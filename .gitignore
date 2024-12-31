@@ -13,6 +13,7 @@ bin-int/
 CMakeSettings.json
 CMakePresets.json
 *.json
+!.vscode/*.json
 *.log
 *rp3d_profiling_.txt
 *imgui.ini
