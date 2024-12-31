@@ -1,7 +1,5 @@
 **/bin/
 bin-int/
-.vs/
-!.vscode/
 **/build/
 **/out/
 
