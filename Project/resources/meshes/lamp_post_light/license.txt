@@ -1,0 +1,11 @@
+Model Information:
+* title:	Lamp post light
+* source:	https://sketchfab.com/3d-models/lamp-post-light-ff5e3bc99dd146d986cb662813ec988e
+* author:	Sousinho (https://sketchfab.com/sousinho)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Lamp post light" (https://sketchfab.com/3d-models/lamp-post-light-ff5e3bc99dd146d986cb662813ec988e) by Sousinho (https://sketchfab.com/sousinho) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -1,0 +1,31 @@
+#include "BHive.h"
+#include "project/Project.h"
+
+namespace BHive
+{
+    // stores launcher settings
+    struct FProjectLauncherSettings
+    {
+        std::unordered_map<std::string, std::filesystem::path> mRecentProjectPaths;
+
+        void Serialize(StreamWriter &ar) const;
+        void Deserialize(StreamReader &ar);
+    };
+
+    class ProjectLauncherLayer : public Layer
+    {
+        void OnAttach() override;
+
+        void OnDetach() override;
+
+        void OnGuiRender(float) override;
+
+    private:
+        void OpenProject(const std::filesystem::path &path);
+        void CreateProject(const FProjectConfiguration &config);
+
+    private:
+        FProjectLauncherSettings mSettings;
+    };
+
+} // namespace BHive

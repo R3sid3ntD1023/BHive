@@ -1,0 +1,23 @@
+#pragma once
+
+#include "asset/AssetMetaData.h"
+#include "gfx/Texture.h"
+#include "threading/SafePromise.h"
+#include "core/Buffer.h"
+
+namespace BHive
+{
+	class Texture;
+
+	struct FTextureImportData
+	{
+		int mWidth = 0, mHeight = 0;
+	};
+
+	struct TextureImporter
+	{
+		static BHIVE Ref<Texture> Import(const std::filesystem::path &file, const FTextureImportData &import_data = {});
+
+		static BHIVE Ref<Texture> LoadFromMemory(const uint8_t *data, int length);
+	};
+}

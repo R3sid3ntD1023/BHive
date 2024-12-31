@@ -1,0 +1,63 @@
+#include "AssetEditor.h"
+#include "core/FileDialog.h"
+
+namespace BHive
+{
+    AssetEditor::AssetEditor()
+        : WindowBase(ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings |
+                     ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar)
+    {
+    }
+
+    void AssetEditor::OnUpdateContent()
+    {
+        if (ImGui::BeginMenuBar())
+        {
+            MenuBar();
+
+            ImGui::EndMenuBar();
+        }
+
+        OnWindowRender();
+    }
+
+    void AssetEditor::MenuBar()
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("Save"))
+            {
+                OnSave(mCurrentSavePath);
+            }
+
+            if (ImGui::MenuItem("SaveAs"))
+            {
+                auto path = FileDialogs::SaveFile(GetFileDialogFilter());
+                if (!path.empty())
+                {
+                    if (OnSave(path))
+                    {
+                        mCurrentSavePath = path;
+                    }
+                }
+            }
+
+            if (ImGui::MenuItem("Load"))
+            {
+                auto path = FileDialogs::OpenFile(GetFileDialogFilter());
+                if (!path.empty())
+                {
+                    if (OnLoad(path))
+                    {
+                        mCurrentSavePath = path;
+                    }
+                }
+            }
+
+            ImGui::EndMenu();
+        }
+
+        OnMenuBar();
+    }
+
+} // namespace BHive

@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 3.8)
+
+set(SRC_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+
+set(PROJECT_NAME ProjectLauncher)
+
+file(GLOB_RECURSE SRC CMAKE_CONFIGURE_DEPENDS ${SRC_DIR}/**  PARENT_SCOPE)
+
+add_executable(${PROJECT_NAME} ${SRC})
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src" )
+target_link_libraries(${PROJECT_NAME} PUBLIC Engine)
+ASSIGN_SOURCE_GROUP(${SRC})
+
+if(MSVC)
+	target_compile_options(${PROJECT_NAME} PRIVATE /ZI PRIVATE /INCREMENTAL PRIVATE /MP)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC _CRT_SECURE_NO_WARNINGS PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
+endif()
