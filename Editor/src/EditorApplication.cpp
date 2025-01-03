@@ -23,9 +23,9 @@ namespace BHive
         FApplicationSpecification specification;
         specification.CommandLine = cmdline;
         specification.Title = "Editor v" + GET_ENGINE_VERSION.to_string();
-        specification.Width = 800;
-        specification.Height = 600;
-        specification.VSync = false;
+        specification.Width = 1080;
+        specification.Height = 720;
+        specification.VSync = true;
         return new EditorApplication(specification);
     }
 }

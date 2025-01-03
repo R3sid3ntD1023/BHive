@@ -236,13 +236,13 @@ namespace BHive
 		mShadowRenderData.mSpotShadowBuffer->SetData(mShadowRenderData.mSpotLightViewProjections, sizeof(uint32_t) * 4);
 	}
 
-	void ShadowRenderer::SubmitPointLight(const glm::vec3 &position)
+	void ShadowRenderer::SubmitPointLight(const glm::vec3 &position, float radius)
 	{
-		auto proj = glm::perspective(glm::radians(90.0f), 1.f, 0.1f, 50.f);
+		auto proj = glm::perspective(glm::radians(90.0f), 1.f, 0.1f, radius);
 
 		for (int j = 0; j < 6; j++)
 		{
-			auto view = glm::lookAt(position, position + point_directions[j].normal, point_directions[j].up);
+			auto view = glm::lookAt(position, position + point_directions[j].normal * radius, point_directions[j].up);
 
 			auto k = ((mShadowRenderData.mNumPointLights % MAX_LIGHTS) * 6) + j;
 			mShadowRenderData.mPointLightViewProjections[k] = proj * view;

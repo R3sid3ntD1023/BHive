@@ -7,7 +7,7 @@ namespace BHive
 {
     Actor::Actor()
     {
-        mRootComponent = AddNewComponent<SceneComponent>("Root");
+      
     }
 
     void Actor::OnBegin()
@@ -57,19 +57,6 @@ namespace BHive
     {
         mComponents.push_back(component);
 
-        if (auto scenecomponent = Cast<SceneComponent>(component))
-        {
-            if (mRootComponent && *mRootComponent != *scenecomponent)
-            {
-
-                scenecomponent->AttachTo(mRootComponent.get());
-            }
-            else if (!mRootComponent)
-            {
-                SetRootComponent(scenecomponent);
-            }
-        }
-
         RegisterComponent(component.get());
     }
 
@@ -81,28 +68,12 @@ namespace BHive
         if (it == mComponents.end())
             return;
 
-        if (auto scenecomponent = Cast<SceneComponent>(*it))
-        {
-            for (auto child : scenecomponent->GetChildren())
-            {
-                child->DetachFromParent();
-            }
-
-            scenecomponent->DetachFromParent();
-        }
-
         mComponents.erase(it);
-    }
-
-    void Actor::SetRootComponent(Ref<SceneComponent> &component)
-    {
-        mRootComponent = component;
     }
 
     void Actor::SetLocalTransform(const FTransform &transform)
     {
-        if (mRootComponent)
-            mRootComponent->SetLocalTransform(transform);
+        mTransform = transform;
     }
 
     void Actor::RegisterComponents()
@@ -123,61 +94,61 @@ namespace BHive
 
     const FTransform &Actor::GetLocalTransform() const
     {
-        static FTransform sTransform;
-
-        if (mRootComponent)
-            return mRootComponent->GetLocalTransform();
-
-        return sTransform;
+        return mTransform;
     }
 
     FTransform Actor::GetWorldTransform() const
     {
-        static FTransform sTransform;
+        if (GetParent())
+            return GetParent()->GetWorldTransform() * mTransform;
 
-        if (mRootComponent)
-            return mRootComponent->GetWorldTransform();
-
-        return sTransform;
+        return mTransform;
     }
 
     Actor *Actor::GetParent() const
     {
-        if (mRootComponent && mRootComponent->GetParent())
-            return mRootComponent->GetParent()->GetOwningActor();
+        auto parent_id = mRelationshipComponent.GetParentID();
+
+        if (parent_id)
+            return mWorld->GetActors().at(parent_id).get();
 
         return nullptr;
     }
 
     void Actor::AttachTo(Actor *actor)
     {
-        if (!mRootComponent || !(actor && actor->mRootComponent))
+        if (!actor)
             return;
 
-        mRootComponent->AttachTo(actor->mRootComponent.get());
+        if (actor->GetParent())
+            actor->DetachFromParent();
+
+        mRelationshipComponent.AddChild(actor->GetUUID());
+        actor->mRelationshipComponent.SetParentID(GetUUID());
     }
 
     void Actor::DetachFromParent()
     {
-        mRootComponent->DetachFromParent();
+        auto parent = GetParent();
+
+        if (!parent)
+            return;
+
+        parent->mRelationshipComponent.RemoveChild(GetUUID());
+        mRelationshipComponent.SetParentID(0);
     }
 
     ActorChildren Actor::GetChildren()
     {
         ActorChildren children;
 
-        if (!mRootComponent)
-            return children;
+        const auto& actors = mWorld->GetActors();
 
-        for (auto &child : mRootComponent->GetChildren())
+        for (auto &child_id : mRelationshipComponent.GetChildren())
         {
-            if (auto actor = child->GetOwningActor())
-            {
-                if (*actor != *this)
-                {
-                    children.push_back(actor);
-                }
-            }
+            auto actor = actors.at(child_id);
+            if (actor)
+                children.push_back(actor.get());
         }
 
         return children;
@@ -193,7 +164,7 @@ namespace BHive
         ObjectBase::Serialize(writer);
 
         writer(mTickEnabled);
-        writer(mPostLoadData.RootComponentID);
+        writer(mRelationshipComponent);
         writer(mComponents.size());
 
         for (auto &component : mComponents)
@@ -210,7 +181,7 @@ namespace BHive
         size_t num_components = 0;
 
         reader(mTickEnabled);
-        reader(mPostLoadData.RootComponentID);
+        reader(mRelationshipComponent);
         reader(num_components);
 
         if (mComponents.size() < num_components)
@@ -230,35 +201,10 @@ namespace BHive
             component->Deserialize(reader);
         }
 
-        auto root_id = mPostLoadData.RootComponentID;
-        auto it = std::find_if(mComponents.begin(), mComponents.end(), [root_id](const auto &component)
-                               { return component->GetUUID() == root_id; });
-
-        if (it != mComponents.end())
-            mRootComponent = Cast<SceneComponent>(*it);
-
         RegisterComponents();
     }
 
-    void Actor::OnPreSave()
-    {
-        mPostLoadData = FActorPostLoadData{};
-        mPostLoadData.RootComponentID = mRootComponent->GetUUID();
-
-        for (auto &component : mComponents)
-        {
-            mPostLoadData.mComponentIDs.emplace(component->GetUUID(), component);
-        }
-
-        for (auto &component : mComponents)
-            component->OnPreSave();
-    }
-
-    void Actor::OnPostLoad()
-    {
-        for (auto &component : mComponents)
-            component->OnPostLoad();
-    }
+   
 
     bool Actor::operator==(const Actor &rhs) const
     {
@@ -273,8 +219,8 @@ namespace BHive
     REFLECT(Actor)
     {
         BEGIN_REFLECT(Actor)
-        REFLECT_CONSTRUCTOR()
-        REFLECT_CONSTRUCTOR(const Actor &)
-        REFLECT_METHOD("AddComponent", &Actor::AddComponent);
+            REFLECT_CONSTRUCTOR()
+            REFLECT_CONSTRUCTOR(const Actor&)
+            REFLECT_METHOD("AddComponent", &Actor::AddComponent);
     }
 } // namespace BHive

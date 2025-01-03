@@ -58,8 +58,16 @@
     using TEnum = cls;          \
     rttr::registration::enumeration<cls>(#cls)
 
-#define ENUM_VALUE(enum_value) \
-    rttr::value(#enum_value, TEnum::##enum_value)
+#define GET_ENUM_VALUE_MACRO_NAME(arg0, macro) macro
+
+#define ENUM_VALUE_IMPL_1(enum_value, name) \
+    rttr::value(name, TEnum::##enum_value)
+
+#define ENUM_VALUE_IMPL_2(enum_value)\
+    ENUM_VALUE_IMPL_1( enum_value, #enum_value)
+
+#define GET_ENUM_VALUE_MACRO(enum_value, ...) EXPAND(GET_ENUM_VALUE_MACRO_NAME(__VA_ARGS__, ENUM_VALUE_IMPL_2, ENUM_VALUE_IMPL_1))
+#define ENUM_VALUE(...) EXPAND(GET_ENUM_VALUE_MACRO(__VA_ARGS__)(__VA_ARGS__))
 
 #define META_DATA(key, value) rttr::metadata(key, value)
 

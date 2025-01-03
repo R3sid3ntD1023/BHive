@@ -33,17 +33,15 @@ namespace BHive
 
 	void GLFramebuffer::Bind() const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glBindFramebuffer(GL_FRAMEBUFFER, mFramebufferID);
 		glViewport(0, 0, mSpecification.Width, mSpecification.Height);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLFramebuffer::UnBind() const
 	{
-		BEGIN_THREAD_DISPATCH()
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLFramebuffer::Resize(uint32_t width, uint32_t height)
@@ -64,12 +62,11 @@ namespace BHive
 	{
 		ASSERT(attachmentIndex < mColorAttachments.size());
 
-		BEGIN_THREAD_DISPATCH(=)
 		auto &attachment = mColorAttachments[attachmentIndex];
 		auto &spec = mColorSpecifications[attachmentIndex];
 
 		glClearTexImage(attachment->GetRendererID(), 0, GetGLFormat(spec.mSpecification.Format), type, data);
-		END_THREAD_DISPATCH();
+		;
 	}
 
 	void GLFramebuffer::Blit(Framebuffer *target)
@@ -77,25 +74,21 @@ namespace BHive
 		if (!target || mSpecification.Width == 0 || mSpecification.Height == 0)
 			return;
 
-		BEGIN_THREAD_DISPATCH(=)
 		BlitInternal(target);
-		END_THREAD_DISPATCH();
+		;
 	}
 
 	void GLFramebuffer::ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data)
 	{
 		ASSERT(attachmentIndex < mColorSpecifications.size());
 
-		BEGIN_THREAD_DISPATCH(=)
 		ReadPixelInternal(attachmentIndex, x, y, w, h, type, data);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLFramebuffer::BindForRead()
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, mFramebufferID);
-		END_THREAD_DISPATCH()
 	}
 
 	bool GLFramebuffer::SaveToImage(const std::filesystem::path &path)
@@ -137,9 +130,8 @@ namespace BHive
 
 	void GLFramebuffer::Release()
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glDeleteFramebuffers(1, &mFramebufferID);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLFramebuffer::BlitInternal(Framebuffer *target)
@@ -239,7 +231,6 @@ namespace BHive
 			}
 		}
 
-		BEGIN_THREAD_DISPATCH(this)
 		glCreateFramebuffers(1, &mFramebufferID);
 		auto num_attachments = mColorAttachments.size();
 		for (size_t i = 0; i < num_attachments; i++)
@@ -275,7 +266,6 @@ namespace BHive
 		}
 
 		ASSERT(glCheckNamedFramebufferStatus(mFramebufferID, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-		END_THREAD_DISPATCH()
 	}
 
 }

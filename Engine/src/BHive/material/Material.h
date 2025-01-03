@@ -13,10 +13,18 @@ namespace BHive
 
 	enum MaterialFlags : uint16_t
 	{
-		MaterialFlag_None = 0,
-		MaterialFlag_UnLit = BIT(0),
-		MaterialFlag_DoubleSided = BIT(1),
-		MaterialFlag_Transparent = BIT(2),
+		MaterialFlag_None					= 0,
+		MaterialFlag_Show_Vertex_Colors		= BIT(0),
+		MaterialFlag_Alpha_Is_Transparency	= BIT(1),
+		MaterialFlag_Use_Metallic_Roughness = BIT(2),
+		MaterialFlag_Use_Normal_Map			= BIT(3),
+		MaterialFlag_Use_Depth_Map			= BIT(4),
+		MaterialFlag_Cast_Shadows			= BIT(5),
+		MaterialFlag_Recieve_Shadows		= BIT(6),
+		MaterialFlag_UnLit					= BIT(7),
+		MaterialFlag_DoubleSided			= BIT(8),
+		MaterialFlag_Transparent			= BIT(9),
+		MaterialFlag_Shadows				= MaterialFlag_Cast_Shadows | MaterialFlag_Recieve_Shadows
 	};
 
 	struct BHIVE FTextureSlot
@@ -50,23 +58,16 @@ namespace BHive
 
 		float mDepthScale = 1.0f;
 
-		bool mCastShadows = true;
 
-		bool mReceiveShadows = true;
-
-		bool mShowVertexColors = false;
-
-		bool mAlphaIsTransparency = false;
-
-		TEnumAsByte<MaterialFlags> mFlags = MaterialFlag_None;
+		TEnumAsByte<MaterialFlags> mFlags = MaterialFlag_Shadows;
 
 		virtual Ref<Shader> Submit() const;
 
 		virtual void SetTexture(const char *name, const Ref<Texture> &texture);
 
-		bool CastShadows() const { return mCastShadows; }
-		virtual bool IsTransparent() const { return (mFlags & MaterialFlag_Transparent) != 0 || mOpacity < 1.0f ||
-													mAlphaIsTransparency; }
+		bool CastShadows() const;
+
+		virtual bool IsTransparent() const;
 
 		static Ref<Shader> GetShader();
 

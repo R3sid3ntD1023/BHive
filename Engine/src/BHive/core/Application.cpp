@@ -106,12 +106,12 @@ namespace BHive
 		float deltatime = time - lasttime;
 		lasttime = time;
 
-		Thread::Update();
-
 		for (auto &layer : mLayerStack)
 		{
 			layer->OnUpdate(deltatime);
 		}
+
+		Thread::Update();
 
 		mImGuiLayer->BeginFrame();
 

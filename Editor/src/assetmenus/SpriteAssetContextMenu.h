@@ -9,6 +9,7 @@
 #include "windows/MaterialEditor.h"
 #include "windows/SkeletonEditor.h"
 #include "windows/MeshEditor.h"
+#include "windows/AnimationEditor.h"
 
 namespace BHive
 {
@@ -62,6 +63,11 @@ namespace BHive
     };
 
     struct MeshContextMenu : public FAssetContextMenuBase<MeshEditor>
+    {
+        REFLECTABLEV(FAssetContextMenu)
+    };
+
+    struct AnimationContextMenu : public FAssetContextMenuBase<AnimationEditor>
     {
         REFLECTABLEV(FAssetContextMenu)
     };

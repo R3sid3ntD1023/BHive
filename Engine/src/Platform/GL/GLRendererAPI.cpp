@@ -90,7 +90,6 @@ namespace BHive
 	void GLRendererAPI::Init()
 	{
 
-		BEGIN_THREAD_DISPATCH()
 #if _DEBUG
 		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -105,53 +104,46 @@ namespace BHive
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 		glEnable(GL_LINE_SMOOTH);
 		// glEnable(GL_FRAMEBUFFER_SRGB);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::ClearColor(float r, float g, float b, float a)
 	{
-		BEGIN_THREAD_DISPATCH(r, g, b, a)
+
 		glClearColor(r, g, b, a);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::Clear(int mask)
 	{
-		BEGIN_THREAD_DISPATCH(mask)
+
 		glClear(mask);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::SetLineWidth(float width)
 	{
-		BEGIN_THREAD_DISPATCH(width)
+
 		glLineWidth(width);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 	{
-		BEGIN_THREAD_DISPATCH(x, y, w, h)
+
 		glViewport(x, y, w, h);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count)
 	{
 		vao.Bind();
-		BEGIN_THREAD_DISPATCH(mode, count)
+
 		glDrawArrays(mode, 0, count);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count)
 	{
 		vao.Bind();
 		auto index_buffer = vao.GetIndexBuffer();
-		BEGIN_THREAD_DISPATCH(mode, index_buffer, count)
+
 		auto _count = count ? count : index_buffer->GetCount();
 		glDrawElements(mode, _count, GL_UNSIGNED_INT, nullptr);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count)
@@ -159,10 +151,8 @@ namespace BHive
 		vao.Bind();
 		auto index_buffer = vao.GetIndexBuffer();
 
-		BEGIN_THREAD_DISPATCH(mode, index_buffer, start, start_index, count)
 		auto _count = count ? count : index_buffer->GetCount();
 		glDrawElementsBaseVertex(mode, _count, GL_UNSIGNED_INT, (void *)(sizeof(uint32_t) * start_index), start);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
@@ -170,10 +160,8 @@ namespace BHive
 		vao.Bind();
 		auto index_buffer = vao.GetIndexBuffer();
 
-		BEGIN_THREAD_DISPATCH(mode, index_buffer, start, end, count)
 		auto _count = count ? count : index_buffer->GetCount();
 		glDrawRangeElements(mode, start, end, _count, GL_UNSIGNED_INT, nullptr);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count)
@@ -181,74 +169,63 @@ namespace BHive
 		vao.Bind();
 		auto index_buffer = vao.GetIndexBuffer();
 
-		BEGIN_THREAD_DISPATCH(mode, index_buffer, instances, count)
-
 		auto _count = count ? count : index_buffer->GetCount();
 		glDrawElementsInstanced(mode, _count, GL_UNSIGNED_INT, nullptr, instances);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::EnableDepth()
 	{
-		BEGIN_THREAD_DISPATCH()
+
 		glEnable(GL_DEPTH_TEST);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::DisableDepth()
 	{
-		BEGIN_THREAD_DISPATCH()
+
 		glDisable(GL_DEPTH_TEST);
-		END_THREAD_DISPATCH();
+		;
 	}
 
 	void GLRendererAPI::DepthFunc(uint32_t func)
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glDepthFunc(func);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::CullFront()
 	{
-		BEGIN_THREAD_DISPATCH()
+
 		glCullFace(GL_FRONT);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::CullBack()
 	{
-		BEGIN_THREAD_DISPATCH()
+
 		glCullFace(GL_BACK);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::SetCullEnabled(bool enabled)
 	{
-		BEGIN_THREAD_DISPATCH(enabled)
+
 		enabled ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::EnableDepthMask(bool mask)
 	{
-		BEGIN_THREAD_DISPATCH(mask)
+
 		glDepthMask(mask ? GL_TRUE : GL_FALSE);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::EnableBlend(bool enabled)
 	{
-		BEGIN_THREAD_DISPATCH(enabled)
+
 		enabled ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLRendererAPI::AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer)
 	{
-		BEGIN_THREAD_DISPATCH(attachment, texture, framebuffer)
+
 		glFramebufferTexture(GL_FRAMEBUFFER, attachment, texture, framebuffer);
-		END_THREAD_DISPATCH()
 	}
 
 	unsigned GLRendererAPI::CheckError(const char *file, int line)

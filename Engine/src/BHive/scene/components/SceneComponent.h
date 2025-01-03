@@ -17,9 +17,9 @@ namespace BHive
     class SceneComponent : public ActorComponent, public ITransform
     {
     public:
-        void AttachTo(SceneComponent *parentComponent);
+        /*void AttachTo(SceneComponent *parentComponent);
 
-        void DetachFromParent();
+        void DetachFromParent();*/
 
         void SetLocalTransform(const FTransform &transform);
 
@@ -27,24 +27,24 @@ namespace BHive
 
         FTransform GetWorldTransform() const;
 
-        const ComponentChildren &GetChildren() const { return mChildren; }
+       /* const ComponentChildren &GetChildren() const { return mChildren; }
 
         ComponentChildren &GetChildren() { return mChildren; }
 
-        SceneComponent *GetParent() const { return mParentComponent; }
+        SceneComponent *GetParent() const { return mParentComponent; }*/
 
         virtual void Serialize(StreamWriter &writer) const;
 
         virtual void Deserialize(StreamReader &reader);
 
-        virtual void OnPreSave();
-        virtual void OnPostLoad();
+        //virtual void OnPreSave();
+        //virtual void OnPostLoad();
 
     private:
         FTransform mTransform;
 
-        SceneComponent *mParentComponent = nullptr;
-        ComponentChildren mChildren;
+        //SceneComponent *mParentComponent = nullptr;
+        //ComponentChildren mChildren;
         FSceneComponentPostLoadData mPostLoadData;
 
         REFLECTABLEV(ActorComponent, ITransform)

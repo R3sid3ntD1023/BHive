@@ -3,7 +3,8 @@
 #include "ObjectBase.h"
 #include "ITickable.h"
 #include "ActorComponent.h"
-#include "scene/components/SceneComponent.h"
+//#include "scene/components/SceneComponent.h"
+#include "scene/components/RelationshipComponent.h"
 #include "asset/AssetType.h"
 #include "ITransform.h"
 
@@ -57,15 +58,11 @@ namespace BHive
 
         void RemoveComponent(ActorComponent *component);
 
-        void SetRootComponent(Ref<SceneComponent> &component);
-
         void SetLocalTransform(const FTransform &transform);
 
         const FTransform &GetLocalTransform() const;
 
         FTransform GetWorldTransform() const;
-
-        SceneComponent *GetRootComponent() const { return mRootComponent.get(); }
 
         Actor *GetParent() const;
 
@@ -90,9 +87,6 @@ namespace BHive
         virtual void Serialize(StreamWriter &writer) const override;
         virtual void Deserialize(StreamReader &reader) override;
 
-        virtual void OnPreSave();
-        virtual void OnPostLoad();
-
         bool operator==(const Actor &rhs) const;
 
         bool operator!=(const Actor &rhs) const;
@@ -105,15 +99,15 @@ namespace BHive
         OnActorDestroyedEvent OnActorDestroyed;
 
     private:
-        Ref<SceneComponent> mRootComponent = nullptr;
+        FTransform mTransform;
+
+        RelationshipComponent mRelationshipComponent;
 
         ComponentList mComponents;
 
         bool mTickEnabled{true};
 
         World *mWorld = nullptr;
-
-        FActorPostLoadData mPostLoadData;
 
         REFLECTABLEV(ObjectBase, ITickable, ITransform)
 

@@ -11,17 +11,8 @@ set_target_properties(Engine PROPERTIES
 	CXX_STANDARD 20
 	CXX_STANDARD_REQUIRED YES
 )
-ASSIGN_SOURCE_GROUP(${ENGINE_SRC})
-
-if(MSVC)
-	target_compile_options(Engine PUBLIC /ZI /INCREMETAL /MP /bigobj /W0 )
-	target_compile_definitions(Engine PUBLIC _CRT_SECURE_NO_WARNINGS PUBLIC GLFW_INCLUDE_NONE YAML_STATIC_LIB AL_LIBTYPE_STATIC
-		PUBLIC IMGUI_DEFINE_MATH_OPERATORS )
-	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebug$<$<CONFIG:Debug>:Debug>")
-	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
-	
-endif()
-
+target_compile_options(Engine PUBLIC /ZI /INCREMETAL /MP /bigobj /W0 )
+target_compile_definitions(Engine PUBLIC _CRT_SECURE_NO_WARNINGS PUBLIC GLFW_INCLUDE_NONE PUBLIC AL_LIBTYPE_STATIC PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
 
 target_link_libraries(Engine
 	PUBLIC glfw 
@@ -31,13 +22,12 @@ target_link_libraries(Engine
 	PUBLIC EnTT
 	PUBLIC assimp::assimp 
 	PUBLIC imgui 
-	PUBLIC ImGuizmo
 	PUBLIC stb
 	PUBLIC waveparser
 	PUBLIC ReactPhysics3D::reactphysics3d 
 	PUBLIC rttr_core 
 	PUBLIC spdlog::spdlog_header_only 
-	PUBLIC glm::glm
+	PUBLIC glm::glm-header-only
 )
 
 target_include_directories(Engine PUBLIC 

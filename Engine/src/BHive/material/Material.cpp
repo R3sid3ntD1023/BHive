@@ -34,6 +34,7 @@ namespace BHive
 
 	Ref<Shader> Material::Submit() const
 	{
+
 		auto shader = GetShader();
 		shader->Bind();
 		shader->SetUniform("u_material.Albedo", (glm::vec4)mAldebo);
@@ -44,34 +45,38 @@ namespace BHive
 		shader->SetUniform("u_material.Emission", (glm::vec3)mEmission);
 		shader->SetUniform("u_material.Tiling", mTiling);
 		shader->SetUniform("u_material.DepthScale", mDepthScale);
-		shader->SetUniform("u_material.ReceiveShadows", (int)mReceiveShadows);
-		shader->SetUniform("u_material.ShowVertexColors", (int)mShowVertexColors);
-		shader->SetUniform("u_material.AlphaIsTranparency", (int)mAlphaIsTransparency);
+
+		int32_t flags = mFlags;
 
 		for (auto &[name, texture] : mTextures)
 		{
 			auto &texture_slot = mTextureSlots.at(name);
 
 			auto texture_used = texture ? texture : texture_slot.mTexture;
-			if (texture_used)
+
+			if (texture_used.get())
 			{
+				if (name == METALLIC_ROUGHNESS_TEX)
+				{
+					flags |= MaterialFlag_Use_Metallic_Roughness;
+				}
+
+				else if (name == NORMAL_TEX)
+				{
+					flags |= MaterialFlag_Use_Normal_Map;
+				}
+
+				else if (name == DISPLACEMENT_TEX)
+				{
+					flags |= MaterialFlag_Use_Depth_Map;
+				}
+
 				texture_used->Bind(texture_slot.mBinding);
+
+				
 			}
 
-			if (name == METALLIC_ROUGHNESS_TEX)
-			{
-				shader->SetUniform("u_material.MetallicRoughnessCombined", texture_used ? 1 : 0);
-			}
-
-			else if (name == NORMAL_TEX)
-			{
-				shader->SetUniform("u_material.HasNormalMap", texture_used ? 1 : 0);
-			}
-
-			else if (name == DISPLACEMENT_TEX)
-			{
-				shader->SetUniform("u_material.HasDepthMap", texture_used ? 1 : 0);
-			}
+			shader->SetUniform("u_material.flags", flags);
 		}
 
 		if ((mFlags & MaterialFlag_DoubleSided) != 0)
@@ -102,23 +107,33 @@ namespace BHive
 
 	void Material::Serialize(StreamWriter &ar) const
 	{
-		ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale, mFlags, mCastShadows, mReceiveShadows, mAlphaIsTransparency, mTextures);
+		ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale, mFlags,mTextures);
 	}
 
 	void Material::Deserialize(StreamReader &ar)
 	{
-		ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale, mFlags, mCastShadows, mReceiveShadows, mAlphaIsTransparency, mTextures);
+		ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale, mFlags, mTextures);
 	}
+
+	bool Material::CastShadows() const { return (mFlags & MaterialFlag_Cast_Shadows) != 0; }
+
+	bool Material::IsTransparent() const { return (mFlags & MaterialFlag_Transparent) != 0 || mOpacity < 1.0f ||
+		(mFlags & MaterialFlag_Alpha_Is_Transparency) != 0;  }
 
 	REFLECT(MaterialFlags)
 	{
 		BEGIN_REFLECT_ENUM(MaterialFlags)
 		(
-
-			ENUM_VALUE(MaterialFlag_None),
-			ENUM_VALUE(MaterialFlag_DoubleSided),
-			ENUM_VALUE(MaterialFlag_Transparent),
-			ENUM_VALUE(MaterialFlag_UnLit));
+			ENUM_VALUE(MaterialFlag_None, "None"),
+			ENUM_VALUE(MaterialFlag_Show_Vertex_Colors, "VertexColors"),
+			ENUM_VALUE(MaterialFlag_Alpha_Is_Transparency, "Alpha Is Transparency"),
+			ENUM_VALUE(MaterialFlag_Cast_Shadows, "Cast Shadows"),
+			ENUM_VALUE(MaterialFlag_Recieve_Shadows, "Recieve Shadows"),
+			ENUM_VALUE(MaterialFlag_DoubleSided, "Double Sided"),
+			ENUM_VALUE(MaterialFlag_Transparent, "Tranparent"),
+			ENUM_VALUE(MaterialFlag_UnLit, "UnLit"),
+			ENUM_VALUE(MaterialFlag_Shadows, "Shadows")
+		);
 	}
 
 	REFLECT(Material)
@@ -134,9 +149,6 @@ namespace BHive
 							REFLECT_PROPERTY("Tiling", mTiling)
 								REFLECT_PROPERTY("DepthScale", mDepthScale)
 									REFLECT_PROPERTY("Flags", mFlags)
-										REFLECT_PROPERTY("CastShadows", mCastShadows)
-											REFLECT_PROPERTY("RecieveShadows", mReceiveShadows)
-												REFLECT_PROPERTY("AlphaIsTransparency", mAlphaIsTransparency)
 													REFLECT_PROPERTY("Textures", mTextures)(META_DATA(EPropertyMetaData_Flags, EPropertyFlags_FixedSize));
 	}
 }

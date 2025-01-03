@@ -25,6 +25,12 @@
 
 namespace BHive
 {
+	uint32_t quad_indices[] = {0, 1, 2, 2, 3, 0};
+	float quad_vertices[] = {
+		-1.f, -1.f, 0.f, 0.f,
+		1.f, -1.f, 1.f, 0.f,
+		1.f, 1.f, 1.f, 1.f,
+		-1.f, 1.f, 0.f, 1.f};
 
 	SceneRenderer::SceneRenderer(uint32_t width, uint32_t height, uint32_t flags)
 		: mViewportSize(width, height), mFlags(flags)
@@ -37,7 +43,7 @@ namespace BHive
 
 		fbspec.Width = width;
 		fbspec.Height = height;
-		fbspec.Samples = 1;
+		fbspec.Samples = 16;
 		mMultiSampleFramebuffer = Framebuffer::Create(fbspec);
 
 		fbspec.Samples = 1;
@@ -49,15 +55,8 @@ namespace BHive
 		fbspec.Samples = 1;
 		mQuadFramebuffer = Framebuffer::Create(fbspec);
 
-		uint32_t indices[] = {0, 1, 2, 2, 3, 0};
-		float vertices[] = {
-			-1.f, -1.f, 0.f, 0.f,
-			1.f, -1.f, 1.f, 0.f,
-			1.f, 1.f, 1.f, 1.f,
-			-1.f, 1.f, 0.f, 1.f};
-
-		auto ibo = IndexBuffer::Create(indices, 6);
-		auto vbo = VertexBuffer::Create(vertices, 16 * sizeof(float));
+		auto ibo = IndexBuffer::Create(quad_indices, 6);
+		auto vbo = VertexBuffer::Create(quad_vertices, 16 * sizeof(float));
 		vbo->SetLayout({{EShaderDataType::Float2}, {EShaderDataType::Float2}});
 
 		mQuadVao = VertexArray::Create();
@@ -161,7 +160,7 @@ namespace BHive
 			auto &[transform, sub_mesh, vao, joints] = objectdata;
 
 			auto shader = material->Submit();
-			shader->SetUniform("u_material_flags", mFlags);
+			shader->SetUniform("u_global_flags", mFlags);
 			if (joints.size())
 			{
 				Renderer::SubmitSkeletalMesh(joints);
@@ -188,7 +187,7 @@ namespace BHive
 			auto &[transform, sub_mesh, vao, joints] = objectdata;
 
 			auto shader = material->Submit();
-			shader->SetUniform("u_material_flags", mFlags);
+			shader->SetUniform("u_global_flags", mFlags);
 
 			if (joints.size())
 			{
@@ -364,7 +363,7 @@ namespace BHive
 
 	const Ref<Framebuffer> &SceneRenderer::GetFinalFramebuffer() const
 	{
-		return mFramebuffer;
+		return mQuadFramebuffer;
 	}
 
 	void SceneRenderer::CreateBloomMipMaps()
@@ -483,7 +482,7 @@ namespace BHive
 			for (auto &light : pointlights)
 			{
 				auto &transform = light.mTransform;
-				ShadowRenderer::SubmitPointLight(transform.get_translation());
+				ShadowRenderer::SubmitPointLight(transform.get_translation(), Cast<PointLight>(light.mLight)->mRadius);
 			}
 
 			ShadowRenderer::BeginPointShadowPass();

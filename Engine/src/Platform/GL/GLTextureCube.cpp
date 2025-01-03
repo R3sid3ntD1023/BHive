@@ -9,7 +9,7 @@ namespace BHive
 	GLTextureCube::GLTextureCube(uint32_t size, const FTextureSpecification &spec)
 		: mSize(size), mSpecification(spec)
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		GLenum target = GetTextureTarget(spec.Type, 1);
 		glCreateTextures(target, 1, &mTextureID);
 
@@ -39,49 +39,41 @@ namespace BHive
 		{
 			glGenerateTextureMipmap(mTextureID);
 		}
-
-		END_THREAD_DISPATCH()
 	}
 
 	GLTextureCube::~GLTextureCube()
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glDeleteTextures(1, &mTextureID);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTextureCube::Bind(uint32_t slot) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glBindTextureUnit(slot, mTextureID);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTextureCube::BindAsImage(uint32_t unit, uint32_t access, uint32_t level) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glBindImageTexture(unit, mTextureID, level, GL_FALSE, 0, access, GetGLInternalFormat(mSpecification.Format));
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTextureCube::UnBind(uint32_t slot) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glBindTextureUnit(slot, 0);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTextureCube::GenerateMipMaps() const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glGenerateTextureMipmap(mTextureID);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTextureCube::AttachToFramebuffer(const Ref<Framebuffer> &framebuffer, uint32_t attachment, uint32_t level)
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glNamedFramebufferTexture(*framebuffer, attachment, mTextureID, level);
-		END_THREAD_DISPATCH()
 	}
 }

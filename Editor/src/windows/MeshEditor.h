@@ -16,6 +16,8 @@ namespace BHive
 
         virtual const char *GetFileDialogFilter() { return "\0"; }
 
+        virtual std::filesystem::path GetAssetPath(const std::filesystem::path &path) const override { return path.parent_path() / (path.stem().string() + ".meta"); }
+
     private:
         EditorCamera mCamera;
         Ref<class SceneRenderer> mRenderer;

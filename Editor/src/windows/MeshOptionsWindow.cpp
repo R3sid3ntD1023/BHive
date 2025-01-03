@@ -8,6 +8,7 @@
 #include "mesh/Skeleton.h"
 #include "mesh/SkeletalAnimation.h"
 #include "core/FileDialog.h"
+#include "inspector/Inspectors.h"
 
 namespace BHive
 {
@@ -54,6 +55,13 @@ namespace BHive
 
         ImGui::BeginDisabled(!has_animations);
         ImGui::Checkbox("Import Animations", &import_animations);
+
+        rttr::variant skeleton_var = mSkeleton;
+        if (inspect(skeleton_var))
+        {
+            mSkeleton = skeleton_var.get_value<TAssetHandle<Skeleton>>();
+        }
+
         ImGui::EndDisabled();
 
         ImGui::BeginDisabled(!import_animations);
@@ -145,17 +153,25 @@ namespace BHive
         }
         else if (has_animations || as_skeletal_mesh)
         {
-            auto skeleton_path = path.parent_path() / (path.stem().string() + ".skeleton");
-
-            if (!std::filesystem::exists(skeleton_path))
+            AssetHandle skeleton_handle = 0;
+            if (mSkeleton)
             {
-
-                FileStreamWriter ar(skeleton_path);
-                ar(mImportData.mData.mBoneData, mImportData.mData.mSkeletonHeirarchyData);
+                skeleton_handle = Asset::GetHandle(mSkeleton.get());
             }
+            else
+            {
+                auto skeleton_path = path.parent_path() / (path.stem().string() + ".skeleton");
 
-            asset_manager->ImportAsset(skeleton_path);
-            auto skeleton_handle = asset_manager->GetHandle(skeleton_path);
+                if (!std::filesystem::exists(skeleton_path))
+                {
+
+                    FileStreamWriter ar(skeleton_path);
+                    ar(mImportData.mData.mBoneData, mImportData.mData.mSkeletonHeirarchyData);
+                }
+
+                asset_manager->ImportAsset(skeleton_path);
+                skeleton_handle = asset_manager->GetHandle(skeleton_path);
+            }
 
             if (as_skeletal_mesh)
             {
@@ -173,8 +189,9 @@ namespace BHive
                 {
                     auto &data = animation_data[i];
 
-                    auto name = data.mName.empty() ? path.stem().string() + std::to_string(i) : data.mName;
-                    auto animation_path = mAnimationDirectory / (name + ".animation");
+                    std::string name = std::format("{}_{}.animation", path.stem().string(), std::to_string(i));
+
+                    auto animation_path = path.parent_path() / name;
 
                     if (!std::filesystem::exists(animation_path))
                     {

@@ -40,13 +40,6 @@ namespace BHive
     {
         for (auto &component : actor->GetComponents())
         {
-            if (auto scene_component = Cast<SceneComponent>(component))
-            {
-                auto parent = scene_component->GetParent();
-                if (parent && parent->GetOwningActor() == actor)
-                    continue;
-            }
-
             DrawComponent(component.get());
         }
     }
@@ -57,18 +50,13 @@ namespace BHive
 
         ImGui::PushID((uint64_t)component->GetUUID());
 
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
-
         auto scenecomponent = Cast<SceneComponent>(component);
         bool is_scene_component = scenecomponent != nullptr;
 
-        flags |= (is_scene_component && scenecomponent->GetChildren().size()) ? 0 : ImGuiTreeNodeFlags_Leaf;
-
-        bool opened = ImGui::TreeNodeEx(component->GetName().c_str(), flags);
-
-        if (ImGui::IsItemClicked() || ImGui::IsItemFocused())
+        auto& edit_subsystem = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+        if (ImGui::Selectable(component->GetName().c_str(), edit_subsystem.mSelection.GetSelectedObject() == component))
         {
-            auto &edit_subsystem = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+            
             edit_subsystem.mSelection.Select(component);
         }
 
@@ -81,21 +69,6 @@ namespace BHive
             ImGui::EndPopup();
         }
 
-        if (opened)
-        {
-            if (is_scene_component)
-            {
-                for (auto &child : scenecomponent->GetChildren())
-                {
-                    auto parent = child->GetOwningActor();
-                    if (parent && parent == component->GetOwningActor())
-                    {
-                        DrawComponent(child);
-                    }
-                }
-            }
-            ImGui::TreePop();
-        }
 
         ImGui::PopID();
 

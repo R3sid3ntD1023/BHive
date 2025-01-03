@@ -19,7 +19,6 @@ namespace BHive
 		: mWidth(width), mHeight(height), mSpecification(specification)
 	{
 
-		BEGIN_THREAD_DISPATCH(=)
 		unsigned levels = specification.Mips ? specification.Levels : 1;
 		glCreateTextures(GL_TEXTURE_2D, 1, &mTextureID);
 		glTextureStorage2D(mTextureID, levels, GetGLInternalFormat(specification.Format), width, height);
@@ -34,8 +33,6 @@ namespace BHive
 		{
 			glGenerateTextureMipmap(mTextureID);
 		}
-
-				END_THREAD_DISPATCH()
 
 		if (data)
 		{
@@ -53,32 +50,27 @@ namespace BHive
 
 	void GLTexture2D::Bind(uint32_t slot) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glBindTextureUnit(slot, mTextureID);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTexture2D::UnBind(uint32_t slot) const
 	{
-		BEGIN_THREAD_DISPATCH(slot)
+
 		glBindTextureUnit(slot, 0);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTexture2D::BindAsImage(uint32_t unit, uint32_t access, uint32_t level) const
 	{
 		auto format = GetGLInternalFormat(mSpecification.Format);
 
-		BEGIN_THREAD_DISPATCH(=)
 		glBindImageTexture(unit, mTextureID, level, GL_FALSE, 0, access, format);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTexture2D::GenerateMipMaps() const
 	{
-		BEGIN_THREAD_DISPATCH(this)
+
 		glGenerateTextureMipmap(mTextureID);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTexture2D::SetData(const void *data, uint64_t size, uint32_t offsetX, uint32_t offsetY)
@@ -86,15 +78,13 @@ namespace BHive
 		auto bbp = mWidth * mHeight * mSpecification.Channels;
 		ASSERT(bbp == size);
 
-		BEGIN_THREAD_DISPATCH(=)
 		glTextureSubImage2D(mTextureID, 0, offsetX, offsetY, mWidth, mHeight, GetGLFormat(mSpecification.Format),
 							GetGLType(mSpecification.Format), data);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTexture2D::Initialize()
 	{
-		BEGIN_THREAD_DISPATCH(this)
+
 		GLenum target = GetTextureTarget(mSpecification.Type, mSamples);
 
 		glCreateTextures(target, 1, &mTextureID);
@@ -134,13 +124,12 @@ namespace BHive
 			break;
 		}
 
-		END_THREAD_DISPATCH();
+		;
 	}
 
 	void GLTexture2D::Release()
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glDeleteTextures(1, &mTextureID);
-		END_THREAD_DISPATCH()
 	}
 }

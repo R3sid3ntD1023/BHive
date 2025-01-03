@@ -8,7 +8,7 @@ namespace BHive
 	GLTexture3D::GLTexture3D(uint32_t width, uint32_t height, uint32_t depth, const FTextureSpecification &specification)
 		: mWidth(width), mHeight(height), mDepth(depth), mSpecification(specification)
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		GLenum target = GetTextureTarget(specification.Type, 1);
 
 		glCreateTextures(target, 1, &mTextureID);
@@ -44,50 +44,42 @@ namespace BHive
 		{
 			glGenerateTextureMipmap(mTextureID);
 		}
-
-		END_THREAD_DISPATCH()
 	}
 
 	GLTexture3D::~GLTexture3D()
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glDeleteTextures(1, &mTextureID);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTexture3D::Bind(uint32_t slot) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glBindTextureUnit(slot, mTextureID);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTexture3D::UnBind(uint32_t slot) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glBindTextureUnit(slot, 0);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTexture3D::BindAsImage(uint32_t unit, uint32_t access, uint32_t level) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glBindImageTexture(unit, mTextureID, level, GL_FALSE, 0, access, GetGLInternalFormat(mSpecification.Format));
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTexture3D::GenerateMipMaps() const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glGenerateTextureMipmap(mTextureID);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLTexture3D::SetData(const void *data, uint64_t size, uint32_t offsetX, uint32_t offsetY)
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glTextureSubImage3D(mTextureID, 0, offsetX, offsetY, 0, mWidth, mHeight, mDepth, GetGLFormat(mSpecification.Format),
 							GetGLType(mSpecification.Format), data);
-		END_THREAD_DISPATCH()
 	}
 }

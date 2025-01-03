@@ -53,7 +53,12 @@ namespace BHive
                         continue;
 
                     auto name = meta.Name;
-                    if (ImGui::Selectable(name.c_str(), current_name == name))
+
+                    ImGui::PushID(id);
+                    auto selected = ImGui::Selectable(name.c_str(), current_name == name);
+                    ImGui::PopID();
+
+                    if (selected)
                     {
                         auto asset = AssetManager::GetAsset(id);
                         data->set_asset(asset);

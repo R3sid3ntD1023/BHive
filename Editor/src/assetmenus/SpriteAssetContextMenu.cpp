@@ -30,5 +30,5 @@ namespace BHive
     REFLECT_ASSET_MENU(MaterialContextMenu, Material)
     REFLECT_ASSET_MENU(SkeletonContextMenu, Skeleton)
     REFLECT_ASSET_MENU(MeshContextMenu, StaticMesh)
-
+    REFLECT_ASSET_MENU(AnimationContextMenu, SkeletalAnimation)
 }

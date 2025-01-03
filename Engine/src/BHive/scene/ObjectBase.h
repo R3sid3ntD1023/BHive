@@ -31,9 +31,6 @@ namespace BHive
 
         virtual void Deserialize(StreamReader &reader);
 
-        virtual void OnPreSave() {}
-        virtual void OnPostLoad() {}
-
         bool operator==(const ObjectBase &rhs) const { return mID == rhs.mID; }
         bool operator!=(const ObjectBase &rhs) const { return mID != rhs.mID; }
 

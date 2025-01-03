@@ -6,30 +6,26 @@ namespace BHive
 {
     GLVertexArray::GLVertexArray()
     {
-        BEGIN_THREAD_DISPATCH(=)
+
         glCreateVertexArrays(1, &mVertexArrayID);
-        END_THREAD_DISPATCH()
     }
 
     GLVertexArray::~GLVertexArray()
     {
-        BEGIN_THREAD_DISPATCH(=)
+
         glDeleteVertexArrays(1, &mVertexArrayID);
-        END_THREAD_DISPATCH()
     }
 
     void GLVertexArray::Bind() const
     {
-        BEGIN_THREAD_DISPATCH(=)
+
         glBindVertexArray(mVertexArrayID);
-        END_THREAD_DISPATCH()
     }
 
     void GLVertexArray::UnBind() const
     {
-        BEGIN_THREAD_DISPATCH(=)
+
         glBindVertexArray(0);
-        END_THREAD_DISPATCH()
     }
 
     void GLVertexArray::SetIndexBuffer(const Ref<IndexBuffer> &indexbuffer)
@@ -52,7 +48,6 @@ namespace BHive
         Bind();
         vertexbuffer->Bind();
 
-        BEGIN_THREAD_DISPATCH(this, elements, stride)
         for (const auto &element : elements)
         {
             auto type = element.Type;
@@ -109,7 +104,6 @@ namespace BHive
             }
         }
 
-        END_THREAD_DISPATCH()
         mVertexBuffers.push_back(vertexbuffer);
     }
 }

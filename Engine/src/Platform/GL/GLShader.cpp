@@ -48,10 +48,8 @@ namespace BHive
 			if (include_src.empty())
 				return false;
 
-			BEGIN_THREAD_DISPATCH(name, include_src)
 			const char *str = &include_src[0];
 			glNamedStringARB(GL_SHADER_INCLUDE_ARB, (GLint)strlen(&name[0]), &name[0], (GLint)strlen(str), str);
-			END_THREAD_DISPATCH()
 
 			return true;
 		}
@@ -79,15 +77,12 @@ namespace BHive
 
 	GLShader::~GLShader()
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glDeleteProgram(mShaderID);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLShader::Compile()
 	{
-
-		BEGIN_THREAD_DISPATCH(=)
 
 		GLint status = 0;
 		GLchar infoLog[512];
@@ -140,8 +135,6 @@ namespace BHive
 #if REFLECT_GL_SHADERS
 		Reflect();
 #endif
-
-		END_THREAD_DISPATCH()
 	}
 
 	void GLShader::PreProcess(const std::string &source)
@@ -169,89 +162,78 @@ namespace BHive
 
 	void GLShader::Bind() const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glUseProgram(mShaderID);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLShader::UnBind() const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glUseProgram(0);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLShader::SetUniform(const std::string &name, int value) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		auto loc = GetUniformLocation(name);
 		glUniform1i(loc, value);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLShader::SetUniform(const std::string &name, uint32_t value) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		auto loc = GetUniformLocation(name);
 		glUniform1ui(loc, value);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLShader::SetUniform(const std::string &name, float value) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		auto loc = GetUniformLocation(name);
 		glUniform1f(loc, value);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLShader::SetUniform(const std::string &name, const glm::vec2 &value) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		auto loc = GetUniformLocation(name);
 		glUniform2fv(loc, 1, &value.x);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLShader::SetUniform(const std::string &name, const glm::vec3 &value) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		auto loc = GetUniformLocation(name);
 		glUniform3fv(loc, 1, &value.x);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLShader::SetUniform(const std::string &name, const glm::vec4 &value) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		auto loc = GetUniformLocation(name);
 		glUniform4fv(loc, 1, &value.x);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLShader::SetUniform(const std::string &name, const glm::mat4 &value) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		auto loc = GetUniformLocation(name);
 		glUniformMatrix4fv(loc, 1, GL_FALSE, &value[0].x);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLShader::SetUniform(const std::string &name, uint64_t handle) const
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		auto loc = GetUniformLocation(name);
 		// glUniformHandleui64ARB(loc, handle);
 		glProgramUniformHandleui64ARB(mShaderID, loc, handle);
-		END_THREAD_DISPATCH()
 	}
 
 	void GLShader::Dispatch(uint32_t w, uint32_t h, uint32_t d)
 	{
-		BEGIN_THREAD_DISPATCH(=)
+
 		glDispatchCompute(w, h, d);
 		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-		END_THREAD_DISPATCH()
 	}
 
 	uint32_t GLShader::GetUniformLocation(const std::string &name) const

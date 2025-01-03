@@ -213,7 +213,6 @@ namespace BHive
 		{
 			writer(actor->get_type());
 
-			actor->OnPreSave();
 			actor->Serialize(writer);
 		}
 	}
@@ -235,9 +234,6 @@ namespace BHive
 				AddActor(actor);
 			}
 		}
-
-		for (auto &[id, actor] : mActors)
-			actor->OnPostLoad();
 	}
 
 	void World::OnPhysicsStart()

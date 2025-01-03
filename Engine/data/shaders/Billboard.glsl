@@ -52,8 +52,8 @@ void main()
 {
 	vec4 color = texture(u_textures[v_TextureID], vs_in.texcoord);
 
-	//if(color.a < 1.0)
-		//discard;
+	if(color.a < 1.0)
+		discard;
 
 	fs_out = color * vs_in.color;
 	

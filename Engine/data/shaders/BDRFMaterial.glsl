@@ -81,17 +81,12 @@ struct BDRFMaterial
 	int DiaElectric;
 	vec3 Emission;	
 	vec2 Tiling;
-	int HasNormalMap;
-	int HasDepthMap;
 	float DepthScale;
-	int ReceiveShadows;
-	int ShowVertexColors;
-	int AlphaIsTranparency;
-	int MetallicRoughnessCombined;
+	int flags;
 };
 
-layout(location = 1) uniform BDRFMaterial u_material = BDRFMaterial(vec4(.5), 0.f, 1.f, 1.f, 1, vec3(0), vec2(1,1),  0, 0, 1.0, 1, 0, 0, 0);
-layout(location = 16) uniform uint u_material_flags;
+layout(location = 1) uniform BDRFMaterial u_material = BDRFMaterial(vec4(.5), 0.f, 1.f, 1.f, 1, vec3(0), vec2(1,1), 1.0, 0);
+layout(location = 16) uniform uint u_global_flags;
 
 layout(binding = 0) uniform samplerCube u_prefilter_map;
 layout(binding = 1) uniform samplerCube u_irradiance_map;
@@ -110,7 +105,6 @@ layout(binding = 12) uniform sampler2D u_depth_map;
 layout(binding = 13) uniform sampler2D u_metallic_roughness_map;
 
 
-#define NO_SHADOWS BIT(0)
 #define SHADOW_MAP_BINDING 7
 
 
@@ -125,13 +119,14 @@ void main()
 	vec3 P = vs_in.position;
 	vec3 N = normalize(vs_in.normal);
 	vec3 V = normalize(vs_in.camera_pos - P);
-	bool shadows = u_material.ReceiveShadows == 1;
-	bool vertex_colors = u_material.ShowVertexColors == 1;
-	bool depth_map = u_material.HasDepthMap == 1;
-	bool normal_map = u_material.HasNormalMap == 1;
-	bool alpha_is_transparency = u_material.AlphaIsTranparency == 1;
-	bool metallic_roughness = u_material.MetallicRoughnessCombined == 1;
-	bool render_shadows = (u_material_flags & NO_SHADOWS) == 0;
+
+	bool vertex_colors			= (u_material.flags & (1 << 0)) != 0;
+	bool alpha_is_transparency	= (u_material.flags & (1 << 1)) != 0;
+	bool metallic_roughness		= (u_material.flags & (1 << 2)) != 0;
+	bool normal_map				= (u_material.flags & (1 << 3)) != 0;
+	bool depth_map				= (u_material.flags & (1 << 4)) != 0;
+	bool recieve_shadows		= (u_material.flags & (1 << 5)) != 0;
+	bool render_shadows			= ((u_global_flags | (1 << 0)) != 0) && recieve_shadows;
 	
 	if(depth_map)
 	{
@@ -200,7 +195,7 @@ void main()
 				vec3 l = CalculateDirectionalLightBDRF(F0, P, N, V, light, albedo, metallic, roughness);
 				if(render_shadows)
 				{
-					float shadow = shadows ? DirLightShadow(k++, P, u_shadow_map) : 1.0f;
+					float shadow = DirLightShadow(k++, P, u_shadow_map);
 					l *= shadow;
 				}
 				Lo += l;
@@ -214,7 +209,7 @@ void main()
 
 				if(render_shadows)
 				{
-					float shadow = shadows ? PointLightShadow(j++, P, normalize(L), L, vec2(.1f, 50.f), u_shadow_point_map) : 1.0f;
+					float shadow = PointLightShadow(j++, P, normalize(L), L, vec2(.1f, 50.f), u_shadow_point_map);
 					l *= shadow;
 				}
 				Lo += l;
@@ -225,7 +220,7 @@ void main()
 				vec3 l = CalculateSpotLightBDRF(F0, P, N, V, light, albedo, metallic, roughness);
 				if(render_shadows)
 				{
-					float shadow = shadows ? SpotLightShadow(s++, P, u_shadow_spot_map) : 1.0f;
+					float shadow = SpotLightShadow(s++, P, u_shadow_spot_map);
 					l *= shadow;
 				}
 

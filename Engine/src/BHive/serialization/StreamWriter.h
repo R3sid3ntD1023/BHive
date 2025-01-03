@@ -88,7 +88,7 @@ namespace BHive
             writer(v);
     }
 
-        template <template <typename...> class Map, typename... TArgs, typename = typename Map<TArgs...>::mapped_type>
+     template <template <typename...> class Map, typename... TArgs, typename = typename Map<TArgs...>::mapped_type>
     inline void Serialize(StreamWriter &writer, const Map<TArgs...> &map)
     {
         writer(map.size());
@@ -98,5 +98,7 @@ namespace BHive
             writer(i.first, i.second);
         }
     }
+
+   
 
 } // namespace BHive

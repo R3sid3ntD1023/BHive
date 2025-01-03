@@ -22,12 +22,10 @@ namespace BHive
 
 		ASSERT(status);
 
-		BEGIN_THREAD_DISPATCH()
 		LOG_INFO("OPENGL: ");
 		LOG_INFO("{}", (const char *)glGetString(GL_VENDOR));
 		LOG_INFO("{}", (const char *)glGetString(GL_VERSION));
 		LOG_INFO("{}", (const char *)glGetString(GL_RENDERER));
-		END_THREAD_DISPATCH()
 	}
 
 	void GLGraphicsContext::SwapBuffers()

@@ -248,6 +248,7 @@ namespace BHive
 
 	void StaticMesh::Serialize(StreamWriter &ar) const
 	{
+		ar(get_type());
 		ar(mData, mMaterialTable);
 	}
 

@@ -16,6 +16,7 @@ namespace BHive
 	{
 		StaticMesh::Serialize(ar);
 		TAssetHandle<Skeleton> handle = mSkeleton;
+
 		ar(handle);
 	}
 

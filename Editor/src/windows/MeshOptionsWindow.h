@@ -8,6 +8,7 @@ namespace BHive
 {
     DECLARE_EVENT(OnMeshOptionsCompleted)
     struct FMeshImportOptions;
+    class Skeleton;
 
     class MeshOptionsWindow : public WindowBase
     {
@@ -38,6 +39,7 @@ namespace BHive
         std::filesystem::path mMaterialDirectory;
         std::filesystem::path mAnimationDirectory;
         bool mShouldClose{false};
+        TAssetHandle<Skeleton> mSkeleton;
     };
 
 } // namespace BHive

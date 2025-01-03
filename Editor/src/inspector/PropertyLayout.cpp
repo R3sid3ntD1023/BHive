@@ -28,7 +28,7 @@ namespace BHive
     {
         if (mColumns)
         {
-            ImGui::BeginTable((mName + "Property").c_str(), 2, ImGuiTableFlags_Borders);
+            ImGui::BeginTable((mName + "Property").c_str(), 2, ImGuiTableFlags_BordersInnerV);
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
         }
