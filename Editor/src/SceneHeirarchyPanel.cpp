@@ -84,13 +84,17 @@ namespace BHive
 
 		bool destroyed = false;
 
-		static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth |
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth |
 										  ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
 
 		auto id = (uint64_t)actor->GetUUID();
+		bool selected = edit_subsystem.mSelection.GetSelectedObject() == actor;
+
+		flags |= (selected ? ImGuiTreeNodeFlags_Selected: 0);
 
 		ImGui::PushID(id);
 		bool opened = ImGui::TreeNodeEx(actor->GetName().c_str(), flags);
+		
 
 		if (ImGui::IsItemClicked() || ImGui::IsItemFocused())
 		{
@@ -128,14 +132,33 @@ namespace BHive
 				}
 			}
 
+			
 			if (ImGui::MenuItem("Duplicate", "Ctrl + D"))
 			{
+				mWorld->DuplicateActor(actor);
 			}
+
 			if (ImGui::MenuItem("Delete", "Delete"))
 			{
 				destroyed = true;
 			}
 			ImGui::EndPopup();
+		}
+
+		if (selected)
+		{
+			if ((ImGui::IsKeyDown(ImGuiKey_ModAlt) && ImGui::IsKeyPressed(ImGuiKey_P)))
+			{
+				actor->DetachFromParent();
+			}
+			else if ((ImGui::IsKeyDown(ImGuiKey_ModCtrl) && ImGui::IsKeyPressed(ImGuiKey_D)))
+			{
+				mWorld->DuplicateActor(actor);
+			}
+			else if (ImGui::IsKeyPressed(ImGuiKey_Delete))
+			{
+				destroyed = true;
+			}
 		}
 
 		if (opened)

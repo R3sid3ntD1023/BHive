@@ -137,6 +137,21 @@ namespace BHive
 		OnPhysicsStop();
 	}
 
+	Ref<World> World::Copy() const
+	{
+		auto new_world = CreateRef<World>(*this);
+		new_world->mActors.clear();
+
+		for (const auto& [id, actor] : mActors)
+		{
+			auto new_actor = actor->Copy();
+			new_world->AddActor(new_actor);
+		}
+
+		return new_world;
+	}
+
+
 	Ref<Actor> World::CreateActor(const std::string &name)
 	{
 		auto actor = CreateRef<Actor>();
@@ -158,7 +173,7 @@ namespace BHive
 		if (!actor)
 			return nullptr;
 
-		auto duplicated = actor->get_type().create({*actor}).get_value<Ref<Actor>>();
+		auto duplicated = actor->Duplicate(true);
 		AddActor(duplicated);
 		return duplicated;
 	}

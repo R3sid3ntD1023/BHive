@@ -50,8 +50,14 @@ namespace BHive
         void SaveWorldAs();
         void OpenWorld(const std::filesystem::path &path = "");
 
+        void OnWorldPlay();
+        void OnWorldStop();
+        void OnWorldSimulate();
+
     private:
         Ref<World> mEditorWorld;
+        Ref<World> mActiveWorld;
+
         Ref<SceneRenderer> mSceneRenderer;
         EditorCamera mEditorCamera;
 

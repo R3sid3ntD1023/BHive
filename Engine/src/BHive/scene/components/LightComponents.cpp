@@ -11,8 +11,8 @@ namespace BHive
         renderer->SubmitLight(mLight, transform);
 
         LineRenderer::DrawSphere(mLight.mRadius, 16, {}, mLight.mColor, transform);
-        LineRenderer::DrawCone(mLight.mRadius, glm::cos(glm::radians(mLight.mOuterCutOff)), 16, 0xFFFF0000, transform);
-        LineRenderer::DrawCone(mLight.mRadius, glm::cos(glm::radians(mLight.mInnerCutOff)), 16, 0xFF00FF00, transform);
+        LineRenderer::DrawCone(glm::cos(glm::radians(mLight.mOuterCutOff)), mLight.mRadius, 16, 0xFFFF0000, transform);
+        LineRenderer::DrawCone(glm::cos(glm::radians(mLight.mInnerCutOff)), mLight.mRadius, 16, 0xFF00FF00, transform);
     }
 
     void SpotLightComponent::Serialize(StreamWriter& ar) const

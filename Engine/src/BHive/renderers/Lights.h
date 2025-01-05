@@ -11,8 +11,6 @@ namespace BHive
 
 	struct Light
 	{
-		Light() = default;
-		Light(const Light &) = default;
 		virtual ~Light() = default;
 
 		Color mColor = 0xFFFFFFFF;
@@ -24,19 +22,28 @@ namespace BHive
 		REFLECTABLEV()
 	};
 
-	struct SpotLight : public Light
+	struct PointLight : public Light
 	{
-		SpotLight() = default;
-		SpotLight(const SpotLight &) = default;
-
 		float mRadius = 1.0f;
+
+		void Serialize(StreamWriter& ar) const;
+		void Deserialize(StreamReader& ar);
+
+		REFLECTABLEV(Light)
+	};
+
+
+	struct SpotLight : public PointLight
+	{
+		
 		float mInnerCutOff = 25.0f;
 		float mOuterCutOff = 75.0f;
 
-		REFLECTABLEV(Light)
-
 		void Serialize(StreamWriter &ar) const;
 		void Deserialize(StreamReader &ar);
+
+		REFLECTABLEV(PointLight)
+
 	};
 
 	struct DirectionalLight : public Light
@@ -47,19 +54,7 @@ namespace BHive
 		REFLECTABLEV(Light)
 	};
 
-	struct PointLight : public Light
-	{
-		PointLight() = default;
-		PointLight(const PointLight &) = default;
-
-		float mRadius = 1.0f;
-
-		void Serialize(StreamWriter &ar) const;
-		void Deserialize(StreamReader &ar);
-
-		REFLECTABLEV(Light)
-	};
-
+	
 	REFLECT_EXTERN(Light)
 	REFLECT_EXTERN(PointLight)
 	REFLECT_EXTERN(SpotLight)

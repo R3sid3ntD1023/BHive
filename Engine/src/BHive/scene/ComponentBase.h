@@ -13,9 +13,12 @@
 
 #define REQUIRED_COMPONENT_FUNCS() \
     REFLECT_CONSTRUCTOR()          \
-    REFLECT_CONSTRUCTOR(const T &)
+    REFLECT_CONSTRUCTOR(const T &)\
+    REFLECT_METHOD(DUPLICATE_COMPONENT_FUNC_NAME, ::BHive::DuplicateComponent<T>)\
+    REFLECT_METHOD(COPY_COMPONENT_FUNC_NAME, ::BHive::CopyComponent<T>)
 
 namespace BHive
 {
     class Actor;
+
 }

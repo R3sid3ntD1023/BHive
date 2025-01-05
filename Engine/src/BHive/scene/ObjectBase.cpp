@@ -12,6 +12,16 @@ namespace BHive
         mData.mName = name;
     }
 
+    void ObjectBase::GenerateNewUUID()
+    {
+        mID = UUID();
+    }
+
+    ObjectBase* ObjectBase::Copy()
+    {
+        return new ObjectBase(*this);
+    }
+
     void ObjectBase::Serialize(StreamWriter &writer) const
     {
         writer(mData.mName);
@@ -22,6 +32,13 @@ namespace BHive
     {
         reader(mData.mName);
         reader(mID);
+    }
+
+    REFLECT(ObjectBase)
+    {
+        BEGIN_REFLECT(ObjectBase)
+        REFLECT_PROPERTY_READ_ONLY("UUID", mID)
+        REFLECT_PROPERTY("Name", GetName, SetName);
     }
 
 } // namespace BHive

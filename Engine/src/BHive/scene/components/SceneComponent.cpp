@@ -20,14 +20,14 @@ namespace BHive
     {
         ActorComponent::Serialize(writer);
 
-        writer(mTransform, mPostLoadData.mParentID, mPostLoadData.mChildrenIDs);
+        writer(mTransform);
     }
 
     void SceneComponent::Deserialize(StreamReader &reader)
     {
         ActorComponent::Deserialize(reader);
 
-        reader(mTransform, mPostLoadData.mParentID, mPostLoadData.mChildrenIDs);
+        reader(mTransform);
     }
 
     REFLECT(SceneComponent)

@@ -21,79 +21,6 @@
 #include "core/WindowInput.h"
 #include <ImGuizmo.h>
 
-namespace ImGui
-{
-    bool MaximizeButton(ImGuiID id, const ImVec2 pos)
-    {
-        ImGuiContext &g = *GImGui;
-        ImGuiWindow *window = g.CurrentWindow;
-
-        // Tweak 1: Shrink hit-testing area if button covers an abnormally large proportion of the visible region. That's in order to facilitate moving the window away. (#3825)
-        // This may better be applied as a general hit-rect reduction mechanism for all widgets to ensure the area to move window is always accessible?
-        const ImRect bb(pos, pos + ImVec2(g.FontSize, g.FontSize));
-        ImRect bb_interact = bb;
-        const float area_to_visible_ratio = window->OuterRectClipped.GetArea() / bb.GetArea();
-        if (area_to_visible_ratio < 1.5f)
-            bb_interact.Expand(ImTrunc(bb_interact.GetSize() * -0.25f));
-
-        // Tweak 2: We intentionally allow interaction when clipped so that a mechanical Alt,Right,Activate sequence can always close a window.
-        // (this isn't the common behavior of buttons, but it doesn't affect the user because navigation tends to keep items visible in scrolling layer).
-        bool is_clipped = !ItemAdd(bb_interact, id);
-
-        bool hovered, held;
-        bool pressed = ButtonBehavior(bb_interact, id, &hovered, &held);
-        if (is_clipped)
-            return pressed;
-
-        // Render
-        ImU32 bg_col = GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered);
-        if (hovered)
-            window->DrawList->AddRectFilled(bb.Min, bb.Max, bg_col);
-        RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_Compact);
-        ImU32 col = GetColorU32(ImGuiCol_Text);
-        ImVec2 size = bb.GetSize();
-
-        window->DrawList->AddRect(bb.Min, bb.Max, col, 1.0f);
-
-        return pressed;
-    }
-
-    bool MinimizeButton(ImGuiID id, const ImVec2 pos)
-    {
-        ImGuiContext &g = *GImGui;
-        ImGuiWindow *window = g.CurrentWindow;
-
-        // Tweak 1: Shrink hit-testing area if button covers an abnormally large proportion of the visible region. That's in order to facilitate moving the window away. (#3825)
-        // This may better be applied as a general hit-rect reduction mechanism for all widgets to ensure the area to move window is always accessible?
-        const ImRect bb(pos, pos + ImVec2(g.FontSize, g.FontSize));
-        ImRect bb_interact = bb;
-        const float area_to_visible_ratio = window->OuterRectClipped.GetArea() / bb.GetArea();
-        if (area_to_visible_ratio < 1.5f)
-            bb_interact.Expand(ImTrunc(bb_interact.GetSize() * -0.25f));
-
-        // Tweak 2: We intentionally allow interaction when clipped so that a mechanical Alt,Right,Activate sequence can always close a window.
-        // (this isn't the common behavior of buttons, but it doesn't affect the user because navigation tends to keep items visible in scrolling layer).
-        bool is_clipped = !ItemAdd(bb_interact, id);
-
-        bool hovered, held;
-        bool pressed = ButtonBehavior(bb_interact, id, &hovered, &held);
-        if (is_clipped)
-            return pressed;
-
-        // Render
-        ImU32 bg_col = GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered);
-        if (hovered)
-            window->DrawList->AddRectFilled(bb.Min, bb.Max, bg_col);
-        RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_Compact);
-        ImU32 col = GetColorU32(ImGuiCol_Text);
-        float half_width = bb.GetWidth() * .5f;
-        ImVec2 center = bb.GetCenter();
-
-        window->DrawList->AddLine({center.x - half_width, center.y}, {center.x + half_width, center.y}, col, 1.0f);
-
-        return pressed;
-    }
-} // namespace ImGui
 
 namespace BHive
 {
@@ -179,6 +106,7 @@ namespace BHive
         }
 
         mEditorWorld = CreateRef<World>();
+        mActiveWorld = mEditorWorld;
 
         auto &window_properties = window.GetProperties();
         auto aspect = window_properties.Width / window_properties.Height;
@@ -187,7 +115,7 @@ namespace BHive
         mEditorCamera = EditorCamera(45.f, aspect, 0.1f, 1000.f);
 
         mSceneHierarchyPanel = CreateRef<SceneHierarchyPanel>();
-        mSceneHierarchyPanel->SetContext(mEditorWorld);
+        mSceneHierarchyPanel->SetContext(mActiveWorld);
 
         mPropertiesPanel = CreateRef<PropertiesPanel>();
 
@@ -207,7 +135,7 @@ namespace BHive
         edit_system.GetEditorMode.bind([this]()
                                        { return mEditorMode; });
         edit_system.GetActiveWorld.bind([this]()
-                                        { return mEditorWorld; });
+                                        { return mActiveWorld; });
     }
 
     void EditorLayer::OnDetach()
@@ -249,7 +177,7 @@ namespace BHive
             mViewportSize = {(unsigned)size.x, (unsigned)size.y};
             mSceneRenderer->Resize(mViewportSize.x, mViewportSize.y);
             mEditorCamera.Resize(mViewportSize.x, mViewportSize.y);
-            mEditorWorld->OnViewportResize(mViewportSize.x, mViewportSize.y);
+            mActiveWorld->OnViewportResize(mViewportSize.x, mViewportSize.y);
         }
 
         if (mEditorMode != EEditorMode::PLAY)
@@ -264,24 +192,24 @@ namespace BHive
 
         mSceneRenderer->SubmitRenderQueue([dt]()
                                           {
-            auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-            edit_system.OnUpdate(dt); });
+        auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+        edit_system.OnUpdate(dt); });
 
         switch (mEditorMode)
         {
         case EDIT:
         {
-            mEditorWorld->UpdateEditor(mSceneRenderer);
+            mActiveWorld->UpdateEditor(mSceneRenderer);
             break;
         }
         case SIMULATE:
         {
-            mEditorWorld->OnSimulate(dt, mSceneRenderer);
+            mActiveWorld->OnSimulate(dt, mSceneRenderer);
             break;
         }
         case PLAY:
         {
-            mEditorWorld->OnRuntimeUpdate(dt, mSceneRenderer);
+            mActiveWorld->OnRuntimeUpdate(dt, mSceneRenderer);
             break;
         }
         default:
@@ -466,7 +394,7 @@ namespace BHive
             mIsHovered = ImGui::IsWindowHovered();
             mIsFocused = ImGui::IsWindowFocused();
 
-            Application::Get().GetImGuiLayer().BlockEvents(!mIsHovered);
+            Application::Get().GetImGuiLayer().BlockEvents(!mIsHovered && !mIsFocused);
 
             auto viewport_min_region = ImGui::GetWindowContentRegionMin();
             auto viewport_max_region = ImGui::GetWindowContentRegionMax();
@@ -487,8 +415,8 @@ namespace BHive
                 if (auto transformable = Cast<ITransform>(current_selection))
                 {
                     glm::mat4 transform = transformable->GetLocalTransform();
-                    glm::mat4 world_transform = transformable->GetWorldTransform();
-                    auto parent_transform = glm::inverse(transform) * world_transform; // get parent to convert world to local
+                    //glm::mat4 world_transform = transformable->GetWorldTransform();
+                    //auto parent_transform = glm::inverse(transform) * world_transform; // get parent to convert world to local
 
                     const glm::mat4 view = mEditorCamera.GetView().inverse();
                     const glm::mat4 projection = mEditorCamera.GetProjection();
@@ -506,12 +434,12 @@ namespace BHive
                             glm::value_ptr(projection),
                             (ImGuizmo::OPERATION)mGizmoOperation,
                             (ImGuizmo::MODE)mGizmoMode,
-                            glm::value_ptr(world_transform), nullptr,
+                            glm::value_ptr(transform), nullptr,
                             snap_values))
                     {
 
-                        auto local_transform = glm::inverse(parent_transform) * world_transform;
-                        transformable->SetLocalTransform(local_transform);
+                       /* auto local_transform = glm::inverse(parent_transform) * world_transform;*/
+                        transformable->SetLocalTransform(transform);
                     }
                 }
             }
@@ -641,18 +569,12 @@ namespace BHive
             {
                 if (ImGui::MenuItem("Play"))
                 {
-                    SaveWorld();
-
-                    mEditorWorld->OnRuntimeStart();
-                    mEditorMode = EEditorMode::PLAY;
+                    OnWorldPlay();
                 }
 
                 if (ImGui::MenuItem("Simulate"))
                 {
-                    SaveWorld();
-
-                    mEditorWorld->OnSimulateStart();
-                    mEditorMode = EEditorMode::SIMULATE;
+                    OnWorldSimulate();
                 }
             }
 
@@ -660,32 +582,21 @@ namespace BHive
             {
                 if (ImGui::MenuItem("Stop"))
                 {
-                    if (mEditorMode == EEditorMode::PLAY)
-                    {
-                        mEditorWorld->OnRuntimeStop();
-                        mEditorMode = EEditorMode::EDIT;
-                        OpenWorld(mCurrentWorldPath);
-                    }
-                    else if (mEditorMode == EEditorMode::SIMULATE)
-                    {
-                        mEditorWorld->OnSimulateStop();
-                        mEditorMode = EEditorMode::EDIT;
-                        OpenWorld(mCurrentWorldPath);
-                    }
+                    OnWorldStop();
                 }
 
-                auto paused = mEditorWorld->IsPaused();
+                auto paused = mActiveWorld->IsPaused();
                 if (ImGui::MenuItem(paused ? "Play" : "Pause"))
                 {
 
-                    mEditorWorld->SetPaused(!paused);
+                    mActiveWorld->SetPaused(!paused);
                 }
 
                 if (paused)
                 {
                     if (ImGui::MenuItem("Step"))
                     {
-                        mEditorWorld->Step(5);
+                        mActiveWorld->Step();
                     }
                 }
             }
@@ -703,7 +614,9 @@ namespace BHive
         edit_system.mSelection.Clear();
 
         mEditorWorld = CreateRef<World>();
-        mSceneHierarchyPanel->SetContext(mEditorWorld);
+        mActiveWorld = mEditorWorld;
+
+        mSceneHierarchyPanel->SetContext(mActiveWorld);
         mCurrentWorldPath.clear();
     }
 
@@ -745,12 +658,77 @@ namespace BHive
         edit_system.mSelection.Clear();
 
         mEditorWorld = CreateRef<World>();
-
+   
         FileStreamReader stream(open_path);
         stream(*mEditorWorld);
 
-        mSceneHierarchyPanel->SetContext(mEditorWorld);
+        mActiveWorld = mEditorWorld;
+        mSceneHierarchyPanel->SetContext(mActiveWorld);
         mCurrentWorldPath = open_path;
+    }
+
+    void EditorLayer::OnWorldPlay()
+    {
+        if (mEditorMode == EEditorMode::SIMULATE)
+            OnWorldStop();
+
+      
+        mEditorMode = EEditorMode::PLAY;
+
+        mActiveWorld = mEditorWorld->Copy();
+        mActiveWorld->OnRuntimeStart();
+
+        mSceneHierarchyPanel->SetContext(mActiveWorld);
+
+        auto& edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+        edit_system.mSelection.Clear();
+
+    }
+
+    void EditorLayer::OnWorldStop()
+    {
+        ASSERT(mEditorMode == EEditorMode::PLAY || mEditorMode == EEditorMode::SIMULATE);
+
+        switch (mEditorMode)
+        {
+        case SIMULATE:
+        {
+            mActiveWorld->OnSimulateStop();
+            break;
+        }
+        case PLAY:
+        {
+            mActiveWorld->OnRuntimeStop();
+            break;
+        }
+        }
+
+        mEditorMode = EEditorMode::EDIT;
+
+        mActiveWorld = mEditorWorld;
+
+        mSceneHierarchyPanel->SetContext(mActiveWorld);
+
+
+        auto& edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+        edit_system.mSelection.Clear();
+    }
+
+    void EditorLayer::OnWorldSimulate()
+    {
+        if (mEditorMode == EEditorMode::PLAY)
+            OnWorldStop();
+
+        mEditorMode = EEditorMode::SIMULATE;
+
+        mActiveWorld = mEditorWorld->Copy();
+        mActiveWorld->OnSimulateStart();
+
+        mSceneHierarchyPanel->SetContext(mActiveWorld);
+
+        auto& edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+        edit_system.mSelection.Clear();
+
     }
 
 } // namespace BHive

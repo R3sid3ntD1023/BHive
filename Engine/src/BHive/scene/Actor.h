@@ -3,7 +3,6 @@
 #include "ObjectBase.h"
 #include "ITickable.h"
 #include "ActorComponent.h"
-//#include "scene/components/SceneComponent.h"
 #include "scene/components/RelationshipComponent.h"
 #include "asset/AssetType.h"
 #include "ITransform.h"
@@ -31,7 +30,6 @@ namespace BHive
 
     public:
         Actor();
-        Actor(const Actor &other) = default;
 
         virtual ~Actor() = default;
 
@@ -54,6 +52,10 @@ namespace BHive
             return component;
         }
 
+        Ref<Actor> Copy() const;
+
+        Ref<Actor> Duplicate(bool duplicate_children = false);
+
         void AddComponent(const ComponentPtr &component);
 
         void RemoveComponent(ActorComponent *component);
@@ -74,7 +76,8 @@ namespace BHive
 
         const ComponentList &GetComponents() const { return mComponents; }
 
-        ActorChildren GetChildren();
+
+        ActorChildren GetChildren() const;
 
         World *GetWorld() { return mWorld; }
 

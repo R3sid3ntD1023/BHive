@@ -54,10 +54,17 @@ namespace BHive
         bool is_scene_component = scenecomponent != nullptr;
 
         auto& edit_subsystem = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-        if (ImGui::Selectable(component->GetName().c_str(), edit_subsystem.mSelection.GetSelectedObject() == component))
+        bool selected = edit_subsystem.mSelection.GetSelectedObject() == component;
+
+        if (ImGui::Selectable(component->GetName().c_str(), selected))
         {
             
             edit_subsystem.mSelection.Select(component);
+        }
+
+        if (ImGui::IsKeyPressed(ImGuiKey_Delete) && selected)
+        {
+            destroyed = true;
         }
 
         if (ImGui::BeginPopupContextItem("ComponentContextMenu"))

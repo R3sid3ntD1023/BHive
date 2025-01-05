@@ -507,7 +507,7 @@ namespace BHive
 			for (auto &light : spot_lights)
 			{
 				auto &transform = light.mTransform;
-				ShadowRenderer::SubmitSpotLight(transform.get_forward(), transform.get_translation());
+				ShadowRenderer::SubmitSpotLight(transform.get_forward(), transform.get_translation(), Cast<SpotLight>(light.mLight)->mRadius);
 			}
 
 			ShadowRenderer::BeginSpotShadowPass();

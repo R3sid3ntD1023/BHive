@@ -3,6 +3,7 @@
 #include "gui/ImGuiExtended.h"
 #include "math/Math.h"
 #include "gfx/Color.h"
+#include "Inspectors.h"
 
 namespace BHive
 {
@@ -34,6 +35,7 @@ namespace BHive
     {
         static const char *component_names[] = {"X", "Y", "Z", "W"};
         static ImU32 component_colors[] = {0xFF0000FF, 0xFF00FF00, 0xFFFF0000, 0xFF00AAFF};
+
         bool changed = false;
 
         float line_height = ImGui::GetLineHeight();

@@ -8,7 +8,6 @@ namespace BHive
 	}
 
 	FTransform::FTransform(const glm::mat4 &matrix)
-		: Translation(0), Rotation(0), Scale(0)
 	{
 		ModelMatrix = matrix;
 

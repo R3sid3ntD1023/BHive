@@ -15,13 +15,13 @@ namespace BHive
 	};
 
 	static LightDirections point_directions[] =
-		{
-			{{1, 0, 0}, {0, -1, 0}},
-			{{-1, 0, 0}, {0, -1, 0}},
-			{{0, 1, 0}, {0, 0, 1}},
-			{{0, -1, 0}, {0, 0, -1}},
-			{{0, 0, 1}, {0, -1, 0}},
-			{{0, 0, -1}, {0, -1, 0}},
+	{
+		{{1, 0, 0}, {0, -1, 0}},
+		{{-1, 0, 0}, {0, -1, 0}},
+		{{0, 1, 0}, {0, 0, 1}},
+		{{0, -1, 0}, {0, 0, -1}},
+		{{0, 0, 1}, {0, -1, 0}},
+		{{0, 0, -1}, {0, -1, 0}},
 	};
 
 	struct ShadowBuffersData
@@ -66,8 +66,8 @@ namespace BHive
 												.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
 												.CompareFunc = ETextureCompareFunc::LEQUAL,
 
-											},
-											ETextureType::TEXTURE_3D);
+			},
+			ETextureType::TEXTURE_3D);
 
 		mShadowRenderData.mShadowPassFBO = Framebuffer::Create(shadow_fbo_specs);
 
@@ -81,8 +81,8 @@ namespace BHive
 												.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
 												.CompareFunc = ETextureCompareFunc::LEQUAL,
 
-											},
-											ETextureType::TEXTURE_3D);
+			},
+			ETextureType::TEXTURE_3D);
 
 		mShadowRenderData.mShadowSpotPassFBO = Framebuffer::Create(shadow_fbo_specs);
 
@@ -98,8 +98,8 @@ namespace BHive
 														.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
 														.CompareFunc = ETextureCompareFunc::LEQUAL,
 
-													},
-													ETextureType::TEXTURE_3D);
+			},
+			ETextureType::TEXTURE_3D);
 		mShadowRenderData.mPointShadowPassFBO = Framebuffer::Create(shadow_fbo_specs);
 
 		mShadowRenderData.mShadowBuffer = UniformBuffer::Create(2, sizeof(uint32_t) * 4 + sizeof(glm::mat4) * max_lights);
@@ -170,13 +170,13 @@ namespace BHive
 		mShadowRenderData.mPointShadowPassFBO->UnBind();
 	}
 
-	void ShadowRenderer::SubmitDirectionalLight(const glm::vec3 &direction, const glm::mat4 &camera_proj,
-												const glm::mat4 &camera_view)
+	void ShadowRenderer::SubmitDirectionalLight(const glm::vec3& direction, const glm::mat4& camera_proj,
+		const glm::mat4& camera_view)
 	{
 		// auto frustum_corners = Camera::GetFrustumCorners(camera_proj, camera_view);
 		// auto center = Camera::GetFrustumCenter(frustum_corners);
 
-		const auto view = glm::lookAt({}, direction, {0, 1, 0});
+		const auto view = glm::lookAt({}, direction, { 0, 1, 0 });
 
 		/*float min_x = std::numeric_limits<float>::max();
 		float max_x = std::numeric_limits<float>::lowest();
@@ -223,10 +223,10 @@ namespace BHive
 		mShadowRenderData.mShadowBuffer->SetData(mShadowRenderData.mLightViewProjections, sizeof(uint32_t) * 4);
 	}
 
-	void ShadowRenderer::SubmitSpotLight(const glm::vec3 &direction, const glm::vec3 &position)
+	void ShadowRenderer::SubmitSpotLight(const glm::vec3& direction, const glm::vec3& position, float radius)
 	{
-		auto view = glm::lookAt(position, position + direction, {0, 1, 0});
-		auto projection = glm::perspective<float>(glm::radians(120.f), 1.f, .1f, 50.0f);
+		auto view = glm::lookAt(position, position + direction, { 0, 1, 0 });
+		auto projection = glm::perspective<float>(glm::radians(120.f), 1.f, .1f, radius);
 
 		auto k = mShadowRenderData.mNumSpotLights % MAX_LIGHTS;
 		mShadowRenderData.mSpotLightViewProjections[k] = projection * view;
@@ -236,13 +236,13 @@ namespace BHive
 		mShadowRenderData.mSpotShadowBuffer->SetData(mShadowRenderData.mSpotLightViewProjections, sizeof(uint32_t) * 4);
 	}
 
-	void ShadowRenderer::SubmitPointLight(const glm::vec3 &position, float radius)
+	void ShadowRenderer::SubmitPointLight(const glm::vec3& position, float radius)
 	{
-		auto proj = glm::perspective(glm::radians(90.0f), 1.f, 0.1f, radius);
+		auto proj = glm::perspective(glm::radians(90.0f), 1.f, .1f, radius * 10.f);
 
 		for (int j = 0; j < 6; j++)
 		{
-			auto view = glm::lookAt(position, position + point_directions[j].normal * radius, point_directions[j].up);
+			auto view = glm::lookAt(position, position + point_directions[j].normal, point_directions[j].up);
 
 			auto k = ((mShadowRenderData.mNumPointLights % MAX_LIGHTS) * 6) + j;
 			mShadowRenderData.mPointLightViewProjections[k] = proj * view;

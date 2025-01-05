@@ -60,45 +60,4 @@ namespace BHive
             WriteImpl((char *)&type, sizeof(T));
         }
     };
-
-    template <typename T1, typename T2>
-    inline void Serialize(StreamWriter &ar, const std::pair<T1, T2> &obj)
-    {
-        ar(obj.first, obj.second);
-    }
-
-    template <typename T, typename Traits, typename Alloc>
-    inline void Serialize(StreamWriter &writer, const std::basic_string<T, Traits, Alloc> &str)
-    {
-        writer(str.size());
-        writer.WriteImpl(str.data(), sizeof(T) * str.size());
-    }
-
-    inline void Serialize(StreamWriter &writer, const std::filesystem::path &path)
-    {
-        writer(path.string());
-    }
-
-    template <typename T>
-    inline void Serialize(StreamWriter &writer, const std::vector<T> &obj)
-    {
-        writer(obj.size());
-
-        for (auto &v : obj)
-            writer(v);
-    }
-
-     template <template <typename...> class Map, typename... TArgs, typename = typename Map<TArgs...>::mapped_type>
-    inline void Serialize(StreamWriter &writer, const Map<TArgs...> &map)
-    {
-        writer(map.size());
-
-        for (const auto &i : map)
-        {
-            writer(i.first, i.second);
-        }
-    }
-
-   
-
 } // namespace BHive

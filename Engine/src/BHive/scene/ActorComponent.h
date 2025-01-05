@@ -55,9 +55,36 @@ namespace BHive
         friend class Actor;
     };
 
+
+    template<typename TComponent>
+    inline Ref<TComponent> CopyComponent(ActorComponent* component)
+    {
+        if (!component)
+            return nullptr;
+
+        auto component_ref = Cast<TComponent>(component);
+        auto new_component = CreateRef<TComponent>(*component_ref);
+
+        return new_component;
+    }
+
+
+    template<typename TComponent>
+    inline Ref<TComponent> DuplicateComponent(ActorComponent* component)
+    {
+        if (auto new_component = CopyComponent<TComponent>(component))
+        {
+            new_component->GenerateNewUUID();
+            return new_component;
+        }
+       
+        return nullptr;
+    }
+
     REFLECT(ActorComponent)
     {
-        BEGIN_REFLECT(ActorComponent);
+        BEGIN_REFLECT(ActorComponent)
+        REQUIRED_COMPONENT_FUNCS();
     }
 
 } // namespace BHive

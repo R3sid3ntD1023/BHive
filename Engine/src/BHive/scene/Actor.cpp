@@ -71,6 +71,55 @@ namespace BHive
         mComponents.erase(it);
     }
 
+    Ref<Actor> Actor::Copy() const
+    {
+        auto new_actor = new Actor(*this);
+        new_actor->mComponents.clear();
+
+        for (auto& component : mComponents)
+        {
+            auto type = component->get_type();
+            rttr::variant copied = type.get_method(COPY_COMPONENT_FUNC_NAME).invoke({}, component.get());
+            if (copied)
+            {
+                auto copied_component = copied.get_value<Ref<ActorComponent>>();
+                new_actor->AddComponent(copied_component);
+            }
+        }
+        return Ref<Actor>(new_actor);
+    }
+
+
+    Ref<Actor> Actor::Duplicate(bool duplicate_children) 
+    {
+        auto new_actor = new Actor();
+        new_actor->SetLocalTransform(GetLocalTransform());
+        new_actor->SetName(GetName());
+
+        for (auto& component : mComponents)
+        {
+            auto type = component->get_type();
+            rttr::variant duplicated = type.get_method(DUPLICATE_COMPONENT_FUNC_NAME).invoke({}, component.get());
+            if (duplicated)
+            {
+                auto duplicated_component = duplicated.get_value<Ref<ActorComponent>>();
+                new_actor->AddComponent(duplicated_component);
+            }
+        }
+  
+        if (duplicate_children)
+        {
+            auto children = GetChildren();
+            for (auto& child : children)
+            {
+                auto duplicated_child = mWorld->DuplicateActor(child);
+                duplicated_child->AttachTo(new_actor);
+            }
+        }
+
+        return Ref<Actor>(new_actor);
+    }
+
     void Actor::SetLocalTransform(const FTransform &transform)
     {
         mTransform = transform;
@@ -120,11 +169,11 @@ namespace BHive
         if (!actor)
             return;
 
-        if (actor->GetParent())
-            actor->DetachFromParent();
+        if (GetParent())
+            DetachFromParent();
 
-        mRelationshipComponent.AddChild(actor->GetUUID());
-        actor->mRelationshipComponent.SetParentID(GetUUID());
+        mRelationshipComponent.SetParentID(actor->GetUUID());
+        actor->mRelationshipComponent.AddChild(GetUUID());
     }
 
     void Actor::DetachFromParent()
@@ -138,7 +187,7 @@ namespace BHive
         mRelationshipComponent.SetParentID(0);
     }
 
-    ActorChildren Actor::GetChildren()
+    ActorChildren Actor::GetChildren() const
     {
         ActorChildren children;
 
@@ -163,9 +212,7 @@ namespace BHive
     {
         ObjectBase::Serialize(writer);
 
-        writer(mTickEnabled);
-        writer(mRelationshipComponent);
-        writer(mComponents.size());
+        writer(mTickEnabled, mTransform, mRelationshipComponent, mComponents.size());
 
         for (auto &component : mComponents)
         {
@@ -180,9 +227,7 @@ namespace BHive
 
         size_t num_components = 0;
 
-        reader(mTickEnabled);
-        reader(mRelationshipComponent);
-        reader(num_components);
+        reader(mTickEnabled, mTransform, mRelationshipComponent, num_components);
 
         if (mComponents.size() < num_components)
             mComponents.resize(num_components);
@@ -219,8 +264,8 @@ namespace BHive
     REFLECT(Actor)
     {
         BEGIN_REFLECT(Actor)
-            REFLECT_CONSTRUCTOR()
-            REFLECT_CONSTRUCTOR(const Actor&)
-            REFLECT_METHOD("AddComponent", &Actor::AddComponent);
+        REFLECT_CONSTRUCTOR()
+        REFLECT_CONSTRUCTOR(const Actor&)
+        REFLECT_METHOD("AddComponent", &Actor::AddComponent);
     }
 } // namespace BHive

@@ -6,7 +6,6 @@
 #include "physics/PhysicsContext.h"
 #include "physics/WorldEventListener.h"
 #include "math/Math.h"
-#include <entt/entt.hpp>
 
 namespace BHive
 {
@@ -32,6 +31,8 @@ namespace BHive
 		void OnSimulateStart();
 		void OnSimulate(float deltatime, Ref<SceneRenderer> renderer);
 		void OnSimulateStop();
+
+		Ref<World> Copy() const;
 
 		Ref<Actor> CreateActor(const std::string &name = "NewActor");
 
@@ -74,11 +75,6 @@ namespace BHive
 
 		void OnActorDestroyed(Actor *actor);
 
-		entt::registry &GetRegistry()
-		{
-			return mEnttRegistry;
-		}
-
 	private:
 		bool mIsPaused = false;
 
@@ -95,8 +91,6 @@ namespace BHive
 		WorldEventListener mCollisionListener;
 
 		ActorList mActors;
-
-		entt::registry mEnttRegistry;
 
 		friend class SceneComponent;
 	};

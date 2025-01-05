@@ -37,4 +37,6 @@ add_subdirectory(Project)
 add_subdirectory(ProjectLauncher)
 add_subdirectory(window_test)
 
+set(VS_STARTUP_PROJECT, Editor)
+
 

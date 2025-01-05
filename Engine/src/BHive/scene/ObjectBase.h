@@ -25,7 +25,11 @@ namespace BHive
         const std::string &GetName() const { return mData.mName; }
         void SetName(const std::string &name);
 
+        void GenerateNewUUID();
+
         const UUID &GetUUID() const { return mID; }
+
+        virtual ObjectBase* Copy();
 
         virtual void Serialize(StreamWriter &writer) const;
 
@@ -41,11 +45,5 @@ namespace BHive
         REFLECTABLEV()
     };
 
-    REFLECT(ObjectBase)
-    {
-        BEGIN_REFLECT(ObjectBase)
-        REFLECT_PROPERTY_READ_ONLY("UUID", mID)
-        REFLECT_PROPERTY("Name", GetName, SetName);
-    }
-
+    REFLECT_EXTERN(ObjectBase)
 } // namespace BHive

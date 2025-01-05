@@ -14,14 +14,14 @@ namespace BHive
 
     void SpotLight::Serialize(StreamWriter &ar) const
     {
-        Light::Serialize(ar);
-        ar(mRadius, mInnerCutOff, mOuterCutOff);
+        PointLight::Serialize(ar);
+        ar(mInnerCutOff, mOuterCutOff);
     }
 
     void SpotLight::Deserialize(StreamReader &ar)
     {
-        Light::Deserialize(ar);
-        ar(mRadius, mInnerCutOff, mOuterCutOff);
+        PointLight::Deserialize(ar);
+        ar(mInnerCutOff, mOuterCutOff);
     }
 
     void PointLight::Serialize(StreamWriter &ar) const
@@ -53,7 +53,6 @@ namespace BHive
     REFLECT(SpotLight)
     {
         BEGIN_REFLECT(SpotLight)
-        REFLECT_PROPERTY("Radius", mRadius)
         REFLECT_PROPERTY("OuterCutOff", mOuterCutOff)
         (META_DATA(EPropertyMetaData_Min, 0.0f))
             REFLECT_PROPERTY("InnerCutOff", mInnerCutOff)(META_DATA(EPropertyMetaData_Min, 0.0f));
