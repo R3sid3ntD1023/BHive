@@ -28,5 +28,5 @@ namespace BHive
 		return true;
 	}
 
-	REFLECT_FACTORY(AssetFactory, Asset, ".asset")
+	REFLECT_Factory(AssetFactory, Asset, ".asset")
 }

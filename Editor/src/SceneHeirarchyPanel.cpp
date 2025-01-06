@@ -1,11 +1,11 @@
 #include "SceneHeirarchyPanel.h"
 #include "scene/World.h"
-#include "scene/Actor.h"
+#include "scene/Entity.h"
 #include "gui/GUICore.h"
 #include "subsystem/SubSystem.h"
 #include "subsystems/EditSubSystem.h"
 
-#define DRAG_DROP_ACTOR_NAME "ACTOR"
+#define DRAG_DROP_entity_NAME "entity"
 
 namespace BHive
 {
@@ -17,42 +17,42 @@ namespace BHive
 
 	void SceneHierarchyPanel::OnGuiRender()
 	{
-		mDestroyedActors.clear();
+		mDestroyedentitys.clear();
 
 		auto &edit_subsystem = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
 
 		if (mWorld)
 		{
-			auto &actors = mWorld->GetActors();
-			for (auto &[id, actor] : actors)
+			auto &entities = mWorld->GetEntities();
+			for (auto &[id, entity] : entities)
 			{
-				if (actor->GetParent())
+				if (entity->GetParent())
 					continue;
 
-				DrawActorNode(actor.get());
+				DrawEntityNode(entity.get());
 			}
 
-			for (auto actor : mDestroyedActors)
-				actor->Destroy();
+			for (auto entity : mDestroyedentitys)
+				entity->Destroy();
 		}
 
 		if (ImGui::BeginPopupContextWindow("SceneHierarchyPanel", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonDefault_))
 		{
 
-			if (ImGui::MenuItem("Create Actor"))
+			if (ImGui::MenuItem("Create Entity"))
 			{
-				auto new_actor = mWorld->CreateActor();
-				edit_subsystem.mSelection.Select(new_actor.get());
+				auto new_entity = mWorld->CreateEntity();
+				edit_subsystem.mSelection.Select(new_entity.get());
 			}
 
-			auto &actor_types = GetSpawnableActors();
-			for (auto &type : actor_types)
+			auto &entity_types = GetSpawnableEntites();
+			for (auto &type : entity_types)
 			{
 				if (ImGui::MenuItem(type.get_name().data()))
 				{
-					auto new_actor = type.create().get_value<Ref<Actor>>();
-					mWorld->AddActor(new_actor);
-					edit_subsystem.mSelection.Select(new_actor.get());
+					auto new_entity = type.create().get_value<Ref<Entity>>();
+					mWorld->AddEntity(new_entity);
+					edit_subsystem.mSelection.Select(new_entity.get());
 				}
 			}
 
@@ -63,10 +63,10 @@ namespace BHive
 
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_ACTOR_NAME))
+			if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_entity_NAME))
 			{
-				auto actor = *(Actor **)payload->Data;
-				actor->DetachFromParent();
+				auto entity = *(Entity **)payload->Data;
+				entity->DetachFromParent();
 			}
 
 			ImGui::EndDragDropTarget();
@@ -78,7 +78,7 @@ namespace BHive
 		mWorld = world;
 	}
 
-	void SceneHierarchyPanel::DrawActorNode(Actor *actor)
+	void SceneHierarchyPanel::DrawEntityNode(Entity *entity)
 	{
 		auto &edit_subsystem = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
 
@@ -87,35 +87,35 @@ namespace BHive
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth |
 										  ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
 
-		auto id = (uint64_t)actor->GetUUID();
-		bool selected = edit_subsystem.mSelection.GetSelectedObject() == actor;
+		auto id = (uint64_t)entity->GetUUID();
+		bool selected = edit_subsystem.mSelection.GetSelectedObject() == entity;
 
 		flags |= (selected ? ImGuiTreeNodeFlags_Selected: 0);
 
 		ImGui::PushID(id);
-		bool opened = ImGui::TreeNodeEx(actor->GetName().c_str(), flags);
+		bool opened = ImGui::TreeNodeEx(entity->GetName().c_str(), flags);
 		
 
 		if (ImGui::IsItemClicked() || ImGui::IsItemFocused())
 		{
-			edit_subsystem.mSelection.Select(actor);
+			edit_subsystem.mSelection.Select(entity);
 		}
 
 		if (ImGui::BeginDragDropSource())
 		{
-			ImGui::SetDragDropPayload(DRAG_DROP_ACTOR_NAME, &actor, sizeof(Actor));
+			ImGui::SetDragDropPayload(DRAG_DROP_entity_NAME, &entity, sizeof(Entity));
 
 			ImGui::EndDragDropSource();
 		}
 
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_ACTOR_NAME))
+			if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_entity_NAME))
 			{
-				auto other_actor = *(Actor **)payload->Data;
-				if (other_actor != actor)
+				auto other_entity = *(Entity **)payload->Data;
+				if (other_entity != entity)
 				{
-					other_actor->AttachTo(actor);
+					other_entity->AttachTo(entity);
 				}
 			}
 
@@ -124,18 +124,18 @@ namespace BHive
 
 		if (ImGui::BeginPopupContextItem())
 		{
-			if (actor->GetParent())
+			if (entity->GetParent())
 			{
 				if (ImGui::MenuItem("Remove From Parent", "Alt + P"))
 				{
-					actor->DetachFromParent();
+					entity->DetachFromParent();
 				}
 			}
 
 			
 			if (ImGui::MenuItem("Duplicate", "Ctrl + D"))
 			{
-				mWorld->DuplicateActor(actor);
+				mWorld->DuplicateEntity(entity);
 			}
 
 			if (ImGui::MenuItem("Delete", "Delete"))
@@ -149,11 +149,11 @@ namespace BHive
 		{
 			if ((ImGui::IsKeyDown(ImGuiKey_ModAlt) && ImGui::IsKeyPressed(ImGuiKey_P)))
 			{
-				actor->DetachFromParent();
+				entity->DetachFromParent();
 			}
 			else if ((ImGui::IsKeyDown(ImGuiKey_ModCtrl) && ImGui::IsKeyPressed(ImGuiKey_D)))
 			{
-				mWorld->DuplicateActor(actor);
+				mWorld->DuplicateEntity(entity);
 			}
 			else if (ImGui::IsKeyPressed(ImGuiKey_Delete))
 			{
@@ -163,9 +163,9 @@ namespace BHive
 
 		if (opened)
 		{
-			for (auto child : actor->GetChildren())
+			for (auto child : entity->GetChildren())
 			{
-				DrawActorNode(child);
+				DrawEntityNode(child);
 			}
 			ImGui::TreePop();
 		}
@@ -174,21 +174,21 @@ namespace BHive
 
 		if (destroyed)
 		{
-			edit_subsystem.mSelection.Deselect(actor, DeselectReason_Destroyed);
-			mDestroyedActors.push_back(actor);
+			edit_subsystem.mSelection.Deselect(entity, DeselectReason_Destroyed);
+			mDestroyedentitys.push_back(entity);
 		}
 	}
 
-	const std::vector<AssetType> &SceneHierarchyPanel::GetSpawnableActors()
+	const std::vector<AssetType> &SceneHierarchyPanel::GetSpawnableEntites()
 	{
-		auto &cache = mActorTypeCache;
+		auto &cache = mentityTypeCache;
 		if (cache.size())
 			return cache;
 
-		auto derived = AssetType::get<Actor>().get_derived_classes();
+		auto derived = AssetType::get<Entity>().get_derived_classes();
 		for (auto &type : derived)
 		{
-			if (type.get_metadata(ClassMetaData_ActorSpawnable))
+			if (type.get_metadata(ClassMetaData_Spawnable))
 			{
 				cache.push_back(type);
 			}

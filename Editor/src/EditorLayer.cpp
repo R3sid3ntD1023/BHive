@@ -258,6 +258,7 @@ namespace BHive
     bool EditorLayer::OnKeyEvent(KeyEvent &event)
     {
         bool ctrl = (event.Mods & Mod::Control) != 0;
+        bool shift = (event.Mods & Mod::Shift) != 0;
 
         mSnapEnabled = ctrl;
 
@@ -288,6 +289,51 @@ namespace BHive
             mGizmoOperation = ImGuizmo::OPERATION::UNIVERSAL;
             return true;
         }
+        case Key::L:
+        {
+            mGizmoMode = ImGuizmo::MODE::LOCAL;
+            return true;
+        }
+        case Key::K:
+        {
+            mGizmoMode = ImGuizmo::MODE::WORLD;
+            return true;
+        }
+        case Key::N: 
+        {
+            if (ctrl)
+            {
+                NewWorld();
+                return true;
+            }
+
+            break;
+        }
+        case Key::O:
+        {
+            if (ctrl)
+            {
+                OpenWorld();
+                return true;
+            }
+
+            break;
+        }
+        case Key::S:
+        {
+            if (ctrl && !shift)
+            {
+                SaveWorld();
+                return true;
+            }
+            else if (ctrl && shift)
+            {
+                SaveWorldAs();
+                return true;
+            }
+
+            break;
+        }
         default:
             break;
         }
@@ -299,19 +345,19 @@ namespace BHive
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("New"))
+            if (ImGui::MenuItem("New", "Ctrl + N"))
             {
                 NewWorld();
             }
-            if (ImGui::MenuItem("Open"))
+            if (ImGui::MenuItem("Open", "Ctrl + O"))
             {
                 OpenWorld();
             }
-            if (ImGui::MenuItem("Save"))
+            if (ImGui::MenuItem("Save", "Ctrl + S"))
             {
                 SaveWorld();
             }
-            if (ImGui::MenuItem("SaveAs..."))
+            if (ImGui::MenuItem("SaveAs...", "Ctrl + Shift + S"))
             {
                 SaveWorldAs();
             }
@@ -408,39 +454,34 @@ namespace BHive
             ImGui::Image((ImTextureID)(uint64_t)fbo_texture, mViewportPanelSize, {0, 1}, {1, 0});
 
             auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-            auto current_selection = edit_system.mSelection.GetSelectedObject();
+            auto current_selection = Cast<ITransform>(edit_system.mSelection.GetSelectedObject());
 
-            if (current_selection && mGizmoOperation != -1)
+            if (current_selection && mGizmoOperation != -1 && mEditorMode == EEditorMode::EDIT)
             {
-                if (auto transformable = Cast<ITransform>(current_selection))
+                glm::mat4 transform = current_selection->GetWorldTransform();
+
+                const glm::mat4 view = mEditorCamera.GetView().inverse();
+                const glm::mat4 projection = mEditorCamera.GetProjection();
+
+                ImGuizmo::SetOrthographic(false);
+                ImGuizmo::SetDrawlist();
+                ImGuizmo::SetRect(mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x,
+                    mViewportBounds[1].y - mViewportBounds[0].y);
+
+                float snap_value = mSnapEnabled ? sSnapping[(ImGuizmo::OPERATION)mGizmoOperation] : 0.0f;
+                float snap_values[3] = { snap_value, snap_value, snap_value };
+
+                if (ImGuizmo::Manipulate(
+                    glm::value_ptr(view),
+                    glm::value_ptr(projection),
+                    (ImGuizmo::OPERATION)mGizmoOperation,
+                    (ImGuizmo::MODE)mGizmoMode,
+                    glm::value_ptr(transform), nullptr,
+                    snap_values))
                 {
-                    glm::mat4 transform = transformable->GetLocalTransform();
-                    //glm::mat4 world_transform = transformable->GetWorldTransform();
-                    //auto parent_transform = glm::inverse(transform) * world_transform; // get parent to convert world to local
 
-                    const glm::mat4 view = mEditorCamera.GetView().inverse();
-                    const glm::mat4 projection = mEditorCamera.GetProjection();
-
-                    ImGuizmo::SetOrthographic(false);
-                    ImGuizmo::SetDrawlist();
-                    ImGuizmo::SetRect(mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x,
-                                      mViewportBounds[1].y - mViewportBounds[0].y);
-
-                    float snap_value = mSnapEnabled ? sSnapping[(ImGuizmo::OPERATION)mGizmoOperation] : 0.0f;
-                    float snap_values[3] = {snap_value, snap_value, snap_value};
-
-                    if (ImGuizmo::Manipulate(
-                            glm::value_ptr(view),
-                            glm::value_ptr(projection),
-                            (ImGuizmo::OPERATION)mGizmoOperation,
-                            (ImGuizmo::MODE)mGizmoMode,
-                            glm::value_ptr(transform), nullptr,
-                            snap_values))
-                    {
-
-                       /* auto local_transform = glm::inverse(parent_transform) * world_transform;*/
-                        transformable->SetLocalTransform(transform);
-                    }
+                    current_selection->SetWorldTransform(transform);
+                        
                 }
             }
 
@@ -618,6 +659,8 @@ namespace BHive
 
         mSceneHierarchyPanel->SetContext(mActiveWorld);
         mCurrentWorldPath.clear();
+
+        LOG_TRACE("Create New World");
     }
 
     void EditorLayer::SaveWorld()
@@ -627,6 +670,8 @@ namespace BHive
 
         FileStreamWriter stream(mCurrentWorldPath);
         stream(*mEditorWorld);
+
+        LOG_TRACE("Saved World {}", mCurrentWorldPath.string());
     }
 
     void EditorLayer::SaveWorldAs()
@@ -637,6 +682,7 @@ namespace BHive
 
         mCurrentWorldPath = path;
         SaveWorld();
+
     }
 
     void EditorLayer::OpenWorld(const std::filesystem::path &path)
@@ -665,6 +711,8 @@ namespace BHive
         mActiveWorld = mEditorWorld;
         mSceneHierarchyPanel->SetContext(mActiveWorld);
         mCurrentWorldPath = open_path;
+
+        LOG_TRACE("Opened World {}", mCurrentWorldPath.string());
     }
 
     void EditorLayer::OnWorldPlay()

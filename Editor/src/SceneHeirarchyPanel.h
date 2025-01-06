@@ -6,7 +6,7 @@
 namespace BHive
 {
 	class World;
-	class Actor;
+	class Entity;
 
 
 
@@ -23,15 +23,15 @@ namespace BHive
 
 	private:
 	
-		void DrawActorNode(Actor *actor);
+		void DrawEntityNode(Entity *entity);
 
-		const std::vector<AssetType>& GetSpawnableActors();
+		const std::vector<AssetType>& GetSpawnableEntites();
 
 	private:
 		Ref<World> mWorld;
 
-		std::vector<Actor *> mDestroyedActors;
+		std::vector<Entity *> mDestroyedentitys;
 
-		std::vector<AssetType> mActorTypeCache;
+		std::vector<AssetType> mentityTypeCache;
 	};
 }

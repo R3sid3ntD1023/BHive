@@ -22,5 +22,5 @@ namespace BHive
         return false;
     }
 
-    REFLECT_FACTORY(SpriteSheetFactory, SpriteSheet, ".spritesheet")
+    REFLECT_Factory(SpriteSheetFactory, SpriteSheet, ".spritesheet")
 } // namespace BHive

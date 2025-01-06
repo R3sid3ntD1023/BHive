@@ -144,19 +144,19 @@ namespace BHive
     void EditorContentBrowser::OnWindowContextMenu()
     {
         auto &registry = FactoryRegistry::Get();
-        auto &factories = registry.GetRegisteredFactories();
+        auto &fentityies = registry.GetRegisteredFentityies();
 
-        for (auto &[type, info] : factories)
+        for (auto &[type, info] : fentityies)
         {
-            auto &factory = info.mFactory;
-            if (!factory->CanCreateNew())
+            auto &Factory = info.mFactory;
+            if (!Factory->CanCreateNew())
                 continue;
 
             auto name = std::string("Create ") + info.mName;
 
             if (ImGui::Selectable(name.c_str()))
             {
-                OnCreateAsset(type, CurrentDirectory()/ factory->GetDefaultAssetName());
+                OnCreateAsset(type, CurrentDirectory()/ Factory->GetDefaultAssetName());
             }
         }
     }

@@ -3,18 +3,18 @@
 
 namespace BHive
 {
-    void FProjectConfiguration::Deserialize(StreamReader& reader)
+    void FProjectConfiguration::Deserialize(StreamReader& ar)
     {
-        reader(mName);
-        reader(mProjectDirectory);
-        reader(mResourcesDirectory);
+        ar(mName);
+        ar(mProjectDirectory);
+        ar(mResourcesDirectory);
     }
 
-    void FProjectConfiguration::Serialize(StreamWriter &writer) const
+    void FProjectConfiguration::Serialize(StreamWriter &ar) const
     {
-        writer(mName);
-        writer(mProjectDirectory);
-        writer(mResourcesDirectory);
+        ar(mName);
+        ar(mProjectDirectory);
+        ar(mResourcesDirectory);
     }
 
     Project::Project(const FProjectConfiguration &config)
@@ -33,10 +33,10 @@ namespace BHive
     {
         sActiveProject = CreateRef<Project>();
 
-        FileStreamReader reader(path);
-        if (reader)
+        FileStreamReader ar(path);
+        if (ar)
         {
-            reader(sActiveProject->mConfig);
+            ar(sActiveProject->mConfig);
         }
 
         return sActiveProject;
@@ -46,11 +46,11 @@ namespace BHive
     {
         ASSERT(sActiveProject);
 
-        FileStreamWriter writer(path);
-        if (!writer)
+        FileStreamWriter ar(path);
+        if (!ar)
             return false;
 
-        writer(sActiveProject->mConfig);
+        ar(sActiveProject->mConfig);
 
         return true;
     }

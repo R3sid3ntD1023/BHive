@@ -374,7 +374,7 @@ namespace BHive
 					material.mAlbedo = {albedo.r, albedo.g, albedo.b, albedo.a};
 				if (aiGetMaterialFloat(loaded_material, AI_MATKEY_METALLIC_FACTOR, &metallic) == aiReturn_SUCCESS)
 					material.mMetallic = metallic;
-				if (aiGetMaterialFloat(loaded_material, AI_MATKEY_ROUGHNESS_FACTOR, &roughness) == aiReturn_SUCCESS)
+				if (aiGetMaterialFloat(loaded_material, AI_MATKEY_METALLIC_FACTOR, &roughness) == aiReturn_SUCCESS)
 					material.mRoughness = roughness;
 			}
 		}

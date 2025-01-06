@@ -21,7 +21,7 @@ namespace BHive
 
     REFLECT(Inspector)
     {
-        auto factory = rttr::registration::class_<Inspector>("Inspector");
+        auto Factory = rttr::registration::class_<Inspector>("Inspector");
     }
 } // namespace BHive
 
@@ -37,6 +37,6 @@ namespace BHive
 #define REFLECT_INSPECTOR(cls, _type)                                                                                      \
     REFLECT(cls)                                                                                                           \
     {                                                                                                                      \
-        auto factory = rttr::registration::class_<cls>(#cls)(rttr::metadata(INSPECTED_TYPE_VAR, rttr::type::get<_type>())) \
+        auto Factory = rttr::registration::class_<cls>(#cls)(rttr::metadata(INSPECTED_TYPE_VAR, rttr::type::get<_type>())) \
                            .constructor()(rttr::policy::ctor::as_std_shared_ptr);                                          \
     }

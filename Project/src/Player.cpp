@@ -11,7 +11,7 @@ namespace BHive
     REFLECT(Player)
     {
         BEGIN_REFLECT(Player)
-        (META_DATA(ClassMetaData_ActorSpawnable, true))
+        (META_DATA(ClassMetaData_Spawnable, true))
             REFLECT_CONSTRUCTOR();
     }
 } // namespace BHive

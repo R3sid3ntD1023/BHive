@@ -1,18 +1,18 @@
 #include "MoveComponent.h"
 #include "scene/components/InputComponent.h"
 #include "scene/components/FlipbookComponent.h"
-#include "scene/Actor.h"
+#include "scene/Entity.h"
 #include "IInputActor.h"
 
 namespace BHive
 {
     void MoveComponent::OnBegin()
     {
-        auto actor = GetOwningActor();
+        auto entity = GetOwner();
 
-        if (auto input_actor = Cast<IInputActor>(actor))
+        if (auto input_entity = Cast<IInputActor>(entity))
         {
-            if (auto context = input_actor->GetInputComponent()->GetContext())
+            if (auto context = input_entity->GetInputComponent()->GetContext())
             {
                 context->bind_key("Jump", BHive::InputAction::RELEASE, this, &MoveComponent::Jump);
                 context->bind_axis("MoveLeft", this, &MoveComponent::Move, -1.f);

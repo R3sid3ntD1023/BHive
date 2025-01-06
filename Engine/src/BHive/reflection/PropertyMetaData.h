@@ -25,6 +25,6 @@ namespace BHive
     enum EClassMetaData : uint32_t
     {
         ClassMetaData_ComponentSpawnable,
-        ClassMetaData_ActorSpawnable
+        ClassMetaData_Spawnable
     };
 } // namespace BHive

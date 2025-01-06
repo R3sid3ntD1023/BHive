@@ -1,28 +1,37 @@
 #pragma once
 
-#include "scene/ActorComponent.h"
+#include "scene/Component.h"
 #include "scene/ITransform.h"
+#include "RelationshipComponent.h"
 
 namespace BHive
 {
-    class SceneComponent : public ActorComponent, public ITransform
+    class SceneComponent : public Component, public ITransform
     {
     public:
+        void SetWorldTransform(const FTransform& transform);
 
-        void SetLocalTransform(const FTransform &transform);
+        const FTransform& GetWorldTransform() const;
 
-        const FTransform &GetLocalTransform() const { return mTransform; }
+        void SetLocalTransform(const FTransform& transform);
 
-        FTransform GetWorldTransform() const;
+        const FTransform& GetLocalTransform() const;
 
-        virtual void Serialize(StreamWriter &writer) const;
 
-        virtual void Deserialize(StreamReader &reader);
+        virtual void Serialize(StreamWriter &ar) const;
+
+        virtual void Deserialize(StreamReader &ar);
 
     private:
-        FTransform mTransform;
+        void UpdateWorldTransform();
 
-        REFLECTABLEV(ActorComponent, ITransform)
+    private:
+        FTransform mLocalTransform;
+        FTransform mWorldTransform;
+
+        REFLECTABLEV(Component, ITransform)
+
+         friend class Entity;
     };
 
     REFLECT_EXTERN(SceneComponent)

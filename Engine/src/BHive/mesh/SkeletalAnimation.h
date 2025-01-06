@@ -43,7 +43,7 @@ namespace BHive
 		int32_t GetPositionIndex(const std::string &name, float aniamtionTime);
 		int32_t GetRotationIndex(const std::string &name, float aniamtionTime);
 		int32_t GetScaleIndex(const std::string &name, float aniamtionTime);
-		float GetScaleFactor(float lastTimeStamp, float nextTimeStamp, float animationTime);
+		float GetScaleFentity(float lastTimeStamp, float nextTimeStamp, float animationTime);
 
 	private:
 		float mDuration;

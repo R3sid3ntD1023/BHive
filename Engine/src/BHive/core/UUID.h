@@ -25,7 +25,7 @@ namespace BHive
 
 		void Serialize(StreamWriter &stream) const;
 
-		void Deserialize(StreamReader &reader);
+		void Deserialize(StreamReader &ar);
 
 		std::string to_string() const;
 

@@ -1,6 +1,6 @@
 #include "AudioComponent.h"
 #include "audio/AudioSource.h"
-#include "scene/Actor.h"
+#include "scene/Entity.h"
 
 namespace BHive
 {
@@ -13,13 +13,13 @@ namespace BHive
 
     void AudioComponent::Serialize(StreamWriter& ar) const
     {
-        ActorComponent::Serialize(ar);
+        Component::Serialize(ar);
         ar(mPlayOnStart, mAudio);
     }
 
     void AudioComponent::Deserialize(StreamReader& ar)
     {
-        ActorComponent::Deserialize(ar);
+        Component::Deserialize(ar);
         ar(mPlayOnStart, mAudio);
     }
 

@@ -42,10 +42,10 @@ namespace BHive
         auto meta_path = path.parent_path() / (path.stem().string() + ".meta");
         if (std::filesystem::exists(meta_path))
         {
-            FileStreamReader reader(meta_path);
+            FileStreamReader ar(meta_path);
             AssetType type = InvalidType;
 
-            reader(type);
+            ar(type);
             if (!type)
                 return false;
 
@@ -53,7 +53,7 @@ namespace BHive
             if (!obj)
                 return false;
 
-            obj->Deserialize(reader);
+            obj->Deserialize(ar);
             asset = obj;
 
             return true;
@@ -88,7 +88,7 @@ namespace BHive
         return asset != nullptr;
     }
 
-    REFLECT_FACTORY(MeshFactory, StaticMesh, ".gltf", ".glb")
-    REFLECT_FACTORY(SkeletonFactory, Skeleton, ".skeleton")
-    REFLECT_FACTORY(AnimationFactory, SkeletalAnimation, ".animation")
+    REFLECT_Factory(MeshFactory, StaticMesh, ".gltf", ".glb")
+    REFLECT_Factory(SkeletonFactory, Skeleton, ".skeleton")
+    REFLECT_Factory(AnimationFactory, SkeletalAnimation, ".animation")
 }

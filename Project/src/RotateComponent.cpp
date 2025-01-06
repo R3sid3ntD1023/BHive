@@ -1,27 +1,27 @@
 #include "RotateComponent.h"
-#include "scene/Actor.h"
+#include "scene/Entity.h"
 
 namespace BHive
 {
     void RotateComponent::OnUpdate(float dt)
     {
-        auto actor = this->GetOwningActor();
+        auto entity = this->GetOwner();
 
-        auto transform = actor->GetLocalTransform();
+        auto transform = entity->GetLocalTransform();
         transform.add_rotation({0, mRotateSpeed * dt, 0});
 
-        actor->SetLocalTransform(transform);
+        entity->SetLocalTransform(transform);
     }
 
     void RotateComponent::Serialize(StreamWriter &ar) const
     {
-        ActorComponent::Serialize(ar);
+        Component::Serialize(ar);
         ar(mRotateSpeed);
     }
 
     void RotateComponent::Deserialize(StreamReader &ar)
     {
-        ActorComponent::Deserialize(ar);
+        Component::Deserialize(ar);
         ar(mRotateSpeed);
     }
 

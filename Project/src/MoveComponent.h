@@ -1,12 +1,12 @@
 // #pragma once
 
-#include "scene/ActorComponent.h"
+#include "scene/Component.h"
 #include "input/InputValue.h"
 #include "sprite/FlipBook.h"
 
 namespace BHive
 {
-    struct MoveComponent : public ActorComponent
+    struct MoveComponent : public Component
     {
         virtual void OnBegin() override;
 
@@ -21,7 +21,7 @@ namespace BHive
         void Serialize(StreamWriter &ar) const;
         void Deserialize(StreamReader &ar);
 
-        REFLECTABLEV(ActorComponent)
+        REFLECTABLEV(Component)
     };
 
     REFLECT_EXTERN(MoveComponent)

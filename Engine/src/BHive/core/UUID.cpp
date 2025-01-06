@@ -44,9 +44,9 @@ namespace BHive
 		stream(mID);
 	}
 
-	void UUID::Deserialize(StreamReader &reader)
+	void UUID::Deserialize(StreamReader &ar)
 	{
-		reader(mID);
+		ar(mID);
 	}
 
 	std::string UUID::to_string() const

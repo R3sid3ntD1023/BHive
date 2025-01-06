@@ -2,36 +2,30 @@
 
 #include "ObjectBase.h"
 #include "ITickable.h"
-#include "ActorComponent.h"
+#include "Component.h"
 #include "scene/components/RelationshipComponent.h"
 #include "asset/AssetType.h"
 #include "ITransform.h"
 
 namespace BHive
 {
-    class ActorComponent;
+    class Component;
     class SceneComponent;
     class World;
-    class Actor;
+    class Entity;
 
-    using ComponentPtr = Ref<ActorComponent>;
-    using ComponentList = std::vector<Ref<ActorComponent>>;
-    using ActorChildren = std::vector<Actor *>;
+    using ComponentPtr = Ref<Component>;
+    using ComponentList = std::vector<Ref<Component>>;
+    using EntityChildren = std::vector<Entity *>;
 
-    DECLARE_EVENT(OnActorDestroyed, Actor *)
+    DECLARE_EVENT(OnEntityDestroyed, Entity *)
 
-    class Actor : public ObjectBase, public ITickable, public ITransform
+    class Entity : public ObjectBase, public ITickable, public ITransform
     {
-        struct FActorPostLoadData
-        {
-            UUID RootComponentID = 0;
-            std::unordered_map<UUID, Ref<ActorComponent>> mComponentIDs;
-        };
-
     public:
-        Actor();
+        Entity();
 
-        virtual ~Actor() = default;
+        virtual ~Entity() = default;
 
         virtual void OnBegin();
 
@@ -52,23 +46,25 @@ namespace BHive
             return component;
         }
 
-        Ref<Actor> Copy() const;
+        Ref<Entity> Copy() const;
 
-        Ref<Actor> Duplicate(bool duplicate_children = false);
+        Ref<Entity> Duplicate(bool duplicate_children = false);
 
         void AddComponent(const ComponentPtr &component);
 
-        void RemoveComponent(ActorComponent *component);
+        void RemoveComponent(Component *component);
 
         void SetLocalTransform(const FTransform &transform);
 
+        void SetWorldTransform(const FTransform& transform);
+
         const FTransform &GetLocalTransform() const;
 
-        FTransform GetWorldTransform() const;
+        const FTransform& GetWorldTransform() const;
 
-        Actor *GetParent() const;
+        Entity *GetParent() const;
 
-        void AttachTo(Actor *actor);
+        void AttachTo(Entity *entity);
 
         void DetachFromParent();
 
@@ -76,8 +72,7 @@ namespace BHive
 
         const ComponentList &GetComponents() const { return mComponents; }
 
-
-        ActorChildren GetChildren() const;
+        EntityChildren GetChildren() const;
 
         World *GetWorld() { return mWorld; }
 
@@ -87,22 +82,24 @@ namespace BHive
 
         virtual void SetTickEnabled(bool) override;
 
-        virtual void Serialize(StreamWriter &writer) const override;
-        virtual void Deserialize(StreamReader &reader) override;
+        virtual void Serialize(StreamWriter &ar) const override;
+        virtual void Deserialize(StreamReader &ar) override;
 
-        bool operator==(const Actor &rhs) const;
+        bool operator==(const Entity &rhs) const;
 
-        bool operator!=(const Actor &rhs) const;
+        bool operator!=(const Entity &rhs) const;
 
     private:
         void RegisterComponents();
-        void RegisterComponent(ActorComponent *component);
+        void RegisterComponent(Component *component);
+        void UpdateWorldTransform();
 
     public:
-        OnActorDestroyedEvent OnActorDestroyed;
+        OnEntityDestroyedEvent OnEntityDestroyed;
 
     private:
         FTransform mTransform;
+        FTransform mWorldTransform;
 
         RelationshipComponent mRelationshipComponent;
 
@@ -117,6 +114,6 @@ namespace BHive
         friend class World;
     };
 
-    REFLECT_EXTERN(Actor)
+    REFLECT_EXTERN(Entity)
 
 } // namespace BHive`

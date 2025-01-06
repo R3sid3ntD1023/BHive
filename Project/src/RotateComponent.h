@@ -1,10 +1,10 @@
 #pragma once
 
-#include "scene/ActorComponent.h"
+#include "scene/Component.h"
 
 namespace BHive
 {
-    struct RotateComponent : public ActorComponent
+    struct RotateComponent : public Component
     {
         /* data */
 
@@ -15,7 +15,7 @@ namespace BHive
         void Serialize(StreamWriter &ar) const;
         void Deserialize(StreamReader &ar);
 
-        REFLECTABLEV(ActorComponent)
+        REFLECTABLEV(Component)
     };
 
     REFLECT_EXTERN(RotateComponent)

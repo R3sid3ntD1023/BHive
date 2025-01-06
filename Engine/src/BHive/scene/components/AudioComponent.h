@@ -1,13 +1,13 @@
 #pragma once
 
-#include "scene/ActorComponent.h"
+#include "scene/Component.h"
 #include "audio/AudioSource.h"
 
 namespace BHive
 {
 	class AudioSource;
 
-	struct BHIVE AudioComponent : public ActorComponent
+	struct BHIVE AudioComponent : public Component
 	{
 		void OnBegin() override;
 
@@ -18,7 +18,7 @@ namespace BHive
 		void Serialize(StreamWriter& ar) const;
 		void Deserialize(StreamReader& ar);
 
-		REFLECTABLEV(ActorComponent)
+		REFLECTABLEV(Component)
 	};
 
 	REFLECT_EXTERN(AudioComponent)

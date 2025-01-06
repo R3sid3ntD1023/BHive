@@ -8,7 +8,7 @@ namespace BHive
 {
     class World;
     class ObjectBase;
-    class Actor;
+    class Entity;
 
     enum EDeselectReason
     {
@@ -24,11 +24,11 @@ namespace BHive
         void Clear();
 
         ObjectBase *GetSelectedObject() const { return mSelectedObject; }
-        Actor *GetSelectedActor() const { return mSelectedActor; }
+        Entity *GetSelectedEntity() const { return mSelectedEntity; }
 
     private:
         ObjectBase *mSelectedObject = nullptr;
-        Actor *mSelectedActor = nullptr;
+        Entity *mSelectedEntity = nullptr;
     };
 
     struct EditSubSystem

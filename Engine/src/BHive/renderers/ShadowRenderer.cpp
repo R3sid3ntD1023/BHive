@@ -5,6 +5,7 @@
 #include "gfx/Shader.h"
 #include "gfx/Camera.h"
 #include "Lights.h"
+#include "math/Frustum.h"
 
 namespace BHive
 {
@@ -48,7 +49,7 @@ namespace BHive
 	};
 
 	static ShadowBuffersData mShadowRenderData;
-	static uint32_t sDirectionalShadowMapSize = 2048;
+	static uint32_t sDirectionalShadowMapSize = 1024;
 	static uint32_t sPointShadowMapSize = 256;
 	static uint32_t sSpotShadowMapSize = 512;
 
@@ -75,11 +76,11 @@ namespace BHive
 		shadow_fbo_specs.Height = sSpotShadowMapSize;
 		shadow_fbo_specs.Depth = max_lights;
 		shadow_fbo_specs.Attachments.attach({
-												.Format = EFormat::DEPTH_COMPONENT_32F,
-												.WrapMode = EWrapMode::CLAMP_TO_EDGE,
-												.Type = ETextureType::TEXTURE_ARRAY_2D,
-												.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
-												.CompareFunc = ETextureCompareFunc::LEQUAL,
+										.Format = EFormat::DEPTH_COMPONENT_32F,
+										.WrapMode = EWrapMode::CLAMP_TO_EDGE,
+										.Type = ETextureType::TEXTURE_ARRAY_2D,
+										.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
+										.CompareFunc = ETextureCompareFunc::LEQUAL,
 
 			},
 			ETextureType::TEXTURE_3D);
@@ -173,21 +174,23 @@ namespace BHive
 	void ShadowRenderer::SubmitDirectionalLight(const glm::vec3& direction, const glm::mat4& camera_proj,
 		const glm::mat4& camera_view)
 	{
-		// auto frustum_corners = Camera::GetFrustumCorners(camera_proj, camera_view);
-		// auto center = Camera::GetFrustumCenter(frustum_corners);
+		
+		auto frustum = Frustum(camera_proj, camera_view);
+		auto center = frustum.get_position();
 
-		const auto view = glm::lookAt({}, direction, { 0, 1, 0 });
 
-		/*float min_x = std::numeric_limits<float>::max();
+		const auto light_view = glm::lookAt({}, direction, { 0, 1, 0 });
+
+		float min_x = std::numeric_limits<float>::max();
 		float max_x = std::numeric_limits<float>::lowest();
 		float min_y = std::numeric_limits<float>::max();
 		float max_y = std::numeric_limits<float>::lowest();
 		float min_z = std::numeric_limits<float>::max();
 		float max_z = std::numeric_limits<float>::lowest();
 
-		for (const auto& v : frustum_corners)
+		for (const auto& v : frustum.get_points())
 		{
-			const auto trf = view * v;
+			const auto trf = light_view * v;
 			min_x = std::min(min_x, trf.x);
 			max_x = std::max(max_x, trf.x);
 			min_y = std::min(min_y, trf.y);
@@ -212,11 +215,11 @@ namespace BHive
 		else
 		{
 			max_z *= z_multi;
-		}*/
+		}
 
 		auto k = mShadowRenderData.mNumDirectionalLights % MAX_LIGHTS;
-		auto projection = glm::ortho<float>(-30, 30, -30, 30, -30.f, 100.f);
-		mShadowRenderData.mLightViewProjections[k] = projection * view;
+		auto projection = glm::ortho<float>(min_x, max_x, min_y, max_y, min_z, max_z);
+		mShadowRenderData.mLightViewProjections[k] = projection * light_view;
 
 		mShadowRenderData.mNumDirectionalLights++;
 		mShadowRenderData.mShadowBuffer->SetData(mShadowRenderData.mNumDirectionalLights);

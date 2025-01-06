@@ -1,5 +1,5 @@
 #include "World.h"
-#include "Actor.h"
+#include "Entity.h"
 #include "SceneRenderer.h"
 #include "cameras/EditorCamera.h"
 #include "debug/Instrumentor.h"
@@ -67,9 +67,9 @@ namespace BHive
 	{
 		OnPhysicsStart();
 
-		for (auto &[id, actor] : mActors)
+		for (auto &[id, entity] : mEntities)
 		{
-			actor->OnBegin();
+			entity->OnBegin();
 		}
 
 		mInitialized = true;
@@ -100,9 +100,9 @@ namespace BHive
 		{
 			OnPhysicsUpdate(deltatime);
 
-			for (auto &[id, actor] : mActors)
+			for (auto &[id, entity] : mEntities)
 			{
-				actor->OnUpdate(deltatime);
+				entity->OnUpdate(deltatime);
 			}
 		}
 	}
@@ -111,9 +111,9 @@ namespace BHive
 	{
 		OnPhysicsStop();
 
-		for (auto &[id, actor] : mActors)
+		for (auto &[id, entity] : mEntities)
 		{
-			actor->OnEnd();
+			entity->OnEnd();
 		}
 	}
 
@@ -140,41 +140,41 @@ namespace BHive
 	Ref<World> World::Copy() const
 	{
 		auto new_world = CreateRef<World>(*this);
-		new_world->mActors.clear();
+		new_world->mEntities.clear();
 
-		for (const auto& [id, actor] : mActors)
+		for (const auto& [id, entity] : mEntities)
 		{
-			auto new_actor = actor->Copy();
-			new_world->AddActor(new_actor);
+			auto new_entity = entity->Copy();
+			new_world->AddEntity(new_entity);
 		}
 
 		return new_world;
 	}
 
 
-	Ref<Actor> World::CreateActor(const std::string &name)
+	Ref<Entity> World::CreateEntity(const std::string &name)
 	{
-		auto actor = CreateRef<Actor>();
-		actor->SetName(name);
-		AddActor(actor);
+		auto entity = CreateRef<Entity>();
+		entity->SetName(name);
+		AddEntity(entity);
 
-		return actor;
+		return entity;
 	}
 
-	void World::AddActor(const Ref<Actor> &actor)
+	void World::AddEntity(const Ref<Entity> &entity)
 	{
-		actor->mWorld = this;
-		actor->OnActorDestroyed.bind(this, &World::OnActorDestroyed);
-		mActors.emplace(actor->GetUUID(), actor);
+		entity->mWorld = this;
+		entity->OnEntityDestroyed.bind(this, &World::OnEntityDestroyed);
+		mEntities.emplace(entity->GetUUID(), entity);
 	}
 
-	Ref<Actor> World::DuplicateActor(Actor *actor)
+	Ref<Entity> World::DuplicateEntity(Entity *entity)
 	{
-		if (!actor)
+		if (!entity)
 			return nullptr;
 
-		auto duplicated = actor->Duplicate(true);
-		AddActor(duplicated);
+		auto duplicated = entity->Duplicate(true);
+		AddEntity(duplicated);
 		return duplicated;
 	}
 
@@ -192,9 +192,9 @@ namespace BHive
 	{
 		mViewportSize = {width, height};
 
-		for (auto &[id, actor] : mActors)
+		for (auto &[id, entity] : mEntities)
 		{
-			for (auto &component : actor->GetComponents())
+			for (auto &component : entity->GetComponents())
 			{
 				if (auto camera_component = Cast<CameraComponent>(component))
 				{
@@ -206,9 +206,9 @@ namespace BHive
 
 	CameraComponent *World::GetPrimaryCameraComponent() const
 	{
-		for (auto &[id, actor] : mActors)
+		for (auto &[id, entity] : mEntities)
 		{
-			for (auto &component : actor->GetComponents())
+			for (auto &component : entity->GetComponents())
 			{
 				if (auto camera_component = Cast<CameraComponent>(component))
 				{
@@ -220,33 +220,33 @@ namespace BHive
 		return nullptr;
 	}
 
-	void World::Serialize(StreamWriter &writer) const
+	void World::Serialize(StreamWriter &ar) const
 	{
-		writer(mActors.size());
+		ar(mEntities.size());
 
-		for (auto &[id, actor] : mActors)
+		for (auto &[id, entity] : mEntities)
 		{
-			writer(actor->get_type());
+			ar(entity->get_type());
 
-			actor->Serialize(writer);
+			entity->Serialize(ar);
 		}
 	}
 
-	void World::Deserialize(StreamReader &reader)
+	void World::Deserialize(StreamReader &ar)
 	{
-		size_t num_actors = 0;
-		reader(num_actors);
+		size_t num_entitys = 0;
+		ar(num_entitys);
 
-		for (size_t i = 0; i < num_actors; i++)
+		for (size_t i = 0; i < num_entitys; i++)
 		{
-			AssetType actor_type = InvalidType;
-			reader(actor_type);
+			AssetType entity_type = InvalidType;
+			ar(entity_type);
 
-			auto actor = actor_type.create().get_value<Ref<Actor>>();
-			if (actor)
+			auto entity = entity_type.create().get_value<Ref<Entity>>();
+			if (entity)
 			{
-				actor->Deserialize(reader);
-				AddActor(actor);
+				entity->Deserialize(ar);
+				AddEntity(entity);
 			}
 		}
 	}
@@ -286,8 +286,8 @@ namespace BHive
 		// 	rb->setAngularDamping(rbc.mAngularDamping);
 		// 	rb->setLinearDamping(rbc.mLinearDamping);
 
-		// 	rb->setLinearLockAxisFactor(utils::LockAxisToVextor3(rbc.mLinearLockAxis));
-		// 	rb->setAngularLockAxisFactor(utils::LockAxisToVextor3(rbc.mAngularLockAxis));
+		// 	rb->setLinearLockAxisFentity(utils::LockAxisToVextor3(rbc.mLinearLockAxis));
+		// 	rb->setAngularLockAxisFentity(utils::LockAxisToVextor3(rbc.mAngularLockAxis));
 
 		// 	rp3d::Collider *collider = nullptr;
 		// 	if (entity.HasComponent<BoxComponent>())
@@ -357,7 +357,7 @@ namespace BHive
 			accumulator -= timestep;
 		}
 
-		// // float factor = accumulator / timestep;
+		// // float fentity = accumulator / timestep;
 
 		// auto view = mRegistry.view<RigidBodyComponent, TransformComponent>();
 		// for (auto e : view)
@@ -400,9 +400,9 @@ namespace BHive
 	{
 		BH_PROFILE_FUNCTION();
 
-		for (auto &[id, actor] : mActors)
+		for (auto &[id, entity] : mEntities)
 		{
-			for (auto &component : actor->GetComponents())
+			for (auto &component : entity->GetComponents())
 			{
 				if (auto renderable = Cast<IRenderable>(component))
 				{
@@ -420,9 +420,9 @@ namespace BHive
 	{
 	}
 
-	void World::OnActorDestroyed(Actor *actor)
+	void World::OnEntityDestroyed(Entity *entity)
 	{
-		if (mActors.contains(actor->GetUUID()))
-			mActors.erase(actor->GetUUID());
+		if (mEntities.contains(entity->GetUUID()))
+			mEntities.erase(entity->GetUUID());
 	}
 }

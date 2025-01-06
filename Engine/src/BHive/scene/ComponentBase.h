@@ -5,8 +5,8 @@
 #define INPUT_ARCHIVE cereal::JSONInputArchive
 #define OUTPUT_ARCHIVE cereal::JSONOutputArchive
 
-// #define HAS_COMPONENT_FUNC HAS_COMPONENT_FUNC_NAME, Actor::HasComponent<T>
-//  #define GET_COMPONENT_FUNC GET_COMPONENT_FUNC_NAME, Actor::GetComponent<T>
+// #define HAS_COMPONENT_FUNC HAS_COMPONENT_FUNC_NAME, entity::HasComponent<T>
+//  #define GET_COMPONENT_FUNC GET_COMPONENT_FUNC_NAME, entity::GetComponent<T>
 
 // #define SERIALIZE_COMPONENT_FUNC SERIALIZE_COMPONENT_FUNC_NAME, &::BHive::SerializeComponent<OUTPUT_ARCHIVE, T>
 // #define DESERIALIZE_COMPONENT_FUNC DESERIALIZE_COMPONENT_FUNC_NAME, &::BHive::DeserializeComponent<INPUT_ARCHIVE, T>
@@ -19,6 +19,6 @@
 
 namespace BHive
 {
-    class Actor;
+    class Entity;
 
 }

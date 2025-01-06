@@ -108,12 +108,12 @@ namespace BHive
 	glm::vec2 EditorCamera::PanSpeed() const
 	{
 		float x = std::min(mViewportSize.x / 1000.0f, 2.4f);
-		float xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.3021f;
+		float xFentity = 0.0366f * (x * x) - 0.1778f * x + 0.3021f;
 
 		float y = std::min(mViewportSize.y / 1000.0f, 2.4f);
-		float yFactor = 0.0366f * (y * y) - 0.1778f * y + 0.3021f;
+		float yFentity = 0.0366f * (y * y) - 0.1778f * y + 0.3021f;
 
-		return {xFactor, yFactor};
+		return {xFentity, yFentity};
 	}
 
 	float EditorCamera::RotationSpeed() const

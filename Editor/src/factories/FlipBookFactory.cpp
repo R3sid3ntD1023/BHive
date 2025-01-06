@@ -21,6 +21,6 @@ namespace BHive
         return asset != nullptr;
     }
 
-    REFLECT_FACTORY(FlipBookFactory, FlipBook, ".flipbook");
+    REFLECT_Factory(FlipBookFactory, FlipBook, ".flipbook");
 
 } // namespace BHive

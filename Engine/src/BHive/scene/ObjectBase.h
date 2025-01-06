@@ -31,9 +31,9 @@ namespace BHive
 
         virtual ObjectBase* Copy();
 
-        virtual void Serialize(StreamWriter &writer) const;
+        virtual void Serialize(StreamWriter &ar) const;
 
-        virtual void Deserialize(StreamReader &reader);
+        virtual void Deserialize(StreamReader &ar);
 
         bool operator==(const ObjectBase &rhs) const { return mID == rhs.mID; }
         bool operator!=(const ObjectBase &rhs) const { return mID != rhs.mID; }

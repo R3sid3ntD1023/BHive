@@ -1,33 +1,48 @@
 #include "SceneComponent.h"
-#include "scene/Actor.h"
+#include "scene/Entity.h"
 #include "scene/World.h"
 
 namespace BHive
 {
-    void SceneComponent::SetLocalTransform(const FTransform &transform)
+    void SceneComponent::SetWorldTransform(const FTransform& transform)
     {
-        mTransform = transform;
+        mWorldTransform = transform;
+
+        mLocalTransform = GetOwner()->GetWorldTransform().inverse() * mWorldTransform;
+    }
+
+    const FTransform& SceneComponent::GetWorldTransform() const
+    {
+        return mWorldTransform;
+    }
+
+    void SceneComponent::SetLocalTransform(const FTransform& transform)
+    {
+        mLocalTransform = transform;
+        mWorldTransform = GetOwner()->GetWorldTransform() * mLocalTransform;
+    }
+
+    const FTransform& SceneComponent::GetLocalTransform() const
+    {
+        return mLocalTransform;
+    }
+
+    void SceneComponent::UpdateWorldTransform()
+    {
+        mWorldTransform = GetOwner()->GetWorldTransform() * mLocalTransform;
     }
 
 
-    FTransform SceneComponent::GetWorldTransform() const
+    void SceneComponent::Serialize(StreamWriter &ar) const
     {
-
-        return GetOwningActor()->GetWorldTransform() * mTransform;
+        Component::Serialize(ar);
+        ar(mLocalTransform, mWorldTransform);
     }
 
-    void SceneComponent::Serialize(StreamWriter &writer) const
+    void SceneComponent::Deserialize(StreamReader &ar)
     {
-        ActorComponent::Serialize(writer);
-
-        writer(mTransform);
-    }
-
-    void SceneComponent::Deserialize(StreamReader &reader)
-    {
-        ActorComponent::Deserialize(reader);
-
-        reader(mTransform);
+        Component::Deserialize(ar);
+        ar(mLocalTransform, mWorldTransform);
     }
 
     REFLECT(SceneComponent)

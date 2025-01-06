@@ -39,10 +39,10 @@ namespace BHive
             pose.mPoseNode->CollectDesendents(children);
         }
 
-        if(mFactorNode)
+        if(mFentityNode)
         {
-            children.push_back(mFactorNode);
-            mFactorNode->CollectDesendents(children);
+            children.push_back(mFentityNode);
+            mFentityNode->CollectDesendents(children);
         }
     }
 
@@ -64,37 +64,37 @@ namespace BHive
         }
     }
 
-    void AnimationNodeBlend::AddPoseNode(const Ref<AnimationNodePoseBase> &node, float factor)
+    void AnimationNodeBlend::AddPoseNode(const Ref<AnimationNodePoseBase> &node, float fentity)
     {
-        mPoseData.push_back({node, factor});
+        mPoseData.push_back({node, fentity});
     }
 
-    void AnimationNodeBlend::SetFactorNode(const Ref<AnimationNodePoseBase> &node)
+    void AnimationNodeBlend::SetFentityNode(const Ref<AnimationNodePoseBase> &node)
     {
-        mFactorNode = node;
+        mFentityNode = node;
     }
 
     void AnimationNodeBlend::SelectBlendedNodes(const AnimatorContext & context)
     {
         ASSERT(!mPoseData.empty());
-        ASSERT(mFactorNode != nullptr);
+        ASSERT(mFentityNode != nullptr);
         ASSERT(std::is_sorted(mPoseData.begin(), mPoseData.end(), [](const auto& p0, const auto& p1){
-            return p0.mFactor < p1.mFactor;
+            return p0.mFentity < p1.mFentity;
         }));
 
-        float factor = mFactorNode ? std::any_cast<float>(mFactorNode->Execute(context)) : 0.0f;
+        float fentity = mFentityNode ? std::any_cast<float>(mFentityNode->Execute(context)) : 0.0f;
 
-        if(factor == mPrevFactor)
+        if(fentity == mPrevFentity)
             return;
 
-        mPrevFactor = factor;
+        mPrevFentity = fentity;
 
         size_t child_count = mPoseData.size();
 
         std::optional<int32_t> upper_bound_child_index_opt;
         for(size_t i = 0; i < child_count; i++)
         {
-            if(mPoseData[i].mFactor >= factor)
+            if(mPoseData[i].mFentity >= fentity)
             {
                 upper_bound_child_index_opt = (int32_t)i;
                 break;
@@ -112,7 +112,7 @@ namespace BHive
             auto upper_bound_child_index = upper_bound_child_index_opt.value();
             PoseData& upper_bound_node = mPoseData[upper_bound_child_index];
 
-            if(upper_bound_node.mFactor == factor)
+            if(upper_bound_node.mFentity == fentity)
             {
                 mSourceNode = nullptr;
                 mDestinationNode = upper_bound_node.mPoseNode;
@@ -123,12 +123,12 @@ namespace BHive
                 ASSERT(upper_bound_child_index >= 1);
                 PoseData& lower_bound_node = mPoseData[upper_bound_child_index - 1];
 
-                const float factor_range = upper_bound_node.mFactor - lower_bound_node.mFactor;
-                ASSERT(factor_range != 0.0f);
+                const float fentity_range = upper_bound_node.mFentity - lower_bound_node.mFentity;
+                ASSERT(fentity_range != 0.0f);
 
                 mSourceNode = lower_bound_node.mPoseNode;
                 mDestinationNode = upper_bound_node.mPoseNode;
-                mDestinationNodeWeight = (factor - lower_bound_node.mFactor) / factor_range;
+                mDestinationNodeWeight = (fentity - lower_bound_node.mFentity) / fentity_range;
                 ASSERT(mDestinationNodeWeight >= 0.f && mDestinationNodeWeight <= 1.0f); 
             }
         }

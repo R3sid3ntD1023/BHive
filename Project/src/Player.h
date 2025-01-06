@@ -1,13 +1,13 @@
 #pragma once
 
-#include "scene/Actor.h"
+#include "scene/Entity.h"
 #include "IInputActor.h"
 
 namespace BHive
 {
     class InputComponent;
 
-    class Player : public Actor
+    class Player : public Entity, public IInputActor
     {
     public:
         Player();
@@ -17,7 +17,7 @@ namespace BHive
     private:
         Ref<InputComponent> mInputComponent;
 
-        REFLECTABLEV(Actor)
+        REFLECTABLEV(Entity)
     };
 
     REFLECT_EXTERN(Player)

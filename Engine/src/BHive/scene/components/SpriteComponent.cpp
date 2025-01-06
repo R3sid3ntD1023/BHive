@@ -1,6 +1,6 @@
 #include "SpriteComponent.h"
 #include "scene/SceneRenderer.h"
-#include "scene/Actor.h"
+#include "scene/Entity.h"
 
 namespace BHive
 {

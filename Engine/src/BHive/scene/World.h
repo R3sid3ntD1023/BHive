@@ -11,10 +11,10 @@ namespace BHive
 {
 	class SceneRenderer;
 	class Camera;
-	class Actor;
+	class Entity;
 
-	using ActorPtr = Ref<Actor>;
-	using ActorList = std::unordered_map<UUID, ActorPtr>;
+	using entityPtr = Ref<Entity>;
+	using Entities = std::unordered_map<UUID, entityPtr>;
 
 	class BHIVE World : public Asset, public ISerializable
 	{
@@ -34,11 +34,11 @@ namespace BHive
 
 		Ref<World> Copy() const;
 
-		Ref<Actor> CreateActor(const std::string &name = "NewActor");
+		Ref<Entity> CreateEntity(const std::string &name = "NewEntity");
 
-		void AddActor(const Ref<Actor> &actor);
+		void AddEntity(const Ref<Entity> &entity);
 
-		Ref<Actor> DuplicateActor(Actor *actor);
+		Ref<Entity> DuplicateEntity(Entity *entity);
 
 		void Step(int32_t frames = 1);
 
@@ -52,14 +52,14 @@ namespace BHive
 
 		rp3d::PhysicsWorld::WorldSettings &GetWorldSettings() { return mPhysicsSettings; }
 
-		ActorList &GetActors() { return mActors; }
+		Entities &GetEntities() { return mEntities; }
 
-		const ActorList &GetActors() const { return mActors; }
+		const Entities &GetEntities() const { return mEntities; }
 
 		struct CameraComponent *GetPrimaryCameraComponent() const;
 
-		void Serialize(StreamWriter &writer) const;
-		void Deserialize(StreamReader &reader);
+		void Serialize(StreamWriter &ar) const;
+		void Deserialize(StreamReader &ar);
 
 		ASSET_CLASS(World)
 
@@ -73,7 +73,7 @@ namespace BHive
 		void OnCollisionContact(rp3d::CollisionCallback::ContactPair contact_pair);
 		void OnCollisionOverlap(rp3d::OverlapCallback::OverlapPair overlap_pair);
 
-		void OnActorDestroyed(Actor *actor);
+		void OnEntityDestroyed(Entity *entity);
 
 	private:
 		bool mIsPaused = false;
@@ -90,7 +90,7 @@ namespace BHive
 
 		WorldEventListener mCollisionListener;
 
-		ActorList mActors;
+		Entities mEntities;
 
 		friend class SceneComponent;
 	};

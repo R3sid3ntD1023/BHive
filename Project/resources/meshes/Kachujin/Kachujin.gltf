@@ -4207,8 +4207,8 @@
 				"baseColorTexture":{
 					"index":2
 				},
-				"metallicFactor":0.5,
-				"roughnessFactor":0.5527864098548889
+				"metallicFentity":0.5,
+				"roughnessFentity":0.5527864098548889
 			}
 		},
 		{
@@ -4229,8 +4229,8 @@
 				"baseColorTexture":{
 					"index":5
 				},
-				"metallicFactor":0.5,
-				"roughnessFactor":0.5527864098548889
+				"metallicFentity":0.5,
+				"roughnessFentity":0.5527864098548889
 			}
 		}
 	],

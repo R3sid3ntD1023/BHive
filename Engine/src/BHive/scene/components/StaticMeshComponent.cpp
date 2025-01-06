@@ -7,7 +7,7 @@
 #include "Animator/Animator.h"
 #include "material/MaterialTable.h"
 #include "scene/SceneRenderer.h"
-#include "scene/Actor.h"
+#include "scene/Entity.h"
 
 namespace BHive
 {

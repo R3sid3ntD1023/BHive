@@ -48,13 +48,13 @@ namespace BHive
 		return -1;
 	}
 
-	float SkeletalAnimation::GetScaleFactor(float lastTimeStamp, float nextTimeStamp, float animationTime)
+	float SkeletalAnimation::GetScaleFentity(float lastTimeStamp, float nextTimeStamp, float animationTime)
 	{
-		float factor = 0.0f;
+		float fentity = 0.0f;
 		float mid_way_length = animationTime - lastTimeStamp;
 		float frame_diff = nextTimeStamp - lastTimeStamp;
-		factor = mid_way_length / frame_diff;
-		return factor;
+		fentity = mid_way_length / frame_diff;
+		return fentity;
 	}
 
 	glm::vec3 SkeletalAnimation::InterpolatePosition(const std::string &name, float animationTime)
@@ -67,8 +67,8 @@ namespace BHive
 		int p0 = GetPositionIndex(name, animationTime);
 		int p1 = p0 + 1;
 
-		float factor = GetScaleFactor(keys[p0].mTimeStamp, keys[p1].mTimeStamp, animationTime);
-		auto position = glm::mix(keys[p0].mValue, keys[p1].mValue, factor);
+		float fentity = GetScaleFentity(keys[p0].mTimeStamp, keys[p1].mTimeStamp, animationTime);
+		auto position = glm::mix(keys[p0].mValue, keys[p1].mValue, fentity);
 		return position;
 	}
 
@@ -81,8 +81,8 @@ namespace BHive
 		int p0 = GetRotationIndex(name, animationTime);
 		int p1 = p0 + 1;
 
-		float factor = GetScaleFactor(keys[p0].mTimeStamp, keys[p1].mTimeStamp, animationTime);
-		auto rotation = glm::slerp(keys[p0].mValue, keys[p1].mValue, factor);
+		float fentity = GetScaleFentity(keys[p0].mTimeStamp, keys[p1].mTimeStamp, animationTime);
+		auto rotation = glm::slerp(keys[p0].mValue, keys[p1].mValue, fentity);
 		return glm::normalize(rotation);
 	}
 
@@ -95,8 +95,8 @@ namespace BHive
 		int p0 = GetScaleIndex(name, animationTime);
 		int p1 = p0 + 1;
 
-		float factor = GetScaleFactor(keys[p0].mTimeStamp, keys[p1].mTimeStamp, animationTime);
-		auto scale = glm::mix(keys[p0].mValue, keys[p1].mValue, factor);
+		float fentity = GetScaleFentity(keys[p0].mTimeStamp, keys[p1].mTimeStamp, animationTime);
+		auto scale = glm::mix(keys[p0].mValue, keys[p1].mValue, fentity);
 		return scale;
 	}
 

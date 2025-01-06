@@ -22,16 +22,16 @@ namespace BHive
         return new ObjectBase(*this);
     }
 
-    void ObjectBase::Serialize(StreamWriter &writer) const
+    void ObjectBase::Serialize(StreamWriter &ar) const
     {
-        writer(mData.mName);
-        writer(mID);
+        ar(mData.mName);
+        ar(mID);
     }
 
-    void ObjectBase::Deserialize(StreamReader &reader)
+    void ObjectBase::Deserialize(StreamReader &ar)
     {
-        reader(mData.mName);
-        reader(mID);
+        ar(mData.mName);
+        ar(mID);
     }
 
     REFLECT(ObjectBase)

@@ -14,9 +14,9 @@ namespace BHive
         std::filesystem::path mProjectDirectory;
         std::filesystem::path mResourcesDirectory;
 
-        void Deserialize(StreamReader &reader);
+        void Deserialize(StreamReader &ar);
 
-        void Serialize(StreamWriter &writer) const;
+        void Serialize(StreamWriter &ar) const;
 
         REFLECTABLE()
     };

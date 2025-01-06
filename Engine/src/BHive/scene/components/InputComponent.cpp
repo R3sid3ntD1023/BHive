@@ -22,13 +22,13 @@ namespace BHive
 	}
 	void InputComponent::Serialize(StreamWriter& ar) const
 	{
-		ActorComponent::Serialize(ar);
+		Component::Serialize(ar);
 		ar(mInputContext);
 	}
 
 	void InputComponent::Deserialize(StreamReader& ar)
 	{
-		ActorComponent::Deserialize(ar);
+		Component::Deserialize(ar);
 		ar(mInputContext);
 	}
 

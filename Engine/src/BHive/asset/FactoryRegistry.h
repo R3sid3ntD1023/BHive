@@ -36,7 +36,7 @@ namespace BHive
 			return Get(AssetType::get<T>());
 		}
 
-		void Register(const char *name, const AssetType &type_id, const FAssetExtensions &extensions, const Ref<Factory> &factory);
+		void Register(const char *name, const AssetType &type_id, const FAssetExtensions &extensions, const Ref<Factory> &Factory);
 
 		Ref<Factory> Get(const AssetType &type_id) const;
 
@@ -62,7 +62,7 @@ namespace BHive
 			return info;
 		}
 
-		const std::unordered_map<AssetType, TypeInfo> &GetRegisteredFactories() const { return mRegisteredTypes; }
+		const std::unordered_map<AssetType, TypeInfo> &GetRegisteredFentityies() const { return mRegisteredTypes; }
 
 	private:
 		std::unordered_map<AssetType, TypeInfo> mRegisteredTypes;

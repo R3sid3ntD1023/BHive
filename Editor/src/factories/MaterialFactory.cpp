@@ -21,5 +21,5 @@ namespace BHive
         return asset != nullptr;
     }
 
-    REFLECT_FACTORY(MaterialFactory, Material, ".material")
+    REFLECT_Factory(MaterialFactory, Material, ".material")
 }

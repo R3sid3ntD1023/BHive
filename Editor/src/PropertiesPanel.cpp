@@ -2,7 +2,7 @@
 #include "reflection/Reflection.h"
 #include "gui/ImGuiExtended.h"
 #include "inspector/Inspectors.h"
-#include "scene/Actor.h"
+#include "scene/Entity.h"
 #include "subsystem/SubSystem.h"
 #include "subsystems/EditSubSystem.h"
 #include "scene/components/SceneComponent.h"
@@ -13,13 +13,13 @@ namespace BHive
     {
 
         auto &edit_subsystem = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-        if (auto actor = edit_subsystem.mSelection.GetSelectedActor())
+        if (auto entity = edit_subsystem.mSelection.GetSelectedEntity())
         {
-            DrawActorComponents(actor);
+            DrawComponents(entity);
 
             ImGui::SeparatorText("Details");
 
-            DrawAddComponent(actor);
+            DrawAddComponent(entity);
 
             if (mDeletedComponents.size())
             {
@@ -28,7 +28,7 @@ namespace BHive
                     if (edit_subsystem.mSelection.GetSelectedObject() == component)
                         edit_subsystem.mSelection.Deselect(component);
 
-                    actor->RemoveComponent(component);
+                    entity->RemoveComponent(component);
                 }
 
                 mDeletedComponents.clear();
@@ -36,15 +36,15 @@ namespace BHive
         }
     }
 
-    void PropertiesPanel::DrawActorComponents(Actor *actor)
+    void PropertiesPanel::DrawComponents(Entity *entity)
     {
-        for (auto &component : actor->GetComponents())
+        for (auto &component : entity->GetComponents())
         {
             DrawComponent(component.get());
         }
     }
 
-    void PropertiesPanel::DrawComponent(ActorComponent *component)
+    void PropertiesPanel::DrawComponent(Component *component)
     {
         bool destroyed = false;
 
@@ -83,10 +83,10 @@ namespace BHive
             mDeletedComponents.insert(component);
     }
 
-    void PropertiesPanel::DrawAddComponent(Actor *actor)
+    void PropertiesPanel::DrawAddComponent(Entity *entity)
     {
         static auto add_component_id = "AddComponent";
-        static auto derived_component_types = rttr::type::get<ActorComponent>().get_derived_classes();
+        static auto derived_component_types = rttr::type::get<Component>().get_derived_classes();
 
         auto line_height = ImGui::GetLineHeight();
         auto button_size = ImVec2(200, line_height);
@@ -115,9 +115,9 @@ namespace BHive
 
                 if (ImGui::Selectable(type.get_name().data()))
                 {
-                    auto component = type.create().get_value<Ref<ActorComponent>>();
+                    auto component = type.create().get_value<Ref<Component>>();
                     component->SetName(std::string("New") + type.get_name());
-                    actor->AddComponent(component);
+                    entity->AddComponent(component);
                 }
             }
             ImGui::EndPopup();

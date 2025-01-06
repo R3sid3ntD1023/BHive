@@ -21,6 +21,6 @@ namespace BHive
         return asset != nullptr;
     }
 
-    REFLECT_FACTORY(SpriteFactory, Sprite, ".sprite")
+    REFLECT_Factory(SpriteFactory, Sprite, ".sprite")
 
 } // namespace BHive

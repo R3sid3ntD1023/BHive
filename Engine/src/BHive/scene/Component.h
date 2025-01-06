@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-    class Actor;
+    class Entity;
     class World;
 
     enum ECreationMode
@@ -15,14 +15,14 @@ namespace BHive
         CreationMode_Native
     };
 
-    class ActorComponent : public ObjectBase, public ITickable
+    class Component : public ObjectBase, public ITickable
     {
     private:
         /* data */
     public:
-        ActorComponent() = default;
+        Component() = default;
 
-        virtual ~ActorComponent() = default;
+        virtual ~Component() = default;
 
         virtual void OnBegin() {}
 
@@ -30,12 +30,12 @@ namespace BHive
 
         virtual void OnEnd() {};
 
-        Actor *GetOwningActor() const { return mOwningActor; }
+        Entity *GetOwner() const { return mOwningentity; }
 
         World *GetWorld() const;
 
         template <typename T>
-        T *GetOwningActor() const { return Cast<T>(GetOwningActor()); }
+        T *GetOwner() const { return Cast<T>(GetOwner()); }
 
         virtual bool IsTickEnabled() const override { return mTickEnabled; };
 
@@ -44,20 +44,20 @@ namespace BHive
         REFLECTABLEV(ObjectBase, ITickable)
 
     public:
-        virtual void Serialize(StreamWriter &writer) const override;
-        virtual void Deserialize(StreamReader &reader) override;
+        virtual void Serialize(StreamWriter &ar) const override;
+        virtual void Deserialize(StreamReader &ar) override;
 
     private:
         bool mTickEnabled = true;
 
-        Actor *mOwningActor = nullptr;
+        Entity *mOwningentity = nullptr;
 
-        friend class Actor;
+        friend class Entity;
     };
 
 
     template<typename TComponent>
-    inline Ref<TComponent> CopyComponent(ActorComponent* component)
+    inline Ref<TComponent> CopyComponent(Component* component)
     {
         if (!component)
             return nullptr;
@@ -70,7 +70,7 @@ namespace BHive
 
 
     template<typename TComponent>
-    inline Ref<TComponent> DuplicateComponent(ActorComponent* component)
+    inline Ref<TComponent> DuplicateComponent(Component* component)
     {
         if (auto new_component = CopyComponent<TComponent>(component))
         {
@@ -81,9 +81,9 @@ namespace BHive
         return nullptr;
     }
 
-    REFLECT(ActorComponent)
+    REFLECT(Component)
     {
-        BEGIN_REFLECT(ActorComponent)
+        BEGIN_REFLECT(Component)
         REQUIRED_COMPONENT_FUNCS();
     }
 

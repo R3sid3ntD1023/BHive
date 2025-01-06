@@ -79,7 +79,7 @@ namespace BHive
 
         if (read_only)
         {
-            ImGui::Text("%s", glm::to_string(data));
+            ImGui::TextUnformatted(glm::to_string(data).c_str());
             return false;
         }
 

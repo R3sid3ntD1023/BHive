@@ -33,10 +33,10 @@ namespace BHive
 	}
 }
 
-#define REFLECT_FACTORY(factory, asset_type, ...)                                                                           \
-	REFLECT(factory)                                                                                                        \
+#define REFLECT_Factory(cls, asset_type, ...)                                                                           \
+	REFLECT(cls)                                                                                                        \
 	{                                                                                                                       \
-		BEGIN_REFLECT(factory)                                                                                              \
+		BEGIN_REFLECT(cls)                                                                                              \
 		(META_DATA("Type", rttr::type::get<asset_type>()), META_DATA("Extensions", BHive::FAssetExtensions({__VA_ARGS__}))) \
 			REFLECT_CONSTRUCTOR()                                                                                           \
 				CONSTRUCTOR_POLICY_SHARED;                                                                                  \

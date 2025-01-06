@@ -1,12 +1,12 @@
 #pragma once
 
-#include "scene/ActorComponent.h"
+#include "scene/Component.h"
 #include "input/InputContext.h"
 
 namespace BHive
 {
 
-	struct BHIVE InputComponent : public ActorComponent
+	struct BHIVE InputComponent : public Component
 	{
 
 		TAssetHandle<InputContext> mInputContext;
@@ -25,7 +25,7 @@ namespace BHive
 	private:
 		InputContext *mContextInstance = nullptr;
 
-		REFLECTABLEV(ActorComponent)
+		REFLECTABLEV(Component)
 	};
 
 	REFLECT_EXTERN(InputComponent)

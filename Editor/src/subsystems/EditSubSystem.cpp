@@ -1,7 +1,7 @@
 #include "EditSubSystem.h"
 #include "scene/World.h"
-#include "scene/Actor.h"
-#include "scene/ActorComponent.h"
+#include "scene/Entity.h"
+#include "scene/Component.h"
 #include "renderers/LineRenderer.h"
 
 namespace BHive
@@ -9,9 +9,9 @@ namespace BHive
 
     void Selection::Select(ObjectBase *object)
     {
-        if (auto actor = Cast<Actor>(object))
+        if (auto entity = Cast<Entity>(object))
         {
-            mSelectedActor = actor;
+            mSelectedEntity = entity;
         }
 
         mSelectedObject = object;
@@ -19,16 +19,16 @@ namespace BHive
 
     void Selection::Deselect(ObjectBase *object, EDeselectReason reason)
     {
-        if (auto actor = Cast<Actor>(object))
+        if (auto entity = Cast<Entity>(object))
         {
-            if (mSelectedActor == actor)
-                mSelectedActor = nullptr;
+            if (mSelectedEntity == entity)
+                mSelectedEntity = nullptr;
 
             if (reason == DeselectReason_Destroyed)
             {
-                if (auto component = Cast<ActorComponent>(mSelectedObject))
+                if (auto component = Cast<Component>(mSelectedObject))
                 {
-                    if (component->GetOwningActor() == actor)
+                    if (component->GetOwner() == entity)
                         mSelectedObject = nullptr;
                 }
             }
@@ -40,7 +40,7 @@ namespace BHive
 
     void Selection::Clear()
     {
-        mSelectedActor = nullptr;
+        mSelectedEntity = nullptr;
         mSelectedObject = nullptr;
     }
 

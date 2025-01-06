@@ -374,7 +374,7 @@
   "materials": [
     {
       "doubleSided": true,
-      "emissiveFactor": [
+      "emissiveFentity": [
         1.0,
         1.0,
         1.0

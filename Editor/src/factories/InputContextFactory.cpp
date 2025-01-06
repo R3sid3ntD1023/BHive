@@ -23,6 +23,6 @@ namespace BHive
         return false;
     }
 
-    REFLECT_FACTORY(InputContextFactory, InputContext, ".input")
+    REFLECT_Factory(InputContextFactory, InputContext, ".input")
 
 } // namespace BHive
