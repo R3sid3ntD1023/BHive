@@ -1,9 +1,9 @@
 #include "GLFramebuffer.h"
 #include "gfx/TextureUtils.h"
-#include <stb_image_write.h>
 #include <glad/glad.h>
 #include "gfx/Texture.h"
 #include "threading/Threading.h"
+#include "utils/ImageUtils.h"
 
 namespace BHive
 {
@@ -98,11 +98,6 @@ namespace BHive
 
 	bool GLFramebuffer::SaveToImage(Framebuffer &framebuffer, const std::filesystem::path &path)
 	{
-		if (!std::filesystem::exists(path.parent_path()))
-		{
-			std::filesystem::create_directory(path.parent_path());
-		}
-
 		try
 		{
 			auto w = framebuffer.GetSpecification().Width;
@@ -115,8 +110,7 @@ namespace BHive
 
 			framebuffer.ReadPixel(0, 0, 0, w, h, GL_UNSIGNED_BYTE, buffer.data());
 
-			stbi_flip_vertically_on_write(true);
-			stbi_write_png(path.string().c_str(), w, h, channels, buffer.data(), stride);
+			ImageUtils::SaveImage(path, w, h, channels, buffer.data());
 
 			return true;
 		}
@@ -208,6 +202,7 @@ namespace BHive
 					break;
 				case ETextureType::TEXTURE_3D:
 					attachment = Texture3D::Create(mSpecification.Width, mSpecification.Height, mSpecification.Depth, specification.mSpecification);
+					break;
 				default:
 					break;
 				}
@@ -226,6 +221,7 @@ namespace BHive
 				break;
 			case ETextureType::TEXTURE_3D:
 				mDepthAttachment = Texture3D::Create(mSpecification.Width, mSpecification.Height, mSpecification.Depth, mDepthSpecification.mSpecification);
+				break;
 			default:
 				break;
 			}
