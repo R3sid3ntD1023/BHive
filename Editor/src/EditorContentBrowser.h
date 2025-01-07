@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gui/ContentBrowser.h"
+#include "ContentBrowser.h"
 #include "ThumbnailCache.h"
 
 namespace BHive
