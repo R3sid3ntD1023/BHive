@@ -14,9 +14,5 @@ namespace BHive
 
 		bool Import(Ref<Asset>& asset, const FAssetMetaData& metadata);
 
-		const std::vector<Ref<Asset>>& GetCreatedOtherAssets() const { return mOtherCreatedAssets; }
-
-	private:
-		std::vector<Ref<Asset>> mOtherCreatedAssets;
 	};
 }

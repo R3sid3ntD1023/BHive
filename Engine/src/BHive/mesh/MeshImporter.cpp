@@ -64,7 +64,7 @@ namespace BHive
 			}
 		}
 
-		void ExtractBoneWeightsForVertices(Bones &bones, std::vector<FVertex> &vertices, aiMesh *mesh)
+		void ExtractBoneWeightsForVertices(Bones &bones, std::vector<FVertex> &vertices, const aiMesh *mesh)
 		{
 			int bone_counter = 0;
 			for (unsigned bone_index = 0; bone_index < mesh->mNumBones; bone_index++)
@@ -97,7 +97,7 @@ namespace BHive
 			}
 		}
 
-		FSubMesh ParseMesh(const aiScene *scene, aiMesh *mesh, FMeshImportData &import_data)
+		FSubMesh ParseMesh(const aiScene *scene, const aiNode* node, const aiMesh *mesh, FMeshImportData &import_data)
 		{
 			FMeshData &data = import_data.mMeshData;
 
@@ -108,9 +108,11 @@ namespace BHive
 			sub_mesh.mIndexCount = mesh->mNumFaces * 3;
 
 			aiMatrix4x4 root_transfrom = scene->mRootNode->mTransformation;
+			aiMatrix4x4 transform = node->mTransformation;
 
 			std::vector<FVertex> vertices(mesh->mNumVertices);
 			std::vector<uint32_t> indices(mesh->mNumFaces * 3);
+			
 
 			if (mesh->mMaterialIndex >= 0)
 				sub_mesh.mMaterialIndex = mesh->mMaterialIndex;
@@ -118,7 +120,7 @@ namespace BHive
 			for (unsigned v = 0; v < mesh->mNumVertices; v++)
 			{
 
-				glm::vec3 position = make_vec3(mesh->mVertices[v]);
+				glm::vec3 position = make_mat4(transform) * glm::vec4(make_vec3(mesh->mVertices[v]), 1.0);
 				glm::vec2 texcoord = {0.0f, 0.0f};
 				glm::vec3 normal = {0.0f, 0.0f, 0.0f};
 				glm::vec3 tangent = {0.0f, 0.0f, 0.0f};
@@ -192,15 +194,23 @@ namespace BHive
 			return sub_mesh;
 		}
 
-		void ParseMesh(const aiScene *scene, FMeshImportData &data)
+
+		void ProcessNode(const aiScene* scene, const aiNode* node, FMeshImportData &data)
 		{
-			auto count = scene->mNumMeshes;
-			data.mMeshData.mSubMeshes.resize(count);
+			auto count = node->mNumChildren;
+
+			for (unsigned i = 0; i < node->mNumMeshes; i++)
+			{
+				aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+				auto submesh = ParseMesh(scene, node, mesh, data);
+				data.mMeshData.mSubMeshes.push_back(submesh);
+			}
 
 			for (unsigned int i = 0; i < count; i++)
 			{
-				aiMesh *mesh = scene->mMeshes[i];
-				data.mMeshData.mSubMeshes[i] = ParseMesh(scene, mesh, data);
+				auto child = node->mChildren[i];
+
+				ProcessNode(scene, child, data);
 			}
 		}
 
@@ -381,7 +391,7 @@ namespace BHive
 
 		void ProcessScene(const aiScene *scene, FMeshImportData &data)
 		{
-			utils::ParseMesh(scene, data);
+			utils::ProcessNode(scene, scene->mRootNode, data);
 
 			utils::GetMaterialData(scene, data.mMaterialData);
 			utils::GetAnimationData(scene, data.mAnimationData, data.mBoneData);
@@ -398,12 +408,12 @@ namespace BHive
 	{
 		Assimp::Importer importer;
 		importer.SetProgressHandler(new ModelProgress());
-		int flags = aiProcessPreset_TargetRealtime_Fast;
+		int flags = aiProcessPreset_TargetRealtime_MaxQuality;
 		const aiScene *scene = importer.ReadFile(path.string().c_str(), (unsigned)flags);
 
-		if (!scene || !scene->mRootNode)
+		if (!scene || !scene->mRootNode || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)
 		{
-			LOG_ERROR("AnimationImporter::Error - {0}", importer.GetErrorString());
+			LOG_ERROR("MeshImporter::Error - {0}", importer.GetErrorString());
 			return {};
 		}
 

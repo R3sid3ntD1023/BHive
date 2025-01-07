@@ -12,7 +12,6 @@ namespace BHive
 			if (Factory->CanCreateNew())
 			{
 				Factory->CreateNew(path);
-				mOtherCreatedAssets = Factory->GetOtherCreatedAssets();
 			}
 		}
 	}
@@ -23,8 +22,6 @@ namespace BHive
 		{
 			if (Factory->Import(asset, metadata.Path))
 			{
-				mOtherCreatedAssets = Factory->GetOtherCreatedAssets();
-
 				return true;
 			}
 

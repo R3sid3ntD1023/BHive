@@ -22,8 +22,6 @@ namespace BHive
 
 		virtual const char *GetDefaultAssetName() const { return ""; }
 
-		virtual const std::vector<Ref<Asset>> &GetOtherCreatedAssets() const { return {}; }
-
 		REFLECTABLEV()
 	};
 
