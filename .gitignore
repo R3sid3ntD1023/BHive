@@ -10,10 +10,12 @@ bin-int/
 **.vcxproj.user
 **.lib
 **.dll
-CMakeSettings.json
-CMakePresets.json
 *.json
-!.vscode/*.json
 *.log
 *rp3d_profiling_.txt
 *imgui.ini
+
+#include
+!CMakeSettings.json
+!CMakePresets.json
+!.vscode/*.json
