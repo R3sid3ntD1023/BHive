@@ -8,6 +8,7 @@ namespace BHive
     {
         /* data */
 
+        virtual void OnBegin() override;
         virtual void OnUpdate(float dt) override;
 
         float mRotateSpeed = 1.0f;

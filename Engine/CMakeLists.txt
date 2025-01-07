@@ -12,7 +12,12 @@ set_target_properties(Engine PROPERTIES
 	CXX_STANDARD_REQUIRED YES
 )
 target_compile_options(Engine PUBLIC /ZI /INCREMETAL /MP /bigobj /W0 )
-target_compile_definitions(Engine PUBLIC _CRT_SECURE_NO_WARNINGS PUBLIC GLFW_INCLUDE_NONE PUBLIC AL_LIBTYPE_STATIC PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
+target_compile_definitions(Engine 
+PUBLIC _CRT_SECURE_NO_WARNINGS 
+PUBLIC GLFW_INCLUDE_NONE 
+PUBLIC AL_LIBTYPE_STATIC 
+PUBLIC IMGUI_DEFINE_MATH_OPERATORS
+PUBLIC SPDLOG_COMPILED_LIB)
 
 target_link_libraries(Engine
 	PUBLIC glfw 
@@ -26,7 +31,7 @@ target_link_libraries(Engine
 	PUBLIC waveparser
 	PUBLIC ReactPhysics3D::reactphysics3d 
 	PUBLIC rttr_core 
-	PUBLIC spdlog::spdlog_header_only 
+	PUBLIC spdlog::spdlog
 	PUBLIC glm::glm-header-only
 )
 

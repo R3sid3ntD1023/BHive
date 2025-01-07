@@ -1,5 +1,6 @@
 #include "IPhysicsComponent.h"
-#include "reactphysics3d/reactphysics3d.h"
+#include "physics/PhysicsContext.h"
+
 
 namespace BHive
 {
@@ -28,6 +29,11 @@ namespace BHive
 		}
 
 		return {};
+	}
+
+	void IPhysicsComponent::SetRigidBody(void* rigidbody)
+	{
+		mRigidBodyInstance = rigidbody;
 	}
 
 }

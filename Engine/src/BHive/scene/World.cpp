@@ -8,42 +8,6 @@
 
 namespace BHive
 {
-	/*namespace utils
-	{
-		rp3d::Transform GetPhysicsTransform(const FTransform &t)
-		{
-			auto position = t.get_translation();
-			auto rotation = glm::radians(t.get_rotation());
-
-			auto quaternion = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(rotation.x, rotation.y, rotation.z));
-			return rp3d::Transform({position.x, position.y, position.z}, quaternion);
-		}
-
-		glm::quat rp3d_to_quat(const rp3d::Quaternion &qua)
-		{
-			return glm::quat((float)qua.w, (float)qua.x, (float)qua.y, (float)qua.z);
-		}
-
-		FTransform GetTransform(const rp3d::Transform &t, const glm::vec3 &scale)
-		{
-
-			auto &position = t.getPosition();
-			auto quat = rp3d_to_quat(t.getOrientation());
-			glm::vec3 rotation = glm::degrees(glm::eulerAngles(quat));
-
-			return FTransform({position.x, position.y, position.z}, {rotation.x, rotation.y, rotation.z}, scale);
-		}
-
-		rp3d::Vector3 LockAxisToVextor3(ELockAxis axis)
-		{
-			float x = (axis & ELockAxis::AxisX) != 0 ? 0.0f : 1.0f;
-			float y = (axis & ELockAxis::AxisY) != 0 ? 0.0f : 1.0f;
-			float z = (axis & ELockAxis::AxisZ) != 0 ? 0.0f : 1.0f;
-
-			return {x, y, z};
-		}
-	}*/
-
 	World::World()
 	{
 		mCollisionListener.OnContact.bind(this, &World::OnCollisionContact);
@@ -109,17 +73,22 @@ namespace BHive
 
 	void World::OnRuntimeStop()
 	{
-		OnPhysicsStop();
-
-		for (auto &[id, entity] : mEntities)
+		for (auto& [id, entity] : mEntities)
 		{
 			entity->OnEnd();
 		}
+
+		OnPhysicsStop();
 	}
 
 	void World::OnSimulateStart()
 	{
 		OnPhysicsStart();
+
+		for (auto& [id, entity] : mEntities)
+		{
+			entity->OnBegin();
+		}
 	}
 
 	void World::OnSimulate(float deltatime, Ref<SceneRenderer> renderer)
@@ -127,6 +96,11 @@ namespace BHive
 		if (!mIsPaused || mFrames-- > 0)
 		{
 			OnPhysicsUpdate(deltatime);
+
+			for (auto& [id, entity] : mEntities)
+			{
+				entity->OnUpdate(deltatime);
+			}
 		}
 
 		RenderScene(renderer);
@@ -134,6 +108,11 @@ namespace BHive
 
 	void World::OnSimulateStop()
 	{
+		for (auto& [id, entity] : mEntities)
+		{
+			entity->OnEnd();
+		}
+
 		OnPhysicsStop();
 	}
 
@@ -266,80 +245,6 @@ namespace BHive
 		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_NORMAL, false);
 		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_POINT, false);
 		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB, false);
-
-		// auto view = mRegistry.view<RigidBodyComponent, TransformComponent>();
-		// for (auto e : view)
-		// {
-		// 	auto [rbc, tc] = view.get(e);
-		// 	Entity entity = {e, this};
-
-		// 	auto uuid = entity.GetUUID();
-		// 	auto &entity_id = mEntityMap.at(uuid);
-		// 	auto transform = entity.GetTransform();
-
-		// 	auto rb = mPhysicsWorld->createRigidBody(utils::GetPhysicsTransform(transform));
-		// 	rb->setIsDebugEnabled(true);
-		// 	rb->setUserData(&entity_id);
-		// 	rb->setMass(rbc.mMass);
-		// 	rb->setType((rp3d::BodyType)rbc.mBodyType);
-		// 	rb->enableGravity(rbc.mGravityEnabled);
-		// 	rb->setAngularDamping(rbc.mAngularDamping);
-		// 	rb->setLinearDamping(rbc.mLinearDamping);
-
-		// 	rb->setLinearLockAxisFentity(utils::LockAxisToVextor3(rbc.mLinearLockAxis));
-		// 	rb->setAngularLockAxisFentity(utils::LockAxisToVextor3(rbc.mAngularLockAxis));
-
-		// 	rp3d::Collider *collider = nullptr;
-		// 	if (entity.HasComponent<BoxComponent>())
-		// 	{
-		// 		auto &boxcomponent = entity.GetComponent<BoxComponent>();
-		// 		auto extents = boxcomponent.mExtents * 2.f * transform.get_scale();
-		// 		auto offset = boxcomponent.mOffset * transform.get_scale();
-
-		// 		auto offset_ = rp3d::Transform({offset.x, offset.y, offset.z},
-		// 									   rp3d::Quaternion::identity());
-
-		// 		auto boxshape = PhysicsContext::get_context().createBoxShape({extents.x * .5f, extents.y * .5f, extents.z * .5f});
-		// 		collider = rb->addCollider(boxshape, offset_);
-		// 		collider->setUserData(&entity_id);
-
-		// 		collider->setIsTrigger(boxcomponent.mIsTrigger);
-
-		// 		if (auto pm = boxcomponent.mPhysicsMaterial)
-		// 		{
-		// 			auto &material = collider->getMaterial();
-		// 			material.setFrictionCoefficient(pm->mFrictionCoefficient);
-		// 			material.setBounciness(pm->mBounciness);
-		// 			material.setMassDensity(pm->mMassDensity);
-		// 		}
-		// 	}
-
-		// 	if (entity.HasComponent<SphereComponent>())
-		// 	{
-		// 		auto &spherecomponent = entity.GetComponent<SphereComponent>();
-		// 		auto extents = spherecomponent.mRadius * glm::compMax(transform.get_scale());
-		// 		auto offset = spherecomponent.mOffset * transform.get_scale();
-
-		// 		auto offset_ = rp3d::Transform({offset.x, offset.y, offset.z},
-		// 									   rp3d::Quaternion::identity());
-
-		// 		auto sphereshape = PhysicsContext::get_context().createSphereShape(extents);
-		// 		collider = rb->addCollider(sphereshape, offset_);
-		// 		collider->setUserData(&entity_id);
-
-		// 		collider->setIsTrigger(spherecomponent.mIsTrigger);
-
-		// 		if (auto pm = spherecomponent.mPhysicsMaterial)
-		// 		{
-		// 			auto &material = collider->getMaterial();
-		// 			material.setFrictionCoefficient(pm->mFrictionCoefficient);
-		// 			material.setBounciness(pm->mBounciness);
-		// 			material.setMassDensity(pm->mMassDensity);
-		// 		}
-		// 	}
-
-		// 	rbc.mRigidBodyInstance = (void *)rb;
-		// }
 	}
 
 	void World::OnPhysicsUpdate(float deltatime)
@@ -356,41 +261,11 @@ namespace BHive
 			mPhysicsWorld->update(timestep);
 			accumulator -= timestep;
 		}
-
-		// // float fentity = accumulator / timestep;
-
-		// auto view = mRegistry.view<RigidBodyComponent, TransformComponent>();
-		// for (auto e : view)
-		// {
-		// 	Entity entity{e, this};
-		// 	auto [rbc, tc] = view.get(e);
-		// 	auto rb = (rp3d::RigidBody *)rbc.mRigidBodyInstance;
-		// 	if (!rb)
-		// 		continue;
-
-		// 	if (rbc.mBodyType == EBodyType::Dynamic)
-		// 	{
-		// 		auto &transform = rb->getTransform();
-		// 		auto scale = entity.GetTransform().get_scale();
-		// 		tc.mTransform = entity.GetParentTransform().inverse() * utils::GetTransform(transform, scale);
-		// 	}
-		// 	else
-		// 	{
-		// 		rb->setTransform(utils::GetPhysicsTransform(tc.mTransform));
-		// 	}
-		// }
 	}
 
 	void World::OnPhysicsStop()
 	{
 		LOG_TRACE("Simulate Stop");
-
-		// auto view = mRegistry.view<RigidBodyComponent>();
-		// for (auto e : view)
-		// {
-		// 	auto [rbc] = view.get(e);
-		// 	mPhysicsWorld->destroyRigidBody((rp3d::RigidBody *)rbc.mRigidBodyInstance);
-		// }
 
 		PhysicsContext::get_context().destroyPhysicsWorld(mPhysicsWorld);
 		mPhysicsWorld = nullptr;
@@ -414,10 +289,55 @@ namespace BHive
 
 	void World::OnCollisionContact(rp3d::CollisionCallback::ContactPair contact_pair)
 	{
+		auto bd1 = (Entity*)contact_pair.getBody1()->getUserData();
+		auto bd2 = (Entity*)contact_pair.getBody2()->getUserData();
+		auto c1 = (ColliderComponent*)contact_pair.getCollider1()->getUserData();
+		auto c2 = (ColliderComponent*)contact_pair.getCollider2()->getUserData();
+		auto event = contact_pair.getEventType();
+
+		switch (event)
+		{
+		case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStart:
+			c1->OnCollisionEnter.invoke(c2, bd1, bd2);
+            c2->OnCollisionEnter.invoke(c1, bd1, bd2);
+			break;
+		case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStay:
+			c1->OnCollisionStay.invoke(c2, bd1, bd2);
+            c2->OnCollisionStay.invoke(c1, bd1, bd2);
+			break;
+		case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactExit:
+			c1->OnCollisionExit.invoke(c2, bd1, bd2);
+            c2->OnCollisionExit.invoke(c1, bd1, bd2);
+			break;
+		default:
+			break;
+		}
 	}
 
 	void World::OnCollisionOverlap(rp3d::OverlapCallback::OverlapPair overlap_pair)
 	{
+        auto bd1 = (Entity *)overlap_pair.getBody1()->getUserData();
+        auto bd2 = (Entity *)overlap_pair.getBody2()->getUserData();
+        auto c1 = (ColliderComponent *)overlap_pair.getCollider1()->getUserData();
+        auto c2 = (ColliderComponent *)overlap_pair.getCollider2()->getUserData();
+        auto event = overlap_pair.getEventType();
+
+        switch (event) {
+            case reactphysics3d::OverlapCallback::OverlapPair::EventType::OverlapStart:
+                c1->OnTriggerEnter.invoke(c2, bd1, bd2);
+                c2->OnTriggerEnter.invoke(c1, bd1, bd2);
+                break;
+            case reactphysics3d::OverlapCallback::OverlapPair::EventType::OverlapStay:
+                c1->OnTriggerStay.invoke(c2, bd1, bd2);
+                c2->OnTriggerStay.invoke(c1, bd1, bd2);
+                break;
+            case reactphysics3d::OverlapCallback::OverlapPair::EventType::OverlapExit:
+                c1->OnTriggerExit.invoke(c2, bd1, bd2);
+                c2->OnTriggerExit.invoke(c1, bd1, bd2);
+                break;
+            default:
+                break;
+        }
 	}
 
 	void World::OnEntityDestroyed(Entity *entity)

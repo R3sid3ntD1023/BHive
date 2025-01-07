@@ -12,6 +12,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Engine)
+target_compile_definitions(${PROJECT_NAME} PUBLIC SPDLOG_COMPILED_LIB)
 
 
 

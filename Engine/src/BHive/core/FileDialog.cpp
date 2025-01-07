@@ -1,10 +1,10 @@
 #include "Application.h"
 #include "FileDialog.h"
 
+#include <Windows.h>
 #include <commdlg.h>
 #include <ShlObj.h>
 #include <glfw/glfw3.h>
-#include <Windows.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <glfw/glfw3native.h>
 

@@ -3,14 +3,16 @@
 #include "ObjectBase.h"
 #include "ITickable.h"
 #include "Component.h"
-#include "scene/components/RelationshipComponent.h"
 #include "asset/AssetType.h"
 #include "ITransform.h"
+#include "scene/components/RelationshipComponent.h"
+#include "scene/components/IPhysicsComponent.h"
 
 namespace BHive
 {
     class Component;
     class SceneComponent;
+    struct ColliderComponent;
     class World;
     class Entity;
 
@@ -19,6 +21,7 @@ namespace BHive
     using EntityChildren = std::vector<Entity *>;
 
     DECLARE_EVENT(OnEntityDestroyed, Entity *)
+   
 
     class Entity : public ObjectBase, public ITickable, public ITransform
     {
@@ -50,6 +53,8 @@ namespace BHive
 
         Ref<Entity> Duplicate(bool duplicate_children = false);
 
+        IPhysicsComponent& GetPhysicsComponent() { return mPhysicsComponent; }
+
         void AddComponent(const ComponentPtr &component);
 
         void RemoveComponent(Component *component);
@@ -60,7 +65,7 @@ namespace BHive
 
         const FTransform &GetLocalTransform() const;
 
-        const FTransform& GetWorldTransform() const;
+        FTransform GetWorldTransform() const;
 
         Entity *GetParent() const;
 
@@ -89,19 +94,20 @@ namespace BHive
 
         bool operator!=(const Entity &rhs) const;
 
+      
+
     private:
         void RegisterComponents();
         void RegisterComponent(Component *component);
-        void UpdateWorldTransform();
 
     public:
         OnEntityDestroyedEvent OnEntityDestroyed;
 
     private:
         FTransform mTransform;
-        FTransform mWorldTransform;
 
         RelationshipComponent mRelationshipComponent;
+        IPhysicsComponent mPhysicsComponent;
 
         ComponentList mComponents;
 

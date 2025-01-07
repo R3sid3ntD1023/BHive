@@ -2,9 +2,46 @@
 #include "World.h"
 #include "Component.h"
 #include "scene/components/SceneComponent.h"
+#include <reactphysics3d/reactphysics3d.h>
 
 namespace BHive
 {
+    namespace physics::utils
+    {
+        rp3d::Transform GetPhysicsTransform(const FTransform &t)
+        {
+            auto position = t.get_translation();
+            auto rotation = glm::radians(t.get_rotation());
+
+            auto quaternion = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(rotation.x, rotation.y, rotation.z));
+            return rp3d::Transform({position.x, position.y, position.z}, quaternion);
+        }
+
+        glm::quat rp3d_to_quat(const rp3d::Quaternion &qua)
+        {
+            return glm::quat((float)qua.w, (float)qua.x, (float)qua.y, (float)qua.z);
+        }
+
+        FTransform GetTransform(const rp3d::Transform &t, const glm::vec3 &scale)
+        {
+
+            auto &position = t.getPosition();
+            auto quat = rp3d_to_quat(t.getOrientation());
+            glm::vec3 rotation = glm::degrees(glm::eulerAngles(quat));
+
+            return FTransform({position.x, position.y, position.z}, {rotation.x, rotation.y, rotation.z}, scale);
+        }
+
+        rp3d::Vector3 LockAxisToVextor3(ELockAxis axis)
+        {
+            float x = (axis & ELockAxis::AxisX) != 0 ? 0.0f : 1.0f;
+            float y = (axis & ELockAxis::AxisY) != 0 ? 0.0f : 1.0f;
+            float z = (axis & ELockAxis::AxisZ) != 0 ? 0.0f : 1.0f;
+
+            return {x, y, z};
+        }
+    }
+
     Entity::Entity()
     {
       
@@ -12,28 +49,68 @@ namespace BHive
 
     void Entity::OnBegin()
     {
+        if (mPhysicsComponent.mPhysicsEnabled)
+        {
+            auto rb = GetWorld()->GetPhysicsWorld()->createRigidBody(physics::utils::GetPhysicsTransform(GetWorldTransform()));
+            rb->setIsDebugEnabled(true);
+            rb->setUserData(this);
+            rb->setMass(mPhysicsComponent.mMass);
+            rb->setType((rp3d::BodyType)mPhysicsComponent.mBodyType);
+            rb->enableGravity(mPhysicsComponent.mGravityEnabled);
+            rb->setAngularDamping(mPhysicsComponent.mAngularDamping);
+            rb->setLinearDamping(mPhysicsComponent.mLinearDamping);
+
+            rb->setLinearLockAxisFactor(physics::utils::LockAxisToVextor3(mPhysicsComponent.mLinearLockAxis));
+            rb->setAngularLockAxisFactor(physics::utils::LockAxisToVextor3(mPhysicsComponent.mAngularLockAxis));
+
+            mPhysicsComponent.SetRigidBody(rb);
+        }
+
         for (auto &component : mComponents)
             component->OnBegin();
     }
 
     void Entity::OnUpdate(float dt)
     {
-        if (!IsTickEnabled())
-            return;
-
-        for (auto &component : mComponents)
+        if (IsTickEnabled())
         {
-            if (!component->IsTickEnabled())
-                continue;
+            for (auto& component : mComponents)
+            {
+                if (!component->IsTickEnabled())
+                    continue;
 
-            component->OnUpdate(dt);
+                component->OnUpdate(dt);
+            }
         }
+
+        if (mPhysicsComponent.mPhysicsEnabled)
+        {
+            auto rb = (rp3d::RigidBody*)mPhysicsComponent.GetRigidBody();
+
+            if (mPhysicsComponent.mBodyType == EBodyType::Dynamic)
+            {
+                
+                auto &transform = rb->getTransform();
+                auto scale = mTransform.get_scale();
+                mTransform = physics::utils::GetTransform(transform, scale);
+            }
+            else
+            {
+                rb->setTransform(physics::utils::GetPhysicsTransform(mTransform));
+            }
+        }
+
     }
 
     void Entity::OnEnd()
     {
         for (auto &component : mComponents)
             component->OnEnd();
+
+        if (mPhysicsComponent.mPhysicsEnabled)
+        {
+            GetWorld()->GetPhysicsWorld()->destroyRigidBody((rp3d::RigidBody*)mPhysicsComponent.GetRigidBody());
+        }
     }
 
     void Entity::Destroy(bool destroy_decendents)
@@ -140,25 +217,7 @@ namespace BHive
     void Entity::SetLocalTransform(const FTransform& transform)
     {
         mTransform = transform;
-
-        FTransform parent;
-        if (GetParent())
-            parent = GetParent()->GetWorldTransform();
-
-        mWorldTransform = parent * mTransform;
-
-        for (auto child : GetChildren())
-            child->UpdateWorldTransform();
-
-        for (auto& component : mComponents)
-        {
-            if (auto scene_component = Cast<SceneComponent>(component))
-                scene_component->UpdateWorldTransform();
-        }
-
-      
     }
-
 
     const FTransform &Entity::GetLocalTransform() const
     {
@@ -167,44 +226,22 @@ namespace BHive
 
     void Entity::SetWorldTransform(const FTransform& transform)
     {
-        mWorldTransform = transform;
-
-        FTransform parent;
-        if(GetParent())
-            parent = GetParent()->GetWorldTransform();
-
-        mTransform = parent.inverse() * mWorldTransform;
-
-
-        for (auto child : GetChildren())
-            child->UpdateWorldTransform();
-
-        for (auto& component : mComponents)
-        {
-            if (auto scene_component = Cast<SceneComponent>(component))
-                scene_component->UpdateWorldTransform();
-        }
-
-    }
-
-    const FTransform& Entity::GetWorldTransform() const
-    {
-        return mWorldTransform;
-    }
-
-    void Entity::UpdateWorldTransform()
-    {    
-        FTransform parent;
         if (GetParent())
-            parent = GetParent()->GetWorldTransform();
-
-        mWorldTransform = parent * mTransform;
-
-        for (auto& component : mComponents)
         {
-            if (auto scene_component = Cast<SceneComponent>(component))
-                scene_component->UpdateWorldTransform();
+            mTransform = GetParent()->GetWorldTransform().inverse() * transform;
+            return;
+
         }
+
+        mTransform = transform;
+    }
+
+    FTransform Entity::GetWorldTransform() const
+    {
+        if (GetParent())
+            return GetParent()->GetWorldTransform() * mTransform;
+
+        return mTransform;
     }
 
     Entity *Entity::GetParent() const
@@ -265,7 +302,7 @@ namespace BHive
     {
         ObjectBase::Serialize(ar);
 
-        ar(mTickEnabled, mTransform, mWorldTransform, mRelationshipComponent, mComponents.size());
+        ar(mTickEnabled, mTransform, mRelationshipComponent, mPhysicsComponent, mComponents.size());
 
         for (auto &component : mComponents)
         {
@@ -280,7 +317,7 @@ namespace BHive
 
         size_t num_components = 0;
 
-        ar(mTickEnabled, mTransform, mWorldTransform, mRelationshipComponent, num_components);
+        ar(mTickEnabled, mTransform, mRelationshipComponent, mPhysicsComponent, num_components);
 
         if (mComponents.size() < num_components)
             mComponents.resize(num_components);
@@ -319,6 +356,7 @@ namespace BHive
         BEGIN_REFLECT(Entity)
         REFLECT_CONSTRUCTOR()
         REFLECT_CONSTRUCTOR(const Entity&)
+        REFLECT_PROPERTY("Physics", mPhysicsComponent)
         REFLECT_METHOD("AddComponent", &Entity::AddComponent);
     }
 } // namespace BHive

@@ -45,7 +45,7 @@ namespace BHive
 
         auto source = CreateRef<AudioSource>(format, output, buffersize, sample_rate, time);
 
-        LOG_TRACE("{} length:{}, time:{}", path.string(), source->GetLengthSeconds(), source->GetLength());
+        LOG_TRACE("{} length:{}, time:{}", path.string(), source->GetLengthSeconds(), source->GetLength().to_string());
 
         free(output);
 

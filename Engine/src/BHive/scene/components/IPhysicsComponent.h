@@ -1,6 +1,5 @@
 #pragma once
 
-#include "scene/ComponentBase.h"
 #include "physics/LockAxis.h"
 #include "core/EnumAsByte.h"
 #include "math/Math.h"
@@ -16,6 +15,8 @@ namespace BHive
 
 	struct BHIVE IPhysicsComponent
 	{
+		bool mPhysicsEnabled{ true };
+
 		EBodyType mBodyType = EBodyType::Static;
 
 		float mMass = 1.0f;
@@ -36,17 +37,20 @@ namespace BHive
 
 		glm::vec3 GetVelocity() const;
 
+		void SetRigidBody(void* rigidbody);
+
+		void* GetRigidBody() const { return mRigidBodyInstance; }
+
 		REFLECTABLEV()
 
 	private:
 		void *mRigidBodyInstance = nullptr;
-
-		friend class World;
 	};
 
 	REFLECT(IPhysicsComponent)
 	{
 		BEGIN_REFLECT(IPhysicsComponent)
+		REFLECT_PROPERTY("Physics Enabled", mPhysicsEnabled)
 		REFLECT_PROPERTY("BodyType", mBodyType)
 		REFLECT_PROPERTY("Mass", mMass)
 		REFLECT_PROPERTY("Angular Damping", mAngularDamping)

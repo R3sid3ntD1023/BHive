@@ -29,8 +29,10 @@ namespace BHive
 
     void PointLightComponent::OnRender(SceneRenderer *renderer)
     {
-        renderer->SubmitLight(mLight, GetWorldTransform());
-        LineRenderer::DrawSphere(mLight.mRadius, 16, {}, mLight.mColor, GetWorldTransform());
+        auto transform = GetWorldTransform();
+
+        renderer->SubmitLight(mLight, transform);
+        LineRenderer::DrawSphere(mLight.mRadius, 16, {}, mLight.mColor, transform);
     }
 
     void PointLightComponent::Serialize(StreamWriter& ar) const

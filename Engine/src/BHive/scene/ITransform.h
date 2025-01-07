@@ -13,7 +13,7 @@ namespace BHive
 
         virtual void SetWorldTransform(const FTransform&) = 0;
 
-        virtual const FTransform& GetWorldTransform() const = 0;
+        virtual FTransform GetWorldTransform() const = 0;
 
         REFLECTABLEV()
     };
@@ -21,8 +21,7 @@ namespace BHive
     REFLECT(ITransform)
     {
         BEGIN_REFLECT(ITransform)
-        REFLECT_PROPERTY("Local Transform", GetLocalTransform, SetLocalTransform)
-        REFLECT_PROPERTY("World Transform", GetWorldTransform, SetWorldTransform);
+        REFLECT_PROPERTY("Local Transform", GetLocalTransform, SetLocalTransform);
     }
 
 } // namespace BHive

@@ -6,20 +6,17 @@ namespace BHive
 {
     void SceneComponent::SetWorldTransform(const FTransform& transform)
     {
-        mWorldTransform = transform;
-
-        mLocalTransform = GetOwner()->GetWorldTransform().inverse() * mWorldTransform;
+        mLocalTransform = GetOwner()->GetWorldTransform().inverse() * transform;
     }
 
-    const FTransform& SceneComponent::GetWorldTransform() const
+    FTransform SceneComponent::GetWorldTransform() const
     {
-        return mWorldTransform;
+        return  GetOwner()->GetWorldTransform() * mLocalTransform;
     }
 
     void SceneComponent::SetLocalTransform(const FTransform& transform)
     {
         mLocalTransform = transform;
-        mWorldTransform = GetOwner()->GetWorldTransform() * mLocalTransform;
     }
 
     const FTransform& SceneComponent::GetLocalTransform() const
@@ -27,22 +24,17 @@ namespace BHive
         return mLocalTransform;
     }
 
-    void SceneComponent::UpdateWorldTransform()
-    {
-        mWorldTransform = GetOwner()->GetWorldTransform() * mLocalTransform;
-    }
-
 
     void SceneComponent::Serialize(StreamWriter &ar) const
     {
         Component::Serialize(ar);
-        ar(mLocalTransform, mWorldTransform);
+        ar(mLocalTransform);
     }
 
     void SceneComponent::Deserialize(StreamReader &ar)
     {
         Component::Deserialize(ar);
-        ar(mLocalTransform, mWorldTransform);
+        ar(mLocalTransform);
     }
 
     REFLECT(SceneComponent)

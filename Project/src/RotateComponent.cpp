@@ -3,6 +3,11 @@
 
 namespace BHive
 {
+    void RotateComponent::OnBegin()
+    {
+   
+    }
+
     void RotateComponent::OnUpdate(float dt)
     {
         auto entity = this->GetOwner();

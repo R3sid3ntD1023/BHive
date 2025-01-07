@@ -11,7 +11,7 @@ namespace BHive
     public:
         void SetWorldTransform(const FTransform& transform);
 
-        const FTransform& GetWorldTransform() const;
+        FTransform GetWorldTransform() const;
 
         void SetLocalTransform(const FTransform& transform);
 
@@ -23,15 +23,9 @@ namespace BHive
         virtual void Deserialize(StreamReader &ar);
 
     private:
-        void UpdateWorldTransform();
-
-    private:
         FTransform mLocalTransform;
-        FTransform mWorldTransform;
 
         REFLECTABLEV(Component, ITransform)
-
-         friend class Entity;
     };
 
     REFLECT_EXTERN(SceneComponent)

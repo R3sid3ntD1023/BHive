@@ -41,14 +41,7 @@ namespace BHive
 		REFLECT_PROPERTY_READ_ONLY("Seconds", mSeconds)
 		REFLECT_PROPERTY_READ_ONLY("Time", to_string);
 	}
-}
 
-template <>
-struct fmt::formatter<BHive::AudioTime> : formatter<std::string>
-{
-	template <typename FormatContext>
-	auto format(const BHive::AudioTime &sw, FormatContext &ctx) const -> decltype(ctx.out())
-	{
-		return fmt::format_to(ctx.out(), "AudioTime = {}", sw.to_string());
-	}
-};
+	
+	
+}
