@@ -12,6 +12,7 @@ namespace BHive
 	{
 		mCollisionListener.OnContact.bind(this, &World::OnCollisionContact);
 		mCollisionListener.OnTrigger.bind(this, &World::OnCollisionOverlap);
+		mHitListener.OnHit.bind(this, &World::OnHit);
 	}
 
 	World::~World()
@@ -240,11 +241,11 @@ namespace BHive
 		// mPhysicsWorld->setGravity(rp3d::Vector3(0, -9.8, 0));
 		mPhysicsWorld->setIsDebugRenderingEnabled(true);
 		auto &debug_renderer = mPhysicsWorld->getDebugRenderer();
-		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_AABB, false);
+		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_AABB, true);
 		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLISION_SHAPE, true);
-		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_NORMAL, false);
-		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_POINT, false);
-		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB, false);
+		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_NORMAL, true);
+		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_POINT, true);
+		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB, true);
 	}
 
 	void World::OnPhysicsUpdate(float deltatime)
@@ -285,9 +286,16 @@ namespace BHive
 				}
 			}
 		}
+
 	}
 
-	void World::OnCollisionContact(rp3d::CollisionCallback::ContactPair contact_pair)
+	void World::RayCast(const glm::vec3 &start, const glm::vec3 &end, unsigned short mask, float factor)
+	{
+		rp3d::Ray ray({start.x, start.y, start.z}, {end.x, end.y, end.z}, factor);
+		mPhysicsWorld->raycast(ray, &mHitListener, mask);
+	}
+
+	void World::OnCollisionContact(const rp3d::CollisionCallback::ContactPair& contact_pair)
 	{
 		auto bd1 = (Entity*)contact_pair.getBody1()->getUserData();
 		auto bd2 = (Entity*)contact_pair.getBody2()->getUserData();
@@ -314,7 +322,7 @@ namespace BHive
 		}
 	}
 
-	void World::OnCollisionOverlap(rp3d::OverlapCallback::OverlapPair overlap_pair)
+	void World::OnCollisionOverlap(const rp3d::OverlapCallback::OverlapPair& overlap_pair)
 	{
         auto bd1 = (Entity *)overlap_pair.getBody1()->getUserData();
         auto bd2 = (Entity *)overlap_pair.getBody2()->getUserData();
@@ -338,6 +346,19 @@ namespace BHive
             default:
                 break;
         }
+	}
+
+	void World::OnHit(const rp3d::RaycastInfo &info)
+	{
+		auto body = (Entity *)info.body->getUserData();
+		auto collider = (ColliderComponent*)info.collider->getUserData();
+
+		if (collider)
+		{
+			auto p = info.worldPoint;
+			auto n = info.worldNormal;
+			collider->OnRaycastHit({p.x, p.y, p.z}, {n.x, n.y, n.z}, info.hitFraction);
+		}
 	}
 
 	void World::OnEntityDestroyed(Entity *entity)

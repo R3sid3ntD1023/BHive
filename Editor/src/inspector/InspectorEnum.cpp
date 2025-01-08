@@ -17,6 +17,7 @@ namespace BHive
             mEnumNameCache[enum_id].emplace(value, name.data());
         }
 
+
         return mEnumNameCache.at(enum_id);
     }
 
@@ -26,7 +27,9 @@ namespace BHive
         auto data = var.to_int();
         auto enumeration = type.get_enumeration();
         auto &name_value = GetEnumNameValues(enumeration);
-        std::string display_name = name_value.at(data);
+        
+        std::string display_name = "None";
+		if (name_value.contains(data)) display_name = name_value.at(data);
 
         bool changed = false;
 

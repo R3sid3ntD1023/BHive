@@ -58,6 +58,8 @@ namespace BHive
 
 		struct CameraComponent *GetPrimaryCameraComponent() const;
 
+		void RayCast(const glm::vec3 &start, const glm::vec3 &end, unsigned short mask = -1, float factor = 1.0f);
+
 		void Serialize(StreamWriter &ar) const;
 		void Deserialize(StreamReader &ar);
 
@@ -70,8 +72,9 @@ namespace BHive
 
 		void RenderScene(Ref<SceneRenderer> renderer);
 
-		void OnCollisionContact(rp3d::CollisionCallback::ContactPair contact_pair);
-		void OnCollisionOverlap(rp3d::OverlapCallback::OverlapPair overlap_pair);
+		void OnCollisionContact(const rp3d::CollisionCallback::ContactPair& contact_pair);
+		void OnCollisionOverlap(const rp3d::OverlapCallback::OverlapPair& overlap_pair);
+		void OnHit(const rp3d::RaycastInfo &info);
 
 		void OnEntityDestroyed(Entity *entity);
 
@@ -88,7 +91,8 @@ namespace BHive
 
 		bool mInitialized = false;
 
-		WorldEventListener mCollisionListener;
+		CollisionEventListener mCollisionListener;
+		HitEventListener mHitListener;
 
 		Entities mEntities;
 

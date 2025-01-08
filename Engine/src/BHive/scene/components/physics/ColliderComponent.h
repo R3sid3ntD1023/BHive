@@ -3,6 +3,8 @@
 #include "scene/components/ShapeComponent.h"
 #include "physics/PhysicsMaterial.h"
 #include "gfx/Color.h"
+#include "CollisionChannel.h"
+#include "core/EnumAsByte.h"
 
 namespace BHive
 {
@@ -10,7 +12,9 @@ namespace BHive
 
 	DECLARE_EVENT(OnCollison, struct ColliderComponent*, Entity*, Entity*);
 	DECLARE_EVENT(OnTrigger, struct ColliderComponent*, Entity*, Entity*);
+	DECLARE_EVENT(OnHit, const glm::vec3&, const glm::vec3&, float );
 
+	
 	struct BHIVE ColliderComponent : public ShapeComponent
 	{
 		bool mCollisionEnabled{true};
@@ -21,6 +25,10 @@ namespace BHive
 
 		bool mIsTrigger = false;
 
+		ECollisionChannel mCollisionChannel = CollisionChannel_0;
+
+		TEnumAsByte<ECollisionChannel> mCollisionChannelMasks = CollisionChannel_All;
+
 		TAssetHandle<PhysicsMaterial> mPhysicsMaterial;
 
 		OnCollisonEvent OnCollisionEnter;
@@ -30,6 +38,8 @@ namespace BHive
         OnTriggerEvent OnTriggerEnter;
         OnTriggerEvent OnTriggerExit;
         OnTriggerEvent OnTriggerStay;
+
+		OnHitEvent OnRaycastHit;
 
 		void OnBegin() override;
 		void OnEnd() override;

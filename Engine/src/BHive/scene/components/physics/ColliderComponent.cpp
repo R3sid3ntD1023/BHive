@@ -23,7 +23,8 @@ namespace BHive
 				rp3d::Transform({offset.x, offset.y, offset.z}, rp3d::Quaternion::identity());
 			auto collider = rb->addCollider(shape, offset_);
 			collider->setUserData(this);
-
+			collider->setCollisionCategoryBits(mCollisionChannel);
+			collider->setCollideWithMaskBits(mCollisionChannelMasks);
 			collider->setIsTrigger(mIsTrigger);
 
 			if (mPhysicsMaterial)
@@ -51,24 +52,27 @@ namespace BHive
 	{
 		ShapeComponent::Serialize(ar);
 
-		ar(mCollisionEnabled, mOffset, mIsTrigger, mColor, mPhysicsMaterial);
+		ar(mCollisionEnabled, mCollisionChannel, mCollisionChannelMasks, mOffset, mIsTrigger, mColor, mPhysicsMaterial);
 	}
 
 	void ColliderComponent::Deserialize(StreamReader& ar)
 	{
 		ShapeComponent::Deserialize(ar);
 
-		ar(mCollisionEnabled, mOffset, mIsTrigger, mColor, mPhysicsMaterial);
+		ar(mCollisionEnabled, mCollisionChannel, mCollisionChannelMasks, mOffset, mIsTrigger,
+		   mColor, mPhysicsMaterial);
 	}
 
 	REFLECT(ColliderComponent)
 	{
 		BEGIN_REFLECT(ColliderComponent)
-		REFLECT_PROPERTY("Collision Enabled", mCollisionEnabled)
-		REFLECT_PROPERTY("Offset", mOffset)
-		REFLECT_PROPERTY("Color", mColor)
 		REFLECT_PROPERTY("IsTrigger", mIsTrigger)
-		REFLECT_PROPERTY("PhysicsMaterial", mPhysicsMaterial);
+		REFLECT_PROPERTY("Collision Enabled", mCollisionEnabled)
+		REFLECT_PROPERTY("Collsion Category", mCollisionChannel)
+		REFLECT_PROPERTY("Collsion Category Masks", mCollisionChannelMasks)
+		REFLECT_PROPERTY("PhysicsMaterial", mPhysicsMaterial)
+		REFLECT_PROPERTY("Offset", mOffset)
+		REFLECT_PROPERTY("Color", mColor);
 	}
 
 }  // namespace  BHive
