@@ -29,7 +29,7 @@ namespace BHive
 		if (mStaticMesh)
 		{
 			auto transform = GetWorldTransform();
-			LineRenderer::DrawAABB(mStaticMesh->GetBoundingBox(), 0xFF00FF00, transform);
+			LineRenderer::DrawAABB(mStaticMesh->GetBoundingBox(), mColor, transform);
 		}
 	}
 
