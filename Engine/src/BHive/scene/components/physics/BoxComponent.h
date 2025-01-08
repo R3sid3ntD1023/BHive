@@ -1,0 +1,25 @@
+#pragma once
+
+#include "ColliderComponent.h"
+
+namespace BHive
+{
+	struct BHIVE BoxComponent : public ColliderComponent
+	{
+		glm::vec3 mExtents{0.5f};
+
+		virtual AABB GetBoundingBox() const { return FBox{{}, mExtents}; }
+
+		virtual void* GetCollisionShape(const FTransform& world_transform) override;
+		virtual void ReleaseCollisionShape() override;
+
+		virtual void OnRender(class SceneRenderer* renderer);
+
+		void Serialize(StreamWriter& ar) const;
+		void Deserialize(StreamReader& ar);
+
+		REFLECTABLEV(ColliderComponent)
+	};
+
+	REFLECT_EXTERN(BoxComponent);
+}

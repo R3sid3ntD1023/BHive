@@ -17,4 +17,13 @@ BreakConstructorInitializersBeforeComma: false
 IndentPPDirectives: BeforeHash
 SortIncludes:    Never
 BreakBeforeBraces : Allman
-AllowShortFunctionsOnASingleLine : InlineOnly
+BraceWrapping:
+ AfterEnum:	true
+ AfterStruct:	true
+ AfterCaseLabel:	true
+ AfterClass:	true
+ AfterControlStatement:	Always
+ AfterFunction:	true
+ AfterNamespace:	true
+NamespaceIndentation: All
+AllowShortFunctionsOnASingleLine:	InlineOnly

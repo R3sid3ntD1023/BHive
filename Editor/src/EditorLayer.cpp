@@ -262,43 +262,51 @@ namespace BHive
 
         mSnapEnabled = ctrl;
 
+        //handle viewport events
+        if (mIsHovered && mIsFocused)
+        {
+			switch (event.Key)
+			{
+				case Key::W:
+				{
+					mGizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+					return true;
+				}
+				case Key::E:
+				{
+					mGizmoOperation = ImGuizmo::OPERATION::ROTATE;
+					return true;
+				}
+				case Key::R:
+				{
+					mGizmoOperation = ImGuizmo::OPERATION::SCALE;
+					return true;
+				}
+				case Key::Q:
+				{
+					mGizmoOperation = -1;
+					return true;
+				}
+				case Key::T:
+				{
+					mGizmoOperation = ImGuizmo::OPERATION::UNIVERSAL;
+					return true;
+				}
+				case Key::L:
+				{
+					mGizmoMode = ImGuizmo::MODE::LOCAL;
+					return true;
+				}
+				case Key::K:
+				{
+					mGizmoMode = ImGuizmo::MODE::WORLD;
+					return true;
+				}
+			}
+        }
+
         switch (event.Key)
         {
-        case Key::W:
-        {
-            mGizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
-            return true;
-        }
-        case Key::E:
-        {
-            mGizmoOperation = ImGuizmo::OPERATION::ROTATE;
-            return true;
-        }
-        case Key::R:
-        {
-            mGizmoOperation = ImGuizmo::OPERATION::SCALE;
-            return true;
-        }
-        case Key::Q:
-        {
-            mGizmoOperation = -1;
-            return true;
-        }
-        case Key::T:
-        {
-            mGizmoOperation = ImGuizmo::OPERATION::UNIVERSAL;
-            return true;
-        }
-        case Key::L:
-        {
-            mGizmoMode = ImGuizmo::MODE::LOCAL;
-            return true;
-        }
-        case Key::K:
-        {
-            mGizmoMode = ImGuizmo::MODE::WORLD;
-            return true;
-        }
         case Key::N: 
         {
             if (ctrl)

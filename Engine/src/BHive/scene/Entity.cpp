@@ -2,46 +2,11 @@
 #include "World.h"
 #include "Component.h"
 #include "scene/components/SceneComponent.h"
-#include <reactphysics3d/reactphysics3d.h>
+#include "physics/PhysicsUtils.h"
 
 namespace BHive
 {
-    namespace physics::utils
-    {
-        rp3d::Transform GetPhysicsTransform(const FTransform &t)
-        {
-            auto position = t.get_translation();
-            auto rotation = glm::radians(t.get_rotation());
-
-            auto quaternion = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(rotation.x, rotation.y, rotation.z));
-            return rp3d::Transform({position.x, position.y, position.z}, quaternion);
-        }
-
-        glm::quat rp3d_to_quat(const rp3d::Quaternion &qua)
-        {
-            return glm::quat((float)qua.w, (float)qua.x, (float)qua.y, (float)qua.z);
-        }
-
-        FTransform GetTransform(const rp3d::Transform &t, const glm::vec3 &scale)
-        {
-
-            auto &position = t.getPosition();
-            auto quat = rp3d_to_quat(t.getOrientation());
-            glm::vec3 rotation = glm::degrees(glm::eulerAngles(quat));
-
-            return FTransform({position.x, position.y, position.z}, {rotation.x, rotation.y, rotation.z}, scale);
-        }
-
-        rp3d::Vector3 LockAxisToVextor3(ELockAxis axis)
-        {
-            float x = (axis & ELockAxis::AxisX) != 0 ? 0.0f : 1.0f;
-            float y = (axis & ELockAxis::AxisY) != 0 ? 0.0f : 1.0f;
-            float z = (axis & ELockAxis::AxisZ) != 0 ? 0.0f : 1.0f;
-
-            return {x, y, z};
-        }
-    }
-
+   
     Entity::Entity()
     {
       
