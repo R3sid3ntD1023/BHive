@@ -40,4 +40,16 @@ namespace BHive
         std::filesystem::path mPath;
         std::ifstream mStream;
     };
+
+    template<typename T>
+    void Serialize(FileStreamWriter& ar, const BinaryData<T>& data)
+    {
+		ar.WriteImpl(data.mData, data.mSize);
+    }
+
+    template <typename T>
+	void Deserialize(FileStreamReader &ar, BinaryData<T> &data)
+	{
+		ar.ReadImpl(data.mData, data.mSize);
+	}
 } // namespace BHive

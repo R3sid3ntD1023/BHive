@@ -9,11 +9,6 @@ namespace BHive
         return asset;
     }
 
-    void AssetManager::AddAsset(Ref<Asset> asset, AssetHandle handle, const std::string &name)
-    {
-        sCurrentAssetManager->AddAsset(asset, handle, name);
-    }
-
     bool AssetManager::IsAssetHandleValid(AssetHandle handle)
     {
         return sCurrentAssetManager->IsAssetHandleValid(handle);

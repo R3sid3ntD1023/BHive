@@ -20,13 +20,9 @@ namespace BHive
     protected:
         virtual bool OnSave(const std::filesystem::path &) const { return false; };
 
-        virtual bool OnLoad(const std::filesystem::path &) { return false; };
-
         virtual void OnMenuBar() {};
 
         virtual void OnWindowRender() = 0;
-
-        virtual const char *GetFileDialogFilter() = 0;
 
     protected:
         std::filesystem::path mCurrentSavePath;

@@ -141,13 +141,6 @@ FetchContent_Declare(
 )
 list(APPEND components entt)
 
-#mINI
-FetchContent_Declare(
-	mINI
-	GIT_REPOSITORY https://github.com/metayeti/mINI.git
-	GIT_TAG 0.9.17
-)
-list(APPEND components mINI)
 
 if(components)
 	FetchContent_MakeAvailable(${components})

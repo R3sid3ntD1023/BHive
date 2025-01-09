@@ -112,11 +112,13 @@ namespace BHive
 
 	void Sprite::Serialize(StreamWriter& ar) const
 	{
+		Asset::Serialize(ar);
 		ar(mSpriteSize, mCellSize, mCoordinates, mSource);
 	}
 
 	void Sprite::Deserialize(StreamReader& ar)
 	{
+		Asset::Deserialize(ar);
 		ar(mSpriteSize, mCellSize, mCoordinates, mSource);
 		SetCoords(mCoordinates, mCellSize, mSpriteSize);
 	}
@@ -125,7 +127,7 @@ namespace BHive
 	REFLECT(Sprite)
 	{
 		BEGIN_REFLECT(Sprite)
-			REFLECT_CONSTRUCTOR()CONSTRUCTOR_POLICY_OBJECT
+			REFLECT_CONSTRUCTOR()
 			REFLECT_PROPERTY("Source", GetSourceTexture, SetSourceTexture)
 			REFLECT_PROPERTY("Coordinates", GetCoordinates, SetCoordinates)
 			REFLECT_PROPERTY("CellSize", GetCellSize, SetCellSize)

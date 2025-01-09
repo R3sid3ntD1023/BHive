@@ -20,10 +20,54 @@
 #include "scene/ITransform.h"
 #include "core/WindowInput.h"
 #include <ImGuizmo.h>
+#include <mini/ini.h>
+
+namespace glm
+{
+	template <length_t L, typename T, qualifier Q>
+	inline std::stringstream &operator<<(std::stringstream &os, const vec<L, T, Q> &vec)
+	{
+		os << "(";
+        for (int i = 0; i < L; i++)
+        {
+			os << vec[i];
+			if (i < L - 1) os << ",";
+        }
+		os << ")";
+		return os;
+	}
+
+	template <length_t L, typename T, qualifier Q>
+	inline std::stringstream &operator>>(std::stringstream &is, vec<L, T, Q> &vec)
+	{
+		char buf;
+		is >> buf;
+        for (int i = 0; i < L; i++)
+        {
+			is >> vec[i];
+			if (i < L - 1) is >> buf;
+        }
+		is >> buf;
+		return is;
+	}
+}
 
 
 namespace BHive
 {
+	inline std::stringstream &operator<<(std::stringstream &os, const FTransform &obj)
+	{
+		return os << obj.get_translation() << obj.get_rotation() << obj.get_scale();
+	}
+
+	inline std::stringstream &operator>>(std::stringstream &is, FTransform &obj)
+	{
+		glm::vec3 t, r, s;
+		is >> t >> r >> s;
+		obj = FTransform{t, r, s};
+		return is;
+	}
+
     struct FPSCounter
     {
         /* data */
@@ -680,6 +724,8 @@ namespace BHive
         stream(*mEditorWorld);
 
         LOG_TRACE("Saved World {}", mCurrentWorldPath.string());
+
+        SaveEditorSettings();
     }
 
     void EditorLayer::SaveWorldAs()
@@ -721,6 +767,8 @@ namespace BHive
         mCurrentWorldPath = open_path;
 
         LOG_TRACE("Opened World {}", mCurrentWorldPath.string());
+
+        LoadEditorSettings();
     }
 
     void EditorLayer::OnWorldPlay()
@@ -786,5 +834,47 @@ namespace BHive
         edit_system.mSelection.Clear();
 
     }
+
+	void EditorLayer::SaveEditorSettings()
+	{
+		mINI::INIStructure ini;
+
+        std::stringstream ss(std::stringstream::out);
+		ss << mEditorCamera.GetView();
+		ini["Editor"]["Camera"] = ss.str();
+
+        auto path = mCurrentWorldPath.parent_path() / (mCurrentWorldPath.stem().string() + ".ini");
+		mINI::INIFile file(path.string());
+		if (!file.write(ini))
+		{
+			LOG_ERROR("EditorLayer::SaveEditorSettings: failed to save {}", path.string());
+		}
+	}
+
+	void EditorLayer::LoadEditorSettings()
+	{
+		auto path = mCurrentWorldPath.parent_path() / (mCurrentWorldPath.stem().string() + ".ini");
+        if (!std::filesystem::exists(path))
+        {
+			return;
+        }
+
+		mINI::INIStructure ini;
+
+		mINI::INIFile file(path.string());
+		if (!file.read(ini))
+		{
+			LOG_ERROR("EditorLayer::SaveEditorSettings: failed to read {}", path.string());
+		}
+
+        auto& camera_view = ini["Editor"]["Camera"];
+
+		FTransform transform;
+
+		std::stringstream ss(camera_view , std::stringstream::in);
+		ss >> transform;
+
+        mEditorCamera.SetView(transform);
+	}
 
 } // namespace BHive

@@ -7,11 +7,9 @@ namespace BHive
     class FlipBookFactory : public Factory
     {
     public:
-        virtual void CreateNew(const std::filesystem::path &path) override;
+        virtual Ref<Asset> CreateNew() override;
 
         virtual bool CanCreateNew() const override { return true; }
-
-        virtual bool Import(Ref<Asset> &asset, const std::filesystem::path &path) override;
 
         const char *GetFileFilters() const { return "FlipBook (*.flipbook)\0*.flipbook\0"; }
 

@@ -56,6 +56,10 @@ namespace BHive
 
 		float mLength{0.0f};
 		AudioSpecification mSpecification;
+
+		int16_t *mData = nullptr;
+		size_t mSize = 0;
+		unsigned mFormat;
 	};
 
 	REFLECT_EXTERN(AudioSource)

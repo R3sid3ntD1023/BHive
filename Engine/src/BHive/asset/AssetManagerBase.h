@@ -13,7 +13,6 @@ namespace BHive
 	{
 	public:
 		virtual Ref<Asset> GetAsset(AssetHandle handle) = 0;
-		virtual void AddAsset(Ref<Asset> asset, AssetHandle handle, const std::string &name) = 0;
 
 		virtual bool IsAssetHandleValid(AssetHandle handle) const = 0;
 		virtual bool IsAssetLoaded(AssetHandle handle) const = 0;

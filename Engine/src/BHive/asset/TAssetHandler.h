@@ -74,7 +74,7 @@ namespace BHive
     template <typename T>
     void Serialize(StreamWriter &ar, const TAssetHandle<T> &obj)
     {
-        auto handle = obj ? obj.get()->Handle : AssetHandle(0);
+		auto handle = obj ? obj.get()->GetHandle() : AssetHandle(0);
         ar(handle);
     }
 

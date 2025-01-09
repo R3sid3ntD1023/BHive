@@ -18,8 +18,6 @@ namespace BHive
 			return std::static_pointer_cast<T>(asset);
 		}
 
-		static BHIVE void AddAsset(Ref<Asset> asset, AssetHandle handle, const std::string &name);
-
 		static BHIVE bool IsAssetHandleValid(AssetHandle handle);
 
 		static BHIVE bool IsAssetLoaded(AssetHandle handle);

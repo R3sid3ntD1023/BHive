@@ -18,11 +18,13 @@ namespace BHive
 
     void Skeleton::Serialize(StreamWriter &ar) const
     {
+		Asset::Serialize(ar);
         ar(mBones, mRoot);
     }
 
     void Skeleton::Deserialize(StreamReader &ar)
     {
+		Asset::Deserialize(ar);
         ar(mBones, mRoot);
         CalculateRestPoseTransforms(mRoot, glm::identity<glm::mat4>());
     }

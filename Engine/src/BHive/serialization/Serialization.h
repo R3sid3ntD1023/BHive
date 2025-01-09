@@ -7,5 +7,6 @@
 #include "types/utility.h"
 #include "types/string.h"
 
+#include "Helpers.h"
 #include "FileStream.h"
 #include "serialization/ISerializable.h"

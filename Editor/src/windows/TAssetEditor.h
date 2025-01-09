@@ -4,7 +4,8 @@
 #include "inspector/Inspectors.h"
 #include "asset/EditorAssetManager.h"
 #include "asset/AssetManager.h"
-#include "asset/AssetSerializer.h"
+#include "asset/AssetFactory.h"
+#include "asset/Asset.h"
 
 namespace BHive
 {
@@ -40,19 +41,8 @@ namespace BHive
 
         bool OnSave(const std::filesystem::path &path) const
         {
-            return AssetSerializer::serialize(*mAsset, GetAssetPath(path));
-        }
-
-        bool OnLoad(const std::filesystem::path &path)
-        {
-            auto asset = GetNewAsset();
-            if (AssetSerializer::deserialize(*asset, GetAssetPath(path)))
-            {
-                mAsset = asset;
-                return true;
-            }
-
-            return false;
+			AssetFactory factory;
+			return factory.Export(mAsset, path);
         }
 
     protected:

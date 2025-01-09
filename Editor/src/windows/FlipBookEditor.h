@@ -11,8 +11,6 @@ namespace BHive
 	protected:
 		virtual void OnWindowRender();
 
-		virtual const char *GetFileDialogFilter() { return "FlipBook (*.flipbook)\0*.flipbook\0"; };
-
 	private:
 		int mCurrentFrame = 0;
 	};

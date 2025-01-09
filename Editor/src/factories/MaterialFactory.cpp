@@ -4,22 +4,13 @@
 
 namespace BHive
 {
-    void MaterialFactory::CreateNew(const std::filesystem::path &path)
-    {
-        Material material;
-        AssetSerializer::serialize(material, path);
-    }
+	Ref<Asset> MaterialFactory::CreateNew()
+	{
+		auto material = CreateRef<Material>();
+		OnImportCompleted.invoke(material);
+		return material;
+	}
 
-    bool MaterialFactory::Import(Ref<Asset> &asset, const std::filesystem::path &path)
-    {
-        auto material = CreateRef<Material>();
-        if (AssetSerializer::deserialize(*material, path))
-        {
-            asset = material;
-        }
-
-        return asset != nullptr;
-    }
 
     REFLECT_Factory(MaterialFactory, Material, ".material")
-}
+} // namespace BHive

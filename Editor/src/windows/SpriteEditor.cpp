@@ -131,7 +131,8 @@ namespace BHive
 			auto &sprite = sprites[i];
 			auto name = filename + std::to_string(i);
 
-			if (AssetSerializer::serialize(sprite, directory / (name + ext)))
+			AssetFactory factory;
+			if (factory.Export(&sprite, directory / (name + ext)))
 			{
 				LOG_TRACE("Extracted Sprite {}", name);
 			}

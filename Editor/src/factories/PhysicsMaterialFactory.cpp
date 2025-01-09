@@ -1,25 +1,14 @@
 #include "PhysicsMaterialFactory.h"
 #include "physics/PhysicsMaterial.h"
-#include "asset/AssetSerializer.h"
 
 namespace BHive
 {
-    void PhysicsMaterialFactory::CreateNew(const std::filesystem::path &path)
-    {
-        PhysicsMaterial material;
-        AssetSerializer::serialize(material, path);
-    }
+	Ref<Asset> PhysicsMaterialFactory::CreateNew()
+	{
+		auto pm =  CreateRef<PhysicsMaterial>();
+		OnImportCompleted.invoke(pm);
+		return pm;
+	}
 
-    bool PhysicsMaterialFactory::Import(Ref<Asset> &asset, const std::filesystem::path &path)
-    {
-        auto material = CreateRef<PhysicsMaterial>();
-        if (AssetSerializer::deserialize(*material, path))
-        {
-            asset = material;
-        }
-
-        return asset != nullptr;
-    }
-
-    REFLECT_Factory(PhysicsMaterialFactory, PhysicsMaterial, ".physicsmaterial")
-}
+    REFLECT_Factory(PhysicsMaterialFactory, PhysicsMaterial, ".physicsmaterial") 
+} // namespace BHive

@@ -7,7 +7,7 @@ namespace BHive
 {
 	typedef TAssetHandle<Sprite> sprite_ptr;
 
-	class FlipBook : public Asset, public ISerializable
+	class FlipBook : public Asset
 	{
 	public:
 		struct Frame
@@ -46,6 +46,7 @@ namespace BHive
 		float GetTotalTime() const;
 
 		ASSET_CLASS(FlipBook)
+		REFLECTABLEV(Asset)
 
 		void Serialize(StreamWriter& ar) const;
 		void Deserialize(StreamReader& ar);
@@ -61,8 +62,6 @@ namespace BHive
 		bool mIsPlaying = false;
 		bool mIsLooping = false;
 		float mCurrentTime = 0.0f;
-
-		friend class FlipBookSerializer;
 	};
 
 	void Serialize(StreamWriter& ar, const FlipBook::Frame& obj);

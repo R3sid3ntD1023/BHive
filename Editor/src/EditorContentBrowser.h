@@ -15,7 +15,7 @@ namespace BHive
         EditorContentBrowser() = default;
         EditorContentBrowser(const std::filesystem::path &directory);
 
-        virtual void OnImportAsset(const std::filesystem::path &relative);
+        virtual void OnImportAsset(const std::filesystem::path & directory, const std::filesystem::path &relative);
         virtual void OnRemoveAsset(const std::filesystem::path &relative);
         virtual void OnDeleteAsset(const std::filesystem::path &relative);
         virtual void OnRenameAsset(const std::filesystem::path &relative_old, const std::filesystem::path &relative_new, bool directory);
@@ -28,7 +28,7 @@ namespace BHive
         virtual void OnWindowContextMenu();
 
     private:
-        virtual void OnCreateAsset(const AssetType& type, const std::filesystem::path &directory);
+        virtual void OnCreateAsset(const std::filesystem::path &directory, const Ref<Factory>& factory);
 
     private:
         ThumbnailCache mThumbnailCache;

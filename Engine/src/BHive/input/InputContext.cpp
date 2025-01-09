@@ -129,6 +129,7 @@ namespace BHive
 	REFLECT(InputContext)
 	{
 		BEGIN_REFLECT(InputContext)
+		REFLECT_CONSTRUCTOR()
 		REFLECT_PROPERTY("Keys", mKeys);
 	}
 }

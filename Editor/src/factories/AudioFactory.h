@@ -9,7 +9,7 @@ namespace BHive
     public:
         virtual bool CanCreateNew() const { return false; }
 
-        virtual bool Import(Ref<Asset> &asset, const std::filesystem::path &path);
+        virtual Ref<Asset> Import(const std::filesystem::path &path) override;
 
         const char *GetFileFilters() const { return "Ogg (*.ogg)\0*.ogg\0Wav (*.wav)\0*.wav"; }
 

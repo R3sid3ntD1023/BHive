@@ -87,4 +87,10 @@ namespace BHive
 
 		return t;
 	}
+
+	template <typename Ostream>
+	inline Ostream &operator<<(Ostream &os, const FTransform& obj)
+	{
+		return os << obj.to_string();
+	}
 }

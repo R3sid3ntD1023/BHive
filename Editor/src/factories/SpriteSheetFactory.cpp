@@ -4,23 +4,12 @@
 
 namespace BHive
 {
-    void SpriteSheetFactory::CreateNew(const std::filesystem::path &path)
-    {
-        SpriteSheet object;
-        AssetSerializer::serialize(object, path);
-    }
+	Ref<Asset> SpriteSheetFactory::CreateNew()
+	{
+		auto ss = CreateRef<SpriteSheet>();
+		OnImportCompleted.invoke(ss);
+		return ss;
+	}
 
-    bool SpriteSheetFactory::Import(Ref<Asset> &asset, const std::filesystem::path &path)
-    {
-        auto _asset = CreateRef<SpriteSheet>();
-        if (AssetSerializer::deserialize(*_asset, path))
-        {
-            asset = _asset;
-            return true;
-        }
-
-        return false;
-    }
-
-    REFLECT_Factory(SpriteSheetFactory, SpriteSheet, ".spritesheet")
+    REFLECT_Factory(SpriteSheetFactory, SpriteSheet, ".spritesheet") 
 } // namespace BHive

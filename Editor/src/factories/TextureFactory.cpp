@@ -4,11 +4,12 @@
 namespace BHive
 {
 
-    bool TextureFactory::Import(Ref<Asset> &asset, const std::filesystem::path &path)
-    {
-        asset = TextureImporter::Import(path);
-        return asset != nullptr;
-    }
+	Ref<Asset> TextureFactory::Import(const std::filesystem::path &path)
+	{
+		auto t = TextureImporter::Import(path);
+		OnImportCompleted.invoke(t);
+		return t;
+	}
 
-    REFLECT_Factory(TextureFactory, Texture, ".png", ".jpg", ".jpeg")
+    REFLECT_Factory(TextureFactory, Texture, ".png", ".jpg", ".jpeg") 
 } // namespace BHive

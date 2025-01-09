@@ -14,10 +14,6 @@ namespace BHive
         virtual void OnWindowRender() override;
         virtual void OnEvent(Event &event) override;
 
-        virtual const char *GetFileDialogFilter() { return "\0"; }
-
-        virtual std::filesystem::path GetAssetPath(const std::filesystem::path &path) const override { return path.parent_path() / (path.stem().string() + ".meta"); }
-
     private:
         EditorCamera mCamera;
         Ref<class SceneRenderer> mRenderer;

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "asset/AssetManagerBase.h"
-#include "asset/AssetMetaData.h"
-#include "asset/Asset.h"
-#include "asset/Factory.h"
+#include "AssetManagerBase.h"
+#include "AssetMetaData.h"
+#include "Asset.h"
+#include "AssetFactory.h"
 
 namespace BHive
 {
@@ -16,23 +16,13 @@ namespace BHive
 		~EditorAssetManager();
 
 		virtual Ref<Asset> GetAsset(AssetHandle handle) override;
-		virtual void AddAsset(Ref<Asset> asset, AssetHandle handle, const std::string &name) override;
 
 		virtual bool IsAssetHandleValid(AssetHandle handle) const override;
 		virtual bool IsAssetLoaded(AssetHandle handle) const override;
 		virtual AssetType GetAssetType(AssetHandle handle) const override;
 
-		AssetHandle CreateNewAsset(const AssetType &type, const std::filesystem::path &path);
 
-		AssetHandle ImportAsset(const std::filesystem::path &path);
-
-		template <typename T>
-		AssetHandle ImportAsset(const std::filesystem::path &path)
-		{
-			return ImportAsset(path, T::GetStaticType());
-		}
-
-		AssetHandle ImportAsset(const std::filesystem::path &path, AssetType type);
+		void ImportAsset(const std::filesystem::path &path, const AssetType& type,  const AssetHandle& handle);
 		bool RemoveAsset(AssetHandle handle);
 		bool RemoveAsset(const std::filesystem::path &path);
 		bool RenameAsset(const std::filesystem::path &old_, const std::filesystem::path &new_);
@@ -57,5 +47,7 @@ namespace BHive
 		AssetMap mTempAssets;
 		std::filesystem::path mAssetRegistryPath;
 		bool mSaveRegistry;
+
+		AssetFactory mAssetFactory;
 	};
 }

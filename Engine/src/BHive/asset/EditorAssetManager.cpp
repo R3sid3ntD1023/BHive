@@ -1,16 +1,9 @@
 #include "EditorAssetManager.h"
-#include "asset/AssetImporter.h"
-#include "FactoryRegistry.h"
 #include "serialization/Serialization.h"
-#include "threading/Threading.h"
 
 namespace BHive
 {
-	AssetType GetAssetTypeFromExtenstion(const std::filesystem::path &extension)
-	{
-		return FactoryRegistry::Get().GetTypeFromExtension(extension.string().c_str());
-	}
-
+	
 	EditorAssetManager::EditorAssetManager(const std::filesystem::path &path, bool save_registry)
 		: mAssetRegistryPath(path), mSaveRegistry(save_registry)
 	{
@@ -42,17 +35,14 @@ namespace BHive
 			}
 			else
 			{
-				AssetImporter importer;
-
 				const FAssetMetaData &metadata = GetMetaData(handle);
-				bool success = importer.Import(asset, metadata);
-				if (!success)
+				
+				if (!mAssetFactory.Import(asset, metadata.Path))
 				{
 					LOG_ERROR("Failed to load asset");
 					return asset;
 				}
 
-				asset->Handle = handle;
 				mLoadedAssets[handle] = asset;
 				LOG_TRACE("Imported asset {}", metadata.Path.string());
 			}
@@ -61,15 +51,6 @@ namespace BHive
 		return asset;
 	}
 
-	void EditorAssetManager::AddAsset(Ref<Asset> asset, AssetHandle handle, const std::string &name)
-	{
-		if (!mMemoryAssets.contains(handle))
-		{
-			mMemoryAssets.emplace(handle, asset);
-			mAssetRegistry.emplace(handle, FAssetMetaData{.Type = asset->GetType(), .Path = name, .Name = name});
-			asset->Handle = handle;
-		}
-	}
 
 	bool EditorAssetManager::IsAssetHandleValid(AssetHandle handle) const
 	{
@@ -89,51 +70,27 @@ namespace BHive
 		return mAssetRegistry.at(handle).Type;
 	}
 
-	AssetHandle EditorAssetManager::CreateNewAsset(const AssetType &type, const std::filesystem::path &path)
+
+	void EditorAssetManager::ImportAsset(const std::filesystem::path &path,	const AssetType &type, const AssetHandle &handle)
 	{
-		AssetImporter importer;
-		importer.CreateNew(type, path);
-
-		FAssetMetaData metadata;
-		metadata.Path = path;
-		metadata.Type = type;
-		metadata.Name = path.stem().string();
-
-		AssetHandle handle;
-		mAssetRegistry[handle] = metadata;
-
-		SerializeAssetRegistry();
-
-		return handle;
-	}
-
-	AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path &path)
-	{
-		return ImportAsset(path, FactoryRegistry::Get().GetTypeFromExtension(path.extension().string()));
-	}
-
-	AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path &path, AssetType type)
-	{
-		if (auto handle = GetHandle(path))
+		if (GetHandle(path))
 		{
-			return handle;
+			return;
 		}
 
-		FAssetMetaData metadata;
-		metadata.Path = path;
-		metadata.Type = type;
-		metadata.Name = path.stem().string();
-		if (metadata.Type == InvalidType)
+		if (type == InvalidType)
 		{
 			LOG_ERROR("UnSupported Asset Type");
-			return 0;
+			return ;
 		}
 
-		AssetHandle handle;
+		FAssetMetaData metadata;
+		metadata.Path = path;
+		metadata.Type = type;
+		metadata.Name = path.stem().string();
+		
 		mAssetRegistry[handle] = metadata;
 		SerializeAssetRegistry();
-
-		return handle;
 	}
 
 	bool EditorAssetManager::RemoveAsset(AssetHandle handle)

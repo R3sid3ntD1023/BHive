@@ -107,11 +107,13 @@ namespace BHive
 
 	void Material::Serialize(StreamWriter &ar) const
 	{
+		Asset::Serialize(ar);
 		ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale, mFlags,mTextures);
 	}
 
 	void Material::Deserialize(StreamReader &ar)
 	{
+		Asset::Deserialize(ar);
 		ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale, mFlags, mTextures);
 	}
 
@@ -139,6 +141,7 @@ namespace BHive
 	REFLECT(Material)
 	{
 		BEGIN_REFLECT(Material)
+		REFLECT_CONSTRUCTOR()
 		REFLECT_PROPERTY("Albedo", mAldebo)
 		REFLECT_PROPERTY("Metallic", mMetallic)
 		(META_DATA(EPropertyMetaData_Min, 0.0f), META_DATA(EPropertyMetaData_Max, 1.f), META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider))

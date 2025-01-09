@@ -54,6 +54,9 @@ namespace BHive
         void OnWorldStop();
         void OnWorldSimulate();
 
+        void SaveEditorSettings();
+		void LoadEditorSettings();
+
     private:
         Ref<World> mEditorWorld;
         Ref<World> mActiveWorld;

@@ -40,17 +40,20 @@ namespace BHive
 
 	void SpriteSheet::Serialize(StreamWriter& ar) const
 	{
+		Asset::Serialize(ar);
 		ar(mSource, mGrid, mSprites);
 	}
 
 	void SpriteSheet::Deserialize(StreamReader& ar)
 	{
+		Asset::Deserialize(ar);
 		ar(mSource, mGrid, mSprites);
 		CreateSprites();
 	}
 
 	void Serialize(StreamWriter& ar, const FSpriteSheetGrid& obj)
 	{
+
 		ar(obj.mRows, obj.mColumns, obj.mCellSize);
 	}
 
@@ -71,6 +74,7 @@ namespace BHive
 	REFLECT(SpriteSheet)
 	{
 		BEGIN_REFLECT(SpriteSheet)
+		REFLECT_CONSTRUCTOR()
 		REFLECT_PROPERTY("Source", GetSource, SetSource)
 		REFLECT_PROPERTY("Grid", GetGrid, SetGrid);
 	}

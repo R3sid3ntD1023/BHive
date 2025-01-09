@@ -7,7 +7,7 @@ namespace BHive
 	class BHIVE TextureFactory : public Factory
 	{
 	public:
-		virtual bool Import(Ref<Asset> &asset, const std::filesystem::path &path);
+		virtual Ref<Asset> Import(const std::filesystem::path &path) override;
 
 		REFLECTABLEV(Factory)
 	};

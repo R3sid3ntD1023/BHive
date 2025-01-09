@@ -18,7 +18,7 @@ namespace BHive
 		glm::vec2 mCellSize{0.0f};
 	};
 
-	class SpriteSheet : public Asset, public ISerializable
+	class SpriteSheet : public Asset
 	{
 
 	public:

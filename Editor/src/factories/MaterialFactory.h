@@ -7,15 +7,15 @@ namespace BHive
     class MaterialFactory : public Factory
     {
     public:
-        virtual void CreateNew(const std::filesystem::path &path);
+        virtual Ref<Asset> CreateNew() override;
 
         virtual bool CanCreateNew() const { return true; }
 
-        virtual bool Import(Ref<Asset> &asset, const std::filesystem::path &path);
+        //virtual Ref<Asset> Import(Ref<Asset> &asset, const std::filesystem::path &path) override;
 
         const char *GetFileFilters() const { return "Material (*.material)\0*.material\0"; }
 
-        virtual const char* GetDefaultAssetName() const { return "NewMaterial.material"; }
+        virtual const char* GetDefaultAssetName() const { return "NewMaterial"; }
 
         REFLECTABLEV(Factory)
     };

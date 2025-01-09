@@ -5,22 +5,34 @@
 
 namespace BHive
 {
+	DECLARE_EVENT(OnImportCompleted, const Ref<Asset>&);
+
 	class BHIVE Factory
 	{
 	public:
 		virtual ~Factory() = default;
 
-		virtual bool Import(Ref<Asset> &asset, const std::filesystem::path &path) { return false; };
+		virtual Ref<Asset> Import(const std::filesystem::path &path) { return nullptr; };
 
 		virtual void Export(Ref<Asset> asset, const std::filesystem::path &path) {};
 
-		virtual void CreateNew(const std::filesystem::path &path) {};
+		virtual Ref<Asset> CreateNew()
+		{
+			return nullptr;
+		};
 
 		virtual bool CanCreateNew() const { return false; }
 
 		virtual const char *GetFileFilters() const { return ""; }
 
 		virtual const char *GetDefaultAssetName() const { return ""; }
+
+		virtual const std::vector<Ref<Asset>>& GetOtherCreatedAssets()
+		{
+			return {};
+		}
+
+		OnImportCompletedEvent OnImportCompleted;
 
 		REFLECTABLEV()
 	};

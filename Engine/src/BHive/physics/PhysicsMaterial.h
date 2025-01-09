@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	class BHIVE PhysicsMaterial : public Asset, public ISerializable
+	class BHIVE PhysicsMaterial : public Asset
 	{
 	public:
 		PhysicsMaterial() = default;
@@ -19,7 +19,7 @@ namespace BHive
 		void Deserialize(StreamReader& ar);
 
 		ASSET_CLASS(PhysicsMaterial);
-		REFLECTABLE()
+		REFLECTABLEV(Asset)
 
 	};
 

@@ -32,22 +32,10 @@ namespace BHive
 
             if (ImGui::MenuItem("SaveAs"))
             {
-                auto path = FileDialogs::SaveFile(GetFileDialogFilter());
+				auto path = FileDialogs::SaveFile("Asset (*.asset)\0*.asset");
                 if (!path.empty())
                 {
                     if (OnSave(path))
-                    {
-                        mCurrentSavePath = path;
-                    }
-                }
-            }
-
-            if (ImGui::MenuItem("Load"))
-            {
-                auto path = FileDialogs::OpenFile(GetFileDialogFilter());
-                if (!path.empty())
-                {
-                    if (OnLoad(path))
                     {
                         mCurrentSavePath = path;
                     }

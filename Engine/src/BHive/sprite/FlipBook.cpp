@@ -77,11 +77,13 @@ namespace BHive
 
 	void FlipBook::Serialize(StreamWriter& ar) const
 	{
+		Asset::Serialize(ar);
 		ar(mIsLooping, mFramesPerSecond, mFrames);
 	}
 
 	void FlipBook::Deserialize(StreamReader& ar)
 	{
+		Asset::Deserialize(ar);
 		ar(mIsLooping, mFramesPerSecond, mFrames);
 	}
 
@@ -171,6 +173,7 @@ namespace BHive
 	REFLECT(FlipBook)
 	{
 		BEGIN_REFLECT(FlipBook)
+		REFLECT_CONSTRUCTOR()
 			REFLECT_PROPERTY("Loop", IsLooping, SetLoop)
 			REFLECT_PROPERTY("FramesPerSecond", GetFramesPerSecond, SetFramesPerSecond)
 			REFLECT_PROPERTY("Frames", GetFrames, SetFrames);

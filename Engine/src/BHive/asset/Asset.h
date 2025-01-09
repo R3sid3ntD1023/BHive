@@ -19,22 +19,46 @@ namespace BHive
 	class BHIVE Asset
 	{
 	public:
-		AssetHandle Handle;
+		
 
+		Asset() = default;
+		
 		virtual ~Asset() = default;
 
 		virtual AssetType GetType() const = 0;
 
-		virtual void Serialize(StreamWriter &ar) const {};
+		virtual void Serialize(StreamWriter &ar) const 
+		{
+			ar(mHandle, mName);
+		};
 
-		virtual void Deserialize(StreamReader &ar) {};
+		virtual void Deserialize(StreamReader &ar) 
+		{
+			ar(mHandle, mName);
+		};
+
+		void SetName(const std::string& name)
+		{
+			mName = name;
+		}
+
+		const std::string& GetName() const { return mName; }
 
 		static AssetHandle GetHandle(const Ref<Asset> &asset)
 		{
-			return asset ? asset->Handle : AssetHandle(0);
+			return asset ? asset->GetHandle() : AssetHandle(0);
+		}
+
+		const AssetHandle& GetHandle() const
+		{
+			return mHandle;
 		}
 
 		REFLECTABLEV()
+
+	private:
+		std::string mName;
+		AssetHandle mHandle;
 	};
 
 }

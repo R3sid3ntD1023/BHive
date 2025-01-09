@@ -5,31 +5,16 @@
 
 namespace BHive
 {
-    bool AudioFactory::Import(Ref<Asset> &asset, const std::filesystem::path &path)
-    {
-        AudioImporter importer;
-        auto source = importer.Import(path);
+	Ref<Asset> AudioFactory::Import(const std::filesystem::path &path)
+	{
+		AudioImporter importer;
+		auto source = importer.Import(path);
 
-        if (!source)
-            return false;
+		OnImportCompleted.invoke(source);
 
-        auto audio_meta_path = path.parent_path() / (path.stem().string() + ".meta");
+		return source;
+	}
 
-        if (std::filesystem::exists(audio_meta_path))
-        {
-            // Deserialize Settings
-            AssetSerializer::deserialize(*source, audio_meta_path);
-        }
-        else
-        {
-            // Serialize Settings
-            AssetSerializer::serialize(*source, audio_meta_path);
-        }
-
-        asset = source;
-
-        return source != nullptr ? true : false;
-    }
 
     REFLECT_Factory(AudioFactory, AudioSource, ".ogg", ".wav")
 

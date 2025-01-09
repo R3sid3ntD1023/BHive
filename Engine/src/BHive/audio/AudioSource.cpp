@@ -6,7 +6,10 @@
 namespace BHive
 {
 	AudioSource::AudioSource(int format, int16_t *buffer, int size, int sampleRate, float length, const AudioSpecification &specs)
-		: mSpecification(specs)
+		: mSpecification(specs),
+		  mData(buffer),
+		  mSize(size),
+		  mFormat(format)
 	{
 		mLength = length;
 
@@ -98,12 +101,12 @@ namespace BHive
 
 	void AudioSource::Serialize(StreamWriter &ar) const
 	{
-		ar(mPitch, mGain, mIsLooping);
+		ar(mPitch, mGain, mIsLooping, mFormat, mLength, mSpecification, BinaryData(mData, mSize));
 	}
 
 	void AudioSource::Deserialize(StreamReader &ar)
 	{
-		ar(mPitch, mGain, mIsLooping);
+		ar(mPitch, mGain, mIsLooping, mFormat, mLength, mSpecification, BinaryData(mData, mSize));
 
 		SetPitch(mPitch);
 		SetVolume(mGain);

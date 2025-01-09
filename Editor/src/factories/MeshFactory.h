@@ -14,25 +14,20 @@ namespace BHive
 	class BHIVE MeshFactory : public Factory
 	{
 	public:
-		virtual bool Import(Ref<Asset> &asset, const std::filesystem::path &path);
+		virtual Ref<Asset> Import(const std::filesystem::path &path) override;
+
+		virtual const std::vector<Ref<Asset>>& GetOtherCreatedAssets() override
+		{
+			return mOtherAssets;
+		}
 
 		REFLECTABLEV(Factory)
+
+	private:
+		
+
+		std::vector<Ref<Asset>> mOtherAssets;
+
+		friend class MeshOptionsWindow;
 	};
-
-	class SkeletonFactory : public Factory
-	{
-	public:
-		virtual bool Import(Ref<Asset> &asset, const std::filesystem::path &path);
-
-		REFLECTABLEV(Factory)
-	};
-
-	class AnimationFactory : public Factory
-	{
-	public:
-		virtual bool Import(Ref<Asset> &asset, const std::filesystem::path &path);
-
-		REFLECTABLEV(Factory)
-	};
-
 } // namespace BHive

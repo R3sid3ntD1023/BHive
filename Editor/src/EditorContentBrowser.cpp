@@ -6,20 +6,54 @@
 #include "asset/AssetContextMenuRegistry.h"
 #include "asset/FAssetContextMenu.h"
 #include "project/Project.h"
+#include "asset/AssetFactory.h"
+
 
 namespace BHive
 {
+    void FinishAssetImport(const std::filesystem::path& dir, const std::filesystem::path& rel, const Ref<Asset>& asset, const std::vector<Ref<Asset>>& others)
+    {
+		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
+		auto export_path = dir / (rel.stem().string() + ".asset");
+		AssetFactory asset_factory;
+		asset_factory.Export(asset, export_path);
+
+		manager->ImportAsset(export_path, asset->get_type(), asset->GetHandle());
+
+		for (auto &other : others)
+		{
+			export_path = dir / (other->GetName() + ".asset");
+			AssetFactory asset_factory;
+			asset_factory.Export(other, export_path);
+			manager->ImportAsset(export_path, other->get_type(), other->GetHandle());
+		}
+    }
+
     EditorContentBrowser::EditorContentBrowser(const std::filesystem::path &directory)
         : ContentBrowserPanel(directory)
     {
     }
 
-    void EditorContentBrowser::OnImportAsset(const std::filesystem::path &relative)
+    void EditorContentBrowser::OnImportAsset(const std::filesystem::path &directory,
+											 const std::filesystem::path &relative)
     {
+		auto &registry = FactoryRegistry::Get();
         auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
-        auto type = FactoryRegistry::Get().GetTypeFromExtension(relative.extension().string());
-
-        manager->ImportAsset(Project::GetResourceDirectory() / relative, type);
+        auto type = registry.GetTypeFromExtension(relative.extension().string());
+		auto factory = registry.Get(type);
+        if (factory)
+        {
+			Ref<Asset> asset;
+			factory->OnImportCompleted.bind(
+				[=](const Ref<Asset> &asset) {
+					FinishAssetImport(directory, relative, asset, factory->GetOtherCreatedAssets());
+				});
+            if (auto asset = factory->Import(relative))
+            {
+				
+            }
+        }
+       
     }
 
     void EditorContentBrowser::OnRemoveAsset(const std::filesystem::path &relative)
@@ -86,12 +120,12 @@ namespace BHive
 
     void EditorContentBrowser::OnAssetDoubleClicked(const std::filesystem::path &relative)
     {
-        auto type = FactoryRegistry::Get().GetTypeFromExtension(relative.extension().string());
-        auto menu = AssetContextMenuRegistry::Get().GetAssetMenu(type);
+		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
+		auto meta_data = manager->GetMetaData(Project::GetResourceDirectory() / relative);
+        auto menu = AssetContextMenuRegistry::Get().GetAssetMenu(meta_data.Type);
 
         if (menu)
         {
-            auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
             auto handle = manager->GetHandle(Project::GetResourceDirectory() / relative);
             if (handle)
                 menu->OnAssetOpen(handle);
@@ -105,10 +139,23 @@ namespace BHive
         return manager->IsAssetHandleValid(handle);
     }
 
-    void EditorContentBrowser::OnCreateAsset(const AssetType& type, const std::filesystem::path &directory)
+    void EditorContentBrowser::OnCreateAsset(const std::filesystem::path &directory,
+											 const Ref<Factory> &factory)
     {
-        auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
-        manager->CreateNewAsset(type, directory);
+		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
+        if (factory->CanCreateNew())
+        {
+			if (auto asset = factory->CreateNew())
+            {
+				asset->SetName(factory->GetDefaultAssetName());
+				auto export_path = directory / (asset->GetName() + ".asset");
+
+				AssetFactory asset_factory;
+				asset_factory.Export(asset, export_path);
+
+				manager->ImportAsset(export_path, asset->get_type(), asset->GetHandle());
+            }
+        }
     }
 
     Ref<Texture> EditorContentBrowser::OnGetIcon(bool directory, const std::filesystem::path &relative)
@@ -144,19 +191,19 @@ namespace BHive
     void EditorContentBrowser::OnWindowContextMenu()
     {
         auto &registry = FactoryRegistry::Get();
-        auto &fentityies = registry.GetRegisteredFentityies();
+        auto &factories = registry.GetRegisteredFentityies();
 
-        for (auto &[type, info] : fentityies)
+        for (auto &[type, info] : factories)
         {
-            auto &Factory = info.mFactory;
-            if (!Factory->CanCreateNew())
+            auto &factory = info.mFactory;
+            if (!factory->CanCreateNew())
                 continue;
 
             auto name = std::string("Create ") + info.mName;
 
             if (ImGui::Selectable(name.c_str()))
             {
-                OnCreateAsset(type, CurrentDirectory()/ Factory->GetDefaultAssetName());
+                OnCreateAsset(CurrentDirectory(), factory);
             }
         }
     }

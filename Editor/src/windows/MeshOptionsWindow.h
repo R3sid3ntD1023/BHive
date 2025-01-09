@@ -2,31 +2,31 @@
 
 #include "WindowBase.h"
 #include "mesh/MeshImportData.h"
-#include "core/EventDelegate.h"
+#include "factories/MeshFactory.h"
 
 namespace BHive
 {
-    DECLARE_EVENT(OnMeshOptionsCompleted)
     struct FMeshImportOptions;
     class Skeleton;
+	class MeshFactory;
 
     class MeshOptionsWindow : public WindowBase
     {
     public:
-        MeshOptionsWindow(FMeshImportOptions &importData);
+        MeshOptionsWindow(MeshFactory* factory, const FMeshImportOptions &importData);
 
         virtual void OnUpdateContent() final override;
 
         bool ShouldClose() const override { return WindowBase::ShouldClose() || mShouldClose; };
 
     protected:
-        void CreateAssetMetaFile(const std::filesystem::path &path);
+        void CreateAssetMetaFile();
 
         virtual const char *GetName() const { return "Mesh Import"; }
 
     private:
         bool mIsOpen = true;
-        FMeshImportOptions &mImportData;
+        FMeshImportOptions mImportData;
 
         bool has_bones;
         bool has_materials;
@@ -39,7 +39,9 @@ namespace BHive
         std::filesystem::path mMaterialDirectory;
         std::filesystem::path mAnimationDirectory;
         bool mShouldClose{false};
+
         TAssetHandle<Skeleton> mSkeleton;
+		MeshFactory *mFactory = nullptr;
     };
 
 } // namespace BHive

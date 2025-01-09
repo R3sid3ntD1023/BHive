@@ -9,7 +9,5 @@ namespace BHive
     {
     public:
         virtual void OnWindowRender();
-
-        virtual const char *GetFileDialogFilter() { return "Animation (*.animation)\0*.animation\0"; };
     };
 }

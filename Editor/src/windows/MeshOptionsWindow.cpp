@@ -9,26 +9,31 @@
 #include "mesh/SkeletalAnimation.h"
 #include "core/FileDialog.h"
 #include "inspector/Inspectors.h"
+#include "factories/TextureFactory.h"
+#include "factories/MaterialFactory.h"
+
 
 namespace BHive
 {
-    MeshOptionsWindow::MeshOptionsWindow(FMeshImportOptions &importData)
-        : WindowBase(ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize), mImportData(importData)
-    {
-        has_bones = mImportData.mData.mBoneData.size();
-        has_materials = mImportData.mData.mMaterialData.size();
-        has_animations = mImportData.mData.mAnimationData.size();
+    MeshOptionsWindow::MeshOptionsWindow(MeshFactory *factory, const FMeshImportOptions &importData) 
+    : WindowBase(ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize),
+		  mImportData(importData),
+		  mFactory(factory)
+	{
+		has_bones = mImportData.mData.mBoneData.size();
+		has_materials = mImportData.mData.mMaterialData.size();
+		has_animations = mImportData.mData.mAnimationData.size();
 
-        as_static_mesh = !has_bones;
-        as_skeletal_mesh = has_bones;
-        import_materials = has_materials;
-        import_animations = has_animations && has_bones;
+		as_static_mesh = !has_bones;
+		as_skeletal_mesh = has_bones;
+		import_materials = has_materials;
+		import_animations = has_animations && has_bones;
 
-        mMaterialDirectory = mImportData.mPath.parent_path();
-        mAnimationDirectory = mImportData.mPath.parent_path();
-    }
+		mMaterialDirectory = mImportData.mPath.parent_path();
+		mAnimationDirectory = mImportData.mPath.parent_path();
+	}
 
-    void MeshOptionsWindow::OnUpdateContent()
+	void MeshOptionsWindow::OnUpdateContent()
     {
         ImGui::BeginDisabled(as_skeletal_mesh);
         ImGui::Checkbox("StaticMesh", &as_static_mesh);
@@ -83,13 +88,12 @@ namespace BHive
         if (ImGui::Button("Import"))
         {
             auto path = mImportData.mPath;
-            auto meta_path = path.parent_path() / (path.stem().string() + ".meta");
-            CreateAssetMetaFile(meta_path);
+            CreateAssetMetaFile();			
             mShouldClose = true;
         }
     }
 
-    void MeshOptionsWindow::CreateAssetMetaFile(const std::filesystem::path &path)
+    void MeshOptionsWindow::CreateAssetMetaFile()
     {
         auto asset_manager = AssetManager::GetAssetManager<EditorAssetManager>();
         if (!asset_manager)
@@ -97,112 +101,107 @@ namespace BHive
             return;
         }
 
-        MaterialTable material_table;
-
-        auto &material_data = mImportData.mData.mMaterialData;
-        size_t num_materials = material_data.size();
-        material_table.resize(num_materials);
-
-        if (import_materials)
-        {
-            for (size_t i = 0; i < num_materials; i++)
-            {
-
-                auto &data = material_data[i];
-
-                auto &textures = data.mTextureData;
-                auto num_textures = textures.size();
-
-                for (size_t i = 0; i < num_textures; i++)
-                {
-                    auto &texture = textures[i];
-                    if (!texture.is_embedded())
-                    {
-                        asset_manager->ImportAsset(path.parent_path() / texture.mPath);
-                    }
-                }
-
-                auto name = data.mName.empty() ? path.stem().string() + std::to_string(i) : data.mName;
-                auto material_path = mMaterialDirectory / (name + ".material");
-
-                if (!std::filesystem::exists(material_path))
-                {
-
-                    Material material;
-                    material.mAldebo = {data.mAlbedo.x, data.mAlbedo.y, data.mAlbedo.z, data.mAlbedo.w};
-                    material.mMetallic = data.mMetallic;
-                    material.mRoughness = data.mRoughness;
-
-                    FileStreamWriter ar(material_path);
-                    ar(material);
-                }
-
-                asset_manager->ImportAsset(material_path);
-
-                auto material_handle = asset_manager->GetHandle(material_path);
-                material_table.set_material(AssetManager::GetAsset<Material>(material_handle), i);
-            }
-        }
+        auto name = mImportData.mPath.stem().string();
+        Ref<Asset> asset;
+        MaterialTable *material_table = nullptr;
 
         if (as_static_mesh)
         {
-            FileStreamWriter ar(path);
-            ar(AssetType::get<StaticMesh>());
-            ar(mImportData.mData.mMeshData, material_table);
-            return;
+			auto mesh = CreateRef<StaticMesh>(mImportData.mData.mMeshData);
+			mesh->SetName(name);
+			material_table = &mesh->GetMaterialTable();
+			asset = mesh;
         }
         else if (has_animations || as_skeletal_mesh)
         {
-            AssetHandle skeleton_handle = 0;
-            if (mSkeleton)
+			Ref<Skeleton> skeleton = mSkeleton.get();
+            if (!mSkeleton)
             {
-                skeleton_handle = Asset::GetHandle(mSkeleton.get());
-            }
-            else
-            {
-                auto skeleton_path = path.parent_path() / (path.stem().string() + ".skeleton");
+			    skeleton = CreateRef<Skeleton>(
+					mImportData.mData.mBoneData, mImportData.mData.mSkeletonHeirarchyData);
 
-                if (!std::filesystem::exists(skeleton_path))
-                {
-
-                    FileStreamWriter ar(skeleton_path);
-                    ar(mImportData.mData.mBoneData, mImportData.mData.mSkeletonHeirarchyData);
-                }
-
-                asset_manager->ImportAsset(skeleton_path);
-                skeleton_handle = asset_manager->GetHandle(skeleton_path);
+                skeleton->SetName(name + "_Skeleton");
+                mFactory->mOtherAssets.push_back(skeleton);
             }
 
             if (as_skeletal_mesh)
             {
-                FileStreamWriter ar(path);
-                ar(AssetType::get<SkeletalMesh>());
-                ar(mImportData.mData.mMeshData, material_table, skeleton_handle);
+				auto mesh = CreateRef<SkeletalMesh>(mImportData.mData.mMeshData, skeleton);
+				material_table = &mesh->GetMaterialTable();
+				asset = mesh;
             }
 
             if (import_animations)
             {
                 auto &animation_data = mImportData.mData.mAnimationData;
                 size_t num_animations = animation_data.size();
+				std::vector<Ref<SkeletalAnimation>> animations(num_animations);
 
                 for (size_t i = 0; i < num_animations; i++)
                 {
                     auto &data = animation_data[i];
 
-                    std::string name = std::format("{}_{}.animation", path.stem().string(), std::to_string(i));
+                    std::string anim_name = !asset ? name : std::format("{}_Animation({})", name, i);
 
-                    auto animation_path = path.parent_path() / name;
+                    animations[i] = CreateRef<SkeletalAnimation>(
+						data.mDuration, data.TicksPerSecond, 
+						data.mFrames, skeleton,
+						data.mGlobalInverseMatrix);
+					animations[i]->SetName(anim_name);
 
-                    if (!std::filesystem::exists(animation_path))
-                    {
-                        FileStreamWriter ar(animation_path);
-                        ar(data.mDuration, data.TicksPerSecond, data.mGlobalInverseMatrix, data.mFrames, skeleton_handle);
-                    }
-
-                    asset_manager->ImportAsset(animation_path);
+                    if (i > 0)
+                        mFactory->mOtherAssets.push_back(animations[i]);
                 }
+
+                asset = animations[0];
             }
         }
+
+        if (!material_table)
+			return;
+
+		auto &material_data = mImportData.mData.mMaterialData;
+		size_t num_materials = material_data.size();
+		material_table->resize(num_materials);
+
+		if (import_materials)
+		{
+			for (size_t i = 0; i < num_materials; i++)
+			{
+
+				auto &data = material_data[i];
+
+				auto &textures = data.mTextureData;
+				auto num_textures = textures.size();
+
+				TextureFactory tex_factory;
+				for (size_t i = 0; i < num_textures; i++)
+				{
+					auto &texture = textures[i];
+					if (!texture.is_embedded())
+					{
+						auto texture_asset = tex_factory.Import(texture.mPath);
+						texture_asset->SetName(texture.mPath.stem().string());
+						mFactory->mOtherAssets.push_back(texture_asset);
+					}
+				}
+
+				auto material_name = data.mName.empty() ? name + std::to_string(i) : data.mName;
+
+				Ref<Material> material = CreateRef<Material>();
+				material->SetName(material_name);
+				material->mAldebo = {data.mAlbedo.x, data.mAlbedo.y, data.mAlbedo.z,
+									 data.mAlbedo.w};
+				material->mMetallic = data.mMetallic;
+				material->mRoughness = data.mRoughness;
+				material_table->set_material(material, i);
+
+				mFactory->mOtherAssets.push_back(material);
+			}
+		}
+
+        if (asset)
+            mFactory->OnImportCompleted.invoke(asset);
     }
 
 } // namespace BHive

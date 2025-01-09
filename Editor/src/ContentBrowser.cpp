@@ -44,6 +44,12 @@ namespace BHive
 				open_settings = true;
 			}
 
+			if (ImGui::Button("Import"))
+			{
+				auto path_str = FileDialogs::OpenFile("All (*.*)\0*.*\0 Mesh (*.glb;*.gltf)\0*.glb;*.gltf\0");
+				if (!path_str.empty()) OnImportAsset(mCurrentDirectory ,path_str);
+			}
+
 			if (mCurrentDirectory != mBaseDirectory)
 			{
 				if (ImGui::Button("<-"))
@@ -202,7 +208,7 @@ namespace BHive
 						{
 							if (ImGui::MenuItem("Import"))
 							{
-								OnImportAsset(relative_path);
+								OnImportAsset(mCurrentDirectory,relative_path);
 							}
 						}
 						else
