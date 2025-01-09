@@ -16,7 +16,7 @@ namespace BHive
 	public:
 		virtual Ref<Asset> Import(const std::filesystem::path &path) override;
 
-		virtual const std::vector<Ref<Asset>>& GetOtherCreatedAssets() override
+		virtual std::vector<Ref<Asset>> GetOtherCreatedAssets() override
 		{
 			return mOtherAssets;
 		}

@@ -6,6 +6,7 @@
 #include "types/filesystem.h"
 #include "types/utility.h"
 #include "types/string.h"
+#include "types/optional.h"
 
 #include "Helpers.h"
 #include "FileStream.h"

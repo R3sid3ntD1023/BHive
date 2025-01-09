@@ -13,7 +13,7 @@ namespace BHive
 
         const char *GetFileFilters() const { return "FlipBook (*.flipbook)\0*.flipbook\0"; }
 
-        virtual const char* GetDefaultAssetName() const { return "NewFlipBook.flipbook"; }
+        virtual const char* GetDefaultAssetName() const { return "NewFlipBook"; }
 
         REFLECTABLEV(Factory)
     };

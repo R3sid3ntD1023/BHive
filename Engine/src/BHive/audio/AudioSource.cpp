@@ -7,14 +7,26 @@ namespace BHive
 {
 	AudioSource::AudioSource(int format, int16_t *buffer, int size, int sampleRate, float length, const AudioSpecification &specs)
 		: mSpecification(specs),
-		  mData(buffer),
-		  mSize(size),
-		  mFormat(format)
+		  mFormat(format),
+		  mLength(length),
+		  mSampleRate(sampleRate)
 	{
-		mLength = length;
+		mData.resize(size);
+		memcpy(&mData[0], buffer, size);
 
+		Initialize();
+	}
+
+	AudioSource::~AudioSource()
+	{
+		alDeleteSources(1, &mSourceID);
+		alDeleteBuffers(1, &mAudioID);
+	}
+
+	void AudioSource::Initialize() 
+	{
 		alGenBuffers(1, &mAudioID);
-		alBufferData(mAudioID, format, buffer, size, sampleRate);
+		alBufferData(mAudioID, mFormat, mData.data(), mData.size(), mSampleRate);
 
 		if (mSpecification.StartLoop.has_value() && mSpecification.EndLoop.has_value())
 		{
@@ -24,12 +36,6 @@ namespace BHive
 
 		alGenSources(1, &mSourceID);
 		alSourcei(mSourceID, AL_BUFFER, mAudioID);
-	}
-
-	AudioSource::~AudioSource()
-	{
-		alDeleteSources(1, &mSourceID);
-		alDeleteBuffers(1, &mAudioID);
 	}
 
 	void AudioSource::Play()
@@ -101,13 +107,16 @@ namespace BHive
 
 	void AudioSource::Serialize(StreamWriter &ar) const
 	{
-		ar(mPitch, mGain, mIsLooping, mFormat, mLength, mSpecification, BinaryData(mData, mSize));
+		Asset::Serialize(ar);
+		ar(mPitch, mGain, mIsLooping, mFormat, mLength, mSpecification, mSampleRate, mData);
 	}
 
 	void AudioSource::Deserialize(StreamReader &ar)
 	{
-		ar(mPitch, mGain, mIsLooping, mFormat, mLength, mSpecification, BinaryData(mData, mSize));
+		Asset::Deserialize(ar);
+		ar(mPitch, mGain, mIsLooping, mFormat, mLength, mSpecification, mSampleRate, mData);
 
+		Initialize();
 		SetPitch(mPitch);
 		SetVolume(mGain);
 		SetLooping(mIsLooping);
@@ -116,6 +125,7 @@ namespace BHive
 	REFLECT(AudioSource)
 	{
 		BEGIN_REFLECT(AudioSource)
+		REFLECT_CONSTRUCTOR()
 		REFLECT_PROPERTY("Pitch", GetPitch, SetPitch)
 		REFLECT_PROPERTY("Volume", GetVolume, SetVolume)
 		REFLECT_PROPERTY("Loop", IsLooping, SetLooping)

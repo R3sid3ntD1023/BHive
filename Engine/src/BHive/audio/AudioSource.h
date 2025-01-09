@@ -44,6 +44,9 @@ namespace BHive
 		REFLECTABLEV(Asset)
 
 	private:
+		void Initialize();
+
+	private:
 		uint32_t mAudioID{0};
 		uint32_t mSourceID{0};
 		bool mIsPlaying{false};
@@ -57,10 +60,24 @@ namespace BHive
 		float mLength{0.0f};
 		AudioSpecification mSpecification;
 
-		int16_t *mData = nullptr;
-		size_t mSize = 0;
+		std::vector<int16_t> mData;
 		unsigned mFormat;
+		int mSampleRate;
 	};
 
 	REFLECT_EXTERN(AudioSource)
+
+		
+	template <typename TArchive>
+	inline void Serialize(TArchive &ar, const AudioSpecification &spec)
+	{
+		ar(spec.StartLoop, spec.EndLoop);
+	}
+
+	template <typename TArchive>
+	inline void Deserialize(TArchive &ar, AudioSpecification& spec)
+	{
+		ar(spec.StartLoop, spec.EndLoop);
+	}
+
 }

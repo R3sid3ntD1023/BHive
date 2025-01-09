@@ -2,6 +2,7 @@
 
 #include "StreamReader.h"
 #include "StreamWriter.h"
+#include "Helpers.h"
 #include <fstream>
 
 

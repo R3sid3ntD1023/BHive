@@ -27,7 +27,7 @@ namespace BHive
 
 		virtual const char *GetDefaultAssetName() const { return ""; }
 
-		virtual const std::vector<Ref<Asset>>& GetOtherCreatedAssets()
+		virtual std::vector<Ref<Asset>> GetOtherCreatedAssets()
 		{
 			return {};
 		}
