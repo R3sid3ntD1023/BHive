@@ -5,14 +5,13 @@
 
 namespace BHive
 {
-	AudioSource::AudioSource(int format, int16_t *buffer, int size, int sampleRate, float length, const AudioSpecification &specs)
+	AudioSource::AudioSource(int16_t *buffer, int size, const AudioSpecification &specs)
 		: mSpecification(specs),
-		  mFormat(format),
-		  mLength(length),
-		  mSampleRate(sampleRate)
+		  mLength((float)specs.mNumSamples / (float)specs.mSampleRate)
 	{
-		mData.resize(size);
-		memcpy(&mData[0], buffer, size);
+		mBuffer.Allocate(size);
+
+		memcpy_s(mBuffer.mData, mBuffer.mSize, buffer, size);
 
 		Initialize();
 	}
@@ -21,16 +20,18 @@ namespace BHive
 	{
 		alDeleteSources(1, &mSourceID);
 		alDeleteBuffers(1, &mAudioID);
+
+		mBuffer.Release();
 	}
 
 	void AudioSource::Initialize() 
 	{
 		alGenBuffers(1, &mAudioID);
-		alBufferData(mAudioID, mFormat, mData.data(), mData.size(), mSampleRate);
+		alBufferData(mAudioID, mSpecification.mFormat, mBuffer.mData, mBuffer.mSize, mSpecification.mSampleRate);
 
-		if (mSpecification.StartLoop.has_value() && mSpecification.EndLoop.has_value())
+		if (mSpecification.mStartLoop.has_value() && mSpecification.mEndLoop.has_value())
 		{
-			int offsets[2] = {*mSpecification.StartLoop, *mSpecification.EndLoop};
+			int offsets[2] = {*mSpecification.mStartLoop, *mSpecification.mEndLoop};
 			alBufferiv(mAudioID, AL_LOOP_POINTS_SOFT, offsets);
 		}
 
@@ -108,13 +109,13 @@ namespace BHive
 	void AudioSource::Serialize(StreamWriter &ar) const
 	{
 		Asset::Serialize(ar);
-		ar(mPitch, mGain, mIsLooping, mFormat, mLength, mSpecification, mSampleRate, mData);
+		ar(mSpecification, mPitch, mGain, mIsLooping, mLength,  mBuffer);
 	}
 
 	void AudioSource::Deserialize(StreamReader &ar)
 	{
 		Asset::Deserialize(ar);
-		ar(mPitch, mGain, mIsLooping, mFormat, mLength, mSpecification, mSampleRate, mData);
+		ar(mSpecification, mPitch, mGain, mIsLooping, mLength,  mBuffer);
 
 		Initialize();
 		SetPitch(mPitch);

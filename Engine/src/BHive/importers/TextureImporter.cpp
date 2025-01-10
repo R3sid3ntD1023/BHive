@@ -32,11 +32,11 @@ namespace BHive
 		}
 
 		FTextureSpecification specification{};
-		specification.Format = GetFormatFromChannels(is_hdr, c);
-		specification.Channels = c;
-		specification.MinFilter = EFilterMode::LINEAR;
-		specification.MagFilter = EFilterMode::LINEAR;
-		specification.WrapMode = EWrapMode::REPEAT;
+		specification.mFormat = GetFormatFromChannels(is_hdr, c);
+		specification.mChannels = c;
+		specification.mMinFilter = EFilterMode::LINEAR;
+		specification.mMagFilter = EFilterMode::LINEAR;
+		specification.mWrapMode = EWrapMode::REPEAT;
 
 		Ref<Texture> texture = nullptr;
 		unsigned char *resize_data = nullptr;
@@ -87,11 +87,11 @@ namespace BHive
 		}
 
 		FTextureSpecification specification{};
-		specification.Format = GetFormatFromChannels(is_hdr, comp);
-		specification.Channels = comp;
-		specification.MinFilter = EFilterMode::LINEAR;
-		specification.MagFilter = EFilterMode::LINEAR;
-		specification.WrapMode = EWrapMode::REPEAT;
+		specification.mFormat = GetFormatFromChannels(is_hdr, comp);
+		specification.mChannels = comp;
+		specification.mMinFilter = EFilterMode::LINEAR;
+		specification.mMagFilter = EFilterMode::LINEAR;
+		specification.mWrapMode = EWrapMode::REPEAT;
 
 		auto texture = Texture2D::Create(image_data, (unsigned)x, (unsigned)y, specification);
 

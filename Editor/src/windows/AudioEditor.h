@@ -14,8 +14,6 @@ namespace BHive
     protected:
         virtual void OnWindowRender();
 
-        virtual Ref<AudioSource> GetNewAsset() const override { return mAsset; }
-
     private:
         static inline Ref<AudioSource> mCurrentAudioPlaying;
     };

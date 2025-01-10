@@ -5,6 +5,10 @@
 
 namespace BHive
 {
+	Ref<Texture2D> Texture2D::Create()
+	{
+		return CreateRef<GLTexture2D>();
+	}
 
 	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, const FTextureSpecification &specification, uint32_t samples)
 	{
@@ -28,11 +32,13 @@ namespace BHive
 
 	REFLECT(Texture)
 	{
-		BEGIN_REFLECT(Texture);
+		BEGIN_REFLECT(Texture)
+			REFLECT_PROPERTY_READ_ONLY("Width", GetWidth)
+			REFLECT_PROPERTY_READ_ONLY("Height" , GetHeight);
 	}
 
 	REFLECT(Texture2D)
 	{
-		BEGIN_REFLECT(Texture2D);
+		BEGIN_REFLECT(Texture2D).constructor(rttr::select_overload<Ref<T>()>(&T::Create));
 	}
 }

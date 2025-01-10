@@ -49,7 +49,7 @@ namespace BHive
 
                 for (auto &[id, meta] : meta_datas)
                 {
-                    if (!(type == meta.Type || type.is_derived_from(meta.Type)))
+                    if (!(type == meta.Type || meta.Type.is_derived_from(type)))
                         continue;
 
                     auto name = meta.Name;

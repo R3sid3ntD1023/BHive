@@ -7,6 +7,7 @@ namespace BHive
 	class GLTexture2D : public Texture2D
 	{
 	public:
+		GLTexture2D() = default;
 		GLTexture2D(uint32_t width, uint32_t height, const FTextureSpecification &specification, uint32_t samples = 1);
 		GLTexture2D(const void *data, uint32_t width, uint32_t height, const FTextureSpecification &specification);
 		~GLTexture2D();
@@ -23,7 +24,9 @@ namespace BHive
 		virtual const FTextureSpecification &GetSpecification() const { return mSpecification; }
 		virtual uint32_t GetRendererID() const { return mTextureID; }
 
-		uint64_t GetResourceHandle() const { return mResourceHandle; }
+		virtual void Serialize(StreamWriter &ar) const;
+
+		virtual void Deserialize(StreamReader &ar);
 
 	protected:
 		void Initialize();
@@ -31,9 +34,10 @@ namespace BHive
 
 	private:
 		uint32_t mTextureID = 0;
-		uint32_t mWidth, mHeight;
+		uint32_t mWidth = 0, mHeight = 0;
 		FTextureSpecification mSpecification;
-		uint64_t mResourceHandle;
-		uint32_t mSamples;
+		uint32_t mSamples = 0 ;
+		Buffer mBuffer;
 	};
+
 }

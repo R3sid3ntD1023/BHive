@@ -127,7 +127,16 @@ namespace BHive
 			return false;
 
 		metadata.Path = new_;
-		metadata.Name = new_.filename().string();
+		metadata.Name = new_.stem().string();
+
+		if (auto handle = GetHandle(old_))
+		{
+			if (IsAssetLoaded(handle))
+			{
+				mLoadedAssets[handle]->SetName(metadata.Name);
+			}
+		}
+		
 
 		SerializeAssetRegistry();
 

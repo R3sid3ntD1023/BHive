@@ -80,18 +80,18 @@ namespace BHive
 
 	struct BHIVE FTextureSpecification
 	{
-		uint32_t Channels;
-		EFormat Format;
-		EWrapMode WrapMode;
-		EFilterMode MinFilter = EFilterMode::LINEAR, MagFilter = EFilterMode::LINEAR;
-		Color BorderColor = 0xFFFFFFFF;
-		bool Mips = true;
-		unsigned Levels = 1;
-		ETextureType Type = ETextureType::TEXTURE_2D;
+		uint32_t mChannels;
+		EFormat	 mFormat;
+		EWrapMode mWrapMode = EWrapMode::REPEAT;
+		EFilterMode mMinFilter = EFilterMode::LINEAR, mMagFilter = EFilterMode::LINEAR;
+		Color mBorderColor = 0xFFFFFFFF;
+		bool mMips = false;
+		unsigned mLevels = 1;
+		ETextureType mType = ETextureType::TEXTURE_2D;
 
 		// depth
-		std::optional<ETextureCompareMode> CompareMode;
-		std::optional<ETextureCompareFunc> CompareFunc;
+		std::optional<ETextureCompareMode> mCompareMode;
+		std::optional<ETextureCompareFunc> mCompareFunc;
 	};
 
 	class BHIVE Texture : public Asset
@@ -111,6 +111,9 @@ namespace BHive
 		virtual uint32_t GetRendererID() const = 0;
 		virtual void GenerateMipMaps() const = 0;
 
+		virtual void Serialize(StreamWriter &ar) const {};
+		virtual void Deserialize(StreamReader &ar) {}
+
 		operator uint32_t() const { return GetRendererID(); }
 
 		virtual uint64_t GetResourceHandle() const { return 0; };
@@ -122,11 +125,16 @@ namespace BHive
 	class BHIVE Texture2D : public Texture
 	{
 	public:
+		virtual ~Texture2D() = default;
+
+		static Ref<Texture2D> Create();
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height, const FTextureSpecification &specification, uint32_t samples = 1);
 		static Ref<Texture2D> Create(const void *data, uint32_t width, uint32_t height, const FTextureSpecification &specification);
 
 		REFLECTABLEV(Texture)
+
 	};
+
 
 	class TextureCube : public Texture
 	{
@@ -141,6 +149,24 @@ namespace BHive
 	public:
 		static Ref<Texture> Create(uint32_t width, uint32_t height, uint32_t depth, const FTextureSpecification &specification);
 	};
+
+	
+
+	template <typename TArchive>
+	inline void Serialize(TArchive &ar, const FTextureSpecification &spec)
+	{
+		ar(spec.mFormat, spec.mChannels, spec.mWrapMode, spec.mMinFilter, spec.mMagFilter,
+		   spec.mBorderColor, spec.mMips, spec.mType, spec.mLevels, spec.mCompareMode,
+		   spec.mCompareFunc);
+	}
+
+	template <typename TArchive>
+	inline void Deserialize(TArchive &ar, FTextureSpecification &spec)
+	{
+		ar(spec.mFormat, spec.mChannels, spec.mWrapMode, spec.mMinFilter, spec.mMagFilter,
+		   spec.mBorderColor, spec.mMips, spec.mType, spec.mLevels, spec.mCompareMode,
+		   spec.mCompareFunc);
+	}
 
 	REFLECT_EXTERN(Texture)
 	REFLECT_EXTERN(Texture2D)

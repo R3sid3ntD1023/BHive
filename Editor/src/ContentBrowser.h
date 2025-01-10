@@ -21,7 +21,6 @@ namespace BHive
 
 		virtual void OnImportAsset(const std::filesystem::path &directory,
 								   const std::filesystem::path &relative) = 0;
-		virtual void OnRemoveAsset(const std::filesystem::path &relative) = 0;
 		virtual void OnDeleteAsset(const std::filesystem::path &relative) = 0;
 		virtual void OnRenameAsset(const std::filesystem::path &relative_old, const std::filesystem::path &relative_new, bool directory) = 0;
 		virtual void OnAssetContextMenu(const std::filesystem::path &relative) {}

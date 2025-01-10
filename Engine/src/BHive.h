@@ -7,3 +7,5 @@
 #include "BHive/events/InputEvents.h"
 
 #include "BHive/core/Time.h"
+
+#include "Platform/GL/GLTexture2D.h"

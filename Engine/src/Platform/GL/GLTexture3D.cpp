@@ -9,38 +9,38 @@ namespace BHive
 		: mWidth(width), mHeight(height), mDepth(depth), mSpecification(specification)
 	{
 
-		GLenum target = GetTextureTarget(specification.Type, 1);
+		GLenum target = GetTextureTarget(specification.mType, 1);
 
 		glCreateTextures(target, 1, &mTextureID);
 
-		glTextureStorage3D(mTextureID, 1, GetGLInternalFormat(specification.Format), width, height, depth);
+		glTextureStorage3D(mTextureID, 1, GetGLInternalFormat(specification.mFormat), width, height, depth);
 
-		glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(specification.MinFilter));
-		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(specification.MagFilter));
+		glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(specification.mMinFilter));
+		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(specification.mMagFilter));
 
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, GetGLWrapMode(specification.WrapMode));
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(specification.WrapMode));
+		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, GetGLWrapMode(specification.mWrapMode));
+		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(specification.mWrapMode));
 		// glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_R, GetGLWrapMode(specification.WrapMode));
 
-		if (mSpecification.WrapMode == EWrapMode::CLAMP_TO_BORDER)
+		if (mSpecification.mWrapMode == EWrapMode::CLAMP_TO_BORDER)
 		{
-			glTextureParameterfv(mTextureID, GL_TEXTURE_BORDER_COLOR, mSpecification.BorderColor);
+			glTextureParameterfv(mTextureID, GL_TEXTURE_BORDER_COLOR, mSpecification.mBorderColor);
 		}
 
-		if (IsDepthFormat(specification.Format))
+		if (IsDepthFormat(specification.mFormat))
 		{
-			if (specification.CompareMode.has_value())
+			if (specification.mCompareMode.has_value())
 			{
-				glTextureParameteri(mTextureID, GL_TEXTURE_COMPARE_MODE, GetTextureCompareMode(specification.CompareMode.value()));
+				glTextureParameteri(mTextureID, GL_TEXTURE_COMPARE_MODE, GetTextureCompareMode(specification.mCompareMode.value()));
 			}
 
-			if (specification.CompareFunc.has_value())
+			if (specification.mCompareFunc.has_value())
 			{
-				glTextureParameteri(mTextureID, GL_TEXTURE_COMPARE_FUNC, GetTextureCompareFunc(specification.CompareFunc.value()));
+				glTextureParameteri(mTextureID, GL_TEXTURE_COMPARE_FUNC, GetTextureCompareFunc(specification.mCompareFunc.value()));
 			}
 		}
 
-		if (mSpecification.Mips)
+		if (mSpecification.mMips)
 		{
 			glGenerateTextureMipmap(mTextureID);
 		}
@@ -67,7 +67,7 @@ namespace BHive
 	void GLTexture3D::BindAsImage(uint32_t unit, uint32_t access, uint32_t level) const
 	{
 
-		glBindImageTexture(unit, mTextureID, level, GL_FALSE, 0, access, GetGLInternalFormat(mSpecification.Format));
+		glBindImageTexture(unit, mTextureID, level, GL_FALSE, 0, access, GetGLInternalFormat(mSpecification.mFormat));
 	}
 
 	void GLTexture3D::GenerateMipMaps() const
@@ -79,7 +79,7 @@ namespace BHive
 	void GLTexture3D::SetData(const void *data, uint64_t size, uint32_t offsetX, uint32_t offsetY)
 	{
 
-		glTextureSubImage3D(mTextureID, 0, offsetX, offsetY, 0, mWidth, mHeight, mDepth, GetGLFormat(mSpecification.Format),
-							GetGLType(mSpecification.Format), data);
+		glTextureSubImage3D(mTextureID, 0, offsetX, offsetY, 0, mWidth, mHeight, mDepth, GetGLFormat(mSpecification.mFormat),
+							GetGLType(mSpecification.mFormat), data);
 	}
 }

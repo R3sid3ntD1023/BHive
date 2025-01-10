@@ -16,7 +16,6 @@ namespace BHive
         EditorContentBrowser(const std::filesystem::path &directory);
 
         virtual void OnImportAsset(const std::filesystem::path & directory, const std::filesystem::path &relative);
-        virtual void OnRemoveAsset(const std::filesystem::path &relative);
         virtual void OnDeleteAsset(const std::filesystem::path &relative);
         virtual void OnRenameAsset(const std::filesystem::path &relative_old, const std::filesystem::path &relative_new, bool directory);
         virtual void OnAssetContextMenu(const std::filesystem::path &relative);

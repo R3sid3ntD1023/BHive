@@ -10,32 +10,32 @@ namespace BHive
 		: mSize(size), mSpecification(spec)
 	{
 
-		GLenum target = GetTextureTarget(spec.Type, 1);
+		GLenum target = GetTextureTarget(spec.mType, 1);
 		glCreateTextures(target, 1, &mTextureID);
 
-		unsigned levels = spec.Mips ? spec.Levels : 1;
+		unsigned levels = spec.mMips ? spec.mLevels : 1;
 
-		glTextureStorage2D(mTextureID, levels, GetGLInternalFormat(spec.Format), size, size);
-		glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(spec.MinFilter));
-		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(spec.MagFilter));
+		glTextureStorage2D(mTextureID, levels, GetGLInternalFormat(spec.mFormat), size, size);
+		glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(spec.mMinFilter));
+		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(spec.mMagFilter));
 
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, GetGLWrapMode(spec.WrapMode));
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(spec.WrapMode));
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_R, GetGLWrapMode(spec.WrapMode));
+		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, GetGLWrapMode(spec.mWrapMode));
+		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(spec.mWrapMode));
+		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_R, GetGLWrapMode(spec.mWrapMode));
 		// glTextureParameteri(mTextureID, GL_TEXTURE_CUBE_MAP_SEAMLESS, GL_TRUE);
 
-		if (spec.WrapMode == EWrapMode::CLAMP_TO_BORDER)
+		if (spec.mWrapMode == EWrapMode::CLAMP_TO_BORDER)
 		{
-			glTextureParameterfv(mTextureID, GL_TEXTURE_BORDER_COLOR, spec.BorderColor);
+			glTextureParameterfv(mTextureID, GL_TEXTURE_BORDER_COLOR, spec.mBorderColor);
 		}
 
 		for (unsigned i = 0; i < 6; i++)
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GetGLInternalFormat(spec.Format), size, size,
-						 0, GetGLFormat(spec.Format), GetGLType(spec.Format), NULL);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GetGLInternalFormat(spec.mFormat), size, size,
+						 0, GetGLFormat(spec.mFormat), GetGLType(spec.mFormat), NULL);
 		}
 
-		if (spec.Mips)
+		if (spec.mMips)
 		{
 			glGenerateTextureMipmap(mTextureID);
 		}
@@ -56,7 +56,7 @@ namespace BHive
 	void GLTextureCube::BindAsImage(uint32_t unit, uint32_t access, uint32_t level) const
 	{
 
-		glBindImageTexture(unit, mTextureID, level, GL_FALSE, 0, access, GetGLInternalFormat(mSpecification.Format));
+		glBindImageTexture(unit, mTextureID, level, GL_FALSE, 0, access, GetGLInternalFormat(mSpecification.mFormat));
 	}
 
 	void GLTextureCube::UnBind(uint32_t slot) const

@@ -10,6 +10,7 @@
 #include "windows/SkeletonEditor.h"
 #include "windows/MeshEditor.h"
 #include "windows/AnimationEditor.h"
+#include "windows/TextureEditor.h"
 
 namespace BHive
 {
@@ -71,5 +72,10 @@ namespace BHive
     {
         REFLECTABLEV(FAssetContextMenu)
     };
+
+    struct TextureContextMenu : public FAssetContextMenuBase<TextureEditor>
+	{
+		REFLECTABLEV(FAssetContextMenu)
+	};
 
 } // namespace BHive

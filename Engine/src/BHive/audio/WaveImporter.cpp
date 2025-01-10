@@ -55,18 +55,23 @@ namespace BHive
 			}
 
 			AudioSpecification specification;
+			specification.mFormat = format;
+			specification.mNumSamples = wave.get_num_samples_per_channel();
+			specification.mSampleRate = wave.fmt.sample_rate;
+
+
 			if (wave.list.id3_chunk.has_tag("LOOP_START"))
 			{
 				auto value = wave.list.id3_chunk.get_tag<WAVE::id3_Frame_TXXX>("LOOP_START")->Value;
-				specification.StartLoop = stoi(value);
+				specification.mStartLoop = stoi(value);
 			}
 			if (wave.list.id3_chunk.has_tag("LOOP_END"))
 			{
 				auto value = wave.list.id3_chunk.get_tag<WAVE::id3_Frame_TXXX>("LOOP_END")->Value;
-				specification.EndLoop = stoi(value);
+				specification.mEndLoop = stoi(value);
 			}
 
-			return CreateRef<AudioSource>(format, wave.get_samples(), wave.get_buffer_size(), wave.fmt.sample_rate, wave.get_length(), specification);
+			return CreateRef<AudioSource>(wave.get_samples(), wave.get_buffer_size(), specification);
 		}
 		catch (const std::runtime_error &e)
 		{

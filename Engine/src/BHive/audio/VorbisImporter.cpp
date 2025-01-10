@@ -11,17 +11,16 @@ namespace BHive
     {
         int error = 0;
         int channels = 0;
-        int sample_rate;
-        short *output;
+        int sample_rate = 0;
+        short *data = nullptr;
 
         stb_vorbis *f = stb_vorbis_open_filename(path.string().c_str(), &error, nullptr);
         stb_vorbis_info info = stb_vorbis_get_info(f);
 
-        int samples = stb_vorbis_decode_filename(path.string().c_str(), &channels, &sample_rate, &output);
-        float time = (float)samples / (float)sample_rate;
+        int samples = stb_vorbis_decode_filename(path.string().c_str(), &channels, &sample_rate, &data);
         int buffersize = 2 * channels * samples;
 
-        if (!output || buffersize == 0)
+        if (!data || buffersize == 0)
             return nullptr;
 
         buffersize = buffersize - buffersize % 4;
@@ -43,11 +42,12 @@ namespace BHive
             return nullptr;
         }
 
-        auto source = CreateRef<AudioSource>(format, output, buffersize, sample_rate, time);
+        AudioSpecification specs{.mFormat = format, .mNumSamples = samples, .mSampleRate = sample_rate};
+		auto source = CreateRef<AudioSource>(data, buffersize, specs);
 
         LOG_TRACE("{} length:{}, time:{}", path.string(), source->GetLengthSeconds(), source->GetLength().to_string());
 
-        free(output);
+        free(data);
 
         return source;
     }

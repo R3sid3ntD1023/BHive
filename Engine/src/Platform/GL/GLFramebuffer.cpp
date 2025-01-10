@@ -14,7 +14,7 @@ namespace BHive
 	{
 		for (auto &spec : mSpecification.Attachments.GetAttachments())
 		{
-			if (IsDepthFormat(spec.mSpecification.Format))
+			if (IsDepthFormat(spec.mSpecification.mFormat))
 			{
 				mDepthSpecification = spec;
 				continue;
@@ -65,7 +65,7 @@ namespace BHive
 		auto &attachment = mColorAttachments[attachmentIndex];
 		auto &spec = mColorSpecifications[attachmentIndex];
 
-		glClearTexImage(attachment->GetRendererID(), 0, GetGLFormat(spec.mSpecification.Format), type, data);
+		glClearTexImage(attachment->GetRendererID(), 0, GetGLFormat(spec.mSpecification.mFormat), type, data);
 		;
 	}
 
@@ -166,7 +166,7 @@ namespace BHive
 		glBindFramebuffer(GL_FRAMEBUFFER, mFramebufferID);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, mFramebufferID);
 		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
-		glReadPixels(x, y, w, h, GetGLFormat(spec.mSpecification.Format), type, data);
+		glReadPixels(x, y, w, h, GetGLFormat(spec.mSpecification.mFormat), type, data);
 
 		glReadBuffer(GL_NONE);
 
@@ -209,7 +209,7 @@ namespace BHive
 			}
 		}
 
-		if (mDepthSpecification.mSpecification.Format != EFormat::Invalid)
+		if (mDepthSpecification.mSpecification.mFormat != EFormat::Invalid)
 		{
 			switch (mDepthSpecification.TextureType)
 			{
@@ -236,7 +236,7 @@ namespace BHive
 
 		if (mDepthAttachment)
 		{
-			glNamedFramebufferTexture(mFramebufferID, GetDepthAttachmentType(mDepthSpecification.mSpecification.Format), *mDepthAttachment, 0);
+			glNamedFramebufferTexture(mFramebufferID, GetDepthAttachmentType(mDepthSpecification.mSpecification.mFormat), *mDepthAttachment, 0);
 		}
 
 		if (num_attachments > 1)
@@ -257,8 +257,8 @@ namespace BHive
 		{
 			auto &specification = mSpecification.mRenderSpecification;
 			glCreateRenderbuffers(1, &mRenderBufferID);
-			glNamedRenderbufferStorage(mRenderBufferID, GetGLInternalFormat(specification.mSpecification.Format), mSpecification.Width, mSpecification.Height);
-			glNamedFramebufferRenderbuffer(mFramebufferID, GetDepthAttachmentType(specification.mSpecification.Format), GL_RENDERBUFFER, mRenderBufferID);
+			glNamedRenderbufferStorage(mRenderBufferID, GetGLInternalFormat(specification.mSpecification.mFormat), mSpecification.Width, mSpecification.Height);
+			glNamedFramebufferRenderbuffer(mFramebufferID, GetDepthAttachmentType(specification.mSpecification.mFormat), GL_RENDERBUFFER, mRenderBufferID);
 		}
 
 		ASSERT(glCheckNamedFramebufferStatus(mFramebufferID, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);

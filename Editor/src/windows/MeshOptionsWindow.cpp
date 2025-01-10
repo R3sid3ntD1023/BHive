@@ -178,12 +178,21 @@ namespace BHive
 				for (size_t i = 0; i < num_textures; i++)
 				{
 					auto &texture = textures[i];
+					Ref<Asset> texture_asset;
 					if (!texture.is_embedded())
 					{
-						auto texture_asset = tex_factory.Import(texture.mPath);
+						texture_asset = tex_factory.Import(texture.mPath);					
+					}
+                    else
+                    {
+						texture_asset = tex_factory.Import(texture.mEmbeddedData, texture.mEmbeddedDataSize);
+                    }
+
+                    if (texture_asset)
+                    {
 						texture_asset->SetName(texture.mPath.stem().string());
 						mFactory->mOtherAssets.push_back(texture_asset);
-					}
+                    }
 				}
 
 				auto material_name = data.mName.empty() ? name + std::to_string(i) : data.mName;

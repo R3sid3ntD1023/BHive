@@ -38,8 +38,8 @@ namespace BHive
 		FramebufferSpecification fbspec{};
 
 		fbspec.Attachments
-			.attach({.Format = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
-			.attach({.Format = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+			.attach({.mFormat = EFormat::RGBA32F, .mWrapMode = EWrapMode::CLAMP_TO_EDGE})
+			.attach({.mFormat = EFormat::DEPTH24_STENCIL8, .mWrapMode = EWrapMode::CLAMP_TO_EDGE});
 
 		fbspec.Width = width;
 		fbspec.Height = height;
@@ -50,7 +50,7 @@ namespace BHive
 		mFramebuffer = Framebuffer::Create(fbspec);
 
 		fbspec.Attachments.reset()
-			.attach({.Format = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+			.attach({.mFormat = EFormat::RGBA32F, .mWrapMode = EWrapMode::CLAMP_TO_EDGE});
 
 		fbspec.Samples = 1;
 		mQuadFramebuffer = Framebuffer::Create(fbspec);
@@ -369,8 +369,8 @@ namespace BHive
 	void SceneRenderer::CreateBloomMipMaps()
 	{
 		FTextureSpecification specs{};
-		specs.Format = EFormat::R11_G11_B10;
-		specs.WrapMode = EWrapMode::CLAMP_TO_BORDER;
+		specs.mFormat = EFormat::R11_G11_B10;
+		specs.mWrapMode = EWrapMode::CLAMP_TO_BORDER;
 
 		for (auto &mip : mBloomMipMaps)
 			mip.reset();

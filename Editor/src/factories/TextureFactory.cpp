@@ -11,5 +11,12 @@ namespace BHive
 		return t;
 	}
 
+	Ref<Asset> TextureFactory::Import(uint8_t *data, size_t size)
+	{
+		auto t = TextureImporter::LoadFromMemory(data, size);
+		OnImportCompleted.invoke(t);
+		return t;
+	}
+
     REFLECT_Factory(TextureFactory, Texture, ".png", ".jpg", ".jpeg") 
 } // namespace BHive

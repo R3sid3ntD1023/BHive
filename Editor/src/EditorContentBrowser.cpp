@@ -56,12 +56,6 @@ namespace BHive
        
     }
 
-    void EditorContentBrowser::OnRemoveAsset(const std::filesystem::path &relative)
-    {
-        auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
-        manager->RemoveAsset(Project::GetResourceDirectory() / relative);
-    }
-
     void EditorContentBrowser::OnDeleteAsset(const std::filesystem::path &relative)
     {
         auto manager = AssetManager::GetAssetManager<EditorAssetManager>();

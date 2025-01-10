@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "AudioTime.h"
 #include "asset/Asset.h"
+#include "core/Buffer.h"
 #include "serialization/Serialization.h"
 
 namespace BHive
@@ -10,15 +11,18 @@ namespace BHive
 
 	struct AudioSpecification
 	{
-		std::optional<int> StartLoop;
-		std::optional<int> EndLoop;
+		int mFormat;
+		int mNumSamples;
+		int mSampleRate;
+		std::optional<int> mStartLoop;
+		std::optional<int> mEndLoop;
 	};
 
 	class BHIVE AudioSource : public Asset
 	{
 	public:
 		AudioSource() = default;
-		AudioSource(int format, int16_t *buffer, int size, int sampleRate, float length, const AudioSpecification &specs = {});
+		AudioSource( int16_t *buffer, int size, const AudioSpecification &specs = {});
 		~AudioSource();
 
 		void Play();
@@ -49,20 +53,17 @@ namespace BHive
 	private:
 		uint32_t mAudioID{0};
 		uint32_t mSourceID{0};
-		bool mIsPlaying{false};
 
+		bool mIsPlaying{false};
 		float mPosition[3] = {0, 0, 0};
 		float mGain = 1.0f;
 		float mPitch = 1.0f;
 		bool mIsSpatial{false};
 		bool mIsLooping{false};
-
 		float mLength{0.0f};
 		AudioSpecification mSpecification;
 
-		std::vector<int16_t> mData;
-		unsigned mFormat;
-		int mSampleRate;
+		TBuffer<int16_t> mBuffer;
 	};
 
 	REFLECT_EXTERN(AudioSource)
@@ -71,13 +72,13 @@ namespace BHive
 	template <typename TArchive>
 	inline void Serialize(TArchive &ar, const AudioSpecification &spec)
 	{
-		ar(spec.StartLoop, spec.EndLoop);
+		ar(spec.mFormat, spec.mNumSamples, spec.mSampleRate, spec.mStartLoop, spec.mEndLoop);
 	}
 
 	template <typename TArchive>
 	inline void Deserialize(TArchive &ar, AudioSpecification& spec)
 	{
-		ar(spec.StartLoop, spec.EndLoop);
+		ar(spec.mFormat, spec.mNumSamples, spec.mSampleRate, spec.mStartLoop, spec.mEndLoop);
 	}
 
 }

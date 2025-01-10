@@ -59,13 +59,14 @@ namespace BHive
 		shadow_fbo_specs.Width = sDirectionalShadowMapSize;
 		shadow_fbo_specs.Height = sDirectionalShadowMapSize;
 		shadow_fbo_specs.Depth = max_lights;
-		shadow_fbo_specs.Attachments.attach({
-												.Format = EFormat::DEPTH_COMPONENT_32F,
-												.WrapMode = EWrapMode::CLAMP_TO_EDGE,
-												.BorderColor = {0, 0, 0, 1.f},
-												.Type = ETextureType::TEXTURE_ARRAY_2D,
-												.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
-												.CompareFunc = ETextureCompareFunc::LEQUAL,
+		shadow_fbo_specs.Attachments.attach(
+			{
+				.mFormat = EFormat::DEPTH_COMPONENT_32F,
+				.mWrapMode = EWrapMode::CLAMP_TO_EDGE,
+				.mBorderColor = {0, 0, 0, 1.f},
+				.mType = ETextureType::TEXTURE_ARRAY_2D,
+				.mCompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
+				.mCompareFunc = ETextureCompareFunc::LEQUAL,
 
 			},
 			ETextureType::TEXTURE_3D);
@@ -75,12 +76,13 @@ namespace BHive
 		shadow_fbo_specs.Width = sSpotShadowMapSize;
 		shadow_fbo_specs.Height = sSpotShadowMapSize;
 		shadow_fbo_specs.Depth = max_lights;
-		shadow_fbo_specs.Attachments.attach({
-										.Format = EFormat::DEPTH_COMPONENT_32F,
-										.WrapMode = EWrapMode::CLAMP_TO_EDGE,
-										.Type = ETextureType::TEXTURE_ARRAY_2D,
-										.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
-										.CompareFunc = ETextureCompareFunc::LEQUAL,
+		shadow_fbo_specs.Attachments.attach(
+			{
+				.mFormat = EFormat::DEPTH_COMPONENT_32F,
+				.mWrapMode = EWrapMode::CLAMP_TO_EDGE,
+				.mType = ETextureType::TEXTURE_ARRAY_2D,
+				.mCompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
+				.mCompareFunc = ETextureCompareFunc::LEQUAL,
 
 			},
 			ETextureType::TEXTURE_3D);
@@ -90,14 +92,15 @@ namespace BHive
 		shadow_fbo_specs.Width = sPointShadowMapSize;
 		shadow_fbo_specs.Height = sPointShadowMapSize;
 		shadow_fbo_specs.Depth = max_lights * 6;
-		shadow_fbo_specs.Attachments.reset().attach({
+		shadow_fbo_specs.Attachments.reset().attach(
+			{
 
-														.Format = EFormat::DEPTH_COMPONENT_32F,
-														.WrapMode = EWrapMode::CLAMP_TO_BORDER,
-														.BorderColor = {0.f, 0.f, 0.f, 0.f},
-														.Type = ETextureType::TEXTURE_CUBE_MAP_ARRAY,
-														.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
-														.CompareFunc = ETextureCompareFunc::LEQUAL,
+				.mFormat = EFormat::DEPTH_COMPONENT_32F,
+				.mWrapMode = EWrapMode::CLAMP_TO_BORDER,
+				.mBorderColor = {0.f, 0.f, 0.f, 0.f},
+				.mType = ETextureType::TEXTURE_CUBE_MAP_ARRAY,
+				.mCompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
+				.mCompareFunc = ETextureCompareFunc::LEQUAL,
 
 			},
 			ETextureType::TEXTURE_3D);

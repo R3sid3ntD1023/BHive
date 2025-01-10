@@ -32,44 +32,46 @@ namespace BHive
         FramebufferSpecification envrioment_capture_fbo_specs{};
         envrioment_capture_fbo_specs.Width = 512;
         envrioment_capture_fbo_specs.Height = 512;
-        envrioment_capture_fbo_specs.Attachments.attach(
-            {.Format = EFormat::RGB16F,
-             .WrapMode = EWrapMode::CLAMP_TO_EDGE,
-             .Mips = true,
-             .Levels = 5,
-             .Type = ETextureType::TEXTURE_CUBE_MAP
+		envrioment_capture_fbo_specs.Attachments.attach({.mFormat = EFormat::RGB16F,
+														 .mWrapMode = EWrapMode::CLAMP_TO_EDGE,
+														 .mMips = true,
+														 .mLevels = 5,
+														 .mType = ETextureType::TEXTURE_CUBE_MAP
 
-            },
-            ETextureType::TEXTURE_CUBE_MAP);
+														},
+														ETextureType::TEXTURE_CUBE_MAP);
         mEnvironmentCaptureFBO = Framebuffer::Create(envrioment_capture_fbo_specs);
 
         envrioment_capture_fbo_specs.Width = IRRANDIANCE_CUBEMAP_SIZE;
         envrioment_capture_fbo_specs.Height = IRRANDIANCE_CUBEMAP_SIZE;
-        envrioment_capture_fbo_specs.Attachments.reset().attach(
-            {.Format = EFormat::RGBA32F,
-             .WrapMode = EWrapMode::CLAMP_TO_EDGE,
-             .Type = ETextureType::TEXTURE_CUBE_MAP
+		envrioment_capture_fbo_specs.Attachments.reset().attach(
+			{
+                .mFormat = EFormat::RGBA32F,
+			    .mWrapMode = EWrapMode::CLAMP_TO_EDGE,
+			     .mType = ETextureType::TEXTURE_CUBE_MAP
 
-            },
-            ETextureType::TEXTURE_CUBE_MAP);
-        mIrradianceFBO = Framebuffer::Create(envrioment_capture_fbo_specs);
+			},
+			ETextureType::TEXTURE_CUBE_MAP);
+		mIrradianceFBO = Framebuffer::Create(envrioment_capture_fbo_specs);
 
-        mPreFilteredEnvironmentTexture = TextureCube::Create(PREFILTER_MAP_SIZE, {FTextureSpecification{
-                                                                                     .Format = EFormat::RGBA16F,
-                                                                                     .WrapMode = EWrapMode::CLAMP_TO_EDGE,
-                                                                                     .MinFilter = EFilterMode::MIPMAP_LINEAR,
-                                                                                     .MagFilter = EFilterMode::LINEAR,
-                                                                                     .Mips = true,
-                                                                                     .Levels = PREFILTER_MIP_LEVELS,
-                                                                                     .Type = ETextureType::TEXTURE_CUBE_MAP,
-                                                                                 }});
+        mPreFilteredEnvironmentTexture =
+			TextureCube::Create(PREFILTER_MAP_SIZE, {FTextureSpecification{
+														.mFormat = EFormat::RGBA16F,
+														.mWrapMode = EWrapMode::CLAMP_TO_EDGE,
+														.mMinFilter = EFilterMode::MIPMAP_LINEAR,
+														.mMagFilter = EFilterMode::LINEAR,
+														.mMips = true,
+														.mLevels = PREFILTER_MIP_LEVELS,
+														.mType = ETextureType::TEXTURE_CUBE_MAP,
+													}});
 
-        mBRDFLUTTexture = Texture2D::Create(BRDF_LUT_SIZE, BRDF_LUT_SIZE, FTextureSpecification{
-                                                                              .Format = EFormat::RG16F,
-                                                                              .WrapMode = EWrapMode::CLAMP_TO_EDGE,
-                                                                              .MinFilter = EFilterMode::NEAREST,
-                                                                              .MagFilter = EFilterMode::NEAREST,
-                                                                          });
+        mBRDFLUTTexture = Texture2D::Create(BRDF_LUT_SIZE, BRDF_LUT_SIZE,
+											FTextureSpecification{
+												.mFormat = EFormat::RG16F,
+												.mWrapMode = EWrapMode::CLAMP_TO_EDGE,
+												.mMinFilter = EFilterMode::NEAREST,
+												.mMagFilter = EFilterMode::NEAREST,
+											});
 
         mCube = StaticMesh::CreateCube(1.f);
 

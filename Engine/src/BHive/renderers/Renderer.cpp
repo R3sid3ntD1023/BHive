@@ -57,8 +57,8 @@ namespace BHive
 
 			uint32_t white = 0xFFFFFFFF;
 			FTextureSpecification texture_specs{};
-			texture_specs.Channels = 3;
-			texture_specs.Format = EFormat::RGB8;
+			texture_specs.mChannels = 3;
+			texture_specs.mFormat = EFormat::RGB8;
 
 			mWhiteTexture = Texture2D::Create(&white, 1, 1, texture_specs);
 

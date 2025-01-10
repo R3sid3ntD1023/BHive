@@ -46,11 +46,6 @@ namespace BHive
         }
 
     protected:
-        virtual std::filesystem::path GetAssetPath(const std::filesystem::path &path) const { return path; }
-
-        virtual Ref<T> GetNewAsset() const { return CreateRef<T>(); }
-
-    protected:
         Ref<T> mAsset;
         std::string mLabel;
     };

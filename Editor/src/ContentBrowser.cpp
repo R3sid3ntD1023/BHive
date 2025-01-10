@@ -204,20 +204,8 @@ namespace BHive
 
 					if (!is_directory)
 					{
-						if (!is_valid_handle)
+						if (is_valid_handle)
 						{
-							if (ImGui::MenuItem("Import"))
-							{
-								OnImportAsset(mCurrentDirectory,relative_path);
-							}
-						}
-						else
-						{
-							if (ImGui::MenuItem("Remove"))
-							{
-								OnRemoveAsset(relative_path);
-							}
-
 							OnAssetContextMenu(relative_path);
 						}
 					}
@@ -227,15 +215,9 @@ namespace BHive
 				static std::string file_name;
 				if (ImGui::DrawEditableText(path.stem().string().c_str(), name, file_name))
 				{
-					auto new_path = relative_path.parent_path() / (file_name + relative_path.extension().string());
+					auto new_path = relative_path.parent_path() /
+									(file_name + relative_path.extension().string());
 					OnRenameAsset(relative_path, new_path, is_directory);
-				}
-
-				if (!is_directory)
-				{
-					ImGui::BeginDisabled();
-					ImGui::Checkbox("##Imported", &is_valid_handle);
-					ImGui::EndDisabled();
 				}
 
 				ImGui::PopID();

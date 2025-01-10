@@ -4,29 +4,30 @@
 
 namespace BHive
 {
-    struct Buffer
+    template<typename T>
+    struct TBuffer
     {
-        uint8_t* mData;
-        uint64_t mSize;
+        T* mData = nullptr;
+        uint64_t mSize = 0;
 
-        Buffer() = default;
-        Buffer(const Buffer&) = default;
+        TBuffer() = default;
+        TBuffer(const TBuffer&) = default;
 
-        Buffer(uint64_t size)
+        TBuffer(uint64_t size)
         {
             Allocate(size);
         }
 
-        Buffer(uint8_t* data, uint64_t size)
+        TBuffer(T* data, uint64_t size)
         {
             Allocate(size);
-            memcpy(mData, data, size);
+            memcpy_s(mData, mSize, data, size);
         }
 
         void Allocate(uint64_t size)
         {
             mSize = size;
-            mData = new uint8_t[size + 1];
+            mData = new T[size + 1];
             mData[size] = 0;
         }
 
@@ -37,24 +38,38 @@ namespace BHive
             mData = nullptr;
         }
 
-        static Buffer Copy(Buffer other)
+        static TBuffer Copy(TBuffer other)
         {
-            Buffer result(other.mSize);
-            memcpy(result.mData, other.mData, other.mSize);
+            TBuffer result(other.mSize);
+            memcpy_s(result.mData, result.mSize, other.mData, other.mSize);
             return result;
         }
 
-        template<typename T>
-        T* As()
-        {
-            return (T*)mData;
-        }
 
         operator bool() const
         {
-            return (bool)mData;
+            return mData != nullptr && mSize != 0;
         }
     };
+
+    struct Buffer : public TBuffer<uint8_t>
+	{
+		Buffer() = default;
+		Buffer(const Buffer& b)
+			: TBuffer<uint8_t>(b)
+            {}
+
+		Buffer(uint64_t size)
+			: TBuffer(size)
+		{
+		}
+
+		template <typename T>
+		T *As()
+		{
+			return (T *)mData;
+		}
+	};
 
     struct ScopedBuffer
     {

@@ -9,8 +9,6 @@ namespace BHive
 	{
 		AudioImporter importer;
 		auto source = importer.Import(path);
-		source->SetName(path.stem().string());
-
 
 		OnImportCompleted.invoke(source);
 
