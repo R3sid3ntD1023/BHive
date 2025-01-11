@@ -61,7 +61,7 @@ namespace BHive
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		virtual void ClearAttachment(uint32_t attachmentIndex, unsigned type, const void* data) = 0;
-		virtual void Blit(Framebuffer* target) = 0;
+		virtual void Blit(Ref<Framebuffer> &target) = 0;
 
 		virtual void ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void* data) = 0;
 

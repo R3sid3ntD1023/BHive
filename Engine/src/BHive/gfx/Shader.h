@@ -2,6 +2,7 @@
 
 #include "core/Core.h"
 #include "ShaderReflection.h"
+#include "threading/Threading.h"
 #include <glm/glm.hpp>
 
 namespace BHive
@@ -15,14 +16,17 @@ namespace BHive
 		virtual void Compile() = 0;
 		virtual void Bind() const = 0;
 		virtual void UnBind() const = 0;
-		virtual void SetUniform(const std::string &name, int value) const = 0;
-		virtual void SetUniform(const std::string &name, uint32_t value) const = 0;
-		virtual void SetUniform(const std::string &name, float value) const = 0;
-		virtual void SetUniform(const std::string &name, const glm::vec2 &value) const = 0;
-		virtual void SetUniform(const std::string &name, const glm::vec3 &value) const = 0;
-		virtual void SetUniform(const std::string &name, const glm::vec4 &value) const = 0;
-		virtual void SetUniform(const std::string &name, const glm::mat4 &value) const = 0;
-		virtual void SetUniform(const std::string &name, uint64_t value) const = 0;
+		
+
+		template <typename T>
+		void SetUniform(const std::string &name, const T &v) const
+		{
+			BEGIN_THREAD_DISPATCH(=)
+			int location = GetUniformLocation(name);
+			if (location != -1)
+				SetUniform(location, v);
+			END_THREAD_DISPATCH()
+		}
 
 		virtual uint32_t GetRendererID() const = 0;
 		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1) = 0;
@@ -31,6 +35,17 @@ namespace BHive
 
 		static Ref<Shader> Create(const std::filesystem::path &path);
 		static Ref<Shader> Create(const std::string &name, const std::string &vertex_shader, const std::string &fragment_shader);
+
+	private:
+		virtual void SetUniform(int location, int value) const = 0;
+		virtual void SetUniform(int location, uint32_t value) const = 0;
+		virtual void SetUniform(int location, float value) const = 0;
+		virtual void SetUniform(int location, const glm::vec2 &value) const = 0;
+		virtual void SetUniform(int location, const glm::vec3 &value) const = 0;
+		virtual void SetUniform(int location, const glm::vec4 &value) const = 0;
+		virtual void SetUniform(int location, const glm::mat4 &value) const = 0;
+		virtual void SetUniform(int location, uint64_t value) const = 0;
+		virtual int GetUniformLocation(const std::string& name) const = 0;
 	};
 
 	class ShaderLibrary
