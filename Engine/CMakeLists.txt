@@ -24,7 +24,7 @@ target_link_libraries(Engine
 	PUBLIC glad 
 	opengl32 
 	PUBLIC OpenAL::OpenAL 
-	PUBLIC EnTT
+	#PUBLIC EnTT
 	PUBLIC assimp::assimp 
 	PUBLIC imgui 
 	PUBLIC stb

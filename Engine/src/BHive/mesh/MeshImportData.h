@@ -16,8 +16,22 @@ namespace BHive
         glm::mat4 mGlobalInverseMatrix;
     };
 
-    struct FTextureData
+    struct FTextureData 
     {
+        enum EType : uint8_t
+        {
+            Type_NONE,
+            Type_ALBEDO,
+            Type_METALLIC,
+            Type_ROUGHNESS,
+            Type_METALLIC_ROUGHNESS,
+            Type_NORMAL,
+            Type_EMISSION,
+            Type_OPACITY,
+            Type_DISPLACEMENT
+        };
+
+        EType mType = Type_NONE;
         std::filesystem::path mPath = "";
         size_t mEmbeddedDataSize = 0;
         uint8_t *mEmbeddedData;

@@ -134,12 +134,12 @@ FetchContent_Declare(
 list(APPEND components rttr)
 
 #entt
-FetchContent_Declare(
-	entt
-	GIT_REPOSITORY https://github.com/skypjack/entt.git
-	GIT_TAG v3.14.0
-)
-list(APPEND components entt)
+#FetchContent_Declare(
+#	entt
+#	GIT_REPOSITORY https://github.com/skypjack/entt.git
+#	GIT_TAG v3.14.0
+#)
+#list(APPEND components entt)
 
 
 if(components)

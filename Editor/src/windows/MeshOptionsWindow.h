@@ -9,6 +9,8 @@ namespace BHive
     struct FMeshImportOptions;
     class Skeleton;
 	class MeshFactory;
+	class Texture;
+	class Material;
 
     class MeshOptionsWindow : public WindowBase
     {
@@ -21,6 +23,8 @@ namespace BHive
 
     protected:
         void CreateAssetMetaFile();
+		void SetMaterialTexture(FTextureData::EType type, const Ref<Texture> &texture,
+								Ref<Material> &material);
 
         virtual const char *GetName() const { return "Mesh Import"; }
 

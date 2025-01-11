@@ -324,9 +324,83 @@ namespace BHive
 			}
 		}
 
+		void GetTextureType(aiTextureType aiType, FTextureData::EType& type)
+		{
+			switch (aiType)
+			{
+			case aiTextureType_NONE:
+				break;
+			case aiTextureType_DIFFUSE:
+				type = FTextureData::Type_ALBEDO;
+				break;
+			case aiTextureType_SPECULAR:
+				type = FTextureData::Type_ROUGHNESS;
+				break;
+			case aiTextureType_AMBIENT:
+				break;
+			case aiTextureType_EMISSIVE:
+				type = FTextureData::Type_EMISSION;
+				break;
+			case aiTextureType_HEIGHT:
+				type = FTextureData::Type_DISPLACEMENT;
+				break;
+			case aiTextureType_NORMALS:
+				type = FTextureData::Type_NORMAL;
+				break;
+			case aiTextureType_SHININESS:
+				type = FTextureData::Type_METALLIC;
+				break;
+			case aiTextureType_OPACITY:
+				type = FTextureData::Type_OPACITY;
+				break;
+			case aiTextureType_DISPLACEMENT:
+				type = FTextureData::Type_DISPLACEMENT;
+				break;
+			case aiTextureType_LIGHTMAP:
+				break;
+			case aiTextureType_REFLECTION:
+				break;
+			case aiTextureType_BASE_COLOR:
+				type = FTextureData::Type_ALBEDO;
+				break;
+			case aiTextureType_NORMAL_CAMERA:
+				break;
+			case aiTextureType_EMISSION_COLOR:
+				break;
+			case aiTextureType_METALNESS:
+				type = FTextureData::Type_METALLIC;
+				break;
+			case aiTextureType_DIFFUSE_ROUGHNESS:
+				type = FTextureData::Type_ROUGHNESS;
+				break;
+			case aiTextureType_AMBIENT_OCCLUSION:
+				break;
+			case aiTextureType_UNKNOWN:
+				break;
+			case aiTextureType_SHEEN:
+				break;
+			case aiTextureType_CLEARCOAT:
+				break;
+			case aiTextureType_TRANSMISSION:
+				break;
+			case aiTextureType_MAYA_BASE:
+				break;
+			case aiTextureType_MAYA_SPECULAR:
+				break;
+			case aiTextureType_MAYA_SPECULAR_COLOR:
+				break;
+			case aiTextureType_MAYA_SPECULAR_ROUGHNESS:
+				break;
+			case _aiTextureType_Force32Bit:
+				break;
+			default:
+				break;
+			}
+		}
+
 		void GetMaterialData(const aiScene *scene, std::vector<FMaterialData> &materials)
 		{
-			static aiTextureType supported_textures[] =
+				static aiTextureType supported_textures[] =
 				{
 
 					aiTextureType_DIFFUSE,
@@ -361,6 +435,7 @@ namespace BHive
 						if (!material.mLoadedTextureNames.contains(str.C_Str()))
 						{
 							FTextureData texture_data;
+							GetTextureType(supported_textures[j], texture_data.mType);
 							GetTextureData(scene, str, texture_data);
 
 							material.mTextureData.push_back(texture_data);

@@ -169,12 +169,13 @@ namespace BHive
 
 			for (size_t i = 0; i < num_materials; i++)
 			{
+				Ref<Material> material = CreateRef<Material>();
 				auto &data = material_data[i];
-
 				auto &textures = data.mTextureData;
 				auto num_textures = textures.size();
 
 				TextureFactory tex_factory;
+
 				for (size_t i = 0; i < num_textures; i++)
 				{
 					auto &texture = textures[i];
@@ -192,12 +193,13 @@ namespace BHive
                     {
 						texture_asset->SetName(texture.mPath.stem().string());
 						mFactory->mOtherAssets.push_back(texture_asset);
+						SetMaterialTexture(texture.mType, Cast<Texture>(texture_asset), material);
                     }
 				}
 
 				auto material_name = data.mName.empty() ? name + std::to_string(i) : data.mName;
 
-				Ref<Material> material = CreateRef<Material>();
+				
 				material->SetName(material_name);
 				material->mAldebo = {data.mAlbedo.x, data.mAlbedo.y, data.mAlbedo.z,
 									 data.mAlbedo.w};
@@ -211,6 +213,48 @@ namespace BHive
 
         if (asset)
             mFactory->OnImportCompleted.invoke(asset);
-    }
+	}
+
+	void MeshOptionsWindow::SetMaterialTexture(FTextureData::EType type,
+											   const Ref<Texture> &texture, Ref<Material> &material)
+	{
+		if (!texture || !material || type == FTextureData::Type_NONE)
+			return;
+
+		std::string name = "";
+
+        switch (type)
+		{
+		case BHive::FTextureData::Type_ALBEDO:
+			name = ALBEDO_TEX;
+			break;
+		case BHive::FTextureData::Type_METALLIC:
+			name = METALLIC_TEX;
+			break;
+		case BHive::FTextureData::Type_ROUGHNESS:
+			name = ROUGHNESS_TEX;
+			break;
+		case BHive::FTextureData::Type_METALLIC_ROUGHNESS:
+			name = METALLIC_ROUGHNESS_TEX;
+			break;
+		case BHive::FTextureData::Type_NORMAL:
+			name = NORMAL_TEX;
+			break;
+		case BHive::FTextureData::Type_EMISSION:
+			name = EMISSION_TEX;
+			break;
+		case BHive::FTextureData::Type_OPACITY:
+			name = OPACITY_TEX;
+			break;
+		case BHive::FTextureData::Type_DISPLACEMENT:
+			name = DISPLACEMENT_TEX;
+			break;
+		default:
+			break;
+		}
+
+        if (!name.empty())
+			material->SetTexture(name.c_str(), texture);
+	}
 
 } // namespace BHive
