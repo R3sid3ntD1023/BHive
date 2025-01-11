@@ -21,6 +21,7 @@ namespace BHive
     {
         virtual void OnAssetContext(const AssetHandle &handle) override;
         virtual void OnAssetOpen(const AssetHandle &handle) override;
+
     };
 
     struct SpriteAssetContextMenu : public FAssetContextMenuBase<SpriteEditor>

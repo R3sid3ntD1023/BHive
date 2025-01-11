@@ -1,11 +1,8 @@
 #pragma once
 
 #include <stdint.h>
-#include <filesystem>
-#include <string>
-#include <unordered_map>
-#include <map>
 #include "SerializeTraits.h"
+#include "ClassVersion.h"
 
 namespace BHive
 {
@@ -47,6 +44,14 @@ namespace BHive
         {
             accessor::Serialize(*this, obj);
         }
+
+         template <typename T, std::enable_if_t<has_serialized_versioned<StreamWriter, T>, bool> = true>
+		inline void Write(const T &obj)
+		{
+			auto version = class_version<T>::version;
+			Write(version);
+			accessor::Serialize(*this, obj, version);
+		}
 
         template <typename T, std::enable_if_t<has_serialize_non_member_v<StreamWriter, T>, bool> = true>
         inline void Write(const T &obj)

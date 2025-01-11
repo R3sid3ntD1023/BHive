@@ -12,10 +12,16 @@ namespace BHive
 {
 	static std::vector<const char *> sHiddenExtensions = {".registry"};
 
-	struct InpsectedEntryItem
+	struct FileEntry
 	{
+		int mID;
 		std::filesystem::directory_entry mEntry;
 	};
+
+	using SelectedItems = std::unordered_map<int, FileEntry>;
+	static SelectedItems sSelectedItems;
+	static int sActiveItem = -1;
+	static std::vector<FileEntry> sItems;
 
 	ContentBrowserPanel::ContentBrowserPanel(const std::filesystem::path &directory)
 		: mBaseDirectory(directory), mCurrentDirectory(directory)
@@ -31,6 +37,8 @@ namespace BHive
 			else
 				LOG_ERROR("Failed to create directory - {}", error.message());
 		}
+
+		SetCurrentDirectory(directory);
 	}
 
 	void ContentBrowserPanel::OnGuiRender()
@@ -54,7 +62,7 @@ namespace BHive
 			{
 				if (ImGui::Button("<-"))
 				{
-					mCurrentDirectory = mCurrentDirectory.parent_path();
+					SetCurrentDirectory(mCurrentDirectory.parent_path());
 				}
 			}
 			ImGui::EndMenuBar();
@@ -117,7 +125,7 @@ namespace BHive
 	void ContentBrowserPanel::SetBaseDirectory(const std::filesystem::path &directory)
 	{
 		mBaseDirectory = directory;
-		mCurrentDirectory = directory;
+		SetCurrentDirectory(mBaseDirectory);
 	}
 
 	void ContentBrowserPanel::ShowFileSystemTree(const std::filesystem::directory_entry &directory)
@@ -126,7 +134,7 @@ namespace BHive
 		auto icon = OnGetIcon(true, "");
 		if (ImGui::DrawIcon("##" + id, icon.get(), GImGui->FontSize, 0))
 		{
-			mCurrentDirectory = directory;
+			SetCurrentDirectory(directory);
 		}
 
 		ImGui::SameLine();
@@ -145,12 +153,14 @@ namespace BHive
 
 	void ContentBrowserPanel::ShowFileSystem(float thumbnailsize)
 	{
-		static bool delete_entry = false;
-		static InpsectedEntryItem inspected_item;
+		static bool delete_entries = false;
 
 		if (!mCurrentDirectory.empty())
 		{
 			auto directory_iter = std::filesystem::directory_iterator(mCurrentDirectory);
+			
+			int index = 0;
+
 			for (auto &entry : directory_iter)
 			{
 				auto path = entry.path();
@@ -166,9 +176,46 @@ namespace BHive
 				bool is_valid_handle = IsAssetValid(relative_path);
 
 				auto icon = OnGetIcon(is_directory, relative_path);
-				ImGui::PushID(path.string().c_str());
+				
+				auto id = ImGui::GetID(path.string().c_str());
+				
+				ImGui::PushID(id);
 
-				ImGui::DrawIcon(name.c_str(), icon.get(), thumbnailsize, 0);
+				bool is_selected = sSelectedItems.contains(index);
+				if (ImGui::DrawIcon(name.c_str(), icon.get(), thumbnailsize, 0, &is_selected))
+				{
+					FileEntry ms_item = {index, entry}; 
+
+					if (!ImGui::IsKeyDown(ImGuiKey_ModCtrl))
+					{
+			
+						sSelectedItems.clear();
+					}
+
+					if (ImGui::IsKeyDown(ImGuiKey_ModShift))
+					{
+						if (sActiveItem != -1)
+						{
+							auto start = sActiveItem;
+							auto end = index;
+
+							for (int i = start; i <= end; i++)
+							{
+								auto &item = sItems[i];
+								sSelectedItems.emplace(item.mID, item);
+							}
+						}
+					}
+					else
+					{
+			
+						sSelectedItems.emplace(index, ms_item);
+					}
+
+					sActiveItem = index;
+				}
+
+
 
 				if (ImGui::BeginDragDropSource())
 				{
@@ -186,7 +233,7 @@ namespace BHive
 				{
 					if (is_directory)
 					{
-						mCurrentDirectory /= path.filename();
+						SetCurrentDirectory(mCurrentDirectory / path.filename());
 					}
 					else
 					{
@@ -198,8 +245,7 @@ namespace BHive
 				{
 					if (ImGui::MenuItem("Delete"))
 					{
-						inspected_item = {entry};
-						delete_entry = true;
+						delete_entries = true;
 					}
 
 					if (!is_directory)
@@ -223,56 +269,75 @@ namespace BHive
 				ImGui::PopID();
 
 				ImGui::TableNextColumn();
+
+				 index++;
 			}
 
-			if (delete_entry)
+			if (ImGui::IsWindowFocused())
 			{
-				ImGui::OpenPopup("Delete?");
+				if (ImGui::IsKeyPressed(ImGuiKey_Delete))
+				{
+					delete_entries = true;
+				}
+				else if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+				{
+					sActiveItem = -1;
+					sSelectedItems.clear();
+				}
 			}
 
-			ImGui::SetNextWindowSize({ 100, 100 });
-			if (ImGui::BeginPopupModal("Delete?", &delete_entry, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize))
+			if (delete_entries)
 			{
-
-				if (ImGui::Button("Yes"))
+				for (auto &[id, item] : sSelectedItems)
 				{
-					DeleteFolder(inspected_item.mEntry);
-					delete_entry = false;
+					DeleteFolder(item.mEntry);
 				}
+				delete_entries = false;
 
-				ImGui::SameLine();
-
-				if (ImGui::Button("No"))
-				{
-					delete_entry = false;
-				}
-
-				ImGui::EndPopup();
+				sActiveItem = -1;
+				sSelectedItems.clear();
 			}
 		}
 	}
-	void ContentBrowserPanel::DeleteFolder(const std::filesystem::directory_entry &item)
+
+	void ContentBrowserPanel::OnDeleteFolder(const std::filesystem::directory_entry &entry) 
 	{
-		if (!item.is_directory())
+		if (!entry.is_directory())
 		{
-			auto relative_path = std::filesystem::relative(item.path(), mBaseDirectory);
+			auto relative_path = std::filesystem::relative(entry.path(), mBaseDirectory);
 			OnDeleteAsset(relative_path);
 			return;
 		}
 
-		for (auto &entry : std::filesystem::directory_iterator(item))
+		for (auto &child_entry : std::filesystem::directory_iterator(entry))
 		{
-			DeleteFolder(entry);
+			OnDeleteFolder(child_entry);
 		}
+	}
 
-		std::error_code error;
-		if (std::filesystem::remove(item, error))
+	void ContentBrowserPanel::DeleteFolder(const std::filesystem::directory_entry &item)
+	{
+		OnDeleteFolder(item);
+
+		if (!FileDialogs::MoveToRecycleBin(item.path().string()))
 		{
-			LOG_TRACE("Deleted folder {}", item.path().string());
+			LOG_ERROR("Failed to delete folder {}");
 		}
-		else
+	}
+	void ContentBrowserPanel::SetCurrentDirectory(const std::filesystem::path &path)
+	{
+		mCurrentDirectory = path;
+		sItems.clear();
+		sActiveItem = -1;
+		sSelectedItems.clear();
+
+		auto directory_iter = std::filesystem::directory_iterator(mCurrentDirectory);
+
+		int index = 0;
+		for (auto& entry : directory_iter)
 		{
-			LOG_ERROR("Failed to delete folder {}", error.message());
+			sItems.push_back(FileEntry{index, entry});
+			index++;
 		}
 	}
 }

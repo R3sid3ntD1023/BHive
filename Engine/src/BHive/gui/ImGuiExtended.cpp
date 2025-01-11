@@ -11,16 +11,30 @@ namespace ImGui
 		ImGui::Image((ImTextureID)(uint64_t)(uint32_t)texture->GetRendererID(), size, {0, 1}, {1, 0}, tint_col, border_col);
 	}
 
-	bool DrawIcon(const std::string &label, BHive::Texture *icon, float size, ImGuiButtonFlags flags)
+	bool DrawIcon(const std::string &label, BHive::Texture *icon, float size, ImGuiButtonFlags flags, bool* selected)
 	{
+		bool pressed = false;
+
 		if (icon)
 		{
+			
 			auto id = ImGui::GetID(label.c_str());
-			return ImageButtonEx(id, (ImTextureID)(uint64_t)(uint32_t)*icon, {size, size}, {0, 1}, {1, 0}, {0, 0, 0, 0}, {1, 1, 1, 1},
+			pressed = ImageButtonEx(id, (ImTextureID)(uint64_t)(uint32_t)*icon, {size, size}, {0, 1}, {1, 0}, {0, 0, 0, 0}, {1, 1, 1, 1},
 								 flags);
 		}
+		else
+		{
+			pressed = ButtonEx("##icon", {size, size}, flags);
+		}
 
-		return ButtonEx("##icon", {size, size}, flags);
+		if (selected && *selected)
+		{
+			auto rect = ImGui::GetItemRect();
+			auto drawlist = ImGui::GetWindowDrawList();
+			drawlist->AddRect(rect.Min, rect.Max, 0xFF00FFFF, 0, 0, 2.f);
+		}
+		
+		return pressed;
 	}
 
 	bool DrawEditableText(const char *str_id, const std::string &label, std::string &editable_text)

@@ -7,12 +7,13 @@
 #include "asset/FAssetContextMenu.h"
 #include "project/Project.h"
 #include "asset/AssetFactory.h"
-
+#include "threading/Threading.h"
 
 namespace BHive
 {
     void FinishAssetImport(const std::filesystem::path& dir, const std::filesystem::path& rel, const Ref<Asset>& asset, const std::vector<Ref<Asset>>& others)
     {
+		BEGIN_THREAD_DISPATCH(=)
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
 		auto export_path = dir / (rel.stem().string() + ".asset");
 		AssetFactory asset_factory;
@@ -27,6 +28,7 @@ namespace BHive
 			asset_factory.Export(other, export_path);
 			manager->ImportAsset(export_path, other->get_type(), other->GetHandle());
 		}
+		END_THREAD_DISPATCH()
     }
 
     EditorContentBrowser::EditorContentBrowser(const std::filesystem::path &directory)
@@ -37,22 +39,20 @@ namespace BHive
     void EditorContentBrowser::OnImportAsset(const std::filesystem::path &directory,
 											 const std::filesystem::path &relative)
     {
+		
 		auto &registry = FactoryRegistry::Get();
         auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
         auto type = registry.GetTypeFromExtension(relative.extension().string());
 		auto factory = registry.Get(type);
         if (factory)
         {
-			Ref<Asset> asset;
 			factory->OnImportCompleted.bind(
 				[=](const Ref<Asset> &asset) {
 					FinishAssetImport(directory, relative, asset, factory->GetOtherCreatedAssets());
 				});
-            if (auto asset = factory->Import(relative))
-            {
-				
-            }
+			factory->Import(relative);
         }
+		
        
     }
 

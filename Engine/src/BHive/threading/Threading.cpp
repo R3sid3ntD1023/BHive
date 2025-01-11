@@ -10,10 +10,10 @@ namespace BHive
 		sJobs.push_back(job);
 	}
 
-	void Thread::Dispatch(const std::string &name, ThreadFunction func)
+	void Thread::Dispatch(ThreadFunction func)
 	{
 		auto_lock lock(sMutex);
-		sDispatched.push_back({name, func});
+		sDispatched.push_back(func);
 	}
 
 	void Thread::Update()
@@ -27,7 +27,7 @@ namespace BHive
 			if (job->IsDone())
 			{
 				auto func = job->GetDispatchedFunction();
-				DispatchInternal(job->GetName(), func);
+				DispatchInternal(func);
 				to_remove.push(job);
 			}
 		}
@@ -42,18 +42,18 @@ namespace BHive
 		{
 			auto &func = sDispatched[i];
 
-			if (!func.mFunc)
+			if (!func)
 				continue;
 
 			// LOG_TRACE("{}", func.mName);
-			func.mFunc();
+			func();
 		}
 
 		sDispatched.clear();
 	}
 
-	void Thread::DispatchInternal(const std::string &name, ThreadFunction func)
+	void Thread::DispatchInternal(ThreadFunction func)
 	{
-		sDispatched.push_back({name, func});
+		sDispatched.push_back(func);
 	}
 }

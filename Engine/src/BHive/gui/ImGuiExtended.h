@@ -13,7 +13,8 @@ namespace ImGui
 	void Image(const BHive::Texture *texture, const ImVec2 size = {0, 0},
 			   const ImVec4 &tint_col = {1, 1, 1, 1}, const ImVec4 &border_col = {0, 0, 0, 0});
 
-	bool DrawIcon(const std::string &label, BHive::Texture *icon, float size, ImGuiButtonFlags flags = ImGuiButtonFlags_PressedOnDoubleClick);
+	bool DrawIcon(const std::string &label, BHive::Texture *icon, float size, ImGuiButtonFlags flags = ImGuiButtonFlags_PressedOnDoubleClick,
+		bool* selected = (bool*)0);
 
 	bool DrawEditableText(const char *str_id, const std::string &label, std::string &editable_text);
 

@@ -103,13 +103,11 @@ namespace BHive
 
         auto name = mImportData.mPath.stem().string();
         Ref<Asset> asset;
-        MaterialTable *material_table = nullptr;
 
         if (as_static_mesh)
         {
 			auto mesh = CreateRef<StaticMesh>(mImportData.mData.mMeshData);
 			mesh->SetName(name);
-			material_table = &mesh->GetMaterialTable();
 			asset = mesh;
         }
         else if (has_animations || as_skeletal_mesh)
@@ -127,7 +125,6 @@ namespace BHive
             if (as_skeletal_mesh)
             {
 				auto mesh = CreateRef<SkeletalMesh>(mImportData.mData.mMeshData, skeleton);
-				material_table = &mesh->GetMaterialTable();
 				asset = mesh;
             }
 
@@ -148,27 +145,30 @@ namespace BHive
 						data.mFrames, skeleton,
 						data.mGlobalInverseMatrix);
 					animations[i]->SetName(anim_name);
-
-                    if (i > 0)
-                        mFactory->mOtherAssets.push_back(animations[i]);
                 }
 
-                asset = animations[0];
+                if (!asset)
+                    asset = animations[0];
+
+                for (auto& animation : animations)
+                {
+					if (asset != animation)
+						mFactory->mOtherAssets.push_back(animation);
+                }
             }
         }
 
-        if (!material_table)
-			return;
-
-		auto &material_data = mImportData.mData.mMaterialData;
-		size_t num_materials = material_data.size();
-		material_table->resize(num_materials);
-
-		if (import_materials)
+        auto mesh = Cast<StaticMesh>(asset);
+		if (mesh && import_materials)
 		{
+			auto &material_table = mesh->GetMaterialTable();
+			auto &material_data = mImportData.mData.mMaterialData;
+			size_t num_materials = material_data.size();
+
+			material_table.resize(num_materials);
+
 			for (size_t i = 0; i < num_materials; i++)
 			{
-
 				auto &data = material_data[i];
 
 				auto &textures = data.mTextureData;
@@ -181,7 +181,7 @@ namespace BHive
 					Ref<Asset> texture_asset;
 					if (!texture.is_embedded())
 					{
-						texture_asset = tex_factory.Import(texture.mPath);					
+						texture_asset = tex_factory.Import(mImportData.mPath.parent_path() / texture.mPath);					
 					}
                     else
                     {
@@ -203,7 +203,7 @@ namespace BHive
 									 data.mAlbedo.w};
 				material->mMetallic = data.mMetallic;
 				material->mRoughness = data.mRoughness;
-				material_table->set_material(material, i);
+				material_table.set_material(material, i);
 
 				mFactory->mOtherAssets.push_back(material);
 			}

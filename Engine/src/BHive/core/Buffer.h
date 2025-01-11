@@ -33,7 +33,9 @@ namespace BHive
 
         void Release()
         {
-            delete[] mData;
+			if (mData)
+				delete[] mData;
+
             mSize = 0;
             mData = nullptr;
         }

@@ -9,5 +9,6 @@ namespace BHive
 		static BHIVE std::string OpenFile(const char* filter);
 		static BHIVE std::string SaveFile(const char* filter);
 		static BHIVE std::string GetDirectory();
+		static bool MoveToRecycleBin(const std::string &path);
 	};
 }

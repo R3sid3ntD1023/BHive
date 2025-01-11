@@ -10,12 +10,13 @@ namespace BHive
         using Yes = std::true_type;
         using No = std::false_type;
 
-#define MAKE_SERIALIZE_FUNCTION_TRAIT(name, func)\
+ #define MAKE_VERSION_TEST ,0
+#define MAKE_SERIALIZE_FUNCTION_TRAIT(name, func, versioned)\
         template <typename TStream, typename T>\
         struct has_##name\
         {\
             template <typename TStream, typename T>\
-            static auto test(int) -> decltype(func(std::declval<TStream &>(), std::declval<const T&>()), Yes());\
+            static auto test(int) -> decltype(func(std::declval<TStream &>(), std::declval<const T&>() versioned), Yes());\
                 \
             template <typename, typename>\
             static No test(...);\
@@ -23,12 +24,13 @@ namespace BHive
             static const bool value = std::is_same_v<decltype(test<TStream, T>(0)), Yes>;\
         };
 
-#define MAKE_DESERIALIZE_FUNCTION_TRAIT(name, func)\
+#define MAKE_DESERIALIZE_FUNCTION_TRAIT(name, func, versioned)\
         template <typename TStream, typename T>\
         struct has_##name\
         {\
             template <typename TStream, typename T>\
-            static auto test(int) -> decltype(func(std::declval<TStream &>(), std::declval<T&>()), Yes());\
+            static auto test(int) -> decltype(func(std::declval<TStream &>(), std::declval<T &>() versioned),             \
+										  Yes());\
                 \
             template <typename, typename>\
             static No test(...);\
@@ -36,10 +38,13 @@ namespace BHive
             static const bool value = std::is_same_v<decltype(test<TStream, T>(0)), Yes>;\
         };
 
-        MAKE_SERIALIZE_FUNCTION_TRAIT(serialize, accessor::Serialize)
-        MAKE_SERIALIZE_FUNCTION_TRAIT(serialize_non_member, Serialize)
-        MAKE_DESERIALIZE_FUNCTION_TRAIT(deserialize, accessor::Deserialize)
-        MAKE_DESERIALIZE_FUNCTION_TRAIT(deserialize_non_member, Deserialize)
+
+        MAKE_SERIALIZE_FUNCTION_TRAIT(serialize, accessor::Serialize, )
+        MAKE_SERIALIZE_FUNCTION_TRAIT(serialize_non_member, Serialize, )
+		MAKE_SERIALIZE_FUNCTION_TRAIT(serialize_versioned, accessor::Serialize, MAKE_VERSION_TEST)
+        MAKE_DESERIALIZE_FUNCTION_TRAIT(deserialize, accessor::Deserialize, )
+        MAKE_DESERIALIZE_FUNCTION_TRAIT(deserialize_non_member, Deserialize, )
+		MAKE_DESERIALIZE_FUNCTION_TRAIT(deserialize_versioned, accessor::Deserialize, MAKE_VERSION_TEST)
     }
 
    
@@ -51,17 +56,25 @@ namespace BHive
     const bool has_serialize_non_member_v = details::has_serialize_non_member<TStream, T>::value;
 
     template <typename TStream, typename T>
+	const bool has_serialized_versioned = details::has_serialize_versioned<TStream, T>::value;
+
+    template <typename TStream, typename T>
     const bool has_deserialize_v = details::has_deserialize<TStream, T>::value;
 
     template <typename TStream, typename T>
     const bool has_deserialize_non_member_v = details::has_deserialize_non_member<TStream, T>::value;
 
+    template <typename TStream, typename T>
+	const bool has_deserialze_versionsed = details::has_deserialize_versioned<TStream, T>::value;
+
     template<typename TStream, typename T>
-    struct serialize_counter : std::integral_constant <int, has_serialize_non_member_v<TStream, T> + has_serialize_v<TStream, T>>
+    struct serialize_counter : std::integral_constant <int, has_serialize_non_member_v<TStream, T> + has_serialize_v<TStream, T> +
+        has_serialized_versioned<TStream, T>>
     { };
 
     template<typename TStream, typename T>
-    struct deserialize_counter : std::integral_constant <int, has_deserialize_non_member_v<TStream, T> + has_deserialize_v<TStream, T>>
+    struct deserialize_counter : std::integral_constant <int, has_deserialize_non_member_v<TStream, T> + has_deserialize_v<TStream, T> +
+        has_deserialze_versionsed<TStream, T>>
     {
     };
 

@@ -111,4 +111,56 @@ namespace BHive
 
 		return folder;
 	}
+
+	bool FileDialogs::MoveToRecycleBin(const std::string &path)
+	{
+		HRESULT hr;
+		IFileOperation *pfo;
+		IShellItem *deleted_item = NULL;
+		wchar_t *wstr = NULL;
+
+		auto hwnd = glfwGetWin32Window((GLFWwindow *)Application::Get().GetWindow().GetNative());
+		hr = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_IFileOperation , (void**)&pfo);
+
+		if (SUCCEEDED(hr))
+		{
+			hr = pfo->SetOperationFlags(FOF_ALLOWUNDO);
+			pfo->SetOwnerWindow(hwnd);
+
+			if (SUCCEEDED(hr))
+			{
+				
+				auto size = path.size() + 1;
+				wstr = new wchar_t[size];
+				size_t converted_chars = 0;
+				mbstowcs_s(&converted_chars, wstr, size, path.c_str(), _TRUNCATE);
+
+				hr = SHCreateItemFromParsingName(wstr, NULL, IID_PPV_ARGS(&deleted_item));
+
+				if (SUCCEEDED(hr))
+				{
+				
+					hr = pfo->DeleteItem(deleted_item, NULL);
+
+					if (SUCCEEDED(hr))
+					{
+						hr = pfo->PerformOperations();
+
+					}
+				}
+			}
+		}
+
+		if (deleted_item != NULL)
+			deleted_item->Release();
+
+		pfo->Release();
+
+		if (wstr != NULL)
+			delete[] wstr;
+
+		CoUninitialize();
+
+		return SUCCEEDED(hr);
+	}
 }

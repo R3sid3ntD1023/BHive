@@ -12,8 +12,13 @@ namespace BHive
 	void *MeshColliderComponent::GetCollisionShape(const FTransform &world_transform)
 	{
 		CreateConvexMesh();
-		mCollisionShape = PhysicsContext::get_context().createConvexMeshShape(
-			(rp3d::ConvexMesh*)mConvexMesh, physics::utils::vec3_to_rp3d(world_transform.get_scale()));
+		
+		if (mConvexMesh)
+		{
+			mCollisionShape = PhysicsContext::get_context().createConvexMeshShape(
+				(rp3d::ConvexMesh *)mConvexMesh,
+				physics::utils::vec3_to_rp3d(world_transform.get_scale()));
+		}
 
 		return mCollisionShape;
 	}
@@ -52,7 +57,7 @@ namespace BHive
 
 	void MeshColliderComponent::CreateConvexMesh()
 	{
-		if (!mConvexMesh)
+		if (!mConvexMesh && mStaticMesh)
 		{
 			auto &mesh_data = mStaticMesh->GetData();
 			auto &vertices = mesh_data.mVertices;

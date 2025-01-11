@@ -97,7 +97,7 @@ namespace BHive
 			}
 		}
 
-		FSubMesh ParseMesh(const aiScene *scene, const aiNode* node, const aiMesh *mesh, FMeshImportData &import_data)
+		FSubMesh ParseMesh(const aiScene *scene, const aiMesh *mesh, FMeshImportData &import_data)
 		{
 			FMeshData &data = import_data.mMeshData;
 
@@ -108,7 +108,6 @@ namespace BHive
 			sub_mesh.mIndexCount = mesh->mNumFaces * 3;
 
 			aiMatrix4x4 root_transfrom = scene->mRootNode->mTransformation;
-			aiMatrix4x4 transform = node->mTransformation;
 
 			std::vector<FVertex> vertices(mesh->mNumVertices);
 			std::vector<uint32_t> indices(mesh->mNumFaces * 3);
@@ -120,7 +119,7 @@ namespace BHive
 			for (unsigned v = 0; v < mesh->mNumVertices; v++)
 			{
 
-				glm::vec3 position = make_mat4(transform) * glm::vec4(make_vec3(mesh->mVertices[v]), 1.0);
+				glm::vec3 position = glm::vec4(make_vec3(mesh->mVertices[v]), 1.0);
 				glm::vec2 texcoord = {0.0f, 0.0f};
 				glm::vec3 normal = {0.0f, 0.0f, 0.0f};
 				glm::vec3 tangent = {0.0f, 0.0f, 0.0f};
@@ -195,22 +194,16 @@ namespace BHive
 		}
 
 
-		void ProcessNode(const aiScene* scene, const aiNode* node, FMeshImportData &data)
+		void ProcessMeshes(const aiScene* scene, FMeshImportData &data)
 		{
-			auto count = node->mNumChildren;
+			auto count = scene->mNumMeshes;
+			data.mMeshData.mSubMeshes.resize(count);
 
-			for (unsigned i = 0; i < node->mNumMeshes; i++)
+			for (unsigned i = 0; i < count; i++)
 			{
-				aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-				auto submesh = ParseMesh(scene, node, mesh, data);
-				data.mMeshData.mSubMeshes.push_back(submesh);
-			}
-
-			for (unsigned int i = 0; i < count; i++)
-			{
-				auto child = node->mChildren[i];
-
-				ProcessNode(scene, child, data);
+				aiMesh* mesh = scene->mMeshes[i];
+				auto submesh = ParseMesh(scene, mesh, data);
+				data.mMeshData.mSubMeshes[i] = submesh;
 			}
 		}
 
@@ -391,7 +384,7 @@ namespace BHive
 
 		void ProcessScene(const aiScene *scene, FMeshImportData &data)
 		{
-			utils::ProcessNode(scene, scene->mRootNode, data);
+			utils::ProcessMeshes(scene, data);
 
 			utils::GetMaterialData(scene, data.mMaterialData);
 			utils::GetAnimationData(scene, data.mAnimationData, data.mBoneData);
@@ -408,7 +401,7 @@ namespace BHive
 	{
 		Assimp::Importer importer;
 		importer.SetProgressHandler(new ModelProgress());
-		int flags = aiProcessPreset_TargetRealtime_MaxQuality;
+		int flags = aiProcessPreset_TargetRealtime_Fast | aiProcess_RemoveRedundantMaterials;
 		const aiScene *scene = importer.ReadFile(path.string().c_str(), (unsigned)flags);
 
 		if (!scene || !scene->mRootNode || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)

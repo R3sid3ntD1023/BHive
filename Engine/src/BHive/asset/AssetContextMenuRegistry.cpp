@@ -29,8 +29,11 @@ namespace BHive
 
     FAssetContextMenu *AssetContextMenuRegistry::GetAssetMenu(const AssetType &type)
     {
-        if (mRegisteredMenus.contains(type))
-            return mRegisteredMenus.at(type).get();
+        for (auto& [supported_type, menu] : mRegisteredMenus)
+        {
+			if (type == supported_type || type.is_derived_from(supported_type))
+				return mRegisteredMenus.at(supported_type).get();
+        }
 
         return nullptr;
     }
