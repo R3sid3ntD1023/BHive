@@ -69,7 +69,7 @@ namespace BHive
 		;
 	}
 
-	void GLFramebuffer::Blit(Framebuffer *target)
+	void GLFramebuffer::Blit(Ref<Framebuffer> &target)
 	{
 		if (!target || mSpecification.Width == 0 || mSpecification.Height == 0)
 			return;
@@ -128,7 +128,7 @@ namespace BHive
 		glDeleteFramebuffers(1, &mFramebufferID);
 	}
 
-	void GLFramebuffer::BlitInternal(Framebuffer *target)
+	void GLFramebuffer::BlitInternal(Ref<Framebuffer> &target)
 	{
 
 		const auto &specs = mSpecification;

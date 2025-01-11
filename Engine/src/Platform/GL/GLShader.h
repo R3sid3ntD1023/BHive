@@ -16,20 +16,20 @@ namespace BHive
 		void Compile();
 		void Bind() const;
 		void UnBind() const;
-		void SetUniform(const std::string &name, int value) const;
-		void SetUniform(const std::string &name, uint32_t value) const;
-		void SetUniform(const std::string &name, float value) const;
-		void SetUniform(const std::string &name, const glm::vec2 &value) const;
-		void SetUniform(const std::string &name, const glm::vec3 &value) const;
-		void SetUniform(const std::string &name, const glm::vec4 &value) const;
-		void SetUniform(const std::string &name, const glm::mat4 &value) const;
-		void SetUniform(const std::string &name, uint64_t handle) const;
 
 		uint32_t GetRendererID() const { return mShaderID; }
 		void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1);
 
 	private:
-		uint32_t GetUniformLocation(const std::string &name) const;
+		virtual void SetUniform(int location, int value) const ;
+		virtual void SetUniform(int location, uint32_t value) const;
+		virtual void SetUniform(int location, float value) const;
+		virtual void SetUniform(int location, const glm::vec2 &value) const;
+		virtual void SetUniform(int location, const glm::vec3 &value) const;
+		virtual void SetUniform(int location, const glm::vec4 &value) const;
+		virtual void SetUniform(int location, const glm::mat4 &value) const;
+		virtual void SetUniform(int location, uint64_t value) const;
+		virtual int GetUniformLocation(const std::string &name) const;
 		void PreProcess(const std::string &source);
 		void Reflect();
 

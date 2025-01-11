@@ -24,9 +24,9 @@ Ref<VertexArray> sVAO;
 void Render()
 {
     auto dt = Time::GetDeltaTime();
-    Thread::Update(dt);
+    Thread::Update();
 
-    RenderCommand::ClearColor(.3f, .3f, .3f, 1);
+    RenderCommand::ClearColor(.1f, .1f, .1f, 1);
     RenderCommand::Clear(Buffer_Color | Buffer_Depth);
 
     Renderer::Begin(glm::perspective(45.f, 1.0f, 0.1f, 1000.f), glm::lookAt(glm::vec3{0, 4, 2}, glm::vec3{0, 0, 0}, {0, 1, 0}));

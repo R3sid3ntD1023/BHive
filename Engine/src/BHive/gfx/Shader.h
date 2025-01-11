@@ -21,11 +21,9 @@ namespace BHive
 		template <typename T>
 		void SetUniform(const std::string &name, const T &v) const
 		{
-			BEGIN_THREAD_DISPATCH(=)
 			int location = GetUniformLocation(name);
 			if (location != -1)
 				SetUniform(location, v);
-			END_THREAD_DISPATCH()
 		}
 
 		virtual uint32_t GetRendererID() const = 0;

@@ -135,7 +135,10 @@ namespace BHive
 
 	void GLTexture2D::Release()
 	{
-		glDeleteTextures(1, &mTextureID);
+		auto id = mTextureID;
+		BEGIN_THREAD_DISPATCH(=)
+		glDeleteTextures(1, &id);
+		END_THREAD_DISPATCH()
 
 		mBuffer.Release();
 	}

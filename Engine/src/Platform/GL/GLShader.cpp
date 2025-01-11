@@ -172,61 +172,44 @@ namespace BHive
 		glUseProgram(0);
 	}
 
-	void GLShader::SetUniform(const std::string &name, int value) const
+	void GLShader::SetUniform(int location, int value) const
 	{
-
-		auto loc = GetUniformLocation(name);
-		glUniform1i(loc, value);
+		glUniform1i(location, value);
 	}
 
-	void GLShader::SetUniform(const std::string &name, uint32_t value) const
+	void GLShader::SetUniform(int location, uint32_t value) const
 	{
-
-		auto loc = GetUniformLocation(name);
-		glUniform1ui(loc, value);
+		glUniform1ui(location, value);
 	}
 
-	void GLShader::SetUniform(const std::string &name, float value) const
+	void GLShader::SetUniform(int location, float value) const
 	{
-
-		auto loc = GetUniformLocation(name);
-		glUniform1f(loc, value);
+		glUniform1f(location, value);
 	}
 
-	void GLShader::SetUniform(const std::string &name, const glm::vec2 &value) const
+	void GLShader::SetUniform(int location, const glm::vec2 &value) const
 	{
-
-		auto loc = GetUniformLocation(name);
-		glUniform2fv(loc, 1, &value.x);
+		glUniform2fv(location, 1, &value.x);
 	}
 
-	void GLShader::SetUniform(const std::string &name, const glm::vec3 &value) const
+	void GLShader::SetUniform(int location, const glm::vec3 &value) const
 	{
-
-		auto loc = GetUniformLocation(name);
-		glUniform3fv(loc, 1, &value.x);
+		glUniform3fv(location, 1, &value.x);
 	}
 
-	void GLShader::SetUniform(const std::string &name, const glm::vec4 &value) const
+	void GLShader::SetUniform(int location, const glm::vec4 &value) const
 	{
-
-		auto loc = GetUniformLocation(name);
-		glUniform4fv(loc, 1, &value.x);
+		glUniform4fv(location, 1, &value.x);
 	}
 
-	void GLShader::SetUniform(const std::string &name, const glm::mat4 &value) const
+	void GLShader::SetUniform(int location, const glm::mat4 &value) const
 	{
-
-		auto loc = GetUniformLocation(name);
-		glUniformMatrix4fv(loc, 1, GL_FALSE, &value[0].x);
+		glUniformMatrix4fv(location, 1, GL_FALSE, &value[0].x);
 	}
 
-	void GLShader::SetUniform(const std::string &name, uint64_t handle) const
+	void GLShader::SetUniform(int location, uint64_t handle) const
 	{
-
-		auto loc = GetUniformLocation(name);
-		// glUniformHandleui64ARB(loc, handle);
-		glProgramUniformHandleui64ARB(mShaderID, loc, handle);
+		glProgramUniformHandleui64ARB(mShaderID, location, handle);
 	}
 
 	void GLShader::Dispatch(uint32_t w, uint32_t h, uint32_t d)
@@ -236,14 +219,14 @@ namespace BHive
 		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	}
 
-	uint32_t GLShader::GetUniformLocation(const std::string &name) const
+	int GLShader::GetUniformLocation(const std::string &name) const
 	{
 
-		auto loc = glGetUniformLocation(mShaderID, name.c_str());
-		if (loc == -1)
+		auto location = glGetUniformLocation(mShaderID, name.c_str());
+		if (location == -1)
 			LOG_ERROR("Failed to find Uniform {} for {}", name, mName);
 
-		return loc;
+		return location;
 	}
 
 	void GLShader::Reflect()

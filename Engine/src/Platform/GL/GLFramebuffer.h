@@ -16,7 +16,7 @@ namespace BHive
 
 		void Resize(uint32_t width, uint32_t height);
 		void ClearAttachment(uint32_t attachmentIndex, unsigned type, const void *data);
-		void Blit(Framebuffer *target);
+		void Blit(Ref<Framebuffer>& target);
 
 		void ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data);
 
@@ -39,7 +39,7 @@ namespace BHive
 		virtual void Initialize();
 		virtual void Release();
 
-		void BlitInternal(Framebuffer *target);
+		void BlitInternal(Ref<Framebuffer> &target);
 		void ReadPixelInternal(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data);
 
 	protected:

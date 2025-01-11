@@ -209,7 +209,7 @@ namespace BHive
 
 		mMultiSampleFramebuffer->UnBind();
 
-		mMultiSampleFramebuffer->Blit(mFramebuffer.get());
+		mMultiSampleFramebuffer->Blit(mFramebuffer);
 
 		// post process
 		ProcessBloom();
