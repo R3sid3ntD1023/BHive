@@ -33,7 +33,8 @@ namespace BHive
 
 		static Ref<StaticMesh> CreatePlane(float width, float height);
 		static Ref<StaticMesh> CreateCube(float size);
-		static Ref<StaticMesh> CreateSphere(float radius = 0.5f, uint32_t sectors = 32, uint32_t stacks = 32);
+		static Ref<StaticMesh> CreateSphere(float radius = 0.5f, uint32_t sectors = 32,
+											uint32_t stacks = 32);
 
 		static void CalculateTangentsAndBitTangents(std::vector<FVertex> &vertices);
 
@@ -41,7 +42,6 @@ namespace BHive
 
 		virtual void Deserialize(StreamReader &ar);
 
-		ASSET_CLASS(StaticMesh);
 		REFLECTABLEV(Asset)
 
 	private:
@@ -54,4 +54,4 @@ namespace BHive
 	};
 
 	REFLECT_EXTERN(StaticMesh)
-}
+} // namespace BHive

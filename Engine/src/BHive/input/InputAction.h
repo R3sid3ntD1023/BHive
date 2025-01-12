@@ -7,31 +7,32 @@
 
 namespace BHive
 {
-    struct FInputAction : public ISerializable
-    {
-        FInputAction() = default;
+	struct FInputAction
+	{
+		FInputAction() = default;
 
-        FInputAction(const std::string &name, const FInputKey &key)
-            : mName(name), mKey(key)
-        {
-        }
+		FInputAction(const std::string &name, const FInputKey &key)
+			: mName(name),
+			  mKey(key)
+		{
+		}
 
-        FInputKey GetKey() const { return mKey; }
-        bool IsMouse() const { return mKey.mIsMouse; }
-        bool IsKey() const { return !mKey.mIsMouse; }
+		FInputKey GetKey() const { return mKey; }
+		bool IsMouse() const { return mKey.mIsMouse; }
+		bool IsKey() const { return !mKey.mIsMouse; }
 
-        void Serialize(StreamWriter &ar) const;
-        void Deserialize(StreamReader &ar);
+		void Serialize(StreamWriter &ar) const;
+		void Deserialize(StreamReader &ar);
 
-    private:
-        std::string mName;
-        FInputKey mKey;
+	private:
+		std::string mName;
+		FInputKey mKey;
 
-        REFLECTABLE()
+		REFLECTABLE()
 
-        friend class InputContext;
-    };
+		friend class InputContext;
+	};
 
-    REFLECT_EXTERN(FInputAction)
+	REFLECT_EXTERN(FInputAction)
 
 } // namespace BHive

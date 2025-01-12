@@ -13,4 +13,4 @@ namespace BHive
 	{
 		delete sLogger;
 	}
-}
+} // namespace BHive

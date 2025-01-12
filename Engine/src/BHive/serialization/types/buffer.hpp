@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Buffer.h"
+#include "serialization/Helpers.h"
 
 namespace BHive
 {
@@ -8,7 +9,7 @@ namespace BHive
 	void Serialize(TArchive& ar, const TBuffer<T>& buffer)
 	{
 		ar(buffer.mSize);
-		ar.WriteImpl((const char*)buffer.mData, buffer.mSize);
+		ar(BinaryData<T>(buffer.mData, buffer.mSize));
 	}
 
 	template <typename TArchive, typename T>
@@ -20,7 +21,7 @@ namespace BHive
 		if (size)
 		{
 			buffer.Allocate(size);
-			ar.ReadImpl((char *)buffer.mData, buffer.mSize);
+			ar(BinaryData<T>(buffer.mData, buffer.mSize));
 		}
 	}
 }

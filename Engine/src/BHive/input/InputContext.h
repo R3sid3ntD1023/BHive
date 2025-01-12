@@ -9,7 +9,7 @@
 
 namespace BHive
 {
-	class InputContext : public Asset, public ISerializable
+	class InputContext : public Asset
 	{
 	public:
 		struct FInputActionCallback
@@ -34,7 +34,8 @@ namespace BHive
 		void SetInputActions(std::vector<FInputAction> actions);
 
 		template <typename T>
-		void bind_key(const std::string &name, InputActionCode action, T *instance, void (T::*func)(const InputValue &value))
+		void bind_key(const std::string &name, InputActionCode action, T *instance,
+					  void (T::*func)(const InputValue &value))
 		{
 			if (mKeys.contains(name))
 			{
@@ -46,7 +47,8 @@ namespace BHive
 		}
 
 		template <typename T>
-		void bind_axis(const std::string &name, T *instance, void (T::*func)(const InputValue &value), float scale = 1.0f)
+		void bind_axis(const std::string &name, T *instance,
+					   void (T::*func)(const InputValue &value), float scale = 1.0f)
 		{
 			if (mKeys.contains(name))
 			{
@@ -60,7 +62,6 @@ namespace BHive
 		void Serialize(StreamWriter &ar) const;
 		void Deserialize(StreamReader &ar);
 
-		ASSET_CLASS(InputContext);
 		REFLECTABLEV(Asset)
 
 	private:
@@ -76,4 +77,4 @@ namespace BHive
 
 	REFLECT_EXTERN(InputContext)
 
-}
+} // namespace BHive

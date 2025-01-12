@@ -12,7 +12,7 @@ namespace BHive
 		Orthographic
 	};
 
-	class BHIVE SceneCamera : public Camera, public ISerializable
+	class BHIVE SceneCamera : public Camera
 	{
 	public:
 		struct FPerspectiveSettings
@@ -20,8 +20,6 @@ namespace BHive
 			float mFov = 45.0f;
 			float mNear = 0.01f;
 			float mFar = 1000.0f;
-
-		
 		};
 
 		struct FOrthographicSettings
@@ -29,7 +27,6 @@ namespace BHive
 			float mSize = 10.0f;
 			float mNear = -1.0f;
 			float mFar = 1.0f;
-
 		};
 
 	public:
@@ -45,12 +42,15 @@ namespace BHive
 		const FPerspectiveSettings &GetPerspectiveSettings() const { return mPerspectiveSettings; }
 
 		void SetOrthographicSettings(const FOrthographicSettings &settings);
-		const FOrthographicSettings &GetOrthographicSettings() const { return mOrthographicSettings; }
+		const FOrthographicSettings &GetOrthographicSettings() const
+		{
+			return mOrthographicSettings;
+		}
 
 		void Resize(uint32_t width, uint32_t height);
 
-		void Serialize(StreamWriter& ar) const;
-		void Deserialize(StreamReader& ar);
+		void Serialize(StreamWriter &ar) const;
+		void Deserialize(StreamReader &ar);
 
 	private:
 		void RecalculateProjection();
@@ -62,15 +62,15 @@ namespace BHive
 		float mAspectRatio = 1.7555f;
 	};
 
-	void Serialize(StreamWriter& ar, const SceneCamera::FPerspectiveSettings& obj);
-	void Deserialize(StreamReader& ar, SceneCamera::FPerspectiveSettings& obj);
+	void Serialize(StreamWriter &ar, const SceneCamera::FPerspectiveSettings &obj);
+	void Deserialize(StreamReader &ar, SceneCamera::FPerspectiveSettings &obj);
 
-	void Serialize(StreamWriter& ar, const SceneCamera::FOrthographicSettings& obj);
-	void Deserialize(StreamReader& ar, SceneCamera::FOrthographicSettings& obj);
+	void Serialize(StreamWriter &ar, const SceneCamera::FOrthographicSettings &obj);
+	void Deserialize(StreamReader &ar, SceneCamera::FOrthographicSettings &obj);
 
 	REFLECT_EXTERN(EProjectionType);
 	REFLECT_EXTERN(SceneCamera::FPerspectiveSettings);
 	REFLECT_EXTERN(SceneCamera::FOrthographicSettings);
 	REFLECT_EXTERN(SceneCamera);
 
-}
+} // namespace BHive

@@ -7,7 +7,8 @@ namespace BHive
 {
 
 	SpriteSheet::SpriteSheet(const TAssetHandle<Texture2D> &source, const FSpriteSheetGrid &grid)
-		: mSource(source), mGrid(grid)
+		: mSource(source),
+		  mGrid(grid)
 	{
 		CreateSprites();
 	}
@@ -38,26 +39,25 @@ namespace BHive
 		CreateSprites();
 	}
 
-	void SpriteSheet::Serialize(StreamWriter& ar) const
+	void SpriteSheet::Serialize(StreamWriter &ar) const
 	{
 		Asset::Serialize(ar);
 		ar(mSource, mGrid, mSprites);
 	}
 
-	void SpriteSheet::Deserialize(StreamReader& ar)
+	void SpriteSheet::Deserialize(StreamReader &ar)
 	{
 		Asset::Deserialize(ar);
 		ar(mSource, mGrid, mSprites);
 		CreateSprites();
 	}
 
-	void Serialize(StreamWriter& ar, const FSpriteSheetGrid& obj)
+	void Serialize(StreamWriter &ar, const FSpriteSheetGrid &obj)
 	{
-
 		ar(obj.mRows, obj.mColumns, obj.mCellSize);
 	}
 
-	void Deserialize(StreamReader& ar, FSpriteSheetGrid& obj)
+	void Deserialize(StreamReader &ar, FSpriteSheetGrid &obj)
 	{
 		ar(obj.mRows, obj.mColumns, obj.mCellSize);
 	}
@@ -79,5 +79,4 @@ namespace BHive
 		REFLECT_PROPERTY("Grid", GetGrid, SetGrid);
 	}
 
-	
-}
+} // namespace BHive

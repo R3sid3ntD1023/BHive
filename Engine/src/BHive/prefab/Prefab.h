@@ -10,12 +10,10 @@ namespace BHive
 	public:
 		Prefab() = default;
 
-		Entity CreateInstance() { return mInstance; }
-
-		ASSET_CLASS(Prefab);
+		Ref<Entity> CreateInstance() { return mInstance; }
 
 	private:
-		Entity mInstance;
+		Ref<Entity> mInstance;
 	};
 
 }

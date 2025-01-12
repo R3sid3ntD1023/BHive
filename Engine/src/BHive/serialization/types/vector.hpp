@@ -2,11 +2,11 @@
 
 #include <vector>
 
-namespace BHive
+namespace std
 {
 
     template <typename TArchive, typename T>
-    inline void Serialize(TArchive& ar, const std::vector<T>& vec)
+    inline void Serialize(TArchive& ar, const vector<T>& vec)
     {
         ar(vec.size());
 
@@ -15,7 +15,7 @@ namespace BHive
     }
 
     template <typename TArchive, typename T>
-    inline void Deserialize(TArchive& ar, std::vector<T>& vec)
+    inline void Deserialize(TArchive& ar, vector<T>& vec)
     {
         size_t size = 0;
         ar(size);

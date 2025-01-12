@@ -15,7 +15,8 @@ namespace BHive
 	{
 	public:
 		SkeletalAnimation() = default;
-		SkeletalAnimation(float duration, float ticksPerSecond, const Frames &frames, Ref<Skeleton> skeleton, const glm::mat4 &globalInverseMatrix);
+		SkeletalAnimation(float duration, float ticksPerSecond, const Frames &frames,
+						  Ref<Skeleton> skeleton, const glm::mat4 &globalInverseMatrix);
 
 		bool Contains(const std::string &name) const;
 
@@ -36,7 +37,6 @@ namespace BHive
 
 		virtual void Deserialize(StreamReader &ar);
 
-		ASSET_CLASS(SkeletalAnimation)
 		REFLECTABLEV(Asset)
 
 	private:
@@ -54,4 +54,4 @@ namespace BHive
 	};
 
 	REFLECT_EXTERN(SkeletalAnimation)
-}
+} // namespace BHive

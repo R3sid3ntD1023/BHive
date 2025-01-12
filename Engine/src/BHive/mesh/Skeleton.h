@@ -53,7 +53,6 @@ namespace BHive
 
 		virtual void Deserialize(StreamReader &ar);
 
-		ASSET_CLASS(Skeleton);
 		REFLECTABLEV()
 
 	private:

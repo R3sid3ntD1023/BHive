@@ -21,7 +21,6 @@ namespace BHive
 	using SelectedItems = std::unordered_map<int, FileEntry>;
 	static SelectedItems sSelectedItems;
 	static int sActiveItem = -1;
-	static std::vector<FileEntry> sItems;
 
 	ContentBrowserPanel::ContentBrowserPanel(const std::filesystem::path &directory)
 		: mBaseDirectory(directory), mCurrentDirectory(directory)
@@ -192,25 +191,7 @@ namespace BHive
 						sSelectedItems.clear();
 					}
 
-					if (ImGui::IsKeyDown(ImGuiKey_ModShift))
-					{
-						if (sActiveItem != -1)
-						{
-							auto start = sActiveItem;
-							auto end = index;
-
-							for (int i = start; i <= end; i++)
-							{
-								auto &item = sItems[i];
-								sSelectedItems.emplace(item.mID, item);
-							}
-						}
-					}
-					else
-					{
-			
-						sSelectedItems.emplace(index, ms_item);
-					}
+					sSelectedItems.emplace(index, ms_item);
 
 					sActiveItem = index;
 				}
@@ -270,7 +251,7 @@ namespace BHive
 
 				ImGui::TableNextColumn();
 
-				 index++;
+				index++;
 			}
 
 			if (ImGui::IsWindowFocused())
@@ -319,25 +300,13 @@ namespace BHive
 	{
 		OnDeleteFolder(item);
 
-		if (!FileDialogs::MoveToRecycleBin(item.path().string()))
-		{
-			LOG_ERROR("Failed to delete folder {}");
-		}
+		FileDialogs::MoveToRecycleBin(item.path().string());
 	}
+
 	void ContentBrowserPanel::SetCurrentDirectory(const std::filesystem::path &path)
 	{
 		mCurrentDirectory = path;
-		sItems.clear();
 		sActiveItem = -1;
 		sSelectedItems.clear();
-
-		auto directory_iter = std::filesystem::directory_iterator(mCurrentDirectory);
-
-		int index = 0;
-		for (auto& entry : directory_iter)
-		{
-			sItems.push_back(FileEntry{index, entry});
-			index++;
-		}
 	}
 }

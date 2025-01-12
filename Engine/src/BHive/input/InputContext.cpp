@@ -62,13 +62,15 @@ namespace BHive
 				{
 					auto &button_callback = mBindedKeys[action.mName];
 
-					// LOG_INFO("InputContext:: State = {}, PrevoisState{}", state, button_callback.PreviousState);
+					// LOG_INFO("InputContext:: State = {}, PrevoisState{}", state,
+					// button_callback.PreviousState);
 
 					if (state != button_callback.PreviousState)
 					{
 						bool handled = (state == button_callback.CallState);
 
-						// LOG_TRACE("InputContext:: Call Callback = {}", handled ? "true" : "false");
+						// LOG_TRACE("InputContext:: Call Callback = {}", handled ? "true" :
+						// "false");
 
 						if (handled)
 						{
@@ -78,7 +80,8 @@ namespace BHive
 
 						button_callback.PreviousState = state;
 
-						// LOG_INFO("InputContext:: State = {}, PrevoisState {}", state, button_callback.PreviousState);
+						// LOG_INFO("InputContext:: State = {}, PrevoisState {}", state,
+						// button_callback.PreviousState);
 					}
 				}
 			}
@@ -113,11 +116,13 @@ namespace BHive
 
 	void InputContext::Serialize(StreamWriter &ar) const
 	{
+		Asset::Serialize(ar);
 		ar(mKeys);
 	}
 
 	void InputContext::Deserialize(StreamReader &ar)
 	{
+		Asset::Deserialize(ar);
 		ar(mKeys);
 	}
 
@@ -132,4 +137,4 @@ namespace BHive
 		REFLECT_CONSTRUCTOR()
 		REFLECT_PROPERTY("Keys", mKeys);
 	}
-}
+} // namespace BHive

@@ -16,7 +16,7 @@ namespace BHive
 	using entityPtr = Ref<Entity>;
 	using Entities = std::unordered_map<UUID, entityPtr>;
 
-	class BHIVE World : public Asset, public ISerializable
+	class BHIVE World : public Asset
 	{
 	public:
 		World();
@@ -58,12 +58,13 @@ namespace BHive
 
 		struct CameraComponent *GetPrimaryCameraComponent() const;
 
-		void RayCast(const glm::vec3 &start, const glm::vec3 &end, unsigned short mask = -1, float factor = 1.0f);
+		void RayCast(const glm::vec3 &start, const glm::vec3 &end, unsigned short mask = -1,
+					 float factor = 1.0f);
 
 		void Serialize(StreamWriter &ar) const;
 		void Deserialize(StreamReader &ar);
 
-		ASSET_CLASS(World)
+		REFLECTABLEV(Asset)
 
 	private:
 		void OnPhysicsStart();
@@ -72,8 +73,8 @@ namespace BHive
 
 		void RenderScene(Ref<SceneRenderer> renderer);
 
-		void OnCollisionContact(const rp3d::CollisionCallback::ContactPair& contact_pair);
-		void OnCollisionOverlap(const rp3d::OverlapCallback::OverlapPair& overlap_pair);
+		void OnCollisionContact(const rp3d::CollisionCallback::ContactPair &contact_pair);
+		void OnCollisionOverlap(const rp3d::OverlapCallback::OverlapPair &overlap_pair);
 		void OnHit(const rp3d::RaycastInfo &info);
 
 		void OnEntityDestroyed(Entity *entity);
@@ -99,4 +100,4 @@ namespace BHive
 		friend class SceneComponent;
 	};
 
-}
+} // namespace BHive

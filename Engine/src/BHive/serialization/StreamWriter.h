@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include "SerializeTraits.h"
-#include "ClassVersion.h"
+#include "Helpers.h"
 
 namespace BHive
 {
@@ -45,13 +45,6 @@ namespace BHive
             accessor::Serialize(*this, obj);
         }
 
-         template <typename T, std::enable_if_t<has_serialized_versioned<StreamWriter, T>, bool> = true>
-		inline void Write(const T &obj)
-		{
-			auto version = class_version<T>::version;
-			Write(version);
-			accessor::Serialize(*this, obj, version);
-		}
 
         template <typename T, std::enable_if_t<has_serialize_non_member_v<StreamWriter, T>, bool> = true>
         inline void Write(const T &obj)
@@ -65,4 +58,10 @@ namespace BHive
             WriteImpl((char *)&type, sizeof(T));
         }
     };
+
+    template <typename A, typename T>
+	void Serialize(A &ar, const BinaryData<T> &data)
+	{
+		ar.WriteImpl((const char*)data.mData, data.mSize);
+	}
 } // namespace BHive

@@ -2,7 +2,7 @@
 
 #include <unordered_set>
 
-namespace BHive
+namespace std
 {
     namespace details
     {
@@ -30,19 +30,19 @@ namespace BHive
                 typename TSet::key_type key;
 
                 ar(key);
-                set.emplace(std::move(key));
+                set.emplace(move(key));
             }
         }
     }
 
     template <typename TArchive, typename K, typename H, typename KE, typename A>
-    void Serialize(TArchive& ar, const std::unordered_set<K, H, KE, A>& unordered_set)
+    void Serialize(TArchive& ar, const unordered_set<K, H, KE, A>& unordered_set)
     {
         details::save(ar, unordered_set);
     }
 
     template <typename TArchive , typename K, typename H, typename KE, typename A>
-    void Deserialize(TArchive& ar, std::unordered_set<K, H, KE, A>& unordered_set)
+    void Deserialize(TArchive& ar, unordered_set<K, H, KE, A>& unordered_set)
     {
         details::load(ar, unordered_set);
     }

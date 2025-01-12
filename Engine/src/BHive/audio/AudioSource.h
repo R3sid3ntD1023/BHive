@@ -22,7 +22,7 @@ namespace BHive
 	{
 	public:
 		AudioSource() = default;
-		AudioSource( int16_t *buffer, int size, const AudioSpecification &specs = {});
+		AudioSource(int16_t *buffer, int size, const AudioSpecification &specs = {});
 		~AudioSource();
 
 		void Play();
@@ -44,7 +44,6 @@ namespace BHive
 		void Serialize(StreamWriter &ar) const;
 		void Deserialize(StreamReader &ar);
 
-		ASSET_CLASS(AudioSource)
 		REFLECTABLEV(Asset)
 
 	private:
@@ -68,7 +67,6 @@ namespace BHive
 
 	REFLECT_EXTERN(AudioSource)
 
-		
 	template <typename TArchive>
 	inline void Serialize(TArchive &ar, const AudioSpecification &spec)
 	{
@@ -76,9 +74,9 @@ namespace BHive
 	}
 
 	template <typename TArchive>
-	inline void Deserialize(TArchive &ar, AudioSpecification& spec)
+	inline void Deserialize(TArchive &ar, AudioSpecification &spec)
 	{
 		ar(spec.mFormat, spec.mNumSamples, spec.mSampleRate, spec.mStartLoop, spec.mEndLoop);
 	}
 
-}
+} // namespace BHive

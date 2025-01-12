@@ -47,7 +47,7 @@ namespace BHive
 			return false;
 
 		FileStreamWriter ar(path);
-		ar(asset->GetType());
+		ar(asset->get_type());
 		asset->Serialize(ar);
 
 		return true;

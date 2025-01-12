@@ -6,37 +6,37 @@
 
 namespace BHive
 {
-    struct FInputKey
-    {
-        FInputKey() = default;
+	struct FInputKey
+	{
+		FInputKey() = default;
 
-        void SetKey(EKey key)
-        {
-            mKey = key;
-            mIsMouse = FKeyDetails(key).mIsMouse;
-        }
+		void SetKey(EKey key)
+		{
+			mKey = key;
+			mIsMouse = FKeyDetails(key).mIsMouse;
+		}
 
-        EKey GetKey() const { return mKey; }
+		EKey GetKey() const { return mKey; }
 
-        void Serialize(StreamWriter &ar) const;
-        void Deserialize(StreamReader &ar);
+		void Serialize(StreamWriter &ar) const;
+		void Deserialize(StreamReader &ar);
 
-        operator uint32_t() const { return (uint32_t)mKey; }
+		operator uint32_t() const { return (uint32_t)mKey; }
 
-        REFLECTABLE()
+		REFLECTABLE()
 
-    private:
-        EKey mKey;
-        bool mIsMouse;
+	private:
+		EKey mKey;
+		bool mIsMouse;
 
-        friend class FInputAction;
-    };
+		friend class FInputAction;
+	};
 
-    REFLECT(FInputKey)
-    {
-        BEGIN_REFLECT(FInputKey)
-        REFLECT_PROPERTY("Key", GetKey, SetKey)
-        REFLECT_PROPERTY_READ_ONLY("IsMouse", mIsMouse);
-    }
+	REFLECT(FInputKey)
+	{
+		BEGIN_REFLECT(FInputKey)
+		REFLECT_PROPERTY("Key", GetKey, SetKey)
+		REFLECT_PROPERTY_READ_ONLY("IsMouse", mIsMouse);
+	}
 
 } // namespace BHive

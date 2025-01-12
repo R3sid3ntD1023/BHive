@@ -14,15 +14,12 @@ namespace BHive
 		float mBounciness = 0.0f;
 		float mMassDensity = 1.0f;
 
+		void Serialize(StreamWriter &ar) const override;
+		void Deserialize(StreamReader &ar) override;
 
-		void Serialize(StreamWriter& ar) const;
-		void Deserialize(StreamReader& ar);
-
-		ASSET_CLASS(PhysicsMaterial);
 		REFLECTABLEV(Asset)
-
 	};
 
 	REFLECT_EXTERN(PhysicsMaterial)
 
-}
+} // namespace BHive

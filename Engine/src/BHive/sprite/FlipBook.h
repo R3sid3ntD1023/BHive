@@ -36,20 +36,28 @@ namespace BHive
 
 		sprite_ptr GetCurrentSprite() const;
 
-		bool IsLooping() const { return mIsLooping; }
-		bool IsPlaying() const { return mIsPlaying; }
-		float GetFramesPerSecond() const { return mFramesPerSecond; }
+		bool IsLooping() const
+		{
+			return mIsLooping;
+		}
+		bool IsPlaying() const
+		{
+			return mIsPlaying;
+		}
+		float GetFramesPerSecond() const
+		{
+			return mFramesPerSecond;
+		}
 
 		sprite_ptr GetSpriteAtFrame(int32_t frame) const;
 		sprite_ptr GetSpriteAtTime(float time) const;
 
 		float GetTotalTime() const;
 
-		ASSET_CLASS(FlipBook)
 		REFLECTABLEV(Asset)
 
-		void Serialize(StreamWriter& ar) const;
-		void Deserialize(StreamReader& ar);
+		void Serialize(StreamWriter &ar) const override;
+		void Deserialize(StreamReader &ar) override;
 
 	private:
 		int32_t GetNumFrames() const;
@@ -64,10 +72,10 @@ namespace BHive
 		float mCurrentTime = 0.0f;
 	};
 
-	void Serialize(StreamWriter& ar, const FlipBook::Frame& obj);
-	void Deserialize(StreamReader& ar, FlipBook::Frame& obj);
+	void Serialize(StreamWriter &ar, const FlipBook::Frame &obj);
+	void Deserialize(StreamReader &ar, FlipBook::Frame &obj);
 
 	REFLECT_EXTERN(FlipBook::Frame)
 	REFLECT_EXTERN(FlipBook)
 
-}
+} // namespace BHive

@@ -26,4 +26,4 @@ BraceWrapping:
  AfterFunction:	true
  AfterNamespace:	true
 NamespaceIndentation: All
-AllowShortFunctionsOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: InlineOnly

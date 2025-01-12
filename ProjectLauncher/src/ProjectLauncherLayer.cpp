@@ -4,8 +4,8 @@
 #include "gui/Gui.h"
 #include "serialization/Serialization.h"
 #include "core/FileDialog.h"
-#include "project/Project.h"
 #include "serialization/FileStream.h"
+#include <Windows.h>
 
 namespace ImGui
 {
@@ -148,7 +148,7 @@ namespace BHive
 
             if (ImGui::Button("Create"))
             {
-                CreateProject(project_configuration);
+                CreateProject(project_configuration, mMessage);
             }
 
             ImGui::SameLine();
@@ -161,6 +161,8 @@ namespace BHive
                     OpenProject(path_str);
                 }
             }
+
+            ImGui::TextUnformatted(mMessage.c_str());
         }
 
         ImGui::End();
@@ -194,15 +196,20 @@ namespace BHive
         Application::Get().Close();
     }
 
-    void ProjectLauncherLayer::CreateProject(const FProjectConfiguration &config)
+    void
+	ProjectLauncherLayer::CreateProject(const FProjectConfiguration &config, std::string &message)
     {
-        if (std::filesystem::exists(config.mProjectDirectory / config.mName))
+        if (std::filesystem::exists(config.mProjectDirectory))
         {
-            LOG_ERROR("Project Already exists");
+            message = "Project Already exists";
             return;
         }
 
-        std::filesystem::create_directory(config.mProjectDirectory / config.mName);
+        std::filesystem::create_directory(config.mProjectDirectory);
+		FileStreamWriter ar(config.mProjectDirectory / (config.mName + ".proj"));
+		ar(config);
+
+        message = std::format("Created {} project sucessfully!", config.mName);
     }
 
 } // namespace BHive

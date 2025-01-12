@@ -34,24 +34,23 @@ namespace BHive
 		const Sprites &GetSprites() const { return mSprites; }
 		const FSpriteSheetGrid &GetGrid() const { return mGrid; }
 
-		void Serialize(StreamWriter& ar) const;
-		void Deserialize(StreamReader& ar);
+		void Serialize(StreamWriter &ar) const override;
+		void Deserialize(StreamReader &ar) override;
 
 	private:
 		Sprites mSprites;
 		TAssetHandle<Texture2D> mSource;
 		FSpriteSheetGrid mGrid;
 
-		ASSET_CLASS(SpriteSheet);
 		REFLECTABLEV(Asset)
 
 		friend class SpriteSheetSerializer;
 	};
 
-	void Serialize(StreamWriter& ar, const FSpriteSheetGrid& obj);
-	void Deserialize(StreamReader& ar, FSpriteSheetGrid& obj);
+	void Serialize(StreamWriter &ar, const FSpriteSheetGrid &obj);
+	void Deserialize(StreamReader &ar, FSpriteSheetGrid &obj);
 
 	REFLECT_EXTERN(FSpriteSheetGrid)
 	REFLECT_EXTERN(SpriteSheet)
 
-}
+} // namespace BHive

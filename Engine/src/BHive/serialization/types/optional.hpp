@@ -2,10 +2,10 @@
 
 #include <optional>
 
-namespace BHive
+namespace std
 {
 	template <typename TArchive, typename T>
-	inline void Deserialize(TArchive &ar, std::optional<T>& optional)
+	inline void Deserialize(TArchive &ar, optional<T>& optional)
 	{
 		bool has_value;
 
@@ -17,12 +17,12 @@ namespace BHive
 		}
 		else
 		{
-			optional = std::nullopt;
+			optional = nullopt;
 		}
 	}
 
 	template <typename TArchive, typename T>
-	inline void Serialize(TArchive &ar, const std::optional<T> &optional)
+	inline void Serialize(TArchive &ar, const optional<T> &optional)
 	{
 		if (optional)
 		{

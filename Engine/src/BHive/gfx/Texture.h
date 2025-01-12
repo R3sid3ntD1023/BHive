@@ -81,7 +81,7 @@ namespace BHive
 	struct BHIVE FTextureSpecification
 	{
 		uint32_t mChannels;
-		EFormat	 mFormat;
+		EFormat mFormat;
 		EWrapMode mWrapMode = EWrapMode::REPEAT;
 		EFilterMode mMinFilter = EFilterMode::LINEAR, mMagFilter = EFilterMode::LINEAR;
 		Color mBorderColor = 0xFFFFFFFF;
@@ -107,18 +107,21 @@ namespace BHive
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 
-		virtual void SetData(const void *data, uint64_t size, uint32_t offsetX = 0, uint32_t offsetY = 0) = 0;
+		virtual void SetData(const void *data, uint64_t size, uint32_t offsetX = 0,
+							 uint32_t offsetY = 0) = 0;
 		virtual uint32_t GetRendererID() const = 0;
 		virtual void GenerateMipMaps() const = 0;
 
-		virtual void Serialize(StreamWriter &ar) const {};
-		virtual void Deserialize(StreamReader &ar) {}
+		operator uint32_t() const
+		{
+			return GetRendererID();
+		}
 
-		operator uint32_t() const { return GetRendererID(); }
+		virtual uint64_t GetResourceHandle() const
+		{
+			return 0;
+		};
 
-		virtual uint64_t GetResourceHandle() const { return 0; };
-
-		ASSET_CLASS(Texture)
 		REFLECTABLEV()
 	};
 
@@ -128,29 +131,30 @@ namespace BHive
 		virtual ~Texture2D() = default;
 
 		static Ref<Texture2D> Create();
-		static Ref<Texture2D> Create(uint32_t width, uint32_t height, const FTextureSpecification &specification, uint32_t samples = 1);
-		static Ref<Texture2D> Create(const void *data, uint32_t width, uint32_t height, const FTextureSpecification &specification);
+		static Ref<Texture2D> Create(uint32_t width, uint32_t height,
+									 const FTextureSpecification &specification,
+									 uint32_t samples = 1);
+		static Ref<Texture2D> Create(const void *data, uint32_t width, uint32_t height,
+									 const FTextureSpecification &specification);
 
 		REFLECTABLEV(Texture)
-
 	};
-
 
 	class TextureCube : public Texture
 	{
 	public:
 		static Ref<TextureCube> Create(uint32_t size, const FTextureSpecification &spec);
 
-		virtual void AttachToFramebuffer(const Ref<class Framebuffer> &framebuffer, uint32_t attachment, uint32_t level) = 0;
+		virtual void AttachToFramebuffer(const Ref<class Framebuffer> &framebuffer,
+										 uint32_t attachment, uint32_t level) = 0;
 	};
 
 	class Texture3D : public Texture
 	{
 	public:
-		static Ref<Texture> Create(uint32_t width, uint32_t height, uint32_t depth, const FTextureSpecification &specification);
+		static Ref<Texture> Create(uint32_t width, uint32_t height, uint32_t depth,
+								   const FTextureSpecification &specification);
 	};
-
-	
 
 	template <typename TArchive>
 	inline void Serialize(TArchive &ar, const FTextureSpecification &spec)
@@ -170,4 +174,4 @@ namespace BHive
 
 	REFLECT_EXTERN(Texture)
 	REFLECT_EXTERN(Texture2D)
-}
+} // namespace BHive

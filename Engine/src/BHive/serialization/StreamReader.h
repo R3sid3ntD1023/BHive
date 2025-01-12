@@ -2,6 +2,7 @@
 
 #include "SerializeTraits.h"
 #include <stdint.h>
+#include "Helpers.h"
 
 namespace BHive
 {
@@ -42,14 +43,6 @@ namespace BHive
             accessor::Deserialize(*this, obj);
         }
 
-        template <typename T, std::enable_if_t<has_deserialze_versionsed<StreamReader, T>, bool> = true>
-		void Read(T &obj)
-		{
-			unsigned version;
-			Read(version);
-			accessor::Deserialize(*this, obj, version);
-		}
-
         template <typename T, std::enable_if_t<has_deserialize_non_member_v<StreamReader, T>, bool> = true>
         void Read(T &obj)
         {
@@ -62,5 +55,11 @@ namespace BHive
             ReadImpl((char *)&type, sizeof(T));
         }
     };
+
+    template<typename A, typename T>
+    void Deserialize(A& ar, BinaryData<T>& data)
+    {
+		ar.ReadImpl((char*)data.mData, data.mSize);
+    }
 
 } // namespace BHive

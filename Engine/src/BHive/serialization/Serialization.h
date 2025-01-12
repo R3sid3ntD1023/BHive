@@ -1,14 +1,13 @@
 #pragma once
 
-#include "types/unordered_set.h"
-#include "types/map.h"
-#include "types/vector.h"
-#include "types/filesystem.h"
-#include "types/utility.h"
-#include "types/string.h"
-#include "types/optional.h"
-#include "types/buffer.h"
+#include "types/unordered_set.hpp"
+#include "types/map.hpp"
+#include "types/vector.hpp"
+#include "types/filesystem.hpp"
+#include "types/utility.hpp"
+#include "types/string.hpp"
+#include "types/optional.hpp"
+#include "types/buffer.hpp"
 
 #include "Helpers.h"
 #include "FileStream.h"
-#include "serialization/ISerializable.h"

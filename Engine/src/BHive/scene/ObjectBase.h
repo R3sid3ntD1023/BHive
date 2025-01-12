@@ -7,43 +7,43 @@
 
 namespace BHive
 {
-    struct FObjectInitializer
-    {
-        std::string mName = "NewObject";
-    };
+	struct FObjectInitializer
+	{
+		std::string mName = "NewObject";
+	};
 
-    class ObjectBase : public ISerializable
-    {
-    private:
-        /* data */
-    public:
-        ObjectBase(const FObjectInitializer &initializer = {});
-        ObjectBase(const ObjectBase &other) = default;
+	class ObjectBase
+	{
+	private:
+		/* data */
+	public:
+		ObjectBase(const FObjectInitializer &initializer = {});
+		ObjectBase(const ObjectBase &other) = default;
 
-        virtual ~ObjectBase() = default;
+		virtual ~ObjectBase() = default;
 
-        const std::string &GetName() const { return mData.mName; }
-        void SetName(const std::string &name);
+		const std::string &GetName() const { return mData.mName; }
+		void SetName(const std::string &name);
 
-        void GenerateNewUUID();
+		void GenerateNewUUID();
 
-        const UUID &GetUUID() const { return mID; }
+		const UUID &GetUUID() const { return mID; }
 
-        virtual ObjectBase* Copy();
+		virtual ObjectBase *Copy();
 
-        virtual void Serialize(StreamWriter &ar) const;
+		virtual void Serialize(StreamWriter &ar) const;
 
-        virtual void Deserialize(StreamReader &ar);
+		virtual void Deserialize(StreamReader &ar);
 
-        bool operator==(const ObjectBase &rhs) const { return mID == rhs.mID; }
-        bool operator!=(const ObjectBase &rhs) const { return mID != rhs.mID; }
+		bool operator==(const ObjectBase &rhs) const { return mID == rhs.mID; }
+		bool operator!=(const ObjectBase &rhs) const { return mID != rhs.mID; }
 
-    private:
-        FObjectInitializer mData;
-        UUID mID;
+	private:
+		FObjectInitializer mData;
+		UUID mID;
 
-        REFLECTABLEV()
-    };
+		REFLECTABLEV()
+	};
 
-    REFLECT_EXTERN(ObjectBase)
+	REFLECT_EXTERN(ObjectBase)
 } // namespace BHive

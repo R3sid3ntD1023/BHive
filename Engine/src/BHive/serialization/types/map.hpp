@@ -3,7 +3,7 @@
 #include <map>
 #include <unordered_map>
 
-namespace BHive
+namespace std
 {
     template <typename TArchive, template <typename...> class Map, typename... TArgs, typename = typename Map<TArgs...>::mapped_type>
     inline void Serialize(TArchive& ar, const Map<TArgs...>& map)
@@ -34,7 +34,7 @@ namespace BHive
 
             ar(key, value);
 
-            hint = map.emplace_hint(hint, std::move(key), std::move(value));
+            hint = map.emplace_hint(hint, move(key), move(value));
         }
     }
 

@@ -13,7 +13,6 @@ namespace BHive
 {
     void FinishAssetImport(const std::filesystem::path& dir, const std::filesystem::path& rel, const Ref<Asset>& asset, const std::vector<Ref<Asset>>& others)
     {
-		BEGIN_THREAD_DISPATCH(=)
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
 		auto export_path = dir / (rel.stem().string() + ".asset");
 		AssetFactory asset_factory;
@@ -28,7 +27,6 @@ namespace BHive
 			asset_factory.Export(other, export_path);
 			manager->ImportAsset(export_path, other->get_type(), other->GetHandle());
 		}
-		END_THREAD_DISPATCH()
     }
 
     EditorContentBrowser::EditorContentBrowser(const std::filesystem::path &directory)

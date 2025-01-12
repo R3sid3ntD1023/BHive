@@ -6,7 +6,7 @@ file(GLOB_RECURSE ENGINE_SRC CMAKE_CONFIGURE_DEPENDS src/** data/** PARENT_SCOPE
 
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 
-add_library(Engine STATIC ${ENGINE_SRC} "src/BHive/serialization/types/string.h")
+add_library(Engine STATIC ${ENGINE_SRC})
 set_target_properties(Engine PROPERTIES 
 	CXX_STANDARD 20
 	CXX_STANDARD_REQUIRED YES

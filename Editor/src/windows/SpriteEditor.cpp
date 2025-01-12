@@ -1,6 +1,7 @@
 #include "SpriteEditor.h"
 #include "gfx/Texture.h"
 #include "core/FileDialog.h"
+#include "asset/EditorAssetManager.h"
 
 namespace BHive
 {
@@ -124,18 +125,24 @@ namespace BHive
 
 	void SpriteSheetEditor::ExtractSprites(const std::filesystem::path &directory, const std::string &filename, const std::string &ext)
 	{
+		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
+		if (!manager)
+			return;
 
 		auto &sprites = mAsset->GetSprites();
 		for (size_t i = 0; i < sprites.size(); i++)
 		{
 			auto &sprite = sprites[i];
 			auto name = filename + std::to_string(i);
+			auto export_path = directory / (name + ext);
 
 			AssetFactory factory;
-			if (factory.Export(&sprite, directory / (name + ext)))
+			if (factory.Export(&sprite, export_path))
 			{
 				LOG_TRACE("Extracted Sprite {}", name);
 			}
+
+			manager->ImportAsset(export_path, sprite.get_type(), sprite.GetHandle());
 		}
 	}
 }

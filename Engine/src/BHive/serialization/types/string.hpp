@@ -2,17 +2,17 @@
 
 #include <string>
 
-namespace BHive
+namespace std
 {
     template <typename TArchive, typename T, typename Traits, typename Alloc>
-    inline void Serialize(TArchive& ar, const std::basic_string<T, Traits, Alloc>& str)
+    inline void Serialize(TArchive& ar, const basic_string<T, Traits, Alloc>& str)
     {
         ar(str.size());
         ar.WriteImpl(str.data(), sizeof(T) * str.size());
     }
 
     template <typename TArchive , typename T, typename Traits, typename Alloc>
-    inline void Deserialize(TArchive& ar , std::basic_string<T, Traits, Alloc>& str)
+    inline void Deserialize(TArchive& ar , basic_string<T, Traits, Alloc>& str)
     {
         size_t size;
         ar(size);

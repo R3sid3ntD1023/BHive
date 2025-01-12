@@ -22,10 +22,11 @@ namespace BHive
 
     private:
         void OpenProject(const std::filesystem::path &path);
-        void CreateProject(const FProjectConfiguration &config);
+        void CreateProject(const FProjectConfiguration &config, std::string& message);
 
     private:
         FProjectLauncherSettings mSettings;
+		std::string mMessage;
     };
 
 } // namespace BHive
