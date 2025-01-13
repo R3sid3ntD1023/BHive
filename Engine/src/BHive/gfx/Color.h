@@ -82,9 +82,7 @@ namespace BHive
 
 		std::string to_string() const
 		{
-			std::stringstream ss;
-			ss << "{" << r << "," << g << "," << b << "," << a << "}";
-			return ss.str();
+			return std::format("[{}, {}, {}, {}]", r, g, b, a);
 		}
 	};
 

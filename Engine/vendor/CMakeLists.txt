@@ -139,8 +139,8 @@ list(APPEND components rttr)
 
 FETCHCONTENT_DECLARE(
 	cereal
-	GIT_REPOSITORY https://github.com/R3sid3ntD1023/cereal.git
-	GIT_TAG master
+	GIT_REPOSITORY https://github.com/USCiLab/cereal.git
+	GIT_TAG v1.3.2
 )
 list(APPEND components cereal)
 

@@ -11,7 +11,7 @@ namespace glm
 	inline std::string CEREAL_SAVE_MINIMAL_FUNCTION_NAME(A &ar, const vec<L, T, Q> &obj)
 	{
 		std::stringstream ss;
-		ss << '{';
+		ss << '[';
 		for (size_t i = 0; i < L; i++)
 		{
 			ss << obj[i];
@@ -19,7 +19,7 @@ namespace glm
 				ss << ',';
 		}
 
-		ss << '}';
+		ss << ']';
 
 		return ss.str();
 	}
@@ -46,7 +46,7 @@ namespace glm
 	inline std::string CEREAL_SAVE_MINIMAL_FUNCTION_NAME(TArchive &ar, const mat<C, R, T, Q> &obj)
 	{
 		std::stringstream ss;
-		ss << '{';
+		ss << '[';
 		for (size_t i = 0; i < C; i++)
 		{
 			for (size_t j = 0; j < R; j++)
@@ -60,7 +60,7 @@ namespace glm
 				ss << ',';
 		}
 
-		ss << '}';
+		ss << ']';
 
 		return ss.str();
 	}
@@ -90,9 +90,7 @@ namespace glm
 	template <typename A, typename T, qualifier Q>
 	inline std::string CEREAL_SAVE_MINIMAL_FUNCTION_NAME(A &ar, const qua<T, Q> &q)
 	{
-		std::stringstream ss;
-		ss << '{' << q.x << ',' << q.y << ',' << q.z << ',' << q.w << '}';
-		return ss.str();
+		return std::format("[{}, {}, {}, {}]", q.x, q.y, q.z, q.w);
 	}
 
 	template <typename A, typename T, qualifier Q>
