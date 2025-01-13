@@ -2,40 +2,6 @@
 
 namespace BHive
 {
-    void Light::Serialize(StreamWriter &ar) const
-    {
-        ar(mColor, mBrightness);
-    }
-
-    void Light::Deserialize(StreamReader &ar)
-    {
-        ar(mColor, mBrightness);
-    }
-
-    void SpotLight::Serialize(StreamWriter &ar) const
-    {
-        PointLight::Serialize(ar);
-        ar(mInnerCutOff, mOuterCutOff);
-    }
-
-    void SpotLight::Deserialize(StreamReader &ar)
-    {
-        PointLight::Deserialize(ar);
-        ar(mInnerCutOff, mOuterCutOff);
-    }
-
-    void PointLight::Serialize(StreamWriter &ar) const
-    {
-        Light::Serialize(ar);
-        ar(mRadius);
-    }
-
-    void PointLight::Deserialize(StreamReader &ar)
-    {
-        Light::Deserialize(ar);
-        ar(mRadius);
-    }
-
     REFLECT(Light)
     {
         BEGIN_REFLECT(Light)

@@ -23,16 +23,20 @@ namespace BHive
 
 		TEnumAsByte<QuadRendererFlags_> mFlags = QuadRendererFlags_None;
 
-		virtual AABB GetBoundingBox() const { return AABB(glm::vec3{0.f, 0.f, 0.f}, glm::vec3{mSize, 1.0f}); }
+		virtual AABB GetBoundingBox() const
+		{
+			return AABB(glm::vec3{0.f, 0.f, 0.f}, glm::vec3{mSize, 1.0f});
+		}
 
 		virtual void OnRender(SceneRenderer *renderer) override;
 
-		void Serialize(StreamWriter &ar) const;
-		void Deserialize(StreamReader &ar);
+		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+
+		virtual void Load(cereal::JSONInputArchive &ar) override;
 
 		REFLECTABLEV(ShapeComponent)
 	};
 
 	REFLECT_EXTERN(SpriteComponent)
 
-}
+} // namespace BHive

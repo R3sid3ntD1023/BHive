@@ -39,27 +39,18 @@ namespace BHive
 		CreateSprites();
 	}
 
-	void SpriteSheet::Serialize(StreamWriter &ar) const
+	void SpriteSheet::Save(cereal::JSONOutputArchive &ar) const
 	{
-		Asset::Serialize(ar);
-		ar(mSource, mGrid, mSprites);
+		Asset::Save(ar);
+		ar(MAKE_NVP("Source", mSource), MAKE_NVP("Grid", mGrid), MAKE_NVP("Sprites", mSprites));
 	}
 
-	void SpriteSheet::Deserialize(StreamReader &ar)
+	void SpriteSheet::Load(cereal::JSONInputArchive &ar)
 	{
-		Asset::Deserialize(ar);
-		ar(mSource, mGrid, mSprites);
+		Asset::Load(ar);
+		ar(MAKE_NVP("Source", mSource), MAKE_NVP("Grid", mGrid), MAKE_NVP("Sprites", mSprites));
+
 		CreateSprites();
-	}
-
-	void Serialize(StreamWriter &ar, const FSpriteSheetGrid &obj)
-	{
-		ar(obj.mRows, obj.mColumns, obj.mCellSize);
-	}
-
-	void Deserialize(StreamReader &ar, FSpriteSheetGrid &obj)
-	{
-		ar(obj.mRows, obj.mColumns, obj.mCellSize);
 	}
 
 	REFLECT(FSpriteSheetGrid)

@@ -16,19 +16,20 @@ namespace BHive
         transform.add_rotation({0, mRotateSpeed * dt, 0});
 
         entity->SetLocalTransform(transform);
-    }
+	}
 
-    void RotateComponent::Serialize(StreamWriter &ar) const
-    {
-        Component::Serialize(ar);
-        ar(mRotateSpeed);
-    }
+	void RotateComponent::Save(cereal::JSONOutputArchive &ar) const
+	{
+		Component::Save(ar);
+		ar(MAKE_NVP("RotationSpeed", mRotateSpeed));
+	}
 
-    void RotateComponent::Deserialize(StreamReader &ar)
-    {
-        Component::Deserialize(ar);
-        ar(mRotateSpeed);
-    }
+	void RotateComponent::Load(cereal::JSONInputArchive &ar)
+	{
+		Component::Load(ar);
+		ar(MAKE_NVP("RotationSpeed", mRotateSpeed));
+	}
+
 
     REFLECT(RotateComponent)
     {

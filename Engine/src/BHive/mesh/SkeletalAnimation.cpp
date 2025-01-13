@@ -3,10 +3,14 @@
 
 namespace BHive
 {
-	SkeletalAnimation::SkeletalAnimation(float duration, float ticksPerSecond, const Frames &frames, Ref<Skeleton> skeleton,
+	SkeletalAnimation::SkeletalAnimation(float duration, float ticksPerSecond, const Frames &frames,
+										 Ref<Skeleton> skeleton,
 										 const glm::mat4 &globalInverseMatrix)
-		: mDuration(duration), mTicksPerSecond(ticksPerSecond),
-		  mGlobalInverseTransformation(globalInverseMatrix), mFrameData(frames), mSkeleton(skeleton)
+		: mDuration(duration),
+		  mTicksPerSecond(ticksPerSecond),
+		  mGlobalInverseTransformation(globalInverseMatrix),
+		  mFrameData(frames),
+		  mSkeleton(skeleton)
 	{
 	}
 	int32_t SkeletalAnimation::GetPositionIndex(const std::string &name, float animationTime)
@@ -48,7 +52,8 @@ namespace BHive
 		return -1;
 	}
 
-	float SkeletalAnimation::GetScaleFentity(float lastTimeStamp, float nextTimeStamp, float animationTime)
+	float SkeletalAnimation::GetScaleFentity(float lastTimeStamp, float nextTimeStamp,
+											 float animationTime)
 	{
 		float fentity = 0.0f;
 		float mid_way_length = animationTime - lastTimeStamp;
@@ -100,16 +105,23 @@ namespace BHive
 		return scale;
 	}
 
-	void SkeletalAnimation::Serialize(StreamWriter &ar) const
+	void SkeletalAnimation::Save(cereal::JSONOutputArchive &ar) const
 	{
+		Asset::Save(ar);
 		TAssetHandle<Skeleton> handle = mSkeleton;
-		ar(mDuration, mTicksPerSecond, mGlobalInverseTransformation, mFrameData, handle);
+		ar(MAKE_NVP("Duration", mDuration), MAKE_NVP("TicksPerSecond", mTicksPerSecond),
+		   MAKE_NVP("GlobalTransformation", mGlobalInverseTransformation),
+		   MAKE_NVP("FrameData", mFrameData), MAKE_NVP("Skeleton", handle));
 	}
 
-	void SkeletalAnimation::Deserialize(StreamReader &ar)
+	void SkeletalAnimation::Load(cereal::JSONInputArchive &ar)
 	{
+		Asset::Load(ar);
+
 		TAssetHandle<Skeleton> handle;
-		ar(mDuration, mTicksPerSecond, mGlobalInverseTransformation, mFrameData, handle);
+		ar(MAKE_NVP("Duration", mDuration), MAKE_NVP("TicksPerSecond", mTicksPerSecond),
+		   MAKE_NVP("GlobalTransformation", mGlobalInverseTransformation),
+		   MAKE_NVP("FrameData", mFrameData), MAKE_NVP("Skeleton", handle));
 
 		mSkeleton = handle.get();
 	}
@@ -132,4 +144,4 @@ namespace BHive
 		REFLECT_PROPERTY_READ_ONLY("TicksPerSecond", mTicksPerSecond)
 		REFLECT_PROPERTY_READ_ONLY("Duration", mDuration);
 	}
-}
+} // namespace BHive

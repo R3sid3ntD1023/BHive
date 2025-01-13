@@ -2,7 +2,6 @@
 
 #include "gfx/Color.h"
 #include "reflection/Reflection.h"
-#include "serialization/Serialization.h"
 
 #define MAX_LIGHTS 32
 
@@ -16,18 +15,13 @@ namespace BHive
 		Color mColor = 0xFFFFFFFF;
 		float mBrightness = 1.0f;
 
-		virtual void Serialize(StreamWriter &ar) const;
-		virtual void Deserialize(StreamReader &ar);
-
+		
 		REFLECTABLEV()
 	};
 
 	struct PointLight : public Light
 	{
 		float mRadius = 1.0f;
-
-		void Serialize(StreamWriter& ar) const;
-		void Deserialize(StreamReader& ar);
 
 		REFLECTABLEV(Light)
 	};
@@ -38,9 +32,6 @@ namespace BHive
 		
 		float mInnerCutOff = 25.0f;
 		float mOuterCutOff = 75.0f;
-
-		void Serialize(StreamWriter &ar) const;
-		void Deserialize(StreamReader &ar);
 
 		REFLECTABLEV(PointLight)
 

@@ -48,24 +48,23 @@ namespace BHive
 		return mSkeletalMesh->GetDefaultPose()->GetTransformsJointSpace();
 	}
 
-	void SkeletalMeshComponent::Serialize(StreamWriter &ar) const
+	void SkeletalMeshComponent::Save(cereal::JSONOutputArchive &ar) const
 	{
-		MeshComponent::Serialize(ar);
-		ar(mSkeletalMesh);
+		MeshComponent::Save(ar);
+		ar(MAKE_NVP("SkeletalMesh", mSkeletalMesh));
 	}
 
-	void SkeletalMeshComponent::Deserialize(StreamReader &ar)
+	void SkeletalMeshComponent::Load(cereal::JSONInputArchive &ar)
 	{
-		MeshComponent::Deserialize(ar);
-		ar(mSkeletalMesh);
+		MeshComponent::Load(ar);
+		ar(MAKE_NVP("SkeletalMesh", mSkeletalMesh));
 		SetSkeletalMesh(mSkeletalMesh);
 	}
 
-	
 	REFLECT(SkeletalMeshComponent)
 	{
 		BEGIN_REFLECT(SkeletalMeshComponent)
 		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
 			REFLECT_PROPERTY("SkeletalMesh", GetSkeletalMesh, SetSkeletalMesh);
 	}
-}
+} // namespace BHive

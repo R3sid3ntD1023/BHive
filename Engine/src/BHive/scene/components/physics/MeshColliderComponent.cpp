@@ -12,7 +12,7 @@ namespace BHive
 	void *MeshColliderComponent::GetCollisionShape(const FTransform &world_transform)
 	{
 		CreateConvexMesh();
-		
+
 		if (mConvexMesh)
 		{
 			mCollisionShape = PhysicsContext::get_context().createConvexMeshShape(
@@ -25,12 +25,13 @@ namespace BHive
 
 	void MeshColliderComponent::ReleaseCollisionShape()
 	{
-		PhysicsContext::get_context().destroyConvexMeshShape((rp3d::ConvexMeshShape *)mCollisionShape);
+		PhysicsContext::get_context().destroyConvexMeshShape(
+			(rp3d::ConvexMeshShape *)mCollisionShape);
 		PhysicsContext::get_context().destroyConvexMesh((rp3d::ConvexMesh *)mConvexMesh);
 	}
 
 	void MeshColliderComponent::OnRender(SceneRenderer *renderer)
-	{		
+	{
 		if (mStaticMesh)
 		{
 			auto transform = GetWorldTransform();
@@ -43,16 +44,16 @@ namespace BHive
 		mStaticMesh = mesh;
 	}
 
-	void MeshColliderComponent::Serialize(StreamWriter &ar) const
+	void MeshColliderComponent::Save(cereal::JSONOutputArchive &ar) const
 	{
-		ColliderComponent::Serialize(ar);
-		ar(mStaticMesh);
+		ColliderComponent::Save(ar);
+		ar(MAKE_NVP("StaticMesh", mStaticMesh));
 	}
 
-	void MeshColliderComponent::Deserialize(StreamReader &ar)
+	void MeshColliderComponent::Load(cereal::JSONInputArchive &ar)
 	{
-		ColliderComponent::Deserialize(ar);
-		ar(mStaticMesh);
+		ColliderComponent::Load(ar);
+		ar(MAKE_NVP("StaticMesh", mStaticMesh));
 	}
 
 	void MeshColliderComponent::CreateConvexMesh()
@@ -81,8 +82,9 @@ namespace BHive
 				rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 				rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);*/
 
-			auto verts = rp3d::VertexArray(vertices.data(), sizeof(FVertex), vertices.size(),
-											rp3d::VertexArray::DataType ::VERTEX_FLOAT_TYPE);
+			auto verts = rp3d::VertexArray(
+				vertices.data(), sizeof(FVertex), vertices.size(),
+				rp3d::VertexArray::DataType ::VERTEX_FLOAT_TYPE);
 
 			std::vector<rp3d::Message> messages;
 			mConvexMesh = PhysicsContext::get_context().createConvexMesh(verts, messages);
@@ -93,15 +95,15 @@ namespace BHive
 				{
 					switch (message.type)
 					{
-						case reactphysics3d::Message::Type::Information:
-							LOG_TRACE("StaticMeshComponent::GetConvexMesh - {}", message.text);
-							break;
-						case reactphysics3d::Message::Type::Warning:
-							LOG_WARN("StaticMeshComponent::GetConvexMesh - {}", message.text);
-							break;
-						case reactphysics3d::Message::Type::Error:
-							LOG_ERROR("StaticMeshComponent::GetConvexMesh - {}", message.text);
-							break;
+					case reactphysics3d::Message::Type::Information:
+						LOG_TRACE("StaticMeshComponent::GetConvexMesh - {}", message.text);
+						break;
+					case reactphysics3d::Message::Type::Warning:
+						LOG_WARN("StaticMeshComponent::GetConvexMesh - {}", message.text);
+						break;
+					case reactphysics3d::Message::Type::Error:
+						LOG_ERROR("StaticMeshComponent::GetConvexMesh - {}", message.text);
+						break;
 					}
 				}
 			}
@@ -116,4 +118,4 @@ namespace BHive
 		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
 			REFLECT_PROPERTY("StaticMesh", GetStaticMesh, SetStaticMesh);
 	}
-}  // namespace BHive
+} // namespace BHive

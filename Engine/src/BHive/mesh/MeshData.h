@@ -51,37 +51,5 @@ namespace BHive
         AABB mBoundingBox;
     };
 
-    inline void Serialize(StreamWriter &ar, const FVertex &obj)
-    {
-        ar(obj.Position, obj.TexCoord, obj.Normal, obj.Tangent, obj.BiNormal, obj.Color);
-        for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
-            ar(obj.mBoneID[i], obj.mWeights[i]);
-    }
-
-    inline void Deserialize(StreamReader &ar, FVertex &obj)
-    {
-        ar(obj.Position, obj.TexCoord, obj.Normal, obj.Tangent, obj.BiNormal, obj.Color);
-        for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
-            ar(obj.mBoneID[i], obj.mWeights[i]);
-    }
-
-    inline void Serialize(StreamWriter &ar, const FSubMesh &obj)
-    {
-        ar(obj.mMaterialIndex, obj.mStartVertex, obj.mStartIndex, obj.mVertexCount, obj.mIndexCount, obj.mInstanceCount);
-    }
-
-    inline void Deserialize(StreamReader &ar, FSubMesh &obj)
-    {
-        ar(obj.mMaterialIndex, obj.mStartVertex, obj.mStartIndex, obj.mVertexCount, obj.mIndexCount, obj.mInstanceCount);
-    }
-
-    inline void Serialize(StreamWriter &ar, const FMeshData &obj)
-    {
-        ar(obj.mSubMeshes, obj.mVertices, obj.mIndices, obj.mBoundingBox);
-    }
-
-    inline void Deserialize(StreamReader &ar, FMeshData &obj)
-    {
-        ar(obj.mSubMeshes, obj.mVertices, obj.mIndices, obj.mBoundingBox);
-    }
+   
 }

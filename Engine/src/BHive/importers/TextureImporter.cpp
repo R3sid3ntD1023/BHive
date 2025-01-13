@@ -54,11 +54,9 @@ namespace BHive
 			texture = Texture2D::Create(image_data, (unsigned)w, (unsigned)h, specification);
 		}
 
-		BEGIN_THREAD_DISPATCH(=)
 		stbi_image_free(image_data);
 
 		free(resize_data);
-		END_THREAD_DISPATCH()
 
 		return texture;
 	}

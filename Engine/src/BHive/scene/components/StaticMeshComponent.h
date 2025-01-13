@@ -20,18 +20,16 @@ namespace BHive
 
 		virtual AABB GetBoundingBox() const;
 
-
 		TAssetHandle<StaticMesh> mStaticMesh;
 
 		void OnRender(SceneRenderer *renderer) override;
 
-		void Serialize(StreamWriter& ar) const;
-		void Deserialize(StreamReader& ar);
+		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+
+		virtual void Load(cereal::JSONInputArchive &ar) override;
 
 		REFLECTABLEV(MeshComponent)
-
-
 	};
 
 	REFLECT_EXTERN(StaticMeshComponent)
-}
+} // namespace BHive

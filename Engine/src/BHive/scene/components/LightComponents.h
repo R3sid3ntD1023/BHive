@@ -19,11 +19,11 @@ namespace BHive
 
 		virtual void OnRender(SceneRenderer *renderer);
 
-		void Serialize(StreamWriter& ar) const;
-		void Deserialize(StreamReader& ar);
+		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+
+		virtual void Load(cereal::JSONInputArchive &ar) override;
 
 		REFLECTABLEV(LightComponent)
-
 	};
 
 	struct BHIVE PointLightComponent : public LightComponent
@@ -32,8 +32,9 @@ namespace BHive
 
 		virtual void OnRender(SceneRenderer *renderer);
 
-		void Serialize(StreamWriter& ar) const;
-		void Deserialize(StreamReader& ar);
+		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+
+		virtual void Load(cereal::JSONInputArchive &ar) override;
 
 		REFLECTABLEV(LightComponent)
 	};
@@ -44,8 +45,9 @@ namespace BHive
 
 		virtual void OnRender(SceneRenderer *renderer);
 
-		void Serialize(StreamWriter& ar) const;
-		void Deserialize(StreamReader& ar);
+		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+
+		virtual void Load(cereal::JSONInputArchive &ar) override;
 
 		REFLECTABLEV(LightComponent)
 	};
@@ -54,4 +56,4 @@ namespace BHive
 	REFLECT_EXTERN(SpotLightComponent)
 	REFLECT_EXTERN(DirectionalLightComponent)
 
-}
+} // namespace BHive

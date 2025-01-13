@@ -5,19 +5,26 @@
 namespace BHive
 {
 	Sprite::Sprite(const Sprite &other)
-		: mSource(other.mSource), mCoords(other.mCoords), mCoordinates(other.mCoordinates), mCellSize(other.mCellSize),
+		: mSource(other.mSource),
+		  mCoords(other.mCoords),
+		  mCoordinates(other.mCoordinates),
+		  mCellSize(other.mCellSize),
 		  mSpriteSize(other.mSpriteSize)
 	{
 	}
 
-	Sprite::Sprite(const TAssetHandle<Texture2D> &texture, const glm::vec2 &coords, const glm::vec2 &cellSize,
-				   const glm::vec2 &spriteSize)
-		: mSource(texture), mCoordinates(coords), mCellSize(cellSize), mSpriteSize(spriteSize)
+	Sprite::Sprite(const TAssetHandle<Texture2D> &texture, const glm::vec2 &coords,
+				   const glm::vec2 &cellSize, const glm::vec2 &spriteSize)
+		: mSource(texture),
+		  mCoordinates(coords),
+		  mCellSize(cellSize),
+		  mSpriteSize(spriteSize)
 	{
 		SetCoords(coords, cellSize, spriteSize);
 	}
 
-	Sprite::Sprite(const TAssetHandle<Texture2D> &texture, const glm::vec2 &min, const glm::vec2 &max)
+	Sprite::Sprite(const TAssetHandle<Texture2D> &texture, const glm::vec2 &min,
+				   const glm::vec2 &max)
 		: mSource(texture)
 	{
 		SetCoords(min, max);
@@ -42,7 +49,8 @@ namespace BHive
 		mCoords[3] = {min.x, max.y};
 	}
 
-	void Sprite::SetCoords(const glm::vec2 &coords, const glm::vec2 &cellSize, const glm::vec2 &spriteSize)
+	void Sprite::SetCoords(const glm::vec2 &coords, const glm::vec2 &cellSize,
+						   const glm::vec2 &spriteSize)
 	{
 		mCoordinates = coords;
 		mCellSize = cellSize;
@@ -110,28 +118,30 @@ namespace BHive
 		mSource = texture;
 	}
 
-	void Sprite::Serialize(StreamWriter& ar) const
+	void Sprite::Save(cereal::JSONOutputArchive &ar) const
 	{
-		Asset::Serialize(ar);
-		ar(mSpriteSize, mCellSize, mCoordinates, mSource);
+		Asset::Save(ar);
+		ar(MAKE_NVP("SpriteSize", mSpriteSize), MAKE_NVP("CellSize", mCellSize),
+		   MAKE_NVP("Coordinates", mCoordinates), MAKE_NVP("Source", mSource));
 	}
 
-	void Sprite::Deserialize(StreamReader& ar)
+	void Sprite::Load(cereal::JSONInputArchive &ar)
 	{
-		Asset::Deserialize(ar);
-		ar(mSpriteSize, mCellSize, mCoordinates, mSource);
+		Asset::Load(ar);
+		ar(MAKE_NVP("SpriteSize", mSpriteSize), MAKE_NVP("CellSize", mCellSize),
+		   MAKE_NVP("Coordinates", mCoordinates), MAKE_NVP("Source", mSource));
+
 		SetCoords(mCoordinates, mCellSize, mSpriteSize);
 	}
-
 
 	REFLECT(Sprite)
 	{
 		BEGIN_REFLECT(Sprite)
-			REFLECT_CONSTRUCTOR()
-			REFLECT_PROPERTY("Source", GetSourceTexture, SetSourceTexture)
-			REFLECT_PROPERTY("Coordinates", GetCoordinates, SetCoordinates)
-			REFLECT_PROPERTY("CellSize", GetCellSize, SetCellSize)
-			REFLECT_PROPERTY("SpriteSize", GetSpriteSize, SetSpriteSize);
+		REFLECT_CONSTRUCTOR()
+		REFLECT_PROPERTY("Source", GetSourceTexture, SetSourceTexture)
+		REFLECT_PROPERTY("Coordinates", GetCoordinates, SetCoordinates)
+		REFLECT_PROPERTY("CellSize", GetCellSize, SetCellSize)
+		REFLECT_PROPERTY("SpriteSize", GetSpriteSize, SetSpriteSize);
 	}
 
-}
+} // namespace BHive

@@ -15,4 +15,30 @@ END_THREAD_DISPATCH() $end$]]>
 			</Code>
 		</Snippet>
 	</CodeSnippet>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>MAKE_NVP</Title>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+			<Shortcut>nvp</Shortcut>
+		</Header>
+		<Snippet>
+			<Code Language="CPP">
+				<![CDATA[MAKE_NVP("", $selected$) $end$]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>SaveLoad</Title>
+			<Shortcut>saveload</Shortcut>
+		</Header>
+		<Snippet>
+			<Code Language="CPP">
+				<![CDATA[virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Load(cereal::JSONInputArchive &ar) override; $end$]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
 </CodeSnippets>

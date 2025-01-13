@@ -1,23 +1,21 @@
 #include "ColliderComponent.h"
 #include "physics/PhysicsContext.h"
-#include "physics//PhysicsUtils.h"
+#include "physics/PhysicsUtils.h"
 #include "scene/Entity.h"
 #include <reactphysics3d/reactphysics3d.h>
-
-
 
 namespace BHive
 {
 	void ColliderComponent::OnBegin()
 	{
-		auto rb = (rp3d::RigidBody*)GetOwner()->GetPhysicsComponent().GetRigidBody();
+		auto rb = (rp3d::RigidBody *)GetOwner()->GetPhysicsComponent().GetRigidBody();
 		if (rb && mCollisionEnabled)
 		{
 			auto transform = GetWorldTransform();
-			auto shape = (rp3d::CollisionShape*)GetCollisionShape(transform);
-			if (!shape) return;
+			auto shape = (rp3d::CollisionShape *)GetCollisionShape(transform);
+			if (!shape)
+				return;
 
-			
 			auto offset = mOffset * transform.get_scale();
 			auto offset_ =
 				rp3d::Transform({offset.x, offset.y, offset.z}, rp3d::Quaternion::identity());
@@ -29,7 +27,7 @@ namespace BHive
 
 			if (mPhysicsMaterial)
 			{
-				auto& material = collider->getMaterial();
+				auto &material = collider->getMaterial();
 				material.setFrictionCoefficient(mPhysicsMaterial->mFrictionCoefficient);
 				material.setBounciness(mPhysicsMaterial->mBounciness);
 				material.setMassDensity(mPhysicsMaterial->mMassDensity);
@@ -42,25 +40,32 @@ namespace BHive
 	{
 		if (mCollisionEnabled && mCollider)
 		{
-			auto rb = (rp3d::RigidBody*)GetOwner()->GetPhysicsComponent().GetRigidBody();
-			rb->removeCollider((rp3d::Collider*)mCollider);
+			auto rb = (rp3d::RigidBody *)GetOwner()->GetPhysicsComponent().GetRigidBody();
+			rb->removeCollider((rp3d::Collider *)mCollider);
 			ReleaseCollisionShape();
 		}
 	}
 
-	void ColliderComponent::Serialize(StreamWriter& ar) const
+	void ColliderComponent::Save(cereal::JSONOutputArchive &ar) const
 	{
-		ShapeComponent::Serialize(ar);
+		ShapeComponent::Save(ar);
 
-		ar(mCollisionEnabled, mCollisionChannel, mCollisionChannelMasks, mOffset, mIsTrigger, mColor, mPhysicsMaterial);
+		ar(MAKE_NVP("IsCollisonEnabled", mCollisionEnabled),
+		   MAKE_NVP("CollisionChannel", mCollisionChannel),
+		   MAKE_NVP("CollisionChannelMasks", mCollisionChannelMasks), MAKE_NVP("Offset", mOffset),
+		   MAKE_NVP("IsTrigger", mIsTrigger), MAKE_NVP("Color", mColor),
+		   MAKE_NVP("PhysicsMaterial", mPhysicsMaterial));
 	}
 
-	void ColliderComponent::Deserialize(StreamReader& ar)
+	void ColliderComponent::Load(cereal::JSONInputArchive &ar)
 	{
-		ShapeComponent::Deserialize(ar);
+		ShapeComponent::Load(ar);
 
-		ar(mCollisionEnabled, mCollisionChannel, mCollisionChannelMasks, mOffset, mIsTrigger,
-		   mColor, mPhysicsMaterial);
+		ar(MAKE_NVP("IsCollisonEnabled", mCollisionEnabled),
+		   MAKE_NVP("CollisionChannel", mCollisionChannel),
+		   MAKE_NVP("CollisionChannelMasks", mCollisionChannelMasks), MAKE_NVP("Offset", mOffset),
+		   MAKE_NVP("IsTrigger", mIsTrigger), MAKE_NVP("Color", mColor),
+		   MAKE_NVP("PhysicsMaterial", mPhysicsMaterial));
 	}
 
 	REFLECT(ColliderComponent)
@@ -75,4 +80,4 @@ namespace BHive
 		REFLECT_PROPERTY("Color", mColor);
 	}
 
-}  // namespace  BHive
+} // namespace  BHive

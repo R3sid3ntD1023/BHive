@@ -2,16 +2,18 @@
 
 namespace BHive
 {
-	void PhysicsMaterial::Serialize(StreamWriter &ar) const
+	void PhysicsMaterial::Save(cereal::JSONOutputArchive& ar) const
 	{
-		Asset::Serialize(ar);
-		ar(mFrictionCoefficient, mBounciness, mMassDensity);
+		Asset::Save(ar);
+		ar(MAKE_NVP("FrictionCoefficient", mFrictionCoefficient),
+		   MAKE_NVP("Bounciness", mBounciness), MAKE_NVP("MassDensity", mMassDensity));
 	}
 
-	void PhysicsMaterial::Deserialize(StreamReader &ar)
+	void PhysicsMaterial::Load(cereal::JSONInputArchive &ar)
 	{
-		Asset::Deserialize(ar);
-		ar(mFrictionCoefficient, mBounciness, mMassDensity);
+		Asset::Load(ar);
+		ar(MAKE_NVP("FrictionCoefficient", mFrictionCoefficient),
+		   MAKE_NVP("Bounciness", mBounciness), MAKE_NVP("MassDensity", mMassDensity));
 	}
 
 	REFLECT(PhysicsMaterial)

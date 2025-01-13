@@ -5,92 +5,94 @@
 namespace BHive
 {
 
-    void SpotLightComponent::OnRender(SceneRenderer *renderer)
-    {
-        auto transform = GetWorldTransform();
-        renderer->SubmitLight(mLight, transform);
+	void SpotLightComponent::OnRender(SceneRenderer *renderer)
+	{
+		auto transform = GetWorldTransform();
+		renderer->SubmitLight(mLight, transform);
 
-        LineRenderer::DrawSphere(mLight.mRadius, 16, {}, mLight.mColor, transform);
-        LineRenderer::DrawCone(glm::cos(glm::radians(mLight.mOuterCutOff)), mLight.mRadius, 16, 0xFFFF0000, transform);
-        LineRenderer::DrawCone(glm::cos(glm::radians(mLight.mInnerCutOff)), mLight.mRadius, 16, 0xFF00FF00, transform);
-    }
+		LineRenderer::DrawSphere(mLight.mRadius, 16, {}, mLight.mColor, transform);
+		LineRenderer::DrawCone(glm::cos(glm::radians(mLight.mOuterCutOff)), mLight.mRadius, 16,
+							   0xFFFF0000, transform);
+		LineRenderer::DrawCone(glm::cos(glm::radians(mLight.mInnerCutOff)), mLight.mRadius, 16,
+							   0xFF00FF00, transform);
+	}
 
-    void SpotLightComponent::Serialize(StreamWriter& ar) const
-    {
-        LightComponent::Serialize(ar);
-        ar(mLight);
-    }
+	void SpotLightComponent::Save(cereal::JSONOutputArchive &ar) const
+	{
+		LightComponent::Save(ar);
+		ar(MAKE_NVP("Light", mLight));
+	}
 
-    void SpotLightComponent::Deserialize(StreamReader& ar)
-    {
-        LightComponent::Deserialize(ar);
-        ar(mLight);
-    }
+	void SpotLightComponent::Load(cereal::JSONInputArchive &ar)
+	{
+		LightComponent::Load(ar);
+		ar(MAKE_NVP("Light", mLight));
+	}
 
-    void PointLightComponent::OnRender(SceneRenderer *renderer)
-    {
-        auto transform = GetWorldTransform();
+	void PointLightComponent::OnRender(SceneRenderer *renderer)
+	{
+		auto transform = GetWorldTransform();
 
-        renderer->SubmitLight(mLight, transform);
-        LineRenderer::DrawSphere(mLight.mRadius, 16, {}, mLight.mColor, transform);
-    }
+		renderer->SubmitLight(mLight, transform);
+		LineRenderer::DrawSphere(mLight.mRadius, 16, {}, mLight.mColor, transform);
+	}
 
-    void PointLightComponent::Serialize(StreamWriter& ar) const
-    {
-        LightComponent::Serialize(ar);
-        ar(mLight);
-    }
+	void PointLightComponent::Save(cereal::JSONOutputArchive &ar) const
+	{
+		LightComponent::Save(ar);
+		ar(MAKE_NVP("Light", mLight));
+	}
 
-    void PointLightComponent::Deserialize(StreamReader& ar)
-    {
-        LightComponent::Deserialize(ar);
-        ar(mLight);
-    }
+	void PointLightComponent::Load(cereal::JSONInputArchive &ar)
+	{
+		LightComponent::Load(ar);
+		ar(MAKE_NVP("Light", mLight));
+	}
 
-    void DirectionalLightComponent::OnRender(SceneRenderer *renderer)
-    {
-        renderer->SubmitLight(mLight, GetWorldTransform());
+	void DirectionalLightComponent::OnRender(SceneRenderer *renderer)
+	{
+		renderer->SubmitLight(mLight, GetWorldTransform());
 
-        auto forward = GetWorldTransform().get_forward();
-        LineRenderer::DrawLine({}, -forward, mLight.mColor, GetWorldTransform());
-    }
+		auto forward = GetWorldTransform().get_forward();
+		LineRenderer::DrawLine({}, -forward, mLight.mColor, GetWorldTransform());
+	}
 
-    void DirectionalLightComponent::Serialize(StreamWriter& ar) const
-    {
-        LightComponent::Serialize(ar);
-        ar(mLight);
-    }
+	void DirectionalLightComponent::Save(cereal::JSONOutputArchive &ar) const
+	{
+		LightComponent::Save(ar);
+		ar(MAKE_NVP("Light", mLight));
+	}
 
-    void DirectionalLightComponent::Deserialize(StreamReader& ar)
-    {
-        LightComponent::Deserialize(ar);
-        ar(mLight);
-    }
+	void DirectionalLightComponent::Load(cereal::JSONInputArchive &ar)
+	{
+		LightComponent::Load(ar);
+		ar(MAKE_NVP("Light", mLight));
+	}
 
-    REFLECT(LightComponent)
-    {
-        BEGIN_REFLECT(LightComponent);
-    }
+	REFLECT(LightComponent)
+	{
+		BEGIN_REFLECT(LightComponent);
+	}
 
-    REFLECT(PointLightComponent)
-    {
-        BEGIN_REFLECT(PointLightComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true))
-        REQUIRED_COMPONENT_FUNCS()
-        REFLECT_PROPERTY("Light", mLight);
-    }
+	REFLECT(PointLightComponent)
+	{
+		BEGIN_REFLECT(PointLightComponent)
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
+			REFLECT_PROPERTY("Light", mLight);
+	}
 
-    REFLECT(SpotLightComponent)
-    {
-        BEGIN_REFLECT(SpotLightComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true))
-        REQUIRED_COMPONENT_FUNCS()
-        REFLECT_PROPERTY("Light", mLight);
-    }
+	REFLECT(SpotLightComponent)
+	{
+		BEGIN_REFLECT(SpotLightComponent)
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
+			REFLECT_PROPERTY("Light", mLight);
+	}
 
-    REFLECT(DirectionalLightComponent)
-    {
-        BEGIN_REFLECT(DirectionalLightComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true))
-        REQUIRED_COMPONENT_FUNCS()
-        REFLECT_PROPERTY("Light", mLight);
-    }
+	REFLECT(DirectionalLightComponent)
+	{
+		BEGIN_REFLECT(DirectionalLightComponent)
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
+			REFLECT_PROPERTY("Light", mLight);
+	}
 
 } // namespace BHive

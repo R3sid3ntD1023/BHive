@@ -1,6 +1,5 @@
 #include "MaterialFactory.h"
 #include "material/Material.h"
-#include "asset/AssetSerializer.h"
 
 namespace BHive
 {

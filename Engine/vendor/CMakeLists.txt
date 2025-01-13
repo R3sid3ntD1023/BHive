@@ -46,6 +46,10 @@ set(SPDLOG_BUILD_SHARED ON CACHE BOOL "" FORCE)
 #set(SPDLOG_ENABLE_PCH ON CACHE BOOL "" FORCE)
 #set(SPDLOG_USE_STD_FORMAT ON CACHE BOOL "" FORCE)
 
+set(BUILD_SANDBOX OFF CACHE BOOL "" FORCE)
+set(BUILD_DOC OFF CACHE BOOL "" FORCE)
+set(SKIP_PERFORMANCE_COMPARISION ON CACHE BOOL "" FORCE)
+
 #glfw
 FetchContent_Declare(
 	glfw
@@ -133,6 +137,13 @@ FetchContent_Declare(
 )
 list(APPEND components rttr)
 
+FETCHCONTENT_DECLARE(
+	cereal
+	GIT_REPOSITORY https://github.com/R3sid3ntD1023/cereal.git
+	GIT_TAG master
+)
+list(APPEND components cereal)
+
 #entt
 #FetchContent_Declare(
 #	entt
@@ -143,7 +154,7 @@ list(APPEND components rttr)
 
 
 if(components)
-	FetchContent_MakeAvailable(${components})
+	FETCHCONTENT_MAKEAVAILABLE(${components})
 endif()
 
 if(MSVC)

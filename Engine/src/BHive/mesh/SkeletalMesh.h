@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Skeleton.h"
+#include "SkeletalPose.h"
 #include "StaticMesh.h"
 
 namespace BHive
@@ -16,9 +18,9 @@ namespace BHive
 
 		Ref<class SkeletalPose> GetDefaultPose() { return mDefaultPose; }
 
-		virtual void Serialize(StreamWriter &ar) const;
+		virtual void Save(cereal::JSONOutputArchive &ar) const override;
 
-		virtual void Deserialize(StreamReader &ar);
+		virtual void Load(cereal::JSONInputArchive &ar) override;
 
 		REFLECTABLEV(StaticMesh)
 

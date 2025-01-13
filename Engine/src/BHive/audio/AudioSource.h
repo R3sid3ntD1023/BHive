@@ -2,27 +2,18 @@
 
 #include "core/Core.h"
 #include "AudioTime.h"
-#include "asset/Asset.h"
 #include "core/Buffer.h"
-#include "serialization/Serialization.h"
+#include "AudioSpecification.h"
+#include "asset/Asset.h"
 
 namespace BHive
 {
-
-	struct AudioSpecification
-	{
-		int mFormat;
-		int mNumSamples;
-		int mSampleRate;
-		std::optional<int> mStartLoop;
-		std::optional<int> mEndLoop;
-	};
 
 	class BHIVE AudioSource : public Asset
 	{
 	public:
 		AudioSource() = default;
-		AudioSource(int16_t *buffer, int size, const AudioSpecification &specs = {});
+		AudioSource(int16_t *buffer, int size, const FAudioSpecification &specs = {});
 		~AudioSource();
 
 		void Play();
@@ -41,8 +32,9 @@ namespace BHive
 		float GetPitch() const { return mPitch; }
 		bool IsLooping() const { return mIsLooping; }
 
-		void Serialize(StreamWriter &ar) const;
-		void Deserialize(StreamReader &ar);
+		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+
+		virtual void Load(cereal::JSONInputArchive &ar) override;
 
 		REFLECTABLEV(Asset)
 
@@ -60,23 +52,11 @@ namespace BHive
 		bool mIsSpatial{false};
 		bool mIsLooping{false};
 		float mLength{0.0f};
-		AudioSpecification mSpecification;
+		FAudioSpecification mSpecification;
 
 		TBuffer<int16_t> mBuffer;
 	};
 
 	REFLECT_EXTERN(AudioSource)
-
-	template <typename TArchive>
-	inline void Serialize(TArchive &ar, const AudioSpecification &spec)
-	{
-		ar(spec.mFormat, spec.mNumSamples, spec.mSampleRate, spec.mStartLoop, spec.mEndLoop);
-	}
-
-	template <typename TArchive>
-	inline void Deserialize(TArchive &ar, AudioSpecification &spec)
-	{
-		ar(spec.mFormat, spec.mNumSamples, spec.mSampleRate, spec.mStartLoop, spec.mEndLoop);
-	}
 
 } // namespace BHive

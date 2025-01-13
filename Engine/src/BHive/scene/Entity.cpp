@@ -263,26 +263,33 @@ namespace BHive
         mTickEnabled = enabled;
     }
 
-    void Entity::Serialize(StreamWriter &ar) const
+    void Entity::Save(cereal::JSONOutputArchive &ar) const
     {
-        ObjectBase::Serialize(ar);
+		CEREAL_BASE(ObjectBase, ar);
 
-        ar(mTickEnabled, mTransform, mRelationshipComponent, mPhysicsComponent, mComponents.size());
+        ar(MAKE_NVP("TickEnabled", mTickEnabled), MAKE_NVP("Transform", mTransform),
+		   MAKE_NVP("RelationshipComponent", mRelationshipComponent), MAKE_NVP("PhysicsComponent", mPhysicsComponent),
+		   MAKE_NVP("NumComponents", mComponents.size()));
 
         for (auto &component : mComponents)
         {
-            ar(component->get_type());
-            component->Serialize(ar);
+			ar(MAKE_NVP("ComponentType", component->get_type()));
+            component->Save(ar);
         }
     }
 
-    void Entity::Deserialize(StreamReader &ar)
+    void Entity::Load(cereal::JSONInputArchive &ar)
     {
-        ObjectBase::Deserialize(ar);
+		CEREAL_BASE(ObjectBase, ar);
 
+	
         size_t num_components = 0;
 
-        ar(mTickEnabled, mTransform, mRelationshipComponent, mPhysicsComponent, num_components);
+       	ar(MAKE_NVP("TickEnabled", mTickEnabled), MAKE_NVP("Transform", mTransform),
+		   MAKE_NVP("RelationshipComponent", mRelationshipComponent),
+		   MAKE_NVP("PhysicsComponent", mPhysicsComponent),
+		   MAKE_NVP("NumComponents", num_components));
+
 
         if (mComponents.size() < num_components)
             mComponents.resize(num_components);
@@ -290,7 +297,7 @@ namespace BHive
         for (size_t i = 0; i < num_components; i++)
         {
             AssetType component_type = InvalidType;
-            ar(component_type);
+			ar(MAKE_NVP("ComponentType", component_type));
 
             auto &component = mComponents[i];
             if (!component)
@@ -298,7 +305,7 @@ namespace BHive
                 component = component_type.create().get_value<Ref<Component>>();
             }
 
-            component->Deserialize(ar);
+            component->Load(ar);
         }
 
         RegisterComponents();
@@ -318,10 +325,10 @@ namespace BHive
 
     REFLECT(Entity)
     {
-        BEGIN_REFLECT(Entity)
-        REFLECT_CONSTRUCTOR()
-        REFLECT_CONSTRUCTOR(const Entity&)
-        REFLECT_PROPERTY("Physics", mPhysicsComponent)
-        REFLECT_METHOD("AddComponent", &Entity::AddComponent);
+		BEGIN_REFLECT(Entity)
+		REFLECT_CONSTRUCTOR()
+		REFLECT_CONSTRUCTOR(const Entity &)
+		REFLECT_PROPERTY("Physics", mPhysicsComponent)
+		REFLECT_METHOD("AddComponent", &Entity::AddComponent);
     }
 } // namespace BHive
