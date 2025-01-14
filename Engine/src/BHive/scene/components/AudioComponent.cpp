@@ -4,30 +4,31 @@
 
 namespace BHive
 {
+    
+    void AudioComponent::OnBegin()
+    {
+        if (mAudio && mPlayOnStart)
+            mAudio->Play();
+    }
 
-	void AudioComponent::OnBegin()
-	{
-		if (mAudio && mPlayOnStart)
-			mAudio->Play();
-	}
+    void AudioComponent::Serialize(StreamWriter& ar) const
+    {
+        Component::Serialize(ar);
+        ar(mPlayOnStart, mAudio);
+    }
 
-	void AudioComponent::Save(cereal::JSONOutputArchive &ar) const
-	{
-		Component::Save(ar);
-		ar(MAKE_NVP("PlayOnStart", mPlayOnStart), MAKE_NVP("Audio", mAudio));
-	}
+    void AudioComponent::Deserialize(StreamReader& ar)
+    {
+        Component::Deserialize(ar);
+        ar(mPlayOnStart, mAudio);
+    }
 
-	void AudioComponent::Load(cereal::JSONInputArchive &ar)
-	{
-		Component::Load(ar);
-		ar(MAKE_NVP("PlayOnStart", mPlayOnStart), MAKE_NVP("Audio", mAudio));
-	}
-
-	REFLECT(AudioComponent)
-	{
-		BEGIN_REFLECT(AudioComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
-			REFLECT_PROPERTY("Play On Start", mPlayOnStart) REFLECT_PROPERTY("Audio", mAudio);
-	}
+    REFLECT(AudioComponent)
+    {
+        BEGIN_REFLECT(AudioComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true))
+            REQUIRED_COMPONENT_FUNCS()
+            REFLECT_PROPERTY("Play On Start", mPlayOnStart)
+            REFLECT_PROPERTY("Audio", mAudio);
+    }
 
 } // namespace BHive

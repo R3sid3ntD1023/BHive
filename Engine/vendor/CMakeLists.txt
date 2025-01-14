@@ -46,10 +46,6 @@ set(SPDLOG_BUILD_SHARED ON CACHE BOOL "" FORCE)
 #set(SPDLOG_ENABLE_PCH ON CACHE BOOL "" FORCE)
 #set(SPDLOG_USE_STD_FORMAT ON CACHE BOOL "" FORCE)
 
-set(BUILD_SANDBOX OFF CACHE BOOL "" FORCE)
-set(BUILD_DOC OFF CACHE BOOL "" FORCE)
-set(SKIP_PERFORMANCE_COMPARISION ON CACHE BOOL "" FORCE)
-
 #glfw
 FetchContent_Declare(
 	glfw
@@ -137,6 +133,7 @@ FetchContent_Declare(
 )
 list(APPEND components rttr)
 
+<<<<<<< HEAD
 FETCHCONTENT_DECLARE(
 	cereal
 	GIT_REPOSITORY https://github.com/USCiLab/cereal.git
@@ -144,6 +141,8 @@ FETCHCONTENT_DECLARE(
 )
 list(APPEND components cereal)
 
+=======
+>>>>>>> parent of 1c2673b (removed custom serializer and added cereal)
 #entt
 #FetchContent_Declare(
 #	entt
@@ -154,7 +153,7 @@ list(APPEND components cereal)
 
 
 if(components)
-	FETCHCONTENT_MAKEAVAILABLE(${components})
+	FetchContent_MakeAvailable(${components})
 endif()
 
 if(MSVC)

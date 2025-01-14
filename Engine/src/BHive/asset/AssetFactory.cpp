@@ -5,14 +5,10 @@ namespace BHive
 {
 	bool AssetFactory::Import(Ref<Asset>& asset, const std::filesystem::path& path)
 	{
-		std::ifstream in(path, std::ios::in);
-		if (!in)
-			return false;
+		FileStreamReader ar(path);
 		
-		cereal::JSONInputArchive ar(in);
-
 		AssetType type = InvalidType;
-		ar(MAKE_NVP("AssetType", type));
+		ar(type);
 
 		if (!type)
 			return false;
@@ -26,7 +22,7 @@ namespace BHive
 		}
 
 		auto obj = var.get_value<Ref<Asset>>();
-		obj->Load(ar);
+		obj->Deserialize(ar);
 
 		asset = obj;
 
@@ -35,7 +31,14 @@ namespace BHive
 
 	bool AssetFactory::Export(const Ref<Asset>& asset, const std::filesystem::path& path)
 	{
-		return Export(asset.get(), path);
+		if (!asset)
+			return false;
+
+		FileStreamWriter ar(path);
+		ar(asset->get_type());
+		asset->Serialize(ar);
+
+		return true;
 	}
 
 	bool AssetFactory::Export(const Asset* asset, const std::filesystem::path& path)
@@ -43,14 +46,9 @@ namespace BHive
 		if (!asset)
 			return false;
 
-		std::ofstream out(path, std::ios::out);
-
-		if (!out)
-			return false;
-
-		cereal::JSONOutputArchive ar(out);
-		ar(MAKE_NVP("AssetType", asset->get_type()));
-		asset->Save(ar);
+		FileStreamWriter ar(path);
+		ar(asset->get_type());
+		asset->Serialize(ar);
 
 		return true;
 	}

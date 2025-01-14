@@ -61,10 +61,8 @@ namespace BHive
 		void RayCast(const glm::vec3 &start, const glm::vec3 &end, unsigned short mask = -1,
 					 float factor = 1.0f);
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const;
-
-		virtual void Load(cereal::JSONInputArchive &ar);
-
+		void Serialize(StreamWriter &ar) const;
+		void Deserialize(StreamReader &ar);
 
 		REFLECTABLEV(Asset)
 

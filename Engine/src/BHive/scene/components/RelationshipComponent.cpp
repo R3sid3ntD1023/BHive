@@ -2,8 +2,17 @@
 
 namespace BHive
 {
+	void RelationshipComponent::Serialize(StreamWriter& ar) const
+	{
+		ar(mParentID, mChildIDs);
+	}
 
-	void RelationshipComponent::SetParentID(const UUID &parent)
+	void RelationshipComponent::Deserialize(StreamReader& ar)
+	{
+		ar(mParentID, mChildIDs);
+	}
+
+	void RelationshipComponent::SetParentID(const UUID& parent)
 	{
 		mParentID = parent;
 	}
@@ -13,13 +22,13 @@ namespace BHive
 		mParentID = 0;
 	}
 
-	void RelationshipComponent::AddChild(const UUID &child)
+	void RelationshipComponent::AddChild(const UUID& child)
 	{
 		mChildIDs.insert(child);
 	}
 
-	void RelationshipComponent::RemoveChild(const UUID &child)
+	void RelationshipComponent::RemoveChild(const UUID& child)
 	{
 		mChildIDs.erase(child);
 	}
-} // namespace BHive
+}

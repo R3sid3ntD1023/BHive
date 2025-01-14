@@ -17,9 +17,8 @@ namespace BHive
 
 		virtual void OnEnd() override;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		void Serialize(StreamWriter& ar) const;
+		void Deserialize(StreamReader& ar);
 
 		InputContext *GetContext() const { return mContextInstance; }
 
@@ -31,4 +30,4 @@ namespace BHive
 
 	REFLECT_EXTERN(InputComponent)
 
-} // namespace BHive
+}

@@ -1,10 +1,8 @@
 #pragma once
 
-
-#include <functional>
-#include <memory>
 #include "core/Traits.hpp"
 #include "core/EventDelegateHandle.h"
+#include <functional>
 
 namespace BHive
 {

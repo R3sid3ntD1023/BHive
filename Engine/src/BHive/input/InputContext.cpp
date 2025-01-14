@@ -114,16 +114,16 @@ namespace BHive
 		}
 	}
 
-	void InputContext::Save(cereal::JSONOutputArchive &ar) const
+	void InputContext::Serialize(StreamWriter &ar) const
 	{
-		Asset::Save(ar);
-		//ar(MAKE_NVP("Keys", mKeys));
+		Asset::Serialize(ar);
+		ar(mKeys);
 	}
 
-	void InputContext::Load(cereal::JSONInputArchive &ar)
+	void InputContext::Deserialize(StreamReader &ar)
 	{
-		Asset::Load(ar);
-		//ar(MAKE_NVP("Keys", mKeys));
+		Asset::Deserialize(ar);
+		ar(mKeys);
 	}
 
 	InputContext *InputContext::CreateInstance()

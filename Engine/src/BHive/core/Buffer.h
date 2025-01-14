@@ -13,13 +13,16 @@ namespace BHive
         TBuffer() = default;
         TBuffer(const TBuffer&) = default;
 
-         explicit TBuffer(uint64_t size) { Allocate(size); }
+        TBuffer(uint64_t size)
+        {
+            Allocate(size);
+        }
 
-        TBuffer(T *data, uint64_t size)
-		 {
-			 Allocate(size);
-			 memcpy_s(mData, mSize, data, size);
-		 }
+        TBuffer(T* data, uint64_t size)
+        {
+            Allocate(size);
+            memcpy_s(mData, mSize, data, size);
+        }
 
         void Allocate(uint64_t size)
         {
@@ -58,7 +61,7 @@ namespace BHive
 			: TBuffer<uint8_t>(b)
             {}
 
-		 explicit Buffer(uint64_t size)
+		Buffer(uint64_t size)
 			: TBuffer(size)
 		{
 		}

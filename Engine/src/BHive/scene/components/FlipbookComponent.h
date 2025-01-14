@@ -26,13 +26,12 @@ namespace BHive
 
 		virtual void OnRender(SceneRenderer *renderer) override;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		void Serialize(StreamWriter& ar) const;
+		void Deserialize(StreamReader& ar);
 
 		REFLECTABLEV(ShapeComponent)
 	};
 
 	REFLECT_EXTERN(FlipbookComponent)
 
-} // namespace BHive
+}

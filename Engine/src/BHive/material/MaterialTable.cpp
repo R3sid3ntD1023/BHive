@@ -54,6 +54,16 @@ namespace BHive
 		return mMaterials[index];
 	}
 
+	void MaterialTable::Serialize(StreamWriter &ar) const
+	{
+		ar(mMaterials);
+	}
+
+	void MaterialTable::Deserialize(StreamReader &ar)
+	{
+		ar(mMaterials);
+	}
+
 	REFLECT(MaterialTable)
 	{
 		BEGIN_REFLECT(MaterialTable)

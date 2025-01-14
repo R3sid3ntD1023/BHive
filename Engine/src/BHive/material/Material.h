@@ -1,9 +1,10 @@
 #pragma once
 
 #include "gfx/Color.h"
-#include "gfx/Texture.h"
-#include "core/EnumAsByte.h"
 #include "asset/Asset.h"
+#include "gfx/Texture.h"
+#include "serialization/Serialization.h"
+#include "core/EnumAsByte.h"
 
 namespace BHive
 {
@@ -69,9 +70,8 @@ namespace BHive
 
 		static Ref<Shader> GetShader();
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		void Serialize(StreamWriter &ar) const;
+		void Deserialize(StreamReader &ar);
 
 		REFLECTABLEV(Asset)
 

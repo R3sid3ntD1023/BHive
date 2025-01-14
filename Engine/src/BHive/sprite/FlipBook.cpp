@@ -4,10 +4,11 @@
 namespace BHive
 {
 	FlipBook::FlipBook(std::initializer_list<Frame> frames)
-		: mFrames()
+		:mFrames()
 	{
 	}
 
+	
 	void FlipBook::Play()
 	{
 		mIsPlaying = true;
@@ -44,9 +45,9 @@ namespace BHive
 		mFramesPerSecond = fps;
 	}
 
-	void FlipBook::AddSprite(const sprite_ptr &sprite, uint32_t duration, uint32_t index)
+	void FlipBook::AddSprite(const sprite_ptr& sprite, uint32_t duration, uint32_t index)
 	{
-		mFrames.insert(mFrames.begin() + index, Frame{.mSprite = sprite, .mDuration = duration});
+		mFrames.insert(mFrames.begin() + index, Frame{ .mSprite = sprite, .mDuration = duration });
 	}
 
 	sprite_ptr FlipBook::RemoveSprite(uint32_t index)
@@ -59,12 +60,12 @@ namespace BHive
 		return nullptr;
 	}
 
-	const FlipBook::Frames &FlipBook::GetFrames() const
+	const FlipBook::Frames& FlipBook::GetFrames() const
 	{
 		return mFrames;
 	}
 
-	void FlipBook::SetFrames(const Frames &frames)
+	void FlipBook::SetFrames(const Frames& frames)
 	{
 		mFrames = frames;
 	}
@@ -72,6 +73,18 @@ namespace BHive
 	sprite_ptr FlipBook::GetCurrentSprite() const
 	{
 		return GetSpriteAtTime(mCurrentTime);
+	}
+
+	void FlipBook::Serialize(StreamWriter& ar) const
+	{
+		Asset::Serialize(ar);
+		ar(mIsLooping, mFramesPerSecond, mFrames);
+	}
+
+	void FlipBook::Deserialize(StreamReader& ar)
+	{
+		Asset::Deserialize(ar);
+		ar(mIsLooping, mFramesPerSecond, mFrames);
 	}
 
 	int32_t FlipBook::GetNumFrames() const
@@ -87,8 +100,7 @@ namespace BHive
 
 	int32_t FlipBook::GetFrameIndexAtTime(float time) const
 	{
-		if (time < 0.0f)
-			return -1;
+		if (time < 0.0f) return -1;
 
 		if (mFramesPerSecond > 0.0f)
 		{
@@ -97,8 +109,7 @@ namespace BHive
 			{
 				sum += mFrames[i].mDuration / mFramesPerSecond;
 
-				if (time <= sum)
-					return i;
+				if (time <= sum) return i;
 			}
 
 			return (int32_t)(mFrames.size() - 1);
@@ -111,14 +122,12 @@ namespace BHive
 
 	sprite_ptr FlipBook::GetSpriteAtFrame(int32_t frame) const
 	{
-		if (frame < 0)
-			return nullptr;
+		if (frame < 0) return nullptr;
 
 		int32_t sum = 0;
 		for (int32_t i = 0; i < mFrames.size(); i++)
 		{
-			if (frame == sum)
-				return mFrames[i].mSprite;
+			if (frame == sum) return mFrames[i].mSprite;
 
 			sum += mFrames[i].mDuration;
 		}
@@ -142,36 +151,32 @@ namespace BHive
 		return 0.0f;
 	}
 
-	void FlipBook::Save(cereal::JSONOutputArchive &ar) const
+	void Serialize(StreamWriter& ar, const FlipBook::Frame& obj)
 	{
-		Asset::Save(ar);
-		ar(MAKE_NVP("Loop", mIsLooping), MAKE_NVP("FramesPerSecond", mFramesPerSecond),
-		   MAKE_NVP("Frames", mFrames));
+		ar(obj.mDuration, obj.mSprite);
 	}
 
-	void FlipBook::Load(cereal::JSONInputArchive &ar)
+	void Deserialize(StreamReader& ar, FlipBook::Frame& obj)
 	{
-		Asset::Load(ar);
-		ar(MAKE_NVP("Loop", mIsLooping), MAKE_NVP("FramesPerSecond", mFramesPerSecond),
-		   MAKE_NVP("Frames", mFrames));
+		ar(obj.mDuration, obj.mSprite);
 	}
 
 	REFLECT(FlipBook::Frame)
 	{
 		BEGIN_REFLECT(FlipBook::Frame)
-		REFLECT_CONSTRUCTOR()
-		CONSTRUCTOR_POLICY_OBJECT
-		REFLECT_PROPERTY("Duration", mDuration)
-		REFLECT_PROPERTY("Source", mSprite);
+			REFLECT_CONSTRUCTOR()
+			CONSTRUCTOR_POLICY_OBJECT
+			REFLECT_PROPERTY("Duration", mDuration)
+			REFLECT_PROPERTY("Source", mSprite);
 	}
 
 	REFLECT(FlipBook)
 	{
 		BEGIN_REFLECT(FlipBook)
 		REFLECT_CONSTRUCTOR()
-		REFLECT_PROPERTY("Loop", IsLooping, SetLoop)
-		REFLECT_PROPERTY("FramesPerSecond", GetFramesPerSecond, SetFramesPerSecond)
-		REFLECT_PROPERTY("Frames", GetFrames, SetFrames);
+			REFLECT_PROPERTY("Loop", IsLooping, SetLoop)
+			REFLECT_PROPERTY("FramesPerSecond", GetFramesPerSecond, SetFramesPerSecond)
+			REFLECT_PROPERTY("Frames", GetFrames, SetFrames);
 	}
-
-} // namespace BHive
+	
+}

@@ -7,15 +7,14 @@ namespace BHive
 {
 	struct BHIVE MeshComponent : public ShapeComponent
 	{
-
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		
+		void Serialize(StreamWriter& ar) const;
+		void Deserialize(StreamReader& ar);
 
 		REFLECTABLEV(ShapeComponent)
 
 	protected:
-		void SetMaterialTable(const MaterialTable &materials);
+		void SetMaterialTable(const MaterialTable& materials);
 
 	protected:
 		MaterialTable mOverrideMaterials;
@@ -23,4 +22,4 @@ namespace BHive
 	};
 
 	REFLECT_EXTERN(MeshComponent)
-} // namespace BHive
+}

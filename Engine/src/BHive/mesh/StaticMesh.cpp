@@ -1,4 +1,6 @@
 #include "StaticMesh.h"
+#include "gfx/RenderCommand.h"
+#include "gfx/Shader.h"
 #include "gfx/VertexArray.h"
 
 namespace BHive
@@ -15,11 +17,12 @@ namespace BHive
 		width *= .5f;
 		height *= .5f;
 
-		std::vector<FVertex> points = {
-			{.Position = {-width, -height, 0}, .TexCoord = {0, 0}, .Normal = {0, 0, 1}},
-			{.Position = {width, -height, 0}, .TexCoord = {1, 0}, .Normal = {0, 0, 1}},
-			{.Position = {width, height, 0}, .TexCoord = {1, 1}, .Normal = {0, 0, 1}},
-			{.Position = {-width, height, 0}, .TexCoord = {0, 1}, .Normal = {0, 0, 1}}};
+		std::vector<FVertex> points =
+			{
+				{.Position = {-width, -height, 0}, .TexCoord = {0, 0}, .Normal = {0, 0, 1}},
+				{.Position = {width, -height, 0}, .TexCoord = {1, 0}, .Normal = {0, 0, 1}},
+				{.Position = {width, height, 0}, .TexCoord = {1, 1}, .Normal = {0, 0, 1}},
+				{.Position = {-width, height, 0}, .TexCoord = {0, 1}, .Normal = {0, 0, 1}}};
 
 		StaticMesh::CalculateTangentsAndBitTangents(points);
 
@@ -43,113 +46,86 @@ namespace BHive
 	Ref<StaticMesh> StaticMesh::CreateCube(float size)
 	{
 		const float s = size * .5f;
-		std::vector<FVertex> vertices = {
-			// front
-			{.Position = {-s, -s, s},
-			 .TexCoord = {0, 0},
-			 .Normal = {0, 0, 1},
-			 .Color = {1, 0, 0, 1}},
-			{.Position = {s, -s, s},
-			 .TexCoord = {1, 0},
-			 .Normal = {0, 0, 1},
-			 .Color = {1, 0, 0, 1}},
-			{.Position = {s, s, s}, .TexCoord = {1, 1}, .Normal = {0, 0, 1}, .Color = {1, 0, 0, 1}},
-			{.Position = {-s, s, s},
-			 .TexCoord = {0, 1},
-			 .Normal = {0, 0, 1},
-			 .Color = {1, 0, 0, 1}},
+		std::vector<FVertex> vertices =
+			{
+				// front
+				{.Position = {-s, -s, s}, .TexCoord = {0, 0}, .Normal = {0, 0, 1}, .Color = {1, 0, 0, 1}},
+				{.Position = {s, -s, s}, .TexCoord = {1, 0}, .Normal = {0, 0, 1}, .Color = {1, 0, 0, 1}},
+				{.Position = {s, s, s}, .TexCoord = {1, 1}, .Normal = {0, 0, 1}, .Color = {1, 0, 0, 1}},
+				{.Position = {-s, s, s}, .TexCoord = {0, 1}, .Normal = {0, 0, 1}, .Color = {1, 0, 0, 1}},
 
-			// back
-			{.Position = {-s, s, -s},
-			 .TexCoord = {0, 0},
-			 .Normal = {0, 0, -1},
-			 .Color = {1, 1, 0, 1}},
-			{.Position = {s, s, -s},
-			 .TexCoord = {1, 0},
-			 .Normal = {0, 0, -1},
-			 .Color = {1, 1, 0, 1}},
-			{.Position = {s, -s, -s},
-			 .TexCoord = {1, 1},
-			 .Normal = {0, 0, -1},
-			 .Color = {1, 1, 0, 1}},
-			{.Position = {-s, -s, -s},
-			 .TexCoord = {0, 1},
-			 .Normal = {0, 0, -1},
-			 .Color = {1, 1, 0, 1}},
+				// back
+				{.Position = {-s, s, -s}, .TexCoord = {0, 0}, .Normal = {0, 0, -1}, .Color = {1, 1, 0, 1}},
+				{.Position = {s, s, -s}, .TexCoord = {1, 0}, .Normal = {0, 0, -1}, .Color = {1, 1, 0, 1}},
+				{.Position = {s, -s, -s}, .TexCoord = {1, 1}, .Normal = {0, 0, -1}, .Color = {1, 1, 0, 1}},
+				{.Position = {-s, -s, -s}, .TexCoord = {0, 1}, .Normal = {0, 0, -1}, .Color = {1, 1, 0, 1}},
 
-			// left
-			{.Position = {-s, -s, -s},
-			 .TexCoord = {0, 0},
-			 .Normal = {-1, 0, 0},
-			 .Color = {0, 1, 0, 1}},
-			{.Position = {-s, -s, s},
-			 .TexCoord = {1, 0},
-			 .Normal = {-1, 0, 0},
-			 .Color = {0, 1, 0, 1}},
-			{.Position = {-s, s, s},
-			 .TexCoord = {1, 1},
-			 .Normal = {-1, 0, 0},
-			 .Color = {0, 1, 0, 1}},
-			{.Position = {-s, s, -s},
-			 .TexCoord = {0, 1},
-			 .Normal = {-1, 0, 0},
-			 .Color = {0, 1, 0, 1}},
+				// left
+				{.Position = {-s, -s, -s}, .TexCoord = {0, 0}, .Normal = {-1, 0, 0}, .Color = {0, 1, 0, 1}},
+				{.Position = {-s, -s, s}, .TexCoord = {1, 0}, .Normal = {-1, 0, 0}, .Color = {0, 1, 0, 1}},
+				{.Position = {-s, s, s}, .TexCoord = {1, 1}, .Normal = {-1, 0, 0}, .Color = {0, 1, 0, 1}},
+				{.Position = {-s, s, -s}, .TexCoord = {0, 1}, .Normal = {-1, 0, 0}, .Color = {0, 1, 0, 1}},
 
-			// right
-			{.Position = {s, -s, -s},
-			 .TexCoord = {0, 0},
-			 .Normal = {1, 0, 1},
-			 .Color = {0, 1, 1, 1}},
-			{.Position = {s, s, -s},
-			 .TexCoord = {1, 0},
-			 .Normal = {1, 0, 1},
-			 .Color = {0, 1, 1, 1}},
-			{.Position = {s, s, s}, .TexCoord = {1, 1}, .Normal = {1, 0, 1}, .Color = {0, 1, 1, 1}},
-			{.Position = {s, -s, s},
-			 .TexCoord = {0, 1},
-			 .Normal = {1, 0, 1},
-			 .Color = {0, 1, 1, 1}},
+				// right
+				{.Position = {s, -s, -s}, .TexCoord = {0, 0}, .Normal = {1, 0, 1}, .Color = {0, 1, 1, 1}},
+				{.Position = {s, s, -s}, .TexCoord = {1, 0}, .Normal = {1, 0, 1}, .Color = {0, 1, 1, 1}},
+				{.Position = {s, s, s}, .TexCoord = {1, 1}, .Normal = {1, 0, 1}, .Color = {0, 1, 1, 1}},
+				{.Position = {s, -s, s}, .TexCoord = {0, 1}, .Normal = {1, 0, 1}, .Color = {0, 1, 1, 1}},
 
-			// top
-			{.Position = {-s, s, -s},
-			 .TexCoord = {0, 0},
-			 .Normal = {0, 1, 0},
-			 .Color = {0, 0, 1, 1}},
-			{.Position = {-s, s, s},
-			 .TexCoord = {1, 0},
-			 .Normal = {0, 1, 0},
-			 .Color = {0, 0, 1, 1}},
-			{.Position = {s, s, s}, .TexCoord = {1, 1}, .Normal = {0, 1, 0}, .Color = {0, 0, 1, 1}},
-			{.Position = {s, s, -s},
-			 .TexCoord = {0, 1},
-			 .Normal = {0, 1, 0},
-			 .Color = {0, 0, 1, 1}},
+				// top
+				{.Position = {-s, s, -s}, .TexCoord = {0, 0}, .Normal = {0, 1, 0}, .Color = {0, 0, 1, 1}},
+				{.Position = {-s, s, s}, .TexCoord = {1, 0}, .Normal = {0, 1, 0}, .Color = {0, 0, 1, 1}},
+				{.Position = {s, s, s}, .TexCoord = {1, 1}, .Normal = {0, 1, 0}, .Color = {0, 0, 1, 1}},
+				{.Position = {s, s, -s}, .TexCoord = {0, 1}, .Normal = {0, 1, 0}, .Color = {0, 0, 1, 1}},
 
-			// bottom
-			{.Position = {s, -s, -s},
-			 .TexCoord = {0, 0},
-			 .Normal = {0, -1, 0},
-			 .Color = {1, 0, 1, 1}},
-			{.Position = {s, -s, s},
-			 .TexCoord = {1, 0},
-			 .Normal = {0, -1, 0},
-			 .Color = {1, 0, 1, 1}},
-			{.Position = {-s, -s, s},
-			 .TexCoord = {1, 1},
-			 .Normal = {0, -1, 0},
-			 .Color = {1, 0, 1, 1}},
-			{.Position = {-s, -s, -s},
-			 .TexCoord = {0, 1},
-			 .Normal = {0, -1, 0},
-			 .Color = {1, 0, 1, 1}},
-		};
+				// bottom
+				{.Position = {s, -s, -s}, .TexCoord = {0, 0}, .Normal = {0, -1, 0}, .Color = {1, 0, 1, 1}},
+				{.Position = {s, -s, s}, .TexCoord = {1, 0}, .Normal = {0, -1, 0}, .Color = {1, 0, 1, 1}},
+				{.Position = {-s, -s, s}, .TexCoord = {1, 1}, .Normal = {0, -1, 0}, .Color = {1, 0, 1, 1}},
+				{.Position = {-s, -s, -s}, .TexCoord = {0, 1}, .Normal = {0, -1, 0}, .Color = {1, 0, 1, 1}},
+			};
 
 		StaticMesh::CalculateTangentsAndBitTangents(vertices);
 
-		std::vector<uint32_t> indces = {
-			0,	1,	2,	2,	3,	0,	4,	5,	6,	6,	7,	4,	8,	9,	10, 10, 11, 8,
-			12, 13, 14, 14, 15, 12, 16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20,
-		};
+		std::vector<uint32_t> indces =
+			{
+				0,
+				1,
+				2,
+				2,
+				3,
+				0,
+				4,
+				5,
+				6,
+				6,
+				7,
+				4,
+				8,
+				9,
+				10,
+				10,
+				11,
+				8,
+				12,
+				13,
+				14,
+				14,
+				15,
+				12,
+				16,
+				17,
+				18,
+				18,
+				19,
+				16,
+				20,
+				21,
+				22,
+				22,
+				23,
+				20,
+			};
 
 		FMeshData data{};
 		data.mVertices = vertices;
@@ -270,25 +246,23 @@ namespace BHive
 		}
 	}
 
-	void StaticMesh::Save(cereal::JSONOutputArchive &ar) const
+	void StaticMesh::Serialize(StreamWriter &ar) const
 	{
-		Asset::Save(ar);
-		ar(MAKE_NVP("Data", mData), MAKE_NVP("Materials", mMaterialTable));
+		Asset::Serialize(ar);
+		ar(mData, mMaterialTable);
 	}
 
-	void StaticMesh::Load(cereal::JSONInputArchive &ar)
+	void StaticMesh::Deserialize(StreamReader &ar)
 	{
-		Asset::Load(ar);
-		ar(MAKE_NVP("Data", mData), MAKE_NVP("Materials", mMaterialTable));
-
+		Asset::Deserialize(ar);
+		ar(mData, mMaterialTable);
 		Initialize();
 	}
 
 	void StaticMesh::Initialize()
 	{
 		auto &data = mData;
-		auto indexbuffer =
-			IndexBuffer::Create(data.mIndices.data(), (uint32_t)data.mIndices.size());
+		auto indexbuffer = IndexBuffer::Create(data.mIndices.data(), (uint32_t)data.mIndices.size());
 		auto vertexbuffer = VertexBuffer::Create(data.mVertices.size() * sizeof(FVertex));
 		vertexbuffer->SetData(data.mVertices.data(), data.mVertices.size() * sizeof(FVertex));
 		vertexbuffer->SetLayout(FVertex::Layout());
@@ -304,4 +278,4 @@ namespace BHive
 		REFLECT_CONSTRUCTOR()
 		REFLECT_PROPERTY("MaterialTable", mMaterialTable);
 	}
-} // namespace BHive
+}

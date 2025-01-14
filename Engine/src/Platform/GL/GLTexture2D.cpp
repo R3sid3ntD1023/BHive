@@ -5,25 +5,20 @@
 
 namespace BHive
 {
-	GLTexture2D::GLTexture2D(uint32_t width, uint32_t height,
-							 const FTextureSpecification &specification, uint32_t samples)
-		: mWidth(width),
-		  mHeight(height),
-		  mSpecification(specification),
-		  mSamples(samples)
+	GLTexture2D::GLTexture2D(uint32_t width, uint32_t height, const FTextureSpecification &specification, uint32_t samples)
+		: mWidth(width), mHeight(height), mSpecification(specification), mSamples(samples)
 	{
 
 		Initialize();
 	}
 
-	GLTexture2D::GLTexture2D(const void *data, uint32_t width, uint32_t height,
-							 const FTextureSpecification &specification)
+	GLTexture2D::GLTexture2D(const void *data, uint32_t width, uint32_t height, const FTextureSpecification &specification)
 		: mWidth(width),
 		  mHeight(height),
 		  mSpecification(specification),
 		  mSamples(0)
 	{
-
+		
 		Initialize();
 
 		if (data)
@@ -70,17 +65,20 @@ namespace BHive
 		mBuffer.Allocate(size);
 		memcpy_s(mBuffer.mData, mBuffer.mSize, (uint8_t *)data, size);
 
-		glTextureSubImage2D(mTextureID, 0, offsetX, offsetY, mWidth, mHeight,
-							GetGLFormat(mSpecification.mFormat), GetGLType(mSpecification.mFormat),
-							data);
+		glTextureSubImage2D(mTextureID, 0, offsetX, offsetY, mWidth, mHeight, GetGLFormat(mSpecification.mFormat),
+							GetGLType(mSpecification.mFormat), data);
 	}
 
-	void GLTexture2D::Load(cereal::JSONInputArchive &ar)
+	void GLTexture2D::Serialize(StreamWriter &ar) const
 	{
-		Asset::Load(ar);
-		ar(MAKE_NVP("Width", mWidth), MAKE_NVP("Height", mHeight),
-		   MAKE_NVP("Specification", mSpecification));
-		ar(MAKE_NVP("Data", mBuffer));
+		Asset::Serialize(ar);
+		ar(mWidth, mHeight, mSpecification, mBuffer);
+	}
+
+	void GLTexture2D::Deserialize(StreamReader &ar) 
+	{
+		Asset::Deserialize(ar);
+		ar(mWidth, mHeight, mSpecification, mBuffer);
 
 		Initialize();
 
@@ -88,15 +86,6 @@ namespace BHive
 		{
 			SetData(mBuffer.mData, mBuffer.mSize);
 		}
-	}
-
-	void GLTexture2D::Save(cereal::JSONOutputArchive &ar) const
-	{
-		Asset::Save(ar);
-		ar(MAKE_NVP("Width", mWidth), MAKE_NVP("Height", mHeight),
-		   MAKE_NVP("Specification", mSpecification));
-		ar(MAKE_NVP("Data", mBuffer));
-
 	}
 
 	void GLTexture2D::Initialize()
@@ -118,8 +107,8 @@ namespace BHive
 
 		case GL_TEXTURE_2D:
 		{
-			glTextureStorage2D(mTextureID, mSpecification.mLevels,
-							   GetGLInternalFormat(mSpecification.mFormat), mWidth, mHeight);
+			glTextureStorage2D(mTextureID, mSpecification.mLevels, GetGLInternalFormat(mSpecification.mFormat), mWidth,
+							   mHeight);
 
 			glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER,
 								GetGLFilterMode(mSpecification.mMinFilter));
@@ -130,6 +119,7 @@ namespace BHive
 								GetGLWrapMode(mSpecification.mWrapMode));
 			glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T,
 								GetGLWrapMode(mSpecification.mWrapMode));
+
 
 			if (mSpecification.mMips)
 			{
@@ -152,4 +142,4 @@ namespace BHive
 
 		mBuffer.Release();
 	}
-} // namespace BHive
+}

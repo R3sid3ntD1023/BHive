@@ -3,15 +3,12 @@
 
 namespace BHive
 {
-
+	
 	EditorAssetManager::EditorAssetManager(const std::filesystem::path &path, bool save_registry)
-		: mAssetRegistryPath(path),
-		  mSaveRegistry(save_registry)
+		: mAssetRegistryPath(path), mSaveRegistry(save_registry)
 	{
 		if (std::filesystem::exists(path) && save_registry)
 			DeserializeAssetRegistry();
-
-		// cereal::traits::is_input_serializable<AssetType, cereal::JSONInputArchive>::value;
 	}
 
 	EditorAssetManager::~EditorAssetManager()
@@ -39,7 +36,7 @@ namespace BHive
 			else
 			{
 				const FAssetMetaData &metadata = GetMetaData(handle);
-
+				
 				if (!mAssetFactory.Import(asset, metadata.Path))
 				{
 					LOG_ERROR("Failed to load asset");
@@ -53,6 +50,7 @@ namespace BHive
 
 		return asset;
 	}
+
 
 	bool EditorAssetManager::IsAssetHandleValid(AssetHandle handle) const
 	{
@@ -72,8 +70,8 @@ namespace BHive
 		return mAssetRegistry.at(handle).Type;
 	}
 
-	void EditorAssetManager::ImportAsset(
-		const std::filesystem::path &path, const AssetType &type, const AssetHandle &handle)
+
+	void EditorAssetManager::ImportAsset(const std::filesystem::path &path,	const AssetType &type, const AssetHandle &handle)
 	{
 		if (GetHandle(path))
 		{
@@ -83,14 +81,14 @@ namespace BHive
 		if (type == InvalidType)
 		{
 			LOG_ERROR("UnSupported Asset Type");
-			return;
+			return ;
 		}
 
 		FAssetMetaData metadata;
 		metadata.Path = path;
 		metadata.Type = type;
 		metadata.Name = path.stem().string();
-
+		
 		mAssetRegistry[handle] = metadata;
 		SerializeAssetRegistry();
 	}
@@ -122,8 +120,7 @@ namespace BHive
 		return RemoveAsset(handle);
 	}
 
-	bool EditorAssetManager::RenameAsset(
-		const std::filesystem::path &old_, const std::filesystem::path &new_)
+	bool EditorAssetManager::RenameAsset(const std::filesystem::path &old_, const std::filesystem::path &new_)
 	{
 		auto &metadata = GetMetaData(old_);
 		if (!metadata)
@@ -139,6 +136,7 @@ namespace BHive
 				mLoadedAssets[handle]->SetName(metadata.Name);
 			}
 		}
+		
 
 		SerializeAssetRegistry();
 
@@ -170,9 +168,8 @@ namespace BHive
 	const FAssetMetaData &EditorAssetManager::GetMetaData(const std::filesystem::path &file) const
 	{
 		static FAssetMetaData sNullMetaData;
-		auto it = std::find_if(
-			mAssetRegistry.begin(), mAssetRegistry.end(),
-			[file](const auto &pair) { return pair.second.Path == file; });
+		auto it = std::find_if(mAssetRegistry.begin(), mAssetRegistry.end(), [file](const auto &pair)
+							   { return pair.second.Path == file; });
 
 		if (it != mAssetRegistry.end())
 			return (*it).second;
@@ -183,9 +180,8 @@ namespace BHive
 	FAssetMetaData &EditorAssetManager::GetMetaData(const std::filesystem::path &file)
 	{
 		static FAssetMetaData sNullMetaData;
-		auto it = std::find_if(
-			mAssetRegistry.begin(), mAssetRegistry.end(),
-			[file](const auto &pair) { return pair.second.Path == file; });
+		auto it = std::find_if(mAssetRegistry.begin(), mAssetRegistry.end(), [file](const auto &pair)
+							   { return pair.second.Path == file; });
 
 		if (it != mAssetRegistry.end())
 			return (*it).second;
@@ -195,9 +191,8 @@ namespace BHive
 
 	AssetHandle EditorAssetManager::GetHandle(const std::filesystem::path &file) const
 	{
-		auto it = std::find_if(
-			mAssetRegistry.begin(), mAssetRegistry.end(),
-			[file](const auto &pair) { return pair.second.Path == file; });
+		auto it = std::find_if(mAssetRegistry.begin(), mAssetRegistry.end(), [file](const auto &pair)
+							   { return pair.second.Path == file; });
 
 		if (it != mAssetRegistry.end())
 			return (*it).first;
@@ -215,11 +210,7 @@ namespace BHive
 		if (!mSaveRegistry)
 			return;
 
-		std::ofstream out(mAssetRegistryPath, std::ios::out);
-		if (!out)
-			return;
-
-		cereal::JSONOutputArchive ar(out);
+		FileStreamWriter ar(mAssetRegistryPath);
 		ar(mAssetRegistry);
 	}
 
@@ -228,13 +219,9 @@ namespace BHive
 		if (!std::filesystem::exists(mAssetRegistryPath))
 			return false;
 
-		std::ifstream in(mAssetRegistryPath, std::ios::in);
-		if (!in)
-			return false;
-
-		cereal::JSONInputArchive ar(in);
+		FileStreamReader ar(mAssetRegistryPath);
 		ar(mAssetRegistry);
 
 		return true;
 	}
-} // namespace BHive
+}

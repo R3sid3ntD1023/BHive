@@ -41,21 +41,17 @@ namespace BHive
     {
         // auto &rigid_body_component = GetComponent<BHive::RigidBodyComponent>();
         // auto &flipbook_component = GetComponent<BHive::FlipbookComponent>();
-	}
+    }
 
-	void MoveComponent::Save(cereal::JSONOutputArchive &ar) const
-	{
-		Component::Save(ar);
-		ar(MAKE_NVP("Speed", mSpeed), MAKE_NVP("JumpForce", mJumpForce),
-		   MAKE_NVP("States", mStates));
-	}
+    void MoveComponent::Serialize(StreamWriter &ar) const
+    {
+        ar(mSpeed, mJumpForce, mStates);
+    }
 
-	void MoveComponent::Load(cereal::JSONInputArchive &ar)
-	{
-		Component::Load(ar);
-		ar(MAKE_NVP("Speed", mSpeed), MAKE_NVP("JumpForce", mJumpForce),
-		   MAKE_NVP("States", mStates));
-	}
+    void MoveComponent::Deserialize(StreamReader &ar)
+    {
+        ar(mSpeed, mJumpForce, mStates);
+    }
 
     REFLECT(MoveComponent)
     {

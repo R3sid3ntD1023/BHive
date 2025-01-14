@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-	void *BoxComponent::GetCollisionShape(const FTransform &world_transform)
+	void* BoxComponent::GetCollisionShape(const FTransform& world_transform)
 	{
 		auto extents = mExtents * world_transform.get_scale();
 		return mCollisionShape = PhysicsContext::get_context().createBoxShape(
@@ -15,24 +15,24 @@ namespace BHive
 
 	void BoxComponent::ReleaseCollisionShape()
 	{
-		PhysicsContext::get_context().destroyBoxShape((rp3d::BoxShape *)mCollisionShape);
+		PhysicsContext::get_context().destroyBoxShape((rp3d::BoxShape*)mCollisionShape);
 	}
 
-	void BoxComponent::OnRender(SceneRenderer *renderer)
+	void BoxComponent::OnRender(SceneRenderer* renderer)
 	{
 		LineRenderer::DrawBox(mExtents, mOffset, mColor, GetWorldTransform());
 	}
 
-	void BoxComponent::Save(cereal::JSONOutputArchive &ar) const
+	void BoxComponent::Serialize(StreamWriter& ar) const
 	{
-		ColliderComponent::Save(ar);
-		ar(MAKE_NVP("Extents", mExtents));
+		ColliderComponent::Serialize(ar);
+		ar(mExtents);
 	}
 
-	void BoxComponent::Load(cereal::JSONInputArchive &ar)
+	void BoxComponent::Deserialize(StreamReader& ar)
 	{
-		ColliderComponent::Load(ar);
-		ar(MAKE_NVP("Extents", mExtents));
+		ColliderComponent::Deserialize(ar);
+		ar(mExtents);
 	}
 
 	REFLECT(BoxComponent)
@@ -42,4 +42,4 @@ namespace BHive
 			REFLECT_PROPERTY("Extents", mExtents);
 	}
 
-} // namespace BHive
+}  // namespace BHive

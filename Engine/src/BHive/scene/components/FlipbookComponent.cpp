@@ -4,43 +4,43 @@
 
 namespace BHive
 {
-	AABB FlipbookComponent::GetBoundingBox() const
-	{
-		// return bounds of current sprite
-		return AABB();
-	}
+    AABB FlipbookComponent::GetBoundingBox() const
+    {
+        // return bounds of current sprite
+        return AABB();
+    }
 
-	void FlipbookComponent::OnRender(SceneRenderer *renderer)
-	{
-		if (mFlipBook)
-		{
-			auto sprite = mFlipBook->GetCurrentSprite();
-			QuadRenderer::DrawSprite(mSize, mColor, GetWorldTransform(), sprite, mFlags);
-		}
-	}
+    void FlipbookComponent::OnRender(SceneRenderer *renderer)
+    {
+        if (mFlipBook)
+        {
+            auto sprite = mFlipBook->GetCurrentSprite();
+            QuadRenderer::DrawSprite(mSize, mColor, GetWorldTransform(), sprite, mFlags);
+        }
+    }
 
-	void FlipbookComponent::Save(cereal::JSONOutputArchive &ar) const
-	{
-		ShapeComponent::Save(ar);
+    void FlipbookComponent::Serialize(StreamWriter& ar) const
+    {
+        ShapeComponent::Serialize(ar);
 
-		ar(MAKE_NVP("AutoPlay", mAutoPlay), MAKE_NVP("Color", mColor),
-		   MAKE_NVP("FlipBook", mFlipBook), MAKE_NVP("Size", mSize), MAKE_NVP("Flags", mFlags));
-	}
+        ar(mAutoPlay, mColor, mFlipBook, mSize, mFlags);
+    }
 
-	void FlipbookComponent::Load(cereal::JSONInputArchive &ar)
-	{
-		ShapeComponent::Load(ar);
+    void FlipbookComponent::Deserialize(StreamReader& ar)
+    {
+        ShapeComponent::Deserialize(ar);
 
-		ar(MAKE_NVP("AutoPlay", mAutoPlay), MAKE_NVP("Color", mColor),
-		   MAKE_NVP("FlipBook", mFlipBook), MAKE_NVP("Size", mSize), MAKE_NVP("Flags", mFlags));
-	}
+        ar(mAutoPlay, mColor, mFlipBook, mSize, mFlags);
+    }
 
-	REFLECT(FlipbookComponent)
-	{
-		BEGIN_REFLECT(FlipbookComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
-			REFLECT_PROPERTY("Auto Play", mAutoPlay) REFLECT_PROPERTY("Flags", mFlags)
-				REFLECT_PROPERTY("Size", mSize) REFLECT_PROPERTY("Color", mColor)
-					REFLECT_PROPERTY("Flipbook", mFlipBook);
-	}
-} // namespace BHive
+    REFLECT(FlipbookComponent)
+    {
+        BEGIN_REFLECT(FlipbookComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true))
+            REQUIRED_COMPONENT_FUNCS()
+                REFLECT_PROPERTY("Auto Play", mAutoPlay)
+                    REFLECT_PROPERTY("Flags", mFlags)
+                        REFLECT_PROPERTY("Size", mSize)
+                            REFLECT_PROPERTY("Color", mColor)
+                                REFLECT_PROPERTY("Flipbook", mFlipBook);
+    }
+}

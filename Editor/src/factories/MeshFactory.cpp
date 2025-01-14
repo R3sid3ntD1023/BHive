@@ -7,6 +7,7 @@
 #include "mesh/MeshImporter.h"
 #include "mesh/SkeletalMesh.h"
 #include "threading/Threading.h"
+#include "asset/AssetSerializer.h"
 
 namespace BHive
 {
@@ -16,11 +17,14 @@ namespace BHive
         MeshImporter importer;
         auto import_data = importer.Import(path);
 
-        auto &window_system = SubSystemContext::Get().GetSubSystem<WindowSubSystem>();
-        auto window = window_system.AddWindow<MeshOptionsWindow>(this, FMeshImportOptions{
-                                                                            path,
-                                                                            import_data
-                                                                        });
+        BEGIN_THREAD_DISPATCH(=)
+				auto &window_system = SubSystemContext::Get().GetSubSystem<WindowSubSystem>();
+		        auto window = window_system.AddWindow<MeshOptionsWindow>(this, FMeshImportOptions{
+																				   path,
+																				   import_data
+																			  });
+		END_THREAD_DISPATCH()
+
         return nullptr;
     }
 

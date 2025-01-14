@@ -6,32 +6,32 @@
 
 namespace BHive
 {
-	void *SphereComponent::GetCollisionShape(const FTransform &world_transform)
+	void* SphereComponent::GetCollisionShape(const FTransform& world_transform)
 	{
 		return mCollisionShape = PhysicsContext::get_context().createSphereShape(
-				   mRadius * glm::compMax(world_transform.get_scale()));
+			mRadius * glm::compMax(world_transform.get_scale()));
 	}
 
 	void SphereComponent::ReleaseCollisionShape()
 	{
-		PhysicsContext::get_context().destroySphereShape((rp3d::SphereShape *)mCollisionShape);
+		PhysicsContext::get_context().destroySphereShape((rp3d::SphereShape*)mCollisionShape);
 	}
 
-	void SphereComponent::OnRender(SceneRenderer *renderer)
+	void SphereComponent::OnRender(SceneRenderer* renderer)
 	{
 		LineRenderer::DrawSphere(mRadius, 32, mOffset, mColor, GetWorldTransform());
 	}
 
-	void SphereComponent::Save(cereal::JSONOutputArchive &ar) const
+	void SphereComponent::Serialize(StreamWriter& ar) const
 	{
-		ColliderComponent::Save(ar);
-		ar(MAKE_NVP("Radius", mRadius));
+		ColliderComponent::Serialize(ar);
+		ar(mRadius);
 	}
 
-	void SphereComponent::Load(cereal::JSONInputArchive &ar)
+	void SphereComponent::Deserialize(StreamReader& ar)
 	{
-		ColliderComponent::Load(ar);
-		ar(MAKE_NVP("Radius", mRadius));
+		ColliderComponent::Deserialize(ar);
+		ar(mRadius);
 	}
 
 	REFLECT(SphereComponent)
@@ -40,4 +40,4 @@ namespace BHive
 		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
 			REFLECT_PROPERTY("Radius", mRadius);
 	}
-} // namespace BHive
+}  // namespace BHive

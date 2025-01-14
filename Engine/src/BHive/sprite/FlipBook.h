@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Sprite.h"
+#include "serialization/Serialization.h"
 
 namespace BHive
 {
@@ -35,9 +36,18 @@ namespace BHive
 
 		sprite_ptr GetCurrentSprite() const;
 
-		bool IsLooping() const { return mIsLooping; }
-		bool IsPlaying() const { return mIsPlaying; }
-		float GetFramesPerSecond() const { return mFramesPerSecond; }
+		bool IsLooping() const
+		{
+			return mIsLooping;
+		}
+		bool IsPlaying() const
+		{
+			return mIsPlaying;
+		}
+		float GetFramesPerSecond() const
+		{
+			return mFramesPerSecond;
+		}
 
 		sprite_ptr GetSpriteAtFrame(int32_t frame) const;
 		sprite_ptr GetSpriteAtTime(float time) const;
@@ -46,9 +56,8 @@ namespace BHive
 
 		REFLECTABLEV(Asset)
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		void Serialize(StreamWriter &ar) const override;
+		void Deserialize(StreamReader &ar) override;
 
 	private:
 		int32_t GetNumFrames() const;
@@ -63,11 +72,8 @@ namespace BHive
 		float mCurrentTime = 0.0f;
 	};
 
-	template <typename A>
-	void Serialize(A &ar, FlipBook::Frame &obj)
-	{
-		ar(MAKE_NVP("Sprite", obj.mSprite), MAKE_NVP("Duration", obj.mDuration));
-	}
+	void Serialize(StreamWriter &ar, const FlipBook::Frame &obj);
+	void Deserialize(StreamReader &ar, FlipBook::Frame &obj);
 
 	REFLECT_EXTERN(FlipBook::Frame)
 	REFLECT_EXTERN(FlipBook)

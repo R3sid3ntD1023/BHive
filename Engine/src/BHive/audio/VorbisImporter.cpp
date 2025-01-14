@@ -42,7 +42,7 @@ namespace BHive
             return nullptr;
         }
 
-        FAudioSpecification specs{.mFormat = format, .mNumSamples = samples, .mSampleRate = sample_rate};
+        AudioSpecification specs{.mFormat = format, .mNumSamples = samples, .mSampleRate = sample_rate};
 		auto source = CreateRef<AudioSource>(data, buffersize, specs);
 
         LOG_TRACE("{} length:{}, time:{}", path.string(), source->GetLengthSeconds(), source->GetLength().to_string());

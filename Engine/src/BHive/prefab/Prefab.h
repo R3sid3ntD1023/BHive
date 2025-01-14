@@ -1,33 +1,19 @@
 #pragma once
 
-#include "asset/Asset.h"
 #include "scene/Entity.h"
+#include "asset/Asset.h"
 
 namespace BHive
 {
-	class World;
-
 	class Prefab : public Asset
 	{
 	public:
-		Prefab();
+		Prefab() = default;
 
-		Ref<Entity> CreateInstance(World *world);
-
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
-
-		REFLECTABLEV(Asset)
+		Ref<Entity> CreateInstance() { return mInstance; }
 
 	private:
 		Ref<Entity> mInstance;
 	};
 
-	REFLECT(Prefab)
-	{
-		BEGIN_REFLECT(Prefab)
-		REFLECT_PROPERTY("Entity", mInstance);
-	}
-
-} // namespace BHive
+}

@@ -1,5 +1,6 @@
 #include "FlipBookFactory.h"
 #include "sprite/FlipBook.h"
+#include "asset/AssetSerializer.h"
 
 namespace BHive
 {

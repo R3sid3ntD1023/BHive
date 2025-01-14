@@ -159,11 +159,8 @@ namespace BHive
 		if (wstr != NULL)
 			delete[] wstr;
 
-		
-		bool success = SUCCEEDED(hr);
-
 		CoUninitialize();
 
-		return success;
+		return SUCCEEDED(hr);
 	}
 }

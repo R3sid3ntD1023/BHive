@@ -1,7 +1,6 @@
 #pragma once
 
 #include "gfx/Texture.h"
-#include "serialization/Serialization.h"
 
 namespace BHive
 {
@@ -9,10 +8,8 @@ namespace BHive
 	{
 	public:
 		GLTexture2D() = default;
-		GLTexture2D(uint32_t width, uint32_t height, const FTextureSpecification &specification,
-					uint32_t samples = 1);
-		GLTexture2D(const void *data, uint32_t width, uint32_t height,
-					const FTextureSpecification &specification);
+		GLTexture2D(uint32_t width, uint32_t height, const FTextureSpecification &specification, uint32_t samples = 1);
+		GLTexture2D(const void *data, uint32_t width, uint32_t height, const FTextureSpecification &specification);
 		~GLTexture2D();
 
 		virtual uint32_t GetWidth() const { return mWidth; }
@@ -23,14 +20,13 @@ namespace BHive
 		void BindAsImage(uint32_t unit, uint32_t access, uint32_t level = 0) const;
 		virtual void GenerateMipMaps() const;
 
-		virtual void SetData(const void *data, uint64_t size, uint32_t offsetX = 0,
-							 uint32_t offsetY = 0);
+		virtual void SetData(const void *data, uint64_t size, uint32_t offsetX = 0, uint32_t offsetY = 0);
 		virtual const FTextureSpecification &GetSpecification() const { return mSpecification; }
 		virtual uint32_t GetRendererID() const { return mTextureID; }
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Serialize(StreamWriter &ar) const;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Deserialize(StreamReader &ar);
 
 	protected:
 		void Initialize();
@@ -40,8 +36,8 @@ namespace BHive
 		uint32_t mTextureID = 0;
 		uint32_t mWidth = 0, mHeight = 0;
 		FTextureSpecification mSpecification;
-		uint32_t mSamples = 0;
+		uint32_t mSamples = 0 ;
 		Buffer mBuffer;
 	};
 
-} // namespace BHive
+}

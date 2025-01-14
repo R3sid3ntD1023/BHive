@@ -11,19 +11,19 @@ namespace BHive
     }
 
     void Component::SetTickEnabled(bool enabled)
-	{
-		mTickEnabled = enabled;
-	}
-
-    void Component::Save(cereal::JSONOutputArchive& ar) const
     {
-		ObjectBase::Save(ar);
-		ar(MAKE_NVP("IsTickEnabled", mTickEnabled));
+        mTickEnabled = enabled;
     }
 
-    void Component::Load(cereal::JSONInputArchive& ar)
+    void Component::Serialize(StreamWriter &ar) const
     {
-		ObjectBase::Load(ar);
-		ar(MAKE_NVP("IsTickEnabled", mTickEnabled));
+        ObjectBase::Serialize(ar);
+        ar(mTickEnabled);
+    }
+
+    void Component::Deserialize(StreamReader &ar)
+    {
+        ObjectBase::Deserialize(ar);
+        ar(mTickEnabled);
     }
 }

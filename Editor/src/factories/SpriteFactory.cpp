@@ -1,5 +1,6 @@
 #include "SpriteFactory.h"
 #include "sprite/Sprite.h"
+#include "asset/AssetSerializer.h"
 
 namespace BHive
 {

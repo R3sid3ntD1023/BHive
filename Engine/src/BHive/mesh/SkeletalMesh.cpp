@@ -1,30 +1,30 @@
 #include "SkeletalMesh.h"
+#include "Skeleton.h"
+#include "SkeletalPose.h"
+#include "gfx/Shader.h"
 
 namespace BHive
 {
 
 	SkeletalMesh::SkeletalMesh(const FMeshData &mesh_data, const Ref<Skeleton> &skeleton)
-		: StaticMesh(mesh_data),
-		  mSkeleton(skeleton)
+		: StaticMesh(mesh_data), mSkeleton(skeleton)
 	{
 		mDefaultPose = CreateRef<SkeletalPose>(skeleton.get());
 	}
 
-	void SkeletalMesh::Save(cereal::JSONOutputArchive &ar) const
+	void SkeletalMesh::Serialize(StreamWriter &ar) const
 	{
-		StaticMesh::Save(ar);
-
+		StaticMesh::Serialize(ar);
 		TAssetHandle<Skeleton> handle = mSkeleton;
 
-		ar(MAKE_NVP("Skeleton", handle));
+		ar(handle);
 	}
 
-	void SkeletalMesh::Load(cereal::JSONInputArchive &ar)
+	void SkeletalMesh::Deserialize(StreamReader &ar)
 	{
-		StaticMesh::Load(ar);
-
+		StaticMesh::Deserialize(ar);
 		TAssetHandle<Skeleton> handle;
-		ar(MAKE_NVP("Skeleton", handle));
+		ar(handle);
 
 		mSkeleton = handle.get();
 		mDefaultPose = CreateRef<SkeletalPose>(mSkeleton.get());
@@ -35,4 +35,4 @@ namespace BHive
 		BEGIN_REFLECT(SkeletalMesh)
 		REFLECT_CONSTRUCTOR();
 	}
-} // namespace BHive
+}

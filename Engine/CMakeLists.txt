@@ -33,7 +33,6 @@ target_link_libraries(Engine
 	PUBLIC rttr_core 
 	PUBLIC spdlog::spdlog
 	PUBLIC glm::glm-header-only
-	PUBLIC cereal::cereal
 	PUBLIC mINI
 )
 

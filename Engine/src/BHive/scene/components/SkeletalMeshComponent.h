@@ -30,9 +30,8 @@ namespace BHive
 
 		Ref<SkeletalPose> GetPose() { return mPose; }
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		void Serialize(StreamWriter &ar) const;
+		void Deserialize(StreamReader &ar);
 
 		REFLECTABLEV(MeshComponent)
 
@@ -41,4 +40,4 @@ namespace BHive
 	};
 
 	REFLECT_EXTERN(SkeletalMeshComponent);
-} // namespace BHive
+}

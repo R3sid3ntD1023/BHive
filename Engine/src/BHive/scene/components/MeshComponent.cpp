@@ -2,16 +2,16 @@
 
 namespace BHive
 {
-	void MeshComponent::Save(cereal::JSONOutputArchive &ar) const
+	void MeshComponent::Serialize(StreamWriter &ar) const
 	{
-		ShapeComponent::Save(ar);
-		ar(MAKE_NVP("Materials", mMaterials), MAKE_NVP("OverrideMaterials", mOverrideMaterials));
+		ShapeComponent::Serialize(ar);
+		ar(mMaterials, mOverrideMaterials);
 	}
 
-	void MeshComponent::Load(cereal::JSONInputArchive &ar)
+	void MeshComponent::Deserialize(StreamReader &ar)
 	{
-		ShapeComponent::Load(ar);
-		ar(MAKE_NVP("Materials", mMaterials), MAKE_NVP("OverrideMaterials", mOverrideMaterials));
+		ShapeComponent::Deserialize(ar);
+		ar(mMaterials, mOverrideMaterials);
 	}
 
 	void MeshComponent::SetMaterialTable(const MaterialTable &materials)
@@ -22,9 +22,10 @@ namespace BHive
 		mOverrideMaterials = materials;
 	}
 
+		
 	REFLECT(MeshComponent)
 	{
 		BEGIN_REFLECT(MeshComponent)
 		REFLECT_PROPERTY("Materials", mOverrideMaterials);
 	}
-} // namespace BHive
+}

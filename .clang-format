@@ -7,15 +7,13 @@ IndentWidth:     4
 TabWidth:        4
 UseTab:         Always
 ColumnLimit:     100
-AlignAfterOpenBracket: AlwaysBreak
+AlignAfterOpenBracket: Align
 BinPackParameters: true
 BinPackArguments: true
 AlignEscapedNewlines: Left
 AlwaysBreakTemplateDeclarations: Yes
 PackConstructorInitializers: Never
 BreakConstructorInitializersBeforeComma: false
-#EmptyLineAfterAccessModifier: true
-AllowShortFunctionsOnASingleLine: InlineOnly
 IndentPPDirectives: BeforeHash
 SortIncludes:    Never
 BreakBeforeBraces : Allman
@@ -28,3 +26,4 @@ BraceWrapping:
  AfterFunction:	true
  AfterNamespace:	true
 NamespaceIndentation: All
+AllowShortFunctionsOnASingleLine: InlineOnly

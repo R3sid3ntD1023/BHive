@@ -2,8 +2,9 @@
 
 #include "core/Core.h"
 #include "math/Math.h"
-#include "gfx/Texture.h"
 #include "asset/Asset.h"
+#include "gfx/Texture.h"
+#include "serialization/Serialization.h"
 
 namespace BHive
 {
@@ -15,15 +16,14 @@ namespace BHive
 		Sprite() = default;
 		Sprite(const Sprite &other);
 
-		Sprite(
-			const TAssetHandle<Texture2D> &texture, const glm::vec2 &coords,
-			const glm::vec2 &cellSize, const glm::vec2 &spriteSize);
+		Sprite(const TAssetHandle<Texture2D> &texture, const glm::vec2 &coords,
+			   const glm::vec2 &cellSize, const glm::vec2 &spriteSize);
 
 		Sprite(const TAssetHandle<Texture2D> &texture, const glm::vec2 &min, const glm::vec2 &max);
 
 		void SetCoords(const glm::vec2 &min, const glm::vec2 &max);
-		void
-		SetCoords(const glm::vec2 &coords, const glm::vec2 &cellSize, const glm::vec2 &spriteSize);
+		void SetCoords(const glm::vec2 &coords, const glm::vec2 &cellSize,
+					   const glm::vec2 &spriteSize);
 
 		const glm::vec2 &GetCoordinates() const;
 		const glm::vec2 &GetCellSize() const;
@@ -37,12 +37,17 @@ namespace BHive
 		const glm::vec2 &GetMaxCoords() const;
 
 		void SetSourceTexture(const TAssetHandle<Texture2D> &texture);
-		const TAssetHandle<Texture2D> &GetSourceTexture() const { return mSource; }
-		const glm::vec2 *GetCoords() const { return mCoords.data(); }
+		const TAssetHandle<Texture2D> &GetSourceTexture() const
+		{
+			return mSource;
+		}
+		const glm::vec2 *GetCoords() const
+		{
+			return mCoords.data();
+		}
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		void Serialize(StreamWriter &ar) const override;
+		void Deserialize(StreamReader &ar) override;
 
 		REFLECTABLEV(Asset)
 

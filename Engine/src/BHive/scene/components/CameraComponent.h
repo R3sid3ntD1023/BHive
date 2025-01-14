@@ -15,9 +15,8 @@ namespace BHive
 		void SetPrimary(bool primary);
 		bool IsPrimary() const;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		void Serialize(StreamWriter& ar) const;
+		void Deserialize(StreamReader& ar);
 
 	private:
 		bool mIsPrimary;
@@ -27,9 +26,10 @@ namespace BHive
 
 	REFLECT(CameraComponent)
 	{
-		BEGIN_REFLECT(CameraComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
-			REFLECT_PROPERTY("Camera", mCamera) REFLECT_PROPERTY("Primary", IsPrimary, SetPrimary);
+		BEGIN_REFLECT(CameraComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true))
+			REQUIRED_COMPONENT_FUNCS()
+				REFLECT_PROPERTY("Camera", mCamera)
+					REFLECT_PROPERTY("Primary", IsPrimary, SetPrimary);
 	}
 
 	class CameraManager
@@ -44,4 +44,4 @@ namespace BHive
 	private:
 		static inline FTransform sCurrentViewTarget{1.0f};
 	};
-} // namespace BHive
+}

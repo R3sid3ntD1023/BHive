@@ -2,6 +2,15 @@
 
 namespace BHive
 {
+    void FInputAction::Serialize(StreamWriter &ar) const
+    {
+        ar(mName, mKey);
+    }
+
+    void FInputAction::Deserialize(StreamReader &ar)
+    {
+        ar(mName, mKey);
+    }
 
     REFLECT(FInputAction)
     {

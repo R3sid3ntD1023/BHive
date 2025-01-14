@@ -1,4 +1,6 @@
 #include "UUID.h"
+#include "serialization/StreamWriter.h"
+#include "serialization/StreamReader.h"
 #include <random>
 
 namespace BHive
@@ -35,6 +37,16 @@ namespace BHive
 	bool UUID::operator!=(const UUID &rhs) const
 	{
 		return !(*this == rhs);
+	}
+
+	void UUID::Serialize(StreamWriter &stream) const
+	{
+		stream(mID);
+	}
+
+	void UUID::Deserialize(StreamReader &ar)
+	{
+		ar(mID);
 	}
 
 	std::string UUID::to_string() const

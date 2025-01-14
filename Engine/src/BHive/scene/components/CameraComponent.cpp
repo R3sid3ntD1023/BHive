@@ -21,18 +21,18 @@ namespace BHive
 		return mIsPrimary;
 	}
 
-	void CameraComponent::Save(cereal::JSONOutputArchive &ar) const
+	void CameraComponent::Serialize(StreamWriter& ar) const
 	{
-		SceneComponent::Save(ar);
+		SceneComponent::Serialize(ar);
 
-		ar(MAKE_NVP("IsPrimary", mIsPrimary), MAKE_NVP("Camera", mCamera));
+		ar(mIsPrimary, mCamera);
 	}
 
-	void CameraComponent::Load(cereal::JSONInputArchive &ar)
+	void CameraComponent::Deserialize(StreamReader& ar)
 	{
-		SceneComponent::Load(ar);
+		SceneComponent::Deserialize(ar);
 
-		ar(MAKE_NVP("IsPrimary", mIsPrimary), MAKE_NVP("Camera", mCamera));
+		ar(mIsPrimary, mCamera);
 	}
 
 	void CameraManager::SetTargetViewWithBlend(const FTransform &view, float blendtime)
@@ -62,4 +62,4 @@ namespace BHive
 		return sCurrentViewTarget;
 	}
 
-} // namespace BHive
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
+#include "Vectors.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_SWIZZLE
@@ -14,6 +15,8 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "serialization/Serialization.h"
+
 namespace glm
 {
 	template <typename Ostream, length_t L, typename T, qualifier Q>
@@ -22,12 +25,25 @@ namespace glm
 		return os << to_string(vec);
 	}
 
-} // namespace glm
+}
 
 #define PI 22.f / 7.f
 
 namespace BHive
 {
+	template <glm::length_t L, typename T, glm::qualifier Q>
+	void Serialize(StreamWriter &ar, const glm::vec<L, T, Q> &obj)
+	{
+		for (size_t i = 0; i < L; i++)
+			ar(obj[i]);
+	}
+
+	template <glm::length_t L, typename T, glm::qualifier Q>
+	void Deserialize(StreamReader &ar, glm::vec<L, T, Q> &obj)
+	{
+		for (size_t i = 0; i < L; i++)
+			ar(obj[i]);
+	}
 	namespace Math
 	{
 		template <typename T>
@@ -37,8 +53,7 @@ namespace BHive
 		}
 
 		template <typename T>
-		static inline T
-		remap(const T &v, const T &inMin, const T &inMax, const T &outMin, const T &outMax)
+		static inline T remap(const T &v, const T &inMin, const T &inMax, const T &outMin, const T &outMax)
 		{
 			T in_span = inMax - inMin;
 			T out_span = outMax - outMin;
@@ -53,5 +68,5 @@ namespace BHive
 		{
 			return (v - min) / ((max - min));
 		}
-	}; // namespace Math
-} // namespace BHive
+	};
+}

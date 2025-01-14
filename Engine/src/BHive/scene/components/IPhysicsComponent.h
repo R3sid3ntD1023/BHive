@@ -3,7 +3,6 @@
 #include "physics/LockAxis.h"
 #include "core/EnumAsByte.h"
 #include "math/Math.h"
-#include "serialization/Serialization.h"
 
 namespace BHive
 {
@@ -16,7 +15,7 @@ namespace BHive
 
 	struct BHIVE IPhysicsComponent
 	{
-		bool mPhysicsEnabled{true};
+		bool mPhysicsEnabled{ true };
 
 		EBodyType mBodyType = EBodyType::Static;
 
@@ -38,20 +37,9 @@ namespace BHive
 
 		glm::vec3 GetVelocity() const;
 
-		void SetRigidBody(void *rigidbody);
+		void SetRigidBody(void* rigidbody);
 
-		void *GetRigidBody() const { return mRigidBodyInstance; }
-
-		template <typename A>
-		void Serialize(A &ar)
-		{
-			ar(MAKE_NVP("PhysicsEnabled", mPhysicsEnabled), MAKE_NVP("BodyType", mBodyType),
-			   MAKE_NVP("Mass", mMass), MAKE_NVP("AngularDamping", mAngularDamping),
-			   MAKE_NVP("LinearDamping", mLinearDamping),
-			   MAKE_NVP("LinearLockAxis", mLinearLockAxis),
-			   MAKE_NVP("AngularLockAxis", mAngularLockAxis),
-			   MAKE_NVP("GravityEnabled", mGravityEnabled));
-		}
+		void* GetRigidBody() const { return mRigidBodyInstance; }
 
 		REFLECTABLEV()
 
@@ -75,7 +63,10 @@ namespace BHive
 	REFLECT(EBodyType)
 	{
 		BEGIN_REFLECT_ENUM(EBodyType)
-		(ENUM_VALUE(Static), ENUM_VALUE(Kinematic), ENUM_VALUE(Dynamic));
+		(
+			ENUM_VALUE(Static),
+			ENUM_VALUE(Kinematic),
+			ENUM_VALUE(Dynamic));
 	}
 
-} // namespace BHive
+}

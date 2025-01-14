@@ -37,6 +37,7 @@ namespace BHive
     void EditorContentBrowser::OnImportAsset(const std::filesystem::path &directory,
 											 const std::filesystem::path &relative)
     {
+		
 		auto &registry = FactoryRegistry::Get();
         auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
         auto type = registry.GetTypeFromExtension(relative.extension().string());
@@ -49,6 +50,7 @@ namespace BHive
 				});
 			factory->Import(relative);
         }
+		
        
     }
 

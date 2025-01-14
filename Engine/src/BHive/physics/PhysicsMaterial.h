@@ -1,6 +1,7 @@
 #pragma once
 
 #include "asset/Asset.h"
+#include "serialization/Serialization.h"
 
 namespace BHive
 {
@@ -13,9 +14,8 @@ namespace BHive
 		float mBounciness = 0.0f;
 		float mMassDensity = 1.0f;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		void Serialize(StreamWriter &ar) const override;
+		void Deserialize(StreamReader &ar) override;
 
 		REFLECTABLEV(Asset)
 	};

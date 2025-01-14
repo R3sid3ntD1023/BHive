@@ -2,6 +2,7 @@
 
 #include "ColliderComponent.h"
 
+
 namespace BHive
 {
 	class StaticMesh;
@@ -9,24 +10,24 @@ namespace BHive
 	class MeshColliderComponent : public ColliderComponent
 	{
 	public:
+
 		virtual AABB GetBoundingBox() const { return FBox{}; };
 
-		virtual void *GetCollisionShape(const FTransform &world_transform) override;
+		virtual void* GetCollisionShape(const FTransform& world_transform) override;
 		virtual void ReleaseCollisionShape() override;
-		virtual void OnRender(class SceneRenderer *renderer);
+		virtual void OnRender(class SceneRenderer* renderer);
 
-		void SetStaticMesh(const TAssetHandle<StaticMesh> &mesh);
-		const TAssetHandle<StaticMesh> &GetStaticMesh() const { return mStaticMesh; }
+		void SetStaticMesh(const TAssetHandle<StaticMesh>& mesh);
+		const TAssetHandle<StaticMesh>& GetStaticMesh() const { return mStaticMesh; }
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		
+		void Serialize(StreamWriter& ar) const;
+		void Deserialize(StreamReader& ar);
 
 		REFLECTABLEV(ColliderComponent)
 
 	private:
 		TAssetHandle<StaticMesh> mStaticMesh;
-
 	private:
 		void CreateConvexMesh();
 
@@ -34,4 +35,4 @@ namespace BHive
 	};
 
 	REFLECT_EXTERN(MeshColliderComponent)
-} // namespace BHive
+}  // namespace BHive

@@ -17,20 +17,35 @@ namespace BHive
 
 		virtual ~Asset() = default;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const;
+		virtual void Serialize(StreamWriter &ar) const
+		{
+			ar(mHandle, mName);
+		};
 
-		virtual void Load(cereal::JSONInputArchive &ar);
+		virtual void Deserialize(StreamReader &ar)
+		{
+			ar(mHandle, mName);
+		};
 
-		void SetName(const std::string &name) { mName = name; }
+		void SetName(const std::string &name)
+		{
+			mName = name;
+		}
 
-		const std::string &GetName() const { return mName; }
+		const std::string &GetName() const
+		{
+			return mName;
+		}
 
 		static AssetHandle GetHandle(const Ref<Asset> &asset)
 		{
 			return asset ? asset->GetHandle() : AssetHandle(0);
 		}
 
-		const AssetHandle &GetHandle() const { return mHandle; }
+		const AssetHandle &GetHandle() const
+		{
+			return mHandle;
+		}
 
 		REFLECTABLEV()
 

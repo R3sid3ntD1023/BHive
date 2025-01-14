@@ -1,11 +1,12 @@
 #pragma once
 
 #include "core/Core.h"
+#include "serialization/Serialization.h"
 #include "reflection/Reflection.h"
+#include "AssetManager.h"
 
 namespace BHive
 {
-	class Asset;
 
     struct AssetHandleBase
     {
@@ -70,6 +71,21 @@ namespace BHive
         Ref<T> mPtr;
     };
 
+    template <typename T>
+    void Serialize(StreamWriter &ar, const TAssetHandle<T> &obj)
+    {
+		auto handle = obj ? obj.get()->GetHandle() : AssetHandle(0);
+        ar(handle);
+    }
+
+    template <typename T>
+    void Deserialize(StreamReader &ar, TAssetHandle<T> &obj)
+    {
+        AssetHandle handle = 0;
+        ar(handle);
+
+        obj = AssetManager::GetAsset<T>(handle);
+    }
 }
 
 namespace rttr

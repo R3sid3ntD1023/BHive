@@ -4,6 +4,7 @@
 #include "gui/Gui.h"
 #include "serialization/Serialization.h"
 #include "core/FileDialog.h"
+#include "serialization/FileStream.h"
 #include <Windows.h>
 
 namespace ImGui
@@ -62,7 +63,15 @@ namespace ImGui
 
 namespace BHive
 {
+    void FProjectLauncherSettings::Serialize(StreamWriter &ar) const
+    {
+        ar(mRecentProjectPaths);
+    }
 
+    void FProjectLauncherSettings::Deserialize(StreamReader &ar)
+    {
+        ar(mRecentProjectPaths);
+    }
 
     std::string GetDirectory()
     {
@@ -74,10 +83,9 @@ namespace BHive
         auto &app = Application::Get();
         auto &cmd = app.GetSpecification().CommandLine;
 
-        std::ifstream in("Settings.projlncher", std::ios::in);
-        if (in)
+        FileStreamReader ar("launcher/Settings.projlncher");
+        if (ar)
         {
-			cereal::JSONInputArchive ar(in);
             ar(mSettings);
         }
 
@@ -87,28 +95,11 @@ namespace BHive
 
     void ProjectLauncherLayer::OnDetach()
     {
-
-        std::ofstream out("Settings.projlncher", std::ios::out);
-        if (out)
+        FileStreamWriter ar("launcher/Settings.projlncher");
+        if (ar)
         {
-            
-			cereal::JSONOutputArchive ar(out);
-			ar(mSettings);
-			return;
+            ar(mSettings);
         }
-
-        DWORD error_message = GetLastError();
-		LPSTR message_buffer = nullptr;
-		size_t size = FormatMessage(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-				FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, error_message, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&message_buffer, 0,
-			NULL);
-
-        std::string message(message_buffer, size);
-		LocalFree(message_buffer);
-
-        LOG_ERROR(message);
     }
 
     void ProjectLauncherLayer::OnGuiRender(float)
@@ -208,25 +199,17 @@ namespace BHive
     void
 	ProjectLauncherLayer::CreateProject(const FProjectConfiguration &config, std::string &message)
     {
-		auto path = config.mProjectDirectory / (config.mName + ".proj");
-		if (std::filesystem::exists(path))
+        if (std::filesystem::exists(config.mProjectDirectory))
         {
             message = "Project Already exists";
             return;
         }
 
         std::filesystem::create_directory(config.mProjectDirectory);
-		std::ofstream out(path, std::ios::out);
-
-        if (!out)
-			return;
-
-        cereal::JSONOutputArchive ar(out);
+		FileStreamWriter ar(config.mProjectDirectory / (config.mName + ".proj"));
 		ar(config);
 
         message = std::format("Created {} project sucessfully!", config.mName);
-
-        mSettings.mRecentProjectPaths.emplace(config.mName, path);
     }
 
 } // namespace BHive

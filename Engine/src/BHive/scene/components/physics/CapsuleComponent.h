@@ -16,12 +16,11 @@ namespace BHive
 
 		virtual void OnRender(class SceneRenderer *renderer);
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		void Serialize(StreamWriter &ar) const;
+		void Deserialize(StreamReader &ar);
 
 		REFLECTABLEV(ColliderComponent)
 	};
 
-	REFLECT_EXTERN(CapsuleComponent);
-} // namespace BHive
+	 REFLECT_EXTERN(CapsuleComponent);
+}

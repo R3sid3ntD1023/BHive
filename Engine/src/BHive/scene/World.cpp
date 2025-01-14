@@ -5,7 +5,6 @@
 #include "debug/Instrumentor.h"
 #include "core/Time.h"
 #include "Components.h"
-#include "serialization/Serialization.h"
 
 namespace BHive
 {
@@ -75,7 +74,7 @@ namespace BHive
 
 	void World::OnRuntimeStop()
 	{
-		for (auto &[id, entity] : mEntities)
+		for (auto& [id, entity] : mEntities)
 		{
 			entity->OnEnd();
 		}
@@ -87,7 +86,7 @@ namespace BHive
 	{
 		OnPhysicsStart();
 
-		for (auto &[id, entity] : mEntities)
+		for (auto& [id, entity] : mEntities)
 		{
 			entity->OnBegin();
 		}
@@ -99,7 +98,7 @@ namespace BHive
 		{
 			OnPhysicsUpdate(deltatime);
 
-			for (auto &[id, entity] : mEntities)
+			for (auto& [id, entity] : mEntities)
 			{
 				entity->OnUpdate(deltatime);
 			}
@@ -110,7 +109,7 @@ namespace BHive
 
 	void World::OnSimulateStop()
 	{
-		for (auto &[id, entity] : mEntities)
+		for (auto& [id, entity] : mEntities)
 		{
 			entity->OnEnd();
 		}
@@ -123,7 +122,7 @@ namespace BHive
 		auto new_world = CreateRef<World>(*this);
 		new_world->mEntities.clear();
 
-		for (const auto &[id, entity] : mEntities)
+		for (const auto& [id, entity] : mEntities)
 		{
 			auto new_entity = entity->Copy();
 			new_world->AddEntity(new_entity);
@@ -131,6 +130,7 @@ namespace BHive
 
 		return new_world;
 	}
+
 
 	Ref<Entity> World::CreateEntity(const std::string &name)
 	{
@@ -200,38 +200,35 @@ namespace BHive
 		return nullptr;
 	}
 
-	void World::Save(cereal::JSONOutputArchive &ar) const
+	void World::Serialize(StreamWriter &ar) const
 	{
-		ar(MAKE_NVP("NumEnities", mEntities.size()));
+		ar(mEntities.size());
 
 		for (auto &[id, entity] : mEntities)
 		{
-			auto type = entity->get_type();
+			ar(entity->get_type());
 
-			ar(MAKE_NVP("EntityType", type));
-
-			entity->Save(ar);
+			entity->Serialize(ar);
 		}
 	}
 
-	void World::Load(cereal::JSONInputArchive &ar)
+	void World::Deserialize(StreamReader &ar)
 	{
 		size_t num_entitys = 0;
-		ar(MAKE_NVP("NumEntities", num_entitys));
+		ar(num_entitys);
 
 		for (size_t i = 0; i < num_entitys; i++)
 		{
 			AssetType entity_type = InvalidType;
-			ar(MAKE_NVP("EntityType", entity_type));
+			ar(entity_type);
 
 			auto entity = entity_type.create().get_value<Ref<Entity>>();
 			if (entity)
 			{
-				entity->Load(ar);
+				entity->Deserialize(ar);
 				AddEntity(entity);
 			}
 		}
-
 	}
 
 	void World::OnPhysicsStart()
@@ -245,13 +242,10 @@ namespace BHive
 		mPhysicsWorld->setIsDebugRenderingEnabled(true);
 		auto &debug_renderer = mPhysicsWorld->getDebugRenderer();
 		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_AABB, true);
-		debug_renderer.setIsDebugItemDisplayed(
-			rp3d::DebugRenderer::DebugItem::COLLISION_SHAPE, true);
-		debug_renderer.setIsDebugItemDisplayed(
-			rp3d::DebugRenderer::DebugItem::CONTACT_NORMAL, true);
+		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLISION_SHAPE, true);
+		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_NORMAL, true);
 		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_POINT, true);
-		debug_renderer.setIsDebugItemDisplayed(
-			rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB, true);
+		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB, true);
 	}
 
 	void World::OnPhysicsUpdate(float deltatime)
@@ -280,6 +274,8 @@ namespace BHive
 
 	void World::RenderScene(Ref<SceneRenderer> renderer)
 	{
+		BH_PROFILE_FUNCTION();
+
 		for (auto &[id, entity] : mEntities)
 		{
 			for (auto &component : entity->GetComponents())
@@ -290,73 +286,72 @@ namespace BHive
 				}
 			}
 		}
+
 	}
 
-	void
-	World::RayCast(const glm::vec3 &start, const glm::vec3 &end, unsigned short mask, float factor)
+	void World::RayCast(const glm::vec3 &start, const glm::vec3 &end, unsigned short mask, float factor)
 	{
 		rp3d::Ray ray({start.x, start.y, start.z}, {end.x, end.y, end.z}, factor);
 		mPhysicsWorld->raycast(ray, &mHitListener, mask);
 	}
 
-	void World::OnCollisionContact(const rp3d::CollisionCallback::ContactPair &contact_pair)
+	void World::OnCollisionContact(const rp3d::CollisionCallback::ContactPair& contact_pair)
 	{
-		auto bd1 = (Entity *)contact_pair.getBody1()->getUserData();
-		auto bd2 = (Entity *)contact_pair.getBody2()->getUserData();
-		auto c1 = (ColliderComponent *)contact_pair.getCollider1()->getUserData();
-		auto c2 = (ColliderComponent *)contact_pair.getCollider2()->getUserData();
+		auto bd1 = (Entity*)contact_pair.getBody1()->getUserData();
+		auto bd2 = (Entity*)contact_pair.getBody2()->getUserData();
+		auto c1 = (ColliderComponent*)contact_pair.getCollider1()->getUserData();
+		auto c2 = (ColliderComponent*)contact_pair.getCollider2()->getUserData();
 		auto event = contact_pair.getEventType();
 
 		switch (event)
 		{
 		case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStart:
 			c1->OnCollisionEnter.invoke(c2, bd1, bd2);
-			c2->OnCollisionEnter.invoke(c1, bd1, bd2);
+            c2->OnCollisionEnter.invoke(c1, bd1, bd2);
 			break;
 		case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStay:
 			c1->OnCollisionStay.invoke(c2, bd1, bd2);
-			c2->OnCollisionStay.invoke(c1, bd1, bd2);
+            c2->OnCollisionStay.invoke(c1, bd1, bd2);
 			break;
 		case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactExit:
 			c1->OnCollisionExit.invoke(c2, bd1, bd2);
-			c2->OnCollisionExit.invoke(c1, bd1, bd2);
+            c2->OnCollisionExit.invoke(c1, bd1, bd2);
 			break;
 		default:
 			break;
 		}
 	}
 
-	void World::OnCollisionOverlap(const rp3d::OverlapCallback::OverlapPair &overlap_pair)
+	void World::OnCollisionOverlap(const rp3d::OverlapCallback::OverlapPair& overlap_pair)
 	{
-		auto bd1 = (Entity *)overlap_pair.getBody1()->getUserData();
-		auto bd2 = (Entity *)overlap_pair.getBody2()->getUserData();
-		auto c1 = (ColliderComponent *)overlap_pair.getCollider1()->getUserData();
-		auto c2 = (ColliderComponent *)overlap_pair.getCollider2()->getUserData();
-		auto event = overlap_pair.getEventType();
+        auto bd1 = (Entity *)overlap_pair.getBody1()->getUserData();
+        auto bd2 = (Entity *)overlap_pair.getBody2()->getUserData();
+        auto c1 = (ColliderComponent *)overlap_pair.getCollider1()->getUserData();
+        auto c2 = (ColliderComponent *)overlap_pair.getCollider2()->getUserData();
+        auto event = overlap_pair.getEventType();
 
-		switch (event)
-		{
-		case reactphysics3d::OverlapCallback::OverlapPair::EventType::OverlapStart:
-			c1->OnTriggerEnter.invoke(c2, bd1, bd2);
-			c2->OnTriggerEnter.invoke(c1, bd1, bd2);
-			break;
-		case reactphysics3d::OverlapCallback::OverlapPair::EventType::OverlapStay:
-			c1->OnTriggerStay.invoke(c2, bd1, bd2);
-			c2->OnTriggerStay.invoke(c1, bd1, bd2);
-			break;
-		case reactphysics3d::OverlapCallback::OverlapPair::EventType::OverlapExit:
-			c1->OnTriggerExit.invoke(c2, bd1, bd2);
-			c2->OnTriggerExit.invoke(c1, bd1, bd2);
-			break;
-		default:
-			break;
-		}
+        switch (event) {
+            case reactphysics3d::OverlapCallback::OverlapPair::EventType::OverlapStart:
+                c1->OnTriggerEnter.invoke(c2, bd1, bd2);
+                c2->OnTriggerEnter.invoke(c1, bd1, bd2);
+                break;
+            case reactphysics3d::OverlapCallback::OverlapPair::EventType::OverlapStay:
+                c1->OnTriggerStay.invoke(c2, bd1, bd2);
+                c2->OnTriggerStay.invoke(c1, bd1, bd2);
+                break;
+            case reactphysics3d::OverlapCallback::OverlapPair::EventType::OverlapExit:
+                c1->OnTriggerExit.invoke(c2, bd1, bd2);
+                c2->OnTriggerExit.invoke(c1, bd1, bd2);
+                break;
+            default:
+                break;
+        }
 	}
 
 	void World::OnHit(const rp3d::RaycastInfo &info)
 	{
 		auto body = (Entity *)info.body->getUserData();
-		auto collider = (ColliderComponent *)info.collider->getUserData();
+		auto collider = (ColliderComponent*)info.collider->getUserData();
 
 		if (collider)
 		{
@@ -371,5 +366,4 @@ namespace BHive
 		if (mEntities.contains(entity->GetUUID()))
 			mEntities.erase(entity->GetUUID());
 	}
-
-} // namespace BHive
+}

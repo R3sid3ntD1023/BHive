@@ -9,101 +9,95 @@ namespace BHive
 
 	FTransform::FTransform(const glm::mat4 &matrix)
 	{
-		mModelMatrix = matrix;
+		ModelMatrix = matrix;
 
 		glm::quat rotation;
 		glm::vec3 skew;
 		glm::vec4 perspective;
-		glm::decompose(mModelMatrix, mScale, rotation, mTranslation, skew, perspective);
+		glm::decompose(ModelMatrix, Scale, rotation, Translation, skew, perspective);
 
-		mRotation = glm::degrees(glm::eulerAngles(rotation));
+		Rotation = glm::degrees(glm::eulerAngles(rotation));
 	}
 
 	FTransform::FTransform(const FTransform &rhs)
-		: mTranslation(rhs.mTranslation),
-		  mRotation(rhs.mRotation),
-		  mScale(rhs.mScale)
+		: Translation(rhs.Translation), Rotation(rhs.Rotation), Scale(rhs.Scale)
 	{
 		calculate_model_matrix();
 	}
 
-	FTransform::FTransform(
-		const glm::vec3 &translation, const glm::vec3 &rotation, const glm::vec3 &scale)
-		: mTranslation(translation),
-		  mRotation(rotation),
-		  mScale(scale),
-		  mModelMatrix(1.0f)
+	FTransform::FTransform(const glm::vec3 &translation, const glm::vec3 &rotation, const glm::vec3 &scale)
+		: Translation(translation), Rotation(rotation), Scale(scale), ModelMatrix(1.0f)
 	{
 		calculate_model_matrix();
 	}
 
 	void FTransform::set_translation(const glm::vec3 &translation)
 	{
-		mTranslation = translation;
+		Translation = translation;
 		calculate_model_matrix();
 	}
 
 	void FTransform::set_rotation(const glm::vec3 &rotation)
 	{
-		mRotation = rotation;
+		Rotation = rotation;
 		calculate_model_matrix();
 	}
 
 	void FTransform::set_quaternion(const glm::quat &quaternion)
 	{
-		mRotation = glm::degrees(glm::eulerAngles(quaternion));
+		Rotation = glm::degrees(glm::eulerAngles(quaternion));
 		calculate_model_matrix();
 	}
 
 	void FTransform::set_scale(const glm::vec3 &scale)
 	{
-		mScale = scale;
+		Scale = scale;
 		calculate_model_matrix();
 	}
 
 	void FTransform::add_translation(const glm::vec3 &translation)
 	{
-		mTranslation += translation;
+		Translation += translation;
 		calculate_model_matrix();
 	}
 
 	void FTransform::add_rotation(const glm::vec3 &rotation)
 	{
-		mRotation += rotation;
+		Rotation += rotation;
 		calculate_model_matrix();
 	}
 
 	glm::vec3 FTransform::get_forward() const
 	{
-		return glm::normalize(mModelMatrix[2]);
+		return glm::normalize(ModelMatrix[2]);
 	}
 
 	glm::vec3 FTransform::get_forward_unnormalized() const
 	{
-		return -mModelMatrix[2];
+		return -ModelMatrix[2];
 	}
 
 	glm::vec3 FTransform::get_right() const
 	{
-		return -glm::normalize(mModelMatrix[0]);
+		return -glm::normalize(ModelMatrix[0]);
 	}
 
 	glm::vec3 FTransform::get_up() const
 	{
-		return glm::normalize(mModelMatrix[1]);
+		return glm::normalize(ModelMatrix[1]);
 	}
 
 	FTransform FTransform::inverse() const
 	{
-		return FTransform(glm::inverse(mModelMatrix));
+		return FTransform(glm::inverse(ModelMatrix));
 	}
 
 	std::string FTransform::to_string() const
 	{
 		std::stringstream ss;
-		ss << "{\n " << glm::to_string(mTranslation) << " , \n"
-		   << glm::to_string(mRotation) << " , \n"
-		   << glm::to_string(mScale) << " , \n"
+		ss << "{\n " << glm::to_string(Translation) << " , \n"
+		   << glm::to_string(Rotation) << " , \n"
+		   << glm::to_string(Scale) << " , \n"
 		   << " }";
 
 		return ss.str();
@@ -111,9 +105,9 @@ namespace BHive
 
 	FTransform &FTransform::operator=(const FTransform &rhs)
 	{
-		mTranslation = rhs.mTranslation;
-		mRotation = rhs.mRotation;
-		mScale = rhs.mScale;
+		Translation = rhs.Translation;
+		Rotation = rhs.Rotation;
+		Scale = rhs.Scale;
 
 		calculate_model_matrix();
 
@@ -122,15 +116,26 @@ namespace BHive
 
 	FTransform FTransform::operator*(const FTransform &rhs) const
 	{
-		auto new_matrix = mModelMatrix * rhs.mModelMatrix;
+		auto new_matrix = ModelMatrix * rhs.ModelMatrix;
 
 		return FTransform(new_matrix);
 	}
 
+	void FTransform::Serialize(StreamWriter &ar) const
+	{
+		ar(Translation, Rotation, Scale);
+	}
+
+	void FTransform::Deserialize(StreamReader &ar)
+	{
+		ar(Translation, Rotation, Scale);
+		calculate_model_matrix();
+	}
+
 	void FTransform::calculate_model_matrix()
 	{
-		auto rotation = glm::quat(glm::radians(mRotation));
-		mModelMatrix = glm::translate(mTranslation) * glm::toMat4(rotation) * glm::scale(mScale);
+		auto rotation = glm::quat(glm::radians(Rotation));
+		ModelMatrix = glm::translate(Translation) * glm::toMat4(rotation) * glm::scale(Scale);
 	}
 
 	REFLECT(FTransform)
@@ -140,4 +145,4 @@ namespace BHive
 		REFLECT_PROPERTY("Rotation", get_rotation, set_rotation)
 		REFLECT_PROPERTY("Scale", get_scale, set_scale);
 	}
-} // namespace BHive
+}

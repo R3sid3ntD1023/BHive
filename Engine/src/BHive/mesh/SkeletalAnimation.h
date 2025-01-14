@@ -2,8 +2,8 @@
 
 #include "core/Core.h"
 #include "math/Math.h"
-#include "AnimationFrames.h"
 #include "asset/Asset.h"
+#include "AnimationFrames.h"
 
 namespace BHive
 {
@@ -15,9 +15,8 @@ namespace BHive
 	{
 	public:
 		SkeletalAnimation() = default;
-		SkeletalAnimation(
-			float duration, float ticksPerSecond, const Frames &frames, Ref<Skeleton> skeleton,
-			const glm::mat4 &globalInverseMatrix);
+		SkeletalAnimation(float duration, float ticksPerSecond, const Frames &frames,
+						  Ref<Skeleton> skeleton, const glm::mat4 &globalInverseMatrix);
 
 		bool Contains(const std::string &name) const;
 
@@ -34,9 +33,9 @@ namespace BHive
 		glm::quat InterpolateRotation(const std::string &name, float animationTime);
 		glm::vec3 InterpolateScaling(const std::string &name, float animationTime);
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Serialize(StreamWriter &ar) const;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Deserialize(StreamReader &ar);
 
 		REFLECTABLEV(Asset)
 

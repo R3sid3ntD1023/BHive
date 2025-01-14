@@ -8,12 +8,8 @@ namespace BHive
     {
         std::unordered_map<std::string, std::filesystem::path> mRecentProjectPaths;
 
-
-        template<typename A>
-        void SERIALIZE(A& ar)
-        {
-			ar(MAKE_NVP("RecentProjects", mRecentProjectPaths));
-        }
+        void Serialize(StreamWriter &ar) const;
+        void Deserialize(StreamReader &ar);
     };
 
     class ProjectLauncherLayer : public Layer
