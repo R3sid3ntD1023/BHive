@@ -6,7 +6,7 @@
 namespace BHive
 {
 	template <typename A>
-	inline std::string CEREAL_SAVE_MINIMAL_FUNCTION_NAME(const A &ar, const Color &col)
+	inline void Serialize(const A &ar, const Color &col)
 	{
 		return col.to_string();
 	}
