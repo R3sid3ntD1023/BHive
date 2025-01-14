@@ -1,21 +1,8 @@
 #include "Project.h"
-#include "serialization/FileStream.h"
+#include "serialization/Serialization.h"
 
 namespace BHive
 {
-    void FProjectConfiguration::Deserialize(StreamReader& ar)
-    {
-        ar(mName);
-        ar(mProjectDirectory);
-        ar(mResourcesDirectory);
-    }
-
-    void FProjectConfiguration::Serialize(StreamWriter &ar) const
-    {
-        ar(mName);
-        ar(mProjectDirectory);
-        ar(mResourcesDirectory);
-    }
 
     Project::Project(const FProjectConfiguration &config)
         : mConfig(config)
@@ -29,27 +16,29 @@ namespace BHive
         return sActiveProject;
     }
 
-    Ref<Project> Project::Load(const std::filesystem::path &path)
+    Ref<Project> Project::LoadProject(const std::filesystem::path &path)
     {
         sActiveProject = CreateRef<Project>();
 
-        FileStreamReader ar(path);
-        if (ar)
+        std::ifstream in(path, std::ios::in);
+        if (in)
         {
+			cereal::JSONInputArchive ar(in);
             ar(sActiveProject->mConfig);
         }
 
         return sActiveProject;
     }
 
-    bool Project::Save(const std::filesystem::path &path)
+    bool Project::SaveProject(const std::filesystem::path &path)
     {
         ASSERT(sActiveProject);
 
-        FileStreamWriter ar(path);
-        if (!ar)
+        std::ofstream out(path, std::ios::out);
+        if (!out)
             return false;
 
+        cereal::JSONOutputArchive ar(out);
         ar(sActiveProject->mConfig);
 
         return true;

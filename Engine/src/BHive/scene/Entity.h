@@ -7,6 +7,7 @@
 #include "ITransform.h"
 #include "scene/components/RelationshipComponent.h"
 #include "scene/components/IPhysicsComponent.h"
+#include "serialization/Serialization.h"
 
 namespace BHive
 {
@@ -87,14 +88,13 @@ namespace BHive
 
         virtual void SetTickEnabled(bool) override;
 
-        virtual void Serialize(StreamWriter &ar) const override;
-        virtual void Deserialize(StreamReader &ar) override;
+		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+
+		virtual void Load(cereal::JSONInputArchive &ar) override;
 
         bool operator==(const Entity &rhs) const;
 
         bool operator!=(const Entity &rhs) const;
-
-      
 
     private:
         void RegisterComponents();

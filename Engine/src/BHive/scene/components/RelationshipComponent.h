@@ -2,6 +2,7 @@
 
 #include "core/UUID.h"
 #include <unordered_set>
+#include "serialization/Serialization.h"
 
 namespace BHive
 {
@@ -10,21 +11,23 @@ namespace BHive
 	public:
 		using Children = std::unordered_set<UUID>;
 
-		void Serialize(StreamWriter& ar) const;
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(MAKE_NVP("ParentID", mParentID), MAKE_NVP("ChildIDs", mChildIDs));
+		}
 
-		void Deserialize(StreamReader& ar);
-
-		void SetParentID(const UUID& parent);
+		void SetParentID(const UUID &parent);
 
 		void RemoveFromParent();
 
-		void AddChild(const UUID& child);
+		void AddChild(const UUID &child);
 
-		void RemoveChild(const UUID& child);
+		void RemoveChild(const UUID &child);
 
-		const UUID& GetParentID() const { return mParentID; }
+		const UUID &GetParentID() const { return mParentID; }
 
-		const Children& GetChildren() const { return mChildIDs; }
+		const Children &GetChildren() const { return mChildIDs; }
 
 		bool HasChildren() const { return mChildIDs.size() > 0; }
 
@@ -34,4 +37,4 @@ namespace BHive
 		UUID mParentID = 0;
 		Children mChildIDs;
 	};
-}
+} // namespace BHive

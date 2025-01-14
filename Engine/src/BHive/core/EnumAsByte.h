@@ -1,7 +1,6 @@
 #pragma once
 
 #include "reflection/Reflection.h"
-#include "serialization/Serialization.h"
 
 namespace BHive
 {
@@ -72,16 +71,6 @@ namespace BHive
         TEnumAsByte &operator&=(const TEnum &rhs) const { return *this = *this & rhs; }
 
         TEnumAsByte &operator|=(const TEnum &rhs) const { return *this = *this | rhs; }
-
-        void Serialize(StreamWriter &ar) const
-        {
-            ar(mValue);
-        }
-
-        void Deserialize(StreamReader &ar)
-        {
-            ar(mValue);
-        }
 
     private:
         TEnum mValue;

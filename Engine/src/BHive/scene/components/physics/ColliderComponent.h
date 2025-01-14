@@ -1,20 +1,20 @@
 #pragma once
 
-#include "scene/components/ShapeComponent.h"
 #include "physics/PhysicsMaterial.h"
 #include "gfx/Color.h"
 #include "CollisionChannel.h"
 #include "core/EnumAsByte.h"
+#include "scene/components/ShapeComponent.h"
+
 
 namespace BHive
 {
 	class Entity;
 
-	DECLARE_EVENT(OnCollison, struct ColliderComponent*, Entity*, Entity*);
-	DECLARE_EVENT(OnTrigger, struct ColliderComponent*, Entity*, Entity*);
-	DECLARE_EVENT(OnHit, const glm::vec3&, const glm::vec3&, float );
+	DECLARE_EVENT(OnCollison, struct ColliderComponent *, Entity *, Entity *);
+	DECLARE_EVENT(OnTrigger, struct ColliderComponent *, Entity *, Entity *);
+	DECLARE_EVENT(OnHit, const glm::vec3 &, const glm::vec3 &, float);
 
-	
 	struct BHIVE ColliderComponent : public ShapeComponent
 	{
 		bool mCollisionEnabled{true};
@@ -32,34 +32,32 @@ namespace BHive
 		TAssetHandle<PhysicsMaterial> mPhysicsMaterial;
 
 		OnCollisonEvent OnCollisionEnter;
-        OnCollisonEvent OnCollisionExit;
-        OnCollisonEvent OnCollisionStay;
+		OnCollisonEvent OnCollisionExit;
+		OnCollisonEvent OnCollisionStay;
 
-        OnTriggerEvent OnTriggerEnter;
-        OnTriggerEvent OnTriggerExit;
-        OnTriggerEvent OnTriggerStay;
+		OnTriggerEvent OnTriggerEnter;
+		OnTriggerEvent OnTriggerExit;
+		OnTriggerEvent OnTriggerStay;
 
 		OnHitEvent OnRaycastHit;
 
 		void OnBegin() override;
 		void OnEnd() override;
 
-		void Serialize(StreamWriter& ar) const;
-		void Deserialize(StreamReader& ar);
+		virtual void Save(cereal::JSONOutputArchive &ar) const override;
 
+		virtual void Load(cereal::JSONInputArchive &ar) override;
 
-		virtual void* GetCollisionShape(const FTransform& world_transform) = 0;
+		virtual void *GetCollisionShape(const FTransform &world_transform) = 0;
 		virtual void ReleaseCollisionShape() = 0;
 
 		REFLECTABLEV(ShapeComponent)
 
 	protected:
-
-		void* mCollider = nullptr;
-		void* mCollisionShape = nullptr;
+		void *mCollider = nullptr;
+		void *mCollisionShape = nullptr;
 	};
 
-	
 	REFLECT_EXTERN(ColliderComponent)
 
-}
+} // namespace BHive

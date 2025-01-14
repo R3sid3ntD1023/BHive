@@ -2,7 +2,6 @@
 
 #include "core/Core.h"
 #include "AssetType.h"
-#include "serialization/Serialization.h"
 
 namespace BHive
 {
@@ -17,12 +16,16 @@ namespace BHive
 
 		operator bool() const { return Type != InvalidType; }
 
-		void Serialize(StreamWriter &ar) const;
-		void Deserialize(StreamReader &ar);
-
 		REFLECTABLE()
 	};
 
 	REFLECT_EXTERN(FAssetMetaData)
 
-}
+	REFLECT(FAssetMetaData)
+	{
+		BEGIN_REFLECT(FAssetMetaData)
+		REFLECT_PROPERTY("Type", Type)
+		REFLECT_PROPERTY("Path", Path)
+		REFLECT_PROPERTY("Name", Name);
+	}
+} // namespace BHive

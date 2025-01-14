@@ -44,8 +44,9 @@ namespace BHive
         REFLECTABLEV(ObjectBase, ITickable)
 
     public:
-        virtual void Serialize(StreamWriter &ar) const override;
-        virtual void Deserialize(StreamReader &ar) override;
+		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+
+		virtual void Load(cereal::JSONInputArchive &ar) override;
 
     private:
         bool mTickEnabled = true;

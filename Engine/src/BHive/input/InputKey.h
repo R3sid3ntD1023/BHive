@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Inputs.h"
-#include "serialization/Serialization.h"
 #include "reflection/Reflection.h"
+#include "serialization/Serialization.h"
 
 namespace BHive
 {
@@ -18,16 +18,19 @@ namespace BHive
 
 		EKey GetKey() const { return mKey; }
 
-		void Serialize(StreamWriter &ar) const;
-		void Deserialize(StreamReader &ar);
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(MAKE_NVP("Key", mKey), MAKE_NVP("IsMouse", mIsMouse));
+		}
 
 		operator uint32_t() const { return (uint32_t)mKey; }
 
 		REFLECTABLE()
 
 	private:
-		EKey mKey;
-		bool mIsMouse;
+		EKey mKey{EKey::MouseButton1};
+		bool mIsMouse{false};
 
 		friend class FInputAction;
 	};

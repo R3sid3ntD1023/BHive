@@ -2,7 +2,6 @@
 
 #include "core/Core.h"
 #include "Material.h"
-#include "serialization/Serialization.h"
 
 namespace BHive
 {
@@ -33,8 +32,11 @@ namespace BHive
 
 		TAssetHandle<Material> operator[](size_t index) const;
 
-		void Serialize(StreamWriter &ar) const;
-		void Deserialize(StreamReader &ar);
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(MAKE_NVP("Materials", mMaterials));
+		}
 
 	private:
 		material_list mMaterials;
@@ -43,4 +45,4 @@ namespace BHive
 
 	REFLECT_EXTERN(MaterialTable);
 
-}
+} // namespace BHive

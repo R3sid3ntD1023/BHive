@@ -13,13 +13,15 @@ namespace BHive
 		FTransform();
 		FTransform(const glm::mat4 &matrix);
 		FTransform(const FTransform &rhs);
-		FTransform(const glm::vec3 &translation, const glm::vec3 &rotation = DEFAULT_ROTATION, const glm::vec3 &scale = DEFAULT_SCALE);
+		FTransform(
+			const glm::vec3 &translation, const glm::vec3 &rotation = DEFAULT_ROTATION,
+			const glm::vec3 &scale = DEFAULT_SCALE);
 
-		const glm::vec3 &get_translation() const { return Translation; }
-		const glm::vec3 &get_rotation() const { return Rotation; }
-		const glm::vec3 &get_scale() const { return Scale; }
+		const glm::vec3 &get_translation() const { return mTranslation; }
+		const glm::vec3 &get_rotation() const { return mRotation; }
+		const glm::vec3 &get_scale() const { return mScale; }
 
-		const glm::quat get_quaternion() const { return glm::quat(glm::radians(Rotation)); }
+		const glm::quat get_quaternion() const { return glm::quat(glm::radians(mRotation)); }
 
 		void set_translation(const glm::vec3 &translation);
 		void set_rotation(const glm::vec3 &rotation);
@@ -38,7 +40,7 @@ namespace BHive
 
 		FTransform inverse() const;
 
-		const glm::mat4 &to_mat4() const { return ModelMatrix; }
+		const glm::mat4 &to_mat4() const { return mModelMatrix; }
 		operator const glm::mat4 &() const { return to_mat4(); }
 
 		std::string to_string() const;
@@ -46,20 +48,22 @@ namespace BHive
 		FTransform &operator=(const FTransform &rhs);
 		FTransform operator*(const FTransform &rhs) const;
 
-		void Serialize(StreamWriter &ar) const;
-
-		void Deserialize(StreamReader &ar);
-
 		REFLECTABLE()
 
 	private:
 		void calculate_model_matrix();
 
 	private:
-		glm::vec3 Translation;
-		glm::vec3 Rotation;
-		glm::vec3 Scale;
-		glm::mat4 ModelMatrix;
+		glm::vec3 mTranslation;
+		glm::vec3 mRotation;
+		glm::vec3 mScale;
+		glm::mat4 mModelMatrix;
+
+		template <typename A>
+		friend void Save(A &, const FTransform &);
+
+		template <typename A>
+		friend void Load(A &, FTransform &);
 	};
 
 	REFLECT_EXTERN(FTransform)
@@ -89,8 +93,8 @@ namespace BHive
 	}
 
 	template <typename Ostream>
-	inline Ostream &operator<<(Ostream &os, const FTransform& obj)
+	inline Ostream &operator<<(Ostream &os, const FTransform &obj)
 	{
 		return os << obj.to_string();
 	}
-}
+} // namespace BHive

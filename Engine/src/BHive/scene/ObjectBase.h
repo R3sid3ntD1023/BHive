@@ -31,9 +31,13 @@ namespace BHive
 
 		virtual ObjectBase *Copy();
 
-		virtual void Serialize(StreamWriter &ar) const;
+		virtual void Save(cereal::JSONOutputArchive &ar) const;
 
-		virtual void Deserialize(StreamReader &ar);
+		virtual void Load(cereal::JSONInputArchive &ar);
+
+		virtual void Save(cereal::BinaryOutputArchive &ar) const;
+
+		virtual void Load(cereal::BinaryInputArchive &ar);
 
 		bool operator==(const ObjectBase &rhs) const { return mID == rhs.mID; }
 		bool operator!=(const ObjectBase &rhs) const { return mID != rhs.mID; }

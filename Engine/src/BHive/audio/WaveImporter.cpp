@@ -54,7 +54,7 @@ namespace BHive
 				break;
 			}
 
-			AudioSpecification specification;
+			FAudioSpecification specification;
 			specification.mFormat = format;
 			specification.mNumSamples = wave.get_num_samples_per_channel();
 			specification.mSampleRate = wave.fmt.sample_rate;

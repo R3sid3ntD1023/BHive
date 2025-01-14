@@ -2,12 +2,10 @@
 
 #include <stdint.h>
 #include <xhash>
-#include "serialization/Serialization.h"
+#include <string>
 
 namespace BHive
 {
-	class StreamReader;
-	class StreamWriter;
 
 	class UUID
 	{
@@ -23,10 +21,6 @@ namespace BHive
 
 		operator uint64_t() const { return mID; }
 
-		void Serialize(StreamWriter &stream) const;
-
-		void Deserialize(StreamReader &ar);
-
 		std::string to_string() const;
 
 	protected:
@@ -34,16 +28,13 @@ namespace BHive
 
 		friend struct std::hash<BHive::UUID>;
 	};
-}
+} // namespace BHive
 
 namespace std
 {
 	template <>
 	struct hash<BHive::UUID>
 	{
-		size_t operator()(const BHive::UUID &uuid) const
-		{
-			return uuid.mID;
-		}
+		size_t operator()(const BHive::UUID &uuid) const { return uuid.mID; }
 	};
-}
+} // namespace std

@@ -1,7 +1,6 @@
 #include "AudioFactory.h"
 #include "audio/AudioImporter.h"
 #include "audio/AudioSource.h"
-#include "asset/AssetSerializer.h"
 
 namespace BHive
 {

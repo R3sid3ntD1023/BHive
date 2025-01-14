@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-	void* CapsuleComponent::GetCollisionShape(const FTransform& world_transform)
+	void *CapsuleComponent::GetCollisionShape(const FTransform &world_transform)
 	{
 		auto radius = mRadius * glm::compMax(world_transform.get_scale());
 		auto height = mHeight * glm::compMax(world_transform.get_scale());
@@ -15,24 +15,24 @@ namespace BHive
 
 	void CapsuleComponent::ReleaseCollisionShape()
 	{
-		PhysicsContext::get_context().destroyCapsuleShape((rp3d::CapsuleShape*)mCollisionShape);
+		PhysicsContext::get_context().destroyCapsuleShape((rp3d::CapsuleShape *)mCollisionShape);
 	}
 
-	void CapsuleComponent::OnRender(SceneRenderer* renderer)
+	void CapsuleComponent::OnRender(SceneRenderer *renderer)
 	{
 		LineRenderer::DrawCapsule(mRadius, mHeight, 16, mOffset, mColor, GetWorldTransform());
 	}
 
-	void CapsuleComponent::Serialize(StreamWriter& ar) const
+	void CapsuleComponent::Save(cereal::JSONOutputArchive &ar) const
 	{
-		ColliderComponent::Serialize(ar);
-		ar(mHeight, mRadius);
+		ColliderComponent::Save(ar);
+		ar(MAKE_NVP("Height", mHeight), MAKE_NVP("Radius", mRadius));
 	}
 
-	void CapsuleComponent::Deserialize(StreamReader& ar)
+	void CapsuleComponent::Load(cereal::JSONInputArchive &ar)
 	{
-		ColliderComponent::Deserialize(ar);
-		ar(mHeight, mRadius);
+		ColliderComponent::Load(ar);
+		ar(MAKE_NVP("Height", mHeight), MAKE_NVP("Radius", mRadius));
 	}
 
 	REFLECT(CapsuleComponent)
@@ -41,4 +41,4 @@ namespace BHive
 		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
 			REFLECT_PROPERTY("Radius", mRadius) REFLECT_PROPERTY("Height", mHeight);
 	}
-}  // namespace BHive
+} // namespace BHive

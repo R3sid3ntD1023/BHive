@@ -2,8 +2,9 @@
 
 #include "core/Core.h"
 #include "InputKey.h"
-#include "serialization/Serialization.h"
 #include "reflection/Reflection.h"
+#include "serialization/Serialization.h"
+
 
 namespace BHive
 {
@@ -21,9 +22,12 @@ namespace BHive
 		bool IsMouse() const { return mKey.mIsMouse; }
 		bool IsKey() const { return !mKey.mIsMouse; }
 
-		void Serialize(StreamWriter &ar) const;
-		void Deserialize(StreamReader &ar);
-
+		template<typename A>
+		void Serialize(A& ar)
+		{
+			ar(MAKE_NVP("Name", mName), MAKE_NVP("Key", mKey));
+		}
+		
 	private:
 		std::string mName;
 		FInputKey mKey;

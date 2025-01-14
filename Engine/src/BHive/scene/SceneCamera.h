@@ -1,7 +1,6 @@
 #pragma once
 
 #include "gfx/Camera.h"
-#include "serialization/Serialization.h"
 #include "reflection/Reflection.h"
 
 namespace BHive
@@ -49,9 +48,6 @@ namespace BHive
 
 		void Resize(uint32_t width, uint32_t height);
 
-		void Serialize(StreamWriter &ar) const;
-		void Deserialize(StreamReader &ar);
-
 	private:
 		void RecalculateProjection();
 
@@ -60,13 +56,14 @@ namespace BHive
 		FPerspectiveSettings mPerspectiveSettings;
 		FOrthographicSettings mOrthographicSettings;
 		float mAspectRatio = 1.7555f;
+
+		template<typename A>
+		friend void Save(A &, const SceneCamera &);
+
+		template<typename A>
+		friend void Load(A &, SceneCamera &);
 	};
 
-	void Serialize(StreamWriter &ar, const SceneCamera::FPerspectiveSettings &obj);
-	void Deserialize(StreamReader &ar, SceneCamera::FPerspectiveSettings &obj);
-
-	void Serialize(StreamWriter &ar, const SceneCamera::FOrthographicSettings &obj);
-	void Deserialize(StreamReader &ar, SceneCamera::FOrthographicSettings &obj);
 
 	REFLECT_EXTERN(EProjectionType);
 	REFLECT_EXTERN(SceneCamera::FPerspectiveSettings);

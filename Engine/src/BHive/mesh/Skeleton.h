@@ -1,34 +1,12 @@
 #pragma once
 
 #include "core/Core.h"
-#include "math/Transform.h"
+#include "Bone.h"
+#include "SkeletalNode.h"
 #include "asset/Asset.h"
 
 namespace BHive
 {
-
-	struct Transform
-	{
-		glm::vec3 Position;
-		glm::quat Rotation;
-		glm::vec3 Scale{1.0f};
-	};
-
-	struct SkeletalNode
-	{
-		std::string mName;
-		glm::mat4 mTransformation;
-		std::vector<SkeletalNode> mChildren;
-	};
-
-	struct Bone
-	{
-		std::string mName;
-		int32_t mID;
-		glm::mat4 mOffset;
-		int32_t mParent = -1;
-	};
-
 	typedef std::map<std::string, Bone> Bones;
 	typedef std::vector<SkeletalNode> SkeletalNodes;
 
@@ -49,9 +27,9 @@ namespace BHive
 		Bones &GetBones() { return mBones; }
 		const Bones &GetBones() const { return mBones; }
 
-		virtual void Serialize(StreamWriter &ar) const;
+		virtual void Save(cereal::JSONOutputArchive &ar) const override;
 
-		virtual void Deserialize(StreamReader &ar);
+		virtual void Load(cereal::JSONInputArchive &ar) override;
 
 		REFLECTABLEV()
 
@@ -68,23 +46,4 @@ namespace BHive
 	REFLECT_EXTERN(Bone);
 	REFLECT_EXTERN(SkeletalNode);
 
-	inline void Serialize(StreamWriter &ar, const SkeletalNode &obj)
-	{
-		ar(obj.mName, obj.mTransformation, obj.mChildren);
-	}
-
-	inline void Deserialize(StreamReader &ar, SkeletalNode &obj)
-	{
-		ar(obj.mName, obj.mTransformation, obj.mChildren);
-	}
-
-	inline void Serialize(StreamWriter &ar, const Bone &obj)
-	{
-		ar(obj.mName, obj.mID, obj.mOffset, obj.mParent);
-	}
-
-	inline void Deserialize(StreamReader &ar, Bone &obj)
-	{
-		ar(obj.mName, obj.mID, obj.mOffset, obj.mParent);
-	}
-}
+} // namespace BHive

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "asset/Asset.h"
 #include "math/Math.h"
 #include "sprite/Sprite.h"
+#include "asset/Asset.h"
 
 namespace BHive
 {
@@ -34,8 +34,9 @@ namespace BHive
 		const Sprites &GetSprites() const { return mSprites; }
 		const FSpriteSheetGrid &GetGrid() const { return mGrid; }
 
-		void Serialize(StreamWriter &ar) const override;
-		void Deserialize(StreamReader &ar) override;
+		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+
+		virtual void Load(cereal::JSONInputArchive &ar) override;
 
 	private:
 		Sprites mSprites;
@@ -47,8 +48,12 @@ namespace BHive
 		friend class SpriteSheetSerializer;
 	};
 
-	void Serialize(StreamWriter &ar, const FSpriteSheetGrid &obj);
-	void Deserialize(StreamReader &ar, FSpriteSheetGrid &obj);
+	template <typename A>
+	void Serialize(A &ar, FSpriteSheetGrid &obj)
+	{
+		ar(MAKE_NVP("Rows", obj.mRows), MAKE_NVP("Columns", obj.mColumns),
+		   MAKE_NVP("CellSize", obj.mCellSize));
+	}
 
 	REFLECT_EXTERN(FSpriteSheetGrid)
 	REFLECT_EXTERN(SpriteSheet)

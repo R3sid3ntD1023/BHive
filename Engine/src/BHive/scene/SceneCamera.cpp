@@ -46,17 +46,6 @@ namespace BHive
 		RecalculateProjection();
 	}
 
-	void SceneCamera::Serialize(StreamWriter& ar) const
-	{
-		ar(mProjectionType, mPerspectiveSettings, mOrthographicSettings);
-	}
-
-	void SceneCamera::Deserialize(StreamReader& ar)
-	{
-		ar(mProjectionType, mPerspectiveSettings, mOrthographicSettings);
-		RecalculateProjection();
-	}
-
 	void SceneCamera::RecalculateProjection()
 	{
 		switch (mProjectionType)
@@ -77,27 +66,6 @@ namespace BHive
 		default:
 			break;
 		}
-	}
-
-
-	void Serialize(StreamWriter& ar, const SceneCamera::FPerspectiveSettings& obj)
-	{
-		ar(obj.mFov, obj.mNear, obj.mFar);
-	}
-
-	void Deserialize(StreamReader& ar, SceneCamera::FPerspectiveSettings& obj)
-	{
-		ar(obj.mFov, obj.mNear, obj.mFar);
-	}
-
-	void Serialize(StreamWriter& ar, const SceneCamera::FOrthographicSettings& obj)
-	{
-		ar(obj.mSize, obj.mNear, obj.mFar);
-	}
-
-	void Deserialize(StreamReader& ar, SceneCamera::FOrthographicSettings& obj)
-	{
-		ar(obj.mSize, obj.mNear, obj.mFar);
 	}
 
 	REFLECT(EProjectionType)

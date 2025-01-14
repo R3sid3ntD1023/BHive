@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	AudioSource::AudioSource(int16_t *buffer, int size, const AudioSpecification &specs)
+	AudioSource::AudioSource(int16_t *buffer, int size, const FAudioSpecification &specs)
 		: mSpecification(specs),
 		  mLength((float)specs.mNumSamples / (float)specs.mSampleRate)
 	{
@@ -24,10 +24,11 @@ namespace BHive
 		mBuffer.Release();
 	}
 
-	void AudioSource::Initialize() 
+	void AudioSource::Initialize()
 	{
 		alGenBuffers(1, &mAudioID);
-		alBufferData(mAudioID, mSpecification.mFormat, mBuffer.mData, mBuffer.mSize, mSpecification.mSampleRate);
+		alBufferData(mAudioID, mSpecification.mFormat, mBuffer.mData, mBuffer.mSize,
+					 mSpecification.mSampleRate);
 
 		if (mSpecification.mStartLoop.has_value() && mSpecification.mEndLoop.has_value())
 		{
@@ -106,16 +107,20 @@ namespace BHive
 		alSourcef(mSourceID, AL_GAIN, gain);
 	}
 
-	void AudioSource::Serialize(StreamWriter &ar) const
+	void AudioSource::Save(cereal::JSONOutputArchive &ar) const
 	{
-		Asset::Serialize(ar);
-		ar(mSpecification, mPitch, mGain, mIsLooping, mLength,  mBuffer);
+		Asset::Save(ar);
+		ar(MAKE_NVP("Specification", mSpecification), MAKE_NVP("Pitch", mPitch),
+		   MAKE_NVP("Volume", mGain), MAKE_NVP("Loop", mIsLooping), MAKE_NVP("Length", mLength));
+		ar(MAKE_NVP("Data", mBuffer));
 	}
 
-	void AudioSource::Deserialize(StreamReader &ar)
+	void AudioSource::Load(cereal::JSONInputArchive &ar)
 	{
-		Asset::Deserialize(ar);
-		ar(mSpecification, mPitch, mGain, mIsLooping, mLength,  mBuffer);
+		Asset::Load(ar);
+		ar(MAKE_NVP("Specification", mSpecification), MAKE_NVP("Pitch", mPitch),
+		   MAKE_NVP("Volume", mGain), MAKE_NVP("Loop", mIsLooping), MAKE_NVP("Length", mLength));
+		  ar(MAKE_NVP("Data", mBuffer));
 
 		Initialize();
 		SetPitch(mPitch);
@@ -133,4 +138,4 @@ namespace BHive
 		REFLECT_PROPERTY_READ_ONLY("Length", GetLength)
 		REFLECT_PROPERTY_READ_ONLY("Length In Seconds", GetLengthSeconds);
 	}
-}
+} // namespace BHive

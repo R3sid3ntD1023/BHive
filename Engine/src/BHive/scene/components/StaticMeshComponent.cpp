@@ -2,9 +2,8 @@
 #include "mesh/StaticMesh.h"
 #include "scene/SceneRenderer.h"
 
-
 namespace BHive
-{	
+{
 	StaticMeshComponent::StaticMeshComponent(const TAssetHandle<StaticMesh> &StaticMesh)
 	{
 		SetStaticMesh(StaticMesh);
@@ -30,20 +29,18 @@ namespace BHive
 		renderer->SubmitStaticMesh(mStaticMesh, GetWorldTransform(), mOverrideMaterials);
 	}
 
-	void StaticMeshComponent::Serialize(StreamWriter &ar) const
+	void StaticMeshComponent::Save(cereal::JSONOutputArchive &ar) const
 	{
-		MeshComponent::Serialize(ar);
-		ar(mStaticMesh);
+		MeshComponent::Save(ar);
+		ar(MAKE_NVP("StaticMesh", mStaticMesh));
 	}
 
-	void StaticMeshComponent::Deserialize(StreamReader &ar)
+	void StaticMeshComponent::Load(cereal::JSONInputArchive &ar)
 	{
-		MeshComponent::Deserialize(ar);
-		ar(mStaticMesh);
+		MeshComponent::Load(ar);
+		ar(MAKE_NVP("StaticMesh", mStaticMesh));
 		SetStaticMesh(mStaticMesh);
 	}
-
-	
 
 	REFLECT(StaticMeshComponent)
 	{
@@ -52,4 +49,4 @@ namespace BHive
 			REFLECT_PROPERTY("StaticMesh", GetStaticMesh, SetStaticMesh);
 	}
 
-}  // namespace BHive
+} // namespace BHive
