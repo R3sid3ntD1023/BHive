@@ -23,7 +23,8 @@ namespace BHive
 	static int sActiveItem = -1;
 
 	ContentBrowserPanel::ContentBrowserPanel(const std::filesystem::path &directory)
-		: mBaseDirectory(directory), mCurrentDirectory(directory)
+		: mBaseDirectory(directory),
+		  mCurrentDirectory(directory)
 	{
 		if (!std::filesystem::exists(directory))
 		{
@@ -53,8 +54,10 @@ namespace BHive
 
 			if (ImGui::Button("Import"))
 			{
-				auto path_str = FileDialogs::OpenFile("All (*.*)\0*.*\0 Mesh (*.glb;*.gltf)\0*.glb;*.gltf\0");
-				if (!path_str.empty()) OnImportAsset(mCurrentDirectory ,path_str);
+				auto path_str =
+					FileDialogs::OpenFile("All (*.*)\0*.*\0 Mesh (*.glb;*.gltf)\0*.glb;*.gltf\0");
+				if (!path_str.empty())
+					OnImportAsset(mCurrentDirectory, path_str);
 			}
 
 			if (mCurrentDirectory != mBaseDirectory)
@@ -67,7 +70,8 @@ namespace BHive
 			ImGui::EndMenuBar();
 		}
 
-		ImGui::BeginTable("##Content", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_Resizable);
+		ImGui::BeginTable(
+			"##Content", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_Resizable);
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
 
@@ -103,7 +107,8 @@ namespace BHive
 			}
 		}
 
-		if (ImGui::BeginPopupContextWindow("Context", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
+		if (ImGui::BeginPopupContextWindow(
+				"Context", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
 		{
 			if (ImGui::Selectable("Create Folder"))
 			{
@@ -157,15 +162,18 @@ namespace BHive
 		if (!mCurrentDirectory.empty())
 		{
 			auto directory_iter = std::filesystem::directory_iterator(mCurrentDirectory);
-			
+
 			int index = 0;
 
 			for (auto &entry : directory_iter)
 			{
+				FileEntry ms_item = {index, entry};
+
 				auto path = entry.path();
 				auto ext = path.extension();
 
-				if (std::find(sHiddenExtensions.begin(), sHiddenExtensions.end(), ext) != sHiddenExtensions.end())
+				if (std::find(sHiddenExtensions.begin(), sHiddenExtensions.end(), ext) !=
+					sHiddenExtensions.end())
 					continue;
 
 				bool is_directory = entry.is_directory();
@@ -175,19 +183,18 @@ namespace BHive
 				bool is_valid_handle = IsAssetValid(relative_path);
 
 				auto icon = OnGetIcon(is_directory, relative_path);
-				
+
 				auto id = ImGui::GetID(path.string().c_str());
-				
+
 				ImGui::PushID(id);
 
 				bool is_selected = sSelectedItems.contains(index);
 				if (ImGui::DrawIcon(name.c_str(), icon.get(), thumbnailsize, 0, &is_selected))
 				{
-					FileEntry ms_item = {index, entry}; 
 
 					if (!ImGui::IsKeyDown(ImGuiKey_ModCtrl))
 					{
-			
+
 						sSelectedItems.clear();
 					}
 
@@ -195,8 +202,6 @@ namespace BHive
 
 					sActiveItem = index;
 				}
-
-
 
 				if (ImGui::BeginDragDropSource())
 				{
@@ -226,6 +231,7 @@ namespace BHive
 				{
 					if (ImGui::MenuItem("Delete"))
 					{
+						sSelectedItems.emplace(index, ms_item);
 						delete_entries = true;
 					}
 
@@ -281,7 +287,7 @@ namespace BHive
 		}
 	}
 
-	void ContentBrowserPanel::OnDeleteFolder(const std::filesystem::directory_entry &entry) 
+	void ContentBrowserPanel::OnDeleteFolder(const std::filesystem::directory_entry &entry)
 	{
 		if (!entry.is_directory())
 		{
@@ -309,4 +315,4 @@ namespace BHive
 		sActiveItem = -1;
 		sSelectedItems.clear();
 	}
-}
+} // namespace BHive

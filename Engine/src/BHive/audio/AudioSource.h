@@ -32,9 +32,9 @@ namespace BHive
 		float GetPitch() const { return mPitch; }
 		bool IsLooping() const { return mIsLooping; }
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(Asset)
 

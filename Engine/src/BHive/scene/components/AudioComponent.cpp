@@ -1,6 +1,4 @@
 #include "AudioComponent.h"
-#include "audio/AudioSource.h"
-#include "scene/Entity.h"
 
 namespace BHive
 {
@@ -11,16 +9,16 @@ namespace BHive
 			mAudio->Play();
 	}
 
-	void AudioComponent::Save(cereal::JSONOutputArchive &ar) const
+	void AudioComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Component::Save(ar);
-		ar(MAKE_NVP("PlayOnStart", mPlayOnStart), MAKE_NVP("Audio", mAudio));
+		ar(mPlayOnStart, mAudio);
 	}
 
-	void AudioComponent::Load(cereal::JSONInputArchive &ar)
+	void AudioComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		Component::Load(ar);
-		ar(MAKE_NVP("PlayOnStart", mPlayOnStart), MAKE_NVP("Audio", mAudio));
+		ar(mPlayOnStart, mAudio);
 	}
 
 	REFLECT(AudioComponent)

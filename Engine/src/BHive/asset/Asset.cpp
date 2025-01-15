@@ -2,14 +2,14 @@
 
 namespace BHive
 {
-	void Asset::Save(cereal::JSONOutputArchive &ar) const
+	void Asset::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(MAKE_NVP("Handle", mHandle), MAKE_NVP("Name", mName));
+		ar(mHandle, mName);
 	}
 
-	void Asset::Load(cereal::JSONInputArchive &ar)
+	void Asset::Load(cereal::BinaryInputArchive &ar)
 	{
-		ar(MAKE_NVP("Handle", mHandle), MAKE_NVP("Name", mName));
+		ar(mHandle, mName);
 	}
 
 } // namespace BHive

@@ -1,9 +1,9 @@
 #pragma once
 
+#include "asset/Asset.h"
 #include "core/Core.h"
 #include "material/MaterialTable.h"
 #include "MeshData.h"
-#include "asset/Asset.h"
 
 namespace BHive
 {
@@ -38,9 +38,9 @@ namespace BHive
 
 		static void CalculateTangentsAndBitTangents(std::vector<FVertex> &vertices);
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(Asset)
 

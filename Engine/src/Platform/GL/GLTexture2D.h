@@ -28,9 +28,9 @@ namespace BHive
 		virtual const FTextureSpecification &GetSpecification() const { return mSpecification; }
 		virtual uint32_t GetRendererID() const { return mTextureID; }
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 	protected:
 		void Initialize();

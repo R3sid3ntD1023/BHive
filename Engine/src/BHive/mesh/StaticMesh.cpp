@@ -1,5 +1,5 @@
-#include "StaticMesh.h"
 #include "gfx/VertexArray.h"
+#include "StaticMesh.h"
 
 namespace BHive
 {
@@ -270,16 +270,16 @@ namespace BHive
 		}
 	}
 
-	void StaticMesh::Save(cereal::JSONOutputArchive &ar) const
+	void StaticMesh::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(MAKE_NVP("Data", mData), MAKE_NVP("Materials", mMaterialTable));
+		ar(mData, mMaterialTable);
 	}
 
-	void StaticMesh::Load(cereal::JSONInputArchive &ar)
+	void StaticMesh::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(MAKE_NVP("Data", mData), MAKE_NVP("Materials", mMaterialTable));
+		ar(mData, mMaterialTable);
 
 		Initialize();
 	}

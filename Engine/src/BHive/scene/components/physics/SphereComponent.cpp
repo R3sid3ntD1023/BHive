@@ -22,16 +22,16 @@ namespace BHive
 		LineRenderer::DrawSphere(mRadius, 32, mOffset, mColor, GetWorldTransform());
 	}
 
-	void SphereComponent::Save(cereal::JSONOutputArchive &ar) const
+	void SphereComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ColliderComponent::Save(ar);
-		ar(MAKE_NVP("Radius", mRadius));
+		ar(mRadius);
 	}
 
-	void SphereComponent::Load(cereal::JSONInputArchive &ar)
+	void SphereComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ColliderComponent::Load(ar);
-		ar(MAKE_NVP("Radius", mRadius));
+		ar(mRadius);
 	}
 
 	REFLECT(SphereComponent)

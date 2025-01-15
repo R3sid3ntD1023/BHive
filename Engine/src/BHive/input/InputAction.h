@@ -5,7 +5,6 @@
 #include "reflection/Reflection.h"
 #include "serialization/Serialization.h"
 
-
 namespace BHive
 {
 	struct FInputAction
@@ -22,12 +21,12 @@ namespace BHive
 		bool IsMouse() const { return mKey.mIsMouse; }
 		bool IsKey() const { return !mKey.mIsMouse; }
 
-		template<typename A>
-		void Serialize(A& ar)
+		template <typename A>
+		void Serialize(A &ar)
 		{
-			ar(MAKE_NVP("Name", mName), MAKE_NVP("Key", mKey));
+			ar(mName, mKey);
 		}
-		
+
 	private:
 		std::string mName;
 		FInputKey mKey;

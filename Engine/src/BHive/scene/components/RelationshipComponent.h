@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/UUID.h"
-#include <unordered_set>
 #include "serialization/Serialization.h"
+#include <unordered_set>
 
 namespace BHive
 {
@@ -14,7 +14,7 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(MAKE_NVP("ParentID", mParentID), MAKE_NVP("ChildIDs", mChildIDs));
+			ar(mParentID, mChildIDs);
 		}
 
 		void SetParentID(const UUID &parent);

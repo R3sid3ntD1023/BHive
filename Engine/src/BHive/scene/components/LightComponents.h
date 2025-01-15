@@ -1,8 +1,8 @@
 #pragma once
 
-#include "SceneComponent.h"
-#include "renderers/Lights.h"
 #include "IRenderable.h"
+#include "renderers/Lights.h"
+#include "SceneComponent.h"
 
 namespace BHive
 {
@@ -19,9 +19,9 @@ namespace BHive
 
 		virtual void OnRender(SceneRenderer *renderer);
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(LightComponent)
 	};
@@ -32,9 +32,9 @@ namespace BHive
 
 		virtual void OnRender(SceneRenderer *renderer);
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(LightComponent)
 	};
@@ -45,9 +45,9 @@ namespace BHive
 
 		virtual void OnRender(SceneRenderer *renderer);
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(LightComponent)
 	};

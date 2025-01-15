@@ -1,7 +1,7 @@
 #pragma once
 
+#include "gui/GUICore.h"
 #include "math/Math.h"
-#include <imgui.h>
 
 namespace BHive
 {
@@ -80,9 +80,12 @@ namespace BHive
 
 		operator const float *() const { return &r; }
 
-		std::string to_string() const
+		std::string to_string() const { return std::format("[{}, {}, {}, {}]", r, g, b, a); }
+
+		template <typename A>
+		void Serialize(A &ar)
 		{
-			return std::format("[{}, {}, {}, {}]", r, g, b, a);
+			ar(r, g, b, a);
 		}
 	};
 

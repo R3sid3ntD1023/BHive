@@ -1,8 +1,6 @@
-#include "SkeletalMeshComponent.h"
-#include "mesh/SkeletalMesh.h"
 #include "mesh/SkeletalPose.h"
-#include "mesh/AnimationClip.h"
 #include "scene/SceneRenderer.h"
+#include "SkeletalMeshComponent.h"
 
 namespace BHive
 {
@@ -34,8 +32,8 @@ namespace BHive
 	void SkeletalMeshComponent::OnRender(SceneRenderer *renderer)
 	{
 		if (mSkeletalMesh)
-			renderer->SubmitSkeletalMesh(mSkeletalMesh, GetWorldTransform(), GetBoneTransforms(),
-										 mOverrideMaterials);
+			renderer->SubmitSkeletalMesh(
+				mSkeletalMesh, GetWorldTransform(), GetBoneTransforms(), mOverrideMaterials);
 	}
 
 	const std::vector<glm::mat4> &SkeletalMeshComponent::GetBoneTransforms() const
@@ -48,16 +46,16 @@ namespace BHive
 		return mSkeletalMesh->GetDefaultPose()->GetTransformsJointSpace();
 	}
 
-	void SkeletalMeshComponent::Save(cereal::JSONOutputArchive &ar) const
+	void SkeletalMeshComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		MeshComponent::Save(ar);
-		ar(MAKE_NVP("SkeletalMesh", mSkeletalMesh));
+		ar(mSkeletalMesh);
 	}
 
-	void SkeletalMeshComponent::Load(cereal::JSONInputArchive &ar)
+	void SkeletalMeshComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		MeshComponent::Load(ar);
-		ar(MAKE_NVP("SkeletalMesh", mSkeletalMesh));
+		ar(mSkeletalMesh);
 		SetSkeletalMesh(mSkeletalMesh);
 	}
 

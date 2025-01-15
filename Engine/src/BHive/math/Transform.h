@@ -3,11 +3,11 @@
 #include "math/Math.h"
 #include "reflection/Reflection.h"
 
-namespace BHive
-{
 #define DEFAULT_SCALE {1.0f, 1.0f, 1.0f}
 #define DEFAULT_ROTATION {0.0f, 0.0f, 0.0f}
 
+namespace BHive
+{
 	struct BHIVE FTransform
 	{
 		FTransform();
@@ -48,6 +48,12 @@ namespace BHive
 		FTransform &operator=(const FTransform &rhs);
 		FTransform operator*(const FTransform &rhs) const;
 
+		template <typename A>
+		inline void Serialize(A &ar)
+		{
+			ar(mTranslation, mRotation, mScale, mModelMatrix);
+		}
+
 		REFLECTABLE()
 
 	private:
@@ -58,12 +64,6 @@ namespace BHive
 		glm::vec3 mRotation;
 		glm::vec3 mScale;
 		glm::mat4 mModelMatrix;
-
-		template <typename A>
-		friend void Save(A &, const FTransform &);
-
-		template <typename A>
-		friend void Load(A &, FTransform &);
 	};
 
 	REFLECT_EXTERN(FTransform)

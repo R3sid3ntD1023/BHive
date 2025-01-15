@@ -35,7 +35,7 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(MAKE_NVP("Materials", mMaterials));
+			ar(mMaterials);
 		}
 
 	private:

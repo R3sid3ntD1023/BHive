@@ -1,11 +1,11 @@
 #pragma once
 
-#include "core/Core.h"
 #include "AssetHandle.h"
-#include "TAssetHandler.h"
 #include "AssetType.h"
+#include "core/Core.h"
 #include "reflection/Reflection.h"
 #include "serialization/Serialization.h"
+#include "TAssetHandler.h"
 
 namespace BHive
 {
@@ -17,9 +17,9 @@ namespace BHive
 
 		virtual ~Asset() = default;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const;
 
-		virtual void Load(cereal::JSONInputArchive &ar);
+		virtual void Load(cereal::BinaryInputArchive &ar);
 
 		void SetName(const std::string &name) { mName = name; }
 

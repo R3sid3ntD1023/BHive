@@ -13,9 +13,9 @@ namespace BHive
 
         float mRotateSpeed = 1.0f;
 
-        virtual void Save(cereal::JSONOutputArchive &ar) const override;
+        virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
         REFLECTABLEV(Component)
     };

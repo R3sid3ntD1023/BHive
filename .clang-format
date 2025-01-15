@@ -17,7 +17,7 @@ BreakConstructorInitializersBeforeComma: false
 #EmptyLineAfterAccessModifier: true
 AllowShortFunctionsOnASingleLine: InlineOnly
 IndentPPDirectives: BeforeHash
-SortIncludes:    Never
+SortIncludes:  Never
 BreakBeforeBraces : Allman
 BraceWrapping:
  AfterEnum:	true

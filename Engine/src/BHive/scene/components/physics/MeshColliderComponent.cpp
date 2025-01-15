@@ -44,16 +44,17 @@ namespace BHive
 		mStaticMesh = mesh;
 	}
 
-	void MeshColliderComponent::Save(cereal::JSONOutputArchive &ar) const
+	void MeshColliderComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ColliderComponent::Save(ar);
-		ar(MAKE_NVP("StaticMesh", mStaticMesh));
+		ar( mStaticMesh);
 	}
 
-	void MeshColliderComponent::Load(cereal::JSONInputArchive &ar)
+	void MeshColliderComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ColliderComponent::Load(ar);
-		ar(MAKE_NVP("StaticMesh", mStaticMesh));
+		ar( mStaticMesh);
+		SetStaticMesh(mStaticMesh);
 	}
 
 	void MeshColliderComponent::CreateConvexMesh()

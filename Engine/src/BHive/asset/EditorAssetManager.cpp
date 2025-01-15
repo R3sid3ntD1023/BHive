@@ -11,7 +11,7 @@ namespace BHive
 		if (std::filesystem::exists(path) && save_registry)
 			DeserializeAssetRegistry();
 
-		// cereal::traits::is_input_serializable<AssetType, cereal::JSONInputArchive>::value;
+		// cereal::traits::is_input_serializable<AssetType, cereal::BinaryInputArchive>::value;
 	}
 
 	EditorAssetManager::~EditorAssetManager()

@@ -1,6 +1,5 @@
-#include "Sprite.h"
 #include "gfx/Texture.h"
-#include "asset/AssetManager.h"
+#include "Sprite.h"
 
 namespace BHive
 {
@@ -13,8 +12,9 @@ namespace BHive
 	{
 	}
 
-	Sprite::Sprite(const TAssetHandle<Texture2D> &texture, const glm::vec2 &coords,
-				   const glm::vec2 &cellSize, const glm::vec2 &spriteSize)
+	Sprite::Sprite(
+		const TAssetHandle<Texture2D> &texture, const glm::vec2 &coords, const glm::vec2 &cellSize,
+		const glm::vec2 &spriteSize)
 		: mSource(texture),
 		  mCoordinates(coords),
 		  mCellSize(cellSize),
@@ -23,8 +23,8 @@ namespace BHive
 		SetCoords(coords, cellSize, spriteSize);
 	}
 
-	Sprite::Sprite(const TAssetHandle<Texture2D> &texture, const glm::vec2 &min,
-				   const glm::vec2 &max)
+	Sprite::Sprite(
+		const TAssetHandle<Texture2D> &texture, const glm::vec2 &min, const glm::vec2 &max)
 		: mSource(texture)
 	{
 		SetCoords(min, max);
@@ -49,8 +49,8 @@ namespace BHive
 		mCoords[3] = {min.x, max.y};
 	}
 
-	void Sprite::SetCoords(const glm::vec2 &coords, const glm::vec2 &cellSize,
-						   const glm::vec2 &spriteSize)
+	void Sprite::SetCoords(
+		const glm::vec2 &coords, const glm::vec2 &cellSize, const glm::vec2 &spriteSize)
 	{
 		mCoordinates = coords;
 		mCellSize = cellSize;
@@ -118,18 +118,16 @@ namespace BHive
 		mSource = texture;
 	}
 
-	void Sprite::Save(cereal::JSONOutputArchive &ar) const
+	void Sprite::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(MAKE_NVP("SpriteSize", mSpriteSize), MAKE_NVP("CellSize", mCellSize),
-		   MAKE_NVP("Coordinates", mCoordinates), MAKE_NVP("Source", mSource));
+		ar(mSpriteSize, mCellSize, mCoordinates, mSource);
 	}
 
-	void Sprite::Load(cereal::JSONInputArchive &ar)
+	void Sprite::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(MAKE_NVP("SpriteSize", mSpriteSize), MAKE_NVP("CellSize", mCellSize),
-		   MAKE_NVP("Coordinates", mCoordinates), MAKE_NVP("Source", mSource));
+		ar(mSpriteSize, mCellSize, mCoordinates, mSource);
 
 		SetCoords(mCoordinates, mCellSize, mSpriteSize);
 	}

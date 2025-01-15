@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Skeleton.h"
 #include "SkeletalPose.h"
+#include "Skeleton.h"
 #include "StaticMesh.h"
 
 namespace BHive
@@ -18,9 +18,9 @@ namespace BHive
 
 		Ref<class SkeletalPose> GetDefaultPose() { return mDefaultPose; }
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(StaticMesh)
 

@@ -1,6 +1,5 @@
-#include "SceneComponent.h"
 #include "scene/Entity.h"
-#include "scene/World.h"
+#include "SceneComponent.h"
 
 namespace BHive
 {
@@ -24,16 +23,16 @@ namespace BHive
 		return mLocalTransform;
 	}
 
-	void SceneComponent::Save(cereal::JSONOutputArchive &ar) const
+	void SceneComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Component::Save(ar);
-		ar(MAKE_NVP("LocalTransform", mLocalTransform));
+		ar(mLocalTransform);
 	}
 
-	void SceneComponent::Load(cereal::JSONInputArchive &ar)
+	void SceneComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		Component::Load(ar);
-		ar(MAKE_NVP("LocalTransform", mLocalTransform));
+		ar(mLocalTransform);
 	}
 
 	REFLECT(SceneComponent)

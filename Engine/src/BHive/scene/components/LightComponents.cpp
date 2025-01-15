@@ -1,6 +1,5 @@
 #include "LightComponents.h"
 #include "scene/SceneRenderer.h"
-#include "scene/Entity.h"
 
 namespace BHive
 {
@@ -11,22 +10,22 @@ namespace BHive
 		renderer->SubmitLight(mLight, transform);
 
 		LineRenderer::DrawSphere(mLight.mRadius, 16, {}, mLight.mColor, transform);
-		LineRenderer::DrawCone(glm::cos(glm::radians(mLight.mOuterCutOff)), mLight.mRadius, 16,
-							   0xFFFF0000, transform);
-		LineRenderer::DrawCone(glm::cos(glm::radians(mLight.mInnerCutOff)), mLight.mRadius, 16,
-							   0xFF00FF00, transform);
+		LineRenderer::DrawCone(
+			glm::cos(glm::radians(mLight.mOuterCutOff)), mLight.mRadius, 16, 0xFFFF0000, transform);
+		LineRenderer::DrawCone(
+			glm::cos(glm::radians(mLight.mInnerCutOff)), mLight.mRadius, 16, 0xFF00FF00, transform);
 	}
 
-	void SpotLightComponent::Save(cereal::JSONOutputArchive &ar) const
+	void SpotLightComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		LightComponent::Save(ar);
-		ar(MAKE_NVP("Light", mLight));
+		ar(mLight);
 	}
 
-	void SpotLightComponent::Load(cereal::JSONInputArchive &ar)
+	void SpotLightComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		LightComponent::Load(ar);
-		ar(MAKE_NVP("Light", mLight));
+		ar(mLight);
 	}
 
 	void PointLightComponent::OnRender(SceneRenderer *renderer)
@@ -37,16 +36,16 @@ namespace BHive
 		LineRenderer::DrawSphere(mLight.mRadius, 16, {}, mLight.mColor, transform);
 	}
 
-	void PointLightComponent::Save(cereal::JSONOutputArchive &ar) const
+	void PointLightComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		LightComponent::Save(ar);
-		ar(MAKE_NVP("Light", mLight));
+		ar(mLight);
 	}
 
-	void PointLightComponent::Load(cereal::JSONInputArchive &ar)
+	void PointLightComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		LightComponent::Load(ar);
-		ar(MAKE_NVP("Light", mLight));
+		ar(mLight);
 	}
 
 	void DirectionalLightComponent::OnRender(SceneRenderer *renderer)
@@ -57,16 +56,16 @@ namespace BHive
 		LineRenderer::DrawLine({}, -forward, mLight.mColor, GetWorldTransform());
 	}
 
-	void DirectionalLightComponent::Save(cereal::JSONOutputArchive &ar) const
+	void DirectionalLightComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		LightComponent::Save(ar);
-		ar(MAKE_NVP("Light", mLight));
+		ar(mLight);
 	}
 
-	void DirectionalLightComponent::Load(cereal::JSONInputArchive &ar)
+	void DirectionalLightComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		LightComponent::Load(ar);
-		ar(MAKE_NVP("Light", mLight));
+		ar(mLight);
 	}
 
 	REFLECT(LightComponent)

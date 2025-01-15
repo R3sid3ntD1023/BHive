@@ -1,5 +1,4 @@
 #include "InputComponent.h"
-#include "asset/AssetManager.h"
 
 namespace BHive
 {
@@ -20,15 +19,15 @@ namespace BHive
 		if (mContextInstance)
 			delete mContextInstance;
 	}
-	void InputComponent::Save(cereal::JSONOutputArchive &ar) const
+	void InputComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Component::Save(ar);
-		ar(MAKE_NVP("InputContext", mInputContext));
+		ar(mInputContext);
 	}
-	void InputComponent::Load(cereal::JSONInputArchive &ar)
+	void InputComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		Component::Load(ar);
-		ar(MAKE_NVP("InputContext", mInputContext));
+		ar(mInputContext);
 	}
 
 	REFLECT(InputComponent)

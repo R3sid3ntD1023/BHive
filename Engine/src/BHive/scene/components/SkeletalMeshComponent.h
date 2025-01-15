@@ -1,7 +1,7 @@
 #pragma once
 
-#include "MeshComponent.h"
 #include "mesh/SkeletalMesh.h"
+#include "MeshComponent.h"
 
 namespace BHive
 {
@@ -30,9 +30,9 @@ namespace BHive
 
 		Ref<SkeletalPose> GetPose() { return mPose; }
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(MeshComponent)
 

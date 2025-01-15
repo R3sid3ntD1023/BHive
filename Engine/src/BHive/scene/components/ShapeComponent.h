@@ -1,8 +1,8 @@
 #pragma once
 
-#include "SceneComponent.h"
-#include "scene/components/IRenderable.h"
 #include "math/AABB.hpp"
+#include "scene/components/IRenderable.h"
+#include "SceneComponent.h"
 
 namespace BHive
 {
@@ -22,4 +22,4 @@ namespace BHive
 		BEGIN_REFLECT(ShapeComponent);
 	}
 
-}
+} // namespace BHive

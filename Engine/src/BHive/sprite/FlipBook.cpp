@@ -1,5 +1,4 @@
 #include "FlipBook.h"
-#include "asset/AssetManager.h"
 
 namespace BHive
 {
@@ -142,18 +141,16 @@ namespace BHive
 		return 0.0f;
 	}
 
-	void FlipBook::Save(cereal::JSONOutputArchive &ar) const
+	void FlipBook::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(MAKE_NVP("Loop", mIsLooping), MAKE_NVP("FramesPerSecond", mFramesPerSecond),
-		   MAKE_NVP("Frames", mFrames));
+		ar(mIsLooping, mFramesPerSecond, mFrames);
 	}
 
-	void FlipBook::Load(cereal::JSONInputArchive &ar)
+	void FlipBook::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(MAKE_NVP("Loop", mIsLooping), MAKE_NVP("FramesPerSecond", mFramesPerSecond),
-		   MAKE_NVP("Frames", mFrames));
+		ar(mIsLooping, mFramesPerSecond, mFrames);
 	}
 
 	REFLECT(FlipBook::Frame)

@@ -3,22 +3,22 @@
 
 namespace BHive
 {
-	bool AssetFactory::Import(Ref<Asset>& asset, const std::filesystem::path& path)
+	bool AssetFactory::Import(Ref<Asset> &asset, const std::filesystem::path &path)
 	{
-		std::ifstream in(path, std::ios::in);
+		std::ifstream in(path, std::ios::in | std::ios::binary);
 		if (!in)
 			return false;
-		
-		cereal::JSONInputArchive ar(in);
+
+		cereal::BinaryInputArchive ar(in);
 
 		AssetType type = InvalidType;
-		ar(MAKE_NVP("AssetType", type));
+		ar(type);
 
 		if (!type)
 			return false;
 
 		auto var = type.create();
-		
+
 		if (!var)
 		{
 			LOG_ERROR("No valid reflected default constructor found");
@@ -33,27 +33,27 @@ namespace BHive
 		return true;
 	}
 
-	bool AssetFactory::Export(const Ref<Asset>& asset, const std::filesystem::path& path)
+	bool AssetFactory::Export(const Ref<Asset> &asset, const std::filesystem::path &path)
 	{
 		return Export(asset.get(), path);
 	}
 
-	bool AssetFactory::Export(const Asset* asset, const std::filesystem::path& path)
+	bool AssetFactory::Export(const Asset *asset, const std::filesystem::path &path)
 	{
 		if (!asset)
 			return false;
 
-		std::ofstream out(path, std::ios::out);
+		std::ofstream out(path, std::ios::out | std::ios::binary);
 
 		if (!out)
 			return false;
 
-		cereal::JSONOutputArchive ar(out);
-		ar(MAKE_NVP("AssetType", asset->get_type()));
+		cereal::BinaryOutputArchive ar(out);
+		ar(asset->get_type());
 		asset->Save(ar);
 
 		return true;
 	}
 
 	REFLECT_Factory(AssetFactory, Asset, ".asset")
-}
+} // namespace BHive

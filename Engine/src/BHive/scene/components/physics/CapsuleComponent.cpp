@@ -1,8 +1,7 @@
 #include "CapsuleComponent.h"
-#include <reactphysics3d/reactphysics3d.h>
-#include "scene/Entity.h"
-#include "renderers/LineRenderer.h"
 #include "physics/PhysicsContext.h"
+#include "renderers/LineRenderer.h"
+#include <reactphysics3d/reactphysics3d.h>
 
 namespace BHive
 {
@@ -23,16 +22,16 @@ namespace BHive
 		LineRenderer::DrawCapsule(mRadius, mHeight, 16, mOffset, mColor, GetWorldTransform());
 	}
 
-	void CapsuleComponent::Save(cereal::JSONOutputArchive &ar) const
+	void CapsuleComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ColliderComponent::Save(ar);
-		ar(MAKE_NVP("Height", mHeight), MAKE_NVP("Radius", mRadius));
+		ar(mHeight, mRadius);
 	}
 
-	void CapsuleComponent::Load(cereal::JSONInputArchive &ar)
+	void CapsuleComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ColliderComponent::Load(ar);
-		ar(MAKE_NVP("Height", mHeight), MAKE_NVP("Radius", mRadius));
+		ar(mHeight, mRadius);
 	}
 
 	REFLECT(CapsuleComponent)

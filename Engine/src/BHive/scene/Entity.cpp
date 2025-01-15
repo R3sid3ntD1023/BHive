@@ -1,334 +1,326 @@
-#include "Entity.h"
-#include "World.h"
 #include "Component.h"
-#include "scene/components/SceneComponent.h"
+#include "Entity.h"
 #include "physics/PhysicsUtils.h"
+#include "World.h"
 
 namespace BHive
 {
-   
-    Entity::Entity()
-    {
-      
-    }
 
-    void Entity::OnBegin()
-    {
-        if (mPhysicsComponent.mPhysicsEnabled)
-        {
-            auto rb = GetWorld()->GetPhysicsWorld()->createRigidBody(physics::utils::GetPhysicsTransform(GetWorldTransform()));
-            rb->setIsDebugEnabled(true);
-            rb->setUserData(this);
-            rb->setMass(mPhysicsComponent.mMass);
-            rb->setType((rp3d::BodyType)mPhysicsComponent.mBodyType);
-            rb->enableGravity(mPhysicsComponent.mGravityEnabled);
-            rb->setAngularDamping(mPhysicsComponent.mAngularDamping);
-            rb->setLinearDamping(mPhysicsComponent.mLinearDamping);
+	Entity::Entity()
+	{
+	}
 
-            rb->setLinearLockAxisFactor(physics::utils::LockAxisToVextor3(mPhysicsComponent.mLinearLockAxis));
-            rb->setAngularLockAxisFactor(physics::utils::LockAxisToVextor3(mPhysicsComponent.mAngularLockAxis));
+	void Entity::OnBegin()
+	{
+		if (mPhysicsComponent.mPhysicsEnabled)
+		{
+			auto rb = GetWorld()->GetPhysicsWorld()->createRigidBody(
+				physics::utils::GetPhysicsTransform(GetWorldTransform()));
+			rb->setIsDebugEnabled(true);
+			rb->setUserData(this);
+			rb->setMass(mPhysicsComponent.mMass);
+			rb->setType((rp3d::BodyType)mPhysicsComponent.mBodyType);
+			rb->enableGravity(mPhysicsComponent.mGravityEnabled);
+			rb->setAngularDamping(mPhysicsComponent.mAngularDamping);
+			rb->setLinearDamping(mPhysicsComponent.mLinearDamping);
 
-            mPhysicsComponent.SetRigidBody(rb);
-        }
+			rb->setLinearLockAxisFactor(
+				physics::utils::LockAxisToVextor3(mPhysicsComponent.mLinearLockAxis));
+			rb->setAngularLockAxisFactor(
+				physics::utils::LockAxisToVextor3(mPhysicsComponent.mAngularLockAxis));
 
-        for (auto &component : mComponents)
-            component->OnBegin();
-    }
+			mPhysicsComponent.SetRigidBody(rb);
+		}
 
-    void Entity::OnUpdate(float dt)
-    {
-        if (IsTickEnabled())
-        {
-            for (auto& component : mComponents)
-            {
-                if (!component->IsTickEnabled())
-                    continue;
+		for (auto &component : mComponents)
+			component->OnBegin();
+	}
 
-                component->OnUpdate(dt);
-            }
-        }
+	void Entity::OnUpdate(float dt)
+	{
+		if (IsTickEnabled())
+		{
+			for (auto &component : mComponents)
+			{
+				if (!component->IsTickEnabled())
+					continue;
 
-        if (mPhysicsComponent.mPhysicsEnabled)
-        {
-            auto rb = (rp3d::RigidBody*)mPhysicsComponent.GetRigidBody();
+				component->OnUpdate(dt);
+			}
+		}
 
-            if (mPhysicsComponent.mBodyType == EBodyType::Dynamic)
-            {
-                
-                auto &transform = rb->getTransform();
-                auto scale = mTransform.get_scale();
-                mTransform = physics::utils::GetTransform(transform, scale);
-            }
-            else
-            {
-                rb->setTransform(physics::utils::GetPhysicsTransform(mTransform));
-            }
-        }
+		if (mPhysicsComponent.mPhysicsEnabled)
+		{
+			auto rb = (rp3d::RigidBody *)mPhysicsComponent.GetRigidBody();
 
-    }
+			if (mPhysicsComponent.mBodyType == EBodyType::Dynamic)
+			{
 
-    void Entity::OnEnd()
-    {
-        for (auto &component : mComponents)
-            component->OnEnd();
+				auto &transform = rb->getTransform();
+				auto scale = mTransform.get_scale();
+				mTransform = physics::utils::GetTransform(transform, scale);
+			}
+			else
+			{
+				rb->setTransform(physics::utils::GetPhysicsTransform(mTransform));
+			}
+		}
+	}
 
-        if (mPhysicsComponent.mPhysicsEnabled)
-        {
-            GetWorld()->GetPhysicsWorld()->destroyRigidBody((rp3d::RigidBody*)mPhysicsComponent.GetRigidBody());
-        }
-    }
+	void Entity::OnEnd()
+	{
+		for (auto &component : mComponents)
+			component->OnEnd();
 
-    void Entity::Destroy(bool destroy_decendents)
-    {
-        auto children = GetChildren();
-        for (auto child : children)
-        {
-            child->DetachFromParent();
-            if (destroy_decendents)
-            {
-                child->Destroy(destroy_decendents);
-            }
-        }
+		if (mPhysicsComponent.mPhysicsEnabled)
+		{
+			GetWorld()->GetPhysicsWorld()->destroyRigidBody(
+				(rp3d::RigidBody *)mPhysicsComponent.GetRigidBody());
+		}
+	}
 
-        DetachFromParent();
+	void Entity::Destroy(bool destroy_decendents)
+	{
+		auto children = GetChildren();
+		for (auto child : children)
+		{
+			child->DetachFromParent();
+			if (destroy_decendents)
+			{
+				child->Destroy(destroy_decendents);
+			}
+		}
 
-        OnEntityDestroyed.invoke(this);
-    }
+		DetachFromParent();
 
-    void Entity::AddComponent(const ComponentPtr &component)
-    {
-        mComponents.push_back(component);
+		OnEntityDestroyed.invoke(this);
+	}
 
-        RegisterComponent(component.get());
-    }
+	void Entity::AddComponent(const ComponentPtr &component)
+	{
+		mComponents.push_back(component);
 
-    void Entity::RemoveComponent(Component *component_ptr)
-    {
-        auto it = std::find_if(mComponents.begin(), mComponents.end(), [component_ptr](const auto &component)
-                               { return component.get() == component_ptr; });
+		RegisterComponent(component.get());
+	}
 
-        if (it == mComponents.end())
-            return;
+	void Entity::RemoveComponent(Component *component_ptr)
+	{
+		auto it = std::find_if(
+			mComponents.begin(), mComponents.end(),
+			[component_ptr](const auto &component) { return component.get() == component_ptr; });
 
-        mComponents.erase(it);
-    }
+		if (it == mComponents.end())
+			return;
 
-    Ref<Entity> Entity::Copy() const
-    {
-        auto new_entity = new Entity(*this);
-        new_entity->mComponents.clear();
+		mComponents.erase(it);
+	}
 
-        for (auto& component : mComponents)
-        {
-            auto type = component->get_type();
-            rttr::variant copied = type.get_method(COPY_COMPONENT_FUNC_NAME).invoke({}, component.get());
-            if (copied)
-            {
-                auto copied_component = copied.get_value<Ref<Component>>();
-                new_entity->AddComponent(copied_component);
-            }
-        }
-        return Ref<Entity>(new_entity);
-    }
+	Ref<Entity> Entity::Copy() const
+	{
+		auto new_entity = new Entity(*this);
+		new_entity->mComponents.clear();
 
+		for (auto &component : mComponents)
+		{
+			auto type = component->get_type();
+			rttr::variant copied =
+				type.get_method(COPY_COMPONENT_FUNC_NAME).invoke({}, component.get());
+			if (copied)
+			{
+				auto copied_component = copied.get_value<Ref<Component>>();
+				new_entity->AddComponent(copied_component);
+			}
+		}
+		return Ref<Entity>(new_entity);
+	}
 
-    Ref<Entity> Entity::Duplicate(bool duplicate_children) 
-    {
-        auto new_entity = new Entity();
-        new_entity->SetLocalTransform(GetLocalTransform());
-        new_entity->SetName(GetName());
+	Ref<Entity> Entity::Duplicate(bool duplicate_children)
+	{
+		auto new_entity = new Entity();
+		new_entity->SetLocalTransform(GetLocalTransform());
+		new_entity->SetName(GetName());
 
-        for (auto& component : mComponents)
-        {
-            auto type = component->get_type();
-            rttr::variant duplicated = type.get_method(DUPLICATE_COMPONENT_FUNC_NAME).invoke({}, component.get());
-            if (duplicated)
-            {
-                auto duplicated_component = duplicated.get_value<Ref<Component>>();
-                new_entity->AddComponent(duplicated_component);
-            }
-        }
-  
-        if (duplicate_children)
-        {
-            auto children = GetChildren();
-            for (auto& child : children)
-            {
-                auto duplicated_child = mWorld->DuplicateEntity(child);
-                duplicated_child->AttachTo(new_entity);
-            }
-        }
+		for (auto &component : mComponents)
+		{
+			auto type = component->get_type();
+			rttr::variant duplicated =
+				type.get_method(DUPLICATE_COMPONENT_FUNC_NAME).invoke({}, component.get());
+			if (duplicated)
+			{
+				auto duplicated_component = duplicated.get_value<Ref<Component>>();
+				new_entity->AddComponent(duplicated_component);
+			}
+		}
 
-        return Ref<Entity>(new_entity);
-    }
+		if (duplicate_children)
+		{
+			auto children = GetChildren();
+			for (auto &child : children)
+			{
+				auto duplicated_child = mWorld->DuplicateEntity(child);
+				duplicated_child->AttachTo(new_entity);
+			}
+		}
 
-  
-    void Entity::RegisterComponents()
-    {
-        for (auto &component : mComponents)
-        {
-            RegisterComponent(component.get());
-        }
-    }
+		return Ref<Entity>(new_entity);
+	}
 
-    void Entity::RegisterComponent(Component *component)
-    {
-        if (!component)
-            return;
+	void Entity::RegisterComponents()
+	{
+		for (auto &component : mComponents)
+		{
+			RegisterComponent(component.get());
+		}
+	}
 
-        component->mOwningentity = this;
-    }
+	void Entity::RegisterComponent(Component *component)
+	{
+		if (!component)
+			return;
 
-    void Entity::SetLocalTransform(const FTransform& transform)
-    {
-        mTransform = transform;
-    }
+		component->mOwningentity = this;
+	}
 
-    const FTransform &Entity::GetLocalTransform() const
-    {
-        return mTransform;
-    }
+	void Entity::SetLocalTransform(const FTransform &transform)
+	{
+		mTransform = transform;
+	}
 
-    void Entity::SetWorldTransform(const FTransform& transform)
-    {
-        if (GetParent())
-        {
-            mTransform = GetParent()->GetWorldTransform().inverse() * transform;
-            return;
+	const FTransform &Entity::GetLocalTransform() const
+	{
+		return mTransform;
+	}
 
-        }
+	void Entity::SetWorldTransform(const FTransform &transform)
+	{
+		if (GetParent())
+		{
+			mTransform = GetParent()->GetWorldTransform().inverse() * transform;
+			return;
+		}
 
-        mTransform = transform;
-    }
+		mTransform = transform;
+	}
 
-    FTransform Entity::GetWorldTransform() const
-    {
-        if (GetParent())
-            return GetParent()->GetWorldTransform() * mTransform;
+	FTransform Entity::GetWorldTransform() const
+	{
+		if (GetParent())
+			return GetParent()->GetWorldTransform() * mTransform;
 
-        return mTransform;
-    }
+		return mTransform;
+	}
 
-    Entity *Entity::GetParent() const
-    {
-        auto parent_id = mRelationshipComponent.GetParentID();
+	Entity *Entity::GetParent() const
+	{
+		auto parent_id = mRelationshipComponent.GetParentID();
 
-        if (parent_id)
-            return mWorld->GetEntities().at(parent_id).get();
+		if (parent_id)
+			return mWorld->GetEntities().at(parent_id).get();
 
-        return nullptr;
-    }
+		return nullptr;
+	}
 
-    void Entity::AttachTo(Entity *entity)
-    {
-        if (!entity)
-            return;
+	void Entity::AttachTo(Entity *entity)
+	{
+		if (!entity)
+			return;
 
-        if (GetParent())
-            DetachFromParent();
+		if (GetParent())
+			DetachFromParent();
 
-        mRelationshipComponent.SetParentID(entity->GetUUID());
-        entity->mRelationshipComponent.AddChild(GetUUID());
-    }
+		mRelationshipComponent.SetParentID(entity->GetUUID());
+		entity->mRelationshipComponent.AddChild(GetUUID());
+	}
 
-    void Entity::DetachFromParent()
-    {
-        auto parent = GetParent();
+	void Entity::DetachFromParent()
+	{
+		auto parent = GetParent();
 
-        if (!parent)
-            return;
+		if (!parent)
+			return;
 
-        parent->mRelationshipComponent.RemoveChild(GetUUID());
-        mRelationshipComponent.SetParentID(0);
-    }
+		parent->mRelationshipComponent.RemoveChild(GetUUID());
+		mRelationshipComponent.SetParentID(0);
+	}
 
-    EntityChildren Entity::GetChildren() const
-    {
-        EntityChildren children;
+	EntityChildren Entity::GetChildren() const
+	{
+		EntityChildren children;
 
-        const auto& entities = mWorld->GetEntities();
+		const auto &entities = mWorld->GetEntities();
 
-        for (auto &child_id : mRelationshipComponent.GetChildren())
-        {
-            auto entity = entities.at(child_id);
-            if (entity)
-                children.push_back(entity.get());
-        }
+		for (auto &child_id : mRelationshipComponent.GetChildren())
+		{
+			auto entity = entities.at(child_id);
+			if (entity)
+				children.push_back(entity.get());
+		}
 
-        return children;
-    }
+		return children;
+	}
 
-    void Entity::SetTickEnabled(bool enabled)
-    {
-        mTickEnabled = enabled;
-    }
+	void Entity::SetTickEnabled(bool enabled)
+	{
+		mTickEnabled = enabled;
+	}
 
-    void Entity::Save(cereal::JSONOutputArchive &ar) const
-    {
+	void Entity::Save(cereal::BinaryOutputArchive &ar) const
+	{
 		CEREAL_BASE(ObjectBase, ar);
 
-        ar(MAKE_NVP("TickEnabled", mTickEnabled), MAKE_NVP("Transform", mTransform),
-		   MAKE_NVP("RelationshipComponent", mRelationshipComponent), MAKE_NVP("PhysicsComponent", mPhysicsComponent),
-		   MAKE_NVP("NumComponents", mComponents.size()));
+		ar(mTickEnabled, mTransform, mRelationshipComponent, mPhysicsComponent, mComponents.size());
 
-        for (auto &component : mComponents)
-        {
-			ar(MAKE_NVP("ComponentType", component->get_type()));
-            component->Save(ar);
-        }
-    }
+		for (auto &component : mComponents)
+		{
+			ar(component->get_type());
+			component->Save(ar);
+		}
+	}
 
-    void Entity::Load(cereal::JSONInputArchive &ar)
-    {
+	void Entity::Load(cereal::BinaryInputArchive &ar)
+	{
 		CEREAL_BASE(ObjectBase, ar);
 
-	
-        size_t num_components = 0;
+		size_t num_components = 0;
 
-       	ar(MAKE_NVP("TickEnabled", mTickEnabled), MAKE_NVP("Transform", mTransform),
-		   MAKE_NVP("RelationshipComponent", mRelationshipComponent),
-		   MAKE_NVP("PhysicsComponent", mPhysicsComponent),
-		   MAKE_NVP("NumComponents", num_components));
+		ar(mTickEnabled, mTransform, mRelationshipComponent, mPhysicsComponent, num_components);
 
+		if (mComponents.size() < num_components)
+			mComponents.resize(num_components);
 
-        if (mComponents.size() < num_components)
-            mComponents.resize(num_components);
+		for (size_t i = 0; i < num_components; i++)
+		{
+			AssetType component_type = InvalidType;
+			ar(component_type);
 
-        for (size_t i = 0; i < num_components; i++)
-        {
-            AssetType component_type = InvalidType;
-			ar(MAKE_NVP("ComponentType", component_type));
+			auto &component = mComponents[i];
+			if (!component)
+			{
+				component = component_type.create().get_value<Ref<Component>>();
+			}
 
-            auto &component = mComponents[i];
-            if (!component)
-            {
-                component = component_type.create().get_value<Ref<Component>>();
-            }
+			component->Load(ar);
+		}
 
-            component->Load(ar);
-        }
+		RegisterComponents();
+	}
 
-        RegisterComponents();
-    }
+	bool Entity::operator==(const Entity &rhs) const
+	{
+		return GetUUID() == rhs.GetUUID();
+	}
 
-   
+	bool Entity::operator!=(const Entity &rhs) const
+	{
+		return !(*this == rhs);
+	}
 
-    bool Entity::operator==(const Entity &rhs) const
-    {
-        return GetUUID() == rhs.GetUUID();
-    }
-
-    bool Entity::operator!=(const Entity &rhs) const
-    {
-        return !(*this == rhs);
-    }
-
-    REFLECT(Entity)
-    {
+	REFLECT(Entity)
+	{
 		BEGIN_REFLECT(Entity)
 		REFLECT_CONSTRUCTOR()
 		REFLECT_CONSTRUCTOR(const Entity &)
 		REFLECT_PROPERTY("Physics", mPhysicsComponent)
 		REFLECT_METHOD("AddComponent", &Entity::AddComponent);
-    }
+	}
 } // namespace BHive

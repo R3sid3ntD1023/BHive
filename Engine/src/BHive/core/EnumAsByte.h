@@ -4,82 +4,94 @@
 
 namespace BHive
 {
-    struct TEnumAsByteBase
-    {
-        virtual void Set(const int &value) = 0;
+	struct TEnumAsByteBase
+	{
+		virtual void Set(const int &value) = 0;
 
-        virtual int Get() const = 0;
+		virtual int Get() const = 0;
 
-        virtual rttr::enumeration GetEnumeration() const = 0;
+		virtual rttr::enumeration GetEnumeration() const = 0;
 
-        REFLECTABLEV()
-    };
+		REFLECTABLEV()
+	};
 
-    template <typename TEnum>
-    struct TEnumAsByte : TEnumAsByteBase
-    {
-        using underlying_type = typename std::underlying_type_t<TEnum>;
+	template <typename TEnum>
+	struct TEnumAsByte : TEnumAsByteBase
+	{
+		using underlying_type = typename std::underlying_type_t<TEnum>;
 
-        TEnumAsByte() = default;
+		TEnumAsByte() = default;
 
-        TEnumAsByte(const TEnum &enum_value)
-            : mValue(enum_value)
-        {
-        }
+		TEnumAsByte(const TEnum &enum_value)
+			: mValue(enum_value)
+		{
+		}
 
-        virtual void Set(const int &value)
-        {
-            mValue = (TEnum)(underlying_type)value;
-        }
+		virtual void Set(const int &value) { mValue = (TEnum)(underlying_type)value; }
 
-        virtual int Get() const
-        {
-            return (int)(underlying_type)(TEnum)mValue;
-        }
+		virtual int Get() const { return (int)(underlying_type)(TEnum)mValue; }
 
-        virtual rttr::enumeration GetEnumeration() const
-        {
-            return rttr::type::get<TEnum>().get_enumeration();
-        };
+		virtual rttr::enumeration GetEnumeration() const
+		{
+			return rttr::type::get<TEnum>().get_enumeration();
+		};
 
-        bool HasFlag(const TEnum &rhs) const { return (mValue | rhs) != 0; }
+		bool HasFlag(const TEnum &rhs) const { return (mValue | rhs) != 0; }
 
-        TEnumAsByte &operator=(const int &rhs)
-        {
-            mValue = (TEnum)(underlying_type)rhs;
-            return *this;
-        }
+		TEnumAsByte &operator=(const int &rhs)
+		{
+			mValue = (TEnum)(underlying_type)rhs;
+			return *this;
+		}
 
-        TEnumAsByte &operator=(const TEnum &rhs)
-        {
-            mValue = rhs;
-            return *this;
-        }
+		TEnumAsByte &operator=(const TEnum &rhs)
+		{
+			mValue = rhs;
+			return *this;
+		}
 
-        bool operator==(const TEnum &rhs) const { return mValue == rhs; }
+		bool operator==(const TEnum &rhs) const { return mValue == rhs; }
 
-        bool operator==(const TEnumAsByte &rhs) const { return mValue == rhs.mValue; }
+		bool operator==(const TEnumAsByte &rhs) const { return mValue == rhs.mValue; }
 
-        operator TEnum() const { return mValue; }
+		operator TEnum() const { return mValue; }
 
-        TEnumAsByte operator~() const { return ~mValue; }
+		TEnumAsByte operator~() const { return ~mValue; }
 
-        TEnumAsByte operator&(const TEnum &rhs) const { return (TEnum)((underlying_type)mValue & (underlying_type)rhs); }
+		TEnumAsByte operator&(const TEnum &rhs) const
+		{
+			return (TEnum)((underlying_type)mValue & (underlying_type)rhs);
+		}
 
-        TEnumAsByte operator|(const TEnum &rhs) const { return (TEnum)((underlying_type)mValue | (underlying_type)rhs); }
+		TEnumAsByte operator|(const TEnum &rhs) const
+		{
+			return (TEnum)((underlying_type)mValue | (underlying_type)rhs);
+		}
 
-        TEnumAsByte &operator&=(const TEnum &rhs) const { return *this = *this & rhs; }
+		TEnumAsByte &operator&=(const TEnum &rhs) const { return *this = *this & rhs; }
 
-        TEnumAsByte &operator|=(const TEnum &rhs) const { return *this = *this | rhs; }
+		TEnumAsByte &operator|=(const TEnum &rhs) const { return *this = *this | rhs; }
 
-    private:
-        TEnum mValue;
+		template <typename A>
+		inline int SaveMinimal(const A &ar) const
+		{
+			return Get();
+		}
 
-        REFLECTABLEV(TEnumAsByteBase)
-    };
+		template <typename A>
+		inline void LoadMinimal(const A &ar, const int &value)
+		{
+			mValue = (TEnum)value;
+		}
 
-    REFLECT(TEnumAsByteBase)
-    {
-        BEGIN_REFLECT(TEnumAsByteBase);
-    }
+	private:
+		TEnum mValue;
+
+		REFLECTABLEV(TEnumAsByteBase)
+	};
+
+	REFLECT(TEnumAsByteBase)
+	{
+		BEGIN_REFLECT(TEnumAsByteBase);
+	}
 } // namespace BHive

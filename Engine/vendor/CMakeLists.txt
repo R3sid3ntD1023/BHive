@@ -48,7 +48,7 @@ set(SPDLOG_BUILD_SHARED ON CACHE BOOL "" FORCE)
 
 set(BUILD_SANDBOX OFF CACHE BOOL "" FORCE)
 set(BUILD_DOC OFF CACHE BOOL "" FORCE)
-set(SKIP_PERFORMANCE_COMPARISION ON CACHE BOOL "" FORCE)
+set(SKIP_PERFORMANCE_COMPARISON ON CACHE BOOL "" FORCE)
 
 #glfw
 FetchContent_Declare(
@@ -137,7 +137,7 @@ FetchContent_Declare(
 )
 list(APPEND components rttr)
 
-FETCHCONTENT_DECLARE(
+FetchContent_Declare(
 	cereal
 	GIT_REPOSITORY https://github.com/USCiLab/cereal.git
 	GIT_TAG v1.3.2

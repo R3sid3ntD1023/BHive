@@ -12,13 +12,13 @@ namespace BHive
 		return mInstance->Copy();
 	}
 
-	void Prefab::Save(cereal::JSONOutputArchive &ar) const
+	void Prefab::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
 		mInstance->Save(ar);
 	}
 
-	void Prefab::Load(cereal::JSONInputArchive &ar)
+	void Prefab::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
 		mInstance->Load(ar);

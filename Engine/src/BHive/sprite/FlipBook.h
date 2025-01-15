@@ -13,6 +13,12 @@ namespace BHive
 		{
 			sprite_ptr mSprite;
 			uint32_t mDuration{1};
+
+			template <typename A>
+			void Serialize(A &ar)
+			{
+				ar(mSprite, mDuration);
+			}
 		};
 
 		typedef std::vector<FlipBook::Frame> Frames;
@@ -44,11 +50,11 @@ namespace BHive
 
 		float GetTotalTime() const;
 
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
+
 		REFLECTABLEV(Asset)
-
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
 
 	private:
 		int32_t GetNumFrames() const;
@@ -62,12 +68,6 @@ namespace BHive
 		bool mIsLooping = false;
 		float mCurrentTime = 0.0f;
 	};
-
-	template <typename A>
-	void Serialize(A &ar, FlipBook::Frame &obj)
-	{
-		ar(MAKE_NVP("Sprite", obj.mSprite), MAKE_NVP("Duration", obj.mDuration));
-	}
 
 	REFLECT_EXTERN(FlipBook::Frame)
 	REFLECT_EXTERN(FlipBook)

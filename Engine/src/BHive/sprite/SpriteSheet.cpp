@@ -1,7 +1,6 @@
-#include "SpriteSheet.h"
-#include "Sprite.h"
 #include "gfx/Texture.h"
-#include "asset/AssetManager.h"
+#include "Sprite.h"
+#include "SpriteSheet.h"
 
 namespace BHive
 {
@@ -39,16 +38,16 @@ namespace BHive
 		CreateSprites();
 	}
 
-	void SpriteSheet::Save(cereal::JSONOutputArchive &ar) const
+	void SpriteSheet::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(MAKE_NVP("Source", mSource), MAKE_NVP("Grid", mGrid), MAKE_NVP("Sprites", mSprites));
+		ar(mSource, mGrid, mSprites);
 	}
 
-	void SpriteSheet::Load(cereal::JSONInputArchive &ar)
+	void SpriteSheet::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(MAKE_NVP("Source", mSource), MAKE_NVP("Grid", mGrid), MAKE_NVP("Sprites", mSprites));
+		ar(mSource, mGrid, mSprites);
 
 		CreateSprites();
 	}

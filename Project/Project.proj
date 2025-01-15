@@ -1,7 +1,7 @@
 {
     "value0": {
-        "Name": "Project",
-        "ProjectPath": "C:\\Users\\dariu\\Documents\\BHive\\Project",
-        "ResourcesPath": "resources"
+        "Path": "Project",
+        "Directory": "C:\\Users\\dariu\\Documents\\BHive\\Project",
+        "ResourceRelativeDirectory": "resources"
     }
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "asset/TAssetHandler.h"
 #include "ColliderComponent.h"
 
 namespace BHive
@@ -18,9 +19,9 @@ namespace BHive
 		void SetStaticMesh(const TAssetHandle<StaticMesh> &mesh);
 		const TAssetHandle<StaticMesh> &GetStaticMesh() const { return mStaticMesh; }
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(ColliderComponent)
 

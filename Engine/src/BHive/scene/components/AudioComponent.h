@@ -1,7 +1,8 @@
 #pragma once
 
-#include "scene/Component.h"
+#include "asset/TAssetHandler.h"
 #include "audio/AudioSource.h"
+#include "scene/Component.h"
 
 namespace BHive
 {
@@ -15,9 +16,9 @@ namespace BHive
 
 		TAssetHandle<AudioSource> mAudio;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(Component)
 	};

@@ -1,8 +1,8 @@
 #pragma once
 
+#include "RelationshipComponent.h"
 #include "scene/Component.h"
 #include "scene/ITransform.h"
-#include "RelationshipComponent.h"
 
 namespace BHive
 {
@@ -17,9 +17,9 @@ namespace BHive
 
 		const FTransform &GetLocalTransform() const;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 	private:
 		FTransform mLocalTransform;

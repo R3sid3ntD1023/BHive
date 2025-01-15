@@ -18,8 +18,8 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(MAKE_NVP("Name", mName), MAKE_NVP("ProjectPath", mProjectDirectory),
-			   MAKE_NVP("ResourcesPath", mResourcesDirectory));
+			ar(MAKE_NVP("Path", mName), MAKE_NVP("Directory", mProjectDirectory),
+			   MAKE_NVP("ResourceRelativeDirectory", mResourcesDirectory));
 		}
 
 		REFLECTABLE()

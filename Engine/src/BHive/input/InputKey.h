@@ -21,7 +21,7 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(MAKE_NVP("Key", mKey), MAKE_NVP("IsMouse", mIsMouse));
+			ar(mKey, mIsMouse);
 		}
 
 		operator uint32_t() const { return (uint32_t)mKey; }

@@ -1,125 +1,124 @@
 #pragma once
 
-#include "ObjectBase.h"
-#include "ITickable.h"
-#include "Component.h"
 #include "asset/AssetType.h"
+#include "Component.h"
+#include "ITickable.h"
 #include "ITransform.h"
-#include "scene/components/RelationshipComponent.h"
+#include "ObjectBase.h"
 #include "scene/components/IPhysicsComponent.h"
+#include "scene/components/RelationshipComponent.h"
 #include "serialization/Serialization.h"
 
 namespace BHive
 {
-    class Component;
-    class SceneComponent;
-    struct ColliderComponent;
-    class World;
-    class Entity;
+	class Component;
+	class SceneComponent;
+	struct ColliderComponent;
+	class World;
+	class Entity;
 
-    using ComponentPtr = Ref<Component>;
-    using ComponentList = std::vector<Ref<Component>>;
-    using EntityChildren = std::vector<Entity *>;
+	using ComponentPtr = Ref<Component>;
+	using ComponentList = std::vector<Ref<Component>>;
+	using EntityChildren = std::vector<Entity *>;
 
-    DECLARE_EVENT(OnEntityDestroyed, Entity *)
-   
+	DECLARE_EVENT(OnEntityDestroyed, Entity *)
 
-    class Entity : public ObjectBase, public ITickable, public ITransform
-    {
-    public:
-        Entity();
+	class Entity : public ObjectBase, public ITickable, public ITransform
+	{
+	public:
+		Entity();
 
-        virtual ~Entity() = default;
+		virtual ~Entity() = default;
 
-        virtual void OnBegin();
+		virtual void OnBegin();
 
-        virtual void OnUpdate(float /*deltatime*/);
+		virtual void OnUpdate(float /*deltatime*/);
 
-        virtual void OnEnd();
+		virtual void OnEnd();
 
-        void Destroy(bool destroy_decendents = false);
+		void Destroy(bool destroy_decendents = false);
 
-        template <typename T>
-        Ref<T> AddNewComponent(const std::string &name)
-        {
-            auto component = CreateRef<T>();
-            component->SetName(name);
+		template <typename T>
+		Ref<T> AddNewComponent(const std::string &name)
+		{
+			auto component = CreateRef<T>();
+			component->SetName(name);
 
-            AddComponent(component);
+			AddComponent(component);
 
-            return component;
-        }
+			return component;
+		}
 
-        Ref<Entity> Copy() const;
+		Ref<Entity> Copy() const;
 
-        Ref<Entity> Duplicate(bool duplicate_children = false);
+		Ref<Entity> Duplicate(bool duplicate_children = false);
 
-        IPhysicsComponent& GetPhysicsComponent() { return mPhysicsComponent; }
+		IPhysicsComponent &GetPhysicsComponent() { return mPhysicsComponent; }
 
-        void AddComponent(const ComponentPtr &component);
+		void AddComponent(const ComponentPtr &component);
 
-        void RemoveComponent(Component *component);
+		void RemoveComponent(Component *component);
 
-        void SetLocalTransform(const FTransform &transform);
+		void SetLocalTransform(const FTransform &transform);
 
-        void SetWorldTransform(const FTransform& transform);
+		void SetWorldTransform(const FTransform &transform);
 
-        const FTransform &GetLocalTransform() const;
+		const FTransform &GetLocalTransform() const;
 
-        FTransform GetWorldTransform() const;
+		FTransform GetWorldTransform() const;
 
-        Entity *GetParent() const;
+		Entity *GetParent() const;
 
-        void AttachTo(Entity *entity);
+		void AttachTo(Entity *entity);
 
-        void DetachFromParent();
+		void DetachFromParent();
 
-        ComponentList &GetComponents() { return mComponents; }
+		ComponentList &GetComponents() { return mComponents; }
 
-        const ComponentList &GetComponents() const { return mComponents; }
+		const ComponentList &GetComponents() const { return mComponents; }
 
-        EntityChildren GetChildren() const;
+		EntityChildren GetChildren() const;
 
-        World *GetWorld() { return mWorld; }
+		World *GetWorld() { return mWorld; }
 
-        /*ITickable*/
+		/*ITickable*/
 
-        virtual bool IsTickEnabled() const override { return mTickEnabled; };
+		virtual bool IsTickEnabled() const override { return mTickEnabled; };
 
-        virtual void SetTickEnabled(bool) override;
+		virtual void SetTickEnabled(bool) override;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-        bool operator==(const Entity &rhs) const;
+		bool operator==(const Entity &rhs) const;
 
-        bool operator!=(const Entity &rhs) const;
+		bool operator!=(const Entity &rhs) const;
 
-    private:
-        void RegisterComponents();
-        void RegisterComponent(Component *component);
+	private:
+		void RegisterComponents();
+		void RegisterComponent(Component *component);
 
-    public:
-        OnEntityDestroyedEvent OnEntityDestroyed;
+	public:
+		OnEntityDestroyedEvent OnEntityDestroyed;
 
-    private:
-        FTransform mTransform;
+	private:
+		FTransform mTransform;
 
-        RelationshipComponent mRelationshipComponent;
-        IPhysicsComponent mPhysicsComponent;
+		RelationshipComponent mRelationshipComponent;
+		IPhysicsComponent mPhysicsComponent;
 
-        ComponentList mComponents;
+		ComponentList mComponents;
 
-        bool mTickEnabled{true};
+		bool mTickEnabled{true};
 
-        World *mWorld = nullptr;
+		World *mWorld = nullptr;
 
-        REFLECTABLEV(ObjectBase, ITickable, ITransform)
+		REFLECTABLEV(ObjectBase, ITickable, ITransform)
 
-        friend class World;
-    };
+		friend class World;
+	};
 
-    REFLECT_EXTERN(Entity)
+	REFLECT_EXTERN(Entity)
 
-} // namespace BHive`
+} // namespace BHive

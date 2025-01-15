@@ -1,8 +1,8 @@
 #pragma once
 
 #include <stdint.h>
-#include <xhash>
 #include <string>
+#include <xhash>
 
 namespace BHive
 {
@@ -22,6 +22,18 @@ namespace BHive
 		operator uint64_t() const { return mID; }
 
 		std::string to_string() const;
+
+		template <typename A>
+		uint64_t SaveMinimal(const A &) const
+		{
+			return mID;
+		}
+
+		template <typename A>
+		void LoadMinimal(const A &, const uint64_t &v)
+		{
+			mID = v;
+		}
 
 	protected:
 		uint64_t mID{0};

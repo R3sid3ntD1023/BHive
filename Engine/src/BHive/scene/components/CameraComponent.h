@@ -1,8 +1,8 @@
 #pragma once
 
-#include "SceneComponent.h"
 #include "IRenderable.h"
 #include "scene/SceneCamera.h"
+#include "SceneComponent.h"
 
 namespace BHive
 {
@@ -15,9 +15,9 @@ namespace BHive
 		void SetPrimary(bool primary);
 		bool IsPrimary() const;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 	private:
 		bool mIsPrimary;

@@ -1,7 +1,7 @@
 #include "CameraComponent.h"
 #include "core/Time.h"
-#include "renderers/LineRenderer.h"
 #include "math/Frustum.h"
+#include "renderers/LineRenderer.h"
 
 namespace BHive
 {
@@ -21,18 +21,18 @@ namespace BHive
 		return mIsPrimary;
 	}
 
-	void CameraComponent::Save(cereal::JSONOutputArchive &ar) const
+	void CameraComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		SceneComponent::Save(ar);
 
-		ar(MAKE_NVP("IsPrimary", mIsPrimary), MAKE_NVP("Camera", mCamera));
+		ar(mIsPrimary, mCamera);
 	}
 
-	void CameraComponent::Load(cereal::JSONInputArchive &ar)
+	void CameraComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		SceneComponent::Load(ar);
 
-		ar(MAKE_NVP("IsPrimary", mIsPrimary), MAKE_NVP("Camera", mCamera));
+		ar(mIsPrimary, mCamera);
 	}
 
 	void CameraManager::SetTargetViewWithBlend(const FTransform &view, float blendtime)

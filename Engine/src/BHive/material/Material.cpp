@@ -1,21 +1,22 @@
-#include "Material.h"
+#include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/Texture.h"
+#include "Material.h"
 #include "renderers/Renderer.h"
-#include "gfx/RenderCommand.h"
 
 namespace BHive
 {
 	Material::Material()
 	{
-		mTextureSlots = {{ALBEDO_TEX, {6, Renderer::GetWhiteTexture()}},
-						 {METALLIC_TEX, {7, Renderer::GetWhiteTexture()}},
-						 {ROUGHNESS_TEX, {8, Renderer::GetWhiteTexture()}},
-						 {NORMAL_TEX, {9, nullptr}},
-						 {EMISSION_TEX, {10, Renderer::GetWhiteTexture()}},
-						 {OPACITY_TEX, {11, Renderer::GetWhiteTexture()}},
-						 {DISPLACEMENT_TEX, {12, nullptr}},
-						 {METALLIC_ROUGHNESS_TEX, {13, nullptr}}};
+		mTextureSlots = {
+			{ALBEDO_TEX, {6, Renderer::GetWhiteTexture()}},
+			{METALLIC_TEX, {7, Renderer::GetWhiteTexture()}},
+			{ROUGHNESS_TEX, {8, Renderer::GetWhiteTexture()}},
+			{NORMAL_TEX, {9, nullptr}},
+			{EMISSION_TEX, {10, Renderer::GetWhiteTexture()}},
+			{OPACITY_TEX, {11, Renderer::GetWhiteTexture()}},
+			{DISPLACEMENT_TEX, {12, nullptr}},
+			{METALLIC_ROUGHNESS_TEX, {13, nullptr}}};
 
 		mTextures = {{ALBEDO_TEX, nullptr},		  {METALLIC_TEX, nullptr},
 					 {ROUGHNESS_TEX, nullptr},	  {NORMAL_TEX, nullptr},
@@ -95,24 +96,18 @@ namespace BHive
 		return shader;
 	}
 
-	void Material::Save(cereal::JSONOutputArchive &ar) const
+	void Material::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(MAKE_NVP("Albedo", mAldebo), MAKE_NVP("Metallic", mMetallic),
-		   MAKE_NVP("Roughness", mRoughness), MAKE_NVP("IsDiaElectric", mDiaElectric),
-		   MAKE_NVP("Emission", mEmission), MAKE_NVP("Opacity", mOpacity),
-		   MAKE_NVP("Tiling", mTiling), MAKE_NVP("DepthScale", mDepthScale),
-		   MAKE_NVP("Flags", mFlags), MAKE_NVP("Textures", mTextures));
+		ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale,
+		   mFlags, mTextures);
 	}
 
-	void Material::Load(cereal::JSONInputArchive &ar)
+	void Material::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(MAKE_NVP("Albedo", mAldebo), MAKE_NVP("Metallic", mMetallic),
-		   MAKE_NVP("Roughness", mRoughness), MAKE_NVP("IsDiaElectric", mDiaElectric),
-		   MAKE_NVP("Emission", mEmission), MAKE_NVP("Opacity", mOpacity),
-		   MAKE_NVP("Tiling", mTiling), MAKE_NVP("DepthScale", mDepthScale),
-		   MAKE_NVP("Flags", mFlags), MAKE_NVP("Textures", mTextures));
+		ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale,
+		   mFlags, mTextures);
 	}
 
 	bool Material::CastShadows() const
@@ -146,16 +141,19 @@ namespace BHive
 		REFLECT_PROPERTY("Albedo", mAldebo)
 		REFLECT_PROPERTY("Metallic", mMetallic)
 		(META_DATA(EPropertyMetaData_Min, 0.0f), META_DATA(EPropertyMetaData_Max, 1.f),
-		 META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider)) REFLECT_PROPERTY("Roughness",
-																					 mRoughness)(
-			META_DATA(EPropertyMetaData_Min, 0.0f), META_DATA(EPropertyMetaData_Max, 1.f),
-			META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider))
-			REFLECT_PROPERTY("DiaElectric", mDiaElectric) REFLECT_PROPERTY("Emission", mEmission)
-				REFLECT_PROPERTY("Opacity", mOpacity)(
-					META_DATA(EPropertyMetaData_Min, 0.0f), META_DATA(EPropertyMetaData_Max, 1.f),
-					META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider))
-					REFLECT_PROPERTY("Tiling", mTiling) REFLECT_PROPERTY("DepthScale", mDepthScale)
-						REFLECT_PROPERTY("Flags", mFlags) REFLECT_PROPERTY("Textures", mTextures)(
-							META_DATA(EPropertyMetaData_Flags, EPropertyFlags_FixedSize));
+		 META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider))
+			REFLECT_PROPERTY("Roughness", mRoughness)(
+				META_DATA(EPropertyMetaData_Min, 0.0f), META_DATA(EPropertyMetaData_Max, 1.f),
+				META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider))
+				REFLECT_PROPERTY("DiaElectric", mDiaElectric)
+					REFLECT_PROPERTY("Emission", mEmission) REFLECT_PROPERTY("Opacity", mOpacity)(
+						META_DATA(EPropertyMetaData_Min, 0.0f),
+						META_DATA(EPropertyMetaData_Max, 1.f),
+						META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider))
+						REFLECT_PROPERTY("Tiling", mTiling)
+							REFLECT_PROPERTY("DepthScale", mDepthScale)
+								REFLECT_PROPERTY("Flags", mFlags)
+									REFLECT_PROPERTY("Textures", mTextures)(META_DATA(
+										EPropertyMetaData_Flags, EPropertyFlags_FixedSize));
 	}
 } // namespace BHive

@@ -23,16 +23,16 @@ namespace BHive
 		LineRenderer::DrawBox(mExtents, mOffset, mColor, GetWorldTransform());
 	}
 
-	void BoxComponent::Save(cereal::JSONOutputArchive &ar) const
+	void BoxComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ColliderComponent::Save(ar);
-		ar(MAKE_NVP("Extents", mExtents));
+		ar( mExtents);
 	}
 
-	void BoxComponent::Load(cereal::JSONInputArchive &ar)
+	void BoxComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ColliderComponent::Load(ar);
-		ar(MAKE_NVP("Extents", mExtents));
+		ar( mExtents);
 	}
 
 	REFLECT(BoxComponent)

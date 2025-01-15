@@ -1,6 +1,5 @@
 #pragma once
 
-#include <stdint.h>
 #include "reflection/Reflection.h"
 
 namespace BHive
@@ -29,14 +28,14 @@ namespace BHive
 	REFLECT(ECollisionChannel)
 	{
 		BEGIN_REFLECT_ENUM(ECollisionChannel)
-		(ENUM_VALUE(CollisionChannel_None), ENUM_VALUE(CollisionChannel_0), 
-			ENUM_VALUE(CollisionChannel_1), ENUM_VALUE(CollisionChannel_2), 
-			ENUM_VALUE(CollisionChannel_3), ENUM_VALUE(CollisionChannel_4),
-			ENUM_VALUE(CollisionChannel_5), ENUM_VALUE(CollisionChannel_6), 
-			ENUM_VALUE(CollisionChannel_7), ENUM_VALUE(CollisionChannel_8), 
-			ENUM_VALUE(CollisionChannel_9), ENUM_VALUE(CollisionChannel_10), 
-			ENUM_VALUE(CollisionChannel_11),ENUM_VALUE(CollisionChannel_12), 
-			ENUM_VALUE(CollisionChannel_13),ENUM_VALUE(CollisionChannel_14), 
-			ENUM_VALUE(CollisionChannel_All));
+		(ENUM_VALUE(CollisionChannel_None), ENUM_VALUE(CollisionChannel_0),
+		 ENUM_VALUE(CollisionChannel_1), ENUM_VALUE(CollisionChannel_2),
+		 ENUM_VALUE(CollisionChannel_3), ENUM_VALUE(CollisionChannel_4),
+		 ENUM_VALUE(CollisionChannel_5), ENUM_VALUE(CollisionChannel_6),
+		 ENUM_VALUE(CollisionChannel_7), ENUM_VALUE(CollisionChannel_8),
+		 ENUM_VALUE(CollisionChannel_9), ENUM_VALUE(CollisionChannel_10),
+		 ENUM_VALUE(CollisionChannel_11), ENUM_VALUE(CollisionChannel_12),
+		 ENUM_VALUE(CollisionChannel_13), ENUM_VALUE(CollisionChannel_14),
+		 ENUM_VALUE(CollisionChannel_All));
 	}
-}
+} // namespace BHive

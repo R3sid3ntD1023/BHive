@@ -15,7 +15,12 @@ namespace BHive
 		Color mColor = 0xFFFFFFFF;
 		float mBrightness = 1.0f;
 
-		
+		template <typename A>
+		inline void Serialize(A &ar)
+		{
+			ar(mColor, mBrightness);
+		}
+
 		REFLECTABLEV()
 	};
 
@@ -23,18 +28,30 @@ namespace BHive
 	{
 		float mRadius = 1.0f;
 
+		template <typename A>
+		inline void Serialize(A &ar)
+		{
+			Light::Serialize(ar);
+			ar(mRadius);
+		}
+
 		REFLECTABLEV(Light)
 	};
 
-
 	struct SpotLight : public PointLight
 	{
-		
+
 		float mInnerCutOff = 25.0f;
 		float mOuterCutOff = 75.0f;
 
-		REFLECTABLEV(PointLight)
+		template <typename A>
+		inline void Serialize(A &ar)
+		{
+			PointLight::Serialize(ar);
+			ar(mInnerCutOff, mOuterCutOff);
+		}
 
+		REFLECTABLEV(PointLight)
 	};
 
 	struct DirectionalLight : public Light
@@ -45,9 +62,8 @@ namespace BHive
 		REFLECTABLEV(Light)
 	};
 
-	
 	REFLECT_EXTERN(Light)
 	REFLECT_EXTERN(PointLight)
 	REFLECT_EXTERN(SpotLight)
 	REFLECT_EXTERN(DirectionalLight)
-}
+} // namespace BHive

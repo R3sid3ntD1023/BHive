@@ -1,8 +1,8 @@
 #pragma once
 
+#include "Color.h"
 #include <optional>
 #include <stdint.h>
-#include "Color.h"
 
 namespace BHive
 {
@@ -92,5 +92,12 @@ namespace BHive
 		// depth
 		std::optional<ETextureCompareMode> mCompareMode;
 		std::optional<ETextureCompareFunc> mCompareFunc;
+
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(mFormat, mChannels, mWrapMode, mMinFilter, mMagFilter, mBorderColor, mMips, mType,
+			   mLevels, mCompareMode, mCompareFunc);
+		}
 	};
 } // namespace BHive

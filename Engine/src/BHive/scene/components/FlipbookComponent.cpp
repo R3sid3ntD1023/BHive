@@ -1,6 +1,5 @@
 #include "FlipbookComponent.h"
 #include "scene/SceneRenderer.h"
-#include "scene/Entity.h"
 
 namespace BHive
 {
@@ -19,20 +18,18 @@ namespace BHive
 		}
 	}
 
-	void FlipbookComponent::Save(cereal::JSONOutputArchive &ar) const
+	void FlipbookComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ShapeComponent::Save(ar);
 
-		ar(MAKE_NVP("AutoPlay", mAutoPlay), MAKE_NVP("Color", mColor),
-		   MAKE_NVP("FlipBook", mFlipBook), MAKE_NVP("Size", mSize), MAKE_NVP("Flags", mFlags));
+		ar(mAutoPlay, mColor, mFlipBook, mSize, mFlags);
 	}
 
-	void FlipbookComponent::Load(cereal::JSONInputArchive &ar)
+	void FlipbookComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ShapeComponent::Load(ar);
 
-		ar(MAKE_NVP("AutoPlay", mAutoPlay), MAKE_NVP("Color", mColor),
-		   MAKE_NVP("FlipBook", mFlipBook), MAKE_NVP("Size", mSize), MAKE_NVP("Flags", mFlags));
+		ar(mAutoPlay, mColor, mFlipBook, mSize, mFlags);
 	}
 
 	REFLECT(FlipbookComponent)

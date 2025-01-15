@@ -1,7 +1,8 @@
 #pragma once
 
-#include "core/Core.h"
 #include "AssetType.h"
+#include "core/Core.h"
+#include "serialization/Serialization.h"
 
 namespace BHive
 {
@@ -15,6 +16,12 @@ namespace BHive
 		std::string Name;
 
 		operator bool() const { return Type != InvalidType; }
+
+		template <typename A>
+		inline void Serialize(A &ar)
+		{
+			ar(MAKE_NVP("Type", Type), MAKE_NVP("Path", Path), MAKE_NVP("Name", Name));
+		}
 
 		REFLECTABLE()
 	};

@@ -1,11 +1,10 @@
 #pragma once
 
-#include "physics/PhysicsMaterial.h"
-#include "gfx/Color.h"
 #include "CollisionChannel.h"
 #include "core/EnumAsByte.h"
+#include "gfx/Color.h"
+#include "physics/PhysicsMaterial.h"
 #include "scene/components/ShapeComponent.h"
-
 
 namespace BHive
 {
@@ -44,9 +43,9 @@ namespace BHive
 		void OnBegin() override;
 		void OnEnd() override;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		virtual void *GetCollisionShape(const FTransform &world_transform) = 0;
 		virtual void ReleaseCollisionShape() = 0;

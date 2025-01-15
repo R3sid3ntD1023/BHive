@@ -36,8 +36,8 @@ END_THREAD_DISPATCH() $end$]]>
 		</Header>
 		<Snippet>
 			<Code Language="CPP">
-				<![CDATA[virtual void Save(cereal::JSONOutputArchive &ar) const override;
-		virtual void Load(cereal::JSONInputArchive &ar) override; $end$]]>
+				<![CDATA[virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override; $end$]]>
 			</Code>
 		</Snippet>
 	</CodeSnippet>

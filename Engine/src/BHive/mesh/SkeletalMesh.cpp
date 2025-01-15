@@ -10,21 +10,21 @@ namespace BHive
 		mDefaultPose = CreateRef<SkeletalPose>(skeleton.get());
 	}
 
-	void SkeletalMesh::Save(cereal::JSONOutputArchive &ar) const
+	void SkeletalMesh::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		StaticMesh::Save(ar);
 
 		TAssetHandle<Skeleton> handle = mSkeleton;
 
-		ar(MAKE_NVP("Skeleton", handle));
+		ar(handle);
 	}
 
-	void SkeletalMesh::Load(cereal::JSONInputArchive &ar)
+	void SkeletalMesh::Load(cereal::BinaryInputArchive &ar)
 	{
 		StaticMesh::Load(ar);
 
 		TAssetHandle<Skeleton> handle;
-		ar(MAKE_NVP("Skeleton", handle));
+		ar(handle);
 
 		mSkeleton = handle.get();
 		mDefaultPose = CreateRef<SkeletalPose>(mSkeleton.get());

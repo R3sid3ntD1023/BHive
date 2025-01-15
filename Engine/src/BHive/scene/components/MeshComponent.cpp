@@ -2,16 +2,16 @@
 
 namespace BHive
 {
-	void MeshComponent::Save(cereal::JSONOutputArchive &ar) const
+	void MeshComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ShapeComponent::Save(ar);
-		ar(MAKE_NVP("Materials", mMaterials), MAKE_NVP("OverrideMaterials", mOverrideMaterials));
+		ar(mMaterials, mOverrideMaterials);
 	}
 
-	void MeshComponent::Load(cereal::JSONInputArchive &ar)
+	void MeshComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ShapeComponent::Load(ar);
-		ar(MAKE_NVP("Materials", mMaterials), MAKE_NVP("OverrideMaterials", mOverrideMaterials));
+		ar(mMaterials, mOverrideMaterials);
 	}
 
 	void MeshComponent::SetMaterialTable(const MaterialTable &materials)

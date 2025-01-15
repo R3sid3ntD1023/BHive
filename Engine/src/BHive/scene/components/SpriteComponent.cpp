@@ -1,6 +1,5 @@
-#include "SpriteComponent.h"
 #include "scene/SceneRenderer.h"
-#include "scene/Entity.h"
+#include "SpriteComponent.h"
 
 namespace BHive
 {
@@ -9,18 +8,16 @@ namespace BHive
 		QuadRenderer::DrawSprite(mSize, mColor, GetWorldTransform(), mSprite, mFlags);
 	}
 
-	void SpriteComponent::Save(cereal::JSONOutputArchive &ar) const
+	void SpriteComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ShapeComponent::Save(ar);
-		ar(MAKE_NVP("Color", mColor), MAKE_NVP("Size", mSize), MAKE_NVP("Flags", mFlags),
-		   MAKE_NVP("Sprite", mSprite));
+		ar(mColor, mSize, mFlags, mSprite);
 	}
 
-	void SpriteComponent::Load(cereal::JSONInputArchive &ar)
+	void SpriteComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ShapeComponent::Load(ar);
-		ar(MAKE_NVP("Color", mColor), MAKE_NVP("Size", mSize), MAKE_NVP("Flags", mFlags),
-		   MAKE_NVP("Sprite", mSprite));
+		ar(mColor, mSize, mFlags, mSprite);
 	}
 
 	REFLECT(QuadRendererFlags_)

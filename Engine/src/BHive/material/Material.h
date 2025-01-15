@@ -1,9 +1,9 @@
 #pragma once
 
+#include "asset/Asset.h"
+#include "core/EnumAsByte.h"
 #include "gfx/Color.h"
 #include "gfx/Texture.h"
-#include "core/EnumAsByte.h"
-#include "asset/Asset.h"
 
 namespace BHive
 {
@@ -69,9 +69,9 @@ namespace BHive
 
 		static Ref<Shader> GetShader();
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(Asset)
 

@@ -3,9 +3,9 @@
 
 namespace BHive
 {
-	SkeletalAnimation::SkeletalAnimation(float duration, float ticksPerSecond, const Frames &frames,
-										 Ref<Skeleton> skeleton,
-										 const glm::mat4 &globalInverseMatrix)
+	SkeletalAnimation::SkeletalAnimation(
+		float duration, float ticksPerSecond, const Frames &frames, Ref<Skeleton> skeleton,
+		const glm::mat4 &globalInverseMatrix)
 		: mDuration(duration),
 		  mTicksPerSecond(ticksPerSecond),
 		  mGlobalInverseTransformation(globalInverseMatrix),
@@ -52,8 +52,8 @@ namespace BHive
 		return -1;
 	}
 
-	float SkeletalAnimation::GetScaleFentity(float lastTimeStamp, float nextTimeStamp,
-											 float animationTime)
+	float SkeletalAnimation::GetScaleFentity(
+		float lastTimeStamp, float nextTimeStamp, float animationTime)
 	{
 		float fentity = 0.0f;
 		float mid_way_length = animationTime - lastTimeStamp;
@@ -105,23 +105,19 @@ namespace BHive
 		return scale;
 	}
 
-	void SkeletalAnimation::Save(cereal::JSONOutputArchive &ar) const
+	void SkeletalAnimation::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
 		TAssetHandle<Skeleton> handle = mSkeleton;
-		ar(MAKE_NVP("Duration", mDuration), MAKE_NVP("TicksPerSecond", mTicksPerSecond),
-		   MAKE_NVP("GlobalTransformation", mGlobalInverseTransformation),
-		   MAKE_NVP("FrameData", mFrameData), MAKE_NVP("Skeleton", handle));
+		ar(mDuration, mTicksPerSecond, mGlobalInverseTransformation, mFrameData, handle);
 	}
 
-	void SkeletalAnimation::Load(cereal::JSONInputArchive &ar)
+	void SkeletalAnimation::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
 
 		TAssetHandle<Skeleton> handle;
-		ar(MAKE_NVP("Duration", mDuration), MAKE_NVP("TicksPerSecond", mTicksPerSecond),
-		   MAKE_NVP("GlobalTransformation", mGlobalInverseTransformation),
-		   MAKE_NVP("FrameData", mFrameData), MAKE_NVP("Skeleton", handle));
+		ar(mDuration, mTicksPerSecond, mGlobalInverseTransformation, mFrameData, handle);
 
 		mSkeleton = handle.get();
 	}

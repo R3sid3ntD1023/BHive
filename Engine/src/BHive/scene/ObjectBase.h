@@ -31,10 +31,6 @@ namespace BHive
 
 		virtual ObjectBase *Copy();
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const;
-
-		virtual void Load(cereal::JSONInputArchive &ar);
-
 		virtual void Save(cereal::BinaryOutputArchive &ar) const;
 
 		virtual void Load(cereal::BinaryInputArchive &ar);

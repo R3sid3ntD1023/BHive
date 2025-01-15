@@ -1,7 +1,7 @@
 #pragma once
 
-#include "scene/Component.h"
 #include "input/InputContext.h"
+#include "scene/Component.h"
 
 namespace BHive
 {
@@ -17,9 +17,9 @@ namespace BHive
 
 		virtual void OnEnd() override;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		InputContext *GetContext() const { return mContextInstance; }
 

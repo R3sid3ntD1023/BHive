@@ -22,16 +22,6 @@ namespace BHive
         return new ObjectBase(*this);
     }
 
-    void ObjectBase::Save(cereal::JSONOutputArchive& ar) const
-    {
-		ar(MAKE_NVP("Name", mData.mName), MAKE_NVP("ID", mID));
-    }
-
-    void ObjectBase::Load(cereal::JSONInputArchive &ar)
-	{
-		ar(MAKE_NVP("Name", mData.mName), MAKE_NVP("ID", mID));
-	}
-
     void ObjectBase::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ar(mData.mName, mID);

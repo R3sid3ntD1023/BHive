@@ -46,26 +46,20 @@ namespace BHive
 		}
 	}
 
-	void ColliderComponent::Save(cereal::JSONOutputArchive &ar) const
+	void ColliderComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ShapeComponent::Save(ar);
 
-		ar(MAKE_NVP("IsCollisonEnabled", mCollisionEnabled),
-		   MAKE_NVP("CollisionChannel", mCollisionChannel),
-		   MAKE_NVP("CollisionChannelMasks", mCollisionChannelMasks), MAKE_NVP("Offset", mOffset),
-		   MAKE_NVP("IsTrigger", mIsTrigger), MAKE_NVP("Color", mColor),
-		   MAKE_NVP("PhysicsMaterial", mPhysicsMaterial));
+		ar(mCollisionEnabled, mCollisionChannel, mCollisionChannelMasks, mOffset, mIsTrigger,
+		   mColor, mPhysicsMaterial);
 	}
 
-	void ColliderComponent::Load(cereal::JSONInputArchive &ar)
+	void ColliderComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ShapeComponent::Load(ar);
 
-		ar(MAKE_NVP("IsCollisonEnabled", mCollisionEnabled),
-		   MAKE_NVP("CollisionChannel", mCollisionChannel),
-		   MAKE_NVP("CollisionChannelMasks", mCollisionChannelMasks), MAKE_NVP("Offset", mOffset),
-		   MAKE_NVP("IsTrigger", mIsTrigger), MAKE_NVP("Color", mColor),
-		   MAKE_NVP("PhysicsMaterial", mPhysicsMaterial));
+		ar(mCollisionEnabled, mCollisionChannel, mCollisionChannelMasks, mOffset, mIsTrigger,
+		   mColor, mPhysicsMaterial);
 	}
 
 	REFLECT(ColliderComponent)

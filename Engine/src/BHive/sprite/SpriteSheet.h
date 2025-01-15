@@ -1,8 +1,8 @@
 #pragma once
 
+#include "asset/Asset.h"
 #include "math/Math.h"
 #include "sprite/Sprite.h"
-#include "asset/Asset.h"
 
 namespace BHive
 {
@@ -16,6 +16,12 @@ namespace BHive
 		uint32_t mRows = 1;
 		uint32_t mColumns = 1;
 		glm::vec2 mCellSize{0.0f};
+
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(mRows, mColumns, mCellSize);
+		}
 	};
 
 	class SpriteSheet : public Asset
@@ -34,26 +40,17 @@ namespace BHive
 		const Sprites &GetSprites() const { return mSprites; }
 		const FSpriteSheetGrid &GetGrid() const { return mGrid; }
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
+
+		REFLECTABLEV(Asset)
 
 	private:
 		Sprites mSprites;
 		TAssetHandle<Texture2D> mSource;
 		FSpriteSheetGrid mGrid;
-
-		REFLECTABLEV(Asset)
-
-		friend class SpriteSheetSerializer;
 	};
-
-	template <typename A>
-	void Serialize(A &ar, FSpriteSheetGrid &obj)
-	{
-		ar(MAKE_NVP("Rows", obj.mRows), MAKE_NVP("Columns", obj.mColumns),
-		   MAKE_NVP("CellSize", obj.mCellSize));
-	}
 
 	REFLECT_EXTERN(FSpriteSheetGrid)
 	REFLECT_EXTERN(SpriteSheet)

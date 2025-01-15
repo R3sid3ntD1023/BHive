@@ -1,11 +1,11 @@
-#include "World.h"
+#include "cameras/EditorCamera.h"
+#include "Components.h"
+#include "core/Time.h"
+#include "debug/Instrumentor.h"
 #include "Entity.h"
 #include "SceneRenderer.h"
-#include "cameras/EditorCamera.h"
-#include "debug/Instrumentor.h"
-#include "core/Time.h"
-#include "Components.h"
 #include "serialization/Serialization.h"
+#include "World.h"
 
 namespace BHive
 {
@@ -200,29 +200,29 @@ namespace BHive
 		return nullptr;
 	}
 
-	void World::Save(cereal::JSONOutputArchive &ar) const
+	void World::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(MAKE_NVP("NumEnities", mEntities.size()));
+		ar(mEntities.size());
 
 		for (auto &[id, entity] : mEntities)
 		{
 			auto type = entity->get_type();
 
-			ar(MAKE_NVP("EntityType", type));
+			ar(type);
 
 			entity->Save(ar);
 		}
 	}
 
-	void World::Load(cereal::JSONInputArchive &ar)
+	void World::Load(cereal::BinaryInputArchive &ar)
 	{
 		size_t num_entitys = 0;
-		ar(MAKE_NVP("NumEntities", num_entitys));
+		ar(num_entitys);
 
 		for (size_t i = 0; i < num_entitys; i++)
 		{
 			AssetType entity_type = InvalidType;
-			ar(MAKE_NVP("EntityType", entity_type));
+			ar(entity_type);
 
 			auto entity = entity_type.create().get_value<Ref<Entity>>();
 			if (entity)
@@ -231,7 +231,6 @@ namespace BHive
 				AddEntity(entity);
 			}
 		}
-
 	}
 
 	void World::OnPhysicsStart()

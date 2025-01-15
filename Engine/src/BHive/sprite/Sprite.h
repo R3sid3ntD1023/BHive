@@ -1,9 +1,9 @@
 #pragma once
 
-#include "core/Core.h"
-#include "math/Math.h"
-#include "gfx/Texture.h"
 #include "asset/Asset.h"
+#include "core/Core.h"
+#include "gfx/Texture.h"
+#include "math/Math.h"
 
 namespace BHive
 {
@@ -40,9 +40,9 @@ namespace BHive
 		const TAssetHandle<Texture2D> &GetSourceTexture() const { return mSource; }
 		const glm::vec2 *GetCoords() const { return mCoords.data(); }
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(Asset)
 

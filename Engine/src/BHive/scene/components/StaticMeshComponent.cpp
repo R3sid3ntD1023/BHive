@@ -1,6 +1,6 @@
-#include "StaticMeshComponent.h"
 #include "mesh/StaticMesh.h"
 #include "scene/SceneRenderer.h"
+#include "StaticMeshComponent.h"
 
 namespace BHive
 {
@@ -29,16 +29,16 @@ namespace BHive
 		renderer->SubmitStaticMesh(mStaticMesh, GetWorldTransform(), mOverrideMaterials);
 	}
 
-	void StaticMeshComponent::Save(cereal::JSONOutputArchive &ar) const
+	void StaticMeshComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		MeshComponent::Save(ar);
-		ar(MAKE_NVP("StaticMesh", mStaticMesh));
+		ar(mStaticMesh);
 	}
 
-	void StaticMeshComponent::Load(cereal::JSONInputArchive &ar)
+	void StaticMeshComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		MeshComponent::Load(ar);
-		ar(MAKE_NVP("StaticMesh", mStaticMesh));
+		ar(mStaticMesh);
 		SetStaticMesh(mStaticMesh);
 	}
 

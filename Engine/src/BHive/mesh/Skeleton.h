@@ -27,9 +27,9 @@ namespace BHive
 		Bones &GetBones() { return mBones; }
 		const Bones &GetBones() const { return mBones; }
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV()
 

@@ -19,6 +19,12 @@ namespace BHive
 			float mFov = 45.0f;
 			float mNear = 0.01f;
 			float mFar = 1000.0f;
+
+			template <typename A>
+			inline void Serialize(A &ar)
+			{
+				ar(mFov, mNear, mFar);
+			}
 		};
 
 		struct FOrthographicSettings
@@ -26,6 +32,12 @@ namespace BHive
 			float mSize = 10.0f;
 			float mNear = -1.0f;
 			float mFar = 1.0f;
+
+			template <typename A>
+			inline void Serialize(A &ar)
+			{
+				ar(mSize, mNear, mFar);
+			}
 		};
 
 	public:
@@ -48,6 +60,20 @@ namespace BHive
 
 		void Resize(uint32_t width, uint32_t height);
 
+		template <typename A>
+		inline void Save(A &ar) const
+		{
+			ar(mProjectionType, mPerspectiveSettings, mOrthographicSettings);
+		}
+
+		template <typename A>
+		inline void Load(A &ar)
+		{
+			ar(mProjectionType, mPerspectiveSettings, mOrthographicSettings);
+
+			RecalculateProjection();
+		}
+
 	private:
 		void RecalculateProjection();
 
@@ -56,14 +82,7 @@ namespace BHive
 		FPerspectiveSettings mPerspectiveSettings;
 		FOrthographicSettings mOrthographicSettings;
 		float mAspectRatio = 1.7555f;
-
-		template<typename A>
-		friend void Save(A &, const SceneCamera &);
-
-		template<typename A>
-		friend void Load(A &, SceneCamera &);
 	};
-
 
 	REFLECT_EXTERN(EProjectionType);
 	REFLECT_EXTERN(SceneCamera::FPerspectiveSettings);

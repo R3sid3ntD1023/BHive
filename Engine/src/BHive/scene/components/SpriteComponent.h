@@ -1,10 +1,10 @@
 #pragma once
 
-#include "scene/components/ShapeComponent.h"
-#include "gfx/Color.h"
-#include "sprite/Sprite.h"
-#include "renderers/QuadRenderer.h"
 #include "core/EnumAsByte.h"
+#include "gfx/Color.h"
+#include "renderers/QuadRenderer.h"
+#include "scene/components/ShapeComponent.h"
+#include "sprite/Sprite.h"
 
 namespace BHive
 {
@@ -30,9 +30,9 @@ namespace BHive
 
 		virtual void OnRender(SceneRenderer *renderer) override;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(ShapeComponent)
 	};

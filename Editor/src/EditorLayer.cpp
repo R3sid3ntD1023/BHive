@@ -1,25 +1,26 @@
-#include "EditorLayer.h"
-#include "scene/World.h"
-#include "scene/SceneRenderer.h"
-#include "gui/Gui.h"
-#include "SceneHeirarchyPanel.h"
-#include "PropertiesPanel.h"
-#include "EditorContentBrowser.h"
-#include "asset/EditorAssetManager.h"
 #include "asset/AssetManager.h"
+#include "asset/EditorAssetManager.h"
+#include "core/FileDialog.h"
+#include "core/WindowInput.h"
+#include "DetailsPanel.h"
+#include "EditorContentBrowser.h"
+#include "EditorLayer.h"
+#include "gui/Gui.h"
+#include "inspector/Inspectors.h"
+#include "project/Project.h"
+#include "PropertiesPanel.h"
+#include "scene/ITransform.h"
+#include "scene/SceneRenderer.h"
+#include "scene/World.h"
+#include "SceneHeirarchyPanel.h"
+#include "serialization/Serialization.h"
 #include "subsystem/SubSystem.h"
 #include "subsystems/EditSubSystem.h"
-#include "core/FileDialog.h"
-#include "inspector/Inspectors.h"
-#include "windows/LogPanel.h"
-#include "project/Project.h"
-#include "DetailsPanel.h"
-#include "serialization/Serialization.h"
 #include "subsystems/WindowSubSystem.h"
-#include "scene/ITransform.h"
-#include "core/WindowInput.h"
+#include "windows/LogPanel.h"
 #include <ImGuizmo.h>
 #include <mini/ini.h>
+#include <rttr/library.h>
 
 namespace glm
 {
@@ -721,11 +722,11 @@ namespace BHive
 		if (mCurrentWorldPath.empty())
 			SaveWorldAs();
 
-		std::ofstream out(mCurrentWorldPath, std::ios::out);
+		std::ofstream out(mCurrentWorldPath, std::ios::out | std::ios::binary);
 		if (!out)
 			return;
 
-		cereal::JSONOutputArchive ar(out);
+		cereal::BinaryOutputArchive ar(out);
 		mEditorWorld->Save(ar);
 
 		LOG_TRACE("Saved World {}", mCurrentWorldPath.string());
@@ -763,11 +764,11 @@ namespace BHive
 
 		mEditorWorld = CreateRef<World>();
 
-		std::ifstream in(open_path, std::ios::in);
+		std::ifstream in(open_path, std::ios::in | std::ios::binary);
 		if (!in)
 			return;
 
-		cereal::JSONInputArchive ar(in);
+		cereal::BinaryInputArchive ar(in);
 		mEditorWorld->Load(ar);
 
 		mActiveWorld = mEditorWorld;

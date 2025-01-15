@@ -18,9 +18,9 @@ namespace BHive
         float mJumpForce = 300.f;
         std::unordered_map<std::string, TAssetHandle<FlipBook>> mStates;
 
-        virtual void Save(cereal::JSONOutputArchive &ar) const override;
+        virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
         REFLECTABLEV(Component)
     };

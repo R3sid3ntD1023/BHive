@@ -1,19 +1,43 @@
 {
     "value0": [
         {
-            "key": 60412464,
+            "key": 1182896169,
             "value": {
-                "Type": "Texture2D",
-                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Textures\\Sprite sheet.asset",
-                "Name": "Sprite sheet"
+                "Type": "Material",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\CubeSPhere\\Material.001.asset",
+                "Name": "Material.001"
             }
         },
         {
-            "key": 539742568,
+            "key": 1359060304,
             "value": {
-                "Type": "Texture2D",
-                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Textures\\heroSpritesheet.asset",
-                "Name": "heroSpritesheet"
+                "Type": "Skeleton",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\CubeSPhere\\CubeSpheres_Skeleton.asset",
+                "Name": "CubeSpheres_Skeleton"
+            }
+        },
+        {
+            "key": 1777163944,
+            "value": {
+                "Type": "Material",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\CubeSPhere\\Material.003.asset",
+                "Name": "Material.003"
+            }
+        },
+        {
+            "key": 2007175099,
+            "value": {
+                "Type": "Material",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\CubeSPhere\\Material.002.asset",
+                "Name": "Material.002"
+            }
+        },
+        {
+            "key": 2053117750,
+            "value": {
+                "Type": "SkeletalMesh",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\CubeSPhere\\CubeSpheres.asset",
+                "Name": "CubeSpheres"
             }
         }
     ]

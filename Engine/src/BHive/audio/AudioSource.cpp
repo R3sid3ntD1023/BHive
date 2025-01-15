@@ -27,8 +27,9 @@ namespace BHive
 	void AudioSource::Initialize()
 	{
 		alGenBuffers(1, &mAudioID);
-		alBufferData(mAudioID, mSpecification.mFormat, mBuffer.mData, mBuffer.mSize,
-					 mSpecification.mSampleRate);
+		alBufferData(
+			mAudioID, mSpecification.mFormat, mBuffer.mData, mBuffer.mSize,
+			mSpecification.mSampleRate);
 
 		if (mSpecification.mStartLoop.has_value() && mSpecification.mEndLoop.has_value())
 		{
@@ -107,20 +108,18 @@ namespace BHive
 		alSourcef(mSourceID, AL_GAIN, gain);
 	}
 
-	void AudioSource::Save(cereal::JSONOutputArchive &ar) const
+	void AudioSource::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(MAKE_NVP("Specification", mSpecification), MAKE_NVP("Pitch", mPitch),
-		   MAKE_NVP("Volume", mGain), MAKE_NVP("Loop", mIsLooping), MAKE_NVP("Length", mLength));
-		ar(MAKE_NVP("Data", mBuffer));
+		ar(mSpecification, mPitch, mGain, mIsLooping, mLength);
+		ar(mBuffer);
 	}
 
-	void AudioSource::Load(cereal::JSONInputArchive &ar)
+	void AudioSource::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(MAKE_NVP("Specification", mSpecification), MAKE_NVP("Pitch", mPitch),
-		   MAKE_NVP("Volume", mGain), MAKE_NVP("Loop", mIsLooping), MAKE_NVP("Length", mLength));
-		  ar(MAKE_NVP("Data", mBuffer));
+		ar(mSpecification, mPitch, mGain, mIsLooping, mLength);
+		ar(mBuffer);
 
 		Initialize();
 		SetPitch(mPitch);

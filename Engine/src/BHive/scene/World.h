@@ -1,11 +1,11 @@
 #pragma once
 
+#include "asset/Asset.h"
 #include "core/Core.h"
 #include "core/UUID.h"
-#include "asset/Asset.h"
+#include "math/Math.h"
 #include "physics/PhysicsContext.h"
 #include "physics/WorldEventListener.h"
-#include "math/Math.h"
 
 namespace BHive
 {
@@ -58,13 +58,13 @@ namespace BHive
 
 		struct CameraComponent *GetPrimaryCameraComponent() const;
 
-		void RayCast(const glm::vec3 &start, const glm::vec3 &end, unsigned short mask = -1,
-					 float factor = 1.0f);
+		void RayCast(
+			const glm::vec3 &start, const glm::vec3 &end, unsigned short mask = -1,
+			float factor = 1.0f);
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const;
+		virtual void Save(cereal::BinaryOutputArchive &ar) const;
 
-		virtual void Load(cereal::JSONInputArchive &ar);
-
+		virtual void Load(cereal::BinaryInputArchive &ar);
 
 		REFLECTABLEV(Asset)
 

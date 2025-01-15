@@ -1,8 +1,8 @@
 #pragma once
 
-#include "physics/LockAxis.h"
 #include "core/EnumAsByte.h"
 #include "math/Math.h"
+#include "physics/LockAxis.h"
 #include "serialization/Serialization.h"
 
 namespace BHive
@@ -45,12 +45,8 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(MAKE_NVP("PhysicsEnabled", mPhysicsEnabled), MAKE_NVP("BodyType", mBodyType),
-			   MAKE_NVP("Mass", mMass), MAKE_NVP("AngularDamping", mAngularDamping),
-			   MAKE_NVP("LinearDamping", mLinearDamping),
-			   MAKE_NVP("LinearLockAxis", mLinearLockAxis),
-			   MAKE_NVP("AngularLockAxis", mAngularLockAxis),
-			   MAKE_NVP("GravityEnabled", mGravityEnabled));
+			ar(mPhysicsEnabled, mBodyType, mMass, mAngularDamping, mLinearDamping, mLinearLockAxis,
+			   mAngularLockAxis, mGravityEnabled);
 		}
 
 		REFLECTABLEV()

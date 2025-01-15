@@ -2,8 +2,8 @@
 
 #include "ComponentMacros.h"
 
-#define INPUT_ARCHIVE cereal::JSONInputArchive
-#define OUTPUT_ARCHIVE cereal::JSONOutputArchive
+#define INPUT_ARCHIVE cereal::BinaryInputArchive
+#define OUTPUT_ARCHIVE cereal::BinaryOutputArchive
 
 // #define HAS_COMPONENT_FUNC HAS_COMPONENT_FUNC_NAME, entity::HasComponent<T>
 //  #define GET_COMPONENT_FUNC GET_COMPONENT_FUNC_NAME, entity::GetComponent<T>

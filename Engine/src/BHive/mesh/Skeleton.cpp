@@ -17,18 +17,16 @@ namespace BHive
 		return nullptr;
 	}
 
-	void Skeleton::Save(cereal::JSONOutputArchive &ar) const
+	void Skeleton::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(MAKE_NVP("Bones", mBones), MAKE_NVP("Heirarchy", mRoot),
-		   MAKE_NVP("RestPose", mRestPoseTransforms));
+		ar(mBones, mRoot, mRestPoseTransforms);
 	}
 
-	void Skeleton::Load(cereal::JSONInputArchive &ar)
+	void Skeleton::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(MAKE_NVP("Bones", mBones), MAKE_NVP("Heirarchy", mRoot),
-		   MAKE_NVP("RestPose", mRestPoseTransforms));
+		ar(mBones, mRoot, mRestPoseTransforms);
 	}
 
 	void Skeleton::CalculateRestPoseTransforms(const SkeletalNode &node, const glm::mat4 &parent)

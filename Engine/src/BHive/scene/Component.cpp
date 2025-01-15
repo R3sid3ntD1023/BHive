@@ -3,27 +3,27 @@
 
 namespace BHive
 {
-    World *Component::GetWorld() const
-    {
-        if (GetOwner())
-            return GetOwner()->GetWorld();
-        return nullptr;
-    }
+	World *Component::GetWorld() const
+	{
+		if (GetOwner())
+			return GetOwner()->GetWorld();
+		return nullptr;
+	}
 
-    void Component::SetTickEnabled(bool enabled)
+	void Component::SetTickEnabled(bool enabled)
 	{
 		mTickEnabled = enabled;
 	}
 
-    void Component::Save(cereal::JSONOutputArchive& ar) const
-    {
+	void Component::Save(cereal::BinaryOutputArchive &ar) const
+	{
 		ObjectBase::Save(ar);
-		ar(MAKE_NVP("IsTickEnabled", mTickEnabled));
-    }
+		ar(mTickEnabled);
+	}
 
-    void Component::Load(cereal::JSONInputArchive& ar)
-    {
+	void Component::Load(cereal::BinaryInputArchive &ar)
+	{
 		ObjectBase::Load(ar);
-		ar(MAKE_NVP("IsTickEnabled", mTickEnabled));
-    }
-}
+		ar(mTickEnabled);
+	}
+} // namespace BHive
