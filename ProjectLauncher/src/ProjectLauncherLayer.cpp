@@ -77,7 +77,7 @@ namespace BHive
 		if (in)
 		{
 			cereal::BinaryInputArchive ar(in);
-			ar(mSettings);
+			mSettings.Serialize(ar);
 		}
 
 		auto &io = ImGui::GetIO();
@@ -92,7 +92,7 @@ namespace BHive
 		{
 
 			cereal::BinaryOutputArchive ar(out);
-			ar(mSettings);
+			mSettings.Serialize(ar);
 			return;
 		}
 
@@ -238,7 +238,7 @@ namespace BHive
 			return;
 
 		cereal::JSONOutputArchive ar(out);
-		ar(config);
+		const_cast<FProjectConfiguration &>(config).Serialize(ar);
 
 		message = std::format("Created {} project sucessfully!", config.mName);
 

@@ -1,11 +1,139 @@
 {
     "value0": [
         {
+            "key": 96901403,
+            "value": {
+                "Type": "Sprite",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Sprites\\Run\\PlayerRun4.sprite",
+                "Name": "PlayerRun4"
+            }
+        },
+        {
+            "key": 133128602,
+            "value": {
+                "Type": "StaticMesh",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Meshes\\sphere.asset",
+                "Name": "sphere"
+            }
+        },
+        {
+            "key": 188226732,
+            "value": {
+                "Type": "FlipBook",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Sprites\\NewFlipBook.asset",
+                "Name": "NewFlipBook"
+            }
+        },
+        {
+            "key": 228093411,
+            "value": {
+                "Type": "Sprite",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Sprites\\NewSprite.asset",
+                "Name": "NewSprite"
+            }
+        },
+        {
+            "key": 367491000,
+            "value": {
+                "Type": "SkeletalMesh",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\Kachujin.asset",
+                "Name": "Kachujin"
+            }
+        },
+        {
+            "key": 426657332,
+            "value": {
+                "Type": "Sprite",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Sprites\\Run\\PlayerRun2.sprite",
+                "Name": "PlayerRun2"
+            }
+        },
+        {
+            "key": 523996954,
+            "value": {
+                "Type": "InputContext",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\InputContext\\PlayerInput.asset",
+                "Name": "PlayerInput"
+            }
+        },
+        {
+            "key": 590368730,
+            "value": {
+                "Type": "Sprite",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Sprites\\Run\\PlayerRun3.sprite",
+                "Name": "PlayerRun3"
+            }
+        },
+        {
+            "key": 634233313,
+            "value": {
+                "Type": "Skeleton",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\Kachujin_Skeleton.asset",
+                "Name": "Kachujin_Skeleton"
+            }
+        },
+        {
+            "key": 655077303,
+            "value": {
+                "Type": "Material",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\plane0.asset",
+                "Name": "plane0"
+            }
+        },
+        {
+            "key": 725716775,
+            "value": {
+                "Type": "Texture2D",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\Kachujin_specular.asset",
+                "Name": "Kachujin_specular"
+            }
+        },
+        {
+            "key": 741278631,
+            "value": {
+                "Type": "Texture2D",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Textures\\Sprite sheet.asset",
+                "Name": "Sprite sheet"
+            }
+        },
+        {
+            "key": 804303556,
+            "value": {
+                "Type": "Texture2D",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\Kachujin_diffuse_body.asset",
+                "Name": "Kachujin_diffuse_body"
+            }
+        },
+        {
+            "key": 905460918,
+            "value": {
+                "Type": "Material",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\sphere0.asset",
+                "Name": "sphere0"
+            }
+        },
+        {
+            "key": 909602854,
+            "value": {
+                "Type": "Texture2D",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\Kachujin_diffuse.asset",
+                "Name": "Kachujin_diffuse"
+            }
+        },
+        {
             "key": 1182896169,
             "value": {
                 "Type": "Material",
                 "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\CubeSPhere\\Material.001.asset",
                 "Name": "Material.001"
+            }
+        },
+        {
+            "key": 1197653813,
+            "value": {
+                "Type": "Sprite",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Sprites\\Run\\PlayerRun1.sprite",
+                "Name": "PlayerRun1"
             }
         },
         {
@@ -17,11 +145,107 @@
             }
         },
         {
+            "key": 1422539550,
+            "value": {
+                "Type": "Material",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Materials\\NewMaterial.asset",
+                "Name": "NewMaterial"
+            }
+        },
+        {
+            "key": 1548320293,
+            "value": {
+                "Type": "StaticMesh",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Meshes\\plane.asset",
+                "Name": "plane"
+            }
+        },
+        {
+            "key": 1581367284,
+            "value": {
+                "Type": "Material",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\kachujin_MAT_.asset",
+                "Name": "kachujin_MAT_"
+            }
+        },
+        {
+            "key": 1640264537,
+            "value": {
+                "Type": "Texture2D",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\Kachujin_normal.asset",
+                "Name": "Kachujin_normal"
+            }
+        },
+        {
+            "key": 1642769580,
+            "value": {
+                "Type": "StaticMesh",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Meshes\\cube.asset",
+                "Name": "cube"
+            }
+        },
+        {
+            "key": 1682680631,
+            "value": {
+                "Type": "Sprite",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Sprites\\Run\\PlayerRun0.sprite",
+                "Name": "PlayerRun0"
+            }
+        },
+        {
+            "key": 1770542545,
+            "value": {
+                "Type": "Sprite",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Sprites\\Run\\PlayerRun5.sprite",
+                "Name": "PlayerRun5"
+            }
+        },
+        {
             "key": 1777163944,
             "value": {
                 "Type": "Material",
                 "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\CubeSPhere\\Material.003.asset",
                 "Name": "Material.003"
+            }
+        },
+        {
+            "key": 1844723753,
+            "value": {
+                "Type": "PhysicsMaterial",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Physics\\NewPhysicsMaterial.asset",
+                "Name": "NewPhysicsMaterial"
+            }
+        },
+        {
+            "key": 1853686538,
+            "value": {
+                "Type": "SpriteSheet",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Sprites\\NewSpriteSheet.asset",
+                "Name": "NewSpriteSheet"
+            }
+        },
+        {
+            "key": 1875809967,
+            "value": {
+                "Type": "Texture2D",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Textures\\heroSpritesheet.asset",
+                "Name": "heroSpritesheet"
+            }
+        },
+        {
+            "key": 1905998527,
+            "value": {
+                "Type": "Material",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\cube0.asset",
+                "Name": "cube0"
+            }
+        },
+        {
+            "key": 1942330884,
+            "value": {
+                "Type": "Material",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\kachujin_MAT.asset",
+                "Name": "kachujin_MAT"
             }
         },
         {

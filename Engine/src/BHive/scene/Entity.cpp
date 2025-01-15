@@ -266,7 +266,7 @@ namespace BHive
 
 	void Entity::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		CEREAL_BASE(ObjectBase, ar);
+		ObjectBase::Save(ar);
 
 		ar(mTickEnabled, mTransform, mRelationshipComponent, mPhysicsComponent, mComponents.size());
 
@@ -279,7 +279,7 @@ namespace BHive
 
 	void Entity::Load(cereal::BinaryInputArchive &ar)
 	{
-		CEREAL_BASE(ObjectBase, ar);
+		ObjectBase::Load(ar);
 
 		size_t num_components = 0;
 

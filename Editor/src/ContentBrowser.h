@@ -19,10 +19,13 @@ namespace BHive
 		void SetBaseDirectory(const std::filesystem::path &directory);
 		const std::filesystem::path &CurrentDirectory() const { return mCurrentDirectory; }
 
-		virtual void OnImportAsset(const std::filesystem::path &directory,
-								   const std::filesystem::path &relative) = 0;
+		virtual void OnImportAsset(
+			const std::filesystem::path &directory, const std::filesystem::path &relative) = 0;
 		virtual void OnDeleteAsset(const std::filesystem::path &relative) = 0;
-		virtual void OnRenameAsset(const std::filesystem::path &relative_old, const std::filesystem::path &relative_new, bool directory) = 0;
+		virtual void OnRenameAsset(
+			const std::filesystem::path &relative_old, const std::filesystem::path &relative_new,
+			bool directory) = 0;
+		virtual void OnReimportAsset(const std::filesystem::path &relative) {};
 		virtual void OnAssetContextMenu(const std::filesystem::path &relative) {}
 		virtual void OnAssetDoubleClicked(const std::filesystem::path &relative) {}
 		virtual bool IsAssetValid(const std::filesystem::path &relative) const = 0;
@@ -44,4 +47,4 @@ namespace BHive
 		std::filesystem::path mBaseDirectory;
 		std::filesystem::path mCurrentDirectory;
 	};
-}
+} // namespace BHive

@@ -197,7 +197,7 @@ namespace BHive
 
 		if (mEditorMode != EEditorMode::PLAY)
 		{
-			if (mIsHovered && mIsFocused)
+			if (mIsHovered || mIsFocused)
 			{
 				mEditorCamera.OnEvent(event);
 			}

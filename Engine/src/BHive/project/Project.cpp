@@ -23,7 +23,7 @@ namespace BHive
 		if (in)
 		{
 			cereal::JSONInputArchive ar(in);
-			ar(sActiveProject->mConfig);
+			sActiveProject->mConfig.Serialize(ar);
 		}
 
 		return sActiveProject;
@@ -38,7 +38,7 @@ namespace BHive
 			return false;
 
 		cereal::JSONOutputArchive ar(out);
-		ar(sActiveProject->mConfig);
+		sActiveProject->mConfig.Serialize(ar);
 
 		return true;
 	}

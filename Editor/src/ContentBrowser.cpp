@@ -1,9 +1,7 @@
 
 #include "ContentBrowser.h"
-
-#include "importers/TextureImporter.h"
-#include "gfx/Texture.h"
 #include "core/FileDialog.h"
+#include "gfx/Texture.h"
 #include "gui/ImGuiExtended.h"
 
 #define DRAG_DROP_SOURCE_TYPE "CONTENT_BROWSER_ITEM"
@@ -215,6 +213,30 @@ namespace BHive
 					ImGui::EndDragDropSource();
 				}
 
+				if (is_directory)
+				{
+					if (ImGui::BeginDragDropTarget())
+					{
+						auto payload = ImGui::AcceptDragDropPayload(
+							"ASSET", ImGuiDragDropFlags_SourceAllowNullID);
+						if (payload)
+						{
+							if (sSelectedItems.size())
+							{
+								for (auto &item : sSelectedItems)
+								{
+									OnRenameAsset(item.second.mEntry.path(), entry.path(), false);
+								}
+
+								sActiveItem = -1;
+								sSelectedItems.clear();
+							}
+						}
+
+						ImGui::EndDragDropTarget();
+					}
+				}
+
 				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 				{
 					if (is_directory)
@@ -229,6 +251,7 @@ namespace BHive
 
 				if (ImGui::BeginPopupContextItem())
 				{
+
 					if (ImGui::MenuItem("Delete"))
 					{
 						sSelectedItems.emplace(index, ms_item);
@@ -239,7 +262,18 @@ namespace BHive
 					{
 						if (is_valid_handle)
 						{
+
 							OnAssetContextMenu(relative_path);
+						}
+						else
+						{
+							if (path.extension() == ".asset")
+							{
+								if (ImGui::MenuItem("Import"))
+								{
+									OnReimportAsset(relative_path);
+								}
+							}
 						}
 					}
 					ImGui::EndPopup();
@@ -248,11 +282,14 @@ namespace BHive
 				static std::string file_name;
 				if (ImGui::DrawEditableText(path.stem().string().c_str(), name, file_name))
 				{
-					auto new_path = relative_path.parent_path() /
-									(file_name + relative_path.extension().string());
-					OnRenameAsset(relative_path, new_path, is_directory);
+					auto new_path = path.parent_path() / (file_name + path.extension().string());
+					OnRenameAsset(path, new_path, is_directory);
 				}
 
+				if (!is_directory)
+				{
+					ImGui::Checkbox("##AssetValid", &is_valid_handle);
+				}
 				ImGui::PopID();
 
 				ImGui::TableNextColumn();
