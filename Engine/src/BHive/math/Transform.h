@@ -66,6 +66,24 @@ namespace BHive
 		glm::mat4 mModelMatrix;
 	};
 
+	template <typename Ostream>
+	inline Ostream &operator<<(Ostream &os, const FTransform &obj)
+	{
+		os << '{' << obj.get_translation() << ',' << obj.get_rotation() << ',' << obj.get_scale()
+		   << '}';
+		return os;
+	}
+
+	template <typename Istream>
+	inline Istream &operator>>(Istream &is, FTransform &obj)
+	{
+		char token;
+		glm::vec3 t, r, s = {};
+		is >> token >> t >> token >> r >> token >> s >> token;
+		obj = {t, r, s};
+		return is;
+	}
+
 	REFLECT_EXTERN(FTransform)
 
 	template <>
@@ -92,9 +110,4 @@ namespace BHive
 		return t;
 	}
 
-	template <typename Ostream>
-	inline Ostream &operator<<(Ostream &os, const FTransform &obj)
-	{
-		return os << obj.to_string();
-	}
 } // namespace BHive

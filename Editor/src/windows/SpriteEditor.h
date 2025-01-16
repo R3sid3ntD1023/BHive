@@ -1,8 +1,8 @@
 #pragma once
 
-#include "TAssetEditor.h"
 #include "sprite/Sprite.h"
 #include "sprite/SpriteSheet.h"
+#include "TAssetEditor.h"
 
 namespace BHive
 {
@@ -18,11 +18,12 @@ namespace BHive
 	protected:
 		virtual void OnWindowRender();
 
-
 	private:
-		void ExtractSprites(const std::filesystem::path &directory, const std::string &filename, const std::string &ext);
+		void ExtractSprites(
+			const std::filesystem::path &directory, const std::string &filename,
+			const std::string &ext);
 
 	private:
 		float mScale = .75f;
 	};
-}
+} // namespace BHive

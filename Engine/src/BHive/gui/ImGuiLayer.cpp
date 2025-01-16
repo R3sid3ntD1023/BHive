@@ -53,7 +53,9 @@ namespace BHive
 		SetColorsDark();
 
 		// Setup Platform/Renderer backends
-		ImGui_ImplGlfw_InitForOpenGL(mWindow, true); // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+		ImGui_ImplGlfw_InitForOpenGL(
+			mWindow, true); // Second param install_callback=true will install GLFW callbacks and
+							// chain to existing ones.
 		ImGui_ImplOpenGL3_Init();
 	}
 
@@ -126,4 +128,4 @@ namespace BHive
 	{
 		mBlockEvents = block;
 	}
-}
+} // namespace BHive

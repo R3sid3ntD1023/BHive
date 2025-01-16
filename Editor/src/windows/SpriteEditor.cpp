@@ -1,7 +1,7 @@
-#include "SpriteEditor.h"
-#include "gfx/Texture.h"
-#include "core/FileDialog.h"
 #include "asset/EditorAssetManager.h"
+#include "core/FileDialog.h"
+#include "gfx/Texture.h"
+#include "SpriteEditor.h"
 
 namespace BHive
 {
@@ -17,7 +17,9 @@ namespace BHive
 			if (texture)
 			{
 
-				ImGui::Image((ImTextureID)(uint64_t)(uint32_t)*texture, {image_size, image_size}, {min.x, max.y}, {max.x, min.y});
+				ImGui::Image(
+					(ImTextureID)(uint64_t)(uint32_t)*texture, {image_size, image_size},
+					{min.x, max.y}, {max.x, min.y});
 				ImGui::SameLine();
 			}
 
@@ -38,7 +40,8 @@ namespace BHive
 				min.y = size.y - min.y;
 				max.y = size.y - max.y;
 
-				ImGui::Image((ImTextureID)(uint64_t)(uint32_t)*texture, {size.x, size.y}, {0, 1}, {1, 0});
+				ImGui::Image(
+					(ImTextureID)(uint64_t)(uint32_t)*texture, {size.x, size.y}, {0, 1}, {1, 0});
 				auto item_pos = ImGui::GetItemRectMin();
 
 				ImGui::SetCursorScreenPos(item_pos);
@@ -51,8 +54,10 @@ namespace BHive
 					newbounds.Min.y = size.y - newbounds.Min.y;
 					newbounds.Max.y = size.y - newbounds.Max.y;
 
-					auto newmin = (glm::vec2(newbounds.Min.x, newbounds.Min.y) / glm::vec2(size.x, size.y));
-					auto newmax = (glm::vec2(newbounds.Max.x, newbounds.Max.y) / glm::vec2(size.x, size.y));
+					auto newmin =
+						(glm::vec2(newbounds.Min.x, newbounds.Min.y) / glm::vec2(size.x, size.y));
+					auto newmax =
+						(glm::vec2(newbounds.Max.x, newbounds.Max.y) / glm::vec2(size.x, size.y));
 
 					mAsset->SetCoords(newmin, newmax);
 				}
@@ -89,7 +94,9 @@ namespace BHive
 
 					ImGui::BeginGroup();
 					auto id = texture ? texture->GetRendererID() : 0;
-					ImGui::Image((ImTextureID)(uint64_t)(uint32_t)id, {item_width, item_width}, {mincoords.x, maxcoords.y}, {maxcoords.x, mincoords.y});
+					ImGui::Image(
+						(ImTextureID)(uint64_t)(uint32_t)id, {item_width, item_width},
+						{mincoords.x, maxcoords.y}, {maxcoords.x, mincoords.y});
 					ImGui::TextColored({1, .5f, 0, 1}, "Sprite %d", i);
 					ImGui::EndGroup();
 
@@ -107,7 +114,8 @@ namespace BHive
 			int index = 0;
 			if (ImGui::Button("Extract"))
 			{
-				std::filesystem::path extract_path = FileDialogs::SaveFile("Sprite (*.sprite)\0*.sprite\0");
+				std::filesystem::path extract_path =
+					FileDialogs::SaveFile("Sprite (*.sprite)\0*.sprite\0");
 				if (!extract_path.empty())
 				{
 					auto file_name = extract_path.stem();
@@ -123,7 +131,8 @@ namespace BHive
 		}
 	}
 
-	void SpriteSheetEditor::ExtractSprites(const std::filesystem::path &directory, const std::string &filename, const std::string &ext)
+	void SpriteSheetEditor::ExtractSprites(
+		const std::filesystem::path &directory, const std::string &filename, const std::string &ext)
 	{
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
 		if (!manager)
@@ -145,4 +154,4 @@ namespace BHive
 			manager->ImportAsset(export_path, sprite.get_type(), sprite.GetHandle());
 		}
 	}
-}
+} // namespace BHive

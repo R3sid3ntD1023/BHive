@@ -19,7 +19,27 @@ namespace glm
 	template <typename Ostream, length_t L, typename T, qualifier Q>
 	inline Ostream &operator<<(Ostream &os, const vec<L, T, Q> &vec)
 	{
-		return os << to_string(vec);
+		os << '(';
+		for (length_t i{}; i < L; i++)
+		{
+			os << vec[i];
+			if (i < L - 1)
+				os << ',';
+		}
+
+		os << ')';
+		return os;
+	}
+
+	template <typename Istream, length_t L, typename T, qualifier Q>
+	inline Istream &operator>>(Istream &is, vec<L, T, Q> &vec)
+	{
+		char token;
+		is >> token;
+		for (length_t i{}; i < L; i++)
+			is >> vec[i] >> token;
+
+		return is;
 	}
 
 } // namespace glm

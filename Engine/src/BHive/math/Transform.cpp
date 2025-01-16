@@ -100,13 +100,11 @@ namespace BHive
 
 	std::string FTransform::to_string() const
 	{
-		std::stringstream ss;
-		ss << "{\n " << glm::to_string(mTranslation) << " , \n"
-		   << glm::to_string(mRotation) << " , \n"
-		   << glm::to_string(mScale) << " , \n"
-		   << " }";
-
-		return ss.str();
+		return "{" +
+			   std::format(
+				   "{},{},{} ", glm::to_string(mTranslation), glm::to_string(mRotation),
+				   glm::to_string(mScale)) +
+			   "}";
 	}
 
 	FTransform &FTransform::operator=(const FTransform &rhs)

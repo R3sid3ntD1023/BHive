@@ -76,7 +76,7 @@
             "key": 655077303,
             "value": {
                 "Type": "Material",
-                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\plane0.asset",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Meshes\\plane0.asset",
                 "Name": "plane0"
             }
         },
@@ -108,7 +108,7 @@
             "key": 905460918,
             "value": {
                 "Type": "Material",
-                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\sphere0.asset",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Meshes\\sphere0.asset",
                 "Name": "sphere0"
             }
         },
@@ -236,7 +236,7 @@
             "key": 1905998527,
             "value": {
                 "Type": "Material",
-                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\cube0.asset",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Meshes\\cube0.asset",
                 "Name": "cube0"
             }
         },

@@ -5,25 +5,27 @@
 
 namespace BHive
 {
-    struct WindowSubSystem
-    {
+	struct WindowSubSystem
+	{
 
-        void UpdateWindows();
-        void ProcessEvents(Event &event);
+		void UpdateWindows();
+		void ProcessEvents(Event &event);
 
-        template <typename T, typename... TArgs>
-        Ref<T> AddWindow(TArgs &&...args)
-        {
-            static_assert(std::is_base_of_v<IWindow, T>, "T must be derived from IWindow");
+		template <typename T, typename... TArgs>
+		Ref<T> AddWindow(TArgs &&...args)
+		{
+			static_assert(std::is_base_of_v<IWindow, T>, "T must be derived from IWindow");
 
-            auto window = CreateRef<T>(std::forward<TArgs>(args)...);
-            AddWindow(window);
-            return window;
-        }
+			auto window = CreateRef<T>(std::forward<TArgs>(args)...);
+			AddWindow(window);
+			return window;
+		}
 
-        void AddWindow(const Ref<IWindow> &window);
+		void AddWindow(const Ref<IWindow> &window);
 
-    private:
-        std::unordered_set<Ref<IWindow>> mWindows;
-    };
-}
+		void Clear();
+
+	private:
+		std::unordered_set<Ref<IWindow>> mWindows;
+	};
+} // namespace BHive

@@ -22,52 +22,8 @@
 #include <mini/ini.h>
 #include <rttr/library.h>
 
-namespace glm
-{
-	template <length_t L, typename T, qualifier Q>
-	inline std::stringstream &operator<<(std::stringstream &os, const vec<L, T, Q> &vec)
-	{
-		os << "(";
-		for (int i = 0; i < L; i++)
-		{
-			os << vec[i];
-			if (i < L - 1)
-				os << ",";
-		}
-		os << ")";
-		return os;
-	}
-
-	template <length_t L, typename T, qualifier Q>
-	inline std::stringstream &operator>>(std::stringstream &is, vec<L, T, Q> &vec)
-	{
-		char buf;
-		is >> buf;
-		for (int i = 0; i < L; i++)
-		{
-			is >> vec[i];
-			if (i < L - 1)
-				is >> buf;
-		}
-		is >> buf;
-		return is;
-	}
-} // namespace glm
-
 namespace BHive
 {
-	inline std::stringstream &operator<<(std::stringstream &os, const FTransform &obj)
-	{
-		return os << obj.get_translation() << obj.get_rotation() << obj.get_scale();
-	}
-
-	inline std::stringstream &operator>>(std::stringstream &is, FTransform &obj)
-	{
-		glm::vec3 t, r, s;
-		is >> t >> r >> s;
-		obj = FTransform{t, r, s};
-		return is;
-	}
 
 	struct FPSCounter
 	{
@@ -182,6 +138,9 @@ namespace BHive
 
 	void EditorLayer::OnDetach()
 	{
+		auto &window_system = SubSystemContext::Get().AddSubSystem<WindowSubSystem>();
+		window_system.Clear();
+
 		if (Log::OnMessageLogged.is_bound())
 		{
 			Log::OnMessageLogged.unbind(mLogEventHandle);
@@ -375,15 +334,18 @@ namespace BHive
 		}
 		case Key::S:
 		{
-			if (ctrl && !shift)
+			if (ctrl)
 			{
-				SaveWorld();
-				return true;
-			}
-			else if (ctrl && shift)
-			{
-				SaveWorldAs();
-				return true;
+				if (shift)
+				{
+					SaveWorldAs();
+					return true;
+				}
+				else
+				{
+					SaveWorld();
+					return true;
+				}
 			}
 
 			break;
