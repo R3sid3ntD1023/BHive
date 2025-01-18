@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mesh/MeshImportData.h"
-#include "WindowBase.h"
+#include "windows/WindowBase.h"
 
 namespace BHive
 {

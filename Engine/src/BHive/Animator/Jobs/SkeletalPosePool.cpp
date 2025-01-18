@@ -1,50 +1,50 @@
-#include "SkeletalPosePool.h"
 #include "mesh/SkeletalPose.h"
-
+#include "SkeletalPosePool.h"
 
 namespace BHive
 {
-    SkeletalPosePool::SkeletalPosePool(const Skeleton *skeleton)
-        :mSkeleton(skeleton)
-    {
-    }
+	SkeletalPosePool::SkeletalPosePool(const Skeleton *skeleton)
+		: mSkeleton(skeleton)
+	{
+	}
 
-    SkeletalPosePool::~SkeletalPosePool()
-    {
-        ASSERT(mBorrows != 0);
-    }
+	SkeletalPosePool::~SkeletalPosePool()
+	{
+		ASSERT(mBorrows == 0);
+	}
 
-    SkeletalPosePool::ptr SkeletalPosePool::Borrow()
-    {
-        ASSERT(mBorrows >= 0);
-        mBorrows++;
+	SkeletalPosePool::ptr SkeletalPosePool::Borrow()
+	{
+		ASSERT(mBorrows >= 0);
+		mBorrows++;
 
-        if(mPoses.empty())
-        {
-            return ptr{new SkeletalPose{mSkeleton}, deleter{*this}};
-        }
-        
-        SkeletalPose* result = mPoses.back().get();
-        mPoses.pop_back();
-        return ptr{result};
-    }
+		if (mPoses.empty())
+		{
+			return ptr{new SkeletalPose{mSkeleton}, deleter{*this}};
+		}
 
-    SkeletalPosePool::deleter::deleter(SkeletalPosePool &pool)
-        :mPool(&pool)
-    {}
+		SkeletalPose *result = mPoses.back().get();
+		mPoses.pop_back();
+		return ptr{result};
+	}
 
-    void SkeletalPosePool::deleter::operator()(SkeletalPose *ptr)
-    {
-        ASSERT(mPool != nullptr);
+	SkeletalPosePool::deleter::deleter(SkeletalPosePool &pool)
+		: mPool(&pool)
+	{
+	}
 
-        ASSERT(mPool->mBorrows > 0);
-        mPool->mBorrows--;
+	void SkeletalPosePool::deleter::operator()(SkeletalPose *ptr)
+	{
+		ASSERT(mPool != nullptr);
 
-        ASSERT(std::find_if(mPool->mPoses.begin(), mPool->mPoses.end(), [ptr](auto& pose)
-        {
-            return pose.get() == ptr;
-        }) == mPool->mPoses.end());
+		ASSERT(mPool->mBorrows > 0);
+		mPool->mBorrows--;
 
-        mPool->mPoses.emplace_back(ptr);
-    }
-}
+		ASSERT(
+			std::find_if(
+				mPool->mPoses.begin(), mPool->mPoses.end(),
+				[ptr](auto &pose) { return pose.get() == ptr; }) == mPool->mPoses.end());
+
+		mPool->mPoses.emplace_back(ptr);
+	}
+} // namespace BHive

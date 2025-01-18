@@ -1,36 +1,36 @@
 #pragma once
 
-#include "WindowBase.h"
+#include "windows/WindowBase.h"
 
 namespace BHive
 {
-    class AssetEditor : public WindowBase
-    {
-    public:
-        AssetEditor();
+	class AssetEditor : public WindowBase
+	{
+	public:
+		AssetEditor();
 
-        virtual ~AssetEditor() = default;
+		virtual ~AssetEditor() = default;
 
-        void OnUpdateContent();
+		void OnUpdateContent();
 
-        bool IsOpened() const { return mIsOpened; }
+		bool IsOpened() const { return mIsOpened; }
 
-        virtual void SetContext(const UUID &handle) {};
+		virtual void SetContext(const UUID &handle) {};
 
-    protected:
-        virtual bool OnSave(const std::filesystem::path &) const { return false; };
+	protected:
+		virtual bool OnSave(const std::filesystem::path &) const { return false; };
 
-        virtual void OnMenuBar() {};
+		virtual void OnMenuBar() {};
 
-        virtual void OnWindowRender() = 0;
+		virtual void OnWindowRender() = 0;
 
-    protected:
-        std::filesystem::path mCurrentSavePath;
+	protected:
+		std::filesystem::path mCurrentSavePath;
 
-    private:
-        void MenuBar();
+	private:
+		void MenuBar();
 
-    private:
-        bool mIsOpened = true;
-    };
+	private:
+		bool mIsOpened = true;
+	};
 } // namespace BHive

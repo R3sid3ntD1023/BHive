@@ -3,6 +3,7 @@
 #include "Animator/BlackBoard.h"
 #include "asset/Asset.h"
 #include "mesh/SkeletalPose.h"
+#include "mesh/Skeleton.h"
 
 namespace BHive
 {
@@ -34,7 +35,7 @@ namespace BHive
 	private:
 		Nodes mNodes;
 
-		Ref<Skeleton> mSkeleton;
+		TAssetHandle<Skeleton> mSkeleton;
 
 		Ref<Animator> mAnimator{nullptr};
 
@@ -43,9 +44,4 @@ namespace BHive
 		BlackBoard mBlackBoard;
 	};
 
-	REFLECT(AnimGraph)
-	{
-		BEGIN_REFLECT(AnimGraph)
-		REFLECT_PROPERTY("BlackBoard", mBlackBoard);
-	}
 } // namespace BHive

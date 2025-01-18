@@ -4,7 +4,7 @@
 #include "MeshFactory.h"
 #include "subsystem/SubSystem.h"
 #include "subsystems/WindowSubSystem.h"
-#include "windows/MeshOptionsWindow.h"
+#include "windows/editors/MeshOptionsWindow.h"
 
 namespace BHive
 {

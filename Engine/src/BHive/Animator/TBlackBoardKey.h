@@ -35,6 +35,7 @@ namespace BHive
 	REFLECT(::BHive::TBlackBoardKey<cls>)           \
 	{                                               \
 		BEGIN_REFLECT(::BHive::TBlackBoardKey<cls>) \
+		REFLECT_CONSTRUCTOR()                       \
 		REFLECT_PROPERTY("Value", mValue);          \
 	}
 

@@ -2,6 +2,7 @@
 
 #include "asset/FAssetContextMenu.h"
 #include "windows/editors/AnimationEditor.h"
+#include "windows/editors/AnimGraphEditor.h"
 #include "windows/editors/AudioEditor.h"
 #include "windows/editors/FlipBookEditor.h"
 #include "windows/editors/InputContextEditor.h"
@@ -74,6 +75,11 @@ namespace BHive
 	};
 
 	struct TextureContextMenu : public FAssetContextMenuBase<TextureEditor>
+	{
+		REFLECTABLEV(FAssetContextMenu)
+	};
+
+	struct AnimGraphContextMenu : public FAssetContextMenuBase<AnimGraphEditor>
 	{
 		REFLECTABLEV(FAssetContextMenu)
 	};

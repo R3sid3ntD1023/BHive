@@ -1,6 +1,5 @@
 #include "Animator/Animator.h"
 #include "AnimGraph.h"
-#include "mesh/Skeleton.h"
 #include "nodes/AnimGraphNodeBase.h"
 
 namespace BHive
@@ -11,9 +10,9 @@ namespace BHive
 	}
 	void AnimGraph::Initialize()
 	{
-		mAnimator = CreateRef<Animator>(mSkeleton.get());
+		mAnimator = CreateRef<Animator>(mSkeleton.get().get());
 		mAnimator->SetBlackBoard(mBlackBoard);
-		mPose = CreateRef<SkeletalPose>(mSkeleton.get());
+		mPose = CreateRef<SkeletalPose>(mSkeleton.get().get());
 	}
 	void AnimGraph::Play(float dt)
 	{
@@ -25,8 +24,7 @@ namespace BHive
 
 	void AnimGraph::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(TAssetHandle<Skeleton>(mSkeleton));
-		ar(mNodes.size());
+		ar(mSkeleton, mBlackBoard, mNodes.size());
 
 		for (const auto &[id, node] : mNodes)
 		{
@@ -38,10 +36,7 @@ namespace BHive
 	void AnimGraph::Load(cereal::BinaryInputArchive &ar)
 	{
 		size_t num_nodes = 0;
-		TAssetHandle<Skeleton> skeleton;
-		ar(skeleton);
-
-		mSkeleton = skeleton.get();
+		ar(mSkeleton, mBlackBoard, num_nodes);
 
 		for (size_t i{}; i < num_nodes; i++)
 		{
@@ -59,5 +54,13 @@ namespace BHive
 		}
 
 		Initialize();
+	}
+
+	REFLECT(AnimGraph)
+	{
+		BEGIN_REFLECT(AnimGraph)
+		REFLECT_CONSTRUCTOR()
+		REFLECT_PROPERTY_READ_ONLY("Skeleton", mSkeleton)
+		REFLECT_PROPERTY("BlackBoard", mBlackBoard);
 	}
 } // namespace BHive

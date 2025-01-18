@@ -49,14 +49,6 @@
             }
         },
         {
-            "key": 441356840,
-            "value": {
-                "Type": "AnimGraph",
-                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\AnimGraphs\\NewAnimGraph.asset",
-                "Name": "NewAnimGraph"
-            }
-        },
-        {
             "key": 523996954,
             "value": {
                 "Type": "InputContext",
@@ -126,6 +118,14 @@
                 "Type": "Texture2D",
                 "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\Kachujin_diffuse.asset",
                 "Name": "Kachujin_diffuse"
+            }
+        },
+        {
+            "key": 998255967,
+            "value": {
+                "Type": "AnimGraph",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\AnimGraphs\\NewAnimGraph.asset",
+                "Name": "NewAnimGraph"
             }
         },
         {

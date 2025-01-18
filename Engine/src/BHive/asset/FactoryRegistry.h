@@ -13,7 +13,7 @@ namespace BHive
 	public:
 		struct TypeInfo
 		{
-			const char *mName;
+			const char *mName = "";
 			FAssetExtensions mExtensions;
 			Ref<Factory> mFactory;
 
@@ -23,7 +23,9 @@ namespace BHive
 	public:
 		FactoryRegistry();
 
-		template <typename T, typename TFactory, typename = std::enable_if<std::is_base_of_v<Factory, TFactory>>>
+		template <
+			typename T, typename TFactory,
+			typename = std::enable_if<std::is_base_of_v<Factory, TFactory>>>
 		void Register(const FAssetExtensions &extensions)
 		{
 			auto type = AssetType::get<T>();
@@ -36,7 +38,9 @@ namespace BHive
 			return Get(AssetType::get<T>());
 		}
 
-		void Register(const char *name, const AssetType &type_id, const FAssetExtensions &extensions, const Ref<Factory> &Factory);
+		void Register(
+			const char *name, const AssetType &type_id, const FAssetExtensions &extensions,
+			const Ref<Factory> &Factory);
 
 		Ref<Factory> Get(const AssetType &type_id) const;
 
@@ -62,10 +66,13 @@ namespace BHive
 			return info;
 		}
 
-		const std::unordered_map<AssetType, TypeInfo> &GetRegisteredFentityies() const { return mRegisteredTypes; }
+		const std::unordered_map<AssetType, TypeInfo> &GetRegisteredFentityies() const
+		{
+			return mRegisteredTypes;
+		}
 
 	private:
 		std::unordered_map<AssetType, TypeInfo> mRegisteredTypes;
 	};
 
-}
+} // namespace BHive

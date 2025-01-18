@@ -54,6 +54,7 @@ set(SKIP_PERFORMANCE_COMPARISON ON CACHE BOOL "" FORCE)
 FetchContent_Declare(
 	glfw
 	GIT_REPOSITORY https://github.com/glfw/glfw.git
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/glfw"
 	GIT_TAG master
 )
 list( APPEND components glfw)
@@ -62,6 +63,7 @@ FetchContent_Declare(
 	glad
 	GIT_REPOSITORY https://github.com/R3sid3ntD1023/glad.git
 	GIT_TAG main
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/glad"
 )
 list(APPEND components glad)
 
@@ -70,6 +72,7 @@ FetchContent_Declare(
 	glm
 	GIT_REPOSITORY https://github.com/g-truc/glm.git
 	GIT_TAG master
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/glm"
 )
 list( APPEND components glm)
 
@@ -78,6 +81,7 @@ FetchContent_Declare(
 	spdlog
 	GIT_REPOSITORY https://github.com/gabime/spdlog.git
 	GIT_TAG v1.15.0
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/spdlog"
 )
 list( APPEND components spdlog)
 	
@@ -86,6 +90,8 @@ FetchContent_Declare(
 	imgui
 	GIT_REPOSITORY https://github.com/R3sid3ntD1023/imgui.git
 	GIT_TAG docking
+	OVERRIDE_FIND_PACKAGE
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/imgui"
 )
 list( APPEND components imgui)
 
@@ -94,6 +100,7 @@ FetchContent_Declare(
 	stb
 	GIT_REPOSITORY https://github.com/R3sid3ntD1023/stb.git
 	GIT_TAG master
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/stb"
 )
 list(APPEND components stb)
 
@@ -102,6 +109,7 @@ FetchContent_Declare(
 	reactphysics3d
 	GIT_REPOSITORY https://github.com/DanielChappuis/reactphysics3d.git
 	GIT_TAG master
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/reactphysics3d"
 )
 list( APPEND components reactphysics3d)
 
@@ -110,6 +118,7 @@ FetchContent_Declare(
 	openal-soft
 	GIT_REPOSITORY https://github.com/kcat/openal-soft.git
 	GIT_TAG 1.24.1
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/openal-soft"
 )
 list(APPEND components openal-soft)
 
@@ -118,6 +127,7 @@ FetchContent_Declare(
 	waveparser
 	GIT_REPOSITORY https://github.com/R3sid3ntD1023/WaveParser.git
 	GIT_TAG master
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/waveparser"
 )
 list(APPEND components waveparser)
 
@@ -126,6 +136,7 @@ FetchContent_Declare(
 	assimp
 	GIT_REPOSITORY https://github.com/assimp/assimp.git
 	GIT_TAG master
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/assimp"
 )
 list(APPEND components assimp)
 
@@ -134,6 +145,7 @@ FetchContent_Declare(
 	rttr
 	GIT_REPOSITORY https://github.com/rttrorg/rttr.git
 	GIT_TAG master
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/rttr"
 )
 list(APPEND components rttr)
 
@@ -141,6 +153,7 @@ FetchContent_Declare(
 	cereal
 	GIT_REPOSITORY https://github.com/USCiLab/cereal.git
 	GIT_TAG v1.3.2
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/cereal"
 )
 list(APPEND components cereal)
 

@@ -6,6 +6,7 @@
 namespace BHive
 {
 	class AnimGraph;
+	class AnimationNodeBase;
 
 	class AnimGraphNodeBase
 	{

@@ -11,6 +11,7 @@ namespace BHive
 	bool Inspector_AssetHandler::Inspect(
 		rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
+
 		auto asset_manager = AssetManager::GetAssetManager<EditorAssetManager>();
 		if (!asset_manager)
 			return false;
@@ -26,7 +27,7 @@ namespace BHive
 
 		if (read_only)
 		{
-			ImGui::Text("%s", current_name.data());
+			ImGui::TextUnformatted(current_name.data());
 			return false;
 		}
 
