@@ -1,14 +1,14 @@
-#include "PhysicsMaterialFactory.h"
 #include "physics/PhysicsMaterial.h"
+#include "PhysicsMaterialFactory.h"
 
 namespace BHive
 {
 	Ref<Asset> PhysicsMaterialFactory::CreateNew()
 	{
-		auto pm =  CreateRef<PhysicsMaterial>();
-		OnImportCompleted.invoke(pm);
+		auto pm = CreateRef<PhysicsMaterial>();
+		OnAssetCreated.invoke(pm);
 		return pm;
 	}
 
-    REFLECT_Factory(PhysicsMaterialFactory, PhysicsMaterial, ".physicsmaterial") 
+	REFLECT_FACTORY(PhysicsMaterialFactory, PhysicsMaterial, ".physicsmaterial")
 } // namespace BHive

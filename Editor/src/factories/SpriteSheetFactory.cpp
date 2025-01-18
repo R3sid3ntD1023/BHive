@@ -1,14 +1,14 @@
-#include "SpriteSheetFactory.h"
 #include "sprite/SpriteSheet.h"
+#include "SpriteSheetFactory.h"
 
 namespace BHive
 {
 	Ref<Asset> SpriteSheetFactory::CreateNew()
 	{
 		auto ss = CreateRef<SpriteSheet>();
-		OnImportCompleted.invoke(ss);
+		OnAssetCreated.invoke(ss);
 		return ss;
 	}
 
-    REFLECT_Factory(SpriteSheetFactory, SpriteSheet, ".spritesheet") 
+	REFLECT_FACTORY(SpriteSheetFactory, SpriteSheet, ".spritesheet")
 } // namespace BHive

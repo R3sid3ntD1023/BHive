@@ -12,9 +12,9 @@
 #define REFLECT_PROPERTY_IMPL(name, member) .property(name, &T::##member)
 
 #define GET_REFLECT_PROPERTY_MACRO_NAME(arg0, arg1, macro) macro
-#define GET_REFLECT_PROPERTY_MACRO(name, ...)                                                \
-	EXPAND(GET_REFLECT_PROPERTY_MACRO_NAME(__VA_ARGS__, REFLECT_PROPERTY_GETTER_SETTER_IMPL, \
-										   REFLECT_PROPERTY_IMPL))
+#define GET_REFLECT_PROPERTY_MACRO(name, ...) \
+	EXPAND(GET_REFLECT_PROPERTY_MACRO_NAME(   \
+		__VA_ARGS__, REFLECT_PROPERTY_GETTER_SETTER_IMPL, REFLECT_PROPERTY_IMPL))
 
 #define REFLECT_PROPERTY(...) EXPAND(GET_REFLECT_PROPERTY_MACRO(__VA_ARGS__)(__VA_ARGS__))
 #define REFLECT_PROPERTY_READ_ONLY(name, member) .property_readonly(name, &T::##member)
@@ -24,7 +24,7 @@
 
 #define CONSTRUCTOR_POLICY_OBJECT (rttr::policy::ctor::as_object)
 #define CONSTRUCTOR_POLICY_SHARED (rttr::policy::ctor::as_std_shared_ptr)
-#define CONSTRUCTOR_POLICY_PTR (rttr::policy::ctor::as_std_raw_ptr)
+#define CONSTRUCTOR_POLICY_PTR (rttr::policy::ctor::as_raw_ptr)
 
 #define REFLECT_IMPL(cls)                                               \
 	template <>                                                         \
@@ -74,6 +74,8 @@
 
 namespace BHive
 {
+	static const rttr::type InvalidType = rttr::type::get<rttr::detail::invalid_type>();
+
 	namespace reflection
 	{
 		template <typename T>

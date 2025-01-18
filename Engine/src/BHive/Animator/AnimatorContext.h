@@ -3,23 +3,22 @@
 #include "core/Core.h"
 #include "Jobs/JobQueue.h"
 
-
 namespace BHive
 {
-    class BlackBoard;
+	class BlackBoard;
 
-    struct AnimatorContext
-    {
-        JobQueue& mJobQueue;
+	struct AnimatorContext
+	{
+		JobQueue &mJobQueue;
 
-        Ref<BlackBoard> mBlackBoard;
+		BlackBoard &mBlackBoard;
 
-        const float mDeltaTime{0.f};
+		const float mDeltaTime{0.f};
 
-        bool mSyncEnabled{false};
+		bool mSyncEnabled{false};
 
-        std::optional<float> mSyncPhase;
+		std::optional<float> mSyncPhase;
 
-        int32_t mPlayCounter{0};
-    };
+		int32_t mPlayCounter{0};
+	};
 } // namespace BHive

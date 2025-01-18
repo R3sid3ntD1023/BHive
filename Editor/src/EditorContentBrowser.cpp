@@ -1,13 +1,12 @@
-#include "EditorContentBrowser.h"
+#include "asset/AssetContextMenuRegistry.h"
+#include "asset/AssetFactory.h"
 #include "asset/AssetManager.h"
 #include "asset/EditorAssetManager.h"
 #include "asset/FactoryRegistry.h"
-#include "gfx/Texture.h"
-#include "asset/AssetContextMenuRegistry.h"
 #include "asset/FAssetContextMenu.h"
+#include "EditorContentBrowser.h"
+#include "gfx/Texture.h"
 #include "project/Project.h"
-#include "asset/AssetFactory.h"
-#include "threading/Threading.h"
 
 namespace BHive
 {
@@ -29,6 +28,19 @@ namespace BHive
 			asset_factory.Export(other, export_path);
 			manager->ImportAsset(export_path, other->get_type(), other->GetHandle());
 		}
+	}
+
+	void
+	FinishCreateAsset(const std::string &name, const std::filesystem::path &path, Ref<Asset> asset)
+	{
+		asset->SetName(name);
+		auto export_path = path / (asset->GetName() + ".asset");
+
+		AssetFactory asset_factory;
+		asset_factory.Export(asset, export_path);
+
+		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
+		manager->ImportAsset(export_path, asset->get_type(), asset->GetHandle());
 	}
 
 	EditorContentBrowser::EditorContentBrowser(const std::filesystem::path &directory)
@@ -80,6 +92,7 @@ namespace BHive
 		}
 
 		std::error_code error;
+
 		std::filesystem::rename(old_path, new_path, error);
 
 		if (error)
@@ -151,19 +164,13 @@ namespace BHive
 	void EditorContentBrowser::OnCreateAsset(
 		const std::filesystem::path &directory, const Ref<Factory> &factory)
 	{
-		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
+
 		if (factory->CanCreateNew())
 		{
-			if (auto asset = factory->CreateNew())
-			{
-				asset->SetName(factory->GetDefaultAssetName());
-				auto export_path = directory / (asset->GetName() + ".asset");
-
-				AssetFactory asset_factory;
-				asset_factory.Export(asset, export_path);
-
-				manager->ImportAsset(export_path, asset->get_type(), asset->GetHandle());
-			}
+			factory->OnAssetCreated.bind(
+				[=](Ref<Asset> asset)
+				{ FinishCreateAsset(factory->GetDefaultAssetName(), directory, asset); });
+			factory->CreateNew();
 		}
 	}
 

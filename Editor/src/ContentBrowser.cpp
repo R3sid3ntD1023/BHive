@@ -8,17 +8,23 @@
 
 namespace BHive
 {
-	static std::vector<const char *> sHiddenExtensions = {".registry"};
-
 	struct FileEntry
 	{
 		int mID;
 		std::filesystem::directory_entry mEntry;
 	};
 
+	enum EContentBrowserAction : uint8_t
+	{
+		Action_None,
+		Action_Delete,
+		Action_Move
+	};
+
 	using SelectedItems = std::unordered_map<int, FileEntry>;
 	static SelectedItems sSelectedItems;
 	static int sActiveItem = -1;
+	static EContentBrowserAction sCurrentAction = Action_None;
 
 	ContentBrowserPanel::ContentBrowserPanel(const std::filesystem::path &directory)
 		: mBaseDirectory(directory),
@@ -77,21 +83,7 @@ namespace BHive
 
 		ImGui::TableNextColumn();
 
-		static float padding = 16.0f;
-		static float thumbnailsize = 128.0f;
-		float cellsize = thumbnailsize + padding;
-		float panelWidth = ImGui::GetContentRegionAvail().x;
-		int columnCount = (int)(panelWidth / cellsize);
-		if (columnCount < 1)
-			columnCount = 1;
-
-		ImGui::BeginTable("##columns", columnCount);
-		ImGui::TableNextRow();
-		ImGui::TableNextColumn();
-
-		ShowFileSystem(thumbnailsize);
-
-		ImGui::EndTable();
+		ShowFileSystem();
 
 		ImGui::EndTable();
 
@@ -99,10 +91,38 @@ namespace BHive
 		{
 			if (ImGui::Begin("ContentBrowserSettings", &open_settings))
 			{
-				ImGui::SliderFloat("Padding", &padding, 1.f, 16.0f, "%.2f");
-				ImGui::SliderFloat("ThumbnailSize", &thumbnailsize, 32.0f, 128.0f, "%.2f");
+				ImGui::SliderFloat("Padding", &mPadding, 1.f, 16.0f, "%.2f");
+				ImGui::SliderFloat("ThumbnailSize", &mThumbnailSize, 32.0f, 128.0f, "%.2f");
 				ImGui::End();
 			}
+		}
+
+		if (ImGui::IsWindowFocused())
+		{
+			if (ImGui::IsKeyPressed(ImGuiKey_Delete))
+			{
+				sCurrentAction = Action_Delete;
+			}
+			else if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+			{
+				sActiveItem = -1;
+				sSelectedItems.clear();
+			}
+		}
+
+		if (sCurrentAction != Action_None)
+		{
+			if (sCurrentAction == Action_Delete)
+			{
+				for (auto &[id, item] : sSelectedItems)
+				{
+					DeleteFolder(item.mEntry);
+				}
+			}
+
+			sCurrentAction = Action_None;
+			sActiveItem = -1;
+			sSelectedItems.clear();
 		}
 
 		if (ImGui::BeginPopupContextWindow(
@@ -153,9 +173,19 @@ namespace BHive
 		}
 	}
 
-	void ContentBrowserPanel::ShowFileSystem(float thumbnailsize)
+	void ContentBrowserPanel::ShowFileSystem()
 	{
-		static bool delete_entries = false;
+		auto drawlist = ImGui::GetWindowDrawList();
+
+		float cellsize = mThumbnailSize + mPadding;
+		float panelWidth = ImGui::GetContentRegionAvail().x;
+		int columnCount = (int)(panelWidth / cellsize);
+		if (columnCount < 1)
+			columnCount = 1;
+
+		ImGui::BeginTable("##columns", columnCount);
+		ImGui::TableNextRow();
+		ImGui::TableNextColumn();
 
 		if (!mCurrentDirectory.empty())
 		{
@@ -169,13 +199,8 @@ namespace BHive
 
 				auto path = entry.path();
 				auto ext = path.extension();
-
-				if (std::find(sHiddenExtensions.begin(), sHiddenExtensions.end(), ext) !=
-					sHiddenExtensions.end())
-					continue;
-
 				bool is_directory = entry.is_directory();
-				auto name = path.filename().string();
+				auto name = path.stem().string();
 
 				auto relative_path = std::filesystem::relative(path, mBaseDirectory);
 				bool is_valid_handle = IsAssetValid(relative_path);
@@ -186,13 +211,10 @@ namespace BHive
 
 				ImGui::PushID(id);
 
-				bool is_selected = sSelectedItems.contains(index);
-				if (ImGui::DrawIcon(name.c_str(), icon.get(), thumbnailsize, 0, &is_selected))
+				if (ImGui::DrawIcon(name.c_str(), icon.get(), mThumbnailSize, 0))
 				{
-
 					if (!ImGui::IsKeyDown(ImGuiKey_ModCtrl))
 					{
-
 						sSelectedItems.clear();
 					}
 
@@ -201,16 +223,11 @@ namespace BHive
 					sActiveItem = index;
 				}
 
-				if (ImGui::BeginDragDropSource())
+				bool is_selected = sSelectedItems.contains(index);
+				if (is_selected)
 				{
-					AssetHandle data;
-
-					if (GetDragDropData(data, relative_path))
-					{
-						ImGui::SetDragDropPayload("ASSET", &data, sizeof(AssetHandle));
-					}
-
-					ImGui::EndDragDropSource();
+					auto rect = ImGui::GetItemRect();
+					drawlist->AddRect(rect.Min, rect.Max, 0xFF00FFFF, 0.f, 0, 2.0f);
 				}
 
 				if (is_directory)
@@ -237,6 +254,18 @@ namespace BHive
 					}
 				}
 
+				if (ImGui::BeginDragDropSource())
+				{
+					AssetHandle data;
+
+					if (GetDragDropData(data, relative_path))
+					{
+						ImGui::SetDragDropPayload("ASSET", &path, sizeof(AssetHandle));
+					}
+
+					ImGui::EndDragDropSource();
+				}
+
 				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 				{
 					if (is_directory)
@@ -255,7 +284,7 @@ namespace BHive
 					if (ImGui::MenuItem("Delete"))
 					{
 						sSelectedItems.emplace(index, ms_item);
-						delete_entries = true;
+						sCurrentAction == Action_Delete;
 					}
 
 					if (!is_directory)
@@ -280,7 +309,7 @@ namespace BHive
 				}
 
 				static std::string file_name;
-				if (ImGui::DrawEditableText(path.stem().string().c_str(), name, file_name))
+				if (ImGui::DrawEditableText(name.c_str(), name, file_name))
 				{
 					auto new_path = path.parent_path() / (file_name + path.extension().string());
 					OnRenameAsset(path, new_path, is_directory);
@@ -297,30 +326,7 @@ namespace BHive
 				index++;
 			}
 
-			if (ImGui::IsWindowFocused())
-			{
-				if (ImGui::IsKeyPressed(ImGuiKey_Delete))
-				{
-					delete_entries = true;
-				}
-				else if (ImGui::IsKeyPressed(ImGuiKey_Escape))
-				{
-					sActiveItem = -1;
-					sSelectedItems.clear();
-				}
-			}
-
-			if (delete_entries)
-			{
-				for (auto &[id, item] : sSelectedItems)
-				{
-					DeleteFolder(item.mEntry);
-				}
-				delete_entries = false;
-
-				sActiveItem = -1;
-				sSelectedItems.clear();
-			}
+			ImGui::EndTable();
 		}
 	}
 

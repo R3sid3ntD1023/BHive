@@ -1,15 +1,14 @@
-#include "MaterialFactory.h"
 #include "material/Material.h"
+#include "MaterialFactory.h"
 
 namespace BHive
 {
 	Ref<Asset> MaterialFactory::CreateNew()
 	{
 		auto material = CreateRef<Material>();
-		OnImportCompleted.invoke(material);
+		OnAssetCreated.invoke(material);
 		return material;
 	}
 
-
-    REFLECT_Factory(MaterialFactory, Material, ".material")
+	REFLECT_FACTORY(MaterialFactory, Material, ".material")
 } // namespace BHive

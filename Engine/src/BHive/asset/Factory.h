@@ -5,7 +5,8 @@
 
 namespace BHive
 {
-	DECLARE_EVENT(OnImportCompleted, const Ref<Asset>&);
+	DECLARE_EVENT(OnImportCompleted, const Ref<Asset> &);
+	DECLARE_EVENT(OnAssetCreated, Ref<Asset>);
 
 	class BHIVE Factory
 	{
@@ -16,10 +17,7 @@ namespace BHive
 
 		virtual void Export(Ref<Asset> asset, const std::filesystem::path &path) {};
 
-		virtual Ref<Asset> CreateNew()
-		{
-			return nullptr;
-		};
+		virtual Ref<Asset> CreateNew() { return nullptr; };
 
 		virtual bool CanCreateNew() const { return false; }
 
@@ -27,12 +25,11 @@ namespace BHive
 
 		virtual const char *GetDefaultAssetName() const { return ""; }
 
-		virtual std::vector<Ref<Asset>> GetOtherCreatedAssets()
-		{
-			return {};
-		}
+		virtual std::vector<Ref<Asset>> GetOtherCreatedAssets() { return {}; }
 
 		OnImportCompletedEvent OnImportCompleted;
+
+		OnAssetCreatedEvent OnAssetCreated;
 
 		REFLECTABLEV()
 	};
@@ -41,13 +38,13 @@ namespace BHive
 	{
 		BEGIN_REFLECT(Factory);
 	}
-}
+} // namespace BHive
 
-#define REFLECT_Factory(cls, asset_type, ...)                                                                           \
-	REFLECT(cls)                                                                                                        \
-	{                                                                                                                       \
-		BEGIN_REFLECT(cls)                                                                                              \
-		(META_DATA("Type", rttr::type::get<asset_type>()), META_DATA("Extensions", BHive::FAssetExtensions({__VA_ARGS__}))) \
-			REFLECT_CONSTRUCTOR()                                                                                           \
-				CONSTRUCTOR_POLICY_SHARED;                                                                                  \
+#define REFLECT_FACTORY(cls, asset_type, ...)                                                   \
+	REFLECT(cls)                                                                                \
+	{                                                                                           \
+		BEGIN_REFLECT(cls)                                                                      \
+		(META_DATA("Type", rttr::type::get<asset_type>()),                                      \
+		 META_DATA("Extensions", BHive::FAssetExtensions({__VA_ARGS__}))) REFLECT_CONSTRUCTOR() \
+			CONSTRUCTOR_POLICY_SHARED;                                                          \
 	}

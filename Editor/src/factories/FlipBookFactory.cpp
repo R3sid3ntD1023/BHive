@@ -6,12 +6,10 @@ namespace BHive
 	Ref<Asset> FlipBookFactory::CreateNew()
 	{
 		auto fb = CreateRef<FlipBook>();
-		OnImportCompleted.invoke(fb);
+		OnAssetCreated.invoke(fb);
 		return fb;
 	}
 
-    REFLECT_Factory(FlipBookFactory, FlipBook, ".flipbook");
-
-
+	REFLECT_FACTORY(FlipBookFactory, FlipBook, ".flipbook");
 
 } // namespace BHive

@@ -5,22 +5,20 @@
 namespace BHive
 {
 
-     class AnimationNodeParam : public AnimationNodePoseBase
-    {
-    public: 
-        AnimationNodeParam(const std::string& param_name);
+	class AnimationNodeParam : public AnimationNodePoseBase
+	{
+	public:
+		AnimationNodeParam(const std::string &param_name);
 
-        void SetParameterName(const std::string& name);
+		void SetParameterName(const std::string &name);
 
-        const std::string& GetParameterName() const { return mParameterName; }
-    protected:
-        void ExecuteImpl(const AnimatorContext& context, std::any& out_result);
+		const std::string &GetParameterName() const { return mParameterName; }
 
-    private:
-        std::string mParameterName;
+	protected:
+		void ExecuteImpl(const AnimatorContext &context, std::any &out_result);
 
-        REFLECTABLE()
-    };
+	private:
+		std::string mParameterName;
+	};
 
-    
 } // namespace BHive

@@ -49,6 +49,14 @@
             }
         },
         {
+            "key": 441356840,
+            "value": {
+                "Type": "AnimGraph",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\AnimGraphs\\NewAnimGraph.asset",
+                "Name": "NewAnimGraph"
+            }
+        },
+        {
             "key": 523996954,
             "value": {
                 "Type": "InputContext",

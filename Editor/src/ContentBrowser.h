@@ -38,7 +38,7 @@ namespace BHive
 
 	private:
 		void ShowFileSystemTree(const std::filesystem::directory_entry &directory);
-		void ShowFileSystem(float thumbnailsize);
+		void ShowFileSystem();
 		void OnDeleteFolder(const std::filesystem::directory_entry &entry);
 		void DeleteFolder(const std::filesystem::directory_entry &entry);
 		void SetCurrentDirectory(const std::filesystem::path &path);
@@ -46,5 +46,7 @@ namespace BHive
 	private:
 		std::filesystem::path mBaseDirectory;
 		std::filesystem::path mCurrentDirectory;
+
+		float mPadding = 16.f, mThumbnailSize = 128.f;
 	};
 } // namespace BHive

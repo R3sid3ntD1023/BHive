@@ -1,17 +1,15 @@
-#include "InputContextFactory.h"
 #include "input/InputContext.h"
+#include "InputContextFactory.h"
 
 namespace BHive
 {
 	Ref<Asset> InputContextFactory::CreateNew()
 	{
-		auto ic =  CreateRef<InputContext>();
-		OnImportCompleted.invoke(ic);
+		auto ic = CreateRef<InputContext>();
+		OnAssetCreated.invoke(ic);
 		return ic;
 	}
 
-    REFLECT_Factory(InputContextFactory, InputContext, ".input")
-
-
+	REFLECT_FACTORY(InputContextFactory, InputContext, ".input")
 
 } // namespace BHive

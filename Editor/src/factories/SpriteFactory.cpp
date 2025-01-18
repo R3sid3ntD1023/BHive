@@ -1,15 +1,15 @@
-#include "SpriteFactory.h"
 #include "sprite/Sprite.h"
+#include "SpriteFactory.h"
 
 namespace BHive
 {
-    Ref<Asset> SpriteFactory::CreateNew()
+	Ref<Asset> SpriteFactory::CreateNew()
 	{
 		auto s = CreateRef<Sprite>();
-		OnImportCompleted.invoke(s);
+		OnAssetCreated.invoke(s);
 		return s;
 	}
 
-    REFLECT_Factory(SpriteFactory, Sprite, ".sprite")
+	REFLECT_FACTORY(SpriteFactory, Sprite, ".sprite")
 
 } // namespace BHive
