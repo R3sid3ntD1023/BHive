@@ -117,15 +117,15 @@ namespace BHive
 		bool has_inspector = inspector != nullptr;
 		bool is_enum = property.is_enumeration();
 		bool details = !has_inspector && !is_enum;
+		bool is_container = type.is_associative_container() || type.is_sequential_container();
 
 		if (inspector)
 		{
-			bool columns = !type.is_associative_container() && !type.is_sequential_container();
-			inspector->BeginInspect(property, columns);
+			inspector->BeginInspect(property, !is_container);
 		}
 
 		bool opened = true;
-		PropertyLayout layout(property, false);
+		
 		if (details)
 		{
 			opened = ImGui::TreeNode(property.get_name().data());
@@ -134,9 +134,11 @@ namespace BHive
 		if (opened)
 		{
 
+			PropertyLayout layout(property);
 			auto meta_getter = [property](const rttr::variant &key) -> rttr::variant
 			{ return property.get_metadata(key); };
 			changed |= inspect(prop_var, false, is_read_only, meta_getter);
+
 		}
 
 		if (details)

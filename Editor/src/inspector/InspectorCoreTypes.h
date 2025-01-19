@@ -13,7 +13,4 @@ namespace BHive
     template <typename TIntegerType>
     DECLARE_INSPECTOR(Int);
 
-    DECLARE_INSPECTOR(StdVector);
-
-    DECLARE_INSPECTOR(StdMap);
 } // namespace BHive

@@ -14,7 +14,8 @@ namespace BHive
 			auto count = (uint32_t)frames.size();
 
 			auto width = ImGui::GetContentRegionAvail().x * .5f;
-			if (ImGui::BeginChild("Data", {width, 0}, ImGuiChildFlags_ResizeX))
+
+			if (ImGui::BeginChild("Data", {width, 0}, ImGuiChildFlags_ResizeX | ImGuiChildFlags_AlwaysUseWindowPadding))
 			{
 				TAssetEditor::OnWindowRender();
 			}
@@ -23,7 +24,7 @@ namespace BHive
 
 			ImGui::SameLine();
 
-			if (ImGui::BeginChild("CurrentFrame"))
+			if (ImGui::BeginChild("CurrentFrame", {0, 0}, ImGuiChildFlags_AlwaysUseWindowPadding))
 			{
 
 				if (count)

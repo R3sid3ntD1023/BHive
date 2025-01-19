@@ -23,7 +23,7 @@ namespace BHive
 				ImGui::SameLine();
 			}
 
-			if (ImGui::BeginChild("Variables", {image_size, image_size}))
+			if (ImGui::BeginChild("Variables", {image_size, image_size}, ImGuiChildFlags_AlwaysUseWindowPadding))
 			{
 				TAssetEditor::OnWindowRender();
 			}

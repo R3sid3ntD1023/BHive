@@ -1,8 +1,8 @@
+#include "events/Event.h"
 #include "ImGuiLayer.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <glfw/glfw3.h>
-#include "events/Event.h"
 
 namespace BHive
 {
