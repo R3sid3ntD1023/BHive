@@ -7,6 +7,7 @@ namespace BHive
 {
 	struct SubClassOf
 	{
+		REFLECTABLEV()
 	};
 
 	template <typename T>
@@ -49,23 +50,41 @@ namespace BHive
 
 		const rttr::type &get() const { return mType; }
 
+		REFLECTABLEV(SubClassOf)
+
 	private:
 		rttr::type mType = InvalidType;
+
+		static inline int reflect()
+		{
+			auto class_name = std::format("TSubclassOf<{}>", rttr::type::get<T>().get_name().data());
+			rttr::registration::class_<TSubClassOf<T>>(class_name).constructor<const rttr::type &>()(rttr::policy::ctor::as_object);
+			return 0;
+		}
+
+		static inline int auto_register = reflect();
 
 		template <typename U>
 		friend struct TSubClassOf;
 	};
+
+	REFLECT(SubClassOf)
+	{
+		BEGIN_REFLECT(SubClassOf);
+	}
 
 } // namespace BHive
 
 namespace rttr
 {
 	template <typename T>
-	struct wrapper_mapper<::BHive::TSubClassOf<T>>
+	struct wrapper_mapper<BHive::TSubClassOf<T>>
 	{
 		using wrapped_type = rttr::type;
-		using type = ::BHive::TSubClassOf<T>;
+		using type = BHive::TSubClassOf<T>;
 
-		static wrapped_type get(const type &obj) { return obj.get(); }
+		inline static wrapped_type get(const type &obj) { return obj.get(); }
+
+		inline static type create(const wrapped_type &value) { return type(value); }
 	};
 } // namespace rttr

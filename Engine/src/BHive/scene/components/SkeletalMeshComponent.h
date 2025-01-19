@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Animator/Animator.h"
 #include "core/SubClassOf.h"
 #include "mesh/SkeletalMesh.h"
 #include "MeshComponent.h"
@@ -17,7 +18,7 @@ namespace BHive
 
 		void SetSkeletalMesh(const TAssetHandle<SkeletalMesh> &mesh);
 
-		const TAssetHandle<SkeletalMesh> &GetSkeletalMesh() const { return mSkeletalMesh; }
+		const TAssetHandle<SkeletalMesh> &GetSkeletalMesh() const;
 
 		virtual AABB GetBoundingBox() const;
 

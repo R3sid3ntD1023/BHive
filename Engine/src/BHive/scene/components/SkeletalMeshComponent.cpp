@@ -1,4 +1,3 @@
-#include "Animator/Animator.h"
 #include "mesh/SkeletalPose.h"
 #include "scene/SceneRenderer.h"
 #include "SkeletalMeshComponent.h"
@@ -28,6 +27,11 @@ namespace BHive
 				mAnimator = mAnimatorClass.get().create({mSkeletalMesh->GetSkeleton().get()}).get_value<Ref<Animator>>();
 			}
 		}
+	}
+
+	const TAssetHandle<SkeletalMesh> &SkeletalMeshComponent::GetSkeletalMesh() const
+	{
+		return mSkeletalMesh;
 	}
 
 	AABB SkeletalMeshComponent::GetBoundingBox() const
