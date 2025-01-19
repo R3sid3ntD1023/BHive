@@ -1,9 +1,9 @@
 #pragma once
 
 #include "AnimationNodePoseBase.h"
-#include "Animator/Jobs/JobRestore.h"
-#include "Animator/Jobs/Jobs.h"
-#include "Animator/Jobs/JobSave.h"
+#include "Animator/anim_player/Jobs/JobRestore.h"
+#include "Animator/anim_player/Jobs/Jobs.h"
+#include "Animator/anim_player/Jobs/JobSave.h"
 
 namespace BHive
 {
@@ -14,9 +14,9 @@ namespace BHive
 	public:
 		AnimationStateTransition(const float duration, bool reversible);
 
-		void Update(const AnimatorContext &context);
+		void Update(const AnimPlayerContext &context);
 
-		bool AreConditionsSatisfied(const AnimatorContext &context) const;
+		bool AreConditionsSatisfied(const AnimPlayerContext &context) const;
 		bool IsFinished(float phase);
 
 		void SetConditonNode(const Ref<AnimationNodeBase> &node);
@@ -27,7 +27,7 @@ namespace BHive
 		void SetReversible(bool reversible);
 
 	protected:
-		void ExecuteImpl(const AnimatorContext &context, std::any &out_result);
+		void ExecuteImpl(const AnimPlayerContext &context, std::any &out_result);
 
 	private:
 		bool mReversible;

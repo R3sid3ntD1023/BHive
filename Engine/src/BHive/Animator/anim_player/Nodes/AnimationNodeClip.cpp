@@ -1,10 +1,10 @@
 #include "AnimationNodeClip.h"
-#include "Animator/AnimatorContext.h"
+#include "Animator/anim_player/AnimPlayerContext.h"
 #include "mesh/AnimationClip.h"
 
 namespace BHive
 {
-	void AnimationClipNode::ExecuteImpl(const AnimatorContext &context, std::any &out_result)
+	void AnimationClipNode::ExecuteImpl(const AnimPlayerContext &context, std::any &out_result)
 	{
 		AnimationNodePoseBase::ExecuteImpl(context, out_result);
 
@@ -21,7 +21,7 @@ namespace BHive
 		SetDuration(mClip->GetLengthInSeconds());
 	}
 
-	void AnimationClipNode::Update(const AnimatorContext &context)
+	void AnimationClipNode::Update(const AnimPlayerContext &context)
 	{
 		AnimationNodePoseBase::Update(context);
 

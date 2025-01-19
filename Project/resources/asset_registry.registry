@@ -121,14 +121,6 @@
             }
         },
         {
-            "key": 998255967,
-            "value": {
-                "Type": "AnimGraph",
-                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\AnimGraphs\\NewAnimGraph.asset",
-                "Name": "NewAnimGraph"
-            }
-        },
-        {
             "key": 1182896169,
             "value": {
                 "Type": "Material",
@@ -142,6 +134,14 @@
                 "Type": "Sprite",
                 "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\Sprites\\Run\\PlayerRun1.sprite",
                 "Name": "PlayerRun1"
+            }
+        },
+        {
+            "key": 1202670764,
+            "value": {
+                "Type": "AnimGraph",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\AnimGraphs\\NewAnimGraph.asset",
+                "Name": "NewAnimGraph"
             }
         },
         {

@@ -8,23 +8,23 @@ namespace BHive
     {
     public:     
 
-        virtual void Update(const AnimatorContext& context);
+        virtual void Update(const AnimPlayerContext& context);
 
         float GetDuration() const { return mDuration; };
 
         float GetPhase() const { return mPhase; };
 
-        float GetNextPhaseUnwrapped(const AnimatorContext& context) const;
+        float GetNextPhaseUnwrapped(const AnimPlayerContext& context) const;
         
         void SetDuration(float duration);
 
     protected:
           enum EPhaseRules : uint8_t { COPY = BIT(0), WRAP = BIT(1), SYNC = BIT(2), REVSERSED = BIT(3)};
 
-        virtual void ExecuteImpl(const AnimatorContext& context, std::any& out_result);
+        virtual void ExecuteImpl(const AnimPlayerContext& context, std::any& out_result);
 
       
-        void ApplyNextPhase(const AnimatorContext& context);
+        void ApplyNextPhase(const AnimPlayerContext& context);
 
         void SetPhaseRules(uint8_t rules);
 

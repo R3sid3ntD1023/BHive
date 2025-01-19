@@ -1,3 +1,5 @@
+#include "Animator/anim_graph/AnimGraph.h"
+#include "Animator/anim_player/AnimPlayer.h"
 #include "mesh/SkeletalPose.h"
 #include "scene/SceneRenderer.h"
 #include "SkeletalMeshComponent.h"
@@ -22,9 +24,9 @@ namespace BHive
 		{
 			mPose = CreateRef<SkeletalPose>(mSkeletalMesh->GetSkeleton().get());
 
-			if (mAnimatorClass)
+			if (mAnimGraph)
 			{
-				mAnimator = mAnimatorClass.get().create({mSkeletalMesh->GetSkeleton().get()}).get_value<Ref<Animator>>();
+				mAnimatorInstance = CreateRef<AnimPlayer>(*mAnimGraph);
 			}
 		}
 	}
@@ -72,6 +74,6 @@ namespace BHive
 	{
 		BEGIN_REFLECT(SkeletalMeshComponent)
 		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
-			REFLECT_PROPERTY("SkeletalMesh", GetSkeletalMesh, SetSkeletalMesh) REFLECT_PROPERTY("Animator", mAnimatorClass);
+			REFLECT_PROPERTY("SkeletalMesh", GetSkeletalMesh, SetSkeletalMesh) REFLECT_PROPERTY("AnimGraph", mAnimGraph);
 	}
 } // namespace BHive

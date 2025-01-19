@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AnimationNodePoseBase.h"
-#include "Animator/Jobs/Jobs.h"
+#include "Animator/anim_player/Jobs/Jobs.h"
 
 namespace BHive
 {
@@ -19,17 +19,17 @@ namespace BHive
 			float mFactor{0.0f};
 		};
 
-		void Update(const AnimatorContext &context);
+		void Update(const AnimPlayerContext &context);
 
 		void AddPoseNode(const Ref<AnimationNodePoseBase> &node, float fentity = 0.0f);
 
 		void SetFactorNode(const Ref<AnimationNodePoseBase> &node);
 
 	protected:
-		void ExecuteImpl(const AnimatorContext &context, std::any &out_result);
+		void ExecuteImpl(const AnimPlayerContext &context, std::any &out_result);
 
 	private:
-		void SelectBlendedNodes(const AnimatorContext &context);
+		void SelectBlendedNodes(const AnimPlayerContext &context);
 
 	private:
 		std::vector<PoseData> mPoseData;

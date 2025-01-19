@@ -1,6 +1,6 @@
 #pragma once
 
-#include "assets/anim_graph/AnimGraph.h"
+#include "Animator/anim_graph/AnimGraph.h"
 #include "TAssetEditor.h"
 
 namespace BHive

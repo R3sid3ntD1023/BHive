@@ -1,5 +1,5 @@
+#include "Animator/anim_graph/nodes/AnimGraphNodeBase.h"
 #include "AnimGraphEditor.h"
-#include "assets/anim_graph/nodes/AnimGraphNodeBase.h"
 #include "gui/ImGuiExtended.h"
 
 namespace BHive

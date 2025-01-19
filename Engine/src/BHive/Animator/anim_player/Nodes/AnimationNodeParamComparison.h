@@ -16,7 +16,7 @@ namespace BHive
         AnimationNodeParamComparison(const std::string& param_name, const std::any& value, EComparisonOperation operation);
 
     protected:
-        void ExecuteImpl(const AnimatorContext& context, std::any& out_result) override;
+        void ExecuteImpl(const AnimPlayerContext& context, std::any& out_result) override;
 
     private:
         std::string mParamName;

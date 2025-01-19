@@ -15,7 +15,7 @@ namespace BHive
         void SetPhase(std::optional<float> phase);
 
     protected:  
-        void ExecuteImpl(const AnimatorContext& context, std::any& out_result) override;
+        void ExecuteImpl(const AnimPlayerContext& context, std::any& out_result) override;
 
     private:
         std::optional<float> mPhase;

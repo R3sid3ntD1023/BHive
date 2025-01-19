@@ -1,9 +1,9 @@
 #include "AnimationNodeBlend.h"
-#include "Animator/AnimatorContext.h"
+#include "Animator/anim_player/AnimPlayerContext.h"
 
 namespace BHive
 {
-	void AnimationNodeBlend::ExecuteImpl(const AnimatorContext &context, std::any &out_result)
+	void AnimationNodeBlend::ExecuteImpl(const AnimPlayerContext &context, std::any &out_result)
 	{
 		AnimationNodePoseBase::ExecuteImpl(context, out_result);
 
@@ -11,7 +11,7 @@ namespace BHive
 
 		ApplyNextPhase(context);
 
-		AnimatorContext context_pass_on{context};
+		AnimPlayerContext context_pass_on{context};
 		context_pass_on.mSyncEnabled = true;
 		context_pass_on.mSyncPhase = phase_unnormalized;
 
@@ -46,7 +46,7 @@ namespace BHive
 		}
 	}
 
-	void AnimationNodeBlend::Update(const AnimatorContext &context)
+	void AnimationNodeBlend::Update(const AnimPlayerContext &context)
 	{
 		AnimationNodePoseBase::Update(context);
 
@@ -61,9 +61,7 @@ namespace BHive
 		{
 			mSourceNode->Update(context);
 			mDestinationNode->Update(context);
-			SetDuration(std::lerp(
-				mSourceNode->GetDuration(), mDestinationNode->GetDuration(),
-				mDestinationNodeWeight));
+			SetDuration(std::lerp(mSourceNode->GetDuration(), mDestinationNode->GetDuration(), mDestinationNodeWeight));
 		}
 	}
 
@@ -77,13 +75,11 @@ namespace BHive
 		mFactorNode = node;
 	}
 
-	void AnimationNodeBlend::SelectBlendedNodes(const AnimatorContext &context)
+	void AnimationNodeBlend::SelectBlendedNodes(const AnimPlayerContext &context)
 	{
 		ASSERT(!mPoseData.empty());
 		ASSERT(mFactorNode != nullptr);
-		ASSERT(std::is_sorted(
-			mPoseData.begin(), mPoseData.end(),
-			[](const auto &p0, const auto &p1) { return p0.mFactor < p1.mFactor; }));
+		ASSERT(std::is_sorted(mPoseData.begin(), mPoseData.end(), [](const auto &p0, const auto &p1) { return p0.mFactor < p1.mFactor; }));
 
 		float factor = mFactorNode ? std::any_cast<float>(mFactorNode->Execute(context)) : 0.0f;
 

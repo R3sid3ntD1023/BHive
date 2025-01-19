@@ -15,7 +15,7 @@ namespace BHive
 
         static const AnimationStateMachine* GetCurrent();
 
-        void Update(const AnimatorContext& context);
+        void Update(const AnimPlayerContext& context);
 
         void AddState(const Ref<AnimationState>& node);
 
@@ -24,9 +24,9 @@ namespace BHive
         float GetTransitionSourcePhase() const { return mTransitionSourceCandidatePhase; };
 
     protected:
-        void ExecuteImpl(const AnimatorContext& context, std::any& out_result) override;
+        void ExecuteImpl(const AnimPlayerContext& context, std::any& out_result) override;
 
-        bool UpdateState(const AnimatorContext& context, float pending_phase);
+        bool UpdateState(const AnimPlayerContext& context, float pending_phase);
 
         void UpdatePhaseCopySource();
 

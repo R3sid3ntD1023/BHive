@@ -1,4 +1,3 @@
-#include "Animator/Animator.h"
 #include "AnimGraph.h"
 #include "nodes/AnimGraphNodeBase.h"
 
@@ -8,22 +7,11 @@ namespace BHive
 		: mSkeleton(skeleton)
 	{
 	}
-	void AnimGraph::Initialize()
-	{
-		mAnimator = CreateRef<Animator>(mSkeleton.get().get());
-		mAnimator->SetBlackBoard(mBlackBoard);
-		mPose = CreateRef<SkeletalPose>(mSkeleton.get().get());
-	}
-	void AnimGraph::Play(float dt)
-	{
-		if (mAnimator)
-		{
-			mAnimator->Update(dt, *mPose);
-		}
-	}
 
 	void AnimGraph::Save(cereal::BinaryOutputArchive &ar) const
 	{
+		Asset::Save(ar);
+
 		ar(mSkeleton, mBlackBoard, mNodes.size());
 
 		for (const auto &[id, node] : mNodes)
@@ -35,6 +23,8 @@ namespace BHive
 
 	void AnimGraph::Load(cereal::BinaryInputArchive &ar)
 	{
+		Asset::Load(ar);
+
 		size_t num_nodes = 0;
 		ar(mSkeleton, mBlackBoard, num_nodes);
 
@@ -52,8 +42,6 @@ namespace BHive
 				node->Serialize(ar);
 			}
 		}
-
-		Initialize();
 	}
 
 	REFLECT(AnimGraph)

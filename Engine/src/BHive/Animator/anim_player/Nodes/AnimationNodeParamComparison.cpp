@@ -1,20 +1,17 @@
 #include "AnimationNodeParamComparison.h"
-#include "Animator/AnimatorContext.h"
-#include "AnimationNodeParam.h"
-#include "Animator/BlackBoard.h"
+#include "Animator/anim_player/AnimPlayerContext.h"
+#include "Animator/anim_player/BlackBoard.h"
 
 namespace BHive
 {
-	AnimationNodeParamComparison::AnimationNodeParamComparison(
-		const std::string &param_name, const std::any &value, EComparisonOperation operation)
+	AnimationNodeParamComparison::AnimationNodeParamComparison(const std::string &param_name, const std::any &value, EComparisonOperation operation)
 		: mParamName(param_name),
 		  mValue(value),
 		  mOperation(operation)
 	{
 	}
 
-	void
-	AnimationNodeParamComparison::ExecuteImpl(const AnimatorContext &context, std::any &out_result)
+	void AnimationNodeParamComparison::ExecuteImpl(const AnimPlayerContext &context, std::any &out_result)
 	{
 		AnimationNodeBase::ExecuteImpl(context, out_result);
 

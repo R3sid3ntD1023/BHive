@@ -11,8 +11,7 @@
 namespace BHive
 {
 	void FinishAssetImport(
-		const std::filesystem::path &dir, const std::filesystem::path &rel, const Ref<Asset> &asset,
-		const std::vector<Ref<Asset>> &others)
+		const std::filesystem::path &dir, const std::filesystem::path &rel, const Ref<Asset> &asset, const std::vector<Ref<Asset>> &others)
 	{
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
 		auto export_path = dir / (rel.stem().string() + ".asset");
@@ -30,8 +29,7 @@ namespace BHive
 		}
 	}
 
-	void
-	FinishCreateAsset(const std::string &name, const std::filesystem::path &path, Ref<Asset> asset)
+	void FinishCreateAsset(const std::string &name, const std::filesystem::path &path, Ref<Asset> asset)
 	{
 		asset->SetName(name);
 		auto export_path = path / (asset->GetName() + ".asset");
@@ -48,8 +46,7 @@ namespace BHive
 	{
 	}
 
-	void EditorContentBrowser::OnImportAsset(
-		const std::filesystem::path &directory, const std::filesystem::path &relative)
+	void EditorContentBrowser::OnImportAsset(const std::filesystem::path &directory, const std::filesystem::path &relative)
 	{
 		auto &registry = FactoryRegistry::Get();
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
@@ -57,10 +54,8 @@ namespace BHive
 		auto factory = registry.Get(type);
 		if (factory)
 		{
-			factory->OnImportCompleted.bind(
-				[=](const Ref<Asset> &asset) {
-					FinishAssetImport(directory, relative, asset, factory->GetOtherCreatedAssets());
-				});
+			factory->OnImportCompleted.bind([=](const Ref<Asset> &asset)
+											{ FinishAssetImport(directory, relative, asset, factory->GetOtherCreatedAssets()); });
 			factory->Import(relative);
 		}
 	}
@@ -78,9 +73,7 @@ namespace BHive
 		}
 	}
 
-	void EditorContentBrowser::OnRenameAsset(
-		const std::filesystem::path &relative_old, const std::filesystem::path &relative_new,
-		bool directory)
+	void EditorContentBrowser::OnRenameAsset(const std::filesystem::path &relative_old, const std::filesystem::path &relative_new, bool directory)
 	{
 		auto old_path = relative_old;
 		auto new_path = relative_new;
@@ -97,14 +90,11 @@ namespace BHive
 
 		if (error)
 		{
-			LOG_ERROR(
-				"EditorAssetManager RenameAsset({}, {}) ERROR: {}", old_path.string(),
-				new_path.string(), error.message());
+			LOG_ERROR("EditorAssetManager RenameAsset({}, {}) ERROR: {}", old_path.string(), new_path.string(), error.message());
 		}
 		else
 		{
-			LOG_TRACE(
-				"EditorAssetManager RenameAsset({}, {})", old_path.string(), new_path.string());
+			LOG_TRACE("EditorAssetManager RenameAsset({}, {})", old_path.string(), new_path.string());
 			if (!directory)
 			{
 				auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
@@ -161,21 +151,17 @@ namespace BHive
 		return manager->IsAssetHandleValid(handle);
 	}
 
-	void EditorContentBrowser::OnCreateAsset(
-		const std::filesystem::path &directory, const Ref<Factory> &factory)
+	void EditorContentBrowser::OnCreateAsset(const std::filesystem::path &directory, const Ref<Factory> &factory)
 	{
 
 		if (factory->CanCreateNew())
 		{
-			factory->OnAssetCreated.bind(
-				[=](Ref<Asset> asset)
-				{ FinishCreateAsset(factory->GetDefaultAssetName(), directory, asset); });
+			factory->OnAssetCreated.bind([=](Ref<Asset> asset) { FinishCreateAsset(factory->GetDefaultAssetName(), directory, asset); });
 			factory->CreateNew();
 		}
 	}
 
-	Ref<Texture>
-	EditorContentBrowser::OnGetIcon(bool directory, const std::filesystem::path &relative)
+	Ref<Texture> EditorContentBrowser::OnGetIcon(bool directory, const std::filesystem::path &relative)
 	{
 		if (directory)
 		{
@@ -198,8 +184,7 @@ namespace BHive
 		return texture;
 	}
 
-	bool
-	EditorContentBrowser::GetDragDropData(AssetHandle &data, const std::filesystem::path &relative)
+	bool EditorContentBrowser::GetDragDropData(AssetHandle &data, const std::filesystem::path &relative)
 	{
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
 		data = manager->GetHandle(Project::GetResourceDirectory() / relative);

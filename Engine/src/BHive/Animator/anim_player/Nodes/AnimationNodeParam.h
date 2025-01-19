@@ -15,7 +15,7 @@ namespace BHive
 		const std::string &GetParameterName() const { return mParameterName; }
 
 	protected:
-		void ExecuteImpl(const AnimatorContext &context, std::any &out_result);
+		void ExecuteImpl(const AnimPlayerContext &context, std::any &out_result);
 
 	private:
 		std::string mParameterName;

@@ -1,6 +1,6 @@
 #include "AnimationNodeParam.h"
-#include "Animator/AnimatorContext.h"
-#include "Animator/BlackBoard.h"
+#include "Animator/anim_player/AnimPlayerContext.h"
+#include "Animator/anim_player/BlackBoard.h"
 
 namespace BHive
 {
@@ -14,7 +14,7 @@ namespace BHive
 		mParameterName = name;
 	}
 
-	void AnimationNodeParam::ExecuteImpl(const AnimatorContext &context, std::any &out_result)
+	void AnimationNodeParam::ExecuteImpl(const AnimPlayerContext &context, std::any &out_result)
 	{
 		AnimationNodePoseBase::ExecuteImpl(context, out_result);
 

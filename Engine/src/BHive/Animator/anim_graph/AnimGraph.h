@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Animator/BlackBoard.h"
+#include "Animator/anim_player/BlackBoard.h"
 #include "asset/Asset.h"
 #include "mesh/SkeletalPose.h"
 #include "mesh/Skeleton.h"
@@ -20,15 +20,13 @@ namespace BHive
 		AnimGraph() = default;
 		AnimGraph(const Ref<Skeleton> &skeleton);
 
-		void Initialize();
-
-		void Play(float dt);
-
 		virtual void Save(cereal::BinaryOutputArchive &ar) const;
 
 		virtual void Load(cereal::BinaryInputArchive &ar);
 
 		const Nodes &GetNodes() { return mNodes; }
+
+		const Ref<Skeleton> &GetSkeleton() const { return mSkeleton; }
 
 		REFLECTABLEV(Asset)
 
@@ -36,10 +34,6 @@ namespace BHive
 		Nodes mNodes;
 
 		TAssetHandle<Skeleton> mSkeleton;
-
-		Ref<Animator> mAnimator{nullptr};
-
-		Ref<SkeletalPose> mPose;
 
 		BlackBoard mBlackBoard;
 	};

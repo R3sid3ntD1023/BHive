@@ -7,7 +7,7 @@ namespace BHive
 {
 	class BlackBoard;
 
-	struct AnimatorContext
+	struct AnimPlayerContext
 	{
 		JobQueue &mJobQueue;
 

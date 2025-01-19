@@ -16,10 +16,10 @@ namespace BHive
         void AddTransition(const Ref<AnimationStateTransition>& transition);
         const Transitions& GetTransitions() const { return mTransitionNodes; }
 
-        void Update(const AnimatorContext& context);
+        void Update(const AnimPlayerContext& context);
 
     protected:
-        void ExecuteImpl(const AnimatorContext& context, std::any& out_result);
+        void ExecuteImpl(const AnimPlayerContext& context, std::any& out_result);
 
     private:
         Ref<AnimationNodePoseBase> mPoseNode;
