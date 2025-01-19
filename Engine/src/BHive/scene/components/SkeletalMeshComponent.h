@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/SubClassOf.h"
 #include "mesh/SkeletalMesh.h"
 #include "MeshComponent.h"
 
@@ -24,7 +25,7 @@ namespace BHive
 
 		TAssetHandle<SkeletalMesh> mSkeletalMesh;
 
-		Ref<Animator> mAnimator;
+		TSubClassOf<Animator> mAnimatorClass;
 
 		const std::vector<glm::mat4> &GetBoneTransforms() const;
 
@@ -37,6 +38,7 @@ namespace BHive
 		REFLECTABLEV(MeshComponent)
 
 	private:
+		Ref<Animator> mAnimator;
 		Ref<SkeletalPose> mPose;
 	};
 

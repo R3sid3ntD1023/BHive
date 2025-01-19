@@ -1,3 +1,4 @@
+#include "Animator/Animator.h"
 #include "mesh/SkeletalPose.h"
 #include "scene/SceneRenderer.h"
 #include "SkeletalMeshComponent.h"
@@ -21,6 +22,11 @@ namespace BHive
 		if (mSkeletalMesh)
 		{
 			mPose = CreateRef<SkeletalPose>(mSkeletalMesh->GetSkeleton().get());
+
+			if (mAnimatorClass)
+			{
+				mAnimator = mAnimatorClass.get().create({mSkeletalMesh->GetSkeleton().get()}).get_value<Ref<Animator>>();
+			}
 		}
 	}
 
@@ -32,8 +38,7 @@ namespace BHive
 	void SkeletalMeshComponent::OnRender(SceneRenderer *renderer)
 	{
 		if (mSkeletalMesh)
-			renderer->SubmitSkeletalMesh(
-				mSkeletalMesh, GetWorldTransform(), GetBoneTransforms(), mOverrideMaterials);
+			renderer->SubmitSkeletalMesh(mSkeletalMesh, GetWorldTransform(), GetBoneTransforms(), mOverrideMaterials);
 	}
 
 	const std::vector<glm::mat4> &SkeletalMeshComponent::GetBoneTransforms() const
@@ -63,6 +68,6 @@ namespace BHive
 	{
 		BEGIN_REFLECT(SkeletalMeshComponent)
 		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
-			REFLECT_PROPERTY("SkeletalMesh", GetSkeletalMesh, SetSkeletalMesh);
+			REFLECT_PROPERTY("SkeletalMesh", GetSkeletalMesh, SetSkeletalMesh) REFLECT_PROPERTY("Animator", mAnimatorClass);
 	}
 } // namespace BHive
