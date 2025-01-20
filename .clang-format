@@ -27,4 +27,5 @@ BraceWrapping:
  AfterControlStatement:	Always
  AfterFunction:	true
  AfterNamespace:	true
+ BeforeLambdaBody : true
 NamespaceIndentation: All
