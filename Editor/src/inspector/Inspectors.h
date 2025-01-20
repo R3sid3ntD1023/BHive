@@ -4,33 +4,33 @@
 
 namespace BHive
 {
-    rttr::variant meta_data_empty(const rttr::variant &);
+	rttr::variant meta_data_empty(const rttr::variant &);
 
-    bool inspect(rttr::variant &var, bool skip_custom = false, bool read_only = false, const Inspector::meta_getter &get_meta_data = meta_data_empty);
+	bool inspect(rttr::variant &var, bool skip_custom = false, bool read_only = false, const Inspector::meta_getter &get_meta_data = meta_data_empty, float width = 0.0f);
 
-    bool inspect(rttr::instance &object, rttr::property &property, bool read_only = false);
+	bool inspect(rttr::instance &object, rttr::property &property, bool read_only = false, float width = 0.0f);
 
-    template <typename T>
-    bool inspect(const std::string &label, const T &obj, bool skip_custom = false, const Inspector::meta_getter &get_meta_data = meta_data_empty)
-    {
-        ScopedPropertyLayout layout(label);
-        rttr::variant var = obj;
-        return inspect(var, skip_custom, true, get_meta_data);
-    }
+	template <typename T>
+	bool inspect(const std::string &label, T &obj, bool skip_custom = false, bool read_only = false, const Inspector::meta_getter &get_meta_data = meta_data_empty, float width = 0.0f)
+	{
+		ScopedPropertyLayout layout(label, true, width);
+		rttr::variant var = obj;
+		bool changed = inspect(var, skip_custom, read_only, get_meta_data, width);
 
-    template <typename T>
-    bool inspect(const std::string &label, T &obj, bool skip_custom = false, bool read_only = false, const Inspector::meta_getter &get_meta_data = meta_data_empty)
-    {
-        ScopedPropertyLayout layout(label);
-        rttr::variant var = obj;
-        bool changed = inspect(var, skip_custom, read_only, get_meta_data);
+		if (changed)
+		{
+			obj = var.get_value<T>();
+		}
 
-        if (changed)
-        {
-            obj = var.get_value<T>();
-        }
+		return changed;
+	}
 
-        return changed;
-    }
+	template <typename T>
+	bool inspect(const std::string &label, const T &obj, bool skip_custom = false, bool read_only = false, const Inspector::meta_getter &get_meta_data = meta_data_empty, float width = 0.0f)
+	{
+		ScopedPropertyLayout layout(label);
+		rttr::variant var = obj;
+		return inspect(var, skip_custom, read_only, get_meta_data, width);
+	}
 
 } // namespace BHive

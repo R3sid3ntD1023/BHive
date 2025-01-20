@@ -8,10 +8,9 @@ namespace BHive
 	struct Inspector
 	{
 		using meta_getter = std::function<rttr::variant(const rttr::variant &)>;
-		virtual bool
-		Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data = {}) = 0;
+		virtual bool Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data = {}) = 0;
 
-		void BeginInspect(const rttr::property &poperty, bool columns = true);
+		void BeginInspect(const rttr::property &poperty, bool columns = true, float width = 0.0f);
 		void EndInspect(const rttr::property &property);
 
 		REFLECTABLEV()
@@ -28,19 +27,16 @@ namespace BHive
 
 #define INSPECTED_TYPE_VAR "InspectedType"
 
-#define DECLARE_INSPECTOR(cls)                                          \
-	struct Inspector_##cls : public Inspector                           \
-	{                                                                   \
-		virtual bool Inspect(                                           \
-			rttr::variant &var, bool read_only,                         \
-			const Inspector::meta_getter &get_meta_data = {}) override; \
-		REFLECTABLEV(Inspector)                                         \
+#define DECLARE_INSPECTOR(cls)                                                                                               \
+	struct Inspector_##cls : public Inspector                                                                                \
+	{                                                                                                                        \
+		virtual bool Inspect(rttr::variant &var, bool read_only, const Inspector::meta_getter &get_meta_data = {}) override; \
+		REFLECTABLEV(Inspector)                                                                                              \
 	};
 
-#define REFLECT_INSPECTOR(cls, _type)                                                    \
-	REFLECT(cls)                                                                         \
-	{                                                                                    \
-		auto Factory = rttr::registration::class_<cls>(#cls)(                            \
-						   rttr::metadata(INSPECTED_TYPE_VAR, rttr::type::get<_type>())) \
-						   .constructor()(rttr::policy::ctor::as_std_shared_ptr);        \
+#define REFLECT_INSPECTOR(cls, _type)                                                                                      \
+	REFLECT(cls)                                                                                                           \
+	{                                                                                                                      \
+		auto Factory = rttr::registration::class_<cls>(#cls)(rttr::metadata(INSPECTED_TYPE_VAR, rttr::type::get<_type>())) \
+						   .constructor()(rttr::policy::ctor::as_std_shared_ptr);                                          \
 	}

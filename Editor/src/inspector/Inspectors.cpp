@@ -21,8 +21,7 @@ namespace BHive
 				if (!inspector)
 					continue;
 
-				mRegisteredInspectors.emplace(
-					inspected_type, inspector.get_value<Ref<Inspector>>());
+				mRegisteredInspectors.emplace(inspected_type, inspector.get_value<Ref<Inspector>>());
 			}
 		}
 
@@ -79,9 +78,7 @@ namespace BHive
 		return rttr::variant();
 	}
 
-	bool inspect(
-		rttr::variant &var, bool skip_custom, bool read_only,
-		const Inspector::meta_getter &get_meta_data)
+	bool inspect(rttr::variant &var, bool skip_custom, bool read_only, const Inspector::meta_getter &get_meta_data, float width)
 	{
 		rttr::instance object = var;
 		auto type = object.get_derived_type();
@@ -99,14 +96,14 @@ namespace BHive
 			for (auto property : properties)
 			{
 
-				changed |= inspect(object, property, read_only);
+				changed |= inspect(object, property, read_only, width);
 			}
 		}
 
 		return changed;
 	}
 
-	bool inspect(rttr::instance &object, rttr::property &property, bool read_only)
+	bool inspect(rttr::instance &object, rttr::property &property, bool read_only, float width)
 	{
 		rttr::variant prop_var = property.get_value(object);
 		rttr::instance prop_object = prop_var;
@@ -121,11 +118,11 @@ namespace BHive
 
 		if (inspector)
 		{
-			inspector->BeginInspect(property, !is_container);
+			inspector->BeginInspect(property, !is_container, width);
 		}
 
 		bool opened = true;
-		
+
 		if (details)
 		{
 			opened = ImGui::TreeNode(property.get_name().data());
@@ -135,10 +132,8 @@ namespace BHive
 		{
 
 			PropertyLayout layout(property);
-			auto meta_getter = [property](const rttr::variant &key) -> rttr::variant
-			{ return property.get_metadata(key); };
-			changed |= inspect(prop_var, false, is_read_only, meta_getter);
-
+			auto meta_getter = [property](const rttr::variant &key) -> rttr::variant { return property.get_metadata(key); };
+			changed |= inspect(prop_var, false, is_read_only, meta_getter, width);
 		}
 
 		if (details)

@@ -2,9 +2,9 @@
 
 namespace BHive
 {
-	void Inspector::BeginInspect(const rttr::property &property, bool columns)
+	void Inspector::BeginInspect(const rttr::property &property, bool columns, float width)
 	{
-		mLayout = PropertyLayout(property, columns);
+		mLayout = PropertyLayout(property, columns, width);
 		mLayout.PushLayout();
 	}
 
