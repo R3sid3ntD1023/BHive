@@ -1,13 +1,13 @@
 #include "MeshImporter.h"
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
-#include <assimp/ProgressHandler.hpp>
 #include <assimp/material.h>
+#include <assimp/postprocess.h>
+#include <assimp/ProgressHandler.hpp>
+#include <assimp/scene.h>
 
-#include "math/Math.h"
-#include "importers/TextureImporter.h"
 #include "gfx/Texture.h"
+#include "importers/TextureImporter.h"
+#include "math/Math.h"
 
 namespace BHive
 {
@@ -111,7 +111,6 @@ namespace BHive
 
 			std::vector<FVertex> vertices(mesh->mNumVertices);
 			std::vector<uint32_t> indices(mesh->mNumFaces * 3);
-			
 
 			if (mesh->mMaterialIndex >= 0)
 				sub_mesh.mMaterialIndex = mesh->mMaterialIndex;
@@ -193,15 +192,14 @@ namespace BHive
 			return sub_mesh;
 		}
 
-
-		void ProcessMeshes(const aiScene* scene, FMeshImportData &data)
+		void ProcessMeshes(const aiScene *scene, FMeshImportData &data)
 		{
 			auto count = scene->mNumMeshes;
 			data.mMeshData.mSubMeshes.resize(count);
 
 			for (unsigned i = 0; i < count; i++)
 			{
-				aiMesh* mesh = scene->mMeshes[i];
+				aiMesh *mesh = scene->mMeshes[i];
 				auto submesh = ParseMesh(scene, mesh, data);
 				data.mMeshData.mSubMeshes[i] = submesh;
 			}
@@ -324,7 +322,7 @@ namespace BHive
 			}
 		}
 
-		void GetTextureType(aiTextureType aiType, FTextureData::EType& type)
+		void GetTextureType(aiTextureType aiType, FTextureData::EType &type)
 		{
 			switch (aiType)
 			{
@@ -400,18 +398,11 @@ namespace BHive
 
 		void GetMaterialData(const aiScene *scene, std::vector<FMaterialData> &materials)
 		{
-				static aiTextureType supported_textures[] =
-				{
+			static aiTextureType supported_textures[] = {
 
-					aiTextureType_DIFFUSE,
-					aiTextureType_EMISSIVE,
-					aiTextureType_NORMALS,
-					aiTextureType_OPACITY,
-					aiTextureType_BASE_COLOR,
-					aiTextureType_METALNESS,
-					aiTextureType_SPECULAR,
-					aiTextureType_DIFFUSE_ROUGHNESS,
-				};
+				aiTextureType_DIFFUSE,	  aiTextureType_EMISSIVE,  aiTextureType_NORMALS,  aiTextureType_OPACITY,
+				aiTextureType_BASE_COLOR, aiTextureType_METALNESS, aiTextureType_SPECULAR, aiTextureType_DIFFUSE_ROUGHNESS,
+			};
 
 			auto count = scene->mNumMaterials;
 			aiString str;
@@ -470,24 +461,23 @@ namespace BHive
 			}
 		}
 
-	}
+	} // namespace utils
 
-	FMeshImportData MeshImporter::Import(const std::filesystem::path &path)
+	bool MeshImporter::Import(const std::filesystem::path &path, FMeshImportData &data)
 	{
 		Assimp::Importer importer;
 		importer.SetProgressHandler(new ModelProgress());
 		int flags = aiProcessPreset_TargetRealtime_Fast | aiProcess_RemoveRedundantMaterials;
 		const aiScene *scene = importer.ReadFile(path.string().c_str(), (unsigned)flags);
 
-		if (!scene || !scene->mRootNode || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)
+		if (!scene || !scene->mRootNode)
 		{
-			LOG_ERROR("MeshImporter::Error - {0}", importer.GetErrorString());
-			return {};
+			LOG_ERROR("MeshImporter::Error - {}", importer.GetErrorString());
+			return false;
 		}
 
-		FMeshImportData data;
 		utils::ProcessScene(scene, data);
 
-		return data;
+		return true;
 	}
-}
+} // namespace BHive

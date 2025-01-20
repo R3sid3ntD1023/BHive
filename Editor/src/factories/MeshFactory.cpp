@@ -12,11 +12,12 @@ namespace BHive
 	Ref<Asset> MeshFactory::Import(const std::filesystem::path &path)
 	{
 		MeshImporter importer;
-		auto import_data = importer.Import(path);
+		FMeshImportData data;
+		if (!importer.Import(path, data))
+			return nullptr;
 
 		auto &window_system = SubSystemContext::Get().GetSubSystem<WindowSubSystem>();
-		auto window =
-			window_system.AddWindow<MeshOptionsWindow>(this, FMeshImportOptions{path, import_data});
+		auto window = window_system.AddWindow<MeshOptionsWindow>(this, FMeshImportOptions{path, data});
 		return nullptr;
 	}
 
