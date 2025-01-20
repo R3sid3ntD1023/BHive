@@ -81,6 +81,14 @@
             }
         },
         {
+            "key": 683208338,
+            "value": {
+                "Type": "SkeletalAnimation",
+                "Path": "C:\\Users\\dariu\\Documents\\BHive\\Project\\resources\\TestImport\\SkeletalMeshes\\Kachujin\\Animations\\Unarmed Idle 01.asset",
+                "Name": "Unarmed Idle 01"
+            }
+        },
+        {
             "key": 725716775,
             "value": {
                 "Type": "Texture2D",
