@@ -21,6 +21,10 @@ namespace BHive
 		if (mWindowIDStr.empty())
 			mWindowIDStr = mCounter.GetName(GetName(), mWindowID);
 
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 2.f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, {.5f, 0.f});
+
 		ImGui::SetNextWindowSize({800, 600}, ImGuiCond_Appearing);
 		if (ImGui::Begin(mWindowIDStr.c_str(), &mIsOpen, mWindowFlags))
 		{
@@ -32,6 +36,7 @@ namespace BHive
 			OnUpdateContent();
 		}
 
+		ImGui::PopStyleVar(3);
 		ImGui::End();
 	}
 } // namespace BHive

@@ -1,5 +1,6 @@
 #include "asset/AssetManager.h"
 #include "asset/EditorAssetManager.h"
+#include "assetmenus/SpriteAssetContextMenu.h"
 #include "core/FileDialog.h"
 #include "core/WindowInput.h"
 #include "DetailsPanel.h"
@@ -109,8 +110,7 @@ namespace BHive
 		auto &window_properties = window.GetProperties();
 		auto aspect = window_properties.Width / window_properties.Height;
 
-		mSceneRenderer =
-			CreateRef<SceneRenderer>(window_properties.Width, window_properties.Height);
+		mSceneRenderer = CreateRef<SceneRenderer>(window_properties.Width, window_properties.Height);
 		mEditorCamera = EditorCamera(45.f, aspect, 0.1f, 1000.f);
 
 		mSceneHierarchyPanel = CreateRef<SceneHierarchyPanel>();
@@ -122,8 +122,7 @@ namespace BHive
 
 		mContentBrowser = CreateRef<EditorContentBrowser>(Project::GetResourceDirectory());
 
-		mAssetManager = CreateRef<EditorAssetManager>(
-			Project::GetResourceDirectory() / "asset_registry.registry");
+		mAssetManager = CreateRef<EditorAssetManager>(Project::GetResourceDirectory() / "asset_registry.registry");
 		AssetManager::SetAssetManager(mAssetManager.get());
 
 		SubSystemContext::Get().AddSubSystem<EditSubSystem>();
@@ -134,6 +133,9 @@ namespace BHive
 		auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
 		edit_system.GetEditorMode.bind([this]() { return mEditorMode; });
 		edit_system.GetActiveWorld.bind([this]() { return mActiveWorld; });
+
+		AnimGraphContextMenu menu;
+		menu.OnAssetOpen(1202670764);
 	}
 
 	void EditorLayer::OnDetach()
@@ -172,8 +174,7 @@ namespace BHive
 		mEditorCamera.ProcessInput();
 
 		const auto &size = mViewportPanelSize;
-		if (((float)mViewportSize.x != size.x || (float)mViewportSize.y != size.y) &&
-			(size.x != 0 && size.y != 0))
+		if (((float)mViewportSize.x != size.x || (float)mViewportSize.y != size.y) && (size.x != 0 && size.y != 0))
 		{
 			mViewportSize = {(unsigned)size.x, (unsigned)size.y};
 			mSceneRenderer->Resize(mViewportSize.x, mViewportSize.y);
@@ -256,6 +257,8 @@ namespace BHive
 
 		auto &window_system = SubSystemContext::Get().GetSubSystem<WindowSubSystem>();
 		window_system.UpdateWindows();
+
+		ImGui::ShowDemoWindow();
 
 		GUI::EndDockSpace();
 	}
@@ -466,8 +469,7 @@ namespace BHive
 			mViewportBounds[0] = viewport_min_region + viewport_offset;
 			mViewportBounds[1] = viewport_max_region + viewport_offset;
 
-			auto fbo_texture =
-				mSceneRenderer->GetFinalFramebuffer()->GetColorAttachment()->GetRendererID();
+			auto fbo_texture = mSceneRenderer->GetFinalFramebuffer()->GetColorAttachment()->GetRendererID();
 			ImGui::Image((ImTextureID)(uint64_t)fbo_texture, mViewportPanelSize, {0, 1}, {1, 0});
 
 			auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
@@ -483,17 +485,14 @@ namespace BHive
 				ImGuizmo::SetOrthographic(false);
 				ImGuizmo::SetDrawlist();
 				ImGuizmo::SetRect(
-					mViewportBounds[0].x, mViewportBounds[0].y,
-					mViewportBounds[1].x - mViewportBounds[0].x,
+					mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x,
 					mViewportBounds[1].y - mViewportBounds[0].y);
 
-				float snap_value =
-					mSnapEnabled ? sSnapping[(ImGuizmo::OPERATION)mGizmoOperation] : 0.0f;
+				float snap_value = mSnapEnabled ? sSnapping[(ImGuizmo::OPERATION)mGizmoOperation] : 0.0f;
 				float snap_values[3] = {snap_value, snap_value, snap_value};
 
 				if (ImGuizmo::Manipulate(
-						glm::value_ptr(view), glm::value_ptr(projection),
-						(ImGuizmo::OPERATION)mGizmoOperation, (ImGuizmo::MODE)mGizmoMode,
+						glm::value_ptr(view), glm::value_ptr(projection), (ImGuizmo::OPERATION)mGizmoOperation, (ImGuizmo::MODE)mGizmoMode,
 						glm::value_ptr(transform), nullptr, snap_values))
 				{
 

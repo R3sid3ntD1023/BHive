@@ -2,7 +2,7 @@
 
 #include "asset/FAssetContextMenu.h"
 #include "windows/editors/AnimationEditor.h"
-#include "windows/editors/AnimGraphEditor.h"
+#include "windows/editors/AnimGraph/AnimGraphEditor.h"
 #include "windows/editors/AudioEditor.h"
 #include "windows/editors/FlipBookEditor.h"
 #include "windows/editors/InputContextEditor.h"

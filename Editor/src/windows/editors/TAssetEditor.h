@@ -12,6 +12,11 @@ namespace BHive
 	class TAssetEditor : public AssetEditor
 	{
 	public:
+		TAssetEditor(int flags = 0)
+			: AssetEditor(flags)
+		{
+		}
+
 		void SetContext(const UUID &handle)
 		{
 			auto manager = AssetManager::GetAssetManager<EditorAssetManager>();

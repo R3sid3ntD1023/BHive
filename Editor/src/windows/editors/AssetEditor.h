@@ -7,7 +7,7 @@ namespace BHive
 	class AssetEditor : public WindowBase
 	{
 	public:
-		AssetEditor();
+		AssetEditor(int flags = 0);
 
 		virtual ~AssetEditor() = default;
 

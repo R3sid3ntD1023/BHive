@@ -50,7 +50,7 @@ namespace BHive
 		ImGui::PushID(mName.c_str());
 
 		auto width = ImGui::GetContentRegionAvail().x;
-		ImGui::PushItemWidth(use_custom_width ? mWidth : width);
+		ImGui::PushItemWidth(width);
 	}
 
 	void PropertyLayout::PopLayout()

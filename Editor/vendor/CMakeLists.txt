@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.8)
 
 include(FetchContent)
 
-set(FECTHCONTENT_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 FetchContent_Declare(
     ImGuizmo
     GIT_REPOSITORY https://github.com/R3sid3ntD1023/ImGuizmo.git
@@ -12,7 +11,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(ImGuizmo)
 
-include(FetchContent)
 FetchContent_Declare(ImNodeFlow
      GIT_REPOSITORY https://github.com/Fattorino/ImNodeFlow.git
      GIT_TAG master

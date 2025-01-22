@@ -8,13 +8,10 @@
 
 namespace ImGui
 {
-	void Image(
-		const BHive::Texture *texture, const ImVec2 size = {0, 0},
-		const ImVec4 &tint_col = {1, 1, 1, 1}, const ImVec4 &border_col = {0, 0, 0, 0});
+	void
+	Image(const BHive::Texture *texture, const ImVec2 size = {0, 0}, const ImVec4 &tint_col = {1, 1, 1, 1}, const ImVec4 &border_col = {0, 0, 0, 0});
 
-	bool DrawIcon(
-		const std::string &label, BHive::Texture *icon, float size,
-		ImGuiButtonFlags flags = ImGuiButtonFlags_PressedOnDoubleClick);
+	bool DrawIcon(const std::string &label, BHive::Texture *icon, float size, ImGuiButtonFlags flags = ImGuiButtonFlags_PressedOnDoubleClick);
 
 	bool DrawEditableText(const char *str_id, const std::string &label, std::string &editable_text);
 
@@ -31,18 +28,15 @@ namespace ImGui
 
 	bool Timeline(const char *str_id, int *frame, int max, const ImVec2 &size_arg = {0, 0});
 
-	bool Timeline(
-		const char *str_id, float *currentTime, float duration, float speed,
-		const ImVec2 &size_arg = {0, 0});
+	bool Timeline(const char *str_id, float *currentTime, float duration, float speed, const ImVec2 &size_arg = {0, 0});
 
 	ImRect GetItemRect();
 
 	float GetLineHeight();
 
 	bool DragTransform(
-		const char *label, BHive::FTransform &transform, float speed = 1.0f, float min = 0.0f,
-		float max = 0.0f, const char *format = "%.2f", ImGuiSliderFlags flags = 0,
-		const BHive::FTransform &reset_value = {});
+		const char *label, BHive::FTransform &transform, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char *format = "%.2f",
+		ImGuiSliderFlags flags = 0, const BHive::FTransform &reset_value = {});
 
 	bool ColorEdit(const char *label, BHive::Color &color, ImGuiColorEditFlags flags = 0);
 } // namespace ImGui
@@ -52,9 +46,8 @@ namespace ImGui
 {
 	template <glm::length_t L, typename T, glm::qualifier Q>
 	bool DragVector(
-		const char *label, glm::vec<L, T, Q> &data, const glm::vec<L, T, Q> &resetValue = {},
-		float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char *format = "%.2f",
-		ImGuiSliderFlags flags = 0)
+		const char *label, glm::vec<L, T, Q> &data, const glm::vec<L, T, Q> &resetValue = {}, float speed = 1.0f, float min = 0.0f, float max = 0.0f,
+		const char *format = "%.2f", ImGuiSliderFlags flags = 0)
 	{
 		static const char *labels[4] = {"x", "y", "z", "w"};
 		static const uint32_t colors[4] = {0xFF0000FF, 0xFF00FF00, 0xFFFF0000, 0xFF00AAFF};
@@ -91,9 +84,7 @@ namespace ImGui
 
 			ImGui::SameLine();
 
-			changed |= ImGui::DragFloat(
-				"##", &data[i], speed, min, max, format,
-				flags | ImGuiInputTextFlags_EnterReturnsTrue);
+			changed |= ImGui::DragFloat("##", &data[i], speed, min, max, format, flags | ImGuiInputTextFlags_EnterReturnsTrue);
 			if (ImGui::IsItemDeactivatedAfterEdit())
 			{
 				changed |= true;
@@ -113,7 +104,16 @@ namespace ImGui
 
 } // namespace ImGui
 
-#define DEBUG_DRAW_RECT(color)                  \
-	auto drawlist = ImGui::GetWindowDrawList(); \
-	auto rect = ImGui::GetItemRect();           \
-	drawlist->AddRect(rect.Min, rect.Max, color, 0, 0, 1);
+#define DEBUG_DRAW_RECT(color)                                 \
+	{                                                          \
+		auto drawlist = ImGui::GetWindowDrawList();            \
+		auto rect = ImGui::GetItemRect();                      \
+		drawlist->AddRect(rect.Min, rect.Max, color, 0, 0, 5); \
+	}
+
+#define DEBUG_DRAW_WINDOW_RECT(color)                                                              \
+	{                                                                                              \
+		auto drawlist = ImGui::GetWindowDrawList();                                                \
+		auto rect = ImRect(ImGui::GetWindowPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize()); \
+		drawlist->AddRect(rect.Min, rect.Max, color, 0, 0, 5);                                     \
+	}
