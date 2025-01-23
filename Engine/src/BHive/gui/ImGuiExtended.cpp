@@ -28,10 +28,12 @@ namespace ImGui
 		return pressed;
 	}
 
-	bool DrawEditableText(const char *str_id, const std::string &label, std::string &editable_text)
+	bool DrawEditableText(const std::string &label, std::string &new_text)
 	{
 		static ImGuiID current_id = -1;
-		ImGuiID id = ImGui::GetID(str_id);
+		static std::string current_text;
+
+		ImGuiID id = ImGui::GetID(label.c_str());
 
 		IM_ASSERT(GImGui);
 		auto &g = *GImGui;
@@ -45,7 +47,7 @@ namespace ImGui
 			if (IsMouseDoubleClicked(0) && IsItemHovered())
 			{
 				current_id = id;
-				editable_text = label;
+				current_text = label;
 			}
 		}
 		else
@@ -58,9 +60,10 @@ namespace ImGui
 			}
 
 			ImGui::SetKeyboardFocusHere();
-			if (InputText("##RenamingName", &editable_text, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+			if (InputText("##RenamingName", &current_text, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
 			{
 				current_id = -1;
+				new_text = current_text;
 				return true;
 			}
 		}

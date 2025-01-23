@@ -397,12 +397,12 @@ namespace BHive
 					ImGui::EndPopup();
 				}
 
-				static std::string file_name;
-				bool edited_name = ImGui::DrawEditableText(name.c_str(), name, file_name);
+				std::string new_name;
+				bool edited_name = ImGui::DrawEditableText(name, new_name);
 
 				if (edited_name)
 				{
-					auto new_path = path.parent_path() / (file_name + path.extension().string());
+					auto new_path = path.parent_path() / (new_name + path.extension().string());
 					OnRenameAsset(path, new_path, is_directory);
 				}
 
