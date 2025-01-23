@@ -50,7 +50,9 @@ namespace ImGui
 		}
 		else
 		{
-			if (IsKeyPressed(ImGuiKey_Escape))
+			bool finish_editing =
+				(IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && IsMouseClicked(ImGuiMouseButton_Left)) || IsKeyPressed(ImGuiKey_Escape);
+			if (finish_editing)
 			{
 				current_id = -1;
 			}

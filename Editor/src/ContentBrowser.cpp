@@ -191,7 +191,7 @@ namespace BHive
 		ImGui::SameLine();
 		if (ImGui::InvisibleButton("##icon", size, 0))
 		{
-			mCurrentDirectory /= directory;
+			SetCurrentDirectory(mCurrentDirectory / directory);
 		}
 
 		auto rect = ImGui::GetItemRect();
@@ -269,6 +269,8 @@ namespace BHive
 				bool is_selected = sSelectedItems.contains(index);
 
 				bool clicked = ImGui::Selectable("", is_selected, ImGuiSelectableFlags_AllowDoubleClick, mThumbnailSize);
+				bool is_hovered = ImGui::IsItemHovered();
+				auto rect = ImGui::GetItemRect();
 
 				if (clicked)
 				{
@@ -282,7 +284,6 @@ namespace BHive
 					sActiveItem = index;
 				}
 
-				auto rect = ImGui::GetItemRect();
 				auto icon = OnGetIcon(is_directory, relative_path);
 				if (icon)
 				{
@@ -354,7 +355,7 @@ namespace BHive
 					ImGui::EndDragDropSource();
 				}
 
-				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				if (is_hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 				{
 					if (is_directory)
 					{
@@ -397,7 +398,9 @@ namespace BHive
 				}
 
 				static std::string file_name;
-				if (ImGui::DrawEditableText(name.c_str(), name, file_name))
+				bool edited_name = ImGui::DrawEditableText(name.c_str(), name, file_name);
+
+				if (edited_name)
 				{
 					auto new_path = path.parent_path() / (file_name + path.extension().string());
 					OnRenameAsset(path, new_path, is_directory);
