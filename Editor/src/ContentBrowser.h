@@ -1,12 +1,26 @@
 #pragma once
 
 #include "asset/Asset.h"
+#include "gui/ImGuiExtended.h"
 
 namespace BHive
 {
 	class Texture;
 	class EditorAssetManager;
 	class Project;
+
+	struct FContentBrowerColors
+	{
+		ImU32 mFolder{IM_COL32(255, 218, 84, 255)};
+		ImU32 mFolderHovered{IM_COL32(255, 235, 166, 255)};
+		ImU32 mSelection{IM_COL32(255, 100, 0, 255)};
+		ImU32 mCheckMark{IM_COL32(180, 180, 255, 180)};
+	};
+
+	struct FContentBrowserStyle
+	{
+		FContentBrowerColors mColors;
+	};
 
 	class ContentBrowserPanel
 	{
@@ -44,7 +58,8 @@ namespace BHive
 		std::filesystem::path mBaseDirectory;
 		std::filesystem::path mCurrentDirectory;
 
-		float mPadding = 16.f, mThumbnailSize = 128.f;
+		float mPadding = 16.f, mThumbnailSize = 90.f;
 		bool mIsMouseDragging = false, mDragStarting = false;
+		FContentBrowserStyle mStyle{};
 	};
 } // namespace BHive

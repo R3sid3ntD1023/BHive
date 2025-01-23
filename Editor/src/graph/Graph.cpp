@@ -24,7 +24,7 @@ namespace BHive
 		if (ImGui::BeginPopupContextWindow())
 		{
 			if (mGraphContextMenu)
-				mGraphContextMenu(ImGui::GetMousePos() - getPos() + getScroll());
+				mGraphContextMenu(screen2Grid(ImGui::GetMousePos()));
 
 			ImGui::EndPopup();
 		}

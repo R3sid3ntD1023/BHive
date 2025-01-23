@@ -44,4 +44,4 @@ namespace BHive
 		FWindowProperties mProperties;
 		Scope<GraphicsContext> mContext;
 	};
-}
+} // namespace BHive

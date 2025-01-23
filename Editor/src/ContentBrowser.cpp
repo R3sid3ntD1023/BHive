@@ -2,7 +2,6 @@
 #include "ContentBrowser.h"
 #include "core/FileDialog.h"
 #include "gfx/Texture.h"
-#include "gui/ImGuiExtended.h"
 
 #define DRAG_DROP_SOURCE_TYPE "CONTENT_BROWSER_ITEM"
 
@@ -201,7 +200,7 @@ namespace BHive
 
 		if (icon)
 		{
-			auto icon_color = hovered || active ? IM_COL32(255, 150, 0, 255) : IM_COL32(255, 100, 0, 255);
+			auto icon_color = hovered || active ? mStyle.mColors.mFolderHovered : mStyle.mColors.mFolder;
 			auto frame_color = hovered ? ImGui::GetColorU32(ImGuiCol_FrameBgHovered) : IM_COL32(0, 0, 0, 0);
 
 			drawlist->AddRectFilled(rect.Min, rect.Max, frame_color);
@@ -287,20 +286,20 @@ namespace BHive
 				auto icon = OnGetIcon(is_directory, relative_path);
 				if (icon)
 				{
-					auto color = is_directory ? IM_COL32(255, 100, 0, 255) : IM_COL32_WHITE;
+					auto color = is_directory ? mStyle.mColors.mFolder : IM_COL32_WHITE;
 					drawlist->AddImage(*icon, rect.Min, rect.Max, {0, 1}, {1, 0}, color);
 				}
 
 				if (is_selected)
 				{
-					drawlist->AddRect(rect.Min, rect.Max, IM_COL32(255, 100, 0, 255), 0.f, 0, 2.0f);
+					drawlist->AddRect(rect.Min, rect.Max, mStyle.mColors.mSelection, 0.f, 0, 2.0f);
 				}
 
 				if (is_valid_handle && !is_directory)
 				{
 					auto checkmark_size = 20.0f;
 					ImGui::RenderCheckMark(
-						drawlist, {rect.Max.x - checkmark_size, rect.Max.y - checkmark_size}, IM_COL32(180, 180, 255, 180), checkmark_size);
+						drawlist, {rect.Max.x - checkmark_size, rect.Max.y - checkmark_size}, mStyle.mColors.mCheckMark, checkmark_size);
 				}
 
 				if (mIsMouseDragging)

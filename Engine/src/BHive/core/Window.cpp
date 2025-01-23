@@ -39,26 +39,20 @@ namespace BHive
 		mContext->Init();
 
 		glfwSetWindowUserPointer(mWindow, &mProperties);
-		glfwSetWindowCloseCallback(mWindow, [](GLFWwindow *)
-								   { WindowInput::OnWindowClose(); });
+		glfwSetWindowCloseCallback(mWindow, [](GLFWwindow *) { WindowInput::OnWindowClose(); });
 
-		glfwSetWindowSizeCallback(mWindow, [](GLFWwindow *, int x, int y)
-								  { WindowInput::OnWindowResize(x, y); });
+		glfwSetWindowSizeCallback(mWindow, [](GLFWwindow *, int x, int y) { WindowInput::OnWindowResize(x, y); });
 
-		glfwSetKeyCallback(mWindow, [](GLFWwindow *, int key, int scancode, int action, int mods)
-						   { WindowInput::OnKeyEvent(key, scancode, action, mods); });
+		glfwSetKeyCallback(
+			mWindow, [](GLFWwindow *, int key, int scancode, int action, int mods) { WindowInput::OnKeyEvent(key, scancode, action, mods); });
 
-		glfwSetMouseButtonCallback(mWindow, [](GLFWwindow *, int button, int action, int mods)
-								   { WindowInput::OnMouseButton(button, action, mods); });
+		glfwSetMouseButtonCallback(mWindow, [](GLFWwindow *, int button, int action, int mods) { WindowInput::OnMouseButton(button, action, mods); });
 
-		glfwSetScrollCallback(mWindow, [](GLFWwindow *, double x, double y)
-							  { WindowInput::OnMouseScroll(x, y); });
+		glfwSetScrollCallback(mWindow, [](GLFWwindow *, double x, double y) { WindowInput::OnMouseScroll(x, y); });
 
-		glfwSetCursorPosCallback(mWindow, [](GLFWwindow *, double x, double y)
-								 { WindowInput::OnMouseMoved(x, y); });
+		glfwSetCursorPosCallback(mWindow, [](GLFWwindow *, double x, double y) { WindowInput::OnMouseMoved(x, y); });
 
-		glfwSetCharCallback(mWindow, [](GLFWwindow *, unsigned codepoint)
-							{ WindowInput::OnKeyTypedEvent(codepoint); });
+		glfwSetCharCallback(mWindow, [](GLFWwindow *, unsigned codepoint) { WindowInput::OnKeyTypedEvent(codepoint); });
 
 		glfwSetJoystickCallback(WindowInput::OnJoyStickConnected);
 
@@ -74,15 +68,7 @@ namespace BHive
 
 		SetVysnc(properties.VSync);
 
-		if (properties.mCenterWindow)
-		{
-			int monitor_pos_x, monitor_pos_y;
-			glfwGetMonitorPos(primary_monitor, &monitor_pos_x, &monitor_pos_y);
-
-			glfwSetWindowPos(mWindow,
-							 monitor_pos_x + (video_mode->width - properties.Width) * .5f,
-							 monitor_pos_y + (video_mode->height - properties.Height) * .5f);
-		}
+		glfwMaximizeWindow(mWindow);
 
 		glfwShowWindow(mWindow);
 	}
@@ -157,4 +143,4 @@ namespace BHive
 		glfwGetWindowSize(mWindow, &x, &y);
 		return {x, y};
 	}
-}
+} // namespace BHive

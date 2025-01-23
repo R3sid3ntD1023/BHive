@@ -155,7 +155,7 @@ namespace BHive
 
 		if (mEditorMode != EEditorMode::PLAY)
 		{
-			if (mIsHovered || mIsFocused)
+			if (mIsHovered)
 			{
 				mEditorCamera.OnEvent(event);
 			}
@@ -266,7 +266,7 @@ namespace BHive
 		mSnapEnabled = ctrl;
 
 		// handle viewport events
-		if (mIsHovered && mIsFocused)
+		if (mIsFocused)
 		{
 			switch (event.Key)
 			{
