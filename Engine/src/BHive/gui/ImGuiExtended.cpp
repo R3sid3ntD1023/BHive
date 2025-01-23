@@ -3,29 +3,22 @@
 
 namespace ImGui
 {
-	void Image(
-		const BHive::Texture *texture, const ImVec2 size, const ImVec4 &tint_col,
-		const ImVec4 &border_col)
+	void Image(const BHive::Texture *texture, const ImVec2 size, const ImVec4 &tint_col, const ImVec4 &border_col)
 	{
 		if (!texture)
 			return;
 
-		ImGui::Image(
-			(ImTextureID)(uint64_t)(uint32_t)texture->GetRendererID(), size, {0, 1}, {1, 0},
-			tint_col, border_col);
+		ImGui::Image((ImTextureID)(uint64_t)(uint32_t)texture->GetRendererID(), size, {0, 1}, {1, 0}, tint_col, border_col);
 	}
 
-	bool
-	DrawIcon(const std::string &label, BHive::Texture *icon, float size, ImGuiButtonFlags flags)
+	bool DrawIcon(const std::string &label, BHive::Texture *icon, float size, ImGuiButtonFlags flags)
 	{
 		bool pressed = false;
 
 		if (icon)
 		{
 			auto id = ImGui::GetID(label.c_str());
-			pressed = ImageButtonEx(
-				id, (ImTextureID)(uint64_t)(uint32_t)*icon, {size, size}, {0, 1}, {1, 0},
-				{0, 0, 0, 0}, {1, 1, 1, 1}, flags);
+			pressed = ImageButtonEx(id, (ImTextureID)(uint64_t)(uint32_t)*icon, {size, size}, {0, 1}, {1, 0}, {0, 0, 0, 0}, {1, 1, 1, 1}, flags);
 		}
 		else
 		{
@@ -52,6 +45,7 @@ namespace ImGui
 			if (IsMouseDoubleClicked(0) && IsItemHovered())
 			{
 				current_id = id;
+				editable_text = label;
 			}
 		}
 		else
@@ -62,9 +56,7 @@ namespace ImGui
 			}
 
 			ImGui::SetKeyboardFocusHere();
-			if (InputText(
-					"##RenamingName", &editable_text,
-					ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+			if (InputText("##RenamingName", &editable_text, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
 			{
 				current_id = -1;
 				return true;
@@ -103,8 +95,7 @@ namespace ImGui
 			return false;
 
 		const bool hovered = ItemHoverable(rect, id, GImGui->LastItemData.ItemFlags);
-		const bool clicked =
-			hovered && IsMouseClicked(ImGuiMouseButton_Left, ImGuiInputFlags_None, id);
+		const bool clicked = hovered && IsMouseClicked(ImGuiMouseButton_Left, ImGuiInputFlags_None, id);
 
 		if (clicked || GImGui->NavActivateId == id)
 		{
@@ -244,22 +235,19 @@ namespace ImGui
 
 		// slider
 		const float slider_size = 10.0f;
-		const auto slider_bg_bb = ImRect(
-			{cursor_pos.x, bb.Max.y + frame_padding.y},
-			{cursor_pos.x + size.x, bb.Max.y + slider_size + frame_padding.y});
+		const auto slider_bg_bb =
+			ImRect({cursor_pos.x, bb.Max.y + frame_padding.y}, {cursor_pos.x + size.x, bb.Max.y + slider_size + frame_padding.y});
 
 		auto slider_offset = (*frame * divider_step);
-		const auto slider_bb = ImRect(
-			{slider_bg_bb.Min.x + slider_offset, slider_bg_bb.Min.y},
-			{slider_bg_bb.Min.x + slider_offset + divider_step, slider_bg_bb.Max.y});
+		const auto slider_bb =
+			ImRect({slider_bg_bb.Min.x + slider_offset, slider_bg_bb.Min.y}, {slider_bg_bb.Min.x + slider_offset + divider_step, slider_bg_bb.Max.y});
 
 		auto slider_id = window->GetID("##slider");
 
 		drawlist->AddRectFilled(slider_bg_bb.Min, slider_bg_bb.Max, 0xFF000000);
 
 		ItemSize(slider_bb);
-		if (!ItemAdd(
-				slider_bb, slider_id, nullptr, ImGuiItemFlags_NoNav | ImGuiItemFlags_AllowOverlap))
+		if (!ItemAdd(slider_bb, slider_id, nullptr, ImGuiItemFlags_NoNav | ImGuiItemFlags_AllowOverlap))
 			return false;
 
 		bool hovered = false;
@@ -283,16 +271,13 @@ namespace ImGui
 		if (changed)
 			MarkItemEdited(slider_id);
 
-		auto slider_color = active	  ? ImVec4(1.f, 1.f, 1.f, 1.f)
-							: hovered ? ImVec4(.7f, .7f, .7f, 1.f)
-									  : ImVec4(.5f, .5f, .5f, .7f);
+		auto slider_color = active ? ImVec4(1.f, 1.f, 1.f, 1.f) : hovered ? ImVec4(.7f, .7f, .7f, 1.f) : ImVec4(.5f, .5f, .5f, .7f);
 		drawlist->AddRectFilled(slider_bb.Min, slider_bb.Max, GetColorU32(slider_color));
 
 		return changed;
 	}
 
-	bool Timeline(
-		const char *str_id, float *currentTime, float duration, float speed, const ImVec2 &size_arg)
+	bool Timeline(const char *str_id, float *currentTime, float duration, float speed, const ImVec2 &size_arg)
 	{
 		IM_ASSERT(GImGui);
 
@@ -307,8 +292,7 @@ namespace ImGui
 		const ImGuiID marker_id = window->GetID((std::string(str_id) + "marker").c_str());
 
 		const float width = GetContentRegionAvail().x;
-		const ImVec2 size = CalcItemSize(
-			size_arg, width - style.FramePadding.x * 2.0f, 50.0f - style.FramePadding.x * 2.0f);
+		const ImVec2 size = CalcItemSize(size_arg, width - style.FramePadding.x * 2.0f, 50.0f - style.FramePadding.x * 2.0f);
 		const auto cursor_pos = window->DC.CursorPos;
 		const ImRect bb = {cursor_pos, cursor_pos + size};
 
@@ -326,8 +310,7 @@ namespace ImGui
 		float marker_width = 10.0f;
 		ImVec2 marker_size = ImVec2{marker_width, bb.GetSize().y - style.FramePadding.y};
 
-		float fraction =
-			duration != 0 ? ((*currentTime / duration) * (bb.GetSize().x - marker_size.x)) : 1.0f;
+		float fraction = duration != 0 ? ((*currentTime / duration) * (bb.GetSize().x - marker_size.x)) : 1.0f;
 
 		ImVec2 marker_pos = cursor_pos + ImVec2{fraction, style.FramePadding.y * .5f};
 		ImRect marker_bb = {marker_pos, marker_pos + marker_size};
@@ -365,9 +348,7 @@ namespace ImGui
 		if (changed)
 			MarkItemEdited(marker_id);
 
-		ImVec4 color = active	 ? ImVec4(1.0f, 0.f, 0.f, 1.f)
-					   : hovered ? ImVec4(3.f, 0.f, .0f, .4f)
-								 : ImVec4(.6f, 0.f, 0.f, .4f);
+		ImVec4 color = active ? ImVec4(1.0f, 0.f, 0.f, 1.f) : hovered ? ImVec4(3.f, 0.f, .0f, .4f) : ImVec4(.6f, 0.f, 0.f, .4f);
 
 		drawlist->AddRectFilled(marker_bb.Min, marker_bb.Max, GetColorU32(color));
 
@@ -385,8 +366,8 @@ namespace ImGui
 	}
 
 	bool DragTransform(
-		const char *label, BHive::FTransform &transform, float speed, float min, float max,
-		const char *format, ImGuiSliderFlags flags, const BHive::FTransform &reset_value)
+		const char *label, BHive::FTransform &transform, float speed, float min, float max, const char *format, ImGuiSliderFlags flags,
+		const BHive::FTransform &reset_value)
 	{
 		bool changed = false;
 
@@ -396,8 +377,7 @@ namespace ImGui
 
 		ImGui::BeginGroup();
 
-		if (DragVector(
-				"Translation", t, reset_value.get_translation(), speed, min, max, format, flags))
+		if (DragVector("Translation", t, reset_value.get_translation(), speed, min, max, format, flags))
 		{
 			transform.set_translation(t);
 			changed |= true;

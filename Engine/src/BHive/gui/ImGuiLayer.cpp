@@ -50,12 +50,15 @@ namespace BHive
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
+		float font_size = 18.f;
+		io.Fonts->AddFontFromFileTTF(ENGINE_PATH "/data/fonts/Roboto/Roboto-Bold.ttf", font_size);
+		io.FontDefault = io.Fonts->AddFontFromFileTTF(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", font_size);
+
 		SetColorsDark();
 
 		// Setup Platform/Renderer backends
-		ImGui_ImplGlfw_InitForOpenGL(
-			mWindow, true); // Second param install_callback=true will install GLFW callbacks and
-							// chain to existing ones.
+		ImGui_ImplGlfw_InitForOpenGL(mWindow, true); // Second param install_callback=true will install GLFW callbacks and
+													 // chain to existing ones.
 		ImGui_ImplOpenGL3_Init();
 	}
 

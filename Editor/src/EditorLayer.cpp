@@ -133,9 +133,6 @@ namespace BHive
 		auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
 		edit_system.GetEditorMode.bind([this]() { return mEditorMode; });
 		edit_system.GetActiveWorld.bind([this]() { return mActiveWorld; });
-
-		AnimGraphContextMenu menu;
-		menu.OnAssetOpen(1202670764);
 	}
 
 	void EditorLayer::OnDetach()
@@ -257,8 +254,6 @@ namespace BHive
 
 		auto &window_system = SubSystemContext::Get().GetSubSystem<WindowSubSystem>();
 		window_system.UpdateWindows();
-
-		ImGui::ShowDemoWindow();
 
 		GUI::EndDockSpace();
 	}
@@ -541,11 +536,10 @@ namespace BHive
 
 			for (auto &[handle, metadata] : assets)
 			{
-				rttr::variant handle_var = handle;
 				rttr::variant metadata_var = metadata;
 
 				ImGui::BeginDisabled();
-				inspect(handle_var, false, true);
+				inspect("Handle", handle, false, true);
 				inspect(metadata_var, false, true);
 				ImGui::EndDisabled();
 
@@ -579,14 +573,8 @@ namespace BHive
 		if (!mShowInputSettings)
 			return;
 
-		if (ImGui::Begin("Input Manager", &mShowInputSettings))
+		if (ImGui::Begin("InputManager", &mShowInputSettings))
 		{
-			rttr::variant var = mSceneRenderer.get();
-			if (inspect(var))
-			{
-				auto ptr = mSceneRenderer.get();
-				ptr = var.get_value<SceneRenderer *>();
-			}
 		}
 
 		ImGui::End();
