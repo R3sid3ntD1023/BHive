@@ -34,9 +34,23 @@ namespace BHive
 		for (auto &[id, node] : mNodes)
 		{
 			node->update();
+
+			if (mDragHandler.isDragActive() && !mIsDraggingNode)
+			{
+				auto rect = ImGui::GetItemRect();
+				if (mDragHandler.isOverlapped(rect))
+				{
+					select(node->getUID());
+				}
+				else
+				{
+					deselect(node->getUID());
+				}
+			}
 		}
 
-		mContext.end();
+		if (!mIsDraggingNode)
+			mDragHandler.handle();
 
 		bool hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
 
@@ -60,6 +74,8 @@ namespace BHive
 				ImGui::EndDragDropTarget();
 			}
 		}
+
+		mContext.end();
 	}
 
 	void Graph::addNode(const ImVec2 &pos, const std::shared_ptr<Node> &node)
@@ -94,18 +110,23 @@ namespace BHive
 		return std::any_of(mNodes.begin(), mNodes.end(), [](const auto &node) { return node.second->isHovered(); });
 	}
 
-	void Graph::select(const NodeID &id, bool append)
+	void Graph::select(const NodeID &id)
 	{
 		if (mNodes.contains(id))
 		{
-			if (!append)
-			{
-				clearSelection();
-			}
-
 			auto node = mNodes.at(id);
 			node->setSelected(true);
 			mSelectedNodes.push_back(node);
+		}
+	}
+
+	void Graph::deselect(const NodeID &id)
+	{
+		auto it = std::find_if(mSelectedNodes.begin(), mSelectedNodes.end(), [id](const auto &node) { return node.lock()->getUID() == id; });
+		if (it != mSelectedNodes.end())
+		{
+			mNodes.at(id)->setSelected(false);
+			mSelectedNodes.erase(it);
 		}
 	}
 
@@ -131,6 +152,11 @@ namespace BHive
 	void Graph::setGraphDragDropEvent(const OnGraphDragDropEvent &event)
 	{
 		mGraphDragDropPayload = event;
+	}
+
+	void Graph::setIsDraggingNode(bool dragging)
+	{
+		mIsDraggingNode = dragging;
 	}
 
 	void Graph::drawGrid(const FGridStyle &style, const FGraphContext &context)
@@ -232,21 +258,25 @@ namespace BHive
 		{
 			if (mouse_state)
 			{
-				mGraph->consumeMouseClickState();
-
-				bool append_seletion = ImGui::IsKeyDown(ImGuiKey_ModCtrl);
-				mGraph->select(getUID(), append_seletion);
+				mGraph->select(getUID());
 				mIsDragging = true;
+				mGraph->setIsDraggingNode(true);
+				mGraph->consumeMouseClickState();
 			}
+
+			bool clear_seletion = !ImGui::IsKeyDown(ImGuiKey_ModCtrl) && !mGraph->isDraggingNode();
+			if (clear_seletion)
+				mGraph->clearSelection();
 		}
 
-		if (mIsDragging)
+		if (mIsDragging || (mIsSelected && mGraph->isDraggingNode()))
 		{
 			mPos += ImGui::GetIO().MouseDelta;
 
 			if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 			{
 				mIsDragging = false;
+				mGraph->setIsDraggingNode(false);
 			}
 		}
 

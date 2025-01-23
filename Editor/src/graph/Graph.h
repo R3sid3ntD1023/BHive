@@ -2,6 +2,7 @@
 
 #include "core/EventDelegate.h"
 #include "GraphContext.h"
+#include "GraphEventHandler.h"
 #include "gui/ImGuiExtended.h"
 #include <memory>
 #include <type_traits>
@@ -67,7 +68,9 @@ namespace BHive
 
 		bool isAnyNodeHovered();
 
-		void select(const NodeID &id, bool append);
+		void select(const NodeID &id);
+
+		void deselect(const NodeID &id);
 
 		void clearSelection();
 
@@ -78,6 +81,10 @@ namespace BHive
 		void setGraphContext(const OnGraphContextMenuEvent &event);
 
 		void setGraphDragDropEvent(const OnGraphDragDropEvent &event);
+
+		void setIsDraggingNode(bool dragging);
+
+		bool isDraggingNode() const { return mIsDraggingNode; }
 
 		FContextConfig &getConfig() { return mContext.mConfig; }
 
@@ -95,6 +102,9 @@ namespace BHive
 		float mScaleTarget{1.f};
 		OnGraphContextMenuEvent mGraphContextMenu;
 		OnGraphDragDropEvent mGraphDragDropPayload;
+
+		MouseDragHandler mDragHandler;
+		bool mIsDraggingNode{false};
 	};
 
 	struct FNodeStyle
