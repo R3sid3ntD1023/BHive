@@ -14,6 +14,7 @@ bin-int/
 *.log
 *rp3d_profiling_.txt
 *imgui.ini
+**/vendor/
 
 #include
 !CMakeSettings.json
