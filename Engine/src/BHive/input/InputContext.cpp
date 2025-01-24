@@ -1,5 +1,6 @@
 #include "InputContext.h"
 #include "core/WindowInput.h"
+#include "core/Application.h"
 
 namespace BHive
 {
@@ -23,7 +24,7 @@ namespace BHive
 
 	void InputContext::process()
 	{
-		auto &input = WindowInput::GetInput();
+		auto &input = Application::Get().GetWindow().GetInput();
 
 		for (auto &[name, action] : mKeys)
 		{

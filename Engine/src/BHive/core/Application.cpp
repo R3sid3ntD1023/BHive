@@ -24,11 +24,13 @@ namespace BHive
 		props.Width = specification.Width;
 		props.Height = specification.Height;
 		props.VSync = specification.VSync;
-		props.mCenterWindow = specification.mCenterWindow;
+		props.mCenterWindow = specification.CenterWindow;
+		props.Maximize = specification.Maximize;
 		mWindow = CreateScope<Window>(props);
 
-		WindowInput::mEvent = [=](Event &event)
-		{ OnEvent(event); };
+		FOnWindowInputEvent window_callback;
+		window_callback.bind(this, &Application::OnEvent);
+		mWindow->SetEventCallback(window_callback);
 
 		RenderCommand::Init();
 		Renderer::Init();
@@ -120,8 +122,7 @@ namespace BHive
 			layer->OnGuiRender(deltatime);
 		}
 
-		auto &properties = mWindow->GetProperties();
-		mImGuiLayer->EndFrame(properties.Width, properties.Height);
+		mImGuiLayer->EndFrame(mWindow->GetWidth(), mWindow->GetHeight());
 
 		mWindow->Update();
 	}
@@ -139,4 +140,4 @@ namespace BHive
 
 		return false;
 	}
-}
+} // namespace BHive

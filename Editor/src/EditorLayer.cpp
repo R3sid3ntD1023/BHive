@@ -107,10 +107,11 @@ namespace BHive
 		mEditorWorld = CreateRef<World>();
 		mActiveWorld = mEditorWorld;
 
-		auto &window_properties = window.GetProperties();
-		auto aspect = window_properties.Width / window_properties.Height;
+		auto w = window.GetWidth();
+		auto h = window.GetHeight();
+		auto aspect = w / h;
 
-		mSceneRenderer = CreateRef<SceneRenderer>(window_properties.Width, window_properties.Height);
+		mSceneRenderer = CreateRef<SceneRenderer>(w, h);
 		mEditorCamera = EditorCamera(45.f, aspect, 0.1f, 1000.f);
 
 		mSceneHierarchyPanel = CreateRef<SceneHierarchyPanel>();

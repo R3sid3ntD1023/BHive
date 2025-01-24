@@ -29,7 +29,8 @@ namespace BHive
 		bool VSync = true;
 
 		// window
-		bool mCenterWindow = true;
+		bool CenterWindow = true;
+		bool Maximize = false;
 	};
 
 	class BHIVE Application

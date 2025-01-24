@@ -1,12 +1,16 @@
 #pragma once
 
 #include "core/Core.h"
+#include "core/EventDelegate.h"
+#include "events/Event.h"
 #include "gfx/GraphicsContext.h"
+#include "WindowInput.h"
 
 struct GLFWwindow;
 
 namespace BHive
 {
+
 	struct FWindowProperties
 	{
 		std::string Title = "Window";
@@ -14,6 +18,7 @@ namespace BHive
 
 		bool VSync = true;
 		bool mCenterWindow = true;
+		bool Maximize = false;
 	};
 
 	class BHIVE Window
@@ -27,21 +32,33 @@ namespace BHive
 		void Maximize();
 		void Minimize();
 		void SetPosition(int x, int y);
+		void SetEventCallback(FOnWindowInputEvent &event);
 
 		static void PollEvents();
 
 	public:
 		GLFWwindow *GetNative() { return mWindow; }
-		const FWindowProperties &GetProperties() const { return mProperties; }
 		GraphicsContext &GetContext() { return *mContext; }
-		const char *GetTitle() const;
-		std::pair<int, int> GetPosition() const;
-		std::pair<int, int> GetSize() const;
+		const std::string &GetTitle() const { return mData.Title; }
+		float GetWidth() const { return mData.Width; }
+		float GetHeight() const { return mData.Height; }
+		const Input &GetInput() const { return mData.Input.GetInput(); }
+
+	private:
+		void RegisterCallbacks();
+
+		struct FWindowData
+		{
+			std::string Title;
+			unsigned Width, Height;
+			bool VSync;
+			WindowInput Input;
+		};
 
 	private:
 		bool mIsMaximized = false;
 		GLFWwindow *mWindow = nullptr;
-		FWindowProperties mProperties;
+		FWindowData mData;
 		Scope<GraphicsContext> mContext;
 	};
 } // namespace BHive

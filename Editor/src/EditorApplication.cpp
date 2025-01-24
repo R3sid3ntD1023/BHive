@@ -4,28 +4,29 @@
 
 namespace BHive
 {
-    class EditorApplication : public Application
-    {
-    public:
-        EditorApplication(const FApplicationSpecification &specification)
-            : Application(specification)
-        {
-            mEditorLayer = new EditorLayer();
-            PushLayer(mEditorLayer);
-        }
+	class EditorApplication : public Application
+	{
+	public:
+		EditorApplication(const FApplicationSpecification &specification)
+			: Application(specification)
+		{
+			mEditorLayer = new EditorLayer();
+			PushLayer(mEditorLayer);
+		}
 
-    private:
-        EditorLayer *mEditorLayer = nullptr;
-    };
+	private:
+		EditorLayer *mEditorLayer = nullptr;
+	};
 
-    Application *CreateApplication(const FCommandLine &cmdline)
-    {
-        FApplicationSpecification specification;
-        specification.CommandLine = cmdline;
-        specification.Title = "Editor v" + GET_ENGINE_VERSION.to_string();
-        specification.Width = 1080;
-        specification.Height = 720;
-        specification.VSync = true;
-        return new EditorApplication(specification);
-    }
-}
+	Application *CreateApplication(const FCommandLine &cmdline)
+	{
+		FApplicationSpecification specification;
+		specification.CommandLine = cmdline;
+		specification.Title = "Editor " + GET_ENGINE_VERSION.to_string();
+		specification.Width = 1080;
+		specification.Height = 720;
+		specification.VSync = true;
+		specification.Maximize = true;
+		return new EditorApplication(specification);
+	}
+} // namespace BHive

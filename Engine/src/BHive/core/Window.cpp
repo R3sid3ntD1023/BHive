@@ -1,5 +1,5 @@
 #include "Window.h"
-#include "WindowInput.h"
+
 #include <glfw/glfw3.h>
 
 namespace BHive
@@ -12,7 +12,7 @@ namespace BHive
 	}
 
 	Window::Window(const FWindowProperties &properties)
-		: mProperties(properties)
+		: mData({properties.Title, properties.Width, properties.Height, properties.VSync})
 	{
 		if (sWindowCount == 0)
 		{
@@ -38,37 +38,14 @@ namespace BHive
 		mContext = GraphicsContext::Create(mWindow);
 		mContext->Init();
 
-		glfwSetWindowUserPointer(mWindow, &mProperties);
-		glfwSetWindowCloseCallback(mWindow, [](GLFWwindow *) { WindowInput::OnWindowClose(); });
+		glfwSetWindowUserPointer(mWindow, &mData);
 
-		glfwSetWindowSizeCallback(mWindow, [](GLFWwindow *, int x, int y) { WindowInput::OnWindowResize(x, y); });
-
-		glfwSetKeyCallback(
-			mWindow, [](GLFWwindow *, int key, int scancode, int action, int mods) { WindowInput::OnKeyEvent(key, scancode, action, mods); });
-
-		glfwSetMouseButtonCallback(mWindow, [](GLFWwindow *, int button, int action, int mods) { WindowInput::OnMouseButton(button, action, mods); });
-
-		glfwSetScrollCallback(mWindow, [](GLFWwindow *, double x, double y) { WindowInput::OnMouseScroll(x, y); });
-
-		glfwSetCursorPosCallback(mWindow, [](GLFWwindow *, double x, double y) { WindowInput::OnMouseMoved(x, y); });
-
-		glfwSetCharCallback(mWindow, [](GLFWwindow *, unsigned codepoint) { WindowInput::OnKeyTypedEvent(codepoint); });
-
-		glfwSetJoystickCallback(WindowInput::OnJoyStickConnected);
-
-		for (int i = 0; i < GLFW_JOYSTICK_LAST; i++)
-		{
-			auto status = glfwJoystickPresent(i);
-			if (status)
-			{
-				WindowInput::OnJoyStickConnected(i, GLFW_CONNECTED);
-				break;
-			}
-		}
+		RegisterCallbacks();
 
 		SetVysnc(properties.VSync);
 
-		glfwMaximizeWindow(mWindow);
+		if (properties.Maximize)
+			glfwMaximizeWindow(mWindow);
 
 		glfwShowWindow(mWindow);
 	}
@@ -86,7 +63,6 @@ namespace BHive
 
 	void Window::Update()
 	{
-
 		mContext->SwapBuffers();
 	}
 
@@ -120,27 +96,86 @@ namespace BHive
 		glfwSetWindowPos(mWindow, x, y);
 	}
 
+	void Window::SetEventCallback(FOnWindowInputEvent &event)
+	{
+		mData.Input.mEvent = event;
+	}
 	void Window::PollEvents()
 	{
 		glfwPollEvents();
 	}
 
-	const char *Window::GetTitle() const
+	void Window::RegisterCallbacks()
 	{
-		return glfwGetWindowTitle(mWindow);
+		glfwSetWindowCloseCallback(
+			mWindow,
+			[](GLFWwindow *window)
+			{
+				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+				input->Input.OnWindowClose();
+			});
+
+		glfwSetWindowSizeCallback(
+			mWindow,
+			[](GLFWwindow *window, int x, int y)
+			{
+				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+				input->Input.OnWindowResize(x, y);
+				input->Width = x;
+				input->Height = y;
+			});
+
+		glfwSetKeyCallback(
+			mWindow,
+			[](GLFWwindow *window, int key, int scancode, int action, int mods)
+			{
+				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+				input->Input.OnKeyEvent(key, scancode, action, mods);
+			});
+
+		glfwSetMouseButtonCallback(
+			mWindow,
+			[](GLFWwindow *window, int button, int action, int mods)
+			{
+				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+				input->Input.OnMouseButton(button, action, mods);
+			});
+
+		glfwSetScrollCallback(
+			mWindow,
+			[](GLFWwindow *window, double x, double y)
+			{
+				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+				input->Input.OnMouseScroll(x, y);
+			});
+
+		glfwSetCursorPosCallback(
+			mWindow,
+			[](GLFWwindow *window, double x, double y)
+			{
+				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+				input->Input.OnMouseMoved(x, y);
+			});
+
+		glfwSetCharCallback(
+			mWindow,
+			[](GLFWwindow *window, unsigned codepoint)
+			{
+				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+				input->Input.OnKeyTypedEvent(codepoint);
+			});
+
+		glfwSetJoystickCallback(WindowInput::OnJoyStickConnected);
+
+		for (int i = 0; i < GLFW_JOYSTICK_LAST; i++)
+		{
+			auto status = glfwJoystickPresent(i);
+			if (status)
+			{
+				WindowInput::OnJoyStickConnected(i, GLFW_CONNECTED);
+				break;
+			}
+		}
 	}
 
-	std::pair<int, int> Window::GetPosition() const
-	{
-		int x, y;
-		glfwGetWindowPos(mWindow, &x, &y);
-		return {x, y};
-	}
-
-	std::pair<int, int> Window::GetSize() const
-	{
-		int x, y;
-		glfwGetWindowSize(mWindow, &x, &y);
-		return {x, y};
-	}
 } // namespace BHive

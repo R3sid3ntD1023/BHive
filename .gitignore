@@ -1,8 +1,8 @@
-**/bin/
+bin/
 bin-int/
 .vs/
-**/build/
-**/out/
+.vscode/
+build/
 
 **.sln
 **.vcxproj
@@ -14,9 +14,6 @@ bin-int/
 *.log
 *rp3d_profiling_.txt
 *imgui.ini
-
-!**/vendor/CMakeLists.txt
-**/vendor/
 
 #include
 !CMakeSettings.json

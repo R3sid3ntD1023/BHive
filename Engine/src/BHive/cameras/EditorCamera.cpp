@@ -1,6 +1,7 @@
 #include "EditorCamera.h"
 #include "events/Event.h"
 #include "core/WindowInput.h"
+#include "core/Application.h"
 
 namespace BHive
 {
@@ -10,7 +11,10 @@ namespace BHive
 	}
 
 	EditorCamera::EditorCamera(float fov, float aspect, float _near, float _far)
-		: mFov(fov), mAspect(aspect), mNear(_near), mFar(_far)
+		: mFov(fov),
+		  mAspect(aspect),
+		  mNear(_near),
+		  mFar(_far)
 	{
 		RecalulatePojection();
 	}
@@ -20,7 +24,7 @@ namespace BHive
 		if (mAltPressed)
 			return;
 
-		auto &input = WindowInput::GetInput();
+		auto &input = Application::Get().GetWindow().GetInput();
 
 		auto forward = mTransform.get_forward();
 		auto right = mTransform.get_right();
@@ -174,4 +178,4 @@ namespace BHive
 	{
 		mProjection = glm::perspective(glm::radians(mFov), mAspect, mNear, mFar);
 	}
-}
+} // namespace BHive
