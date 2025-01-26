@@ -40,8 +40,8 @@ namespace BHive
 		GLFWwindow *GetNative() { return mWindow; }
 		GraphicsContext &GetContext() { return *mContext; }
 		const std::string &GetTitle() const { return mData.Title; }
-		float GetWidth() const { return mData.Width; }
-		float GetHeight() const { return mData.Height; }
+		unsigned GetWidth() const { return mData.Width; }
+		unsigned GetHeight() const { return mData.Height; }
 		const Input &GetInput() const { return mData.Input.GetInput(); }
 
 	private:

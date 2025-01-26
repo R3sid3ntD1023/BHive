@@ -1,14 +1,14 @@
 #pragma once
 
-#include "graph/Graph.h"
 #include "inspector/Inspectors.h"
 #include "mesh/SkeletalAnimation.h"
 #include <asset/TAssetHandler.h>
+#include <ImNodeFlow.h>
 #include <reflection/Reflection.h>
 
 namespace BHive
 {
-	struct AnimGraphEditorNodeBase : Node
+	struct AnimGraphEditorNodeBase : public ImFlow::BaseNode
 	{
 		REFLECTABLEV()
 	};
@@ -60,6 +60,8 @@ namespace BHive
 
 		virtual void draw();
 
+		REFLECTABLEV(AnimGraphEditorNodeBase)
+
 	private:
 		T mValue{};
 	};
@@ -67,13 +69,13 @@ namespace BHive
 	template <typename T>
 	inline ArithmeticNode<T>::ArithmeticNode()
 	{
-		// addOUT<T>("Value")->behaviour([=]() { return mValue; });
+		addOUT<T>("Value")->behaviour([=]() { return mValue; });
 	}
 
 	template <typename T>
 	inline void ArithmeticNode<T>::draw()
 	{
-		inspect("In", mValue, false, false, meta_data_empty, 100.f);
+		inspect(typeid(T).name(), mValue, false, false, meta_data_empty, 100.f);
 	}
 
 #define REFLECT_ARITHMETIC_NODE(cls)       \

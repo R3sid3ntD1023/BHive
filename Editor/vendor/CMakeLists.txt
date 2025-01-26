@@ -10,12 +10,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(ImGuizmo)
 
-FetchContent_Declare(ImNodeFlow
-     GIT_REPOSITORY https://github.com/Fattorino/ImNodeFlow.git
-     GIT_TAG master
-)
-FetchContent_MakeAvailable(ImNodeFlow)
-
 #mINI
 FetchContent_Declare(
 	mINI
@@ -23,3 +17,5 @@ FetchContent_Declare(
 	GIT_TAG 0.9.17
 )
 FetchContent_MakeAvailable(mINI)
+
+add_subdirectory(ImNodeFlow)

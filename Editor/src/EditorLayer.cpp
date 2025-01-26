@@ -109,7 +109,7 @@ namespace BHive
 
 		auto w = window.GetWidth();
 		auto h = window.GetHeight();
-		auto aspect = w / h;
+		auto aspect = w / (float)h;
 
 		mSceneRenderer = CreateRef<SceneRenderer>(w, h);
 		mEditorCamera = EditorCamera(45.f, aspect, 0.1f, 1000.f);
@@ -134,6 +134,9 @@ namespace BHive
 		auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
 		edit_system.GetEditorMode.bind([this]() { return mEditorMode; });
 		edit_system.GetActiveWorld.bind([this]() { return mActiveWorld; });
+
+		AnimGraphContextMenu menu;
+		menu.OnAssetOpen(1202670764);
 	}
 
 	void EditorLayer::OnDetach()

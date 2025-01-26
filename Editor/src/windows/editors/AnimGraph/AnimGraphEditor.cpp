@@ -10,20 +10,32 @@ namespace BHive
 		auto derived = rttr::type::get<AnimGraphEditorNodeBase>().get_derived_classes();
 		mDerivedNodes.insert(mDerivedNodes.end(), derived.begin(), derived.end());
 
-		OnGraphContextMenuEvent context_menu;
-		context_menu.bind(this, &AnimGraphEditor::DrawCreateNodeMenu);
-
-		OnGraphDragDropEvent drag_drop_event;
-		drag_drop_event.bind(
-			[=](const ImVec2 &p, const ImGuiPayload *payload)
+		mGraph.rightClickPopUpContent(
+			[=](ImFlow::BaseNode *hovered, const ImVec2 &pos)
 			{
-				auto type = *(rttr::type *)payload->Data;
-				auto new_node = type.create().get_value<Ref<Node>>();
-				mGraph.addNode(p, new_node);
+				if (!hovered)
+				{
+					DrawCreateNodeMenu(pos);
+				}
+				else
+				{
+					if (ImGui::MenuItem("Delete", "Delete"))
+					{
+						hovered->destroy();
+					}
+				}
 			});
-
-		mGraph.setGraphContext(context_menu);
-		mGraph.setGraphDragDropEvent(drag_drop_event);
+		mGraph.dragDropTarget(
+			[=](const ImVec2 &pos)
+			{
+				auto payload = ImGui::AcceptDragDropPayload("NODE");
+				if (payload)
+				{
+					auto type = (rttr::type *)payload->Data;
+					auto new_node = type->create().get_value<Ref<ImFlow::BaseNode>>();
+					mGraph.addNode(new_node, pos);
+				}
+			});
 	}
 
 	void AnimGraphEditor::OnWindowRender()
@@ -49,8 +61,8 @@ namespace BHive
 				auto name = pretty_name ? pretty_name.to_string() : type.get_name();
 				if (ImGui::Selectable(name.data()))
 				{
-					auto new_node = type.create().get_value<Ref<Node>>();
-					mGraph.addNode({}, new_node);
+					auto new_node = type.create().get_value<Ref<ImFlow::BaseNode>>();
+					mGraph.addNode(new_node, {});
 				}
 
 				if (ImGui::BeginDragDropSource())
@@ -84,8 +96,8 @@ namespace BHive
 			auto name = pretty_name ? pretty_name.to_string() : type.get_name();
 			if (ImGui::Selectable(name.data()))
 			{
-				auto new_node = type.create().get_value<Ref<Node>>();
-				mGraph.addNode(pos, new_node);
+				auto new_node = type.create().get_value<Ref<ImFlow::BaseNode>>();
+				mGraph.addNode(new_node, pos);
 			}
 		}
 	}

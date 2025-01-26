@@ -1,33 +1,46 @@
 #include "AnimGraphEditorNodes.h"
 #include "core/Casting.h"
+#include "gui/ImGuiExtended.h"
 
 namespace BHive
 {
 	AnimGraphBlendNode::AnimGraphBlendNode()
 	{
 		setTitle("Blend");
-		/*setStyle(ImFlow::NodeStyle::green());
-		addIN<float>("Factor", 0, ImFlow::ConnectionFilter::Numbers());*/
+
+		setStyle(ImFlow::NodeStyle::green());
+		addIN<float>("Factor", 0, ImFlow::ConnectionFilter::Numbers());
 	}
 
 	void AnimGraphBlendNode::draw()
 	{
-		for (size_t i{}; i < mPoseDatas.size(); i++)
+		for (size_t i = 0; i < mPoseDatas.size(); i++)
 		{
-			// showIN(std::format("Pose{}", i), mPoseDatas[i], ImFlow::ConnectionFilter::SameType());
+			mPoseDatas[i] = showIN(std::format("Pose {}", i), PoseData{}, ImFlow::ConnectionFilter::SameType());
 		}
 
-		if (ImGui::Button("+", {20.f, 0.f}))
+		if (ImGui::Button("+"))
 		{
-			mPoseDatas.push_back({});
+			auto i = mPoseDatas.size();
+			mPoseDatas.push_back(AnimGraphBlendNode::PoseData{});
+		}
+
+		if (mPoseDatas.size())
+		{
+			ImGui::SameLine();
+
+			if (ImGui::Button("-"))
+			{
+				mPoseDatas.pop_back();
+			}
 		}
 	}
 
 	AnimGraphClipNode::AnimGraphClipNode()
 	{
 		setTitle("Clip");
-		/*setStyle(ImFlow::NodeStyle::cyan());
-		addOUT<AnimGraphEditorNodeBase *>("Animation", ImFlow::PinStyle::cyan())->behaviour([=]() { return this; });*/
+		setStyle(ImFlow::NodeStyle::cyan());
+		addOUT<AnimGraphEditorNodeBase *>("Animation", ImFlow::PinStyle::cyan())->behaviour([=]() { return this; });
 	}
 
 	void AnimGraphClipNode::draw()
@@ -39,9 +52,9 @@ namespace BHive
 	{
 		setTitle("PoseData");
 
-		/*	addIN<AnimGraphEditorNodeBase *>("Node", mPoseData.mNode.get(), ImFlow::ConnectionFilter::SameType());
-			addIN("Factor", mPoseData.mFactor, ImFlow::ConnectionFilter::Numbers());
-			addOUT<AnimGraphBlendNode::PoseData>("PoseData")->behaviour([=]() { return mPoseData; });*/
+		addIN<AnimGraphEditorNodeBase *>("Node", &*mPoseData.mNode, ImFlow::ConnectionFilter::SameType());
+		addIN("Factor", mPoseData.mFactor, ImFlow::ConnectionFilter::Numbers());
+		addOUT<AnimGraphBlendNode::PoseData>("PoseData")->behaviour([=]() { return mPoseData; });
 	}
 
 	REFLECT(AnimGraphEditorNodeBase)
@@ -58,6 +71,12 @@ namespace BHive
 	REFLECT(AnimGraphClipNode)
 	{
 		BEGIN_REFLECT(AnimGraphClipNode)
+		REFLECT_CONSTRUCTOR();
+	}
+
+	REFLECT(AnimGraphPoseDataNode)
+	{
+		BEGIN_REFLECT(AnimGraphPoseDataNode)
 		REFLECT_CONSTRUCTOR();
 	}
 
