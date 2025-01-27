@@ -2,10 +2,11 @@
 
 #include "Animator/anim_graph/AnimGraph.h"
 #include "windows/editors/TAssetEditor.h"
-#include <ImNodeFlow.h>
 
 namespace BHive
 {
+	class AnimationGraph;
+
 	class AnimGraphEditor : public TAssetEditor<AnimGraph>
 	{
 	public:
@@ -16,10 +17,8 @@ namespace BHive
 	private:
 		void DrawNodeList();
 		void DrawEditorWindow();
-		void DrawCreateNodeMenu(const ImVec2 &pos);
 
-		std::vector<rttr::type> mDerivedNodes;
-		ImFlow::ImNodeFlow mGraph;
+		Ref<AnimationGraph> mAnimationGraph;
 	};
 
 } // namespace BHive

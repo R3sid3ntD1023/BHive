@@ -2,86 +2,128 @@
 
 #include "inspector/Inspectors.h"
 #include "mesh/SkeletalAnimation.h"
-#include <asset/TAssetHandler.h>
+#include "asset/TAssetHandler.h"
+#include "reflection/Reflection.h"
 #include <ImNodeFlow.h>
-#include <reflection/Reflection.h>
 
 namespace BHive
 {
-	struct AnimGraphEditorNodeBase : public ImFlow::BaseNode
-	{
-		REFLECTABLEV()
-	};
-
-	struct AnimGraphBlendNode : public AnimGraphEditorNodeBase
-	{
-		struct PoseData
-		{
-			Ref<AnimGraphEditorNodeBase> mNode;
-			float mFactor{0.0f};
-		};
-
-		AnimGraphBlendNode();
-
-		virtual void draw() override;
-
-		REFLECTABLEV(AnimGraphEditorNodeBase)
-
-		std::vector<PoseData> mPoseDatas;
-	};
-
 	class SkeletalAnimation;
 
-	struct AnimGraphClipNode : public AnimGraphEditorNodeBase
+	namespace AnimEditor
 	{
-		AnimGraphClipNode();
+		struct NodeBase : public ImFlow::BaseNode
+		{
+			REFLECTABLEV()
+		};
 
-		virtual void draw() override;
+		struct PoseNode : public NodeBase
+		{
+			PoseNode();
 
-		TAssetHandle<SkeletalAnimation> mAnimation;
+			REFLECTABLEV(NodeBase)
+		};
 
-		REFLECTABLEV(AnimGraphEditorNodeBase)
-	};
+		struct BlendNode : public PoseNode
+		{
+			struct PoseData
+			{
+				Ref<PoseNode> mNode;
+				float mFactor{0.0f};
+			};
 
-	struct AnimGraphPoseDataNode : public AnimGraphEditorNodeBase
-	{
-		AnimGraphPoseDataNode();
+			BlendNode();
 
-		REFLECTABLEV(AnimGraphEditorNodeBase)
+			virtual void draw() override;
 
-	private:
-		AnimGraphBlendNode::PoseData mPoseData;
-	};
+			REFLECTABLEV(PoseNode)
 
-	template <typename T>
-	struct ArithmeticNode : public AnimGraphEditorNodeBase
-	{
-		ArithmeticNode();
+			std::vector<PoseData> mPoseDatas;
+		};
 
-		virtual void draw();
+		struct ClipNode : public PoseNode
+		{
+			ClipNode();
 
-		REFLECTABLEV(AnimGraphEditorNodeBase)
+			virtual void draw() override;
 
-	private:
-		T mValue{};
-	};
+			TAssetHandle<SkeletalAnimation> mAnimation;
 
-	template <typename T>
-	inline ArithmeticNode<T>::ArithmeticNode()
-	{
-		addOUT<T>("Value")->behaviour([=]() { return mValue; });
-	}
+			REFLECTABLEV(PoseNode)
+		};
 
-	template <typename T>
-	inline void ArithmeticNode<T>::draw()
-	{
-		inspect(typeid(T).name(), mValue, false, false, meta_data_empty, 100.f);
-	}
+		struct PoseDataNode : public NodeBase
+		{
+			PoseDataNode();
 
-#define REFLECT_ARITHMETIC_NODE(cls)       \
-	REFLECT(ArithmeticNode<cls>)           \
-	{                                      \
-		BEGIN_REFLECT(ArithmeticNode<cls>) \
-		REFLECT_CONSTRUCTOR();             \
-	}
+			REFLECTABLEV(NodeBase)
+
+		private:
+			BlendNode::PoseData mPoseData;
+		};
+
+		struct StateTransition : public PoseNode
+		{
+			StateTransition();
+
+			REFLECTABLEV(PoseNode)
+
+		private:
+			struct PoseNode *mCondition = nullptr;
+			struct State *mDestination = nullptr;
+		};
+
+		struct State : public PoseNode
+		{
+			State();
+
+			virtual void draw() override;
+
+			REFLECTABLEV(PoseNode)
+
+		private:
+			struct PoseNode *mPoseNode = nullptr;
+			struct std::vector<StateTransition *> mTransitions;
+		};
+
+		struct StateMachine : public PoseNode
+		{
+			StateMachine();
+
+			REFLECTABLEV(PoseNode);
+		};
+
+		template <typename T>
+		struct ArithmeticNode : public NodeBase
+		{
+			ArithmeticNode();
+
+			virtual void draw();
+
+			REFLECTABLEV(NodeBase)
+
+		private:
+			T mValue{};
+		};
+
+		template <typename T>
+		inline ArithmeticNode<T>::ArithmeticNode()
+		{
+			addOUT<T>("Value")->behaviour([=]() { return mValue; });
+		}
+
+		template <typename T>
+		inline void ArithmeticNode<T>::draw()
+		{
+			inspect(typeid(T).name(), mValue, false, false, meta_data_empty, 100.f);
+		}
+	} // namespace AnimEditor
+
 } // namespace BHive
+
+#define REFLECT_ARITHMETIC_NODE(cls)                         \
+	REFLECT(AnimEditor::ArithmeticNode<cls>)                 \
+	{                                                        \
+		BEGIN_REFLECT(AnimEditor::ArithmeticNode<cls>, #cls) \
+		REFLECT_CONSTRUCTOR();                               \
+	}
