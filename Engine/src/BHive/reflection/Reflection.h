@@ -7,14 +7,12 @@
 #include <rttr/type.h>
 #include "PropertyMetaData.h"
 
-#define REFLECT_PROPERTY_GETTER_SETTER_IMPL(name, getter, setter) \
-	.property(name, &T::##getter, &T::##setter)
+#define REFLECT_PROPERTY_GETTER_SETTER_IMPL(name, getter, setter) .property(name, &T::##getter, &T::##setter)
 #define REFLECT_PROPERTY_IMPL(name, member) .property(name, &T::##member)
 
 #define GET_REFLECT_PROPERTY_MACRO_NAME(arg0, arg1, macro) macro
 #define GET_REFLECT_PROPERTY_MACRO(name, ...) \
-	EXPAND(GET_REFLECT_PROPERTY_MACRO_NAME(   \
-		__VA_ARGS__, REFLECT_PROPERTY_GETTER_SETTER_IMPL, REFLECT_PROPERTY_IMPL))
+	EXPAND(GET_REFLECT_PROPERTY_MACRO_NAME(__VA_ARGS__, REFLECT_PROPERTY_GETTER_SETTER_IMPL, REFLECT_PROPERTY_IMPL))
 
 #define REFLECT_PROPERTY(...) EXPAND(GET_REFLECT_PROPERTY_MACRO(__VA_ARGS__)(__VA_ARGS__))
 #define REFLECT_PROPERTY_READ_ONLY(name, member) .property_readonly(name, &T::##member)
@@ -29,8 +27,7 @@
 #define REFLECT_IMPL(cls)                                               \
 	template <>                                                         \
 	inline void ::BHive::reflection::auto_register_reflection_t<cls>(); \
-	static const auto ANONYMOUS_VARIABLE(auto_register__) =             \
-		::BHive::reflection::refl(&::BHive::reflection::auto_register_reflection_t<cls>);
+	static const auto ANONYMOUS_VARIABLE(auto_register__) = ::BHive::reflection::refl(&::BHive::reflection::auto_register_reflection_t<cls>);
 
 #define REFLECT(cls)  \
 	REFLECT_IMPL(cls) \
@@ -52,9 +49,15 @@
 	REFLECTABLE_FRIEND()  \
 	RTTR_ENABLE(__VA_ARGS__)
 
-#define BEGIN_REFLECT(cls) \
-	using T = cls;         \
-	auto factory = rttr::registration::class_<cls>(#cls)
+#define BEGIN_REFLECT_IMPL(cls, name) \
+	using T = cls;                    \
+	auto factory = rttr::registration::class_<cls>(name)
+
+#define BEGIN_REFLECT_WITH_NAME(cls, name) BEGIN_REFLECT_IMPL(cls, name)
+#define BEGIN_REFLECT_NO_NAME(cls) BEGIN_REFLECT_IMPL(cls, #cls)
+#define BEGIN_REFLECT_GET_MACRO(arg0, arg1, macro) macro
+#define BEGIN_REFLECT_GET_MACRO_NAME(...) EXPAND(BEGIN_REFLECT_GET_MACRO(__VA_ARGS__, BEGIN_REFLECT_WITH_NAME, BEGIN_REFLECT_NO_NAME))
+#define BEGIN_REFLECT(...) EXPAND(BEGIN_REFLECT_GET_MACRO_NAME(__VA_ARGS__)(__VA_ARGS__))
 
 #define BEGIN_REFLECT_ENUM(cls) \
 	using TEnum = cls;          \
@@ -66,8 +69,7 @@
 
 #define ENUM_VALUE_IMPL_2(enum_value) ENUM_VALUE_IMPL_1(enum_value, #enum_value)
 
-#define GET_ENUM_VALUE_MACRO(enum_value, ...) \
-	EXPAND(GET_ENUM_VALUE_MACRO_NAME(__VA_ARGS__, ENUM_VALUE_IMPL_2, ENUM_VALUE_IMPL_1))
+#define GET_ENUM_VALUE_MACRO(enum_value, ...) EXPAND(GET_ENUM_VALUE_MACRO_NAME(__VA_ARGS__, ENUM_VALUE_IMPL_2, ENUM_VALUE_IMPL_1))
 #define ENUM_VALUE(...) EXPAND(GET_ENUM_VALUE_MACRO(__VA_ARGS__)(__VA_ARGS__))
 
 #define META_DATA(key, value) rttr::metadata(key, value)
