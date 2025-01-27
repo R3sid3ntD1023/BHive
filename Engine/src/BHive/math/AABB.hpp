@@ -41,7 +41,9 @@ namespace BHive
 		{
 		}
 
-		glm::vec3 get_size() const { return Max - Min; }
+		glm::vec3 get_center() const { return Min + ((Max - Min) * .5f); }
+
+		glm::vec3 get_size() const { return glm::abs(Max - Min); }
 
 		float get_radius() const { return glm::length(get_size()); }
 
@@ -56,10 +58,7 @@ namespace BHive
 			return *this;
 		}
 
-		AABB operator+(const AABB &rhs) const
-		{
-			return {glm::min(Min, rhs.Min), glm::max(Max, rhs.Max)};
-		}
+		AABB operator+(const AABB &rhs) const { return {glm::min(Min, rhs.Min), glm::max(Max, rhs.Max)}; }
 
 		AABB operator+(const glm::vec3 &rhs) const { return {Min + rhs, Max + rhs}; }
 
