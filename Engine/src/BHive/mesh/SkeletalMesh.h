@@ -1,14 +1,14 @@
 #pragma once
 
+#include "IRenderableAsset.h"
 #include "SkeletalPose.h"
 #include "Skeleton.h"
-#include "StaticMesh.h"
 
 namespace BHive
 {
 	class Skeleton;
 
-	class SkeletalMesh : public StaticMesh
+	class SkeletalMesh : public IRenderableAsset
 	{
 	public:
 		SkeletalMesh() = default;
@@ -22,7 +22,7 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLEV(StaticMesh)
+		REFLECTABLEV(IRenderableAsset)
 
 	private:
 		Ref<Skeleton> mSkeleton;

@@ -4,7 +4,7 @@ namespace BHive
 {
 
 	SkeletalMesh::SkeletalMesh(const FMeshData &mesh_data, const Ref<Skeleton> &skeleton)
-		: StaticMesh(mesh_data),
+		: IRenderableAsset(mesh_data),
 		  mSkeleton(skeleton)
 	{
 		mDefaultPose = CreateRef<SkeletalPose>(skeleton.get());
@@ -12,7 +12,7 @@ namespace BHive
 
 	void SkeletalMesh::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		StaticMesh::Save(ar);
+		IRenderableAsset::Save(ar);
 
 		TAssetHandle<Skeleton> handle = mSkeleton;
 
@@ -21,7 +21,7 @@ namespace BHive
 
 	void SkeletalMesh::Load(cereal::BinaryInputArchive &ar)
 	{
-		StaticMesh::Load(ar);
+		IRenderableAsset::Load(ar);
 
 		TAssetHandle<Skeleton> handle;
 		ar(handle);
