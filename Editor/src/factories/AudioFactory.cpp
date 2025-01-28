@@ -14,6 +14,6 @@ namespace BHive
 		return source;
 	}
 
-	REFLECT_FACTORY(AudioFactory, AudioSource, ".ogg", ".wav")
+	REFLECT_FACTORY(AudioFactory)
 
 } // namespace BHive

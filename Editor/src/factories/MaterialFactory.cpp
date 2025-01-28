@@ -10,5 +10,5 @@ namespace BHive
 		return material;
 	}
 
-	REFLECT_FACTORY(MaterialFactory, Material, ".material")
+	REFLECT_FACTORY(MaterialFactory)
 } // namespace BHive

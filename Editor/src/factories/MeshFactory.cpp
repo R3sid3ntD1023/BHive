@@ -22,5 +22,5 @@ namespace BHive
 		return nullptr;
 	}
 
-	REFLECT_FACTORY(MeshFactory, StaticMesh, ".gltf", ".glb")
+	REFLECT_FACTORY(MeshFactory)
 } // namespace BHive

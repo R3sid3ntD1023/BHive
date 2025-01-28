@@ -46,5 +46,5 @@ namespace BHive
 		return nullptr;
 	}
 
-	REFLECT_FACTORY(AnimGraphFactory, AnimGraph);
+	REFLECT_FACTORY(AnimGraphFactory);
 } // namespace BHive

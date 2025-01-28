@@ -24,7 +24,7 @@ namespace ImGui
 	bool DraggablePoint(const char *str_id, float point[2], float size = 1.0f);
 
 	// min-max vec2
-	bool EditableRect(const char *str_id, float min[2], float max[2], float size = 1.0f);
+	bool EditableRect(const char *str_id, float min[2], float max[2], float size = 1.0f, float thickness = 2.f);
 
 	bool Timeline(const char *str_id, int *frame, int max, const ImVec2 &size_arg = {0, 0});
 

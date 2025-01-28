@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/Core.h"
-#include "AssetExtensions.h"
 #include "asset/AssetType.h"
 
 namespace BHive
@@ -10,41 +9,20 @@ namespace BHive
 
 	class FactoryRegistry
 	{
-	public:
-		struct TypeInfo
-		{
-			const char *mName = "";
-			FAssetExtensions mExtensions;
-			Ref<Factory> mFactory;
-
-			operator bool() const { return mFactory != nullptr; }
-		};
+		using factories = std::vector<Ref<Factory>>;
 
 	public:
 		FactoryRegistry();
 
-		template <
-			typename T, typename TFactory,
-			typename = std::enable_if<std::is_base_of_v<Factory, TFactory>>>
-		void Register(const FAssetExtensions &extensions)
+		template <typename TFactory, typename = std::enable_if<std::is_base_of_v<Factory, TFactory>>>
+		void Register()
 		{
-			auto type = AssetType::get<T>();
-			Register(type.get_name().data(), type, extensions, CreateRef<TFactory>());
+			Register(CreateRef<TFactory>());
 		}
 
-		template <typename T>
-		Ref<Factory> Get() const
-		{
-			return Get(AssetType::get<T>());
-		}
+		void Register(const Ref<Factory> &Factory);
 
-		void Register(
-			const char *name, const AssetType &type_id, const FAssetExtensions &extensions,
-			const Ref<Factory> &Factory);
-
-		Ref<Factory> Get(const AssetType &type_id) const;
-
-		const AssetType &GetTypeFromExtension(const std::string &ext) const;
+		Ref<Factory> Get(const std::string &extension) const;
 
 		static FactoryRegistry &Get()
 		{
@@ -52,27 +30,11 @@ namespace BHive
 			return instance;
 		}
 
-		template <typename T>
-		const TypeInfo &GetTypeInfo() const
-		{
-			static TypeInfo info;
-
-			auto type = AssetType::get<T>();
-			if (mRegisteredTypes.contains(type))
-			{
-				return mRegisteredTypes.at(type);
-			}
-
-			return info;
-		}
-
-		const std::unordered_map<AssetType, TypeInfo> &GetRegisteredFentityies() const
-		{
-			return mRegisteredTypes;
-		}
+		const factories &GetRegisteredFactories() const { return mRegisteredFactories; }
 
 	private:
-		std::unordered_map<AssetType, TypeInfo> mRegisteredTypes;
+		// extension - factory
+		factories mRegisteredFactories;
 	};
 
 } // namespace BHive

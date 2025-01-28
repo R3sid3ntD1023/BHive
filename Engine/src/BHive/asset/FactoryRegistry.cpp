@@ -6,39 +6,30 @@ namespace BHive
 {
 	FactoryRegistry::FactoryRegistry()
 	{
-		auto derived_fentityies = rttr::type::get<Factory>().get_derived_classes();
-		for (auto &Factory_type : derived_fentityies)
+		auto derived_types = rttr::type::get<Factory>().get_derived_classes();
+		for (auto &type : derived_types)
 		{
-			auto asset_type = Factory_type.get_metadata("Type").get_value<AssetType>();
-			auto extensions = Factory_type.get_metadata("Extensions").get_value<FAssetExtensions>();
-			auto factory = Factory_type.create().get_value<Ref<Factory>>();
+			auto factory = type.create().get_value<Ref<Factory>>();
 
-			Register(asset_type.get_name().data(), asset_type, extensions, factory);
+			Register(factory);
 		}
 	}
 
-	void FactoryRegistry::Register(const char *name, const AssetType &type_id, const FAssetExtensions &extensions, const Ref<Factory> &Factory)
+	void FactoryRegistry::Register(const Ref<Factory> &factory)
 	{
-		ASSERT(!mRegisteredTypes.contains(type_id));
-
-		mRegisteredTypes[type_id] = {name, extensions, Factory};
+		mRegisteredFactories.push_back(factory);
 	}
 
-	Ref<Factory> FactoryRegistry::Get(const AssetType &type_id) const
+	Ref<Factory> FactoryRegistry::Get(const std::string &extension) const
 	{
-		ASSERT(mRegisteredTypes.contains(type_id));
-
-		return mRegisteredTypes.at(type_id).mFactory;
-	}
-
-	const AssetType &FactoryRegistry::GetTypeFromExtension(const std::string &ext) const
-	{
-		for (auto &extension : mRegisteredTypes)
+		for (auto &factory : mRegisteredFactories)
 		{
-			if (extension.second.mExtensions.Contains(ext))
-				return extension.first;
+			auto extensions = factory->GetSupportedExtensions();
+			auto it = std::find(extensions.begin(), extensions.end(), extension);
+			if (it != extensions.end())
+				return factory;
 		}
 
-		return InvalidType;
+		return nullptr;
 	}
-}
+} // namespace BHive

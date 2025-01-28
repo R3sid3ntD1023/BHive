@@ -1,7 +1,6 @@
 #pragma once
 
 #include "asset/Asset.h"
-#include "AssetExtensions.h"
 
 namespace BHive
 {
@@ -21,11 +20,13 @@ namespace BHive
 
 		virtual bool CanCreateNew() const { return false; }
 
-		virtual const char *GetFileFilters() const { return ""; }
-
-		virtual const char *GetDefaultAssetName() const { return ""; }
+		virtual std::string GetDefaultAssetName() const { return ""; }
 
 		virtual std::vector<Ref<Asset>> GetOtherCreatedAssets() { return {}; }
+
+		virtual std::vector<std::string> GetSupportedExtensions() { return {}; }
+
+		virtual std::string GetDisplayName() const { return "Factory"; }
 
 		OnImportCompletedEvent OnImportCompleted;
 
@@ -40,11 +41,9 @@ namespace BHive
 	}
 } // namespace BHive
 
-#define REFLECT_FACTORY(cls, asset_type, ...)                                                   \
-	REFLECT(cls)                                                                                \
-	{                                                                                           \
-		BEGIN_REFLECT(cls)                                                                      \
-		(META_DATA("Type", rttr::type::get<asset_type>()),                                      \
-		 META_DATA("Extensions", BHive::FAssetExtensions({__VA_ARGS__}))) REFLECT_CONSTRUCTOR() \
-			CONSTRUCTOR_POLICY_SHARED;                                                          \
+#define REFLECT_FACTORY(cls)                             \
+	REFLECT(cls)                                         \
+	{                                                    \
+		BEGIN_REFLECT(cls)                               \
+		REFLECT_CONSTRUCTOR() CONSTRUCTOR_POLICY_SHARED; \
 	}

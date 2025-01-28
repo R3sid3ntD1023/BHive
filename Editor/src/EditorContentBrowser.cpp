@@ -50,8 +50,7 @@ namespace BHive
 	{
 		auto &registry = FactoryRegistry::Get();
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
-		auto type = registry.GetTypeFromExtension(relative.extension().string());
-		auto factory = registry.Get(type);
+		auto factory = registry.Get(relative.extension().string());
 		if (factory)
 		{
 			factory->OnImportCompleted.bind([=](const Ref<Asset> &asset)
@@ -118,8 +117,9 @@ namespace BHive
 
 	void EditorContentBrowser::OnAssetContextMenu(const std::filesystem::path &relative)
 	{
-		auto type = FactoryRegistry::Get().GetTypeFromExtension(relative.extension().string());
-		auto menu = AssetContextMenuRegistry::Get().GetAssetMenu(type);
+		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
+		auto meta_data = manager->GetMetaData(Project::GetResourceDirectory() / relative);
+		auto menu = AssetContextMenuRegistry::Get().GetAssetMenu(meta_data.Type);
 
 		if (menu)
 		{
@@ -170,10 +170,10 @@ namespace BHive
 
 		Ref<Texture> texture;
 		auto ext = relative.extension();
-		if (auto info = FactoryRegistry::Get().GetTypeInfo<Texture>())
+
+		if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
 		{
-			if (info.mExtensions.Contains(ext.string()))
-				texture = mThumbnailCache.Get(Project::GetResourceDirectory() / relative);
+			texture = mThumbnailCache.Get(Project::GetResourceDirectory() / relative);
 		}
 
 		if (!texture)
@@ -194,15 +194,14 @@ namespace BHive
 	void EditorContentBrowser::OnWindowContextMenu()
 	{
 		auto &registry = FactoryRegistry::Get();
-		auto &factories = registry.GetRegisteredFentityies();
+		auto &factories = registry.GetRegisteredFactories();
 
-		for (auto &[type, info] : factories)
+		for (auto &factory : factories)
 		{
-			auto &factory = info.mFactory;
 			if (!factory->CanCreateNew())
 				continue;
 
-			auto name = std::string("Create ") + info.mName;
+			auto name = std::format("Create {}", factory->GetDisplayName());
 
 			if (ImGui::Selectable(name.c_str()))
 			{

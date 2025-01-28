@@ -18,5 +18,5 @@ namespace BHive
 		return t;
 	}
 
-    REFLECT_FACTORY(TextureFactory, Texture, ".png", ".jpg", ".jpeg") 
+	REFLECT_FACTORY(TextureFactory)
 } // namespace BHive

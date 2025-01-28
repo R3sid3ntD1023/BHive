@@ -4,20 +4,20 @@
 
 namespace BHive
 {
-    class SpriteSheetFactory : public Factory
-    {
-    private:
-        /* data */
-    public:
-        virtual Ref<Asset> CreateNew() override;
+	class SpriteSheetFactory : public Factory
+	{
+	private:
+		/* data */
+	public:
+		virtual Ref<Asset> CreateNew() override;
 
-        virtual bool CanCreateNew() const { return true; }
+		virtual bool CanCreateNew() const { return true; }
 
-        const char *GetFileFilters() const { return "SpriteSheet (*.spritesheet)\0*.spritesheet\0"; }
+		virtual std::string GetDefaultAssetName() const { return "NewSpriteSheet"; }
 
-        virtual const char* GetDefaultAssetName() const { return "NewSpriteSheet"; }
+		virtual std::string GetDisplayName() const { return "SpriteSheet"; }
 
-        REFLECTABLEV(Factory)
-    };
+		REFLECTABLEV(Factory)
+	};
 
 } // namespace BHive

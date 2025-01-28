@@ -4,18 +4,20 @@
 
 namespace BHive
 {
-    class AudioFactory : public Factory
-    {
-    public:
-        virtual bool CanCreateNew() const { return false; }
+	class AudioFactory : public Factory
+	{
+	public:
+		virtual bool CanCreateNew() const { return false; }
 
-        virtual Ref<Asset> Import(const std::filesystem::path &path) override;
+		virtual Ref<Asset> Import(const std::filesystem::path &path) override;
 
-        const char *GetFileFilters() const { return "Ogg (*.ogg)\0*.ogg\0Wav (*.wav)\0*.wav"; }
+		virtual std::string GetDefaultAssetName() const override { return "NewAudio"; }
 
-        virtual const char* GetDefaultAssetName() const override { return "NewAudio"; }
+		virtual std::vector<std::string> GetSupportedExtensions() { return {".ogg", ".wav"}; }
 
-        REFLECTABLEV(Factory)
-    };
+		virtual std::string GetDisplayName() const { return "Audio"; }
+
+		REFLECTABLEV(Factory)
+	};
 
 } // namespace BHive

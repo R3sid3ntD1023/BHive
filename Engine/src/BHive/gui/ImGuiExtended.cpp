@@ -71,15 +71,6 @@ namespace ImGui
 		return false;
 	}
 
-	void OnDragDropSource(const char *type, void *data, size_t size)
-	{
-		if (BeginDragDropSource())
-		{
-			SetDragDropPayload(type, data, size);
-			EndDragDropSource();
-		}
-	}
-
 	bool DraggablePoint(const char *str_id, float point[2], float size)
 	{
 
@@ -91,16 +82,14 @@ namespace ImGui
 		const ImGuiID id = window->GetID(str_id);
 
 		auto pos = window->DC.CursorPos;
-		auto item_size = ImVec2(size);
-		auto offset = item_size * .5f;
 		ImVec2 center = {point[0], point[1]};
-		ImRect rect = {pos + center - offset, pos + center + offset};
+		ImRect rect = {pos + center - (size * .5f), pos + center + (size * .5f)};
 
 		if (!ItemAdd(rect, id))
 			return false;
 
-		const bool hovered = ItemHoverable(rect, id, GImGui->LastItemData.ItemFlags);
-		const bool clicked = hovered && IsMouseClicked(ImGuiMouseButton_Left, ImGuiInputFlags_None, id);
+		const bool hovered = ItemHoverable(rect, id, ImGuiItemFlags_None);
+		const bool clicked = hovered && IsMouseDown(ImGuiMouseButton_Left);
 
 		if (clicked || GImGui->NavActivateId == id)
 		{
@@ -113,22 +102,18 @@ namespace ImGui
 		}
 
 		bool active = GImGui->ActiveId == id;
-
-		if (GImGui->ActiveIdSource == ImGuiInputSource_Mouse && active)
+		if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && active)
 		{
-			if (!GImGui->IO.MouseDown[0])
-			{
-				ClearActiveID();
-			}
+			ClearActiveID();
 		}
 
-		float threshold = -1.0f;
-		bool is_dragging = IsMouseDragging(ImGuiMouseButton_Left, threshold);
-		if (active && hovered && is_dragging)
+		bool is_dragging = IsMouseDragging(ImGuiMouseButton_Left, 0);
+
+		if (active && is_dragging)
 		{
-			auto delta = GetMousePos() - pos;
-			point[0] = delta.x;
-			point[1] = delta.y;
+			auto delta = ImGui::GetIO().MouseDelta;
+			point[0] += delta.x;
+			point[1] += delta.y;
 			changed |= true;
 		}
 
@@ -138,12 +123,15 @@ namespace ImGui
 		ImU32 color = active ? 0xFF00FF00 : hovered ? 0xFF00FFFF : 0xFFFFFFFF;
 
 		auto drawlist = window->DrawList;
-		drawlist->AddRectFilled(rect.Min, rect.Max, color);
+
+		auto min = ImMin(rect.Min, rect.Max);
+		auto max = ImMax(rect.Min, rect.Max);
+		drawlist->AddRectFilled(min, max, color);
 
 		return changed;
 	}
 
-	bool EditableRect(const char *str_id, float min[2], float max[2], float size)
+	bool EditableRect(const char *str_id, float min[2], float max[2], float size, float thickness)
 	{
 		bool changed = false;
 
@@ -156,42 +144,16 @@ namespace ImGui
 
 		auto drawlist = window->DrawList;
 		auto pos = window->DC.CursorPos;
+		ImU32 rect_color = 0xFF0000FF;
 
-		ImVec2 points[4] = {{min[0], min[1]}, {max[0], min[1]}, {max[0], max[1]}, {min[0], max[1]}};
+		drawlist->AddRect(pos + ImVec2{min[0], min[1]}, pos + ImVec2{max[0], max[1]}, rect_color, 0.0f, 0, thickness);
 
-		drawlist->AddLine(pos + points[0], pos + points[1], 0xFF0000FF);
-		drawlist->AddLine(pos + points[1], pos + points[2], 0xFF0000FF);
-		drawlist->AddLine(pos + points[2], pos + points[3], 0xFF0000FF);
-		drawlist->AddLine(pos + points[3], pos + points[0], 0xFF0000FF);
-
-		if (DraggablePoint("##min", min, size))
-		{
-			changed |= true;
-		}
-
-		if (DraggablePoint("##max", max, size))
-		{
-			changed |= true;
-		}
+		changed |= DraggablePoint("##min", min, size);
+		changed |= DraggablePoint("##max", max, size);
 
 		PopID();
 
 		return changed;
-	}
-
-	void *OnDragDropTarget(const char *type)
-	{
-		if (BeginDragDropTarget())
-		{
-			if (const ImGuiPayload *payload = AcceptDragDropPayload(type))
-			{
-				return payload->Data;
-			}
-
-			EndDragDropTarget();
-		}
-
-		return nullptr;
 	}
 
 	bool Timeline(const char *str_id, int *frame, int max, const ImVec2 &size_arg)

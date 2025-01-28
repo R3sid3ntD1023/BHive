@@ -4,17 +4,17 @@
 
 namespace BHive
 {
-    class PhysicsMaterialFactory : public Factory
-    {
-    public:
-        virtual Ref<Asset> CreateNew();
+	class PhysicsMaterialFactory : public Factory
+	{
+	public:
+		virtual Ref<Asset> CreateNew();
 
-        virtual bool CanCreateNew() const { return true; }
+		virtual bool CanCreateNew() const { return true; }
 
-        const char *GetFileFilters() const { return "PhysicsMaterial (*.physicsmaterial)\0*.physicsmaterial\0"; }
+		virtual std::string GetDefaultAssetName() const { return "NewPhysicsMaterial"; }
 
-        virtual const char* GetDefaultAssetName() const { return "NewPhysicsMaterial"; }
+		virtual std::string GetDisplayName() const { return "PhysicsMaterial"; }
 
-        REFLECTABLEV(Factory)
-    };
+		REFLECTABLEV(Factory)
+	};
 } // namespace BHive

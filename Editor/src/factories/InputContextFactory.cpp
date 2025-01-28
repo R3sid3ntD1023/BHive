@@ -10,6 +10,6 @@ namespace BHive
 		return ic;
 	}
 
-	REFLECT_FACTORY(InputContextFactory, InputContext, ".input")
+	REFLECT_FACTORY(InputContextFactory)
 
 } // namespace BHive

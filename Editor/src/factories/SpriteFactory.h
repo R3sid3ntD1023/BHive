@@ -4,18 +4,18 @@
 
 namespace BHive
 {
-    class SpriteFactory : public Factory
-    {
-    public:
-        virtual Ref<Asset> CreateNew();
+	class SpriteFactory : public Factory
+	{
+	public:
+		virtual Ref<Asset> CreateNew();
 
-        virtual bool CanCreateNew() const { return true; }
+		virtual bool CanCreateNew() const { return true; }
 
-        const char *GetFileFilters() const { return "Sprite (*.sprite)\0*.sprite\0"; }
+		virtual std::string GetDefaultAssetName() const { return "NewSprite"; }
 
-        virtual const char* GetDefaultAssetName() const { return "NewSprite"; }
+		virtual std::string GetDisplayName() const { return "Sprite"; }
 
-        REFLECTABLEV(Factory)
-    };
+		REFLECTABLEV(Factory)
+	};
 
 } // namespace BHive

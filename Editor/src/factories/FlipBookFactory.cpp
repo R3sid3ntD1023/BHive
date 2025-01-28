@@ -10,6 +10,6 @@ namespace BHive
 		return fb;
 	}
 
-	REFLECT_FACTORY(FlipBookFactory, FlipBook, ".flipbook");
+	REFLECT_FACTORY(FlipBookFactory);
 
 } // namespace BHive
