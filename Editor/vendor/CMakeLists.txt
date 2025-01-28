@@ -27,4 +27,3 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(mINI)
 
-add_subdirectory(ImNodeFlow)
