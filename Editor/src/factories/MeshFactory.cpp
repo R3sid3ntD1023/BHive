@@ -1,6 +1,7 @@
 #include "mesh/MeshImportData.h"
 #include "mesh/MeshImporter.h"
 #include "mesh/SkeletalMesh.h"
+#include "mesh/StaticMesh.h"
 #include "MeshFactory.h"
 #include "subsystem/SubSystem.h"
 #include "subsystems/WindowSubSystem.h"
