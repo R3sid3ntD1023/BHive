@@ -10,7 +10,7 @@ namespace BHive
 		auto transform = GetWorldTransform();
 		renderer->SubmitLight(mLight, transform);
 
-		LineRenderer::DrawSphere(mLight.mRadius, 16, {}, mLight.mColor, transform);
+		LineRenderer::DrawSphere(mLight.mRadius, 16, {}, 0xFFFFFFFF, transform);
 		LineRenderer::DrawCone(glm::cos(glm::radians(mLight.mOuterCutOff)), mLight.mRadius, 16, 0xFFFF0000, transform);
 		LineRenderer::DrawCone(glm::cos(glm::radians(mLight.mInnerCutOff)), mLight.mRadius, 16, 0xFF00FF00, transform);
 	}
@@ -32,8 +32,8 @@ namespace BHive
 		auto transform = GetWorldTransform();
 
 		renderer->SubmitLight(mLight, transform);
-		LineRenderer::DrawSphere(mLight.mRadius, 16, {}, mLight.mColor, transform);
-		QuadRenderer::DrawBillboard({1.f, 1.f}, mLight.mColor, transform, GetIcon());
+		LineRenderer::DrawSphere(mLight.mRadius, 16, {}, 0xFFFFFFFF, transform);
+		QuadRenderer::DrawBillboard({1.f, 1.f}, 0xFFFFFFFF, transform, GetIcon());
 	}
 
 	void PointLightComponent::Save(cereal::BinaryOutputArchive &ar) const
@@ -65,7 +65,7 @@ namespace BHive
 		renderer->SubmitLight(mLight, transform);
 
 		auto forward = transform.get_forward();
-		LineRenderer::DrawLine({}, -forward, mLight.mColor, transform);
+		LineRenderer::DrawLine({}, -forward, 0xFFFFFFFF, transform);
 	}
 
 	void DirectionalLightComponent::Save(cereal::BinaryOutputArchive &ar) const

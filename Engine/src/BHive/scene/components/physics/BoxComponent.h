@@ -6,7 +6,7 @@ namespace BHive
 {
 	struct BHIVE BoxComponent : public ColliderComponent
 	{
-		glm::vec3 mExtents{0.5f};
+		glm::vec3 mExtents{1.f};
 
 		virtual AABB GetBoundingBox() const { return FBox{{}, mExtents}; }
 

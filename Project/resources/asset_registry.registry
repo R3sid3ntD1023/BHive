@@ -17,6 +17,14 @@
             }
         },
         {
+            "key": 181170305,
+            "value": {
+                "Type": "World",
+                "Path": "scenes\\World0.world",
+                "Name": "World0"
+            }
+        },
+        {
             "key": 188226732,
             "value": {
                 "Type": "FlipBook",
@@ -126,6 +134,14 @@
                 "Type": "Texture2D",
                 "Path": "TestImport\\SkeletalMeshes\\Kachujin_diffuse_body.asset",
                 "Name": "Kachujin_diffuse_body"
+            }
+        },
+        {
+            "key": 818030239,
+            "value": {
+                "Type": "World",
+                "Path": "scenes\\World0.world",
+                "Name": "World0"
             }
         },
         {
@@ -289,6 +305,14 @@
             }
         },
         {
+            "key": 1927156847,
+            "value": {
+                "Type": "World",
+                "Path": "scenes\\World0.world",
+                "Name": "World0"
+            }
+        },
+        {
             "key": 1942330884,
             "value": {
                 "Type": "Material",
@@ -302,6 +326,14 @@
                 "Type": "Material",
                 "Path": "TestImport\\SkeletalMeshes\\CubeSPhere\\Material.002.asset",
                 "Name": "Material.002"
+            }
+        },
+        {
+            "key": 2013079959,
+            "value": {
+                "Type": "World",
+                "Path": "scenes\\World0.world",
+                "Name": "World0"
             }
         },
         {

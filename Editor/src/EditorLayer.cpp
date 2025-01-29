@@ -20,6 +20,7 @@
 #include "subsystems/WindowSubSystem.h"
 #include "windows/LogPanel.h"
 #include "math/TransformCoordinates.hpp"
+#include "scene/Entity.h"
 #include <ImGuizmo.h>
 #include <mini/ini.h>
 #include <rttr/library.h>
@@ -493,7 +494,7 @@ namespace BHive
 			}
 
 			auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-			auto current_selection = Cast<ITransform>(edit_system.mSelection.GetSelectedObject());
+			auto current_selection = Cast<ITransform>(edit_system.mSelection.GetSelectedEntity());
 
 			if (current_selection && mGizmoOperation != -1 && mEditorMode == EEditorMode::EDIT)
 			{

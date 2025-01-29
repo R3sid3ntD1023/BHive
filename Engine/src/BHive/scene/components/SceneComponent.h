@@ -6,25 +6,25 @@
 
 namespace BHive
 {
-	class SceneComponent : public Component, public ITransform
+	class SceneComponent : public Component /*, public ITransform*/
 	{
 	public:
-		void SetWorldTransform(const FTransform &transform);
+		// void SetWorldTransform(const FTransform &transform);
 
 		FTransform GetWorldTransform() const;
 
-		void SetLocalTransform(const FTransform &transform);
+		/*void SetLocalTransform(const FTransform &transform);
 
-		const FTransform &GetLocalTransform() const;
+		const FTransform &GetLocalTransform() const;*/
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 	private:
-		FTransform mLocalTransform;
+		// FTransform mLocalTransform;
 
-		REFLECTABLEV(Component, ITransform)
+		REFLECTABLEV(Component /*, ITransform*/)
 	};
 
 	REFLECT_EXTERN(SceneComponent)
