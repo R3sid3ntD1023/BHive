@@ -1,5 +1,6 @@
 #include "LightComponents.h"
 #include "scene/SceneRenderer.h"
+#include "importers/TextureImporter.h"
 
 namespace BHive
 {
@@ -10,10 +11,8 @@ namespace BHive
 		renderer->SubmitLight(mLight, transform);
 
 		LineRenderer::DrawSphere(mLight.mRadius, 16, {}, mLight.mColor, transform);
-		LineRenderer::DrawCone(
-			glm::cos(glm::radians(mLight.mOuterCutOff)), mLight.mRadius, 16, 0xFFFF0000, transform);
-		LineRenderer::DrawCone(
-			glm::cos(glm::radians(mLight.mInnerCutOff)), mLight.mRadius, 16, 0xFF00FF00, transform);
+		LineRenderer::DrawCone(glm::cos(glm::radians(mLight.mOuterCutOff)), mLight.mRadius, 16, 0xFFFF0000, transform);
+		LineRenderer::DrawCone(glm::cos(glm::radians(mLight.mInnerCutOff)), mLight.mRadius, 16, 0xFF00FF00, transform);
 	}
 
 	void SpotLightComponent::Save(cereal::BinaryOutputArchive &ar) const
@@ -34,6 +33,7 @@ namespace BHive
 
 		renderer->SubmitLight(mLight, transform);
 		LineRenderer::DrawSphere(mLight.mRadius, 16, {}, mLight.mColor, transform);
+		QuadRenderer::DrawBillboard({1.f, 1.f}, mLight.mColor, transform, GetIcon());
 	}
 
 	void PointLightComponent::Save(cereal::BinaryOutputArchive &ar) const
@@ -48,12 +48,24 @@ namespace BHive
 		ar(mLight);
 	}
 
+	const Ref<Texture> &PointLightComponent::GetIcon()
+	{
+		static Ref<Texture> icon;
+		if (!icon)
+		{
+			icon = TextureImporter::Import(ENGINE_PATH "/data/textures/ic_pointlight.png");
+		}
+
+		return icon;
+	}
+
 	void DirectionalLightComponent::OnRender(SceneRenderer *renderer)
 	{
-		renderer->SubmitLight(mLight, GetWorldTransform());
+		const auto transform = GetWorldTransform();
+		renderer->SubmitLight(mLight, transform);
 
-		auto forward = GetWorldTransform().get_forward();
-		LineRenderer::DrawLine({}, -forward, mLight.mColor, GetWorldTransform());
+		auto forward = transform.get_forward();
+		LineRenderer::DrawLine({}, -forward, mLight.mColor, transform);
 	}
 
 	void DirectionalLightComponent::Save(cereal::BinaryOutputArchive &ar) const
@@ -76,22 +88,19 @@ namespace BHive
 	REFLECT(PointLightComponent)
 	{
 		BEGIN_REFLECT(PointLightComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
-			REFLECT_PROPERTY("Light", mLight);
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS() REFLECT_PROPERTY("Light", mLight);
 	}
 
 	REFLECT(SpotLightComponent)
 	{
 		BEGIN_REFLECT(SpotLightComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
-			REFLECT_PROPERTY("Light", mLight);
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS() REFLECT_PROPERTY("Light", mLight);
 	}
 
 	REFLECT(DirectionalLightComponent)
 	{
 		BEGIN_REFLECT(DirectionalLightComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
-			REFLECT_PROPERTY("Light", mLight);
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS() REFLECT_PROPERTY("Light", mLight);
 	}
 
 } // namespace BHive

@@ -101,7 +101,7 @@ void main()
 	if(color.a < .1)
 		discard;
 
-	fs_out = color;
+	fs_out = color * vs_in.color;
 	
 }
 

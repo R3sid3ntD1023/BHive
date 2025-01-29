@@ -26,6 +26,8 @@ namespace BHive
 		REFLECTABLEV(LightComponent)
 	};
 
+	class Texture;
+
 	struct BHIVE PointLightComponent : public LightComponent
 	{
 		PointLight mLight{};
@@ -37,6 +39,9 @@ namespace BHive
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(LightComponent)
+
+	private:
+		static const Ref<Texture> &GetIcon();
 	};
 
 	struct BHIVE DirectionalLightComponent : public LightComponent
