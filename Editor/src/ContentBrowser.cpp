@@ -348,7 +348,7 @@ namespace BHive
 
 					if (GetDragDropData(data, relative_path))
 					{
-						ImGui::SetDragDropPayload("ASSET", &path, sizeof(AssetHandle));
+						ImGui::SetDragDropPayload("ASSET", &data, sizeof(AssetHandle));
 					}
 
 					ImGui::EndDragDropSource();
@@ -401,8 +401,8 @@ namespace BHive
 
 				if (edited_name)
 				{
-					auto new_path = path.parent_path() / (new_name + path.extension().string());
-					OnRenameAsset(path, new_path, is_directory);
+					auto new_path = relative_path.parent_path() / (new_name + relative_path.extension().string());
+					OnRenameAsset(relative_path, new_path, is_directory);
 				}
 
 				ImGui::PopID();

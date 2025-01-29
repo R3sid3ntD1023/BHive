@@ -19,6 +19,7 @@
 #include "subsystems/EditSubSystem.h"
 #include "subsystems/WindowSubSystem.h"
 #include "windows/LogPanel.h"
+#include "math/TransformCoordinates.hpp"
 #include <ImGuizmo.h>
 #include <mini/ini.h>
 #include <rttr/library.h>
@@ -135,8 +136,8 @@ namespace BHive
 		edit_system.GetEditorMode.bind([this]() { return mEditorMode; });
 		edit_system.GetActiveWorld.bind([this]() { return mActiveWorld; });
 
-		AnimGraphContextMenu menu;
-		menu.OnAssetOpen(1202670764);
+		/*AnimGraphContextMenu menu;
+		menu.OnAssetOpen(1202670764);*/
 	}
 
 	void EditorLayer::OnDetach()
@@ -455,6 +456,9 @@ namespace BHive
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
 		if (ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_MenuBar))
 		{
+
+			ViewportToolbar();
+
 			mIsHovered = ImGui::IsWindowHovered();
 			mIsFocused = ImGui::IsWindowFocused();
 
@@ -470,6 +474,23 @@ namespace BHive
 
 			auto fbo_texture = mSceneRenderer->GetFinalFramebuffer()->GetColorAttachment()->GetRendererID();
 			ImGui::Image((ImTextureID)(uint64_t)fbo_texture, mViewportPanelSize, {0, 1}, {1, 0});
+
+			// DragDropAsset
+			if (ImGui::BeginDragDropTarget())
+			{
+				auto payload = ImGui::AcceptDragDropPayload("ASSET");
+				if (payload)
+				{
+					auto handle = *(AssetHandle *)payload->Data;
+					auto &meta_data = mAssetManager->GetMetaData(handle);
+					if (meta_data.Type.is_derived_from<World>())
+					{
+						OpenWorld(Project::GetResourceDirectory() / meta_data.Path);
+					}
+				}
+
+				ImGui::EndDragDropTarget();
+			}
 
 			auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
 			auto current_selection = Cast<ITransform>(edit_system.mSelection.GetSelectedObject());
@@ -498,8 +519,6 @@ namespace BHive
 					current_selection->SetWorldTransform(transform);
 				}
 			}
-
-			ViewportToolbar();
 		}
 
 		ImGui::End();
@@ -683,6 +702,7 @@ namespace BHive
 		mEditorWorld->Save(ar);
 
 		LOG_TRACE("Saved World {}", mCurrentWorldPath.string());
+		mAssetManager->ImportAsset(mCurrentWorldPath, rttr::type::get<World>(), mEditorWorld->GetHandle());
 
 		SaveEditorSettings();
 	}

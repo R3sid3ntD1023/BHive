@@ -69,7 +69,7 @@ namespace BHive
 		Ref<class SceneHierarchyPanel> mSceneHierarchyPanel;
 		Ref<class PropertiesPanel> mPropertiesPanel;
 		Ref<class ContentBrowserPanel> mContentBrowser;
-		Ref<class AssetManagerBase> mAssetManager;
+		Ref<class EditorAssetManager> mAssetManager;
 		Ref<class DetailsPanel> mDetailsPanel;
 
 		glm::vec2 mViewportPanelSize{0};

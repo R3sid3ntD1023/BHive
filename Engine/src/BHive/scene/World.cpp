@@ -244,13 +244,10 @@ namespace BHive
 		mPhysicsWorld->setIsDebugRenderingEnabled(true);
 		auto &debug_renderer = mPhysicsWorld->getDebugRenderer();
 		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_AABB, true);
-		debug_renderer.setIsDebugItemDisplayed(
-			rp3d::DebugRenderer::DebugItem::COLLISION_SHAPE, true);
-		debug_renderer.setIsDebugItemDisplayed(
-			rp3d::DebugRenderer::DebugItem::CONTACT_NORMAL, true);
+		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLISION_SHAPE, true);
+		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_NORMAL, true);
 		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_POINT, true);
-		debug_renderer.setIsDebugItemDisplayed(
-			rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB, true);
+		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB, true);
 	}
 
 	void World::OnPhysicsUpdate(float deltatime)
@@ -291,8 +288,7 @@ namespace BHive
 		}
 	}
 
-	void
-	World::RayCast(const glm::vec3 &start, const glm::vec3 &end, unsigned short mask, float factor)
+	void World::RayCast(const glm::vec3 &start, const glm::vec3 &end, unsigned short mask, float factor)
 	{
 		rp3d::Ray ray({start.x, start.y, start.z}, {end.x, end.y, end.z}, factor);
 		mPhysicsWorld->raycast(ray, &mHitListener, mask);
@@ -369,6 +365,11 @@ namespace BHive
 	{
 		if (mEntities.contains(entity->GetUUID()))
 			mEntities.erase(entity->GetUUID());
+	}
+
+	REFLECT(World)
+	{
+		BEGIN_REFLECT(World);
 	}
 
 } // namespace BHive

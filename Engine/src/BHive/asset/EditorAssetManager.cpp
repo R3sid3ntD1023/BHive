@@ -1,5 +1,6 @@
 #include "EditorAssetManager.h"
 #include "serialization/Serialization.h"
+#include "project/Project.h"
 
 namespace BHive
 {
@@ -38,7 +39,7 @@ namespace BHive
 			{
 				const FAssetMetaData &metadata = GetMetaData(handle);
 
-				if (!mAssetFactory.Import(asset, metadata.Path))
+				if (!mAssetFactory.Import(asset, Project::GetResourceDirectory() / metadata.Path))
 				{
 					LOG_ERROR("Failed to load asset");
 					return asset;
@@ -84,7 +85,7 @@ namespace BHive
 		}
 
 		FAssetMetaData metadata;
-		metadata.Path = path;
+		metadata.Path = std::filesystem::relative(path, Project::GetResourceDirectory());
 		metadata.Type = type;
 		metadata.Name = path.stem().string();
 

@@ -58,9 +58,7 @@ namespace BHive
 
 		struct CameraComponent *GetPrimaryCameraComponent() const;
 
-		void RayCast(
-			const glm::vec3 &start, const glm::vec3 &end, unsigned short mask = -1,
-			float factor = 1.0f);
+		void RayCast(const glm::vec3 &start, const glm::vec3 &end, unsigned short mask = -1, float factor = 1.0f);
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const;
 
@@ -101,5 +99,7 @@ namespace BHive
 
 		friend class SceneComponent;
 	};
+
+	REFLECT_EXTERN(World)
 
 } // namespace BHive

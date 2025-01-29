@@ -55,14 +55,14 @@ namespace BHive
 		{
 			factory->OnImportCompleted.bind([=](const Ref<Asset> &asset)
 											{ FinishAssetImport(directory, relative, asset, factory->GetOtherCreatedAssets()); });
-			factory->Import(relative);
+			factory->Import(directory / relative);
 		}
 	}
 
 	void EditorContentBrowser::OnDeleteAsset(const std::filesystem::path &relative)
 	{
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
-		manager->RemoveAsset(Project::GetResourceDirectory() / relative);
+		manager->RemoveAsset(relative);
 
 		std::error_code error;
 		std::filesystem::remove(Project::GetResourceDirectory() / relative, error);
@@ -74,8 +74,8 @@ namespace BHive
 
 	void EditorContentBrowser::OnRenameAsset(const std::filesystem::path &relative_old, const std::filesystem::path &relative_new, bool directory)
 	{
-		auto old_path = relative_old;
-		auto new_path = relative_new;
+		auto old_path = Project::GetResourceDirectory() / relative_old;
+		auto new_path = Project::GetResourceDirectory() / relative_new;
 
 		if (std::filesystem::exists(new_path) && !std::filesystem::is_directory(new_path))
 		{
@@ -97,7 +97,7 @@ namespace BHive
 			if (!directory)
 			{
 				auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
-				manager->RenameAsset(old_path, new_path);
+				manager->RenameAsset(relative_old, relative_new);
 			}
 		}
 	}
@@ -118,13 +118,13 @@ namespace BHive
 	void EditorContentBrowser::OnAssetContextMenu(const std::filesystem::path &relative)
 	{
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
-		auto meta_data = manager->GetMetaData(Project::GetResourceDirectory() / relative);
+		auto meta_data = manager->GetMetaData(relative);
 		auto menu = AssetContextMenuRegistry::Get().GetAssetMenu(meta_data.Type);
 
 		if (menu)
 		{
 			auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
-			auto handle = manager->GetHandle(Project::GetResourceDirectory() / relative);
+			auto handle = manager->GetHandle(relative);
 			if (handle)
 				menu->OnAssetContext(handle);
 		}
@@ -133,12 +133,12 @@ namespace BHive
 	void EditorContentBrowser::OnAssetDoubleClicked(const std::filesystem::path &relative)
 	{
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
-		auto meta_data = manager->GetMetaData(Project::GetResourceDirectory() / relative);
+		auto meta_data = manager->GetMetaData(relative);
 		auto menu = AssetContextMenuRegistry::Get().GetAssetMenu(meta_data.Type);
 
 		if (menu)
 		{
-			auto handle = manager->GetHandle(Project::GetResourceDirectory() / relative);
+			auto handle = manager->GetHandle(relative);
 			if (handle)
 				menu->OnAssetOpen(handle);
 		}
@@ -147,7 +147,7 @@ namespace BHive
 	bool EditorContentBrowser::IsAssetValid(const std::filesystem::path &relative) const
 	{
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
-		auto handle = manager->GetHandle(Project::GetResourceDirectory() / relative);
+		auto handle = manager->GetHandle(relative);
 		return manager->IsAssetHandleValid(handle);
 	}
 
@@ -187,7 +187,7 @@ namespace BHive
 	bool EditorContentBrowser::GetDragDropData(AssetHandle &data, const std::filesystem::path &relative)
 	{
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
-		data = manager->GetHandle(Project::GetResourceDirectory() / relative);
+		data = manager->GetHandle(relative);
 		return data != AssetHandle(0);
 	}
 
