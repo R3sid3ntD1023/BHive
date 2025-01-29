@@ -90,7 +90,10 @@ namespace BHive
 		{
 			if (ImGui::Button("+"))
 			{
-				auto it = data.insert(key_type.create(), value_type.create());
+				auto key = key_type.create();
+				auto value = value_type.create();
+
+				auto it = data.insert(key, value);
 				changed |= it.second;
 			}
 
@@ -98,7 +101,11 @@ namespace BHive
 
 			if (ImGui::Button("-"))
 			{
-				changed |= (data.erase((data.end() - 1)) > 0);
+				if (size > 0)
+				{
+					auto key = data.end() - 1;
+					changed |= (data.erase(*key) > 0);
+				}
 			}
 
 			ImGui::SameLine();

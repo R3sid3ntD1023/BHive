@@ -24,6 +24,9 @@
 #define CONSTRUCTOR_POLICY_SHARED (rttr::policy::ctor::as_std_shared_ptr)
 #define CONSTRUCTOR_POLICY_PTR (rttr::policy::ctor::as_raw_ptr)
 
+#define PROPERTY_POLICY_AS_PTR (rttr::policy::prop::bind_as_ptr)
+#define PROPERTY_POLICY_AS_REFERENCE_WRAPPER (rttr::policy::prop::as_reference_wrapper)
+
 #define REFLECT_IMPL(cls)                                               \
 	template <>                                                         \
 	inline void ::BHive::reflection::auto_register_reflection_t<cls>(); \

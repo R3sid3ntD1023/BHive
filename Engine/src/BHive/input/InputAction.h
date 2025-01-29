@@ -18,8 +18,12 @@ namespace BHive
 		}
 
 		FInputKey GetKey() const { return mKey; }
+
 		bool IsMouse() const { return mKey.mIsMouse; }
+
 		bool IsKey() const { return !mKey.mIsMouse; }
+
+		const std::string &GetName() const { return mName; }
 
 		template <typename A>
 		void Serialize(A &ar)

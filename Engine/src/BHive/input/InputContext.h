@@ -28,18 +28,12 @@ namespace BHive
 
 		void process();
 
-		void add_input(const FInputAction &action);
-
-		std::vector<FInputAction> GetInputActions() const;
-		void SetInputActions(std::vector<FInputAction> actions);
-
 		template <typename T>
-		void bind_key(const std::string &name, InputActionCode action, T *instance,
-					  void (T::*func)(const InputValue &value))
+		void bind_key(const std::string &name, InputActionCode action, T *instance, void (T::*func)(const InputValue &value))
 		{
-			if (mKeys.contains(name))
+			if (has_key(name))
 			{
-				auto &input_action = mKeys[name];
+				auto &input_action = mKeys.emplace();
 				auto &binded_keys = mBindedKeys[name];
 				binded_keys.CallState = action;
 				binded_keys.Callback.bind(instance, func);
@@ -47,17 +41,18 @@ namespace BHive
 		}
 
 		template <typename T>
-		void bind_axis(const std::string &name, T *instance,
-					   void (T::*func)(const InputValue &value), float scale = 1.0f)
+		void bind_axis(const std::string &name, T *instance, void (T::*func)(const InputValue &value), float scale = 1.0f)
 		{
-			if (mKeys.contains(name))
+			if (has_key(name))
 			{
-				auto &input_action = mKeys[name];
+				auto &input_action = mKeys.emplace();
 				auto &binded_axis = mBindedAxisKeys[name];
 				binded_axis.Scale = scale;
 				binded_axis.Callback.bind(instance, func);
 			}
 		}
+
+		bool has_key(const std::string name) const;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
@@ -68,7 +63,7 @@ namespace BHive
 	private:
 		InputContext *CreateInstance();
 
-		std::unordered_map<std::string, FInputAction> mKeys;
+		std::vector<FInputAction> mKeys;
 		std::unordered_map<std::string, FInputActionCallback> mBindedKeys;
 		std::unordered_map<std::string, FInputAxisCallback> mBindedAxisKeys;
 

@@ -24,8 +24,8 @@ namespace BHive
 	REFLECT(AudioComponent)
 	{
 		BEGIN_REFLECT(AudioComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
-			REFLECT_PROPERTY("Play On Start", mPlayOnStart) REFLECT_PROPERTY("Audio", mAudio);
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS() REFLECT_PROPERTY("Play On Start", mPlayOnStart)
+			REFLECT_PROPERTY("Audio", mAudio);
 	}
 
 } // namespace BHive

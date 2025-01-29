@@ -125,8 +125,8 @@ void main()
 	bool metallic_roughness		= (u_material.flags & (1 << 2)) != 0;
 	bool normal_map				= (u_material.flags & (1 << 3)) != 0;
 	bool depth_map				= (u_material.flags & (1 << 4)) != 0;
-	bool recieve_shadows		= (u_material.flags & (1 << 5)) != 0;
-	bool render_shadows			= ((u_global_flags | (1 << 0)) != 0) && recieve_shadows;
+	bool recieve_shadows		= (u_material.flags & (1 << 6)) != 0;
+	bool render_shadows			= ((u_global_flags & (1 << 0)) == 0) && recieve_shadows;
 	
 	if(depth_map)
 	{

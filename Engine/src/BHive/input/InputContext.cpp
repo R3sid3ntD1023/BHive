@@ -22,16 +22,23 @@ namespace BHive
 		return {mValue.x, mValue.y};
 	}
 
+	bool InputContext::has_key(const std::string name) const
+	{
+		auto it = std::find_if(mKeys.begin(), mKeys.end(), [name](const FInputAction &action) { return action.GetName() == name; });
+
+		return it != mKeys.end();
+	}
+
 	void InputContext::process()
 	{
 		auto &input = Application::Get().GetWindow().GetInput();
 
-		for (auto &[name, action] : mKeys)
+		for (auto &action : mKeys)
 		{
 			glm::vec2 value = {0.f, 0.f};
 			auto key = action.GetKey();
 
-			if (mBindedAxisKeys.contains(action.mName))
+			if (mBindedAxisKeys.contains(action.GetName()))
 			{
 				switch (key)
 				{
@@ -89,32 +96,6 @@ namespace BHive
 		}
 	}
 
-	void InputContext::add_input(const FInputAction &action)
-	{
-		if (!mKeys.contains(action.mName))
-			mKeys[action.mName] = action;
-	}
-
-	std::vector<FInputAction> InputContext::GetInputActions() const
-	{
-		std::vector<FInputAction> actions;
-		for (auto &[name, action] : mKeys)
-		{
-			actions.emplace_back(action);
-		}
-
-		return actions;
-	}
-
-	void InputContext::SetInputActions(std::vector<FInputAction> actions)
-	{
-
-		for (auto it = actions.rbegin(); it != actions.rend(); it++)
-		{
-			mKeys[(*it).mName] = (*it);
-		}
-	}
-
 	void InputContext::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
@@ -138,4 +119,5 @@ namespace BHive
 		REFLECT_CONSTRUCTOR()
 		REFLECT_PROPERTY("Keys", mKeys);
 	}
+
 } // namespace BHive

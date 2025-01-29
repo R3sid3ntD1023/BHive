@@ -30,6 +30,7 @@ namespace BHive
 
 	private:
 		EKey mKey{EKey::MouseButton1};
+
 		bool mIsMouse{false};
 
 		friend class FInputAction;

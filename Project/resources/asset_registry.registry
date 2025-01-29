@@ -25,11 +25,27 @@
             }
         },
         {
+            "key": 214901397,
+            "value": {
+                "Type": "World",
+                "Path": "scenes\\World0.world",
+                "Name": "World0"
+            }
+        },
+        {
             "key": 228093411,
             "value": {
                 "Type": "Sprite",
                 "Path": "TestImport\\Sprites\\NewSprite.asset",
                 "Name": "NewSprite"
+            }
+        },
+        {
+            "key": 304916646,
+            "value": {
+                "Type": "InputContext",
+                "Path": "TestImport\\InputContext\\PlayerInput.asset",
+                "Name": "PlayerInput"
             }
         },
         {
@@ -49,11 +65,11 @@
             }
         },
         {
-            "key": 523996954,
+            "key": 475316148,
             "value": {
-                "Type": "InputContext",
-                "Path": "TestImport\\InputContext\\PlayerInput.asset",
-                "Name": "PlayerInput"
+                "Type": "Material",
+                "Path": "TestImport\\Materials\\NewMaterial.asset",
+                "Name": "NewMaterial"
             }
         },
         {
@@ -158,14 +174,6 @@
                 "Type": "Skeleton",
                 "Path": "TestImport\\SkeletalMeshes\\CubeSPhere\\CubeSpheres_Skeleton.asset",
                 "Name": "CubeSpheres_Skeleton"
-            }
-        },
-        {
-            "key": 1422539550,
-            "value": {
-                "Type": "Material",
-                "Path": "TestImport\\Materials\\NewMaterial.asset",
-                "Name": "NewMaterial"
             }
         },
         {

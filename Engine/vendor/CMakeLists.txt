@@ -133,7 +133,7 @@ list(APPEND components assimp)
 #rttr
 FetchContent_Declare(
 	rttr
-	GIT_REPOSITORY https://github.com/rttrorg/rttr.git
+	GIT_REPOSITORY https://github.com/R3sid3ntD1023/rttr.git
 	GIT_TAG master
 )
 list(APPEND components rttr)
