@@ -73,6 +73,14 @@
             }
         },
         {
+            "key": 441126714,
+            "value": {
+                "Type": "AudioSource",
+                "Path": "TestImport\\Audio\\Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).asset",
+                "Name": "Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers)"
+            }
+        },
+        {
             "key": 475316148,
             "value": {
                 "Type": "Material",
@@ -193,14 +201,6 @@
             }
         },
         {
-            "key": 1449395964,
-            "value": {
-                "Type": "AudioSource",
-                "Path": "TestImport\\Audio\\Resident Evil 5 OST - KILLERS [Survivors Theme].asset",
-                "Name": "Resident Evil 5 OST - KILLERS [Survivors Theme]"
-            }
-        },
-        {
             "key": 1486298184,
             "value": {
                 "Type": "World",
@@ -262,14 +262,6 @@
                 "Type": "Material",
                 "Path": "TestImport\\SkeletalMeshes\\CubeSPhere\\Material.003.asset",
                 "Name": "Material.003"
-            }
-        },
-        {
-            "key": 1809309105,
-            "value": {
-                "Type": "AudioSource",
-                "Path": "TestImport\\Audio\\Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).asset",
-                "Name": "Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers)"
             }
         },
         {
@@ -342,6 +334,14 @@
                 "Type": "SkeletalMesh",
                 "Path": "TestImport\\SkeletalMeshes\\CubeSPhere\\CubeSpheres.asset",
                 "Name": "CubeSpheres"
+            }
+        },
+        {
+            "key": 2073705236,
+            "value": {
+                "Type": "AudioSource",
+                "Path": "TestImport\\Audio\\Resident Evil 5 OST - KILLERS [Survivors Theme].asset",
+                "Name": "Resident Evil 5 OST - KILLERS [Survivors Theme]"
             }
         }
     ]

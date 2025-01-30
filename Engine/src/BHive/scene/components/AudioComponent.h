@@ -12,6 +12,8 @@ namespace BHive
 	{
 		void OnBegin() override;
 
+		void OnEnd() override;
+
 		bool mPlayOnStart = false;
 
 		TAssetHandle<AudioSource> mAudio;

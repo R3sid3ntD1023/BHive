@@ -21,6 +21,8 @@
 #include "windows/LogPanel.h"
 #include "math/TransformCoordinates.hpp"
 #include "scene/Entity.h"
+#include "factories/entity_factories/EntityFactory.h"
+#include "math/RayCasting.h"
 #include <ImGuizmo.h>
 #include <mini/ini.h>
 #include <rttr/library.h>
@@ -454,6 +456,8 @@ namespace BHive
 
 	void EditorLayer::ShowViewport()
 	{
+		auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
 		if (ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_MenuBar))
 		{
@@ -488,12 +492,29 @@ namespace BHive
 					{
 						OpenWorld(Project::GetResourceDirectory() / meta_data.Path);
 					}
+					else
+					{
+						const auto mouse_pos = ImGui::GetMousePos();
+						const auto projection = mEditorCamera.GetProjection();
+						const auto view = mEditorCamera.GetView();
+
+						const auto mouse_world_pos =
+							GetMouseRay(mouse_pos.x, mouse_pos.y, mViewportPanelSize.x, mViewportPanelSize.y, projection, view.inverse());
+
+						const float distance = glm::distance(view.get_translation(), glm::vec3{0.0f});
+						auto world_pos = RayCast::GetPointOnRay(mouse_world_pos, -view.get_forward(), distance);
+
+						if (auto factory = GetEntityFactory(meta_data))
+						{
+							auto new_entity = factory->CreateEntityFrom(meta_data, mActiveWorld.get(), world_pos);
+							edit_system.mSelection.Select(&*new_entity);
+						}
+					}
 				}
 
 				ImGui::EndDragDropTarget();
 			}
 
-			auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
 			auto current_selection = Cast<ITransform>(edit_system.mSelection.GetSelectedEntity());
 
 			if (current_selection && mGizmoOperation != -1 && mEditorMode == EEditorMode::EDIT)

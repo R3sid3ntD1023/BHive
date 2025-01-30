@@ -9,6 +9,12 @@ namespace BHive
 			mAudio->Play();
 	}
 
+	void AudioComponent::OnEnd()
+	{
+		if (mAudio && mAudio->IsPlaying())
+			mAudio->Stop();
+	}
+
 	void AudioComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Component::Save(ar);

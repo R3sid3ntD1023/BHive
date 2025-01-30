@@ -20,8 +20,6 @@ namespace BHive
 
 		virtual AABB GetBoundingBox() const;
 
-		TAssetHandle<StaticMesh> mStaticMesh;
-
 		void OnRender(SceneRenderer *renderer) override;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
@@ -29,6 +27,9 @@ namespace BHive
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(MeshComponent)
+
+	private:
+		TAssetHandle<StaticMesh> mStaticMesh;
 	};
 
 	REFLECT_EXTERN(StaticMeshComponent)

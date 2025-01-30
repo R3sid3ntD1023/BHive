@@ -122,8 +122,7 @@ namespace BHive
 			Ref<Skeleton> skeleton = mSkeleton.get();
 			if (!mSkeleton)
 			{
-				skeleton = CreateRef<Skeleton>(
-					mImportData.mData.mBoneData, mImportData.mData.mSkeletonHeirarchyData);
+				skeleton = CreateRef<Skeleton>(mImportData.mData.mBoneData, mImportData.mData.mSkeletonHeirarchyData);
 
 				skeleton->SetName(name + "_Skeleton");
 				mFactory->mOtherAssets.push_back(skeleton);
@@ -132,6 +131,7 @@ namespace BHive
 			if (as_skeletal_mesh)
 			{
 				auto mesh = CreateRef<SkeletalMesh>(mImportData.mData.mMeshData, skeleton);
+				mesh->SetName(name);
 				asset = mesh;
 			}
 
@@ -145,12 +145,10 @@ namespace BHive
 				{
 					auto &data = animation_data[i];
 
-					std::string anim_name =
-						!asset ? name : std::format("{}_Animation({})", name, i);
+					std::string anim_name = !asset ? name : std::format("{}_Animation({})", name, i);
 
-					animations[i] = CreateRef<SkeletalAnimation>(
-						data.mDuration, data.TicksPerSecond, data.mFrames, skeleton,
-						data.mGlobalInverseMatrix);
+					animations[i] =
+						CreateRef<SkeletalAnimation>(data.mDuration, data.TicksPerSecond, data.mFrames, skeleton, data.mGlobalInverseMatrix);
 					animations[i]->SetName(anim_name);
 				}
 
@@ -195,30 +193,25 @@ namespace BHive
 						Ref<Asset> texture_asset;
 						if (!texture.is_embedded())
 						{
-							texture_asset =
-								tex_factory.Import(mImportData.mPath.parent_path() / texture.mPath);
+							texture_asset = tex_factory.Import(mImportData.mPath.parent_path() / texture.mPath);
 						}
 						else
 						{
-							texture_asset = tex_factory.Import(
-								texture.mEmbeddedData, texture.mEmbeddedDataSize);
+							texture_asset = tex_factory.Import(texture.mEmbeddedData, texture.mEmbeddedDataSize);
 						}
 
 						if (texture_asset)
 						{
 							texture_asset->SetName(texture.mPath.stem().string());
 							mFactory->mOtherAssets.push_back(texture_asset);
-							SetMaterialTexture(
-								texture.mType, Cast<Texture>(texture_asset), material);
+							SetMaterialTexture(texture.mType, Cast<Texture>(texture_asset), material);
 						}
 					}
 
-					auto material_name =
-						data.mName.empty() ? std::format("{}({})", name, i) : data.mName;
+					auto material_name = data.mName.empty() ? std::format("{}({})", name, i) : data.mName;
 
 					material->SetName(material_name);
-					material->mAldebo = {
-						data.mAlbedo.x, data.mAlbedo.y, data.mAlbedo.z, data.mAlbedo.w};
+					material->mAldebo = {data.mAlbedo.x, data.mAlbedo.y, data.mAlbedo.z, data.mAlbedo.w};
 					material->mMetallic = data.mMetallic;
 					material->mRoughness = data.mRoughness;
 
@@ -233,8 +226,7 @@ namespace BHive
 			mFactory->OnImportCompleted.invoke(asset);
 	}
 
-	void MeshOptionsWindow::SetMaterialTexture(
-		FTextureData::EType type, const Ref<Texture> &texture, Ref<Material> &material)
+	void MeshOptionsWindow::SetMaterialTexture(FTextureData::EType type, const Ref<Texture> &texture, Ref<Material> &material)
 	{
 		if (!texture || !material || type == FTextureData::Type_NONE)
 			return;
