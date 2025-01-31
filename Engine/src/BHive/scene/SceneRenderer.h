@@ -74,7 +74,8 @@ namespace BHive
 	enum ESceneRendererFlags : uint32_t
 	{
 		ESceneRendererFlags_None,
-		ESceneRendererFlags_NoShadows = BIT(0)
+		ESceneRendererFlags_NoShadows = BIT(0),
+		ESceneRendererFlags_VisualizeColliders = BIT(1),
 	};
 
 	struct FRenderSettings
@@ -96,7 +97,7 @@ namespace BHive
 		SceneRenderer(uint32_t width, uint32_t height, uint32_t flags = 0);
 		~SceneRenderer();
 
-		void Begin(const glm::mat4 &projection, const glm::mat4 &view);
+		void Begin(const Camera &camera, const FTransform &view);
 		// void BeginZPass(const glm::mat4& projection, const glm::mat4& view);
 		// void EndZPass();
 		void End();
@@ -108,8 +109,9 @@ namespace BHive
 		void SubmitStaticMesh(const Ref<StaticMesh> &static_mesh, const FTransform &transform, const Ref<Material> &material);
 
 		void SubmitStaticMesh(const Ref<StaticMesh> &static_mesh, const FTransform &transform, const MaterialTable &materials);
-		void SubmitSkeletalMesh(const Ref<SkeletalMesh> &skeletal_mesh, const FTransform &transform,
-								const std::vector<glm::mat4> &joints, const MaterialTable &materials);
+		void SubmitSkeletalMesh(
+			const Ref<SkeletalMesh> &skeletal_mesh, const FTransform &transform, const std::vector<glm::mat4> &joints,
+			const MaterialTable &materials);
 
 		void SubmitRenderQueue(const std::function<void()> &func);
 
@@ -120,6 +122,8 @@ namespace BHive
 		const Ref<Framebuffer> &GetFinalFramebuffer() const;
 		const MipMaps &GetMipMaps() const { return mBloomMipMaps; }
 		const Ref<Texture2D> GetPreFilter() const { return mPreFilterTexture; }
+
+		const ESceneRendererFlags &GetFlags() const { return mFlags; }
 
 	private:
 		void CreateBloomMipMaps();
@@ -148,7 +152,7 @@ namespace BHive
 
 		std::vector<std::function<void()>> mRenderQueue;
 		FSceneData mSceneData;
-		uint32_t mFlags;
+		TEnumAsByte<ESceneRendererFlags> mFlags;
 
 		REFLECTABLE()
 	};
@@ -156,4 +160,4 @@ namespace BHive
 	REFLECT_EXTERN(SceneRenderer);
 	REFLECT_EXTERN(FRenderSettings);
 
-}
+} // namespace BHive

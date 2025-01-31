@@ -1,6 +1,7 @@
 #include "CapsuleComponent.h"
 #include "physics/PhysicsContext.h"
 #include "renderers/LineRenderer.h"
+#include "scene/SceneRenderer.h"
 #include <reactphysics3d/reactphysics3d.h>
 
 namespace BHive
@@ -19,7 +20,10 @@ namespace BHive
 
 	void CapsuleComponent::OnRender(SceneRenderer *renderer)
 	{
-		LineRenderer::DrawCapsule(mRadius, mHeight, 16, mOffset, mColor, GetWorldTransform());
+		if ((renderer->GetFlags() & ESceneRendererFlags_VisualizeColliders) != 0)
+		{
+			LineRenderer::DrawCapsule(mRadius, mHeight, 16, mOffset, mColor, GetWorldTransform());
+		}
 	}
 
 	void CapsuleComponent::Save(cereal::BinaryOutputArchive &ar) const
@@ -37,7 +41,8 @@ namespace BHive
 	REFLECT(CapsuleComponent)
 	{
 		BEGIN_REFLECT(CapsuleComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
-			REFLECT_PROPERTY("Radius", mRadius) REFLECT_PROPERTY("Height", mHeight);
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS() REFLECT_PROPERTY("Radius", mRadius)
+			REFLECT_PROPERTY("Height", mHeight);
 	}
+
 } // namespace BHive

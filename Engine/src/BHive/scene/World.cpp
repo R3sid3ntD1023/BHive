@@ -52,10 +52,11 @@ namespace BHive
 
 		if (camera_component)
 		{
-			const auto projection = camera_component->mCamera.GetProjection();
+			const auto &camera = camera_component->mCamera;
 			const auto transform = camera_component->GetWorldTransform();
 
-			renderer->Begin(projection, transform.inverse());
+			auto flags = renderer->GetFlags();
+			renderer->Begin(camera, transform.inverse());
 
 			RenderScene(renderer);
 

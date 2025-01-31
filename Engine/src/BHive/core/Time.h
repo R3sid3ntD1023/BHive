@@ -10,8 +10,6 @@ namespace BHive
 		static BHIVE float Get();
 
 		static float GetDeltaTime();
-
-		static float GetFPS();
 	};
 
 	class Timer
@@ -28,4 +26,4 @@ namespace BHive
 	private:
 		std::chrono::time_point<std::chrono::high_resolution_clock> mStart;
 	};
-}
+} // namespace BHive

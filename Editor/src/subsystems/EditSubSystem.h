@@ -6,39 +6,42 @@
 
 namespace BHive
 {
-    class World;
-    class ObjectBase;
-    class Entity;
+	class World;
+	class ObjectBase;
+	class Entity;
 
-    enum EDeselectReason
-    {
-        DeselectReason_None,
-        DeselectReason_Destroyed
-    };
+	enum EDeselectReason
+	{
+		DeselectReason_None,
+		DeselectReason_Destroyed
+	};
 
-    struct Selection
-    {
+	struct Selection
+	{
 
-        void Select(ObjectBase *object);
-        void Deselect(ObjectBase *object, EDeselectReason reason = DeselectReason_None);
-        void Clear();
+		void Select(ObjectBase *object);
+		void Deselect(ObjectBase *object, EDeselectReason reason = DeselectReason_None);
+		void Clear();
 
-        ObjectBase *GetSelectedObject() const { return mSelectedObject; }
-        Entity *GetSelectedEntity() const { return mSelectedEntity; }
+		ObjectBase *GetSelectedObject() const { return mSelectedObject; }
+		Entity *GetSelectedEntity() const { return mSelectedEntity; }
 
-    private:
-        ObjectBase *mSelectedObject = nullptr;
-        Entity *mSelectedEntity = nullptr;
-    };
+	private:
+		ObjectBase *mSelectedObject = nullptr;
+		Entity *mSelectedEntity = nullptr;
+	};
 
-    struct EditSubSystem
-    {
-        void OnUpdate(float dt);
+	DECLARE_RET_EVENT(OnGetEditorMode, EEditorMode);
+	DECLARE_RET_EVENT(OnGetActiveWorld, Ref<World>);
 
-        RetEventDelegate<EEditorMode> GetEditorMode;
-        RetEventDelegate<Ref<World>> GetActiveWorld;
+	struct EditSubSystem
+	{
+		void OnUpdate(float dt);
 
-        Selection mSelection;
-    };
+		OnGetEditorModeEvent GetEditorMode;
+		OnGetActiveWorldEvent GetActiveWorld;
+
+		Selection mSelection;
+	};
 
 } // namespace BHive

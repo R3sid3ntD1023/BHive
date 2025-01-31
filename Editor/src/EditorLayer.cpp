@@ -23,43 +23,13 @@
 #include "scene/Entity.h"
 #include "factories/entity_factories/EntityFactory.h"
 #include "math/RayCasting.h"
+#include "core/FPSCounter.h"
 #include <ImGuizmo.h>
 #include <mini/ini.h>
 #include <rttr/library.h>
 
 namespace BHive
 {
-
-	struct FPSCounter
-	{
-		/* data */
-		float mDeltaTime;
-		uint32_t mFrames;
-
-		void Begin(float dt)
-		{
-			mTimer = Timer();
-
-			mDeltaTime += dt;
-			if (mDeltaTime > 1.0)
-			{
-				mDeltaTime = 0.f;
-				mFrames = 0;
-			}
-		}
-
-		void End()
-		{
-			mLastRenderTime = mTimer.ElaspedMillis();
-			mFrames++;
-		}
-
-		operator float() const { return mFrames / mDeltaTime; }
-
-	private:
-		float mLastRenderTime{0.f};
-		Timer mTimer;
-	};
 
 	struct ImGuizmoSnap
 	{
@@ -115,7 +85,7 @@ namespace BHive
 		auto h = window.GetHeight();
 		auto aspect = w / (float)h;
 
-		mSceneRenderer = CreateRef<SceneRenderer>(w, h);
+		mSceneRenderer = CreateRef<SceneRenderer>(w, h, ESceneRendererFlags_VisualizeColliders);
 		mEditorCamera = EditorCamera(45.f, aspect, 0.1f, 1000.f);
 
 		mSceneHierarchyPanel = CreateRef<SceneHierarchyPanel>();
@@ -136,8 +106,8 @@ namespace BHive
 		window_system.AddWindow<LogPanel>();
 
 		auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-		edit_system.GetEditorMode.bind([this]() { return mEditorMode; });
-		edit_system.GetActiveWorld.bind([this]() { return mActiveWorld; });
+		edit_system.GetEditorMode.bind([=]() { return mEditorMode; });
+		edit_system.GetActiveWorld.bind([=]() { return mActiveWorld; });
 
 		/*AnimGraphContextMenu menu;
 		menu.OnAssetOpen(1202670764);*/
@@ -174,7 +144,7 @@ namespace BHive
 
 	void EditorLayer::OnUpdate(float dt)
 	{
-		sCounter.Begin(dt);
+		sCounter.Begin();
 
 		mEditorCamera.ProcessInput();
 
@@ -189,7 +159,7 @@ namespace BHive
 
 		if (mEditorMode != EEditorMode::PLAY)
 		{
-			mSceneRenderer->Begin(mEditorCamera.GetProjection(), mEditorCamera.GetView().inverse());
+			mSceneRenderer->Begin(mEditorCamera, mEditorCamera.GetView().inverse());
 
 			mSceneRenderer->SubmitRenderQueue(
 				[]()

@@ -17,8 +17,7 @@ namespace BHive
 				return;
 
 			auto offset = mOffset * transform.get_scale();
-			auto offset_ =
-				rp3d::Transform({offset.x, offset.y, offset.z}, rp3d::Quaternion::identity());
+			auto offset_ = rp3d::Transform({offset.x, offset.y, offset.z}, rp3d::Quaternion::identity());
 			auto collider = rb->addCollider(shape, offset_);
 			collider->setUserData(this);
 			collider->setCollisionCategoryBits(mCollisionChannel);
@@ -50,16 +49,14 @@ namespace BHive
 	{
 		ShapeComponent::Save(ar);
 
-		ar(mCollisionEnabled, mCollisionChannel, mCollisionChannelMasks, mOffset, mIsTrigger,
-		   mColor, mPhysicsMaterial);
+		ar(mCollisionEnabled, mCollisionChannel, mCollisionChannelMasks, mOffset, mIsTrigger, mColor, mPhysicsMaterial);
 	}
 
 	void ColliderComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ShapeComponent::Load(ar);
 
-		ar(mCollisionEnabled, mCollisionChannel, mCollisionChannelMasks, mOffset, mIsTrigger,
-		   mColor, mPhysicsMaterial);
+		ar(mCollisionEnabled, mCollisionChannel, mCollisionChannelMasks, mOffset, mIsTrigger, mColor, mPhysicsMaterial);
 	}
 
 	REFLECT(ColliderComponent)

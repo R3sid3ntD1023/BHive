@@ -16,8 +16,7 @@ namespace BHive
 		if (mConvexMesh)
 		{
 			mCollisionShape = PhysicsContext::get_context().createConvexMeshShape(
-				(rp3d::ConvexMesh *)mConvexMesh,
-				physics::utils::vec3_to_rp3d(world_transform.get_scale()));
+				(rp3d::ConvexMesh *)mConvexMesh, physics::utils::vec3_to_rp3d(world_transform.get_scale()));
 		}
 
 		return mCollisionShape;
@@ -25,8 +24,7 @@ namespace BHive
 
 	void MeshColliderComponent::ReleaseCollisionShape()
 	{
-		PhysicsContext::get_context().destroyConvexMeshShape(
-			(rp3d::ConvexMeshShape *)mCollisionShape);
+		PhysicsContext::get_context().destroyConvexMeshShape((rp3d::ConvexMeshShape *)mCollisionShape);
 		PhysicsContext::get_context().destroyConvexMesh((rp3d::ConvexMesh *)mConvexMesh);
 	}
 
@@ -47,13 +45,13 @@ namespace BHive
 	void MeshColliderComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ColliderComponent::Save(ar);
-		ar( mStaticMesh);
+		ar(mStaticMesh);
 	}
 
 	void MeshColliderComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ColliderComponent::Load(ar);
-		ar( mStaticMesh);
+		ar(mStaticMesh);
 		SetStaticMesh(mStaticMesh);
 	}
 
@@ -63,29 +61,8 @@ namespace BHive
 		{
 			auto &mesh_data = mStaticMesh->GetData();
 			auto &vertices = mesh_data.mVertices;
-			/*auto &indices = mesh_data.mIndices;
-			auto num_faces = vertices.size() / 4;
 
-			rp3d::PolygonVertexArray::PolygonFace *faces =
-				new rp3d::PolygonVertexArray::PolygonFace[num_faces];
-
-			rp3d::PolygonVertexArray::PolygonFace *face = faces;
-			for (int i = 0; i < num_faces; i++)
-			{
-				face->indexBase = i * 6;
-				face->nbVertices = 4;
-				face++;
-			}
-
-			auto polys = rp3d::PolygonVertexArray(
-				vertices.size(), vertices.data(), sizeof(FVertex), indices.data(),
-				sizeof(uint32_t), num_faces, faces,
-				rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
-				rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);*/
-
-			auto verts = rp3d::VertexArray(
-				vertices.data(), sizeof(FVertex), vertices.size(),
-				rp3d::VertexArray::DataType ::VERTEX_FLOAT_TYPE);
+			auto verts = rp3d::VertexArray(vertices.data(), sizeof(FVertex), vertices.size(), rp3d::VertexArray::DataType ::VERTEX_FLOAT_TYPE);
 
 			std::vector<rp3d::Message> messages;
 			mConvexMesh = PhysicsContext::get_context().createConvexMesh(verts, messages);
@@ -108,15 +85,12 @@ namespace BHive
 					}
 				}
 			}
-
-			// delete[] faces;
 		}
 	}
 
 	REFLECT(MeshColliderComponent)
 	{
 		BEGIN_REFLECT(MeshColliderComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
-			REFLECT_PROPERTY("StaticMesh", GetStaticMesh, SetStaticMesh);
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS() REFLECT_PROPERTY("StaticMesh", GetStaticMesh, SetStaticMesh);
 	}
 } // namespace BHive

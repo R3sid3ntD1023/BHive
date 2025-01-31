@@ -3,6 +3,7 @@
 #include "scene/Entity.h"
 #include "renderers/LineRenderer.h"
 #include "physics/PhysicsContext.h"
+#include "scene/SceneRenderer.h"
 
 namespace BHive
 {
@@ -19,7 +20,10 @@ namespace BHive
 
 	void BoxComponent::OnRender(SceneRenderer *renderer)
 	{
-		LineRenderer::DrawBox(mExtents, mOffset, mColor, GetWorldTransform());
+		if ((renderer->GetFlags() & ESceneRendererFlags_VisualizeColliders) != 0)
+		{
+			LineRenderer::DrawBox(mExtents, mOffset, mColor, GetWorldTransform());
+		}
 	}
 
 	void BoxComponent::Save(cereal::BinaryOutputArchive &ar) const

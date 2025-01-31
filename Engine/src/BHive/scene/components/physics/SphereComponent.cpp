@@ -3,13 +3,13 @@
 #include "physics/PhysicsContext.h"
 #include "renderers/LineRenderer.h"
 #include "scene/Entity.h"
+#include "scene/SceneRenderer.h"
 
 namespace BHive
 {
 	void *SphereComponent::GetCollisionShape(const FTransform &world_transform)
 	{
-		return mCollisionShape = PhysicsContext::get_context().createSphereShape(
-				   mRadius * glm::compMax(world_transform.get_scale()));
+		return mCollisionShape = PhysicsContext::get_context().createSphereShape(mRadius * glm::compMax(world_transform.get_scale()));
 	}
 
 	void SphereComponent::ReleaseCollisionShape()
@@ -19,7 +19,10 @@ namespace BHive
 
 	void SphereComponent::OnRender(SceneRenderer *renderer)
 	{
-		LineRenderer::DrawSphere(mRadius, 32, mOffset, mColor, GetWorldTransform());
+		if ((renderer->GetFlags() & ESceneRendererFlags_VisualizeColliders) != 0 && mRadius > 0.f)
+		{
+			LineRenderer::DrawSphere(mRadius, 32, mOffset, mColor, GetWorldTransform());
+		}
 	}
 
 	void SphereComponent::Save(cereal::BinaryOutputArchive &ar) const
@@ -37,7 +40,6 @@ namespace BHive
 	REFLECT(SphereComponent)
 	{
 		BEGIN_REFLECT(SphereComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
-			REFLECT_PROPERTY("Radius", mRadius);
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS() REFLECT_PROPERTY("Radius", mRadius);
 	}
 } // namespace BHive

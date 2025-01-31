@@ -18,26 +18,6 @@ namespace BHive
 		return deltaTime;
 	}
 
-	float Time::GetFPS()
-	{
-		static float fps = 0;
-		static int frames = 0;
-		static float last_time = 0.0f;
-		float time = Time::Get();
-		float delta = time - last_time;
-
-		if (delta >= 1.0f)
-		{
-			fps = (float)frames / delta;
-			frames = 0;
-			last_time = time;
-		}
-
-		frames++;
-
-		return fps;
-	}
-
 	Timer::Timer()
 	{
 		Reset();
@@ -50,11 +30,12 @@ namespace BHive
 
 	float Timer::Elasped()
 	{
-		return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - mStart).count() * .001f * .001f * .001f;
+		return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - mStart).count() * .001f * .001f *
+			   .001f;
 	}
 
 	float Timer::ElaspedMillis()
 	{
 		return Elasped() * 1000.0f;
 	}
-}
+} // namespace BHive

@@ -14,31 +14,23 @@
 #include "importers/TextureImporter.h"
 #include "renderers/HDRConverter.h"
 
-#define DRAW_ELEMENTS()                                           \
-	RenderCommand::DrawElementsBaseVertex(EDrawMode::Triangles,   \
-										  *vao,                   \
-										  sub_mesh->mStartVertex, \
-										  sub_mesh->mStartIndex,  \
-										  sub_mesh->mIndexCount);
+#define DRAW_ELEMENTS() \
+	RenderCommand::DrawElementsBaseVertex(EDrawMode::Triangles, *vao, sub_mesh->mStartVertex, sub_mesh->mStartIndex, sub_mesh->mIndexCount);
 
 #define RENDER_SHADOWS
 
 namespace BHive
 {
 	uint32_t quad_indices[] = {0, 1, 2, 2, 3, 0};
-	float quad_vertices[] = {
-		-1.f, -1.f, 0.f, 0.f,
-		1.f, -1.f, 1.f, 0.f,
-		1.f, 1.f, 1.f, 1.f,
-		-1.f, 1.f, 0.f, 1.f};
+	float quad_vertices[] = {-1.f, -1.f, 0.f, 0.f, 1.f, -1.f, 1.f, 0.f, 1.f, 1.f, 1.f, 1.f, -1.f, 1.f, 0.f, 1.f};
 
 	SceneRenderer::SceneRenderer(uint32_t width, uint32_t height, uint32_t flags)
-		: mViewportSize(width, height), mFlags(flags)
+		: mViewportSize(width, height),
+		  mFlags(flags)
 	{
 		FramebufferSpecification fbspec{};
 
-		fbspec.Attachments
-			.attach({.mFormat = EFormat::RGBA32F, .mWrapMode = EWrapMode::CLAMP_TO_EDGE})
+		fbspec.Attachments.attach({.mFormat = EFormat::RGBA32F, .mWrapMode = EWrapMode::CLAMP_TO_EDGE})
 			.attach({.mFormat = EFormat::DEPTH24_STENCIL8, .mWrapMode = EWrapMode::CLAMP_TO_EDGE});
 
 		fbspec.Width = width;
@@ -49,8 +41,7 @@ namespace BHive
 		fbspec.Samples = 1;
 		mFramebuffer = Framebuffer::Create(fbspec);
 
-		fbspec.Attachments.reset()
-			.attach({.mFormat = EFormat::RGBA32F, .mWrapMode = EWrapMode::CLAMP_TO_EDGE});
+		fbspec.Attachments.reset().attach({.mFormat = EFormat::RGBA32F, .mWrapMode = EWrapMode::CLAMP_TO_EDGE});
 
 		fbspec.Samples = 1;
 		mQuadFramebuffer = Framebuffer::Create(fbspec);
@@ -101,11 +92,11 @@ namespace BHive
 	{
 	}
 
-	void SceneRenderer::Begin(const glm::mat4 &projection, const glm::mat4 &view)
+	void SceneRenderer::Begin(const Camera &camera, const FTransform &view)
 	{
 		BH_PROFILE_FUNCTION();
 
-		mSceneData.mProjection = projection;
+		mSceneData.mProjection = camera.GetProjection();
 		mSceneData.mView = view;
 		mSceneData.clear();
 
@@ -136,8 +127,8 @@ namespace BHive
 		RenderCommand::DepthFunc(GL_LEQUAL);
 
 		auto &submesh = mCube->GetSubMeshes()[0];
-		RenderCommand::DrawElementsBaseVertex(EDrawMode::Triangles, *mCube->GetVertexArray(),
-											  submesh.mStartVertex, submesh.mStartIndex, submesh.mIndexCount);
+		RenderCommand::DrawElementsBaseVertex(
+			EDrawMode::Triangles, *mCube->GetVertexArray(), submesh.mStartVertex, submesh.mStartIndex, submesh.mIndexCount);
 
 		mSkyBoxShader->UnBind();
 
@@ -148,12 +139,15 @@ namespace BHive
 		// RENDER OPAQUE OBJECTS SORTED
 
 		auto &opaque = mSceneData.mOpaqueObjects;
-		std::sort(opaque.begin(), opaque.end(), [this](const FObjectMaterialData &a, const FObjectMaterialData &b)
-				  {
-			float dist_a = glm::distance(glm::vec3(mSceneData.mView[3]), a.mObjectData.mTransform.get_translation());
-			float dist_b = glm::distance(glm::vec3(mSceneData.mView[3]), b.mObjectData.mTransform.get_translation());
+		std::sort(
+			opaque.begin(), opaque.end(),
+			[this](const FObjectMaterialData &a, const FObjectMaterialData &b)
+			{
+				float dist_a = glm::distance(glm::vec3(mSceneData.mView[3]), a.mObjectData.mTransform.get_translation());
+				float dist_b = glm::distance(glm::vec3(mSceneData.mView[3]), b.mObjectData.mTransform.get_translation());
 
-			return dist_a > dist_b; });
+				return dist_a > dist_b;
+			});
 
 		for (auto &[material, objectdata] : opaque)
 		{
@@ -175,12 +169,15 @@ namespace BHive
 		// RENDER TRANSPARENT OBJECTS SORTED
 
 		auto &transparent = mSceneData.mTransparentObjects;
-		std::sort(transparent.begin(), transparent.end(), [this](const FObjectMaterialData &a, const FObjectMaterialData &b)
-				  {
-			float dist_a = glm::distance(glm::vec3(mSceneData.mView[3]), a.mObjectData.mTransform.get_translation());
-			float dist_b = glm::distance(glm::vec3(mSceneData.mView[3]), b.mObjectData.mTransform.get_translation());
+		std::sort(
+			transparent.begin(), transparent.end(),
+			[this](const FObjectMaterialData &a, const FObjectMaterialData &b)
+			{
+				float dist_a = glm::distance(glm::vec3(mSceneData.mView[3]), a.mObjectData.mTransform.get_translation());
+				float dist_b = glm::distance(glm::vec3(mSceneData.mView[3]), b.mObjectData.mTransform.get_translation());
 
-			return dist_a < dist_b; });
+				return dist_a < dist_b;
+			});
 
 		for (auto &[material, objectdata] : transparent)
 		{
@@ -282,8 +279,7 @@ namespace BHive
 			FObjectData object_data = {transform, &sub_mesh, vao};
 			FObjectMaterialData material_data = {material, object_data};
 
-			material->IsTransparent() ? mSceneData.mTransparentObjects.push_back(material_data)
-									  : mSceneData.mOpaqueObjects.push_back(material_data);
+			material->IsTransparent() ? mSceneData.mTransparentObjects.push_back(material_data) : mSceneData.mOpaqueObjects.push_back(material_data);
 
 			if (material->CastShadows())
 				mSceneData.mShadowCasters.push_back(object_data);
@@ -305,16 +301,15 @@ namespace BHive
 			FObjectData object_data = {transform, &sub_mesh, vao};
 			FObjectMaterialData material_data = {material, object_data};
 
-			material->IsTransparent() ? mSceneData.mTransparentObjects.push_back(material_data)
-									  : mSceneData.mOpaqueObjects.push_back(material_data);
+			material->IsTransparent() ? mSceneData.mTransparentObjects.push_back(material_data) : mSceneData.mOpaqueObjects.push_back(material_data);
 
 			if (material->CastShadows())
 				mSceneData.mShadowCasters.push_back(object_data);
 		}
 	}
 
-	void SceneRenderer::SubmitSkeletalMesh(const Ref<SkeletalMesh> &skeletal_mesh, const FTransform &transform,
-										   const std::vector<glm::mat4> &joints, const MaterialTable &materials)
+	void SceneRenderer::SubmitSkeletalMesh(
+		const Ref<SkeletalMesh> &skeletal_mesh, const FTransform &transform, const std::vector<glm::mat4> &joints, const MaterialTable &materials)
 	{
 		if (!skeletal_mesh)
 			return;
@@ -330,8 +325,7 @@ namespace BHive
 			FObjectData object_data = {transform, &sub_mesh, vao, joints};
 			FObjectMaterialData material_data = {material, object_data};
 
-			material->IsTransparent() ? mSceneData.mTransparentObjects.push_back(material_data)
-									  : mSceneData.mOpaqueObjects.push_back(material_data);
+			material->IsTransparent() ? mSceneData.mTransparentObjects.push_back(material_data) : mSceneData.mOpaqueObjects.push_back(material_data);
 
 			if (material->CastShadows())
 				mSceneData.mShadowCasters.push_back(object_data);
@@ -533,24 +527,27 @@ namespace BHive
 	REFLECT(EPostProcessMode)
 	{
 		BEGIN_REFLECT_ENUM(EPostProcessMode)
-		(
-			ENUM_VALUE(EPostProcessMode_None),
-			ENUM_VALUE(EPostProcessMode_ACES));
+		(ENUM_VALUE(EPostProcessMode_None), ENUM_VALUE(EPostProcessMode_ACES));
 	}
 
 	REFLECT(FRenderSettings)
 	{
 		BEGIN_REFLECT(FRenderSettings)
 		REFLECT_PROPERTY("Strength", mStrength)
-		(META_DATA(EPropertyMetaData_Min, 0.0f))
-			REFLECT_PROPERTY("FilterRadius", mFilterRadius)
-				REFLECT_PROPERTY("Threshold", mThreshold)
-					REFLECT_PROPERTY("ProcessMode", mProcessMode);
+		(META_DATA(EPropertyMetaData_Min, 0.0f)) REFLECT_PROPERTY("FilterRadius", mFilterRadius) REFLECT_PROPERTY("Threshold", mThreshold)
+			REFLECT_PROPERTY("ProcessMode", mProcessMode);
 	}
 
 	REFLECT(SceneRenderer)
 	{
 		BEGIN_REFLECT(SceneRenderer)
-		REFLECT_PROPERTY("RenderSettings", mRenderSettings);
+		REFLECT_PROPERTY("RenderSettings", mRenderSettings)
+		REFLECT_PROPERTY("RenderFlags", mFlags)(META_DATA(EPropertyMetaData_Flags, EPropertyFlags_BitFlags));
 	}
-}
+
+	REFLECT(ESceneRendererFlags)
+	{
+		BEGIN_REFLECT_ENUM(ESceneRendererFlags)
+		(ENUM_VALUE(ESceneRendererFlags_NoShadows, "NoShadows"), ENUM_VALUE(ESceneRendererFlags_VisualizeColliders, "VisualizeColliders"));
+	}
+} // namespace BHive

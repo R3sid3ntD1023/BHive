@@ -22,6 +22,11 @@ namespace BHive
 
 		TEnumAsByte() = default;
 
+		explicit TEnumAsByte(underlying_type value)
+			: mValue((TEnum)value)
+		{
+		}
+
 		TEnumAsByte(const TEnum &enum_value)
 			: mValue(enum_value)
 		{
@@ -31,10 +36,7 @@ namespace BHive
 
 		virtual int Get() const { return (int)(underlying_type)(TEnum)mValue; }
 
-		virtual rttr::enumeration GetEnumeration() const
-		{
-			return rttr::type::get<TEnum>().get_enumeration();
-		};
+		virtual rttr::enumeration GetEnumeration() const { return rttr::type::get<TEnum>().get_enumeration(); };
 
 		bool HasFlag(const TEnum &rhs) const { return (mValue | rhs) != 0; }
 
@@ -58,19 +60,13 @@ namespace BHive
 
 		TEnumAsByte operator~() const { return ~mValue; }
 
-		TEnumAsByte operator&(const TEnum &rhs) const
-		{
-			return (TEnum)((underlying_type)mValue & (underlying_type)rhs);
-		}
+		TEnumAsByte operator&(const TEnum &rhs) const { return (TEnum)((underlying_type)mValue & (underlying_type)rhs); }
 
-		TEnumAsByte operator|(const TEnum &rhs) const
-		{
-			return (TEnum)((underlying_type)mValue | (underlying_type)rhs);
-		}
+		TEnumAsByte operator|(const TEnum &rhs) const { return (TEnum)((underlying_type)mValue | (underlying_type)rhs); }
 
-		TEnumAsByte &operator&=(const TEnum &rhs) const { return *this = *this & rhs; }
+		TEnumAsByte &operator&=(const TEnum &rhs) { return *this = *this & rhs; }
 
-		TEnumAsByte &operator|=(const TEnum &rhs) const { return *this = *this | rhs; }
+		TEnumAsByte &operator|=(const TEnum &rhs) { return *this = *this | rhs; }
 
 		template <typename A>
 		inline int SaveMinimal(const A &ar) const
