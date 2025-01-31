@@ -219,6 +219,9 @@ namespace BHive
 			ImGui::EndMenuBar();
 		}
 
+		auto &window_system = SubSystemContext::Get().GetSubSystem<WindowSubSystem>();
+		window_system.UpdateWindows();
+
 		ShowSceneHierarchyPanel();
 		ShowPropertiesPanel();
 		ShowDetailsPanel();
@@ -229,9 +232,7 @@ namespace BHive
 		ShowRenderSettings();
 		ShowInputWindow();
 		ShowProjectWindow();
-
-		auto &window_system = SubSystemContext::Get().GetSubSystem<WindowSubSystem>();
-		window_system.UpdateWindows();
+		ShowWorldSettings();
 
 		GUI::EndDockSpace();
 	}
@@ -380,6 +381,11 @@ namespace BHive
 			if (ImGui::MenuItem("Input Manager", "", &mShowInputSettings))
 			{
 				mShowInputSettings = true;
+			}
+
+			if (ImGui::MenuItem("World Settings", "", &mShowWorldSettings))
+			{
+				mShowWorldSettings = true;
 			}
 
 			if (ImGui::MenuItem("Log Window", ""))
@@ -614,6 +620,24 @@ namespace BHive
 				auto path_str = FileDialogs::SaveFile("Project (*.proj)\0*.proj\0");
 				if (!path_str.empty())
 					Project::SaveProject(path_str);
+			}
+		}
+
+		ImGui::End();
+	}
+
+	void EditorLayer::ShowWorldSettings()
+	{
+		if (ImGui::Begin("World Settings", &mShowWorldSettings))
+		{
+			if (mActiveWorld)
+			{
+				auto ptr = mActiveWorld.get();
+				rttr::variant var = ptr;
+				if (inspect(var))
+				{
+					ptr = var.get_value<World *>();
+				}
 			}
 		}
 

@@ -6,6 +6,7 @@
 #include "math/Math.h"
 #include "physics/PhysicsContext.h"
 #include "physics/WorldEventListener.h"
+#include "WorldPhysicsSettings.h"
 
 namespace BHive
 {
@@ -50,7 +51,7 @@ namespace BHive
 
 		rp3d::PhysicsWorld *GetPhysicsWorld() const { return mPhysicsWorld; }
 
-		rp3d::PhysicsWorld::WorldSettings &GetWorldSettings() { return mPhysicsSettings; }
+		FWorldPhysicsSettings &GetWorldSettings() { return mPhysicsSettings; }
 
 		Entities &GetEntities() { return mEntities; }
 
@@ -86,13 +87,14 @@ namespace BHive
 
 		rp3d::PhysicsWorld *mPhysicsWorld = nullptr;
 
-		rp3d::PhysicsWorld::WorldSettings mPhysicsSettings{};
+		FWorldPhysicsSettings mPhysicsSettings{};
 
 		glm::uvec2 mViewportSize{0, 0};
 
 		bool mInitialized = false;
 
 		CollisionEventListener mCollisionListener;
+
 		HitEventListener mHitListener;
 
 		Entities mEntities;

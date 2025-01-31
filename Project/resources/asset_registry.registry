@@ -57,6 +57,14 @@
             }
         },
         {
+            "key": 342659171,
+            "value": {
+                "Type": "World",
+                "Path": "scenes\\World0.world",
+                "Name": "World0"
+            }
+        },
+        {
             "key": 367491000,
             "value": {
                 "Type": "SkeletalMesh",
@@ -81,6 +89,14 @@
             }
         },
         {
+            "key": 442469763,
+            "value": {
+                "Type": "World",
+                "Path": "scenes\\World0.world",
+                "Name": "World0"
+            }
+        },
+        {
             "key": 475316148,
             "value": {
                 "Type": "Material",
@@ -94,6 +110,14 @@
                 "Type": "Sprite",
                 "Path": "TestImport\\Sprites\\Run\\PlayerRun3.sprite",
                 "Name": "PlayerRun3"
+            }
+        },
+        {
+            "key": 627861527,
+            "value": {
+                "Type": "World",
+                "Path": "scenes\\World0.world",
+                "Name": "World0"
             }
         },
         {

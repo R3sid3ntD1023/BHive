@@ -15,3 +15,8 @@
 #include "components/physics/CapsuleComponent.h"
 #include "components/physics/MeshColliderComponent.h"
 #include "components/InputComponent.h"
+
+// lights
+#include "components/lights/DirectionalLightComponent.h"
+#include "components/lights/PointLightComponent.h"
+#include "components/lights/SpotLightComponent.h"

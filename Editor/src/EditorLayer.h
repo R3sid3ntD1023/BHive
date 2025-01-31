@@ -42,6 +42,7 @@ namespace BHive
 		void ShowRenderSettings();
 		void ShowInputWindow();
 		void ShowProjectWindow();
+		void ShowWorldSettings();
 		void ViewportToolbar();
 
 		void NewWorld();
@@ -82,6 +83,7 @@ namespace BHive
 		bool mShowRenderSettings{false};
 		bool mShowInputSettings{false};
 		bool mShowProjectWindow{false};
+		bool mShowWorldSettings{true};
 		bool mSnapEnabled{false};
 		bool mIsTitleBarHovered{false};
 

@@ -203,6 +203,7 @@ namespace BHive
 
 	void World::Save(cereal::BinaryOutputArchive &ar) const
 	{
+		ar(mPhysicsSettings);
 		ar(mEntities.size());
 
 		for (auto &[id, entity] : mEntities)
@@ -217,6 +218,7 @@ namespace BHive
 
 	void World::Load(cereal::BinaryInputArchive &ar)
 	{
+		ar(mPhysicsSettings);
 		size_t num_entitys = 0;
 		ar(num_entitys);
 
@@ -370,7 +372,8 @@ namespace BHive
 
 	REFLECT(World)
 	{
-		BEGIN_REFLECT(World);
+		BEGIN_REFLECT(World)
+		REFLECT_PROPERTY("Physics Settings", mPhysicsSettings);
 	}
 
 } // namespace BHive
