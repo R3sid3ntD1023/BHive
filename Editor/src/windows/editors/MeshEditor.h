@@ -1,12 +1,12 @@
 #pragma once
 
 #include "cameras/EditorCamera.h"
-#include "mesh/StaticMesh.h"
+#include "mesh/IRenderableAsset.h"
 #include "TAssetEditor.h"
 
 namespace BHive
 {
-	class MeshEditor : public TAssetEditor<StaticMesh>
+	class MeshEditor : public TAssetEditor<IRenderableAsset>
 	{
 	public:
 		MeshEditor();

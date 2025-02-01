@@ -2,6 +2,19 @@
 #include "subsystem/SubSystem.h"
 #include "subsystems/WindowSubSystem.h"
 
+#include "windows/editors/AnimationEditor.h"
+#include "windows/editors/AnimGraph/AnimGraphEditor.h"
+#include "windows/editors/AudioEditor.h"
+#include "windows/editors/FlipBookEditor.h"
+#include "windows/editors/InputContextEditor.h"
+#include "windows/editors/MaterialEditor.h"
+#include "windows/editors/MeshEditor.h"
+#include "windows/editors/PhysicsMaterialEditor.h"
+#include "windows/editors/SkeletonEditor.h"
+#include "windows/editors/SpriteEditor.h"
+#include "windows/editors/TextureEditor.h"
+#include "windows/editors/PrefabEditor.h"
+
 namespace BHive
 {
 	template <typename TEditor>
@@ -21,16 +34,17 @@ namespace BHive
 		editor->SetContext(handle);
 	}
 
-	REFLECT_ASSET_MENU(SpriteAssetContextMenu, Sprite)
-	REFLECT_ASSET_MENU(FlipbookAssetContextMenu, FlipBook)
-	REFLECT_ASSET_MENU(SpriteSheetContextMenu, SpriteSheet)
-	REFLECT_ASSET_MENU(AudioAssetContextMenu, AudioSource)
-	REFLECT_ASSET_MENU(PhysicsMaterialContextMenu, PhysicsMaterial)
-	REFLECT_ASSET_MENU(InputContextContextMenu, InputContext)
-	REFLECT_ASSET_MENU(MaterialContextMenu, Material)
-	REFLECT_ASSET_MENU(SkeletonContextMenu, Skeleton)
-	REFLECT_ASSET_MENU(MeshContextMenu, StaticMesh)
-	REFLECT_ASSET_MENU(AnimationContextMenu, SkeletalAnimation)
-	REFLECT_ASSET_MENU(TextureContextMenu, Texture2D)
-	REFLECT_ASSET_MENU(AnimGraphContextMenu, AnimGraph)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<SpriteEditor>, Sprite)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<FlipBookEditor>, FlipBook)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<SpriteSheetEditor>, SpriteSheet)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<AudioEditor>, AudioSource)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<PhysicsMaterialEditor>, PhysicsMaterial)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<InputContextEditor>, InputContext)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<MaterialEditor>, Material)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<SkeletonEditor>, Skeleton)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<MeshEditor>, IRenderableAsset)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<AnimationEditor>, SkeletalAnimation)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<TextureEditor>, Texture2D)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<AnimGraphEditor>, AnimGraph)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<PrefabEditor>, Prefab)
 } // namespace BHive

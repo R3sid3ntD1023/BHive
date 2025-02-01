@@ -22,6 +22,11 @@ namespace BHive
 		return {mValue.x, mValue.y};
 	}
 
+	void InputContext::add_action(const std::string &name, FInputKey key)
+	{
+		mKeys.emplace_back(name, key);
+	}
+
 	bool InputContext::has_key(const std::string name) const
 	{
 		auto it = std::find_if(mKeys.begin(), mKeys.end(), [name](const FInputAction &action) { return action.GetName() == name; });

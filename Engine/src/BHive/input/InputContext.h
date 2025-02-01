@@ -28,12 +28,13 @@ namespace BHive
 
 		void process();
 
+		void add_action(const std::string &name, FInputKey key);
+
 		template <typename T>
 		void bind_key(const std::string &name, InputActionCode action, T *instance, void (T::*func)(const InputValue &value))
 		{
 			if (has_key(name))
 			{
-				auto &input_action = mKeys.emplace();
 				auto &binded_keys = mBindedKeys[name];
 				binded_keys.CallState = action;
 				binded_keys.Callback.bind(instance, func);
@@ -45,7 +46,6 @@ namespace BHive
 		{
 			if (has_key(name))
 			{
-				auto &input_action = mKeys.emplace();
 				auto &binded_axis = mBindedAxisKeys[name];
 				binded_axis.Scale = scale;
 				binded_axis.Callback.bind(instance, func);

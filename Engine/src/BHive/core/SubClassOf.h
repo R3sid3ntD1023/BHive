@@ -50,6 +50,12 @@ namespace BHive
 
 		const rttr::type &get() const { return mType; }
 
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(mType);
+		}
+
 		REFLECTABLEV(SubClassOf)
 
 	private:

@@ -2,6 +2,7 @@
 
 #include "asset/Asset.h"
 #include "scene/Entity.h"
+#include "core/SubClassOf.h"
 
 namespace BHive
 {
@@ -10,9 +11,13 @@ namespace BHive
 	class Prefab : public Asset
 	{
 	public:
-		Prefab();
+		Prefab() = default;
 
 		Ref<Entity> CreateInstance(World *world);
+
+		void SetEntityClass(const TSubClassOf<Entity> &entityClass);
+
+		const TSubClassOf<Entity> &GetEntityClass() const { return mEntityClass; }
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
@@ -22,12 +27,7 @@ namespace BHive
 
 	private:
 		Ref<Entity> mInstance;
+		TSubClassOf<Entity> mEntityClass;
 	};
-
-	REFLECT(Prefab)
-	{
-		BEGIN_REFLECT(Prefab)
-		REFLECT_PROPERTY("Entity", mInstance);
-	}
 
 } // namespace BHive
