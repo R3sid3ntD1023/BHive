@@ -239,185 +239,187 @@ namespace BHive
 		int columnCount = (int)(panelWidth / cellsize);
 		if (columnCount < 1)
 			columnCount = 1;
-		ImGui::BeginTable("##columns", columnCount, ImGuiTableFlags_PadOuterX | ImGuiTableFlags_NoClip);
 
-		ImGui::TableNextRow();
-		ImGui::TableNextColumn();
-
-		if (!mCurrentDirectory.empty())
+		if (ImGui::BeginTable("##columns", columnCount, ImGuiTableFlags_PadOuterX))
 		{
-			auto directory_iter = std::filesystem::directory_iterator(mCurrentDirectory);
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
 
-			int index = 0;
-			for (auto &entry : directory_iter)
+			if (!mCurrentDirectory.empty())
 			{
-				FileEntry ms_item = {index, entry};
+				auto directory_iter = std::filesystem::directory_iterator(mCurrentDirectory);
 
-				auto path = entry.path();
-				auto ext = path.extension();
-				bool is_directory = entry.is_directory();
-				auto name = path.stem().string();
-
-				auto relative_path = std::filesystem::relative(path, mBaseDirectory);
-				bool is_valid_handle = IsAssetValid(relative_path);
-
-				auto id = ImGui::GetID(path.string().c_str());
-
-				ImGui::PushID(id);
-
-				bool is_selected = sSelectedItems.contains(index);
-
-				bool clicked = ImGui::Selectable("", is_selected, ImGuiSelectableFlags_AllowDoubleClick, mThumbnailSize);
-				bool is_hovered = ImGui::IsItemHovered();
-				auto rect = ImGui::GetItemRect();
-
-				if (clicked)
+				int index = 0;
+				for (auto &entry : directory_iter)
 				{
-					if (!ImGui::IsKeyDown(ImGuiKey_ModCtrl))
+					FileEntry ms_item = {index, entry};
+
+					auto path = entry.path();
+					auto ext = path.extension();
+					bool is_directory = entry.is_directory();
+					auto name = path.stem().string();
+
+					auto relative_path = std::filesystem::relative(path, mBaseDirectory);
+					bool is_valid_handle = IsAssetValid(relative_path);
+
+					auto id = ImGui::GetID(path.string().c_str());
+
+					ImGui::PushID(id);
+
+					bool is_selected = sSelectedItems.contains(index);
+
+					bool clicked = ImGui::Selectable("", is_selected, ImGuiSelectableFlags_AllowDoubleClick, mThumbnailSize);
+					bool is_hovered = ImGui::IsItemHovered();
+					auto rect = ImGui::GetItemRect();
+
+					if (clicked)
 					{
-						sSelectedItems.clear();
-					}
-
-					sSelectedItems.emplace(index, ms_item);
-
-					sActiveItem = index;
-				}
-
-				auto icon = OnGetIcon(is_directory, relative_path);
-				if (icon)
-				{
-					auto color = is_directory ? mStyle.mColors.mFolder : IM_COL32_WHITE;
-					drawlist->AddImage(*icon, rect.Min, rect.Max, {0, 1}, {1, 0}, color);
-				}
-
-				if (is_selected)
-				{
-					drawlist->AddRect(rect.Min, rect.Max, mStyle.mColors.mSelection, 0.f, 0, 2.0f);
-				}
-
-				if (is_valid_handle && !is_directory)
-				{
-					auto checkmark_size = 20.0f;
-					ImGui::RenderCheckMark(
-						drawlist, {rect.Max.x - checkmark_size, rect.Max.y - checkmark_size}, mStyle.mColors.mCheckMark, checkmark_size);
-				}
-
-				if (mIsMouseDragging)
-				{
-
-					if (drag_rect.Overlaps(rect))
-					{
-						if (!is_selected)
-							sSelectedItems.emplace(index, ms_item);
-					}
-					else
-					{
-						if (is_selected)
+						if (!ImGui::IsKeyDown(ImGuiKey_ModCtrl))
 						{
-							sSelectedItems.erase(index);
-						}
-					}
-				}
-
-				if (is_directory)
-				{
-					if (ImGui::BeginDragDropTarget())
-					{
-						auto payload = ImGui::AcceptDragDropPayload("ASSET", ImGuiDragDropFlags_SourceAllowNullID);
-						if (payload)
-						{
-							if (sSelectedItems.size())
-							{
-								for (auto &item : sSelectedItems)
-								{
-									OnRenameAsset(item.second.mEntry.path(), entry.path(), false);
-								}
-
-								sActiveItem = -1;
-								sSelectedItems.clear();
-							}
+							sSelectedItems.clear();
 						}
 
-						ImGui::EndDragDropTarget();
-					}
-				}
-
-				if (ImGui::BeginDragDropSource())
-				{
-					AssetHandle data;
-
-					if (GetDragDropData(data, relative_path))
-					{
-						ImGui::SetDragDropPayload("ASSET", &data, sizeof(AssetHandle));
-					}
-
-					ImGui::EndDragDropSource();
-				}
-
-				if (is_hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-				{
-					if (is_directory)
-					{
-						SetCurrentDirectory(mCurrentDirectory / path.filename());
-					}
-					else
-					{
-						OnAssetDoubleClicked(relative_path);
-					}
-				}
-
-				if (ImGui::BeginPopupContextItem())
-				{
-
-					if (ImGui::MenuItem("Delete"))
-					{
 						sSelectedItems.emplace(index, ms_item);
-						sCurrentAction == Action_Delete;
+
+						sActiveItem = index;
 					}
 
-					if (!is_directory)
+					auto icon = OnGetIcon(is_directory, relative_path);
+					if (icon)
 					{
-						if (is_valid_handle)
-						{
+						auto color = is_directory ? mStyle.mColors.mFolder : IM_COL32_WHITE;
+						drawlist->AddImage(*icon, rect.Min, rect.Max, {0, 1}, {1, 0}, color);
+					}
 
-							OnAssetContextMenu(relative_path);
+					if (is_selected)
+					{
+						drawlist->AddRect(rect.Min, rect.Max, mStyle.mColors.mSelection, 0.f, 0, 2.0f);
+					}
+
+					if (is_valid_handle && !is_directory)
+					{
+						auto checkmark_size = 20.0f;
+						ImGui::RenderCheckMark(
+							drawlist, {rect.Max.x - checkmark_size, rect.Max.y - checkmark_size}, mStyle.mColors.mCheckMark, checkmark_size);
+					}
+
+					if (mIsMouseDragging)
+					{
+
+						if (drag_rect.Overlaps(rect))
+						{
+							if (!is_selected)
+								sSelectedItems.emplace(index, ms_item);
 						}
 						else
 						{
-							if (path.extension() == ".asset")
+							if (is_selected)
 							{
-								if (ImGui::MenuItem("Import"))
-								{
-									OnReimportAsset(relative_path);
-								}
+								sSelectedItems.erase(index);
 							}
 						}
 					}
-					ImGui::EndPopup();
+
+					if (is_directory)
+					{
+						if (ImGui::BeginDragDropTarget())
+						{
+							auto payload = ImGui::AcceptDragDropPayload("ASSET", ImGuiDragDropFlags_SourceAllowNullID);
+							if (payload)
+							{
+								if (sSelectedItems.size())
+								{
+									for (auto &item : sSelectedItems)
+									{
+										OnRenameAsset(item.second.mEntry.path(), entry.path(), false);
+									}
+
+									sActiveItem = -1;
+									sSelectedItems.clear();
+								}
+							}
+
+							ImGui::EndDragDropTarget();
+						}
+					}
+
+					if (ImGui::BeginDragDropSource())
+					{
+						AssetHandle data;
+
+						if (GetDragDropData(data, relative_path))
+						{
+							ImGui::SetDragDropPayload("ASSET", &data, sizeof(AssetHandle));
+						}
+
+						ImGui::EndDragDropSource();
+					}
+
+					if (is_hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+					{
+						if (is_directory)
+						{
+							SetCurrentDirectory(mCurrentDirectory / path.filename());
+						}
+						else
+						{
+							OnAssetDoubleClicked(relative_path);
+						}
+					}
+
+					if (ImGui::BeginPopupContextItem())
+					{
+
+						if (ImGui::MenuItem("Delete"))
+						{
+							sSelectedItems.emplace(index, ms_item);
+							sCurrentAction == Action_Delete;
+						}
+
+						if (!is_directory)
+						{
+							if (is_valid_handle)
+							{
+
+								OnAssetContextMenu(relative_path);
+							}
+							else
+							{
+								if (path.extension() == ".asset")
+								{
+									if (ImGui::MenuItem("Import"))
+									{
+										OnReimportAsset(relative_path);
+									}
+								}
+							}
+						}
+						ImGui::EndPopup();
+					}
+
+					std::string new_name;
+					bool edited_name = ImGui::DrawEditableText(name, new_name);
+
+					if (edited_name)
+					{
+						auto new_path = relative_path.parent_path() / (new_name + relative_path.extension().string());
+						OnRenameAsset(relative_path, new_path, is_directory);
+					}
+
+					ImGui::PopID();
+
+					ImGui::TableNextColumn();
+
+					index++;
 				}
-
-				std::string new_name;
-				bool edited_name = ImGui::DrawEditableText(name, new_name);
-
-				if (edited_name)
-				{
-					auto new_path = relative_path.parent_path() / (new_name + relative_path.extension().string());
-					OnRenameAsset(relative_path, new_path, is_directory);
-				}
-
-				ImGui::PopID();
-
-				ImGui::TableNextColumn();
-
-				index++;
 			}
 
 			ImGui::EndTable();
-		}
 
-		if (mIsMouseDragging)
-		{
-			drawlist->AddRect(drag_rect.Min, drag_rect.Max, IM_COL32(180, 200, 255, 255));
+			if (mIsMouseDragging)
+			{
+				drawlist->AddRect(drag_rect.Min, drag_rect.Max, IM_COL32(180, 200, 255, 255));
+			}
 		}
 	}
 

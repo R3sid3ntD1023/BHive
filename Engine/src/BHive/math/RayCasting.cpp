@@ -2,12 +2,12 @@
 
 namespace BHive
 {
-	glm::vec3 RayCast::GetPointOnRay(const glm::vec3& origin, const glm::vec3& direction, float distance)
+	glm::vec3 RayCast::GetPointOnRay(const glm::vec3 &origin, const glm::vec3 &direction, float distance)
 	{
 		return origin + direction * distance;
 	}
 
-	bool RayCast::IsRayIntersectingSphere(const FRay& ray, const FSphere& sphere)
+	bool RayCast::IsRayIntersectingSphere(const FRay &ray, const FSphere &sphere)
 	{
 		auto a = glm::dot(ray.Direction, ray.Direction);
 		auto b = 2 * glm::dot(ray.Origin, ray.Direction);
@@ -22,7 +22,7 @@ namespace BHive
 		return false;
 	}
 
-	bool RayCast::IsRayIntersectingBox(const FRay& ray, const FBox& box)
+	bool RayCast::IsRayIntersectingBox(const FRay &ray, const FBox &box)
 	{
 		float xmin = (box.Min.x - ray.Origin.x) / ray.Direction.x;
 		float xmax = (box.Max.x - ray.Origin.x) / ray.Direction.x;
@@ -42,5 +42,11 @@ namespace BHive
 		return true;
 	}
 
-}
+	float RayCast::GetRayPlaneDistance(const FRay &ray, const glm::vec3 &normal, float distance)
+	{
+		float numerator = glm::dot(normal, ray.Origin) + distance;
+		float denominator = glm::dot(normal, ray.Direction);
 
+		return -(numerator / denominator);
+	}
+} // namespace BHive

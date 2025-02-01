@@ -14,6 +14,24 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+template <glm::length_t L, typename T, glm::qualifier Q>
+struct fmt::formatter<glm::vec<L, T, Q>> : fmt::formatter<std::string>
+{
+	using formatted_type = glm::vec<L, T, Q>;
+
+	template <typename ParseContext>
+	constexpr auto parse(ParseContext &ctx)
+	{
+		return ctx.begin();
+	}
+
+	template <typename FormatContext>
+	auto format(const formatted_type &v, FormatContext &ctx) const
+	{
+		return fmt::format_to(ctx.out(), "{}", glm::to_string(v));
+	}
+};
+
 namespace glm
 {
 	template <typename Ostream, length_t L, typename T, qualifier Q>
@@ -57,8 +75,7 @@ namespace BHive
 		}
 
 		template <typename T>
-		static inline T
-		remap(const T &v, const T &inMin, const T &inMax, const T &outMin, const T &outMax)
+		static inline T remap(const T &v, const T &inMin, const T &inMax, const T &outMin, const T &outMax)
 		{
 			T in_span = inMax - inMin;
 			T out_span = outMax - outMin;

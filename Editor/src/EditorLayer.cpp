@@ -470,15 +470,21 @@ namespace BHive
 					}
 					else
 					{
-						const auto mouse_pos = ImGui::GetMousePos();
+						const auto mouse_pos = ImGui::GetMousePos() - viewport_offset;
 						const auto projection = mEditorCamera.GetProjection();
 						const auto view = mEditorCamera.GetView();
 
-						const auto mouse_world_pos =
+						LOG_TRACE("Mouse Pos {}, {}", mouse_pos.x, mouse_pos.y);
+
+						const auto mouse_ray =
 							GetMouseRay(mouse_pos.x, mouse_pos.y, mViewportPanelSize.x, mViewportPanelSize.y, projection, view.inverse());
 
-						const float distance = glm::distance(view.get_translation(), glm::vec3{0.0f});
-						auto world_pos = RayCast::GetPointOnRay(mouse_world_pos, -view.get_forward(), distance);
+						FRay ray{view.get_translation(), mouse_ray};
+
+						const float distance = RayCast::GetRayPlaneDistance(ray, {0, 1, 0}, 0.f);
+						auto world_pos = RayCast::GetPointOnRay(view.get_translation(), mouse_ray, distance);
+
+						LOG_TRACE("Mouse World Pos {}, World Pos Ray {}", mouse_ray, world_pos);
 
 						if (auto factory = GetEntityFactory(meta_data))
 						{
