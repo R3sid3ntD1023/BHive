@@ -3,47 +3,37 @@
 
 namespace BHive
 {
-	Ref<Entity> Prefab::CreateInstance(World *world)
+	Prefab::Prefab()
 	{
-		auto instance = mInstance->Copy();
-		world->AddEntity(instance);
-		return instance;
+		mInstance = CreateRef<World>();
 	}
 
-	void Prefab::SetEntityClass(const TSubClassOf<Entity> &entityClass)
+	void Prefab::CreateInstance(World *world)
 	{
-		mEntityClass = entityClass;
-		if (mEntityClass)
+		for (auto &[id, entity] : mInstance->GetEntities())
 		{
-			mInstance = mEntityClass.get().create().get_value<Ref<Entity>>();
+			auto duplicated = mInstance->DuplicateEntity(&*entity);
+			world->AddEntity(duplicated);
 		}
 	}
 
 	void Prefab::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(mEntityClass);
-		if (mInstance)
-			mInstance->Save(ar);
+		mInstance->Save(ar);
 	}
 
 	void Prefab::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-
-		ar(mEntityClass);
-
-		SetEntityClass(mEntityClass);
-		if (mInstance)
-			mInstance->Load(ar);
+		mInstance->Load(ar);
 	}
 
 	REFLECT(Prefab)
 	{
 		BEGIN_REFLECT(Prefab)
 		REFLECT_CONSTRUCTOR()
-		REFLECT_PROPERTY("Entity", mInstance)
-		REFLECT_PROPERTY("EntityClass", GetEntityClass, SetEntityClass);
+		REFLECT_PROPERTY("Instance", mInstance);
 	}
 
 } // namespace BHive

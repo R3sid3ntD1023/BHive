@@ -1,32 +1,35 @@
 #pragma once
 
 #include "core/Core.h"
-#include "core/EventDelegate.h"
-
+#include "selection/SelectionEvents.h"
 
 namespace BHive
 {
-    struct Component;
-    class Entity;
-    class Component;
+	struct Component;
+	class Entity;
+	class ObjectBase;
+	class Component;
 
-    DECLARE_RET_EVENT(GetSelectedEntity, Entity *)
+	class PropertiesPanel
+	{
+	public:
+		FGetSelectedEntityEvent mGetSelectedEntity;
+		FGetSelectedObjectEvent mGetSelectedObject;
+		FOnObjectSelectedEvent mOnObjectSelected;
+		FOnObjectDeselectedEvent mOnObjectDeselected;
 
-    class PropertiesPanel
-    {
-    private:
-        /* data */
-    public:
-        PropertiesPanel() = default;
+	public:
+		PropertiesPanel() = default;
 
-        void OnGuiRender();
+		void OnGuiRender();
 
-    private:
-        void DrawComponents(Entity *entity);
-        void DrawComponent(Component *component);
-        void DrawAddComponent(Entity *entity);
+	private:
+		void DrawComponents(Entity *entity);
+		void DrawComponent(Component *component);
+		void DrawAddComponent(Entity *entity);
 
-        std::unordered_set<Component *> mDeletedComponents;
-    };
+	private:
+		std::unordered_set<Component *> mDeletedComponents;
+	};
 
 } // namespace BHive

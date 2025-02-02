@@ -32,6 +32,12 @@ namespace BHive
 			auto types = AssetType::get<EntityFactory>().get_derived_classes();
 			for (auto &type : types)
 			{
+				if (!type.get_constructor())
+				{
+					LOG_WARN("No Default Constructor for {}", type);
+					continue;
+				}
+
 				auto factory = type.create().get_value<Ref<EntityFactory>>();
 				mFactories.push_back(factory);
 			}

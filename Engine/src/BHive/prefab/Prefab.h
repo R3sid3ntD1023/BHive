@@ -11,13 +11,11 @@ namespace BHive
 	class Prefab : public Asset
 	{
 	public:
-		Prefab() = default;
+		Prefab();
 
-		Ref<Entity> CreateInstance(World *world);
+		void CreateInstance(World *world);
 
-		void SetEntityClass(const TSubClassOf<Entity> &entityClass);
-
-		const TSubClassOf<Entity> &GetEntityClass() const { return mEntityClass; }
+		const Ref<World> &GetInstance() const { return mInstance; }
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
@@ -26,8 +24,7 @@ namespace BHive
 		REFLECTABLEV(Asset)
 
 	private:
-		Ref<Entity> mInstance;
-		TSubClassOf<Entity> mEntityClass;
+		Ref<World> mInstance;
 	};
 
 } // namespace BHive

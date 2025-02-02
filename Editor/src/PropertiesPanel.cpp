@@ -9,119 +9,114 @@
 
 namespace BHive
 {
-    void PropertiesPanel::OnGuiRender()
-    {
+	void PropertiesPanel::OnGuiRender()
+	{
+		if (!mGetSelectedEntity)
+			return;
 
-        auto &edit_subsystem = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-        if (auto entity = edit_subsystem.mSelection.GetSelectedEntity())
-        {
-            DrawComponents(entity);
+		if (auto entity = mGetSelectedEntity())
+		{
+			DrawComponents(entity);
 
-            ImGui::SeparatorText("Details");
+			ImGui::SeparatorText("Details");
 
-            DrawAddComponent(entity);
+			DrawAddComponent(entity);
 
-            if (mDeletedComponents.size())
-            {
-                for (auto component : mDeletedComponents)
-                {
-                    if (edit_subsystem.mSelection.GetSelectedObject() == component)
-                        edit_subsystem.mSelection.Deselect(component);
+			if (mDeletedComponents.size())
+			{
+				for (auto component : mDeletedComponents)
+				{
+					mOnObjectDeselected(component, 1);
 
-                    entity->RemoveComponent(component);
-                }
+					entity->RemoveComponent(component);
+				}
 
-                mDeletedComponents.clear();
-            }
-        }
-    }
+				mDeletedComponents.clear();
+			}
+		}
+	}
 
-    void PropertiesPanel::DrawComponents(Entity *entity)
-    {
-        for (auto &component : entity->GetComponents())
-        {
-            DrawComponent(component.get());
-        }
-    }
+	void PropertiesPanel::DrawComponents(Entity *entity)
+	{
+		for (auto &component : entity->GetComponents())
+		{
+			DrawComponent(component.get());
+		}
+	}
 
-    void PropertiesPanel::DrawComponent(Component *component)
-    {
-        bool destroyed = false;
+	void PropertiesPanel::DrawComponent(Component *component)
+	{
+		bool destroyed = false;
 
-        ImGui::PushID((uint64_t)component->GetUUID());
+		ImGui::PushID((uint64_t)component->GetUUID());
 
-        auto scenecomponent = Cast<SceneComponent>(component);
-        bool is_scene_component = scenecomponent != nullptr;
+		auto selected_object = mGetSelectedObject();
+		bool selected = selected_object == component;
 
-        auto& edit_subsystem = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-        bool selected = edit_subsystem.mSelection.GetSelectedObject() == component;
+		if (ImGui::Selectable(component->GetName().c_str(), selected))
+		{
+			mOnObjectSelected(component);
+		}
 
-        if (ImGui::Selectable(component->GetName().c_str(), selected))
-        {
-            
-            edit_subsystem.mSelection.Select(component);
-        }
+		if (ImGui::IsKeyPressed(ImGuiKey_Delete) && selected)
+		{
+			destroyed = true;
+		}
 
-        if (ImGui::IsKeyPressed(ImGuiKey_Delete) && selected)
-        {
-            destroyed = true;
-        }
+		if (ImGui::BeginPopupContextItem("ComponentContextMenu"))
+		{
+			if (ImGui::MenuItem("Remove"))
+			{
+				destroyed = true;
+			}
+			ImGui::EndPopup();
+		}
 
-        if (ImGui::BeginPopupContextItem("ComponentContextMenu"))
-        {
-            if (ImGui::MenuItem("Remove"))
-            {
-                destroyed = true;
-            }
-            ImGui::EndPopup();
-        }
+		ImGui::PopID();
 
+		if (destroyed)
+			mDeletedComponents.insert(component);
+	}
 
-        ImGui::PopID();
+	void PropertiesPanel::DrawAddComponent(Entity *entity)
+	{
+		static auto add_component_id = "AddComponent";
+		static auto derived_component_types = rttr::type::get<Component>().get_derived_classes();
 
-        if (destroyed)
-            mDeletedComponents.insert(component);
-    }
+		auto line_height = ImGui::GetLineHeight();
+		auto button_size = ImVec2(200, line_height);
+		auto pos = ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x * .5f) - (button_size.x * .5f);
+		ImGui::SetCursorPosX(pos);
+		ImGui::PushStyleColor(ImGuiCol_Button, {0, .5f, 0, 1});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, {0, .5f, 0, 1});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {.2f, .6f, .2f, 1});
 
-    void PropertiesPanel::DrawAddComponent(Entity *entity)
-    {
-        static auto add_component_id = "AddComponent";
-        static auto derived_component_types = rttr::type::get<Component>().get_derived_classes();
+		if (ImGui::Button("Add Component", button_size))
+		{
+			ImGui::OpenPopup(add_component_id);
+		}
 
-        auto line_height = ImGui::GetLineHeight();
-        auto button_size = ImVec2(200, line_height);
-        auto pos = ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x * .5f) - (button_size.x * .5f);
-        ImGui::SetCursorPosX(pos);
-        ImGui::PushStyleColor(ImGuiCol_Button, {0, .5f, 0, 1});
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, {0, .5f, 0, 1});
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {.2f, .6f, .2f, 1});
+		ImGui::PopStyleColor(3);
 
-        if (ImGui::Button("Add Component", button_size))
-        {
-            ImGui::OpenPopup(add_component_id);
-        }
+		if (ImGui::BeginPopup(add_component_id))
+		{
+			for (auto &type : derived_component_types)
+			{
+				auto spawnable_var = type.get_metadata(ClassMetaData_ComponentSpawnable);
+				auto is_spawnable = spawnable_var ? spawnable_var.to_bool() : false;
 
-        ImGui::PopStyleColor(3);
+				if (!is_spawnable)
+					continue;
 
-        if (ImGui::BeginPopup(add_component_id))
-        {
-            for (auto &type : derived_component_types)
-            {
-                auto spawnable_var = type.get_metadata(ClassMetaData_ComponentSpawnable);
-                auto is_spawnable = spawnable_var ? spawnable_var.to_bool() : false;
-
-                if (!is_spawnable)
-                    continue;
-
-                if (ImGui::Selectable(type.get_name().data()))
-                {
-                    auto component = type.create().get_value<Ref<Component>>();
-                    component->SetName(std::string("New") + type.get_name());
-                    entity->AddComponent(component);
-                }
-            }
-            ImGui::EndPopup();
-        }
-    }
+				if (ImGui::Selectable(type.get_name().data()))
+				{
+					auto component = type.create().get_value<Ref<Component>>();
+					component->SetName(std::string("New") + type.get_name());
+					entity->AddComponent(component);
+				}
+			}
+			ImGui::EndPopup();
+		}
+	}
 
 } // namespace BHive

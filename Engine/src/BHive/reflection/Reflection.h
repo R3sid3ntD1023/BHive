@@ -108,4 +108,21 @@ namespace rttr
 	{
 		obj = rttr::type::get_by_name(value);
 	}
+
 } // namespace rttr
+
+template <>
+struct fmt::formatter<rttr::type> : fmt::formatter<std::string>
+{
+	template <typename ParseContext>
+	constexpr auto parse(ParseContext &ctx)
+	{
+		return ctx.begin();
+	}
+
+	template <typename FormatContext>
+	auto format(const rttr::type &v, FormatContext &ctx) const
+	{
+		return fmt::format_to(ctx.out(), "{}", v.get_name().data());
+	}
+};

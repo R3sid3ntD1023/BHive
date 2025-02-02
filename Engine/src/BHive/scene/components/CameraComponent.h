@@ -20,7 +20,7 @@ namespace BHive
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 	private:
-		bool mIsPrimary;
+		bool mIsPrimary{true};
 
 		REFLECTABLEV(SceneComponent)
 	};
@@ -28,8 +28,8 @@ namespace BHive
 	REFLECT(CameraComponent)
 	{
 		BEGIN_REFLECT(CameraComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
-			REFLECT_PROPERTY("Camera", mCamera) REFLECT_PROPERTY("Primary", IsPrimary, SetPrimary);
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS() REFLECT_PROPERTY("Camera", mCamera)
+			REFLECT_PROPERTY("Primary", IsPrimary, SetPrimary);
 	}
 
 	class CameraManager

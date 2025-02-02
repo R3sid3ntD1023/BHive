@@ -90,10 +90,55 @@ namespace BHive
 
 		mSceneHierarchyPanel = CreateRef<SceneHierarchyPanel>();
 		mSceneHierarchyPanel->SetContext(mActiveWorld);
+		mSceneHierarchyPanel->mOnEntitySelected.bind(
+			[](ObjectBase *obj)
+			{
+				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+				edit_system.mSelection.Select(obj);
+			});
+
+		mSceneHierarchyPanel->mOnEntityDeselected.bind(
+			[](ObjectBase *obj, uint8_t reason)
+			{
+				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+				edit_system.mSelection.Deselect(obj, (EDeselectReason)reason);
+			});
+
+		mSceneHierarchyPanel->mOnGetSelectedObject.bind(
+			[]()
+			{
+				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+				return edit_system.mSelection.GetSelectedObject();
+			});
 
 		mPropertiesPanel = CreateRef<PropertiesPanel>();
+		mPropertiesPanel->mGetSelectedEntity.bind(
+			[]()
+			{
+				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+				return edit_system.mSelection.GetSelectedEntity();
+			});
+		mPropertiesPanel->mGetSelectedObject.bind(
+			[]()
+			{
+				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+				return edit_system.mSelection.GetSelectedObject();
+			});
+		mPropertiesPanel->mOnObjectSelected.bind(
+			[](ObjectBase *obj)
+			{
+				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+				edit_system.mSelection.Select(obj);
+			});
 
 		mDetailsPanel = CreateRef<DetailsPanel>();
+
+		mDetailsPanel->mGetSelectedObject.bind(
+			[]()
+			{
+				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+				return edit_system.mSelection.GetSelectedObject();
+			});
 
 		mContentBrowser = CreateRef<EditorContentBrowser>(Project::GetResourceDirectory());
 
@@ -427,7 +472,12 @@ namespace BHive
 
 	void EditorLayer::ShowDetailsPanel()
 	{
-		mDetailsPanel->OnGuiRender();
+		if (ImGui::Begin("Details"))
+		{
+			mDetailsPanel->OnGuiRender();
+		}
+
+		ImGui::End();
 	}
 
 	void EditorLayer::ShowViewport()
@@ -489,7 +539,8 @@ namespace BHive
 						if (auto factory = GetEntityFactory(meta_data))
 						{
 							auto new_entity = factory->CreateEntityFrom(meta_data, mActiveWorld.get(), world_pos);
-							edit_system.mSelection.Select(&*new_entity);
+							if (new_entity)
+								edit_system.mSelection.Select(&*new_entity);
 						}
 					}
 				}

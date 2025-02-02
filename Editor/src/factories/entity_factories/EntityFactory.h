@@ -12,7 +12,7 @@ namespace BHive
 	class EntityFactory
 	{
 	public:
-		Ref<Entity> CreateEntityFrom(const FAssetMetaData &metaData, World *world, const FTransform &transform);
+		virtual Ref<Entity> CreateEntityFrom(const FAssetMetaData &metaData, World *world, const FTransform &transform);
 
 		virtual bool CanCreateEntityFrom(const FAssetMetaData &metaData) { return false; }
 

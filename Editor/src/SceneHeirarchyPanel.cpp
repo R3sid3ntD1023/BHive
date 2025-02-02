@@ -5,7 +5,7 @@
 #include "subsystem/SubSystem.h"
 #include "subsystems/EditSubSystem.h"
 
-#define DRAG_DROP_entity_NAME "entity"
+#define DRAG_DROP_ENTITY_NAME "entity"
 
 namespace BHive
 {
@@ -18,8 +18,6 @@ namespace BHive
 	void SceneHierarchyPanel::OnGuiRender()
 	{
 		mDestroyedentitys.clear();
-
-		auto &edit_subsystem = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
 
 		if (mWorld)
 		{
@@ -42,7 +40,7 @@ namespace BHive
 			if (ImGui::MenuItem("Create Entity"))
 			{
 				auto new_entity = mWorld->CreateEntity();
-				edit_subsystem.mSelection.Select(new_entity.get());
+				mOnEntitySelected(&*new_entity);
 			}
 
 			auto &entity_types = GetSpawnableEntites();
@@ -52,7 +50,7 @@ namespace BHive
 				{
 					auto new_entity = type.create().get_value<Ref<Entity>>();
 					mWorld->AddEntity(new_entity);
-					edit_subsystem.mSelection.Select(new_entity.get());
+					mOnEntitySelected(&*new_entity);
 				}
 			}
 
@@ -63,7 +61,7 @@ namespace BHive
 
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_entity_NAME))
+			if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_ENTITY_NAME))
 			{
 				auto entity = *(Entity **)payload->Data;
 				entity->DetachFromParent();
@@ -80,37 +78,33 @@ namespace BHive
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity *entity)
 	{
-		auto &edit_subsystem = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-
 		bool destroyed = false;
 
-		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth |
-										  ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
 
 		auto id = (uint64_t)entity->GetUUID();
-		bool selected = edit_subsystem.mSelection.GetSelectedObject() == entity;
+		bool selected = mOnGetSelectedObject() == entity;
 
-		flags |= (selected ? ImGuiTreeNodeFlags_Selected: 0);
+		flags |= (selected ? ImGuiTreeNodeFlags_Selected : 0);
 
 		ImGui::PushID(id);
 		bool opened = ImGui::TreeNodeEx(entity->GetName().c_str(), flags);
-		
 
 		if (ImGui::IsItemClicked() || ImGui::IsItemFocused())
 		{
-			edit_subsystem.mSelection.Select(entity);
+			mOnEntitySelected(entity);
 		}
 
 		if (ImGui::BeginDragDropSource())
 		{
-			ImGui::SetDragDropPayload(DRAG_DROP_entity_NAME, &entity, sizeof(Entity));
+			ImGui::SetDragDropPayload(DRAG_DROP_ENTITY_NAME, &entity, sizeof(Entity));
 
 			ImGui::EndDragDropSource();
 		}
 
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_entity_NAME))
+			if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_ENTITY_NAME))
 			{
 				auto other_entity = *(Entity **)payload->Data;
 				if (other_entity != entity)
@@ -132,7 +126,6 @@ namespace BHive
 				}
 			}
 
-			
 			if (ImGui::MenuItem("Duplicate", "Ctrl + D"))
 			{
 				mWorld->DuplicateEntity(entity);
@@ -174,14 +167,14 @@ namespace BHive
 
 		if (destroyed)
 		{
-			edit_subsystem.mSelection.Deselect(entity, DeselectReason_Destroyed);
+			mOnEntityDeselected(entity, DeselectReason_Destroyed);
 			mDestroyedentitys.push_back(entity);
 		}
 	}
 
 	const std::vector<AssetType> &SceneHierarchyPanel::GetSpawnableEntites()
 	{
-		auto &cache = mentityTypeCache;
+		auto &cache = mEntityTypeCache;
 		if (cache.size())
 			return cache;
 
@@ -196,4 +189,4 @@ namespace BHive
 
 		return cache;
 	}
-}
+} // namespace BHive

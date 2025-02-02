@@ -1,16 +1,17 @@
 #pragma once
 
 #include "core/EventDelegate.h"
-#include "scene/ObjectBase.h"
+#include "selection/SelectionEvents.h"
 
 namespace BHive
 {
-    class DetailsPanel
-    {
-    private:
-        /* data */
-    public:
-        void OnGuiRender();
-    };
+	class DetailsPanel
+	{
+	public:
+		FGetSelectedObjectEvent mGetSelectedObject;
+
+	public:
+		void OnGuiRender();
+	};
 
 } // namespace BHive

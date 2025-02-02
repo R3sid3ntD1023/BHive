@@ -161,14 +161,6 @@
             }
         },
         {
-            "key": 793382329,
-            "value": {
-                "Type": "Prefab",
-                "Path": "TestImport\\Prefabs\\NewPrefab.asset",
-                "Name": "NewPrefab"
-            }
-        },
-        {
             "key": 804303556,
             "value": {
                 "Type": "Texture2D",
@@ -222,6 +214,14 @@
                 "Type": "AnimGraph",
                 "Path": "TestImport\\AnimGraphs\\NewAnimGraph.asset",
                 "Name": "NewAnimGraph"
+            }
+        },
+        {
+            "key": 1354126626,
+            "value": {
+                "Type": "Prefab",
+                "Path": "TestImport\\Prefabs\\NewPrefab.asset",
+                "Name": "NewPrefab"
             }
         },
         {

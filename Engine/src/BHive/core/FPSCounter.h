@@ -14,8 +14,8 @@ namespace BHive
 		operator float() const { return mFrames / mDeltaTime; }
 
 	private:
-		float mDeltaTime;
-		uint32_t mFrames;
+		float mDeltaTime{0.f};
+		uint32_t mFrames{0};
 		Timer mTimer;
 	};
 } // namespace BHive

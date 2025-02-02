@@ -5,6 +5,7 @@
 #include "asset/EditorAssetManager.h"
 #include "AssetEditor.h"
 #include "inspector/Inspectors.h"
+#include "project/Project.h"
 
 namespace BHive
 {
@@ -23,10 +24,17 @@ namespace BHive
 			auto metadata = manager->GetMetaData(handle);
 			auto asset = AssetManager::GetAsset<T>(handle);
 
-			mCurrentSavePath = metadata.Path;
 			mAsset = asset;
-			mLabel = metadata.Name;
+
+			if (mAsset)
+			{
+				mCurrentSavePath = Project::GetResourceDirectory() / metadata.Path;
+				mLabel = metadata.Name;
+				OnSetContext(mAsset);
+			}
 		}
+
+		virtual void OnSetContext(const Ref<Asset> &asset) {}
 
 		virtual void OnWindowRender()
 		{
