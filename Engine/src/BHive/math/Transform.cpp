@@ -120,6 +120,32 @@ namespace BHive
 		return FTransform(new_matrix);
 	}
 
+	FTransform FTransform::operator+(const FTransform &rhs) const
+	{
+		auto t = mTranslation + rhs.mTranslation;
+		auto r = mRotation + rhs.mRotation;
+		auto s = mScale * rhs.mScale;
+		return {t, r, s};
+	}
+
+	FTransform &FTransform::operator+=(const FTransform &rhs)
+	{
+		return *this = *this + rhs;
+	}
+
+	FTransform FTransform::operator/(float rhs) const
+	{
+		auto t = mTranslation / rhs;
+		auto r = mRotation / rhs;
+		auto s = mScale / rhs;
+		return {t, r, s};
+	}
+
+	FTransform &FTransform::operator/=(float rhs)
+	{
+		return *this = *this / rhs;
+	}
+
 	void FTransform::calculate_model_matrix()
 	{
 		auto rotation = glm::quat(glm::radians(mRotation));

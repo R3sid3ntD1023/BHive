@@ -13,6 +13,7 @@ namespace BHive
 		mProperties.mGetActiveObject.bind([=]() { return mSelection.GetActiveObject(); });
 		mProperties.mOnObjectSelected.bind([=](ObjectBase *obj, bool append) { mSelection.Select(obj, append); });
 		mProperties.mOnObjectDeselected.bind([=](ObjectBase *obj) { mSelection.Deselect(obj); });
+		mProperties.mGetActiveEntity.bind([=]() { return mSelection.GetActiveEntity(); });
 
 		mDetails.mGetActiveObject.bind([=]() { return mSelection.GetActiveObject(); });
 	}

@@ -19,11 +19,13 @@ namespace BHive
 
 		const SelectionContainer &GetSelectedObjects() const { return mSelectedObjects; }
 		ObjectBase *GetActiveObject() const { return mActiveObject; }
+		Entity *GetActiveEntity() const { return mActiveEntity; }
 
 		operator bool() const { return mSelectedObjects.size(); }
 
 	private:
 		ObjectBase *mActiveObject = nullptr;
+		Entity *mActiveEntity = nullptr;
 		SelectionContainer mSelectedObjects;
 		SelectionHandleContainer mHandles;
 	};

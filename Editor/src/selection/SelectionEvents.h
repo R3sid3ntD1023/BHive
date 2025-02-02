@@ -8,6 +8,7 @@ namespace BHive
 	class ObjectBase;
 
 	DECLARE_RET_EVENT(FGetActiveObject, ObjectBase *);
+	DECLARE_RET_EVENT(FGetActiveEntity, Entity *);
 	DECLARE_RET_EVENT(FIsSelected, bool, ObjectBase *);
 	DECLARE_EVENT(FOnObjectDeselected, ObjectBase *);
 	DECLARE_EVENT(FOnObjectSelected, ObjectBase *, bool);

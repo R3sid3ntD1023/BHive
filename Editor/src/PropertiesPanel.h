@@ -13,6 +13,7 @@ namespace BHive
 	class PropertiesPanel
 	{
 	public:
+		FGetActiveEntityEvent mGetActiveEntity;
 		FGetActiveObjectEvent mGetActiveObject;
 		FOnObjectSelectedEvent mOnObjectSelected;
 		FOnObjectDeselectedEvent mOnObjectDeselected;

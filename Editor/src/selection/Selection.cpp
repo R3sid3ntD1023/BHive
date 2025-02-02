@@ -16,6 +16,9 @@ namespace BHive
 
 		mSelectedObjects.insert(object);
 		mActiveObject = object;
+
+		if (auto entity = Cast<Entity>(object))
+			mActiveEntity = entity;
 	}
 
 	void Selection::Deselect(ObjectBase *object)
@@ -32,6 +35,11 @@ namespace BHive
 			{
 				mActiveObject = nullptr;
 			}
+
+			if (auto entity = Cast<Entity>(object) && mActiveEntity == object)
+			{
+				mActiveEntity = nullptr;
+			}
 		}
 	}
 
@@ -46,6 +54,7 @@ namespace BHive
 
 		mSelectedObjects.clear();
 		mActiveObject = nullptr;
+		mActiveEntity = nullptr;
 	}
 
 	bool Selection::IsSelected(ObjectBase *object) const

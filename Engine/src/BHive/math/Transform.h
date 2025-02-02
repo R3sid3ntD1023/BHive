@@ -13,9 +13,7 @@ namespace BHive
 		FTransform();
 		FTransform(const glm::mat4 &matrix);
 		FTransform(const FTransform &rhs);
-		FTransform(
-			const glm::vec3 &translation, const glm::vec3 &rotation = DEFAULT_ROTATION,
-			const glm::vec3 &scale = DEFAULT_SCALE);
+		FTransform(const glm::vec3 &translation, const glm::vec3 &rotation = DEFAULT_ROTATION, const glm::vec3 &scale = DEFAULT_SCALE);
 
 		const glm::vec3 &get_translation() const { return mTranslation; }
 		const glm::vec3 &get_rotation() const { return mRotation; }
@@ -48,6 +46,12 @@ namespace BHive
 		FTransform &operator=(const FTransform &rhs);
 		FTransform operator*(const FTransform &rhs) const;
 
+		FTransform operator+(const FTransform &rhs) const;
+		FTransform &operator+=(const FTransform &rhs);
+
+		FTransform operator/(float rhs) const;
+		FTransform &operator/=(float rhs);
+
 		template <typename A>
 		inline void Serialize(A &ar)
 		{
@@ -69,8 +73,7 @@ namespace BHive
 	template <typename Ostream>
 	inline Ostream &operator<<(Ostream &os, const FTransform &obj)
 	{
-		os << '{' << obj.get_translation() << ',' << obj.get_rotation() << ',' << obj.get_scale()
-		   << '}';
+		os << '{' << obj.get_translation() << ',' << obj.get_rotation() << ',' << obj.get_scale() << '}';
 		return os;
 	}
 

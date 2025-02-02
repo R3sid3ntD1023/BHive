@@ -138,6 +138,13 @@ namespace BHive
 				edit_system.mSelection.Select(obj, append);
 			});
 
+		mPropertiesPanel->mGetActiveEntity.bind(
+			[]()
+			{
+				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+				return edit_system.mSelection.GetActiveEntity();
+			});
+
 		mDetailsPanel = CreateRef<DetailsPanel>();
 
 		mDetailsPanel->mGetActiveObject.bind(
@@ -555,11 +562,27 @@ namespace BHive
 				ImGui::EndDragDropTarget();
 			}
 
-			auto current_selection = Cast<ITransform>(edit_system.mSelection.GetActiveObject());
-
-			if (current_selection && mGizmoOperation != -1 && mEditorMode == EEditorMode::EDIT)
+			auto &selected_objects = edit_system.mSelection.GetSelectedObjects();
+			std::vector<Entity *> selected_entities;
+			for (auto &selected_object : selected_objects)
 			{
-				glm::mat4 transform = current_selection->GetWorldTransform();
+				if (auto entity = Cast<Entity>(selected_object))
+				{
+					selected_entities.push_back(entity);
+				}
+			}
+
+			if (selected_entities.size() && mGizmoOperation != -1 && mEditorMode == EEditorMode::EDIT)
+			{
+				glm::mat4 transform = selected_entities[0]->GetWorldTransform();
+
+				for (size_t i = 1; i < selected_entities.size(); i++)
+				{
+					auto entity = selected_entities[i];
+					transform += entity->GetWorldTransform().to_mat4();
+				}
+
+				transform /= selected_entities.size();
 
 				const glm::mat4 view = mEditorCamera.GetView().inverse();
 				const glm::mat4 projection = mEditorCamera.GetProjection();
@@ -573,12 +596,17 @@ namespace BHive
 				float snap_value = mSnapEnabled ? sSnapping[(ImGuizmo::OPERATION)mGizmoOperation] : 0.0f;
 				float snap_values[3] = {snap_value, snap_value, snap_value};
 
+				glm::mat4 delta{1.f};
 				if (ImGuizmo::Manipulate(
 						glm::value_ptr(view), glm::value_ptr(projection), (ImGuizmo::OPERATION)mGizmoOperation, (ImGuizmo::MODE)mGizmoMode,
-						glm::value_ptr(transform), nullptr, snap_values))
+						glm::value_ptr(transform), glm::value_ptr(delta), snap_values))
 				{
 
-					current_selection->SetWorldTransform(transform);
+					for (auto &entity : selected_entities)
+					{
+						const glm::mat4 world_transform = entity->GetWorldTransform();
+						entity->SetWorldTransform(delta * world_transform);
+					}
 				}
 			}
 		}
