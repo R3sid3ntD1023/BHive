@@ -2,7 +2,7 @@
 
 #include "RelationshipComponent.h"
 #include "scene/Component.h"
-#include "scene/ITransform.h"
+#include "scene/interfaces/ITransform.h"
 
 namespace BHive
 {

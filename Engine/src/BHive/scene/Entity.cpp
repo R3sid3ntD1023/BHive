@@ -14,8 +14,7 @@ namespace BHive
 	{
 		if (mPhysicsComponent.mPhysicsEnabled)
 		{
-			auto rb = GetWorld()->GetPhysicsWorld()->createRigidBody(
-				physics::utils::GetPhysicsTransform(GetWorldTransform()));
+			auto rb = GetWorld()->GetPhysicsWorld()->createRigidBody(physics::utils::GetPhysicsTransform(GetWorldTransform()));
 			rb->setIsDebugEnabled(true);
 			rb->setUserData(this);
 			rb->setMass(mPhysicsComponent.mMass);
@@ -24,10 +23,8 @@ namespace BHive
 			rb->setAngularDamping(mPhysicsComponent.mAngularDamping);
 			rb->setLinearDamping(mPhysicsComponent.mLinearDamping);
 
-			rb->setLinearLockAxisFactor(
-				physics::utils::LockAxisToVextor3(mPhysicsComponent.mLinearLockAxis));
-			rb->setAngularLockAxisFactor(
-				physics::utils::LockAxisToVextor3(mPhysicsComponent.mAngularLockAxis));
+			rb->setLinearLockAxisFactor(physics::utils::LockAxisToVextor3(mPhysicsComponent.mLinearLockAxis));
+			rb->setAngularLockAxisFactor(physics::utils::LockAxisToVextor3(mPhysicsComponent.mAngularLockAxis));
 
 			mPhysicsComponent.SetRigidBody(rb);
 		}
@@ -74,26 +71,27 @@ namespace BHive
 
 		if (mPhysicsComponent.mPhysicsEnabled)
 		{
-			GetWorld()->GetPhysicsWorld()->destroyRigidBody(
-				(rp3d::RigidBody *)mPhysicsComponent.GetRigidBody());
+			GetWorld()->GetPhysicsWorld()->destroyRigidBody((rp3d::RigidBody *)mPhysicsComponent.GetRigidBody());
 		}
 	}
 
-	void Entity::Destroy(bool destroy_decendents)
+	void Entity::OnDestroyed(bool decendents)
 	{
 		auto children = GetChildren();
+
+		for (auto &component : mComponents)
+			component->Destroy(decendents);
+
 		for (auto child : children)
 		{
 			child->DetachFromParent();
-			if (destroy_decendents)
+			if (decendents)
 			{
-				child->Destroy(destroy_decendents);
+				child->Destroy(decendents);
 			}
 		}
 
 		DetachFromParent();
-
-		OnEntityDestroyed.invoke(this);
 	}
 
 	void Entity::AddComponent(const ComponentPtr &component)
@@ -105,12 +103,13 @@ namespace BHive
 
 	void Entity::RemoveComponent(Component *component_ptr)
 	{
-		auto it = std::find_if(
-			mComponents.begin(), mComponents.end(),
-			[component_ptr](const auto &component) { return component.get() == component_ptr; });
+		auto it =
+			std::find_if(mComponents.begin(), mComponents.end(), [component_ptr](const auto &component) { return component.get() == component_ptr; });
 
 		if (it == mComponents.end())
 			return;
+
+		(*it)->Destroy(true);
 
 		mComponents.erase(it);
 	}
@@ -123,8 +122,7 @@ namespace BHive
 		for (auto &component : mComponents)
 		{
 			auto type = component->get_type();
-			rttr::variant copied =
-				type.get_method(COPY_COMPONENT_FUNC_NAME).invoke({}, component.get());
+			rttr::variant copied = type.get_method(COPY_COMPONENT_FUNC_NAME).invoke({}, component.get());
 			if (copied)
 			{
 				auto copied_component = copied.get_value<Ref<Component>>();
@@ -143,8 +141,7 @@ namespace BHive
 		for (auto &component : mComponents)
 		{
 			auto type = component->get_type();
-			rttr::variant duplicated =
-				type.get_method(DUPLICATE_COMPONENT_FUNC_NAME).invoke({}, component.get());
+			rttr::variant duplicated = type.get_method(DUPLICATE_COMPONENT_FUNC_NAME).invoke({}, component.get());
 			if (duplicated)
 			{
 				auto duplicated_component = duplicated.get_value<Ref<Component>>();

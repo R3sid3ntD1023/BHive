@@ -145,7 +145,7 @@ namespace BHive
 	void World::AddEntity(const Ref<Entity> &entity)
 	{
 		entity->mWorld = this;
-		entity->OnEntityDestroyed.bind(this, &World::OnEntityDestroyed);
+		entity->OnDestroyedEvent.bind(this, &World::OnEntityDestroyed);
 		mEntities.emplace(entity->GetUUID(), entity);
 	}
 
@@ -364,10 +364,13 @@ namespace BHive
 		}
 	}
 
-	void World::OnEntityDestroyed(Entity *entity)
+	void World::OnEntityDestroyed(ObjectBase *obj)
 	{
-		if (mEntities.contains(entity->GetUUID()))
-			mEntities.erase(entity->GetUUID());
+		if (auto entity = Cast<Entity>(obj))
+		{
+			if (mEntities.contains(entity->GetUUID()))
+				mEntities.erase(entity->GetUUID());
+		}
 	}
 
 	REFLECT(World)

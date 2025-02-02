@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ComponentBase.h"
-#include "ITickable.h"
+#include "interfaces/ITickable.h"
 #include "ObjectBase.h"
 
 namespace BHive

@@ -4,40 +4,53 @@
 
 namespace BHive
 {
-	void Selection::Select(ObjectBase *object)
+	void Selection::Select(ObjectBase *object, bool append)
 	{
-		if (auto entity = Cast<Entity>(object))
+		if (!append)
 		{
-			mSelectedEntity = entity;
+			Clear();
 		}
 
-		mSelectedObject = object;
+		auto handle = object->OnDestroyedEvent.bind([=](ObjectBase *obj) { Deselect(obj); });
+		mHandles.emplace(object, handle);
+
+		mSelectedObjects.insert(object);
+		mActiveObject = object;
 	}
 
-	void Selection::Deselect(ObjectBase *object, EDeselectReason reason)
+	void Selection::Deselect(ObjectBase *object)
 	{
-		if (auto entity = Cast<Entity>(object))
+		if (mSelectedObjects.contains(object))
 		{
-			if (mSelectedEntity == entity)
-				mSelectedEntity = nullptr;
+			auto handle = mHandles.at(object);
+			object->OnDestroyedEvent.unbind(handle);
+			mHandles.erase(object);
 
-			if (reason == DeselectReason_Destroyed)
+			mSelectedObjects.erase(object);
+
+			if (mActiveObject == object)
 			{
-				if (auto component = Cast<Component>(mSelectedObject))
-				{
-					if (component->GetOwner() == entity)
-						mSelectedObject = nullptr;
-				}
+				mActiveObject = nullptr;
 			}
 		}
-
-		if (mSelectedObject == object)
-			mSelectedObject = nullptr;
 	}
 
 	void Selection::Clear()
 	{
-		mSelectedEntity = nullptr;
-		mSelectedObject = nullptr;
+		for (auto object : mSelectedObjects)
+		{
+			auto handle = mHandles.at(object);
+			object->OnDestroyedEvent.unbind(handle);
+			mHandles.erase(object);
+		}
+
+		mSelectedObjects.clear();
+		mActiveObject = nullptr;
 	}
+
+	bool Selection::IsSelected(ObjectBase *object) const
+	{
+		return mSelectedObjects.contains(object);
+	}
+
 } // namespace BHive

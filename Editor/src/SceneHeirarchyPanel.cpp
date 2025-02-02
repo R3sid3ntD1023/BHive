@@ -17,7 +17,7 @@ namespace BHive
 
 	void SceneHierarchyPanel::OnGuiRender()
 	{
-		mDestroyedentitys.clear();
+		mDestroyedEntitys.clear();
 
 		if (mWorld)
 		{
@@ -30,7 +30,7 @@ namespace BHive
 				DrawEntityNode(entity.get());
 			}
 
-			for (auto entity : mDestroyedentitys)
+			for (auto entity : mDestroyedEntitys)
 				entity->Destroy();
 		}
 
@@ -40,7 +40,7 @@ namespace BHive
 			if (ImGui::MenuItem("Create Entity"))
 			{
 				auto new_entity = mWorld->CreateEntity();
-				mOnEntitySelected(&*new_entity);
+				mOnObjectSelected(&*new_entity, false);
 			}
 
 			auto &entity_types = GetSpawnableEntites();
@@ -50,7 +50,7 @@ namespace BHive
 				{
 					auto new_entity = type.create().get_value<Ref<Entity>>();
 					mWorld->AddEntity(new_entity);
-					mOnEntitySelected(&*new_entity);
+					mOnObjectSelected(&*new_entity, false);
 				}
 			}
 
@@ -69,6 +69,14 @@ namespace BHive
 
 			ImGui::EndDragDropTarget();
 		}
+
+		if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
+		{
+			if (mClearSelection)
+			{
+				mClearSelection();
+			}
+		}
 	}
 
 	void SceneHierarchyPanel::SetContext(const Ref<World> &world)
@@ -83,16 +91,26 @@ namespace BHive
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
 
 		auto id = (uint64_t)entity->GetUUID();
-		bool selected = mOnGetSelectedObject() == entity;
+		bool selected = mIsObjectSelected(entity);
 
 		flags |= (selected ? ImGuiTreeNodeFlags_Selected : 0);
 
 		ImGui::PushID(id);
 		bool opened = ImGui::TreeNodeEx(entity->GetName().c_str(), flags);
 
-		if (ImGui::IsItemClicked() || ImGui::IsItemFocused())
+		if (ImGui::IsItemClicked())
 		{
-			mOnEntitySelected(entity);
+			bool append = ImGui::IsKeyDown(ImGuiKey_ModShift);
+			bool ctrl_down = ImGui::IsKeyDown(ImGuiKey_ModCtrl);
+
+			if (ctrl_down)
+			{
+				mOnObjectDeselected(entity);
+			}
+			else
+			{
+				mOnObjectSelected(entity, append);
+			}
 		}
 
 		if (ImGui::BeginDragDropSource())
@@ -167,8 +185,7 @@ namespace BHive
 
 		if (destroyed)
 		{
-			mOnEntityDeselected(entity, DeselectReason_Destroyed);
-			mDestroyedentitys.push_back(entity);
+			mDestroyedEntitys.push_back(entity);
 		}
 	}
 

@@ -4,14 +4,17 @@ namespace BHive
 {
 	PrefabEditor::PrefabEditor()
 	{
-		mSceneHierarchy.mOnEntitySelected.bind([=](ObjectBase *obj) { mSelection.Select(obj); });
-		mSceneHierarchy.mOnEntityDeselected.bind([=](ObjectBase *obj, uint8_t reason) { mSelection.Deselect(obj, (EDeselectReason)reason); });
-		mSceneHierarchy.mOnGetSelectedObject.bind([=]() { return mSelection.GetSelectedObject(); });
-		mProperties.mGetSelectedEntity.bind([=]() { return mSelection.GetSelectedEntity(); });
-		mProperties.mGetSelectedObject.bind([=]() { return mSelection.GetSelectedObject(); });
-		mProperties.mOnObjectSelected.bind([=](ObjectBase *obj) { mSelection.Select(obj); });
-		mProperties.mOnObjectDeselected.bind([=](ObjectBase *obj, uint8_t reason) { mSelection.Deselect(obj, (EDeselectReason)reason); });
-		mDetails.mGetSelectedObject.bind([=]() { return mSelection.GetSelectedObject(); });
+		mSceneHierarchy.mOnObjectSelected.bind([=](ObjectBase *obj, bool append) { mSelection.Select(obj, append); });
+		mSceneHierarchy.mOnObjectDeselected.bind([=](ObjectBase *obj) { mSelection.Deselect(obj); });
+		mSceneHierarchy.mOnGetActiveObject.bind([=]() { return mSelection.GetActiveObject(); });
+		mSceneHierarchy.mIsObjectSelected.bind([=](ObjectBase *obj) { return mSelection.IsSelected(obj); });
+		mSceneHierarchy.mClearSelection.bind([=]() { mSelection.Clear(); });
+
+		mProperties.mGetActiveObject.bind([=]() { return mSelection.GetActiveObject(); });
+		mProperties.mOnObjectSelected.bind([=](ObjectBase *obj, bool append) { mSelection.Select(obj, append); });
+		mProperties.mOnObjectDeselected.bind([=](ObjectBase *obj) { mSelection.Deselect(obj); });
+
+		mDetails.mGetActiveObject.bind([=]() { return mSelection.GetActiveObject(); });
 	}
 
 	void PrefabEditor::OnWindowRender()

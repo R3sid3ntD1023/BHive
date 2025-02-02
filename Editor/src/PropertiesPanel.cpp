@@ -11,10 +11,11 @@ namespace BHive
 {
 	void PropertiesPanel::OnGuiRender()
 	{
-		if (!mGetSelectedEntity)
+		if (!mGetActiveObject)
 			return;
 
-		if (auto entity = mGetSelectedEntity())
+		auto active_object = mGetActiveObject();
+		if (auto entity = Cast<Entity>(active_object))
 		{
 			DrawComponents(entity);
 
@@ -26,8 +27,6 @@ namespace BHive
 			{
 				for (auto component : mDeletedComponents)
 				{
-					mOnObjectDeselected(component, 1);
-
 					entity->RemoveComponent(component);
 				}
 
@@ -50,12 +49,12 @@ namespace BHive
 
 		ImGui::PushID((uint64_t)component->GetUUID());
 
-		auto selected_object = mGetSelectedObject();
+		auto selected_object = mGetActiveObject();
 		bool selected = selected_object == component;
 
 		if (ImGui::Selectable(component->GetName().c_str(), selected))
 		{
-			mOnObjectSelected(component);
+			mOnObjectSelected(component, false);
 		}
 
 		if (ImGui::IsKeyPressed(ImGuiKey_Delete) && selected)

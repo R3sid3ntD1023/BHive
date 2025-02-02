@@ -78,7 +78,7 @@ namespace BHive
 		void OnCollisionOverlap(const rp3d::OverlapCallback::OverlapPair &overlap_pair);
 		void OnHit(const rp3d::RaycastInfo &info);
 
-		void OnEntityDestroyed(Entity *entity);
+		void OnEntityDestroyed(class ObjectBase *obj);
 
 	private:
 		bool mIsPaused = false;

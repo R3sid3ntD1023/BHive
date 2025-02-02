@@ -9,9 +9,9 @@ namespace BHive
 {
 	void DetailsPanel::OnGuiRender()
 	{
-		if (mGetSelectedObject)
+		if (mGetActiveObject)
 		{
-			auto object = mGetSelectedObject();
+			auto object = mGetActiveObject();
 
 			if (object)
 			{

@@ -8,7 +8,7 @@ namespace BHive
 	class DetailsPanel
 	{
 	public:
-		FGetSelectedObjectEvent mGetSelectedObject;
+		FGetActiveObjectEvent mGetActiveObject;
 
 	public:
 		void OnGuiRender();

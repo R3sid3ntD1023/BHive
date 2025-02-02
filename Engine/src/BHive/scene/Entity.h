@@ -2,8 +2,8 @@
 
 #include "asset/AssetType.h"
 #include "Component.h"
-#include "ITickable.h"
-#include "ITransform.h"
+#include "interfaces/ITickable.h"
+#include "interfaces/ITransform.h"
 #include "ObjectBase.h"
 #include "scene/components/IPhysicsComponent.h"
 #include "scene/components/RelationshipComponent.h"
@@ -21,8 +21,6 @@ namespace BHive
 	using ComponentList = std::vector<Ref<Component>>;
 	using EntityChildren = std::vector<Entity *>;
 
-	DECLARE_EVENT(OnEntityDestroyed, Entity *)
-
 	class Entity : public ObjectBase, public ITickable, public ITransform
 	{
 	public:
@@ -36,7 +34,7 @@ namespace BHive
 
 		virtual void OnEnd();
 
-		void Destroy(bool destroy_decendents = false);
+		void OnDestroyed(bool decendents) override;
 
 		template <typename T>
 		Ref<T> AddNewComponent(const std::string &name)
@@ -98,9 +96,6 @@ namespace BHive
 	private:
 		void RegisterComponents();
 		void RegisterComponent(Component *component);
-
-	public:
-		OnEntityDestroyedEvent OnEntityDestroyed;
 
 	private:
 		FTransform mTransform;

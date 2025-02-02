@@ -10,7 +10,7 @@
 #include "inspector/Inspectors.h"
 #include "project/Project.h"
 #include "PropertiesPanel.h"
-#include "scene/ITransform.h"
+#include "scene/interfaces/ITransform.h"
 #include "scene/SceneRenderer.h"
 #include "scene/World.h"
 #include "SceneHeirarchyPanel.h"
@@ -90,54 +90,61 @@ namespace BHive
 
 		mSceneHierarchyPanel = CreateRef<SceneHierarchyPanel>();
 		mSceneHierarchyPanel->SetContext(mActiveWorld);
-		mSceneHierarchyPanel->mOnEntitySelected.bind(
+		mSceneHierarchyPanel->mOnObjectSelected.bind(
+			[](ObjectBase *obj, bool append)
+			{
+				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+				edit_system.mSelection.Select(obj, append);
+			});
+
+		mSceneHierarchyPanel->mOnObjectDeselected.bind(
 			[](ObjectBase *obj)
 			{
 				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-				edit_system.mSelection.Select(obj);
+				edit_system.mSelection.Deselect(obj);
 			});
 
-		mSceneHierarchyPanel->mOnEntityDeselected.bind(
-			[](ObjectBase *obj, uint8_t reason)
-			{
-				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-				edit_system.mSelection.Deselect(obj, (EDeselectReason)reason);
-			});
-
-		mSceneHierarchyPanel->mOnGetSelectedObject.bind(
+		mSceneHierarchyPanel->mOnGetActiveObject.bind(
 			[]()
 			{
 				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-				return edit_system.mSelection.GetSelectedObject();
+				return edit_system.mSelection.GetActiveObject();
+			});
+		mSceneHierarchyPanel->mIsObjectSelected.bind(
+			[](ObjectBase *obj)
+			{
+				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+				return edit_system.mSelection.IsSelected(obj);
+			});
+		mSceneHierarchyPanel->mClearSelection.bind(
+			[]()
+			{
+				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
+				edit_system.mSelection.Clear();
 			});
 
 		mPropertiesPanel = CreateRef<PropertiesPanel>();
-		mPropertiesPanel->mGetSelectedEntity.bind(
+		mPropertiesPanel->mGetActiveObject.bind(
 			[]()
 			{
 				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-				return edit_system.mSelection.GetSelectedEntity();
+				return edit_system.mSelection.GetActiveObject();
 			});
-		mPropertiesPanel->mGetSelectedObject.bind(
-			[]()
-			{
-				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-				return edit_system.mSelection.GetSelectedObject();
-			});
+
 		mPropertiesPanel->mOnObjectSelected.bind(
-			[](ObjectBase *obj)
+			[](ObjectBase *obj, bool append)
 			{
 				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-				edit_system.mSelection.Select(obj);
+				edit_system.mSelection.Select(obj, append);
 			});
 
 		mDetailsPanel = CreateRef<DetailsPanel>();
 
-		mDetailsPanel->mGetSelectedObject.bind(
+		mDetailsPanel->mGetActiveObject.bind(
 			[]()
 			{
 				auto &edit_system = SubSystemContext::Get().GetSubSystem<EditSubSystem>();
-				return edit_system.mSelection.GetSelectedObject();
+				return edit_system.mSelection.GetActiveObject();
 			});
 
 		mContentBrowser = CreateRef<EditorContentBrowser>(Project::GetResourceDirectory());
@@ -548,7 +555,7 @@ namespace BHive
 				ImGui::EndDragDropTarget();
 			}
 
-			auto current_selection = Cast<ITransform>(edit_system.mSelection.GetSelectedEntity());
+			auto current_selection = Cast<ITransform>(edit_system.mSelection.GetActiveObject());
 
 			if (current_selection && mGizmoOperation != -1 && mEditorMode == EEditorMode::EDIT)
 			{

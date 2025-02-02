@@ -13,9 +13,11 @@ namespace BHive
 	class SceneHierarchyPanel
 	{
 	public:
-		FOnObjectSelectedEvent mOnEntitySelected;
-		FOnObjectDeselectedEvent mOnEntityDeselected;
-		FGetSelectedObjectEvent mOnGetSelectedObject;
+		FOnObjectSelectedEvent mOnObjectSelected;
+		FOnObjectDeselectedEvent mOnObjectDeselected;
+		FGetActiveObjectEvent mOnGetActiveObject;
+		FIsSelectedEvent mIsObjectSelected;
+		FOnClearSelectionEvent mClearSelection;
 
 	public:
 		SceneHierarchyPanel() = default;
@@ -34,7 +36,7 @@ namespace BHive
 	private:
 		Ref<World> mWorld;
 
-		std::vector<Entity *> mDestroyedentitys;
+		std::vector<Entity *> mDestroyedEntitys;
 
 		std::vector<AssetType> mEntityTypeCache;
 	};

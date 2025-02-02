@@ -2,27 +2,33 @@
 
 namespace BHive
 {
-    ObjectBase::ObjectBase(const FObjectInitializer &initializer)
-        : mData(initializer)
-    {
-    }
+	ObjectBase::ObjectBase(const FObjectInitializer &initializer)
+		: mData(initializer)
+	{
+	}
 
-    void ObjectBase::SetName(const std::string &name)
-    {
-        mData.mName = name;
-    }
+	void ObjectBase::Destroy(bool descendents)
+	{
+		OnDestroyedEvent(this);
+		OnDestroyed(descendents);
+	}
 
-    void ObjectBase::GenerateNewUUID()
-    {
-        mID = UUID();
-    }
+	void ObjectBase::SetName(const std::string &name)
+	{
+		mData.mName = name;
+	}
 
-    ObjectBase* ObjectBase::Copy()
-    {
-        return new ObjectBase(*this);
-    }
+	void ObjectBase::GenerateNewUUID()
+	{
+		mID = UUID();
+	}
 
-    void ObjectBase::Save(cereal::BinaryOutputArchive &ar) const
+	ObjectBase *ObjectBase::Copy()
+	{
+		return new ObjectBase(*this);
+	}
+
+	void ObjectBase::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ar(mData.mName, mID);
 	}
@@ -32,11 +38,11 @@ namespace BHive
 		ar(mData.mName, mID);
 	}
 
-    REFLECT(ObjectBase)
-    {
-        BEGIN_REFLECT(ObjectBase)
-        REFLECT_PROPERTY_READ_ONLY("UUID", mID)
-        REFLECT_PROPERTY("Name", GetName, SetName);
-    }
+	REFLECT(ObjectBase)
+	{
+		BEGIN_REFLECT(ObjectBase)
+		REFLECT_PROPERTY_READ_ONLY("UUID", mID)
+		REFLECT_PROPERTY("Name", GetName, SetName);
+	}
 
 } // namespace BHive

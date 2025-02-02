@@ -12,6 +12,8 @@ namespace BHive
 		std::string mName = "NewObject";
 	};
 
+	DECLARE_EVENT(FOnDestroyed, class ObjectBase *);
+
 	class ObjectBase
 	{
 	private:
@@ -22,10 +24,15 @@ namespace BHive
 
 		virtual ~ObjectBase() = default;
 
-		const std::string &GetName() const { return mData.mName; }
+		void Destroy(bool descendents = false);
+
+		virtual void OnDestroyed(bool descendents) {};
+
 		void SetName(const std::string &name);
 
 		void GenerateNewUUID();
+
+		const std::string &GetName() const { return mData.mName; }
 
 		const UUID &GetUUID() const { return mID; }
 
@@ -37,6 +44,9 @@ namespace BHive
 
 		bool operator==(const ObjectBase &rhs) const { return mID == rhs.mID; }
 		bool operator!=(const ObjectBase &rhs) const { return mID != rhs.mID; }
+
+	public:
+		FOnDestroyedEvent OnDestroyedEvent;
 
 	private:
 		FObjectInitializer mData;
