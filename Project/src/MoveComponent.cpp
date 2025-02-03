@@ -14,7 +14,7 @@ namespace BHive
 		{
 			if (auto context = input_entity->GetInputComponent()->GetContext())
 			{
-				context->bind_key("Jump", BHive::InputAction::RELEASE, this, &MoveComponent::Jump);
+				context->bind_key("Jump", BHive::EventStatus::RELEASE, this, &MoveComponent::Jump);
 				context->bind_axis("MoveLeft", this, &MoveComponent::Move, -1.f);
 				context->bind_axis("MoveRight", this, &MoveComponent::Move, 1.f);
 			}
@@ -58,8 +58,7 @@ namespace BHive
 	REFLECT(MoveComponent)
 	{
 		BEGIN_REFLECT(MoveComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS()
-			REFLECT_PROPERTY("Speed", mSpeed) REFLECT_PROPERTY("JumpForce", mJumpForce)
-				REFLECT_PROPERTY("States", mStates);
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REQUIRED_COMPONENT_FUNCS() REFLECT_PROPERTY("Speed", mSpeed)
+			REFLECT_PROPERTY("JumpForce", mJumpForce) REFLECT_PROPERTY("States", mStates);
 	}
 } // namespace BHive

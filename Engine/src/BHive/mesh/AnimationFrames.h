@@ -2,7 +2,7 @@
 
 #include "core/Core.h"
 #include "math/Math.h"
-#include "serialization/Serialization.h"
+#include "core/serialization/Serialization.h"
 
 namespace BHive
 {
@@ -46,12 +46,9 @@ namespace BHive
 		ar(size);
 		obj.mScales.resize(size);
 
-		ar(MAKE_BINARY(
-			const_cast<Vec3Key *>(obj.mPositions.data()), obj.mPositions.size() * sizeof(Vec3Key)));
-		ar(MAKE_BINARY(
-			const_cast<QuatKey *>(obj.mRotations.data()), obj.mRotations.size() * sizeof(QuatKey)));
-		ar(MAKE_BINARY(
-			const_cast<Vec3Key *>(obj.mScales.data()), obj.mScales.size() * sizeof(Vec3Key)));
+		ar(MAKE_BINARY(const_cast<Vec3Key *>(obj.mPositions.data()), obj.mPositions.size() * sizeof(Vec3Key)));
+		ar(MAKE_BINARY(const_cast<QuatKey *>(obj.mRotations.data()), obj.mRotations.size() * sizeof(QuatKey)));
+		ar(MAKE_BINARY(const_cast<Vec3Key *>(obj.mScales.data()), obj.mScales.size() * sizeof(Vec3Key)));
 	}
 
 } // namespace BHive

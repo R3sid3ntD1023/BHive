@@ -10,14 +10,18 @@ namespace BHive
 		EVENT(KeyEvent, EventCategoryKeyboard | EventCategoryInput)
 
 	public:
-		KeyEvent(KeyCode key, int scancode, InputActionCode action, ModCode mods)
-			:Key(key), ScanCode(scancode), Action(action), Mods(mods)
-		{}
+		KeyEvent(KeyCode key, int scancode, int action, int mods)
+			: Key(key),
+			  ScanCode(scancode),
+			  Action(action),
+			  Mods(mods)
+		{
+		}
 
 		KeyCode Key;
 		int ScanCode;
-		InputActionCode Action;
-		ModCode Mods;
+		int Action;
+		int Mods;
 	};
 
 	class BHIVE KeyTypedEvent : public Event
@@ -26,9 +30,10 @@ namespace BHive
 
 	public:
 		KeyTypedEvent(KeyCode key)
-			:Key(key)
-		{}
+			: Key(key)
+		{
+		}
 
 		KeyCode Key;
 	};
-}
+} // namespace BHive

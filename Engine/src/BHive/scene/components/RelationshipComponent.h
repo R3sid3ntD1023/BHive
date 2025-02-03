@@ -1,8 +1,8 @@
 #pragma once
 
+#include "core/Core.h"
 #include "core/UUID.h"
-#include "serialization/Serialization.h"
-#include <unordered_set>
+#include "core/serialization/Serialization.h"
 
 namespace BHive
 {

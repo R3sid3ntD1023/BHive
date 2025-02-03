@@ -3,7 +3,7 @@
 #include "mesh/SkeletalMesh.h"
 #include "mesh/StaticMesh.h"
 #include "MeshFactory.h"
-#include "subsystem/SubSystem.h"
+#include "core/subsystem/SubSystem.h"
 #include "subsystems/WindowSubSystem.h"
 #include "windows/editors/MeshOptionsWindow.h"
 

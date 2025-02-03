@@ -42,7 +42,6 @@ namespace BHive
 		const std::string &GetTitle() const { return mData.Title; }
 		unsigned GetWidth() const { return mData.Width; }
 		unsigned GetHeight() const { return mData.Height; }
-		const Input &GetInput() const { return mData.Input.GetInput(); }
 
 	private:
 		void RegisterCallbacks();

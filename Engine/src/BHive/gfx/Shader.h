@@ -2,7 +2,6 @@
 
 #include "core/Core.h"
 #include "ShaderReflection.h"
-#include "threading/Threading.h"
 #include <glm/glm.hpp>
 
 namespace BHive
@@ -16,7 +15,6 @@ namespace BHive
 		virtual void Compile() = 0;
 		virtual void Bind() const = 0;
 		virtual void UnBind() const = 0;
-		
 
 		template <typename T>
 		void SetUniform(const std::string &name, const T &v) const
@@ -43,7 +41,7 @@ namespace BHive
 		virtual void SetUniform(int location, const glm::vec4 &value) const = 0;
 		virtual void SetUniform(int location, const glm::mat4 &value) const = 0;
 		virtual void SetUniform(int location, uint64_t value) const = 0;
-		virtual int GetUniformLocation(const std::string& name) const = 0;
+		virtual int GetUniformLocation(const std::string &name) const = 0;
 	};
 
 	class ShaderLibrary
@@ -65,4 +63,4 @@ namespace BHive
 	{
 		bool SetIncludeFromFile(const std::string &name, const char *filename);
 	}
-}
+} // namespace BHive

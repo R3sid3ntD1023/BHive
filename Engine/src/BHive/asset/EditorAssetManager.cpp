@@ -1,5 +1,5 @@
 #include "EditorAssetManager.h"
-#include "serialization/Serialization.h"
+#include "core/serialization/Serialization.h"
 #include "project/Project.h"
 
 namespace BHive

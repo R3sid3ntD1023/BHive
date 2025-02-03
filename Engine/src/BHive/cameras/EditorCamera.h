@@ -1,7 +1,7 @@
 #pragma once
 
-#include "events/InputEvents.h"
-#include "events/MouseEvents.h"
+#include "core/events/KeyEvents.h"
+#include "core/events/MouseEvents.h"
 #include "gfx/Camera.h"
 #include "math/Transform.h"
 

@@ -2,7 +2,7 @@
 #include "scene/World.h"
 #include "scene/Entity.h"
 #include "gui/GUICore.h"
-#include "subsystem/SubSystem.h"
+#include "core/subsystem/SubSystem.h"
 #include "subsystems/EditSubSystem.h"
 
 #define DRAG_DROP_ENTITY_NAME "entity"

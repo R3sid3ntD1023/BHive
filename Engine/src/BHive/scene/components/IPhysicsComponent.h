@@ -3,7 +3,7 @@
 #include "core/EnumAsByte.h"
 #include "math/Math.h"
 #include "physics/LockAxis.h"
-#include "serialization/Serialization.h"
+#include "core/serialization/Serialization.h"
 
 namespace BHive
 {
@@ -45,8 +45,7 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(mPhysicsEnabled, mBodyType, mMass, mAngularDamping, mLinearDamping, mLinearLockAxis,
-			   mAngularLockAxis, mGravityEnabled);
+			ar(mPhysicsEnabled, mBodyType, mMass, mAngularDamping, mLinearDamping, mLinearLockAxis, mAngularLockAxis, mGravityEnabled);
 		}
 
 		REFLECTABLEV()

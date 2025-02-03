@@ -1,10 +1,7 @@
 #pragma once
 
 #include "math/Math.h"
-#include "reflection/Reflection.h"
-
-#define DEFAULT_SCALE {1.0f, 1.0f, 1.0f}
-#define DEFAULT_ROTATION {0.0f, 0.0f, 0.0f}
+#include "core/reflection/Reflection.h"
 
 namespace BHive
 {
@@ -13,7 +10,7 @@ namespace BHive
 		FTransform();
 		FTransform(const glm::mat4 &matrix);
 		FTransform(const FTransform &rhs);
-		FTransform(const glm::vec3 &translation, const glm::vec3 &rotation = DEFAULT_ROTATION, const glm::vec3 &scale = DEFAULT_SCALE);
+		FTransform(const glm::vec3 &translation, const glm::vec3 &rotation = {0, 0, 0}, const glm::vec3 &scale = {1, 1, 1});
 
 		const glm::vec3 &get_translation() const { return mTranslation; }
 		const glm::vec3 &get_rotation() const { return mRotation; }

@@ -1,13 +1,11 @@
 #include "GLTexture2D.h"
 #include "gfx/TextureUtils.h"
 #include <glad/glad.h>
-#include "threading/Threading.h"
+#include "core/threading/Threading.h"
 
 namespace BHive
 {
-	GLTexture2D::GLTexture2D(
-		uint32_t width, uint32_t height, const FTextureSpecification &specification,
-		uint32_t samples)
+	GLTexture2D::GLTexture2D(uint32_t width, uint32_t height, const FTextureSpecification &specification, uint32_t samples)
 		: mWidth(width),
 		  mHeight(height),
 		  mSpecification(specification),
@@ -17,9 +15,7 @@ namespace BHive
 		Initialize();
 	}
 
-	GLTexture2D::GLTexture2D(
-		const void *data, uint32_t width, uint32_t height,
-		const FTextureSpecification &specification)
+	GLTexture2D::GLTexture2D(const void *data, uint32_t width, uint32_t height, const FTextureSpecification &specification)
 		: mWidth(width),
 		  mHeight(height),
 		  mSpecification(specification),
@@ -73,8 +69,7 @@ namespace BHive
 		memcpy_s(mBuffer.mData, mBuffer.mSize, (uint8_t *)data, size);
 
 		glTextureSubImage2D(
-			mTextureID, 0, offsetX, offsetY, mWidth, mHeight, GetGLFormat(mSpecification.mFormat),
-			GetGLType(mSpecification.mFormat), data);
+			mTextureID, 0, offsetX, offsetY, mWidth, mHeight, GetGLFormat(mSpecification.mFormat), GetGLType(mSpecification.mFormat), data);
 	}
 
 	void GLTexture2D::Load(cereal::BinaryInputArchive &ar)
@@ -109,27 +104,19 @@ namespace BHive
 		case GL_TEXTURE_2D_MULTISAMPLE:
 		{
 
-			glTextureStorage2DMultisample(
-				mTextureID, mSamples, GetGLInternalFormat(mSpecification.mFormat), mWidth, mHeight,
-				GL_FALSE);
+			glTextureStorage2DMultisample(mTextureID, mSamples, GetGLInternalFormat(mSpecification.mFormat), mWidth, mHeight, GL_FALSE);
 			break;
 		}
 
 		case GL_TEXTURE_2D:
 		{
-			glTextureStorage2D(
-				mTextureID, mSpecification.mLevels, GetGLInternalFormat(mSpecification.mFormat),
-				mWidth, mHeight);
+			glTextureStorage2D(mTextureID, mSpecification.mLevels, GetGLInternalFormat(mSpecification.mFormat), mWidth, mHeight);
 
-			glTextureParameteri(
-				mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(mSpecification.mMinFilter));
-			glTextureParameteri(
-				mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(mSpecification.mMagFilter));
+			glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(mSpecification.mMinFilter));
+			glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(mSpecification.mMagFilter));
 
-			glTextureParameteri(
-				mTextureID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mSpecification.mWrapMode));
-			glTextureParameteri(
-				mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mSpecification.mWrapMode));
+			glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mSpecification.mWrapMode));
+			glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mSpecification.mWrapMode));
 
 			if (mSpecification.mMips)
 			{

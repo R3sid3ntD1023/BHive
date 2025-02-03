@@ -1,15 +1,15 @@
 #pragma once
 
-#include "reflection/Reflection.h"
+#include "core/reflection/Reflection.h"
 
 namespace BHive
 {
-    class SceneRenderer;
+	class SceneRenderer;
 
-    struct IRenderable
-    {
-        virtual void OnRender(SceneRenderer *renderer) = 0;
+	struct IRenderable
+	{
+		virtual void OnRender(SceneRenderer *renderer) = 0;
 
-        REFLECTABLEV()
-    };
+		REFLECTABLEV()
+	};
 } // namespace BHive

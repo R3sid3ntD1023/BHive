@@ -1,5 +1,5 @@
 #include "FactoryRegistry.h"
-#include "reflection/Reflection.h"
+#include "core/reflection/Reflection.h"
 #include "asset/Factory.h"
 
 namespace BHive

@@ -2,7 +2,7 @@
 
 #include "asset/AssetManager.h"
 #include "core/Core.h"
-#include "reflection/Reflection.h"
+#include "core/reflection/Reflection.h"
 
 namespace BHive
 {
@@ -26,9 +26,7 @@ namespace BHive
 
 		constexpr TAssetHandle(std::nullptr_t) noexcept {}
 
-		template <
-			typename U,
-			std::enable_if_t<std::is_base_of_v<T, U> || std::is_same_v<T, U>, bool> = true>
+		template <typename U, std::enable_if_t<std::is_base_of_v<T, U> || std::is_same_v<T, U>, bool> = true>
 		TAssetHandle(const Ref<U> &ptr)
 			: mPtr(ptr)
 		{
@@ -57,9 +55,7 @@ namespace BHive
 
 		void set_asset(std::nullptr_t) { mPtr = nullptr; }
 
-		template <
-			typename U,
-			std::enable_if_t<std::is_base_of_v<T, U> || std::is_same_v<T, U>, bool> = true>
+		template <typename U, std::enable_if_t<std::is_base_of_v<T, U> || std::is_same_v<T, U>, bool> = true>
 		TAssetHandle &operator=(const Ref<U> &ptr)
 		{
 			mPtr = ptr;
@@ -106,16 +102,12 @@ namespace rttr
 
 		inline static wrapped_type get(const type &obj) { return obj.get(); }
 
-		inline static type create(const wrapped_type &value)
-		{
-			return BHive::TAssetHandle<T>(value);
-		}
+		inline static type create(const wrapped_type &value) { return BHive::TAssetHandle<T>(value); }
 
 		template <typename U>
 		inline static BHive::TAssetHandle<U> convert(const type &source, bool &ok)
 		{
-			if (auto obj =
-					rttr_cast<typename BHive::TAssetHandle<U>::wrapped_type *>(source.get_asset()))
+			if (auto obj = rttr_cast<typename BHive::TAssetHandle<U>::wrapped_type *>(source.get_asset()))
 			{
 				ok = true;
 				return BHive::TAssetHandle<U>(*obj);

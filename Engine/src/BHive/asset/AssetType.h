@@ -1,6 +1,6 @@
 #pragma once
 
-#include "reflection/Reflection.h"
+#include "core/reflection/Reflection.h"
 
 namespace BHive
 {

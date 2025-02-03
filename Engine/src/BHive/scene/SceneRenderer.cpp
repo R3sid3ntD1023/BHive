@@ -9,7 +9,7 @@
 #include "mesh/StaticMesh.h"
 #include "mesh/SkeletalMesh.h"
 #include "mesh/SkeletalPose.h"
-#include "debug/Instrumentor.h"
+#include "core/debug/Instrumentor.h"
 
 #include "importers/TextureImporter.h"
 #include "renderers/HDRConverter.h"

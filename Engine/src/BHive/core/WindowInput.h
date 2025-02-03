@@ -2,7 +2,6 @@
 
 #include "core/Core.h"
 #include "events/Event.h"
-#include "events/Input.h"
 #include "events/JoyStickCodes.h"
 #include "core/EventDelegate.h"
 #include <glm/glm.hpp>
@@ -29,12 +28,9 @@ namespace BHive
 
 		static void OnJoyStickConnected(int joystick, int status);
 		static glm::vec2 GetJoyStickAxes(JoyStickAxisCode axis);
-		static InputActionCode GetJoyStickButton(JoyStickButtonCode button);
-
-		const Input &GetInput() const { return sInput; }
+		static uint8_t GetJoyStickButton(JoyStickButtonCode button);
 
 	private:
-		Input sInput;
 		static inline int sJoyStickID = -1;
 		static inline glm::vec2 sJoyStickDeadZones[3];
 	};

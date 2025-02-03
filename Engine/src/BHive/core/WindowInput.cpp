@@ -1,7 +1,7 @@
 #include "WindowInput.h"
 #include "events/ApplicationEvents.h"
-#include "events/InputEvents.h"
 #include "events/MouseEvents.h"
+#include "events/KeyEvents.h"
 #include <glfw/glfw3.h>
 
 namespace BHive
@@ -28,8 +28,7 @@ namespace BHive
 	{
 		if (mEvent)
 		{
-			sInput.add_input((KeyCode)key, (InputActionCode)action, (ModCode)mods);
-			KeyEvent event((KeyCode)key, scancode, (InputActionCode)action, (ModCode)mods);
+			KeyEvent event((KeyCode)key, scancode, action, mods);
 			mEvent(event);
 		}
 	}
@@ -47,8 +46,7 @@ namespace BHive
 	{
 		if (mEvent)
 		{
-			sInput.add_input((MouseCode)button, (InputActionCode)action, (ModCode)mods);
-			MouseButtonEvent event((MouseCode)button, (InputActionCode)action, (ModCode)mods);
+			MouseButtonEvent event((MouseCode)button, action, mods);
 			mEvent(event);
 
 			// LOG_TRACE("Key : {}, Action : {}", button, action);
@@ -59,7 +57,6 @@ namespace BHive
 	{
 		if (mEvent)
 		{
-			sInput.set_scroll((float)x, (float)y);
 			MouseScrolledEvent event((float)x, (float)y);
 			mEvent(event);
 		}
@@ -139,10 +136,10 @@ namespace BHive
 		return value;
 	}
 
-	InputActionCode WindowInput::GetJoyStickButton(JoyStickButtonCode button)
+	uint8_t WindowInput::GetJoyStickButton(JoyStickButtonCode button)
 	{
 		if (sJoyStickID == -1)
-			return InputAction::RELEASE;
+			return 0;
 
 		int count = 0;
 		auto buttons = glfwGetJoystickButtons(sJoyStickID, &count);
@@ -150,4 +147,4 @@ namespace BHive
 		return buttons[(int)button];
 	}
 
-}
+} // namespace BHive

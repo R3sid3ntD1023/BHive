@@ -2,7 +2,7 @@
 
 #include "core/Core.h"
 #include "asset/Asset.h"
-#include "events/InputAction.h"
+#include "core/events/EventStatus.h"
 #include "input/InputAction.h"
 #include "input/InputValue.h"
 #include "core/EventDelegate.h"
@@ -15,8 +15,8 @@ namespace BHive
 		struct FInputActionCallback
 		{
 			EventDelegate<const InputValue &> Callback;
-			InputActionCode CallState = InputAction::RELEASE;
-			InputActionCode PreviousState = InputAction::RELEASE;
+			EventStatusCode CallState = EventStatus::RELEASE;
+			EventStatusCode PreviousState = EventStatus::RELEASE;
 			float Scale = 1.0f;
 		};
 
@@ -31,7 +31,7 @@ namespace BHive
 		void add_action(const std::string &name, FInputKey key);
 
 		template <typename T>
-		void bind_key(const std::string &name, InputActionCode action, T *instance, void (T::*func)(const InputValue &value))
+		void bind_key(const std::string &name, EventStatusCode action, T *instance, void (T::*func)(const InputValue &value))
 		{
 			if (has_key(name))
 			{

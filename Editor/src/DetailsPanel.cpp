@@ -1,7 +1,7 @@
 #include "DetailsPanel.h"
 #include "inspector/Inspectors.h"
 #include "gui/ImGuiExtended.h"
-#include "subsystem/SubSystem.h"
+#include "core/subsystem/SubSystem.h"
 #include "subsystems/EditSubSystem.h"
 #include "scene/ObjectBase.h"
 

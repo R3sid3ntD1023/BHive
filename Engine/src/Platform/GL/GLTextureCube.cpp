@@ -2,12 +2,12 @@
 #include "gfx/TextureUtils.h"
 #include "gfx/Framebuffer.h"
 #include <glad/glad.h>
-#include "threading/Threading.h"
 
 namespace BHive
 {
 	GLTextureCube::GLTextureCube(uint32_t size, const FTextureSpecification &spec)
-		: mSize(size), mSpecification(spec)
+		: mSize(size),
+		  mSpecification(spec)
 	{
 
 		GLenum target = GetTextureTarget(spec.mType, 1);
@@ -31,8 +31,9 @@ namespace BHive
 
 		for (unsigned i = 0; i < 6; i++)
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GetGLInternalFormat(spec.mFormat), size, size,
-						 0, GetGLFormat(spec.mFormat), GetGLType(spec.mFormat), NULL);
+			glTexImage2D(
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GetGLInternalFormat(spec.mFormat), size, size, 0, GetGLFormat(spec.mFormat),
+				GetGLType(spec.mFormat), NULL);
 		}
 
 		if (spec.mMips)
@@ -76,4 +77,4 @@ namespace BHive
 
 		glNamedFramebufferTexture(*framebuffer, attachment, mTextureID, level);
 	}
-}
+} // namespace BHive

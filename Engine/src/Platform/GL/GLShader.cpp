@@ -1,7 +1,6 @@
 #include "GLShader.h"
 #include "core/FileSystem.h"
 #include <glad/glad.h>
-#include "threading/Threading.h"
 
 namespace BHive
 {
@@ -56,7 +55,7 @@ namespace BHive
 
 		static const char *includePaths[] = {"/"};
 
-	}
+	} // namespace utils
 
 	GLShader::GLShader(const std::filesystem::path &path)
 		: mName(path.filename().string())
@@ -270,4 +269,4 @@ namespace BHive
 		}
 	}
 
-}
+} // namespace BHive

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gfx/Camera.h"
-#include "reflection/Reflection.h"
+#include "core/reflection/Reflection.h"
 
 namespace BHive
 {
@@ -53,10 +53,7 @@ namespace BHive
 		const FPerspectiveSettings &GetPerspectiveSettings() const { return mPerspectiveSettings; }
 
 		void SetOrthographicSettings(const FOrthographicSettings &settings);
-		const FOrthographicSettings &GetOrthographicSettings() const
-		{
-			return mOrthographicSettings;
-		}
+		const FOrthographicSettings &GetOrthographicSettings() const { return mOrthographicSettings; }
 
 		void Resize(uint32_t width, uint32_t height);
 

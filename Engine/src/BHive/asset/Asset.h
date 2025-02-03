@@ -3,8 +3,8 @@
 #include "AssetHandle.h"
 #include "AssetType.h"
 #include "core/Core.h"
-#include "reflection/Reflection.h"
-#include "serialization/Serialization.h"
+#include "core/reflection/Reflection.h"
+#include "core/serialization/Serialization.h"
 #include "TAssetHandler.h"
 
 namespace BHive
@@ -25,10 +25,7 @@ namespace BHive
 
 		const std::string &GetName() const { return mName; }
 
-		static AssetHandle GetHandle(const Ref<Asset> &asset)
-		{
-			return asset ? asset->GetHandle() : AssetHandle(0);
-		}
+		static AssetHandle GetHandle(const Ref<Asset> &asset) { return asset ? asset->GetHandle() : AssetHandle(0); }
 
 		const AssetHandle &GetHandle() const { return mHandle; }
 

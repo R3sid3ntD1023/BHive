@@ -14,8 +14,8 @@
 #include "scene/SceneRenderer.h"
 #include "scene/World.h"
 #include "SceneHeirarchyPanel.h"
-#include "serialization/Serialization.h"
-#include "subsystem/SubSystem.h"
+#include "core/serialization/Serialization.h"
+#include "core/subsystem/SubSystem.h"
 #include "subsystems/EditSubSystem.h"
 #include "subsystems/WindowSubSystem.h"
 #include "windows/LogPanel.h"
@@ -24,6 +24,7 @@
 #include "factories/entity_factories/EntityFactory.h"
 #include "math/RayCasting.h"
 #include "core/FPSCounter.h"
+#include "core/events/ModCode.h"
 #include <ImGuizmo.h>
 #include <mini/ini.h>
 #include <rttr/library.h>

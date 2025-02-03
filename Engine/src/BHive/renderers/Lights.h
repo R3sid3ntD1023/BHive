@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gfx/Color.h"
-#include "reflection/Reflection.h"
+#include "core/reflection/Reflection.h"
 
 #define MAX_LIGHTS 32
 

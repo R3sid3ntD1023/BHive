@@ -2,7 +2,6 @@
 #include "gfx/TextureUtils.h"
 #include <glad/glad.h>
 #include "gfx/Texture.h"
-#include "threading/Threading.h"
 #include "utils/ImageUtils.h"
 
 namespace BHive
@@ -146,14 +145,13 @@ namespace BHive
 		{
 			glReadBuffer(GL_COLOR_ATTACHMENT0 + (uint32_t)i);
 			glDrawBuffer(GL_COLOR_ATTACHMENT0 + (uint32_t)i);
-			glBlitFramebuffer(0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height, GL_COLOR_BUFFER_BIT,
-							  GL_NEAREST);
+			glBlitFramebuffer(0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		}
 
 		if (target->GetDepthAttachment() && GetDepthAttachment())
 		{
-			glBlitFramebuffer(0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height, GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT,
-							  GL_NEAREST);
+			glBlitFramebuffer(
+				0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height, GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -214,13 +212,15 @@ namespace BHive
 			switch (mDepthSpecification.TextureType)
 			{
 			case ETextureType::TEXTURE_2D:
-				mDepthAttachment = Texture2D::Create(mSpecification.Width, mSpecification.Height, mDepthSpecification.mSpecification, mSpecification.Samples);
+				mDepthAttachment =
+					Texture2D::Create(mSpecification.Width, mSpecification.Height, mDepthSpecification.mSpecification, mSpecification.Samples);
 				break;
 			case ETextureType::TEXTURE_CUBE_MAP:
 				mDepthAttachment = TextureCube::Create(mSpecification.Width, mDepthSpecification.mSpecification);
 				break;
 			case ETextureType::TEXTURE_3D:
-				mDepthAttachment = Texture3D::Create(mSpecification.Width, mSpecification.Height, mSpecification.Depth, mDepthSpecification.mSpecification);
+				mDepthAttachment =
+					Texture3D::Create(mSpecification.Width, mSpecification.Height, mSpecification.Depth, mDepthSpecification.mSpecification);
 				break;
 			default:
 				break;
@@ -257,11 +257,13 @@ namespace BHive
 		{
 			auto &specification = mSpecification.mRenderSpecification;
 			glCreateRenderbuffers(1, &mRenderBufferID);
-			glNamedRenderbufferStorage(mRenderBufferID, GetGLInternalFormat(specification.mSpecification.mFormat), mSpecification.Width, mSpecification.Height);
-			glNamedFramebufferRenderbuffer(mFramebufferID, GetDepthAttachmentType(specification.mSpecification.mFormat), GL_RENDERBUFFER, mRenderBufferID);
+			glNamedRenderbufferStorage(
+				mRenderBufferID, GetGLInternalFormat(specification.mSpecification.mFormat), mSpecification.Width, mSpecification.Height);
+			glNamedFramebufferRenderbuffer(
+				mFramebufferID, GetDepthAttachmentType(specification.mSpecification.mFormat), GL_RENDERBUFFER, mRenderBufferID);
 		}
 
 		ASSERT(glCheckNamedFramebufferStatus(mFramebufferID, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 	}
 
-}
+} // namespace BHive

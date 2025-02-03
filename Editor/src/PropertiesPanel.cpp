@@ -1,9 +1,9 @@
 #include "PropertiesPanel.h"
-#include "reflection/Reflection.h"
+#include "core/reflection/Reflection.h"
 #include "gui/ImGuiExtended.h"
 #include "inspector/Inspectors.h"
 #include "scene/Entity.h"
-#include "subsystem/SubSystem.h"
+#include "core/subsystem/SubSystem.h"
 #include "subsystems/EditSubSystem.h"
 #include "scene/components/SceneComponent.h"
 

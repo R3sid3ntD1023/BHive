@@ -3,7 +3,7 @@
 #include "inspector/Inspectors.h"
 #include "mesh/SkeletalAnimation.h"
 #include "asset/TAssetHandler.h"
-#include "reflection/Reflection.h"
+#include "core/reflection/Reflection.h"
 #include <ImNodeFlow.h>
 
 namespace BHive

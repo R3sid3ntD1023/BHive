@@ -7,7 +7,7 @@
 #include "ObjectBase.h"
 #include "scene/components/IPhysicsComponent.h"
 #include "scene/components/RelationshipComponent.h"
-#include "serialization/Serialization.h"
+#include "core/serialization/Serialization.h"
 
 namespace BHive
 {

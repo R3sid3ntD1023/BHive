@@ -1,6 +1,6 @@
 #pragma once
 
-#include "serialization/macros.h"
+#include "core/serialization/macros.h"
 
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/map.hpp>

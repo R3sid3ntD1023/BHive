@@ -3,7 +3,7 @@
 #include "core/Core.h"
 #include "gfx/BufferLayout.h"
 #include "math/AABB.hpp"
-#include "serialization/Serialization.h"
+#include "core/serialization/Serialization.h"
 
 #define MAX_BONE_INFLUENCE 4
 
@@ -22,9 +22,8 @@ namespace BHive
 
 		static BufferLayout Layout()
 		{
-			return {{EShaderDataType::Float3}, {EShaderDataType::Float2}, {EShaderDataType::Float3},
-					{EShaderDataType::Float3}, {EShaderDataType::Float3}, {EShaderDataType::Float4},
-					{EShaderDataType::Int4},   {EShaderDataType::Float4}};
+			return {{EShaderDataType::Float3}, {EShaderDataType::Float2}, {EShaderDataType::Float3}, {EShaderDataType::Float3},
+					{EShaderDataType::Float3}, {EShaderDataType::Float4}, {EShaderDataType::Int4},	 {EShaderDataType::Float4}};
 		}
 	};
 
@@ -49,16 +48,14 @@ namespace BHive
 	template <typename A>
 	inline void Serialize(A &ar, FVertex &obj)
 	{
-		ar(obj.Position, obj.TexCoord, obj.Normal, obj.Tangent, obj.BiNormal, obj.Color,
-		   MAKE_BINARY(obj.mBoneID, 4 * sizeof(float)),
+		ar(obj.Position, obj.TexCoord, obj.Normal, obj.Tangent, obj.BiNormal, obj.Color, MAKE_BINARY(obj.mBoneID, 4 * sizeof(float)),
 		   MAKE_BINARY(obj.mWeights, 4 * sizeof(float)));
 	}
 
 	template <typename A>
 	inline void Serialize(A &ar, FSubMesh &obj)
 	{
-		ar(obj.mStartIndex, obj.mStartVertex, obj.mVertexCount, obj.mIndexCount, obj.mMaterialIndex,
-		   obj.mInstanceCount);
+		ar(obj.mStartIndex, obj.mStartVertex, obj.mVertexCount, obj.mIndexCount, obj.mMaterialIndex, obj.mInstanceCount);
 	}
 
 	template <typename A>
@@ -66,8 +63,7 @@ namespace BHive
 	{
 		ar(obj.mVertices.size());
 		ar(obj.mIndices.size());
-		ar(obj.mSubMeshes, obj.mBoundingBox,
-		   MAKE_BINARY(obj.mVertices.data(), obj.mVertices.size() * sizeof(FVertex)),
+		ar(obj.mSubMeshes, obj.mBoundingBox, MAKE_BINARY(obj.mVertices.data(), obj.mVertices.size() * sizeof(FVertex)),
 		   MAKE_BINARY(obj.mIndices.data(), obj.mIndices.size() * sizeof(uint32_t)));
 	}
 
@@ -82,11 +78,7 @@ namespace BHive
 		obj.mVertices.resize(num_verts);
 		obj.mIndices.resize(num_idx);
 
-		ar(obj.mSubMeshes, obj.mBoundingBox,
-		   MAKE_BINARY(
-			   const_cast<FVertex *>(obj.mVertices.data()), obj.mVertices.size() * sizeof(FVertex)),
-		   MAKE_BINARY(
-			   const_cast<uint32_t *>(obj.mIndices.data()),
-			   obj.mIndices.size() * sizeof(uint32_t)));
+		ar(obj.mSubMeshes, obj.mBoundingBox, MAKE_BINARY(const_cast<FVertex *>(obj.mVertices.data()), obj.mVertices.size() * sizeof(FVertex)),
+		   MAKE_BINARY(const_cast<uint32_t *>(obj.mIndices.data()), obj.mIndices.size() * sizeof(uint32_t)));
 	}
 } // namespace BHive

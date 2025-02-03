@@ -1,6 +1,5 @@
 #include "InputContext.h"
-#include "core/WindowInput.h"
-#include "core/Application.h"
+#include "input/InputManager.h"
 
 namespace BHive
 {
@@ -36,7 +35,7 @@ namespace BHive
 
 	void InputContext::process()
 	{
-		auto &input = Application::Get().GetWindow().GetInput();
+		auto &input = InputManager::GetInputManager();
 
 		for (auto &action : mKeys)
 		{
@@ -57,7 +56,7 @@ namespace BHive
 					value = input.get_mouse_delta();
 					break;
 				default:
-					if (input.get_input_state(key) != InputAction::RELEASE)
+					if (input.get_input_state(key) != EventStatus::RELEASE)
 					{
 						value.x = 1.0f;
 					}

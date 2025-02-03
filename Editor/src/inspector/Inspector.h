@@ -1,7 +1,7 @@
 #pragma once
 
 #include "inspector/PropertyLayout.h"
-#include "reflection/Reflection.h"
+#include "core/reflection/Reflection.h"
 
 namespace BHive
 {

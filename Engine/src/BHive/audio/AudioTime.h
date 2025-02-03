@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
-#include "reflection/Reflection.h"
+#include "core/reflection/Reflection.h"
 
 namespace BHive
 {
@@ -21,14 +21,13 @@ namespace BHive
 		}
 
 		AudioTime(uint32_t h, uint32_t m, uint32_t s)
-			: mHours(h), mMinutes(m), mSeconds(s)
+			: mHours(h),
+			  mMinutes(m),
+			  mSeconds(s)
 		{
 		}
 
-		std::string to_string() const
-		{
-			return std::format("{:02}:{:02}:{:02}", mHours, mMinutes, mSeconds);
-		}
+		std::string to_string() const { return std::format("{:02}:{:02}:{:02}", mHours, mMinutes, mSeconds); }
 
 		REFLECTABLE()
 	};
@@ -42,6 +41,4 @@ namespace BHive
 		REFLECT_PROPERTY_READ_ONLY("Time", to_string);
 	}
 
-	
-	
-}
+} // namespace BHive

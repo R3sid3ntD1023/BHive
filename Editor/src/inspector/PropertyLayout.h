@@ -1,6 +1,6 @@
 #pragma once
 
-#include "reflection/Reflection.h"
+#include "core/reflection/Reflection.h"
 
 #define PROPERTY_PRETTY_NAME "PrettyName"
 
@@ -25,8 +25,7 @@ namespace BHive
 	struct ScopedPropertyLayout : public PropertyLayout
 	{
 		ScopedPropertyLayout(const std::string &name, bool columns = true, float width = 0.0f);
-		ScopedPropertyLayout(
-			const rttr::property &property, bool columns = true, float width = 0.0f);
+		ScopedPropertyLayout(const rttr::property &property, bool columns = true, float width = 0.0f);
 		~ScopedPropertyLayout();
 	};
 } // namespace BHive

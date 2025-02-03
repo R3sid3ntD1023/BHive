@@ -1,21 +1,21 @@
 #pragma once
 
-#include "reflection/Reflection.h"
+#include "core/reflection/Reflection.h"
 
 namespace BHive
 {
-    struct ITickable
-    {
-        virtual bool IsTickEnabled() const = 0;
+	struct ITickable
+	{
+		virtual bool IsTickEnabled() const = 0;
 
-        virtual void SetTickEnabled(bool) = 0;
+		virtual void SetTickEnabled(bool) = 0;
 
-        REFLECTABLEV()
-    };
+		REFLECTABLEV()
+	};
 
-    REFLECT(ITickable)
-    {
-        BEGIN_REFLECT(ITickable)
-        REFLECT_PROPERTY("TickEnabled", IsTickEnabled, SetTickEnabled);
-    }
+	REFLECT(ITickable)
+	{
+		BEGIN_REFLECT(ITickable)
+		REFLECT_PROPERTY("TickEnabled", IsTickEnabled, SetTickEnabled);
+	}
 } // namespace BHive

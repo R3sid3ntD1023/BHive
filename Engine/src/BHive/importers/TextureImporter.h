@@ -2,7 +2,6 @@
 
 #include "asset/AssetMetaData.h"
 #include "gfx/Texture.h"
-#include "threading/SafePromise.h"
 #include "core/Buffer.h"
 
 namespace BHive
@@ -20,4 +19,4 @@ namespace BHive
 
 		static BHIVE Ref<Texture> LoadFromMemory(const uint8_t *data, int length);
 	};
-}
+} // namespace BHive

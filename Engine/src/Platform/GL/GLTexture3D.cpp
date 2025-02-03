@@ -1,12 +1,14 @@
 #include "GLTexture3D.h"
 #include "gfx/TextureUtils.h"
 #include <glad/glad.h>
-#include "threading/Threading.h"
 
 namespace BHive
 {
 	GLTexture3D::GLTexture3D(uint32_t width, uint32_t height, uint32_t depth, const FTextureSpecification &specification)
-		: mWidth(width), mHeight(height), mDepth(depth), mSpecification(specification)
+		: mWidth(width),
+		  mHeight(height),
+		  mDepth(depth),
+		  mSpecification(specification)
 	{
 
 		GLenum target = GetTextureTarget(specification.mType, 1);
@@ -79,7 +81,8 @@ namespace BHive
 	void GLTexture3D::SetData(const void *data, uint64_t size, uint32_t offsetX, uint32_t offsetY)
 	{
 
-		glTextureSubImage3D(mTextureID, 0, offsetX, offsetY, 0, mWidth, mHeight, mDepth, GetGLFormat(mSpecification.mFormat),
-							GetGLType(mSpecification.mFormat), data);
+		glTextureSubImage3D(
+			mTextureID, 0, offsetX, offsetY, 0, mWidth, mHeight, mDepth, GetGLFormat(mSpecification.mFormat), GetGLType(mSpecification.mFormat),
+			data);
 	}
-}
+} // namespace BHive

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
-#include "reflection/Reflection.h"
+#include "core/reflection/Reflection.h"
 #include <ImNodeFlow.h>
 
 namespace BHive

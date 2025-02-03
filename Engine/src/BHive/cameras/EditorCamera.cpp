@@ -1,7 +1,6 @@
 #include "EditorCamera.h"
-#include "events/Event.h"
-#include "core/WindowInput.h"
-#include "core/Application.h"
+#include "core/events/Event.h"
+#include "input/InputManager.h"
 
 namespace BHive
 {
@@ -24,7 +23,7 @@ namespace BHive
 		if (mAltPressed)
 			return;
 
-		auto &input = Application::Get().GetWindow().GetInput();
+		auto &input = InputManager::GetInputManager();
 
 		auto forward = mTransform.get_forward();
 		auto right = mTransform.get_right();

@@ -93,10 +93,8 @@ namespace BHive
 
 		auto texture = Texture2D::Create(image_data, (unsigned)x, (unsigned)y, specification);
 
-		BEGIN_THREAD_DISPATCH(=)
 		stbi_image_free(image_data);
-		END_THREAD_DISPATCH()
 
 		return texture;
 	}
-}
+} // namespace BHive

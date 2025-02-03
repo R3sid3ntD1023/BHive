@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gfx/Texture.h"
-#include "serialization/Serialization.h"
+#include "core/serialization/Serialization.h"
 
 namespace BHive
 {
@@ -9,10 +9,8 @@ namespace BHive
 	{
 	public:
 		GLTexture2D() = default;
-		GLTexture2D(uint32_t width, uint32_t height, const FTextureSpecification &specification,
-					uint32_t samples = 1);
-		GLTexture2D(const void *data, uint32_t width, uint32_t height,
-					const FTextureSpecification &specification);
+		GLTexture2D(uint32_t width, uint32_t height, const FTextureSpecification &specification, uint32_t samples = 1);
+		GLTexture2D(const void *data, uint32_t width, uint32_t height, const FTextureSpecification &specification);
 		~GLTexture2D();
 
 		virtual uint32_t GetWidth() const { return mWidth; }
@@ -23,8 +21,7 @@ namespace BHive
 		void BindAsImage(uint32_t unit, uint32_t access, uint32_t level = 0) const;
 		virtual void GenerateMipMaps() const;
 
-		virtual void SetData(const void *data, uint64_t size, uint32_t offsetX = 0,
-							 uint32_t offsetY = 0);
+		virtual void SetData(const void *data, uint64_t size, uint32_t offsetX = 0, uint32_t offsetY = 0);
 		virtual const FTextureSpecification &GetSpecification() const { return mSpecification; }
 		virtual uint32_t GetRendererID() const { return mTextureID; }
 

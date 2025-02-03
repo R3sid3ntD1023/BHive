@@ -3,7 +3,6 @@
 #include "Event.h"
 #include "MouseCodes.h"
 
-
 namespace BHive
 {
 	class BHIVE MouseButtonEvent : public Event
@@ -11,13 +10,16 @@ namespace BHive
 		EVENT(MouseButtonEvent, EventCategoryMouseButton | EventCategoryInput)
 
 	public:
-		MouseButtonEvent(MouseCode button,  InputActionCode action, ModCode mods)
-			:Button(button), Action(action), Mods(mods)
-		{}
+		MouseButtonEvent(MouseCode button, int action, int mods)
+			: Button(button),
+			  Action(action),
+			  Mods(mods)
+		{
+		}
 
 		MouseCode Button;
-		InputActionCode Action;
-		ModCode Mods;
+		int Action;
+		int Mods;
 	};
 
 	class BHIVE MouseScrolledEvent : public Event
@@ -26,8 +28,10 @@ namespace BHive
 
 	public:
 		MouseScrolledEvent(float _x, float _y)
-			:x(_x), y(_y)
-		{}
+			: x(_x),
+			  y(_y)
+		{
+		}
 
 		float x, y;
 	};
@@ -38,9 +42,11 @@ namespace BHive
 
 	public:
 		MouseMovedEvent(float _x, float _y)
-			:x(_x), y(_y)
-		{}
+			: x(_x),
+			  y(_y)
+		{
+		}
 
 		float x, y;
 	};
-}
+} // namespace BHive

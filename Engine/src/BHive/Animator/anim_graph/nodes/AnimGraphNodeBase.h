@@ -1,7 +1,7 @@
 #pragma once
 
-#include "reflection/Reflection.h"
-#include "serialization/Serialization.h"
+#include "core/reflection/Reflection.h"
+#include "core/serialization/Serialization.h"
 
 namespace BHive
 {

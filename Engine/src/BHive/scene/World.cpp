@@ -1,10 +1,10 @@
 #include "cameras/EditorCamera.h"
 #include "Components.h"
 #include "core/Time.h"
-#include "debug/Instrumentor.h"
+#include "core/debug/Instrumentor.h"
 #include "Entity.h"
 #include "SceneRenderer.h"
-#include "serialization/Serialization.h"
+#include "core/serialization/Serialization.h"
 #include "World.h"
 
 namespace BHive

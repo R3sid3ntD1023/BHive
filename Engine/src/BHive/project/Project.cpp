@@ -1,5 +1,4 @@
 #include "Project.h"
-#include "serialization/Serialization.h"
 
 namespace BHive
 {
