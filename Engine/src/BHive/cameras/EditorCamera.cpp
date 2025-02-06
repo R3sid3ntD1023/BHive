@@ -45,26 +45,30 @@ namespace BHive
 			{
 				Zoom(delta.y);
 			}
+		}
 
-			if (input.is_pressed(Key::Up) || input.is_pressed(Key::W))
-			{
-				mTransform.add_translation(forward);
-			}
+		if (input.is_pressed(Key::Up) || input.is_pressed(Key::W))
+		{
+			mTransform.add_translation(-forward * MovementSpeed());
+		}
 
-			if (input.is_pressed(Key::Down) || input.is_pressed(Key::S))
-			{
-				mTransform.add_translation(-forward);
-			}
+		if (input.is_pressed(Key::Down) || input.is_pressed(Key::S))
+		{
+			mTransform.add_translation(forward * MovementSpeed());
+		}
 
-			if (input.is_pressed(Key::Left) || input.is_pressed(Key::A))
-			{
-				mTransform.add_translation(-right);
-			}
+		if (input.is_pressed(Key::Left) || input.is_pressed(Key::A))
+		{
+			mTransform.add_translation(right * MovementSpeed());
+		}
 
-			if (input.is_pressed(Key::Right) || input.is_pressed(Key::D))
-			{
-				mTransform.add_translation(right);
-			}
+		if (input.is_pressed(Key::Right) || input.is_pressed(Key::D))
+		{
+			mTransform.add_translation(-right * MovementSpeed());
+		}
+		if (input.is_pressed(Key::R))
+		{
+			mTransform = mInitialTransform;
 		}
 	}
 
@@ -122,6 +126,11 @@ namespace BHive
 	float EditorCamera::RotationSpeed() const
 	{
 		return 50.0f;
+	}
+
+	float EditorCamera::MovementSpeed() const
+	{
+		return .1f;
 	}
 
 	float EditorCamera::Distance() const

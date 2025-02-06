@@ -54,7 +54,7 @@ namespace BHive
 		mQuadVao->AddVertexBuffer(vbo);
 		mQuadVao->SetIndexBuffer(ibo);
 
-		mCube = StaticMesh::CreateSphere(300.f);
+		mCube = StaticMesh::CreateSphere(8.f);
 
 		mQuadShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/ScreenQuad.glsl");
 
@@ -75,10 +75,6 @@ namespace BHive
 		mSceneData.mOpaqueObjects.reserve(100);
 		mSceneData.mTransparentObjects.reserve(100);
 		mSceneData.mShadowCasters.reserve(100);
-
-		// HDRConverter::Get().GetPreFilteredEnvironmentTetxure()->Bind(0);
-		// HDRConverter::Get().GetIrradianceFBO()->GetColorAttachment()->Bind(1);
-		// HDRConverter::Get().GetBDRFLUT()->Bind(2);
 
 		if ((flags & ESceneRendererFlags_NoShadows) == 0)
 		{

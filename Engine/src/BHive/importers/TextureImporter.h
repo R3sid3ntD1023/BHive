@@ -11,6 +11,7 @@ namespace BHive
 	struct FTextureImportData
 	{
 		int mWidth = 0, mHeight = 0;
+		bool mFlip = true;
 	};
 
 	struct TextureImporter

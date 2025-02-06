@@ -13,7 +13,7 @@ namespace BHive
 		stbi_uc *image_data = nullptr;
 		auto path_str = file.string();
 		bool is_hdr = stbi_is_hdr(path_str.c_str());
-		stbi_set_flip_vertically_on_load(1);
+		stbi_set_flip_vertically_on_load((int)import_data.mFlip);
 
 		if (is_hdr)
 		{

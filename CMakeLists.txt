@@ -35,7 +35,7 @@ add_subdirectory(Engine)
 add_subdirectory(Editor)
 add_subdirectory(Project)
 add_subdirectory(ProjectLauncher)
-add_subdirectory(window_test)
+add_subdirectory(SolarSystem)
 
 set(VS_STARTUP_PROJECT, Editor)
 

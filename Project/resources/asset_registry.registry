@@ -9,6 +9,14 @@
             }
         },
         {
+            "key": 106534172,
+            "value": {
+                "Type": "Texture2D",
+                "Path": "TestImport\\HDR\\rogland_clear_night_4k.asset",
+                "Name": "rogland_clear_night_4k"
+            }
+        },
+        {
             "key": 133128602,
             "value": {
                 "Type": "StaticMesh",

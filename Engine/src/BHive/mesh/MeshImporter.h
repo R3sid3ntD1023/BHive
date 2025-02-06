@@ -11,6 +11,6 @@ namespace BHive
 
 	struct MeshImporter
 	{
-		bool Import(const std::filesystem::path &path, FMeshImportData &data);
+		static bool Import(const std::filesystem::path &path, FMeshImportData &data);
 	};
 } // namespace BHive

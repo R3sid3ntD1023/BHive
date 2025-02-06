@@ -106,8 +106,10 @@ namespace BHive
 				auto spawnable_var = type.get_metadata(ClassMetaData_ComponentSpawnable);
 				auto is_spawnable = spawnable_var ? spawnable_var.to_bool() : false;
 
-				if (!is_spawnable)
+				if (!is_spawnable || !type.get_constructor())
+				{
 					continue;
+				}
 
 				if (ImGui::Selectable(type.get_name().data()))
 				{

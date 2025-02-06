@@ -31,6 +31,7 @@ namespace BHive
 		float ZoomSpeed() const;
 		glm::vec2 PanSpeed() const;
 		float RotationSpeed() const;
+		float MovementSpeed() const;
 		float Distance() const;
 
 	private:
@@ -42,7 +43,9 @@ namespace BHive
 
 	private:
 		float mFov = 45.f, mAspect = 1.7555f, mNear = 0.1f, mFar = 1000.0f;
-		FTransform mTransform{{0.0f, 10.0f, 10.0f}, {-45, 0, 0}};
+
+		FTransform mInitialTransform{{0.0f, 10.0f, 10.0f}, {-45, 0, 0}};
+		FTransform mTransform{mInitialTransform};
 		glm::vec3 mTarget{0.0f};
 		glm::vec2 mPrevMousePosition{0, 0};
 		glm::vec2 mViewportSize{0, 0};

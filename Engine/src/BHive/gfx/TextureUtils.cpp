@@ -282,8 +282,7 @@ namespace BHive
 
 	bool IsDepthFormat(EFormat format)
 	{
-		return format == EFormat::Depth || format == EFormat::DEPTH_COMPONENT_32F ||
-			   format == EFormat::DEPTH_COMPONENT_24;
+		return format == EFormat::Depth || format == EFormat::DEPTH_COMPONENT_32F || format == EFormat::DEPTH_COMPONENT_24;
 	}
 
 	uint32_t GetDepthAttachmentType(EFormat format)
@@ -336,4 +335,4 @@ namespace BHive
 		ASSERT(false);
 		return EFormat::Invalid;
 	}
-}
+} // namespace BHive
