@@ -1,6 +1,5 @@
 #include "GLUniformBuffer.h"
 #include <glad/glad.h>
-#include "threading/Threading.h"
 
 namespace BHive
 {
@@ -37,4 +36,4 @@ namespace BHive
 
 		glNamedBufferSubData(mUniformBufferID, offset, size, data);
 	}
-}
+} // namespace BHive

@@ -4,7 +4,7 @@
 #include "gfx/RenderCommand.h"
 #include "renderers/Renderer.h"
 #include "audio/AudioContext.h"
-#include "gui/Gui.h"
+#include "layers/ImGuiLayer.h"
 #include "threading/Threading.h"
 
 namespace BHive

@@ -75,12 +75,10 @@ namespace BHive
 		}
 	}
 
-	void Entity::OnDestroyed(bool decendents)
+	void Entity::Destroy(bool decendents)
 	{
-		auto children = GetChildren();
 
-		for (auto &component : mComponents)
-			component->Destroy(decendents);
+		auto children = GetChildren();
 
 		for (auto child : children)
 		{
@@ -92,6 +90,8 @@ namespace BHive
 		}
 
 		DetachFromParent();
+
+		mWorld->Destroy(this);
 	}
 
 	void Entity::AddComponent(const ComponentPtr &component)
@@ -108,8 +108,6 @@ namespace BHive
 
 		if (it == mComponents.end())
 			return;
-
-		(*it)->Destroy(true);
 
 		mComponents.erase(it);
 	}

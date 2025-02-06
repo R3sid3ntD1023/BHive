@@ -7,12 +7,6 @@ namespace BHive
 	{
 	}
 
-	void ObjectBase::Destroy(bool descendents)
-	{
-		OnDestroyedEvent(this);
-		OnDestroyed(descendents);
-	}
-
 	void ObjectBase::SetName(const std::string &name)
 	{
 		mData.mName = name;

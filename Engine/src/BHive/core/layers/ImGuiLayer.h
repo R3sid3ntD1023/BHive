@@ -1,9 +1,9 @@
 #pragma once
 
-#include "GUICore.h"
 #include "core/Layer.h"
 
 struct GLFWwindow;
+struct ImGuiContext;
 
 namespace BHive
 {
@@ -34,4 +34,4 @@ namespace BHive
 		GLFWwindow *mWindow = nullptr;
 		ImGuiContext *context = nullptr;
 	};
-}
+} // namespace BHive

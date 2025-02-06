@@ -4,10 +4,11 @@
 #include "core/Window.h"
 #include "core/Layer.h"
 #include "events/ApplicationEvents.h"
-#include "gui/ImGuiLayer.h"
 
 namespace BHive
 {
+	class ImGuiLayer;
+
 	struct FCommandLine
 	{
 		int Count = 0;
@@ -81,4 +82,4 @@ namespace BHive
 	{
 		PushLayer(new TLayer());
 	}
-}
+} // namespace BHive

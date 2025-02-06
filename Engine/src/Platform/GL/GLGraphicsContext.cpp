@@ -2,7 +2,6 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <iostream>
-#include "threading/Threading.h"
 
 namespace BHive
 {
@@ -33,4 +32,4 @@ namespace BHive
 
 		glfwSwapBuffers(mWindowHandle);
 	}
-}
+} // namespace BHive

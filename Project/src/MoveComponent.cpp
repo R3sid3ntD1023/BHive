@@ -23,16 +23,16 @@ namespace BHive
 
 	void MoveComponent::Jump(const BHive::InputValue &value)
 	{
-		// auto &rigid_body_component = GetComponent<BHive::RigidBodyComponent>();
-		// rigid_body_component.ApplyForce({0, 300, 0});
+		auto &rigid_body_component = GetOwner()->GetPhysicsComponent();
+		rigid_body_component.ApplyForce({0, 300, 0});
 	}
 
 	void MoveComponent::Move(const BHive::InputValue &value)
 	{
 		auto direction = value.Get<float>() * mSpeed;
 
-		// auto &rigid_body_component = GetComponent<BHive::RigidBodyComponent>();
-		// rigid_body_component.ApplyForce({direction, 0, 0});
+		auto &rigid_body_component = GetOwner()->GetPhysicsComponent();
+		rigid_body_component.ApplyForce({direction, 0, 0});
 
 		UpdateState();
 	}

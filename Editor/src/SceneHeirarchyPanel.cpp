@@ -31,7 +31,7 @@ namespace BHive
 			}
 
 			for (auto entity : mDestroyedEntitys)
-				entity->Destroy();
+				entity->Destroy(true);
 		}
 
 		if (ImGui::BeginPopupContextWindow("SceneHierarchyPanel", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonDefault_))
@@ -50,7 +50,7 @@ namespace BHive
 				{
 					auto new_entity = type.create().get_value<Ref<Entity>>();
 					mWorld->AddEntity(new_entity);
-					mOnObjectSelected(&*new_entity, false);
+					mOnObjectSelected(new_entity.get(), false);
 				}
 			}
 
@@ -185,6 +185,7 @@ namespace BHive
 
 		if (destroyed)
 		{
+			mOnObjectDeselected(entity);
 			mDestroyedEntitys.push_back(entity);
 		}
 	}

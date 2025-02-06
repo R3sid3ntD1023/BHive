@@ -1,6 +1,5 @@
 #include "GLRendererAPI.h"
 #include <glad/glad.h>
-#include "threading/Threading.h"
 
 namespace BHive
 {
@@ -57,13 +56,7 @@ namespace BHive
 		return "";
 	}
 
-	void OpenGLCallback(unsigned source,
-						unsigned type,
-						unsigned id,
-						unsigned severity,
-						int length,
-						const char *message,
-						const void *userdata)
+	void OpenGLCallback(unsigned source, unsigned type, unsigned id, unsigned severity, int length, const char *message, const void *userdata)
 	{
 		auto source_name = get_debug_source_name(source);
 		auto type_name = get_debug_type_name(type);
@@ -263,4 +256,4 @@ namespace BHive
 		}
 		return errorCode;
 	}
-}
+} // namespace BHive

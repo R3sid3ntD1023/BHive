@@ -2,6 +2,7 @@
 #include "events/ApplicationEvents.h"
 #include "events/MouseEvents.h"
 #include "events/KeyEvents.h"
+#include "input/InputManager.h"
 #include <glfw/glfw3.h>
 
 namespace BHive
@@ -30,6 +31,9 @@ namespace BHive
 		{
 			KeyEvent event((KeyCode)key, scancode, action, mods);
 			mEvent(event);
+
+			auto &im = InputManager::GetInputManager();
+			im.add_input(key, action, mods);
 		}
 	}
 
@@ -49,7 +53,8 @@ namespace BHive
 			MouseButtonEvent event((MouseCode)button, action, mods);
 			mEvent(event);
 
-			// LOG_TRACE("Key : {}, Action : {}", button, action);
+			auto &im = InputManager::GetInputManager();
+			im.add_input(button, action, mods);
 		}
 	}
 
@@ -59,6 +64,9 @@ namespace BHive
 		{
 			MouseScrolledEvent event((float)x, (float)y);
 			mEvent(event);
+
+			auto &im = InputManager::GetInputManager();
+			im.set_scroll(x, y);
 		}
 	}
 

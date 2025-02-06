@@ -25,6 +25,7 @@
 #include "math/RayCasting.h"
 #include "core/FPSCounter.h"
 #include "core/events/ModCode.h"
+#include "core/layers/ImGuiLayer.h"
 #include <ImGuizmo.h>
 #include <mini/ini.h>
 #include <rttr/library.h>

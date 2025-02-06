@@ -1,5 +1,6 @@
 #include "core/Application.h"
 #include "WindowBase.h"
+#include "core/layers/ImGuiLayer.h"
 
 namespace BHive
 {

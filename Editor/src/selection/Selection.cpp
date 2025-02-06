@@ -11,9 +11,6 @@ namespace BHive
 			Clear();
 		}
 
-		auto handle = object->OnDestroyedEvent.bind([=](ObjectBase *obj) { Deselect(obj); });
-		mHandles.emplace(object, handle);
-
 		mSelectedObjects.insert(object);
 		mActiveObject = object;
 
@@ -25,10 +22,6 @@ namespace BHive
 	{
 		if (mSelectedObjects.contains(object))
 		{
-			auto handle = mHandles.at(object);
-			object->OnDestroyedEvent.unbind(handle);
-			mHandles.erase(object);
-
 			mSelectedObjects.erase(object);
 
 			if (mActiveObject == object)
@@ -45,13 +38,6 @@ namespace BHive
 
 	void Selection::Clear()
 	{
-		for (auto object : mSelectedObjects)
-		{
-			auto handle = mHandles.at(object);
-			object->OnDestroyedEvent.unbind(handle);
-			mHandles.erase(object);
-		}
-
 		mSelectedObjects.clear();
 		mActiveObject = nullptr;
 		mActiveEntity = nullptr;

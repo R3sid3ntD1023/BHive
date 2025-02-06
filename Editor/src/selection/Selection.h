@@ -10,7 +10,6 @@ namespace BHive
 	struct Selection
 	{
 		using SelectionContainer = std::unordered_set<ObjectBase *>;
-		using SelectionHandleContainer = std::unordered_map<ObjectBase *, EventDelegateHandle>;
 
 		void Select(ObjectBase *object, bool append = false);
 		void Deselect(ObjectBase *object);
@@ -27,6 +26,5 @@ namespace BHive
 		ObjectBase *mActiveObject = nullptr;
 		Entity *mActiveEntity = nullptr;
 		SelectionContainer mSelectedObjects;
-		SelectionHandleContainer mHandles;
 	};
 } // namespace BHive

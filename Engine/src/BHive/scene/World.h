@@ -41,6 +41,8 @@ namespace BHive
 
 		Ref<Entity> DuplicateEntity(Entity *entity);
 
+		void Destroy(class Entity *entity);
+
 		void Step(int32_t frames = 1);
 
 		bool IsPaused() const { return mIsPaused; }
@@ -77,8 +79,6 @@ namespace BHive
 		void OnCollisionContact(const rp3d::CollisionCallback::ContactPair &contact_pair);
 		void OnCollisionOverlap(const rp3d::OverlapCallback::OverlapPair &overlap_pair);
 		void OnHit(const rp3d::RaycastInfo &info);
-
-		void OnEntityDestroyed(class ObjectBase *obj);
 
 	private:
 		bool mIsPaused = false;

@@ -34,7 +34,7 @@ namespace BHive
 
 		virtual void OnEnd();
 
-		void OnDestroyed(bool decendents) override;
+		void Destroy(bool decendents = true);
 
 		template <typename T>
 		Ref<T> AddNewComponent(const std::string &name)

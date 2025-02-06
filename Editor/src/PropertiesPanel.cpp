@@ -73,7 +73,10 @@ namespace BHive
 		ImGui::PopID();
 
 		if (destroyed)
+		{
+			mOnObjectDeselected(component);
 			mDeletedComponents.insert(component);
+		}
 	}
 
 	void PropertiesPanel::DrawAddComponent(Entity *entity)
