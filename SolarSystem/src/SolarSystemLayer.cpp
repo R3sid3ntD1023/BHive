@@ -1,5 +1,6 @@
 #include "Planet.h"
 #include "SolarSystemLayer.h"
+#include <core/serialization/Serialization.h>
 #include <gfx/Framebuffer.h>
 #include <gfx/RenderCommand.h>
 #include <gfx/Shader.h>
@@ -8,16 +9,16 @@
 
 namespace SolarSystem
 {
-	static std::vector<PlanetData> sPlanetData = {
-		PlanetData{"Mercury", BHive::FTransform({4, 0, 0}), RESOURCE_PATH "/Textures/Mercury.jpg"},
-		PlanetData{"Venus", BHive::FTransform({8, 0, 0}, {}, {1.9f, 1.9f, 1.9f}), RESOURCE_PATH "/Textures/Venus.jpg"},
-		PlanetData{"Earth", BHive::FTransform({12, 0, 0}, {}, {2, 2, 2}), RESOURCE_PATH "/Textures/Earth.jpg"},
-		PlanetData{"Mars", BHive::FTransform({18, 0, 0}, {}, {1.3f, 1.3f, 1.3f}), RESOURCE_PATH "/Textures/Mars.jpg"},
-		PlanetData{"Jupiter", BHive::FTransform({35, 0, 0}, {}, {10, 10, 10}), RESOURCE_PATH "/Textures/Jupiter.jpg"},
-	};
+	static std::vector<PlanetData> sPlanetData;
 
 	void SolarSystemLayer::OnAttach()
 	{
+		{
+			std::ifstream in(RESOURCE_PATH "/PlanetData.json");
+			cereal::JSONInputArchive ar(in);
+			ar(sPlanetData);
+		}
+
 		mShader = BHive::ShaderLibrary::Load(RESOURCE_PATH "/Shaders/Planet.glsl");
 		mQuadShader = BHive::ShaderLibrary::Load(RESOURCE_PATH "/Shaders/ScreenQuad.glsl");
 		mScreenQuad = CreateRef<BHive::PPlane>(1.f, 1.f);

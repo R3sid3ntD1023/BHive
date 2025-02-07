@@ -1,7 +1,6 @@
 #pragma once
 
-#include <core/Core.h>
-#include <math/Transform.h>
+#include "PlanetData.h"
 
 namespace BHive
 {
@@ -11,18 +10,6 @@ namespace BHive
 } // namespace BHive
 namespace SolarSystem
 {
-	struct PlanetData
-	{
-		PlanetData(const std::string &name, const BHive::FTransform &transform, const std::string &texture_path)
-			: mName(name),
-			  mTransform(transform),
-			  mTexturePath(texture_path)
-		{
-		}
-		std::string mName;
-		BHive::FTransform mTransform;
-		std::string mTexturePath;
-	};
 
 	struct Planet
 	{

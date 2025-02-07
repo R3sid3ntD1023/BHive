@@ -25,12 +25,16 @@ namespace SolarSystem
 
 		if (!data.mTexturePath.empty())
 		{
-			mTexture = BHive::TextureImporter::Import(data.mTexturePath);
+			mTexture = BHive::TextureImporter::Import(RESOURCE_PATH + data.mTexturePath);
 		}
 	}
 
 	void Planet::Update(float dt)
 	{
+		float theta = 360.f / mData.mRotationTime.ToSeconds();
+
+		mData.mTransform.add_rotation({0, theta * dt * 1000.f, 0});
+
 		auto texture = mTexture;
 		if (!texture)
 		{

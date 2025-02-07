@@ -1,7 +1,7 @@
 #pragma once
 
-#include "math/Math.h"
 #include "core/reflection/Reflection.h"
+#include "math/Math.h"
 
 namespace BHive
 {
@@ -50,9 +50,16 @@ namespace BHive
 		FTransform &operator/=(float rhs);
 
 		template <typename A>
-		inline void Serialize(A &ar)
+		inline void Save(A &ar) const
 		{
-			ar(mTranslation, mRotation, mScale, mModelMatrix);
+			ar(mTranslation, mRotation, mScale);
+		}
+
+		template <typename A>
+		inline void Load(A &ar)
+		{
+			ar(mTranslation, mRotation, mScale);
+			calculate_model_matrix();
 		}
 
 		REFLECTABLE()
