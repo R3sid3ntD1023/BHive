@@ -1,0 +1,54 @@
+{
+    "value0": [
+        {
+            "value0": "Mercury",
+            "value1": {
+                "value0": [4,0,0],
+                "value1": [0,0,0],
+                "value2": [1,1,1]
+            },
+            "value2": "Textures/Mercury.jpg",
+            "value3": "0'176'0'0'0"
+        },
+        {
+            "value0": "Venus",
+            "value1": {
+              "value0": [ 8, 0, 0 ],
+              "value1": [ 0, 0, 0 ],
+              "value2": [ 1.9, 1.9, 1.9 ]
+            },
+            "value2": "Textures/Venus.jpg",
+            "value3": "0'243'0'0'0"
+        },
+        {
+            "value0": "Earth",
+            "value1": {
+                "value0": [12,0,0],
+                "value1": [0,0,0],
+                "value2": [2,2,2]
+            },
+            "value2": "Textures/Earth.jpg",
+            "value3": "0'0'24'0'0"
+        },
+        {
+            "value0": "Mars",
+            "value1": {
+              "value0": [ 18, 0, 0 ],
+              "value1": [ 0, 0, 0 ],
+              "value2": [ 1.3, 1.3, 1.3 ]
+            },
+            "value2": "Textures/Mars.jpg",
+            "value3": "0'0'24'39'35"
+        },
+        {
+            "value0": "Jupiter",
+            "value1": {
+              "value0": [ 35, 0, 0 ],
+              "value1": [ 0, 0, 0 ],
+              "value2": [ 10, 10, 10 ]
+            },
+            "value2": "Textures/Jupiter.jpg",
+            "value3": "0'0'12'0'0"
+        }
+    ]
+}
