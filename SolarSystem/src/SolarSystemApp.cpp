@@ -1,6 +1,6 @@
+#include "SolarSystemLayer.h"
 #include <core/Application.h>
 #include <core/EntryPoint.h>
-#include "SolarSystemLayer.h"
 
 struct TestApplication : public BHive::Application
 {
@@ -18,7 +18,7 @@ namespace BHive
 		FApplicationSpecification specs{};
 		specs.Width = 800;
 		specs.Height = 600;
-		specs.Title = "TestApp-Water";
+		specs.Title = "Solar System";
 		return new TestApplication(specs);
 	}
 

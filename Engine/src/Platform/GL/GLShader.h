@@ -21,10 +21,11 @@ namespace BHive
 		void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1);
 
 	private:
-		virtual void SetUniform(int location, int value) const ;
+		virtual void SetUniform(int location, int value) const;
 		virtual void SetUniform(int location, uint32_t value) const;
 		virtual void SetUniform(int location, float value) const;
 		virtual void SetUniform(int location, const glm::vec2 &value) const;
+		virtual void SetUniform(int location, const glm::ivec2 &value) const;
 		virtual void SetUniform(int location, const glm::vec3 &value) const;
 		virtual void SetUniform(int location, const glm::vec4 &value) const;
 		virtual void SetUniform(int location, const glm::mat4 &value) const;
@@ -39,4 +40,4 @@ namespace BHive
 		uint32_t mShaderID{0};
 		ShaderRelfectionData mReflectionData;
 	};
-}
+} // namespace BHive

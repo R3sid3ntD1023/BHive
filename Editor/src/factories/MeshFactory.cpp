@@ -12,9 +12,8 @@ namespace BHive
 
 	Ref<Asset> MeshFactory::Import(const std::filesystem::path &path)
 	{
-		MeshImporter importer;
 		FMeshImportData data;
-		if (!importer.Import(path, data))
+		if (!MeshImporter::Import(path, data))
 			return nullptr;
 
 		auto &window_system = SubSystemContext::Get().GetSubSystem<WindowSubSystem>();

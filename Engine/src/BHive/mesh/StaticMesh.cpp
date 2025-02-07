@@ -19,7 +19,7 @@ namespace BHive
 			{.Position = {width, height, 0}, .TexCoord = {1, 1}, .Normal = {0, 0, 1}},
 			{.Position = {-width, height, 0}, .TexCoord = {0, 1}, .Normal = {0, 0, 1}}};
 
-		StaticMesh::CalculateTangentsAndBitTangents(points);
+		StaticMesh::CalculateTangentsAndBitTangents(points.data(), points.size());
 
 		std::vector<uint32_t> indces = {0, 1, 2, 2, 3, 0};
 
@@ -79,7 +79,7 @@ namespace BHive
 			{.Position = {-s, -s, -s}, .TexCoord = {0, 1}, .Normal = {0, -1, 0}, .Color = {1, 0, 1, 1}},
 		};
 
-		StaticMesh::CalculateTangentsAndBitTangents(vertices);
+		StaticMesh::CalculateTangentsAndBitTangents(vertices.data(), vertices.size());
 
 		std::vector<uint32_t> indces = {
 			0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 8, 9, 10, 10, 11, 8, 12, 13, 14, 14, 15, 12, 16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20,
@@ -144,7 +144,7 @@ namespace BHive
 			}
 		}
 
-		StaticMesh::CalculateTangentsAndBitTangents(vertices);
+		StaticMesh::CalculateTangentsAndBitTangents(vertices.data(), vertices.size());
 
 		unsigned k1, k2;
 		for (unsigned i = 0; i < stacks; i++)
@@ -185,10 +185,9 @@ namespace BHive
 		return CreateRef<StaticMesh>(data);
 	}
 
-	void StaticMesh::CalculateTangentsAndBitTangents(std::vector<FVertex> &vertices)
+	void StaticMesh::CalculateTangentsAndBitTangents(FVertex *vertices, size_t size)
 	{
-		auto count = vertices.size();
-		for (size_t i = 0; i < count; i++)
+		for (size_t i = 0; i < size; i++)
 		{
 			auto &vertex = vertices[i];
 

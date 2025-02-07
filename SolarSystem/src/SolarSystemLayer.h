@@ -1,14 +1,16 @@
 #pragma once
 
-#include <core/Core.h>
-#include <core/Layer.h>
 #include <cameras/EditorCamera.h>
 #include <core/Application.h>
+#include <core/Core.h>
+#include <core/Layer.h>
 
 namespace BHive
 {
 	class UniformBuffer;
 	class Shader;
+	class Framebuffer;
+	class PQuad;
 
 } // namespace BHive
 
@@ -27,12 +29,20 @@ namespace SolarSystem
 		bool OnWindowResize(BHive::WindowResizeEvent &e);
 
 	private:
+		void InitFramebuffer();
+
+	private:
 		Ref<BHive::Shader> mShader;
+		Ref<BHive::Shader> mQuadShader;
+
 		std::unordered_map<std::string, Ref<BHive::UniformBuffer>> mUniformBuffers;
 		BHive::EditorCamera mCamera;
 
 		std::vector<Ref<Planet>> mPlanets;
 
-		BHive::FTransform mModelTransform;
+		Ref<BHive::Framebuffer> mMultiSampleFrameBuffer;
+		Ref<BHive::PQuad> mScreenQuad;
+
+		glm::ivec2 mViewportSize{};
 	};
 } // namespace SolarSystem

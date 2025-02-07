@@ -1,5 +1,5 @@
-#include "GLShader.h"
 #include "core/FileSystem.h"
+#include "GLShader.h"
 #include <glad/glad.h>
 
 namespace BHive
@@ -189,6 +189,11 @@ namespace BHive
 	void GLShader::SetUniform(int location, const glm::vec2 &value) const
 	{
 		glUniform2fv(location, 1, &value.x);
+	}
+
+	void GLShader::SetUniform(int location, const glm::ivec2 &value) const
+	{
+		glUniform2iv(location, 1, &value.x);
 	}
 
 	void GLShader::SetUniform(int location, const glm::vec3 &value) const

@@ -37,6 +37,7 @@ namespace BHive
 		virtual void SetUniform(int location, uint32_t value) const = 0;
 		virtual void SetUniform(int location, float value) const = 0;
 		virtual void SetUniform(int location, const glm::vec2 &value) const = 0;
+		virtual void SetUniform(int location, const glm::ivec2 &value) const = 0;
 		virtual void SetUniform(int location, const glm::vec3 &value) const = 0;
 		virtual void SetUniform(int location, const glm::vec4 &value) const = 0;
 		virtual void SetUniform(int location, const glm::mat4 &value) const = 0;

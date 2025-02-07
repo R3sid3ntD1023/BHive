@@ -1,8 +1,8 @@
 #include "Planet.h"
-#include <mesh/MeshImporter.h>
-#include <mesh/StaticMesh.h>
 #include <gfx/RenderCommand.h>
 #include <importers/TextureImporter.h>
+#include <mesh/MeshImporter.h>
+#include <mesh/primitives/Sphere.h>
 
 namespace SolarSystem
 {
@@ -11,9 +11,7 @@ namespace SolarSystem
 	{
 		if (!mSphere)
 		{
-			BHive::FMeshImportData data;
-			BHive::MeshImporter::Import(RESOURCE_PATH "/Meshes/sphere.glb", data);
-			mSphere = CreateRef<BHive::StaticMesh>(data.mMeshData);
+			mSphere = CreateRef<BHive::PSphere>(1.f, 32, 32);
 		}
 
 		if (!mWhiteTexture)
