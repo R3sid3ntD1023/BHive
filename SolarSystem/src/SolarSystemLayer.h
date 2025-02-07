@@ -26,6 +26,8 @@ namespace SolarSystem
 
 		virtual void OnEvent(BHive::Event &e);
 
+		virtual void OnGuiRender(float) override;
+
 		bool OnWindowResize(BHive::WindowResizeEvent &e);
 
 	private:
@@ -41,6 +43,7 @@ namespace SolarSystem
 		std::vector<Ref<Planet>> mPlanets;
 
 		Ref<BHive::Framebuffer> mMultiSampleFrameBuffer;
+		Ref<BHive::Framebuffer> mFramebuffer;
 		Ref<BHive::PPlane> mScreenQuad;
 
 		glm::ivec2 mViewportSize{};

@@ -63,13 +63,17 @@ namespace SolarSystem
 		}
 
 		mMultiSampleFrameBuffer->UnBind();
+		mMultiSampleFrameBuffer->Blit(mFramebuffer);
 
 		BHive::RenderCommand::Clear();
 
 		mQuadShader->Bind();
-		mQuadShader->SetUniform("uViewportSize", mViewportSize);
+		// mQuadShader->SetUniform("uViewportSize", mViewportSize);
 
-		mMultiSampleFrameBuffer->GetColorAttachment()->Bind();
+		// mMultiSampleFrameBuffer->GetColorAttachment()->Bind();
+		mFramebuffer->GetColorAttachment()->Bind();
+		mFramebuffer->GetColorAttachment(1)->Bind(1);
+		mFramebuffer->GetColorAttachment(2)->Bind(2);
 
 		BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
 	}
@@ -82,11 +86,28 @@ namespace SolarSystem
 		mCamera.OnEvent(e);
 	}
 
+	void SolarSystemLayer::OnGuiRender(float)
+	{
+		if (ImGui::Begin("GBuffer"))
+		{
+			auto scene = mFramebuffer->GetColorAttachment();
+			auto pos = mFramebuffer->GetColorAttachment(1);
+			auto norm = mFramebuffer->GetColorAttachment(2);
+
+			ImGui::Image((ImTextureID)(uint64_t)*scene, {200, 200}, {0, 1}, {1, 0});
+			ImGui::Image((ImTextureID)(uint64_t)*pos, {200, 200}, {0, 1}, {1, 0});
+			ImGui::Image((ImTextureID)(uint64_t)*norm, {200, 200}, {0, 1}, {1, 0});
+		}
+
+		ImGui::End();
+	}
+
 	bool SolarSystemLayer::OnWindowResize(BHive::WindowResizeEvent &e)
 	{
 		BHive::RenderCommand::SetViewport(0, 0, e.x, e.y);
 		mCamera = BHive::EditorCamera(45.f, e.x / (float)e.y, .01f, 1000.f);
 		mMultiSampleFrameBuffer->Resize(e.x, e.y);
+		mFramebuffer->Resize(e.x, e.y);
 		mViewportSize = {e.x, e.y};
 
 		return false;
@@ -102,11 +123,13 @@ namespace SolarSystem
 		specs.Width = w;
 		specs.Height = h;
 		specs.Samples = 16;
-		specs.Attachments
-			.attach({.mFormat = BHive::EFormat::RGBA32F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
-			/*.attach({.mFormat = BHive::EFormat::RGB8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})*/
+		specs.Attachments.attach({.mFormat = BHive::EFormat::RGBA32F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
+			.attach({.mFormat = BHive::EFormat::RGB16F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
+			.attach({.mFormat = BHive::EFormat::RGB16F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
 			.attach({.mFormat = BHive::EFormat::DEPTH24_STENCIL8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
 
 		mMultiSampleFrameBuffer = BHive::Framebuffer::Create(specs);
+		specs.Samples = 1;
+		mFramebuffer = BHive::Framebuffer::Create(specs);
 	}
 } // namespace SolarSystem
