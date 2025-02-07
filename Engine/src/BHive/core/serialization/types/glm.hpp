@@ -25,34 +25,24 @@ namespace glm
 	}
 
 	template <typename A, length_t L, typename T, qualifier Q>
-	inline std::string CEREAL_SAVE_MINIMAL_FUNCTION_NAME(A &ar, const vec<L, T, Q> &obj)
+	inline void CEREAL_SAVE_FUNCTION_NAME(A &ar, const vec<L, T, Q> &obj)
 	{
-		std::stringstream ss;
-		ss << "{";
+		ar(cereal::make_size_tag(L));
 		for (int i = 0; i < L; i++)
 		{
-			ss << obj[i];
-			if (i < L - 1)
-				ss << ",";
+			ar(obj[i]);
 		}
-		ss << "}";
-		return ss.str();
 	}
 
 	template <typename A, length_t L, typename T, qualifier Q>
-	inline void CEREAL_LOAD_MINIMAL_FUNCTION_NAME(A &ar, vec<L, T, Q> &obj, const std::string &v)
+	inline void CEREAL_LOAD_FUNCTION_NAME(A &ar, vec<L, T, Q> &obj)
 	{
-		char token;
-		std::stringstream ss(v);
-		ss >> token;
-
+		size_t size = L;
+		ar(cereal::make_size_tag(size));
 		for (int i = 0; i < L; i++)
 		{
-			ss >> obj[i];
-			if (i < L - 1)
-				ss >> token;
+			ar(obj[i]);
 		}
-		ss >> token;
 	}
 
 } // namespace glm
