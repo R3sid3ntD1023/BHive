@@ -4,7 +4,7 @@
 #include <gfx/RenderCommand.h>
 #include <gfx/Shader.h>
 #include <gfx/UniformBuffer.h>
-#include <mesh/primitives/Quad.h>
+#include <mesh/primitives/Plane.h>
 
 namespace SolarSystem
 {
@@ -20,7 +20,7 @@ namespace SolarSystem
 	{
 		mShader = BHive::ShaderLibrary::Load(RESOURCE_PATH "/Shaders/Planet.glsl");
 		mQuadShader = BHive::ShaderLibrary::Load(RESOURCE_PATH "/Shaders/ScreenQuad.glsl");
-		mScreenQuad = CreateRef<BHive::PQuad>();
+		mScreenQuad = CreateRef<BHive::PPlane>(1.f, 1.f);
 
 		mUniformBuffers["CameraBuffer"] = BHive::UniformBuffer::Create(0, sizeof(glm::mat4));
 		mUniformBuffers["ModelBuffer"] = BHive::UniformBuffer::Create(1, sizeof(glm::mat4));

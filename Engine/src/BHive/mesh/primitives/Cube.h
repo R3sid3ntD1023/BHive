@@ -4,12 +4,12 @@
 
 namespace BHive
 {
-	class PQuad : public StaticMesh
+	class PCube : public StaticMesh
 	{
 	public:
-		PQuad();
+		PCube(float size);
 
 	private:
-		FMeshData GetMeshData() const;
+		FMeshData GetMeshData(float size);
 	};
 } // namespace BHive

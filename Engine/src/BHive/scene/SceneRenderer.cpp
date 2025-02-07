@@ -1,18 +1,21 @@
-#include "SceneRenderer.h"
 #include "gfx/RenderCommand.h"
-#include "gfx/VertexArray.h"
 #include "gfx/Shader.h"
 #include "gfx/Texture.h"
 #include "gfx/UniformBuffer.h"
+#include "gfx/VertexArray.h"
 #include "renderers/ShadowRenderer.h"
+#include "SceneRenderer.h"
 #include <glad/glad.h>
-#include "mesh/StaticMesh.h"
-#include "mesh/SkeletalMesh.h"
-#include "mesh/SkeletalPose.h"
+
 #include "core/debug/Instrumentor.h"
+#include "mesh/SkeletalPose.h"
 
 #include "importers/TextureImporter.h"
 #include "renderers/HDRConverter.h"
+
+#include "mesh/primitives/Sphere.h"
+#include "mesh/SkeletalMesh.h"
+#include "mesh/StaticMesh.h"
 
 #define DRAW_ELEMENTS() \
 	RenderCommand::DrawElementsBaseVertex(EDrawMode::Triangles, *vao, sub_mesh->mStartVertex, sub_mesh->mStartIndex, sub_mesh->mIndexCount);
@@ -54,7 +57,7 @@ namespace BHive
 		mQuadVao->AddVertexBuffer(vbo);
 		mQuadVao->SetIndexBuffer(ibo);
 
-		mCube = StaticMesh::CreateSphere(8.f);
+		mCube = CreateRef<PSphere>(300.f);
 
 		mQuadShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/ScreenQuad.glsl");
 

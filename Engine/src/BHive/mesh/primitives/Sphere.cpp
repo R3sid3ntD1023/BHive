@@ -7,6 +7,7 @@ namespace BHive
 	{
 	}
 
+	// https://stackoverflow.com/questions/26116923/modern-opengl-draw-a-sphere-and-cylinder
 	FMeshData PSphere::GetMeshData(float radius, uint32_t sectors, uint32_t stacks) const
 	{
 

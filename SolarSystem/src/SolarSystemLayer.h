@@ -10,7 +10,7 @@ namespace BHive
 	class UniformBuffer;
 	class Shader;
 	class Framebuffer;
-	class PQuad;
+	class PPlane;
 
 } // namespace BHive
 
@@ -41,7 +41,7 @@ namespace SolarSystem
 		std::vector<Ref<Planet>> mPlanets;
 
 		Ref<BHive::Framebuffer> mMultiSampleFrameBuffer;
-		Ref<BHive::PQuad> mScreenQuad;
+		Ref<BHive::PPlane> mScreenQuad;
 
 		glm::ivec2 mViewportSize{};
 	};

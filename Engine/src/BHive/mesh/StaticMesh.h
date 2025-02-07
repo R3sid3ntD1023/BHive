@@ -15,10 +15,6 @@ namespace BHive
 		StaticMesh() = default;
 		StaticMesh(const FMeshData &data);
 
-		static Ref<StaticMesh> CreatePlane(float width, float height);
-		static Ref<StaticMesh> CreateCube(float size);
-		static Ref<StaticMesh> CreateSphere(float radius = 0.5f, uint32_t sectors = 32, uint32_t stacks = 32);
-
 		static void CalculateTangentsAndBitTangents(FVertex *vertices, size_t size);
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
