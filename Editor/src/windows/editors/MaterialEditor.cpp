@@ -1,6 +1,6 @@
 #include "MaterialEditor.h"
+#include "mesh/primitives/Sphere.h"
 #include "scene/SceneRenderer.h"
-#include "mesh/StaticMesh.h"
 
 namespace BHive
 {
@@ -8,7 +8,7 @@ namespace BHive
 	{
 		if (!mSphere)
 		{
-			mSphere = StaticMesh::CreateSphere(1.0f);
+			mSphere = CreateRef<PSphere>(1.f, 64, 64);
 		}
 
 		mCamera = glm::perspective(45.0f, 1.f, 0.01f, 1000.f);
