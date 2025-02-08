@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/serialization/Serialization.h"
 #include "gui/GUICore.h"
 #include "math/Math.h"
 
@@ -70,11 +71,7 @@ namespace BHive
 
 		operator glm::vec3() const { return {r, g, b}; }
 
-		operator uint32_t() const
-		{
-			return uint32_t(a * 255) << 24 | uint32_t(255 * g) << 16 | uint32_t(255 * b) << 8 |
-				   uint32_t(255 * a) << 0;
-		}
+		operator uint32_t() const { return uint32_t(a * 255) << 24 | uint32_t(255 * g) << 16 | uint32_t(255 * b) << 8 | uint32_t(255 * a) << 0; }
 
 		operator float *() { return &r; }
 
@@ -82,9 +79,17 @@ namespace BHive
 
 		std::string to_string() const { return std::format("[{}, {}, {}, {}]", r, g, b, a); }
 
-		template <typename A>
+		template <typename A, std::enable_if_t<is_binary_archive_v<A>, bool> = true>
 		void Serialize(A &ar)
 		{
+			ar(r, g, b, a);
+		}
+
+		template <typename A, std::enable_if_t<is_json_archive_v<A>, bool> = true>
+		void Serialize(A &ar)
+		{
+			size_t size = 4;
+			ar(cereal::make_size_tag(size));
 			ar(r, g, b, a);
 		}
 	};
