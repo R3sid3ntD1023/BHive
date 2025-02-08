@@ -17,6 +17,8 @@
 #include "mesh/SkeletalMesh.h"
 #include "mesh/StaticMesh.h"
 
+#include "renderers/postprocessing/Bloom.h"
+
 #define DRAW_ELEMENTS() \
 	RenderCommand::DrawElementsBaseVertex(EDrawMode::Triangles, *vao, sub_mesh->mStartVertex, sub_mesh->mStartIndex, sub_mesh->mIndexCount);
 
@@ -61,16 +63,7 @@ namespace BHive
 
 		mQuadShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/ScreenQuad.glsl");
 
-		mPreFilterShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/PreFilter.glsl");
-
-		mDownSamplerShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/DownSample.glsl");
-
-		mUpSamplerShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/UpSample.glsl");
-
 		mSkyBoxShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/SkyBox.glsl");
-
-		mBloomMipMaps.resize(5);
-		CreateBloomMipMaps();
 
 		auto environment_texture = TextureImporter::Import(ENGINE_PATH "/data/hdr/industrial_sunset_puresky_2k.hdr");
 		HDRConverter::Get().SetEnvironmentMap(environment_texture);
@@ -85,6 +78,9 @@ namespace BHive
 			ShadowRenderer::GetSpotShadowFBO()->GetDepthAttachment()->Bind(4);
 			ShadowRenderer::GetPointShadowFBO()->GetDepthAttachment()->Bind(5);
 		}
+
+		FBloomSettings settings{};
+		mPostProcessors.push_back(CreateRef<Bloom>(5, width, height, settings));
 	}
 
 	SceneRenderer::~SceneRenderer()
@@ -208,7 +204,11 @@ namespace BHive
 		mMultiSampleFramebuffer->Blit(mFramebuffer);
 
 		// post process
-		ProcessBloom();
+		Ref<Texture> post_process_texture = nullptr;
+		for (auto &postprocess : mPostProcessors)
+		{
+			post_process_texture = postprocess->Process(mFramebuffer->GetColorAttachment());
+		}
 
 		// render screen quad
 
@@ -223,7 +223,7 @@ namespace BHive
 		mQuadShader->SetUniform("u_bloomstrength", mRenderSettings.mStrength);
 
 		mFramebuffer->GetColorAttachment()->Bind();
-		mBloomMipMaps[0]->Bind(1);
+		post_process_texture->Bind(1);
 		RenderCommand::DrawElements(Triangles, *mQuadVao);
 
 		mQuadShader->UnBind();
@@ -346,7 +346,8 @@ namespace BHive
 		mFramebuffer->Resize(width, height);
 		mQuadFramebuffer->Resize(width, height);
 
-		CreateBloomMipMaps();
+		for (auto &postprocess : mPostProcessors)
+			postprocess->Resize(width, height);
 	}
 
 	const Ref<Framebuffer> &SceneRenderer::GetFramebuffer() const
@@ -357,76 +358,6 @@ namespace BHive
 	const Ref<Framebuffer> &SceneRenderer::GetFinalFramebuffer() const
 	{
 		return mQuadFramebuffer;
-	}
-
-	void SceneRenderer::CreateBloomMipMaps()
-	{
-		FTextureSpecification specs{};
-		specs.mFormat = EFormat::R11_G11_B10;
-		specs.mWrapMode = EWrapMode::CLAMP_TO_BORDER;
-
-		for (auto &mip : mBloomMipMaps)
-			mip.reset();
-
-		mPreFilterTexture.reset();
-
-		mPreFilterTexture = Texture2D::Create(nullptr, mViewportSize.x, mViewportSize.y, specs);
-
-		glm::ivec2 mps = mViewportSize;
-		for (auto &mip : mBloomMipMaps)
-		{
-			mip = Texture2D::Create(nullptr, mps.x, mps.y, specs);
-
-			mps /= 2;
-			if (mps.x < 1)
-				mps.x = 1;
-			if (mps.y < 1)
-				mps.y = 1;
-		}
-	}
-
-	void SceneRenderer::ProcessBloom()
-	{
-		// get bloom filetered
-		mPreFilterShader->Bind();
-		mPreFilterShader->SetUniform("u_threshold", mRenderSettings.mThreshold);
-
-		mFramebuffer->GetColorAttachment()->Bind();
-		mPreFilterTexture->BindAsImage(0, GL_WRITE_ONLY);
-		mPreFilterShader->Dispatch(mPreFilterTexture->GetWidth(), mPreFilterTexture->GetHeight());
-
-		mPreFilterShader->UnBind();
-
-		// downsample
-		mDownSamplerShader->Bind();
-
-		auto texture = mPreFilterTexture;
-		for (auto &mip : mBloomMipMaps)
-		{
-			texture->Bind();
-			mip->BindAsImage(0, GL_WRITE_ONLY);
-
-			glm::ivec2 size = {mip->GetWidth(), mip->GetHeight()};
-			mDownSamplerShader->Dispatch(size.x, size.y);
-
-			texture = mip;
-		}
-		mDownSamplerShader->UnBind();
-
-		mUpSamplerShader->Bind();
-		mUpSamplerShader->SetUniform("u_filterRadius", mRenderSettings.mFilterRadius);
-
-		for (size_t i = mBloomMipMaps.size() - 1; i > 0; i--)
-		{
-			const auto &mip = mBloomMipMaps[i];
-			const auto &next_mip = mBloomMipMaps[i - 1];
-
-			mip->Bind();
-			next_mip->BindAsImage(0, GL_READ_WRITE);
-			mUpSamplerShader->Dispatch(next_mip->GetWidth(), next_mip->GetHeight());
-		}
-
-		mUpSamplerShader->UnBind();
 	}
 
 	void SceneRenderer::RenderShadows(bool render_shadows)

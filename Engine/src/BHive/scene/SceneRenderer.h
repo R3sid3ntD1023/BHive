@@ -1,9 +1,9 @@
 #pragma once
 
-#include "math/Math.h"
 #include "gfx/Framebuffer.h"
-#include "renderers/Renderer.h"
+#include "math/Math.h"
 #include "mesh/StaticMesh.h"
+#include "renderers/Renderer.h"
 
 namespace BHive
 {
@@ -120,14 +120,10 @@ namespace BHive
 		const glm::ivec2 &GetViewportSize() const { return mViewportSize; }
 		const Ref<Framebuffer> &GetFramebuffer() const;
 		const Ref<Framebuffer> &GetFinalFramebuffer() const;
-		const MipMaps &GetMipMaps() const { return mBloomMipMaps; }
-		const Ref<Texture2D> GetPreFilter() const { return mPreFilterTexture; }
 
 		const ESceneRendererFlags &GetFlags() const { return mFlags; }
 
 	private:
-		void CreateBloomMipMaps();
-		void ProcessBloom();
 		void RenderShadows(bool render_shadows);
 
 	private:
@@ -140,19 +136,14 @@ namespace BHive
 		Ref<Shader> mQuadShader;
 		glm::ivec2 mViewportSize;
 
-		Ref<Texture2D> mPreFilterTexture = nullptr;
-		MipMaps mBloomMipMaps;
-
-		Ref<Shader> mPreFilterShader;
-		Ref<Shader> mDownSamplerShader;
-		Ref<Shader> mUpSamplerShader;
-
 		Ref<Shader> mSkyBoxShader;
 		Ref<StaticMesh> mCube;
 
 		std::vector<std::function<void()>> mRenderQueue;
 		FSceneData mSceneData;
 		TEnumAsByte<ESceneRendererFlags> mFlags;
+
+		std::vector<Ref<class PostProcessor>> mPostProcessors;
 
 		REFLECTABLE()
 	};
