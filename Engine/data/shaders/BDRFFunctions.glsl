@@ -95,8 +95,6 @@ vec3 CalculatePointLightBDRF(vec3 F0, vec3 P, vec3 N, vec3 V, Light light, vec3 
 	vec3 L = light.position - P;
 	float dist = length(light.position - P);
 
-	if(dist > light.radius) return vec3(0);
-
 	float pointlight =  PointLight(P, N, light);
 	vec3 BDRF = CalculateBDRF(F0, N, V, normalize(L), albedo, metallic, roughness);
 

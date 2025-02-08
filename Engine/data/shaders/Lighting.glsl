@@ -86,9 +86,13 @@ float DirectionalLight(vec3 N, vec3 D)
 float PointLight(vec3 P, vec3 N, Light light)
 {
 	float dist = length(light.position - P);
+	if(dist > light.radius) return 0;
+
+	vec3 dir = light.position - P;
+	float ndotl = dot(N, dir);
 	float attenuation = max(1.0 - (dist * dist)/(light.radius*light.radius), 0.0);
 
-	return attenuation;
+	return ndotl * light.brightness * attenuation;
 }
 
 float DirLightShadow(int light, vec3 position, in sampler2DArrayShadow shadow_array_texture)
