@@ -1,30 +1,43 @@
-#include "Planet.h"
+#include "CelestrialBody.h"
 #include "SolarSystemLayer.h"
 #include <core/serialization/Serialization.h>
 #include <gfx/Framebuffer.h>
 #include <gfx/RenderCommand.h>
 #include <gfx/Shader.h>
 #include <gfx/UniformBuffer.h>
+#include <glad/glad.h>
 #include <mesh/primitives/Plane.h>
+#include <renderers/postprocessing/Bloom.h>
+#include <renderers/Renderer.h>
 
 namespace SolarSystem
 {
-	static std::vector<PlanetData> sPlanetData;
-
 	void SolarSystemLayer::OnAttach()
 	{
 		{
 			std::ifstream in(RESOURCE_PATH "/PlanetData.json");
 			cereal::JSONInputArchive ar(in);
-			ar(sPlanetData);
+
+			size_t num_bodies = 0;
+			ar(num_bodies);
+			for (size_t i = 0; i < num_bodies; i++)
+			{
+				rttr::type type = BHive::InvalidType;
+				ar(type);
+
+				if (type)
+				{
+					auto body = type.create().get_value<Ref<CelestrialBody>>();
+					body->Load(ar);
+					mBodies.push_back(body);
+				}
+			}
 		}
 
 		mShader = BHive::ShaderLibrary::Load(RESOURCE_PATH "/Shaders/Planet.glsl");
+		mLightingShader = BHive::ShaderLibrary::Load(RESOURCE_PATH "/Shaders/Lighting.glsl");
 		mQuadShader = BHive::ShaderLibrary::Load(RESOURCE_PATH "/Shaders/ScreenQuad.glsl");
 		mScreenQuad = CreateRef<BHive::PPlane>(1.f, 1.f);
-
-		mUniformBuffers["CameraBuffer"] = BHive::UniformBuffer::Create(0, sizeof(glm::mat4));
-		mUniformBuffers["ModelBuffer"] = BHive::UniformBuffer::Create(1, sizeof(glm::mat4));
 
 		InitFramebuffer();
 
@@ -34,12 +47,10 @@ namespace SolarSystem
 		mCamera = BHive::EditorCamera(45.f, w / (float)h, .01f, 1000.f);
 		mViewportSize = {w, h};
 
-		for (auto &data : sPlanetData)
-		{
-			mPlanets.push_back(CreateRef<Planet>(data));
-		}
-
 		BHive::RenderCommand::SetCullEnabled(false);
+
+		BHive::FBloomSettings settings{};
+		mBloom = CreateRef<BHive::Bloom>(5, w, h, settings);
 	}
 
 	void SolarSystemLayer::OnUpdate(float dt)
@@ -51,31 +62,51 @@ namespace SolarSystem
 		BHive::RenderCommand::ClearColor(.2f, .2f, .2f, 1.f);
 		BHive::RenderCommand::Clear();
 
-		const glm::mat4 view_projection = mCamera.GetProjection() * mCamera.GetView().inverse().to_mat4();
-		mUniformBuffers["CameraBuffer"]->SetData(view_projection);
+		auto clear = glm::vec3(0);
+		mMultiSampleFrameBuffer->ClearAttachment(3, GL_FLOAT, &clear);
+
+		BHive::Renderer::Begin(mCamera.GetProjection(), mCamera.GetView().inverse());
 
 		mShader->Bind();
 
-		for (auto &p : mPlanets)
+		for (auto &body : mBodies)
 		{
-			mUniformBuffers["ModelBuffer"]->SetData(p->GetTransform().to_mat4());
-			p->Update(dt);
+			body->Update(mShader, dt);
 		}
+
+		BHive::Renderer::End();
 
 		mMultiSampleFrameBuffer->UnBind();
 		mMultiSampleFrameBuffer->Blit(mFramebuffer);
 
-		BHive::RenderCommand::Clear();
+		BHive::RenderCommand::DisableDepth();
 
-		mQuadShader->Bind();
-		// mQuadShader->SetUniform("uViewportSize", mViewportSize);
+		mLightingbuffer->Bind();
+		BHive::RenderCommand::Clear(BHive::Buffer_Color);
 
-		// mMultiSampleFrameBuffer->GetColorAttachment()->Bind();
+		mLightingShader->Bind();
+
 		mFramebuffer->GetColorAttachment()->Bind();
 		mFramebuffer->GetColorAttachment(1)->Bind(1);
 		mFramebuffer->GetColorAttachment(2)->Bind(2);
+		mFramebuffer->GetColorAttachment(3)->Bind(3);
 
 		BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
+
+		mLightingbuffer->UnBind();
+
+		BHive::RenderCommand::Clear(BHive::Buffer_Color);
+
+		auto postprocess_texture = mBloom->Process(mFramebuffer->GetColorAttachment(3));
+
+		mQuadShader->Bind();
+
+		mLightingbuffer->GetColorAttachment()->Bind();
+		postprocess_texture->Bind(1);
+
+		BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
+
+		BHive::RenderCommand::EnableDepth();
 	}
 
 	void SolarSystemLayer::OnEvent(BHive::Event &e)
@@ -90,13 +121,30 @@ namespace SolarSystem
 	{
 		if (ImGui::Begin("GBuffer"))
 		{
-			auto scene = mFramebuffer->GetColorAttachment();
-			auto pos = mFramebuffer->GetColorAttachment(1);
-			auto norm = mFramebuffer->GetColorAttachment(2);
 
-			ImGui::Image((ImTextureID)(uint64_t)*scene, {200, 200}, {0, 1}, {1, 0});
-			ImGui::Image((ImTextureID)(uint64_t)*pos, {200, 200}, {0, 1}, {1, 0});
-			ImGui::Image((ImTextureID)(uint64_t)*norm, {200, 200}, {0, 1}, {1, 0});
+			if (ImGui::BeginTable("Settings", 2))
+			{
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+
+				auto scene = mFramebuffer->GetColorAttachment();
+				auto pos = mFramebuffer->GetColorAttachment(1);
+				auto norm = mFramebuffer->GetColorAttachment(2);
+				auto emission = mFramebuffer->GetColorAttachment(3);
+
+				ImGui::Image((ImTextureID)(uint64_t)*scene, {200, 200}, {0, 1}, {1, 0});
+				ImGui::Image((ImTextureID)(uint64_t)*pos, {200, 200}, {0, 1}, {1, 0});
+				ImGui::Image((ImTextureID)(uint64_t)*norm, {200, 200}, {0, 1}, {1, 0});
+				ImGui::Image((ImTextureID)(uint64_t)*emission, {200, 200}, {0, 1}, {1, 0});
+
+				ImGui::TableNextColumn();
+
+				auto &bloom = mBloom->GetSettings();
+				ImGui::DragFloat("FilterRadius", &bloom.mFilterRadius, .01f, 0.0f, 1.0f);
+				ImGui::ColorEdit4("FilterThreshold", &bloom.mFilterThreshold.x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+			}
+
+			ImGui::EndTable();
 		}
 
 		ImGui::End();
@@ -105,10 +153,12 @@ namespace SolarSystem
 	bool SolarSystemLayer::OnWindowResize(BHive::WindowResizeEvent &e)
 	{
 		BHive::RenderCommand::SetViewport(0, 0, e.x, e.y);
-		mCamera = BHive::EditorCamera(45.f, e.x / (float)e.y, .01f, 1000.f);
+		mCamera.Resize(e.x, e.y);
 		mMultiSampleFrameBuffer->Resize(e.x, e.y);
 		mFramebuffer->Resize(e.x, e.y);
+		mLightingbuffer->Resize(e.x, e.y);
 		mViewportSize = {e.x, e.y};
+		mBloom->Resize(e.x, e.y);
 
 		return false;
 	}
@@ -122,14 +172,18 @@ namespace SolarSystem
 		BHive::FramebufferSpecification specs{};
 		specs.Width = w;
 		specs.Height = h;
-		specs.Samples = 16;
+		specs.Samples = 32;
 		specs.Attachments.attach({.mFormat = BHive::EFormat::RGBA32F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
 			.attach({.mFormat = BHive::EFormat::RGB16F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
 			.attach({.mFormat = BHive::EFormat::RGB16F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
+			.attach({.mFormat = BHive::EFormat::RGB32F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
 			.attach({.mFormat = BHive::EFormat::DEPTH24_STENCIL8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
 
 		mMultiSampleFrameBuffer = BHive::Framebuffer::Create(specs);
 		specs.Samples = 1;
 		mFramebuffer = BHive::Framebuffer::Create(specs);
+
+		specs.Attachments.reset().attach({.mFormat = BHive::EFormat::RGBA8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
+		mLightingbuffer = BHive::Framebuffer::Create(specs);
 	}
 } // namespace SolarSystem

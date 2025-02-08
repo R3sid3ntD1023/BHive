@@ -11,12 +11,13 @@ namespace BHive
 	class Shader;
 	class Framebuffer;
 	class PPlane;
+	class Bloom;
 
 } // namespace BHive
 
 namespace SolarSystem
 {
-	struct Planet;
+	struct CelestrialBody;
 
 	struct SolarSystemLayer : public BHive::Layer
 	{
@@ -35,17 +36,21 @@ namespace SolarSystem
 
 	private:
 		Ref<BHive::Shader> mShader;
+		Ref<BHive::Shader> mLightingShader;
 		Ref<BHive::Shader> mQuadShader;
 
-		std::unordered_map<std::string, Ref<BHive::UniformBuffer>> mUniformBuffers;
 		BHive::EditorCamera mCamera;
 
-		std::vector<Ref<Planet>> mPlanets;
+		std::vector<Ref<CelestrialBody>> mBodies;
 
 		Ref<BHive::Framebuffer> mMultiSampleFrameBuffer;
 		Ref<BHive::Framebuffer> mFramebuffer;
+		Ref<BHive::Framebuffer> mLightingbuffer;
 		Ref<BHive::PPlane> mScreenQuad;
 
 		glm::ivec2 mViewportSize{};
+
+		// PostProcessing
+		Ref<BHive::Bloom> mBloom;
 	};
 } // namespace SolarSystem

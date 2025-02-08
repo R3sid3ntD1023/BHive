@@ -7,8 +7,7 @@ layout(location = 0) in vec3 vPos;
 layout(location = 1) in vec2 vTexCoord;
 layout(location = 2) in vec3 vNormal;
 
-layout(std430 , binding = 0) uniform CameraBuffer{ mat4 u_viewprojection;} ;
-layout(std430, binding = 1) uniform ModelBuffer {mat4 u_model; };
+layout(std430 , binding = 0) uniform ObjectBuffer{ mat4 u_projection; mat4 u_view; mat4 u_model;} ;
 
 layout(location = 0) out struct VS_OUT
 {
@@ -26,7 +25,7 @@ void main()
     mat3 normal_matrix = transpose(inverse(mat3(u_model)));
     vs_out.normal = normal_matrix * vNormal;
 
-    gl_Position = u_viewprojection * worldPos;
+    gl_Position = u_projection * u_view * worldPos;
 }
 
 #type fragment
@@ -42,14 +41,25 @@ layout(location = 0) in struct VS_OUT
 
 
 layout(binding = 0) uniform sampler2D u_Texture;
+
+layout(location = 0) uniform vec3 uColor = vec3(1);
+layout(location = 1) uniform vec3 uEmission = vec3(0);
+
 layout(location = 0) out vec4 fColor;
 layout(location = 1) out vec4 fPosition;
 layout(location = 2) out vec4 fNormal;
+layout(location = 3) out vec4 fEmission;
 
 void main()
 {
-    vec4 color = texture(u_Texture, vs_in.texcoord);
-    fColor = color;
+    
+    vec3 color = pow(texture(u_Texture, vs_in.texcoord).rgb, vec3(2.2));
+    color += vec3(.2);
+    color *= uColor;
+
+    fColor = vec4(color, 1);
     fPosition = vec4(vs_in.position,1);
     fNormal = vec4(vs_in.normal, 1);
+    fEmission = vec4(uEmission ,1);
 }
+

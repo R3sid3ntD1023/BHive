@@ -33,14 +33,13 @@ namespace SolarSystem
 	struct PlanetData
 	{
 		std::string mName;
-		BHive::FTransform mTransform;
 		std::string mTexturePath;
 		PlanetTime mRotationTime;
 
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(mName, mTransform, mTexturePath, mRotationTime);
+			ar(mName, mTexturePath, mRotationTime);
 		}
 	};
 } // namespace SolarSystem

@@ -1,84 +1,101 @@
 {
-  "value0": [
-    {
-      "value0": "Mercury",
-      "value1": {
-        "value0": [ 4, 0, 0 ],
-        "value1": [ 0, 0, 0 ],
-        "value2": [ 1, 1, 1 ]
-      },
-      "value2": "Textures/Mercury.jpg",
-      "value3": "0'176'0'0'0"
-    },
-    {
-      "value0": "Venus",
-      "value1": {
-        "value0": [ 8, 0, 0 ],
-        "value1": [ 0, 0, 0 ],
-        "value2": [ 1.9, 1.9, 1.9 ]
-      },
-      "value2": "Textures/Venus.jpg",
-      "value3": "0'243'0'0'0"
-    },
-    {
-      "value0": "Earth",
-      "value1": {
-        "value0": [ 12, 0, 0 ],
-        "value1": [ 0, 0, 0 ],
-        "value2": [ 2, 2, 2 ]
-      },
-      "value2": "Textures/Earth.jpg",
-      "value3": "0'0'24'0'0"
-    },
-    {
-      "value0": "Mars",
-      "value1": {
-        "value0": [ 18, 0, 0 ],
-        "value1": [ 0, 0, 0 ],
-        "value2": [ 1.3, 1.3, 1.3 ]
-      },
-      "value2": "Textures/Mars.jpg",
-      "value3": "0'0'24'39'35"
-    },
-    {
-      "value0": "Jupiter",
-      "value1": {
-        "value0": [ 35, 0, 0 ],
-        "value1": [ 0, 0, 0 ],
-        "value2": [ 10, 10, 10 ]
-      },
-      "value2": "Textures/Jupiter.jpg",
-      "value3": "0'0'12'0'0"
-    },
-    {
-      "value0": "Saturn",
-      "value1": {
-        "value0": [ 58, 0, 0 ],
-        "value1": [ 0, 0, 0 ],
-        "value2": [ 8, 8, 8 ]
-      },
-      "value2": "Textures/Saturn.jpg",
-      "value3": "0'0'10'33'38"
-    },
-    {
-      "value0": "Uranus",
-      "value1": {
-        "value0": [ 80, 0, 0 ],
-        "value1": [ 0, 0, 0 ],
-        "value2": [ 5, 5, 5 ]
-      },
-      "value2": "Textures/Uranus.jpg",
-      "value3": "0'0'17'14'00"
-    },
-    {
-      "value0": "Neptune",
-      "value1": {
-        "value0": [ 100, 0, 0 ],
-        "value1": [ 0, 0, 0 ],
-        "value2": [ 5.5, 5.5, 5.5 ]
-      },
-      "value2": "Textures/Neptune.jpg",
-      "value3": "0'0'16'00'00"
-    }
-  ]
+  "value0" :  9,
+  "value1": "Planet",
+  "value2": {
+    "value0": [ 4, 0, 0 ],
+    "value1": [ 0, 0, 0 ],
+    "value2": [ 1, 1, 1 ]
+  },
+  "value3": {
+    "value0": "Mercury",
+    "value1": "Textures/Mercury.jpg",
+    "value2": "0'176'0'0'0"
+  },
+  "value4": "Planet",
+  "value5": {
+    "value0": [ 8, 0, 0 ],
+    "value1": [ 0, 0, 0 ],
+    "value2": [ 1.9, 1.9, 1.9 ]
+  },
+  "value6": {
+    "value0": "Venus",
+    "value1": "Textures/Venus.jpg",
+    "value2": "0'243'0'0'0"
+  },
+  "value7": "Planet",
+  "value8": {
+    "value0": [ 12, 0, 0 ],
+    "value1": [ 0, 0, 0 ],
+    "value2": [ 2, 2, 2 ]
+  },
+  "value9": {
+    "value0": "Earth",
+    "value1": "Textures/Earth.jpg",
+    "value2": "0'0'24'0'0"
+  },
+  "value10": "Planet",
+  "value11": {
+    "value0": [ 18, 0, 0 ],
+    "value1": [ 0, 0, 0 ],
+    "value2": [ 1.3, 1.3, 1.3 ]
+  },
+  "value12": {
+    "value0": "Mars",
+    "value1": "Textures/Mars.jpg",
+    "value2": "0'0'24'39'35"
+  },
+  "value13": "Planet",
+  "value14": {
+    "value0": [ 35, 0, 0 ],
+    "value1": [ 0, 0, 0 ],
+    "value2": [ 10, 10, 10 ]
+  },
+  "value15": {
+    "value0": "Jupiter",
+    "value1": "Textures/Jupiter.jpg",
+    "value2": "0'0'12'0'0"
+  },
+  "value16": "Planet",
+  "value17": {
+    "value0": [ 58, 0, 0 ],
+    "value1": [ 0, 0, 0 ],
+    "value2": [ 8, 8, 8 ]
+  },
+  "value18": {
+    "value0": "Saturn",
+    "value1": "Textures/Saturn.jpg",
+    "value2": "0'0'10'33'38"
+  },
+  "value19": "Planet",
+  "value20": {
+    "value0": [ 80, 0, 0 ],
+    "value1": [ 0, 0, 0 ],
+    "value2": [ 5, 5, 5 ]
+  },
+  "value21": {
+    "value0": "Uranus",
+    "value1": "Textures/Uranus.jpg",
+    "value2": "0'0'17'14'00"
+  },
+  "value22": "Planet",
+  "value23": {
+    "value0": [ 100, 0, 0 ],
+    "value1": [ 0, 0, 0 ],
+    "value2": [ 5.5, 5.5, 5.5 ]
+  },
+  "value24": {
+    "value0": "Neptune",
+    "value1": "Textures/Neptune.jpg",
+    "value2": "0'0'16'00'00"
+  },
+  "value25": "Star",
+  "value26": {
+    "value0": [ 0, 0, 0 ],
+    "value1": [ 0, 0, 0 ],
+    "value2": [ 1, 1, 1 ]
+  },
+  "value27": 0.1,
+  "value28": 200,
+  "value29": [ 1, 1, 1, 1 ],
+  "value30" : [10, 5, 0.5, 1]
 }
