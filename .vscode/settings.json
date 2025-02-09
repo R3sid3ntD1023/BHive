@@ -102,5 +102,6 @@
         "*.embedded": "cpp"
     },
     "editor.formatOnSave": true,
-    "debug.console.closeOnEnd": true
+    "debug.console.closeOnEnd": true,
+    "workbench.colorTheme": "Visual Studio Dark - C++"
 }
