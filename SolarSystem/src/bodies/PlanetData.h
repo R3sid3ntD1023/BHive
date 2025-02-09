@@ -2,44 +2,49 @@
 
 #include <core/Core.h>
 #include <math/Transform.h>
+#include <core/EnumAsByte.h>
 
-namespace SolarSystem
+struct PlanetTime
 {
-	struct PlanetTime
+	uint32_t Years = 0;
+	uint32_t Days = 0;
+	uint32_t Hours = 24;
+	uint32_t Minutes = 0;
+	uint32_t Seconds = 0;
+
+	uint32_t ToSeconds();
+
+	template <typename A>
+	std::string SaveMinimal(A &ar) const
 	{
-		uint32_t Years = 0;
-		uint32_t Days = 0;
-		uint32_t Hours = 24;
-		uint32_t Minutes = 0;
-		uint32_t Seconds = 0;
+		return std::format("{}'{}'{}'{}'{}", Years, Days, Hours, Minutes, Seconds);
+	}
 
-		uint32_t ToSeconds();
-
-		template <typename A>
-		std::string SaveMinimal(A &ar) const
-		{
-			return std::format("{}'{}'{}'{}'{}", Years, Days, Hours, Minutes, Seconds);
-		}
-
-		template <typename A>
-		void LoadMinimal(A &ar, const std::string &v)
-		{
-			std::string token;
-			std::stringstream ss(v);
-			ss >> Years >> token >> Days >> token >> Hours >> token >> Minutes >> token >> Seconds;
-		}
-	};
-
-	struct PlanetData
+	template <typename A>
+	void LoadMinimal(A &ar, const std::string &v)
 	{
-		std::string mName;
-		std::string mTexturePath;
-		PlanetTime mRotationTime;
+		std::string token;
+		std::stringstream ss(v);
+		ss >> Years >> token >> Days >> token >> Hours >> token >> Minutes >> token >> Seconds;
+	}
+};
 
-		template <typename A>
-		void Serialize(A &ar)
-		{
-			ar(mName, mTexturePath, mRotationTime);
-		}
-	};
-} // namespace SolarSystem
+enum EPlanetFlags : uint32_t
+{
+	None = 0,
+	Single_Channel_Texture = 1 << 0
+};
+
+struct PlanetData
+{
+	std::string mName;
+	std::string mTexturePath;
+	PlanetTime mRotationTime;
+	BHive::TEnumAsByte<EPlanetFlags> mFlags;
+
+	template <typename A>
+	void Serialize(A &ar)
+	{
+		ar(mName, mTexturePath, mRotationTime, mFlags);
+	}
+};

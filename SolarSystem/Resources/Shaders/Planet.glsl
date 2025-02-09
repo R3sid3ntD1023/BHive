@@ -32,6 +32,8 @@ void main()
 
 #version 460 core
 
+#define SINGLE_CHANNEL 1 << 0
+
 layout(location = 0) in struct VS_OUT
 {
     vec3 position;
@@ -42,8 +44,10 @@ layout(location = 0) in struct VS_OUT
 
 layout(binding = 0) uniform sampler2D u_Texture;
 
-layout(location = 0) uniform vec3 uColor = vec3(1);
-layout(location = 1) uniform vec3 uEmission = vec3(0);
+layout(location = 0) uniform uint uFlags = 0;
+layout(location = 1) uniform vec3 uColor = vec3(1);
+layout(location = 2) uniform vec3 uEmission = vec3(0);
+
 
 layout(location = 0) out vec4 fColor;
 layout(location = 1) out vec4 fPosition;
@@ -52,8 +56,12 @@ layout(location = 3) out vec4 fEmission;
 
 void main()
 {
-    
+    bool is_single_channel = (uFlags & SINGLE_CHANNEL) != 0;
+
     vec3 color = pow(texture(u_Texture, vs_in.texcoord).rgb, vec3(2.2));
+    if(is_single_channel)
+        color.rgb = vec3(color.r);
+    
     color += vec3(.2);
     color *= uColor;
 

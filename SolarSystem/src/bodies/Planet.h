@@ -9,34 +9,30 @@ namespace BHive
 	class Texture;
 
 } // namespace BHive
-namespace SolarSystem
+
+struct Planet : public CelestrialBody
 {
+	Planet();
 
-	struct Planet : public CelestrialBody
-	{
-		Planet();
+	virtual void OnUpdate(const Ref<BHive::Shader> &shader, float dt) override;
 
-		virtual void Update(const Ref<BHive::Shader> &shader, float dt) override;
+	void Initialize(const PlanetData &data);
 
-		void Initialize(const PlanetData &data);
+	void Save(cereal::JSONOutputArchive &ar) const override;
 
-		void Save(cereal::JSONOutputArchive &ar) const;
+	void Load(cereal::JSONInputArchive &ar) override;
 
-		void Load(cereal::JSONInputArchive &ar);
+	REFLECTABLEV(CelestrialBody)
 
-		REFLECTABLEV(CelestrialBody)
+private:
+	PlanetData mData;
 
-	private:
-		PlanetData mData;
+	Ref<BHive::Texture> mTexture;
+	static inline Ref<BHive::StaticMesh> mSphere;
+};
 
-		Ref<BHive::Texture> mTexture;
-		static inline Ref<BHive::StaticMesh> mSphere;
-	};
-
-} // namespace SolarSystem
-
-REFLECT(SolarSystem::Planet)
+REFLECT(Planet)
 {
-	BEGIN_REFLECT(SolarSystem::Planet, "Planet")
+	BEGIN_REFLECT(Planet)
 	REFLECT_CONSTRUCTOR();
 }

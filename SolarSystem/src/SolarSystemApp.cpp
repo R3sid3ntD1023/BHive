@@ -7,7 +7,7 @@ struct TestApplication : public BHive::Application
 	TestApplication(const BHive::FApplicationSpecification &specs)
 		: Application(specs)
 	{
-		PushLayer(new SolarSystem::SolarSystemLayer());
+		PushLayer(new SolarSystemLayer());
 	}
 };
 

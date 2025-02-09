@@ -14,8 +14,9 @@ namespace SolarSystem
 		}
 	}
 
-	void Star::Update(const Ref<BHive::Shader> &shader, float)
+	void Star::OnUpdate(const Ref<BHive::Shader> &shader, float dt)
 	{
+		CelestrialBody::OnUpdate(shader, dt);
 
 		BHive::Renderer::GetWhiteTexture()->Bind();
 		shader->SetUniform("uColor", (glm::vec3)Color);
@@ -26,8 +27,9 @@ namespace SolarSystem
 		light.mRadius = Radius;
 		light.mBrightness = Brightness;
 
-		BHive::Renderer::SubmitTransform(mTransform);
-		BHive::Renderer::SubmitPointLight(mTransform.get_translation(), light);
+		auto world_transform = GetTransform();
+		BHive::Renderer::SubmitTransform(world_transform);
+		BHive::Renderer::SubmitPointLight(world_transform.get_translation(), light);
 		BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mSphere->GetVertexArray());
 	}
 	void Star::Save(cereal::JSONOutputArchive &ar) const

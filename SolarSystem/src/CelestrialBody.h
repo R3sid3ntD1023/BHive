@@ -1,5 +1,6 @@
 #pragma once
 
+#include <core/Core.h>
 #include <core/reflection/Reflection.h>
 #include <core/serialization/Serialization.h>
 #include <math/Transform.h>
@@ -9,27 +10,32 @@ namespace BHive
 	class Shader;
 }
 
-namespace SolarSystem
+struct CelestrialBody
 {
-	struct CelestrialBody
-	{
-		virtual void Update(const Ref<BHive::Shader> &shader, float) {}
+	void Update(const Ref<BHive::Shader> &shader, float);
 
-		const BHive::FTransform &GetTransform() const { return mTransform; }
+	virtual void OnUpdate(const Ref<BHive::Shader> &shader, float) {}
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const { ar(mTransform); }
+	BHive::FTransform GetTransform() const;
 
-		virtual void Load(cereal::JSONInputArchive &ar) { ar(mTransform); }
+	virtual void Save(cereal::JSONOutputArchive &ar) const;
 
-		REFLECTABLEV()
+	virtual void Load(cereal::JSONInputArchive &ar);
 
-	protected:
-		BHive::FTransform mTransform;
-	};
+	REFLECTABLEV()
 
-} // namespace SolarSystem
+protected:
+	BHive::FTransform mTransform;
 
-REFLECT(SolarSystem::CelestrialBody)
+private:
+	CelestrialBody *mParent = nullptr;
+	std::vector<Ref<CelestrialBody>> mChildren;
+};
+
+void Save(cereal::JSONOutputArchive &ar, const Ref<CelestrialBody> &obj);
+void Load(cereal::JSONInputArchive &ar, Ref<CelestrialBody> &obj);
+
+REFLECT(CelestrialBody)
 {
-	BEGIN_REFLECT(SolarSystem::CelestrialBody, "CelestrialBody");
+	BEGIN_REFLECT(CelestrialBody);
 }

@@ -15,42 +15,39 @@ namespace BHive
 
 } // namespace BHive
 
-namespace SolarSystem
+class Universe;
+
+struct SolarSystemLayer : public BHive::Layer
 {
-	struct CelestrialBody;
+	virtual void OnAttach() override;
 
-	struct SolarSystemLayer : public BHive::Layer
-	{
-		virtual void OnAttach() override;
+	virtual void OnUpdate(float dt) override;
 
-		virtual void OnUpdate(float dt) override;
+	virtual void OnEvent(BHive::Event &e);
 
-		virtual void OnEvent(BHive::Event &e);
+	virtual void OnGuiRender(float) override;
 
-		virtual void OnGuiRender(float) override;
+	bool OnWindowResize(BHive::WindowResizeEvent &e);
 
-		bool OnWindowResize(BHive::WindowResizeEvent &e);
+private:
+	void InitFramebuffer();
 
-	private:
-		void InitFramebuffer();
+private:
+	Ref<BHive::Shader> mShader;
+	Ref<BHive::Shader> mLightingShader;
+	Ref<BHive::Shader> mQuadShader;
 
-	private:
-		Ref<BHive::Shader> mShader;
-		Ref<BHive::Shader> mLightingShader;
-		Ref<BHive::Shader> mQuadShader;
+	BHive::EditorCamera mCamera;
 
-		BHive::EditorCamera mCamera;
+	Ref<BHive::Framebuffer> mMultiSampleFrameBuffer;
+	Ref<BHive::Framebuffer> mFramebuffer;
+	Ref<BHive::Framebuffer> mLightingbuffer;
+	Ref<BHive::PPlane> mScreenQuad;
 
-		std::vector<Ref<CelestrialBody>> mBodies;
+	glm::ivec2 mViewportSize{};
 
-		Ref<BHive::Framebuffer> mMultiSampleFrameBuffer;
-		Ref<BHive::Framebuffer> mFramebuffer;
-		Ref<BHive::Framebuffer> mLightingbuffer;
-		Ref<BHive::PPlane> mScreenQuad;
+	// PostProcessing
+	Ref<BHive::Bloom> mBloom;
 
-		glm::ivec2 mViewportSize{};
-
-		// PostProcessing
-		Ref<BHive::Bloom> mBloom;
-	};
-} // namespace SolarSystem
+	Ref<Universe> mUniverse;
+};

@@ -23,7 +23,7 @@ namespace SolarSystem
 	public:
 		Star();
 
-		virtual void Update(const Ref<BHive::Shader> &shader, float);
+		virtual void OnUpdate(const Ref<BHive::Shader> &shader, float);
 
 		void Save(cereal::JSONOutputArchive &ar) const;
 
