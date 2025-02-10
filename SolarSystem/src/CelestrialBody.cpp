@@ -1,46 +1,41 @@
 #include "CelestrialBody.h"
+#include "Universe.h"
+
+CelestrialBody::CelestrialBody(const entt::entity &entity, Universe *universe)
+	: mEntityHandle(entity),
+	  mUniverse(universe)
+{
+}
 
 void CelestrialBody::Update(const Ref<BHive::Shader> &shader, float dt)
 {
 	OnUpdate(shader, dt);
-
-	for (auto &child : mChildren)
-	{
-		child->Update(shader, dt);
-	}
 }
 
 BHive::FTransform CelestrialBody::GetTransform() const
 {
-	if (!mParent)
-		return mTransform;
 
-	return mParent->GetTransform() * mTransform;
+	if (!mParent)
+	{
+		return mTransform;
+	}
+
+	auto parent = mUniverse->GetBody(mParent);
+	return parent->GetTransform() * mTransform;
 }
 
 void CelestrialBody::Save(cereal::JSONOutputArchive &ar) const
 {
-	ar(mTransform, mChildren);
+	ar(MAKE_NVP("Transform", mTransform), MAKE_NVP("Components", mComponents), MAKE_NVP("Parent", mParent));
 }
 
 void CelestrialBody::Load(cereal::JSONInputArchive &ar)
 {
-	ar(mTransform, mChildren);
-
-	for (auto &child : mChildren)
-		child->mParent = this;
+	ar(MAKE_NVP("Transform", mTransform), MAKE_NVP("Components", mComponents), MAKE_NVP("Parent", mParent));
 }
 
-void Save(cereal::JSONOutputArchive &ar, const Ref<CelestrialBody> &obj)
+REFLECT(CelestrialBody)
 {
-	ar(obj->get_type());
-	obj->Save(ar);
-}
-
-void Load(cereal::JSONInputArchive &ar, Ref<CelestrialBody> &obj)
-{
-	rttr::type type = BHive::InvalidType;
-	ar(type);
-	obj = type.create().get_value<Ref<CelestrialBody>>();
-	obj->Load(ar);
+	BEGIN_REFLECT(CelestrialBody)
+	REFLECT_CONSTRUCTOR(const entt::entity &, Universe *);
 }

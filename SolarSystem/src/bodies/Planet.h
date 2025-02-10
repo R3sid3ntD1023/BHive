@@ -12,11 +12,9 @@ namespace BHive
 
 struct Planet : public CelestrialBody
 {
-	Planet();
+	Planet(const entt::entity &entity, Universe *universe);
 
 	virtual void OnUpdate(const Ref<BHive::Shader> &shader, float dt) override;
-
-	void Initialize(const PlanetData &data);
 
 	void Save(cereal::JSONOutputArchive &ar) const override;
 
@@ -26,13 +24,4 @@ struct Planet : public CelestrialBody
 
 private:
 	PlanetData mData;
-
-	Ref<BHive::Texture> mTexture;
-	static inline Ref<BHive::StaticMesh> mSphere;
 };
-
-REFLECT(Planet)
-{
-	BEGIN_REFLECT(Planet)
-	REFLECT_CONSTRUCTOR();
-}

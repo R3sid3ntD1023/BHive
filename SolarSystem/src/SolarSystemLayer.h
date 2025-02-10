@@ -4,6 +4,7 @@
 #include <core/Application.h>
 #include <core/Core.h>
 #include <core/Layer.h>
+#include "ResourceManager.h"
 
 namespace BHive
 {
@@ -50,4 +51,5 @@ private:
 	Ref<BHive::Bloom> mBloom;
 
 	Ref<Universe> mUniverse;
+	Ref<BHive::ResourceManager> mResourceManager;
 };

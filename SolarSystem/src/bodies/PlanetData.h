@@ -3,6 +3,8 @@
 #include <core/Core.h>
 #include <math/Transform.h>
 #include <core/EnumAsByte.h>
+#include <asset/AssetHandle.h>
+#include <core/serialization/Serialization.h>
 
 struct PlanetTime
 {
@@ -38,13 +40,15 @@ enum EPlanetFlags : uint32_t
 struct PlanetData
 {
 	std::string mName;
-	std::string mTexturePath;
 	PlanetTime mRotationTime;
 	BHive::TEnumAsByte<EPlanetFlags> mFlags;
+	BHive::AssetHandle mTextureHandle;
+	BHive::AssetHandle mMeshHandle;
 
 	template <typename A>
 	void Serialize(A &ar)
 	{
-		ar(mName, mTexturePath, mRotationTime, mFlags);
+		ar(MAKE_NVP("Name", mName), MAKE_NVP("DayLength", mRotationTime), MAKE_NVP("Flags", mFlags), MAKE_NVP("Texture", mTextureHandle),
+		   MAKE_NVP("Mesh", mMeshHandle));
 	}
 };

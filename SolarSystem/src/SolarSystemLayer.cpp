@@ -9,15 +9,20 @@
 #include <renderers/postprocessing/Bloom.h>
 #include <renderers/Renderer.h>
 #include "Universe.h"
+#include <asset/AssetManager.h>
+#include <core/FileDialog.h>
 
 void SolarSystemLayer::OnAttach()
 {
+	mResourceManager = CreateRef<BHive::ResourceManager>(RESOURCE_PATH);
+	BHive::AssetManager::SetAssetManager(&*mResourceManager);
+
 	mUniverse = CreateRef<Universe>();
 
 	{
-		std::ifstream in(RESOURCE_PATH "/Universe.json");
+		std::ifstream in(RESOURCE_PATH "/Data/Universe.json");
 		cereal::JSONInputArchive ar(in);
-		ar(*mUniverse);
+		ar(MAKE_NVP("Universe", *mUniverse));
 	}
 
 	mShader = BHive::ShaderLibrary::Load(RESOURCE_PATH "/Shaders/Planet.glsl");
@@ -104,7 +109,6 @@ void SolarSystemLayer::OnGuiRender(float)
 {
 	if (ImGui::Begin("GBuffer"))
 	{
-
 		if (ImGui::BeginTable("Settings", 2))
 		{
 			ImGui::TableNextRow();
@@ -128,6 +132,22 @@ void SolarSystemLayer::OnGuiRender(float)
 		}
 
 		ImGui::EndTable();
+	}
+
+	ImGui::End();
+
+	if (ImGui::Begin("Importer"))
+	{
+		if (ImGui::Button("Import"))
+		{
+			const char *filter =
+				"All (*.*)\0*.*\0 JPG (*.jpg)\0*.jpg\0 PNG (*.png)\0*.png\0 GLB (*.glb)\0*.glb\0 GLTF (*.gltf)\0*.gltf\0 OBJ (*.obj)\0*.obj\0";
+			auto str = BHive::FileDialogs::OpenFile(filter);
+			if (!str.empty())
+			{
+				mResourceManager->Import(str);
+			}
+		}
 	}
 
 	ImGui::End();

@@ -1,4 +1,6 @@
 #include "Planet.h"
+#include "Universe.h"
+#include <asset/AssetManager.h>
 #include <gfx/RenderCommand.h>
 #include <gfx/Shader.h>
 #include <importers/TextureImporter.h>
@@ -6,23 +8,27 @@
 #include <mesh/primitives/Sphere.h>
 #include <renderers/Renderer.h>
 
-Planet::Planet()
+Planet::Planet(const entt::entity &entity, Universe *universe)
+	: CelestrialBody(entity, universe)
 {
-	if (!mSphere)
-	{
-		mSphere = CreateRef<BHive::PSphere>(1.f, 64, 64);
-	}
 }
 
 void Planet::OnUpdate(const Ref<BHive::Shader> &shader, float dt)
 {
 	CelestrialBody::OnUpdate(shader, dt);
 
-	float theta = 360.f / mData.mRotationTime.ToSeconds();
+	auto mesh = BHive::AssetManager::GetAsset<BHive::StaticMesh>(mData.mMeshHandle);
+	if (!mesh)
+		return;
 
-	mTransform.add_rotation({0, theta * dt * 1000.f, 0});
+	float seconds = mData.mRotationTime.ToSeconds();
+	if (seconds != 0.f)
+	{
+		float theta = 360.f / seconds;
+		mTransform.add_rotation({0, theta * dt * 1000.f, 0});
+	}
 
-	auto texture = mTexture;
+	auto texture = BHive::AssetManager::GetAsset<BHive::Texture>(mData.mTextureHandle);
 	if (!texture)
 	{
 		texture = BHive::Renderer::GetWhiteTexture();
@@ -36,29 +42,23 @@ void Planet::OnUpdate(const Ref<BHive::Shader> &shader, float dt)
 
 	auto world_transform = GetTransform();
 	BHive::Renderer::SubmitTransform(world_transform);
-	BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mSphere->GetVertexArray());
-}
-
-void Planet::Initialize(const PlanetData &data)
-{
-	if (!data.mTexturePath.empty())
-	{
-		mTexture = BHive::TextureImporter::Import(RESOURCE_PATH + data.mTexturePath);
-	}
-
-	mData = data;
+	BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mesh->GetVertexArray());
 }
 
 void Planet::Save(cereal::JSONOutputArchive &ar) const
 {
 	CelestrialBody::Save(ar);
-	ar(mData);
+	ar(MAKE_NVP("Data", mData));
 }
 
 void Planet::Load(cereal::JSONInputArchive &ar)
 {
 	CelestrialBody::Load(ar);
-	ar(mData);
+	ar(MAKE_NVP("Data", mData));
+}
 
-	Initialize(mData);
+REFLECT(Planet)
+{
+	BEGIN_REFLECT(Planet)
+	REFLECT_CONSTRUCTOR(const entt::entity &, Universe *);
 }
