@@ -35,7 +35,6 @@ private:
 	void InitFramebuffer();
 
 private:
-	Ref<BHive::Shader> mShader;
 	Ref<BHive::Shader> mLightingShader;
 	Ref<BHive::Shader> mQuadShader;
 

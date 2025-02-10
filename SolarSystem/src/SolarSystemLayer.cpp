@@ -26,7 +26,6 @@ void SolarSystemLayer::OnAttach()
 		ar(MAKE_NVP("Universe", *mUniverse));
 	}
 
-	mShader = BHive::ShaderLibrary::Load(RESOURCE_PATH "/Shaders/Planet.glsl");
 	mLightingShader = BHive::ShaderLibrary::Load(RESOURCE_PATH "/Shaders/Lighting.glsl");
 	mQuadShader = BHive::ShaderLibrary::Load(RESOURCE_PATH "/Shaders/ScreenQuad.glsl");
 	mScreenQuad = CreateRef<BHive::PPlane>(1.f, 1.f);
@@ -62,9 +61,7 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	BHive::Renderer::Begin(mCamera.GetProjection(), mCamera.GetView().inverse());
 
-	mShader->Bind();
-
-	mUniverse->Update(mShader, dt);
+	mUniverse->Update(dt);
 
 	BHive::Renderer::End();
 

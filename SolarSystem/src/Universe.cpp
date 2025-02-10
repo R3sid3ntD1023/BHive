@@ -1,72 +1,26 @@
 #include "Universe.h"
 #include "CelestrialBody.h"
-#include <asset/AssetManager.h>
+#include "ComponentSystems/StarComponentSystem.h"
+#include "ComponentSystems/PlanetComponentSystem.h"
+#include "ComponentSystems/MeshComponentSystem.h"
 
-#include <renderers/Renderer.h>
-#include <gfx/RenderCommand.h>
-#include <gfx/Texture.h>
-#include <mesh/StaticMesh.h>
-#include <gfx/Shader.h>
-
-#include "components/IDComponent.h"
-#include "components/MeshComponent.h"
-#include "components/StarComponent.h"
-#include "components/PlanetComponent.h"
+Universe::Universe()
+{
+	mSystems.push_back(CreateRef<PlanetComponentSystem>());
+	mSystems.push_back(CreateRef<StarComponentSystem>());
+	mSystems.push_back(CreateRef<MeshComponentSystem>());
+}
 
 void Universe::AddBody(const Ref<CelestrialBody> &body)
 {
 	mBodies.emplace(BHive::UUID(), body);
 }
 
-void Universe::Update(const Ref<BHive::Shader> &shader, float dt)
+void Universe::Update(float dt)
 {
+	for (auto &system : mSystems)
 	{
-		auto view = mRegistry.view<IDComponent, PlanetComponent>();
-		for (auto &e : view)
-		{
-			auto [idcomponent, planetcomponent] = view.get(e);
-			auto body = mBodies.at(idcomponent.mID);
-			body->GetLocalTransform().add_rotation({0.f, planetcomponent.mTheta * dt * 1000.f, 0.f});
-		}
-	}
-
-	{
-		auto view = mRegistry.view<IDComponent, StarComponent>();
-		for (auto &e : view)
-		{
-			auto [idcomponent, starcomponent] = view.get(e);
-
-			auto world_transform = mBodies.at(idcomponent.mID)->GetTransform();
-
-			BHive::PointLight light;
-			light.mBrightness = starcomponent.mBrightness;
-			light.mRadius = starcomponent.mRadius;
-			light.mColor = starcomponent.mColor;
-			BHive::Renderer::SubmitPointLight(world_transform.get_translation(), light);
-		}
-	}
-
-	{
-		auto view = mRegistry.view<IDComponent, MeshComponent>();
-		for (auto &e : view)
-		{
-			auto [idcomponent, meshcomponent] = view.get(e);
-			auto texture = BHive::AssetManager::GetAsset<BHive::Texture2D>(meshcomponent.mTextureHandle);
-			auto mesh = BHive::AssetManager::GetAsset<BHive::StaticMesh>(meshcomponent.mMeshHandle);
-
-			if (mesh)
-			{
-				auto body = mBodies.at(idcomponent.mID);
-				auto world_transform = body->GetTransform();
-
-				texture->Bind();
-				shader->SetUniform("uFlags", (uint32_t)meshcomponent.mFlags);
-				shader->SetUniform("uColor", meshcomponent.mColor);
-				shader->SetUniform("uEmission", meshcomponent.mEmission);
-				BHive::Renderer::SubmitTransform(world_transform);
-				BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mesh->GetVertexArray());
-			}
-		}
+		system->Update(this, dt);
 	}
 }
 
@@ -116,5 +70,8 @@ void Universe::Load(cereal::JSONInputArchive &ar)
 
 Ref<CelestrialBody> Universe::GetBody(const BHive::UUID &id) const
 {
-	return mBodies.at(id);
+	if (mBodies.contains(id))
+		return mBodies.at(id);
+
+	return nullptr;
 }
