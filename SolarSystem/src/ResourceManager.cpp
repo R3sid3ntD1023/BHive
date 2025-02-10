@@ -146,7 +146,8 @@ namespace BHive
 		auto grey = 0xFF808080;
 
 		mMemoryAssets[1] = CreateRef<PSphere>(1.f, 64, 64);
-		mMemoryAssets[2] = Texture2D::Create(&grey, 1, 1, FTextureSpecification{.mChannels = 4, .mFormat = EFormat::RGBA8});
+		mMemoryAssets[2] = Renderer::GetWhiteTexture();
+		mMemoryAssets[3] = Texture2D::Create(&grey, 1, 1, FTextureSpecification{.mChannels = 4, .mFormat = EFormat::RGBA8});
 	}
 
 	bool ResourceManager::IsMemoryAsset(AssetHandle handle) const

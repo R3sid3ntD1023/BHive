@@ -4,6 +4,7 @@
 #include <core/Application.h>
 #include <core/Core.h>
 #include <core/Layer.h>
+#include <core/FPSCounter.h>
 #include "ResourceManager.h"
 
 namespace BHive
@@ -52,4 +53,5 @@ private:
 
 	Ref<Universe> mUniverse;
 	Ref<BHive::ResourceManager> mResourceManager;
+	BHive::FPSCounter mCounter;
 };

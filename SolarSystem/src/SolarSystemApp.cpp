@@ -2,9 +2,9 @@
 #include <core/Application.h>
 #include <core/EntryPoint.h>
 
-struct TestApplication : public BHive::Application
+struct UniverseApplication : public BHive::Application
 {
-	TestApplication(const BHive::FApplicationSpecification &specs)
+	UniverseApplication(const BHive::FApplicationSpecification &specs)
 		: Application(specs)
 	{
 		PushLayer(new SolarSystemLayer());
@@ -19,7 +19,8 @@ namespace BHive
 		specs.Width = 800;
 		specs.Height = 600;
 		specs.Title = "Solar System";
-		return new TestApplication(specs);
+		specs.VSync = false;
+		return new UniverseApplication(specs);
 	}
 
 } // namespace BHive

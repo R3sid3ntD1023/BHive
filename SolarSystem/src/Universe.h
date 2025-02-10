@@ -15,6 +15,14 @@ namespace BHive
 class Universe
 {
 public:
+	template <typename T>
+	void AddBody()
+	{
+		AddBody(CreateRef<T>(mRegistry.create(), this));
+	}
+
+	void AddBody(const Ref<CelestrialBody> &body);
+
 	void Update(const Ref<BHive::Shader> &shader, float dt);
 
 	void Save(cereal::JSONOutputArchive &ar) const;

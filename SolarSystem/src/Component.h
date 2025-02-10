@@ -13,10 +13,11 @@ struct Component
 	REFLECTABLEV()
 };
 
-void Save(cereal::JSONOutputArchive &ar, const Ref<Component> &obj);
-void Load(cereal::JSONInputArchive &ar, Ref<Component> &obj);
+#define ADD_COMPONENT_FUNC_NAME "AddComponent"
+#define GET_COMPONENT_FUNC_NAME "GetComponent"
+#define HAS_COMPONENT_FUNC_NAME "HasComponent"
 
-REFLECT(Component)
-{
-	BEGIN_REFLECT(Component);
-}
+#define DECLARE_COMPONENT_FUNCS                                               \
+	REFLECT_METHOD(ADD_COMPONENT_FUNC_NAME, &CelestrialBody::AddComponent<T>) \
+	REFLECT_METHOD(HAS_COMPONENT_FUNC_NAME, &CelestrialBody::HasComponent<T>) \
+	REFLECT_METHOD(GET_COMPONENT_FUNC_NAME, &CelestrialBody::GetComponent<T>)

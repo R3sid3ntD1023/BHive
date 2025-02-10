@@ -11,6 +11,7 @@
 #include "Universe.h"
 #include <asset/AssetManager.h>
 #include <core/FileDialog.h>
+#include "CelestrialBody.h"
 
 void SolarSystemLayer::OnAttach()
 {
@@ -46,6 +47,9 @@ void SolarSystemLayer::OnAttach()
 
 void SolarSystemLayer::OnUpdate(float dt)
 {
+
+	mCounter.Begin();
+
 	mCamera.ProcessInput();
 
 	mMultiSampleFrameBuffer->Bind();
@@ -95,6 +99,8 @@ void SolarSystemLayer::OnUpdate(float dt)
 	BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
 
 	BHive::RenderCommand::EnableDepth();
+
+	mCounter.End();
 }
 
 void SolarSystemLayer::OnEvent(BHive::Event &e)
@@ -129,6 +135,7 @@ void SolarSystemLayer::OnGuiRender(float)
 			auto &bloom = mBloom->GetSettings();
 			ImGui::DragFloat("FilterRadius", &bloom.mFilterRadius, .01f, 0.0f, 1.0f);
 			ImGui::ColorEdit4("FilterThreshold", &bloom.mFilterThreshold.x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+			ImGui::TextColored({1, .5f, 0, 1}, "FPS : %.2f", (float)mCounter);
 		}
 
 		ImGui::EndTable();
