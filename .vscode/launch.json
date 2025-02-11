@@ -14,7 +14,7 @@
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [],
+            "environment": [ ],
             "console": "externalTerminal",
             "preLaunchTask": "CMake: build"
         }

@@ -225,12 +225,7 @@ namespace BHive
 
 	int GLShader::GetUniformLocation(const std::string &name) const
 	{
-
-		auto location = glGetUniformLocation(mShaderID, name.c_str());
-		if (location == -1)
-			LOG_ERROR("Failed to find Uniform {} for {}", name, mName);
-
-		return location;
+		return glGetUniformLocation(mShaderID, name.c_str());
 	}
 
 	void GLShader::Reflect()

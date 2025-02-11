@@ -17,6 +17,7 @@ namespace BHive
 		void Bind() const;
 		void UnBind() const;
 
+		virtual const std::string &GetName() const { return mName; }
 		uint32_t GetRendererID() const { return mShaderID; }
 		void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1);
 

@@ -90,7 +90,8 @@ namespace BHive
 			GLFWwindow *backup_current_context = glfwGetCurrentContext();
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent(backup_current_context);
+			if (backup_current_context != glfwGetCurrentContext())
+				glfwMakeContextCurrent(backup_current_context);
 		}
 	}
 

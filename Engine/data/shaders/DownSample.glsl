@@ -1,16 +1,17 @@
 #type compute
 #version 460 core
 
-layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+#define LOCAL_SIZE 1
+layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = LOCAL_SIZE) in;
 
 
 layout(r11f_g11f_b10f, binding = 0) uniform restrict writeonly image2D imgOutput;
 layout(binding = 0) uniform sampler2D srcTexture;
+layout(location = 0) uniform ivec2 u_src_resolution;
 
 void main() {
 
-    ivec2 srcResolution = textureSize(srcTexture, 0);
-    vec2 srctexelSize = 1.0 / srcResolution;
+    vec2 srctexelSize = 1.0 / u_src_resolution;
     float x = srctexelSize.x;
     float y = srctexelSize.y;
 

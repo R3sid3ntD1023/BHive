@@ -20,11 +20,17 @@ namespace BHive
 		void SetUniform(const std::string &name, const T &v) const
 		{
 			int location = GetUniformLocation(name);
-			if (location != -1)
-				SetUniform(location, v);
+			if (location == -1)
+			{
+				LOG_ERROR("Failed to find Uniform {} for {}", name, GetName());
+				return;
+			}
+
+			SetUniform(location, v);
 		}
 
 		virtual uint32_t GetRendererID() const = 0;
+		virtual const std::string &GetName() const = 0;
 		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1) = 0;
 
 		operator uint32_t() const { return GetRendererID(); }

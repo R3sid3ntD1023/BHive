@@ -38,6 +38,7 @@ namespace BHive
 			mip->BindAsImage(0, GL_WRITE_ONLY);
 
 			glm::ivec2 size = {mip->GetWidth(), mip->GetHeight()};
+			mDownSamplerShader->SetUniform("u_src_resolution", size);
 			mDownSamplerShader->Dispatch(size.x, size.y);
 
 			current_texture = mip;
@@ -54,6 +55,7 @@ namespace BHive
 
 			mip->Bind();
 			next_mip->BindAsImage(0, GL_READ_WRITE);
+
 			mUpSamplerShader->Dispatch(next_mip->GetWidth(), next_mip->GetHeight());
 		}
 
