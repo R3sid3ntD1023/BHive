@@ -21,7 +21,7 @@ void SolarSystemLayer::OnAttach()
 	mUniverse = CreateRef<Universe>();
 
 	{
-		std::ifstream in(RESOURCE_PATH "/Data/Universe.json");
+		std::ifstream in(RESOURCE_PATH "/TestPlanet.json");
 		cereal::JSONInputArchive ar(in);
 		ar(MAKE_NVP("Universe", *mUniverse));
 	}

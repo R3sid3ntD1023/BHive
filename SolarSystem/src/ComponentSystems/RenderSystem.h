@@ -1,6 +1,5 @@
 #pragma once
 
-#include <core/UUID.h>
 #include "ComponentSystem.h"
 
 namespace BHive
@@ -9,14 +8,14 @@ namespace BHive
 	class VertexBuffer;
 } // namespace BHive
 
-struct AstroidComponentSystem : public ComponentSystem
+struct RenderSystem : public ComponentSystem
 {
-	AstroidComponentSystem();
+	RenderSystem();
 
-	/* data */
 	virtual void Update(class Universe *universe, float dt) override;
 
 private:
+	Ref<BHive::Shader> mShader;
 	Ref<BHive::Shader> mInstanceShader;
 	std::unordered_map<BHive::UUID, Ref<BHive::VertexBuffer>> mVertexBuffers;
 };

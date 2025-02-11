@@ -1,16 +1,12 @@
 #include "Universe.h"
 #include "CelestrialBody.h"
-#include "ComponentSystems/StarComponentSystem.h"
+#include "ComponentSystems/RenderSystem.h"
 #include "ComponentSystems/PlanetComponentSystem.h"
-#include "ComponentSystems/MeshComponentSystem.h"
-#include "ComponentSystems/AstroidComponentSystem.h"
 
 Universe::Universe()
 {
 	mSystems.push_back(CreateRef<PlanetComponentSystem>());
-	mSystems.push_back(CreateRef<StarComponentSystem>());
-	mSystems.push_back(CreateRef<MeshComponentSystem>());
-	mSystems.push_back(CreateRef<AstroidComponentSystem>());
+	mSystems.push_back(CreateRef<RenderSystem>());
 }
 
 void Universe::AddBody(const Ref<CelestrialBody> &body)
