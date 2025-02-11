@@ -10,7 +10,9 @@ struct CelestrialBody;
 namespace BHive
 {
 	class Shader;
-}
+	class VertexBuffer;
+	class StaticMesh;
+} // namespace BHive
 
 class Universe
 {

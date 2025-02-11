@@ -92,8 +92,7 @@ namespace BHive
 				{
 					glEnableVertexAttribArray(mVertexBufferIndex);
 					glVertexAttribPointer(
-						mVertexBufferIndex, element.ComponentCount, GL_FLOAT, element.Normalized, stride,
-						(const void *)(i * count * sizeof(float) + element.Offset));
+						mVertexBufferIndex, count, GL_FLOAT, element.Normalized, stride, (const void *)(element.Offset + sizeof(float) * count * i));
 					glVertexAttribDivisor(mVertexBufferIndex, 1);
 					mVertexBufferIndex++;
 				}

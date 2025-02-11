@@ -40,7 +40,7 @@ private:
 
 	BHive::EditorCamera mCamera;
 
-	Ref<BHive::Framebuffer> mMultiSampleFrameBuffer;
+	Ref<BHive::Framebuffer> mMultiSampleFramebuffer;
 	Ref<BHive::Framebuffer> mFramebuffer;
 	Ref<BHive::Framebuffer> mLightingbuffer;
 	Ref<BHive::PPlane> mScreenQuad;

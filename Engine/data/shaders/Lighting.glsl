@@ -86,11 +86,18 @@ float DirectionalLight(vec3 N, vec3 D)
 float PointLight(vec3 P, vec3 N, Light light)
 {
 	float dist = length(light.position - P);
-	if(dist > light.radius) return 0;
+	if(dist > light.radius || light.brightness <= 0.f) return 0;
 
 	vec3 dir = light.position - P;
-	float ndotl = dot(N, dir);
-	float attenuation = max(1.0 - (dist * dist)/(light.radius*light.radius), 0.0);
+	float ndotl = max(dot(N, dir), 0.0);
+
+	//https://lisyarus.github.io/blog/posts/point-light-attenuation.html
+	float s = dist / light.radius;
+	if(s >= 1.0)
+		return 0.0;
+	float s2 = sqrt(s);
+
+	float attenuation = sqrt(1 -s2) / (1 + light.radius * s);
 
 	return ndotl * light.brightness * attenuation;
 }

@@ -34,7 +34,6 @@ layout(binding  = 0) uniform sampler2D uColors;
 layout(binding  = 1) uniform sampler2D uPositions;
 layout(binding  = 2) uniform sampler2D uNormals;
 layout(binding  = 3) uniform sampler2D uEmission;
-layout(binding = 4) uniform sampler2D uBloom;
 
 layout(location = 0) out vec4 fColor;
 
@@ -44,8 +43,7 @@ void main()
 	vec3 normal = texture(uNormals, vs_in.texCoord).rgb;
 	vec4 color = texture(uColors, vs_in.texCoord);
 	vec3 emission = texture(uEmission, vs_in.texCoord).rgb;
-	vec4 bloom = texture(uBloom, vs_in.texCoord);
-	vec3 ambient = vec3(.3);
+	vec3 ambient = vec3(.1);
 
 	vec3 Lo = vec3(0.0);
 	for(int i = 0; i < u_NumLights; i++)
@@ -67,8 +65,6 @@ void main()
 	}
 
 	color.rgb = (color.rgb * (Lo + ambient)) + emission ;
-
-	color += bloom;
 
 	fColor = color;
 }

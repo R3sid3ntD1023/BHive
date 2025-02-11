@@ -6,6 +6,7 @@
 layout(location = 0) in vec3 vPos;
 layout(location = 1) in vec2 vTexCoord;
 layout(location = 2) in vec3 vNormal;
+layout(location = 8) in mat4 vInstanceMatrix;
 
 layout(std430 , binding = 0) uniform ObjectBuffer{ mat4 u_projection; mat4 u_view; mat4 u_model;} ;
 
@@ -18,11 +19,11 @@ layout(location = 0) out struct VS_OUT
 
 void main()
 {
-    vec4 worldPos = u_model * vec4(vPos, 1);
+    vec4 worldPos = u_model * vInstanceMatrix * vec4(vPos, 1);
     vs_out.position = worldPos.xyz;
     vs_out.texcoord = vTexCoord;
 
-    mat3 normal_matrix = transpose(inverse(mat3(u_model)));
+    mat3 normal_matrix = transpose(inverse(mat3(u_model * vInstanceMatrix)));
     vs_out.normal = normal_matrix * vNormal;
 
     gl_Position = u_projection * u_view * worldPos;

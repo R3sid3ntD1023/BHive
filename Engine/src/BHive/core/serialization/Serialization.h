@@ -22,5 +22,13 @@
 #include <cereal/cereal.hpp>
 
 #define CEREAL_BASE(cls, archive) cereal::base_class<cls>(this)
-#define MAKE_NVP(name, obj) cereal::make_nvp(name, obj)
+
 #define MAKE_BINARY(data, size) cereal::binary_data(data, size)
+
+#define MAKE_NVP_IMPL(name, obj) cereal::make_nvp(name, obj)
+#define MAKE_NVP_NAME(name, obj) MAKE_NVP_IMPL(name, obj)
+#define MAKE_NVP_NONAME(obj) MAKE_NVP_IMPL(#obj, obj)
+
+#define GET_NVP_MACRO_NAME(arg0, arg1, macro, ...) macro
+#define GET_NVP_MACRO(...) EXPAND(GET_NVP_MACRO_NAME(__VA_ARGS__, MAKE_NVP_NAME, MAKE_NVP_NONAME))
+#define MAKE_NVP(...) EXPAND(GET_NVP_MACRO(__VA_ARGS__)(__VA_ARGS__))

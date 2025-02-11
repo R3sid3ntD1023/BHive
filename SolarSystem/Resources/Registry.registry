@@ -76,7 +76,7 @@
             "key": 1550937985,
             "value": {
                 "Type": "StaticMesh",
-                "Path": "Meshes\\phobos\\phobos.obj",
+                "Path": "Meshes\\phobos\\phobos.glb",
                 "Name": "phobos"
             }
         },
@@ -84,7 +84,7 @@
             "key": 887575754,
             "value": {
                 "Type": "StaticMesh",
-                "Path": "Meshes\\deimos\\deimos.obj",
+                "Path": "Meshes\\deimos\\deimos.glb",
                 "Name": "deimos"
             }
         }
