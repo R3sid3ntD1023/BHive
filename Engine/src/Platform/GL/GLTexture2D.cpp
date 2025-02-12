@@ -165,7 +165,7 @@ namespace BHive
 
 		BEGIN_THREAD_DISPATCH(=)
 
-		glMakeTextureHandleNonResidentARB(mHandle);
+		// glMakeTextureHandleNonResidentARB(mHandle);
 		glDeleteTextures(1, &mTextureID);
 		glDeleteSamplers(1, &mSamplerID);
 

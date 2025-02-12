@@ -107,7 +107,8 @@ namespace BHive
 	{
 	}
 
-	void LineRenderer::DrawRect(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3, const Color &color, const glm::mat4 &transform)
+	void LineRenderer::DrawRect(
+		const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3, const Color &color, const glm::mat4 &transform)
 	{
 		DrawLine(p0, p1, color, transform);
 		DrawLine(p1, p2, color, transform);
@@ -143,8 +144,8 @@ namespace BHive
 		DrawLine(bottom[3] + offset, bottom[0] + offset, color, transform);
 	}
 
-	void LineRenderer::DrawArc(float radius, uint32_t sides, float start, float end, const glm::vec3& offset,
-		const Color& color, const glm::mat4& transform)
+	void LineRenderer::DrawArc(
+		float radius, uint32_t sides, float start, float end, const glm::vec3 &offset, const Color &color, const glm::mat4 &transform)
 	{
 		float step = glm::radians(360.0f / (float)sides);
 		for (float theta = start; theta < end - step; theta += step)
@@ -157,8 +158,7 @@ namespace BHive
 			float y1 = 0.0f;
 			float z1 = sin(theta + step);
 
-			DrawLine(glm::vec3{x0, y0, z0} * radius + offset,
-					 glm::vec3{x1, y1, z1} * radius + offset, color, transform);
+			DrawLine(glm::vec3{x0, y0, z0} * radius + offset, glm::vec3{x1, y1, z1} * radius + offset, color, transform);
 		}
 	}
 
@@ -249,18 +249,24 @@ namespace BHive
 
 	void LineRenderer::DrawFrustum(const Frustum &frustum, const Color &color)
 	{
-		auto points = frustum.get_points();
-		LineRenderer::DrawRect(points[0], points[1], points[2], points[3], color);
-		LineRenderer::DrawRect(points[4], points[5], points[6], points[7], color);
+		// auto points = frustum.get_points();
+		// LineRenderer::DrawRect(points[0], points[1], points[2], points[3], color);
+		// LineRenderer::DrawRect(points[4], points[5], points[6], points[7], color);
 
-		LineRenderer::DrawLine(points[0], points[4], color);
-		LineRenderer::DrawLine(points[1], points[5], color);
-		LineRenderer::DrawLine(points[2], points[6], color);
-		LineRenderer::DrawLine(points[3], points[7], color);
+		// LineRenderer::DrawLine(points[0], points[4], color);
+		// LineRenderer::DrawLine(points[1], points[5], color);
+		// LineRenderer::DrawLine(points[2], points[6], color);
+		// LineRenderer::DrawLine(points[3], points[7], color);
+
+		for (int i = 0; i < 6; i++)
+		{
+			auto &plane = frustum._get_planes()[i];
+			LineRenderer::DrawRect(plane.Points[0], plane.Points[1], plane.Points[2], plane.Points[3], color);
+		}
 	}
 
-	void LineRenderer::DrawCylinder(float radius, float height, uint32_t sides, const glm::vec3 &offset,
-									const Color &color, const glm::mat4 &transform)
+	void
+	LineRenderer::DrawCylinder(float radius, float height, uint32_t sides, const glm::vec3 &offset, const Color &color, const glm::mat4 &transform)
 	{
 		float hh = height * .5f;
 		float step = (PI * 2) / sides;
@@ -283,29 +289,24 @@ namespace BHive
 			float y3 = -hh;
 			float z3 = sin(theta + step);
 
-			DrawLine(glm::vec3{x0, y0, z0} * radius + offset,
-					 glm::vec3{x1, y1, z1} * radius + offset, color, transform);
-			DrawLine(glm::vec3{x2, y2, z2} * radius + offset,
-					 glm::vec3{x3, y3, z3} * radius + offset, color, transform);
-			DrawLine(glm::vec3{x0, y0, z0} * radius + offset,
-					 glm::vec3{x2, y2, z2} * radius + offset, color, transform);
-			DrawLine(glm::vec3{x1, y1, z1} * radius + offset,
-					 glm::vec3{x3, y3, z3} * radius + offset, color, transform);
+			DrawLine(glm::vec3{x0, y0, z0} * radius + offset, glm::vec3{x1, y1, z1} * radius + offset, color, transform);
+			DrawLine(glm::vec3{x2, y2, z2} * radius + offset, glm::vec3{x3, y3, z3} * radius + offset, color, transform);
+			DrawLine(glm::vec3{x0, y0, z0} * radius + offset, glm::vec3{x2, y2, z2} * radius + offset, color, transform);
+			DrawLine(glm::vec3{x1, y1, z1} * radius + offset, glm::vec3{x3, y3, z3} * radius + offset, color, transform);
 		}
 	}
 
-	void LineRenderer::DrawCapsule(float radius, float height, uint32_t sides,
-								   const glm::vec3 &offset, const Color &color,
-								   const glm::mat4 &transform)
+	void
+	LineRenderer::DrawCapsule(float radius, float height, uint32_t sides, const glm::vec3 &offset, const Color &color, const glm::mat4 &transform)
 	{
-		auto rotationY = glm::toMat4(glm::quat({0,  PI / 2, 0 }));
+		auto rotationY = glm::toMat4(glm::quat({0, PI / 2, 0}));
 		auto rotationX = glm::toMat4(glm::quat({PI / 2, 0, 0}));
 		glm::vec3 h = {0, 0, height * .5f * radius};
 
 		DrawArc(radius, sides, 0.f, PI, offset + h, color, transform * rotationX);
 		DrawArc(radius, sides, 0.f, PI, offset + h, color, transform * rotationY * rotationX);
 
-		DrawCylinder(radius, height , sides, offset, color, transform);
+		DrawCylinder(radius, height, sides, offset, color, transform);
 
 		DrawArc(radius, sides, PI, PI * 2.f, offset - h, color, transform * rotationY * rotationX);
 		DrawArc(radius, sides, PI, PI * 2, offset - h, color, transform * rotationX);
@@ -362,4 +363,4 @@ namespace BHive
 	}
 
 	LineRenderer::RenderData *LineRenderer::sData = nullptr;
-}
+} // namespace BHive

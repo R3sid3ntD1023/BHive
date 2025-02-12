@@ -41,7 +41,8 @@ namespace BHive
 			mDownSamplerShader->SetBindlessTexture("uImgOutput", mip->GetImageHandle());
 
 			glm::ivec2 size = {mip->GetWidth(), mip->GetHeight()};
-			mDownSamplerShader->SetUniform("u_src_resolution", size);
+			glm::ivec2 src_size = {current_texture->GetWidth(), current_texture->GetHeight()};
+			mDownSamplerShader->SetUniform("u_src_resolution", src_size);
 			mDownSamplerShader->Dispatch(size.x, size.y);
 
 			current_texture = mip;

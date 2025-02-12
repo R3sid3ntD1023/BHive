@@ -62,6 +62,9 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	BHive::Renderer::Begin(mCamera.GetProjection(), mCamera.GetView().inverse());
 
+	BHive::Frustum frustum(mCamera.GetProjection(), mCamera.GetView().inverse());
+	BHive::LineRenderer::DrawFrustum(frustum, 0xFF00FFFF);
+
 	mUniverse->Update(dt);
 
 	BHive::Renderer::End();
