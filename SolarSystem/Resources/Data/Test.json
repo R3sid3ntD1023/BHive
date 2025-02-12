@@ -1,0 +1,27 @@
+{
+    "Universe": [
+        {
+            "ID": 834172905,
+            "Type": "CelestrialBody",
+            "Transform": {
+                "value0": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "value1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "value2": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "Parent": 0,
+            "Components": []
+        }
+    ]
+}

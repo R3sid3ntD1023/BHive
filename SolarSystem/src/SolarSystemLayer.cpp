@@ -141,6 +141,28 @@ void SolarSystemLayer::OnGuiRender(float)
 			ImGui::DragFloat("FilterRadius", &bloom.mFilterRadius, .01f, 0.0f, 1.0f);
 			ImGui::ColorEdit4("FilterThreshold", &bloom.mFilterThreshold.x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
 			ImGui::TextColored({1, .5f, 0, 1}, "FPS : %.2f", (float)mCounter);
+
+			// auto texture = BHive::AssetManager::GetAsset<BHive::Texture>(1257525188);
+			// ImGui::Image((ImTextureID)(uint64_t)*texture, {200, 200}, {0, 2}, {2, 0});
+
+			// int current_item = (int)texture->GetSpecification().mWrapMode;
+			// if (ImGui::Combo("Wrapping", &current_item, "REPEAT\0CLAMP_TO_EDGE\0MIRRORED_REPEAT\0CLAMP_TO_BORDER\0"))
+			// {
+			// 	texture->SetWrapMode((BHive::EWrapMode)current_item);
+			// }
+
+			// current_item = (int)texture->GetSpecification().mMinFilter;
+			// if (ImGui::Combo(
+			// 		"MinFilter", &current_item, "LINEAR\0NEAREST\0MIPMAP_LINEAR\0MIPMAP_NEAREST\0MIPMAP_LINEAR_NEAREST\0MIPMAP_NEAREST_LINEAR\0"))
+			// {
+			// 	texture->SetMinFilter((BHive::EMinFilter)current_item);
+			// }
+
+			// current_item = (int)texture->GetSpecification().mMagFilter;
+			// if (ImGui::Combo("MagFilter", &current_item, "LINEAR\0NEAREST\0"))
+			// {
+			// 	texture->SetMagFilter((BHive::EMagFilter)current_item);
+			// }
 		}
 
 		ImGui::EndTable();

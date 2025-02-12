@@ -86,22 +86,38 @@ namespace BHive
 		return 0;
 	}
 
-	uint32_t GetGLFilterMode(EFilterMode mode)
+	uint32_t GetGLFilterMode(EMinFilter mode)
 	{
 		switch (mode)
 		{
-		case BHive::EFilterMode::LINEAR:
+		case BHive::EMinFilter::LINEAR:
 			return GL_LINEAR;
-		case BHive::EFilterMode::NEAREST:
+		case BHive::EMinFilter::NEAREST:
 			return GL_NEAREST;
-		case BHive::EFilterMode::MIPMAP_LINEAR:
+		case BHive::EMinFilter::MIPMAP_LINEAR:
 			return GL_LINEAR_MIPMAP_LINEAR;
-		case BHive::EFilterMode::MIPMAP_NEAREST:
+		case BHive::EMinFilter::MIPMAP_NEAREST:
 			return GL_NEAREST_MIPMAP_NEAREST;
-		case BHive::EFilterMode::MIPMAP_LINEAR_NEAREST:
+		case BHive::EMinFilter::MIPMAP_LINEAR_NEAREST:
 			return GL_LINEAR_MIPMAP_NEAREST;
-		case BHive::EFilterMode::MIPMAP_NEAREST_LINEAR:
+		case BHive::EMinFilter::MIPMAP_NEAREST_LINEAR:
 			return GL_NEAREST_MIPMAP_LINEAR;
+		default:
+			break;
+		}
+
+		ASSERT(false);
+		return 0;
+	}
+
+	uint32_t GetGLFilterMode(EMagFilter mode)
+	{
+		switch (mode)
+		{
+		case BHive::EMagFilter::LINEAR:
+			return GL_LINEAR;
+		case BHive::EMagFilter::NEAREST:
+			return GL_NEAREST;
 		default:
 			break;
 		}

@@ -13,6 +13,10 @@ namespace BHive
 		GLTexture2D(const void *data, uint32_t width, uint32_t height, const FTextureSpecification &specification);
 		~GLTexture2D();
 
+		virtual void SetWrapMode(EWrapMode mode) override;
+		virtual void SetMinFilter(EMinFilter mode) override;
+		virtual void SetMagFilter(EMagFilter mode) override;
+
 		virtual uint32_t GetWidth() const { return mWidth; }
 		virtual uint32_t GetHeight() const { return mHeight; }
 
@@ -46,6 +50,7 @@ namespace BHive
 		Buffer mBuffer;
 		uint64_t mHandle = 0;
 		uint64_t mImageHandle = 0;
+		// uint64_t mSamplerHandle = 0;
 	};
 
 } // namespace BHive

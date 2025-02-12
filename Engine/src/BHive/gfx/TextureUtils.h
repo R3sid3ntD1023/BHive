@@ -10,19 +10,14 @@ namespace BHive
 
 	uint32_t GetTextureCompareFunc(ETextureCompareFunc func);
 
-	extern BHIVE uint32_t GetGLFilterMode(EFilterMode mode);
-
-	extern BHIVE uint32_t GetGLWrapMode(EWrapMode mode);
-
-	extern BHIVE uint32_t GetGLFormat(EFormat format);
-
-	extern BHIVE uint32_t GetGLInternalFormat(EFormat format);
-
-	extern BHIVE uint32_t GetGLType(EFormat format);
-
-	extern BHIVE EFormat GetFormat(uint32_t channels);
-
-	extern BHIVE bool IsDepthFormat(EFormat format);
+	uint32_t GetGLFilterMode(EMinFilter mode);
+	uint32_t GetGLFilterMode(EMagFilter mode);
+	uint32_t GetGLWrapMode(EWrapMode mode);
+	uint32_t GetGLFormat(EFormat format);
+	uint32_t GetGLInternalFormat(EFormat format);
+	uint32_t GetGLType(EFormat format);
+	EFormat GetFormat(uint32_t channels);
+	bool IsDepthFormat(EFormat format);
 
 	uint32_t GetDepthAttachmentType(EFormat format);
 

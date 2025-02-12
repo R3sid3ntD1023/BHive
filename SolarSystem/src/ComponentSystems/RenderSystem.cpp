@@ -51,6 +51,7 @@ void RenderSystem::Update(Universe *universe, float dt)
 			auto texture = BHive::AssetManager::GetAsset<BHive::Texture2D>(astroidcomponent.mTextureHandle);
 
 			mInstanceShader->SetBindlessTexture("u_Texture", texture->GetResourceHandle());
+			// texture->Bind();
 			mInstanceShader->SetUniform("uFlags", (uint32_t)astroidcomponent.mFlags);
 			mInstanceShader->SetUniform("uColor", astroidcomponent.mColor);
 			mInstanceShader->SetUniform("uEmission", astroidcomponent.mEmission);

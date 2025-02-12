@@ -57,11 +57,10 @@ layout(location = 3) out vec4 fEmission;
 
 void main()
 {
-    bool is_single_channel = (uFlags & SINGLE_CHANNEL) != 0;
+    uint is_single_channel = (uFlags & SINGLE_CHANNEL);
 
     vec3 color = pow(texture(u_Texture, vs_in.texcoord).rgb, vec3(2.2));
-    if(is_single_channel)
-        color.rgb = vec3(color.r);
+    color.rgb = mix(color.rgb, vec3(color.r), is_single_channel);
     
     color += vec3(.2);
     color *= uColor;

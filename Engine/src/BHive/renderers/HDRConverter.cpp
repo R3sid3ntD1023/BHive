@@ -48,8 +48,8 @@ namespace BHive
 		FTextureSpecification pre_filter_specification;
 		pre_filter_specification.mFormat = EFormat::RGBA16F;
 		pre_filter_specification.mWrapMode = EWrapMode::CLAMP_TO_EDGE;
-		pre_filter_specification.mMinFilter = EFilterMode::MIPMAP_LINEAR;
-		pre_filter_specification.mMagFilter = EFilterMode::LINEAR;
+		pre_filter_specification.mMinFilter = EMinFilter::MIPMAP_LINEAR;
+		pre_filter_specification.mMagFilter = EMagFilter::LINEAR;
 		pre_filter_specification.mLevels = PREFILTER_MIP_LEVELS;
 		pre_filter_specification.mType = ETextureType::TEXTURE_CUBE_MAP;
 
@@ -60,8 +60,8 @@ namespace BHive
 			FTextureSpecification{
 				.mFormat = EFormat::RG16F,
 				.mWrapMode = EWrapMode::CLAMP_TO_EDGE,
-				.mMinFilter = EFilterMode::NEAREST,
-				.mMagFilter = EFilterMode::NEAREST,
+				.mMinFilter = EMinFilter::NEAREST,
+				.mMagFilter = EMagFilter::NEAREST,
 			});
 
 		mCube = CreateRef<PCube>(1.0f);

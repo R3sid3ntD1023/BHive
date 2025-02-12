@@ -1,0 +1,393 @@
+{
+  "Universe": [
+    {
+      "ID": 1,
+      "Type": "CelestrialBody",
+      "Name": "Sun",
+      "Transform": {
+        "value0": [ 0, 0, 0 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 1, 1, 1 ]
+      },
+      "Parent": 0,
+      "Components": [
+        {
+          "Type": "IDComponent",
+          "ID": 1
+        },
+        {
+          "Type": "StarComponent",
+          "Brightness": 1,
+          "Radius": 200,
+          "Color": [ 1, 1, 1, 1 ]
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1 ],
+          "Emission": [ 10, 5, 0.5 ],
+          "Flags": 0,
+          "Texture": 2,
+          "Mesh": 1
+        } ]
+    },
+    {
+      "ID": 2,
+      "Type": "CelestrialBody",
+      "Name": "Mercury",
+      "Transform": {
+        "value0": [ 4, 0, 0 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 1, 1, 1 ]
+      },
+      "Parent": 1,
+      "Components": [
+        { "Type": "IDComponent",
+          "ID": 2
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1 ],
+          "Emission": [ 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": 847963549,
+          "Mesh": 1
+        },
+        {
+          "Type": "PlanetComponent",
+          "Time": "0'176'0'0'0"
+        }
+      ]
+    },
+    {
+      "ID": 3,
+      "Type": "CelestrialBody",
+      "Name": "Venus",
+      "Transform": {
+        "value0": [ 8, 0, 0 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 1.9, 1.9, 1.9 ]
+      },
+      "Parent": 1,
+      "Components": [
+        { "Type": "IDComponent",
+          "ID": 3
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1 ],
+          "Emission": [ 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": 1999456737,
+          "Mesh": 1
+        },
+        {
+          "Type": "PlanetComponent",
+          "Time": "0'243'0'0'0"
+        } ]
+    },
+    {
+      "ID": 4,
+      "Type": "CelestrialBody",
+      "Name": "",
+      "Transform": {
+        "value0": [ 12, 0, 0 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 1, 1, 1 ]
+      },
+      "Parent": 1,
+      "Components": [
+        { "Type": "IDComponent",
+          "ID": 4
+        }
+      ]
+    },
+    {
+      "ID": 5,
+      "Type": "CelestrialBody",
+      "Name": "Earth",
+      "Transform": {
+        "value0": [ 0, 0, 0 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 2, 2, 2 ]
+      },
+      "Parent": 4,
+      "Components": [
+        { "Type": "IDComponent",
+          "ID": 5
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1 ],
+          "Emission": [ 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": 1257525188,
+          "Mesh": 1
+        },
+        {
+          "Type": "PlanetComponent",
+          "Time": "0'0'24'0'0"
+        } ]
+    },
+    {
+      "ID": 6,
+      "Type": "CelestrialBody",
+      "Name": "Moon",
+      "Transform": {
+        "value0": [ 0, 0, 3 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 0.3, 0.3, 0.3 ]
+      },
+      "Parent": 4,
+      "Components": [
+        { "Type": "IDComponent",
+          "ID": 6
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1 ],
+          "Emission": [ 0, 0, 0 ],
+          "Flags": 1,
+          "Texture": 2036039098,
+          "Mesh": 1
+        },
+        {
+          "Type": "PlanetComponent",
+          "Time": "0'29'12'0'0"
+        } ]
+    },
+    {
+      "ID": 7,
+      "Type": "CelestrialBody",
+      "Name": "",
+      "Transform": {
+        "value0": [ 18, 0, 0 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 1.3, 1.3, 1.3 ]
+      },
+      "Parent": 1,
+      "Components": [
+        { "Type": "IDComponent",
+          "ID": 7
+        } ]
+    },
+    {
+      "ID": 8,
+      "Type": "CelestrialBody",
+      "Name": "Mars",
+      "Transform": {
+        "value0": [ 0, 0, 0 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 1.3, 1.3, 1.3 ]
+      },
+      "Parent": 7,
+      "Components": [
+        { "Type": "IDComponent",
+          "ID": 8
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1 ],
+          "Emission": [ 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": 139715560,
+          "Mesh": 1
+        },
+        {
+          "Type": "PlanetComponent",
+          "Time": "0'0'24'39'35"
+        } ]
+    },
+    {
+      "ID": 9,
+      "Type": "CelestrialBody",
+      "Name": "Phobos",
+      "Transform": {
+        "value0": [ 0, 0, 2 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 1, 1, 1 ]
+      },
+      "Parent": 7,
+      "Components": [
+        { "Type": "IDComponent",
+          "ID": 9
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 0.5, 0.5, 0.5 ],
+          "Emission": [ 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": 2,
+          "Mesh": 1550937985
+        },
+        {
+          "Type": "PlanetComponent",
+          "Time": "0'0'0'0'0"
+        } ]
+    },
+    {
+      "ID": 10,
+      "Type": "CelestrialBody",
+      "Name": "Deimos",
+      "Transform": {
+        "value0": [ 0, 0, -2 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 1, 1, 1 ]
+      },
+      "Parent": 7,
+      "Components": [
+        { "Type": "IDComponent",
+          "ID": 10
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 0.5, 0.5, 0.5 ],
+          "Emission": [ 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": 2,
+          "Mesh": 887575754
+        },
+        {
+          "Type": "PlanetComponent",
+          "Time": "0'0'0'0'0"
+        } ]
+    },
+    {
+      "ID": 11,
+      "Type": "CelestrialBody",
+      "Name": "Jupiter",
+      "Transform": {
+        "value0": [ 35, 0, 0 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 10, 10, 10 ]
+      },
+      "Parent": 1,
+      "Components": [
+        { "Type": "IDComponent",
+          "ID": 11
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1 ],
+          "Emission": [ 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": 80582718,
+          "Mesh": 1
+        },
+        {
+          "Type": "PlanetComponent",
+          "Time": "0'0'12'0'0"
+        } ]
+    },
+    {
+      "ID": 12,
+      "Type": "CelestrialBody",
+      "Name": "Saturn",
+      "Transform": {
+        "value0": [ 58, 0, 0 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 8, 8, 8 ]
+      },
+      "Parent": 1,
+      "Components": [
+        { "Type": "IDComponent",
+          "ID": 12
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1 ],
+          "Emission": [ 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": 1942043287,
+          "Mesh": 1
+        },
+        {
+          "Type": "PlanetComponent",
+          "Time": "0'0'10'33'38"
+        } ]
+    },
+    {
+      "ID": 13,
+      "Type": "CelestrialBody",
+      "Name": "Uranus",
+      "Transform": {
+        "value0": [ 80, 0, 0 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 5, 5, 5 ]
+      },
+      "Parent": 1,
+      "Components": [
+        { "Type": "IDComponent",
+          "ID": 13
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1 ],
+          "Emission": [ 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": 328434949,
+          "Mesh": 1
+        },
+        {
+          "Type": "PlanetComponent",
+          "Time": "0'0'17'14'0"
+        } ]
+    },
+    {
+      "ID": 14,
+      "Type": "CelestrialBody",
+      "Name": "Neptune",
+      "Transform": {
+        "value0": [ 100, 0, 0 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 5.5, 5.5, 5.5 ]
+      },
+      "Parent": 1,
+      "Components": [
+        { "Type": "IDComponent",
+          "ID": 14
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1 ],
+          "Emission": [ 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": 1511299943,
+          "Mesh": 1
+        },
+        {
+          "Type": "PlanetComponent",
+          "Time": "0'0'16'0'0"
+        } ]
+    },
+    {
+      "ID": 15,
+      "Type": "CelestrialBody",
+      "Name": "Astroids",
+      "Transform": {
+        "value0": [ 0, 0, 0 ],
+        "value1": [ 0, 0, 0 ],
+        "value2": [ 1, 1, 1 ]
+      },
+      "Parent": 1,
+      "Components": [
+        { "Type": "IDComponent",
+          "ID": 15
+        },
+        {
+          "Type": "AstroidComponent",
+          "Instances": 10000,
+          "Seed": 0,
+          "Radius": 21,
+          "Offset": 0.4,
+          "Meshes": [
+            1550937985
+          ],
+          "Color": [ 0.5, 0.5, 0.5 ],
+          "Emission": [ 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": 2
+        }
+      ]
+    }
+  ]
+}

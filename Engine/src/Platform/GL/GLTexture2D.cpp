@@ -13,15 +13,6 @@ namespace BHive
 	{
 
 		Initialize();
-
-		mHandle = glGetTextureHandleARB(mTextureID);
-		glMakeTextureHandleResidentARB(mHandle);
-
-		if (specification.mAccess)
-		{
-			mImageHandle = glGetImageHandleARB(mTextureID, 0, GL_FALSE, 0, GetGLInternalFormat(specification.mFormat));
-			glMakeImageHandleResidentARB(mImageHandle, GetGLAccess(specification.mAccess.value()));
-		}
 	}
 
 	GLTexture2D::GLTexture2D(const void *data, uint32_t width, uint32_t height, const FTextureSpecification &specification)
@@ -33,15 +24,6 @@ namespace BHive
 
 		Initialize();
 
-		mHandle = glGetTextureHandleARB(mTextureID);
-		glMakeTextureHandleResidentARB(mHandle);
-
-		if (specification.mAccess)
-		{
-			mImageHandle = glGetImageHandleARB(mTextureID, 0, GL_FALSE, 0, GetGLInternalFormat(specification.mFormat));
-			glMakeImageHandleResidentARB(mImageHandle, GetGLAccess(specification.mAccess.value()));
-		}
-
 		if (data)
 		{
 			SetData(data, width * height * specification.mChannels);
@@ -51,6 +33,25 @@ namespace BHive
 	GLTexture2D::~GLTexture2D()
 	{
 		Release();
+	}
+
+	void GLTexture2D::SetWrapMode(EWrapMode mode)
+	{
+		mSpecification.mWrapMode = mode;
+		glSamplerParameteri(mSamplerID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mode));
+		glSamplerParameteri(mSamplerID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mode));
+	}
+
+	void GLTexture2D::SetMinFilter(EMinFilter mode)
+	{
+		mSpecification.mMinFilter = mode;
+		glSamplerParameteri(mSamplerID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(mode));
+	}
+
+	void GLTexture2D::SetMagFilter(EMagFilter mode)
+	{
+		mSpecification.mMagFilter = mode;
+		glSamplerParameteri(mSamplerID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(mode));
 	}
 
 	void GLTexture2D::Bind(uint32_t slot) const
@@ -146,6 +147,17 @@ namespace BHive
 		default:
 			break;
 		};
+
+		mHandle = glGetTextureHandleNV(mTextureID);
+		glMakeTextureHandleResidentNV(mHandle);
+
+		// mSamplerHandle = glGetTextureSamplerHandleNV(mTextureID, mSamplerID);
+
+		if (mSpecification.mAccess)
+		{
+			mImageHandle = glGetImageHandleNV(mTextureID, 0, GL_FALSE, 0, GetGLInternalFormat(mSpecification.mFormat));
+			glMakeImageHandleResidentNV(mImageHandle, GetGLAccess(mSpecification.mAccess.value()));
+		}
 	}
 
 	void GLTexture2D::Release()

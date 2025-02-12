@@ -12,6 +12,10 @@ namespace BHive
 	public:
 		virtual ~Texture() = default;
 
+		virtual void SetWrapMode(EWrapMode mode) {}
+		virtual void SetMinFilter(EMinFilter mode) {};
+		virtual void SetMagFilter(EMagFilter mode) {};
+
 		virtual void Bind(uint32_t slot = 0) const = 0;
 		virtual void UnBind(uint32_t slot = 0) const = 0;
 

@@ -6,7 +6,13 @@
 
 namespace BHive
 {
-	enum class EFilterMode
+	enum class EMagFilter
+	{
+		LINEAR,
+		NEAREST
+	};
+
+	enum class EMinFilter
 	{
 		LINEAR,
 		NEAREST,
@@ -90,7 +96,8 @@ namespace BHive
 		uint32_t mChannels;
 		EFormat mFormat;
 		EWrapMode mWrapMode = EWrapMode::REPEAT;
-		EFilterMode mMinFilter = EFilterMode::LINEAR, mMagFilter = EFilterMode::LINEAR;
+		EMinFilter mMinFilter = EMinFilter::LINEAR;
+		EMagFilter mMagFilter = EMagFilter::LINEAR;
 		Color mBorderColor = 0xFFFFFFFF;
 		uint32_t mLevels = 1;
 		ETextureType mType = ETextureType::TEXTURE_2D;
