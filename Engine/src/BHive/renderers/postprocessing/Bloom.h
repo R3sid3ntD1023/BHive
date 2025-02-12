@@ -34,6 +34,7 @@ namespace BHive
 	private:
 		FBloomSettings mSettings;
 		MipMaps mMipMaps;
+
 		Ref<Texture> mPreFilterTexture;
 
 		Ref<Shader> mPreFilterShader;

@@ -1,9 +1,11 @@
 #type compute
+
 #version 460 core
+#extension GL_ARB_bindless_texture : require
 
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-layout(r11f_g11f_b10f, binding = 0) uniform image2D imgOutput;
-layout(binding = 0) uniform sampler2D u_scene_texture;
+layout(r11f_g11f_b10f, bindless_image) uniform image2D uImgOutput;
+layout(bindless_sampler) uniform sampler2D u_src_texture;
 
 layout(location = 0) uniform vec4 u_threshold;
 
@@ -19,10 +21,10 @@ void main()
     float x = float(texelCoord.x)/(gl_NumWorkGroups.x);
     float y = float(texelCoord.y)/(gl_NumWorkGroups.y);
 
-    vec4 value = texture(u_scene_texture, vec2(x, y));
+    vec4 value = texture(u_src_texture, vec2(x, y));
     vec4 color = QuadraticThreshold(value, u_threshold.a, u_threshold.rgb);
 	
-    imageStore(imgOutput, texelCoord, color);
+    imageStore(uImgOutput, texelCoord, color);
 }
 
 vec4 QuadraticThreshold(vec4 color, float threshold, vec3 curve)

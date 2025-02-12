@@ -211,9 +211,9 @@ namespace BHive
 		glUniformMatrix4fv(location, 1, GL_FALSE, &value[0].x);
 	}
 
-	void GLShader::SetUniform(int location, uint64_t handle) const
+	void GLShader::SetBindlessTexture(int location, uint64_t texture) const
 	{
-		glProgramUniformHandleui64ARB(mShaderID, location, handle);
+		glProgramUniformHandleui64ARB(mShaderID, location, texture);
 	}
 
 	void GLShader::Dispatch(uint32_t w, uint32_t h, uint32_t d)

@@ -13,6 +13,15 @@ namespace BHive
 	{
 
 		Initialize();
+
+		mHandle = glGetTextureHandleARB(mTextureID);
+		glMakeTextureHandleResidentARB(mHandle);
+
+		if (specification.mAccess)
+		{
+			mImageHandle = glGetImageHandleARB(mTextureID, 0, GL_FALSE, 0, GetGLInternalFormat(specification.mFormat));
+			glMakeImageHandleResidentARB(mImageHandle, GetGLAccess(specification.mAccess.value()));
+		}
 	}
 
 	GLTexture2D::GLTexture2D(const void *data, uint32_t width, uint32_t height, const FTextureSpecification &specification)
@@ -23,6 +32,15 @@ namespace BHive
 	{
 
 		Initialize();
+
+		mHandle = glGetTextureHandleARB(mTextureID);
+		glMakeTextureHandleResidentARB(mHandle);
+
+		if (specification.mAccess)
+		{
+			mImageHandle = glGetImageHandleARB(mTextureID, 0, GL_FALSE, 0, GetGLInternalFormat(specification.mFormat));
+			glMakeImageHandleResidentARB(mImageHandle, GetGLAccess(specification.mAccess.value()));
+		}
 
 		if (data)
 		{
@@ -37,13 +55,13 @@ namespace BHive
 
 	void GLTexture2D::Bind(uint32_t slot) const
 	{
-
+		glBindSampler(slot, mSamplerID);
 		glBindTextureUnit(slot, mTextureID);
 	}
 
 	void GLTexture2D::UnBind(uint32_t slot) const
 	{
-
+		glBindSampler(slot, 0);
 		glBindTextureUnit(slot, 0);
 	}
 
@@ -98,6 +116,7 @@ namespace BHive
 		GLenum target = GetTextureTarget(mSpecification.mType, mSamples);
 
 		glCreateTextures(target, 1, &mTextureID);
+		glCreateSamplers(1, &mSamplerID);
 
 		switch (target)
 		{
@@ -112,13 +131,12 @@ namespace BHive
 		{
 			glTextureStorage2D(mTextureID, mSpecification.mLevels, GetGLInternalFormat(mSpecification.mFormat), mWidth, mHeight);
 
-			glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(mSpecification.mMinFilter));
-			glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(mSpecification.mMagFilter));
+			glSamplerParameteri(mSamplerID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(mSpecification.mMinFilter));
+			glSamplerParameteri(mSamplerID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(mSpecification.mMagFilter));
+			glSamplerParameteri(mSamplerID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mSpecification.mWrapMode));
+			glSamplerParameteri(mSamplerID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mSpecification.mWrapMode));
 
-			glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mSpecification.mWrapMode));
-			glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mSpecification.mWrapMode));
-
-			if (mSpecification.mMips)
+			if (mSpecification.mLevels > 1)
 			{
 				glGenerateTextureMipmap(mTextureID);
 			}
@@ -132,9 +150,13 @@ namespace BHive
 
 	void GLTexture2D::Release()
 	{
-		auto id = mTextureID;
+
 		BEGIN_THREAD_DISPATCH(=)
-		glDeleteTextures(1, &id);
+
+		glMakeTextureHandleNonResidentARB(mHandle);
+		glDeleteTextures(1, &mTextureID);
+		glDeleteSamplers(1, &mSamplerID);
+
 		END_THREAD_DISPATCH()
 
 		mBuffer.Release();

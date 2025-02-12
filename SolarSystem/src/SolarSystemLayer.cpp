@@ -21,7 +21,7 @@ void SolarSystemLayer::OnAttach()
 	mUniverse = CreateRef<Universe>();
 
 	{
-		std::ifstream in(RESOURCE_PATH "/TestPlanet.json");
+		std::ifstream in(RESOURCE_PATH "/Data/Universe.json");
 		cereal::JSONInputArchive ar(in);
 		ar(MAKE_NVP("Universe", *mUniverse));
 	}
@@ -76,10 +76,15 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	mLightingShader->Bind();
 
-	mFramebuffer->GetColorAttachment()->Bind();
-	mFramebuffer->GetColorAttachment(1)->Bind(1);
-	mFramebuffer->GetColorAttachment(2)->Bind(2);
-	mFramebuffer->GetColorAttachment(3)->Bind(3);
+	auto colors = mFramebuffer->GetColorAttachment();
+	auto positions = mFramebuffer->GetColorAttachment(1);
+	auto normals = mFramebuffer->GetColorAttachment(2);
+	auto emissions = mFramebuffer->GetColorAttachment(3);
+
+	mLightingShader->SetBindlessTexture("uColors", colors->GetResourceHandle());
+	mLightingShader->SetBindlessTexture("uPositions", positions->GetResourceHandle());
+	mLightingShader->SetBindlessTexture("uNormals", normals->GetResourceHandle());
+	mLightingShader->SetBindlessTexture("uEmission", emissions->GetResourceHandle());
 
 	BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
 
@@ -91,9 +96,11 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	mQuadShader->Bind();
 
-	mLightingbuffer->GetColorAttachment()->Bind();
-	postprocess_texture->Bind(1);
+	auto hdr = mLightingbuffer->GetColorAttachment();
+	auto processed_texture = postprocess_texture;
 
+	mQuadShader->SetBindlessTexture("uHDR", hdr->GetResourceHandle());
+	mQuadShader->SetBindlessTexture("uBloom", processed_texture->GetResourceHandle());
 	BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
 
 	BHive::RenderCommand::EnableDepth();

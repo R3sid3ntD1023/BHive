@@ -2,6 +2,8 @@
 #include "gfx/Shader.h"
 #include "gfx/Texture.h"
 #include "glad/glad.h"
+#include "gfx/BindlessTexture.h"
+#include "gfx/TextureUtils.h"
 
 namespace BHive
 {
@@ -22,8 +24,9 @@ namespace BHive
 		mPreFilterShader->Bind();
 		mPreFilterShader->SetUniform("u_threshold", mSettings.mFilterThreshold);
 
-		texture->Bind();
-		mPreFilterTexture->BindAsImage(0, GL_WRITE_ONLY);
+		mPreFilterShader->SetBindlessTexture("u_src_texture", texture->GetResourceHandle());
+		mPreFilterShader->SetBindlessTexture("uImgOutput", mPreFilterTexture->GetResourceHandle());
+
 		mPreFilterShader->Dispatch(mPreFilterTexture->GetWidth(), mPreFilterTexture->GetHeight());
 
 		mPreFilterShader->UnBind();
@@ -34,8 +37,8 @@ namespace BHive
 		auto current_texture = mPreFilterTexture;
 		for (auto &mip : mMipMaps)
 		{
-			current_texture->Bind();
-			mip->BindAsImage(0, GL_WRITE_ONLY);
+			mDownSamplerShader->SetBindlessTexture("u_src_texture", current_texture->GetResourceHandle());
+			mDownSamplerShader->SetBindlessTexture("uImgOutput", mip->GetImageHandle());
 
 			glm::ivec2 size = {mip->GetWidth(), mip->GetHeight()};
 			mDownSamplerShader->SetUniform("u_src_resolution", size);
@@ -53,8 +56,8 @@ namespace BHive
 			const auto &mip = mMipMaps[i];
 			const auto &next_mip = mMipMaps[i - 1];
 
-			mip->Bind();
-			next_mip->BindAsImage(0, GL_READ_WRITE);
+			mUpSamplerShader->SetBindlessTexture("u_src_texture", mip->GetResourceHandle());
+			mUpSamplerShader->SetBindlessTexture("uImgOutput", next_mip->GetImageHandle());
 
 			mUpSamplerShader->Dispatch(next_mip->GetWidth(), next_mip->GetHeight());
 		}
@@ -79,6 +82,7 @@ namespace BHive
 		FTextureSpecification specs{};
 		specs.mFormat = EFormat::R11_G11_B10;
 		specs.mWrapMode = EWrapMode::CLAMP_TO_BORDER;
+		specs.mAccess = EAccess::READ_WRITE;
 
 		mPreFilterTexture = Texture2D::Create(nullptr, width, height, specs);
 

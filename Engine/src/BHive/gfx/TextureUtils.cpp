@@ -335,4 +335,19 @@ namespace BHive
 		ASSERT(false);
 		return EFormat::Invalid;
 	}
+
+	uint32_t GetGLAccess(EAccess access)
+	{
+		switch (access)
+		{
+		case EAccess::READ:
+			return GL_READ_ONLY;
+		case EAccess::WRITE:
+			return GL_WRITE_ONLY;
+		case EAccess::READ_WRITE:
+			return GL_READ_WRITE;
+		default:
+			break;
+		}
+	}
 } // namespace BHive

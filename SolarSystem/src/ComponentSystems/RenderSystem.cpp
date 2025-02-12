@@ -49,8 +49,8 @@ void RenderSystem::Update(Universe *universe, float dt)
 			auto world_transform = body->GetTransform();
 
 			auto texture = BHive::AssetManager::GetAsset<BHive::Texture2D>(astroidcomponent.mTextureHandle);
-			texture->Bind();
 
+			mInstanceShader->SetBindlessTexture("u_Texture", texture->GetResourceHandle());
 			mInstanceShader->SetUniform("uFlags", (uint32_t)astroidcomponent.mFlags);
 			mInstanceShader->SetUniform("uColor", astroidcomponent.mColor);
 			mInstanceShader->SetUniform("uEmission", astroidcomponent.mEmission);
@@ -93,10 +93,11 @@ void RenderSystem::Update(Universe *universe, float dt)
 				auto body = universe->GetBody(idcomponent.mID);
 				auto world_transform = body->GetTransform();
 
-				texture->Bind();
+				// texture->Bind();
 				mShader->SetUniform("uFlags", (uint32_t)meshcomponent.mFlags);
 				mShader->SetUniform("uColor", meshcomponent.mColor);
 				mShader->SetUniform("uEmission", meshcomponent.mEmission);
+				mShader->SetBindlessTexture("u_Texture", texture->GetResourceHandle());
 				BHive::Renderer::SubmitTransform(world_transform);
 				BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mesh->GetVertexArray());
 			}

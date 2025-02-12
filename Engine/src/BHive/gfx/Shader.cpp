@@ -3,17 +3,23 @@
 
 namespace BHive
 {
-	Ref<Shader> Shader::Create(const std::filesystem::path& path)
+	void Shader::SetBindlessTexture(const std::string &name, uint64_t texture) const
+	{
+		auto location = GetUniformLocation(name);
+		SetBindlessTexture(location, texture);
+	}
+
+	Ref<Shader> Shader::Create(const std::filesystem::path &path)
 	{
 		return CreateRef<GLShader>(path);
 	}
 
-	Ref<Shader> Shader::Create(const std::string& name, const std::string& vertex_shader, const std::string& fragment_shader)
+	Ref<Shader> Shader::Create(const std::string &name, const std::string &vertex_shader, const std::string &fragment_shader)
 	{
 		return CreateRef<GLShader>(name, vertex_shader, fragment_shader);
 	}
 
-	void ShaderLibrary::Add(const char* name, const Ref<Shader>& shader)
+	void ShaderLibrary::Add(const char *name, const Ref<Shader> &shader)
 	{
 		if (!Contains(name))
 		{
@@ -21,7 +27,7 @@ namespace BHive
 		}
 	}
 
-	Ref<Shader> ShaderLibrary::Load(const char* name, const std::string& vertex_src, const std::string& fragment_src)
+	Ref<Shader> ShaderLibrary::Load(const char *name, const std::string &vertex_src, const std::string &fragment_src)
 	{
 		if (!Contains(name))
 		{
@@ -33,7 +39,7 @@ namespace BHive
 		return mShaders.at(name);
 	}
 
-	Ref<Shader> ShaderLibrary::Load(const std::filesystem::path& file)
+	Ref<Shader> ShaderLibrary::Load(const std::filesystem::path &file)
 	{
 		auto name = file.filename().string();
 		if (Contains(name))
@@ -41,25 +47,24 @@ namespace BHive
 			return mShaders.at(name);
 		}
 
-		auto& shader = mShaders[name];
+		auto &shader = mShaders[name];
 		shader = Shader::Create(file);
 		return shader;
 	}
 
-	Ref<Shader> ShaderLibrary::Get(const char* name)
+	Ref<Shader> ShaderLibrary::Get(const char *name)
 	{
 		if (Contains(name))
 		{
 			return mShaders.at(name);
 		}
 
-
 		return {};
 	}
 
-	bool ShaderLibrary::Contains(const std::string& name)
+	bool ShaderLibrary::Contains(const std::string &name)
 	{
 		return mShaders.contains(name);
 	}
-	
-}
+
+} // namespace BHive

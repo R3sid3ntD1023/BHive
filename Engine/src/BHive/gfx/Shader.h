@@ -29,6 +29,8 @@ namespace BHive
 			SetUniform(location, v);
 		}
 
+		void SetBindlessTexture(const std::string &name, uint64_t texture) const;
+
 		virtual uint32_t GetRendererID() const = 0;
 		virtual const std::string &GetName() const = 0;
 		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1) = 0;
@@ -47,7 +49,7 @@ namespace BHive
 		virtual void SetUniform(int location, const glm::vec3 &value) const = 0;
 		virtual void SetUniform(int location, const glm::vec4 &value) const = 0;
 		virtual void SetUniform(int location, const glm::mat4 &value) const = 0;
-		virtual void SetUniform(int location, uint64_t value) const = 0;
+		virtual void SetBindlessTexture(int location, uint64_t value) const = 0;
 		virtual int GetUniformLocation(const std::string &name) const = 0;
 	};
 

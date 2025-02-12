@@ -42,15 +42,18 @@ namespace BHive
 			}
 		}
 
-		if (mSpecification.mMips)
+		if (mSpecification.mLevels > 1)
 		{
 			glGenerateTextureMipmap(mTextureID);
 		}
+
+		mHandle = glGetTextureHandleARB(mTextureID);
+		glMakeTextureHandleResidentARB(mHandle);
 	}
 
 	GLTexture3D::~GLTexture3D()
 	{
-
+		glMakeTextureHandleNonResidentARB(mHandle);
 		glDeleteTextures(1, &mTextureID);
 	}
 
@@ -68,7 +71,6 @@ namespace BHive
 
 	void GLTexture3D::BindAsImage(uint32_t unit, uint32_t access, uint32_t level) const
 	{
-
 		glBindImageTexture(unit, mTextureID, level, GL_FALSE, 0, access, GetGLInternalFormat(mSpecification.mFormat));
 	}
 

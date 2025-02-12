@@ -13,9 +13,7 @@ namespace BHive
 		GLenum target = GetTextureTarget(spec.mType, 1);
 		glCreateTextures(target, 1, &mTextureID);
 
-		unsigned levels = spec.mMips ? spec.mLevels : 1;
-
-		glTextureStorage2D(mTextureID, levels, GetGLInternalFormat(spec.mFormat), size, size);
+		glTextureStorage2D(mTextureID, spec.mLevels, GetGLInternalFormat(spec.mFormat), size, size);
 		glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(spec.mMinFilter));
 		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(spec.mMagFilter));
 
@@ -36,15 +34,18 @@ namespace BHive
 				GetGLType(spec.mFormat), NULL);
 		}
 
-		if (spec.mMips)
+		if (spec.mLevels > 1)
 		{
 			glGenerateTextureMipmap(mTextureID);
 		}
+
+		mHandle = glGetTextureHandleARB(mTextureID);
+		glMakeTextureHandleResidentARB(mHandle);
 	}
 
 	GLTextureCube::~GLTextureCube()
 	{
-
+		glMakeTextureHandleNonResidentARB(mHandle);
 		glDeleteTextures(1, &mTextureID);
 	}
 
@@ -56,7 +57,6 @@ namespace BHive
 
 	void GLTextureCube::BindAsImage(uint32_t unit, uint32_t access, uint32_t level) const
 	{
-
 		glBindImageTexture(unit, mTextureID, level, GL_FALSE, 0, access, GetGLInternalFormat(mSpecification.mFormat));
 	}
 

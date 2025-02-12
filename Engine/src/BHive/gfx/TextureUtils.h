@@ -15,16 +15,18 @@ namespace BHive
 	extern BHIVE uint32_t GetGLWrapMode(EWrapMode mode);
 
 	extern BHIVE uint32_t GetGLFormat(EFormat format);
-	
+
 	extern BHIVE uint32_t GetGLInternalFormat(EFormat format);
 
 	extern BHIVE uint32_t GetGLType(EFormat format);
 
 	extern BHIVE EFormat GetFormat(uint32_t channels);
-	
+
 	extern BHIVE bool IsDepthFormat(EFormat format);
 
 	uint32_t GetDepthAttachmentType(EFormat format);
 
 	EFormat GetFormatFromChannels(bool hdr, int channels);
-}
+
+	uint32_t GetGLAccess(EAccess access);
+} // namespace BHive

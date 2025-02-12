@@ -65,7 +65,6 @@ namespace BHive
 		auto &spec = mColorSpecifications[attachmentIndex];
 
 		glClearTexImage(attachment->GetRendererID(), 0, GetGLFormat(spec.mSpecification.mFormat), type, data);
-		;
 	}
 
 	void GLFramebuffer::Blit(Ref<Framebuffer> &target)
@@ -74,7 +73,6 @@ namespace BHive
 			return;
 
 		BlitInternal(target);
-		;
 	}
 
 	void GLFramebuffer::ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data)

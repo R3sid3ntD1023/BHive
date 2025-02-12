@@ -30,7 +30,7 @@ namespace BHive
 		virtual void SetUniform(int location, const glm::vec3 &value) const;
 		virtual void SetUniform(int location, const glm::vec4 &value) const;
 		virtual void SetUniform(int location, const glm::mat4 &value) const;
-		virtual void SetUniform(int location, uint64_t value) const;
+		virtual void SetBindlessTexture(int location, uint64_t texture) const;
 		virtual int GetUniformLocation(const std::string &name) const;
 		void PreProcess(const std::string &source);
 		void Reflect();
