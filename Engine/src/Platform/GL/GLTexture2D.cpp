@@ -169,13 +169,13 @@ namespace BHive
 	void GLTexture2D::Release()
 	{
 
-		BEGIN_THREAD_DISPATCH(=)
+		// BEGIN_THREAD_DISPATCH(=)
 
 		// glMakeTextureHandleNonResidentARB(mHandle);
 		glDeleteTextures(1, &mTextureID);
 		// glDeleteSamplers(1, &mSamplerID);
 
-		END_THREAD_DISPATCH()
+		// END_THREAD_DISPATCH()
 
 		mBuffer.Release();
 	}

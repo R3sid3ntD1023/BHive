@@ -3,9 +3,12 @@
 #include "components/IDComponent.h"
 #include "Universe.h"
 #include "CelestrialBody.h"
+#include "CPUGPUProfiler/CPUGPUProfiler.h"
 
 void PlanetComponentSystem::Update(Universe *universe, float dt)
 {
+	CPU_PROFILER_FUNCTION();
+
 	auto view = universe->GetRegistry().view<IDComponent, PlanetComponent>();
 	for (auto &e : view)
 	{

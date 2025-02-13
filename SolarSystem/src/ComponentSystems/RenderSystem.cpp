@@ -23,6 +23,8 @@ RenderSystem::RenderSystem()
 
 void RenderSystem::Update(Universe *universe, float dt)
 {
+	CPU_PROFILER_FUNCTION();
+
 	{
 
 		auto view = universe->GetRegistry().view<IDComponent, StarComponent>();
