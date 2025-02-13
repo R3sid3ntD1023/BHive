@@ -12,6 +12,8 @@
 #include <asset/AssetManager.h>
 #include <core/FileDialog.h>
 #include "CelestrialBody.h"
+#include "CPUGPUProfiler/CPUGPUProfiler.h"
+#include <implot.h>
 
 void SolarSystemLayer::OnAttach()
 {
@@ -45,13 +47,22 @@ void SolarSystemLayer::OnAttach()
 	mBloom = CreateRef<BHive::Bloom>(5, w, h, settings);
 
 	BHive::RenderCommand::ClearColor(.2f, .2f, .2f, 1.f);
+
+	ImPlot::CreateContext();
+}
+
+void SolarSystemLayer::OnDetach()
+{
+	ImPlot::DestroyContext();
 }
 
 void SolarSystemLayer::OnUpdate(float dt)
 {
-	mCounter.Begin();
+	mCounter.Frame();
 
 	mCamera.ProcessInput();
+
+	CPU_PROFILER_FUNCTION();
 
 	mMultiSampleFramebuffer->Bind();
 
@@ -62,8 +73,8 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	BHive::Renderer::Begin(mCamera.GetProjection(), mCamera.GetView().inverse());
 
-	BHive::Frustum frustum(mCamera.GetProjection(), mCamera.GetView().inverse());
-	BHive::LineRenderer::DrawFrustum(frustum, 0xFF00FFFF);
+	// BHive::Frustum frustum(mCamera.GetProjection(), mCamera.GetView().inverse());
+	// BHive::LineRenderer::DrawFrustum(frustum, 0xFF00FFFF);
 
 	mUniverse->Update(dt);
 
@@ -79,17 +90,15 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	mLightingShader->Bind();
 
-	auto colors = mFramebuffer->GetColorAttachment();
-	auto positions = mFramebuffer->GetColorAttachment(1);
-	auto normals = mFramebuffer->GetColorAttachment(2);
-	auto emissions = mFramebuffer->GetColorAttachment(3);
+	mFramebuffer->GetColorAttachment()->Bind();
+	mFramebuffer->GetColorAttachment(1)->Bind(1);
+	mFramebuffer->GetColorAttachment(2)->Bind(2);
+	mFramebuffer->GetColorAttachment(3)->Bind(3);
 
-	mLightingShader->SetBindlessTexture("uColors", colors->GetResourceHandle());
-	mLightingShader->SetBindlessTexture("uPositions", positions->GetResourceHandle());
-	mLightingShader->SetBindlessTexture("uNormals", normals->GetResourceHandle());
-	mLightingShader->SetBindlessTexture("uEmission", emissions->GetResourceHandle());
-
-	BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
+	{
+		GPU_PROFILER_SCOPED("DrawGBufferQuad");
+		BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
+	}
 
 	mLightingbuffer->UnBind();
 
@@ -102,13 +111,18 @@ void SolarSystemLayer::OnUpdate(float dt)
 	auto hdr = mLightingbuffer->GetColorAttachment();
 	auto processed_texture = postprocess_texture;
 
-	mQuadShader->SetBindlessTexture("uHDR", hdr->GetResourceHandle());
-	mQuadShader->SetBindlessTexture("uBloom", processed_texture->GetResourceHandle());
-	BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
+	hdr->Bind();
+	processed_texture->Bind(1);
+	{
+		GPU_PROFILER_SCOPED("LightingQuad");
+		BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
+	}
 
 	BHive::RenderCommand::EnableDepth();
 
-	mCounter.End();
+	mFPS[mCurrentIndex++] = (float)(mCounter);
+
+	mCurrentIndex = mCurrentIndex % mFPS.size();
 }
 
 void SolarSystemLayer::OnEvent(BHive::Event &e)
@@ -143,29 +157,6 @@ void SolarSystemLayer::OnGuiRender(float)
 			auto &bloom = mBloom->GetSettings();
 			ImGui::DragFloat("FilterRadius", &bloom.mFilterRadius, .01f, 0.0f, 1.0f);
 			ImGui::ColorEdit4("FilterThreshold", &bloom.mFilterThreshold.x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
-			ImGui::TextColored({1, .5f, 0, 1}, "FPS : %.2f", (float)mCounter);
-
-			// auto texture = BHive::AssetManager::GetAsset<BHive::Texture>(1257525188);
-			// ImGui::Image((ImTextureID)(uint64_t)*texture, {200, 200}, {0, 2}, {2, 0});
-
-			// int current_item = (int)texture->GetSpecification().mWrapMode;
-			// if (ImGui::Combo("Wrapping", &current_item, "REPEAT\0CLAMP_TO_EDGE\0MIRRORED_REPEAT\0CLAMP_TO_BORDER\0"))
-			// {
-			// 	texture->SetWrapMode((BHive::EWrapMode)current_item);
-			// }
-
-			// current_item = (int)texture->GetSpecification().mMinFilter;
-			// if (ImGui::Combo(
-			// 		"MinFilter", &current_item, "LINEAR\0NEAREST\0MIPMAP_LINEAR\0MIPMAP_NEAREST\0MIPMAP_LINEAR_NEAREST\0MIPMAP_NEAREST_LINEAR\0"))
-			// {
-			// 	texture->SetMinFilter((BHive::EMinFilter)current_item);
-			// }
-
-			// current_item = (int)texture->GetSpecification().mMagFilter;
-			// if (ImGui::Combo("MagFilter", &current_item, "LINEAR\0NEAREST\0"))
-			// {
-			// 	texture->SetMagFilter((BHive::EMagFilter)current_item);
-			// }
 		}
 
 		ImGui::EndTable();
@@ -188,6 +179,41 @@ void SolarSystemLayer::OnGuiRender(float)
 	}
 
 	ImGui::End();
+
+	if (ImGui::Begin("Performance"))
+	{
+		static ImPlotFlags plotflags = ImPlotFlags_NoMouseText;
+
+		if (ImPlot::BeginPlot("FPS", {-1, 0}, plotflags))
+		{
+			ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1000, ImGuiCond_Once);
+
+			auto fps_overlay = std::format("FPS: {:4.2}", (float)mCounter);
+			ImPlot::SetupAxes(nullptr, fps_overlay.c_str(), 0, ImPlotAxisFlags_LockMin);
+			ImPlot::PlotLine("FPS", mFPS.data(), mFPS.size());
+
+			ImPlot::EndPlot();
+		}
+
+		if (ImPlot::BeginPlot("Profiler", {-1, 0}, plotflags))
+		{
+			ImPlot::SetupAxes(nullptr, "Elasped Time (ms)", 0, ImPlotAxisFlags_LockMin);
+			ImPlot::SetupAxisLimits(ImAxis_Y1, 0, .5, ImGuiCond_Once);
+
+			for (const auto &[name, data] : BHive::CPUGPUProfiler::GetInstance().GetData())
+			{
+				auto &samples = data.GetSamples();
+
+				ImPlot::PlotLine(name.c_str(), samples.data(), samples.size());
+			}
+			ImPlot::EndPlot();
+		}
+	}
+
+	ImGui::End();
+
+	// ImPlot::ShowDemoWindow();
+	//   ImGui::ShowDemoWindow();
 }
 
 bool SolarSystemLayer::OnWindowResize(BHive::WindowResizeEvent &e)

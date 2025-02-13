@@ -6,8 +6,8 @@
 layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = LOCAL_SIZE) in;
 
 
-layout(bindless_sampler) uniform sampler2D u_src_texture;
-layout(r11f_g11f_b10f, bindless_image) uniform image2D uImgOutput;
+layout(binding =  0) uniform sampler2D u_src_texture;
+layout(r11f_g11f_b10f, binding =  0) uniform image2D uImgOutput;
 
 layout(location = 0) uniform float u_filterRadius;
 

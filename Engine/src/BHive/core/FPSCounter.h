@@ -7,15 +7,15 @@ namespace BHive
 {
 	struct FPSCounter
 	{
-		void Begin();
+		FPSCounter();
 
-		void End();
+		void Frame();
 
-		operator float() const { return mFrames / mDeltaTime; }
+		operator float() const;
 
 	private:
-		float mDeltaTime{0.f};
-		uint32_t mFrames{0};
-		Timer mTimer;
+		uint32_t mFrameCount = 0;
+		std::chrono::steady_clock::time_point mLastTime;
+		double mFPS = 0;
 	};
 } // namespace BHive

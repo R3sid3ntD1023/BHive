@@ -13,6 +13,7 @@
 #include "components/AstroidComponent.h"
 #include "Universe.h"
 #include "CelestrialBody.h"
+#include "CPUGPUProfiler/CPUGPUProfiler.h"
 
 RenderSystem::RenderSystem()
 {
@@ -23,6 +24,7 @@ RenderSystem::RenderSystem()
 void RenderSystem::Update(Universe *universe, float dt)
 {
 	{
+
 		auto view = universe->GetRegistry().view<IDComponent, StarComponent>();
 		for (auto &e : view)
 		{
@@ -34,11 +36,14 @@ void RenderSystem::Update(Universe *universe, float dt)
 			light.mBrightness = starcomponent.mBrightness;
 			light.mRadius = starcomponent.mRadius;
 			light.mColor = starcomponent.mColor;
+
+			GPU_PROFILER_SCOPED("SubmitLight");
 			BHive::Renderer::SubmitPointLight(world_transform.get_translation(), light);
 		}
 	}
 
 	{
+
 		mInstanceShader->Bind();
 
 		auto view = universe->GetRegistry().view<IDComponent, AstroidComponent>();
@@ -50,7 +55,7 @@ void RenderSystem::Update(Universe *universe, float dt)
 
 			auto texture = BHive::AssetManager::GetAsset<BHive::Texture2D>(astroidcomponent.mTextureHandle);
 
-			mInstanceShader->SetBindlessTexture("u_Texture", texture->GetResourceHandle());
+			texture->Bind();
 			// texture->Bind();
 			mInstanceShader->SetUniform("uFlags", (uint32_t)astroidcomponent.mFlags);
 			mInstanceShader->SetUniform("uColor", astroidcomponent.mColor);
@@ -74,12 +79,15 @@ void RenderSystem::Update(Universe *universe, float dt)
 				instanced->SetData(astroidcomponent.GetMatrices().data(), sizeof(glm::mat4) * amount);
 
 				BHive::Renderer::SubmitTransform(world_transform);
+
+				GPU_PROFILER_SCOPED("DrawInstancedMeshes");
 				BHive::RenderCommand::DrawElementsInstanced(BHive::EDrawMode::Triangles, *mesh->GetVertexArray(), amount);
 			}
 		}
 	}
 
 	{
+
 		mShader->Bind();
 
 		auto view = universe->GetRegistry().view<IDComponent, MeshComponent>();
@@ -94,12 +102,13 @@ void RenderSystem::Update(Universe *universe, float dt)
 				auto body = universe->GetBody(idcomponent.mID);
 				auto world_transform = body->GetTransform();
 
-				// texture->Bind();
+				texture->Bind();
 				mShader->SetUniform("uFlags", (uint32_t)meshcomponent.mFlags);
 				mShader->SetUniform("uColor", meshcomponent.mColor);
 				mShader->SetUniform("uEmission", meshcomponent.mEmission);
-				mShader->SetBindlessTexture("u_Texture", texture->GetResourceHandle());
 				BHive::Renderer::SubmitTransform(world_transform);
+
+				GPU_PROFILER_SCOPED("DrawMeshes");
 				BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mesh->GetVertexArray());
 			}
 		}

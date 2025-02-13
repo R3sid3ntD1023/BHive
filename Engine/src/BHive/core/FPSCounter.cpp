@@ -2,20 +2,27 @@
 
 namespace BHive
 {
-	void FPSCounter::Begin()
+	FPSCounter::FPSCounter()
 	{
-		mTimer = Timer();
+		mLastTime = std::chrono::high_resolution_clock::now();
+	}
 
-		mDeltaTime += Time::GetDeltaTime();
-		if (mDeltaTime > 1.0)
+	void FPSCounter::Frame()
+	{
+		mFrameCount++;
+		auto current = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed = current - mLastTime;
+
+		if (elapsed.count() > 1.0)
 		{
-			mDeltaTime = 0.f;
-			mFrames = 0;
+			mFPS = mFrameCount / elapsed.count();
+			mFrameCount = 0;
+			mLastTime = current;
 		}
 	}
 
-	void FPSCounter::End()
+	FPSCounter::operator float() const
 	{
-		mFrames++;
+		return mFPS;
 	}
 } // namespace BHive

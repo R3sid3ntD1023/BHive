@@ -101,7 +101,7 @@ namespace BHive
 		Color mBorderColor = 0xFFFFFFFF;
 		uint32_t mLevels = 1;
 		ETextureType mType = ETextureType::TEXTURE_2D;
-		std::optional<EAccess> mAccess;					 // Image Access
+		// std::optional<EAccess> mAccess;					 // Image Access
 		std::optional<ETextureCompareMode> mCompareMode; // Depth Compare Mode
 		std::optional<ETextureCompareFunc> mCompareFunc; // Depth Compare Funcs
 

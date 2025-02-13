@@ -13,9 +13,9 @@ namespace BHive
 		GLTexture2D(const void *data, uint32_t width, uint32_t height, const FTextureSpecification &specification);
 		~GLTexture2D();
 
-		virtual void SetWrapMode(EWrapMode mode) override;
-		virtual void SetMinFilter(EMinFilter mode) override;
-		virtual void SetMagFilter(EMagFilter mode) override;
+		// virtual void SetWrapMode(EWrapMode mode) override;
+		// virtual void SetMinFilter(EMinFilter mode) override;
+		// virtual void SetMagFilter(EMagFilter mode) override;
 
 		virtual uint32_t GetWidth() const { return mWidth; }
 		virtual uint32_t GetHeight() const { return mHeight; }
@@ -30,8 +30,8 @@ namespace BHive
 		virtual const FTextureSpecification &GetSpecification() const { return mSpecification; }
 		virtual uint32_t GetRendererID() const { return mTextureID; }
 
-		virtual uint64_t GetResourceHandle() const { return mHandle; };
-		virtual uint64_t GetImageHandle() const { return mImageHandle; }
+		// virtual uint64_t GetResourceHandle() const { return mHandle; };
+		// virtual uint64_t GetImageHandle() const { return mImageHandle; }
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
@@ -43,14 +43,14 @@ namespace BHive
 
 	private:
 		uint32_t mTextureID = 0;
-		uint32_t mSamplerID = 0;
+		// uint32_t mSamplerID = 0;
 		uint32_t mWidth = 0, mHeight = 0;
 		FTextureSpecification mSpecification;
 		uint32_t mSamples = 0;
 		Buffer mBuffer;
-		uint64_t mHandle = 0;
-		uint64_t mImageHandle = 0;
-		// uint64_t mSamplerHandle = 0;
+		// uint64_t mHandle = 0;
+		// uint64_t mImageHandle = 0;
+		//  uint64_t mSamplerHandle = 0;
 	};
 
 } // namespace BHive

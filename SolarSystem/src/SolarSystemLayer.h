@@ -5,6 +5,7 @@
 #include <core/Core.h>
 #include <core/Layer.h>
 #include <core/FPSCounter.h>
+
 #include "ResourceManager.h"
 
 namespace BHive
@@ -22,6 +23,7 @@ class Universe;
 struct SolarSystemLayer : public BHive::Layer
 {
 	virtual void OnAttach() override;
+	virtual void OnDetach() override;
 
 	virtual void OnUpdate(float dt) override;
 
@@ -53,4 +55,7 @@ private:
 	Ref<Universe> mUniverse;
 	Ref<BHive::ResourceManager> mResourceManager;
 	BHive::FPSCounter mCounter;
+
+	std::array<float, 100> mFPS;
+	size_t mCurrentIndex = 0;
 };

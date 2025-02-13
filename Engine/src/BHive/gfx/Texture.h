@@ -12,9 +12,9 @@ namespace BHive
 	public:
 		virtual ~Texture() = default;
 
-		virtual void SetWrapMode(EWrapMode mode) {}
-		virtual void SetMinFilter(EMinFilter mode) {};
-		virtual void SetMagFilter(EMagFilter mode) {};
+		// virtual void SetWrapMode(EWrapMode mode) {}
+		// virtual void SetMinFilter(EMinFilter mode) {};
+		// virtual void SetMagFilter(EMagFilter mode) {};
 
 		virtual void Bind(uint32_t slot = 0) const = 0;
 		virtual void UnBind(uint32_t slot = 0) const = 0;
@@ -27,8 +27,8 @@ namespace BHive
 		virtual void SetData(const void *data, uint64_t size, uint32_t offsetX = 0, uint32_t offsetY = 0) = 0;
 		virtual uint32_t GetRendererID() const = 0;
 
-		virtual uint64_t GetResourceHandle() const = 0;
-		virtual uint64_t GetImageHandle() const = 0;
+		// virtual uint64_t GetResourceHandle() const = 0;
+		// virtual uint64_t GetImageHandle() const = 0;
 
 		virtual void GenerateMipMaps() const = 0;
 		virtual const FTextureSpecification &GetSpecification() const = 0;

@@ -42,6 +42,7 @@ namespace BHive
 		const std::string &GetTitle() const { return mData.Title; }
 		unsigned GetWidth() const { return mData.Width; }
 		unsigned GetHeight() const { return mData.Height; }
+		bool IsVSyncEnabled() const { return mData.VSync; }
 
 	private:
 		void RegisterCallbacks();

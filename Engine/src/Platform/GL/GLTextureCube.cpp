@@ -39,13 +39,13 @@ namespace BHive
 			glGenerateTextureMipmap(mTextureID);
 		}
 
-		mHandle = glGetTextureHandleARB(mTextureID);
-		glMakeTextureHandleResidentARB(mHandle);
+		// mHandle = glGetTextureHandleARB(mTextureID);
+		// glMakeTextureHandleResidentARB(mHandle);
 	}
 
 	GLTextureCube::~GLTextureCube()
 	{
-		glMakeTextureHandleNonResidentARB(mHandle);
+		// glMakeTextureHandleNonResidentARB(mHandle);
 		glDeleteTextures(1, &mTextureID);
 	}
 

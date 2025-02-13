@@ -21,7 +21,6 @@ void main()
 #version 460 core
 
 #extension GL_ARB_shading_language_include : require
-#extension GL_ARB_bindless_texture : require
 
 #include <Core.glsl>
 #include <Lighting.glsl>
@@ -31,10 +30,10 @@ layout(location = 0) in struct VS_OUT{
 	vec2 texCoord;
 } vs_in;
 
-layout(bindless_sampler) uniform sampler2D uColors;
-layout(bindless_sampler) uniform sampler2D uPositions;
-layout(bindless_sampler) uniform sampler2D uNormals;
-layout(bindless_sampler) uniform sampler2D uEmission;
+layout(binding = 0) uniform sampler2D uColors;
+layout(binding = 1) uniform sampler2D uPositions;
+layout(binding = 2) uniform sampler2D uNormals;
+layout(binding = 3) uniform sampler2D uEmission;
 
 layout(location = 0) out vec4 fColor;
 

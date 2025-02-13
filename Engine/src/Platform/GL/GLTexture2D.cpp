@@ -35,34 +35,34 @@ namespace BHive
 		Release();
 	}
 
-	void GLTexture2D::SetWrapMode(EWrapMode mode)
-	{
-		mSpecification.mWrapMode = mode;
-		glSamplerParameteri(mSamplerID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mode));
-		glSamplerParameteri(mSamplerID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mode));
-	}
+	// void GLTexture2D::SetWrapMode(EWrapMode mode)
+	// {
+	// 	mSpecification.mWrapMode = mode;
+	// 	// glSamplerParameteri(mSamplerID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mode));
+	// 	// glSamplerParameteri(mSamplerID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mode));
+	// }
 
-	void GLTexture2D::SetMinFilter(EMinFilter mode)
-	{
-		mSpecification.mMinFilter = mode;
-		glSamplerParameteri(mSamplerID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(mode));
-	}
+	// void GLTexture2D::SetMinFilter(EMinFilter mode)
+	// {
+	// 	mSpecification.mMinFilter = mode;
+	// 	// glSamplerParameteri(mSamplerID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(mode));
+	// }
 
-	void GLTexture2D::SetMagFilter(EMagFilter mode)
-	{
-		mSpecification.mMagFilter = mode;
-		glSamplerParameteri(mSamplerID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(mode));
-	}
+	// void GLTexture2D::SetMagFilter(EMagFilter mode)
+	// {
+	// 	mSpecification.mMagFilter = mode;
+	// 	// glSamplerParameteri(mSamplerID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(mode));
+	// }
 
 	void GLTexture2D::Bind(uint32_t slot) const
 	{
-		glBindSampler(slot, mSamplerID);
+		// glBindSampler(slot, mSamplerID);
 		glBindTextureUnit(slot, mTextureID);
 	}
 
 	void GLTexture2D::UnBind(uint32_t slot) const
 	{
-		glBindSampler(slot, 0);
+		// glBindSampler(slot, 0);
 		glBindTextureUnit(slot, 0);
 	}
 
@@ -117,7 +117,7 @@ namespace BHive
 		GLenum target = GetTextureTarget(mSpecification.mType, mSamples);
 
 		glCreateTextures(target, 1, &mTextureID);
-		glCreateSamplers(1, &mSamplerID);
+		// ;
 
 		switch (target)
 		{
@@ -130,12 +130,18 @@ namespace BHive
 
 		case GL_TEXTURE_2D:
 		{
+			// glCreateSamplers(1, &mSamplerID);
 			glTextureStorage2D(mTextureID, mSpecification.mLevels, GetGLInternalFormat(mSpecification.mFormat), mWidth, mHeight);
 
-			glSamplerParameteri(mSamplerID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(mSpecification.mMinFilter));
-			glSamplerParameteri(mSamplerID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(mSpecification.mMagFilter));
-			glSamplerParameteri(mSamplerID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mSpecification.mWrapMode));
-			glSamplerParameteri(mSamplerID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mSpecification.mWrapMode));
+			// glSamplerParameteri(mSamplerID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(mSpecification.mMinFilter));
+			// glSamplerParameteri(mSamplerID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(mSpecification.mMagFilter));
+			// glSamplerParameteri(mSamplerID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mSpecification.mWrapMode));
+			// glSamplerParameteri(mSamplerID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mSpecification.mWrapMode));
+
+			glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(mSpecification.mMinFilter));
+			glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(mSpecification.mMagFilter));
+			glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mSpecification.mWrapMode));
+			glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mSpecification.mWrapMode));
 
 			if (mSpecification.mLevels > 1)
 			{
@@ -148,16 +154,16 @@ namespace BHive
 			break;
 		};
 
-		mHandle = glGetTextureHandleNV(mTextureID);
-		glMakeTextureHandleResidentNV(mHandle);
+		// mHandle = glGetTextureHandleNV(mTextureID);
+		// glMakeTextureHandleResidentNV(mHandle);
 
-		// mSamplerHandle = glGetTextureSamplerHandleNV(mTextureID, mSamplerID);
+		// // mSamplerHandle = glGetTextureSamplerHandleNV(mTextureID, mSamplerID);
 
-		if (mSpecification.mAccess)
-		{
-			mImageHandle = glGetImageHandleNV(mTextureID, 0, GL_FALSE, 0, GetGLInternalFormat(mSpecification.mFormat));
-			glMakeImageHandleResidentNV(mImageHandle, GetGLAccess(mSpecification.mAccess.value()));
-		}
+		// if (mSpecification.mAccess)
+		// {
+		// 	mImageHandle = glGetImageHandleNV(mTextureID, 0, GL_FALSE, 0, GetGLInternalFormat(mSpecification.mFormat));
+		// 	glMakeImageHandleResidentNV(mImageHandle, GetGLAccess(mSpecification.mAccess.value()));
+		// }
 	}
 
 	void GLTexture2D::Release()
@@ -167,7 +173,7 @@ namespace BHive
 
 		// glMakeTextureHandleNonResidentARB(mHandle);
 		glDeleteTextures(1, &mTextureID);
-		glDeleteSamplers(1, &mSamplerID);
+		// glDeleteSamplers(1, &mSamplerID);
 
 		END_THREAD_DISPATCH()
 

@@ -8,6 +8,13 @@ FetchContent_Declare(
 )
 list(APPEND components entt)
 
+FetchContent_Declare(
+	ImPlot
+	GIT_REPOSITORY https://github.com/R3sid3ntD1023/implot.git
+	GIT_TAG master
+)
+list(APPEND components ImPlot)
+
 if(components)
 FETCHCONTENT_MAKEAVAILABLE(${components})
 endif()
@@ -22,7 +29,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 target_compile_options(${PROJECT_NAME} PUBLIC /ZI /INCREMETAL /MP /bigobj /W0 )
 target_compile_definitions(${PROJECT_NAME} PUBLIC _CRT_SECURE_NO_WARNINGS PUBLIC RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/Resources/" )
-target_link_libraries(${PROJECT_NAME} PUBLIC Engine PUBLIC EnTT::EnTT)
+target_link_libraries(${PROJECT_NAME} PUBLIC Engine PUBLIC EnTT::EnTT PUBLIC ImPlot)
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 
