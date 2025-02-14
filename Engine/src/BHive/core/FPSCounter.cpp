@@ -11,11 +11,12 @@ namespace BHive
 	{
 		mFrameCount++;
 		auto current = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<double> elapsed = current - mLastTime;
+		auto elapsed = current - mLastTime;
 
-		if (elapsed.count() > 1.0)
+		if (std::chrono::duration_cast<std::chrono::seconds>(elapsed) >= std::chrono::seconds{1})
 		{
-			mFPS = mFrameCount / elapsed.count();
+			// mFPS = mFrameCount / elapsed.count();
+			mFPS = mFrameCount / std::chrono::duration<double>(elapsed).count();
 			mFrameCount = 0;
 			mLastTime = current;
 		}

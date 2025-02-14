@@ -188,7 +188,7 @@ void SolarSystemLayer::OnGuiRender(float)
 		{
 			ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1000, ImGuiCond_Once);
 
-			auto fps_overlay = std::format("FPS: {:4.2}", (float)mCounter);
+			auto fps_overlay = std::format("FPS: {:.2f}", (float)mCounter);
 			ImPlot::SetupAxes(nullptr, fps_overlay.c_str(), 0, ImPlotAxisFlags_LockMin);
 			ImPlot::PlotLine("FPS", mFPS.data(), mFPS.size());
 
