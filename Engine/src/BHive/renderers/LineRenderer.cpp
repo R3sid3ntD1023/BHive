@@ -3,6 +3,7 @@
 #include "gfx/Shader.h"
 #include "gfx/RenderCommand.h"
 #include "Renderer.h"
+#include "core/profiler/CPUGPUProfiler.h"
 
 namespace BHive
 {
@@ -62,11 +63,6 @@ namespace BHive
 	void LineRenderer::End()
 	{
 		Flush();
-	}
-
-	void LineRenderer::SetPeristance(Persistance persistance)
-	{
-		// sData->mPersistance = persistance;
 	}
 
 	void LineRenderer::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const Color &color, const glm::mat4 &transform)
@@ -249,19 +245,19 @@ namespace BHive
 
 	void LineRenderer::DrawFrustum(const Frustum &frustum, const Color &color)
 	{
-		// auto points = frustum.get_points();
-		// LineRenderer::DrawRect(points[0], points[1], points[2], points[3], color);
-		// LineRenderer::DrawRect(points[4], points[5], points[6], points[7], color);
+		auto &points = frustum.get_points();
+		LineRenderer::DrawRect(points[0], points[1], points[2], points[3], color);
+		LineRenderer::DrawRect(points[4], points[5], points[6], points[7], color);
 
-		// LineRenderer::DrawLine(points[0], points[4], color);
-		// LineRenderer::DrawLine(points[1], points[5], color);
-		// LineRenderer::DrawLine(points[2], points[6], color);
-		// LineRenderer::DrawLine(points[3], points[7], color);
+		LineRenderer::DrawLine(points[0], points[4], color);
+		LineRenderer::DrawLine(points[1], points[5], color);
+		LineRenderer::DrawLine(points[2], points[6], color);
+		LineRenderer::DrawLine(points[3], points[7], color);
 
-		for (int i = 0; i < 6; i++)
+		auto &planes = frustum._get_planes();
+		for (size_t i = 0; i < 6; i++)
 		{
-			auto &plane = frustum._get_planes()[i];
-			LineRenderer::DrawRect(plane.Points[0], plane.Points[1], plane.Points[2], plane.Points[3], color);
+			LineRenderer::DrawLine(planes[i].Origin, planes[i].Normal, color);
 		}
 	}
 
@@ -312,6 +308,15 @@ namespace BHive
 		DrawArc(radius, sides, PI, PI * 2, offset - h, color, transform * rotationX);
 	}
 
+	void LineRenderer::DrawArrow(float size, const Color &color, const glm::mat4 &transform)
+	{
+		auto forward = glm::vec3{1, 0, 0};
+
+		DrawLine({}, forward * size, color, transform);
+		DrawLine(forward * size, (glm::vec3{.75f, 0, .25f}) * size, color, transform);
+		DrawLine(forward * size, (glm::vec3{.75f, 0, -.25f}) * size, color, transform);
+	}
+
 	glm::vec3 LineRenderer::perpendicular(const glm::vec3 &v)
 	{
 		float min = fabs(v.x);
@@ -348,6 +353,8 @@ namespace BHive
 
 	void LineRenderer::Flush()
 	{
+		GPU_PROFILER_FUNCTION();
+
 		if (sData->mVertexCount > 0)
 		{
 			sData->mLineShader->Bind();

@@ -18,6 +18,7 @@
 #include "mesh/StaticMesh.h"
 
 #include "renderers/postprocessing/Bloom.h"
+#include "core/profiler/CPUGPUProfiler.h"
 
 #define DRAW_ELEMENTS() \
 	RenderCommand::DrawElementsBaseVertex(EDrawMode::Triangles, *vao, sub_mesh->mStartVertex, sub_mesh->mStartIndex, sub_mesh->mIndexCount);
@@ -89,8 +90,6 @@ namespace BHive
 
 	void SceneRenderer::Begin(const Camera &camera, const FTransform &view)
 	{
-		BH_PROFILE_FUNCTION();
-
 		mSceneData.mProjection = camera.GetProjection();
 		mSceneData.mView = view;
 		mSceneData.clear();
@@ -100,6 +99,8 @@ namespace BHive
 
 	void SceneRenderer::End()
 	{
+		CPU_PROFILER_FUNCTION();
+
 		if ((mFlags & ESceneRendererFlags_NoShadows) == 0)
 		{
 			RenderShadows(mSceneData.mLights.size() && mSceneData.mShadowCasters.size());
@@ -144,6 +145,8 @@ namespace BHive
 				return dist_a > dist_b;
 			});
 
+		GPU_PROFILER_SCOPED("Opaque Objects");
+
 		for (auto &[material, objectdata] : opaque)
 		{
 			auto &[transform, sub_mesh, vao, joints] = objectdata;
@@ -156,13 +159,14 @@ namespace BHive
 			}
 
 			Renderer::SubmitTransform(transform);
+
 			DRAW_ELEMENTS();
 		}
 
 		RenderCommand::EnableBlend(true);
 
 		// RENDER TRANSPARENT OBJECTS SORTED
-
+		GPU_PROFILER_SCOPED("Transparent Objects");
 		auto &transparent = mSceneData.mTransparentObjects;
 		std::sort(
 			transparent.begin(), transparent.end(),

@@ -34,6 +34,7 @@ target_link_libraries(Engine
 	PUBLIC spdlog::spdlog
 	PUBLIC glm::glm-header-only
 	PUBLIC cereal::cereal
+	PUBLIC ImPlot
 	PUBLIC mINI
 )
 

@@ -12,7 +12,7 @@
 #include <asset/AssetManager.h>
 #include <core/FileDialog.h>
 #include "CelestrialBody.h"
-#include "CPUGPUProfiler/CPUGPUProfiler.h"
+#include "core/profiler/ProfilerViewer.h"
 #include <implot.h>
 #include "imgui/ImProfiler.h"
 
@@ -184,32 +184,8 @@ void SolarSystemLayer::OnGuiRender(float)
 
 	if (ImGui::Begin("Performance"))
 	{
-		static ImPlotFlags plotflags = ImPlotFlags_NoMouseText;
-
-		if (ImPlot::BeginPlot("FPS", {-1, 0}, plotflags))
-		{
-			ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1000, ImGuiCond_Once);
-
-			auto fps_overlay = std::format("FPS: {:.2f}", (float)mCounter);
-			ImPlot::SetupAxes(nullptr, fps_overlay.c_str(), 0, ImPlotAxisFlags_LockMin);
-			ImPlot::PlotLine("FPS", mFPS.data(), mFPS.size());
-
-			ImPlot::EndPlot();
-		}
-
-		if (ImPlot::BeginPlot("Profiler", {-1, 0}, plotflags))
-		{
-			ImPlot::SetupAxes(nullptr, "Elasped Time (s)", 0, ImPlotAxisFlags_LockMin);
-			ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1, ImGuiCond_Once);
-
-			for (const auto &[name, data] : BHive::CPUGPUProfiler::GetInstance().GetData())
-			{
-				auto &samples = data.GetSamples();
-
-				ImPlot::PlotLine(name.c_str(), samples.data(), samples.size());
-			}
-			ImPlot::EndPlot();
-		}
+		BHive::ProfilerViewer::ViewFPS(mCounter, mFPS.data(), mFPS.size());
+		BHive::ProfilerViewer::ViewCPUGPU();
 	}
 
 	ImGui::End();

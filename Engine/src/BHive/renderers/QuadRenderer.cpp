@@ -5,6 +5,7 @@
 #include "gfx/RenderCommand.h"
 #include "Renderer.h"
 #include "sprite/Sprite.h"
+#include "core/profiler/CPUGPUProfiler.h"
 
 namespace BHive
 {
@@ -211,6 +212,8 @@ namespace BHive
 
 	void QuadRenderer::Flush()
 	{
+		GPU_PROFILER_FUNCTION();
+
 		if (sData->mIndexCount)
 		{
 			{

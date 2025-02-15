@@ -154,6 +154,12 @@ list(APPEND components cereal)
 #)
 #list(APPEND components entt)
 
+FetchContent_Declare(
+	ImPlot
+	GIT_REPOSITORY https://github.com/R3sid3ntD1023/implot.git
+	GIT_TAG master
+)
+list(APPEND components ImPlot)
 
 if(components)
 	FETCHCONTENT_MAKEAVAILABLE(${components})

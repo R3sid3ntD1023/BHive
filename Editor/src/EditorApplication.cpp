@@ -25,8 +25,8 @@ namespace BHive
 		specification.Title = "Editor " + GET_ENGINE_VERSION.to_string();
 		specification.Width = 1080;
 		specification.Height = 720;
-		specification.VSync = true;
-		specification.Maximize = true;
+		specification.VSync = false;
+		specification.Maximize = false;
 		return new EditorApplication(specification);
 	}
 } // namespace BHive

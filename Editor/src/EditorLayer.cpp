@@ -26,6 +26,7 @@
 #include "core/FPSCounter.h"
 #include "core/events/ModCode.h"
 #include "core/layers/ImGuiLayer.h"
+#include <core/profiler/ProfilerViewer.h>
 #include <ImGuizmo.h>
 #include <mini/ini.h>
 #include <rttr/library.h>
@@ -205,7 +206,7 @@ namespace BHive
 
 	void EditorLayer::OnUpdate(float dt)
 	{
-		sCounter.Begin();
+		sCounter.Frame();
 
 		mEditorCamera.ProcessInput();
 
@@ -262,8 +263,6 @@ namespace BHive
 		{
 			mSceneRenderer->End();
 		}
-
-		sCounter.End();
 	}
 
 	void EditorLayer::OnGuiRender(float)
@@ -620,9 +619,16 @@ namespace BHive
 
 	void EditorLayer::ShowPerformancePanel()
 	{
+		static int current = 0;
+		static float fps[100];
+
+		fps[current++] = sCounter;
+		current = current % 100;
+
 		if (ImGui::Begin("Performance"))
 		{
-			ImGui::Text("FPS: %.4f f/s", (float)sCounter);
+			ProfilerViewer::ViewFPS(sCounter, fps, 100);
+			ProfilerViewer::ViewCPUGPU();
 		}
 
 		ImGui::End();

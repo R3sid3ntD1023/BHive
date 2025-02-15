@@ -3,6 +3,7 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <imgui.h>
+#include <implot.h>
 #include <glfw/glfw3.h>
 
 namespace BHive
@@ -37,6 +38,7 @@ namespace BHive
 	{
 		IMGUI_CHECKVERSION();
 		context = ImGui::CreateContext();
+		ImPlot::CreateContext();
 
 		ImGuiIO &io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
@@ -67,6 +69,8 @@ namespace BHive
 	{
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
+
+		ImPlot::DestroyContext();
 		ImGui::DestroyContext();
 	}
 
