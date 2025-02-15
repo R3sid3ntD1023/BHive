@@ -49,4 +49,12 @@ namespace BHive
 		_planes[4] = {_points[2], _points[3], _points[6], _points[7]};
 		_planes[5] = {_points[0], _points[1], _points[5], _points[4]};
 	}
+
+	void FrustumPlane::CalculateNormal()
+	{
+		glm::vec3 x = Points[0] - Points[2] + Points[1] - Points[3];
+		glm::vec3 y = Points[1] - Points[1] + Points[2] - Points[3];
+		glm::vec3 z = glm::cross(x, y);
+		Normal = (x + y + z) / 3.f;
+	}
 } // namespace BHive

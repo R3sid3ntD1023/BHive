@@ -42,7 +42,9 @@ namespace BHive
 	ScopedGPUProfiler::~ScopedGPUProfiler()
 	{
 		mQueryInstance->End();
-		auto time = mQueryInstance->GetTime() / 1000.0;
+
+		// seconds
+		auto time = mQueryInstance->GetTime() / 1000.f;
 		CPUGPUProfiler::GetInstance().AddData(mName, time);
 	}
 
@@ -55,7 +57,9 @@ namespace BHive
 	ScopedCPUProfiler::~ScopedCPUProfiler()
 	{
 		auto elasped = std::chrono::high_resolution_clock::now() - mStartTimePoint;
-		auto time = std::chrono::duration_cast<std::chrono::microseconds>(elasped).count();
+
+		// seconds
+		auto time = std::chrono::duration_cast<std::chrono::milliseconds>(elasped).count() / 1000.f;
 
 		CPUGPUProfiler::GetInstance().AddData(mName, time);
 	}

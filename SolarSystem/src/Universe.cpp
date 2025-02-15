@@ -5,8 +5,8 @@
 
 Universe::Universe()
 {
-	mSystems.push_back(CreateRef<PlanetComponentSystem>());
-	mSystems.push_back(CreateRef<RenderSystem>());
+	mPlanetSystem = CreateRef<PlanetComponentSystem>();
+	mRenderSystem = CreateRef<RenderSystem>();
 }
 
 void Universe::AddBody(const Ref<CelestrialBody> &body)
@@ -16,10 +16,8 @@ void Universe::AddBody(const Ref<CelestrialBody> &body)
 
 void Universe::Update(float dt)
 {
-	for (auto &system : mSystems)
-	{
-		system->Update(this, dt);
-	}
+	mPlanetSystem->Update(this, dt);
+	mRenderSystem->Update(this, dt);
 }
 
 void Universe::Save(cereal::JSONOutputArchive &ar) const

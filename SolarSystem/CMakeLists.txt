@@ -28,7 +28,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	CXX_STANDARD_REQUIRED YES
 )
 target_compile_options(${PROJECT_NAME} PUBLIC /ZI /INCREMETAL /MP /bigobj /W0 )
-target_compile_definitions(${PROJECT_NAME} PUBLIC _CRT_SECURE_NO_WARNINGS PUBLIC RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/Resources/" )
+target_compile_definitions(${PROJECT_NAME} PUBLIC _CRT_SECURE_NO_WARNINGS DEFINE_IMGUI_MATH_OPERATORS PUBLIC RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/Resources/" )
 target_link_libraries(${PROJECT_NAME} PUBLIC Engine PUBLIC EnTT::EnTT PUBLIC ImPlot)
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 

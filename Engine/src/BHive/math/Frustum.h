@@ -7,6 +7,9 @@ namespace BHive
 	struct FrustumPlane
 	{
 		std::array<glm::vec4, 4> Points;
+		glm::vec3 Normal;
+
+		void CalculateNormal();
 	};
 
 	struct Frustum

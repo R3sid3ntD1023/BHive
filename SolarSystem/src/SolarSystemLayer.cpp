@@ -14,6 +14,7 @@
 #include "CelestrialBody.h"
 #include "CPUGPUProfiler/CPUGPUProfiler.h"
 #include <implot.h>
+#include "imgui/ImProfiler.h"
 
 void SolarSystemLayer::OnAttach()
 {
@@ -63,6 +64,7 @@ void SolarSystemLayer::OnUpdate(float dt)
 	mCamera.ProcessInput();
 
 	CPU_PROFILER_FUNCTION();
+	GPU_PROFILER_SCOPED("GPU- SolarSystem::Update");
 
 	mMultiSampleFramebuffer->Bind();
 
@@ -197,8 +199,8 @@ void SolarSystemLayer::OnGuiRender(float)
 
 		if (ImPlot::BeginPlot("Profiler", {-1, 0}, plotflags))
 		{
-			ImPlot::SetupAxes(nullptr, "Elasped Time (ms)", 0, ImPlotAxisFlags_LockMin);
-			ImPlot::SetupAxisLimits(ImAxis_Y1, 0, .5, ImGuiCond_Once);
+			ImPlot::SetupAxes(nullptr, "Elasped Time (s)", 0, ImPlotAxisFlags_LockMin);
+			ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1, ImGuiCond_Once);
 
 			for (const auto &[name, data] : BHive::CPUGPUProfiler::GetInstance().GetData())
 			{
@@ -218,7 +220,6 @@ void SolarSystemLayer::OnGuiRender(float)
 
 bool SolarSystemLayer::OnWindowResize(BHive::WindowResizeEvent &e)
 {
-	BHive::RenderCommand::SetViewport(0, 0, e.x, e.y);
 	mCamera.Resize(e.x, e.y);
 	mMultiSampleFramebuffer->Resize(e.x, e.y);
 	mFramebuffer->Resize(e.x, e.y);

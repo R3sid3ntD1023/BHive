@@ -6,27 +6,36 @@ namespace BHive
 {
 	GLQueryTimer::GLQueryTimer()
 	{
-		glCreateQueries(GL_TIME_ELAPSED_EXT, 1, &mQueryID);
+		glGenQueries(2, mQueryIDs);
 	}
 
 	GLQueryTimer::~GLQueryTimer()
 	{
-		glDeleteQueries(1, &mQueryID);
+		glDeleteQueries(2, mQueryIDs);
 	}
 
 	void GLQueryTimer::Begin()
 	{
-		glBeginQuery(GL_TIME_ELAPSED, mQueryID);
+		glQueryCounter(mQueryIDs[0], GL_TIMESTAMP);
 	}
 
 	void GLQueryTimer::End()
 	{
-		glEndQuery(GL_TIME_ELAPSED);
+		GLuint64 start, end;
+		glQueryCounter(mQueryIDs[1], GL_TIMESTAMP);
 
-		GLuint QueryTime(0);
-		glGetQueryObjectuiv(mQueryID, GL_QUERY_RESULT, &QueryTime);
+		GLint available = 0;
+		while (!available)
+		{
+			glGetQueryObjectiv(mQueryIDs[1], GL_QUERY_RESULT_AVAILABLE, &available);
+		}
 
-		mInstanceTime = (static_cast<double>(QueryTime) / 1000.0);
+		glGetQueryObjectui64v(mQueryIDs[0], GL_QUERY_RESULT, &start);
+		glGetQueryObjectui64v(mQueryIDs[1], GL_QUERY_RESULT, &end);
+
+		// nanoseconds -> microseconds- > milliseconds
+		auto elapsed = (end - start) / 1'000'000.f;
+		mInstanceTime = elapsed;
 		mTimeAccumulated += mInstanceTime;
 		mMaxTime = glm::max(mMaxTime, mInstanceTime);
 		mMinTime = glm::min(mMinTime, mInstanceTime);

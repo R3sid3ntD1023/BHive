@@ -24,7 +24,7 @@ namespace BHive
 		double mMinTime = 0;
 		double mMaxTime = 0;
 		double mInstanceTime = 0;
-		uint32_t mQueryID = 0;
+		uint32_t mQueryIDs[2];
 	};
 
 } // namespace BHive

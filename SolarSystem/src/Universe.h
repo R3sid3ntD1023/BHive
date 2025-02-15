@@ -37,7 +37,8 @@ public:
 	entt::registry &GetRegistry() { return mRegistry; }
 
 private:
-	std::vector<Ref<struct ComponentSystem>> mSystems;
 	std::unordered_map<BHive::UUID, Ref<CelestrialBody>> mBodies;
 	entt::registry mRegistry;
+	Ref<struct ComponentSystem> mRenderSystem;
+	Ref<struct ComponentSystem> mPlanetSystem;
 };
