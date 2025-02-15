@@ -3,7 +3,7 @@
 #include "components/IDComponent.h"
 #include "Universe.h"
 #include "CelestrialBody.h"
-#include "CPUGPUProfiler/CPUGPUProfiler.h"
+#include "core/profiler/CPUGPUProfiler.h"
 
 void PlanetComponentSystem::Update(Universe *universe, float dt)
 {

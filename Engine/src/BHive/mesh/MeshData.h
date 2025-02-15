@@ -19,11 +19,13 @@ namespace BHive
 		glm::vec4 Color;
 		int32_t mBoneID[MAX_BONE_INFLUENCE] = {-1, -1, -1, -1};
 		float mWeights[MAX_BONE_INFLUENCE] = {0, 0, 0, 0};
+		// glm::mat4 Matrix = {1.f};
 
 		static BufferLayout Layout()
 		{
-			return {{EShaderDataType::Float3}, {EShaderDataType::Float2}, {EShaderDataType::Float3}, {EShaderDataType::Float3},
-					{EShaderDataType::Float3}, {EShaderDataType::Float4}, {EShaderDataType::Int4},	 {EShaderDataType::Float4}};
+			return {{EShaderDataType::Float3}, {EShaderDataType::Float2}, {EShaderDataType::Float3},
+					{EShaderDataType::Float3}, {EShaderDataType::Float3}, {EShaderDataType::Float4},
+					{EShaderDataType::Int4},   {EShaderDataType::Float4} /*, {EShaderDataType::Mat4}*/};
 		}
 	};
 

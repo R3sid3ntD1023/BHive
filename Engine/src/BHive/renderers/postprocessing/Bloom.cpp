@@ -4,6 +4,7 @@
 #include "glad/glad.h"
 #include "gfx/BindlessTexture.h"
 #include "gfx/TextureUtils.h"
+#include "core/profiler/CPUGPUProfiler.h"
 
 namespace BHive
 {
@@ -21,6 +22,8 @@ namespace BHive
 
 	Ref<Texture> Bloom::Process(const Ref<Texture> &texture)
 	{
+		CPU_PROFILER_SCOPED("Bloom::Process");
+
 		mPreFilterShader->Bind();
 		mPreFilterShader->SetUniform("u_threshold", mSettings.mFilterThreshold);
 
@@ -32,6 +35,8 @@ namespace BHive
 
 		// downsample
 		mDownSamplerShader->Bind();
+
+		GPU_PROFILER_SCOPED("DownSample");
 
 		auto current_texture = mPreFilterTexture;
 		for (auto &mip : mMipMaps)
@@ -50,6 +55,8 @@ namespace BHive
 
 		mUpSamplerShader->Bind();
 		mUpSamplerShader->SetUniform("u_filterRadius", mSettings.mFilterRadius);
+
+		GPU_PROFILER_SCOPED("UpSample");
 
 		for (size_t i = mMipMaps.size() - 1; i > 0; i--)
 		{

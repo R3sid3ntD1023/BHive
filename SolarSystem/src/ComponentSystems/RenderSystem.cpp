@@ -13,7 +13,7 @@
 #include "components/AstroidComponent.h"
 #include "Universe.h"
 #include "CelestrialBody.h"
-#include "CPUGPUProfiler/CPUGPUProfiler.h"
+#include "core/profiler/CPUGPUProfiler.h"
 
 RenderSystem::RenderSystem()
 {
@@ -39,12 +39,13 @@ void RenderSystem::Update(Universe *universe, float dt)
 			light.mRadius = starcomponent.mRadius;
 			light.mColor = starcomponent.mColor;
 
-			GPU_PROFILER_SCOPED("SubmitLight");
 			BHive::Renderer::SubmitPointLight(world_transform.get_translation(), light);
 		}
 	}
 
 	{
+
+		GPU_PROFILER_SCOPED("DrawInstancedMeshes");
 
 		mInstanceShader->Bind();
 
@@ -82,13 +83,14 @@ void RenderSystem::Update(Universe *universe, float dt)
 
 				BHive::Renderer::SubmitTransform(world_transform);
 
-				GPU_PROFILER_SCOPED("DrawInstancedMeshes");
 				BHive::RenderCommand::DrawElementsInstanced(BHive::EDrawMode::Triangles, *mesh->GetVertexArray(), amount);
 			}
 		}
 	}
 
 	{
+
+		GPU_PROFILER_SCOPED("DrawMeshes");
 
 		mShader->Bind();
 
@@ -110,7 +112,6 @@ void RenderSystem::Update(Universe *universe, float dt)
 				mShader->SetUniform("uEmission", meshcomponent.mEmission);
 				BHive::Renderer::SubmitTransform(world_transform);
 
-				GPU_PROFILER_SCOPED("DrawMeshes");
 				BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mesh->GetVertexArray());
 			}
 		}

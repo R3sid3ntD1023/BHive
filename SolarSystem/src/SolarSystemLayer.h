@@ -47,6 +47,9 @@ private:
 	Ref<BHive::Framebuffer> mLightingbuffer;
 	Ref<BHive::PPlane> mScreenQuad;
 
+	Ref<BHive::Framebuffer> mCullingBuffer;
+	Ref<struct CullingSystem> mCullingSystem;
+
 	glm::ivec2 mViewportSize{};
 
 	// PostProcessing

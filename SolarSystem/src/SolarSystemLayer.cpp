@@ -1,20 +1,22 @@
+#include "CelestrialBody.h"
+#include "core/profiler/ProfilerViewer.h"
+#include "imgui/ImProfiler.h"
 #include "SolarSystemLayer.h"
+#include "Universe.h"
+#include <asset/AssetManager.h>
+#include <core/FileDialog.h>
 #include <core/serialization/Serialization.h>
 #include <gfx/Framebuffer.h>
 #include <gfx/RenderCommand.h>
 #include <gfx/Shader.h>
 #include <gfx/UniformBuffer.h>
 #include <glad/glad.h>
+#include <implot.h>
 #include <mesh/primitives/Plane.h>
 #include <renderers/postprocessing/Bloom.h>
 #include <renderers/Renderer.h>
-#include "Universe.h"
-#include <asset/AssetManager.h>
-#include <core/FileDialog.h>
-#include "CelestrialBody.h"
-#include "core/profiler/ProfilerViewer.h"
-#include <implot.h>
-#include "imgui/ImProfiler.h"
+
+#include "ComponentSystems/CullingSystem.h"
 
 void SolarSystemLayer::OnAttach()
 {
@@ -48,23 +50,20 @@ void SolarSystemLayer::OnAttach()
 	mBloom = CreateRef<BHive::Bloom>(5, w, h, settings);
 
 	BHive::RenderCommand::ClearColor(.2f, .2f, .2f, 1.f);
-
-	ImPlot::CreateContext();
 }
 
 void SolarSystemLayer::OnDetach()
 {
-	ImPlot::DestroyContext();
 }
 
 void SolarSystemLayer::OnUpdate(float dt)
 {
+	CPU_PROFILER_FUNCTION();
+	GPU_PROFILER_SCOPED("GPU- SolarSystem::Update");
+
 	mCounter.Frame();
 
 	mCamera.ProcessInput();
-
-	CPU_PROFILER_FUNCTION();
-	GPU_PROFILER_SCOPED("GPU- SolarSystem::Update");
 
 	mMultiSampleFramebuffer->Bind();
 
@@ -121,6 +120,17 @@ void SolarSystemLayer::OnUpdate(float dt)
 	}
 
 	BHive::RenderCommand::EnableDepth();
+
+	mCullingBuffer->Bind();
+
+	BHive::RenderCommand::Clear();
+	BHive::Renderer::Begin(mCamera.GetProjection(), glm::inverse(glm::translate(glm::vec3{8, 20, 0})));
+
+	mCullingSystem->Update(mUniverse.get(), dt);
+
+	BHive::Renderer::End();
+
+	mCullingBuffer->UnBind();
 
 	mFPS[mCurrentIndex++] = (float)(mCounter);
 
@@ -190,8 +200,13 @@ void SolarSystemLayer::OnGuiRender(float)
 
 	ImGui::End();
 
-	// ImPlot::ShowDemoWindow();
-	//   ImGui::ShowDemoWindow();
+	if (ImGui::Begin("Culling"))
+	{
+		auto size = ImGui::GetContentRegionAvail();
+		ImGui::Image((ImTextureID)(uint64_t)*mCullingBuffer->GetColorAttachment(), size, {0, 1}, {1, 0});
+	}
+
+	ImGui::End();
 }
 
 bool SolarSystemLayer::OnWindowResize(BHive::WindowResizeEvent &e)
@@ -202,6 +217,8 @@ bool SolarSystemLayer::OnWindowResize(BHive::WindowResizeEvent &e)
 	mLightingbuffer->Resize(e.x, e.y);
 	mViewportSize = {e.x, e.y};
 	mBloom->Resize(e.x, e.y);
+
+	mCullingBuffer->Resize(e.x, e.y);
 
 	return false;
 }
@@ -228,4 +245,11 @@ void SolarSystemLayer::InitFramebuffer()
 
 	specs.Attachments.reset().attach({.mFormat = BHive::EFormat::RGBA8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
 	mLightingbuffer = BHive::Framebuffer::Create(specs);
+
+	specs.Attachments.reset()
+		.attach({.mFormat = BHive::EFormat::RGBA8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
+		.attach({.mFormat = BHive::EFormat::DEPTH24_STENCIL8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
+	mCullingBuffer = BHive::Framebuffer::Create(specs);
+
+	mCullingSystem = CreateRef<CullingSystem>();
 }

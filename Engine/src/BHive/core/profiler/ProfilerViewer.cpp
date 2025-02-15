@@ -8,7 +8,7 @@ namespace BHive
 	void ProfilerViewer::ViewFPS(const FPSCounter &counter, const float *data, size_t size)
 	{
 
-		if (ImPlot::BeginPlot("FPS", {-1, 0}, plotflags))
+		if (ImPlot::BeginPlot("FPS", {-1, 0}, plotflags | ImPlotFlags_NoLegend))
 		{
 			ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1000, ImGuiCond_Once);
 
@@ -21,12 +21,15 @@ namespace BHive
 	}
 	void ProfilerViewer::ViewCPUGPU()
 	{
+		auto &datas = BHive::CPUGPUProfiler::GetInstance().GetData();
+
 		if (ImPlot::BeginPlot("Profiler", {-1, 0}, plotflags))
 		{
 			ImPlot::SetupAxes(nullptr, "Elasped Time (s)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_LockMin);
 			ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1, ImGuiCond_Once);
+			ImPlot::SetupLegend(ImPlotLocation_East, ImPlotLegendFlags_Outside | ImPlotLegendFlags_Sort);
 
-			for (const auto &[name, data] : BHive::CPUGPUProfiler::GetInstance().GetData())
+			for (const auto &[name, data] : datas)
 			{
 				auto &samples = data.GetSamples();
 

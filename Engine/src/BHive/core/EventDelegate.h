@@ -5,14 +5,6 @@
 #include <functional>
 #include <memory>
 
-#if 1
-	#include <format>
-	#include <iostream>
-	#define PRINT(msg, ...) std::cout << std::format(msg, __VA_ARGS__) << "\n";
-#else
-	#define PRINT(msg, ...)
-#endif
-
 namespace BHive
 {
 	namespace utils
@@ -61,14 +53,12 @@ namespace BHive
 			: mCallback(other.mCallback),
 			  mHandle(other.mHandle)
 		{
-			PRINT("Copied Constructor");
 		}
 
 		EventDelegateBase(EventDelegateBase &&other)
 			: mCallback(std::move(other.mCallback)),
 			  mHandle(std::move(other.mHandle))
 		{
-			PRINT("Moved Constructor");
 		}
 
 		template <typename T>
@@ -104,7 +94,6 @@ namespace BHive
 
 		EventDelegateBase &operator=(const EventDelegateBase &rhs)
 		{
-			PRINT("Copy Operator");
 
 			mCallback = rhs.mCallback;
 			mHandle = rhs.mHandle;
@@ -113,7 +102,6 @@ namespace BHive
 
 		EventDelegateBase &operator=(EventDelegateBase &&rhs)
 		{
-			PRINT("Moved Operator");
 
 			mCallback = std::move(rhs.mCallback);
 			mHandle = std::move(rhs.mHandle);
