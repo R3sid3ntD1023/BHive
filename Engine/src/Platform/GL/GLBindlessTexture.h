@@ -16,6 +16,7 @@ namespace BHive
 
 	private:
 		uint64_t mResourceHandle = 0;
+		Ref<Texture> mTexture;
 	};
 
 	class GLBindlessImage : public BindlessImage
