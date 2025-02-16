@@ -4,8 +4,6 @@
 
 namespace BHive
 {
-	;
-
 	class RenderCommand
 	{
 	public:
@@ -32,6 +30,7 @@ namespace BHive
 
 		static void SetCullEnabled(bool enabled);
 
+		static void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 		static void EnableDepthMask(bool mask);
 		static void EnableBlend(bool enabled);
 
@@ -42,6 +41,6 @@ namespace BHive
 	private:
 		static Scope<RendererAPI> sRendererAPI;
 	};
-}
+} // namespace BHive
 
 #define GL_CHECK_ERROR() ::BHive::RenderCommand::CheckError(__FILE__, __LINE__)

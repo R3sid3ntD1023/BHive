@@ -203,6 +203,11 @@ namespace BHive
 		enabled ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
 	}
 
+	void GLRendererAPI::ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+	{
+		glColorMask(r, g, b, a);
+	}
+
 	void GLRendererAPI::EnableDepthMask(bool mask)
 	{
 

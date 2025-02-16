@@ -31,6 +31,7 @@ namespace BHive
 
 		virtual void SetCullEnabled(bool enabled);
 
+		virtual void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 		virtual void EnableDepthMask(bool mask);
 		virtual void EnableBlend(bool enabled);
 

@@ -51,6 +51,7 @@ namespace BHive
 		virtual void CullBack() = 0;
 		virtual void SetCullEnabled(bool enabled) = 0;
 
+		virtual void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a) = 0;
 		virtual void EnableDepthMask(bool mask) = 0;
 		virtual void EnableBlend(bool enabled) = 0;
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) = 0;

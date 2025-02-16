@@ -83,6 +83,11 @@ namespace BHive
 		sRendererAPI->SetCullEnabled(enabled);
 	}
 
+	void RenderCommand::ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+	{
+		sRendererAPI->ColorMask(r, g, b, a);
+	}
+
 	void RenderCommand::EnableDepthMask(bool mask)
 	{
 		sRendererAPI->EnableDepthMask(mask);
