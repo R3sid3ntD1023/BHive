@@ -14,21 +14,21 @@ namespace BHive
 		virtual void OnAttach() {};
 		virtual void OnDetach() {};
 		virtual void OnUpdate(float) {};
-		virtual void OnEvent(Event&) {};
-		virtual void OnGuiRender(float) {}
+		virtual void OnEvent(Event &) {};
+		virtual void OnGuiRender() {}
 	};
 
 	class BHIVE LayerStack
 	{
 	public:
-		using Layers = std::vector<Layer*>;
+		using Layers = std::vector<Layer *>;
 
 	public:
 		LayerStack() = default;
 		~LayerStack();
 
-		void Push(Layer* layer);
-		void Pop(Layer* layer);
+		void Push(Layer *layer);
+		void Pop(Layer *layer);
 
 		Layers::iterator begin() { return mLayers.begin(); }
 		Layers::iterator end() { return mLayers.end(); }
@@ -45,4 +45,4 @@ namespace BHive
 	private:
 		Layers mLayers;
 	};
-}
+} // namespace BHive
