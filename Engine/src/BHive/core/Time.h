@@ -7,9 +7,7 @@ namespace BHive
 	class Time
 	{
 	public:
-		static BHIVE float Get();
-
-		static float GetDeltaTime();
+		static float Get();
 	};
 
 	class Timer

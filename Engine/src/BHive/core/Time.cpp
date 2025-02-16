@@ -8,16 +8,6 @@ namespace BHive
 		return (float)glfwGetTime();
 	}
 
-	float Time::GetDeltaTime()
-	{
-		static float lasttime = 0;
-		float time = Time::Get();
-		float deltaTime = time - lasttime;
-		lasttime = time;
-
-		return deltaTime;
-	}
-
 	Timer::Timer()
 	{
 		Reset();
