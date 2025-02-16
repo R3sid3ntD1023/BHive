@@ -117,7 +117,6 @@ namespace BHive
 		GLenum target = GetTextureTarget(mSpecification.mType, mSamples);
 
 		glCreateTextures(target, 1, &mTextureID);
-		// ;
 
 		switch (target)
 		{
@@ -138,17 +137,17 @@ namespace BHive
 			// glSamplerParameteri(mSamplerID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mSpecification.mWrapMode));
 			// glSamplerParameteri(mSamplerID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mSpecification.mWrapMode));
 
-			glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(mSpecification.mMinFilter));
-			glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(mSpecification.mMagFilter));
-			glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mSpecification.mWrapMode));
-			glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mSpecification.mWrapMode));
-
 			if (mSpecification.mLevels > 1)
 			{
 				glGenerateTextureMipmap(mTextureID);
 			}
 
-			break;
+			glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(mSpecification.mMinFilter));
+			glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(mSpecification.mMagFilter));
+			glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mSpecification.mWrapMode));
+			glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mSpecification.mWrapMode));
+
+						break;
 		}
 		default:
 			break;

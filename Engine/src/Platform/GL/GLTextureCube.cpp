@@ -14,6 +14,12 @@ namespace BHive
 		glCreateTextures(target, 1, &mTextureID);
 
 		glTextureStorage2D(mTextureID, spec.mLevels, GetGLInternalFormat(spec.mFormat), size, size);
+
+		if (spec.mLevels > 1)
+		{
+			glGenerateTextureMipmap(mTextureID);
+		}
+
 		glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(spec.mMinFilter));
 		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(spec.mMagFilter));
 
@@ -32,11 +38,6 @@ namespace BHive
 			glTexImage2D(
 				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GetGLInternalFormat(spec.mFormat), size, size, 0, GetGLFormat(spec.mFormat),
 				GetGLType(spec.mFormat), NULL);
-		}
-
-		if (spec.mLevels > 1)
-		{
-			glGenerateTextureMipmap(mTextureID);
 		}
 
 		// mHandle = glGetTextureHandleARB(mTextureID);

@@ -17,6 +17,11 @@ namespace BHive
 
 		glTextureStorage3D(mTextureID, 1, GetGLInternalFormat(specification.mFormat), width, height, depth);
 
+		if (mSpecification.mLevels > 1)
+		{
+			glGenerateTextureMipmap(mTextureID);
+		}
+
 		glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(specification.mMinFilter));
 		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(specification.mMagFilter));
 
@@ -42,12 +47,7 @@ namespace BHive
 			}
 		}
 
-		if (mSpecification.mLevels > 1)
-		{
-			glGenerateTextureMipmap(mTextureID);
-		}
-
-		// mHandle = glGetTextureHandleARB(mTextureID);
+				// mHandle = glGetTextureHandleARB(mTextureID);
 		// glMakeTextureHandleResidentARB(mHandle);
 	}
 
