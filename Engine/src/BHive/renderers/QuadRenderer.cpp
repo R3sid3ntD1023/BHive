@@ -160,15 +160,14 @@ namespace BHive
 			}
 		}
 
-		if (texture_index == 0)
+		if (texture_index == 0 && texture)
 		{
 			if (sData->mTextureCount >= 32)
 				NextBatch();
 
-			auto &texture_count = sData->mTextureCount;
-			texture_index = texture_count;
-			sData->mTextures[texture_count % 32] = texture;
-			texture_count++;
+			texture_index = sData->mTextureCount;
+			sData->mTextures[sData->mTextureCount] = texture;
+			sData->mTextureCount++;
 		}
 
 		for (uint32_t i = 0; i < 4; i++)

@@ -19,29 +19,29 @@ namespace BHive
 	class QuadRenderer
 	{
 	public:
-		static BHIVE void Init();
-		static BHIVE void Shutdown();
+		static void Init();
+		static void Shutdown();
 
-		static BHIVE void Begin(const glm::mat4 &view);
-		static BHIVE void End();
+		static void Begin(const glm::mat4 &view);
+		static void End();
 
-		static BHIVE void
+		static void
 		DrawQuad(const glm::vec2 &size, const Color &color, const FTransform &transform, const Ref<Texture> &texture, QuadRendererFlags flags = 0);
 
-		static BHIVE void
+		static void
 		DrawSprite(const glm::vec2 &size, const Color &color, const FTransform &transform, const Ref<Sprite> &sprite, QuadRendererFlags flags = 0);
 
-		static BHIVE void DrawBillboard(
+		static void DrawBillboard(
 			const glm::vec2 &size, const Color &color, const FTransform &transform, const Ref<Texture> &texture, QuadRendererFlags flags = 0);
 
-		static BHIVE void DrawQuad(
+		static void DrawQuad(
 			const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const Color &color, const glm::mat4 &transform,
 			const Ref<Texture> &texture, QuadRendererFlags flags = 0);
 
 	private:
-		static BHIVE void StartBatch();
-		static BHIVE void NextBatch();
-		static BHIVE void Flush();
+		static void StartBatch();
+		static void NextBatch();
+		static void Flush();
 
 	protected:
 		struct RenderData;
