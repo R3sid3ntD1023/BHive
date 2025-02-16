@@ -51,7 +51,6 @@ namespace BHive
 		void PopLayer(Layer *layer);
 
 		virtual void OnEvent(Event &event);
-		void QueueEvent(const std::function<void()> &event);
 
 	public:
 		const FApplicationSpecification &GetSpecification() const { return mSpecification; }
@@ -71,7 +70,6 @@ namespace BHive
 		FApplicationSpecification mSpecification;
 		ImGuiLayer *mImGuiLayer = nullptr;
 
-		std::queue<std::function<void()>> mEventQueue;
 		static inline Application *sInstance = nullptr;
 	};
 

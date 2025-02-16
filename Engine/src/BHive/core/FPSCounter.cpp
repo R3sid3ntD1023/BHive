@@ -27,4 +27,10 @@ namespace BHive
 	{
 		return mFPS;
 	}
+
+	FPSCounter &FPSCounter::Get()
+	{
+		static FPSCounter counter;
+		return counter;
+	}
 } // namespace BHive

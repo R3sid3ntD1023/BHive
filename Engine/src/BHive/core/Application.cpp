@@ -6,6 +6,7 @@
 #include "audio/AudioContext.h"
 #include "layers/ImGuiLayer.h"
 #include "threading/Threading.h"
+#include "FPSCounter.h"
 
 namespace BHive
 {
@@ -50,16 +51,11 @@ namespace BHive
 	{
 		while (mIsRunning)
 		{
-
-			while (mEventQueue.size())
-			{
-				mEventQueue.front()();
-				mEventQueue.pop();
-			}
-
-			UpdateLayersAndWindow();
+			FPSCounter::Get().Frame();
 
 			Window::PollEvents();
+
+			UpdateLayersAndWindow();
 		}
 	}
 
@@ -96,13 +92,9 @@ namespace BHive
 		}
 	}
 
-	void Application::QueueEvent(const std::function<void()> &event)
-	{
-		mEventQueue.push(event);
-	}
-
 	void Application::UpdateLayersAndWindow()
 	{
+
 		static float lasttime = 0;
 		float time = Time::Get();
 		float deltatime = time - lasttime;
@@ -119,7 +111,7 @@ namespace BHive
 
 		for (auto &layer : mLayerStack)
 		{
-			layer->OnGuiRender(deltatime);
+			layer->OnGuiRender();
 		}
 
 		mImGuiLayer->EndFrame(mWindow->GetWidth(), mWindow->GetHeight());
