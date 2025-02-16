@@ -32,3 +32,22 @@ REFLECT(PlanetComponent)
 	BEGIN_REFLECT(PlanetComponent)
 	DECLARE_COMPONENT_FUNCS;
 }
+
+void RevolutionComponent::Save(cereal::JSONOutputArchive &ar) const
+{
+	ar(MAKE_NVP("RevolutionTime", mRevolutionTime));
+}
+
+void RevolutionComponent::Load(cereal::JSONInputArchive &ar)
+{
+	ar(MAKE_NVP("RevolutionTime", mRevolutionTime));
+
+	if (auto seconds = mRevolutionTime.ToSeconds(); seconds > 0.f)
+		mRevolutionTheta = 360.f / seconds;
+}
+
+REFLECT(RevolutionComponent)
+{
+	BEGIN_REFLECT(RevolutionComponent)
+	DECLARE_COMPONENT_FUNCS;
+}

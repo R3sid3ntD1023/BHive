@@ -15,6 +15,7 @@ namespace BHive
 	class Framebuffer;
 	class PPlane;
 	class Bloom;
+	class AudioSource;
 
 } // namespace BHive
 
@@ -29,12 +30,11 @@ struct SolarSystemLayer : public BHive::Layer
 
 	virtual void OnEvent(BHive::Event &e);
 
-	virtual void OnGuiRender(float) override;
-
-	bool OnWindowResize(BHive::WindowResizeEvent &e);
+	virtual void OnGuiRender() override;
 
 private:
 	void InitFramebuffer();
+	bool OnWindowResize(BHive::WindowResizeEvent &e);
 
 private:
 	Ref<BHive::Shader> mLightingShader;
@@ -47,18 +47,15 @@ private:
 	Ref<BHive::Framebuffer> mLightingbuffer;
 	Ref<BHive::PPlane> mScreenQuad;
 
-	Ref<BHive::Framebuffer> mCullingBuffer;
-	Ref<struct CullingSystem> mCullingSystem;
-
-	glm::ivec2 mViewportSize{};
+	// Ref<BHive::Framebuffer> mCullingBuffer;
+	// Ref<struct CullingSystem> mCullingSystem;
 
 	// PostProcessing
 	Ref<BHive::Bloom> mBloom;
 
 	Ref<Universe> mUniverse;
 	Ref<BHive::ResourceManager> mResourceManager;
-	BHive::FPSCounter mCounter;
 
-	std::array<float, 100> mFPS;
-	size_t mCurrentIndex = 0;
+	Ref<BHive::AudioSource> mAudio;
+	Ref<struct CelestrialBody> mPlayer;
 };

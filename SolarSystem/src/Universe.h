@@ -20,9 +20,11 @@ public:
 	Universe();
 
 	template <typename T>
-	void AddBody()
+	Ref<CelestrialBody> AddBody()
 	{
-		AddBody(CreateRef<T>(mRegistry.create(), this));
+		auto body = CreateRef<T>(mRegistry.create(), this);
+		AddBody(body);
+		return body;
 	}
 
 	void AddBody(const Ref<CelestrialBody> &body);
@@ -35,6 +37,8 @@ public:
 	Ref<CelestrialBody> GetBody(const BHive::UUID &id) const;
 
 	entt::registry &GetRegistry() { return mRegistry; }
+
+	Ref<struct ComponentSystem> &GetRenderSystem() { return mRenderSystem; }
 
 private:
 	std::unordered_map<BHive::UUID, Ref<CelestrialBody>> mBodies;

@@ -30,7 +30,19 @@ struct PlanetTime
 struct PlanetComponent : public Component
 {
 	PlanetTime mTime;
+
 	float mTheta = 0.0f;
+
+	virtual void Save(cereal::JSONOutputArchive &ar) const override;
+	virtual void Load(cereal::JSONInputArchive &ar) override;
+
+	REFLECTABLEV(Component)
+};
+
+struct RevolutionComponent : public Component
+{
+	PlanetTime mRevolutionTime;
+	float mRevolutionTheta = 0.0f;
 
 	virtual void Save(cereal::JSONOutputArchive &ar) const override;
 	virtual void Load(cereal::JSONInputArchive &ar) override;

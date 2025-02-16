@@ -19,6 +19,8 @@ struct CelestrialBody
 {
 	CelestrialBody(const entt::entity &entity, Universe *universe);
 
+	void SetParent(const BHive::UUID &parent);
+
 	BHive::FTransform GetTransform() const;
 	BHive::FTransform &GetLocalTransform() { return mTransform; }
 
@@ -54,7 +56,6 @@ protected:
 	BHive::FTransform mTransform;
 
 private:
-	std::string mName;
 	BHive::UUID mParent = 0;
 	entt::entity mEntityHandle{entt::null};
 	Universe *mUniverse = nullptr;

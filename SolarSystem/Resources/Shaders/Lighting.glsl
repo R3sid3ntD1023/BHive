@@ -43,7 +43,7 @@ void main()
 	vec3 normal = texture(uNormals, vs_in.texCoord).rgb;
 	vec4 color = texture(uColors, vs_in.texCoord);
 	vec3 emission = texture(uEmission, vs_in.texCoord).rgb;
-	vec3 ambient = vec3(.1);
+	vec3 ambient = vec3(.3);
 
 	vec3 Lo = vec3(0.0);
 	for(int i = 0; i < u_NumLights; i++)

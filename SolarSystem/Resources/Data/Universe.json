@@ -3,7 +3,6 @@
     {
       "ID": 1,
       "Type": "CelestrialBody",
-      "Name": "Sun",
       "Transform": {
         "value0": [ 0, 0, 0 ],
         "value1": [ 0, 0, 0 ],
@@ -16,9 +15,13 @@
           "ID": 1
         },
         {
+          "Type" : "TagComponent",
+          "Tag" : "Sun"
+        },
+        {
           "Type": "StarComponent",
           "Brightness": 1,
-          "Radius": 200,
+          "Radius": 5000,
           "Color": [ 1, 1, 1, 1 ]
         },
         {
@@ -33,9 +36,8 @@
     {
       "ID": 2,
       "Type": "CelestrialBody",
-      "Name": "Mercury",
       "Transform": {
-        "value0": [ 4, 0, 0 ],
+        "value0": [ 35, 0, 0 ],
         "value1": [ 0, 0, 0 ],
         "value2": [ 1, 1, 1 ]
       },
@@ -43,6 +45,10 @@
       "Components": [
         { "Type": "IDComponent",
           "ID": 2
+        },
+        {
+          "Type" : "TagComponent",
+          "Tag" : "Mercury"
         },
         {
           "Type": "MeshComponent",
@@ -55,15 +61,19 @@
         {
           "Type": "PlanetComponent",
           "Time": "0'176'0'0'0"
+          
+        },
+        {
+          "Type" : "RevolutionComponent",
+         "RevolutionTime" : "0'88'0'0'0"
         }
       ]
     },
     {
       "ID": 3,
       "Type": "CelestrialBody",
-      "Name": "Venus",
       "Transform": {
-        "value0": [ 8, 0, 0 ],
+        "value0": [ 67, 0, 0 ],
         "value1": [ 0, 0, 0 ],
         "value2": [ 1.9, 1.9, 1.9 ]
       },
@@ -71,6 +81,10 @@
       "Components": [
         { "Type": "IDComponent",
           "ID": 3
+        },
+        {
+          "Type" : "TagComponent",
+          "Tag" : "Venus"
         },
         {
           "Type": "MeshComponent",
@@ -83,14 +97,17 @@
         {
           "Type": "PlanetComponent",
           "Time": "0'243'0'0'0"
-        } ]
+        } ,
+        {
+          "Type" : "RevolutionComponent",
+         "RevolutionTime" : "0'224'0'0'0"
+        }]
     },
     {
       "ID": 4,
       "Type": "CelestrialBody",
-      "Name": "",
       "Transform": {
-        "value0": [ 12, 0, 0 ],
+        "value0": [ 93, 0, 0 ],
         "value1": [ 0, 0, 0 ],
         "value2": [ 1, 1, 1 ]
       },
@@ -98,13 +115,20 @@
       "Components": [
         { "Type": "IDComponent",
           "ID": 4
+        },
+        {
+          "Type" : "TagComponent",
+          "Tag" : "EarthSystem"
+        },
+        {
+          "Type" : "RevolutionComponent",
+         "RevolutionTime" : "0'365'0'0'0"
         }
       ]
     },
     {
       "ID": 5,
       "Type": "CelestrialBody",
-      "Name": "Earth",
       "Transform": {
         "value0": [ 0, 0, 0 ],
         "value1": [ 0, 0, 0 ],
@@ -114,6 +138,10 @@
       "Components": [
         { "Type": "IDComponent",
           "ID": 5
+        },
+        {
+          "Type" : "TagComponent",
+          "Tag" : "Earth"
         },
         {
           "Type": "MeshComponent",
@@ -131,7 +159,6 @@
     {
       "ID": 6,
       "Type": "CelestrialBody",
-      "Name": "Moon",
       "Transform": {
         "value0": [ 0, 0, 3 ],
         "value1": [ 0, 0, 0 ],
@@ -141,6 +168,10 @@
       "Components": [
         { "Type": "IDComponent",
           "ID": 6
+        },
+        {
+          "Type" : "TagComponent",
+          "Tag" : "Moon"
         },
         {
           "Type": "MeshComponent",
@@ -153,14 +184,17 @@
         {
           "Type": "PlanetComponent",
           "Time": "0'29'12'0'0"
+        },
+        {
+          "Type" : "RevolutionComponent",
+         "RevolutionTime" : "0'29'12'0'0"
         } ]
     },
     {
       "ID": 7,
       "Type": "CelestrialBody",
-      "Name": "",
       "Transform": {
-        "value0": [ 18, 0, 0 ],
+        "value0": [ 142, 0, 0 ],
         "value1": [ 0, 0, 0 ],
         "value2": [ 1.3, 1.3, 1.3 ]
       },
@@ -168,12 +202,19 @@
       "Components": [
         { "Type": "IDComponent",
           "ID": 7
-        } ]
+        } ,
+        {
+          "Type" : "TagComponent",
+          "Tag" : "MarsSystem"
+        },
+        {
+          "Type" : "RevolutionComponent",
+         "RevolutionTime" : "0'686'4'28'0"
+        }]
     },
     {
       "ID": 8,
       "Type": "CelestrialBody",
-      "Name": "Mars",
       "Transform": {
         "value0": [ 0, 0, 0 ],
         "value1": [ 0, 0, 0 ],
@@ -183,6 +224,10 @@
       "Components": [
         { "Type": "IDComponent",
           "ID": 8
+        },
+        {
+          "Type" : "TagComponent",
+          "Tag" : "Mars"
         },
         {
           "Type": "MeshComponent",
@@ -200,16 +245,19 @@
     {
       "ID": 9,
       "Type": "CelestrialBody",
-      "Name": "Phobos",
       "Transform": {
         "value0": [ 0, 0, 2 ],
         "value1": [ 0, 0, 0 ],
         "value2": [ 1, 1, 1 ]
       },
-      "Parent": 7,
+      "Parent": 8,
       "Components": [
         { "Type": "IDComponent",
           "ID": 9
+        },
+        {
+          "Type" : "TagComponent",
+          "Tag" : "Phobos"
         },
         {
           "Type": "MeshComponent",
@@ -222,21 +270,28 @@
         {
           "Type": "PlanetComponent",
           "Time": "0'0'0'0'0"
+        },
+        {
+          "Type" : "RevolutionComponent",
+         "RevolutionTime" : "0'0'0'0'0"
         } ]
     },
     {
       "ID": 10,
       "Type": "CelestrialBody",
-      "Name": "Deimos",
       "Transform": {
         "value0": [ 0, 0, -2 ],
         "value1": [ 0, 0, 0 ],
         "value2": [ 1, 1, 1 ]
       },
-      "Parent": 7,
+      "Parent": 8,
       "Components": [
         { "Type": "IDComponent",
           "ID": 10
+        },
+        {
+          "Type" : "TagComponent",
+          "Tag" : "Deimos"
         },
         {
           "Type": "MeshComponent",
@@ -249,14 +304,17 @@
         {
           "Type": "PlanetComponent",
           "Time": "0'0'0'0'0"
+        },
+        {
+          "Type" : "RevolutionComponent",
+         "RevolutionTime" : "0'0'0'0'0"
         } ]
     },
     {
       "ID": 11,
       "Type": "CelestrialBody",
-      "Name": "Jupiter",
       "Transform": {
-        "value0": [ 35, 0, 0 ],
+        "value0": [ 484, 0, 0 ],
         "value1": [ 0, 0, 0 ],
         "value2": [ 10, 10, 10 ]
       },
@@ -264,6 +322,10 @@
       "Components": [
         { "Type": "IDComponent",
           "ID": 11
+        },
+        {
+          "Type" : "TagComponent",
+          "Tag" : "Jupiter"
         },
         {
           "Type": "MeshComponent",
@@ -276,14 +338,17 @@
         {
           "Type": "PlanetComponent",
           "Time": "0'0'12'0'0"
+        },
+        {
+          "Type" : "RevolutionComponent",
+         "RevolutionTime" : "11'314'13'22'4"
         } ]
     },
     {
       "ID": 12,
       "Type": "CelestrialBody",
-      "Name": "Saturn",
       "Transform": {
-        "value0": [ 58, 0, 0 ],
+        "value0": [ 889, 0, 0 ],
         "value1": [ 0, 0, 0 ],
         "value2": [ 8, 8, 8 ]
       },
@@ -291,6 +356,10 @@
       "Components": [
         { "Type": "IDComponent",
           "ID": 12
+        },
+        {
+          "Type" : "TagComponent",
+          "Tag" : "Saturn"
         },
         {
           "Type": "MeshComponent",
@@ -303,14 +372,17 @@
         {
           "Type": "PlanetComponent",
           "Time": "0'0'10'33'38"
+        },
+        {
+          "Type" : "RevolutionComponent",
+         "RevolutionTime" : "29'146'0'0'0"
         } ]
     },
     {
       "ID": 13,
       "Type": "CelestrialBody",
-      "Name": "Uranus",
       "Transform": {
-        "value0": [ 80, 0, 0 ],
+        "value0": [ 1790, 0, 0 ],
         "value1": [ 0, 0, 0 ],
         "value2": [ 5, 5, 5 ]
       },
@@ -318,6 +390,10 @@
       "Components": [
         { "Type": "IDComponent",
           "ID": 13
+        },
+        {
+          "Type" : "TagComponent",
+          "Tag" : "Uranus"
         },
         {
           "Type": "MeshComponent",
@@ -330,14 +406,17 @@
         {
           "Type": "PlanetComponent",
           "Time": "0'0'17'14'0"
+        },
+        {
+          "Type" : "RevolutionComponent",
+         "RevolutionTime" : "84'0'0'0'0"
         } ]
     },
     {
       "ID": 14,
       "Type": "CelestrialBody",
-      "Name": "Neptune",
       "Transform": {
-        "value0": [ 100, 0, 0 ],
+        "value0": [ 2800, 0, 0 ],
         "value1": [ 0, 0, 0 ],
         "value2": [ 5.5, 5.5, 5.5 ]
       },
@@ -345,6 +424,10 @@
       "Components": [
         { "Type": "IDComponent",
           "ID": 14
+        },
+        {
+          "Type" : "TagComponent",
+          "Tag" : "Neptune"
         },
         {
           "Type": "MeshComponent",
@@ -357,12 +440,15 @@
         {
           "Type": "PlanetComponent",
           "Time": "0'0'16'0'0"
-        } ]
+        } ,
+        {
+          "Type" : "RevolutionComponent",
+         "RevolutionTime" : "164'146'0'0'0"
+        }]
     },
     {
       "ID": 15,
       "Type": "CelestrialBody",
-      "Name": "Astroids",
       "Transform": {
         "value0": [ 0, 0, 0 ],
         "value1": [ 0, 0, 0 ],
@@ -374,11 +460,15 @@
           "ID": 15
         },
         {
+          "Type" : "TagComponent",
+          "Tag" : "Astroids"
+        },
+        {
           "Type": "AstroidComponent",
-          "Instances": 10000,
+          "Instances": 30000,
           "Seed": 0,
-          "Radius": 21,
-          "Offset": 0.4,
+          "Radius": 274,
+          "Offset": 5,
           "Meshes": [
             1550937985
           ],

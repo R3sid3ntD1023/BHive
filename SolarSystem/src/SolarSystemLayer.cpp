@@ -17,9 +17,22 @@
 #include <renderers/Renderer.h>
 
 #include "ComponentSystems/CullingSystem.h"
+#include "ComponentSystems/RenderSystem.h"
+
+#include <audio/AudioImporter.h>
+#include <audio/AudioSource.h>
+#include <gui/Gui.h>
+
+#include "components/CameraComponent.h"
+#include "components/TagComponent.h"
+#include "components/IDComponent.h"
+
+BHive::UUID mSelectedID = 1;
 
 void SolarSystemLayer::OnAttach()
 {
+	mAudio = BHive::AudioImporter::Import(RESOURCE_PATH "Audio/Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).wav");
+
 	mResourceManager = CreateRef<BHive::ResourceManager>(RESOURCE_PATH);
 	BHive::AssetManager::SetAssetManager(&*mResourceManager);
 
@@ -41,7 +54,6 @@ void SolarSystemLayer::OnAttach()
 	auto w = window.GetWidth();
 	auto h = window.GetHeight();
 	mCamera = BHive::EditorCamera(45.f, w / (float)h, .01f, 1000.f);
-	mViewportSize = {w, h};
 
 	BHive::RenderCommand::SetCullEnabled(false);
 
@@ -50,6 +62,13 @@ void SolarSystemLayer::OnAttach()
 	mBloom = CreateRef<BHive::Bloom>(5, w, h, settings);
 
 	BHive::RenderCommand::ClearColor(.2f, .2f, .2f, 1.f);
+
+	mPlayer = mUniverse->AddBody<CelestrialBody>();
+	mPlayer->AddComponent<CameraComponent>();
+	mPlayer->GetComponent<TagComponent>()->Tag = "Camera";
+	mPlayer->SetParent(1);
+
+	// mAudio->Play();
 }
 
 void SolarSystemLayer::OnDetach()
@@ -58,11 +77,6 @@ void SolarSystemLayer::OnDetach()
 
 void SolarSystemLayer::OnUpdate(float dt)
 {
-	CPU_PROFILER_FUNCTION();
-	GPU_PROFILER_SCOPED("GPU- SolarSystem::Update");
-
-	mCounter.Frame();
-
 	mCamera.ProcessInput();
 
 	mMultiSampleFramebuffer->Bind();
@@ -72,6 +86,7 @@ void SolarSystemLayer::OnUpdate(float dt)
 	auto clear = glm::vec3(0);
 	mMultiSampleFramebuffer->ClearAttachment(3, GL_FLOAT, &clear);
 
+	auto &camera = mPlayer->GetComponent<CameraComponent>()->mCamera;
 	BHive::Renderer::Begin(mCamera.GetProjection(), mCamera.GetView().inverse());
 
 	// BHive::Frustum frustum(mCamera.GetProjection(), mCamera.GetView().inverse());
@@ -79,6 +94,10 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	mUniverse->Update(dt);
 
+	BHive::Renderer::End();
+
+	BHive::Renderer::Begin(glm::ortho(0.f, 800.f, 0.f, 600.f), glm::inverse(glm::mat4(1.f)));
+	BHive::QuadRenderer::DrawQuad(glm::vec2{100, 560}, 0xFF00FF00, BHive::FTransform{{680, 20, 0}}, nullptr);
 	BHive::Renderer::End();
 
 	mMultiSampleFramebuffer->UnBind();
@@ -96,11 +115,7 @@ void SolarSystemLayer::OnUpdate(float dt)
 	mFramebuffer->GetColorAttachment(2)->Bind(2);
 	mFramebuffer->GetColorAttachment(3)->Bind(3);
 
-	{
-		GPU_PROFILER_SCOPED("DrawGBufferQuad");
-		BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
-	}
-
+	BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
 	mLightingbuffer->UnBind();
 
 	BHive::RenderCommand::Clear(BHive::Buffer_Color);
@@ -121,106 +136,76 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	BHive::RenderCommand::EnableDepth();
 
-	mCullingBuffer->Bind();
+	// mCullingBuffer->Bind();
 
-	BHive::RenderCommand::Clear();
-	BHive::Renderer::Begin(mCamera.GetProjection(), glm::inverse(glm::translate(glm::vec3{8, 20, 0})));
+	// BHive::RenderCommand::Clear();
 
-	mCullingSystem->Update(mUniverse.get(), dt);
+	// const glm::mat4 t = glm::translate(glm::vec3{50, 100, 0}) * glm::toMat4(glm::quat(glm::vec3{-PI * .5f, 0, 0}));
+	// BHive::Renderer::Begin(mCamera.GetProjection(), glm::inverse(t));
 
-	BHive::Renderer::End();
+	// mCullingSystem->Update(mUniverse.get(), dt);
 
-	mCullingBuffer->UnBind();
+	// BHive::Renderer::End();
 
-	mFPS[mCurrentIndex++] = (float)(mCounter);
-
-	mCurrentIndex = mCurrentIndex % mFPS.size();
+	// mCullingBuffer->UnBind();
 }
 
 void SolarSystemLayer::OnEvent(BHive::Event &e)
 {
 	BHive::EventDispatcher dispatcher(e);
 	dispatcher.Dispatch(this, &SolarSystemLayer::OnWindowResize);
-
 	mCamera.OnEvent(e);
 }
 
-void SolarSystemLayer::OnGuiRender(float)
+void SolarSystemLayer::OnGuiRender()
 {
-	if (ImGui::Begin("GBuffer"))
-	{
-		if (ImGui::BeginTable("Settings", 2))
-		{
-			ImGui::TableNextRow();
-			ImGui::TableNextColumn();
+	// if (ImGui::Begin("Bodies"))
+	// {
+	// 	auto &registry = mUniverse->GetRegistry();
+	// 	auto view = registry.view<IDComponent, TagComponent>();
+	// 	for (auto &e : view)
+	// 	{
+	// 		auto [id, tag] = view.get(e);
 
-			auto scene = mFramebuffer->GetColorAttachment();
-			auto pos = mFramebuffer->GetColorAttachment(1);
-			auto norm = mFramebuffer->GetColorAttachment(2);
-			auto emission = mFramebuffer->GetColorAttachment(3);
+	// 		bool selected = ImGui::Selectable(tag.Tag.c_str(), mSelectedID == id.mID);
+	// 		if (selected)
+	// 		{
+	// 			mSelectedID = id.mID;
+	// 			mPlayer->SetParent(id.mID);
+	// 		}
+	// 	}
+	// }
 
-			ImGui::Image((ImTextureID)(uint64_t)*scene, {200, 200}, {0, 1}, {1, 0});
-			ImGui::Image((ImTextureID)(uint64_t)*pos, {200, 200}, {0, 1}, {1, 0});
-			ImGui::Image((ImTextureID)(uint64_t)*norm, {200, 200}, {0, 1}, {1, 0});
-			ImGui::Image((ImTextureID)(uint64_t)*emission, {200, 200}, {0, 1}, {1, 0});
+	// ImGui::End();
 
-			ImGui::TableNextColumn();
+	// if (ImGui::Begin("GBuffer"))
+	// {
+	// 	auto renderer = Cast<RenderSystem>(mUniverse->GetRenderSystem());
+	// 	bool zprepass = renderer->IsPreZPassEnabled();
+	// 	if (ImGui::Checkbox("Z-PrePass", &zprepass))
+	// 	{
+	// 		renderer->SetPreZPass(zprepass);
+	// 	}
+	// }
 
-			auto &bloom = mBloom->GetSettings();
-			ImGui::DragFloat("FilterRadius", &bloom.mFilterRadius, .01f, 0.0f, 1.0f);
-			ImGui::ColorEdit4("FilterThreshold", &bloom.mFilterThreshold.x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
-		}
-
-		ImGui::EndTable();
-	}
-
-	ImGui::End();
-
-	if (ImGui::Begin("Importer"))
-	{
-		if (ImGui::Button("Import"))
-		{
-			const char *filter =
-				"All (*.*)\0*.*\0 JPG (*.jpg)\0*.jpg\0 PNG (*.png)\0*.png\0 GLB (*.glb)\0*.glb\0 GLTF (*.gltf)\0*.gltf\0 OBJ (*.obj)\0*.obj\0";
-			auto str = BHive::FileDialogs::OpenFile(filter);
-			if (!str.empty())
-			{
-				mResourceManager->Import(str);
-			}
-		}
-	}
-
-	ImGui::End();
+	// ImGui::End();
 
 	if (ImGui::Begin("Performance"))
 	{
-		BHive::ProfilerViewer::ViewFPS(mCounter, mFPS.data(), mFPS.size());
+
+		BHive::ProfilerViewer::ViewFPS();
 		BHive::ProfilerViewer::ViewCPUGPU();
 	}
 
 	ImGui::End();
 
-	if (ImGui::Begin("Culling"))
-	{
-		auto size = ImGui::GetContentRegionAvail();
-		ImGui::Image((ImTextureID)(uint64_t)*mCullingBuffer->GetColorAttachment(), size, {0, 1}, {1, 0});
-	}
+	// if (ImGui::Begin("Culling"))
+	// {
+	// 	auto size = ImGui::GetContentRegionAvail();
+	// 	ImGui::Image((ImTextureID)(uint64_t)*mCullingBuffer->GetColorAttachment(), size, {0, 1}, {1, 0});
+	// }
 
-	ImGui::End();
-}
-
-bool SolarSystemLayer::OnWindowResize(BHive::WindowResizeEvent &e)
-{
-	mCamera.Resize(e.x, e.y);
-	mMultiSampleFramebuffer->Resize(e.x, e.y);
-	mFramebuffer->Resize(e.x, e.y);
-	mLightingbuffer->Resize(e.x, e.y);
-	mViewportSize = {e.x, e.y};
-	mBloom->Resize(e.x, e.y);
-
-	mCullingBuffer->Resize(e.x, e.y);
-
-	return false;
+	// ImGui::End();
 }
 
 void SolarSystemLayer::InitFramebuffer()
@@ -245,11 +230,21 @@ void SolarSystemLayer::InitFramebuffer()
 
 	specs.Attachments.reset().attach({.mFormat = BHive::EFormat::RGBA8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
 	mLightingbuffer = BHive::Framebuffer::Create(specs);
+	// specs.Attachments.reset()
+	// 	.attach({.mFormat = BHive::EFormat::RGBA8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
+	// 	.attach({.mFormat = BHive::EFormat::DEPTH24_STENCIL8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
+	// mCullingBuffer = BHive::Framebuffer::Create(specs);
 
-	specs.Attachments.reset()
-		.attach({.mFormat = BHive::EFormat::RGBA8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
-		.attach({.mFormat = BHive::EFormat::DEPTH24_STENCIL8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
-	mCullingBuffer = BHive::Framebuffer::Create(specs);
+	// mCullingSystem = CreateRef<CullingSystem>();
+}
 
-	mCullingSystem = CreateRef<CullingSystem>();
+bool SolarSystemLayer::OnWindowResize(BHive::WindowResizeEvent &e)
+{
+	mCamera.Resize(e.x, e.y);
+	mBloom->Resize(e.x, e.y);
+	mMultiSampleFramebuffer->Resize(e.x, e.y);
+	mFramebuffer->Resize(e.x, e.y);
+	mLightingbuffer->Resize(e.x, e.y);
+
+	return false;
 }

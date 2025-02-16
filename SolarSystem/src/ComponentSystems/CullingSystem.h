@@ -6,7 +6,7 @@
 namespace BHive
 {
 	class Shader;
-	class VertexBuffer;
+	class StorageBuffer;
 } // namespace BHive
 
 struct CullingSystem : public ComponentSystem
@@ -15,9 +15,6 @@ struct CullingSystem : public ComponentSystem
 
 	void Update(Universe *universe, float dt) override;
 
-	std::unordered_map<BHive::UUID, Ref<BHive::VertexBuffer>> mInstanced;
+	std::unordered_map<BHive::UUID, Ref<BHive::StorageBuffer>> mInstanced;
 	Ref<BHive::Shader> mCullingShader;
-	bool First = true;
-
-	uint32_t mTransformFeedback = 0;
 };

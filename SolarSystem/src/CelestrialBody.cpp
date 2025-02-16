@@ -1,9 +1,18 @@
 #include "CelestrialBody.h"
+#include "components/IDComponent.h"
+#include "components/TagComponent.h"
 
 CelestrialBody::CelestrialBody(const entt::entity &entity, Universe *universe)
 	: mEntityHandle(entity),
 	  mUniverse(universe)
 {
+	AddComponent<IDComponent>();
+	AddComponent<TagComponent>();
+}
+
+void CelestrialBody::SetParent(const BHive::UUID &parent)
+{
+	mParent = parent;
 }
 
 BHive::FTransform CelestrialBody::GetTransform() const
@@ -20,7 +29,7 @@ BHive::FTransform CelestrialBody::GetTransform() const
 
 void CelestrialBody::Save(cereal::JSONOutputArchive &ar) const
 {
-	ar(MAKE_NVP("Name", mName), MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
+	ar(MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
 
 	std::vector<rttr::type> components;
 	auto component_types = rttr::type::get<Component>().get_derived_classes();
@@ -52,7 +61,7 @@ void CelestrialBody::Save(cereal::JSONOutputArchive &ar) const
 void CelestrialBody::Load(cereal::JSONInputArchive &ar)
 {
 	size_t num_components = 0;
-	ar(MAKE_NVP("Name", mName), MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
+	ar(MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
 
 	ar.setNextName("Components");
 	ar.startNode();
