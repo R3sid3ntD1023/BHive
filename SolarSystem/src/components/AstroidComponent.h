@@ -15,6 +15,8 @@ struct AstroidComponent : public Component
 	BHive::TEnumAsByte<EFlags> mFlags = EFlags::EFlags_None;
 	BHive::UUID mTextureHandle;
 
+	AstroidComponent() = default;
+
 	const std::vector<glm::mat4> &GetMatrices() const { return mMatrices; }
 
 	virtual void Save(cereal::JSONOutputArchive &ar) const override;

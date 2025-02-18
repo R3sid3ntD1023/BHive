@@ -4,7 +4,6 @@
 #include <core/Core.h>
 #include <core/reflection/Reflection.h>
 #include <core/serialization/Serialization.h>
-#include <entt/entt.hpp>
 #include <math/Transform.h>
 #include "Universe.h"
 
@@ -14,10 +13,18 @@ namespace BHive
 } // namespace BHive
 
 class Universe;
+struct IDComponent;
+struct TagComponent;
 
 struct CelestrialBody
 {
-	CelestrialBody(const entt::entity &entity, Universe *universe);
+	CelestrialBody(Universe *universe);
+
+	virtual void Begin();
+
+	virtual void Update(float dt);
+
+	void SetName(const std::string &name);
 
 	void SetParent(const BHive::UUID &parent);
 
@@ -29,26 +36,14 @@ struct CelestrialBody
 	virtual void Load(cereal::JSONInputArchive &ar);
 
 	template <typename T, typename... TArgs>
-	T *AddComponent(TArgs &&...args)
+	Ref<T> AddComponent(TArgs &&...args)
 	{
-		ASSERT(!HasComponent<T>());
-
-		return &mUniverse->GetRegistry().emplace<T>(mEntityHandle, std::forward<TArgs>(args)...);
+		auto component = CreateRef<T>(std::forward<TArgs>(args)...);
+		AddComponent(component);
+		return component;
 	}
 
-	template <typename T>
-	T *GetComponent()
-	{
-		ASSERT(HasComponent<T>());
-
-		return &mUniverse->GetRegistry().get<T>(mEntityHandle);
-	}
-
-	template <typename T>
-	bool HasComponent() const
-	{
-		return mUniverse->GetRegistry().any_of<T>(mEntityHandle);
-	}
+	void AddComponent(const Ref<Component> &component);
 
 	REFLECTABLEV()
 
@@ -57,6 +52,10 @@ protected:
 
 private:
 	BHive::UUID mParent = 0;
-	entt::entity mEntityHandle{entt::null};
 	Universe *mUniverse = nullptr;
+	std::vector<Ref<Component>> mComponents;
+	std::vector<Ref<Component>> mTickedComponents;
+
+	Ref<IDComponent> mIDComponent;
+	Ref<TagComponent> mTagComponent;
 };

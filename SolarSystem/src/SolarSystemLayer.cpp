@@ -17,7 +17,6 @@
 #include <renderers/Renderer.h>
 
 #include "ComponentSystems/CullingSystem.h"
-#include "ComponentSystems/RenderSystem.h"
 
 #include <audio/AudioImporter.h>
 #include <audio/AudioSource.h>
@@ -27,10 +26,15 @@
 #include "components/TagComponent.h"
 #include "components/IDComponent.h"
 
+#include <font/Font.h>
+
 BHive::UUID mSelectedID = 1;
+BHive::FontStyle sTextStyle;
 
 void SolarSystemLayer::OnAttach()
 {
+	mFont = CreateRef<BHive::Font>(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", 48);
+
 	mAudio = BHive::AudioImporter::Import(RESOURCE_PATH "Audio/Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).wav");
 
 	mResourceManager = CreateRef<BHive::ResourceManager>(RESOURCE_PATH);
@@ -65,10 +69,11 @@ void SolarSystemLayer::OnAttach()
 
 	mPlayer = mUniverse->AddBody<CelestrialBody>();
 	mPlayer->AddComponent<CameraComponent>();
-	mPlayer->GetComponent<TagComponent>()->Tag = "Camera";
+	mPlayer->SetName("Camera");
 	mPlayer->SetParent(1);
 
 	// mAudio->Play();
+	mUniverse->Begin();
 }
 
 void SolarSystemLayer::OnDetach()
@@ -86,8 +91,11 @@ void SolarSystemLayer::OnUpdate(float dt)
 	auto clear = glm::vec3(0);
 	mMultiSampleFramebuffer->ClearAttachment(3, GL_FLOAT, &clear);
 
-	auto &camera = mPlayer->GetComponent<CameraComponent>()->mCamera;
 	BHive::Renderer::Begin(mCamera.GetProjection(), mCamera.GetView().inverse());
+
+	auto atlas = mFont->GetAtlas();
+	BHive::QuadRenderer::DrawQuad({40, 40}, 0xFFFFFFFF, {}, atlas);
+	BHive::TextRenderer::DrawText(mFont, 1, "Text\nNew Line\nYy", {.Style = sTextStyle}, {{0, 0, 5}});
 
 	// BHive::Frustum frustum(mCamera.GetProjection(), mCamera.GetView().inverse());
 	// BHive::LineRenderer::DrawFrustum(frustum, 0xFF00FFFF);
@@ -98,6 +106,7 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	BHive::Renderer::Begin(glm::ortho(0.f, 800.f, 0.f, 600.f), glm::inverse(glm::mat4(1.f)));
 	BHive::QuadRenderer::DrawQuad(glm::vec2{100, 560}, 0xFF00FF00, BHive::FTransform{{680, 20, 0}}, nullptr);
+	BHive::TextRenderer::DrawText(mFont, 40, "Text2D \nNewline Text! \n\ttygp", {.Style = sTextStyle}, {{50, 200, 0}, {0, 0, 45}});
 	BHive::Renderer::End();
 
 	mMultiSampleFramebuffer->UnBind();
@@ -192,6 +201,14 @@ void SolarSystemLayer::OnGuiRender()
 
 	if (ImGui::Begin("Performance"))
 	{
+		ImGui::ColorPicker4("Text Color", &sTextStyle.TextColor.r);
+		ImGui::DragFloat("Text Thickness", &sTextStyle.Thickness, 0.001f, 0.f, 1.f);
+		ImGui::DragFloat("Text Smoothness", &sTextStyle.Smoothness, 0.001f, 0.f, 1.f);
+
+		ImGui::SeparatorText("Outline");
+		ImGui::ColorPicker4("Text Outline Color", &sTextStyle.OutlineColor.r);
+		ImGui::DragFloat("Text Outline Thickness", &sTextStyle.OutlineThickness, 0.001f, 0.f, 1.f);
+		ImGui::DragFloat("Text Outline Smoothness", &sTextStyle.OutlineSmoothness, 0.001f, 0.f, 1.f);
 
 		BHive::ProfilerViewer::ViewFPS();
 		BHive::ProfilerViewer::ViewCPUGPU();

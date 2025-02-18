@@ -54,5 +54,5 @@ void AstroidComponent::CalculateMatrices()
 REFLECT(AstroidComponent)
 {
 	BEGIN_REFLECT(AstroidComponent)
-	DECLARE_COMPONENT_FUNCS;
+	REFLECT_CONSTRUCTOR();
 }

@@ -5,9 +5,13 @@
 
 struct StarComponent : public Component
 {
-	float mBrightness{1.0f};
-	float mRadius{1.0f};
-	BHive::Color mColor;
+	float Brightness{1.0f};
+	float Radius{1.0f};
+	BHive::Color Color;
+
+	StarComponent() = default;
+
+	virtual void Update(float dt) override;
 
 	virtual void Save(cereal::JSONOutputArchive &ar) const override;
 

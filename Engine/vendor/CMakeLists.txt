@@ -51,6 +51,8 @@ set(BUILD_SANDBOX OFF CACHE BOOL "" FORCE)
 set(BUILD_DOC OFF CACHE BOOL "" FORCE)
 set(SKIP_PERFORMANCE_COMPARISON ON CACHE BOOL "" FORCE)
 
+
+
 #glfw
 FetchContent_Declare(
 	glfw
@@ -146,6 +148,7 @@ FetchContent_Declare(
 )
 list(APPEND components cereal)
 
+
 #entt
 #FetchContent_Declare(
 #	entt
@@ -164,6 +167,9 @@ list(APPEND components ImPlot)
 if(components)
 	FETCHCONTENT_MAKEAVAILABLE(${components})
 endif()
+
+add_subdirectory(freetype)
+
 
 if(MSVC)
 	target_compile_options(reactphysics3d PUBLIC /W0 )

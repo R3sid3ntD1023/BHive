@@ -14,5 +14,5 @@ void IDComponent::Load(cereal::JSONInputArchive &ar)
 REFLECT(IDComponent)
 {
 	BEGIN_REFLECT(IDComponent)
-	DECLARE_COMPONENT_FUNCS;
+	REFLECT_CONSTRUCTOR();
 }

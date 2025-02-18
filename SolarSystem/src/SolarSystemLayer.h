@@ -16,6 +16,7 @@ namespace BHive
 	class PPlane;
 	class Bloom;
 	class AudioSource;
+	class Font;
 
 } // namespace BHive
 
@@ -58,4 +59,5 @@ private:
 
 	Ref<BHive::AudioSource> mAudio;
 	Ref<struct CelestrialBody> mPlayer;
+	Ref<BHive::Font> mFont;
 };

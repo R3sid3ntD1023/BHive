@@ -4,6 +4,7 @@
 
 struct TagComponent : public Component
 {
+	TagComponent() { SetTickEnabled(false); }
 	/* data */
 	std::string Tag;
 

@@ -36,6 +36,7 @@ target_link_libraries(Engine
 	PUBLIC cereal::cereal
 	PUBLIC ImPlot
 	PUBLIC mINI
+	PUBLIC freetype
 )
 
 target_include_directories(Engine PUBLIC 

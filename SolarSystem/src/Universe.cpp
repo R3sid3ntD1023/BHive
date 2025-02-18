@@ -1,12 +1,8 @@
 #include "Universe.h"
 #include "CelestrialBody.h"
-#include "ComponentSystems/RenderSystem.h"
-#include "ComponentSystems/PlanetComponentSystem.h"
 
 Universe::Universe()
 {
-	mPlanetSystem = CreateRef<PlanetComponentSystem>();
-	mRenderSystem = CreateRef<RenderSystem>();
 }
 
 void Universe::AddBody(const Ref<CelestrialBody> &body)
@@ -14,10 +10,16 @@ void Universe::AddBody(const Ref<CelestrialBody> &body)
 	mBodies.emplace(BHive::UUID(), body);
 }
 
+void Universe::Begin()
+{
+	for (auto &[id, body] : mBodies)
+		body->Begin();
+}
+
 void Universe::Update(float dt)
 {
-	mPlanetSystem->Update(this, dt);
-	mRenderSystem->Update(this, dt);
+	for (auto &[id, body] : mBodies)
+		body->Update(dt);
 }
 
 void Universe::Save(cereal::JSONOutputArchive &ar) const
@@ -54,7 +56,7 @@ void Universe::Load(cereal::JSONInputArchive &ar)
 
 		if (type)
 		{
-			auto body = type.create({mRegistry.create(), this}).get_value<Ref<CelestrialBody>>();
+			auto body = type.create({this}).get_value<Ref<CelestrialBody>>();
 			body->Load(ar);
 
 			mBodies.emplace(id, body);

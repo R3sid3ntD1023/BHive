@@ -5,6 +5,7 @@
 #include "gfx/RenderCommand.h"
 #include "Renderer.h"
 #include "sprite/Sprite.h"
+#include "font/Font.h"
 #include "core/profiler/CPUGPUProfiler.h"
 
 namespace BHive

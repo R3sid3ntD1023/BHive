@@ -3,8 +3,11 @@
 #include "Component.h"
 #include <scene/SceneCamera.h>
 
-struct CameraComponent
+struct CameraComponent : public Component
 {
+	CameraComponent() { SetTickEnabled(false); }
 	/* data */
 	BHive::SceneCamera mCamera;
+
+	REFLECTABLEV(Component)
 };

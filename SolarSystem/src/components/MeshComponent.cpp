@@ -16,5 +16,5 @@ void MeshComponent::Load(cereal::JSONInputArchive &ar)
 REFLECT(MeshComponent)
 {
 	BEGIN_REFLECT(MeshComponent)
-	DECLARE_COMPONENT_FUNCS;
+	REFLECT_CONSTRUCTOR();
 }

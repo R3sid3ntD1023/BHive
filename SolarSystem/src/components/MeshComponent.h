@@ -17,6 +17,8 @@ struct MeshComponent : public Component
 	BHive::UUID mTextureHandle;
 	BHive::UUID mMeshHandle;
 
+	MeshComponent() = default;
+
 	virtual void Save(cereal::JSONOutputArchive &ar) const override;
 	virtual void Load(cereal::JSONInputArchive &ar) override;
 

@@ -29,6 +29,10 @@ struct PlanetTime
 
 struct PlanetComponent : public Component
 {
+	PlanetComponent() = default;
+
+	virtual void Update(float dt) override;
+
 	PlanetTime mTime;
 
 	float mTheta = 0.0f;
@@ -41,6 +45,12 @@ struct PlanetComponent : public Component
 
 struct RevolutionComponent : public Component
 {
+	RevolutionComponent() = default;
+
+	virtual void Begin() override;
+
+	virtual void Update(float dt) override;
+
 	PlanetTime mRevolutionTime;
 	float mRevolutionTheta = 0.0f;
 
@@ -48,4 +58,7 @@ struct RevolutionComponent : public Component
 	virtual void Load(cereal::JSONInputArchive &ar) override;
 
 	REFLECTABLEV(Component)
+
+private:
+	glm::vec3 mOrigin{};
 };

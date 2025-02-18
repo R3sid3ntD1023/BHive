@@ -7,6 +7,7 @@ namespace BHive
 {
 	class Texture;
 	class Sprite;
+	class Font;
 
 	enum QuadRendererFlags_
 	{

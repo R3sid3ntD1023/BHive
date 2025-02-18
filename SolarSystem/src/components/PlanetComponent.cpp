@@ -14,6 +14,11 @@ uint32_t PlanetTime::ToSeconds()
 	return seconds;
 }
 
+void PlanetComponent::Update(float dt)
+{
+	GetOwner()->GetLocalTransform().add_rotation({0.f, mTheta * dt * 1000.f, 0.f});
+}
+
 void PlanetComponent::Save(cereal::JSONOutputArchive &ar) const
 {
 	ar(MAKE_NVP("Time", mTime));
@@ -30,7 +35,26 @@ void PlanetComponent::Load(cereal::JSONInputArchive &ar)
 REFLECT(PlanetComponent)
 {
 	BEGIN_REFLECT(PlanetComponent)
-	DECLARE_COMPONENT_FUNCS;
+	REFLECT_CONSTRUCTOR();
+}
+
+void RevolutionComponent::Begin()
+{
+	mOrigin = GetOwner()->GetLocalTransform().get_translation();
+}
+
+void RevolutionComponent::Update(float dt)
+{
+
+	float theta_radians = glm::radians(mRevolutionTheta);
+
+	auto origin = mOrigin;
+	auto radius = glm::length(origin);
+
+	float x = glm::cos(theta_radians * dt * 10000.f) * radius;
+	float y = 0;
+	float z = glm::sin(theta_radians * dt * 10000.f) * radius;
+	GetOwner()->GetLocalTransform().add_translation({x, y, z});
 }
 
 void RevolutionComponent::Save(cereal::JSONOutputArchive &ar) const
@@ -49,5 +73,5 @@ void RevolutionComponent::Load(cereal::JSONInputArchive &ar)
 REFLECT(RevolutionComponent)
 {
 	BEGIN_REFLECT(RevolutionComponent)
-	DECLARE_COMPONENT_FUNCS;
+	REFLECT_CONSTRUCTOR();
 }

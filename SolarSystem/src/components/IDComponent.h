@@ -5,6 +5,8 @@
 
 struct IDComponent : public Component
 {
+	IDComponent() { SetTickEnabled(false); }
+
 	BHive::UUID mID;
 
 	virtual void Save(cereal::JSONOutputArchive &ar) const override;

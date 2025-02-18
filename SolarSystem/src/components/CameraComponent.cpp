@@ -4,5 +4,5 @@
 REFLECT(CameraComponent)
 {
 	BEGIN_REFLECT(CameraComponent)
-	DECLARE_COMPONENT_FUNCS;
+	REFLECT_CONSTRUCTOR();
 }

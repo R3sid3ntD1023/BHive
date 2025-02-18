@@ -3,7 +3,6 @@
 #include <core/Core.h>
 #include <core/serialization/Serialization.h>
 #include <core/UUID.h>
-#include <entt/entt.hpp>
 
 struct CelestrialBody;
 
@@ -17,17 +16,22 @@ namespace BHive
 class Universe
 {
 public:
+	using ObjectList = std::unordered_map<BHive::UUID, Ref<CelestrialBody>>;
+
+public:
 	Universe();
 
 	template <typename T>
 	Ref<CelestrialBody> AddBody()
 	{
-		auto body = CreateRef<T>(mRegistry.create(), this);
+		auto body = CreateRef<T>(this);
 		AddBody(body);
 		return body;
 	}
 
 	void AddBody(const Ref<CelestrialBody> &body);
+
+	void Begin();
 
 	void Update(float dt);
 
@@ -36,13 +40,9 @@ public:
 
 	Ref<CelestrialBody> GetBody(const BHive::UUID &id) const;
 
-	entt::registry &GetRegistry() { return mRegistry; }
-
-	Ref<struct ComponentSystem> &GetRenderSystem() { return mRenderSystem; }
+	const ObjectList &GetObjects() const { return mBodies; }
+	ObjectList &GetObjects() { return mBodies; }
 
 private:
-	std::unordered_map<BHive::UUID, Ref<CelestrialBody>> mBodies;
-	entt::registry mRegistry;
-	Ref<struct ComponentSystem> mRenderSystem;
-	Ref<struct ComponentSystem> mPlanetSystem;
+	ObjectList mBodies;
 };

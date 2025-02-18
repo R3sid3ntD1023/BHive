@@ -4,20 +4,29 @@
 #include <core/reflection/Reflection.h>
 #include <core/serialization/Serialization.h>
 
+struct CelestrialBody;
+
 struct Component
 {
+	virtual void Begin() {}
+
+	virtual void Update(float dt) {};
+
 	virtual void Save(cereal::JSONOutputArchive &ar) const {};
 
 	virtual void Load(cereal::JSONInputArchive &ar) {};
 
+	void SetOwner(CelestrialBody *owner);
+
+	void SetTickEnabled(bool enabled);
+
+	bool IsTickEnabled() const { return mTickEnabled; }
+
+	CelestrialBody *GetOwner() const { return mOwner; }
+
 	REFLECTABLEV()
+
+private:
+	CelestrialBody *mOwner = nullptr;
+	bool mTickEnabled = true;
 };
-
-#define ADD_COMPONENT_FUNC_NAME "AddComponent"
-#define GET_COMPONENT_FUNC_NAME "GetComponent"
-#define HAS_COMPONENT_FUNC_NAME "HasComponent"
-
-#define DECLARE_COMPONENT_FUNCS                                               \
-	REFLECT_METHOD(ADD_COMPONENT_FUNC_NAME, &CelestrialBody::AddComponent<T>) \
-	REFLECT_METHOD(HAS_COMPONENT_FUNC_NAME, &CelestrialBody::HasComponent<T>) \
-	REFLECT_METHOD(GET_COMPONENT_FUNC_NAME, &CelestrialBody::GetComponent<T>)

@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "LineRenderer.h"
 #include "QuadRenderer.h"
+#include "TextRenderer.h"
 #include "gfx/Camera.h"
 #include "Lights.h"
 

@@ -78,6 +78,7 @@ namespace BHive
 		ShadowRenderer::Init(MAX_LIGHTS);
 		LineRenderer::Init();
 		QuadRenderer::Init();
+		TextRenderer::Init();
 	}
 
 	void Renderer::Shutdown()
@@ -85,6 +86,7 @@ namespace BHive
 
 		LineRenderer::Shutdown();
 		QuadRenderer::Shutdown();
+		TextRenderer::Shutdown();
 
 		delete sData;
 	}
@@ -103,6 +105,7 @@ namespace BHive
 
 		LineRenderer::Begin();
 		QuadRenderer::Begin(view);
+		TextRenderer::Begin();
 	}
 
 	void Renderer::SubmitDirectionalLight(const glm::vec3 &direction, const DirectionalLight &light)
@@ -157,6 +160,7 @@ namespace BHive
 	{
 		LineRenderer::End();
 		QuadRenderer::End();
+		TextRenderer::End();
 	}
 
 	Ref<Texture> Renderer::GetWhiteTexture()
