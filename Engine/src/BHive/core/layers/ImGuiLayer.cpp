@@ -1,5 +1,7 @@
 #include "ImGuiLayer.h"
 #include "core/events/Event.h"
+#include "core/Application.h"
+#include "core/Window.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <imgui.h>
@@ -81,10 +83,13 @@ namespace BHive
 		ImGui::NewFrame();
 	}
 
-	void ImGuiLayer::EndFrame(uint32_t w, uint32_t h)
+	void ImGuiLayer::EndFrame()
 	{
+		auto &window = Application::Get().GetWindow();
+		auto size = window.GetSize();
+
 		ImGuiIO &io = ImGui::GetIO();
-		io.DisplaySize = ImVec2((float)w, (float)h);
+		io.DisplaySize = {(float)size.x, (float)size.y};
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

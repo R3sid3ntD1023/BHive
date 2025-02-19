@@ -3,7 +3,6 @@
 #include "core/Core.h"
 #include "LineRenderer.h"
 #include "QuadRenderer.h"
-#include "TextRenderer.h"
 #include "gfx/Camera.h"
 #include "Lights.h"
 
@@ -38,8 +37,8 @@ namespace BHive
 		static BHIVE void SubmitPointLight(const glm::vec3 &position, const PointLight &light);
 		static BHIVE void SubmitSpotLight(const glm::vec3 &direction, const glm::vec3 &position, const SpotLight &light);
 		static BHIVE void SubmitLight(
-			const glm::vec3 &direction, const glm::vec3 &position, const Color &color, float brightness, float radius, float cutoff,
-			float outercutoff, ELightType type);
+			const glm::vec3 &direction, const glm::vec3 &position, const Color &color, float brightness, float radius,
+			float cutoff, float outercutoff, ELightType type);
 
 		static void SubmitTransform(const glm::mat4 &transform);
 		static void SubmitSkeletalMesh(const std::vector<glm::mat4> &bone_matrices);

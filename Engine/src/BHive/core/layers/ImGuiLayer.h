@@ -18,7 +18,7 @@ namespace BHive
 		void OnEvent(Event &event) override;
 
 		void BeginFrame();
-		void EndFrame(uint32_t w, uint32_t h);
+		void EndFrame();
 
 		void SetColorsDark();
 

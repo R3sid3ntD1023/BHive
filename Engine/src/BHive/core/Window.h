@@ -14,8 +14,7 @@ namespace BHive
 	struct FWindowProperties
 	{
 		std::string Title = "Window";
-		unsigned Width = 800, Height = 600;
-
+		glm::ivec2 Size{800, 600};
 		bool VSync = true;
 		bool mCenterWindow = true;
 		bool Maximize = false;
@@ -40,8 +39,7 @@ namespace BHive
 		GLFWwindow *GetNative() { return mWindow; }
 		GraphicsContext &GetContext() { return *mContext; }
 		const std::string &GetTitle() const { return mData.Title; }
-		unsigned GetWidth() const { return mData.Width; }
-		unsigned GetHeight() const { return mData.Height; }
+		const glm::ivec2 &GetSize() const { return mData.mSize; }
 		bool IsVSyncEnabled() const { return mData.VSync; }
 
 	private:
@@ -50,7 +48,7 @@ namespace BHive
 		struct FWindowData
 		{
 			std::string Title;
-			unsigned Width, Height;
+			glm::ivec2 mSize;
 			bool VSync;
 			WindowInput Input;
 		};

@@ -12,7 +12,7 @@ namespace BHive
 	}
 
 	Window::Window(const FWindowProperties &properties)
-		: mData({properties.Title, properties.Width, properties.Height, properties.VSync})
+		: mData({properties.Title, properties.Size, properties.VSync})
 	{
 		if (sWindowCount == 0)
 		{
@@ -32,7 +32,7 @@ namespace BHive
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-		mWindow = glfwCreateWindow(properties.Width, properties.Height, properties.Title.c_str(), nullptr, nullptr);
+		mWindow = glfwCreateWindow(properties.Size.x, properties.Size.y, properties.Title.c_str(), nullptr, nullptr);
 		sWindowCount++;
 
 		mContext = GraphicsContext::Create(mWindow);
@@ -121,8 +121,7 @@ namespace BHive
 			{
 				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
 				input->Input.OnWindowResize(x, y);
-				input->Width = x;
-				input->Height = y;
+				input->mSize = {x, y};
 			});
 
 		glfwSetKeyCallback(

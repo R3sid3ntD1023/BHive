@@ -27,15 +27,19 @@
 #include "components/IDComponent.h"
 
 #include <font/Font.h>
+#include <font/FontManager.h>
 
 BHive::UUID mSelectedID = 1;
-BHive::FontStyle sTextStyle;
+BHive::FTextStyle sTextStyle;
+BHive::FCircleParams sCircleParams;
+glm::vec3 sQuadPos = {680, 20, 0};
 
 void SolarSystemLayer::OnAttach()
 {
-	mFont = CreateRef<BHive::Font>(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", 48);
+	auto font = BHive::FontManager::Get().AddFontFromFile(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", 96);
 
-	mAudio = BHive::AudioImporter::Import(RESOURCE_PATH "Audio/Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).wav");
+	mAudio = BHive::AudioImporter::Import(RESOURCE_PATH
+										  "Audio/Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).wav");
 
 	mResourceManager = CreateRef<BHive::ResourceManager>(RESOURCE_PATH);
 	BHive::AssetManager::SetAssetManager(&*mResourceManager);
@@ -55,15 +59,15 @@ void SolarSystemLayer::OnAttach()
 	InitFramebuffer();
 
 	auto &window = BHive::Application::Get().GetWindow();
-	auto w = window.GetWidth();
-	auto h = window.GetHeight();
-	mCamera = BHive::EditorCamera(45.f, w / (float)h, .01f, 1000.f);
+	auto window_size = window.GetSize();
+
+	mCamera = BHive::EditorCamera(45.f, window_size.x / (float)window_size.y, .01f, 5000.f);
 
 	BHive::RenderCommand::SetCullEnabled(false);
 
 	BHive::FBloomSettings settings{};
 	settings.mFilterThreshold = {1, .95f, .79f, 60.f};
-	mBloom = CreateRef<BHive::Bloom>(5, w, h, settings);
+	mBloom = CreateRef<BHive::Bloom>(5, window_size.x, window_size.y, settings);
 
 	BHive::RenderCommand::ClearColor(.2f, .2f, .2f, 1.f);
 
@@ -93,20 +97,8 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	BHive::Renderer::Begin(mCamera.GetProjection(), mCamera.GetView().inverse());
 
-	auto atlas = mFont->GetAtlas();
-	BHive::QuadRenderer::DrawQuad({40, 40}, 0xFFFFFFFF, {}, atlas);
-	BHive::TextRenderer::DrawText(mFont, 1, "Text\nNew Line\nYy", {.Style = sTextStyle}, {{0, 0, 5}});
-
-	// BHive::Frustum frustum(mCamera.GetProjection(), mCamera.GetView().inverse());
-	// BHive::LineRenderer::DrawFrustum(frustum, 0xFF00FFFF);
-
 	mUniverse->Update(dt);
 
-	BHive::Renderer::End();
-
-	BHive::Renderer::Begin(glm::ortho(0.f, 800.f, 0.f, 600.f), glm::inverse(glm::mat4(1.f)));
-	BHive::QuadRenderer::DrawQuad(glm::vec2{100, 560}, 0xFF00FF00, BHive::FTransform{{680, 20, 0}}, nullptr);
-	BHive::TextRenderer::DrawText(mFont, 40, "Text2D \nNewline Text! \n\ttygp", {.Style = sTextStyle}, {{50, 200, 0}, {0, 0, 45}});
 	BHive::Renderer::End();
 
 	mMultiSampleFramebuffer->UnBind();
@@ -142,6 +134,13 @@ void SolarSystemLayer::OnUpdate(float dt)
 		GPU_PROFILER_SCOPED("LightingQuad");
 		BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
 	}
+
+	// ui
+	BHive::Renderer::Begin(glm::ortho(0.f, 800.f, 0.f, 600.f), glm::inverse(glm::mat4(1.f)));
+	BHive::QuadRenderer::DrawQuad(glm::ivec2{100, 560}, 0xFF00FF00, BHive::FTransform{sQuadPos}, nullptr);
+	BHive::QuadRenderer::DrawText(12, "Text2D \nNewline Text! \n\ttygp", {.Style = sTextStyle}, {{50, 200, 0}, {0, 0, 45}});
+	BHive::QuadRenderer::DrawCircle(sCircleParams, {{400, 300, 0}});
+	BHive::Renderer::End();
 
 	BHive::RenderCommand::EnableDepth();
 
@@ -201,14 +200,14 @@ void SolarSystemLayer::OnGuiRender()
 
 	if (ImGui::Begin("Performance"))
 	{
-		ImGui::ColorPicker4("Text Color", &sTextStyle.TextColor.r);
-		ImGui::DragFloat("Text Thickness", &sTextStyle.Thickness, 0.001f, 0.f, 1.f);
-		ImGui::DragFloat("Text Smoothness", &sTextStyle.Smoothness, 0.001f, 0.f, 1.f);
 
-		ImGui::SeparatorText("Outline");
-		ImGui::ColorPicker4("Text Outline Color", &sTextStyle.OutlineColor.r);
-		ImGui::DragFloat("Text Outline Thickness", &sTextStyle.OutlineThickness, 0.001f, 0.f, 1.f);
-		ImGui::DragFloat("Text Outline Smoothness", &sTextStyle.OutlineSmoothness, 0.001f, 0.f, 1.f);
+		ImGui::PushID("Circle");
+		ImGui::ColorPicker4("Color", &sCircleParams.LineColor.r);
+		ImGui::DragFloat("Thickness", &sCircleParams.Thickness, 0.001f);
+		ImGui::DragFloat("Fade", &sCircleParams.Fade, .001f);
+		ImGui::DragFloat("Radius", &sCircleParams.Radius, .001f);
+
+		ImGui::PopID();
 
 		BHive::ProfilerViewer::ViewFPS();
 		BHive::ProfilerViewer::ViewCPUGPU();
@@ -228,12 +227,11 @@ void SolarSystemLayer::OnGuiRender()
 void SolarSystemLayer::InitFramebuffer()
 {
 	auto &window = BHive::Application::Get().GetWindow();
-	auto w = window.GetWidth();
-	auto h = window.GetHeight();
+	auto window_size = window.GetSize();
 
 	BHive::FramebufferSpecification specs{};
-	specs.Width = w;
-	specs.Height = h;
+	specs.Width = window_size.x;
+	specs.Height = window_size.y;
 	specs.Samples = 32;
 	specs.Attachments.attach({.mFormat = BHive::EFormat::RGBA32F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
 		.attach({.mFormat = BHive::EFormat::RGB16F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})

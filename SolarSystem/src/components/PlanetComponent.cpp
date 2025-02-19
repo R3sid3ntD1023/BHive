@@ -1,5 +1,6 @@
 #include "PlanetComponent.h"
 #include "CelestrialBody.h"
+#include <core/Time.h>
 
 uint32_t PlanetTime::ToSeconds()
 {
@@ -50,11 +51,12 @@ void RevolutionComponent::Update(float dt)
 
 	auto origin = mOrigin;
 	auto radius = glm::length(origin);
+	auto time = BHive::Time::Get();
 
-	float x = glm::cos(theta_radians * dt * 10000.f) * radius;
+	float x = glm::cos(theta_radians * time * 100000.f) * radius;
 	float y = 0;
-	float z = glm::sin(theta_radians * dt * 10000.f) * radius;
-	GetOwner()->GetLocalTransform().add_translation({x, y, z});
+	float z = glm::sin(theta_radians * time * 100000.f) * radius;
+	GetOwner()->GetLocalTransform().set_translation({x, y, z});
 }
 
 void RevolutionComponent::Save(cereal::JSONOutputArchive &ar) const

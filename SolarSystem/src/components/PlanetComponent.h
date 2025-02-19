@@ -21,7 +21,7 @@ struct PlanetTime
 	template <typename A>
 	void LoadMinimal(A &ar, const std::string &v)
 	{
-		std::string token;
+		char token;
 		std::stringstream ss(v);
 		ss >> Years >> token >> Days >> token >> Hours >> token >> Minutes >> token >> Seconds;
 	}

@@ -26,7 +26,7 @@ namespace BHive
 		FCommandLine CommandLine;
 		std::string Title = "BHive Application";
 		std::string WorkingDirectory;
-		uint32_t Width = 800, Height = 600;
+		glm::ivec2 Size{800, 600};
 		bool VSync = true;
 
 		// window

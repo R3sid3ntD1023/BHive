@@ -1,6 +1,7 @@
 #include "CelestrialBody.h"
 #include "components/IDComponent.h"
 #include "components/TagComponent.h"
+#include "renderers/QuadRenderer.h"
 
 CelestrialBody::CelestrialBody(Universe *universe)
 	: mUniverse(universe)
@@ -27,6 +28,10 @@ void CelestrialBody::Update(float dt)
 	{
 		component->Update(dt);
 	}
+
+	const auto &t = GetTransform().get_translation();
+	const auto offset = glm::vec3{0, 1, 0};
+	BHive::QuadRenderer::DrawText(1.f, mTagComponent->Tag, {}, {t + offset});
 }
 
 void CelestrialBody::SetName(const std::string &name)

@@ -16,8 +16,7 @@ namespace BHive
 	Application *CreateApplication(const FCommandLine &cmdline)
 	{
 		FApplicationSpecification specs{};
-		specs.Width = 800;
-		specs.Height = 600;
+		specs.Size = {800, 600};
 		specs.Title = "Solar System";
 		specs.VSync = false;
 		return new UniverseApplication(specs);

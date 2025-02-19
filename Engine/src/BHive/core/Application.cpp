@@ -22,8 +22,7 @@ namespace BHive
 
 		FWindowProperties props{};
 		props.Title = specification.Title;
-		props.Width = specification.Width;
-		props.Height = specification.Height;
+		props.Size = specification.Size;
 		props.VSync = specification.VSync;
 		props.mCenterWindow = specification.CenterWindow;
 		props.Maximize = specification.Maximize;
@@ -114,7 +113,7 @@ namespace BHive
 			layer->OnGuiRender();
 		}
 
-		mImGuiLayer->EndFrame(mWindow->GetWidth(), mWindow->GetHeight());
+		mImGuiLayer->EndFrame();
 
 		mWindow->Update();
 	}

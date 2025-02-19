@@ -71,9 +71,6 @@ static const char *text_frag = R"(
 
         vec4 color = mix(vs_in.color, outline_color, 1.0 - outline);
 
-        if(a < .01)
-            discard;
-
         fColor = vec4(a) * color;
     }
 )";
