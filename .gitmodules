@@ -1,3 +1,0 @@
-[submodule "Engine/vendor/freetype"]
-	path = Engine/vendor/freetype
-	url = https://github.com/freetype/freetype.git
