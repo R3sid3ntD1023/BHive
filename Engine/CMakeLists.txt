@@ -1,6 +1,8 @@
 cmake_minimum_required( VERSION 3.8 )
 
 add_subdirectory(vendor)
+find_package(OpenAL CONFIG REQUIRED)
+find_package(assimp CONFIG REQUIRED)
 
 file(GLOB_RECURSE ENGINE_SRC CMAKE_CONFIGURE_DEPENDS src/** data/** PARENT_SCOPE)
 
@@ -20,15 +22,15 @@ PUBLIC IMGUI_DEFINE_MATH_OPERATORS
 PUBLIC SPDLOG_COMPILED_LIB)
 
 target_link_libraries(Engine
-	PUBLIC glfw 
+	PRIVATE glfw 
 	PUBLIC glad 
 	opengl32 
-	PUBLIC OpenAL::OpenAL 
-	PUBLIC assimp::assimp 
+	PRIVATE OpenAL::OpenAL
+	PRIVATE assimp::assimp 
 	PUBLIC imgui 
-	PUBLIC stb
+	PRIVATE stb
 	PUBLIC waveparser
-	PUBLIC ReactPhysics3D::reactphysics3d 
+	PRIVATE ReactPhysics3D::reactphysics3d 
 	PUBLIC rttr_core 
 	PUBLIC spdlog::spdlog
 	PUBLIC glm::glm-header-only

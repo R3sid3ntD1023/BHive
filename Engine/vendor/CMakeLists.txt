@@ -16,17 +16,6 @@ set(ASSIMP_BUILD_GLTF_IMPORTER ON CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_FBX_IMPORTER ON CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_OBJ_IMPORTER ON CACHE BOOL "" FORCE)
 
-set(ALSOFT_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(ALSOFT_TESTS OFF CACHE BOOL "" FORCE)
-#set(LIBTYPE "STATIC")
-set(ALSOFT_INSTALL OFF CACHE BOOL "" FORCE)
-set(ALSOFT_INSTALL_CONFIG OFF CACHE BOOL "" FORCE)
-set(ALSOFT_INSTALL_HRTF_DATA OFF CACHE BOOL "" FORCE)
-set(ALSOFT_INSTALL_AMBDEC_PRESETS OFF CACHE BOOL "" FORCE)
-set(ALSOFT_INSTALL_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(ALSOFT_INSTALL_UTILS OFF CACHE BOOL "" FORCE)
-set(ALSOFT_UPDATE_BUILD_VERSION ON CACHE BOOL "" FORCE)
-
 #reactphysics3d
 set(RP3D_COMPILE_TESTBED OFF CACHE BOOL "" FORCE)
 set(RP3D_PROFILING_ENABLED ON CACHE BOOL "" FORCE)
@@ -47,6 +36,7 @@ set(SPDLOG_BUILD_SHARED ON CACHE BOOL "" FORCE)
 #set(SPDLOG_ENABLE_PCH ON CACHE BOOL "" FORCE)
 #set(SPDLOG_USE_STD_FORMAT ON CACHE BOOL "" FORCE)
 
+#cereal
 set(BUILD_SANDBOX OFF CACHE BOOL "" FORCE)
 set(BUILD_DOC OFF CACHE BOOL "" FORCE)
 set(SKIP_PERFORMANCE_COMPARISON ON CACHE BOOL "" FORCE)
@@ -109,14 +99,6 @@ FetchContent_Declare(
 )
 list( APPEND components reactphysics3d)
 
-#openal-soft
-FetchContent_Declare(
-	openal-soft
-	GIT_REPOSITORY https://github.com/kcat/openal-soft.git
-	GIT_TAG 1.24.1
-)
-list(APPEND components openal-soft)
-
 #wave
 FetchContent_Declare(
 	waveparser
@@ -125,13 +107,6 @@ FetchContent_Declare(
 )
 list(APPEND components waveparser)
 
-#assimp
-FetchContent_Declare(
-	assimp
-	GIT_REPOSITORY https://github.com/assimp/assimp.git
-	GIT_TAG master
-)
-list(APPEND components assimp)
 
 #rttr
 FetchContent_Declare(
