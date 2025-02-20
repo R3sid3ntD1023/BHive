@@ -24,7 +24,7 @@ namespace BHive
 		virtual void OnDetach() override;
 		virtual void OnEvent(Event &event) override;
 		virtual void OnUpdate(float dt) override;
-		virtual void OnGuiRender(float) override;
+		virtual void OnGuiRender() override;
 
 	private:
 		bool OnKeyEvent(KeyEvent &event);
@@ -92,6 +92,6 @@ namespace BHive
 
 		int32_t mGizmoOperation = 7;
 		int32_t mGizmoMode = 0;
-		glm::vec2 mViewportBounds[2];
+		glm::vec2 mViewportBounds[2] = {};
 	};
 } // namespace BHive

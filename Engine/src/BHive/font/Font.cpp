@@ -1,137 +1,110 @@
 #include "Font.h"
-#include <freetype/freetype.h>
 #include <glad/glad.h>
 #include <gfx/Texture.h>
+#include "MSDFData.h"
+
+using namespace msdf_atlas;
 
 namespace BHive
 {
+
+	template <typename T, typename S, int N, msdf_atlas::GeneratorFunction<S, N> GenFunc>
+	Ref<Texture2D> CreateAndCacheAtlas(
+		float fontSize, const std::vector<msdf_atlas::GlyphGeometry> &glyphs, const msdf_atlas::FontGeometry &fontGeomerty,
+		uint32_t w, uint32_t h)
+	{
+
+		GeneratorAttributes attributes;
+		attributes.config.overlapSupport = true;
+		attributes.scanlinePass = true;
+
+		ImmediateAtlasGenerator<S, N, GenFunc, BitmapAtlasStorage<T, N>> generator(w, h);
+		generator.setAttributes(attributes);
+		generator.setThreadCount(8);
+		generator.generate(glyphs.data(), (int)glyphs.size());
+
+		msdfgen::BitmapConstRef<T, N> bitmap = (msdfgen::BitmapConstRef<T, N>)generator.atlasStorage();
+
+		FTextureSpecification specification{};
+		specification.mFormat = EFormat::RGB8;
+		specification.mChannels = 3;
+
+		Ref<Texture2D> texture = Texture2D::Create(bitmap.pixels, w, h, specification);
+		return texture;
+	};
+
 	Font::Font(const char *filename, int fontSize)
-		: mFontSize(fontSize)
+		: mData(new MSDFData()),
+		  mFontSize(fontSize)
 	{
 		Initialize(filename);
 	}
 
 	Font::~Font()
 	{
-	}
-
-	const Glyph &Font::GetCharacter(uint8_t c) const
-	{
-		return mCharacters.at(c);
-	}
-
-	float Font::GetDeviceScale() const
-	{
-		return mDeviceScale;
+		delete mData;
 	}
 
 	void Font::Initialize(const char *filename)
 	{
-		FT_Library ft;
-		if (FT_Init_FreeType(&ft))
-		{
-			ASSERT(false, "Failed to init freetype libary");
+		msdfgen::FreetypeHandle *ft = msdfgen::initializeFreetype();
+		if (!ft)
 			return;
-		}
 
-		FT_Face face;
-		auto error = FT_New_Face(ft, filename, 0, &face);
-		if (error)
-		{
-			ASSERT(false);
+		msdfgen::FontHandle *font = msdfgen::loadFont(ft, filename);
+		if (!font)
 			return;
-		}
 
-		float scale = (float)face->units_per_EM / (float)(face->height + 4 * mFontSize);
-		FT_Set_Pixel_Sizes(face, 0, mFontSize * scale);
-
-		int line_height = 0;
-
-		int max_dim = (1 + (face->size->metrics.height >> 6)) * ceilf(sqrtf(128));
-		int tex_width = 1;
-		while (tex_width < max_dim)
-			tex_width <<= 1;
-		int tex_height = tex_width;
-
-		char *pixels = (char *)calloc(tex_width * tex_height, 1);
-		int x = 0, y = 0;
-
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte alignment restriction
-
-		FT_GlyphSlot slot = face->glyph;
-		for (uint8_t c = 0; c < 128; c++)
+		struct CharsetRange
 		{
-			if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-				continue;
+			uint32_t begin, end;
+		};
 
-			if (FT_Render_Glyph(slot, FT_RENDER_MODE_SDF))
-				continue;
+		static const CharsetRange char_set_ranges[] = {0x0020, 0x00FF};
 
-			auto buffer = slot->bitmap.buffer;
-
-			if (x + slot->bitmap.width >= tex_width)
-			{
-				x = 0;
-				y += (face->size->metrics.height >> 6) + 1;
-			}
-
-			auto width = slot->bitmap.width;
-			auto rows = slot->bitmap.rows;
-			for (uint32_t row = 0; row < rows; row++)
-			{
-				for (uint32_t col = 0; col < width; col++)
-				{
-					int _x = x + col;
-					int _y = y + row;
-					pixels[_y * tex_width + _x] = buffer[row * slot->bitmap.pitch + col];
-				}
-			}
-
-			Glyph character;
-			character.Position = {x, y};
-			character.Advance = slot->advance.x;
-			character.Size = {width, rows};
-			character.Bearing = {slot->bitmap_left, slot->bitmap_top};
-			character.Bounds = {character.Position, character.Position + character.Size};
-
-			mCharacters.emplace(c, character);
-
-			line_height = glm::max((int)(face->size->metrics.height) >> 6, line_height);
-			x += slot->bitmap.width + 1;
-		}
-
-		mAscender = face->ascender >> 6;
-		mDescender = face->descender >> 6;
-		mLineHeight = line_height;
-
-		double scale_x = face->size->metrics.x_scale / 65536.0;
-		double scale_y = face->size->metrics.y_scale / 65536.0;
-		mDeviceScale = 1.f / (mAscender - mDescender);
-
-		FT_Done_Face(face);
-		FT_Done_FreeType(ft);
-
-		char *data = (char *)calloc(tex_width * tex_height * 4, 1);
-		for (int i = 0; i < (tex_width * tex_height); i++)
+		msdf_atlas::Charset charset;
+		for (auto &range : char_set_ranges)
 		{
-			data[i * 4 + 0] |= pixels[i];
-			data[i * 4 + 1] |= pixels[i];
-			data[i * 4 + 2] |= pixels[i];
-			data[i * 4 + 3] = 0xff;
+			for (uint32_t c = range.begin; c <= range.end; c++)
+				charset.add(c);
 		}
 
-		FTextureSpecification specification;
-		specification.mMagFilter = EMagFilter::LINEAR;
-		specification.mMinFilter = EMinFilter::LINEAR;
-		specification.mWrapMode = EWrapMode::CLAMP_TO_EDGE;
-		specification.mFormat = EFormat::RGBA8;
-		specification.mChannels = 4;
-		mTextureAtlas = Texture2D::Create(data, tex_width, tex_height, specification);
+		mData->FontGeometry = FontGeometry(&mData->Glyphs);
+		int loaded_glyphs = mData->FontGeometry.loadCharset(font, 1, charset);
+		LOG_INFO("Loaded {} glyphs", loaded_glyphs);
 
-		free(pixels);
-		free(data);
+		double emSize = 40.0;
+		TightAtlasPacker atlas_packer;
+		atlas_packer.setPixelRange(2.0);
+		atlas_packer.setMiterLimit(1.0);
+		atlas_packer.setInnerPixelPadding(0);
+		atlas_packer.setOuterPixelPadding(0);
+		atlas_packer.setScale(emSize);
+		int remaining = atlas_packer.pack(mData->Glyphs.data(), (int)mData->Glyphs.size());
+		ASSERT(remaining == 0);
 
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+		int w, h;
+		atlas_packer.getDimensions(w, h);
+		emSize = atlas_packer.getScale();
+
+#define DEFAULT_ANGLE_THRESHOLD 3.0
+#define LCG_MULTIPLIER 6364136223846793005ull
+#define LCG_INCREMENT 1442695040888963407ull
+#define THREAD_COUNT 8
+
+		uint64_t coloringSeed = 0;
+		unsigned long long glyphSeed = coloringSeed;
+		for (GlyphGeometry &glyph : mData->Glyphs)
+		{
+			glyphSeed *= LCG_MULTIPLIER;
+			glyph.edgeColoring(msdfgen::edgeColoringInkTrap, DEFAULT_ANGLE_THRESHOLD, glyphSeed);
+		}
+
+		mTextureAtlas = CreateAndCacheAtlas<uint8_t, float, 3, msdf_atlas::msdfGenerator>(
+			(float)emSize, mData->Glyphs, mData->FontGeometry, w, h);
+
+		msdfgen::destroyFont(font);
+		msdfgen::deinitializeFreetype(ft);
 	}
 
 } // namespace BHive

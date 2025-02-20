@@ -56,6 +56,9 @@ static const char *text_frag = R"(
 
     layout(location = 0) out vec4 fColor;
 
+    float screenPxRange();
+    float median(float r, float g, float b);
+
     void main()
     {
         float thickness = vs_in.thickness.x;
@@ -64,13 +67,31 @@ static const char *text_frag = R"(
         float outline_smoothness = vs_in.outline.y;
         vec4 outline_color = vs_in.outlineColor;
 
-       
-        float a = texture(uTextures[vs_texture], vs_in.texCoord).r;
-        float outline = smoothstep(outline_thickness - outline_smoothness, outline_thickness + outline_smoothness, a);
-        a = smoothstep(1.0 - thickness - smoothness, 1.0 - thickness + smoothness, a);
 
+        vec3 msd = texture(uTextures[vs_texture], vs_in.texCoord).rgb;
+        float sd  = median(msd.r, msd.g, msd.b);
+        float screenPxDistance = screenPxRange()  * (sd - .5);
+        float opacity = clamp(screenPxDistance + 0.5, 0, 1);
+
+        float a = opacity;
+        float outline = smoothstep(outline_thickness - outline_smoothness, outline_thickness + outline_smoothness, a);
+        a = smoothstep(1 - thickness - smoothness, 1 - thickness + smoothness, a);
+        
         vec4 color = mix(vs_in.color, outline_color, 1.0 - outline);
 
-        fColor = vec4(a) * color;
+        fColor = vec4(color.rgb, opacity);
+    }
+
+    float screenPxRange()
+    {   
+        const float pxRange = 1.0;
+        vec2 unitRange = vec2(pxRange)/vec2(textureSize(uTextures[vs_texture], 0));
+        vec2 screentextSize = vec2(1.0)/fwidth(vs_in.texCoord);
+        return max(0.5*dot(unitRange, screentextSize), 1.0);
+    }   
+
+    float median(float r, float g, float b)
+    {
+        return max(min(r, g), min(max(r, g), b));
     }
 )";

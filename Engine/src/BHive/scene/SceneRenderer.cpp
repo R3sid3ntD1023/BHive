@@ -20,8 +20,9 @@
 #include "renderers/postprocessing/Bloom.h"
 #include "core/profiler/CPUGPUProfiler.h"
 
-#define DRAW_ELEMENTS() \
-	RenderCommand::DrawElementsBaseVertex(EDrawMode::Triangles, *vao, sub_mesh->mStartVertex, sub_mesh->mStartIndex, sub_mesh->mIndexCount);
+#define DRAW_ELEMENTS()                    \
+	RenderCommand::DrawElementsBaseVertex( \
+		EDrawMode::Triangles, *vao, sub_mesh->mStartVertex, sub_mesh->mStartIndex, sub_mesh->mIndexCount);
 
 #define RENDER_SHADOWS
 
@@ -30,8 +31,8 @@ namespace BHive
 	uint32_t quad_indices[] = {0, 1, 2, 2, 3, 0};
 	float quad_vertices[] = {-1.f, -1.f, 0.f, 0.f, 1.f, -1.f, 1.f, 0.f, 1.f, 1.f, 1.f, 1.f, -1.f, 1.f, 0.f, 1.f};
 
-	SceneRenderer::SceneRenderer(uint32_t width, uint32_t height, uint32_t flags)
-		: mViewportSize(width, height),
+	SceneRenderer::SceneRenderer(const glm::ivec2 &size, uint32_t flags)
+		: mViewportSize(size),
 		  mFlags(flags)
 	{
 		FramebufferSpecification fbspec{};
@@ -39,8 +40,8 @@ namespace BHive
 		fbspec.Attachments.attach({.mFormat = EFormat::RGBA32F, .mWrapMode = EWrapMode::CLAMP_TO_EDGE})
 			.attach({.mFormat = EFormat::DEPTH24_STENCIL8, .mWrapMode = EWrapMode::CLAMP_TO_EDGE});
 
-		fbspec.Width = width;
-		fbspec.Height = height;
+		fbspec.Width = size.x;
+		fbspec.Height = size.y;
 		fbspec.Samples = 16;
 		mMultiSampleFramebuffer = Framebuffer::Create(fbspec);
 
@@ -81,7 +82,7 @@ namespace BHive
 		}
 
 		FBloomSettings settings{};
-		mPostProcessors.push_back(CreateRef<Bloom>(5, width, height, settings));
+		mPostProcessors.push_back(CreateRef<Bloom>(5, size.x, size.y, settings));
 	}
 
 	SceneRenderer::~SceneRenderer()
@@ -268,7 +269,8 @@ namespace BHive
 		Renderer::SubmitSpotLight(transform.get_forward(), transform.get_translation(), light);
 	}
 
-	void SceneRenderer::SubmitStaticMesh(const Ref<StaticMesh> &static_mesh, const FTransform &transform, const Ref<Material> &material)
+	void SceneRenderer::SubmitStaticMesh(
+		const Ref<StaticMesh> &static_mesh, const FTransform &transform, const Ref<Material> &material)
 	{
 		if (!static_mesh)
 			return;
@@ -282,14 +284,16 @@ namespace BHive
 			FObjectData object_data = {transform, &sub_mesh, vao};
 			FObjectMaterialData material_data = {material, object_data};
 
-			material->IsTransparent() ? mSceneData.mTransparentObjects.push_back(material_data) : mSceneData.mOpaqueObjects.push_back(material_data);
+			material->IsTransparent() ? mSceneData.mTransparentObjects.push_back(material_data)
+									  : mSceneData.mOpaqueObjects.push_back(material_data);
 
 			if (material->CastShadows())
 				mSceneData.mShadowCasters.push_back(object_data);
 		}
 	}
 
-	void SceneRenderer::SubmitStaticMesh(const Ref<StaticMesh> &static_mesh, const FTransform &transform, const MaterialTable &materials)
+	void SceneRenderer::SubmitStaticMesh(
+		const Ref<StaticMesh> &static_mesh, const FTransform &transform, const MaterialTable &materials)
 	{
 		if (!static_mesh)
 			return;
@@ -304,7 +308,8 @@ namespace BHive
 			FObjectData object_data = {transform, &sub_mesh, vao};
 			FObjectMaterialData material_data = {material, object_data};
 
-			material->IsTransparent() ? mSceneData.mTransparentObjects.push_back(material_data) : mSceneData.mOpaqueObjects.push_back(material_data);
+			material->IsTransparent() ? mSceneData.mTransparentObjects.push_back(material_data)
+									  : mSceneData.mOpaqueObjects.push_back(material_data);
 
 			if (material->CastShadows())
 				mSceneData.mShadowCasters.push_back(object_data);
@@ -312,7 +317,8 @@ namespace BHive
 	}
 
 	void SceneRenderer::SubmitSkeletalMesh(
-		const Ref<SkeletalMesh> &skeletal_mesh, const FTransform &transform, const std::vector<glm::mat4> &joints, const MaterialTable &materials)
+		const Ref<SkeletalMesh> &skeletal_mesh, const FTransform &transform, const std::vector<glm::mat4> &joints,
+		const MaterialTable &materials)
 	{
 		if (!skeletal_mesh)
 			return;
@@ -328,7 +334,8 @@ namespace BHive
 			FObjectData object_data = {transform, &sub_mesh, vao, joints};
 			FObjectMaterialData material_data = {material, object_data};
 
-			material->IsTransparent() ? mSceneData.mTransparentObjects.push_back(material_data) : mSceneData.mOpaqueObjects.push_back(material_data);
+			material->IsTransparent() ? mSceneData.mTransparentObjects.push_back(material_data)
+									  : mSceneData.mOpaqueObjects.push_back(material_data);
 
 			if (material->CastShadows())
 				mSceneData.mShadowCasters.push_back(object_data);
@@ -435,7 +442,8 @@ namespace BHive
 			for (auto &light : spot_lights)
 			{
 				auto &transform = light.mTransform;
-				ShadowRenderer::SubmitSpotLight(transform.get_forward(), transform.get_translation(), Cast<SpotLight>(light.mLight)->mRadius);
+				ShadowRenderer::SubmitSpotLight(
+					transform.get_forward(), transform.get_translation(), Cast<SpotLight>(light.mLight)->mRadius);
 			}
 
 			ShadowRenderer::BeginSpotShadowPass();
@@ -468,8 +476,8 @@ namespace BHive
 	{
 		BEGIN_REFLECT(FRenderSettings)
 		REFLECT_PROPERTY("Strength", mStrength)
-		(META_DATA(EPropertyMetaData_Min, 0.0f)) REFLECT_PROPERTY("FilterRadius", mFilterRadius) REFLECT_PROPERTY("Threshold", mThreshold)
-			REFLECT_PROPERTY("ProcessMode", mProcessMode);
+		(META_DATA(EPropertyMetaData_Min, 0.0f)) REFLECT_PROPERTY("FilterRadius", mFilterRadius)
+			REFLECT_PROPERTY("Threshold", mThreshold) REFLECT_PROPERTY("ProcessMode", mProcessMode);
 	}
 
 	REFLECT(SceneRenderer)
@@ -482,6 +490,7 @@ namespace BHive
 	REFLECT(ESceneRendererFlags)
 	{
 		BEGIN_REFLECT_ENUM(ESceneRendererFlags)
-		(ENUM_VALUE(ESceneRendererFlags_NoShadows, "NoShadows"), ENUM_VALUE(ESceneRendererFlags_VisualizeColliders, "VisualizeColliders"));
+		(ENUM_VALUE(ESceneRendererFlags_NoShadows, "NoShadows"),
+		 ENUM_VALUE(ESceneRendererFlags_VisualizeColliders, "VisualizeColliders"));
 	}
 } // namespace BHive

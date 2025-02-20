@@ -84,11 +84,10 @@ namespace BHive
 		mEditorWorld = CreateRef<World>();
 		mActiveWorld = mEditorWorld;
 
-		auto w = window.GetWidth();
-		auto h = window.GetHeight();
-		auto aspect = w / (float)h;
+		auto size = window.GetSize();
+		auto aspect = size.x / (float)size.y;
 
-		mSceneRenderer = CreateRef<SceneRenderer>(w, h, ESceneRendererFlags_VisualizeColliders);
+		mSceneRenderer = CreateRef<SceneRenderer>(size, ESceneRendererFlags_VisualizeColliders);
 		mEditorCamera = EditorCamera(45.f, aspect, 0.1f, 1000.f);
 
 		mSceneHierarchyPanel = CreateRef<SceneHierarchyPanel>();
@@ -265,7 +264,7 @@ namespace BHive
 		}
 	}
 
-	void EditorLayer::OnGuiRender(float)
+	void EditorLayer::OnGuiRender()
 	{
 		ImGuizmo::BeginFrame();
 
@@ -541,8 +540,9 @@ namespace BHive
 
 						LOG_TRACE("Mouse Pos {}, {}", mouse_pos.x, mouse_pos.y);
 
-						const auto mouse_ray =
-							GetMouseRay(mouse_pos.x, mouse_pos.y, mViewportPanelSize.x, mViewportPanelSize.y, projection, view.inverse());
+						const auto mouse_ray = GetMouseRay(
+							mouse_pos.x, mouse_pos.y, mViewportPanelSize.x, mViewportPanelSize.y, projection,
+							view.inverse());
 
 						FRay ray{view.get_translation(), mouse_ray};
 
@@ -599,8 +599,8 @@ namespace BHive
 
 				glm::mat4 delta{1.f};
 				if (ImGuizmo::Manipulate(
-						glm::value_ptr(view), glm::value_ptr(projection), (ImGuizmo::OPERATION)mGizmoOperation, (ImGuizmo::MODE)mGizmoMode,
-						glm::value_ptr(transform), glm::value_ptr(delta), snap_values))
+						glm::value_ptr(view), glm::value_ptr(projection), (ImGuizmo::OPERATION)mGizmoOperation,
+						(ImGuizmo::MODE)mGizmoMode, glm::value_ptr(transform), glm::value_ptr(delta), snap_values))
 				{
 
 					for (auto &entity : selected_entities)
@@ -619,15 +619,9 @@ namespace BHive
 
 	void EditorLayer::ShowPerformancePanel()
 	{
-		static int current = 0;
-		static float fps[100];
-
-		fps[current++] = sCounter;
-		current = current % 100;
-
 		if (ImGui::Begin("Performance"))
 		{
-			ProfilerViewer::ViewFPS(sCounter, fps, 100);
+			ProfilerViewer::ViewFPS();
 			ProfilerViewer::ViewCPUGPU();
 		}
 

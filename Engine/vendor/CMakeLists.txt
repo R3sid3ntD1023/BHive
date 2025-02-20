@@ -149,13 +149,12 @@ FetchContent_Declare(
 list(APPEND components cereal)
 
 
-#entt
-#FetchContent_Declare(
-#	entt
-#	GIT_REPOSITORY https://github.com/skypjack/entt.git
-#	GIT_TAG v3.14.0
-#)
-#list(APPEND components entt)
+FETCHCONTENT_DECLARE(
+	msdf-atlas-gen
+	GIT_REPOSITORY https://github.com/Chlumsky/msdf-atlas-gen.git
+	GIT_TAG master
+)
+list(APPEND components msdf-atlas-gen)
 
 FetchContent_Declare(
 	ImPlot
@@ -168,7 +167,6 @@ if(components)
 	FETCHCONTENT_MAKEAVAILABLE(${components})
 endif()
 
-add_subdirectory(freetype)
 
 
 if(MSVC)

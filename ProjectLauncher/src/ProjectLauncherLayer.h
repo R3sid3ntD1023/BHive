@@ -21,7 +21,7 @@ namespace BHive
 
 		void OnDetach() override;
 
-		void OnGuiRender(float) override;
+		void OnGuiRender() override;
 
 	private:
 		void OpenProject(const std::filesystem::path &path);

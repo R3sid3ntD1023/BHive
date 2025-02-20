@@ -78,6 +78,8 @@ void SolarSystemLayer::OnAttach()
 
 	// mAudio->Play();
 	mUniverse->Begin();
+
+	BHive::RenderCommand::SetLineWidth(3.0f);
 }
 
 void SolarSystemLayer::OnDetach()
@@ -136,10 +138,13 @@ void SolarSystemLayer::OnUpdate(float dt)
 	}
 
 	// ui
+
 	BHive::Renderer::Begin(glm::ortho(0.f, 800.f, 0.f, 600.f), glm::inverse(glm::mat4(1.f)));
 	BHive::QuadRenderer::DrawQuad(glm::ivec2{100, 560}, 0xFF00FF00, BHive::FTransform{sQuadPos}, nullptr);
-	BHive::QuadRenderer::DrawText(12, "Text2D \nNewline Text! \n\ttygp", {.Style = sTextStyle}, {{50, 200, 0}, {0, 0, 45}});
+	BHive::QuadRenderer::DrawText(36, "Text2D \nNewline Text! \n\ttygp", {.Style = sTextStyle}, {{50, 200, 0}});
 	BHive::QuadRenderer::DrawCircle(sCircleParams, {{400, 300, 0}});
+	BHive::LineRenderer::DrawLine({30, 30, 0}, {200, 200, 0}, 0xff00ffff);
+	BHive::LineRenderer::DrawRect({100.f, 560}, 0xffffffff, {sQuadPos});
 	BHive::Renderer::End();
 
 	BHive::RenderCommand::EnableDepth();
@@ -197,9 +202,23 @@ void SolarSystemLayer::OnGuiRender()
 	// }
 
 	// ImGui::End();
-
 	if (ImGui::Begin("Performance"))
 	{
+		ImGui::PushID("Quad");
+		ImGui::DragFloat3("Pos", &sQuadPos.x, 0.001f);
+		ImGui::PopID();
+
+		ImGui::PushID("TextStyle");
+		ImGui::ColorPicker4("Color", &sTextStyle.TextColor.r);
+		ImGui::DragFloat("Thickness", &sTextStyle.Thickness, 0.001f, 0, 1);
+		ImGui::DragFloat("Smoothness", &sTextStyle.Smoothness, 0.001f, 0, 1);
+
+		ImGui::SeparatorText("Outline");
+		ImGui::ColorPicker4("Outline Color", &sTextStyle.OutlineColor.r);
+		ImGui::DragFloat("Outline Thickness", &sTextStyle.OutlineThickness, 0.001f, 0, 1);
+		ImGui::DragFloat("Outline Smoothness", &sTextStyle.OutlineSmoothness, 0.001f, 0, 1);
+
+		ImGui::PopID();
 
 		ImGui::PushID("Circle");
 		ImGui::ColorPicker4("Color", &sCircleParams.LineColor.r);

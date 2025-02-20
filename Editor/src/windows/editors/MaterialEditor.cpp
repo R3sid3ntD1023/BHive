@@ -12,13 +12,13 @@ namespace BHive
 		}
 
 		mCamera = glm::perspective(45.0f, 1.f, 0.01f, 1000.f);
-		mRenderer = CreateRef<SceneRenderer>(300, 300, ESceneRendererFlags_NoShadows);
+		mRenderer = CreateRef<SceneRenderer>(glm::ivec2{300, 300}, ESceneRendererFlags_NoShadows);
 	}
 
 	void MaterialEditor::OnWindowRender()
 	{
-		if ((mViewportPanelSize.x != mViewportSize.x || mViewportPanelSize.y != mViewportSize.y) && mViewportPanelSize.x != 0 &&
-			mViewportPanelSize.y != 0)
+		if ((mViewportPanelSize.x != mViewportSize.x || mViewportPanelSize.y != mViewportSize.y) &&
+			mViewportPanelSize.x != 0 && mViewportPanelSize.y != 0)
 		{
 			mViewportSize = mViewportPanelSize;
 			mCamera = glm::perspective(45.0f, mViewportSize.x / mViewportSize.y, 0.01f, 1000.f);

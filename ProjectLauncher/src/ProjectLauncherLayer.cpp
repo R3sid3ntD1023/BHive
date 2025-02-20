@@ -2,7 +2,7 @@
 #include "gui/ImGuiExtended.h"
 #include "project/Project.h"
 #include "ProjectLauncherLayer.h"
-#include "serialization/Serialization.h"
+#include "core/serialization/Serialization.h"
 #include <Windows.h>
 
 namespace ImGui
@@ -12,8 +12,7 @@ namespace ImGui
 	bool InputText(
 		const char *label, std::filesystem::path *path, ImGuiInputTextFlags flags = 0,
 		FileSystemCallback filecallback = (FileSystemCallback) nullptr,
-		ImGuiInputTextCallback callback = (ImGuiInputTextCallback) nullptr,
-		void *user_data = (void *)nullptr)
+		ImGuiInputTextCallback callback = (ImGuiInputTextCallback) nullptr, void *user_data = (void *)nullptr)
 	{
 		auto str = path->string();
 		if (InputText(label, &str, flags, callback, user_data))
@@ -99,10 +98,8 @@ namespace BHive
 		DWORD error_message = GetLastError();
 		LPSTR message_buffer = nullptr;
 		size_t size = FormatMessage(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-				FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, error_message, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&message_buffer,
-			0, NULL);
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, error_message,
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&message_buffer, 0, NULL);
 
 		std::string message(message_buffer, size);
 		LocalFree(message_buffer);
@@ -110,7 +107,7 @@ namespace BHive
 		LOG_ERROR(message);
 	}
 
-	void ProjectLauncherLayer::OnGuiRender(float)
+	void ProjectLauncherLayer::OnGuiRender()
 	{
 		static FProjectConfiguration project_configuration{"Untitled", "", "resources"};
 
@@ -120,8 +117,8 @@ namespace BHive
 		ImGui::SetNextWindowViewport(viewport->ID);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		auto window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-							ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		auto window_flags =
+			ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
 		if (ImGui::Begin("ProjectLauncher", nullptr, window_flags))
@@ -148,11 +145,9 @@ namespace BHive
 
 			ImGui::InputLayout(
 				"Project Name",
-				[]()
-				{
+				[]() {
 					return ImGui::InputText(
-						"##ProjectName", &project_configuration.mName,
-						ImGuiInputTextFlags_EnterReturnsTrue);
+						"##ProjectName", &project_configuration.mName, ImGuiInputTextFlags_EnterReturnsTrue);
 				});
 
 			ImGui::InputLayout(
@@ -160,8 +155,8 @@ namespace BHive
 				[]()
 				{
 					return ImGui::InputText(
-						"##DirectoryPath", &project_configuration.mProjectDirectory,
-						ImGuiInputTextFlags_EnterReturnsTrue, GetDirectory);
+						"##DirectoryPath", &project_configuration.mProjectDirectory, ImGuiInputTextFlags_EnterReturnsTrue,
+						GetDirectory);
 				});
 
 			ImGui::InputLayout(
@@ -206,19 +201,17 @@ namespace BHive
 		si.cb = sizeof(si);
 		ZeroMemory(&pi, sizeof(pi));
 
-		auto command_line =
-			"C:/users/dariu/Documents/BHive/bin/Windows/Debug/Editor.exe " + path.string();
+		auto command_line = "C:/users/dariu/Documents/BHive/bin/Windows/Debug/Editor.exe " + path.string();
 		CreateProcess(
-			"C:/users/dariu/Documents/BHive/bin/Windows/Debug/Editor.exe ", command_line.data(),
-			NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+			"C:/users/dariu/Documents/BHive/bin/Windows/Debug/Editor.exe ", command_line.data(), NULL, NULL, FALSE, 0, NULL,
+			NULL, &si, &pi);
 
 		mSettings.mRecentProjectPaths.emplace(path.stem().string(), path);
 
 		Application::Get().Close();
 	}
 
-	void
-	ProjectLauncherLayer::CreateProject(const FProjectConfiguration &config, std::string &message)
+	void ProjectLauncherLayer::CreateProject(const FProjectConfiguration &config, std::string &message)
 	{
 		auto path = config.mProjectDirectory / (config.mName + ".proj");
 		if (std::filesystem::exists(path))

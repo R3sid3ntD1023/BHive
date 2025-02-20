@@ -10,6 +10,7 @@
 #include "shaders/TextShader.h"
 #include "shaders/CircleShader.h"
 #include "core/profiler/CPUGPUProfiler.h"
+#include "font/MSDFData.h"
 
 namespace BHive
 {
@@ -434,57 +435,74 @@ namespace BHive
 			return;
 
 		auto texture = font->GetAtlas();
-		auto scale = font->GetDeviceScale() * size_arg;
-		auto line_height = font->GetLineHeight() * scale;
+		const auto &fontgeometry = font->GetMSDFData()->FontGeometry;
+		const auto &metrics = fontgeometry.getMetrics();
+
+		double scale = (1.0 / (metrics.ascenderY - metrics.descenderY)) * size_arg;
+		const float spaceGlyphAdvance = fontgeometry.getGlyph(' ')->getAdvance();
 
 		glm::vec2 texel_size = 1.0f / glm::vec2{texture->GetWidth(), texture->GetHeight()};
 
 		glm::vec2 coords[4];
 
-		glm::vec2 offset = {};
-		for (auto &c : text)
+		glm::dvec2 offset = {};
+		for (size_t i = 0; i < text.size(); i++)
 		{
-
-			auto &character = font->GetCharacter(c);
-			const auto &bounds = character.Bounds;
-			const auto &pos = character.Position;
-			const auto &size = character.Size;
-			const auto &bearing = character.Bearing;
-			auto advance = character.Advance >> 6;
-
-			float x = offset.x + (bearing.x * scale);
-			float y = offset.y - (size.y - bearing.y) * scale;
-			float w = size.x * scale;
-			float h = size.y * scale;
-
-			glm::vec3 quad[4];
-			quad[0] = {x, y, 0};
-			quad[1] = {x + w, y, 0};
-			quad[2] = {x + w, y + h, 0};
-			quad[3] = {x, y + h, 0};
-
-			coords[1] = (pos + size) * texel_size;
-			coords[0] = glm::vec2{pos.x, pos.y + size.y} * texel_size;
-			coords[3] = pos * texel_size;
-			coords[2] = glm::vec2{pos.x + size.x, pos.y} * texel_size;
+			auto c = text[i];
 
 			if (c == '\n')
 			{
 				offset.x = 0.f;
-				offset.y -= (line_height + params.LineSpacing);
+				offset.y -= (scale * metrics.lineHeight + params.LineSpacing);
 				continue;
 			}
 
 			if (c == '\t')
 			{
-				offset.x += 4.0f * (scale * advance + params.Kerning);
+				offset.x += 4.0f * (scale * spaceGlyphAdvance + params.Kerning);
 				continue;
 			}
+
+			auto glyph = fontgeometry.getGlyph(c);
+			if (!glyph)
+				glyph = fontgeometry.getGlyph('?');
+			if (!glyph)
+				return;
+
+			GlyphBounds uvs{};
+			GlyphBounds quad_bounds{};
+			glyph->getQuadAtlasBounds(uvs.Min.x, uvs.Min.y, uvs.Max.x, uvs.Max.y);
+			glyph->getQuadPlaneBounds(quad_bounds.Min.x, quad_bounds.Min.y, quad_bounds.Max.x, quad_bounds.Max.y);
+
+			quad_bounds.Min *= scale;
+			quad_bounds.Max *= scale;
+			quad_bounds.Min += offset;
+			quad_bounds.Max += offset;
+			uvs.Min *= texel_size;
+			uvs.Max *= texel_size;
+
+			glm::vec3 quad[4];
+			quad[0] = {quad_bounds.Min, 0};
+			quad[1] = {quad_bounds.Max.x, quad_bounds.Min.y, 0};
+			quad[2] = {quad_bounds.Max, 0};
+			quad[3] = {quad_bounds.Min.x, quad_bounds.Max.y, 0};
+
+			coords[0] = uvs.Min;
+			coords[1] = {uvs.Max.x, uvs.Min.y};
+			coords[2] = uvs.Max;
+			coords[3] = {uvs.Min.x, uvs.Max.y};
 
 			DrawTextQuad(quad, coords, {1, 1}, params.Style, transform, texture);
 
 			// bitshift advance to get value in pixels (2^6 = 64)
-			offset.x += scale * advance + params.Kerning;
+			if (i < text.size() - 1)
+			{
+				double advance = glyph->getAdvance();
+				char next_character = text[i + 1];
+				fontgeometry.getAdvance(advance, c, next_character);
+
+				offset.x += scale * advance + params.Kerning;
+			}
 		}
 	}
 

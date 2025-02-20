@@ -24,7 +24,6 @@ target_link_libraries(Engine
 	PUBLIC glad 
 	opengl32 
 	PUBLIC OpenAL::OpenAL 
-	#PUBLIC EnTT
 	PUBLIC assimp::assimp 
 	PUBLIC imgui 
 	PUBLIC stb
@@ -36,7 +35,7 @@ target_link_libraries(Engine
 	PUBLIC cereal::cereal
 	PUBLIC ImPlot
 	PUBLIC mINI
-	PUBLIC freetype
+	PRIVATE msdf-atlas-gen::msdf-atlas-gen
 )
 
 target_include_directories(Engine PUBLIC 

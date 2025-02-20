@@ -94,7 +94,7 @@ namespace BHive
 	public:
 		FRenderSettings mRenderSettings;
 
-		SceneRenderer(uint32_t width, uint32_t height, uint32_t flags = 0);
+		SceneRenderer(const glm::ivec2 &size, uint32_t flags = 0);
 		~SceneRenderer();
 
 		void Begin(const Camera &camera, const FTransform &view);
@@ -106,9 +106,11 @@ namespace BHive
 		void SubmitLight(const PointLight &light, const FTransform &transform);
 		void SubmitLight(const SpotLight &light, const FTransform &transform);
 
-		void SubmitStaticMesh(const Ref<StaticMesh> &static_mesh, const FTransform &transform, const Ref<Material> &material);
+		void
+		SubmitStaticMesh(const Ref<StaticMesh> &static_mesh, const FTransform &transform, const Ref<Material> &material);
 
-		void SubmitStaticMesh(const Ref<StaticMesh> &static_mesh, const FTransform &transform, const MaterialTable &materials);
+		void
+		SubmitStaticMesh(const Ref<StaticMesh> &static_mesh, const FTransform &transform, const MaterialTable &materials);
 		void SubmitSkeletalMesh(
 			const Ref<SkeletalMesh> &skeletal_mesh, const FTransform &transform, const std::vector<glm::mat4> &joints,
 			const MaterialTable &materials);

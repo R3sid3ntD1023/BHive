@@ -3,6 +3,7 @@
 #include "gfx/Shader.h"
 #include "gfx/RenderCommand.h"
 #include "Renderer.h"
+#include "shaders/LineShader.h"
 #include "core/profiler/CPUGPUProfiler.h"
 
 namespace BHive
@@ -35,7 +36,7 @@ namespace BHive
 			mVertexArray = VertexArray::Create();
 			mVertexArray->AddVertexBuffer(mVertexBuffer);
 
-			mLineShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/Line.glsl");
+			mLineShader = ShaderLibrary::Load("Line", line_vert, line_frag);
 		}
 
 		~RenderData()
@@ -65,46 +66,51 @@ namespace BHive
 		Flush();
 	}
 
-	void LineRenderer::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const Color &color, const glm::mat4 &transform)
+	void LineRenderer::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const Color &color, const FTransform &transform)
 	{
 		NextBatch();
 
-		sData->mVertexDataPtr->position = transform * glm::vec4(p0, 1.0f);
+		sData->mVertexDataPtr->position = transform.to_mat4() * glm::vec4(p0, 1.0f);
 		sData->mVertexDataPtr->color = color;
 		sData->mVertexDataPtr++;
 
-		sData->mVertexDataPtr->position = transform * glm::vec4(p1, 1.0f);
+		sData->mVertexDataPtr->position = transform.to_mat4() * glm::vec4(p1, 1.0f);
 		sData->mVertexDataPtr->color = color;
 		sData->mVertexDataPtr++;
 
 		sData->mVertexCount += 2;
 	}
 
-	void LineRenderer::DrawLine(const Line &line, const glm::mat4 &transform)
+	void LineRenderer::DrawLine(const Line &line, const FTransform &transform)
 	{
 		DrawLine(line.p0, line.p1, line.color, transform);
 	}
 
-	void LineRenderer::DrawTriangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const Color &color, const glm::mat4 &transform)
+	void LineRenderer::DrawTriangle(
+		const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const Color &color, const FTransform &transform)
 	{
 		DrawLine(p0, p1, color, transform);
 		DrawLine(p1, p2, color, transform);
 		DrawLine(p2, p0, color, transform);
 	}
 
-	void LineRenderer::DrawTriangle(const Line &l0, const Line &l1, const Line &l2, const glm::mat4 &transform)
+	void LineRenderer::DrawTriangle(const Line &l0, const Line &l1, const Line &l2, const FTransform &transform)
 	{
 		DrawLine(l0, transform);
 		DrawLine(l1, transform);
 		DrawLine(l2, transform);
 	}
 
-	void LineRenderer::DrawRect(const float &size, const Color &color, const glm::mat4 &transform)
+	void LineRenderer::DrawRect(const glm::vec2 &size, const Color &color, const FTransform &transform)
 	{
+		float w = size.x * .5f;
+		float h = size.y * .5f;
+		DrawRect({-w, -h, 0}, {w, -h, 0}, {w, h, 0}, {-w, h, 0}, color, transform);
 	}
 
 	void LineRenderer::DrawRect(
-		const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3, const Color &color, const glm::mat4 &transform)
+		const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3, const Color &color,
+		const FTransform &transform)
 	{
 		DrawLine(p0, p1, color, transform);
 		DrawLine(p1, p2, color, transform);
@@ -112,7 +118,8 @@ namespace BHive
 		DrawLine(p3, p0, color, transform);
 	}
 
-	void LineRenderer::DrawBox(const glm::vec3 &extents, const glm::vec3 &offset, const Color &color, const glm::mat4 &transform)
+	void
+	LineRenderer::DrawBox(const glm::vec3 &extents, const glm::vec3 &offset, const Color &color, const FTransform &transform)
 	{
 		float x = extents.x;
 		float y = extents.y;
@@ -141,7 +148,8 @@ namespace BHive
 	}
 
 	void LineRenderer::DrawArc(
-		float radius, uint32_t sides, float start, float end, const glm::vec3 &offset, const Color &color, const glm::mat4 &transform)
+		float radius, uint32_t sides, float start, float end, const glm::vec3 &offset, const Color &color,
+		const FTransform &transform)
 	{
 		float step = glm::radians(360.0f / (float)sides);
 		for (float theta = start; theta < end - step; theta += step)
@@ -158,12 +166,14 @@ namespace BHive
 		}
 	}
 
-	void LineRenderer::DrawCircle(float radius, uint32_t sides, const glm::vec3 &offset, const Color &color, const glm::mat4 &transform)
+	void LineRenderer::DrawCircle(
+		float radius, uint32_t sides, const glm::vec3 &offset, const Color &color, const FTransform &transform)
 	{
 		DrawArc(radius, sides, 0, PI * 2, offset, color, transform);
 	}
 
-	void LineRenderer::DrawSphere(float radius, uint32_t sides, const glm::vec3 &offset, const Color &color, const glm::mat4 &transform)
+	void LineRenderer::DrawSphere(
+		float radius, uint32_t sides, const glm::vec3 &offset, const Color &color, const FTransform &transform)
 	{
 
 		auto rotationZ = glm::toMat4(glm::quat({0, 0, PI / 2}));
@@ -174,7 +184,7 @@ namespace BHive
 		DrawCircle(radius, sides, offset, color, transform * rotationX);
 	}
 
-	void LineRenderer::DrawGrid(const FGrid &grid, const glm::mat4 &transform)
+	void LineRenderer::DrawGrid(const FGrid &grid, const FTransform &transform)
 	{
 		float stepsize = grid.size / grid.divisions;
 		float size = grid.size * .5f;
@@ -193,7 +203,7 @@ namespace BHive
 		}
 	}
 
-	void LineRenderer::DrawAABB(const AABB &aabb, const Color &color, const glm::mat4 &transform)
+	void LineRenderer::DrawAABB(const AABB &aabb, const Color &color, const FTransform &transform)
 	{
 		auto size = aabb.get_size();
 
@@ -223,7 +233,7 @@ namespace BHive
 		DrawLine(bottom[3], bottom[0], color, transform);
 	}
 
-	void LineRenderer::DrawCone(float height, float radius, uint32_t sides, const Color &color, const glm::mat4 &transform)
+	void LineRenderer::DrawCone(float height, float radius, uint32_t sides, const Color &color, const FTransform &transform)
 	{
 
 		auto theta = glm::radians(360.0f / sides);
@@ -261,8 +271,8 @@ namespace BHive
 		}
 	}
 
-	void
-	LineRenderer::DrawCylinder(float radius, float height, uint32_t sides, const glm::vec3 &offset, const Color &color, const glm::mat4 &transform)
+	void LineRenderer::DrawCylinder(
+		float radius, float height, uint32_t sides, const glm::vec3 &offset, const Color &color, const FTransform &transform)
 	{
 		float hh = height * .5f;
 		float step = (PI * 2) / sides;
@@ -292,8 +302,8 @@ namespace BHive
 		}
 	}
 
-	void
-	LineRenderer::DrawCapsule(float radius, float height, uint32_t sides, const glm::vec3 &offset, const Color &color, const glm::mat4 &transform)
+	void LineRenderer::DrawCapsule(
+		float radius, float height, uint32_t sides, const glm::vec3 &offset, const Color &color, const FTransform &transform)
 	{
 		auto rotationY = glm::toMat4(glm::quat({0, PI / 2, 0}));
 		auto rotationX = glm::toMat4(glm::quat({PI / 2, 0, 0}));
@@ -308,32 +318,13 @@ namespace BHive
 		DrawArc(radius, sides, PI, PI * 2, offset - h, color, transform * rotationX);
 	}
 
-	void LineRenderer::DrawArrow(float size, const Color &color, const glm::mat4 &transform)
+	void LineRenderer::DrawArrow(float size, const Color &color, const FTransform &transform)
 	{
 		auto forward = glm::vec3{1, 0, 0};
 
 		DrawLine({}, forward * size, color, transform);
 		DrawLine(forward * size, (glm::vec3{.75f, 0, .25f}) * size, color, transform);
 		DrawLine(forward * size, (glm::vec3{.75f, 0, -.25f}) * size, color, transform);
-	}
-
-	glm::vec3 LineRenderer::perpendicular(const glm::vec3 &v)
-	{
-		float min = fabs(v.x);
-		glm::vec3 cardinalAxis(1, 0, 0);
-
-		if (fabs(v.y) < min)
-		{
-			min = fabs(v.y);
-			cardinalAxis = {0, 1, 0};
-		}
-
-		if (fabs(v.z) < min)
-		{
-			cardinalAxis = {0, 0, 1};
-		}
-
-		return glm::cross(v, cardinalAxis);
 	}
 
 	void LineRenderer::StartBatch()

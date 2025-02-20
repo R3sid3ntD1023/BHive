@@ -7,7 +7,8 @@ namespace BHive
 	struct FPlane
 	{
 		FPlane()
-			: Normal(0, 1, 0)
+			: Normal(0, 1, 0),
+			  Origin()
 		{
 		}
 		FPlane(const glm::vec3 &A, const glm::vec3 &B, const glm::vec3 &C, const glm::vec3 &D)
@@ -18,8 +19,9 @@ namespace BHive
 			Normal = z / glm::length(z);
 			Origin = (A + B + C + D) / 4.f;
 		}
-		FPlane(const glm::vec3 &normal)
-			: Normal(normal)
+		FPlane(const glm::vec3 &normal, const glm::vec3 &origin)
+			: Normal(normal),
+			  Origin(origin)
 		{
 		}
 
