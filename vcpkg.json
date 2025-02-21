@@ -1,0 +1,3 @@
+{
+  "dependencies": ["freetype" , "msdfgen", "openal-soft", "assimp"]
+}
