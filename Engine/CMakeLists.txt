@@ -22,22 +22,22 @@ PUBLIC IMGUI_DEFINE_MATH_OPERATORS
 PUBLIC SPDLOG_COMPILED_LIB)
 
 target_link_libraries(Engine
-	PRIVATE glfw 
+	PUBLIC glfw 
 	PUBLIC glad 
 	opengl32 
-	PRIVATE OpenAL::OpenAL
-	PRIVATE assimp::assimp 
+	PUBLIC OpenAL::OpenAL
+	PUBLIC assimp::assimp 
 	PUBLIC imgui 
-	PRIVATE stb
+	PUBLIC stb
 	PUBLIC waveparser
-	PRIVATE ReactPhysics3D::reactphysics3d 
+	PUBLIC ReactPhysics3D::reactphysics3d 
 	PUBLIC rttr_core 
 	PUBLIC spdlog::spdlog
 	PUBLIC glm::glm-header-only
 	PUBLIC cereal::cereal
 	PUBLIC ImPlot
 	PUBLIC mINI
-	PRIVATE msdf-atlas-gen::msdf-atlas-gen
+	PUBLIC msdf-atlas-gen::msdf-atlas-gen
 )
 
 target_include_directories(Engine PUBLIC 

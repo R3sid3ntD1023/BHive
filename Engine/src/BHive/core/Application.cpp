@@ -52,9 +52,9 @@ namespace BHive
 		{
 			FPSCounter::Get().Frame();
 
-			Window::PollEvents();
-
 			UpdateLayersAndWindow();
+
+			Window::PollEvents();
 		}
 	}
 

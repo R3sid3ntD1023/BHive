@@ -1,6 +1,6 @@
 #include "StarComponent.h"
 #include "CelestrialBody.h"
-#include <renderers/Renderer.h>
+#include "renderer/RenderPipeline.h"
 
 void StarComponent::Update(float dt)
 {
@@ -9,7 +9,7 @@ void StarComponent::Update(float dt)
 	light.mRadius = Radius;
 	light.mColor = Color;
 
-	BHive::Renderer::SubmitPointLight(GetOwner()->GetTransform().get_translation(), light);
+	BHive::UniverseRenderPipeline::GetPipeline().SubmitLight({.Transform = GetOwner()->GetTransform(), .PointLight = light});
 }
 
 void StarComponent::Save(cereal::JSONOutputArchive &ar) const

@@ -173,42 +173,42 @@ namespace BHive
 
 	void GLShader::SetUniform(int location, int value) const
 	{
-		glUniform1i(location, value);
+		glProgramUniform1i(mShaderID, location, value);
 	}
 
 	void GLShader::SetUniform(int location, uint32_t value) const
 	{
-		glUniform1ui(location, value);
+		glProgramUniform1ui(mShaderID, location, value);
 	}
 
 	void GLShader::SetUniform(int location, float value) const
 	{
-		glUniform1f(location, value);
+		glProgramUniform1f(mShaderID, location, value);
 	}
 
 	void GLShader::SetUniform(int location, const glm::vec2 &value) const
 	{
-		glUniform2fv(location, 1, &value.x);
+		glProgramUniform2fv(mShaderID, location, 1, &value.x);
 	}
 
 	void GLShader::SetUniform(int location, const glm::ivec2 &value) const
 	{
-		glUniform2iv(location, 1, &value.x);
+		glProgramUniform2iv(mShaderID, location, 1, &value.x);
 	}
 
 	void GLShader::SetUniform(int location, const glm::vec3 &value) const
 	{
-		glUniform3fv(location, 1, &value.x);
+		glProgramUniform3fv(mShaderID, location, 1, &value.x);
 	}
 
 	void GLShader::SetUniform(int location, const glm::vec4 &value) const
 	{
-		glUniform4fv(location, 1, &value.x);
+		glProgramUniform4fv(mShaderID, location, 1, &value.x);
 	}
 
 	void GLShader::SetUniform(int location, const glm::mat4 &value) const
 	{
-		glUniformMatrix4fv(location, 1, GL_FALSE, &value[0].x);
+		glProgramUniformMatrix4fv(mShaderID, location, 1, GL_FALSE, &value[0].x);
 	}
 
 	void GLShader::SetBindlessTexture(int location, uint64_t texture) const

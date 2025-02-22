@@ -452,30 +452,33 @@
       "Transform": {
         "value0": [ 0, 0, 0 ],
         "value1": [ 0, 0, 0 ],
-        "value2": [ 1, 1, 1 ]
+        "value2": [1,1,1 ]
       },
       "Parent": 1,
       "Components": [
-        { "Type": "IDComponent",
+        {
+          "Type": "IDComponent",
           "ID": 15
         },
         {
-          "Type" : "TagComponent",
-          "Tag" : "Astroids"
+          "Type": "TagComponent",
+          "Tag": "Astroids"
+        },
+        {
+          "Type": "PlanetComponent",
+          "Time": "0'0'24'0'0"
         },
         {
           "Type": "AstroidComponent",
-          "Instances": 30000,
+          "Instances": 2000,
           "Seed": 0,
-          "Radius": 274,
-          "Offset": 5,
-          "Meshes": [
-            1550937985
-          ],
+          "Radius":247,
+          "Offset": 20,
           "Color": [ 0.5, 0.5, 0.5 ],
           "Emission": [ 0, 0, 0 ],
           "Flags": 0,
-          "Texture": 2
+          "Texture": 2,
+          "Mesh": 1550937985
         }
       ]
     }

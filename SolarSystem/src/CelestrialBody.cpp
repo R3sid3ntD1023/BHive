@@ -29,8 +29,11 @@ void CelestrialBody::Update(float dt)
 		component->Update(dt);
 	}
 
-	const auto &t = GetTransform().get_translation();
-	const auto offset = glm::vec3{0, 1, 0};
+	const auto transform = GetTransform();
+	const auto &t = transform.get_translation();
+	const auto s = glm::compMax(transform.get_scale());
+
+	const auto offset = glm::vec3{0, 1, 0} * s;
 	BHive::QuadRenderer::DrawText(1.f, mTagComponent->Tag, {}, {t + offset});
 }
 

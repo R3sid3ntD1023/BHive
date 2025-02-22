@@ -10,17 +10,21 @@ namespace BHive
 		: mTexture(texture)
 	{
 		mResourceHandle = glGetTextureHandleARB(texture->GetRendererID());
-		glMakeTextureHandleResidentARB(mResourceHandle);
+
+		if (!glIsTextureHandleResidentARB(mResourceHandle))
+			glMakeTextureHandleResidentARB(mResourceHandle);
 	}
 
 	GLBindlessTexture::~GLBindlessTexture()
 	{
-		glMakeTextureHandleNonResidentARB(mResourceHandle);
+		if (glIsTextureHandleResidentARB(mResourceHandle))
+			glMakeTextureHandleNonResidentARB(mResourceHandle);
 	}
 
 	GLBindlessImage::GLBindlessImage(const Ref<Texture> &texture, uint32_t level, uint32_t access)
 	{
-		mResourceHandle = glGetImageHandleARB(texture->GetRendererID(), level, GL_FALSE, 0, GetGLInternalFormat(texture->GetSpecification().mFormat));
+		mResourceHandle = glGetImageHandleARB(
+			texture->GetRendererID(), level, GL_FALSE, 0, GetGLInternalFormat(texture->GetSpecification().mFormat));
 		if (mResourceHandle)
 			glMakeImageHandleResidentARB(mResourceHandle, access);
 	}

@@ -20,7 +20,7 @@ namespace BHive
 
 		ImmediateAtlasGenerator<S, N, GenFunc, BitmapAtlasStorage<T, N>> generator(w, h);
 		generator.setAttributes(attributes);
-		generator.setThreadCount(8);
+		generator.setThreadCount(2);
 		generator.generate(glyphs.data(), (int)glyphs.size());
 
 		msdfgen::BitmapConstRef<T, N> bitmap = (msdfgen::BitmapConstRef<T, N>)generator.atlasStorage();
