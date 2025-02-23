@@ -1,5 +1,5 @@
-#include "PlanetComponent.h"
 #include "CelestrialBody.h"
+#include "PlanetComponent.h"
 #include <core/Time.h>
 
 uint32_t PlanetTime::ToSeconds()
@@ -46,6 +46,7 @@ void RevolutionComponent::Begin()
 
 void RevolutionComponent::Update(float dt)
 {
+	return;
 
 	float theta_radians = glm::radians(mRevolutionTheta);
 

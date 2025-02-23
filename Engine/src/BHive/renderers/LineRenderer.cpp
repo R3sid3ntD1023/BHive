@@ -1,10 +1,10 @@
-#include "LineRenderer.h"
-#include "gfx/VertexArray.h"
-#include "gfx/Shader.h"
+#include "core/profiler/CPUGPUProfiler.h"
 #include "gfx/RenderCommand.h"
+#include "gfx/Shader.h"
+#include "gfx/VertexArray.h"
+#include "LineRenderer.h"
 #include "Renderer.h"
 #include "shaders/LineShader.h"
-#include "core/profiler/CPUGPUProfiler.h"
 
 namespace BHive
 {
@@ -205,11 +205,11 @@ namespace BHive
 
 	void LineRenderer::DrawAABB(const AABB &aabb, const Color &color, const FTransform &transform)
 	{
-		auto size = aabb.get_size();
+		auto size = aabb.get_extent();
 
-		float x = size.x * 0.5f;
-		float y = size.y * 0.5f;
-		float z = size.z * 0.5f;
+		float x = size.x;
+		float y = size.y;
+		float z = size.z;
 
 		glm::vec3 top[4] = {{x, y, z}, {x, y, -z}, {-x, y, -z}, {-x, y, z}};
 		glm::vec3 bottom[4] = {{x, -y, z}, {x, -y, -z}, {-x, -y, -z}, {-x, -y, z}};

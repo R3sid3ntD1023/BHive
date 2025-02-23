@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
+#include "math/Frustum.h"
 #include "math/Transform.h"
 #include "renderers/Lights.h"
 
@@ -27,6 +28,14 @@ namespace BHive
 		PointLight PointLight;
 	};
 
+	struct FPipelineData
+	{
+		Frustum CameraFrustum;
+		FTransform CameraTransform;
+		std::vector<ObjectData> ObjectData;
+		std::vector<LightData> LightData;
+	};
+
 	class UniverseRenderPipeline
 	{
 	public:
@@ -36,14 +45,13 @@ namespace BHive
 
 		void SubmitObject(const ObjectData &data);
 
-		void Begin();
+		void Begin(const glm::mat4 &projection, const glm::mat4 &view);
 
 		void End();
 
 		static UniverseRenderPipeline &GetPipeline();
 
 	private:
-		std::vector<ObjectData> mObjects;
-		std::vector<LightData> mLights;
+		FPipelineData mPipelineData;
 	};
 } // namespace BHive

@@ -23,9 +23,10 @@
 #include <gui/Gui.h>
 
 #include "components/CameraComponent.h"
-#include "components/TagComponent.h"
 #include "components/IDComponent.h"
+#include "components/TagComponent.h"
 
+#include "renderer/RenderPipeline.h"
 #include <font/Font.h>
 #include <font/FontManager.h>
 
@@ -61,7 +62,7 @@ void SolarSystemLayer::OnAttach()
 	auto &window = BHive::Application::Get().GetWindow();
 	auto window_size = window.GetSize();
 
-	mCamera = BHive::EditorCamera(45.f, window_size.x / (float)window_size.y, .01f, 5000.f);
+	mCamera = BHive::EditorCamera(45.f, window_size.x / (float)window_size.y, .01f, 1000.f);
 
 	BHive::RenderCommand::SetCullEnabled(false);
 
@@ -97,11 +98,19 @@ void SolarSystemLayer::OnUpdate(float dt)
 	auto clear = glm::vec3(0);
 	mMultiSampleFramebuffer->ClearAttachment(3, GL_FLOAT, &clear);
 
-	BHive::Renderer::Begin(mCamera.GetProjection(), mCamera.GetView().inverse());
+	const glm::mat4 t = glm::translate(glm::vec3{35, 0, 10});
+	// render scene
+	{
+		auto &pipeline = BHive::UniverseRenderPipeline::GetPipeline();
+		pipeline.Begin(mCamera.GetProjection(), mCamera.GetView().inverse());
 
-	mUniverse->Update(dt);
+		BHive::Frustum frustum(mCamera.GetProjection(), glm::inverse(t));
+		BHive::LineRenderer::DrawFrustum(frustum, 0xFF00FFFF);
 
-	BHive::Renderer::End();
+		mUniverse->Update(dt);
+
+		pipeline.End();
+	}
 
 	mMultiSampleFramebuffer->UnBind();
 	mMultiSampleFramebuffer->Blit(mFramebuffer);
@@ -139,28 +148,27 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	// ui
 
-	BHive::Renderer::Begin(glm::ortho(0.f, 800.f, 0.f, 600.f), glm::inverse(glm::mat4(1.f)));
+	/*BHive::Renderer::Begin(glm::ortho(0.f, 800.f, 0.f, 600.f), glm::inverse(glm::mat4(1.f)));
 	BHive::QuadRenderer::DrawQuad(glm::ivec2{100, 560}, 0xFF00FF00, BHive::FTransform{sQuadPos}, nullptr);
 	BHive::QuadRenderer::DrawText(36, "Text2D \nNewline Text! \n\ttygp", {.Style = sTextStyle}, {{50, 200, 0}});
 	BHive::QuadRenderer::DrawCircle(sCircleParams, {{400, 300, 0}});
-	BHive::LineRenderer::DrawLine({30, 30, 0}, {200, 200, 0}, 0xff00ffff);
 	BHive::LineRenderer::DrawRect({100.f, 560}, 0xffffffff, {sQuadPos});
-	BHive::Renderer::End();
+	BHive::Renderer::End();*/
 
 	BHive::RenderCommand::EnableDepth();
 
-	// mCullingBuffer->Bind();
+	mCullingBuffer->Bind();
 
-	// BHive::RenderCommand::Clear();
+	BHive::RenderCommand::Clear();
 
-	// const glm::mat4 t = glm::translate(glm::vec3{50, 100, 0}) * glm::toMat4(glm::quat(glm::vec3{-PI * .5f, 0, 0}));
-	// BHive::Renderer::Begin(mCamera.GetProjection(), glm::inverse(t));
+	auto &pipeline = BHive::UniverseRenderPipeline::GetPipeline();
+	pipeline.Begin(mCamera.GetProjection(), glm::inverse(t));
 
-	// mCullingSystem->Update(mUniverse.get(), dt);
+	mUniverse->Update(dt);
 
-	// BHive::Renderer::End();
+	pipeline.End();
 
-	// mCullingBuffer->UnBind();
+	mCullingBuffer->UnBind();
 }
 
 void SolarSystemLayer::OnEvent(BHive::Event &e)
@@ -228,6 +236,9 @@ void SolarSystemLayer::OnGuiRender()
 
 		ImGui::PopID();
 
+		auto culling_image = mCullingBuffer->GetColorAttachment();
+		ImGui::Image((ImTextureID)(uint64_t)*culling_image, {500, 200}, {0, 1}, {1, 0});
+
 		BHive::ProfilerViewer::ViewFPS();
 		BHive::ProfilerViewer::ViewCPUGPU();
 	}
@@ -264,10 +275,10 @@ void SolarSystemLayer::InitFramebuffer()
 
 	specs.Attachments.reset().attach({.mFormat = BHive::EFormat::RGBA8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
 	mLightingbuffer = BHive::Framebuffer::Create(specs);
-	// specs.Attachments.reset()
-	// 	.attach({.mFormat = BHive::EFormat::RGBA8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
-	// 	.attach({.mFormat = BHive::EFormat::DEPTH24_STENCIL8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
-	// mCullingBuffer = BHive::Framebuffer::Create(specs);
+	specs.Attachments.reset()
+		.attach({.mFormat = BHive::EFormat::RGBA8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
+		.attach({.mFormat = BHive::EFormat::DEPTH24_STENCIL8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
+	mCullingBuffer = BHive::Framebuffer::Create(specs);
 
 	// mCullingSystem = CreateRef<CullingSystem>();
 }

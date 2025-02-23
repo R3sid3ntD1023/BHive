@@ -3,8 +3,8 @@
 #include <cameras/EditorCamera.h>
 #include <core/Application.h>
 #include <core/Core.h>
-#include <core/Layer.h>
 #include <core/FPSCounter.h>
+#include <core/Layer.h>
 
 #include "ResourceManager.h"
 
@@ -48,7 +48,7 @@ private:
 	Ref<BHive::Framebuffer> mLightingbuffer;
 	Ref<BHive::PPlane> mScreenQuad;
 
-	// Ref<BHive::Framebuffer> mCullingBuffer;
+	Ref<BHive::Framebuffer> mCullingBuffer;
 	// Ref<struct CullingSystem> mCullingSystem;
 
 	// PostProcessing

@@ -19,6 +19,8 @@ namespace BHive
 		void Draw(const FTransform &objectMatrix);
 		void Draw(const FTransform &objectMatrix, const glm::mat4 *matrices);
 
+		const Ref<IRenderableAsset> &GetRenderable() const { return mRenderable; }
+
 	private:
 		void InitDrawCmdBuffers(const std::vector<FSubMesh> &meshes);
 		void AllocatePerObjectBuffer(const std::vector<FSubMesh> &meshes);

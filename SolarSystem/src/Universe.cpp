@@ -19,13 +19,9 @@ void Universe::Begin()
 
 void Universe::Update(float dt)
 {
-	auto &pipeline = BHive::UniverseRenderPipeline::GetPipeline();
-	pipeline.Begin();
 
 	for (auto &[id, body] : mBodies)
 		body->Update(dt);
-
-	pipeline.End();
 }
 
 void Universe::Save(cereal::JSONOutputArchive &ar) const
