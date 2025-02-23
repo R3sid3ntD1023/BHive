@@ -65,12 +65,12 @@ namespace BHive
 
 			object.ShaderInstance->Bind();
 
-			const auto &mesh = indirect_mesh->GetRenderable();
+			/*const auto &mesh = indirect_mesh->GetRenderable();
 			const auto &bounds = mesh->GetBoundingBox();
 			FSphereVolume volume = GenerateSphereFromAABB(bounds);
 			bool is_in_frustum = volume.InFrustum(mPipelineData.CameraFrustum, object.Transform);
 			if (!is_in_frustum)
-				continue;
+				continue;*/
 
 			if (!object.Instanced)
 			{

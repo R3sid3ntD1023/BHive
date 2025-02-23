@@ -5,8 +5,22 @@
 
 layout(location = 0) in vec3 vPos;
 
-layout(std430 , binding = 0) uniform ObjectBuffer{ mat4 u_projection; mat4 u_view; mat4 u_model;} ;
-layout(std430, binding = 0) buffer InstanceBuffer{ mat4 matrices[];};
+struct PerObjectData
+{
+	mat4 WorldMatrix;
+};
+
+layout(std430, binding = 0) uniform CameraBuffer
+{
+	mat4 uProjection;
+	mat4 uView;
+	mat4 u_model;
+};
+layout(std430, binding = 1) restrict readonly buffer InstanceBuffer{ mat4 matrices[];};
+layout(std430, binding = 2) restrict readonly buffer PerObjectSSBO
+{
+	PerObjectData object[];
+};
 
 layout(location = 0) uniform bool uInstanced = false;
 
@@ -16,21 +30,21 @@ void main()
     if(uInstanced)
         instance = matrices[gl_InstanceID];
 
-    vec4 worldPos = instance * u_model * vec4(vPos, 1);
-    gl_Position = u_projection * u_view * worldPos;
+    vec4 worldPos = instance * object[gl_DrawID].WorldMatrix * vec4(vPos, 1);
+    gl_Position = uProjection * uView * worldPos;
 }
 
 #type fragment
 
 #version 460 core
 
-layout(location =  1) uniform uint uIsCulled;
+layout(location =  1) uniform bool uIsInFrustum;
 layout(location = 0) out vec4 fColor;
 
 
 void main()
 {
-    vec3 color = mix(vec3(0, 1, 0), vec3(1, 0, 0), uIsCulled);
+    vec3 color = mix(vec3(1, 0, 0), vec3(0, 1, 0), uIsInFrustum);
     fColor = vec4(color, 1);
 }
 

@@ -3,6 +3,7 @@
 #include "renderer/RenderPipeline.h"
 #include "indirect_mesh/IndirectMesh.h"
 #include "renderer/ShaderInstance.inl"
+#include "renderer/CullingPipeline.h"
 
 float GetRandomDisplacement(float offset)
 {
@@ -18,6 +19,9 @@ void AstroidComponent::Update(float dt)
 		 .Instanced = true,
 		 .Instances = Instances,
 		 .InstanceTransforms = mMatrices.data()});
+
+	BHive::CullingPipeline::GetPipeline().SubmitObject(
+		{mIndirectMesh, GetOwner()->GetTransform(), Instances, mMatrices.data()});
 }
 
 void AstroidComponent::Save(cereal::JSONOutputArchive &ar) const

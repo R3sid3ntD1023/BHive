@@ -11,33 +11,34 @@ namespace BHive
 	struct IndirectRenderable;
 	class ShaderInstance;
 
-	struct ObjectData
-	{
-		Ref<ShaderInstance> ShaderInstance;
-		Ref<IndirectRenderable> Renderable;
-		FTransform Transform;
-
-		bool Instanced = false;
-		uint32_t Instances = 0;
-		glm::mat4 *InstanceTransforms;
-	};
-
-	struct LightData
-	{
-		FTransform Transform;
-		PointLight PointLight;
-	};
-
-	struct FPipelineData
-	{
-		Frustum CameraFrustum;
-		FTransform CameraTransform;
-		std::vector<ObjectData> ObjectData;
-		std::vector<LightData> LightData;
-	};
-
 	class UniverseRenderPipeline
 	{
+	public:
+		struct ObjectData
+		{
+			Ref<ShaderInstance> ShaderInstance;
+			Ref<IndirectRenderable> Renderable;
+			FTransform Transform;
+
+			bool Instanced = false;
+			uint32_t Instances = 0;
+			glm::mat4 *InstanceTransforms;
+		};
+
+		struct LightData
+		{
+			FTransform Transform;
+			PointLight PointLight;
+		};
+
+		struct FPipelineData
+		{
+			Frustum CameraFrustum;
+			FTransform CameraTransform;
+			std::vector<ObjectData> ObjectData;
+			std::vector<LightData> LightData;
+		};
+
 	public:
 		UniverseRenderPipeline();
 

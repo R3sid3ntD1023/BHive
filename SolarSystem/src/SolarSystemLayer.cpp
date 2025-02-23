@@ -16,8 +16,6 @@
 #include <renderers/postprocessing/Bloom.h>
 #include <renderers/Renderer.h>
 
-#include "ComponentSystems/CullingSystem.h"
-
 #include <audio/AudioImporter.h>
 #include <audio/AudioSource.h>
 #include <gui/Gui.h>
@@ -27,6 +25,7 @@
 #include "components/TagComponent.h"
 
 #include "renderer/RenderPipeline.h"
+#include "renderer/CullingPipeline.h"
 #include <font/Font.h>
 #include <font/FontManager.h>
 
@@ -62,7 +61,7 @@ void SolarSystemLayer::OnAttach()
 	auto &window = BHive::Application::Get().GetWindow();
 	auto window_size = window.GetSize();
 
-	mCamera = BHive::EditorCamera(45.f, window_size.x / (float)window_size.y, .01f, 1000.f);
+	mCamera = BHive::EditorCamera(45.f, window_size.x / (float)window_size.y, .01f, 5000.00f);
 
 	BHive::RenderCommand::SetCullEnabled(false);
 
@@ -81,6 +80,8 @@ void SolarSystemLayer::OnAttach()
 	mUniverse->Begin();
 
 	BHive::RenderCommand::SetLineWidth(3.0f);
+
+	// glEnable(GL_SCISSOR_TEST);
 }
 
 void SolarSystemLayer::OnDetach()
@@ -98,7 +99,7 @@ void SolarSystemLayer::OnUpdate(float dt)
 	auto clear = glm::vec3(0);
 	mMultiSampleFramebuffer->ClearAttachment(3, GL_FLOAT, &clear);
 
-	const glm::mat4 t = glm::translate(glm::vec3{35, 0, 10});
+	const glm::mat4 t = glm::translate(glm::vec3{35, 0, 80});
 	// render scene
 	{
 		auto &pipeline = BHive::UniverseRenderPipeline::GetPipeline();
@@ -130,6 +131,10 @@ void SolarSystemLayer::OnUpdate(float dt)
 	BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
 	mLightingbuffer->UnBind();
 
+	auto &window = BHive::Application::Get().GetWindow();
+	auto &size = window.GetSize();
+
+	// glScissor(0, 0, size.x * .5f, size.y);
 	BHive::RenderCommand::Clear(BHive::Buffer_Color);
 
 	auto postprocess_texture = mBloom->Process(mFramebuffer->GetColorAttachment(3));
@@ -143,6 +148,7 @@ void SolarSystemLayer::OnUpdate(float dt)
 	processed_texture->Bind(1);
 	{
 		GPU_PROFILER_SCOPED("LightingQuad");
+
 		BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
 	}
 
@@ -159,10 +165,13 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	mCullingBuffer->Bind();
 
+	// glScissor(size.x * .5f, 0, size.x * .5f, size.y);
 	BHive::RenderCommand::Clear();
 
-	auto &pipeline = BHive::UniverseRenderPipeline::GetPipeline();
+	auto &pipeline = BHive::CullingPipeline::GetPipeline();
 	pipeline.Begin(mCamera.GetProjection(), glm::inverse(t));
+	pipeline.SetTestFrustum(
+		BHive::Frustum(mCamera.GetView().inverse(), size.x / size.y, glm::radians(45.0f), .01f, 5000.0f));
 
 	mUniverse->Update(dt);
 
@@ -180,36 +189,6 @@ void SolarSystemLayer::OnEvent(BHive::Event &e)
 
 void SolarSystemLayer::OnGuiRender()
 {
-	// if (ImGui::Begin("Bodies"))
-	// {
-	// 	auto &registry = mUniverse->GetRegistry();
-	// 	auto view = registry.view<IDComponent, TagComponent>();
-	// 	for (auto &e : view)
-	// 	{
-	// 		auto [id, tag] = view.get(e);
-
-	// 		bool selected = ImGui::Selectable(tag.Tag.c_str(), mSelectedID == id.mID);
-	// 		if (selected)
-	// 		{
-	// 			mSelectedID = id.mID;
-	// 			mPlayer->SetParent(id.mID);
-	// 		}
-	// 	}
-	// }
-
-	// ImGui::End();
-
-	// if (ImGui::Begin("GBuffer"))
-	// {
-	// 	auto renderer = Cast<RenderSystem>(mUniverse->GetRenderSystem());
-	// 	bool zprepass = renderer->IsPreZPassEnabled();
-	// 	if (ImGui::Checkbox("Z-PrePass", &zprepass))
-	// 	{
-	// 		renderer->SetPreZPass(zprepass);
-	// 	}
-	// }
-
-	// ImGui::End();
 	if (ImGui::Begin("Performance"))
 	{
 		ImGui::PushID("Quad");
@@ -236,22 +215,19 @@ void SolarSystemLayer::OnGuiRender()
 
 		ImGui::PopID();
 
-		auto culling_image = mCullingBuffer->GetColorAttachment();
-		ImGui::Image((ImTextureID)(uint64_t)*culling_image, {500, 200}, {0, 1}, {1, 0});
-
 		BHive::ProfilerViewer::ViewFPS();
 		BHive::ProfilerViewer::ViewCPUGPU();
 	}
 
 	ImGui::End();
 
-	// if (ImGui::Begin("Culling"))
-	// {
-	// 	auto size = ImGui::GetContentRegionAvail();
-	// 	ImGui::Image((ImTextureID)(uint64_t)*mCullingBuffer->GetColorAttachment(), size, {0, 1}, {1, 0});
-	// }
-
-	// ImGui::End();
+	if (ImGui::Begin("CullingTest"))
+	{
+		auto size = ImGui::GetContentRegionAvail();
+		auto culling_image = mCullingBuffer->GetColorAttachment();
+		ImGui::Image((ImTextureID)(uint64_t)*culling_image, size, {0, 1}, {1, 0});
+	}
+	ImGui::End();
 }
 
 void SolarSystemLayer::InitFramebuffer()
@@ -279,8 +255,6 @@ void SolarSystemLayer::InitFramebuffer()
 		.attach({.mFormat = BHive::EFormat::RGBA8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
 		.attach({.mFormat = BHive::EFormat::DEPTH24_STENCIL8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
 	mCullingBuffer = BHive::Framebuffer::Create(specs);
-
-	// mCullingSystem = CreateRef<CullingSystem>();
 }
 
 bool SolarSystemLayer::OnWindowResize(BHive::WindowResizeEvent &e)
