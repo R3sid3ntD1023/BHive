@@ -1,7 +1,7 @@
 #pragma once
 
-#include "math/AABB.hpp"
 #include "gfx/Color.h"
+#include "math/AABB.hpp"
 #include "math/Frustum.h"
 #include "math/Transform.h"
 
@@ -62,7 +62,7 @@ namespace BHive
 
 		static void DrawArrow(float size, const Color &color, const FTransform &transform = {});
 
-		static void DrawFrustum(const Frustum &frustum, const Color &color);
+		static void DrawFrustum(const FrustumViewer &frustum, const Color &color);
 
 	private:
 		static void StartBatch();

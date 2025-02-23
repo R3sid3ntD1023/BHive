@@ -43,7 +43,7 @@ namespace BHive
 
 		glm::vec3 get_center() const { return (Max + Min) * 0.5f; }
 
-		glm::vec3 get_extent() const { return (Max - Min) * 0.5f; }
+		glm::vec3 get_extent() const { return abs(Max - Min) * 0.5f; }
 
 		float get_radius() const { return glm::length(get_extent()); }
 

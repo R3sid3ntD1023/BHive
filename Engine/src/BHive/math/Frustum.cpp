@@ -4,79 +4,56 @@ namespace BHive
 {
 	Frustum::Frustum(const glm::mat4 &projection, const glm::mat4 &view)
 	{
-		update(projection, view);
+		const auto forward = -glm::normalize(glm::vec3(view[2]));
+		const auto right = glm::normalize(glm::vec3(view[0]));
+		const auto up = glm::normalize(glm::vec3(view[1]));
+
+		auto fov = 2.0f * atan(1.0f / projection[1][1]);
+		const auto near = projection[3][2] / (projection[2][2] - 1.0f);
+		const auto far = projection[3][2] / (projection[2][2] + 1.0f);
+		const auto aspect = projection[1][1] / projection[0][0];
+
+		const auto half_v = far * tanf(fov * .5f);
+		const auto half_h = half_v * aspect;
+		const glm::vec3 frontMultFar = far * forward;
+		const glm::vec3 pos = view[3].xyz;
+
+		mPlanes[0] = CreatePlane(pos + near * forward, forward);					  // near
+		mPlanes[1] = CreatePlane(pos + frontMultFar, -forward);						  // far
+		mPlanes[2] = CreatePlane(pos, glm::cross(frontMultFar - right * half_h, up)); // right
+		mPlanes[3] = CreatePlane(pos, glm::cross(up, frontMultFar + right * half_h)); // left
+		mPlanes[4] = CreatePlane(pos, glm::cross(right, frontMultFar - up * half_v)); // top
+		mPlanes[5] = CreatePlane(pos, glm::cross(frontMultFar + up * half_v, right)); // bottom
 	}
 
 	Frustum::Frustum(const glm::mat4 &view, float aspect, float fov, float near, float far)
 	{
 		const auto view_inv = glm::inverse(view);
-		const auto projection = glm::perspective(fov, aspect, near, far);
 
-		const auto front = -glm::normalize(glm::vec3(view_inv[2]));
-		const auto right = glm::normalize(glm::vec3(view_inv[0]));
-		const auto up = glm::normalize(glm::vec3(view_inv[1]));
+		const auto forward = -glm::normalize(glm::vec3(view[2]));
+		const auto right = glm::normalize(glm::cross(forward, {0, 1, 0}));
+		const auto up = glm::normalize(glm::cross(right, forward));
 
-		const auto halfVSide = far * tanf(fov * .5f);
-		const auto halfHSide = halfVSide * aspect;
-		const glm::vec3 frontMultFar = far * front;
-		const glm::vec3 pos = view_inv[3].xyz;
+		const auto half_v = far * tanf(fov * .5f);
+		const auto half_h = half_v * aspect;
+		const glm::vec3 frontMultFar = far * forward;
+		const glm::vec3 pos = view[3].xyz;
 
-		constexpr glm::vec4 cube[8] = {
-			{-1, -1, -1, 1}, {1, -1, -1, 1}, {1, 1, -1, 1}, {-1, 1, -1, 1},
-
-			{-1, -1, 1, 1},	 {1, -1, 1, 1},	 {1, 1, 1, 1},	{-1, 1, 1, 1},
-		};
-
-		const auto inv = glm::inverse(projection * view);
-
-		_points[0] = inv * cube[0];
-		_points[1] = inv * cube[1];
-		_points[2] = inv * cube[2];
-		_points[3] = inv * cube[3];
-		_points[4] = inv * cube[4];
-		_points[5] = inv * cube[5];
-		_points[6] = inv * cube[6];
-		_points[7] = inv * cube[7];
-
-		_points[0] /= _points[0].w;
-		_points[1] /= _points[1].w;
-		_points[2] /= _points[2].w;
-		_points[3] /= _points[3].w;
-		_points[4] /= _points[4].w;
-		_points[5] /= _points[5].w;
-		_points[6] /= _points[6].w;
-		_points[7] /= _points[7].w;
-
-		glm::vec3 center = {0, 0, 0};
-		for (const auto &v : _points)
-			center += glm::vec3(v);
-
-		_position = center / 8.0f;
-
-		_planes[0] = {pos + near * front, front};							  // near
-		_planes[1] = {pos + frontMultFar, -front};							  // far
-		_planes[2] = {pos, glm::cross(frontMultFar - right * halfHSide, up)}; // right
-		_planes[3] = {pos, glm::cross(up, frontMultFar + right * halfHSide)}; // left
-		_planes[4] = {pos, glm::cross(right, frontMultFar - up * halfVSide)}; // top
-		_planes[5] = {pos, glm::cross(frontMultFar + up * halfVSide, right)}; // bottom
+		mPlanes[0] = CreatePlane(pos + near * forward, forward);					  // near
+		mPlanes[1] = CreatePlane(pos + frontMultFar, -forward);						  // far
+		mPlanes[2] = CreatePlane(pos, glm::cross(frontMultFar - right * half_h, up)); // right
+		mPlanes[3] = CreatePlane(pos, glm::cross(up, frontMultFar + right * half_h)); // left
+		mPlanes[4] = CreatePlane(pos, glm::cross(right, frontMultFar - up * half_v)); // top
+		mPlanes[5] = CreatePlane(pos, glm::cross(frontMultFar + up * half_v, right)); // bottom
 	}
 
-	void Frustum::update(const glm::mat4 &projection, const glm::mat4 &view)
+	FrustumViewer::FrustumViewer(const glm::mat4 &projection, const glm::mat4 &view)
 	{
-		const glm::mat4 view_inv = glm::inverse(view);
-		const auto front = glm::normalize(glm::vec3(view_inv[2]));
-		const auto right = glm::normalize(glm::vec3(view_inv[0]));
-		const auto up = glm::normalize(glm::vec3(view_inv[1]));
+		CalculatePoints(projection, view);
+	}
 
-		auto fov = 2.0f * atan(1.0f / projection[1][1]);
-		const auto near = projection[3][2] / (projection[2][2] - 1.0f);
-		const auto far = projection[3][2] / (projection[2][2] + 1.0f);
-		const auto halfVSide = far * tanf(fov * .5f);
-		const auto aspect = projection[1][1] / projection[0][0];
-		const auto halfHSide = halfVSide * aspect;
-		const glm::vec3 frontMultFar = far * front;
-		const glm::vec3 pos = view_inv[3].xyz;
-
+	void FrustumViewer::CalculatePoints(const glm::mat4 &projection, const glm::mat4 &view)
+	{
 		constexpr glm::vec4 cube[8] = {
 			{-1, -1, -1, 1}, {1, -1, -1, 1}, {1, 1, -1, 1}, {-1, 1, -1, 1},
 
@@ -85,43 +62,26 @@ namespace BHive
 
 		const auto inv = glm::inverse(projection * view);
 
-		_points[0] = inv * cube[0];
-		_points[1] = inv * cube[1];
-		_points[2] = inv * cube[2];
-		_points[3] = inv * cube[3];
-		_points[4] = inv * cube[4];
-		_points[5] = inv * cube[5];
-		_points[6] = inv * cube[6];
-		_points[7] = inv * cube[7];
+		mPoints[0] = inv * cube[0];
+		mPoints[1] = inv * cube[1];
+		mPoints[2] = inv * cube[2];
+		mPoints[3] = inv * cube[3];
+		mPoints[4] = inv * cube[4];
+		mPoints[5] = inv * cube[5];
+		mPoints[6] = inv * cube[6];
+		mPoints[7] = inv * cube[7];
 
-		_points[0] /= _points[0].w;
-		_points[1] /= _points[1].w;
-		_points[2] /= _points[2].w;
-		_points[3] /= _points[3].w;
-		_points[4] /= _points[4].w;
-		_points[5] /= _points[5].w;
-		_points[6] /= _points[6].w;
-		_points[7] /= _points[7].w;
+		mPoints[0] /= mPoints[0].w;
+		mPoints[1] /= mPoints[1].w;
+		mPoints[2] /= mPoints[2].w;
+		mPoints[3] /= mPoints[3].w;
+		mPoints[4] /= mPoints[4].w;
+		mPoints[5] /= mPoints[5].w;
+		mPoints[6] /= mPoints[6].w;
+		mPoints[7] /= mPoints[7].w;
 
-		glm::vec3 center = {0, 0, 0};
-		for (const auto &v : _points)
-			center += glm::vec3(v);
-
-		_position = center / 8.0f;
-
-		/*_planes[0] = {_points[0], _points[1], _points[2], _points[3]};
-		_planes[1] = {_points[4], _points[5], _points[6], _points[7]};
-		_planes[2] = {_points[1], _points[5], _points[6], _points[3]};
-		_planes[3] = {_points[0], _points[4], _points[7], _points[2]};
-		_planes[4] = {_points[2], _points[3], _points[6], _points[7]};
-		_planes[5] = {_points[0], _points[1], _points[5], _points[4]};*/
-
-		_planes[0] = {pos + near * front, front};							  // near
-		_planes[1] = {pos + frontMultFar, -front};							  // far
-		_planes[2] = {pos, glm::cross(frontMultFar - right * halfHSide, up)}; // right
-		_planes[3] = {pos, glm::cross(up, frontMultFar + right * halfHSide)}; // left
-		_planes[4] = {pos, glm::cross(right, frontMultFar - up * halfVSide)}; // top
-		_planes[5] = {pos, glm::cross(frontMultFar + up * halfVSide, right)}; // bottom
+		mPosition =
+			(mPoints[0] + mPoints[1] + mPoints[2] + mPoints[3] + mPoints[4] + mPoints[5] + mPoints[6] + mPoints[7]) / 8.f;
 	}
 
 } // namespace BHive

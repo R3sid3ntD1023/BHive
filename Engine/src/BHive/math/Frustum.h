@@ -5,10 +5,6 @@
 
 namespace BHive
 {
-	struct CameraData
-	{
-		glm::vec3 pos{}, front{}, right{}, up{};
-	};
 
 	struct Frustum
 	{
@@ -16,17 +12,24 @@ namespace BHive
 		Frustum(const glm::mat4 &projection, const glm::mat4 &view);
 		Frustum(const glm::mat4 &view, float aspect, float fov, float near, float far);
 
-		const std::array<FPlane, 6> &_get_planes() const { return _planes; }
-		const std::array<glm::vec4, 8> &get_points() const { return _points; }
-		const glm::vec3 &get_position() const { return _position; }
+		const std::array<FPlane, 6> &GetPlanes() const { return mPlanes; }
 
 	private:
-		void update(const glm::mat4 &projection, const glm::mat4 &view);
+		std::array<FPlane, 6> mPlanes = {};
+	};
+
+	struct FrustumViewer
+	{
+		FrustumViewer(const glm::mat4 &projection, const glm::mat4 &view);
+
+		const std::array<glm::vec4, 8> &GetPoints() const { return mPoints; }
+		const glm::vec3 &GetPosition() const { return mPosition; }
 
 	private:
-		std::array<FPlane, 6> _planes = {};
-		std::array<glm::vec4, 8> _points = {};
-		glm::vec3 _position = {0, 0, 0};
+		void CalculatePoints(const glm::mat4 &projection, const glm::mat4 &view);
+
+		std::array<glm::vec4, 8> mPoints = {};
+		glm::vec3 mPosition{};
 	};
 
 } // namespace BHive

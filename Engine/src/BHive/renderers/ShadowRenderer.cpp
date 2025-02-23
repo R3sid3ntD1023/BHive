@@ -1,11 +1,11 @@
-#include "ShadowRenderer.h"
+#include "gfx/Camera.h"
 #include "gfx/Framebuffer.h"
-#include "gfx/UniformBuffer.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
-#include "gfx/Camera.h"
+#include "gfx/UniformBuffer.h"
 #include "Lights.h"
 #include "math/Frustum.h"
+#include "ShadowRenderer.h"
 
 namespace BHive
 {
@@ -15,14 +15,9 @@ namespace BHive
 		glm::vec3 up;
 	};
 
-	static LightDirections point_directions[] =
-	{
-		{{1, 0, 0}, {0, -1, 0}},
-		{{-1, 0, 0}, {0, -1, 0}},
-		{{0, 1, 0}, {0, 0, 1}},
-		{{0, -1, 0}, {0, 0, -1}},
-		{{0, 0, 1}, {0, -1, 0}},
-		{{0, 0, -1}, {0, -1, 0}},
+	static LightDirections point_directions[] = {
+		{{1, 0, 0}, {0, -1, 0}},  {{-1, 0, 0}, {0, -1, 0}}, {{0, 1, 0}, {0, 0, 1}},
+		{{0, -1, 0}, {0, 0, -1}}, {{0, 0, 1}, {0, -1, 0}},	{{0, 0, -1}, {0, -1, 0}},
 	};
 
 	struct ShadowBuffersData
@@ -107,8 +102,10 @@ namespace BHive
 		mShadowRenderData.mPointShadowPassFBO = Framebuffer::Create(shadow_fbo_specs);
 
 		mShadowRenderData.mShadowBuffer = UniformBuffer::Create(2, sizeof(uint32_t) * 4 + sizeof(glm::mat4) * max_lights);
-		mShadowRenderData.mSpotShadowBuffer = UniformBuffer::Create(3, sizeof(uint32_t) * 4 + sizeof(glm::mat4) * max_lights);
-		mShadowRenderData.mPointShadowBuffer = UniformBuffer::Create(4, sizeof(uint32_t) * 4 + sizeof(glm::mat4) * max_lights * 6);
+		mShadowRenderData.mSpotShadowBuffer =
+			UniformBuffer::Create(3, sizeof(uint32_t) * 4 + sizeof(glm::mat4) * max_lights);
+		mShadowRenderData.mPointShadowBuffer =
+			UniformBuffer::Create(4, sizeof(uint32_t) * 4 + sizeof(glm::mat4) * max_lights * 6);
 
 		mShadowRenderData.mLightViewProjections.resize(max_lights);
 		mShadowRenderData.mSpotLightViewProjections.resize(max_lights);
@@ -174,15 +171,14 @@ namespace BHive
 		mShadowRenderData.mPointShadowPassFBO->UnBind();
 	}
 
-	void ShadowRenderer::SubmitDirectionalLight(const glm::vec3& direction, const glm::mat4& camera_proj,
-		const glm::mat4& camera_view)
+	void ShadowRenderer::SubmitDirectionalLight(
+		const glm::vec3 &direction, const glm::mat4 &camera_proj, const glm::mat4 &camera_view)
 	{
-		
-		auto frustum = Frustum(camera_proj, camera_view);
-		auto center = frustum.get_position();
 
+		auto frustum = FrustumViewer(camera_proj, camera_view);
+		auto center = frustum.GetPosition();
 
-		const auto light_view = glm::lookAt({}, direction, { 0, 1, 0 });
+		const auto light_view = glm::lookAt({}, direction, {0, 1, 0});
 
 		float min_x = std::numeric_limits<float>::max();
 		float max_x = std::numeric_limits<float>::lowest();
@@ -191,7 +187,7 @@ namespace BHive
 		float min_z = std::numeric_limits<float>::max();
 		float max_z = std::numeric_limits<float>::lowest();
 
-		for (const auto& v : frustum.get_points())
+		for (const auto &v : frustum.GetPoints())
 		{
 			const auto trf = light_view * v;
 			min_x = std::min(min_x, trf.x);
@@ -229,9 +225,9 @@ namespace BHive
 		mShadowRenderData.mShadowBuffer->SetData(mShadowRenderData.mLightViewProjections, sizeof(uint32_t) * 4);
 	}
 
-	void ShadowRenderer::SubmitSpotLight(const glm::vec3& direction, const glm::vec3& position, float radius)
+	void ShadowRenderer::SubmitSpotLight(const glm::vec3 &direction, const glm::vec3 &position, float radius)
 	{
-		auto view = glm::lookAt(position, position + direction, { 0, 1, 0 });
+		auto view = glm::lookAt(position, position + direction, {0, 1, 0});
 		auto projection = glm::perspective<float>(glm::radians(120.f), 1.f, .1f, radius);
 
 		auto k = mShadowRenderData.mNumSpotLights % MAX_LIGHTS;
@@ -242,7 +238,7 @@ namespace BHive
 		mShadowRenderData.mSpotShadowBuffer->SetData(mShadowRenderData.mSpotLightViewProjections, sizeof(uint32_t) * 4);
 	}
 
-	void ShadowRenderer::SubmitPointLight(const glm::vec3& position, float radius)
+	void ShadowRenderer::SubmitPointLight(const glm::vec3 &position, float radius)
 	{
 		auto proj = glm::perspective(glm::radians(90.0f), 1.f, .1f, radius * 10.f);
 
@@ -273,4 +269,4 @@ namespace BHive
 	{
 		return mShadowRenderData.mPointShadowPassFBO;
 	}
-}
+} // namespace BHive

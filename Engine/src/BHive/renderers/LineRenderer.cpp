@@ -253,9 +253,9 @@ namespace BHive
 		}
 	}
 
-	void LineRenderer::DrawFrustum(const Frustum &frustum, const Color &color)
+	void LineRenderer::DrawFrustum(const FrustumViewer &frustum, const Color &color)
 	{
-		auto &points = frustum.get_points();
+		auto &points = frustum.GetPoints();
 		LineRenderer::DrawRect(points[0], points[1], points[2], points[3], color);
 		LineRenderer::DrawRect(points[4], points[5], points[6], points[7], color);
 
@@ -263,12 +263,6 @@ namespace BHive
 		LineRenderer::DrawLine(points[1], points[5], color);
 		LineRenderer::DrawLine(points[2], points[6], color);
 		LineRenderer::DrawLine(points[3], points[7], color);
-
-		auto &planes = frustum._get_planes();
-		for (size_t i = 0; i < 6; i++)
-		{
-			LineRenderer::DrawLine(planes[i].Origin, planes[i].Normal, color);
-		}
 	}
 
 	void LineRenderer::DrawCylinder(
