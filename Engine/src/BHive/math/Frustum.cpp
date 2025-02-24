@@ -4,9 +4,10 @@ namespace BHive
 {
 	Frustum::Frustum(const glm::mat4 &projection, const glm::mat4 &view)
 	{
-		const auto forward = -glm::normalize(glm::vec3(view[2]));
-		const auto right = glm::normalize(glm::vec3(view[0]));
-		const auto up = glm::normalize(glm::vec3(view[1]));
+		const auto view_inv = glm::inverse(view);
+		const auto forward = -glm::normalize(glm::vec3(view_inv[2]));
+		const auto right = glm::normalize(glm::vec3(view_inv[0]));
+		const auto up = glm::normalize(glm::vec3(view_inv[1]));
 
 		auto fov = 2.0f * atan(1.0f / projection[1][1]);
 		const auto near = projection[3][2] / (projection[2][2] - 1.0f);
@@ -16,7 +17,7 @@ namespace BHive
 		const auto half_v = far * tanf(fov * .5f);
 		const auto half_h = half_v * aspect;
 		const glm::vec3 frontMultFar = far * forward;
-		const glm::vec3 pos = view[3].xyz;
+		const glm::vec3 pos = view_inv[3].xyz;
 
 		mPlanes[0] = CreatePlane(pos + near * forward, forward);					  // near
 		mPlanes[1] = CreatePlane(pos + frontMultFar, -forward);						  // far

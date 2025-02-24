@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Component.h"
+#include "renderers/Lights.h"
 #include <gfx/Color.h>
 
 struct StarComponent : public Component
@@ -18,4 +19,7 @@ struct StarComponent : public Component
 	virtual void Load(cereal::JSONInputArchive &ar) override;
 
 	REFLECTABLEV(Component)
+
+private:
+	BHive::PointLight mLight;
 };

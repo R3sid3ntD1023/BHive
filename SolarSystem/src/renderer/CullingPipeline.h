@@ -1,48 +1,27 @@
 #pragma once
 
 #include "core/Core.h"
-#include "math/Transform.h"
-#include "math/Frustum.h"
+#include "RenderPipeline.h"
 
 namespace BHive
 {
-	struct IndirectRenderable;
 	class Shader;
+	class UniformBuffer;
 
-	class CullingPipeline
+	class CullingPipeline : public RenderPipeline
 	{
-	public:
-		struct ObjectData
-		{
-			Ref<IndirectRenderable> Renderable;
-			FTransform Transform;
-
-			uint32_t Instances = 0;
-			glm::mat4 *InstanceTransforms = nullptr;
-		};
 
 	public:
 		CullingPipeline();
 
-		void SubmitObject(const ObjectData &object);
-
-		void Begin(const glm::mat4 &proj, const glm::mat4 &view);
 		void SetTestFrustum(const Frustum &frustum);
 
-		void End();
-
-		static CullingPipeline &GetPipeline();
-
-	private:
-		struct PipelineData
-		{
-			FTransform CameraTransform;
-			std::vector<ObjectData> Objects;
-			Frustum TestFrustum;
-		};
+	protected:
+		void OnPipelineEnd() override;
 
 	private:
-		PipelineData mData;
 		Ref<Shader> mCullingShader;
+		Frustum mTestFrustum;
+		Ref<UniformBuffer> mCullingBuffer;
 	};
 } // namespace BHive

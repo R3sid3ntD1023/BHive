@@ -1,40 +1,49 @@
-#include "indirect_mesh/IndirectMesh.h"
-#include "mesh/IRenderableAsset.h"
-#include "renderers/Renderer.h"
 #include "RenderPipeline.h"
-#include "ShaderInstance.h"
-#include "volumes/SphereVolume.h"
 
 namespace BHive
 {
-
-	UniverseRenderPipeline::UniverseRenderPipeline()
+	RenderPipeline::RenderPipeline()
 	{
-		mPipelineData.LightData.reserve(50);
-		mPipelineData.ObjectData.reserve(50);
+		mPipelineData.Objects.reserve(512);
+		mPipelineData.Lights[ELightType::Point].reserve(512);
+		mPipelineData.Lights[ELightType::Directional].reserve(512);
+		mPipelineData.Lights[ELightType::SpotLight].reserve(512);
 	}
 
-	void UniverseRenderPipeline::SubmitLight(const LightData &light)
+	void RenderPipeline::SubmitMesh(
+		const Ref<IndirectRenderable> &mesh, const FTransform &transform, const Ref<ShaderInstance> &shaderInstance,
+		uint32_t instances, const glm::mat4 *transforms)
 	{
-		mPipelineData.LightData.emplace_back(light);
+		mPipelineData.Objects.emplace_back(ObjectData{transform, shaderInstance, mesh, instances, transforms});
 	}
 
-	void UniverseRenderPipeline::SubmitObject(const ObjectData &data)
+	void RenderPipeline::SubmitLight(const Light &light, const FTransform &transform)
 	{
-		mPipelineData.ObjectData.emplace_back(data);
+		mPipelineData.Lights.at(light.GetLightType()).emplace_back(LightData{transform, light});
 	}
 
-	void UniverseRenderPipeline::Begin(const glm::mat4 &projection, const glm::mat4 &view)
+	void RenderPipeline::Begin(const glm::mat4 &projection, const glm::mat4 &view)
 	{
-		mPipelineData.LightData.clear();
-		mPipelineData.ObjectData.clear();
-		mPipelineData.CameraTransform = view;
-		mPipelineData.CameraFrustum = Frustum(projection, view);
+		mPipelineData.Objects.clear();
+		mPipelineData.Lights[ELightType::Point].clear();
+		mPipelineData.Lights[ELightType::Directional].clear();
+		mPipelineData.Lights[ELightType::SpotLight].clear();
 
 		Renderer::Begin(projection, view);
+		mPipelineData.CameraTransform = view;
+		mPipelineData.CameraFrustum = Frustum(projection, view);
 	}
 
-	void UniverseRenderPipeline::End()
+	void RenderPipeline::End()
+	{
+		SortObjects();
+
+		OnPipelineEnd();
+
+		Renderer::End();
+	}
+
+	void RenderPipeline::SortObjects()
 	{
 		static auto sorter = [this](const ObjectData &a, const ObjectData &b)
 		{
@@ -48,46 +57,7 @@ namespace BHive
 			return distA < distB;
 		};
 
-		for (auto &light : mPipelineData.LightData)
-		{
-			Renderer::SubmitPointLight(light.Transform.get_translation(), light.PointLight);
-		}
-
-		auto &objects = mPipelineData.ObjectData;
-		// sort objects based on distance from camera
+		auto &objects = mPipelineData.Objects;
 		std::sort(objects.begin(), objects.end(), sorter);
-
-		for (auto &object : objects)
-		{
-			auto indirect_mesh = object.Renderable;
-			if (!indirect_mesh || !object.ShaderInstance)
-				continue;
-
-			object.ShaderInstance->Bind();
-
-			/*const auto &mesh = indirect_mesh->GetRenderable();
-			const auto &bounds = mesh->GetBoundingBox();
-			FSphereVolume volume = GenerateSphereFromAABB(bounds);
-			bool is_in_frustum = volume.InFrustum(mPipelineData.CameraFrustum, object.Transform);
-			if (!is_in_frustum)
-				continue;*/
-
-			if (!object.Instanced)
-			{
-				indirect_mesh->Draw(object.Transform);
-			}
-			else
-			{
-				indirect_mesh->Draw(object.Transform, object.InstanceTransforms);
-			}
-		}
-
-		Renderer::End();
-	}
-
-	UniverseRenderPipeline &UniverseRenderPipeline::GetPipeline()
-	{
-		static UniverseRenderPipeline pipeline;
-		return pipeline;
 	}
 } // namespace BHive

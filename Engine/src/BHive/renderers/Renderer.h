@@ -8,12 +8,6 @@
 
 namespace BHive
 {
-	enum class ELightType : uint32_t
-	{
-		Directional = 0,
-		Point = 1,
-		SpotLight = 2
-	};
 
 	class Texture;
 	class Material;

@@ -2,8 +2,8 @@
 #include "gfx/Shader.h"
 #include "indirect_mesh/IndirectMesh.h"
 #include "mesh/IRenderableAsset.h"
-#include "volumes/SphereVolume.h"
 #include "renderers/Renderer.h"
+#include "volumes/SphereVolume.h"
 
 namespace BHive
 {
@@ -12,54 +12,34 @@ namespace BHive
 		mCullingShader = ShaderLibrary::Load(RESOURCE_PATH "Shaders/CullingShader.glsl");
 	}
 
-	void CullingPipeline::SubmitObject(const ObjectData &object)
-	{
-		mData.Objects.emplace_back(object);
-	}
-
-	void CullingPipeline::Begin(const glm::mat4 &proj, const glm::mat4 &view)
-	{
-		mData.Objects.clear();
-		mData.CameraTransform = view;
-
-		Renderer::Begin(proj, view);
-	}
-
 	void CullingPipeline::SetTestFrustum(const Frustum &frustum)
 	{
-		mData.TestFrustum = frustum;
+		mTestFrustum = frustum;
 	}
 
-	void CullingPipeline::End()
+	void CullingPipeline::OnPipelineEnd()
 	{
-		static auto sorter = [this](const ObjectData &a, const ObjectData &b)
-		{
-			const auto &A = a.Transform.get_translation();
-			const auto &B = b.Transform.get_translation();
-			const auto &C = mData.CameraTransform.get_translation();
+		RenderPipeline::OnPipelineEnd();
 
-			const auto distA = glm::distance(A, C);
-			const auto distB = glm::distance(B, C);
-
-			return distA < distB;
-		};
-
-		auto &objects = mData.Objects;
-		// sort objects based on distance from camera
-		std::sort(objects.begin(), objects.end(), sorter);
+		auto &objects = mPipelineData.Objects;
 
 		mCullingShader->Bind();
+
+		size_t i = 0;
 		for (auto &object : objects)
 		{
-			auto indirect_mesh = object.Renderable;
+			auto indirect_mesh = object.Mesh;
 			if (!indirect_mesh)
 				continue;
 
 			const auto &mesh = indirect_mesh->GetRenderable();
 			const auto &bounds = mesh->GetBoundingBox();
 			FSphereVolume volume = GenerateSphereFromAABB(bounds);
-			bool is_in_frustum = volume.InFrustum(mData.TestFrustum, object.Transform);
+			bool is_in_frustum = volume.InFrustum(mTestFrustum, object.Transform);
 
+			srand(i++);
+			glm::vec3 color = {(float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX};
+			mCullingShader->SetUniform("uColor", color);
 			mCullingShader->SetUniform("uIsInFrustum", is_in_frustum);
 			mCullingShader->SetUniform("uInstanced", object.Instances > 0);
 
@@ -71,15 +51,12 @@ namespace BHive
 			{
 				indirect_mesh->Draw(object.Transform, object.InstanceTransforms);
 			}
+
+			LineRenderer::DrawSphere(volume.Radius, 16, {}, 0xFF00FFFF, object.Transform);
 		}
+
 		mCullingShader->UnBind();
 
 		Renderer::End();
-	}
-
-	CullingPipeline &CullingPipeline::GetPipeline()
-	{
-		static CullingPipeline pipeline;
-		return pipeline;
 	}
 } // namespace BHive

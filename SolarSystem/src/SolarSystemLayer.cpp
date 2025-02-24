@@ -24,8 +24,6 @@
 #include "components/IDComponent.h"
 #include "components/TagComponent.h"
 
-#include "renderer/RenderPipeline.h"
-#include "renderer/CullingPipeline.h"
 #include <font/Font.h>
 #include <font/FontManager.h>
 
@@ -61,7 +59,7 @@ void SolarSystemLayer::OnAttach()
 	auto &window = BHive::Application::Get().GetWindow();
 	auto window_size = window.GetSize();
 
-	mCamera = BHive::EditorCamera(45.f, window_size.x / (float)window_size.y, .01f, 5000.00f);
+	mCamera = BHive::EditorCamera(45.f, window_size.x / (float)window_size.y, .01f, 1000.00f);
 
 	BHive::RenderCommand::SetCullEnabled(false);
 
@@ -79,7 +77,7 @@ void SolarSystemLayer::OnAttach()
 	// mAudio->Play();
 	mUniverse->Begin();
 
-	BHive::RenderCommand::SetLineWidth(3.0f);
+	BHive::RenderCommand::SetLineWidth(1.0f);
 
 	// glEnable(GL_SCISSOR_TEST);
 }
@@ -99,18 +97,15 @@ void SolarSystemLayer::OnUpdate(float dt)
 	auto clear = glm::vec3(0);
 	mMultiSampleFramebuffer->ClearAttachment(3, GL_FLOAT, &clear);
 
-	const glm::mat4 t = glm::translate(glm::vec3{35, 0, 80});
 	// render scene
 	{
-		auto &pipeline = BHive::UniverseRenderPipeline::GetPipeline();
-		pipeline.Begin(mCamera.GetProjection(), mCamera.GetView().inverse());
+		BHive::GetRenderPipelineManager().SetCurrentPipeline(&mPipeline);
 
-		BHive::Frustum frustum(mCamera.GetProjection(), glm::inverse(t));
-		BHive::LineRenderer::DrawFrustum(frustum, 0xFF00FFFF);
+		mPipeline.Begin(mCamera.GetProjection(), mCamera.GetView().inverse());
 
 		mUniverse->Update(dt);
 
-		pipeline.End();
+		mPipeline.End();
 	}
 
 	mMultiSampleFramebuffer->UnBind();
@@ -163,21 +158,24 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	BHive::RenderCommand::EnableDepth();
 
-	mCullingBuffer->Bind();
+	// mCullingBuffer->Bind();
 
-	// glScissor(size.x * .5f, 0, size.x * .5f, size.y);
-	BHive::RenderCommand::Clear();
+	// BHive::RenderCommand::Clear();
 
-	auto &pipeline = BHive::CullingPipeline::GetPipeline();
-	pipeline.Begin(mCamera.GetProjection(), glm::inverse(t));
-	pipeline.SetTestFrustum(
-		BHive::Frustum(mCamera.GetView().inverse(), size.x / size.y, glm::radians(45.0f), .01f, 5000.0f));
+	// const glm::mat4 t = glm::translate(glm::vec3{35, 0, 200});
 
-	mUniverse->Update(dt);
+	// BHive::GetRenderPipelineManager().SetCurrentPipeline(&mCullingPipeline);
+	// mCullingPipeline.Begin(mCamera.GetProjection(), glm::inverse(t));
+	// mCullingPipeline.SetTestFrustum(BHive::Frustum(mCamera.GetProjection(), mCamera.GetView().inverse()));
 
-	pipeline.End();
+	// BHive::FrustumViewer frustum(mCamera.GetProjection(), mCamera.GetView().inverse());
+	// BHive::LineRenderer::DrawFrustum(frustum, 0xFF00FFFF);
 
-	mCullingBuffer->UnBind();
+	// mUniverse->Update(dt);
+
+	// mCullingPipeline.End();
+
+	// mCullingBuffer->UnBind();
 }
 
 void SolarSystemLayer::OnEvent(BHive::Event &e)
@@ -191,6 +189,9 @@ void SolarSystemLayer::OnGuiRender()
 {
 	if (ImGui::Begin("Performance"))
 	{
+
+		ImGui::TextColored({1, .5, 0, 1}, "%u", BHive::Renderer::GetStats().DrawCalls);
+
 		ImGui::PushID("Quad");
 		ImGui::DragFloat3("Pos", &sQuadPos.x, 0.001f);
 		ImGui::PopID();
@@ -221,13 +222,13 @@ void SolarSystemLayer::OnGuiRender()
 
 	ImGui::End();
 
-	if (ImGui::Begin("CullingTest"))
-	{
-		auto size = ImGui::GetContentRegionAvail();
-		auto culling_image = mCullingBuffer->GetColorAttachment();
-		ImGui::Image((ImTextureID)(uint64_t)*culling_image, size, {0, 1}, {1, 0});
-	}
-	ImGui::End();
+	// if (ImGui::Begin("CullingTest"))
+	//{
+	//	auto size = ImGui::GetContentRegionAvail();
+	//	auto culling_image = mCullingBuffer->GetColorAttachment();
+	//	ImGui::Image((ImTextureID)(uint64_t)*culling_image, size, {0, 1}, {1, 0});
+	// }
+	// ImGui::End();
 }
 
 void SolarSystemLayer::InitFramebuffer()
@@ -254,7 +255,7 @@ void SolarSystemLayer::InitFramebuffer()
 	specs.Attachments.reset()
 		.attach({.mFormat = BHive::EFormat::RGBA8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
 		.attach({.mFormat = BHive::EFormat::DEPTH24_STENCIL8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
-	mCullingBuffer = BHive::Framebuffer::Create(specs);
+	// mCullingBuffer = BHive::Framebuffer::Create(specs);
 }
 
 bool SolarSystemLayer::OnWindowResize(BHive::WindowResizeEvent &e)

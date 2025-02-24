@@ -1,9 +1,8 @@
 #include "AstroidComponent.h"
 #include "CelestrialBody.h"
-#include "renderer/RenderPipeline.h"
 #include "indirect_mesh/IndirectMesh.h"
+#include "renderer/RenderPipeline.h"
 #include "renderer/ShaderInstance.inl"
-#include "renderer/CullingPipeline.h"
 
 float GetRandomDisplacement(float offset)
 {
@@ -12,16 +11,10 @@ float GetRandomDisplacement(float offset)
 
 void AstroidComponent::Update(float dt)
 {
-	BHive::UniverseRenderPipeline::GetPipeline().SubmitObject(
-		{.ShaderInstance = mShaderInstance,
-		 .Renderable = mIndirectMesh,
-		 .Transform = GetOwner()->GetTransform(),
-		 .Instanced = true,
-		 .Instances = Instances,
-		 .InstanceTransforms = mMatrices.data()});
-
-	BHive::CullingPipeline::GetPipeline().SubmitObject(
-		{mIndirectMesh, GetOwner()->GetTransform(), Instances, mMatrices.data()});
+	if (auto pipeline = BHive::GetRenderPipelineManager().GetCurrentPipeline())
+	{
+		pipeline->SubmitMesh(mIndirectMesh, GetOwner()->GetTransform(), mShaderInstance, Instances, mMatrices.data());
+	}
 }
 
 void AstroidComponent::Save(cereal::JSONOutputArchive &ar) const

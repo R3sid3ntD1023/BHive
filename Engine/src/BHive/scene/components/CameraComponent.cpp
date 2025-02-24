@@ -7,7 +7,7 @@ namespace BHive
 {
 	void CameraComponent::OnRender(SceneRenderer *renderer)
 	{
-		auto frustrum = Frustum(mCamera.GetProjection(), GetWorldTransform().inverse());
+		auto frustrum = FrustumViewer(mCamera.GetProjection(), GetWorldTransform().inverse());
 		LineRenderer::DrawFrustum(frustrum, 0xFF00FFFF);
 	}
 

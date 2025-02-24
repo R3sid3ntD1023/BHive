@@ -1,58 +1,80 @@
 #pragma once
 
 #include "core/Core.h"
-#include "math/Frustum.h"
 #include "math/Transform.h"
 #include "renderers/Lights.h"
+#include "renderers/Renderer.h"
 
 namespace BHive
 {
-	struct PointLight;
-	struct IndirectRenderable;
 	class ShaderInstance;
+	class IndirectRenderable;
 
-	class UniverseRenderPipeline
+	class RenderPipeline
 	{
 	public:
 		struct ObjectData
 		{
+			FTransform Transform{};
 			Ref<ShaderInstance> ShaderInstance;
-			Ref<IndirectRenderable> Renderable;
-			FTransform Transform;
-
-			bool Instanced = false;
-			uint32_t Instances = 0;
-			glm::mat4 *InstanceTransforms;
+			Ref<IndirectRenderable> Mesh;
+			uint32_t Instances{};
+			const glm::mat4 *InstanceTransforms = nullptr;
 		};
 
 		struct LightData
 		{
 			FTransform Transform;
-			PointLight PointLight;
+			const Light &Light;
 		};
 
 		struct FPipelineData
 		{
 			Frustum CameraFrustum;
 			FTransform CameraTransform;
-			std::vector<ObjectData> ObjectData;
-			std::vector<LightData> LightData;
+			std::vector<ObjectData> Objects;
+			std::unordered_map<ELightType, std::vector<LightData>> Lights;
 		};
 
 	public:
-		UniverseRenderPipeline();
+		RenderPipeline();
 
-		void SubmitLight(const LightData &light);
+		virtual ~RenderPipeline() = default;
 
-		void SubmitObject(const ObjectData &data);
+		void SubmitMesh(
+			const Ref<IndirectRenderable> &mesh, const FTransform &transform, const Ref<ShaderInstance> &instance = nullptr,
+			uint32_t instances = 0, const glm::mat4 *transforms = nullptr);
 
-		void Begin(const glm::mat4 &projection, const glm::mat4 &view);
+		void SubmitLight(const Light &light, const FTransform &transform);
 
-		void End();
+		virtual void Begin(const glm::mat4 &projection, const glm::mat4 &view);
 
-		static UniverseRenderPipeline &GetPipeline();
+		virtual void End();
+
+	protected:
+		virtual void OnPipelineEnd() {};
 
 	private:
+		void SortObjects();
+
+	protected:
 		FPipelineData mPipelineData;
 	};
+
+	struct RenderPipelineManager
+	{
+		void SetCurrentPipeline(RenderPipeline *pipeline) { mCurrentPipeline = pipeline; }
+
+		RenderPipeline *GetCurrentPipeline() { return mCurrentPipeline; }
+
+	private:
+		RenderPipeline *mCurrentPipeline = nullptr;
+	};
+
+	inline RenderPipelineManager &GetRenderPipelineManager()
+	{
+		static RenderPipelineManager manager;
+		return manager;
+	}
+
 } // namespace BHive

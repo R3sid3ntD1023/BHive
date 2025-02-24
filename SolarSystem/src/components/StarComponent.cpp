@@ -1,15 +1,13 @@
-#include "StarComponent.h"
 #include "CelestrialBody.h"
 #include "renderer/RenderPipeline.h"
+#include "StarComponent.h"
 
 void StarComponent::Update(float dt)
 {
-	BHive::PointLight light;
-	light.mBrightness = Brightness;
-	light.mRadius = Radius;
-	light.mColor = Color;
-
-	BHive::UniverseRenderPipeline::GetPipeline().SubmitLight({.Transform = GetOwner()->GetTransform(), .PointLight = light});
+	if (auto pipeline = BHive::GetRenderPipelineManager().GetCurrentPipeline())
+	{
+		pipeline->SubmitLight(mLight, GetOwner()->GetTransform());
+	}
 }
 
 void StarComponent::Save(cereal::JSONOutputArchive &ar) const
@@ -20,6 +18,10 @@ void StarComponent::Save(cereal::JSONOutputArchive &ar) const
 void StarComponent::Load(cereal::JSONInputArchive &ar)
 {
 	ar(MAKE_NVP(Brightness), MAKE_NVP(Radius), MAKE_NVP(Color));
+
+	mLight.mBrightness = Brightness;
+	mLight.mRadius = Radius;
+	mLight.mColor = Color;
 }
 
 REFLECT(StarComponent)

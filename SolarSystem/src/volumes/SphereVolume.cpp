@@ -21,16 +21,21 @@ namespace BHive
 
 		FSphereVolume sphere(globalCenter, Radius * (maxScale * 0.5f));
 
-		const auto &planes = frustum._get_planes();
-		return (
-			sphere.IsOnOrForwardPlane(planes[0]) && sphere.IsOnOrForwardPlane(planes[1]) &&
-			sphere.IsOnOrForwardPlane(planes[2]) && sphere.IsOnOrForwardPlane(planes[3]) &&
-			sphere.IsOnOrForwardPlane(planes[4]) && sphere.IsOnOrForwardPlane(planes[5]));
+		const auto &planes = frustum.GetPlanes();
+		for (auto &plane : planes)
+		{
+			if (!sphere.IsOnOrForwardPlane(plane))
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	bool FSphereVolume::IsOnOrForwardPlane(const FPlane &plane) const
 	{
-		return plane.GetSignedDistanceToPlane(Center) > -Radius;
+		return GetSignedDistanceToPlane(plane, Center) > -Radius;
 	}
 
 	FSphereVolume GenerateSphereFromAABB(const AABB &aabb)

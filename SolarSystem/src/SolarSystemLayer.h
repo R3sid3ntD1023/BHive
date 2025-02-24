@@ -6,6 +6,8 @@
 #include <core/FPSCounter.h>
 #include <core/Layer.h>
 
+#include "renderer/CullingPipeline.h"
+#include "renderer/UniverseRenderPipeline.h"
 #include "ResourceManager.h"
 
 namespace BHive
@@ -48,8 +50,7 @@ private:
 	Ref<BHive::Framebuffer> mLightingbuffer;
 	Ref<BHive::PPlane> mScreenQuad;
 
-	Ref<BHive::Framebuffer> mCullingBuffer;
-	// Ref<struct CullingSystem> mCullingSystem;
+	// Ref<BHive::Framebuffer> mCullingBuffer;
 
 	// PostProcessing
 	Ref<BHive::Bloom> mBloom;
@@ -59,4 +60,7 @@ private:
 
 	Ref<BHive::AudioSource> mAudio;
 	Ref<struct CelestrialBody> mPlayer;
+
+	BHive::UniverseRenderPipeline mPipeline;
+	// BHive::CullingPipeline mCullingPipeline;
 };

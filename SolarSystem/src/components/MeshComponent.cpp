@@ -1,14 +1,13 @@
-#include "MeshComponent.h"
-#include "CelestrialBody.h"
-#include "indirect_mesh/IndirectMesh.h"
 #include "asset/AssetManager.h"
-#include "mesh/IRenderableAsset.h"
-#include "gfx/Texture.h"
+#include "CelestrialBody.h"
 #include "gfx/BindlessTexture.h"
 #include "gfx/Shader.h"
+#include "gfx/Texture.h"
+#include "indirect_mesh/IndirectMesh.h"
+#include "mesh/IRenderableAsset.h"
+#include "MeshComponent.h"
 #include "renderer/RenderPipeline.h"
 #include "renderer/ShaderInstance.h"
-#include "renderer/CullingPipeline.h"
 
 MeshComponent::MeshComponent()
 {
@@ -19,10 +18,10 @@ MeshComponent::MeshComponent()
 void MeshComponent::Update(float dt)
 {
 	auto transform = GetOwner()->GetTransform();
-	BHive::UniverseRenderPipeline::GetPipeline().SubmitObject(
-		{.ShaderInstance = mShaderInstance, .Renderable = mIndirectMesh, .Transform = transform});
-
-	BHive::CullingPipeline::GetPipeline().SubmitObject({mIndirectMesh, transform});
+	if (auto pipeline = BHive::GetRenderPipelineManager().GetCurrentPipeline())
+	{
+		pipeline->SubmitMesh(mIndirectMesh, GetOwner()->GetTransform(), mShaderInstance);
+	}
 }
 
 void MeshComponent::Save(cereal::JSONOutputArchive &ar) const
