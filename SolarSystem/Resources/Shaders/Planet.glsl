@@ -96,7 +96,7 @@ void main()
 	vec3 color = pow(texture(uTexture, vs_in.texcoord).rgb, vec3(2.2));
 	color.rgb = mix(color.rgb, vec3(color.r), is_single_channel);
 
-	color += vec3(.2);
+	color += vec3(.1);
 	color *= uColor;
 
 	fColor = vec4(color, 1);

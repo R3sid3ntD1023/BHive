@@ -65,7 +65,7 @@ void SolarSystemLayer::OnAttach()
 
 	BHive::FBloomSettings settings{};
 	settings.mFilterThreshold = {1, .95f, .79f, 60.f};
-	mBloom = CreateRef<BHive::Bloom>(5, window_size.x, window_size.y, settings);
+	mBloom = CreateRef<BHive::Bloom>(5, window_size.x / 2, window_size.y / 2, settings);
 
 	BHive::RenderCommand::ClearColor(.2f, .2f, .2f, 1.f);
 
@@ -239,7 +239,7 @@ void SolarSystemLayer::InitFramebuffer()
 	BHive::FramebufferSpecification specs{};
 	specs.Width = window_size.x;
 	specs.Height = window_size.y;
-	specs.Samples = 32;
+	specs.Samples = 4;
 	specs.Attachments.attach({.mFormat = BHive::EFormat::RGBA32F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
 		.attach({.mFormat = BHive::EFormat::RGB16F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
 		.attach({.mFormat = BHive::EFormat::RGB16F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
@@ -247,6 +247,7 @@ void SolarSystemLayer::InitFramebuffer()
 		.attach({.mFormat = BHive::EFormat::DEPTH24_STENCIL8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
 
 	mMultiSampleFramebuffer = BHive::Framebuffer::Create(specs);
+
 	specs.Samples = 1;
 	mFramebuffer = BHive::Framebuffer::Create(specs);
 
@@ -261,7 +262,7 @@ void SolarSystemLayer::InitFramebuffer()
 bool SolarSystemLayer::OnWindowResize(BHive::WindowResizeEvent &e)
 {
 	mCamera.Resize(e.x, e.y);
-	mBloom->Resize(e.x, e.y);
+	mBloom->Resize(e.x / 2, e.y / 2);
 	mMultiSampleFramebuffer->Resize(e.x, e.y);
 	mFramebuffer->Resize(e.x, e.y);
 	mLightingbuffer->Resize(e.x, e.y);

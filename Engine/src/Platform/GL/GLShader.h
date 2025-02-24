@@ -40,5 +40,6 @@ namespace BHive
 		std::unordered_map<uint32_t, std::string> mSources;
 		uint32_t mShaderID{0};
 		ShaderRelfectionData mReflectionData;
+		mutable std::unordered_map<std::string, int> mUniformLocationCache;
 	};
 } // namespace BHive

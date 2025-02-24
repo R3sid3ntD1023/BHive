@@ -11,7 +11,7 @@ namespace BHive
 	struct FBloomSettings
 	{
 		glm::vec4 mFilterThreshold{0.2126, 0.7152, 0.0722, 1.0};
-		float mFilterRadius{0.003f};
+		float mFilterRadius{0.001f};
 	};
 
 	class Bloom : public PostProcessor

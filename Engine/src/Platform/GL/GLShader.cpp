@@ -225,7 +225,12 @@ namespace BHive
 
 	int GLShader::GetUniformLocation(const std::string &name) const
 	{
-		return glGetUniformLocation(mShaderID, name.c_str());
+		if (mUniformLocationCache.contains(name))
+			return mUniformLocationCache.at(name);
+
+		int location = glGetUniformLocation(mShaderID, name.c_str());
+		mUniformLocationCache[name] = location;
+		return location;
 	}
 
 	void GLShader::Reflect()

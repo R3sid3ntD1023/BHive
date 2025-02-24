@@ -46,8 +46,6 @@ void RevolutionComponent::Begin()
 
 void RevolutionComponent::Update(float dt)
 {
-	return;
-
 	float theta_radians = glm::radians(mRevolutionTheta);
 
 	auto origin = mOrigin;

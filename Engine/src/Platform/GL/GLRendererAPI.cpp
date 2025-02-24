@@ -56,7 +56,9 @@ namespace BHive
 		return "";
 	}
 
-	void OpenGLCallback(unsigned source, unsigned type, unsigned id, unsigned severity, int length, const char *message, const void *userdata)
+	void OpenGLCallback(
+		unsigned source, unsigned type, unsigned id, unsigned severity, int length, const char *message,
+		const void *userdata)
 	{
 		auto source_name = get_debug_source_name(source);
 		auto type_name = get_debug_type_name(type);
@@ -69,7 +71,6 @@ namespace BHive
 			return;
 		case GL_DEBUG_SEVERITY_MEDIUM:
 			LOG_ERROR("{} {} {}", source_name, type_name, message);
-			ASSERT(false);
 			return;
 		case GL_DEBUG_SEVERITY_LOW:
 			LOG_WARN("{} {} {}", source_name, type_name, message);
@@ -139,7 +140,8 @@ namespace BHive
 		glDrawElements(mode, _count, GL_UNSIGNED_INT, nullptr);
 	}
 
-	void GLRendererAPI::DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count)
+	void GLRendererAPI::DrawElementsBaseVertex(
+		EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count)
 	{
 		vao.Bind();
 		auto index_buffer = vao.GetIndexBuffer();
@@ -148,7 +150,8 @@ namespace BHive
 		glDrawElementsBaseVertex(mode, _count, GL_UNSIGNED_INT, (void *)(sizeof(uint32_t) * start_index), start);
 	}
 
-	void GLRendererAPI::DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
+	void
+	GLRendererAPI::DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
 	{
 		vao.Bind();
 		auto index_buffer = vao.GetIndexBuffer();
