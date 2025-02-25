@@ -2,7 +2,7 @@
 
 #include "gfx/Shader.h"
 
-#define REFLECT_GL_SHADERS 0
+#define REFLECT_GL_SHADERS 1
 
 namespace BHive
 {

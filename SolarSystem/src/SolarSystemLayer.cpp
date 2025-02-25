@@ -149,12 +149,9 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	// ui
 
-	/*BHive::Renderer::Begin(glm::ortho(0.f, 800.f, 0.f, 600.f), glm::inverse(glm::mat4(1.f)));
-	BHive::QuadRenderer::DrawQuad(glm::ivec2{100, 560}, 0xFF00FF00, BHive::FTransform{sQuadPos}, nullptr);
+	BHive::Renderer::Begin(glm::ortho(0.f, 800.f, 0.f, 600.f), glm::inverse(glm::mat4(1.f)));
 	BHive::QuadRenderer::DrawText(36, "Text2D \nNewline Text! \n\ttygp", {.Style = sTextStyle}, {{50, 200, 0}});
-	BHive::QuadRenderer::DrawCircle(sCircleParams, {{400, 300, 0}});
-	BHive::LineRenderer::DrawRect({100.f, 560}, 0xffffffff, {sQuadPos});
-	BHive::Renderer::End();*/
+	BHive::Renderer::End();
 
 	BHive::RenderCommand::EnableDepth();
 
@@ -222,13 +219,13 @@ void SolarSystemLayer::OnGuiRender()
 
 	ImGui::End();
 
-	// if (ImGui::Begin("CullingTest"))
-	//{
-	//	auto size = ImGui::GetContentRegionAvail();
-	//	auto culling_image = mCullingBuffer->GetColorAttachment();
-	//	ImGui::Image((ImTextureID)(uint64_t)*culling_image, size, {0, 1}, {1, 0});
-	// }
-	// ImGui::End();
+	if (ImGui::Begin("Depth"))
+	{
+		auto size = ImGui::GetContentRegionAvail();
+		auto texture = mFramebuffer->GetDepthAttachment();
+		ImGui::Image((ImTextureID)(uint64_t)*texture, size, {0, 1}, {1, 0});
+	}
+	ImGui::End();
 }
 
 void SolarSystemLayer::InitFramebuffer()
@@ -253,10 +250,6 @@ void SolarSystemLayer::InitFramebuffer()
 
 	specs.Attachments.reset().attach({.mFormat = BHive::EFormat::RGBA8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
 	mLightingbuffer = BHive::Framebuffer::Create(specs);
-	specs.Attachments.reset()
-		.attach({.mFormat = BHive::EFormat::RGBA8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
-		.attach({.mFormat = BHive::EFormat::DEPTH24_STENCIL8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
-	// mCullingBuffer = BHive::Framebuffer::Create(specs);
 }
 
 bool SolarSystemLayer::OnWindowResize(BHive::WindowResizeEvent &e)

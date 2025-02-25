@@ -41,7 +41,6 @@ namespace BHive
 			glm::vec3 color = {(float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX};
 			mCullingShader->SetUniform("uColor", color);
 			mCullingShader->SetUniform("uIsInFrustum", is_in_frustum);
-			mCullingShader->SetUniform("uInstanced", object.Instances > 0);
 
 			if (!object.Instances)
 			{
@@ -56,7 +55,5 @@ namespace BHive
 		}
 
 		mCullingShader->UnBind();
-
-		Renderer::End();
 	}
 } // namespace BHive

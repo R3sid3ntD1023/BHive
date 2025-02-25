@@ -15,6 +15,7 @@ static const char *text_vert = R"(
     {
         mat4 uProjection;
         mat4 uView;
+        vec2 uNearFar;
     };
 
     layout(location = 0) out flat uint vs_texture;
@@ -41,6 +42,8 @@ static const char *text_vert = R"(
 
 static const char *text_frag = R"(
     #version 460 core
+    #extension GL_NV_bindless_texture : require
+    #extension GL_NV_uniform_buffer_std430_layout : require
 
     layout(location = 0) in flat uint vs_texture;
     layout(location = 1) in struct VS_OUT
@@ -52,7 +55,7 @@ static const char *text_frag = R"(
         vec4 outlineColor;
     } vs_in;
 
-    layout(binding = 0) uniform sampler2D uTextures[32];
+    layout(std430, binding = 0) restrict readonly buffer TextureBuffer {sampler2D uTextures[];};
 
     layout(location = 0) out vec4 fColor;
 

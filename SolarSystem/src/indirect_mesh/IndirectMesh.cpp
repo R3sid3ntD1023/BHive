@@ -9,9 +9,16 @@ namespace BHive
 #define SSBO_INSTANCE_DATA 1
 #define SSBO_INDEX_PER_OBJECT_DATA 2
 
+	enum ObjectFlags
+	{
+		None = 0,
+		Instanced = BIT(0)
+	};
+
 	struct FPerObjectData
 	{
 		glm::mat4 WorldMatrix;
+		uint32_t Flags{};
 	};
 
 	struct FDrawElementsIndirectCommand
@@ -73,6 +80,7 @@ namespace BHive
 		for (size_t i = 0; i < mNumMeshes; i++)
 		{
 			perObjectData[i].WorldMatrix = objectMatrix;
+			perObjectData[i].Flags |= (mInstances > 1 ? Instanced : 0);
 		}
 
 		mPerObjectBuffer->SetData(perObjectData.data(), sizeof(FPerObjectData) * perObjectData.size());

@@ -4,28 +4,29 @@
 
 namespace BHive
 {
-	struct BHIVE Uniform
+	struct Uniform
 	{
-		int32_t size;
-		int32_t type;
-		int32_t loc;
+		int32_t Type{};
+		int32_t Size{};
+		int32_t Offset{};
+		int32_t Location{};
 	};
 
-	struct BHIVE Sampler2D
+	struct Sampler2D
 	{
-		int32_t binding;
+		int32_t Binding{};
 	};
 
-	struct BHIVE UniformBufferData
+	struct UniformBufferData
 	{
-		int32_t binding;
-		int32_t size;
+		int32_t Binding{};
+		int32_t Size{};
 	};
 
-	struct BHIVE ShaderRelfectionData
+	struct ShaderRelfectionData
 	{
-		std::unordered_map<const char*, Uniform> uniforms;
-		std::unordered_map<const char*, Sampler2D> samplers;
-		std::unordered_map<const char*, UniformBufferData> uniformBuffers;
+		std::unordered_map<const char *, Uniform> Uniforms;
+		std::unordered_map<const char *, Sampler2D> Samplers;
+		std::unordered_map<const char *, UniformBufferData> UniformBuffers;
 	};
-}
+} // namespace BHive

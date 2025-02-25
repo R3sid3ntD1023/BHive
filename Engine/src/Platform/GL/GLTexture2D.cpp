@@ -88,7 +88,8 @@ namespace BHive
 		memcpy_s(mBuffer.mData, mBuffer.mSize, (uint8_t *)data, size);
 
 		glTextureSubImage2D(
-			mTextureID, 0, offsetX, offsetY, mWidth, mHeight, GetGLFormat(mSpecification.mFormat), GetGLType(mSpecification.mFormat), data);
+			mTextureID, 0, offsetX, offsetY, mWidth, mHeight, GetGLFormat(mSpecification.mFormat),
+			GetGLType(mSpecification.mFormat), data);
 	}
 
 	void GLTexture2D::Load(cereal::BinaryInputArchive &ar)
@@ -123,14 +124,16 @@ namespace BHive
 		case GL_TEXTURE_2D_MULTISAMPLE:
 		{
 
-			glTextureStorage2DMultisample(mTextureID, mSamples, GetGLInternalFormat(mSpecification.mFormat), mWidth, mHeight, GL_FALSE);
+			glTextureStorage2DMultisample(
+				mTextureID, mSamples, GetGLInternalFormat(mSpecification.mFormat), mWidth, mHeight, GL_FALSE);
 			break;
 		}
 
 		case GL_TEXTURE_2D:
 		{
 			// glCreateSamplers(1, &mSamplerID);
-			glTextureStorage2D(mTextureID, mSpecification.mLevels, GetGLInternalFormat(mSpecification.mFormat), mWidth, mHeight);
+			glTextureStorage2D(
+				mTextureID, mSpecification.mLevels, GetGLInternalFormat(mSpecification.mFormat), mWidth, mHeight);
 
 			// glSamplerParameteri(mSamplerID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(mSpecification.mMinFilter));
 			// glSamplerParameteri(mSamplerID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(mSpecification.mMagFilter));
@@ -147,14 +150,18 @@ namespace BHive
 			glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mSpecification.mWrapMode));
 			glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mSpecification.mWrapMode));
 
-						break;
+			glGenerateTextureMipmap(mTextureID);
+
+			break;
 		}
 		default:
 			break;
 		};
 
-		// mHandle = glGetTextureHandleNV(mTextureID);
-		// glMakeTextureHandleResidentNV(mHandle);
+		mResourceHandle = glGetTextureHandleNV(mTextureID);
+
+		if (!glIsTextureHandleResidentNV(mResourceHandle))
+			glMakeTextureHandleResidentNV(mResourceHandle);
 
 		// // mSamplerHandle = glGetTextureSamplerHandleNV(mTextureID, mSamplerID);
 
@@ -170,7 +177,9 @@ namespace BHive
 
 		// BEGIN_THREAD_DISPATCH(=)
 
-		// glMakeTextureHandleNonResidentARB(mHandle);
+		if (glIsTextureHandleResidentNV(mResourceHandle))
+			glMakeTextureHandleNonResidentNV(mResourceHandle);
+
 		glDeleteTextures(1, &mTextureID);
 		// glDeleteSamplers(1, &mSamplerID);
 

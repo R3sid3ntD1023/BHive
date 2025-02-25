@@ -11,7 +11,7 @@ namespace BHive
 		alignas(16) glm::vec3 Color;
 		alignas(16) glm::vec3 Emission;
 		uint32_t Flags;
-		bool Instanced = false;
+		uint64_t Texture;
 	};
 
 	ShaderInstance::ShaderInstance(const Ref<Shader> &shader)
@@ -24,10 +24,8 @@ namespace BHive
 		mShaderUniforms["uEmission"] =
 			FShaderUniform{"uEmission", offsetof(PlanetMaterial, Emission), sizeof(PlanetMaterial::Emission)};
 		mShaderUniforms["uFlags"] = FShaderUniform{"uFlags", offsetof(PlanetMaterial, Flags), sizeof(PlanetMaterial::Flags)};
-		mShaderUniforms["uInstanced"] =
-			FShaderUniform{"uInstanced", offsetof(PlanetMaterial, Instanced), sizeof(PlanetMaterial::Instanced)};
-
-		mShaderSamplers.emplace("uTexture", 0);
+		mShaderUniforms["uTexture"] =
+			FShaderUniform{"uTexture", offsetof(PlanetMaterial, Texture), sizeof(PlanetMaterial::Texture)};
 
 		if (!mBuffer)
 		{
@@ -45,13 +43,6 @@ namespace BHive
 		mShader->Bind();
 
 		mBuffer->SetData((const void *)mInstanceData, sizeof(PlanetMaterial));
-		for (auto &samplers : mShaderSamplers)
-		{
-			if (!samplers.second)
-				continue;
-
-			mShader->SetBindlessTexture(samplers.first, samplers.second);
-		}
 	}
 
 	void BHive::ShaderInstance::SetTexture(const char *name, uint64_t bindless_texture)

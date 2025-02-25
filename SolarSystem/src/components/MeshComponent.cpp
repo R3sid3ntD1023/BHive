@@ -39,15 +39,14 @@ void MeshComponent::Load(cereal::JSONInputArchive &ar)
 		InitIndirectMesh(renderable, mIndirectMesh);
 	}
 
-	if (auto texture = BHive::AssetManager::GetAsset<BHive::Texture2D>(Texture))
-	{
-		mBindlessTexture = BHive::BindlessTexture::Create(texture);
-	}
-
 	mShaderInstance->SetParameter("uColor", Color);
 	mShaderInstance->SetParameter("uEmission", Emission);
 	mShaderInstance->SetParameter("uFlags", (uint32_t)Flags);
-	mShaderInstance->SetTexture("uTexture", *mBindlessTexture);
+
+	if (auto texture = BHive::AssetManager::GetAsset<BHive::Texture2D>(Texture))
+	{
+		mShaderInstance->SetParameter("uTexture", texture->GetResourceHandle());
+	}
 }
 
 void MeshComponent::InitIndirectMesh(

@@ -12,6 +12,7 @@ layout(std140, binding = 0) uniform CameraBuffer
 {
 	mat4 u_projection;
 	mat4 u_view;
+	vec2 u_near_far;
 };
 		
 layout (location = 0) out flat int v_TextureID;
@@ -46,6 +47,8 @@ void main()
 #type fragment
 #version 460 core
 #extension GL_ARB_shading_language_include : require
+#extension GL_NV_bindless_texture : require
+#extension GL_NV_uniform_buffer_std430_layout : require
 
 #include <Core.glsl>
 #include <Lighting.glsl>
@@ -64,7 +67,7 @@ layout(location = 3) in VertexOutput
 	vec3 view;
 } vs_in;
 
-layout(binding = 0) uniform sampler2D u_textures[32];
+layout(std430, binding = 0) restrict readonly buffer TextureBuffer {sampler2D uTextures[];};
 
 layout(location = 0) out vec4 fs_out;
 
@@ -74,7 +77,7 @@ vec3 CalculatePointLight(vec3 pos, vec3 norm,  Light light);
 void main()
 {
 
-	vec4 color = texture(u_textures[v_TextureID], vs_in.texcoord);
+	vec4 color = texture(uTextures[v_TextureID], vs_in.texcoord);
 
 	bool lit = (v_Flags & LIT) != 0;
 	if(lit)

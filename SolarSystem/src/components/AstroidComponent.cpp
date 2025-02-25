@@ -29,7 +29,6 @@ void AstroidComponent::Load(cereal::JSONInputArchive &ar)
 	MeshComponent::Load(ar);
 
 	CalculateMatrices();
-	mShaderInstance->SetParameter("uInstanced", true);
 }
 
 void AstroidComponent::InitIndirectMesh(

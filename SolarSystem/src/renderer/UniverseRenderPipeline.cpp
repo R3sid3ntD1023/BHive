@@ -7,6 +7,13 @@
 
 namespace BHive
 {
+	void UniverseRenderPipeline::Begin(const glm::mat4 &projection, const glm::mat4 &view)
+	{
+		RenderPipeline::Begin(projection, view);
+
+		mNear = projection[3][2] / (projection[2][2] - 1.0f);
+		mFar = projection[3][2] / (projection[2][2] + 1.0f);
+	}
 
 	void UniverseRenderPipeline::OnPipelineEnd()
 	{

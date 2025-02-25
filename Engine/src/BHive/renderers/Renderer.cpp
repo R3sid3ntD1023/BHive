@@ -28,7 +28,7 @@ namespace BHive
 		{
 			glm::mat4 projection{1.0f};
 			glm::mat4 view{1.0f};
-			glm::mat4 model{1.0f};
+			glm::vec4 near_far;
 		};
 
 		struct FLightData
@@ -95,6 +95,8 @@ namespace BHive
 
 		sData->mObjectData.projection = projection;
 		sData->mObjectData.view = view;
+		sData->mObjectData.near_far.x = projection[3][2] / (projection[2][2] - 1.0f);
+		sData->mObjectData.near_far.y = projection[3][2] / (projection[2][2] + 1.0f);
 		sData->mObjectBuffer->SetData(sData->mObjectData);
 		sData->mLightData.mNumLights = 0;
 		// sData->mLightData.mNumPointLights = 0;
@@ -144,8 +146,8 @@ namespace BHive
 
 	void Renderer::SubmitTransform(const glm::mat4 &transform)
 	{
-		sData->mObjectData.model = transform;
-		sData->mObjectBuffer->SetData(sData->mObjectData);
+		/*	sData->mObjectData.model = transform;
+			sData->mObjectBuffer->SetData(sData->mObjectData);*/
 	}
 
 	void Renderer::SubmitSkeletalMesh(const std::vector<glm::mat4> &bone_matrices)

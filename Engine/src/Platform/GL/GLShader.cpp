@@ -131,6 +131,8 @@ namespace BHive
 			glDeleteShader(shader);
 		}
 
+		LOG_INFO("ShaderID {} - {}", mShaderID, mName);
+
 #if REFLECT_GL_SHADERS
 		Reflect();
 #endif
@@ -245,17 +247,20 @@ namespace BHive
 
 		for (int i = 0; i < uniform_count; i++)
 		{
-			GLenum properties[2] = {GL_ARRAY_SIZE, GL_TYPE};
-			GLint values[2] = {};
+			GLenum properties[] = {GL_TYPE, GL_OFFSET, GL_LOCATION};
+			GLint values[] = {0, 0, 0};
 			GLchar name[512];
 
-			glGetProgramResourceiv(mShaderID, GL_UNIFORM, i, 2, properties, 2, nullptr, values);
+			glGetProgramResourceiv(mShaderID, GL_UNIFORM, i, 3, properties, 3, nullptr, values);
 			glGetProgramResourceName(mShaderID, GL_UNIFORM, i, 512, nullptr, name);
 
-			Uniform uniform{.size = values[0], .type = values[1]};
-			mReflectionData.uniforms.emplace(name, uniform);
+			Uniform uniform{.Type = values[0], .Offset = values[1], .Location = values[2]};
+			mReflectionData.Uniforms.emplace(name, uniform);
 
-			LOG_TRACE("\t{} : sz-{}, tp-{}", name, values[0], values[1]);
+			LOG_TRACE("\t{}:", name);
+			LOG_TRACE("\t\t type-{}", values[0]);
+			LOG_TRACE("\t\t offset-{}", values[1]);
+			LOG_TRACE("\t\t location-{}", values[2]);
 		}
 
 		for (int i = 0; i < uniform_buffer_count; i++)
@@ -267,10 +272,10 @@ namespace BHive
 			glGetProgramResourceiv(mShaderID, GL_UNIFORM_BLOCK, i, 2, properties, 2, nullptr, values);
 			glGetProgramResourceName(mShaderID, GL_UNIFORM_BLOCK, i, 512, nullptr, name);
 
-			UniformBufferData uniform{.binding = values[0], .size = values[1]};
-			mReflectionData.uniformBuffers.emplace(name, uniform);
+			UniformBufferData uniform{.Binding = values[0], .Size = values[1]};
+			mReflectionData.UniformBuffers.emplace(name, uniform);
 
-			LOG_TRACE("\t{} : binding-{}, sz-{}", name, values[0], values[1]);
+			LOG_TRACE("\t{} : binding-{}, size-{}", name, values[0], values[1]);
 		}
 	}
 

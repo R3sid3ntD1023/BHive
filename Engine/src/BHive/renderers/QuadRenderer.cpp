@@ -11,6 +11,9 @@
 #include "shaders/CircleShader.h"
 #include "core/profiler/CPUGPUProfiler.h"
 #include "font/MSDFData.h"
+#include "gfx/StorageBuffer.h"
+
+#define TEXT_SSBO_BINDING 0
 
 namespace BHive
 {
@@ -68,11 +71,13 @@ namespace BHive
 
 	struct TextureData
 	{
+		static inline const uint32_t sMaxTextureCount = 512;
+
 		uint32_t mTextureCount = 1;
 
-		std::array<Ref<Texture>, 32> mTextures;
+		std::array<uint64_t, sMaxTextureCount> mTextures;
 
-		TextureData() { mTextures[0] = Renderer::GetWhiteTexture(); }
+		TextureData() { mTextures[0] = Renderer::GetWhiteTexture()->GetHandle(); }
 	};
 
 	struct IRenderDataBase
@@ -91,6 +96,7 @@ namespace BHive
 		Ref<IndexBuffer> mIndexBuffer;
 		Ref<VertexBuffer> mVertexBuffer;
 		Ref<VertexArray> mVertexArray;
+		Ref<StorageBuffer> mTextureStorage;
 
 		// current vertex and index
 		T *mVertexCurrentPtr = nullptr;
@@ -158,6 +164,8 @@ namespace BHive
 			mVertexArray->SetIndexBuffer(mIndexBuffer);
 			mVertexArray->AddVertexBuffer(mVertexBuffer);
 
+			mTextureStorage = StorageBuffer::Create(sizeof(uint64_t) * TextureData::sMaxTextureCount);
+
 			mShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/Quad.glsl");
 		}
 
@@ -175,13 +183,8 @@ namespace BHive
 
 				mShader->Bind();
 
-				for (uint32_t i = 0; i < mTextures.mTextureCount; i++)
-				{
-					if (auto texture = mTextures.mTextures[i])
-					{
-						texture->Bind(i);
-					}
-				}
+				mTextureStorage->SetData(mTextures.mTextures.data(), sizeof(uint64_t) * TextureData::sMaxTextureCount);
+				mTextureStorage->BindBufferBase(TEXT_SSBO_BINDING);
 
 				RenderCommand::DrawElements(Triangles, *mVertexArray, mIndexCount);
 
@@ -211,6 +214,8 @@ namespace BHive
 			mVertexArray->SetIndexBuffer(mIndexBuffer);
 			mVertexArray->AddVertexBuffer(mVertexBuffer);
 
+			mTextureStorage = StorageBuffer::Create(sizeof(uint64_t) * TextureData::sMaxTextureCount);
+
 			mShader = ShaderLibrary::Load("Text", text_vert, text_frag);
 		}
 
@@ -228,13 +233,8 @@ namespace BHive
 
 				mShader->Bind();
 
-				for (uint32_t i = 0; i < mTextures.mTextureCount; i++)
-				{
-					if (auto texture = mTextures.mTextures[i])
-					{
-						texture->Bind(i);
-					}
-				}
+				mTextureStorage->SetData(mTextures.mTextures.data(), sizeof(uint64_t) * TextureData::sMaxTextureCount);
+				mTextureStorage->BindBufferBase(TEXT_SSBO_BINDING);
 
 				RenderCommand::EnableDepthMask(false);
 				RenderCommand::DrawElements(Triangles, *mVertexArray, mIndexCount);
@@ -548,7 +548,7 @@ namespace BHive
 		uint32_t texture_index = 0;
 		for (uint32_t t = 0; t < textures.mTextureCount; t++)
 		{
-			if (texture && *textures.mTextures[t] == *texture)
+			if (texture && textures.mTextures[t] == texture->GetResourceHandle())
 			{
 				texture_index = t;
 				break;
@@ -557,11 +557,11 @@ namespace BHive
 
 		if (texture_index == 0 && texture)
 		{
-			if (textures.mTextureCount >= 32)
+			if (textures.mTextureCount >= TextureData::sMaxTextureCount)
 				data->NextBatch();
 
 			texture_index = textures.mTextureCount;
-			textures.mTextures[textures.mTextureCount] = texture;
+			textures.mTextures[textures.mTextureCount] = texture->GetResourceHandle();
 			textures.mTextureCount++;
 		}
 
