@@ -11,6 +11,7 @@ namespace BHive
 	public:
 		GLShader(const std::filesystem::path &path);
 		GLShader(const std::string &name, const std::string &vertex_shader, const std::string &fragment_shader);
+		GLShader(const std::string &name, const std::string &compute_shader);
 		~GLShader();
 
 		void Compile();
@@ -20,6 +21,7 @@ namespace BHive
 		virtual const std::string &GetName() const { return mName; }
 		uint32_t GetRendererID() const { return mShaderID; }
 		void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1);
+		virtual const FShaderReflectionData &GetRelectionData() const { return mReflectionData; }
 
 	private:
 		virtual void SetUniform(int location, int value) const;
@@ -39,7 +41,7 @@ namespace BHive
 		std::string mName;
 		std::unordered_map<uint32_t, std::string> mSources;
 		uint32_t mShaderID{0};
-		ShaderRelfectionData mReflectionData;
+		FShaderReflectionData mReflectionData;
 		mutable std::unordered_map<std::string, int> mUniformLocationCache;
 	};
 } // namespace BHive

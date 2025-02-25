@@ -5,17 +5,40 @@
 #include "gfx/BindlessTexture.h"
 #include "gfx/TextureUtils.h"
 #include "core/profiler/CPUGPUProfiler.h"
+#include "shaders/DownSample.h"
+#include "shaders/UpSample.h"
+#include "shaders/PreFilter.h"
+#include "gfx/UniformBuffer.h"
 
 namespace BHive
 {
+
 	Bloom::Bloom(uint32_t iterations, uint32_t width, uint32_t height, const FBloomSettings &data)
 		: mSettings(data),
 		  mSize(width, height)
 	{
-		mPreFilterShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/PreFilter.glsl");
-		mDownSamplerShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/DownSample.glsl");
-		mUpSamplerShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/UpSample.glsl");
+		mPreFilterShader = ShaderLibrary::Load("PreFilter", prefiler_comp);
+		mDownSamplerShader = ShaderLibrary::Load("DownSample", downsample_comp);
+		mUpSamplerShader = ShaderLibrary::Load("UpSample", upsample_comp);
 		mMipMaps.resize(iterations);
+
+		{
+			auto &reflection_data = mUpSamplerShader->GetRelectionData();
+			auto &buffer = reflection_data.UniformBuffers.at("UpSampler");
+			mUpSampleBuffer = UniformBuffer::Create(buffer.Binding, buffer.Size);
+		}
+
+		{
+			auto &reflection_data = mDownSamplerShader->GetRelectionData();
+			auto &buffer = reflection_data.UniformBuffers.at("DownSampler");
+			mDownSampleBuffer = UniformBuffer::Create(buffer.Binding, buffer.Size);
+		}
+
+		{
+			auto &reflection_data = mPreFilterShader->GetRelectionData();
+			auto &buffer = reflection_data.UniformBuffers.at("PreFilter");
+			mPreFilterBuffer = UniformBuffer::Create(buffer.Binding, buffer.Size);
+		}
 
 		Initialize(width, height);
 	}
@@ -25,10 +48,20 @@ namespace BHive
 		CPU_PROFILER_SCOPED("Bloom::Process");
 
 		mPreFilterShader->Bind();
-		mPreFilterShader->SetUniform("u_threshold", mSettings.mFilterThreshold);
 
-		texture->Bind();
-		mPreFilterTexture->BindAsImage(0, GetGLAccess(EAccess::WRITE));
+		struct PreFilter
+		{
+			uint64_t Src;
+			uint64_t Out;
+			glm::vec4 Threshold;
+		};
+
+		PreFilter data{
+			.Src = texture->GetResourceHandle(),
+			.Out = mPreFilterTexture->GetImageHandle(),
+			.Threshold = mSettings.mFilterThreshold};
+
+		mPreFilterBuffer->SetData(data);
 		mPreFilterShader->Dispatch(mPreFilterTexture->GetWidth(), mPreFilterTexture->GetHeight());
 
 		mPreFilterShader->UnBind();
@@ -36,17 +69,19 @@ namespace BHive
 		// downsample
 		mDownSamplerShader->Bind();
 
-		GPU_PROFILER_SCOPED("DownSample");
+		struct FDownSamplerData
+		{
+			alignas(16) uint64_t Src;
+			uint64_t Out;
+		};
 
 		auto current_texture = mPreFilterTexture;
 		for (auto &mip : mMipMaps)
 		{
-			current_texture->Bind();
-			mip->BindAsImage(0, GetGLAccess(EAccess::WRITE));
-
 			glm::ivec2 size = {mip->GetWidth(), mip->GetHeight()};
-			glm::ivec2 src_size = {current_texture->GetWidth(), current_texture->GetHeight()};
-			mDownSamplerShader->SetUniform("u_src_resolution", src_size);
+
+			FDownSamplerData data{.Src = current_texture->GetResourceHandle(), .Out = mip->GetImageHandle()};
+			mDownSampleBuffer->SetData(data);
 			mDownSamplerShader->Dispatch(size.x, size.y);
 
 			current_texture = mip;
@@ -54,17 +89,23 @@ namespace BHive
 		mDownSamplerShader->UnBind();
 
 		mUpSamplerShader->Bind();
-		mUpSamplerShader->SetUniform("u_filterRadius", mSettings.mFilterRadius);
 
-		GPU_PROFILER_SCOPED("UpSample");
+		struct FUpSamplerData
+		{
+			alignas(16) uint64_t Src;
+			uint64_t Out;
+			float Filter;
+		};
 
 		for (size_t i = mMipMaps.size() - 1; i > 0; i--)
 		{
 			const auto &mip = mMipMaps[i];
 			const auto &next_mip = mMipMaps[i - 1];
 
-			mip->Bind();
-			next_mip->BindAsImage(0, GetGLAccess(EAccess::READ_WRITE));
+			FUpSamplerData data = {
+				.Src = mip->GetResourceHandle(), .Out = next_mip->GetImageHandle(), .Filter = mSettings.mFilterRadius};
+
+			mUpSampleBuffer->SetData(data);
 			mUpSamplerShader->Dispatch(next_mip->GetWidth(), next_mip->GetHeight());
 		}
 
@@ -88,7 +129,7 @@ namespace BHive
 		FTextureSpecification specs{};
 		specs.mFormat = EFormat::R11_G11_B10;
 		specs.mWrapMode = EWrapMode::CLAMP_TO_BORDER;
-		// specs.mAccess = EAccess::READ_WRITE;
+		specs.ImageAccess = EImageAccess::READ_WRITE;
 
 		mPreFilterTexture = Texture2D::Create(nullptr, width, height, specs);
 

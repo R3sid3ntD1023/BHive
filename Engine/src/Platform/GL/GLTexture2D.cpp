@@ -165,17 +165,21 @@ namespace BHive
 
 		// // mSamplerHandle = glGetTextureSamplerHandleNV(mTextureID, mSamplerID);
 
-		// if (mSpecification.mAccess)
-		// {
-		// 	mImageHandle = glGetImageHandleNV(mTextureID, 0, GL_FALSE, 0, GetGLInternalFormat(mSpecification.mFormat));
-		// 	glMakeImageHandleResidentNV(mImageHandle, GetGLAccess(mSpecification.mAccess.value()));
-		// }
+		if (mSpecification.ImageAccess)
+		{
+			mImageHandle = glGetImageHandleNV(mTextureID, 0, GL_FALSE, 0, GetGLInternalFormat(mSpecification.mFormat));
+			if (!glIsImageHandleResidentNV(mImageHandle))
+				glMakeImageHandleResidentNV(mImageHandle, GetGLAccess(mSpecification.ImageAccess.value()));
+		}
 	}
 
 	void GLTexture2D::Release()
 	{
 
 		// BEGIN_THREAD_DISPATCH(=)
+
+		if (mImageHandle && glIsImageHandleResidentNV(mImageHandle))
+			glMakeImageHandleNonResidentNV(mImageHandle);
 
 		if (glIsTextureHandleResidentNV(mResourceHandle))
 			glMakeTextureHandleNonResidentNV(mResourceHandle);

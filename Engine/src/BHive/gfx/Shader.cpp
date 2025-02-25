@@ -19,6 +19,11 @@ namespace BHive
 		return CreateRef<GLShader>(name, vertex_shader, fragment_shader);
 	}
 
+	Ref<Shader> Shader::Create(const std::string &name, const std::string &comp_shader)
+	{
+		return CreateRef<GLShader>(name, comp_shader);
+	}
+
 	void ShaderLibrary::Add(const char *name, const Ref<Shader> &shader)
 	{
 		if (!Contains(name))
@@ -32,6 +37,18 @@ namespace BHive
 		if (!Contains(name))
 		{
 			auto shader = Shader::Create(name, vertex_src, fragment_src);
+			auto operation = mShaders.emplace(name, shader);
+			return (*operation.first).second;
+		}
+
+		return mShaders.at(name);
+	}
+
+	BHIVE Ref<Shader> ShaderLibrary::Load(const char *name, const std::string &comp_src)
+	{
+		if (!Contains(name))
+		{
+			auto shader = Shader::Create(name, comp_src);
 			auto operation = mShaders.emplace(name, shader);
 			return (*operation.first).second;
 		}

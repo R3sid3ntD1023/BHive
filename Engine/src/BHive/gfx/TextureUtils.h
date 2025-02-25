@@ -23,5 +23,5 @@ namespace BHive
 
 	EFormat GetFormatFromChannels(bool hdr, int channels);
 
-	uint32_t GetGLAccess(EAccess access);
+	uint32_t GetGLAccess(EImageAccess access);
 } // namespace BHive

@@ -24,6 +24,7 @@ namespace BHive
 		void UnBind(uint32_t slot = 0) const override;
 		void BindAsImage(uint32_t unit, uint32_t access, uint32_t level = 0) const;
 		virtual uint64_t GetResourceHandle() const override { return mResourceHandle; }
+		virtual uint64_t GetImageHandle() const override { return mImageHandle; }
 
 		virtual void GenerateMipMaps() const;
 
@@ -50,6 +51,7 @@ namespace BHive
 		uint32_t mSamples = 0;
 		Buffer mBuffer;
 		uint64_t mResourceHandle = 0;
+		uint64_t mImageHandle = 0;
 		// uint64_t mHandle = 0;
 		// uint64_t mImageHandle = 0;
 		//  uint64_t mSamplerHandle = 0;

@@ -352,15 +352,15 @@ namespace BHive
 		return EFormat::Invalid;
 	}
 
-	uint32_t GetGLAccess(EAccess access)
+	uint32_t GetGLAccess(EImageAccess access)
 	{
 		switch (access)
 		{
-		case EAccess::READ:
+		case EImageAccess::READ:
 			return GL_READ_ONLY;
-		case EAccess::WRITE:
+		case EImageAccess::WRITE:
 			return GL_WRITE_ONLY;
-		case EAccess::READ_WRITE:
+		case EImageAccess::READ_WRITE:
 			return GL_READ_WRITE;
 		default:
 			break;

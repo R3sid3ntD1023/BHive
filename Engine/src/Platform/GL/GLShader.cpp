@@ -74,6 +74,12 @@ namespace BHive
 		Compile();
 	}
 
+	GLShader::GLShader(const std::string &name, const std::string &compute_shader)
+	{
+		mSources[GL_COMPUTE_SHADER] = compute_shader;
+		Compile();
+	}
+
 	GLShader::~GLShader()
 	{
 
@@ -254,7 +260,7 @@ namespace BHive
 			glGetProgramResourceiv(mShaderID, GL_UNIFORM, i, 3, properties, 3, nullptr, values);
 			glGetProgramResourceName(mShaderID, GL_UNIFORM, i, 512, nullptr, name);
 
-			Uniform uniform{.Type = values[0], .Offset = values[1], .Location = values[2]};
+			FUniform uniform{.Type = values[0], .Offset = values[1], .Location = values[2]};
 			mReflectionData.Uniforms.emplace(name, uniform);
 
 			LOG_TRACE("\t{}:", name);
@@ -272,7 +278,7 @@ namespace BHive
 			glGetProgramResourceiv(mShaderID, GL_UNIFORM_BLOCK, i, 2, properties, 2, nullptr, values);
 			glGetProgramResourceName(mShaderID, GL_UNIFORM_BLOCK, i, 512, nullptr, name);
 
-			UniformBufferData uniform{.Binding = values[0], .Size = values[1]};
+			FUniformBufferData uniform{.Binding = values[0], .Size = values[1]};
 			mReflectionData.UniformBuffers.emplace(name, uniform);
 
 			LOG_TRACE("\t{} : binding-{}, size-{}", name, values[0], values[1]);

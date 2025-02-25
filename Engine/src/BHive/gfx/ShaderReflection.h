@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	struct Uniform
+	struct FUniform
 	{
 		int32_t Type{};
 		int32_t Size{};
@@ -12,21 +12,21 @@ namespace BHive
 		int32_t Location{};
 	};
 
-	struct Sampler2D
+	struct FSampler2D
 	{
 		int32_t Binding{};
 	};
 
-	struct UniformBufferData
+	struct FUniformBufferData
 	{
 		int32_t Binding{};
 		int32_t Size{};
 	};
 
-	struct ShaderRelfectionData
+	struct FShaderReflectionData
 	{
-		std::unordered_map<const char *, Uniform> Uniforms;
-		std::unordered_map<const char *, Sampler2D> Samplers;
-		std::unordered_map<const char *, UniformBufferData> UniformBuffers;
+		std::unordered_map<std::string, FUniform> Uniforms;
+		std::unordered_map<std::string, FSampler2D> Samplers;
+		std::unordered_map<std::string, FUniformBufferData> UniformBuffers;
 	};
 } // namespace BHive
