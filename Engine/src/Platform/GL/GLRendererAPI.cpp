@@ -169,6 +169,20 @@ namespace BHive
 		glDrawElementsInstanced(mode, _count, GL_UNSIGNED_INT, nullptr, instances);
 	}
 
+	void GLRendererAPI::MultiDrawElementsIndirect(
+		uint32_t buffer, EDrawMode mode, const VertexArray &vao, size_t numMeshes, size_t stride)
+	{
+		vao.Bind();
+
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, buffer);
+
+		glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, NULL, numMeshes, stride);
+
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+
+		vao.UnBind();
+	}
+
 	void GLRendererAPI::EnableDepth()
 	{
 

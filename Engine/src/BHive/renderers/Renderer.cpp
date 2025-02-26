@@ -7,6 +7,9 @@
 #include <glad/glad.h>
 
 #define MAX_BONES 128
+#define CAMERA_UBO_BINDING 0
+#define LIGHT_UBO_BINDING 1
+#define BONE_UBO_BINDING 5
 
 namespace BHive
 {
@@ -50,9 +53,9 @@ namespace BHive
 
 		RenderData()
 		{
-			mObjectBuffer = UniformBuffer::Create(0, sizeof(FObjectData));
-			mLightBuffer = UniformBuffer::Create(1, sizeof(FLightData));
-			mBoneBuffer = UniformBuffer::Create(5, sizeof(glm::mat4) * MAX_BONES);
+			mObjectBuffer = UniformBuffer::Create(CAMERA_UBO_BINDING, sizeof(FObjectData));
+			mLightBuffer = UniformBuffer::Create(LIGHT_UBO_BINDING, sizeof(FLightData));
+			mBoneBuffer = UniformBuffer::Create(BONE_UBO_BINDING, sizeof(glm::mat4) * MAX_BONES);
 
 			uint32_t white = 0xFFFFFFFF;
 			FTextureSpecification texture_specs{};
@@ -99,9 +102,7 @@ namespace BHive
 		sData->mObjectData.near_far.y = projection[3][2] / (projection[2][2] + 1.0f);
 		sData->mObjectBuffer->SetData(sData->mObjectData);
 		sData->mLightData.mNumLights = 0;
-		// sData->mLightData.mNumPointLights = 0;
 		sData->mLightBuffer->SetData(sData->mLightData.mNumLights);
-		// sData->mLightBuffer->SetData(sData->mLightData.mNumPointLights, sizeof(uint32_t));
 
 		LineRenderer::Begin();
 		QuadRenderer::Begin(view);

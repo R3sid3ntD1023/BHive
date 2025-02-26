@@ -1,0 +1,78 @@
+#include "CelestrialBody.h"
+#include "PlanetComponent.h"
+#include <core/Time.h>
+
+uint32_t PlanetTime::ToSeconds()
+{
+	uint32_t seconds = 0;
+
+	seconds = Years * 31'536'000;
+	seconds += Days * 86'400;
+	seconds += Hours * 3'600;
+	seconds += Minutes * 60;
+	seconds += Seconds;
+
+	return seconds;
+}
+
+void PlanetComponent::Update(float dt)
+{
+	GetOwner()->GetLocalTransform().add_rotation({0.f, mTheta * dt * 1000.f, 0.f});
+}
+
+void PlanetComponent::Save(cereal::JSONOutputArchive &ar) const
+{
+	ar(MAKE_NVP("Time", mTime));
+}
+
+void PlanetComponent::Load(cereal::JSONInputArchive &ar)
+{
+	ar(MAKE_NVP("Time", mTime));
+
+	if (auto seconds = mTime.ToSeconds(); seconds > 0.f)
+		mTheta = 360.f / seconds;
+}
+
+REFLECT(PlanetComponent)
+{
+	BEGIN_REFLECT(PlanetComponent)
+	REFLECT_CONSTRUCTOR();
+}
+
+void RevolutionComponent::Begin()
+{
+	mOrigin = GetOwner()->GetLocalTransform().get_translation();
+}
+
+void RevolutionComponent::Update(float dt)
+{
+	float theta_radians = glm::radians(mRevolutionTheta);
+
+	auto origin = mOrigin;
+	auto radius = glm::length(origin);
+	auto time = BHive::Time::Get();
+
+	float x = glm::cos(theta_radians * time * 100000.f) * radius;
+	float y = 0;
+	float z = glm::sin(theta_radians * time * 100000.f) * radius;
+	GetOwner()->GetLocalTransform().set_translation({x, y, z});
+}
+
+void RevolutionComponent::Save(cereal::JSONOutputArchive &ar) const
+{
+	ar(MAKE_NVP("RevolutionTime", mRevolutionTime));
+}
+
+void RevolutionComponent::Load(cereal::JSONInputArchive &ar)
+{
+	ar(MAKE_NVP("RevolutionTime", mRevolutionTime));
+
+	if (auto seconds = mRevolutionTime.ToSeconds(); seconds > 0.f)
+		mRevolutionTheta = 360.f / seconds;
+}
+
+REFLECT(RevolutionComponent)
+{
+	BEGIN_REFLECT(RevolutionComponent)
+	REFLECT_CONSTRUCTOR();
+}

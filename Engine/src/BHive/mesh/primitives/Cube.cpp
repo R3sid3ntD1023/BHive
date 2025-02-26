@@ -51,7 +51,8 @@ namespace BHive
 		StaticMesh::CalculateTangentsAndBitTangents(vertices.data(), vertices.size());
 
 		std::vector<uint32_t> indces = {
-			0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 8, 9, 10, 10, 11, 8, 12, 13, 14, 14, 15, 12, 16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20,
+			0,	1,	2,	2,	3,	0,	4,	5,	6,	6,	7,	4,	8,	9,	10, 10, 11, 8,
+			12, 13, 14, 14, 15, 12, 16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20,
 		};
 
 		FMeshData data{};
@@ -60,11 +61,10 @@ namespace BHive
 		data.mBoundingBox = AABB(vertices[7].Position, vertices[2].Position);
 
 		auto &submesh = data.mSubMeshes.emplace_back();
-		submesh.mStartIndex = 0;
-		submesh.mStartVertex = 0;
-		submesh.mIndexCount = (uint32_t)data.mIndices.size();
-		submesh.mVertexCount = (uint32_t)data.mVertices.size();
-		submesh.mMaterialIndex = 0;
+		submesh.StartIndex = 0;
+		submesh.StartVertex = 0;
+		submesh.IndexCount = (uint32_t)data.mIndices.size();
+		submesh.MaterialIndex = 0;
 
 		return data;
 	}

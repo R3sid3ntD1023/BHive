@@ -18,9 +18,10 @@
 namespace BHive
 {
 	const static glm::mat4 projection = glm::perspective(glm::radians(90.0f), 1.f, .1f, 10.f);
-	const static glm::mat4 views[] = {glm::lookAt(glm::vec3{}, {1, 0, 0}, {0, -1, 0}), glm::lookAt(glm::vec3{}, {-1, 0, 0}, {0, -1, 0}),
-									  glm::lookAt(glm::vec3{}, {0, 1, 0}, {0, 0, 1}),  glm::lookAt(glm::vec3{}, {0, -1, 0}, {0, 0, -1}),
-									  glm::lookAt(glm::vec3{}, {0, 0, 1}, {0, -1, 0}), glm::lookAt(glm::vec3{}, {0, 0, -1}, {0, -1, 0})};
+	const static glm::mat4 views[] = {
+		glm::lookAt(glm::vec3{}, {1, 0, 0}, {0, -1, 0}), glm::lookAt(glm::vec3{}, {-1, 0, 0}, {0, -1, 0}),
+		glm::lookAt(glm::vec3{}, {0, 1, 0}, {0, 0, 1}),	 glm::lookAt(glm::vec3{}, {0, -1, 0}, {0, 0, -1}),
+		glm::lookAt(glm::vec3{}, {0, 0, 1}, {0, -1, 0}), glm::lookAt(glm::vec3{}, {0, 0, -1}, {0, -1, 0})};
 
 	HDRConverter::HDRConverter()
 	{
@@ -118,7 +119,7 @@ namespace BHive
 
 		auto &submesh = mCube->GetSubMeshes()[0];
 		RenderCommand::DrawElementsBaseVertex(
-			EDrawMode::Triangles, *mCube->GetVertexArray(), submesh.mStartVertex, submesh.mStartIndex, submesh.mIndexCount);
+			EDrawMode::Triangles, *mCube->GetVertexArray(), submesh.StartVertex, submesh.StartIndex, submesh.IndexCount);
 
 		mEquirectangularShader->UnBind();
 		mEnvironmentCaptureFBO->UnBind();
@@ -150,7 +151,7 @@ namespace BHive
 
 		auto &submesh = mCube->GetSubMeshes()[0];
 		RenderCommand::DrawElementsBaseVertex(
-			EDrawMode::Triangles, *mCube->GetVertexArray(), submesh.mStartVertex, submesh.mStartIndex, submesh.mIndexCount);
+			EDrawMode::Triangles, *mCube->GetVertexArray(), submesh.StartVertex, submesh.StartIndex, submesh.IndexCount);
 
 		mIrradianceShader->UnBind();
 		mIrradianceFBO->UnBind();

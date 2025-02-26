@@ -1,7 +1,7 @@
 cmake_minimum_required( VERSION 3.8 )
 
 add_subdirectory(vendor)
-find_package(OpenAL CONFIG REQUIRED)
+
 find_package(assimp CONFIG REQUIRED)
 
 file(GLOB_RECURSE ENGINE_SRC CMAKE_CONFIGURE_DEPENDS src/** data/** PARENT_SCOPE)

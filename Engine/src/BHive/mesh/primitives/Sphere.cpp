@@ -65,11 +65,10 @@ namespace BHive
 		data.mBoundingBox = AABB(glm::vec3{-radius}, glm::vec3{radius});
 
 		auto &submesh = data.mSubMeshes.emplace_back();
-		submesh.mStartIndex = 0;
-		submesh.mStartVertex = 0;
-		submesh.mIndexCount = (uint32_t)data.mIndices.size();
-		submesh.mVertexCount = (uint32_t)data.mVertices.size();
-		submesh.mMaterialIndex = 0;
+		submesh.StartIndex = 0;
+		submesh.StartVertex = 0;
+		submesh.IndexCount = (uint32_t)data.mIndices.size();
+		submesh.MaterialIndex = 0;
 
 		return data;
 	}

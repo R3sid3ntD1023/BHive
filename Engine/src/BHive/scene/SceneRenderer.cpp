@@ -22,7 +22,7 @@
 
 #define DRAW_ELEMENTS()                    \
 	RenderCommand::DrawElementsBaseVertex( \
-		EDrawMode::Triangles, *vao, sub_mesh->mStartVertex, sub_mesh->mStartIndex, sub_mesh->mIndexCount);
+		EDrawMode::Triangles, *vao, sub_mesh->StartVertex, sub_mesh->StartIndex, sub_mesh->IndexCount);
 
 #define RENDER_SHADOWS
 
@@ -125,7 +125,7 @@ namespace BHive
 
 		auto &submesh = mCube->GetSubMeshes()[0];
 		RenderCommand::DrawElementsBaseVertex(
-			EDrawMode::Triangles, *mCube->GetVertexArray(), submesh.mStartVertex, submesh.mStartIndex, submesh.mIndexCount);
+			EDrawMode::Triangles, *mCube->GetVertexArray(), submesh.StartVertex, submesh.StartIndex, submesh.IndexCount);
 
 		mSkyBoxShader->UnBind();
 
@@ -301,7 +301,7 @@ namespace BHive
 		auto vao = static_mesh->GetVertexArray();
 		for (auto &sub_mesh : *static_mesh)
 		{
-			auto material = materials.get_material(sub_mesh.mMaterialIndex).get();
+			auto material = materials.get_material(sub_mesh.MaterialIndex).get();
 			if (!material)
 				return;
 
@@ -326,7 +326,7 @@ namespace BHive
 		auto vao = skeletal_mesh->GetVertexArray();
 		for (auto &sub_mesh : *skeletal_mesh)
 		{
-			auto material = materials.get_material(sub_mesh.mMaterialIndex).get();
+			auto material = materials.get_material(sub_mesh.MaterialIndex).get();
 
 			if (!material)
 				return;

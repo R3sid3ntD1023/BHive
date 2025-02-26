@@ -1,0 +1,685 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 7349,
+      "max": [
+        0.3996502757072449,
+        0.3559931516647339,
+        0.8078242540359497
+      ],
+      "min": [
+        -0.25489577651023865,
+        -0.3539690673351288,
+        -0.6597055196762085
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 88188,
+      "componentType": 5126,
+      "count": 7349,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 7349,
+      "max": [
+        0.8818918466567993,
+        0.9993806481361389
+      ],
+      "min": [
+        0.0,
+        -0.0009365014266222715
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 26580,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 176376,
+      "componentType": 5126,
+      "count": 1200,
+      "max": [
+        0.392561137676239,
+        0.3498261570930481,
+        0.642022430896759
+      ],
+      "min": [
+        -0.19378553330898285,
+        -0.34784483909606934,
+        -0.6515305042266846
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 190776,
+      "componentType": 5126,
+      "count": 1200,
+      "max": [
+        0.9999999403953552,
+        0.9999999403953552,
+        1.0
+      ],
+      "min": [
+        -0.9999999403953552,
+        -0.9999999403953552,
+        -0.9995912909507751
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 58792,
+      "componentType": 5126,
+      "count": 1200,
+      "max": [
+        0.880497395992279,
+        0.9884202480316162
+      ],
+      "min": [
+        0.23820681869983673,
+        -0.0009365014266222715
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 106320,
+      "componentType": 5125,
+      "count": 3210,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 205176,
+      "componentType": 5126,
+      "count": 2434,
+      "max": [
+        0.251555472612381,
+        0.23145270347595215,
+        0.7615228891372681
+      ],
+      "min": [
+        -0.1295686662197113,
+        -0.23279531300067902,
+        -0.606269121170044
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 234384,
+      "componentType": 5126,
+      "count": 2434,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -0.989521324634552
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 68392,
+      "componentType": 5126,
+      "count": 2434,
+      "max": [
+        0.8723952174186707,
+        0.9796862006187439
+      ],
+      "min": [
+        0.23820677399635315,
+        -0.0009365014266222715
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 119160,
+      "componentType": 5125,
+      "count": 10104,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 263592,
+      "componentType": 5126,
+      "count": 398,
+      "max": [
+        0.022271886467933655,
+        0.21835626661777496,
+        0.8009011149406433
+      ],
+      "min": [
+        -0.006120163016021252,
+        -0.2189658284187317,
+        0.7085568904876709
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 268368,
+      "componentType": 5126,
+      "count": 398,
+      "max": [
+        0.995689868927002,
+        1.0,
+        0.993422269821167
+      ],
+      "min": [
+        -0.30543220043182373,
+        -1.0,
+        -0.9934208393096924
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 87864,
+      "componentType": 5126,
+      "count": 398,
+      "max": [
+        0.7162054777145386,
+        0.9366904497146606
+      ],
+      "min": [
+        0.4404701590538025,
+        0.17483600974082947
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 159576,
+      "componentType": 5125,
+      "count": 1152,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 273144,
+      "componentType": 5126,
+      "count": 96,
+      "max": [
+        0.016396865248680115,
+        0.2057022899389267,
+        0.7888410091400146
+      ],
+      "min": [
+        -0.004453141242265701,
+        -0.2063118815422058,
+        0.7210270166397095
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 274296,
+      "componentType": 5126,
+      "count": 96,
+      "max": [
+        0.9956893920898438,
+        2.158339063029757e-09,
+        -0.09275054186582565
+      ],
+      "min": [
+        0.9519885778427124,
+        -1.036728369818718e-09,
+        -0.306133896112442
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 91048,
+      "componentType": 5126,
+      "count": 96,
+      "max": [
+        0.7168967127799988,
+        0.3124575614929199
+      ],
+      "min": [
+        0.4897497892379761,
+        0.16913877427577972
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 164184,
+      "componentType": 5125,
+      "count": 276,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 275448,
+      "componentType": 5126,
+      "count": 192,
+      "max": [
+        0.026194658130407333,
+        0.21835626661777496,
+        0.8006078600883484
+      ],
+      "min": [
+        -0.0031105850357562304,
+        -0.2189658284187317,
+        0.7081747055053711
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 277752,
+      "componentType": 5126,
+      "count": 192,
+      "max": [
+        0.9956893920898438,
+        -1.0704298558650294e-09,
+        0.30613335967063904
+      ],
+      "min": [
+        -0.9956893920898438,
+        -4.492791916277383e-09,
+        -0.3061336874961853
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 91816,
+      "componentType": 5126,
+      "count": 192,
+      "max": [
+        0.7373322248458862,
+        0.8081405758857727
+      ],
+      "min": [
+        0.37260711193084717,
+        -0.0009365014266222715
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 165288,
+      "componentType": 5125,
+      "count": 549,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "Veebroush (https://sketchfab.com/veebroush)",
+      "license": "SKETCHFAB Standard (https://sketchfab.com/licenses)",
+      "source": "https://sketchfab.com/3d-models/industrial-standing-light-3e25617afc904d53b8d2b998fea32bb2",
+      "title": "Industrial standing light"
+    },
+    "generator": "Sketchfab-15.61.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 167484,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 93352,
+      "byteOffset": 167484,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 280056,
+      "byteOffset": 260836,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 540892,
+      "uri": "scene.bin"
+    }
+  ],
+  "extensionsUsed": [
+    "KHR_materials_emissive_strength"
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "Black_material",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.21586,
+          0.21586,
+          0.215861,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.9517322204932788
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Yellow_material",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.397182,
+          0.342354,
+          0.130979,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.9242533855838397
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Metal",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.571124,
+          0.571124,
+          0.571125,
+          1.0
+        ],
+        "roughnessFactor": 0.88577518556
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "White_material",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.775822,
+          0.745404,
+          0.665388,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.8331683743277276
+      }
+    },
+    {
+      "doubleSided": true,
+      "emissiveFactor": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "extensions": {
+        "KHR_materials_emissive_strength": {
+          "emissiveStrength": 10.0
+        }
+      },
+      "name": "Light2",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.8,
+          0.8,
+          0.8,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.8211145618000169
+      }
+    },
+    {
+      "alphaMode": "BLEND",
+      "doubleSided": true,
+      "name": "Glass",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.8,
+          0.8,
+          0.8,
+          0.43123940949153367
+        ],
+        "metallicFactor": 0.0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Standing_light_Black_material_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Standing_light_Yellow_material_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 5,
+            "POSITION": 4,
+            "TEXCOORD_0": 6
+          },
+          "indices": 7,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Standing_light_Metal_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 9,
+            "POSITION": 8,
+            "TEXCOORD_0": 10
+          },
+          "indices": 11,
+          "material": 2,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Standing_light_White_material_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 13,
+            "POSITION": 12,
+            "TEXCOORD_0": 14
+          },
+          "indices": 15,
+          "material": 3,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Standing_light_Light2_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 17,
+            "POSITION": 16,
+            "TEXCOORD_0": 18
+          },
+          "indices": 19,
+          "material": 4,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Standing_light_Glass_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 21,
+            "POSITION": 20,
+            "TEXCOORD_0": 22
+          },
+          "indices": 23,
+          "material": 5,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.009999999776482582,
+        0.0,
+        0.0,
+        -0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Standing_light.fbx"
+    },
+    {
+      "children": [
+        3
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "matrix": [
+        -4.038550954009823,
+        -5.8388688883859174e-06,
+        -99.91841725223549,
+        0.0,
+        -99.91841725204247,
+        0.00019687543753033054,
+        4.038550953990527,
+        0.0,
+        0.00019647901544073143,
+        99.99999999980602,
+        -1.3785020236412038e-05,
+        0.0,
+        0.0,
+        65.83346557617188,
+        0.0,
+        1.0
+      ],
+      "name": "Standing_light"
+    },
+    {
+      "mesh": 0,
+      "name": "Standing_light_Black_material_0"
+    },
+    {
+      "mesh": 1,
+      "name": "Standing_light_Yellow_material_0"
+    },
+    {
+      "mesh": 2,
+      "name": "Standing_light_Metal_0"
+    },
+    {
+      "mesh": 3,
+      "name": "Standing_light_White_material_0"
+    },
+    {
+      "mesh": 4,
+      "name": "Standing_light_Light2_0"
+    },
+    {
+      "mesh": 5,
+      "name": "Standing_light_Glass_0"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ]
+}

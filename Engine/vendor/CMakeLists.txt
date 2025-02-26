@@ -138,6 +138,20 @@ FetchContent_Declare(
 )
 list(APPEND components ImPlot)
 
+FetchContent_Declare(
+	OpenAL
+	GIT_REPOSITORY https://github.com/kcat/openal-soft.git
+	GIT_TAG master
+)
+list(APPEND components OpenAL)
+
+#FetchContent_Declare(
+#	assimp
+#	GIT_REPOSITORY https://github.com/assimp/assimp.git
+#	GIT_TAG master
+#)
+#list(APPEND components assimp)
+
 if(components)
 	FETCHCONTENT_MAKEAVAILABLE(${components})
 endif()

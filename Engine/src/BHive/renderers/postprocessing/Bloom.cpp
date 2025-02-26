@@ -71,7 +71,7 @@ namespace BHive
 
 		struct FDownSamplerData
 		{
-			alignas(16) uint64_t Src;
+			uint64_t Src;
 			uint64_t Out;
 		};
 
@@ -92,9 +92,9 @@ namespace BHive
 
 		struct FUpSamplerData
 		{
-			alignas(16) uint64_t Src;
+			uint64_t Src;
 			uint64_t Out;
-			float Filter;
+			alignas(16) float Filter;
 		};
 
 		for (size_t i = mMipMaps.size() - 1; i > 0; i--)

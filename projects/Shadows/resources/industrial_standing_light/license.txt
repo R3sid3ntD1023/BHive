@@ -1,0 +1,8 @@
+Model Information:
+* title:	Industrial standing light
+* source:	https://sketchfab.com/3d-models/industrial-standing-light-3e25617afc904d53b8d2b998fea32bb2
+* author:	Veebroush (https://sketchfab.com/veebroush)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

@@ -31,12 +31,11 @@ namespace BHive
 
 	struct FSubMesh
 	{
-		int32_t mMaterialIndex = 0;
-		uint32_t mStartVertex = 0;
-		uint32_t mStartIndex = 0;
-		uint32_t mVertexCount = 0;
-		uint32_t mIndexCount = 0;
-		uint32_t mInstanceCount = 0;
+		uint32_t StartVertex = 0;
+		uint32_t StartIndex = 0;
+		uint32_t IndexCount = 0;
+		glm::mat4 Transformation{1.f};
+		int32_t MaterialIndex = 0;
 	};
 
 	struct BHIVE FMeshData
@@ -50,14 +49,14 @@ namespace BHive
 	template <typename A>
 	inline void Serialize(A &ar, FVertex &obj)
 	{
-		ar(obj.Position, obj.TexCoord, obj.Normal, obj.Tangent, obj.BiNormal, obj.Color, MAKE_BINARY(obj.mBoneID, 4 * sizeof(float)),
-		   MAKE_BINARY(obj.mWeights, 4 * sizeof(float)));
+		ar(obj.Position, obj.TexCoord, obj.Normal, obj.Tangent, obj.BiNormal, obj.Color,
+		   MAKE_BINARY(obj.mBoneID, 4 * sizeof(float)), MAKE_BINARY(obj.mWeights, 4 * sizeof(float)));
 	}
 
 	template <typename A>
 	inline void Serialize(A &ar, FSubMesh &obj)
 	{
-		ar(obj.mStartIndex, obj.mStartVertex, obj.mVertexCount, obj.mIndexCount, obj.mMaterialIndex, obj.mInstanceCount);
+		ar(obj.StartIndex, obj.StartVertex, obj.IndexCount, obj.Transformation, obj.MaterialIndex);
 	}
 
 	template <typename A>
@@ -80,7 +79,8 @@ namespace BHive
 		obj.mVertices.resize(num_verts);
 		obj.mIndices.resize(num_idx);
 
-		ar(obj.mSubMeshes, obj.mBoundingBox, MAKE_BINARY(const_cast<FVertex *>(obj.mVertices.data()), obj.mVertices.size() * sizeof(FVertex)),
+		ar(obj.mSubMeshes, obj.mBoundingBox,
+		   MAKE_BINARY(const_cast<FVertex *>(obj.mVertices.data()), obj.mVertices.size() * sizeof(FVertex)),
 		   MAKE_BINARY(const_cast<uint32_t *>(obj.mIndices.data()), obj.mIndices.size() * sizeof(uint32_t)));
 	}
 } // namespace BHive

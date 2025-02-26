@@ -17,9 +17,14 @@ namespace BHive
 
 		static BHIVE void DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count = 0);
 		static BHIVE void DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count = 0);
-		static void DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0);
-		static void DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count = 0);
-		static BHIVE void DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count = 0);
+		static void DrawElementsBaseVertex(
+			EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0);
+		static void
+		DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count = 0);
+		static BHIVE void
+		DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count = 0);
+		static void MultiDrawElementsIndirect(
+			uint32_t buffer, EDrawMode mode, const VertexArray &vao, size_t numMeshes, size_t stride = 0);
 
 		static BHIVE void EnableDepth();
 		static BHIVE void DisableDepth();

@@ -226,7 +226,6 @@ namespace BHive
 
 	void GLShader::Dispatch(uint32_t w, uint32_t h, uint32_t d)
 	{
-
 		glDispatchCompute(w, h, d);
 		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	}
@@ -245,11 +244,12 @@ namespace BHive
 	{
 		LOG_TRACE("Reflecting GLShader... {}", mName);
 
-		GLint uniform_count = 0, resource_count = 0, uniform_buffer_count = 0;
+		GLint uniform_count = 0, resource_count = 0, uniform_buffer_count = 0, storage_buffer_count = 0;
 
 		glGetProgramInterfaceiv(mShaderID, GL_UNIFORM, GL_ACTIVE_RESOURCES, &uniform_count);
 		glGetProgramInterfaceiv(mShaderID, GL_PROGRAM_INPUT, GL_ACTIVE_RESOURCES, &resource_count);
 		glGetProgramInterfaceiv(mShaderID, GL_UNIFORM_BLOCK, GL_ACTIVE_RESOURCES, &uniform_buffer_count);
+		glGetProgramInterfaceiv(mShaderID, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES, &storage_buffer_count);
 
 		for (int i = 0; i < uniform_count; i++)
 		{
@@ -269,6 +269,7 @@ namespace BHive
 			LOG_TRACE("\t\t location-{}", values[2]);
 		}
 
+		LOG_TRACE("\tUniformBuffers");
 		for (int i = 0; i < uniform_buffer_count; i++)
 		{
 			GLenum properties[2] = {GL_BUFFER_BINDING, GL_BUFFER_DATA_SIZE};
@@ -281,7 +282,21 @@ namespace BHive
 			FUniformBufferData uniform{.Binding = values[0], .Size = values[1]};
 			mReflectionData.UniformBuffers.emplace(name, uniform);
 
-			LOG_TRACE("\t{} : binding-{}, size-{}", name, values[0], values[1]);
+			LOG_TRACE("\t\t{} : binding-{}, size-{}", name, values[0], values[1]);
+		}
+
+		LOG_TRACE("\tStorageBuffers");
+
+		for (int i = 0; i < storage_buffer_count; i++)
+		{
+			GLenum properties[2] = {GL_BUFFER_BINDING, GL_BUFFER_DATA_SIZE};
+			GLint values[2] = {};
+			GLchar name[512];
+
+			glGetProgramResourceiv(mShaderID, GL_SHADER_STORAGE_BLOCK, i, 2, properties, 2, nullptr, values);
+			glGetProgramResourceName(mShaderID, GL_SHADER_STORAGE_BLOCK, i, 512, nullptr, name);
+
+			LOG_TRACE("\t\t{} : binding-{}, size-{}", name, values[0], values[1]);
 		}
 	}
 

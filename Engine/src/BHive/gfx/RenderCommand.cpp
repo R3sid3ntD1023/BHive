@@ -38,12 +38,14 @@ namespace BHive
 		sRendererAPI->DrawElements(mode, vao, count);
 	}
 
-	void RenderCommand::DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count)
+	void RenderCommand::DrawElementsBaseVertex(
+		EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count)
 	{
 		sRendererAPI->DrawElementsBaseVertex(mode, vao, start, start_index, count);
 	}
 
-	void RenderCommand::DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
+	void
+	RenderCommand::DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
 	{
 		sRendererAPI->DrawElementsRanged(mode, vao, start, end, count);
 	}
@@ -51,6 +53,12 @@ namespace BHive
 	void RenderCommand::DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count)
 	{
 		sRendererAPI->DrawElementsInstanced(mode, vao, instances, count);
+	}
+
+	void RenderCommand::MultiDrawElementsIndirect(
+		uint32_t buffer, EDrawMode mode, const VertexArray &vao, size_t numMeshes, size_t stride)
+	{
+		sRendererAPI->MultiDrawElementsIndirect(buffer, mode, vao, numMeshes, stride);
 	}
 
 	void RenderCommand::EnableDepth()
@@ -109,4 +117,4 @@ namespace BHive
 	}
 
 	Scope<RendererAPI> RenderCommand::sRendererAPI = RendererAPI::Create();
-}
+} // namespace BHive
