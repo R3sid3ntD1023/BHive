@@ -14,10 +14,8 @@ namespace BHive
 	public:
 		IndirectRenderable() = default;
 
-		void Init(const Ref<IRenderableAsset> &renderable);
-		void Init(const Ref<IRenderableAsset> &renderable, uint32_t instances);
-		void Draw(const FTransform &objectMatrix);
-		void Draw(const FTransform &objectMatrix, const glm::mat4 *matrices);
+		void Init(const Ref<IRenderableAsset> &renderable, uint32_t instances = 1, bool bones = false);
+		void Draw(const FTransform &objectMatrix, const glm::mat4 *matrices = nullptr, const glm::mat4 *bones = nullptr);
 
 		const Ref<IRenderableAsset> &GetRenderable() const { return mRenderable; }
 
@@ -28,6 +26,7 @@ namespace BHive
 
 		Ref<StorageBuffer> mDrawBuffer;
 		Ref<StorageBuffer> mPerObjectBuffer;
+		Ref<StorageBuffer> mBoneBuffer;
 
 		size_t mNumMeshes = 0;
 		Ref<IRenderableAsset> mRenderable;

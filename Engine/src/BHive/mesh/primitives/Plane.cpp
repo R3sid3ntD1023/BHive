@@ -13,10 +13,10 @@ namespace BHive
 		float h = height;
 
 		std::vector<FVertex> vertices = {
-			FVertex{.Position = {-w, -h, 0}, .TexCoord = {0, 0}, .Normal = {0, 0, 1}},
-			FVertex{.Position = {w, -h, 0}, .TexCoord = {1, 0}, .Normal = {0, 0, 1}},
-			FVertex{.Position = {w, h, 0}, .TexCoord = {1, 1}, .Normal = {0, 0, 1}},
-			FVertex{.Position = {-w, h, 0}, .TexCoord = {0, 1}, .Normal = {0, 0, 1}}};
+			FVertex{.Position = {-w, -h, 0}, .TexCoord = {0, 0}, .Normal = {0, -1, 0}},
+			FVertex{.Position = {w, -h, 0}, .TexCoord = {1, 0}, .Normal = {0, -1, 0}},
+			FVertex{.Position = {w, h, 0}, .TexCoord = {1, 1}, .Normal = {0, -1, 0}},
+			FVertex{.Position = {-w, h, 0}, .TexCoord = {0, 1}, .Normal = {0, -1, 0}}};
 
 		// CalculateTangentsAndBitTangents(vertices.data(), 4);
 

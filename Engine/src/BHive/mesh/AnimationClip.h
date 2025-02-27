@@ -5,33 +5,33 @@
 
 namespace BHive
 {
-    class SkeletalAnimation;
-    struct SkeletalNode;
-    class SkeletalPose;
+	class SkeletalAnimation;
+	struct SkeletalNode;
+	class SkeletalPose;
 
-    class AnimationClip 
-    {
-    public:
-        AnimationClip(const Ref<SkeletalAnimation>& animation);
+	class AnimationClip
+	{
+	public:
+		AnimationClip(const Ref<SkeletalAnimation> &animation);
 
-        void Play(float dt, SkeletalPose& pose);
+		void Play(float dt, SkeletalPose &pose);
 
-        void PlayFromStart();
+		void PlayFromStart();
 
-        float GetDuration() const ;
+		float GetDuration() const;
 
-        float GetLengthInSeconds() const;
+		float GetLengthInSeconds() const;
 
-        void SetSkeletalAnimation(const Ref<SkeletalAnimation>& animation);
+		void SetSkeletalAnimation(const Ref<SkeletalAnimation> &animation);
 
-        const std::vector<glm::mat4>& GetBoneTransformations() const { return mBoneTransformations;}
+		const std::vector<glm::mat4> &GetBoneTransformations() const { return mBoneTransformations; }
 
-    private:
-        void ReadNodeHeirarchy(const SkeletalNode& node, SkeletalPose& pose, float time);
+	private:
+		void ReadNodeHeirarchy(const SkeletalNode &node, SkeletalPose &pose, const glm::mat4 &parent, float time);
 
-    private:
-        Ref<SkeletalAnimation> mAnimation;
-       std::vector<glm::mat4> mBoneTransformations;
-       float mCurrentTime = 0.0f;
-    };
-}
+	private:
+		Ref<SkeletalAnimation> mAnimation;
+		std::vector<glm::mat4> mBoneTransformations;
+		float mCurrentTime = 0.0f;
+	};
+} // namespace BHive

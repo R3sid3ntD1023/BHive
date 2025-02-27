@@ -120,7 +120,7 @@ namespace BHive
 			for (unsigned v = 0; v < mesh->mNumVertices; v++)
 			{
 
-				glm::vec3 position = glm::vec4(make_vec3(mesh->mVertices[v]), 1.0);
+				glm::vec3 position = make_vec3(mesh->mVertices[v]);
 				glm::vec2 texcoord = {0.0f, 0.0f};
 				glm::vec3 normal = {0.0f, 0.0f, 0.0f};
 				glm::vec3 tangent = {0.0f, 0.0f, 0.0f};
@@ -194,7 +194,7 @@ namespace BHive
 			return sub_mesh;
 		}
 
-		void ProcessMeshes(const aiScene *scene, const aiNode *node, const aiMatrix4x4 &parent, FMeshImportData &data)
+		void ProcessNode(const aiScene *scene, const aiNode *node, const aiMatrix4x4 &parent, FMeshImportData &data)
 		{
 
 			for (unsigned i = 0; i < node->mNumMeshes; i++)
@@ -206,7 +206,20 @@ namespace BHive
 
 			for (unsigned i = 0; i < node->mNumChildren; i++)
 			{
-				ProcessMeshes(scene, node->mChildren[i], parent * node->mTransformation, data);
+				ProcessNode(scene, node->mChildren[i], parent * node->mTransformation, data);
+			}
+		}
+
+		void GetNodeHeiracrchy(aiNode *node, SkeletalNode &data)
+		{
+			data.mName = node->mName.C_Str();
+			data.mTransformation = make_mat4(node->mTransformation);
+
+			for (unsigned int i = 0; i < node->mNumChildren; i++)
+			{
+				SkeletalNode child_data;
+				GetNodeHeiracrchy(node->mChildren[i], child_data);
+				data.mChildren.push_back(child_data);
 			}
 		}
 
@@ -251,16 +264,25 @@ namespace BHive
 			}
 		}
 
-		void GetNodeHeiracrchy(aiNode *node, SkeletalNode &data)
+		void ReadMissingBones(aiAnimation *animation, Bones &bones)
 		{
-			data.mName = node->mName.C_Str();
-			data.mTransformation = make_mat4(node->mTransformation);
+			int32_t bone_count = (int32_t)bones.size();
 
-			for (unsigned int i = 0; i < node->mNumChildren; i++)
+			for (unsigned j = 0; j < animation->mNumChannels; j++)
 			{
-				SkeletalNode child_data;
-				GetNodeHeiracrchy(node->mChildren[i], child_data);
-				data.mChildren.push_back(child_data);
+
+				auto channel = animation->mChannels[j];
+				std::string bone_name = channel->mNodeName.data;
+				// remove_extension(bone_name);
+
+				// find missing bones
+				if (!bones.contains(bone_name))
+				{
+					bones[bone_name].mID = bone_count;
+					bones[bone_name].mName = bone_name;
+					bone_count++;
+					LOG_TRACE("Added Missing Bone {}", bone_name);
+				}
 			}
 		}
 
@@ -274,6 +296,7 @@ namespace BHive
 			for (unsigned int i = 0; i < scene->mNumAnimations; i++)
 			{
 				aiAnimation *animation = scene->mAnimations[i];
+				ReadMissingBones(animation, bones);
 
 				std::map<std::string, FrameData> frames;
 				for (unsigned j = 0; j < animation->mNumChannels; j++)
@@ -283,21 +306,12 @@ namespace BHive
 					std::string bone_name = channel->mNodeName.data;
 					// remove_extension(bone_name);
 
-					// find missing bones
-					if (!bones.contains(bone_name))
-					{
-						bones[bone_name].mID = bone_count;
-						bones[bone_name].mName = bone_name;
-						bone_count++;
-						// LOG_TRACE("Added Missing Bone {}", bone_name);
-					}
-
 					// get animation keys
 					FrameData frame_data;
 					ParseAnimationData(animation, channel, frame_data);
 					frames.emplace(bone_name, frame_data);
 
-					// LOG_TRACE("Added Bone to animation {}", bone_name);
+					LOG_TRACE("Added frames for bone{} ", bone_name);
 				}
 
 				FImportedAnimationData animation_data;
@@ -307,7 +321,7 @@ namespace BHive
 				animation_data.mFrames = frames;
 				animation_data.mGlobalInverseMatrix = make_mat4(global_inverse_matrix);
 
-				data.push_back(animation_data);
+				data.emplace_back(animation_data);
 			}
 		}
 
@@ -456,15 +470,10 @@ namespace BHive
 		void ProcessScene(const aiScene *scene, FMeshImportData &data)
 		{
 			aiMatrix4x4 root;
-			utils::ProcessMeshes(scene, scene->mRootNode, root, data);
-
+			utils::ProcessNode(scene, scene->mRootNode, root, data);
+			utils::GetNodeHeiracrchy(scene->mRootNode, data.mSkeletonHeirarchyData);
 			utils::GetMaterialData(scene, data.mMaterialData);
 			utils::GetAnimationData(scene, data.mAnimationData, data.mBoneData);
-
-			if (data.mBoneData.size())
-			{
-				utils::GetNodeHeiracrchy(scene->mRootNode, data.mSkeletonHeirarchyData);
-			}
 		}
 
 	} // namespace utils

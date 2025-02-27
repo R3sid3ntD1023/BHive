@@ -34,8 +34,8 @@ namespace BHive
 		uint32_t StartVertex = 0;
 		uint32_t StartIndex = 0;
 		uint32_t IndexCount = 0;
-		glm::mat4 Transformation{1.f};
 		int32_t MaterialIndex = 0;
+		glm::mat4 Transformation{1.f};
 	};
 
 	struct BHIVE FMeshData

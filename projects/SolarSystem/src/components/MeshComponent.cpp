@@ -3,7 +3,7 @@
 #include "gfx/BindlessTexture.h"
 #include "gfx/Shader.h"
 #include "gfx/Texture.h"
-#include "indirect_mesh/IndirectMesh.h"
+#include "mesh/indirect_mesh/IndirectMesh.h"
 #include "mesh/IRenderableAsset.h"
 #include "MeshComponent.h"
 #include "renderer/RenderPipeline.h"

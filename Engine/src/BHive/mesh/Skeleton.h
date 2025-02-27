@@ -34,7 +34,7 @@ namespace BHive
 		REFLECTABLEV()
 
 	private:
-		void CalculateRestPoseTransforms(const SkeletalNode &node, const glm::mat4 &parent);
+		void CalculateRestPoseTransforms(const SkeletalNode &node);
 
 	private:
 		SkeletalNode mRoot;

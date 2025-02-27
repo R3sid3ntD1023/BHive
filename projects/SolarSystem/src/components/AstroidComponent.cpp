@@ -1,6 +1,6 @@
 #include "AstroidComponent.h"
 #include "CelestrialBody.h"
-#include "indirect_mesh/IndirectMesh.h"
+#include "mesh/indirect_mesh/IndirectMesh.h"
 #include "renderer/RenderPipeline.h"
 #include "renderer/ShaderInstance.inl"
 

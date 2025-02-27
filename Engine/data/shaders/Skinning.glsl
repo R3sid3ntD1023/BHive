@@ -2,9 +2,9 @@
 #define MAX_BONES 128
 #define MAX_BONE_INFLUENCE 4
 
-layout(std140, binding = 5) uniform BoneBuffer
+layout(std430, binding = 2) restrict readonly buffer Bones
 {
-	mat4 u_bone_matrices[MAX_BONES];
+	mat4 bones[MAX_BONES];
 };
 
 bool any_bone(ivec4 indices)
@@ -31,7 +31,7 @@ mat4 Skinning(vec4 weights, ivec4 indices)
 		}
 
 		
-		bone_transform += u_bone_matrices[indices[i]] * weights[i];
+		bone_transform += bones[indices[i]] * weights[i];
 
 	}
 

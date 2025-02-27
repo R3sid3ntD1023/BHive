@@ -10,7 +10,6 @@ layout(location = 2) in vec3 vNormal;
 struct PerObjectData
 {
 	mat4 WorldMatrix;
-	uint Flags;
 };
 
 layout(std430, binding = 0) uniform CameraBuffer
@@ -19,13 +18,16 @@ layout(std430, binding = 0) uniform CameraBuffer
 	mat4 u_view;
 	vec2 u_near_far;
 };
+
+layout(std430, binding = 0) restrict readonly buffer PerObjectSSBO
+{
+	PerObjectData object[];
+};
+
+
 layout(std430, binding = 1) restrict readonly buffer InstanceBufferSSBO
 {
 	mat4 matrices[];
-};
-layout(std430, binding = 2) restrict readonly buffer PerObjectSSBO
-{
-	PerObjectData object[];
 };
 
 layout(location = 0) out struct VS_OUT
@@ -35,17 +37,14 @@ layout(location = 0) out struct VS_OUT
 	vec3 normal;
 } vs_out;
 
-#define INSTANCED_FLAG 0x01
-
 void main()
 {
-	uint flags = object[gl_DrawID].Flags;
-	bool instanced = (flags & INSTANCED_FLAG) != 0; 
+	bool instanced = gl_InstanceID  != 0; 
 
 	mat4 instance = (mat4(1) * (1.f - float(instanced))) +  (matrices[gl_InstanceID] *  float(instanced));
 
-	mat4 model = object[gl_DrawID].WorldMatrix;
-	vec4 worldPos = instance * model * vec4(vPos, 1);
+	mat4 model = instance * object[gl_DrawID].WorldMatrix;
+	vec4 worldPos = model * vec4(vPos, 1);
 	vs_out.position = worldPos.xyz;
 	vs_out.texcoord = vTexCoord;
 

@@ -5,10 +5,13 @@
 #include "gfx/RenderCommand.h"
 #include <glad/glad.h>
 
+#define SSBO_INDEX_PER_OBJECT_BINDING 0
+#define SSBO_INSTANCE_BINDING 1
+#define SSBO_BONE_BINDING 2
+#define MAX_BONES 128
+
 namespace BHive
 {
-#define SSBO_INDEX_PER_OBJECT_DATA 0
-#define SSBO_INSTANCE_DATA 1
 
 	struct FPerObjectData
 	{
@@ -24,9 +27,20 @@ namespace BHive
 		uint32_t baseInstance;
 	};
 
-	void IndirectRenderable::Init(const Ref<IRenderableAsset> &renderable)
+	void IndirectRenderable::Init(const Ref<IRenderableAsset> &renderable, uint32_t instances, bool bones)
 	{
 		mRenderable = renderable;
+		mInstances = instances;
+
+		if (mInstances > 1)
+		{
+			mInstanceBuffer = StorageBuffer::Create(sizeof(glm::mat4) * mInstances);
+		}
+
+		if (bones)
+		{
+			mBoneBuffer = StorageBuffer::Create(sizeof(glm::mat4) * MAX_BONES);
+		}
 
 		const auto &meshes = renderable->GetSubMeshes();
 		mNumMeshes = meshes.size();
@@ -35,11 +49,26 @@ namespace BHive
 		AllocatePerObjectBuffer(meshes);
 	}
 
-	void IndirectRenderable::Init(const Ref<IRenderableAsset> &renderable, uint32_t instances)
+	void IndirectRenderable::Draw(const FTransform &objectMatrix, const glm::mat4 *matrices, const glm::mat4 *bones)
 	{
-		mInstances = instances;
-		mInstanceBuffer = StorageBuffer::Create(sizeof(glm::mat4) * mInstances);
-		Init(renderable);
+		if (matrices)
+		{
+
+			mInstanceBuffer->SetData(matrices, sizeof(glm::mat4) * mInstances);
+			mInstanceBuffer->BindBufferBase(SSBO_INSTANCE_BINDING);
+		}
+
+		if (bones)
+		{
+
+			mBoneBuffer->SetData(bones, sizeof(glm::mat4) * MAX_BONES);
+			mBoneBuffer->BindBufferBase(SSBO_BONE_BINDING);
+		}
+
+		UpdateObjectData(objectMatrix);
+
+		RenderCommand::MultiDrawElementsIndirect(
+			mDrawBuffer->GetRendererID(), Triangles, *mRenderable->GetVertexArray(), mNumMeshes, 0);
 	}
 
 	void IndirectRenderable::InitDrawCmdBuffers(const std::vector<FSubMesh> &meshes)
@@ -74,27 +103,12 @@ namespace BHive
 		auto &meshes = mRenderable->GetSubMeshes();
 		for (size_t i = 0; i < mNumMeshes; i++)
 		{
-			perObjectData[i].WorldMatrix = objectMatrix * meshes[i].Transformation;
+			glm::mat4 final_transformation = objectMatrix * meshes[i].Transformation;
+			perObjectData[i].WorldMatrix = final_transformation;
 		}
 
-		mPerObjectBuffer->BindBufferBase(SSBO_INDEX_PER_OBJECT_DATA);
+		mPerObjectBuffer->BindBufferBase(SSBO_INDEX_PER_OBJECT_BINDING);
 		mPerObjectBuffer->SetData(perObjectData.data(), sizeof(FPerObjectData) * perObjectData.size());
-	}
-
-	void IndirectRenderable::Draw(const FTransform &objectMatrix)
-	{
-		UpdateObjectData(objectMatrix);
-
-		RenderCommand::MultiDrawElementsIndirect(
-			mDrawBuffer->GetRendererID(), Triangles, *mRenderable->GetVertexArray(), mNumMeshes, 0);
-	}
-
-	void IndirectRenderable::Draw(const FTransform &objectMatrix, const glm::mat4 *matrices)
-	{
-		mInstanceBuffer->BindBufferBase(SSBO_INSTANCE_DATA);
-		mInstanceBuffer->SetData(matrices, sizeof(glm::mat4) * mInstances);
-
-		Draw(objectMatrix);
 	}
 
 } // namespace BHive

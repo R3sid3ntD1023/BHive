@@ -1,6 +1,6 @@
 #include "CullingPipeline.h"
 #include "gfx/Shader.h"
-#include "indirect_mesh/IndirectMesh.h"
+#include "mesh/indirect_mesh/IndirectMesh.h"
 #include "mesh/IRenderableAsset.h"
 #include "renderers/Renderer.h"
 #include "volumes/SphereVolume.h"
