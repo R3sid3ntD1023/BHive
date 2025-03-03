@@ -29,23 +29,21 @@ namespace BHive
 
 	void GLVertexArray::SetIndexBuffer(const Ref<IndexBuffer> &indexbuffer)
 	{
-		Bind();
-		indexbuffer->Bind();
+
+		glVertexArrayElementBuffer(mVertexArrayID, indexbuffer->GetBufferID());
 
 		mIndexBuffer = indexbuffer;
 	}
 
 	void GLVertexArray::AddVertexBuffer(const Ref<VertexBuffer> &vertexbuffer)
 	{
+
 		auto &layout = vertexbuffer->GetLayout();
 		auto &elements = layout.GetElements();
 		auto stride = layout.GetStride();
 
 		if (elements.size() == 0)
 			return;
-
-		Bind();
-		vertexbuffer->Bind();
 
 		for (const auto &element : elements)
 		{
@@ -58,14 +56,9 @@ namespace BHive
 			case BHive::EShaderDataType::Float3:
 			case BHive::EShaderDataType::Float4:
 			{
-
-				glEnableVertexAttribArray(mVertexBufferIndex);
-				glVertexAttribPointer(mVertexBufferIndex, element.ComponentCount, GL_FLOAT, element.Normalized, stride, (const void *)element.Offset);
-				if (divisor)
-				{
-					glVertexAttribDivisor(mVertexBufferIndex, 1);
-				}
-
+				glEnableVertexArrayAttrib(mVertexArrayID, mVertexBufferIndex);
+				glVertexArrayVertexBuffer(
+					mVertexArrayID, mVertexBufferIndex, vertexbuffer->GetBufferID(), element.Offset, stride);
 				mVertexBufferIndex++;
 				break;
 			}
@@ -75,12 +68,9 @@ namespace BHive
 			case BHive::EShaderDataType::Int4:
 			case BHive::EShaderDataType::Bool:
 			{
-				glEnableVertexAttribArray(mVertexBufferIndex);
-				glVertexAttribIPointer(mVertexBufferIndex, element.ComponentCount, GL_INT, stride, (const void *)element.Offset);
-				if (divisor)
-				{
-					glVertexAttribDivisor(mVertexBufferIndex, 1);
-				}
+				glEnableVertexArrayAttrib(mVertexArrayID, mVertexBufferIndex);
+				glVertexArrayVertexBuffer(
+					mVertexArrayID, mVertexBufferIndex, vertexbuffer->GetBufferID(), element.Offset, stride);
 				mVertexBufferIndex++;
 				break;
 			}
@@ -90,10 +80,11 @@ namespace BHive
 				auto count = element.ComponentCount;
 				for (uint8_t i = 0; i < count; i++)
 				{
-					glEnableVertexAttribArray(mVertexBufferIndex);
-					glVertexAttribPointer(
-						mVertexBufferIndex, count, GL_FLOAT, element.Normalized, stride, (const void *)(element.Offset + sizeof(float) * count * i));
-					glVertexAttribDivisor(mVertexBufferIndex, 1);
+					glEnableVertexArrayAttrib(mVertexArrayID, mVertexBufferIndex);
+					glVertexArrayVertexBuffer(
+						mVertexArrayID, mVertexBufferIndex, vertexbuffer->GetBufferID(),
+						element.Offset + sizeof(float) * count * i, stride);
+					glVertexArrayBindingDivisor(mVertexArrayID, mVertexBufferIndex, 1);
 					mVertexBufferIndex++;
 				}
 				break;
@@ -104,5 +95,13 @@ namespace BHive
 		}
 
 		mVertexBuffers.push_back(vertexbuffer);
+	}
+	void GLVertexArray::BindBuffersBase(uint32_t binding) const
+	{
+		int i = binding;
+		for (auto &vertexBuffer : mVertexBuffers)
+		{
+			vertexBuffer->BindBufferBase(i++);
+		}
 	}
 } // namespace BHive

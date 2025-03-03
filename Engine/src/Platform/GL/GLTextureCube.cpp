@@ -36,17 +36,20 @@ namespace BHive
 		for (unsigned i = 0; i < 6; i++)
 		{
 			glTexImage2D(
-				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GetGLInternalFormat(spec.mFormat), size, size, 0, GetGLFormat(spec.mFormat),
-				GetGLType(spec.mFormat), NULL);
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GetGLInternalFormat(spec.mFormat), size, size, 0,
+				GetGLFormat(spec.mFormat), GetGLType(spec.mFormat), NULL);
 		}
 
-		// mHandle = glGetTextureHandleARB(mTextureID);
-		// glMakeTextureHandleResidentARB(mHandle);
+		mResourceHandle = glGetTextureHandleNV(mTextureID);
+
+		if (!glIsTextureHandleResidentNV(mResourceHandle))
+			glMakeTextureHandleResidentNV(mResourceHandle);
 	}
 
 	GLTextureCube::~GLTextureCube()
 	{
-		// glMakeTextureHandleNonResidentARB(mHandle);
+		if (glIsTextureHandleResidentNV(mResourceHandle))
+			glMakeTextureHandleNonResidentNV(mResourceHandle);
 		glDeleteTextures(1, &mTextureID);
 	}
 

@@ -1,5 +1,8 @@
+
 #define BLINN_PHONG 1
 #define LIGHTING_TYPE BLINN_PHONG
+#define MAX_LIGHTS 32
+#define USE_POISSONDISK 1
 
 
 struct Light
@@ -9,45 +12,26 @@ struct Light
 	vec3 color;
 	float brightness;
 	float radius;
-	float cutoff;
-	float outercutoff;
+	float innerCutoff;
+	float outerCutoff;
 	uint type;
 };
 
-#define MAX_LIGHTS 32
-#define USE_POISSONDISK 1
-
-layout(std140, binding = 1) uniform LightBuffer
+layout(std430, binding = 1) uniform LightBuffer
 {
-	uint u_NumLights;
-	Light lights[MAX_LIGHTS];	
+	uint uNumLights;
+	Light uLights[MAX_LIGHTS];
 };
 
-layout(std140, binding = 2) uniform ShadowData
+layout(std430, binding = 4) restrict readonly buffer ShadowSSBO
 {
-	uint u_NumDirectionalLights;
-	mat4 u_ViewProjectionShadow[MAX_LIGHTS];
-};
-
-layout(std140, binding = 3) uniform SpotShadowData
-{
-	uint u_NumSpotLights;
-	mat4 u_ViewProjectionSpotShadow[MAX_LIGHTS];
-};
-
-layout(std140, binding = 4) uniform PointShadowData
-{
-	uint u_NumPointLights;
-	mat4 u_ViewProjectionPointShadow[MAX_LIGHTS * 6];
+	uvec4 uNumShadowMaps;
+	mat4 uDirViewProjections[MAX_LIGHTS];
+	mat4 uPointViewProjections[MAX_LIGHTS * 6];
+	mat4 uSpotViewProjections[MAX_LIGHTS];
 };
 
 
-float SpotLightShadow(int light, vec3 position, in sampler2DArrayShadow shadow_array_texture);
-
-float PointLightShadow(int light, vec3 position, vec3 lightDirection, vec3 lightDirectionUN,  vec2 near_far, 
-	in samplerCubeArrayShadow point_shadow_array_texture);
-
-float random(in vec3 seed, in float fFreq);
 
 const vec2 poissonDisk[9] = vec2[]
 (
@@ -83,28 +67,41 @@ float DirectionalLight(vec3 N, vec3 D)
 	return NdotL;
 }
 
-float PointLight(vec3 P, vec3 N, Light light)
+float PointLight(vec3 P, vec3 N, vec3 LP, float radius)
 {
-	float dist = length(light.position - P);
-	if(dist > light.radius || light.brightness <= 0.f) return 0;
+	float dist = length(LP - P);
+	if(dist > radius) return 0;
 
-	vec3 dir = light.position - P;
+	vec3 dir = LP - P;
 	float ndotl = max(dot(N, dir), 0.0);
 
 	//https://lisyarus.github.io/blog/posts/point-light-attenuation.html
-	float s = dist / light.radius;
+	float s = dist / radius;
 	if(s >= 1.0)
 		return 0.0;
 	float s2 = sqrt(s);
 
-	float attenuation = sqrt(1 -s2) / (1 + light.radius * s);
+	float attenuation = sqrt(1 -s2) / (1 + radius * s);
 
-	return ndotl * light.brightness * attenuation;
+	return ndotl * attenuation;
+}
+
+float SpotLight(vec3 P, vec3 N,  vec3 LP, vec3 LD, float radius, float outerCutoff, float innerCutoff)
+{
+	float pointlight =  PointLight(P, N, LP, radius);
+	
+	vec3 L = normalize(LP - P);
+	
+	float theta = dot(L, normalize(-LD ));
+	float epsilon = innerCutoff - outerCutoff;
+	float intensity = smoothstep(0, 1 , (theta - outerCutoff) / epsilon);
+	
+	return pointlight * intensity;
 }
 
 float DirLightShadow(int light, vec3 position, in sampler2DArrayShadow shadow_array_texture)
 {
-	vec4 fragLightPos = u_ViewProjectionShadow[light] * vec4(position, 1.0f);
+	vec4 fragLightPos = uDirViewProjections[light] * vec4(position, 1.0f);
 	vec3 projCoords = fragLightPos.xyz / fragLightPos.w;
 	projCoords = (projCoords + 1.f) * .5f;
 
@@ -136,7 +133,7 @@ float DirLightShadow(int light, vec3 position, in sampler2DArrayShadow shadow_ar
 
 float SpotLightShadow(int light, vec3 position, in sampler2DArrayShadow shadow_array_texture)
 {
-	vec4 fragLightPos = u_ViewProjectionSpotShadow[light] * vec4(position, 1.0f);
+	vec4 fragLightPos = uSpotViewProjections[light] * vec4(position, 1.0f);
 	vec3 projCoords = fragLightPos.xyz / fragLightPos.w;
 	projCoords = (projCoords + 1.f) * .5f;
 
@@ -176,7 +173,7 @@ float PointLightShadow(int light, vec3 position, vec3 lightDirection, vec3 light
 	depth /= (near_far.y - near_far.x) * dist;
 	depth = (depth * 0.5) + 0.5;
 
-	
+#if USE_POISSONDISK
 	float shadow = 0.0;
 	int texel_size = textureSize(point_shadow_array_texture, 0).x;
 	float shadow_region = light_size * depth;
@@ -197,10 +194,37 @@ float PointLightShadow(int light, vec3 position, vec3 lightDirection, vec3 light
 	}
 
 	return shadow / 9.0;
+
+#else
+	return texture(point_shadow_array_texture, vec4(-lightDirection, light), depth).r;
+#endif
 }
 
-float random(in vec3 seed, in float freq)
+
+float SampleVariancePointLightShadow(int light, vec3 position, vec3 lightDirection, vec3 lightDirectionUN, vec2 near_far, 
+	in samplerCubeArray point_shadow_array_texture)
 {
-	float dt = dot(floor(seed * freq), vec3(53.1215, 21.1352, 9.1322));
-	return fract(sin(dt) * 2105.2354);
+
+	vec3 absDirect = abs(lightDirectionUN);
+	float dist = max(absDirect.x, max(absDirect.y, absDirect.z));
+	float depth = (near_far.y + near_far.x) * dist;
+	depth += (-2 * near_far.y * near_far.x);
+	depth /= (near_far.y - near_far.x) * dist;
+	depth = (depth * 0.5) + 0.5;
+
+	vec2 moments =  texture(point_shadow_array_texture, vec4(-lightDirection, light)).xy;
+
+	return SampleVariance(moments, depth);
+}
+
+float SampleVarianceSpotLightShadow(int light, vec3 position, in sampler2DArray shadow_array_texture)
+{
+	vec4 fragLightPos = uSpotViewProjections[light] * vec4(position, 1.0f);
+	vec3 projCoords = fragLightPos.xyz / fragLightPos.w;
+	projCoords = (projCoords + 1.f) * .5f;
+
+	vec3 uvc = projCoords;
+	vec2 moments =  texture(shadow_array_texture,vec3(uvc.xy, light)).xy;
+
+	return SampleVariance(moments, uvc.z);
 }

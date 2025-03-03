@@ -38,7 +38,7 @@ namespace BHive
 
 	struct FLightData
 	{
-		const Light *mLight;
+		const Light *mLight = nullptr;
 		FTransform mTransform;
 	};
 
@@ -48,7 +48,7 @@ namespace BHive
 
 	struct FSceneData
 	{
-		glm::mat4 mProjection, mView;
+		glm::mat4 mProjection{1.f}, mView{1.f};
 
 		LightList mLights;
 

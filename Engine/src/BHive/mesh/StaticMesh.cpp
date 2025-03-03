@@ -4,7 +4,7 @@
 namespace BHive
 {
 	StaticMesh::StaticMesh(const FMeshData &data)
-		: IRenderableAsset(data)
+		: BaseMesh(data)
 	{
 	}
 
@@ -28,12 +28,12 @@ namespace BHive
 
 	void StaticMesh::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		IRenderableAsset::Save(ar);
+		BaseMesh::Save(ar);
 	}
 
 	void StaticMesh::Load(cereal::BinaryInputArchive &ar)
 	{
-		IRenderableAsset::Load(ar);
+		BaseMesh::Load(ar);
 	}
 
 	REFLECT(StaticMesh)

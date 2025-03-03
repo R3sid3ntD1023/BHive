@@ -24,7 +24,7 @@ namespace BHive
 		virtual void SetData(const void *data, uint64_t size, uint32_t offsetX = 0, uint32_t offsetY = 0) {}
 		virtual const FTextureSpecification &GetSpecification() const { return mSpecification; }
 		virtual uint32_t GetRendererID() const { return mTextureID; }
-		// virtual uint64_t GetResourceHandle() const { return mHandle; };
+		virtual uint64_t GetResourceHandle() const { return mResourceHandle; };
 		// virtual uint64_t GetImageHandle() const { return mImageHandle; }
 
 		void AttachToFramebuffer(const Ref<Framebuffer> &framebuffer, uint32_t attachment, uint32_t level = 0);
@@ -34,7 +34,7 @@ namespace BHive
 		FTextureSpecification mSpecification;
 		uint32_t mTextureID{0};
 		uint32_t mTextureTarget{0};
-		// uint64_t mHandle = 0;
+		uint64_t mResourceHandle = 0;
 		// uint64_t mImageHandle = 0;
 	};
 } // namespace BHive

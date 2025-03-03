@@ -16,6 +16,8 @@ namespace BHive
 	class SkeletalAnimation;
 	class AnimationClip;
 	class SkeletalPose;
+	class Framebuffer;
+	class PPlane;
 
 	class SandboxLayer : public Layer
 	{
@@ -24,9 +26,11 @@ namespace BHive
 		virtual void OnUpdate(float dt) override;
 		virtual void OnDetach() override;
 		virtual void OnEvent(Event &e) override;
+		virtual void OnGuiRender() override;
 
 	private:
 		bool OnWindowResize(WindowResizeEvent &e);
+		void DrawScene();
 
 	private:
 		EditorCamera mCamera;
@@ -42,5 +46,9 @@ namespace BHive
 		Ref<AnimationClip> mAnimationClip;
 		Ref<Shader> mShader;
 		Ref<SkeletalPose> mPose;
+
+		Ref<Framebuffer> mFramebuffer;
+		Ref<PPlane> mScreenQuad;
+		Ref<Shader> mScreenQuadShader;
 	};
 } // namespace BHive

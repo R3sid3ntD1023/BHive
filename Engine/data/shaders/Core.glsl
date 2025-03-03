@@ -18,6 +18,32 @@ float Max3(vec3 v)
 	return max(max(v.x, v.y), v.z);
 }
 
+mat4 mix(mat4 a, mat4 b, float v)
+{
+	return (a * (1.f - v)) +  (b *  v);
+}
+
+float linStep(float low, float high, float v )
+{
+	return clamp((v-low)/(high - low), 0, 1);
+}
+
+float SampleVariance(vec2 moments, float compare)
+{
+	float p = step(compare, moments.x);
+	float variance = max(moments.y - moments.x * moments.x, 0.00002);
+	float d = compare - moments.x;
+	float pMax = linStep(0.2, 1, variance / (variance + d*d));
+	return min(max(p, pMax), 1.0);
+}
+
+float random(in vec3 seed, in float freq)
+{
+	float dt = dot(floor(seed * freq), vec3(53.1215, 21.1352, 9.1322));
+	return fract(sin(dt) * 2105.2354);
+}
+
+
 vec3 CalculateTangentSpaceNormal(vec3 N, mat3 TBN, vec4 normal_map)
 {
 	//calaculate tangent space normal

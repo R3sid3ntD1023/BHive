@@ -42,7 +42,7 @@ namespace BHive
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<InputContextEditor>, InputContext)
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<MaterialEditor>, Material)
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<SkeletonEditor>, Skeleton)
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<MeshEditor>, IRenderableAsset)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<MeshEditor>, BaseMesh)
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<AnimationEditor>, SkeletalAnimation)
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<TextureEditor>, Texture2D)
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<AnimGraphEditor>, AnimGraph)

@@ -10,6 +10,8 @@ namespace BHive
 
 	uint32_t GetTextureCompareFunc(ETextureCompareFunc func);
 
+	uint32_t GetTextureFormat(ETextureFormat format);
+
 	uint32_t GetGLFilterMode(EMinFilter mode);
 	uint32_t GetGLFilterMode(EMagFilter mode);
 	uint32_t GetGLWrapMode(EWrapMode mode);

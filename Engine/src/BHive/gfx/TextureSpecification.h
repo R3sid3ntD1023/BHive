@@ -30,12 +30,22 @@ namespace BHive
 		CLAMP_TO_BORDER
 	};
 
+	enum class ETextureFormat
+	{
+		R,
+		RG,
+		RGB,
+		RGBA
+	};
+
 	enum class EFormat
 	{
 		Invalid,
 		R8,
 		R8F,
+		R32F,
 		RG8,
+		RG32F,
 		RG16F,
 		RGB8,
 		RGBA8,
@@ -95,6 +105,7 @@ namespace BHive
 	{
 		uint32_t mChannels;
 		EFormat mFormat;
+		ETextureFormat Format = ETextureFormat::RGBA;
 		EWrapMode mWrapMode = EWrapMode::REPEAT;
 		EMinFilter mMinFilter = EMinFilter::LINEAR;
 		EMagFilter mMagFilter = EMagFilter::LINEAR;

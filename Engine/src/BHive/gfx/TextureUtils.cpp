@@ -86,6 +86,26 @@ namespace BHive
 		return 0;
 	}
 
+	uint32_t GetTextureFormat(ETextureFormat format)
+	{
+		switch (format)
+		{
+		case BHive::ETextureFormat::R:
+			return GL_RED;
+		case BHive::ETextureFormat::RG:
+			return GL_RG;
+		case BHive::ETextureFormat::RGB:
+			return GL_RGB;
+		case BHive::ETextureFormat::RGBA:
+			return GL_RGBA;
+		default:
+			break;
+		}
+
+		ASSERT(false);
+		return 0;
+	}
+
 	uint32_t GetGLFilterMode(EMinFilter mode)
 	{
 		switch (mode)
@@ -151,9 +171,11 @@ namespace BHive
 		{
 		case BHive::EFormat::R8:
 		case BHive::EFormat::R8F:
+		case BHive::EFormat::R32F:
 			return GL_RED;
 		case BHive::EFormat::RG8:
 		case BHive::EFormat::RG16F:
+		case BHive::EFormat::RG32F:
 			return GL_RG;
 		case BHive::EFormat::RGB8:
 		case BHive::EFormat::RGB16F:
@@ -193,8 +215,12 @@ namespace BHive
 			return GL_R8;
 		case BHive::EFormat::R8F:
 			return GL_R8;
+		case BHive::EFormat::R32F:
+			return GL_R32F;
 		case BHive::EFormat::RG16F:
 			return GL_RG16F;
+		case BHive::EFormat::RG32F:
+			return GL_RG32F;
 		case BHive::EFormat::RG8:
 			return GL_RG8;
 		case BHive::EFormat::RGB8:

@@ -57,76 +57,20 @@ namespace BHive
 		Initialize();
 	}
 
-	void GLFramebuffer::ClearAttachment(uint32_t attachmentIndex, unsigned type, const void *data)
+	void GLFramebuffer::ClearAttachment(uint32_t attachmentIndex, unsigned type, const float *data)
 	{
 		ASSERT(attachmentIndex < mColorAttachments.size());
 
 		auto &attachment = mColorAttachments[attachmentIndex];
 		auto &spec = mColorSpecifications[attachmentIndex];
 
-		glClearTexImage(attachment->GetRendererID(), 0, GetGLFormat(spec.mSpecification.mFormat), type, data);
+		glClearNamedFramebufferfv(mFramebufferID, GL_COLOR, attachmentIndex, data);
 	}
 
 	void GLFramebuffer::Blit(Ref<Framebuffer> &target)
 	{
 		if (!target || mSpecification.Width == 0 || mSpecification.Height == 0)
 			return;
-
-		BlitInternal(target);
-	}
-
-	void GLFramebuffer::ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data)
-	{
-		ASSERT(attachmentIndex < mColorSpecifications.size());
-
-		ReadPixelInternal(attachmentIndex, x, y, w, h, type, data);
-	}
-
-	void GLFramebuffer::BindForRead()
-	{
-
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, mFramebufferID);
-	}
-
-	bool GLFramebuffer::SaveToImage(const std::filesystem::path &path)
-	{
-		return SaveToImage(*this, path);
-	}
-
-	bool GLFramebuffer::SaveToImage(Framebuffer &framebuffer, const std::filesystem::path &path)
-	{
-		try
-		{
-			auto w = framebuffer.GetSpecification().Width;
-			auto h = framebuffer.GetSpecification().Height;
-
-			GLsizei channels = 4;
-			GLsizei stride = channels * w;
-			GLsizei buffersize = stride * h;
-			std::vector<uint8_t> buffer(buffersize);
-
-			framebuffer.ReadPixel(0, 0, 0, w, h, GL_UNSIGNED_BYTE, buffer.data());
-
-			ImageUtils::SaveImage(path, w, h, channels, buffer.data());
-
-			return true;
-		}
-		catch (std::exception &e)
-		{
-			LOG_ERROR("Save Image {}", e.what());
-		}
-
-		return false;
-	}
-
-	void GLFramebuffer::Release()
-	{
-
-		glDeleteFramebuffers(1, &mFramebufferID);
-	}
-
-	void GLFramebuffer::BlitInternal(Ref<Framebuffer> &target)
-	{
 
 		const auto &specs = mSpecification;
 
@@ -136,38 +80,42 @@ namespace BHive
 		const auto &dst_specs = target->GetSpecification();
 		auto count = dst_specs.Attachments.GetAttachments().size();
 
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, mFramebufferID);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target->GetRendererID());
+		const auto read_target = mFramebufferID;
+		const auto draw_target = target->GetRendererID();
 
 		for (size_t i = 0; i < count; i++)
 		{
-			glReadBuffer(GL_COLOR_ATTACHMENT0 + (uint32_t)i);
-			glDrawBuffer(GL_COLOR_ATTACHMENT0 + (uint32_t)i);
-			glBlitFramebuffer(0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+			glNamedFramebufferReadBuffer(read_target, GL_COLOR_ATTACHMENT0 + i);
+			glNamedFramebufferDrawBuffer(draw_target, GL_COLOR_ATTACHMENT0 + i);
+
+			glBlitNamedFramebuffer(
+				read_target, draw_target, 0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height,
+				GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		}
 
 		if (target->GetDepthAttachment() && GetDepthAttachment())
 		{
-			glBlitFramebuffer(
-				0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height, GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+			glBlitNamedFramebuffer(
+				read_target, draw_target, 0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height,
+				GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 		}
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void GLFramebuffer::ReadPixelInternal(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data)
+	void GLFramebuffer::ReadPixel(
+		uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data) const
 	{
+		ASSERT(attachmentIndex < mColorSpecifications.size());
+
 		auto &spec = mColorSpecifications[attachmentIndex];
 
-		glBindFramebuffer(GL_FRAMEBUFFER, mFramebufferID);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, mFramebufferID);
-		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
+		glNamedFramebufferReadBuffer(mFramebufferID, GL_COLOR_ATTACHMENT0 + attachmentIndex);
 		glReadPixels(x, y, w, h, GetGLFormat(spec.mSpecification.mFormat), type, data);
+	}
 
-		glReadBuffer(GL_NONE);
+	void GLFramebuffer::Release()
+	{
 
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDeleteFramebuffers(1, &mFramebufferID);
 	}
 
 	void GLFramebuffer::Initialize()
@@ -191,13 +139,15 @@ namespace BHive
 				switch (specification.TextureType)
 				{
 				case ETextureType::TEXTURE_2D:
-					attachment = Texture2D::Create(mSpecification.Width, mSpecification.Height, specification.mSpecification, mSpecification.Samples);
+					attachment = Texture2D::Create(
+						mSpecification.Width, mSpecification.Height, specification.mSpecification, mSpecification.Samples);
 					break;
 				case ETextureType::TEXTURE_CUBE_MAP:
 					attachment = TextureCube::Create(mSpecification.Width, specification.mSpecification);
 					break;
 				case ETextureType::TEXTURE_3D:
-					attachment = Texture3D::Create(mSpecification.Width, mSpecification.Height, mSpecification.Depth, specification.mSpecification);
+					attachment = Texture3D::Create(
+						mSpecification.Width, mSpecification.Height, mSpecification.Depth, specification.mSpecification);
 					break;
 				default:
 					break;
@@ -210,15 +160,15 @@ namespace BHive
 			switch (mDepthSpecification.TextureType)
 			{
 			case ETextureType::TEXTURE_2D:
-				mDepthAttachment =
-					Texture2D::Create(mSpecification.Width, mSpecification.Height, mDepthSpecification.mSpecification, mSpecification.Samples);
+				mDepthAttachment = Texture2D::Create(
+					mSpecification.Width, mSpecification.Height, mDepthSpecification.mSpecification, mSpecification.Samples);
 				break;
 			case ETextureType::TEXTURE_CUBE_MAP:
 				mDepthAttachment = TextureCube::Create(mSpecification.Width, mDepthSpecification.mSpecification);
 				break;
 			case ETextureType::TEXTURE_3D:
-				mDepthAttachment =
-					Texture3D::Create(mSpecification.Width, mSpecification.Height, mSpecification.Depth, mDepthSpecification.mSpecification);
+				mDepthAttachment = Texture3D::Create(
+					mSpecification.Width, mSpecification.Height, mSpecification.Depth, mDepthSpecification.mSpecification);
 				break;
 			default:
 				break;
@@ -234,7 +184,8 @@ namespace BHive
 
 		if (mDepthAttachment)
 		{
-			glNamedFramebufferTexture(mFramebufferID, GetDepthAttachmentType(mDepthSpecification.mSpecification.mFormat), *mDepthAttachment, 0);
+			glNamedFramebufferTexture(
+				mFramebufferID, GetDepthAttachmentType(mDepthSpecification.mSpecification.mFormat), *mDepthAttachment, 0);
 		}
 
 		if (num_attachments > 1)
@@ -251,14 +202,16 @@ namespace BHive
 			glNamedFramebufferDrawBuffer(mFramebufferID, GL_NONE);
 		}
 
-		if (mSpecification.mWriteOnly)
+		if (mSpecification.WriteOnly)
 		{
 			auto &specification = mSpecification.mRenderSpecification;
 			glCreateRenderbuffers(1, &mRenderBufferID);
 			glNamedRenderbufferStorage(
-				mRenderBufferID, GetGLInternalFormat(specification.mSpecification.mFormat), mSpecification.Width, mSpecification.Height);
+				mRenderBufferID, GetGLInternalFormat(specification.mSpecification.mFormat), mSpecification.Width,
+				mSpecification.Height);
 			glNamedFramebufferRenderbuffer(
-				mFramebufferID, GetDepthAttachmentType(specification.mSpecification.mFormat), GL_RENDERBUFFER, mRenderBufferID);
+				mFramebufferID, GetDepthAttachmentType(specification.mSpecification.mFormat), GL_RENDERBUFFER,
+				mRenderBufferID);
 		}
 
 		ASSERT(glCheckNamedFramebufferStatus(mFramebufferID, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);

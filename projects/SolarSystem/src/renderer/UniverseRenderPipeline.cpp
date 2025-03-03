@@ -1,5 +1,5 @@
 #include "mesh/indirect_mesh/IndirectMesh.h"
-#include "mesh/IRenderableAsset.h"
+#include "mesh/BaseMesh.h"
 #include "renderers/Renderer.h"
 #include "ShaderInstance.h"
 #include "UniverseRenderPipeline.h"

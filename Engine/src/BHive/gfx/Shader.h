@@ -29,8 +29,6 @@ namespace BHive
 			SetUniform(location, v);
 		}
 
-		void SetBindlessTexture(const std::string &name, uint64_t texture) const;
-
 		virtual uint32_t GetRendererID() const = 0;
 		virtual const std::string &GetName() const = 0;
 		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1) = 0;
@@ -52,24 +50,8 @@ namespace BHive
 		virtual void SetUniform(int location, const glm::vec3 &value) const = 0;
 		virtual void SetUniform(int location, const glm::vec4 &value) const = 0;
 		virtual void SetUniform(int location, const glm::mat4 &value) const = 0;
-		virtual void SetBindlessTexture(int location, uint64_t value) const = 0;
+		virtual void SetUniform(int location, uint64_t value) const = 0;
 		virtual int GetUniformLocation(const std::string &name) const = 0;
-	};
-
-	class ShaderLibrary
-	{
-	public:
-		using Shaders = std::unordered_map<std::string, Ref<Shader>>;
-
-		static BHIVE void Add(const char *name, const Ref<Shader> &shader);
-		static BHIVE Ref<Shader> Load(const char *name, const std::string &vertex_src, const std::string &fragment_src);
-		static BHIVE Ref<Shader> Load(const char *name, const std::string &comp_src);
-		static BHIVE Ref<Shader> Load(const std::filesystem::path &file);
-		static BHIVE Ref<Shader> Get(const char *name);
-		static BHIVE bool Contains(const std::string &name);
-
-	private:
-		static inline Shaders mShaders;
 	};
 
 	namespace utils

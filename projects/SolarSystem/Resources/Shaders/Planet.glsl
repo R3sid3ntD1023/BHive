@@ -1,7 +1,7 @@
 #type vertex
 
 #version 460 core
-#extension GL_NV_uniform_buffer_std430_layout : require
+#include <Core.glsl>
 
 layout(location = 0) in vec3 vPos;
 layout(location = 1) in vec2 vTexCoord;
@@ -19,16 +19,16 @@ layout(std430, binding = 0) uniform CameraBuffer
 	vec2 u_near_far;
 };
 
-layout(std430, binding = 0) restrict readonly buffer PerObjectSSBO
+layout(std430, binding = 1) restrict readonly buffer PerObjectSSBO
 {
 	PerObjectData object[];
 };
 
-
-layout(std430, binding = 1) restrict readonly buffer InstanceBufferSSBO
+layout(std430, binding = 2) restrict readonly buffer InstanceSSBO
 {
-	mat4 matrices[];
+	mat4 instances[];
 };
+
 
 layout(location = 0) out struct VS_OUT
 {
@@ -39,11 +39,12 @@ layout(location = 0) out struct VS_OUT
 
 void main()
 {
-	bool instanced = gl_InstanceID  != 0; 
 
-	mat4 instance = (mat4(1) * (1.f - float(instanced))) +  (matrices[gl_InstanceID] *  float(instanced));
+	bool instanced = gl_InstanceID != -1; 
 
-	mat4 model = instance * object[gl_DrawID].WorldMatrix;
+	mat4 instance = mix( instances[gl_InstanceID], mat4(1), float(instanced));
+
+	mat4 model = object[gl_DrawID].WorldMatrix * instance;
 	vec4 worldPos = model * vec4(vPos, 1);
 	vs_out.position = worldPos.xyz;
 	vs_out.texcoord = vTexCoord;
@@ -57,8 +58,6 @@ void main()
 #type fragment
 
 #version 460 core
-#extension GL_NV_bindless_texture : require
-#extension GL_NV_uniform_buffer_std430_layout : require
 
 #define SINGLE_CHANNEL 1 << 0
 
@@ -108,7 +107,7 @@ void main()
 	fNormal = vec4(normalize(vs_in.normal), 1);
 	fEmission = vec4(uEmission, 1);
 
-	  gl_FragDepth = LinerizeDepth(gl_FragCoord.z, u_near_far.x, u_near_far.y);
+	gl_FragDepth = LinerizeDepth(gl_FragCoord.z, u_near_far.x, u_near_far.y);
 }
 
 float LinerizeDepth(float depth, float near, float far)

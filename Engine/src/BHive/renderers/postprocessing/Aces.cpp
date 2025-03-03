@@ -3,12 +3,13 @@
 #include "gfx/UniformBuffer.h"
 #include "shaders/AcesFilter.h"
 #include "gfx/Texture.h"
+#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
 	Aces::Aces(uint32_t w, uint32_t h)
 	{
-		mComputeShader = ShaderLibrary::Load("Aces", aces_comp);
+		mComputeShader = ShaderManager::Get().Load("Aces", aces_comp);
 		{
 			auto &reflection_data = mComputeShader->GetRelectionData();
 			auto &buffer = reflection_data.UniformBuffers.at("Aces");

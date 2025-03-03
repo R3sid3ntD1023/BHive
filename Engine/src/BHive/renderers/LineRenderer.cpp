@@ -5,6 +5,7 @@
 #include "LineRenderer.h"
 #include "Renderer.h"
 #include "shaders/LineShader.h"
+#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
@@ -36,7 +37,7 @@ namespace BHive
 			mVertexArray = VertexArray::Create();
 			mVertexArray->AddVertexBuffer(mVertexBuffer);
 
-			mLineShader = ShaderLibrary::Load("Line", line_vert, line_frag);
+			mLineShader = ShaderManager::Get().Load("Line", line_vert, line_frag);
 		}
 
 		~RenderData()

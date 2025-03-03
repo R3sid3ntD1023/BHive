@@ -3,6 +3,7 @@
 #include "gfx/Texture.h"
 #include "Material.h"
 #include "renderers/Renderer.h"
+#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
@@ -18,9 +19,8 @@ namespace BHive
 			{DISPLACEMENT_TEX, {12, nullptr}},
 			{METALLIC_ROUGHNESS_TEX, {13, nullptr}}};
 
-		mTextures = {{ALBEDO_TEX, nullptr},		  {METALLIC_TEX, nullptr},
-					 {ROUGHNESS_TEX, nullptr},	  {NORMAL_TEX, nullptr},
-					 {EMISSION_TEX, nullptr},	  {OPACITY_TEX, nullptr},
+		mTextures = {{ALBEDO_TEX, nullptr},		  {METALLIC_TEX, nullptr},			{ROUGHNESS_TEX, nullptr},
+					 {NORMAL_TEX, nullptr},		  {EMISSION_TEX, nullptr},			{OPACITY_TEX, nullptr},
 					 {DISPLACEMENT_TEX, nullptr}, {METALLIC_ROUGHNESS_TEX, nullptr}};
 	}
 
@@ -91,23 +91,20 @@ namespace BHive
 
 	Ref<Shader> Material::GetShader()
 	{
-		static Ref<Shader> shader =
-			ShaderLibrary::Load(ENGINE_PATH "/data/shaders/BDRFMaterial.glsl");
+		static Ref<Shader> shader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/BDRFMaterial.glsl");
 		return shader;
 	}
 
 	void Material::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale,
-		   mFlags, mTextures);
+		ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale, mFlags, mTextures);
 	}
 
 	void Material::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale,
-		   mFlags, mTextures);
+		ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale, mFlags, mTextures);
 	}
 
 	bool Material::CastShadows() const
@@ -124,13 +121,10 @@ namespace BHive
 	REFLECT(MaterialFlags)
 	{
 		BEGIN_REFLECT_ENUM(MaterialFlags)
-		(ENUM_VALUE(MaterialFlag_None, "None"),
-		 ENUM_VALUE(MaterialFlag_Show_Vertex_Colors, "VertexColors"),
+		(ENUM_VALUE(MaterialFlag_None, "None"), ENUM_VALUE(MaterialFlag_Show_Vertex_Colors, "VertexColors"),
 		 ENUM_VALUE(MaterialFlag_Alpha_Is_Transparency, "Alpha Is Transparency"),
-		 ENUM_VALUE(MaterialFlag_Cast_Shadows, "Cast Shadows"),
-		 ENUM_VALUE(MaterialFlag_Recieve_Shadows, "Recieve Shadows"),
-		 ENUM_VALUE(MaterialFlag_DoubleSided, "Double Sided"),
-		 ENUM_VALUE(MaterialFlag_Transparent, "Tranparent"),
+		 ENUM_VALUE(MaterialFlag_Cast_Shadows, "Cast Shadows"), ENUM_VALUE(MaterialFlag_Recieve_Shadows, "Recieve Shadows"),
+		 ENUM_VALUE(MaterialFlag_DoubleSided, "Double Sided"), ENUM_VALUE(MaterialFlag_Transparent, "Tranparent"),
 		 ENUM_VALUE(MaterialFlag_UnLit, "UnLit"), ENUM_VALUE(MaterialFlag_Shadows, "Shadows"));
 	}
 
@@ -144,16 +138,11 @@ namespace BHive
 		 META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider))
 			REFLECT_PROPERTY("Roughness", mRoughness)(
 				META_DATA(EPropertyMetaData_Min, 0.0f), META_DATA(EPropertyMetaData_Max, 1.f),
-				META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider))
-				REFLECT_PROPERTY("DiaElectric", mDiaElectric)
-					REFLECT_PROPERTY("Emission", mEmission) REFLECT_PROPERTY("Opacity", mOpacity)(
-						META_DATA(EPropertyMetaData_Min, 0.0f),
-						META_DATA(EPropertyMetaData_Max, 1.f),
-						META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider))
-						REFLECT_PROPERTY("Tiling", mTiling)
-							REFLECT_PROPERTY("DepthScale", mDepthScale)
-								REFLECT_PROPERTY("Flags", mFlags)
-									REFLECT_PROPERTY("Textures", mTextures)(META_DATA(
-										EPropertyMetaData_Flags, EPropertyFlags_FixedSize));
+				META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider)) REFLECT_PROPERTY("DiaElectric", mDiaElectric)
+				REFLECT_PROPERTY("Emission", mEmission) REFLECT_PROPERTY("Opacity", mOpacity)(
+					META_DATA(EPropertyMetaData_Min, 0.0f), META_DATA(EPropertyMetaData_Max, 1.f),
+					META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider)) REFLECT_PROPERTY("Tiling", mTiling)
+					REFLECT_PROPERTY("DepthScale", mDepthScale) REFLECT_PROPERTY("Flags", mFlags) REFLECT_PROPERTY(
+						"Textures", mTextures)(META_DATA(EPropertyMetaData_Flags, EPropertyFlags_FixedSize));
 	}
 } // namespace BHive

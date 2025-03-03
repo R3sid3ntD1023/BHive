@@ -5,6 +5,7 @@
 #include "HDRConverter.h"
 #include "mesh/primitives/Cube.h"
 #include <glad/glad.h>
+#include "gfx/ShaderManager.h"
 
 #define ENVIRONMENT_MAP_SIZE 512
 #define PREFILTER_MAP_SIZE 128
@@ -67,11 +68,11 @@ namespace BHive
 
 		mCube = CreateRef<PCube>(1.0f);
 
-		mEquirectangularShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/Equirectangular.glsl");
+		mEquirectangularShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/Equirectangular.glsl");
 
-		mIrradianceShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/Irradiance.glsl");
-		mPreFilterEnironmentShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/PreFilterEnironmentShader.glsl");
-		mBRDFLUTShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/BRDFLUT.glsl");
+		mIrradianceShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/Irradiance.glsl");
+		mPreFilterEnironmentShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/PreFilterEnironmentShader.glsl");
+		mBRDFLUTShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/BRDFLUT.glsl");
 	}
 
 	void HDRConverter::SetEnvironmentMap(const Ref<Texture> &texture)

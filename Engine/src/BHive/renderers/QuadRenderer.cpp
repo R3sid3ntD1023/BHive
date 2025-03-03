@@ -12,6 +12,7 @@
 #include "core/profiler/CPUGPUProfiler.h"
 #include "font/MSDFData.h"
 #include "gfx/StorageBuffer.h"
+#include "gfx/ShaderManager.h"
 
 #define TEXT_SSBO_BINDING 0
 
@@ -166,7 +167,7 @@ namespace BHive
 
 			mTextureStorage = StorageBuffer::Create(sizeof(uint64_t) * TextureData::sMaxTextureCount);
 
-			mShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/Quad.glsl");
+			mShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/Quad.glsl");
 		}
 
 		void StartBatch() override
@@ -216,7 +217,7 @@ namespace BHive
 
 			mTextureStorage = StorageBuffer::Create(sizeof(uint64_t) * TextureData::sMaxTextureCount);
 
-			mShader = ShaderLibrary::Load("Text", text_vert, text_frag);
+			mShader = mShader = ShaderManager::Get().Load("Text", text_vert, text_frag);
 		}
 
 		void StartBatch() override
@@ -264,7 +265,7 @@ namespace BHive
 			mVertexArray->SetIndexBuffer(mIndexBuffer);
 			mVertexArray->AddVertexBuffer(mVertexBuffer);
 
-			mShader = ShaderLibrary::Load("Circle", circle_vert, circle_frag);
+			mShader = ShaderManager::Get().Load("Circle", circle_vert, circle_frag);
 		}
 
 		void Flush() override

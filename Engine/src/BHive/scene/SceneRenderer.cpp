@@ -19,6 +19,7 @@
 
 #include "renderers/postprocessing/Bloom.h"
 #include "core/profiler/CPUGPUProfiler.h"
+#include "gfx/ShaderManager.h"
 
 #define DRAW_ELEMENTS()                    \
 	RenderCommand::DrawElementsBaseVertex( \
@@ -63,9 +64,9 @@ namespace BHive
 
 		mCube = CreateRef<PSphere>(300.f);
 
-		mQuadShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/ScreenQuad.glsl");
+		mQuadShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/ScreenQuad.glsl");
 
-		mSkyBoxShader = ShaderLibrary::Load(ENGINE_PATH "/data/shaders/SkyBox.glsl");
+		mSkyBoxShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/SkyBox.glsl");
 
 		auto environment_texture = TextureImporter::Import(ENGINE_PATH "/data/hdr/industrial_sunset_puresky_2k.hdr");
 		HDRConverter::Get().SetEnvironmentMap(environment_texture);

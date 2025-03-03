@@ -19,7 +19,7 @@ struct AstroidComponent : public MeshComponent
 	REFLECTABLEV(Component)
 
 protected:
-	void InitIndirectMesh(const Ref<BHive::IRenderableAsset> &renderable, Ref<BHive::IndirectRenderable> &indirect) override;
+	void InitIndirectMesh(const Ref<BHive::BaseMesh> &renderable, Ref<BHive::IndirectRenderable> &indirect) override;
 
 private:
 	void CalculateMatrices();

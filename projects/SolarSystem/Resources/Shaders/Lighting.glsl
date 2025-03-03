@@ -20,8 +20,6 @@ void main()
 
 #version 460 core
 
-#extension GL_ARB_shading_language_include : require
-
 #include <Core.glsl>
 #include <Lighting.glsl>
 
@@ -46,16 +44,16 @@ void main()
 	vec3 ambient = vec3(.3);
 
 	vec3 Lo = vec3(0.0);
-	for(int i = 0; i < u_NumLights; i++)
+	for(int i = 0; i < uNumLights; i++)
 	{
-		Light light = lights[i];
+		Light light = uLights[i];
 		uint type = light.type;
 
 		switch(type)
 		{
 			case 1:
 			{
-				Lo += PointLight(position, normal, light) * light.color;
+				Lo += PointLight(position, normal, light.position, light.radius) * light.brightness * light.color;
 				
 				break;
 			}

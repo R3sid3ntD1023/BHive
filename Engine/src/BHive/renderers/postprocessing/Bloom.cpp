@@ -9,6 +9,7 @@
 #include "shaders/UpSample.h"
 #include "shaders/PreFilter.h"
 #include "gfx/UniformBuffer.h"
+#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
@@ -17,9 +18,9 @@ namespace BHive
 		: mSettings(data),
 		  mSize(width, height)
 	{
-		mPreFilterShader = ShaderLibrary::Load("PreFilter", prefiler_comp);
-		mDownSamplerShader = ShaderLibrary::Load("DownSample", downsample_comp);
-		mUpSamplerShader = ShaderLibrary::Load("UpSample", upsample_comp);
+		mPreFilterShader = ShaderManager::Get().Load("PreFilter", prefiler_comp);
+		mDownSamplerShader = ShaderManager::Get().Load("DownSample", downsample_comp);
+		mUpSamplerShader = ShaderManager::Get().Load("UpSample", upsample_comp);
 		mMipMaps.resize(iterations);
 
 		{

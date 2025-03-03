@@ -4,14 +4,15 @@
 #include "gfx/Shader.h"
 #include "gfx/Texture.h"
 #include "mesh/indirect_mesh/IndirectMesh.h"
-#include "mesh/IRenderableAsset.h"
+#include "mesh/BaseMesh.h"
 #include "MeshComponent.h"
 #include "renderer/RenderPipeline.h"
 #include "renderer/ShaderInstance.h"
+#include "gfx/ShaderManager.h"
 
 MeshComponent::MeshComponent()
 {
-	auto shader = BHive::ShaderLibrary::Load(RESOURCE_PATH "Shaders/Planet.glsl");
+	auto shader = BHive::ShaderManager::Get().Get("Planet.glsl");
 	mShaderInstance = CreateRef<BHive::ShaderInstance>(shader);
 }
 
@@ -33,7 +34,7 @@ void MeshComponent::Load(cereal::JSONInputArchive &ar)
 {
 	ar(MAKE_NVP(Color), MAKE_NVP(Emission), MAKE_NVP(Flags), MAKE_NVP(Texture), MAKE_NVP(Mesh));
 
-	if (auto renderable = BHive::AssetManager::GetAsset<BHive::IRenderableAsset>(Mesh))
+	if (auto renderable = BHive::AssetManager::GetAsset<BHive::BaseMesh>(Mesh))
 	{
 		mIndirectMesh = CreateRef<BHive::IndirectRenderable>();
 		InitIndirectMesh(renderable, mIndirectMesh);
@@ -49,8 +50,7 @@ void MeshComponent::Load(cereal::JSONInputArchive &ar)
 	}
 }
 
-void MeshComponent::InitIndirectMesh(
-	const Ref<BHive::IRenderableAsset> &renderable, Ref<BHive::IndirectRenderable> &indirect)
+void MeshComponent::InitIndirectMesh(const Ref<BHive::BaseMesh> &renderable, Ref<BHive::IndirectRenderable> &indirect)
 {
 	indirect->Init(renderable);
 }

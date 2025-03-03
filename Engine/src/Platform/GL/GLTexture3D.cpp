@@ -15,7 +15,8 @@ namespace BHive
 
 		glCreateTextures(target, 1, &mTextureID);
 
-		glTextureStorage3D(mTextureID, 1, GetGLInternalFormat(specification.mFormat), width, height, depth);
+		glTextureStorage3D(
+			mTextureID, specification.mLevels, GetGLInternalFormat(specification.mFormat), width, height, depth);
 
 		if (mSpecification.mLevels > 1)
 		{
@@ -38,22 +39,27 @@ namespace BHive
 		{
 			if (specification.mCompareMode.has_value())
 			{
-				glTextureParameteri(mTextureID, GL_TEXTURE_COMPARE_MODE, GetTextureCompareMode(specification.mCompareMode.value()));
+				glTextureParameteri(
+					mTextureID, GL_TEXTURE_COMPARE_MODE, GetTextureCompareMode(specification.mCompareMode.value()));
 			}
 
 			if (specification.mCompareFunc.has_value())
 			{
-				glTextureParameteri(mTextureID, GL_TEXTURE_COMPARE_FUNC, GetTextureCompareFunc(specification.mCompareFunc.value()));
+				glTextureParameteri(
+					mTextureID, GL_TEXTURE_COMPARE_FUNC, GetTextureCompareFunc(specification.mCompareFunc.value()));
 			}
 		}
 
-				// mHandle = glGetTextureHandleARB(mTextureID);
-		// glMakeTextureHandleResidentARB(mHandle);
+		mResourceHandle = glGetTextureHandleNV(mTextureID);
+
+		if (!glIsTextureHandleResidentNV(mResourceHandle))
+			glMakeTextureHandleResidentNV(mResourceHandle);
 	}
 
 	GLTexture3D::~GLTexture3D()
 	{
-		// glMakeTextureHandleNonResidentARB(mHandle);
+		if (glIsTextureHandleResidentNV(mResourceHandle))
+			glMakeTextureHandleNonResidentNV(mResourceHandle);
 		glDeleteTextures(1, &mTextureID);
 	}
 
@@ -84,7 +90,7 @@ namespace BHive
 	{
 
 		glTextureSubImage3D(
-			mTextureID, 0, offsetX, offsetY, 0, mWidth, mHeight, mDepth, GetGLFormat(mSpecification.mFormat), GetGLType(mSpecification.mFormat),
-			data);
+			mTextureID, 0, offsetX, offsetY, 0, mWidth, mHeight, mDepth, GetGLFormat(mSpecification.mFormat),
+			GetGLType(mSpecification.mFormat), data);
 	}
 } // namespace BHive

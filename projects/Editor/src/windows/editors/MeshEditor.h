@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-	class MeshEditor : public TAssetEditor<IRenderableAsset>
+	class MeshEditor : public TAssetEditor<BaseMesh>
 	{
 	public:
 		MeshEditor();

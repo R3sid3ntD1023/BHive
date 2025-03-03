@@ -15,12 +15,11 @@ namespace BHive
 		void UnBind() const;
 
 		void Resize(uint32_t width, uint32_t height);
-		void ClearAttachment(uint32_t attachmentIndex, unsigned type, const void *data);
-		void Blit(Ref<Framebuffer>& target);
+		void ClearAttachment(uint32_t attachmentIndex, unsigned type, const float *data);
+		void Blit(Ref<Framebuffer> &target);
 
-		void ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data);
-
-		void BindForRead();
+		void ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data)
+			const override;
 
 		Ref<Texture> GetColorAttachment(uint32_t index = 0) const { return mColorAttachments[index]; }
 		Ref<Texture> GetDepthAttachment() const { return mDepthAttachment; }
@@ -30,17 +29,10 @@ namespace BHive
 		uint32_t GetHeight() const { return mSpecification.Height; }
 
 		uint32_t GetRendererID() const { return mFramebufferID; }
-		operator uint32_t() const { return GetRendererID(); }
-
-		bool SaveToImage(const std::filesystem::path &path);
-		static bool SaveToImage(Framebuffer &framebuffer, const std::filesystem::path &path);
 
 	protected:
 		virtual void Initialize();
 		virtual void Release();
-
-		void BlitInternal(Ref<Framebuffer> &target);
-		void ReadPixelInternal(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data);
 
 	protected:
 		std::vector<FFramebufferTexture> mColorSpecifications;
@@ -54,4 +46,4 @@ namespace BHive
 		uint32_t mFramebufferID{0};
 		uint32_t mRenderBufferID{0};
 	};
-}
+} // namespace BHive

@@ -2,7 +2,7 @@
 #define MAX_BONES 128
 #define MAX_BONE_INFLUENCE 4
 
-layout(std430, binding = 2) restrict readonly buffer Bones
+layout(std430, binding = 3) restrict readonly buffer Bones
 {
 	mat4 bones[MAX_BONES];
 };

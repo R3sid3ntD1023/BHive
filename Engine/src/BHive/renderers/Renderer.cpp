@@ -37,7 +37,6 @@ namespace BHive
 		struct FLightData
 		{
 			uint32_t mNumLights = 0;
-			// uint32_t mNumPointLights = 0;
 			LightData mLights[MAX_LIGHTS] = {};
 		};
 

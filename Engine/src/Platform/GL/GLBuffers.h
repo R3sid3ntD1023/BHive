@@ -1,45 +1,39 @@
 #pragma once
 
 #include "gfx/Buffers.h"
+#include "GLBufferBase.h"
 
 namespace BHive
 {
-	class GLIndexBuffer : public IndexBuffer
+	class GLIndexBuffer : public IndexBuffer, public GLBufferBase
 	{
 	public:
-		GLIndexBuffer(const uint32_t* data, const uint32_t count);
+		GLIndexBuffer(const uint32_t *data, const uint32_t count);
 		GLIndexBuffer(const uint32_t count);
-		~GLIndexBuffer();
-
-		void Bind() const;
-		void UnBind() const;
 
 		uint32_t GetCount() const { return mCount; }
+		uint32_t GetBufferID() const { return mBufferID; }
 
-		void SetData(const void* data, uint64_t size, uint32_t offset = 0);
+		void SetData(const void *data, uint64_t size, uint32_t offset = 0);
 
 	private:
 		uint32_t mCount;
-		uint32_t mIndexBufferID{ 0 };
 	};
 
-	class GLVertexBuffer : public VertexBuffer
+	class GLVertexBuffer : public VertexBuffer, public GLBufferBase
 	{
 	public:
-		GLVertexBuffer(const float* data, const uint64_t size);
+		GLVertexBuffer(const float *data, const uint64_t size);
 		GLVertexBuffer(const uint64_t size);
 
-		~GLVertexBuffer();
+		uint32_t GetBufferID() const { return mBufferID; }
+		virtual void BindBufferBase(uint32_t binding) const override;
 
-		void Bind() const;
-		void UnBind() const;
-
-		void SetData(const void* data, uint64_t size, uint32_t offset = 0);
-		void SetLayout(const BufferLayout& layout);
-		const BufferLayout& GetLayout() const { return mLayout; }
+		void SetData(const void *data, uint64_t size, uint32_t offset = 0);
+		void SetLayout(const BufferLayout &layout);
+		const BufferLayout &GetLayout() const { return mLayout; }
 
 	private:
 		BufferLayout mLayout;
-		uint32_t mVertexBufferID{ 0 };
 	};
-}
+} // namespace BHive

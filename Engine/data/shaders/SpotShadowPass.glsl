@@ -1,48 +1,62 @@
 #type vertex
 #version 460 core
-#extension GL_ARB_shading_language_include : require
 
 #include <Skinning.glsl>
+#include <Core.glsl>
 
 layout(location = 0) in vec3 vPosition;
 layout(location = 6) in ivec4 vBoneIds;
 layout(location = 7) in vec4 vWeights;
 
-layout(std140, binding = 0) uniform ObjectBuffer
+struct PerObjectData
+{ 
+	mat4 WorldMatrix;
+};
+
+
+layout(std430, binding = 1) restrict readonly buffer ObjectSSBO
 {
-	mat4 u_projection;
-	mat4 u_view;
-	mat4 u_model;
+	PerObjectData o[];
+};
+
+layout(std430, binding = 2) restrict readonly buffer InstanceSSBO
+{
+	mat4 instances[];
 };
 
 
 void main()
 {
-	mat4 bone_transform = Skinning(vWeights, vBoneIds);
-	gl_Position = u_model * bone_transform * vec4(vPosition, 1);
+	vec4 pos = vec4(vPosition , 1);
+	mat4 boneTransform = Skinning(vWeights, vBoneIds);
+	vec4 posL = boneTransform * pos;
+
+	bool instanced = gl_InstanceID != -1; 
+
+	mat4 instance = mix(mat4(1), instances[gl_InstanceID], float(instanced));
+
+	mat4 model =  o[gl_DrawID].WorldMatrix * instance;
+	gl_Position = model *  posL;
 }
 
 #type geometry
 #version 460 core
 
-#define MAX_LIGHTS 32
+#include <Core.glsl>
+#include <Lighting.glsl>
 
-layout(std140, binding = 3) uniform SpotShadowData
-{
-	uint u_NumSpotLights;
-	mat4 u_ViewProjectionSpotShadow[MAX_LIGHTS];
-};
+
 
 layout(triangles, invocations = MAX_LIGHTS) in;
 layout(triangle_strip, max_vertices = 3) out;
 
 void main()
 {
-	if(gl_InvocationID < u_NumSpotLights)
+	if(gl_InvocationID < uNumShadowMaps.z)
 	{
 		for(int i = 0; i < 3; i++)
 		{
-			gl_Position = u_ViewProjectionSpotShadow[gl_InvocationID] * gl_in[i].gl_Position;
+			gl_Position = uSpotViewProjections[gl_InvocationID] * gl_in[i].gl_Position;
 			gl_Layer = gl_InvocationID;
 			
 			EmitVertex();
@@ -55,7 +69,15 @@ void main()
 #type fragment
 #version 460 core
 
+
+layout(location = 0) out vec4 FragColor;
+
 void main()
 {
+	float depth = gl_FragCoord.z;
+	float dx = dFdx(depth);
+	float dy = dFdy(depth);
+	float moment2 = depth * depth + 0.25 * (dx * dx + dy * dy);
 
+	FragColor = vec4(depth, moment2, 0, 1);
 }

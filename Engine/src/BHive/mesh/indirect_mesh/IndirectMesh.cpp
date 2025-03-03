@@ -1,13 +1,13 @@
 #include "IndirectMesh.h"
-#include "mesh/IRenderableAsset.h"
+#include "mesh/BaseMesh.h"
 #include "gfx/StorageBuffer.h"
 #include "gfx/VertexArray.h"
 #include "gfx/RenderCommand.h"
 #include <glad/glad.h>
 
-#define SSBO_INDEX_PER_OBJECT_BINDING 0
-#define SSBO_INSTANCE_BINDING 1
-#define SSBO_BONE_BINDING 2
+#define SSBO_INDEX_PER_OBJECT_BINDING 1
+#define SSBO_INSTANCE_BINDING 2
+#define SSBO_BONE_BINDING 3
 #define MAX_BONES 128
 
 namespace BHive
@@ -27,7 +27,7 @@ namespace BHive
 		uint32_t baseInstance;
 	};
 
-	void IndirectRenderable::Init(const Ref<IRenderableAsset> &renderable, uint32_t instances, bool bones)
+	void IndirectRenderable::Init(const Ref<BaseMesh> &renderable, uint32_t instances, bool bones)
 	{
 		mRenderable = renderable;
 		mInstances = instances;
@@ -49,19 +49,20 @@ namespace BHive
 		AllocatePerObjectBuffer(meshes);
 	}
 
-	void IndirectRenderable::Draw(const FTransform &objectMatrix, const glm::mat4 *matrices, const glm::mat4 *bones)
+	void IndirectRenderable::Draw(
+		const FTransform &objectMatrix, const glm::mat4 *matrices, const glm::mat4 *bones, size_t bone_count)
 	{
-		if (matrices)
+		if (matrices != nullptr)
 		{
 
 			mInstanceBuffer->SetData(matrices, sizeof(glm::mat4) * mInstances);
 			mInstanceBuffer->BindBufferBase(SSBO_INSTANCE_BINDING);
 		}
 
-		if (bones)
+		if (bones != nullptr)
 		{
 
-			mBoneBuffer->SetData(bones, sizeof(glm::mat4) * MAX_BONES);
+			mBoneBuffer->SetData(bones, sizeof(glm::mat4) * bone_count);
 			mBoneBuffer->BindBufferBase(SSBO_BONE_BINDING);
 		}
 
@@ -103,12 +104,16 @@ namespace BHive
 		auto &meshes = mRenderable->GetSubMeshes();
 		for (size_t i = 0; i < mNumMeshes; i++)
 		{
-			glm::mat4 final_transformation = objectMatrix * meshes[i].Transformation;
+			glm::mat4 final_transformation = objectMatrix.to_mat4() * meshes[i].Transformation;
 			perObjectData[i].WorldMatrix = final_transformation;
 		}
 
 		mPerObjectBuffer->BindBufferBase(SSBO_INDEX_PER_OBJECT_BINDING);
 		mPerObjectBuffer->SetData(perObjectData.data(), sizeof(FPerObjectData) * perObjectData.size());
+
+#ifdef USE_VERTEX_PULLING
+		mRenderable->GetVertexArray()->BindBuffersBase(0);
+#endif
 	}
 
 } // namespace BHive

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
-#include "IRenderableAsset.h"
+#include "BaseMesh.h"
 #include "material/MaterialTable.h"
 #include "MeshData.h"
 
@@ -9,7 +9,7 @@ namespace BHive
 {
 	class VertexArray;
 
-	class BHIVE StaticMesh : public IRenderableAsset
+	class BHIVE StaticMesh : public BaseMesh
 	{
 	public:
 		StaticMesh() = default;
@@ -21,7 +21,7 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLEV(IRenderableAsset)
+		REFLECTABLEV(BaseMesh)
 	};
 
 	REFLECT_EXTERN(StaticMesh)

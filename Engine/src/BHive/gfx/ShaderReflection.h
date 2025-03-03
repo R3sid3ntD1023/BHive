@@ -23,10 +23,17 @@ namespace BHive
 		int32_t Size{};
 	};
 
+	struct FStorageBuffer
+	{
+		int32_t Binding{};
+		int32_t Size{};
+	};
+
 	struct FShaderReflectionData
 	{
 		std::unordered_map<std::string, FUniform> Uniforms;
 		std::unordered_map<std::string, FSampler2D> Samplers;
 		std::unordered_map<std::string, FUniformBufferData> UniformBuffers;
+		std::unordered_map<std::string, FStorageBuffer> StorageBuffers;
 	};
 } // namespace BHive

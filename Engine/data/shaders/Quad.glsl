@@ -46,9 +46,6 @@ void main()
 
 #type fragment
 #version 460 core
-#extension GL_ARB_shading_language_include : require
-#extension GL_NV_bindless_texture : require
-#extension GL_NV_uniform_buffer_std430_layout : require
 
 #include <Core.glsl>
 #include <Lighting.glsl>
@@ -84,9 +81,9 @@ void main()
 	{
 		vec3 lo = vec3(0);
 
-		for(int i = 0; i < u_NumLights; i++)
+		for(int i = 0; i < uNumLights; i++)
 		{
-			Light light = lights[i];
+			Light light = uLights[i];
 			switch(light.type)
 			{
 			case 0:
@@ -117,7 +114,7 @@ vec3 CalculateDirectionalLight( vec3 norm, Light light)
 
 vec3 CalculatePointLight(vec3 pos, vec3 norm,  Light light)
 {
-	float ndotl = PointLight(pos, norm, light);
+	float ndotl = PointLight(pos, norm, light.position, light.radius);
 
 	return ndotl * light.color * light.brightness;
 }

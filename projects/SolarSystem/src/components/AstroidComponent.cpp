@@ -31,8 +31,7 @@ void AstroidComponent::Load(cereal::JSONInputArchive &ar)
 	CalculateMatrices();
 }
 
-void AstroidComponent::InitIndirectMesh(
-	const Ref<BHive::IRenderableAsset> &renderable, Ref<BHive::IndirectRenderable> &indirect)
+void AstroidComponent::InitIndirectMesh(const Ref<BHive::BaseMesh> &renderable, Ref<BHive::IndirectRenderable> &indirect)
 {
 	indirect->Init(renderable, Instances);
 }

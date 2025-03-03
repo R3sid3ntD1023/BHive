@@ -8,7 +8,7 @@ namespace BHive
 	class IndirectRenderable;
 	class ShaderInstance;
 	class BindlessTexture;
-	class IRenderableAsset;
+	class BaseMesh;
 } // namespace BHive
 
 enum EFlags : uint32_t
@@ -34,7 +34,7 @@ struct MeshComponent : public Component
 	REFLECTABLEV(Component)
 
 protected:
-	virtual void InitIndirectMesh(const Ref<BHive::IRenderableAsset> &renderable, Ref<BHive::IndirectRenderable> &indirect);
+	virtual void InitIndirectMesh(const Ref<BHive::BaseMesh> &renderable, Ref<BHive::IndirectRenderable> &indirect);
 
 protected:
 	Ref<BHive::IndirectRenderable> mIndirectMesh;

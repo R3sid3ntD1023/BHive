@@ -1,15 +1,16 @@
 #include "CullingPipeline.h"
 #include "gfx/Shader.h"
 #include "mesh/indirect_mesh/IndirectMesh.h"
-#include "mesh/IRenderableAsset.h"
+#include "mesh/BaseMesh.h"
 #include "renderers/Renderer.h"
 #include "volumes/SphereVolume.h"
+#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
 	CullingPipeline::CullingPipeline()
 	{
-		mCullingShader = ShaderLibrary::Load(RESOURCE_PATH "Shaders/CullingShader.glsl");
+		mCullingShader = ShaderManager::Get().Get("CullingShader.glsl");
 	}
 
 	void CullingPipeline::SetTestFrustum(const Frustum &frustum)

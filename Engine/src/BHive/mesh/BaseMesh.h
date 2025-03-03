@@ -7,16 +7,17 @@
 namespace BHive
 {
 	class VertexArray;
+	class StorageBuffer;
 
-	class IRenderableAsset : public Asset
+	class BaseMesh : public Asset
 	{
 	public:
 		using submeshes = std::vector<FSubMesh>;
 		using iterator = submeshes::iterator;
 		using const_iterator = submeshes::const_iterator;
 
-		IRenderableAsset() = default;
-		IRenderableAsset(const FMeshData &data);
+		BaseMesh() = default;
+		BaseMesh(const FMeshData &data);
 
 		void Initialize();
 
@@ -40,10 +41,14 @@ namespace BHive
 		REFLECTABLEV(Asset)
 
 	private:
+		void CreatePVPBuffers();
+		void CreateVertexArrayBuffer();
+
+	private:
 		FMeshData mData;
 		Ref<VertexArray> mVertexArray;
 		MaterialTable mMaterialTable;
 	};
 
-	REFLECT_EXTERN(IRenderableAsset)
+	REFLECT_EXTERN(BaseMesh)
 } // namespace BHive

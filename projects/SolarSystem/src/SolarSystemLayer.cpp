@@ -26,6 +26,8 @@
 
 #include <font/Font.h>
 #include <font/FontManager.h>
+#include "gfx/ShaderManager.h"
+#include "utils/ImageUtils.h"
 
 BHive::UUID mSelectedID = 1;
 BHive::FTextStyle sTextStyle{.TextColor = 0xFF00FFFF};
@@ -34,6 +36,8 @@ glm::vec3 sQuadPos = {680, 20, 0};
 
 void SolarSystemLayer::OnAttach()
 {
+	BHive::ShaderManager::Get().LoadFiles(RESOURCE_PATH "Shaders");
+
 	auto font = BHive::FontManager::Get().AddFontFromFile(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", 96);
 
 	mAudio = BHive::AudioImporter::Import(RESOURCE_PATH
@@ -50,8 +54,8 @@ void SolarSystemLayer::OnAttach()
 		ar(MAKE_NVP("Universe", *mUniverse));
 	}
 
-	mLightingShader = BHive::ShaderLibrary::Load(RESOURCE_PATH "/Shaders/Lighting.glsl");
-	mQuadShader = BHive::ShaderLibrary::Load(RESOURCE_PATH "/Shaders/ScreenQuad.glsl");
+	mLightingShader = BHive::ShaderManager::Get().Get("Lighting.glsl");
+	mQuadShader = BHive::ShaderManager::Get().Get("ScreenQuad.glsl");
 	mScreenQuad = CreateRef<BHive::PPlane>(1.f, 1.f);
 
 	InitFramebuffer();
@@ -95,7 +99,7 @@ void SolarSystemLayer::OnUpdate(float dt)
 	BHive::RenderCommand::Clear();
 
 	auto clear = glm::vec3(0);
-	mMultiSampleFramebuffer->ClearAttachment(3, GL_FLOAT, &clear);
+	mMultiSampleFramebuffer->ClearAttachment(3, GL_FLOAT, &clear.x);
 
 	// render scene
 	{
@@ -189,8 +193,10 @@ void SolarSystemLayer::OnGuiRender()
 {
 	if (ImGui::Begin("Performance"))
 	{
-
+		glm::vec4 pixel = {0, 0, 0, 1};
+		mFramebuffer->ReadPixel(3, 0, 0, 1, 1, GL_FLOAT, &pixel.x);
 		ImGui::TextColored({1, .5, 0, 1}, "%u", BHive::Renderer::GetStats().DrawCalls);
+		ImGui::TextColored({1, .5, 1, 1}, glm::to_string(pixel).c_str());
 
 		ImGui::PushID("Quad");
 		ImGui::DragFloat3("Pos", &sQuadPos.x, 0.001f);
@@ -228,6 +234,20 @@ void SolarSystemLayer::OnGuiRender()
 		auto texture = mFramebuffer->GetDepthAttachment();
 		ImGui::Image((ImTextureID)(uint64_t)*texture, size, {0, 1}, {1, 0});
 	}
+	ImGui::End();
+
+	if (ImGui::Begin("Save"))
+	{
+		if (ImGui::Button("Save"))
+		{
+			auto path = BHive::FileDialogs::SaveFile("PNG (.png)\0*.png\0");
+			if (!path.empty())
+			{
+				BHive::ImageUtils::SaveImage(path, mFramebuffer);
+			}
+		}
+	}
+
 	ImGui::End();
 }
 

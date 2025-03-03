@@ -1,5 +1,6 @@
 #include "core/FileSystem.h"
 #include "GLShader.h"
+#include "gfx/GFXMacros.h"
 #include <glad/glad.h>
 
 namespace BHive
@@ -147,7 +148,22 @@ namespace BHive
 	void GLShader::PreProcess(const std::string &source)
 	{
 		auto token = "#type";
+		auto version_token = "#version";
+
 		auto token_length = strlen(token);
+		auto version_length = strlen(version_token);
+
+		std::string preprocessors =
+			R"(
+				#extension GL_NV_uniform_buffer_std430_layout: require
+				#extension GL_ARB_shading_language_include : require
+				#extension GL_NV_bindless_texture : require
+				#extension GL_ARB_bindless_texture : require
+			)";
+
+#ifdef USE_VERTEX_PULLING
+		preprocessors += "\r\n#define USE_VERTEX_PULLING\r\n";
+#endif // USE_VERTEX_PULLING
 
 		auto pos = source.find(token, 0);
 		while (pos != std::string::npos)
@@ -163,6 +179,11 @@ namespace BHive
 			pos = source.find(token, next_pos);
 
 			auto code = (pos == std::string::npos) ? source.substr(next_pos) : source.substr(next_pos, pos - next_pos);
+			{
+				auto v_start = code.find_first_of(version_token);
+				auto v_end = code.find_first_of('\r\n', v_start);
+				code.insert(code.begin() + v_end, preprocessors.begin(), preprocessors.end());
+			}
 			mSources.emplace(utils::GetTypeFromString(type), code);
 		}
 	}
@@ -219,9 +240,9 @@ namespace BHive
 		glProgramUniformMatrix4fv(mShaderID, location, 1, GL_FALSE, &value[0].x);
 	}
 
-	void GLShader::SetBindlessTexture(int location, uint64_t texture) const
+	void GLShader::SetUniform(int location, uint64_t texture) const
 	{
-		glProgramUniformHandleui64ARB(mShaderID, location, texture);
+		glProgramUniformHandleui64NV(mShaderID, location, texture);
 	}
 
 	void GLShader::Dispatch(uint32_t w, uint32_t h, uint32_t d)
@@ -253,20 +274,21 @@ namespace BHive
 
 		for (int i = 0; i < uniform_count; i++)
 		{
-			GLenum properties[] = {GL_TYPE, GL_OFFSET, GL_LOCATION};
-			GLint values[] = {0, 0, 0};
+			GLenum properties[] = {GL_TYPE, GL_ARRAY_SIZE, GL_OFFSET, GL_LOCATION};
+			GLint values[] = {0, 0, 0, 0};
 			GLchar name[512];
 
-			glGetProgramResourceiv(mShaderID, GL_UNIFORM, i, 3, properties, 3, nullptr, values);
+			glGetProgramResourceiv(mShaderID, GL_UNIFORM, i, 4, properties, 4, nullptr, values);
 			glGetProgramResourceName(mShaderID, GL_UNIFORM, i, 512, nullptr, name);
 
-			FUniform uniform{.Type = values[0], .Offset = values[1], .Location = values[2]};
+			FUniform uniform{.Type = values[0], .Size = values[1], .Offset = values[2], .Location = values[3]};
 			mReflectionData.Uniforms.emplace(name, uniform);
 
 			LOG_TRACE("\t{}:", name);
 			LOG_TRACE("\t\t type-{}", values[0]);
-			LOG_TRACE("\t\t offset-{}", values[1]);
-			LOG_TRACE("\t\t location-{}", values[2]);
+			LOG_TRACE("\t\t size-{}", values[1]);
+			LOG_TRACE("\t\t offset-{}", values[2]);
+			LOG_TRACE("\t\t location-{}", values[3]);
 		}
 
 		LOG_TRACE("\tUniformBuffers");
@@ -291,11 +313,13 @@ namespace BHive
 		{
 			GLenum properties[2] = {GL_BUFFER_BINDING, GL_BUFFER_DATA_SIZE};
 			GLint values[2] = {};
+			GLint length;
 			GLchar name[512];
 
 			glGetProgramResourceiv(mShaderID, GL_SHADER_STORAGE_BLOCK, i, 2, properties, 2, nullptr, values);
-			glGetProgramResourceName(mShaderID, GL_SHADER_STORAGE_BLOCK, i, 512, nullptr, name);
+			glGetProgramResourceName(mShaderID, GL_SHADER_STORAGE_BLOCK, i, 512, &length, name);
 
+			mReflectionData.StorageBuffers.emplace(name, FStorageBuffer{.Binding = values[0], .Size = values[1]});
 			LOG_TRACE("\t\t{} : binding-{}, size-{}", name, values[0], values[1]);
 		}
 	}
