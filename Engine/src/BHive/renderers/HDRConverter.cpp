@@ -1,7 +1,8 @@
 #include "gfx/Framebuffer.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
-#include "gfx/Texture.h"
+#include "gfx/textures/TextureCube.h"
+#include "gfx/textures/Texture2D.h"
 #include "HDRConverter.h"
 #include "mesh/primitives/Cube.h"
 #include <glad/glad.h>
@@ -27,43 +28,40 @@ namespace BHive
 	HDRConverter::HDRConverter()
 	{
 		FTextureSpecification environment_specification;
-		environment_specification.mFormat = EFormat::RGB16F;
-		environment_specification.mWrapMode = EWrapMode::CLAMP_TO_EDGE;
-		environment_specification.mLevels = 5;
-		environment_specification.mType = ETextureType::TEXTURE_CUBE_MAP;
+		environment_specification.InternalFormat = EFormat::RGB16F;
+		environment_specification.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		environment_specification.Levels = 5;
 
 		FramebufferSpecification envrioment_capture_fbo_specs{};
 		envrioment_capture_fbo_specs.Width = 512;
 		envrioment_capture_fbo_specs.Height = 512;
 		envrioment_capture_fbo_specs.Attachments.attach({environment_specification}, ETextureType::TEXTURE_CUBE_MAP);
-		mEnvironmentCaptureFBO = Framebuffer::Create(envrioment_capture_fbo_specs);
+		mEnvironmentCaptureFBO = CreateRef<Framebuffer>(envrioment_capture_fbo_specs);
 
 		FTextureSpecification irradiance_specification;
-		irradiance_specification.mFormat = EFormat::RGBA32F;
-		irradiance_specification.mWrapMode = EWrapMode::CLAMP_TO_EDGE;
-		irradiance_specification.mType = ETextureType::TEXTURE_CUBE_MAP;
+		irradiance_specification.InternalFormat = EFormat::RGBA32F;
+		irradiance_specification.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		envrioment_capture_fbo_specs.Width = IRRANDIANCE_CUBEMAP_SIZE;
 		envrioment_capture_fbo_specs.Height = IRRANDIANCE_CUBEMAP_SIZE;
 		envrioment_capture_fbo_specs.Attachments.reset().attach({irradiance_specification}, ETextureType::TEXTURE_CUBE_MAP);
-		mIrradianceFBO = Framebuffer::Create(envrioment_capture_fbo_specs);
+		mIrradianceFBO = CreateRef<Framebuffer>(envrioment_capture_fbo_specs);
 
 		FTextureSpecification pre_filter_specification;
-		pre_filter_specification.mFormat = EFormat::RGBA16F;
-		pre_filter_specification.mWrapMode = EWrapMode::CLAMP_TO_EDGE;
-		pre_filter_specification.mMinFilter = EMinFilter::MIPMAP_LINEAR;
-		pre_filter_specification.mMagFilter = EMagFilter::LINEAR;
-		pre_filter_specification.mLevels = PREFILTER_MIP_LEVELS;
-		pre_filter_specification.mType = ETextureType::TEXTURE_CUBE_MAP;
+		pre_filter_specification.InternalFormat = EFormat::RGBA16F;
+		pre_filter_specification.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		pre_filter_specification.MinFilter = EMinFilter::MIPMAP_LINEAR;
+		pre_filter_specification.MagFilter = EMagFilter::LINEAR;
+		pre_filter_specification.Levels = PREFILTER_MIP_LEVELS;
 
-		mPreFilteredEnvironmentTexture = TextureCube::Create(PREFILTER_MAP_SIZE, pre_filter_specification);
+		mPreFilteredEnvironmentTexture = CreateRef<TextureCube>(PREFILTER_MAP_SIZE, pre_filter_specification);
 
-		mBRDFLUTTexture = Texture2D::Create(
+		mBRDFLUTTexture = CreateRef<Texture2D>(
 			BRDF_LUT_SIZE, BRDF_LUT_SIZE,
 			FTextureSpecification{
-				.mFormat = EFormat::RG16F,
-				.mWrapMode = EWrapMode::CLAMP_TO_EDGE,
-				.mMinFilter = EMinFilter::NEAREST,
-				.mMagFilter = EMagFilter::NEAREST,
+				.InternalFormat = EFormat::RG16F,
+				.WrapMode = EWrapMode::CLAMP_TO_EDGE,
+				.MinFilter = EMinFilter::NEAREST,
+				.MagFilter = EMagFilter::NEAREST,
 			});
 
 		mCube = CreateRef<PCube>(1.0f);

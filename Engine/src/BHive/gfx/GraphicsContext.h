@@ -9,11 +9,13 @@ namespace BHive
 	class BHIVE GraphicsContext
 	{
 	public:
+		GraphicsContext(GLFWwindow *window);
 		virtual ~GraphicsContext() = default;
 
-		virtual void Init() = 0;
-		virtual void SwapBuffers() = 0;
+		virtual void Init();
+		virtual void SwapBuffers();
 
-		static Scope<GraphicsContext> Create(void* window);
+	private:
+		GLFWwindow *mWindowHandle;
 	};
-}
+} // namespace BHive

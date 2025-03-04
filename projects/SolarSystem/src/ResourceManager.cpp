@@ -125,7 +125,8 @@ namespace BHive
 
 	void ResourceManager::RegisterImporters()
 	{
-		auto texture_importer = [](const std::filesystem::path &path) -> Ref<Asset> { return TextureImporter::Import(path); };
+		auto texture_importer = [](const std::filesystem::path &path) -> Ref<Asset>
+		{ return TextureImporter::Import(path); };
 		auto mesh_importer = [](const std::filesystem::path &path) -> Ref<Asset>
 		{
 			FMeshImportData data;
@@ -147,7 +148,8 @@ namespace BHive
 
 		mMemoryAssets[1] = CreateRef<PSphere>(1.f, 32, 32);
 		mMemoryAssets[2] = Renderer::GetWhiteTexture();
-		mMemoryAssets[3] = Texture2D::Create(&grey, 1, 1, FTextureSpecification{.mChannels = 4, .mFormat = EFormat::RGBA8});
+		mMemoryAssets[3] =
+			CreateRef<Texture2D>(&grey, 1, 1, FTextureSpecification{.Channels = 4, .InternalFormat = EFormat::RGBA8});
 		mMemoryAssets[4] = Renderer::GetBlackTexture();
 	}
 

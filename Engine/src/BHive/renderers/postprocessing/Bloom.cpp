@@ -1,8 +1,7 @@
 #include "Bloom.h"
 #include "gfx/Shader.h"
-#include "gfx/Texture.h"
+#include "gfx/textures/Texture2D.h"
 #include "glad/glad.h"
-#include "gfx/BindlessTexture.h"
 #include "gfx/TextureUtils.h"
 #include "core/profiler/CPUGPUProfiler.h"
 #include "shaders/DownSample.h"
@@ -26,19 +25,19 @@ namespace BHive
 		{
 			auto &reflection_data = mUpSamplerShader->GetRelectionData();
 			auto &buffer = reflection_data.UniformBuffers.at("UpSampler");
-			mUpSampleBuffer = UniformBuffer::Create(buffer.Binding, buffer.Size);
+			mUpSampleBuffer = CreateRef<UniformBuffer>(buffer.Binding, buffer.Size);
 		}
 
 		{
 			auto &reflection_data = mDownSamplerShader->GetRelectionData();
 			auto &buffer = reflection_data.UniformBuffers.at("DownSampler");
-			mDownSampleBuffer = UniformBuffer::Create(buffer.Binding, buffer.Size);
+			mDownSampleBuffer = CreateRef<UniformBuffer>(buffer.Binding, buffer.Size);
 		}
 
 		{
 			auto &reflection_data = mPreFilterShader->GetRelectionData();
 			auto &buffer = reflection_data.UniformBuffers.at("PreFilter");
-			mPreFilterBuffer = UniformBuffer::Create(buffer.Binding, buffer.Size);
+			mPreFilterBuffer = CreateRef<UniformBuffer>(buffer.Binding, buffer.Size);
 		}
 
 		Initialize(width, height);
@@ -62,7 +61,7 @@ namespace BHive
 			.Out = mPreFilterTexture->GetImageHandle(),
 			.Threshold = mSettings.mFilterThreshold};
 
-		mPreFilterBuffer->SetData(data);
+		mPreFilterBuffer->SetData(&data, sizeof(PreFilter));
 		mPreFilterShader->Dispatch(mPreFilterTexture->GetWidth(), mPreFilterTexture->GetHeight());
 
 		mPreFilterShader->UnBind();
@@ -82,7 +81,7 @@ namespace BHive
 			glm::ivec2 size = {mip->GetWidth(), mip->GetHeight()};
 
 			FDownSamplerData data{.Src = current_texture->GetResourceHandle(), .Out = mip->GetImageHandle()};
-			mDownSampleBuffer->SetData(data);
+			mDownSampleBuffer->SetData(&data, sizeof(FDownSamplerData));
 			mDownSamplerShader->Dispatch(size.x, size.y);
 
 			current_texture = mip;
@@ -106,7 +105,7 @@ namespace BHive
 			FUpSamplerData data = {
 				.Src = mip->GetResourceHandle(), .Out = next_mip->GetImageHandle(), .Filter = mSettings.mFilterRadius};
 
-			mUpSampleBuffer->SetData(data);
+			mUpSampleBuffer->SetData(&data, sizeof(FUpSamplerData));
 			mUpSamplerShader->Dispatch(next_mip->GetWidth(), next_mip->GetHeight());
 		}
 
@@ -128,16 +127,16 @@ namespace BHive
 		Reset();
 
 		FTextureSpecification specs{};
-		specs.mFormat = EFormat::R11_G11_B10;
-		specs.mWrapMode = EWrapMode::CLAMP_TO_BORDER;
+		specs.InternalFormat = EFormat::R11_G11_B10;
+		specs.WrapMode = EWrapMode::CLAMP_TO_BORDER;
 		specs.ImageAccess = EImageAccess::READ_WRITE;
 
-		mPreFilterTexture = Texture2D::Create(nullptr, width, height, specs);
+		mPreFilterTexture = CreateRef<Texture2D>(nullptr, width, height, specs);
 
 		glm::uvec2 mps = mSize;
 		for (auto &mip : mMipMaps)
 		{
-			mip = Texture2D::Create(nullptr, mps.x, mps.y, specs);
+			mip = CreateRef<Texture2D>(nullptr, mps.x, mps.y, specs);
 
 			mps /= 2;
 			if (mps.x < 1)

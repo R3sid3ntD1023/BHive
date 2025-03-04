@@ -43,7 +43,6 @@ target_link_libraries(Engine
 target_include_directories(Engine PUBLIC 
 	${CMAKE_CURRENT_SOURCE_DIR}/src 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/BHive 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/platform 
 	${VENDOR_DIR}
 )
 

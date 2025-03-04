@@ -61,17 +61,16 @@ namespace BHive
 		shadow_fbo_specs.Depth = max_lights;
 		shadow_fbo_specs.Attachments.attach(
 			{
-				.mFormat = EFormat::DEPTH_COMPONENT_32F,
-				.mWrapMode = EWrapMode::CLAMP_TO_EDGE,
-				.mBorderColor = {0, 0, 0, 1.f},
-				.mType = ETextureType::TEXTURE_ARRAY_2D,
-				.mCompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
-				.mCompareFunc = ETextureCompareFunc::LEQUAL,
+				.InternalFormat = EFormat::DEPTH_COMPONENT_32F,
+				.WrapMode = EWrapMode::CLAMP_TO_EDGE,
+				.BorderColor = {0, 0, 0, 1.f},
+				.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
+				.CompareFunc = ETextureCompareFunc::LEQUAL,
 
 			},
-			ETextureType::TEXTURE_3D);
+			ETextureType::TEXTURE_ARRAY_2D);
 
-		mShadowRenderData.mShadowPassFBO = Framebuffer::Create(shadow_fbo_specs);
+		mShadowRenderData.mShadowPassFBO = CreateRef<Framebuffer>(shadow_fbo_specs);
 
 		shadow_fbo_specs.Width = SPOT_SHADOWMAP_SIZE;
 		shadow_fbo_specs.Height = SPOT_SHADOWMAP_SIZE;
@@ -79,23 +78,21 @@ namespace BHive
 		shadow_fbo_specs.Attachments.reset()
 			.attach(
 				{
-					.mFormat = EFormat::RG32F,
-					.mWrapMode = EWrapMode::CLAMP_TO_EDGE,
-					.mType = ETextureType::TEXTURE_ARRAY_2D,
+					.InternalFormat = EFormat::RG32F,
+					.WrapMode = EWrapMode::CLAMP_TO_EDGE,
 				},
-				ETextureType::TEXTURE_3D)
+				ETextureType::TEXTURE_ARRAY_2D)
 			.attach(
 				{
-					.mFormat = EFormat::DEPTH_COMPONENT_32F,
-					.mWrapMode = EWrapMode::CLAMP_TO_EDGE,
-					.mType = ETextureType::TEXTURE_ARRAY_2D,
-					.mCompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
-					.mCompareFunc = ETextureCompareFunc::LEQUAL,
+					.InternalFormat = EFormat::DEPTH_COMPONENT_32F,
+					.WrapMode = EWrapMode::CLAMP_TO_EDGE,
+					.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
+					.CompareFunc = ETextureCompareFunc::LEQUAL,
 
 				},
-				ETextureType::TEXTURE_3D);
+				ETextureType::TEXTURE_ARRAY_2D);
 
-		mShadowRenderData.mShadowSpotPassFBO = Framebuffer::Create(shadow_fbo_specs);
+		mShadowRenderData.mShadowSpotPassFBO = CreateRef<Framebuffer>(shadow_fbo_specs);
 
 		shadow_fbo_specs.Width = POINT_SHADOWMAP_SIZE;
 		shadow_fbo_specs.Height = POINT_SHADOWMAP_SIZE;
@@ -103,24 +100,21 @@ namespace BHive
 		shadow_fbo_specs.Attachments.reset()
 			.attach(
 				{
-					.mFormat = EFormat::RG32F,
-					.mWrapMode = EWrapMode::CLAMP_TO_EDGE,
-					.mType = ETextureType::TEXTURE_CUBE_MAP_ARRAY,
+					.InternalFormat = EFormat::RG32F,
+					.WrapMode = EWrapMode::CLAMP_TO_EDGE,
 				},
-				ETextureType::TEXTURE_3D)
+				ETextureType::TEXTURE_CUBE_MAP_ARRAY)
 			.attach(
 				{
-					.mFormat = EFormat::DEPTH_COMPONENT_32F,
-					.mWrapMode = EWrapMode::CLAMP_TO_EDGE,
-
-					.mType = ETextureType::TEXTURE_CUBE_MAP_ARRAY,
-					.mCompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
-					.mCompareFunc = ETextureCompareFunc::LEQUAL,
+					.InternalFormat = EFormat::DEPTH_COMPONENT_32F,
+					.WrapMode = EWrapMode::CLAMP_TO_EDGE,
+					.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
+					.CompareFunc = ETextureCompareFunc::LEQUAL,
 				},
-				ETextureType::TEXTURE_3D);
-		mShadowRenderData.mPointShadowPassFBO = Framebuffer::Create(shadow_fbo_specs);
+				ETextureType::TEXTURE_CUBE_MAP_ARRAY);
+		mShadowRenderData.mPointShadowPassFBO = CreateRef<Framebuffer>(shadow_fbo_specs);
 
-		mShadowRenderData.mShadowBuffer = StorageBuffer::Create(sizeof(FShadowData));
+		mShadowRenderData.mShadowBuffer = CreateRef<StorageBuffer>(sizeof(FShadowData));
 
 		mShadowRenderData.mShadowPassShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/ShadowPass.glsl");
 		mShadowRenderData.mSpotShadowPassShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/SpotShadowPass.glsl");

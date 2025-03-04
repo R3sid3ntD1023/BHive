@@ -1,8 +1,7 @@
 #include "asset/AssetManager.h"
 #include "CelestrialBody.h"
-#include "gfx/BindlessTexture.h"
 #include "gfx/Shader.h"
-#include "gfx/Texture.h"
+#include "gfx/textures/Texture2D.h"
 #include "mesh/indirect_mesh/IndirectMesh.h"
 #include "mesh/BaseMesh.h"
 #include "MeshComponent.h"
@@ -10,16 +9,18 @@
 #include "renderer/ShaderInstance.h"
 #include "gfx/ShaderManager.h"
 
+BEGIN_NAMESPACE(BHive)
+
 MeshComponent::MeshComponent()
 {
-	auto shader = BHive::ShaderManager::Get().Get("Planet.glsl");
-	mShaderInstance = CreateRef<BHive::ShaderInstance>(shader);
+	auto shader = ShaderManager::Get().Get("Planet.glsl");
+	mShaderInstance = CreateRef<ShaderInstance>(shader);
 }
 
 void MeshComponent::Update(float dt)
 {
 	auto transform = GetOwner()->GetTransform();
-	if (auto pipeline = BHive::GetRenderPipelineManager().GetCurrentPipeline())
+	if (auto pipeline = GetRenderPipelineManager().GetCurrentPipeline())
 	{
 		pipeline->SubmitMesh(mIndirectMesh, GetOwner()->GetTransform(), mShaderInstance);
 	}
@@ -34,9 +35,9 @@ void MeshComponent::Load(cereal::JSONInputArchive &ar)
 {
 	ar(MAKE_NVP(Color), MAKE_NVP(Emission), MAKE_NVP(Flags), MAKE_NVP(Texture), MAKE_NVP(Mesh));
 
-	if (auto renderable = BHive::AssetManager::GetAsset<BHive::BaseMesh>(Mesh))
+	if (auto renderable = AssetManager::GetAsset<BaseMesh>(Mesh))
 	{
-		mIndirectMesh = CreateRef<BHive::IndirectRenderable>();
+		mIndirectMesh = CreateRef<IndirectRenderable>();
 		InitIndirectMesh(renderable, mIndirectMesh);
 	}
 
@@ -44,13 +45,13 @@ void MeshComponent::Load(cereal::JSONInputArchive &ar)
 	mShaderInstance->SetParameter("uEmission", Emission);
 	mShaderInstance->SetParameter("uFlags", (uint32_t)Flags);
 
-	if (auto texture = BHive::AssetManager::GetAsset<BHive::Texture2D>(Texture))
+	if (auto texture = AssetManager::GetAsset<Texture2D>(Texture))
 	{
 		mShaderInstance->SetParameter("uTexture", texture->GetResourceHandle());
 	}
 }
 
-void MeshComponent::InitIndirectMesh(const Ref<BHive::BaseMesh> &renderable, Ref<BHive::IndirectRenderable> &indirect)
+void MeshComponent::InitIndirectMesh(const Ref<BaseMesh> &renderable, Ref<IndirectRenderable> &indirect)
 {
 	indirect->Init(renderable);
 }
@@ -60,3 +61,5 @@ REFLECT(MeshComponent)
 	BEGIN_REFLECT(MeshComponent)
 	REFLECT_CONSTRUCTOR();
 }
+
+END_NAMESPACE

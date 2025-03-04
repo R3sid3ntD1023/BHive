@@ -2,6 +2,8 @@
 
 #include "Component.h"
 
+BEGIN_NAMESPACE(BHive)
+
 struct PlanetTime
 {
 	uint32_t Years = 0;
@@ -62,3 +64,5 @@ struct RevolutionComponent : public Component
 private:
 	glm::vec3 mOrigin{};
 };
+
+END_NAMESPACE

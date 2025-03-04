@@ -17,6 +17,7 @@ namespace BHive
 	class SkeletalPose;
 	class UniformBuffer;
 	class Material;
+	class PPlane;
 
 	struct FObjectData
 	{
@@ -134,7 +135,7 @@ namespace BHive
 		Ref<Framebuffer> mQuadFramebuffer;
 		// Ref<Framebuffer> mZPassFramebuffer;
 
-		Ref<VertexArray> mQuadVao;
+		Ref<PPlane> mScreenQuad;
 		Ref<Shader> mQuadShader;
 		glm::ivec2 mViewportSize;
 

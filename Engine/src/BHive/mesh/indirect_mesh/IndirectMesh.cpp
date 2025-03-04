@@ -34,12 +34,12 @@ namespace BHive
 
 		if (mInstances > 1)
 		{
-			mInstanceBuffer = StorageBuffer::Create(sizeof(glm::mat4) * mInstances);
+			mInstanceBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * mInstances);
 		}
 
 		if (bones)
 		{
-			mBoneBuffer = StorageBuffer::Create(sizeof(glm::mat4) * MAX_BONES);
+			mBoneBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * MAX_BONES);
 		}
 
 		const auto &meshes = renderable->GetSubMeshes();
@@ -69,7 +69,7 @@ namespace BHive
 		UpdateObjectData(objectMatrix);
 
 		RenderCommand::MultiDrawElementsIndirect(
-			mDrawBuffer->GetRendererID(), Triangles, *mRenderable->GetVertexArray(), mNumMeshes, 0);
+			mDrawBuffer->GetBufferID(), Triangles, *mRenderable->GetVertexArray(), mNumMeshes, 0);
 	}
 
 	void IndirectRenderable::InitDrawCmdBuffers(const std::vector<FSubMesh> &meshes)
@@ -88,12 +88,13 @@ namespace BHive
 			drawCommand.baseInstance = 0;
 		}
 
-		mDrawBuffer = StorageBuffer::Create(drawCommands.data(), drawCommands.size() * sizeof(FDrawElementsIndirectCommand));
+		mDrawBuffer =
+			CreateRef<StorageBuffer>(drawCommands.data(), drawCommands.size() * sizeof(FDrawElementsIndirectCommand));
 	}
 
 	void IndirectRenderable::AllocatePerObjectBuffer(const std::vector<FSubMesh> &meshes)
 	{
-		mPerObjectBuffer = StorageBuffer::Create(meshes.size() * sizeof(FPerObjectData));
+		mPerObjectBuffer = CreateRef<StorageBuffer>(meshes.size() * sizeof(FPerObjectData));
 	}
 
 	void IndirectRenderable::UpdateObjectData(const FTransform &objectMatrix)

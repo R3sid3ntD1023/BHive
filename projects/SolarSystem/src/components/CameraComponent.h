@@ -3,6 +3,8 @@
 #include "Component.h"
 #include <scene/SceneCamera.h>
 
+BEGIN_NAMESPACE(BHive)
+
 struct CameraComponent : public Component
 {
 	CameraComponent() { SetTickEnabled(false); }
@@ -11,3 +13,5 @@ struct CameraComponent : public Component
 
 	REFLECTABLEV(Component)
 };
+
+END_NAMESPACE

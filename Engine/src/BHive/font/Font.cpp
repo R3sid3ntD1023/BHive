@@ -1,6 +1,6 @@
 #include "Font.h"
 #include <glad/glad.h>
-#include <gfx/Texture.h>
+#include <gfx/textures/Texture2D.h>
 #include "MSDFData.h"
 
 using namespace msdf_atlas;
@@ -26,10 +26,10 @@ namespace BHive
 		msdfgen::BitmapConstRef<T, N> bitmap = (msdfgen::BitmapConstRef<T, N>)generator.atlasStorage();
 
 		FTextureSpecification specification{};
-		specification.mFormat = EFormat::RGB8;
-		specification.mChannels = 3;
+		specification.InternalFormat = EFormat::RGB8;
+		specification.Channels = 3;
 
-		Ref<Texture2D> texture = Texture2D::Create(bitmap.pixels, w, h, specification);
+		Ref<Texture2D> texture = CreateRef<Texture2D>(bitmap.pixels, w, h, specification);
 		return texture;
 	};
 

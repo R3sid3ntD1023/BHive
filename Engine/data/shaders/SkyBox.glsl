@@ -7,6 +7,7 @@ layout(std140, binding = 0) uniform ObjectBuffer
 {
 	mat4 u_projection;
 	mat4 u_view;
+    vec2 u_near_far;
 };
 
 layout(location = 0) out struct vertex_output

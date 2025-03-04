@@ -2,6 +2,8 @@
 
 #include "MeshComponent.h"
 
+BEGIN_NAMESPACE(BHive)
+
 struct AstroidComponent : public MeshComponent
 {
 	uint32_t Instances = 0;
@@ -19,7 +21,7 @@ struct AstroidComponent : public MeshComponent
 	REFLECTABLEV(Component)
 
 protected:
-	void InitIndirectMesh(const Ref<BHive::BaseMesh> &renderable, Ref<BHive::IndirectRenderable> &indirect) override;
+	void InitIndirectMesh(const Ref<BaseMesh> &renderable, Ref<IndirectRenderable> &indirect) override;
 
 private:
 	void CalculateMatrices();
@@ -27,3 +29,5 @@ private:
 private:
 	std::vector<glm::mat4> mMatrices;
 };
+
+END_NAMESPACE

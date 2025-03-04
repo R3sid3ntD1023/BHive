@@ -34,7 +34,6 @@ namespace BHive
 			const glm::vec3 &direction, const glm::vec3 &position, const Color &color, float brightness, float radius,
 			float cutoff, float outercutoff, ELightType type);
 
-		static void SubmitTransform(const glm::mat4 &transform);
 		static void SubmitSkeletalMesh(const std::vector<glm::mat4> &bone_matrices);
 
 		static BHIVE void End();

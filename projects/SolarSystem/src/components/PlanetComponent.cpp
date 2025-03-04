@@ -2,6 +2,8 @@
 #include "PlanetComponent.h"
 #include <core/Time.h>
 
+BEGIN_NAMESPACE(BHive)
+
 uint32_t PlanetTime::ToSeconds()
 {
 	uint32_t seconds = 0;
@@ -76,3 +78,5 @@ REFLECT(RevolutionComponent)
 	BEGIN_REFLECT(RevolutionComponent)
 	REFLECT_CONSTRUCTOR();
 }
+
+END_NAMESPACE

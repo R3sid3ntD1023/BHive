@@ -2,6 +2,8 @@
 #include "components/IDComponent.h"
 #include "components/TagComponent.h"
 
+BEGIN_NAMESPACE(BHive)
+
 CelestrialBody::CelestrialBody(Universe *universe)
 	: mUniverse(universe)
 {
@@ -117,3 +119,5 @@ REFLECT(CelestrialBody)
 	BEGIN_REFLECT(CelestrialBody)
 	REFLECT_CONSTRUCTOR(Universe *);
 }
+
+END_NAMESPACE

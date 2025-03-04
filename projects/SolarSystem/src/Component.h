@@ -4,6 +4,8 @@
 #include <core/reflection/Reflection.h>
 #include <core/serialization/Serialization.h>
 
+BEGIN_NAMESPACE(BHive)
+
 struct CelestrialBody;
 
 struct Component
@@ -30,3 +32,5 @@ private:
 	CelestrialBody *mOwner = nullptr;
 	bool mTickEnabled = true;
 };
+
+END_NAMESPACE

@@ -2,7 +2,7 @@
 
 #include "asset/Asset.h"
 #include "core/Core.h"
-#include "gfx/Texture.h"
+#include "gfx/textures/Texture2D.h"
 #include "math/Math.h"
 
 namespace BHive
@@ -16,14 +16,13 @@ namespace BHive
 		Sprite(const Sprite &other);
 
 		Sprite(
-			const TAssetHandle<Texture2D> &texture, const glm::vec2 &coords,
-			const glm::vec2 &cellSize, const glm::vec2 &spriteSize);
+			const TAssetHandle<Texture2D> &texture, const glm::vec2 &coords, const glm::vec2 &cellSize,
+			const glm::vec2 &spriteSize);
 
 		Sprite(const TAssetHandle<Texture2D> &texture, const glm::vec2 &min, const glm::vec2 &max);
 
 		void SetCoords(const glm::vec2 &min, const glm::vec2 &max);
-		void
-		SetCoords(const glm::vec2 &coords, const glm::vec2 &cellSize, const glm::vec2 &spriteSize);
+		void SetCoords(const glm::vec2 &coords, const glm::vec2 &cellSize, const glm::vec2 &spriteSize);
 
 		const glm::vec2 &GetCoordinates() const;
 		const glm::vec2 &GetCellSize() const;

@@ -15,10 +15,10 @@ namespace BHive
 		mData[name].AddSample(time);
 	}
 
-	Ref<QueryTimer> CPUGPUProfiler::GetQuery(const std::string &name)
+	Ref<Query> CPUGPUProfiler::GetQuery(const std::string &name)
 	{
 		if (!mQueries.contains(name))
-			mQueries.emplace(name, QueryTimer::Create());
+			mQueries.emplace(name, CreateRef<Query>());
 
 		return mQueries.at(name);
 	}

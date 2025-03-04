@@ -1,10 +1,30 @@
 #include "GraphicsContext.h"
-#include "Platform/GL/GLGraphicsContext.h"
+#include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
 namespace BHive
 {
-	Scope<GraphicsContext> GraphicsContext::Create(void* window)
+
+	GraphicsContext::GraphicsContext(GLFWwindow *window)
+		: mWindowHandle(window)
 	{
-		return CreateScope<GLGraphicsContext>(window);
 	}
-}
+
+	void GraphicsContext::Init()
+	{
+		glfwMakeContextCurrent(mWindowHandle);
+		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
+		ASSERT(status);
+
+		LOG_INFO("OPENGL: ");
+		LOG_INFO("{}", (const char *)glGetString(GL_VENDOR));
+		LOG_INFO("{}", (const char *)glGetString(GL_VERSION));
+		LOG_INFO("{}", (const char *)glGetString(GL_RENDERER));
+	}
+
+	void GraphicsContext::SwapBuffers()
+	{
+		glfwSwapBuffers(mWindowHandle);
+	}
+} // namespace BHive

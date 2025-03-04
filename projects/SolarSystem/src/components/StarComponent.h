@@ -4,11 +4,13 @@
 #include "renderers/Lights.h"
 #include <gfx/Color.h>
 
+BEGIN_NAMESPACE(BHive)
+
 struct StarComponent : public Component
 {
 	float Brightness{1.0f};
 	float Radius{1.0f};
-	BHive::Color Color;
+	Color Color;
 
 	StarComponent() = default;
 
@@ -21,5 +23,7 @@ struct StarComponent : public Component
 	REFLECTABLEV(Component)
 
 private:
-	BHive::PointLight mLight;
+	PointLight mLight;
 };
+
+END_NAMESPACE

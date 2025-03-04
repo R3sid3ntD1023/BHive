@@ -31,10 +31,10 @@ namespace BHive
 		{
 			mVertexDataBuffer = new FLineVertex[sMaxVertexCount];
 
-			mVertexBuffer = VertexBuffer::Create(RenderData::sMaxVertexCount * sizeof(FLineVertex));
+			mVertexBuffer = CreateRef<VertexBuffer>(RenderData::sMaxVertexCount * sizeof(FLineVertex));
 			mVertexBuffer->SetLayout({{EShaderDataType::Float3}, {EShaderDataType::Float4}});
 
-			mVertexArray = VertexArray::Create();
+			mVertexArray = CreateRef<VertexArray>();
 			mVertexArray->AddVertexBuffer(mVertexBuffer);
 
 			mLineShader = ShaderManager::Get().Load("Line", line_vert, line_frag);

@@ -1,20 +1,27 @@
 #include "StorageBuffer.h"
-#include "Platform/GL/GLStorageBuffer.h"
+#include <glad/glad.h>
 
 namespace BHive
 {
-
-	Ref<StorageBuffer> StorageBuffer::Create(uint32_t binding, size_t size)
+	StorageBuffer::StorageBuffer(uint32_t binding, size_t size)
 	{
-		return CreateRef<GLStorageBuffer>(binding, size);
+		glNamedBufferStorage(mBufferID, size, nullptr, GL_DYNAMIC_STORAGE_BIT);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, mBufferID);
 	}
 
-	Ref<StorageBuffer> StorageBuffer::Create(size_t size)
+	StorageBuffer::StorageBuffer(size_t size)
 	{
-		return CreateRef<GLStorageBuffer>(size);
+		glNamedBufferStorage(mBufferID, size, nullptr, GL_DYNAMIC_STORAGE_BIT);
 	}
-	Ref<StorageBuffer> StorageBuffer::Create(const void *data, size_t size)
+
+	StorageBuffer::StorageBuffer(const void *data, size_t size)
 	{
-		return CreateRef<GLStorageBuffer>(data, size);
+		glNamedBufferStorage(mBufferID, size, data, 0);
 	}
+
+	void StorageBuffer::BindBufferBase(uint32_t binding) const
+	{
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, mBufferID);
+	}
+
 } // namespace BHive

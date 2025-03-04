@@ -4,19 +4,18 @@
 #include <core/serialization/Serialization.h>
 #include <core/UUID.h>
 
+BEGIN_NAMESPACE(BHive)
+
 struct CelestrialBody;
 
-namespace BHive
-{
-	class Shader;
-	class VertexBuffer;
-	class StaticMesh;
-} // namespace BHive
+class Shader;
+class VertexBuffer;
+class StaticMesh;
 
 class Universe
 {
 public:
-	using ObjectList = std::unordered_map<BHive::UUID, Ref<CelestrialBody>>;
+	using ObjectList = std::unordered_map<UUID, Ref<CelestrialBody>>;
 
 public:
 	Universe();
@@ -38,7 +37,7 @@ public:
 	void Save(cereal::JSONOutputArchive &ar) const;
 	void Load(cereal::JSONInputArchive &ar);
 
-	Ref<CelestrialBody> GetBody(const BHive::UUID &id) const;
+	Ref<CelestrialBody> GetBody(const UUID &id) const;
 
 	const ObjectList &GetObjects() const { return mBodies; }
 	ObjectList &GetObjects() { return mBodies; }
@@ -46,3 +45,5 @@ public:
 private:
 	ObjectList mBodies;
 };
+
+END_NAMESPACE

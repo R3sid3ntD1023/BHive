@@ -29,7 +29,7 @@ namespace BHive
 
 		if (!mBuffer)
 		{
-			mBuffer = UniformBuffer::Create(UNIFORM_BUFFER_BINDING, sizeof(PlanetMaterial));
+			mBuffer = CreateRef<UniformBuffer>(UNIFORM_BUFFER_BINDING, sizeof(PlanetMaterial));
 		}
 	}
 

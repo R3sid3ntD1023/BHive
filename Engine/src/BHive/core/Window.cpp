@@ -35,7 +35,7 @@ namespace BHive
 		mWindow = glfwCreateWindow(properties.Size.x, properties.Size.y, properties.Title.c_str(), nullptr, nullptr);
 		sWindowCount++;
 
-		mContext = GraphicsContext::Create(mWindow);
+		mContext = CreateScope<GraphicsContext>(mWindow);
 		mContext->Init();
 
 		glfwSetWindowUserPointer(mWindow, &mData);

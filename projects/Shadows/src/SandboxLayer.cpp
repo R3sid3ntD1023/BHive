@@ -83,10 +83,11 @@ namespace BHive
 		FramebufferSpecification spec{};
 		spec.Width = windowSize.x;
 		spec.Height = windowSize.y;
-		spec.Attachments.attach(FTextureSpecification{.mFormat = EFormat::RGB8, .mWrapMode = EWrapMode::CLAMP_TO_EDGE})
-			.attach(FTextureSpecification{.mFormat = EFormat::DEPTH24_STENCIL8, .mWrapMode = EWrapMode::CLAMP_TO_EDGE});
+		spec.Attachments.attach(FTextureSpecification{.InternalFormat = EFormat::RGB8, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
+			.attach(
+				FTextureSpecification{.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 
-		mFramebuffer = Framebuffer::Create(spec);
+		mFramebuffer = CreateRef<Framebuffer>(spec);
 
 		mScreenQuad = CreateRef<PPlane>(1.f, 1.f);
 	}

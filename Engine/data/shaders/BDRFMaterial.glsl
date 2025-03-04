@@ -17,7 +17,7 @@ layout(std140, binding = 0) uniform ObjectBuffer
 {
 	mat4 u_projection;
 	mat4 u_view;
-	mat4 u_model;
+	vec2 u_near_far;
 };
 
 layout(location = 1) out struct vertex_output
@@ -36,14 +36,14 @@ void main()
 {
 	mat4 bone_transform = Skinning(vWeights, vBoneIds);
 
-	gl_Position = u_projection * u_view * u_model * bone_transform * vec4(vPosition, 1.0);
+	gl_Position = u_projection * u_view * bone_transform * vec4(vPosition, 1.0);
 
-	vs_out.position = vec3(u_model * bone_transform * vec4(vPosition, 1.0));
+	vs_out.position = vec3(bone_transform * vec4(vPosition, 1.0));
 	vs_out.texcoord = vTexCoord;
 	vs_out.color = vColor;
 	vs_out.camera_pos = inverse(u_view)[3].xyz;
 
-	mat3 normal_matrix = mat3(transpose(inverse(u_model * bone_transform)));
+	mat3 normal_matrix = mat3(transpose(inverse(bone_transform)));
 	vec3 T = normalize(normal_matrix * vTangent);
 	vec3 N = normalize(normal_matrix * vNormal);
 	vec3 B = normalize(normal_matrix * vBiNormal);
@@ -182,7 +182,7 @@ void main()
 	int j = 0;
 	int k = 0;
 	int s = 0;
-	for(int i = 0; i < u_NumLights; i++)
+	for(int i = 0; i < uNumLights; i++)
 	{
 		Light light = lights[i];
 		uint type = light.type;

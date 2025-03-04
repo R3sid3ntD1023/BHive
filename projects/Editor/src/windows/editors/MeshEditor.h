@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cameras/EditorCamera.h"
-#include "mesh/IRenderableAsset.h"
+#include "mesh/BaseMesh.h"
 #include "TAssetEditor.h"
 
 namespace BHive

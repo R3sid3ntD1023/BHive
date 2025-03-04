@@ -116,5 +116,5 @@ namespace BHive
 		return sRendererAPI->CheckError(file, line);
 	}
 
-	Scope<RendererAPI> RenderCommand::sRendererAPI = RendererAPI::Create();
+	Scope<RendererAPI> RenderCommand::sRendererAPI = CreateScope<RendererAPI>();
 } // namespace BHive

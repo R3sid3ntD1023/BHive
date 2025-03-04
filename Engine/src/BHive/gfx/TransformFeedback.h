@@ -7,14 +7,16 @@ namespace BHive
 	class TransformFeedback
 	{
 	public:
-		virtual ~TransformFeedback() = default;
-		virtual uint32_t GetRendererID() const = 0;
-		virtual void GetData(void *data, size_t size) = 0;
-		virtual void Begin(uint32_t mode) = 0;
-		virtual void End() = 0;
+		TransformFeedback(size_t size);
+		virtual ~TransformFeedback();
 
-	public:
-		static Ref<TransformFeedback> Create(size_t size);
+		virtual uint32_t GetRendererID() const { return mTransformFeedback; }
+		virtual void GetData(void *data, size_t size);
+		virtual void Begin(uint32_t mode);
+		virtual void End();
+
+	private:
+		uint32_t mTransformFeedback = 0;
 	};
 
 } // namespace BHive

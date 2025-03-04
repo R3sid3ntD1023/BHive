@@ -42,17 +42,16 @@ void main()
 
 	bool instanced = gl_InstanceID != -1; 
 
-	mat4 instance = mix( instances[gl_InstanceID], mat4(1), float(instanced));
+	mat4 instance = mix( mat4(1), instances[gl_InstanceID], float(instanced));
 
 	mat4 model = object[gl_DrawID].WorldMatrix * instance;
 	vec4 worldPos = model * vec4(vPos, 1);
+	gl_Position = u_projection * u_view * worldPos;
+
 	vs_out.position = worldPos.xyz;
 	vs_out.texcoord = vTexCoord;
-
 	mat3 normal_matrix = transpose(inverse(mat3(model)));
 	vs_out.normal = normal_matrix * vNormal;
-
-	gl_Position = u_projection * u_view * worldPos;
 }
 
 #type fragment

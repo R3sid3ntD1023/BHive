@@ -29,22 +29,24 @@
 #include "gfx/ShaderManager.h"
 #include "utils/ImageUtils.h"
 
-BHive::UUID mSelectedID = 1;
-BHive::FTextStyle sTextStyle{.TextColor = 0xFF00FFFF};
-BHive::FCircleParams sCircleParams;
+BEGIN_NAMESPACE(BHive)
+
+UUID mSelectedID = 1;
+FTextStyle sTextStyle{.TextColor = 0xFF00FFFF};
+FCircleParams sCircleParams;
 glm::vec3 sQuadPos = {680, 20, 0};
 
 void SolarSystemLayer::OnAttach()
 {
-	BHive::ShaderManager::Get().LoadFiles(RESOURCE_PATH "Shaders");
+	ShaderManager::Get().LoadFiles(RESOURCE_PATH "Shaders");
 
-	auto font = BHive::FontManager::Get().AddFontFromFile(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", 96);
+	auto font = FontManager::Get().AddFontFromFile(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", 96);
 
-	mAudio = BHive::AudioImporter::Import(RESOURCE_PATH
-										  "Audio/Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).wav");
+	mAudio =
+		AudioImporter::Import(RESOURCE_PATH "Audio/Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).wav");
 
-	mResourceManager = CreateRef<BHive::ResourceManager>(RESOURCE_PATH);
-	BHive::AssetManager::SetAssetManager(&*mResourceManager);
+	mResourceManager = CreateRef<ResourceManager>(RESOURCE_PATH);
+	AssetManager::SetAssetManager(&*mResourceManager);
 
 	mUniverse = CreateRef<Universe>();
 
@@ -54,24 +56,24 @@ void SolarSystemLayer::OnAttach()
 		ar(MAKE_NVP("Universe", *mUniverse));
 	}
 
-	mLightingShader = BHive::ShaderManager::Get().Get("Lighting.glsl");
-	mQuadShader = BHive::ShaderManager::Get().Get("ScreenQuad.glsl");
-	mScreenQuad = CreateRef<BHive::PPlane>(1.f, 1.f);
+	mLightingShader = ShaderManager::Get().Get("Lighting.glsl");
+	mQuadShader = ShaderManager::Get().Get("ScreenQuad.glsl");
+	mScreenQuad = CreateRef<PPlane>(1.f, 1.f);
 
 	InitFramebuffer();
 
-	auto &window = BHive::Application::Get().GetWindow();
+	auto &window = Application::Get().GetWindow();
 	auto window_size = window.GetSize();
 
-	mCamera = BHive::EditorCamera(45.f, window_size.x / (float)window_size.y, .01f, 1000.00f);
+	mCamera = EditorCamera(45.f, window_size.x / (float)window_size.y, .01f, 1000.00f);
 
-	BHive::RenderCommand::SetCullEnabled(false);
+	RenderCommand::SetCullEnabled(false);
 
-	BHive::FBloomSettings settings{};
+	FBloomSettings settings{};
 	settings.mFilterThreshold = {1, .95f, .79f, 60.f};
-	mBloom = CreateRef<BHive::Bloom>(3, window_size.x / 2, window_size.y / 2, settings);
+	mBloom = CreateRef<Bloom>(3, window_size.x / 2, window_size.y / 2, settings);
 
-	BHive::RenderCommand::ClearColor(.2f, .2f, .2f, 1.f);
+	RenderCommand::ClearColor(.2f, .2f, .2f, 1.f);
 
 	mPlayer = mUniverse->AddBody<CelestrialBody>();
 	mPlayer->AddComponent<CameraComponent>();
@@ -81,7 +83,7 @@ void SolarSystemLayer::OnAttach()
 	// mAudio->Play();
 	mUniverse->Begin();
 
-	BHive::RenderCommand::SetLineWidth(1.0f);
+	RenderCommand::SetLineWidth(1.0f);
 
 	// glEnable(GL_SCISSOR_TEST);
 }
@@ -96,14 +98,14 @@ void SolarSystemLayer::OnUpdate(float dt)
 
 	mMultiSampleFramebuffer->Bind();
 
-	BHive::RenderCommand::Clear();
+	RenderCommand::Clear();
 
 	auto clear = glm::vec3(0);
 	mMultiSampleFramebuffer->ClearAttachment(3, GL_FLOAT, &clear.x);
 
 	// render scene
 	{
-		BHive::GetRenderPipelineManager().SetCurrentPipeline(&mPipeline);
+		GetRenderPipelineManager().SetCurrentPipeline(&mPipeline);
 
 		mPipeline.Begin(mCamera.GetProjection(), mCamera.GetView().inverse());
 
@@ -115,10 +117,10 @@ void SolarSystemLayer::OnUpdate(float dt)
 	mMultiSampleFramebuffer->UnBind();
 	mMultiSampleFramebuffer->Blit(mFramebuffer);
 
-	BHive::RenderCommand::DisableDepth();
+	RenderCommand::DisableDepth();
 
 	mLightingbuffer->Bind();
-	BHive::RenderCommand::Clear(BHive::Buffer_Color);
+	RenderCommand::Clear(Buffer_Color);
 
 	mLightingShader->Bind();
 
@@ -127,14 +129,14 @@ void SolarSystemLayer::OnUpdate(float dt)
 	mFramebuffer->GetColorAttachment(2)->Bind(2);
 	mFramebuffer->GetColorAttachment(3)->Bind(3);
 
-	BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
+	RenderCommand::DrawElements(EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
 	mLightingbuffer->UnBind();
 
-	auto &window = BHive::Application::Get().GetWindow();
+	auto &window = Application::Get().GetWindow();
 	auto &size = window.GetSize();
 
 	// glScissor(0, 0, size.x * .5f, size.y);
-	BHive::RenderCommand::Clear(BHive::Buffer_Color);
+	RenderCommand::Clear(Buffer_Color);
 
 	auto postprocess_texture = mBloom->Process(mFramebuffer->GetColorAttachment(3));
 
@@ -148,32 +150,32 @@ void SolarSystemLayer::OnUpdate(float dt)
 	{
 		GPU_PROFILER_SCOPED("LightingQuad");
 
-		BHive::RenderCommand::DrawElements(BHive::EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
+		RenderCommand::DrawElements(EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
 	}
 
 	mQuadShader->UnBind();
 	// ui
 
-	BHive::Renderer::Begin(glm::ortho(0.f, 800.f, 0.f, 600.f), glm::inverse(glm::mat4(1.f)));
-	BHive::QuadRenderer::DrawText(
+	Renderer::Begin(glm::ortho(0.f, 800.f, 0.f, 600.f), glm::inverse(glm::mat4(1.f)));
+	QuadRenderer::DrawText(
 		36, "Text2D \nNewline Text! \n\ttygp\nfifojoissosogsg\nafianaiofno\naffaffaryy", {.Style = sTextStyle},
 		{{50, 200, 0}});
-	BHive::Renderer::End();
+	Renderer::End();
 
-	BHive::RenderCommand::EnableDepth();
+	RenderCommand::EnableDepth();
 
 	// mCullingBuffer->Bind();
 
-	// BHive::RenderCommand::Clear();
+	// RenderCommand::Clear();
 
 	// const glm::mat4 t = glm::translate(glm::vec3{35, 0, 200});
 
-	// BHive::GetRenderPipelineManager().SetCurrentPipeline(&mCullingPipeline);
+	// GetRenderPipelineManager().SetCurrentPipeline(&mCullingPipeline);
 	// mCullingPipeline.Begin(mCamera.GetProjection(), glm::inverse(t));
-	// mCullingPipeline.SetTestFrustum(BHive::Frustum(mCamera.GetProjection(), mCamera.GetView().inverse()));
+	// mCullingPipeline.SetTestFrustum(Frustum(mCamera.GetProjection(), mCamera.GetView().inverse()));
 
-	// BHive::FrustumViewer frustum(mCamera.GetProjection(), mCamera.GetView().inverse());
-	// BHive::LineRenderer::DrawFrustum(frustum, 0xFF00FFFF);
+	// FrustumViewer frustum(mCamera.GetProjection(), mCamera.GetView().inverse());
+	// LineRenderer::DrawFrustum(frustum, 0xFF00FFFF);
 
 	// mUniverse->Update(dt);
 
@@ -182,9 +184,9 @@ void SolarSystemLayer::OnUpdate(float dt)
 	// mCullingBuffer->UnBind();
 }
 
-void SolarSystemLayer::OnEvent(BHive::Event &e)
+void SolarSystemLayer::OnEvent(Event &e)
 {
-	BHive::EventDispatcher dispatcher(e);
+	EventDispatcher dispatcher(e);
 	dispatcher.Dispatch(this, &SolarSystemLayer::OnWindowResize);
 	mCamera.OnEvent(e);
 }
@@ -195,7 +197,7 @@ void SolarSystemLayer::OnGuiRender()
 	{
 		glm::vec4 pixel = {0, 0, 0, 1};
 		mFramebuffer->ReadPixel(3, 0, 0, 1, 1, GL_FLOAT, &pixel.x);
-		ImGui::TextColored({1, .5, 0, 1}, "%u", BHive::Renderer::GetStats().DrawCalls);
+		ImGui::TextColored({1, .5, 0, 1}, "%u", Renderer::GetStats().DrawCalls);
 		ImGui::TextColored({1, .5, 1, 1}, glm::to_string(pixel).c_str());
 
 		ImGui::PushID("Quad");
@@ -222,8 +224,8 @@ void SolarSystemLayer::OnGuiRender()
 
 		ImGui::PopID();
 
-		BHive::ProfilerViewer::ViewFPS();
-		BHive::ProfilerViewer::ViewCPUGPU();
+		ProfilerViewer::ViewFPS();
+		ProfilerViewer::ViewCPUGPU();
 	}
 
 	ImGui::End();
@@ -240,10 +242,10 @@ void SolarSystemLayer::OnGuiRender()
 	{
 		if (ImGui::Button("Save"))
 		{
-			auto path = BHive::FileDialogs::SaveFile("PNG (.png)\0*.png\0");
+			auto path = FileDialogs::SaveFile("PNG (.png)\0*.png\0");
 			if (!path.empty())
 			{
-				BHive::ImageUtils::SaveImage(path, mFramebuffer);
+				ImageUtils::SaveImage(path, mFramebuffer);
 			}
 		}
 	}
@@ -253,29 +255,29 @@ void SolarSystemLayer::OnGuiRender()
 
 void SolarSystemLayer::InitFramebuffer()
 {
-	auto &window = BHive::Application::Get().GetWindow();
+	auto &window = Application::Get().GetWindow();
 	auto window_size = window.GetSize();
 
-	BHive::FramebufferSpecification specs{};
+	FramebufferSpecification specs{};
 	specs.Width = window_size.x;
 	specs.Height = window_size.y;
 	specs.Samples = 4;
-	specs.Attachments.attach({.mFormat = BHive::EFormat::RGBA32F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
-		.attach({.mFormat = BHive::EFormat::RGB16F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
-		.attach({.mFormat = BHive::EFormat::RGB16F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
-		.attach({.mFormat = BHive::EFormat::RGB32F, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE})
-		.attach({.mFormat = BHive::EFormat::DEPTH24_STENCIL8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
+	specs.Attachments.attach({.InternalFormat = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
+		.attach({.InternalFormat = EFormat::RGB16F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
+		.attach({.InternalFormat = EFormat::RGB16F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
+		.attach({.InternalFormat = EFormat::RGB32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
+		.attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 
-	mMultiSampleFramebuffer = BHive::Framebuffer::Create(specs);
+	mMultiSampleFramebuffer = CreateRef<Framebuffer>(specs);
 
 	specs.Samples = 1;
-	mFramebuffer = BHive::Framebuffer::Create(specs);
+	mFramebuffer = CreateRef<Framebuffer>(specs);
 
-	specs.Attachments.reset().attach({.mFormat = BHive::EFormat::RGBA8, .mWrapMode = BHive::EWrapMode::CLAMP_TO_EDGE});
-	mLightingbuffer = BHive::Framebuffer::Create(specs);
+	specs.Attachments.reset().attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+	mLightingbuffer = CreateRef<Framebuffer>(specs);
 }
 
-bool SolarSystemLayer::OnWindowResize(BHive::WindowResizeEvent &e)
+bool SolarSystemLayer::OnWindowResize(WindowResizeEvent &e)
 {
 	mCamera.Resize(e.x, e.y);
 	mBloom->Resize(e.x / 2, e.y / 2);
@@ -285,3 +287,5 @@ bool SolarSystemLayer::OnWindowResize(BHive::WindowResizeEvent &e)
 
 	return false;
 }
+
+END_NAMESPACE

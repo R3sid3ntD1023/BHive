@@ -3,11 +3,13 @@
 #include <core/UUID.h>
 #include "Component.h"
 
+BEGIN_NAMESPACE(BHive)
+
 struct IDComponent : public Component
 {
 	IDComponent() { SetTickEnabled(false); }
 
-	BHive::UUID mID;
+	UUID mID;
 
 	virtual void Save(cereal::JSONOutputArchive &ar) const override;
 
@@ -15,3 +17,5 @@ struct IDComponent : public Component
 
 	REFLECTABLEV(Component);
 };
+
+END_NAMESPACE

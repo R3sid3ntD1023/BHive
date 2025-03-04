@@ -2,7 +2,7 @@
 #include "gfx/Shader.h"
 #include "gfx/UniformBuffer.h"
 #include "shaders/AcesFilter.h"
-#include "gfx/Texture.h"
+#include "gfx/textures/Texture2D.h"
 #include "gfx/ShaderManager.h"
 
 namespace BHive
@@ -13,7 +13,7 @@ namespace BHive
 		{
 			auto &reflection_data = mComputeShader->GetRelectionData();
 			auto &buffer = reflection_data.UniformBuffers.at("Aces");
-			mBuffer = UniformBuffer::Create(buffer.Binding, buffer.Size);
+			mBuffer = CreateRef<UniformBuffer>(buffer.Binding, buffer.Size);
 		}
 
 		Initialize(w, h);
@@ -27,7 +27,7 @@ namespace BHive
 		};
 
 		FAcesData data{.Src = texture->GetResourceHandle(), .Out = mOutput->GetImageHandle()};
-		mBuffer->SetData(data);
+		mBuffer->SetData(&data, sizeof(FAcesData));
 
 		mComputeShader->Bind();
 		mComputeShader->Dispatch(texture->GetWidth(), texture->GetHeight());
@@ -45,9 +45,9 @@ namespace BHive
 	void Aces::Initialize(uint32_t w, uint32_t h)
 	{
 		FTextureSpecification specs;
-		specs.mChannels = 3;
-		specs.mFormat = EFormat::R11_G11_B10;
+		specs.Channels = 3;
+		specs.InternalFormat = EFormat::R11_G11_B10;
 		specs.ImageAccess = EImageAccess::WRITE;
-		mOutput = Texture2D::Create(w, h, specs);
+		mOutput = CreateRef<Texture2D>(w, h, specs);
 	}
 } // namespace BHive

@@ -38,12 +38,12 @@ namespace BHive
 	void BaseMesh::CreateVertexArrayBuffer()
 	{
 		auto &data = mData;
-		auto indexbuffer = IndexBuffer::Create(data.mIndices.data(), (uint32_t)data.mIndices.size());
-		auto vertexbuffer = VertexBuffer::Create(data.mVertices.size() * sizeof(FVertex));
+		auto indexbuffer = CreateRef<IndexBuffer>(data.mIndices.data(), (uint32_t)data.mIndices.size());
+		auto vertexbuffer = CreateRef<VertexBuffer>(data.mVertices.size() * sizeof(FVertex));
 		vertexbuffer->SetData(data.mVertices.data(), data.mVertices.size() * sizeof(FVertex));
 		vertexbuffer->SetLayout(FVertex::Layout());
 
-		mVertexArray = VertexArray::Create();
+		mVertexArray = CreateRef<VertexArray>();
 		mVertexArray->AddVertexBuffer(vertexbuffer);
 		mVertexArray->SetIndexBuffer(indexbuffer);
 	}

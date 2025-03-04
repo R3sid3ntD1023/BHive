@@ -1,10 +1,31 @@
 #include "TransformFeedback.h"
-#include "Platform/GL/GLTransformFeedback.h"
+#include <glad/glad.h>
 
 namespace BHive
 {
-	Ref<TransformFeedback> BHive::TransformFeedback::Create(size_t size)
+	TransformFeedback::TransformFeedback(size_t size)
 	{
-		return CreateRef<GLTransformFeedback>(size);
+		glCreateBuffers(1, &mTransformFeedback);
+		glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, mTransformFeedback);
+		glBufferData(GL_TRANSFORM_FEEDBACK_BUFFER, size, nullptr, GL_STATIC_READ);
+	}
+
+	TransformFeedback::~TransformFeedback()
+	{
+		glDeleteBuffers(1, &mTransformFeedback);
+	}
+
+	void TransformFeedback::GetData(void *data, size_t size)
+	{
+	}
+
+	void TransformFeedback::Begin(uint32_t mode)
+	{
+		glBeginTransformFeedback(mode);
+	}
+
+	void TransformFeedback::End()
+	{
+		glEndTransformFeedback();
 	}
 } // namespace BHive

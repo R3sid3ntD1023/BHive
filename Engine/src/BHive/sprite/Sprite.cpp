@@ -1,4 +1,4 @@
-#include "gfx/Texture.h"
+#include "gfx/textures/Texture2D.h"
 #include "Sprite.h"
 
 namespace BHive
@@ -23,8 +23,7 @@ namespace BHive
 		SetCoords(coords, cellSize, spriteSize);
 	}
 
-	Sprite::Sprite(
-		const TAssetHandle<Texture2D> &texture, const glm::vec2 &min, const glm::vec2 &max)
+	Sprite::Sprite(const TAssetHandle<Texture2D> &texture, const glm::vec2 &min, const glm::vec2 &max)
 		: mSource(texture)
 	{
 		SetCoords(min, max);
@@ -49,8 +48,7 @@ namespace BHive
 		mCoords[3] = {min.x, max.y};
 	}
 
-	void Sprite::SetCoords(
-		const glm::vec2 &coords, const glm::vec2 &cellSize, const glm::vec2 &spriteSize)
+	void Sprite::SetCoords(const glm::vec2 &coords, const glm::vec2 &cellSize, const glm::vec2 &spriteSize)
 	{
 		mCoordinates = coords;
 		mCellSize = cellSize;

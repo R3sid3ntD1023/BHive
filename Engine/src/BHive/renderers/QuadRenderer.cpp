@@ -1,6 +1,6 @@
 #include "QuadRenderer.h"
 #include "gfx/Shader.h"
-#include "gfx/Texture.h"
+#include "gfx/textures/Texture2D.h"
 #include "gfx/VertexArray.h"
 #include "gfx/RenderCommand.h"
 #include "Renderer.h"
@@ -157,15 +157,15 @@ namespace BHive
 			mVertexBufferPtr = new QuadVertex[RenderData2D::sMaxVertices];
 			mIndexBufferPtr = new uint32_t[RenderData2D::sMaxIndices];
 
-			mIndexBuffer = IndexBuffer::Create(RenderData2D::sMaxIndices);
-			mVertexBuffer = VertexBuffer::Create(RenderData2D::sMaxVertices * sizeof(QuadVertex));
+			mIndexBuffer = CreateRef<IndexBuffer>(RenderData2D::sMaxIndices);
+			mVertexBuffer = CreateRef<VertexBuffer>(RenderData2D::sMaxVertices * sizeof(QuadVertex));
 			mVertexBuffer->SetLayout(QuadVertex::Layout());
 
-			mVertexArray = VertexArray::Create();
+			mVertexArray = CreateRef<VertexArray>();
 			mVertexArray->SetIndexBuffer(mIndexBuffer);
 			mVertexArray->AddVertexBuffer(mVertexBuffer);
 
-			mTextureStorage = StorageBuffer::Create(sizeof(uint64_t) * TextureData::sMaxTextureCount);
+			mTextureStorage = CreateRef<StorageBuffer>(sizeof(uint64_t) * TextureData::sMaxTextureCount);
 
 			mShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/Quad.glsl");
 		}
@@ -207,15 +207,15 @@ namespace BHive
 			mVertexBufferPtr = new TextVertex[RenderData2D::sMaxVertices];
 			mIndexBufferPtr = new uint32_t[RenderData2D::sMaxIndices];
 
-			mIndexBuffer = IndexBuffer::Create(RenderData2D::sMaxIndices);
-			mVertexBuffer = VertexBuffer::Create(RenderData2D::sMaxVertices * sizeof(TextVertex));
+			mIndexBuffer = CreateRef<IndexBuffer>(RenderData2D::sMaxIndices);
+			mVertexBuffer = CreateRef<VertexBuffer>(RenderData2D::sMaxVertices * sizeof(TextVertex));
 			mVertexBuffer->SetLayout(TextVertex::Layout());
 
-			mVertexArray = VertexArray::Create();
+			mVertexArray = CreateRef<VertexArray>();
 			mVertexArray->SetIndexBuffer(mIndexBuffer);
 			mVertexArray->AddVertexBuffer(mVertexBuffer);
 
-			mTextureStorage = StorageBuffer::Create(sizeof(uint64_t) * TextureData::sMaxTextureCount);
+			mTextureStorage = CreateRef<StorageBuffer>(sizeof(uint64_t) * TextureData::sMaxTextureCount);
 
 			mShader = mShader = ShaderManager::Get().Load("Text", text_vert, text_frag);
 		}
@@ -257,11 +257,11 @@ namespace BHive
 			mVertexBufferPtr = new CircleVertex[RenderData2D::sMaxVertices];
 			mIndexBufferPtr = new uint32_t[RenderData2D::sMaxIndices];
 
-			mIndexBuffer = IndexBuffer::Create(RenderData2D::sMaxIndices);
-			mVertexBuffer = VertexBuffer::Create(RenderData2D::sMaxVertices * sizeof(CircleVertex));
+			mIndexBuffer = CreateRef<IndexBuffer>(RenderData2D::sMaxIndices);
+			mVertexBuffer = CreateRef<VertexBuffer>(RenderData2D::sMaxVertices * sizeof(CircleVertex));
 			mVertexBuffer->SetLayout(CircleVertex::Layout());
 
-			mVertexArray = VertexArray::Create();
+			mVertexArray = CreateRef<VertexArray>();
 			mVertexArray->SetIndexBuffer(mIndexBuffer);
 			mVertexArray->AddVertexBuffer(mVertexBuffer);
 

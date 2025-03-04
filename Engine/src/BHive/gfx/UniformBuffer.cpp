@@ -1,15 +1,22 @@
 #include "UniformBuffer.h"
-#include "Platform/GL/GLUniformBuffer.h"
+#include <glad/glad.h>
 
 namespace BHive
 {
-	Ref<UniformBuffer> UniformBuffer::Create(uint32_t binding, uint64_t size)
+	UniformBuffer::UniformBuffer(uint32_t binding, uint64_t size)
 	{
-		return CreateRef<GLUniformBuffer>(binding, size);
+		glNamedBufferData(mBufferID, size, nullptr, GL_DYNAMIC_DRAW);
+		glBindBufferBase(GL_UNIFORM_BUFFER, binding, mBufferID);
 	}
 
-    Ref<UniformBuffer> UniformBuffer::Create(uint64_t size, const void *data)
-    {
-        return CreateRef<GLUniformBuffer>(size, data);
-    }
-}
+	UniformBuffer::UniformBuffer(uint64_t size, const void *data)
+	{
+		glNamedBufferData(mBufferID, size, data, GL_DYNAMIC_DRAW);
+	}
+
+	void UniformBuffer::BindBufferBase(uint32_t binding) const
+	{
+		glBindBufferBase(GL_UNIFORM_BUFFER, binding, mBufferID);
+	}
+
+} // namespace BHive

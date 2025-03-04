@@ -56,29 +56,44 @@ namespace BHive
 	class BHIVE Framebuffer
 	{
 	public:
-		virtual ~Framebuffer() = default;
+		Framebuffer(const FramebufferSpecification &specification);
+		virtual ~Framebuffer();
 
-		virtual void Bind() const = 0;
-		virtual void UnBind() const = 0;
+		virtual void Bind() const;
+		virtual void UnBind() const;
 
-		virtual void Resize(uint32_t width, uint32_t height) = 0;
-		virtual void ClearAttachment(uint32_t attachmentIndex, unsigned type, const float *data) = 0;
-		virtual void Blit(Ref<Framebuffer> &target) = 0;
+		virtual void Resize(uint32_t width, uint32_t height);
+		virtual void ClearAttachment(uint32_t attachmentIndex, unsigned type, const float *data);
+		virtual void Blit(Ref<Framebuffer> &target);
 
-		virtual void ReadPixel(
-			uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data) const = 0;
+		virtual void
+		ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data) const;
 
-		virtual Ref<Texture> GetColorAttachment(uint32_t index = 0) const = 0;
-		virtual Ref<Texture> GetDepthAttachment() const = 0;
+		virtual Ref<Texture> GetColorAttachment(uint32_t index = 0) const;
+		virtual Ref<Texture> GetDepthAttachment() const;
 
-		virtual const FramebufferSpecification &GetSpecification() const = 0;
-		virtual uint32_t GetWidth() const = 0;
-		virtual uint32_t GetHeight() const = 0;
+		virtual const FramebufferSpecification &GetSpecification() const { return mSpecification; }
+		virtual uint32_t GetWidth() const { return mSpecification.Width; }
+		virtual uint32_t GetHeight() const { return mSpecification.Height; }
 
-		virtual uint32_t GetRendererID() const = 0;
+		virtual uint32_t GetRendererID() const { return mFramebufferID; }
 		operator uint32_t() const { return GetRendererID(); }
 
-		static Ref<Framebuffer> Create(const FramebufferSpecification &specification);
+	private:
+		virtual void Initialize();
+		virtual void Release();
+
+	private:
+		std::vector<FFramebufferTexture> mColorSpecifications{};
+		FFramebufferTexture mDepthSpecification{};
+
+		std::vector<Ref<Texture>> mColorAttachments;
+		Ref<Texture> mDepthAttachment;
+
+		FramebufferSpecification mSpecification;
+
+		uint32_t mFramebufferID{0};
+		uint32_t mRenderBufferID{0};
 	};
 
 } // namespace BHive

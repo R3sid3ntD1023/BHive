@@ -4,6 +4,8 @@
 #include "renderer/RenderPipeline.h"
 #include "renderer/ShaderInstance.inl"
 
+BEGIN_NAMESPACE(BHive)
+
 float GetRandomDisplacement(float offset)
 {
 	return (rand() % (int)(2 * offset * 100)) / 100.f - offset;
@@ -70,3 +72,5 @@ REFLECT(AstroidComponent)
 	BEGIN_REFLECT(AstroidComponent)
 	REFLECT_CONSTRUCTOR();
 }
+
+END_NAMESPACE

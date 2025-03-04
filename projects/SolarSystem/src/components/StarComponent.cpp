@@ -2,6 +2,8 @@
 #include "renderer/RenderPipeline.h"
 #include "StarComponent.h"
 
+BEGIN_NAMESPACE(BHive)
+
 void StarComponent::Update(float dt)
 {
 	if (auto pipeline = BHive::GetRenderPipelineManager().GetCurrentPipeline())
@@ -29,3 +31,5 @@ REFLECT(StarComponent)
 	BEGIN_REFLECT(StarComponent)
 	REFLECT_CONSTRUCTOR();
 }
+
+END_NAMESPACE

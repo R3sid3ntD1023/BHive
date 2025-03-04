@@ -2,7 +2,7 @@
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/UniformBuffer.h"
-#include "gfx/Texture.h"
+#include "gfx/textures/Texture2D.h"
 #include "ShadowRenderer.h"
 #include <glad/glad.h>
 
@@ -52,19 +52,19 @@ namespace BHive
 
 		RenderData()
 		{
-			mObjectBuffer = UniformBuffer::Create(CAMERA_UBO_BINDING, sizeof(FObjectData));
-			mLightBuffer = UniformBuffer::Create(LIGHT_UBO_BINDING, sizeof(FLightData));
-			mBoneBuffer = UniformBuffer::Create(BONE_UBO_BINDING, sizeof(glm::mat4) * MAX_BONES);
+			mObjectBuffer = CreateRef<UniformBuffer>(CAMERA_UBO_BINDING, sizeof(FObjectData));
+			mLightBuffer = CreateRef<UniformBuffer>(LIGHT_UBO_BINDING, sizeof(FLightData));
+			mBoneBuffer = CreateRef<UniformBuffer>(BONE_UBO_BINDING, sizeof(glm::mat4) * MAX_BONES);
 
 			uint32_t white = 0xFFFFFFFF;
 			FTextureSpecification texture_specs{};
-			texture_specs.mChannels = 3;
-			texture_specs.mFormat = EFormat::RGB8;
+			texture_specs.Channels = 3;
+			texture_specs.InternalFormat = EFormat::RGB8;
 
-			mWhiteTexture = Texture2D::Create(&white, 1, 1, texture_specs);
+			mWhiteTexture = CreateRef<Texture2D>(&white, 1, 1, texture_specs);
 
 			uint32_t black = 0xFF000000;
-			mBlackTexture = Texture2D::Create(&black, 1, 1, texture_specs);
+			mBlackTexture = CreateRef<Texture2D>(&black, 1, 1, texture_specs);
 		}
 	};
 
@@ -99,9 +99,9 @@ namespace BHive
 		sData->mObjectData.view = view;
 		sData->mObjectData.near_far.x = projection[3][2] / (projection[2][2] - 1.0f);
 		sData->mObjectData.near_far.y = projection[3][2] / (projection[2][2] + 1.0f);
-		sData->mObjectBuffer->SetData(sData->mObjectData);
+		sData->mObjectBuffer->SetData(&sData->mObjectData, sizeof(RenderData::FObjectData));
 		sData->mLightData.mNumLights = 0;
-		sData->mLightBuffer->SetData(sData->mLightData.mNumLights);
+		sData->mLightBuffer->SetData(&sData->mLightData.mNumLights, sizeof(uint32_t));
 
 		LineRenderer::Begin();
 		QuadRenderer::Begin(view);
@@ -141,18 +141,12 @@ namespace BHive
 			.Type = (uint32_t)type};
 
 		sData->mLightData.mNumLights++;
-		sData->mLightBuffer->SetData(sData->mLightData);
-	}
-
-	void Renderer::SubmitTransform(const glm::mat4 &transform)
-	{
-		/*	sData->mObjectData.model = transform;
-			sData->mObjectBuffer->SetData(sData->mObjectData);*/
+		sData->mLightBuffer->SetData(&sData->mLightData, sizeof(RenderData::FLightData));
 	}
 
 	void Renderer::SubmitSkeletalMesh(const std::vector<glm::mat4> &bone_matrices)
 	{
-		sData->mBoneBuffer->SetData(bone_matrices);
+		sData->mBoneBuffer->SetData(bone_matrices.data(), bone_matrices.size() * sizeof(glm::mat4));
 	}
 
 	void Renderer::End()

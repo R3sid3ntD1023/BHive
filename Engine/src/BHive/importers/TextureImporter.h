@@ -1,7 +1,7 @@
 #pragma once
 
 #include "asset/AssetMetaData.h"
-#include "gfx/Texture.h"
+#include "gfx/textures/Texture2D.h"
 #include "core/Buffer.h"
 
 namespace BHive

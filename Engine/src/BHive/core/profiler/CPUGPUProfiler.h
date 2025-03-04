@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-	class QueryTimer;
+	class Query;
 
 	struct ProfilerData
 	{
@@ -20,7 +20,7 @@ namespace BHive
 		float GetMaxSample() const { return mMaxSample; }
 
 	private:
-		Samples mSamples;
+		Samples mSamples{};
 		size_t mCurrentSample = 0;
 		float mMinSample = 0;
 		float mMaxSample = 0;
@@ -35,10 +35,10 @@ namespace BHive
 		const GPUData &GetData() const { return mData; }
 
 		void AddData(const std::string &name, float time);
-		Ref<QueryTimer> GetQuery(const std::string &name);
+		Ref<Query> GetQuery(const std::string &name);
 
 	private:
-		std::unordered_map<std::string, Ref<QueryTimer>> mQueries;
+		std::unordered_map<std::string, Ref<Query>> mQueries;
 		GPUData mData;
 	};
 
@@ -58,7 +58,7 @@ namespace BHive
 		~ScopedGPUProfiler();
 
 	private:
-		Ref<QueryTimer> mQueryInstance;
+		Ref<Query> mQueryInstance;
 	};
 
 	struct ScopedCPUProfiler : public ScopedProfiler
@@ -88,7 +88,8 @@ namespace BHive
 			while (srcIndex < N)
 			{
 				size_t matchIndex = 0;
-				while (matchIndex < K - 1 && srcIndex + matchIndex < N - 1 && expr[srcIndex + matchIndex] == remove[matchIndex])
+				while (matchIndex < K - 1 && srcIndex + matchIndex < N - 1 &&
+					   expr[srcIndex + matchIndex] == remove[matchIndex])
 					matchIndex++;
 
 				if (matchIndex == K - 1)

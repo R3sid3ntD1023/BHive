@@ -2,6 +2,8 @@
 #include "CelestrialBody.h"
 #include "renderer/RenderPipeline.h"
 
+BEGIN_NAMESPACE(BHive)
+
 Universe::Universe()
 {
 }
@@ -75,3 +77,5 @@ Ref<CelestrialBody> Universe::GetBody(const BHive::UUID &id) const
 
 	return nullptr;
 }
+
+END_NAMESPACE

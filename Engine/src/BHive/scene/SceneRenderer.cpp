@@ -21,46 +21,39 @@
 #include "core/profiler/CPUGPUProfiler.h"
 #include "gfx/ShaderManager.h"
 
+#include "mesh/primitives/Plane.h"
+
 #define DRAW_ELEMENTS()                    \
 	RenderCommand::DrawElementsBaseVertex( \
 		EDrawMode::Triangles, *vao, sub_mesh->StartVertex, sub_mesh->StartIndex, sub_mesh->IndexCount);
 
-#define RENDER_SHADOWS
+// #define RENDER_SHADOWS
 
 namespace BHive
 {
-	uint32_t quad_indices[] = {0, 1, 2, 2, 3, 0};
-	float quad_vertices[] = {-1.f, -1.f, 0.f, 0.f, 1.f, -1.f, 1.f, 0.f, 1.f, 1.f, 1.f, 1.f, -1.f, 1.f, 0.f, 1.f};
-
 	SceneRenderer::SceneRenderer(const glm::ivec2 &size, uint32_t flags)
 		: mViewportSize(size),
 		  mFlags(flags)
 	{
 		FramebufferSpecification fbspec{};
 
-		fbspec.Attachments.attach({.mFormat = EFormat::RGBA32F, .mWrapMode = EWrapMode::CLAMP_TO_EDGE})
-			.attach({.mFormat = EFormat::DEPTH24_STENCIL8, .mWrapMode = EWrapMode::CLAMP_TO_EDGE});
+		fbspec.Attachments.attach({.InternalFormat = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
+			.attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 
 		fbspec.Width = size.x;
 		fbspec.Height = size.y;
 		fbspec.Samples = 16;
-		mMultiSampleFramebuffer = Framebuffer::Create(fbspec);
+		mMultiSampleFramebuffer = CreateRef<Framebuffer>(fbspec);
 
 		fbspec.Samples = 1;
-		mFramebuffer = Framebuffer::Create(fbspec);
+		mFramebuffer = CreateRef<Framebuffer>(fbspec);
 
-		fbspec.Attachments.reset().attach({.mFormat = EFormat::RGBA32F, .mWrapMode = EWrapMode::CLAMP_TO_EDGE});
+		fbspec.Attachments.reset().attach({.InternalFormat = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 
 		fbspec.Samples = 1;
-		mQuadFramebuffer = Framebuffer::Create(fbspec);
+		mQuadFramebuffer = CreateRef<Framebuffer>(fbspec);
 
-		auto ibo = IndexBuffer::Create(quad_indices, 6);
-		auto vbo = VertexBuffer::Create(quad_vertices, 16 * sizeof(float));
-		vbo->SetLayout({{EShaderDataType::Float2}, {EShaderDataType::Float2}});
-
-		mQuadVao = VertexArray::Create();
-		mQuadVao->AddVertexBuffer(vbo);
-		mQuadVao->SetIndexBuffer(ibo);
+		mScreenQuad = CreateRef<PPlane>(1.f, 1.f);
 
 		mCube = CreateRef<PSphere>(300.f);
 
@@ -160,8 +153,6 @@ namespace BHive
 				Renderer::SubmitSkeletalMesh(joints);
 			}
 
-			Renderer::SubmitTransform(transform);
-
 			DRAW_ELEMENTS();
 		}
 
@@ -192,7 +183,6 @@ namespace BHive
 				Renderer::SubmitSkeletalMesh(joints);
 			}
 
-			Renderer::SubmitTransform(transform);
 			DRAW_ELEMENTS();
 		}
 
@@ -230,7 +220,7 @@ namespace BHive
 
 		mFramebuffer->GetColorAttachment()->Bind();
 		post_process_texture->Bind(1);
-		RenderCommand::DrawElements(Triangles, *mQuadVao);
+		RenderCommand::DrawElements(Triangles, *mScreenQuad->GetVertexArray());
 
 		mQuadShader->UnBind();
 
@@ -243,7 +233,7 @@ namespace BHive
 		mQuadShader->SetUniform("u_postprocess_mode", mRenderSettings.mProcessMode);
 
 		mQuadFramebuffer->GetColorAttachment()->Bind();
-		RenderCommand::DrawElements(Triangles, *mQuadVao);
+		RenderCommand::DrawElements(Triangles, *mScreenQuad->GetVertexArray());
 
 		mQuadShader->UnBind();
 
@@ -405,8 +395,6 @@ namespace BHive
 					Renderer::SubmitSkeletalMesh(joints);
 				}
 
-				Renderer::SubmitTransform(transform);
-
 				DRAW_ELEMENTS();
 			}
 
@@ -431,7 +419,6 @@ namespace BHive
 					Renderer::SubmitSkeletalMesh(joints);
 				}
 
-				Renderer::SubmitTransform(transform);
 				DRAW_ELEMENTS();
 			}
 
@@ -457,7 +444,6 @@ namespace BHive
 					Renderer::SubmitSkeletalMesh(joints);
 				}
 
-				Renderer::SubmitTransform(transform);
 				DRAW_ELEMENTS();
 			}
 

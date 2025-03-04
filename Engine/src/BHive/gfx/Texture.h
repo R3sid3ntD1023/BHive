@@ -33,33 +33,6 @@ namespace BHive
 		REFLECTABLEV()
 	};
 
-	class BHIVE Texture2D : public Texture
-	{
-	public:
-		virtual ~Texture2D() = default;
-
-		static Ref<Texture2D> Create();
-		static Ref<Texture2D>
-		Create(uint32_t width, uint32_t height, const FTextureSpecification &specification, uint32_t samples = 1);
-		static Ref<Texture2D>
-		Create(const void *data, uint32_t width, uint32_t height, const FTextureSpecification &specification);
-
-		REFLECTABLEV(Texture)
-	};
-
-	class TextureCube : public Texture
-	{
-	public:
-		static Ref<TextureCube> Create(uint32_t size, const FTextureSpecification &spec);
-	};
-
-	class Texture3D : public Texture
-	{
-	public:
-		static Ref<Texture>
-		Create(uint32_t width, uint32_t height, uint32_t depth, const FTextureSpecification &specification);
-	};
-
 	REFLECT_EXTERN(Texture)
-	REFLECT_EXTERN(Texture2D)
+
 } // namespace BHive

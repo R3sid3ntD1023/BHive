@@ -2,6 +2,8 @@
 
 #include "Component.h"
 
+BEGIN_NAMESPACE(BHive)
+
 struct TagComponent : public Component
 {
 	TagComponent() { SetTickEnabled(false); }
@@ -14,3 +16,5 @@ struct TagComponent : public Component
 
 	REFLECTABLEV(Component)
 };
+
+END_NAMESPACE

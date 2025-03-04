@@ -55,7 +55,7 @@ namespace BHive
 		{
 		}
 
-		EventDelegateBase(EventDelegateBase &&other)
+		EventDelegateBase(EventDelegateBase &&other) noexcept
 			: mCallback(std::move(other.mCallback)),
 			  mHandle(std::move(other.mHandle))
 		{

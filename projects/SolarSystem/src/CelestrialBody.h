@@ -7,11 +7,8 @@
 #include <math/Transform.h>
 #include "Universe.h"
 
-namespace BHive
-{
-	class Shader;
-} // namespace BHive
-
+BEGIN_NAMESPACE(BHive)
+class Shader;
 class Universe;
 struct IDComponent;
 struct TagComponent;
@@ -59,3 +56,5 @@ private:
 	Ref<IDComponent> mIDComponent;
 	Ref<TagComponent> mTagComponent;
 };
+
+END_NAMESPACE

@@ -2,24 +2,24 @@
 #include <core/Application.h>
 #include <core/EntryPoint.h>
 
-struct UniverseApplication : public BHive::Application
+BEGIN_NAMESPACE(BHive)
+
+struct UniverseApplication : public Application
 {
-	UniverseApplication(const BHive::FApplicationSpecification &specs)
+	UniverseApplication(const FApplicationSpecification &specs)
 		: Application(specs)
 	{
 		PushLayer(new SolarSystemLayer());
 	}
 };
 
-namespace BHive
+Application *CreateApplication(const FCommandLine &cmdline)
 {
-	Application *CreateApplication(const FCommandLine &cmdline)
-	{
-		FApplicationSpecification specs{};
-		specs.Size = {800, 600};
-		specs.Title = "Solar System";
-		specs.VSync = false;
-		return new UniverseApplication(specs);
-	}
+	FApplicationSpecification specs{};
+	specs.Size = {800, 600};
+	specs.Title = "Solar System";
+	specs.VSync = false;
+	return new UniverseApplication(specs);
+}
 
-} // namespace BHive
+END_NAMESPACE

@@ -37,7 +37,7 @@ namespace BHive
 	{
 		if (!Contains(name))
 		{
-			auto shader = Shader::Create(name, vertex_src, fragment_src);
+			auto shader = CreateRef<Shader>(name, vertex_src, fragment_src);
 			auto operation = mShaders.emplace(name, shader);
 			return (*operation.first).second;
 		}
@@ -49,7 +49,7 @@ namespace BHive
 	{
 		if (!Contains(name))
 		{
-			auto shader = Shader::Create(name, comp_src);
+			auto shader = CreateRef<Shader>(name, comp_src);
 			auto operation = mShaders.emplace(name, shader);
 			return (*operation.first).second;
 		}
@@ -68,7 +68,7 @@ namespace BHive
 		auto &shader = mShaders[name];
 		mShaderMetaDatas[name].Path = file;
 
-		shader = Shader::Create(file);
+		shader = CreateRef<Shader>(file);
 		return shader;
 	}
 

@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Texture.h"
+#include "gfx/Texture.h"
 
 namespace BHive
 {
-	class TextureRenderTarget
+	class RenderTarget2D
 	{
 	public:
-		TextureRenderTarget(const Ref<Texture> &texture, uint32_t attachment = 0, uint32_t level = 0);
-		~TextureRenderTarget();
+		RenderTarget2D(const Ref<Texture> &texture, uint32_t attachment = 0, uint32_t level = 0);
+		~RenderTarget2D();
 
 		virtual void Bind();
 		virtual void UnBind();

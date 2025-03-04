@@ -1,10 +1,10 @@
-#include "TextureRenderTarget.h"
-#include "TextureUtils.h"
+#include "RenderTarget2D.h"
+#include "gfx/TextureUtils.h"
 #include <glad/glad.h>
 
 namespace BHive
 {
-	TextureRenderTarget::TextureRenderTarget(const Ref<Texture> &texture, uint32_t attachment, uint32_t level)
+	RenderTarget2D::RenderTarget2D(const Ref<Texture> &texture, uint32_t attachment, uint32_t level)
 		: mTargetTexture(texture)
 	{
 		if (!texture)
@@ -23,19 +23,19 @@ namespace BHive
 		ASSERT(glCheckNamedFramebufferStatus(GL_FRAMEBUFFER, mFramebufferID) == GL_FRAMEBUFFER_COMPLETE);
 	}
 
-	TextureRenderTarget::~TextureRenderTarget()
+	RenderTarget2D::~RenderTarget2D()
 	{
 		glDeleteFramebuffers(1, &mFramebufferID);
 		glDeleteRenderbuffers(1, &mRenderBufferID);
 	}
 
-	void TextureRenderTarget::Bind()
+	void RenderTarget2D::Bind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, mFramebufferID);
 		glViewport(0, 0, mWidth, mHeight);
 	}
 
-	void TextureRenderTarget::UnBind()
+	void RenderTarget2D::UnBind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}

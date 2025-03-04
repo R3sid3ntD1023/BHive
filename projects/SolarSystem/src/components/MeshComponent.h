@@ -3,13 +3,11 @@
 #include <core/EnumAsByte.h>
 #include "Component.h"
 
-namespace BHive
-{
-	class IndirectRenderable;
-	class ShaderInstance;
-	class BindlessTexture;
-	class BaseMesh;
-} // namespace BHive
+BEGIN_NAMESPACE(BHive)
+
+class IndirectRenderable;
+class ShaderInstance;
+class BaseMesh;
 
 enum EFlags : uint32_t
 {
@@ -21,9 +19,9 @@ struct MeshComponent : public Component
 {
 	glm::vec3 Color{1.0f};
 	glm::vec3 Emission{0.0f};
-	BHive::TEnumAsByte<EFlags> Flags = EFlags::EFlags_None;
-	BHive::UUID Texture;
-	BHive::UUID Mesh;
+	TEnumAsByte<EFlags> Flags = EFlags::EFlags_None;
+	UUID Texture;
+	UUID Mesh;
 
 	MeshComponent();
 
@@ -34,10 +32,11 @@ struct MeshComponent : public Component
 	REFLECTABLEV(Component)
 
 protected:
-	virtual void InitIndirectMesh(const Ref<BHive::BaseMesh> &renderable, Ref<BHive::IndirectRenderable> &indirect);
+	virtual void InitIndirectMesh(const Ref<BaseMesh> &renderable, Ref<IndirectRenderable> &indirect);
 
 protected:
-	Ref<BHive::IndirectRenderable> mIndirectMesh;
-	Ref<BHive::ShaderInstance> mShaderInstance;
-	Ref<BHive::BindlessTexture> mBindlessTexture;
+	Ref<IndirectRenderable> mIndirectMesh;
+	Ref<ShaderInstance> mShaderInstance;
 };
+
+END_NAMESPACE

@@ -1,5 +1,5 @@
 #include "TextureImporter.h"
-#include "gfx/Texture.h"
+#include "gfx/textures/Texture2D.h"
 #include "gfx/TextureUtils.h"
 
 #include <stb_image.h>
@@ -32,11 +32,11 @@ namespace BHive
 		}
 
 		FTextureSpecification specification{};
-		specification.mFormat = GetFormatFromChannels(is_hdr, c);
-		specification.mChannels = c;
-		specification.mMinFilter = EMinFilter::LINEAR;
-		specification.mMagFilter = EMagFilter::LINEAR;
-		specification.mWrapMode = EWrapMode::REPEAT;
+		specification.InternalFormat = GetFormatFromChannels(is_hdr, c);
+		specification.Channels = c;
+		specification.MinFilter = EMinFilter::LINEAR;
+		specification.MagFilter = EMagFilter::LINEAR;
+		specification.WrapMode = EWrapMode::REPEAT;
 
 		Ref<Texture> texture = nullptr;
 		unsigned char *resize_data = nullptr;
@@ -45,13 +45,15 @@ namespace BHive
 		{
 			auto size = import_data.mWidth * import_data.mHeight * c;
 			resize_data = (unsigned char *)malloc(size);
-			stbir_resize_uint8_linear(image_data, w, h, 0, resize_data, import_data.mWidth, import_data.mHeight, 0, (stbir_pixel_layout)c);
+			stbir_resize_uint8_linear(
+				image_data, w, h, 0, resize_data, import_data.mWidth, import_data.mHeight, 0, (stbir_pixel_layout)c);
 
-			texture = Texture2D::Create(resize_data, (unsigned)import_data.mWidth, (unsigned)import_data.mHeight, specification);
+			texture = CreateRef<Texture2D>(
+				resize_data, (unsigned)import_data.mWidth, (unsigned)import_data.mHeight, specification);
 		}
 		else
 		{
-			texture = Texture2D::Create(image_data, (unsigned)w, (unsigned)h, specification);
+			texture = CreateRef<Texture2D>(image_data, (unsigned)w, (unsigned)h, specification);
 		}
 
 		stbi_image_free(image_data);
@@ -85,13 +87,13 @@ namespace BHive
 		}
 
 		FTextureSpecification specification{};
-		specification.mFormat = GetFormatFromChannels(is_hdr, comp);
-		specification.mChannels = comp;
-		specification.mMinFilter = EMinFilter::LINEAR;
-		specification.mMagFilter = EMagFilter::LINEAR;
-		specification.mWrapMode = EWrapMode::REPEAT;
+		specification.InternalFormat = GetFormatFromChannels(is_hdr, comp);
+		specification.Channels = comp;
+		specification.MinFilter = EMinFilter::LINEAR;
+		specification.MagFilter = EMagFilter::LINEAR;
+		specification.WrapMode = EWrapMode::REPEAT;
 
-		auto texture = Texture2D::Create(image_data, (unsigned)x, (unsigned)y, specification);
+		auto texture = CreateRef<Texture2D>(image_data, (unsigned)x, (unsigned)y, specification);
 
 		stbi_image_free(image_data);
 

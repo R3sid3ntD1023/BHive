@@ -82,8 +82,8 @@ vec3 CalculateSpotLightBDRF(vec3 F0, vec3 P, vec3 N, vec3 V, Light light, vec3 a
 	vec3 BDRF = CalculateBDRF(F0, N, V, L, albedo, metallic, roughness);
 
 	float theta = dot(L, normalize(-light.direction ));
-	float epsilon = light.cutoff - light.outercutoff;
-	float intensity = smoothstep(0, 1 , (theta - light.outercutoff) / epsilon);
+	float epsilon = light.innerCutoff - light.outerCutoff;
+	float intensity = smoothstep(0, 1 , (theta - light.outerCutoff) / epsilon);
 	
 	return BDRF  * light.color * max(0, light.brightness) * pointlight * intensity;
 }
@@ -95,7 +95,7 @@ vec3 CalculatePointLightBDRF(vec3 F0, vec3 P, vec3 N, vec3 V, Light light, vec3 
 	vec3 L = light.position - P;
 	float dist = length(light.position - P);
 
-	float pointlight =  PointLight(P, N, light);
+	float pointlight =  PointLight(P, N,light.position, light.radius);
 	vec3 BDRF = CalculateBDRF(F0, N, V, normalize(L), albedo, metallic, roughness);
 
 	return BDRF  * light.color * max(0, light.brightness) * pointlight;

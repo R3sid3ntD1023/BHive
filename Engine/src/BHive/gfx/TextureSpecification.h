@@ -103,25 +103,24 @@ namespace BHive
 
 	struct FTextureSpecification
 	{
-		uint32_t mChannels;
-		EFormat mFormat;
+		uint32_t Width = 0, Height = 0;
+		uint32_t Channels = 0;
+		EFormat InternalFormat = EFormat::Invalid;
 		ETextureFormat Format = ETextureFormat::RGBA;
-		EWrapMode mWrapMode = EWrapMode::REPEAT;
-		EMinFilter mMinFilter = EMinFilter::LINEAR;
-		EMagFilter mMagFilter = EMagFilter::LINEAR;
-		Color mBorderColor = 0xFFFFFFFF;
-		uint32_t mLevels = 1;
-		ETextureType mType = ETextureType::TEXTURE_2D;
+		EWrapMode WrapMode = EWrapMode::REPEAT;
+		EMinFilter MinFilter = EMinFilter::LINEAR;
+		EMagFilter MagFilter = EMagFilter::LINEAR;
+		Color BorderColor = 0xFFFFFFFF;
+		uint32_t Levels = 1;
 		std::optional<EImageAccess> ImageAccess;
-		// std::optional<EAccess> mAccess;					 // Image Access
-		std::optional<ETextureCompareMode> mCompareMode; // Depth Compare Mode
-		std::optional<ETextureCompareFunc> mCompareFunc; // Depth Compare Funcs
+		std::optional<ETextureCompareMode> CompareMode; // Depth Compare Mode
+		std::optional<ETextureCompareFunc> CompareFunc; // Depth Compare Funcs
 
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(mFormat, mChannels, mWrapMode, mMinFilter, mMagFilter, mBorderColor, mType, mLevels, mCompareMode,
-			   mCompareFunc);
+			ar(Format, InternalFormat, Channels, WrapMode, MinFilter, MagFilter, BorderColor, Levels, CompareMode,
+			   CompareFunc);
 		}
 	};
 } // namespace BHive

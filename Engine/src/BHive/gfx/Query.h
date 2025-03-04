@@ -4,19 +4,26 @@
 
 namespace BHive
 {
-	class QueryTimer
+	class Query
 	{
 	public:
-		virtual ~QueryTimer() = default;
+		Query();
+		virtual ~Query();
 
-		virtual void Begin() = 0;
-		virtual void End() = 0;
-		virtual double GetTime() const = 0;
-		virtual double GetMinTime() const = 0;
-		virtual double GetMaxTime() const = 0;
-		virtual double GetTimeSum() const = 0;
+		virtual void Begin();
+		virtual void End();
 
-		static Ref<QueryTimer> Create();
+		virtual double GetTime() const { return mInstanceTime; }
+		virtual double GetMinTime() const { return mMinTime; }
+		virtual double GetMaxTime() const { return mMaxTime; }
+		virtual double GetTimeSum() const { return mTimeAccumulated; }
+
+	private:
+		double mTimeAccumulated = 0;
+		double mMinTime = 0;
+		double mMaxTime = 0;
+		double mInstanceTime = 0;
+		uint32_t mQueryIDs[2];
 	};
 
 } // namespace BHive
