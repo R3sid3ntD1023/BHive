@@ -64,7 +64,11 @@ layout(location = 3) in VertexOutput
 	vec3 view;
 } vs_in;
 
+#ifdef GL_ARB_bindless_texture
 layout(std430, binding = 0) restrict readonly buffer TextureBuffer {sampler2D uTextures[];};
+#else
+layout(binding = 0) uniform sampler2D uTextures[32];
+#endif
 
 layout(location = 0) out vec4 fs_out;
 

@@ -25,7 +25,8 @@ namespace BHive
 		static BHIVE void Init();
 		static BHIVE void Shutdown();
 
-		static BHIVE void Begin(const glm::mat4 &projection, const glm::mat4 &view);
+		static BHIVE void Begin();
+		static void SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view);
 
 		static BHIVE void SubmitDirectionalLight(const glm::vec3 &direction, const DirectionalLight &light);
 		static BHIVE void SubmitPointLight(const glm::vec3 &position, const PointLight &light);
@@ -48,5 +49,31 @@ namespace BHive
 		struct RenderData;
 		static RenderData *sData;
 		static Statitics sStats;
+	};
+
+	class UniformBuffer;
+
+	struct CameraBuffer
+	{
+		CameraBuffer();
+
+		void Submit(const glm::mat4 &proj, const glm::mat4 &view);
+
+		glm::mat4 &GetCurrentView() { return mData.View; }
+
+		static CameraBuffer &Get();
+
+	public:
+		struct FCameraData
+		{
+			glm::mat4 Projection{1.0f};
+			glm::mat4 View{1.0f};
+			alignas(16) glm::vec2 NearFar;
+			glm::vec3 CameraPosition;
+		};
+
+	private:
+		Ref<UniformBuffer> mBuffer;
+		FCameraData mData;
 	};
 } // namespace BHive

@@ -14,18 +14,13 @@ namespace BHive
 
 		glTextureStorage2D(mTextureID, spec.Levels, GetGLInternalFormat(spec.InternalFormat), size, size);
 
-		if (spec.Levels > 1)
-		{
-			glGenerateTextureMipmap(mTextureID);
-		}
-
 		glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(spec.MinFilter));
 		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(spec.MagFilter));
 
 		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, GetGLWrapMode(spec.WrapMode));
 		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(spec.WrapMode));
 		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_R, GetGLWrapMode(spec.WrapMode));
-		glTextureParameteri(mTextureID, GL_TEXTURE_CUBE_MAP_SEAMLESS, GL_TRUE);
+		// glTextureParameteri(mTextureID, GL_TEXTURE_CUBE_MAP_SEAMLESS, GL_TRUE);
 
 		if (spec.WrapMode == EWrapMode::CLAMP_TO_BORDER)
 		{
@@ -37,6 +32,11 @@ namespace BHive
 			glTexImage2D(
 				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GetGLInternalFormat(spec.InternalFormat), size, size, 0,
 				GetGLFormat(spec.InternalFormat), GetGLType(spec.InternalFormat), NULL);
+		}
+
+		if (spec.Levels > 1)
+		{
+			glGenerateTextureMipmap(mTextureID);
 		}
 
 		mResourceHandle = glGetTextureHandleNV(mTextureID);

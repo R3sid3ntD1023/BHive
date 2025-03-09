@@ -13,6 +13,7 @@
 #include "font/MSDFData.h"
 #include "gfx/StorageBuffer.h"
 #include "gfx/ShaderManager.h"
+#include "renderers/Renderer.h"
 
 #define TEXT_SSBO_BINDING 0
 
@@ -299,9 +300,9 @@ namespace BHive
 		delete sCircleData;
 	}
 
-	void QuadRenderer::Begin(const glm::mat4 &view)
+	void QuadRenderer::Begin()
 	{
-		sData->mCameraView = view;
+		sData->mCameraView = CameraBuffer::Get().GetCurrentView();
 		StartBatch();
 	}
 

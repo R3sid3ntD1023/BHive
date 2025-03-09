@@ -49,7 +49,7 @@ namespace BHive
 		static void Init();
 		static void Shutdown();
 
-		static void Begin(const glm::mat4 &view);
+		static void Begin();
 		static void End();
 
 		static void DrawCircle(const FCircleParams &params, const FTransform &transform);

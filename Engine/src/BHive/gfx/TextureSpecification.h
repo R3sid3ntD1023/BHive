@@ -58,6 +58,7 @@ namespace BHive
 		RGB_INTEGER,
 		R11_G11_B10,
 		DEPTH24_STENCIL8,
+		DEPTH_COMPONENT,
 		DEPTH_COMPONENT_32F,
 		DEPTH_COMPONENT_24,
 		Depth = DEPTH24_STENCIL8
@@ -69,7 +70,7 @@ namespace BHive
 		TEXTURE_1D_ARRAY,
 		TEXTURE_2D,
 		TEXTURE_3D,
-		TEXTURE_ARRAY_2D,
+		TEXTURE_2D_ARRAY,
 		TEXTURE_CUBE_MAP,
 		TEXTURE_CUBE_MAP_ARRAY,
 		TEXTURE_RECTANGLE
@@ -103,7 +104,6 @@ namespace BHive
 
 	struct FTextureSpecification
 	{
-		uint32_t Width = 0, Height = 0;
 		uint32_t Channels = 0;
 		EFormat InternalFormat = EFormat::Invalid;
 		ETextureFormat Format = ETextureFormat::RGBA;

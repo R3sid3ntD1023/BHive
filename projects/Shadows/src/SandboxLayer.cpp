@@ -107,9 +107,10 @@ namespace BHive
 		light.mRadius = lightRadius;
 
 		auto &proj = mCamera.GetProjection();
-		auto view = mCamera.GetView().inverse();
+		auto view = mCamera.GetView();
 
-		Renderer::Begin(proj, view);
+		Renderer::Begin();
+		Renderer::SubmitCamera(proj, view);
 
 		ShadowRenderer::Begin();
 		ShadowRenderer::SubmitPointLight(lightpos, light.mRadius);

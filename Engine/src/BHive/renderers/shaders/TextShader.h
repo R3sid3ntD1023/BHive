@@ -42,8 +42,8 @@ static const char *text_vert = R"(
 
 static const char *text_frag = R"(
     #version 460 core
-    #extension GL_NV_bindless_texture : require
-    #extension GL_NV_uniform_buffer_std430_layout : require
+
+    #extension GL_ARB_bindless_texture : enable
 
     layout(location = 0) in flat uint vs_texture;
     layout(location = 1) in struct VS_OUT
@@ -55,7 +55,11 @@ static const char *text_frag = R"(
         vec4 outlineColor;
     } vs_in;
 
+#ifdef GL_ARB_bindless_texture
     layout(std430, binding = 0) restrict readonly buffer TextureBuffer {sampler2D uTextures[];};
+#else
+    layout(location = 0) uniform sampler2D uTextures[32];
+#endif
 
     layout(location = 0) out vec4 fColor;
 

@@ -27,12 +27,6 @@ namespace BHive
 
 	struct Renderer::RenderData
 	{
-		struct FObjectData
-		{
-			glm::mat4 projection{1.0f};
-			glm::mat4 view{1.0f};
-			glm::vec4 near_far;
-		};
 
 		struct FLightData
 		{
@@ -46,13 +40,10 @@ namespace BHive
 
 		Ref<Texture> mWhiteTexture;
 		Ref<Texture> mBlackTexture;
-
-		FObjectData mObjectData{};
 		FLightData mLightData{};
 
 		RenderData()
 		{
-			mObjectBuffer = CreateRef<UniformBuffer>(CAMERA_UBO_BINDING, sizeof(FObjectData));
 			mLightBuffer = CreateRef<UniformBuffer>(LIGHT_UBO_BINDING, sizeof(FLightData));
 			mBoneBuffer = CreateRef<UniformBuffer>(BONE_UBO_BINDING, sizeof(glm::mat4) * MAX_BONES);
 
@@ -91,20 +82,20 @@ namespace BHive
 		delete sData;
 	}
 
-	void Renderer::Begin(const glm::mat4 &projection, const glm::mat4 &view)
+	void Renderer::Begin()
 	{
 		ResetStats();
 
-		sData->mObjectData.projection = projection;
-		sData->mObjectData.view = view;
-		sData->mObjectData.near_far.x = projection[3][2] / (projection[2][2] - 1.0f);
-		sData->mObjectData.near_far.y = projection[3][2] / (projection[2][2] + 1.0f);
-		sData->mObjectBuffer->SetData(&sData->mObjectData, sizeof(RenderData::FObjectData));
 		sData->mLightData.mNumLights = 0;
 		sData->mLightBuffer->SetData(&sData->mLightData.mNumLights, sizeof(uint32_t));
 
 		LineRenderer::Begin();
-		QuadRenderer::Begin(view);
+		QuadRenderer::Begin();
+	}
+
+	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
+	{
+		CameraBuffer::Get().Submit(projection, view);
 	}
 
 	void Renderer::SubmitDirectionalLight(const glm::vec3 &direction, const DirectionalLight &light)
@@ -173,4 +164,26 @@ namespace BHive
 	Renderer::RenderData *Renderer::sData = nullptr;
 
 	Renderer::Statitics Renderer::sStats;
+
+	CameraBuffer::CameraBuffer()
+	{
+		mBuffer = CreateRef<UniformBuffer>(CAMERA_UBO_BINDING, sizeof(FCameraData));
+	}
+
+	void CameraBuffer::Submit(const glm::mat4 &proj, const glm::mat4 &view)
+	{
+		mData.Projection = proj;
+		mData.View = view;
+		mData.NearFar.x = proj[3][2] / (proj[2][2] - 1.0f);
+		mData.NearFar.y = proj[3][2] / (proj[2][2] + 1.0f);
+		mData.CameraPosition = glm::inverse(view)[3];
+
+		mBuffer->SetData(&mData, sizeof(FCameraData));
+	}
+
+	CameraBuffer &CameraBuffer::Get()
+	{
+		static CameraBuffer buffer;
+		return buffer;
+	}
 } // namespace BHive

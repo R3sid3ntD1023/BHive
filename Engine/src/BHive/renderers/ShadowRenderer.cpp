@@ -12,7 +12,7 @@
 #include "LineRenderer.h"
 
 #define DIRECTIONAL_SHADOWMAP_SIZE 1024
-#define POINT_SHADOWMAP_SIZE 512
+#define POINT_SHADOWMAP_SIZE 1024
 #define SPOT_SHADOWMAP_SIZE 512
 
 namespace BHive
@@ -68,7 +68,7 @@ namespace BHive
 				.CompareFunc = ETextureCompareFunc::LEQUAL,
 
 			},
-			ETextureType::TEXTURE_ARRAY_2D);
+			ETextureType::TEXTURE_2D_ARRAY);
 
 		mShadowRenderData.mShadowPassFBO = CreateRef<Framebuffer>(shadow_fbo_specs);
 
@@ -81,7 +81,7 @@ namespace BHive
 					.InternalFormat = EFormat::RG32F,
 					.WrapMode = EWrapMode::CLAMP_TO_EDGE,
 				},
-				ETextureType::TEXTURE_ARRAY_2D)
+				ETextureType::TEXTURE_2D_ARRAY)
 			.attach(
 				{
 					.InternalFormat = EFormat::DEPTH_COMPONENT_32F,
@@ -90,7 +90,7 @@ namespace BHive
 					.CompareFunc = ETextureCompareFunc::LEQUAL,
 
 				},
-				ETextureType::TEXTURE_ARRAY_2D);
+				ETextureType::TEXTURE_2D_ARRAY);
 
 		mShadowRenderData.mShadowSpotPassFBO = CreateRef<Framebuffer>(shadow_fbo_specs);
 
@@ -99,10 +99,7 @@ namespace BHive
 		shadow_fbo_specs.Depth = max_lights * 6;
 		shadow_fbo_specs.Attachments.reset()
 			.attach(
-				{
-					.InternalFormat = EFormat::RG32F,
-					.WrapMode = EWrapMode::CLAMP_TO_EDGE,
-				},
+				{.InternalFormat = EFormat::RG32F, .WrapMode = EWrapMode::CLAMP_TO_BORDER, .BorderColor = 0xffffffff},
 				ETextureType::TEXTURE_CUBE_MAP_ARRAY)
 			.attach(
 				{
@@ -111,7 +108,7 @@ namespace BHive
 					.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
 					.CompareFunc = ETextureCompareFunc::LEQUAL,
 				},
-				ETextureType::TEXTURE_CUBE_MAP_ARRAY);
+				ETextureType::TEXTURE_2D_ARRAY);
 		mShadowRenderData.mPointShadowPassFBO = CreateRef<Framebuffer>(shadow_fbo_specs);
 
 		mShadowRenderData.mShadowBuffer = CreateRef<StorageBuffer>(sizeof(FShadowData));

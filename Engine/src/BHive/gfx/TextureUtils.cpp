@@ -3,46 +3,6 @@
 
 namespace BHive
 {
-	uint32_t GetTextureTarget(ETextureType type, uint32_t samples)
-	{
-		if (samples > 1)
-		{
-			switch (type)
-			{
-			case BHive::ETextureType::TEXTURE_2D:
-				return GL_TEXTURE_2D_MULTISAMPLE;
-			case BHive::ETextureType::TEXTURE_ARRAY_2D:
-				return GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
-			default:
-				break;
-			}
-		}
-
-		switch (type)
-		{
-		case BHive::ETextureType::TEXTURE_1D:
-			return GL_TEXTURE_1D;
-		case BHive::ETextureType::TEXTURE_1D_ARRAY:
-			return GL_TEXTURE_1D_ARRAY;
-		case BHive::ETextureType::TEXTURE_2D:
-			return GL_TEXTURE_2D;
-		case BHive::ETextureType::TEXTURE_3D:
-			return GL_TEXTURE_3D;
-		case BHive::ETextureType::TEXTURE_ARRAY_2D:
-			return GL_TEXTURE_2D_ARRAY;
-		case BHive::ETextureType::TEXTURE_CUBE_MAP:
-			return GL_TEXTURE_CUBE_MAP;
-		case BHive::ETextureType::TEXTURE_CUBE_MAP_ARRAY:
-			return GL_TEXTURE_CUBE_MAP_ARRAY;
-		case BHive::ETextureType::TEXTURE_RECTANGLE:
-			return GL_TEXTURE_RECTANGLE;
-		default:
-			break;
-		}
-
-		ASSERT(false);
-		return 0;
-	}
 
 	uint32_t GetTextureCompareMode(ETextureCompareMode mode)
 	{
@@ -194,6 +154,8 @@ namespace BHive
 			return GL_RGB_INTEGER;
 		case BHive::EFormat::DEPTH24_STENCIL8:
 			return GL_DEPTH_STENCIL;
+		case BHive::EFormat::DEPTH_COMPONENT:
+			return GL_DEPTH_COMPONENT;
 		case BHive::EFormat::DEPTH_COMPONENT_32F:
 			return GL_DEPTH_COMPONENT;
 		case BHive::EFormat::DEPTH_COMPONENT_24:
@@ -245,6 +207,8 @@ namespace BHive
 			return GL_R11F_G11F_B10F;
 		case BHive::EFormat::DEPTH24_STENCIL8:
 			return GL_DEPTH24_STENCIL8;
+		case BHive::EFormat::DEPTH_COMPONENT:
+			return GL_DEPTH_COMPONENT;
 		case BHive::EFormat::DEPTH_COMPONENT_32F:
 			return GL_DEPTH_COMPONENT32F;
 		case BHive::EFormat::DEPTH_COMPONENT_24:
@@ -333,6 +297,7 @@ namespace BHive
 		{
 		case BHive::EFormat::DEPTH24_STENCIL8:
 			return GL_DEPTH_STENCIL_ATTACHMENT;
+		case BHive::EFormat::DEPTH_COMPONENT:
 		case BHive::EFormat::DEPTH_COMPONENT_32F:
 		case BHive::EFormat::DEPTH_COMPONENT_24:
 			return GL_DEPTH_ATTACHMENT;

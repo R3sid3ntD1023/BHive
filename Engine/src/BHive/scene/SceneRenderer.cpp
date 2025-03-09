@@ -89,7 +89,8 @@ namespace BHive
 		mSceneData.mView = view;
 		mSceneData.clear();
 
-		Renderer::Begin(mSceneData.mProjection, mSceneData.mView);
+		Renderer::Begin();
+		Renderer::SubmitCamera(mSceneData.mProjection, mSceneData.mView);
 	}
 
 	void SceneRenderer::End()

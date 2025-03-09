@@ -1,22 +1,23 @@
 #pragma once
 
-#include "gfx/Texture.h"
+#include "gfx/textures/TextureCube.h"
 
 namespace BHive
 {
 	class RenderTarget2D
 	{
 	public:
-		RenderTarget2D(const Ref<Texture> &texture, uint32_t attachment = 0, uint32_t level = 0);
+		RenderTarget2D(uint32_t size, float radius);
 		~RenderTarget2D();
 
-		virtual void Bind();
+		virtual void Bind(uint32_t face);
 		virtual void UnBind();
 		virtual const Ref<Texture> GetTargetTexture() const { return mTargetTexture; }
 
 	private:
-		uint32_t mWidth = 0, mHeight = 0;
-		uint32_t mFramebufferID = 0, mRenderBufferID = 0;
-		Ref<Texture> mTargetTexture;
+		uint32_t mSize;
+		float mRadius;
+		uint32_t mFramebufferID = 0, mRenderBufferID;
+		Ref<TextureCube> mTargetTexture;
 	};
 } // namespace BHive

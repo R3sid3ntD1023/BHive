@@ -1,4 +1,4 @@
-#include "cameras/EditorCamera.h"
+#include "gfx/cameras/EditorCamera.h"
 #include "Components.h"
 #include "core/Time.h"
 #include "core/debug/Instrumentor.h"

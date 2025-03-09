@@ -212,9 +212,26 @@ float SampleVariancePointLightShadow(int light, vec3 position, vec3 lightDirecti
 	depth /= (near_far.y - near_far.x) * dist;
 	depth = (depth * 0.5) + 0.5;
 
-	vec2 moments =  texture(point_shadow_array_texture, vec4(-lightDirection, light)).xy;
+	float shadow = 0.0;
+	int texel_size = textureSize(point_shadow_array_texture, 0).x;
+	float shadow_region = light_size * depth;
+	float shadow_size = shadow_region / 9;
+	float angle = random(position, 500.f) * (PI * 2.0f);
+	vec3 rotate = vec3(sin(angle), cos(angle), 1);
 
-	return SampleVariance(moments, depth);
+	for(int i = 0; i < 9; i++)
+	{	
+		vec3 rotated_poisson = (v3poissonDisk[i].x * rotate.yyx * rotate.zxx) + 
+			(v3poissonDisk[i].y * rotate.xyx * rotate.zyy * vec3(-1.0f, 1.0f, 1.0f) +
+			(v3poissonDisk[i].z * rotate.zxy * vec3(0.0f, -1.0f, 1.0f))
+			);
+		vec3 offset =  rotated_poisson * shadow_size;
+		vec3 uvc = -lightDirection + offset;
+		vec2 moments =  texture(point_shadow_array_texture, vec4(uvc, light)).xy;
+		shadow += SampleVariance(moments, depth);
+	}
+
+	return shadow / 9.0;
 }
 
 float SampleVarianceSpotLightShadow(int light, vec3 position, in sampler2DArray shadow_array_texture)

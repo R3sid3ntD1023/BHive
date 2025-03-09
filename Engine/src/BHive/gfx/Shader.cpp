@@ -1,6 +1,7 @@
 #include "Shader.h"
 #include <glad/glad.h>
 #include "core/FileSystem.h"
+#include "GraphicsContext.h"
 
 namespace BHive
 {
@@ -158,12 +159,10 @@ namespace BHive
 
 		std::string preprocessors =
 			R"(
-				#extension GL_NV_uniform_buffer_std430_layout: require
-				#extension GL_ARB_shading_language_include : require
-				#extension GL_NV_bindless_texture : require
-				#extension GL_ARB_bindless_texture : require
+				#extension GL_NV_uniform_buffer_std430_layout: enable
+				#extension GL_ARB_shading_language_include : enable
+				#extension GL_ARB_bindless_texture : enable
 			)";
-
 #ifdef USE_VERTEX_PULLING
 		preprocessors += "\r\n#define USE_VERTEX_PULLING\r\n";
 #endif // USE_VERTEX_PULLING

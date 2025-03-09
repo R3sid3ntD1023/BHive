@@ -4,18 +4,9 @@
 
 namespace BHive
 {
-	EditorCamera::EditorCamera()
-	{
-		RecalulatePojection();
-	}
-
 	EditorCamera::EditorCamera(float fov, float aspect, float _near, float _far)
-		: mFov(fov),
-		  mAspect(aspect),
-		  mNear(_near),
-		  mFar(_far)
+		: PerspectiveCamera(fov, aspect, _near, _far)
 	{
-		RecalulatePojection();
 	}
 
 	void EditorCamera::ProcessInput()
@@ -72,16 +63,6 @@ namespace BHive
 		}
 	}
 
-	void EditorCamera::Resize(uint32_t width, uint32_t height)
-	{
-		if (width == 0 || height == 0)
-			return;
-
-		mViewportSize = {width, height};
-		mAspect = width / (float)height;
-		RecalulatePojection();
-	}
-
 	void EditorCamera::OnEvent(Event &event)
 	{
 		EventDispatcher dispatcher(event);
@@ -100,19 +81,18 @@ namespace BHive
 		mTarget = target.get_translation();
 		auto eye = mTarget + distance * 2.0f;
 		auto target_pos = mTarget;
-		auto look_at_matrix = glm::lookAt(eye, target_pos, {0, 1, 0});
-
-		mTransform = FTransform(glm::inverse(look_at_matrix));
+		mTransform = glm::lookAt(eye, target_pos, {0, 1, 0});
 	}
 
-	void EditorCamera::SetView(const FTransform &view)
+	const glm::mat4 &EditorCamera::GetView() const
 	{
-		mTransform = view;
+		return mTransform.inverse();
 	}
 
-	const FTransform &EditorCamera::GetView() const
+	void EditorCamera::Resize(uint32_t w, uint32_t h)
 	{
-		return mTransform;
+		PerspectiveCamera::Resize(w, h);
+		mViewportSize = {w, h};
 	}
 
 	glm::vec2 EditorCamera::PanSpeed() const
@@ -185,8 +165,4 @@ namespace BHive
 		return speed;
 	}
 
-	void EditorCamera::RecalulatePojection()
-	{
-		mProjection = glm::perspective(glm::radians(mFov), mAspect, mNear, mFar);
-	}
 } // namespace BHive

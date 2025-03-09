@@ -4,8 +4,6 @@
 
 namespace BHive
 {
-	extern uint32_t GetTextureTarget(ETextureType type, uint32_t samples = 1);
-
 	uint32_t GetTextureCompareMode(ETextureCompareMode mode);
 
 	uint32_t GetTextureCompareFunc(ETextureCompareFunc func);

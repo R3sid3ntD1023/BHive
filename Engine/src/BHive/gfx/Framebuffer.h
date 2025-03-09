@@ -15,6 +15,11 @@ namespace BHive
 		ETextureType TextureType = ETextureType::TEXTURE_2D;
 	};
 
+	struct FRenderbufferTexture
+	{
+		EFormat Format = EFormat::Invalid;
+	};
+
 	struct BHIVE FramebufferAttachments
 	{
 		FramebufferAttachments() = default;
@@ -47,10 +52,9 @@ namespace BHive
 	struct BHIVE FramebufferSpecification
 	{
 		FramebufferAttachments Attachments;
-		FFramebufferTexture mRenderSpecification;
 		uint32_t Width = 800, Height = 600, Depth = 1;
 		uint32_t Samples = 1;
-		bool WriteOnly = false;
+		FRenderbufferTexture mRenderBufferSpecification;
 	};
 
 	class BHIVE Framebuffer
@@ -86,14 +90,14 @@ namespace BHive
 	private:
 		std::vector<FFramebufferTexture> mColorSpecifications{};
 		FFramebufferTexture mDepthSpecification{};
+		FRenderbufferTexture mRenderBufferSpecification{};
 
 		std::vector<Ref<Texture>> mColorAttachments;
 		Ref<Texture> mDepthAttachment;
 
 		FramebufferSpecification mSpecification;
 
-		uint32_t mFramebufferID{0};
-		uint32_t mRenderBufferID{0};
+		uint32_t mFramebufferID = 0, mRenderbufferID = 0;
 	};
 
 } // namespace BHive

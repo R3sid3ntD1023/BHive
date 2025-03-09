@@ -2,7 +2,7 @@
 
 #include "core/Core.h"
 #include "core/Layer.h"
-#include "cameras/EditorCamera.h"
+#include "gfx/cameras/EditorCamera.h"
 #include "core/events/ApplicationEvents.h"
 
 namespace BHive
