@@ -3,16 +3,30 @@
 #include "renderers/Renderer.h"
 #include "core/Application.h"
 #include "gfx/RenderCommand.h"
+#include "gfx/textures/RenderTargetCube.h"
+#include "core/Time.h"
+#include "gfx/UniformBuffer.h"
 
 namespace BHive
 {
+	struct alignas(16) ReflectionMaterial
+	{
+		glm::vec4 Color;
+		float IOR;
+		float Reflective;
+	};
+
 	void ReflectionLayer::OnAttach()
 	{
 		mReflectionShader = ShaderManager::Get().Load(RESOURCE_PATH "shaders/reflection.glsl");
-		mPlane = CreateRef<PPlane>(20.f, 20.f);
+		auto &ubo = mReflectionShader->GetRelectionData().UniformBuffers.at("Material");
+
+		mReflectUBO = CreateRef<UniformBuffer>(ubo.Binding, ubo.Size);
+
+		mPlane = CreateRef<PPlane>(100.f, 100.f);
 		mSphere = CreateRef<PSphere>(2.f);
 
-		mRelfectionTarget = CreateRef<RenderTarget2D>(1024, 100.f);
+		mRelfectionTarget = CreateRef<RenderTargetCube>(256, 100.f);
 
 		mPlaneIndirect = CreateRef<IndirectRenderable>();
 		mPlaneIndirect->Init(mPlane);
@@ -24,6 +38,10 @@ namespace BHive
 		mCamera = EditorCamera(75.f, size.x / (float)size.y, .01f, 1000.f);
 
 		RenderCommand::ClearColor(.3f, .3f, .3f);
+	}
+
+	void ReflectionLayer::OnDetach()
+	{
 	}
 
 	void ReflectionLayer::OnUpdate(float dt)
@@ -77,14 +95,31 @@ namespace BHive
 	}
 	void ReflectionLayer::DrawScene()
 	{
-		mReflectionShader->SetUniform("uColor", glm::vec3(1, 0, 0));
+		static float radius = 9.0f;
+		float x = glm::cos(Time::Get()) * radius;
+		float y = glm::sin(Time::Get()) * radius;
 
-		mPlaneIndirect->Draw(FTransform({0, -4, 0}, {-90, 0, 0}));
+		ReflectionMaterial material{};
 
-		mReflectionShader->SetUniform("uColor", glm::vec3(1, .5, 0));
-		mSphereIndirect->Draw(FTransform({5, 0, 0}));
+		material.Color = {1, 0, 0, 1};
+		material.IOR = 1.33f;
+		material.Reflective = 0.5f;
+		mReflectUBO->SetData(&material, sizeof(ReflectionMaterial));
 
-		mReflectionShader->SetUniform("uColor", glm::vec3(1, .5, 1));
+		mPlaneIndirect->Draw(FTransform({0, -4, 0}, {0, 0, 0}));
+
+		material.Color = {1, 0, 1, 1};
+		material.IOR = 1.52f;
+		material.Reflective = 0.5f;
+		mReflectUBO->SetData(&material, sizeof(ReflectionMaterial));
+
+		mSphereIndirect->Draw(FTransform({x, 0, y}));
+
+		material.Color = {1, .5f, 0, .5f};
+		material.IOR = 2.42f;
+		material.Reflective = 1.f;
+		mReflectUBO->SetData(&material, sizeof(ReflectionMaterial));
+
 		mSphereIndirect->Draw(FTransform({-5, 0, 0}));
 	}
 } // namespace BHive

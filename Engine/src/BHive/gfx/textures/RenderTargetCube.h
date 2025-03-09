@@ -1,14 +1,15 @@
 #pragma once
 
 #include "gfx/textures/TextureCube.h"
+#include "gfx/cameras/CubeCamera.h"
 
 namespace BHive
 {
-	class RenderTarget2D
+	class RenderTargetCube
 	{
 	public:
-		RenderTarget2D(uint32_t size, float radius);
-		~RenderTarget2D();
+		RenderTargetCube(uint32_t size, float radius);
+		~RenderTargetCube();
 
 		virtual void Bind(uint32_t face);
 		virtual void UnBind();
@@ -16,8 +17,8 @@ namespace BHive
 
 	private:
 		uint32_t mSize;
-		float mRadius;
 		uint32_t mFramebufferID = 0, mRenderBufferID;
 		Ref<TextureCube> mTargetTexture;
+		CubeCamera mCamera;
 	};
 } // namespace BHive

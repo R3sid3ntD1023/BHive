@@ -38,7 +38,7 @@ layout(location  = 0) out struct VS_OUT
 {
 	vec3 Position;
 	vec3 Normal;
-	vec3 Reflected;
+	vec3 CameraPosition;
 } vs_out;
 
 void main()
@@ -59,11 +59,7 @@ void main()
 
 	vs_out.Normal = transpose(inverse(mat3(model))) * vNormal;
 	vs_out.Position = worldPos.xyz;
-
-	vec3 normal  = normalize(vs_out.Normal);
-	vec3 view = normalize(worldPos.xyz - uCameraPosition);
-	vs_out.Reflected = reflect(view, normal);
-
+	vs_out.CameraPosition = uCameraPosition;
 }
 
 #type fragment
@@ -73,22 +69,33 @@ layout(location  = 0) in struct VS_OUT
 {
 	vec3 Position;
 	vec3 Normal;
-	vec3 Reflected;
+	vec3 CameraPosition;
 } vs_in;
 
-layout(location = 0) uniform vec3 uColor;
-layout(location = 1) uniform bool uCaptureReflections;
+
+layout(std430, binding = 1) uniform Material
+{
+	vec4 Color;
+	float IOR;
+	float Reflective;
+};
+
+layout(location = 2) uniform bool uCaptureReflections;
 layout(binding = 0) uniform samplerCube uReflection;
 
 layout(location = 0) out vec4 fColor;
 
 void main()
 {
-	
-	vec4 color = vec4(uColor, 1);
+	vec3 N  = normalize(vs_in.Normal);
+	vec3  I = normalize(vs_in.Position - vs_in.CameraPosition);
+	float ratio = 1.00 / max(IOR, 0.0001);
+	vec3 R = reflect(I, N);
+
+	vec4 color = Color;
 	if(!uCaptureReflections)
 	{
-		color.rgb  = mix(color, texture(uReflection, vs_in.Reflected), 0.5).rgb;
+		color.rgb  = mix(color, texture(uReflection, R), Reflective).rgb;
 	}
 
 	fColor = color;

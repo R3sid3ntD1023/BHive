@@ -68,8 +68,8 @@ namespace BHive
 		{
 			glm::mat4 Projection{1.0f};
 			glm::mat4 View{1.0f};
-			alignas(16) glm::vec2 NearFar;
-			glm::vec3 CameraPosition;
+			glm::vec4 NearFar;
+			glm::vec4 CameraPosition;
 		};
 
 	private:

@@ -9,14 +9,15 @@ namespace BHive
 
 	FMeshData PPlane::GetMeshData(float width, float height) const
 	{
-		float w = width;
-		float h = height;
+		float w = width * .5f;
+		float h = height * .5f;
+		const auto normal = glm::vec3(0, 1, 0);
 
 		std::vector<FVertex> vertices = {
-			FVertex{.Position = {-w, -h, 0}, .TexCoord = {0, 0}, .Normal = {0, -1, 0}},
-			FVertex{.Position = {w, -h, 0}, .TexCoord = {1, 0}, .Normal = {0, -1, 0}},
-			FVertex{.Position = {w, h, 0}, .TexCoord = {1, 1}, .Normal = {0, -1, 0}},
-			FVertex{.Position = {-w, h, 0}, .TexCoord = {0, 1}, .Normal = {0, -1, 0}}};
+			FVertex{.Position = {-w, 0, h}, .TexCoord = {0, 1}, .Normal = normal},
+			FVertex{.Position = {w, 0, h}, .TexCoord = {1, 1}, .Normal = normal},
+			FVertex{.Position = {w, 0, -h}, .TexCoord = {1, 0}, .Normal = normal},
+			FVertex{.Position = {-w, 0, -h}, .TexCoord = {0, 0}, .Normal = normal}};
 
 		// CalculateTangentsAndBitTangents(vertices.data(), 4);
 
