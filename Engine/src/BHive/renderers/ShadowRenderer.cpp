@@ -2,14 +2,14 @@
 #include "gfx/Framebuffer.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
-#include "gfx/UniformBuffer.h"
-#include "Lights.h"
-#include "math/Frustum.h"
-#include "ShadowRenderer.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/StorageBuffer.h"
-#include "math/Frustum.h"
+#include "gfx/UniformBuffer.h"
+#include "Lights.h"
 #include "LineRenderer.h"
+#include "math/Frustum.h"
+#include "math/Frustum.h"
+#include "ShadowRenderer.h"
 
 #define DIRECTIONAL_SHADOWMAP_SIZE 1024
 #define POINT_SHADOWMAP_SIZE 1024
@@ -118,8 +118,11 @@ namespace BHive
 		auto point_shadow_shader = mShadowRenderData.mPointShadowPassShader =
 			ShaderManager::Get().Load(ENGINE_PATH "/data/Shaders/ShadowPointPass.glsl");
 
-		mShadowRenderData.ShadowSSBOBinding =
-			point_shadow_shader->GetRelectionData().StorageBuffers.at("ShadowSSBO").Binding;
+		auto &data = point_shadow_shader->GetRelectionData();
+		if (data.StorageBuffers.contains("ShadowSSBO"))
+		{
+			mShadowRenderData.ShadowSSBOBinding = data.StorageBuffers.at("ShadowSSBO").Binding;
+		}
 	}
 
 	void ShadowRenderer::Begin()

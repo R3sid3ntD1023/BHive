@@ -1,7 +1,7 @@
-#include "Shader.h"
-#include <glad/glad.h>
 #include "core/FileSystem.h"
 #include "GraphicsContext.h"
+#include "Shader.h"
+#include <glad/glad.h>
 
 namespace BHive
 {
@@ -60,7 +60,8 @@ namespace BHive
 	} // namespace utils
 
 	Shader::Shader(const std::filesystem::path &path)
-		: mName(path.filename().string())
+		: mName(path.filename().string()),
+		  mFilePath(path)
 	{
 		std::string source;
 		FileSystem::ReadFile(path, source);
@@ -88,8 +89,27 @@ namespace BHive
 		glDeleteProgram(mShaderID);
 	}
 
+	void Shader::Recompile()
+	{
+		if (mFilePath.empty())
+			return;
+
+		LOG_TRACE("Recompiling Shader...");
+
+		std::string source;
+		FileSystem::ReadFile(mFilePath, source);
+		PreProcess(source);
+		Compile();
+	}
+
 	void Shader::Compile()
 	{
+		if (mShaderID != 0)
+		{
+			glDeleteProgram(mShaderID);
+		}
+
+		mShaderID = glCreateProgram();
 
 		GLint status = 0;
 		GLchar infoLog[512];
@@ -105,18 +125,13 @@ namespace BHive
 			if (!status)
 			{
 				glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-				LOG_ERROR("{} - {}, {}", mName, utils::GetTypeString(type), infoLog);
-				ASSERT(false);
-				return;
+				LOG_ERROR("SHADER::COMPILE ERROR {} - {}, {}", mName, utils::GetTypeString(type), infoLog);
 			}
-
-			shaders.emplace_back(shader);
-		}
-
-		mShaderID = glCreateProgram();
-		for (auto &shader : shaders)
-		{
-			glAttachShader(mShaderID, shader);
+			else
+			{
+				shaders.emplace_back(shader);
+				glAttachShader(mShaderID, shader);
+			}
 		}
 
 		glLinkProgram(mShaderID);
@@ -125,8 +140,7 @@ namespace BHive
 		if (!status)
 		{
 			glGetProgramInfoLog(mShaderID, 512, nullptr, infoLog);
-			LOG_ERROR("{}", infoLog);
-			ASSERT(false);
+			LOG_ERROR("SHADER::PROGRAM LINKING : {}", infoLog);
 		}
 
 		if (!status)
@@ -137,6 +151,8 @@ namespace BHive
 			}
 
 			glDeleteProgram(mShaderID);
+
+			return;
 		}
 
 		for (auto &shader : shaders)
@@ -144,13 +160,13 @@ namespace BHive
 			glDetachShader(mShaderID, shader);
 		}
 
-		LOG_INFO("ShaderID {} - {}", mShaderID, mName);
-
 		Reflect();
 	}
 
 	void Shader::PreProcess(const std::string &source)
 	{
+		mSources.clear();
+
 		auto token = "#type";
 		auto version_token = "#version";
 
@@ -267,62 +283,37 @@ namespace BHive
 	{
 		LOG_TRACE("Reflecting Shader... {}", mName);
 
-		GLint uniform_count = 0, resource_count = 0, uniform_buffer_count = 0, storage_buffer_count = 0;
+		mReflectionData = FShaderReflectionData(mShaderID);
 
-		glGetProgramInterfaceiv(mShaderID, GL_UNIFORM, GL_ACTIVE_RESOURCES, &uniform_count);
-		glGetProgramInterfaceiv(mShaderID, GL_PROGRAM_INPUT, GL_ACTIVE_RESOURCES, &resource_count);
-		glGetProgramInterfaceiv(mShaderID, GL_UNIFORM_BLOCK, GL_ACTIVE_RESOURCES, &uniform_buffer_count);
-		glGetProgramInterfaceiv(mShaderID, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES, &storage_buffer_count);
-
-		for (int i = 0; i < uniform_count; i++)
+		LOG_TRACE("\tUniforms");
+		for (const auto &[name, uniform] : mReflectionData.Uniforms)
 		{
-			GLenum properties[] = {GL_TYPE, GL_ARRAY_SIZE, GL_OFFSET, GL_LOCATION};
-			GLint values[] = {0, 0, 0, 0};
-			GLchar name[512];
-
-			glGetProgramResourceiv(mShaderID, GL_UNIFORM, i, 4, properties, 4, nullptr, values);
-			glGetProgramResourceName(mShaderID, GL_UNIFORM, i, 512, nullptr, name);
-
-			FUniform uniform{.Type = values[0], .Size = values[1], .Offset = values[2], .Location = values[3]};
-			mReflectionData.Uniforms.emplace(name, uniform);
-
-			LOG_TRACE("\t{}:", name);
-			LOG_TRACE("\t\t type-{}", values[0]);
-			LOG_TRACE("\t\t size-{}", values[1]);
-			LOG_TRACE("\t\t offset-{}", values[2]);
-			LOG_TRACE("\t\t location-{}", values[3]);
+			LOG_TRACE("\t\t name : {}", name);
+			LOG_TRACE(
+				"\t\t\t type : {}, size : {}, offset : {}, location : {}", uniform.Type, uniform.Size, uniform.Offset,
+				uniform.Location);
 		}
 
-		LOG_TRACE("\tUniformBuffers");
-		for (int i = 0; i < uniform_buffer_count; i++)
+		LOG_TRACE("\tUniform Buffers");
+		for (const auto &[name, buffer] : mReflectionData.UniformBuffers)
 		{
-			GLenum properties[2] = {GL_BUFFER_BINDING, GL_BUFFER_DATA_SIZE};
-			GLint values[2] = {};
-			GLchar name[512];
+			LOG_TRACE("\t\t name : {}", name);
+			LOG_TRACE("\t\t\t binding : {}, size : {}", buffer.Binding, buffer.Size);
 
-			glGetProgramResourceiv(mShaderID, GL_UNIFORM_BLOCK, i, 2, properties, 2, nullptr, values);
-			glGetProgramResourceName(mShaderID, GL_UNIFORM_BLOCK, i, 512, nullptr, name);
-
-			FUniformBufferData uniform{.Binding = values[0], .Size = values[1]};
-			mReflectionData.UniformBuffers.emplace(name, uniform);
-
-			LOG_TRACE("\t\t{} : binding-{}, size-{}", name, values[0], values[1]);
+			for (auto &[member_name, member] : buffer.Uniforms)
+			{
+				LOG_TRACE("\t\t name : {}", member_name);
+				LOG_TRACE(
+					"\t\t\t type : {}, size : {}, offset : {}, location : {}", member.Type, member.Size, member.Offset,
+					member.Location);
+			}
 		}
 
-		LOG_TRACE("\tStorageBuffers");
-
-		for (int i = 0; i < storage_buffer_count; i++)
+		LOG_TRACE("\tStorage Buffers");
+		for (const auto &[name, buffer] : mReflectionData.StorageBuffers)
 		{
-			GLenum properties[2] = {GL_BUFFER_BINDING, GL_BUFFER_DATA_SIZE};
-			GLint values[2] = {};
-			GLint length;
-			GLchar name[512];
-
-			glGetProgramResourceiv(mShaderID, GL_SHADER_STORAGE_BLOCK, i, 2, properties, 2, nullptr, values);
-			glGetProgramResourceName(mShaderID, GL_SHADER_STORAGE_BLOCK, i, 512, &length, name);
-
-			mReflectionData.StorageBuffers.emplace(name, FStorageBuffer{.Binding = values[0], .Size = values[1]});
-			LOG_TRACE("\t\t{} : binding-{}, size-{}", name, values[0], values[1]);
+			LOG_TRACE("\t\t name : {}", name);
+			LOG_TRACE("\t\t\t binding : {}, size : {}", buffer.Binding, buffer.Size);
 		}
 	}
 

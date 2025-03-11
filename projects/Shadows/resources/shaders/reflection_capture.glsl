@@ -70,24 +70,16 @@ layout(location = 0) in struct VS_OUT
 	vec3 CameraPosition;
 } vs_in;
 
-layout(std140, binding = 1) uniform Material
+layout(std430, binding = 1) uniform Material
 {
 	vec4 Color;
 	float IOR;
 	float Reflective;
-	samplerCube uReflection;
 };
 
 layout(location = 0) out vec4 fColor;
 
 void main()
 {
-	vec3 N = normalize(vs_in.Normal);
-	vec3 I = normalize(vs_in.Position - vs_in.CameraPosition);
-	float ratio = 1.00 / max(IOR, 0.0001);
-	vec3 R = reflect(I, N);
-
-	vec4 color = mix(Color, texture(uReflection, R), Reflective);
-
-	fColor = color;
+	fColor = Color;
 }

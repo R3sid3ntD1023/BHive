@@ -67,7 +67,6 @@ namespace BHive
 		{
 		case GL_DEBUG_SEVERITY_HIGH:
 			LOG_CRITICAL("{} {} {}", source_name, type_name, message);
-			ASSERT(false);
 			return;
 		case GL_DEBUG_SEVERITY_MEDIUM:
 			LOG_ERROR("{} {} {}", source_name, type_name, message);
@@ -178,9 +177,9 @@ namespace BHive
 
 		glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, NULL, numMeshes, stride);
 
-		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+		// glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 
-		vao.UnBind();
+		// vao.UnBind();
 	}
 
 	void RendererAPI::EnableDepth()

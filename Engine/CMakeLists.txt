@@ -36,7 +36,6 @@ target_link_libraries(Engine
 	PUBLIC glm::glm-header-only
 	PUBLIC cereal::cereal
 	PUBLIC ImPlot
-	PUBLIC mINI
 	PUBLIC msdf-atlas-gen::msdf-atlas-gen
 )
 

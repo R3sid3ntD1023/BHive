@@ -2,8 +2,8 @@
 
 #include "core/events/KeyEvents.h"
 #include "core/events/MouseEvents.h"
-#include "PerspectiveCamera.h"
 #include "math/Transform.h"
+#include "PerspectiveCamera.h"
 
 namespace BHive
 {
@@ -19,6 +19,7 @@ namespace BHive
 		void OnEvent(Event &event);
 
 		bool OnMouseScrolled(MouseScrolledEvent &event);
+		bool OnKeyEvent(KeyEvent &e);
 
 		void Focus(const FTransform &target, const glm::vec3 &distance);
 

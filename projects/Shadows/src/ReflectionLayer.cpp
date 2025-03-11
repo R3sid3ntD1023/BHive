@@ -1,25 +1,28 @@
-#include "ReflectionLayer.h"
-#include "gfx/ShaderManager.h"
-#include "renderers/Renderer.h"
 #include "core/Application.h"
-#include "gfx/RenderCommand.h"
-#include "gfx/textures/RenderTargetCube.h"
 #include "core/Time.h"
+#include "gfx/RenderCommand.h"
+#include "gfx/ShaderInstance.h"
+#include "gfx/ShaderManager.h"
+#include "gfx/textures/RenderTargetCube.h"
 #include "gfx/UniformBuffer.h"
+#include "ReflectionLayer.h"
+#include "renderers/Renderer.h"
 
 namespace BHive
 {
-	struct alignas(16) ReflectionMaterial
+	struct ReflectionMaterial
 	{
 		glm::vec4 Color;
-		float IOR;
+		alignas(16) float IOR;
 		float Reflective;
 	};
 
 	void ReflectionLayer::OnAttach()
 	{
 		mReflectionShader = ShaderManager::Get().Load(RESOURCE_PATH "shaders/reflection.glsl");
-		auto &ubo = mReflectionShader->GetRelectionData().UniformBuffers.at("Material");
+		auto &data = mReflectionShader->GetRelectionData();
+		auto &ubo = data.UniformBuffers.at("Material");
+		mInstance = CreateRef<ShaderInstance>(mReflectionShader);
 
 		mReflectUBO = CreateRef<UniformBuffer>(ubo.Binding, ubo.Size);
 
@@ -59,7 +62,6 @@ namespace BHive
 			for (int i = 0; i < 6; i++)
 			{
 				mRelfectionTarget->Bind(i);
-				mReflectionShader->SetUniform("uCaptureReflections", true);
 
 				DrawScene();
 
@@ -73,7 +75,6 @@ namespace BHive
 		Renderer::SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
 
 		mRelfectionTarget->GetTargetTexture()->Bind();
-		mReflectionShader->SetUniform("uCaptureReflections", false);
 
 		DrawScene();
 
@@ -85,12 +86,23 @@ namespace BHive
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch(this, &ReflectionLayer::OnWindowResize);
+		dispatcher.Dispatch(this, &ReflectionLayer::OnKeyEvent);
 	}
 
 	bool ReflectionLayer::OnWindowResize(WindowResizeEvent &e)
 	{
 		RenderCommand::SetViewport(0, 0, e.x, e.y);
 		mCamera.Resize(e.x, e.y);
+		return false;
+	}
+	bool ReflectionLayer::OnKeyEvent(KeyEvent &e)
+	{
+		if (e.Key == Key::R)
+		{
+			mReflectionShader->Recompile();
+
+			return true;
+		}
 		return false;
 	}
 	void ReflectionLayer::DrawScene()
@@ -101,7 +113,7 @@ namespace BHive
 
 		ReflectionMaterial material{};
 
-		material.Color = {1, 0, 0, 1};
+		material.Color = {1, 1, 1, 1};
 		material.IOR = 1.33f;
 		material.Reflective = 0.5f;
 		mReflectUBO->SetData(&material, sizeof(ReflectionMaterial));
@@ -117,7 +129,7 @@ namespace BHive
 
 		material.Color = {1, .5f, 0, .5f};
 		material.IOR = 2.42f;
-		material.Reflective = 1.f;
+		material.Reflective = 0.3f;
 		mReflectUBO->SetData(&material, sizeof(ReflectionMaterial));
 
 		mSphereIndirect->Draw(FTransform({-5, 0, 0}));

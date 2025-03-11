@@ -1,5 +1,5 @@
-#include "EditorCamera.h"
 #include "core/events/Event.h"
+#include "EditorCamera.h"
 #include "input/InputManager.h"
 
 namespace BHive
@@ -57,22 +57,34 @@ namespace BHive
 		{
 			mTransform.add_translation(-right * MovementSpeed());
 		}
-		if (input.is_pressed(Key::R))
-		{
-			mTransform = mInitialTransform;
-		}
 	}
 
 	void EditorCamera::OnEvent(Event &event)
 	{
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch(this, &EditorCamera::OnMouseScrolled);
+		dispatcher.Dispatch(this, &EditorCamera::OnKeyEvent);
 	}
 
 	bool EditorCamera::OnMouseScrolled(MouseScrolledEvent &event)
 	{
 		Zoom(event.y * 0.1f);
 
+		return false;
+	}
+
+	bool EditorCamera::OnKeyEvent(KeyEvent &e)
+	{
+		switch (e.Key)
+		{
+		case Key::F:
+		{
+			mTransform = mInitialTransform;
+			return true;
+		}
+		default:
+			break;
+		}
 		return false;
 	}
 

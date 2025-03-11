@@ -16,6 +16,7 @@ namespace BHive
 		virtual ~Shader();
 
 		virtual void Compile();
+		virtual void Recompile();
 		virtual void Bind() const;
 		virtual void UnBind() const;
 
@@ -55,10 +56,12 @@ namespace BHive
 
 	private:
 		std::string mName;
-		std::unordered_map<uint32_t, std::string> mSources;
 		uint32_t mShaderID{0};
+		uint32_t mPipelineID{0};
+		std::unordered_map<uint32_t, std::string> mSources;
 		FShaderReflectionData mReflectionData;
 		mutable std::unordered_map<std::string, int> mUniformLocationCache;
+		std::filesystem::path mFilePath;
 	};
 
 	namespace utils
