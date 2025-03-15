@@ -29,7 +29,8 @@ namespace BHive
 		mPipelineData.Lights[ELightType::Directional].clear();
 		mPipelineData.Lights[ELightType::SpotLight].clear();
 
-		Renderer::Begin(projection, view);
+		Renderer::Begin();
+		Renderer::SubmitCamera(projection, view);
 		mPipelineData.CameraTransform = view;
 		mPipelineData.CameraFrustum = Frustum(projection, view);
 	}

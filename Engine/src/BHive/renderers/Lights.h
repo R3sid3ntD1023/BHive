@@ -18,7 +18,7 @@ namespace BHive
 	{
 		virtual ~Light() = default;
 
-		Color mColor = 0xFFFFFFFF;
+		FColor mColor = 0xFFFFFFFF;
 
 		float mBrightness = 1.0f;
 

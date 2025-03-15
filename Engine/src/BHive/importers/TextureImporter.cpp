@@ -7,7 +7,7 @@
 
 namespace BHive
 {
-	Ref<Texture> TextureImporter::Import(const std::filesystem::path &file, const FTextureImportData &import_data)
+	Ref<Texture2D> TextureLoader::Import(const std::filesystem::path &file, const FTextureImportData &import_data)
 	{
 		int w = 0, h = 0, c = 0;
 		stbi_uc *image_data = nullptr;
@@ -38,7 +38,7 @@ namespace BHive
 		specification.MagFilter = EMagFilter::LINEAR;
 		specification.WrapMode = EWrapMode::REPEAT;
 
-		Ref<Texture> texture = nullptr;
+		Ref<Texture2D> texture = nullptr;
 		unsigned char *resize_data = nullptr;
 
 		if (import_data.mWidth != 0 && import_data.mHeight != 0)
@@ -63,7 +63,7 @@ namespace BHive
 		return texture;
 	}
 
-	Ref<Texture> TextureImporter::LoadFromMemory(const uint8_t *data, int length)
+	Ref<Texture2D> TextureLoader::LoadFromMemory(const uint8_t *data, int length)
 	{
 		int x = 0, y = 0, comp = 0;
 		stbi_uc *image_data = nullptr;

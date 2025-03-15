@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 
+
 find_package(EnTT CONFIG REQUIRED)
 
 file(GLOB_RECURSE SRC CMAKE_CONFIGURE_DEPENDS src/**)

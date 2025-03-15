@@ -5,30 +5,30 @@
 namespace BHive
 {
 
-    struct EventDelegateHandle
-    {
-        enum class EGenerateNewHandle
-        {
-            GenerateNewHandle
-        };
+	struct EventDelegateHandle
+	{
+		enum class EGenerateNewHandle
+		{
+			GenerateNewHandle
+		};
 
-        EventDelegateHandle();
-        EventDelegateHandle(EGenerateNewHandle);
-        EventDelegateHandle(const EventDelegateHandle &) = default;
+		EventDelegateHandle();
+		EventDelegateHandle(EGenerateNewHandle);
+		EventDelegateHandle(const EventDelegateHandle &) = default;
 
-        void reset();
+		void reset();
 
-        bool operator==(const EventDelegateHandle &rhs) const;
-        bool operator!=(const EventDelegateHandle &rhs) const;
+		bool operator==(const EventDelegateHandle &rhs) const;
+		bool operator!=(const EventDelegateHandle &rhs) const;
 
-        operator bool() const;
+		operator bool() const;
 
-    private:
-        void GenerateNewID();
+	private:
+		void GenerateNewID();
 
-        UUID mID = 0;
+		UUID mID = UUID::Null;
 
-        template <typename TRet, typename... TArgs>
-        friend struct EventDelegateBase;
-    };
+		template <typename TRet, typename... TArgs>
+		friend struct EventDelegateBase;
+	};
 } // namespace BHive

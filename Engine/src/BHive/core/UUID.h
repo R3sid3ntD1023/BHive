@@ -11,42 +11,46 @@ namespace BHive
 	{
 	public:
 		UUID();
-		UUID(uint64_t id);
-		UUID(const UUID &uuid);
+		UUID(const char *guid);
+		UUID(const std::string &guid);
+		UUID(const UUID &) = default;
 
-		UUID &operator=(uint64_t rhs);
+		UUID &operator=(const char *rhs);
 
 		bool operator==(const UUID &rhs) const;
 		bool operator!=(const UUID &rhs) const;
 
-		operator uint64_t() const { return mID; }
+		operator const std::string &() const { return mGUID; }
+		operator bool() const { return mGUID != Null.mGUID; }
 
-		std::string to_string() const;
+		static UUID Null;
 
-		template <typename A>
-		uint64_t SaveMinimal(const A &) const
+		template <typename Ar>
+		std::string SaveMinimal(const Ar &ar) const
 		{
-			return mID;
+			return mGUID;
 		}
 
-		template <typename A>
-		void LoadMinimal(const A &, const uint64_t &v)
+		template <typename Ar>
+		void LoadMinimal(const Ar &ar, const std::string &v)
 		{
-			mID = v;
+			mGUID = v;
 		}
 
-	protected:
-		uint64_t mID{0};
+	private:
+		std::string mGUID = UUID::Null;
 
 		friend struct std::hash<BHive::UUID>;
 	};
+
 } // namespace BHive
 
 namespace std
 {
+
 	template <>
 	struct hash<BHive::UUID>
 	{
-		size_t operator()(const BHive::UUID &uuid) const { return uuid.mID; }
+		size_t operator()(const BHive::UUID &uuid) const { return std::hash<std::string>()(uuid.mGUID); }
 	};
 } // namespace std

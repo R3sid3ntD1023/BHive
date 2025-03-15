@@ -82,6 +82,18 @@ namespace BHive
 		}
 	}
 
+	Ref<Texture2D> Texture2D::CreateSubTexture(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+	{
+		auto format = GetGLFormat(mSpecification.InternalFormat);
+		auto type = GetGLType(mSpecification.InternalFormat);
+		auto c = mSpecification.Channels;
+
+		std::vector<uint8_t> pixels(w * h * c);
+		glGetTextureSubImage(mTextureID, 0, x, y, 0, w, h, 1, format, type, w * h * c, &pixels[0]);
+
+		return CreateRef<Texture2D>(pixels.data(), w, h, mSpecification);
+	}
+
 	void Texture2D::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);

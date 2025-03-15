@@ -13,8 +13,7 @@ namespace BHive
 			auto position = t.get_translation();
 			auto rotation = glm::radians(t.get_rotation());
 
-			auto quaternion = rp3d::Quaternion::fromEulerAngles(
-				rp3d::Vector3(rotation.x, rotation.y, rotation.z));
+			auto quaternion = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(rotation.x, rotation.y, rotation.z));
 			return rp3d::Transform({position.x, position.y, position.z}, quaternion);
 		}
 
@@ -23,8 +22,7 @@ namespace BHive
 			return glm::quat((float)qua.w, (float)qua.x, (float)qua.y, (float)qua.z);
 		}
 
-		
-		inline rp3d::Vector3 vec3_to_rp3d(const glm::vec3& v)
+		inline rp3d::Vector3 vec3_to_rp3d(const glm::vec3 &v)
 		{
 			return rp3d::Vector3(v.x, v.y, v.z);
 		}
@@ -35,8 +33,7 @@ namespace BHive
 			auto quat = rp3d_to_quat(t.getOrientation());
 			glm::vec3 rotation = glm::degrees(glm::eulerAngles(quat));
 
-			return FTransform({position.x, position.y, position.z},
-							  {rotation.x, rotation.y, rotation.z}, scale);
+			return FTransform({position.x, position.y, position.z}, {rotation.x, rotation.y, rotation.z}, scale);
 		}
 
 		inline rp3d::Vector3 LockAxisToVextor3(ELockAxis axis)
@@ -47,6 +44,6 @@ namespace BHive
 
 			return {x, y, z};
 		}
-	}  // namespace physics::utils
+	} // namespace physics::utils
 
-}
+} // namespace BHive

@@ -42,6 +42,11 @@ namespace BHive
 		calculate_model_matrix();
 	}
 
+	void FTransform::set_translation(float x, float y, float z)
+	{
+		set_translation({x, y, z});
+	}
+
 	void FTransform::set_rotation(const glm::vec3 &rotation)
 	{
 		mRotation = rotation;
@@ -99,7 +104,9 @@ namespace BHive
 
 	std::string FTransform::to_string() const
 	{
-		return "{" + std::format("{},{},{} ", glm::to_string(mTranslation), glm::to_string(mRotation), glm::to_string(mScale)) + "}";
+		return "{" +
+			   std::format("{},{},{} ", glm::to_string(mTranslation), glm::to_string(mRotation), glm::to_string(mScale)) +
+			   "}";
 	}
 
 	FTransform &FTransform::operator=(const FTransform &rhs)
@@ -155,7 +162,7 @@ namespace BHive
 	REFLECT(FTransform)
 	{
 		BEGIN_REFLECT(FTransform)
-		REFLECT_PROPERTY("Translation", get_translation, set_translation)
+		// REFLECT_PROPERTY("Translation", get_translation, set_translation)
 		REFLECT_PROPERTY("Rotation", get_rotation, set_rotation)
 		REFLECT_PROPERTY("Scale", get_scale, set_scale)(META_DATA(EPropertyMetaData_Default, glm::vec3(1.f)));
 	}

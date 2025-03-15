@@ -367,7 +367,7 @@ namespace ImGui
 		return changed;
 	}
 
-	bool ColorEdit(const char *label, BHive::Color &color, ImGuiColorEditFlags flags)
+	bool ColorEdit(const char *label, BHive::FColor &color, ImGuiColorEditFlags flags)
 	{
 		return ImGui::ColorEdit4(label, &color.r, flags);
 	}

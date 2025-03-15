@@ -41,7 +41,7 @@ namespace BHive
 	public:
 		Material();
 
-		Color mAldebo{0xFFFFFFFF};
+		FColor mAldebo{0xFFFFFFFF};
 
 		float mMetallic{0.0f};
 
@@ -51,7 +51,7 @@ namespace BHive
 
 		bool mDiaElectric = true;
 
-		Color mEmission{0xFF000000};
+		FColor mEmission{0xFF000000};
 
 		glm::vec2 mTiling{1.0f};
 

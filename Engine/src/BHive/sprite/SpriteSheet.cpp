@@ -56,9 +56,8 @@ namespace BHive
 	{
 		BEGIN_REFLECT(FSpriteSheetGrid)
 		REFLECT_PROPERTY("Rows", mRows)
-		(META_DATA(EPropertyMetaData_Min, 0))
-			REFLECT_PROPERTY("Columns", mColumns)(META_DATA(EPropertyMetaData_Min, 0))
-				REFLECT_PROPERTY("CellSize", mCellSize);
+		(META_DATA(EPropertyMetaData_Min, 0)) REFLECT_PROPERTY("Columns", mColumns)(META_DATA(EPropertyMetaData_Min, 0))
+			REFLECT_PROPERTY("CellSize", mCellSize);
 	}
 
 	REFLECT(SpriteSheet)

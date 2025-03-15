@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cameras/EditorCamera.h>
+#include <gfx/cameras/EditorCamera.h>
 #include <core/Application.h>
 #include <core/Core.h>
 #include <core/FPSCounter.h>
@@ -15,7 +15,7 @@ BEGIN_NAMESPACE(BHive)
 class UniformBuffer;
 class Shader;
 class Framebuffer;
-class PPlane;
+class PQuad;
 class Bloom;
 class AudioSource;
 class Font;
@@ -45,7 +45,7 @@ private:
 	Ref<Framebuffer> mMultiSampleFramebuffer;
 	Ref<Framebuffer> mFramebuffer;
 	Ref<Framebuffer> mLightingbuffer;
-	Ref<PPlane> mScreenQuad;
+	Ref<PQuad> mScreenQuad;
 
 	// Ref<Framebuffer> mCullingBuffer;
 

@@ -19,6 +19,8 @@ namespace BHive
 		const glm::quat get_quaternion() const { return glm::quat(glm::radians(mRotation)); }
 
 		void set_translation(const glm::vec3 &translation);
+		void set_translation(float x, float y, float z);
+
 		void set_rotation(const glm::vec3 &rotation);
 		void set_quaternion(const glm::quat &quaternion);
 

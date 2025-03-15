@@ -285,14 +285,14 @@ namespace BHive
 
 		mReflectionData = FShaderReflectionData(mShaderID);
 
-		LOG_TRACE("\tUniforms");
+		/*LOG_TRACE("\tUniforms");
 		for (const auto &[name, uniform] : mReflectionData.Uniforms)
 		{
 			LOG_TRACE("\t\t name : {}", name);
 			LOG_TRACE(
 				"\t\t\t type : {}, size : {}, offset : {}, location : {}", uniform.Type, uniform.Size, uniform.Offset,
 				uniform.Location);
-		}
+		}*/
 
 		LOG_TRACE("\tUniform Buffers");
 		for (const auto &[name, buffer] : mReflectionData.UniformBuffers)
@@ -300,13 +300,13 @@ namespace BHive
 			LOG_TRACE("\t\t name : {}", name);
 			LOG_TRACE("\t\t\t binding : {}, size : {}", buffer.Binding, buffer.Size);
 
-			for (auto &[member_name, member] : buffer.Uniforms)
+			/*for (auto &[member_name, member] : buffer.Uniforms)
 			{
 				LOG_TRACE("\t\t name : {}", member_name);
 				LOG_TRACE(
 					"\t\t\t type : {}, size : {}, offset : {}, location : {}", member.Type, member.Size, member.Offset,
 					member.Location);
-			}
+			}*/
 		}
 
 		LOG_TRACE("\tStorage Buffers");

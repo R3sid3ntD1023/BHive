@@ -12,7 +12,7 @@
 #include <gfx/UniformBuffer.h>
 #include <glad/glad.h>
 #include <implot.h>
-#include <mesh/primitives/Plane.h>
+#include <mesh/primitives/Quad.h>
 #include <renderers/postprocessing/Bloom.h>
 #include <renderers/Renderer.h>
 
@@ -31,7 +31,7 @@
 
 BEGIN_NAMESPACE(BHive)
 
-UUID mSelectedID = 1;
+UUID mSelectedID{"f68f4384-d55f-4a9b-872e-efe27fa06659"};
 FTextStyle sTextStyle{.TextColor = 0xFF00FFFF};
 FCircleParams sCircleParams;
 glm::vec3 sQuadPos = {680, 20, 0};
@@ -58,7 +58,7 @@ void SolarSystemLayer::OnAttach()
 
 	mLightingShader = ShaderManager::Get().Get("Lighting.glsl");
 	mQuadShader = ShaderManager::Get().Get("ScreenQuad.glsl");
-	mScreenQuad = CreateRef<PPlane>(1.f, 1.f);
+	mScreenQuad = CreateRef<PQuad>();
 
 	InitFramebuffer();
 
@@ -78,7 +78,7 @@ void SolarSystemLayer::OnAttach()
 	mPlayer = mUniverse->AddBody<CelestrialBody>();
 	mPlayer->AddComponent<CameraComponent>();
 	mPlayer->SetName("Camera");
-	mPlayer->SetParent(1);
+	mPlayer->SetParent(mSelectedID);
 
 	// mAudio->Play();
 	mUniverse->Begin();
@@ -107,7 +107,7 @@ void SolarSystemLayer::OnUpdate(float dt)
 	{
 		GetRenderPipelineManager().SetCurrentPipeline(&mPipeline);
 
-		mPipeline.Begin(mCamera.GetProjection(), mCamera.GetView().inverse());
+		mPipeline.Begin(mCamera.GetProjection(), mCamera.GetView());
 
 		mUniverse->Update(dt);
 
@@ -135,7 +135,6 @@ void SolarSystemLayer::OnUpdate(float dt)
 	auto &window = Application::Get().GetWindow();
 	auto &size = window.GetSize();
 
-	// glScissor(0, 0, size.x * .5f, size.y);
 	RenderCommand::Clear(Buffer_Color);
 
 	auto postprocess_texture = mBloom->Process(mFramebuffer->GetColorAttachment(3));
@@ -156,13 +155,14 @@ void SolarSystemLayer::OnUpdate(float dt)
 	mQuadShader->UnBind();
 	// ui
 
-	Renderer::Begin(glm::ortho(0.f, 800.f, 0.f, 600.f), glm::inverse(glm::mat4(1.f)));
+	/*Renderer::Begin();
+	Renderer::SubmitCamera(glm::ortho(0.f, 800.f, 0.f, 600.f), glm::inverse(glm::mat4(1.f)));
 	QuadRenderer::DrawText(
 		36, "Text2D \nNewline Text! \n\ttygp\nfifojoissosogsg\nafianaiofno\naffaffaryy", {.Style = sTextStyle},
 		{{50, 200, 0}});
 	Renderer::End();
 
-	RenderCommand::EnableDepth();
+	RenderCommand::EnableDepth();*/
 
 	// mCullingBuffer->Bind();
 
@@ -182,6 +182,8 @@ void SolarSystemLayer::OnUpdate(float dt)
 	// mCullingPipeline.End();
 
 	// mCullingBuffer->UnBind();
+
+	RenderCommand::EnableDepth();
 }
 
 void SolarSystemLayer::OnEvent(Event &e)
@@ -223,6 +225,8 @@ void SolarSystemLayer::OnGuiRender()
 		ImGui::DragFloat("Radius", &sCircleParams.Radius, .001f);
 
 		ImGui::PopID();
+
+		ImGui::Image((ImTextureID)(uint64_t)mFramebuffer->GetColorAttachment()->GetRendererID(), {300, 300}, {0, 1}, {1, 0});
 
 		ProfilerViewer::ViewFPS();
 		ProfilerViewer::ViewCPUGPU();

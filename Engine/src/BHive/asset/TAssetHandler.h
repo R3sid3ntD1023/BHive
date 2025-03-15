@@ -73,13 +73,13 @@ namespace BHive
 		operator Ref<T>() const { return mPtr; }
 
 		template <typename A>
-		inline uint64_t SaveMinimal(const A &ar) const
+		inline std::string SaveMinimal(const A &ar) const
 		{
-			return mPtr ? mPtr->GetHandle() : AssetHandle(0);
+			return mPtr ? mPtr->GetHandle() : UUID::Null;
 		}
 
 		template <typename A>
-		inline void LoadMinimal(const A &ar, const uint64_t &value)
+		inline void LoadMinimal(const A &ar, const std::string &value)
 		{
 			mPtr = AssetManager::GetAsset<T>(value);
 		}

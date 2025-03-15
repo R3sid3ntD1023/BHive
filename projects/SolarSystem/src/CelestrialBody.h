@@ -48,7 +48,7 @@ protected:
 	BHive::FTransform mTransform;
 
 private:
-	BHive::UUID mParent = 0;
+	BHive::UUID mParent = UUID::Null;
 	Universe *mUniverse = nullptr;
 	std::vector<Ref<Component>> mComponents;
 	std::vector<Ref<Component>> mTickedComponents;

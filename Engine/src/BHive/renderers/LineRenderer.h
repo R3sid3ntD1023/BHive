@@ -11,15 +11,15 @@ namespace BHive
 	{
 		glm::vec3 p0{};
 		glm::vec3 p1{};
-		Color color{};
+		FColor color{};
 	};
 
 	struct FGrid
 	{
 		float size = 10.0f;
 		uint32_t divisions = 10;
-		Color color{.5f};
-		Color stepcolor{};
+		FColor color{.5f};
+		FColor stepcolor{};
 	};
 
 	struct LineRenderer
@@ -30,39 +30,39 @@ namespace BHive
 		static void Begin();
 		static void End();
 
-		static void DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const Color &color, const FTransform &transform = {});
+		static void DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const FColor &color, const FTransform &transform = {});
 		static void DrawLine(const Line &line, const FTransform &transform = {});
 		static void DrawTriangle(
-			const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const Color &color,
+			const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const FColor &color,
 			const FTransform &transform = {});
 		static void DrawTriangle(const Line &l0, const Line &l1, const Line &l2, const FTransform &transform = {});
-		static void DrawRect(const glm::vec2 &size, const Color &color, const FTransform &transform = {});
+		static void DrawRect(const glm::vec2 &size, const FColor &color, const FTransform &transform = {});
 		static void DrawRect(
-			const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3, const Color &color,
+			const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3, const FColor &color,
 			const FTransform &transform = {});
 		static void
-		DrawBox(const glm::vec3 &extents, const glm::vec3 &offset, const Color &color, const FTransform &transform = {});
+		DrawBox(const glm::vec3 &extents, const glm::vec3 &offset, const FColor &color, const FTransform &transform = {});
 		static void DrawArc(
-			float radius, uint32_t sides, float start, float end, const glm::vec3 &offset, const Color &color,
+			float radius, uint32_t sides, float start, float end, const glm::vec3 &offset, const FColor &color,
 			const FTransform &transform = {});
 		static void DrawCircle(
-			float radius, uint32_t sides, const glm::vec3 &offset, const Color &color, const FTransform &transform = {});
+			float radius, uint32_t sides, const glm::vec3 &offset, const FColor &color, const FTransform &transform = {});
 		static void DrawSphere(
-			float radius, uint32_t sides, const glm::vec3 &offset, const Color &color, const FTransform &transform = {});
+			float radius, uint32_t sides, const glm::vec3 &offset, const FColor &color, const FTransform &transform = {});
 		static void DrawGrid(const FGrid &grid, const FTransform &transform = {});
 		static void DrawCylinder(
-			float radius, float height, uint32_t sides, const glm::vec3 &offset, const Color &color,
+			float radius, float height, uint32_t sides, const glm::vec3 &offset, const FColor &color,
 			const FTransform &transform = {});
-		static void DrawAABB(const AABB &aabb, const Color &color, const FTransform &transform = {});
+		static void DrawAABB(const AABB &aabb, const FColor &color, const FTransform &transform = {});
 		static void
-		DrawCone(float height, float radius, uint32_t sides, const Color &color, const FTransform &transform = {});
+		DrawCone(float height, float radius, uint32_t sides, const FColor &color, const FTransform &transform = {});
 		static void DrawCapsule(
-			float radius, float height, uint32_t sides, const glm::vec3 &offset, const Color &color,
+			float radius, float height, uint32_t sides, const glm::vec3 &offset, const FColor &color,
 			const FTransform &transform = {});
 
-		static void DrawArrow(float size, const Color &color, const FTransform &transform = {});
+		static void DrawArrow(float size, const FColor &color, const FTransform &transform = {});
 
-		static void DrawFrustum(const FrustumViewer &frustum, const Color &color);
+		static void DrawFrustum(const FrustumViewer &frustum, const FColor &color);
 
 	private:
 		static void StartBatch();

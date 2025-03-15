@@ -16,6 +16,7 @@ static const char *text_vert = R"(
         mat4 uProjection;
         mat4 uView;
         vec2 uNearFar;
+        vec3 CameraPosition;
     };
 
     layout(location = 0) out flat uint vs_texture;

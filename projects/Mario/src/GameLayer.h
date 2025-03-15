@@ -15,6 +15,7 @@ namespace BHive
 		void OnAttach() override;
 		void OnUpdate(float dt) override;
 		void OnEvent(Event &event) override;
+		void OnDetach() override;
 
 	private:
 		bool OnKeyEvent(KeyEvent &e);
@@ -22,6 +23,11 @@ namespace BHive
 
 	private:
 		Ref<World> mCurrentWorld;
-		TAssetHandle<Texture2D> mTexture;
+		Ref<Texture2D> mTexture;
+		Ref<Texture2D> mMario;
+		Ref<Texture2D> mSubTexture;
+		Ref<Texture2D> mItems;
+
+		UUID mPlayerID = UUID::Null;
 	};
 } // namespace BHive

@@ -32,7 +32,7 @@ namespace BHive
 		static BHIVE void SubmitPointLight(const glm::vec3 &position, const PointLight &light);
 		static BHIVE void SubmitSpotLight(const glm::vec3 &direction, const glm::vec3 &position, const SpotLight &light);
 		static BHIVE void SubmitLight(
-			const glm::vec3 &direction, const glm::vec3 &position, const Color &color, float brightness, float radius,
+			const glm::vec3 &direction, const glm::vec3 &position, const FColor &color, float brightness, float radius,
 			float cutoff, float outercutoff, ELightType type);
 
 		static void SubmitSkeletalMesh(const std::vector<glm::mat4> &bone_matrices);

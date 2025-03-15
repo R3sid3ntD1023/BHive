@@ -1,16 +1,108 @@
-#include "components/Components.h"
 #include "GameObject.h"
+#include "components/TagComponent.h"
+#include "components/IDComponent.h"
+#include "components/TransformComponent.h"
+#include "components/RelationshipComponent.h"
 
 namespace BHive
 {
-	GameObject::GameObject(const std::string &name, const entt::entity &handle, World *world)
-		: mWorld(world),
-		  mEntity(handle)
+	GameObject::GameObject(World *world)
+		: mWorld(world)
 	{
-		AddComponent<TagComponent>(name);
-		AddComponent<TransformComponent>();
-		AddComponent<IDComponent>();
-		AddComponent<RelationshipComponent>();
+		AddComponent<TagComponent>(this, "New GameObject");
+		AddComponent<TransformComponent>(this);
+		AddComponent<IDComponent>(this);
+		AddComponent<RelationshipComponent>(this);
+	}
+
+	void GameObject::Begin()
+	{
+		for (auto &component : mComponents)
+			component.second->Begin();
+	}
+
+	void GameObject::Update(float dt)
+	{
+		for (auto &component : mComponents)
+			component.second->Update(dt);
+	}
+
+	void GameObject::End()
+	{
+		for (auto &component : mComponents)
+			component.second->End();
+	}
+
+	PhysicsComponent &GameObject::GetPhysicsComponent()
+	{
+		return GetComponent<PhysicsComponent>();
+	}
+
+	void GameObject::SetName(const std::string &name)
+	{
+		GetComponent<TagComponent>().Name = name;
+	}
+
+	void GameObject::SetParent(GameObject *object)
+	{
+		if (!object)
+			return;
+
+		auto &this_rel = GetComponent<RelationshipComponent>();
+		auto &other_rel = object->GetComponent<RelationshipComponent>();
+
+		this_rel.Parent = object->GetID();
+		other_rel.Children.insert(GetID());
+	}
+
+	void GameObject::AddChild(GameObject *object)
+	{
+		if (!object)
+			return;
+
+		auto &this_rel = GetComponent<RelationshipComponent>();
+		auto &child_rel = object->GetComponent<RelationshipComponent>();
+
+		this_rel.Children.insert(object->GetID());
+		child_rel.Parent = GetID();
+	}
+
+	void GameObject::RemoveChild(GameObject *object)
+	{
+		if (!object)
+			return;
+
+		auto &this_rel = GetComponent<RelationshipComponent>();
+		auto &child_rel = object->GetComponent<RelationshipComponent>();
+
+		auto &child_id = object->GetID();
+		if (this_rel.Children.contains(child_id))
+		{
+			this_rel.Children.erase(child_id);
+			child_rel.Parent = 0;
+		}
+	}
+
+	void GameObject::RemoveParent()
+	{
+		auto &this_rel = GetComponent<RelationshipComponent>();
+		auto &id = GetID();
+
+		if (this_rel.Parent)
+		{
+			auto parent = mWorld->GetGameObject(this_rel.Parent);
+			auto &parent_rel = parent->GetComponent<RelationshipComponent>();
+
+			if (parent_rel.Children.contains(id))
+			{
+				parent_rel.Children.erase(id);
+			}
+		}
+	}
+
+	void GameObject::Destroy()
+	{
+		mWorld->Destroy(GetID());
 	}
 
 	const UUID &GameObject::GetID() const
@@ -18,10 +110,15 @@ namespace BHive
 		return GetComponent<IDComponent>().ID;
 	}
 
+	const std::string &GameObject::GetName() const
+	{
+		return GetComponent<TagComponent>().Name;
+	}
+
 	const FTransform &GameObject::GetTransform() const
 	{
-		auto parentID = GetComponent<RelationshipComponent>().Parent;
-		auto transform = GetComponent<TransformComponent>().Transform;
+		auto &parentID = GetComponent<RelationshipComponent>().Parent;
+		auto &transform = GetComponent<TransformComponent>().Transform;
 
 		if (parentID)
 		{
@@ -31,5 +128,13 @@ namespace BHive
 		}
 
 		return transform;
+	}
+	FTransform &GameObject::GetLocalTransform()
+	{
+		return GetComponent<TransformComponent>().Transform;
+	}
+	const FTransform &GameObject::GetLocalTransform() const
+	{
+		return GetComponent<TransformComponent>().Transform;
 	}
 } // namespace BHive

@@ -110,7 +110,7 @@ namespace BHive
 		EWrapMode WrapMode = EWrapMode::REPEAT;
 		EMinFilter MinFilter = EMinFilter::LINEAR;
 		EMagFilter MagFilter = EMagFilter::LINEAR;
-		Color BorderColor = 0xFFFFFFFF;
+		FColor BorderColor = 0xFFFFFFFF;
 		uint32_t Levels = 1;
 		std::optional<EImageAccess> ImageAccess;
 		std::optional<ETextureCompareMode> CompareMode; // Depth Compare Mode

@@ -29,6 +29,8 @@ namespace BHive
 		virtual void GenerateMipMaps() const;
 		virtual const FTextureSpecification &GetSpecification() const { return mSpecification; }
 
+		Ref<Texture2D> CreateSubTexture(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+
 		void Save(cereal::BinaryOutputArchive &ar) const;
 		void Load(cereal::BinaryInputArchive &ar);
 

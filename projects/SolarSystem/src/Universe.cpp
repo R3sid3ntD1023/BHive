@@ -52,7 +52,7 @@ void Universe::Load(cereal::JSONInputArchive &ar)
 	{
 		ar.startNode();
 
-		BHive::UUID id = 0;
+		BHive::UUID id = UUID::Null;
 		rttr::type type = BHive::InvalidType;
 
 		ar(MAKE_NVP("ID", id));

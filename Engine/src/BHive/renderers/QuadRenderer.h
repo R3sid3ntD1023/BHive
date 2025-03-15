@@ -11,11 +11,11 @@ namespace BHive
 
 	struct FTextStyle
 	{
-		Color TextColor = 0xFFFFFFFF;
+		FColor TextColor = 0xFFFFFFFF;
 		float Thickness = .5f;
 		float Smoothness = 0.f;
 
-		Color OutlineColor = 0xFF000000;
+		FColor OutlineColor = 0xFF000000;
 		float OutlineThickness = 0.f;
 		float OutlineSmoothness = 0.1f;
 	};
@@ -29,7 +29,7 @@ namespace BHive
 
 	struct FCircleParams
 	{
-		Color LineColor = 0xffffffff;
+		FColor LineColor = 0xffffffff;
 		float Thickness = 1.0f;
 		float Fade = 0.005f;
 		float Radius = 1.f;
@@ -43,6 +43,14 @@ namespace BHive
 
 	typedef unsigned QuadRendererFlags;
 
+	struct FQuadParams
+	{
+		glm::vec2 Size{1, 1};
+		glm::vec2 Tiling{1, 1};
+		FColor Color{0xffffffff};
+		QuadRendererFlags Flags{0};
+	};
+
 	class QuadRenderer
 	{
 	public:
@@ -54,21 +62,15 @@ namespace BHive
 
 		static void DrawCircle(const FCircleParams &params, const FTransform &transform);
 
-		static void DrawQuad(
-			const glm::vec2 &size, const Color &color, const FTransform &transform, const Ref<Texture> &texture,
-			QuadRendererFlags flags = 0);
+		static void DrawQuad(const FQuadParams &params, const Ref<Texture> &texture, const FTransform &transform);
 
-		static void DrawSprite(
-			const glm::vec2 &size, const Color &color, const FTransform &transform, const Ref<Sprite> &sprite,
-			QuadRendererFlags flags = 0);
+		static void DrawSprite(const FQuadParams &params, const Ref<Sprite> &sprite, const FTransform &transform);
 
-		static void DrawBillboard(
-			const glm::vec2 &size, const Color &color, const FTransform &transform, const Ref<Texture> &texture,
-			QuadRendererFlags flags = 0);
+		static void DrawBillboard(const FQuadParams &params, const Ref<Texture> &texture, const FTransform &transform);
 
 		static void DrawQuad(
-			const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const Color &color,
-			const glm::mat4 &transform, const Ref<Texture> &texture, QuadRendererFlags flags = 0);
+			const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FColor &color,
+			const glm::mat4 &transform, const Ref<Texture> &texture, const glm::vec2 &tiling, QuadRendererFlags flags = 0);
 
 		static void
 		DrawText(float size, const std::string &text, const FTextParams &params = {}, const FTransform &transform = {});

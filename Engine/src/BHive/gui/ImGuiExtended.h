@@ -38,7 +38,7 @@ namespace ImGui
 		const char *label, BHive::FTransform &transform, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char *format = "%.2f",
 		ImGuiSliderFlags flags = 0, const BHive::FTransform &reset_value = {});
 
-	bool ColorEdit(const char *label, BHive::Color &color, ImGuiColorEditFlags flags = 0);
+	bool ColorEdit(const char *label, BHive::FColor &color, ImGuiColorEditFlags flags = 0);
 } // namespace ImGui
 
 // templates

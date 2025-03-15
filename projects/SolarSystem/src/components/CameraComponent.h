@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Component.h"
-#include <scene/SceneCamera.h>
+#include <gfx/cameras/SceneCamera.h>
 
 BEGIN_NAMESPACE(BHive)
 

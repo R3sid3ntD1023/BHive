@@ -117,7 +117,7 @@ namespace BHive
 	}
 
 	void Renderer::SubmitLight(
-		const glm::vec3 &direction, const glm::vec3 &position, const Color &color, float brightness, float radius,
+		const glm::vec3 &direction, const glm::vec3 &position, const FColor &color, float brightness, float radius,
 		float cutoff, float outercutoff, ELightType type)
 	{
 		auto current_index = sData->mLightData.mNumLights % MAX_LIGHTS;

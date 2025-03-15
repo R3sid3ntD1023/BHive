@@ -9,6 +9,7 @@ namespace BHive
 	struct FInputKey
 	{
 		FInputKey() = default;
+		FInputKey(EKey key) { SetKey(key); }
 
 		void SetKey(EKey key)
 		{

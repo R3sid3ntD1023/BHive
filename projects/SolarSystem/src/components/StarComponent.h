@@ -10,7 +10,7 @@ struct StarComponent : public Component
 {
 	float Brightness{1.0f};
 	float Radius{1.0f};
-	Color Color;
+	FColor Color;
 
 	StarComponent() = default;
 

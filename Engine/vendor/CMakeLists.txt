@@ -30,7 +30,7 @@ set(ALSOFT_UPDATE_BUILD_VERSION ON CACHE BOOL "" FORCE)
 
 #reactphysics3d
 set(RP3D_COMPILE_TESTBED OFF CACHE BOOL "" FORCE)
-set(RP3D_PROFILING_ENABLED ON CACHE BOOL "" FORCE)
+set(RP3D_PROFILING_ENABLED OFF CACHE BOOL "" FORCE)
 set(RP3D_DOUBLE_PRECISION_ENABLED OFF CACHE BOOL "" FORCE)
 set(RP3D_GENERATE_DOCUMENTATION OFF CACHE BOOL "" FORCE)
 
@@ -107,7 +107,7 @@ list(APPEND components stb)
 FetchContent_Declare(
 	reactphysics3d
 	GIT_REPOSITORY https://github.com/DanielChappuis/reactphysics3d.git
-	GIT_TAG master
+	GIT_TAG v0.10.2
 )
 list( APPEND components reactphysics3d)
 

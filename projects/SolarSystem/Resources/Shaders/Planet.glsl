@@ -17,6 +17,7 @@ layout(std430, binding = 0) uniform CameraBuffer
 	mat4 u_projection;
 	mat4 u_view;
 	vec2 u_near_far;
+	vec3 u_camera_position;
 };
 
 layout(std430, binding = 1) restrict readonly buffer PerObjectSSBO
@@ -42,7 +43,7 @@ void main()
 
 	bool instanced = gl_InstanceID != -1; 
 
-	mat4 instance = mix( mat4(1), instances[gl_InstanceID], float(instanced));
+	mat4 instance = mix( instances[gl_InstanceID],  mat4(1), float(instanced));
 
 	mat4 model = object[gl_DrawID].WorldMatrix * instance;
 	vec4 worldPos = model * vec4(vPos, 1);
@@ -80,6 +81,7 @@ layout(std430, binding = 0) uniform CameraBuffer
 	mat4 u_projection;
 	mat4 u_view;
 	vec2 u_near_far;
+	vec3 u_camera_position;
 };
 
 layout(location = 0) out vec4 fColor;

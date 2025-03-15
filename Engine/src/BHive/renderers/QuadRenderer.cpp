@@ -342,32 +342,28 @@ namespace BHive
 		sCircleData->mIndexCount += 6;
 	}
 
-	void QuadRenderer::DrawQuad(
-		const glm::vec2 &size, const Color &color, const FTransform &transform, const Ref<Texture> &texture,
-		QuadRendererFlags flags)
+	void QuadRenderer::DrawQuad(const FQuadParams &params, const Ref<Texture> &texture, const FTransform &transform)
 	{
 		static glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
 
 		static glm::vec2 texcoords[4] = {{0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}, {0.f, 1.f}};
 
-		DrawQuad(positions, texcoords, size, color, transform.to_mat4(), texture, flags);
+		DrawQuad(positions, texcoords, params.Size, params.Color, transform.to_mat4(), texture, params.Tiling, params.Flags);
 	}
 
-	void QuadRenderer::DrawSprite(
-		const glm::vec2 &size, const Color &color, const FTransform &transform, const Ref<Sprite> &sprite,
-		QuadRendererFlags flags)
+	void QuadRenderer::DrawSprite(const FQuadParams &params, const Ref<Sprite> &sprite, const FTransform &transform)
 	{
 		if (!sprite)
 			return;
 
 		static glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
 
-		DrawQuad(positions, sprite->GetCoords(), size, color, transform.to_mat4(), sprite->GetSourceTexture().get(), flags);
+		DrawQuad(
+			positions, sprite->GetCoords(), params.Size, params.Color, transform.to_mat4(), sprite->GetSourceTexture(),
+			params.Tiling, params.Flags);
 	}
 
-	void QuadRenderer::DrawBillboard(
-		const glm::vec2 &size, const Color &color, const FTransform &transform, const Ref<Texture> &texture,
-		QuadRendererFlags flags)
+	void QuadRenderer::DrawBillboard(const FQuadParams &params, const Ref<Texture> &texture, const FTransform &transform)
 	{
 		const auto &view = sData->mCameraView;
 		glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
@@ -378,17 +374,17 @@ namespace BHive
 		const glm::vec3 camera_up = glm::vec3{view[0][1], view[1][1], view[2][1]};
 		for (uint32_t i = 0; i < 4; i++)
 		{
-			auto newposition = glm::vec4(positions[i] * glm::vec3(size, 1), 1.0f);
+			auto newposition = glm::vec4(positions[i] * glm::vec3(params.Size, 1), 1.0f);
 			glm::vec3 world_space_center = transform.to_mat4() * glm::vec4(0.0f, 0.f, 0.f, 1.f);
 			positions[i] = world_space_center + camera_right * newposition.x + camera_up * newposition.y;
 		}
 
-		DrawQuad(positions, texcoords, size, color, {1.f}, texture, flags);
+		DrawQuad(positions, texcoords, params.Size, params.Color, {1.f}, texture, params.Tiling, params.Flags);
 	}
 
 	void QuadRenderer::DrawQuad(
-		const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const Color &color,
-		const glm::mat4 &transform, const Ref<Texture> &texture, QuadRendererFlags flags)
+		const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FColor &color,
+		const glm::mat4 &transform, const Ref<Texture> &texture, const glm::vec2 &tiling, QuadRendererFlags flags)
 	{
 		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
 
@@ -403,7 +399,7 @@ namespace BHive
 		{
 			sData->mVertexCurrentPtr->Position = transform * (glm::vec4(points[i], 1.0f) * glm::vec4(size, 1.f, 1.f));
 			sData->mVertexCurrentPtr->Normal = glm::transpose(glm::inverse(transform)) * glm::vec4(0, 0, 1, 0);
-			sData->mVertexCurrentPtr->TexCoord = texcoords[i];
+			sData->mVertexCurrentPtr->TexCoord = texcoords[i] * tiling;
 			sData->mVertexCurrentPtr->Color = color;
 			sData->mVertexCurrentPtr->Texture = texture_index;
 			sData->mVertexCurrentPtr->Flags = flags;

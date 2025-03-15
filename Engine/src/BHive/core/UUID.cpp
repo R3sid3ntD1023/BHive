@@ -1,44 +1,62 @@
 #include "UUID.h"
-#include <random>
+#include "Rpc.h"
+#pragma comment(lib, "Rpcrt4.lib")
 
 namespace BHive
 {
-	static std::random_device sDevice;
-	static std::mt19937_64 sEngine(sDevice());
-	static std::uniform_int_distribution sDistribution;
 
 	UUID::UUID()
-		: mID(sDistribution(sEngine))
+	{
+		static const int uuid_string_length = 36;
+		::GUID id;
+		RPC_CSTR uuid_string = nullptr;
+
+		auto result = CoCreateGuid(&id);
+		if (SUCCEEDED(result))
+		{
+			result = (result == RPC_S_UUID_LOCAL_ONLY) ? S_OK : result;
+
+			if (SUCCEEDED(result))
+				result = ::UuidToString(&id, &uuid_string);
+
+			if (SUCCEEDED(result))
+			{
+				mGUID.resize(uuid_string_length);
+				memcpy(&mGUID[0], uuid_string, uuid_string_length);
+			}
+
+			if (uuid_string != nullptr)
+			{
+				RpcStringFree(&uuid_string);
+			}
+		}
+	}
+
+	UUID::UUID(const char *guid)
+		: mGUID(guid)
 	{
 	}
 
-	UUID::UUID(uint64_t id)
-		: mID(id)
+	UUID::UUID(const std::string &guid)
+		: mGUID(guid)
 	{
 	}
 
-	UUID::UUID(const UUID &uuid)
-		: mID(uuid.mID)
+	UUID &UUID::operator=(const char *rhs)
 	{
-	}
-
-	UUID &UUID::operator=(uint64_t rhs)
-	{
-		mID = rhs;
+		mGUID = rhs;
 		return *this;
 	}
 
 	bool UUID::operator==(const UUID &rhs) const
 	{
-		return rhs.mID == mID;
+		return rhs.mGUID == mGUID;
 	}
+
 	bool UUID::operator!=(const UUID &rhs) const
 	{
 		return !(*this == rhs);
 	}
 
-	std::string UUID::to_string() const
-	{
-		return std::to_string(mID);
-	}
-}
+	UUID UUID::Null{"00000000-0000-0000-0000-000000000000"};
+} // namespace BHive

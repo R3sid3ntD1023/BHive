@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-	class Texture;
+	class Texture2D;
 
 	struct FTextureImportData
 	{
@@ -14,10 +14,10 @@ namespace BHive
 		bool mFlip = true;
 	};
 
-	struct TextureImporter
+	struct TextureLoader
 	{
-		static BHIVE Ref<Texture> Import(const std::filesystem::path &file, const FTextureImportData &import_data = {});
+		static BHIVE Ref<Texture2D> Import(const std::filesystem::path &file, const FTextureImportData &import_data = {});
 
-		static BHIVE Ref<Texture> LoadFromMemory(const uint8_t *data, int length);
+		static BHIVE Ref<Texture2D> LoadFromMemory(const uint8_t *data, int length);
 	};
 } // namespace BHive
