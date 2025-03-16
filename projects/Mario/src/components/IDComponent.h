@@ -1,10 +1,11 @@
 #pragma once
 
+#include "Component.h"
 #include "core/UUID.h"
 
 namespace BHive
 {
-	struct IDComponent
+	struct IDComponent : public Component
 	{
 		UUID ID;
 	};

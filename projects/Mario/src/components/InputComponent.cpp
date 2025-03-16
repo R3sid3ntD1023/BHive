@@ -12,4 +12,20 @@ namespace BHive
 	{
 		mContextInstance = nullptr;
 	}
+
+	void InputComponent::Begin()
+	{
+		CreateInstance();
+	}
+
+	void InputComponent::Update(float)
+	{
+		if (mContextInstance)
+			mContextInstance->process();
+	}
+
+	void InputComponent::End()
+	{
+		DestroyInstance();
+	}
 } // namespace BHive

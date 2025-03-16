@@ -1,12 +1,15 @@
-#include "components/Components.h"
-#include "components/InputComponent.h"
+#include "components//IDComponent.h"
 #include "components/BoxComponent.h"
+#include "components/CameraComponent.h"
+#include "components/Component.h"
+#include "components/InputComponent.h"
 #include "components/PhysicsComponent.h"
+#include "components/SpriteComponent.h"
 #include "GameObject.h"
 #include "gfx/RenderCommand.h"
+#include "physics/PhysicsUtils.h"
 #include "renderers/Renderer.h"
 #include "World.h"
-#include "physics/PhysicsUtils.h"
 
 namespace BHive
 {
@@ -92,36 +95,41 @@ namespace BHive
 	{
 		SimulateBegin();
 
-		auto inputs = mRegistry.view<InputComponent>();
-		inputs.each([](InputComponent &input) { input.CreateInstance(); });
+		for (auto &object : mObjects)
+			object.second->Begin();
 	}
 
 	void World::Update(float dt)
 	{
-		auto inputs = mRegistry.view<InputComponent>();
-		inputs.each(
-			[](InputComponent &input)
-			{
-				if (auto context = input.GetContext())
-				{
-					context->process();
-				}
-			});
-
 		Simulate(dt);
-		Render();
 
-		for (auto &[entity_id, id] : mDestroyedObjects)
+		RenderCommand::Clear();
+
+		Renderer::Begin();
+
+		for (auto &object : mObjects)
+			object.second->Update(dt);
+
+#ifdef _DEBUG
+		RenderPhysicsWorld();
+#endif // DEBUG
+
+		Renderer::End();
+
+		for (auto &object : mDestoryedObjects)
 		{
-			mRegistry.erase(entity_id);
-			mObjects.erase(id);
+			object->End();
+
+			mObjects.erase(object->GetID());
 		}
+
+		mDestoryedObjects.clear();
 	}
 
 	void World::End()
 	{
-		auto inputs = mRegistry.view<InputComponent>();
-		inputs.each([](InputComponent &input) { input.DestroyInstance(); });
+		for (auto &object : mObjects)
+			object.second->End();
 
 		SimulateEnd();
 	}
@@ -145,33 +153,6 @@ namespace BHive
 		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_POINT, true);
 		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB, true);
 #endif
-
-		auto view = mRegistry.view<IDComponent, PhysicsComponent>();
-		view.each(
-			[&](IDComponent &id, PhysicsComponent &physics)
-			{
-				auto object = mObjects.at(id.ID);
-				auto t = object->GetTransform();
-				auto rb = mPhysicsWorld->createRigidBody(physics::utils::GetPhysicsTransform(t));
-				rb->setIsDebugEnabled(true);
-				rb->setUserData(object.get());
-				rb->setMass(physics.mMass);
-				rb->setType((rp3d::BodyType)physics.mBodyType);
-				rb->enableGravity(physics.mGravityEnabled);
-				rb->setAngularDamping(physics.mAngularDamping);
-				rb->setLinearDamping(physics.mLinearDamping);
-
-				rb->setLinearLockAxisFactor(physics::utils::LockAxisToVextor3(physics.mLinearLockAxis));
-				rb->setAngularLockAxisFactor(physics::utils::LockAxisToVextor3(physics.mAngularLockAxis));
-
-				physics.SetRigidBody(rb);
-
-				if (object->HasComponent<BoxComponent>())
-				{
-					auto &box = object->GetComponent<BoxComponent>();
-					box.CreateCollsionShape(rb, t);
-				}
-			});
 	}
 
 	void World::Simulate(float dt)
@@ -185,97 +166,12 @@ namespace BHive
 			mPhysicsWorld->update(time_step);
 			mAccumulatedTime -= time_step;
 		}
-
-		auto view = mRegistry.view<TransformComponent, PhysicsComponent>();
-		view.each(
-			[](TransformComponent &t, PhysicsComponent &p)
-			{
-				auto rb = Cast<rp3d::RigidBody>(p.GetRigidBody());
-
-				if (!rb)
-					return;
-
-				switch (p.mBodyType)
-				{
-				case EBodyType::Dynamic:
-				{
-					auto &transform = rb->getTransform();
-					auto scale = t.Transform.get_scale();
-					t.Transform = physics::utils::GetTransform(transform, scale);
-					break;
-				}
-				case EBodyType::Kinematic:
-				{
-					rb->setTransform(physics::utils::GetPhysicsTransform(t.Transform));
-					break;
-				}
-				default:
-					break;
-				}
-			});
 	}
 
 	void World::SimulateEnd()
 	{
-		auto view = mRegistry.view<IDComponent, PhysicsComponent>();
-		view.each(
-			[&](IDComponent &id, PhysicsComponent &physics)
-			{
-				auto rb = Cast<rp3d::RigidBody>(physics.GetRigidBody());
-				auto object = mObjects.at(id.ID);
-
-				mPhysicsWorld->destroyRigidBody(rb);
-				physics.SetRigidBody(nullptr);
-			});
-
 		PhysicsContext::get_context().destroyPhysicsWorld(mPhysicsWorld);
 		mPhysicsWorld = nullptr;
-	}
-
-	void World::Render()
-	{
-		RenderCommand::Clear();
-
-		Camera *camera = nullptr;
-		FTransform transform;
-
-		{
-			auto view = mRegistry.view<CameraComponent, IDComponent>();
-			view.each(
-				[&](CameraComponent &c, IDComponent &id)
-				{
-					if (c.Primary)
-					{
-						auto object = mObjects.at(id.ID);
-						camera = &c.Camera;
-						transform = object->GetTransform();
-					}
-				});
-		}
-
-		if (camera)
-		{
-			Renderer::SubmitCamera(camera->GetProjection(), transform.inverse());
-
-			Renderer::Begin();
-
-			{
-				auto view = mRegistry.view<SpriteComponent, IDComponent>();
-				view.each(
-					[&](SpriteComponent &s, IDComponent &id)
-					{
-						auto object = mObjects.at(id.ID);
-						auto t = object->GetTransform();
-						QuadRenderer::DrawSprite({s.SpriteSize, s.Tiling, s.SpriteColor}, s.Sprite, t);
-					});
-			}
-
-#ifdef _DEBUG
-			RenderPhysicsWorld();
-#endif // DEBUG
-
-			Renderer::End();
-		}
 	}
 
 	void World::RenderPhysicsWorld()
@@ -310,8 +206,14 @@ namespace BHive
 
 	void World::Resize(uint32_t w, uint32_t h)
 	{
-		auto view = mRegistry.view<CameraComponent>();
-		view.each([w, h](CameraComponent &component) { component.Camera.Resize(w, h); });
+		for (auto &object : mObjects)
+		{
+			if (object.second->HasComponent<CameraComponent>())
+			{
+				auto &camera = object.second->GetComponent<CameraComponent>().Camera;
+				camera.Resize(w, h);
+			}
+		}
 
 		RenderCommand::SetViewport(0, 0, w, h);
 	}
@@ -331,8 +233,7 @@ namespace BHive
 		if (!mObjects.contains(id))
 			return;
 
-		auto object = mObjects.at(id);
-		mDestroyedObjects.emplace(*object, id);
+		mDestoryedObjects.push_back(mObjects.at(id));
 	}
 
 	void World::RayCast(const glm::vec3 &start, const glm::vec3 &end, uint16_t categoryMasks)

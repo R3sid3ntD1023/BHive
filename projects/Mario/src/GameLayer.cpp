@@ -1,15 +1,17 @@
-#include "GameLayer.h"
-#include "gfx/RenderCommand.h"
 #include "core/Application.h"
 #include "core/Window.h"
+#include "GameLayer.h"
+#include "gfx/RenderCommand.h"
 
 #include "importers/TextureImporter.h"
-#include "objects/Player.h"
 #include "objects/Block.h"
+#include "objects/Player.h"
 #include "objects/World.h"
 
 #include "components/BoxComponent.h"
 #include "components/PhysicsComponent.h"
+#include "components/SpriteComponent.h"
+#include "components/TagComponent.h"
 
 namespace BHive
 {
@@ -76,10 +78,11 @@ namespace BHive
 			auto background = mCurrentWorld->CreateGameObject("Background-mountains");
 			background->AddComponent<SpriteComponent>();
 
-			auto [sp, t] = background->GetComponents<SpriteComponent, TransformComponent>();
+			auto sp = background->GetComponent<SpriteComponent>();
 			sp.Sprite = sprite;
 			sp.SpriteSize = {20, 20};
-			t.Transform.set_translation(0, 10, -1);
+
+			background->GetLocalTransform().set_translation(0, 10, -1);
 		}
 
 		mCurrentWorld->Begin();

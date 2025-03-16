@@ -10,7 +10,7 @@ namespace BHive
 
 	struct Player : public GameObject
 	{
-		Player(const entt::entity &handle, World *world);
+		Player(World *world);
 
 		void Jump(const InputValue &value);
 

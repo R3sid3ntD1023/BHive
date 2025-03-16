@@ -1,14 +1,17 @@
-#include "Player.h"
+#include "components/BoxComponent.h"
+#include "components/CameraComponent.h"
+#include "components/InputComponent.h"
+#include "components/PhysicsComponent.h"
+#include "components/SpriteComponent.h"
+#include "components/TagComponent.h"
 #include "core/Application.h"
 #include "core/Window.h"
-#include "components/BoxComponent.h"
-#include "components/PhysicsComponent.h"
-#include "components/InputComponent.h"
+#include "Player.h"
 
 namespace BHive
 {
-	Player::Player(const entt::entity &handle, World *world)
-		: GameObject(handle, world)
+	Player::Player(World *world)
+		: GameObject(world)
 	{
 		auto &window = Application::Get().GetWindow();
 		auto &size = window.GetSize();
@@ -16,16 +19,17 @@ namespace BHive
 		camera_component.Camera.SetOrthographic(-10.f, 10.0f, -2.f, 18.0f, size.x / (float)size.y, -1.0f, 10.f);
 
 		AddComponent<SpriteComponent>();
-		AddComponent<PhysicsComponent>();
 		AddComponent<BoxComponent>();
 		AddComponent<InputComponent>();
 
-		auto [physc, bc] = GetComponents<PhysicsComponent, BoxComponent>();
-		physc.mAngularLockAxis = AxisXYZ;
-		physc.mLinearLockAxis = AxisZ;
-		physc.mLinearDamping = 0.f;
-		physc.mMass = 10.f;
-		physc.mBodyType = EBodyType::Dynamic;
+		auto &physc = GetPhysicsComponent();
+		physc.Settings.AngularLockAxis = AxisXYZ;
+		physc.Settings.LinearLockAxis = AxisZ;
+		physc.Settings.LinearDamping = 0.f;
+		physc.Settings.Mass = 10.f;
+		physc.Settings.BodyType = EBodyType::Dynamic;
+
+		auto &bc = GetComponent<BoxComponent>();
 		bc.mExtents = {.5f, .5f, .5f};
 		bc.OnCollisionEnter.bind(this, &Player::OnCollisionEnter);
 
@@ -45,7 +49,7 @@ namespace BHive
 	void Player::Jump(const InputValue &value)
 	{
 		LOG_TRACE("Jumped");
-		auto &phys = GetComponent<PhysicsComponent>();
+		auto &phys = GetPhysicsComponent();
 		phys.SetBodyType(EBodyType::Dynamic);
 		phys.ApplyForce({0, 6000.f, 0});
 	}
@@ -55,7 +59,7 @@ namespace BHive
 		auto v = value.Get<float>();
 		if (!IsNearlyZero(v) && !IsJumping())
 		{
-			auto &phys = GetComponent<PhysicsComponent>();
+			auto &phys = GetPhysicsComponent();
 			phys.SetBodyType(EBodyType::Dynamic);
 			phys.ApplyForce({v * 100, 0, 0});
 		}
@@ -68,7 +72,7 @@ namespace BHive
 
 	bool Player::IsJumping()
 	{
-		auto &phys = GetComponent<PhysicsComponent>();
+		auto &phys = GetPhysicsComponent();
 		auto y = phys.GetVelocity().y;
 		return !IsNearlyZero(y, 0.1f);
 	}

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "World.h"
-#include "math/Transform.h"
-#include "core/UUID.h"
 #include "components/Component.h"
 #include "components/PhysicsComponent.h"
+#include "core/UUID.h"
+#include "math/Transform.h"
+#include "World.h"
 
 namespace BHive
 {
@@ -21,8 +21,11 @@ namespace BHive
 		T &AddComponent(TArgs &&...args)
 		{
 			ASSERT(!HasComponent<T>());
-			auto pair = mComponents.emplace(typeid(T).hash_code(), CreateRef<T>(std::forward<TArgs>(args)...));
-			return *pair.second.second;
+
+			auto component = CreateRef<T>(std::forward<TArgs>(args)...);
+			component->mOwningObject = this;
+			auto pair = mComponents.emplace(typeid(T).hash_code(), component);
+			return *component;
 		}
 
 		template <typename T>
@@ -49,7 +52,7 @@ namespace BHive
 		void RemoveComponent()
 		{
 			ASSERT(HasComponent<T>());
-			return return mComponents.erase(typeid(T).hash_code()));
+			mComponents.erase(typeid(T).hash_code());
 		}
 
 		template <typename T>
@@ -77,7 +80,8 @@ namespace BHive
 		World *GetWorld() const { return mWorld; }
 
 	private:
-		std::unordered_map<uint64_t, Ref<Component>> mComponents;
+		std::unordered_map<size_t, Ref<Component>> mComponents;
+		PhysicsComponent mPhysicsComponent;
 		World *mWorld = nullptr;
 	};
 } // namespace BHive

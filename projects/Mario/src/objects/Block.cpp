@@ -1,21 +1,21 @@
 #include "Block.h"
 #include "components/BoxComponent.h"
 #include "components/PhysicsComponent.h"
+#include "components/SpriteComponent.h"
 
 namespace BHive
 {
-	Block::Block(const entt::entity &handle, World *world)
-		: GameObject(handle, world)
+	Block::Block(World *world)
+		: GameObject(world)
 
 	{
 		AddComponent<SpriteComponent>();
-		AddComponent<PhysicsComponent>();
 		AddComponent<BoxComponent>();
 
-		auto [physc, bc, sc] = GetComponents<PhysicsComponent, BoxComponent, SpriteComponent>();
-		physc.mAngularLockAxis = AxisXYZ;
-		physc.mLinearLockAxis = AxisZ;
-		physc.mBodyType = EBodyType::Static;
+		auto &physc = GetPhysicsComponent();
+		physc.Settings.AngularLockAxis = AxisXYZ;
+		physc.Settings.LinearLockAxis = AxisZ;
+		physc.Settings.BodyType = EBodyType::Static;
 	}
 
 	void Block::SetSize(const glm::vec2 &size)

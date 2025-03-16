@@ -1,7 +1,7 @@
 #pragma once
 
-#include "sprite/Sprite.h"
 #include "Component.h"
+#include "sprite/Sprite.h"
 
 namespace BHive
 {
@@ -16,6 +16,8 @@ namespace BHive
 		Ref<Sprite> Sprite;
 
 		UUID SpriteHandle = UUID::Null;
+
+		void Update(float) override;
 	};
 
 } // namespace BHive

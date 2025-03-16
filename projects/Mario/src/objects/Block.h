@@ -8,7 +8,7 @@ namespace BHive
 
 	struct Block : public GameObject
 	{
-		Block(const entt::entity &handle, World *world);
+		Block(World *world);
 
 		void SetSize(const glm::vec2 &size);
 

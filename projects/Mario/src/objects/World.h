@@ -1,9 +1,9 @@
 #pragma once
 
 #include "core/Core.h"
-#include <entt/entt.hpp>
-#include "physics/PhysicsContext.h"
 #include "physics/EventListener.h"
+#include "physics/PhysicsContext.h"
+#include <entt/entt.hpp>
 #include <glm/glm.hpp>
 
 namespace BHive
@@ -25,7 +25,6 @@ namespace BHive
 		void Simulate(float dt);
 		void SimulateEnd();
 
-		void Render();
 		void RenderPhysicsWorld();
 		void Resize(uint32_t w, uint32_t h);
 
@@ -33,7 +32,7 @@ namespace BHive
 		Ref<T> CreateGameObject(const std::string &name)
 			requires(std::is_base_of_v<GameObject, T>)
 		{
-			auto object = CreateRef<T>(mRegistry.create(), this);
+			auto object = CreateRef<T>(this);
 			object->SetName(name);
 			AddGameObject(object);
 			return object;
@@ -49,11 +48,12 @@ namespace BHive
 
 		void RayCast(const glm::vec3 &start, const glm::vec3 &end, uint16_t categoryMasks = 65535U);
 
+		rp3d::PhysicsWorld *GetPhysicsWorld() const { return mPhysicsWorld; }
+
 	private:
 		std::string mName;
 		std::unordered_map<UUID, Ref<GameObject>> mObjects;
-		std::unordered_map<Ref<GameObject>> mDestroyedObjects;
-		entt::registry mRegistry;
+		std::vector<Ref<GameObject>> mDestoryedObjects;
 
 		// physics
 		rp3d::PhysicsWorld *mPhysicsWorld = nullptr;

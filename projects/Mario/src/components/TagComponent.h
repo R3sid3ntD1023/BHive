@@ -1,10 +1,11 @@
 #pragma once
 
+#include "Component.h"
 #include "core/Core.h"
 
 namespace BHive
 {
-	struct TagComponent
+	struct TagComponent : public Component
 	{
 		TagComponent() = default;
 		TagComponent(const TagComponent &) = default;

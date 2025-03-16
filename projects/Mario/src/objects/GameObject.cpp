@@ -1,41 +1,50 @@
-#include "GameObject.h"
-#include "components/TagComponent.h"
 #include "components/IDComponent.h"
-#include "components/TransformComponent.h"
 #include "components/RelationshipComponent.h"
+#include "components/TagComponent.h"
+#include "components/TransformComponent.h"
+#include "GameObject.h"
 
 namespace BHive
 {
 	GameObject::GameObject(World *world)
 		: mWorld(world)
 	{
-		AddComponent<TagComponent>(this, "New GameObject");
-		AddComponent<TransformComponent>(this);
-		AddComponent<IDComponent>(this);
-		AddComponent<RelationshipComponent>(this);
+		AddComponent<TagComponent>("New GameObject");
+		AddComponent<TransformComponent>();
+		AddComponent<IDComponent>();
+		AddComponent<RelationshipComponent>();
+
+		mPhysicsComponent.mOwningObject = this;
 	}
 
 	void GameObject::Begin()
 	{
+		mPhysicsComponent.Begin();
+
 		for (auto &component : mComponents)
 			component.second->Begin();
 	}
 
 	void GameObject::Update(float dt)
 	{
+		mPhysicsComponent.Update(dt);
+
 		for (auto &component : mComponents)
 			component.second->Update(dt);
 	}
 
 	void GameObject::End()
 	{
+
 		for (auto &component : mComponents)
 			component.second->End();
+
+		mPhysicsComponent.End();
 	}
 
 	PhysicsComponent &GameObject::GetPhysicsComponent()
 	{
-		return GetComponent<PhysicsComponent>();
+		return mPhysicsComponent;
 	}
 
 	void GameObject::SetName(const std::string &name)

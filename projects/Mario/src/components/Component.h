@@ -8,10 +8,6 @@ namespace BHive
 
 	struct Component
 	{
-		Component(GameObject *owner)
-			: mOwningObject(owner)
-		{
-		}
 
 		virtual void Begin() {};
 		virtual void Update(float) {};
@@ -21,6 +17,7 @@ namespace BHive
 
 	private:
 		GameObject *mOwningObject = nullptr;
+		friend struct GameObject;
 	};
 
 } // namespace BHive
