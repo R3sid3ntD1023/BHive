@@ -78,7 +78,7 @@ namespace BHive
 			auto background = mCurrentWorld->CreateGameObject("Background-mountains");
 			background->AddComponent<SpriteComponent>();
 
-			auto sp = background->GetComponent<SpriteComponent>();
+			auto &sp = background->GetComponent<SpriteComponent>();
 			sp.Sprite = sprite;
 			sp.SpriteSize = {20, 20};
 

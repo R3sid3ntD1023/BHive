@@ -3,7 +3,6 @@
 #include "core/Core.h"
 #include "physics/EventListener.h"
 #include "physics/PhysicsContext.h"
-#include <entt/entt.hpp>
 #include <glm/glm.hpp>
 
 namespace BHive
