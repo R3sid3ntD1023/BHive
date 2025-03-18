@@ -11,6 +11,9 @@ namespace BHive
 		bool Primary = true;
 
 		void Update(float) override;
+		void Render() override;
+
+		REFLECTABLEV(Component)
 	};
 
 } // namespace BHive

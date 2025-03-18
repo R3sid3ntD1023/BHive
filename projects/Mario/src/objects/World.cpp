@@ -103,18 +103,10 @@ namespace BHive
 	{
 		Simulate(dt);
 
-		RenderCommand::Clear();
-
-		Renderer::Begin();
-
 		for (auto &object : mObjects)
 			object.second->Update(dt);
 
-#ifdef _DEBUG
-		RenderPhysicsWorld();
-#endif // DEBUG
-
-		Renderer::End();
+		Render();
 
 		for (auto &object : mDestoryedObjects)
 		{
@@ -124,6 +116,17 @@ namespace BHive
 		}
 
 		mDestoryedObjects.clear();
+	}
+
+	void World::Render()
+	{
+
+		for (auto &object : mObjects)
+			object.second->Render();
+
+#ifdef _DEBUG
+		RenderPhysicsWorld();
+#endif // DEBUG
 	}
 
 	void World::End()
@@ -176,6 +179,9 @@ namespace BHive
 
 	void World::RenderPhysicsWorld()
 	{
+		if (!mPhysicsWorld)
+			return;
+
 		if (mPhysicsWorld->getIsDebugRenderingEnabled())
 		{
 			auto &physics_debugger = mPhysicsWorld->getDebugRenderer();

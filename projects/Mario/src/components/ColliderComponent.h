@@ -19,19 +19,19 @@ namespace BHive
 
 	struct ColliderComponent : public Component
 	{
-		bool mCollisionEnabled{true};
+		bool CollisionEnabled{true};
 
-		glm::vec3 mOffset{0.0f};
+		glm::vec3 Offset{0.0f};
 
-		FColor mColor{0xFFFF0000};
+		FColor Color{0xffff00ff};
 
-		bool mIsTrigger = false;
+		bool IsTrigger = false;
 
-		ECollisionChannel mCollisionChannel = CollisionChannel_0;
+		ECollisionChannel CollisionChannel = CollisionChannel_0;
 
-		TEnumAsByte<ECollisionChannel> mCollisionChannelMasks = CollisionChannel_All;
+		TEnumAsByte<ECollisionChannel> CollisionChannelMasks = CollisionChannel_All;
 
-		Ref<PhysicsMaterial> mPhysicsMaterial;
+		TAssetHandle<PhysicsMaterial> PhysicsMaterial;
 
 		OnCollisonEvent OnCollisionEnter;
 		OnCollisonEvent OnCollisionExit;
@@ -56,5 +56,8 @@ namespace BHive
 	protected:
 		void *mCollider = nullptr;
 		void *mCollisionShape = nullptr;
+
+		REFLECTABLEV(Component)
 	};
+
 } // namespace BHive

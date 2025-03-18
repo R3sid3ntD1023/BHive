@@ -8,11 +8,16 @@ namespace BHive
 {
 	struct BoxComponent : public ColliderComponent
 	{
-		glm::vec3 mExtents{0.5f};
+		glm::vec3 Extents{0.5f};
 
-		virtual AABB GetBoundingBox() const { return FBox{{}, mExtents}; }
+		virtual void Render() override;
+
+		virtual AABB GetBoundingBox() const { return FBox{{}, Extents}; }
 
 		void *GetCollisionShape(const FTransform &world_transform) override;
 		void OnReleaseCollisionShape() override;
+
+		REFLECTABLEV(ColliderComponent)
 	};
+
 } // namespace BHive

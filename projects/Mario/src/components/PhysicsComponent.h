@@ -57,6 +57,8 @@ namespace BHive
 
 		EBodyType GetBodyType() const;
 
+		REFLECTABLEV(Component)
+
 	private:
 		void *mRigidBodyInstance = nullptr;
 	};

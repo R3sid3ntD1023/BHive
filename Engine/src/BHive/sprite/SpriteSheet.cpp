@@ -41,13 +41,13 @@ namespace BHive
 	void SpriteSheet::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(mSource, mGrid, mSprites);
+		// ar(mSource, mGrid, mSprites);
 	}
 
 	void SpriteSheet::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(mSource, mGrid, mSprites);
+		// ar(mSource, mGrid, mSprites);
 
 		CreateSprites();
 	}

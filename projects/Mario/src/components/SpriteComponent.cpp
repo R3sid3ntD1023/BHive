@@ -6,7 +6,10 @@ namespace BHive
 {
 	void SpriteComponent::Update(float)
 	{
+	}
 
+	void SpriteComponent::Render()
+	{
 		if (!Sprite)
 			return;
 
@@ -17,6 +20,6 @@ namespace BHive
 		params.Color = SpriteColor;
 		params.Size = SpriteSize;
 		params.Tiling = Tiling;
-		QuadRenderer::DrawSprite(params, Sprite, transform);
+		QuadRenderer::DrawSprite(params, Sprite->Get(), transform);
 	}
 } // namespace BHive

@@ -4,16 +4,7 @@
 
 namespace BHive
 {
-	Texture2D::Texture2D(uint32_t width, uint32_t height, const FTextureSpecification &specification)
-		: mWidth(width),
-		  mHeight(height),
-		  mSpecification(specification)
-	{
-
-		Initialize();
-	}
-
-	Texture2D::Texture2D(const void *data, uint32_t width, uint32_t height, const FTextureSpecification &specification)
+	Texture2D::Texture2D(uint32_t width, uint32_t height, const FTextureSpecification &specification, const void *data)
 		: mWidth(width),
 		  mHeight(height),
 		  mSpecification(specification)
@@ -60,26 +51,9 @@ namespace BHive
 		auto bbp = mWidth * mHeight * mSpecification.Channels;
 		ASSERT(bbp == size);
 
-		mBuffer.Allocate(size);
-		memcpy_s(mBuffer.mData, mBuffer.mSize, (uint8_t *)data, size);
-
 		glTextureSubImage2D(
 			mTextureID, 0, offsetX, offsetY, mWidth, mHeight, GetGLFormat(mSpecification.InternalFormat),
 			GetGLType(mSpecification.InternalFormat), data);
-	}
-
-	void Texture2D::Load(cereal::BinaryInputArchive &ar)
-	{
-		Asset::Load(ar);
-		ar(mWidth, mHeight, mSpecification);
-		ar(mBuffer);
-
-		Initialize();
-
-		if (mBuffer)
-		{
-			SetData(mBuffer.mData, mBuffer.mSize);
-		}
 	}
 
 	Ref<Texture2D> Texture2D::CreateSubTexture(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
@@ -91,14 +65,15 @@ namespace BHive
 		std::vector<uint8_t> pixels(w * h * c);
 		glGetTextureSubImage(mTextureID, 0, x, y, 0, w, h, 1, format, type, w * h * c, &pixels[0]);
 
-		return CreateRef<Texture2D>(pixels.data(), w, h, mSpecification);
+		return CreateRef<Texture2D>(w, h, mSpecification, pixels.data());
 	}
 
-	void Texture2D::Save(cereal::BinaryOutputArchive &ar) const
+	void Texture2D::GetSubImage(uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t size, void *data) const
 	{
-		Asset::Save(ar);
-		ar(mWidth, mHeight, mSpecification);
-		ar(mBuffer);
+		auto format = GetGLFormat(mSpecification.InternalFormat);
+		auto type = GetGLType(mSpecification.InternalFormat);
+
+		glGetTextureSubImage(mTextureID, 0, 0, 0, 0, mWidth, mHeight, 1, format, type, size, data);
 	}
 
 	void Texture2D::Initialize()
@@ -144,12 +119,6 @@ namespace BHive
 			glMakeTextureHandleNonResidentNV(mResourceHandle);
 
 		glDeleteTextures(1, &mTextureID);
-
-		mBuffer.Release();
 	}
 
-	REFLECT(Texture2D)
-	{
-		BEGIN_REFLECT(Texture2D).constructor();
-	}
 } // namespace BHive

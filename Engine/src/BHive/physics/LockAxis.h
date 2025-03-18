@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/Core.h"
-#include "core/reflection/Reflection.h"
 
 namespace BHive
 {
@@ -16,10 +15,4 @@ namespace BHive
 		AxisYZ = AxisY | AxisZ,
 		AxisXYZ = AxisX | AxisY | AxisZ
 	};
-
-	REFLECT(ELockAxis)
-	{
-		BEGIN_REFLECT_ENUM(ELockAxis)
-		(ENUM_VALUE(NoAxis), ENUM_VALUE(AxisX), ENUM_VALUE(AxisY), ENUM_VALUE(AxisZ));
-	}
 } // namespace BHive

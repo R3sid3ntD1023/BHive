@@ -12,11 +12,17 @@
 #include "components/PhysicsComponent.h"
 #include "components/SpriteComponent.h"
 #include "components/TagComponent.h"
+#include "asset/AssetFactory.h"
+#include "assets/ATexture2D.h"
+#include "core/FileDialog.h"
+#include "assets/ASprite.h"
 
 namespace BHive
 {
 	void GameLayer::OnAttach()
 	{
+		AssetManager::SetAssetManager(&mResourceManager);
+
 		PhysicsContext::Init();
 
 		auto &window = Application::Get().GetWindow();
@@ -25,65 +31,6 @@ namespace BHive
 		RenderCommand::ClearColor(.1f, .1f, .1f);
 
 		mCurrentWorld = CreateRef<World>("World 1-1");
-
-		mItems = TextureLoader::Import(RESOURCE_PATH "textures/items.png");
-		mTexture = TextureLoader::Import(RESOURCE_PATH "sprites0.jpg");
-		mMario = TextureLoader::Import(RESOURCE_PATH "textures/character_and_enemies_32.png");
-
-		mSubTexture = mTexture->CreateSubTexture(0, 480, 480, 480);
-		auto sprite = CreateRef<Sprite>(mSubTexture, glm::vec2{0, 0}, glm::vec2{480, 480}, glm::vec2{1, 1});
-		auto mario_sprite = CreateRef<Sprite>(mMario, glm::vec2{0, 1}, glm::vec2{16, 16}, glm::vec2{1, 1});
-
-		{
-			/*auto camera = mCurrentWorld->CreateGameObject("Camera");
-			auto &c = camera->AddComponent<CameraComponent>();
-			c.Camera.SetPerspective(75.f, size.x / (float)size.y, 0.01f, 100.f);
-			camera->GetComponent<TransformComponent>().Transform.set_translation(0, 1, 10);*/
-
-			auto player = mCurrentWorld->CreateGameObject<Player>("Player");
-			player->GetComponent<SpriteComponent>().Sprite = mario_sprite;
-			player->GetLocalTransform().set_translation(0, 1, 0);
-			mPlayerID = player->GetID();
-		}
-
-		{
-			auto tile = mCurrentWorld->CreateGameObject<Block>("Block-T0");
-			tile->SetSize({20, 1});
-			tile->SetSprite(sprite);
-			tile->SetTiling({20, 1});
-
-			auto item = Ref<Sprite>(new Sprite(mItems, {0, 4}, {16, 16}, {1, 1}));
-			auto stile = mCurrentWorld->CreateGameObject<Block>("Block-T1");
-			stile->SetSprite(item);
-			stile->GetLocalTransform().set_translation(5, 5, 0);
-			stile->GetComponent<TagComponent>().Groups |= BREAKABLE_BLOCKS;
-
-			auto t1 = mCurrentWorld->CreateGameObject<Block>("Block-T2");
-			t1->SetSprite(sprite);
-			t1->GetLocalTransform().set_translation(4, 5, 0);
-			t1->GetComponent<TagComponent>().Groups |= BREAKABLE_BLOCKS;
-
-			auto t2 = mCurrentWorld->CreateGameObject<Block>("Block-T2");
-			t2->SetSprite(sprite);
-			t2->GetLocalTransform().set_translation(6, 5, 0);
-			t2->GetComponent<TagComponent>().Groups |= BREAKABLE_BLOCKS;
-		}
-
-		{
-			auto texture =
-				TextureLoader::Import(RESOURCE_PATH "textures/NES - Super Mario Bros - Background 1 Mountains.png");
-
-			auto mountains = texture->CreateSubTexture(0, 1440, 768, 211);
-			auto sprite = CreateRef<Sprite>(mountains, glm::vec2(0, 0), glm::vec2(768, 211), glm::vec2(1, 1));
-			auto background = mCurrentWorld->CreateGameObject("Background-mountains");
-			background->AddComponent<SpriteComponent>();
-
-			auto &sp = background->GetComponent<SpriteComponent>();
-			sp.Sprite = sprite;
-			sp.SpriteSize = {20, 20};
-
-			background->GetLocalTransform().set_translation(0, 10, -1);
-		}
 
 		mCurrentWorld->Begin();
 	}
@@ -105,6 +52,31 @@ namespace BHive
 		mCurrentWorld->End();
 
 		PhysicsContext::Shutdown();
+	}
+
+	void GameLayer::OnGuiRender()
+	{
+		auto items = AssetManager::GetAsset<ATexture2D>("0f40f57f-e246-44b5-9f34-e675263440e3")->Get();
+		auto characters = AssetManager::GetAsset<ATexture2D>("68101e6e-91a1-446b-ab3a-c4703b598f87")->Get();
+		auto brick = AssetManager::GetAsset<ATexture2D>("dcb136ac-1165-4134-9f85-17cd180a0d2f")->Get();
+
+		ImGui::Begin("Textures");
+		ImGui::Image((ImTextureID)(uint64_t)*items, {200, 200}, {0, 1}, {1, 0});
+		ImGui::Image((ImTextureID)(uint64_t)*characters, {200, 200}, {0, 1}, {1, 0});
+		ImGui::Image((ImTextureID)(uint64_t)*brick, {200, 200}, {0, 1}, {1, 0});
+		ImGui::End();
+
+		ImGui::Begin("Importer");
+
+		if (ImGui::Button("Import"))
+		{
+			auto path = FileDialogs::OpenFile(AssetFactory::GetFileFilters());
+			if (!path.empty())
+			{
+				mResourceManager.Import(path);
+			}
+		}
+		ImGui::End();
 	}
 
 	bool GameLayer::OnKeyEvent(KeyEvent &e)

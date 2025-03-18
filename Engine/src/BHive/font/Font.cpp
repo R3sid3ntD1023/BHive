@@ -29,7 +29,7 @@ namespace BHive
 		specification.InternalFormat = EFormat::RGB8;
 		specification.Channels = 3;
 
-		Ref<Texture2D> texture = CreateRef<Texture2D>(bitmap.pixels, w, h, specification);
+		Ref<Texture2D> texture = CreateRef<Texture2D>(w, h, specification, bitmap.pixels);
 		return texture;
 	};
 

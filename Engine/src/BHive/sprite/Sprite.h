@@ -27,6 +27,11 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
+		static Ref<Sprite> Create(
+			const Ref<Texture2D> &texture, const glm::vec2 &coords, const glm::vec2 &cellSize, const glm::vec2 spriteSize);
+
+		static Ref<Sprite> Create(const Ref<Texture2D> &texture, const glm::vec2 &min, const glm::vec2 &max);
+
 		REFLECTABLEV(Asset)
 
 	private:

@@ -131,12 +131,12 @@ namespace BHive
 		specs.WrapMode = EWrapMode::CLAMP_TO_BORDER;
 		specs.ImageAccess = EImageAccess::READ_WRITE;
 
-		mPreFilterTexture = CreateRef<Texture2D>(nullptr, width, height, specs);
+		mPreFilterTexture = CreateRef<Texture2D>(width, height, specs);
 
 		glm::uvec2 mps = mSize;
 		for (auto &mip : mMipMaps)
 		{
-			mip = CreateRef<Texture2D>(nullptr, mps.x, mps.y, specs);
+			mip = CreateRef<Texture2D>(mps.x, mps.y, specs);
 
 			mps /= 2;
 			if (mps.x < 1)

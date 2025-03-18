@@ -11,7 +11,7 @@ namespace BHive
 	{
 		mBuffer.Allocate(size);
 
-		memcpy_s(mBuffer.mData, mBuffer.mSize, buffer, size);
+		memcpy_s(mBuffer.GetData(), mBuffer.GetSize(), buffer, size);
 
 		Initialize();
 	}
@@ -27,9 +27,7 @@ namespace BHive
 	void AudioSource::Initialize()
 	{
 		alGenBuffers(1, &mAudioID);
-		alBufferData(
-			mAudioID, mSpecification.mFormat, mBuffer.mData, mBuffer.mSize,
-			mSpecification.mSampleRate);
+		alBufferData(mAudioID, mSpecification.mFormat, mBuffer.GetData(), mBuffer.GetSize(), mSpecification.mSampleRate);
 
 		if (mSpecification.mStartLoop.has_value() && mSpecification.mEndLoop.has_value())
 		{

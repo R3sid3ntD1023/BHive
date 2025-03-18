@@ -3,17 +3,19 @@
 #include "core/events/KeyEvents.h"
 #include "core/events/MouseEvents.h"
 #include "math/Transform.h"
-#include "PerspectiveCamera.h"
+#include "SceneCamera.h"
 
 namespace BHive
 {
 	class Event;
 
-	class EditorCamera : public PerspectiveCamera
+	class EditorCamera : public SceneCamera
 	{
+
 	public:
 		EditorCamera() = default;
 		EditorCamera(float fov, float aspect, float _near, float _far);
+		EditorCamera(float l, float r, float b, float t, float aspect, float _near, float _far);
 
 		void ProcessInput();
 		void OnEvent(Event &event);

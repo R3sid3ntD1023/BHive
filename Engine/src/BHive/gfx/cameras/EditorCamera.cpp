@@ -5,8 +5,13 @@
 namespace BHive
 {
 	EditorCamera::EditorCamera(float fov, float aspect, float _near, float _far)
-		: PerspectiveCamera(fov, aspect, _near, _far)
 	{
+		SetPerspective(fov, aspect, _near, _far);
+	}
+
+	EditorCamera::EditorCamera(float l, float r, float b, float t, float aspect, float _near, float _far)
+	{
+		SetOrthographic(l, r, b, t, aspect, _near, _far);
 	}
 
 	void EditorCamera::ProcessInput()
@@ -103,7 +108,7 @@ namespace BHive
 
 	void EditorCamera::Resize(uint32_t w, uint32_t h)
 	{
-		PerspectiveCamera::Resize(w, h);
+		SceneCamera::Resize(w, h);
 		mViewportSize = {w, h};
 	}
 

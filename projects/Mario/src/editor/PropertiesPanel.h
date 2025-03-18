@@ -1,0 +1,35 @@
+#pragma once
+
+#include "core/Core.h"
+#include "core/EventDelegate.h"
+#include "WindowBase.h"
+
+namespace BHive
+{
+	struct Component;
+	struct GameObject;
+
+	DECLARE_RET_EVENT(FGetSelectedObject, GameObject *);
+
+	class PropertiesPanel : public WindowBase
+	{
+	public:
+		FGetSelectedObjectEvent GetSelectedObjectEvent;
+
+	public:
+		PropertiesPanel() = default;
+
+		void OnGuiRender();
+
+		virtual const char *GetName() const { return "Properties"; }
+
+	private:
+		void DrawComponents(GameObject *entity);
+		void DrawComponent(Component *component);
+		void DrawAddComponent(GameObject *entity);
+
+	private:
+		std::unordered_set<Component *> mDeletedComponents;
+	};
+
+} // namespace BHive

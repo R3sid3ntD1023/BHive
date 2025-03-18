@@ -10,6 +10,14 @@ namespace BHive
 	{
 		UUID Parent = UUID::Null;
 		std::unordered_set<UUID> Children;
+
+		REFLECTABLEV(Component)
 	};
+
+	REFLECT(RelationshipComponent)
+	{
+		BEGIN_REFLECT(RelationshipComponent)
+		REFLECT_PROPERTY_READ_ONLY("Parent", Parent) REFLECT_PROPERTY_READ_ONLY("Children", Children);
+	}
 
 } // namespace BHive

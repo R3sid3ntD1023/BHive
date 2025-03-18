@@ -98,13 +98,13 @@ namespace BHive
 	void Material::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale, mFlags, mTextures);
+		// ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale, mFlags, mTextures);
 	}
 
 	void Material::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale, mFlags, mTextures);
+		// ar(mAldebo, mMetallic, mRoughness, mDiaElectric, mEmission, mOpacity, mTiling, mDepthScale, mFlags, mTextures);
 	}
 
 	bool Material::CastShadows() const

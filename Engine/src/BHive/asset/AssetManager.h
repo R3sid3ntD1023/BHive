@@ -26,6 +26,8 @@ namespace BHive
 
 		static void SetAssetManager(AssetManagerBase *manager);
 
+		static AssetManagerBase *GetAssetManager() { return sCurrentAssetManager; };
+
 		template <typename T>
 		static T *GetAssetManager()
 		{
@@ -35,4 +37,4 @@ namespace BHive
 	private:
 		static AssetManagerBase *sCurrentAssetManager;
 	};
-}
+} // namespace BHive

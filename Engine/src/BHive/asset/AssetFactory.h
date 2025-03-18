@@ -7,13 +7,12 @@ namespace BHive
 	class AssetFactory
 	{
 	public:
+		static bool Import(Ref<Asset> &asset, const std::filesystem::path &path);
 
-		bool Import(Ref<Asset> &asset, const std::filesystem::path &path);
+		static bool Export(const Ref<Asset> &asset, const std::filesystem::path &path);
 
-		bool Export(const Ref<Asset>& asset, const std::filesystem::path& path);
+		static bool Export(const Asset *asset, const std::filesystem::path &path);
 
-		bool Export(const Asset* asset, const std::filesystem::path &path);
-
-		virtual const char* GetFileFilters() const { return "Asset (*.asset)\0*.asset\0"; }
+		static const char *GetFileFilters() { return "Asset (*.asset)\0*.asset\0"; }
 	};
-}
+} // namespace BHive

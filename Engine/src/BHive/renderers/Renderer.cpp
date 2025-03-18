@@ -52,10 +52,10 @@ namespace BHive
 			texture_specs.Channels = 3;
 			texture_specs.InternalFormat = EFormat::RGB8;
 
-			mWhiteTexture = CreateRef<Texture2D>(&white, 1, 1, texture_specs);
+			mWhiteTexture = CreateRef<Texture2D>(1, 1, texture_specs, &white);
 
 			uint32_t black = 0xFF000000;
-			mBlackTexture = CreateRef<Texture2D>(&black, 1, 1, texture_specs);
+			mBlackTexture = CreateRef<Texture2D>(1, 1, texture_specs, &black);
 		}
 	};
 

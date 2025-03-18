@@ -8,10 +8,11 @@ namespace BHive
 	template <typename A, typename T>
 	inline void CEREAL_SAVE_FUNCTION_NAME(A &ar, const TBuffer<T> &buffer)
 	{
-		ar(buffer.mSize);
-		if (buffer.mSize)
+		auto size = buffer.GetSize();
+		ar(size);
+		if (size)
 		{
-			ar(cereal::binary_data(const_cast<const T *>(buffer.mData), buffer.mSize * sizeof(T)));
+			ar(cereal::binary_data(buffer.GetData(), buffer.GetSize() * sizeof(T)));
 		}
 	}
 
@@ -24,7 +25,7 @@ namespace BHive
 		if (size)
 		{
 			buffer.Allocate(size);
-			ar(cereal::binary_data(buffer.mData, buffer.mSize * sizeof(T)));
+			ar(cereal::binary_data(buffer.GetData(), size * sizeof(T)));
 		}
 	}
 

@@ -33,7 +33,9 @@ namespace BHive
 		void SetLoop(bool loop);
 		void SetFramesPerSecond(float fps);
 
-		void AddSprite(const sprite_ptr &sprite, uint32_t duration = 1, uint32_t index = 0);
+		void AddFrame(const sprite_ptr &sprite, uint32_t duration = 1);
+		void InsertFrame(const sprite_ptr &sprite, uint32_t duration = 1, uint32_t index = 0);
+
 		sprite_ptr RemoveSprite(uint32_t index);
 
 		const Frames &GetFrames() const;

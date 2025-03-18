@@ -4,6 +4,7 @@
 #include "core/events/KeyEvents.h"
 #include "core/Layer.h"
 #include "gfx/textures/Texture2D.h"
+#include "ResourceManager.h"
 
 namespace BHive
 {
@@ -16,6 +17,7 @@ namespace BHive
 		void OnUpdate(float dt) override;
 		void OnEvent(Event &event) override;
 		void OnDetach() override;
+		void OnGuiRender() override;
 
 	private:
 		bool OnKeyEvent(KeyEvent &e);
@@ -23,11 +25,8 @@ namespace BHive
 
 	private:
 		Ref<World> mCurrentWorld;
-		Ref<Texture2D> mTexture;
-		Ref<Texture2D> mMario;
-		Ref<Texture2D> mSubTexture;
-		Ref<Texture2D> mItems;
 
 		UUID mPlayerID = UUID::Null;
+		ResourceManager mResourceManager{RESOURCE_PATH, "AssetRegistry.json"};
 	};
 } // namespace BHive

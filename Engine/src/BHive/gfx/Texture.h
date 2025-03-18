@@ -7,7 +7,7 @@
 namespace BHive
 {
 
-	class BHIVE Texture : public Asset
+	class BHIVE Texture
 	{
 	public:
 		virtual ~Texture() = default;
@@ -29,10 +29,6 @@ namespace BHive
 		virtual const FTextureSpecification &GetSpecification() const = 0;
 
 		operator uint32_t() const { return GetRendererID(); }
-
-		REFLECTABLEV()
 	};
-
-	REFLECT_EXTERN(Texture)
 
 } // namespace BHive

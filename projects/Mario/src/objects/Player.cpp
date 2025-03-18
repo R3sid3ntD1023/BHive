@@ -30,7 +30,7 @@ namespace BHive
 		physc.Settings.BodyType = EBodyType::Dynamic;
 
 		auto &bc = GetComponent<BoxComponent>();
-		bc.mExtents = {.5f, .5f, .5f};
+		bc.Extents = {.5f, .5f, .5f};
 		bc.OnCollisionEnter.bind(this, &Player::OnCollisionEnter);
 
 		Ref<InputContext> context;

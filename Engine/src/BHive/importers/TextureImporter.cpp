@@ -49,11 +49,11 @@ namespace BHive
 				image_data, w, h, 0, resize_data, import_data.mWidth, import_data.mHeight, 0, (stbir_pixel_layout)c);
 
 			texture = CreateRef<Texture2D>(
-				resize_data, (unsigned)import_data.mWidth, (unsigned)import_data.mHeight, specification);
+				(unsigned)import_data.mWidth, (unsigned)import_data.mHeight, specification, resize_data);
 		}
 		else
 		{
-			texture = CreateRef<Texture2D>(image_data, (unsigned)w, (unsigned)h, specification);
+			texture = CreateRef<Texture2D>((unsigned)w, (unsigned)h, specification, image_data);
 		}
 
 		stbi_image_free(image_data);
@@ -93,7 +93,7 @@ namespace BHive
 		specification.MagFilter = EMagFilter::LINEAR;
 		specification.WrapMode = EWrapMode::REPEAT;
 
-		auto texture = CreateRef<Texture2D>(image_data, (unsigned)x, (unsigned)y, specification);
+		auto texture = CreateRef<Texture2D>((unsigned)x, (unsigned)y, specification, image_data);
 
 		stbi_image_free(image_data);
 

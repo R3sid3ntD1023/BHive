@@ -115,12 +115,5 @@ namespace BHive
 		std::optional<EImageAccess> ImageAccess;
 		std::optional<ETextureCompareMode> CompareMode; // Depth Compare Mode
 		std::optional<ETextureCompareFunc> CompareFunc; // Depth Compare Funcs
-
-		template <typename A>
-		void Serialize(A &ar)
-		{
-			ar(Format, InternalFormat, Channels, WrapMode, MinFilter, MagFilter, BorderColor, Levels, CompareMode,
-			   CompareFunc);
-		}
 	};
 } // namespace BHive

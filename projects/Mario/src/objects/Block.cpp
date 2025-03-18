@@ -2,14 +2,14 @@
 #include "components/BoxComponent.h"
 #include "components/PhysicsComponent.h"
 #include "components/SpriteComponent.h"
+#include "components/FlipBookComponent.h"
+#include "importers/TextureImporter.h"
 
 namespace BHive
 {
-	Block::Block(World *world)
+	BlockBase::BlockBase(World *world)
 		: GameObject(world)
-
 	{
-		AddComponent<SpriteComponent>();
 		AddComponent<BoxComponent>();
 
 		auto &physc = GetPhysicsComponent();
@@ -18,10 +18,17 @@ namespace BHive
 		physc.Settings.BodyType = EBodyType::Static;
 	}
 
+	Block::Block(World *world)
+		: BlockBase(world)
+
+	{
+		AddComponent<SpriteComponent>();
+	}
+
 	void Block::SetSize(const glm::vec2 &size)
 	{
 		GetComponent<SpriteComponent>().SpriteSize = size;
-		GetComponent<BoxComponent>().mExtents = {size.x * .5f, size.y * .5f, 1.0f};
+		GetComponent<BoxComponent>().Extents = {size.x * .5f, size.y * .5f, 1.0f};
 	}
 
 	void Block::SetTiling(const glm::vec2 &tiling)
@@ -29,8 +36,30 @@ namespace BHive
 		GetComponent<SpriteComponent>().Tiling = tiling;
 	}
 
-	void Block::SetSprite(const Ref<Sprite> &sprite)
+	void Block::SetSprite(const Ref<ASprite> &sprite)
 	{
 		GetComponent<SpriteComponent>().Sprite = sprite;
 	}
+
+	QuestionBlock::QuestionBlock(World *world)
+		: BlockBase(world)
+	{
+		auto &fb_component = AddComponent<FlipBookComponent>();
+
+		auto texture = TextureLoader::Import(RESOURCE_PATH "textures/items.png");
+		Ref<Sprite> sprites[3] = {};
+
+		sprites[0] = Sprite::Create(texture, {0, 4}, {16, 16}, {1, 1});
+		sprites[1] = Sprite::Create(texture, {1, 4}, {16, 16}, {1, 1});
+		sprites[2] = Sprite::Create(texture, {2, 4}, {16, 16}, {1, 1});
+
+		auto flipbook = CreateRef<FlipBook>();
+		flipbook->AddFrame(sprites[0], 5);
+		flipbook->AddFrame(sprites[1], 5);
+		flipbook->AddFrame(sprites[2], 5);
+		flipbook->SetLoop(true);
+
+		fb_component.FlipBook = flipbook;
+	}
+
 } // namespace BHive

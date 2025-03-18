@@ -43,7 +43,12 @@ namespace BHive
 		mFramesPerSecond = fps;
 	}
 
-	void FlipBook::AddSprite(const sprite_ptr &sprite, uint32_t duration, uint32_t index)
+	void FlipBook::AddFrame(const sprite_ptr &sprite, uint32_t duration)
+	{
+		mFrames.emplace_back(Frame{.mSprite = sprite, .mDuration = duration});
+	}
+
+	void FlipBook::InsertFrame(const sprite_ptr &sprite, uint32_t duration, uint32_t index)
 	{
 		mFrames.insert(mFrames.begin() + index, Frame{.mSprite = sprite, .mDuration = duration});
 	}

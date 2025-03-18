@@ -159,11 +159,4 @@ namespace BHive
 		mModelMatrix = glm::translate(mTranslation) * glm::toMat4(rotation) * glm::scale(mScale);
 	}
 
-	REFLECT(FTransform)
-	{
-		BEGIN_REFLECT(FTransform)
-		// REFLECT_PROPERTY("Translation", get_translation, set_translation)
-		REFLECT_PROPERTY("Rotation", get_rotation, set_rotation)
-		REFLECT_PROPERTY("Scale", get_scale, set_scale)(META_DATA(EPropertyMetaData_Default, glm::vec3(1.f)));
-	}
 } // namespace BHive

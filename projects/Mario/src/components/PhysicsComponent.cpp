@@ -113,4 +113,34 @@ namespace BHive
 			return (EBodyType)rb->getType();
 		}
 	}
+
+	REFLECT(PhysicsSettings)
+	{
+		{
+			BEGIN_REFLECT_ENUM(ELockAxis)
+			(ENUM_VALUE(NoAxis), ENUM_VALUE(AxisX), ENUM_VALUE(AxisY), ENUM_VALUE(AxisZ));
+		}
+		{
+			BEGIN_REFLECT_ENUM(EBodyType)
+			(ENUM_VALUE(Static), ENUM_VALUE(Kinematic), ENUM_VALUE(Dynamic));
+		}
+		{
+			BEGIN_REFLECT(PhysicsSettings)
+			REFLECT_PROPERTY(PhysicsEnabled)
+			REFLECT_PROPERTY(BodyType)
+			REFLECT_PROPERTY(Mass)
+			REFLECT_PROPERTY(AngularDamping)
+			REFLECT_PROPERTY(LinearDamping)
+			REFLECT_PROPERTY(LinearLockAxis)
+			REFLECT_PROPERTY(AngularLockAxis)
+			REFLECT_PROPERTY(GravityEnabled);
+		}
+	}
+
+	REFLECT(PhysicsComponent)
+	{
+		BEGIN_REFLECT(PhysicsComponent)
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Settings)
+			REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &GameObject::AddComponent<PhysicsComponent>);
+	}
 } // namespace BHive

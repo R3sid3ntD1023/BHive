@@ -64,8 +64,6 @@ namespace BHive
 			calculate_model_matrix();
 		}
 
-		REFLECTABLE()
-
 	private:
 		void calculate_model_matrix();
 
@@ -92,8 +90,6 @@ namespace BHive
 		obj = {t, r, s};
 		return is;
 	}
-
-	REFLECT_EXTERN(FTransform)
 
 	template <>
 	inline FTransform Math::Lerp(const FTransform &v0, const FTransform &v1, float t)

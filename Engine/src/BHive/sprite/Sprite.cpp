@@ -48,15 +48,26 @@ namespace BHive
 	void Sprite::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(mMin, mMax, mSource);
+		// ar(mMin, mMax, mSource);
 	}
 
 	void Sprite::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(mMin, mMax, mSource);
+		// ar(mMin, mMax, mSource);
 
 		Initialize();
+	}
+
+	Ref<Sprite> Sprite::Create(
+		const Ref<Texture2D> &texture, const glm::vec2 &coords, const glm::vec2 &cellSize, const glm::vec2 spriteSize)
+	{
+		return CreateRef<Sprite>(texture, coords, cellSize, spriteSize);
+	}
+
+	Ref<Sprite> Sprite::Create(const Ref<Texture2D> &texture, const glm::vec2 &min, const glm::vec2 &max)
+	{
+		return CreateRef<Sprite>(texture, min, max);
 	}
 
 	REFLECT(Sprite)

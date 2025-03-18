@@ -33,6 +33,12 @@ namespace BHive
 			component.second->Update(dt);
 	}
 
+	void GameObject::Render()
+	{
+		for (auto &component : mComponents)
+			component.second->Render();
+	}
+
 	void GameObject::End()
 	{
 
@@ -145,5 +151,24 @@ namespace BHive
 	const FTransform &GameObject::GetLocalTransform() const
 	{
 		return GetComponent<TransformComponent>().Transform;
+	}
+
+	Ref<GameObject> GameObject::GetParent() const
+	{
+		auto &parent = GetComponent<RelationshipComponent>().Parent;
+		if (!parent)
+			return nullptr;
+
+		return mWorld->GetGameObject(parent);
+	}
+
+	std::unordered_set<Ref<GameObject>> GameObject::GetChildren() const
+	{
+		std::unordered_set<Ref<GameObject>> children;
+		auto &child_ids = GetComponent<RelationshipComponent>().Children;
+		for (auto &id : child_ids)
+			children.insert(mWorld->GetGameObject(id));
+
+		return children;
 	}
 } // namespace BHive

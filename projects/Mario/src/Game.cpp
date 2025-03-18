@@ -1,5 +1,6 @@
 #include "core/EntryPoint.h"
 #include "GameLayer.h"
+#include "EditorLayer.h"
 
 namespace BHive
 {
@@ -9,7 +10,8 @@ namespace BHive
 		Game(const FApplicationSpecification &specs)
 			: Application(specs)
 		{
-			PushLayer(new GameLayer());
+			// PushLayer(new GameLayer());
+			PushLayer(new EditorLayer());
 		}
 	};
 
@@ -19,6 +21,7 @@ namespace BHive
 		specs.Title = "Mario";
 		specs.CommandLine = cmd;
 		specs.Size = {800, 600};
+		specs.Maximize = true;
 		return new Game(specs);
 	}
 } // namespace BHive

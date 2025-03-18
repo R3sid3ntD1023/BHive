@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/Core.h"
 #include "components/Component.h"
 #include "components/PhysicsComponent.h"
 #include "core/UUID.h"
@@ -15,6 +16,7 @@ namespace BHive
 
 		virtual void Begin();
 		virtual void Update(float dt);
+		virtual void Render();
 		virtual void End();
 
 		template <typename T, typename... TArgs>
@@ -78,6 +80,8 @@ namespace BHive
 		const FTransform &GetLocalTransform() const;
 
 		World *GetWorld() const { return mWorld; }
+		Ref<GameObject> GetParent() const;
+		std::unordered_set<Ref<GameObject>> GetChildren() const;
 
 	private:
 		std::unordered_map<size_t, Ref<Component>> mComponents;

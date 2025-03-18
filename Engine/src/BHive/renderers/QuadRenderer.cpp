@@ -79,7 +79,7 @@ namespace BHive
 
 		std::array<uint64_t, sMaxTextureCount> mTextures;
 
-		TextureData() { mTextures[0] = Renderer::GetWhiteTexture()->GetHandle(); }
+		TextureData() { mTextures[0] = Renderer::GetWhiteTexture()->GetResourceHandle(); }
 	};
 
 	struct IRenderDataBase

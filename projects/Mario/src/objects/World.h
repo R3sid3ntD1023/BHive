@@ -9,6 +9,7 @@ namespace BHive
 {
 	class GameObject;
 	class Texture2D;
+	using ObjectList = std::unordered_map<UUID, Ref<GameObject>>;
 
 	class World
 	{
@@ -18,6 +19,7 @@ namespace BHive
 
 		void Begin();
 		void Update(float dt);
+		void Render();
 		void End();
 
 		void SimulateBegin();
@@ -41,6 +43,8 @@ namespace BHive
 
 		Ref<GameObject> GetGameObject(const UUID &id) const;
 
+		const ObjectList &GetGameObjects() const { return mObjects; }
+
 		const std::string &GetName() const { return mName; }
 
 		void Destroy(const UUID &id);
@@ -51,7 +55,7 @@ namespace BHive
 
 	private:
 		std::string mName;
-		std::unordered_map<UUID, Ref<GameObject>> mObjects;
+		ObjectList mObjects;
 		std::vector<Ref<GameObject>> mDestoryedObjects;
 
 		// physics
