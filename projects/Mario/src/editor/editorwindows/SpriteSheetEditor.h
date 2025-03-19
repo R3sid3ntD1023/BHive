@@ -11,6 +11,7 @@ namespace BHive
 		virtual void OnWindowRender();
 
 	private:
+		void DrawSprites();
 		void ExtractSprites(const std::filesystem::path &directory, const std::string &filename, const std::string &ext);
 
 	private:

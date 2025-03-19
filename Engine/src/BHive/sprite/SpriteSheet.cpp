@@ -14,6 +14,9 @@ namespace BHive
 
 	void SpriteSheet::CreateSprites()
 	{
+		if (!mSource)
+			return;
+
 		mSprites.clear();
 
 		for (uint32_t c = 0; c < mGrid.mColumns; c++)

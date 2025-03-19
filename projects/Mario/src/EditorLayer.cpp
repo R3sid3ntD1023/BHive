@@ -71,7 +71,7 @@ namespace BHive
 
 		Renderer::Begin();
 
-		mEditorWorld->Render();
+		mEditorWorld->Update(dt);
 
 		LineRenderer::DrawGrid(FGrid{.color = 0x808080ff, .stepcolor = 0x808080ff});
 

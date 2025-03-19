@@ -1,4 +1,7 @@
 #include "TextureEditor.h"
+#include "asset/AssetFactory.h"
+#include "asset/EditorAssetManager.h"
+#include "core/FileDialog.h"
 
 namespace BHive
 {
@@ -26,7 +29,36 @@ namespace BHive
 
 			TAssetEditor::OnWindowRender();
 
+			// Creates subtexture from texture
+			ImGui::SeparatorText("Create SubTexture");
+
+			if (ImGui::BeginChild("Create SubTexture"))
+			{
+				inspect("X", mSubTexture.x);
+				inspect("Y", mSubTexture.y);
+				inspect("Width", mSubTexture.width);
+				inspect("Height", mSubTexture.height);
+
+				if (ImGui::Button("Create"))
+				{
+					auto path = FileDialogs::SaveFile(AssetFactory::GetFileFilters());
+					if (!path.empty())
+					{
+						auto texture = mAsset->CreateSubTexture(mSubTexture);
+						AssetFactory::Export(texture, path);
+						AssetManager::GetAssetManager<EditorAssetManager>()->ImportAsset(
+							path, texture->get_type(), texture->GetHandle());
+					}
+				}
+				ImGui::EndChild();
+			}
+
 			ImGui::EndTable();
 		}
+	}
+	void TextureEditor::OnSetContext(const Ref<Texture2D> &asset)
+	{
+		mSubTexture.width = mAsset->GetWidth();
+		mSubTexture.height = mAsset->GetHeight();
 	}
 } // namespace BHive

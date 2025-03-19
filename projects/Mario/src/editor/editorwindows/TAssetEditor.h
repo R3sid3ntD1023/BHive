@@ -34,7 +34,7 @@ namespace BHive
 			}
 		}
 
-		virtual void OnSetContext(const Ref<Asset> &asset) {}
+		virtual void OnSetContext(const Ref<T> &asset) {}
 
 		virtual void OnWindowRender()
 		{

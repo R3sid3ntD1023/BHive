@@ -97,20 +97,26 @@ namespace BHive
 
 		for (auto &object : mObjects)
 			object.second->Begin();
+
+		mIsRunning = true;
 	}
 
 	void World::Update(float dt)
 	{
-		Simulate(dt);
+		if (mIsRunning)
+		{
+			Simulate(dt);
 
-		for (auto &object : mObjects)
-			object.second->Update(dt);
+			for (auto &object : mObjects)
+				object.second->Update(dt);
+		}
 
 		Render();
 
 		for (auto &object : mDestoryedObjects)
 		{
-			object->End();
+			if (mIsRunning)
+				object->End();
 
 			mObjects.erase(object->GetID());
 		}
@@ -135,6 +141,8 @@ namespace BHive
 			object.second->End();
 
 		SimulateEnd();
+
+		mIsRunning = false;
 	}
 
 	void World::SimulateBegin()

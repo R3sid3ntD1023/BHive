@@ -9,37 +9,33 @@ namespace BHive
 		{
 			TAssetEditor::OnWindowRender();
 
-			auto &sprites = mAsset->GetSprites();
-			auto &grid = mAsset->GetGrid();
-
-			ImGui::TextDisabled("%llu", sprites.size());
-
-			int i = 0;
-			int columns = grid.mColumns > 0 ? grid.mColumns : 1;
-			float avail_width = ImGui::GetContentRegionAvail().x;
-			float item_width = avail_width / columns;
-			if (ImGui::BeginTable("##sprites", columns, 0, {0, 0}, avail_width))
+			if (ImGui::BeginTable("##source", 2))
 			{
-
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
 
-				for (auto &sprite : sprites)
+				if (ImGui::BeginChild("Source"))
 				{
-					auto texture = sprite.GetSourceTexture();
-					auto mincoords = sprite.GetMinCoords();
-					auto maxcoords = sprite.GetMaxCoords();
+					auto source = mAsset->GetSource();
 
-					ImGui::BeginGroup();
-					auto id = texture ? texture->GetRendererID() : 0;
-					ImGui::Image(
-						(ImTextureID)(uint64_t)(uint32_t)id, {item_width, item_width}, {mincoords.x, maxcoords.y},
-						{maxcoords.x, mincoords.y});
-					ImGui::TextColored({1, .5f, 0, 1}, "Sprite %d", i);
-					ImGui::EndGroup();
+					if (source)
+					{
+						auto size = ImGui::GetContentRegionAvail();
+						auto ratio = (float)source->GetHeight() / (float)source->GetWidth();
+						auto texture_size = size * ImVec2{1, ratio};
+						ImGui::Image((ImTextureID)(uint64_t)(uint32_t)*source, texture_size, {0, 1}, {1, 0});
+					}
 
-					ImGui::TableNextColumn();
-					i++;
+					ImGui::EndChild();
+				}
+
+				ImGui::TableNextColumn();
+
+				if (ImGui::BeginChild("Sprites"))
+				{
+					DrawSprites();
+
+					ImGui::EndChild();
 				}
 
 				ImGui::EndTable();
@@ -65,6 +61,45 @@ namespace BHive
 			}
 
 			ImGui::PopStyleColor(3);
+		}
+	}
+
+	void SpriteSheetEditor::DrawSprites()
+	{
+		auto &sprites = mAsset->GetSprites();
+		auto &grid = mAsset->GetGrid();
+
+		ImGui::TextDisabled("%llu", sprites.size());
+
+		int i = 0;
+		int columns = grid.mColumns > 0 ? grid.mColumns : 1;
+		float avail_width = ImGui::GetContentRegionAvail().x;
+		float item_width = avail_width / columns;
+		if (ImGui::BeginTable("##sprites", columns, 0, {0, 0}, avail_width))
+		{
+
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+
+			for (auto &sprite : sprites)
+			{
+				auto texture = sprite.GetSourceTexture();
+				auto mincoords = sprite.GetMinCoords();
+				auto maxcoords = sprite.GetMaxCoords();
+
+				ImGui::BeginGroup();
+				auto id = texture ? texture->GetRendererID() : 0;
+				ImGui::Image(
+					(ImTextureID)(uint64_t)(uint32_t)id, {item_width, item_width}, {mincoords.x, maxcoords.y},
+					{maxcoords.x, mincoords.y});
+				ImGui::TextColored({1, .5f, 0, 1}, "Sprite %d", i);
+				ImGui::EndGroup();
+
+				ImGui::TableNextColumn();
+				i++;
+			}
+
+			ImGui::EndTable();
 		}
 	}
 

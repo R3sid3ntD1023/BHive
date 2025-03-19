@@ -64,6 +64,8 @@ namespace BHive
 		CollisionEventListener mCollisionListener;
 		HitEventListener mHitListener;
 
+		bool mIsRunning = false;
+
 		friend class GameObject;
 	};
 } // namespace BHive

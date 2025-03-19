@@ -4,9 +4,15 @@
 #include "asset/Asset.h"
 #include "TextureSpecification.h"
 #include "asset/Asset.h"
+#include "core/Buffer.h"
 
 namespace BHive
 {
+	struct FSubTexture
+	{
+		uint32_t x = 0, y = 0, z = 0;
+		uint32_t width = 1, height = 1, depth = 1;
+	};
 
 	class BHIVE Texture : public Asset
 	{

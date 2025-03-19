@@ -9,5 +9,11 @@ namespace BHive
 	{
 	protected:
 		virtual void OnWindowRender();
+
+		virtual void OnSetContext(const Ref<Texture2D> &asset) override;
+
+	private:
+		FSubTexture mSubTexture;
 	};
+
 } // namespace BHive

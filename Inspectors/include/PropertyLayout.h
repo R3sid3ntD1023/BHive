@@ -23,7 +23,7 @@ namespace BHive
 		std::string mName = "";
 	};
 
-	struct ScopedPropertyLayout : public PropertyLayout
+	struct INSPECTOR_API ScopedPropertyLayout : public PropertyLayout
 	{
 		ScopedPropertyLayout(const std::string &name, bool columns = true, float width = 0.0f);
 		ScopedPropertyLayout(const rttr::property &property, bool columns = true, float width = 0.0f);

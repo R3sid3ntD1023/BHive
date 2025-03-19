@@ -34,8 +34,6 @@ namespace BHive
 
 		GameObject *mSelectedObject = nullptr;
 
-		std::vector<GameObject *> mDestroyedObjects;
-
 		std::vector<AssetType> mEntityTypeCache;
 	};
 } // namespace BHive

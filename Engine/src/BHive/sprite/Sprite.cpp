@@ -65,6 +65,8 @@ namespace BHive
 
 	void Sprite::CalculateMinMax(const FSpriteGenerator &generator)
 	{
+		ASSERT(mSource, "Source texture is null!");
+
 		auto texture = mSource;
 		glm::vec2 texture_size = {texture->GetWidth(), texture->GetHeight()};
 		mMin = (generator.Coordinates * generator.CellSize) / texture_size;

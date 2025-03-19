@@ -56,22 +56,25 @@ namespace BHive
 			GetGLType(mSpecification.InternalFormat), data);
 	}
 
-	Ref<Texture2D> Texture2D::CreateSubTexture(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+	Ref<Texture2D> Texture2D::CreateSubTexture(const FSubTexture &texture)
 	{
 		auto c = mSpecification.Channels;
+		size_t size = texture.width * texture.height * c;
 
-		std::vector<uint8_t> pixels(w * h * c);
-		GetSubImage(x, y, w, h, w * h * c, &pixels[0]);
+		std::vector<uint8_t> pixels(size);
+		GetSubImage(texture, size, &pixels[0]);
 
-		return CreateRef<Texture2D>(w, h, mSpecification, pixels.data());
+		return CreateRef<Texture2D>(texture.width, texture.height, mSpecification, pixels.data());
 	}
 
-	void Texture2D::GetSubImage(uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t size, uint8_t *data) const
+	void Texture2D::GetSubImage(const FSubTexture &texture, size_t size, uint8_t *data) const
 	{
 		auto format = GetGLFormat(mSpecification.InternalFormat);
 		auto type = GetGLType(mSpecification.InternalFormat);
 
-		glGetTextureSubImage(mTextureID, 0, x, y, 0, mWidth, mHeight, 1, format, type, size, data);
+		glGetTextureSubImage(
+			mTextureID, 0, texture.x, texture.y, texture.z, texture.width, texture.height, texture.depth, format, type, size,
+			data);
 	}
 
 	void Texture2D::Initialize()
@@ -121,9 +124,10 @@ namespace BHive
 
 	void Texture2D::Save(cereal::BinaryOutputArchive &ar) const
 	{
+		FSubTexture texture{.width = mWidth, .height = mHeight};
 		size_t data_size = mWidth * mHeight * mSpecification.Channels;
 		Buffer buffer(data_size);
-		GetSubImage(0, 0, mWidth, mHeight, data_size, buffer.GetData());
+		GetSubImage(texture, data_size, buffer.GetData());
 
 		Asset::Save(ar);
 		ar(mWidth, mHeight, mSpecification, buffer);

@@ -13,8 +13,6 @@ namespace BHive
 
 	void SceneHierarchyPanel::OnGuiRender()
 	{
-		mDestroyedObjects.clear();
-
 		if (mWorld)
 		{
 			auto &objs = mWorld->GetGameObjects();
@@ -25,9 +23,6 @@ namespace BHive
 
 				DrawNode(obj.get());
 			}
-
-			for (auto obj : mDestroyedObjects)
-				obj->Destroy();
 		}
 
 		if (ImGui::BeginPopupContextWindow(
@@ -156,7 +151,7 @@ namespace BHive
 		if (destroyed)
 		{
 			mSelectedObject = nullptr;
-			mDestroyedObjects.push_back(obj);
+			obj->Destroy();
 		}
 	}
 

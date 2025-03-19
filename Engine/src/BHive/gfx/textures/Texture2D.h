@@ -29,9 +29,9 @@ namespace BHive
 		virtual void GenerateMipMaps() const;
 		virtual const FTextureSpecification &GetSpecification() const { return mSpecification; }
 
-		Ref<Texture2D> CreateSubTexture(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+		Ref<Texture2D> CreateSubTexture(const FSubTexture &texture);
 
-		void GetSubImage(uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t size, uint8_t *data) const;
+		void GetSubImage(const FSubTexture &texture, size_t size, uint8_t *data) const;
 
 		/*Begin Asset*/
 		void Save(cereal::BinaryOutputArchive &ar) const override;

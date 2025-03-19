@@ -13,8 +13,8 @@ namespace BHive
 
 	struct FSpriteSheetGrid
 	{
-		uint32_t mRows = 1;
-		uint32_t mColumns = 1;
+		uint32_t mRows = 0;
+		uint32_t mColumns = 0;
 		glm::vec2 mCellSize{0.0f};
 
 		template <typename A>
