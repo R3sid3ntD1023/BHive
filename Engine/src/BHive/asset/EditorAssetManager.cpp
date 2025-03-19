@@ -1,16 +1,15 @@
 #include "EditorAssetManager.h"
 #include "core/serialization/Serialization.h"
-#include "project/Project.h"
 
 namespace BHive
 {
 
-	EditorAssetManager::EditorAssetManager(const std::filesystem::path &path, bool save_registry)
-		: mAssetRegistryPath(path),
-		  mSaveRegistry(save_registry)
+	EditorAssetManager::EditorAssetManager(const std::filesystem::path &directory, const std::string &filename)
+		: mDirectory(directory),
+		  mFileName(filename)
 	{
-		if (std::filesystem::exists(path) && save_registry)
-			DeserializeAssetRegistry();
+
+		Deserialize();
 	}
 
 	EditorAssetManager::~EditorAssetManager()
@@ -39,7 +38,7 @@ namespace BHive
 			{
 				const FAssetMetaData &metadata = GetMetaData(handle);
 
-				if (!mAssetFactory.Import(asset, Project::GetResourceDirectory() / metadata.Path))
+				if (!mAssetFactory.Import(asset, mDirectory / metadata.Path))
 				{
 					LOG_ERROR("Failed to load asset");
 					return asset;
@@ -60,7 +59,8 @@ namespace BHive
 
 	bool EditorAssetManager::IsAssetLoaded(AssetHandle handle) const
 	{
-		return mLoadedAssets.contains(handle);
+		bool loaded = mLoadedAssets.contains(handle);
+		return loaded;
 	}
 
 	AssetType EditorAssetManager::GetAssetType(AssetHandle handle) const
@@ -85,12 +85,12 @@ namespace BHive
 		}
 
 		FAssetMetaData metadata;
-		metadata.Path = std::filesystem::relative(path, Project::GetResourceDirectory());
+		metadata.Path = std::filesystem::relative(path, mDirectory);
 		metadata.Type = type;
 		metadata.Name = path.stem().string();
 
 		mAssetRegistry[handle] = metadata;
-		SerializeAssetRegistry();
+		Serialize();
 	}
 
 	bool EditorAssetManager::RemoveAsset(AssetHandle handle)
@@ -98,7 +98,7 @@ namespace BHive
 		if (mAssetRegistry.contains(handle))
 		{
 			mAssetRegistry.erase(handle);
-			SerializeAssetRegistry();
+			Serialize();
 			return true;
 		}
 
@@ -137,7 +137,7 @@ namespace BHive
 			}
 		}
 
-		SerializeAssetRegistry();
+		Serialize();
 
 		return true;
 	}
@@ -204,31 +204,49 @@ namespace BHive
 		return GetMetaData(handle).Path;
 	}
 
-	void EditorAssetManager::SerializeAssetRegistry() const
+	void EditorAssetManager::Serialize() const
 	{
-		if (!mSaveRegistry)
-			return;
+		try
+		{
+			if (!std::filesystem::exists(mDirectory))
+			{
+				std::filesystem::create_directory(mDirectory);
+			}
 
-		std::ofstream out(mAssetRegistryPath, std::ios::out);
-		if (!out)
-			return;
+			std::ofstream out(mDirectory / mFileName, std::ios::out);
+			if (!out)
+				return;
 
-		cereal::JSONOutputArchive ar(out);
-		ar(mAssetRegistry);
+			cereal::JSONOutputArchive ar(out);
+			ar(MAKE_NVP("Assets", mAssetRegistry));
+		}
+		catch (std::exception &e)
+		{
+			LOG_ERROR("EditorAssetManager::Serialize() ERROR: {}", e.what());
+		}
 	}
 
-	bool EditorAssetManager::DeserializeAssetRegistry()
+	bool EditorAssetManager::Deserialize()
 	{
-		if (!std::filesystem::exists(mAssetRegistryPath))
-			return false;
+		try
+		{
+			if (!std::filesystem::exists(mDirectory))
+				return false;
 
-		std::ifstream in(mAssetRegistryPath, std::ios::in);
-		if (!in)
-			return false;
+			std::ifstream in(mDirectory / mFileName, std::ios::in);
+			if (!in)
+				return false;
 
-		cereal::JSONInputArchive ar(in);
-		ar(mAssetRegistry);
+			cereal::JSONInputArchive ar(in);
+			ar(MAKE_NVP("Assets", mAssetRegistry));
 
-		return true;
+			return true;
+		}
+		catch (std::exception &e)
+		{
+			LOG_ERROR("EditorAssetManager::Deserialize() ERROR: {}", e.what());
+		}
+
+		return false;
 	}
 } // namespace BHive

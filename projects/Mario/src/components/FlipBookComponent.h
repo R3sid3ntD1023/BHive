@@ -15,7 +15,7 @@ namespace BHive
 
 		glm::vec2 Tiling{1, 1};
 
-		TAssetHandle<FlipBook> FlipBook;
+		Ref<FlipBook> FlipBook;
 
 		virtual void Begin() override;
 		virtual void Update(float dt) override;

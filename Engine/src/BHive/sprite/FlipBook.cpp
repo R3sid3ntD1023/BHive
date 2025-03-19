@@ -43,17 +43,17 @@ namespace BHive
 		mFramesPerSecond = fps;
 	}
 
-	void FlipBook::AddFrame(const sprite_ptr &sprite, uint32_t duration)
+	void FlipBook::AddFrame(const Ref<Sprite> &sprite, uint32_t duration)
 	{
 		mFrames.emplace_back(Frame{.mSprite = sprite, .mDuration = duration});
 	}
 
-	void FlipBook::InsertFrame(const sprite_ptr &sprite, uint32_t duration, uint32_t index)
+	void FlipBook::InsertFrame(const Ref<Sprite> &sprite, uint32_t duration, uint32_t index)
 	{
 		mFrames.insert(mFrames.begin() + index, Frame{.mSprite = sprite, .mDuration = duration});
 	}
 
-	sprite_ptr FlipBook::RemoveSprite(uint32_t index)
+	Ref<Sprite> FlipBook::RemoveSprite(uint32_t index)
 	{
 		if (mFrames.size() > index)
 		{
@@ -73,7 +73,7 @@ namespace BHive
 		mFrames = frames;
 	}
 
-	sprite_ptr FlipBook::GetCurrentSprite() const
+	Ref<Sprite> FlipBook::GetCurrentSprite() const
 	{
 		return GetSpriteAtTime(mCurrentTime);
 	}
@@ -113,7 +113,7 @@ namespace BHive
 		}
 	}
 
-	sprite_ptr FlipBook::GetSpriteAtFrame(int32_t frame) const
+	Ref<Sprite> FlipBook::GetSpriteAtFrame(int32_t frame) const
 	{
 		if (frame < 0)
 			return nullptr;
@@ -130,7 +130,7 @@ namespace BHive
 		return nullptr;
 	}
 
-	sprite_ptr FlipBook::GetSpriteAtTime(float time) const
+	Ref<Sprite> FlipBook::GetSpriteAtTime(float time) const
 	{
 		const auto index = GetFrameIndexAtTime(time);
 		return (index != -1) ? mFrames[index].mSprite : nullptr;
@@ -149,13 +149,28 @@ namespace BHive
 	void FlipBook::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(mIsLooping, mFramesPerSecond, mFrames);
+		ar(mIsLooping, mFramesPerSecond);
+
+		ar(cereal::make_size_tag(mFrames.size()));
+		for (auto &frame : mFrames)
+		{
+			ar(TAssetHandle<Sprite>(frame.mSprite), frame.mDuration);
+		}
 	}
 
 	void FlipBook::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(mIsLooping, mFramesPerSecond, mFrames);
+		ar(mIsLooping, mFramesPerSecond);
+
+		size_t size = 0;
+		ar(cereal::make_size_tag(size));
+
+		mFrames.resize(size);
+		for (auto &frame : mFrames)
+		{
+			ar(TAssetHandle<Sprite>(frame.mSprite), frame.mDuration);
+		}
 	}
 
 	REFLECT(FlipBook::Frame)

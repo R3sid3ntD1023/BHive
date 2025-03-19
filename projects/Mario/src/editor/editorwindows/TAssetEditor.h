@@ -4,7 +4,7 @@
 #include "asset/AssetManager.h"
 #include "asset/EditorAssetManager.h"
 #include "AssetEditor.h"
-#include "inspector/Inspectors.h"
+#include "Inspectors.h"
 #include "project/Project.h"
 
 namespace BHive

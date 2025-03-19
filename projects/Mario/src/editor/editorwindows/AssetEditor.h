@@ -1,6 +1,6 @@
 #pragma once
 
-#include "windows/WindowBase.h"
+#include "editor/WindowBase.h"
 
 namespace BHive
 {
@@ -11,7 +11,7 @@ namespace BHive
 
 		virtual ~AssetEditor() = default;
 
-		void OnUpdateContent();
+		void OnGuiRender();
 
 		bool IsOpened() const { return mIsOpened; }
 

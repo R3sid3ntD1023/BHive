@@ -29,14 +29,14 @@ namespace BHive
 	struct BHIVE FTextureSlot
 	{
 		uint32_t mBinding = 0;
-		TAssetHandle<Texture> mTexture;
+		Ref<Texture> mTexture;
 	};
 
 	class Material : public Asset
 	{
 	public:
 		using TextureSlots = std::unordered_map<std::string, FTextureSlot>;
-		using Textures = std::unordered_map<std::string, TAssetHandle<Texture>>;
+		using Textures = std::unordered_map<std::string, Ref<Texture>>;
 
 	public:
 		Material();

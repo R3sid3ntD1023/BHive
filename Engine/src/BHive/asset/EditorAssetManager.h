@@ -7,12 +7,12 @@
 
 namespace BHive
 {
-	using AssetRegistry = std::map<AssetHandle, FAssetMetaData>;
+	using AssetRegistry = std::unordered_map<AssetHandle, FAssetMetaData>;
 
 	class EditorAssetManager : public AssetManagerBase
 	{
 	public:
-		EditorAssetManager(const std::filesystem::path &path, bool save_registry = true);
+		EditorAssetManager(const std::filesystem::path &directory, const std::string &fileName);
 		~EditorAssetManager();
 
 		virtual Ref<Asset> GetAsset(AssetHandle handle) override;
@@ -21,8 +21,7 @@ namespace BHive
 		virtual bool IsAssetLoaded(AssetHandle handle) const override;
 		virtual AssetType GetAssetType(AssetHandle handle) const override;
 
-
-		void ImportAsset(const std::filesystem::path &path, const AssetType& type,  const AssetHandle& handle);
+		void ImportAsset(const std::filesystem::path &path, const AssetType &type, const AssetHandle &handle);
 		bool RemoveAsset(AssetHandle handle);
 		bool RemoveAsset(const std::filesystem::path &path);
 		bool RenameAsset(const std::filesystem::path &old_, const std::filesystem::path &new_);
@@ -37,17 +36,17 @@ namespace BHive
 
 		const AssetRegistry &GetAssetRegistry() const { return mAssetRegistry; }
 
-		void SerializeAssetRegistry() const;
-		bool DeserializeAssetRegistry();
+		void Serialize() const;
+		bool Deserialize();
 
 	private:
 		AssetRegistry mAssetRegistry;
 		AssetMap mLoadedAssets;
 		AssetMap mMemoryAssets;
 		AssetMap mTempAssets;
-		std::filesystem::path mAssetRegistryPath;
-		bool mSaveRegistry;
+		std::filesystem::path mDirectory;
+		std::string mFileName;
 
 		AssetFactory mAssetFactory;
 	};
-}
+} // namespace BHive

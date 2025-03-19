@@ -28,7 +28,8 @@ namespace BHive
 	static ImVec2 mStartDragPos{};
 
 	ContentBrowserPanel::ContentBrowserPanel(const std::filesystem::path &directory)
-		: mBaseDirectory(directory),
+		: WindowBase(ImGuiWindowFlags_MenuBar),
+		  mBaseDirectory(directory),
 		  mCurrentDirectory(directory)
 	{
 		if (!std::filesystem::exists(directory))

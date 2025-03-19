@@ -4,5 +4,6 @@
 
 namespace BHive
 {
-    DECLARE_INSPECTOR(AssetHandler)
+	template <typename T>
+	DECLARE_INSPECTOR(AssetHandler)
 } // namespace BHive

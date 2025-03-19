@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Component.h"
-#include "assets/ASprite.h"
+#include "sprite/Sprite.h"
 
 namespace BHive
 {
@@ -13,20 +13,12 @@ namespace BHive
 
 		FColor SpriteColor{0xffffffff};
 
-		TAssetHandle<ASprite> Sprite;
+		Ref<Sprite> Sprite;
 
 		void Update(float) override;
 		void Render() override;
 
 		REFLECTABLEV(Component)
 	};
-
-	REFLECT(SpriteComponent)
-	{
-		BEGIN_REFLECT(SpriteComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Tiling)
-			REFLECT_PROPERTY(SpriteSize) REFLECT_PROPERTY(SpriteColor) REFLECT_PROPERTY(Sprite)
-				REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &GameObject::AddComponent<SpriteComponent>);
-	}
 
 } // namespace BHive

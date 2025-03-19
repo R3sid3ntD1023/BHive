@@ -3,11 +3,12 @@
 #include "core/Core.h"
 #include "asset/Asset.h"
 #include "TextureSpecification.h"
+#include "asset/Asset.h"
 
 namespace BHive
 {
 
-	class BHIVE Texture
+	class BHIVE Texture : public Asset
 	{
 	public:
 		virtual ~Texture() = default;
@@ -29,6 +30,8 @@ namespace BHive
 		virtual const FTextureSpecification &GetSpecification() const = 0;
 
 		operator uint32_t() const { return GetRendererID(); }
+
+		REFLECTABLEV(Asset)
 	};
 
 } // namespace BHive

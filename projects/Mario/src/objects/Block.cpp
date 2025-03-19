@@ -36,7 +36,7 @@ namespace BHive
 		GetComponent<SpriteComponent>().Tiling = tiling;
 	}
 
-	void Block::SetSprite(const Ref<ASprite> &sprite)
+	void Block::SetSprite(const Ref<Sprite> &sprite)
 	{
 		GetComponent<SpriteComponent>().Sprite = sprite;
 	}
@@ -49,9 +49,9 @@ namespace BHive
 		auto texture = TextureLoader::Import(RESOURCE_PATH "textures/items.png");
 		Ref<Sprite> sprites[3] = {};
 
-		sprites[0] = Sprite::Create(texture, {0, 4}, {16, 16}, {1, 1});
-		sprites[1] = Sprite::Create(texture, {1, 4}, {16, 16}, {1, 1});
-		sprites[2] = Sprite::Create(texture, {2, 4}, {16, 16}, {1, 1});
+		sprites[0] = Sprite::Create(texture, FSpriteGenerator{{0, 4}, {16, 16}, {1, 1}});
+		sprites[1] = Sprite::Create(texture, FSpriteGenerator{{1, 4}, {16, 16}, {1, 1}});
+		sprites[2] = Sprite::Create(texture, FSpriteGenerator{{2, 4}, {16, 16}, {1, 1}});
 
 		auto flipbook = CreateRef<FlipBook>();
 		flipbook->AddFrame(sprites[0], 5);

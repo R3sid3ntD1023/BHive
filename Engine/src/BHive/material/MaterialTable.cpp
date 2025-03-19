@@ -18,7 +18,7 @@ namespace BHive
 		return mMaterials.size();
 	}
 
-	TAssetHandle<Material> MaterialTable::get_material(uint32_t index) const
+	Ref<Material> MaterialTable::get_material(uint32_t index) const
 	{
 		if (mMaterials.size() > index)
 		{
@@ -28,12 +28,12 @@ namespace BHive
 		return nullptr;
 	}
 
-	void MaterialTable::add_material(const TAssetHandle<Material> &material)
+	void MaterialTable::add_material(const Ref<Material> &material)
 	{
 		mMaterials.push_back(material);
 	}
 
-	void MaterialTable::set_material(const TAssetHandle<Material> &material, uint32_t index)
+	void MaterialTable::set_material(const Ref<Material> &material, uint32_t index)
 	{
 		if (mMaterials.size() > index)
 		{
@@ -47,7 +47,7 @@ namespace BHive
 			mMaterials.emplace_back(m);
 	}
 
-	TAssetHandle<Material> MaterialTable::operator[](size_t index) const
+	Ref<Material> MaterialTable::operator[](size_t index) const
 	{
 		ASSERT(index >= 0 && index < mMaterials.size());
 

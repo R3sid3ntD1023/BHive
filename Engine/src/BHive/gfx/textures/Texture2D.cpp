@@ -58,22 +58,20 @@ namespace BHive
 
 	Ref<Texture2D> Texture2D::CreateSubTexture(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 	{
-		auto format = GetGLFormat(mSpecification.InternalFormat);
-		auto type = GetGLType(mSpecification.InternalFormat);
 		auto c = mSpecification.Channels;
 
 		std::vector<uint8_t> pixels(w * h * c);
-		glGetTextureSubImage(mTextureID, 0, x, y, 0, w, h, 1, format, type, w * h * c, &pixels[0]);
+		GetSubImage(x, y, w, h, w * h * c, &pixels[0]);
 
 		return CreateRef<Texture2D>(w, h, mSpecification, pixels.data());
 	}
 
-	void Texture2D::GetSubImage(uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t size, void *data) const
+	void Texture2D::GetSubImage(uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t size, uint8_t *data) const
 	{
 		auto format = GetGLFormat(mSpecification.InternalFormat);
 		auto type = GetGLType(mSpecification.InternalFormat);
 
-		glGetTextureSubImage(mTextureID, 0, 0, 0, 0, mWidth, mHeight, 1, format, type, size, data);
+		glGetTextureSubImage(mTextureID, 0, x, y, 0, mWidth, mHeight, 1, format, type, size, data);
 	}
 
 	void Texture2D::Initialize()
@@ -119,6 +117,39 @@ namespace BHive
 			glMakeTextureHandleNonResidentNV(mResourceHandle);
 
 		glDeleteTextures(1, &mTextureID);
+	}
+
+	void Texture2D::Save(cereal::BinaryOutputArchive &ar) const
+	{
+		size_t data_size = mWidth * mHeight * mSpecification.Channels;
+		Buffer buffer(data_size);
+		GetSubImage(0, 0, mWidth, mHeight, data_size, buffer.GetData());
+
+		Asset::Save(ar);
+		ar(mWidth, mHeight, mSpecification, buffer);
+
+		buffer.Release();
+	}
+
+	void Texture2D::Load(cereal::BinaryInputArchive &ar)
+	{
+
+		Asset::Load(ar);
+		Buffer buffer;
+		ar(mWidth, mHeight, mSpecification, buffer);
+
+		if (buffer)
+		{
+			Initialize();
+			SetData(buffer.GetData(), buffer.GetSize());
+			buffer.Release();
+		}
+	}
+
+	REFLECT(Texture2D)
+	{
+		BEGIN_REFLECT(Texture2D)
+		REFLECT_CONSTRUCTOR() REFLECT_PROPERTY_READ_ONLY("Width", mWidth) REFLECT_PROPERTY_READ_ONLY("Height", mHeight);
 	}
 
 } // namespace BHive

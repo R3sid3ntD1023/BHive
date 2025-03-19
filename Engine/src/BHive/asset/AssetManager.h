@@ -15,7 +15,7 @@ namespace BHive
 		static Ref<T> GetAsset(AssetHandle handle)
 		{
 			auto asset = sCurrentAssetManager->GetAsset(handle);
-			return std::static_pointer_cast<T>(asset);
+			return std::dynamic_pointer_cast<T>(asset);
 		}
 
 		static BHIVE bool IsAssetHandleValid(AssetHandle handle);

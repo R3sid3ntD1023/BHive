@@ -25,7 +25,9 @@ namespace BHive
 
 		const std::string &GetName() const { return mName; }
 
-		static AssetHandle GetHandle(const Ref<Asset> &asset) { return asset ? asset->GetHandle() : AssetHandle::Null; }
+		static AssetHandle GetHandle(const Ref<Asset> &asset) { return GetHandle(asset.get()); }
+
+		static AssetHandle GetHandle(const Asset *asset) { return asset ? asset->GetHandle() : AssetHandle::Null; }
 
 		const AssetHandle &GetHandle() const { return mHandle; }
 

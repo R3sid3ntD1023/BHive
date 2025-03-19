@@ -43,6 +43,8 @@ namespace BHive
 
 		T *GetData() const { return mData; }
 
+		T *GetData() { return mData; }
+
 		static TBuffer Copy(TBuffer other)
 		{
 			TBuffer result(other.mSize);

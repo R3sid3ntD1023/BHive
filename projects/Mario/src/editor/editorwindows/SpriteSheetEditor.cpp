@@ -1,69 +1,8 @@
-#include "asset/EditorAssetManager.h"
+#include "SpriteSheetEditor.h"
 #include "core/FileDialog.h"
-#include "gfx/Texture.h"
-#include "SpriteEditor.h"
 
 namespace BHive
 {
-	void SpriteEditor::OnWindowRender()
-	{
-		if (mAsset)
-		{
-			auto min = mAsset->GetMinCoords();
-			auto max = mAsset->GetMaxCoords();
-			auto texture = mAsset->GetSourceTexture();
-
-			if (ImGui::BeginChild("##Texture", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX))
-			{
-				auto image_size = ImGui::GetContentRegionAvail();
-				if (texture)
-				{
-					ImGui::Image((ImTextureID)(uint64_t)(uint32_t)*texture, {image_size}, {min.x, max.y}, {max.x, min.y});
-				}
-			}
-
-			ImGui::EndChild();
-
-			ImGui::SameLine();
-
-			if (ImGui::BeginChild("##Variables", {}, ImGuiChildFlags_AlwaysUseWindowPadding))
-			{
-				TAssetEditor::OnWindowRender();
-			}
-
-			ImGui::EndChild();
-
-			if (ImGui::BeginChild("##Coordinates", {0, 200.f}, ImGuiChildFlags_AlwaysUseWindowPadding))
-			{
-				if (texture)
-				{
-					auto size = ImGui::GetContentRegionAvail();
-
-					ImGui::Image((ImTextureID)(uint64_t)(uint32_t)*texture, {size.x, size.y}, {0, 1}, {1, 0});
-					auto item_pos = ImGui::GetItemRectMin();
-
-					ImGui::SetCursorScreenPos(item_pos);
-
-					ImRect bounds = {ImVec2(min.x * size.x, size.y - (min.y * size.y)), ImVec2(max.x * size.x, size.y - (max.y * size.y))};
-					if (ImGui::EditableRect("##spritebounds", &bounds.Min.x, &bounds.Max.x, 10.0f))
-					{
-
-						ImRect newbounds = {bounds.Min, bounds.Max};
-						newbounds.Min.y = size.y - newbounds.Min.y;
-						newbounds.Max.y = size.y - newbounds.Max.y;
-
-						auto newmin = (glm::vec2(newbounds.Min.x, newbounds.Min.y) / glm::vec2(size.x, size.y));
-						auto newmax = (glm::vec2(newbounds.Max.x, newbounds.Max.y) / glm::vec2(size.x, size.y));
-
-						mAsset->SetCoords(newmin, newmax);
-					}
-				}
-			}
-
-			ImGui::EndChild();
-		}
-	}
-
 	void SpriteSheetEditor::OnWindowRender()
 	{
 		if (mAsset)
@@ -94,7 +33,8 @@ namespace BHive
 					ImGui::BeginGroup();
 					auto id = texture ? texture->GetRendererID() : 0;
 					ImGui::Image(
-						(ImTextureID)(uint64_t)(uint32_t)id, {item_width, item_width}, {mincoords.x, maxcoords.y}, {maxcoords.x, mincoords.y});
+						(ImTextureID)(uint64_t)(uint32_t)id, {item_width, item_width}, {mincoords.x, maxcoords.y},
+						{maxcoords.x, mincoords.y});
 					ImGui::TextColored({1, .5f, 0, 1}, "Sprite %d", i);
 					ImGui::EndGroup();
 
@@ -128,7 +68,8 @@ namespace BHive
 		}
 	}
 
-	void SpriteSheetEditor::ExtractSprites(const std::filesystem::path &directory, const std::string &filename, const std::string &ext)
+	void SpriteSheetEditor::ExtractSprites(
+		const std::filesystem::path &directory, const std::string &filename, const std::string &ext)
 	{
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
 		if (!manager)
@@ -141,8 +82,7 @@ namespace BHive
 			auto name = filename + std::to_string(i);
 			auto export_path = directory / (name + ext);
 
-			AssetFactory factory;
-			if (factory.Export(&sprite, export_path))
+			if (AssetFactory::Export(&sprite, export_path))
 			{
 				LOG_TRACE("Extracted Sprite {}", name);
 			}

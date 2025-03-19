@@ -12,7 +12,8 @@ namespace BHive
 	{
 		Asset::Save(ar);
 
-		ar(mSkeleton, mBlackBoard, mNodes.size());
+		TAssetHandle<Skeleton> handle(mSkeleton);
+		ar(handle, mBlackBoard, mNodes.size());
 
 		for (const auto &[id, node] : mNodes)
 		{
@@ -26,7 +27,8 @@ namespace BHive
 		Asset::Load(ar);
 
 		size_t num_nodes = 0;
-		ar(mSkeleton, mBlackBoard, num_nodes);
+		TAssetHandle<Skeleton> handle(mSkeleton);
+		ar(handle, mBlackBoard, num_nodes);
 
 		for (size_t i{}; i < num_nodes; i++)
 		{

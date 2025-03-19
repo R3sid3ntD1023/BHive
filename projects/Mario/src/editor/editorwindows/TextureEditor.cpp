@@ -17,8 +17,7 @@ namespace BHive
 				auto texture_size = size * ImVec2{1, ratio};
 
 				ImGui::SetCursorPos((size - texture_size) * .5f);
-				ImGui::Image((ImTextureID)(uint64_t)(uint32_t)*mAsset, texture_size, {0, 1},
-							 {1, 0});
+				ImGui::Image((ImTextureID)(uint64_t)(uint32_t)*mAsset, texture_size, {0, 1}, {1, 0});
 
 				ImGui::EndChild();
 			}
@@ -28,7 +27,6 @@ namespace BHive
 			TAssetEditor::OnWindowRender();
 
 			ImGui::EndTable();
-				
 		}
 	}
-}
+} // namespace BHive

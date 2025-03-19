@@ -13,9 +13,9 @@
 #include "components/SpriteComponent.h"
 #include "components/TagComponent.h"
 #include "asset/AssetFactory.h"
-#include "assets/ATexture2D.h"
 #include "core/FileDialog.h"
-#include "assets/ASprite.h"
+#include "gfx/textures/Texture2D.h"
+#include "sprite/Sprite.h"
 
 namespace BHive
 {
@@ -56,9 +56,9 @@ namespace BHive
 
 	void GameLayer::OnGuiRender()
 	{
-		auto items = AssetManager::GetAsset<ATexture2D>("0f40f57f-e246-44b5-9f34-e675263440e3")->Get();
-		auto characters = AssetManager::GetAsset<ATexture2D>("68101e6e-91a1-446b-ab3a-c4703b598f87")->Get();
-		auto brick = AssetManager::GetAsset<ATexture2D>("dcb136ac-1165-4134-9f85-17cd180a0d2f")->Get();
+		auto items = AssetManager::GetAsset<Texture2D>("0f40f57f-e246-44b5-9f34-e675263440e3");
+		auto characters = AssetManager::GetAsset<Texture2D>("68101e6e-91a1-446b-ab3a-c4703b598f87");
+		auto brick = AssetManager::GetAsset<Texture2D>("dcb136ac-1165-4134-9f85-17cd180a0d2f");
 
 		ImGui::Begin("Textures");
 		ImGui::Image((ImTextureID)(uint64_t)*items, {200, 200}, {0, 1}, {1, 0});

@@ -29,14 +29,14 @@ namespace BHive
 
 	public:
 		SpriteSheet() = default;
-		SpriteSheet(const TAssetHandle<Texture2D> &source, const FSpriteSheetGrid &grid);
+		SpriteSheet(const Ref<Texture2D> &source, const FSpriteSheetGrid &grid);
 
 		void CreateSprites();
 
-		void SetSource(const TAssetHandle<Texture2D> &source);
+		void SetSource(const Ref<Texture2D> &source);
 		void SetGrid(const FSpriteSheetGrid &grid);
 
-		const TAssetHandle<Texture2D> &GetSource() const { return mSource; }
+		const Ref<Texture2D> &GetSource() const { return mSource; }
 		const Sprites &GetSprites() const { return mSprites; }
 		const FSpriteSheetGrid &GetGrid() const { return mGrid; }
 
@@ -48,7 +48,7 @@ namespace BHive
 
 	private:
 		Sprites mSprites;
-		TAssetHandle<Texture2D> mSource;
+		Ref<Texture2D> mSource;
 		FSpriteSheetGrid mGrid;
 	};
 

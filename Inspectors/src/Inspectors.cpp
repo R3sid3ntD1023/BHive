@@ -29,9 +29,6 @@ namespace BHive
 		{
 			rttr::type current_type = type;
 
-			// if(current_type.is_wrapper())
-			//     current_type = current_type.get_wrapped_type().get_raw_type();
-
 			if (mRegisteredInspectors.contains(current_type))
 			{
 				return mRegisteredInspectors.at(current_type);

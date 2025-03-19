@@ -4,11 +4,12 @@
 namespace BHive
 {
 	AssetEditor::AssetEditor(int flags)
-		: WindowBase(ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_HorizontalScrollbar | flags)
+		: WindowBase(
+			  ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_HorizontalScrollbar | flags)
 	{
 	}
 
-	void AssetEditor::OnUpdateContent()
+	void AssetEditor::OnGuiRender()
 	{
 		if (ImGui::BeginMenuBar())
 		{

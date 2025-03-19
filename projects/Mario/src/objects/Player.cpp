@@ -35,7 +35,7 @@ namespace BHive
 
 		Ref<InputContext> context;
 		auto &input = GetComponent<InputComponent>();
-		input.mInputContext = context = CreateRef<InputContext>();
+		input.Context = context = CreateRef<InputContext>();
 
 		context->add_action("Jump", EKey::Space);
 		context->add_action("MoveLeft", EKey::A);

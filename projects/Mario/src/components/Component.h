@@ -4,6 +4,7 @@
 #include "core/reflection/Reflection.h"
 
 #define ADD_COMPONENT_FUNCTION_NAME "AddComponent"
+#define REMOVE_COMPONENT_FUNCTION_NAME "RemoveComponent"
 
 namespace BHive
 {

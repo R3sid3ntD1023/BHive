@@ -28,7 +28,8 @@ namespace BHive
 	{
 		BEGIN_REFLECT(BoxComponent)
 		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Extents)
-			REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &GameObject::AddComponent<BoxComponent>);
+			REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &GameObject::AddComponent<BoxComponent>)
+				REFLECT_METHOD(REMOVE_COMPONENT_FUNCTION_NAME, &GameObject::RemoveComponent<BoxComponent>);
 	}
 
 } // namespace BHive

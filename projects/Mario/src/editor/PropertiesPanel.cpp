@@ -42,7 +42,8 @@ namespace BHive
 		ImGui::PushID(component);
 
 		int flags = ImGuiTreeNodeFlags_SpanAvailWidth;
-		auto name = component->get_type().get_name();
+		auto type = component->get_type();
+		auto name = type.get_name();
 		bool opened = ImGui::TreeNodeEx(name.data(), flags);
 
 		if (opened)
@@ -51,6 +52,20 @@ namespace BHive
 			if (inspect(var))
 			{
 				component = var.get_value<Component *>();
+			}
+
+			if (type.get_metadata(ClassMetaData_ComponentSpawnable))
+			{
+				auto size = ImGui::GetContentRegionAvail();
+				auto button_size = ImVec2{100, ImGui::GetLineHeight()};
+				ImGui::SetCursorPosX(size.x - button_size.x);
+
+				if (auto method = type.get_method(REMOVE_COMPONENT_FUNCTION_NAME);
+					method && ImGui::Button("Remove", button_size))
+				{
+					auto object = GetSelectedObjectEvent.invoke();
+					method.invoke(object);
+				}
 			}
 
 			ImGui::TreePop();
@@ -83,18 +98,17 @@ namespace BHive
 			for (auto &type : derived_component_types)
 			{
 				auto spawnable_var = type.get_metadata(ClassMetaData_ComponentSpawnable);
-				auto is_spawnable = spawnable_var ? spawnable_var.to_bool() : false;
 
-				if (!is_spawnable || !type.get_constructor())
+				if (!spawnable_var || !type.get_constructor())
 				{
 					continue;
 				}
 
 				if (ImGui::Selectable(type.get_name().data()))
 				{
-					auto object = GetSelectedObjectEvent.invoke();
 					if (auto method = type.get_method(ADD_COMPONENT_FUNCTION_NAME))
 					{
+						auto object = GetSelectedObjectEvent.invoke();
 						method.invoke(object);
 					}
 				}

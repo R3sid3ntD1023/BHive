@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	class ASprite;
+	class Sprite;
 
 	struct BlockBase : public GameObject
 	{
@@ -18,7 +18,7 @@ namespace BHive
 		void SetSize(const glm::vec2 &size);
 
 		void SetTiling(const glm::vec2 &tiling);
-		void SetSprite(const Ref<ASprite> &sprite);
+		void SetSprite(const Ref<Sprite> &sprite);
 	};
 
 	struct QuestionBlock : public BlockBase

@@ -27,7 +27,8 @@ namespace BHive
 			BEGIN_REFLECT(CameraComponent)
 			(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Primary)
 				REFLECT_PROPERTY(Camera)
-					REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &GameObject::AddComponent<CameraComponent>);
+					REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &GameObject::AddComponent<CameraComponent>)
+						REFLECT_METHOD(REMOVE_COMPONENT_FUNCTION_NAME, &GameObject::RemoveComponent<CameraComponent>);
 		}
 
 		{

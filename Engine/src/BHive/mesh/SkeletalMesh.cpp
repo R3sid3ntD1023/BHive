@@ -23,11 +23,11 @@ namespace BHive
 	{
 		BaseMesh::Load(ar);
 
-		TAssetHandle<Skeleton> handle;
+		TAssetHandle<Skeleton> handle(mSkeleton);
 		ar(handle);
 
-		mSkeleton = handle.get();
-		mDefaultPose = CreateRef<SkeletalPose>(mSkeleton.get());
+		if (mSkeleton)
+			mDefaultPose = CreateRef<SkeletalPose>(mSkeleton.get());
 	}
 
 	REFLECT(SkeletalMesh)

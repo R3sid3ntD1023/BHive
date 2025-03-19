@@ -5,7 +5,7 @@
 namespace BHive
 {
 
-	SpriteSheet::SpriteSheet(const TAssetHandle<Texture2D> &source, const FSpriteSheetGrid &grid)
+	SpriteSheet::SpriteSheet(const Ref<Texture2D> &source, const FSpriteSheetGrid &grid)
 		: mSource(source),
 		  mGrid(grid)
 	{
@@ -20,13 +20,14 @@ namespace BHive
 		{
 			for (uint32_t r = 0; r < mGrid.mRows; r++)
 			{
-				Sprite sprite = Sprite(mSource, {c, r}, mGrid.mCellSize, {1, 1});
+				FSpriteGenerator generator{{c, r}, mGrid.mCellSize, {1, 1}};
+				Sprite sprite = Sprite(mSource, generator);
 				mSprites.emplace_back(sprite);
 			}
 		}
 	}
 
-	void SpriteSheet::SetSource(const TAssetHandle<Texture2D> &source)
+	void SpriteSheet::SetSource(const Ref<Texture2D> &source)
 	{
 		mSource = source;
 		CreateSprites();
@@ -41,13 +42,13 @@ namespace BHive
 	void SpriteSheet::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		// ar(mSource, mGrid, mSprites);
+		ar(TAssetHandle<Texture2D>(mSource), mGrid, mSprites);
 	}
 
 	void SpriteSheet::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		// ar(mSource, mGrid, mSprites);
+		ar(TAssetHandle<Texture2D>(mSource), mGrid, mSprites);
 
 		CreateSprites();
 	}

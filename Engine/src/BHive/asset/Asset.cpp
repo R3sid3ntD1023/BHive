@@ -12,4 +12,9 @@ namespace BHive
 		ar(mHandle, mName);
 	}
 
+	REFLECT(Asset)
+	{
+		BEGIN_REFLECT(Asset);
+	}
+
 } // namespace BHive

@@ -116,4 +116,12 @@ namespace BHive
 		std::optional<ETextureCompareMode> CompareMode; // Depth Compare Mode
 		std::optional<ETextureCompareFunc> CompareFunc; // Depth Compare Funcs
 	};
+
+	template <typename A>
+	void Serialize(A &ar, FTextureSpecification &spec)
+	{
+		ar(MAKE_NVP(spec.Format), MAKE_NVP(spec.InternalFormat), MAKE_NVP(spec.Channels), MAKE_NVP(spec.WrapMode),
+		   MAKE_NVP(spec.MinFilter), MAKE_NVP(spec.MagFilter), MAKE_NVP(spec.BorderColor), MAKE_NVP(spec.Levels),
+		   MAKE_NVP(spec.CompareMode), MAKE_NVP(spec.CompareFunc));
+	}
 } // namespace BHive

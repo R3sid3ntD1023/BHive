@@ -7,7 +7,7 @@ namespace BHive
 {
 	class Asset;
 
-	using AssetMap = std::map<AssetHandle, Ref<Asset>>;
+	using AssetMap = std::unordered_map<AssetHandle, Ref<Asset>>;
 
 	class AssetManagerBase
 	{

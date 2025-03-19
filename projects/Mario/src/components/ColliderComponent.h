@@ -31,7 +31,7 @@ namespace BHive
 
 		TEnumAsByte<ECollisionChannel> CollisionChannelMasks = CollisionChannel_All;
 
-		TAssetHandle<PhysicsMaterial> PhysicsMaterial;
+		Ref<PhysicsMaterial> PhysicsMaterial;
 
 		OnCollisonEvent OnCollisionEnter;
 		OnCollisonEvent OnCollisionExit;

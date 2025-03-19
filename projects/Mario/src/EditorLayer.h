@@ -24,7 +24,7 @@ namespace BHive
 		Ref<EditorContentBrowser<EditorAssetManager>> mContentBrowser;
 		EditorCamera mEditorCamera;
 
-		EditorAssetManager mAssetManager{RESOURCE_PATH};
+		EditorAssetManager mAssetManager{RESOURCE_PATH, "AssetRegistry.json"};
 
 	public:
 		void OnAttach() override;

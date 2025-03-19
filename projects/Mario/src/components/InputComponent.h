@@ -8,8 +8,7 @@ namespace BHive
 
 	struct InputComponent : public Component
 	{
-
-		TAssetHandle<InputContext> mInputContext;
+		Ref<InputContext> Context;
 
 		void CreateInstance();
 
@@ -20,6 +19,8 @@ namespace BHive
 		void Begin() override;
 		void Update(float) override;
 		void End() override;
+
+		REFLECTABLEV(Component)
 
 	private:
 		InputContext *mContextInstance = nullptr;

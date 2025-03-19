@@ -33,7 +33,7 @@ namespace BHive
 	private:
 		Nodes mNodes;
 
-		TAssetHandle<Skeleton> mSkeleton;
+		Ref<Skeleton> mSkeleton;
 
 		BlackBoard mBlackBoard;
 	};

@@ -10,7 +10,7 @@ namespace BHive
 	struct BHIVE MaterialTable
 	{
 
-		using material_list = std::vector<TAssetHandle<Material>>;
+		using material_list = std::vector<Ref<Material>>;
 
 		void clear();
 
@@ -18,11 +18,11 @@ namespace BHive
 
 		size_t size() const;
 
-		TAssetHandle<Material> get_material(uint32_t index = 0) const;
+		Ref<Material> get_material(uint32_t index = 0) const;
 
-		void add_material(const TAssetHandle<Material> &material);
+		void add_material(const Ref<Material> &material);
 
-		void set_material(const TAssetHandle<Material> &material, uint32_t index = 0);
+		void set_material(const Ref<Material> &material, uint32_t index = 0);
 
 		const material_list &get_materials() const { return mMaterials; }
 
@@ -30,12 +30,12 @@ namespace BHive
 
 		void set_materials(const std::vector<Ref<Material>> &materials);
 
-		TAssetHandle<Material> operator[](size_t index) const;
+		Ref<Material> operator[](size_t index) const;
 
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(mMaterials);
+			// ar(mMaterials);
 		}
 
 	private:

@@ -115,10 +115,8 @@ namespace BHive
 	{
 		Asset::Load(ar);
 
-		TAssetHandle<Skeleton> handle;
+		TAssetHandle<Skeleton> handle(mSkeleton);
 		ar(mDuration, mTicksPerSecond, mGlobalInverseTransformation, mFrameData, handle);
-
-		mSkeleton = handle.get();
 	}
 
 	bool SkeletalAnimation::Contains(const std::string &name) const

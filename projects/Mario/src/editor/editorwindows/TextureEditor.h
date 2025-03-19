@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TAssetEditor.h"
+#include "gfx/textures/Texture2D.h"
 
 namespace BHive
 {
@@ -9,4 +10,4 @@ namespace BHive
 	protected:
 		virtual void OnWindowRender();
 	};
-}
+} // namespace BHive

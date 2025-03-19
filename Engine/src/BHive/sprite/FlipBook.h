@@ -4,14 +4,12 @@
 
 namespace BHive
 {
-	typedef TAssetHandle<Sprite> sprite_ptr;
-
 	class FlipBook : public Asset
 	{
 	public:
 		struct Frame
 		{
-			sprite_ptr mSprite;
+			Ref<Sprite> mSprite;
 			uint32_t mDuration{1};
 
 			template <typename A>
@@ -33,28 +31,27 @@ namespace BHive
 		void SetLoop(bool loop);
 		void SetFramesPerSecond(float fps);
 
-		void AddFrame(const sprite_ptr &sprite, uint32_t duration = 1);
-		void InsertFrame(const sprite_ptr &sprite, uint32_t duration = 1, uint32_t index = 0);
+		void AddFrame(const Ref<Sprite> &sprite, uint32_t duration = 1);
+		void InsertFrame(const Ref<Sprite> &sprite, uint32_t duration = 1, uint32_t index = 0);
 
-		sprite_ptr RemoveSprite(uint32_t index);
+		Ref<Sprite> RemoveSprite(uint32_t index);
 
 		const Frames &GetFrames() const;
 		void SetFrames(const Frames &frames);
 
-		sprite_ptr GetCurrentSprite() const;
+		Ref<Sprite> GetCurrentSprite() const;
 
 		bool IsLooping() const { return mIsLooping; }
 		bool IsPlaying() const { return mIsPlaying; }
 		float GetFramesPerSecond() const { return mFramesPerSecond; }
 
-		sprite_ptr GetSpriteAtFrame(int32_t frame) const;
-		sprite_ptr GetSpriteAtTime(float time) const;
+		Ref<Sprite> GetSpriteAtFrame(int32_t frame) const;
+		Ref<Sprite> GetSpriteAtTime(float time) const;
 
 		float GetTotalTime() const;
 
-		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
-
-		virtual void Load(cereal::BinaryInputArchive &ar) override;
+		void Save(cereal::BinaryOutputArchive &ar) const;
+		void Load(cereal::BinaryInputArchive &ar);
 
 		REFLECTABLEV(Asset)
 

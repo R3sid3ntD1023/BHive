@@ -31,7 +31,15 @@ namespace BHive
 
 		Ref<Texture2D> CreateSubTexture(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
-		void GetSubImage(uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t size, void *data) const;
+		void GetSubImage(uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t size, uint8_t *data) const;
+
+		/*Begin Asset*/
+		void Save(cereal::BinaryOutputArchive &ar) const override;
+		void Load(cereal::BinaryInputArchive &ar) override;
+
+		REFLECTABLEV(Texture)
+
+		/*End Asset*/
 
 	private:
 		void Initialize();
@@ -43,5 +51,7 @@ namespace BHive
 		uint64_t mResourceHandle = 0, mImageHandle = 0;
 		uint32_t mTextureID = 0;
 	};
+
+	REFLECT_EXTERN(Texture2D)
 
 } // namespace BHive
