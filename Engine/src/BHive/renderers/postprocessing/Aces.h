@@ -25,6 +25,5 @@ namespace BHive
 	private:
 		Ref<Texture> mOutput;
 		Ref<Shader> mComputeShader;
-		Ref<UniformBuffer> mBuffer;
 	};
 } // namespace BHive

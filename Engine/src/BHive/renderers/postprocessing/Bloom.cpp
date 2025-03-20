@@ -22,24 +22,6 @@ namespace BHive
 		mUpSamplerShader = ShaderManager::Get().Load("UpSample", upsample_comp);
 		mMipMaps.resize(iterations);
 
-		{
-			auto &reflection_data = mUpSamplerShader->GetRelectionData();
-			auto &buffer = reflection_data.UniformBuffers.at("UpSampler");
-			mUpSampleBuffer = CreateRef<UniformBuffer>(buffer.Binding, buffer.Size);
-		}
-
-		{
-			auto &reflection_data = mDownSamplerShader->GetRelectionData();
-			auto &buffer = reflection_data.UniformBuffers.at("DownSampler");
-			mDownSampleBuffer = CreateRef<UniformBuffer>(buffer.Binding, buffer.Size);
-		}
-
-		{
-			auto &reflection_data = mPreFilterShader->GetRelectionData();
-			auto &buffer = reflection_data.UniformBuffers.at("PreFilter");
-			mPreFilterBuffer = CreateRef<UniformBuffer>(buffer.Binding, buffer.Size);
-		}
-
 		Initialize(width, height);
 	}
 
@@ -48,20 +30,9 @@ namespace BHive
 		CPU_PROFILER_SCOPED("Bloom::Process");
 
 		mPreFilterShader->Bind();
-
-		struct PreFilter
-		{
-			uint64_t Src;
-			uint64_t Out;
-			glm::vec4 Threshold;
-		};
-
-		PreFilter data{
-			.Src = texture->GetResourceHandle(),
-			.Out = mPreFilterTexture->GetImageHandle(),
-			.Threshold = mSettings.mFilterThreshold};
-
-		mPreFilterBuffer->SetData(&data, sizeof(PreFilter));
+		mPreFilterShader->SetUniform("uThreshold", mSettings.mFilterThreshold);
+		texture->Bind();
+		mPreFilterTexture->BindAsImage(0, EImageAccess::WRITE);
 		mPreFilterShader->Dispatch(mPreFilterTexture->GetWidth(), mPreFilterTexture->GetHeight());
 
 		mPreFilterShader->UnBind();
@@ -69,19 +40,13 @@ namespace BHive
 		// downsample
 		mDownSamplerShader->Bind();
 
-		struct FDownSamplerData
-		{
-			uint64_t Src;
-			uint64_t Out;
-		};
-
 		auto current_texture = mPreFilterTexture;
 		for (auto &mip : mMipMaps)
 		{
 			glm::ivec2 size = {mip->GetWidth(), mip->GetHeight()};
 
-			FDownSamplerData data{.Src = current_texture->GetResourceHandle(), .Out = mip->GetImageHandle()};
-			mDownSampleBuffer->SetData(&data, sizeof(FDownSamplerData));
+			current_texture->Bind();
+			mip->BindAsImage(0, EImageAccess::WRITE);
 			mDownSamplerShader->Dispatch(size.x, size.y);
 
 			current_texture = mip;
@@ -89,23 +54,15 @@ namespace BHive
 		mDownSamplerShader->UnBind();
 
 		mUpSamplerShader->Bind();
-
-		struct FUpSamplerData
-		{
-			uint64_t Src;
-			uint64_t Out;
-			alignas(16) float Filter;
-		};
+		mUpSamplerShader->SetUniform("uFilterRadius", mSettings.mFilterRadius);
 
 		for (size_t i = mMipMaps.size() - 1; i > 0; i--)
 		{
 			const auto &mip = mMipMaps[i];
 			const auto &next_mip = mMipMaps[i - 1];
 
-			FUpSamplerData data = {
-				.Src = mip->GetResourceHandle(), .Out = next_mip->GetImageHandle(), .Filter = mSettings.mFilterRadius};
-
-			mUpSampleBuffer->SetData(&data, sizeof(FUpSamplerData));
+			mip->Bind();
+			next_mip->BindAsImage(0, EImageAccess::WRITE);
 			mUpSamplerShader->Dispatch(next_mip->GetWidth(), next_mip->GetHeight());
 		}
 

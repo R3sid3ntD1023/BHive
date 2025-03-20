@@ -14,7 +14,7 @@
 #include "gfx/ShaderManager.h"
 #include "renderers/ShadowRenderer.h"
 #include "gfx/Framebuffer.h"
-#include "mesh/primitives/Plane.h"
+#include "mesh/primitives/Quad.h"
 #include "gui/ImGuiExtended.h"
 
 namespace BHive
@@ -89,7 +89,7 @@ namespace BHive
 
 		mFramebuffer = CreateRef<Framebuffer>(spec);
 
-		mScreenQuad = CreateRef<PPlane>(1.f, 1.f);
+		mScreenQuad = CreateRef<PQuad>();
 	}
 
 	void SandboxLayer::OnUpdate(float dt)
@@ -143,15 +143,9 @@ namespace BHive
 
 		mShader->Bind();
 
-		/*ShadowRenderer::GetShadowFBO()->GetDepthAttachment()->Bind();
-		ShadowRenderer::GetPointShadowFBO()->GetDepthAttachment()->Bind(1);
-		ShadowRenderer::GetSpotShadowFBO()->GetDepthAttachment()->Bind(2);*/
-		mShader->SetUniform(
-			"uDirectionalShadowMaps", ShadowRenderer::GetShadowFBO()->GetDepthAttachment()->GetResourceHandle());
-		mShader->SetUniform(
-			"uPointShadowMaps", ShadowRenderer::GetPointShadowFBO()->GetColorAttachment()->GetResourceHandle());
-		mShader->SetUniform(
-			"uSpotShadowMaps", ShadowRenderer::GetSpotShadowFBO()->GetColorAttachment()->GetResourceHandle());
+		ShadowRenderer::GetShadowFBO()->GetDepthAttachment()->Bind();
+		ShadowRenderer::GetPointShadowFBO()->GetColorAttachment()->Bind(1);
+		ShadowRenderer::GetSpotShadowFBO()->GetColorAttachment()->Bind(2);
 
 		DrawScene();
 
@@ -164,7 +158,7 @@ namespace BHive
 		RenderCommand::Clear();
 
 		mScreenQuadShader->Bind();
-		mScreenQuadShader->SetUniform("uTexture", mFramebuffer->GetColorAttachment()->GetResourceHandle());
+		mFramebuffer->GetColorAttachment()->Bind();
 
 		RenderCommand::DrawElements(EDrawMode::Triangles, *mScreenQuad->GetVertexArray());
 

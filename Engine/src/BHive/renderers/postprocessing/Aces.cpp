@@ -10,26 +10,15 @@ namespace BHive
 	Aces::Aces(uint32_t w, uint32_t h)
 	{
 		mComputeShader = ShaderManager::Get().Load("Aces", aces_comp);
-		{
-			auto &reflection_data = mComputeShader->GetRelectionData();
-			auto &buffer = reflection_data.UniformBuffers.at("Aces");
-			mBuffer = CreateRef<UniformBuffer>(buffer.Binding, buffer.Size);
-		}
 
 		Initialize(w, h);
 	}
 
 	Ref<Texture> Aces::Process(const Ref<Texture> &texture)
 	{
-		struct FAcesData
-		{
-			uint64_t Src, Out;
-		};
-
-		FAcesData data{.Src = texture->GetResourceHandle(), .Out = mOutput->GetImageHandle()};
-		mBuffer->SetData(&data, sizeof(FAcesData));
-
 		mComputeShader->Bind();
+		texture->Bind();
+		mOutput->BindAsImage(0, EImageAccess::WRITE);
 		mComputeShader->Dispatch(texture->GetWidth(), texture->GetHeight());
 		mComputeShader->UnBind();
 		return mOutput;

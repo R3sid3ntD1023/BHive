@@ -25,6 +25,7 @@ namespace BHive
 
 	void Texture2D::Bind(uint32_t slot) const
 	{
+
 		glBindTextureUnit(slot, mTextureID);
 	}
 
@@ -33,10 +34,10 @@ namespace BHive
 		glBindTextureUnit(slot, 0);
 	}
 
-	void Texture2D::BindAsImage(uint32_t unit, uint32_t access, uint32_t level) const
+	void Texture2D::BindAsImage(uint32_t unit, EImageAccess image_access, uint32_t level) const
 	{
 		auto format = GetGLInternalFormat(mSpecification.InternalFormat);
-
+		auto access = GetGLAccess(image_access);
 		glBindImageTexture(unit, mTextureID, level, GL_FALSE, 0, access, format);
 	}
 
@@ -44,6 +45,18 @@ namespace BHive
 	{
 
 		glGenerateTextureMipmap(mTextureID);
+	}
+
+	void Texture2D::SetSpecification(const FTextureSpecification &specs)
+	{
+		mSpecification.MinFilter = specs.MinFilter;
+		mSpecification.MagFilter = specs.MagFilter;
+		mSpecification.WrapMode = specs.WrapMode;
+
+		glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GetGLFilterMode(mSpecification.MinFilter));
+		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GetGLFilterMode(mSpecification.MagFilter));
+		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, GetGLWrapMode(mSpecification.WrapMode));
+		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mSpecification.WrapMode));
 	}
 
 	void Texture2D::SetData(const void *data, uint64_t size, uint32_t offsetX, uint32_t offsetY)
@@ -96,28 +109,28 @@ namespace BHive
 
 		glGenerateTextureMipmap(mTextureID);
 
-		mResourceHandle = glGetTextureHandleNV(mTextureID);
+		// mResourceHandle = glGetTextureHandleNV(mTextureID);
 
-		if (!glIsTextureHandleResidentNV(mResourceHandle))
-			glMakeTextureHandleResidentNV(mResourceHandle);
+		// if (!glIsTextureHandleResidentNV(mResourceHandle))
+		// 	glMakeTextureHandleResidentNV(mResourceHandle);
 
-		if (mSpecification.ImageAccess)
-		{
-			mImageHandle =
-				glGetImageHandleNV(mTextureID, 0, GL_FALSE, 0, GetGLInternalFormat(mSpecification.InternalFormat));
-			if (!glIsImageHandleResidentNV(mImageHandle))
-				glMakeImageHandleResidentNV(mImageHandle, GetGLAccess(mSpecification.ImageAccess.value()));
-		}
+		// if (mSpecification.ImageAccess)
+		// {
+		// 	mImageHandle =
+		// 		glGetImageHandleNV(mTextureID, 0, GL_FALSE, 0, GetGLInternalFormat(mSpecification.InternalFormat));
+		// 	if (!glIsImageHandleResidentNV(mImageHandle))
+		// 		glMakeImageHandleResidentNV(mImageHandle, GetGLAccess(mSpecification.ImageAccess.value()));
+		// }
 	}
 
 	void Texture2D::Release()
 	{
 
-		if (mImageHandle && glIsImageHandleResidentNV(mImageHandle))
-			glMakeImageHandleNonResidentNV(mImageHandle);
+		// if (mImageHandle && glIsImageHandleResidentNV(mImageHandle))
+		// 	glMakeImageHandleNonResidentNV(mImageHandle);
 
-		if (glIsTextureHandleResidentNV(mResourceHandle))
-			glMakeTextureHandleNonResidentNV(mResourceHandle);
+		// if (glIsTextureHandleResidentNV(mResourceHandle))
+		// 	glMakeTextureHandleNonResidentNV(mResourceHandle);
 
 		glDeleteTextures(1, &mTextureID);
 	}
@@ -153,7 +166,9 @@ namespace BHive
 	REFLECT(Texture2D)
 	{
 		BEGIN_REFLECT(Texture2D)
-		REFLECT_CONSTRUCTOR() REFLECT_PROPERTY_READ_ONLY("Width", mWidth) REFLECT_PROPERTY_READ_ONLY("Height", mHeight);
+		REFLECT_CONSTRUCTOR()
+		REFLECT_PROPERTY_READ_ONLY("Width", mWidth)
+		REFLECT_PROPERTY_READ_ONLY("Height", mHeight) REFLECT_PROPERTY("Specification", GetSpecification, SetSpecification);
 	}
 
 } // namespace BHive

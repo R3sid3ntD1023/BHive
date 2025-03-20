@@ -2,8 +2,8 @@
 #include "SandboxLayer.h"
 #include "ReflectionLayer.h"
 
-#define SHADOWS 0
-#define REFLECTION 1
+#define SHADOWS 1
+#define REFLECTION 0
 
 namespace BHive
 {

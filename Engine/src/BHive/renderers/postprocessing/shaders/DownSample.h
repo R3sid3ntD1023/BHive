@@ -7,11 +7,8 @@ static const char *downsample_comp = R"(
     #define LOCAL_SIZE 1
     layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = LOCAL_SIZE) in;
 
-    layout(std430, binding = 9) uniform DownSampler
-    {
-        sampler2D uSrcTexture;
-        layout(r11f_g11f_b10f) image2D uOutput;
-    };
+    layout(binding = 0 ) uniform sampler2D uSrcTexture;
+    layout(binding = 0, r11f_g11f_b10f) uniform image2D uOutput;
 
 
     void main() {

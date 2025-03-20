@@ -175,7 +175,7 @@ namespace BHive
 			mPreFilterEnironmentShader->SetUniform("u_width", w);
 			mPreFilterEnironmentShader->SetUniform("u_height", h);
 
-			mPreFilteredEnvironmentTexture->BindAsImage(0, GL_WRITE_ONLY, i);
+			mPreFilteredEnvironmentTexture->BindAsImage(0, EImageAccess::WRITE, i);
 
 			mPreFilterEnironmentShader->Dispatch(w / PREFILTER_WORK_GROUP_SIZE, h / PREFILTER_WORK_GROUP_SIZE, 6);
 		}
@@ -187,7 +187,7 @@ namespace BHive
 	{
 		mBRDFLUTShader->Bind();
 
-		mBRDFLUTTexture->BindAsImage(0, GL_WRITE_ONLY);
+		mBRDFLUTTexture->BindAsImage(0, EImageAccess::WRITE);
 		mBRDFLUTShader->Dispatch(BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE, BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE);
 
 		mBRDFLUTShader->UnBind();

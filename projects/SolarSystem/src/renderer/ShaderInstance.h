@@ -6,6 +6,7 @@
 namespace BHive
 {
 	class Shader;
+	class Texture;
 	class UniformBuffer;
 
 	struct FShaderUniform
@@ -27,13 +28,13 @@ namespace BHive
 		template <typename T>
 		void SetParameter(const char *parameterName, const T &v);
 
-		void SetTexture(const char *name, uint64_t bindless_texture);
+		void SetTexture(const char *name, const Ref<Texture> &texture);
 
 	private:
 		Ref<Shader> mShader;
 		uint8_t *mInstanceData = nullptr;
 		std::unordered_map<const char *, FShaderUniform> mShaderUniforms;
-		std::unordered_map<const char *, uint64_t> mShaderSamplers;
+		std::unordered_map<const char *, std::pair<uint32_t, Ref<Texture>>> mTextures;
 		static inline Ref<UniformBuffer> mBuffer;
 	};
 

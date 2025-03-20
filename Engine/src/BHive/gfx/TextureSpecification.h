@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/reflection/Reflection.h"
 #include "Color.h"
 #include <optional>
 #include <stdint.h>
@@ -115,7 +116,11 @@ namespace BHive
 		std::optional<EImageAccess> ImageAccess;
 		std::optional<ETextureCompareMode> CompareMode; // Depth Compare Mode
 		std::optional<ETextureCompareFunc> CompareFunc; // Depth Compare Funcs
+
+		REFLECTABLE()
 	};
+
+	REFLECT_EXTERN(FTextureSpecification)
 
 	template <typename A>
 	void Serialize(A &ar, FTextureSpecification &spec)
@@ -124,4 +129,5 @@ namespace BHive
 		   MAKE_NVP(spec.MinFilter), MAKE_NVP(spec.MagFilter), MAKE_NVP(spec.BorderColor), MAKE_NVP(spec.Levels),
 		   MAKE_NVP(spec.CompareMode), MAKE_NVP(spec.CompareFunc));
 	}
+
 } // namespace BHive

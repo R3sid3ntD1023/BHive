@@ -48,16 +48,16 @@ namespace BHive
 			}
 		}
 
-		mResourceHandle = glGetTextureHandleNV(mTextureID);
+		// mResourceHandle = glGetTextureHandleNV(mTextureID);
 
-		if (!glIsTextureHandleResidentNV(mResourceHandle))
-			glMakeTextureHandleResidentNV(mResourceHandle);
+		// if (!glIsTextureHandleResidentNV(mResourceHandle))
+		// 	glMakeTextureHandleResidentNV(mResourceHandle);
 	}
 
 	Texture2DArray::~Texture2DArray()
 	{
-		if (glIsTextureHandleResidentNV(mResourceHandle))
-			glMakeTextureHandleNonResidentNV(mResourceHandle);
+		// if (glIsTextureHandleResidentNV(mResourceHandle))
+		// 	glMakeTextureHandleNonResidentNV(mResourceHandle);
 		glDeleteTextures(1, &mTextureID);
 	}
 
@@ -73,8 +73,9 @@ namespace BHive
 		glBindTextureUnit(slot, 0);
 	}
 
-	void Texture2DArray::BindAsImage(uint32_t unit, uint32_t access, uint32_t level) const
+	void Texture2DArray::BindAsImage(uint32_t unit, EImageAccess image_access, uint32_t level) const
 	{
+		auto access = GetGLAccess(image_access);
 		glBindImageTexture(unit, mTextureID, level, GL_FALSE, 0, access, GetGLInternalFormat(mSpecification.InternalFormat));
 	}
 

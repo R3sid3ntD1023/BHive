@@ -17,7 +17,7 @@ namespace BHive
 	class AnimationClip;
 	class SkeletalPose;
 	class Framebuffer;
-	class PPlane;
+	class PQuad;
 
 	class SandboxLayer : public Layer
 	{
@@ -48,7 +48,7 @@ namespace BHive
 		Ref<SkeletalPose> mPose;
 
 		Ref<Framebuffer> mFramebuffer;
-		Ref<PPlane> mScreenQuad;
+		Ref<PQuad> mScreenQuad;
 		Ref<Shader> mScreenQuadShader;
 	};
 } // namespace BHive

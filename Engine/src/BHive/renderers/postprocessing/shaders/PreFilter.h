@@ -5,12 +5,9 @@ static const char *prefiler_comp = R"(
 
     layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-    layout(std430, binding = 8) uniform PreFilter
-    {
-        sampler2D uSrcTexture;
-        layout(r11f_g11f_b10f) image2D uOutput;
-        vec4 uThreshold;
-    };
+    layout(binding = 0 , r11f_g11f_b10f) uniform image2D uOutput;
+    layout(binding = 0) uniform sampler2D uSrcTexture;
+    layout(location = 0) uniform vec4 uThreshold;
 
     #define EPSILON 1.0e-4
 

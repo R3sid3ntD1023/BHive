@@ -75,8 +75,9 @@ layout(std140, binding = 1) uniform Material
 	vec4 Color;
 	float IOR;
 	float Reflective;
-	samplerCube uReflection;
 };
+
+layout(binding = 0) uniform samplerCube uReflection;
 
 layout(location = 0) out vec4 fColor;
 

@@ -47,7 +47,7 @@ void MeshComponent::Load(cereal::JSONInputArchive &ar)
 
 	if (auto texture = AssetManager::GetAsset<Texture2D>(Texture))
 	{
-		mShaderInstance->SetParameter("uTexture", texture->GetResourceHandle());
+		mShaderInstance->SetTexture("uTexture", texture);
 	}
 }
 

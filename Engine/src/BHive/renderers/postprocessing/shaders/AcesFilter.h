@@ -71,11 +71,8 @@ static const char *aces_comp = R"(
       return pow(result, vec3(2.2));
     }
 
-    layout(std430, binding = 11) uniform Aces
-    {
-        sampler2D uSrcTexture;
-        layout(r11f_g11f_b10f) image2D uOutput;
-    };
+    layout(binding = 0) uniform sampler2D uSrcTexture;
+    layout(binding = 0, r11f_g11f_b10f) uniform image2D uOutput;
 
     void main()
     {

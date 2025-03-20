@@ -148,7 +148,7 @@ namespace BHive
 		mMemoryAssets["5d95f7aa-36f2-4f5d-8b91-fe2163859429"] = CreateRef<PSphere>(1.f, 32, 32);
 		mMemoryAssets["ecdd6cfa-e368-4953-94f1-e9a7c0f307b5"] = Renderer::GetWhiteTexture();
 		mMemoryAssets["31d7563b-3025-4e86-9551-655affbe7380"] =
-			CreateRef<Texture2D>(&grey, 1, 1, FTextureSpecification{.Channels = 4, .InternalFormat = EFormat::RGBA8});
+			CreateRef<Texture2D>(1, 1, FTextureSpecification{.Channels = 4, .InternalFormat = EFormat::RGBA8}, &grey);
 		mMemoryAssets["1933c64d-fd73-4a3d-9406-e8c611d6a03b"] = Renderer::GetBlackTexture();
 	}
 

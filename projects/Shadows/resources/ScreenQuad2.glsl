@@ -19,14 +19,12 @@ void main()
 #type fragment
 
 #version 460 core
-#extension GL_ARB_bindless_texture : require
-#extension GL_NV_uniform_buffer_std430_layout : require
 
 layout(location = 0) in struct VS_OUT{
 	vec2 texCoord;
 } vs_in;
 
-layout(bindless_sampler) uniform sampler2D uTexture;
+layout(binding = 0) uniform sampler2D uTexture;
 
 layout(location = 0) out vec4 fColor;
 

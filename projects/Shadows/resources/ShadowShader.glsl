@@ -105,9 +105,9 @@ layout(location  = 0) in struct VS_OUT
 	vec3 Normal;
 } vs_in;
 
-layout(bindless_sampler) uniform sampler2DArrayShadow uDirectionalShadowMaps;
-layout(bindless_sampler) uniform samplerCubeArray uPointShadowMaps;
-layout(bindless_sampler) uniform sampler2DArray uSpotShadowMaps;
+layout(binding = 0) uniform sampler2DArrayShadow uDirectionalShadowMaps;
+layout(binding = 1) uniform samplerCubeArray uPointShadowMaps;
+layout(binding = 2) uniform sampler2DArray uSpotShadowMaps;
 
 layout(location = 0) out vec4 fColor;
 

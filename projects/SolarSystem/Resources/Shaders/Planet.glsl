@@ -73,8 +73,9 @@ layout(std430, binding = 3) uniform Material
 	vec3 uColor;
 	vec3 uEmission;
 	uint uFlags;
-	sampler2D uTexture;
 };
+
+layout(location = 0) uniform sampler2D uTexture;
 
 layout(std430, binding = 0) uniform CameraBuffer
 {
