@@ -66,6 +66,7 @@ namespace BHive
 		PhysicsComponent &GetPhysicsComponent();
 
 		void SetName(const std::string &name);
+		void SetTransform(const FTransform &transform);
 
 		void SetParent(GameObject *object);
 		void AddChild(GameObject *object);
@@ -82,6 +83,8 @@ namespace BHive
 		World *GetWorld() const { return mWorld; }
 		Ref<GameObject> GetParent() const;
 		std::unordered_set<Ref<GameObject>> GetChildren() const;
+
+		REFLECTABLEV()
 
 	private:
 		std::unordered_map<size_t, Ref<Component>> mComponents;

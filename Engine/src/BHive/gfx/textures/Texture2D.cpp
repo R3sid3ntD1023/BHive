@@ -108,29 +108,10 @@ namespace BHive
 		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mSpecification.WrapMode));
 
 		glGenerateTextureMipmap(mTextureID);
-
-		// mResourceHandle = glGetTextureHandleNV(mTextureID);
-
-		// if (!glIsTextureHandleResidentNV(mResourceHandle))
-		// 	glMakeTextureHandleResidentNV(mResourceHandle);
-
-		// if (mSpecification.ImageAccess)
-		// {
-		// 	mImageHandle =
-		// 		glGetImageHandleNV(mTextureID, 0, GL_FALSE, 0, GetGLInternalFormat(mSpecification.InternalFormat));
-		// 	if (!glIsImageHandleResidentNV(mImageHandle))
-		// 		glMakeImageHandleResidentNV(mImageHandle, GetGLAccess(mSpecification.ImageAccess.value()));
-		// }
 	}
 
 	void Texture2D::Release()
 	{
-
-		// if (mImageHandle && glIsImageHandleResidentNV(mImageHandle))
-		// 	glMakeImageHandleNonResidentNV(mImageHandle);
-
-		// if (glIsTextureHandleResidentNV(mResourceHandle))
-		// 	glMakeTextureHandleNonResidentNV(mResourceHandle);
 
 		glDeleteTextures(1, &mTextureID);
 	}

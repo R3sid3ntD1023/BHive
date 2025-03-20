@@ -7,6 +7,7 @@
 #include <imgui.h>
 #include <implot.h>
 #include <glfw/glfw3.h>
+#include <ImGuizmo.h>
 
 namespace BHive
 {
@@ -81,6 +82,7 @@ namespace BHive
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+		ImGuizmo::BeginFrame();
 	}
 
 	void ImGuiLayer::EndFrame()

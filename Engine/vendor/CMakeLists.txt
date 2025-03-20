@@ -95,6 +95,14 @@ FetchContent_Declare(
 )
 list( APPEND components imgui)
 
+FetchContent_Declare(
+    ImGuizmo
+    GIT_REPOSITORY https://github.com/R3sid3ntD1023/ImGuizmo.git
+    GIT_TAG master
+)
+
+list(APPEND components ImGuizmo)
+
 #stb
 FetchContent_Declare(
 	stb

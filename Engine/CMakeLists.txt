@@ -28,6 +28,7 @@ target_link_libraries(Engine
 	PUBLIC OpenAL::OpenAL
 	PUBLIC assimp::assimp 
 	PUBLIC imgui 
+	PUBLIC ImGuizmo
 	PUBLIC stb
 	PUBLIC waveparser
 	PUBLIC ReactPhysics3D::reactphysics3d 

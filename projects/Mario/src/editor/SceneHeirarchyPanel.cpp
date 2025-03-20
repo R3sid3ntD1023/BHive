@@ -32,6 +32,7 @@ namespace BHive
 			if (ImGui::MenuItem("Create Entity"))
 			{
 				auto new_obj = mWorld->CreateGameObject("New Object");
+				mSelectedObject = new_obj.get();
 			}
 
 			auto &entity_types = GetSpawnableEntites();
@@ -39,8 +40,10 @@ namespace BHive
 			{
 				if (ImGui::MenuItem(type.get_name().data()))
 				{
-					auto obj = type.create().get_value<Ref<GameObject>>();
+					auto world = mWorld.get();
+					auto obj = type.create({world}).get_value<Ref<GameObject>>();
 					mWorld->AddGameObject(obj);
+					mSelectedObject = obj.get();
 				}
 			}
 
@@ -60,13 +63,10 @@ namespace BHive
 		// 	ImGui::EndDragDropTarget();
 		// }
 
-		// if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
-		// {
-		// 	if (mClearSelection)
-		// 	{
-		// 		mClearSelection();
-		// 	}
-		// }
+		if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
+		{
+			mSelectedObject = nullptr;
+		}
 	}
 
 	void SceneHierarchyPanel::SetContext(const Ref<World> &world)
@@ -81,12 +81,11 @@ namespace BHive
 		ImGuiTreeNodeFlags flags =
 			ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
 
-		auto id = (uint64_t)obj->GetID();
 		bool selected = mSelectedObject == obj;
 
 		flags |= (selected ? ImGuiTreeNodeFlags_Selected : 0);
 
-		ImGui::PushID(id);
+		ImGui::PushID(obj);
 		bool opened = ImGui::TreeNodeEx(obj->GetName().c_str(), flags);
 
 		if (ImGui::IsItemClicked())

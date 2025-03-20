@@ -22,9 +22,7 @@ namespace BHive
 		virtual uint32_t GetHeight() const { return mHeight; }
 
 		virtual void SetData(const void *data, uint64_t size, uint32_t offsetX = 0, uint32_t offsetY = 0);
-		// virtual uint64_t GetResourceHandle() const { return mResourceHandle; }
 		virtual uint32_t GetRendererID() const { return mTextureID; }
-		// virtual uint64_t GetImageHandle() const { return mImageHandle; }
 
 		virtual void GenerateMipMaps() const;
 		virtual const FTextureSpecification &GetSpecification() const { return mSpecification; }
@@ -49,7 +47,6 @@ namespace BHive
 	private:
 		uint32_t mWidth = 0, mHeight = 0;
 		FTextureSpecification mSpecification;
-		// uint64_t mResourceHandle = 0, mImageHandle = 0;
 		uint32_t mTextureID = 0;
 	};
 

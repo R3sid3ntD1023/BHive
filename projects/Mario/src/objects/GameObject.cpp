@@ -58,6 +58,11 @@ namespace BHive
 		GetComponent<TagComponent>().Name = name;
 	}
 
+	void GameObject::SetTransform(const FTransform &transform)
+	{
+		GetComponent<TransformComponent>().Transform = transform;
+	}
+
 	void GameObject::SetParent(GameObject *object)
 	{
 		if (!object)
@@ -170,5 +175,10 @@ namespace BHive
 			children.insert(mWorld->GetGameObject(id));
 
 		return children;
+	}
+
+	REFLECT(GameObject)
+	{
+		BEGIN_REFLECT(GameObject) REFLECT_CONSTRUCTOR(World *);
 	}
 } // namespace BHive

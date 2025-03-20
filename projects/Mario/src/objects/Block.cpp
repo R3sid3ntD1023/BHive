@@ -62,4 +62,13 @@ namespace BHive
 		fb_component.FlipBook = flipbook;
 	}
 
+	REFLECT(Block)
+	{
+		BEGIN_REFLECT(Block)(META_DATA(ClassMetaData_Spawnable, true)) REFLECT_CONSTRUCTOR(World *);
+	}
+
+	REFLECT(QuestionBlock)
+	{
+		BEGIN_REFLECT(QuestionBlock)(META_DATA(ClassMetaData_Spawnable, true)) REFLECT_CONSTRUCTOR(World *);
+	}
 } // namespace BHive

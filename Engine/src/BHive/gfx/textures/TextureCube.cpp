@@ -38,17 +38,10 @@ namespace BHive
 		{
 			glGenerateTextureMipmap(mTextureID);
 		}
-
-		// mResourceHandle = glGetTextureHandleNV(mTextureID);
-
-		// if (!glIsTextureHandleResidentNV(mResourceHandle))
-		// 	glMakeTextureHandleResidentNV(mResourceHandle);
 	}
 
 	TextureCube::~TextureCube()
 	{
-		// if (glIsTextureHandleResidentNV(mResourceHandle))
-		// 	glMakeTextureHandleNonResidentNV(mResourceHandle);
 		glDeleteTextures(1, &mTextureID);
 	}
 

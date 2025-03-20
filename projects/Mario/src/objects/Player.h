@@ -20,6 +20,8 @@ namespace BHive
 
 		bool IsJumping();
 
+		REFLECTABLEV(GameObject)
+
 	private:
 		void OnCollisionEnter(struct ColliderComponent *component, GameObject *other);
 	};

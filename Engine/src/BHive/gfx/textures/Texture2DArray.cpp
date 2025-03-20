@@ -47,17 +47,10 @@ namespace BHive
 					mTextureID, GL_TEXTURE_COMPARE_FUNC, GetTextureCompareFunc(specification.CompareFunc.value()));
 			}
 		}
-
-		// mResourceHandle = glGetTextureHandleNV(mTextureID);
-
-		// if (!glIsTextureHandleResidentNV(mResourceHandle))
-		// 	glMakeTextureHandleResidentNV(mResourceHandle);
 	}
 
 	Texture2DArray::~Texture2DArray()
 	{
-		// if (glIsTextureHandleResidentNV(mResourceHandle))
-		// 	glMakeTextureHandleNonResidentNV(mResourceHandle);
 		glDeleteTextures(1, &mTextureID);
 	}
 

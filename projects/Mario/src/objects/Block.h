@@ -19,10 +19,14 @@ namespace BHive
 
 		void SetTiling(const glm::vec2 &tiling);
 		void SetSprite(const Ref<Sprite> &sprite);
+
+		REFLECTABLEV(GameObject)
 	};
 
 	struct QuestionBlock : public BlockBase
 	{
 		QuestionBlock(World *world);
+
+		REFLECTABLEV(BlockBase)
 	};
 } // namespace BHive
