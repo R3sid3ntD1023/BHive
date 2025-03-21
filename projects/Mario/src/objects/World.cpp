@@ -124,7 +124,7 @@ namespace BHive
 				continue;
 
 			ar(obj_type);
-			auto obj = obj_type.create({this}).get_value<Ref<GameObject>>();
+			auto obj = obj_type.create({mRegistry.create(), this}).get_value<Ref<GameObject>>();
 			obj->Load(ar);
 
 			AddGameObject(obj);
@@ -143,7 +143,7 @@ namespace BHive
 
 	void World::Update(float dt)
 	{
-		if (mIsRunning)
+		if (mIsRunning && !mIsPaused)
 		{
 			Simulate(dt);
 
@@ -159,6 +159,7 @@ namespace BHive
 				object->End();
 
 			mObjects.erase(object->GetID());
+			mRegistry.destroy((entt::entity)*object);
 		}
 
 		mDestoryedObjects.clear();
@@ -223,6 +224,11 @@ namespace BHive
 	{
 		PhysicsContext::get_context().destroyPhysicsWorld(mPhysicsWorld);
 		mPhysicsWorld = nullptr;
+	}
+
+	void World::SetPaused(bool paused)
+	{
+		mIsPaused = paused;
 	}
 
 	void World::RenderPhysicsWorld()

@@ -9,6 +9,7 @@
 #include "editor/EditorContentBrowser.h"
 #include "gfx/cameras/EditorCamera.h"
 #include "asset/EditorAssetManager.h"
+#include "Command.h"
 
 namespace BHive
 {
@@ -34,7 +35,7 @@ namespace BHive
 		uint32_t mGizmoMode = 0;
 		bool mSnappingEnabled{false};
 
-		std::unordered_map<uint32_t, std::function<void()>> mCommands;
+		std::unordered_map<FCommand, std::function<void()>> mCommands;
 
 		std::filesystem::path mCurrentWorldPath = "";
 

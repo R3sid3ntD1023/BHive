@@ -10,10 +10,11 @@
 
 namespace BHive
 {
+	using ComponentList = std::unordered_map<size_t, Component *>;
 
 	struct GameObject
 	{
-		GameObject(World *world);
+		GameObject(const entt::entity &handle, World *world);
 
 		virtual void Begin();
 		virtual void Update(float dt);
@@ -25,28 +26,27 @@ namespace BHive
 		{
 			ASSERT(!HasComponent<T>());
 
-			auto component = CreateRef<T>(std::forward<TArgs>(args)...);
-			component->mOwningObject = this;
-			auto pair = mComponents.emplace(typeid(T).hash_code(), component);
-			return component.get();
+			auto &component = mWorld->mRegistry.emplace<T>(mEntityHandle, std::forward<TArgs>(args)...);
+			RegisterComponent<T>(&component);
+			return &component;
 		}
 
 		template <typename T>
 		const T *GetComponent() const
 		{
 			ASSERT(HasComponent<T>());
-			return Cast<T>(mComponents.at(typeid(T).hash_code())).get();
+			return &mWorld->mRegistry.get<T>(mEntityHandle);
 		}
 
 		template <typename T>
 		T *GetComponent()
 		{
 			ASSERT(HasComponent<T>());
-			return Cast<T>(mComponents.at(typeid(T).hash_code())).get();
+			return &mWorld->mRegistry.get<T>(mEntityHandle);
 		}
 
 		template <typename... T>
-		auto GetComponents()
+		ComponentList GetComponents()
 		{
 			return mComponents;
 		}
@@ -55,13 +55,14 @@ namespace BHive
 		void RemoveComponent()
 		{
 			ASSERT(HasComponent<T>());
-			mComponents.erase(typeid(T).hash_code());
+			UnRegisterComponent<T>(GetComponent<T>());
+			mWorld->mRegistry.remove<T>(mEntityHandle);
 		}
 
 		template <typename T>
 		bool HasComponent() const
 		{
-			return mComponents.contains(typeid(T).hash_code());
+			return mWorld->mRegistry.all_of<T>(mEntityHandle);
 		}
 
 		PhysicsComponent &GetPhysicsComponent();
@@ -88,10 +89,33 @@ namespace BHive
 		Ref<GameObject> GetParent() const;
 		std::unordered_set<Ref<GameObject>> GetChildren() const;
 
+		operator entt::entity() const { return mEntityHandle; }
+
 		REFLECTABLEV()
 
 	private:
-		std::unordered_map<size_t, Ref<Component>> mComponents;
+		template <typename T>
+		size_t GetComponentHash() const
+		{
+			return typeid(T).hash_code();
+		}
+
+		template <typename T>
+		void RegisterComponent(Component *component)
+		{
+			component->mOwningObject = this;
+			mComponents.emplace(GetComponentHash<T>(), component);
+		}
+
+		template <typename T>
+		void UnRegisterComponent(Component *component)
+		{
+			mComponents.erase(GetComponentHash<T>());
+		}
+
+	private:
+		entt::entity mEntityHandle{entt::null};
+		ComponentList mComponents;
 		PhysicsComponent mPhysicsComponent;
 		World *mWorld = nullptr;
 	};

@@ -5,6 +5,7 @@
 #include "physics/PhysicsContext.h"
 #include "asset/Asset.h"
 #include <glm/glm.hpp>
+#include <entt/entt.hpp>
 
 namespace BHive
 {
@@ -29,6 +30,7 @@ namespace BHive
 		void SimulateBegin();
 		void Simulate(float dt);
 		void SimulateEnd();
+		void SetPaused(bool paused);
 
 		void RenderPhysicsWorld();
 		void Resize(uint32_t w, uint32_t h);
@@ -37,7 +39,7 @@ namespace BHive
 		Ref<T> CreateGameObject(const std::string &name)
 			requires(std::is_base_of_v<GameObject, T>)
 		{
-			auto object = CreateRef<T>(this);
+			auto object = CreateRef<T>(mRegistry.create(), this);
 			object->SetName(name);
 			AddGameObject(object);
 			return object;
@@ -68,6 +70,9 @@ namespace BHive
 		HitEventListener mHitListener;
 
 		bool mIsRunning = false;
+		bool mIsPaused = false;
+
+		entt::registry mRegistry;
 
 		friend class GameObject;
 	};

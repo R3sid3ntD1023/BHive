@@ -6,8 +6,9 @@
 
 namespace BHive
 {
-	GameObject::GameObject(World *world)
-		: mWorld(world)
+	GameObject::GameObject(const entt::entity &handle, World *world)
+		: mEntityHandle(handle),
+		  mWorld(world)
 	{
 		AddComponent<TagComponent>("New GameObject");
 		AddComponent<TransformComponent>();
@@ -218,6 +219,6 @@ namespace BHive
 
 	REFLECT(GameObject)
 	{
-		BEGIN_REFLECT(GameObject) REFLECT_CONSTRUCTOR(World *);
+		BEGIN_REFLECT(GameObject) REFLECT_CONSTRUCTOR(const entt::entity &, World *);
 	}
 } // namespace BHive

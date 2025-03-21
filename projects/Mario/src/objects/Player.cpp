@@ -10,8 +10,8 @@
 
 namespace BHive
 {
-	Player::Player(World *world)
-		: GameObject(world)
+	Player::Player(const entt::entity &handle, World *world)
+		: GameObject(handle, world)
 	{
 		auto &window = Application::Get().GetWindow();
 		auto &size = window.GetSize();
@@ -32,18 +32,17 @@ namespace BHive
 		auto bc = GetComponent<BoxComponent>();
 		bc->Extents = {.5f, .5f, .5f};
 		bc->OnCollisionEnter.bind(this, &Player::OnCollisionEnter);
+	}
 
-		Ref<InputContext> context;
+	void Player::Begin()
+	{
+		GameObject::Begin();
+
 		auto input = GetComponent<InputComponent>();
-		input->Context = context = CreateRef<InputContext>();
 
-		context->add_action("Jump", EKey::Space);
-		context->add_action("MoveLeft", EKey::A);
-		context->add_action("MoveRight", EKey::D);
-
-		context->bind_key("Jump", EventStatus::PRESS, this, &Player::Jump);
-		context->bind_axis("MoveLeft", this, &Player::Move, -1.f);
-		context->bind_axis("MoveRight", this, &Player::Move, 1.f);
+		input->GetInstance()->bind_key("Jump", EventStatus::PRESS, this, &Player::Jump);
+		input->GetInstance()->bind_axis("MoveLeft", this, &Player::Move, -1.f);
+		input->GetInstance()->bind_axis("MoveRight", this, &Player::Move, 1.f);
 	}
 
 	void Player::Jump(const InputValue &value)
@@ -88,6 +87,6 @@ namespace BHive
 
 	REFLECT(Player)
 	{
-		BEGIN_REFLECT(Player)(META_DATA(ClassMetaData_Spawnable, true)) REFLECT_CONSTRUCTOR(World *);
+		BEGIN_REFLECT(Player)(META_DATA(ClassMetaData_Spawnable, true)) REFLECT_CONSTRUCTOR(const entt::entity &, World *);
 	}
 } // namespace BHive

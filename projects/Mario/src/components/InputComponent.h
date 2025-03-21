@@ -11,9 +11,7 @@ namespace BHive
 		Ref<InputContext> Context;
 
 		void CreateInstance();
-
-		InputContext *GetContext() const { return mContextInstance; }
-
+		InputContext *GetInstance() const { return mContextInstance; }
 		void DestroyInstance();
 
 		void Begin() override;

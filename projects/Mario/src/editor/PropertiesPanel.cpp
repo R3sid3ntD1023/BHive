@@ -27,7 +27,7 @@ namespace BHive
 	{
 		for (auto &component : obj->GetComponents())
 		{
-			DrawComponent(component.second.get());
+			DrawComponent(component.second);
 		}
 	}
 

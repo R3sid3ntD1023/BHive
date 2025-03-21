@@ -213,18 +213,18 @@ namespace BHive
 
 	void EditorLayer::SetupDefaultCommands()
 	{
-		mCommands.emplace(Key::Q, [&]() { mGizmoOperation = 0; });
-		mCommands.emplace(Key::W, [&]() { mGizmoOperation = ImGuizmo::TRANSLATE; });
-		mCommands.emplace(Key::E, [&]() { mGizmoOperation = ImGuizmo::ROTATE; });
-		mCommands.emplace(Key::R, [&]() { mGizmoOperation = ImGuizmo::SCALE; });
-		mCommands.emplace(Key::T, [&]() { mGizmoOperation = ImGuizmo::UNIVERSAL; });
-		mCommands.emplace(Key::L, [&]() { mGizmoMode = ImGuizmo::LOCAL; });
-		mCommands.emplace(Key::K, [&]() { mGizmoMode = ImGuizmo::WORLD; });
+		mCommands.emplace(FCommand{Key::Q}, [&]() { mGizmoOperation = 0; });
+		mCommands.emplace(FCommand{Key::W}, [&]() { mGizmoOperation = ImGuizmo::TRANSLATE; });
+		mCommands.emplace(FCommand{Key::E}, [&]() { mGizmoOperation = ImGuizmo::ROTATE; });
+		mCommands.emplace(FCommand{Key::R}, [&]() { mGizmoOperation = ImGuizmo::SCALE; });
+		mCommands.emplace(FCommand{Key::T}, [&]() { mGizmoOperation = ImGuizmo::UNIVERSAL; });
+		mCommands.emplace(FCommand{Key::L}, [&]() { mGizmoMode = ImGuizmo::LOCAL; });
+		mCommands.emplace(FCommand{Key::K}, [&]() { mGizmoMode = ImGuizmo::WORLD; });
 
-		mCommands.emplace(Key::O | Mod::Control, [&]() { LoadWorld(); });
-		mCommands.emplace(Key::N | Mod::Control, [&]() { CreateWorld(); });
-		mCommands.emplace(Key::S | Mod::Control, [&]() { SaveWorld(); });
-		mCommands.emplace(Key::S | Mod::Control | Mod::Alt, [&]() { SaveWorldAs(); });
+		mCommands.emplace(FCommand{Key::O, Mod::Control}, [&]() { LoadWorld(); });
+		mCommands.emplace(FCommand{Key::N, Mod::Control}, [&]() { CreateWorld(); });
+		mCommands.emplace(FCommand{Key::S, Mod::Control}, [&]() { SaveWorld(); });
+		mCommands.emplace(FCommand{Key::S, Mod::Control | Mod::Alt}, [&]() { SaveWorldAs(); });
 	}
 
 	bool EditorLayer::OnWindowResize(WindowResizeEvent &e)
@@ -237,7 +237,7 @@ namespace BHive
 	{
 		if (e.Action == EventStatus::PRESS)
 		{
-			int32_t command_code = e.Key | e.Mods;
+			FCommand command_code = {e.Key, e.Mods};
 			if (mCommands.contains(command_code))
 			{
 				auto &command = mCommands.at(command_code);

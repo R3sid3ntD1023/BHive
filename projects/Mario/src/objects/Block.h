@@ -8,12 +8,12 @@ namespace BHive
 
 	struct BlockBase : public GameObject
 	{
-		BlockBase(World *world);
+		BlockBase(const entt::entity &handle, World *world);
 	};
 
 	struct Block : public BlockBase
 	{
-		Block(World *world);
+		Block(const entt::entity &handle, World *world);
 
 		void SetSize(const glm::vec2 &size);
 
@@ -25,7 +25,7 @@ namespace BHive
 
 	struct QuestionBlock : public BlockBase
 	{
-		QuestionBlock(World *world);
+		QuestionBlock(const entt::entity &handle, World *world);
 
 		REFLECTABLEV(BlockBase)
 	};
