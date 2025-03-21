@@ -15,9 +15,10 @@ namespace BHive
 
 		glm::vec2 Tiling{1, 1};
 
-		Ref<FlipBook> FlipBook;
+		Ref<FlipBook> FlipBookAsset;
 
 		virtual void Begin() override;
+		virtual void End() override;
 		virtual void Update(float dt) override;
 		virtual void Render() override;
 
@@ -25,6 +26,9 @@ namespace BHive
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(Component)
+
+	private:
+		FlipBook *Instance = nullptr;
 	};
 
 } // namespace BHive

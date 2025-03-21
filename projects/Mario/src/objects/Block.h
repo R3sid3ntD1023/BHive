@@ -27,6 +27,6 @@ namespace BHive
 	{
 		QuestionBlock(const entt::entity &handle, World *world);
 
-		REFLECTABLEV(BlockBase)
+		REFLECTABLEV(GameObject)
 	};
 } // namespace BHive

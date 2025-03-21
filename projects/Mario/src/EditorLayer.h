@@ -57,6 +57,12 @@ namespace BHive
 		void SaveWorld();
 		void SaveWorldAs();
 		void LoadWorld();
+		void SetActiveWorld(const Ref<World> &world);
+
+#pragma region GUI
+		void ViewportGUI();
+
+#pragma endregion
 	};
 
 } // namespace BHive

@@ -44,22 +44,7 @@ namespace BHive
 	QuestionBlock::QuestionBlock(const entt::entity &handle, World *world)
 		: BlockBase(handle, world)
 	{
-		auto fb_component = AddComponent<FlipBookComponent>();
-
-		auto texture = TextureLoader::Import(RESOURCE_PATH "textures/items.png");
-		Ref<Sprite> sprites[3] = {};
-
-		sprites[0] = Sprite::Create(texture, FSpriteGenerator{{0, 4}, {16, 16}, {1, 1}});
-		sprites[1] = Sprite::Create(texture, FSpriteGenerator{{1, 4}, {16, 16}, {1, 1}});
-		sprites[2] = Sprite::Create(texture, FSpriteGenerator{{2, 4}, {16, 16}, {1, 1}});
-
-		auto flipbook = CreateRef<FlipBook>();
-		flipbook->AddFrame(sprites[0], 5);
-		flipbook->AddFrame(sprites[1], 5);
-		flipbook->AddFrame(sprites[2], 5);
-		flipbook->SetLoop(true);
-
-		fb_component->FlipBook = flipbook;
+		AddComponent<FlipBookComponent>();
 	}
 
 	REFLECT(Block)

@@ -32,7 +32,7 @@ namespace BHive
 		void Simulate(float dt);
 		void SimulateEnd();
 		void SetPaused(bool paused);
-		Ref<World> Copy();
+		Ref<World> Copy() const;
 
 		void RenderPhysicsWorld();
 		void Resize(uint32_t w, uint32_t h);

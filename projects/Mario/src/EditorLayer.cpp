@@ -32,8 +32,7 @@ namespace BHive
 				{
 					SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().Clear();
 					mEditorWorld = asset;
-					mActiveWorld = mEditorWorld;
-					mSceneHeirarchyPanel->SetContext(mActiveWorld);
+					SetActiveWorld(mEditorWorld);
 				}
 			});
 
@@ -48,10 +47,6 @@ namespace BHive
 		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 		mFramebuffer = CreateRef<Framebuffer>(specs);
 
-		mEditorWorld = CreateRef<World>();
-		mEditorWorld->SetName("EditorWorld");
-		mActiveWorld = mEditorWorld;
-
 		RenderCommand::ClearColor(.2f, .2f, .2f);
 
 		float aspect = size.x / (float)size.y;
@@ -60,10 +55,11 @@ namespace BHive
 		SubSystemContext::Get().AddSubSystem<SelectionSubSystem>();
 		auto &window_system = SubSystemContext::Get().AddSubSystem<WindowSubSystem>();
 		mSceneHeirarchyPanel = window_system.CreateWindow<SceneHierarchyPanel>();
-		mSceneHeirarchyPanel->SetContext(mActiveWorld);
 		mPropertiesPanel = window_system.CreateWindow<PropertiesPanel>();
 
 		mContentBrowser = window_system.CreateWindow<EditorContentBrowser<EditorAssetManager>>(RESOURCE_PATH);
+
+		CreateWorld();
 
 		FProjectConfiguration config{};
 		config.mName = "Mario";
@@ -163,25 +159,11 @@ namespace BHive
 		{
 			if (ImGui::BeginMenuBar())
 			{
-				auto label = mActiveWorld->IsRunning() ? "Stop" : "Play";
-				if (ImGui::Button(label))
-				{
-					if (mActiveWorld->IsRunning())
-					{
-						mActiveWorld->End();
-						mActiveWorld = mEditorWorld;
-						mSceneHeirarchyPanel->SetContext(mActiveWorld);
-					}
-					else
-					{
-						mActiveWorld = mEditorWorld->Copy();
-						mSceneHeirarchyPanel->SetContext(mActiveWorld);
-						mActiveWorld->Begin();
-					}
-				}
+				ViewportGUI();
 
 				ImGui::EndMenuBar();
 			}
+
 			auto size = ImGui::GetContentRegionAvail();
 			auto viewport_min_region = ImGui::GetWindowContentRegionMin();
 			auto viewport_max_region = ImGui::GetWindowContentRegionMax();
@@ -279,8 +261,8 @@ namespace BHive
 		SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().Clear();
 
 		mEditorWorld = CreateRef<World>();
-		mActiveWorld = mEditorWorld;
-		mSceneHeirarchyPanel->SetContext(mActiveWorld);
+		mEditorWorld->SetName("New World");
+		SetActiveWorld(mEditorWorld);
 
 		mCurrentWorldPath = "";
 	}
@@ -317,9 +299,32 @@ namespace BHive
 		AssetFactory::Import(asset, path);
 
 		mEditorWorld = Cast<World>(asset);
-		mActiveWorld = mEditorWorld;
-		mSceneHeirarchyPanel->SetContext(mActiveWorld);
+		SetActiveWorld(mEditorWorld);
 		mCurrentWorldPath = path;
+	}
+
+	void EditorLayer::SetActiveWorld(const Ref<World> &world)
+	{
+		mActiveWorld = world;
+		mSceneHeirarchyPanel->SetContext(mActiveWorld);
+	}
+
+	void EditorLayer::ViewportGUI()
+	{
+		auto label = mActiveWorld->IsRunning() ? "Stop" : "Play";
+		if (ImGui::Button(label))
+		{
+			if (mActiveWorld->IsRunning())
+			{
+				mActiveWorld->End();
+				SetActiveWorld(mEditorWorld);
+			}
+			else
+			{
+				SetActiveWorld(mEditorWorld->Copy());
+				mActiveWorld->Begin();
+			}
+		}
 	}
 
 } // namespace BHive

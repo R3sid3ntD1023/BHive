@@ -250,7 +250,7 @@ namespace BHive
 		mIsPaused = paused;
 	}
 
-	Ref<World> World::Copy()
+	Ref<World> World::Copy() const
 	{
 		auto new_world = CreateRef<World>(*this);
 		new_world->SetName("Instance");
