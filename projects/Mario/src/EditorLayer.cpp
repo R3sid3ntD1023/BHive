@@ -32,7 +32,8 @@ namespace BHive
 				{
 					SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().Clear();
 					mEditorWorld = asset;
-					mSceneHeirarchyPanel->SetContext(mEditorWorld);
+					mActiveWorld = mEditorWorld;
+					mSceneHeirarchyPanel->SetContext(mActiveWorld);
 				}
 			});
 
@@ -49,6 +50,7 @@ namespace BHive
 
 		mEditorWorld = CreateRef<World>();
 		mEditorWorld->SetName("EditorWorld");
+		mActiveWorld = mEditorWorld;
 
 		RenderCommand::ClearColor(.2f, .2f, .2f);
 
@@ -58,7 +60,7 @@ namespace BHive
 		SubSystemContext::Get().AddSubSystem<SelectionSubSystem>();
 		auto &window_system = SubSystemContext::Get().AddSubSystem<WindowSubSystem>();
 		mSceneHeirarchyPanel = window_system.CreateWindow<SceneHierarchyPanel>();
-		mSceneHeirarchyPanel->SetContext(mEditorWorld);
+		mSceneHeirarchyPanel->SetContext(mActiveWorld);
 		mPropertiesPanel = window_system.CreateWindow<PropertiesPanel>();
 
 		mContentBrowser = window_system.CreateWindow<EditorContentBrowser<EditorAssetManager>>(RESOURCE_PATH);
@@ -87,7 +89,8 @@ namespace BHive
 			mFramebuffer->Resize(mViewportSize.x, mViewportSize.y);
 		}
 
-		mEditorCamera.ProcessInput();
+		if (mViewportHovered)
+			mEditorCamera.ProcessInput();
 
 		Renderer::SubmitCamera(mEditorCamera.GetProjection(), mEditorCamera.GetView());
 
@@ -97,7 +100,7 @@ namespace BHive
 
 		Renderer::Begin();
 
-		mEditorWorld->Update(dt);
+		mActiveWorld->Update(dt);
 
 		LineRenderer::DrawGrid(FGrid{.color = 0x808080ff, .stepcolor = 0x808080ff});
 
@@ -108,7 +111,8 @@ namespace BHive
 
 	void EditorLayer::OnEvent(Event &e)
 	{
-		mEditorCamera.OnEvent(e);
+		if (mViewportHovered)
+			mEditorCamera.OnEvent(e);
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch(this, &EditorLayer::OnWindowResize);
@@ -155,15 +159,36 @@ namespace BHive
 		SubSystemContext::Get().GetSubSystem<WindowSubSystem>().UpdateWindows();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-		if (ImGui::Begin("Viewport", &viewport_status))
+		if (ImGui::Begin("Viewport", &viewport_status, ImGuiWindowFlags_MenuBar))
 		{
+			if (ImGui::BeginMenuBar())
+			{
+				auto label = mActiveWorld->IsRunning() ? "Stop" : "Play";
+				if (ImGui::Button(label))
+				{
+					if (mActiveWorld->IsRunning())
+					{
+						mActiveWorld->End();
+						mActiveWorld = mEditorWorld;
+						mSceneHeirarchyPanel->SetContext(mActiveWorld);
+					}
+					else
+					{
+						mActiveWorld = mEditorWorld->Copy();
+						mSceneHeirarchyPanel->SetContext(mActiveWorld);
+						mActiveWorld->Begin();
+					}
+				}
+
+				ImGui::EndMenuBar();
+			}
 			auto size = ImGui::GetContentRegionAvail();
 			auto viewport_min_region = ImGui::GetWindowContentRegionMin();
 			auto viewport_max_region = ImGui::GetWindowContentRegionMax();
 			auto viewport_offset = ImGui::GetWindowPos();
-			bool hovered = ImGui::IsWindowHovered();
-			bool focused = ImGui::IsWindowFocused();
-			Application::Get().GetImGuiLayer().BlockEvents(!(hovered && focused));
+			mViewportHovered = ImGui::IsWindowHovered();
+			mViewportFocused = ImGui::IsWindowFocused();
+			Application::Get().GetImGuiLayer().BlockEvents(!(mViewportHovered && mViewportFocused));
 
 			mViewportSize = {size.x, size.y};
 			mViewportBounds[0] = {viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y};
@@ -254,7 +279,8 @@ namespace BHive
 		SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().Clear();
 
 		mEditorWorld = CreateRef<World>();
-		mSceneHeirarchyPanel->SetContext(mEditorWorld);
+		mActiveWorld = mEditorWorld;
+		mSceneHeirarchyPanel->SetContext(mActiveWorld);
 
 		mCurrentWorldPath = "";
 	}
@@ -291,7 +317,8 @@ namespace BHive
 		AssetFactory::Import(asset, path);
 
 		mEditorWorld = Cast<World>(asset);
-		mSceneHeirarchyPanel->SetContext(mEditorWorld);
+		mActiveWorld = mEditorWorld;
+		mSceneHeirarchyPanel->SetContext(mActiveWorld);
 		mCurrentWorldPath = path;
 	}
 

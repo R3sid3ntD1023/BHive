@@ -32,6 +32,14 @@ namespace BHive
 		}
 
 		template <typename T>
+		T *EmplaceOrReplaceComponent(const Component &srcComponent)
+		{
+			auto &component = mWorld->mRegistry.emplace_or_replace<T>(mEntityHandle, static_cast<const T &>(srcComponent));
+			RegisterComponent<T>(&component);
+			return &component;
+		}
+
+		template <typename T>
 		const T *GetComponent() const
 		{
 			ASSERT(HasComponent<T>());
@@ -45,11 +53,7 @@ namespace BHive
 			return &mWorld->mRegistry.get<T>(mEntityHandle);
 		}
 
-		template <typename... T>
-		ComponentList GetComponents()
-		{
-			return mComponents;
-		}
+		const ComponentList &GetComponents() const { return mComponents; }
 
 		template <typename T>
 		void RemoveComponent()
@@ -125,14 +129,19 @@ namespace BHive
 #define REMOVE_COMPONENT_FUNCTION_NAME "RemoveComponent"
 #define HAS_COMPONENT_FUNCTION_NAME "HasComponent"
 #define GET_COMPONENT_FUNCTION_NAME "GetComponent"
+#define EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME "EmplaceOrReplaceComponent"
 
 #define ADD_COMPONENT_FUNCTION() REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::AddComponent<T>)
 #define HAS_COMPONENT_FUNCTION() REFLECT_METHOD(HAS_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::HasComponent<T>)
 #define REMOVE_COMPONENT_FUNCTION() REFLECT_METHOD(REMOVE_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::RemoveComponent<T>)
 #define GET_COMPONENT_FUNCTION() \
 	REFLECT_METHOD(GET_COMPONENT_FUNCTION_NAME, rttr::select_overload<T *()>(&::BHive::GameObject::GetComponent<T>))
+#define EMPLACE_OR_REPLACE_COMPONENT_FUNCTION() \
+	REFLECT_METHOD(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::EmplaceOrReplaceComponent<T>)
+
 #define COMPONENT_IMPL()        \
 	ADD_COMPONENT_FUNCTION()    \
 	HAS_COMPONENT_FUNCTION()    \
 	REMOVE_COMPONENT_FUNCTION() \
-	GET_COMPONENT_FUNCTION()
+	GET_COMPONENT_FUNCTION()    \
+	EMPLACE_OR_REPLACE_COMPONENT_FUNCTION()

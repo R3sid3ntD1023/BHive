@@ -17,6 +17,7 @@ namespace BHive
 	{
 	public:
 		World();
+		World(const World &world);
 		~World();
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
@@ -31,6 +32,7 @@ namespace BHive
 		void Simulate(float dt);
 		void SimulateEnd();
 		void SetPaused(bool paused);
+		Ref<World> Copy();
 
 		void RenderPhysicsWorld();
 		void Resize(uint32_t w, uint32_t h);
@@ -49,6 +51,8 @@ namespace BHive
 
 		Ref<GameObject> GetGameObject(const UUID &id) const;
 
+		entt::entity CreateEntity();
+
 		const ObjectList &GetGameObjects() const { return mObjects; }
 
 		void Destroy(const UUID &id);
@@ -56,6 +60,9 @@ namespace BHive
 		void RayCast(const glm::vec3 &start, const glm::vec3 &end, uint16_t categoryMasks = 65535U);
 
 		rp3d::PhysicsWorld *GetPhysicsWorld() const { return mPhysicsWorld; }
+
+		bool IsRunning() const { return mIsRunning; }
+		bool IsPaused() const { return mIsPaused; }
 
 		REFLECTABLEV(Asset);
 

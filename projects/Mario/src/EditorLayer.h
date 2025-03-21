@@ -20,6 +20,7 @@ namespace BHive
 	private:
 		Ref<Framebuffer> mFramebuffer;
 		Ref<World> mEditorWorld;
+		Ref<World> mActiveWorld;
 
 		Ref<SceneHierarchyPanel> mSceneHeirarchyPanel;
 		Ref<PropertiesPanel> mPropertiesPanel;
@@ -30,6 +31,7 @@ namespace BHive
 
 		glm::ivec2 mViewportSize{};
 		glm::ivec2 mViewportBounds[2] = {};
+		bool mViewportHovered{false}, mViewportFocused{false};
 
 		uint32_t mGizmoOperation = 0;
 		uint32_t mGizmoMode = 0;

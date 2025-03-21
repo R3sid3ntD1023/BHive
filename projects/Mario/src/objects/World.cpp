@@ -13,6 +13,15 @@
 
 namespace BHive
 {
+	void CopyComponents(const Ref<GameObject> &src, Ref<GameObject> &dst)
+	{
+		for (auto &[typehash, component] : src->GetComponents())
+		{
+			auto type = component->get_type();
+			type.get_method(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME).invoke(dst, *component);
+		}
+	}
+
 	World::World()
 	{
 		mCollisionListener.OnContact.bind(
@@ -86,8 +95,18 @@ namespace BHive
 			});
 	}
 
+	World::World(const World &world)
+		: Asset(world)
+	{
+	}
+
 	World::~World()
 	{
+	}
+
+	entt::entity World::CreateEntity()
+	{
+		return mRegistry.create();
 	}
 
 	void World::Save(cereal::BinaryOutputArchive &ar) const
@@ -229,6 +248,26 @@ namespace BHive
 	void World::SetPaused(bool paused)
 	{
 		mIsPaused = paused;
+	}
+
+	Ref<World> World::Copy()
+	{
+		auto new_world = CreateRef<World>(*this);
+		new_world->SetName("Instance");
+
+		auto &dst_registry = new_world->mRegistry;
+
+		auto &objects = GetGameObjects();
+
+		for (auto &[id, src_obj] : objects)
+		{
+			auto type = src_obj->get_type();
+			auto new_obj = type.create({dst_registry.create(), new_world.get()}).convert<Ref<GameObject>>();
+			CopyComponents(src_obj, new_obj);
+			new_world->AddGameObject(new_obj);
+		}
+
+		return new_world;
 	}
 
 	void World::RenderPhysicsWorld()
