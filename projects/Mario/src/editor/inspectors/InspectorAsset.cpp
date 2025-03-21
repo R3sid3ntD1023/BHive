@@ -72,7 +72,7 @@ namespace BHive
 		{
 			if (auto payload = ImGui::AcceptDragDropPayload(ASSET_DRAG_DROP_NAME))
 			{
-				auto handle = *(AssetHandle *)payload->Data;
+				auto handle = *(UUID *)payload->Data;
 				auto meta_data = asset_manager->GetMetaData(handle);
 				if (meta_data.Type == type || meta_data.Type.is_derived_from(type))
 				{

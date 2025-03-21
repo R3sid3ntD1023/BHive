@@ -2,6 +2,7 @@
 
 #include "Component.h"
 #include "core/Core.h"
+#include "objects/GameObject.h"
 
 namespace BHive
 {
@@ -18,12 +19,15 @@ namespace BHive
 		{
 		}
 
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override { ar(Name, Groups); }
+		virtual void Load(cereal::BinaryInputArchive &ar) override { ar(Name, Groups); }
+
 		REFLECTABLEV(Component)
 	};
 
 	REFLECT(TagComponent)
 	{
-		BEGIN_REFLECT(TagComponent) REFLECT_PROPERTY(Name) REFLECT_PROPERTY(Groups);
+		BEGIN_REFLECT(TagComponent) REFLECT_PROPERTY(Name) REFLECT_PROPERTY(Groups) COMPONENT_IMPL();
 	}
 
 } // namespace BHive

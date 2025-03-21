@@ -3,6 +3,7 @@
 #include "Component.h"
 #include "core/Core.h"
 #include "core/UUID.h"
+#include "objects/GameObject.h"
 
 namespace BHive
 {
@@ -11,13 +12,16 @@ namespace BHive
 		UUID Parent = UUID::Null;
 		std::unordered_set<UUID> Children;
 
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override { ar(Parent, Children); };
+		virtual void Load(cereal::BinaryInputArchive &ar) override { ar(Parent, Children); }
+
 		REFLECTABLEV(Component)
 	};
 
 	REFLECT(RelationshipComponent)
 	{
 		BEGIN_REFLECT(RelationshipComponent)
-		REFLECT_PROPERTY_READ_ONLY("Parent", Parent) REFLECT_PROPERTY_READ_ONLY("Children", Children);
+		REFLECT_PROPERTY_READ_ONLY("Parent", Parent) REFLECT_PROPERTY_READ_ONLY("Children", Children) COMPONENT_IMPL();
 	}
 
 } // namespace BHive

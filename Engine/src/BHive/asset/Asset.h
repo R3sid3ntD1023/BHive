@@ -1,8 +1,8 @@
 #pragma once
 
-#include "AssetHandle.h"
 #include "AssetType.h"
 #include "core/Core.h"
+#include "core/UUID.h"
 #include "core/reflection/Reflection.h"
 #include "core/serialization/Serialization.h"
 #include "TAssetHandler.h"
@@ -25,17 +25,17 @@ namespace BHive
 
 		const std::string &GetName() const { return mName; }
 
-		static AssetHandle GetHandle(const Ref<Asset> &asset) { return GetHandle(asset.get()); }
+		static UUID GetHandle(const Ref<Asset> &asset) { return GetHandle(asset.get()); }
 
-		static AssetHandle GetHandle(const Asset *asset) { return asset ? asset->GetHandle() : AssetHandle::Null; }
+		static UUID GetHandle(const Asset *asset) { return asset ? asset->GetHandle() : UUID::Null; }
 
-		const AssetHandle &GetHandle() const { return mHandle; }
+		const UUID &GetHandle() const { return mHandle; }
 
 		REFLECTABLEV()
 
 	private:
 		std::string mName;
-		AssetHandle mHandle;
+		UUID mHandle;
 	};
 
 } // namespace BHive

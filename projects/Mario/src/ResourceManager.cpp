@@ -35,7 +35,7 @@ namespace BHive
 		return false;
 	}
 
-	Ref<Asset> ResourceManager::GetAsset(AssetHandle handle)
+	Ref<Asset> ResourceManager::GetAsset(UUID handle)
 	{
 		if (IsMemoryAsset(handle))
 		{
@@ -60,17 +60,17 @@ namespace BHive
 		return asset;
 	}
 
-	bool ResourceManager::IsAssetHandleValid(AssetHandle handle) const
+	bool ResourceManager::IsAssetHandleValid(UUID handle) const
 	{
 		return mMetaData.contains(handle);
 	}
 
-	bool ResourceManager::IsAssetLoaded(AssetHandle handle) const
+	bool ResourceManager::IsAssetLoaded(UUID handle) const
 	{
 		return mLoadedAssets.contains(handle) && mLoadedAssets.at(handle);
 	}
 
-	AssetType ResourceManager::GetAssetType(AssetHandle handle) const
+	AssetType ResourceManager::GetAssetType(UUID handle) const
 	{
 		static FAssetMetaData null_data{};
 
@@ -104,7 +104,7 @@ namespace BHive
 		ar(mMetaData);
 	}
 
-	bool ResourceManager::IsMemoryAsset(AssetHandle handle) const
+	bool ResourceManager::IsMemoryAsset(UUID handle) const
 	{
 		return mMemoryAssets.contains(handle);
 	}

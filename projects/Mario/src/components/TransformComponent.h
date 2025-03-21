@@ -2,12 +2,16 @@
 
 #include "Component.h"
 #include "math/Transform.h"
+#include "objects/GameObject.h"
 
 namespace BHive
 {
 	struct TransformComponent : public Component
 	{
 		FTransform Transform{};
+
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override { ar(Transform); }
+		virtual void Load(cereal::BinaryInputArchive &ar) override { ar(Transform); }
 
 		REFLECTABLEV(Component)
 	};
@@ -22,7 +26,7 @@ namespace BHive
 
 	REFLECT(TransformComponent)
 	{
-		BEGIN_REFLECT(TransformComponent) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Transform);
+		BEGIN_REFLECT(TransformComponent) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Transform) COMPONENT_IMPL();
 	}
 
 } // namespace BHive

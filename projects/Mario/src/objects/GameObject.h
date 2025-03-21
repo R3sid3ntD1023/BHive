@@ -6,6 +6,7 @@
 #include "core/UUID.h"
 #include "math/Transform.h"
 #include "World.h"
+#include "core/serialization/Serialization.h"
 
 namespace BHive
 {
@@ -20,28 +21,28 @@ namespace BHive
 		virtual void End();
 
 		template <typename T, typename... TArgs>
-		T &AddComponent(TArgs &&...args)
+		T *AddComponent(TArgs &&...args)
 		{
 			ASSERT(!HasComponent<T>());
 
 			auto component = CreateRef<T>(std::forward<TArgs>(args)...);
 			component->mOwningObject = this;
 			auto pair = mComponents.emplace(typeid(T).hash_code(), component);
-			return *component;
+			return component.get();
 		}
 
 		template <typename T>
-		const T &GetComponent() const
+		const T *GetComponent() const
 		{
 			ASSERT(HasComponent<T>());
-			return static_cast<T &>(*mComponents.at(typeid(T).hash_code()));
+			return Cast<T>(mComponents.at(typeid(T).hash_code())).get();
 		}
 
 		template <typename T>
-		T &GetComponent()
+		T *GetComponent()
 		{
 			ASSERT(HasComponent<T>());
-			return static_cast<T &>(*mComponents.at(typeid(T).hash_code()));
+			return Cast<T>(mComponents.at(typeid(T).hash_code())).get();
 		}
 
 		template <typename... T>
@@ -68,6 +69,9 @@ namespace BHive
 		void SetName(const std::string &name);
 		void SetTransform(const FTransform &transform);
 
+		virtual void Save(cereal::BinaryOutputArchive &ar) const;
+		virtual void Load(cereal::BinaryInputArchive &ar);
+
 		void SetParent(GameObject *object);
 		void AddChild(GameObject *object);
 		void RemoveChild(GameObject *object);
@@ -92,3 +96,19 @@ namespace BHive
 		World *mWorld = nullptr;
 	};
 } // namespace BHive
+
+#define ADD_COMPONENT_FUNCTION_NAME "AddComponent"
+#define REMOVE_COMPONENT_FUNCTION_NAME "RemoveComponent"
+#define HAS_COMPONENT_FUNCTION_NAME "HasComponent"
+#define GET_COMPONENT_FUNCTION_NAME "GetComponent"
+
+#define ADD_COMPONENT_FUNCTION() REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::AddComponent<T>)
+#define HAS_COMPONENT_FUNCTION() REFLECT_METHOD(HAS_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::HasComponent<T>)
+#define REMOVE_COMPONENT_FUNCTION() REFLECT_METHOD(REMOVE_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::RemoveComponent<T>)
+#define GET_COMPONENT_FUNCTION() \
+	REFLECT_METHOD(GET_COMPONENT_FUNCTION_NAME, rttr::select_overload<T *()>(&::BHive::GameObject::GetComponent<T>))
+#define COMPONENT_IMPL()        \
+	ADD_COMPONENT_FUNCTION()    \
+	HAS_COMPONENT_FUNCTION()    \
+	REMOVE_COMPONENT_FUNCTION() \
+	GET_COMPONENT_FUNCTION()

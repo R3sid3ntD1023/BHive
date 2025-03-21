@@ -13,8 +13,7 @@
 
 namespace BHive
 {
-	World::World(const std::string &name)
-		: mName(name)
+	World::World()
 	{
 		mCollisionListener.OnContact.bind(
 			[](const rp3d::CollisionCallback::ContactPair &p)
@@ -91,6 +90,47 @@ namespace BHive
 	{
 	}
 
+	void World::Save(cereal::BinaryOutputArchive &ar) const
+	{
+		Asset::Save(ar);
+
+		ar(mObjects.size());
+		for (auto &[id, obj] : mObjects)
+		{
+			ar(obj ? true : false);
+			if (obj)
+			{
+				ar(obj->get_type());
+				obj->Save(ar);
+			}
+		}
+	}
+
+	void World::Load(cereal::BinaryInputArchive &ar)
+	{
+		Asset::Load(ar);
+
+		size_t num_objects = 0;
+		ar(num_objects);
+
+		for (size_t i = 0; i < num_objects; i++)
+		{
+			bool is_valid = false;
+			rttr::type obj_type = InvalidType;
+
+			ar(is_valid);
+
+			if (!is_valid)
+				continue;
+
+			ar(obj_type);
+			auto obj = obj_type.create({this}).get_value<Ref<GameObject>>();
+			obj->Load(ar);
+
+			AddGameObject(obj);
+		}
+	}
+
 	void World::Begin()
 	{
 		SimulateBegin();
@@ -148,7 +188,7 @@ namespace BHive
 	void World::SimulateBegin()
 	{
 		rp3d::PhysicsWorld::WorldSettings settings{};
-		settings.worldName = mName;
+		settings.worldName = GetName();
 		mPhysicsWorld = PhysicsContext::get_context().createPhysicsWorld(settings);
 
 		// setup listeners
@@ -224,7 +264,7 @@ namespace BHive
 		{
 			if (object.second->HasComponent<CameraComponent>())
 			{
-				auto &camera = object.second->GetComponent<CameraComponent>().Camera;
+				auto &camera = object.second->GetComponent<CameraComponent>()->Camera;
 				camera.Resize(w, h);
 			}
 		}
@@ -254,5 +294,10 @@ namespace BHive
 	{
 		rp3d::Ray ray({start.x, start.y, start.z}, {end.x, end.y, end.z});
 		mPhysicsWorld->raycast(ray, &mHitListener, categoryMasks);
+	}
+
+	REFLECT(World)
+	{
+		BEGIN_REFLECT(World) REFLECT_CONSTRUCTOR();
 	}
 } // namespace BHive

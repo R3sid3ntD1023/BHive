@@ -27,24 +27,24 @@ namespace BHive
 
 	void Block::SetSize(const glm::vec2 &size)
 	{
-		GetComponent<SpriteComponent>().SpriteSize = size;
-		GetComponent<BoxComponent>().Extents = {size.x * .5f, size.y * .5f, 1.0f};
+		GetComponent<SpriteComponent>()->SpriteSize = size;
+		GetComponent<BoxComponent>()->Extents = {size.x * .5f, size.y * .5f, 1.0f};
 	}
 
 	void Block::SetTiling(const glm::vec2 &tiling)
 	{
-		GetComponent<SpriteComponent>().Tiling = tiling;
+		GetComponent<SpriteComponent>()->Tiling = tiling;
 	}
 
 	void Block::SetSprite(const Ref<Sprite> &sprite)
 	{
-		GetComponent<SpriteComponent>().Sprite = sprite;
+		GetComponent<SpriteComponent>()->Sprite = sprite;
 	}
 
 	QuestionBlock::QuestionBlock(World *world)
 		: BlockBase(world)
 	{
-		auto &fb_component = AddComponent<FlipBookComponent>();
+		auto fb_component = AddComponent<FlipBookComponent>();
 
 		auto texture = TextureLoader::Import(RESOURCE_PATH "textures/items.png");
 		Ref<Sprite> sprites[3] = {};
@@ -59,7 +59,7 @@ namespace BHive
 		flipbook->AddFrame(sprites[2], 5);
 		flipbook->SetLoop(true);
 
-		fb_component.FlipBook = flipbook;
+		fb_component->FlipBook = flipbook;
 	}
 
 	REFLECT(Block)

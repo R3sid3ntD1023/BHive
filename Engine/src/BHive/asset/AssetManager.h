@@ -9,20 +9,20 @@ namespace BHive
 	class AssetManager
 	{
 	public:
-		static BHIVE Ref<Asset> GetAsset(AssetHandle handle);
+		static BHIVE Ref<Asset> GetAsset(UUID handle);
 
 		template <typename T>
-		static Ref<T> GetAsset(AssetHandle handle)
+		static Ref<T> GetAsset(UUID handle)
 		{
 			auto asset = sCurrentAssetManager->GetAsset(handle);
 			return std::dynamic_pointer_cast<T>(asset);
 		}
 
-		static BHIVE bool IsAssetHandleValid(AssetHandle handle);
+		static BHIVE bool IsAssetHandleValid(UUID handle);
 
-		static BHIVE bool IsAssetLoaded(AssetHandle handle);
+		static BHIVE bool IsAssetLoaded(UUID handle);
 
-		static BHIVE AssetType GetAssetType(AssetHandle handle);
+		static BHIVE AssetType GetAssetType(UUID handle);
 
 		static void SetAssetManager(AssetManagerBase *manager);
 

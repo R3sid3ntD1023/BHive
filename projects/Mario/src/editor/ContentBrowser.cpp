@@ -347,11 +347,11 @@ namespace BHive
 
 					if (ImGui::BeginDragDropSource())
 					{
-						AssetHandle data;
+						UUID data;
 
 						if (GetDragDropData(data, relative_path))
 						{
-							ImGui::SetDragDropPayload("ASSET", &data, sizeof(AssetHandle));
+							ImGui::SetDragDropPayload("ASSET", &data, sizeof(UUID));
 						}
 
 						ImGui::EndDragDropSource();

@@ -24,7 +24,7 @@ namespace BHive
 		virtual bool IsAssetValid(const std::filesystem::path &relative) const;
 
 		virtual Ref<Texture2D> OnGetIcon(bool directory, const std::filesystem::path &relative);
-		virtual bool GetDragDropData(AssetHandle &data, const std::filesystem::path &relative);
+		virtual bool GetDragDropData(UUID &data, const std::filesystem::path &relative);
 		virtual void OnWindowContextMenu();
 
 	private:

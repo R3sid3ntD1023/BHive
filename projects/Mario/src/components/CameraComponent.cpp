@@ -6,7 +6,7 @@ namespace BHive
 {
 	void CameraComponent::Update(float)
 	{
-		if (Primary)
+		if (IsPrimary)
 		{
 			auto owner = GetOwner();
 			auto transform = owner->GetTransform();
@@ -21,14 +21,22 @@ namespace BHive
 		FrustumViewer viewer(Camera.GetProjection(), transform);
 	}
 
+	void CameraComponent::Save(cereal::BinaryOutputArchive &ar) const
+	{
+		ar(Camera, IsPrimary);
+	}
+
+	void CameraComponent::Load(cereal::BinaryInputArchive &ar)
+	{
+		ar(Camera, IsPrimary);
+	}
+
 	REFLECT(CameraComponent)
 	{
 		{
 			BEGIN_REFLECT(CameraComponent)
-			(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Primary)
-				REFLECT_PROPERTY(Camera)
-					REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &GameObject::AddComponent<CameraComponent>)
-						REFLECT_METHOD(REMOVE_COMPONENT_FUNCTION_NAME, &GameObject::RemoveComponent<CameraComponent>);
+			(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(IsPrimary)
+				REFLECT_PROPERTY(Camera) COMPONENT_IMPL();
 		}
 
 		{

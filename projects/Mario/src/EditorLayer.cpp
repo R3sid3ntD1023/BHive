@@ -7,9 +7,13 @@
 #include "gfx/RenderCommand.h"
 #include "renderers/Renderer.h"
 #include "editor/WindowSubSystem.h"
+#include "editor/SelectionSubSystem.h"
 #include "subsystem/SubSystem.h"
 #include "Inspectors.h"
 #include "objects/GameObject.h"
+#include "editor/contextmenus/ContextMenus.h"
+#include "asset/AssetFactory.h"
+#include "core/FileDialog.h"
 #include <ImGuizmo.h>
 
 namespace BHive
@@ -19,6 +23,19 @@ namespace BHive
 
 	void EditorLayer::OnAttach()
 	{
+		FWorldContentMenu::OnAssetOpenedEvent.bind(
+			[&](const UUID &handle)
+			{
+				auto asset = AssetManager::GetAsset<World>(handle);
+
+				if (asset)
+				{
+					SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().Clear();
+					mEditorWorld = asset;
+					mSceneHeirarchyPanel->SetContext(mEditorWorld);
+				}
+			});
+
 		SetCurrentContext(ImGui::GetCurrentContext());
 
 		auto &window = Application::Get().GetWindow();
@@ -30,18 +47,19 @@ namespace BHive
 		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 		mFramebuffer = CreateRef<Framebuffer>(specs);
 
-		mEditorWorld = CreateRef<World>("EditorWorld");
+		mEditorWorld = CreateRef<World>();
+		mEditorWorld->SetName("EditorWorld");
 
 		RenderCommand::ClearColor(.2f, .2f, .2f);
 
 		float aspect = size.x / (float)size.y;
 		mEditorCamera = EditorCamera(75.f, aspect, .01f, 100.f);
 
+		SubSystemContext::Get().AddSubSystem<SelectionSubSystem>();
 		auto &window_system = SubSystemContext::Get().AddSubSystem<WindowSubSystem>();
 		mSceneHeirarchyPanel = window_system.CreateWindow<SceneHierarchyPanel>();
 		mSceneHeirarchyPanel->SetContext(mEditorWorld);
 		mPropertiesPanel = window_system.CreateWindow<PropertiesPanel>();
-		mPropertiesPanel->GetSelectedObjectEvent.bind(mSceneHeirarchyPanel.get(), &SceneHierarchyPanel::GetSelectedObject);
 
 		mContentBrowser = window_system.CreateWindow<EditorContentBrowser<EditorAssetManager>>(RESOURCE_PATH);
 
@@ -106,6 +124,34 @@ namespace BHive
 
 		GUI::BeginDockSpace("DockSpace");
 
+		if (ImGui::BeginMainMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("New", "Ctrl + N"))
+				{
+					CreateWorld();
+				}
+
+				if (ImGui::MenuItem("Open", "Ctrl + O"))
+				{
+					LoadWorld();
+				}
+
+				if (ImGui::MenuItem("Save", "Ctrl + S"))
+				{
+					SaveWorld();
+				}
+
+				if (ImGui::MenuItem("SaveAs...", "Ctrl + Alt + S"))
+				{
+					SaveWorldAs();
+				}
+				ImGui::EndMenu();
+			}
+			ImGui::EndMainMenuBar();
+		}
+
 		SubSystemContext::Get().GetSubSystem<WindowSubSystem>().UpdateWindows();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
@@ -125,7 +171,9 @@ namespace BHive
 
 			ImGui::Image((ImTextureID)(uint64_t)*mFramebuffer->GetColorAttachment(), size, {0, 1}, {1, 0});
 
-			auto selected_object = mSceneHeirarchyPanel->GetSelectedObject();
+			auto &selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>();
+			auto selected_object = selection.GetSelection();
+
 			if (selected_object && mGizmoOperation != -1)
 			{
 
@@ -172,6 +220,11 @@ namespace BHive
 		mCommands.emplace(Key::T, [&]() { mGizmoOperation = ImGuizmo::UNIVERSAL; });
 		mCommands.emplace(Key::L, [&]() { mGizmoMode = ImGuizmo::LOCAL; });
 		mCommands.emplace(Key::K, [&]() { mGizmoMode = ImGuizmo::WORLD; });
+
+		mCommands.emplace(Key::O | Mod::Control, [&]() { LoadWorld(); });
+		mCommands.emplace(Key::N | Mod::Control, [&]() { CreateWorld(); });
+		mCommands.emplace(Key::S | Mod::Control, [&]() { SaveWorld(); });
+		mCommands.emplace(Key::S | Mod::Control | Mod::Alt, [&]() { SaveWorldAs(); });
 	}
 
 	bool EditorLayer::OnWindowResize(WindowResizeEvent &e)
@@ -182,15 +235,64 @@ namespace BHive
 
 	bool EditorLayer::OnKeyEvent(KeyEvent &e)
 	{
-		uint32_t command_code = e.Key | e.Mods;
-		if (mCommands.contains(command_code))
+		if (e.Action == EventStatus::PRESS)
 		{
-			auto &command = mCommands.at(command_code);
-			command();
+			int32_t command_code = e.Key | e.Mods;
+			if (mCommands.contains(command_code))
+			{
+				auto &command = mCommands.at(command_code);
+				command();
 
-			return true;
+				return true;
+			}
 		}
 		return false;
+	}
+
+	void EditorLayer::CreateWorld()
+	{
+		SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().Clear();
+
+		mEditorWorld = CreateRef<World>();
+		mSceneHeirarchyPanel->SetContext(mEditorWorld);
+
+		mCurrentWorldPath = "";
+	}
+
+	void EditorLayer::SaveWorld()
+	{
+		if (mCurrentWorldPath.empty())
+		{
+			SaveWorldAs();
+			return;
+		}
+
+		AssetFactory::Export(mEditorWorld, mCurrentWorldPath);
+	}
+
+	void EditorLayer::SaveWorldAs()
+	{
+		auto path = FileDialogs::SaveFile(AssetFactory::GetFileFilters());
+		if (path.empty())
+			return;
+
+		AssetFactory::Export(mEditorWorld, path);
+		mCurrentWorldPath = path;
+		mAssetManager.ImportAsset(mCurrentWorldPath, AssetType::get<World>(), mEditorWorld->GetHandle());
+	}
+
+	void EditorLayer::LoadWorld()
+	{
+		auto path = FileDialogs::OpenFile(AssetFactory::GetFileFilters());
+		if (path.empty())
+			return;
+
+		Ref<Asset> asset = mEditorWorld;
+		AssetFactory::Import(asset, path);
+
+		mEditorWorld = Cast<World>(asset);
+		mSceneHeirarchyPanel->SetContext(mEditorWorld);
+		mCurrentWorldPath = path;
 	}
 
 } // namespace BHive

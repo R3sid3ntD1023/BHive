@@ -23,6 +23,18 @@ namespace BHive
 		auto rb = physc.GetRigidBody();
 		ReleaseCollisionShape(rb);
 	}
+	void ColliderComponent::Save(cereal::BinaryOutputArchive &ar) const
+	{
+		ar(CollisionEnabled, Offset, Color, IsTrigger, CollisionChannel, CollisionChannelMasks,
+		   TAssetHandle(PhysicsMaterial));
+	}
+
+	void ColliderComponent::Load(cereal::BinaryInputArchive &ar)
+	{
+		ar(CollisionEnabled, Offset, Color, IsTrigger, CollisionChannel, CollisionChannelMasks,
+		   TAssetHandle(PhysicsMaterial));
+	}
+
 	void BHive::ColliderComponent::CreateCollsionShape(void *rb, const FTransform &transform)
 	{
 		mCollisionShape = (rp3d::CollisionShape *)GetCollisionShape(transform);

@@ -30,11 +30,19 @@ namespace BHive
 		DestroyInstance();
 	}
 
+	void InputComponent::Save(cereal::BinaryOutputArchive &ar) const
+	{
+		ar(TAssetHandle<InputContext>(Context));
+	}
+
+	void InputComponent::Load(cereal::BinaryInputArchive &ar)
+	{
+		ar(TAssetHandle<InputContext>(Context));
+	}
+
 	REFLECT(InputComponent)
 	{
 		BEGIN_REFLECT(InputComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Context)
-			REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &GameObject::AddComponent<InputComponent>)
-				REFLECT_METHOD(REMOVE_COMPONENT_FUNCTION_NAME, &GameObject::RemoveComponent<InputComponent>);
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Context) COMPONENT_IMPL();
 	}
 } // namespace BHive

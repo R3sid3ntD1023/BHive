@@ -17,7 +17,7 @@ namespace BHive
 		LOG_TRACE("EditorAssetManager Destructor Called");
 	}
 
-	Ref<Asset> EditorAssetManager::GetAsset(AssetHandle handle)
+	Ref<Asset> EditorAssetManager::GetAsset(UUID handle)
 	{
 		Ref<Asset> asset;
 
@@ -52,18 +52,18 @@ namespace BHive
 		return asset;
 	}
 
-	bool EditorAssetManager::IsAssetHandleValid(AssetHandle handle) const
+	bool EditorAssetManager::IsAssetHandleValid(UUID handle) const
 	{
 		return (bool)handle && mAssetRegistry.contains(handle);
 	}
 
-	bool EditorAssetManager::IsAssetLoaded(AssetHandle handle) const
+	bool EditorAssetManager::IsAssetLoaded(UUID handle) const
 	{
 		bool loaded = mLoadedAssets.contains(handle);
 		return loaded;
 	}
 
-	AssetType EditorAssetManager::GetAssetType(AssetHandle handle) const
+	AssetType EditorAssetManager::GetAssetType(UUID handle) const
 	{
 		if (!IsAssetHandleValid(handle))
 			return InvalidType;
@@ -71,7 +71,7 @@ namespace BHive
 		return mAssetRegistry.at(handle).Type;
 	}
 
-	void EditorAssetManager::ImportAsset(const std::filesystem::path &path, const AssetType &type, const AssetHandle &handle)
+	void EditorAssetManager::ImportAsset(const std::filesystem::path &path, const AssetType &type, const UUID &handle)
 	{
 		if (GetHandle(path))
 		{
@@ -93,7 +93,7 @@ namespace BHive
 		Serialize();
 	}
 
-	bool EditorAssetManager::RemoveAsset(AssetHandle handle)
+	bool EditorAssetManager::RemoveAsset(UUID handle)
 	{
 		if (mAssetRegistry.contains(handle))
 		{
@@ -142,7 +142,7 @@ namespace BHive
 		return true;
 	}
 
-	const FAssetMetaData &EditorAssetManager::GetMetaData(AssetHandle handle) const
+	const FAssetMetaData &EditorAssetManager::GetMetaData(UUID handle) const
 	{
 		static FAssetMetaData sNullMetaData;
 		if (mAssetRegistry.contains(handle))
@@ -153,7 +153,7 @@ namespace BHive
 		return sNullMetaData;
 	}
 
-	FAssetMetaData &EditorAssetManager::GetMetaData(AssetHandle handle)
+	FAssetMetaData &EditorAssetManager::GetMetaData(UUID handle)
 	{
 		static FAssetMetaData sNullMetaData;
 		if (mAssetRegistry.contains(handle))
@@ -188,7 +188,7 @@ namespace BHive
 		return sNullMetaData;
 	}
 
-	AssetHandle EditorAssetManager::GetHandle(const std::filesystem::path &file) const
+	UUID EditorAssetManager::GetHandle(const std::filesystem::path &file) const
 	{
 		auto it = std::find_if(
 			mAssetRegistry.begin(), mAssetRegistry.end(), [file](const auto &pair) { return pair.second.Path == file; });
@@ -199,7 +199,7 @@ namespace BHive
 		return UUID::Null;
 	}
 
-	const std::filesystem::path &EditorAssetManager::GetFilePath(AssetHandle handle) const
+	const std::filesystem::path &EditorAssetManager::GetFilePath(UUID handle) const
 	{
 		return GetMetaData(handle).Path;
 	}

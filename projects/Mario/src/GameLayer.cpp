@@ -30,7 +30,8 @@ namespace BHive
 
 		RenderCommand::ClearColor(.1f, .1f, .1f);
 
-		mCurrentWorld = CreateRef<World>("World 1-1");
+		mCurrentWorld = CreateRef<World>();
+		mCurrentWorld->SetName("World 1-1");
 
 		mCurrentWorld->Begin();
 	}
@@ -86,7 +87,7 @@ namespace BHive
 		case Key::R:
 		{
 			auto player = mCurrentWorld->GetGameObject(mPlayerID);
-			player->GetComponent<PhysicsComponent>().SetBodyType(EBodyType::Kinematic);
+			player->GetComponent<PhysicsComponent>()->SetBodyType(EBodyType::Kinematic);
 			player->GetLocalTransform().set_translation(0, 1, 0);
 			return true;
 		}

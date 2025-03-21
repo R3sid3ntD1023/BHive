@@ -36,6 +36,8 @@ namespace BHive
 
 		std::unordered_map<uint32_t, std::function<void()>> mCommands;
 
+		std::filesystem::path mCurrentWorldPath = "";
+
 	public:
 		void OnAttach() override;
 		void OnUpdate(float) override;
@@ -47,6 +49,11 @@ namespace BHive
 	private:
 		bool OnWindowResize(WindowResizeEvent &e);
 		bool OnKeyEvent(KeyEvent &e);
+
+		void CreateWorld();
+		void SaveWorld();
+		void SaveWorldAs();
+		void LoadWorld();
 	};
 
 } // namespace BHive

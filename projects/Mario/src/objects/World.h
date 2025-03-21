@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "physics/EventListener.h"
 #include "physics/PhysicsContext.h"
+#include "asset/Asset.h"
 #include <glm/glm.hpp>
 
 namespace BHive
@@ -11,11 +12,14 @@ namespace BHive
 	class Texture2D;
 	using ObjectList = std::unordered_map<UUID, Ref<GameObject>>;
 
-	class World
+	class World : public Asset
 	{
 	public:
-		World(const std::string &name);
+		World();
 		~World();
+
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		void Begin();
 		void Update(float dt);
@@ -45,16 +49,15 @@ namespace BHive
 
 		const ObjectList &GetGameObjects() const { return mObjects; }
 
-		const std::string &GetName() const { return mName; }
-
 		void Destroy(const UUID &id);
 
 		void RayCast(const glm::vec3 &start, const glm::vec3 &end, uint16_t categoryMasks = 65535U);
 
 		rp3d::PhysicsWorld *GetPhysicsWorld() const { return mPhysicsWorld; }
 
+		REFLECTABLEV(Asset);
+
 	private:
-		std::string mName;
 		ObjectList mObjects;
 		std::vector<Ref<GameObject>> mDestoryedObjects;
 

@@ -2,9 +2,7 @@
 
 #include "core/Core.h"
 #include "core/reflection/Reflection.h"
-
-#define ADD_COMPONENT_FUNCTION_NAME "AddComponent"
-#define REMOVE_COMPONENT_FUNCTION_NAME "RemoveComponent"
+#include "core/serialization/Serialization.h"
 
 namespace BHive
 {
@@ -17,6 +15,9 @@ namespace BHive
 		virtual void Update(float) {};
 		virtual void Render() {}
 		virtual void End() {};
+
+		virtual void Save(cereal::BinaryOutputArchive &ar) const {};
+		virtual void Load(cereal::BinaryInputArchive &ar) {};
 
 		GameObject *GetOwner() const { return mOwningObject; }
 

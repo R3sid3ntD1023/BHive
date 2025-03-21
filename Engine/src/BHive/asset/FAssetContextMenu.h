@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
-#include "asset/AssetHandle.h"
+#include "core/UUID.h"
 #include "core/reflection/Reflection.h"
 
 namespace BHive
@@ -12,8 +12,8 @@ namespace BHive
 	{
 		virtual ~FAssetContextMenu() = default;
 
-		virtual void OnAssetContext(const AssetHandle &handle) = 0;
-		virtual void OnAssetOpen(const AssetHandle &handle) = 0;
+		virtual void OnAssetContext(const UUID &handle) = 0;
+		virtual void OnAssetOpen(const UUID &handle) = 0;
 
 		REFLECTABLEV()
 	};

@@ -31,12 +31,21 @@ namespace BHive
 		QuadRenderer::DrawSprite(params, FlipBook->GetCurrentSprite(), t);
 	}
 
+	void FlipBookComponent::Save(cereal::BinaryOutputArchive &ar) const
+	{
+		ar(AutoPlay, Color, Size, Tiling, TAssetHandle(FlipBook));
+	}
+
+	void FlipBookComponent::Load(cereal::BinaryInputArchive &ar)
+	{
+		ar(AutoPlay, Color, Size, Tiling, TAssetHandle(FlipBook));
+	}
+
 	REFLECT(FlipBookComponent)
 	{
 		BEGIN_REFLECT(FlipBookComponent)
 		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(AutoPlay)
 			REFLECT_PROPERTY(Color) REFLECT_PROPERTY(Size) REFLECT_PROPERTY(Tiling) REFLECT_PROPERTY(FlipBook)
-				REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &GameObject::AddComponent<FlipBookComponent>)
-					REFLECT_METHOD(REMOVE_COMPONENT_FUNCTION_NAME, &GameObject::RemoveComponent<FlipBookComponent>);
+				COMPONENT_IMPL();
 	}
 } // namespace BHive

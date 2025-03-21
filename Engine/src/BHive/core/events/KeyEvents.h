@@ -2,6 +2,8 @@
 
 #include "Event.h"
 #include "KeyCodes.h"
+#include "ModCode.h"
+#include "EventStatus.h"
 
 namespace BHive
 {
@@ -10,7 +12,7 @@ namespace BHive
 		EVENT(KeyEvent, EventCategoryKeyboard | EventCategoryInput)
 
 	public:
-		KeyEvent(KeyCode key, int scancode, int action, int mods)
+		KeyEvent(int key, int scancode, int action, int mods)
 			: Key(key),
 			  ScanCode(scancode),
 			  Action(action),
@@ -18,7 +20,7 @@ namespace BHive
 		{
 		}
 
-		KeyCode Key;
+		int Key;
 		int ScanCode;
 		int Action;
 		int Mods;

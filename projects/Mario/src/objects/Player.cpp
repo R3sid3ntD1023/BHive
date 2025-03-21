@@ -15,8 +15,8 @@ namespace BHive
 	{
 		auto &window = Application::Get().GetWindow();
 		auto &size = window.GetSize();
-		auto &camera_component = AddComponent<CameraComponent>();
-		camera_component.Camera.SetOrthographic(-10.f, 10.0f, -2.f, 18.0f, size.x / (float)size.y, -1.0f, 10.f);
+		auto camera_component = AddComponent<CameraComponent>();
+		camera_component->Camera.SetOrthographic(-10.f, 10.0f, -2.f, 18.0f, size.x / (float)size.y, -1.0f, 10.f);
 
 		AddComponent<SpriteComponent>();
 		AddComponent<BoxComponent>();
@@ -29,13 +29,13 @@ namespace BHive
 		physc.Settings.Mass = 10.f;
 		physc.Settings.BodyType = EBodyType::Dynamic;
 
-		auto &bc = GetComponent<BoxComponent>();
-		bc.Extents = {.5f, .5f, .5f};
-		bc.OnCollisionEnter.bind(this, &Player::OnCollisionEnter);
+		auto bc = GetComponent<BoxComponent>();
+		bc->Extents = {.5f, .5f, .5f};
+		bc->OnCollisionEnter.bind(this, &Player::OnCollisionEnter);
 
 		Ref<InputContext> context;
-		auto &input = GetComponent<InputComponent>();
-		input.Context = context = CreateRef<InputContext>();
+		auto input = GetComponent<InputComponent>();
+		input->Context = context = CreateRef<InputContext>();
 
 		context->add_action("Jump", EKey::Space);
 		context->add_action("MoveLeft", EKey::A);
@@ -79,7 +79,7 @@ namespace BHive
 
 	void Player::OnCollisionEnter(ColliderComponent *component, GameObject *other)
 	{
-		if ((other->GetComponent<TagComponent>().Groups & BREAKABLE_BLOCKS) != 0)
+		if ((other->GetComponent<TagComponent>()->Groups & BREAKABLE_BLOCKS) != 0)
 		{
 			other->Destroy();
 			LOG_TRACE("Destroyed Block");

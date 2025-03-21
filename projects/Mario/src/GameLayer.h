@@ -1,5 +1,5 @@
 #pragma once
-#include "asset/AssetHandle.h"
+#include "core/UUID.h"
 #include "core/events/ApplicationEvents.h"
 #include "core/events/KeyEvents.h"
 #include "core/Layer.h"

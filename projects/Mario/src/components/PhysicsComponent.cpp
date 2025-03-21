@@ -141,7 +141,6 @@ namespace BHive
 	{
 		BEGIN_REFLECT(PhysicsComponent)
 		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Settings)
-			REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &GameObject::AddComponent<PhysicsComponent>)
-				REFLECT_METHOD(REMOVE_COMPONENT_FUNCTION_NAME, &GameObject::RemoveComponent<PhysicsComponent>);
+			COMPONENT_IMPL();
 	}
 } // namespace BHive

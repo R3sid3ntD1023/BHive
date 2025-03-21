@@ -22,8 +22,6 @@ namespace BHive
 
 		virtual const char *GetName() const { return "SceneHeirachy"; }
 
-		GameObject *GetSelectedObject() { return mSelectedObject; }
-
 	private:
 		void DrawNode(GameObject *obj);
 
@@ -31,8 +29,6 @@ namespace BHive
 
 	private:
 		Ref<World> mWorld;
-
-		GameObject *mSelectedObject = nullptr;
 
 		std::vector<AssetType> mEntityTypeCache;
 	};

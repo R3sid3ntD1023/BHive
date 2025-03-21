@@ -1,31 +1,25 @@
 #include "PropertiesPanel.h"
 #include "gui/ImGuiExtended.h"
 #include "objects/GameObject.h"
+#include "editor/SelectionSubSystem.h"
+#include "subsystem/SubSystem.h"
 #include "Inspectors.h"
 
 namespace BHive
 {
 	void PropertiesPanel::OnGuiRender()
 	{
-		if (!GetSelectedObjectEvent)
+		auto selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().GetSelection();
+		if (!selection)
 			return;
 
-		if (auto obj = GetSelectedObjectEvent.invoke())
+		if (selection)
 		{
-			DrawComponents(obj);
+			DrawComponents(selection);
 
 			ImGui::SeparatorText("Details");
 
-			DrawAddComponent(obj);
-
-			if (mDeletedComponents.size())
-			{
-				for (auto component : mDeletedComponents)
-				{
-				}
-
-				mDeletedComponents.clear();
-			}
+			DrawAddComponent(selection);
 		}
 	}
 
@@ -39,6 +33,8 @@ namespace BHive
 
 	void PropertiesPanel::DrawComponent(Component *component)
 	{
+		auto selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().GetSelection();
+
 		ImGui::PushID(component);
 
 		int flags = ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -63,8 +59,7 @@ namespace BHive
 				if (auto method = type.get_method(REMOVE_COMPONENT_FUNCTION_NAME);
 					method && ImGui::Button("Remove", button_size))
 				{
-					auto object = GetSelectedObjectEvent.invoke();
-					method.invoke(object);
+					method.invoke(selection);
 				}
 			}
 
@@ -76,6 +71,7 @@ namespace BHive
 
 	void PropertiesPanel::DrawAddComponent(GameObject *obj)
 	{
+		auto selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().GetSelection();
 		static auto derived_component_types = rttr::type::get<Component>().get_derived_classes();
 
 		auto line_height = ImGui::GetLineHeight();
@@ -108,8 +104,7 @@ namespace BHive
 				{
 					if (auto method = type.get_method(ADD_COMPONENT_FUNCTION_NAME))
 					{
-						auto object = GetSelectedObjectEvent.invoke();
-						method.invoke(object);
+						method.invoke(selection);
 					}
 				}
 			}

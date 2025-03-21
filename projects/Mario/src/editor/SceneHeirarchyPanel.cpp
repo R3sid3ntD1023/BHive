@@ -2,6 +2,8 @@
 #include "objects/World.h"
 #include "objects/GameObject.h"
 #include "gui/GUICore.h"
+#include "subsystem/SubSystem.h"
+#include "editor/SelectionSubSystem.h"
 
 namespace BHive
 {
@@ -13,6 +15,8 @@ namespace BHive
 
 	void SceneHierarchyPanel::OnGuiRender()
 	{
+		auto &selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>();
+
 		if (mWorld)
 		{
 			auto &objs = mWorld->GetGameObjects();
@@ -32,7 +36,7 @@ namespace BHive
 			if (ImGui::MenuItem("Create Entity"))
 			{
 				auto new_obj = mWorld->CreateGameObject("New Object");
-				mSelectedObject = new_obj.get();
+				selection.Select(new_obj.get());
 			}
 
 			auto &entity_types = GetSpawnableEntites();
@@ -43,7 +47,7 @@ namespace BHive
 					auto world = mWorld.get();
 					auto obj = type.create({world}).get_value<Ref<GameObject>>();
 					mWorld->AddGameObject(obj);
-					mSelectedObject = obj.get();
+					selection.Select(obj.get());
 				}
 			}
 
@@ -65,7 +69,7 @@ namespace BHive
 
 		if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
 		{
-			mSelectedObject = nullptr;
+			selection.Clear();
 		}
 	}
 
@@ -76,12 +80,14 @@ namespace BHive
 
 	void SceneHierarchyPanel::DrawNode(GameObject *obj)
 	{
+		auto &selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>();
+
 		bool destroyed = false;
 
 		ImGuiTreeNodeFlags flags =
 			ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
 
-		bool selected = mSelectedObject == obj;
+		bool selected = selection.GetSelection() == obj;
 
 		flags |= (selected ? ImGuiTreeNodeFlags_Selected : 0);
 
@@ -90,17 +96,8 @@ namespace BHive
 
 		if (ImGui::IsItemClicked())
 		{
-			bool append = ImGui::IsKeyDown(ImGuiKey_ModShift);
-			bool ctrl_down = ImGui::IsKeyDown(ImGuiKey_ModCtrl);
-
-			if (ctrl_down)
-			{
-				mSelectedObject = nullptr;
-			}
-			else
-			{
-				mSelectedObject = obj;
-			}
+			if (!selected)
+				selection.Select(obj);
 		}
 
 		if (ImGui::BeginDragDropSource())
@@ -149,7 +146,8 @@ namespace BHive
 
 		if (destroyed)
 		{
-			mSelectedObject = nullptr;
+			if (selection.GetSelection() == obj)
+				selection.Clear();
 			obj->Destroy();
 		}
 	}

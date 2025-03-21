@@ -12,6 +12,18 @@ namespace BHive
 		LineRenderer::DrawBox(Extents, Offset, Color, t);
 	}
 
+	void BoxComponent::Save(cereal::BinaryOutputArchive &ar) const
+	{
+		ColliderComponent::Save(ar);
+		ar(Extents);
+	}
+
+	void BoxComponent::Load(cereal::BinaryInputArchive &ar)
+	{
+		ColliderComponent::Load(ar);
+		ar(Extents);
+	}
+
 	void *BoxComponent::GetCollisionShape(const FTransform &world_transform)
 	{
 		auto extents = Extents * world_transform.get_scale();
@@ -27,9 +39,7 @@ namespace BHive
 	REFLECT(BoxComponent)
 	{
 		BEGIN_REFLECT(BoxComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Extents)
-			REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &GameObject::AddComponent<BoxComponent>)
-				REFLECT_METHOD(REMOVE_COMPONENT_FUNCTION_NAME, &GameObject::RemoveComponent<BoxComponent>);
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Extents) COMPONENT_IMPL();
 	}
 
 } // namespace BHive

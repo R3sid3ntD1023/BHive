@@ -47,6 +47,9 @@ namespace BHive
 		void Update(float) override;
 		void End() override;
 
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
+
 		void CreateCollsionShape(void *rb, const FTransform &transform);
 		void ReleaseCollisionShape(void *rb);
 

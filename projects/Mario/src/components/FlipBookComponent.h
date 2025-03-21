@@ -21,6 +21,9 @@ namespace BHive
 		virtual void Update(float dt) override;
 		virtual void Render() override;
 
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
+
 		REFLECTABLEV(Component)
 	};
 

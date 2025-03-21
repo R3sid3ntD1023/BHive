@@ -526,7 +526,7 @@ namespace BHive
 				auto payload = ImGui::AcceptDragDropPayload("ASSET");
 				if (payload)
 				{
-					auto handle = *(AssetHandle *)payload->Data;
+					auto handle = *(UUID *)payload->Data;
 					auto &meta_data = mAssetManager->GetMetaData(handle);
 					if (meta_data.Type.is_derived_from<World>())
 					{

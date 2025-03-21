@@ -18,6 +18,12 @@ namespace BHive
 			float Fov = 45.0f;
 			float Near = 0.01f;
 			float Far = 1000.0f;
+
+			template <typename A>
+			void Serialize(A &ar)
+			{
+				ar(Fov, Near, Far);
+			}
 		};
 
 		struct FOrthographicSettings
@@ -28,6 +34,12 @@ namespace BHive
 			float Top = 10.0f;
 			float Near = -1.0f;
 			float Far = 1.0f;
+
+			template <typename A>
+			void Serialize(A &ar)
+			{
+				ar(Left, Right, Bottom, Top, Near, Far);
+			}
 		};
 
 	public:
@@ -47,6 +59,12 @@ namespace BHive
 		const FOrthographicSettings &GetOrthographicSettings() const { return mOrthographicSettings; }
 
 		void Resize(uint32_t width, uint32_t height);
+
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(mProjectionType, mPerspectiveSettings, mOrthographicSettings);
+		}
 
 	private:
 		void RecalculateProjection();

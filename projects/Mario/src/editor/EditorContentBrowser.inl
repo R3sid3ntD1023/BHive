@@ -202,11 +202,11 @@ namespace BHive
 	}
 
 	template <typename T>
-	bool EditorContentBrowser<T>::GetDragDropData(AssetHandle &data, const std::filesystem::path &relative)
+	bool EditorContentBrowser<T>::GetDragDropData(UUID &data, const std::filesystem::path &relative)
 	{
 		auto manager = AssetManager::GetAssetManager<T>();
 		data = manager->GetHandle(relative);
-		return data != AssetHandle(0);
+		return data != UUID::Null;
 	}
 
 	template <typename T>
