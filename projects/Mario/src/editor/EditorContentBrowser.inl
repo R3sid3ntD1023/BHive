@@ -206,7 +206,7 @@ namespace BHive
 	{
 		auto manager = AssetManager::GetAssetManager<T>();
 		data = manager->GetHandle(relative);
-		return data != UUID::Null;
+		return (bool)data;
 	}
 
 	template <typename T>

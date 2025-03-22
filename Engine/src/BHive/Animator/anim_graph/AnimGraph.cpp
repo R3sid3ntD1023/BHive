@@ -32,7 +32,7 @@ namespace BHive
 
 		for (size_t i{}; i < num_nodes; i++)
 		{
-			UUID node_id = UUID::Null;
+			UUID node_id = nullptr;
 			rttr::type node_type = InvalidType;
 
 			ar(node_id, node_type);

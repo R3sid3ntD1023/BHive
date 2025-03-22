@@ -6,6 +6,13 @@
 
 namespace BHive
 {
+	struct NullID_t
+	{
+		operator std::string() const { return "00000000-0000-0000-0000-000000000000"; }
+		bool operator==(const std::string &rhs) const { return rhs == "00000000-0000-0000-0000-000000000000"; }
+	};
+
+	inline constexpr NullID_t NullID{};
 
 	class UUID
 	{
@@ -14,16 +21,16 @@ namespace BHive
 		UUID(const char *guid);
 		UUID(const std::string &guid);
 		UUID(const UUID &) = default;
+		UUID(NullID_t);
 
 		UUID &operator=(const char *rhs);
+		UUID &operator=(NullID_t);
 
 		bool operator==(const UUID &rhs) const;
 		bool operator!=(const UUID &rhs) const;
 
 		operator const std::string &() const { return mGUID; }
-		operator bool() const { return mGUID != Null.mGUID; }
-
-		static UUID Null;
+		operator bool() const { return mGUID != NullID; }
 
 		template <typename Ar>
 		std::string SaveMinimal(const Ar &ar) const
@@ -38,7 +45,7 @@ namespace BHive
 		}
 
 	private:
-		std::string mGUID = UUID::Null;
+		std::string mGUID;
 
 		friend struct std::hash<BHive::UUID>;
 	};

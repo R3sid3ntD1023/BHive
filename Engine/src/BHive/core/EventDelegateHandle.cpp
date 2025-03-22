@@ -2,11 +2,6 @@
 
 namespace BHive
 {
-	EventDelegateHandle::EventDelegateHandle()
-		: mID(UUID::Null)
-	{
-	}
-
 	EventDelegateHandle::EventDelegateHandle(EGenerateNewHandle)
 	{
 		GenerateNewID();
@@ -14,7 +9,7 @@ namespace BHive
 
 	void EventDelegateHandle::reset()
 	{
-		mID = UUID::Null;
+		mID = NullID;
 	}
 
 	bool EventDelegateHandle::operator==(const EventDelegateHandle &rhs) const
@@ -28,7 +23,7 @@ namespace BHive
 
 	EventDelegateHandle::operator bool() const
 	{
-		return (uint64_t)mID != 0;
+		return (bool)mID;
 	}
 
 	void EventDelegateHandle::GenerateNewID()

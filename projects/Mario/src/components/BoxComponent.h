@@ -8,6 +8,9 @@ namespace BHive
 {
 	struct BoxComponent : public ColliderComponent
 	{
+		BoxComponent() = default;
+		BoxComponent(const BoxComponent &) = default;
+
 		glm::vec3 Extents{0.5f};
 
 		virtual void Render() override;

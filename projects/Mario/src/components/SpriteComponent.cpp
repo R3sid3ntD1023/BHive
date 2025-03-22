@@ -4,39 +4,32 @@
 
 namespace BHive
 {
-	void SpriteComponent::Update(float)
-	{
-	}
-
 	void SpriteComponent::Render()
 	{
-		if (!Sprite)
-			return;
-
 		auto owner = GetOwner();
 		auto transform = owner->GetTransform();
 
 		FQuadParams params{};
-		params.Color = SpriteColor;
-		params.Size = SpriteSize;
+		params.Color = Color;
+		params.Size = Size;
 		params.Tiling = Tiling;
-		QuadRenderer::DrawSprite(params, Sprite, transform);
+		QuadRenderer::DrawSprite(params, SpriteAsset, transform);
 	}
 
 	void SpriteComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(SpriteColor, SpriteSize, Tiling, TAssetHandle(Sprite));
+		ar(Color, Size, Tiling, TAssetHandle(SpriteAsset));
 	}
 
 	void SpriteComponent::Load(cereal::BinaryInputArchive &ar)
 	{
-		ar(SpriteColor, SpriteSize, Tiling, TAssetHandle(Sprite));
+		ar(Color, Size, Tiling, TAssetHandle(SpriteAsset));
 	}
 
 	REFLECT(SpriteComponent)
 	{
 		BEGIN_REFLECT(SpriteComponent)
 		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Tiling)
-			REFLECT_PROPERTY(SpriteSize) REFLECT_PROPERTY(SpriteColor) REFLECT_PROPERTY(Sprite) COMPONENT_IMPL();
+			REFLECT_PROPERTY(Size) REFLECT_PROPERTY(Color) REFLECT_PROPERTY(SpriteAsset) COMPONENT_IMPL();
 	}
 } // namespace BHive

@@ -59,7 +59,8 @@ namespace BHive
 
 				if (selected)
 				{
-					data = AssetManager::GetAsset<T>(id);
+					auto asset = AssetManager::GetAsset<T>(id);
+					data = asset;
 					changed |= true;
 					break;
 				}

@@ -2,7 +2,7 @@
 #include "objects/World.h"
 #include "objects/GameObject.h"
 #include "gui/GUICore.h"
-#include "subsystem/SubSystem.h"
+#include "core/subsystem/SubSystem.h"
 #include "editor/subsystems/SelectionSubSystem.h"
 
 namespace BHive
@@ -15,7 +15,7 @@ namespace BHive
 
 	void SceneHierarchyPanel::OnGuiRender()
 	{
-		auto &selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>();
+		auto &selection = GetSubSystem<SelectionSubSystem>();
 
 		if (mWorld)
 		{
@@ -80,7 +80,7 @@ namespace BHive
 
 	void SceneHierarchyPanel::DrawNode(GameObject *obj)
 	{
-		auto &selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>();
+		auto &selection = GetSubSystem<SelectionSubSystem>();
 
 		bool destroyed = false;
 

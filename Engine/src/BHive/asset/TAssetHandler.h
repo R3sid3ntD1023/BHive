@@ -34,7 +34,7 @@ namespace BHive
 		template <typename A>
 		inline std::string SaveMinimal(const A &ar) const
 		{
-			return mPtr ? mPtr->GetHandle() : UUID::Null;
+			return mPtr ? mPtr->GetHandle() : UUID(NullID);
 		}
 
 		template <typename A>

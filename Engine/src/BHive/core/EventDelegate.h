@@ -126,7 +126,7 @@ namespace BHive
 
 		Function mCallback;
 
-		EventDelegateHandle mHandle;
+		EventDelegateHandle mHandle{};
 	};
 
 	template <typename TRet, typename... TArgs>

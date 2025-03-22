@@ -19,6 +19,9 @@ namespace BHive
 
 	struct ColliderComponent : public Component
 	{
+		ColliderComponent() = default;
+		ColliderComponent(const ColliderComponent &other) = default;
+
 		bool CollisionEnabled{true};
 
 		glm::vec3 Offset{0.0f};

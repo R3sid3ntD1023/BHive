@@ -8,6 +8,9 @@ namespace BHive
 
 	struct InputComponent : public Component
 	{
+		InputComponent() = default;
+		InputComponent(const InputComponent &) = default;
+
 		Ref<InputContext> Context;
 
 		void CreateInstance();

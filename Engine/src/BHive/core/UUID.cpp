@@ -42,9 +42,20 @@ namespace BHive
 	{
 	}
 
+	UUID::UUID(NullID_t null)
+		: mGUID(null)
+	{
+	}
+
 	UUID &UUID::operator=(const char *rhs)
 	{
 		mGUID = rhs;
+		return *this;
+	}
+
+	UUID &UUID::operator=(NullID_t null)
+	{
+		mGUID = null;
 		return *this;
 	}
 
@@ -57,6 +68,4 @@ namespace BHive
 	{
 		return !(*this == rhs);
 	}
-
-	UUID UUID::Null{"00000000-0000-0000-0000-000000000000"};
 } // namespace BHive

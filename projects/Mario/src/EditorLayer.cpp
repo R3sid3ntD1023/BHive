@@ -10,12 +10,13 @@
 #include "editor/subsystems/WindowSubSystem.h"
 #include "editor/subsystems/EditorSubSystem.h"
 #include "editor/subsystems/SelectionSubSystem.h"
-#include "subsystem/SubSystem.h"
+#include "core/subsystem/SubSystem.h"
 #include "Inspectors.h"
 #include "objects/GameObject.h"
 #include "editor/contextmenus/ContextMenus.h"
 #include "asset/AssetFactory.h"
 #include "core/FileDialog.h"
+#include "editor/LogPanel.h"
 #include <ImGuizmo.h>
 
 namespace BHive
@@ -59,11 +60,12 @@ namespace BHive
 		float aspect = size.x / (float)size.y;
 		mEditorCamera = EditorCamera(75.f, aspect, .01f, 100.f);
 
-		SubSystemContext::Get().AddSubSystem<SelectionSubSystem>();
-		SubSystemContext::Get().AddSubSystem<EditorSubSystem>();
-		auto &window_system = SubSystemContext::Get().AddSubSystem<WindowSubSystem>();
+		AddSubSystem<SelectionSubSystem>();
+		AddSubSystem<EditorSubSystem>();
+		auto &window_system = AddSubSystem<WindowSubSystem>();
 		mSceneHeirarchyPanel = window_system.CreateWindow<SceneHierarchyPanel>();
 		mPropertiesPanel = window_system.CreateWindow<PropertiesPanel>();
+		window_system.CreateWindow<LogPanel>();
 
 		mContentBrowser = window_system.CreateWindow<EditorContentBrowser<EditorAssetManager>>(RESOURCE_PATH);
 
@@ -77,10 +79,13 @@ namespace BHive
 		AssetManager::SetAssetManager(&mAssetManager);
 
 		SetupDefaultCommands();
+
+		PhysicsContext::Init();
 	}
 
 	void EditorLayer::OnDetach()
 	{
+		PhysicsContext::Shutdown();
 	}
 
 	void EditorLayer::OnUpdate(float dt)
@@ -115,12 +120,12 @@ namespace BHive
 
 	void EditorLayer::OnEvent(Event &e)
 	{
-		if (mViewportHovered)
-			mEditorCamera.OnEvent(e);
-
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch(this, &EditorLayer::OnWindowResize);
 		dispatcher.Dispatch(this, &EditorLayer::OnKeyEvent);
+
+		if (mViewportHovered)
+			mEditorCamera.OnEvent(e);
 	}
 
 	void EditorLayer::OnGuiRender()
@@ -218,6 +223,19 @@ namespace BHive
 		ImGui::End();
 		ImGui::PopStyleVar();
 
+		if (ImGui::Begin("Assets"))
+		{
+			for (auto &[id, metadata] : mAssetManager.GetAssetRegistry())
+			{
+				inspect("Handle", id, false, true);
+				inspect("Data", metadata, false, true);
+
+				ImGui::Separator();
+			}
+		}
+
+		ImGui::End();
+
 		GUI::EndDockSpace();
 	}
 
@@ -245,15 +263,18 @@ namespace BHive
 
 	bool EditorLayer::OnKeyEvent(KeyEvent &e)
 	{
-		if (e.Action == EventStatus::PRESS)
+		if (mViewportHovered || mViewportFocused)
 		{
-			FCommand command_code = {e.Key, e.Mods};
-			if (mCommands.contains(command_code))
+			if (e.Action == EventStatus::PRESS)
 			{
-				auto &command = mCommands.at(command_code);
-				command();
+				FCommand command_code = {e.Key, e.Mods};
+				if (mCommands.contains(command_code))
+				{
+					auto &command = mCommands.at(command_code);
+					command();
 
-				return true;
+					return true;
+				}
 			}
 		}
 		return false;
@@ -342,11 +363,13 @@ namespace BHive
 				if (running)
 				{
 					mActiveWorld->End();
-					SetActiveWorld(mEditorWorld);
+					mActiveWorld = mEditorWorld;
+					mSceneHeirarchyPanel->SetContext(mActiveWorld);
 				}
 				else
 				{
-					SetActiveWorld(mEditorWorld->Copy());
+					mActiveWorld = mEditorWorld->Copy();
+					mSceneHeirarchyPanel->SetContext(mActiveWorld);
 					mActiveWorld->Begin();
 				}
 			}

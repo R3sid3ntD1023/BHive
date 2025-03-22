@@ -8,6 +8,9 @@ namespace BHive
 {
 	struct IDComponent : public Component
 	{
+		IDComponent() = default;
+		IDComponent(const IDComponent &) = default;
+
 		UUID ID;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override { ar(ID); }

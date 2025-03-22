@@ -12,7 +12,7 @@ namespace BHive
 			GenerateNewHandle
 		};
 
-		EventDelegateHandle();
+		EventDelegateHandle() = default;
 		EventDelegateHandle(EGenerateNewHandle);
 		EventDelegateHandle(const EventDelegateHandle &) = default;
 
@@ -26,7 +26,7 @@ namespace BHive
 	private:
 		void GenerateNewID();
 
-		UUID mID = UUID::Null;
+		UUID mID{NullID};
 
 		template <typename TRet, typename... TArgs>
 		friend struct EventDelegateBase;

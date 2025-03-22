@@ -196,7 +196,7 @@ namespace BHive
 		if (it != mAssetRegistry.end())
 			return (*it).first;
 
-		return UUID::Null;
+		return NullID;
 	}
 
 	const std::filesystem::path &EditorAssetManager::GetFilePath(UUID handle) const

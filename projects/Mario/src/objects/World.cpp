@@ -13,9 +13,9 @@
 
 namespace BHive
 {
-	void CopyComponents(const Ref<GameObject> &src, Ref<GameObject> &dst)
+	void CopyComponents(const GameObject &src, GameObject &dst)
 	{
-		for (auto &component : src->GetComponents())
+		for (auto &component : src.GetComponents())
 		{
 			auto type = component->get_type();
 			type.get_method(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME).invoke(dst, *component);
@@ -23,6 +23,7 @@ namespace BHive
 	}
 
 	World::World()
+		: Asset()
 	{
 		mCollisionListener.OnContact.bind(
 			[](const rp3d::CollisionCallback::ContactPair &p)
@@ -98,6 +99,8 @@ namespace BHive
 	World::World(const World &world)
 		: Asset(world)
 	{
+		mCollisionListener = world.mCollisionListener;
+		mHitListener = world.mHitListener;
 	}
 
 	World::~World()
@@ -276,7 +279,7 @@ namespace BHive
 			if (!new_obj)
 				continue;
 
-			CopyComponents(src_obj, new_obj);
+			CopyComponents(*src_obj, *new_obj);
 			new_world->AddGameObject(new_obj);
 		}
 

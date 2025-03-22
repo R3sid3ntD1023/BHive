@@ -2,14 +2,14 @@
 #include "gui/ImGuiExtended.h"
 #include "objects/GameObject.h"
 #include "editor/subsystems/SelectionSubSystem.h"
-#include "subsystem/SubSystem.h"
+#include "core/subsystem/SubSystem.h"
 #include "Inspectors.h"
 
 namespace BHive
 {
 	void PropertiesPanel::OnGuiRender()
 	{
-		auto selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().GetSelection();
+		auto selection = GetSubSystem<SelectionSubSystem>().GetSelection();
 		if (!selection)
 			return;
 
@@ -43,7 +43,7 @@ namespace BHive
 
 	void PropertiesPanel::DrawComponent(Component *component)
 	{
-		auto selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().GetSelection();
+		auto selection = GetSubSystem<SelectionSubSystem>().GetSelection();
 
 		ImGui::PushID(component);
 

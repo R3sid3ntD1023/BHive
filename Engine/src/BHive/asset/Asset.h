@@ -27,7 +27,7 @@ namespace BHive
 
 		static UUID GetHandle(const Ref<Asset> &asset) { return GetHandle(asset.get()); }
 
-		static UUID GetHandle(const Asset *asset) { return asset ? asset->GetHandle() : UUID::Null; }
+		static UUID GetHandle(const Asset *asset) { return asset ? asset->GetHandle() : NullID; }
 
 		const UUID &GetHandle() const { return mHandle; }
 

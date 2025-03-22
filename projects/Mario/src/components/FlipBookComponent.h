@@ -7,6 +7,9 @@ namespace BHive
 {
 	struct FlipBookComponent : public Component
 	{
+		FlipBookComponent() = default;
+		FlipBookComponent(const FlipBookComponent &) = default;
+
 		bool AutoPlay{true};
 
 		FColor Color{0xffffffff};

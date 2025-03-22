@@ -28,10 +28,6 @@ namespace BHive
 		physc.Settings.LinearDamping = 0.f;
 		physc.Settings.Mass = 10.f;
 		physc.Settings.BodyType = EBodyType::Dynamic;
-
-		auto bc = GetComponent<BoxComponent>();
-		bc->Extents = {.5f, .5f, .5f};
-		bc->OnCollisionEnter.bind(this, &Player::OnCollisionEnter);
 	}
 
 	void Player::Begin()
@@ -40,9 +36,15 @@ namespace BHive
 
 		auto input = GetComponent<InputComponent>();
 
-		input->GetInstance()->bind_key("Jump", EventStatus::PRESS, this, &Player::Jump);
-		input->GetInstance()->bind_axis("MoveLeft", this, &Player::Move, -1.f);
-		input->GetInstance()->bind_axis("MoveRight", this, &Player::Move, 1.f);
+		if (auto instance = input->GetInstance())
+		{
+			instance->bind_key("Jump", EventStatus::PRESS, this, &Player::Jump);
+			instance->bind_axis("MoveLeft", this, &Player::Move, -1.f);
+			instance->bind_axis("MoveRight", this, &Player::Move, 1.f);
+		}
+
+		auto bc = GetComponent<BoxComponent>();
+		bc->OnCollisionEnter.bind(this, &Player::OnCollisionEnter);
 	}
 
 	void Player::Jump(const InputValue &value)
@@ -78,6 +80,8 @@ namespace BHive
 
 	void Player::OnCollisionEnter(ColliderComponent *component, GameObject *other)
 	{
+		LOG_TRACE("CollisionEnter : {}", other->GetName());
+
 		if ((other->GetComponent<TagComponent>()->Groups & BREAKABLE_BLOCKS) != 0)
 		{
 			other->Destroy();

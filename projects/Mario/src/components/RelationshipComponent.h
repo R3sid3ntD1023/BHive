@@ -9,7 +9,10 @@ namespace BHive
 {
 	struct RelationshipComponent : public Component
 	{
-		UUID Parent = UUID::Null;
+		RelationshipComponent() = default;
+		RelationshipComponent(const RelationshipComponent &) = default;
+
+		UUID Parent = NullID;
 		std::unordered_set<UUID> Children;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override { ar(Parent, Children); };

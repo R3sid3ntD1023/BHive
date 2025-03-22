@@ -8,6 +8,9 @@ namespace BHive
 {
 	struct TransformComponent : public Component
 	{
+		TransformComponent() = default;
+		TransformComponent(const TransformComponent &) = default;
+
 		FTransform Transform{};
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override { ar(Transform); }

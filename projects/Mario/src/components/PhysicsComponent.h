@@ -44,6 +44,9 @@ namespace BHive
 
 	struct PhysicsComponent : public Component
 	{
+		PhysicsComponent() = default;
+		PhysicsComponent(const PhysicsComponent &) = default;
+
 		PhysicsSettings Settings;
 
 		void Begin() override;

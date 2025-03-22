@@ -7,15 +7,17 @@ namespace BHive
 {
 	struct SpriteComponent : public Component
 	{
+		SpriteComponent() = default;
+		SpriteComponent(const SpriteComponent &other) = default;
+
 		glm::vec2 Tiling{1, 1};
 
-		glm::vec2 SpriteSize{1, 1};
+		glm::vec2 Size{1, 1};
 
-		FColor SpriteColor{0xffffffff};
+		FColor Color{0xffffffff};
 
-		Ref<Sprite> Sprite;
+		Ref<Sprite> SpriteAsset;
 
-		void Update(float) override;
 		void Render() override;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;

@@ -7,6 +7,9 @@ namespace BHive
 {
 	struct CameraComponent : public Component
 	{
+		CameraComponent() = default;
+		CameraComponent(const CameraComponent &) = default;
+
 		SceneCamera Camera;
 		bool IsPrimary = true;
 

@@ -26,7 +26,7 @@ namespace BHive
 	private:
 		Ref<World> mCurrentWorld;
 
-		UUID mPlayerID = UUID::Null;
+		UUID mPlayerID = NullID;
 		ResourceManager mResourceManager{RESOURCE_PATH, "AssetRegistry.json"};
 	};
 } // namespace BHive
