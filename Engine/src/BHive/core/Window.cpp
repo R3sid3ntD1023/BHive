@@ -96,6 +96,12 @@ namespace BHive
 		glfwSetWindowPos(mWindow, x, y);
 	}
 
+	void Window::SetTitle(const std::string &title)
+	{
+		glfwSetWindowTitle(mWindow, title.c_str());
+		mData.Title = title;
+	}
+
 	void Window::SetEventCallback(FOnWindowInputEvent &event)
 	{
 		mData.Input.mEvent = event;

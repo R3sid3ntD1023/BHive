@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
-#include "IWindow.h"
+#include "editor/IWindow.h"
 
 namespace BHive
 {

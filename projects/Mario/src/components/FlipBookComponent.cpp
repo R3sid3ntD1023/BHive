@@ -26,7 +26,7 @@ namespace BHive
 	}
 	void FlipBookComponent::Render()
 	{
-		if (!FlipBookAsset || !Instance)
+		if (!FlipBookAsset)
 			return;
 
 		auto owner = GetOwner();

@@ -10,7 +10,7 @@
 
 namespace BHive
 {
-	using ComponentList = std::unordered_map<size_t, Component *>;
+	using ComponentList = std::vector<Component *>;
 
 	struct GameObject
 	{
@@ -27,7 +27,7 @@ namespace BHive
 			ASSERT(!HasComponent<T>());
 
 			auto &component = mWorld->mRegistry.emplace<T>(mEntityHandle, std::forward<TArgs>(args)...);
-			RegisterComponent<T>(&component);
+			RegisterComponent(&component);
 			return &component;
 		}
 
@@ -35,7 +35,7 @@ namespace BHive
 		T *EmplaceOrReplaceComponent(const Component &srcComponent)
 		{
 			auto &component = mWorld->mRegistry.emplace_or_replace<T>(mEntityHandle, static_cast<const T &>(srcComponent));
-			RegisterComponent<T>(&component);
+			RegisterComponent(&component);
 			return &component;
 		}
 
@@ -59,7 +59,7 @@ namespace BHive
 		void RemoveComponent()
 		{
 			ASSERT(HasComponent<T>());
-			UnRegisterComponent<T>(GetComponent<T>());
+			UnRegisterComponent(GetComponent<T>());
 			mWorld->mRegistry.remove<T>(mEntityHandle);
 		}
 
@@ -104,23 +104,13 @@ namespace BHive
 			return typeid(T).hash_code();
 		}
 
-		template <typename T>
-		void RegisterComponent(Component *component)
-		{
-			component->mOwningObject = this;
-			mComponents.emplace(GetComponentHash<T>(), component);
-		}
+		void RegisterComponent(Component *component);
 
-		template <typename T>
-		void UnRegisterComponent(Component *component)
-		{
-			mComponents.erase(GetComponentHash<T>());
-		}
+		void UnRegisterComponent(Component *component);
 
 	private:
 		entt::entity mEntityHandle{entt::null};
 		ComponentList mComponents;
-		PhysicsComponent mPhysicsComponent;
 		World *mWorld = nullptr;
 	};
 } // namespace BHive

@@ -15,7 +15,10 @@ namespace BHive
 			Alt = 1 << 2,
 			Super = 1 << 3,
 			Caps_lock = 1 << 4,
-			Num_lock = 1 << 5
+			Num_lock = 1 << 5,
+			Control_Alt = Control | Alt,
+			Control_Shift = Control | Shift,
+			Control_Alt_Shift = Control | Alt | Shift
 		};
 	}
 } // namespace BHive

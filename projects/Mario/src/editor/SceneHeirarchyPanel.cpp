@@ -3,7 +3,7 @@
 #include "objects/GameObject.h"
 #include "gui/GUICore.h"
 #include "subsystem/SubSystem.h"
-#include "editor/SelectionSubSystem.h"
+#include "editor/subsystems/SelectionSubSystem.h"
 
 namespace BHive
 {

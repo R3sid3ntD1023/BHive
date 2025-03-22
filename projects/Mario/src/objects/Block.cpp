@@ -25,26 +25,15 @@ namespace BHive
 		AddComponent<SpriteComponent>();
 	}
 
-	void Block::SetSize(const glm::vec2 &size)
-	{
-		GetComponent<SpriteComponent>()->SpriteSize = size;
-		GetComponent<BoxComponent>()->Extents = {size.x * .5f, size.y * .5f, 1.0f};
-	}
-
-	void Block::SetTiling(const glm::vec2 &tiling)
-	{
-		GetComponent<SpriteComponent>()->Tiling = tiling;
-	}
-
-	void Block::SetSprite(const Ref<Sprite> &sprite)
-	{
-		GetComponent<SpriteComponent>()->Sprite = sprite;
-	}
-
 	QuestionBlock::QuestionBlock(const entt::entity &handle, World *world)
 		: BlockBase(handle, world)
 	{
 		AddComponent<FlipBookComponent>();
+	}
+
+	REFLECT(BlockBase)
+	{
+		BEGIN_REFLECT(BlockBase);
 	}
 
 	REFLECT(Block)

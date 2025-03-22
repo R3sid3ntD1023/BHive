@@ -1,13 +1,15 @@
 #include "EditorLayer.h"
 #include "GUI/Gui.h"
+#include "gui/ImGuiExtended.h"
 #include "gfx/Framebuffer.h"
 #include "core/Application.h"
 #include "core/Window.h"
 #include "core/layers/ImGuiLayer.h"
 #include "gfx/RenderCommand.h"
 #include "renderers/Renderer.h"
-#include "editor/WindowSubSystem.h"
-#include "editor/SelectionSubSystem.h"
+#include "editor/subsystems/WindowSubSystem.h"
+#include "editor/subsystems/EditorSubSystem.h"
+#include "editor/subsystems/SelectionSubSystem.h"
 #include "subsystem/SubSystem.h"
 #include "Inspectors.h"
 #include "objects/GameObject.h"
@@ -33,6 +35,11 @@ namespace BHive
 					SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().Clear();
 					mEditorWorld = asset;
 					SetActiveWorld(mEditorWorld);
+
+					auto &meta_data = mAssetManager.GetMetaData(handle);
+					mCurrentWorldPath = RESOURCE_PATH / meta_data.Path;
+					auto &window = Application::Get().GetWindow();
+					window.SetTitle(mCurrentWorldPath.stem().string());
 				}
 			});
 
@@ -53,6 +60,7 @@ namespace BHive
 		mEditorCamera = EditorCamera(75.f, aspect, .01f, 100.f);
 
 		SubSystemContext::Get().AddSubSystem<SelectionSubSystem>();
+		SubSystemContext::Get().AddSubSystem<EditorSubSystem>();
 		auto &window_system = SubSystemContext::Get().AddSubSystem<WindowSubSystem>();
 		mSceneHeirarchyPanel = window_system.CreateWindow<SceneHierarchyPanel>();
 		mPropertiesPanel = window_system.CreateWindow<PropertiesPanel>();
@@ -143,7 +151,7 @@ namespace BHive
 					SaveWorld();
 				}
 
-				if (ImGui::MenuItem("SaveAs...", "Ctrl + Alt + S"))
+				if (ImGui::MenuItem("SaveAs...", "Ctrl + Shift + S"))
 				{
 					SaveWorldAs();
 				}
@@ -157,12 +165,7 @@ namespace BHive
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
 		if (ImGui::Begin("Viewport", &viewport_status, ImGuiWindowFlags_MenuBar))
 		{
-			if (ImGui::BeginMenuBar())
-			{
-				ViewportGUI();
-
-				ImGui::EndMenuBar();
-			}
+			ViewportGUI();
 
 			auto size = ImGui::GetContentRegionAvail();
 			auto viewport_min_region = ImGui::GetWindowContentRegionMin();
@@ -231,7 +234,7 @@ namespace BHive
 		mCommands.emplace(FCommand{Key::O, Mod::Control}, [&]() { LoadWorld(); });
 		mCommands.emplace(FCommand{Key::N, Mod::Control}, [&]() { CreateWorld(); });
 		mCommands.emplace(FCommand{Key::S, Mod::Control}, [&]() { SaveWorld(); });
-		mCommands.emplace(FCommand{Key::S, Mod::Control | Mod::Alt}, [&]() { SaveWorldAs(); });
+		mCommands.emplace(FCommand{Key::S, Mod::Control_Shift}, [&]() { SaveWorldAs(); });
 	}
 
 	bool EditorLayer::OnWindowResize(WindowResizeEvent &e)
@@ -265,6 +268,8 @@ namespace BHive
 		SetActiveWorld(mEditorWorld);
 
 		mCurrentWorldPath = "";
+		auto &window = Application::Get().GetWindow();
+		window.SetTitle("New World");
 	}
 
 	void EditorLayer::SaveWorld()
@@ -276,6 +281,9 @@ namespace BHive
 		}
 
 		AssetFactory::Export(mEditorWorld, mCurrentWorldPath);
+
+		auto &window = Application::Get().GetWindow();
+		window.SetTitle(mCurrentWorldPath.stem().string());
 	}
 
 	void EditorLayer::SaveWorldAs()
@@ -301,6 +309,9 @@ namespace BHive
 		mEditorWorld = Cast<World>(asset);
 		SetActiveWorld(mEditorWorld);
 		mCurrentWorldPath = path;
+
+		auto &window = Application::Get().GetWindow();
+		window.SetTitle(mCurrentWorldPath.stem().string());
 	}
 
 	void EditorLayer::SetActiveWorld(const Ref<World> &world)
@@ -311,19 +322,56 @@ namespace BHive
 
 	void EditorLayer::ViewportGUI()
 	{
-		auto label = mActiveWorld->IsRunning() ? "Stop" : "Play";
-		if (ImGui::Button(label))
+		auto &editor_subsystem = GetSubSystem<EditorSubSystem>();
+
+		if (ImGui::BeginChild("Buttons##Viewport", {0, 40}))
 		{
-			if (mActiveWorld->IsRunning())
+			auto size = ImGui::GetContentRegionAvail();
+
+			const bool running = mActiveWorld->IsRunning();
+			const bool paused = mActiveWorld->IsPaused();
+
+			auto play_icon = editor_subsystem.GetIcon(EDITOR_RESOURCE_PATH "icons/PlayButton.png");
+			auto stop_icon = editor_subsystem.GetIcon(EDITOR_RESOURCE_PATH "icons/StopButton.png");
+
+			auto icon = running ? stop_icon : play_icon;
+
+			ImGui::SetCursorPosX(size.x * .5f - 16);
+			if (ImGui::ImageButton("Icon##Viewport", (ImTextureID)(uint64_t)*icon, {32, 32}, {0, 1}, {1, 0}))
 			{
-				mActiveWorld->End();
-				SetActiveWorld(mEditorWorld);
+				if (running)
+				{
+					mActiveWorld->End();
+					SetActiveWorld(mEditorWorld);
+				}
+				else
+				{
+					SetActiveWorld(mEditorWorld->Copy());
+					mActiveWorld->Begin();
+				}
 			}
-			else
+
+			if (running)
 			{
-				SetActiveWorld(mEditorWorld->Copy());
-				mActiveWorld->Begin();
+				ImGui::SameLine();
+
+				auto pause = editor_subsystem.GetIcon(EDITOR_RESOURCE_PATH "icons/PauseButton.png");
+				auto step = editor_subsystem.GetIcon(EDITOR_RESOURCE_PATH "icons/StepButton.png");
+
+				auto pause_icon = !paused ? pause : play_icon;
+				if (ImGui::ImageButton("PauseIcon##Viewport", (ImTextureID)(uint64_t)*pause_icon, {32, 32}, {0, 1}, {1, 0}))
+				{
+					mActiveWorld->SetPaused(!paused);
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::ImageButton("StepIcon##Viewport", (ImTextureID)(uint64_t)*step, {32, 32}, {0, 1}, {1, 0}))
+				{
+					mActiveWorld->Step();
+				}
 			}
+			ImGui::EndChild();
 		}
 	}
 

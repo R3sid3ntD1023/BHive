@@ -24,15 +24,22 @@ namespace BHive
 
 		float Mass = 1.0f;
 
-		float AngularDamping = 0.0f;
-
 		float LinearDamping = 0.0f;
+
+		float AngularDamping = 0.0f;
 
 		TEnumAsByte<ELockAxis> LinearLockAxis = NoAxis;
 
 		TEnumAsByte<ELockAxis> AngularLockAxis = NoAxis;
 
 		bool GravityEnabled = true;
+
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(PhysicsEnabled, BodyType, Mass, LinearDamping, AngularDamping, LinearLockAxis, AngularLockAxis,
+			   GravityEnabled);
+		}
 	};
 
 	struct PhysicsComponent : public Component
@@ -56,6 +63,9 @@ namespace BHive
 		void *GetRigidBody() { return mRigidBodyInstance; }
 
 		EBodyType GetBodyType() const;
+
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(Component)
 

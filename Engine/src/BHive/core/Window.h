@@ -31,6 +31,7 @@ namespace BHive
 		void Maximize();
 		void Minimize();
 		void SetPosition(int x, int y);
+		void SetTitle(const std::string &title);
 		void SetEventCallback(FOnWindowInputEvent &event);
 
 		static void PollEvents();

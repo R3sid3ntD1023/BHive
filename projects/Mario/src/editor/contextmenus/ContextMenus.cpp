@@ -1,6 +1,6 @@
 #include "ContextMenus.h"
 #include "core/subsystem/SubSystem.h"
-#include "editor/WindowSubSystem.h"
+#include "editor/subsystems/WindowSubSystem.h"
 
 #include "editor/editorwindows/AudioEditor.h"
 #include "editor/editorwindows/FlipBookEditor.h"

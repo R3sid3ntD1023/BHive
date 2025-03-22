@@ -61,9 +61,9 @@ namespace BHive
 		if (!Settings.PhysicsEnabled)
 			return;
 
-		auto object = GetOwner();
-		auto world = object->GetWorld()->GetPhysicsWorld();
-		world->destroyRigidBody((rp3d::RigidBody *)mRigidBodyInstance);
+		// auto object = GetOwner();
+		// auto world = object->GetWorld()->GetPhysicsWorld();
+		// world->destroyRigidBody((rp3d::RigidBody *)mRigidBodyInstance);
 	}
 
 	void PhysicsComponent::ApplyForce(const glm::vec3 &force)
@@ -112,6 +112,16 @@ namespace BHive
 		{
 			return (EBodyType)rb->getType();
 		}
+	}
+
+	void PhysicsComponent::Save(cereal::BinaryOutputArchive &ar) const
+	{
+		ar(Settings);
+	}
+
+	void PhysicsComponent::Load(cereal::BinaryInputArchive &ar)
+	{
+		ar(Settings);
 	}
 
 	REFLECT(PhysicsSettings)

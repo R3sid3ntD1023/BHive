@@ -32,6 +32,8 @@ namespace BHive
 		void Simulate(float dt);
 		void SimulateEnd();
 		void SetPaused(bool paused);
+		void Step(int32_t frames = 1);
+
 		Ref<World> Copy() const;
 
 		void RenderPhysicsWorld();
@@ -78,6 +80,7 @@ namespace BHive
 
 		bool mIsRunning = false;
 		bool mIsPaused = false;
+		int32_t mFrames = 1;
 
 		entt::registry mRegistry;
 

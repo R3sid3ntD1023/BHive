@@ -7,8 +7,8 @@ namespace BHive
 {
 	struct FCommand
 	{
-		int32_t InKey = 0;
-		int32_t InMod = 0;
+		uint32_t InKey = 0;
+		uint8_t InMod = 0;
 
 		inline bool operator==(const FCommand &rhs) const { return InKey == rhs.InKey && InMod == rhs.InMod; }
 		inline bool operator!=(const FCommand &rhs) const { return !(*this == rhs); }
@@ -22,7 +22,7 @@ namespace std
 	{
 		size_t operator()(const BHive::FCommand &command) const
 		{
-			return hash<int32_t>()(command.InKey) + hash<int32_t>()(command.InMod);
+			return hash<uint32_t>()(command.InKey) | hash<uint8_t>()(command.InMod);
 		}
 	};
 

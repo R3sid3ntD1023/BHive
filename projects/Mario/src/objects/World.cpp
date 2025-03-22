@@ -15,7 +15,7 @@ namespace BHive
 {
 	void CopyComponents(const Ref<GameObject> &src, Ref<GameObject> &dst)
 	{
-		for (auto &[typehash, component] : src->GetComponents())
+		for (auto &component : src->GetComponents())
 		{
 			auto type = component->get_type();
 			type.get_method(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME).invoke(dst, *component);
@@ -162,12 +162,15 @@ namespace BHive
 
 	void World::Update(float dt)
 	{
-		if (mIsRunning && !mIsPaused)
+		if (mIsRunning)
 		{
-			Simulate(dt);
+			if (!mIsPaused || mFrames-- > 0)
+			{
+				Simulate(dt);
 
-			for (auto &object : mObjects)
-				object.second->Update(dt);
+				for (auto &object : mObjects)
+					object.second->Update(dt);
+			}
 		}
 
 		Render();
@@ -250,6 +253,11 @@ namespace BHive
 		mIsPaused = paused;
 	}
 
+	void World::Step(int32_t frames)
+	{
+		mFrames = frames;
+	}
+
 	Ref<World> World::Copy() const
 	{
 		auto new_world = CreateRef<World>(*this);
@@ -262,7 +270,12 @@ namespace BHive
 		for (auto &[id, src_obj] : objects)
 		{
 			auto type = src_obj->get_type();
-			auto new_obj = type.create({dst_registry.create(), new_world.get()}).convert<Ref<GameObject>>();
+
+			auto new_obj = type.create({dst_registry.create(), new_world.get()}).get_value<Ref<GameObject>>();
+
+			if (!new_obj)
+				continue;
+
 			CopyComponents(src_obj, new_obj);
 			new_world->AddGameObject(new_obj);
 		}

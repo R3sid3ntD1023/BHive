@@ -14,44 +14,37 @@ namespace BHive
 		AddComponent<TransformComponent>();
 		AddComponent<IDComponent>();
 		AddComponent<RelationshipComponent>();
-
-		mPhysicsComponent.mOwningObject = this;
+		AddComponent<PhysicsComponent>();
 	}
 
 	void GameObject::Begin()
 	{
-		mPhysicsComponent.Begin();
-
 		for (auto &component : mComponents)
-			component.second->Begin();
+			component->Begin();
 	}
 
 	void GameObject::Update(float dt)
 	{
-		mPhysicsComponent.Update(dt);
-
 		for (auto &component : mComponents)
-			component.second->Update(dt);
+			component->Update(dt);
 	}
 
 	void GameObject::Render()
 	{
 		for (auto &component : mComponents)
-			component.second->Render();
+			component->Render();
 	}
 
 	void GameObject::End()
 	{
 
 		for (auto &component : mComponents)
-			component.second->End();
-
-		mPhysicsComponent.End();
+			component->End();
 	}
 
 	PhysicsComponent &GameObject::GetPhysicsComponent()
 	{
-		return mPhysicsComponent;
+		return *GetComponent<PhysicsComponent>();
 	}
 
 	void GameObject::SetName(const std::string &name)
@@ -68,7 +61,7 @@ namespace BHive
 	{
 		ar(mComponents.size());
 
-		for (auto &[typehash, component] : mComponents)
+		for (auto component : mComponents)
 		{
 			ar(component->get_type());
 			component->Save(ar);
@@ -215,6 +208,20 @@ namespace BHive
 			children.insert(mWorld->GetGameObject(id));
 
 		return children;
+	}
+
+	void GameObject::RegisterComponent(Component *component)
+	{
+		component->mOwningObject = this;
+		mComponents.push_back(component);
+	}
+
+	void GameObject::UnRegisterComponent(Component *component)
+	{
+		auto it = std::find(mComponents.begin(), mComponents.end(), component);
+		if (it == mComponents.end())
+			return;
+		mComponents.erase(it);
 	}
 
 	REFLECT(GameObject)

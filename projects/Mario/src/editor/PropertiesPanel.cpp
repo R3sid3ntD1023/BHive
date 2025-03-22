@@ -1,7 +1,7 @@
 #include "PropertiesPanel.h"
 #include "gui/ImGuiExtended.h"
 #include "objects/GameObject.h"
-#include "editor/SelectionSubSystem.h"
+#include "editor/subsystems/SelectionSubSystem.h"
 #include "subsystem/SubSystem.h"
 #include "Inspectors.h"
 
@@ -20,6 +20,16 @@ namespace BHive
 			ImGui::SeparatorText("Details");
 
 			DrawAddComponent(selection);
+
+			for (auto &method : mDeleteComponentInvokers)
+			{
+				method.invoke(selection);
+			}
+
+			if (mDeleteComponentInvokers.size())
+			{
+				mDeleteComponentInvokers.clear();
+			}
 		}
 	}
 
@@ -27,7 +37,7 @@ namespace BHive
 	{
 		for (auto &component : obj->GetComponents())
 		{
-			DrawComponent(component.second);
+			DrawComponent(component);
 		}
 	}
 
@@ -59,7 +69,7 @@ namespace BHive
 				if (auto method = type.get_method(REMOVE_COMPONENT_FUNCTION_NAME);
 					method && ImGui::Button("Remove", button_size))
 				{
-					method.invoke(selection);
+					mDeleteComponentInvokers.push_back(method);
 				}
 			}
 

@@ -9,24 +9,25 @@ namespace BHive
 	struct BlockBase : public GameObject
 	{
 		BlockBase(const entt::entity &handle, World *world);
+
+		REFLECTABLEV(GameObject)
 	};
 
 	struct Block : public BlockBase
 	{
 		Block(const entt::entity &handle, World *world);
 
-		void SetSize(const glm::vec2 &size);
-
-		void SetTiling(const glm::vec2 &tiling);
-		void SetSprite(const Ref<Sprite> &sprite);
-
-		REFLECTABLEV(GameObject)
+		REFLECTABLEV(BlockBase)
 	};
 
 	struct QuestionBlock : public BlockBase
 	{
 		QuestionBlock(const entt::entity &handle, World *world);
 
-		REFLECTABLEV(GameObject)
+		REFLECTABLEV(BlockBase)
 	};
+
+	REFLECT_EXTERN(BlockBase)
+	REFLECT_EXTERN(Block)
+	REFLECT_EXTERN(QuestionBlock)
 } // namespace BHive

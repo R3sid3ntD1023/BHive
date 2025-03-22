@@ -62,12 +62,12 @@ namespace BHive
 
 	void ColliderComponent::ReleaseCollisionShape(void *rb)
 	{
-		if (CollisionEnabled && mCollider)
-		{
-			((rp3d::RigidBody *)rb)->removeCollider((rp3d::Collider *)mCollider);
-			OnReleaseCollisionShape();
-			mCollider = nullptr;
-		}
+		// if (CollisionEnabled && mCollider)
+		// {
+		// 	((rp3d::RigidBody *)rb)->removeCollider((rp3d::Collider *)mCollider);
+		// 	OnReleaseCollisionShape();
+		// 	mCollider = nullptr;
+		// }
 	}
 
 	REFLECT(ColliderComponent)
