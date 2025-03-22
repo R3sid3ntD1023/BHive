@@ -10,7 +10,17 @@
 
 namespace BHive
 {
-	using ComponentList = std::vector<Component *>;
+	struct FRegisteredComponent
+	{
+		size_t ComponentHash = 0;
+		Component *ComponentPtr = nullptr;
+
+		Component *operator->() const { return ComponentPtr; }
+
+		Component &operator*() const { return *ComponentPtr; }
+	};
+
+	using ComponentList = std::vector<FRegisteredComponent>;
 
 	struct GameObject
 	{
@@ -27,7 +37,7 @@ namespace BHive
 			ASSERT(!HasComponent<T>());
 
 			auto &component = mWorld->mRegistry.emplace<T>(mEntityHandle, std::forward<TArgs>(args)...);
-			RegisterComponent(&component);
+			RegisterComponent<T>(&component);
 			return &component;
 		}
 
@@ -35,7 +45,7 @@ namespace BHive
 		T *EmplaceOrReplaceComponent(const Component &srcComponent)
 		{
 			auto &component = mWorld->mRegistry.emplace_or_replace<T>(mEntityHandle, static_cast<const T &>(srcComponent));
-			RegisterComponent(&component);
+			RegisterComponent<T>(&component);
 			return &component;
 		}
 
@@ -59,7 +69,7 @@ namespace BHive
 		void RemoveComponent()
 		{
 			ASSERT(HasComponent<T>());
-			UnRegisterComponent(GetComponent<T>());
+			UnRegisterComponent<T>();
 			mWorld->mRegistry.remove<T>(mEntityHandle);
 		}
 
@@ -104,9 +114,36 @@ namespace BHive
 			return typeid(T).hash_code();
 		}
 
-		void RegisterComponent(Component *component);
+		template <typename T>
+		void RegisterComponent(Component *component)
+		{
+			component->mOwningObject = this;
+			auto hash = GetComponentHash<T>();
 
-		void UnRegisterComponent(Component *component);
+			auto it = std::find_if(
+				mComponents.begin(), mComponents.end(),
+				[hash](const FRegisteredComponent &comp) { return comp.ComponentHash == hash; });
+
+			if (it != mComponents.end())
+			{
+				(*it).ComponentPtr = component;
+				return;
+			}
+
+			mComponents.emplace_back(FRegisteredComponent{hash, component});
+		}
+
+		template <typename T>
+		void UnRegisterComponent()
+		{
+			auto it = std::find_if(
+				mComponents.begin(), mComponents.end(),
+				[&](const FRegisteredComponent &comp) { return comp.ComponentHash == GetComponentHash<T>(); });
+			if (it == mComponents.end())
+				return;
+
+			mComponents.erase(it);
+		}
 
 	private:
 		entt::entity mEntityHandle{entt::null};

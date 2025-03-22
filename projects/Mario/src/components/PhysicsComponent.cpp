@@ -61,9 +61,9 @@ namespace BHive
 		if (!Settings.PhysicsEnabled)
 			return;
 
-		// auto object = GetOwner();
-		// auto world = object->GetWorld()->GetPhysicsWorld();
-		// world->destroyRigidBody((rp3d::RigidBody *)mRigidBodyInstance);
+		auto object = GetOwner();
+		auto world = object->GetWorld()->GetPhysicsWorld();
+		world->destroyRigidBody((rp3d::RigidBody *)mRigidBodyInstance);
 	}
 
 	void PhysicsComponent::ApplyForce(const glm::vec3 &force)

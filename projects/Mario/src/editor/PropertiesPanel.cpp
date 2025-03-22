@@ -37,7 +37,7 @@ namespace BHive
 	{
 		for (auto &component : obj->GetComponents())
 		{
-			DrawComponent(component);
+			DrawComponent(component.ComponentPtr);
 		}
 	}
 

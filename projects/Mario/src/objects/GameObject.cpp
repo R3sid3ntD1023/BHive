@@ -37,9 +37,11 @@ namespace BHive
 
 	void GameObject::End()
 	{
-
-		for (auto &component : mComponents)
+		for (auto it = mComponents.rbegin(); it != mComponents.rend(); it++)
+		{
+			auto component = (*it);
 			component->End();
+		}
 	}
 
 	PhysicsComponent &GameObject::GetPhysicsComponent()
@@ -208,20 +210,6 @@ namespace BHive
 			children.insert(mWorld->GetGameObject(id));
 
 		return children;
-	}
-
-	void GameObject::RegisterComponent(Component *component)
-	{
-		component->mOwningObject = this;
-		mComponents.push_back(component);
-	}
-
-	void GameObject::UnRegisterComponent(Component *component)
-	{
-		auto it = std::find(mComponents.begin(), mComponents.end(), component);
-		if (it == mComponents.end())
-			return;
-		mComponents.erase(it);
 	}
 
 	REFLECT(GameObject)
