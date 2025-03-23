@@ -4,6 +4,7 @@
 #include "physics/EventListener.h"
 #include "physics/PhysicsContext.h"
 #include "asset/Asset.h"
+#include "math/Transform.h"
 #include <glm/glm.hpp>
 #include <entt/entt.hpp>
 
@@ -11,6 +12,8 @@ namespace BHive
 {
 	class GameObject;
 	class Texture2D;
+	class Camera;
+
 	using ObjectList = std::unordered_map<UUID, Ref<GameObject>>;
 
 	class World : public Asset
@@ -65,6 +68,14 @@ namespace BHive
 
 		bool IsRunning() const { return mIsRunning; }
 		bool IsPaused() const { return mIsPaused; }
+
+		template <typename... T>
+		auto view() const
+		{
+			return mRegistry.view<T...>();
+		}
+
+		std::pair<Camera *, FTransform> GetPrimaryCamera();
 
 		REFLECTABLEV(Asset);
 

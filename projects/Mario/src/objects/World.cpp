@@ -357,6 +357,22 @@ namespace BHive
 		mPhysicsWorld->raycast(ray, &mHitListener, categoryMasks);
 	}
 
+	std::pair<Camera *, FTransform> World::GetPrimaryCamera()
+	{
+		auto view = mRegistry.view<CameraComponent, IDComponent>();
+		for (auto &e : view)
+		{
+			auto [camera_component, id_component] = view.get(e);
+			if (camera_component.IsPrimary)
+			{
+				Camera *camera = &camera_component.Camera;
+				auto t = GetGameObject(id_component.ID)->GetTransform().inverse();
+				return std::make_pair(camera, t);
+			}
+		}
+		return {nullptr, FTransform()};
+	}
+
 	REFLECT(World)
 	{
 		BEGIN_REFLECT(World) REFLECT_CONSTRUCTOR();

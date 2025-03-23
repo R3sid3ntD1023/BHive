@@ -17,6 +17,9 @@
 #include "asset/AssetFactory.h"
 #include "core/FileDialog.h"
 #include "editor/LogPanel.h"
+#include "components/CameraComponent.h"
+#include "components/IDComponent.h"
+#include "components/BoxComponent.h"
 #include <ImGuizmo.h>
 
 namespace BHive
@@ -135,7 +138,7 @@ namespace BHive
 		static bool properties_status = true;
 		static bool content_browser_status = true;
 
-		GUI::BeginDockSpace("DockSpace");
+		GUI::BeginDockSpace("DockSpace", nullptr, mMenuBarHeight);
 
 		if (ImGui::BeginMainMenuBar())
 		{
@@ -165,62 +168,16 @@ namespace BHive
 			ImGui::EndMainMenuBar();
 		}
 
-		SubSystemContext::Get().GetSubSystem<WindowSubSystem>().UpdateWindows();
+		ViewportGUI();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-		if (ImGui::Begin("Viewport", &viewport_status, ImGuiWindowFlags_MenuBar))
+		if (ImGui::Begin("Viewport", &viewport_status))
 		{
-			ViewportGUI();
 
-			auto size = ImGui::GetContentRegionAvail();
-			auto viewport_min_region = ImGui::GetWindowContentRegionMin();
-			auto viewport_max_region = ImGui::GetWindowContentRegionMax();
-			auto viewport_offset = ImGui::GetWindowPos();
-			mViewportHovered = ImGui::IsWindowHovered();
-			mViewportFocused = ImGui::IsWindowFocused();
-			Application::Get().GetImGuiLayer().BlockEvents(!(mViewportHovered && mViewportFocused));
-
-			mViewportSize = {size.x, size.y};
-			mViewportBounds[0] = {viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y};
-			mViewportBounds[1] = {viewport_max_region.x + viewport_offset.x, viewport_max_region.y + viewport_offset.y};
-
-			ImGui::Image((ImTextureID)(uint64_t)*mFramebuffer->GetColorAttachment(), size, {0, 1}, {1, 0});
-
-			auto &selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>();
-			auto selected_object = selection.GetSelection();
-
-			if (selected_object && mGizmoOperation != -1)
-			{
-
-				glm::mat4 world_transform = selected_object->GetTransform().to_mat4();
-				glm::mat4 local_transform = selected_object->GetLocalTransform().to_mat4();
-				glm::mat4 parent_transform = glm::inverse(world_transform) * local_transform;
-
-				const glm::mat4 view = mEditorCamera.GetView();
-				const glm::mat4 projection = mEditorCamera.GetProjection();
-
-				ImGuizmo::SetOrthographic(false);
-				ImGuizmo::SetDrawlist();
-				ImGuizmo::SetRect(
-					mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x,
-					mViewportBounds[1].y - mViewportBounds[0].y);
-
-				float snap_value = mSnappingEnabled ? sSnapValues[(ImGuizmo::OPERATION)mGizmoOperation] : 0.0f;
-				float snap_values[3] = {snap_value, snap_value, snap_value};
-
-				glm::mat4 delta{1.f};
-				if (ImGuizmo::Manipulate(
-						&view[0][0], &projection[0][0], (ImGuizmo::OPERATION)mGizmoOperation, (ImGuizmo::MODE)mGizmoMode,
-						&world_transform[0][0], &delta[0][0], snap_values))
-				{
-					glm::mat4 new_transform = glm::inverse(parent_transform) * world_transform;
-
-					selected_object->SetTransform(new_transform);
-				}
-			}
+			Viewport();
 		}
-
 		ImGui::End();
+
 		ImGui::PopStyleVar();
 
 		if (ImGui::Begin("Assets"))
@@ -236,6 +193,8 @@ namespace BHive
 
 		ImGui::End();
 
+		SubSystemContext::Get().GetSubSystem<WindowSubSystem>().UpdateWindows();
+
 		GUI::EndDockSpace();
 	}
 
@@ -246,6 +205,7 @@ namespace BHive
 		mCommands.emplace(FCommand{Key::E}, [&]() { mGizmoOperation = ImGuizmo::ROTATE; });
 		mCommands.emplace(FCommand{Key::R}, [&]() { mGizmoOperation = ImGuizmo::SCALE; });
 		mCommands.emplace(FCommand{Key::T}, [&]() { mGizmoOperation = ImGuizmo::UNIVERSAL; });
+		mCommands.emplace(FCommand{Key::B}, [&]() { mGizmoOperation = ImGuizmo::BOUNDS; });
 		mCommands.emplace(FCommand{Key::L}, [&]() { mGizmoMode = ImGuizmo::LOCAL; });
 		mCommands.emplace(FCommand{Key::K}, [&]() { mGizmoMode = ImGuizmo::WORLD; });
 
@@ -341,13 +301,76 @@ namespace BHive
 		mSceneHeirarchyPanel->SetContext(mActiveWorld);
 	}
 
+	void EditorLayer::Viewport()
+	{
+		if (ImGui::BeginChild("Viewport##Image"))
+		{
+			auto size = ImGui::GetContentRegionAvail();
+			auto viewport_min_region = ImGui::GetWindowContentRegionMin();
+			auto viewport_max_region = ImGui::GetWindowContentRegionMax();
+			auto viewport_offset = ImGui::GetWindowPos();
+			mViewportHovered = ImGui::IsWindowHovered();
+			mViewportFocused = ImGui::IsWindowFocused();
+			Application::Get().GetImGuiLayer().BlockEvents(!(mViewportHovered && mViewportFocused));
+
+			mViewportSize = {size.x, size.y};
+			mViewportBounds[0] = {viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y};
+			mViewportBounds[1] = {viewport_max_region.x + viewport_offset.x, viewport_max_region.y + viewport_offset.y};
+
+			ImGui::Image((ImTextureID)(uint64_t)*mFramebuffer->GetColorAttachment(), size, {0, 1}, {1, 0});
+
+			auto &selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>();
+			auto selected_object = selection.GetSelection();
+
+			if (selected_object && mGizmoOperation != -1 && !mActiveWorld->IsRunning())
+			{
+				ImGuizmo::SetOrthographic(false);
+				ImGuizmo::SetDrawlist();
+				ImGuizmo::SetRect(
+					mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x,
+					mViewportBounds[1].y - mViewportBounds[0].y);
+
+				const glm::mat4 view = mEditorCamera.GetView();
+				const glm::mat4 projection = mEditorCamera.GetProjection();
+				const glm::mat4 local_transform = selected_object->GetLocalTransform().to_mat4();
+
+				glm::mat4 world_transform = selected_object->GetTransform().to_mat4();
+
+				float snap_value = mSnappingEnabled ? sSnapValues[(ImGuizmo::OPERATION)mGizmoOperation] : 0.0f;
+				float snap_values[3] = {snap_value, snap_value, snap_value};
+
+				glm::mat4 delta{1.f};
+
+				ImGuizmo::Manipulate(
+					&view[0][0], &projection[0][0], (ImGuizmo::OPERATION)mGizmoOperation, (ImGuizmo::MODE)mGizmoMode,
+					&world_transform[0][0], &delta[0][0], snap_values);
+
+				if (ImGuizmo::IsUsing())
+				{
+					glm::mat4 new_transform = delta * local_transform;
+
+					selected_object->SetTransform(new_transform);
+				}
+			}
+
+			ImGui::EndChild();
+		}
+	}
+
 	void EditorLayer::ViewportGUI()
 	{
 		auto &editor_subsystem = GetSubSystem<EditorSubSystem>();
+		auto line_height = ImGui::GetLineHeight();
+		const auto height = mMenuBarHeight * 2.f * .8f;
+		const auto icon_size = height;
+		const int num_buttons = 3;
 
-		if (ImGui::BeginChild("Buttons##Viewport", {0, 40}))
+		bool opened = ImGui::BeginMenuBar();
+
+		if (opened)
 		{
 			auto size = ImGui::GetContentRegionAvail();
+			auto spacing = ImGui::GetStyle().ItemSpacing.x;
 
 			const bool running = mActiveWorld->IsRunning();
 			const bool paused = mActiveWorld->IsPaused();
@@ -357,8 +380,12 @@ namespace BHive
 
 			auto icon = running ? stop_icon : play_icon;
 
-			ImGui::SetCursorPosX(size.x * .5f - 16);
-			if (ImGui::ImageButton("Icon##Viewport", (ImTextureID)(uint64_t)*icon, {32, 32}, {0, 1}, {1, 0}))
+			ImGui::SetCursorPosX((size.x * .5f) - ((num_buttons * icon_size * .5f * spacing) * .5f));
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {icon_size * .5f, icon_size * .5f});
+
+			if (ImGui::ImageButton(
+					"Viewport##PlayIcon", (ImTextureID)(uint64_t)*icon, {icon_size, icon_size}, {0, 1}, {1, 0}))
 			{
 				if (running)
 				{
@@ -374,28 +401,33 @@ namespace BHive
 				}
 			}
 
-			if (running)
+			ImGui::SameLine();
+
+			auto pause = editor_subsystem.GetIcon(EDITOR_RESOURCE_PATH "icons/PauseButton.png");
+			auto step = editor_subsystem.GetIcon(EDITOR_RESOURCE_PATH "icons/StepButton.png");
+
+			auto pause_icon = !paused ? pause : play_icon;
+
+			ImGui::BeginDisabled(!running);
+			if (ImGui::ImageButton(
+					"Viewport##PauseIcon", (ImTextureID)(uint64_t)*pause_icon, {icon_size, icon_size}, {0, 1}, {1, 0}))
 			{
-				ImGui::SameLine();
-
-				auto pause = editor_subsystem.GetIcon(EDITOR_RESOURCE_PATH "icons/PauseButton.png");
-				auto step = editor_subsystem.GetIcon(EDITOR_RESOURCE_PATH "icons/StepButton.png");
-
-				auto pause_icon = !paused ? pause : play_icon;
-				if (ImGui::ImageButton("PauseIcon##Viewport", (ImTextureID)(uint64_t)*pause_icon, {32, 32}, {0, 1}, {1, 0}))
-				{
-					mActiveWorld->SetPaused(!paused);
-				}
-
-				ImGui::SameLine();
-
-				if (ImGui::ImageButton("StepIcon##Viewport", (ImTextureID)(uint64_t)*step, {32, 32}, {0, 1}, {1, 0}))
-				{
-					mActiveWorld->Step();
-				}
+				mActiveWorld->SetPaused(!paused);
 			}
-			ImGui::EndChild();
+
+			ImGui::SameLine();
+
+			if (ImGui::ImageButton(
+					"Viewport##StepIcon", (ImTextureID)(uint64_t)*step, {icon_size, icon_size}, {0, 1}, {1, 0}))
+			{
+				mActiveWorld->Step();
+			}
+
+			ImGui::EndDisabled();
+			ImGui::PopStyleVar(2);
 		}
+
+		ImGui::EndMenuBar();
 	}
 
 } // namespace BHive
