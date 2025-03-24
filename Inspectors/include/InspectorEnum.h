@@ -4,26 +4,28 @@
 
 namespace BHive
 {
-    struct InspectorEnum : public Inspector
-    {
-        using EnumNames = std::unordered_map<int, std::string>;
+	struct Inspector_Enum : public Inspector
+	{
+		using EnumNames = std::unordered_map<int, std::string>;
 
-        virtual bool Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data = {});
+		virtual bool
+		Inspect(const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data = {});
 
-        REFLECTABLEV(Inspector)
+		REFLECTABLEV(Inspector)
 
-    protected:
-        EnumNames &GetEnumNameValues(const rttr::enumeration &enumeration);
+	protected:
+		EnumNames &GetEnumNameValues(const rttr::enumeration &enumeration);
 
-    private:
-        static inline std::unordered_map<rttr::type::type_id, EnumNames> mEnumNameCache;
-    };
+	private:
+		static inline std::unordered_map<rttr::type::type_id, EnumNames> mEnumNameCache;
+	};
 
-    struct InspectorEnumAsBtye : public InspectorEnum
-    {
+	struct Inspector_EnumAsByte : public Inspector_Enum
+	{
 
-        virtual bool Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data = {});
+		virtual bool
+		Inspect(const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data = {});
 
-        REFLECTABLEV(InspectorEnum)
-    };
+		REFLECTABLEV(Inspector_Enum)
+	};
 } // namespace BHive

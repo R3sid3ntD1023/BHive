@@ -7,6 +7,7 @@
 
 namespace BHive
 {
+#define DRAG_DROP_GAMEOBJECT "GAMEOBJECT"
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<World> &world)
 		: mWorld(world)
@@ -56,16 +57,16 @@ namespace BHive
 
 		ImGui::Dummy(ImGui::GetContentRegionAvail());
 
-		// if (ImGui::BeginDragDropTarget())
-		// {
-		// 	if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_ENTITY_NAME))
-		// 	{
-		// 		auto entity = *(Entity **)payload->Data;
-		// 		entity->DetachFromParent();
-		// 	}
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_GAMEOBJECT))
+			{
+				auto id = *(UUID *)payload->Data;
+				mWorld->GetGameObject(id)->RemoveParent();
+			}
 
-		// 	ImGui::EndDragDropTarget();
-		// }
+			ImGui::EndDragDropTarget();
+		}
 
 		if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
 		{
@@ -102,13 +103,17 @@ namespace BHive
 
 		if (ImGui::BeginDragDropSource())
 		{
-
+			ImGui::SetDragDropPayload(DRAG_DROP_GAMEOBJECT, &obj->GetID(), sizeof(UUID));
 			ImGui::EndDragDropSource();
 		}
 
 		if (ImGui::BeginDragDropTarget())
 		{
-
+			if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_GAMEOBJECT))
+			{
+				auto id = *(UUID *)payload->Data;
+				obj->AddChild(mWorld->GetGameObject(id).get());
+			}
 			ImGui::EndDragDropTarget();
 		}
 

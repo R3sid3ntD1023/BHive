@@ -7,7 +7,8 @@
 namespace BHive
 {
 
-	bool Inspector_String::Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_String::Inspect(
+		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 		auto data = var.to_string();
 		if (read_only)
@@ -39,7 +40,8 @@ namespace BHive
 		return changed;
 	}
 
-	bool Inspector_Float::Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_Float::Inspect(
+		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 		auto data = var.to_float();
 		bool changed = false;
@@ -97,7 +99,8 @@ namespace BHive
 		return changed;
 	}
 
-	bool Inspector_Bool::Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_Bool::Inspect(
+		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 		auto data = var.to_bool();
 		bool changed = false;
@@ -131,7 +134,8 @@ namespace BHive
 	}
 
 	template <typename TIntegerType>
-	bool Inspector_Int<TIntegerType>::Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_Int<TIntegerType>::Inspect(
+		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 		auto data = (int)var.get_value<TIntegerType>();
 		bool changed = false;

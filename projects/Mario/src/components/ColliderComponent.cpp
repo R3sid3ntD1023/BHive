@@ -70,7 +70,7 @@ namespace BHive
 		}
 	}
 
-	REFLECT(ColliderComponent)
+		REFLECT(ColliderComponent)
 	{
 		BEGIN_REFLECT(ColliderComponent)
 		REFLECT_PROPERTY(CollisionEnabled)
@@ -79,7 +79,8 @@ namespace BHive
 		REFLECT_PROPERTY(IsTrigger)
 		REFLECT_PROPERTY(CollisionChannel)
 		REFLECT_PROPERTY(CollisionChannelMasks)
-		REFLECT_PROPERTY(PhysicsMaterial);
+		REFLECT_PROPERTY(PhysicsMaterial)
+		REFLECT_PROPERTY(Delegate);
 	}
 
 	REFLECT(ECollisionChannel)

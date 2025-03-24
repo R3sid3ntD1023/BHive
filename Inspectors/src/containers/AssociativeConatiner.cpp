@@ -4,7 +4,8 @@
 
 namespace BHive
 {
-	bool Inspector_AssociativeContainer::Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_AssociativeContainer::Inspect(
+		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 		auto data = var.create_associative_view();
 		auto key_type = data.get_key_type();
@@ -42,7 +43,7 @@ namespace BHive
 
 				ImGui::PushID(key_id.c_str());
 				{
-					element_changed.first = inspect(newkey, false, read_only, meta_data_empty);
+					element_changed.first = inspect(instance, newkey, false, read_only, meta_data_empty);
 					ImGui::PopItemWidth();
 				}
 				ImGui::PopID();
@@ -51,7 +52,7 @@ namespace BHive
 
 				ImGui::PushID(value_id.c_str());
 				{
-					element_changed.second = inspect(value, false, read_only, meta_data_empty);
+					element_changed.second = inspect(instance, value, false, read_only, meta_data_empty);
 					ImGui::PopItemWidth();
 				}
 				ImGui::PopID();

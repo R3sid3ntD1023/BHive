@@ -193,13 +193,13 @@ namespace BHive
 
 		for (float x = -size; x <= size; x += stepsize, divx++)
 		{
-			auto color = (divx % 10) ? grid.color : grid.stepcolor;
+			auto color = (divx % 10) ? grid.stepcolor : grid.color;
 			DrawLine(Line{.p0 = {x, 0, -size}, .p1 = {x, 0, size}, .color = color}, transform);
 		}
 
 		for (float z = -size; z <= size; z += stepsize, divz++)
 		{
-			auto color = (divz % 10) ? grid.color : grid.stepcolor;
+			auto color = (divz % 10) ? grid.stepcolor : grid.color;
 			DrawLine(Line{.p0 = {-size, 0, z}, .p1 = {size, 0, z}, .color = color}, transform);
 		}
 	}

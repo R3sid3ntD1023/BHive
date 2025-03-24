@@ -7,7 +7,8 @@
 
 namespace BHive
 {
-	bool Inspector_UUID::Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_UUID::Inspect(
+		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 		auto data = var.get_value<UUID>();
 
@@ -71,7 +72,8 @@ namespace BHive
 	}
 
 	template <typename T>
-	bool Inspector_Vec<T>::Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_Vec<T>::Inspect(
+		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 		static T zero = T(0.0f);
 		auto data = var.get_value<T>();
@@ -101,7 +103,8 @@ namespace BHive
 		return false;
 	}
 
-	bool Inspector_Color::Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_Color::Inspect(
+		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 		auto data = var.get_value<FColor>();
 

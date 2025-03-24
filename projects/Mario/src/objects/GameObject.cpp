@@ -134,7 +134,7 @@ namespace BHive
 		if (this_rel->Children.contains(child_id))
 		{
 			this_rel->Children.erase(child_id);
-			child_rel->Parent = 0;
+			child_rel->Parent = NullID;
 		}
 	}
 
@@ -146,17 +146,13 @@ namespace BHive
 		if (this_rel->Parent)
 		{
 			auto parent = mWorld->GetGameObject(this_rel->Parent);
-			auto parent_rel = parent->GetComponent<RelationshipComponent>();
-
-			if (parent_rel->Children.contains(id))
-			{
-				parent_rel->Children.erase(id);
-			}
+			parent->RemoveChild(this);
 		}
 	}
 
 	void GameObject::Destroy()
 	{
+		OnDestroyedEvent.invoke(this);
 		mWorld->Destroy(GetID());
 	}
 
@@ -215,5 +211,6 @@ namespace BHive
 	REFLECT(GameObject)
 	{
 		BEGIN_REFLECT(GameObject) REFLECT_CONSTRUCTOR(const entt::entity &, World *);
+		RTTR_REGISTRATION_STANDARD_TYPE_VARIANTS(GameObject)
 	}
 } // namespace BHive

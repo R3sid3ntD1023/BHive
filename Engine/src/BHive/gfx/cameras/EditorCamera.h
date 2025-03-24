@@ -26,6 +26,7 @@ namespace BHive
 		void Focus(const FTransform &target, const glm::vec3 &distance);
 
 		virtual const glm::mat4 &GetView() const;
+		void SetView(const glm::mat4 &view);
 
 		virtual void Resize(uint32_t w, uint32_t h) override;
 

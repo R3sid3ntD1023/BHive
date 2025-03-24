@@ -75,23 +75,56 @@ namespace BHive
 		ImGui::SetCurrentContext(ctx);
 	}
 
+	rttr::type GetInstanceType(const rttr::instance &object)
+	{
+		rttr::type _type = rttr::type::get<rttr::detail::invalid_type>();
+
+		_type = object.get_derived_type();
+		if (!_type)
+		{
+			_type = object.get_type();
+		}
+
+		// if (_type.is_wrapper())
+		// {
+		// 	_type = object.get_wrapped_instance().get_derived_type();
+
+		// 	if (!_type)
+		// 	{
+		// 		_type = object.get_wrapped_instance().get_type();
+		// 	}
+		// }
+		// else
+		// {
+		// 	_type = object.get_derived_type();
+		// 	if (!_type)
+		// 	{
+		// 		_type = object.get_type();
+		// 	}
+		// }
+
+		return _type;
+	}
+
 	rttr::variant meta_data_empty(const rttr::variant &)
 	{
 		return rttr::variant();
 	}
 
-	bool
-	inspect(rttr::variant &var, bool skip_custom, bool read_only, const Inspector::meta_getter &get_meta_data, float width)
+	bool inspect(
+		const rttr::variant &instance, rttr::variant &var, bool skip_custom, bool read_only,
+		const Inspector::meta_getter &get_meta_data, float width)
 	{
 		rttr::instance object = var;
-		auto type = object.get_derived_type();
+		auto type = GetInstanceType(object);
 		auto inspector = InspectorRegistry::Get().GetInspector(type);
+
 		auto properties = type.get_properties();
 		bool changed = false;
 
 		if (!skip_custom && inspector)
 		{
-			changed |= inspector->Inspect(var, read_only, get_meta_data);
+			changed |= inspector->Inspect(instance, var, read_only, get_meta_data);
 		}
 		else
 		{
@@ -99,18 +132,19 @@ namespace BHive
 			for (auto property : properties)
 			{
 
-				changed |= inspect(object, property, read_only, width);
+				changed |= inspect(var, object, property, read_only, width);
 			}
 		}
 
 		return changed;
 	}
 
-	bool inspect(rttr::instance &object, rttr::property &property, bool read_only, float width)
+	bool
+	inspect(const rttr::variant &instance, rttr::instance &object, rttr::property &property, bool read_only, float width)
 	{
 		rttr::variant prop_var = property.get_value(object);
 		rttr::instance prop_object = prop_var;
-		auto type = prop_object.get_derived_type();
+		auto type = GetInstanceType(prop_object);
 		auto inspector = InspectorRegistry::Get().GetInspector(type);
 		bool is_read_only = property.is_readonly() || read_only;
 		bool changed = false;
@@ -136,7 +170,7 @@ namespace BHive
 
 			PropertyLayout layout(property);
 			auto meta_getter = [property](const rttr::variant &key) -> rttr::variant { return property.get_metadata(key); };
-			changed |= inspect(prop_var, false, is_read_only, meta_getter, width);
+			changed |= inspect(instance, prop_var, false, is_read_only, meta_getter, width);
 		}
 
 		if (details)

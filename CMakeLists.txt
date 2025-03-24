@@ -19,6 +19,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 add_subdirectory(Engine)
 add_subdirectory(Inspectors)
 add_subdirectory(projects)
+#add_subdirectory(ReflectionBuilder)
 
 
 

@@ -55,7 +55,8 @@ namespace BHive
 		if (opened)
 		{
 			rttr::variant var = component;
-			if (inspect(var))
+			rttr::variant instance = selection;
+			if (inspect(instance, var))
 			{
 				component = var.get_value<Component *>();
 			}

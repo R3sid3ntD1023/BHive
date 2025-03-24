@@ -4,5 +4,5 @@
 
 namespace BHive
 {
-	DECLARE_INSPECTOR(SubClassOf)
+	DECLARE_INSPECTOR(Delegate)
 } // namespace BHive

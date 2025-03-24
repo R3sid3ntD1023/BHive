@@ -8,6 +8,7 @@
 #include "physics/CollisionChannel.h"
 #include "core/EnumAsByte.h"
 #include "objects/GameObject.h"
+#include "RuntimeEventDelegate.h"
 
 namespace BHive
 {
@@ -45,6 +46,8 @@ namespace BHive
 		OnTriggerEvent OnTriggerStay;
 
 		OnHitEvent OnRaycastHit;
+
+		RuntimeEventDelegate Delegate;
 
 		void Begin() override;
 		void Update(float) override;

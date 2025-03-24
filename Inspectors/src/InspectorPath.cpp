@@ -3,26 +3,27 @@
 
 namespace BHive
 {
-    bool Inspector_Path::Inspect(rttr::variant &var, bool read_only, const meta_getter &metadata)
-    {
-        auto data = var.get_value<std::filesystem::path>();
-        auto data_str = data.string();
+	bool
+	Inspector_Path::Inspect(const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &metadata)
+	{
+		auto data = var.get_value<std::filesystem::path>();
+		auto data_str = data.string();
 
-        if (read_only)
-        {
-            ImGui::TextUnformatted(data.string().c_str());
-            return false;
-        }
+		if (read_only)
+		{
+			ImGui::TextUnformatted(data.string().c_str());
+			return false;
+		}
 
-        if (ImGui::InputText("##", &data_str, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
-        {
-            data = data_str;
-            var = data;
-            return true;
-        }
+		if (ImGui::InputText("##", &data_str, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+		{
+			data = data_str;
+			var = data;
+			return true;
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    REFLECT_INSPECTOR(Inspector_Path, std::filesystem::path)
+	REFLECT_INSPECTOR(Inspector_Path, std::filesystem::path)
 } // namespace BHive

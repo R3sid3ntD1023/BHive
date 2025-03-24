@@ -5,7 +5,7 @@
 namespace BHive
 {
 
-	InspectorEnum::EnumNames &InspectorEnum::GetEnumNameValues(const rttr::enumeration &enumeration)
+	Inspector_Enum::EnumNames &Inspector_Enum::GetEnumNameValues(const rttr::enumeration &enumeration)
 	{
 		auto enum_id = enumeration.get_type().get_id();
 		if (mEnumNameCache.contains(enum_id))
@@ -20,7 +20,8 @@ namespace BHive
 		return mEnumNameCache.at(enum_id);
 	}
 
-	bool InspectorEnum::Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_Enum::Inspect(
+		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 		auto type = var.get_type();
 		auto data = var.to_int();
@@ -65,7 +66,8 @@ namespace BHive
 		return changed;
 	}
 
-	bool InspectorEnumAsBtye::Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_EnumAsByte::Inspect(
+		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 		auto data = &var.get_value<TEnumAsByteBase>();
 		auto enumeration = data->GetEnumeration();
@@ -111,7 +113,7 @@ namespace BHive
 		return changed;
 	}
 
-	REFLECT_INSPECTOR(InspectorEnum, rttr::enumeration);
-	REFLECT_INSPECTOR(InspectorEnumAsBtye, TEnumAsByteBase);
+	REFLECT_INSPECTOR(Inspector_Enum, rttr::enumeration);
+	REFLECT_INSPECTOR(Inspector_EnumAsByte, TEnumAsByteBase);
 
 } // namespace BHive

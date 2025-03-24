@@ -33,8 +33,8 @@ namespace BHive
 		glm::ivec2 mViewportBounds[2] = {};
 		bool mViewportHovered{false}, mViewportFocused{false};
 
-		uint32_t mGizmoOperation = 0;
-		uint32_t mGizmoMode = 0;
+		int32_t mGizmoOperation = 0;
+		int32_t mGizmoMode = 0;
 		bool mSnappingEnabled{false};
 		float mMenuBarHeight = 10.f;
 

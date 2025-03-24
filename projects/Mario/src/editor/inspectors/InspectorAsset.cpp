@@ -16,7 +16,8 @@
 namespace BHive
 {
 	template <typename T>
-	bool Inspector_AssetHandler<T>::Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_AssetHandler<T>::Inspect(
+		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 
 		auto asset_manager = AssetManager::GetAssetManager<EditorAssetManager>();

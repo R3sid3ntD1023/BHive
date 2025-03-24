@@ -96,7 +96,8 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "*.h++": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

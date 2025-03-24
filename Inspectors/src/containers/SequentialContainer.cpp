@@ -4,7 +4,8 @@
 
 namespace BHive
 {
-	bool Inspector_SequentialContainer::Inspect(rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_SequentialContainer::Inspect(
+		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 		auto data = var.create_sequential_view();
 		auto type = data.get_value_type();
@@ -78,7 +79,7 @@ namespace BHive
 					ImGui::BeginGroup();
 
 					ImGui::PushID(name.c_str());
-					changed |= inspect(element, false, read_only, meta_data_empty);
+					changed |= inspect(instance, element, false, read_only, meta_data_empty);
 					ImGui::PopID();
 
 					if (changed)

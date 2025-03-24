@@ -66,9 +66,9 @@ namespace BHive
 		AddSubSystem<SelectionSubSystem>();
 		AddSubSystem<EditorSubSystem>();
 		auto &window_system = AddSubSystem<WindowSubSystem>();
+		window_system.CreateWindow<LogPanel>();
 		mSceneHeirarchyPanel = window_system.CreateWindow<SceneHierarchyPanel>();
 		mPropertiesPanel = window_system.CreateWindow<PropertiesPanel>();
-		window_system.CreateWindow<LogPanel>();
 
 		mContentBrowser = window_system.CreateWindow<EditorContentBrowser<EditorAssetManager>>(RESOURCE_PATH);
 
@@ -114,7 +114,7 @@ namespace BHive
 
 		mActiveWorld->Update(dt);
 
-		LineRenderer::DrawGrid(FGrid{.color = 0x808080ff, .stepcolor = 0x808080ff});
+		LineRenderer::DrawGrid(FGrid{.size = 40.f, .divisions = 20, .color = 0xffffffff, .stepcolor = 0x808080ff});
 
 		Renderer::End();
 
@@ -317,6 +317,9 @@ namespace BHive
 			mViewportBounds[0] = {viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y};
 			mViewportBounds[1] = {viewport_max_region.x + viewport_offset.x, viewport_max_region.y + viewport_offset.y};
 
+			glm::mat4 view = mEditorCamera.GetView();
+			const glm::mat4 projection = mEditorCamera.GetProjection();
+
 			ImGui::Image((ImTextureID)(uint64_t)*mFramebuffer->GetColorAttachment(), size, {0, 1}, {1, 0});
 
 			auto &selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>();
@@ -330,11 +333,8 @@ namespace BHive
 					mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x,
 					mViewportBounds[1].y - mViewportBounds[0].y);
 
-				const glm::mat4 view = mEditorCamera.GetView();
-				const glm::mat4 projection = mEditorCamera.GetProjection();
-				const glm::mat4 local_transform = selected_object->GetLocalTransform().to_mat4();
-
-				glm::mat4 world_transform = selected_object->GetTransform().to_mat4();
+				glm::mat4 local_transform = selected_object->GetLocalTransform().to_mat4();
+				glm::mat4 world_transform = selected_object->GetTransform();
 
 				float snap_value = mSnappingEnabled ? sSnapValues[(ImGuizmo::OPERATION)mGizmoOperation] : 0.0f;
 				float snap_values[3] = {snap_value, snap_value, snap_value};
@@ -347,10 +347,21 @@ namespace BHive
 
 				if (ImGuizmo::IsUsing())
 				{
-					glm::mat4 new_transform = delta * local_transform;
+					glm::mat4 parent_transform = glm::inverse(world_transform) * local_transform * delta;
+					glm::mat4 new_transform = glm::inverse(parent_transform) * world_transform;
 
 					selected_object->SetTransform(new_transform);
 				}
+			}
+
+			auto view_size = 100.0f;
+			auto view_position = ImVec2(mViewportBounds[1].x - view_size, mViewportBounds[0].y);
+			ImGuizmo::ViewManipulate(
+				&view[0][0], mEditorCamera.Distance(), view_position, {view_size, view_size}, 0x00000000);
+
+			if (ImGuizmo::IsUsingViewManipulate())
+			{
+				mEditorCamera.SetView(glm::inverse(view));
 			}
 
 			ImGui::EndChild();
@@ -369,6 +380,25 @@ namespace BHive
 
 		if (opened)
 		{
+			if (ImGui::Button("Gizmo Mode"))
+			{
+				ImGui::OpenPopup("GizmoModes");
+			}
+
+			if (ImGui::BeginPopup("GizmoModes"))
+			{
+				if (ImGui::RadioButton("Local", mGizmoMode == ImGuizmo::LOCAL))
+				{
+					mGizmoMode = ImGuizmo::LOCAL;
+				}
+
+				if (ImGui::RadioButton("World", mGizmoMode == ImGuizmo::WORLD))
+				{
+					mGizmoMode = ImGuizmo::WORLD;
+				}
+
+				ImGui::EndPopup();
+			}
 			auto size = ImGui::GetContentRegionAvail();
 			auto spacing = ImGui::GetStyle().ItemSpacing.x;
 

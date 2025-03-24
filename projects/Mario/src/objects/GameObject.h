@@ -7,9 +7,12 @@
 #include "math/Transform.h"
 #include "World.h"
 #include "core/serialization/Serialization.h"
+#include "core/EventDelegate.h"
 
 namespace BHive
 {
+	DECLARE_EVENT(FOnDestroyed, GameObject *);
+
 	struct FRegisteredComponent
 	{
 		size_t ComponentHash = 0;
@@ -25,6 +28,7 @@ namespace BHive
 	struct GameObject
 	{
 		GameObject(const entt::entity &handle, World *world);
+		GameObject(const GameObject &) = default;
 
 		virtual void Begin();
 		virtual void Update(float dt);
@@ -104,6 +108,8 @@ namespace BHive
 		std::unordered_set<Ref<GameObject>> GetChildren() const;
 
 		operator entt::entity() const { return mEntityHandle; }
+
+		FOnDestroyedEvent OnDestroyedEvent;
 
 		REFLECTABLEV()
 

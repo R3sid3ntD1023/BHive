@@ -106,6 +106,11 @@ namespace BHive
 		return mTransform.inverse();
 	}
 
+	void EditorCamera::SetView(const glm::mat4 &view)
+	{
+		mTransform = view;
+	}
+
 	void EditorCamera::Resize(uint32_t w, uint32_t h)
 	{
 		SceneCamera::Resize(w, h);
@@ -135,8 +140,7 @@ namespace BHive
 
 	float EditorCamera::Distance() const
 	{
-		float distance = glm::distance(mTransform.get_translation(), mTarget);
-		return std::max(distance, 0.0f);
+		return glm::length(mTransform.get_translation());
 	}
 
 	void EditorCamera::Zoom(float delta)

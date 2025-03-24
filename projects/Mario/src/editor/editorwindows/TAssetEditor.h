@@ -39,7 +39,8 @@ namespace BHive
 		virtual void OnWindowRender()
 		{
 			rttr::variant var = mAsset.get();
-			if (inspect(var))
+			rttr::variant instance = this;
+			if (inspect(instance, var))
 			{
 				auto asset_ptr = mAsset.get();
 				asset_ptr = var.get_value<T *>();
