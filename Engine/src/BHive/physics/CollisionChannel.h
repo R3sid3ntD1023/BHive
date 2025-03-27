@@ -4,6 +4,7 @@
 
 namespace BHive
 {
+	DECLARE_ENUM(BitFlags)
 	enum ECollisionChannel : uint16_t
 	{
 		CollisionChannel_None = 0,

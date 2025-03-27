@@ -4,6 +4,7 @@
 
 namespace BHive
 {
+	DECLARE_ENUM(BitFlags)
 	enum ELockAxis : int
 	{
 		NoAxis = 0,

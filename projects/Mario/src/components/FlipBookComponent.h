@@ -5,19 +5,27 @@
 
 namespace BHive
 {
+	DECLARE_CLASS(ClassMetaData_ComponentSpawnable)
 	struct FlipBookComponent : public Component
 	{
 		FlipBookComponent() = default;
 		FlipBookComponent(const FlipBookComponent &) = default;
 
-		bool AutoPlay{true};
+		DECLARE_PROPERTY()
+		bool AutoPlay = true;
 
-		FColor Color{0xffffffff};
+		
+		DECLARE_PROPERTY()
+		FColor Color = 0xffffffff;
 
-		glm::vec2 Size{1, 1};
+		
+		DECLARE_PROPERTY()
+		glm::vec2 Size = glm::vec2(1, 1);
+	
+		DECLARE_PROPERTY()
+		glm::vec2 Tiling = glm::vec2(1, 1);
 
-		glm::vec2 Tiling{1, 1};
-
+		DECLARE_PROPERTY()
 		Ref<FlipBook> FlipBookAsset;
 
 		virtual void Begin() override;

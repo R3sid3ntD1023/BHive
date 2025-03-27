@@ -124,28 +124,7 @@ namespace BHive
 		ar(Settings);
 	}
 
-	REFLECT(PhysicsSettings)
-	{
-		{
-			BEGIN_REFLECT_ENUM(ELockAxis)
-			(ENUM_VALUE(NoAxis), ENUM_VALUE(AxisX), ENUM_VALUE(AxisY), ENUM_VALUE(AxisZ));
-		}
-		{
-			BEGIN_REFLECT_ENUM(EBodyType)
-			(ENUM_VALUE(Static), ENUM_VALUE(Kinematic), ENUM_VALUE(Dynamic));
-		}
-		{
-			BEGIN_REFLECT(PhysicsSettings)
-			REFLECT_PROPERTY(PhysicsEnabled)
-			REFLECT_PROPERTY(BodyType)
-			REFLECT_PROPERTY(Mass)
-			REFLECT_PROPERTY(AngularDamping)
-			REFLECT_PROPERTY(LinearDamping)
-			REFLECT_PROPERTY(LinearLockAxis)
-			REFLECT_PROPERTY(AngularLockAxis)
-			REFLECT_PROPERTY(GravityEnabled);
-		}
-	}
+
 
 	REFLECT(PhysicsComponent)
 	{

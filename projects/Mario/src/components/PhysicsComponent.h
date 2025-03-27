@@ -8,7 +8,7 @@
 
 namespace BHive
 {
-
+	DECLARE_ENUM()
 	enum class EBodyType : int
 	{
 		Static,
@@ -16,22 +16,31 @@ namespace BHive
 		Dynamic
 	};
 
+	DECLARE_STRUCT()
 	struct PhysicsSettings
 	{
-		bool PhysicsEnabled{true};
+		DECLARE_PROPERTY()
+		bool PhysicsEnabled = true;
 
+		DECLARE_PROPERTY()
 		EBodyType BodyType = EBodyType::Static;
 
+		DECLARE_PROPERTY()
 		float Mass = 1.0f;
 
+		DECLARE_PROPERTY()
 		float LinearDamping = 0.0f;
 
+		DECLARE_PROPERTY()
 		float AngularDamping = 0.0f;
 
+		DECLARE_PROPERTY()
 		TEnumAsByte<ELockAxis> LinearLockAxis = NoAxis;
 
+		DECLARE_PROPERTY()
 		TEnumAsByte<ELockAxis> AngularLockAxis = NoAxis;
 
+		DECLARE_PROPERTY()
 		bool GravityEnabled = true;
 
 		template <typename A>
