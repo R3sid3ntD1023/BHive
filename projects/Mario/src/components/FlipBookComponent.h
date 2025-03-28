@@ -14,16 +14,16 @@ namespace BHive
 		FlipBookComponent(const FlipBookComponent &) = default;
 
 		DECLARE_PROPERTY()
-		bool AutoPlay = true;
+		bool AutoPlay{true};
 
 		DECLARE_PROPERTY()
-		FColor Color = 0xffffffff;
+		FColor Color{0xffffffff};
 
 		DECLARE_PROPERTY()
-		glm::vec2 Size = glm::vec2(1, 1);
+		glm::vec2 Size{1, 1};
 
 		DECLARE_PROPERTY()
-		glm::vec2 Tiling = glm::vec2(1, 1);
+		glm::vec2 Tiling{1, 1};
 
 		DECLARE_PROPERTY()
 		Ref<FlipBook> FlipBookAsset;
