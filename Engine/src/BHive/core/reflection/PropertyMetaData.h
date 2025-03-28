@@ -6,6 +6,8 @@ namespace BHive
 {
 	enum EPropertyMetaData : uint32_t
 	{
+		EPropertyMetaData_None,
+		EPropertyMetaData_DisplayName,
 		EPropertyMetaData_Min,
 		EPropertyMetaData_Max,
 		EPropertyMetaData_Step,

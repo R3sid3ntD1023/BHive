@@ -26,10 +26,6 @@ namespace Reflection
 
         }
 
-        public override string ToString()
-        {
-            return $"Enum: {Name}, NameSpace: {Namespace} , UnderlyingType: {UnderlyingType}, MetaData: {string.Join(", ", Metadatas)}, Values: {string.Join(", ", EnumValues)}";
-        }
 
         public override string GenerateRTTR()
         {

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -8,17 +9,19 @@ namespace Reflection
     {
         public Property(Class parentClass)
         {
-            ClassName = parentClass.Name;
+            ParentClass = parentClass;
             Namespace = parentClass.Namespace;
         }
 
         private string AccessModifier { get; set; }
         private bool ReadOnly { get; set; } // Indicates if the property is readonly
-        private string ClassName { get; set; } // The name of the class that contains the property
         private string Getter { get; set; } // The getter of the property
         private string Setter { get; set; } // The setter of the property
         private string Policy { get; set; } // The policy of the property
-        public static string _Regex = @"DECLARE_PROPERTY\((?<meta>[^)]*)\)\s+(?<type>[^\s]*)(?<name>[^\=\{\;]*)";
+        private Class ParentClass { get; set; } // The parent class
+
+        // Updated regex to handle multiline DECLARE_PROPERTY with nested brackets
+        public static string _Regex = @"DECLARE_PROPERTY\((?<meta>(?>[^()]+|\((?<c>)|\)(?<-c>))*(?(c)(?!)))\)\s+(?<specifiers>(?:const\s|static\s)*)?(?<type>[^\s]*)\s+(?<name>[^\=\{\;]*)";
 
         public override void Parse(Match match)
         {
@@ -36,20 +39,47 @@ namespace Reflection
             }
         }
 
-        public override string ToString()
+        private Method FindMethod(string methodName)
         {
-            return $"Property: {Name}, NameSpace: {Namespace}, ClassName: {ClassName}, Getter: {Getter}, Setter: {Setter}, MetaData: {string.Join(", ", Metadatas)}";
+            return ParentClass.Methods.FirstOrDefault(m => m.Name == methodName);
         }
 
         public override string GenerateRTTR()
         {
             // Generate the RTTR code for the property
-            string parentName = $"&{Namespace}::{ClassName}::";
-            string name = !string.IsNullOrEmpty(Getter) && !string.IsNullOrEmpty(Setter) ? $"{parentName}{Getter}, {parentName}{Setter}" : $"{parentName}{Name}";
+            string getter = !string.IsNullOrEmpty(Getter) ? FindMethod(Getter)?.GenerateRTTR() : string.Empty;
+            string setter = !string.IsNullOrEmpty(Setter) ? FindMethod(Setter)?.GenerateRTTR() : string.Empty;
+
+            if (!string.IsNullOrEmpty(Setter) && string.IsNullOrEmpty(Getter))
+            {
+                Console.WriteLine($"Error: Setter is set but Getter is not set for property {Name} in class {ParentClass.FullName}.");
+                throw new InvalidOperationException("Setter is set but Getter is not set.");
+            }
 
             string propertyType = !ReadOnly ? ".property" : ".property_readonly";
+            if (string.IsNullOrEmpty(Getter) && string.IsNullOrEmpty(Setter))
+            {
+                getter = $"&{ParentClass.FullName}::{Name}";
+            }
+            else if (string.IsNullOrEmpty(Getter))
+            {
+                getter = $"&{ParentClass.FullName}::{Name}";
+            }
+            else if (string.IsNullOrEmpty(Setter))
+            {
+                propertyType = ".property_readonly";
+                setter = string.Empty;
+            }
+
             string accessor = string.IsNullOrEmpty(AccessModifier) ? string.Empty : $", {AccessModifier}";
-            string rttrDefinition = $"{propertyType}(\"{Name}\", {name}{accessor})";
+            string rttrDefinition = $"{propertyType}(\"{Name}\", {getter}";
+
+            if (!string.IsNullOrEmpty(setter))
+            {
+                rttrDefinition += $", {setter}";
+            }
+
+            rttrDefinition += $"{accessor})";
 
             if (!string.IsNullOrEmpty(Policy))
             {

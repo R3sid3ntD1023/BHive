@@ -18,7 +18,7 @@ namespace Reflection
             Owner = owner;
         }
 
-        public static string _Regex = @"DECLARE_FUNCTION\((?<meta>[^)]*)\)\s*(?<specifiers>(?:virtual\s|static\s)*)?(?<type>[^\s]*)?\s(?<name>[^(|]+)?\((?<args>[^)]*)\)\s*(?:const)?";
+        public static string _Regex = @"DECLARE_FUNCTION\((?<meta>[^)]*)\)\s*(?<specifiers>(?:virtual\s|static\s)*)?(?<type>[^&]+[^\s]*)?\s(?<name>[^(|]+)?\((?<args>[^)]*)\)\s*(const)?";
 
         public override void Parse(Match match)
         {
@@ -26,7 +26,7 @@ namespace Reflection
 
             ReturnType = match.Groups["type"].Value.Trim();
             var args = match.Groups["args"].Value.Trim();
-            IsConst = match.Value.Contains("const");
+            IsConst = match.Groups["const"].Success;
             IsVirtual = match.Groups["specifiers"].Value.Contains("virtual");
             IsStatic = match.Groups["specifiers"].Value.Contains("static");
 
@@ -35,8 +35,7 @@ namespace Reflection
 
         public override string GenerateRTTR()
         {
-            string rttrdefinition = $".method(\"{Name}\",";
-            rttrdefinition += $"rttr::select_overload<{ReturnType}(";
+            string rttrdefinition = $"rttr::select_overload<{ReturnType}(";
             rttrdefinition += string.Join(", ", _args.Arguments.Select(arg => arg.Type));
             rttrdefinition += $")";
 
@@ -46,7 +45,6 @@ namespace Reflection
             }
 
             rttrdefinition += $">(&{Owner.FullName}::{Name})";
-            rttrdefinition += ")";
             return rttrdefinition;
         }
     }

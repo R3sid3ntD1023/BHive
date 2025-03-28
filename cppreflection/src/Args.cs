@@ -25,7 +25,7 @@ namespace Reflection
         public void Parse(string args)
         {
             Arguments.Clear();
-            var argList = args.Split(',');
+            var argList = SplitArguments(args);
 
             var argRegex = new Regex(_Regex);
 
@@ -39,6 +39,36 @@ namespace Reflection
                     Arguments.Add(new Arg(type, name));
                 }
             }
+        }
+
+        private List<string> SplitArguments(string args)
+        {
+            var result = new List<string>();
+            var currentArg = new List<char>();
+            var nestedLevel = 0;
+
+            foreach (var c in args)
+            {
+                if (c == ',' && nestedLevel == 0)
+                {
+                    result.Add(new string(currentArg.ToArray()));
+                    currentArg.Clear();
+                }
+                else
+                {
+                    if (c == '(' || c == '{' || c == '[')
+                        nestedLevel++;
+                    else if (c == ')' || c == '}' || c == ']')
+                        nestedLevel--;
+
+                    currentArg.Add(c);
+                }
+            }
+
+            if (currentArg.Count > 0)
+                result.Add(new string(currentArg.ToArray()));
+
+            return result;
         }
     }
     

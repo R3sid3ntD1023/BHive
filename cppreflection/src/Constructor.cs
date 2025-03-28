@@ -9,7 +9,7 @@ namespace Reflection
     {
         private Class _owningClass { get; set; }
         private string _returnType { get; set; }
-        private Args _args { get; set; } = new Args();
+        internal Args _args { get; set; } = new Args();
         private bool IsMethod => Name != _owningClass.Name;
 
         public Constructor(Class @class)

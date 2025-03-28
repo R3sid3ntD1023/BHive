@@ -3,8 +3,6 @@
 #include "core/reflection/Reflection.h"
 #include "core/InspectorCore.h"
 
-#define PROPERTY_PRETTY_NAME "PrettyName"
-
 namespace BHive
 {
 	struct INSPECTOR_API PropertyLayout

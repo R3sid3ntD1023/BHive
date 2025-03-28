@@ -15,11 +15,6 @@ namespace Reflection
 			Value = value;
 		}
 
-		public override string ToString()
-		{
-			return $"{Key} = {Value}";
-		}
-
 		public string GenerateRTTR()
 		{
 			// Generate the RTTR code for the metadata

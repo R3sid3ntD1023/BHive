@@ -15,7 +15,7 @@ namespace BHive
 		  mWidth(width)
 	{
 		std::string name = property.get_name().data();
-		if (auto name_var = property.get_metadata(PROPERTY_PRETTY_NAME))
+		if (auto name_var = property.get_metadata(EPropertyMetaData_DisplayName))
 		{
 			name = name_var.to_string();
 		}
