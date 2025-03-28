@@ -124,12 +124,9 @@ namespace BHive
 		ar(Settings);
 	}
 
-
-
 	REFLECT(PhysicsComponent)
 	{
 		BEGIN_REFLECT(PhysicsComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Settings)
-			COMPONENT_IMPL();
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) COMPONENT_IMPL();
 	}
 } // namespace BHive

@@ -23,7 +23,8 @@ namespace Reflection
 		public string GenerateRTTR()
 		{
 			// Generate the RTTR code for the metadata
-			return $"rttr::metadata(\"{Key}\", \"{Value}\")";
+			string value = string.IsNullOrEmpty(Value) ? "1" : $"{Value}";
+            return $"rttr::metadata({Key}, {value})";
 		}
 	}
 

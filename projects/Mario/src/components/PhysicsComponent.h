@@ -1,9 +1,9 @@
 #pragma once
 
-#include "core/EnumAsByte.h"
-#include "core/Core.h"
-#include "physics/LockAxis.h"
 #include "Component.h"
+#include "core/Core.h"
+#include "core/EnumAsByte.h"
+#include "physics/LockAxis.h"
 #include <glm/glm.hpp>
 
 namespace BHive
@@ -51,11 +51,15 @@ namespace BHive
 		}
 	};
 
+	DECLARE_CLASS(BHive::ClassMetaData_ComponentSpawnable)
 	struct PhysicsComponent : public Component
 	{
+		DECLARE_CONSTRUCTOR()
 		PhysicsComponent() = default;
+
 		PhysicsComponent(const PhysicsComponent &) = default;
 
+		DECLARE_PROPERTY()
 		PhysicsSettings Settings;
 
 		void Begin() override;

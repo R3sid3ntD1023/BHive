@@ -39,5 +39,5 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC RESOURCE_PATH="${CMAKE_CURRENT
 target_link_libraries(${PROJECT_NAME} PUBLIC Engine PUBLIC Inspectors PUBLIC EnTT::EnTT)
 target_include_directories(${PROJECT_NAME} PUBLIC src ${GENERATED_DIR})
 
-
+add_dependencies(${PROJECT_NAME} CPPReflector)
 add_dependencies(${PROJECT_NAME} GenerateFiles)

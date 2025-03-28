@@ -53,7 +53,6 @@ namespace BHive
 	REFLECT(FlipBookComponent)
 	{
 		BEGIN_REFLECT(FlipBookComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() 
-				COMPONENT_IMPL();
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) COMPONENT_IMPL();
 	}
 } // namespace BHive

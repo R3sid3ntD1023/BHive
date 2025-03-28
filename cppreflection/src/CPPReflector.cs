@@ -9,12 +9,25 @@ namespace Reflection
     class FileParser
     {
         public Dictionary<string, List<BaseClass>> ReflectedTypes { get; private set; } // The types that are reflected in the file
-
+        private Dictionary<string, DateTime> _FileTimeStamps = new Dictionary<string, DateTime>(); // The timestamps of the files
+        private string _OutputDirectory; // The output directory
+        private string _OutputFile => Path.Combine(_OutputDirectory, "timestamps.txt"); // The output file
         private string _Regex = @"DECLARE_(?:CLASS|STRUCT|ENUM)\((?<meta>(?:.+|))\)\s*(?<type>class|struct|enum(?:\sclass)?)(?<name>.+?)(?:\s|:(?:.*?)(?<base>[^\s].*))+\{(?<content>[^}]*)\}";
 
+        public FileParser(string ouputDirectory)
+        {
+            _OutputDirectory = ouputDirectory;
+            LoadTimeStamps();
+        }
+
+        ~FileParser()
+        {
+            SaveTimeStamps();
+        }
 
         public void Parse(string directory)
         {
+
             if (!Directory.Exists(directory))
             {
                 throw new DirectoryNotFoundException($"The directory {directory} does not exist.");
@@ -27,10 +40,21 @@ namespace Reflection
  
             foreach (string file in files)
             {
-                // Parse the file
+                // Parse the file only if it has been modified
+                DateTime timestamp = GetFileTimeStamp(file);
+                if (_FileTimeStamps.ContainsKey(file))
+                {
+                    Console.WriteLine($"Checking {file} for changes");
+                    if (timestamp == _FileTimeStamps[file])
+                    {
+                        continue;
+                    }
+                }
+
+                Console.WriteLine($"Parsing {file}");
+                _FileTimeStamps[file] = timestamp;
 
                 string content = File.ReadAllText(file);
-                Console.WriteLine($"Parsing {file}");
 
                 Regex namespaceRegex = new Regex(@"namespace\s+(\w+)\s*{");
                 Match namespaceMatch = namespaceRegex.Match(content);
@@ -82,17 +106,17 @@ namespace Reflection
             }
         }
 
-        public void Generate(string directory)
+        public void Generate()
         {
-            if (!Directory.Exists(directory))
+            if (!Directory.Exists(_OutputDirectory))
             {
-                Directory.CreateDirectory(directory);
+                Directory.CreateDirectory(_OutputDirectory);
             }
 
             foreach (var kvp in ReflectedTypes)
             {
                 string fileName = Path.GetFileNameWithoutExtension(kvp.Key) + ".generated.cpp";
-                string filePath = Path.Combine(directory, fileName);
+                string filePath = Path.Combine(_OutputDirectory, fileName);
 
                 using (StreamWriter writer = new StreamWriter(filePath))
                 {
@@ -112,6 +136,39 @@ namespace Reflection
                     Console.WriteLine($"Generated {filePath}");
                 }
             }
+        }
+
+        private void LoadTimeStamps()
+        {
+            Console.WriteLine("Loading timestamps");
+
+            if (File.Exists(_OutputFile))
+            {
+                string[] lines = File.ReadAllLines(_OutputFile);
+                foreach (string line in lines)
+                {
+                    string[] parts = line.Split('=');
+                    _FileTimeStamps[parts[0]] = DateTime.Parse(parts[1]);
+                }
+            }
+        }
+
+        private void SaveTimeStamps()
+        {
+            Console.WriteLine("Saving timestamps");
+
+            using (StreamWriter writer = new StreamWriter(_OutputFile))
+            {
+                foreach (var kvp in _FileTimeStamps)
+                {
+                    writer.WriteLine($"{kvp.Key}={kvp.Value}");
+                }
+            }
+        }
+
+        private DateTime GetFileTimeStamp(string file)
+        {
+            return File.GetLastWriteTime(file);
         }
     }
 }

@@ -1,26 +1,26 @@
 #pragma once
 
-#include <memory>
-#include <vector>
+#include "Version.h"
 #include <any>
 #include <array>
-#include <queue>
-#include <stdint.h>
 #include <filesystem>
+#include <fstream>
 #include <functional>
+#include <future>
+#include <iostream>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <set>
+#include <sstream>
+#include <stdint.h>
+#include <string>
+#include <thread>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
-#include <set>
-#include <iostream>
-#include <string>
-#include <sstream>
+#include <vector>
 #include <xhash>
-#include <future>
-#include <thread>
-#include <fstream>
-#include <type_traits>
-#include <mutex>
-#include "Version.h"
 
 #ifdef _WIN32
 	#ifdef BUILD_DLL
@@ -53,6 +53,7 @@
 
 #define DECLARE_CLASS(...)
 #define DECLARE_STRUCT(...)
+#define DECLARE_CONSTRUCTOR(...)
 #define DECLARE_PROPERTY(...)
 #define DECLARE_FUNCTION(...)
 #define DECLARE_ENUM(...)

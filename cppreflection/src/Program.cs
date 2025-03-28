@@ -54,7 +54,7 @@ class Program
             return;
         }
 
-        Reflection.FileParser parser = new Reflection.FileParser();
+        Reflection.FileParser parser = new Reflection.FileParser(outputDir);
 
         Console.WriteLine($"Parsing files in {inputDir}...");
         parser.Parse(inputDir);
@@ -67,7 +67,7 @@ class Program
         parser.PrintReflectedTypes();
 
         Console.WriteLine($"Generating files in {outputDir}...");
-        parser.Generate(outputDir);
+        parser.Generate();
 
         Console.ReadLine();
     }

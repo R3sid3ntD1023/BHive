@@ -1,27 +1,27 @@
 #pragma once
 
-#include "sprite/FlipBook.h"
 #include "Component.h"
+#include "sprite/FlipBook.h"
 
 namespace BHive
 {
-	DECLARE_CLASS(ClassMetaData_ComponentSpawnable)
+	DECLARE_CLASS(BHive::ClassMetaData_ComponentSpawnable)
 	struct FlipBookComponent : public Component
 	{
+		DECLARE_CONSTRUCTOR()
 		FlipBookComponent() = default;
+
 		FlipBookComponent(const FlipBookComponent &) = default;
 
 		DECLARE_PROPERTY()
 		bool AutoPlay = true;
 
-		
 		DECLARE_PROPERTY()
 		FColor Color = 0xffffffff;
 
-		
 		DECLARE_PROPERTY()
 		glm::vec2 Size = glm::vec2(1, 1);
-	
+
 		DECLARE_PROPERTY()
 		glm::vec2 Tiling = glm::vec2(1, 1);
 

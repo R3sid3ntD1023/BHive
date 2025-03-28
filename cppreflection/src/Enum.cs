@@ -35,8 +35,9 @@ namespace Reflection
         {
 
             // Generate the RTTR code for the enum
-            string rttrDefinition = $"rttr::registration::enumeration<{Namespace}::{Name}>(\"{Name}\")";
-            rttrDefinition += "\n(\n";
+            string rttrDefinition = $"\trttr::registration::enumeration<{Namespace}::{Name}>(\"{Name}\")";
+
+            rttrDefinition += "\n\t(\n";
             if (EnumValues.Count > 0 || Metadatas.Count > 0)
             {
                
@@ -48,12 +49,12 @@ namespace Reflection
             {
                 if (EnumValues.Count > 0)
                 {
-                    rttrDefinition += ",\n";
+                    rttrDefinition += "\t\t,\n";
                 }
-                rttrDefinition += string.Join(",", Metadatas.ConvertAll(meta => meta.GenerateRTTR()));
+                rttrDefinition += string.Join(",\n", Metadatas.ConvertAll(meta => meta.GenerateRTTR()));
             }
 
-            rttrDefinition += "\n)";
+            rttrDefinition += "\n\t\t)";
             rttrDefinition += ";\n";
             return rttrDefinition;
         }

@@ -1,10 +1,11 @@
 #pragma once
 
 #include "core/Core.h"
+#include "core/reflection/PropertyMetaData.h"
 
 namespace BHive
 {
-	DECLARE_ENUM(BitFlags)
+	DECLARE_ENUM(BHive::EPropertyMetaData_Flags = BHive::EPropertyFlags_BitFlags)
 	enum ECollisionChannel : uint16_t
 	{
 		CollisionChannel_None = 0,
