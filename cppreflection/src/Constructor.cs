@@ -7,14 +7,14 @@ namespace Reflection
 {
     class Constructor : BaseClass
     {
-        private Class OwningClass { get; set; }
-        private string ReturnType { get; set; }
-        private List<string> Args { get; set; } = new List<string>();
-        private bool IsMethod => Name != OwningClass.Name;
+        private Class _owningClass { get; set; }
+        private string _returnType { get; set; }
+        private Args _args { get; set; } = new Args();
+        private bool IsMethod => Name != _owningClass.Name;
 
         public Constructor(Class @class)
         {
-            OwningClass = @class;
+            _owningClass = @class;
         }
 
         public static string _Regex = @"DECLARE_CONSTRUCTOR\((?<meta>[^)]*)\)\s*?(?<type>[^\s]*)?\s(?<name>[^(|]+)?\((?<args>[^)]*)\)";
@@ -23,19 +23,21 @@ namespace Reflection
         {
             base.Parse(match);
 
-            ReturnType = match.Groups["type"].Value.Trim();
-            Args = match.Groups["args"].Value.Trim().Split(',').ToList();
+            _returnType = match.Groups["type"].Value.Trim();
+            var args = match.Groups["args"].Value.Trim();
+
+            _args.Parse(args);
         }
 
         public override string GenerateRTTR()
         {
             string rttrdefinition = ".constructor<";
-            rttrdefinition += string.Join(", ", Args);
-            rttrdefinition += ">("; 
+            rttrdefinition += string.Join(", ", _args.Arguments.Select(arg => arg.Type));
+            rttrdefinition += ">(";
 
-            if(IsMethod)
+            if (IsMethod)
             {
-                rttrdefinition += $"&{OwningClass.FullName}::{Name}";
+                rttrdefinition += $"&{_owningClass.FullName}::{Name}";
             }
             rttrdefinition += ")";
             return rttrdefinition;

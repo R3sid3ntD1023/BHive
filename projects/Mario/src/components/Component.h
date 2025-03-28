@@ -8,6 +8,7 @@ namespace BHive
 {
 	struct GameObject;
 
+	DECLARE_CLASS()
 	struct Component
 	{
 
@@ -27,10 +28,5 @@ namespace BHive
 		GameObject *mOwningObject = nullptr;
 		friend struct GameObject;
 	};
-
-	REFLECT(Component)
-	{
-		BEGIN_REFLECT(Component);
-	}
 
 } // namespace BHive

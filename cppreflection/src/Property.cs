@@ -12,9 +12,8 @@ namespace Reflection
             Namespace = parentClass.Namespace;
         }
 
-
         private string AccessModifier { get; set; }
-        private string ReadOnly { get; set; } // Indicates if the property is readonly
+        private bool ReadOnly { get; set; } // Indicates if the property is readonly
         private string ClassName { get; set; } // The name of the class that contains the property
         private string Getter { get; set; } // The getter of the property
         private string Setter { get; set; } // The setter of the property
@@ -29,30 +28,27 @@ namespace Reflection
             {
                 Getter = Metadatas.FirstOrDefault(meta => meta.Key == "Getter")?.Value.Trim();
                 Setter = Metadatas.FirstOrDefault(meta => meta.Key == "Setter")?.Value.Trim();
-                AccessModifier = Metadatas.FirstOrDefault(meta => meta.Key == "access")?.Value.Trim();
-                ReadOnly = Metadatas.FirstOrDefault(meta => meta.Key == "readonly")?.Value.Trim();
-                Policy = Metadatas.FirstOrDefault(meta => meta.Key == "policy")?.Value.Trim();
+                AccessModifier = Metadatas.FirstOrDefault(meta => meta.Key == "Access")?.Value.Trim();
+                ReadOnly = Metadatas.Any(meta => meta.Key == "ReadOnly");
+                Policy = Metadatas.FirstOrDefault(meta => meta.Key == "Policy")?.Value.Trim();
 
-                Metadatas.RemoveAll(meta => meta.Key == "Getter" || meta.Key == "Setter" || meta.Key == "access" || meta.Key == "readonly" || meta.Key == "policy");
-
+                Metadatas.RemoveAll(meta => meta.Key == "Getter" || meta.Key == "Setter" || meta.Key == "Access" || meta.Key == "ReadOnly" || meta.Key == "Policy");
             }
-
         }
 
         public override string ToString()
         {
-            return $"Property: {Name}, NameSpace: {Namespace} , ClassName: {ClassName}, Getter: {Getter}, Setter: {Setter}, MetaData: {string.Join(", ", Metadatas)}";
+            return $"Property: {Name}, NameSpace: {Namespace}, ClassName: {ClassName}, Getter: {Getter}, Setter: {Setter}, MetaData: {string.Join(", ", Metadatas)}";
         }
 
         public override string GenerateRTTR()
         {
             // Generate the RTTR code for the property
-
             string parentName = $"&{Namespace}::{ClassName}::";
-            string name = !string.IsNullOrEmpty(Getter) && !string.IsNullOrEmpty(Setter) ? $"{parentName}{Getter} , {parentName}{Setter}" : $"{parentName}{Name}";
+            string name = !string.IsNullOrEmpty(Getter) && !string.IsNullOrEmpty(Setter) ? $"{parentName}{Getter}, {parentName}{Setter}" : $"{parentName}{Name}";
 
-            string propertyType = string.IsNullOrEmpty(ReadOnly) ? ".property" : ".property_read_only";
-            string accessor = string.IsNullOrEmpty(AccessModifier) ? string.Empty : $",{AccessModifier}";
+            string propertyType = !ReadOnly ? ".property" : ".property_readonly";
+            string accessor = string.IsNullOrEmpty(AccessModifier) ? string.Empty : $", {AccessModifier}";
             string rttrDefinition = $"{propertyType}(\"{Name}\", {name}{accessor})";
 
             if (!string.IsNullOrEmpty(Policy))

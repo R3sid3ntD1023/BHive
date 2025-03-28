@@ -4,44 +4,64 @@
 
 namespace BHive
 {
+	DECLARE_ENUM()
 	enum class EProjectionType
 	{
 		Perspective,
 		Orthographic
 	};
 
+	DECLARE_STRUCT()
+	struct FPerspectiveSettings
+	{
+		DECLARE_PROPERTY()
+		float Fov = 45.0f;
+
+		DECLARE_PROPERTY()
+		float Near = 0.01f;
+
+		DECLARE_PROPERTY()
+		float Far = 1000.0f;
+
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(Fov, Near, Far);
+		}
+	};
+
+	DECLARE_STRUCT()
+	struct FOrthographicSettings
+	{
+		DECLARE_PROPERTY()
+		float Left = -10.0f;
+
+		DECLARE_PROPERTY()
+		float Right = 10.f;
+
+		DECLARE_PROPERTY()
+		float Bottom = -10.f;
+
+		DECLARE_PROPERTY()
+		float Top = 10.0f;
+
+		DECLARE_PROPERTY()
+		float Near = -1.0f;
+
+		DECLARE_PROPERTY()
+		float Far = 1.0f;
+
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(Left, Right, Bottom, Top, Near, Far);
+		}
+	};
+
+	DECLARE_CLASS()
 	class SceneCamera : public Camera
 	{
 	public:
-		struct FPerspectiveSettings
-		{
-			float Fov = 45.0f;
-			float Near = 0.01f;
-			float Far = 1000.0f;
-
-			template <typename A>
-			void Serialize(A &ar)
-			{
-				ar(Fov, Near, Far);
-			}
-		};
-
-		struct FOrthographicSettings
-		{
-			float Left = -10.0f;
-			float Right = 10.f;
-			float Bottom = -10.f;
-			float Top = 10.0f;
-			float Near = -1.0f;
-			float Far = 1.0f;
-
-			template <typename A>
-			void Serialize(A &ar)
-			{
-				ar(Left, Right, Bottom, Top, Near, Far);
-			}
-		};
-
 	public:
 		SceneCamera();
 
@@ -70,8 +90,13 @@ namespace BHive
 		void RecalculateProjection();
 
 	private:
+		DECLARE_PROPERTY(Setter = SetProjectionType, Getter = GetProjectionType)
 		EProjectionType mProjectionType = EProjectionType::Perspective;
+
+		DECLARE_PROPERTY(Setter = SetPerspectiveSettings, Getter = GetPerspectiveSettings)
 		FPerspectiveSettings mPerspectiveSettings;
+
+		DECLARE_PROPERTY(Setter = SetOrthographicSettings, Getter = GetOrthographicSettings)
 		FOrthographicSettings mOrthographicSettings;
 		float mAspectRatio = 1.7555f;
 	};

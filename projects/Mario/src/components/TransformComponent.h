@@ -6,11 +6,14 @@
 
 namespace BHive
 {
+	DECLARE_CLASS()
 	struct TransformComponent : public Component
 	{
+		DECLARE_CONSTRUCTOR()
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent &) = default;
 
+		DECLARE_PROPERTY()
 		FTransform Transform{};
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override { ar(Transform); }
@@ -29,7 +32,7 @@ namespace BHive
 
 	REFLECT(TransformComponent)
 	{
-		BEGIN_REFLECT(TransformComponent) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Transform) COMPONENT_IMPL();
+		BEGIN_REFLECT(TransformComponent) COMPONENT_IMPL();
 	}
 
 } // namespace BHive

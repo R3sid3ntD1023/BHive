@@ -5,12 +5,14 @@
 
 namespace BHive
 {
-
+	DECLARE_CLASS(BHive::ClassMetaData_ComponentSpawnable)
 	struct InputComponent : public Component
 	{
+		DECLARE_CONSTRUCTOR()
 		InputComponent() = default;
 		InputComponent(const InputComponent &) = default;
 
+		DECLARE_PROPERTY()
 		Ref<InputContext> Context;
 
 		void CreateInstance();

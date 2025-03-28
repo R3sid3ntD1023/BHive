@@ -51,7 +51,7 @@ namespace BHive
 		}
 	};
 
-	DECLARE_CLASS(BHive::ClassMetaData_ComponentSpawnable)
+	DECLARE_CLASS()
 	struct PhysicsComponent : public Component
 	{
 		DECLARE_CONSTRUCTOR()

@@ -29,7 +29,6 @@ namespace BHive
 	REFLECT(SpriteComponent)
 	{
 		BEGIN_REFLECT(SpriteComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Tiling)
-			REFLECT_PROPERTY(Size) REFLECT_PROPERTY(Color) REFLECT_PROPERTY(SpriteAsset) COMPONENT_IMPL();
+		COMPONENT_IMPL();
 	}
 } // namespace BHive

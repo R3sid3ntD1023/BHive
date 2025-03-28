@@ -1,16 +1,19 @@
 #pragma once
 
-#include "math/Transform.h"
-#include "math/AABB.hpp"
 #include "ColliderComponent.h"
+#include "math/AABB.hpp"
+#include "math/Transform.h"
 
 namespace BHive
 {
+	DECLARE_CLASS(BHive::ClassMetaData_ComponentSpawnable)
 	struct BoxComponent : public ColliderComponent
 	{
+		DECLARE_CONSTRUCTOR()
 		BoxComponent() = default;
 		BoxComponent(const BoxComponent &) = default;
 
+		DECLARE_PROPERTY()
 		glm::vec3 Extents{0.5f};
 
 		virtual void Render() override;

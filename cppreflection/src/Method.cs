@@ -1,42 +1,52 @@
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Reflection
 {
-    //Method class to represent a method in C++
+    // Method class to represent a method in C++
     class Method : BaseClass
     {
-        public string ReturnType { get; private set; }
-        public string Args { get; private set; }
-        public bool IsConst { get; private set; }
-        public Class Owner { get; private set; }
+        public string ReturnType { get; set; }
+        public Args _args { get; set; } = new Args();
+        public bool IsConst { get; set; }
+        public bool IsVirtual { get; set; }
+        public bool IsStatic { get; set; }
+        public Class Owner { get; set; }
 
         public Method(Class owner)
         {
             Owner = owner;
-            Namespace = owner.Namespace;
         }
 
-        public static string _Regex = @"DECLARE_FUNCTION\((?<meta>[^)]*)\)\s*(?:virtual\s)?(?<type>[^\s]*)?\s(?<name>[^(|]+)?\((?<args>[^)]*)\)\s*(const)?";
+        public static string _Regex = @"DECLARE_FUNCTION\((?<meta>[^)]*)\)\s*(?<specifiers>(?:virtual\s|static\s)*)?(?<type>[^\s]*)?\s(?<name>[^(|]+)?\((?<args>[^)]*)\)\s*(?:const)?";
 
-        override public void Parse(Match match)
+        public override void Parse(Match match)
         {
             base.Parse(match);
 
             ReturnType = match.Groups["type"].Value.Trim();
-            Args = match.Groups["args"].Value.Trim();
-            IsConst = match.Groups[3].Success;
+            var args = match.Groups["args"].Value.Trim();
+            IsConst = match.Value.Contains("const");
+            IsVirtual = match.Groups["specifiers"].Value.Contains("virtual");
+            IsStatic = match.Groups["specifiers"].Value.Contains("static");
+
+            _args.Parse(args);
         }
 
-        override public string GenerateRTTR()
+        public override string GenerateRTTR()
         {
-            string rttrdefinition = $".method(\"{Name}\", &{Namespace}::{Owner.Name}::{Name})";
+            string rttrdefinition = $".method(\"{Name}\",";
+            rttrdefinition += $"rttr::select_overload<{ReturnType}(";
+            rttrdefinition += string.Join(", ", _args.Arguments.Select(arg => arg.Type));
+            rttrdefinition += $")";
 
-            if (Metadatas.Count > 0)
+            if (IsConst)
             {
-                rttrdefinition += "\n\t\t(";
-                rttrdefinition += string.Join(",", Metadatas.ConvertAll(meta => meta.GenerateRTTR()));
-                rttrdefinition += ")";
+                rttrdefinition += " const";
             }
+
+            rttrdefinition += $">(&{Owner.FullName}::{Name})";
+            rttrdefinition += ")";
             return rttrdefinition;
         }
     }

@@ -1,7 +1,7 @@
 #include "BoxComponent.h"
+#include "objects/GameObject.h"
 #include "physics/PhysicsContext.h"
 #include "renderers/Renderer.h"
-#include "objects/GameObject.h"
 
 namespace BHive
 {
@@ -39,7 +39,7 @@ namespace BHive
 	REFLECT(BoxComponent)
 	{
 		BEGIN_REFLECT(BoxComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Extents) COMPONENT_IMPL();
+		COMPONENT_IMPL();
 	}
 
 } // namespace BHive

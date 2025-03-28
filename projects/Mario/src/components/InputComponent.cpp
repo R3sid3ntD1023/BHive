@@ -43,6 +43,6 @@ namespace BHive
 	REFLECT(InputComponent)
 	{
 		BEGIN_REFLECT(InputComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Context) COMPONENT_IMPL();
+		COMPONENT_IMPL();
 	}
 } // namespace BHive
