@@ -73,15 +73,10 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLEV(Asset)
-
 	private:
 		TextureSlots mTextureSlots;
 		Textures mTextures;
 	};
-
-	REFLECT_EXTERN(MaterialFlags)
-	REFLECT_EXTERN(Material)
 
 #define ALBEDO_TEX "u_albedo_map"
 #define METALLIC_TEX "u_metallic_map"

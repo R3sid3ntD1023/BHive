@@ -5,23 +5,23 @@
 
 namespace BHive
 {
-	DECLARE_CLASS(BHive::ClassMetaData_ComponentSpawnable)
+	REFLECT_CLASS(BHive::ClassMetaData_ComponentSpawnable)
 	struct SpriteComponent : public Component
 	{
-		DECLARE_CONSTRUCTOR()
+		REFLECT_CONSTRUCTOR()
 		SpriteComponent() = default;
 		SpriteComponent(const SpriteComponent &other) = default;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		glm::vec2 Tiling{1, 1};
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		glm::vec2 Size{1, 1};
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		FColor Color{0xffffffff};
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		Ref<Sprite> SpriteAsset;
 
 		void Render() override;
@@ -29,7 +29,7 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLEV(Component)
+		REFLECTABLE_CLASS(Component)
 	};
 
 } // namespace BHive

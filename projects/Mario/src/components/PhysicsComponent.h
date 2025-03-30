@@ -8,7 +8,7 @@
 
 namespace BHive
 {
-	DECLARE_ENUM()
+	REFLECT_ENUM()
 	enum class EBodyType : int
 	{
 		Static,
@@ -16,31 +16,31 @@ namespace BHive
 		Dynamic
 	};
 
-	DECLARE_STRUCT()
+	REFLECT_STRUCT()
 	struct PhysicsSettings
 	{
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		bool PhysicsEnabled = true;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		EBodyType BodyType = EBodyType::Static;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		float Mass = 1.0f;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		float LinearDamping = 0.0f;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		float AngularDamping = 0.0f;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		TEnumAsByte<ELockAxis> LinearLockAxis = NoAxis;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		TEnumAsByte<ELockAxis> AngularLockAxis = NoAxis;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		bool GravityEnabled = true;
 
 		template <typename A>
@@ -51,15 +51,15 @@ namespace BHive
 		}
 	};
 
-	DECLARE_CLASS()
+	REFLECT_CLASS()
 	struct PhysicsComponent : public Component
 	{
-		DECLARE_CONSTRUCTOR()
+		REFLECT_CONSTRUCTOR()
 		PhysicsComponent() = default;
 
 		PhysicsComponent(const PhysicsComponent &) = default;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		PhysicsSettings Settings;
 
 		void Begin() override;
@@ -83,7 +83,7 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLEV(Component)
+		REFLECTABLE_CLASS(Component)
 
 	private:
 		void *mRigidBodyInstance = nullptr;

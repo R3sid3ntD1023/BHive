@@ -4,6 +4,7 @@
 
 namespace BHive
 {
+	REFLECT_STRUCT()
 	struct TEnumAsByteBase
 	{
 		virtual void Set(const int &value) = 0;
@@ -12,7 +13,7 @@ namespace BHive
 
 		virtual rttr::enumeration GetEnumeration() const = 0;
 
-		REFLECTABLEV()
+		REFLECTABLE_CLASS()
 	};
 
 	template <typename TEnum>
@@ -80,14 +81,10 @@ namespace BHive
 			mValue = (TEnum)value;
 		}
 
+		REFLECTABLE_CLASS(TEnumAsByteBase)
+
 	private:
 		TEnum mValue;
-
-		REFLECTABLEV(TEnumAsByteBase)
 	};
 
-	REFLECT(TEnumAsByteBase)
-	{
-		BEGIN_REFLECT(TEnumAsByteBase);
-	}
 } // namespace BHive

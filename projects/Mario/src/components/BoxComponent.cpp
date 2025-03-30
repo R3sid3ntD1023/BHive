@@ -35,11 +35,4 @@ namespace BHive
 		PhysicsContext::get_context().destroyBoxShape((rp3d::BoxShape *)mCollisionShape);
 		mCollisionShape = nullptr;
 	}
-
-	REFLECT(BoxComponent)
-	{
-		BEGIN_REFLECT(BoxComponent)
-		COMPONENT_IMPL();
-	}
-
 } // namespace BHive

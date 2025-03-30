@@ -1,6 +1,6 @@
 #include "FlipBookComponent.h"
-#include "renderers/Renderer.h"
 #include "objects/GameObject.h"
+#include "renderers/Renderer.h"
 
 namespace BHive
 {
@@ -48,11 +48,5 @@ namespace BHive
 	void FlipBookComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ar(AutoPlay, Color, Size, Tiling, TAssetHandle(FlipBookAsset));
-	}
-
-	REFLECT(FlipBookComponent)
-	{
-		BEGIN_REFLECT(FlipBookComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) COMPONENT_IMPL();
 	}
 } // namespace BHive

@@ -7,28 +7,22 @@
 
 namespace BHive
 {
-	DECLARE_CLASS()
+	REFLECT_CLASS()
 	struct RelationshipComponent : public Component
 	{
 		RelationshipComponent() = default;
 		RelationshipComponent(const RelationshipComponent &) = default;
 
-		DECLARE_PROPERTY(ReadOnly)
+		REFLECT_PROPERTY(ReadOnly)
 		UUID Parent = NullID;
 
-		DECLARE_PROPERTY(ReadOnly)
+		REFLECT_PROPERTY(ReadOnly)
 		std::unordered_set<UUID> Children;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override { ar(Parent, Children); };
 		virtual void Load(cereal::BinaryInputArchive &ar) override { ar(Parent, Children); }
 
-		REFLECTABLEV(Component)
+		REFLECTABLE_CLASS(Component)
 	};
-
-	REFLECT(RelationshipComponent)
-	{
-		BEGIN_REFLECT(RelationshipComponent)
-		COMPONENT_IMPL();
-	}
 
 } // namespace BHive

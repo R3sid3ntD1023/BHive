@@ -40,9 +40,5 @@ namespace BHive
 
 	private:
 		material_list mMaterials;
-		REFLECTABLE()
 	};
-
-	REFLECT_EXTERN(MaterialTable);
-
 } // namespace BHive

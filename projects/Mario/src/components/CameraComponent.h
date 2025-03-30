@@ -5,17 +5,17 @@
 
 namespace BHive
 {
-	DECLARE_CLASS(BHive::ClassMetaData_ComponentSpawnable)
+	REFLECT_CLASS(BHive::ClassMetaData_ComponentSpawnable)
 	struct CameraComponent : public Component
 	{
-		DECLARE_CONSTRUCTOR()
+		REFLECT_CONSTRUCTOR()
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent &) = default;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		SceneCamera Camera;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		bool IsPrimary = true;
 
 		void Update(float) override;
@@ -24,7 +24,7 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLEV(Component)
+		REFLECTABLE_CLASS(Component)
 	};
 
 } // namespace BHive

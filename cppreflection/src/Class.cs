@@ -46,27 +46,34 @@ namespace Reflection
 
         public override string GenerateRTTR()
         {
-            string rttrDefinition = $"rttr::registration::class_<{FullName}>(\"{Name}\")";
+            string rttrDefinition = $"\trttr::registration::class_<{FullName}>(\"{Name}\")";
+
+            if (Metadatas.Count > 0)
+            {
+                rttrDefinition += "\n\t\t(";
+                rttrDefinition += $"\n\t\t\t{string.Join(",\n", Metadatas.ConvertAll(meta => meta.GenerateRTTR()))}";
+                rttrDefinition += "\n\t\t)";
+            }
 
             // Generate constructors
             foreach (var constructor in Constructors)
             {
-                rttrDefinition += $"\n\t.constructor<{string.Join(", ", constructor._args.Arguments.Select(arg => arg.Type))}>()";
+                rttrDefinition += $"\n\t\t.constructor<{string.Join(", ", constructor._args.Arguments.Select(arg => arg.Type))}>()";
             }
 
             // Generate methods
             foreach (var method in Methods)
             {
-                rttrDefinition += $"\n\t.method(\"{method.Name}\", {method.GenerateRTTR()})";
+                rttrDefinition += $"\n\t\t.method(\"{method.Name}\", {method.GenerateRTTR()})";
             }
 
             // Generate properties
             foreach (var property in Properties)
             {
-                rttrDefinition += $"\n\t{property.GenerateRTTR()}";
+                rttrDefinition += $"\n\t\t{property.GenerateRTTR()}";
             }
 
-            return rttrDefinition + ";";
+            return rttrDefinition + ";\n";
         }
     }
 }

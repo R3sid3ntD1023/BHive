@@ -1,11 +1,10 @@
 #pragma once
 
-#include "core/Core.h"
-#include "core/reflection/PropertyMetaData.h"
+#include "core/reflection/Reflection.h"
 
 namespace BHive
 {
-	DECLARE_ENUM(BHive::EPropertyMetaData_Flags = BHive::EPropertyFlags_BitFlags)
+	REFLECT_ENUM(BHive::EPropertyMetaData_Flags = BHive::EPropertyFlags_BitFlags)
 	enum ELockAxis : int
 	{
 		NoAxis = 0,

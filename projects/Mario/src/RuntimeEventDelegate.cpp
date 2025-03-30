@@ -26,10 +26,4 @@ namespace BHive
 		Object = nullptr;
 	}
 
-	REFLECT(RuntimeEventDelegate)
-	{
-		BEGIN_REFLECT(RuntimeEventDelegate)
-		REFLECT_PROPERTY("Caller", GetCaller, SetCaller);
-	}
-
 } // namespace BHive

@@ -70,6 +70,11 @@ namespace Reflection
                 propertyType = ".property_readonly";
                 setter = string.Empty;
             }
+            else if(string.IsNullOrEmpty(getter) || string.IsNullOrEmpty(setter))
+            {
+                Console.WriteLine($"Error: Getter or Setter not found for property {Name} in class {ParentClass.FullName}.");
+                Console.WriteLine("Please make sure the Getter and Setter methods are marked DECLARE_FUNCTION in class.");
+            }
 
             string accessor = string.IsNullOrEmpty(AccessModifier) ? string.Empty : $", {AccessModifier}";
             string rttrDefinition = $"{propertyType}(\"{Name}\", {getter}";

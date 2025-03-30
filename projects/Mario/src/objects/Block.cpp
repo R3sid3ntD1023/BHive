@@ -1,8 +1,8 @@
 #include "Block.h"
 #include "components/BoxComponent.h"
+#include "components/FlipBookComponent.h"
 #include "components/PhysicsComponent.h"
 #include "components/SpriteComponent.h"
-#include "components/FlipBookComponent.h"
 #include "importers/TextureImporter.h"
 
 namespace BHive
@@ -31,19 +31,4 @@ namespace BHive
 		AddComponent<FlipBookComponent>();
 	}
 
-	REFLECT(BlockBase)
-	{
-		BEGIN_REFLECT(BlockBase);
-	}
-
-	REFLECT(Block)
-	{
-		BEGIN_REFLECT(Block)(META_DATA(ClassMetaData_Spawnable, true)) REFLECT_CONSTRUCTOR(const entt::entity &, World *);
-	}
-
-	REFLECT(QuestionBlock)
-	{
-		BEGIN_REFLECT(QuestionBlock)(META_DATA(ClassMetaData_Spawnable, true))
-			REFLECT_CONSTRUCTOR(const entt::entity &, World *);
-	}
 } // namespace BHive

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "core/Core.h"
 #include "components/Component.h"
 #include "components/PhysicsComponent.h"
+#include "core/Core.h"
+#include "core/EventDelegate.h"
+#include "core/serialization/Serialization.h"
 #include "core/UUID.h"
 #include "math/Transform.h"
 #include "World.h"
-#include "core/serialization/Serialization.h"
-#include "core/EventDelegate.h"
 
 namespace BHive
 {
@@ -25,6 +25,7 @@ namespace BHive
 
 	using ComponentList = std::vector<FRegisteredComponent>;
 
+	REFLECT_STRUCT()
 	struct GameObject
 	{
 		GameObject(const entt::entity &handle, World *world);
@@ -111,7 +112,7 @@ namespace BHive
 
 		FOnDestroyedEvent OnDestroyedEvent;
 
-		REFLECTABLEV()
+		REFLECTABLE_CLASS()
 
 	private:
 		template <typename T>

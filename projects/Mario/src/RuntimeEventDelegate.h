@@ -7,6 +7,7 @@ namespace BHive
 {
 	struct GameObject;
 
+	REFLECT_STRUCT()
 	struct RuntimeEventDelegate
 	{
 		RuntimeEventDelegate() = default;
@@ -20,9 +21,8 @@ namespace BHive
 	private:
 		void OnObjectDestroyed(GameObject *);
 
+		REFLECT_PROPERTY(Setter = SetCaller, Getter = GetCaller)
 		GameObject *Object = nullptr;
-
-		REFLECTABLE()
 	};
 
 } // namespace BHive

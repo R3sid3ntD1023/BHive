@@ -6,20 +6,20 @@
 
 namespace BHive
 {
-	DECLARE_CLASS()
+	REFLECT_CLASS()
 	struct TagComponent : public Component
 	{
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		std::string Name = "New Object";
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		uint16_t Groups = 0x00;
 
-		DECLARE_CONSTRUCTOR()
+		REFLECT_CONSTRUCTOR()
 		TagComponent() = default;
 		TagComponent(const TagComponent &) = default;
 
-		DECLARE_CONSTRUCTOR()
+		REFLECT_CONSTRUCTOR()
 		TagComponent(const std::string &name, uint16_t groups = 0)
 			: Name(name),
 			  Groups(groups)
@@ -29,12 +29,7 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override { ar(Name, Groups); }
 		virtual void Load(cereal::BinaryInputArchive &ar) override { ar(Name, Groups); }
 
-		REFLECTABLEV(Component)
+		REFLECTABLE_CLASS(Component)
 	};
-
-	REFLECT(TagComponent)
-	{
-		BEGIN_REFLECT(TagComponent) COMPONENT_IMPL();
-	}
 
 } // namespace BHive

@@ -1,11 +1,11 @@
 #pragma once
 
 #include "core/Core.h"
+#include "PropertyMetaData.h"
 #include <rttr/registration>
 #include <rttr/registration_friend>
 #include <rttr/rttr_enable.h>
 #include <rttr/type.h>
-#include "PropertyMetaData.h"
 
 #define REFLECT_PROPERTY_GETTER_SETTER_IMPL(name, getter, setter) .property(name, &T::##getter, &T::##setter)
 #define REFLECT_PROPERTY_IMPL(name, member) .property(name, &T::##member)
@@ -83,6 +83,15 @@
 #define ENUM_VALUE(...) EXPAND(GET_ENUM_VALUE_MACRO(__VA_ARGS__)(__VA_ARGS__))
 
 #define META_DATA(key, value) rttr::metadata(key, value)
+
+#define REFLECT_CLASS(...)
+#define REFLECT_STRUCT(...)
+#define REFLECT_CONSTRUCTOR(...)
+#define REFLECT_PROPERTY(...)
+#define REFLECT_FUNCTION(...)
+#define REFLECT_ENUM(...)
+
+#define REFLECTABLE_CLASS(...) RTTR_REGISTRATION_FRIEND RTTR_ENABLE(__VA_ARGS__)
 
 namespace BHive
 {

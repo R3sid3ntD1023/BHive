@@ -30,12 +30,4 @@ namespace BHive
 	{
 		ar(Camera, IsPrimary);
 	}
-
-	REFLECT(CameraComponent)
-	{
-		{
-			BEGIN_REFLECT(CameraComponent)
-			COMPONENT_IMPL();
-		}
-	}
 } // namespace BHive

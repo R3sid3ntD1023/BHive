@@ -372,9 +372,4 @@ namespace BHive
 		}
 		return {nullptr, FTransform()};
 	}
-
-	REFLECT(World)
-	{
-		BEGIN_REFLECT(World) REFLECT_CONSTRUCTOR();
-	}
 } // namespace BHive

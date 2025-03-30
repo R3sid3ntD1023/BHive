@@ -41,9 +41,8 @@ namespace BHive
 	}
 } // namespace BHive
 
-#define REFLECT_FACTORY(cls)                             \
-	REFLECT(cls)                                         \
-	{                                                    \
-		BEGIN_REFLECT(cls)                               \
-		REFLECT_CONSTRUCTOR() CONSTRUCTOR_POLICY_SHARED; \
+#define REFLECT_FACTORY(cls) \
+	REFLECT(cls)             \
+	{                        \
+		BEGIN_REFLECT(cls);  \
 	}

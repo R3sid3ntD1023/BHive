@@ -4,31 +4,42 @@
 
 namespace BHive
 {
+	REFLECT_STRUCT()
+	struct Frame
+	{
+		REFLECT_PROPERTY()
+		Ref<Sprite> mSprite;
+
+		REFLECT_PROPERTY()
+		uint32_t mDuration{1};
+
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(mSprite, mDuration);
+		}
+	};
+
+	REFLECT_CLASS()
 	class FlipBook : public Asset
 	{
 	public:
-		struct Frame
-		{
-			Ref<Sprite> mSprite;
-			uint32_t mDuration{1};
-
-			template <typename A>
-			void Serialize(A &ar)
-			{
-				ar(mSprite, mDuration);
-			}
-		};
-
-		typedef std::vector<FlipBook::Frame> Frames;
+		typedef std::vector<Frame> Frames;
 
 	public:
+		REFLECT_CONSTRUCTOR()
 		FlipBook() = default;
+
 		FlipBook(std::initializer_list<Frame> frames);
 
 		void Play();
 		void Stop();
 		void Update(float deltatime);
+
+		REFLECT_FUNCTION()
 		void SetLoop(bool loop);
+
+		REFLECT_FUNCTION()
 		void SetFramesPerSecond(float fps);
 
 		void AddFrame(const Ref<Sprite> &sprite, uint32_t duration = 1);
@@ -36,13 +47,20 @@ namespace BHive
 
 		Ref<Sprite> RemoveSprite(uint32_t index);
 
-		const Frames &GetFrames() const;
+		REFLECT_FUNCTION()
 		void SetFrames(const Frames &frames);
 
 		Ref<Sprite> GetCurrentSprite() const;
 
+		REFLECT_FUNCTION()
+		const Frames &GetFrames() const;
+
+		REFLECT_FUNCTION()
 		bool IsLooping() const { return mIsLooping; }
+
 		bool IsPlaying() const { return mIsPlaying; }
+
+		REFLECT_FUNCTION()
 		float GetFramesPerSecond() const { return mFramesPerSecond; }
 
 		Ref<Sprite> GetSpriteAtFrame(int32_t frame) const;
@@ -61,14 +79,18 @@ namespace BHive
 		int32_t GetFrameIndexAtTime(float time) const;
 
 	private:
+		REFLECT_PROPERTY(Getter = GetFrames, Setter = SetFrames);
 		Frames mFrames;
+
+		REFLECT_PROPERTY(Getter = GetFramesPerSecond, Setter = SetFramesPerSecond)
 		float mFramesPerSecond = 15.0f;
-		bool mIsPlaying = false;
+
+		REFLECT_PROPERTY(Getter = IsLooping, Setter = SetLoop)
 		bool mIsLooping = false;
+
+		bool mIsPlaying = false;
+
 		float mCurrentTime = 0.0f;
 	};
-
-	REFLECT_EXTERN(FlipBook::Frame)
-	REFLECT_EXTERN(FlipBook)
 
 } // namespace BHive

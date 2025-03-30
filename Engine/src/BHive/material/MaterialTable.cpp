@@ -53,12 +53,4 @@ namespace BHive
 
 		return mMaterials[index];
 	}
-
-	REFLECT(MaterialTable)
-	{
-		BEGIN_REFLECT(MaterialTable)
-		REFLECT_PROPERTY("Materials", mMaterials)
-		(META_DATA(EPropertyMetaData_Flags, EPropertyFlags_FixedSize));
-	}
-
-}
+} // namespace BHive

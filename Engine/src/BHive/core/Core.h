@@ -51,13 +51,6 @@
 	{
 #define END_NAMESPACE }
 
-#define DECLARE_CLASS(...)
-#define DECLARE_STRUCT(...)
-#define DECLARE_CONSTRUCTOR(...)
-#define DECLARE_PROPERTY(...)
-#define DECLARE_FUNCTION(...)
-#define DECLARE_ENUM(...)
-
 template <typename T>
 using Ref = std::shared_ptr<T>;
 

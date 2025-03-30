@@ -208,9 +208,4 @@ namespace BHive
 		return children;
 	}
 
-	REFLECT(GameObject)
-	{
-		BEGIN_REFLECT(GameObject) REFLECT_CONSTRUCTOR(const entt::entity &, World *);
-		RTTR_REGISTRATION_STANDARD_TYPE_VARIANTS(GameObject)
-	}
 } // namespace BHive

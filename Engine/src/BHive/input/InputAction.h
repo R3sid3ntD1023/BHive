@@ -1,16 +1,19 @@
 #pragma once
 
 #include "core/Core.h"
-#include "InputKey.h"
 #include "core/reflection/Reflection.h"
 #include "core/serialization/Serialization.h"
+#include "InputKey.h"
 
 namespace BHive
 {
+	REFLECT_STRUCT()
 	struct FInputAction
 	{
+		REFLECT_CONSTRUCTOR()
 		FInputAction() = default;
 
+		REFLECT_CONSTRUCTOR()
 		FInputAction(const std::string &name, const FInputKey &key)
 			: mName(name),
 			  mKey(key)
@@ -32,14 +35,15 @@ namespace BHive
 		}
 
 	private:
+		REFLECT_PROPERTY()
 		std::string mName;
+
+		REFLECT_PROPERTY()
 		FInputKey mKey;
 
-		REFLECTABLE()
+		REFLECTABLE_CLASS()
 
 		friend class InputContext;
 	};
-
-	REFLECT_EXTERN(FInputAction)
 
 } // namespace BHive

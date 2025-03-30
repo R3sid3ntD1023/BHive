@@ -132,6 +132,9 @@ namespace Reflection
 
             foreach (var kvp in ReflectedTypes)
             {
+                List<string> namespaces = new List<string>();
+                
+
                 string fileName = Path.GetFileNameWithoutExtension(kvp.Key) + ".generated.cpp";
                 string filePath = Path.Combine(_OutputDirectory, fileName);
 
@@ -139,6 +142,17 @@ namespace Reflection
                 {
                     string header = $"#include \"{kvp.Key}\"\r\n";
                     header += "#include <rttr/registration.h>\r\n";
+
+                    foreach (var type in kvp.Value)
+                    {
+                        if (!namespaces.Contains(type.Namespace))
+                        {
+                            namespaces.Add(type.Namespace);
+                            header += $"using namespace {type.Namespace};\r\n";
+                        }
+                    }
+
+                   
                     writer.WriteLine(header);
                     writer.WriteLine("RTTR_REGISTRATION\r\n{");
 

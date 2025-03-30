@@ -56,20 +56,4 @@ namespace BHive
 		CreateSprites();
 	}
 
-	REFLECT(FSpriteSheetGrid)
-	{
-		BEGIN_REFLECT(FSpriteSheetGrid)
-		REFLECT_PROPERTY("Rows", mRows)
-		(META_DATA(EPropertyMetaData_Min, 0)) REFLECT_PROPERTY("Columns", mColumns)(META_DATA(EPropertyMetaData_Min, 0))
-			REFLECT_PROPERTY("CellSize", mCellSize);
-	}
-
-	REFLECT(SpriteSheet)
-	{
-		BEGIN_REFLECT(SpriteSheet)
-		REFLECT_CONSTRUCTOR()
-		REFLECT_PROPERTY("Source", GetSource, SetSource)
-		REFLECT_PROPERTY("Grid", GetGrid, SetGrid);
-	}
-
 } // namespace BHive

@@ -5,14 +5,14 @@
 
 namespace BHive
 {
-	DECLARE_CLASS(BHive::ClassMetaData_ComponentSpawnable)
+	REFLECT_CLASS(BHive::ClassMetaData_ComponentSpawnable)
 	struct InputComponent : public Component
 	{
-		DECLARE_CONSTRUCTOR()
+		REFLECT_CONSTRUCTOR()
 		InputComponent() = default;
 		InputComponent(const InputComponent &) = default;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		Ref<InputContext> Context;
 
 		void CreateInstance();
@@ -26,7 +26,7 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLEV(Component)
+		REFLECTABLE_CLASS(Component)
 
 	private:
 		InputContext *mContextInstance = nullptr;

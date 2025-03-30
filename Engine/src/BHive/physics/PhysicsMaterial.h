@@ -4,30 +4,28 @@
 
 namespace BHive
 {
-	DECLARE_CLASS()
+	REFLECT_CLASS()
 	class PhysicsMaterial : public Asset
 	{
 	public:
 		PhysicsMaterial() = default;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		float mFrictionCoefficient = 1.0f;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		float mBounciness = 0.0f;
 
-		DECLARE_PROPERTY()
+		REFLECT_PROPERTY()
 		float mMassDensity = 1.0f;
 
-		DECLARE_FUNCTION()
+		REFLECT_FUNCTION()
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		DECLARE_FUNCTION()
+		REFLECT_FUNCTION()
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLEV(Asset)
+		REFLECTABLE_CLASS(Asset)
 	};
-
-	REFLECT_EXTERN(PhysicsMaterial)
 
 } // namespace BHive

@@ -88,9 +88,4 @@ namespace BHive
 			LOG_TRACE("Destroyed Block");
 		}
 	}
-
-	REFLECT(Player)
-	{
-		BEGIN_REFLECT(Player)(META_DATA(ClassMetaData_Spawnable, true)) REFLECT_CONSTRUCTOR(const entt::entity &, World *);
-	}
 } // namespace BHive

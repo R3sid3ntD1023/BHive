@@ -173,22 +173,4 @@ namespace BHive
 		}
 	}
 
-	REFLECT(FlipBook::Frame)
-	{
-		BEGIN_REFLECT(FlipBook::Frame)
-		REFLECT_CONSTRUCTOR()
-		CONSTRUCTOR_POLICY_OBJECT
-		REFLECT_PROPERTY("Duration", mDuration)
-		REFLECT_PROPERTY("Source", mSprite);
-	}
-
-	REFLECT(FlipBook)
-	{
-		BEGIN_REFLECT(FlipBook)
-		REFLECT_CONSTRUCTOR()
-		REFLECT_PROPERTY("Loop", IsLooping, SetLoop)
-		REFLECT_PROPERTY("FramesPerSecond", GetFramesPerSecond, SetFramesPerSecond)
-		REFLECT_PROPERTY("Frames", GetFrames, SetFrames);
-	}
-
 } // namespace BHive

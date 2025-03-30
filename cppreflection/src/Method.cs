@@ -18,15 +18,15 @@ namespace Reflection
             Owner = owner;
         }
 
-        public static string _Regex = @"DECLARE_FUNCTION\((?<meta>[^)]*)\)\s*(?<specifiers>(?:virtual\s|static\s)*)?(?<type>[^&]+[^\s]*)?\s(?<name>[^(|]+)?\((?<args>[^)]*)\)\s*(const)?";
+        public static string _Regex = @"DECLARE_FUNCTION\((?<meta>\w.*)?\)\s*(?<specifiers>virtual|static)?(?<return_type>.*?)(?<name>\w*\W*\s*)\((?<args>\w.*)?\)(?<keywords>\s*const)?";
 
         public override void Parse(Match match)
         {
             base.Parse(match);
 
-            ReturnType = match.Groups["type"].Value.Trim();
+            ReturnType = match.Groups["return_type"].Value.Trim();
             var args = match.Groups["args"].Value.Trim();
-            IsConst = match.Groups["const"].Success;
+            IsConst = match.Groups["keywords"].Value.Contains("const");
             IsVirtual = match.Groups["specifiers"].Value.Contains("virtual");
             IsStatic = match.Groups["specifiers"].Value.Contains("static");
 

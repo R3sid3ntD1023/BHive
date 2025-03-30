@@ -1,7 +1,7 @@
-#include "PhysicsComponent.h"
-#include "physics/PhysicsCore.h"
 #include "objects/GameObject.h"
+#include "physics/PhysicsCore.h"
 #include "physics/PhysicsUtils.h"
+#include "PhysicsComponent.h"
 
 namespace BHive
 {
@@ -122,11 +122,5 @@ namespace BHive
 	void PhysicsComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ar(Settings);
-	}
-
-	REFLECT(PhysicsComponent)
-	{
-		BEGIN_REFLECT(PhysicsComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) COMPONENT_IMPL();
 	}
 } // namespace BHive

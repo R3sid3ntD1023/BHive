@@ -36,8 +36,7 @@ namespace Reflection
             rttrDefinition += "\n\t(\n";
             if (EnumValues.Count > 0 || Metadatas.Count > 0)
             {
-               
-                rttrDefinition += string.Join(",\n", EnumValues.ConvertAll(value => $"rttr::value(\"{value}\", {Namespace}::{Name}::{value})"));
+                rttrDefinition += string.Join(",\n", EnumValues.ConvertAll(value => $"\t\trttr::value(\"{value}\", {Namespace}::{Name}::{value})"));
               
             }
 
@@ -50,7 +49,7 @@ namespace Reflection
                 rttrDefinition += string.Join(",\n", Metadatas.ConvertAll(meta => meta.GenerateRTTR()));
             }
 
-            rttrDefinition += "\n\t\t)";
+            rttrDefinition += "\n\t)";
             rttrDefinition += ";\n";
             return rttrDefinition;
         }

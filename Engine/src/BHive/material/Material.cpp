@@ -1,9 +1,9 @@
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
+#include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
 #include "Material.h"
 #include "renderers/Renderer.h"
-#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
@@ -116,33 +116,5 @@ namespace BHive
 	{
 		return (mFlags & MaterialFlag_Transparent) != 0 || mOpacity < 1.0f ||
 			   (mFlags & MaterialFlag_Alpha_Is_Transparency) != 0;
-	}
-
-	REFLECT(MaterialFlags)
-	{
-		BEGIN_REFLECT_ENUM(MaterialFlags)
-		(ENUM_VALUE(MaterialFlag_None, "None"), ENUM_VALUE(MaterialFlag_Show_Vertex_Colors, "VertexColors"),
-		 ENUM_VALUE(MaterialFlag_Alpha_Is_Transparency, "Alpha Is Transparency"),
-		 ENUM_VALUE(MaterialFlag_Cast_Shadows, "Cast Shadows"), ENUM_VALUE(MaterialFlag_Recieve_Shadows, "Recieve Shadows"),
-		 ENUM_VALUE(MaterialFlag_DoubleSided, "Double Sided"), ENUM_VALUE(MaterialFlag_Transparent, "Tranparent"),
-		 ENUM_VALUE(MaterialFlag_UnLit, "UnLit"), ENUM_VALUE(MaterialFlag_Shadows, "Shadows"));
-	}
-
-	REFLECT(Material)
-	{
-		BEGIN_REFLECT(Material)
-		REFLECT_CONSTRUCTOR()
-		REFLECT_PROPERTY("Albedo", mAldebo)
-		REFLECT_PROPERTY("Metallic", mMetallic)
-		(META_DATA(EPropertyMetaData_Min, 0.0f), META_DATA(EPropertyMetaData_Max, 1.f),
-		 META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider))
-			REFLECT_PROPERTY("Roughness", mRoughness)(
-				META_DATA(EPropertyMetaData_Min, 0.0f), META_DATA(EPropertyMetaData_Max, 1.f),
-				META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider)) REFLECT_PROPERTY("DiaElectric", mDiaElectric)
-				REFLECT_PROPERTY("Emission", mEmission) REFLECT_PROPERTY("Opacity", mOpacity)(
-					META_DATA(EPropertyMetaData_Min, 0.0f), META_DATA(EPropertyMetaData_Max, 1.f),
-					META_DATA(EPropertyMetaData_Flags, EPropertyFlags_Slider)) REFLECT_PROPERTY("Tiling", mTiling)
-					REFLECT_PROPERTY("DepthScale", mDepthScale) REFLECT_PROPERTY("Flags", mFlags) REFLECT_PROPERTY(
-						"Textures", mTextures)(META_DATA(EPropertyMetaData_Flags, EPropertyFlags_FixedSize));
 	}
 } // namespace BHive

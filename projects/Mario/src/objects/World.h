@@ -1,12 +1,12 @@
 #pragma once
 
+#include "asset/Asset.h"
 #include "core/Core.h"
+#include "math/Transform.h"
 #include "physics/EventListener.h"
 #include "physics/PhysicsContext.h"
-#include "asset/Asset.h"
-#include "math/Transform.h"
-#include <glm/glm.hpp>
 #include <entt/entt.hpp>
+#include <glm/glm.hpp>
 
 namespace BHive
 {
@@ -16,10 +16,13 @@ namespace BHive
 
 	using ObjectList = std::unordered_map<UUID, Ref<GameObject>>;
 
+	REFLECT_CLASS()
 	class World : public Asset
 	{
 	public:
+		REFLECT_CONSTRUCTOR()
 		World();
+
 		World(const World &world);
 		~World();
 
@@ -77,7 +80,7 @@ namespace BHive
 
 		std::pair<Camera *, FTransform> GetPrimaryCamera();
 
-		REFLECTABLEV(Asset);
+		REFLECTABLE_CLASS(Asset);
 
 	private:
 		ObjectList mObjects;

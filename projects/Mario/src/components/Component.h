@@ -8,7 +8,7 @@ namespace BHive
 {
 	struct GameObject;
 
-	DECLARE_CLASS()
+	REFLECT_CLASS()
 	struct Component
 	{
 
@@ -22,7 +22,7 @@ namespace BHive
 
 		GameObject *GetOwner() const { return mOwningObject; }
 
-		REFLECTABLEV()
+		REFLECTABLE_CLASS()
 
 	private:
 		GameObject *mOwningObject = nullptr;

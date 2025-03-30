@@ -6,28 +6,31 @@ namespace BHive
 {
 	class Sprite;
 
+	REFLECT_CLASS(BHive::ClassMetaData_Spawnable)
 	struct BlockBase : public GameObject
 	{
+		REFLECT_CONSTRUCTOR()
 		BlockBase(const entt::entity &handle, World *world);
 
-		REFLECTABLEV(GameObject)
+		REFLECTABLE_CLASS(GameObject)
 	};
 
+	REFLECT_CLASS(BHive::ClassMetaData_Spawnable)
 	struct Block : public BlockBase
 	{
+		REFLECT_CONSTRUCTOR()
 		Block(const entt::entity &handle, World *world);
 
-		REFLECTABLEV(BlockBase)
+		REFLECTABLE_CLASS(BlockBase)
 	};
 
+	REFLECT_CLASS(BHive::ClassMetaData_Spawnable)
 	struct QuestionBlock : public BlockBase
 	{
+		REFLECT_CONSTRUCTOR()
 		QuestionBlock(const entt::entity &handle, World *world);
 
-		REFLECTABLEV(BlockBase)
+		REFLECTABLE_CLASS(BlockBase)
 	};
 
-	REFLECT_EXTERN(BlockBase)
-	REFLECT_EXTERN(Block)
-	REFLECT_EXTERN(QuestionBlock)
 } // namespace BHive

@@ -14,12 +14,4 @@ namespace BHive
 		ar(mFrictionCoefficient, mBounciness, mMassDensity);
 	}
 
-	REFLECT(PhysicsMaterial)
-	{
-		BEGIN_REFLECT(PhysicsMaterial)
-		REFLECT_CONSTRUCTOR()
-		REFLECT_PROPERTY("FrictionCoefficient", mFrictionCoefficient)
-		REFLECT_PROPERTY("Bounciness", mBounciness)
-		REFLECT_PROPERTY("MassDensity", mMassDensity);
-	}
 } // namespace BHive
