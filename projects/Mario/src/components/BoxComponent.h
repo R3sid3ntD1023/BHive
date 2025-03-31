@@ -6,14 +6,14 @@
 
 namespace BHive
 {
-	REFLECT_CLASS(BHive::ClassMetaData_ComponentSpawnable)
+	DECLARE_CLASS(BHive::ClassMetaData_ComponentSpawnable)
 	struct BoxComponent : public ColliderComponent
 	{
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		BoxComponent() = default;
 		BoxComponent(const BoxComponent &) = default;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		glm::vec3 Extents{0.5f};
 
 		virtual void Render() override;

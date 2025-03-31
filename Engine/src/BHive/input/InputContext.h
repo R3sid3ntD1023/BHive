@@ -9,9 +9,13 @@
 
 namespace BHive
 {
+	DECLARE_CLASS()
 	class InputContext : public Asset
 	{
 	public:
+		DECLARE_CONSTRUCTOR()
+		InputContext() = default;
+
 		struct FInputActionCallback
 		{
 			EventDelegate<const InputValue &> Callback;
@@ -58,11 +62,12 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLEV(Asset)
+		REFLECTABLE_CLASS(Asset)
 
 	private:
 		InputContext *CreateInstance();
 
+		DECLARE_PROPERTY()
 		std::vector<FInputAction> mKeys;
 		std::unordered_map<std::string, FInputActionCallback> mBindedKeys;
 		std::unordered_map<std::string, FInputAxisCallback> mBindedAxisKeys;
@@ -70,7 +75,5 @@ namespace BHive
 		friend struct InputComponent;
 		friend class InputContextSerializer;
 	};
-
-	REFLECT_EXTERN(InputContext)
 
 } // namespace BHive

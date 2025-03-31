@@ -4,13 +4,13 @@
 
 namespace BHive
 {
-	REFLECT_STRUCT()
+	DECLARE_STRUCT()
 	struct Frame
 	{
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		Ref<Sprite> mSprite;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		uint32_t mDuration{1};
 
 		template <typename A>
@@ -20,14 +20,15 @@ namespace BHive
 		}
 	};
 
-	REFLECT_CLASS()
+	typedef std::vector<Frame> Frames;
+
+	DECLARE_CLASS()
 	class FlipBook : public Asset
 	{
 	public:
-		typedef std::vector<Frame> Frames;
-
+		
 	public:
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		FlipBook() = default;
 
 		FlipBook(std::initializer_list<Frame> frames);
@@ -36,10 +37,10 @@ namespace BHive
 		void Stop();
 		void Update(float deltatime);
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		void SetLoop(bool loop);
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		void SetFramesPerSecond(float fps);
 
 		void AddFrame(const Ref<Sprite> &sprite, uint32_t duration = 1);
@@ -47,20 +48,20 @@ namespace BHive
 
 		Ref<Sprite> RemoveSprite(uint32_t index);
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		void SetFrames(const Frames &frames);
 
 		Ref<Sprite> GetCurrentSprite() const;
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		const Frames &GetFrames() const;
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		bool IsLooping() const { return mIsLooping; }
 
 		bool IsPlaying() const { return mIsPlaying; }
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		float GetFramesPerSecond() const { return mFramesPerSecond; }
 
 		Ref<Sprite> GetSpriteAtFrame(int32_t frame) const;
@@ -71,7 +72,7 @@ namespace BHive
 		void Save(cereal::BinaryOutputArchive &ar) const;
 		void Load(cereal::BinaryInputArchive &ar);
 
-		REFLECTABLEV(Asset)
+		REFLECTABLE_CLASS(Asset)
 
 	private:
 		int32_t GetNumFrames() const;
@@ -79,13 +80,13 @@ namespace BHive
 		int32_t GetFrameIndexAtTime(float time) const;
 
 	private:
-		REFLECT_PROPERTY(Getter = GetFrames, Setter = SetFrames);
+		DECLARE_PROPERTY(Getter = GetFrames, Setter = SetFrames);
 		Frames mFrames;
 
-		REFLECT_PROPERTY(Getter = GetFramesPerSecond, Setter = SetFramesPerSecond)
+		DECLARE_PROPERTY(Getter = GetFramesPerSecond, Setter = SetFramesPerSecond)
 		float mFramesPerSecond = 15.0f;
 
-		REFLECT_PROPERTY(Getter = IsLooping, Setter = SetLoop)
+		DECLARE_PROPERTY(Getter = IsLooping, Setter = SetLoop)
 		bool mIsLooping = false;
 
 		bool mIsPlaying = false;

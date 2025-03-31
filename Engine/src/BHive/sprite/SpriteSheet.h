@@ -11,16 +11,16 @@ namespace BHive
 
 	typedef std::vector<Sprite> Sprites;
 
-	REFLECT_STRUCT()
+	DECLARE_STRUCT()
 	struct FSpriteSheetGrid
 	{
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		uint32_t mRows = 0;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		uint32_t mColumns = 0;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		glm::vec2 mCellSize{0.0f};
 
 		template <typename A>
@@ -30,44 +30,45 @@ namespace BHive
 		}
 	};
 
-	REFLECT_STRUCT()
+	DECLARE_STRUCT()
 	class SpriteSheet : public Asset
 	{
 
 	public:
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		SpriteSheet() = default;
 
 		SpriteSheet(const Ref<Texture2D> &source, const FSpriteSheetGrid &grid);
 
 		void CreateSprites();
 
-		REFLECT_FUNCTION()
-		void SetSource(const Ref<Texture2D> &source);
+		DECLARE_FUNCTION()
+		void SetSource(const Ref<Texture2D>& source);
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		void SetGrid(const FSpriteSheetGrid &grid);
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		const Ref<Texture2D> &GetSource() const { return mSource; }
+
 		const Sprites &GetSprites() const { return mSprites; }
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		const FSpriteSheetGrid &GetGrid() const { return mGrid; }
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLEV(Asset)
+		REFLECTABLE_CLASS(Asset)
 
 	private:
 		Sprites mSprites;
 
-		REFLECT_PROPERTY(Setter = SetSource, Getter = GetSource)
+		DECLARE_PROPERTY(Setter = SetSource, Getter = GetSource)
 		Ref<Texture2D> mSource;
 
-		REFLECT_PROPERTY(Setter = SetGrid, Getter = GetGrid)
+		DECLARE_PROPERTY(Setter = SetGrid, Getter = GetGrid)
 		FSpriteSheetGrid mGrid;
 	};
 

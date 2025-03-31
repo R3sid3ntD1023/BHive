@@ -123,4 +123,6 @@ namespace BHive
 	{
 		ar(Settings);
 	}
+
+	
 } // namespace BHive

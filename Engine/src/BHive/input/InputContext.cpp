@@ -116,12 +116,4 @@ namespace BHive
 	{
 		return new InputContext(*this);
 	}
-
-	REFLECT(InputContext)
-	{
-		BEGIN_REFLECT(InputContext)
-		REFLECT_CONSTRUCTOR()
-		REFLECT_PROPERTY("Keys", mKeys);
-	}
-
 } // namespace BHive

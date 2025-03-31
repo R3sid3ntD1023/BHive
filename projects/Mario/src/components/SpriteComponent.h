@@ -5,23 +5,23 @@
 
 namespace BHive
 {
-	REFLECT_CLASS(BHive::ClassMetaData_ComponentSpawnable)
+	DECLARE_CLASS(BHive::ClassMetaData_ComponentSpawnable)
 	struct SpriteComponent : public Component
 	{
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		SpriteComponent() = default;
 		SpriteComponent(const SpriteComponent &other) = default;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		glm::vec2 Tiling{1, 1};
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		glm::vec2 Size{1, 1};
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		FColor Color{0xffffffff};
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		Ref<Sprite> SpriteAsset;
 
 		void Render() override;

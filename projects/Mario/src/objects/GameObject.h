@@ -25,7 +25,7 @@ namespace BHive
 
 	using ComponentList = std::vector<FRegisteredComponent>;
 
-	REFLECT_STRUCT()
+	DECLARE_STRUCT()
 	struct GameObject
 	{
 		GameObject(const entt::entity &handle, World *world);

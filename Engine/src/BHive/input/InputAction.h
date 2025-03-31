@@ -7,13 +7,13 @@
 
 namespace BHive
 {
-	REFLECT_STRUCT()
+	DECLARE_STRUCT()
 	struct FInputAction
 	{
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		FInputAction() = default;
 
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		FInputAction(const std::string &name, const FInputKey &key)
 			: mName(name),
 			  mKey(key)
@@ -35,10 +35,10 @@ namespace BHive
 		}
 
 	private:
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		std::string mName;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		FInputKey mKey;
 
 		REFLECTABLE_CLASS()

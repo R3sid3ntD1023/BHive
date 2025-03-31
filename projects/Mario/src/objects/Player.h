@@ -8,10 +8,10 @@ namespace BHive
 {
 	struct InputValue;
 
-	REFLECT_STRUCT()
+	DECLARE_STRUCT()
 	struct Player : public GameObject
 	{
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		Player(const entt::entity &handle, World *world);
 
 		void Begin() override;

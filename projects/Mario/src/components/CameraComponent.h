@@ -5,17 +5,17 @@
 
 namespace BHive
 {
-	REFLECT_CLASS(BHive::ClassMetaData_ComponentSpawnable)
+	DECLARE_CLASS(BHive::ClassMetaData_ComponentSpawnable)
 	struct CameraComponent : public Component
 	{
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent &) = default;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		SceneCamera Camera;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		bool IsPrimary = true;
 
 		void Update(float) override;

@@ -8,7 +8,7 @@ namespace BHive
 {
 	struct GameObject;
 
-	REFLECT_CLASS()
+	DECLARE_CLASS()
 	struct Component
 	{
 

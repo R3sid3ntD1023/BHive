@@ -143,13 +143,4 @@ namespace BHive
 			buffer.Release();
 		}
 	}
-
-	REFLECT(Texture2D)
-	{
-		BEGIN_REFLECT(Texture2D)
-		REFLECT_CONSTRUCTOR()
-		REFLECT_PROPERTY_READ_ONLY("Width", mWidth)
-		REFLECT_PROPERTY_READ_ONLY("Height", mHeight) REFLECT_PROPERTY("Specification", GetSpecification, SetSpecification);
-	}
-
 } // namespace BHive

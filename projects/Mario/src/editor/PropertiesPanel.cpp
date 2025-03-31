@@ -105,8 +105,9 @@ namespace BHive
 			for (auto &type : derived_component_types)
 			{
 				auto spawnable_var = type.get_metadata(ClassMetaData_ComponentSpawnable);
+				auto has_component = type.get_method(HAS_COMPONENT_FUNCTION_NAME);
 
-				if (!spawnable_var || !type.get_constructor())
+				if (!spawnable_var || !type.get_constructor() || has_component.invoke(selection).to_bool())
 				{
 					continue;
 				}

@@ -16,11 +16,11 @@ namespace BHive
 
 	using ObjectList = std::unordered_map<UUID, Ref<GameObject>>;
 
-	REFLECT_CLASS()
+	DECLARE_CLASS()
 	class World : public Asset
 	{
 	public:
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		World();
 
 		World(const World &world);

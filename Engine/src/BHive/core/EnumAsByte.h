@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	REFLECT_STRUCT()
+	DECLARE_STRUCT()
 	struct TEnumAsByteBase
 	{
 		virtual void Set(const int &value) = 0;

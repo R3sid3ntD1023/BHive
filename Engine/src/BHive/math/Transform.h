@@ -5,41 +5,41 @@
 
 namespace BHive
 {
-	REFLECT_STRUCT()
+	DECLARE_STRUCT()
 	struct FTransform
 	{
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		FTransform();
 
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		FTransform(const glm::mat4 &matrix);
 
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		FTransform(const FTransform &rhs);
 
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		FTransform(const glm::vec3 &translation, const glm::vec3 &rotation = {0, 0, 0}, const glm::vec3 &scale = {1, 1, 1});
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		const glm::vec3 &get_translation() const { return mTranslation; }
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		const glm::vec3 &get_rotation() const { return mRotation; }
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		const glm::vec3 &get_scale() const { return mScale; }
 
 		const glm::quat get_quaternion() const { return glm::quat(glm::radians(mRotation)); }
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		void set_translation(const glm::vec3 &translation);
 		void set_translation(float x, float y, float z);
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		void set_rotation(const glm::vec3 &rotation);
 		void set_quaternion(const glm::quat &quaternion);
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		void set_scale(const glm::vec3 &scale);
 
 		void add_translation(const glm::vec3 &translation);
@@ -84,13 +84,13 @@ namespace BHive
 		void calculate_model_matrix();
 
 	private:
-		REFLECT_PROPERTY(Setter = set_translation, Getter = get_translation, EPropertyMetaData_DisplayName = "Translation")
+		DECLARE_PROPERTY(Setter = set_translation, Getter = get_translation, EPropertyMetaData_DisplayName = "Translation")
 		glm::vec3 mTranslation;
 
-		REFLECT_PROPERTY(Setter = set_rotation, Getter = get_rotation, EPropertyMetaData_DisplayName = "Rotation")
+		DECLARE_PROPERTY(Setter = set_rotation, Getter = get_rotation, EPropertyMetaData_DisplayName = "Rotation")
 		glm::vec3 mRotation;
 
-		REFLECT_PROPERTY(
+		DECLARE_PROPERTY(
 			Setter = set_scale, Getter = get_scale, EPropertyMetaData_DisplayName = "Scale",
 			EPropertyMetaData_Default = glm::vec3(1.f))
 		glm::vec3 mScale;

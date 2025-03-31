@@ -14,7 +14,9 @@ namespace BHive
 		uint32_t width = 1, height = 1, depth = 1;
 	};
 
-	class BHIVE Texture : public Asset
+
+	DECLARE_CLASS()
+	class Texture : public Asset
 	{
 	public:
 		virtual ~Texture() = default;
@@ -25,6 +27,7 @@ namespace BHive
 		virtual void BindAsImage(uint32_t unit, EImageAccess access, uint32_t level = 0) const = 0;
 
 		virtual uint32_t GetWidth() const = 0;
+
 		virtual uint32_t GetHeight() const = 0;
 
 		virtual void SetData(const void *data, uint64_t size, uint32_t offsetX = 0, uint32_t offsetY = 0) = 0;
@@ -37,7 +40,7 @@ namespace BHive
 
 		operator uint32_t() const { return GetRendererID(); }
 
-		REFLECTABLEV(Asset)
+		REFLECTABLE_CLASS(Asset)
 	};
 
 } // namespace BHive

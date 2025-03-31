@@ -18,31 +18,31 @@ namespace BHive
 	DECLARE_EVENT(OnTrigger, struct ColliderComponent *, GameObject *);
 	DECLARE_EVENT(OnHit, const glm::vec3 &, const glm::vec3 &, float);
 
-	REFLECT_CLASS()
+	DECLARE_CLASS()
 	struct ColliderComponent : public Component
 	{
 		ColliderComponent() = default;
 		ColliderComponent(const ColliderComponent &other) = default;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		bool CollisionEnabled{true};
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		glm::vec3 Offset{0.0f};
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		FColor Color{0xffff00ff};
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		bool IsTrigger = false;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		ECollisionChannel CollisionChannel = CollisionChannel_0;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		TEnumAsByte<ECollisionChannel> CollisionChannelMasks = CollisionChannel_All;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		Ref<PhysicsMaterial> PhysicsMaterial;
 
 		OnCollisonEvent OnCollisionEnter;
@@ -55,7 +55,7 @@ namespace BHive
 
 		OnHitEvent OnRaycastHit;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		RuntimeEventDelegate Delegate;
 
 		void Begin() override;

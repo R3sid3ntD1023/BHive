@@ -84,12 +84,12 @@
 
 #define META_DATA(key, value) rttr::metadata(key, value)
 
-#define REFLECT_CLASS(...)
-#define REFLECT_STRUCT(...)
-#define REFLECT_CONSTRUCTOR(...)
-#define REFLECT_PROPERTY(...)
-#define REFLECT_FUNCTION(...)
-#define REFLECT_ENUM(...)
+#define DECLARE_CLASS(...)
+#define DECLARE_STRUCT(...)
+#define DECLARE_CONSTRUCTOR(...)
+#define DECLARE_PROPERTY(...)
+#define DECLARE_FUNCTION(...)
+#define DECLARE_ENUM(...)
 
 #define REFLECTABLE_CLASS(...) RTTR_REGISTRATION_FRIEND RTTR_ENABLE(__VA_ARGS__)
 

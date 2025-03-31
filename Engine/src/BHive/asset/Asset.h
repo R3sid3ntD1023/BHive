@@ -9,7 +9,7 @@
 
 namespace BHive
 {
-	REFLECT_CLASS()
+	DECLARE_CLASS()
 	class BHIVE Asset
 	{
 	public:
@@ -31,7 +31,7 @@ namespace BHive
 
 		const UUID &GetHandle() const { return mHandle; }
 
-		REFLECTABLEV()
+		REFLECTABLE_CLASS()
 
 	private:
 		std::string mName;

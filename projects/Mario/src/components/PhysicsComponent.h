@@ -8,7 +8,7 @@
 
 namespace BHive
 {
-	REFLECT_ENUM()
+	DECLARE_ENUM()
 	enum class EBodyType : int
 	{
 		Static,
@@ -16,31 +16,31 @@ namespace BHive
 		Dynamic
 	};
 
-	REFLECT_STRUCT()
+	DECLARE_STRUCT()
 	struct PhysicsSettings
 	{
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		bool PhysicsEnabled = true;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		EBodyType BodyType = EBodyType::Static;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		float Mass = 1.0f;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		float LinearDamping = 0.0f;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		float AngularDamping = 0.0f;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		TEnumAsByte<ELockAxis> LinearLockAxis = NoAxis;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		TEnumAsByte<ELockAxis> AngularLockAxis = NoAxis;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		bool GravityEnabled = true;
 
 		template <typename A>
@@ -51,15 +51,15 @@ namespace BHive
 		}
 	};
 
-	REFLECT_CLASS()
+	DECLARE_CLASS()
 	struct PhysicsComponent : public Component
 	{
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		PhysicsComponent() = default;
 
 		PhysicsComponent(const PhysicsComponent &) = default;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		PhysicsSettings Settings;
 
 		void Begin() override;

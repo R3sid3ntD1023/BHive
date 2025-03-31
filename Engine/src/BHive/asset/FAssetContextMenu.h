@@ -29,5 +29,5 @@ namespace BHive
 	REFLECT(cls)                                     \
 	{                                                \
 		BEGIN_REFLECT(cls)                           \
-		(META_DATA("Type", AssetType::get<type>())); \
+		(META_DATA("Type", AssetType::get<type>())) REFLECT_CONSTRUCTOR() CONSTRUCTOR_POLICY_PTR; \
 	}

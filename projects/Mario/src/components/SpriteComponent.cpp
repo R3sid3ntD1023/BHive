@@ -26,9 +26,8 @@ namespace BHive
 		ar(Color, Size, Tiling, TAssetHandle(SpriteAsset));
 	}
 
-	REFLECT(SpriteComponent)
+	RTTR_REGISTRATION
 	{
-		BEGIN_REFLECT(SpriteComponent)
-		COMPONENT_IMPL();
+		BEGIN_REFLECT(SpriteComponent) COMPONENT_IMPL();
 	}
 } // namespace BHive

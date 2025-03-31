@@ -6,20 +6,20 @@
 
 namespace BHive
 {
-	REFLECT_CLASS()
+	DECLARE_CLASS()
 	struct TagComponent : public Component
 	{
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		std::string Name = "New Object";
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		uint16_t Groups = 0x00;
 
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		TagComponent() = default;
 		TagComponent(const TagComponent &) = default;
 
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		TagComponent(const std::string &name, uint16_t groups = 0)
 			: Name(name),
 			  Groups(groups)

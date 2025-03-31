@@ -6,14 +6,14 @@
 
 namespace BHive
 {
-	REFLECT_CLASS()
+	DECLARE_CLASS()
 	struct IDComponent : public Component
 	{
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		IDComponent() = default;
 		IDComponent(const IDComponent &) = default;
 
-		REFLECT_PROPERTY(ReadOnly)
+		DECLARE_PROPERTY(ReadOnly)
 		UUID ID;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override { ar(ID); }

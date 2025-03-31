@@ -5,23 +5,23 @@
 
 namespace BHive
 {
-	REFLECT_ENUM()
+	DECLARE_ENUM()
 	enum class EProjectionType
 	{
 		Perspective,
 		Orthographic
 	};
 
-	REFLECT_STRUCT()
+	DECLARE_STRUCT()
 	struct FPerspectiveSettings
 	{
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		float Fov = 45.0f;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		float Near = 0.01f;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		float Far = 1000.0f;
 
 		template <typename A>
@@ -31,25 +31,25 @@ namespace BHive
 		}
 	};
 
-	REFLECT_STRUCT()
+	DECLARE_STRUCT()
 	struct FOrthographicSettings
 	{
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		float Left = -10.0f;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		float Right = 10.f;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		float Bottom = -10.f;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		float Top = 10.0f;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		float Near = -1.0f;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		float Far = 1.0f;
 
 		template <typename A>
@@ -59,33 +59,33 @@ namespace BHive
 		}
 	};
 
-	REFLECT_CLASS()
+	DECLARE_CLASS()
 	class SceneCamera : public Camera
 	{
 	public:
 	public:
 		SceneCamera();
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		void SetProjectionType(const EProjectionType &projection);
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		const EProjectionType &GetProjectionType() const { return mProjectionType; }
 
 		void SetPerspective(float fov, float aspect, float nearclip, float farclip);
 		void SetOrthographic(float size, float aspect, float nearclip, float farclip);
 		void SetOrthographic(float l, float r, float b, float t, float aspect, float nearclip, float farclip);
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		void SetPerspectiveSettings(const FPerspectiveSettings &settings);
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		const FPerspectiveSettings &GetPerspectiveSettings() const { return mPerspectiveSettings; }
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		void SetOrthographicSettings(const FOrthographicSettings &settings);
 
-		REFLECT_FUNCTION()
+		DECLARE_FUNCTION()
 		const FOrthographicSettings &GetOrthographicSettings() const { return mOrthographicSettings; }
 
 		void Resize(uint32_t width, uint32_t height);
@@ -100,13 +100,13 @@ namespace BHive
 		void RecalculateProjection();
 
 	private:
-		REFLECT_PROPERTY(Setter = SetProjectionType, Getter = GetProjectionType)
+		DECLARE_PROPERTY(Setter = SetProjectionType, Getter = GetProjectionType)
 		EProjectionType mProjectionType = EProjectionType::Perspective;
 
-		REFLECT_PROPERTY(Setter = SetPerspectiveSettings, Getter = GetPerspectiveSettings)
+		DECLARE_PROPERTY(Setter = SetPerspectiveSettings, Getter = GetPerspectiveSettings)
 		FPerspectiveSettings mPerspectiveSettings;
 
-		REFLECT_PROPERTY(Setter = SetOrthographicSettings, Getter = GetOrthographicSettings)
+		DECLARE_PROPERTY(Setter = SetOrthographicSettings, Getter = GetOrthographicSettings)
 		FOrthographicSettings mOrthographicSettings;
 		float mAspectRatio = 1.7555f;
 	};

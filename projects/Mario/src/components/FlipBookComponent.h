@@ -5,27 +5,27 @@
 
 namespace BHive
 {
-	REFLECT_CLASS(BHive::ClassMetaData_ComponentSpawnable)
+	DECLARE_CLASS(BHive::ClassMetaData_ComponentSpawnable)
 	struct FlipBookComponent : public Component
 	{
-		REFLECT_CONSTRUCTOR()
+		DECLARE_CONSTRUCTOR()
 		FlipBookComponent() = default;
 
 		FlipBookComponent(const FlipBookComponent &) = default;
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		bool AutoPlay{true};
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		FColor Color{0xffffffff};
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		glm::vec2 Size{1, 1};
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		glm::vec2 Tiling{1, 1};
 
-		REFLECT_PROPERTY()
+		DECLARE_PROPERTY()
 		Ref<FlipBook> FlipBookAsset;
 
 		virtual void Begin() override;

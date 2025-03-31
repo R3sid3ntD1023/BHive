@@ -63,7 +63,7 @@ namespace BHive
 		return nullptr;
 	}
 
-	const FlipBook::Frames &FlipBook::GetFrames() const
+	const Frames &FlipBook::GetFrames() const
 	{
 		return mFrames;
 	}

@@ -20,7 +20,7 @@ namespace Reflection
     {
         public List<Arg> Arguments { get; private set; } = new List<Arg>();
 
-        public static string _Regex = @"(?<type>(?:const\s+)?(?:\w+::)*\w+(?:\s*[\*&]+)*)(?:\s+(?<name>\w+))?(?:\s*=\s*[^,]*)?";
+        public static string _Regex = @"^(?<type>(?:const)?(?:\s*\w+\:\:\w+)?\s*\w*(?:\<\w*\>)?\W*)(?<name>\w*)?(\s*\=)?(\s*\{\s*\})?";
 
         public void Parse(string args)
         {

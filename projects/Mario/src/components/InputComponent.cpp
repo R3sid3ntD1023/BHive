@@ -40,9 +40,8 @@ namespace BHive
 		ar(TAssetHandle<InputContext>(Context));
 	}
 
-	REFLECT(InputComponent)
+	RTTR_REGISTRATION
 	{
-		BEGIN_REFLECT(InputComponent)
-		COMPONENT_IMPL();
+		BEGIN_REFLECT(InputComponent) COMPONENT_IMPL();
 	}
 } // namespace BHive

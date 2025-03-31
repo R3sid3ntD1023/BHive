@@ -49,4 +49,9 @@ namespace BHive
 	{
 		ar(AutoPlay, Color, Size, Tiling, TAssetHandle(FlipBookAsset));
 	}
+
+	RTTR_REGISTRATION
+	{
+		BEGIN_REFLECT(FlipBookComponent) COMPONENT_IMPL();
+	}
 } // namespace BHive

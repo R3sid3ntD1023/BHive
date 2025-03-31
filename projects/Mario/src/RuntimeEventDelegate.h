@@ -7,13 +7,16 @@ namespace BHive
 {
 	struct GameObject;
 
-	REFLECT_STRUCT()
+	DECLARE_STRUCT()
 	struct RuntimeEventDelegate
 	{
 		RuntimeEventDelegate() = default;
 		RuntimeEventDelegate(const RuntimeEventDelegate &);
 
+		DECLARE_FUNCTION()
 		void SetCaller(GameObject *caller);
+
+		DECLARE_FUNCTION()
 		GameObject *GetCaller() const { return Object; }
 
 		RuntimeEventDelegate &operator=(const RuntimeEventDelegate &rhs);
@@ -21,8 +24,10 @@ namespace BHive
 	private:
 		void OnObjectDestroyed(GameObject *);
 
-		REFLECT_PROPERTY(Setter = SetCaller, Getter = GetCaller)
+		DECLARE_PROPERTY(Setter = SetCaller, Getter = GetCaller)
 		GameObject *Object = nullptr;
+
+
 	};
 
 } // namespace BHive
