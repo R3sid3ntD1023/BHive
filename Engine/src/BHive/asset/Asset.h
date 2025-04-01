@@ -10,7 +10,7 @@
 namespace BHive
 {
 	DECLARE_CLASS()
-	class BHIVE Asset
+	class Asset
 	{
 	public:
 		Asset() = default;

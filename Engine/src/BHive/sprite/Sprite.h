@@ -60,6 +60,8 @@ namespace BHive
 
 		static Ref<Sprite> Create(const Ref<Texture2D> &texture, const glm::vec2 &min, const glm::vec2 &max);
 
+		REFLECTABLE_CLASS(Asset)
+
 	private:
 		void Initialize();
 		void CalculateMinMax(const FSpriteGenerator &generator);
@@ -78,8 +80,6 @@ namespace BHive
 		FSpriteGenerator mGenerator{};
 
 		std::array<glm::vec2, 4> mCoords = {};
-
-		REFLECTABLE_CLASS(Asset)
 	};
 
 } // namespace BHive

@@ -13,6 +13,13 @@ namespace BHive
 
 			AssetType type = InvalidType;
 			ar(type);
+
+			if (!type.get_constructor())
+			{
+				LOG_ERROR("AssetFactory::Import() no default constructor found for type", type);
+				return false;
+			}
+
 			auto var = type.create();
 			auto obj = var.get_value<Ref<Asset>>();
 			obj->Load(ar);

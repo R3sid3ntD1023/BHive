@@ -8,6 +8,7 @@ namespace BHive
 	class Texture2D : public Texture
 	{
 	public:
+		DECLARE_CONSTRUCTOR()
 		Texture2D() = default;
 		Texture2D(
 			uint32_t width, uint32_t height, const FTextureSpecification &specification = {}, const void *data = nullptr);
@@ -53,7 +54,7 @@ namespace BHive
 		void Release();
 
 	private:
-		DECLARE_PROPERTY(ReadOnly , Getter = GetWidth)
+		DECLARE_PROPERTY(ReadOnly, Getter = GetWidth)
 		uint32_t mWidth = 0;
 
 		DECLARE_PROPERTY(ReadOnly, Getter = GetHeight)

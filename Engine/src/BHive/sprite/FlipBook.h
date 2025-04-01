@@ -26,7 +26,6 @@ namespace BHive
 	class FlipBook : public Asset
 	{
 	public:
-		
 	public:
 		DECLARE_CONSTRUCTOR()
 		FlipBook() = default;
@@ -80,7 +79,7 @@ namespace BHive
 		int32_t GetFrameIndexAtTime(float time) const;
 
 	private:
-		DECLARE_PROPERTY(Getter = GetFrames, Setter = SetFrames);
+		DECLARE_PROPERTY(Getter = GetFrames, Setter = SetFrames)
 		Frames mFrames;
 
 		DECLARE_PROPERTY(Getter = GetFramesPerSecond, Setter = SetFramesPerSecond)

@@ -208,4 +208,19 @@ namespace BHive
 		return children;
 	}
 
+	RTTR_REGISTRATION
+	{
+		{
+			BEGIN_REFLECT(TransformComponent) COMPONENT_IMPL();
+		}
+		{
+			BEGIN_REFLECT(IDComponent) COMPONENT_IMPL();
+		}
+		{
+			BEGIN_REFLECT(TagComponent) COMPONENT_IMPL();
+		}
+		{
+			BEGIN_REFLECT(RelationshipComponent) COMPONENT_IMPL();
+		}
+	}
 } // namespace BHive

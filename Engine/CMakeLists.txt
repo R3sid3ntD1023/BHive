@@ -8,6 +8,7 @@ find_package(assimp CONFIG REQUIRED)
 file(GLOB_RECURSE ENGINE_SRC CONFIGURE_DEPENDS src/** data/**)
 
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
+set(USE_PCH ON)
 
 add_library(Engine STATIC ${ENGINE_SRC})
 set_target_properties(Engine PROPERTIES 
@@ -49,3 +50,7 @@ target_include_directories(Engine PUBLIC
 )
 
 target_compile_definitions(Engine PUBLIC ENGINE_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
+
+if(${USE_PCH})
+target_precompile_headers(Engine PUBLIC src/BHivePCH.h)
+endif()

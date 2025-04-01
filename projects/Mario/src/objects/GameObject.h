@@ -46,6 +46,13 @@ namespace BHive
 			return &component;
 		}
 
+		// void AddComponent(const Component *component)
+		//{
+		//	using type = decltype(component);
+		//	auto &component = mWorld->mRegistry.emplace<type>(mEntityHandle);
+		//	RegisterComponent<type>(dynamic_cast<type *>(component));
+		// }
+
 		template <typename T>
 		T *EmplaceOrReplaceComponent(const Component &srcComponent)
 		{

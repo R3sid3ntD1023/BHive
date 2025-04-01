@@ -124,5 +124,9 @@ namespace BHive
 		ar(Settings);
 	}
 
-	
+	RTTR_REGISTRATION
+	{
+		BEGIN_REFLECT(PhysicsComponent) COMPONENT_IMPL();
+	}
+
 } // namespace BHive
