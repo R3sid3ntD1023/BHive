@@ -28,7 +28,6 @@ namespace Reflection
                         string[] strings = meta.Split('=');
                         MetaData metaData = new(strings[0].Trim(), strings.Length > 1 ? strings[1].Trim() : string.Empty);
                         Metadatas.Add(metaData);
-                        Console.WriteLine($"Parsed metadata: {metaData.Key} = {metaData.Value}");
                     }
                 }
             }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -11,6 +12,8 @@ namespace Reflection
         public List<Method> Methods { get; set; } = new List<Method>();
         public List<Property> Properties { get; set; } = new List<Property>();
         public List<Constructor> Constructors { get; set; } = new List<Constructor>();
+        public List<string> ParentClassNames { get; set; } = new List<string>();
+        private string ParentClassRegex = @"(?:public|protected|private)?(?<name>.*),?";
 
         public override void Parse(Match match)
         {
@@ -42,6 +45,21 @@ namespace Reflection
                 constructor.Parse(constructorMatch);
                 Constructors.Add(constructor);
             }
+
+            var bases = match.Groups["base"].Value;
+            if(!string.IsNullOrEmpty(bases))
+            {
+                var parent_matches = Regex.Matches(bases, ParentClassRegex);
+                foreach (Match parent in parent_matches)
+                {
+                    var name = parent.Groups["name"].Value;
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        ParentClassNames.Add(name);
+                    }
+                }
+            }
+           
         }
 
         public override string GenerateRTTR()

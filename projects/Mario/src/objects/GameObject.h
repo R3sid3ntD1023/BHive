@@ -92,6 +92,7 @@ namespace BHive
 		}
 
 		PhysicsComponent &GetPhysicsComponent();
+		uint16_t GetTag() const;
 
 		void SetName(const std::string &name);
 		void SetTransform(const FTransform &transform);

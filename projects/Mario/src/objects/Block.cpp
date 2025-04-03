@@ -4,6 +4,7 @@
 #include "components/PhysicsComponent.h"
 #include "components/SpriteComponent.h"
 #include "importers/TextureImporter.h"
+#include "GroupMacros.h"
 
 namespace BHive
 {
@@ -29,6 +30,16 @@ namespace BHive
 		: BlockBase(handle, world)
 	{
 		AddComponent<FlipBookComponent>();
+	}
+
+	void QuestionBlock::OnCollisionEnter(ColliderComponent *component, GameObject *other)
+	{
+		if ((other->GetTag() & PLAYER) != 0)
+		{
+			Destroy();
+			GetWorld()->SpawnGameObject(SpawnedBlock, GetTransform(), "New Item");
+			
+		}
 	}
 
 } // namespace BHive

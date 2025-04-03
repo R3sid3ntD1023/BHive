@@ -2,6 +2,7 @@
 
 #include "core/Core.h"
 #include "core/reflection/Reflection.h"
+#include "objects/GameObject.h"
 
 namespace BHive
 {

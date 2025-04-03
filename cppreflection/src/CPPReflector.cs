@@ -111,18 +111,6 @@ namespace Reflection
             }
         }
 
-        public void PrintReflectedTypes()
-        {
-            foreach (var kvp in ReflectedTypes)
-            {
-                Console.WriteLine($"File: {kvp.Key}");
-                foreach (var type in kvp.Value)
-                {
-                    Console.WriteLine(type.ToString());
-                }
-            }
-        }
-
         public void Generate()
         {
             if (!Directory.Exists(_OutputDirectory))

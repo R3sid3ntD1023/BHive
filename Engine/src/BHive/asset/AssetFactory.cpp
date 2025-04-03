@@ -5,6 +5,7 @@ namespace BHive
 {
 	bool AssetFactory::Import(Ref<Asset> &asset, const std::filesystem::path &path)
 	{
+		
 		try
 		{
 			std::ifstream in(path, std::ios::in | std::ios::binary);
@@ -48,6 +49,9 @@ namespace BHive
 		if (!asset)
 			return false;
 
+		std::ofstream out(path, std::ios::out | std::ios::binary);
+		cereal::BinaryOutputArchive ar(out);
+
 		try
 		{
 			auto parent_directory = path.parent_path();
@@ -56,8 +60,7 @@ namespace BHive
 				std::filesystem::create_directory(parent_directory);
 			}
 
-			std::ofstream out(path, std::ios::out | std::ios::binary);
-			cereal::BinaryOutputArchive ar(out);
+			
 			ar(asset->get_type());
 			asset->Save(ar);
 

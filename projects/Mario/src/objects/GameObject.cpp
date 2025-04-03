@@ -49,6 +49,11 @@ namespace BHive
 		return *GetComponent<PhysicsComponent>();
 	}
 
+	uint16_t GameObject::GetTag() const
+	{
+		return GetComponent<TagComponent>()->Groups;
+	}
+
 	void GameObject::SetName(const std::string &name)
 	{
 		GetComponent<TagComponent>()->Name = name;

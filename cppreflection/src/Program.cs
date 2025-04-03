@@ -63,9 +63,6 @@ class Program
             parser.Parse(include);
         }
 
-        // Print the reflected types
-        parser.PrintReflectedTypes();
-
         Console.WriteLine($"Generating files in {outputDir}...");
         parser.Generate();
 

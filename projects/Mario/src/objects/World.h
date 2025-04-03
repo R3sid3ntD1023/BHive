@@ -5,6 +5,7 @@
 #include "math/Transform.h"
 #include "physics/EventListener.h"
 #include "physics/PhysicsContext.h"
+#include "core/SubClassOf.h"
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
 
@@ -44,6 +45,16 @@ namespace BHive
 
 		void RenderPhysicsWorld();
 		void Resize(uint32_t w, uint32_t h);
+
+		template<typename T>
+		Ref<T> SpawnGameObject(const TSubClassOf<T> &type,const FTransform& transform, const std::string &name)
+		{
+			auto object = type.get().create({mRegistry.create(), this}).get_value<Ref<T>>();
+			object->SetName(name);
+			object->SetTransform(transform);
+			AddGameObject(object);
+			return object;
+		}
 
 		template <typename T = GameObject>
 		Ref<T> CreateGameObject(const std::string &name)

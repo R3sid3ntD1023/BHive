@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameObject.h"
+#include "core/SubClassOf.h"
 
 namespace BHive
 {
@@ -29,6 +30,11 @@ namespace BHive
 	{
 		DECLARE_CONSTRUCTOR()
 		QuestionBlock(const entt::entity &handle, World *world);
+
+		DECLARE_PROPERTY()
+		TSubClassOf<Block> SpawnedBlock;
+
+		void OnCollisionEnter(struct ColliderComponent *component, GameObject *other);
 
 		REFLECTABLE_CLASS(BlockBase)
 	};
