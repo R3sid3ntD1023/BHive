@@ -45,8 +45,8 @@ namespace BHive
 	REFLECT(FProjectConfiguration)
 	{
 		BEGIN_REFLECT(FProjectConfiguration)
-		REFLECT_PROPERTY("Name", mName)
-		REFLECT_PROPERTY("ProjectDirectory", mProjectDirectory)
-		REFLECT_PROPERTY("ResourcesDirectory", mResourcesDirectory);
+		REFLECT_PROPERTY(Name)
+		REFLECT_PROPERTY(ProjectDirectory)
+		REFLECT_PROPERTY(ResourcesDirectory);
 	}
 } // namespace BHive

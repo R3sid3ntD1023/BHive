@@ -43,10 +43,13 @@ target_link_libraries(Engine
 target_include_directories(Engine PUBLIC 
 	${CMAKE_CURRENT_SOURCE_DIR}/src 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/BHive 
+	${CMAKE_CURRENT_SOURCE_DIR}/src/BHive/world
 	${VENDOR_DIR}
+	
 )
 
 target_compile_definitions(Engine PUBLIC ENGINE_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
+target_precompile_headers(Engine PUBLIC src/BHivePCH.h)
 
 
 

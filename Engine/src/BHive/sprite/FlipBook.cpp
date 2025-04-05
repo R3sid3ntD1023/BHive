@@ -115,19 +115,10 @@ namespace BHive
 
 	Ref<Sprite> FlipBook::GetSpriteAtFrame(int32_t frame) const
 	{
-		if (frame < 0)
+		if (frame < 0 || frame >= mFrames.size())
 			return nullptr;
 
-		int32_t sum = 0;
-		for (int32_t i = 0; i < mFrames.size(); i++)
-		{
-			if (frame == sum)
-				return mFrames[i].mSprite;
-
-			sum += mFrames[i].mDuration;
-		}
-
-		return nullptr;
+		return mFrames.at(frame).mSprite;
 	}
 
 	Ref<Sprite> FlipBook::GetSpriteAtTime(float time) const

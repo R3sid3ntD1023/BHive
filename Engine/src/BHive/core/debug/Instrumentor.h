@@ -43,7 +43,8 @@ namespace BHive
 			{
 				if (Log::GetLogger())
 				{
-					LOG_ERROR("Instrumentor::BeginSession('{0}') when session '{1}' already open.", name, mCurrentSession->Name);
+					LOG_ERROR(
+						"Instrumentor::BeginSession('{0}') when session '{1}' already open.", name, mCurrentSession->Name);
 				}
 
 				InternalEndSession();
@@ -106,10 +107,7 @@ namespace BHive
 		{
 		}
 
-		~Instrumentor()
-		{
-			EndSession();
-		}
+		~Instrumentor() { EndSession(); }
 
 		void WriteHeader()
 		{
@@ -144,7 +142,8 @@ namespace BHive
 	{
 	public:
 		InstrumentationTimer(const char *name)
-			: mName(name), mStopped(false)
+			: mName(name),
+			  mStopped(false)
 		{
 			mStartTimePoint = std::chrono::steady_clock::now();
 		}
@@ -191,7 +190,8 @@ namespace BHive
 			while (srcIndex < N)
 			{
 				size_t matchIndex = 0;
-				while (matchIndex < K - 1 && srcIndex + matchIndex < N - 1 && expr[srcIndex + matchIndex] == remove[matchIndex])
+				while (matchIndex < K - 1 && srcIndex + matchIndex < N - 1 &&
+					   expr[srcIndex + matchIndex] == remove[matchIndex])
 					matchIndex++;
 
 				if (matchIndex == K - 1)
@@ -203,29 +203,29 @@ namespace BHive
 
 			return result;
 		}
-	}
-}
+	} // namespace InstrumentorUtils
+} // namespace BHive
 
 #if _DEBUG
-#define BH_PROFILE 1
+	#define BH_PROFILE 1
 #endif
 
 #if BH_PROFILE
-#if (defined(__FUNCSIG__) || (_MSC_VER))
-#define BH_FUNC_SIG __FUNCSIG__
-#endif
-#define BH_PROFILE_BEGIN_SESSION(name, filepath) ::BHive::Instrumentor::Get().BeginSession(name, filepath)
-#define BH_PROFILE_END_SESSION() ::BHive::Instrumentor::Get().EndSession()
-#define BH_PROFILE_SCOPE_LINE2(name, line)                                                             \
-	constexpr auto fixedName##line = ::BHive::InstrumentorUtils::CleanupOutputString(name, "__cdel "); \
-	::BHive::InstrumentationTimer timer##line(fixedName##line.Data)
+	#if (defined(__FUNCSIG__) || (_MSC_VER))
+		#define BH_FUNC_SIG __FUNCSIG__
+	#endif
+	#define BH_PROFILE_BEGIN_SESSION(name, filepath) ::BHive::Instrumentor::Get().BeginSession(name, filepath)
+	#define BH_PROFILE_END_SESSION() ::BHive::Instrumentor::Get().EndSession()
+	#define BH_PROFILE_SCOPE_LINE2(name, line)                                                             \
+		constexpr auto fixedName##line = ::BHive::InstrumentorUtils::CleanupOutputString(name, "__cdel "); \
+		::BHive::InstrumentationTimer timer##line(fixedName##line.Data)
 
-#define BH_PROFILE_SCOPE_LINE(name, line) BH_PROFILE_SCOPE_LINE2(name, line)
-#define BH_PROFILE_SCOPE(name) BH_PROFILE_SCOPE_LINE(name, __LINE__)
-#define BH_PROFILE_FUNCTION() BH_PROFILE_SCOPE(BH_FUNC_SIG)
+	#define BH_PROFILE_SCOPE_LINE(name, line) BH_PROFILE_SCOPE_LINE2(name, line)
+	#define BH_PROFILE_SCOPE(name) BH_PROFILE_SCOPE_LINE(name, __LINE__)
+	#define BH_PROFILE_FUNCTION() BH_PROFILE_SCOPE(BH_FUNC_SIG)
 #else
-#define BH_PROFILE_BEGIN_SESSION(name, filepath)
-#define BH_PROFILE_END_SESSION()
-#define BH_PROFILE_SCOPE(name)
-#define BH_PROFILE_FUNCTION()
+	#define BH_PROFILE_BEGIN_SESSION(name, filepath)
+	#define BH_PROFILE_END_SESSION()
+	#define BH_PROFILE_SCOPE(name)
+	#define BH_PROFILE_FUNCTION()
 #endif
