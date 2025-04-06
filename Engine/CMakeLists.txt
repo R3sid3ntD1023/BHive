@@ -8,6 +8,19 @@ file(GLOB_RECURSE ENGINE_SRC CMAKE_CONFIGURE_DEPENDS src/** data/** PARENT_SCOPE
 
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 
+include(FindVulkan)
+if(DEFINED Vulkan_SDK_PATH)
+    set(VULKAN_INCLUDE_DIR ${Vulkan_SDK_PATH}/Include)
+    set(VULKAN_LIBRARY ${Vulkan_SDK_PATH}/Lib)
+    set(VULKAN_HEADERS ${Vulkan_SDK_PATH}/Include)
+    set(VULKAN_LIBRARIES ${VULKAN_LIBRARY}/vulkan-1.lib ${VULKAN_LIBRARY}/shaderc.lib ${VULKAN_LIBRARY}spirv-cross-core.lib)
+else()
+    find_package(Vulkan REQUIRED COMPONENTS shaderc_combined glslc)
+endif()
+
+message(STATUS "Vulkan SDK Path: ${Vulkan_SDK_PATH}")
+message(STATUS "Vulkan VERSION: ${Vulkan_VERSION}")
+
 add_library(Engine STATIC ${ENGINE_SRC})
 set_target_properties(Engine PROPERTIES 
 	CXX_STANDARD 20
