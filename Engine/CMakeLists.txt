@@ -10,15 +10,13 @@ set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 
 include(FindVulkan)
 if(DEFINED Vulkan_SDK_PATH)
-    set(VULKAN_INCLUDE_DIR ${Vulkan_SDK_PATH}/Include)
-    set(VULKAN_LIBRARY ${Vulkan_SDK_PATH}/Lib)
-    set(VULKAN_HEADERS ${Vulkan_SDK_PATH}/Include)
-    set(VULKAN_LIBRARIES ${VULKAN_LIBRARY}/vulkan-1.lib ${VULKAN_LIBRARY}/shaderc.lib ${VULKAN_LIBRARY}spirv-cross-core.lib)
+    set(Vulkan_INCLUDE_DIRS "${Vulkan_SDK_PATH}/Include")
+    set(Vulkan_LIBRARIES "${Vulkan_SDK_PATH}/Lib")
+	message(STATUS "Vulkan SDK found at ${Vulkan_SDK_PATH}")
 else()
-    find_package(Vulkan REQUIRED COMPONENTS shaderc_combined glslc)
+    find_package(Vulkan REQUIRED COMPONENTS shaderc spirv_cross_core spirv_cross_glsl)
 endif()
 
-message(STATUS "Vulkan SDK Path: ${Vulkan_SDK_PATH}")
 message(STATUS "Vulkan VERSION: ${Vulkan_VERSION}")
 
 add_library(Engine STATIC ${ENGINE_SRC})
@@ -34,6 +32,7 @@ PUBLIC AL_LIBTYPE_STATIC
 PUBLIC IMGUI_DEFINE_MATH_OPERATORS
 PUBLIC SPDLOG_COMPILED_LIB)
 
+target_link_directories(Engine PUBLIC ${Vulkan_LIBRARIES})
 target_link_libraries(Engine
 	PUBLIC glfw 
 	PUBLIC glad 
@@ -51,6 +50,10 @@ target_link_libraries(Engine
 	PUBLIC cereal::cereal
 	PUBLIC ImPlot
 	PUBLIC msdf-atlas-gen::msdf-atlas-gen
+	vulkan-1 
+	shaderc 
+	spirv-cross-core
+	spirv-cross-glsl
 )
 
 target_include_directories(Engine PUBLIC 
@@ -58,6 +61,7 @@ target_include_directories(Engine PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/src/BHive 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/BHive/world
 	${VENDOR_DIR}
+	${Vulkan_INCLUDE_DIRS}
 	
 )
 
