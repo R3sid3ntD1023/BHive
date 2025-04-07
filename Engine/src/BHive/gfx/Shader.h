@@ -6,6 +6,17 @@
 
 namespace BHive
 {
+	enum EShaderType : uint8_t
+	{
+		ShaderType_None = 0,
+		ShaderType_Vertex,
+		ShaderType_Fragment,
+		ShaderType_Compute,
+		ShaderType_Geometry,
+	};
+
+	using ShaderReflectionData = std::unordered_map<EShaderType, FShaderReflectionData>;
+
 	class Shader
 	{
 	public:
@@ -15,7 +26,7 @@ namespace BHive
 
 		virtual ~Shader();
 
-		virtual void Compile();
+		virtual void Compile(bool recompile = false);
 		virtual void Recompile();
 		virtual void Bind() const;
 		virtual void UnBind() const;
@@ -36,7 +47,7 @@ namespace BHive
 		virtual uint32_t GetRendererID() const { return mShaderID; }
 		virtual const std::string &GetName() const { return mName; }
 		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1);
-		virtual const FShaderReflectionData &GetRelectionData() const { return mReflectionData; }
+		virtual const ShaderReflectionData &GetRelectionData() const { return mReflectionData; }
 
 		operator uint32_t() const { return GetRendererID(); }
 
@@ -54,18 +65,24 @@ namespace BHive
 		void PreProcess(const std::string &source);
 		void Reflect();
 
+		void GetOrCreateVulkanBinaries(bool recompile = false);
+		void GetOrCreateOpenGLBinaries(bool recompile = false);
+		void CreateCacheDirectoryIfNeeded();
+
 	private:
 		std::string mName;
 		uint32_t mShaderID{0};
 		uint32_t mPipelineID{0};
-		std::unordered_map<uint32_t, std::string> mSources;
-		FShaderReflectionData mReflectionData;
+
+		ShaderReflectionData mReflectionData;
+
 		mutable std::unordered_map<std::string, int> mUniformLocationCache;
 		std::filesystem::path mFilePath;
+
+		std::unordered_map<uint32_t, std::string> mSources;
+		std::unordered_map<uint32_t, std::vector<uint32_t>> mVulkanSpirv;
+		std::unordered_map<uint32_t, std::vector<uint32_t>> mOpenglSpirv;
+		std::unordered_map<uint32_t, std::string> mOpenglSources;
 	};
 
-	namespace utils
-	{
-		bool SetIncludeFromFile(const std::string &name, const char *filename);
-	}
 } // namespace BHive

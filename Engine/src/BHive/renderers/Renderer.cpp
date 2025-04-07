@@ -1,8 +1,8 @@
-#include "Renderer.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
-#include "gfx/UniformBuffer.h"
 #include "gfx/textures/Texture2D.h"
+#include "gfx/UniformBuffer.h"
+#include "Renderer.h"
 #include "ShadowRenderer.h"
 #include <glad/glad.h>
 
@@ -61,11 +61,6 @@ namespace BHive
 
 	void Renderer::Init()
 	{
-		utils::SetIncludeFromFile("/Core.glsl", ENGINE_PATH "/data/shaders/Core.glsl");
-		utils::SetIncludeFromFile("/Lighting.glsl", ENGINE_PATH "/data/shaders/Lighting.glsl");
-		utils::SetIncludeFromFile("/Skinning.glsl", ENGINE_PATH "/data/shaders/Skinning.glsl");
-		utils::SetIncludeFromFile("/BDRFFunctions.glsl", ENGINE_PATH "/data/shaders/BDRFFunctions.glsl");
-
 		sData = new RenderData();
 
 		ShadowRenderer::Init(MAX_LIGHTS);

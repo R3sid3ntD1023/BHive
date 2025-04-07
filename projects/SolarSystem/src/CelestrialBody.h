@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Component.h"
+#include "Universe.h"
 #include <core/Core.h>
 #include <core/reflection/Reflection.h>
 #include <core/serialization/Serialization.h>
 #include <math/Transform.h>
-#include "Universe.h"
 
 BEGIN_NAMESPACE(BHive)
 class Shader;
@@ -48,7 +48,7 @@ protected:
 	BHive::FTransform mTransform;
 
 private:
-	BHive::UUID mParent = UUID::Null;
+	BHive::UUID mParent = NullID;
 	Universe *mUniverse = nullptr;
 	std::vector<Ref<Component>> mComponents;
 	std::vector<Ref<Component>> mTickedComponents;

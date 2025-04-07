@@ -24,10 +24,10 @@
 #include "components/IDComponent.h"
 #include "components/TagComponent.h"
 
-#include <font/Font.h>
-#include <font/FontManager.h>
 #include "gfx/ShaderManager.h"
 #include "utils/ImageUtils.h"
+#include <font/Font.h>
+#include <font/FontManager.h>
 
 BEGIN_NAMESPACE(BHive)
 
@@ -108,6 +108,8 @@ void SolarSystemLayer::OnUpdate(float dt)
 		GetRenderPipelineManager().SetCurrentPipeline(&mPipeline);
 
 		mPipeline.Begin(mCamera.GetProjection(), mCamera.GetView());
+
+		LineRenderer::DrawGrid(FGrid{});
 
 		mUniverse->Update(dt);
 

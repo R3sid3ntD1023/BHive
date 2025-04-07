@@ -13,11 +13,12 @@ layout(std140, binding = 0) uniform CameraBuffer
 	mat4 u_projection;
 	mat4 u_view;
 	vec2 u_near_far;
+    vec3 u_camera_position;
 };
 
 layout(location = 0) out flat int v_TextureID;
 layout(location = 1) out flat int v_Flags;
-layout(location = 2) out VertexOutput
+layout(location = 2) out struct VS_OUT
 {
 	vec3 position;
 	vec3 normal;
@@ -50,7 +51,7 @@ void main()
 
 layout(location = 0) in flat int v_TextureID;
 layout(location = 1) in flat int v_Flags;
-layout(location = 2) in VertexOutput
+layout(location = 2) in struct VS_OUT
 {
 	vec3 position;
 	vec3 normal;

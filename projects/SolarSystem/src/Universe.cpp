@@ -1,6 +1,6 @@
-#include "Universe.h"
 #include "CelestrialBody.h"
 #include "renderer/RenderPipeline.h"
+#include "Universe.h"
 
 BEGIN_NAMESPACE(BHive)
 
@@ -52,7 +52,7 @@ void Universe::Load(cereal::JSONInputArchive &ar)
 	{
 		ar.startNode();
 
-		BHive::UUID id = UUID::Null;
+		BHive::UUID id = NullID;
 		rttr::type type = BHive::InvalidType;
 
 		ar(MAKE_NVP("ID", id));

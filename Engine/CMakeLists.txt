@@ -14,7 +14,7 @@ if(DEFINED Vulkan_SDK_PATH)
     set(Vulkan_LIBRARIES "${Vulkan_SDK_PATH}/Lib")
 	message(STATUS "Vulkan SDK found at ${Vulkan_SDK_PATH}")
 else()
-    find_package(Vulkan REQUIRED COMPONENTS shaderc spirv_cross_core spirv_cross_glsl)
+    find_package(Vulkan REQUIRED COMPONENTS shaderc_shared spirv_cross_core spirv_cross_glsl)
 endif()
 
 message(STATUS "Vulkan VERSION: ${Vulkan_VERSION}")
@@ -51,9 +51,9 @@ target_link_libraries(Engine
 	PUBLIC ImPlot
 	PUBLIC msdf-atlas-gen::msdf-atlas-gen
 	vulkan-1 
-	shaderc 
-	spirv-cross-core
-	spirv-cross-glsl
+	shaderc_shared$<$<CONFIG:Debug>:d> 
+	spirv-cross-core$<$<CONFIG:Debug>:d> 
+	spirv-cross-glsl$<$<CONFIG:Debug>:d> 
 )
 
 target_include_directories(Engine PUBLIC 

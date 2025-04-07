@@ -1,13 +1,18 @@
 static const char *prefiler_comp = R"(
     #version 460 core
-    #extension GL_ARB_bindless_texture : require
-    #extension GL_NV_uniform_buffer_std430_layout : require
+  #extension GL_EXT_scalar_block_layout: require
 
     layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
     layout(binding = 0 , r11f_g11f_b10f) uniform image2D uOutput;
     layout(binding = 0) uniform sampler2D uSrcTexture;
-    layout(location = 0) uniform vec4 uThreshold;
+
+    
+    layout(binding = 0) uniform BloomSettings
+    {
+        vec4 uFilterThreshold;
+        float uFilterRadius;
+    };
 
     #define EPSILON 1.0e-4
 

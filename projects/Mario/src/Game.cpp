@@ -1,6 +1,5 @@
 #include "core/EntryPoint.h"
 #include "GameLayer.h"
-#include "EditorLayer.h"
 
 namespace BHive
 {
@@ -11,7 +10,6 @@ namespace BHive
 			: Application(specs)
 		{
 			// PushLayer(new GameLayer());
-			PushLayer(new EditorLayer());
 		}
 	};
 

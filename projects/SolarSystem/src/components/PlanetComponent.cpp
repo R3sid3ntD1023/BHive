@@ -17,40 +17,23 @@ uint32_t PlanetTime::ToSeconds()
 	return seconds;
 }
 
+void PlanetComponent::Begin()
+{
+	mOrbitalOrigin = GetOwner()->GetLocalTransform().get_translation();
+	if (auto seconds = RotationTime.ToSeconds(); seconds > 0.f)
+		mTheta = 360.f / seconds;
+
+	if (auto seconds = OrbitalTime.ToSeconds(); seconds > 0.f)
+		mOrbitalTheta = 360.f / seconds;
+}
+
 void PlanetComponent::Update(float dt)
 {
 	GetOwner()->GetLocalTransform().add_rotation({0.f, mTheta * dt * 1000.f, 0.f});
-}
 
-void PlanetComponent::Save(cereal::JSONOutputArchive &ar) const
-{
-	ar(MAKE_NVP("Time", mTime));
-}
+	float theta_radians = glm::radians(mOrbitalTheta);
 
-void PlanetComponent::Load(cereal::JSONInputArchive &ar)
-{
-	ar(MAKE_NVP("Time", mTime));
-
-	if (auto seconds = mTime.ToSeconds(); seconds > 0.f)
-		mTheta = 360.f / seconds;
-}
-
-REFLECT(PlanetComponent)
-{
-	BEGIN_REFLECT(PlanetComponent)
-	REFLECT_CONSTRUCTOR();
-}
-
-void RevolutionComponent::Begin()
-{
-	mOrigin = GetOwner()->GetLocalTransform().get_translation();
-}
-
-void RevolutionComponent::Update(float dt)
-{
-	float theta_radians = glm::radians(mRevolutionTheta);
-
-	auto origin = mOrigin;
+	auto origin = mOrbitalOrigin;
 	auto radius = glm::length(origin);
 	auto time = BHive::Time::Get();
 
@@ -60,22 +43,19 @@ void RevolutionComponent::Update(float dt)
 	GetOwner()->GetLocalTransform().set_translation({x, y, z});
 }
 
-void RevolutionComponent::Save(cereal::JSONOutputArchive &ar) const
+void PlanetComponent::Save(cereal::JSONOutputArchive &ar) const
 {
-	ar(MAKE_NVP("RevolutionTime", mRevolutionTime));
+	ar(MAKE_NVP(RotationTime), MAKE_NVP(OrbitalTime));
 }
 
-void RevolutionComponent::Load(cereal::JSONInputArchive &ar)
+void PlanetComponent::Load(cereal::JSONInputArchive &ar)
 {
-	ar(MAKE_NVP("RevolutionTime", mRevolutionTime));
-
-	if (auto seconds = mRevolutionTime.ToSeconds(); seconds > 0.f)
-		mRevolutionTheta = 360.f / seconds;
+	ar(MAKE_NVP(RotationTime), MAKE_NVP(OrbitalTime));
 }
 
-REFLECT(RevolutionComponent)
+REFLECT(PlanetComponent)
 {
-	BEGIN_REFLECT(RevolutionComponent)
+	BEGIN_REFLECT(PlanetComponent)
 	REFLECT_CONSTRUCTOR();
 }
 

@@ -23,7 +23,7 @@ layout(std430, binding = 1) uniform LightBuffer
 	Light uLights[MAX_LIGHTS];
 };
 
-layout(std430, binding = 4) restrict readonly buffer ShadowSSBO
+layout(std430, binding = 0) restrict readonly buffer ShadowSSBO
 {
 	uvec4 uNumShadowMaps;
 	mat4 uDirViewProjections[MAX_LIGHTS];

@@ -1,8 +1,7 @@
 static const char *downsample_comp = R"(
 
     #version 460 core
-    #extension GL_ARB_bindless_texture : require
-    #extension GL_NV_uniform_buffer_std430_layout : require
+   #extension GL_EXT_scalar_block_layout: require
 
     #define LOCAL_SIZE 1
     layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = LOCAL_SIZE) in;

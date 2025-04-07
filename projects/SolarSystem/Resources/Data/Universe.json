@@ -1,3 +1,105 @@
 {
+  "Universe": [
+    {
+      "ID": "8a82173a-866e-49b0-bca5-45d2d038299d",
+      "Type": "CelestrialBody",
+      "Transform": {
+        "Position": [ 0, 0, 0 ],
+        "Rotation": [ 0, 0, 0 ],
+        "Scale": [ 1, 1, 1 ]
+      },
+      "Parent": "00000000-0000-0000-0000-000000000000",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "Tag": "Sun"
+        },
+        {
+          "Type": "IDComponent",
+          "ID": "8a82173a-866e-49b0-bca5-45d2d038299d"
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1, 1 ],
+          "Emission": [ 1, 1, 1, 1 ],
+          "Flags": 0,
+          "Texture": "ecdd6cfa-e368-4953-94f1-e9a7c0f307b5",
+          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+        },
+        {
+          "Type": "StarComponent",
+          "Brightness": 1,
+          "Radius": 100000,
+          "Color": [ 1, 1, 1, 1 ]
+        }
+      ]
+    },
+    {
+      "ID": "4abb75f1-9117-4c5d-bbf8-c9ec60999c90",
+      "Type": "CelestrialBody",
+      "Transform": {
+        "Position": [ 5, 0, 0 ],
+        "Rotation": [ 0, 0, 0 ],
+        "Scale": [ 1, 1, 1 ]
+      },
+      "Parent": "8a82173a-866e-49b0-bca5-45d2d038299d",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "Tag": "Mercury"
+        },
+        {
+          "Type": "IDComponent",
+          "ID": "4abb75f1-9117-4c5d-bbf8-c9ec60999c90"
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1, 1 ],
+          "Emission": [ 0, 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": "e9a0a76f-b53d-4dfc-8197-7a985740d31f",
+          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+        },
+        {
+          "Type": "PlanetComponent",
+          "RotationTime": "0'176'0'0'0",
+          "OrbitalTime": "0'88'0'0'0"
+        }
+      ]
+    },
 
+    {
+      "ID": "f7aa675a-ac4b-4ad7-a4ac-1fb6c870b9f8",
+      "Type": "CelestrialBody",
+      "Transform": {
+        "Position": [ 20, 0, 0 ],
+        "Rotation": [ 0, 0, 0 ],
+        "Scale": [ 1, 1, 1 ]
+      },
+      "Parent": "8a82173a-866e-49b0-bca5-45d2d038299d",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "Tag": "Venus"
+        },
+        {
+          "Type": "IDComponent",
+          "ID": "f7aa675a-ac4b-4ad7-a4ac-1fb6c870b9f8"
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1, 1 ],
+          "Emission": [ 0, 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": "8ed71410-b378-4752-b7f3-6e3b2fd06604",
+          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+        },
+        {
+          "Type": "PlanetComponent",
+          "RotationTime": "0'243'0'0'0",
+          "OrbitalTime": "0'225'0'0'0"
+        }
+      ]
+    }
+  ]
 }

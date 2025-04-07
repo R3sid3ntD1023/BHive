@@ -41,9 +41,9 @@ layout(location = 0) out struct VS_OUT
 void main()
 {
 
-	bool instanced = gl_InstanceID != -1; 
+	bool instanced = gl_InstanceIndex != -1; 
 
-	mat4 instance = mix( instances[gl_InstanceID],  mat4(1), float(instanced));
+	mat4 instance = mix( instances[gl_InstanceIndex],  mat4(1), float(instanced));
 
 	mat4 model = object[gl_DrawID].WorldMatrix * instance;
 	vec4 worldPos = model * vec4(vPos, 1);
@@ -75,7 +75,7 @@ layout(std430, binding = 3) uniform Material
 	uint uFlags;
 };
 
-layout(location = 0) uniform sampler2D uTexture;
+layout(binding = 0) uniform sampler2D uTexture;
 
 layout(std430, binding = 0) uniform CameraBuffer
 {

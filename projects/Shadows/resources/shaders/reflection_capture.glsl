@@ -47,9 +47,9 @@ void main()
 	mat4 boneTransform = Skinning(vWeights, vBoneIds);
 	vec4 posL = boneTransform * pos;
 
-	bool instanced = gl_InstanceID != 0;
+	bool instanced = gl_InstanceIndex != 0;
 
-	mat4 instance = mix(mat4(1), instances[gl_InstanceID], float(instanced));
+	mat4 instance = mix(mat4(1), instances[gl_InstanceIndex], float(instanced));
 
 	mat4 model = o[gl_DrawID].WorldMatrix * instance;
 	vec4 worldPos = model * posL;

@@ -1,7 +1,7 @@
 static const char *circle_vert = R"(
     #version 460 core
 
-    #extension GL_NV_uniform_buffer_std430_layout : require
+   #extension GL_EXT_scalar_block_layout: require
 
     layout(location = 0) in vec4 vWorldPosition;
     layout(location = 1) in vec3 vLocalPosition;
@@ -13,6 +13,8 @@ static const char *circle_vert = R"(
     {
         mat4 uProjection;
         mat4 uView;
+        vec2 uNearFar;
+        vec3 uCameraPosition;
     };
 
     layout(location = 0) out struct VS_OUT

@@ -91,9 +91,13 @@ void CelestrialBody::Load(cereal::JSONInputArchive &ar)
 
 		Ref<Component> component = nullptr;
 
-		if (mComponents[i])
+		auto it = std::find_if(
+			mComponents.begin(), mComponents.end(),
+			[&](const Ref<Component> &comp) { return comp && comp->get_type() == component_type; });
+
+		if (it != mComponents.end())
 		{
-			component = mComponents[i];
+			component = *it;
 		}
 		else
 		{
