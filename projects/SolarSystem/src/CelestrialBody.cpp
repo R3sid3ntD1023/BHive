@@ -11,8 +11,9 @@ CelestrialBody::CelestrialBody(World *world)
 
 void CelestrialBody::Save(cereal::JSONOutputArchive &ar) const
 {
+	GameObject::Save(ar);
+
 	auto &components = GetComponents();
-	ar(MAKE_NVP("ID", mID), MAKE_NVP("Name", mName), MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
 
 	ar.setNextName("Components");
 	ar.startNode();
@@ -31,8 +32,9 @@ void CelestrialBody::Save(cereal::JSONOutputArchive &ar) const
 
 void CelestrialBody::Load(cereal::JSONInputArchive &ar)
 {
+	GameObject::Load(ar);
+
 	size_t num_components = 0;
-	ar(MAKE_NVP("ID", mID), MAKE_NVP("Name", mName), MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
 
 	ar.setNextName("Components");
 	ar.startNode();

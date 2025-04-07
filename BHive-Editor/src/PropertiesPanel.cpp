@@ -15,9 +15,19 @@ namespace BHive
 
 		if (selection)
 		{
+			ImGui::SeparatorText("Details");
+
+			rttr::variant object_var = selection;
+			if (inspect({}, object_var))
+			{
+				selection = object_var.get_value<GameObject *>();
+			}
+
+			ImGui::SeparatorText("Components");
+
 			DrawComponents(selection);
 
-			ImGui::SeparatorText("Details");
+			ImGui::Separator();
 
 			DrawAddComponent(selection);
 

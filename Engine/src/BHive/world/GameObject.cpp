@@ -84,6 +84,7 @@ namespace BHive
 
 	void GameObject::Save(cereal::BinaryOutputArchive &ar) const
 	{
+		ar(mID, mName, mTransform, mParent, mChildren);
 		ar(mComponents.size());
 
 		for (auto component : mComponents)
@@ -93,16 +94,9 @@ namespace BHive
 		}
 	}
 
-	void GameObject::Save(cereal::JSONOutputArchive &ar) const
-	{
-	}
-
-	void GameObject::Load(cereal::JSONInputArchive &ar)
-	{
-	}
-
 	void GameObject::Load(cereal::BinaryInputArchive &ar)
 	{
+		ar(mID, mName, mTransform, mParent, mChildren);
 		size_t num_components = 0;
 		ar(num_components);
 
@@ -127,6 +121,16 @@ namespace BHive
 				component->Load(ar);
 			}
 		}
+	}
+
+	void GameObject::Save(cereal::JSONOutputArchive &ar) const
+	{
+		ar(MAKE_NVP("ID", mID), MAKE_NVP("Name", mName), MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
+	}
+
+	void GameObject::Load(cereal::JSONInputArchive &ar)
+	{
+		ar(MAKE_NVP("ID", mID), MAKE_NVP("Name", mName), MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
 	}
 
 	void GameObject::SetParent(GameObject *object)
@@ -221,9 +225,22 @@ namespace BHive
 		return children;
 	}
 
+	RTTR_REGISTRATION
+	{
+		BEGIN_REFLECT(FTransform)
+			.property(
+				"Translation", &FTransform::get_translation,
+				rttr::select_overload<void(const glm::vec3 &)>(&FTransform::set_translation))
+				REFLECT_PROPERTY("Rotation", get_rotation, set_rotation) REFLECT_PROPERTY("Scale", get_scale, set_scale);
+	}
+
 	REFLECT(GameObject)
 	{
-		BEGIN_REFLECT(GameObject) REFLECT_CONSTRUCTOR(World *);
-		RTTR_REGISTRATION_STANDARD_TYPE_VARIANTS(GameObject)
+		BEGIN_REFLECT(GameObject)
+		REFLECT_CONSTRUCTOR(World *)
+		REFLECT_PROPERTY("ID", mID)
+		REFLECT_PROPERTY("Name", mName)
+		REFLECT_PROPERTY("Transform", mTransform)
+		REFLECT_PROPERTY_READ_ONLY("Parent", mParent) REFLECT_PROPERTY_READ_ONLY("Children", mChildren);
 	}
 } // namespace BHive
