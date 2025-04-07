@@ -1,5 +1,6 @@
 #include "ColliderComponent.h"
 #include "Physics/PhysicsCore.h"
+#include "GameObject.h"
 
 namespace BHive
 {
@@ -70,15 +71,15 @@ namespace BHive
 		}
 	}
 
-		REFLECT(ColliderComponent)
+	REFLECT(ColliderComponent)
 	{
-			BEGIN_REFLECT(ColliderComponent)
-			REFLECT_PROPERTY(CollisionEnabled)
-			REFLECT_PROPERTY(Offset)
-			REFLECT_PROPERTY(Color)
-			REFLECT_PROPERTY(IsTrigger)
-			REFLECT_PROPERTY(CollisionChannel)
-			REFLECT_PROPERTY(CollisionChannelMasks) REFLECT_PROPERTY(PhysicsMaterial);
+		BEGIN_REFLECT(ColliderComponent)
+		REFLECT_PROPERTY(CollisionEnabled)
+		REFLECT_PROPERTY(Offset)
+		REFLECT_PROPERTY(Color)
+		REFLECT_PROPERTY(IsTrigger)
+		REFLECT_PROPERTY(CollisionChannel)
+		REFLECT_PROPERTY(CollisionChannelMasks) REFLECT_PROPERTY(PhysicsMaterial);
 	}
 
 	REFLECT(ECollisionChannel)

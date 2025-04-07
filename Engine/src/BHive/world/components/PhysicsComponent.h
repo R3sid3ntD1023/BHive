@@ -49,9 +49,7 @@ namespace BHive
 
 		PhysicsSettings Settings;
 
-		void Begin() override;
 		void Update(float) override;
-		void End() override;
 
 		void ApplyForce(const glm::vec3 &force);
 
@@ -75,4 +73,6 @@ namespace BHive
 	private:
 		void *mRigidBodyInstance = nullptr;
 	};
+
+	REFLECT_EXTERN(PhysicsComponent)
 } // namespace BHive

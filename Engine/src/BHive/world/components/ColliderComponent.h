@@ -1,13 +1,13 @@
 #pragma once
 
+#include "Component.h"
 #include "core/Core.h"
-#include "core/EventDelegate.h"
-#include "math/Transform.h"
-#include "physics/PhysicsMaterial.h"
-#include "gfx/Color.h"
-#include "physics/CollisionChannel.h"
 #include "core/EnumAsByte.h"
-#include "GameObject.h"
+#include "core/EventDelegate.h"
+#include "gfx/Color.h"
+#include "math/Transform.h"
+#include "physics/CollisionChannel.h"
+#include "physics/PhysicsMaterial.h"
 
 namespace BHive
 {
@@ -65,5 +65,7 @@ namespace BHive
 
 		REFLECTABLEV(Component)
 	};
+
+	REFLECT_EXTERN(ColliderComponent)
 
 } // namespace BHive

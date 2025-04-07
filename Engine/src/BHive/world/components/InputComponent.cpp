@@ -1,5 +1,5 @@
-#include "InputComponent.h"
 #include "GameObject.h"
+#include "InputComponent.h"
 
 namespace BHive
 {

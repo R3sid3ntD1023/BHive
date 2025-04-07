@@ -5,29 +5,6 @@
 
 namespace BHive
 {
-	void PhysicsComponent::Begin()
-	{
-		if (!Settings.PhysicsEnabled)
-			return;
-
-		auto object = GetOwner();
-		auto world = object->GetWorld()->GetPhysicsWorld();
-		auto t = object->GetTransform();
-		auto rb = world->createRigidBody(physics::utils::GetPhysicsTransform(t));
-		rb->setIsDebugEnabled(true);
-		rb->setUserData(object);
-		rb->setMass(Settings.Mass);
-		rb->setType((rp3d::BodyType)Settings.BodyType);
-		rb->enableGravity(Settings.GravityEnabled);
-		rb->setAngularDamping(Settings.AngularDamping);
-		rb->setLinearDamping(Settings.LinearDamping);
-
-		rb->setLinearLockAxisFactor(physics::utils::LockAxisToVextor3(Settings.LinearLockAxis));
-		rb->setAngularLockAxisFactor(physics::utils::LockAxisToVextor3(Settings.AngularLockAxis));
-
-		SetRigidBody(rb);
-	}
-
 	void PhysicsComponent::Update(float)
 	{
 		if (!Settings.PhysicsEnabled)
@@ -54,16 +31,6 @@ namespace BHive
 		default:
 			break;
 		}
-	}
-
-	void PhysicsComponent::End()
-	{
-		if (!Settings.PhysicsEnabled)
-			return;
-
-		auto object = GetOwner();
-		auto world = object->GetWorld()->GetPhysicsWorld();
-		world->destroyRigidBody((rp3d::RigidBody *)mRigidBodyInstance);
 	}
 
 	void PhysicsComponent::ApplyForce(const glm::vec3 &force)
@@ -149,7 +116,7 @@ namespace BHive
 
 	REFLECT(PhysicsComponent)
 	{
-		BEGIN_REFLECT(PhysicsComponent)
-		REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Settings) COMPONENT_IMPL();
+		BEGIN_REFLECT(PhysicsComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR()
+			REFLECT_PROPERTY(Settings) COMPONENT_IMPL();
 	}
 } // namespace BHive

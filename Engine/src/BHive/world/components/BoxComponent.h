@@ -1,8 +1,8 @@
 #pragma once
 
-#include "math/Transform.h"
-#include "math/AABB.hpp"
 #include "ColliderComponent.h"
+#include "math/AABB.hpp"
+#include "math/Transform.h"
 
 namespace BHive
 {
@@ -24,5 +24,7 @@ namespace BHive
 
 		REFLECTABLEV(ColliderComponent)
 	};
+
+	REFLECT_EXTERN(BoxComponent)
 
 } // namespace BHive

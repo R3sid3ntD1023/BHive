@@ -26,4 +26,5 @@ namespace BHive
 		REFLECTABLEV(Component)
 	};
 
+	REFLECT_EXTERN(SpriteComponent)
 } // namespace BHive

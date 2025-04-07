@@ -4,8 +4,8 @@
 
 BEGIN_NAMESPACE(BHive)
 
-CelestrialBody::CelestrialBody(World *world)
-	: GameObject(world)
+CelestrialBody::CelestrialBody(const entt::entity &handle, World *world)
+	: GameObject(handle, world)
 {
 }
 
@@ -49,20 +49,15 @@ void CelestrialBody::Load(cereal::JSONInputArchive &ar)
 		ar.startNode();
 		ar(component_type);
 
-		Ref<Component> component = nullptr;
+		Component *component = nullptr;
 
-		auto it = std::find_if(
-			components.begin(), components.end(),
-			[&](const Ref<Component> &comp) { return comp && comp->get_type() == component_type; });
-
-		if (it != components.end())
+		if (component_type.get_method(HAS_COMPONENT_FUNCTION_NAME).invoke({this}).to_bool())
 		{
-			component = *it;
+			component = component_type.get_method(GET_COMPONENT_FUNCTION_NAME).invoke({this}).get_value<Component *>();
 		}
 		else
 		{
-			component = components[i] = component_type.create().get_value<Ref<Component>>();
-			component->SetOwner(this);
+			component = component_type.get_method(ADD_COMPONENT_FUNCTION_NAME).invoke({this}).get_value<Component *>();
 		}
 
 		component->Load(ar);

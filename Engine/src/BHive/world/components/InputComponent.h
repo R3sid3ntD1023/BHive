@@ -30,4 +30,6 @@ namespace BHive
 		InputContext *mContextInstance = nullptr;
 	};
 
+	REFLECT_EXTERN(InputComponent)
+
 } // namespace BHive

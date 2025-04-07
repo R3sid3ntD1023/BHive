@@ -5,6 +5,7 @@
 #include "math/Transform.h"
 #include "physics/EventListener.h"
 #include "physics/PhysicsContext.h"
+#include <entt/entt.hpp>
 #include <glm/glm.hpp>
 
 namespace BHive
@@ -14,6 +15,7 @@ namespace BHive
 	class Camera;
 
 	using ObjectList = std::unordered_map<UUID, Ref<GameObject>>;
+	using EnTTList = std::unordered_map<entt::entity, UUID>;
 
 	class World : public Asset
 	{
@@ -45,7 +47,7 @@ namespace BHive
 		Ref<T> CreateGameObject(const std::string &name)
 			requires(std::is_base_of_v<GameObject, T>)
 		{
-			auto object = CreateRef<T>(this);
+			auto object = CreateRef<T>(mRegistry.create(), this);
 			object->SetName(name);
 			AddGameObject(object);
 			return object;
@@ -72,6 +74,8 @@ namespace BHive
 
 	protected:
 		ObjectList mObjects;
+		EnTTList mEnttMap;
+
 		std::vector<Ref<GameObject>> mDestoryedObjects;
 
 		// physics
@@ -83,6 +87,10 @@ namespace BHive
 		bool mIsRunning = false;
 		bool mIsPaused = false;
 		int32_t mFrames = 1;
+
+		// entt
+		entt::registry mRegistry;
+
 		friend class GameObject;
 	};
 } // namespace BHive

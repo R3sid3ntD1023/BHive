@@ -38,7 +38,7 @@ namespace BHive
 
 	REFLECT(Component)
 	{
-		BEGIN_REFLECT(Component);
+		BEGIN_REFLECT(Component) REFLECT_PROPERTY("TickEnabled", mTickEnabled);
 	}
 
 } // namespace BHive

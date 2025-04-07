@@ -2,10 +2,10 @@
 
 namespace BHive
 {
-	GameObject::GameObject(World *world)
-		: mWorld(world)
+	GameObject::GameObject(const entt::entity &handle, World *world)
+		: mEntity(handle),
+		  mWorld(world)
 	{
-		mPhysicsComponent = AddComponent<PhysicsComponent>();
 	}
 
 	void GameObject::Begin()
@@ -38,38 +38,9 @@ namespace BHive
 		}
 	}
 
-	void GameObject::AddComponent(const Ref<Component> &component)
-	{
-		component->SetOwner(this);
-		mComponents.emplace_back(component);
-	}
-
-	void GameObject::RemoveComponent(const Ref<Component> &component)
-	{
-		auto it = std::find(mComponents.begin(), mComponents.end(), component);
-		if (it != mComponents.end())
-		{
-			component->End();
-			mComponents.erase(it);
-		}
-	}
-
-	void GameObject::RemoveComponent(Component *component)
-	{
-		auto it = std::find_if(
-			mComponents.begin(), mComponents.end(),
-			[component](const Ref<Component> &comp) { return comp && comp.get() == component; });
-
-		if (it != mComponents.end())
-		{
-			component->End();
-			mComponents.erase(it);
-		}
-	}
-
 	PhysicsComponent &GameObject::GetPhysicsComponent()
 	{
-		return *mPhysicsComponent;
+		return *GetComponent<PhysicsComponent>();
 	}
 
 	void GameObject::SetName(const std::string &name)
@@ -107,7 +78,7 @@ namespace BHive
 			ar(type);
 
 			Component *component = nullptr;
-			if (auto method = type.get_method(HAS_COMPONENT_FUNCTION_NAME); method && method.invoke({this}).to_bool())
+			if (type.get_method(HAS_COMPONENT_FUNCTION_NAME).invoke({this}).to_bool())
 			{
 				component = type.get_method(GET_COMPONENT_FUNCTION_NAME).invoke({this}).get_value<Component *>();
 			}
@@ -131,6 +102,12 @@ namespace BHive
 	void GameObject::Load(cereal::JSONInputArchive &ar)
 	{
 		ar(MAKE_NVP("ID", mID), MAKE_NVP("Name", mName), MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
+	}
+
+	void GameObject::AddComponent(Component *component)
+	{
+		component->SetOwner(this);
+		mComponents.emplace_back(component);
 	}
 
 	void GameObject::SetParent(GameObject *object)
@@ -237,7 +214,7 @@ namespace BHive
 	REFLECT(GameObject)
 	{
 		BEGIN_REFLECT(GameObject)
-		REFLECT_CONSTRUCTOR(World *)
+		REFLECT_CONSTRUCTOR(const entt::entity &, World *)
 		REFLECT_PROPERTY("ID", mID)
 		REFLECT_PROPERTY("Name", mName)
 		REFLECT_PROPERTY("Transform", mTransform)

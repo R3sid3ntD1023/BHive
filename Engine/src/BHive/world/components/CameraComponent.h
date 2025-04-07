@@ -22,4 +22,6 @@ namespace BHive
 		REFLECTABLEV(Component)
 	};
 
+	REFLECT_EXTERN(CameraComponent)
+
 } // namespace BHive

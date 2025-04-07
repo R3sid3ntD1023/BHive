@@ -23,7 +23,7 @@ namespace BHive
 		void DrawComponent(Component *component);
 		void DrawAddComponent(GameObject *entity);
 
-		std::vector<rttr::method> mDeleteComponentInvokers;
+		std::vector<rttr::method> mDeleteComponents;
 	};
 
 } // namespace BHive

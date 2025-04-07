@@ -14,10 +14,11 @@ namespace BHive
 {
 	void CopyComponents(const GameObject &src, GameObject &dst)
 	{
+		dst.GetComponents().clear();
 		for (auto &component : src.GetComponents())
 		{
 			auto type = component->get_type();
-			type.get_method(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME).invoke(dst, *component);
+			type.get_method(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME).invoke(dst, component);
 		}
 	}
 
@@ -144,7 +145,7 @@ namespace BHive
 			if (!obj_type)
 				continue;
 
-			auto obj = obj_type.create({this}).get_value<Ref<GameObject>>();
+			auto obj = obj_type.create({mRegistry.create(), this}).get_value<Ref<GameObject>>();
 			obj->Load(ar);
 
 			AddGameObject(obj);
@@ -210,9 +211,9 @@ namespace BHive
 
 	void World::SimulateBegin()
 	{
-		rp3d::PhysicsWorld::WorldSettings settings{};
-		settings.worldName = GetName();
-		mPhysicsWorld = PhysicsContext::get_context().createPhysicsWorld(settings);
+		rp3d::PhysicsWorld::WorldSettings world_settings{};
+		world_settings.worldName = GetName();
+		mPhysicsWorld = PhysicsContext::get_context().createPhysicsWorld(world_settings);
 
 		// setup listeners
 
@@ -227,6 +228,33 @@ namespace BHive
 		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_POINT, true);
 		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB, true);
 #endif
+
+		auto view = mRegistry.view<PhysicsComponent>();
+		for (auto &e : view)
+		{
+			auto [physics_component] = view.get(e);
+			auto &settings = physics_component.Settings;
+
+			if (!settings.PhysicsEnabled)
+				continue;
+
+			auto gameobject = mObjects[mEnttMap[e]];
+			auto t = gameobject->GetTransform();
+
+			auto rb = mPhysicsWorld->createRigidBody(physics::utils::GetPhysicsTransform(t));
+			rb->setIsDebugEnabled(true);
+			rb->setUserData(gameobject.get());
+			rb->setMass(settings.Mass);
+			rb->setType((rp3d::BodyType)settings.BodyType);
+			rb->enableGravity(settings.GravityEnabled);
+			rb->setAngularDamping(settings.AngularDamping);
+			rb->setLinearDamping(settings.LinearDamping);
+
+			rb->setLinearLockAxisFactor(physics::utils::LockAxisToVextor3(settings.LinearLockAxis));
+			rb->setAngularLockAxisFactor(physics::utils::LockAxisToVextor3(settings.AngularLockAxis));
+
+			physics_component.SetRigidBody(rb);
+		}
 	}
 
 	void World::Simulate(float dt)
@@ -244,6 +272,17 @@ namespace BHive
 
 	void World::SimulateEnd()
 	{
+		auto view = mRegistry.view<PhysicsComponent>();
+		for (auto &e : view)
+		{
+			auto [physics_component] = view.get(e);
+			if (!physics_component.Settings.PhysicsEnabled)
+				continue;
+
+			auto rb = (rp3d::RigidBody *)physics_component.GetRigidBody();
+			mPhysicsWorld->destroyRigidBody(rb);
+		}
+
 		PhysicsContext::get_context().destroyPhysicsWorld(mPhysicsWorld);
 		mPhysicsWorld = nullptr;
 	}
@@ -262,6 +301,7 @@ namespace BHive
 	{
 		auto new_world = CreateRef<World>(*this);
 		new_world->SetName("Instance");
+		auto &dst_registry = new_world->mRegistry;
 
 		auto &objects = GetGameObjects();
 
@@ -269,7 +309,7 @@ namespace BHive
 		{
 			auto type = src_obj->get_type();
 
-			auto new_obj = type.create({new_world.get()}).get_value<Ref<GameObject>>();
+			auto new_obj = type.create({dst_registry.create(), new_world.get()}).get_value<Ref<GameObject>>();
 
 			if (!new_obj)
 				continue;
@@ -330,7 +370,12 @@ namespace BHive
 
 	void World::AddGameObject(const Ref<GameObject> &object)
 	{
-		mObjects.emplace(object->GetID(), object);
+		if (!object)
+			return;
+
+		const auto &id = object->GetID();
+		mObjects.emplace(id, object);
+		mEnttMap.emplace(*object, id);
 	}
 
 	Ref<GameObject> World::GetGameObject(const UUID &id) const

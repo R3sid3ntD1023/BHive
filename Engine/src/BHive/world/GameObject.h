@@ -13,11 +13,11 @@ namespace BHive
 {
 	DECLARE_EVENT(FOnDestroyed, GameObject *);
 
-	using ComponentList = std::vector<Ref<Component>>;
+	using ComponentList = std::vector<Component *>;
 
 	struct GameObject
 	{
-		GameObject(World *world);
+		GameObject(const entt::entity &handle, World *world);
 		GameObject(const GameObject &) = default;
 
 		virtual void Begin();
@@ -26,55 +26,51 @@ namespace BHive
 		virtual void End();
 
 		template <typename T, typename... TArgs>
-		Ref<T> AddComponent(TArgs &&...args)
+		T *AddComponent(TArgs &&...args)
 		{
-			auto component = CreateRef<T>(std::forward<TArgs>(args)...);
+			ASSERT(!HasComponent<T>())
+			auto component = &mWorld->mRegistry.emplace<T>(mEntity, std::forward<TArgs>(args)...);
 			AddComponent(component);
 			return component;
 		}
 
 		template <typename T>
-		Ref<T> EmplaceOrReplaceComponent(const T &component)
+		T *EmplaceOrReplaceComponent(Component *component)
 		{
-			return nullptr;
-		}
-
-		void AddComponent(const Ref<Component> &component);
-		void RemoveComponent(const Ref<Component> &component);
-		void RemoveComponent(Component *component);
-
-		template <typename T>
-		bool HasComponent()
-		{
-			auto it = std::find_if(
-				mComponents.begin(), mComponents.end(),
-				[](const Ref<Component> &comp) { return comp && comp->get_type() == rttr::type::get<T>(); });
-
-			return it != mComponents.end();
-		}
-
-		template <typename T>
-		Ref<T> GetComponent()
-		{
-			auto it = std::find_if(
-				mComponents.begin(), mComponents.end(),
-				[](const Ref<Component> &comp) { return comp && comp->get_type() == rttr::type::get<T>(); });
-
-			return Cast<T>(*it);
+			auto new_component = &mWorld->mRegistry.get_or_emplace<T>(mEntity, *dynamic_cast<T *>(component));
+			AddComponent(new_component);
+			return new_component;
 		}
 
 		template <typename T>
 		void RemoveComponent()
 		{
-			auto it = std::find_if(
-				mComponents.begin(), mComponents.end(),
-				[](const Ref<Component> &comp) { return comp && comp->get_type() == rttr::type::get<T>(); });
+			ASSERT(HasComponent<T>())
 
-			if (it != mComponents.end())
-			{
-				(*it)->End();
-				mComponents.erase(it);
-			}
+			T *component = GetComponent<T>();
+			auto it = std::find_if(
+				mComponents.begin(), mComponents.end(), [component](Component *comp) { return component == comp; });
+
+			mComponents.erase(it);
+			mWorld->mRegistry.remove<T>(mEntity);
+		}
+
+		template <typename T>
+		T *GetComponent()
+		{
+			return &mWorld->mRegistry.get<T>(mEntity);
+		}
+
+		template <typename T>
+		const T *GetComponent() const
+		{
+			return &mWorld->mRegistry.get<T>(mEntity);
+		}
+
+		template <typename T>
+		bool HasComponent() const
+		{
+			return mWorld->mRegistry.any_of<T>(mEntity);
 		}
 
 		void SetName(const std::string &name);
@@ -109,7 +105,12 @@ namespace BHive
 
 		FOnDestroyedEvent OnDestroyedEvent;
 
+		operator entt::entity() const { return mEntity; }
+
 		REFLECTABLEV()
+
+	private:
+		void AddComponent(Component *component);
 
 	protected:
 		World *mWorld = nullptr;
@@ -118,11 +119,13 @@ namespace BHive
 		FTransform mTransform;
 
 		ComponentList mComponents;
-		Ref<PhysicsComponent> mPhysicsComponent;
 
 		UUID mParent = NullID;
 		std::unordered_set<UUID> mChildren;
+
+		entt::entity mEntity{entt::null};
 	};
+
 } // namespace BHive
 
 #define ADD_COMPONENT_FUNCTION_NAME "AddComponent"
@@ -134,7 +137,8 @@ namespace BHive
 #define ADD_COMPONENT_FUNCTION() REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::AddComponent<T>)
 #define HAS_COMPONENT_FUNCTION() REFLECT_METHOD(HAS_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::HasComponent<T>)
 #define REMOVE_COMPONENT_FUNCTION() REFLECT_METHOD(REMOVE_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::RemoveComponent<T>)
-#define GET_COMPONENT_FUNCTION() REFLECT_METHOD(GET_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::GetComponent<T>)
+#define GET_COMPONENT_FUNCTION() \
+	REFLECT_METHOD(GET_COMPONENT_FUNCTION_NAME, rttr::select_const(&::BHive::GameObject::GetComponent<T>))
 #define EMPLACE_OR_REPLACE_COMPONENT_FUNCTION() \
 	REFLECT_METHOD(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::EmplaceOrReplaceComponent<T>)
 

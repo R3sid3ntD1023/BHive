@@ -31,14 +31,14 @@ namespace BHive
 
 			DrawAddComponent(selection);
 
-			for (auto &method : mDeleteComponentInvokers)
+			for (auto &component : mDeleteComponents)
 			{
-				method.invoke(selection);
+				component.invoke(selection);
 			}
 
-			if (mDeleteComponentInvokers.size())
+			if (mDeleteComponents.size())
 			{
-				mDeleteComponentInvokers.clear();
+				mDeleteComponents.clear();
 			}
 		}
 	}
@@ -47,7 +47,7 @@ namespace BHive
 	{
 		for (auto &component : obj->GetComponents())
 		{
-			DrawComponent(component.get());
+			DrawComponent(component);
 		}
 	}
 
@@ -77,10 +77,10 @@ namespace BHive
 				auto button_size = ImVec2{100, ImGui::GetLineHeight()};
 				ImGui::SetCursorPosX(size.x - button_size.x);
 
-				if (auto method = type.get_method(REMOVE_COMPONENT_FUNCTION_NAME);
-					method && ImGui::Button("Remove", button_size))
+				if (ImGui::Button("Remove", button_size))
 				{
-					mDeleteComponentInvokers.push_back(method);
+					auto remove_method = type.get_method(REMOVE_COMPONENT_FUNCTION_NAME);
+					mDeleteComponents.push_back(remove_method);
 				}
 			}
 
@@ -115,18 +115,16 @@ namespace BHive
 			for (auto &type : derived_component_types)
 			{
 				auto spawnable_var = type.get_metadata(ClassMetaData_ComponentSpawnable);
+				auto has_method = type.get_method(HAS_COMPONENT_FUNCTION_NAME).invoke(obj).to_bool();
 
-				if (!spawnable_var || !type.get_constructor())
+				if (!spawnable_var || !type.get_constructor() || has_method)
 				{
 					continue;
 				}
 
 				if (ImGui::Selectable(type.get_name().data()))
 				{
-					if (auto method = type.get_method(ADD_COMPONENT_FUNCTION_NAME))
-					{
-						method.invoke(selection);
-					}
+					type.get_method(ADD_COMPONENT_FUNCTION_NAME).invoke(obj);
 				}
 			}
 			ImGui::EndPopup();

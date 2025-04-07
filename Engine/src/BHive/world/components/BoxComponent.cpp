@@ -1,7 +1,7 @@
 #include "BoxComponent.h"
+#include "GameObject.h"
 #include "physics/PhysicsContext.h"
 #include "renderers/Renderer.h"
-#include "GameObject.h"
 
 namespace BHive
 {

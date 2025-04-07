@@ -1,7 +1,7 @@
 #pragma once
 
-#include "sprite/FlipBook.h"
 #include "Component.h"
+#include "sprite/FlipBook.h"
 
 namespace BHive
 {
@@ -33,5 +33,7 @@ namespace BHive
 	private:
 		FlipBook *Instance = nullptr;
 	};
+
+	REFLECT_EXTERN(FlipBookComponent)
 
 } // namespace BHive

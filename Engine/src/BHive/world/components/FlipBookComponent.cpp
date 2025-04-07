@@ -1,6 +1,6 @@
 #include "FlipBookComponent.h"
-#include "renderers/Renderer.h"
 #include "GameObject.h"
+#include "renderers/Renderer.h"
 
 namespace BHive
 {

@@ -10,7 +10,7 @@ class Universe;
 
 struct CelestrialBody : public GameObject
 {
-	CelestrialBody(World *world);
+	CelestrialBody(const entt::entity &handle, World *world);
 
 	virtual void Save(cereal::JSONOutputArchive &ar) const override;
 
