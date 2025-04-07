@@ -1,12 +1,11 @@
 #pragma once
 
+#include "asset/Asset.h"
 #include "core/Core.h"
+#include "math/Transform.h"
 #include "physics/EventListener.h"
 #include "physics/PhysicsContext.h"
-#include "asset/Asset.h"
-#include "math/Transform.h"
 #include <glm/glm.hpp>
-#include <entt/entt.hpp>
 
 namespace BHive
 {
@@ -46,7 +45,7 @@ namespace BHive
 		Ref<T> CreateGameObject(const std::string &name)
 			requires(std::is_base_of_v<GameObject, T>)
 		{
-			auto object = CreateRef<T>(mRegistry.create(), this);
+			auto object = CreateRef<T>(this);
 			object->SetName(name);
 			AddGameObject(object);
 			return object;
@@ -55,8 +54,6 @@ namespace BHive
 		void AddGameObject(const Ref<GameObject> &object);
 
 		Ref<GameObject> GetGameObject(const UUID &id) const;
-
-		entt::entity CreateEntity();
 
 		const ObjectList &GetGameObjects() const { return mObjects; }
 
@@ -69,17 +66,11 @@ namespace BHive
 		bool IsRunning() const { return mIsRunning; }
 		bool IsPaused() const { return mIsPaused; }
 
-		template <typename... T>
-		auto view() const
-		{
-			return mRegistry.view<T...>();
-		}
-
 		std::pair<Camera *, FTransform> GetPrimaryCamera();
 
 		REFLECTABLEV(Asset);
 
-	private:
+	protected:
 		ObjectList mObjects;
 		std::vector<Ref<GameObject>> mDestoryedObjects;
 
@@ -92,9 +83,6 @@ namespace BHive
 		bool mIsRunning = false;
 		bool mIsPaused = false;
 		int32_t mFrames = 1;
-
-		entt::registry mRegistry;
-
 		friend class GameObject;
 	};
 } // namespace BHive

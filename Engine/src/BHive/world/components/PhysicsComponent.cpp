@@ -1,7 +1,7 @@
-#include "PhysicsComponent.h"
-#include "physics/PhysicsCore.h"
 #include "GameObject.h"
+#include "physics/PhysicsCore.h"
 #include "physics/PhysicsUtils.h"
+#include "PhysicsComponent.h"
 
 namespace BHive
 {

@@ -1,67 +1,24 @@
 #include "CelestrialBody.h"
-#include "components/IDComponent.h"
-#include "components/TagComponent.h"
+#include "Component.h"
+#include <core/serialization/Serialization.h>
 
 BEGIN_NAMESPACE(BHive)
 
-CelestrialBody::CelestrialBody(Universe *universe)
-	: mUniverse(universe)
+CelestrialBody::CelestrialBody(World *world)
+	: GameObject(world)
 {
-	mIDComponent = AddComponent<IDComponent>();
-	mTagComponent = AddComponent<TagComponent>();
-}
-
-void CelestrialBody::Begin()
-{
-	for (auto &component : mComponents)
-	{
-		component->Begin();
-		if (component->IsTickEnabled())
-		{
-			mTickedComponents.push_back(component);
-		}
-	}
-}
-
-void CelestrialBody::Update(float dt)
-{
-	for (auto &component : mTickedComponents)
-	{
-		component->Update(dt);
-	}
-}
-
-void CelestrialBody::SetName(const std::string &name)
-{
-	mTagComponent->Tag = name;
-}
-
-void CelestrialBody::SetParent(const BHive::UUID &parent)
-{
-	mParent = parent;
-}
-
-BHive::FTransform CelestrialBody::GetTransform() const
-{
-
-	if (!mParent)
-	{
-		return mTransform;
-	}
-
-	auto parent = mUniverse->GetBody(mParent);
-	return parent->GetTransform() * mTransform;
 }
 
 void CelestrialBody::Save(cereal::JSONOutputArchive &ar) const
 {
-	ar(MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
+	auto &components = GetComponents();
+	ar(MAKE_NVP("ID", mID), MAKE_NVP("Name", mName), MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
 
 	ar.setNextName("Components");
 	ar.startNode();
-	ar(cereal::make_size_tag(mComponents.size()));
+	ar(cereal::make_size_tag(components.size()));
 
-	for (auto &component : mComponents)
+	for (auto &component : components)
 	{
 		ar.startNode();
 		ar(component->get_type());
@@ -75,13 +32,14 @@ void CelestrialBody::Save(cereal::JSONOutputArchive &ar) const
 void CelestrialBody::Load(cereal::JSONInputArchive &ar)
 {
 	size_t num_components = 0;
-	ar(MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
+	ar(MAKE_NVP("ID", mID), MAKE_NVP("Name", mName), MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
 
 	ar.setNextName("Components");
 	ar.startNode();
 	ar(cereal::make_size_tag(num_components));
 
-	mComponents.resize(num_components);
+	auto &components = GetComponents();
+	components.resize(num_components);
 	for (size_t i = 0; i < num_components; i++)
 	{
 		rttr::type component_type = BHive::InvalidType;
@@ -92,16 +50,16 @@ void CelestrialBody::Load(cereal::JSONInputArchive &ar)
 		Ref<Component> component = nullptr;
 
 		auto it = std::find_if(
-			mComponents.begin(), mComponents.end(),
+			components.begin(), components.end(),
 			[&](const Ref<Component> &comp) { return comp && comp->get_type() == component_type; });
 
-		if (it != mComponents.end())
+		if (it != components.end())
 		{
 			component = *it;
 		}
 		else
 		{
-			component = mComponents[i] = component_type.create().get_value<Ref<Component>>();
+			component = components[i] = component_type.create().get_value<Ref<Component>>();
 			component->SetOwner(this);
 		}
 
@@ -110,12 +68,6 @@ void CelestrialBody::Load(cereal::JSONInputArchive &ar)
 	}
 
 	ar.finishNode();
-}
-
-void CelestrialBody::AddComponent(const Ref<Component> &component)
-{
-	component->SetOwner(this);
-	mComponents.push_back(component);
 }
 
 REFLECT(CelestrialBody)

@@ -1,7 +1,6 @@
 #include "Component.h"
 #include "components/BoxComponent.h"
 #include "components/CameraComponent.h"
-#include "components/IDComponent.h"
 #include "components/InputComponent.h"
 #include "components/PhysicsComponent.h"
 #include "components/SpriteComponent.h"
@@ -107,11 +106,6 @@ namespace BHive
 	{
 	}
 
-	entt::entity World::CreateEntity()
-	{
-		return mRegistry.create();
-	}
-
 	void World::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
@@ -150,7 +144,7 @@ namespace BHive
 			if (!obj_type)
 				continue;
 
-			auto obj = obj_type.create({mRegistry.create(), this}).get_value<Ref<GameObject>>();
+			auto obj = obj_type.create({this}).get_value<Ref<GameObject>>();
 			obj->Load(ar);
 
 			AddGameObject(obj);
@@ -188,7 +182,6 @@ namespace BHive
 				object->End();
 
 			mObjects.erase(object->GetID());
-			mRegistry.destroy((entt::entity)*object);
 		}
 
 		mDestoryedObjects.clear();
@@ -270,15 +263,13 @@ namespace BHive
 		auto new_world = CreateRef<World>(*this);
 		new_world->SetName("Instance");
 
-		auto &dst_registry = new_world->mRegistry;
-
 		auto &objects = GetGameObjects();
 
 		for (auto &[id, src_obj] : objects)
 		{
 			auto type = src_obj->get_type();
 
-			auto new_obj = type.create({dst_registry.create(), new_world.get()}).get_value<Ref<GameObject>>();
+			auto new_obj = type.create({new_world.get()}).get_value<Ref<GameObject>>();
 
 			if (!new_obj)
 				continue;
@@ -363,17 +354,7 @@ namespace BHive
 
 	std::pair<Camera *, FTransform> World::GetPrimaryCamera()
 	{
-		auto view = mRegistry.view<CameraComponent, IDComponent>();
-		for (auto &e : view)
-		{
-			auto [camera_component, id_component] = view.get(e);
-			if (camera_component.IsPrimary)
-			{
-				Camera *camera = &camera_component.Camera;
-				auto t = GetGameObject(id_component.ID)->GetTransform().inverse();
-				return std::make_pair(camera, t);
-			}
-		}
+
 		return {nullptr, FTransform()};
 	}
 

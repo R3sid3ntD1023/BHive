@@ -1,8 +1,9 @@
 {
   "Universe": [
     {
-      "ID": "8a82173a-866e-49b0-bca5-45d2d038299d",
       "Type": "CelestrialBody",
+      "ID": "8a82173a-866e-49b0-bca5-45d2d038299d",
+      "Name": "Sun",
       "Transform": {
         "Position": [ 0, 0, 0 ],
         "Rotation": [ 0, 0, 0 ],
@@ -10,14 +11,6 @@
       },
       "Parent": "00000000-0000-0000-0000-000000000000",
       "Components": [
-        {
-          "Type": "TagComponent",
-          "Tag": "Sun"
-        },
-        {
-          "Type": "IDComponent",
-          "ID": "8a82173a-866e-49b0-bca5-45d2d038299d"
-        },
         {
           "Type": "MeshComponent",
           "Color": [ 1, 1, 1, 1 ],
@@ -35,8 +28,9 @@
       ]
     },
     {
-      "ID": "4abb75f1-9117-4c5d-bbf8-c9ec60999c90",
       "Type": "CelestrialBody",
+      "ID": "4abb75f1-9117-4c5d-bbf8-c9ec60999c90",
+      "Name": "Mercury",
       "Transform": {
         "Position": [ 5, 0, 0 ],
         "Rotation": [ 0, 0, 0 ],
@@ -44,14 +38,6 @@
       },
       "Parent": "8a82173a-866e-49b0-bca5-45d2d038299d",
       "Components": [
-        {
-          "Type": "TagComponent",
-          "Tag": "Mercury"
-        },
-        {
-          "Type": "IDComponent",
-          "ID": "4abb75f1-9117-4c5d-bbf8-c9ec60999c90"
-        },
         {
           "Type": "MeshComponent",
           "Color": [ 1, 1, 1, 1 ],
@@ -69,8 +55,9 @@
     },
 
     {
-      "ID": "f7aa675a-ac4b-4ad7-a4ac-1fb6c870b9f8",
       "Type": "CelestrialBody",
+      "ID": "f7aa675a-ac4b-4ad7-a4ac-1fb6c870b9f8",
+      "Name": "Venus",
       "Transform": {
         "Position": [ 20, 0, 0 ],
         "Rotation": [ 0, 0, 0 ],
@@ -78,14 +65,6 @@
       },
       "Parent": "8a82173a-866e-49b0-bca5-45d2d038299d",
       "Components": [
-        {
-          "Type": "TagComponent",
-          "Tag": "Venus"
-        },
-        {
-          "Type": "IDComponent",
-          "ID": "f7aa675a-ac4b-4ad7-a4ac-1fb6c870b9f8"
-        },
         {
           "Type": "MeshComponent",
           "Color": [ 1, 1, 1, 1 ],

@@ -1,7 +1,6 @@
 #include "asset/AssetFactory.h"
 #include "components/BoxComponent.h"
 #include "components/CameraComponent.h"
-#include "components/IDComponent.h"
 #include "contextmenus/ContextMenus.h"
 #include "core/Application.h"
 #include "core/FileDialog.h"

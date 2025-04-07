@@ -1,20 +1,11 @@
-#include "components/IDComponent.h"
-#include "components/RelationshipComponent.h"
-#include "components/TagComponent.h"
-#include "components/TransformComponent.h"
 #include "GameObject.h"
 
 namespace BHive
 {
-	GameObject::GameObject(const entt::entity &handle, World *world)
-		: mEntityHandle(handle),
-		  mWorld(world)
+	GameObject::GameObject(World *world)
+		: mWorld(world)
 	{
-		AddComponent<TagComponent>("New GameObject");
-		AddComponent<TransformComponent>();
-		AddComponent<IDComponent>();
-		AddComponent<RelationshipComponent>();
-		AddComponent<PhysicsComponent>();
+		mPhysicsComponent = AddComponent<PhysicsComponent>();
 	}
 
 	void GameObject::Begin()
@@ -26,7 +17,10 @@ namespace BHive
 	void GameObject::Update(float dt)
 	{
 		for (auto &component : mComponents)
-			component->Update(dt);
+		{
+			if (component->IsTickEnabled())
+				component->Update(dt);
+		}
 	}
 
 	void GameObject::Render()
@@ -44,19 +38,48 @@ namespace BHive
 		}
 	}
 
+	void GameObject::AddComponent(const Ref<Component> &component)
+	{
+		component->SetOwner(this);
+		mComponents.emplace_back(component);
+	}
+
+	void GameObject::RemoveComponent(const Ref<Component> &component)
+	{
+		auto it = std::find(mComponents.begin(), mComponents.end(), component);
+		if (it != mComponents.end())
+		{
+			component->End();
+			mComponents.erase(it);
+		}
+	}
+
+	void GameObject::RemoveComponent(Component *component)
+	{
+		auto it = std::find_if(
+			mComponents.begin(), mComponents.end(),
+			[component](const Ref<Component> &comp) { return comp && comp.get() == component; });
+
+		if (it != mComponents.end())
+		{
+			component->End();
+			mComponents.erase(it);
+		}
+	}
+
 	PhysicsComponent &GameObject::GetPhysicsComponent()
 	{
-		return *GetComponent<PhysicsComponent>();
+		return *mPhysicsComponent;
 	}
 
 	void GameObject::SetName(const std::string &name)
 	{
-		GetComponent<TagComponent>()->Name = name;
+		mName = name;
 	}
 
 	void GameObject::SetTransform(const FTransform &transform)
 	{
-		GetComponent<TransformComponent>()->Transform = transform;
+		mTransform = transform;
 	}
 
 	void GameObject::Save(cereal::BinaryOutputArchive &ar) const
@@ -68,6 +91,14 @@ namespace BHive
 			ar(component->get_type());
 			component->Save(ar);
 		}
+	}
+
+	void GameObject::Save(cereal::JSONOutputArchive &ar) const
+	{
+	}
+
+	void GameObject::Load(cereal::JSONInputArchive &ar)
+	{
 	}
 
 	void GameObject::Load(cereal::BinaryInputArchive &ar)
@@ -100,14 +131,8 @@ namespace BHive
 
 	void GameObject::SetParent(GameObject *object)
 	{
-		if (!object)
-			return;
-
-		auto this_rel = GetComponent<RelationshipComponent>();
-		auto other_rel = object->GetComponent<RelationshipComponent>();
-
-		this_rel->Parent = object->GetID();
-		other_rel->Children.insert(GetID());
+		mParent = object->GetID();
+		object->mChildren.insert(GetID());
 	}
 
 	void GameObject::AddChild(GameObject *object)
@@ -115,11 +140,8 @@ namespace BHive
 		if (!object)
 			return;
 
-		auto this_rel = GetComponent<RelationshipComponent>();
-		auto child_rel = object->GetComponent<RelationshipComponent>();
-
-		this_rel->Children.insert(object->GetID());
-		child_rel->Parent = GetID();
+		object->SetParent(this);
+		mChildren.insert(object->GetID());
 	}
 
 	void GameObject::RemoveChild(GameObject *object)
@@ -127,27 +149,21 @@ namespace BHive
 		if (!object)
 			return;
 
-		auto this_rel = GetComponent<RelationshipComponent>();
-		auto child_rel = object->GetComponent<RelationshipComponent>();
-
-		auto &child_id = object->GetID();
-		if (this_rel->Children.contains(child_id))
+		if (mChildren.contains(object->GetID()))
 		{
-			this_rel->Children.erase(child_id);
-			child_rel->Parent = NullID;
+			object->RemoveParent();
+		}
+		else
+		{
+			LOG_WARN("GameObject::RemoveChild: Object is not a child of this object");
 		}
 	}
 
 	void GameObject::RemoveParent()
 	{
-		auto this_rel = GetComponent<RelationshipComponent>();
-		auto &id = GetID();
-
-		if (this_rel->Parent)
-		{
-			auto parent = mWorld->GetGameObject(this_rel->Parent);
-			parent->RemoveChild(this);
-		}
+		auto parent = mWorld->GetGameObject(mParent);
+		mParent = NullID;
+		parent->mChildren.erase(GetID());
 	}
 
 	void GameObject::Destroy()
@@ -158,50 +174,47 @@ namespace BHive
 
 	const UUID &GameObject::GetID() const
 	{
-		return GetComponent<IDComponent>()->ID;
+		return mID;
 	}
 
 	const std::string &GameObject::GetName() const
 	{
-		return GetComponent<TagComponent>()->Name;
+		return mName;
 	}
 
 	const FTransform &GameObject::GetTransform() const
 	{
-		auto &parentID = GetComponent<RelationshipComponent>()->Parent;
-		auto &transform = GetComponent<TransformComponent>()->Transform;
 
-		if (parentID)
+		if (mParent)
 		{
-			auto parent = mWorld->GetGameObject(parentID);
+			auto parent = mWorld->GetGameObject(mParent);
 
-			return parent->GetTransform().to_mat4() * transform.to_mat4();
+			return parent->GetTransform().to_mat4() * mTransform.to_mat4();
 		}
 
-		return transform;
+		return mTransform;
 	}
 	FTransform &GameObject::GetLocalTransform()
 	{
-		return GetComponent<TransformComponent>()->Transform;
+		return mTransform;
 	}
 	const FTransform &GameObject::GetLocalTransform() const
 	{
-		return GetComponent<TransformComponent>()->Transform;
+		return mTransform;
 	}
 
 	Ref<GameObject> GameObject::GetParent() const
 	{
-		auto &parent = GetComponent<RelationshipComponent>()->Parent;
-		if (!parent)
+		if (!mParent)
 			return nullptr;
 
-		return mWorld->GetGameObject(parent);
+		return mWorld->GetGameObject(mParent);
 	}
 
 	std::unordered_set<Ref<GameObject>> GameObject::GetChildren() const
 	{
 		std::unordered_set<Ref<GameObject>> children;
-		auto &child_ids = GetComponent<RelationshipComponent>()->Children;
+		auto &child_ids = mChildren;
 		for (auto &id : child_ids)
 			children.insert(mWorld->GetGameObject(id));
 
@@ -210,7 +223,7 @@ namespace BHive
 
 	REFLECT(GameObject)
 	{
-		BEGIN_REFLECT(GameObject) REFLECT_CONSTRUCTOR(const entt::entity &, World *);
+		BEGIN_REFLECT(GameObject) REFLECT_CONSTRUCTOR(World *);
 		RTTR_REGISTRATION_STANDARD_TYPE_VARIANTS(GameObject)
 	}
 } // namespace BHive

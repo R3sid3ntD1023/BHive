@@ -1,9 +1,9 @@
 #pragma once
 
-#include "core/EnumAsByte.h"
 #include "core/Core.h"
+#include "core/EnumAsByte.h"
 #include "physics/LockAxis.h"
-#include "Component.h"
+#include "world/Component.h"
 #include <glm/glm.hpp>
 
 namespace BHive

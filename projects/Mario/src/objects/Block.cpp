@@ -7,8 +7,8 @@
 
 namespace BHive
 {
-	BlockBase::BlockBase(const entt::entity &handle, World *world)
-		: GameObject(handle, world)
+	BlockBase::BlockBase(World *world)
+		: GameObject(world)
 	{
 		AddComponent<BoxComponent>();
 
@@ -18,15 +18,15 @@ namespace BHive
 		physc.Settings.BodyType = EBodyType::Static;
 	}
 
-	Block::Block(const entt::entity &handle, World *world)
-		: BlockBase(handle, world)
+	Block::Block(World *world)
+		: BlockBase(world)
 
 	{
 		AddComponent<SpriteComponent>();
 	}
 
-	QuestionBlock::QuestionBlock(const entt::entity &handle, World *world)
-		: BlockBase(handle, world)
+	QuestionBlock::QuestionBlock(World *world)
+		: BlockBase(world)
 	{
 		AddComponent<FlipBookComponent>();
 	}
@@ -38,12 +38,11 @@ namespace BHive
 
 	REFLECT(Block)
 	{
-		BEGIN_REFLECT(Block)(META_DATA(ClassMetaData_Spawnable, true)) REFLECT_CONSTRUCTOR(const entt::entity &, World *);
+		BEGIN_REFLECT(Block)(META_DATA(ClassMetaData_Spawnable, true)) REFLECT_CONSTRUCTOR(World *);
 	}
 
 	REFLECT(QuestionBlock)
 	{
-		BEGIN_REFLECT(QuestionBlock)(META_DATA(ClassMetaData_Spawnable, true))
-			REFLECT_CONSTRUCTOR(const entt::entity &, World *);
+		BEGIN_REFLECT(QuestionBlock)(META_DATA(ClassMetaData_Spawnable, true)) REFLECT_CONSTRUCTOR(World *);
 	}
 } // namespace BHive

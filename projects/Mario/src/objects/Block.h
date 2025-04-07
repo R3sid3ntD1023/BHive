@@ -8,21 +8,21 @@ namespace BHive
 
 	struct BlockBase : public GameObject
 	{
-		BlockBase(const entt::entity &handle, World *world);
+		BlockBase(World *world);
 
 		REFLECTABLEV(GameObject)
 	};
 
 	struct Block : public BlockBase
 	{
-		Block(const entt::entity &handle, World *world);
+		Block(World *world);
 
 		REFLECTABLEV(BlockBase)
 	};
 
 	struct QuestionBlock : public BlockBase
 	{
-		QuestionBlock(const entt::entity &handle, World *world);
+		QuestionBlock(World *world);
 
 		REFLECTABLEV(BlockBase)
 	};

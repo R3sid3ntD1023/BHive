@@ -8,28 +8,10 @@ Universe::Universe()
 {
 }
 
-void Universe::AddBody(const Ref<CelestrialBody> &body)
-{
-	mBodies.emplace(BHive::UUID(), body);
-}
-
-void Universe::Begin()
-{
-	for (auto &[id, body] : mBodies)
-		body->Begin();
-}
-
-void Universe::Update(float dt)
-{
-
-	for (auto &[id, body] : mBodies)
-		body->Update(dt);
-}
-
 void Universe::Save(cereal::JSONOutputArchive &ar) const
 {
-	ar(cereal::make_size_tag(mBodies.size()));
-	for (auto &[id, body] : mBodies)
+	ar(cereal::make_size_tag(mObjects.size()));
+	for (auto &[id, body] : mObjects)
 	{
 		ar.startNode();
 
@@ -46,16 +28,14 @@ void Universe::Load(cereal::JSONInputArchive &ar)
 	size_t size = 0;
 	ar(cereal::make_size_tag(size));
 
-	mBodies.reserve(size);
+	mObjects.reserve(size);
 
 	for (size_t i = 0; i < size; i++)
 	{
 		ar.startNode();
 
-		BHive::UUID id = NullID;
 		rttr::type type = BHive::InvalidType;
 
-		ar(MAKE_NVP("ID", id));
 		ar(MAKE_NVP("Type", type));
 
 		if (type)
@@ -63,19 +43,11 @@ void Universe::Load(cereal::JSONInputArchive &ar)
 			auto body = type.create({this}).get_value<Ref<CelestrialBody>>();
 			body->Load(ar);
 
-			mBodies.emplace(id, body);
+			mObjects.emplace(body->GetID(), body);
 		}
 
 		ar.finishNode();
 	}
-}
-
-Ref<CelestrialBody> Universe::GetBody(const BHive::UUID &id) const
-{
-	if (mBodies.contains(id))
-		return mBodies.at(id);
-
-	return nullptr;
 }
 
 END_NAMESPACE

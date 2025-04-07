@@ -1,33 +1,23 @@
 #pragma once
 
-#include "core/Core.h"
-#include "Component.h"
 #include "components/PhysicsComponent.h"
+#include "core/Core.h"
+#include "core/EventDelegate.h"
+#include "core/serialization/Serialization.h"
 #include "core/UUID.h"
 #include "math/Transform.h"
 #include "World.h"
-#include "core/serialization/Serialization.h"
-#include "core/EventDelegate.h"
+#include "world/Component.h"
 
 namespace BHive
 {
 	DECLARE_EVENT(FOnDestroyed, GameObject *);
 
-	struct FRegisteredComponent
-	{
-		size_t ComponentHash = 0;
-		Component *ComponentPtr = nullptr;
-
-		Component *operator->() const { return ComponentPtr; }
-
-		Component &operator*() const { return *ComponentPtr; }
-	};
-
-	using ComponentList = std::vector<FRegisteredComponent>;
+	using ComponentList = std::vector<Ref<Component>>;
 
 	struct GameObject
 	{
-		GameObject(const entt::entity &handle, World *world);
+		GameObject(World *world);
 		GameObject(const GameObject &) = default;
 
 		virtual void Begin();
@@ -36,60 +26,68 @@ namespace BHive
 		virtual void End();
 
 		template <typename T, typename... TArgs>
-		T *AddComponent(TArgs &&...args)
+		Ref<T> AddComponent(TArgs &&...args)
 		{
-			ASSERT(!HasComponent<T>());
-
-			auto &component = mWorld->mRegistry.emplace<T>(mEntityHandle, std::forward<TArgs>(args)...);
-			RegisterComponent<T>(&component);
-			return &component;
+			auto component = CreateRef<T>(std::forward<TArgs>(args)...);
+			AddComponent(component);
+			return component;
 		}
 
 		template <typename T>
-		T *EmplaceOrReplaceComponent(const Component &srcComponent)
+		Ref<T> EmplaceOrReplaceComponent(const T &component)
 		{
-			auto &component = mWorld->mRegistry.emplace_or_replace<T>(mEntityHandle, static_cast<const T &>(srcComponent));
-			RegisterComponent<T>(&component);
-			return &component;
+			return nullptr;
+		}
+
+		void AddComponent(const Ref<Component> &component);
+		void RemoveComponent(const Ref<Component> &component);
+		void RemoveComponent(Component *component);
+
+		template <typename T>
+		bool HasComponent()
+		{
+			auto it = std::find_if(
+				mComponents.begin(), mComponents.end(),
+				[](const Ref<Component> &comp) { return comp && comp->get_type() == rttr::type::get<T>(); });
+
+			return it != mComponents.end();
 		}
 
 		template <typename T>
-		const T *GetComponent() const
+		Ref<T> GetComponent()
 		{
-			ASSERT(HasComponent<T>());
-			return &mWorld->mRegistry.get<T>(mEntityHandle);
-		}
+			auto it = std::find_if(
+				mComponents.begin(), mComponents.end(),
+				[](const Ref<Component> &comp) { return comp && comp->get_type() == rttr::type::get<T>(); });
 
-		template <typename T>
-		T *GetComponent()
-		{
-			ASSERT(HasComponent<T>());
-			return &mWorld->mRegistry.get<T>(mEntityHandle);
+			return Cast<T>(*it);
 		}
-
-		const ComponentList &GetComponents() const { return mComponents; }
 
 		template <typename T>
 		void RemoveComponent()
 		{
-			ASSERT(HasComponent<T>());
-			UnRegisterComponent<T>();
-			mWorld->mRegistry.remove<T>(mEntityHandle);
-		}
+			auto it = std::find_if(
+				mComponents.begin(), mComponents.end(),
+				[](const Ref<Component> &comp) { return comp && comp->get_type() == rttr::type::get<T>(); });
 
-		template <typename T>
-		bool HasComponent() const
-		{
-			return mWorld->mRegistry.all_of<T>(mEntityHandle);
+			if (it != mComponents.end())
+			{
+				(*it)->End();
+				mComponents.erase(it);
+			}
 		}
-
-		PhysicsComponent &GetPhysicsComponent();
 
 		void SetName(const std::string &name);
+		void SetParent(const BHive::UUID &parent);
+
+		PhysicsComponent &GetPhysicsComponent();
 		void SetTransform(const FTransform &transform);
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const;
 		virtual void Load(cereal::BinaryInputArchive &ar);
+
+		virtual void Save(cereal::JSONOutputArchive &ar) const;
+		virtual void Load(cereal::JSONInputArchive &ar);
 
 		void SetParent(GameObject *object);
 		void AddChild(GameObject *object);
@@ -106,55 +104,24 @@ namespace BHive
 		World *GetWorld() const { return mWorld; }
 		Ref<GameObject> GetParent() const;
 		std::unordered_set<Ref<GameObject>> GetChildren() const;
-
-		operator entt::entity() const { return mEntityHandle; }
+		const ComponentList &GetComponents() const { return mComponents; }
+		ComponentList &GetComponents() { return mComponents; }
 
 		FOnDestroyedEvent OnDestroyedEvent;
 
 		REFLECTABLEV()
 
-	private:
-		template <typename T>
-		size_t GetComponentHash() const
-		{
-			return typeid(T).hash_code();
-		}
-
-		template <typename T>
-		void RegisterComponent(Component *component)
-		{
-			component->mOwningObject = this;
-			auto hash = GetComponentHash<T>();
-
-			auto it = std::find_if(
-				mComponents.begin(), mComponents.end(),
-				[hash](const FRegisteredComponent &comp) { return comp.ComponentHash == hash; });
-
-			if (it != mComponents.end())
-			{
-				(*it).ComponentPtr = component;
-				return;
-			}
-
-			mComponents.emplace_back(FRegisteredComponent{hash, component});
-		}
-
-		template <typename T>
-		void UnRegisterComponent()
-		{
-			auto it = std::find_if(
-				mComponents.begin(), mComponents.end(),
-				[&](const FRegisteredComponent &comp) { return comp.ComponentHash == GetComponentHash<T>(); });
-			if (it == mComponents.end())
-				return;
-
-			mComponents.erase(it);
-		}
-
-	private:
-		entt::entity mEntityHandle{entt::null};
-		ComponentList mComponents;
+	protected:
 		World *mWorld = nullptr;
+		UUID mID;
+		std::string mName = "New GameObject";
+		FTransform mTransform;
+
+		ComponentList mComponents;
+		Ref<PhysicsComponent> mPhysicsComponent;
+
+		UUID mParent = NullID;
+		std::unordered_set<UUID> mChildren;
 	};
 } // namespace BHive
 
@@ -167,8 +134,7 @@ namespace BHive
 #define ADD_COMPONENT_FUNCTION() REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::AddComponent<T>)
 #define HAS_COMPONENT_FUNCTION() REFLECT_METHOD(HAS_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::HasComponent<T>)
 #define REMOVE_COMPONENT_FUNCTION() REFLECT_METHOD(REMOVE_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::RemoveComponent<T>)
-#define GET_COMPONENT_FUNCTION() \
-	REFLECT_METHOD(GET_COMPONENT_FUNCTION_NAME, rttr::select_overload<T *()>(&::BHive::GameObject::GetComponent<T>))
+#define GET_COMPONENT_FUNCTION() REFLECT_METHOD(GET_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::GetComponent<T>)
 #define EMPLACE_OR_REPLACE_COMPONENT_FUNCTION() \
 	REFLECT_METHOD(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::EmplaceOrReplaceComponent<T>)
 

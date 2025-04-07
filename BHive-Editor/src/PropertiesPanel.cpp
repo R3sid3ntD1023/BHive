@@ -1,9 +1,9 @@
-#include "PropertiesPanel.h"
-#include "gui/ImGuiExtended.h"
-#include "world/GameObject.h"
-#include "subsystems/SelectionSubSystem.h"
 #include "core/subsystem/SubSystem.h"
+#include "gui/ImGuiExtended.h"
 #include "Inspectors.h"
+#include "PropertiesPanel.h"
+#include "subsystems/SelectionSubSystem.h"
+#include "world/GameObject.h"
 
 namespace BHive
 {
@@ -37,7 +37,7 @@ namespace BHive
 	{
 		for (auto &component : obj->GetComponents())
 		{
-			DrawComponent(component.ComponentPtr);
+			DrawComponent(component.get());
 		}
 	}
 

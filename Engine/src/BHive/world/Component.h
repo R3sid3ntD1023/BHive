@@ -16,15 +16,23 @@ namespace BHive
 		virtual void Render() {}
 		virtual void End() {};
 
+		void SetTickEnabled(bool enabled);
+		void SetOwner(GameObject *owner);
+
+		bool IsTickEnabled() const { return mTickEnabled; }
+		GameObject *GetOwner() const { return mOwningObject; }
+
 		virtual void Save(cereal::BinaryOutputArchive &ar) const {};
 		virtual void Load(cereal::BinaryInputArchive &ar) {};
 
-		GameObject *GetOwner() const { return mOwningObject; }
+		virtual void Save(cereal::JSONOutputArchive &ar) const {};
+		virtual void Load(cereal::JSONInputArchive &ar) {};
 
 		REFLECTABLEV()
 
 	private:
 		GameObject *mOwningObject = nullptr;
+		bool mTickEnabled = true;
 		friend struct GameObject;
 	};
 
