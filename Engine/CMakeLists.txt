@@ -13,12 +13,15 @@ include(FindVulkan)
 if(DEFINED Vulkan_SDK_PATH)
     set(Vulkan_INCLUDE_DIRS "${Vulkan_SDK_PATH}/Include")
     set(Vulkan_LIBRARIES "${Vulkan_SDK_PATH}/Lib")
-	message(STATUS "Vulkan SDK found at ${Vulkan_SDK_PATH}")
+	set(Vulkan_FOUND true)
+	message(STATUS "Using Vulkan at: ${Vulkan_SDK_PATH}")
 else()
     find_package(Vulkan REQUIRED COMPONENTS shaderc_shared spirv_cross_core spirv_cross_glsl)
 endif()
 
+if(DEFINED Vulkan_FOUND)
 message(STATUS "Vulkan VERSION: ${Vulkan_VERSION}")
+endif()
 
 add_library(Engine STATIC ${ENGINE_SRC})
 set_target_properties(Engine PROPERTIES 
@@ -37,7 +40,7 @@ target_link_directories(Engine PUBLIC ${Vulkan_LIBRARIES})
 target_link_libraries(Engine
 	PUBLIC glfw 
 	PUBLIC glad 
-	opengl32 
+	PUBLIC opengl32 
 	PUBLIC OpenAL::OpenAL
 	PUBLIC assimp::assimp 
 	PUBLIC imgui 
@@ -52,10 +55,10 @@ target_link_libraries(Engine
 	PUBLIC ImPlot
 	PUBLIC msdf-atlas-gen::msdf-atlas-gen
 	PUBLIC EnTT::EnTT
-	vulkan-1 
-	shaderc_shared$<$<CONFIG:Debug>:d> 
-	spirv-cross-core$<$<CONFIG:Debug>:d> 
-	spirv-cross-glsl$<$<CONFIG:Debug>:d> 
+	PUBLIC vulkan-1 
+	PUBLIC shaderc_shared$<$<CONFIG:Debug>:d> 
+	PUBLIC spirv-cross-core$<$<CONFIG:Debug>:d> 
+	PUBLIC spirv-cross-glsl$<$<CONFIG:Debug>:d> 
 )
 
 target_include_directories(Engine PUBLIC 
