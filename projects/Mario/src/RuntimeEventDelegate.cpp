@@ -1,5 +1,5 @@
 #include "RuntimeEventDelegate.h"
-#include "objects/GameObject.h"
+#include "world/GameObject.h"
 
 namespace BHive
 {

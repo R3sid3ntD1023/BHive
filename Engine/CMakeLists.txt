@@ -2,6 +2,7 @@ cmake_minimum_required( VERSION 3.8 )
 
 add_subdirectory(vendor)
 
+find_package(EnTT CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 
 file(GLOB_RECURSE ENGINE_SRC CMAKE_CONFIGURE_DEPENDS src/** data/** PARENT_SCOPE)
@@ -50,6 +51,7 @@ target_link_libraries(Engine
 	PUBLIC cereal::cereal
 	PUBLIC ImPlot
 	PUBLIC msdf-atlas-gen::msdf-atlas-gen
+	PUBLIC EnTT::EnTT
 	vulkan-1 
 	shaderc_shared$<$<CONFIG:Debug>:d> 
 	spirv-cross-core$<$<CONFIG:Debug>:d> 

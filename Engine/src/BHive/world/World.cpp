@@ -1,6 +1,7 @@
 #include "Component.h"
 #include "components/BoxComponent.h"
 #include "components/CameraComponent.h"
+#include "components/FlipBookComponent.h"
 #include "components/InputComponent.h"
 #include "components/PhysicsComponent.h"
 #include "components/SpriteComponent.h"
@@ -405,6 +406,13 @@ namespace BHive
 		}
 
 		RenderCommand::SetViewport(0, 0, w, h);
+	}
+
+	Ref<GameObject> World::CreateGameObject(const rttr::type &type)
+	{
+		auto obj = type.create({mRegistry.create(), this}).get_value<Ref<GameObject>>();
+		AddGameObject(obj);
+		return obj;
 	}
 
 	void World::AddGameObject(const Ref<GameObject> &object)

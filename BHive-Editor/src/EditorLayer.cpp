@@ -20,6 +20,7 @@
 #include "subsystems/WindowSubSystem.h"
 #include "world/GameObject.h"
 #include <ImGuizmo.h>
+#include <rttr/library.h>
 
 namespace BHive
 {
@@ -28,6 +29,25 @@ namespace BHive
 
 	void EditorLayer::OnAttach()
 	{
+		if (!Project::GetActive())
+		{
+			auto project_path = FileDialogs::OpenFile("BHive-Project (*proj)\0 *.proj\0");
+			if (project_path.empty())
+			{
+				Application::Get().Close();
+				return;
+			}
+
+			Project::LoadProject(project_path);
+		}
+
+		auto project_name = Project::GetProjectName();
+		mProjectLib = new rttr::library(project_name);
+		if (!mProjectLib->is_loaded())
+		{
+			mProjectLib->load();
+		}
+
 		FWorldContentMenu::OnAssetOpenedEvent.bind(
 			[&](const UUID &handle)
 			{
@@ -71,15 +91,6 @@ namespace BHive
 
 		CreateWorld();
 
-		auto project_path = FileDialogs::OpenFile("BHive-Project (*proj)\0 *.proj\0");
-		if (project_path.empty())
-		{
-			Application::Get().Close();
-			return;
-		}
-
-		Project::LoadProject(project_path);
-
 		mAssetManager = CreateRef<EditorAssetManager>(Project::GetResourceDirectory(), "AssetRegistry.json");
 		AssetManager::SetAssetManager(mAssetManager.get());
 
@@ -87,13 +98,15 @@ namespace BHive
 			window_system.CreateWindow<EditorContentBrowser<EditorAssetManager>>(Project::GetResourceDirectory());
 
 		SetupDefaultCommands();
-
-		PhysicsContext::Init();
 	}
 
 	void EditorLayer::OnDetach()
 	{
-		PhysicsContext::Shutdown();
+		if (mProjectLib->is_loaded())
+		{
+			mProjectLib->unload();
+			delete mProjectLib;
+		}
 	}
 
 	void EditorLayer::OnUpdate(float dt)

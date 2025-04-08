@@ -56,6 +56,8 @@ namespace BHive
 			return object;
 		}
 
+		Ref<GameObject> CreateGameObject(const rttr::type &type);
+
 		void AddGameObject(const Ref<GameObject> &object);
 
 		Ref<GameObject> GetGameObject(const UUID &id) const;

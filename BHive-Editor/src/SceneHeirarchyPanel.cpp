@@ -46,8 +46,7 @@ namespace BHive
 				if (ImGui::MenuItem(type.get_name().data()))
 				{
 					auto world = mWorld.get();
-					auto obj = type.create({world}).get_value<Ref<GameObject>>();
-					mWorld->AddGameObject(obj);
+					auto obj = world->CreateGameObject(type);
 					selection.Select(obj.get());
 				}
 			}

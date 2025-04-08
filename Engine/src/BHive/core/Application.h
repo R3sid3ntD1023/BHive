@@ -46,7 +46,6 @@ namespace BHive
 
 		template <typename TLayer>
 		void PushLayer();
-
 		void PushLayer(Layer *layer);
 		void PopLayer(Layer *layer);
 

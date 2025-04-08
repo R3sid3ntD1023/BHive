@@ -8,6 +8,7 @@
 #include "EditorContentBrowser.h"
 #include "gfx/cameras/EditorCamera.h"
 #include "PropertiesPanel.h"
+#include "rttr/library.h"
 #include "SceneHeirarchyPanel.h"
 #include "world/World.h"
 
@@ -41,6 +42,8 @@ namespace BHive
 		std::unordered_map<FCommand, std::function<void()>> mCommands;
 
 		std::filesystem::path mCurrentWorldPath = "";
+
+		rttr::library *mProjectLib = nullptr;
 
 	public:
 		void OnAttach() override;

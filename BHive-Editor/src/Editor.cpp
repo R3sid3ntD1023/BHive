@@ -1,6 +1,7 @@
 #include "core/Application.h"
 #include "core/EntryPoint.h"
 #include "EditorLayer.h"
+#include "ProjectLauncherLayer.h"
 
 namespace BHive
 {
@@ -10,7 +11,7 @@ namespace BHive
 		BHiveEditor(const FApplicationSpecification &spec)
 			: Application(spec)
 		{
-			PushLayer(new EditorLayer());
+			PushLayer(new ProjectLauncherLayer());
 		}
 	};
 
