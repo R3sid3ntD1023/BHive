@@ -27,6 +27,9 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
+		virtual void Save(cereal::JSONOutputArchive &ar) const;
+		virtual void Load(cereal::JSONInputArchive &ar);
+
 		void Begin();
 		void Update(float dt);
 		void Render();

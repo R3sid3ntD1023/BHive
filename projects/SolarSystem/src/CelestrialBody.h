@@ -12,10 +12,6 @@ struct CelestrialBody : public GameObject
 {
 	CelestrialBody(const entt::entity &handle, World *world);
 
-	virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-	virtual void Load(cereal::JSONInputArchive &ar) override;
-
 	REFLECTABLEV()
 };
 

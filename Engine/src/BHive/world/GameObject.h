@@ -37,7 +37,7 @@ namespace BHive
 		template <typename T>
 		T *EmplaceOrReplaceComponent(Component *component)
 		{
-			auto new_component = &mWorld->mRegistry.get_or_emplace<T>(mEntity, *dynamic_cast<T *>(component));
+			auto new_component = &mWorld->mRegistry.emplace_or_replace<T>(mEntity, *dynamic_cast<T *>(component));
 			AddComponent(new_component);
 			return new_component;
 		}
@@ -76,7 +76,7 @@ namespace BHive
 		void SetName(const std::string &name);
 		void SetParent(const BHive::UUID &parent);
 
-		PhysicsComponent &GetPhysicsComponent();
+		PhysicsComponent *GetPhysicsComponent();
 		void SetTransform(const FTransform &transform);
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const;
@@ -93,9 +93,11 @@ namespace BHive
 
 		const UUID &GetID() const;
 		const std::string &GetName() const;
-		const FTransform &GetTransform() const;
+		FTransform GetTransform() const;
 		FTransform &GetLocalTransform();
 		const FTransform &GetLocalTransform() const;
+		const uint64_t GetGroup() const;
+		bool IsInGroup(uint16_t group) const;
 
 		World *GetWorld() const { return mWorld; }
 		Ref<GameObject> GetParent() const;
@@ -111,17 +113,12 @@ namespace BHive
 
 	private:
 		void AddComponent(Component *component);
+		Component *GetOrAddComponent(const rttr::type &type);
 
 	protected:
 		World *mWorld = nullptr;
-		UUID mID;
-		std::string mName = "New GameObject";
-		FTransform mTransform;
 
 		ComponentList mComponents;
-
-		UUID mParent = NullID;
-		std::unordered_set<UUID> mChildren;
 
 		entt::entity mEntity{entt::null};
 	};

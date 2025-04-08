@@ -70,7 +70,7 @@ void AstroidComponent::CalculateMatrices()
 REFLECT(AstroidComponent)
 {
 	BEGIN_REFLECT(AstroidComponent)
-	REFLECT_CONSTRUCTOR();
+	REFLECT_CONSTRUCTOR() COMPONENT_IMPL();
 }
 
 END_NAMESPACE

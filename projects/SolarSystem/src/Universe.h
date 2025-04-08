@@ -16,13 +16,8 @@ class StaticMesh;
 class Universe : public World
 {
 public:
-	using ObjectList = std::unordered_map<UUID, Ref<CelestrialBody>>;
-
 public:
 	Universe();
-
-	void Save(cereal::JSONOutputArchive &ar) const;
-	void Load(cereal::JSONInputArchive &ar);
 };
 
 END_NAMESPACE

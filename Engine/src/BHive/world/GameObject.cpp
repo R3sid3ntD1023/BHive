@@ -1,3 +1,6 @@
+#include "components/RelationshipComponent.h"
+#include "components/TagComponent.h"
+#include "components/TransformComponent.h"
 #include "GameObject.h"
 
 namespace BHive
@@ -6,6 +9,9 @@ namespace BHive
 		: mEntity(handle),
 		  mWorld(world)
 	{
+		AddComponent<TagComponent>();
+		AddComponent<TransformComponent>();
+		AddComponent<RelationshipComponent>();
 	}
 
 	void GameObject::Begin()
@@ -38,24 +44,26 @@ namespace BHive
 		}
 	}
 
-	PhysicsComponent &GameObject::GetPhysicsComponent()
+	PhysicsComponent *GameObject::GetPhysicsComponent()
 	{
-		return *GetComponent<PhysicsComponent>();
+		if (HasComponent<PhysicsComponent>())
+			return GetComponent<PhysicsComponent>();
+
+		return nullptr;
 	}
 
 	void GameObject::SetName(const std::string &name)
 	{
-		mName = name;
+		GetComponent<TagComponent>()->Name = name;
 	}
 
 	void GameObject::SetTransform(const FTransform &transform)
 	{
-		mTransform = transform;
+		GetComponent<TransformComponent>()->Transform = transform;
 	}
 
 	void GameObject::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(mID, mName, mTransform, mParent, mChildren);
 		ar(mComponents.size());
 
 		for (auto component : mComponents)
@@ -67,7 +75,6 @@ namespace BHive
 
 	void GameObject::Load(cereal::BinaryInputArchive &ar)
 	{
-		ar(mID, mName, mTransform, mParent, mChildren);
 		size_t num_components = 0;
 		ar(num_components);
 
@@ -77,15 +84,7 @@ namespace BHive
 
 			ar(type);
 
-			Component *component = nullptr;
-			if (type.get_method(HAS_COMPONENT_FUNCTION_NAME).invoke({this}).to_bool())
-			{
-				component = type.get_method(GET_COMPONENT_FUNCTION_NAME).invoke({this}).get_value<Component *>();
-			}
-			else
-			{
-				component = type.get_method(ADD_COMPONENT_FUNCTION_NAME).invoke({this}).get_value<Component *>();
-			}
+			Component *component = GetOrAddComponent(type);
 
 			if (component)
 			{
@@ -96,12 +95,61 @@ namespace BHive
 
 	void GameObject::Save(cereal::JSONOutputArchive &ar) const
 	{
-		ar(MAKE_NVP("ID", mID), MAKE_NVP("Name", mName), MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
+		auto &components = GetComponents();
+
+		ar.setNextName("Components");
+		ar.startNode();
+		ar(cereal::make_size_tag(components.size()));
+
+		for (auto &component : components)
+		{
+			ar.startNode();
+			ar(component->get_type());
+			component->Save(ar);
+			ar.finishNode();
+		}
+
+		ar.finishNode();
 	}
 
 	void GameObject::Load(cereal::JSONInputArchive &ar)
 	{
-		ar(MAKE_NVP("ID", mID), MAKE_NVP("Name", mName), MAKE_NVP("Transform", mTransform), MAKE_NVP("Parent", mParent));
+		size_t num_components = 0;
+
+		ar.setNextName("Components");
+		ar.startNode();
+		ar(cereal::make_size_tag(num_components));
+
+		for (size_t i = 0; i < num_components; i++)
+		{
+			rttr::type component_type = BHive::InvalidType;
+
+			ar.startNode();
+			ar(component_type);
+
+			Component *component = GetOrAddComponent(component_type);
+
+			if (component)
+				component->Load(ar);
+
+			ar.finishNode();
+		}
+
+		ar.finishNode();
+	}
+
+	Component *GameObject::GetOrAddComponent(const rttr::type &type)
+	{
+		if (type.get_method(HAS_COMPONENT_FUNCTION_NAME).invoke({this}).to_bool())
+		{
+			return type.get_method(GET_COMPONENT_FUNCTION_NAME).invoke({this}).get_value<Component *>();
+		}
+		else
+		{
+			return type.get_method(ADD_COMPONENT_FUNCTION_NAME).invoke({this}).get_value<Component *>();
+		}
+
+		return nullptr;
 	}
 
 	void GameObject::AddComponent(Component *component)
@@ -112,8 +160,14 @@ namespace BHive
 
 	void GameObject::SetParent(GameObject *object)
 	{
-		mParent = object->GetID();
-		object->mChildren.insert(GetID());
+		if (!object)
+			return;
+
+		auto rel = GetComponent<RelationshipComponent>();
+		auto other = object->GetComponent<RelationshipComponent>();
+
+		rel->Parent = object->GetID();
+		other->Children.insert(GetID());
 	}
 
 	void GameObject::AddChild(GameObject *object)
@@ -122,7 +176,6 @@ namespace BHive
 			return;
 
 		object->SetParent(this);
-		mChildren.insert(object->GetID());
 	}
 
 	void GameObject::RemoveChild(GameObject *object)
@@ -130,7 +183,8 @@ namespace BHive
 		if (!object)
 			return;
 
-		if (mChildren.contains(object->GetID()))
+		auto rel = GetComponent<RelationshipComponent>();
+		if (rel->Children.contains(object->GetID()))
 		{
 			object->RemoveParent();
 		}
@@ -142,9 +196,16 @@ namespace BHive
 
 	void GameObject::RemoveParent()
 	{
-		auto parent = mWorld->GetGameObject(mParent);
-		mParent = NullID;
-		parent->mChildren.erase(GetID());
+		auto rel = GetComponent<RelationshipComponent>();
+
+		if (!rel->Parent)
+			return;
+
+		auto parent = mWorld->GetGameObject(rel->Parent);
+		auto parent_rel = parent->GetComponent<RelationshipComponent>();
+
+		rel->Parent = NullID;
+		parent_rel->Children.erase(GetID());
 	}
 
 	void GameObject::Destroy()
@@ -155,69 +216,69 @@ namespace BHive
 
 	const UUID &GameObject::GetID() const
 	{
-		return mID;
+		return GetComponent<TagComponent>()->GetID();
 	}
 
 	const std::string &GameObject::GetName() const
 	{
-		return mName;
+		return GetComponent<TagComponent>()->Name;
 	}
 
-	const FTransform &GameObject::GetTransform() const
+	FTransform GameObject::GetTransform() const
 	{
+		auto &transform = GetComponent<TransformComponent>()->Transform;
 
-		if (mParent)
+		if (auto parent = GetParent())
 		{
-			auto parent = mWorld->GetGameObject(mParent);
-
-			return parent->GetTransform().to_mat4() * mTransform.to_mat4();
+			return parent->GetTransform().to_mat4() * transform.to_mat4();
 		}
 
-		return mTransform;
+		return transform;
 	}
 	FTransform &GameObject::GetLocalTransform()
 	{
-		return mTransform;
+		return GetComponent<TransformComponent>()->Transform;
 	}
 	const FTransform &GameObject::GetLocalTransform() const
 	{
-		return mTransform;
+		return GetComponent<TransformComponent>()->Transform;
 	}
 
 	Ref<GameObject> GameObject::GetParent() const
 	{
-		if (!mParent)
+		auto parent = GetComponent<RelationshipComponent>()->Parent;
+
+		if (!parent)
 			return nullptr;
 
-		return mWorld->GetGameObject(mParent);
+		return mWorld->GetGameObject(parent);
+	}
+
+	const uint64_t GameObject::GetGroup() const
+	{
+		return GetComponent<TagComponent>()->Group;
+	}
+
+	bool GameObject::IsInGroup(uint16_t group) const
+	{
+		auto groups = GetComponent<TagComponent>()->Group;
+		return (groups & group) != 0;
 	}
 
 	std::unordered_set<Ref<GameObject>> GameObject::GetChildren() const
 	{
+		auto rel = GetComponent<RelationshipComponent>();
 		std::unordered_set<Ref<GameObject>> children;
-		auto &child_ids = mChildren;
+		auto &child_ids = rel->Children;
 		for (auto &id : child_ids)
 			children.insert(mWorld->GetGameObject(id));
 
 		return children;
 	}
 
-	RTTR_REGISTRATION
-	{
-		BEGIN_REFLECT(FTransform)
-			.property(
-				"Translation", &FTransform::get_translation,
-				rttr::select_overload<void(const glm::vec3 &)>(&FTransform::set_translation))
-				REFLECT_PROPERTY("Rotation", get_rotation, set_rotation) REFLECT_PROPERTY("Scale", get_scale, set_scale);
-	}
-
 	REFLECT(GameObject)
 	{
 		BEGIN_REFLECT(GameObject)
-		REFLECT_CONSTRUCTOR(const entt::entity &, World *)
-		REFLECT_PROPERTY("ID", mID)
-		REFLECT_PROPERTY("Name", mName)
-		REFLECT_PROPERTY("Transform", mTransform)
-		REFLECT_PROPERTY_READ_ONLY("Parent", mParent) REFLECT_PROPERTY_READ_ONLY("Children", mChildren);
+		REFLECT_CONSTRUCTOR(const entt::entity &, World *);
 	}
 } // namespace BHive

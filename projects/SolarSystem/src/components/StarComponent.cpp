@@ -29,7 +29,7 @@ void StarComponent::Load(cereal::JSONInputArchive &ar)
 REFLECT(StarComponent)
 {
 	BEGIN_REFLECT(StarComponent)
-	REFLECT_CONSTRUCTOR();
+	REFLECT_CONSTRUCTOR() COMPONENT_IMPL();
 }
 
 END_NAMESPACE

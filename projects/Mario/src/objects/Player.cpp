@@ -81,11 +81,11 @@ namespace BHive
 	{
 		LOG_TRACE("CollisionEnter : {}", other->GetName());
 
-		/*if ((other->GetComponent<TagComponent>()->Groups & BREAKABLE_BLOCKS) != 0)
+		if (other->IsInGroup(BREAKABLE_BLOCKS))
 		{
 			other->Destroy();
 			LOG_TRACE("Destroyed Block");
-		}*/
+		}
 	}
 
 	REFLECT(Player)

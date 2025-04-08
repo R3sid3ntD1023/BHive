@@ -56,7 +56,7 @@ void PlanetComponent::Load(cereal::JSONInputArchive &ar)
 REFLECT(PlanetComponent)
 {
 	BEGIN_REFLECT(PlanetComponent)
-	REFLECT_CONSTRUCTOR();
+	REFLECT_CONSTRUCTOR() COMPONENT_IMPL();
 }
 
 END_NAMESPACE

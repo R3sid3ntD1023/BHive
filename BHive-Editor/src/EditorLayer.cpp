@@ -422,8 +422,10 @@ namespace BHive
 			if (ImGui::ImageButton(
 					"Viewport##PlayIcon", (ImTextureID)(uint64_t)*icon, {icon_size, icon_size}, {0, 1}, {1, 0}))
 			{
+				SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().Clear();
 				if (running)
 				{
+
 					mActiveWorld->End();
 					mActiveWorld = mEditorWorld;
 					mSceneHeirarchyPanel->SetContext(mActiveWorld);

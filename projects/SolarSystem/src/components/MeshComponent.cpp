@@ -59,7 +59,7 @@ void MeshComponent::InitIndirectMesh(const Ref<BaseMesh> &renderable, Ref<Indire
 REFLECT(MeshComponent)
 {
 	BEGIN_REFLECT(MeshComponent)
-	REFLECT_CONSTRUCTOR();
+	REFLECT_CONSTRUCTOR() COMPONENT_IMPL();
 }
 
 END_NAMESPACE

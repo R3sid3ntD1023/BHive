@@ -1,14 +1,18 @@
 #include "ColliderComponent.h"
-#include "Physics/PhysicsCore.h"
 #include "GameObject.h"
+#include "Physics/PhysicsCore.h"
 
 namespace BHive
 {
 	void ColliderComponent::Begin()
 	{
 		auto object = GetOwner();
-		auto &physc = object->GetPhysicsComponent();
-		auto rb = physc.GetRigidBody();
+		auto physc = object->GetPhysicsComponent();
+
+		if (!physc)
+			return;
+
+		auto rb = physc->GetRigidBody();
 
 		CreateCollsionShape(rb, object->GetTransform());
 	}
@@ -20,8 +24,12 @@ namespace BHive
 	void ColliderComponent::End()
 	{
 		auto object = GetOwner();
-		auto &physc = object->GetPhysicsComponent();
-		auto rb = physc.GetRigidBody();
+		auto physc = object->GetPhysicsComponent();
+
+		if (!physc)
+			return;
+
+		auto rb = physc->GetRigidBody();
 		ReleaseCollisionShape(rb);
 	}
 	void ColliderComponent::Save(cereal::BinaryOutputArchive &ar) const
