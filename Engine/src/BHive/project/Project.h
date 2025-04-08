@@ -11,14 +11,14 @@ namespace BHive
 
 	struct FProjectConfiguration
 	{
-		std::string mName = "Untitled";
-		std::filesystem::path mProjectDirectory;
-		std::filesystem::path mResourcesDirectory;
+		std::string Name = "Untitled";
+		std::filesystem::path ProjectDirectory;
+		std::filesystem::path ResourcesDirectory;
 
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(MAKE_NVP("Path", mName), MAKE_NVP("Directory", mProjectDirectory), MAKE_NVP("ResourceRelativeDirectory", mResourcesDirectory));
+			ar(MAKE_NVP(Name), MAKE_NVP(ProjectDirectory), MAKE_NVP(ResourcesDirectory));
 		}
 
 		REFLECTABLE()
@@ -38,19 +38,19 @@ namespace BHive
 		static std::string GetProjectName()
 		{
 			ASSERT(sActiveProject);
-			return sActiveProject->mConfig.mName;
+			return sActiveProject->mConfig.Name;
 		}
 
 		static std::filesystem::path GetProjectDirectory()
 		{
 			ASSERT(sActiveProject);
-			return sActiveProject->mConfig.mProjectDirectory;
+			return sActiveProject->mConfig.ProjectDirectory;
 		}
 
 		static std::filesystem::path GetResourceDirectory()
 		{
 			ASSERT(sActiveProject);
-			return GetProjectDirectory() / sActiveProject->mConfig.mResourcesDirectory;
+			return GetProjectDirectory() / sActiveProject->mConfig.ResourcesDirectory;
 		}
 
 		static FProjectConfiguration &GetConfiguration()

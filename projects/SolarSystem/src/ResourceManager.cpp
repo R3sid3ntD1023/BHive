@@ -1,10 +1,10 @@
 #include "ResourceManager.h"
+#include <asset/FactoryRegistry.h>
 #include <core/serialization/Serialization.h>
 #include <importers/TextureImporter.h>
 #include <mesh/MeshImporter.h>
-#include <mesh/StaticMesh.h>
 #include <mesh/primitives/Sphere.h>
-#include <asset/FactoryRegistry.h>
+#include <mesh/StaticMesh.h>
 #include <renderers/Renderer.h>
 
 namespace BHive
@@ -44,7 +44,7 @@ namespace BHive
 			metadata.Path = std::filesystem::relative(path, mDirectory);
 			metadata.Type = type;
 
-			mMetaData.emplace(AssetHandle(), metadata);
+			mMetaData.emplace(UUID(), metadata);
 			SaveRegistry();
 
 			return true;

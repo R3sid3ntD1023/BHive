@@ -33,28 +33,11 @@ struct PlanetComponent : public Component
 {
 	PlanetComponent() = default;
 
-	virtual void Update(float dt) override;
-
-	PlanetTime mTime;
-
-	float mTheta = 0.0f;
-
-	virtual void Save(cereal::JSONOutputArchive &ar) const override;
-	virtual void Load(cereal::JSONInputArchive &ar) override;
-
-	REFLECTABLEV(Component)
-};
-
-struct RevolutionComponent : public Component
-{
-	RevolutionComponent() = default;
-
 	virtual void Begin() override;
-
 	virtual void Update(float dt) override;
 
-	PlanetTime mRevolutionTime;
-	float mRevolutionTheta = 0.0f;
+	PlanetTime RotationTime;
+	PlanetTime OrbitalTime;
 
 	virtual void Save(cereal::JSONOutputArchive &ar) const override;
 	virtual void Load(cereal::JSONInputArchive &ar) override;
@@ -62,7 +45,9 @@ struct RevolutionComponent : public Component
 	REFLECTABLEV(Component)
 
 private:
-	glm::vec3 mOrigin{};
+	float mTheta = 0.0f;
+	float mOrbitalTheta = 0.0f;
+	glm::vec3 mOrbitalOrigin{};
 };
 
 END_NAMESPACE

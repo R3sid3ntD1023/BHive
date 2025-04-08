@@ -30,7 +30,7 @@ namespace BHive
 		for (int i = 0; i < num_extensions; i++)
 		{
 			const char *ext = (const char *)glGetStringi(GL_EXTENSIONS, i);
-			LOG_INFO("Loaded extension: {}", ext);
+			// LOG_INFO("Loaded extension: {}", ext);
 			sExtensions.insert(ext);
 		}
 	}

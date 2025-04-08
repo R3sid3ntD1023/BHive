@@ -1,6 +1,6 @@
 static const char *line_vert = R"(
     #version 460  core
-    #extension GL_NV_uniform_buffer_std430_layout : require
+   #extension GL_EXT_scalar_block_layout: require
 
     layout(location = 0) in vec3 vPosition;
     layout(location = 1) in vec4 vColor;

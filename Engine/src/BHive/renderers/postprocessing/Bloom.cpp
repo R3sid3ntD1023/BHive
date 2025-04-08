@@ -1,14 +1,14 @@
 #include "Bloom.h"
-#include "gfx/Shader.h"
-#include "gfx/textures/Texture2D.h"
-#include "glad/glad.h"
-#include "gfx/TextureUtils.h"
 #include "core/profiler/CPUGPUProfiler.h"
-#include "shaders/DownSample.h"
-#include "shaders/UpSample.h"
-#include "shaders/PreFilter.h"
-#include "gfx/UniformBuffer.h"
+#include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
+#include "gfx/textures/Texture2D.h"
+#include "gfx/TextureUtils.h"
+#include "gfx/UniformBuffer.h"
+#include "glad/glad.h"
+#include "shaders/DownSample.h"
+#include "shaders/PreFilter.h"
+#include "shaders/UpSample.h"
 
 namespace BHive
 {
@@ -23,14 +23,15 @@ namespace BHive
 		mMipMaps.resize(iterations);
 
 		Initialize(width, height);
+
+		mUniformBuffer = CreateRef<UniformBuffer>(0, sizeof(FBloomSettings));
 	}
 
 	Ref<Texture> Bloom::Process(const Ref<Texture> &texture)
 	{
-		CPU_PROFILER_SCOPED("Bloom::Process");
+		mUniformBuffer->SetData(&mSettings, sizeof(FBloomSettings));
 
 		mPreFilterShader->Bind();
-		mPreFilterShader->SetUniform("uThreshold", mSettings.mFilterThreshold);
 		texture->Bind();
 		mPreFilterTexture->BindAsImage(0, EImageAccess::WRITE);
 		mPreFilterShader->Dispatch(mPreFilterTexture->GetWidth(), mPreFilterTexture->GetHeight());
@@ -54,7 +55,6 @@ namespace BHive
 		mDownSamplerShader->UnBind();
 
 		mUpSamplerShader->Bind();
-		mUpSamplerShader->SetUniform("uFilterRadius", mSettings.mFilterRadius);
 
 		for (size_t i = mMipMaps.size() - 1; i > 0; i--)
 		{

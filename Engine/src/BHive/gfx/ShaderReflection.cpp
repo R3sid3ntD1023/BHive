@@ -1,96 +1,75 @@
 #include "ShaderReflection.h"
 #include <glad/glad.h>
+#include <spirv_cross/spirv_cpp.hpp>
 
 namespace BHive
 {
-	FShaderReflectionData::FShaderReflectionData(uint32_t program)
+	void FShaderReflectionData::Reflect(const std::vector<uint32_t> &source)
 	{
-		GetUniforms(program);
-		GetSamplers(program);
-		GetUniformBuffers(program);
-		GetStorageBuffers(program);
-	}
-
-	void FShaderReflectionData::GetUniforms(uint32_t program)
-	{
-		GLenum properties[] = {GL_NAME_LENGTH, GL_TYPE, GL_ARRAY_SIZE, GL_OFFSET, GL_LOCATION};
-		GLint data[5] = {};
-		GLint count = 0;
-		GLchar name[512];
-
-		glGetProgramInterfaceiv(program, GL_UNIFORM, GL_ACTIVE_RESOURCES, &count);
-
-		for (int i = 0; i < count; i++)
+		spirv_cross::Compiler compiler(source);
+		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+		for (const auto &uniform : resources.uniform_buffers)
 		{
-			glGetProgramResourceiv(program, GL_UNIFORM, i, 5, properties, 5, nullptr, data);
+			auto &buffer = compiler.get_type(uniform.base_type_id);
 
-			glGetProgramResourceName(program, GL_UNIFORM, i, data[0], nullptr, name);
-
-			FUniform uniform{data[1], data[2], data[3], data[4]};
-			Uniforms.emplace(name, uniform);
-		}
-	}
-
-	void FShaderReflectionData::GetUniformBuffers(uint32_t program)
-	{
-		GLenum properties[] = {GL_NAME_LENGTH, GL_NUM_ACTIVE_VARIABLES, GL_BUFFER_BINDING, GL_BUFFER_DATA_SIZE};
-		GLint data[4] = {};
-		GLchar name[512];
-		GLchar member_name[512];
-
-		GLenum member = GL_ACTIVE_VARIABLES;
-		GLenum member_props[] = {GL_NAME_LENGTH, GL_TYPE, GL_ARRAY_SIZE, GL_OFFSET, GL_LOCATION};
-		GLint member_data[5] = {};
-
-		GLint count = 0;
-		glGetProgramInterfaceiv(program, GL_UNIFORM_BLOCK, GL_ACTIVE_RESOURCES, &count);
-
-		for (int i = 0; i < count; i++)
-		{
-
-			glGetProgramResourceiv(program, GL_UNIFORM_BLOCK, i, 4, properties, 4, nullptr, data);
-
-			glGetProgramResourceName(program, GL_UNIFORM_BLOCK, i, data[0], nullptr, name);
-
-			std::vector<GLint> indices(data[1]);
-			glGetProgramResourceiv(program, GL_UNIFORM_BLOCK, i, 1, &member, indices.size(), nullptr, indices.data());
-
-			FUniformBufferData uniform_buffer{data[2], data[3]};
-
-			for (auto &idx : indices)
+			FUniformBufferData buffer_data;
+			buffer_data.Binding = compiler.get_decoration(uniform.id, spv::DecorationBinding);
+			buffer_data.Size = compiler.get_declared_struct_size(buffer);
+			auto member_count = buffer.member_types.size();
+			for (size_t i = 0; i < member_count; i++)
 			{
-				glGetProgramResourceiv(program, GL_UNIFORM, idx, 5, member_props, 5, nullptr, member_data);
+				auto &member = buffer.member_types[i];
+				auto &type = compiler.get_type(member);
 
-				glGetProgramResourceName(program, GL_UNIFORM, idx, member_data[0], nullptr, member_name);
-
-				FUniform uniform{member_data[1], member_data[2], member_data[3], member_data[4]};
-				uniform_buffer.Uniforms.emplace(member_name, uniform);
+				FUniform uniform_data;
+				uniform_data.Type = type.basetype;
+				uniform_data.Size = type.width / 8;
+				uniform_data.Offset = compiler.type_struct_member_offset(buffer, i);
+				uniform_data.Location = compiler.get_decoration(member, spv::DecorationLocation);
+				buffer_data.Uniforms[compiler.get_member_name(buffer.self, i)] = uniform_data;
 			}
-
-			UniformBuffers.emplace(name, uniform_buffer);
+			UniformBuffers[compiler.get_name(uniform.id)] = buffer_data;
 		}
-	}
-	void FShaderReflectionData::GetStorageBuffers(uint32_t program)
-	{
-		GLint count = 0;
-		GLenum properties[] = {GL_NAME_LENGTH, GL_BUFFER_BINDING, GL_BUFFER_DATA_SIZE};
-		GLint data[3] = {};
-		GLchar name[512];
 
-		glGetProgramInterfaceiv(program, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES, &count);
-
-		for (int i = 0; i < count; i++)
+		for (auto &sampler : resources.sampled_images)
 		{
-			glGetProgramResourceiv(program, GL_SHADER_STORAGE_BLOCK, i, 3, properties, 3, nullptr, data);
+			auto &type = compiler.get_type(sampler.base_type_id);
+			FSampler2D sampler_data;
+			sampler_data.Binding = compiler.get_decoration(sampler.id, spv::DecorationBinding);
+			Samplers[compiler.get_name(sampler.id)] = sampler_data;
+		}
 
-			glGetProgramResourceName(program, GL_SHADER_STORAGE_BLOCK, i, data[0], nullptr, name);
-
-			StorageBuffers.emplace(name, FStorageBuffer{data[1], data[2]});
+		for (auto &storage : resources.storage_buffers)
+		{
+			auto &type = compiler.get_type(storage.base_type_id);
+			FStorageBuffer storage_data;
+			storage_data.Binding = compiler.get_decoration(storage.id, spv::DecorationBinding);
+			storage_data.Size = compiler.get_declared_struct_size(type);
+			StorageBuffers[compiler.get_name(storage.id)] = storage_data;
 		}
 	}
 
-	void FShaderReflectionData::GetSamplers(uint32_t program)
+	std::string FShaderReflectionData::to_string() const
 	{
+		std::string result;
+		for (const auto &[name, sampler] : Samplers)
+		{
+			result += fmt::format("\t\tSampler: {} - Binding: {}\n", name, sampler.Binding);
+		}
+		for (const auto &[name, buffer] : UniformBuffers)
+		{
+			result += fmt::format("\t\tUniform Buffer: {} - Binding: {} - Size: {}\n", name, buffer.Binding, buffer.Size);
+			for (const auto &[uniform_name, uniform] : buffer.Uniforms)
+			{
+				result += fmt::format(
+					"\t\tUniform: {} - Type: {} - Size: {} - Offset: {} - Location: {}\n", uniform_name, uniform.Type,
+					uniform.Size, uniform.Offset, uniform.Location);
+			}
+		}
+		for (const auto &[name, buffer] : StorageBuffers)
+		{
+			result += fmt::format("\t\tStorage Buffer: {} - Binding: {} - Size: {}\n", name, buffer.Binding, buffer.Size);
+		}
+		return result;
 	}
-
 } // namespace BHive

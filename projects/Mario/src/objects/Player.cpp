@@ -3,7 +3,6 @@
 #include "components/InputComponent.h"
 #include "components/PhysicsComponent.h"
 #include "components/SpriteComponent.h"
-#include "components/TagComponent.h"
 #include "core/Application.h"
 #include "core/Window.h"
 #include "Player.h"
@@ -21,13 +20,14 @@ namespace BHive
 		AddComponent<SpriteComponent>();
 		AddComponent<BoxComponent>();
 		AddComponent<InputComponent>();
+		AddComponent<PhysicsComponent>();
 
-		auto &physc = GetPhysicsComponent();
-		physc.Settings.AngularLockAxis = AxisXYZ;
-		physc.Settings.LinearLockAxis = AxisZ;
-		physc.Settings.LinearDamping = 0.f;
-		physc.Settings.Mass = 10.f;
-		physc.Settings.BodyType = EBodyType::Dynamic;
+		auto physc = GetPhysicsComponent();
+		physc->Settings.AngularLockAxis = AxisXYZ;
+		physc->Settings.LinearLockAxis = AxisZ;
+		physc->Settings.LinearDamping = 0.f;
+		physc->Settings.Mass = 10.f;
+		physc->Settings.BodyType = EBodyType::Dynamic;
 	}
 
 	void Player::Begin()
@@ -50,9 +50,9 @@ namespace BHive
 	void Player::Jump(const InputValue &value)
 	{
 		LOG_TRACE("Jumped");
-		auto &phys = GetPhysicsComponent();
-		phys.SetBodyType(EBodyType::Dynamic);
-		phys.ApplyForce({0, 6000.f, 0});
+		auto phys = GetPhysicsComponent();
+		phys->SetBodyType(EBodyType::Dynamic);
+		phys->ApplyForce({0, 6000.f, 0});
 	}
 
 	void Player::Move(const InputValue &value)
@@ -60,9 +60,9 @@ namespace BHive
 		auto v = value.Get<float>();
 		if (!IsNearlyZero(v) && !IsJumping())
 		{
-			auto &phys = GetPhysicsComponent();
-			phys.SetBodyType(EBodyType::Dynamic);
-			phys.ApplyForce({v * 100, 0, 0});
+			auto phys = GetPhysicsComponent();
+			phys->SetBodyType(EBodyType::Dynamic);
+			phys->ApplyForce({v * 100, 0, 0});
 		}
 	}
 
@@ -73,8 +73,8 @@ namespace BHive
 
 	bool Player::IsJumping()
 	{
-		auto &phys = GetPhysicsComponent();
-		auto y = phys.GetVelocity().y;
+		auto phys = GetPhysicsComponent();
+		auto y = phys->GetVelocity().y;
 		return !IsNearlyZero(y, 0.1f);
 	}
 
@@ -82,7 +82,7 @@ namespace BHive
 	{
 		LOG_TRACE("CollisionEnter : {}", other->GetName());
 
-		if ((other->GetComponent<TagComponent>()->Groups & BREAKABLE_BLOCKS) != 0)
+		if (other->IsInGroup(BREAKABLE_BLOCKS))
 		{
 			other->Destroy();
 			LOG_TRACE("Destroyed Block");

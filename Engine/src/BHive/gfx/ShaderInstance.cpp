@@ -11,7 +11,7 @@ namespace BHive
 		if (!shader)
 			return;
 
-		auto &data = shader->GetRelectionData().UniformBuffers.at("Material");
+		auto &data = shader->GetRelectionData().at(ShaderType_Fragment).UniformBuffers.at("Material");
 		mData = new uint8_t[data.Size];
 		// mBuffer = CreateRef<UniformBuffer>(data.Binding, data.Size);
 	}

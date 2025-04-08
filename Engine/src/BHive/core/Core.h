@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Version.h"
+
 
 #ifdef _WIN32
 	#ifdef BUILD_DLL

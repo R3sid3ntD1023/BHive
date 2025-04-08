@@ -12,11 +12,12 @@ namespace BHive
 		: GameObject(handle, world)
 	{
 		AddComponent<BoxComponent>();
+		AddComponent<PhysicsComponent>();
 
-		auto &physc = GetPhysicsComponent();
-		physc.Settings.AngularLockAxis = AxisXYZ;
-		physc.Settings.LinearLockAxis = AxisZ;
-		physc.Settings.BodyType = EBodyType::Static;
+		auto physc = GetPhysicsComponent();
+		physc->Settings.AngularLockAxis = AxisXYZ;
+		physc->Settings.LinearLockAxis = AxisZ;
+		physc->Settings.BodyType = EBodyType::Static;
 	}
 
 	Block::Block(const entt::entity &handle, World *world)

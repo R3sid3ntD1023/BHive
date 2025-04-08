@@ -21,7 +21,7 @@ namespace BHive
 	{
 		mReflectionShader = ShaderManager::Get().Load(RESOURCE_PATH "shaders/reflection.glsl");
 		auto &data = mReflectionShader->GetRelectionData();
-		auto &ubo = data.UniformBuffers.at("Material");
+		auto ubo = data.at(ShaderType_Fragment).UniformBuffers.at("Material");
 		mInstance = CreateRef<ShaderInstance>(mReflectionShader);
 
 		mReflectUBO = CreateRef<UniformBuffer>(ubo.Binding, ubo.Size);

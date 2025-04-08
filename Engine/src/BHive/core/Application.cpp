@@ -1,12 +1,13 @@
 #include "Application.h"
-#include "WindowInput.h"
-#include "Time.h"
-#include "gfx/RenderCommand.h"
-#include "renderers/Renderer.h"
 #include "audio/AudioContext.h"
-#include "layers/ImGuiLayer.h"
-#include "threading/Threading.h"
 #include "FPSCounter.h"
+#include "gfx/RenderCommand.h"
+#include "layers/ImGuiLayer.h"
+#include "physics/PhysicsContext.h"
+#include "renderers/Renderer.h"
+#include "threading/Threading.h"
+#include "Time.h"
+#include "WindowInput.h"
 
 namespace BHive
 {
@@ -34,6 +35,7 @@ namespace BHive
 
 		RenderCommand::Init();
 		Renderer::Init();
+		PhysicsContext::Init();
 
 		mImGuiLayer = new ImGuiLayer(mWindow->GetNative());
 		PushLayer(mImGuiLayer);

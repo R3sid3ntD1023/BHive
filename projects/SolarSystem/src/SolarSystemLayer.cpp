@@ -1,6 +1,5 @@
 #include "CelestrialBody.h"
 #include "core/profiler/ProfilerViewer.h"
-#include "imgui/ImProfiler.h"
 #include "SolarSystemLayer.h"
 #include "Universe.h"
 #include <asset/AssetManager.h>
@@ -21,20 +20,15 @@
 #include <gui/Gui.h>
 
 #include "components/CameraComponent.h"
-#include "components/IDComponent.h"
-#include "components/TagComponent.h"
 
-#include <font/Font.h>
-#include <font/FontManager.h>
 #include "gfx/ShaderManager.h"
 #include "utils/ImageUtils.h"
+#include <font/Font.h>
+#include <font/FontManager.h>
 
 BEGIN_NAMESPACE(BHive)
 
 UUID mSelectedID{"f68f4384-d55f-4a9b-872e-efe27fa06659"};
-FTextStyle sTextStyle{.TextColor = 0xFF00FFFF};
-FCircleParams sCircleParams;
-glm::vec3 sQuadPos = {680, 20, 0};
 
 void SolarSystemLayer::OnAttach()
 {
@@ -75,11 +69,6 @@ void SolarSystemLayer::OnAttach()
 
 	RenderCommand::ClearColor(.2f, .2f, .2f, 1.f);
 
-	mPlayer = mUniverse->AddBody<CelestrialBody>();
-	mPlayer->AddComponent<CameraComponent>();
-	mPlayer->SetName("Camera");
-	mPlayer->SetParent(mSelectedID);
-
 	// mAudio->Play();
 	mUniverse->Begin();
 
@@ -108,6 +97,8 @@ void SolarSystemLayer::OnUpdate(float dt)
 		GetRenderPipelineManager().SetCurrentPipeline(&mPipeline);
 
 		mPipeline.Begin(mCamera.GetProjection(), mCamera.GetView());
+
+		LineRenderer::DrawGrid(FGrid{});
 
 		mUniverse->Update(dt);
 
@@ -153,35 +144,6 @@ void SolarSystemLayer::OnUpdate(float dt)
 	}
 
 	mQuadShader->UnBind();
-	// ui
-
-	/*Renderer::Begin();
-	Renderer::SubmitCamera(glm::ortho(0.f, 800.f, 0.f, 600.f), glm::inverse(glm::mat4(1.f)));
-	QuadRenderer::DrawText(
-		36, "Text2D \nNewline Text! \n\ttygp\nfifojoissosogsg\nafianaiofno\naffaffaryy", {.Style = sTextStyle},
-		{{50, 200, 0}});
-	Renderer::End();
-
-	RenderCommand::EnableDepth();*/
-
-	// mCullingBuffer->Bind();
-
-	// RenderCommand::Clear();
-
-	// const glm::mat4 t = glm::translate(glm::vec3{35, 0, 200});
-
-	// GetRenderPipelineManager().SetCurrentPipeline(&mCullingPipeline);
-	// mCullingPipeline.Begin(mCamera.GetProjection(), glm::inverse(t));
-	// mCullingPipeline.SetTestFrustum(Frustum(mCamera.GetProjection(), mCamera.GetView().inverse()));
-
-	// FrustumViewer frustum(mCamera.GetProjection(), mCamera.GetView().inverse());
-	// LineRenderer::DrawFrustum(frustum, 0xFF00FFFF);
-
-	// mUniverse->Update(dt);
-
-	// mCullingPipeline.End();
-
-	// mCullingBuffer->UnBind();
 
 	RenderCommand::EnableDepth();
 }
@@ -197,37 +159,6 @@ void SolarSystemLayer::OnGuiRender()
 {
 	if (ImGui::Begin("Performance"))
 	{
-		glm::vec4 pixel = {0, 0, 0, 1};
-		mFramebuffer->ReadPixel(3, 0, 0, 1, 1, GL_FLOAT, &pixel.x);
-		ImGui::TextColored({1, .5, 0, 1}, "%u", Renderer::GetStats().DrawCalls);
-		ImGui::TextColored({1, .5, 1, 1}, glm::to_string(pixel).c_str());
-
-		ImGui::PushID("Quad");
-		ImGui::DragFloat3("Pos", &sQuadPos.x, 0.001f);
-		ImGui::PopID();
-
-		ImGui::PushID("TextStyle");
-		ImGui::ColorPicker4("Color", &sTextStyle.TextColor.r);
-		ImGui::DragFloat("Thickness", &sTextStyle.Thickness, 0.001f, 0, 1);
-		ImGui::DragFloat("Smoothness", &sTextStyle.Smoothness, 0.001f, 0, 1);
-
-		ImGui::SeparatorText("Outline");
-		ImGui::ColorPicker4("Outline Color", &sTextStyle.OutlineColor.r);
-		ImGui::DragFloat("Outline Thickness", &sTextStyle.OutlineThickness, 0.001f, 0, 1);
-		ImGui::DragFloat("Outline Smoothness", &sTextStyle.OutlineSmoothness, 0.001f, 0, 1);
-
-		ImGui::PopID();
-
-		ImGui::PushID("Circle");
-		ImGui::ColorPicker4("Color", &sCircleParams.LineColor.r);
-		ImGui::DragFloat("Thickness", &sCircleParams.Thickness, 0.001f);
-		ImGui::DragFloat("Fade", &sCircleParams.Fade, .001f);
-		ImGui::DragFloat("Radius", &sCircleParams.Radius, .001f);
-
-		ImGui::PopID();
-
-		ImGui::Image((ImTextureID)(uint64_t)mFramebuffer->GetColorAttachment()->GetRendererID(), {300, 300}, {0, 1}, {1, 0});
-
 		ProfilerViewer::ViewFPS();
 		ProfilerViewer::ViewCPUGPU();
 	}
