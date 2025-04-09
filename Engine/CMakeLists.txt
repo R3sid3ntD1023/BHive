@@ -1,10 +1,23 @@
 cmake_minimum_required( VERSION 3.8 )
 
-add_subdirectory(vendor)
 
+find_package(glfw3 CONFIG REQUIRED)
+find_package(glad CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(Stb REQUIRED)
+find_package(cereal CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
+find_package(rttr CONFIG REQUIRED)
+find_package(implot CONFIG REQUIRED)
+#find_package(imguizmo CONFIG REQUIRED)
+find_package(OpenAL CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(unofficial-omniverse-physx-sdk CONFIG REQUIRED)
+
+add_subdirectory(vendor)
+
 
 file(GLOB_RECURSE ENGINE_SRC CMAKE_CONFIGURE_DEPENDS src/** data/** PARENT_SCOPE)
 
@@ -39,20 +52,19 @@ PUBLIC SPDLOG_COMPILED_LIB)
 
 target_link_directories(Engine PUBLIC ${Vulkan_LIBRARIES})
 target_link_libraries(Engine
-	PUBLIC glfw 
-	PUBLIC glad 
+	PUBLIC glfw
+	PUBLIC glad::glad
 	PUBLIC opengl32 
 	PUBLIC OpenAL::OpenAL
 	PUBLIC assimp::assimp 
-	PUBLIC imgui 
+	PUBLIC imgui::imgui
 	PUBLIC ImGuizmo
-	PUBLIC stb
 	PUBLIC waveparser
-	PUBLIC rttr_core 
+	PUBLIC RTTR::Core
 	PUBLIC spdlog::spdlog
 	PUBLIC glm::glm-header-only
 	PUBLIC cereal::cereal
-	PUBLIC ImPlot
+	PUBLIC implot::implot
 	PUBLIC msdf-atlas-gen::msdf-atlas-gen
 	PUBLIC EnTT::EnTT
 	PUBLIC vulkan-1 
@@ -68,6 +80,7 @@ target_include_directories(Engine PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/src/BHive/world
 	${VENDOR_DIR}
 	${Vulkan_INCLUDE_DIRS}
+	${Stb_INCLUDE_DIR}
 	
 )
 

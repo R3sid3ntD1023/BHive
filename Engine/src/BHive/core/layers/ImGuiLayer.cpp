@@ -1,13 +1,13 @@
-#include "ImGuiLayer.h"
-#include "core/events/Event.h"
 #include "core/Application.h"
+#include "core/events/Event.h"
 #include "core/Window.h"
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
-#include <imgui.h>
-#include <implot.h>
+#include "ImGuiLayer.h"
 #include <glfw/glfw3.h>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 #include <ImGuizmo.h>
+#include <implot.h>
 
 namespace BHive
 {

@@ -12,6 +12,7 @@
 #include "gfx/RenderCommand.h"
 #include "GUI/Gui.h"
 #include "gui/ImGuiExtended.h"
+#include "ImGuizmo.h"
 #include "Inspectors.h"
 #include "LogPanel.h"
 #include "renderers/Renderer.h"
@@ -19,7 +20,6 @@
 #include "subsystems/SelectionSubSystem.h"
 #include "subsystems/WindowSubSystem.h"
 #include "world/GameObject.h"
-#include <ImGuizmo.h>
 #include <rttr/library.h>
 
 namespace BHive
