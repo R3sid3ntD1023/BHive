@@ -1,11 +1,11 @@
 #pragma once
 
 #include "core/Core.h"
+#include "PropertyMetaData.h"
 #include <rttr/registration>
 #include <rttr/registration_friend>
 #include <rttr/rttr_enable.h>
 #include <rttr/type.h>
-#include "PropertyMetaData.h"
 
 #define REFLECT_PROPERTY_GETTER_SETTER_IMPL(name, getter, setter) .property(name, &T::##getter, &T::##setter)
 #define REFLECT_PROPERTY_IMPL(name, member) .property(name, &T::##member)

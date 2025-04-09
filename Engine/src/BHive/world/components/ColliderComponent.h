@@ -56,7 +56,7 @@ namespace BHive
 		void CreateCollsionShape(void *rb, const FTransform &transform);
 		void ReleaseCollisionShape(void *rb);
 
-		virtual void *GetGeometry(const FTransform &transform) = 0;
+		virtual void *GetGeometry() = 0;
 
 	protected:
 		// void *mCollider = nullptr;

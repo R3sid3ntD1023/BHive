@@ -9,7 +9,7 @@ namespace BHive
 		if (IsPrimary)
 		{
 			auto owner = GetOwner();
-			auto transform = owner->GetTransform();
+			auto transform = owner->GetWorldTransform();
 			Renderer::SubmitCamera(Camera.GetProjection(), transform.inverse());
 		}
 	}
@@ -17,7 +17,7 @@ namespace BHive
 	void CameraComponent::Render()
 	{
 		auto owner = GetOwner();
-		auto transform = owner->GetTransform();
+		auto transform = owner->GetWorldTransform();
 		FrustumViewer viewer(Camera.GetProjection(), transform);
 	}
 

@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "core/reflection/Reflection.h"
 #include "core/serialization/Serialization.h"
+#include "math/Transform.h"
 
 namespace BHive
 {
@@ -21,6 +22,7 @@ namespace BHive
 
 		bool IsTickEnabled() const { return mTickEnabled; }
 		GameObject *GetOwner() const { return mOwningObject; }
+		FTransform GetWorldTransform() const;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const;
 		virtual void Load(cereal::BinaryInputArchive &ar);

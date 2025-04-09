@@ -1,4 +1,5 @@
 #include "Component.h"
+#include "GameObject.h"
 
 namespace BHive
 {
@@ -9,6 +10,14 @@ namespace BHive
 	void Component::SetTickEnabled(bool enabled)
 	{
 		mTickEnabled = enabled;
+	}
+
+	FTransform Component::GetWorldTransform() const
+	{
+		if (mOwningObject)
+			return mOwningObject->GetWorldTransform();
+
+		return FTransform();
 	}
 
 	void Component::Save(cereal::BinaryOutputArchive &ar) const

@@ -7,6 +7,11 @@ namespace BHive
 	{
 	}
 
+	FTransform::FTransform(const glm::vec3 &translation, const glm::quat &rotation)
+		: FTransform(translation, glm::degrees(glm::eulerAngles(rotation)))
+	{
+	}
+
 	FTransform::FTransform(const glm::mat4 &matrix)
 	{
 		mModelMatrix = matrix;
@@ -17,14 +22,6 @@ namespace BHive
 		glm::decompose(mModelMatrix, mScale, rotation, mTranslation, skew, perspective);
 
 		mRotation = glm::degrees(glm::eulerAngles(rotation));
-	}
-
-	FTransform::FTransform(const FTransform &rhs)
-		: mTranslation(rhs.mTranslation),
-		  mRotation(rhs.mRotation),
-		  mScale(rhs.mScale)
-	{
-		calculate_model_matrix();
 	}
 
 	FTransform::FTransform(const glm::vec3 &translation, const glm::vec3 &rotation, const glm::vec3 &scale)

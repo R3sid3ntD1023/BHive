@@ -4,6 +4,7 @@
 #include "components/FlipBookComponent.h"
 #include "components/InputComponent.h"
 #include "components/PhysicsComponent.h"
+#include "components/SphereComponent.h"
 #include "components/SpriteComponent.h"
 #include "GameObject.h"
 #include "gfx/RenderCommand.h"
@@ -273,17 +274,18 @@ namespace BHive
 
 #ifdef _DEBUG
 		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eSCALE, 1.0f);
-		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eACTOR_AXES, 1.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eACTOR_AXES, 2.0f);
 
-		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_AXES, 1.0f);
-		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_MASS_AXES, 1.0f);
-		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_ANG_VELOCITY, 1.0f);
-		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_LIN_VELOCITY, 1.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_AXES, 2.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_MASS_AXES, 2.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_ANG_VELOCITY, 2.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_LIN_VELOCITY, 2.0f);
 
-		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_DYNAMIC, 1.0f);
-		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_AABBS, 1.0f);
-		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_COMPOUNDS, 1.0f);
-		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_EDGES, 1.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_DYNAMIC, 2.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_AABBS, 2.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_COMPOUNDS, 2.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_EDGES, 2.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_AXES, 2.0f);
 #endif // _DEBUG
 
 		physx::PxPvdSceneClient *pvdClient = mPhyxWorld->getScenePvdClient();
@@ -304,29 +306,28 @@ namespace BHive
 				continue;
 
 			auto gameobject = mObjects[mEnttMap[e]];
-			auto t = gameobject->GetTransform();
+			auto t = gameobject->GetWorldTransform();
 
 			physx::PxRigidActor *rigid_body = nullptr;
 			switch (settings.BodyType)
 			{
 			case EBodyType::Static:
 			{
-				auto body = physics->createRigidStatic(physics::utils::getTransform(t));
+				auto body = physics->createRigidStatic(physics::utils::Convert(t));
 				rigid_body = body;
 			}
 			break;
 			case EBodyType::Dynamic:
 			case EBodyType::Kinematic:
 			{
-				auto body = physics->createRigidDynamic(physics::utils::getTransform(t));
+				auto body = physics->createRigidDynamic(physics::utils::Convert(t));
 				body->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, settings.BodyType == EBodyType::Kinematic);
 				body->setAngularDamping(settings.AngularDamping);
 				body->setLinearDamping(settings.LinearDamping);
 				body->setMass(settings.Mass);
 				body->setRigidDynamicLockFlags(
 					physics::utils::GetLockFlags(settings.LinearLockAxis, settings.AngularLockAxis));
-				body->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, settings.GravityEnabled);
-				body->userData = gameobject.get();
+				body->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, !settings.GravityEnabled);
 				rigid_body = body;
 			}
 			break;
@@ -334,22 +335,17 @@ namespace BHive
 				break;
 			}
 
-			mPhyxWorld->addActor(*rigid_body);
-			physics_component.SetRigidBody(rigid_body);
+			if (rigid_body && gameobject)
+			{
 
-			/*auto rb = mPhysicsWorld->createRigidBody(physics::utils::GetPhysicsTransform(t));
-			rb->setIsDebugEnabled(true);
-			rb->setUserData(gameobject.get());
-			rb->setMass(settings.Mass);
-			rb->setType((rp3d::BodyType)settings.BodyType);
-			rb->enableGravity(settings.GravityEnabled);
-			rb->setAngularDamping(settings.AngularDamping);
-			rb->setLinearDamping(settings.LinearDamping);
+#ifdef _DEBUG
+				rigid_body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+#endif // _DEBUG
 
-			rb->setLinearLockAxisFactor(physics::utils::LockAxisToVextor3(settings.LinearLockAxis));
-			rb->setAngularLockAxisFactor(physics::utils::LockAxisToVextor3(settings.AngularLockAxis));
-
-			physics_component.SetRigidBody(rb);*/
+				rigid_body->userData = gameobject.get();
+				mPhyxWorld->addActor(*rigid_body);
+				physics_component.SetRigidBody(rigid_body);
+			}
 		}
 	}
 
@@ -375,10 +371,6 @@ namespace BHive
 			auto [physics_component] = view.get(e);
 			if (!physics_component.Settings.PhysicsEnabled)
 				continue;
-
-			/*auto rb = (rp3d::RigidBody *)physics_component.GetRigidBody();
-			mPhysicsWorld->destroyRigidBody(rb);*/
-			// physx
 
 			auto rb = (physx::PxRigidActor *)physics_component.GetRigidBody();
 			rb->release();
@@ -450,7 +442,7 @@ namespace BHive
 				glm::vec3 p0 = {tri.pos0.x, tri.pos0.y, tri.pos0.z};
 				glm::vec3 p1 = {tri.pos1.x, tri.pos1.y, tri.pos1.z};
 				glm::vec3 p2 = {tri.pos2.x, tri.pos2.y, tri.pos2.z};
-				LineRenderer::DrawTriangle(p0, p1, p2, tri.color2, {});
+				LineRenderer::DrawTriangle(p0, p1, p2, tri.color0, {});
 			}
 		}
 	}
@@ -503,10 +495,13 @@ namespace BHive
 		const glm::vec3 &start, const glm::vec3 &dir, float maxDistance, FHitResult &result, uint16_t categoryMasks)
 	{
 		physx::PxRaycastBuffer hit;
+		physx::PxQueryFilterData filter{};
+		filter.data = {categoryMasks, 0, 0, 0};
+		filter.flags = PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC;
 
 		physx::PxVec3 origin = {start.x, start.y, start.z};
 		physx::PxVec3 unitdir = {dir.x, dir.y, dir.z};
-		bool status = mPhyxWorld->raycast(origin, unitdir, maxDistance, hit);
+		bool status = mPhyxWorld->raycast(origin, unitdir, maxDistance, hit, physx::PxHitFlag::eDEFAULT, filter);
 		if (status)
 		{
 			auto &block = hit.block;

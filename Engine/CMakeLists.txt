@@ -37,7 +37,7 @@ if(DEFINED Vulkan_FOUND)
 message(STATUS "Vulkan VERSION: ${Vulkan_VERSION}")
 endif()
 
-add_library(Engine STATIC ${ENGINE_SRC})
+add_library(Engine STATIC ${ENGINE_SRC} "src/BHive/world/components/SphereComponent.cpp")
 set_target_properties(Engine PROPERTIES 
 	CXX_STANDARD 20
 	CXX_STANDARD_REQUIRED YES

@@ -11,7 +11,7 @@ namespace BHive
 	namespace physics::utils
 	{
 
-		inline physx::PxTransform getTransform(const FTransform &transform)
+		inline physx::PxTransform Convert(const FTransform &transform)
 		{
 			const auto &t = transform.get_translation();
 			const auto &o = transform.get_quaternion();
@@ -19,6 +19,16 @@ namespace BHive
 			physx::PxVec3 pos(t.x, t.y, t.z);
 			physx::PxQuat orientation(o.x, o.y, o.z, o.w);
 			return physx::PxTransform(pos, orientation);
+		}
+
+		inline FTransform Convert(const physx::PxTransform &transform)
+		{
+			const auto &t = transform.p;
+			const auto &o = transform.q;
+
+			glm::vec3 pos(t.x, t.y, t.z);
+			glm::quat orientation(o.x, o.y, o.z, o.w);
+			return {pos, orientation};
 		}
 
 		inline physx::PxRigidDynamicLockFlags GetLockFlags(ELockAxis linear, ELockAxis angular)

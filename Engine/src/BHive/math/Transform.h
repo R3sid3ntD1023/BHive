@@ -5,12 +5,12 @@
 
 namespace BHive
 {
-	struct BHIVE FTransform
+	struct FTransform
 	{
 		FTransform();
 		FTransform(const glm::mat4 &matrix);
-		FTransform(const FTransform &rhs);
 		FTransform(const glm::vec3 &translation, const glm::vec3 &rotation = {0, 0, 0}, const glm::vec3 &scale = {1, 1, 1});
+		FTransform(const glm::vec3 &translation, const glm::quat &rotation);
 
 		const glm::vec3 &get_translation() const { return mTranslation; }
 		const glm::vec3 &get_rotation() const { return mRotation; }

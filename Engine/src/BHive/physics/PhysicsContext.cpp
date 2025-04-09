@@ -24,6 +24,7 @@ namespace BHive
 			ASSERT(false, "PxCreateFundation Failed ");
 
 #ifdef _DEBUG
+
 		sPvd = PxCreatePvd(*sFoundation);
 		physx::PxPvdTransport *transport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
 		sPvd->connect(*transport, physx::PxPvdInstrumentationFlag::eALL);

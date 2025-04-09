@@ -1,11 +1,11 @@
 #include "core/profiler/CPUGPUProfiler.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
+#include "gfx/ShaderManager.h"
 #include "gfx/VertexArray.h"
 #include "LineRenderer.h"
 #include "Renderer.h"
 #include "shaders/LineShader.h"
-#include "gfx/ShaderManager.h"
 
 namespace BHive
 {

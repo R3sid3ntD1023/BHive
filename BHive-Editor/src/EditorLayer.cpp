@@ -353,7 +353,7 @@ namespace BHive
 			{
 
 				glm::mat4 local_transform = selected_object->GetLocalTransform().to_mat4();
-				glm::mat4 world_transform = selected_object->GetTransform();
+				glm::mat4 world_transform = selected_object->GetWorldTransform();
 
 				float snap_value = mSnappingEnabled ? sSnapValues[(ImGuizmo::OPERATION)mGizmoOperation] : 0.0f;
 				float snap_values[3] = {snap_value, snap_value, snap_value};
@@ -369,7 +369,7 @@ namespace BHive
 					glm::mat4 parent_transform = glm::inverse(world_transform) * local_transform * delta;
 					glm::mat4 new_transform = glm::inverse(parent_transform) * world_transform;
 
-					selected_object->SetTransform(new_transform);
+					selected_object->SetLocalTransform(new_transform);
 				}
 			}
 

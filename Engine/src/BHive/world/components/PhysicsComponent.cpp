@@ -10,27 +10,18 @@ namespace BHive
 		if (!Settings.PhysicsEnabled)
 			return;
 
-		/*auto rb = (rp3d::RigidBody *)mRigidBodyInstance;
-		auto object = GetOwner();
-		auto &t = object->GetLocalTransform();
+		if (auto rb = Cast<physx::PxRigidDynamic>(mRigidBodyInstance))
+		{
+			auto object = GetOwner();
+			auto t = object->GetWorldTransform();
 
-		switch (Settings.BodyType)
-		{
-		case EBodyType::Dynamic:
-		{
-			auto &transform = rb->getTransform();
+			auto global_pose = rb->getGlobalPose();
 			auto scale = t.get_scale();
-			t = physics::utils::GetTransform(transform, scale);
-			break;
+			auto global = physics::utils::Convert(global_pose);
+			global.set_scale(scale);
+
+			object->SetWorldTransform(global);
 		}
-		case EBodyType::Kinematic:
-		{
-			rb->setTransform(physics::utils::GetPhysicsTransform(t));
-			break;
-		}
-		default:
-			break;
-		}*/
 	}
 
 	void PhysicsComponent::SetGravityEnabled(bool enabled)
