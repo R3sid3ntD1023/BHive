@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Inspector.h"
 #include "core/InspectorCore.h"
+#include "Inspector.h"
 
 struct ImGuiContext;
 

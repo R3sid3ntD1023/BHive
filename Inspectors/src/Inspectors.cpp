@@ -70,7 +70,7 @@ namespace BHive
 		std::unordered_map<rttr::type, Ref<Inspector>> mRegisteredInspectors;
 	};
 
-	void INSPECTOR_API SetCurrentContext(ImGuiContext *ctx)
+	void SetCurrentContext(ImGuiContext *ctx)
 	{
 		ImGui::SetCurrentContext(ctx);
 	}
