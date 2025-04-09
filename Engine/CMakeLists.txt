@@ -4,6 +4,7 @@ add_subdirectory(vendor)
 
 find_package(EnTT CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
+find_package(unofficial-omniverse-physx-sdk CONFIG REQUIRED)
 
 file(GLOB_RECURSE ENGINE_SRC CMAKE_CONFIGURE_DEPENDS src/** data/** PARENT_SCOPE)
 
@@ -47,7 +48,6 @@ target_link_libraries(Engine
 	PUBLIC ImGuizmo
 	PUBLIC stb
 	PUBLIC waveparser
-	PUBLIC ReactPhysics3D::reactphysics3d 
 	PUBLIC rttr_core 
 	PUBLIC spdlog::spdlog
 	PUBLIC glm::glm-header-only
@@ -59,6 +59,7 @@ target_link_libraries(Engine
 	PUBLIC shaderc_shared$<$<CONFIG:Debug>:d> 
 	PUBLIC spirv-cross-core$<$<CONFIG:Debug>:d> 
 	PUBLIC spirv-cross-glsl$<$<CONFIG:Debug>:d> 
+	PUBLIC unofficial::omniverse-physx-sdk::sdk
 )
 
 target_include_directories(Engine PUBLIC 

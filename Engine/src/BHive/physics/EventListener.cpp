@@ -2,27 +2,28 @@
 
 namespace BHive
 {
-	void CollisionEventListener::onContact(const rp3d::CollisionCallback::CallbackData &callbackData)
+	void SimulationCallback::onContact(const PxContactPairHeader &pairheader, const PxContactPair *pairs, PxU32 nbPairs)
 	{
-		for (unsigned p = 0; p < callbackData.getNbContactPairs(); p++)
+		for (PxU32 i = 0; i < nbPairs; i++)
 		{
-			auto contactpair = callbackData.getContactPair(p);
-			OnContact.invoke(contactpair);
 		}
 	}
 
-	void CollisionEventListener::onTrigger(const rp3d::OverlapCallback::CallbackData &callbackData)
+	void SimulationCallback::onTrigger(PxTriggerPair *pairs, PxU32 count)
 	{
-		for (unsigned p = 0; p < callbackData.getNbOverlappingPairs(); p++)
-		{
-			auto overlappair = callbackData.getOverlappingPair(p);
-			OnTrigger.invoke(overlappair);
-		}
+	}
+	void SimulationCallback::onConstraintBreak(PxConstraintInfo *constraints, PxU32 count)
+	{
+	}
+	void SimulationCallback::onWake(PxActor **actors, PxU32 count)
+	{
+	}
+	void SimulationCallback::onSleep(PxActor **actors, PxU32 count)
+	{
+	}
+	void
+	SimulationCallback::onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count)
+	{
 	}
 
-	rp3d::decimal HitEventListener::notifyRaycastHit(const rp3d::RaycastInfo &info)
-	{
-		OnHit.invoke(info);
-		return rp3d::decimal(1.0);
-	}
 } // namespace BHive

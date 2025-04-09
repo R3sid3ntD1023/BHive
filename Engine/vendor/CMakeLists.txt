@@ -28,12 +28,6 @@ set(ALSOFT_INSTALL_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(ALSOFT_INSTALL_UTILS OFF CACHE BOOL "" FORCE)
 set(ALSOFT_UPDATE_BUILD_VERSION ON CACHE BOOL "" FORCE)
 
-#reactphysics3d
-set(RP3D_COMPILE_TESTBED OFF CACHE BOOL "" FORCE)
-set(RP3D_PROFILING_ENABLED OFF CACHE BOOL "" FORCE)
-set(RP3D_DOUBLE_PRECISION_ENABLED OFF CACHE BOOL "" FORCE)
-set(RP3D_GENERATE_DOCUMENTATION OFF CACHE BOOL "" FORCE)
-
 #imnodes
 set(IMNODES_IMGUI_TARGET_NAME imgui)
 
@@ -111,14 +105,6 @@ FetchContent_Declare(
 )
 list(APPEND components stb)
 
-#reactphysic3d
-FetchContent_Declare(
-	reactphysics3d
-	GIT_REPOSITORY https://github.com/DanielChappuis/reactphysics3d.git
-	GIT_TAG v0.10.2
-)
-list( APPEND components reactphysics3d)
-
 #wave
 FetchContent_Declare(
 	waveparser
@@ -165,21 +151,7 @@ FetchContent_Declare(
 )
 list(APPEND components OpenAL)
 
-#FetchContent_Declare(
-#	assimp
-#	GIT_REPOSITORY https://github.com/assimp/assimp.git
-#	GIT_TAG master
-#)
-#list(APPEND components assimp)
-
 if(components)
 	FETCHCONTENT_MAKEAVAILABLE(${components})
 endif()
-
-
-
-if(MSVC)
-	target_compile_options(reactphysics3d PUBLIC /W0 )
-endif()
-
 

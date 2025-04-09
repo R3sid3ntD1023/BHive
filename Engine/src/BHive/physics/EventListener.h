@@ -1,31 +1,42 @@
 #pragma once
 
-#include "PhysicsCore.h"
 #include "core/EventDelegate.h"
-
-DECLARE_EVENT(FOnContact, const rp3d::CollisionCallback::ContactPair &)
-DECLARE_EVENT(FOnTrigger, const rp3d::OverlapCallback::OverlapPair &)
-DECLARE_EVENT(FOnHit, const rp3d::RaycastInfo &)
+#include "math/Math.h"
+#include "PhysicsCore.h"
 
 namespace BHive
 {
-	class CollisionEventListener : public rp3d::EventListener
+
+	using namespace physx;
+
+	class SimulationCallback : public PxSimulationEventCallback
 	{
 	public:
-		virtual void onContact(const rp3d::CollisionCallback::CallbackData &callbackData) override;
+		virtual void onContact(const PxContactPairHeader &pairheader, const PxContactPair *pairs, PxU32 nbPairs);
 
-		virtual void onTrigger(const rp3d::OverlapCallback::CallbackData &callbackData) override;
+		virtual void onTrigger(PxTriggerPair *pairs, PxU32 count);
 
-		FOnContactEvent OnContact;
-		FOnTriggerEvent OnTrigger;
+		virtual void onConstraintBreak(PxConstraintInfo *constraints, PxU32 count);
+
+		virtual void onWake(PxActor **actors, PxU32 count);
+
+		virtual void onSleep(PxActor **actors, PxU32 count);
+
+		virtual void onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count);
 	};
 
-	class HitEventListener : public rp3d::RaycastCallback
+	struct FHitResult
 	{
-	public:
-		virtual rp3d::decimal notifyRaycastHit(const rp3d::RaycastInfo &info) override;
+		bool InitalOverlap{};
 
-		FOnHitEvent OnHit;
+		glm::vec3 Normal{};
+		glm::vec3 Position{};
+		float Distance{};
+
+		struct GameObject *Object = nullptr;
+		struct Component *Component = nullptr;
+
+		bool isValid() const { return Object && Component; }
 	};
 
 } // namespace BHive

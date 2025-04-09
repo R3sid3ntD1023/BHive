@@ -57,6 +57,8 @@ namespace BHive
 
 		void SetVelocity(const glm::vec3 &velocity);
 
+		void SetGravityEnabled(bool enabled);
+
 		glm::vec3 GetVelocity() const;
 
 		void SetRigidBody(void *rigidbody);

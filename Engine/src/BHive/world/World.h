@@ -8,6 +8,13 @@
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
 
+namespace physx
+{
+	class PxScene;
+	class PxDefaultCpuDispatcher;
+	class PxSimulationEventCallback;
+} // namespace physx
+
 namespace BHive
 {
 	class GameObject;
@@ -66,9 +73,9 @@ namespace BHive
 
 		void Destroy(const UUID &id);
 
-		void RayCast(const glm::vec3 &start, const glm::vec3 &end, uint16_t categoryMasks = 65535U);
-
-		rp3d::PhysicsWorld *GetPhysicsWorld() const { return mPhysicsWorld; }
+		bool RayCast(
+			const glm::vec3 &start, const glm::vec3 &dir, float maxDistance, FHitResult &result,
+			uint16_t categoryMasks = 65535U);
 
 		bool IsRunning() const { return mIsRunning; }
 		bool IsPaused() const { return mIsPaused; }
@@ -83,18 +90,19 @@ namespace BHive
 
 		std::vector<Ref<GameObject>> mDestoryedObjects;
 
-		// physics
-		rp3d::PhysicsWorld *mPhysicsWorld = nullptr;
-		float mAccumulatedTime{0.0f};
-		CollisionEventListener mCollisionListener;
-		HitEventListener mHitListener;
+		// entt
+		entt::registry mRegistry;
 
+#pragma region Physics
+		float mAccumulatedTime{0.0f};
 		bool mIsRunning = false;
 		bool mIsPaused = false;
 		int32_t mFrames = 1;
-
-		// entt
-		entt::registry mRegistry;
+		physx::PxScene *mPhyxWorld = nullptr;
+		physx::PxDefaultCpuDispatcher *mCpuDispatcher = nullptr;
+		physx::PxSimulationEventCallback *mSimulationEventCallback = nullptr;
+		physx::PxRaycastCallback *mHitCallback = nullptr;
+#pragma endregion
 
 		friend class GameObject;
 	};

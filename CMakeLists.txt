@@ -4,12 +4,13 @@ include(FETCHCONTENT)
 
 project(BHive VERSION 1.0 LANGUAGES CXX C)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+enable_testing()
 
 set(Vulkan_SDK_PATH "C:/VulkanSDK/1.4.309.0")
 set(ENV{VULKAN_SDK} ${Vulkan_SDK_PATH})
 set(VULKAN_DOWNLOAD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/downloads/VulkanSDK-1.4.309.0-Installer.exe)
 
-if(NOT EXISTS ${VULKAN_DOWNLOAD_DIR})
+if(NOT EXISTS ${VULKAN_DOWNLOAD_DIR} AND NOT EXISTS ${Vulkan_SDK_PATH})
     file(DOWNLOAD https://sdk.lunarg.com/sdk/download/1.4.309.0/windows/VulkanSDK-1.4.309.0-Installer.exe 
         ${VULKAN_DOWNLOAD_DIR} STATUS status LOG log SHOW_PROGRESS)
 endif()

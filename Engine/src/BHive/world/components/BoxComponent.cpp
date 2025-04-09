@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "physics/PhysicsContext.h"
 #include "renderers/Renderer.h"
+#include <physx/PxPhysicsAPI.h>
 
 namespace BHive
 {
@@ -24,16 +25,10 @@ namespace BHive
 		ar(Extents);
 	}
 
-	void *BoxComponent::GetCollisionShape(const FTransform &world_transform)
+	void *BoxComponent::GetGeometry(const FTransform &transform)
 	{
-		auto extents = Extents * world_transform.get_scale();
-		return PhysicsContext::get_context().createBoxShape(rp3d::Vector3{extents.x, extents.y, extents.z});
-	}
-
-	void BoxComponent::OnReleaseCollisionShape()
-	{
-		PhysicsContext::get_context().destroyBoxShape((rp3d::BoxShape *)mCollisionShape);
-		mCollisionShape = nullptr;
+		auto extents = Extents * transform.get_scale();
+		return new physx::PxBoxGeometry(extents.x, extents.y, extents.z);
 	}
 
 	REFLECT(BoxComponent)

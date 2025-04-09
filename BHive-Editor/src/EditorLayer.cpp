@@ -105,7 +105,7 @@ namespace BHive
 		if (mProjectLib->is_loaded())
 		{
 			mProjectLib->unload();
-			delete mProjectLib;
+			mProjectLib = nullptr;
 		}
 	}
 
@@ -343,13 +343,14 @@ namespace BHive
 			auto &selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>();
 			auto selected_object = selection.GetSelection();
 
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(
+				mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x,
+				mViewportBounds[1].y - mViewportBounds[0].y);
+
 			if (selected_object && mGizmoOperation != -1 && !mActiveWorld->IsRunning())
 			{
-				ImGuizmo::SetOrthographic(false);
-				ImGuizmo::SetDrawlist();
-				ImGuizmo::SetRect(
-					mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x,
-					mViewportBounds[1].y - mViewportBounds[0].y);
 
 				glm::mat4 local_transform = selected_object->GetLocalTransform().to_mat4();
 				glm::mat4 world_transform = selected_object->GetTransform();

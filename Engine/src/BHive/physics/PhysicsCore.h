@@ -1,7 +1,5 @@
 #pragma once
 
+#include "physics/PhysicsUtils.h"
 #include <core/Core.h>
-
-#pragma warning(push, 0)
-#include <reactphysics3d/reactphysics3d.h>
-#pragma warning(pop)
+#include <physx/PxPhysicsAPI.h>

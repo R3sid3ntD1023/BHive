@@ -1,5 +1,6 @@
 #include "ColliderComponent.h"
 #include "GameObject.h"
+#include "physics/PhysicsContext.h"
 #include "Physics/PhysicsCore.h"
 
 namespace BHive
@@ -46,7 +47,36 @@ namespace BHive
 
 	void BHive::ColliderComponent::CreateCollsionShape(void *rb, const FTransform &transform)
 	{
-		mCollisionShape = (rp3d::CollisionShape *)GetCollisionShape(transform);
+		if (!CollisionEnabled)
+			return;
+
+		auto geo = (physx::PxGeometry *)GetGeometry(transform);
+		if (!geo)
+			return;
+
+		auto physcs = PhysicsContext::GetPhysics();
+		physx::PxMaterial *material = physcs->createMaterial(1.f, 1.0f, 0.f);
+
+		if (PhysicsMaterial)
+		{
+			auto friction = PhysicsMaterial->mFrictionCoefficient;
+			auto resitution = PhysicsMaterial->mBounciness;
+			material->setStaticFriction(friction);
+			material->setDynamicFriction(friction);
+			material->setRestitution(resitution);
+		}
+
+		auto shape = physcs->createShape(*geo, *material, true);
+		((physx::PxRigidActor *)rb)->attachShape(*shape);
+		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, IsTrigger);
+		shape->userData = this;
+		shape->setLocalPose(physics::utils::getTransform(transform));
+
+		mCollisionShape = shape;
+		material->release();
+		delete geo;
+
+		/*mCollisionShape = (rp3d::CollisionShape *)GetCollisionShape(transform);
 		if (!mCollisionShape)
 			return;
 
@@ -66,17 +96,23 @@ namespace BHive
 			material.setMassDensity(PhysicsMaterial->mMassDensity);
 		}
 
-		mCollider = collider;
+		mCollider = collider;*/
 	}
 
 	void ColliderComponent::ReleaseCollisionShape(void *rb)
 	{
-		if (CollisionEnabled && mCollider)
+		if (!CollisionEnabled)
+			return;
+
+		auto shape = (physx::PxShape *)mCollisionShape;
+		((physx::PxRigidActor *)rb)->detachShape(*shape);
+
+		/*if (CollisionEnabled && mCollider)
 		{
 			((rp3d::RigidBody *)rb)->removeCollider((rp3d::Collider *)mCollider);
 			OnReleaseCollisionShape();
 			mCollider = nullptr;
-		}
+		}*/
 	}
 
 	REFLECT(ColliderComponent)

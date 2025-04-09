@@ -19,10 +19,12 @@ namespace BHive
 
 		virtual AABB GetBoundingBox() const { return FBox{{}, Extents}; }
 
-		void *GetCollisionShape(const FTransform &world_transform) override;
-		void OnReleaseCollisionShape() override;
+		void *GetGeometry(const FTransform &transform) override;
 
 		REFLECTABLEV(ColliderComponent)
+
+	private:
+		void *SoftBodyShape = nullptr;
 	};
 
 	REFLECT_EXTERN(BoxComponent)
