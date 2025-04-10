@@ -7,13 +7,11 @@
 
 namespace BHive
 {
-	DECLARE_STRUCT()
+
 	struct FInputAction
 	{
-		DECLARE_CONSTRUCTOR()
 		FInputAction() = default;
 
-		DECLARE_CONSTRUCTOR()
 		FInputAction(const std::string &name, const FInputKey &key)
 			: mName(name),
 			  mKey(key)
@@ -35,13 +33,11 @@ namespace BHive
 		}
 
 	private:
-		DECLARE_PROPERTY()
 		std::string mName;
 
-		DECLARE_PROPERTY()
 		FInputKey mKey;
 
-		REFLECTABLE_CLASS()
+		REFLECTABLEV()
 
 		friend class InputContext;
 	};

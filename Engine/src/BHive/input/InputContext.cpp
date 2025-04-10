@@ -1,5 +1,5 @@
-#include "InputContext.h"
 #include "input/InputManager.h"
+#include "InputContext.h"
 
 namespace BHive
 {
@@ -28,7 +28,8 @@ namespace BHive
 
 	bool InputContext::has_key(const std::string name) const
 	{
-		auto it = std::find_if(mKeys.begin(), mKeys.end(), [name](const FInputAction &action) { return action.GetName() == name; });
+		auto it = std::find_if(
+			mKeys.begin(), mKeys.end(), [name](const FInputAction &action) { return action.GetName() == name; });
 
 		return it != mKeys.end();
 	}
@@ -115,5 +116,15 @@ namespace BHive
 	InputContext *InputContext::CreateInstance()
 	{
 		return new InputContext(*this);
+	}
+
+	REFLECT(InputContext)
+	{
+		{
+			BEGIN_REFLECT(FInputAction) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY("Key", mKey) REFLECT_PROPERTY("Name", mName);
+		}
+		{
+			BEGIN_REFLECT(InputContext) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY("Keys", mKeys);
+		}
 	}
 } // namespace BHive

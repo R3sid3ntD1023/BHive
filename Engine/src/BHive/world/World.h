@@ -106,4 +106,6 @@ namespace BHive
 
 		friend class GameObject;
 	};
+
+	REFLECT_EXTERN(World)
 } // namespace BHive

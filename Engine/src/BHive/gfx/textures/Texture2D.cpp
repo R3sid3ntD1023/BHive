@@ -1,6 +1,6 @@
+#include "gfx/TextureUtils.h"
 #include "Texture2D.h"
 #include <glad/glad.h>
-#include "gfx/TextureUtils.h"
 
 namespace BHive
 {
@@ -142,5 +142,10 @@ namespace BHive
 			SetData(buffer.GetData(), buffer.GetSize());
 			buffer.Release();
 		}
+	}
+
+	REFLECT(Texture2D)
+	{
+		BEGIN_REFLECT(Texture2D) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY("Specification", GetSpecification, SetSpecification);
 	}
 } // namespace BHive

@@ -1,17 +1,17 @@
 #include "Block.h"
-#include "components/BoxComponent.h"
+#include "components/BoxColliderComponent.h"
 #include "components/FlipBookComponent.h"
 #include "components/PhysicsComponent.h"
 #include "components/SpriteComponent.h"
-#include "importers/TextureImporter.h"
 #include "GroupMacros.h"
+#include "importers/TextureImporter.h"
 
 namespace BHive
 {
 	BlockBase::BlockBase(const entt::entity &handle, World *world)
 		: GameObject(handle, world)
 	{
-		AddComponent<BoxComponent>();
+		AddComponent<BoxColliderComponent>();
 		AddComponent<PhysicsComponent>();
 
 		auto physc = GetPhysicsComponent();
@@ -35,12 +35,11 @@ namespace BHive
 
 	void QuestionBlock::OnCollisionEnter(ColliderComponent *component, GameObject *other)
 	{
-		if ((other->GetTag() & PLAYER) != 0)
+		/*if ((other->GetTag() & PLAYER) != 0)
 		{
 			Destroy();
 			GetWorld()->SpawnGameObject(SpawnedBlock, GetTransform(), "New Item");
-			
-		}
+		}*/
 	}
 
 } // namespace BHive

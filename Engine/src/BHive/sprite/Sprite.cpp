@@ -91,4 +91,16 @@ namespace BHive
 		return CreateRef<Sprite>(texture, min, max);
 	}
 
+	REFLECT(Sprite)
+	{
+		{
+			BEGIN_REFLECT(FSpriteGenerator)
+			REFLECT_PROPERTY(Coordinates) REFLECT_PROPERTY(CellSize) REFLECT_PROPERTY(Size);
+		}
+		{
+			BEGIN_REFLECT(Sprite)
+			REFLECT_CONSTRUCTOR()
+			REFLECT_PROPERTY("Generator", GetGenerator, SetFromGenerator) REFLECT_PROPERTY("Source", mSource);
+		}
+	}
 } // namespace BHive

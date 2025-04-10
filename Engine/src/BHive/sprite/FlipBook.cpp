@@ -45,19 +45,19 @@ namespace BHive
 
 	void FlipBook::AddFrame(const Ref<Sprite> &sprite, uint32_t duration)
 	{
-		mFrames.emplace_back(Frame{.mSprite = sprite, .mDuration = duration});
+		mFrames.emplace_back(Frame{.Sprite = sprite, .Duration = duration});
 	}
 
 	void FlipBook::InsertFrame(const Ref<Sprite> &sprite, uint32_t duration, uint32_t index)
 	{
-		mFrames.insert(mFrames.begin() + index, Frame{.mSprite = sprite, .mDuration = duration});
+		mFrames.insert(mFrames.begin() + index, Frame{.Sprite = sprite, .Duration = duration});
 	}
 
 	Ref<Sprite> FlipBook::RemoveSprite(uint32_t index)
 	{
 		if (mFrames.size() > index)
 		{
-			return mFrames[index].mSprite;
+			return mFrames[index].Sprite;
 		}
 
 		return nullptr;
@@ -83,7 +83,7 @@ namespace BHive
 		int32_t sum = 0;
 		for (int32_t i = 0; i < mFrames.size(); i++)
 		{
-			sum += mFrames[i].mDuration;
+			sum += mFrames[i].Duration;
 		}
 
 		return sum;
@@ -99,7 +99,7 @@ namespace BHive
 			float sum = 0.0f;
 			for (int32_t i = 0; i < mFrames.size(); i++)
 			{
-				sum += mFrames[i].mDuration / mFramesPerSecond;
+				sum += mFrames[i].Duration / mFramesPerSecond;
 
 				if (time <= sum)
 					return i;
@@ -118,13 +118,13 @@ namespace BHive
 		if (frame < 0 || frame >= mFrames.size())
 			return nullptr;
 
-		return mFrames.at(frame).mSprite;
+		return mFrames.at(frame).Sprite;
 	}
 
 	Ref<Sprite> FlipBook::GetSpriteAtTime(float time) const
 	{
 		const auto index = GetFrameIndexAtTime(time);
-		return (index != -1) ? mFrames[index].mSprite : nullptr;
+		return (index != -1) ? mFrames[index].Sprite : nullptr;
 	}
 
 	float FlipBook::GetTotalTime() const
@@ -145,7 +145,7 @@ namespace BHive
 		ar(cereal::make_size_tag(mFrames.size()));
 		for (auto &frame : mFrames)
 		{
-			ar(TAssetHandle<Sprite>(frame.mSprite), frame.mDuration);
+			ar(TAssetHandle<Sprite>(frame.Sprite), frame.Duration);
 		}
 	}
 
@@ -160,8 +160,22 @@ namespace BHive
 		mFrames.resize(size);
 		for (auto &frame : mFrames)
 		{
-			ar(TAssetHandle<Sprite>(frame.mSprite), frame.mDuration);
+			ar(TAssetHandle<Sprite>(frame.Sprite), frame.Duration);
 		}
 	}
 
+	REFLECT(FlipBook)
+	{
+		{
+			BEGIN_REFLECT(Frame) REFLECT_PROPERTY(Sprite) REFLECT_PROPERTY(Duration);
+		}
+
+		{
+			BEGIN_REFLECT(FlipBook)
+			REFLECT_CONSTRUCTOR()
+			REFLECT_PROPERTY("Loop", IsLooping, SetLoop)
+			REFLECT_PROPERTY("FramesPerSecond", GetFramesPerSecond, SetFramesPerSecond)
+			REFLECT_PROPERTY("Frames", GetFrames, SetFrames);
+		}
+	}
 } // namespace BHive

@@ -1,6 +1,4 @@
 #include "asset/AssetFactory.h"
-#include "components/BoxComponent.h"
-#include "components/CameraComponent.h"
 #include "contextmenus/ContextMenus.h"
 #include "core/Application.h"
 #include "core/FileDialog.h"
@@ -80,7 +78,7 @@ namespace BHive
 		RenderCommand::ClearColor(.2f, .2f, .2f);
 
 		float aspect = size.x / (float)size.y;
-		mEditorCamera = EditorCamera(75.f, aspect, .01f, 100.f);
+		mEditorCamera = EditorCamera(75.f, aspect, .01f, 1000.f);
 
 		AddSubSystem<SelectionSubSystem>();
 		AddSubSystem<EditorSubSystem>();

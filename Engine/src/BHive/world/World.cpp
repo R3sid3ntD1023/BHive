@@ -1,10 +1,11 @@
 #include "Component.h"
-#include "components/BoxComponent.h"
+#include "components/BoxColliderComponent.h"
 #include "components/CameraComponent.h"
+#include "components/CapsuleColliderComponent.h"
 #include "components/FlipBookComponent.h"
 #include "components/InputComponent.h"
 #include "components/PhysicsComponent.h"
-#include "components/SphereComponent.h"
+#include "components/SphereColliderComponent.h"
 #include "components/SpriteComponent.h"
 #include "GameObject.h"
 #include "gfx/RenderCommand.h"
@@ -520,5 +521,10 @@ namespace BHive
 	{
 
 		return {nullptr, FTransform()};
+	}
+
+	REFLECT(World)
+	{
+		BEGIN_REFLECT(World) REFLECT_CONSTRUCTOR();
 	}
 } // namespace BHive

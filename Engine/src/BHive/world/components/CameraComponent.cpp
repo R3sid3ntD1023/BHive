@@ -31,8 +31,9 @@ namespace BHive
 		ar(Camera, IsPrimary);
 	}
 
-	RTTR_REGISTRATION
+	REFLECT(CameraComponent)
 	{
-		BEGIN_REFLECT(CameraComponent) COMPONENT_IMPL();
+		BEGIN_REFLECT(CameraComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR()
+			REFLECT_PROPERTY(Camera) REFLECT_PROPERTY(IsPrimary) COMPONENT_IMPL();
 	}
 } // namespace BHive

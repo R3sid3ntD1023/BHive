@@ -59,27 +59,32 @@ namespace BHive
 
 		if (PhysicsMaterial)
 		{
-			auto friction = PhysicsMaterial->mFrictionCoefficient;
-			auto resitution = PhysicsMaterial->mBounciness;
+			auto friction = PhysicsMaterial->FrictionCoefficient;
+			auto resitution = PhysicsMaterial->Bounciness;
 			material->setStaticFriction(friction);
 			material->setDynamicFriction(friction);
 			material->setRestitution(resitution);
 		}
 
+		physx::PxTransform relative_transform({Offset.x, Offset.y, Offset.z});
 		physx::PxFilterData filter_data(CollisionChannel, CollisionChannelMasks, 0, 0);
 
+		if (geo->getType() == physx::PxGeometryType::eCAPSULE)
+		{
+			relative_transform.q = physx::PxQuat(PxHalfPi, {0, 0, 1});
+		}
 		auto shape = physcs->createShape(*geo, *material, true);
+		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, IsTrigger);
+		shape->userData = this;
+		shape->setLocalPose(relative_transform);
+		shape->setQueryFilterData(filter_data);
+		shape->setSimulationFilterData(filter_data);
 
 #ifdef _DEBUG
 		shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, true);
 #endif // _DEBUG
-		((physx::PxRigidActor *)rb)->attachShape(*shape);
-		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, IsTrigger);
-		shape->userData = this;
-		shape->setLocalPose(physics::utils::Convert(Offset));
-		shape->setQueryFilterData(filter_data);
-		shape->setSimulationFilterData(filter_data);
 
+		((physx::PxRigidActor *)rb)->attachShape(*shape);
 		mCollisionShape = shape;
 		material->release();
 		delete geo;

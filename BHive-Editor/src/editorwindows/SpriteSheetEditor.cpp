@@ -1,5 +1,5 @@
-#include "SpriteSheetEditor.h"
 #include "core/FileDialog.h"
+#include "SpriteSheetEditor.h"
 
 namespace BHive
 {
@@ -72,7 +72,7 @@ namespace BHive
 		ImGui::TextDisabled("%llu", sprites.size());
 
 		int i = 0;
-		int columns = grid.mColumns > 0 ? grid.mColumns : 1;
+		int columns = grid.Columns > 0 ? grid.Columns : 1;
 		float avail_width = ImGui::GetContentRegionAvail().x;
 		float item_width = avail_width / columns;
 		if (ImGui::BeginTable("##sprites", columns, 0, {0, 0}, avail_width))

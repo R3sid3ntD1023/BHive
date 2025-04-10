@@ -19,11 +19,11 @@ namespace BHive
 
 		mSprites.clear();
 
-		for (uint32_t c = 0; c < mGrid.mColumns; c++)
+		for (uint32_t c = 0; c < mGrid.Columns; c++)
 		{
-			for (uint32_t r = 0; r < mGrid.mRows; r++)
+			for (uint32_t r = 0; r < mGrid.Rows; r++)
 			{
-				FSpriteGenerator generator{{c, r}, mGrid.mCellSize, {1, 1}};
+				FSpriteGenerator generator{{c, r}, mGrid.CellSize, {1, 1}};
 				Sprite sprite = Sprite(mSource, generator);
 				mSprites.emplace_back(sprite);
 			}
@@ -54,6 +54,19 @@ namespace BHive
 		ar(TAssetHandle<Texture2D>(mSource), mGrid, mSprites);
 
 		CreateSprites();
+	}
+
+	REFLECT(SpriteSheet)
+	{
+		{
+			BEGIN_REFLECT(FSpriteSheetGrid) REFLECT_PROPERTY(Rows) REFLECT_PROPERTY(Columns) REFLECT_PROPERTY(CellSize);
+		}
+		{
+			BEGIN_REFLECT(SpriteSheet)
+			REFLECT_CONSTRUCTOR()
+			REFLECT_PROPERTY("Source", GetSource, SetSource)
+			REFLECT_PROPERTY("Grid", GetGrid, SetGrid) /* REFLECT_PROPERTY("Sprites", mSprites)*/;
+		}
 	}
 
 } // namespace BHive

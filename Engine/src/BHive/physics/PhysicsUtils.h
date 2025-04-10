@@ -27,7 +27,7 @@ namespace BHive
 			const auto &o = transform.q;
 
 			glm::vec3 pos(t.x, t.y, t.z);
-			glm::quat orientation(o.x, o.y, o.z, o.w);
+			glm::quat orientation(o.w, o.x, o.y, o.z);
 			return {pos, orientation};
 		}
 

@@ -5,6 +5,7 @@
 #include "core/EnumAsByte.h"
 #include "core/EventDelegate.h"
 #include "gfx/Color.h"
+#include "math/AABB.hpp"
 #include "math/Transform.h"
 #include "physics/CollisionChannel.h"
 #include "physics/PhysicsMaterial.h"

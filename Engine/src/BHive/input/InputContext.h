@@ -1,19 +1,18 @@
 #pragma once
 
-#include "core/Core.h"
 #include "asset/Asset.h"
+#include "core/Core.h"
+#include "core/EventDelegate.h"
 #include "core/events/EventStatus.h"
 #include "input/InputAction.h"
 #include "input/InputValue.h"
-#include "core/EventDelegate.h"
 
 namespace BHive
 {
-	DECLARE_CLASS()
+
 	class InputContext : public Asset
 	{
 	public:
-		DECLARE_CONSTRUCTOR()
 		InputContext() = default;
 
 		struct FInputActionCallback
@@ -62,12 +61,11 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLE_CLASS(Asset)
+		REFLECTABLEV(Asset)
 
 	private:
 		InputContext *CreateInstance();
 
-		DECLARE_PROPERTY()
 		std::vector<FInputAction> mKeys;
 		std::unordered_map<std::string, FInputActionCallback> mBindedKeys;
 		std::unordered_map<std::string, FInputAxisCallback> mBindedAxisKeys;
@@ -75,5 +73,7 @@ namespace BHive
 		friend struct InputComponent;
 		friend class InputContextSerializer;
 	};
+
+	REFLECT_EXTERN(InputContext)
 
 } // namespace BHive

@@ -1,4 +1,4 @@
-#include "components/BoxComponent.h"
+#include "components/BoxColliderComponent.h"
 #include "components/CameraComponent.h"
 #include "components/InputComponent.h"
 #include "components/PhysicsComponent.h"
@@ -18,7 +18,7 @@ namespace BHive
 		camera_component->Camera.SetOrthographic(-10.f, 10.0f, -2.f, 18.0f, size.x / (float)size.y, -1.0f, 10.f);
 
 		AddComponent<SpriteComponent>();
-		AddComponent<BoxComponent>();
+		AddComponent<BoxColliderComponent>();
 		AddComponent<InputComponent>();
 		AddComponent<PhysicsComponent>();
 
@@ -43,7 +43,7 @@ namespace BHive
 			instance->bind_axis("MoveRight", this, &Player::Move, 1.f);
 		}
 
-		auto bc = GetComponent<BoxComponent>();
+		auto bc = GetComponent<BoxColliderComponent>();
 		bc->OnCollisionEnter.bind(this, &Player::OnCollisionEnter);
 	}
 

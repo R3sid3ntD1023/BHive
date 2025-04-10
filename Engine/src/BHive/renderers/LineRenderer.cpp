@@ -267,28 +267,28 @@ namespace BHive
 	}
 
 	void LineRenderer::DrawCylinder(
-		float radius, float height, uint32_t sides, const glm::vec3 &offset, const FColor &color,
+		float radius, float half_height, uint32_t sides, const glm::vec3 &offset, const FColor &color,
 		const FTransform &transform)
 	{
-		float hh = height * .5f;
+		float h = half_height * 2;
 		float step = (PI * 2) / sides;
 
 		for (float theta = 0.f; theta <= (PI * 2); theta += step)
 		{
 			float x0 = cos(theta);
-			float y0 = hh;
+			float y0 = h;
 			float z0 = sin(theta);
 
 			float x1 = cos(theta + step);
-			float y1 = hh;
+			float y1 = h;
 			float z1 = sin(theta + step);
 
 			float x2 = cos(theta);
-			float y2 = -hh;
+			float y2 = -h;
 			float z2 = sin(theta);
 
 			float x3 = cos(theta + step);
-			float y3 = -hh;
+			float y3 = -h;
 			float z3 = sin(theta + step);
 
 			DrawLine(glm::vec3{x0, y0, z0} * radius + offset, glm::vec3{x1, y1, z1} * radius + offset, color, transform);
@@ -299,17 +299,17 @@ namespace BHive
 	}
 
 	void LineRenderer::DrawCapsule(
-		float radius, float height, uint32_t sides, const glm::vec3 &offset, const FColor &color,
+		float radius, float half_height, uint32_t sides, const glm::vec3 &offset, const FColor &color,
 		const FTransform &transform)
 	{
 		auto rotationY = glm::toMat4(glm::quat({0, PI / 2, 0}));
 		auto rotationX = glm::toMat4(glm::quat({PI / 2, 0, 0}));
-		glm::vec3 h = {0, 0, height * .5f * radius};
+		glm::vec3 h = {0, 0, half_height};
 
 		DrawArc(radius, sides, 0.f, PI, offset + h, color, transform * rotationX);
 		DrawArc(radius, sides, 0.f, PI, offset + h, color, transform * rotationY * rotationX);
 
-		DrawCylinder(radius, height, sides, offset, color, transform);
+		DrawCylinder(radius, half_height, sides, offset, color, transform);
 
 		DrawArc(radius, sides, PI, PI * 2.f, offset - h, color, transform * rotationY * rotationX);
 		DrawArc(radius, sides, PI, PI * 2, offset - h, color, transform * rotationX);

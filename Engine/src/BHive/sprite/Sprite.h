@@ -9,16 +9,12 @@ namespace BHive
 {
 	class Texture2D;
 
-	DECLARE_STRUCT()
 	struct FSpriteGenerator
 	{
-		DECLARE_PROPERTY()
 		glm::vec2 Coordinates{0, 0};
 
-		DECLARE_PROPERTY()
 		glm::vec2 CellSize{1, 1};
 
-		DECLARE_PROPERTY()
 		glm::vec2 Size{1, 1};
 
 		template <typename A>
@@ -28,11 +24,9 @@ namespace BHive
 		}
 	};
 
-	DECLARE_CLASS()
 	class Sprite : public Asset
 	{
 	public:
-		DECLARE_CONSTRUCTOR()
 		Sprite() = default;
 		Sprite(const Sprite &other);
 
@@ -42,7 +36,6 @@ namespace BHive
 
 		void SetCoords(const glm::vec2 &min, const glm::vec2 &max);
 
-		DECLARE_FUNCTION()
 		void SetFromGenerator(const FSpriteGenerator &generator);
 
 		void Save(cereal::BinaryOutputArchive &ar) const;
@@ -53,30 +46,25 @@ namespace BHive
 		const glm::vec2 &GetMinCoords() const { return mMin; }
 		const glm::vec2 &GetMaxCoords() const { return mMax; }
 
-		DECLARE_FUNCTION()
 		const FSpriteGenerator &GetGenerator() const { return mGenerator; }
 
 		static Ref<Sprite> Create(const Ref<Texture2D> &texture, const FSpriteGenerator &generator);
 
 		static Ref<Sprite> Create(const Ref<Texture2D> &texture, const glm::vec2 &min, const glm::vec2 &max);
 
-		REFLECTABLE_CLASS(Asset)
+		REFLECTABLEV(Asset)
 
 	private:
 		void Initialize();
 		void CalculateMinMax(const FSpriteGenerator &generator);
 
 	private:
-		DECLARE_PROPERTY()
 		Ref<Texture2D> mSource;
 
-		DECLARE_PROPERTY()
 		glm::vec2 mMin{0, 0};
 
-		DECLARE_PROPERTY()
 		glm::vec2 mMax{1, 1};
 
-		DECLARE_PROPERTY(Setter = SetFromGenerator, Getter = GetGenerator)
 		FSpriteGenerator mGenerator{};
 
 		std::array<glm::vec2, 4> mCoords = {};

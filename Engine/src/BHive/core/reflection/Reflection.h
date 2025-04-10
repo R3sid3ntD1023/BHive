@@ -2,6 +2,7 @@
 
 #include "core/Core.h"
 #include "PropertyMetaData.h"
+#include "ReflectionRedirector.h"
 #include <rttr/registration>
 #include <rttr/registration_friend>
 #include <rttr/rttr_enable.h>
@@ -122,7 +123,9 @@ namespace rttr
 	template <typename A>
 	inline void LoadMinimal(const A &ar, rttr::type &obj, const std::string &value)
 	{
-		obj = rttr::type::get_by_name(value);
+		static BHive::ReflectionRedirector redirector("redirected_classes.json");
+
+		obj = rttr::type::get_by_name(redirector.Redirect(value));
 	}
 
 } // namespace rttr

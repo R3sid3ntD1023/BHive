@@ -14,8 +14,6 @@ namespace BHive
 		uint32_t width = 1, height = 1, depth = 1;
 	};
 
-
-	DECLARE_CLASS()
 	class Texture : public Asset
 	{
 	public:
@@ -40,7 +38,11 @@ namespace BHive
 
 		operator uint32_t() const { return GetRendererID(); }
 
-		REFLECTABLE_CLASS(Asset)
+		REFLECTABLEV(Asset)
 	};
 
+	REFLECT(Texture)
+	{
+		BEGIN_REFLECT(Texture) REFLECT_PROPERTY_READ_ONLY("Width", GetWidth) REFLECT_PROPERTY_READ_ONLY("Height", GetHeight);
+	}
 } // namespace BHive

@@ -8,10 +8,8 @@ namespace BHive
 {
 	struct InputValue;
 
-	DECLARE_STRUCT()
 	struct Player : public GameObject
 	{
-		DECLARE_CONSTRUCTOR()
 		Player(const entt::entity &handle, World *world);
 
 		void Begin() override;
@@ -24,7 +22,7 @@ namespace BHive
 
 		bool IsJumping();
 
-		REFLECTABLE_CLASS(GameObject)
+		REFLECTABLEV(GameObject)
 
 	private:
 		void OnCollisionEnter(struct ColliderComponent *component, GameObject *other);
