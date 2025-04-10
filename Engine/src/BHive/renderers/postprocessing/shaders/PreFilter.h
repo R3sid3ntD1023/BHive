@@ -1,6 +1,6 @@
 static const char *prefiler_comp = R"(
     #version 460 core
-  #extension GL_EXT_scalar_block_layout: require
+    #extension GL_EXT_scalar_block_layout: require
 
     layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
@@ -27,7 +27,7 @@ static const char *prefiler_comp = R"(
         float y = float(texelCoord.y)/(gl_NumWorkGroups.y);
 
         vec4 value = texture(uSrcTexture, vec2(x, y));
-        vec4 color = QuadraticThreshold(value, uThreshold.a, uThreshold.rgb);
+        vec4 color = QuadraticThreshold(value, uFilterThreshold.a, uFilterThreshold.rgb);
 	
         imageStore(uOutput, texelCoord, color);
     }

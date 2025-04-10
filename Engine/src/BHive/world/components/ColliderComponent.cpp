@@ -1,5 +1,6 @@
 #include "ColliderComponent.h"
 #include "GameObject.h"
+#include "physics/PhysicsContext.h"
 #include "Physics/PhysicsCore.h"
 
 namespace BHive
@@ -14,7 +15,7 @@ namespace BHive
 
 		auto rb = physc->GetRigidBody();
 
-		CreateCollsionShape(rb, object->GetTransform());
+		CreateCollsionShape(rb, object->GetLocalTransform());
 	}
 
 	void ColliderComponent::Update(float)
@@ -46,37 +47,51 @@ namespace BHive
 
 	void BHive::ColliderComponent::CreateCollsionShape(void *rb, const FTransform &transform)
 	{
-		mCollisionShape = (rp3d::CollisionShape *)GetCollisionShape(transform);
-		if (!mCollisionShape)
+		if (!CollisionEnabled)
 			return;
 
-		auto offset = Offset * transform.get_scale();
-		auto offset_ = rp3d::Transform({offset.x, offset.y, offset.z}, rp3d::Quaternion::identity());
-		auto collider = ((rp3d::RigidBody *)rb)->addCollider((rp3d::CollisionShape *)mCollisionShape, offset_);
-		collider->setUserData(this);
-		collider->setCollisionCategoryBits(CollisionChannel);
-		collider->setCollideWithMaskBits(CollisionChannelMasks);
-		collider->setIsTrigger(IsTrigger);
+		auto geo = (physx::PxGeometry *)GetGeometry();
+		if (!geo)
+			return;
+
+		auto physcs = PhysicsContext::GetPhysics();
+		physx::PxMaterial *material = physcs->createMaterial(1.f, 1.0f, 0.f);
 
 		if (PhysicsMaterial)
 		{
-			auto &material = collider->getMaterial();
-			material.setFrictionCoefficient(PhysicsMaterial->mFrictionCoefficient);
-			material.setBounciness(PhysicsMaterial->mBounciness);
-			material.setMassDensity(PhysicsMaterial->mMassDensity);
+			auto friction = PhysicsMaterial->mFrictionCoefficient;
+			auto resitution = PhysicsMaterial->mBounciness;
+			material->setStaticFriction(friction);
+			material->setDynamicFriction(friction);
+			material->setRestitution(resitution);
 		}
 
-		mCollider = collider;
+		physx::PxFilterData filter_data(CollisionChannel, CollisionChannelMasks, 0, 0);
+
+		auto shape = physcs->createShape(*geo, *material, true);
+
+#ifdef _DEBUG
+		shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, true);
+#endif // _DEBUG
+		((physx::PxRigidActor *)rb)->attachShape(*shape);
+		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, IsTrigger);
+		shape->userData = this;
+		shape->setLocalPose(physics::utils::Convert(Offset));
+		shape->setQueryFilterData(filter_data);
+		shape->setSimulationFilterData(filter_data);
+
+		mCollisionShape = shape;
+		material->release();
+		delete geo;
 	}
 
 	void ColliderComponent::ReleaseCollisionShape(void *rb)
 	{
-		if (CollisionEnabled && mCollider)
-		{
-			((rp3d::RigidBody *)rb)->removeCollider((rp3d::Collider *)mCollider);
-			OnReleaseCollisionShape();
-			mCollider = nullptr;
-		}
+		if (!CollisionEnabled)
+			return;
+
+		auto shape = (physx::PxShape *)mCollisionShape;
+		((physx::PxRigidActor *)rb)->detachShape(*shape);
 	}
 
 	REFLECT(ColliderComponent)

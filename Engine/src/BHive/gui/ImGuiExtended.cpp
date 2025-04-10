@@ -1,5 +1,5 @@
 #include "ImGuiExtended.h"
-#include <misc/cpp/imgui_stdlib.h>
+#include <imgui_stdlib.h>
 
 namespace ImGui
 {
@@ -18,7 +18,8 @@ namespace ImGui
 		if (icon)
 		{
 			auto id = ImGui::GetID(label.c_str());
-			pressed = ImageButtonEx(id, (ImTextureID)(uint64_t)(uint32_t)*icon, {size, size}, {0, 1}, {1, 0}, {0, 0, 0, 0}, {1, 1, 1, 1}, flags);
+			pressed = ImageButtonEx(
+				id, (ImTextureID)(uint64_t)(uint32_t)*icon, {size, size}, {0, 1}, {1, 0}, {0, 0, 0, 0}, {1, 1, 1, 1}, flags);
 		}
 		else
 		{
@@ -52,15 +53,17 @@ namespace ImGui
 		}
 		else
 		{
-			bool finish_editing =
-				(IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && IsMouseClicked(ImGuiMouseButton_Left)) || IsKeyPressed(ImGuiKey_Escape);
+			bool finish_editing = (IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && IsMouseClicked(ImGuiMouseButton_Left)) ||
+								  IsKeyPressed(ImGuiKey_Escape);
 			if (finish_editing)
 			{
 				current_id = -1;
 			}
 
 			ImGui::SetKeyboardFocusHere();
-			if (InputText("##RenamingName", &current_text, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+			if (InputText(
+					"##RenamingName", &current_text,
+					ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
 			{
 				current_id = -1;
 				new_text = current_text;
@@ -202,12 +205,13 @@ namespace ImGui
 
 		// slider
 		const float slider_size = 10.0f;
-		const auto slider_bg_bb =
-			ImRect({cursor_pos.x, bb.Max.y + frame_padding.y}, {cursor_pos.x + size.x, bb.Max.y + slider_size + frame_padding.y});
+		const auto slider_bg_bb = ImRect(
+			{cursor_pos.x, bb.Max.y + frame_padding.y}, {cursor_pos.x + size.x, bb.Max.y + slider_size + frame_padding.y});
 
 		auto slider_offset = (*frame * divider_step);
-		const auto slider_bb =
-			ImRect({slider_bg_bb.Min.x + slider_offset, slider_bg_bb.Min.y}, {slider_bg_bb.Min.x + slider_offset + divider_step, slider_bg_bb.Max.y});
+		const auto slider_bb = ImRect(
+			{slider_bg_bb.Min.x + slider_offset, slider_bg_bb.Min.y},
+			{slider_bg_bb.Min.x + slider_offset + divider_step, slider_bg_bb.Max.y});
 
 		auto slider_id = window->GetID("##slider");
 
@@ -238,7 +242,9 @@ namespace ImGui
 		if (changed)
 			MarkItemEdited(slider_id);
 
-		auto slider_color = active ? ImVec4(1.f, 1.f, 1.f, 1.f) : hovered ? ImVec4(.7f, .7f, .7f, 1.f) : ImVec4(.5f, .5f, .5f, .7f);
+		auto slider_color = active	  ? ImVec4(1.f, 1.f, 1.f, 1.f)
+							: hovered ? ImVec4(.7f, .7f, .7f, 1.f)
+									  : ImVec4(.5f, .5f, .5f, .7f);
 		drawlist->AddRectFilled(slider_bb.Min, slider_bb.Max, GetColorU32(slider_color));
 
 		return changed;
@@ -315,7 +321,9 @@ namespace ImGui
 		if (changed)
 			MarkItemEdited(marker_id);
 
-		ImVec4 color = active ? ImVec4(1.0f, 0.f, 0.f, 1.f) : hovered ? ImVec4(3.f, 0.f, .0f, .4f) : ImVec4(.6f, 0.f, 0.f, .4f);
+		ImVec4 color = active	 ? ImVec4(1.0f, 0.f, 0.f, 1.f)
+					   : hovered ? ImVec4(3.f, 0.f, .0f, .4f)
+								 : ImVec4(.6f, 0.f, 0.f, .4f);
 
 		drawlist->AddRectFilled(marker_bb.Min, marker_bb.Max, GetColorU32(color));
 
@@ -333,8 +341,8 @@ namespace ImGui
 	}
 
 	bool DragTransform(
-		const char *label, BHive::FTransform &transform, float speed, float min, float max, const char *format, ImGuiSliderFlags flags,
-		const BHive::FTransform &reset_value)
+		const char *label, BHive::FTransform &transform, float speed, float min, float max, const char *format,
+		ImGuiSliderFlags flags, const BHive::FTransform &reset_value)
 	{
 		bool changed = false;
 

@@ -74,10 +74,10 @@ namespace BHive
 		}
 
 		void SetName(const std::string &name);
-		void SetParent(const BHive::UUID &parent);
+		void SetLocalTransform(const FTransform &transform);
+		void SetWorldTransform(const FTransform &transform);
 
 		PhysicsComponent *GetPhysicsComponent();
-		void SetTransform(const FTransform &transform);
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const;
 		virtual void Load(cereal::BinaryInputArchive &ar);
@@ -93,7 +93,7 @@ namespace BHive
 
 		const UUID &GetID() const;
 		const std::string &GetName() const;
-		FTransform GetTransform() const;
+		FTransform GetWorldTransform() const;
 		FTransform &GetLocalTransform();
 		const FTransform &GetLocalTransform() const;
 		const uint64_t GetGroup() const;

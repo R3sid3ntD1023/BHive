@@ -12,6 +12,7 @@
 #include "gfx/RenderCommand.h"
 #include "GUI/Gui.h"
 #include "gui/ImGuiExtended.h"
+#include "ImGuizmo.h"
 #include "Inspectors.h"
 #include "LogPanel.h"
 #include "renderers/Renderer.h"
@@ -19,7 +20,6 @@
 #include "subsystems/SelectionSubSystem.h"
 #include "subsystems/WindowSubSystem.h"
 #include "world/GameObject.h"
-#include <ImGuizmo.h>
 #include <rttr/library.h>
 
 namespace BHive
@@ -105,7 +105,7 @@ namespace BHive
 		if (mProjectLib->is_loaded())
 		{
 			mProjectLib->unload();
-			delete mProjectLib;
+			mProjectLib = nullptr;
 		}
 	}
 
@@ -343,16 +343,17 @@ namespace BHive
 			auto &selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>();
 			auto selected_object = selection.GetSelection();
 
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(
+				mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x,
+				mViewportBounds[1].y - mViewportBounds[0].y);
+
 			if (selected_object && mGizmoOperation != -1 && !mActiveWorld->IsRunning())
 			{
-				ImGuizmo::SetOrthographic(false);
-				ImGuizmo::SetDrawlist();
-				ImGuizmo::SetRect(
-					mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x,
-					mViewportBounds[1].y - mViewportBounds[0].y);
 
 				glm::mat4 local_transform = selected_object->GetLocalTransform().to_mat4();
-				glm::mat4 world_transform = selected_object->GetTransform();
+				glm::mat4 world_transform = selected_object->GetWorldTransform();
 
 				float snap_value = mSnappingEnabled ? sSnapValues[(ImGuizmo::OPERATION)mGizmoOperation] : 0.0f;
 				float snap_values[3] = {snap_value, snap_value, snap_value};
@@ -368,7 +369,7 @@ namespace BHive
 					glm::mat4 parent_transform = glm::inverse(world_transform) * local_transform * delta;
 					glm::mat4 new_transform = glm::inverse(parent_transform) * world_transform;
 
-					selected_object->SetTransform(new_transform);
+					selected_object->SetLocalTransform(new_transform);
 				}
 			}
 

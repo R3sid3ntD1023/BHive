@@ -1,15 +1,13 @@
 #include "BoxComponent.h"
 #include "GameObject.h"
-#include "physics/PhysicsContext.h"
 #include "renderers/Renderer.h"
+#include <physx/PxPhysicsAPI.h>
 
 namespace BHive
 {
 	void BoxComponent::Render()
 	{
-		auto object = GetOwner();
-		auto t = object->GetTransform();
-		LineRenderer::DrawBox(Extents, Offset, Color, t);
+		LineRenderer::DrawBox(Extents, Offset, Color, GetWorldTransform());
 	}
 
 	void BoxComponent::Save(cereal::BinaryOutputArchive &ar) const
@@ -24,22 +22,17 @@ namespace BHive
 		ar(Extents);
 	}
 
-	void *BoxComponent::GetCollisionShape(const FTransform &world_transform)
+	void *BoxComponent::GetGeometry()
 	{
-		auto extents = Extents * world_transform.get_scale();
-		return PhysicsContext::get_context().createBoxShape(rp3d::Vector3{extents.x, extents.y, extents.z});
-	}
-
-	void BoxComponent::OnReleaseCollisionShape()
-	{
-		PhysicsContext::get_context().destroyBoxShape((rp3d::BoxShape *)mCollisionShape);
-		mCollisionShape = nullptr;
+		return new physx::PxBoxGeometry(Extents.x, Extents.y, Extents.z);
 	}
 
 	REFLECT(BoxComponent)
 	{
 		BEGIN_REFLECT(BoxComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Extents) COMPONENT_IMPL();
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR()
+			REFLECT_PROPERTY(Extents)(META_DATA(EPropertyMetaData_Default, glm::vec3{.5f COMMA.5f COMMA.5f}))
+				COMPONENT_IMPL();
 	}
 
 } // namespace BHive

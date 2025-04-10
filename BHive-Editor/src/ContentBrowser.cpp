@@ -205,7 +205,9 @@ namespace BHive
 			auto frame_color = hovered ? ImGui::GetColorU32(ImGuiCol_FrameBgHovered) : IM_COL32(0, 0, 0, 0);
 
 			drawlist->AddRectFilled(rect.Min, rect.Max, frame_color);
-			drawlist->AddImage(*icon, rect.Min, rect.Min + ImVec2{size.y, size.y}, {0, 1}, {1, 0}, icon_color);
+			drawlist->AddImage(
+				(ImTextureID)(uint64_t)(uint32_t)*icon, rect.Min, rect.Min + ImVec2{size.y, size.y}, {0, 1}, {1, 0},
+				icon_color);
 			drawlist->AddText({rect.Min.x + size.y + GImGui->Style.FramePadding.x, rect.Min.y}, IM_COL32_WHITE, id.c_str());
 		}
 
@@ -289,7 +291,8 @@ namespace BHive
 					if (icon)
 					{
 						auto color = is_directory ? mStyle.mColors.mFolder : IM_COL32_WHITE;
-						drawlist->AddImage(*icon, rect.Min, rect.Max, {0, 1}, {1, 0}, color);
+						drawlist->AddImage(
+							(ImTextureID)(uint64_t)(uint32_t)*icon, rect.Min, rect.Max, {0, 1}, {1, 0}, color);
 					}
 
 					if (is_selected)

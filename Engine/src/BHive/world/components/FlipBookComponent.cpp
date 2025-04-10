@@ -30,7 +30,7 @@ namespace BHive
 			return;
 
 		auto owner = GetOwner();
-		auto t = owner->GetTransform();
+		auto t = owner->GetWorldTransform();
 		FQuadParams params{};
 		params.Color = Color;
 		params.Size = Size;

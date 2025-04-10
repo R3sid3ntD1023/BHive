@@ -56,11 +56,10 @@ namespace BHive
 		void CreateCollsionShape(void *rb, const FTransform &transform);
 		void ReleaseCollisionShape(void *rb);
 
-		virtual void *GetCollisionShape(const FTransform &world_transform) = 0;
-		virtual void OnReleaseCollisionShape() = 0;
+		virtual void *GetGeometry() = 0;
 
 	protected:
-		void *mCollider = nullptr;
+		// void *mCollider = nullptr;
 		void *mCollisionShape = nullptr;
 
 		REFLECTABLEV(Component)

@@ -1,3 +1,56 @@
 {
-  "dependencies": ["freetype" , "msdfgen", "assimp", "entt"]
+  "dependencies": [
+    {
+      "name": "freetype"
+    },
+    {
+      "name": "msdfgen"
+    },
+    {
+      "name": "assimp"
+    },
+    {
+      "name": "entt"
+    },
+    {
+      "name": "physx"
+    },
+    {
+      "name": "openal-soft"
+    },
+    {
+      "name": "glfw3"
+    },
+    {
+      "name": "glad",
+      "features": [ "gl-api-latest", "extensions" ]
+    },
+    {
+      "name": "glm"
+    },
+    {
+      "name": "stb"
+    },
+    {
+      "name": "spdlog"
+    },
+    {
+      "name": "cereal"
+    },
+    {
+      "name": "imgui",
+      "features": [
+        "docking-experimental",
+        "glfw-binding",
+        "opengl3-binding",
+        "vulkan-binding"
+      ]
+    },
+    {
+      "name": "implot"
+    },
+    {
+      "name": "rttr"
+    }
+  ]
 }

@@ -10,48 +10,43 @@ namespace BHive
 		if (!Settings.PhysicsEnabled)
 			return;
 
-		auto rb = (rp3d::RigidBody *)mRigidBodyInstance;
-		auto object = GetOwner();
-		auto &t = object->GetLocalTransform();
+		if (auto rb = Cast<physx::PxRigidDynamic>(mRigidBodyInstance))
+		{
+			auto object = GetOwner();
+			auto t = object->GetWorldTransform();
 
-		switch (Settings.BodyType)
-		{
-		case EBodyType::Dynamic:
-		{
-			auto &transform = rb->getTransform();
+			auto global_pose = rb->getGlobalPose();
 			auto scale = t.get_scale();
-			t = physics::utils::GetTransform(transform, scale);
-			break;
+			auto global = physics::utils::Convert(global_pose);
+			global.set_scale(scale);
+
+			object->SetWorldTransform(global);
 		}
-		case EBodyType::Kinematic:
+	}
+
+	void PhysicsComponent::SetGravityEnabled(bool enabled)
+	{
+		if (auto rb = Cast<physx::PxRigidDynamic>(mRigidBodyInstance))
 		{
-			rb->setTransform(physics::utils::GetPhysicsTransform(t));
-			break;
-		}
-		default:
-			break;
+			rb->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, enabled);
 		}
 	}
 
 	void PhysicsComponent::ApplyForce(const glm::vec3 &force)
 	{
-		if (auto rb = Cast<rp3d::RigidBody>(mRigidBodyInstance))
+		if (auto rb = Cast<physx::PxRigidDynamic>(mRigidBodyInstance))
 		{
-			rb->applyLocalForceAtCenterOfMass({force.x, force.y, force.z});
+			rb->addForce({force.x, force.y, force.z});
 		}
 	}
 
 	void PhysicsComponent::SetBodyType(EBodyType type)
 	{
-		if (auto rb = Cast<rp3d::RigidBody>(mRigidBodyInstance))
-		{
-			rb->setType((rp3d::BodyType)type);
-		}
 	}
 
 	void PhysicsComponent::SetVelocity(const glm::vec3 &velocity)
 	{
-		if (auto rb = Cast<rp3d::RigidBody>(mRigidBodyInstance))
+		if (auto rb = Cast<physx::PxRigidDynamic>(mRigidBodyInstance))
 		{
 			rb->setLinearVelocity({velocity.x, velocity.y, velocity.z});
 		}
@@ -59,7 +54,7 @@ namespace BHive
 
 	glm::vec3 PhysicsComponent::GetVelocity() const
 	{
-		if (auto rb = Cast<rp3d::RigidBody>(mRigidBodyInstance))
+		if (auto rb = Cast<physx::PxRigidDynamic>(mRigidBodyInstance))
 		{
 			auto vel = rb->getLinearVelocity();
 			return {vel.x, vel.y, vel.z};
@@ -75,7 +70,7 @@ namespace BHive
 
 	EBodyType PhysicsComponent::GetBodyType() const
 	{
-		if (auto rb = Cast<rp3d::RigidBody>(mRigidBodyInstance))
+		if (auto rb = Cast<physx::PxRigidDynamic>(mRigidBodyInstance))
 		{
 			return (EBodyType)rb->getType();
 		}

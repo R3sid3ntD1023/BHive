@@ -4,15 +4,23 @@
 #include "components/FlipBookComponent.h"
 #include "components/InputComponent.h"
 #include "components/PhysicsComponent.h"
+#include "components/SphereComponent.h"
 #include "components/SpriteComponent.h"
 #include "GameObject.h"
 #include "gfx/RenderCommand.h"
+#include "physics/EventListener.h"
 #include "physics/PhysicsUtils.h"
 #include "renderers/Renderer.h"
 #include "World.h"
+#include <physx/PxPhysicsAPI.h>
 
 namespace BHive
 {
+	namespace callbacks
+	{
+
+	} // namespace callbacks
+
 	void CopyComponents(const GameObject &src, GameObject &dst)
 	{
 		dst.GetComponents().clear();
@@ -26,7 +34,7 @@ namespace BHive
 	World::World()
 		: Asset()
 	{
-		mCollisionListener.OnContact.bind(
+		/*mCollisionListener.OnContact.bind(
 			[](const rp3d::CollisionCallback::ContactPair &p)
 			{
 				auto bd1 = (GameObject *)p.getBody1()->getUserData();
@@ -94,14 +102,12 @@ namespace BHive
 					auto n = hit.worldNormal;
 					collider->OnRaycastHit({p.x, p.y, p.z}, {n.x, n.y, n.z}, hit.hitFraction);
 				}
-			});
+			});*/
 	}
 
 	World::World(const World &world)
 		: Asset(world)
 	{
-		mCollisionListener = world.mCollisionListener;
-		mHitListener = world.mHitListener;
 	}
 
 	World::~World()
@@ -251,23 +257,44 @@ namespace BHive
 
 	void World::SimulateBegin()
 	{
-		rp3d::PhysicsWorld::WorldSettings world_settings{};
-		world_settings.worldName = GetName();
-		mPhysicsWorld = PhysicsContext::get_context().createPhysicsWorld(world_settings);
 
-		// setup listeners
+		// physx
+		auto physics = PhysicsContext::GetPhysics();
+		physx::PxSceneDesc sceneDesc(physics->getTolerancesScale());
+		sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 
-		mPhysicsWorld->setEventListener(&mCollisionListener);
+		// init callbacks
+		mSimulationEventCallback = new SimulationCallback();
+
+		mCpuDispatcher = physx::PxDefaultCpuDispatcherCreate(2);
+		sceneDesc.cpuDispatcher = mCpuDispatcher;
+		sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
+		mPhyxWorld = physics->createScene(sceneDesc);
+		mPhyxWorld->setSimulationEventCallback(mSimulationEventCallback);
 
 #ifdef _DEBUG
-		mPhysicsWorld->setIsDebugRenderingEnabled(true);
-		auto &debug_renderer = mPhysicsWorld->getDebugRenderer();
-		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_AABB, true);
-		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLISION_SHAPE, true);
-		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_NORMAL, true);
-		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_POINT, true);
-		debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB, true);
-#endif
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eSCALE, 1.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eACTOR_AXES, 2.0f);
+
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_AXES, 2.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_MASS_AXES, 2.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_ANG_VELOCITY, 2.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_LIN_VELOCITY, 2.0f);
+
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_DYNAMIC, 2.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_AABBS, 2.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_COMPOUNDS, 2.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_EDGES, 2.0f);
+		mPhyxWorld->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_AXES, 2.0f);
+#endif // _DEBUG
+
+		physx::PxPvdSceneClient *pvdClient = mPhyxWorld->getScenePvdClient();
+		if (pvdClient)
+		{
+			pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+			pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+			pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+		}
 
 		auto view = mRegistry.view<PhysicsComponent>();
 		for (auto &e : view)
@@ -279,21 +306,46 @@ namespace BHive
 				continue;
 
 			auto gameobject = mObjects[mEnttMap[e]];
-			auto t = gameobject->GetTransform();
+			auto t = gameobject->GetWorldTransform();
 
-			auto rb = mPhysicsWorld->createRigidBody(physics::utils::GetPhysicsTransform(t));
-			rb->setIsDebugEnabled(true);
-			rb->setUserData(gameobject.get());
-			rb->setMass(settings.Mass);
-			rb->setType((rp3d::BodyType)settings.BodyType);
-			rb->enableGravity(settings.GravityEnabled);
-			rb->setAngularDamping(settings.AngularDamping);
-			rb->setLinearDamping(settings.LinearDamping);
+			physx::PxRigidActor *rigid_body = nullptr;
+			switch (settings.BodyType)
+			{
+			case EBodyType::Static:
+			{
+				auto body = physics->createRigidStatic(physics::utils::Convert(t));
+				rigid_body = body;
+			}
+			break;
+			case EBodyType::Dynamic:
+			case EBodyType::Kinematic:
+			{
+				auto body = physics->createRigidDynamic(physics::utils::Convert(t));
+				body->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, settings.BodyType == EBodyType::Kinematic);
+				body->setAngularDamping(settings.AngularDamping);
+				body->setLinearDamping(settings.LinearDamping);
+				body->setMass(settings.Mass);
+				body->setRigidDynamicLockFlags(
+					physics::utils::GetLockFlags(settings.LinearLockAxis, settings.AngularLockAxis));
+				body->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, !settings.GravityEnabled);
+				rigid_body = body;
+			}
+			break;
+			default:
+				break;
+			}
 
-			rb->setLinearLockAxisFactor(physics::utils::LockAxisToVextor3(settings.LinearLockAxis));
-			rb->setAngularLockAxisFactor(physics::utils::LockAxisToVextor3(settings.AngularLockAxis));
+			if (rigid_body && gameobject)
+			{
 
-			physics_component.SetRigidBody(rb);
+#ifdef _DEBUG
+				rigid_body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+#endif // _DEBUG
+
+				rigid_body->userData = gameobject.get();
+				mPhyxWorld->addActor(*rigid_body);
+				physics_component.SetRigidBody(rigid_body);
+			}
 		}
 	}
 
@@ -305,7 +357,8 @@ namespace BHive
 
 		while (mAccumulatedTime >= time_step)
 		{
-			mPhysicsWorld->update(time_step);
+			mPhyxWorld->simulate(time_step);
+			mPhyxWorld->fetchResults(true);
 			mAccumulatedTime -= time_step;
 		}
 	}
@@ -319,12 +372,15 @@ namespace BHive
 			if (!physics_component.Settings.PhysicsEnabled)
 				continue;
 
-			auto rb = (rp3d::RigidBody *)physics_component.GetRigidBody();
-			mPhysicsWorld->destroyRigidBody(rb);
+			auto rb = (physx::PxRigidActor *)physics_component.GetRigidBody();
+			rb->release();
+			physics_component.SetRigidBody(nullptr);
 		}
 
-		PhysicsContext::get_context().destroyPhysicsWorld(mPhysicsWorld);
-		mPhysicsWorld = nullptr;
+		mPhyxWorld->release();
+		mPhyxWorld = nullptr;
+
+		delete mSimulationEventCallback;
 	}
 
 	void World::SetPaused(bool paused)
@@ -363,33 +419,30 @@ namespace BHive
 
 	void World::RenderPhysicsWorld()
 	{
-		if (!mPhysicsWorld)
-			return;
-
-		if (mPhysicsWorld->getIsDebugRenderingEnabled())
+		if (mPhyxWorld)
 		{
-			auto &physics_debugger = mPhysicsWorld->getDebugRenderer();
+			const auto &rb = mPhyxWorld->getRenderBuffer();
+			// for (physx::PxU32 i = 0; i < rb.getNbPoints(); i++)
+			//{
+			// }
 
-			auto &lines = physics_debugger.getLines();
-			auto &tris = physics_debugger.getTriangles();
-
-			for (unsigned i = 0; i < lines.size(); i++)
+			for (physx::PxU32 i = 0; i < rb.getNbLines(); i++)
 			{
-				auto &line = lines[i];
-				Line debug_line;
-				debug_line.color = line.color1;
-				debug_line.p0 = {line.point1.x, line.point1.y, line.point1.z};
-				debug_line.p1 = {line.point2.x, line.point2.y, line.point2.z};
-				LineRenderer::DrawLine(debug_line, {});
+				const auto &line = rb.getLines()[i];
+
+				uint32_t color = line.color1;
+				glm::vec3 p0 = {line.pos0.x, line.pos0.y, line.pos0.z};
+				glm::vec3 p1 = {line.pos1.x, line.pos1.y, line.pos1.z};
+				LineRenderer::DrawLine(p0, p1, color, {});
 			}
 
-			for (unsigned i = 0; i < tris.size(); i++)
+			for (physx::PxU32 i = 0; i < rb.getNbTriangles(); i++)
 			{
-				auto &tri = tris[i];
-				glm::vec3 p0 = {tri.point1.x, tri.point1.y, tri.point1.z};
-				glm::vec3 p1 = {tri.point2.x, tri.point2.y, tri.point2.z};
-				glm::vec3 p2 = {tri.point3.x, tri.point3.y, tri.point3.z};
-				LineRenderer::DrawTriangle(p0, p1, p2, tri.color2, {});
+				const auto &tri = rb.getTriangles()[i];
+				glm::vec3 p0 = {tri.pos0.x, tri.pos0.y, tri.pos0.z};
+				glm::vec3 p1 = {tri.pos1.x, tri.pos1.y, tri.pos1.z};
+				glm::vec3 p2 = {tri.pos2.x, tri.pos2.y, tri.pos2.z};
+				LineRenderer::DrawTriangle(p0, p1, p2, tri.color0, {});
 			}
 		}
 	}
@@ -438,10 +491,29 @@ namespace BHive
 		mDestoryedObjects.push_back(mObjects.at(id));
 	}
 
-	void World::RayCast(const glm::vec3 &start, const glm::vec3 &end, uint16_t categoryMasks)
+	bool World::RayCast(
+		const glm::vec3 &start, const glm::vec3 &dir, float maxDistance, FHitResult &result, uint16_t categoryMasks)
 	{
-		rp3d::Ray ray({start.x, start.y, start.z}, {end.x, end.y, end.z});
-		mPhysicsWorld->raycast(ray, &mHitListener, categoryMasks);
+		physx::PxRaycastBuffer hit;
+		physx::PxQueryFilterData filter{};
+		filter.data = {categoryMasks, 0, 0, 0};
+		filter.flags = PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC;
+
+		physx::PxVec3 origin = {start.x, start.y, start.z};
+		physx::PxVec3 unitdir = {dir.x, dir.y, dir.z};
+		bool status = mPhyxWorld->raycast(origin, unitdir, maxDistance, hit, physx::PxHitFlag::eDEFAULT, filter);
+		if (status)
+		{
+			auto &block = hit.block;
+			result.Normal = {block.normal.x, block.normal.y, block.normal.z};
+			result.Position = {block.position.x, block.position.y, block.position.z};
+			result.Object = (GameObject *)block.actor->userData;
+			result.Component = (ColliderComponent *)block.shape->userData;
+			result.Distance = block.distance;
+			result.InitalOverlap = block.hadInitialOverlap();
+		}
+
+		return status;
 	}
 
 	std::pair<Camera *, FTransform> World::GetPrimaryCamera()

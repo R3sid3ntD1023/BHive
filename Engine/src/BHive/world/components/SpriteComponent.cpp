@@ -7,7 +7,7 @@ namespace BHive
 	void SpriteComponent::Render()
 	{
 		auto owner = GetOwner();
-		auto transform = owner->GetTransform();
+		auto transform = owner->GetWorldTransform();
 
 		FQuadParams params{};
 		params.Color = Color;

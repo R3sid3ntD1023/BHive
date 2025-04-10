@@ -57,7 +57,19 @@ namespace BHive
 		GetComponent<TagComponent>()->Name = name;
 	}
 
-	void GameObject::SetTransform(const FTransform &transform)
+	void GameObject::SetWorldTransform(const FTransform &transform)
+	{
+		if (auto parent = GetParent())
+		{
+			auto parent_transform = parent->GetWorldTransform();
+			SetLocalTransform(parent_transform.inverse().to_mat4() * transform.to_mat4());
+			return;
+		}
+
+		SetLocalTransform(transform);
+	}
+
+	void GameObject::SetLocalTransform(const FTransform &transform)
 	{
 		GetComponent<TransformComponent>()->Transform = transform;
 	}
@@ -224,13 +236,13 @@ namespace BHive
 		return GetComponent<TagComponent>()->Name;
 	}
 
-	FTransform GameObject::GetTransform() const
+	FTransform GameObject::GetWorldTransform() const
 	{
 		auto &transform = GetComponent<TransformComponent>()->Transform;
 
 		if (auto parent = GetParent())
 		{
-			return parent->GetTransform().to_mat4() * transform.to_mat4();
+			return parent->GetWorldTransform().to_mat4() * transform.to_mat4();
 		}
 
 		return transform;
