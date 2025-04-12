@@ -1,28 +1,29 @@
 #include "VulkanContext.h"
 #include "VulkanCore.h"
 #include "VulkanDevice.h"
+#include <GLFW/glfw3.h>
 
 namespace BHive
 {
-	VulkanDevice::VulkanDevice(const VulkanInstance &instance)
+	VulkanDevice::VulkanDevice(const Ref<VulkanInstance> &instance, GLFWwindow *window)
+		: mInstance(instance)
 	{
-		GetPhysicalDevice(instance);
+		mDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
+		VK_ASSERT(glfwCreateWindowSurface(*instance, window, nullptr, &mSurface), "Failed to create window surface!");
+		GetPhysicalDevice(*instance);
 		CreateLogicalDevice();
 	}
 
 	VulkanDevice::~VulkanDevice()
 	{
+		vkDestroySurfaceKHR(*mInstance, mSurface, nullptr);
 		vkDestroyDevice(mLogicalDevice, nullptr);
 	}
 
-	const VkQueue &VulkanDevice::GetQueue(const char *name) const
+	const Queues &VulkanDevice::GetQueues() const
 	{
-		return mQueues.at(name);
-	}
-
-	const VkQueue &VulkanDevice::GetGraphicsQueue() const
-	{
-		return GetQueue(VK_GRAPHICS_QUEUE_NAME);
+		return mQueues;
 	}
 
 	void VulkanDevice::GetPhysicalDevice(const VulkanInstance &instance)
@@ -58,31 +59,36 @@ namespace BHive
 	{
 		mQueueFamilyIndices = FindQueueFamilies(mPhysicalDevice);
 
-		// Queue for garphics capabilties
-		VkDeviceQueueCreateInfo queuecreateinfo{};
-		queuecreateinfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queuecreateinfo.queueFamilyIndex = mQueueFamilyIndices.GraphicsFamily.value();
-		queuecreateinfo.queueCount = 1;
+		std::vector<VkDeviceQueueCreateInfo> queues;
+		std::set<uint32_t> queuesFamilies = {mQueueFamilyIndices.Graphics.value(), mQueueFamilyIndices.Present.value()};
 
 		float priority = 1.f;
-		queuecreateinfo.pQueuePriorities = &priority;
+		for (auto queue : queuesFamilies)
+		{
+			// Queue for garphics capabilties
+			VkDeviceQueueCreateInfo queuecreateinfo{};
+			queuecreateinfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queuecreateinfo.queueFamilyIndex = queue;
+			queuecreateinfo.queueCount = 1;
+			queuecreateinfo.pQueuePriorities = &priority;
+			queues.push_back(queuecreateinfo);
+		}
 
 		VkPhysicalDeviceFeatures features{};
 		features.geometryShader = true;
 
 		VkDeviceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		createInfo.pQueueCreateInfos = &queuecreateinfo;
-		createInfo.queueCreateInfoCount = 1;
+		createInfo.pQueueCreateInfos = queues.data();
+		createInfo.queueCreateInfoCount = queues.size();
 		createInfo.pEnabledFeatures = &features;
-		createInfo.enabledExtensionCount = 0;
+		createInfo.enabledExtensionCount = mDeviceExtensions.size();
+		createInfo.ppEnabledExtensionNames = mDeviceExtensions.data();
 
 		VK_ASSERT(vkCreateDevice(mPhysicalDevice, &createInfo, nullptr, &mLogicalDevice), "Failed to create logical device");
 
-		VkQueue graphics_queue;
-		vkGetDeviceQueue(mLogicalDevice, mQueueFamilyIndices.GraphicsFamily.value(), 0, &graphics_queue);
-
-		mQueues[VK_GRAPHICS_QUEUE_NAME] = graphics_queue;
+		vkGetDeviceQueue(mLogicalDevice, mQueueFamilyIndices.Graphics.value(), 0, &mGraphicsQueue);
+		vkGetDeviceQueue(mLogicalDevice, mQueueFamilyIndices.Present.value(), 0, &mPresentQueue);
 	}
 
 	int32_t VulkanDevice::GetDeviceSuitability(VkPhysicalDevice device)
@@ -107,6 +113,23 @@ namespace BHive
 		return score;
 	}
 
+	bool VulkanDevice::CheckExtensionSupport(VkPhysicalDevice device, const DeviceExtensions &exts)
+	{
+		uint32_t extension_count = 0;
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
+
+		std::vector<VkExtensionProperties> extensions(extension_count);
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, extensions.data());
+
+		std::set<std::string> requiredExtensions(exts.begin(), exts.end());
+		for (const auto &ext : extensions)
+		{
+			requiredExtensions.erase(ext.extensionName);
+		}
+
+		return requiredExtensions.empty();
+	}
+
 	QueueFamilyIndices VulkanDevice::FindQueueFamilies(VkPhysicalDevice device)
 	{
 		QueueFamilyIndices indices{};
@@ -122,7 +145,15 @@ namespace BHive
 		{
 			if (family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			{
-				indices.GraphicsFamily = i;
+				indices.Graphics = i;
+			}
+
+			VkBool32 present_support = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, mSurface, &present_support);
+
+			if (present_support)
+			{
+				indices.Present = i;
 			}
 
 			i++;
@@ -133,6 +164,7 @@ namespace BHive
 
 	bool VulkanDevice::IsDeviceSuitable(VkPhysicalDevice device)
 	{
-		return FindQueueFamilies(device).IsValid();
+
+		return FindQueueFamilies(device).IsValid() && CheckExtensionSupport(device, mDeviceExtensions);
 	}
 } // namespace BHive

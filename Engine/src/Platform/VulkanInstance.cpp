@@ -1,6 +1,5 @@
 #include "VulkanCore.h"
 #include "VulkanInstance.h"
-#include "VulkanSurface.h"
 #include <glfw/glfw3.h>
 
 namespace BHive

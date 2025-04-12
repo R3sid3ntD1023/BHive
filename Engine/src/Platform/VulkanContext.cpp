@@ -21,7 +21,8 @@ namespace BHive
 	void VulkanContext::Init()
 	{
 		mInstance = CreateRef<VulkanInstance>(glfwGetWindowTitle(mWindowHandle));
-		mSurface = CreateRef<VulkanSurface>(mInstance, mWindowHandle);
+
+		ASSERT(mInstance);
 
 		uint32_t extension_count = 0;
 		vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
@@ -35,12 +36,11 @@ namespace BHive
 			LOG_INFO("\t {}", ext.extensionName);
 		}
 
-		ASSERT(mInstance);
-		mDevice = CreateRef<VulkanDevice>(*mInstance);
+		mDevice = CreateRef<VulkanDevice>(mInstance, mWindowHandle);
 	}
 
 	VulkanInstance &VulkanContext::GetInstance()
 	{
-		return *Application::Get().GetWindow().GetContext().mInstance;
+		return *mInstance;
 	}
 } // namespace BHive
