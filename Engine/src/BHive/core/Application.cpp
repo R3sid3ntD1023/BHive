@@ -33,17 +33,17 @@ namespace BHive
 		window_callback.bind(this, &Application::OnEvent);
 		mWindow->SetEventCallback(window_callback);
 
-		RenderCommand::Init();
-		Renderer::Init();
-		PhysicsContext::Init();
+		/*RenderCommand::Init();
+		Renderer::Init();*/
+		// PhysicsContext::Init();
 
-		mImGuiLayer = new ImGuiLayer(mWindow->GetNative());
-		PushLayer(mImGuiLayer);
+		// mImGuiLayer = new ImGuiLayer(mWindow->GetNative());
+		// PushLayer(mImGuiLayer);
 	}
 
 	Application::~Application()
 	{
-		Renderer::Shutdown();
+		// Renderer::Shutdown();
 
 		sInstance = nullptr;
 	}
@@ -108,14 +108,14 @@ namespace BHive
 
 		Thread::Update();
 
-		mImGuiLayer->BeginFrame();
+		/*mImGuiLayer->BeginFrame();
 
 		for (auto &layer : mLayerStack)
 		{
 			layer->OnGuiRender();
 		}
 
-		mImGuiLayer->EndFrame();
+		mImGuiLayer->EndFrame();*/
 
 		mWindow->Update();
 	}

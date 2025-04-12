@@ -43,6 +43,7 @@ add_subdirectory(Engine)
 add_subdirectory(Inspectors)
 add_subdirectory(projects)
 add_subdirectory(BHive-Editor)
+add_subdirectory(VulkanTestApp)
 #add_subdirectory(ReflectionBuilder)
 
 

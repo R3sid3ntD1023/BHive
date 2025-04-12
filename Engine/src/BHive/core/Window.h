@@ -4,6 +4,7 @@
 #include "core/EventDelegate.h"
 #include "events/Event.h"
 #include "gfx/GraphicsContext.h"
+#include "Platform/VulkanContext.h"
 #include "WindowInput.h"
 
 struct GLFWwindow;
@@ -38,7 +39,8 @@ namespace BHive
 
 	public:
 		GLFWwindow *GetNative() { return mWindow; }
-		GraphicsContext &GetContext() { return *mContext; }
+		// GraphicsContext &GetContext() { return *mContext; }
+		VulkanContext &GetContext() { return *mContext; }
 		const std::string &GetTitle() const { return mData.Title; }
 		const glm::ivec2 &GetSize() const { return mData.mSize; }
 		bool IsVSyncEnabled() const { return mData.VSync; }
@@ -58,6 +60,7 @@ namespace BHive
 		bool mIsMaximized = false;
 		GLFWwindow *mWindow = nullptr;
 		FWindowData mData;
-		Scope<GraphicsContext> mContext;
+		// Scope<GraphicsContext> mContext;
+		Scope<VulkanContext> mContext;
 	};
 } // namespace BHive

@@ -28,14 +28,17 @@ namespace BHive
 #endif // _DEBUG
 
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		// glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		// glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		// glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 		mWindow = glfwCreateWindow(properties.Size.x, properties.Size.y, properties.Title.c_str(), nullptr, nullptr);
 		sWindowCount++;
 
-		mContext = CreateScope<GraphicsContext>(mWindow);
+		/*mContext = CreateScope<GraphicsContext>(mWindow);
+		mContext->Init();*/
+
+		mContext = CreateScope<VulkanContext>(mWindow);
 		mContext->Init();
 
 		glfwSetWindowUserPointer(mWindow, &mData);
@@ -63,12 +66,12 @@ namespace BHive
 
 	void Window::Update()
 	{
-		mContext->SwapBuffers();
+		// mContext->SwapBuffers();
 	}
 
 	void Window::SetVysnc(bool enabled)
 	{
-		glfwSwapInterval(enabled ? 1 : 0);
+		//	glfwSwapInterval(enabled ? 1 : 0);
 	}
 
 	void Window::Maximize()
