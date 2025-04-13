@@ -1,13 +1,13 @@
 #pragma once
 
 #include "VulkanCore.h"
-#include "VulkanDevice.h"
-#include "VulkanInstance.h"
 
 struct GLFWwindow;
 
 namespace BHive
 {
+	class VulkanSwapChain;
+
 	class VulkanContext
 	{
 	public:
@@ -16,11 +16,8 @@ namespace BHive
 
 		void Init();
 
-		VulkanInstance &GetInstance();
-
 	private:
 		GLFWwindow *mWindowHandle = nullptr;
-		Ref<VulkanInstance> mInstance;
-		Ref<VulkanDevice> mDevice;
+		Ref<VulkanSwapChain> mSwapChain;
 	};
 } // namespace BHive

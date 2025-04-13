@@ -1,8 +1,10 @@
 #include "core/Application.h"
 #include "core/Window.h"
+#include "VulkanAPI.h"
 #include "VulkanContext.h"
 #include "VulkanCore.h"
-#include "VulkanInstance.h"
+#include "VulkanSwapChain.h"
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -16,13 +18,12 @@ namespace BHive
 
 	VulkanContext::~VulkanContext()
 	{
+		VulkanAPI::GetAPI().Shutdown();
 	}
 
 	void VulkanContext::Init()
 	{
-		mInstance = CreateRef<VulkanInstance>(glfwGetWindowTitle(mWindowHandle));
-
-		ASSERT(mInstance);
+		VulkanAPI::GetAPI().Init(glfwGetWindowTitle(mWindowHandle), mWindowHandle);
 
 		uint32_t extension_count = 0;
 		vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
@@ -36,11 +37,7 @@ namespace BHive
 			LOG_INFO("\t {}", ext.extensionName);
 		}
 
-		mDevice = CreateRef<VulkanDevice>(mInstance, mWindowHandle);
+		mSwapChain = CreateRef<VulkanSwapChain>();
 	}
 
-	VulkanInstance &VulkanContext::GetInstance()
-	{
-		return *mInstance;
-	}
 } // namespace BHive

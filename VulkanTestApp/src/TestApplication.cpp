@@ -1,4 +1,5 @@
 #include "core/EntryPoint.h"
+#include "TestLayer.h"
 
 namespace BHive
 {
@@ -8,6 +9,7 @@ namespace BHive
 		VulkanTestApp(const FApplicationSpecification &specs)
 			: Application(specs)
 		{
+			PushLayer(new TestLayer());
 		}
 	};
 
