@@ -8,7 +8,7 @@ void StarComponent::Update(float dt)
 {
 	if (auto pipeline = BHive::GetRenderPipelineManager().GetCurrentPipeline())
 	{
-		pipeline->SubmitLight(mLight, GetOwner()->GetTransform());
+		pipeline->SubmitLight(mLight, GetOwner()->GetWorldTransform());
 	}
 }
 

@@ -15,7 +15,7 @@ void AstroidComponent::Update(float dt)
 {
 	if (auto pipeline = BHive::GetRenderPipelineManager().GetCurrentPipeline())
 	{
-		pipeline->SubmitMesh(mIndirectMesh, GetOwner()->GetTransform(), mShaderInstance, Instances, mMatrices.data());
+		pipeline->SubmitMesh(mIndirectMesh, GetOwner()->GetWorldTransform(), mShaderInstance, Instances, mMatrices.data());
 	}
 }
 

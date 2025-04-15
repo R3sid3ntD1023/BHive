@@ -19,10 +19,9 @@ MeshComponent::MeshComponent()
 
 void MeshComponent::Update(float dt)
 {
-	auto transform = GetOwner()->GetTransform();
 	if (auto pipeline = GetRenderPipelineManager().GetCurrentPipeline())
 	{
-		pipeline->SubmitMesh(mIndirectMesh, GetOwner()->GetTransform(), mShaderInstance);
+		pipeline->SubmitMesh(mIndirectMesh, GetOwner()->GetWorldTransform(), mShaderInstance);
 	}
 }
 
