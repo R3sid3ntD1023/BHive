@@ -20,6 +20,7 @@ namespace BHive
 	{
 	private:
 		Ref<Framebuffer> mFramebuffer;
+		Ref<Framebuffer> mMultiSampleBuffer;
 		Ref<World> mEditorWorld;
 		Ref<World> mActiveWorld;
 

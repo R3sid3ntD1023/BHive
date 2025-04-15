@@ -5,14 +5,18 @@
 #include "textures/Texture2DArray.h"
 #include "textures/TextureCube.h"
 #include "textures/TextureCubeArray.h"
+#include "textures/Texture2DMultisample.h"
 
 namespace BHive
 {
 	static const uint32_t sMaxFramebufferSize = 8192;
 
 	Ref<Texture>
-	CreateFramebufferTexture(ETextureType type, uint32_t w, uint32_t h, uint32_t d, FFramebufferTexture specification)
+	CreateFramebufferTexture(ETextureType type, uint32_t w, uint32_t h, uint32_t d, uint32_t samples, FFramebufferTexture specification)
 	{
+		if (samples > 1 && type == ETextureType::TEXTURE_2D)
+			return CreateRef<Texture2DMultisample>(w, h, samples, specification.mSpecification);
+
 		switch (type)
 		{
 		case ETextureType::TEXTURE_2D:
@@ -143,7 +147,6 @@ namespace BHive
 
 	Ref<Texture> Framebuffer::GetDepthAttachment() const
 	{
-		ASSERT(mDepthAttachment);
 		return mDepthAttachment;
 	}
 
@@ -173,7 +176,7 @@ namespace BHive
 				auto &attachment = mColorAttachments[i];
 
 				attachment = CreateFramebufferTexture(
-					specification.TextureType, mSpecification.Width, mSpecification.Height, mSpecification.Depth,
+					specification.TextureType, mSpecification.Width, mSpecification.Height, mSpecification.Depth, mSpecification.Samples,
 					specification);
 			}
 		}
@@ -182,9 +185,11 @@ namespace BHive
 		{
 			mDepthAttachment = CreateFramebufferTexture(
 				mDepthSpecification.TextureType, mSpecification.Width, mSpecification.Height, mSpecification.Depth,
+				mSpecification.Samples,
 				mDepthSpecification);
 		}
 
+		//create framebuffer and attach textures
 		glCreateFramebuffers(1, &mFramebufferID);
 		auto num_attachments = mColorAttachments.size();
 		for (size_t i = 0; i < num_attachments; i++)
@@ -213,7 +218,7 @@ namespace BHive
 			glNamedFramebufferDrawBuffer(mFramebufferID, GL_NONE);
 		}
 
-		if (mRenderBufferSpecification.Format != EFormat::Invalid)
+		if (mRenderBufferSpecification.Format != EFormat::Invalid && !mDepthAttachment)
 		{
 			auto depth_format = GetDepthAttachmentType(mRenderBufferSpecification.Format);
 			glCreateRenderbuffers(1, &mRenderbufferID);

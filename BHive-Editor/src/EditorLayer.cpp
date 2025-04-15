@@ -72,8 +72,12 @@ namespace BHive
 		FramebufferSpecification specs{};
 		specs.Width = size.x;
 		specs.Height = size.y;
-		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
+			.attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode =EWrapMode::CLAMP_TO_EDGE});
 		mFramebuffer = CreateRef<Framebuffer>(specs);
+
+		specs.Samples = 16;
+		mMultiSampleBuffer = CreateRef<Framebuffer>(specs);
 
 		RenderCommand::ClearColor(.2f, .2f, .2f);
 
@@ -114,6 +118,7 @@ namespace BHive
 		if ((mViewportSize.x > 0.f && mViewportSize.y > 0.f) && (mViewportSize.x != w || mViewportSize.y != h))
 		{
 			mEditorCamera.Resize(mViewportSize.x, mViewportSize.y);
+			mMultiSampleBuffer->Resize(mViewportSize.x, mViewportSize.y);
 			mFramebuffer->Resize(mViewportSize.x, mViewportSize.y);
 		}
 
@@ -122,7 +127,7 @@ namespace BHive
 
 		Renderer::SubmitCamera(mEditorCamera.GetProjection(), mEditorCamera.GetView());
 
-		mFramebuffer->Bind();
+		mMultiSampleBuffer->Bind();
 
 		RenderCommand::Clear();
 
@@ -134,7 +139,8 @@ namespace BHive
 
 		Renderer::End();
 
-		mFramebuffer->UnBind();
+		mMultiSampleBuffer->UnBind();
+		mMultiSampleBuffer->Blit(mFramebuffer);
 	}
 
 	void EditorLayer::OnEvent(Event &e)
