@@ -51,5 +51,6 @@ namespace BHive
 
 		bool mAltPressed{false};
 		std::map<MouseCode, bool> mButtonStatus;
+		glm::vec3 mRotation{};
 	};
 } // namespace BHive
