@@ -1,5 +1,9 @@
 cmake_minimum_required( VERSION 3.8 )
-cmake_policy(SET CMP0053 NEW)
+
+add_subdirectory(vendor)
+set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
+
+include(FindVulkan)
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
@@ -14,13 +18,15 @@ find_package(OpenAL CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(unofficial-omniverse-physx-sdk CONFIG REQUIRED)
+find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
 
-add_subdirectory(vendor)
+message(STATUS "Vulkan VERSION: ${Vulkan_VERSION}")
+message(STATUS "Vulkan Includes: ${Vulkan_INCLUDE_DIR} - Libs ${Vulkan_LIBRARIES}")
+set(Vulkan_LIB_DIR $ENV{VULKAN_SDK}/Lib)
 
 
 file(GLOB_RECURSE ENGINE_SRC CMAKE_CONFIGURE_DEPENDS src/** data/** PARENT_SCOPE)
 
-set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 
 
 add_library(Engine STATIC ${ENGINE_SRC})
@@ -55,9 +61,9 @@ target_link_libraries(Engine
 	PUBLIC EnTT::EnTT
 	PUBLIC unofficial::omniverse-physx-sdk::sdk
 	PUBLIC ${Vulkan_LIBRARIES}
-	PUBLIC shaderc_combined$<$<CONFIG:DEBUG>:d>.lib
-	PUBLIC spirv-cross-core$<$<CONFIG:DEBUG>:d>.lib
-	PUBLIC spirv-cross-glsl$<$<CONFIG:DEBUG>:d>.lib
+	PUBLIC shaderc_combined$<$<CONFIG:DEBUG>:d>
+	PUBLIC spirv-cross-core$<$<CONFIG:DEBUG>:d>
+	PUBLIC spirv-cross-glsl$<$<CONFIG:DEBUG>:d>
 )
 
 target_include_directories(Engine PUBLIC 

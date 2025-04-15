@@ -30,8 +30,3 @@ else()
     message(STATUS "Using Vulkan SDK Path - $ENV{VULKAN_SDK}")
 endif()
 
-include(FindVulkan)
-find_package(Vulkan REQUIRED COMPONENTS shaderc_combined SPIRV-Tools)
-message(STATUS "Vulkan VERSION: ${Vulkan_VERSION}")
-message(STATUS "Vulkan Includes: ${Vulkan_INCLUDE_DIR} - Libs ${Vulkan_LIBRARIES}")
-set(Vulkan_LIB_DIR $ENV{VULKAN_SDK}/Lib)
