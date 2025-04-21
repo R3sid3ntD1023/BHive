@@ -55,7 +55,6 @@ private:
 	Ref<Universe> mUniverse;
 	Ref<ResourceManager> mResourceManager;
 
-	Ref<AudioSource> mAudio;
 	Ref<struct CelestrialBody> mPlayer;
 
 	UniverseRenderPipeline mPipeline;

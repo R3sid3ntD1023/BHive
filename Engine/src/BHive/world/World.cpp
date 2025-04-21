@@ -7,6 +7,7 @@
 #include "components/PhysicsComponent.h"
 #include "components/SphereColliderComponent.h"
 #include "components/SpriteComponent.h"
+#include "components/AudioComponent.h"
 #include "GameObject.h"
 #include "gfx/RenderCommand.h"
 #include "physics/EventListener.h"
@@ -14,6 +15,7 @@
 #include "renderers/Renderer.h"
 #include "World.h"
 #include <physx/PxPhysicsAPI.h>
+#include "core/serialization/IncludeExternal.h"
 
 namespace BHive
 {

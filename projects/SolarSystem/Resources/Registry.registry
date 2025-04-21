@@ -1,92 +1,116 @@
 {
-    "value0": [
-      {
-        "key": "b2a44a50-3a59-426f-952e-32bf706697d2",
-        "value": {
-          "Type": "Texture2D",
-          "Path": "Textures\\Uranus.jpg",
-          "Name": "Uranus"
-        }
-      },
-      {
-        "key": "e9a0a76f-b53d-4dfc-8197-7a985740d31f",
-        "value": {
-          "Type": "Texture2D",
-          "Path": "Textures/Mercury.jpg",
-          "Name": "Mercury"
-        }
-      },
-      {
-        "key": "8ed71410-b378-4752-b7f3-6e3b2fd06604",
-        "value": {
-          "Type": "Texture2D",
-          "Path": "Textures\\Venus.jpg",
-          "Name": "Venus"
-        }
-      },
-      {
-        "key": "50903826-6bd9-4aea-ba82-71813a1c0c27",
-        "value": {
-          "Type": "Texture2D",
-          "Path": "Textures\\Earth.jpg",
-          "Name": "Earth"
-        }
-      },
-      {
-        "key": "6f5ff122-9a63-4c61-8181-9493fdc2d3cf",
-        "value": {
-          "Type": "Texture2D",
-          "Path": "Textures\\Moon.jpg",
-          "Name": "Moon"
-        }
-      },
-      {
-        "key": "da486c26-b4d0-4a6b-a909-41b88e24cb0a",
-        "value": {
-          "Type": "Texture2D",
-          "Path": "Textures\\Mars.jpg",
-          "Name": "Mars"
-        }
-      },
-      {
-        "key": "2cb659cd-82d4-4309-b434-386e0cac01a3",
-        "value": {
-          "Type": "Texture2D",
-          "Path": "Textures\\Jupiter.jpg",
-          "Name": "Jupiter"
-        }
-      },
-      {
-        "key": "d69c7bed-ac41-48e2-abf4-dd13b5f31b88",
-        "value": {
-          "Type": "Texture2D",
-          "Path": "Textures\\Saturn.jpg",
-          "Name": "Saturn"
-        }
-      },
-      {
-        "key": "b5d12f83-6ecb-463d-a92c-4288c7e1d6cd",
-        "value": {
-          "Type": "Texture2D",
-          "Path": "Textures\\Neptune.jpg",
-          "Name": "Neptune"
-        }
-      },
-      {
-        "key": "ed025ccb-d5cf-4180-8c6c-264270f93608",
-        "value": {
-          "Type": "StaticMesh",
-          "Path": "Meshes\\phobos\\phobos.glb",
-          "Name": "phobos"
-        }
-      },
-      {
-        "key": "a9000be6-9685-4d59-a5c0-a79fdbb765cb",
-        "value": {
-          "Type": "StaticMesh",
-          "Path": "Meshes\\deimos\\deimos.glb",
-          "Name": "deimos"
-        }
+  "value0": [
+    {
+      "key": "b2a44a50-3a59-426f-952e-32bf706697d2",
+      "value": {
+        "Type": "Texture2D",
+        "Path": "Textures\\Uranus.jpg",
+        "Name": "Uranus"
       }
-    ]
+    },
+    {
+      "key": "e9a0a76f-b53d-4dfc-8197-7a985740d31f",
+      "value": {
+        "Type": "Texture2D",
+        "Path": "Textures/Mercury.jpg",
+        "Name": "Mercury"
+      }
+    },
+    {
+      "key": "8ed71410-b378-4752-b7f3-6e3b2fd06604",
+      "value": {
+        "Type": "Texture2D",
+        "Path": "Textures\\Venus.jpg",
+        "Name": "Venus"
+      }
+    },
+    {
+      "key": "50903826-6bd9-4aea-ba82-71813a1c0c27",
+      "value": {
+        "Type": "Texture2D",
+        "Path": "Textures\\Earth.jpg",
+        "Name": "Earth"
+      }
+    },
+    {
+      "key": "6f5ff122-9a63-4c61-8181-9493fdc2d3cf",
+      "value": {
+        "Type": "Texture2D",
+        "Path": "Textures\\Moon.jpg",
+        "Name": "Moon"
+      }
+    },
+    {
+      "key": "da486c26-b4d0-4a6b-a909-41b88e24cb0a",
+      "value": {
+        "Type": "Texture2D",
+        "Path": "Textures\\Mars.jpg",
+        "Name": "Mars"
+      }
+    },
+    {
+      "key": "2cb659cd-82d4-4309-b434-386e0cac01a3",
+      "value": {
+        "Type": "Texture2D",
+        "Path": "Textures\\Jupiter.jpg",
+        "Name": "Jupiter"
+      }
+    },
+    {
+      "key": "d69c7bed-ac41-48e2-abf4-dd13b5f31b88",
+      "value": {
+        "Type": "Texture2D",
+        "Path": "Textures\\Saturn.jpg",
+        "Name": "Saturn"
+      }
+    },
+    {
+      "key": "b5d12f83-6ecb-463d-a92c-4288c7e1d6cd",
+      "value": {
+        "Type": "Texture2D",
+        "Path": "Textures\\Neptune.jpg",
+        "Name": "Neptune"
+      }
+    },
+    {
+      "key": "9459613c-44b2-4366-98fd-5a579ce75a50",
+      "value": {
+        "Type": "Texture2D",
+        "Path": "Textures\\Pluto.jpg",
+        "Name": "Pluto"
+      }
+    },
+    {
+      "key": "efc7558e-f2be-4803-b282-4cf8d23345d9",
+      "value": {
+        "Type": "Texture2D",
+        "Path": "Textures\\Charon.jpg",
+        "Name": "Charon"
+      }
+    },
+    {
+      "key": "ed025ccb-d5cf-4180-8c6c-264270f93608",
+      "value": {
+        "Type": "StaticMesh",
+        "Path": "Meshes\\phobos\\phobos.glb",
+        "Name": "phobos"
+      }
+    },
+    {
+      "key": "a9000be6-9685-4d59-a5c0-a79fdbb765cb",
+      "value": {
+        "Type": "StaticMesh",
+        "Path": "Meshes\\deimos\\deimos.glb",
+        "Name": "deimos"
+      }
+    },
+    {
+      "key": "ab37e821-11e8-4c80-a471-b286338e17b5",
+      "value": {
+        "Type": "AudioSource",
+        "Path": "Audio\\Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).wav",
+        "Name": "Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers)"
+      }
+    }
+  ]
 }

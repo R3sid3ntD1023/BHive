@@ -1,7 +1,36 @@
 {
   "Universe": [
     {
-      "Type": "CelestrialBody",    
+      "Type": "GameObject",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "ID": "7c635068-d29c-4b0f-a387-467f42896942",
+          "Name": "Player",
+          "Group": 0
+        },
+        {
+          "Type": "TransformComponent",
+          "Transform": {
+            "Position": [ 0, 0, 0 ],
+            "Rotation": [ 0, 0, 0 ],
+            "Scale": [ 1, 1, 1 ]
+          }
+        },
+        {
+          "Type": "RelationshipComponent",
+          "Parent": "00000000-0000-0000-0000-000000000000",
+          "Children": []
+        },
+        {
+          "Type": "AudioComponent",
+          "AutoPlay": true,
+          "Audio": "ab37e821-11e8-4c80-a471-b286338e17b5"
+        }
+      ]
+    },
+    {
+      "Type": "CelestrialBody",
       "Components": [
         {
           "Type": "TagComponent",
@@ -52,13 +81,13 @@
           "Transform": {
             "Position": [ 5, 0, 0 ],
             "Rotation": [ 0, 0, 0 ],
-            "Scale": [ 1, 1, 1 ]
+            "Scale": [ 0.38, 0.38, 0.38 ]
           }
         },
         {
           "Type": "RelationshipComponent",
           "Parent": "8a82173a-866e-49b0-bca5-45d2d038299d",
-          "Children": [ ]
+          "Children": []
         },
         {
           "Type": "MeshComponent",
@@ -75,7 +104,6 @@
         }
       ]
     },
-
     {
       "Type": "CelestrialBody",
       "Components": [
@@ -90,7 +118,7 @@
           "Transform": {
             "Position": [ 20, 0, 0 ],
             "Rotation": [ 0, 0, 0 ],
-            "Scale": [ 1, 1, 1 ]
+            "Scale": [ 0.95, 0.95, 0.95 ]
           }
         },
         {
@@ -110,6 +138,397 @@
           "Type": "PlanetComponent",
           "RotationTime": "0'243'0'0'0",
           "OrbitalTime": "0'225'0'0'0"
+        }
+      ]
+    },
+    {
+      "Type": "CelestrialBody",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "ID": "4cb8f10d-e3ba-41f1-a708-d3a49e4b2330",
+          "Name": "EarthSystem",
+          "Group": 0
+        },
+        {
+          "Type": "TransformComponent",
+          "Transform": {
+            "Position": [ 30, 0, 0 ],
+            "Rotation": [ 0, 0, 0 ],
+            "Scale": [ 1, 1, 1 ]
+          }
+        },
+        {
+          "Type": "RelationshipComponent",
+          "Parent": "8a82173a-866e-49b0-bca5-45d2d038299d",
+          "Children": []
+        },
+        {
+          "Type": "PlanetComponent",
+          "RotationTime": "0'0'0'0'0",
+          "OrbitalTime": "1'0'0'0'0"
+        }
+      ]
+    },
+    {
+      "Type": "CelestrialBody",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "ID": "ce19bb35-3928-4d1e-ba09-b081de940d27",
+          "Name": "Earth",
+          "Group": 0
+        },
+        {
+          "Type": "TransformComponent",
+          "Transform": {
+            "Position": [ 0, 0, 0 ],
+            "Rotation": [ 0, 0, 0 ],
+            "Scale": [ 1, 1, 1 ]
+          }
+        },
+        {
+          "Type": "RelationshipComponent",
+          "Parent": "4cb8f10d-e3ba-41f1-a708-d3a49e4b2330",
+          "Children": []
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1, 1 ],
+          "Emission": [ 0, 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": "50903826-6bd9-4aea-ba82-71813a1c0c27",
+          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+        },
+        {
+          "Type": "PlanetComponent",
+          "RotationTime": "0'0'24'0'0",
+          "OrbitalTime": "0'0'0'0'0"
+        }
+      ]
+    },
+    {
+      "Type": "CelestrialBody",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "ID": "a9d2dd32-09e4-468a-bfdf-cd1479c64c02",
+          "Name": "Moon",
+          "Group": 0
+        },
+        {
+          "Type": "TransformComponent",
+          "Transform": {
+            "Position": [ 5, 0, 0 ],
+            "Rotation": [ 0, 0, 0 ],
+            "Scale": [ 0.33, 0.33, 0.33 ]
+          }
+        },
+        {
+          "Type": "RelationshipComponent",
+          "Parent": "4cb8f10d-e3ba-41f1-a708-d3a49e4b2330",
+          "Children": []
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1, 1 ],
+          "Emission": [ 0, 0, 0, 0 ],
+          "Flags": 1,
+          "Texture": "6f5ff122-9a63-4c61-8181-9493fdc2d3cf",
+          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+        },
+        {
+          "Type": "PlanetComponent",
+          "RotationTime": "0'29'0'0'0",
+          "OrbitalTime": "0'0'0'0'0"
+        }
+      ]
+    },
+    {
+      "Type": "CelestrialBody",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "ID": "30d52a5b-8de2-4b89-9398-bc94e5f9f3fb",
+          "Name": "Mars",
+          "Group": 0
+        },
+        {
+          "Type": "TransformComponent",
+          "Transform": {
+            "Position": [ 45, 0, 0 ],
+            "Rotation": [ 0, 0, 0 ],
+            "Scale": [ 0.53, 0.53, 0.53 ]
+          }
+        },
+        {
+          "Type": "RelationshipComponent",
+          "Parent": "8a82173a-866e-49b0-bca5-45d2d038299d",
+          "Children": []
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1, 1 ],
+          "Emission": [ 0, 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": "da486c26-b4d0-4a6b-a909-41b88e24cb0a",
+          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+        },
+        {
+          "Type": "PlanetComponent",
+          "RotationTime": "0'0'24'14'24",
+          "OrbitalTime": "0'687'0'0'0"
+        }
+      ]
+    },
+    {
+      "Type": "CelestrialBody",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "ID": "f975b390-87bd-484e-b42b-1a080bd8a017",
+          "Name": "Jupiter",
+          "Group": 0
+        },
+        {
+          "Type": "TransformComponent",
+          "Transform": {
+            "Position": [ 60, 0, 0 ],
+            "Rotation": [ 0, 0, 0 ],
+            "Scale": [ 10.97, 10.97, 10.97 ]
+          }
+        },
+        {
+          "Type": "RelationshipComponent",
+          "Parent": "8a82173a-866e-49b0-bca5-45d2d038299d",
+          "Children": []
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1, 1 ],
+          "Emission": [ 0, 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": "2cb659cd-82d4-4309-b434-386e0cac01a3",
+          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+        },
+        {
+          "Type": "PlanetComponent",
+          "RotationTime": "0'0'10'0'0",
+          "OrbitalTime": "12'0'0'0'0"
+        }
+      ]
+    },
+    {
+      "Type": "CelestrialBody",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "ID": "c32b4456-ce5c-4e6e-8f03-e768f8a5bb12",
+          "Name": "Saturn",
+          "Group": 0
+        },
+        {
+          "Type": "TransformComponent",
+          "Transform": {
+            "Position": [ 90, 0, 0 ],
+            "Rotation": [ 0, 0, 0 ],
+            "Scale": [ 9.12, 9.12, 9.12 ]
+          }
+        },
+        {
+          "Type": "RelationshipComponent",
+          "Parent": "8a82173a-866e-49b0-bca5-45d2d038299d",
+          "Children": []
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1, 1 ],
+          "Emission": [ 0, 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": "d69c7bed-ac41-48e2-abf4-dd13b5f31b88",
+          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+        },
+        {
+          "Type": "PlanetComponent",
+          "RotationTime": "0'0'10'16'48",
+          "OrbitalTime": "29'146'0'0'0"
+        }
+      ]
+    },
+    {
+      "Type": "CelestrialBody",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "ID": "95c95b1c-ec3e-4bc0-9fef-cb9a60c7f269",
+          "Name": "Uranus",
+          "Group": 0
+        },
+        {
+          "Type": "TransformComponent",
+          "Transform": {
+            "Position": [ 120, 0, 0 ],
+            "Rotation": [ 0, 0, 0 ],
+            "Scale": [ 3.97, 3.97, 3.97 ]
+          }
+        },
+        {
+          "Type": "RelationshipComponent",
+          "Parent": "8a82173a-866e-49b0-bca5-45d2d038299d",
+          "Children": []
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1, 1 ],
+          "Emission": [ 0, 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": "b2a44a50-3a59-426f-952e-32bf706697d2",
+          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+        },
+        {
+          "Type": "PlanetComponent",
+          "RotationTime": "0'0'17'14'0",
+          "OrbitalTime": "84'0'0'0'0"
+        }
+      ]
+    },
+    {
+      "Type": "CelestrialBody",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "ID": "420d4248-973f-48ea-b679-00991efb9782",
+          "Name": "Neptune",
+          "Group": 0
+        },
+        {
+          "Type": "TransformComponent",
+          "Transform": {
+            "Position": [ 160, 0, 0 ],
+            "Rotation": [ 0, 0, 0 ],
+            "Scale": [ 3.86, 3.86, 3.86 ]
+          }
+        },
+        {
+          "Type": "RelationshipComponent",
+          "Parent": "8a82173a-866e-49b0-bca5-45d2d038299d",
+          "Children": []
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1, 1 ],
+          "Emission": [ 0, 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": "b5d12f83-6ecb-463d-a92c-4288c7e1d6cd",
+          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+        },
+        {
+          "Type": "PlanetComponent",
+          "RotationTime": "0'0'16'0'0",
+          "OrbitalTime": "165'0'0'0'0"
+        }
+      ]
+    },
+    {
+      "Type": "CelestrialBody",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "ID": "ef0253bd-9786-49f8-bbc7-efc8d33ea343",
+          "Name": "PlutoSystem",
+          "Group": 0
+        },
+        {
+          "Type": "TransformComponent",
+          "Transform": {
+            "Position": [ 190, 0, 0 ],
+            "Rotation": [ 0, 0, 0 ],
+            "Scale": [ 1, 1, 1 ]
+          }
+        },
+        {
+          "Type": "RelationshipComponent",
+          "Parent": "8a82173a-866e-49b0-bca5-45d2d038299d",
+          "Children": []
+        },
+        {
+          "Type": "PlanetComponent",
+          "RotationTime": "0'0'0'0'0",
+          "OrbitalTime": "248'0'0'0'0"
+        }
+      ]
+    },
+    {
+      "Type": "CelestrialBody",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "ID": "8942985f-f7b3-465e-8a9c-962a403cc4e3",
+          "Name": "Pluto",
+          "Group": 0
+        },
+        {
+          "Type": "TransformComponent",
+          "Transform": {
+            "Position": [ 0, 0, 0 ],
+            "Rotation": [ 0, 0, 0 ],
+            "Scale": [ 0.2, 0.2, 0.2 ]
+          }
+        },
+        {
+          "Type": "RelationshipComponent",
+          "Parent": "ef0253bd-9786-49f8-bbc7-efc8d33ea343",
+          "Children": []
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1, 1 ],
+          "Emission": [ 0, 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": "9459613c-44b2-4366-98fd-5a579ce75a50",
+          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+        },
+        {
+          "Type": "PlanetComponent",
+          "RotationTime": "0'6'12'0'0",
+          "OrbitalTime": "0'0'0'0'0"
+        }
+      ]
+    },
+    {
+      "Type": "CelestrialBody",
+      "Components": [
+        {
+          "Type": "TagComponent",
+          "ID": "e2619dec-585b-4c5f-90c0-5833f143ee7a",
+          "Name": "Charon",
+          "Group": 0
+        },
+        {
+          "Type": "TransformComponent",
+          "Transform": {
+            "Position": [ 3, 0, 0 ],
+            "Rotation": [ 0, 0, 0 ],
+            "Scale": [ 0.07, 0.07, 0.07 ]
+          }
+        },
+        {
+          "Type": "RelationshipComponent",
+          "Parent": "ef0253bd-9786-49f8-bbc7-efc8d33ea343",
+          "Children": []
+        },
+        {
+          "Type": "MeshComponent",
+          "Color": [ 1, 1, 1, 1 ],
+          "Emission": [ 0, 0, 0, 0 ],
+          "Flags": 0,
+          "Texture": "efc7558e-f2be-4803-b282-4cf8d23345d9",
+          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+        },
+        {
+          "Type": "PlanetComponent",
+          "RotationTime": "0'6'12'0'0",
+          "OrbitalTime": "0'0'0'0'0"
         }
       ]
     }

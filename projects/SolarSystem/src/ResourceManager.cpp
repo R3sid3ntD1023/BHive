@@ -6,24 +6,29 @@
 #include <mesh/primitives/Sphere.h>
 #include <mesh/StaticMesh.h>
 #include <renderers/Renderer.h>
+#include <audio/AudioSource.h>
+#include <audio/AudioImporter.h>
 
 namespace BHive
 {
 	AssetType GetTypeFromExtension(const std::string &ext)
 	{
-		AssetType type = InvalidType;
-
 		if (ext == ".glb" || ext == ".gltf" || ext == ".obj")
 		{
-			type = AssetType::get<StaticMesh>();
+			return AssetType::get<StaticMesh>();
 		}
 
 		else if (ext == ".jpg" || ext == ".png")
 		{
-			type = AssetType::get<Texture2D>();
+			return AssetType::get<Texture2D>();
+		}
+		else if (ext == ".wav" || ext == ".ogg")
+		{
+			return AssetType::get<AudioSource>();
 		}
 
-		return type;
+		ASSERT(false);
+		return InvalidType;
 	}
 
 	ResourceManager::ResourceManager(const std::filesystem::path &directory)
@@ -136,9 +141,11 @@ namespace BHive
 
 			return nullptr;
 		};
+		auto audio_importer = [](const std::filesystem::path &path) -> Ref<Asset> { return AudioImporter::Import(path); };
 
 		mLoadFunctions[rttr::type::get<Texture2D>()] = texture_importer;
 		mLoadFunctions[rttr::type::get<StaticMesh>()] = mesh_importer;
+		mLoadFunctions[rttr::type::get<AudioSource>()] = audio_importer;
 	}
 
 	void ResourceManager::RegisterDefaultAssets()

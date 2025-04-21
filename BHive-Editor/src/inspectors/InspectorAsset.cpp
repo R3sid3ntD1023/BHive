@@ -9,6 +9,7 @@
 #include "gfx/textures/Texture2D.h"
 #include "physics/PhysicsMaterial.h"
 #include "input/InputContext.h"
+#include "audio/AudioSource.h"
 
 #define NULLPTR_NAME "Nullptr"
 #define ASSET_DRAG_DROP_NAME "ASSET"
@@ -108,4 +109,5 @@ namespace BHive
 	REFLECT_INSPECTOR(Inspector_AssetHandler<FlipBook>, Ref<FlipBook>)
 	REFLECT_INSPECTOR(Inspector_AssetHandler<PhysicsMaterial>, Ref<PhysicsMaterial>)
 	REFLECT_INSPECTOR(Inspector_AssetHandler<InputContext>, Ref<InputContext>)
+	REFLECT_INSPECTOR(Inspector_AssetHandler<AudioSource>, Ref<AudioSource>)
 } // namespace BHive

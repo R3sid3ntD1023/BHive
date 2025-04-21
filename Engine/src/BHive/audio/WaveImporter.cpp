@@ -9,10 +9,10 @@ void WaveLoggerCallback(WAVE::Logger::LogLevel level, const char *message)
 	switch (level)
 	{
 	case WAVE::Logger::info:
-		LOG_INFO(message);
+		//LOG_INFO(message);
 		break;
 	case WAVE::Logger::trace:
-		LOG_TRACE(message);
+		//LOG_TRACE(message);
 		break;
 	case WAVE::Logger::warn:
 		LOG_WARN(message);

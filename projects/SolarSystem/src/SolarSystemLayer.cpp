@@ -36,9 +36,6 @@ void SolarSystemLayer::OnAttach()
 
 	auto font = FontManager::Get().AddFontFromFile(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", 96);
 
-	mAudio =
-		AudioImporter::Import(RESOURCE_PATH "Audio/Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).wav");
-
 	mResourceManager = CreateRef<ResourceManager>(RESOURCE_PATH);
 	AssetManager::SetAssetManager(&*mResourceManager);
 
@@ -69,12 +66,10 @@ void SolarSystemLayer::OnAttach()
 
 	RenderCommand::ClearColor(.2f, .2f, .2f, 1.f);
 
-	// mAudio->Play();
+
 	mUniverse->Begin();
 
 	RenderCommand::SetLineWidth(1.0f);
-
-	// glEnable(GL_SCISSOR_TEST);
 }
 
 void SolarSystemLayer::OnDetach()

@@ -44,5 +44,5 @@ namespace BHive
 #define REFLECT_FACTORY(cls) \
 	REFLECT(cls)             \
 	{                        \
-		BEGIN_REFLECT(cls);  \
+		BEGIN_REFLECT(cls) REFLECT_CONSTRUCTOR();  \
 	}

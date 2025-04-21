@@ -9,9 +9,15 @@ namespace BHive
 		auto derived_types = rttr::type::get<Factory>().get_derived_classes();
 		for (auto &type : derived_types)
 		{
-			auto factory = type.create().get_value<Ref<Factory>>();
-
-			Register(factory);
+			auto factory = type.create();
+			
+			if (!factory)
+			{
+				LOG_WARN("No Factory found for type - {}", type);
+				continue;
+			}
+				
+			Register(factory.get_value<Ref<Factory>>());
 		}
 	}
 
