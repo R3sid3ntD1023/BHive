@@ -30,6 +30,10 @@ namespace BHive
 
 	void SandboxLayer::OnAttach()
 	{
+		ShaderManager::Get().LoadFiles(RESOURCE_PATH);
+		mShader = ShaderManager::Get().Get("ShadowShader.glsl");
+		mScreenQuadShader = ShaderManager::Get().Get("ScreenQuad2.glsl");
+
 		auto &window = Application::Get().GetWindow();
 		auto windowSize = window.GetSize();
 		auto aspect = windowSize.x / (float)windowSize.y;
@@ -39,16 +43,14 @@ namespace BHive
 		RenderCommand::ClearColor(.1f, .1f, .1f, 1.0f);
 
 		mPlane = CreateRef<PCube>(1.f);
-		mIndirectPlane = CreateRef<IndirectRenderable>();
-		mIndirectPlane->Init(mPlane, 2);
+		mPlane->GetMaterialTable().add_material(CreateRef<Material>(mShader));
 
 		{
 			FMeshImportData data;
 			if (MeshImporter::Import(RESOURCE_PATH "industrial_standing_light/scene.gltf", data))
 			{
 				mLightPost = CreateRef<StaticMesh>(data.mMeshData);
-				mIndirectLightPost = CreateRef<IndirectRenderable>();
-				mIndirectLightPost->Init(mLightPost, 2);
+	
 			}
 		}
 
@@ -58,8 +60,6 @@ namespace BHive
 			{
 				mSkeleton = CreateRef<Skeleton>(data.mBoneData, data.mSkeletonHeirarchyData);
 				mCharacter = CreateRef<SkeletalMesh>(data.mMeshData, mSkeleton);
-				mIndirectCharacter = CreateRef<IndirectRenderable>();
-				mIndirectCharacter->Init(mCharacter, 1, true);
 			}
 		}
 
@@ -76,10 +76,7 @@ namespace BHive
 			}
 		}
 
-		ShaderManager::Get().LoadFiles(RESOURCE_PATH);
-		mShader = ShaderManager::Get().Get("ShadowShader.glsl");
-		mScreenQuadShader = ShaderManager::Get().Get("ScreenQuad2.glsl");
-
+		
 		FramebufferSpecification spec{};
 		spec.Width = windowSize.x;
 		spec.Height = windowSize.y;
@@ -214,16 +211,15 @@ namespace BHive
 	void SandboxLayer::DrawScene()
 	{
 		glm::mat4 matrices[] = {FTransform({-4, .5, 0}, {}, {1, 1, 1}), FTransform({5, -.05, 0}, {}, {40, .1, 20})};
-		mIndirectPlane->Draw(FTransform(), matrices);
+		MeshRenderer::DrawMesh(mLightPost);
 
 		glm::mat4 matrices2[] = {FTransform({-10, 0, 0}), FTransform({10, 0, 0})};
-		mIndirectLightPost->Draw(FTransform(), matrices2);
+		MeshRenderer::DrawMesh(mPlane, {1.0f}, matrices2, 2);
 
-		if (mIndirectCharacter)
+		if (mCharacter)
 		{
 			auto character_transform = FTransform({0, 0, 0}, {-90, 0, 0}, {.01, .01, .01});
-			auto &bones = mPose->GetTransformsJointSpace();
-			mIndirectCharacter->Draw(character_transform, nullptr, bones.data(), bones.size());
+			MeshRenderer::DrawMesh(mCharacter, *mPose, character_transform);
 		}
 	}
 

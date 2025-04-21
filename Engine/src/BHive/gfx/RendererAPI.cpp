@@ -140,13 +140,19 @@ namespace BHive
 	}
 
 	void RendererAPI::DrawElementsBaseVertex(
-		EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count)
+		EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count, uint32_t instance_count)
 	{
 		vao.Bind();
 		auto index_buffer = vao.GetIndexBuffer();
 
 		auto _count = count ? count : index_buffer->GetCount();
-		glDrawElementsBaseVertex(mode, _count, GL_UNSIGNED_INT, (void *)(sizeof(uint32_t) * start_index), start);
+		
+
+		if (instance_count > 0)
+			glDrawElementsInstancedBaseVertexBaseInstance(
+				mode, _count, GL_UNSIGNED_INT, (void *)(sizeof(uint32_t) * start_index), instance_count, start, start_index);
+		else
+			glDrawElementsBaseVertex(mode, _count, GL_UNSIGNED_INT, (void *)(sizeof(uint32_t) * start_index), start);
 	}
 
 	void

@@ -34,9 +34,6 @@ namespace BHive
 
 	private:
 		EditorCamera mCamera;
-		Ref<IndirectRenderable> mIndirectPlane;
-		Ref<IndirectRenderable> mIndirectLightPost;
-		Ref<IndirectRenderable> mIndirectCharacter;
 		Ref<PCube> mPlane;
 		Ref<StaticMesh> mLightPost;
 

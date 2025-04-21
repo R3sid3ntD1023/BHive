@@ -22,10 +22,15 @@ namespace BHive
 		void Initialize();
 
 		const Ref<VertexArray> &GetVertexArray() const { return mVertexArray; }
+
 		Ref<VertexArray> &GetVertexArray() { return mVertexArray; }
+
 		const AABB &GetBoundingBox() const { return mData.mBoundingBox; }
+
 		const FMeshData &GetData() const { return mData; }
+
 		const std::vector<FSubMesh> &GetSubMeshes() const { return mData.mSubMeshes; }
+
 		MaterialTable &GetMaterialTable() { return mMaterialTable; }
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;

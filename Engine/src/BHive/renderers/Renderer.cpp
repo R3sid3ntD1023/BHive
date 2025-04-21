@@ -4,12 +4,13 @@
 #include "gfx/UniformBuffer.h"
 #include "Renderer.h"
 #include "ShadowRenderer.h"
+
 #include <glad/glad.h>
 
-#define MAX_BONES 128
+
 #define CAMERA_UBO_BINDING 0
 #define LIGHT_UBO_BINDING 1
-#define BONE_UBO_BINDING 5
+
 
 namespace BHive
 {
@@ -36,7 +37,6 @@ namespace BHive
 
 		Ref<UniformBuffer> mObjectBuffer;
 		Ref<UniformBuffer> mLightBuffer;
-		Ref<UniformBuffer> mBoneBuffer;
 
 		Ref<Texture> mWhiteTexture;
 		Ref<Texture> mBlackTexture;
@@ -45,8 +45,7 @@ namespace BHive
 		RenderData()
 		{
 			mLightBuffer = CreateRef<UniformBuffer>(LIGHT_UBO_BINDING, sizeof(FLightData));
-			mBoneBuffer = CreateRef<UniformBuffer>(BONE_UBO_BINDING, sizeof(glm::mat4) * MAX_BONES);
-
+			
 			uint32_t white = 0xFFFFFFFF;
 			FTextureSpecification texture_specs{};
 			texture_specs.Channels = 3;
@@ -66,6 +65,7 @@ namespace BHive
 		ShadowRenderer::Init(MAX_LIGHTS);
 		LineRenderer::Init();
 		QuadRenderer::Init();
+		MeshRenderer::Init();
 	}
 
 	void Renderer::Shutdown()
@@ -73,6 +73,7 @@ namespace BHive
 
 		LineRenderer::Shutdown();
 		QuadRenderer::Shutdown();
+		MeshRenderer::Shutdown();
 
 		delete sData;
 	}
@@ -86,6 +87,7 @@ namespace BHive
 
 		LineRenderer::Begin();
 		QuadRenderer::Begin();
+		MeshRenderer::Begin();
 	}
 
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
@@ -130,15 +132,12 @@ namespace BHive
 		sData->mLightBuffer->SetData(&sData->mLightData, sizeof(RenderData::FLightData));
 	}
 
-	void Renderer::SubmitSkeletalMesh(const std::vector<glm::mat4> &bone_matrices)
-	{
-		sData->mBoneBuffer->SetData(bone_matrices.data(), bone_matrices.size() * sizeof(glm::mat4));
-	}
 
 	void Renderer::End()
 	{
 		LineRenderer::End();
 		QuadRenderer::End();
+		MeshRenderer::End();
 	}
 
 	Ref<Texture> Renderer::GetWhiteTexture()

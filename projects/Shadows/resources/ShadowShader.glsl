@@ -25,7 +25,7 @@ struct PerObjectData
 
 layout(std430, binding = 1) restrict readonly buffer ObjectSSBO
 {
-	PerObjectData o[];
+	mat4 worldMatrix;
 };
 
 layout(std430, binding = 2) restrict readonly buffer InstanceSSBO
@@ -49,7 +49,7 @@ void main()
 
 	mat4 instance = mix(mat4(1), instances[gl_InstanceIndex], float(instanced));
 
-	mat4 model =  o[gl_DrawID].WorldMatrix * instance;
+	mat4 model =  worldMatrix * instance;
 	gl_Position = uProjection * uView *  model *  posL;
 
 	vs_out.Normal = transpose(inverse(mat3(model))) * vNormal;

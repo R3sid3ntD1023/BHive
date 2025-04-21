@@ -39,9 +39,10 @@ namespace BHive
 	}
 
 	void RenderCommand::DrawElementsBaseVertex(
-		EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count)
+		EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count,
+		uint32_t instance_count)
 	{
-		sRendererAPI->DrawElementsBaseVertex(mode, vao, start, start_index, count);
+		sRendererAPI->DrawElementsBaseVertex(mode, vao, start, start_index, count, instance_count);
 	}
 
 	void

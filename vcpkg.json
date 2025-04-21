@@ -42,8 +42,7 @@
       "features": [
         "docking-experimental",
         "glfw-binding",
-        "opengl3-binding",
-        "vulkan-binding"
+        "opengl3-binding"
       ]
     },
     {

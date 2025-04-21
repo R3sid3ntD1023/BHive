@@ -18,7 +18,8 @@ namespace BHive
 		static BHIVE void DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count = 0);
 		static BHIVE void DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count = 0);
 		static void DrawElementsBaseVertex(
-			EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0);
+			EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0,
+			uint32_t instance_count= 0);
 		static void
 		DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count = 0);
 		static BHIVE void
