@@ -1,13 +1,4 @@
-#include "Component.h"
-#include "components/BoxColliderComponent.h"
-#include "components/CameraComponent.h"
-#include "components/CapsuleColliderComponent.h"
-#include "components/FlipBookComponent.h"
-#include "components/InputComponent.h"
-#include "components/PhysicsComponent.h"
-#include "components/SphereColliderComponent.h"
-#include "components/SpriteComponent.h"
-#include "components/AudioComponent.h"
+#include "Components.h"
 #include "GameObject.h"
 #include "gfx/RenderCommand.h"
 #include "physics/EventListener.h"
@@ -528,5 +519,6 @@ namespace BHive
 	REFLECT(World)
 	{
 		BEGIN_REFLECT(World) REFLECT_CONSTRUCTOR();
+		rttr::type::register_wrapper_converter_for_base_classes<Ref<World>>();
 	}
 } // namespace BHive
