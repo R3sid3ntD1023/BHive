@@ -45,13 +45,13 @@ A game engine created for educational purposes to learn how game frameworks and 
 
 ## Third Party
 
-Markup :*[GLFW](https://github.com/glfw/glfw)
-		*Glad
-		*[EnTT](https://github.com/skypjack/entt)
-		*[msdfgen](https://github.com/Chlumsky/msdfgen)
-		*[msdf-atlas-gen](https://github.com/Chlumsky/msdf-atlas-gen)
-		*[Openal-Soft](https://github.com/kcat/openal-soft)
-		*[Rttr](https://github.com/rttrorg/rttr)
-		*[Physx](https://github.com/NVIDIA-Omniverse/PhysX)
-		*[ImGui-docking_branch](https://github.com/ocornut/imgui/)
-		*[ImGuizmo] https://github.com/CedricGuillemet/ImGuizmo/)
+<li>[GLFW](https://github.com/glfw/glfw)
+<li>Glad
+<li>[EnTT](https://github.com/skypjack/entt)
+<li>[msdfgen](https://github.com/Chlumsky/msdfgen)
+<li>[msdf-atlas-gen](https://github.com/Chlumsky/msdf-atlas-gen)
+<li>[Openal-Soft](https://github.com/kcat/openal-soft)
+<li>[Rttr](https://github.com/rttrorg/rttr)
+<li>[Physx](https://github.com/NVIDIA-Omniverse/PhysX)
+<li>[ImGui-docking_branch](https://github.com/ocornut/imgui/)
+<li>[ImGuizmo] https://github.com/CedricGuillemet/ImGuizmo/)
