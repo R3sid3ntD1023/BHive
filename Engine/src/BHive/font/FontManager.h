@@ -9,6 +9,8 @@ namespace BHive
 	class FontManager
 	{
 	public:
+		FontManager();
+
 		void AddFont(const std::string &name, const Ref<Font> &font);
 
 		Ref<Font> AddFontFromFile(const std::filesystem::path &filename, int fontSize);

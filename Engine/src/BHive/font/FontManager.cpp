@@ -3,6 +3,11 @@
 
 namespace BHive
 {
+	FontManager::FontManager()
+	{
+		mDefaultFont = AddFontFromFile(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", 96);
+	}
+
 	void FontManager::AddFont(const std::string &name, const Ref<Font> &font)
 	{
 		mFonts.emplace(name, font);
