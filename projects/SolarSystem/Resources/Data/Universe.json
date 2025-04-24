@@ -21,11 +21,6 @@
           "Type": "RelationshipComponent",
           "Parent": "00000000-0000-0000-0000-000000000000",
           "Children": []
-        },
-        {
-          "Type": "AudioComponent",
-          "AutoPlay": true,
-          "Audio": "ab37e821-11e8-4c80-a471-b286338e17b5"
         }
       ]
     },
