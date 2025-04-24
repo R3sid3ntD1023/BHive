@@ -1,23 +1,16 @@
 #include "asset/AssetManager.h"
 #include "asset/EditorAssetManager.h"
-#include "asset/TAssetHandler.h"
 #include "gui/ImGuiExtended.h"
 #include "InspectorAsset.h"
-#include "sprite/Sprite.h"
-#include "sprite/FlipBook.h"
-#include "sprite/SpriteSheet.h"
-#include "gfx/textures/Texture2D.h"
-#include "physics/PhysicsMaterial.h"
-#include "input/InputContext.h"
-#include "audio/AudioSource.h"
+
 
 #define NULLPTR_NAME "Nullptr"
 #define ASSET_DRAG_DROP_NAME "ASSET"
 
 namespace BHive
 {
-	template <typename T>
-	bool Inspector_AssetHandler<T>::Inspect(
+	
+	bool Inspector_AssetHandler::Inspect(
 		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 
@@ -25,7 +18,7 @@ namespace BHive
 		if (!asset_manager)
 			return false;
 
-		auto data = var.get_value<std::shared_ptr<T>>();
+		auto data = var.get_value<std::shared_ptr<Asset>>();
 		auto type = var.extract_wrapped_value().get_type().get_raw_type();
 		auto meta_data = asset_manager->GetMetaData(Asset::GetHandle(data));
 		auto current_name = meta_data ? meta_data.Name : NULLPTR_NAME;
@@ -61,8 +54,10 @@ namespace BHive
 
 				if (selected)
 				{
-					auto asset = AssetManager::GetAsset<T>(id);
-					data = asset;
+					auto asset = AssetManager::GetAsset(id);
+					rttr::variant arg(asset);
+					arg.convert(var.get_type());
+					var = arg;
 					changed |= true;
 					break;
 				}
@@ -79,7 +74,11 @@ namespace BHive
 				auto meta_data = asset_manager->GetMetaData(handle);
 				if (meta_data.Type == type || meta_data.Type.is_derived_from(type))
 				{
-					data = AssetManager::GetAsset<T>(handle);
+
+					auto asset = AssetManager::GetAsset(handle);
+					rttr::variant arg(asset);
+					arg.convert(var.get_type());
+					var = arg;
 					changed = true;
 				}
 			}
@@ -95,19 +94,8 @@ namespace BHive
 			}
 		}
 
-		if (changed)
-		{
-			var = data;
-		}
-
 		return changed;
 	}
 
-	REFLECT_INSPECTOR(Inspector_AssetHandler<Texture2D>, Ref<Texture2D>)
-	REFLECT_INSPECTOR(Inspector_AssetHandler<Sprite>, Ref<Sprite>)
-	REFLECT_INSPECTOR(Inspector_AssetHandler<SpriteSheet>, Ref<SpriteSheet>)
-	REFLECT_INSPECTOR(Inspector_AssetHandler<FlipBook>, Ref<FlipBook>)
-	REFLECT_INSPECTOR(Inspector_AssetHandler<PhysicsMaterial>, Ref<PhysicsMaterial>)
-	REFLECT_INSPECTOR(Inspector_AssetHandler<InputContext>, Ref<InputContext>)
-	REFLECT_INSPECTOR(Inspector_AssetHandler<AudioSource>, Ref<AudioSource>)
+	REFLECT_INSPECTOR(Inspector_AssetHandler, Asset)
 } // namespace BHive

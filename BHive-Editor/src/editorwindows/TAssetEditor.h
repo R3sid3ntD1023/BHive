@@ -40,10 +40,10 @@ namespace BHive
 		{
 			rttr::variant var = mAsset.get();
 			rttr::variant instance = this;
-			if (inspect(instance, var))
+			if (inspect(instance, var, true))
 			{
-				auto asset_ptr = mAsset.get();
-				asset_ptr = var.get_value<T *>();
+				auto ptr = mAsset.get();
+				ptr = var.get_value<T*>();
 			}
 		}
 

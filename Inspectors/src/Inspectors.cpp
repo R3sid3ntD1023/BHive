@@ -27,37 +27,52 @@ namespace BHive
 
 		Ref<Inspector> GetInspector(const rttr::type &type) const
 		{
-			rttr::type current_type = type;
+			Ref<Inspector> inspector = nullptr;
 
-			if (mRegisteredInspectors.contains(current_type))
+			if (mRegisteredInspectors.contains(type))
 			{
-				return mRegisteredInspectors.at(current_type);
+				inspector = mRegisteredInspectors.at(type);
 			}
 
-			for (auto base : current_type.get_base_classes())
+			if (!inspector)
 			{
-				if (mRegisteredInspectors.contains(base))
+				for (auto base : type.get_base_classes())
 				{
-					return mRegisteredInspectors.at(base);
+					if (mRegisteredInspectors.contains(base))
+					{
+						inspector = mRegisteredInspectors.at(base);
+					}
 				}
 			}
 
-			if (current_type.is_enumeration())
+			if (!inspector && type.is_wrapper())
+			{
+				auto wrapped_type = type.get_wrapped_type();
+				inspector = GetInspector(wrapped_type);
+
+				if (!inspector)
+				{
+					auto raw_type = wrapped_type.get_raw_type();
+					inspector = GetInspector(raw_type);
+				}
+			}
+			
+			if (type.is_enumeration())
 			{
 				return mRegisteredInspectors.at(rttr::type::get<rttr::enumeration>());
 			}
 
-			if (current_type.is_associative_container())
+			if (type.is_associative_container())
 			{
 				return mRegisteredInspectors.at(rttr::type::get<rttr::variant_associative_view>());
 			}
 
-			if (current_type.is_sequential_container())
+			if (type.is_sequential_container())
 			{
 				return mRegisteredInspectors.at(rttr::type::get<rttr::variant_sequential_view>());
 			}
 
-			return nullptr;
+			return inspector;
 		}
 
 		static InspectorRegistry Get()
