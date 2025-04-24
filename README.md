@@ -1,8 +1,9 @@
 # BHive
 
- ##About
-A game engine created for educational purposes to learn how game frameworks and engines work on the backend. Created with C++ and OpenGL for graphics, it's one of my personal projects that I enjoyed working on and put most of time into. It features:
+## About
+A game engine created for educational purposes to learn how game frameworks and engines work on the backend. Created with C++ and OpenGL for graphics, it's one of my personal projects that I enjoyed working on and put most of time into.
 
+## Features
 -Worlds, Components, Game Objects
 -Physics simulations (PhysX)
 -Sprites, Flipbooks, Sprite Sheets
@@ -13,7 +14,7 @@ A game engine created for educational purposes to learn how game frameworks and 
 -Project Management
 -CMake
 
-##Third Party
+## Third Party
 <li>[GLFW] (https://github.com/glfw/glfw)</li>
 <li>Glad</li>
 <li>[EnTT] (https://github.com/skypjack/entt)</li>
