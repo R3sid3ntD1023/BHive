@@ -9,12 +9,14 @@ namespace BHive
 		{
 			TAssetEditor::OnWindowRender();
 
-			if (ImGui::BeginTable("##source", 2))
+			if (ImGui::BeginTable("##source", 2, 0))
 			{
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
 
-				if (ImGui::BeginChild("Source"))
+				if (ImGui::BeginChild(
+						"Source", {},
+						ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY))
 				{
 					auto source = mAsset->GetSource();
 
@@ -31,7 +33,9 @@ namespace BHive
 
 				ImGui::TableNextColumn();
 
-				if (ImGui::BeginChild("Sprites"))
+				if (ImGui::BeginChild(
+						"Sprites", {},
+						ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY))
 				{
 					DrawSprites();
 

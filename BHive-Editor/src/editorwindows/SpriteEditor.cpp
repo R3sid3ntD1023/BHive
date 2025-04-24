@@ -13,7 +13,7 @@ namespace BHive
 			auto max = mAsset->GetMaxCoords();
 			auto texture = mAsset->GetSourceTexture();
 
-			if (ImGui::BeginChild("##Texture", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX))
+			if (ImGui::BeginChild("##Texture", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY))
 			{
 				auto image_size = ImGui::GetContentRegionAvail();
 				if (texture)
@@ -26,14 +26,18 @@ namespace BHive
 
 			ImGui::SameLine();
 
-			if (ImGui::BeginChild("##Variables", {}, ImGuiChildFlags_AlwaysUseWindowPadding))
+			if (ImGui::BeginChild(
+					"##Variables", {},
+					ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY))
 			{
 				TAssetEditor::OnWindowRender();
 			}
 
 			ImGui::EndChild();
 
-			if (ImGui::BeginChild("##Coordinates", {0, 200.f}, ImGuiChildFlags_AlwaysUseWindowPadding))
+			if (ImGui::BeginChild(
+					"##Coordinates", {0, 200.f},
+					ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY))
 			{
 				if (texture)
 				{
