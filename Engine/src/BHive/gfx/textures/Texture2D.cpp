@@ -147,5 +147,6 @@ namespace BHive
 	REFLECT(Texture2D)
 	{
 		BEGIN_REFLECT(Texture2D) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY("Specification", GetSpecification, SetSpecification);
+		rttr::type::register_wrapper_converter_for_base_classes<Ref<Texture2D>>();
 	}
 } // namespace BHive

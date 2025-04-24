@@ -126,5 +126,7 @@ namespace BHive
 		{
 			BEGIN_REFLECT(InputContext) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY("Keys", mKeys);
 		}
+
+		rttr::type::register_wrapper_converter_for_base_classes<Ref<InputContext>>();
 	}
 } // namespace BHive

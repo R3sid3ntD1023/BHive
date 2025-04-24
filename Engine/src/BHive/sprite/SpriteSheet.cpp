@@ -67,6 +67,8 @@ namespace BHive
 			REFLECT_PROPERTY("Source", GetSource, SetSource)
 			REFLECT_PROPERTY("Grid", GetGrid, SetGrid) /* REFLECT_PROPERTY("Sprites", mSprites)*/;
 		}
+
+		rttr::type::register_wrapper_converter_for_base_classes<Ref<SpriteSheet>>();
 	}
 
 } // namespace BHive

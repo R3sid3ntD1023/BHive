@@ -134,5 +134,7 @@ namespace BHive
 		REFLECT_PROPERTY("Loop", IsLooping, SetLooping)
 		REFLECT_PROPERTY_READ_ONLY("Length", GetLength)
 		REFLECT_PROPERTY_READ_ONLY("Length In Seconds", GetLengthSeconds);
+
+		rttr::type::register_wrapper_converter_for_base_classes<Ref<AudioSource>>();
 	}
 } // namespace BHive

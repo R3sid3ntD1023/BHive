@@ -102,5 +102,7 @@ namespace BHive
 			REFLECT_CONSTRUCTOR()
 			REFLECT_PROPERTY("Generator", GetGenerator, SetFromGenerator) REFLECT_PROPERTY("Source", mSource);
 		}
+
+		rttr::type::register_wrapper_converter_for_base_classes<Ref<Sprite>>();
 	}
 } // namespace BHive

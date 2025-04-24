@@ -177,5 +177,7 @@ namespace BHive
 			REFLECT_PROPERTY("FramesPerSecond", GetFramesPerSecond, SetFramesPerSecond)
 			REFLECT_PROPERTY("Frames", GetFrames, SetFrames);
 		}
+
+		rttr::type::register_wrapper_converter_for_base_classes<Ref<FlipBook>>();
 	}
 } // namespace BHive

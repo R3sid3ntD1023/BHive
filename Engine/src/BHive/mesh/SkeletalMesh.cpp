@@ -34,5 +34,6 @@ namespace BHive
 	{
 		BEGIN_REFLECT(SkeletalMesh)
 		REFLECT_CONSTRUCTOR();
+		rttr::type::register_wrapper_converter_for_base_classes<Ref<SkeletalMesh>>();
 	}
 } // namespace BHive

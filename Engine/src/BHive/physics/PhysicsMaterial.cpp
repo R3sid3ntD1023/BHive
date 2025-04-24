@@ -19,6 +19,7 @@ namespace BHive
 		BEGIN_REFLECT(PhysicsMaterial)
 		REFLECT_CONSTRUCTOR()
 		REFLECT_PROPERTY(FrictionCoefficient) REFLECT_PROPERTY(Bounciness) REFLECT_PROPERTY(MassDensity);
+		rttr::type::register_wrapper_converter_for_base_classes<Ref<PhysicsMaterial>>();
 	}
 
 } // namespace BHive
