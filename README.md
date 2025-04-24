@@ -14,7 +14,12 @@ A game engine created for educational purposes to learn how game frameworks and 
 <li>CMake</li>
 
 ## ScreenShots
+<details>
+<summary>ScreenShots</summary>
+
 ![level_editor](https://github.com/R3sid3ntD1023/BHive/blob/main/images/level_editor.png?raw=true)
+
+</details>
 
 ## Third Party
 <li>[GLFW] (https://github.com/glfw/glfw)</li>
