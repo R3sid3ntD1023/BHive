@@ -4,21 +4,24 @@
 #include "core/reflection/Reflection.h"
 #include "core/serialization/Serialization.h"
 
+
 namespace BHive
 {
 	class StreamReader;
 	class StreamWriter;
+	class World;
 
 	struct FProjectConfiguration
 	{
 		std::string Name = "Untitled";
 		std::filesystem::path ProjectDirectory;
 		std::filesystem::path ResourcesDirectory;
+		UUID StartScene = NullID;
 
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(MAKE_NVP(Name), MAKE_NVP(ProjectDirectory), MAKE_NVP(ResourcesDirectory));
+			ar(MAKE_NVP(Name), MAKE_NVP(ProjectDirectory), MAKE_NVP(ResourcesDirectory), MAKE_NVP(StartScene));
 		}
 
 		REFLECTABLE()
