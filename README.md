@@ -54,4 +54,4 @@ A game engine created for educational purposes to learn how game frameworks and 
 - [Rttr](https://github.com/rttrorg/rttr)
 - [Physx](https://github.com/NVIDIA-Omniverse/PhysX)
 - [ImGui-docking_branch](https://github.com/ocornut/imgui/)
-- [ImGuizmo] https://github.com/CedricGuillemet/ImGuizmo/)
+- [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo/)
