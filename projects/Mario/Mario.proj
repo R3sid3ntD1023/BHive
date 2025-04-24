@@ -1,5 +1,6 @@
 {
-    "Name": "Mario",
-    "ProjectDirectory": "C:\\Users\\dariu\\Documents\\BHive\\projects\\Mario",
-    "ResourcesDirectory": "resources"
+  "Name": "Mario",
+  "ProjectDirectory": "C:\\Users\\dariu\\Documents\\BHive\\projects\\Mario",
+  "ResourcesDirectory": "resources",
+  "StartScene": "00000000-0000-0000-0000-000000000000"
 }
