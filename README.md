@@ -13,11 +13,32 @@ A game engine created for educational purposes to learn how game frameworks and 
 <li>Project Management</li>
 <li>CMake</li>
 
-## ScreenShots
+## Screenshots
 <details>
-<summary>ScreenShots</summary>
+<summary>Screenshots</summary>
 
 ![level_editor](https://github.com/R3sid3ntD1023/BHive/blob/main/images/level_editor.png?raw=true)
+![project_window](https://github.com/R3sid3ntD1023/BHive/blob/main/images/project_selector.png?raw=true)
+![asset_window](https://github.com/R3sid3ntD1023/BHive/blob/main/images/AssetWindow.png?raw=true)
+
+### Components
+![components](https://github.com/R3sid3ntD1023/BHive/blob/main/images/Components.png?raw=true)
+![box_component](https://github.com/R3sid3ntD1023/BHive/blob/main/images/BoxComponent.png?raw=true)
+![sphere_component](https://github.com/R3sid3ntD1023/BHive/blob/main/images/SphereComponent.png?raw=true)
+![capsule_component](https://github.com/R3sid3ntD1023/BHive/blob/main/images/CapsuleComponent.png?raw=true)
+![sprite_component](https://github.com/R3sid3ntD1023/BHive/blob/main/images/SpriteComponent.png?raw=true)
+![text_component](https://github.com/R3sid3ntD1023/BHive/blob/main/images/TextComponent.png?raw=true)
+
+### Editors
+![flipbook_editor](https://github.com/R3sid3ntD1023/BHive/blob/main/images/FlipbookEditor.png?raw=true)
+![sprite_editor](https://github.com/R3sid3ntD1023/BHive/blob/main/images/SpriteEditor.png?raw=true)
+![sprite_sheet_editor](https://github.com/R3sid3ntD1023/BHive/blob/main/images/SpriteSheetEditor.png?raw=true)
+![input_editor](https://github.com/R3sid3ntD1023/BHive/blob/main/images/InputEditor.png?raw=true)
+![texture_editor](https://github.com/R3sid3ntD1023/BHive/blob/main/images/TextureEditor.png?raw=true)
+
+### Example Scene
+![example](https://github.com/R3sid3ntD1023/BHive/blob/main/images/TestWorld.png?raw=true)
+
 
 </details>
 
