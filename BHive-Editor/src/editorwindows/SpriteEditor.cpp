@@ -13,31 +13,30 @@ namespace BHive
 			auto max = mAsset->GetMaxCoords();
 			auto texture = mAsset->GetSourceTexture();
 
-			if (ImGui::BeginChild("##Texture", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY))
+			if (ImGui::BeginChild("##Texture", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeY))
 			{
-				auto image_size = ImGui::GetContentRegionAvail();
+
+				if (ImGui::BeginChild("##Variables", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX))
+				{
+					TAssetEditor::OnWindowRender();
+				}
+
+				ImGui::EndChild();
+
+				ImGui::SameLine();
+
 				if (texture)
 				{
-					ImGui::Image((ImTextureID)(uint64_t)(uint32_t)*texture, {image_size}, {min.x, max.y}, {max.x, min.y});
+					auto max_size = ImGui::GetContentRegionAvail();
+					auto texture_size = max_size * ImVec2{1, 1.f / texture->GetAspectRatio()};
+					ImGui::Image((ImTextureID)(uint64_t)(uint32_t)*texture, texture_size, {min.x, max.y}, {max.x, min.y});
 				}
 			}
 
 			ImGui::EndChild();
 
-			ImGui::SameLine();
-
 			if (ImGui::BeginChild(
-					"##Variables", {},
-					ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY))
-			{
-				TAssetEditor::OnWindowRender();
-			}
-
-			ImGui::EndChild();
-
-			if (ImGui::BeginChild(
-					"##Coordinates", {0, 200.f},
-					ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY))
+					"##Coordinates", {0, 200.f}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeY))
 			{
 				if (texture)
 				{

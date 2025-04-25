@@ -64,8 +64,6 @@ namespace BHive
 				}
 			});
 
-		SetCurrentContext(ImGui::GetCurrentContext());
-
 		auto &window = Application::Get().GetWindow();
 		auto &size = window.GetSize();
 
@@ -73,7 +71,7 @@ namespace BHive
 		specs.Width = size.x;
 		specs.Height = size.y;
 		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
-			.attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode =EWrapMode::CLAMP_TO_EDGE});
+			.attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 		mFramebuffer = CreateRef<Framebuffer>(specs);
 
 		specs.Samples = 16;
@@ -104,11 +102,6 @@ namespace BHive
 
 	void EditorLayer::OnDetach()
 	{
-		if (mProjectLib->is_loaded())
-		{
-			mProjectLib->unload();
-			mProjectLib = nullptr;
-		}
 	}
 
 	void EditorLayer::OnUpdate(float dt)
@@ -160,8 +153,6 @@ namespace BHive
 		static bool properties_status = true;
 		static bool content_browser_status = true;
 
-		GUI::BeginDockSpace("DockSpace", nullptr, mMenuBarHeight);
-
 		if (ImGui::BeginMainMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
@@ -206,18 +197,19 @@ namespace BHive
 		{
 			for (auto &[id, metadata] : mAssetManager->GetAssetRegistry())
 			{
-				inspect("Handle", id, false, true);
-				inspect("Data", metadata, false, true);
+				if (ImGui::BeginChild(metadata.Name.c_str()))
+				{
+					inspect("Handle", id, false, true);
+					inspect("Data", metadata, false, true);
+				}
 
-				ImGui::Separator();
+				ImGui::EndChild();
 			}
 		}
 
 		ImGui::End();
 
 		SubSystemContext::Get().GetSubSystem<WindowSubSystem>().UpdateWindows();
-
-		GUI::EndDockSpace();
 	}
 
 	void EditorLayer::SetupDefaultCommands()

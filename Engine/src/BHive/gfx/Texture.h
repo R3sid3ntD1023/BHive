@@ -28,6 +28,8 @@ namespace BHive
 
 		virtual uint32_t GetHeight() const = 0;
 
+		float GetAspectRatio() const { return (float)GetWidth() / (float)GetHeight(); }
+
 		virtual void SetData(const void *data, uint64_t size, uint32_t offsetX = 0, uint32_t offsetY = 0) = 0;
 
 		virtual uint32_t GetRendererID() const = 0;

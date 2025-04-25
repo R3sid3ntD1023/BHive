@@ -93,6 +93,26 @@ namespace BHive
 		}
 	}
 
+	void Application::ProcessMainQueue()
+	{
+		while (!mMainQueue.empty())
+		{
+			auto func = mMainQueue.front();
+			mMainQueue.pop();
+			func();
+		}
+	}
+
+	void Application::OnBeginGUIRender()
+	{
+		mImGuiLayer->BeginFrame();
+	}
+
+	void Application::OnEndGUIRender()
+	{
+		mImGuiLayer->EndFrame();
+	}
+
 	void Application::UpdateLayersAndWindow()
 	{
 
@@ -106,18 +126,20 @@ namespace BHive
 			layer->OnUpdate(deltatime);
 		}
 
-		Thread::Update();
-
-		mImGuiLayer->BeginFrame();
+		OnBeginGUIRender();
 
 		for (auto &layer : mLayerStack)
 		{
 			layer->OnGuiRender();
 		}
 
-		mImGuiLayer->EndFrame();
+		OnEndGUIRender();
 
 		mWindow->Update();
+
+		ProcessMainQueue();
+
+		Thread::Update();
 	}
 
 	bool Application::OnWindowResized(WindowResizeEvent &event)

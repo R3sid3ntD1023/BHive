@@ -9,41 +9,35 @@ namespace BHive
 		{
 			TAssetEditor::OnWindowRender();
 
-			if (ImGui::BeginTable("##source", 2, 0))
+			if (ImGui::BeginChild("##children", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeY))
 			{
-				ImGui::TableNextRow();
-				ImGui::TableNextColumn();
-
-				if (ImGui::BeginChild(
-						"Source", {},
-						ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY))
+				if (ImGui::BeginChild("Source", {}, ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
 				{
+
 					auto source = mAsset->GetSource();
 
 					if (source)
 					{
 						auto size = ImGui::GetContentRegionAvail();
-						auto ratio = (float)source->GetHeight() / (float)source->GetWidth();
-						auto texture_size = size * ImVec2{1, ratio};
+						auto texture_size = size * ImVec2{1, 1.f / source->GetAspectRatio()};
 						ImGui::Image((ImTextureID)(uint64_t)(uint32_t)*source, texture_size, {0, 1}, {1, 0});
 					}
-
-					ImGui::EndChild();
 				}
 
-				ImGui::TableNextColumn();
+				ImGui::EndChild();
 
-				if (ImGui::BeginChild(
-						"Sprites", {},
-						ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY))
+				ImGui::SameLine();
+
+				auto next_size = ImGui::GetContentRegionAvail();
+				if (ImGui::BeginChild("Sprites", next_size))
 				{
 					DrawSprites();
-
-					ImGui::EndChild();
 				}
 
-				ImGui::EndTable();
+				ImGui::EndChild();
 			}
+
+			ImGui::EndChild();
 
 			ImGui::PushStyleColor(ImGuiCol_Button, {0, .6f, 0, 1});
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {.4f, .6f, .4f, 1});
@@ -76,10 +70,12 @@ namespace BHive
 		ImGui::TextDisabled("%llu", sprites.size());
 
 		int i = 0;
-		int columns = grid.Columns > 0 ? grid.Columns : 1;
-		float avail_width = ImGui::GetContentRegionAvail().x;
-		float item_width = avail_width / columns;
-		if (ImGui::BeginTable("##sprites", columns, 0, {0, 0}, avail_width))
+
+		auto avail_size = ImGui::GetContentRegionAvail();
+		auto cell_size = avail_size.x / grid.Columns;
+
+		int columns = floor(avail_size.x / cell_size);
+		if (ImGui::BeginTable("##sprites", columns, 0, avail_size, cell_size))
 		{
 
 			ImGui::TableNextRow();
@@ -94,8 +90,7 @@ namespace BHive
 				ImGui::BeginGroup();
 				auto id = texture ? texture->GetRendererID() : 0;
 				ImGui::Image(
-					(ImTextureID)(uint64_t)(uint32_t)id, {item_width, item_width}, {mincoords.x, maxcoords.y},
-					{maxcoords.x, mincoords.y});
+					(ImTextureID)(uint64_t)(uint32_t)id, cell_size, {mincoords.x, maxcoords.y}, {maxcoords.x, mincoords.y});
 				ImGui::TextColored({1, .5f, 0, 1}, "Sprite %d", i);
 				ImGui::EndGroup();
 

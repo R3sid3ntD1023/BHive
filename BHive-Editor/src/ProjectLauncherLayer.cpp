@@ -5,69 +5,11 @@
 #include "gui/ImGuiExtended.h"
 #include "project/Project.h"
 #include "ProjectLauncherLayer.h"
+#include "Inspectors.h"
 #include <Windows.h>
-
-namespace ImGui
-{
-	using FileSystemCallback = std::string (*)();
-
-	bool InputText(
-		const char *label, std::filesystem::path *path, ImGuiInputTextFlags flags = 0,
-		FileSystemCallback filecallback = (FileSystemCallback) nullptr,
-		ImGuiInputTextCallback callback = (ImGuiInputTextCallback) nullptr, void *user_data = (void *)nullptr)
-	{
-		auto str = path->string();
-		if (InputText(label, &str, flags, callback, user_data))
-		{
-			*path = str;
-			return true;
-		}
-
-		ImGui::SameLine();
-
-		if (ImGui::Button("..."))
-		{
-			if (filecallback)
-			{
-				auto path_str = filecallback();
-				if (!path_str.empty())
-				{
-					*path = path_str;
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	template <typename TFunc, typename... TArgs>
-	bool InputLayout(const char *label, TFunc func, TArgs &&...args)
-	{
-		ImGui::BeginTable("##colums", 2);
-		ImGui::TableNextRow();
-		ImGui::TableNextColumn();
-
-		ImGui::AlignTextToFramePadding();
-		ImGui::TextUnformatted(label);
-
-		ImGui::TableNextColumn();
-
-		bool changed = func(std::forward<TArgs>(args)...);
-
-		ImGui::EndTable();
-
-		return changed;
-	}
-} // namespace ImGui
 
 namespace BHive
 {
-
-	std::string GetDirectory()
-	{
-		return FileDialogs::GetDirectory();
-	}
 
 	void ProjectLauncherLayer::OnAttach()
 	{
@@ -80,9 +22,6 @@ namespace BHive
 			cereal::BinaryInputArchive ar(in);
 			mSettings.Serialize(ar);
 		}
-
-		auto &io = ImGui::GetIO();
-		io.ConfigFlags &= ~ImGuiConfigFlags_ViewportsEnable;
 	}
 
 	void ProjectLauncherLayer::OnDetach()
@@ -113,17 +52,9 @@ namespace BHive
 	{
 		static FProjectConfiguration project_configuration{"Untitled", "", "resources"};
 
-		const ImGuiViewport *viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(viewport->WorkPos);
-		ImGui::SetNextWindowSize(viewport->WorkSize);
-		ImGui::SetNextWindowViewport(viewport->ID);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		auto window_flags =
-			ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-		if (ImGui::Begin("ProjectLauncher", nullptr, window_flags))
+		auto flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+					 ImGuiWindowFlags_NoTitleBar;
+		if (ImGui::Begin("ProjectLauncher", nullptr, flags))
 		{
 			ImGui::BeginTable("##projectlauncher", 2, ImGuiTableFlags_BordersInnerV);
 			ImGui::TableNextRow();
@@ -145,31 +76,31 @@ namespace BHive
 
 			ImGui::EndTable();
 
-			ImGui::InputLayout(
-				"Project Name",
-				[]()
-				{
-					return ImGui::InputText(
-						"##ProjectName", &project_configuration.Name, ImGuiInputTextFlags_EnterReturnsTrue);
-				});
+			auto width = ImGui::GetContentRegionAvail().x * .75f;
 
-			ImGui::InputLayout(
-				"Directory Path",
-				[]()
-				{
-					return ImGui::InputText(
-						"##DirectoryPath", &project_configuration.ProjectDirectory, ImGuiInputTextFlags_EnterReturnsTrue,
-						GetDirectory);
-				});
+			inspect("Project Name", project_configuration.Name, false, false, meta_data_empty, width);
 
-			ImGui::InputLayout(
-				"Resource Directory",
-				[]()
+			inspect("Project Directory", project_configuration.ProjectDirectory, false, false, meta_data_empty, width);
+			ImGui::SameLine();
+			if (ImGui::Button("...##project"))
+			{
+				auto path_str = FileDialogs::GetDirectory();
+				if (!path_str.empty())
 				{
-					return ImGui::InputText(
-						"##ResourceDirectory", &project_configuration.ResourcesDirectory,
-						ImGuiInputTextFlags_EnterReturnsTrue, GetDirectory);
-				});
+					project_configuration.ProjectDirectory = path_str;
+				}
+			}
+
+			inspect("Resource Directory", project_configuration.ResourcesDirectory, false, false, meta_data_empty, width);
+			ImGui::SameLine();
+			if (ImGui::Button("...##resources"))
+			{
+				auto path_str = FileDialogs::GetDirectory();
+				if (!path_str.empty())
+				{
+					project_configuration.ResourcesDirectory = path_str;
+				}
+			}
 
 			if (ImGui::Button("Create"))
 			{
@@ -191,8 +122,6 @@ namespace BHive
 		}
 
 		ImGui::End();
-
-		ImGui::PopStyleVar(2);
 	}
 
 	void ProjectLauncherLayer::OpenProject(const std::filesystem::path &path)
@@ -212,12 +141,13 @@ namespace BHive
 		mSettings.mRecentProjectPaths.emplace(path.stem().string(), path);
 		Project::LoadProject(path);
 
-		BEGIN_THREAD_DISPATCH(=)
-		auto &application = Application::Get();
-
-		application.PopLayer(this);
-		application.PushLayer<EditorLayer>();
-		END_THREAD_DISPATCH()
+		Application::Get().SubmitToMainQueue(
+			[this]()
+			{
+				auto &app = Application::Get();
+				app.PopLayer(this);
+				app.PushLayer<EditorLayer>();
+			});
 	}
 
 	void ProjectLauncherLayer::CreateProject(const FProjectConfiguration &config, std::string &message)
@@ -245,6 +175,8 @@ namespace BHive
 		message = std::format("Created {} project sucessfully!", config.Name);
 
 		mSettings.mRecentProjectPaths.emplace(config.Name, path);
+
+		OpenProject(path);
 	}
 
 } // namespace BHive
