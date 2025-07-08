@@ -24,7 +24,8 @@ namespace BHive
 
 		Initialize(width, height);
 
-		mUniformBuffer = CreateRef<UniformBuffer>(0, sizeof(FBloomSettings));
+		auto uniform_buffer = mPreFilterShader->GetRelectionData().UniformBuffers.at("BloomSettings");
+		mUniformBuffer = CreateRef<UniformBuffer>(uniform_buffer.Binding, uniform_buffer.Size);
 	}
 
 	Ref<Texture> Bloom::Process(const Ref<Texture> &texture)

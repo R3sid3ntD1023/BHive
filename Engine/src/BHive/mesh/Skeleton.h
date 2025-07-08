@@ -31,7 +31,7 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLEV()
+		REFLECTABLEV(Asset)
 
 	private:
 		void CalculateRestPoseTransforms(const SkeletalNode &node);

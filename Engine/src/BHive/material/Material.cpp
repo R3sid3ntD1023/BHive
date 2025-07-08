@@ -10,19 +10,13 @@ namespace BHive
 	Material::Material()
 		: Material(GetShader())
 	{
-
 	}
 
 	Material::Material(const Ref<Shader> &shader)
 		: mShader(shader)
 	{
 		auto &data = shader->GetRelectionData();
-		auto &buffers = data.at(ShaderType_Fragment).UniformBuffers;
-	}
-
-	void Material::Submit() const
-	{
-
+		auto &buffers = data.UniformBuffers;
 	}
 
 	void Material::SetTexture(const char *name, const Ref<Texture> &texture)
@@ -35,19 +29,37 @@ namespace BHive
 
 	Ref<Shader> Material::GetShader() const
 	{
-	return mShader;
+		return mShader;
 	}
 
 	void Material::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(mTextures);
+		ar(mTextureSlots);
+
+		// Save all texture handles
+		for (auto &[name, texture] : mTextures)
+		{
+			ar(TAssetHandle(texture));
+		}
 	}
 
 	void Material::Load(cereal::BinaryInputArchive &ar)
 	{
+
 		Asset::Load(ar);
-		ar(mTextures);
+		ar(mTextureSlots);
+
+		for (auto &slot : mTextureSlots)
+		{
+			ar(TAssetHandle(mTextures[slot.first]));
+		}
+	}
+
+	REFLECT(Material)
+	{
+		BEGIN_REFLECT(Material)
+		REFLECT_PROPERTY("Textures", mTextures);
 	}
 
 } // namespace BHive

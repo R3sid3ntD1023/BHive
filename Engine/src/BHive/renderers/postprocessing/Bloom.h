@@ -28,6 +28,8 @@ namespace BHive
 
 		FBloomSettings &GetSettings() { return mSettings; }
 
+		const MipMaps &GetMipMaps() const { return mMipMaps; }
+
 	private:
 		void Initialize(uint32_t width, uint32_t height);
 		void Reset();

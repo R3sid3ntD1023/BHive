@@ -3,7 +3,7 @@
 #include "mesh/indirect_mesh/IndirectMesh.h"
 #include "mesh/BaseMesh.h"
 #include "renderers/Renderer.h"
-#include "volumes/SphereVolume.h"
+#include "math/volumes/SphereVolume.h"
 #include "gfx/ShaderManager.h"
 
 namespace BHive

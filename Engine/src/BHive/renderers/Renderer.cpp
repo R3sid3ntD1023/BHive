@@ -7,10 +7,8 @@
 
 #include <glad/glad.h>
 
-
 #define CAMERA_UBO_BINDING 0
 #define LIGHT_UBO_BINDING 1
-
 
 namespace BHive
 {
@@ -45,7 +43,7 @@ namespace BHive
 		RenderData()
 		{
 			mLightBuffer = CreateRef<UniformBuffer>(LIGHT_UBO_BINDING, sizeof(FLightData));
-			
+
 			uint32_t white = 0xFFFFFFFF;
 			FTextureSpecification texture_specs{};
 			texture_specs.Channels = 3;
@@ -132,7 +130,6 @@ namespace BHive
 		sData->mLightBuffer->SetData(&sData->mLightData, sizeof(RenderData::FLightData));
 	}
 
-
 	void Renderer::End()
 	{
 		LineRenderer::End();
@@ -155,6 +152,11 @@ namespace BHive
 		memset(&sStats, 0, sizeof(Statitics));
 	}
 
+	const Frustum &Renderer::GetFrustum()
+	{
+		return CameraBuffer::Get().GetCameraData().ViewFrustum;
+	}
+
 	Renderer::RenderData *Renderer::sData = nullptr;
 
 	Renderer::Statitics Renderer::sStats;
@@ -173,6 +175,8 @@ namespace BHive
 		mData.CameraPosition = glm::inverse(view)[3];
 
 		mBuffer->SetData(&mData, sizeof(FCameraData));
+
+		mData.ViewFrustum.Update(proj, view);
 	}
 
 	CameraBuffer &CameraBuffer::Get()

@@ -15,8 +15,6 @@ namespace BHive
 		ShaderType_Geometry,
 	};
 
-	using ShaderReflectionData = std::unordered_map<EShaderType, FShaderReflectionData>;
-
 	class Shader
 	{
 	public:
@@ -47,7 +45,7 @@ namespace BHive
 		virtual uint32_t GetRendererID() const { return mShaderID; }
 		virtual const std::string &GetName() const { return mName; }
 		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1);
-		virtual const ShaderReflectionData &GetRelectionData() const { return mReflectionData; }
+		virtual const FShaderReflectionData &GetRelectionData() const { return mReflectionData; }
 
 		operator uint32_t() const { return GetRendererID(); }
 
@@ -74,7 +72,7 @@ namespace BHive
 		uint32_t mShaderID{0};
 		uint32_t mPipelineID{0};
 
-		ShaderReflectionData mReflectionData;
+		FShaderReflectionData mReflectionData;
 
 		mutable std::unordered_map<std::string, int> mUniformLocationCache;
 		std::filesystem::path mFilePath;

@@ -23,11 +23,33 @@ namespace BHive
 		BEGIN_REFLECT(FAssetContextMenu);
 	}
 
+	template <typename T>
+	struct AssetContextMenuBuilder
+	{
+		AssetContextMenuBuilder(const std::string &className)
+			: mClass(rttr::registration::class_<T>(className))
+		{
+			mClass.constructor<>()(rttr::policy::ctor::as_std_shared_ptr);
+		}
+
+		template <typename... Types>
+		AssetContextMenuBuilder &RegisterSupportedTypes()
+		{
+			mSupportedTypes = {rttr::type::get<Types>()...};
+			mClass(META_DATA("SupportedTypes", mSupportedTypes));
+			return *this;
+		}
+
+	private:
+		rttr::registration::class_<T> mClass;
+		std::unordered_set<rttr::type> mSupportedTypes;
+	};
+
 } // namespace BHive
 
-#define REFLECT_ASSET_MENU(cls, type)                                                                \
-	REFLECT(cls)                                                                                     \
-	{                                                                                                \
-		BEGIN_REFLECT(cls)                                                                           \
-		(META_DATA("Type", AssetType::get<type>())) REFLECT_CONSTRUCTOR() CONSTRUCTOR_POLICY_SHARED; \
+#define REFLECT_ASSET_MENU(cls, ...)                         \
+	REFLECT(cls)                                             \
+	{                                                        \
+		::BHive::AssetContextMenuBuilder<cls> builder(#cls); \
+		builder.RegisterSupportedTypes<__VA_ARGS__>();       \
 	}

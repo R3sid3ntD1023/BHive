@@ -94,8 +94,11 @@ layout(location = 0) in struct vertex_output
 layout(binding = 0) uniform sampler2D u_hdrtexture;
 layout(binding = 1) uniform sampler2D u_bloomtexture;
 
-layout(location = 0) uniform float u_bloomstrength;
-layout(location =  1) uniform uint u_postprocess_mode;
+layout(std140, binding = 6) uniform PostProcessBuffer
+{
+  float u_bloomstrength;
+  uint u_postprocess_mode;
+};
 
 layout(location = 0) out vec4 fs_out;
 
@@ -121,4 +124,6 @@ void main()
   
 	
 	fs_out = vec4(final, 1);
+    //fs_out = vec4(1, 0, 0, 1); // Debugging: force output to red
+    //fs_out = vec4(hdr.rgb, 1.0); // Debugging: output HDR texture directly
 }

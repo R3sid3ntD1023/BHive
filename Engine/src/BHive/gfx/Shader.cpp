@@ -458,10 +458,8 @@ namespace BHive
 
 		for (auto &[type, source] : mVulkanSpirv)
 		{
-			auto type_name = utils::GetShaderTypeFromGL(type);
-			auto reflection_data = mReflectionData[type_name];
-			reflection_data.Reflect(source);
-			LOG_TRACE("Stage - {} :\n {}\n", utils::GetTypeString(type), reflection_data.to_string());
+			mReflectionData.Reflect(source);
+			LOG_TRACE("{}\n", mReflectionData.to_string());
 		}
 	}
 

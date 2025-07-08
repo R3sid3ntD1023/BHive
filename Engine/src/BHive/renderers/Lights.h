@@ -29,6 +29,8 @@ namespace BHive
 		{
 			ar(mColor, mBrightness);
 		}
+
+		REFLECTABLEV()
 	};
 
 	struct PointLight : public Light
@@ -43,6 +45,8 @@ namespace BHive
 			Light::Serialize(ar);
 			ar(mRadius);
 		}
+
+		REFLECTABLEV(Light)
 	};
 
 	struct SpotLight : public PointLight
@@ -59,6 +63,8 @@ namespace BHive
 			PointLight::Serialize(ar);
 			ar(mInnerCutOff, mOuterCutOff);
 		}
+
+		REFLECTABLEV(PointLight)
 	};
 
 	struct DirectionalLight : public Light
@@ -67,6 +73,8 @@ namespace BHive
 		DirectionalLight(const DirectionalLight &) = default;
 
 		virtual ELightType GetLightType() const override { return ELightType::Directional; }
+
+		REFLECTABLEV(Light)
 	};
 
 } // namespace BHive

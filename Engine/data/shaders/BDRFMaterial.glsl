@@ -20,6 +20,17 @@ layout(std140, binding = 0) uniform ObjectBuffer
 	vec2 u_near_far;
 };
 
+struct PerObjectData
+{
+	mat4 WorldMatrix;
+};
+
+
+layout(std430, binding = 1) restrict readonly buffer PerObjectSSBO
+{
+	PerObjectData object[];
+};
+
 layout(location = 1) out struct vertex_output
 {
 	vec3 position;
@@ -35,15 +46,18 @@ layout(location = 1) out struct vertex_output
 void main()
 {
 	mat4 bone_transform = Skinning(vWeights, vBoneIds);
+	mat4 object_transform = object[gl_DrawID].WorldMatrix * bone_transform;
 
-	gl_Position = u_projection * u_view * bone_transform * vec4(vPosition, 1.0);
+	gl_Position = u_projection * u_view * object_transform * vec4(vPosition, 1.0);
 
-	vs_out.position = vec3(bone_transform * vec4(vPosition, 1.0));
+	vs_out.position = vec3(object_transform * vec4(vPosition, 1.0));
 	vs_out.texcoord = vTexCoord;
 	vs_out.color = vColor;
 	vs_out.camera_pos = inverse(u_view)[3].xyz;
 
-	mat3 normal_matrix = mat3(transpose(inverse(bone_transform)));
+	// Calculate the TBN matrix
+
+	mat3 normal_matrix = mat3(transpose(inverse(object_transform)));
 	vec3 T = normalize(normal_matrix * vTangent);
 	vec3 N = normalize(normal_matrix * vNormal);
 	vec3 B = normalize(normal_matrix * vBiNormal);
@@ -75,18 +89,20 @@ layout(location = 1) in struct vertex_output
 struct BDRFMaterial
 {
 	vec4 Albedo;
+	vec3 Emission;	
+	vec2 Tiling;
 	float Metallic;
 	float Roughness;
 	float Opacity;
-	int DiaElectric;
-	vec3 Emission;	
-	vec2 Tiling;
 	float DepthScale;
 	int flags;
 };
 
-layout(location = 1) uniform BDRFMaterial u_material = BDRFMaterial(vec4(.5), 0.f, 1.f, 1.f, 1, vec3(0), vec2(1,1), 1.0, 0);
-layout(location = 16) uniform uint u_global_flags;
+layout(std140, binding = 4) uniform MaterialBuffer
+{
+	BDRFMaterial u_material;
+	uint u_global_flags;
+};
 
 layout(binding = 0) uniform samplerCube u_prefilter_map;
 layout(binding = 1) uniform samplerCube u_irradiance_map;
@@ -126,6 +142,7 @@ void main()
 	bool normal_map				= (u_material.flags & (1 << 3)) != 0;
 	bool depth_map				= (u_material.flags & (1 << 4)) != 0;
 	bool recieve_shadows		= (u_material.flags & (1 << 6)) != 0;
+	bool dielectric				= (u_material.flags & (1 << 10)) != 0;
 	bool render_shadows			= ((u_global_flags & (1 << 0)) == 0) && recieve_shadows;
 	
 	if(depth_map)
@@ -159,9 +176,7 @@ void main()
 	roughness = max(roughness, 0.0);
 	metallic = max(metallic, 0.0);
 
-	bool is_dia_electric = u_material.DiaElectric == 1;
-
-	vec3 F0 = is_dia_electric ? vec3(0.04) : albedo;
+	vec3 F0 = dielectric ? vec3(0.04) : albedo;
 	F0 =  mix(F0, albedo, metallic);
 
 	if(vertex_colors)
@@ -184,7 +199,7 @@ void main()
 	int s = 0;
 	for(int i = 0; i < uNumLights; i++)
 	{
-		Light light = lights[i];
+		Light light = uLights[i];
 		uint type = light.type;
 
 		switch(type)
@@ -195,8 +210,8 @@ void main()
 				vec3 l = CalculateDirectionalLightBDRF(F0, P, N, V, light, albedo, metallic, roughness);
 				if(render_shadows)
 				{
-					float shadow = DirLightShadow(k++, P, u_shadow_map);
-					l *= shadow;
+					//float shadow = DirLightShadow(k++, P, u_shadow_map);
+					//l *= shadow;
 				}
 				Lo += l;
 				break;
@@ -204,13 +219,14 @@ void main()
 			case 1:
 			{
 				
-				vec3 L = light.position - P;
+				
 				vec3 l = CalculatePointLightBDRF(F0, P, N, V, light, albedo, metallic, roughness);
 
 				if(render_shadows)
 				{
-					float shadow = PointLightShadow(j++, P, normalize(L), L, vec2(.1f, 50.f), u_shadow_point_map);
-					l *= shadow;
+					vec3 L = light.position - P;
+					//float shadow = PointLightShadow(j++, P, normalize(L), L, vec2(.1f, 50.f), u_shadow_point_map);
+					//l *= shadow;
 				}
 				Lo += l;
 				break;
@@ -220,8 +236,8 @@ void main()
 				vec3 l = CalculateSpotLightBDRF(F0, P, N, V, light, albedo, metallic, roughness);
 				if(render_shadows)
 				{
-					float shadow = SpotLightShadow(s++, P, u_shadow_spot_map);
-					l *= shadow;
+					//float shadow = SpotLightShadow(s++, P, u_shadow_spot_map);
+					//l *= shadow;
 				}
 
 				Lo += l;
@@ -234,9 +250,12 @@ void main()
 		
 	}
 
-	vec3 environment = EnvironmentLighting(F0, N , V, albedo.rgb, metallic, roughness, u_irradiance_map, u_prefilter_map ,u_brdf_lut);
+	vec3 environment = vec3(0.0);
+	//environment = EnvironmentLighting(F0, N , V, albedo.rgb, metallic, roughness, u_irradiance_map, u_prefilter_map ,u_brdf_lut);
 
 	fs_out = vec4(Lo + environment + emission, opacity);
+	//fs_out = vec4(1, 0, 0, 1); // For testing purposes, remove this line in production)
+	//fs_out.rgb = albedo; // Gamma correction
 }
 
 vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir, float scale, in sampler2D depth)

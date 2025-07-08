@@ -41,26 +41,26 @@ namespace BHive
 			{
 				Zoom(delta.y);
 			}
-		}
 
-		if (input.is_pressed(Key::Up) || input.is_pressed(Key::W))
-		{
-			mTransform.add_translation(-forward * MovementSpeed());
-		}
+			if (input.is_pressed(Key::Up) || input.is_pressed(Key::W))
+			{
+				mTransform.add_translation(-forward * MovementSpeed());
+			}
 
-		if (input.is_pressed(Key::Down) || input.is_pressed(Key::S))
-		{
-			mTransform.add_translation(forward * MovementSpeed());
-		}
+			if (input.is_pressed(Key::Down) || input.is_pressed(Key::S))
+			{
+				mTransform.add_translation(forward * MovementSpeed());
+			}
 
-		if (input.is_pressed(Key::Left) || input.is_pressed(Key::A))
-		{
-			mTransform.add_translation(right * MovementSpeed());
-		}
+			if (input.is_pressed(Key::Left) || input.is_pressed(Key::A))
+			{
+				mTransform.add_translation(right * MovementSpeed());
+			}
 
-		if (input.is_pressed(Key::Right) || input.is_pressed(Key::D))
-		{
-			mTransform.add_translation(-right * MovementSpeed());
+			if (input.is_pressed(Key::Right) || input.is_pressed(Key::D))
+			{
+				mTransform.add_translation(-right * MovementSpeed());
+			}
 		}
 	}
 
@@ -101,12 +101,12 @@ namespace BHive
 		mTransform = glm::lookAt(eye, target_pos, {0, 1, 0});
 	}
 
-	const glm::mat4 &EditorCamera::GetView() const
+	const FTransform &EditorCamera::GetView() const
 	{
-		return mTransform.inverse();
+		return mTransform;
 	}
 
-	void EditorCamera::SetView(const glm::mat4 &view)
+	void EditorCamera::SetView(const FTransform &view)
 	{
 		mTransform = view;
 	}
@@ -146,7 +146,7 @@ namespace BHive
 	void EditorCamera::Zoom(float delta)
 	{
 		auto offset = delta * ZoomSpeed();
-		auto new_position = mTransform.get_translation() + -mTransform.get_forward() * offset;
+		auto new_position = mTransform.get_forward() * offset + mTransform.get_translation();
 
 		if (Distance() < 1.0f)
 		{

@@ -17,7 +17,7 @@ namespace BHive
 			mEnumNameCache[enum_id].emplace(value, name.data());
 		}
 
-		return mEnumNameCache.at(enum_id);
+		return mEnumNameCache[enum_id];
 	}
 
 	bool Inspector_Enum::Inspect(

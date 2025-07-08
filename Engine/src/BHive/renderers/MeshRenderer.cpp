@@ -2,14 +2,20 @@
 #include "gfx/RenderCommand.h"
 #include "material/Material.h"
 #include "gfx/StorageBuffer.h"
+#include "gfx/UniformBuffer.h"
 #include "mesh/StaticMesh.h"
 #include "mesh/SkeletalMesh.h"
 #include "gfx/Shader.h"
+#include "Renderers/Renderer.h"
+#include "math/AABB.hpp"
+#include "math/volumes/SphereVolume.h"
+#include "material/BDRFMaterial.h"
 
 #define SSBO_INDEX_PER_OBJECT_BINDING 1
 #define SSBO_INSTANCE_BINDING 2
 #define SSBO_BONE_BINDING 3
 #define MAX_BONES 128
+#define MATERIAL_UBO_BINDING 4
 
 namespace BHive
 {
@@ -26,7 +32,7 @@ namespace BHive
 		AABB Bounds;
 		const SkeletalPose *Pose = nullptr;
 
-		//instances
+		// instances
 		const glm::mat4 *Instances = nullptr;
 		size_t InstanceCount = 0;
 	};
@@ -37,9 +43,10 @@ namespace BHive
 		Ref<StorageBuffer> BoneBuffer;
 		Ref<StorageBuffer> WorldMatrixBuffer;
 		Ref<StorageBuffer> InstanceBuffer;
+		Ref<UniformBuffer> mMaterialBuffer;
 	};
 
-	static MeshRenderData *sMeshRenderData =nullptr;
+	static MeshRenderData *sMeshRenderData = nullptr;
 
 	void MeshRenderer::Init()
 	{
@@ -47,6 +54,8 @@ namespace BHive
 		sMeshRenderData->BoneBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * MAX_BONES);
 		sMeshRenderData->WorldMatrixBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4));
 		sMeshRenderData->InstanceBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * 1000);
+		sMeshRenderData->mMaterialBuffer =
+			CreateRef<UniformBuffer>(MATERIAL_UBO_BINDING, sizeof(FBDRFMaterialData) + sizeof(uint32_t));
 	}
 
 	void MeshRenderer::Shutdown()
@@ -65,12 +74,12 @@ namespace BHive
 	{
 		ASSERT(sMeshRenderData);
 
-		//display only visible meshes
-		for (auto& [material , objects] : sMeshRenderData->ObjectData)
+		// display only visible meshes
+		for (auto &[material, objects] : sMeshRenderData->ObjectData)
 		{
 			auto shader = material->GetShader();
 			shader->Bind();
-			material->Submit();
+			material->Submit(sMeshRenderData->mMaterialBuffer);
 
 			for (auto &[transform, submesh, vao, bounds, pose, instances, instanceCount] : objects)
 			{
@@ -78,18 +87,18 @@ namespace BHive
 				sMeshRenderData->WorldMatrixBuffer->SetData(&matrix, sizeof(glm::mat4));
 				sMeshRenderData->WorldMatrixBuffer->BindBufferBase(SSBO_INDEX_PER_OBJECT_BINDING);
 
-				if (pose)
-				{
-					const auto& bone_data = pose->GetTransformsJointSpace().data();
-					const auto& bone_count = pose->GetTransformsJointSpace().size();
-					sMeshRenderData->BoneBuffer->SetData(bone_data, bone_count);
-					sMeshRenderData->BoneBuffer->BindBufferBase(SSBO_BONE_BINDING);
-				}
-
 				if (instanceCount > 0)
 				{
 					sMeshRenderData->InstanceBuffer->SetData(instances, sizeof(glm::mat4) * instanceCount);
 					sMeshRenderData->InstanceBuffer->BindBufferBase(SSBO_INSTANCE_BINDING);
+				}
+
+				if (pose)
+				{
+					const auto &bone_data = pose->GetTransformsJointSpace().data();
+					const auto &bone_count = pose->GetTransformsJointSpace().size();
+					sMeshRenderData->BoneBuffer->SetData(bone_data, bone_count * sizeof(glm::mat4));
+					sMeshRenderData->BoneBuffer->BindBufferBase(SSBO_BONE_BINDING);
 				}
 
 				RenderCommand::DrawElementsBaseVertex(
@@ -99,22 +108,23 @@ namespace BHive
 	}
 
 	void MeshRenderer::DrawMesh(
-		const Ref<StaticMesh> &mesh, const glm::mat4 &transform, const glm::mat4 *instances,
-		size_t instanceCount)
+		const Ref<StaticMesh> &mesh, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
 	{
-		if (!mesh)
+		// TODO: CullMeshes
+		ASSERT(sMeshRenderData);
+
+		if (!mesh || IsMeshCulled(mesh, transform))
 			return;
 
 		auto &sub_meshes = mesh->GetSubMeshes();
 		auto &materials = mesh->GetMaterialTable();
 
-		for (auto& sub_mesh : sub_meshes)
+		for (auto &sub_mesh : sub_meshes)
 		{
 			auto material = materials.get_material(sub_mesh.MaterialIndex);
 			if (!material)
 				return;
 
-			
 			auto data = ObjectData{
 				.ModelMatrix = transform,
 				.SubMesh = sub_mesh,
@@ -128,10 +138,13 @@ namespace BHive
 	}
 
 	void MeshRenderer::DrawMesh(
-		const Ref<SkeletalMesh> &mesh, const SkeletalPose &pose, const glm::mat4 &transform ,
-		const glm::mat4 *instances, size_t instanceCount)
+		const Ref<SkeletalMesh> &mesh, const SkeletalPose &pose, const glm::mat4 &transform, const glm::mat4 *instances,
+		size_t instanceCount)
 	{
-		if (!mesh)
+		// TODO: CullMeshes
+		ASSERT(sMeshRenderData);
+
+		if (!mesh || IsMeshCulled(mesh, transform))
 			return;
 
 		auto &sub_meshes = mesh->GetSubMeshes();
@@ -154,5 +167,17 @@ namespace BHive
 
 			sMeshRenderData->ObjectData[material].emplace_back(data);
 		}
+	}
+
+	bool MeshRenderer::IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform)
+	{
+		if (!mesh)
+			return true;
+
+		const auto &bounds = mesh->GetBoundingBox();
+		const auto &frustum = Renderer::GetFrustum();
+
+		auto volume = FSphereVolume(bounds.get_center(), bounds.get_radius());
+		return !volume.InFrustum(frustum, FTransform(transform));
 	}
 } // namespace BHive

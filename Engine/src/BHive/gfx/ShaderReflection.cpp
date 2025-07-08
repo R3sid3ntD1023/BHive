@@ -28,7 +28,7 @@ namespace BHive
 				uniform_data.Location = compiler.get_decoration(member, spv::DecorationLocation);
 				buffer_data.Uniforms[compiler.get_member_name(buffer.self, i)] = uniform_data;
 			}
-			UniformBuffers[compiler.get_name(uniform.id)] = buffer_data;
+			UniformBuffers[uniform.name] = buffer_data;
 		}
 
 		for (auto &sampler : resources.sampled_images)
@@ -36,7 +36,7 @@ namespace BHive
 			auto &type = compiler.get_type(sampler.base_type_id);
 			FSampler2D sampler_data;
 			sampler_data.Binding = compiler.get_decoration(sampler.id, spv::DecorationBinding);
-			Samplers[compiler.get_name(sampler.id)] = sampler_data;
+			Samplers[sampler.name] = sampler_data;
 		}
 
 		for (auto &storage : resources.storage_buffers)
@@ -45,7 +45,7 @@ namespace BHive
 			FStorageBuffer storage_data;
 			storage_data.Binding = compiler.get_decoration(storage.id, spv::DecorationBinding);
 			storage_data.Size = compiler.get_declared_struct_size(type);
-			StorageBuffers[compiler.get_name(storage.id)] = storage_data;
+			StorageBuffers[storage.name] = storage_data;
 		}
 	}
 

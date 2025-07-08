@@ -70,7 +70,7 @@ float DirectionalLight(vec3 N, vec3 D)
 float PointLight(vec3 P, vec3 N, vec3 LP, float radius)
 {
 	float dist = length(LP - P);
-	if(dist > radius) return 0;
+	//if(dist > radius) return 0;
 
 	vec3 dir = LP - P;
 	float ndotl = max(dot(N, dir), 0.0);
@@ -82,6 +82,7 @@ float PointLight(vec3 P, vec3 N, vec3 LP, float radius)
 	float s2 = sqrt(s);
 
 	float attenuation = sqrt(1 -s2) / (1 + radius * s);
+	//float attenuation = 1.0 / (radius * radius);
 
 	return ndotl * attenuation;
 }

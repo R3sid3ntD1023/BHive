@@ -16,7 +16,7 @@ namespace BHive
 
 		Ref<Skeleton> GetSkeleton() { return mSkeleton; }
 
-		Ref<class SkeletalPose> GetDefaultPose() { return mDefaultPose; }
+		const Ref<class SkeletalPose> &GetDefaultPose() { return mDefaultPose; }
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 

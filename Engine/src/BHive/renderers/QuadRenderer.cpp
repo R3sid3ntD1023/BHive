@@ -294,7 +294,7 @@ namespace BHive
 
 	void QuadRenderer::Begin()
 	{
-		sData->mCameraView = CameraBuffer::Get().GetCurrentView();
+		sData->mCameraView = CameraBuffer::Get().GetCameraData().View;
 		StartBatch();
 	}
 

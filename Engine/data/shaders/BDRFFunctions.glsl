@@ -75,7 +75,7 @@ vec3 CalculateDirectionalLightBDRF(vec3 F0, vec3 P, vec3 N, vec3 V, Light light,
 vec3 CalculateSpotLightBDRF(vec3 F0, vec3 P, vec3 N, vec3 V, Light light, vec3 albedo, float metallic, float roughness)
 {
 	if(light.brightness <= 0.f) return vec3(0);
-	float pointlight =  PointLight(P, N, light);
+	float pointlight =  PointLight(P, N, light.position, light.radius);
 	
 	vec3 L = normalize(light.position - P);
 	

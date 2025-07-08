@@ -11,3 +11,6 @@
 #include "components/SphereColliderComponent.h"
 #include "components/AudioComponent.h"
 #include "components/TextComponent.h"
+#include "components/StaticMeshComponent.h"
+#include "components/SkeletalMeshComponent.h"
+#include "components/LightComponents.h"

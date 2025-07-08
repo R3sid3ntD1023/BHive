@@ -9,6 +9,13 @@
 #include "editorwindows/TextureEditor.h"
 #include "editorwindows/SpriteSheetEditor.h"
 #include "physics/PhysicsMaterial.h"
+#include "editorwindows/MeshEditor.h"
+#include "editorwindows/MaterialEditor.h"
+#include "editorwindows/AnimationEditor.h"
+#include "editorwindows/SkeletonEditor.h"
+#include "mesh/StaticMesh.h"
+#include "mesh/SkeletalMesh.h"
+#include "mesh/SkeletalAnimation.h"
 #include "world/World.h"
 
 namespace BHive
@@ -54,5 +61,9 @@ namespace BHive
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<InputContextEditor>, InputContext)
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<TextureEditor>, Texture2D)
 	REFLECT_ASSET_MENU(FWorldContentMenu, World);
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<MeshEditor>, StaticMesh, SkeletalMesh);
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<MaterialEditor>, Material);
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<AnimationEditor>, SkeletalAnimation);
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<SkeletonEditor>, Skeleton);
 
 } // namespace BHive

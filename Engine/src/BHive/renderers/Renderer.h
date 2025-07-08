@@ -6,6 +6,7 @@
 #include "MeshRenderer.h"
 #include "gfx/Camera.h"
 #include "Lights.h"
+#include "math/Frustum.h"
 
 namespace BHive
 {
@@ -43,6 +44,7 @@ namespace BHive
 
 		static void ResetStats();
 		static BHIVE Statitics &GetStats() { return sStats; }
+		static const Frustum &GetFrustum();
 
 	private:
 		struct RenderData;
@@ -54,13 +56,6 @@ namespace BHive
 
 	struct CameraBuffer
 	{
-		CameraBuffer();
-
-		void Submit(const glm::mat4 &proj, const glm::mat4 &view);
-
-		glm::mat4 &GetCurrentView() { return mData.View; }
-
-		static CameraBuffer &Get();
 
 	public:
 		struct FCameraData
@@ -69,7 +64,16 @@ namespace BHive
 			glm::mat4 View{1.0f};
 			glm::vec4 NearFar;
 			glm::vec4 CameraPosition;
+			Frustum ViewFrustum;
 		};
+
+		CameraBuffer();
+
+		void Submit(const glm::mat4 &proj, const glm::mat4 &view);
+
+		const FCameraData &GetCameraData() { return mData; }
+
+		static CameraBuffer &Get();
 
 	private:
 		Ref<UniformBuffer> mBuffer;

@@ -33,12 +33,32 @@ namespace BHive
 		Ref<Material> operator[](size_t index) const;
 
 		template <typename A>
-		void Serialize(A &ar)
+		void Save(A &ar) const
 		{
-			// ar(mMaterials);
+			ar(cereal::make_size_tag(mMaterials.size()));
+			for (auto &material : mMaterials)
+			{
+				ar(TAssetHandle(material));
+			}
 		}
+
+		template <typename A>
+		void Load(A &ar)
+		{
+			size_t size = 0;
+			ar(cereal::make_size_tag(size));
+			mMaterials.resize(size);
+			for (size_t i = 0; i < size; i++)
+			{
+				ar(TAssetHandle(mMaterials[i]));
+			}
+		}
+
+		REFLECTABLE()
 
 	private:
 		material_list mMaterials;
 	};
+
+	REFLECT_EXTERN(MaterialTable)
 } // namespace BHive

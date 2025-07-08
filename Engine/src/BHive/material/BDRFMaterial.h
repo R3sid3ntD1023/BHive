@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	enum MaterialFlags : uint16_t
+	enum EMaterialFlags : uint16_t
 	{
 		MaterialFlag_None = 0,
 		MaterialFlag_Show_Vertex_Colors = BIT(0),
@@ -17,7 +17,26 @@ namespace BHive
 		MaterialFlag_UnLit = BIT(7),
 		MaterialFlag_DoubleSided = BIT(8),
 		MaterialFlag_Transparent = BIT(9),
+		MaterialFlag_DiaElectric = BIT(10),
 		MaterialFlag_Shadows = MaterialFlag_Cast_Shadows | MaterialFlag_Recieve_Shadows
+	};
+
+	struct FBDRFMaterialData
+	{
+		glm::vec4 Albedo{1.0f, 1.0f, 1.0f, 1.0f};
+		alignas(16) glm::vec3 Emission{0.0f, 0.0f, 0.0f};
+		alignas(16) glm::vec2 Tiling{1.0f, 1.0f};
+		float Metallic{0.0f};
+		float Roughness{1.0f};
+		float Opacity{1.0f};
+		float DepthScale{1.0f};
+		EMaterialFlags Flags = MaterialFlag_None;
+
+		template <class Archive>
+		void Serialize(Archive &ar)
+		{
+			ar(Albedo, Emission, Tiling, Metallic, Roughness, Opacity, DepthScale, Flags);
+		}
 	};
 
 	class BDRFMaterial : public Material
@@ -26,36 +45,20 @@ namespace BHive
 	public:
 		BDRFMaterial();
 
-		FColor mAldebo{0xFFFFFFFF};
+		FBDRFMaterialData mMaterialData;
 
-		float mMetallic{0.0f};
-
-		float mRoughness{1.0f};
-
-		float mOpacity{1.f};
-
-		bool mDiaElectric = true;
-
-		FColor mEmission{0xFF000000};
-
-		glm::vec2 mTiling{1.0f};
-
-		float mDepthScale = 1.0f;
-
-		TEnumAsByte<MaterialFlags> mFlags = MaterialFlag_Shadows;
-
-		virtual void Submit() const;
-
-		bool CastShadows() const;
-
-		virtual bool IsTransparent() const;
+		void Submit(const Ref<UniformBuffer> &material_buffer) override;
 
 		Ref<Shader> GetShader() const;
 
-		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+		void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::BinaryInputArchive &ar) override;
+		void Load(cereal::BinaryInputArchive &ar) override;
+
+		REFLECTABLEV(Material)
 	};
 
+	REFLECT_EXTERN(BDRFMaterial)
+	REFLECT_EXTERN(FBDRFMaterialData)
 
 } // namespace BHive

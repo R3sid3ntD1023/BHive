@@ -118,7 +118,7 @@ namespace BHive
 		if (mViewportHovered)
 			mEditorCamera.ProcessInput();
 
-		Renderer::SubmitCamera(mEditorCamera.GetProjection(), mEditorCamera.GetView());
+		Renderer::SubmitCamera(mEditorCamera.GetProjection(), mEditorCamera.GetView().inverse());
 
 		mMultiSampleBuffer->Bind();
 
@@ -331,7 +331,7 @@ namespace BHive
 			mViewportBounds[0] = {viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y};
 			mViewportBounds[1] = {viewport_max_region.x + viewport_offset.x, viewport_max_region.y + viewport_offset.y};
 
-			glm::mat4 view = mEditorCamera.GetView();
+			glm::mat4 view = mEditorCamera.GetView().inverse();
 			const glm::mat4 projection = mEditorCamera.GetProjection();
 
 			ImGui::Image((ImTextureID)(uint64_t)*mFramebuffer->GetColorAttachment(), size, {0, 1}, {1, 0});
@@ -358,14 +358,14 @@ namespace BHive
 
 				ImGuizmo::Manipulate(
 					&view[0][0], &projection[0][0], (ImGuizmo::OPERATION)mGizmoOperation, (ImGuizmo::MODE)mGizmoMode,
-					&world_transform[0][0], &delta[0][0], snap_values);
+					&local_transform[0][0], &delta[0][0], snap_values);
 
 				if (ImGuizmo::IsUsing())
 				{
 					glm::mat4 parent_transform = glm::inverse(world_transform) * local_transform * delta;
 					glm::mat4 new_transform = glm::inverse(parent_transform) * world_transform;
 
-					selected_object->SetLocalTransform(new_transform);
+					selected_object->SetLocalTransform(local_transform);
 				}
 			}
 

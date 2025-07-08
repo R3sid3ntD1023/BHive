@@ -17,11 +17,11 @@ namespace BHive
 		}
 	};
 
-	typedef std::vector<Frame> Frames;
-
 	class FlipBook : public Asset
 	{
 	public:
+		typedef std::vector<Frame> Frames;
+
 	public:
 		FlipBook() = default;
 

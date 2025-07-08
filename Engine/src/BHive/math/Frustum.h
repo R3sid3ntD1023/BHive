@@ -14,6 +14,9 @@ namespace BHive
 
 		const std::array<FPlane, 6> &GetPlanes() const { return mPlanes; }
 
+		void Update(const glm::mat4 &projection, const glm::mat4 &view);
+		void Update(const glm::mat4 &view, float aspect, float fov, float near, float far);
+
 	private:
 		std::array<FPlane, 6> mPlanes = {};
 	};

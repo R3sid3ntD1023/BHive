@@ -7,7 +7,7 @@ static const char *upsample_comp = R"(
 
     layout(binding = 0) uniform sampler2D uSrcTexture;
     layout(binding = 0, r11f_g11f_b10f) uniform image2D uOutput;
-    layout(binding = 0) uniform BloomSettings
+    layout(binding = 7) uniform BloomSettings
     {
         vec4 uFilterThreshold;
         float uFilterRadius;

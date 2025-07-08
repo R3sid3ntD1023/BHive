@@ -47,9 +47,9 @@ namespace BHive
 
 		float get_radius() const { return glm::length(get_extent()); }
 
-		FBox GetBox() { return {Min, Max}; }
+		FBox GetBox() const { return {Min, Max}; }
 
-		FSphere GetSphere() { return {Min + get_radius(), get_radius()}; }
+		FSphere GetSphere() const { return {Min + get_radius(), get_radius()}; }
 
 		AABB &operator=(const AABB &rhs)
 		{

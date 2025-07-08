@@ -53,4 +53,10 @@ namespace BHive
 
 		return mMaterials[index];
 	}
+
+	REFLECT(MaterialTable)
+	{
+		BEGIN_REFLECT(MaterialTable)
+		REFLECT_PROPERTY("Materials", mMaterials);
+	}
 } // namespace BHive

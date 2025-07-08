@@ -103,7 +103,6 @@ namespace BHive
 			mDragStarting = false;
 			mStartDragPos = {0, 0};
 		}
-		ShowFileSystem();
 
 		if (clicked)
 		{
@@ -120,6 +119,8 @@ namespace BHive
 				sCurrentAction = Action_Deselect;
 			}
 		}
+
+		ShowFileSystem();
 
 		if (ImGui::BeginPopupContextWindow("Context", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
 		{

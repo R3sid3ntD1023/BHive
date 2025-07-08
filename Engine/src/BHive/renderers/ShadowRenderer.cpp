@@ -118,7 +118,7 @@ namespace BHive
 		auto point_shadow_shader = mShadowRenderData.mPointShadowPassShader =
 			ShaderManager::Get().Load(ENGINE_PATH "/data/Shaders/ShadowPointPass.glsl");
 
-		auto &data = point_shadow_shader->GetRelectionData().at(ShaderType_Fragment);
+		auto &data = point_shadow_shader->GetRelectionData();
 		if (data.StorageBuffers.contains("ShadowSSBO"))
 		{
 			mShadowRenderData.ShadowSSBOBinding = data.StorageBuffers.at("ShadowSSBO").Binding;

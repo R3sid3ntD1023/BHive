@@ -5,29 +5,29 @@
 
 namespace BHive
 {
-    struct FAssetContextMenu;
+	struct FAssetContextMenu;
 
-    class AssetContextMenuRegistry
-    {
-    public:
-        AssetContextMenuRegistry();
+	class AssetContextMenuRegistry
+	{
+	public:
+		AssetContextMenuRegistry();
 
-        static AssetContextMenuRegistry &Get();
+		static AssetContextMenuRegistry &Get();
 
-        template <typename T, typename M>
-        void RegisterAssetContextMenu()
-        {
-            auto type = AssetType::get<T>();
-            auto menu = type.create().get_value<Ref<FAssetContextMenu>>();
-            RegisterAssetContextMenu(type, menu);
-        }
+		template <typename T, typename M>
+		void RegisterAssetContextMenu()
+		{
+			auto type = AssetType::get<T>();
+			auto menu = type.create().get_value<Ref<FAssetContextMenu>>();
+			RegisterAssetContextMenu({type}, menu);
+		}
 
-        void RegisterAssetContextMenu(const AssetType &type, const Ref<FAssetContextMenu> &menu);
+		void RegisterAssetContextMenu(const std::unordered_set<AssetType> &types, const Ref<FAssetContextMenu> &menu);
 
-        FAssetContextMenu *GetAssetMenu(const AssetType &type);
+		FAssetContextMenu *GetAssetMenu(const AssetType &type);
 
-    private:
-        std::unordered_map<AssetType, Ref<FAssetContextMenu>> mRegisteredMenus;
-    };
+	private:
+		std::unordered_map<AssetType, Ref<FAssetContextMenu>> mRegisteredMenus;
+	};
 
 } // namespace BHive
