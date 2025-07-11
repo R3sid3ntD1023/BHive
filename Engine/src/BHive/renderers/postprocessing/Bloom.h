@@ -7,7 +7,6 @@
 namespace BHive
 {
 	class Shader;
-	class UniformBuffer;
 
 	struct FBloomSettings
 	{
@@ -22,7 +21,7 @@ namespace BHive
 	public:
 		Bloom(uint32_t iterations, uint32_t width, uint32_t height, const FBloomSettings &data);
 
-		virtual Ref<Texture> Process(const Ref<Texture> &texture) override;
+		virtual Ref<Texture> Process(const Ref<Texture> &textures) override;
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 
@@ -39,10 +38,12 @@ namespace BHive
 		MipMaps mMipMaps;
 
 		Ref<Texture> mPreFilterTexture;
+		Ref<Texture> mOutputTexture;
 
 		Ref<Shader> mPreFilterShader;
 		Ref<Shader> mDownSamplerShader;
 		Ref<Shader> mUpSamplerShader;
+		Ref<Shader> mCombineShader;
 
 		glm::uvec2 mSize{};
 	};

@@ -89,50 +89,17 @@ layout(location = 0) in struct vertex_output
 	vec2 texcoord;
 } vs_in;
 
-#define PP_ACES 1 << 0
 
-layout(binding = 0) uniform sampler2D u_hdrtexture;
-layout(binding = 1) uniform sampler2D u_bloomtexture;
+layout(binding = 0) uniform sampler2D u_texture;
 
-#ifdef VULKAN
-    layout(push_constant) uniform PushConstants
-    {
-        float u_BloomStrength;
-        uint u_PostProcessMode;
-    } constants;
-
-#else
-
-    layout(location = 0) uniform struct PushConstants
-    {
-        float u_BloomStrength;
-        uint u_PostProcessMode;
-    } constants;
-
-#endif
 
 layout(location = 0) out vec4 fs_out;
 
-//const float gamma = 2.2;
-//float exposure = 0.1;
 
 void main()
 {	
 	
-	vec4 hdr = texture(u_hdrtexture, vs_in.texcoord );
-	vec4 bloom = texture(u_bloomtexture, vs_in.texcoord);
+	vec4 color = texture(u_texture, vs_in.texcoord );
 
-  switch(constants.u_PostProcessMode)
-  {
-    case PP_ACES:
-      hdr.rgb = ACES(hdr.rgb);
-      break;
-    default:
-      break;
-  }
-
-	vec3 final = mix(hdr.rgb, hdr.rgb + bloom.rgb, vec3(constants.u_BloomStrength));
-  
-	
-	fs_out = vec4(final, 1);
+	fs_out = color;
 }

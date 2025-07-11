@@ -52,6 +52,7 @@ namespace BHive
 	private:
 		virtual void SetUniform(int location, int value) const;
 		virtual void SetUniform(int location, uint32_t value) const;
+		virtual void SetUniform(int location, uint16_t value) const;
 		virtual void SetUniform(int location, float value) const;
 		virtual void SetUniform(int location, const glm::vec2 &value) const;
 		virtual void SetUniform(int location, const glm::ivec2 &value) const;

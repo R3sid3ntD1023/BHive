@@ -9,6 +9,7 @@
 #include "shaders/DownSample.h"
 #include "shaders/PreFilter.h"
 #include "shaders/UpSample.h"
+#include "shaders/CombineTexture.h"
 
 namespace BHive
 {
@@ -20,6 +21,8 @@ namespace BHive
 		mPreFilterShader = ShaderManager::Get().Load("PreFilter", prefiler_comp);
 		mDownSamplerShader = ShaderManager::Get().Load("DownSample", downsample_comp);
 		mUpSamplerShader = ShaderManager::Get().Load("UpSample", upsample_comp);
+		mCombineShader = ShaderManager::Get().Load("Combine", combine_texture_comp);
+
 		mMipMaps.resize(iterations);
 
 		Initialize(width, height);
@@ -66,7 +69,16 @@ namespace BHive
 
 		mUpSamplerShader->UnBind();
 
-		return mMipMaps[0];
+		mCombineShader->Bind();
+
+		texture->Bind(0);
+		mMipMaps[0]->Bind(1);
+
+		mOutputTexture->BindAsImage(0, EImageAccess::WRITE);
+		mCombineShader->Dispatch(mSize.x, mSize.y);
+		mCombineShader->UnBind();
+
+		return mOutputTexture;
 	}
 
 	void Bloom::Resize(uint32_t width, uint32_t height)
@@ -87,6 +99,9 @@ namespace BHive
 		specs.ImageAccess = EImageAccess::READ_WRITE;
 
 		mPreFilterTexture = CreateRef<Texture2D>(width, height, specs);
+
+		specs.InternalFormat = EFormat::RGBA32F;
+		mOutputTexture = CreateRef<Texture2D>(width, height, specs);
 
 		glm::uvec2 mps = mSize;
 		for (auto &mip : mMipMaps)

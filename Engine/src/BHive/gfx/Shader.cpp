@@ -354,7 +354,6 @@ namespace BHive
 		std::string preprocessors =
 			R"(
 				#extension GL_EXT_scalar_block_layout: enable
-				#extension GL_ARB_gl_spirv : enable
 				#extension GL_ARB_enhanced_layouts : enable
 			)";
 
@@ -401,6 +400,11 @@ namespace BHive
 	void Shader::SetUniform(int location, uint32_t value) const
 	{
 		glProgramUniform1ui(mShaderID, location, value);
+	}
+
+	void Shader::SetUniform(int location, uint16_t value) const
+	{
+		SetUniform(location, static_cast<uint32_t>(value));
 	}
 
 	void Shader::SetUniform(int location, float value) const

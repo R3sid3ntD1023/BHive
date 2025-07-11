@@ -14,6 +14,7 @@
 #include "Inspectors.h"
 #include "LogPanel.h"
 #include "renderers/Renderer.h"
+#include "renderers/SceneRenderer.h"
 #include "subsystems/EditorSubSystem.h"
 #include "subsystems/SelectionSubSystem.h"
 #include "subsystems/WindowSubSystem.h"
@@ -67,15 +68,8 @@ namespace BHive
 		auto &window = Application::Get().GetWindow();
 		auto &size = window.GetSize();
 
-		FramebufferSpecification specs{};
-		specs.Width = size.x;
-		specs.Height = size.y;
-		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
-			.attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
-		mFramebuffer = CreateRef<Framebuffer>(specs);
-
-		specs.Samples = 16;
-		mMultiSampleBuffer = CreateRef<Framebuffer>(specs);
+		mRenderer = CreateRef<SceneRenderer>();
+		mRenderer->Initialize(size.x, size.y);
 
 		RenderCommand::ClearColor(.2f, .2f, .2f);
 
@@ -106,21 +100,19 @@ namespace BHive
 
 	void EditorLayer::OnUpdate(float dt)
 	{
-		auto w = mFramebuffer->GetWidth();
-		auto h = mFramebuffer->GetHeight();
-		if ((mViewportSize.x > 0.f && mViewportSize.y > 0.f) && (mViewportSize.x != w || mViewportSize.y != h))
+		auto size = mRenderer->GetSize();
+		if ((mViewportSize.x > 0.f && mViewportSize.y > 0.f) && (mViewportSize.x != size.x || mViewportSize.y != size.y))
 		{
 			mEditorCamera.Resize(mViewportSize.x, mViewportSize.y);
-			mMultiSampleBuffer->Resize(mViewportSize.x, mViewportSize.y);
-			mFramebuffer->Resize(mViewportSize.x, mViewportSize.y);
+			mRenderer->Resize(mViewportSize.x, mViewportSize.y);
 		}
 
 		if (mViewportHovered)
 			mEditorCamera.ProcessInput();
 
-		Renderer::SubmitCamera(mEditorCamera.GetProjection(), mEditorCamera.GetView().inverse());
+		mRenderer->Begin(&mEditorCamera, mEditorCamera.GetView());
 
-		mMultiSampleBuffer->Bind();
+		Renderer::SubmitCamera(mEditorCamera.GetProjection(), mEditorCamera.GetView().inverse());
 
 		RenderCommand::Clear();
 
@@ -132,8 +124,7 @@ namespace BHive
 
 		Renderer::End();
 
-		mMultiSampleBuffer->UnBind();
-		mMultiSampleBuffer->Blit(mFramebuffer);
+		mRenderer->End();
 	}
 
 	void EditorLayer::OnEvent(Event &e)
@@ -334,7 +325,8 @@ namespace BHive
 			glm::mat4 view = mEditorCamera.GetView().inverse();
 			const glm::mat4 projection = mEditorCamera.GetProjection();
 
-			ImGui::Image((ImTextureID)(uint64_t)*mFramebuffer->GetColorAttachment(), size, {0, 1}, {1, 0});
+			auto color_attachment = mRenderer->GetColorAttachment();
+			ImGui::Image((ImTextureID)(uint64_t)*color_attachment, size, {0, 1}, {1, 0});
 
 			auto &selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>();
 			auto selected_object = selection.GetSelection();

@@ -1,7 +1,5 @@
 static const char *aces_comp = R"(
 	#version 460 core
-    #extension GL_ARB_bindless_texture : require
-    #extension GL_NV_uniform_buffer_std430_layout : require
 
     #define LOCAL_SIZE 1
     layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = LOCAL_SIZE) in;
@@ -71,7 +69,7 @@ static const char *aces_comp = R"(
       return pow(result, vec3(2.2));
     }
 
-    layout(binding = 0) uniform sampler2D uSrcTexture;
+    layout(binding = 0) uniform sampler2D u_Texture;
     layout(binding = 0, r11f_g11f_b10f) uniform image2D uOutput;
 
     void main()
@@ -81,7 +79,7 @@ static const char *aces_comp = R"(
         float x = float(texelCoord.x)/(gl_NumWorkGroups.x);
         float y = float(texelCoord.y)/(gl_NumWorkGroups.y);
 
-        vec4 color = texture(uSrcTexture, vec2(x,y));
+        vec4 color = texture(u_Texture, vec2(x,y));
         color.rgb = ACES(color.rgb);
 
         imageStore(uOutput, texelCoord, color);

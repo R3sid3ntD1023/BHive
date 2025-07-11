@@ -20,7 +20,7 @@ namespace BHive
 		mCamera.SetView(FTransform({0, 3, 5}, {-45.f, 0.f, 0.f}));
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
-		mSceneRenderer->Initialize(300, 300, SceneRendererFlags::RenderQuad | SceneRendererFlags::Bloom);
+		mSceneRenderer->Initialize(300, 300);
 	}
 
 	void MaterialEditor::OnWindowRender()

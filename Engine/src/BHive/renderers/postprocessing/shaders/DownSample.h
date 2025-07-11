@@ -1,7 +1,6 @@
 static const char *downsample_comp = R"(
 
     #version 460 core
-   #extension GL_EXT_scalar_block_layout: require
 
     #define LOCAL_SIZE 1
     layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = LOCAL_SIZE) in;

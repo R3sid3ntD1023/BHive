@@ -14,13 +14,13 @@
 
 namespace BHive
 {
-	class Framebuffer;
+	class SceneRenderer;
 
 	class EditorLayer : public Layer
 	{
 	private:
-		Ref<Framebuffer> mFramebuffer;
-		Ref<Framebuffer> mMultiSampleBuffer;
+		Ref<SceneRenderer> mRenderer;
+
 		Ref<World> mEditorWorld;
 		Ref<World> mActiveWorld;
 
