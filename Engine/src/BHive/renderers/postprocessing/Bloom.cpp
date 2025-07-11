@@ -23,18 +23,14 @@ namespace BHive
 		mMipMaps.resize(iterations);
 
 		Initialize(width, height);
-
-		auto uniform_buffer = mPreFilterShader->GetRelectionData().UniformBuffers.at("BloomSettings");
-		mUniformBuffer = CreateRef<UniformBuffer>(uniform_buffer.Binding, uniform_buffer.Size);
 	}
 
 	Ref<Texture> Bloom::Process(const Ref<Texture> &texture)
 	{
-		mUniformBuffer->SetData(&mSettings, sizeof(FBloomSettings));
-
 		mPreFilterShader->Bind();
 		texture->Bind();
 		mPreFilterTexture->BindAsImage(0, EImageAccess::WRITE);
+		mPreFilterShader->SetUniform("constants.u_FilterThreshold", mSettings.mFilterThreshold);
 		mPreFilterShader->Dispatch(mPreFilterTexture->GetWidth(), mPreFilterTexture->GetHeight());
 
 		mPreFilterShader->UnBind();
@@ -56,6 +52,7 @@ namespace BHive
 		mDownSamplerShader->UnBind();
 
 		mUpSamplerShader->Bind();
+		mUpSamplerShader->SetUniform("constants.u_FilterRadius", mSettings.mFilterRadius);
 
 		for (size_t i = mMipMaps.size() - 1; i > 0; i--)
 		{

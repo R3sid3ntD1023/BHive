@@ -7,16 +7,10 @@
 
 namespace BHive
 {
-	Material::Material()
-		: Material(GetShader())
-	{
-	}
 
 	Material::Material(const Ref<Shader> &shader)
 		: mShader(shader)
 	{
-		auto &data = shader->GetRelectionData();
-		auto &buffers = data.UniformBuffers;
 	}
 
 	void Material::SetTexture(const char *name, const Ref<Texture> &texture)

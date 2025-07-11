@@ -30,8 +30,7 @@ namespace BHive
 		for (int i = 0; i < num_extensions; i++)
 		{
 			const char *ext = (const char *)glGetStringi(GL_EXTENSIONS, i);
-			// LOG_INFO("Loaded extension: {}", ext);
-			sExtensions.insert(ext);
+			LOG_INFO("Loaded extension: {}", ext);
 		}
 	}
 
@@ -40,13 +39,4 @@ namespace BHive
 		glfwSwapBuffers(mWindowHandle);
 	}
 
-	const GraphicsContext::EXTENSIONS &GraphicsContext::GetExtensions()
-	{
-		return sExtensions;
-	}
-
-	bool GraphicsContext::IsExtensionSupported(const std::string &extension)
-	{
-		return sExtensions.find(extension) != sExtensions.end();
-	}
 } // namespace BHive

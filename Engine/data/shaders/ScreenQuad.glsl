@@ -94,11 +94,22 @@ layout(location = 0) in struct vertex_output
 layout(binding = 0) uniform sampler2D u_hdrtexture;
 layout(binding = 1) uniform sampler2D u_bloomtexture;
 
-layout(std140, binding = 6) uniform PostProcessBuffer
-{
-  float u_bloomstrength;
-  uint u_postprocess_mode;
-};
+#ifdef VULKAN
+    layout(push_constant) uniform PushConstants
+    {
+        float u_BloomStrength;
+        uint u_PostProcessMode;
+    } constants;
+
+#else
+
+    layout(location = 0) uniform struct PushConstants
+    {
+        float u_BloomStrength;
+        uint u_PostProcessMode;
+    } constants;
+
+#endif
 
 layout(location = 0) out vec4 fs_out;
 
@@ -111,7 +122,7 @@ void main()
 	vec4 hdr = texture(u_hdrtexture, vs_in.texcoord );
 	vec4 bloom = texture(u_bloomtexture, vs_in.texcoord);
 
-  switch(u_postprocess_mode)
+  switch(constants.u_PostProcessMode)
   {
     case PP_ACES:
       hdr.rgb = ACES(hdr.rgb);
@@ -120,10 +131,8 @@ void main()
       break;
   }
 
-	vec3 final = mix(hdr.rgb, hdr.rgb + bloom.rgb, vec3(u_bloomstrength));
+	vec3 final = mix(hdr.rgb, hdr.rgb + bloom.rgb, vec3(constants.u_BloomStrength));
   
 	
 	fs_out = vec4(final, 1);
-    //fs_out = vec4(1, 0, 0, 1); // Debugging: force output to red
-    //fs_out = vec4(hdr.rgb, 1.0); // Debugging: output HDR texture directly
 }

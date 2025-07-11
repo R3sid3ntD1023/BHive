@@ -31,6 +31,17 @@ namespace BHive
 			UniformBuffers[uniform.name] = buffer_data;
 		}
 
+		for (auto &uniform : resources.gl_plain_uniforms)
+		{
+			auto &type = compiler.get_type(uniform.base_type_id);
+			FUniform uniform_data;
+			uniform_data.Type = type.basetype;
+			uniform_data.Size = type.width / 8;
+			uniform_data.Offset = compiler.get_decoration(uniform.id, spv::DecorationOffset);
+			uniform_data.Location = compiler.get_decoration(uniform.id, spv::DecorationLocation);
+			Uniforms[uniform.name] = uniform_data;
+		}
+
 		for (auto &sampler : resources.sampled_images)
 		{
 			auto &type = compiler.get_type(sampler.base_type_id);
@@ -65,6 +76,12 @@ namespace BHive
 					"\t\tUniform: {} - Type: {} - Size: {} - Offset: {} - Location: {}\n", uniform_name, uniform.Type,
 					uniform.Size, uniform.Offset, uniform.Location);
 			}
+		}
+		for (const auto &[name, uniform] : Uniforms)
+		{
+			result += fmt::format(
+				"\t\tUniform: {} - Type: {} - Size: {} - Offset: {} - Location: {}\n", name, uniform.Type, uniform.Size,
+				uniform.Offset, uniform.Location);
 		}
 		for (const auto &[name, buffer] : StorageBuffers)
 		{

@@ -95,14 +95,25 @@ struct BDRFMaterial
 	float Roughness;
 	float Opacity;
 	float DepthScale;
-	int flags;
+	int Flags;
 };
 
-layout(std140, binding = 4) uniform MaterialBuffer
-{
-	BDRFMaterial u_material;
-	uint u_global_flags;
-};
+#ifdef VULKAN
+	layout(push_constant) uniform PushConstants
+	{
+		BDRFMaterial u_material;
+		uint u_global_flags;
+	} constants;
+
+#else
+
+	layout(location = 0) uniform struct PushConstants
+	{
+		BDRFMaterial u_material;
+		uint u_global_flags;
+	} constants;
+
+#endif
 
 layout(binding = 0) uniform samplerCube u_prefilter_map;
 layout(binding = 1) uniform samplerCube u_irradiance_map;
@@ -136,40 +147,40 @@ void main()
 	vec3 N = normalize(vs_in.normal);
 	vec3 V = normalize(vs_in.camera_pos - P);
 
-	bool vertex_colors			= (u_material.flags & (1 << 0)) != 0;
-	bool alpha_is_transparency	= (u_material.flags & (1 << 1)) != 0;
-	bool metallic_roughness		= (u_material.flags & (1 << 2)) != 0;
-	bool normal_map				= (u_material.flags & (1 << 3)) != 0;
-	bool depth_map				= (u_material.flags & (1 << 4)) != 0;
-	bool recieve_shadows		= (u_material.flags & (1 << 6)) != 0;
-	bool dielectric				= (u_material.flags & (1 << 10)) != 0;
-	bool render_shadows			= ((u_global_flags & (1 << 0)) == 0) && recieve_shadows;
+	bool vertex_colors			= (constants.u_material.Flags & (1 << 0)) != 0;
+	bool alpha_is_transparency	= (constants.u_material.Flags & (1 << 1)) != 0;
+	bool metallic_roughness		= (constants.u_material.Flags & (1 << 2)) != 0;
+	bool normal_map				= (constants.u_material.Flags & (1 << 3)) != 0;
+	bool depth_map				= (constants.u_material.Flags & (1 << 4)) != 0;
+	bool recieve_shadows		= (constants.u_material.Flags & (1 << 6)) != 0;
+	bool dielectric				= (constants.u_material.Flags & (1 << 10)) != 0;
+	bool render_shadows			= ((constants.u_global_flags & (1 << 0)) == 0) && recieve_shadows;
 	
 	if(depth_map)
 	{
 		vec3 view = normalize(vs_in.camera_pos - P);
-		coords = ParallaxMapping(coords, view, u_material.DepthScale, u_depth_map);
+		coords = ParallaxMapping(coords, view, constants.u_material.DepthScale, u_depth_map);
 		if(coords.x > 1.0 || coords.y > 1.0 || coords.x < 0.0 || coords.y < 0.0)
     		 discard;
 	} 
 
-	coords *= u_material.Tiling;
+	coords *= constants.u_material.Tiling;
 
-	vec3 albedo = u_material.Albedo.rgb * pow(texture(u_albedo_map, coords).rgb, vec3(2.2)) ;
-	float roughness = u_material.Roughness * texture(u_metallic_map, coords).r;
-	float metallic = u_material.Metallic * texture(u_roughness_map, coords).r;
-	vec3 emission = u_material.Emission * texture(u_emission_map, coords).rgb;
-	float opacity = u_material.Opacity * texture(u_opacity_map, coords).r ;
+	vec3 albedo =		constants.u_material.Albedo.rgb * pow(texture(u_albedo_map, coords).rgb, vec3(2.2)) ;
+	float roughness =	constants.u_material.Roughness * texture(u_metallic_map, coords).r;
+	float metallic =	constants.u_material.Metallic * texture(u_roughness_map, coords).r;
+	vec3 emission =		constants.u_material.Emission * texture(u_emission_map, coords).rgb;
+	float opacity =		constants.u_material.Opacity * texture(u_opacity_map, coords).r ;
 
 	if(metallic_roughness)
 	{
-		roughness = u_material.Roughness * texture(u_metallic_roughness_map, coords).g;
-		metallic = u_material.Metallic * texture(u_metallic_roughness_map, coords).b;
+		roughness = constants.u_material.Roughness * texture(u_metallic_roughness_map, coords).g;
+		metallic =	constants.u_material.Metallic * texture(u_metallic_roughness_map, coords).b;
 	}
 
 	if(alpha_is_transparency)
 	{
-		opacity = u_material.Opacity * texture(u_albedo_map, coords).a; 
+		opacity = constants.u_material.Opacity * texture(u_albedo_map, coords).a; 
 	}
 
 
@@ -250,8 +261,8 @@ void main()
 		
 	}
 
-	vec3 environment = vec3(0.0);
-	//environment = EnvironmentLighting(F0, N , V, albedo.rgb, metallic, roughness, u_irradiance_map, u_prefilter_map ,u_brdf_lut);
+	//vec3 environment = vec3(0.0);
+	vec3 environment = EnvironmentLighting(F0, N , V, albedo.rgb, metallic, roughness, u_irradiance_map, u_prefilter_map ,u_brdf_lut);
 
 	fs_out = vec4(Lo + environment + emission, opacity);
 	//fs_out = vec4(1, 0, 0, 1); // For testing purposes, remove this line in production)

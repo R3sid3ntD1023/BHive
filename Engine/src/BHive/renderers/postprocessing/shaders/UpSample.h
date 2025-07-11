@@ -7,11 +7,20 @@ static const char *upsample_comp = R"(
 
     layout(binding = 0) uniform sampler2D uSrcTexture;
     layout(binding = 0, r11f_g11f_b10f) uniform image2D uOutput;
-    layout(binding = 7) uniform BloomSettings
+
+#ifdef VULKAN
+    layout(push_constant) uniform BloomSettings
     {
-        vec4 uFilterThreshold;
-        float uFilterRadius;
-    };
+        float u_FilterRadius;
+    } constants;
+
+#else
+    layout(location = 0) uniform struct PushConstants
+    {
+        float u_FilterRadius;
+    } constants;
+
+#endif
 
     void main()
     {
@@ -23,8 +32,8 @@ static const char *upsample_comp = R"(
 
         vec3 color = texture(uSrcTexture, uv ).rgb;
 
-        float x = uFilterRadius;
-        float y = uFilterRadius;
+        float x = constants.u_FilterRadius;
+        float y = constants.u_FilterRadius;
 
         vec3 upsample = vec3(0);
         upsample += texture(uSrcTexture, vec2(uv.x - x, uv.y + y)).rgb;

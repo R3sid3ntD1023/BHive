@@ -5,12 +5,12 @@
 namespace BHive
 {
 
-	RenderTargetCube::RenderTargetCube(uint32_t size, float radius)
-		: mSize(size),
-		  mCamera(1.0f, radius)
+	RenderTargetCube::RenderTargetCube(uint32_t size, EFormat format)
+		: mSize(size)
 	{
 		mTargetTexture = CreateRef<TextureCube>(
-			size, FTextureSpecification{.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+			size, FTextureSpecification{
+					  .InternalFormat = format, .WrapMode = EWrapMode::CLAMP_TO_EDGE, .MinFilter = EMinFilter::LINEAR});
 
 		glCreateFramebuffers(1, &mFramebufferID);
 		glNamedFramebufferDrawBuffer(mFramebufferID, GL_COLOR_ATTACHMENT0);
@@ -30,9 +30,6 @@ namespace BHive
 
 	void RenderTargetCube::Bind(uint32_t face)
 	{
-		auto proj = mCamera.GetProjection();
-		auto view = mCamera.GetView({}, face);
-
 		glBindFramebuffer(GL_FRAMEBUFFER, mFramebufferID);
 		glNamedFramebufferTextureLayer(mFramebufferID, GL_COLOR_ATTACHMENT0, mTargetTexture->GetRendererID(), 0, face);
 

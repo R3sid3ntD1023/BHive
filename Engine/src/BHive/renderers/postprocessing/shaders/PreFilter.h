@@ -8,11 +8,20 @@ static const char *prefiler_comp = R"(
     layout(binding = 0) uniform sampler2D uSrcTexture;
 
     
-    layout(binding = 7) uniform BloomSettings
+#ifdef VULKAN
+    layout(push_constant) uniform PushConstants
     {
-        vec4 uFilterThreshold;
-        float uFilterRadius;
-    };
+        vec4 u_FilterThreshold;
+    } constants;
+
+#else
+
+    layout(location = 0) uniform struct PushConstants
+    {
+        vec4 u_FilterThreshold; // x: threshold, y: curve_x, z: curve_y
+    } constants;
+
+#endif
 
     #define EPSILON 1.0e-4
 
@@ -27,7 +36,7 @@ static const char *prefiler_comp = R"(
         float y = float(texelCoord.y)/(gl_NumWorkGroups.y);
 
         vec4 value = texture(uSrcTexture, vec2(x, y));
-        vec4 color = QuadraticThreshold(value, uFilterThreshold.a, uFilterThreshold.rgb);
+        vec4 color = QuadraticThreshold(value, constants.u_FilterThreshold.a, constants.u_FilterThreshold.rgb);
 	
         imageStore(uOutput, texelCoord, color);
     }

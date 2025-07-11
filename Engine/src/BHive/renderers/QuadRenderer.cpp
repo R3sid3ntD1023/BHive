@@ -13,6 +13,7 @@
 #include "renderers/Renderer.h"
 #include "shaders/CircleShader.h"
 #include "shaders/TextShader.h"
+#include "shaders/QuadShader.h"
 #include "sprite/Sprite.h"
 
 namespace BHive
@@ -163,7 +164,7 @@ namespace BHive
 			mVertexArray->SetIndexBuffer(mIndexBuffer);
 			mVertexArray->AddVertexBuffer(mVertexBuffer);
 
-			mShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/Quad.glsl");
+			mShader = ShaderManager::Get().Load("Quad", quad_vert, quad_frag);
 		}
 
 		void StartBatch() override

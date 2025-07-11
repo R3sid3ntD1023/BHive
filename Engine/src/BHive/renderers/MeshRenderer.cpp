@@ -15,7 +15,6 @@
 #define SSBO_INSTANCE_BINDING 2
 #define SSBO_BONE_BINDING 3
 #define MAX_BONES 128
-#define MATERIAL_UBO_BINDING 4
 
 namespace BHive
 {
@@ -43,7 +42,6 @@ namespace BHive
 		Ref<StorageBuffer> BoneBuffer;
 		Ref<StorageBuffer> WorldMatrixBuffer;
 		Ref<StorageBuffer> InstanceBuffer;
-		Ref<UniformBuffer> mMaterialBuffer;
 	};
 
 	static MeshRenderData *sMeshRenderData = nullptr;
@@ -54,8 +52,6 @@ namespace BHive
 		sMeshRenderData->BoneBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * MAX_BONES);
 		sMeshRenderData->WorldMatrixBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4));
 		sMeshRenderData->InstanceBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * 1000);
-		sMeshRenderData->mMaterialBuffer =
-			CreateRef<UniformBuffer>(MATERIAL_UBO_BINDING, sizeof(FBDRFMaterialData) + sizeof(uint32_t));
 	}
 
 	void MeshRenderer::Shutdown()
@@ -79,7 +75,7 @@ namespace BHive
 		{
 			auto shader = material->GetShader();
 			shader->Bind();
-			material->Submit(sMeshRenderData->mMaterialBuffer);
+			material->Submit(shader);
 
 			for (auto &[transform, submesh, vao, bounds, pose, instances, instanceCount] : objects)
 			{

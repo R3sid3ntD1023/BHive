@@ -21,33 +21,29 @@ namespace BHive
 		MaterialFlag_Shadows = MaterialFlag_Cast_Shadows | MaterialFlag_Recieve_Shadows
 	};
 
-	struct FBDRFMaterialData
-	{
-		glm::vec4 Albedo{1.0f, 1.0f, 1.0f, 1.0f};
-		alignas(16) glm::vec3 Emission{0.0f, 0.0f, 0.0f};
-		alignas(16) glm::vec2 Tiling{1.0f, 1.0f};
-		float Metallic{0.0f};
-		float Roughness{1.0f};
-		float Opacity{1.0f};
-		float DepthScale{1.0f};
-		EMaterialFlags Flags = MaterialFlag_None;
-
-		template <class Archive>
-		void Serialize(Archive &ar)
-		{
-			ar(Albedo, Emission, Tiling, Metallic, Roughness, Opacity, DepthScale, Flags);
-		}
-	};
-
 	class BDRFMaterial : public Material
 	{
+	public:
+		FColor Albedo{1.0f, 1.0f, 1.0f, 1.0f};
+
+		FColor Emission{0.0f, 0.0f, 0.0f};
+
+		float Metallic{0.0f};
+
+		float Roughness{1.0f};
+
+		float Opacity{1.0f};
+
+		float DepthScale{1.0f};
+
+		glm::vec2 Tiling{1.0f, 1.0f};
+
+		EMaterialFlags Flags = MaterialFlag_None;
 
 	public:
 		BDRFMaterial();
 
-		FBDRFMaterialData mMaterialData;
-
-		void Submit(const Ref<UniformBuffer> &material_buffer) override;
+		void Submit(const Ref<Shader> &shader) override;
 
 		Ref<Shader> GetShader() const;
 
@@ -59,6 +55,5 @@ namespace BHive
 	};
 
 	REFLECT_EXTERN(BDRFMaterial)
-	REFLECT_EXTERN(FBDRFMaterialData)
 
 } // namespace BHive

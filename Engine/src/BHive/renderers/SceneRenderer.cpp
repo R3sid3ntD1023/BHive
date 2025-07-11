@@ -8,13 +8,12 @@
 #include "gfx/RenderCommand.h"
 #include "math/Transform.h"
 #include "renderers/postprocessing/Bloom.h"
-#include "gfx/UniformBuffer.h"
+#include "renderers/PMREMGenerator.h"
+#include "importers/TextureImporter.h"
 
 namespace BHive
 {
 #define SCENE_RENDERER_HAS_FLAG(flag) ((mFlags & flag) != 0)
-
-	static Ref<UniformBuffer> sQuadUniformBuffer;
 
 	void SceneRenderer::Initialize(uint32_t width, uint32_t height, uint16_t flags)
 	{
@@ -45,12 +44,11 @@ namespace BHive
 
 			mQuad = CreateRef<PQuad>();
 			mQuadShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/ScreenQuad.glsl");
-
-			if (!sQuadUniformBuffer)
-			{
-				sQuadUniformBuffer = CreateRef<UniformBuffer>(6, sizeof(float) + sizeof(uint32_t));
-			}
 		}
+
+		Ref<Texture> environment_texture = TextureLoader::Import(ENGINE_PATH "/data/hdr/industrial_sunset_puresky_2k.hdr");
+		EnvironmentMapGenerator.Initialize();
+		EnvironmentMapGenerator.SetEnvironmentMap(environment_texture);
 	}
 
 	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
@@ -65,6 +63,10 @@ namespace BHive
 
 	void SceneRenderer::End()
 	{
+		EnvironmentMapGenerator.GetPreFilteredEnvironmentTetxure()->Bind(0);
+		EnvironmentMapGenerator.GetIrradianceTexture()->Bind(1);
+		EnvironmentMapGenerator.GetBDRFLUT()->Bind(2);
+
 		Renderer::End();
 
 		mFramebuffer->UnBind();
@@ -89,8 +91,8 @@ namespace BHive
 			float bloom_strength = 1.0f;
 			uint32_t flags = BIT(0);
 
-			sQuadUniformBuffer->SetData(&bloom_strength, sizeof(float));
-			sQuadUniformBuffer->SetData(&flags, sizeof(uint32_t), sizeof(float));
+			mQuadShader->SetUniform("constants.u_BloomStrength", bloom_strength);
+			mQuadShader->SetUniform("constants.u_PostProcessMode", flags);
 
 			texture->Bind(0);
 			bloom_texture->Bind(1);
@@ -99,6 +101,11 @@ namespace BHive
 
 			mFinalFramebuffer->UnBind();
 		}
+	}
+
+	void SceneRenderer::SetEnvironmentMap(const Ref<Texture> &environment)
+	{
+		EnvironmentMapGenerator.SetEnvironmentMap(environment);
 	}
 
 	void SceneRenderer::AddPostProcessingEffect(const Ref<PostProcessor> &processor)

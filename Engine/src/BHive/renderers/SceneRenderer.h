@@ -2,6 +2,7 @@
 
 #include "core/Core.h"
 #include "Renderer.h"
+#include "PMREMGenerator.h"
 
 namespace BHive
 {
@@ -13,6 +14,7 @@ namespace BHive
 	class Bloom;
 	class PostProcessor;
 	struct FTransform;
+	class PMREMGenerator;
 
 	/**
 	 * @brief The SceneRenderer class is responsible for rendering the scene.
@@ -38,6 +40,8 @@ namespace BHive
 
 		void Begin(const Camera *camera, const FTransform &view);
 
+		void SetEnvironmentMap(const Ref<Texture> &environment);
+
 		void End();
 
 		void AddPostProcessingEffect(const Ref<PostProcessor> &processor);
@@ -52,11 +56,13 @@ namespace BHive
 		Ref<Framebuffer> mFramebuffer;
 		Ref<Framebuffer> mFinalFramebuffer; // Final framebuffer for post-processing effects
 		Ref<PQuad> mQuad;
-		Ref<Shader> mQuadShader;					// Shader used for rendering the quad
-		uint16_t mFlags = SceneRendererFlags::None; // Flag to determine if the quad should be rendered
+		Ref<Shader> mQuadShader;						   // Shader used for rendering the quad
+		uint16_t mFlags = SceneRendererFlags::Flags::None; // Flag to determine if the quad should be rendered
 
 		// Post-processing effects
 		Ref<Bloom> mBloom;										// Bloom effect for post-processing
 		std::vector<Ref<PostProcessor>> mPostProcessingEffects; // effects for post-processing
+
+		static inline PMREMGenerator EnvironmentMapGenerator;
 	};
 } // namespace BHive

@@ -8,7 +8,7 @@ namespace BHive
 	class RenderTargetCube
 	{
 	public:
-		RenderTargetCube(uint32_t size, float radius);
+		RenderTargetCube(uint32_t size, EFormat format);
 		~RenderTargetCube();
 
 		virtual void Bind(uint32_t face);
@@ -19,6 +19,5 @@ namespace BHive
 		uint32_t mSize;
 		uint32_t mFramebufferID = 0, mRenderBufferID;
 		Ref<TextureCube> mTargetTexture;
-		CubeCamera mCamera;
 	};
 } // namespace BHive

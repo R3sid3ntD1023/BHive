@@ -9,7 +9,6 @@ namespace BHive
 {
 	class Shader;
 	class Texture;
-	class UniformBuffer;
 
 	class Material : public Asset
 	{
@@ -18,10 +17,9 @@ namespace BHive
 		using Textures = std::unordered_map<std::string, Ref<Texture>>;
 
 	public:
-		Material();
 		Material(const Ref<Shader> &shader);
 
-		virtual void Submit(const Ref<UniformBuffer> &material_buffer) {};
+		virtual void Submit(const Ref<Shader> &shader) {};
 
 		virtual void SetTexture(const char *name, const Ref<Texture> &texture);
 

@@ -211,7 +211,7 @@ namespace BHive
 			shaderc::CompileOptions options;
 			// options.SetOptimizationLevel(shaderc_optimization_level_performance);
 			options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-			options.SetSourceLanguage(shaderc_source_language_glsl);
+			// options.SetSourceLanguage(shaderc_source_language_glsl);
 			options.SetIncluder(std::make_unique<utils::IncludeHandler>());
 			auto spirv_binary = compiler.CompileGlslToSpv(source, utils::GetShadercType(type), mName.c_str(), options);
 			if (spirv_binary.GetCompilationStatus() != shaderc_compilation_status_success)
@@ -233,7 +233,7 @@ namespace BHive
 	{
 		mOpenglSpirv.clear();
 		mOpenglSources.clear();
-		for (auto &[type, spirv] : mVulkanSpirv)
+		for (auto &[type, source] : mSources)
 		{
 			auto cache_path = utils::GetCacheDirectory() / (mName + utils::GetCacheOpenglFileExtension(type));
 			if (std::filesystem::exists(cache_path) && !recompile)
@@ -243,14 +243,14 @@ namespace BHive
 			}
 			shaderc::Compiler compiler;
 			shaderc::CompileOptions options;
-			options.SetOptimizationLevel(shaderc_optimization_level_performance);
+			// options.SetOptimizationLevel(shaderc_optimization_level_performance);
 			options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
-			options.SetSourceLanguage(shaderc_source_language_glsl);
+			// options.SetSourceLanguage(shaderc_source_language_glsl);
 			options.SetIncluder(std::make_unique<utils::IncludeHandler>());
 
-			spirv_cross::CompilerGLSL glsl_compiler(spirv);
-			mOpenglSources[type] = glsl_compiler.compile();
-			auto &source = mOpenglSources[type];
+			// spirv_cross::CompilerGLSL glsl_compiler(spirv);
+			// mOpenglSources[type] = glsl_compiler.compile();
+			// auto &source = mOpenglSources[type];
 
 			auto spirv_binary = compiler.CompileGlslToSpv(source, utils::GetShadercType(type), mName.c_str(), options);
 			if (spirv_binary.GetCompilationStatus() == shaderc_compilation_status_success)
@@ -354,6 +354,8 @@ namespace BHive
 		std::string preprocessors =
 			R"(
 				#extension GL_EXT_scalar_block_layout: enable
+				#extension GL_ARB_gl_spirv : enable
+				#extension GL_ARB_enhanced_layouts : enable
 			)";
 
 		auto pos = source.find(token, 0);

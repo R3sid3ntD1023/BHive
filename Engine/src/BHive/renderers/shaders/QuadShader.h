@@ -1,4 +1,6 @@
-#type vertex
+#pragma once
+
+const char *quad_vert = R"(
 #version 460 core
 
 layout(location = 0) in vec4 vPosition;
@@ -40,9 +42,9 @@ void main()
 
 	v_TextureID = vTextureID;
 	v_Flags = vFlags;
-}
+})";
 
-#type fragment
+const char *quad_frag = R"(
 #version 460 core
 
 #include <Core.glsl>
@@ -70,4 +72,4 @@ void main()
 	vec4 color = texture(uTextures[v_TextureID], vs_in.texcoord);
 
 	fs_out = color * vs_in.color;
-}
+})";

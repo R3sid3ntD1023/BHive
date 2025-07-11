@@ -13,8 +13,8 @@ namespace BHive
 	CameraDirection sCameraDirections[] = {
 		{GL_TEXTURE_CUBE_MAP_POSITIVE_X, {1.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}},
 		{GL_TEXTURE_CUBE_MAP_NEGATIVE_X, {-1.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}},
-		{GL_TEXTURE_CUBE_MAP_POSITIVE_Y, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}},
-		{GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+		{GL_TEXTURE_CUBE_MAP_POSITIVE_Y, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+		{GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}},
 		{GL_TEXTURE_CUBE_MAP_POSITIVE_Z, {0.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}},
 		{GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, {0.0f, 0.0f, -1.0f}, {0.0f, -1.0f, 0.0f}}};
 
@@ -29,8 +29,13 @@ namespace BHive
 	{
 	}
 
-	const glm::mat4 &CubeCamera::GetView(const glm::vec3 &eye, uint32_t i)
+	const glm::mat4 &CubeCamera::GetView(const glm::vec3 &eye, uint32_t i) const
 	{
 		return glm::lookAt(eye, sCameraDirections[i].Target, sCameraDirections[i].Up);
+	}
+
+	const glm::mat4 &CubeCamera::GetViewProjection(uint32_t i) const
+	{
+		return mProjection * GetView(glm::vec3(0.f), i);
 	}
 } // namespace BHive

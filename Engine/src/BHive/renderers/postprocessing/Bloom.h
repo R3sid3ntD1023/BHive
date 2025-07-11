@@ -45,7 +45,5 @@ namespace BHive
 		Ref<Shader> mUpSamplerShader;
 
 		glm::uvec2 mSize{};
-
-		Ref<UniformBuffer> mUniformBuffer;
 	};
 } // namespace BHive
