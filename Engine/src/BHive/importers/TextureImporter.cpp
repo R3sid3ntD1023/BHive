@@ -15,14 +15,17 @@ namespace BHive
 		bool is_hdr = stbi_is_hdr(path_str.c_str());
 		stbi_set_flip_vertically_on_load((int)import_data.mFlip);
 
+		size_t data_size = 0;
 		if (is_hdr)
 		{
 			image_data = (stbi_uc *)stbi_loadf(path_str.c_str(), &w, &h, &c, 0);
+			data_size = w * h * c * sizeof(float);
 		}
 		else
 		{
 
 			image_data = stbi_load(path_str.c_str(), &w, &h, &c, 0);
+			data_size = w * h * c;
 		}
 
 		if (!image_data)
@@ -39,26 +42,23 @@ namespace BHive
 		specification.WrapMode = EWrapMode::REPEAT;
 
 		Ref<Texture2D> texture = nullptr;
-		unsigned char *resize_data = nullptr;
 
 		if (import_data.mWidth != 0 && import_data.mHeight != 0)
 		{
 			auto size = import_data.mWidth * import_data.mHeight * c;
-			resize_data = (unsigned char *)malloc(size);
+			stbi_uc *resized_buffer = (stbi_uc *)malloc(size);
 			stbir_resize_uint8_linear(
-				image_data, w, h, 0, resize_data, import_data.mWidth, import_data.mHeight, 0, (stbir_pixel_layout)c);
+				image_data, w, h, 0, resized_buffer, import_data.mWidth, import_data.mHeight, 0, (stbir_pixel_layout)c);
 
 			texture = CreateRef<Texture2D>(
-				(unsigned)import_data.mWidth, (unsigned)import_data.mHeight, specification, resize_data);
+				(unsigned)import_data.mWidth, (unsigned)import_data.mHeight, specification, resized_buffer, size);
 		}
 		else
 		{
-			texture = CreateRef<Texture2D>((unsigned)w, (unsigned)h, specification, image_data);
+			texture = CreateRef<Texture2D>((unsigned)w, (unsigned)h, specification, image_data, data_size);
 		}
 
 		stbi_image_free(image_data);
-
-		free(resize_data);
 
 		return texture;
 	}
@@ -70,14 +70,17 @@ namespace BHive
 
 		stbi_set_flip_vertically_on_load(1);
 		bool is_hdr = stbi_is_hdr_from_memory(data, length);
+		size_t data_size = 0;
 
 		if (is_hdr)
 		{
 			image_data = (stbi_uc *)stbi_loadf_from_memory(data, length, &x, &y, &comp, 0);
+			data_size = x * y * comp * sizeof(float);
 		}
 		else
 		{
 			image_data = stbi_load_from_memory(data, length, &x, &y, &comp, 0);
+			data_size = x * y * comp;
 		}
 
 		if (!image_data)
@@ -93,7 +96,7 @@ namespace BHive
 		specification.MagFilter = EMagFilter::LINEAR;
 		specification.WrapMode = EWrapMode::REPEAT;
 
-		auto texture = CreateRef<Texture2D>((unsigned)x, (unsigned)y, specification, image_data);
+		auto texture = CreateRef<Texture2D>((unsigned)x, (unsigned)y, specification, image_data, data_size);
 
 		stbi_image_free(image_data);
 

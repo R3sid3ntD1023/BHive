@@ -339,6 +339,20 @@ namespace BHive
 			}
 		}
 
+		switch (channels)
+		{
+		case 1:
+			return EFormat::R8;
+		case 2:
+			return EFormat::RG8;
+		case 3:
+			return EFormat::RGB8;
+		case 4:
+			return EFormat::RGBA8;
+		default:
+			break;
+		}
+
 		ASSERT(false);
 		return EFormat::Invalid;
 	}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
+#include "core/reflection/Reflection.h"
 
 namespace BHive
 {
@@ -12,5 +13,13 @@ namespace BHive
 		virtual Ref<Texture> Process(const Ref<Texture> &texture) = 0;
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
+
+		REFLECTABLEV()
 	};
+
+	REFLECT(PostProcessor)
+	{
+		BEGIN_REFLECT(PostProcessor);
+	};
+
 } // namespace BHive

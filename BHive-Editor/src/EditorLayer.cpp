@@ -182,6 +182,14 @@ namespace BHive
 		}
 		ImGui::End();
 
+		if (ImGui::Begin("Settings"))
+		{
+
+			inspect("Renderer", mRenderer);
+		}
+
+		ImGui::End();
+
 		ImGui::PopStyleVar();
 
 		if (ImGui::Begin("Assets"))
@@ -406,6 +414,7 @@ namespace BHive
 
 				ImGui::EndPopup();
 			}
+
 			auto size = ImGui::GetContentRegionAvail();
 			auto spacing = ImGui::GetStyle().ItemSpacing.x;
 

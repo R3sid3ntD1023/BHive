@@ -17,7 +17,9 @@ namespace BHive
 
 		explicit TBuffer(uint64_t size) { Allocate(size); }
 
-		TBuffer(T *data, uint64_t size)
+		explicit TBuffer(const void *data, uint64_t size) { Allocate(data, size); }
+
+		void Allocate(const void *data, uint64_t size)
 		{
 			Allocate(size);
 			memcpy_s(mData, mSize, data, size);
@@ -45,6 +47,12 @@ namespace BHive
 
 		T *GetData() { return mData; }
 
+		operator T *() { return GetData(); }
+
+		operator T *() const { return GetData(); }
+
+		operator void *() const { return mData; }
+
 		static TBuffer Copy(TBuffer other)
 		{
 			TBuffer result(other.mSize);
@@ -65,6 +73,11 @@ namespace BHive
 
 		explicit Buffer(uint64_t size)
 			: TBuffer(size)
+		{
+		}
+
+		explicit Buffer(const void *data, uint64_t size)
+			: TBuffer(data, size)
 		{
 		}
 

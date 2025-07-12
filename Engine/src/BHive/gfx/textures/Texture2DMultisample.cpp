@@ -9,11 +9,10 @@ namespace BHive
 		: mWidth(width),
 		  mHeight(height),
 		  mSamples(samples),
-		  mSpecification(specs)		  
+		  mSpecification(specs)
 	{
 		glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &mTextureID);
 		glTextureStorage2DMultisample(mTextureID, samples, GetGLInternalFormat(specs.InternalFormat), width, height, false);
-
 	}
 
 	Texture2DMultisample::~Texture2DMultisample()
@@ -32,10 +31,6 @@ namespace BHive
 	}
 
 	void Texture2DMultisample::BindAsImage(uint32_t unit, EImageAccess access, uint32_t level) const
-	{
-	}
-
-	void Texture2DMultisample::SetData(const void *data, uint64_t size, uint32_t offsetX, uint32_t offsetY)
 	{
 	}
 

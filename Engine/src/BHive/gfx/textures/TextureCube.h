@@ -20,7 +20,7 @@ namespace BHive
 		virtual uint32_t GetWidth() const { return mSize; }
 		virtual uint32_t GetHeight() const { return mSize; }
 
-		virtual void SetData(const void *data, uint64_t size, uint32_t offsetX = 0, uint32_t offsetY = 0) {}
+		virtual void SetData(const void *data, uint32_t offsetX = 0, uint32_t offsetY = 0) {}
 		virtual const FTextureSpecification &GetSpecification() const { return mSpecification; }
 		virtual uint32_t GetRendererID() const { return mTextureID; }
 

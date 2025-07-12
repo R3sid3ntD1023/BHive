@@ -4,23 +4,26 @@
 
 namespace BHive
 {
-	Texture2D::Texture2D(uint32_t width, uint32_t height, const FTextureSpecification &specification, const void *data)
-		: mWidth(width),
-		  mHeight(height),
+
+	Texture2D::Texture2D(uint32_t w, uint32_t h, const FTextureSpecification &specification, const void *buffer, size_t size)
+		: mWidth(w),
+		  mHeight(h),
 		  mSpecification(specification)
 	{
 
 		Initialize();
 
-		if (data)
+		if (buffer)
 		{
-			SetData(data, width * height * specification.Channels);
+			mBuffer.Allocate(buffer, size);
+			SetData(buffer);
 		}
 	}
 
 	Texture2D::~Texture2D()
 	{
 		Release();
+		mBuffer.Release();
 	}
 
 	void Texture2D::Bind(uint32_t slot) const
@@ -59,11 +62,8 @@ namespace BHive
 		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GetGLWrapMode(mSpecification.WrapMode));
 	}
 
-	void Texture2D::SetData(const void *data, uint64_t size, uint32_t offsetX, uint32_t offsetY)
+	void Texture2D::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
 	{
-		auto bbp = mWidth * mHeight * mSpecification.Channels;
-		ASSERT(bbp == size);
-
 		glTextureSubImage2D(
 			mTextureID, 0, offsetX, offsetY, mWidth, mHeight, GetGLFormat(mSpecification.InternalFormat),
 			GetGLType(mSpecification.InternalFormat), data);
@@ -74,10 +74,10 @@ namespace BHive
 		auto c = mSpecification.Channels;
 		size_t size = texture.width * texture.height * c;
 
-		std::vector<uint8_t> pixels(size);
+		Buffer pixels(size);
 		GetSubImage(texture, size, &pixels[0]);
 
-		return CreateRef<Texture2D>(texture.width, texture.height, mSpecification, pixels.data());
+		return CreateRef<Texture2D>(texture.width, texture.height, mSpecification, pixels);
 	}
 
 	void Texture2D::GetSubImage(const FSubTexture &texture, size_t size, uint8_t *data) const
@@ -112,35 +112,28 @@ namespace BHive
 
 	void Texture2D::Release()
 	{
-
 		glDeleteTextures(1, &mTextureID);
+
+		mBuffer.Release();
 	}
 
 	void Texture2D::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		FSubTexture texture{.width = mWidth, .height = mHeight};
-		size_t data_size = mWidth * mHeight * mSpecification.Channels;
-		Buffer buffer(data_size);
-		GetSubImage(texture, data_size, buffer.GetData());
-
 		Asset::Save(ar);
-		ar(mWidth, mHeight, mSpecification, buffer);
-
-		buffer.Release();
+		ar(mWidth, mHeight, mSpecification, mBuffer);
 	}
 
 	void Texture2D::Load(cereal::BinaryInputArchive &ar)
 	{
 
 		Asset::Load(ar);
-		Buffer buffer;
-		ar(mWidth, mHeight, mSpecification, buffer);
 
-		if (buffer)
+		ar(mWidth, mHeight, mSpecification, mBuffer);
+
+		if (mBuffer)
 		{
 			Initialize();
-			SetData(buffer.GetData(), buffer.GetSize());
-			buffer.Release();
+			SetData(mBuffer);
 		}
 	}
 

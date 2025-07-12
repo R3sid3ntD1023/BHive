@@ -11,7 +11,7 @@ namespace BHive
 
 		virtual Ref<Asset> Import(uint8_t *data, size_t size);
 
-		virtual std::vector<std::string> GetSupportedExtensions() { return {".png", ".jpg", ".jpeg"}; }
+		virtual std::vector<std::string> GetSupportedExtensions() { return {".png", ".jpg", ".jpeg", ".hdr"}; }
 
 		virtual std::string GetDisplayName() const { return "Texture2D"; }
 

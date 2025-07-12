@@ -56,7 +56,7 @@ namespace BHive
 					inspector = GetInspector(raw_type);
 				}
 			}
-			
+
 			if (type.is_enumeration())
 			{
 				return mRegisteredInspectors.at(rttr::type::get<rttr::enumeration>());
@@ -133,6 +133,14 @@ namespace BHive
 		rttr::instance object = var;
 		auto type = GetInstanceType(object);
 		auto inspector = InspectorRegistry::Get().GetInspector(type);
+
+		if (!inspector)
+		{
+			if (type.is_wrapper())
+			{
+				type = object.get_wrapped_instance().get_derived_type();
+			}
+		}
 
 		auto properties = type.get_properties();
 		bool changed = false;

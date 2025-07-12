@@ -80,7 +80,7 @@ namespace BHive
 		glGenerateTextureMipmap(mTextureID);
 	}
 
-	void TextureCubeArray::SetData(const void *data, uint64_t size, uint32_t offsetX, uint32_t offsetY)
+	void TextureCubeArray::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
 	{
 
 		glTextureSubImage3D(

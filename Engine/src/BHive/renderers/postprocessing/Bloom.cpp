@@ -123,4 +123,17 @@ namespace BHive
 
 		mPreFilterTexture.reset();
 	}
+
+	REFLECT(FBloomSettings)
+	{
+		BEGIN_REFLECT(FBloomSettings)
+		REFLECT_PROPERTY("FilterThreshold", mFilterThreshold)
+		REFLECT_PROPERTY("FilterRadius", mFilterRadius);
+	}
+
+	REFLECT(Bloom)
+	{
+		BEGIN_REFLECT(Bloom)
+		REFLECT_PROPERTY("Settings", mSettings);
+	}
 } // namespace BHive

@@ -10,7 +10,8 @@ namespace BHive
 	public:
 		Texture2D() = default;
 		Texture2D(
-			uint32_t width, uint32_t height, const FTextureSpecification &specification = {}, const void *data = nullptr);
+			uint32_t w, uint32_t h, const FTextureSpecification &specification = {}, const void *buffer = nullptr,
+			size_t size = 0);
 
 		virtual ~Texture2D();
 
@@ -23,7 +24,8 @@ namespace BHive
 
 		virtual uint32_t GetHeight() const { return mHeight; }
 
-		virtual void SetData(const void *data, uint64_t size, uint32_t offsetX = 0, uint32_t offsetY = 0);
+		virtual void SetData(const void *data, uint32_t offsetX = 0, uint32_t offsetY = 0);
+
 		virtual uint32_t GetRendererID() const { return mTextureID; }
 
 		virtual void GenerateMipMaps() const;
@@ -53,6 +55,7 @@ namespace BHive
 		uint32_t mHeight = 0;
 		FTextureSpecification mSpecification;
 		uint32_t mTextureID = 0;
+		Buffer mBuffer;
 	};
 
 } // namespace BHive

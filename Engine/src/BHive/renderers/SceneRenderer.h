@@ -21,20 +21,9 @@ namespace BHive
 	 * It manages the rendering process, including setting up the camera and framebuffer.
 	 */
 
-	struct ESceneRendererFlags
-	{
-		enum Flags : uint16_t
-		{
-			None = 0,		// No flags set
-			Bloom = BIT(0), // Flag to enable bloom post-processing
-			Default = Bloom
-		};
-	};
-
 	struct FRenderSettings
 	{
-		float BloomStrength = 1.0f;					   // Mode for post-processing effects
-		uint16_t Flags = ESceneRendererFlags::Default; // Default flags for the renderer
+		Ref<Texture> EnvironmentMap; // Environment map for the scene
 	};
 
 	class SceneRenderer
@@ -44,7 +33,7 @@ namespace BHive
 	public:
 		SceneRenderer() = default;
 
-		void Initialize(uint32_t width, uint32_t height, uint16_t flags = ESceneRendererFlags::Default);
+		void Initialize(uint32_t width, uint32_t height);
 
 		void Begin(const Camera *camera, const FTransform &view);
 
@@ -58,7 +47,7 @@ namespace BHive
 
 		const Ref<Texture> &GetColorAttachment(uint32_t index = 0) const;
 
-		Ref<Bloom> GetBloom() const { return mBloom; }
+		const Ref<Texture> &GetEnvironmentMap() const;
 
 		glm::uvec2 GetSize() const;
 
@@ -70,9 +59,13 @@ namespace BHive
 		glm::uvec2 mRenderSize{0, 0}; // Size of the renderer
 
 		// Post-processing effects
-		Ref<Bloom> mBloom;										// Bloom effect for post-processing
 		std::vector<Ref<PostProcessor>> mPostProcessingEffects; // effects for post-processing
 
 		static inline PMREMGenerator EnvironmentMapGenerator;
+
+		REFLECTABLE()
 	};
+
+	REFLECT_EXTERN(SceneRenderer)
+	REFLECT_EXTERN(FRenderSettings)
 } // namespace BHive

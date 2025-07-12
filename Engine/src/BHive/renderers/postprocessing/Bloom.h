@@ -29,6 +29,8 @@ namespace BHive
 
 		const MipMaps &GetMipMaps() const { return mMipMaps; }
 
+		REFLECTABLEV(PostProcessor)
+
 	private:
 		void Initialize(uint32_t width, uint32_t height);
 		void Reset();
@@ -47,4 +49,6 @@ namespace BHive
 
 		glm::uvec2 mSize{};
 	};
+
+	REFLECT_EXTERN(Bloom)
 } // namespace BHive

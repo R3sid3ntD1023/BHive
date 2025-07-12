@@ -14,11 +14,9 @@
 
 namespace BHive
 {
-#define SCENE_RENDERER_HAS_FLAG(flag) ((mRenderSettings.Flags & flag) != 0)
 
-	void SceneRenderer::Initialize(uint32_t width, uint32_t height, uint16_t flags)
+	void SceneRenderer::Initialize(uint32_t width, uint32_t height)
 	{
-		mRenderSettings.Flags = flags;
 
 		// Initialize the framebuffer or any other resources needed for rendering
 		FramebufferSpecification specs;
@@ -29,13 +27,9 @@ namespace BHive
 
 		mFramebuffer = CreateRef<Framebuffer>(specs);
 
-		if (SCENE_RENDERER_HAS_FLAG(ESceneRendererFlags::Bloom))
-		{
-			// Initialize bloom post-processing effect if enabled
-			mBloom = CreateRef<Bloom>(5, width, height, FBloomSettings{});
-			AddPostProcessingEffect(mBloom);
-			AddPostProcessingEffect(CreateRef<Aces>(width, height));
-		}
+		// Initialize bloom post-processing effect if enabled
+		AddPostProcessingEffect(CreateRef<Bloom>(5, width, height, FBloomSettings{}));
+		AddPostProcessingEffect(CreateRef<Aces>(width, height));
 
 		// Create a final framebuffer for post-processing effects
 		specs.Attachments.reset();
@@ -77,13 +71,9 @@ namespace BHive
 
 		auto texture = mFramebuffer->GetColorAttachment(0);
 
-		if (SCENE_RENDERER_HAS_FLAG(ESceneRendererFlags::Bloom))
+		for (const auto &effect : mPostProcessingEffects)
 		{
-			// Apply post-processing effects if enabled
-			for (const auto &effect : mPostProcessingEffects)
-			{
-				texture = effect->Process(texture);
-			}
+			texture = effect->Process(texture);
 		}
 
 		mFinalFramebuffer->Bind();
@@ -101,6 +91,7 @@ namespace BHive
 
 	void SceneRenderer::SetEnvironmentMap(const Ref<Texture> &environment)
 	{
+		mRenderSettings.EnvironmentMap = environment;
 		EnvironmentMapGenerator.SetEnvironmentMap(environment);
 	}
 
@@ -128,8 +119,25 @@ namespace BHive
 		return mFinalFramebuffer->GetColorAttachment(index);
 	}
 
+	const Ref<Texture> &SceneRenderer::GetEnvironmentMap() const
+	{
+		return mRenderSettings.EnvironmentMap;
+	}
+
 	glm::uvec2 SceneRenderer::GetSize() const
 	{
 		return mRenderSize;
+	}
+
+	REFLECT(FRenderSettings)
+	{
+		BEGIN_REFLECT(FRenderSettings);
+	}
+
+	REFLECT(SceneRenderer)
+	{
+		BEGIN_REFLECT(SceneRenderer)
+		REFLECT_PROPERTY("PostProcessEffects", mPostProcessingEffects)
+		REFLECT_PROPERTY("EnvironmentMap", GetEnvironmentMap, SetEnvironmentMap);
 	}
 } // namespace BHive
