@@ -1,5 +1,5 @@
 
-#define MAX_BONES 128
+#define MAX_BONES 200
 #define MAX_BONE_INFLUENCE 4
 
 layout(std430, binding = 3) restrict readonly buffer Bones

@@ -1,8 +1,8 @@
 #type vertex
 #version 460 core
-#extension GL_ARB_shading_language_include : require
 
 #include <Skinning.glsl>
+#include <Core.glsl>
 
 layout(location = 0) in vec3 vPosition;
 layout(location = 1) in vec2 vTexCoord;
@@ -13,22 +13,22 @@ layout(location = 5) in vec4 vColor;
 layout(location = 6) in ivec4 vBoneIds;
 layout(location = 7) in vec4 vWeights;
 
-layout(std140, binding = 0) uniform ObjectBuffer
+layout(std430, binding = 0) uniform ObjectBuffer
 {
 	mat4 u_projection;
 	mat4 u_view;
 	vec2 u_near_far;
+	vec3 u_camera_position;
 };
-
-struct PerObjectData
-{
-	mat4 WorldMatrix;
-};
-
 
 layout(std430, binding = 1) restrict readonly buffer PerObjectSSBO
 {
-	PerObjectData object[];
+	mat4 object[];
+};
+
+layout(std430, binding = 2) restrict readonly buffer InstanceSSBO
+{
+	mat4 instances[];
 };
 
 layout(location = 1) out struct vertex_output
@@ -41,23 +41,35 @@ layout(location = 1) out struct vertex_output
 	mat3 TBN;
 } vs_out;
 
+#ifdef VULKAN
+#define INSTANCE_ID gl_InstanceIndex
+#define IS_INSTANCED (INSTANCE_ID != -1)
+#else
+#define INSTANCE_ID gl_InstanceID
+#define IS_INSTANCED (INSTANCE_ID != 0)
+#endif
 
 
 void main()
 {
+	bool instanced = IS_INSTANCED; 
+
+	mat4 instance = mix(mat4(1), instances[INSTANCE_ID], float(instanced));
+
 	mat4 bone_transform = Skinning(vWeights, vBoneIds);
-	mat4 object_transform = object[gl_DrawID].WorldMatrix * bone_transform;
+	mat4 model = object[gl_DrawID] * instance * bone_transform;
+	vec4 posL = vec4(vPosition, 1.0);
 
-	gl_Position = u_projection * u_view * object_transform * vec4(vPosition, 1.0);
+	gl_Position = u_projection * u_view * model * posL;
 
-	vs_out.position = vec3(object_transform * vec4(vPosition, 1.0));
+	vs_out.position = vec3(model * posL);
 	vs_out.texcoord = vTexCoord;
 	vs_out.color = vColor;
 	vs_out.camera_pos = inverse(u_view)[3].xyz;
 
 	// Calculate the TBN matrix
 
-	mat3 normal_matrix = mat3(transpose(inverse(object_transform)));
+	mat3 normal_matrix = mat3(transpose(inverse(model)));
 	vec3 T = normalize(normal_matrix * vTangent);
 	vec3 N = normalize(normal_matrix * vNormal);
 	vec3 B = normalize(normal_matrix * vBiNormal);
@@ -68,7 +80,6 @@ void main()
 
 #type fragment
 #version 460 core
-#extension GL_ARB_shading_language_include : require
 
 #include <Core.glsl>
 #include <Lighting.glsl>
