@@ -41,9 +41,9 @@ namespace BHive
 
 		bool HasFlag(const TEnum &rhs) const { return (mValue | rhs) != 0; }
 
-		TEnumAsByte &operator=(const int &rhs)
+		TEnumAsByte &operator=(const underlying_type &rhs)
 		{
-			mValue = (TEnum)(underlying_type)rhs;
+			mValue = (TEnum)rhs;
 			return *this;
 		}
 
