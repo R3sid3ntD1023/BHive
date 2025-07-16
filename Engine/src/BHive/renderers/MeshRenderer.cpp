@@ -14,14 +14,10 @@
 #define SSBO_INDEX_PER_OBJECT_BINDING 1
 #define SSBO_INSTANCE_BINDING 2
 #define SSBO_BONE_BINDING 3
-#define MAX_BONES 128
+#define MAX_BONES 200
 
 namespace BHive
 {
-	struct FPerObjectData
-	{
-		glm::mat4 WorldMatrix;
-	};
 
 	struct ObjectData
 	{
@@ -91,9 +87,8 @@ namespace BHive
 
 				if (pose)
 				{
-					const auto &bone_data = pose->GetTransformsJointSpace().data();
-					const auto &bone_count = pose->GetTransformsJointSpace().size();
-					sMeshRenderData->BoneBuffer->SetData(bone_data, bone_count * sizeof(glm::mat4));
+					const auto &joints = pose->GetTransformsJointSpace();
+					sMeshRenderData->BoneBuffer->SetData(joints.data(), joints.size() * sizeof(glm::mat4));
 					sMeshRenderData->BoneBuffer->BindBufferBase(SSBO_BONE_BINDING);
 				}
 
