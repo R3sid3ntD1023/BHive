@@ -11,6 +11,7 @@
 #include "renderers/PMREMGenerator.h"
 #include "importers/TextureImporter.h"
 #include "postprocessing/Aces.h"
+#include "gfx/textures/Texture2D.h"
 
 namespace BHive
 {
@@ -42,9 +43,14 @@ namespace BHive
 		mQuadShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/ScreenQuad.glsl");
 
 		// Initialize the PMREM generator
-		Ref<Texture> environment_texture = TextureLoader::Import(ENGINE_PATH "/data/hdr/industrial_sunset_puresky_2k.hdr");
 		EnvironmentMapGenerator.Initialize();
-		EnvironmentMapGenerator.SetEnvironmentMap(environment_texture);
+
+		// Load the environment map if it is not already set
+		if (!sEnvironmentMap)
+		{
+			sEnvironmentMap = TextureLoader::Import(ENGINE_PATH "/data/hdr/industrial_sunset_puresky_2k.hdr");
+			EnvironmentMapGenerator.SetEnvironmentMap(sEnvironmentMap);
+		}
 
 		mRenderSize = {width, height};
 	}
@@ -89,9 +95,9 @@ namespace BHive
 		mFinalFramebuffer->UnBind();
 	}
 
-	void SceneRenderer::SetEnvironmentMap(const Ref<Texture> &environment)
+	void SceneRenderer::SetEnvironmentMap(const Ref<Texture2D> &environment)
 	{
-		mRenderSettings.EnvironmentMap = environment;
+		sEnvironmentMap = environment;
 		EnvironmentMapGenerator.SetEnvironmentMap(environment);
 	}
 
@@ -119,9 +125,9 @@ namespace BHive
 		return mFinalFramebuffer->GetColorAttachment(index);
 	}
 
-	const Ref<Texture> &SceneRenderer::GetEnvironmentMap() const
+	const Ref<Texture2D> &SceneRenderer::GetEnvironmentMap() const
 	{
-		return mRenderSettings.EnvironmentMap;
+		return sEnvironmentMap;
 	}
 
 	glm::uvec2 SceneRenderer::GetSize() const

@@ -10,6 +10,7 @@ namespace BHive
 	class Framebuffer;
 	class Shader;
 	class Texture;
+	class Texture2D;
 	class PQuad;
 	class Bloom;
 	class PostProcessor;
@@ -23,7 +24,6 @@ namespace BHive
 
 	struct FRenderSettings
 	{
-		Ref<Texture> EnvironmentMap; // Environment map for the scene
 	};
 
 	class SceneRenderer
@@ -37,7 +37,7 @@ namespace BHive
 
 		void Begin(const Camera *camera, const FTransform &view);
 
-		void SetEnvironmentMap(const Ref<Texture> &environment);
+		void SetEnvironmentMap(const Ref<Texture2D> &environment);
 
 		void End();
 
@@ -47,7 +47,7 @@ namespace BHive
 
 		const Ref<Texture> &GetColorAttachment(uint32_t index = 0) const;
 
-		const Ref<Texture> &GetEnvironmentMap() const;
+		const Ref<Texture2D> &GetEnvironmentMap() const;
 
 		glm::uvec2 GetSize() const;
 
@@ -62,6 +62,7 @@ namespace BHive
 		std::vector<Ref<PostProcessor>> mPostProcessingEffects; // effects for post-processing
 
 		static inline PMREMGenerator EnvironmentMapGenerator;
+		static inline Ref<Texture2D> sEnvironmentMap = nullptr; // Static environment map
 
 		REFLECTABLE()
 	};
