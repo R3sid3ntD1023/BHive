@@ -11,7 +11,7 @@ namespace BHive
 		return t;
 	}
 
-	Ref<Asset> TextureFactory::Import(uint8_t *data, size_t size)
+	Ref<Asset> TextureFactory::Import(const uint8_t *data, size_t size)
 	{
 		auto t = TextureLoader::LoadFromMemory(data, size);
 		OnImportCompleted.invoke(t);

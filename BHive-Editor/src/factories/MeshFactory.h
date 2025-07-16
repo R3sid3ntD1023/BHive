@@ -5,11 +5,6 @@
 
 namespace BHive
 {
-	struct FMeshImportOptions
-	{
-		std::filesystem::path mPath;
-		FMeshImportData mData;
-	};
 
 	class BHIVE MeshFactory : public Factory
 	{

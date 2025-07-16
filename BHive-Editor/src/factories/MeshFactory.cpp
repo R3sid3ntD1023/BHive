@@ -17,7 +17,7 @@ namespace BHive
 			return nullptr;
 
 		auto &window_system = SubSystemContext::Get().GetSubSystem<WindowSubSystem>();
-		auto window = window_system.CreateWindow<MeshOptionsWindow>(this, FMeshImportOptions{path, data});
+		auto window = window_system.CreateWindow<MeshOptionsWindow>(this, path, data);
 		return nullptr;
 	}
 
