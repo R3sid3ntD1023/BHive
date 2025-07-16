@@ -21,7 +21,7 @@ namespace BHive
 	{
 		mReflectionShader = ShaderManager::Get().Load(RESOURCE_PATH "shaders/reflection.glsl");
 		auto &data = mReflectionShader->GetRelectionData();
-		auto ubo = data.at(ShaderType_Fragment).UniformBuffers.at("Material");
+		auto ubo = data.UniformBuffers.at("Material");
 		mInstance = CreateRef<ShaderInstance>(mReflectionShader);
 
 		mReflectUBO = CreateRef<UniformBuffer>(ubo.Binding, ubo.Size);
@@ -29,7 +29,7 @@ namespace BHive
 		mPlane = CreateRef<PPlane>(100.f, 100.f);
 		mSphere = CreateRef<PSphere>(2.f);
 
-		mRelfectionTarget = CreateRef<RenderTargetCube>(256, 100.f);
+		mRelfectionTarget = CreateRef<RenderTargetCube>(256, EFormat::RGBA8);
 
 		mPlaneIndirect = CreateRef<IndirectRenderable>();
 		mPlaneIndirect->Init(mPlane);

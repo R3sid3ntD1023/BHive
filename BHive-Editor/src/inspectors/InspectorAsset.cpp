@@ -3,13 +3,11 @@
 #include "gui/ImGuiExtended.h"
 #include "InspectorAsset.h"
 
-
-#define NULLPTR_NAME "Nullptr"
 #define ASSET_DRAG_DROP_NAME "ASSET"
 
 namespace BHive
 {
-	
+
 	bool Inspector_AssetHandler::Inspect(
 		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
@@ -18,14 +16,15 @@ namespace BHive
 		if (!asset_manager)
 			return false;
 
-		auto data = var.get_value<std::shared_ptr<Asset>>();
-		auto type = var.extract_wrapped_value().get_type().get_raw_type();
-		auto meta_data = asset_manager->GetMetaData(Asset::GetHandle(data));
-		auto current_name = meta_data ? meta_data.Name : NULLPTR_NAME;
+		auto data = var.get_value<Ref<Asset>>();
+		const auto inspected_type = var.extract_wrapped_value().get_type().get_raw_type();
+		const auto type = var.get_type();
+		auto &meta_data = asset_manager->GetMetaData(Asset::GetHandle(data));
+		const auto &display_name = meta_data ? meta_data.Name : "None";
 
 		if (read_only)
 		{
-			ImGui::TextUnformatted(current_name.data());
+			ImGui::TextUnformatted(display_name.data());
 			return false;
 		}
 
@@ -33,9 +32,9 @@ namespace BHive
 
 		const auto &meta_datas = asset_manager->GetAssetRegistry();
 
-		if (ImGui::BeginCombo("##", current_name.c_str(), ImGuiComboFlags_PopupAlignLeft))
+		if (ImGui::BeginCombo("##", display_name.c_str(), ImGuiComboFlags_PopupAlignLeft))
 		{
-			if (ImGui::Selectable(NULLPTR_NAME, current_name == NULLPTR_NAME))
+			if (ImGui::Selectable("None", display_name == "None"))
 			{
 				data = nullptr;
 				changed |= true;
@@ -43,21 +42,19 @@ namespace BHive
 
 			for (auto &[id, meta] : meta_datas)
 			{
-				if (!(type == meta.Type || meta.Type.is_derived_from(type)))
+				if (!(inspected_type == meta.Type || meta.Type.is_derived_from(inspected_type)))
 					continue;
 
 				auto name = meta.Name;
 
 				ImGui::PushID(id);
-				auto selected = ImGui::Selectable(name.c_str(), current_name == name);
+				auto selected = ImGui::Selectable(name.c_str(), display_name == name);
 				ImGui::PopID();
 
 				if (selected)
 				{
-					auto asset = AssetManager::GetAsset(id);
-					rttr::variant arg(asset);
-					arg.convert(var.get_type());
-					var = arg;
+					data = AssetManager::GetAsset(id);
+
 					changed |= true;
 					break;
 				}
@@ -75,11 +72,8 @@ namespace BHive
 				if (meta_data.Type == type || meta_data.Type.is_derived_from(type))
 				{
 
-					auto asset = AssetManager::GetAsset(handle);
-					rttr::variant arg(asset);
-					arg.convert(var.get_type());
-					var = arg;
-					changed = true;
+					data = AssetManager::GetAsset(handle);
+					changed |= true;
 				}
 			}
 			ImGui::EndDragDropTarget();
@@ -89,9 +83,17 @@ namespace BHive
 		{
 			if (ImGui::BeginItemTooltip())
 			{
-				ImGui::TextUnformatted(current_name.c_str());
+				ImGui::TextUnformatted(display_name.c_str());
 				ImGui::EndTooltip();
 			}
+		}
+
+		if (changed)
+		{
+			rttr::variant arg(data);
+			arg.convert(type);
+
+			var = arg;
 		}
 
 		return changed;

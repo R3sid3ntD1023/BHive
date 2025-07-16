@@ -42,15 +42,19 @@ namespace BHive
 
 		RenderCommand::ClearColor(.1f, .1f, .1f, 1.0f);
 
+		auto material = CreateRef<Material>(mShader);
 		mPlane = CreateRef<PCube>(1.f);
-		mPlane->GetMaterialTable().add_material(CreateRef<Material>(mShader));
+		mPlane->GetMaterialTable().add_material(material);
 
 		{
 			FMeshImportData data;
 			if (MeshImporter::Import(RESOURCE_PATH "industrial_standing_light/scene.gltf", data))
 			{
 				mLightPost = CreateRef<StaticMesh>(data.mMeshData);
-	
+				for (size_t i = 0; i < data.mMaterialData.size(); i++)
+				{
+					mLightPost->GetMaterialTable().add_material(material);
+				}
 			}
 		}
 
@@ -60,6 +64,11 @@ namespace BHive
 			{
 				mSkeleton = CreateRef<Skeleton>(data.mBoneData, data.mSkeletonHeirarchyData);
 				mCharacter = CreateRef<SkeletalMesh>(data.mMeshData, mSkeleton);
+				for (size_t i = 0; i < data.mMaterialData.size(); i++)
+				{
+					mCharacter->GetMaterialTable().add_material(material);
+				}
+				mPose = mCharacter->GetDefaultPose();
 			}
 		}
 
@@ -72,11 +81,9 @@ namespace BHive
 					anim.mDuration, anim.TicksPerSecond, anim.mFrames, mSkeleton, anim.mGlobalInverseMatrix);
 
 				mAnimationClip = CreateRef<AnimationClip>(mAnimation);
-				mPose = CreateRef<SkeletalPose>(mSkeleton.get());
 			}
 		}
 
-		
 		FramebufferSpecification spec{};
 		spec.Width = windowSize.x;
 		spec.Height = windowSize.y;
@@ -104,7 +111,7 @@ namespace BHive
 		light.mRadius = lightRadius;
 
 		auto &proj = mCamera.GetProjection();
-		auto view = mCamera.GetView();
+		auto view = mCamera.GetView().inverse();
 
 		Renderer::Begin();
 		Renderer::SubmitCamera(proj, view);

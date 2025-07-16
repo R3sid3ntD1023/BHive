@@ -26,13 +26,14 @@ namespace BHive
 		auto type = var.get_type();
 		auto data = var.to_int();
 		auto enumeration = type.get_enumeration();
-		auto &name_value = GetEnumNameValues(enumeration);
+		auto &enumeration_names = GetEnumNameValues(enumeration);
 
-		std::string display_name = "None";
-		if (name_value.contains(data))
-			display_name = name_value.at(data);
+		std::string display_name = enumeration_names.at(data);
 
 		bool changed = false;
+
+		if (display_name.empty())
+			display_name = "None";
 
 		if (read_only)
 		{
@@ -43,7 +44,7 @@ namespace BHive
 		if (ImGui::BeginCombo("##", display_name.c_str()))
 		{
 
-			for (auto &[value, name] : name_value)
+			for (auto &[value, name] : enumeration_names)
 			{
 				if (ImGui::Selectable(name.c_str(), value == data))
 				{
@@ -59,6 +60,7 @@ namespace BHive
 		if (changed)
 		{
 			rttr::variant arg(data);
+			arg.convert(enumeration.get_underlying_type());
 			arg.convert(var.get_type());
 			var = arg;
 		}

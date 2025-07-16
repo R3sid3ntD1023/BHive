@@ -16,11 +16,15 @@ namespace BHive
 
 		Ref<Skeleton> GetSkeleton() { return mSkeleton; }
 
-		const Ref<class SkeletalPose> &GetDefaultPose() { return mDefaultPose; }
+		Ref<class SkeletalPose> GetDefaultPose() const { return mDefaultPose; }
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
+
+		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+
+		virtual void Load(cereal::JSONInputArchive &ar) override;
 
 		REFLECTABLEV(BaseMesh)
 
