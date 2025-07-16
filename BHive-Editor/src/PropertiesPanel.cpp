@@ -92,6 +92,7 @@ namespace BHive
 
 	void PropertiesPanel::DrawAddComponent(GameObject *obj)
 	{
+
 		auto selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().GetSelection();
 		static auto derived_component_types = rttr::type::get<Component>().get_derived_classes();
 
@@ -110,8 +111,11 @@ namespace BHive
 
 		ImGui::PopStyleColor(3);
 
+		ImGui::SetNextWindowSize({0, 200}, ImGuiCond_Always);
+
 		if (ImGui::BeginPopup(ADD_COMPONENT_FUNCTION_NAME))
 		{
+
 			for (auto &type : derived_component_types)
 			{
 				auto spawnable_var = type.get_metadata(ClassMetaData_ComponentSpawnable);
