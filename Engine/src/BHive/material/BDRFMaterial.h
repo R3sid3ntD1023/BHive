@@ -38,7 +38,7 @@ namespace BHive
 
 		glm::vec2 Tiling{1.0f, 1.0f};
 
-		EMaterialFlags Flags = MaterialFlag_None;
+		TEnumAsByte<EMaterialFlags> Flags = MaterialFlag_None;
 
 	public:
 		BDRFMaterial();

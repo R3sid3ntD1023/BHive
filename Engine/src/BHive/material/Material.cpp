@@ -17,7 +17,31 @@ namespace BHive
 	{
 		if (mTextures.contains(name))
 		{
-			mTextures[name] = texture;
+			mTextures[name].Texture = texture;
+		}
+	}
+
+	void Material::Submit(const Ref<Shader> &shader)
+	{
+		for (auto &[name, slot] : mTextures)
+		{
+			if (slot.Texture)
+			{
+				slot.Texture->Bind(slot.Binding);
+			}
+			else
+			{
+				Renderer::GetWhiteTexture()->Bind(slot.Binding);
+				continue;
+			}
+		}
+	}
+
+	void Material::AddTextureSlot(const std::string &name, uint32_t binding)
+	{
+		if (!mTextures.contains(name))
+		{
+			mTextures.emplace(name, TextureSlot{binding, nullptr});
 		}
 	}
 
@@ -29,12 +53,11 @@ namespace BHive
 	void Material::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(mTextureSlots);
 
 		// Save all texture handles
-		for (auto &[name, texture] : mTextures)
+		for (auto &[name, slot] : mTextures)
 		{
-			ar(TAssetHandle(texture));
+			ar(TAssetHandle(slot.Texture));
 		}
 	}
 
@@ -42,12 +65,17 @@ namespace BHive
 	{
 
 		Asset::Load(ar);
-		ar(mTextureSlots);
 
-		for (auto &slot : mTextureSlots)
+		for (auto &[name, slot] : mTextures)
 		{
-			ar(TAssetHandle(mTextures[slot.first]));
+			ar(TAssetHandle(slot.Texture));
 		}
+	}
+
+	REFLECT(Material::TextureSlot)
+	{
+		BEGIN_REFLECT(Material::TextureSlot)
+		REFLECT_PROPERTY("Texture", Texture);
 	}
 
 	REFLECT(Material)
