@@ -7,7 +7,7 @@ namespace BHive
 		: BaseMesh(mesh_data),
 		  mSkeleton(skeleton)
 	{
-		mDefaultPose = CreateRef<SkeletalPose>(mSkeleton.get());
+		mDefaultPose = CreateRef<SkeletalPose>(skeleton.get());
 	}
 
 	void SkeletalMesh::Save(cereal::BinaryOutputArchive &ar) const
@@ -26,22 +26,6 @@ namespace BHive
 		TAssetHandle<Skeleton> handle(mSkeleton);
 		ar(handle);
 
-		if (mSkeleton)
-			mDefaultPose = CreateRef<SkeletalPose>(mSkeleton.get());
-	}
-
-	void SkeletalMesh::Save(cereal::JSONOutputArchive &ar) const
-	{
-		BaseMesh::Save(ar);
-		TAssetHandle<Skeleton> handle = mSkeleton;
-		ar(handle);
-	}
-
-	void SkeletalMesh::Load(cereal::JSONInputArchive &ar)
-	{
-		BaseMesh::Load(ar);
-		TAssetHandle<Skeleton> handle(mSkeleton);
-		ar(handle);
 		if (mSkeleton)
 			mDefaultPose = CreateRef<SkeletalPose>(mSkeleton.get());
 	}

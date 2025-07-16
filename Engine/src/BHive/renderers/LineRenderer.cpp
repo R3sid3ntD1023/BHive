@@ -238,8 +238,6 @@ namespace BHive
 	{
 
 		auto theta = glm::radians(360.0f / sides);
-
-		// top
 		for (uint32_t i = 0; i < sides; i++)
 		{
 			glm::vec3 pos = {glm::cos(theta * i), glm::sin(theta * i), height};
@@ -247,7 +245,6 @@ namespace BHive
 			DrawLine({}, pos * radius, color, transform);
 		}
 
-		// bottom
 		for (uint32_t i = 0; i < sides; i++)
 		{
 			glm::vec3 start = {cos(theta * (i)), glm::sin(theta * (i)), height};
@@ -325,11 +322,6 @@ namespace BHive
 		DrawLine({}, forward * size, color, transform);
 		DrawLine(forward * size, (glm::vec3{.75f, 0, .25f}) * size, color, transform);
 		DrawLine(forward * size, (glm::vec3{.75f, 0, -.25f}) * size, color, transform);
-	}
-
-	void LineRenderer::DrawJoint(const glm::mat4 &joint, float size, const FColor &color)
-	{
-		DrawSphere(0.05f, 16, {}, color, joint);
 	}
 
 	void LineRenderer::StartBatch()

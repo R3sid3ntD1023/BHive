@@ -11,20 +11,21 @@ namespace BHive
 {
 	struct FVertex
 	{
-		glm::vec3 Position{0.f, 0.f, 0.0f};
-		glm::vec2 TexCoord{0.f, 0.f};
-		glm::vec3 Normal{0.f, 0.f, 1.f};
-		glm::vec3 Tangent{0.f, 0.f, 0.f};
-		glm::vec3 BiNormal{0.f, 0.0f, .0f};
-		glm::vec4 Color{0.f, 0.0f, 0.f, 0.f};
-		int BoneIDs[MAX_BONE_INFLUENCE] = {-1, -1, -1, -1};
-		float Weights[MAX_BONE_INFLUENCE] = {0.f, 0.f, 0.f, 0.f};
+		glm::vec3 Position;
+		glm::vec2 TexCoord;
+		glm::vec3 Normal;
+		glm::vec3 Tangent;
+		glm::vec3 BiNormal;
+		glm::vec4 Color;
+		int32_t mBoneID[MAX_BONE_INFLUENCE] = {-1, -1, -1, -1};
+		float mWeights[MAX_BONE_INFLUENCE] = {0, 0, 0, 0};
+		// glm::mat4 Matrix = {1.f};
 
 		static BufferLayout Layout()
 		{
 			return {{EShaderDataType::Float3}, {EShaderDataType::Float2}, {EShaderDataType::Float3},
 					{EShaderDataType::Float3}, {EShaderDataType::Float3}, {EShaderDataType::Float4},
-					{EShaderDataType::Int4},   {EShaderDataType::Float4}};
+					{EShaderDataType::Int4},   {EShaderDataType::Float4} /*, {EShaderDataType::Mat4}*/};
 		}
 	};
 
@@ -49,8 +50,7 @@ namespace BHive
 	inline void Serialize(A &ar, FVertex &obj)
 	{
 		ar(obj.Position, obj.TexCoord, obj.Normal, obj.Tangent, obj.BiNormal, obj.Color,
-		   MAKE_BINARY(obj.BoneIDs, MAX_BONE_INFLUENCE * sizeof(int)),
-		   MAKE_BINARY(obj.Weights, MAX_BONE_INFLUENCE * sizeof(float)));
+		   MAKE_BINARY(obj.mBoneID, 4 * sizeof(float)), MAKE_BINARY(obj.mWeights, 4 * sizeof(float)));
 	}
 
 	template <typename A>

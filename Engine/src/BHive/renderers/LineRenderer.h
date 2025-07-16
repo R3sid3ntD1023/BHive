@@ -30,8 +30,7 @@ namespace BHive
 		static void Begin();
 		static void End();
 
-		static void
-		DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const FColor &color, const FTransform &transform = {});
+		static void DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const FColor &color, const FTransform &transform = {});
 		static void DrawLine(const Line &line, const FTransform &transform = {});
 		static void DrawTriangle(
 			const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const FColor &color,
@@ -64,8 +63,6 @@ namespace BHive
 		static void DrawArrow(float size, const FColor &color, const FTransform &transform = {});
 
 		static void DrawFrustum(const FrustumViewer &frustum, const FColor &color);
-
-		static void DrawJoint(const glm::mat4 &joint, float size = 1.f, const FColor &color = Colors::Cyan);
 
 	private:
 		static void StartBatch();

@@ -120,7 +120,7 @@ namespace BHive
 
 		mActiveWorld->Update(dt);
 
-		LineRenderer::DrawGrid(FGrid{.size = 40.f, .divisions = 20, .color = 0xffffffff, .stepcolor = 0xff808080});
+		LineRenderer::DrawGrid(FGrid{.size = 40.f, .divisions = 20, .color = 0xffffffff, .stepcolor = 0x808080ff});
 
 		Renderer::End();
 
