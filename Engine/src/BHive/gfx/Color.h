@@ -14,10 +14,10 @@ namespace BHive
 		FColor(uint32_t hex)
 		{
 			const float s = 1.0f / 255.0f;
-			r = ((hex >> 24) & 0xFF) * s;
-			g = ((hex >> 16) & 0xFF) * s;
-			b = ((hex >> 8) & 0xFF) * s;
-			a = (hex & 0xFF) * s;
+			a = ((hex >> 24) & 0xFF) * s;
+			r = ((hex >> 16) & 0xFF) * s;
+			g = ((hex >> 8) & 0xFF) * s;
+			b = (hex & 0xFF) * s;
 		}
 
 		FColor(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a = (uint8_t)255)
@@ -56,10 +56,10 @@ namespace BHive
 		FColor &operator=(uint32_t hex)
 		{
 			const float s = 1.0f / 255.0f;
-			r = ((hex >> 24) & 0xFF) * s;
-			g = ((hex >> 16) & 0xFF) * s;
-			b = ((hex >> 8) & 0xFF) * s;
-			a = (hex & 0xFF) * s;
+			a = ((hex >> 24) & 0xFF) * s;
+			r = ((hex >> 16) & 0xFF) * s;
+			g = ((hex >> 8) & 0xFF) * s;
+			b = (hex & 0xFF) * s;
 			return *this;
 		}
 
@@ -73,7 +73,7 @@ namespace BHive
 
 		operator uint32_t() const
 		{
-			return uint32_t(a * 255) << 24 | uint32_t(255 * g) << 16 | uint32_t(255 * b) << 8 | uint32_t(255 * a) << 0;
+			return uint32_t(a * 255) << 24 | uint32_t(255 * r) << 16 | uint32_t(255 * g) << 8 | uint32_t(255 * b) << 0;
 		}
 
 		operator float *() { return &r; }
@@ -99,9 +99,21 @@ namespace BHive
 
 	namespace Colors
 	{
-		static const FColor Blue = 0xFFFF0000;
-		static const FColor Red = 0xFF0000FF;
+		static const FColor Blue = 0xFF0000FF;
+		static const FColor Red = 0xFFFF0000;
 		static const FColor Green = 0xFF00FF00;
 		static const FColor White = 0xFFFFFFFF;
+		static const FColor Black = 0xFF000000;
+		static const FColor Yellow = 0xFFFFFF00;
+		static const FColor Magenta = 0xFFFF00FF;
+		static const FColor Cyan = 0xFF00FFFF;
+		static const FColor Gray = 0xFF808080;
+		static const FColor DarkGray = 0xFF404040;
+		static const FColor LightGray = 0xFFC0C0C0;
+		static const FColor Orange = 0xFFFFA500;
+		static const FColor Pink = 0xFFFFC0CB;
+		static const FColor Purple = 0xFF800080;
+		static const FColor Brown = 0xFFA52A2A;
+
 	} // namespace Colors
 } // namespace BHive
