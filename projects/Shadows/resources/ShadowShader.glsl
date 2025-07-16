@@ -39,15 +39,23 @@ layout(location  = 0) out struct VS_OUT
 	vec3 Normal;
 } vs_out;
 
+#ifdef VULKAN
+#define INSTANCE_ID gl_InstanceIndex
+#define IS_INSTANCED (INSTANCE_ID != -1)
+#else
+#define INSTANCE_ID gl_InstanceID
+#define IS_INSTANCED (INSTANCE_ID != 0)
+#endif
+
 void main()
 {
 	vec4 pos = vec4(vPosition , 1);
 	mat4 boneTransform = Skinning(vWeights, vBoneIds);
 	vec4 posL = boneTransform * pos;
 
-	bool instanced = gl_InstanceIndex != -1; 
+	bool instanced = IS_INSTANCED; 
 
-	mat4 instance = mix(mat4(1), instances[gl_InstanceIndex], float(instanced));
+	mat4 instance = mix(mat4(1), instances[INSTANCE_ID], float(instanced));
 
 	mat4 model =  worldMatrix * instance;
 	gl_Position = uProjection * uView *  model *  posL;

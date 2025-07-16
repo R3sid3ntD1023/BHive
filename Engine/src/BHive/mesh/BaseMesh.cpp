@@ -31,6 +31,18 @@ namespace BHive
 		Initialize();
 	}
 
+	void BaseMesh::Save(cereal::JSONOutputArchive &ar) const
+	{
+		Asset::Save(ar);
+		ar(mData, mMaterialTable);
+	}
+
+	void BaseMesh::Load(cereal::JSONInputArchive &ar)
+	{
+		Asset::Load(ar);
+		ar(mData, mMaterialTable);
+	}
+
 	void BaseMesh::CreatePVPBuffers()
 	{
 	}

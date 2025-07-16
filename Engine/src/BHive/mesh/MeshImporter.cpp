@@ -55,10 +55,10 @@ namespace BHive
 		{
 			for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
 			{
-				if (vertex.mBoneID[i] < 0)
+				if (vertex.BoneIDs[i] < 0)
 				{
-					vertex.mBoneID[i] = id;
-					vertex.mWeights[i] = weight;
+					vertex.BoneIDs[i] = id;
+					vertex.Weights[i] = weight;
 					break;
 				}
 			}
@@ -159,12 +159,6 @@ namespace BHive
 				vertex.BiNormal = bitangent;
 				vertex.Tangent = tangent;
 				vertex.TexCoord = texcoord;
-
-				for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
-				{
-					vertex.mBoneID[i] = -1;
-					vertex.mWeights[i] = 0.f;
-				}
 				vertices[v] = vertex;
 
 				data.mBoundingBox.Min = glm::min(position, data.mBoundingBox.Min);
