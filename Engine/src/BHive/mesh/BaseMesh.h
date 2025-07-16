@@ -37,10 +37,6 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
-
 		iterator begin() { return mData.mSubMeshes.begin(); }
 		iterator end() { return mData.mSubMeshes.end(); }
 
@@ -50,7 +46,6 @@ namespace BHive
 		REFLECTABLEV(Asset)
 
 	private:
-		void CreatePVPBuffers();
 		void CreateVertexArrayBuffer();
 
 	private:
