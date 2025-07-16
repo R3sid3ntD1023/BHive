@@ -6,7 +6,7 @@ namespace BHive
 		: mBones(bones),
 		  mRoot(root)
 	{
-		CalculateRestPoseTransforms(mRoot);
+		CalculateRestPoseTransforms(mRoot, glm::mat4(1));
 	}
 
 	const Bone *Skeleton::FindBone(const std::string &name) const
@@ -29,7 +29,7 @@ namespace BHive
 		ar(mBones, mRoot, mRestPoseTransforms);
 	}
 
-	void Skeleton::CalculateRestPoseTransforms(const SkeletalNode &node)
+	void Skeleton::CalculateRestPoseTransforms(const SkeletalNode &node, const glm::mat4 &parent)
 	{
 		auto name = node.mName;
 		auto children = node.mChildren;
@@ -39,11 +39,14 @@ namespace BHive
 		if (mBones.contains(name))
 		{
 			auto &bone = mBones.at(name);
-			mRestPoseTransforms.push_back(transform * bone.mOffset);
+			mRestPoseTransforms.push_back(parent * transform * bone.mOffset);
 		}
 
+		glm::mat4 global = parent * transform;
 		for (auto &child : children)
-			CalculateRestPoseTransforms(child);
+		{
+			CalculateRestPoseTransforms(child, global);
+		}
 	}
 
 	REFLECT(Skeleton)
