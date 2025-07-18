@@ -24,6 +24,8 @@ namespace BHive
 
 	void MeshOptionsWindow::OnGuiRender()
 	{
+		bool animations_enabled = mImportData.mBoneData.size() > 0 && mOptions.MeshType != EMeshType::StaticMesh;
+
 		if (inspect("Mesh Type", mOptions.MeshType))
 		{
 			if (mOptions.MeshType == EMeshType::SkeletalAnimation)
@@ -31,6 +33,8 @@ namespace BHive
 				mOptions.ImportAnimations = true;
 			}
 		}
+
+		ImGui::SeparatorText("Materials");
 
 		ImGui::BeginDisabled(!mImportData.mMaterialData.size());
 		inspect("Import Materials", mOptions.ImportMaterials);
@@ -40,11 +44,11 @@ namespace BHive
 		ImGui::SeparatorText("Override Materials");
 		for (size_t i = 0; i < mOptions.OverideMaterials.size(); i++)
 		{
-			inspect(std::format("Materials", i), mOptions.OverideMaterials[i]);
+			inspect(std::format("Material {}", i), mOptions.OverideMaterials[i]);
 		}
 
 		ImGui::SeparatorText("Animations");
-		ImGui::BeginDisabled(!mImportData.mAnimationData.size());
+		ImGui::BeginDisabled(!animations_enabled);
 
 		inspect("Import Animations", mOptions.ImportAnimations);
 		inspect("Skeleton", mOptions.Skeleton);

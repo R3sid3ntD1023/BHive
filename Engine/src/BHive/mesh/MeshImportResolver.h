@@ -55,8 +55,6 @@ namespace BHive
 
 		void ResolveMaterials(MaterialTable &material_table);
 
-		const char *ResolveTextureSlot(FTextureData::EType type);
-
 	private:
 		const FMeshImportData &mData;
 		const FMeshImportOptions &mOptions;

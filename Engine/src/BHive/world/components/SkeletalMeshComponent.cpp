@@ -12,21 +12,22 @@ namespace BHive
 		{
 			auto pose = SkeletalMeshAsset->GetDefaultPose();
 			auto owner = GetOwner();
-			auto transform = owner ? owner->GetWorldTransform() : FTransform{};
-			MeshRenderer::DrawMesh(SkeletalMeshAsset, *pose, transform);
+			auto world_transform = owner ? owner->GetWorldTransform() : FTransform{};
+			MeshRenderer::DrawMesh(SkeletalMeshAsset, *pose, world_transform);
+			LineRenderer::DrawAABB(SkeletalMeshAsset->GetBoundingBox(), Colors::Red, world_transform);
 
 			const auto &joints = pose->GetTransformsJointSpace();
 
 			for (size_t i = 0; i < joints.size(); i++)
 			{
-				const glm::mat4 parent = transform * joints[i];
+				const glm::mat4 parent = world_transform * joints[i];
 				LineRenderer::DrawJoint(parent, 1.0f);
 
 				if (i == joints.size() - 1)
 					continue; // skip last joint, as it has no child
 
-				const glm::mat4 child = transform * joints[i + 1];
-				LineRenderer::DrawLine(parent[3], child[3], Colors::Cyan, transform);
+				const glm::mat4 child = world_transform * joints[i + 1];
+				LineRenderer::DrawLine(parent[3], child[3], Colors::Cyan, world_transform);
 			}
 		}
 	}

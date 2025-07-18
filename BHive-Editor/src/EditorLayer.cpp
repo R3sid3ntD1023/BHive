@@ -71,7 +71,7 @@ namespace BHive
 		mRenderer = CreateRef<SceneRenderer>();
 		mRenderer->Initialize(size.x, size.y);
 
-		RenderCommand::ClearColor(.2f, .2f, .2f);
+		RenderCommand::ClearColor(0.1f, 0.1f, 0.1f);
 
 		float aspect = size.x / (float)size.y;
 		mEditorCamera = EditorCamera(75.f, aspect, .01f, 1000.f);

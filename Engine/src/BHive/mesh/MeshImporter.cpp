@@ -327,65 +327,48 @@ namespace BHive
 			{
 				auto size = embedded_texture->mWidth + embedded_texture->mHeight;
 
-				auto pixels = new uint8_t[size];
-				memcpy(pixels, embedded_texture->pcData, size);
-
-				data.mEmbeddedData = pixels;
-				data.mEmbeddedDataSize = size;
+				data.mEmbeddedData.Allocate(embedded_texture->pcData, size);
 			}
 		}
 
-		void GetTextureType(aiTextureType aiType, FTextureData::EType &type)
+		std::string GetTextureType(aiTextureType aiType)
 		{
 			switch (aiType)
 			{
-			case aiTextureType_NONE:
-				break;
 			case aiTextureType_DIFFUSE:
-				type = FTextureData::Type_ALBEDO;
-				break;
+				return "Albedo";
 			case aiTextureType_SPECULAR:
-				type = FTextureData::Type_ROUGHNESS;
-				break;
+				return "Roughness";
 			case aiTextureType_AMBIENT:
-				break;
+				return "Ambient";
 			case aiTextureType_EMISSIVE:
-				type = FTextureData::Type_EMISSION;
-				break;
+				return "Emission";
 			case aiTextureType_HEIGHT:
-				type = FTextureData::Type_DISPLACEMENT;
-				break;
+				return "Height";
 			case aiTextureType_NORMALS:
-				type = FTextureData::Type_NORMAL;
-				break;
+				return "Normal";
 			case aiTextureType_SHININESS:
-				type = FTextureData::Type_METALLIC;
-				break;
+				return "Shininess";
 			case aiTextureType_OPACITY:
-				type = FTextureData::Type_OPACITY;
-				break;
+				return "Opacity";
 			case aiTextureType_DISPLACEMENT:
-				type = FTextureData::Type_DISPLACEMENT;
-				break;
+				return "Displacement";
 			case aiTextureType_LIGHTMAP:
-				break;
+				return "Lightmap";
 			case aiTextureType_REFLECTION:
-				break;
+				return "Reflection";
 			case aiTextureType_BASE_COLOR:
-				type = FTextureData::Type_ALBEDO;
-				break;
+				return "Albedo";
 			case aiTextureType_NORMAL_CAMERA:
-				break;
+				return "NormalCamera";
 			case aiTextureType_EMISSION_COLOR:
-				break;
+				return "EmissionColor";
 			case aiTextureType_METALNESS:
-				type = FTextureData::Type_METALLIC;
-				break;
+				return "Metallic";
 			case aiTextureType_DIFFUSE_ROUGHNESS:
-				type = FTextureData::Type_ROUGHNESS;
-				break;
+				return "DiffuseRoughness";
 			case aiTextureType_AMBIENT_OCCLUSION:
-				break;
+				return "AmbientOcclusion";
 			case aiTextureType_UNKNOWN:
 				break;
 			case aiTextureType_SHEEN:
@@ -407,6 +390,8 @@ namespace BHive
 			default:
 				break;
 			}
+
+			return "";
 		}
 
 		void GetMaterialData(const aiScene *scene, std::vector<FMaterialData> &materials)
@@ -439,7 +424,7 @@ namespace BHive
 						if (!material.mLoadedTextureNames.contains(str.C_Str()))
 						{
 							FTextureData texture_data;
-							GetTextureType(supported_textures[j], texture_data.mType);
+							texture_data.mType = GetTextureType(supported_textures[j]);
 							GetTextureData(scene, str, texture_data);
 
 							material.mTextureData.push_back(texture_data);

@@ -6,14 +6,6 @@
 
 namespace BHive
 {
-#define ALBEDO_TEX "Albedo";
-#define METALLIC_TEX "Metallic";
-#define ROUGHNESS_TEX "Roughness";
-#define METALLIC_ROUGHNESS_TEX "MetallicRoughness";
-#define NORMAL_TEX "Normal";
-#define EMISSION_TEX "Emission";
-#define OPACITY_TEX "Opacity";
-#define DISPLACEMENT_TEX "Displacement";
 
 	MeshImportResolver::MeshImportResolver(
 		const FMeshImportData &data, const FMeshImportOptions &options, AdditionalAssets &additional)
@@ -153,7 +145,8 @@ namespace BHive
 					}
 					else
 					{
-						texture_asset = LoadTextureMemoryFunc(texture_data.mEmbeddedData, texture_data.mEmbeddedDataSize);
+						texture_asset =
+							LoadTextureMemoryFunc(texture_data.mEmbeddedData, texture_data.mEmbeddedData.GetSize());
 					}
 
 					if (auto texture = Cast<Texture>(texture_asset))
@@ -161,9 +154,9 @@ namespace BHive
 						texture_asset->SetName(texture_data.mPath.stem().string());
 						mAdditionalAssets.push_back(texture_asset);
 
-						if (auto slot_name = ResolveTextureSlot(texture_data.mType); strcmp("", slot_name) != 0)
+						if (texture_data.mType != "")
 						{
-							material->SetTexture(slot_name, texture);
+							material->SetTexture(texture_data.mType.c_str(), texture);
 						}
 					}
 				}
@@ -178,41 +171,6 @@ namespace BHive
 
 			material_table.set_material(material, i);
 		}
-	}
-
-	const char *MeshImportResolver::ResolveTextureSlot(FTextureData::EType type)
-	{
-		switch (type)
-		{
-		case BHive::FTextureData::Type_ALBEDO:
-			return ALBEDO_TEX;
-			break;
-		case BHive::FTextureData::Type_METALLIC:
-			return METALLIC_TEX;
-			break;
-		case BHive::FTextureData::Type_ROUGHNESS:
-			return ROUGHNESS_TEX;
-			break;
-		case BHive::FTextureData::Type_METALLIC_ROUGHNESS:
-			return METALLIC_ROUGHNESS_TEX;
-			break;
-		case BHive::FTextureData::Type_NORMAL:
-			return NORMAL_TEX;
-			break;
-		case BHive::FTextureData::Type_EMISSION:
-			return EMISSION_TEX;
-			break;
-		case BHive::FTextureData::Type_OPACITY:
-			return OPACITY_TEX;
-			break;
-		case BHive::FTextureData::Type_DISPLACEMENT:
-			return DISPLACEMENT_TEX;
-			break;
-		default:
-			break;
-		}
-
-		return "";
 	}
 
 } // namespace BHive
