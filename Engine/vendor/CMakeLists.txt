@@ -23,6 +23,16 @@ FETCHCONTENT_DECLARE(
 )
 list(APPEND components imguizmo)
 
+#imnodeflow
+FetchContent_Declare(
+    ImNodeFlow
+    GIT_REPOSITORY https://github.com/R3sid3ntD1023/ImNodeFlow.git
+    GIT_TAG master
+)
+
+list(APPEND components ImNodeFlow)
+
+
 if(components)
 	FETCHCONTENT_MAKEAVAILABLE(${components})
 endif()
