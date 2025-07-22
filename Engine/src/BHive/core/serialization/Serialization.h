@@ -16,6 +16,7 @@
 #include "types/buffer.hpp"
 #include "types/filesystem.hpp"
 #include "types/glm.hpp"
+#include "types/rttr.hpp"
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/json.hpp>

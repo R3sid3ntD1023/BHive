@@ -25,11 +25,12 @@ message(STATUS "Vulkan Includes: ${Vulkan_INCLUDE_DIR} - Libs ${Vulkan_LIBRARIES
 set(Vulkan_LIB_DIR $ENV{VULKAN_SDK}/Lib)
 
 
-file(GLOB_RECURSE ENGINE_SRC CMAKE_CONFIGURE_DEPENDS src/** data/** PARENT_SCOPE)
+file(GLOB_RECURSE HEADER_FILES CMAKE_CONFIGURE_DEPENDS src/**.h src/**.inl)
+file(GLOB_RECURSE SOURCE_FILES CMAKE_CONFIGURE_DEPENDS src/**.cpp src/**.hpp)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES} ${SOURCE_FILES} )
 
 
-
-add_library(Engine STATIC ${ENGINE_SRC})
+add_library(Engine STATIC ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(Engine PROPERTIES 
 	CXX_STANDARD 20
 	CXX_STANDARD_REQUIRED YES
@@ -51,6 +52,7 @@ target_link_libraries(Engine
 	PUBLIC assimp::assimp 
 	PUBLIC imgui::imgui
 	PUBLIC ImGuizmo
+	PUBLIC ImNodeFlow
 	PUBLIC waveparser
 	PUBLIC RTTR::Core
 	PUBLIC spdlog::spdlog

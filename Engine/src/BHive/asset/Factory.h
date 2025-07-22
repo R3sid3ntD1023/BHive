@@ -1,6 +1,8 @@
 #pragma once
 
+#include "core/Core.h"
 #include "asset/Asset.h"
+#include "core/EventDelegate.h"
 
 namespace BHive
 {
@@ -41,8 +43,8 @@ namespace BHive
 	}
 } // namespace BHive
 
-#define REFLECT_FACTORY(cls) \
-	REFLECT(cls)             \
-	{                        \
-		BEGIN_REFLECT(cls) REFLECT_CONSTRUCTOR();  \
+#define REFLECT_FACTORY(cls)                      \
+	REFLECT(cls)                                  \
+	{                                             \
+		BEGIN_REFLECT(cls) REFLECT_CONSTRUCTOR(); \
 	}

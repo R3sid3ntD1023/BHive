@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gfx/Color.h"
-#include "math/Transform.h"
+#include "core/math/Transform.h"
 
 namespace BHive
 {

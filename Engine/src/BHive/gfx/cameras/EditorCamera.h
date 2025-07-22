@@ -1,9 +1,9 @@
 #pragma once
 
+#include "SceneCamera.h"
 #include "core/events/KeyEvents.h"
 #include "core/events/MouseEvents.h"
-#include "math/Transform.h"
-#include "SceneCamera.h"
+#include "core/math/Transform.h"
 
 namespace BHive
 {

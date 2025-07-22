@@ -34,10 +34,10 @@ namespace BHive
 
 			if (ImGui::BeginChild("Create SubTexture"))
 			{
-				inspect("X", mSubTexture.x);
-				inspect("Y", mSubTexture.y);
-				inspect("Width", mSubTexture.width);
-				inspect("Height", mSubTexture.height);
+				Inspect::inspect("X", mSubTexture.x);
+				Inspect::inspect("Y", mSubTexture.y);
+				Inspect::inspect("Width", mSubTexture.width);
+				Inspect::inspect("Height", mSubTexture.height);
 
 				if (ImGui::Button("Create"))
 				{

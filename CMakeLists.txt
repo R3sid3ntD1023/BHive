@@ -17,7 +17,6 @@ endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
 
 add_subdirectory(Engine)
-add_subdirectory(Inspectors)
 add_subdirectory(projects)
 add_subdirectory(BHive-Editor)
 #add_subdirectory(ReflectionBuilder)

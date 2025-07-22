@@ -38,9 +38,9 @@ namespace BHive
 	LogPanel::LogPanel()
 		: WindowBase(ImGuiWindowFlags_MenuBar)
 	{
-		if (!Log::OnMessageLogged.is_bound())
+		if (!Log::OnMessageLogged)
 		{
-			Log::OnMessageLogged.bind(&LogPanel::LogMessage);
+			Log::OnMessageLogged = [](const spdlog::details::log_msg &msg) { LogPanel::LogMessage(msg); };
 		}
 	}
 

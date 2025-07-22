@@ -1,6 +1,6 @@
 #pragma once
 
-#include "math/Math.h"
+#include "core/Core.h"
 
 namespace BHive
 {

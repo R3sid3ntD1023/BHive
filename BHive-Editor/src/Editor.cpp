@@ -2,7 +2,6 @@
 #include "core/EntryPoint.h"
 #include "EditorLayer.h"
 #include "ProjectLauncherLayer.h"
-#include "Inspectors.h"
 #include "gui/Gui.h"
 
 namespace BHive
@@ -13,7 +12,6 @@ namespace BHive
 		BHiveEditor(const FApplicationSpecification &spec)
 			: Application(spec)
 		{
-			SetCurrentContext(ImGui::GetCurrentContext());
 
 			PushLayer(new ProjectLauncherLayer());
 		}

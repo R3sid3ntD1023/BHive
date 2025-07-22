@@ -1,18 +1,6 @@
 #pragma once
 
-
-
-#ifdef _WIN32
-	#ifdef BUILD_DLL
-		#ifdef BHIVE_DLL
-			#define BHIVE __declspec(dllexport)
-		#else
-			#define BHIVE __declspec(dllimport)
-		#endif
-	#else
-		#define BHIVE
-	#endif
-#endif
+#include "CoreAPI.h"
 
 #define CAT_IMPL_(a, b) a##b
 #define CAT_(a, b) CAT_IMPL_(a, b)
@@ -49,7 +37,6 @@ Scope<T> CreateScope(TArgs &&...args)
 	return std::make_unique<T>(std::forward<TArgs>(args)...);
 }
 
-#include "Casting.h"
 #include "Log.h"
 
 #ifdef _DEBUG
@@ -69,6 +56,11 @@ Scope<T> CreateScope(TArgs &&...args)
 #else
 	#define ASSERT(...)
 #endif
+
+#include "Casting.h"
+#include "math/Math.h"
+#include "reflection/Reflection.h"
+#include "serialization/Serialization.h"
 
 namespace BHive
 {

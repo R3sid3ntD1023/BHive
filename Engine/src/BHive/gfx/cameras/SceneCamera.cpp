@@ -1,5 +1,4 @@
 #include "SceneCamera.h"
-#include "math/Math.h"
 
 namespace BHive
 {

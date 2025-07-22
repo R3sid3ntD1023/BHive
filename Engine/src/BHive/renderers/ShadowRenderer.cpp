@@ -7,8 +7,7 @@
 #include "gfx/UniformBuffer.h"
 #include "Lights.h"
 #include "LineRenderer.h"
-#include "math/Frustum.h"
-#include "math/Frustum.h"
+#include "core/math/Frustum.h"
 #include "ShadowRenderer.h"
 
 #define DIRECTIONAL_SHADOWMAP_SIZE 1024

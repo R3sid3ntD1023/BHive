@@ -1,7 +1,8 @@
 #pragma once
 
+#include "core/Core.h"
 #include "LockAxis.h"
-#include "math/Transform.h"
+#include "core/math/Transform.h"
 #include "PhysicsCore.h"
 #include <physx/foundation/PxTransform.h>
 #include <physx/PxRigidDynamic.h>

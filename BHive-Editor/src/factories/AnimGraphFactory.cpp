@@ -1,6 +1,6 @@
 #include "Animator/anim_graph/AnimGraph.h"
 #include "AnimGraphFactory.h"
-#include "Inspectors.h"
+#include "inspectors/Inspect.h"
 #include "mesh/Skeleton.h"
 #include "core/subsystem/SubSystem.h"
 #include "subsystems/WindowSubSystem.h"
@@ -18,7 +18,7 @@ namespace BHive
 
 		virtual void OnGuiRender() final override
 		{
-			inspect("Skeleton", mSkeleton);
+			Inspect::inspect("Skeleton", mSkeleton);
 
 			if (mSkeleton)
 			{

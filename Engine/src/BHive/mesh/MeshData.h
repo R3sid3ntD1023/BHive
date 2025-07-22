@@ -2,7 +2,7 @@
 
 #include "core/Core.h"
 #include "gfx/BufferLayout.h"
-#include "math/AABB.hpp"
+#include "core/math/boundingbox/AABB.h"
 #include "core/serialization/Serialization.h"
 
 #define MAX_BONE_INFLUENCE 4

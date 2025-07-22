@@ -1,6 +1,7 @@
 #pragma once
 
 #include "WindowBase.h"
+#include "core/UUID.h"
 
 namespace BHive
 {

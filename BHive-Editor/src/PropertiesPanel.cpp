@@ -1,6 +1,6 @@
 #include "core/subsystem/SubSystem.h"
 #include "gui/ImGuiExtended.h"
-#include "Inspectors.h"
+#include "inspectors/Inspect.h"
 #include "PropertiesPanel.h"
 #include "subsystems/SelectionSubSystem.h"
 #include "world/GameObject.h"
@@ -18,7 +18,7 @@ namespace BHive
 			ImGui::SeparatorText("Details");
 
 			rttr::variant object_var = selection;
-			if (inspect({}, object_var))
+			if (Inspect::inspect({}, object_var))
 			{
 				selection = object_var.get_value<GameObject *>();
 			}
@@ -66,7 +66,7 @@ namespace BHive
 		{
 			rttr::variant var = component;
 			rttr::variant instance = selection;
-			if (inspect(instance, var))
+			if (Inspect::inspect(instance, var))
 			{
 				component = var.get_value<Component *>();
 			}

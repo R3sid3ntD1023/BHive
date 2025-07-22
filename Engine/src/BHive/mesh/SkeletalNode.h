@@ -1,7 +1,7 @@
 #pragma once
 
-#include "math/Math.h"
-#include <vector>
+#include "core/Core.h"
+#include "core/math/Math.h"
 
 namespace BHive
 {

@@ -6,7 +6,7 @@
 #include "MeshRenderer.h"
 #include "gfx/Camera.h"
 #include "Lights.h"
-#include "math/Frustum.h"
+#include "core/math/Frustum.h"
 
 namespace BHive
 {

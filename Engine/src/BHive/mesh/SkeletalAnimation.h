@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/Core.h"
-#include "math/Math.h"
 #include "AnimationFrames.h"
 #include "asset/Asset.h"
 

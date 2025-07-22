@@ -6,7 +6,7 @@
 #include "gfx/ShaderManager.h"
 #include "mesh/primitives/Quad.h"
 #include "gfx/RenderCommand.h"
-#include "math/Transform.h"
+#include "core/math/Transform.h"
 #include "renderers/postprocessing/Bloom.h"
 #include "renderers/PMREMGenerator.h"
 #include "importers/TextureImporter.h"

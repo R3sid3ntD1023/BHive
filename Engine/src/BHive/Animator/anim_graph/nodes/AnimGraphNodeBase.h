@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/reflection/Reflection.h"
-#include "core/serialization/Serialization.h"
+#include "core/Core.h"
+#include "core/UUID.h"
 
 namespace BHive
 {

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "core/Core.h"
 #include "core/EventDelegate.h"
-#include "math/Math.h"
 #include "PhysicsCore.h"
 
 namespace BHive

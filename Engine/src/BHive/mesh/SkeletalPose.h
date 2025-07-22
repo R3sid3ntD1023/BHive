@@ -1,6 +1,6 @@
 #pragma once
 
-#include "math/Transform.h"
+#include "core/math/Transform.h"
 #include "SkeletalNode.h"
 
 namespace BHive
@@ -27,10 +27,7 @@ namespace BHive
 
 		const glm::mat4 &GetTransformJointSpace(uint64_t index) const;
 
-		const std::vector<glm::mat4> &GetTransformsJointSpace() const
-		{
-			return mTransformsJointSpace;
-		}
+		const std::vector<glm::mat4> &GetTransformsJointSpace() const { return mTransformsJointSpace; }
 
 		uint64_t GetBoneCount() const { return mTransformsJointSpace.size(); }
 
@@ -44,8 +41,7 @@ namespace BHive
 		std::vector<glm::mat4> mTransformsJointSpace;
 	};
 
-	void SkeletalPoseBlend(
-		const SkeletalPose &p0, const SkeletalPose &p1, float weight, SkeletalPose &result);
+	void SkeletalPoseBlend(const SkeletalPose &p0, const SkeletalPose &p1, float weight, SkeletalPose &result);
 
 	void SkeletalPoseAdd(const SkeletalPose &p0, const SkeletalPose &p1, SkeletalPose &result);
 } // namespace BHive

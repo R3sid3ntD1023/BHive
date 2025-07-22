@@ -3,7 +3,7 @@
 #include "asset/Asset.h"
 #include "core/Core.h"
 #include "gfx/textures/Texture2D.h"
-#include "math/Math.h"
+#include "core/math/Math.h"
 
 namespace BHive
 {

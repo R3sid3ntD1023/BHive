@@ -1,4 +1,6 @@
 #include "ImGuiExtended.h"
+#include "gfx/Color.h"
+#include "gfx/Texture.h"
 #include <imgui_stdlib.h>
 
 namespace ImGui
@@ -337,7 +339,7 @@ namespace ImGui
 
 	float GetLineHeight()
 	{
-		return GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		return ImGui::GetFontSize() + GImGui->Style.FramePadding.y * 2.0f;
 	}
 
 	bool DragTransform(

@@ -1,5 +1,6 @@
 #include "SkeletalPose.h"
 #include "Skeleton.h"
+#include "core/math/MathFunctionLibrary.h"
 
 namespace BHive
 {
@@ -70,7 +71,7 @@ namespace BHive
 			const FTransform &t0 = p0.GetTransformJointSpace(i);
 			const FTransform &t1 = p1.GetTransformJointSpace(i);
 
-			result.SetTransformJointSpace(i, mix(t0, t1, weight));
+			result.SetTransformJointSpace(i, MathFunctionLibrary::mix(t0, t1, weight));
 		}
 	}
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/serialization/Serialization.h"
 #include "gui/GUICore.h"
-#include "math/Math.h"
+#include "core/math/Math.h"
+#include "core/serialization/Serialization.h"
 
 namespace BHive
 {

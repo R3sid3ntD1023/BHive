@@ -38,17 +38,6 @@
       "name": "cereal"
     },
     {
-      "name": "imgui",
-      "features": [
-        "docking-experimental",
-        "glfw-binding",
-        "opengl3-binding"
-      ]
-    },
-    {
-      "name": "implot"
-    },
-    {
       "name": "rttr"
     }
   ]

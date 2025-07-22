@@ -6,7 +6,7 @@
 #include "InputAction.h"
 #include "core/events/EventStatus.h"
 #include "core/events/ModCode.h"
-#include "math/Math.h"
+#include "core/math/Math.h"
 
 namespace BHive
 {

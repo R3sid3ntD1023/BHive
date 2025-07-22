@@ -1,12 +1,11 @@
 #pragma once
 
-#include "asset/Asset.h"
 #include "core/Core.h"
-#include "math/Transform.h"
+#include "asset/Asset.h"
+#include "core/math/Transform.h"
 #include "physics/EventListener.h"
 #include "physics/PhysicsContext.h"
 #include <entt/entt.hpp>
-#include <glm/glm.hpp>
 
 namespace physx
 {

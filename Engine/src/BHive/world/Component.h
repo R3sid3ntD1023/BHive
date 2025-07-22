@@ -3,7 +3,7 @@
 #include "core/Core.h"
 #include "core/reflection/Reflection.h"
 #include "core/serialization/Serialization.h"
-#include "math/Transform.h"
+#include "core/math/Transform.h"
 
 namespace BHive
 {

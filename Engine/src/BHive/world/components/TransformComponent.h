@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Component.h"
-#include "math/Transform.h"
 
 namespace BHive
 {

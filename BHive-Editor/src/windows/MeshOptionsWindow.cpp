@@ -5,7 +5,7 @@
 #include "factories/MeshFactory.h"
 #include "factories/TextureFactory.h"
 #include "gui/ImGuiExtended.h"
-#include "Inspectors.h"
+#include "inspectors/Inspect.h"
 #include "MeshOptionsWindow.h"
 
 namespace BHive
@@ -26,7 +26,7 @@ namespace BHive
 	{
 		bool animations_enabled = mImportData.mBoneData.size() > 0 && mOptions.MeshType != EMeshType::StaticMesh;
 
-		if (inspect("Mesh Type", mOptions.MeshType))
+		if (Inspect::inspect("Mesh Type", mOptions.MeshType))
 		{
 			if (mOptions.MeshType == EMeshType::SkeletalAnimation)
 			{
@@ -37,21 +37,21 @@ namespace BHive
 		ImGui::SeparatorText("Materials");
 
 		ImGui::BeginDisabled(!mImportData.mMaterialData.size());
-		inspect("Import Materials", mOptions.ImportMaterials);
+		Inspect::inspect("Import Materials", mOptions.ImportMaterials);
 		ImGui::EndDisabled();
 
 		// allow overriding materials
 		ImGui::SeparatorText("Override Materials");
 		for (size_t i = 0; i < mOptions.OverideMaterials.size(); i++)
 		{
-			inspect(std::format("Material {}", i), mOptions.OverideMaterials[i]);
+			Inspect::inspect(std::format("Material {}", i), mOptions.OverideMaterials[i]);
 		}
 
 		ImGui::SeparatorText("Animations");
 		ImGui::BeginDisabled(!animations_enabled);
 
-		inspect("Import Animations", mOptions.ImportAnimations);
-		inspect("Skeleton", mOptions.Skeleton);
+		Inspect::inspect("Import Animations", mOptions.ImportAnimations);
+		Inspect::inspect("Skeleton", mOptions.Skeleton);
 
 		ImGui::EndDisabled();
 

@@ -11,7 +11,7 @@
 #include "GUI/Gui.h"
 #include "gui/ImGuiExtended.h"
 #include "ImGuizmo.h"
-#include "Inspectors.h"
+#include "inspectors/Inspect.h"
 #include "LogPanel.h"
 #include "renderers/Renderer.h"
 #include "renderers/SceneRenderer.h"
@@ -185,7 +185,7 @@ namespace BHive
 		if (ImGui::Begin("Settings"))
 		{
 
-			inspect("Renderer", mRenderer);
+			Inspect::inspect("Renderer", mRenderer);
 		}
 
 		ImGui::End();
@@ -198,8 +198,8 @@ namespace BHive
 			{
 				if (ImGui::BeginChild(metadata.Name.c_str()))
 				{
-					inspect("Handle", id, false, true);
-					inspect("Data", metadata, false, true);
+					Inspect::inspect("Handle", id, false, true);
+					Inspect::inspect("Data", metadata, false, true);
 				}
 
 				ImGui::EndChild();

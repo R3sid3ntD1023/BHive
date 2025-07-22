@@ -7,7 +7,6 @@
 
 #include "gfx/Texture.h"
 #include "importers/TextureImporter.h"
-#include "math/Math.h"
 
 namespace BHive
 {

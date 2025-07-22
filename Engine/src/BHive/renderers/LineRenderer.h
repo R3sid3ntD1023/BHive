@@ -1,9 +1,9 @@
 #pragma once
 
 #include "gfx/Color.h"
-#include "math/AABB.hpp"
-#include "math/Frustum.h"
-#include "math/Transform.h"
+#include "core/math/boundingbox/AABB.h"
+#include "core/math/Frustum.h"
+#include "core/math/Transform.h"
 
 namespace BHive
 {

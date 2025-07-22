@@ -2,7 +2,7 @@
 
 #include "core/Core.h"
 #include "Texture.h"
-#include "math/Math.h"
+#include "core/math/Math.h"
 
 namespace BHive
 {

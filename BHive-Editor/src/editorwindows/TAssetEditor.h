@@ -4,7 +4,7 @@
 #include "asset/AssetManager.h"
 #include "asset/EditorAssetManager.h"
 #include "AssetEditor.h"
-#include "Inspectors.h"
+#include "inspectors/Inspect.h"
 #include "project/Project.h"
 
 namespace BHive
@@ -40,10 +40,10 @@ namespace BHive
 		{
 			rttr::variant var = mAsset.get();
 			rttr::variant instance = this;
-			if (inspect(instance, var, true))
+			if (Inspect::inspect(instance, var, true))
 			{
 				auto ptr = mAsset.get();
-				ptr = var.get_value<T*>();
+				ptr = var.get_value<T *>();
 			}
 		}
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "math/Math.h"
+#include "core/math/Math.h"
 #include <cereal/archives/binary.hpp>
 #include <cereal/cereal.hpp>
 #include <string>

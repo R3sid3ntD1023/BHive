@@ -1,26 +1,27 @@
 #pragma once
 
-#include "core/Core.h"
-#include "core/EventDelegate.h"
+#include "core/CoreAPI.h"
 
 #pragma warning(push, 0)
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
 #pragma warning(pop)
 
+#include <functional>
+
 namespace BHive
 {
 	class Log
 	{
 	public:
-		static BHIVE void Init();
+		static void Init();
 
-		static BHIVE Ref<spdlog::logger> &GetLogger() { return sLogger; }
+		static std::shared_ptr<spdlog::logger> &GetLogger() { return sLogger; }
 
-		static inline EventDelegate<const spdlog::details::log_msg &> OnMessageLogged;
+		static inline std::function<void(const spdlog::details::log_msg &)> OnMessageLogged;
 
 	private:
-		static inline Ref<spdlog::logger> sLogger;
+		static inline std::shared_ptr<spdlog::logger> sLogger;
 	};
 } // namespace BHive
 

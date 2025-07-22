@@ -5,7 +5,7 @@
 #include "gui/ImGuiExtended.h"
 #include "project/Project.h"
 #include "ProjectLauncherLayer.h"
-#include "Inspectors.h"
+#include "inspectors/Inspect.h"
 #include <Windows.h>
 
 namespace BHive
@@ -78,29 +78,9 @@ namespace BHive
 
 			auto width = ImGui::GetContentRegionAvail().x * .75f;
 
-			inspect("Project Name", project_configuration.Name, false, false, meta_data_empty, width);
-
-			inspect("Project Directory", project_configuration.ProjectDirectory, false, false, meta_data_empty, width);
-			ImGui::SameLine();
-			if (ImGui::Button("...##project"))
-			{
-				auto path_str = FileDialogs::GetDirectory();
-				if (!path_str.empty())
-				{
-					project_configuration.ProjectDirectory = path_str;
-				}
-			}
-
-			inspect("Resource Directory", project_configuration.ResourcesDirectory, false, false, meta_data_empty, width);
-			ImGui::SameLine();
-			if (ImGui::Button("...##resources"))
-			{
-				auto path_str = FileDialogs::GetDirectory();
-				if (!path_str.empty())
-				{
-					project_configuration.ResourcesDirectory = path_str;
-				}
-			}
+			Inspect::inspect("Project Name", project_configuration.Name, false, false, width);
+			Inspect::inspect("Project Directory", project_configuration.ProjectDirectory, false, false, width);
+			Inspect::inspect("Resource Directory", project_configuration.ResourcesDirectory, false, false, width);
 
 			if (ImGui::Button("Create"))
 			{

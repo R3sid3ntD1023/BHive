@@ -1,7 +1,6 @@
 #pragma once
 
 #include "asset/Asset.h"
-#include "math/Math.h"
 #include "sprite/Sprite.h"
 
 namespace BHive

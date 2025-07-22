@@ -7,8 +7,8 @@
 #include "mesh/SkeletalMesh.h"
 #include "gfx/Shader.h"
 #include "Renderers/Renderer.h"
-#include "math/AABB.hpp"
-#include "math/volumes/SphereVolume.h"
+#include "core/math/boundingbox/AABB.h"
+#include "core/math/volumes/SphereVolume.h"
 #include "material/BDRFMaterial.h"
 
 #define SSBO_INDEX_PER_OBJECT_BINDING 1

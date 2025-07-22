@@ -1,7 +1,5 @@
 #pragma once
 
-#include "gfx/Color.h"
-#include "math/Math.h"
 #include "PostProcessor.h"
 
 namespace BHive
