@@ -13,4 +13,5 @@ namespace BHive
 		REFLECTABLEV(Inspector)
 	};
 
+	REFLECT_EXTERN(Inspector_Path)
 } // namespace BHive

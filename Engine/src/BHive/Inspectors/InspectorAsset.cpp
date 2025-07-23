@@ -8,7 +8,7 @@
 namespace BHive
 {
 
-	bool Inspector_AssetHandler::Inspect(
+	bool Inspector_Asset::Inspect(
 		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 
@@ -99,5 +99,5 @@ namespace BHive
 		return changed;
 	}
 
-	REFLECT_INSPECTOR(Inspector_AssetHandler, Asset)
+	REFLECT_INSPECTOR(Inspector_Asset, Asset)
 } // namespace BHive

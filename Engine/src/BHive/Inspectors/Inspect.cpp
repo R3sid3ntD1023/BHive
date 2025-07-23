@@ -2,6 +2,17 @@
 #include "PropertyLayout.h"
 #include <imgui.h>
 
+#include "InspectorBaseTypes.h"
+#include "InspectorCoreTypes.h"
+#include "InspectorEnum.h"
+#include "InspectorPath.h"
+#include "InspectorType.h"
+#include "InspectorGameObject.h"
+#include "InspectorAsset.h"
+#include "InspectorSubClassOf.h"
+#include "AssociativeContainer.h"
+#include "SequentialContainer.h"
+
 namespace BHive
 {
 	struct InspectorRegistry

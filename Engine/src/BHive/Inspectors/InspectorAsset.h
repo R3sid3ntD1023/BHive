@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	struct Inspector_AssetHandler : public Inspector
+	struct Inspector_Asset : public Inspector
 	{
 		virtual bool Inspect(
 			const rttr::variant &instance, rttr::variant &var, bool read_only,
@@ -12,4 +12,6 @@ namespace BHive
 
 		REFLECTABLEV(Inspector)
 	};
+
+	REFLECT_EXTERN(Inspector_Asset)
 } // namespace BHive

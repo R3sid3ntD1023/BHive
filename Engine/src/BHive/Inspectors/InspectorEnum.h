@@ -28,4 +28,7 @@ namespace BHive
 
 		REFLECTABLEV(Inspector_Enum)
 	};
+
+	REFLECT_EXTERN(Inspector_Enum)
+	REFLECT_EXTERN(Inspector_EnumAsByte)
 } // namespace BHive
