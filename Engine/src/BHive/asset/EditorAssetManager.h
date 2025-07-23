@@ -23,7 +23,7 @@ namespace BHive
 
 		void ImportAsset(const std::filesystem::path &path, const rttr::type &type, const UUID &handle);
 		bool RemoveAsset(UUID handle);
-		bool RemoveAsset(const std::filesystem::path &path);
+		bool RemoveAsset(const std::filesystem::path &relative_path);
 		bool RenameAsset(const std::filesystem::path &old_, const std::filesystem::path &new_);
 
 		const FAssetMetaData &GetMetaData(UUID handle) const;

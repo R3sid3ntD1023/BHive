@@ -1,10 +1,12 @@
 #include "AnimationGraph.h"
 #include "AnimGraphEditorNodes.h"
+#include "Animator/anim_graph/AnimGraph.h"
 
 namespace BHive
 {
 
-	AnimationGraph::AnimationGraph()
+	AnimationGraph::AnimationGraph(const Ref<AnimGraph> &graph)
+		: mGraph(graph)
 	{
 		auto derived = GetSupportedNodeType().get_derived_classes();
 		for (auto &type : derived)
@@ -35,12 +37,12 @@ namespace BHive
 				if (payload)
 				{
 					auto type = (rttr::type *)payload->Data;
-					auto new_node = type->create().get_value<Ref<ImFlow::BaseNode>>();
+					auto new_node = type->create().get_value<Ref<AnimGraphNodeBase>>();
 					addNode(new_node, pos);
+					if (mGraph)
+						mGraph->AddNode(new_node);
 				}
 			});
-
-		mCurrentGraph = this;
 	}
 
 	void AnimationGraph::DrawCreateNodeMenu(const ImVec2 &pos)
@@ -51,8 +53,11 @@ namespace BHive
 			auto name = pretty_name ? pretty_name.to_string() : type.get_name();
 			if (ImGui::Selectable(name.data()))
 			{
-				auto new_node = type.create().get_value<Ref<ImFlow::BaseNode>>();
+				auto new_node = type.create().get_value<Ref<AnimGraphNodeBase>>();
 				addNode(new_node, pos);
+
+				if (mGraph)
+					mGraph->AddNode(new_node);
 			}
 
 			if (ImGui::BeginDragDropSource())
@@ -66,6 +71,6 @@ namespace BHive
 
 	rttr::type AnimationGraph::GetSupportedNodeType() const
 	{
-		return rttr::type::get<AnimEditor::NodeBase>();
+		return rttr::type::get<AnimGraphNodeBase>();
 	}
 } // namespace BHive

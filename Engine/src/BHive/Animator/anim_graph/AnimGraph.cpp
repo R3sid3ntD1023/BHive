@@ -8,6 +8,11 @@ namespace BHive
 	{
 	}
 
+	void AnimGraph::AddNode(const Ref<AnimGraphNodeBase> &node)
+	{
+		mNodes.emplace(node->GetID(), node);
+	}
+
 	void AnimGraph::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);

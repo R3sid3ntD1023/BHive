@@ -435,12 +435,14 @@ namespace BHive
 		{
 			auto relative_path = std::filesystem::relative(entry.path(), mBaseDirectory);
 			OnDeleteAsset(relative_path);
-			return;
 		}
 
-		for (auto &child_entry : std::filesystem::directory_iterator(entry))
+		if (entry.is_directory())
 		{
-			OnDeleteFolder(child_entry);
+			for (auto &child_entry : std::filesystem::directory_iterator(entry))
+			{
+				OnDeleteFolder(child_entry);
+			}
 		}
 	}
 

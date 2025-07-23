@@ -10,9 +10,11 @@ namespace BHive
 	class AnimGraphEditor : public TAssetEditor<AnimGraph>
 	{
 	public:
-		AnimGraphEditor();
+		AnimGraphEditor() = default;
 
 		virtual void OnWindowRender() override;
+
+		virtual void OnSetContext(const Ref<AnimGraph> &asset);
 
 	private:
 		void DrawNodeList();

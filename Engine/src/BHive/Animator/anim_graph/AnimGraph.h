@@ -20,6 +20,8 @@ namespace BHive
 		AnimGraph() = default;
 		AnimGraph(const Ref<Skeleton> &skeleton);
 
+		void AddNode(const Ref<AnimGraphNodeBase> &node);
+
 		virtual void Save(cereal::BinaryOutputArchive &ar) const;
 
 		virtual void Load(cereal::BinaryInputArchive &ar);

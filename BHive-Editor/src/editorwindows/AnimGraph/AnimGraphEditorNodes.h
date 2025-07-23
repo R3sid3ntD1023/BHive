@@ -3,127 +3,118 @@
 #include "inspectors/Inspect.h"
 #include "mesh/SkeletalAnimation.h"
 #include "asset/TAssetHandler.h"
-#include "core/reflection/Reflection.h"
-#include <ImNodeFlow.h>
+#include "Animator/anim_graph/nodes/AnimGraphNodeBase.h"
 
 namespace BHive
 {
 	class SkeletalAnimation;
 
-	namespace AnimEditor
+	struct PoseNode : public AnimGraphNodeBase
 	{
-		struct NodeBase : public ImFlow::BaseNode
+		PoseNode();
+
+		REFLECTABLEV(AnimGraphNodeBase)
+	};
+
+	struct BlendNode : public PoseNode
+	{
+		struct PoseData
 		{
-			REFLECTABLEV()
+			Ref<PoseNode> mNode;
+			float mFactor{0.0f};
 		};
 
-		struct PoseNode : public NodeBase
-		{
-			PoseNode();
+		BlendNode();
 
-			REFLECTABLEV(NodeBase)
-		};
+		virtual void draw() override;
 
-		struct BlendNode : public PoseNode
-		{
-			struct PoseData
-			{
-				Ref<PoseNode> mNode;
-				float mFactor{0.0f};
-			};
+		REFLECTABLEV(PoseNode)
 
-			BlendNode();
+		std::vector<PoseData> mPoseDatas;
+	};
 
-			virtual void draw() override;
+	struct ClipNode : public PoseNode
+	{
+		ClipNode();
 
-			REFLECTABLEV(PoseNode)
+		virtual void draw() override;
 
-			std::vector<PoseData> mPoseDatas;
-		};
+		Ref<SkeletalAnimation> mAnimation;
 
-		struct ClipNode : public PoseNode
-		{
-			ClipNode();
+		REFLECTABLEV(PoseNode)
+	};
 
-			virtual void draw() override;
+	struct PoseDataNode : public AnimGraphNodeBase
+	{
+		PoseDataNode();
 
-			Ref<SkeletalAnimation> mAnimation;
+		REFLECTABLEV(AnimGraphNodeBase)
 
-			REFLECTABLEV(PoseNode)
-		};
+	private:
+		BlendNode::PoseData mPoseData;
+	};
 
-		struct PoseDataNode : public NodeBase
-		{
-			PoseDataNode();
+	struct StateTransition : public PoseNode
+	{
+		StateTransition();
 
-			REFLECTABLEV(NodeBase)
+		REFLECTABLEV(PoseNode)
 
-		private:
-			BlendNode::PoseData mPoseData;
-		};
+	private:
+		struct PoseNode *mCondition = nullptr;
+		struct State *mDestination = nullptr;
+	};
 
-		struct StateTransition : public PoseNode
-		{
-			StateTransition();
+	struct State : public PoseNode
+	{
+		State();
 
-			REFLECTABLEV(PoseNode)
+		virtual void draw() override;
 
-		private:
-			struct PoseNode *mCondition = nullptr;
-			struct State *mDestination = nullptr;
-		};
+		REFLECTABLEV(PoseNode)
 
-		struct State : public PoseNode
-		{
-			State();
+	private:
+		struct PoseNode *mPoseNode = nullptr;
+		struct std::vector<StateTransition *> mTransitions;
+	};
 
-			virtual void draw() override;
+	struct StateMachine : public PoseNode
+	{
+		StateMachine();
 
-			REFLECTABLEV(PoseNode)
+		REFLECTABLEV(PoseNode);
+	};
 
-		private:
-			struct PoseNode *mPoseNode = nullptr;
-			struct std::vector<StateTransition *> mTransitions;
-		};
+	template <typename T>
+	struct ArithmeticNode : public AnimGraphNodeBase
+	{
+		ArithmeticNode();
 
-		struct StateMachine : public PoseNode
-		{
-			StateMachine();
+		virtual void draw();
 
-			REFLECTABLEV(PoseNode);
-		};
+		REFLECTABLEV(AnimGraphNodeBase)
 
-		template <typename T>
-		struct ArithmeticNode : public NodeBase
-		{
-			ArithmeticNode();
+	private:
+		T mValue{};
+	};
 
-			virtual void draw();
+	template <typename T>
+	inline ArithmeticNode<T>::ArithmeticNode()
+	{
+		addOUT<T>("Value")->behaviour([=]() { return mValue; });
+	}
 
-			REFLECTABLEV(NodeBase)
-
-		private:
-			T mValue{};
-		};
-
-		template <typename T>
-		inline ArithmeticNode<T>::ArithmeticNode()
-		{
-			addOUT<T>("Value")->behaviour([=]() { return mValue; });
-		}
-
-		template <typename T>
-		inline void ArithmeticNode<T>::draw()
-		{
-			Inspect::inspect(typeid(T).name(), mValue, false, false, 100.0f);
-		}
-	} // namespace AnimEditor
+	template <typename T>
+	inline void ArithmeticNode<T>::draw()
+	{
+		Inspect::inspect(typeid(T).name(), mValue, false, false, 100.0f);
+	}
 
 } // namespace BHive
 
-#define REFLECT_ARITHMETIC_NODE(cls)                         \
-	REFLECT(AnimEditor::ArithmeticNode<cls>)                 \
-	{                                                        \
-		BEGIN_REFLECT(AnimEditor::ArithmeticNode<cls>, #cls) \
-		REFLECT_CONSTRUCTOR();                               \
+#define REFLECT_ARITHMETIC_NODE(cls)                                      \
+	REFLECT(ArithmeticNode<cls>)                                          \
+	{                                                                     \
+		BEGIN_REFLECT(ArithmeticNode<cls>, STRINGIFY(Arthmetic<##cls##>)) \
+		REFLECT_CONSTRUCTOR();                                            \
 	}

@@ -2,42 +2,35 @@
 
 #include "core/Core.h"
 #include "core/UUID.h"
+#include <ImNodeFlow.h>
 
 namespace BHive
 {
 	class AnimGraph;
 	class AnimationNodeBase;
 
-	class AnimGraphNodeBase
+	class AnimGraphNodeBase : public ImFlow::BaseNode
 	{
 	public:
-		AnimGraphNodeBase(AnimGraph *graph)
-			: mOwningGraph(graph)
-		{
-		}
+		AnimGraphNodeBase() = default;
 
 		virtual ~AnimGraphNodeBase() = default;
 
 		virtual void CollectDesendents(std::vector<Ref<AnimGraphNodeBase>> &children) const {};
 
-		virtual void Serialize(cereal::BinaryOutputArchive &ar) const { ar(mID); };
+		virtual void Serialize(cereal::BinaryOutputArchive &ar);
 
-		virtual void Serialize(cereal::BinaryInputArchive &ar) { ar(mID); };
+		virtual void Serialize(cereal::BinaryInputArchive &ar);
 
-		virtual Ref<AnimationNodeBase> Clone() = 0;
+		virtual Ref<AnimationNodeBase> Clone() { return nullptr; }
 
 		const UUID &GetID() const { return mID; }
 
 		REFLECTABLEV()
 
 	private:
-		AnimGraph *mOwningGraph{nullptr};
 		UUID mID;
 	};
 
-	REFLECT(AnimGraphNodeBase)
-	{
-		BEGIN_REFLECT(AnimGraphNodeBase);
-	}
-
+	REFLECT_EXTERN(AnimGraphNodeBase)
 } // namespace BHive

@@ -6,11 +6,6 @@
 
 namespace BHive
 {
-	AnimGraphEditor::AnimGraphEditor()
-	{
-		mAnimationGraph = CreateRef<AnimationGraph>();
-	}
-
 	void AnimGraphEditor::OnWindowRender()
 	{
 
@@ -28,7 +23,7 @@ namespace BHive
 		auto size = ImGui::GetContentRegionAvail();
 		if (ImGui::BeginChild("Nodes", {size.x * .25f, size.y}))
 		{
-			mAnimationGraph->GetCurrentGraph()->DrawCreateNodeMenu({});
+			mAnimationGraph->DrawCreateNodeMenu({});
 		}
 
 		ImGui::EndChild();
@@ -39,10 +34,15 @@ namespace BHive
 		auto size = ImGui::GetContentRegionAvail();
 		if (ImGui::BeginChild("Graph", size, ImGuiChildFlags_Border))
 		{
-			mAnimationGraph->GetCurrentGraph()->update();
+			mAnimationGraph->update();
 		}
 
 		ImGui::EndChild();
+	}
+
+	void AnimGraphEditor::OnSetContext(const Ref<AnimGraph> &asset)
+	{
+		mAnimationGraph = CreateRef<AnimationGraph>(asset);
 	}
 
 } // namespace BHive

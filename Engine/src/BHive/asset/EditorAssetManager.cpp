@@ -187,13 +187,14 @@ namespace BHive
 		return sNullMetaData;
 	}
 
-	UUID EditorAssetManager::GetHandle(const std::filesystem::path &file) const
+	UUID EditorAssetManager::GetHandle(const std::filesystem::path &relative_path) const
 	{
 		auto it = std::find_if(
-			mAssetRegistry.begin(), mAssetRegistry.end(), [file](const auto &pair) { return pair.second.Path == file; });
+			mAssetRegistry.begin(), mAssetRegistry.end(),
+			[=](const auto &pair) { return pair.second.Path == relative_path; });
 
 		if (it != mAssetRegistry.end())
-			return (*it).first;
+			return it->first;
 
 		return NullID;
 	}
