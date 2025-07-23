@@ -11,7 +11,7 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(mRecentProjectPaths);
+			ar(MAKE_NVP("RecentProjects", mRecentProjectPaths));
 		}
 	};
 

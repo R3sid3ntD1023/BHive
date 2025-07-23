@@ -6,6 +6,7 @@
 #include "project/Project.h"
 #include "ProjectLauncherLayer.h"
 #include "inspectors/Inspect.h"
+#include "gui/Gui.h"
 #include <Windows.h>
 
 namespace BHive
@@ -20,7 +21,7 @@ namespace BHive
 		if (in)
 		{
 			cereal::BinaryInputArchive ar(in);
-			mSettings.Serialize(ar);
+			ar(mSettings);
 		}
 	}
 
@@ -32,7 +33,7 @@ namespace BHive
 		{
 
 			cereal::BinaryOutputArchive ar(out);
-			mSettings.Serialize(ar);
+			ar(mSettings);
 			return;
 		}
 
@@ -51,6 +52,11 @@ namespace BHive
 	void ProjectLauncherLayer::OnGuiRender()
 	{
 		static FProjectConfiguration project_configuration{"Untitled", "", "resources"};
+
+		auto dock_name = GUI::GetDockSpaceID();
+		ImGuiID dockspace_id = ImGui::GetID(dock_name);
+
+		ImGui::DockBuilderDockWindow("ProjectLauncher", dockspace_id);
 
 		auto flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
 					 ImGuiWindowFlags_NoTitleBar;
@@ -76,11 +82,9 @@ namespace BHive
 
 			ImGui::EndTable();
 
-			auto width = ImGui::GetContentRegionAvail().x * .75f;
-
-			Inspect::inspect("Project Name", project_configuration.Name, false, false, width);
-			Inspect::inspect("Project Directory", project_configuration.ProjectDirectory, false, false, width);
-			Inspect::inspect("Resource Directory", project_configuration.ResourcesDirectory, false, false, width);
+			Inspect::inspect("Project Name", project_configuration.Name, false, false);
+			Inspect::inspect("Project Directory", project_configuration.ProjectDirectory, false, false);
+			Inspect::inspect("Resource Directory", project_configuration.ResourcesDirectory, false, false);
 
 			if (ImGui::Button("Create"))
 			{

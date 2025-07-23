@@ -5,6 +5,8 @@ namespace BHive
 {
 	void GUI::BeginDockSpace(const char *strid, bool *opened, float title_height)
 	{
+		sDockSpaceID = strid;
+
 		static bool opt_fullscreen = true;
 		static bool opt_padding = false;
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;

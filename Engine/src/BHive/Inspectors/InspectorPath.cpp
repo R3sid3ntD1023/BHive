@@ -25,7 +25,7 @@ namespace BHive
 
 		ImGui::SameLine();
 
-		if (ImGui::Button("..."))
+		if (ImGui::Button("...##"))
 		{
 			auto path_str = FileDialogs::GetDirectory();
 			if (!path_str.empty())
