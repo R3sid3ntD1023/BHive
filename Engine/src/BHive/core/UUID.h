@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/Core.h"
 #include <stdint.h>
 #include <string>
 #include <xhash>
@@ -14,7 +15,7 @@ namespace BHive
 
 	inline constexpr NullID_t NullID{};
 
-	class UUID
+	class BHIVE_API UUID
 	{
 	public:
 		UUID();

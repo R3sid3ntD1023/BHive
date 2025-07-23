@@ -11,7 +11,7 @@ struct GLFWwindow;
 namespace BHive
 {
 
-	struct FWindowProperties
+	struct BHIVE_API FWindowProperties
 	{
 		std::string Title = "Window";
 		glm::ivec2 Size{800, 600};
@@ -20,7 +20,7 @@ namespace BHive
 		bool Maximize = false;
 	};
 
-	class BHIVE Window
+	class BHIVE_API Window
 	{
 	public:
 		Window(const FWindowProperties &properties = {});

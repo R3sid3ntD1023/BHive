@@ -6,10 +6,10 @@ namespace BHive
 {
 	class Asset;
 
-	class AssetManager
+	class BHIVE_API AssetManager
 	{
 	public:
-		static BHIVE Ref<Asset> GetAsset(UUID handle);
+		static Ref<Asset> GetAsset(UUID handle);
 
 		template <typename T>
 		static Ref<T> GetAsset(UUID handle)
@@ -18,11 +18,11 @@ namespace BHive
 			return std::dynamic_pointer_cast<T>(asset);
 		}
 
-		static BHIVE bool IsAssetHandleValid(UUID handle);
+		static bool IsAssetHandleValid(UUID handle);
 
-		static BHIVE bool IsAssetLoaded(UUID handle);
+		static bool IsAssetLoaded(UUID handle);
 
-		static BHIVE AssetType GetAssetType(UUID handle);
+		static rttr::type GetAssetType(UUID handle);
 
 		static void SetAssetManager(AssetManagerBase *manager);
 
@@ -35,6 +35,6 @@ namespace BHive
 		}
 
 	private:
-		static AssetManagerBase *sCurrentAssetManager;
+		static inline AssetManagerBase *sCurrentAssetManager = nullptr;
 	};
 } // namespace BHive

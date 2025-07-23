@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	class BHIVE MouseButtonEvent : public Event
+	class BHIVE_API MouseButtonEvent : public Event
 	{
 		EVENT(MouseButtonEvent, EventCategoryMouseButton | EventCategoryInput)
 
@@ -22,7 +22,7 @@ namespace BHive
 		int Mods;
 	};
 
-	class BHIVE MouseScrolledEvent : public Event
+	class BHIVE_API MouseScrolledEvent : public Event
 	{
 		EVENT(MouseScrolledEvent, EventCategoryMouse | EventCategoryInput)
 
@@ -36,7 +36,7 @@ namespace BHive
 		float x, y;
 	};
 
-	class MouseMovedEvent : public Event
+	class BHIVE_API MouseMovedEvent : public Event
 	{
 		EVENT(MouseMovedEvent, EventCategoryMouse | EventCategoryInput)
 

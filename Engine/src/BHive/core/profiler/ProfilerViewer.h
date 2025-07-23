@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	struct ProfilerViewer
+	struct BHIVE_API ProfilerViewer
 	{
 		static void ViewFPS();
 		static void ViewCPUGPU();

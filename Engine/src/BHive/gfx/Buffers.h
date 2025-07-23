@@ -1,12 +1,12 @@
 #pragma once
-#include "core/Core.h"
+
 #include "BufferLayout.h"
 #include "BufferBase.h"
 #include "GFXMacros.h"
 
 namespace BHive
 {
-	class IndexBuffer : public BufferBase
+	class BHIVE_API IndexBuffer : public BufferBase
 	{
 	public:
 		IndexBuffer(const uint32_t *data, const uint32_t count);
@@ -22,7 +22,7 @@ namespace BHive
 		uint32_t mCount;
 	};
 
-	class BHIVE VertexBuffer : public BufferBase
+	class BHIVE_API VertexBuffer : public BufferBase
 	{
 	public:
 		virtual ~VertexBuffer() = default;

@@ -1,13 +1,12 @@
 #pragma once
 
 #include "core/Core.h"
-#include "asset/AssetType.h"
 
 namespace BHive
 {
 	struct FAssetContextMenu;
 
-	class AssetContextMenuRegistry
+	class BHIVE_API AssetContextMenuRegistry
 	{
 	public:
 		AssetContextMenuRegistry();
@@ -17,17 +16,17 @@ namespace BHive
 		template <typename T, typename M>
 		void RegisterAssetContextMenu()
 		{
-			auto type = AssetType::get<T>();
+			auto type = rttr::type::get<T>();
 			auto menu = type.create().get_value<Ref<FAssetContextMenu>>();
 			RegisterAssetContextMenu({type}, menu);
 		}
 
-		void RegisterAssetContextMenu(const std::unordered_set<AssetType> &types, const Ref<FAssetContextMenu> &menu);
+		void RegisterAssetContextMenu(const std::unordered_set<rttr::type> &types, const Ref<FAssetContextMenu> &menu);
 
-		FAssetContextMenu *GetAssetMenu(const AssetType &type);
+		FAssetContextMenu *GetAssetMenu(const rttr::type &type);
 
 	private:
-		std::unordered_map<AssetType, Ref<FAssetContextMenu>> mRegisteredMenus;
+		std::unordered_map<rttr::type, Ref<FAssetContextMenu>> mRegisteredMenus;
 	};
 
 } // namespace BHive

@@ -5,7 +5,7 @@
 namespace BHive
 {
 
-	struct EventDelegateHandle
+	struct BHIVE_API EventDelegateHandle
 	{
 		enum class EGenerateNewHandle
 		{

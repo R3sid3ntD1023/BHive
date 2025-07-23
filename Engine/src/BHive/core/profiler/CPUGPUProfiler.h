@@ -8,7 +8,7 @@ namespace BHive
 {
 	class Query;
 
-	struct ProfilerData
+	struct BHIVE_API ProfilerData
 	{
 		using Samples = std::array<float, MAX_PROFILE_SAMPLES>;
 
@@ -26,7 +26,7 @@ namespace BHive
 		float mMaxSample = 0;
 	};
 
-	struct CPUGPUProfiler
+	struct BHIVE_API CPUGPUProfiler
 	{
 		using GPUData = std::unordered_map<std::string, ProfilerData>;
 

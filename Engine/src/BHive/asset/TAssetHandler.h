@@ -7,7 +7,7 @@
 namespace BHive
 {
 	template <typename T>
-	struct TAssetHandle
+	struct BHIVE_API TAssetHandle
 	{
 		TAssetHandle(const Ref<T> &ptr)
 			: mPtr(const_cast<Ref<T> &>(ptr))

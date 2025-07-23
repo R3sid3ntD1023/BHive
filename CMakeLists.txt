@@ -6,6 +6,7 @@ include(cmake/vulkan.cmake)
 
 project(BHive VERSION 1.0 LANGUAGES CXX C)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 #enable_testing()
 
 foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )

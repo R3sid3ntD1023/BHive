@@ -1,15 +1,13 @@
 #pragma once
 
-#include "AssetType.h"
 #include "core/Core.h"
-#include "core/serialization/Serialization.h"
 
 namespace BHive
 {
 
-	struct BHIVE FAssetMetaData
+	struct BHIVE_API FAssetMetaData
 	{
-		AssetType Type = InvalidType;
+		rttr::type Type = InvalidType;
 
 		std::filesystem::path Path;
 

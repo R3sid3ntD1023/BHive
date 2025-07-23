@@ -7,14 +7,14 @@
 
 namespace BHive
 {
-	struct Line
+	struct BHIVE_API Line
 	{
 		glm::vec3 p0{};
 		glm::vec3 p1{};
 		FColor color{};
 	};
 
-	struct FGrid
+	struct BHIVE_API FGrid
 	{
 		float size = 10.0f;
 		uint32_t divisions = 10;
@@ -22,7 +22,7 @@ namespace BHive
 		FColor stepcolor{};
 	};
 
-	struct LineRenderer
+	struct BHIVE_API LineRenderer
 	{
 		static void Init();
 		static void Shutdown();

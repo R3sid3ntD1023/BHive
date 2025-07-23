@@ -6,7 +6,7 @@
 namespace BHive
 {
 
-	class BHIVE MeshFactory : public Factory
+	class MeshFactory : public Factory
 	{
 	public:
 		virtual Ref<Asset> Import(const std::filesystem::path &path) override;

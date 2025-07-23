@@ -11,7 +11,7 @@
 
 namespace BHive
 {
-	class Log
+	class BHIVE_API Log
 	{
 	public:
 		static void Init();

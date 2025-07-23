@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	class BufferBase
+	class BHIVE_API BufferBase
 	{
 	public:
 		BufferBase();

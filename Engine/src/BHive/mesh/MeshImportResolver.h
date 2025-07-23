@@ -32,7 +32,7 @@ namespace BHive
 		std::vector<Ref<Material>> OverideMaterials;
 	};
 
-	class MeshImportResolver
+	class BHIVE_API MeshImportResolver
 	{
 	public:
 		using LoadTextureSigniture = std::function<Ref<Texture>(const std::filesystem::path &)>;

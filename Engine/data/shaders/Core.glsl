@@ -1,3 +1,12 @@
+#ifdef VULKAN
+#define INSTANCE_ID gl_InstanceIndex
+#define IS_INSTANCED (INSTANCE_ID != -1)
+#else
+#define INSTANCE_ID gl_InstanceID
+#define IS_INSTANCED (INSTANCE_ID != 0)
+#endif
+
+
 #define EPSILON 1.0e-4
 #define BIT(x) 1 << x
 #define UNLIT BIT(0)

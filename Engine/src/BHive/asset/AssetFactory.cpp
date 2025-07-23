@@ -1,18 +1,17 @@
 #include "AssetFactory.h"
-#include "core/serialization/Serialization.h"
 
 namespace BHive
 {
 	bool AssetFactory::Import(Ref<Asset> &asset, const std::filesystem::path &path)
 	{
-		
+
 		try
 		{
 			std::ifstream in(path, std::ios::in | std::ios::binary);
 
 			cereal::BinaryInputArchive ar(in);
 
-			AssetType type = InvalidType;
+			rttr::type type = InvalidType;
 			ar(type);
 
 			if (!type.get_constructor())
@@ -60,7 +59,6 @@ namespace BHive
 				std::filesystem::create_directory(parent_directory);
 			}
 
-			
 			ar(asset->get_type());
 			asset->Save(ar);
 

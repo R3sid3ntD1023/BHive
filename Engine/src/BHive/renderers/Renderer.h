@@ -16,40 +16,40 @@ namespace BHive
 	class VertexArray;
 	class Shader;
 
-	struct Renderer
+	struct BHIVE_API Renderer
 	{
-		struct BHIVE Statitics
+		struct BHIVE_API Statitics
 		{
 			uint32_t DrawCalls;
 			uint32_t InstanceCount;
 		};
 
-		static BHIVE void Init();
-		static BHIVE void Shutdown();
+		static void Init();
+		static void Shutdown();
 
-		static BHIVE void Begin();
+		static void Begin();
 		static void SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view);
 
-		static BHIVE void SubmitDirectionalLight(const glm::vec3 &direction, const DirectionalLight &light);
-		static BHIVE void SubmitPointLight(const glm::vec3 &position, const PointLight &light);
-		static BHIVE void SubmitSpotLight(const glm::vec3 &direction, const glm::vec3 &position, const SpotLight &light);
-		static BHIVE void SubmitLight(
+		static void SubmitDirectionalLight(const glm::vec3 &direction, const DirectionalLight &light);
+		static void SubmitPointLight(const glm::vec3 &position, const PointLight &light);
+		static void SubmitSpotLight(const glm::vec3 &direction, const glm::vec3 &position, const SpotLight &light);
+		static void SubmitLight(
 			const glm::vec3 &direction, const glm::vec3 &position, const FColor &color, float brightness, float radius,
 			float cutoff, float outercutoff, ELightType type);
 
-		static BHIVE void End();
+		static void End();
 
-		static BHIVE Ref<Texture> GetWhiteTexture();
-		static BHIVE Ref<Texture> GetBlackTexture();
+		static Ref<Texture> GetWhiteTexture();
+		static Ref<Texture> GetBlackTexture();
 
 		static void ResetStats();
-		static BHIVE Statitics &GetStats() { return sStats; }
+		static Statitics &GetStats() { return sStats; }
 		static const Frustum &GetFrustum();
 
 	private:
 		struct RenderData;
 		static RenderData *sData;
-		static Statitics sStats;
+		static inline Statitics sStats;
 	};
 
 	class UniformBuffer;

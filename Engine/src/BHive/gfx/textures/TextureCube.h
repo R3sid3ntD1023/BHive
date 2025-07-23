@@ -5,7 +5,7 @@
 namespace BHive
 {
 
-	class TextureCube : public Texture
+	class BHIVE_API TextureCube : public Texture
 	{
 	public:
 		TextureCube() = default;

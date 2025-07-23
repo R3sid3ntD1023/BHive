@@ -10,7 +10,7 @@ namespace BHive
 	class SkeletalPose;
 	class BaseMesh;
 
-	class MeshRenderer
+	class BHIVE_API MeshRenderer
 	{
 	public:
 		static void Init();

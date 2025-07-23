@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	class PPlane : public StaticMesh
+	class BHIVE_API PPlane : public StaticMesh
 	{
 	public:
 		PPlane(float width, float height);

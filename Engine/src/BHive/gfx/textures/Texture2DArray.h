@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	class Texture2DArray : public Texture
+	class BHIVE_API Texture2DArray : public Texture
 	{
 	public:
 		Texture2DArray(uint32_t width, uint32_t height, uint32_t depth, const FTextureSpecification &specification);

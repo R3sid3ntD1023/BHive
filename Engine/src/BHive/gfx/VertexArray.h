@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	class VertexArray
+	class BHIVE_API VertexArray
 	{
 	public:
 		VertexArray();

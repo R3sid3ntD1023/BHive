@@ -4,13 +4,13 @@
 
 namespace BHive
 {
-	class Time
+	class BHIVE_API Time
 	{
 	public:
 		static float Get();
 	};
 
-	class Timer
+	class BHIVE_API Timer
 	{
 	public:
 		Timer();

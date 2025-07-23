@@ -60,7 +60,7 @@ namespace BHive
 	};
 
 	DECLARE_CLASS()
-	class SceneCamera : public Camera
+	class BHIVE_API SceneCamera : public Camera
 	{
 	public:
 	public:

@@ -8,7 +8,7 @@ namespace BHive
 {
 	class Asset;
 
-	struct FAssetContextMenu
+	struct BHIVE_API FAssetContextMenu
 	{
 		virtual ~FAssetContextMenu() = default;
 
@@ -24,7 +24,7 @@ namespace BHive
 	}
 
 	template <typename T>
-	struct AssetContextMenuBuilder
+	struct BHIVE_API AssetContextMenuBuilder
 	{
 		AssetContextMenuBuilder(const std::string &className)
 			: mClass(rttr::registration::class_<T>(className))

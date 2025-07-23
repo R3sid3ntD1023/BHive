@@ -7,7 +7,7 @@ namespace BHive
 	struct FPlane;
 	struct AABB;
 
-	struct FSphereVolume : public FVolume
+	struct BHIVE_API FSphereVolume : public FVolume
 	{
 		glm::vec3 Center = {0.f, 0.f, 0.f};
 

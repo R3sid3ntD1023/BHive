@@ -15,7 +15,7 @@ namespace BHive
 
 	using ComponentList = std::vector<Component *>;
 
-	struct GameObject
+	struct BHIVE_API GameObject
 	{
 		GameObject(const entt::entity &handle, World *world);
 		GameObject(const GameObject &) = default;

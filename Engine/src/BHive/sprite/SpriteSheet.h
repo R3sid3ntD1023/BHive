@@ -25,7 +25,7 @@ namespace BHive
 		}
 	};
 
-	class SpriteSheet : public Asset
+	class BHIVE_API SpriteSheet : public Asset
 	{
 
 	public:

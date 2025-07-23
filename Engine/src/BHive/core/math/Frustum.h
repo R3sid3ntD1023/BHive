@@ -6,7 +6,7 @@
 namespace BHive
 {
 
-	struct Frustum
+	struct BHIVE_API Frustum
 	{
 		Frustum() = default;
 		Frustum(const glm::mat4 &projection, const glm::mat4 &view);

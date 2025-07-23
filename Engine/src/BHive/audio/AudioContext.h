@@ -6,11 +6,11 @@ namespace BHive
 {
 	class AudioSource;
 
-	class AudioContext
+	class BHIVE_API AudioContext
 	{
 	public:
-		static BHIVE void Init();
-		static BHIVE void Shutdown();
-		static BHIVE void PrintDeviceInfo();
+		static void Init();
+		static void Shutdown();
+		static void PrintDeviceInfo();
 	};
-}
+} // namespace BHive

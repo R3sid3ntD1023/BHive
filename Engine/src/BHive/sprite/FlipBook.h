@@ -17,7 +17,7 @@ namespace BHive
 		}
 	};
 
-	class FlipBook : public Asset
+	class BHIVE_API FlipBook : public Asset
 	{
 	public:
 		typedef std::vector<Frame> Frames;

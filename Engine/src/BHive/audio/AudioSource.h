@@ -9,7 +9,7 @@
 namespace BHive
 {
 
-	class BHIVE AudioSource : public Asset
+	class BHIVE_API AudioSource : public Asset
 	{
 	public:
 		AudioSource() = default;

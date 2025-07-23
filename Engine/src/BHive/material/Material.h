@@ -10,7 +10,7 @@ namespace BHive
 	class Shader;
 	class Texture;
 
-	class Material : public Asset
+	class BHIVE_API Material : public Asset
 	{
 	public:
 		struct TextureSlot

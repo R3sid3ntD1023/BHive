@@ -9,7 +9,7 @@ namespace BHive
 {
 	class VertexArray;
 
-	class BHIVE StaticMesh : public BaseMesh
+	class BHIVE_API StaticMesh : public BaseMesh
 	{
 	public:
 		StaticMesh() = default;

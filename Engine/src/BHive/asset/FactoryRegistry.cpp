@@ -1,5 +1,4 @@
 #include "FactoryRegistry.h"
-#include "core/reflection/Reflection.h"
 #include "asset/Factory.h"
 
 namespace BHive
@@ -10,13 +9,13 @@ namespace BHive
 		for (auto &type : derived_types)
 		{
 			auto factory = type.create();
-			
+
 			if (!factory)
 			{
 				LOG_WARN("No Factory found for type - {}", type);
 				continue;
 			}
-				
+
 			Register(factory.get_value<Ref<Factory>>());
 		}
 	}

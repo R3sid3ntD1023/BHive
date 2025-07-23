@@ -8,7 +8,7 @@ struct ImGuiContext;
 namespace BHive
 {
 	/*gui class that uses imgui*/
-	struct BHIVE ImGuiLayer : public Layer
+	struct BHIVE_API ImGuiLayer : public Layer
 	{
 		ImGuiLayer(GLFWwindow *window);
 		~ImGuiLayer() = default;
@@ -24,14 +24,11 @@ namespace BHive
 
 		void BlockEvents(bool block);
 
-		ImGuiContext *get_context() { return context; }
-
 	private:
 		void Init();
 		void Shutdown();
 
 		bool mBlockEvents{false};
 		GLFWwindow *mWindow = nullptr;
-		ImGuiContext *context = nullptr;
 	};
 } // namespace BHive

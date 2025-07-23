@@ -18,7 +18,7 @@ namespace BHive
 		Buffer_Color = 0x00004000,
 	};
 
-	class RendererAPI
+	class BHIVE_API RendererAPI
 	{
 	public:
 		RendererAPI() = default;

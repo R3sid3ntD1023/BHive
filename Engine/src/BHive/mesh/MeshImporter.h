@@ -10,7 +10,7 @@ namespace BHive
 	class SkeletalMesh;
 	class SkeletalAnimation;
 
-	struct MeshImporter
+	struct BHIVE_API MeshImporter
 	{
 		static bool Import(const std::filesystem::path &path, FMeshImportData &data);
 	};

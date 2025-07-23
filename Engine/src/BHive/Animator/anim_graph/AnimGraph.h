@@ -11,7 +11,7 @@ namespace BHive
 	class Animator;
 	class Skeleton;
 
-	class AnimGraph : public Asset
+	class BHIVE_API AnimGraph : public Asset
 	{
 	public:
 		using Nodes = std::unordered_map<UUID, Ref<AnimGraphNodeBase>>;

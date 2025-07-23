@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/reflection/Reflection.h"
+#include "core/Core.h"
 #include "gfx/Color.h"
 
 #define MAX_LIGHTS 32
@@ -14,7 +14,7 @@ namespace BHive
 		SpotLight = 2
 	};
 
-	struct Light
+	struct BHIVE_API Light
 	{
 		virtual ~Light() = default;
 
@@ -33,7 +33,7 @@ namespace BHive
 		REFLECTABLEV()
 	};
 
-	struct PointLight : public Light
+	struct BHIVE_API PointLight : public Light
 	{
 		float mRadius = 1.0f;
 
@@ -49,7 +49,7 @@ namespace BHive
 		REFLECTABLEV(Light)
 	};
 
-	struct SpotLight : public PointLight
+	struct BHIVE_API SpotLight : public PointLight
 	{
 
 		float mInnerCutOff = 25.0f;
@@ -67,7 +67,7 @@ namespace BHive
 		REFLECTABLEV(PointLight)
 	};
 
-	struct DirectionalLight : public Light
+	struct BHIVE_API DirectionalLight : public Light
 	{
 		DirectionalLight() = default;
 		DirectionalLight(const DirectionalLight &) = default;

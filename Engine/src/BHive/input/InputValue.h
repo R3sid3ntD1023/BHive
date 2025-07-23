@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	struct InputValue
+	struct BHIVE_API InputValue
 	{
 		typedef float Axis1D;
 		typedef glm::vec2 Axis2D;

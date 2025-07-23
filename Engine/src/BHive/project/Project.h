@@ -25,7 +25,7 @@ namespace BHive
 		REFLECTABLE()
 	};
 
-	class Project
+	class BHIVE_API Project
 	{
 	public:
 		Project() = default;

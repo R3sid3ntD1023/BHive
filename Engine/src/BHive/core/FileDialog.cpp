@@ -63,15 +63,13 @@ namespace BHive
 
 		auto hwnd = glfwGetWin32Window((GLFWwindow *)Application::Get().GetWindow().GetNative());
 
-		HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED |
-											  COINIT_DISABLE_OLE1DDE);
+		HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
 		if (SUCCEEDED(hr))
 		{
 			IFileOpenDialog *pFileOpen;
 
-			hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
-								  IID_IFileOpenDialog, (void **)&pFileOpen);
+			hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_IFileOpenDialog, (void **)&pFileOpen);
 
 			if (SUCCEEDED(hr))
 			{
@@ -120,7 +118,7 @@ namespace BHive
 		wchar_t *wstr = NULL;
 
 		auto hwnd = glfwGetWin32Window((GLFWwindow *)Application::Get().GetWindow().GetNative());
-		hr = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_IFileOperation , (void**)&pfo);
+		hr = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_IFileOperation, (void **)&pfo);
 
 		if (SUCCEEDED(hr))
 		{
@@ -129,7 +127,7 @@ namespace BHive
 
 			if (SUCCEEDED(hr))
 			{
-				
+
 				auto size = path.size() + 1;
 				wstr = new wchar_t[size];
 				size_t converted_chars = 0;
@@ -139,13 +137,12 @@ namespace BHive
 
 				if (SUCCEEDED(hr))
 				{
-				
+
 					hr = pfo->DeleteItem(deleted_item, NULL);
 
 					if (SUCCEEDED(hr))
 					{
 						hr = pfo->PerformOperations();
-
 					}
 				}
 			}
@@ -159,11 +156,10 @@ namespace BHive
 		if (wstr != NULL)
 			delete[] wstr;
 
-		
 		bool success = SUCCEEDED(hr);
 
 		CoUninitialize();
 
 		return success;
 	}
-}
+} // namespace BHive

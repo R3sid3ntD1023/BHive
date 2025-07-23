@@ -1,11 +1,10 @@
 #pragma once
 
 #include "core/Core.h"
-#include "core/reflection/Reflection.h"
 
 namespace BHive
 {
-	struct BHIVE AudioTime
+	struct BHIVE_API AudioTime
 	{
 		uint32_t mHours;
 		uint32_t mMinutes;

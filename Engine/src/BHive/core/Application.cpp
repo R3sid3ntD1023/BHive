@@ -60,6 +60,11 @@ namespace BHive
 		}
 	}
 
+	void Application::SubmitToMainQueue(const std::function<void()> &func)
+	{
+		mMainQueue.push(func);
+	}
+
 	void Application::Close()
 	{
 		mIsRunning = false;
@@ -155,4 +160,5 @@ namespace BHive
 
 		return false;
 	}
+
 } // namespace BHive

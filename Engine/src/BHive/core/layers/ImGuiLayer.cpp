@@ -3,11 +3,18 @@
 #include "core/Window.h"
 #include "ImGuiLayer.h"
 #include <glfw/glfw3.h>
-#include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-#include <ImGuizmo.h>
+
+#include <imgui.h>
 #include <implot.h>
+
+#ifdef IMGUI_SHARED
+	#undef IMGUI_SHARED
+	#define IMGUI_API
+#endif
+
+#include <ImGuizmo.h>
 
 namespace BHive
 {
@@ -40,9 +47,8 @@ namespace BHive
 	void ImGuiLayer::Init()
 	{
 		IMGUI_CHECKVERSION();
-		context = ImGui::CreateContext();
+		ImGui::CreateContext();
 		ImPlot::CreateContext();
-
 		ImGuiIO &io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
 		// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls

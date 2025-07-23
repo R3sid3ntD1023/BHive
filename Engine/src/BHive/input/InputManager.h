@@ -10,7 +10,7 @@
 
 namespace BHive
 {
-	struct BHIVE InputManager
+	struct BHIVE_API InputManager
 	{
 		using INPUT_MAP = std::unordered_map<uint32_t, EventStatusCode>;
 

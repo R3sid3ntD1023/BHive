@@ -9,7 +9,7 @@ namespace BHive
 	DECLARE_EVENT(OnImportCompleted, const Ref<Asset> &);
 	DECLARE_EVENT(OnAssetCreated, Ref<Asset>);
 
-	class BHIVE Factory
+	class BHIVE_API Factory
 	{
 	public:
 		virtual ~Factory() = default;

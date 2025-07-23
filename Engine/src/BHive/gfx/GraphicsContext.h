@@ -6,7 +6,7 @@ struct GLFWwindow;
 
 namespace BHive
 {
-	class BHIVE GraphicsContext
+	class BHIVE_API GraphicsContext
 	{
 	public:
 		GraphicsContext(GLFWwindow *window);

@@ -6,7 +6,7 @@
 namespace BHive
 {
 
-	struct BHIVE BufferElement
+	struct BHIVE_API BufferElement
 	{
 		BufferElement() = default;
 		BufferElement(EShaderDataType type, uint32_t divisor = 0, bool normalized = false)
@@ -29,7 +29,7 @@ namespace BHive
 		uint8_t GetComponentCount();
 	};
 
-	struct BHIVE BufferLayout
+	struct BHIVE_API BufferLayout
 	{
 		using Elements = std::vector<BufferElement>;
 

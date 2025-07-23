@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	class PCube : public StaticMesh
+	class BHIVE_API PCube : public StaticMesh
 	{
 	public:
 		PCube(float size);

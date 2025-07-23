@@ -9,7 +9,7 @@ namespace BHive
 	class VertexArray;
 	class StorageBuffer;
 
-	class BaseMesh : public Asset
+	class BHIVE_API BaseMesh : public Asset
 	{
 	public:
 		using submeshes = std::vector<FSubMesh>;

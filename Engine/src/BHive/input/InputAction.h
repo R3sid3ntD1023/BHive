@@ -1,14 +1,12 @@
 #pragma once
 
 #include "core/Core.h"
-#include "core/reflection/Reflection.h"
-#include "core/serialization/Serialization.h"
 #include "InputKey.h"
 
 namespace BHive
 {
 
-	struct FInputAction
+	struct BHIVE_API FInputAction
 	{
 		FInputAction() = default;
 

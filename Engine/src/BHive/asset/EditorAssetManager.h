@@ -9,7 +9,7 @@ namespace BHive
 {
 	using AssetRegistry = std::unordered_map<UUID, FAssetMetaData>;
 
-	class EditorAssetManager : public AssetManagerBase
+	class BHIVE_API EditorAssetManager : public AssetManagerBase
 	{
 	public:
 		EditorAssetManager(const std::filesystem::path &directory, const std::string &fileName);
@@ -19,9 +19,9 @@ namespace BHive
 
 		virtual bool IsAssetHandleValid(UUID handle) const override;
 		virtual bool IsAssetLoaded(UUID handle) const override;
-		virtual AssetType GetAssetType(UUID handle) const override;
+		virtual rttr::type GetAssetType(UUID handle) const override;
 
-		void ImportAsset(const std::filesystem::path &path, const AssetType &type, const UUID &handle);
+		void ImportAsset(const std::filesystem::path &path, const rttr::type &type, const UUID &handle);
 		bool RemoveAsset(UUID handle);
 		bool RemoveAsset(const std::filesystem::path &path);
 		bool RenameAsset(const std::filesystem::path &old_, const std::filesystem::path &new_);

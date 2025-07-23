@@ -54,7 +54,7 @@ namespace glm
 
 namespace BHive
 {
-	struct MathFunctionLibrary
+	struct BHIVE_API MathFunctionLibrary
 	{
 		template <typename T>
 		static T mix(const T &t0, const T &t1, float w);

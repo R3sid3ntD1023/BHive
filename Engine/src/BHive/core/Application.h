@@ -9,7 +9,7 @@ namespace BHive
 {
 	class ImGuiLayer;
 
-	struct FCommandLine
+	struct BHIVE_API FCommandLine
 	{
 		int Count = 0;
 		char **Args = nullptr;
@@ -21,7 +21,7 @@ namespace BHive
 		}
 	};
 
-	struct FApplicationSpecification
+	struct BHIVE_API FApplicationSpecification
 	{
 		FCommandLine CommandLine;
 		std::string Title = "BHive Application";
@@ -34,7 +34,7 @@ namespace BHive
 		bool Maximize = false;
 	};
 
-	class BHIVE Application
+	class BHIVE_API Application
 	{
 
 	public:
@@ -50,7 +50,7 @@ namespace BHive
 		void PopLayer(Layer *layer);
 
 		virtual void OnEvent(Event &event);
-		void SubmitToMainQueue(const std::function<void()> &func) { mMainQueue.push(func); }
+		void SubmitToMainQueue(const std::function<void()> &func);
 
 	public:
 		const FApplicationSpecification &GetSpecification() const { return mSpecification; }
@@ -76,10 +76,10 @@ namespace BHive
 		ImGuiLayer *mImGuiLayer = nullptr;
 		std::queue<std::function<void()>> mMainQueue;
 
-		static inline Application *sInstance = nullptr;
+		static inline Application *sInstance;
 	};
 
-	BHIVE Application *CreateApplication(const FCommandLine &commandline);
+	BHIVE_API Application *CreateApplication(const FCommandLine &commandline);
 
 	template <typename TLayer>
 	inline void Application::PushLayer()

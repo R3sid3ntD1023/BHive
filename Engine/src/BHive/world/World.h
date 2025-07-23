@@ -23,7 +23,7 @@ namespace BHive
 	using ObjectList = std::unordered_map<UUID, Ref<GameObject>>;
 	using EnTTList = std::unordered_map<entt::entity, UUID>;
 
-	class World : public Asset
+	class BHIVE_API World : public Asset
 	{
 	public:
 		World();

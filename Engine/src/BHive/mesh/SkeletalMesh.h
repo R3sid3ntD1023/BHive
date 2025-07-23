@@ -8,7 +8,7 @@ namespace BHive
 {
 	class Skeleton;
 
-	class SkeletalMesh : public BaseMesh
+	class BHIVE_API SkeletalMesh : public BaseMesh
 	{
 	public:
 		SkeletalMesh() = default;

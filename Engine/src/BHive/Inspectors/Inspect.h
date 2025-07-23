@@ -2,11 +2,9 @@
 
 #include "Inspector.h"
 
-struct ImGuiContext;
-
 namespace BHive
 {
-	struct Inspect
+	struct BHIVE_API Inspect
 	{
 		static rttr::variant meta_data_empty(const rttr::variant &);
 

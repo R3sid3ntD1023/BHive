@@ -7,7 +7,7 @@ namespace BHive
 {
 	class Material;
 
-	struct BHIVE MaterialTable
+	struct BHIVE_API MaterialTable
 	{
 
 		using material_list = std::vector<Ref<Material>>;

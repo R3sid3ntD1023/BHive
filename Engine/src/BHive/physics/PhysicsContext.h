@@ -18,11 +18,11 @@ namespace BHive
 {
 	class PhysicsLogger;
 
-	class PhysicsContext
+	class BHIVE_API PhysicsContext
 	{
 	public:
-		static BHIVE void Init();
-		static BHIVE void Shutdown();
+		static void Init();
+		static void Shutdown();
 		static physx::PxPhysics *GetPhysics() { return sPhysics; }
 
 	private:

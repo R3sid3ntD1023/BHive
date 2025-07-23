@@ -5,13 +5,13 @@
 
 namespace BHive
 {
-	struct FRay
+	struct BHIVE_API FRay
 	{
 		glm::vec3 Origin;
 		glm::vec3 Direction;
 	};
 
-	struct RayCast
+	struct BHIVE_API RayCast
 	{
 		static glm::vec3 GetPointOnRay(const glm::vec3 &origin, const glm::vec3 &direction, float distance);
 

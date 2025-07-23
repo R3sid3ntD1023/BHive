@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/Core.h"
-#include "asset/AssetType.h"
 #include "WindowBase.h"
 
 namespace BHive
@@ -25,11 +24,11 @@ namespace BHive
 	private:
 		void DrawNode(GameObject *obj);
 
-		const std::vector<AssetType> &GetSpawnableEntites();
+		const std::vector<rttr::type> &GetSpawnableEntites();
 
 	private:
 		Ref<World> mWorld;
 
-		std::vector<AssetType> mEntityTypeCache;
+		std::vector<rttr::type> mEntityTypeCache;
 	};
 } // namespace BHive

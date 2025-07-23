@@ -26,7 +26,7 @@ namespace BHive
 	{
 	};
 
-	class SceneRenderer
+	class BHIVE_API SceneRenderer
 	{
 		FRenderSettings mRenderSettings; // Render settings for the scene renderer
 

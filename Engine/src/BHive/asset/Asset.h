@@ -1,15 +1,12 @@
 #pragma once
 
-#include "AssetType.h"
 #include "core/Core.h"
-#include "core/reflection/Reflection.h"
-#include "core/serialization/Serialization.h"
 #include "core/UUID.h"
 #include "TAssetHandler.h"
 
 namespace BHive
 {
-	class Asset
+	class BHIVE_API Asset
 	{
 	public:
 		Asset() = default;

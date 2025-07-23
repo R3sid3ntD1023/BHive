@@ -1,7 +1,7 @@
 #pragma once
 
+#include "core/Core.h"
 #include "core/UUID.h"
-#include "asset/AssetType.h"
 
 namespace BHive
 {
@@ -9,13 +9,13 @@ namespace BHive
 
 	using AssetMap = std::unordered_map<UUID, Ref<Asset>>;
 
-	class AssetManagerBase
+	class BHIVE_API AssetManagerBase
 	{
 	public:
 		virtual Ref<Asset> GetAsset(UUID handle) = 0;
 
 		virtual bool IsAssetHandleValid(UUID handle) const = 0;
 		virtual bool IsAssetLoaded(UUID handle) const = 0;
-		virtual AssetType GetAssetType(UUID handle) const = 0;
+		virtual rttr::type GetAssetType(UUID handle) const = 0;
 	};
-}
+} // namespace BHive

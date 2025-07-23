@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	class CubeCamera : public Camera
+	class BHIVE_API CubeCamera : public Camera
 	{
 	public:
 		CubeCamera();

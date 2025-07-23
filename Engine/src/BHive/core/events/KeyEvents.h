@@ -7,7 +7,7 @@
 
 namespace BHive
 {
-	class BHIVE KeyEvent : public Event
+	class BHIVE_API KeyEvent : public Event
 	{
 		EVENT(KeyEvent, EventCategoryKeyboard | EventCategoryInput)
 
@@ -26,7 +26,7 @@ namespace BHive
 		int Mods;
 	};
 
-	class BHIVE KeyTypedEvent : public Event
+	class BHIVE_API KeyTypedEvent : public Event
 	{
 		EVENT(KeyTypedEvent, EventCategoryKeyboard | EventCategoryInput)
 

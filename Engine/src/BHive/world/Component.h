@@ -9,7 +9,7 @@ namespace BHive
 {
 	struct GameObject;
 
-	struct Component
+	struct BHIVE_API Component
 	{
 
 		virtual void Begin() {};

@@ -20,7 +20,7 @@ namespace BHive
 		EFormat Format = EFormat::Invalid;
 	};
 
-	struct BHIVE FramebufferAttachments
+	struct BHIVE_API FramebufferAttachments
 	{
 		FramebufferAttachments() = default;
 		FramebufferAttachments(std::initializer_list<FFramebufferTexture> attachments)
@@ -49,7 +49,7 @@ namespace BHive
 		friend class Framebuffer;
 	};
 
-	struct BHIVE FramebufferSpecification
+	struct BHIVE_API FramebufferSpecification
 	{
 		FramebufferAttachments Attachments;
 		uint32_t Width = 800, Height = 600, Depth = 1;
@@ -57,7 +57,7 @@ namespace BHive
 		FRenderbufferTexture mRenderBufferSpecification;
 	};
 
-	class BHIVE Framebuffer
+	class BHIVE_API Framebuffer
 	{
 	public:
 		Framebuffer(const FramebufferSpecification &specification);

@@ -288,7 +288,7 @@ namespace BHive
 
 		AssetFactory::Export(mEditorWorld, path);
 		mCurrentWorldPath = path;
-		mAssetManager->ImportAsset(mCurrentWorldPath, AssetType::get<World>(), mEditorWorld->GetHandle());
+		mAssetManager->ImportAsset(mCurrentWorldPath, rttr::type::get<World>(), mEditorWorld->GetHandle());
 	}
 
 	void EditorLayer::LoadWorld()

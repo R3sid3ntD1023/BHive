@@ -15,7 +15,7 @@ namespace BHive
 		ShaderType_Geometry,
 	};
 
-	class Shader
+	class BHIVE_API Shader
 	{
 	public:
 		Shader(const std::filesystem::path &path);

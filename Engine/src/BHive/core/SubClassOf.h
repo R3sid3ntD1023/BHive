@@ -5,13 +5,10 @@
 
 namespace BHive
 {
-	struct SubClassOf
-	{
-		REFLECTABLEV()
-	};
+	struct BHIVE_API SubClassOf{REFLECTABLEV()};
 
 	template <typename T>
-	struct TSubClassOf : public SubClassOf
+	struct BHIVE_API TSubClassOf : public SubClassOf
 	{
 		using BaseType = T;
 
@@ -64,7 +61,8 @@ namespace BHive
 		static inline int reflect()
 		{
 			auto class_name = std::format("TSubclassOf<{}>", rttr::type::get<T>().get_name().data());
-			rttr::registration::class_<TSubClassOf<T>>(class_name).constructor<const rttr::type &>()(rttr::policy::ctor::as_object);
+			rttr::registration::class_<TSubClassOf<T>>(class_name)
+				.constructor<const rttr::type &>()(rttr::policy::ctor::as_object);
 			return 0;
 		}
 

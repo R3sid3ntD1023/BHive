@@ -10,7 +10,7 @@
 namespace BHive
 {
 
-	class InputContext : public Asset
+	class BHIVE_API InputContext : public Asset
 	{
 	public:
 		InputContext() = default;

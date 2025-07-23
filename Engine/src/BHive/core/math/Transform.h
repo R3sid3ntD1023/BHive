@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	struct FTransform
+	struct BHIVE_API FTransform
 	{
 		FTransform();
 		FTransform(const glm::mat4 &matrix);

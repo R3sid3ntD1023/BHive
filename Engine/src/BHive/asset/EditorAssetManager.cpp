@@ -1,5 +1,4 @@
 #include "EditorAssetManager.h"
-#include "core/serialization/Serialization.h"
 
 namespace BHive
 {
@@ -63,7 +62,7 @@ namespace BHive
 		return loaded;
 	}
 
-	AssetType EditorAssetManager::GetAssetType(UUID handle) const
+	rttr::type EditorAssetManager::GetAssetType(UUID handle) const
 	{
 		if (!IsAssetHandleValid(handle))
 			return InvalidType;
@@ -71,7 +70,7 @@ namespace BHive
 		return mAssetRegistry.at(handle).Type;
 	}
 
-	void EditorAssetManager::ImportAsset(const std::filesystem::path &path, const AssetType &type, const UUID &handle)
+	void EditorAssetManager::ImportAsset(const std::filesystem::path &path, const rttr::type &type, const UUID &handle)
 	{
 		if (GetHandle(path))
 		{

@@ -159,8 +159,6 @@ namespace BHive
 
 	Renderer::RenderData *Renderer::sData = nullptr;
 
-	Renderer::Statitics Renderer::sStats;
-
 	CameraBuffer::CameraBuffer()
 	{
 		mBuffer = CreateRef<UniformBuffer>(CAMERA_UBO_BINDING, sizeof(FCameraData));

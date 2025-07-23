@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	class BHIVE TextureFactory : public Factory
+	class TextureFactory : public Factory
 	{
 	public:
 		virtual Ref<Asset> Import(const std::filesystem::path &path) override;

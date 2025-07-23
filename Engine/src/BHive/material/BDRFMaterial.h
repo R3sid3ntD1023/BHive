@@ -21,7 +21,7 @@ namespace BHive
 		MaterialFlag_Shadows = MaterialFlag_Cast_Shadows | MaterialFlag_Recieve_Shadows
 	};
 
-	class BDRFMaterial : public Material
+	class BHIVE_API BDRFMaterial : public Material
 	{
 	public:
 		FColor Albedo{1.0f, 1.0f, 1.0f, 1.0f};

@@ -45,7 +45,7 @@ namespace BHive
 		return mShaders.at(name);
 	}
 
-	BHIVE Ref<Shader> ShaderManager::Load(const char *name, const std::string &comp_src)
+	Ref<Shader> ShaderManager::Load(const char *name, const std::string &comp_src)
 	{
 		if (!Contains(name))
 		{

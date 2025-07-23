@@ -8,16 +8,16 @@ namespace BHive
 {
 	class Texture2D;
 
-	struct FTextureImportData
+	struct BHIVE_API FTextureImportData
 	{
 		int mWidth = 0, mHeight = 0;
 		bool mFlip = true;
 	};
 
-	struct TextureLoader
+	struct BHIVE_API TextureLoader
 	{
-		static BHIVE Ref<Texture2D> Import(const std::filesystem::path &file, const FTextureImportData &import_data = {});
+		static Ref<Texture2D> Import(const std::filesystem::path &file, const FTextureImportData &import_data = {});
 
-		static BHIVE Ref<Texture2D> LoadFromMemory(const uint8_t *data, int length);
+		static Ref<Texture2D> LoadFromMemory(const uint8_t *data, int length);
 	};
 } // namespace BHive

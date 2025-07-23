@@ -9,7 +9,7 @@ namespace BHive
 {
 	class Event;
 
-	class EditorCamera : public SceneCamera
+	class BHIVE_API EditorCamera : public SceneCamera
 	{
 
 	public:

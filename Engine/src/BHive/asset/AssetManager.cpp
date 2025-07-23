@@ -19,7 +19,7 @@ namespace BHive
 		return sCurrentAssetManager->IsAssetLoaded(handle);
 	}
 
-	AssetType AssetManager::GetAssetType(UUID handle)
+	rttr::type AssetManager::GetAssetType(UUID handle)
 	{
 		return sCurrentAssetManager->GetAssetType(handle);
 	}
@@ -29,5 +29,4 @@ namespace BHive
 		sCurrentAssetManager = manager;
 	}
 
-	AssetManagerBase *AssetManager::sCurrentAssetManager = nullptr;
 } // namespace BHive

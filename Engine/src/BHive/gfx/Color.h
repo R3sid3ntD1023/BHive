@@ -1,12 +1,12 @@
 #pragma once
 
+#include "core/Core.h"
 #include "gui/GUICore.h"
 #include "core/math/Math.h"
-#include "core/serialization/Serialization.h"
 
 namespace BHive
 {
-	struct FColor
+	struct BHIVE_API FColor
 	{
 		FColor() = default;
 		FColor(const FColor &) = default;

@@ -4,8 +4,7 @@
 
 namespace BHive
 {
-
-	class BHIVE Camera
+	class BHIVE_API Camera
 	{
 	public:
 		Camera() = default;

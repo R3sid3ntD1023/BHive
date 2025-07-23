@@ -4,31 +4,36 @@
 
 namespace BHive
 {
-	class RenderCommand
+	class BHIVE_API RenderCommand
 	{
 	public:
-		static BHIVE void Init();
+		static void Init();
 
-		static BHIVE void ClearColor(float r, float g, float b, float a = 1.0f);
-		static BHIVE void Clear(int mask = Buffer_Color | Buffer_Depth | Buffer_Stencil);
+		static void ClearColor(float r, float g, float b, float a = 1.0f);
 
-		static BHIVE void SetLineWidth(float width);
+		static void Clear(int mask = Buffer_Color | Buffer_Depth | Buffer_Stencil);
+
+		static void SetLineWidth(float width);
+
 		static void SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
-		static BHIVE void DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count = 0);
-		static BHIVE void DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count = 0);
+		static void DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count = 0);
+
+		static void DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count = 0);
+
 		static void DrawElementsBaseVertex(
 			EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0,
-			uint32_t instance_count= 0);
+			uint32_t instance_count = 0);
+
 		static void
 		DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count = 0);
-		static BHIVE void
-		DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count = 0);
+		static void DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count = 0);
+
 		static void MultiDrawElementsIndirect(
 			uint32_t buffer, EDrawMode mode, const VertexArray &vao, size_t numMeshes, size_t stride = 0);
 
-		static BHIVE void EnableDepth();
-		static BHIVE void DisableDepth();
+		static void EnableDepth();
+		static void DisableDepth();
 		static void DepthFunc(uint32_t func);
 
 		static void CullFront();

@@ -3,6 +3,7 @@
 #include "EditorLayer.h"
 #include "ProjectLauncherLayer.h"
 #include "gui/Gui.h"
+#include "core/layers/ImGuiLayer.h"
 
 namespace BHive
 {
@@ -15,6 +16,8 @@ namespace BHive
 
 			PushLayer(new ProjectLauncherLayer());
 		}
+
+		~BHiveEditor() {}
 
 		void OnBeginGUIRender() override
 		{

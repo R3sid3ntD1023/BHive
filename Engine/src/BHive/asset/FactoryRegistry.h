@@ -1,13 +1,12 @@
 #pragma once
 
 #include "core/Core.h"
-#include "asset/AssetType.h"
 
 namespace BHive
 {
 	class Factory;
 
-	class FactoryRegistry
+	class BHIVE_API FactoryRegistry
 	{
 		using factories = std::vector<Ref<Factory>>;
 

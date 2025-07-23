@@ -156,13 +156,13 @@ namespace BHive
 		}
 	}
 
-	const std::vector<AssetType> &SceneHierarchyPanel::GetSpawnableEntites()
+	const std::vector<rttr::type> &SceneHierarchyPanel::GetSpawnableEntites()
 	{
 		auto &cache = mEntityTypeCache;
 		if (cache.size())
 			return cache;
 
-		auto derived = AssetType::get<GameObject>().get_derived_classes();
+		auto derived = rttr::type::get<GameObject>().get_derived_classes();
 		for (auto &type : derived)
 		{
 			if (type.get_metadata(ClassMetaData_Spawnable))

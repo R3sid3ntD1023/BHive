@@ -5,19 +5,19 @@
 
 namespace BHive
 {
-	struct BHIVE FBox
+	struct BHIVE_API FBox
 	{
 		glm::vec3 Min{0.0f};
 		glm::vec3 Max{0.0f};
 	};
 
-	struct BHIVE FSphere
+	struct BHIVE_API FSphere
 	{
 		glm::vec3 Origin{0.0f};
 		float Radius{0.0f};
 	};
 
-	struct BHIVE AABB
+	struct BHIVE_API AABB
 	{
 
 		glm::vec3 Min{0.0f};

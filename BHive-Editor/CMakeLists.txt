@@ -8,5 +8,5 @@ set_target_properties(BHive-Editor PROPERTIES
 	CXX_STANDARD_REQUIRED YES
 )
 target_compile_definitions(BHive-Editor PUBLIC EDITOR_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/")
-target_link_libraries(BHive-Editor PUBLIC Engine )
+target_link_libraries(BHive-Editor PUBLIC BHive-Engine )
 target_include_directories(BHive-Editor PRIVATE src)

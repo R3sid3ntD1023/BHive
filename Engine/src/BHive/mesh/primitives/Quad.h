@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	class PQuad : public StaticMesh
+	class BHIVE_API PQuad : public StaticMesh
 	{
 	public:
 		PQuad();

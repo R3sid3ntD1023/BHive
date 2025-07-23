@@ -6,7 +6,7 @@ namespace BHive
 {
 	class Event;
 
-	class BHIVE Layer
+	class BHIVE_API Layer
 	{
 	public:
 		virtual ~Layer() = default;
@@ -18,7 +18,7 @@ namespace BHive
 		virtual void OnGuiRender() {}
 	};
 
-	class BHIVE LayerStack
+	class BHIVE_API LayerStack
 	{
 	public:
 		using Layers = std::vector<Layer *>;

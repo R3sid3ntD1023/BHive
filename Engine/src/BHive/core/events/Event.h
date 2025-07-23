@@ -29,7 +29,7 @@ namespace BHive
 		EventCategoryMouseButton = BIT(4),
 	};
 
-	class BHIVE Event
+	class BHIVE_API Event
 	{
 	public:
 		virtual ~Event() = default;
@@ -48,7 +48,7 @@ namespace BHive
 	template <typename Derived, typename Base>
 	using is_derived_from = std::enable_if_t<std::is_base_of_v<Base, Derived>>;
 
-	class BHIVE EventDispatcher
+	class BHIVE_API EventDispatcher
 	{
 	public:
 		EventDispatcher(Event &event)

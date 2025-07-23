@@ -24,7 +24,7 @@ namespace BHive
 		}
 	};
 
-	class Sprite : public Asset
+	class BHIVE_API Sprite : public Asset
 	{
 	public:
 		Sprite() = default;

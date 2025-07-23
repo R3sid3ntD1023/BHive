@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	class AssetFactory
+	class BHIVE_API AssetFactory
 	{
 	public:
 		static bool Import(Ref<Asset> &asset, const std::filesystem::path &path);

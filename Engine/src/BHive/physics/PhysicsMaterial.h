@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	class PhysicsMaterial : public Asset
+	class BHIVE_API PhysicsMaterial : public Asset
 	{
 	public:
 		PhysicsMaterial() = default;

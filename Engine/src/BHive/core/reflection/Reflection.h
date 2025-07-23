@@ -44,7 +44,7 @@
 #define REFLECT_EXTERN(cls) \
 	REFLECT_IMPL(cls)       \
 	template <>             \
-	extern void ::BHive::reflection::auto_register_reflection_t<cls>();
+	extern BHIVE_API void ::BHive::reflection::auto_register_reflection_t<cls>();
 
 #define REFLECTABLE_FRIEND() \
 	template <typename T>    \
@@ -99,14 +99,13 @@ namespace BHive
 	namespace reflection
 	{
 		template <typename T>
-		void auto_register_reflection_t();
+		void BHIVE_API auto_register_reflection_t();
 
-		struct refl
-		{
-			refl(void (*f)()) { f(); }
-		};
-
+		struct BHIVE_API refl{refl(void (*f)()){f();
 	} // namespace reflection
+}; // namespace BHive
+
+} // namespace reflection
 
 } // namespace BHive
 

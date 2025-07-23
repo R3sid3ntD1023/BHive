@@ -4,12 +4,12 @@
 
 namespace BHive
 {
-	struct GUI
+	struct BHIVE_API GUI
 	{
-		static BHIVE void BeginDockSpace(const char *strid, bool *opened = (bool *)0, float title_height = 0);
-		static BHIVE void EndDockSpace();
+		static void BeginDockSpace(const char *strid, bool *opened = (bool *)0, float title_height = 0);
+		static void EndDockSpace();
 
 	private:
-		static BHIVE void ShowDockingDisabledMessage();
+		static void ShowDockingDisabledMessage();
 	};
 } // namespace BHive

@@ -6,11 +6,9 @@ namespace BHive
 {
 	class AudioSource;
 
-
-	struct AudioImporter
+	struct BHIVE_API AudioImporter
 	{
-		static BHIVE Ref<AudioSource> Import(const std::filesystem::path& path);
+		static Ref<AudioSource> Import(const std::filesystem::path &path);
 	};
 
-	
-}
+} // namespace BHive

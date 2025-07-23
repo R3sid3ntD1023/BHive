@@ -37,7 +37,7 @@ namespace BHive
 		glm::mat4 Transformation{1.f};
 	};
 
-	struct BHIVE FMeshData
+	struct FMeshData
 	{
 		std::vector<FSubMesh> mSubMeshes;
 		std::vector<FVertex> mVertices;

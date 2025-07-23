@@ -4,11 +4,11 @@
 
 namespace BHive
 {
-	struct FileDialogs
+	struct BHIVE_API FileDialogs
 	{
-		static BHIVE std::string OpenFile(const char* filter);
-		static BHIVE std::string SaveFile(const char* filter);
-		static BHIVE std::string GetDirectory();
+		static std::string OpenFile(const char *filter);
+		static std::string SaveFile(const char *filter);
+		static std::string GetDirectory();
 		static bool MoveToRecycleBin(const std::string &path);
 	};
-}
+} // namespace BHive
