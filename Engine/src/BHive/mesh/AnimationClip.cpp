@@ -54,9 +54,9 @@ namespace BHive
 			if (bone)
 			{
 
-				auto translation = mAnimation->InterpolatePosition(bone->mName, time);
-				auto rotation = mAnimation->InterpolateRotation(bone->mName, time);
-				auto scale = mAnimation->InterpolateScaling(bone->mName, time);
+				auto translation = mAnimation->InterpolatePosition(bone->Name, time);
+				auto rotation = mAnimation->InterpolateRotation(bone->Name, time);
+				auto scale = mAnimation->InterpolateScaling(bone->Name, time);
 
 				node_transformation = glm::translate(translation) * glm::toMat4(rotation) * glm::scale(scale);
 			}
@@ -66,7 +66,7 @@ namespace BHive
 
 		if (bone)
 		{
-			pose.SetTransformJointSpace(bone->mID, global_transformation * bone->mOffset);
+			pose.SetTransformJointSpace(bone->ID, global_transformation * bone->LocalBindPoseMatrix);
 		}
 
 		for (auto &child : node.mChildren)

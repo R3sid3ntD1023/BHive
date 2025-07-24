@@ -73,16 +73,16 @@ namespace BHive
 				if (!bones.contains(bone_name))
 				{
 					Bone bone{
-						.mName = bone_name,
-						.mID = bone_counter,
-						.mOffset = make_mat4(mesh->mBones[bone_index]->mOffsetMatrix)};
+						.Name = bone_name,
+						.ID = bone_counter,
+						.LocalBindPoseMatrix = make_mat4(mesh->mBones[bone_index]->mOffsetMatrix)};
 					bones[bone_name] = bone;
 					bone_id = bone_counter;
 					bone_counter++;
 				}
 				else
 				{
-					bone_id = bones.at(bone_name).mID;
+					bone_id = bones.at(bone_name).ID;
 				}
 
 				ASSERT(bone_id != -1);
@@ -271,8 +271,8 @@ namespace BHive
 				// find missing bones
 				if (!bones.contains(bone_name))
 				{
-					bones[bone_name].mID = bone_count;
-					bones[bone_name].mName = bone_name;
+					bones[bone_name].ID = bone_count;
+					bones[bone_name].Name = bone_name;
 					bone_count++;
 					LOG_TRACE("Added Missing Bone {}", bone_name);
 				}

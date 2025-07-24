@@ -153,6 +153,8 @@ namespace BHive
 		ASSERT(LoadTextureMemoryFunc);
 		ASSERT(CreateMaterialFunc);
 
+		TextureResolver texture_resolver(LoadTextureFunc, LoadTextureMemoryFunc);
+
 		size_t num_materials = mData.mMaterialData.size();
 
 		material_table.resize(num_materials);
@@ -174,7 +176,6 @@ namespace BHive
 				{
 					auto &texture_data = textures[i];
 
-					TextureResolver texture_resolver(LoadTextureFunc, LoadTextureMemoryFunc);
 					auto &texture_asset = texture_resolver.Resolve(texture_data, mOptions.AssetPath.parent_path());
 
 					if (texture_asset)

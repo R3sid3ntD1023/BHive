@@ -39,7 +39,7 @@ namespace BHive
 		if (mBones.contains(name))
 		{
 			auto &bone = mBones.at(name);
-			mRestPoseTransforms.push_back(parent * transform * bone.mOffset);
+			mRestPoseTransforms.push_back(parent * transform * bone.LocalBindPoseMatrix);
 		}
 
 		glm::mat4 global = parent * transform;
@@ -55,14 +55,6 @@ namespace BHive
 		REFLECT_CONSTRUCTOR()
 		REFLECT_PROPERTY_READ_ONLY("Bones", mBones)
 		REFLECT_PROPERTY_READ_ONLY("Heirarchy", mRoot);
-	}
-	REFLECT(Bone)
-	{
-		BEGIN_REFLECT(Bone)
-		REFLECT_PROPERTY_READ_ONLY("Name", mName)
-		REFLECT_PROPERTY_READ_ONLY("ID", mID)
-		REFLECT_PROPERTY_READ_ONLY("Offset", mOffset)
-		REFLECT_PROPERTY_READ_ONLY("Parent", mParent);
 	}
 
 	REFLECT(SkeletalNode)

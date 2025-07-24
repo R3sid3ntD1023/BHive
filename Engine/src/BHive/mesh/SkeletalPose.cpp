@@ -48,9 +48,9 @@ namespace BHive
 
 		if (auto bone = mSkeleton->FindBone(name))
 		{
-			auto index = bone->mID;
+			auto index = bone->ID;
 			transform = GetTransformJointSpace(index);
-			SetTransformJointSpace(index, parent * transform * bone->mOffset);
+			SetTransformJointSpace(index, parent * transform * bone->LocalBindPoseMatrix);
 		}
 
 		glm::mat4 global_transform = parent * transform;
