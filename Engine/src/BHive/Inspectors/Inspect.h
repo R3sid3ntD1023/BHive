@@ -23,7 +23,7 @@ namespace BHive
 
 		template <typename T>
 		static bool inspect(
-			const std::string &label, const T &obj, bool skip_custom = false, bool read_only = false, float width = 0.0f,
+			const std::string &label, const T &obj, bool skip_custom = false, float width = 0.0f,
 			const Inspector::meta_getter &get_meta_data = meta_data_empty);
 	};
 

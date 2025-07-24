@@ -4,7 +4,7 @@
 namespace BHive
 {
 	PropertyLayout::PropertyLayout(const std::string &name, bool columns, float width)
-		: mColumns(columns),
+		: mColumns(columns && !name.empty()),
 		  mWidth(width),
 		  mName(name)
 	{
@@ -21,6 +21,7 @@ namespace BHive
 		}
 
 		mName = name;
+		mColumns = mColumns && !mName.empty();
 	}
 
 	PropertyLayout::~PropertyLayout()

@@ -14,13 +14,12 @@ namespace BHive
 
 		bool changed = false;
 
-		static auto treeflags = ImGuiTreeNodeFlags_OpenOnArrow;
+		static auto treeflags = ImGuiTreeNodeFlags_SpanAvailWidth;
+		static auto table_flags = ImGuiTableFlags_Borders;
 
 		float width = ImGui::GetContentRegionAvail().x;
 		if (ImGui::TreeNodeEx("Elements", treeflags))
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10, 10});
-
 			size_t i = 0;
 
 			for (auto it = data.begin(); it != data.end();)
@@ -31,37 +30,33 @@ namespace BHive
 				auto value = element.second.extract_wrapped_value();
 				std::pair<bool, bool> element_changed = {false, false};
 
-				auto key_id = std::format("Key{}", i);
-				auto value_id = std::format("Value{}", i);
+				auto key_id = ImGui::GetID(std::format("##Key{}", i).c_str());
+				auto value_id = ImGui::GetID(std::format("##Value{}", i).c_str());
 
-				ImGui::BeginTable("##KeyValueTable", 2, 0, {width, 0});
+				ImGui::BeginTable("##KeyValueTable", 2, table_flags);
 
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
 
-				ImGui::PushMultiItemsWidths(2, width);
-
-				ImGui::PushID(key_id.c_str());
+				ImGui::PushID(key_id);
 				{
 					element_changed.first =
 						Inspect::inspect(instance, newkey, false, read_only, 0.0f, Inspect::meta_data_empty);
-					ImGui::PopItemWidth();
 				}
 				ImGui::PopID();
 
 				ImGui::TableNextColumn();
 
-				ImGui::PushID(value_id.c_str());
+				ImGui::PushID(value_id);
+
 				{
 					element_changed.second =
 						Inspect::inspect(instance, value, false, read_only, 0.0f, Inspect::meta_data_empty);
-					ImGui::PopItemWidth();
 				}
+
 				ImGui::PopID();
 
 				ImGui::EndTable();
-
-				// DEBUG_DRAW_RECT(0xFF00FF00)
 
 				changed |= element_changed.first || element_changed.second;
 
@@ -78,7 +73,6 @@ namespace BHive
 				i++;
 			}
 
-			ImGui::PopStyleVar();
 			ImGui::TreePop();
 		}
 
