@@ -194,16 +194,8 @@ namespace BHive
 
 		if (ImGui::Begin("Assets"))
 		{
-			for (auto &[id, metadata] : mAssetManager->GetAssetRegistry())
-			{
-				if (ImGui::BeginChild(metadata.Name.c_str()))
-				{
-					Inspect::inspect("Handle", id, false, true);
-					Inspect::inspect("Data", metadata, false, true);
-				}
-
-				ImGui::EndChild();
-			}
+			const auto &registry = mAssetManager->GetAssetRegistry();
+			Inspect::inspect("", registry);
 		}
 
 		ImGui::End();
