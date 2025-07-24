@@ -320,14 +320,16 @@ namespace BHive
 
 		void GetTextureData(const aiScene *scene, aiString &str, FTextureData &data)
 		{
-			data.mPath = str.C_Str();
+			data.Path = str.C_Str();
 
 			if (auto embedded_texture = scene->GetEmbeddedTexture(str.C_Str()))
 			{
 				auto size = embedded_texture->mWidth + embedded_texture->mHeight;
 
-				data.mEmbeddedData.Allocate(embedded_texture->pcData, size);
+				data.EmbeddedData.Allocate(embedded_texture->pcData, size);
 			}
+
+			LOG_TRACE("Found texture", data.get_name());
 		}
 
 		std::string GetTextureType(aiTextureType aiType)
@@ -423,7 +425,7 @@ namespace BHive
 						if (!material.mLoadedTextureNames.contains(str.C_Str()))
 						{
 							FTextureData texture_data;
-							texture_data.mType = GetTextureType(supported_textures[j]);
+							texture_data.Type = GetTextureType(supported_textures[j]);
 							GetTextureData(scene, str, texture_data);
 
 							material.mTextureData.push_back(texture_data);

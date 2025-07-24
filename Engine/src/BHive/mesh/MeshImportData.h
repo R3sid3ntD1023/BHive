@@ -18,11 +18,13 @@ namespace BHive
 
 	struct FTextureData
 	{
-		std::string mType{""};
-		std::filesystem::path mPath{""};
-		Buffer mEmbeddedData;
+		std::string Type{""};
+		std::filesystem::path Path{""};
+		Buffer EmbeddedData;
 
-		bool is_embedded() const { return mEmbeddedData; }
+		std::string get_name() const { return Path.filename().string(); }
+
+		bool is_embedded() const { return EmbeddedData; }
 	};
 
 	struct FMaterialData

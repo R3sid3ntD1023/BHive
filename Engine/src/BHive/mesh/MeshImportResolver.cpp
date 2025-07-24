@@ -6,6 +6,41 @@
 
 namespace BHive
 {
+	struct TextureResolver
+	{
+		TextureResolver(LoadTextureSigniture loadTextureFunc, LoadTextureMemorySigniture loadTextureMemoryFunc)
+			: mLoadTextureFunc(loadTextureFunc),
+			  mLoadTextureMemoryFunc(loadTextureMemoryFunc)
+		{
+		}
+
+		Ref<Texture> &Resolve(const FTextureData &data, const std::filesystem::path &parent_path)
+		{
+
+			auto &texture_asset = mLoadedTextures[data.get_name()];
+			if (!texture_asset)
+			{
+				if (!data.is_embedded())
+				{
+					texture_asset = mLoadTextureFunc(parent_path / data.Path);
+				}
+				else
+				{
+					texture_asset = mLoadTextureMemoryFunc(data.EmbeddedData, data.EmbeddedData.GetSize());
+				}
+
+				texture_asset->SetName(data.get_name());
+			}
+
+			return texture_asset;
+		}
+
+	private:
+		LoadTextureSigniture mLoadTextureFunc;
+		LoadTextureMemorySigniture mLoadTextureMemoryFunc;
+
+		std::unordered_map<std::string, Ref<Texture>> mLoadedTextures;
+	};
 
 	MeshImportResolver::MeshImportResolver(
 		const FMeshImportData &data, const FMeshImportOptions &options, AdditionalAssets &additional)
@@ -138,26 +173,14 @@ namespace BHive
 				for (size_t i = 0; i < num_textures; i++)
 				{
 					auto &texture_data = textures[i];
-					Ref<Asset> texture_asset;
-					if (!texture_data.is_embedded())
-					{
-						texture_asset = LoadTextureFunc(mOptions.AssetPath.parent_path() / texture_data.mPath);
-					}
-					else
-					{
-						texture_asset =
-							LoadTextureMemoryFunc(texture_data.mEmbeddedData, texture_data.mEmbeddedData.GetSize());
-					}
 
-					if (auto texture = Cast<Texture>(texture_asset))
+					TextureResolver texture_resolver(LoadTextureFunc, LoadTextureMemoryFunc);
+					auto &texture_asset = texture_resolver.Resolve(texture_data, mOptions.AssetPath.parent_path());
+
+					if (texture_asset)
 					{
-						texture_asset->SetName(texture_data.mPath.stem().string());
 						mAdditionalAssets.push_back(texture_asset);
-
-						if (texture_data.mType != "")
-						{
-							material->SetTexture(texture_data.mType.c_str(), texture);
-						}
+						material->SetTexture(texture_data.Type.c_str(), texture_asset);
 					}
 				}
 
