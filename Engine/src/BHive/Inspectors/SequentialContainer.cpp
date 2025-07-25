@@ -4,6 +4,8 @@
 
 namespace BHive
 {
+	using edit_sequential_conainter_func = std::function<bool(rttr::variant_sequential_view &)>;
+
 	bool Inspector_SequentialContainer::Inspect(
 		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
@@ -13,6 +15,7 @@ namespace BHive
 		auto is_dynamic = data.is_dynamic();
 
 		bool changed = false;
+		edit_sequential_conainter_func edit_func = nullptr;
 
 		auto drawlist = ImGui::GetWindowDrawList();
 		ImDrawListSplitter splitter;
@@ -21,6 +24,7 @@ namespace BHive
 		auto flags = flags_var ? flags_var.to_uint32() : 0;
 		auto fixed_size = ((flags & EPropertyFlags_FixedSize) != 0);
 
+		// header buttons
 		if (is_dynamic && !fixed_size && !read_only)
 		{
 			auto width = ImGui::GetContentRegionAvail().x;
@@ -36,7 +40,7 @@ namespace BHive
 			{
 				int_size = ImClamp(int_size, 0, int_size);
 
-				changed |= data.set_size((size_t)int_size);
+				edit_func = [int_size](rttr::variant_sequential_view &view) { return view.set_size((size_t)int_size); };
 			}
 
 			ImGui::PopItemWidth();
@@ -44,16 +48,23 @@ namespace BHive
 
 			if (ImGui::Button("+"))
 			{
-				data.insert(data.end(), type.create());
-				changed |= true;
+
+				edit_func = [](rttr::variant_sequential_view &view)
+				{
+					view.insert(view.end(), view.get_value_type().create());
+					return true;
+				};
 			}
 
 			ImGui::SameLine();
 
 			if (ImGui::Button("-") && size > 0)
 			{
-				data.erase(data.end() - 1);
-				changed |= true;
+				edit_func = [](rttr::variant_sequential_view &view)
+				{
+					view.erase(view.end() - 1);
+					return true;
+				};
 			}
 		}
 
@@ -79,11 +90,15 @@ namespace BHive
 					ImGui::BeginGroup();
 
 					ImGui::PushID(name.c_str());
-					changed |= Inspect::inspect(instance, element, false, read_only, 0.0f, Inspect::meta_data_empty);
+					if (Inspect::inspect(instance, element, false, read_only, 0.0f, Inspect::meta_data_empty))
+					{
+						edit_func = [i, element](rttr::variant_sequential_view &view)
+						{
+							view.set_value((size_t)i, element);
+							return true;
+						};
+					}
 					ImGui::PopID();
-
-					if (changed)
-						data.set_value((size_t)i, element);
 
 					ImGui::EndGroup();
 				}
@@ -109,14 +124,13 @@ namespace BHive
 					{
 						if (auto payload = ImGui::AcceptDragDropPayload("VECTOR_ITEM"))
 						{
+
 							auto index = *(size_t *)payload->Data;
 							auto valueA = data.get_value(index).extract_wrapped_value();
 							auto valueB = data.get_value(i).extract_wrapped_value();
 
-							if (data.set_value(index, valueB) && data.set_value(i, valueA))
-							{
-								changed |= true;
-							}
+							edit_func = [index, i, valueA, valueB](rttr::variant_sequential_view &view)
+							{ return view.set_value(index, valueB) && view.set_value(i, valueA); };
 						}
 
 						ImGui::EndDragDropTarget();
@@ -125,6 +139,11 @@ namespace BHive
 			}
 
 			ImGui::TreePop();
+		}
+
+		if (edit_func)
+		{
+			changed |= edit_func(data);
 		}
 
 		return changed;

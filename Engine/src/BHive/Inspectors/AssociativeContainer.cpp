@@ -1,19 +1,20 @@
 #include "AssociativeContainer.h"
 #include "gui/ImGuiExtended.h"
 #include "Inspect.h"
-#include "AssociativeContainerModifiers.h"
 
 #define CONTEXT_MENU "##KEY_CONTEXT_MENU"
 
 namespace BHive
 {
+	using edit_associative_conainter_func = std::function<bool(rttr::variant_associative_view &)>;
 
 	bool Inspector_AssociativeContainer::Inspect(
 		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
 	{
 		static auto treeflags = ImGuiTreeNodeFlags_SpanAvailWidth;
 		static auto table_flags = ImGuiTableFlags_Borders;
-		FAssociativeViewModifier *m_modifier = nullptr;
+
+		edit_associative_conainter_func edit_func = nullptr;
 
 		auto data = var.create_associative_view();
 		bool changed = false;
@@ -27,23 +28,29 @@ namespace BHive
 				auto &element = (*it);
 				auto key = element.first.extract_wrapped_value();
 				auto value = element.second.extract_wrapped_value();
-				std::pair<bool, bool> element_changed = {false, false};
 				auto old_key = key;
 
 				auto key_id = ImGui::GetID(std::format("##Key{}", i).c_str());
 				auto value_id = ImGui::GetID(std::format("##Value{}", i).c_str());
 
-				bool is_visable = ImGui::BeginTable("##KeyValueTable", 2, table_flags);
+				bool is_visible = ImGui::BeginTable("##KeyValueTable", 2, table_flags);
 
-				if (is_visable)
+				if (is_visible)
 				{
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
 
 					ImGui::PushID(key_id);
 					{
-						element_changed.first =
-							Inspect::inspect(instance, key, false, read_only, 0.0f, Inspect::meta_data_empty);
+
+						if (Inspect::inspect(instance, key, false, read_only, 0.0f, Inspect::meta_data_empty))
+						{
+							edit_func = [key, old_key, value](rttr::variant_associative_view &view)
+							{
+								view.erase(old_key);
+								return view.insert(key, value).second;
+							};
+						}
 
 						if (!read_only)
 						{
@@ -53,7 +60,7 @@ namespace BHive
 							{
 								if (ImGui::Selectable("Delete"))
 								{
-									m_modifier = new FAssociativeViewDelete(key);
+									edit_func = [key](rttr::variant_associative_view &view) { return view.erase(key); };
 								}
 
 								ImGui::EndPopup();
@@ -66,19 +73,18 @@ namespace BHive
 
 					ImGui::PushID(value_id);
 
+					if (Inspect::inspect(instance, value, false, read_only, 0.0f, Inspect::meta_data_empty))
 					{
-						element_changed.second =
-							Inspect::inspect(instance, value, false, read_only, 0.0f, Inspect::meta_data_empty);
+						edit_func = [key, old_key, value](rttr::variant_associative_view &view)
+						{
+							view.erase(old_key);
+							return view.insert(key, value).second;
+						};
 					}
 
 					ImGui::PopID();
 
 					ImGui::EndTable();
-
-					if (element_changed.first || element_changed.second)
-					{
-						m_modifier = new FAssociativeViewChange(old_key, key, value);
-					}
 				}
 			}
 
@@ -96,30 +102,44 @@ namespace BHive
 		{
 			if (ImGui::Button("+"))
 			{
-				auto key_type = data.get_key_type();
-				auto value_type = data.get_value_type();
-				m_modifier = new FAssociativeViewAppend(key_type, value_type);
+				edit_func = [](rttr::variant_associative_view &view)
+				{
+					auto key = view.get_key_type().create();
+					auto value = view.get_value_type().create();
+
+					return view.insert(key, value).second;
+				};
 			}
 
 			ImGui::SameLine();
 
 			if (ImGui::Button("-"))
 			{
-				m_modifier = new FAssociativeViewRemove();
+				edit_func = [](rttr::variant_associative_view &view)
+				{
+					if (!view.get_size())
+						return false;
+
+					auto key = view.end() - 1;
+					return view.erase(key.get_key().extract_wrapped_value()) != 0;
+				};
 			}
 
 			ImGui::SameLine();
 
 			if (ImGui::Button("Clear"))
 			{
-				m_modifier = new FAssociativeViewClear();
+				edit_func = [](rttr::variant_associative_view &view)
+				{
+					view.clear();
+					return true;
+				};
 			}
 		}
 
-		if (m_modifier)
+		if (edit_func)
 		{
-			changed |= m_modifier->modify(data);
-			delete m_modifier;
+			changed |= edit_func(data);
 		}
 
 		return changed;
