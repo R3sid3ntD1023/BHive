@@ -8,9 +8,15 @@ namespace BHive
 	{
 	}
 
-	void AnimGraph::AddNode(const Ref<AnimGraphNodeBase> &node)
+	void AnimGraph::add_node(const Ref<AnimGraphNodeBase> &node)
 	{
+		node->mParentGraph = this;
 		mNodes.emplace(node->GetID(), node);
+	}
+
+	void AnimGraph::remove_node(const UUID &node_id)
+	{
+		mNodes.erase(node_id);
 	}
 
 	void AnimGraph::Save(cereal::BinaryOutputArchive &ar) const
@@ -37,16 +43,17 @@ namespace BHive
 
 		for (size_t i{}; i < num_nodes; i++)
 		{
-			UUID node_id = nullptr;
+			UUID node_id = NullID;
 			rttr::type node_type = InvalidType;
 
 			ar(node_id, node_type);
 
-			auto node = node_type.create({this}).get_value<Ref<AnimGraphNodeBase>>();
+			auto node = node_type.create().get_value<Ref<AnimGraphNodeBase>>();
 
 			if (node)
 			{
 				node->Serialize(ar);
+				add_node(node);
 			}
 		}
 	}

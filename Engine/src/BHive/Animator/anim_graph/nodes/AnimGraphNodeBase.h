@@ -26,10 +26,16 @@ namespace BHive
 
 		const UUID &GetID() const { return mID; }
 
+		AnimGraph *GetGraph() const { return mParentGraph; }
+
 		REFLECTABLEV()
 
 	private:
 		UUID mID;
+
+		AnimGraph *mParentGraph;
+
+		friend class AnimGraph;
 	};
 
 	REFLECT_EXTERN(AnimGraphNodeBase)

@@ -55,4 +55,10 @@ namespace BHive
 		}
 	}
 
+	REFLECT(BlackBoard)
+	{
+		BEGIN_REFLECT(BlackBoard)
+		REFLECT_PROPERTY("Keys", mKeys);
+	}
+
 } // namespace BHive

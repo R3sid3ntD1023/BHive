@@ -8,7 +8,7 @@
 namespace BHive
 {
 	AnimPlayer::AnimPlayer(const AnimGraph &graph)
-		: mQueue(graph.GetSkeleton().get())
+		: mQueue(graph.get_skeleton().get())
 	{
 	}
 
@@ -19,7 +19,8 @@ namespace BHive
 
 		mPlayCounter++;
 
-		AnimPlayerContext anim_context{.mJobQueue = mQueue, .mBlackBoard = mBlackBoard, .mDeltaTime = dt, .mPlayCounter = mPlayCounter};
+		AnimPlayerContext anim_context{
+			.mJobQueue = mQueue, .mBlackBoard = mBlackBoard, .mDeltaTime = dt, .mPlayCounter = mPlayCounter};
 
 		mRoot->Execute(anim_context);
 

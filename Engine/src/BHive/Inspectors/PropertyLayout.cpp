@@ -34,7 +34,7 @@ namespace BHive
 
 		if (mColumns)
 		{
-			ImGui::BeginTable((mName + "Property").c_str(), 2, 0, {mWidth, 0.f});
+			ImGui::BeginTable((mName + "Property").c_str(), 2, 0, {size, 0.f});
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
 

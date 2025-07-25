@@ -8,13 +8,24 @@ namespace BHive
 	AnimationGraph::AnimationGraph(const Ref<AnimGraph> &graph)
 		: mGraph(graph)
 	{
+		if (!mGraph)
+			return;
 
+		// populate graph
+		for (const auto &[node_id, node] : mGraph->get_nodes())
+		{
+			addNode(node->getPos(), node);
+		}
+
+		// get nodes derived from supported type
 		auto derived = GetSupportedNodeType().get_derived_classes();
 		for (auto &type : derived)
 		{
 			if (type.get_constructor())
 				mDerivedNodeTypes.push_back(type);
 		}
+
+		// set up graph callbacks
 
 		rightClickPopUpContent(
 			[=](ImFlow::BaseNode *node)
@@ -42,7 +53,7 @@ namespace BHive
 					auto new_node = type->create().get_value<Ref<AnimGraphNodeBase>>();
 					addNode(pos, new_node);
 					if (mGraph)
-						mGraph->AddNode(new_node);
+						mGraph->add_node(new_node);
 				}
 			});
 	}
@@ -59,7 +70,7 @@ namespace BHive
 				addNode(pos, new_node);
 
 				if (mGraph)
-					mGraph->AddNode(new_node);
+					mGraph->add_node(new_node);
 			}
 
 			if (ImGui::BeginDragDropSource())

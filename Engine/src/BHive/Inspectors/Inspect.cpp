@@ -12,6 +12,7 @@
 #include "InspectorSubClassOf.h"
 #include "AssociativeContainer.h"
 #include "SequentialContainer.h"
+#include "Inspector_Blackboard.h"
 
 namespace BHive
 {

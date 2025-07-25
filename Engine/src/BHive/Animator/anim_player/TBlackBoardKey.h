@@ -3,6 +3,14 @@
 #include "BlackBoardKey.h"
 #include "core/Core.h"
 
+#define REFLECT_BLACKBOARD_KEY(cls, name)        \
+	REFLECT(TBlackBoardKey<cls>)                 \
+	{                                            \
+		BEGIN_REFLECT(TBlackBoardKey<cls>, name) \
+		REFLECT_CONSTRUCTOR()                    \
+		REFLECT_PROPERTY("Value", mValue);       \
+	}
+
 namespace BHive
 {
 	template <typename T>
@@ -29,16 +37,8 @@ namespace BHive
 		T mValue{};
 	};
 
+	REFLECT_BLACKBOARD_KEY(int, "IntKey")
+	REFLECT_BLACKBOARD_KEY(float, "FloatKey")
+	REFLECT_BLACKBOARD_KEY(bool, "BoolKey")
+
 } // namespace BHive
-
-#define REFLECT_BLACKBOARD_KEY(cls)                 \
-	REFLECT(::BHive::TBlackBoardKey<cls>)           \
-	{                                               \
-		BEGIN_REFLECT(::BHive::TBlackBoardKey<cls>) \
-		REFLECT_CONSTRUCTOR()                       \
-		REFLECT_PROPERTY("Value", mValue);          \
-	}
-
-REFLECT_BLACKBOARD_KEY(int)
-REFLECT_BLACKBOARD_KEY(float)
-REFLECT_BLACKBOARD_KEY(bool)

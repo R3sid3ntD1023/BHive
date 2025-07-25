@@ -20,15 +20,17 @@ namespace BHive
 		AnimGraph() = default;
 		AnimGraph(const Ref<Skeleton> &skeleton);
 
-		void AddNode(const Ref<AnimGraphNodeBase> &node);
+		void add_node(const Ref<AnimGraphNodeBase> &node);
+
+		void remove_node(const UUID &node_id);
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const;
 
 		virtual void Load(cereal::BinaryInputArchive &ar);
 
-		const Nodes &GetNodes() { return mNodes; }
+		const Nodes &get_nodes() { return mNodes; }
 
-		const Ref<Skeleton> &GetSkeleton() const { return mSkeleton; }
+		const Ref<Skeleton> &get_skeleton() const { return mSkeleton; }
 
 		REFLECTABLEV(Asset)
 

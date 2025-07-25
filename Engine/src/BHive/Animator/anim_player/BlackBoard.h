@@ -1,8 +1,6 @@
 #pragma once
 
 #include "core/Core.h"
-#include "core/reflection/Reflection.h"
-#include "core/serialization/Serialization.h"
 #include "TBlackBoardKey.h"
 
 namespace BHive
@@ -36,9 +34,6 @@ namespace BHive
 		Keys mKeys;
 	};
 
-	REFLECT(BlackBoard)
-	{
-		BEGIN_REFLECT(BlackBoard);
-	}
+	REFLECT_EXTERN(BlackBoard)
 
 } // namespace BHive
