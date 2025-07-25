@@ -8,6 +8,7 @@ namespace BHive
 	AnimationGraph::AnimationGraph(const Ref<AnimGraph> &graph)
 		: mGraph(graph)
 	{
+
 		auto derived = GetSupportedNodeType().get_derived_classes();
 		for (auto &type : derived)
 		{
@@ -16,20 +17,21 @@ namespace BHive
 		}
 
 		rightClickPopUpContent(
-			[=](ImFlow::BaseNode *hovered, const ImVec2 &pos)
+			[=](ImFlow::BaseNode *node)
 			{
-				if (!hovered)
+				if (!node)
 				{
-					DrawCreateNodeMenu(pos);
+					DrawCreateNodeMenu(screen2grid(ImGui::GetMousePos()));
 				}
 				else
 				{
 					if (ImGui::MenuItem("Delete", "Delete"))
 					{
-						hovered->destroy();
+						node->destroy();
 					}
 				}
 			});
+
 		dragDropTarget(
 			[=](const ImVec2 &pos)
 			{
@@ -38,7 +40,7 @@ namespace BHive
 				{
 					auto type = (rttr::type *)payload->Data;
 					auto new_node = type->create().get_value<Ref<AnimGraphNodeBase>>();
-					addNode(new_node, pos);
+					addNode(pos, new_node);
 					if (mGraph)
 						mGraph->AddNode(new_node);
 				}
@@ -54,7 +56,7 @@ namespace BHive
 			if (ImGui::Selectable(name.data()))
 			{
 				auto new_node = type.create().get_value<Ref<AnimGraphNodeBase>>();
-				addNode(new_node, pos);
+				addNode(pos, new_node);
 
 				if (mGraph)
 					mGraph->AddNode(new_node);
