@@ -7,9 +7,31 @@
 #include "EditorContentBrowser.h"
 #include "gfx/textures/Texture2D.h"
 #include "project/Project.h"
+#include "core/subsystem/subsystem.h"
+#include "ThumbnailCache.h"
+#include "importers/TextureImporter.h"
 
 namespace BHive
 {
+	struct AssetThumbnailCache
+	{
+		AssetThumbnailCache()
+		{
+			mAssetIcons["BDRFMaterial"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/material.png");
+			mAssetIcons["StaticMesh"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/static_mesh.png");
+			mAssetIcons["SkeletalMesh"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/skeletal_mesh.png");
+			mAssetIcons["Skeleton"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/skeleton.png");
+			mAssetIcons["SkeletalAnimation"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/animation.png");
+			mAssetIcons["Texture2D"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/texture_2d.png");
+			mAssetIcons["World"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/world.png");
+		}
+
+		const Ref<Texture2D> &Get(const std::string &type_name) { return mAssetIcons[type_name]; }
+
+	private:
+		std::unordered_map<std::string, Ref<Texture2D>> mAssetIcons;
+	};
+
 	template <typename T>
 	void FinishAssetImport(
 		const std::filesystem::path &dir, const std::filesystem::path &rel, const Ref<Asset> &asset,
@@ -180,22 +202,36 @@ namespace BHive
 	template <typename T>
 	Ref<Texture2D> EditorContentBrowser<T>::OnGetIcon(bool directory, const std::filesystem::path &relative)
 	{
-		if (directory)
-		{
-			return mThumbnailCache.Get(EDITOR_RESOURCE_PATH "icons/DirectoryIcon.png");
-		}
-
+		static AssetThumbnailCache asset_cache;
+		auto &thumbnail_cache = GetSubSystem<ThumbnailCache>();
 		Ref<Texture2D> texture;
-		auto ext = relative.extension();
 
-		if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
+		auto asset_manager = AssetManager::GetAssetManager<EditorAssetManager>();
+		if (asset_manager)
 		{
-			texture = mThumbnailCache.Get(Project::GetResourceDirectory() / relative);
+			auto handle = asset_manager->GetHandle(relative);
+			if (auto type = AssetManager::GetAssetType(handle))
+			{
+				texture = asset_cache.Get(type.get_name().data());
+			}
 		}
 
 		if (!texture)
 		{
-			texture = mThumbnailCache.Get(EDITOR_RESOURCE_PATH "icons/FileIcon.png");
+			if (directory)
+			{
+				return thumbnail_cache.Get("DirectoryIcon");
+			}
+
+			auto ext = relative.extension();
+
+			if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
+			{
+				texture = thumbnail_cache.Get(Project::GetResourceDirectory() / relative);
+			}
+
+			if (!texture)
+				texture = thumbnail_cache.Get("FileIcon");
 		}
 
 		return texture;

@@ -1,8 +1,15 @@
 #include "ThumbnailCache.h"
 #include "importers/TextureImporter.h"
+#include "asset/EditorAssetManager.h"
 
 namespace BHive
 {
+
+	ThumbnailCache::ThumbnailCache()
+	{
+		mCache["DirectoryIcon"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/DirectoryIcon.png");
+		mCache["FileIcon"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/FileIcon.png");
+	}
 
 	Ref<Texture2D> ThumbnailCache::Get(const std::filesystem::path &path)
 	{

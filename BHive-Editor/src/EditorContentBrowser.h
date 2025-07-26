@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ContentBrowser.h"
-#include "ThumbnailCache.h"
 
 namespace BHive
 {
@@ -29,9 +28,6 @@ namespace BHive
 
 	private:
 		virtual void OnCreateAsset(const std::filesystem::path &directory, const Ref<Factory> &factory);
-
-	private:
-		ThumbnailCache mThumbnailCache;
 	};
 
 } // namespace BHive

@@ -78,6 +78,8 @@ namespace BHive
 
 		AddSubSystem<SelectionSubSystem>();
 		AddSubSystem<EditorSubSystem>();
+		AddSubSystem<ThumbnailCache>();
+
 		auto &window_system = AddSubSystem<WindowSubSystem>();
 		window_system.CreateWindow<LogPanel>();
 		mSceneHeirarchyPanel = window_system.CreateWindow<SceneHierarchyPanel>();

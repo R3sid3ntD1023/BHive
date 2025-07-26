@@ -16,19 +16,12 @@ namespace BHive
 			if (ImGui::BeginChild("##Texture", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeY))
 			{
 
-				if (ImGui::BeginChild("##Variables", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX))
-				{
-					TAssetEditor::OnWindowRender();
-				}
-
-				ImGui::EndChild();
-
-				ImGui::SameLine();
+				TAssetEditor::OnWindowRender();
 
 				if (texture)
 				{
-					auto max_size = ImGui::GetContentRegionAvail();
-					auto texture_size = max_size * ImVec2{1, 1.f / texture->GetAspectRatio()};
+					auto max_size = ImGui::GetContentRegionAvail().y;
+					auto texture_size = ImVec2{max_size, max_size / texture->GetAspectRatio()};
 					ImGui::Image((ImTextureID)(uint64_t)(uint32_t)*texture, texture_size, {min.x, max.y}, {max.x, min.y});
 				}
 			}

@@ -11,7 +11,7 @@ namespace BHive
 	private:
 		/* data */
 	public:
-		ThumbnailCache() = default;
+		ThumbnailCache();
 
 		Ref<Texture2D> Get(const std::filesystem::path &path);
 
