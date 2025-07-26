@@ -210,8 +210,10 @@ namespace BHive
 	}
 
 	template <typename T>
-	void EditorContentBrowser<T>::OnWindowContextMenu()
+	void EditorContentBrowser<T>::OnCreateAssetMenu()
 	{
+		ContentBrowserPanel::OnCreateAssetMenu();
+
 		auto &registry = FactoryRegistry::Get();
 		auto &factories = registry.GetRegisteredFactories();
 

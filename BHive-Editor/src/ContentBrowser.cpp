@@ -4,27 +4,21 @@
 #include "gfx/textures/Texture2D.h"
 
 #define DRAG_DROP_SOURCE_TYPE "CONTENT_BROWSER_ITEM"
+#define CREATE_ASSET_MENU_NAME "CREATE_ASSET_MENU"
+#define CONTENT_BROWSER_SETTINGS_NAME "CONTENT_BROWSER_SETTINGS"
 
 namespace BHive
 {
+
 	struct FileEntry
 	{
 		int mID;
 		std::filesystem::directory_entry mEntry;
 	};
 
-	enum EContentBrowserAction : uint8_t
-	{
-		Action_None,
-		Action_Delete,
-		Action_Deselect,
-		Action_Move
-	};
-
 	using SelectedItems = std::unordered_map<int, FileEntry>;
 	static SelectedItems sSelectedItems;
 	static int sActiveItem = -1;
-	static EContentBrowserAction sCurrentAction = Action_None;
 	static ImVec2 mStartDragPos{};
 
 	ContentBrowserPanel::ContentBrowserPanel(const std::filesystem::path &directory)
@@ -32,6 +26,26 @@ namespace BHive
 		  mBaseDirectory(directory),
 		  mCurrentDirectory(directory)
 	{
+		if (!mDeselectFunc)
+		{
+			mDeselectFunc = []()
+			{
+				sActiveItem = -1;
+				sSelectedItems.clear();
+			};
+		}
+
+		if (!mDeleteFunc)
+		{
+			mDeleteFunc = [=]()
+			{
+				for (auto &[id, item] : sSelectedItems)
+				{
+					DeleteFolder(item.mEntry);
+				}
+			};
+		}
+
 		if (!std::filesystem::exists(directory))
 		{
 			std::error_code error;
@@ -49,20 +63,45 @@ namespace BHive
 
 	void ContentBrowserPanel::OnGuiRender()
 	{
+
 		static bool open_settings = false;
 
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::Button("Settings"))
 			{
-				open_settings = true;
+				ImGui::OpenPopup(CONTENT_BROWSER_SETTINGS_NAME);
 			}
+
+			if (ImGui::BeginPopup(CONTENT_BROWSER_SETTINGS_NAME))
+			{
+				ImGui::SliderFloat("Padding", &mPadding, 1.f, 16.0f, "%.2f");
+				ImGui::SliderFloat("ThumbnailSize", &mThumbnailSize, 32.0f, 128.0f, "%.2f");
+				ImGui::EndPopup();
+			}
+
+			ImGui::PushStyleColor(ImGuiCol_Button, 0xff4cb024);
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0xff67da38);
 
 			if (ImGui::Button("Import"))
 			{
 				auto path_str = FileDialogs::OpenFile("All (*.*)\0*.*\0 Mesh (*.glb;*.gltf)\0*.glb;*.gltf\0");
 				if (!path_str.empty())
 					OnImportAsset(mCurrentDirectory, path_str);
+			}
+
+			if (ImGui::Button("Create New +"))
+			{
+				ImGui::OpenPopup(CREATE_ASSET_MENU_NAME);
+			}
+
+			ImGui::PopStyleColor(2);
+
+			if (ImGui::BeginPopup(CREATE_ASSET_MENU_NAME))
+			{
+				OnCreateAssetMenu();
+
+				ImGui::EndPopup();
 			}
 
 			if (mCurrentDirectory != mBaseDirectory)
@@ -104,19 +143,15 @@ namespace BHive
 			mStartDragPos = {0, 0};
 		}
 
-		if (clicked)
-		{
-			sCurrentAction = Action_Deselect;
-		}
 		if (focused)
 		{
 			if (ImGui::IsKeyPressed(ImGuiKey_Delete))
 			{
-				sCurrentAction = Action_Delete;
+				sContentBrowerAction = mDeleteFunc;
 			}
 			else if (ImGui::IsKeyPressed(ImGuiKey_Escape))
 			{
-				sCurrentAction = Action_Deselect;
+				sContentBrowerAction = mDeleteFunc;
 			}
 		}
 
@@ -124,52 +159,17 @@ namespace BHive
 
 		if (ImGui::BeginPopupContextWindow("Context", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
 		{
-			if (ImGui::Selectable("Create Folder"))
-			{
-				std::error_code error;
-				std::filesystem::create_directory(mCurrentDirectory / "NewFolder", error);
-				if (error)
-				{
-					LOG_ERROR("{}", error.message());
-				}
-			}
-
-			OnWindowContextMenu();
+			OnCreateAssetMenu();
 
 			ImGui::EndPopup();
 		}
 
 		ImGui::EndChild();
 
-		if (open_settings)
+		if (sContentBrowerAction)
 		{
-			if (ImGui::Begin("ContentBrowserSettings", &open_settings))
-			{
-				ImGui::SliderFloat("Padding", &mPadding, 1.f, 16.0f, "%.2f");
-				ImGui::SliderFloat("ThumbnailSize", &mThumbnailSize, 32.0f, 128.0f, "%.2f");
-				ImGui::End();
-			}
-		}
-
-		// actions
-		while (sCurrentAction != Action_None)
-		{
-			if (sCurrentAction == Action_Delete)
-			{
-				for (auto &[id, item] : sSelectedItems)
-				{
-					DeleteFolder(item.mEntry);
-				}
-
-				sCurrentAction = Action_Deselect;
-			}
-
-			if (sCurrentAction == Action_Deselect)
-			{
-				sActiveItem = -1;
-				sSelectedItems.clear();
-				sCurrentAction = Action_None;
-			}
+			sContentBrowerAction();
+			sContentBrowerAction = nullptr;
 		}
 	}
 
@@ -340,8 +340,7 @@ namespace BHive
 										OnRenameAsset(item.second.mEntry.path(), entry.path(), false);
 									}
 
-									sActiveItem = -1;
-									sSelectedItems.clear();
+									mDeselectFunc();
 								}
 							}
 
@@ -375,11 +374,10 @@ namespace BHive
 
 					if (ImGui::BeginPopupContextItem())
 					{
-
 						if (ImGui::MenuItem("Delete"))
 						{
 							sSelectedItems.emplace(index, ms_item);
-							sCurrentAction == Action_Delete;
+							sContentBrowerAction = mDeleteFunc;
 						}
 
 						if (!is_directory)
@@ -456,7 +454,19 @@ namespace BHive
 	void ContentBrowserPanel::SetCurrentDirectory(const std::filesystem::path &path)
 	{
 		mCurrentDirectory = path;
-		sActiveItem = -1;
-		sSelectedItems.clear();
+		mDeselectFunc();
+	}
+
+	void ContentBrowserPanel::OnCreateAssetMenu()
+	{
+		if (ImGui::Selectable("Create Folder"))
+		{
+			std::error_code error;
+			std::filesystem::create_directory(mCurrentDirectory / "NewFolder", error);
+			if (error)
+			{
+				LOG_ERROR("{}", error.message());
+			}
+		}
 	}
 } // namespace BHive

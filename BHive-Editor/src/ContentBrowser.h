@@ -24,6 +24,8 @@ namespace BHive
 
 	class ContentBrowserPanel : public WindowBase
 	{
+		using ContentBrowserActionFunc = std::function<void()>;
+
 	public:
 		ContentBrowserPanel() = default;
 		ContentBrowserPanel(const std::filesystem::path &directory);
@@ -47,7 +49,7 @@ namespace BHive
 		virtual bool GetDragDropData(UUID &data, const std::filesystem::path &relative) { return false; };
 
 	protected:
-		virtual void OnWindowContextMenu() {};
+		virtual void OnCreateAssetMenu();
 		virtual const char *GetName() const { return "Content Browser"; }
 
 	private:
@@ -64,5 +66,10 @@ namespace BHive
 		float mPadding = 16.f, mThumbnailSize = 90.f;
 		bool mIsMouseDragging = false, mDragStarting = false;
 		FContentBrowserStyle mStyle{};
+
+		// content browser actions
+		ContentBrowserActionFunc sContentBrowerAction;
+		ContentBrowserActionFunc mDeselectFunc;
+		ContentBrowserActionFunc mDeleteFunc;
 	};
 } // namespace BHive
