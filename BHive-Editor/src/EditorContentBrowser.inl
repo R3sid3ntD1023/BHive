@@ -24,6 +24,7 @@ namespace BHive
 			mAssetIcons["SkeletalAnimation"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/animation.png");
 			mAssetIcons["Texture2D"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/texture_2d.png");
 			mAssetIcons["World"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/world.png");
+			mAssetIcons["AnimGraph"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/graph.png");
 		}
 
 		const Ref<Texture2D> &Get(const std::string &type_name) { return mAssetIcons[type_name]; }

@@ -2,7 +2,6 @@
 
 #include "core/Core.h"
 #include "core/UUID.h"
-#include "core/reflection/Reflection.h"
 
 namespace BHive
 {
