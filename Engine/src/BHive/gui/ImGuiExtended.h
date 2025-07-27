@@ -117,7 +117,7 @@ namespace ImGui
 	{                                                          \
 		auto drawlist = ImGui::GetWindowDrawList();            \
 		auto rect = ImGui::GetItemRect();                      \
-		drawlist->AddRect(rect.Min, rect.Max, color, 0, 0, 5); \
+		drawlist->AddRect(rect.Min, rect.Max, color, 0, 0, 1); \
 	}
 
 #define DEBUG_DRAW_WINDOW_RECT(color)                                                              \
