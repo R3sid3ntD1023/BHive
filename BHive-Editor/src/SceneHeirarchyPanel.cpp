@@ -4,6 +4,7 @@
 #include "subsystems/SelectionSubSystem.h"
 #include "world/GameObject.h"
 #include "world/World.h"
+#include "inspectors/Inspect.h"
 
 namespace BHive
 {
@@ -18,19 +19,25 @@ namespace BHive
 	{
 		auto &selection = GetSubSystem<SelectionSubSystem>();
 
-		if (mWorld)
-		{
-			auto &objs = mWorld->GetGameObjects();
-			for (auto &[id, obj] : objs)
-			{
-				if (obj->GetParent())
-					continue;
+		if (ImGui::BeginChild("##GameObjects", {}, ImGuiChildFlags_ResizeY))
 
-				DrawNode(obj.get());
+		{
+			if (mWorld)
+			{
+				auto &objs = mWorld->GetGameObjects();
+				for (auto &[id, obj] : objs)
+				{
+					if (obj->GetParent())
+						continue;
+
+					DrawNode(obj.get());
+				}
 			}
 		}
 
-		if (ImGui::BeginPopupContextWindow(
+		ImGui::EndChild();
+
+		if (ImGui::BeginPopupContextItem(
 				"SceneHierarchyPanel", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonDefault_))
 		{
 
@@ -54,8 +61,6 @@ namespace BHive
 			ImGui::EndPopup();
 		}
 
-		ImGui::Dummy(ImGui::GetContentRegionAvail());
-
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_GAMEOBJECT))
@@ -67,10 +72,25 @@ namespace BHive
 			ImGui::EndDragDropTarget();
 		}
 
-		if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
+		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && ImGui::IsMouseClicked(ImGuiMouseButton_Left) &&
+			!ImGui::IsAnyItemHovered())
 		{
 			selection.Clear();
 		}
+
+		ImGui::SeparatorText("Properties");
+
+		if (ImGui::BeginChild("##Properties"))
+		{
+			auto gameobject = selection.GetSelection();
+			rttr::variant object_var = gameobject;
+			if (Inspect::inspect({}, object_var))
+			{
+				gameobject = object_var.get_value<GameObject *>();
+			}
+		}
+
+		ImGui::EndChild();
 	}
 
 	void SceneHierarchyPanel::SetContext(const Ref<World> &world)

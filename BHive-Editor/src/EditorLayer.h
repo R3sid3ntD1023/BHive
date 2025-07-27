@@ -7,7 +7,6 @@
 #include "core/Layer.h"
 #include "EditorContentBrowser.h"
 #include "gfx/cameras/EditorCamera.h"
-#include "PropertiesPanel.h"
 #include "rttr/library.h"
 #include "SceneHeirarchyPanel.h"
 #include "world/World.h"
@@ -25,7 +24,6 @@ namespace BHive
 		Ref<World> mActiveWorld;
 
 		Ref<SceneHierarchyPanel> mSceneHeirarchyPanel;
-		Ref<PropertiesPanel> mPropertiesPanel;
 		Ref<EditorContentBrowser<EditorAssetManager>> mContentBrowser;
 		EditorCamera mEditorCamera;
 

@@ -83,7 +83,6 @@ namespace BHive
 		auto &window_system = AddSubSystem<WindowSubSystem>();
 		window_system.CreateWindow<LogPanel>();
 		mSceneHeirarchyPanel = window_system.CreateWindow<SceneHierarchyPanel>();
-		mPropertiesPanel = window_system.CreateWindow<PropertiesPanel>();
 
 		CreateWorld();
 
