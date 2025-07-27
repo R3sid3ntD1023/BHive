@@ -30,11 +30,9 @@ namespace BHive
 
 	void PropertyLayout::PushLayout()
 	{
-		float size = mWidth != 0.f ? mWidth : ImGui::GetContentRegionAvail().x;
-
 		if (mColumns)
 		{
-			ImGui::BeginTable((mName + "Property").c_str(), 2, 0, {size, 0.f});
+			ImGui::BeginTable((mName + "Property").c_str(), 2, 0, {mWidth, 0.f});
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
 
