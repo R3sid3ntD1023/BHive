@@ -15,7 +15,6 @@
 #include "LogPanel.h"
 #include "renderers/Renderer.h"
 #include "renderers/SceneRenderer.h"
-#include "subsystems/EditorSubSystem.h"
 #include "subsystems/SelectionSubSystem.h"
 #include "subsystems/WindowSubSystem.h"
 #include "world/GameObject.h"
@@ -77,7 +76,6 @@ namespace BHive
 		mEditorCamera = EditorCamera(75.f, aspect, .01f, 1000.f);
 
 		AddSubSystem<SelectionSubSystem>();
-		AddSubSystem<EditorSubSystem>();
 		AddSubSystem<ThumbnailCache>();
 
 		auto &window_system = AddSubSystem<WindowSubSystem>();
@@ -140,7 +138,7 @@ namespace BHive
 
 	void EditorLayer::OnGuiRender()
 	{
-		static bool viewport_status = true;
+
 		static bool scene_heirarchy_status = true;
 		static bool properties_status = true;
 		static bool content_browser_status = true;
@@ -170,18 +168,11 @@ namespace BHive
 				}
 				ImGui::EndMenu();
 			}
+
 			ImGui::EndMainMenuBar();
 		}
 
-		ViewportGUI();
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-		if (ImGui::Begin("Viewport", &viewport_status))
-		{
-
-			Viewport();
-		}
-		ImGui::End();
+		Viewport();
 
 		if (ImGui::Begin("Settings"))
 		{
@@ -190,8 +181,6 @@ namespace BHive
 		}
 
 		ImGui::End();
-
-		ImGui::PopStyleVar();
 
 		if (ImGui::Begin("Assets"))
 		{
@@ -309,122 +298,130 @@ namespace BHive
 
 	void EditorLayer::Viewport()
 	{
-		if (ImGui::BeginChild("Viewport##Image"))
+		static bool viewport_status = true;
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+
+		if (ImGui::Begin("Viewport", &viewport_status))
 		{
-			auto size = ImGui::GetContentRegionAvail();
-			auto viewport_min_region = ImGui::GetWindowContentRegionMin();
-			auto viewport_max_region = ImGui::GetWindowContentRegionMax();
-			auto viewport_offset = ImGui::GetWindowPos();
-			mViewportHovered = ImGui::IsWindowHovered();
-			mViewportFocused = ImGui::IsWindowFocused();
-			Application::Get().GetImGuiLayer().BlockEvents(!(mViewportHovered && mViewportFocused));
 
-			mViewportSize = {size.x, size.y};
-			mViewportBounds[0] = {viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y};
-			mViewportBounds[1] = {viewport_max_region.x + viewport_offset.x, viewport_max_region.y + viewport_offset.y};
+			bool shown = ImGui::BeginChild("Viewport##Image", {}, 0, ImGuiWindowFlags_MenuBar);
 
-			glm::mat4 view = mEditorCamera.GetView().inverse();
-			const glm::mat4 projection = mEditorCamera.GetProjection();
-
-			auto color_attachment = mRenderer->GetColorAttachment();
-			ImGui::Image((ImTextureID)(uint64_t)*color_attachment, size, {0, 1}, {1, 0});
-
-			auto &selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>();
-			auto selected_object = selection.GetSelection();
-
-			ImGuizmo::SetOrthographic(false);
-			ImGuizmo::SetDrawlist();
-			ImGuizmo::SetRect(
-				mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x,
-				mViewportBounds[1].y - mViewportBounds[0].y);
-
-			if (selected_object && mGizmoOperation != -1 && !mActiveWorld->IsRunning())
+			if (shown)
 			{
+				// menu bar
+				ViewportGUI();
 
-				glm::mat4 local_transform = selected_object->GetLocalTransform().to_mat4();
-				glm::mat4 world_transform = selected_object->GetWorldTransform();
+				auto size = ImGui::GetContentRegionAvail();
+				auto viewport_min_region = ImGui::GetWindowContentRegionMin();
+				auto viewport_max_region = ImGui::GetWindowContentRegionMax();
+				auto viewport_offset = ImGui::GetWindowPos();
+				mViewportHovered = ImGui::IsWindowHovered();
+				mViewportFocused = ImGui::IsWindowFocused();
+				Application::Get().GetImGuiLayer().BlockEvents(!(mViewportHovered && mViewportFocused));
 
-				float snap_value = mSnappingEnabled ? sSnapValues[(ImGuizmo::OPERATION)mGizmoOperation] : 0.0f;
-				float snap_values[3] = {snap_value, snap_value, snap_value};
+				mViewportSize = {size.x, size.y};
+				mViewportBounds[0] = {viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y};
+				mViewportBounds[1] = {viewport_max_region.x + viewport_offset.x, viewport_max_region.y + viewport_offset.y};
 
-				glm::mat4 delta{1.f};
+				glm::mat4 view = mEditorCamera.GetView().inverse();
+				const glm::mat4 projection = mEditorCamera.GetProjection();
 
-				ImGuizmo::Manipulate(
-					&view[0][0], &projection[0][0], (ImGuizmo::OPERATION)mGizmoOperation, (ImGuizmo::MODE)mGizmoMode,
-					&local_transform[0][0], &delta[0][0], snap_values);
+				auto color_attachment = mRenderer->GetColorAttachment();
+				ImGui::Image((ImTextureID)(uint64_t)*color_attachment, size, {0, 1}, {1, 0});
 
-				if (ImGuizmo::IsUsing())
+				auto &selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>();
+				auto selected_object = selection.GetSelection();
+
+				ImGuizmo::SetOrthographic(false);
+				ImGuizmo::SetDrawlist();
+				ImGuizmo::SetRect(
+					mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x,
+					mViewportBounds[1].y - mViewportBounds[0].y);
+
+				if (selected_object && mGizmoOperation != -1 && !mActiveWorld->IsRunning())
 				{
-					glm::mat4 parent_transform = glm::inverse(world_transform) * local_transform * delta;
-					glm::mat4 new_transform = glm::inverse(parent_transform) * world_transform;
 
-					selected_object->SetLocalTransform(local_transform);
+					glm::mat4 local_transform = selected_object->GetLocalTransform().to_mat4();
+					glm::mat4 world_transform = selected_object->GetWorldTransform();
+
+					float snap_value = mSnappingEnabled ? sSnapValues[(ImGuizmo::OPERATION)mGizmoOperation] : 0.0f;
+					float snap_values[3] = {snap_value, snap_value, snap_value};
+
+					glm::mat4 delta{1.f};
+
+					ImGuizmo::Manipulate(
+						&view[0][0], &projection[0][0], (ImGuizmo::OPERATION)mGizmoOperation, (ImGuizmo::MODE)mGizmoMode,
+						&local_transform[0][0], &delta[0][0], snap_values);
+
+					if (ImGuizmo::IsUsing())
+					{
+						glm::mat4 parent_transform = glm::inverse(world_transform) * local_transform * delta;
+						glm::mat4 new_transform = glm::inverse(parent_transform) * world_transform;
+
+						selected_object->SetLocalTransform(local_transform);
+					}
 				}
+
+				auto view_size = 100.0f;
+				auto view_position = ImVec2(mViewportBounds[1].x - view_size, mViewportBounds[0].y);
+				ImGuizmo::ViewManipulate(
+					&view[0][0], mEditorCamera.Distance(), view_position, {view_size, view_size}, 0x00000000);
+
+				if (ImGuizmo::IsUsingViewManipulate())
+				{
+					mEditorCamera.SetView(glm::inverse(view));
+				}
+
+				ImGui::EndChild();
 			}
-
-			auto view_size = 100.0f;
-			auto view_position = ImVec2(mViewportBounds[1].x - view_size, mViewportBounds[0].y);
-			ImGuizmo::ViewManipulate(
-				&view[0][0], mEditorCamera.Distance(), view_position, {view_size, view_size}, 0x00000000);
-
-			if (ImGuizmo::IsUsingViewManipulate())
-			{
-				mEditorCamera.SetView(glm::inverse(view));
-			}
-
-			ImGui::EndChild();
 		}
+
+		ImGui::End();
+		ImGui::PopStyleVar();
 	}
 
 	void EditorLayer::ViewportGUI()
 	{
-		auto &editor_subsystem = GetSubSystem<EditorSubSystem>();
-		auto line_height = ImGui::GetLineHeight();
-		const auto height = mMenuBarHeight * 2.f * .8f;
-		const auto icon_size = height;
+		auto &thumbnail_cache = GetSubSystem<ThumbnailCache>();
+
+		// icons
+		auto play_icon = thumbnail_cache.Get("PlayIcon");
+		auto stop_icon = thumbnail_cache.Get("StopIcon");
+		auto pause = thumbnail_cache.Get("PauseIcon");
+		auto step = thumbnail_cache.Get("StepIcon");
+
+		const bool running = mActiveWorld->IsRunning();
+		const bool paused = mActiveWorld->IsPaused();
+		auto icon = running ? stop_icon : play_icon;
+		auto pause_icon = !paused ? pause : play_icon;
+		const auto icon_size = ImGui::GetLineHeight() * .75f;
+		auto spacing = ImGui::GetStyle().ItemSpacing.x;
 		const int num_buttons = 3;
 
 		bool opened = ImGui::BeginMenuBar();
 
 		if (opened)
 		{
-			if (ImGui::Button("Gizmo Mode"))
+			auto width = ImGui::GetContentRegionAvail().x;
+
+			if (ImGui::Button("Add New"))
 			{
-				ImGui::OpenPopup("GizmoModes");
+				ImGui::OpenPopup("ADD_NEW_GAMEOBJECT_MENU");
 			}
 
-			if (ImGui::BeginPopup("GizmoModes"))
+			if (ImGui::BeginPopup("ADD_NEW_GAMEOBJECT_MENU"))
 			{
-				if (ImGui::RadioButton("Local", mGizmoMode == ImGuizmo::LOCAL))
-				{
-					mGizmoMode = ImGuizmo::LOCAL;
-				}
-
-				if (ImGui::RadioButton("World", mGizmoMode == ImGuizmo::WORLD))
-				{
-					mGizmoMode = ImGuizmo::WORLD;
-				}
-
 				ImGui::EndPopup();
 			}
 
-			auto size = ImGui::GetContentRegionAvail();
-			auto spacing = ImGui::GetStyle().ItemSpacing.x;
+			ImGui::RadioButton("Local", &mGizmoMode, ImGuizmo::LOCAL);
+			ImGui::RadioButton("World", &mGizmoMode, ImGuizmo::WORLD);
 
-			const bool running = mActiveWorld->IsRunning();
-			const bool paused = mActiveWorld->IsPaused();
-
-			auto play_icon = editor_subsystem.GetIcon(EDITOR_RESOURCE_PATH "icons/PlayButton.png");
-			auto stop_icon = editor_subsystem.GetIcon(EDITOR_RESOURCE_PATH "icons/StopButton.png");
-
-			auto icon = running ? stop_icon : play_icon;
-
-			ImGui::SetCursorPosX((size.x * .5f) - ((num_buttons * icon_size * .5f * spacing) * .5f));
+			ImGui::SetCursorPosX((width * .5f) - (3 * icon_size + spacing * 3.f));
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {icon_size * .5f, icon_size * .5f});
 
-			if (ImGui::ImageButton(
-					"Viewport##PlayIcon", (ImTextureID)(uint64_t)*icon, {icon_size, icon_size}, {0, 1}, {1, 0}))
+			if (ImGui::ImageButton("Viewport##PlayIcon", (ImTextureID)(uint64_t)*icon, {icon_size}, {0, 1}, {1, 0}))
 			{
 				SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().Clear();
 				if (running)
@@ -444,28 +441,21 @@ namespace BHive
 
 			ImGui::SameLine();
 
-			auto pause = editor_subsystem.GetIcon(EDITOR_RESOURCE_PATH "icons/PauseButton.png");
-			auto step = editor_subsystem.GetIcon(EDITOR_RESOURCE_PATH "icons/StepButton.png");
-
-			auto pause_icon = !paused ? pause : play_icon;
-
 			ImGui::BeginDisabled(!running);
-			if (ImGui::ImageButton(
-					"Viewport##PauseIcon", (ImTextureID)(uint64_t)*pause_icon, {icon_size, icon_size}, {0, 1}, {1, 0}))
+			if (ImGui::ImageButton("Viewport##PauseIcon", (ImTextureID)(uint64_t)*pause_icon, {icon_size}, {0, 1}, {1, 0}))
 			{
 				mActiveWorld->SetPaused(!paused);
 			}
 
 			ImGui::SameLine();
 
-			if (ImGui::ImageButton(
-					"Viewport##StepIcon", (ImTextureID)(uint64_t)*step, {icon_size, icon_size}, {0, 1}, {1, 0}))
+			if (ImGui::ImageButton("Viewport##StepIcon", (ImTextureID)(uint64_t)*step, {icon_size}, {0, 1}, {1, 0}))
 			{
 				mActiveWorld->Step();
 			}
 
 			ImGui::EndDisabled();
-			ImGui::PopStyleVar(2);
+			ImGui::PopStyleVar();
 		}
 
 		ImGui::EndMenuBar();

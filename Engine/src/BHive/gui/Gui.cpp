@@ -3,7 +3,7 @@
 
 namespace BHive
 {
-	void GUI::BeginDockSpace(const char *strid, bool *opened, float title_height)
+	void GUI::BeginDockSpace(const char *strid, bool *opened)
 	{
 		sDockSpaceID = strid;
 
@@ -13,7 +13,7 @@ namespace BHive
 
 		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
 		// because it would be confusing to have two docking targets within each others.
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_MenuBar;
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
 		if (opt_fullscreen)
 		{
 			const ImGuiViewport *viewport = ImGui::GetMainViewport();
@@ -44,14 +44,7 @@ namespace BHive
 		if (!opt_padding)
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-		bool custom_title_height = title_height != 0.0f;
-		if (custom_title_height)
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {0, title_height});
-
 		ImGui::Begin(strid, opened, window_flags);
-
-		if (custom_title_height)
-			ImGui::PopStyleVar();
 
 		if (!opt_padding)
 			ImGui::PopStyleVar();

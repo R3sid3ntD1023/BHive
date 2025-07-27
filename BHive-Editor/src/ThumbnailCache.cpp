@@ -9,6 +9,10 @@ namespace BHive
 	{
 		mCache["DirectoryIcon"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/DirectoryIcon.png");
 		mCache["FileIcon"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/FileIcon.png");
+		mCache["PlayIcon"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/PlayButton.png");
+		mCache["PauseIcon"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/PauseButton.png");
+		mCache["StepIcon"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/StepButton.png");
+		mCache["StopIcon"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/StopButton.png");
 	}
 
 	Ref<Texture2D> ThumbnailCache::Get(const std::filesystem::path &path)

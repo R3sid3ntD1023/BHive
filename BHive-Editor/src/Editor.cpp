@@ -23,7 +23,7 @@ namespace BHive
 		{
 			Application::OnBeginGUIRender();
 
-			GUI::BeginDockSpace("DockSpace", nullptr, 10.f);
+			GUI::BeginDockSpace("DockSpace", nullptr);
 		}
 
 		void OnEndGUIRender() override

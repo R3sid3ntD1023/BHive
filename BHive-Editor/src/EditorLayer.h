@@ -36,7 +36,6 @@ namespace BHive
 		int32_t mGizmoOperation = 0;
 		int32_t mGizmoMode = 0;
 		bool mSnappingEnabled{false};
-		float mMenuBarHeight = 10.f;
 
 		std::unordered_map<FCommand, std::function<void()>> mCommands;
 
