@@ -49,4 +49,13 @@ namespace BHive
 		mCommands[mCurrentCommandIndex - 1].CommandPtr->OnRedo();
 	}
 
+	void UndoRedo::clear()
+	{
+		delete[] mCommands;
+
+		mCommands = new FCommand[mMaxHistorySize + 1];
+		mCurrentCommandIndex = 0;
+		mCommandCount = 0;
+	}
+
 } // namespace BHive

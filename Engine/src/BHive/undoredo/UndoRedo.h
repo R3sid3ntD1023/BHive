@@ -24,6 +24,8 @@ namespace BHive
 
 		void redo();
 
+		void clear();
+
 		uint16_t get_max_size() const { return mMaxHistorySize; }
 
 		uint16_t get_command_count() const { return mCommandCount; }

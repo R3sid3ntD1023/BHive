@@ -7,7 +7,7 @@ namespace BHive
 {
 	void HistoryWindow::OnGuiRender()
 	{
-		const auto &undo_system = GetSubSystem<UndoRedo>();
+		auto &undo_system = GetSubSystem<UndoRedo>();
 		const auto &count = undo_system.get_command_count();
 		const auto &index = undo_system.get_current_command_index();
 
@@ -15,7 +15,18 @@ namespace BHive
 		{
 			const auto &command = undo_system.get_command_at(i);
 
+			ImGui::PushID(&command);
 			ImGui::Selectable(command.Name.c_str(), index == i);
+			ImGui::PopID();
+		}
+
+		if (ImGui::BeginPopupContextWindow())
+		{
+			if (ImGui::MenuItem("Clear"))
+			{
+				undo_system.clear();
+			}
+			ImGui::EndPopup();
 		}
 	}
 } // namespace BHive
