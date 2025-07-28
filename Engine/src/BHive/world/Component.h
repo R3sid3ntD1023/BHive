@@ -1,8 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
-#include "core/reflection/Reflection.h"
-#include "core/serialization/Serialization.h"
+#include "world/ITickable.h"
 #include "core/math/Transform.h"
 
 namespace BHive
@@ -13,14 +12,12 @@ namespace BHive
 	{
 
 		virtual void Begin() {};
-		virtual void Update(float) {};
+
 		virtual void Render() {}
 		virtual void End() {};
 
-		void SetTickEnabled(bool enabled);
 		void SetOwner(GameObject *owner);
 
-		bool IsTickEnabled() const { return mTickEnabled; }
 		GameObject *GetOwner() const { return mOwningObject; }
 		FTransform GetWorldTransform() const;
 
@@ -34,13 +31,13 @@ namespace BHive
 
 	private:
 		GameObject *mOwningObject = nullptr;
-		bool mTickEnabled = true;
+
 		friend struct GameObject;
 	};
 
 	REFLECT(Component)
 	{
-		BEGIN_REFLECT(Component) REFLECT_PROPERTY("TickEnabled", mTickEnabled);
+		BEGIN_REFLECT(Component);
 	}
 
 } // namespace BHive

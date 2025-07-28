@@ -18,10 +18,6 @@ namespace BHive
 		CreateCollsionShape(rb, object->GetLocalTransform());
 	}
 
-	void ColliderComponent::Update(float)
-	{
-	}
-
 	void ColliderComponent::End()
 	{
 		auto object = GetOwner();

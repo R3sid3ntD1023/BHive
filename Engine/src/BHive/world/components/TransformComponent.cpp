@@ -3,11 +3,6 @@
 
 namespace BHive
 {
-	TransformComponent::TransformComponent()
-	{
-		SetTickEnabled(false);
-	}
-
 	void TransformComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ar(Transform);

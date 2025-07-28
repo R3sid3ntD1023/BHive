@@ -3,11 +3,6 @@
 
 namespace BHive
 {
-	TagComponent::TagComponent()
-	{
-		SetTickEnabled(false);
-	}
-
 	void TagComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ar(mID, Name, Group);

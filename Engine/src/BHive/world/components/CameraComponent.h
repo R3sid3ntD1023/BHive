@@ -6,7 +6,7 @@
 namespace BHive
 {
 	DECLARE_CLASS(BHive::ClassMetaData_ComponentSpawnable)
-	struct CameraComponent : public Component
+	struct CameraComponent : public Component, public ITickable
 	{
 		DECLARE_CONSTRUCTOR()
 		CameraComponent() = default;
@@ -24,7 +24,7 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLE_CLASS(Component)
+		REFLECTABLE_CLASS(Component, ITickable)
 	};
 
 	REFLECT_EXTERN(CameraComponent)

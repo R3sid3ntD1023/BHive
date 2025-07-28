@@ -3,7 +3,6 @@
 #include "core/Core.h"
 #include "components/PhysicsComponent.h"
 #include "core/EventDelegate.h"
-#include "core/serialization/Serialization.h"
 #include "core/UUID.h"
 #include "core/math/Transform.h"
 #include "World.h"
@@ -15,8 +14,10 @@ namespace BHive
 
 	using ComponentList = std::vector<Component *>;
 
-	struct BHIVE_API GameObject
+	struct BHIVE_API GameObject : public ITickable
 	{
+		using TickableComponents = std::vector<ITickable *>;
+
 		GameObject(const entt::entity &handle, World *world);
 		GameObject(const GameObject &) = default;
 
@@ -109,7 +110,7 @@ namespace BHive
 
 		operator entt::entity() const { return mEntity; }
 
-		REFLECTABLEV()
+		REFLECTABLEV(ITickable)
 
 	private:
 		void AddComponent(Component *component);
@@ -118,9 +119,11 @@ namespace BHive
 	protected:
 		World *mWorld = nullptr;
 
+		entt::entity mEntity{entt::null};
+
 		ComponentList mComponents;
 
-		entt::entity mEntity{entt::null};
+		TickableComponents mTickableComponents;
 	};
 
 } // namespace BHive

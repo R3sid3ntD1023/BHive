@@ -6,7 +6,7 @@ namespace BHive
 {
 	struct TransformComponent : public Component
 	{
-		TransformComponent();
+		TransformComponent() = default;
 		TransformComponent(const TransformComponent &) = default;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const;

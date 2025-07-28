@@ -17,15 +17,23 @@ namespace BHive
 	void GameObject::Begin()
 	{
 		for (auto &component : mComponents)
+		{
+			if (auto tickable = Cast<ITickable>(component))
+				mTickableComponents.push_back(tickable);
+
 			component->Begin();
+		}
 	}
 
 	void GameObject::Update(float dt)
 	{
-		for (auto &component : mComponents)
+		if (!IsTickEnabled())
+			return;
+
+		for (auto &tickable : mTickableComponents)
 		{
-			if (component->IsTickEnabled())
-				component->Update(dt);
+			if (tickable->IsTickEnabled())
+				tickable->Update(dt);
 		}
 	}
 

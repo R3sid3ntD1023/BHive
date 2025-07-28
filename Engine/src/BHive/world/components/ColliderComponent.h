@@ -46,7 +46,6 @@ namespace BHive
 		OnHitEvent OnRaycastHit;
 
 		void Begin() override;
-		void Update(float) override;
 		void End() override;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;

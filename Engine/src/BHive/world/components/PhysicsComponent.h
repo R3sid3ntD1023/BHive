@@ -4,7 +4,7 @@
 #include "core/EnumAsByte.h"
 #include "physics/LockAxis.h"
 #include "world/Component.h"
-#include <glm/glm.hpp>
+#include "core/math/Math.h"
 
 namespace BHive
 {
@@ -42,7 +42,7 @@ namespace BHive
 		}
 	};
 
-	struct PhysicsComponent : public Component
+	struct PhysicsComponent : public Component, public ITickable
 	{
 		PhysicsComponent() = default;
 		PhysicsComponent(const PhysicsComponent &) = default;
@@ -70,7 +70,7 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLEV(Component)
+		REFLECTABLEV(Component, ITickable)
 
 	private:
 		void *mRigidBodyInstance = nullptr;

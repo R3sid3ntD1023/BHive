@@ -7,10 +7,6 @@ namespace BHive
 	{
 		mOwningObject = owner;
 	}
-	void Component::SetTickEnabled(bool enabled)
-	{
-		mTickEnabled = enabled;
-	}
 
 	FTransform Component::GetWorldTransform() const
 	{
@@ -22,11 +18,9 @@ namespace BHive
 
 	void Component::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(mTickEnabled);
 	}
 
 	void Component::Load(cereal::BinaryInputArchive &ar)
 	{
-		ar(mTickEnabled);
 	}
 } // namespace BHive

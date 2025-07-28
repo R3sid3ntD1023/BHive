@@ -3,11 +3,6 @@
 
 namespace BHive
 {
-	RelationshipComponent::RelationshipComponent()
-	{
-		SetTickEnabled(false);
-	}
-
 	void RelationshipComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ar(Parent, Children);

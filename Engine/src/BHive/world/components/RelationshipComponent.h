@@ -11,7 +11,7 @@ namespace BHive
 
 	struct RelationshipComponent : public Component
 	{
-		RelationshipComponent();
+		RelationshipComponent() = default;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const;
 		virtual void Load(cereal::BinaryInputArchive &ar);

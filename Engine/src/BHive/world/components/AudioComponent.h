@@ -9,9 +9,7 @@ namespace BHive
 	struct AudioComponent : public Component
 	{
 	public:
-
 		void Begin() override;
-
 		void End() override;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const;
@@ -28,4 +26,4 @@ namespace BHive
 	};
 
 	REFLECT_EXTERN(AudioComponent)
-}
+} // namespace BHive

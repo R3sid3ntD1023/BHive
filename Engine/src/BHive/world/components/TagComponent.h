@@ -7,7 +7,7 @@ namespace BHive
 {
 	struct TagComponent : public Component
 	{
-		TagComponent();
+		TagComponent() = default;
 		TagComponent(const TagComponent &) = default;
 
 		std::string Name = "New Object";

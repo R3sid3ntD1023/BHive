@@ -6,7 +6,7 @@
 namespace BHive
 {
 
-	struct InputComponent : public Component
+	struct InputComponent : public Component, public ITickable
 	{
 
 		InputComponent() = default;
@@ -25,7 +25,7 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLE_CLASS(Component)
+		REFLECTABLE_CLASS(Component, ITickable)
 
 	private:
 		InputContext *mContextInstance = nullptr;

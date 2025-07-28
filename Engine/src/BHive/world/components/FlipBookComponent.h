@@ -6,7 +6,7 @@
 namespace BHive
 {
 
-	struct FlipBookComponent : public Component
+	struct FlipBookComponent : public Component, public ITickable
 	{
 		FlipBookComponent() = default;
 
@@ -30,7 +30,7 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLE_CLASS(Component)
+		REFLECTABLE_CLASS(Component, ITickable)
 
 	private:
 		FlipBook *Instance = nullptr;
