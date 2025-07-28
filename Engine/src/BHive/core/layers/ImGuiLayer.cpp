@@ -62,7 +62,7 @@ namespace BHive
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
-		float font_size = 18.f;
+		float font_size = 14.f;
 		io.Fonts->AddFontFromFileTTF(ENGINE_PATH "/data/fonts/Roboto/Roboto-Bold.ttf", font_size);
 		io.FontDefault = io.Fonts->AddFontFromFileTTF(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", font_size);
 
