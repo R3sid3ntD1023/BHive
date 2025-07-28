@@ -19,7 +19,7 @@ namespace BHive
 	{
 		auto &selection = GetSubSystem<SelectionSubSystem>();
 
-		if (ImGui::BeginChild("##GameObjects", {}, ImGuiChildFlags_ResizeY))
+		if (ImGui::BeginChild("##GameObjects", {}, ImGuiChildFlags_ResizeY | ImGuiChildFlags_AlwaysUseWindowPadding))
 
 		{
 			if (mWorld)
@@ -80,7 +80,7 @@ namespace BHive
 
 		ImGui::SeparatorText("Properties");
 
-		if (ImGui::BeginChild("##Properties"))
+		if (ImGui::BeginChild("##Properties", {}, ImGuiChildFlags_AlwaysUseWindowPadding))
 		{
 			auto gameobject = selection.GetSelection();
 			rttr::variant object_var = gameobject;
