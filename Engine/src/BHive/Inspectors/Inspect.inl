@@ -6,8 +6,7 @@ namespace BHive
 {
 	template <typename T>
 	inline bool Inspect::inspect(
-		const std::string &label, T &obj, bool skip_custom, bool read_only, float width,
-		const Inspector::meta_getter &get_meta_data)
+		const std::string &label, T &obj, bool skip_custom, bool read_only, float width, const MetaGetter &get_meta_data)
 	{
 		ScopedPropertyLayout layout(label, true, width);
 		rttr::variant var = obj;
@@ -22,8 +21,8 @@ namespace BHive
 	}
 
 	template <typename T>
-	inline bool Inspect::inspect(
-		const std::string &label, const T &obj, bool skip_custom, float width, const Inspector::meta_getter &get_meta_data)
+	inline bool
+	Inspect::inspect(const std::string &label, const T &obj, bool skip_custom, float width, const MetaGetter &get_meta_data)
 	{
 		ScopedPropertyLayout layout(label);
 		rttr::variant var = obj;

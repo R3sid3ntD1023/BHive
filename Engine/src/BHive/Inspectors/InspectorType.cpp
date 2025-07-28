@@ -4,10 +4,9 @@
 
 namespace BHive
 {
-	bool
-	Inspector_Type::Inspect(const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &metadata)
+	bool Inspector_Type::Inspect(FPropertyData &property_data, const bool is_read_only)
 	{
-		auto data = var.get_value<rttr::type>();
+		auto data = property_data.Value.get_value<rttr::type>();
 		auto name = data.get_name();
 
 		ImGui::TextUnformatted(name.data());

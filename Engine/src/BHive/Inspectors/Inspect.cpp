@@ -133,7 +133,7 @@ namespace BHive
 
 	bool Inspect::inspect(
 		const rttr::variant &instance, rttr::variant &var, bool skip_custom, bool read_only, float width,
-		const Inspector::meta_getter &get_meta_data)
+		const MetaGetter &get_meta_data, bool *finished_edit)
 	{
 		rttr::instance object = var;
 		auto type = GetInstanceType(object);
@@ -152,7 +152,11 @@ namespace BHive
 
 		if (!skip_custom && inspector)
 		{
-			changed |= inspector->Inspect(instance, var, read_only, get_meta_data);
+			FPropertyData data{.Owner = instance, .Value = var, .GetMetaData = get_meta_data};
+
+			changed |= inspector->Inspect(data, read_only);
+			if (finished_edit && changed)
+				*finished_edit |= ImGui::IsItemDeactivatedAfterEdit();
 		}
 		else
 		{
@@ -180,6 +184,7 @@ namespace BHive
 		bool is_enum = property.is_enumeration();
 		bool details = !has_inspector && !is_enum;
 		bool is_container = type.is_associative_container() || type.is_sequential_container();
+		bool finished_edit = false;
 
 		if (inspector)
 		{
@@ -198,7 +203,7 @@ namespace BHive
 
 			PropertyLayout layout(property);
 			auto meta_getter = [property](const rttr::variant &key) -> rttr::variant { return property.get_metadata(key); };
-			changed |= inspect(instance, prop_var, false, is_read_only, width, meta_getter);
+			changed |= inspect(instance, prop_var, false, is_read_only, width, meta_getter, &finished_edit);
 		}
 
 		if (details)
@@ -211,6 +216,11 @@ namespace BHive
 
 		if (changed && !is_read_only)
 		{
+			if (mPropertyChangedCallback && finished_edit)
+			{
+				mPropertyChangedCallback(object, property, prop_var);
+			}
+
 			property.set_value(object, prop_var);
 		}
 
@@ -220,5 +230,10 @@ namespace BHive
 		}
 
 		return changed;
+	}
+
+	void Inspect::set_property_changed_callback(const PropertyChangedCallback &callback)
+	{
+		mPropertyChangedCallback = callback;
 	}
 } // namespace BHive

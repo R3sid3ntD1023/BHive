@@ -2,28 +2,17 @@
 #include "core/UUID.h"
 #include "gui/ImGuiExtended.h"
 #include "gfx/Color.h"
+#include "Inspect.h"
 
 namespace BHive
 {
-	bool Inspector_UUID::Inspect(
-		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_UUID::Inspect(FPropertyData &property_data, const bool is_read_only)
 	{
-		auto data = var.get_value<UUID>();
+		auto data = property_data.Value.get_value<UUID>();
 
-		ImGui::Text("%s", ((std::string)data).c_str());
+		ImGui::TextWrapped("%s", ((std::string)data).c_str());
 
 		return false;
-	}
-
-	template <typename T>
-	bool OnInspectVectorComponent(T *component, const T &min, const T &max, const char *format)
-	{
-	}
-
-	template <>
-	bool OnInspectVectorComponent(float *component, const float &min, const float &max, const char *format)
-	{
-		return ImGui::DragFloat("", component, .01f, min, max, format);
 	}
 
 	template <glm::length_t L, typename T, glm::qualifier Q>
@@ -37,16 +26,15 @@ namespace BHive
 		bool changed = false;
 
 		float line_height = ImGui::GetLineHeight();
-		auto button_size = ImVec2(line_height + 3.f, line_height);
-
-		ImGui::PushMultiItemsWidths(L, ImGui::CalcItemWidth() - (button_size.x * 3.f));
+		auto width = ImGui::GetContentRegionAvail().x;
+		ImGui::PushMultiItemsWidths(L, width - (line_height * 3.0f));
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0, 0});
 
 		for (int i = 0; i < L; i++)
 		{
 			auto &component = vec[i];
 			ImGui::PushStyleColor(ImGuiCol_Button, component_colors[i]);
-			if (ImGui::Button(component_names[i], button_size))
+			if (ImGui::Button(component_names[i], {line_height}))
 			{
 				component = defaultvalue[i];
 				changed |= true;
@@ -55,7 +43,8 @@ namespace BHive
 			ImGui::SameLine();
 
 			ImGui::PushID(i);
-			changed |= OnInspectVectorComponent<T>(&component, min[i], max[i], format);
+			changed |= Inspect::inspect("", component);
+
 			ImGui::PopID();
 
 			ImGui::PopItemWidth();
@@ -70,22 +59,21 @@ namespace BHive
 	}
 
 	template <typename T>
-	bool Inspector_Vec<T>::Inspect(
-		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_Vec<T>::Inspect(FPropertyData &property_data, const bool is_read_only)
 	{
 		static T zero = T(0.0f);
-		auto data = var.get_value<T>();
+		auto data = property_data.Value.get_value<T>();
 
-		if (read_only)
+		if (is_read_only)
 		{
 			ImGui::TextUnformatted(glm::to_string(data).c_str());
 			return false;
 		}
 
-		auto default_value_var = get_meta_data(EPropertyMetaData_Default);
-		auto min_value_var = get_meta_data(EPropertyMetaData_Min);
-		auto max_value_var = get_meta_data(EPropertyMetaData_Max);
-		auto format_var = get_meta_data(EPropertyMetaData_CustomFormat);
+		auto default_value_var = property_data.GetMetaData(EPropertyMetaData_Default);
+		auto min_value_var = property_data.GetMetaData(EPropertyMetaData_Min);
+		auto max_value_var = property_data.GetMetaData(EPropertyMetaData_Max);
+		auto format_var = property_data.GetMetaData(EPropertyMetaData_CustomFormat);
 
 		auto default_value = default_value_var ? default_value_var.get_value<T>() : zero;
 		auto min_value = min_value_var ? min_value_var.get_value<T>() : zero;
@@ -94,31 +82,33 @@ namespace BHive
 
 		if (OnInspectVector(data, default_value, min_value, max_value, format.c_str()))
 		{
-			var = data;
+			property_data.Value = data;
 			return true;
 		}
 
 		return false;
 	}
 
-	bool Inspector_Color::Inspect(
-		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_Color::Inspect(FPropertyData &property_data, const bool is_read_only)
 	{
-		auto data = var.get_value<FColor>();
+		bool changed = false;
+		auto data = property_data.Value.get_value<FColor>();
 
-		if (read_only)
+		if (is_read_only)
 		{
 			ImGui::Text("%s", data.to_string().c_str());
 			return false;
 		}
 
-		auto hdr_var = get_meta_data(EPropertyMetaData_HDR);
+		auto hdr_var = property_data.GetMetaData(EPropertyMetaData_HDR);
 
 		auto flags = (hdr_var ? ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float : 0);
+		ImGui::ColorEdit4("", &data.r, flags);
+		changed |= ImGui::IsItemDeactivatedAfterEdit();
 
-		if (ImGui::ColorEdit4("", &data.r, flags))
+		if (changed)
 		{
-			var = data;
+			property_data.Value = data;
 			return true;
 		}
 

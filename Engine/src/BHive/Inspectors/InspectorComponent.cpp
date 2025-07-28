@@ -6,11 +6,10 @@
 
 namespace BHive
 {
-	bool InspectorComponent::Inspect(
-		const rttr::variant &instance, rttr::variant &var, bool read_only, const Inspector::meta_getter &get_meta_data)
+	bool InspectorComponent::Inspect(FPropertyData &property_data, const bool is_read_only)
 	{
 		bool changed = false, removed = false;
-		auto data = var.get_value<Component *>();
+		auto data = property_data.Value.get_value<Component *>();
 
 		int flags = ImGuiTreeNodeFlags_SpanAvailWidth;
 		auto type = data->get_type();
@@ -22,11 +21,11 @@ namespace BHive
 			auto properties = type.get_properties();
 			for (auto property : properties)
 			{
-				rttr::instance obj = var;
-				changed |= Inspect::inspect({}, obj, property, read_only);
+				rttr::instance obj = property_data.Value;
+				changed |= Inspect::inspect({}, obj, property, is_read_only);
 			}
 
-			if (type.get_metadata(ClassMetaData_ComponentSpawnable) && !read_only)
+			if (type.get_metadata(ClassMetaData_ComponentSpawnable) && !is_read_only)
 			{
 				auto size = ImGui::GetContentRegionAvail();
 				auto button_size = ImVec2{100, ImGui::GetLineHeight()};

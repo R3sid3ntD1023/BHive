@@ -20,11 +20,10 @@ namespace BHive
 		return mEnumNameCache[enum_id];
 	}
 
-	bool Inspector_Enum::Inspect(
-		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_Enum::Inspect(FPropertyData &property_data, const bool is_read_only)
 	{
-		auto type = var.get_type();
-		auto data = var.to_int();
+		auto type = property_data.Value.get_type();
+		auto data = property_data.Value.to_int();
 		auto enumeration = type.get_enumeration();
 		auto &enumeration_names = GetEnumNameValues(enumeration);
 
@@ -35,7 +34,7 @@ namespace BHive
 		if (display_name.empty())
 			display_name = "None";
 
-		if (read_only)
+		if (is_read_only)
 		{
 			ImGui::Text("%s", display_name.c_str());
 			return false;
@@ -61,23 +60,22 @@ namespace BHive
 		{
 			rttr::variant arg(data);
 			arg.convert(enumeration.get_underlying_type());
-			arg.convert(var.get_type());
-			var = arg;
+			arg.convert(property_data.Value.get_type());
+			property_data.Value = arg;
 		}
 
 		return changed;
 	}
 
-	bool Inspector_EnumAsByte::Inspect(
-		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_EnumAsByte::Inspect(FPropertyData &property_data, const bool is_read_only)
 	{
-		auto data = &var.get_value<TEnumAsByteBase>();
+		auto data = &property_data.Value.get_value<TEnumAsByteBase>();
 		auto enumeration = data->GetEnumeration();
 		auto &name_value = GetEnumNameValues(enumeration);
 		std::string display_name = "";
 		auto current_value = data->Get();
 
-		if (read_only)
+		if (is_read_only)
 		{
 			ImGui::Text("%s", display_name.c_str());
 			return false;

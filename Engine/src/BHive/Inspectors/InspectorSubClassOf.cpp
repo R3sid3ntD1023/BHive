@@ -4,19 +4,18 @@
 
 namespace BHive
 {
-	bool Inspector_SubClassOf::Inspect(
-		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_SubClassOf::Inspect(FPropertyData &property_data, const bool is_read_only)
 	{
 		bool changed = false;
 
-		auto &data = var.extract_wrapped_value().get_value<rttr::type>();
-		auto template_arguments = var.get_type().get_template_arguments();
+		auto &data = property_data.Value.extract_wrapped_value().get_value<rttr::type>();
+		auto template_arguments = property_data.Value.get_type().get_template_arguments();
 		auto base_type = *template_arguments.begin();
-		auto var_type = var.get_type();
+		auto var_type = property_data.Value.get_type();
 
 		auto name = (data ? data.get_name() : "None");
 
-		if (read_only)
+		if (is_read_only)
 		{
 			ImGui::TextUnformatted(name.data());
 			return changed;
@@ -52,7 +51,7 @@ namespace BHive
 
 		if (changed)
 		{
-			var = var_type.create({data});
+			property_data.Value = var_type.create({data});
 		}
 		return changed;
 	}

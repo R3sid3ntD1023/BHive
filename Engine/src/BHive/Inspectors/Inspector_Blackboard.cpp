@@ -9,12 +9,11 @@ namespace BHive
 {
 #define ADD_KEY_LIST "Add Key List"
 
-	bool Inspector_Blackboard::Inspect(
-		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_Blackboard::Inspect(FPropertyData &property_data, const bool is_read_only)
 	{
 		static const auto key_types = rttr::type::get<BlackBoardKey>().get_derived_classes();
 		bool changed = false;
-		auto data = var.get_value<BlackBoard>();
+		auto data = property_data.Value.get_value<BlackBoard>();
 
 		if (ImGui::Button("Add"))
 		{
@@ -43,7 +42,7 @@ namespace BHive
 
 		if (changed)
 		{
-			var = data;
+			property_data.Value = data;
 		}
 
 		return changed;

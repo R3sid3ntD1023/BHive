@@ -6,9 +6,7 @@ namespace BHive
 {
 	struct Inspector_Asset : public Inspector
 	{
-		virtual bool Inspect(
-			const rttr::variant &instance, rttr::variant &var, bool read_only,
-			const Inspector::meta_getter &get_meta_data = {}) override;
+		virtual bool Inspect(FPropertyData &property_data, const bool is_read_only) override;
 
 		REFLECTABLEV(Inspector)
 	};

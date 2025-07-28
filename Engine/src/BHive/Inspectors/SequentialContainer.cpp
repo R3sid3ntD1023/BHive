@@ -6,10 +6,9 @@ namespace BHive
 {
 	using edit_sequential_conainter_func = std::function<bool(rttr::variant_sequential_view &)>;
 
-	bool Inspector_SequentialContainer::Inspect(
-		const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data)
+	bool Inspector_SequentialContainer::Inspect(FPropertyData &property_data, const bool is_read_only)
 	{
-		auto data = var.create_sequential_view();
+		auto data = property_data.Value.create_sequential_view();
 		auto type = data.get_value_type();
 		auto size = data.get_size();
 		auto is_dynamic = data.is_dynamic();
@@ -20,12 +19,12 @@ namespace BHive
 		auto drawlist = ImGui::GetWindowDrawList();
 		ImDrawListSplitter splitter;
 
-		auto flags_var = get_meta_data(EPropertyMetaData_Flags);
+		auto flags_var = property_data.GetMetaData(EPropertyMetaData_Flags);
 		auto flags = flags_var ? flags_var.to_uint32() : 0;
 		auto fixed_size = ((flags & EPropertyFlags_FixedSize) != 0);
 
 		// header buttons
-		if (is_dynamic && !fixed_size && !read_only)
+		if (is_dynamic && !fixed_size && !is_read_only)
 		{
 			auto width = ImGui::GetContentRegionAvail().x;
 
@@ -90,7 +89,7 @@ namespace BHive
 					ImGui::BeginGroup();
 
 					ImGui::PushID(name.c_str());
-					if (Inspect::inspect(instance, element, false, read_only, 0.0f, Inspect::meta_data_empty))
+					if (Inspect::inspect(property_data.Owner, element, false, is_read_only, 0.0f, Inspect::meta_data_empty))
 					{
 						edit_func = [i, element](rttr::variant_sequential_view &view)
 						{
@@ -111,7 +110,7 @@ namespace BHive
 
 				splitter.Merge(drawlist);
 
-				if (!read_only)
+				if (!is_read_only)
 				{
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
 					{

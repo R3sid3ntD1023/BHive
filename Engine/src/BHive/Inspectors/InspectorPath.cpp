@@ -4,14 +4,13 @@
 
 namespace BHive
 {
-	bool
-	Inspector_Path::Inspect(const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &metadata)
+	bool Inspector_Path::Inspect(FPropertyData &property_data, const bool is_read_only)
 	{
-		auto data = var.get_value<std::filesystem::path>();
+		auto data = property_data.Value.get_value<std::filesystem::path>();
 		auto data_str = data.string();
 		bool changed = false;
 
-		if (read_only)
+		if (is_read_only)
 		{
 			ImGui::TextUnformatted(data.string().c_str());
 			return false;
@@ -37,7 +36,7 @@ namespace BHive
 
 		if (changed)
 		{
-			var = data;
+			property_data.Value = data;
 		}
 
 		return changed;

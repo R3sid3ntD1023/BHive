@@ -5,14 +5,25 @@
 
 namespace BHive
 {
+	using MetaGetter = std::function<rttr::variant(const rttr::variant &)>;
+
+	struct FPropertyData
+	{
+		const rttr::variant &Owner;
+		rttr::variant &Value;
+		const MetaGetter &GetMetaData = {};
+	};
+
 	struct Inspector
 	{
-		using meta_getter = std::function<rttr::variant(const rttr::variant &)>;
-		virtual bool Inspect(
-			const rttr::variant &instance, rttr::variant &var, bool read_only, const meta_getter &get_meta_data = {}) = 0;
+
+		virtual bool Inspect(FPropertyData &property_data, const bool is_read_only = false) = 0;
 
 		void BeginInspect(const rttr::property &poperty, bool columns = true, float width = 0.0f);
+
 		void EndInspect(const rttr::property &property);
+
+		virtual bool IsFinishedEditing() const { return true; }
 
 		REFLECTABLEV()
 
