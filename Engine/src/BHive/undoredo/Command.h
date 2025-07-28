@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	struct FHistoryCommand
+	struct ICommand
 	{
 		virtual void OnUndo() = 0;
 

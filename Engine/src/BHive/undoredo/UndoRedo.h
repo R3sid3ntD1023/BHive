@@ -11,14 +11,14 @@ namespace BHive
 		{
 			std::string Name = "";
 
-			FHistoryCommand *CommandPtr = nullptr;
+			ICommand *CommandPtr = nullptr;
 		};
 
 		void init(int16_t size);
 
 		void shutdown();
 
-		void add_history_command(const std::string &name, FHistoryCommand *command);
+		void add_history_command(const std::string &name, ICommand *command);
 
 		void undo();
 

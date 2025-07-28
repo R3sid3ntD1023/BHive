@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	struct FCommandProperty : public FHistoryCommand
+	struct FCommandProperty : public ICommand
 	{
 		FCommandProperty(rttr::instance obj, const rttr::property &prop, const rttr::variant &new_value);
 
@@ -20,4 +20,5 @@ namespace BHive
 		rttr::property mProperty;
 		rttr::instance mInstance;
 	};
+
 } // namespace BHive

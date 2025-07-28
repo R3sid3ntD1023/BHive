@@ -20,7 +20,7 @@ namespace BHive
 		return mCommands[index];
 	}
 
-	void UndoRedo::add_history_command(const std::string &name, FHistoryCommand *command)
+	void UndoRedo::add_history_command(const std::string &name, ICommand *command)
 	{
 		ASSERT(mCommands, "Did you call undoredo::init()?");
 
