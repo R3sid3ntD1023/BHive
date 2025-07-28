@@ -18,6 +18,9 @@
 #include "subsystems/SelectionSubSystem.h"
 #include "subsystems/WindowSubSystem.h"
 #include "world/GameObject.h"
+#include "undoredo/UndoRedo.h"
+#include "windows//HistoryWindow.h"
+#include "undoredo/Commands.h"
 #include <rttr/library.h>
 
 namespace BHive
@@ -77,9 +80,12 @@ namespace BHive
 
 		AddSubSystem<SelectionSubSystem>();
 		AddSubSystem<ThumbnailCache>();
+		AddSubSystem<UndoRedo>().init(5);
 
 		auto &window_system = AddSubSystem<WindowSubSystem>();
 		window_system.CreateWindow<LogPanel>();
+		window_system.CreateWindow<HistoryWindow>();
+
 		mSceneHeirarchyPanel = window_system.CreateWindow<SceneHierarchyPanel>();
 
 		CreateWorld();
@@ -91,10 +97,19 @@ namespace BHive
 			window_system.CreateWindow<EditorContentBrowser<EditorAssetManager>>(Project::GetResourceDirectory());
 
 		SetupDefaultCommands();
+
+		Inspect::set_property_changed_callback(
+			[](auto object, const auto &prop, auto var)
+			{
+				auto &undo_system = GetSubSystem<UndoRedo>();
+				undo_system.add_history_command<FCommandProperty>(
+					std::format("{} Property Changed", prop.get_name().data()), object, prop, var);
+			});
 	}
 
 	void EditorLayer::OnDetach()
 	{
+		GetSubSystem<UndoRedo>().shutdown();
 	}
 
 	void EditorLayer::OnUpdate(float dt)
@@ -208,6 +223,8 @@ namespace BHive
 		mCommands.emplace(FCommand{Key::N, Mod::Control}, [&]() { CreateWorld(); });
 		mCommands.emplace(FCommand{Key::S, Mod::Control}, [&]() { SaveWorld(); });
 		mCommands.emplace(FCommand{Key::S, Mod::Control_Shift}, [&]() { SaveWorldAs(); });
+		mCommands.emplace(FCommand{Key::Z, Mod::Control}, []() { GetSubSystem<UndoRedo>().undo(); });
+		mCommands.emplace(FCommand{Key::Y, Mod::Control}, []() { GetSubSystem<UndoRedo>().redo(); });
 	}
 
 	bool EditorLayer::OnWindowResize(WindowResizeEvent &e)
