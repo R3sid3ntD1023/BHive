@@ -1,14 +1,19 @@
 #pragma once
 
+#include "ReflectionCore.h"
 #include "PropertyMetaData.h"
-#include <rttr/registration>
-#include <rttr/registration_friend>
-#include <rttr/rttr_enable.h>
-#include <rttr/type.h>
+#include "Formatters.h"
+
+// policies
+#define CONSTRUCTOR_POLICY_OBJECT (rttr::policy::ctor::as_object)
+#define CONSTRUCTOR_POLICY_SHARED (rttr::policy::ctor::as_std_shared_ptr)
+#define CONSTRUCTOR_POLICY_PTR (rttr::policy::ctor::as_raw_ptr)
+#define PROPERTY_POLICY_AS_PTR rttr::policy::prop::bind_as_ptr
+#define PROPERTY_POLICY_AS_REFERENCE_WRAPPER (rttr::policy::prop::as_reference_wrapper)
 
 #define REFLECT_PROPERTY_GETTER_SETTER_IMPL(name, getter, setter) .property(name, &T::##getter, &T::##setter)
 #define REFLECT_PROPERTY_IMPL(name, member) .property(name, &T::##member)
-#define REFECT_PROPERTY_NO_NAME_IMPL(member) .property(#member, &T::##member)
+#define REFECT_PROPERTY_NO_NAME_IMPL(member) REFLECT_PROPERTY_IMPL(#member, member)
 
 #define GET_REFLECT_PROPERTY_MACRO_NAME(arg0, arg1, arg2, macro) macro
 #define GET_REFLECT_PROPERTY_MACRO(...)     \
@@ -20,13 +25,6 @@
 
 #define REFLECT_CONSTRUCTOR(...) .constructor<__VA_ARGS__>()
 #define REFLECT_METHOD(name, func) .method(name, func)
-
-#define CONSTRUCTOR_POLICY_OBJECT (rttr::policy::ctor::as_object)
-#define CONSTRUCTOR_POLICY_SHARED (rttr::policy::ctor::as_std_shared_ptr)
-#define CONSTRUCTOR_POLICY_PTR (rttr::policy::ctor::as_raw_ptr)
-
-#define PROPERTY_POLICY_AS_PTR (rttr::policy::prop::bind_as_ptr)
-#define PROPERTY_POLICY_AS_REFERENCE_WRAPPER (rttr::policy::prop::as_reference_wrapper)
 
 #define SELECT_OVERLOAD(function, ...) rttr::select_overload<__VA_ARGS__>(&T::##function)
 
@@ -108,19 +106,3 @@ namespace BHive
 } // namespace reflection
 
 } // namespace BHive
-
-template <>
-struct fmt::formatter<rttr::type> : fmt::formatter<std::string>
-{
-	template <typename ParseContext>
-	constexpr auto parse(ParseContext &ctx)
-	{
-		return ctx.begin();
-	}
-
-	template <typename FormatContext>
-	auto format(const rttr::type &v, FormatContext &ctx) const
-	{
-		return fmt::format_to(ctx.out(), "{}", v.get_name().data());
-	}
-};
