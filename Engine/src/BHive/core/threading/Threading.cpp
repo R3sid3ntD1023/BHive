@@ -1,6 +1,5 @@
 #include "Threading.h"
 #include <queue>
-#include "core/Log.h"
 
 namespace BHive
 {
@@ -45,7 +44,6 @@ namespace BHive
 			if (!func)
 				continue;
 
-			// LOG_TRACE("{}", func.mName);
 			func();
 		}
 
@@ -56,4 +54,4 @@ namespace BHive
 	{
 		sDispatched.push_back(func);
 	}
-}
+} // namespace BHive
