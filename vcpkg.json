@@ -36,9 +36,6 @@
     },
     {
       "name": "cereal"
-    },
-    {
-      "name": "rttr"
     }
   ]
 }
