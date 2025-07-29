@@ -60,19 +60,20 @@ namespace BHive
 	{
 		BEGIN_REFLECT(Light)
 		REFLECT_PROPERTY("Color", mColor)
-		REFLECT_PROPERTY("Brightness", mBrightness);
+		REFLECT_PROPERTY("Brightness", mBrightness)(META_DATA(EPropertyMetaData_Min, 0.0f));
 	}
 
 	REFLECT(PointLight)
 	{
 		BEGIN_REFLECT(PointLight)
-		REFLECT_PROPERTY("Radius", mRadius);
+		REFLECT_PROPERTY("Radius", mRadius)(META_DATA(EPropertyMetaData_Min, 0.0f));
 	}
 
 	REFLECT(SpotLight)
 	{
 		BEGIN_REFLECT(SpotLight)
-		REFLECT_PROPERTY("InnerCutOff", mInnerCutOff) REFLECT_PROPERTY("OuterCutOff", mOuterCutOff);
+		REFLECT_PROPERTY("InnerCutOff", mInnerCutOff)(META_DATA(EPropertyMetaData_Min, 0.0f))
+			REFLECT_PROPERTY("OuterCutOff", mOuterCutOff)(META_DATA(EPropertyMetaData_Min, 0.0f));
 	}
 
 	REFLECT(DirectionalLight)
