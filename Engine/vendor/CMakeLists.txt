@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.8)
 
+FETCHCONTENT_DECLARE(
+	rttr
+	GIT_REPOSITORY https://github.com/rttrorg/rttr.git
+	GIT_TAG master
+	OVERRIDE_FIND_PACKAGE
+)
+list(APPEND components rttr)
 
 #wave
 FetchContent_Declare(
