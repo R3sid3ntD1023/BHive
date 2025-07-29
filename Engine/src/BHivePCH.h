@@ -20,4 +20,8 @@
 #include <fstream>
 #include <type_traits>
 #include <mutex>
+
+#include <algorithm>
+#include <chrono>
+#include <iomanip>
 #include "Version.h"
