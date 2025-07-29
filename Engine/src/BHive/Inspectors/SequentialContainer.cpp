@@ -6,9 +6,10 @@ namespace BHive
 {
 	using edit_sequential_conainter_func = std::function<bool(rttr::variant_sequential_view &)>;
 
-	bool Inspector_SequentialContainer::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool Inspector_SequentialContainer::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
-		auto data = property_data.Value.create_sequential_view();
+		auto data = var.create_sequential_view();
 		auto type = data.get_value_type();
 		auto size = data.get_size();
 		auto is_dynamic = data.is_dynamic();
@@ -19,7 +20,7 @@ namespace BHive
 		auto drawlist = ImGui::GetWindowDrawList();
 		ImDrawListSplitter splitter;
 
-		auto flags_var = property_data.GetMetaData(EPropertyMetaData_Flags);
+		auto flags_var = GetMetaData(EPropertyMetaData_Flags);
 		auto flags = flags_var ? flags_var.to_uint32() : 0;
 		auto fixed_size = ((flags & EPropertyFlags_FixedSize) != 0);
 
@@ -89,7 +90,7 @@ namespace BHive
 					ImGui::BeginGroup();
 
 					ImGui::PushID(name.c_str());
-					if (Inspect::inspect(property_data.Owner, element, false, is_read_only, 0.0f, Inspect::meta_data_empty))
+					if (Inspect::inspect(owner, element, false, is_read_only, 0.0f, Inspect::meta_data_empty))
 					{
 						edit_func = [i, element](rttr::variant_sequential_view &view)
 						{

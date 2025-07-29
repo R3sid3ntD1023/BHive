@@ -6,7 +6,7 @@ namespace BHive
 {
 	struct Inspector_Blackboard : public Inspector
 	{
-		virtual bool Inspect(FPropertyData &property_data, const bool is_read_only);
+		INSPECTOR_BODY()
 
 		REFLECTABLEV(Inspector)
 	};

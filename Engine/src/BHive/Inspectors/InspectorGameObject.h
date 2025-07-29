@@ -6,7 +6,7 @@ namespace BHive
 {
 	struct Inspector_GameObject : public Inspector
 	{
-		virtual bool Inspect(FPropertyData &data, const bool is_read_only) override;
+		INSPECTOR_BODY()
 
 		REFLECTABLEV(Inspector)
 	};

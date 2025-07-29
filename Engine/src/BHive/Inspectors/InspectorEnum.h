@@ -8,7 +8,7 @@ namespace BHive
 	{
 		using EnumNames = std::unordered_map<int, std::string>;
 
-		virtual bool Inspect(FPropertyData &property_data, const bool is_read_only);
+		INSPECTOR_BODY()
 
 		REFLECTABLEV(Inspector)
 
@@ -22,7 +22,7 @@ namespace BHive
 	struct Inspector_EnumAsByte : public Inspector_Enum
 	{
 
-		virtual bool Inspect(FPropertyData &property_data, const bool is_read_only);
+		INSPECTOR_BODY()
 
 		REFLECTABLEV(Inspector_Enum)
 	};

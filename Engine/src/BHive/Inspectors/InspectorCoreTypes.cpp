@@ -7,9 +7,10 @@
 namespace BHive
 {
 
-	bool Inspector_String::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool Inspector_String::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
-		auto data = property_data.Value.to_string();
+		auto data = var.to_string();
 		if (is_read_only)
 		{
 			ImGui::TextDisabled(data.c_str());
@@ -19,7 +20,7 @@ namespace BHive
 		bool changed =
 			ImGui::InputText("##", &data, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll);
 
-		auto default_var = property_data.GetMetaData(EPropertyMetaData_Default);
+		auto default_var = GetMetaData(EPropertyMetaData_Default);
 		auto default_value = default_var ? default_var.to_string() : "";
 		if (ImGui::BeginPopupContextItem())
 		{
@@ -33,16 +34,18 @@ namespace BHive
 
 		if (changed)
 		{
-			property_data.Value = data;
+			var = data;
 		}
 
 		return changed;
 	}
 
-	bool Inspector_Float::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool Inspector_Float::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
-		auto data = property_data.Value.to_float();
+		auto data = var.to_float();
 		bool changed = false;
+		bool updated_value = false;
 
 		if (is_read_only)
 		{
@@ -50,11 +53,11 @@ namespace BHive
 			return false;
 		}
 
-		auto min_var = property_data.GetMetaData(EPropertyMetaData_Min);
-		auto max_var = property_data.GetMetaData(EPropertyMetaData_Max);
-		auto step_var = property_data.GetMetaData(EPropertyMetaData_Step);
-		auto format_var = property_data.GetMetaData(EPropertyMetaData_CustomFormat);
-		auto flags_var = property_data.GetMetaData(EPropertyMetaData_Flags);
+		auto min_var = GetMetaData(EPropertyMetaData_Min);
+		auto max_var = GetMetaData(EPropertyMetaData_Max);
+		auto step_var = GetMetaData(EPropertyMetaData_Step);
+		auto format_var = GetMetaData(EPropertyMetaData_CustomFormat);
+		auto flags_var = GetMetaData(EPropertyMetaData_Flags);
 
 		float min = min_var ? min_var.to_float() : 0.0f;
 		float max = max_var ? max_var.to_float() : 0.0f;
@@ -64,30 +67,31 @@ namespace BHive
 
 		if ((flags & EPropertyFlags_Slider) != 0)
 		{
-			changed |= ImGui::SliderFloat("##", &data, min, max, format.c_str());
+			updated_value |= ImGui::SliderFloat("##", &data, min, max, format.c_str());
 		}
 		else
 		{
-			changed |= ImGui::DragFloat("##", &data, step, min, max, format.c_str());
+			updated_value |= ImGui::DragFloat("##", &data, step, min, max, format.c_str());
 		}
 
 		if (ImGui::IsItemDeactivatedAfterEdit())
 		{
+			changed |= true;
 		}
 
-		auto default_var = property_data.GetMetaData(EPropertyMetaData_Default);
+		auto default_var = GetMetaData(EPropertyMetaData_Default);
 		auto default_value = default_var ? default_var.to_float() : 0.f;
 		if (ImGui::BeginPopupContextItem())
 		{
 			if (ImGui::MenuItem("Reset"))
 			{
 				data = default_value;
-				changed |= true;
+				updated_value |= true;
 			}
 			ImGui::EndPopup();
 		}
 
-		if (changed)
+		if (updated_value)
 		{
 			if (min_var && (data < min))
 				data = min;
@@ -95,15 +99,16 @@ namespace BHive
 			if (max_var && (data > max))
 				data = max;
 
-			property_data.Value = data;
+			var = data;
 		}
 
 		return changed;
 	}
 
-	bool Inspector_Bool::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool Inspector_Bool::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
-		auto data = property_data.Value.to_bool();
+		auto data = var.to_bool();
 		bool changed = false;
 
 		if (is_read_only)
@@ -114,7 +119,7 @@ namespace BHive
 
 		changed |= ImGui::Checkbox("##", &data);
 
-		auto default_var = property_data.GetMetaData(EPropertyMetaData_Default);
+		auto default_var = GetMetaData(EPropertyMetaData_Default);
 		auto default_value = default_var ? default_var.to_bool() : false;
 		if (ImGui::BeginPopupContextItem())
 		{
@@ -128,17 +133,19 @@ namespace BHive
 
 		if (changed)
 		{
-			property_data.Value = data;
+			var = data;
 		}
 
 		return changed;
 	}
 
 	template <typename TIntegerType>
-	bool Inspector_Int<TIntegerType>::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool Inspector_Int<TIntegerType>::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
-		auto data = (int)property_data.Value.get_value<TIntegerType>();
+		auto data = (int)var.get_value<TIntegerType>();
 		bool changed = false;
+		bool updated_value = false;
 
 		if (is_read_only)
 		{
@@ -146,12 +153,12 @@ namespace BHive
 			return false;
 		}
 
-		auto min_var = property_data.GetMetaData(EPropertyMetaData_Min);
-		auto max_var = property_data.GetMetaData(EPropertyMetaData_Max);
-		auto step_var = property_data.GetMetaData(EPropertyMetaData_Step);
-		auto format_var = property_data.GetMetaData(EPropertyMetaData_CustomFormat);
-		auto flags_var = property_data.GetMetaData(EPropertyMetaData_Flags);
-		auto default_var = property_data.GetMetaData(EPropertyMetaData_Default);
+		auto min_var = GetMetaData(EPropertyMetaData_Min);
+		auto max_var = GetMetaData(EPropertyMetaData_Max);
+		auto step_var = GetMetaData(EPropertyMetaData_Step);
+		auto format_var = GetMetaData(EPropertyMetaData_CustomFormat);
+		auto flags_var = GetMetaData(EPropertyMetaData_Flags);
+		auto default_var = GetMetaData(EPropertyMetaData_Default);
 
 		auto min = min_var ? min_var.to_int() : 0;
 		auto max = max_var ? max_var.to_int() : 0;
@@ -162,15 +169,16 @@ namespace BHive
 
 		if ((flags & EPropertyFlags_Slider) != 0)
 		{
-			changed |= ImGui::SliderInt("##", &data, min, max, format.c_str());
+			updated_value |= ImGui::SliderInt("##", &data, min, max, format.c_str());
 		}
 		else
 		{
-			changed |= ImGui::DragInt("##", &data, step, min, max, format.c_str());
+			updated_value |= ImGui::DragInt("##", &data, step, min, max, format.c_str());
 		}
 
 		if (ImGui::IsItemDeactivatedAfterEdit())
 		{
+			changed |= true;
 		}
 
 		if (ImGui::BeginPopupContextItem())
@@ -178,12 +186,12 @@ namespace BHive
 			if (ImGui::MenuItem("Reset"))
 			{
 				data = default_value;
-				changed |= true;
+				updated_value |= true;
 			}
 			ImGui::EndPopup();
 		}
 
-		if (changed)
+		if (updated_value)
 		{
 			if (min_var && (data <= min))
 				data = min;
@@ -191,7 +199,7 @@ namespace BHive
 			if (max_var && (data >= max))
 				data = max;
 
-			property_data.Value = (TIntegerType)data;
+			var = (TIntegerType)data;
 		}
 
 		return changed;

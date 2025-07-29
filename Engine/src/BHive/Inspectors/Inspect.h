@@ -12,7 +12,7 @@ namespace BHive
 
 		static bool inspect(
 			const rttr::variant &instance, rttr::variant &var, bool skip_custom = false, bool read_only = false,
-			float width = 0.0f, const MetaGetter &get_meta_data = meta_data_empty, bool *finished_edit = nullptr);
+			float width = 0.0f, const MetaGetter &get_meta_data = meta_data_empty);
 
 		static bool inspect(
 			const rttr::variant &instance, rttr::instance &object, rttr::property &property, bool read_only = false,

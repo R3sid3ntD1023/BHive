@@ -6,10 +6,11 @@
 
 namespace BHive
 {
-	bool InspectorComponent::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool InspectorComponent::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		bool changed = false, removed = false;
-		auto data = property_data.Value.get_value<Component *>();
+		auto data = var.get_value<Component *>();
 
 		int flags = ImGuiTreeNodeFlags_SpanAvailWidth;
 		auto type = data->get_type();
@@ -18,11 +19,12 @@ namespace BHive
 
 		if (opened)
 		{
+			rttr::instance obj = var;
 			auto properties = type.get_properties();
+
 			for (auto property : properties)
 			{
-				rttr::instance obj = property_data.Value;
-				changed |= Inspect::inspect({}, obj, property, is_read_only);
+				changed |= Inspect::inspect(data, obj, property, is_read_only);
 			}
 
 			if (type.get_metadata(ClassMetaData_ComponentSpawnable) && !is_read_only)

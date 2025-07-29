@@ -6,9 +6,10 @@
 
 namespace BHive
 {
-	bool Inspector_UUID::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool Inspector_UUID::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
-		auto data = property_data.Value.get_value<UUID>();
+		auto data = var.get_value<UUID>();
 
 		ImGui::TextWrapped("%s", ((std::string)data).c_str());
 
@@ -59,10 +60,11 @@ namespace BHive
 	}
 
 	template <typename T>
-	bool Inspector_Vec<T>::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool Inspector_Vec<T>::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		static T zero = T(0.0f);
-		auto data = property_data.Value.get_value<T>();
+		auto data = var.get_value<T>();
 
 		if (is_read_only)
 		{
@@ -70,10 +72,10 @@ namespace BHive
 			return false;
 		}
 
-		auto default_value_var = property_data.GetMetaData(EPropertyMetaData_Default);
-		auto min_value_var = property_data.GetMetaData(EPropertyMetaData_Min);
-		auto max_value_var = property_data.GetMetaData(EPropertyMetaData_Max);
-		auto format_var = property_data.GetMetaData(EPropertyMetaData_CustomFormat);
+		auto default_value_var = GetMetaData(EPropertyMetaData_Default);
+		auto min_value_var = GetMetaData(EPropertyMetaData_Min);
+		auto max_value_var = GetMetaData(EPropertyMetaData_Max);
+		auto format_var = GetMetaData(EPropertyMetaData_CustomFormat);
 
 		auto default_value = default_value_var ? default_value_var.get_value<T>() : zero;
 		auto min_value = min_value_var ? min_value_var.get_value<T>() : zero;
@@ -82,17 +84,17 @@ namespace BHive
 
 		if (OnInspectVector(data, default_value, min_value, max_value, format.c_str()))
 		{
-			property_data.Value = data;
+			var = data;
 			return true;
 		}
 
 		return false;
 	}
 
-	bool Inspector_Color::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool Inspector_Color::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
-		bool changed = false;
-		auto data = property_data.Value.get_value<FColor>();
+		auto data = var.get_value<FColor>();
 
 		if (is_read_only)
 		{
@@ -100,19 +102,15 @@ namespace BHive
 			return false;
 		}
 
-		auto hdr_var = property_data.GetMetaData(EPropertyMetaData_HDR);
-
+		auto hdr_var = GetMetaData(EPropertyMetaData_HDR);
 		auto flags = (hdr_var ? ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float : 0);
-		ImGui::ColorEdit4("", &data.r, flags);
-		changed |= ImGui::IsItemDeactivatedAfterEdit();
 
-		if (changed)
+		if (ImGui::ColorEdit4("##ColorEdit", &data.r, flags))
 		{
-			property_data.Value = data;
-			return true;
+			var = data;
 		}
 
-		return false;
+		return ImGui::IsItemDeactivatedAfterEdit();
 	}
 
 	REFLECT_INSPECTOR(Inspector_UUID, UUID)

@@ -6,21 +6,21 @@ namespace BHive
 {
 	struct Inspector_String : public Inspector
 	{
-		virtual bool Inspect(FPropertyData &property_data, const bool is_read_only) override;
+		INSPECTOR_BODY()
 
 		REFLECTABLEV(Inspector)
 	};
 
 	struct Inspector_Float : public Inspector
 	{
-		virtual bool Inspect(FPropertyData &property_data, const bool is_read_only) override;
+		INSPECTOR_BODY()
 
 		REFLECTABLEV(Inspector)
 	};
 
 	struct Inspector_Bool : public Inspector
 	{
-		virtual bool Inspect(FPropertyData &property_data, const bool is_read_only) override;
+		INSPECTOR_BODY()
 
 		REFLECTABLEV(Inspector)
 	};
@@ -28,7 +28,7 @@ namespace BHive
 	template <typename TIntegerType>
 	struct Inspector_Int : public Inspector
 	{
-		virtual bool Inspect(FPropertyData &property_data, const bool is_read_only) override;
+		INSPECTOR_BODY()
 
 		REFLECTABLEV(Inspector)
 	};

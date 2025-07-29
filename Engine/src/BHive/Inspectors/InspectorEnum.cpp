@@ -20,10 +20,11 @@ namespace BHive
 		return mEnumNameCache[enum_id];
 	}
 
-	bool Inspector_Enum::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool Inspector_Enum::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
-		auto type = property_data.Value.get_type();
-		auto data = property_data.Value.to_int();
+		auto type = var.get_type();
+		auto data = var.to_int();
 		auto enumeration = type.get_enumeration();
 		auto &enumeration_names = GetEnumNameValues(enumeration);
 
@@ -60,16 +61,17 @@ namespace BHive
 		{
 			rttr::variant arg(data);
 			arg.convert(enumeration.get_underlying_type());
-			arg.convert(property_data.Value.get_type());
-			property_data.Value = arg;
+			arg.convert(var.get_type());
+			var = arg;
 		}
 
 		return changed;
 	}
 
-	bool Inspector_EnumAsByte::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool Inspector_EnumAsByte::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
-		auto data = &property_data.Value.get_value<TEnumAsByteBase>();
+		auto data = &var.get_value<TEnumAsByteBase>();
 		auto enumeration = data->GetEnumeration();
 		auto &name_value = GetEnumNameValues(enumeration);
 		std::string display_name = "";

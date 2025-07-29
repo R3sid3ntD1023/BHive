@@ -6,7 +6,7 @@ namespace BHive
 {
 	struct Inspector_UUID : public Inspector
 	{
-		virtual bool Inspect(FPropertyData &property_data, const bool is_read_only) override;
+		INSPECTOR_BODY()
 
 		REFLECTABLEV(Inspector)
 	};
@@ -14,14 +14,14 @@ namespace BHive
 	template <typename T>
 	struct Inspector_Vec : public Inspector
 	{
-		virtual bool Inspect(FPropertyData &property_data, const bool is_read_only) override;
+		INSPECTOR_BODY()
 
 		REFLECTABLEV(Inspector)
 	};
 
 	struct Inspector_Color : public Inspector
 	{
-		virtual bool Inspect(FPropertyData &property_data, const bool is_read_only) override;
+		INSPECTOR_BODY()
 
 		REFLECTABLEV(Inspector)
 	};

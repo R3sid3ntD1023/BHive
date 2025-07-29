@@ -5,16 +5,17 @@
 
 namespace BHive
 {
-	bool Inspector_GameObject::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool Inspector_GameObject::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		bool changed = false;
-		auto &data = property_data.Value.get_value<GameObject *>();
+		auto &data = var.get_value<GameObject *>();
 		auto type = data->get_type();
 		auto properties = type.get_properties();
 
 		for (auto property : properties)
 		{
-			rttr::instance obj = property_data.Value;
+			rttr::instance obj = var;
 			changed |= Inspect::inspect({}, obj, property, is_read_only);
 		}
 

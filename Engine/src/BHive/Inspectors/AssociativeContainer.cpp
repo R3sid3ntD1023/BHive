@@ -8,14 +8,15 @@ namespace BHive
 {
 	using edit_associative_conainter_func = std::function<bool(rttr::variant_associative_view &)>;
 
-	bool Inspector_AssociativeContainer::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool Inspector_AssociativeContainer::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		static auto treeflags = ImGuiTreeNodeFlags_SpanAvailWidth;
 		static auto table_flags = ImGuiTableFlags_Borders;
 
 		edit_associative_conainter_func edit_func = nullptr;
 
-		auto data = property_data.Value.create_associative_view();
+		auto data = var.create_associative_view();
 		bool changed = false;
 
 		if (ImGui::TreeNodeEx("Elements", treeflags))
@@ -42,7 +43,7 @@ namespace BHive
 					ImGui::PushID(key_id);
 					{
 
-						if (Inspect::inspect(property_data.Owner, key, false, is_read_only, 0.0f, Inspect::meta_data_empty))
+						if (Inspect::inspect(owner, key, false, is_read_only, 0.0f, Inspect::meta_data_empty))
 						{
 							edit_func = [key, old_key, value](rttr::variant_associative_view &view)
 							{
@@ -72,7 +73,7 @@ namespace BHive
 
 					ImGui::PushID(value_id);
 
-					if (Inspect::inspect(property_data.Owner, value, false, is_read_only, 0.0f, Inspect::meta_data_empty))
+					if (Inspect::inspect(owner, value, false, is_read_only, 0.0f, Inspect::meta_data_empty))
 					{
 						edit_func = [key, old_key, value](rttr::variant_associative_view &view)
 						{
@@ -93,7 +94,7 @@ namespace BHive
 		if (is_read_only)
 			return false;
 
-		auto flags_var = property_data.GetMetaData(EPropertyMetaData_Flags);
+		auto flags_var = GetMetaData(EPropertyMetaData_Flags);
 		auto flags = flags_var ? flags_var.to_uint32() : 0;
 		auto fixed_size = ((flags & EPropertyFlags_FixedSize) != 0);
 

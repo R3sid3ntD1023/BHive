@@ -4,9 +4,10 @@
 
 namespace BHive
 {
-	bool Inspector_Path::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool Inspector_Path::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
-		auto data = property_data.Value.get_value<std::filesystem::path>();
+		auto data = var.get_value<std::filesystem::path>();
 		auto data_str = data.string();
 		bool changed = false;
 
@@ -36,7 +37,7 @@ namespace BHive
 
 		if (changed)
 		{
-			property_data.Value = data;
+			var = data;
 		}
 
 		return changed;

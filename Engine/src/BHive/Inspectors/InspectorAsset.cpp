@@ -8,16 +8,17 @@
 namespace BHive
 {
 
-	bool Inspector_Asset::Inspect(FPropertyData &property_data, const bool is_read_only)
+	bool Inspector_Asset::Inspect(
+		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 
 		auto asset_manager = AssetManager::GetAssetManager<EditorAssetManager>();
 		if (!asset_manager)
 			return false;
 
-		auto data = property_data.Value.get_value<Ref<Asset>>();
-		const auto inspected_type = property_data.Value.extract_wrapped_value().get_type().get_raw_type();
-		const auto type = property_data.Value.get_type();
+		auto data = var.get_value<Ref<Asset>>();
+		const auto inspected_type = var.extract_wrapped_value().get_type().get_raw_type();
+		const auto type = var.get_type();
 		auto &meta_data = asset_manager->GetMetaData(Asset::GetHandle(data));
 		const auto &display_name = meta_data ? meta_data.Name : "None";
 
@@ -91,8 +92,7 @@ namespace BHive
 		{
 			rttr::variant arg(data);
 			arg.convert(type);
-
-			property_data.Value = arg;
+			var = arg;
 		}
 
 		return changed;
