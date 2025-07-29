@@ -50,6 +50,8 @@ namespace BHive
 		FTransform operator/(float rhs) const;
 		FTransform &operator/=(float rhs);
 
+		bool operator==(const FTransform &rhs) const;
+
 		template <typename A>
 		inline void Save(A &ar) const
 		{

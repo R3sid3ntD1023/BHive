@@ -150,6 +150,11 @@ namespace BHive
 		return *this = *this / rhs;
 	}
 
+	bool FTransform::operator==(const FTransform &rhs) const
+	{
+		return mTranslation == rhs.mTranslation && mRotation == rhs.mRotation && mScale == rhs.mScale;
+	}
+
 	void FTransform::calculate_model_matrix()
 	{
 		auto rotation = glm::quat(glm::radians(mRotation));
