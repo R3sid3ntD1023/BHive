@@ -22,6 +22,8 @@ namespace BHive
 
 		float mBrightness = 1.0f;
 
+		bool operator==(const Light &rhs) const;
+
 		virtual ELightType GetLightType() const = 0;
 
 		template <typename A>
@@ -37,7 +39,9 @@ namespace BHive
 	{
 		float mRadius = 1.0f;
 
-		virtual ELightType GetLightType() const override { return ELightType::Point; }
+		bool operator==(const PointLight &rhs) const;
+
+		virtual ELightType GetLightType() const override;
 
 		template <typename A>
 		inline void Serialize(A &ar)
@@ -55,7 +59,9 @@ namespace BHive
 		float mInnerCutOff = 25.0f;
 		float mOuterCutOff = 75.0f;
 
-		virtual ELightType GetLightType() const override { return ELightType::SpotLight; }
+		bool operator==(const SpotLight &rhs) const;
+
+		virtual ELightType GetLightType() const override;
 
 		template <typename A>
 		inline void Serialize(A &ar)
@@ -72,7 +78,7 @@ namespace BHive
 		DirectionalLight() = default;
 		DirectionalLight(const DirectionalLight &) = default;
 
-		virtual ELightType GetLightType() const override { return ELightType::Directional; }
+		virtual ELightType GetLightType() const override;
 
 		REFLECTABLEV(Light)
 	};
