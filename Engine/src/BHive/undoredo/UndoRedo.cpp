@@ -24,11 +24,17 @@ namespace BHive
 	{
 		ASSERT(mCommands, "Did you call undoredo::init()?");
 
+		if (mCurrentCommandIndex >= (mMaxHistorySize))
+		{
+			mCurrentCommandIndex = mMaxHistorySize;
+		}
+
 		mCommands[mCurrentCommandIndex].Name = name;
 		mCommands[mCurrentCommandIndex].CommandPtr = command;
 		mCurrentCommandIndex++;
 
-		mCommandCount++;
+		if (mCommandCount < mMaxHistorySize)
+			mCommandCount++;
 	}
 
 	void UndoRedo::undo()
