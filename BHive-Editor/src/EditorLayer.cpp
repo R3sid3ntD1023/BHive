@@ -1,3 +1,4 @@
+#include "EditorLayer.h"
 #include "asset/AssetFactory.h"
 #include "contextmenus/ContextMenus.h"
 #include "core/Application.h"
@@ -5,7 +6,6 @@
 #include "core/layers/ImGuiLayer.h"
 #include "core/subsystem/SubSystem.h"
 #include "core/Window.h"
-#include "EditorLayer.h"
 #include "gfx/Framebuffer.h"
 #include "gfx/RenderCommand.h"
 #include "GUI/Gui.h"
@@ -153,9 +153,7 @@ namespace BHive
 
 	void EditorLayer::OnGuiRender()
 	{
-
 		static bool scene_heirarchy_status = true;
-		static bool properties_status = true;
 		static bool content_browser_status = true;
 
 		if (ImGui::BeginMainMenuBar())
@@ -184,6 +182,13 @@ namespace BHive
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("Windows"))
+			{
+				ImGui::Checkbox("Scene Hierarchy", &scene_heirarchy_status);
+				ImGui::Checkbox("Content Browser", &content_browser_status);
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMainMenuBar();
 		}
 
@@ -204,6 +209,8 @@ namespace BHive
 		}
 
 		ImGui::End();
+
+		ImGui::ShowDemoWindow();
 
 		SubSystemContext::Get().GetSubSystem<WindowSubSystem>().UpdateWindows();
 	}
