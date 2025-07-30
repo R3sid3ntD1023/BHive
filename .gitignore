@@ -12,6 +12,7 @@ downloads/
 **.dll
 *.json
 *.log
+**.asset
 *rp3d_profiling_.txt
 *imgui.ini
 
