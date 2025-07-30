@@ -1,7 +1,6 @@
 #pragma once
 
 #include "asset/Asset.h"
-#include "gui/ImGuiExtended.h"
 #include "WindowBase.h"
 
 namespace BHive
