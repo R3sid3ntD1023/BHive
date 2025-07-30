@@ -14,7 +14,7 @@ namespace BHive
 		// populate graph
 		for (const auto &[node_id, node] : mGraph->get_nodes())
 		{
-			addNode(node->getPos(), node);
+			emplaceNode(node->getPos(), node);
 		}
 
 		// get nodes derived from supported type
@@ -51,7 +51,7 @@ namespace BHive
 				{
 					auto type = (rttr::type *)payload->Data;
 					auto new_node = type->create().get_value<Ref<AnimGraphNodeBase>>();
-					addNode(pos, new_node);
+					emplaceNode(pos, new_node);
 					if (mGraph)
 						mGraph->add_node(new_node);
 				}
@@ -67,7 +67,7 @@ namespace BHive
 			if (ImGui::Selectable(name.data()))
 			{
 				auto new_node = type.create().get_value<Ref<AnimGraphNodeBase>>();
-				addNode(pos, new_node);
+				emplaceNode(pos, new_node);
 
 				if (mGraph)
 					mGraph->add_node(new_node);
