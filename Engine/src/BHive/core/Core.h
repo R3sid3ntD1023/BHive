@@ -61,10 +61,3 @@ Scope<T> CreateScope(TArgs &&...args)
 #include "math/Math.h"
 #include "reflection/Reflection.h"
 #include "serialization/Serialization.h"
-
-namespace BHive
-{
-	static const WAVE::Version sEngineVersion{1, 0, 0};
-}
-
-#define GET_ENGINE_VERSION ::BHive::sEngineVersion
