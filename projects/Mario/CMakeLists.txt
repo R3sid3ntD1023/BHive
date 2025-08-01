@@ -14,5 +14,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/" )
-target_link_libraries(${PROJECT_NAME} PRIVATE Engine)
+target_link_libraries(${PROJECT_NAME} PRIVATE BHive-Engine)
 target_include_directories(${PROJECT_NAME} PUBLIC src)
