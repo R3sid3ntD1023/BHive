@@ -25,8 +25,7 @@
 
 namespace BHive
 {
-	std::unordered_map<uint8_t, float> sSnapValues = {
-		{ImGuizmo::TRANSLATE, 10.f}, {ImGuizmo::ROTATE, 15.f}, {ImGuizmo::SCALE, .25f}};
+	std::unordered_map<uint8_t, float> sSnapValues = {{ImGuizmo::TRANSLATE, 10.f}, {ImGuizmo::ROTATE, 15.f}, {ImGuizmo::SCALE, .25f}};
 
 	void EditorLayer::OnAttach()
 	{
@@ -93,8 +92,7 @@ namespace BHive
 		mAssetManager = CreateRef<EditorAssetManager>(Project::GetResourceDirectory(), "AssetRegistry.json");
 		AssetManager::SetAssetManager(mAssetManager.get());
 
-		mContentBrowser =
-			window_system.CreateWindow<EditorContentBrowser<EditorAssetManager>>(Project::GetResourceDirectory());
+		mContentBrowser = window_system.CreateWindow<EditorContentBrowser<EditorAssetManager>>(Project::GetResourceDirectory());
 
 		SetupDefaultCommands();
 
@@ -102,8 +100,7 @@ namespace BHive
 			[](auto object, const auto &prop, auto var)
 			{
 				auto &undo_system = GetSubSystem<UndoRedo>();
-				undo_system.add_history_command<FCommandProperty>(
-					std::format("{} Property Changed", prop.get_name().data()), object, prop, var);
+				undo_system.add_history_command<FCommandProperty>(std::format("{} Property Changed", prop.get_name().data()), object, prop, var);
 			});
 	}
 
@@ -209,8 +206,6 @@ namespace BHive
 		}
 
 		ImGui::End();
-
-		ImGui::ShowDemoWindow();
 
 		SubSystemContext::Get().GetSubSystem<WindowSubSystem>().UpdateWindows();
 	}
@@ -359,9 +354,7 @@ namespace BHive
 
 				ImGuizmo::SetOrthographic(false);
 				ImGuizmo::SetDrawlist();
-				ImGuizmo::SetRect(
-					mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x,
-					mViewportBounds[1].y - mViewportBounds[0].y);
+				ImGuizmo::SetRect(mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x, mViewportBounds[1].y - mViewportBounds[0].y);
 
 				if (selected_object && mGizmoOperation != -1 && !mActiveWorld->IsRunning())
 				{
@@ -374,9 +367,7 @@ namespace BHive
 
 					glm::mat4 delta{1.f};
 
-					ImGuizmo::Manipulate(
-						&view[0][0], &projection[0][0], (ImGuizmo::OPERATION)mGizmoOperation, (ImGuizmo::MODE)mGizmoMode,
-						&local_transform[0][0], &delta[0][0], snap_values);
+					ImGuizmo::Manipulate(&view[0][0], &projection[0][0], (ImGuizmo::OPERATION)mGizmoOperation, (ImGuizmo::MODE)mGizmoMode, &local_transform[0][0], &delta[0][0], snap_values);
 
 					if (ImGuizmo::IsUsing())
 					{
@@ -389,8 +380,7 @@ namespace BHive
 
 				auto view_size = 100.0f;
 				auto view_position = ImVec2(mViewportBounds[1].x - view_size, mViewportBounds[0].y);
-				ImGuizmo::ViewManipulate(
-					&view[0][0], mEditorCamera.Distance(), view_position, {view_size, view_size}, 0x00000000);
+				ImGuizmo::ViewManipulate(&view[0][0], mEditorCamera.Distance(), view_position, {view_size, view_size}, 0x00000000);
 
 				if (ImGuizmo::IsUsingViewManipulate())
 				{
