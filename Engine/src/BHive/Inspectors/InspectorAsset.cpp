@@ -3,13 +3,12 @@
 #include "gui/ImGuiExtended.h"
 #include "InspectorAsset.h"
 
-#define ASSET_DRAG_DROP_NAME "ASSET"
+#define ASSET_DRAG_DROP_NAME "CONTENT_BROWSER_ITEM"
 
 namespace BHive
 {
 
-	bool Inspector_Asset::Inspect(
-		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_Asset::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 
 		auto asset_manager = AssetManager::GetAssetManager<EditorAssetManager>();
