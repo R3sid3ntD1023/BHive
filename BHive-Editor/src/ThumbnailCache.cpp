@@ -7,8 +7,9 @@ namespace BHive
 
 	ThumbnailCache::ThumbnailCache()
 	{
-		mCache["DirectoryIcon"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/DirectoryIcon.png");
-		mCache["FileIcon"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/FileIcon.png");
+		mCache["FolderIcon"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/non_empty_folder.png");
+		mCache["FolderIconEmpty"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/empty_folder.png");
+		mCache["Invalid"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/invalid.png");
 		mCache["PlayIcon"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/PlayButton.png");
 		mCache["PauseIcon"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/PauseButton.png");
 		mCache["StepIcon"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/StepButton.png");
