@@ -13,18 +13,17 @@ namespace BHive
 	public:
 		EditorContentBrowser(const std::filesystem::path &directory);
 
-		virtual void OnImportAsset(const std::filesystem::path &directory, const std::filesystem::path &relative);
-		virtual void OnDeleteAsset(const std::filesystem::path &relative);
-		virtual void
-		OnRenameAsset(const std::filesystem::path &relative_old, const std::filesystem::path &relative_new, bool directory);
+		virtual void OnImportAsset(const std::filesystem::path &directory, const std::filesystem::path &relative) override;
+		virtual void OnDeleteAsset(const std::filesystem::path &relative) override;
+		virtual void OnRenameAsset(const std::filesystem::path &relative_old, const std::filesystem::path &relative_new) override;
 		virtual void OnReimportAsset(const std::filesystem::path &relative) override;
-		virtual void OnAssetContextMenu(const std::filesystem::path &relative);
-		virtual void OnAssetDoubleClicked(const std::filesystem::path &relative);
-		virtual bool IsAssetValid(const std::filesystem::path &relative) const;
+		virtual void OnAssetContextMenu(const std::filesystem::path &relative) override;
+		virtual void OnAssetDoubleClicked(const std::filesystem::path &relative) override;
+		virtual bool IsAssetValid(const std::filesystem::path &relative) const override;
 
-		virtual Ref<Texture2D> OnGetIcon(bool directory, const std::filesystem::path &relative);
-		virtual bool GetDragDropData(UUID &data, const std::filesystem::path &relative);
-		virtual void OnCreateAssetMenu();
+		virtual Ref<Texture2D> OnGetIcon(const std::filesystem::directory_entry &entry) override;
+		virtual bool GetDragDropData(UUID &data, const std::filesystem::path &relative) override;
+		virtual void OnCreateAssetMenu() override;
 
 	private:
 		virtual void OnCreateAsset(const std::filesystem::path &directory, const Ref<Factory> &factory);

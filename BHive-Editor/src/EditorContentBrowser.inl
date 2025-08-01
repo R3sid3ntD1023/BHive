@@ -34,9 +34,7 @@ namespace BHive
 	};
 
 	template <typename T>
-	void FinishAssetImport(
-		const std::filesystem::path &dir, const std::filesystem::path &rel, const Ref<Asset> &asset,
-		const std::vector<Ref<Asset>> &others)
+	void FinishAssetImport(const std::filesystem::path &dir, const std::filesystem::path &rel, const Ref<Asset> &asset, const std::vector<Ref<Asset>> &others)
 	{
 		auto manager = AssetManager::GetAssetManager<T>();
 		auto export_path = dir / (rel.stem().string() + ".asset");
@@ -74,17 +72,14 @@ namespace BHive
 	}
 
 	template <typename T>
-	void
-	EditorContentBrowser<T>::OnImportAsset(const std::filesystem::path &directory, const std::filesystem::path &relative)
+	void EditorContentBrowser<T>::OnImportAsset(const std::filesystem::path &directory, const std::filesystem::path &relative)
 	{
 		auto &registry = FactoryRegistry::Get();
 		auto manager = AssetManager::GetAssetManager<T>();
 		auto factory = registry.Get(relative.extension().string());
 		if (factory)
 		{
-			factory->OnImportCompleted.bind(
-				[=](const Ref<Asset> &asset)
-				{ FinishAssetImport<T>(directory, relative, asset, factory->GetOtherCreatedAssets()); });
+			factory->OnImportCompleted.bind([=](const Ref<Asset> &asset) { FinishAssetImport<T>(directory, relative, asset, factory->GetOtherCreatedAssets()); });
 			factory->Import(directory / relative);
 		}
 	}
@@ -104,36 +99,28 @@ namespace BHive
 	}
 
 	template <typename T>
-	void EditorContentBrowser<T>::OnRenameAsset(
-		const std::filesystem::path &relative_old, const std::filesystem::path &relative_new, bool directory)
+	void EditorContentBrowser<T>::OnRenameAsset(const std::filesystem::path &old_path, const std::filesystem::path &new_path)
 	{
-		auto old_path = Project::GetResourceDirectory() / relative_old;
-		auto new_path = Project::GetResourceDirectory() / relative_new;
-
-		if (std::filesystem::exists(new_path) && !std::filesystem::is_directory(new_path))
+		if (std::filesystem::exists(new_path))
 		{
-			LOG_WARN("File with name \"{}\" already exists!", new_path.filename().string());
 			return;
 		}
 
 		std::error_code error;
-
 		std::filesystem::rename(old_path, new_path, error);
 
 		if (error)
 		{
-			LOG_ERROR(
-				"EditorAssetManager RenameAsset({}, {}) ERROR: {}", old_path.string(), new_path.string(), error.message());
+			LOG_ERROR("EditorAssetManager RenameAsset({}, {}) ERROR: {}", old_path.string(), new_path.string(), error.message());
+			return;
 		}
-		else
+
+		if (auto manager = AssetManager::GetAssetManager<T>(); manager->GetHandle(old_path))
 		{
-			LOG_TRACE("EditorAssetManager RenameAsset({}, {})", old_path.string(), new_path.string());
-			if (!directory)
-			{
-				auto manager = AssetManager::GetAssetManager<T>();
-				manager->RenameAsset(relative_old, relative_new);
-			}
+			manager->RenameAsset(old_path, new_path);
 		}
+
+		LOG_TRACE("Renamed Asset({}, {})", old_path.string(), new_path.string());
 	}
 
 	template <typename T>
@@ -194,14 +181,13 @@ namespace BHive
 
 		if (factory->CanCreateNew())
 		{
-			factory->OnAssetCreated.bind([=](Ref<Asset> asset)
-										 { FinishCreateAsset<T>(factory->GetDefaultAssetName(), directory, asset); });
+			factory->OnAssetCreated.bind([=](Ref<Asset> asset) { FinishCreateAsset<T>(factory->GetDefaultAssetName(), directory, asset); });
 			factory->CreateNew();
 		}
 	}
 
 	template <typename T>
-	Ref<Texture2D> EditorContentBrowser<T>::OnGetIcon(bool directory, const std::filesystem::path &relative)
+	Ref<Texture2D> EditorContentBrowser<T>::OnGetIcon(const std::filesystem::directory_entry &entry)
 	{
 		static AssetThumbnailCache asset_cache;
 		auto &thumbnail_cache = GetSubSystem<ThumbnailCache>();
@@ -210,6 +196,7 @@ namespace BHive
 		auto asset_manager = AssetManager::GetAssetManager<EditorAssetManager>();
 		if (asset_manager)
 		{
+			auto relative = std::filesystem::relative(entry, Project::GetResourceDirectory());
 			auto handle = asset_manager->GetHandle(relative);
 			if (auto type = AssetManager::GetAssetType(handle))
 			{
@@ -219,20 +206,21 @@ namespace BHive
 
 		if (!texture)
 		{
-			if (directory)
+			if (entry.is_directory())
 			{
-				return thumbnail_cache.Get("DirectoryIcon");
+				bool is_empty = std::filesystem::is_empty(entry);
+				return thumbnail_cache.Get(is_empty ? "FolderIconEmpty" : "FolderIcon");
 			}
 
-			auto ext = relative.extension();
+			auto ext = entry.path().extension().string();
 
 			if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
 			{
-				texture = thumbnail_cache.Get(Project::GetResourceDirectory() / relative);
+				texture = thumbnail_cache.Get(entry.path());
 			}
 
 			if (!texture)
-				texture = thumbnail_cache.Get("FileIcon");
+				texture = thumbnail_cache.Get("Invalid");
 		}
 
 		return texture;

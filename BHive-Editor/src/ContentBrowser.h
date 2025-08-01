@@ -25,8 +25,16 @@ namespace BHive
 	{
 		using ContentBrowserActionFunc = std::function<void()>;
 
+		struct FileEntry
+		{
+			ImGuiID ID;
+			std::filesystem::directory_entry Entry;
+		};
+
+		using EntryItems = std::vector<FileEntry>;
+
 	public:
-		ContentBrowserPanel() = default;
+		ContentBrowserPanel();
 		ContentBrowserPanel(const std::filesystem::path &directory);
 
 		void OnGuiRender();
@@ -36,15 +44,13 @@ namespace BHive
 
 		virtual void OnImportAsset(const std::filesystem::path &directory, const std::filesystem::path &relative) {};
 		virtual void OnDeleteAsset(const std::filesystem::path &relative) {};
-		virtual void
-		OnRenameAsset(const std::filesystem::path &relative_old, const std::filesystem::path &relative_new, bool directory) {
-		};
+		virtual void OnRenameAsset(const std::filesystem::path &relative_old, const std::filesystem::path &relative_new) {};
 		virtual void OnReimportAsset(const std::filesystem::path &relative) {};
 		virtual void OnAssetContextMenu(const std::filesystem::path &relative) {}
 		virtual void OnAssetDoubleClicked(const std::filesystem::path &relative) {}
 		virtual bool IsAssetValid(const std::filesystem::path &relative) const { return false; };
 
-		virtual Ref<Texture2D> OnGetIcon(bool directory, const std::filesystem::path &relative) { return nullptr; };
+		virtual Ref<Texture2D> OnGetIcon(const std::filesystem::directory_entry &entry) { return nullptr; };
 		virtual bool GetDragDropData(UUID &data, const std::filesystem::path &relative) { return false; };
 
 	protected:
@@ -57,18 +63,19 @@ namespace BHive
 		void OnDeleteFolder(const std::filesystem::directory_entry &entry);
 		void DeleteFolder(const std::filesystem::directory_entry &entry);
 		void SetCurrentDirectory(const std::filesystem::path &path);
+		void ApplyDragDropTarget(const std::filesystem::directory_entry &entry);
 
 	private:
 		std::filesystem::path mBaseDirectory;
 		std::filesystem::path mCurrentDirectory;
 
 		float mPadding = 16.f, mThumbnailSize = 90.f;
-		bool mIsMouseDragging = false, mDragStarting = false;
 		FContentBrowserStyle mStyle{};
 
 		// content browser actions
-		ContentBrowserActionFunc sContentBrowerAction;
-		ContentBrowserActionFunc mDeselectFunc;
-		ContentBrowserActionFunc mDeleteFunc;
+		ContentBrowserActionFunc mContentBrowerAction;
+
+		ImGuiSelectionBasicStorage mSelection;
+		EntryItems mItems;
 	};
 } // namespace BHive
