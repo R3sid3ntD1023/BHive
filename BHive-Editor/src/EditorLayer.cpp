@@ -79,7 +79,7 @@ namespace BHive
 
 		AddSubSystem<SelectionSubSystem>();
 		AddSubSystem<ThumbnailCache>();
-		AddSubSystem<UndoRedo>().init(5);
+		AddSubSystem<UndoRedo>();
 
 		auto &window_system = AddSubSystem<WindowSubSystem>();
 		window_system.CreateWindow<LogPanel>();
@@ -106,7 +106,6 @@ namespace BHive
 
 	void EditorLayer::OnDetach()
 	{
-		GetSubSystem<UndoRedo>().shutdown();
 	}
 
 	void EditorLayer::OnUpdate(float dt)
