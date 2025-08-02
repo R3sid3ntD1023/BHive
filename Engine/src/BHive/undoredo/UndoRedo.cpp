@@ -2,66 +2,69 @@
 
 namespace BHive
 {
-	void UndoRedo::init(int16_t size)
+	void UndoRedo::add_history_command(const std::string &name, ICommand *cmd)
 	{
-		mMaxHistorySize = size;
-		mCommands = new FCommand[size + 1];
-	}
-
-	void UndoRedo::shutdown()
-	{
-		delete[] mCommands;
-	}
-
-	const UndoRedo::FCommand &UndoRedo::get_command_at(uint16_t index) const
-	{
-		ASSERT(index < mCommandCount);
-
-		return mCommands[index];
-	}
-
-	void UndoRedo::add_history_command(const std::string &name, ICommand *command)
-	{
-		ASSERT(mCommands, "Did you call undoredo::init()?");
-
-		if (mCurrentCommandIndex >= (mMaxHistorySize))
+		if (mCommandPtr < mCommandSize - 1)
 		{
-			mCurrentCommandIndex = mMaxHistorySize;
+			for (int i = mCommandSize - 1; i > mCommandPtr; i--)
+			{
+				delete mCommands[i];
+			}
+
+			mCommandSize = mCommandPtr + 1;
 		}
 
-		mCommands[mCurrentCommandIndex].Name = name;
-		mCommands[mCurrentCommandIndex].CommandPtr = command;
-		mCurrentCommandIndex++;
+		mCommands[mCommandSize] = new FCommand{name, cmd};
+		mCommandSize++;
 
-		if (mCommandCount < mMaxHistorySize)
-			mCommandCount++;
+		if (mCommandSize > 1 && mCommands[mCommandSize - 1]->Command->can_merge() && mCommands[mCommandSize - 2]->Command->can_merge())
+		{
+			if (mCommands[mCommandSize - 1]->Command->merge(mCommands[mCommandSize - 2]->Command))
+			{
+				delete mCommands[mCommandSize - 1];
+				mCommandSize--;
+			}
+		}
+
+		mCommandPtr = mCommandSize - 1;
 	}
 
 	void UndoRedo::undo()
 	{
-		if (mCurrentCommandIndex <= 0)
-			return;
 
-		mCommands[mCurrentCommandIndex - 1].CommandPtr->OnUndo();
-		mCurrentCommandIndex--;
+		if (mCommandPtr >= 0)
+		{
+			mCommands[mCommandPtr]->Command->on_undo();
+			mCommandPtr--;
+		}
 	}
 
 	void UndoRedo::redo()
 	{
-		if (mCurrentCommandIndex >= mCommandCount)
-			return;
-
-		mCurrentCommandIndex++;
-		mCommands[mCurrentCommandIndex - 1].CommandPtr->OnRedo();
+		int command = mCommandPtr + 1;
+		if (command < mCommandSize && command >= 0)
+		{
+			mCommands[command]->Command->on_redo();
+			mCommandPtr++;
+		}
 	}
 
 	void UndoRedo::clear()
 	{
-		delete[] mCommands;
+		for (uint16_t i = 0; i < mCommandSize; i++)
+		{
+			delete mCommands[i];
+		}
+	}
 
-		mCommands = new FCommand[mMaxHistorySize + 1];
-		mCurrentCommandIndex = 0;
-		mCommandCount = 0;
+	UndoRedo::Iterator UndoRedo::begin()
+	{
+		return Iterator(mCommands[0]);
+	}
+
+	UndoRedo::Iterator UndoRedo::end()
+	{
+		return Iterator(mCommands[mCommandSize]);
 	}
 
 } // namespace BHive

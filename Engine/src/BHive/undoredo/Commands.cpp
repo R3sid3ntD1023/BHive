@@ -2,7 +2,7 @@
 
 namespace BHive
 {
-	FCommandProperty::FCommandProperty(rttr::instance obj, const rttr::property &prop, const rttr::variant &new_value)
+	FCommandProperty::FCommandProperty(rttr::variant obj, const rttr::property &prop, const rttr::variant &new_value)
 		: mProperty(prop),
 		  mInstance(obj),
 		  mValue(new_value)
@@ -10,13 +10,28 @@ namespace BHive
 		mOldValue = mProperty.get_value(mInstance);
 	}
 
-	void FCommandProperty::OnUndo()
+	void FCommandProperty::on_undo()
 	{
 		mProperty.set_value(mInstance, mOldValue);
 	}
 
-	void FCommandProperty::OnRedo()
+	void FCommandProperty::on_redo()
 	{
 		mProperty.set_value(mInstance, mValue);
+	}
+
+	bool FCommandProperty::merge(ICommand *other)
+	{
+		FCommandProperty *command = dynamic_cast<FCommandProperty *>(other);
+		if (command)
+		{
+			if (command->mInstance == mInstance)
+			{
+				command->mValue = mValue;
+				return true;
+			}
+
+			return false;
+		}
 	}
 } // namespace BHive

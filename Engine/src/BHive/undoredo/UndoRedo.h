@@ -11,12 +11,43 @@ namespace BHive
 		{
 			std::string Name = "";
 
-			ICommand *CommandPtr = nullptr;
+			ICommand *Command = nullptr;
+
+			~FCommand() { delete Command; }
 		};
 
-		void init(int16_t size);
+		struct Iterator
+		{
+			using iterator_category = std::forward_iterator_tag;
+			using differnce_type = std::ptrdiff_t;
+			using value_type = FCommand;
+			using pointer = FCommand *;
+			using reference = FCommand &;
 
-		void shutdown();
+			Iterator(pointer ptr)
+				: m_ptr(ptr)
+			{
+			}
+
+			reference operator*() const { return *m_ptr; }
+			pointer operator->() { return m_ptr; }
+			Iterator &operator++()
+			{
+				m_ptr++;
+				return *this;
+			}
+			Iterator &operator++(int)
+			{
+				Iterator temp = *this;
+				++(*this);
+				return temp;
+			}
+
+			friend bool operator==(const Iterator &a, const Iterator &b) { return a.m_ptr == b.m_ptr; }
+
+		private:
+			pointer m_ptr;
+		};
 
 		void add_history_command(const std::string &name, ICommand *command);
 
@@ -26,13 +57,9 @@ namespace BHive
 
 		void clear();
 
-		uint16_t get_max_size() const { return mMaxHistorySize; }
+		int32_t get_command_size() const { return mCommandSize; }
 
-		uint16_t get_command_count() const { return mCommandCount; }
-
-		uint16_t get_current_command_index() const { return mCurrentCommandIndex; }
-
-		const FCommand &get_command_at(uint16_t index) const;
+		int32_t get_current_command_index() const { return mCommandPtr; }
 
 		template <typename T, typename... TArgs>
 		void add_history_command(const std::string &name, TArgs &&...args)
@@ -40,11 +67,14 @@ namespace BHive
 			add_history_command(name, new T(std::forward<TArgs>(args)...));
 		}
 
-	private:
-		FCommand *mCommands = nullptr;
+		Iterator begin();
 
-		uint16_t mMaxHistorySize = 0;
-		uint16_t mCommandCount = 0;
-		uint16_t mCurrentCommandIndex = 0;
+		Iterator end();
+
+	private:
+		FCommand *mCommands[1000] = {};
+
+		int32_t mCommandSize = 0;
+		int32_t mCommandPtr = 0;
 	};
 } // namespace BHive

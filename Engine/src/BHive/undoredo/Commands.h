@@ -7,18 +7,22 @@ namespace BHive
 {
 	struct FCommandProperty : public ICommand
 	{
-		FCommandProperty(rttr::instance obj, const rttr::property &prop, const rttr::variant &new_value);
+		FCommandProperty(rttr::variant obj, const rttr::property &prop, const rttr::variant &new_value);
 
-		virtual void OnUndo();
+		virtual void on_undo() override;
 
-		virtual void OnRedo();
+		virtual void on_redo() override;
+
+		virtual bool can_merge() const { return true; }
+
+		virtual bool merge(ICommand *other) override;
 
 	private:
 		rttr::variant mValue;
 		rttr::variant mOldValue;
 
 		rttr::property mProperty;
-		rttr::instance mInstance;
+		rttr::variant mInstance;
 	};
 
 } // namespace BHive
