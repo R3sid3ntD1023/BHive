@@ -2,13 +2,33 @@
 #include "world/GameObject.h"
 #include "Inspect.h"
 #include "Gui/ImGuiExtended.h"
+#include "undoredo/Command.h"
+#include "core/subsystem/SubSystem.h"
+#include "undoredo/UndoRedo.h"
 
 namespace BHive
 {
+	struct FCommandAddComponent : public ICommand
+	{
+		FCommandAddComponent(GameObject *obj, const rttr::type &component_type)
+			: mObj(obj),
+			  mComponentType(component_type)
+		{
+		}
+
+		virtual void on_undo() override { mComponentType.get_method(REMOVE_COMPONENT_FUNCTION_NAME).invoke({mObj}); }
+
+		virtual void on_redo() override { mComponentType.get_method(ADD_COMPONENT_FUNCTION_NAME).invoke({mObj}); }
+
+	private:
+		GameObject *mObj;
+		rttr::type mComponentType;
+	};
+
 	bool Inspector_GameObject::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		bool changed = false;
-		auto &data = var.get_value<GameObject *>();
+		auto data = var.get_value<GameObject *>();
 		auto type = data->get_type();
 		auto properties = type.get_properties();
 
@@ -64,6 +84,9 @@ namespace BHive
 				if (ImGui::Selectable(type.get_name().data()))
 				{
 					type.get_method(ADD_COMPONENT_FUNCTION_NAME).invoke({data});
+
+					GetSubSystem<UndoRedo>().add_history_command<FCommandAddComponent>("Add Component", data, type);
+
 					changed |= true;
 				}
 			}

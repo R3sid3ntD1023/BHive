@@ -45,9 +45,8 @@ namespace BHive
 
 	void GameObject::End()
 	{
-		for (auto it = mComponents.rbegin(); it != mComponents.rend(); it++)
+		for (auto component : mComponents)
 		{
-			auto component = (*it);
 			component->End();
 		}
 	}
@@ -175,7 +174,7 @@ namespace BHive
 	void GameObject::AddComponent(Component *component)
 	{
 		component->SetOwner(this);
-		mComponents.emplace_back(component);
+		mComponents.push_back(component);
 	}
 
 	void GameObject::SetParent(GameObject *object)

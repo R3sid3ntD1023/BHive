@@ -205,8 +205,6 @@ namespace BHive
 				mPropertyChangedCallback(object, property, prop_var);
 
 				property.set_value(object, prop_var);
-
-				LOG_TRACE("Property Changed and Set {}", property.get_name());
 			}
 		}
 

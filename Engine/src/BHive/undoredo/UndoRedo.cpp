@@ -27,6 +27,8 @@ namespace BHive
 		}
 
 		mCommandPtr = mCommandSize - 1;
+
+		LOG_TRACE("Added Command : {}", name);
 	}
 
 	void UndoRedo::undo()

@@ -49,8 +49,7 @@ namespace BHive
 			ASSERT(HasComponent<T>())
 
 			T *component = GetComponent<T>();
-			auto it = std::find_if(
-				mComponents.begin(), mComponents.end(), [component](Component *comp) { return component == comp; });
+			auto it = std::find_if(mComponents.begin(), mComponents.end(), [component](Component *comp) { return component == comp; });
 
 			mComponents.erase(it);
 			mWorld->mRegistry.remove<T>(mEntity);
@@ -137,10 +136,8 @@ namespace BHive
 #define ADD_COMPONENT_FUNCTION() REFLECT_METHOD(ADD_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::AddComponent<T>)
 #define HAS_COMPONENT_FUNCTION() REFLECT_METHOD(HAS_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::HasComponent<T>)
 #define REMOVE_COMPONENT_FUNCTION() REFLECT_METHOD(REMOVE_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::RemoveComponent<T>)
-#define GET_COMPONENT_FUNCTION() \
-	REFLECT_METHOD(GET_COMPONENT_FUNCTION_NAME, rttr::select_const(&::BHive::GameObject::GetComponent<T>))
-#define EMPLACE_OR_REPLACE_COMPONENT_FUNCTION() \
-	REFLECT_METHOD(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::EmplaceOrReplaceComponent<T>)
+#define GET_COMPONENT_FUNCTION() REFLECT_METHOD(GET_COMPONENT_FUNCTION_NAME, rttr::select_const(&::BHive::GameObject::GetComponent<T>))
+#define EMPLACE_OR_REPLACE_COMPONENT_FUNCTION() REFLECT_METHOD(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME, &::BHive::GameObject::EmplaceOrReplaceComponent<T>)
 
 #define COMPONENT_IMPL()        \
 	ADD_COMPONENT_FUNCTION()    \

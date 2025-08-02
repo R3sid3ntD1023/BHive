@@ -3,9 +3,28 @@
 #include "world/GameObject.h"
 #include "gui/ImGuiExtended.h"
 #include "Inspect.h"
+#include "core/subsystem/SubSystem.h"
+#include "undoredo/UndoRedo.h"
 
 namespace BHive
 {
+	struct FCommandRemoveComponent : public ICommand
+	{
+		FCommandRemoveComponent(GameObject *obj, Component *component)
+			: mObj(obj),
+			  mComponent(component)
+		{
+		}
+
+		virtual void on_undo() override { mComponent->get_type().get_method(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME).invoke({mObj}, mComponent); }
+
+		virtual void on_redo() override { mComponent->get_type().get_method(REMOVE_COMPONENT_FUNCTION_NAME).invoke({mObj}); }
+
+	private:
+		GameObject *mObj;
+		Component *mComponent;
+	};
+
 	bool InspectorComponent::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		bool changed = false, removed = false;
@@ -33,6 +52,7 @@ namespace BHive
 
 				if (ImGui::Button("Remove", button_size))
 				{
+					GetSubSystem<UndoRedo>().add_history_command<FCommandRemoveComponent>("Removed Component", data->GetOwner(), data);
 					removed |= true;
 				}
 			}
