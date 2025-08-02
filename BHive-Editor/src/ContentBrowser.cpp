@@ -504,8 +504,7 @@ namespace BHive
 	{
 		if (!entry.is_directory())
 		{
-			auto relative_path = std::filesystem::relative(entry.path(), mBaseDirectory);
-			OnDeleteAsset(relative_path);
+			OnDeleteAsset(entry);
 		}
 
 		if (entry.is_directory())

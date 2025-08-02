@@ -37,8 +37,7 @@ namespace BHive
 
 		ImGui::EndChild();
 
-		if (ImGui::BeginPopupContextItem(
-				"SceneHierarchyPanel", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonDefault_))
+		if (ImGui::BeginPopupContextItem("SceneHierarchyPanel", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonDefault_))
 		{
 
 			if (ImGui::MenuItem("Create Entity"))
@@ -72,8 +71,7 @@ namespace BHive
 			ImGui::EndDragDropTarget();
 		}
 
-		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && ImGui::IsMouseClicked(ImGuiMouseButton_Left) &&
-			!ImGui::IsAnyItemHovered())
+		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
 		{
 			selection.Clear();
 		}
@@ -104,8 +102,7 @@ namespace BHive
 
 		bool destroyed = false;
 
-		ImGuiTreeNodeFlags flags =
-			ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
 
 		bool selected = selection.GetSelection() == obj;
 
@@ -145,7 +142,8 @@ namespace BHive
 			ImGui::EndPopup();
 		}
 
-		if (selected)
+		bool focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
+		if (selected && focused)
 		{
 			if ((ImGui::IsKeyDown(ImGuiKey_ModAlt) && ImGui::IsKeyPressed(ImGuiKey_P)))
 			{
