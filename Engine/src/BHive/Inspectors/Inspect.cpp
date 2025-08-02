@@ -131,9 +131,7 @@ namespace BHive
 		return rttr::variant();
 	}
 
-	bool Inspect::inspect(
-		const rttr::variant &instance, rttr::variant &var, bool skip_custom, bool read_only, float width,
-		const MetaGetter &get_meta_data)
+	bool Inspect::inspect(const rttr::variant &instance, rttr::variant &var, bool skip_custom, bool read_only, float width, const MetaGetter &get_meta_data)
 	{
 		rttr::instance object = var;
 		auto type = GetInstanceType(object);
@@ -161,19 +159,19 @@ namespace BHive
 			for (auto property : properties)
 			{
 
-				changed |= inspect(var, object, property, read_only, width);
+				changed |= inspect(instance, var, property, read_only, width);
 			}
 		}
 
 		return changed;
 	}
 
-	bool Inspect::inspect(
-		const rttr::variant &instance, rttr::instance &object, rttr::property &property, bool read_only, float width)
+	bool Inspect::inspect(const rttr::variant &instance, rttr::variant &object, rttr::property &property, bool read_only, float width)
 	{
 		rttr::variant prop_var = property.get_value(object);
 		rttr::variant original_var = prop_var;
 		rttr::instance prop_object = prop_var;
+		rttr::instance obj_instance = object;
 		auto type = GetInstanceType(prop_object);
 		auto inspector = InspectorRegistry::Get().GetInspector(type);
 		bool is_read_only = property.is_readonly() || read_only;
@@ -202,16 +200,13 @@ namespace BHive
 			auto meta_getter = [property](const rttr::variant &key) -> rttr::variant { return property.get_metadata(key); };
 			changed |= inspect(instance, prop_var, false, is_read_only, width, meta_getter);
 
-			if (mPropertyChangedCallback && changed)
+			if (mPropertyChangedCallback && changed && !is_read_only)
 			{
 				mPropertyChangedCallback(object, property, prop_var);
-			}
-
-			if ((prop_var != original_var) && !is_read_only)
-			{
-				LOG_TRACE("Property Changed and Set {}", property.get_name());
 
 				property.set_value(object, prop_var);
+
+				LOG_TRACE("Property Changed and Set {}", property.get_name());
 			}
 		}
 

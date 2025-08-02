@@ -7,8 +7,7 @@
 namespace BHive
 {
 
-	bool Inspector_String::Inspect(
-		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_String::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		auto data = var.to_string();
 		if (is_read_only)
@@ -17,8 +16,7 @@ namespace BHive
 			return false;
 		}
 
-		bool changed =
-			ImGui::InputText("##", &data, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll);
+		bool changed = ImGui::InputText("##", &data, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll);
 
 		auto default_var = GetMetaData(EPropertyMetaData_Default);
 		auto default_value = default_var ? default_var.to_string() : "";
@@ -40,12 +38,10 @@ namespace BHive
 		return changed;
 	}
 
-	bool Inspector_Float::Inspect(
-		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_Float::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		auto data = var.to_float();
 		bool changed = false;
-		bool updated_value = false;
 
 		if (is_read_only)
 		{
@@ -67,16 +63,11 @@ namespace BHive
 
 		if ((flags & EPropertyFlags_Slider) != 0)
 		{
-			updated_value |= ImGui::SliderFloat("##", &data, min, max, format.c_str());
+			changed |= ImGui::SliderFloat("##", &data, min, max, format.c_str());
 		}
 		else
 		{
-			updated_value |= ImGui::DragFloat("##", &data, step, min, max, format.c_str());
-		}
-
-		if (ImGui::IsItemDeactivatedAfterEdit())
-		{
-			changed |= true;
+			changed |= ImGui::DragFloat("##", &data, step, min, max, format.c_str());
 		}
 
 		auto default_var = GetMetaData(EPropertyMetaData_Default);
@@ -86,12 +77,12 @@ namespace BHive
 			if (ImGui::MenuItem("Reset"))
 			{
 				data = default_value;
-				updated_value |= true;
+				changed |= true;
 			}
 			ImGui::EndPopup();
 		}
 
-		if (updated_value)
+		if (changed)
 		{
 			if (min_var && (data < min))
 				data = min;
@@ -105,8 +96,7 @@ namespace BHive
 		return changed;
 	}
 
-	bool Inspector_Bool::Inspect(
-		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_Bool::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		auto data = var.to_bool();
 		bool changed = false;
@@ -140,8 +130,7 @@ namespace BHive
 	}
 
 	template <typename TIntegerType>
-	bool Inspector_Int<TIntegerType>::Inspect(
-		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_Int<TIntegerType>::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		auto data = (int)var.get_value<TIntegerType>();
 		bool changed = false;
@@ -174,11 +163,6 @@ namespace BHive
 		else
 		{
 			updated_value |= ImGui::DragInt("##", &data, step, min, max, format.c_str());
-		}
-
-		if (ImGui::IsItemDeactivatedAfterEdit())
-		{
-			changed |= true;
 		}
 
 		if (ImGui::BeginPopupContextItem())

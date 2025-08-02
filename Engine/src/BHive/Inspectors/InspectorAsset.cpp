@@ -2,11 +2,28 @@
 #include "asset/EditorAssetManager.h"
 #include "gui/ImGuiExtended.h"
 #include "InspectorAsset.h"
+#include "project/Project.h"
 
 #define ASSET_DRAG_DROP_NAME "CONTENT_BROWSER_ITEM"
 
 namespace BHive
 {
+	static auto get_entries(const char *buffer, size_t size)
+	{
+		std::vector<std::filesystem::directory_entry> entries;
+		const char *current = buffer;
+		const char *end = buffer + size;
+
+		while (current < end)
+		{
+			std::string str(current);
+			if (!str.empty())
+				entries.emplace_back(str);
+			current += str.size() + 1;
+		}
+
+		return entries;
+	}
 
 	bool Inspector_Asset::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
@@ -53,7 +70,6 @@ namespace BHive
 				if (selected)
 				{
 					data = AssetManager::GetAsset(id);
-
 					changed |= true;
 					break;
 				}
@@ -66,13 +82,18 @@ namespace BHive
 		{
 			if (auto payload = ImGui::AcceptDragDropPayload(ASSET_DRAG_DROP_NAME))
 			{
-				auto handle = *(UUID *)payload->Data;
-				auto meta_data = asset_manager->GetMetaData(handle);
-				if (meta_data.Type == type || meta_data.Type.is_derived_from(type))
+				auto buffer = (const char *)payload->Data;
+				auto entries = get_entries(buffer, payload->DataSize);
+				if (!entries.empty())
 				{
-
-					data = AssetManager::GetAsset(handle);
-					changed |= true;
+					auto relative = std::filesystem::relative(entries[0], Project::GetResourceDirectory());
+					auto handle = asset_manager->GetHandle(relative);
+					auto meta_data = asset_manager->GetMetaData(handle);
+					if (meta_data.Type == inspected_type || meta_data.Type.is_derived_from(inspected_type))
+					{
+						data = AssetManager::GetAsset(handle);
+						changed |= true;
+					}
 				}
 			}
 			ImGui::EndDragDropTarget();
