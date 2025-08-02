@@ -85,16 +85,37 @@ namespace BHive
 	}
 
 	template <typename T>
-	void EditorContentBrowser<T>::OnDeleteAsset(const std::filesystem::path &relative)
+	void EditorContentBrowser<T>::OnDeleteAsset(const std::filesystem::path &path)
 	{
+		auto relative = std::filesystem::relative(path, Project::GetResourceDirectory());
 		auto manager = AssetManager::GetAssetManager<T>();
 		manager->RemoveAsset(relative);
 
 		std::error_code error;
-		std::filesystem::remove(Project::GetResourceDirectory() / relative, error);
+		std::filesystem::remove(path, error);
 		if (error)
 		{
 			LOG_ERROR("EditorContentBrower::DeleteAsset {}", error.message());
+		}
+	}
+
+	template <typename T>
+	void EditorContentBrowser<T>::RenameAsset(const std::filesystem::path &_old, const std::filesystem::path &_new, const std::filesystem::recursive_directory_iterator &it)
+	{
+		auto relative_old = std::filesystem::relative(_old, Project::GetResourceDirectory());
+		auto relative_new = std::filesystem::relative(_new, Project::GetResourceDirectory());
+
+		if (auto manager = AssetManager::GetAssetManager<T>())
+		{
+			manager->RenameAsset(relative_old, relative_new);
+
+			for (auto &entry : it)
+			{
+				auto entry_relative = std::filesystem::relative(entry, Project::GetResourceDirectory());
+				auto new_relative = std::filesystem::relative(_new / entry.path().filename(), Project::GetResourceDirectory());
+
+				manager->RenameAsset(entry_relative, new_relative);
+			}
 		}
 	}
 
@@ -106,6 +127,8 @@ namespace BHive
 			return;
 		}
 
+		auto old_entries = std::filesystem::recursive_directory_iterator(old_path);
+
 		std::error_code error;
 		std::filesystem::rename(old_path, new_path, error);
 
@@ -115,19 +138,14 @@ namespace BHive
 			return;
 		}
 
-		if (auto manager = AssetManager::GetAssetManager<T>(); manager->GetHandle(old_path))
-		{
-			manager->RenameAsset(old_path, new_path);
-		}
+		RenameAsset(old_path, new_path, old_entries);
 
 		LOG_TRACE("Renamed Asset({}, {})", old_path.string(), new_path.string());
 	}
 
 	template <typename T>
-	void EditorContentBrowser<T>::OnReimportAsset(const std::filesystem::path &relative)
+	void EditorContentBrowser<T>::OnReimportAsset(const std::filesystem::path &path)
 	{
-		auto path = Project::GetResourceDirectory() / relative;
-
 		Ref<Asset> asset;
 		AssetFactory factory;
 		if (factory.Import(asset, path))
@@ -138,8 +156,9 @@ namespace BHive
 	}
 
 	template <typename T>
-	void EditorContentBrowser<T>::OnAssetContextMenu(const std::filesystem::path &relative)
+	void EditorContentBrowser<T>::OnAssetContextMenu(const std::filesystem::path &path)
 	{
+		auto relative = std::filesystem::relative(path, Project::GetResourceDirectory());
 		auto manager = AssetManager::GetAssetManager<T>();
 		auto meta_data = manager->GetMetaData(relative);
 		auto menu = AssetContextMenuRegistry::Get().GetAssetMenu(meta_data.Type);
@@ -153,8 +172,9 @@ namespace BHive
 	}
 
 	template <typename T>
-	void EditorContentBrowser<T>::OnAssetDoubleClicked(const std::filesystem::path &relative)
+	void EditorContentBrowser<T>::OnAssetDoubleClicked(const std::filesystem::path &path)
 	{
+		auto relative = std::filesystem::relative(path, Project::GetResourceDirectory());
 		auto manager = AssetManager::GetAssetManager<T>();
 		auto meta_data = manager->GetMetaData(relative);
 		auto menu = AssetContextMenuRegistry::Get().GetAssetMenu(meta_data.Type);
@@ -168,8 +188,9 @@ namespace BHive
 	}
 
 	template <typename T>
-	bool EditorContentBrowser<T>::IsAssetValid(const std::filesystem::path &relative) const
+	bool EditorContentBrowser<T>::IsAssetValid(const std::filesystem::path &path) const
 	{
+		auto relative = std::filesystem::relative(path, Project::GetResourceDirectory());
 		auto manager = AssetManager::GetAssetManager<T>();
 		auto handle = manager->GetHandle(relative);
 		return manager->IsAssetHandleValid(handle);
@@ -224,14 +245,6 @@ namespace BHive
 		}
 
 		return texture;
-	}
-
-	template <typename T>
-	bool EditorContentBrowser<T>::GetDragDropData(UUID &data, const std::filesystem::path &relative)
-	{
-		auto manager = AssetManager::GetAssetManager<T>();
-		data = manager->GetHandle(relative);
-		return (bool)data;
 	}
 
 	template <typename T>
