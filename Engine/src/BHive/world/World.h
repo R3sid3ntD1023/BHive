@@ -56,8 +56,7 @@ namespace BHive
 		Ref<T> CreateGameObject(const std::string &name)
 			requires(std::is_base_of_v<GameObject, T>)
 		{
-			auto object = CreateRef<T>(mRegistry.create(), this);
-			object->SetName(name);
+			auto object = CreateRef<T>(name, mRegistry.create(), this);
 			AddGameObject(object);
 			return object;
 		}
@@ -72,9 +71,7 @@ namespace BHive
 
 		void Destroy(const UUID &id);
 
-		bool RayCast(
-			const glm::vec3 &start, const glm::vec3 &dir, float maxDistance, FHitResult &result,
-			uint16_t categoryMasks = 65535U);
+		bool RayCast(const glm::vec3 &start, const glm::vec3 &dir, float maxDistance, FHitResult &result, uint16_t categoryMasks = 65535U);
 
 		bool IsRunning() const { return mIsRunning; }
 		bool IsPaused() const { return mIsPaused; }

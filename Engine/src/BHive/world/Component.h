@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-	struct GameObject;
+	class GameObject;
 
 	struct BHIVE_API Component
 	{

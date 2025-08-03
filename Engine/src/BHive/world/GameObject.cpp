@@ -14,6 +14,12 @@ namespace BHive
 		AddComponent<RelationshipComponent>();
 	}
 
+	GameObject::GameObject(const std::string &name, const entt::entity &handle, World *world)
+		: GameObject(handle, world)
+	{
+		SetName(name);
+	}
+
 	void GameObject::Begin()
 	{
 		for (auto &component : mComponents)
@@ -49,6 +55,17 @@ namespace BHive
 		{
 			component->End();
 		}
+	}
+
+	Ref<GameObject> GameObject::Duplicate() const
+	{
+		auto duplicate = CreateRef<GameObject>(*this);
+		for (auto &component : mComponents)
+		{
+			component->get_type().get_method(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME).invoke({duplicate}, component);
+		}
+
+		return duplicate;
 	}
 
 	PhysicsComponent *GameObject::GetPhysicsComponent()

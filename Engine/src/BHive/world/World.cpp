@@ -319,8 +319,7 @@ namespace BHive
 				body->setAngularDamping(settings.AngularDamping);
 				body->setLinearDamping(settings.LinearDamping);
 				body->setMass(settings.Mass);
-				body->setRigidDynamicLockFlags(
-					physics::utils::GetLockFlags(settings.LinearLockAxis, settings.AngularLockAxis));
+				body->setRigidDynamicLockFlags(physics::utils::GetLockFlags(settings.LinearLockAxis, settings.AngularLockAxis));
 				body->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, !settings.GravityEnabled);
 				rigid_body = body;
 			}
@@ -485,8 +484,7 @@ namespace BHive
 		mDestoryedObjects.push_back(mObjects.at(id));
 	}
 
-	bool World::RayCast(
-		const glm::vec3 &start, const glm::vec3 &dir, float maxDistance, FHitResult &result, uint16_t categoryMasks)
+	bool World::RayCast(const glm::vec3 &start, const glm::vec3 &dir, float maxDistance, FHitResult &result, uint16_t categoryMasks)
 	{
 		physx::PxRaycastBuffer hit;
 		physx::PxQueryFilterData filter{};

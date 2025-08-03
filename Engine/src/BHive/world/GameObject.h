@@ -14,17 +14,20 @@ namespace BHive
 
 	using ComponentList = std::vector<Component *>;
 
-	struct BHIVE_API GameObject : public ITickable
+	class BHIVE_API GameObject : public ITickable
 	{
+	public:
 		using TickableComponents = std::vector<ITickable *>;
 
 		GameObject(const entt::entity &handle, World *world);
+		GameObject(const std::string &name, const entt::entity &handle, World *world);
 		GameObject(const GameObject &) = default;
 
 		virtual void Begin();
 		virtual void Update(float dt);
 		virtual void Render();
 		virtual void End();
+		virtual Ref<GameObject> Duplicate() const;
 
 		template <typename T, typename... TArgs>
 		T *AddComponent(TArgs &&...args)
