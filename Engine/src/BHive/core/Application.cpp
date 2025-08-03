@@ -8,6 +8,8 @@
 #include "threading/Threading.h"
 #include "Time.h"
 #include "WindowInput.h"
+#include "subsystem/SubSystem.h"
+#include "undoredo/UndoRedo.h"
 
 namespace BHive
 {
@@ -39,6 +41,8 @@ namespace BHive
 
 		mImGuiLayer = new ImGuiLayer(mWindow->GetNative());
 		PushLayer(mImGuiLayer);
+
+		AddSubSystem<UndoRedo>();
 	}
 
 	Application::~Application()

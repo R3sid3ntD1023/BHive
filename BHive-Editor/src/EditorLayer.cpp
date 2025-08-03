@@ -79,7 +79,6 @@ namespace BHive
 
 		AddSubSystem<SelectionSubSystem>();
 		AddSubSystem<ThumbnailCache>();
-		AddSubSystem<UndoRedo>();
 
 		auto &window_system = AddSubSystem<WindowSubSystem>();
 		window_system.CreateWindow<LogPanel>();
@@ -190,7 +189,7 @@ namespace BHive
 
 		Viewport();
 
-		if (ImGui::Begin("Settings"))
+		if (ImGui::Begin("Render Settings"))
 		{
 
 			Inspect::inspect("Renderer", mRenderer);
