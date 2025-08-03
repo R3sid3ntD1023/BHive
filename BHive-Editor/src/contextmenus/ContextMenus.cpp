@@ -14,6 +14,7 @@
 #include "editorwindows/AnimationEditor.h"
 #include "editorwindows/SkeletonEditor.h"
 #include "editorwindows/AnimGraph/AnimGraphEditor.h"
+#include "editorwindows/PrefabEditor.h"
 
 #include "mesh/StaticMesh.h"
 #include "mesh/SkeletalMesh.h"
@@ -68,5 +69,6 @@ namespace BHive
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<AnimationEditor>, SkeletalAnimation);
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<SkeletonEditor>, Skeleton);
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<AnimGraphEditor>, AnimGraph);
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<PrefabEditor>, Prefab);
 
 } // namespace BHive
