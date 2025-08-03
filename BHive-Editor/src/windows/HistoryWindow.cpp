@@ -14,8 +14,8 @@ namespace BHive
 		for (const auto &it : undo_system)
 		{
 
-			ImGui::PushID(&it.Command);
-			ImGui::Selectable(it.Name.c_str(), index == i++);
+			ImGui::PushID(it->Command);
+			ImGui::Selectable(it->Name.c_str(), index == i++);
 			ImGui::PopID();
 		}
 

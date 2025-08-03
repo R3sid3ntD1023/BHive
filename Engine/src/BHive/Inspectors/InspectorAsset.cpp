@@ -25,7 +25,7 @@ namespace BHive
 		return entries;
 	}
 
-	bool Inspector_Asset::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_Asset::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 
 		auto asset_manager = AssetManager::GetAssetManager<EditorAssetManager>();

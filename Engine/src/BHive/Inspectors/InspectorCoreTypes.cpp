@@ -7,7 +7,7 @@
 namespace BHive
 {
 
-	bool Inspector_String::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_String::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		auto data = var.to_string();
 		if (is_read_only)
@@ -38,7 +38,7 @@ namespace BHive
 		return changed;
 	}
 
-	bool Inspector_Float::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_Float::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		auto data = var.to_float();
 		bool changed = false;
@@ -96,7 +96,7 @@ namespace BHive
 		return changed;
 	}
 
-	bool Inspector_Bool::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_Bool::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		auto data = var.to_bool();
 		bool changed = false;
@@ -130,11 +130,10 @@ namespace BHive
 	}
 
 	template <typename TIntegerType>
-	bool Inspector_Int<TIntegerType>::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_Int<TIntegerType>::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		auto data = (int)var.get_value<TIntegerType>();
 		bool changed = false;
-		bool updated_value = false;
 
 		if (is_read_only)
 		{
@@ -158,11 +157,11 @@ namespace BHive
 
 		if ((flags & EPropertyFlags_Slider) != 0)
 		{
-			updated_value |= ImGui::SliderInt("##", &data, min, max, format.c_str());
+			changed |= ImGui::SliderInt("##", &data, min, max, format.c_str());
 		}
 		else
 		{
-			updated_value |= ImGui::DragInt("##", &data, step, min, max, format.c_str());
+			changed |= ImGui::DragInt("##", &data, step, min, max, format.c_str());
 		}
 
 		if (ImGui::BeginPopupContextItem())
@@ -170,12 +169,12 @@ namespace BHive
 			if (ImGui::MenuItem("Reset"))
 			{
 				data = default_value;
-				updated_value |= true;
+				changed |= true;
 			}
 			ImGui::EndPopup();
 		}
 
-		if (updated_value)
+		if (changed)
 		{
 			if (min_var && (data <= min))
 				data = min;

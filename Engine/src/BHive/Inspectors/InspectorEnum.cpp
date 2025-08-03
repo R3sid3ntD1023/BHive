@@ -20,8 +20,7 @@ namespace BHive
 		return mEnumNameCache[enum_id];
 	}
 
-	bool Inspector_Enum::Inspect(
-		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_Enum::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		auto type = var.get_type();
 		auto data = var.to_int();
@@ -68,8 +67,7 @@ namespace BHive
 		return changed;
 	}
 
-	bool Inspector_EnumAsByte::Inspect(
-		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_EnumAsByte::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		auto data = &var.get_value<TEnumAsByteBase>();
 		auto enumeration = data->GetEnumeration();

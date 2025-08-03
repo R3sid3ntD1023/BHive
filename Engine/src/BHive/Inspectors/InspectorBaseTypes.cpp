@@ -6,8 +6,7 @@
 
 namespace BHive
 {
-	bool Inspector_UUID::Inspect(
-		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_UUID::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		auto data = var.get_value<UUID>();
 
@@ -17,9 +16,7 @@ namespace BHive
 	}
 
 	template <glm::length_t L, typename T, glm::qualifier Q>
-	bool OnInspectVector(
-		glm::vec<L, T, Q> &vec, const glm::vec<L, T, Q> &defaultvalue, const glm::vec<L, T, Q> &min,
-		const glm::vec<L, T, Q> &max, const char *format)
+	bool OnInspectVector(glm::vec<L, T, Q> &vec, const glm::vec<L, T, Q> &defaultvalue, const glm::vec<L, T, Q> &min, const glm::vec<L, T, Q> &max, const char *format)
 	{
 		static const char *component_names[] = {"X", "Y", "Z", "W"};
 		static ImU32 component_colors[] = {0xFF0000FF, 0xFF00FF00, 0xFFFF0000, 0xFF00AAFF};
@@ -44,7 +41,7 @@ namespace BHive
 			ImGui::SameLine();
 
 			ImGui::PushID(i);
-			changed |= Inspect::inspect("", component);
+			changed |= Inspect::get().inspect("", vec, component);
 
 			ImGui::PopID();
 
@@ -60,8 +57,7 @@ namespace BHive
 	}
 
 	template <typename T>
-	bool Inspector_Vec<T>::Inspect(
-		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_Vec<T>::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		static T zero = T(0.0f);
 		auto data = var.get_value<T>();
@@ -91,8 +87,7 @@ namespace BHive
 		return false;
 	}
 
-	bool Inspector_Color::Inspect(
-		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_Color::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		auto data = var.get_value<FColor>();
 

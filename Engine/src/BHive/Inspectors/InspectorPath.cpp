@@ -4,8 +4,7 @@
 
 namespace BHive
 {
-	bool Inspector_Path::Inspect(
-		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_Path::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		auto data = var.get_value<std::filesystem::path>();
 		auto data_str = data.string();

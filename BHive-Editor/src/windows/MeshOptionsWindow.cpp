@@ -10,8 +10,7 @@
 
 namespace BHive
 {
-	MeshOptionsWindow::MeshOptionsWindow(
-		MeshFactory *factory, const std::filesystem::path &filePath, const FMeshImportData &data)
+	MeshOptionsWindow::MeshOptionsWindow(MeshFactory *factory, const std::filesystem::path &filePath, const FMeshImportData &data)
 		: WindowBase(ImGuiWindowFlags_NoSavedSettings),
 		  mImportData(data),
 		  mFactory(factory),
@@ -26,7 +25,7 @@ namespace BHive
 	{
 		bool animations_enabled = mImportData.mBoneData.size() > 0 && mOptions.MeshType != EMeshType::StaticMesh;
 
-		if (Inspect::inspect("Mesh Type", mOptions.MeshType))
+		if (Inspect::get().inspect("Mesh Type", this, mOptions.MeshType))
 		{
 			if (mOptions.MeshType == EMeshType::SkeletalAnimation)
 			{
@@ -37,21 +36,21 @@ namespace BHive
 		ImGui::SeparatorText("Materials");
 
 		ImGui::BeginDisabled(!mImportData.mMaterialData.size());
-		Inspect::inspect("Import Materials", mOptions.ImportMaterials);
+		Inspect::get().inspect("Import Materials", this, mOptions.ImportMaterials);
 		ImGui::EndDisabled();
 
 		// allow overriding materials
 		ImGui::SeparatorText("Override Materials");
 		for (size_t i = 0; i < mOptions.OverideMaterials.size(); i++)
 		{
-			Inspect::inspect(std::format("Material {}", i), mOptions.OverideMaterials[i]);
+			Inspect::get().inspect(std::format("Material {}", i), this, mOptions.OverideMaterials[i]);
 		}
 
 		ImGui::SeparatorText("Animations");
 		ImGui::BeginDisabled(!animations_enabled);
 
-		Inspect::inspect("Import Animations", mOptions.ImportAnimations);
-		Inspect::inspect("Skeleton", mOptions.Skeleton);
+		Inspect::get().inspect("Import Animations", this, mOptions.ImportAnimations);
+		Inspect::get().inspect("Skeleton", this, mOptions.Skeleton);
 
 		ImGui::EndDisabled();
 

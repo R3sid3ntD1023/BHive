@@ -25,7 +25,7 @@ namespace BHive
 		Component *mComponent;
 	};
 
-	bool InspectorComponent::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool InspectorComponent::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		bool changed = false, removed = false;
 		auto data = var.get_value<Component *>();
@@ -41,7 +41,7 @@ namespace BHive
 
 			for (auto property : properties)
 			{
-				changed |= Inspect::inspect(owner, var, property, is_read_only);
+				changed |= Inspect::get().inspect(owner, var, property, is_read_only);
 			}
 
 			if (type.get_metadata(ClassMetaData_ComponentSpawnable) && !is_read_only)

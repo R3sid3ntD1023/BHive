@@ -25,7 +25,7 @@ namespace BHive
 		rttr::type mComponentType;
 	};
 
-	bool Inspector_GameObject::Inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_GameObject::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		bool changed = false;
 		auto data = var.get_value<GameObject *>();
@@ -34,14 +34,14 @@ namespace BHive
 
 		for (auto property : properties)
 		{
-			changed |= Inspect::inspect(owner, var, property, is_read_only);
+			changed |= Inspect::get().inspect(owner, var, property, is_read_only);
 		}
 
 		ImGui::SeparatorText("Components");
 
 		for (auto &component : data->GetComponents())
 		{
-			changed |= Inspect::inspect("", component, false, is_read_only);
+			changed |= Inspect::get().inspect("", data, component, false, is_read_only);
 		}
 
 		if (is_read_only)

@@ -34,10 +34,10 @@ namespace BHive
 
 			if (ImGui::BeginChild("Create SubTexture"))
 			{
-				Inspect::inspect("X", mSubTexture.x);
-				Inspect::inspect("Y", mSubTexture.y);
-				Inspect::inspect("Width", mSubTexture.width);
-				Inspect::inspect("Height", mSubTexture.height);
+				Inspect::get().inspect("X", this, mSubTexture.x);
+				Inspect::get().inspect("Y", this, mSubTexture.y);
+				Inspect::get().inspect("Width", this, mSubTexture.width);
+				Inspect::get().inspect("Height", this, mSubTexture.height);
 
 				if (ImGui::Button("Create"))
 				{
@@ -46,8 +46,7 @@ namespace BHive
 					{
 						auto texture = mAsset->CreateSubTexture(mSubTexture);
 						AssetFactory::Export(texture, path);
-						AssetManager::GetAssetManager<EditorAssetManager>()->ImportAsset(
-							path, texture->get_type(), texture->GetHandle());
+						AssetManager::GetAssetManager<EditorAssetManager>()->ImportAsset(path, texture->get_type(), texture->GetHandle());
 					}
 				}
 				ImGui::EndChild();

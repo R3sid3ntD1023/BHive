@@ -95,7 +95,7 @@ namespace BHive
 
 		SetupDefaultCommands();
 
-		Inspect::set_property_changed_callback(
+		Inspect::get().set_property_changed_callback(
 			[](auto object, const auto &prop, auto var)
 			{
 				auto &undo_system = GetSubSystem<UndoRedo>();
@@ -192,7 +192,7 @@ namespace BHive
 		if (ImGui::Begin("Render Settings"))
 		{
 
-			Inspect::inspect("Renderer", mRenderer);
+			Inspect::get().inspect("Renderer", this, mRenderer);
 		}
 
 		ImGui::End();
@@ -200,7 +200,7 @@ namespace BHive
 		if (ImGui::Begin("Assets"))
 		{
 			const auto &registry = mAssetManager->GetAssetRegistry();
-			Inspect::inspect("", registry);
+			Inspect::get().inspect("", mAssetManager.get(), registry);
 		}
 
 		ImGui::End();

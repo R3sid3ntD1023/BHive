@@ -37,7 +37,7 @@ namespace BHive
 			}
 		}
 
-		Ref<Inspector> GetInspector(const rttr::type &type) const
+		Ref<Inspector> get_inspector(const rttr::type &type) const
 		{
 			Ref<Inspector> inspector = nullptr;
 
@@ -60,12 +60,12 @@ namespace BHive
 			if (!inspector && type.is_wrapper())
 			{
 				auto wrapped_type = type.get_wrapped_type();
-				inspector = GetInspector(wrapped_type);
+				inspector = get_inspector(wrapped_type);
 
 				if (!inspector)
 				{
 					auto raw_type = wrapped_type.get_raw_type();
-					inspector = GetInspector(raw_type);
+					inspector = get_inspector(raw_type);
 				}
 			}
 
@@ -103,7 +103,7 @@ namespace BHive
 			return inspector;
 		}
 
-		static InspectorRegistry Get()
+		static InspectorRegistry get()
 		{
 			static InspectorRegistry registry;
 			return registry;
@@ -113,7 +113,7 @@ namespace BHive
 		std::unordered_map<rttr::type, Ref<Inspector>> mRegisteredInspectors;
 	};
 
-	rttr::type GetInstanceType(const rttr::instance &object)
+	rttr::type Inspect::get_instance_type(const rttr::instance &object)
 	{
 		rttr::type _type = rttr::type::get<rttr::detail::invalid_type>();
 
@@ -131,11 +131,11 @@ namespace BHive
 		return rttr::variant();
 	}
 
-	bool Inspect::inspect(const rttr::variant &instance, rttr::variant &var, bool skip_custom, bool read_only, float width, const MetaGetter &get_meta_data)
+	bool Inspect::inspect(const rttr::variant &instance, rttr::variant &var, bool read_only, float width, const MetaGetter &get_meta_data)
 	{
 		rttr::instance object = var;
-		auto type = GetInstanceType(object);
-		auto inspector = InspectorRegistry::Get().GetInspector(type);
+		auto type = get_instance_type(object);
+		auto inspector = InspectorRegistry::get().get_inspector(type);
 
 		if (!inspector)
 		{
@@ -148,9 +148,9 @@ namespace BHive
 		auto properties = type.get_properties();
 		bool changed = false;
 
-		if (!skip_custom && inspector)
+		if (inspector)
 		{
-			return inspector->Inspect(instance, var, get_meta_data, read_only);
+			return inspector->inspect(instance, var, get_meta_data, read_only);
 		}
 
 		if (object)
@@ -172,8 +172,8 @@ namespace BHive
 		rttr::variant original_var = prop_var;
 		rttr::instance prop_object = prop_var;
 		rttr::instance obj_instance = object;
-		auto type = GetInstanceType(prop_object);
-		auto inspector = InspectorRegistry::Get().GetInspector(type);
+		auto type = get_instance_type(prop_object);
+		auto inspector = InspectorRegistry::get().get_inspector(type);
 		bool is_read_only = property.is_readonly() || read_only;
 		bool has_inspector = inspector != nullptr;
 		bool is_enum = property.is_enumeration();
@@ -182,7 +182,7 @@ namespace BHive
 
 		if (inspector)
 		{
-			inspector->BeginInspect(property, !is_container, width);
+			inspector->begin_inspect(property, !is_container, width);
 		}
 
 		bool opened = true;
@@ -198,7 +198,7 @@ namespace BHive
 
 			PropertyLayout layout(property);
 			auto meta_getter = [property](const rttr::variant &key) -> rttr::variant { return property.get_metadata(key); };
-			changed |= inspect(instance, prop_var, false, is_read_only, width, meta_getter);
+			changed |= inspect(instance, prop_var, is_read_only, width, meta_getter);
 
 			if (mPropertyChangedCallback && changed && !is_read_only)
 			{
@@ -218,7 +218,7 @@ namespace BHive
 
 		if (inspector)
 		{
-			inspector->EndInspect(property);
+			inspector->end_inspect(property);
 		}
 
 		return changed;

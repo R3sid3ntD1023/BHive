@@ -40,8 +40,8 @@ namespace BHive
 		DWORD error_message = GetLastError();
 		LPSTR message_buffer = nullptr;
 		size_t size = FormatMessage(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, error_message,
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&message_buffer, 0, NULL);
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, error_message, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&message_buffer, 0,
+			NULL);
 
 		std::string message(message_buffer, size);
 		LocalFree(message_buffer);
@@ -58,8 +58,7 @@ namespace BHive
 
 		ImGui::DockBuilderDockWindow("ProjectLauncher", dockspace_id);
 
-		auto flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-					 ImGuiWindowFlags_NoTitleBar;
+		auto flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
 		if (ImGui::Begin("ProjectLauncher", nullptr, flags))
 		{
 			ImGui::BeginTable("##projectlauncher", 2, ImGuiTableFlags_BordersInnerV);
@@ -82,9 +81,9 @@ namespace BHive
 
 			ImGui::EndTable();
 
-			Inspect::inspect("Project Name", project_configuration.Name, false, false);
-			Inspect::inspect("Project Directory", project_configuration.ProjectDirectory, false, false);
-			Inspect::inspect("Resource Directory", project_configuration.ResourcesDirectory, false, false);
+			Inspect::get().inspect("Project Name", project_configuration, project_configuration.Name, false, false);
+			Inspect::get().inspect("Project Directory", project_configuration, project_configuration.ProjectDirectory, false, false);
+			Inspect::get().inspect("Resource Directory", project_configuration, project_configuration.ResourcesDirectory, false, false);
 
 			if (ImGui::Button("Create"))
 			{

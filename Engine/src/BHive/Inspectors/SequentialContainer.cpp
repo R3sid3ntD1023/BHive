@@ -6,8 +6,7 @@ namespace BHive
 {
 	using edit_sequential_conainter_func = std::function<bool(rttr::variant_sequential_view &)>;
 
-	bool Inspector_SequentialContainer::Inspect(
-		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_SequentialContainer::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		auto data = var.create_sequential_view();
 		auto type = data.get_value_type();
@@ -68,8 +67,7 @@ namespace BHive
 			}
 		}
 
-		static auto treeflags =
-			ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow;
+		static auto treeflags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow;
 		static ImU32 element_colors[2] = {{0xFF8A8A8A}, {0xFF454545}};
 
 		if (ImGui::TreeNodeEx("##Elements", treeflags))
@@ -90,7 +88,7 @@ namespace BHive
 					ImGui::BeginGroup();
 
 					ImGui::PushID(name.c_str());
-					if (Inspect::inspect(owner, element, false, is_read_only, 0.0f, Inspect::meta_data_empty))
+					if (Inspect::get().inspect(owner, element, is_read_only))
 					{
 						edit_func = [i, element](rttr::variant_sequential_view &view)
 						{
@@ -129,8 +127,7 @@ namespace BHive
 							auto valueA = data.get_value(index).extract_wrapped_value();
 							auto valueB = data.get_value(i).extract_wrapped_value();
 
-							edit_func = [index, i, valueA, valueB](rttr::variant_sequential_view &view)
-							{ return view.set_value(index, valueB) && view.set_value(i, valueA); };
+							edit_func = [index, i, valueA, valueB](rttr::variant_sequential_view &view) { return view.set_value(index, valueB) && view.set_value(i, valueA); };
 						}
 
 						ImGui::EndDragDropTarget();

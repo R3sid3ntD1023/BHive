@@ -18,7 +18,7 @@ namespace BHive
 
 		virtual void OnGuiRender() final override
 		{
-			Inspect::inspect("Skeleton", mSkeleton);
+			Inspect::get().inspect("Skeleton", this, mSkeleton);
 
 			if (mSkeleton)
 			{

@@ -81,11 +81,9 @@ namespace BHive
 		if (ImGui::BeginChild("##Properties", {}, ImGuiChildFlags_AlwaysUseWindowPadding))
 		{
 			auto gameobject = selection.GetSelection();
-			rttr::variant object_var = gameobject;
-			if (Inspect::inspect({}, object_var))
-			{
-				gameobject = object_var.get_value<GameObject *>();
-			}
+
+			if (gameobject)
+				Inspect::get().inspect("", mWorld.get(), gameobject);
 		}
 
 		ImGui::EndChild();

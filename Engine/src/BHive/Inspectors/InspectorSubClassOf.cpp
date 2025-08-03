@@ -4,8 +4,7 @@
 
 namespace BHive
 {
-	bool Inspector_SubClassOf::Inspect(
-		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_SubClassOf::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		bool changed = false;
 

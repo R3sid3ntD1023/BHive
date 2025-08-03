@@ -61,7 +61,7 @@ namespace BHive
 
 	void ClipNode::draw()
 	{
-		Inspect::inspect("Animation", mAnimation, false, false, 100.f);
+		Inspect::get().inspect("Animation", this, mAnimation, false, 100.f);
 	}
 
 	PoseDataNode::PoseDataNode()
@@ -83,8 +83,7 @@ namespace BHive
 	{
 		for (size_t i = 0; i < mTransitions.size(); i++)
 		{
-			mTransitions[i] =
-				showIN<StateTransition *>(std::format("Transition {}", i), nullptr, IsSameNodeType<StateTransition>());
+			mTransitions[i] = showIN<StateTransition *>(std::format("Transition {}", i), nullptr, IsSameNodeType<StateTransition>());
 		}
 
 		if (ImGui::Button("+"))

@@ -9,8 +9,7 @@ namespace BHive
 {
 #define ADD_KEY_LIST "Add Key List"
 
-	bool Inspector_Blackboard::Inspect(
-		const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	bool Inspector_Blackboard::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 		static const auto key_types = rttr::type::get<BlackBoardKey>().get_derived_classes();
 		bool changed = false;
@@ -38,8 +37,7 @@ namespace BHive
 		}
 
 		auto &keys = data.GetKeys();
-		ImGui::TextUnformatted("Keys");
-		changed |= Inspect::inspect("", keys);
+		changed |= Inspect::get().inspect("Keys", data, keys);
 
 		if (changed)
 		{
