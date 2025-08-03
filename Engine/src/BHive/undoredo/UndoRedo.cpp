@@ -61,12 +61,12 @@ namespace BHive
 
 	UndoRedo::Iterator UndoRedo::begin()
 	{
-		return Iterator(mCommands[0]);
+		return Iterator(&mCommands[0]);
 	}
 
 	UndoRedo::Iterator UndoRedo::end()
 	{
-		return Iterator(mCommands[mCommandSize]);
+		return Iterator(&mCommands[mCommandSize]);
 	}
 
 } // namespace BHive

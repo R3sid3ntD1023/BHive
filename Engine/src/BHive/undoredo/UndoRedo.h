@@ -21,8 +21,8 @@ namespace BHive
 			using iterator_category = std::forward_iterator_tag;
 			using differnce_type = std::ptrdiff_t;
 			using value_type = FCommand;
-			using pointer = FCommand *;
-			using reference = FCommand &;
+			using pointer = FCommand **;
+			using reference = FCommand *;
 
 			Iterator(pointer ptr)
 				: m_ptr(ptr)
@@ -43,6 +43,7 @@ namespace BHive
 				return temp;
 			}
 
+			operator bool() const { return m_ptr != nullptr; }
 			friend bool operator==(const Iterator &a, const Iterator &b) { return a.m_ptr == b.m_ptr; }
 
 		private:

@@ -25,7 +25,7 @@ namespace BHive
 		FCommandProperty *command = dynamic_cast<FCommandProperty *>(other);
 		if (command)
 		{
-			if (command->mInstance == mInstance)
+			if (command->mInstance == mInstance && mOldValue == command->mOldValue)
 			{
 				command->mValue = mValue;
 				return true;
