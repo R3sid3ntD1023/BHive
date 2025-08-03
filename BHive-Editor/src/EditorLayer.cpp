@@ -21,6 +21,9 @@
 #include "undoredo/UndoRedo.h"
 #include "windows//HistoryWindow.h"
 #include "undoredo/Commands.h"
+#include "gui/PayloadHelpers.h"
+#include "dragdropfactories/DragDropFactory.h"
+#include "core/math/MathFunctionLibrary.h"
 #include <rttr/library.h>
 
 namespace BHive
@@ -383,6 +386,38 @@ namespace BHive
 				if (ImGuizmo::IsUsingViewManipulate())
 				{
 					mEditorCamera.SetView(glm::inverse(view));
+				}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_SOURCE_TYPE))
+					{
+						auto data = (const char *)payload->Data;
+						auto entries = PayloadHelpers::get_entries_from_buffer(data, payload->DataSize);
+
+						for (auto &entry : entries)
+						{
+							auto mouse_pos = ImGui::GetMousePos();
+							auto mouse_ray =
+								MathFunctionLibrary::get_mouse_ray(mouse_pos.x, mouse_pos.y, mViewportSize.x, mViewportSize.y, mEditorCamera.GetProjection(), mEditorCamera.GetView().inverse());
+
+							auto relative = std::filesystem::relative(entry, Project::GetResourceDirectory());
+							auto metadata = mAssetManager->GetMetaData(relative);
+
+							if (metadata)
+							{
+								auto handle = mAssetManager->GetHandle(metadata.Path);
+								if (auto asset = mAssetManager->GetAsset(handle))
+								{
+									auto factory = DragDropFactory::GetDragDropFactory(metadata.Type);
+									if (factory->CanCreateEntityFrom(metadata.Type))
+										factory->CreateEntityFrom(asset, metadata.Name, mActiveWorld.get(), mouse_ray * 100.f);
+								}
+							}
+						}
+					}
+
+					ImGui::EndDragDropTarget();
 				}
 
 				ImGui::EndChild();

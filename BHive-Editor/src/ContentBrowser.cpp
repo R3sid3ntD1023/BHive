@@ -2,8 +2,8 @@
 #include "ContentBrowser.h"
 #include "core/FileDialog.h"
 #include "gfx/textures/Texture2D.h"
+#include "gui/PayloadHelpers.h"
 
-#define DRAG_DROP_SOURCE_TYPE "CONTENT_BROWSER_ITEM"
 #define CREATE_ASSET_MENU_NAME "CREATE_ASSET_MENU"
 #define CONTENT_BROWSER_SETTINGS_NAME "CONTENT_BROWSER_SETTINGS"
 
@@ -156,36 +156,6 @@ namespace BHive
 		EntryDragDropCallback mOnDragDropTarget;
 		EntryRenamedCallback mOnRenamed;
 		EntryEventCallback mOnContextMenu;
-	};
-	struct FilesPayload
-	{
-		static auto get_buffer(const std::vector<std::filesystem::directory_entry> &entries, size_t &size)
-		{
-			std::string buffer;
-			for (const auto &str : entries)
-			{
-				buffer += str.path().string() + '\0';
-				size += buffer.size() + 1;
-			}
-			return buffer;
-		}
-
-		static auto get_entries(const char *buffer, size_t size)
-		{
-			std::vector<std::filesystem::directory_entry> entries;
-			const char *current = buffer;
-			const char *end = buffer + size;
-
-			while (current < end)
-			{
-				std::string str(current);
-				if (!str.empty())
-					entries.emplace_back(str);
-				current += str.size() + 1;
-			}
-
-			return entries;
-		}
 	};
 
 	ContentBrowserPanel::ContentBrowserPanel()
@@ -416,7 +386,7 @@ namespace BHive
 						}
 
 						size_t data_size = 0;
-						auto buffer = FilesPayload::get_buffer(entries, data_size);
+						auto buffer = PayloadHelpers::get_entries_buffer(entries, data_size);
 						if (!buffer.empty())
 						{
 							ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", buffer.c_str(), data_size);
@@ -536,7 +506,7 @@ namespace BHive
 			if (auto payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM", ImGuiDragDropFlags_SourceAllowNullID))
 			{
 				auto data = (const char *)payload->Data;
-				auto entries = FilesPayload::get_entries(data, payload->DataSize);
+				auto entries = PayloadHelpers::get_entries_from_buffer(data, payload->DataSize);
 
 				for (const auto &other_entry : entries)
 				{

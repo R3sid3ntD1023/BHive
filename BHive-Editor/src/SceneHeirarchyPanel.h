@@ -6,7 +6,7 @@
 namespace BHive
 {
 	class World;
-	struct GameObject;
+	class GameObject;
 
 	class SceneHierarchyPanel : public WindowBase
 	{

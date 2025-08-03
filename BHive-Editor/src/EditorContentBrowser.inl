@@ -127,7 +127,9 @@ namespace BHive
 			return;
 		}
 
-		auto old_entries = std::filesystem::recursive_directory_iterator(old_path);
+		std::filesystem::recursive_directory_iterator old_entries;
+		if (std::filesystem::is_directory(old_path))
+			old_entries = std::filesystem::recursive_directory_iterator(old_path);
 
 		std::error_code error;
 		std::filesystem::rename(old_path, new_path, error);

@@ -3,6 +3,8 @@
 #include "asset/Asset.h"
 #include "WindowBase.h"
 
+#define DRAG_DROP_SOURCE_TYPE "CONTENT_BROWSER_ITEM"
+
 namespace BHive
 {
 	class Texture2D;
