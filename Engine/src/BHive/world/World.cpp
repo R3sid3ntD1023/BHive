@@ -469,11 +469,34 @@ namespace BHive
 		const auto &id = object->GetID();
 		mObjects.emplace(id, object);
 		mEnttMap.emplace(*object, id);
+
+		LOG_TRACE("Added gameobject with ID: {}", (std::string)id);
+	}
+
+	GameObject *World::duplicate_gameobject(GameObject *object)
+	{
+		if (!object)
+			return nullptr;
+
+		auto obj = object->get_type().create({mRegistry.create(), this}).get_value<Ref<GameObject>>();
+
+		for (auto &component : object->GetComponents())
+		{
+			const auto component_type = component->get_type();
+			component_type.get_method(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME).invoke(obj, component);
+		}
+
+		AddGameObject(obj);
+
+		return obj.get();
 	}
 
 	Ref<GameObject> World::GetGameObject(const UUID &id) const
 	{
-		return mObjects.at(id);
+		if (mObjects.contains(id))
+			return mObjects.at(id);
+
+		return nullptr;
 	}
 
 	void World::Destroy(const UUID &id)

@@ -40,9 +40,9 @@ namespace BHive
 		if (ImGui::BeginPopupContextItem("SceneHierarchyPanel", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonDefault_))
 		{
 
-			if (ImGui::MenuItem("Create Entity"))
+			if (ImGui::MenuItem("Add New GameObject"))
 			{
-				auto new_obj = mWorld->CreateGameObject("New Object");
+				auto new_obj = mWorld->CreateGameObject("NewGameObject");
 				selection.Select(new_obj.get());
 			}
 
@@ -65,7 +65,7 @@ namespace BHive
 			if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_GAMEOBJECT))
 			{
 				auto id = *(UUID *)payload->Data;
-				mWorld->GetGameObject(id)->RemoveParent();
+				mWorld->GetGameObject(id)->remove_from_parent();
 			}
 
 			ImGui::EndDragDropTarget();
@@ -145,7 +145,7 @@ namespace BHive
 		{
 			if ((ImGui::IsKeyDown(ImGuiKey_ModAlt) && ImGui::IsKeyPressed(ImGuiKey_P)))
 			{
-				obj->RemoveParent();
+				obj->remove_from_parent();
 			}
 			else if (ImGui::IsKeyPressed(ImGuiKey_Delete))
 			{
@@ -164,10 +164,11 @@ namespace BHive
 
 		ImGui::PopID();
 
-		if (destroyed)
+		if (destroyed && obj)
 		{
 			if (selection.GetSelection() == obj)
 				selection.Clear();
+
 			obj->Destroy();
 		}
 	}

@@ -409,9 +409,9 @@ namespace BHive
 								auto handle = mAssetManager->GetHandle(metadata.Path);
 								if (auto asset = mAssetManager->GetAsset(handle))
 								{
-									auto factory = DragDropFactory::GetDragDropFactory(metadata.Type);
-									if (factory->CanCreateEntityFrom(metadata.Type))
-										factory->CreateEntityFrom(asset, metadata.Name, mActiveWorld.get(), mouse_ray * 100.f);
+									auto factory = DragDropFactory::get_factory_from_type(metadata.Type);
+									if (factory->can_create(metadata.Type))
+										factory->create_from(asset, metadata.Name, mActiveWorld.get(), mouse_ray * 100.f);
 								}
 							}
 						}

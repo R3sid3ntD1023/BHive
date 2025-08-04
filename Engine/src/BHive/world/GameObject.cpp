@@ -57,17 +57,6 @@ namespace BHive
 		}
 	}
 
-	Ref<GameObject> GameObject::Duplicate() const
-	{
-		auto duplicate = CreateRef<GameObject>(*this);
-		for (auto &component : mComponents)
-		{
-			component->get_type().get_method(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME).invoke({duplicate}, component);
-		}
-
-		return duplicate;
-	}
-
 	PhysicsComponent *GameObject::GetPhysicsComponent()
 	{
 		if (HasComponent<PhysicsComponent>())
@@ -191,7 +180,7 @@ namespace BHive
 	void GameObject::AddComponent(Component *component)
 	{
 		component->SetOwner(this);
-		mComponents.push_back(component);
+		mComponents.insert(component);
 	}
 
 	void GameObject::SetParent(GameObject *object)
@@ -222,7 +211,7 @@ namespace BHive
 		auto rel = GetComponent<RelationshipComponent>();
 		if (rel->Children.contains(object->GetID()))
 		{
-			object->RemoveParent();
+			object->remove_from_parent();
 		}
 		else
 		{
@@ -230,7 +219,7 @@ namespace BHive
 		}
 	}
 
-	void GameObject::RemoveParent()
+	void GameObject::remove_from_parent()
 	{
 		auto rel = GetComponent<RelationshipComponent>();
 
@@ -246,6 +235,7 @@ namespace BHive
 
 	void GameObject::Destroy()
 	{
+		remove_from_parent();
 		OnDestroyedEvent.invoke(this);
 		mWorld->Destroy(GetID());
 	}

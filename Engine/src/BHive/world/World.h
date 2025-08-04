@@ -65,6 +65,8 @@ namespace BHive
 
 		void AddGameObject(const Ref<GameObject> &object);
 
+		GameObject *duplicate_gameobject(GameObject *object);
+
 		Ref<GameObject> GetGameObject(const UUID &id) const;
 
 		const ObjectList &GetGameObjects() const { return mObjects; }

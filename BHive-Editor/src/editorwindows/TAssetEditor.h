@@ -38,9 +38,14 @@ namespace BHive
 
 		virtual void OnWindowRender()
 		{
-
-			if (mAsset)
-				Inspect::get().inspect("", this, mAsset.get());
+			auto ptr = mAsset.get();
+			rttr::variant var = ptr;
+			auto properties = rttr::type::get<T>().get_properties();
+			for (auto prop : properties)
+			{
+				if (Inspect::get().inspect(this, var, prop))
+					ptr = var.get_value<T *>();
+			}
 		}
 
 		virtual const char *GetName() const { return mLabel.c_str(); };

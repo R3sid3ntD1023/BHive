@@ -9,15 +9,6 @@ namespace BHive
 		mInstance = CreateRef<World>();
 	}
 
-	void Prefab::CreateInstance(World *world)
-	{
-		for (auto &[id, object] : mInstance->GetGameObjects())
-		{
-			auto duplicated = object->Duplicate();
-			world->AddGameObject(duplicated);
-		}
-	}
-
 	void Prefab::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);

@@ -11,8 +11,6 @@ namespace BHive
 	public:
 		Prefab();
 
-		void CreateInstance(World *world);
-
 		const Ref<World> &GetInstance() const { return mInstance; }
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;

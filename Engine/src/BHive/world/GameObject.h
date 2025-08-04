@@ -12,7 +12,7 @@ namespace BHive
 {
 	DECLARE_EVENT(FOnDestroyed, GameObject *);
 
-	using ComponentList = std::vector<Component *>;
+	using ComponentList = std::unordered_set<Component *>;
 
 	class BHIVE_API GameObject : public ITickable
 	{
@@ -27,7 +27,6 @@ namespace BHive
 		virtual void Update(float dt);
 		virtual void Render();
 		virtual void End();
-		virtual Ref<GameObject> Duplicate() const;
 
 		template <typename T, typename... TArgs>
 		T *AddComponent(TArgs &&...args)
@@ -91,7 +90,7 @@ namespace BHive
 		void SetParent(GameObject *object);
 		void AddChild(GameObject *object);
 		void RemoveChild(GameObject *object);
-		void RemoveParent();
+		void remove_from_parent();
 		void Destroy();
 
 		const UUID &GetID() const;
