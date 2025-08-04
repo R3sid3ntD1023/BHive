@@ -61,7 +61,7 @@ namespace BHive
 
 	void ClipNode::draw()
 	{
-		Inspect::get().inspect("Animation", this, mAnimation, false, 100.f);
+		Inspect::get().inspect("Animation", this, mAnimation, false, false, 100.f);
 	}
 
 	PoseDataNode::PoseDataNode()

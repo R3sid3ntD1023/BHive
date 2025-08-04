@@ -20,29 +20,29 @@ namespace BHive
 	{
 	}
 
-	glm::vec3 AABB::get_center() const
+	glm::vec3 AABB::GetCenter() const
 	{
 		return (Max + Min) * 0.5f;
 	}
 
-	glm::vec3 AABB::get_extent() const
+	glm::vec3 AABB::GetExtent() const
 	{
 		return abs(Max - Min) * 0.5f;
 	}
 
-	float AABB::get_radius() const
+	float AABB::GetRadius() const
 	{
-		return glm::length(get_extent());
+		return glm::length(GetExtent());
 	}
 
-	FBox AABB::get_box() const
+	FBox AABB::GetBox() const
 	{
 		return {Min, Max};
 	}
 
-	FSphere AABB::get_sphere() const
+	FSphere AABB::GetSphere() const
 	{
-		return {Min + get_radius(), get_radius()};
+		return {Min + GetRadius(), GetRadius()};
 	}
 
 	AABB &AABB::operator=(const AABB &rhs)

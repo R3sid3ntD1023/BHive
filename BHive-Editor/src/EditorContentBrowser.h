@@ -1,13 +1,13 @@
 #pragma once
 
-#include "ContentBrowser.h"
+#include "windows/ContentBrowserWindow.h"
 
 namespace BHive
 {
 	class Factory;
 
 	template <typename T>
-	class EditorContentBrowser : public ContentBrowserPanel
+	class EditorContentBrowser : public ImContentBrowserWindow
 	{
 
 	public:

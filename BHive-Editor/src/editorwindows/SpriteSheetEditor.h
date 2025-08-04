@@ -8,7 +8,7 @@ namespace BHive
 	class SpriteSheetEditor : public TAssetEditor<SpriteSheet>
 	{
 	protected:
-		virtual void OnWindowRender();
+		virtual void OnContentUpdate() override;
 
 	private:
 		void DrawSprites();

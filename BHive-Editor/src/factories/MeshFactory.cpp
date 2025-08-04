@@ -4,7 +4,7 @@
 #include "mesh/StaticMesh.h"
 #include "MeshFactory.h"
 #include "core/subsystem/SubSystem.h"
-#include "subsystems/WindowSubSystem.h"
+#include "windows/ImWindowSystem.h"
 #include "windows/MeshOptionsWindow.h"
 
 namespace BHive
@@ -16,8 +16,8 @@ namespace BHive
 		if (!MeshImporter::Import(path, data))
 			return nullptr;
 
-		auto &window_system = SubSystemContext::Get().GetSubSystem<WindowSubSystem>();
-		auto window = window_system.CreateWindow<MeshOptionsWindow>(this, path, data);
+		auto &window_system = SubSystemContext::Get().GetSubSystem<ImWindowSystem>();
+		auto window = window_system.ConstructWindow<MeshOptionsWindow>(this, path, data);
 		return nullptr;
 	}
 

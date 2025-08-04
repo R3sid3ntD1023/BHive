@@ -3,20 +3,20 @@
 #include "inspectors/Inspect.h"
 #include "mesh/Skeleton.h"
 #include "core/subsystem/SubSystem.h"
-#include "subsystems/WindowSubSystem.h"
-#include "WindowBase.h"
+#include "windows/ImWindowSystem.h"
+#include "windows/ImWindowBase.h"
 
 namespace BHive
 {
-	struct AnimGraphOptions : public WindowBase
+	struct AnimGraphOptions : public ImWindowBase
 	{
 		AnimGraphOptions(AnimGraphFactory *factory)
-			: WindowBase(ImGuiWindowFlags_NoSavedSettings),
+			: ImWindowBase(ImGuiWindowFlags_NoSavedSettings),
 			  mFactory(factory)
 		{
 		}
 
-		virtual void OnGuiRender() final override
+		virtual void OnUpdate() final override
 		{
 			Inspect::get().inspect("Skeleton", this, mSkeleton);
 
@@ -30,7 +30,7 @@ namespace BHive
 			}
 		}
 
-		bool ShouldClose() const override { return WindowBase::ShouldClose() || mShouldClose; };
+		bool ShouldClose() const override { return ImWindowBase::ShouldClose() || mShouldClose; };
 
 	private:
 		AnimGraphFactory *mFactory;
@@ -40,8 +40,8 @@ namespace BHive
 
 	Ref<Asset> AnimGraphFactory::CreateNew()
 	{
-		auto &window_system = SubSystemContext::Get().GetSubSystem<WindowSubSystem>();
-		auto window = window_system.CreateWindow<AnimGraphOptions>(this);
+		auto &window_system = SubSystemContext::Get().GetSubSystem<ImWindowSystem>();
+		auto window = window_system.ConstructWindow<AnimGraphOptions>(this);
 
 		return nullptr;
 	}

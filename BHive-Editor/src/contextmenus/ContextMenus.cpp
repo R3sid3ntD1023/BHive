@@ -1,10 +1,8 @@
 #include "ContextMenus.h"
 #include "core/subsystem/SubSystem.h"
-#include "subsystems/WindowSubSystem.h"
 
 #include "editorwindows/AudioEditor.h"
 #include "editorwindows/FlipBookEditor.h"
-#include "editorwindows/InputContextEditor.h"
 #include "editorwindows/SpriteEditor.h"
 #include "editorwindows/TextureEditor.h"
 #include "editorwindows/SpriteSheetEditor.h"
@@ -20,6 +18,9 @@
 #include "mesh/SkeletalMesh.h"
 #include "mesh/SkeletalAnimation.h"
 #include "world/World.h"
+#include "input/InputContext.h"
+
+#include "windows/ImWindowSystem.h"
 
 namespace BHive
 {
@@ -35,8 +36,8 @@ namespace BHive
 	template <typename TEditor>
 	void FAssetContextMenuBase<TEditor>::OnAssetOpen(const UUID &handle)
 	{
-		auto &editor_system = SubSystemContext::Get().GetSubSystem<WindowSubSystem>();
-		auto editor = editor_system.CreateWindow<TEditor>();
+		auto &editor_system = SubSystemContext::Get().GetSubSystem<ImWindowSystem>();
+		auto editor = editor_system.ConstructWindow<TEditor>();
 		editor->SetContext(handle);
 	}
 
@@ -61,7 +62,7 @@ namespace BHive
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<SpriteSheetEditor>, SpriteSheet)
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<AudioEditor>, AudioSource)
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<TAssetEditor<PhysicsMaterial>>, PhysicsMaterial)
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<InputContextEditor>, InputContext)
+	REFLECT_ASSET_MENU(FAssetContextMenuBase<TAssetEditor<InputContext>>, InputContext)
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<TextureEditor>, Texture2D)
 	REFLECT_ASSET_MENU(FWorldContentMenu, World);
 	REFLECT_ASSET_MENU(FAssetContextMenuBase<MeshEditor>, StaticMesh, SkeletalMesh);

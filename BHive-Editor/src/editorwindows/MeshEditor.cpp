@@ -16,12 +16,11 @@ namespace BHive
 		mSceneRenderer->Initialize(300, 300);
 	}
 
-	void MeshEditor::OnWindowRender()
+	void MeshEditor::OnContentUpdate()
 	{
 		mCamera.ProcessInput();
 
-		if ((mViewportPanelSize.x != mViewportSize.x || mViewportPanelSize.y != mViewportSize.y) &&
-			mViewportPanelSize.x != 0 && mViewportPanelSize.y != 0)
+		if ((mViewportPanelSize.x != mViewportSize.x || mViewportPanelSize.y != mViewportSize.y) && mViewportPanelSize.x != 0 && mViewportPanelSize.y != 0)
 		{
 			mViewportSize = mViewportPanelSize;
 			mCamera.Resize(mViewportSize.x, mViewportSize.y);
@@ -65,7 +64,7 @@ namespace BHive
 
 		ImGui::TableNextColumn();
 
-		TAssetEditor::OnWindowRender();
+		TAssetEditor::OnContentUpdate();
 
 		ImGui::EndTable();
 	}

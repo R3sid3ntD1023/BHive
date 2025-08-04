@@ -2,7 +2,7 @@
 
 #include "core/Core.h"
 #include "gui/ImGuiExtended.h"
-#include "IWindow.h"
+#include "ImWindow.h"
 
 namespace BHive
 {
@@ -37,20 +37,20 @@ namespace BHive
 		std::unordered_map<std::string, std::queue<uint32_t>> mUnUsedIDs;
 	};
 
-	struct WindowBase : public IWindow
+	struct ImWindowBase : public ImWindow
 	{
-		WindowBase(uint32_t windowFlags = 0);
+		ImWindowBase(uint32_t windowFlags = 0);
 
-		virtual ~WindowBase();
+		virtual ~ImWindowBase();
 
-		void OnUpdate() override;
+		void Update() override;
 
 		bool ShouldClose() const override { return !mIsOpen; };
 
 		virtual bool IsFocused() const override { return mIsFocused || mIsHovered; }
 
 	protected:
-		virtual void OnGuiRender() {}
+		virtual void OnUpdate() {}
 
 		virtual const char *GetName() const { return "Window"; }
 

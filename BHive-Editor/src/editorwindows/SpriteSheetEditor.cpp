@@ -3,11 +3,11 @@
 
 namespace BHive
 {
-	void SpriteSheetEditor::OnWindowRender()
+	void SpriteSheetEditor::OnContentUpdate()
 	{
 		if (mAsset)
 		{
-			TAssetEditor::OnWindowRender();
+			TAssetEditor::OnContentUpdate();
 
 			if (ImGui::BeginChild("##children", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeY))
 			{
@@ -89,8 +89,7 @@ namespace BHive
 
 				ImGui::BeginGroup();
 				auto id = texture ? texture->GetRendererID() : 0;
-				ImGui::Image(
-					(ImTextureID)(uint64_t)(uint32_t)id, cell_size, {mincoords.x, maxcoords.y}, {maxcoords.x, mincoords.y});
+				ImGui::Image((ImTextureID)(uint64_t)(uint32_t)id, cell_size, {mincoords.x, maxcoords.y}, {maxcoords.x, mincoords.y});
 				ImGui::TextColored({1, .5f, 0, 1}, "Sprite %d", i);
 				ImGui::EndGroup();
 
@@ -102,8 +101,7 @@ namespace BHive
 		}
 	}
 
-	void SpriteSheetEditor::ExtractSprites(
-		const std::filesystem::path &directory, const std::string &filename, const std::string &ext)
+	void SpriteSheetEditor::ExtractSprites(const std::filesystem::path &directory, const std::string &filename, const std::string &ext)
 	{
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
 		if (!manager)

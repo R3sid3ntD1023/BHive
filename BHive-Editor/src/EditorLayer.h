@@ -8,12 +8,12 @@
 #include "EditorContentBrowser.h"
 #include "gfx/cameras/EditorCamera.h"
 #include "rttr/library.h"
-#include "SceneHeirarchyPanel.h"
 #include "world/World.h"
 
 namespace BHive
 {
 	class SceneRenderer;
+	class ImSceneHierarchy;
 
 	class EditorLayer : public Layer
 	{
@@ -23,7 +23,7 @@ namespace BHive
 		Ref<World> mEditorWorld;
 		Ref<World> mActiveWorld;
 
-		Ref<SceneHierarchyPanel> mSceneHeirarchyPanel;
+		Ref<ImSceneHierarchy> mSceneHeirarchyPanel;
 		Ref<EditorContentBrowser<EditorAssetManager>> mContentBrowser;
 		EditorCamera mEditorCamera;
 

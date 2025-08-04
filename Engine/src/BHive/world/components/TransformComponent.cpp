@@ -26,10 +26,8 @@ namespace BHive
 	RTTR_REGISTRATION
 	{
 		BEGIN_REFLECT(FTransform)
-			.property(
-				"Translation", &FTransform::get_translation,
-				rttr::select_overload<void(const glm::vec3 &)>(&FTransform::set_translation))
-				REFLECT_PROPERTY("Rotation", get_rotation, set_rotation) REFLECT_PROPERTY("Scale", get_scale, set_scale);
+			.property("Translation", &FTransform::GetTranslation, rttr::select_overload<void(const glm::vec3 &)>(&FTransform::SetTranslation)) REFLECT_PROPERTY("Rotation", GetRotation, SetRotation)
+				REFLECT_PROPERTY("Scale", GetScale, SetScale);
 	}
 
 	REFLECT(TransformComponent)

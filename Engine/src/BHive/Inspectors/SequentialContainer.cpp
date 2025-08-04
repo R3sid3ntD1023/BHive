@@ -88,7 +88,7 @@ namespace BHive
 					ImGui::BeginGroup();
 
 					ImGui::PushID(name.c_str());
-					if (Inspect::get().inspect(owner, element, is_read_only))
+					if (Inspect::get().inspect(owner, element, false, is_read_only))
 					{
 						edit_func = [i, element](rttr::variant_sequential_view &view)
 						{

@@ -18,21 +18,21 @@ namespace BHive
 	{
 		DragDropFactoryRegistry()
 		{
-			register_factory<StaticMesh, DragDropStaticMesh>();
-			register_factory<SkeletalMesh, DragDropSkeletalMesh>();
-			register_factory<AudioSource, DragDropAudio>();
-			register_factory<Prefab, DragDropPrefab>();
+			RegisterFactory<StaticMesh, DragDropStaticMesh>();
+			RegisterFactory<SkeletalMesh, DragDropSkeletalMesh>();
+			RegisterFactory<AudioSource, DragDropAudio>();
+			RegisterFactory<Prefab, DragDropPrefab>();
 		}
 
 		template <typename T, typename TFactory>
-		void register_factory()
+		void RegisterFactory()
 		{
 			mFactories.emplace(rttr::type::get<T>(), CreateRef<TFactory>());
 		}
 
-		void register_factory(const rttr::type &type, const Ref<DragDropFactory> &factory) { mFactories.emplace(type, factory); }
+		void RegisterFactory(const rttr::type &type, const Ref<DragDropFactory> &factory) { mFactories.emplace(type, factory); }
 
-		Ref<DragDropFactory> get_factory(const rttr::type &type)
+		Ref<DragDropFactory> GetFactory(const rttr::type &type)
 		{
 			if (mFactories.contains(type))
 				return mFactories.at(type);
@@ -44,7 +44,7 @@ namespace BHive
 		std::unordered_map<rttr::type, Ref<DragDropFactory>> mFactories;
 	};
 
-	Ref<GameObject> DragDropFactory::create_from(const Ref<Asset> &asset, const std::string &name, World *world, const FTransform &transform)
+	Ref<GameObject> DragDropFactory::CreateFrom(const Ref<Asset> &asset, const std::string &name, World *world, const FTransform &transform)
 	{
 		if (!asset)
 		{
@@ -53,22 +53,22 @@ namespace BHive
 
 		auto object = world->CreateGameObject(name);
 		object->SetLocalTransform(transform);
-		post_create(asset, object);
+		PostCreate(asset, object);
 
 		return object;
 	}
 
-	Ref<DragDropFactory> DragDropFactory::get_factory_from_type(const rttr::type &type)
+	Ref<DragDropFactory> DragDropFactory::GetFactoryFromType(const rttr::type &type)
 	{
-		return get_registry().get_factory(type);
+		return GetRegistry().GetFactory(type);
 	}
 
-	void DragDropFactory::register_factory(const rttr::type &type, const Ref<DragDropFactory> &factory)
+	void DragDropFactory::RegisterFactory(const rttr::type &type, const Ref<DragDropFactory> &factory)
 	{
-		get_registry().register_factory(type, factory);
+		GetRegistry().RegisterFactory(type, factory);
 	}
 
-	DragDropFactoryRegistry &DragDropFactory::get_registry()
+	DragDropFactoryRegistry &DragDropFactory::GetRegistry()
 	{
 		static DragDropFactoryRegistry registry;
 		return registry;

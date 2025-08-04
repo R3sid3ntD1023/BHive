@@ -34,7 +34,7 @@ namespace BHive
 
 		for (auto property : properties)
 		{
-			changed |= Inspect::get().inspect(owner, var, property, is_read_only);
+			changed |= Inspect::get().inspect(owner, var, property, false, is_read_only);
 		}
 
 		ImGui::SeparatorText("Components");

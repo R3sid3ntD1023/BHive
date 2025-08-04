@@ -8,7 +8,7 @@ namespace BHive
 	{
 		auto owner = GetOwner();
 		auto transform = owner->GetWorldTransform();
-		Renderer::SubmitDirectionalLight(transform.get_forward(), mLight);
+		Renderer::SubmitDirectionalLight(transform.GetForward(), mLight);
 	}
 
 	void DirectionalLightComponent::Save(cereal::BinaryOutputArchive &ar) const
@@ -24,7 +24,7 @@ namespace BHive
 	{
 		auto owner = GetOwner();
 		auto transform = owner->GetWorldTransform();
-		Renderer::SubmitPointLight(transform.get_translation(), mLight);
+		Renderer::SubmitPointLight(transform.GetTranslation(), mLight);
 		LineRenderer::DrawSphere(mLight.mRadius, 16, {}, mLight.mColor, transform);
 	}
 
@@ -42,7 +42,7 @@ namespace BHive
 	{
 		auto owner = GetOwner();
 		auto transform = owner->GetWorldTransform();
-		Renderer::SubmitSpotLight(transform.get_forward(), transform.get_translation(), mLight);
+		Renderer::SubmitSpotLight(transform.GetForward(), transform.GetTranslation(), mLight);
 		LineRenderer::DrawCone(mLight.mRadius, mLight.mRadius, 16, mLight.mColor, transform);
 	}
 
@@ -72,8 +72,7 @@ namespace BHive
 	REFLECT(SpotLight)
 	{
 		BEGIN_REFLECT(SpotLight)
-		REFLECT_PROPERTY("InnerCutOff", mInnerCutOff)(META_DATA(EPropertyMetaData_Min, 0.0f))
-			REFLECT_PROPERTY("OuterCutOff", mOuterCutOff)(META_DATA(EPropertyMetaData_Min, 0.0f));
+		REFLECT_PROPERTY("InnerCutOff", mInnerCutOff)(META_DATA(EPropertyMetaData_Min, 0.0f)) REFLECT_PROPERTY("OuterCutOff", mOuterCutOff)(META_DATA(EPropertyMetaData_Min, 0.0f));
 	}
 
 	REFLECT(DirectionalLight)
@@ -84,22 +83,19 @@ namespace BHive
 	REFLECT(DirectionalLightComponent)
 	{
 		BEGIN_REFLECT(DirectionalLightComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY("Light", mLight)
-			COMPONENT_IMPL();
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY("Light", mLight) COMPONENT_IMPL();
 	}
 
 	REFLECT(PointLightComponent)
 	{
 		BEGIN_REFLECT(PointLightComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY("Light", mLight)
-			COMPONENT_IMPL();
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY("Light", mLight) COMPONENT_IMPL();
 	}
 
 	REFLECT(SpotLightComponent)
 	{
 		BEGIN_REFLECT(SpotLightComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY("Light", mLight)
-			COMPONENT_IMPL();
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY("Light", mLight) COMPONENT_IMPL();
 	}
 
 } // namespace BHive

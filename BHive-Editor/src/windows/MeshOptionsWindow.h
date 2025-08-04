@@ -1,6 +1,6 @@
 #pragma once
 
-#include "WindowBase.h"
+#include "ImWindowBase.h"
 #include "mesh/MeshImportResolver.h"
 
 namespace BHive
@@ -8,17 +8,17 @@ namespace BHive
 
 	class MeshFactory;
 
-	class MeshOptionsWindow : public WindowBase
+	class MeshOptionsWindow : public ImWindowBase
 	{
 	public:
 		MeshOptionsWindow(MeshFactory *factory, const std::filesystem::path &filePath, const FMeshImportData &data);
 
-		virtual void OnGuiRender() final override;
+		virtual void OnUpdate() final override;
 
-		bool ShouldClose() const override { return WindowBase::ShouldClose() || mShouldClose; };
+		bool ShouldClose() const override { return ImWindowBase::ShouldClose() || mShouldClose; };
 
 	protected:
-		virtual const char *GetName() const { return "Mesh Import"; }
+		virtual const char *GetName() const override { return "Mesh Import"; }
 
 	private:
 		bool mIsOpen = true;

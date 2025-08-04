@@ -1,20 +1,20 @@
 #include "core/Application.h"
-#include "WindowBase.h"
+#include "ImWindowBase.h"
 #include "core/layers/ImGuiLayer.h"
 
 namespace BHive
 {
-	WindowBase::WindowBase(uint32_t windowFlags)
+	ImWindowBase::ImWindowBase(uint32_t windowFlags)
 		: mWindowFlags(windowFlags)
 	{
 	}
 
-	WindowBase::~WindowBase()
+	ImWindowBase::~ImWindowBase()
 	{
 		mCounter.RemoveName(GetName(), mWindowID);
 	}
 
-	void WindowBase::OnUpdate()
+	void ImWindowBase::Update()
 	{
 		if (!mIsOpen)
 			return;
@@ -34,7 +34,7 @@ namespace BHive
 
 			Application::Get().GetImGuiLayer().BlockEvents(!mIsHovered);
 
-			OnGuiRender();
+			OnUpdate();
 		}
 
 		ImGui::PopStyleVar(3);

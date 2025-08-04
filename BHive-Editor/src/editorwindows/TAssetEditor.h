@@ -18,7 +18,7 @@ namespace BHive
 		{
 		}
 
-		void SetContext(const UUID &handle)
+		void SetContext(const UUID &handle) override
 		{
 			auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
 			auto metadata = manager->GetMetaData(handle);
@@ -36,19 +36,17 @@ namespace BHive
 
 		virtual void OnSetContext(const Ref<T> &asset) {}
 
-		virtual void OnWindowRender()
+		virtual void OnContentUpdate()
 		{
 			auto ptr = mAsset.get();
 			rttr::variant var = ptr;
-			auto properties = rttr::type::get<T>().get_properties();
-			for (auto prop : properties)
+			if (Inspect::get().inspect("Asset", this, var, true))
 			{
-				if (Inspect::get().inspect(this, var, prop))
-					ptr = var.get_value<T *>();
+				ptr = var.get_value<T *>();
 			}
 		}
 
-		virtual const char *GetName() const { return mLabel.c_str(); };
+		virtual const char *GetName() const override { return mLabel.c_str(); };
 
 		bool OnSave(const std::filesystem::path &path) const
 		{

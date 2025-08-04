@@ -67,7 +67,7 @@ namespace BHive
 
 	template <typename T>
 	EditorContentBrowser<T>::EditorContentBrowser<T>(const std::filesystem::path &directory)
-		: ContentBrowserPanel(directory)
+		: ImContentBrowserWindow(directory)
 	{
 	}
 
@@ -252,7 +252,7 @@ namespace BHive
 	template <typename T>
 	void EditorContentBrowser<T>::OnCreateAssetMenu()
 	{
-		ContentBrowserPanel::OnCreateAssetMenu();
+		ImContentBrowserWindow::OnCreateAssetMenu();
 
 		auto &registry = FactoryRegistry::Get();
 		auto &factories = registry.GetRegisteredFactories();

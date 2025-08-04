@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-	void AnimGraphEditor::OnWindowRender()
+	void AnimGraphEditor::OnContentUpdate()
 	{
 
 		DrawNodeList();
@@ -15,7 +15,7 @@ namespace BHive
 
 		DrawEditorWindow();
 
-		TAssetEditor::OnWindowRender();
+		TAssetEditor::OnContentUpdate();
 	}
 
 	void AnimGraphEditor::DrawNodeList()

@@ -14,7 +14,7 @@ namespace BHive
 
 	bool FSphereVolume::InFrustum(const Frustum &frustum, const FTransform &transform) const
 	{
-		const glm::vec3 globalScale = transform.get_scale();
+		const glm::vec3 globalScale = transform.GetScale();
 
 		const glm::vec3 globalCenter = transform.to_mat4() * glm::vec4(Center, 1.0f);
 
@@ -36,12 +36,12 @@ namespace BHive
 
 	bool FSphereVolume::IsOnOrForwardPlane(const FPlane &plane) const
 	{
-		return MathFunctionLibrary::get_signed_distance_to_plane(plane, Center) > -Radius;
+		return MathFunctionLibrary::GetSignedDistanceToPlane(plane, Center) > -Radius;
 	}
 
 	FSphereVolume GenerateSphereFromAABB(const AABB &aabb)
 	{
-		return FSphereVolume(aabb.get_center(), aabb.get_radius());
+		return FSphereVolume(aabb.GetCenter(), aabb.GetRadius());
 	}
 
 } // namespace BHive

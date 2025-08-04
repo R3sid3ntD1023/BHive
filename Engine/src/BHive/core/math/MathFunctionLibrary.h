@@ -57,30 +57,29 @@ namespace BHive
 	struct BHIVE_API MathFunctionLibrary
 	{
 		template <typename T>
-		static T mix(const T &t0, const T &t1, float w);
+		static T Mix(const T &t0, const T &t1, float w);
 
 		template <typename T>
-		static T lerp(const T &v0, const T &v1, float t);
+		static T Lerp(const T &v0, const T &v1, float t);
 
 		template <typename T>
-		static T remap(const T &v, const T &inMin, const T &inMax, const T &outMin, const T &outMax);
+		static T Remap(const T &v, const T &InMin, const T &InMax, const T &OutMin, const T &OutMax);
 
 		template <typename T>
-		static T normalize(const T &v, const T &min, const T &max);
+		static T Normalize(const T &v, const T &min, const T &max);
 
-		static glm::vec3 normalize_device_coordinates(float x, float y, float width, float height);
+		static glm::vec3 NormalizeDeviceCoordinates(float x, float y, float width, float height);
 
-		static glm::vec4 ndc_to_eye_coordinates(const glm::vec3 &ndc_coordinates, const glm::mat4 &projection_matrix);
+		static glm::vec4 NdcToEyeCoordinates(const glm::vec3 &NdcCoordinates, const glm::mat4 &ProjectionMatrix);
 
-		static glm::vec3 eye_to_world_coordinates(const glm::vec4 &eye_coordinates, const glm::mat4 &view_matrix);
+		static glm::vec3 EyeToWorldCoordinates(const glm::vec4 &EyeCoordinates, const glm::mat4 &ViewMatrix);
 
-		static glm::vec3 get_mouse_ray(
-			float x, float y, float width, float height, const glm::mat4 &projection_matrix, const glm::mat4 &view_matrix);
+		static glm::vec3 GetMouseRay(float x, float y, float width, float height, const glm::mat4 &ProjectionMatrix, const glm::mat4 &ViewMatrix);
 
 		// construct a plane
-		static FPlane create_plane(const glm::vec3 &p1, const glm::vec3 &normal);
+		static FPlane CreatePlane(const glm::vec3 &p1, const glm::vec3 &normal);
 
-		static float get_signed_distance_to_plane(const FPlane &plane, const glm::vec3 &point);
+		static float GetSignedDistanceToPlane(const FPlane &plane, const glm::vec3 &point);
 	};
 } // namespace BHive
 

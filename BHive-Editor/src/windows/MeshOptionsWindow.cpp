@@ -11,7 +11,7 @@
 namespace BHive
 {
 	MeshOptionsWindow::MeshOptionsWindow(MeshFactory *factory, const std::filesystem::path &filePath, const FMeshImportData &data)
-		: WindowBase(ImGuiWindowFlags_NoSavedSettings),
+		: ImWindowBase(ImGuiWindowFlags_NoSavedSettings),
 		  mImportData(data),
 		  mFactory(factory),
 		  mImportPath(filePath)
@@ -21,7 +21,7 @@ namespace BHive
 		mOptions.OverideMaterials.resize(data.mMaterialData.size());
 	}
 
-	void MeshOptionsWindow::OnGuiRender()
+	void MeshOptionsWindow::OnUpdate()
 	{
 		bool animations_enabled = mImportData.mBoneData.size() > 0 && mOptions.MeshType != EMeshType::StaticMesh;
 

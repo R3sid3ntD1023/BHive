@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	void SpriteEditor::OnWindowRender()
+	void SpriteEditor::OnContentUpdate()
 	{
 		if (mAsset)
 		{
@@ -16,7 +16,7 @@ namespace BHive
 			if (ImGui::BeginChild("##Texture", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeY))
 			{
 
-				TAssetEditor::OnWindowRender();
+				TAssetEditor::OnContentUpdate();
 
 				if (texture)
 				{
@@ -28,8 +28,7 @@ namespace BHive
 
 			ImGui::EndChild();
 
-			if (ImGui::BeginChild(
-					"##Coordinates", {0, 200.f}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeY))
+			if (ImGui::BeginChild("##Coordinates", {0, 200.f}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeY))
 			{
 				if (texture)
 				{
@@ -40,9 +39,7 @@ namespace BHive
 
 					ImGui::SetCursorScreenPos(item_pos);
 
-					ImRect bounds = {
-						ImVec2(min.x * size.x, size.y - (min.y * size.y)),
-						ImVec2(max.x * size.x, size.y - (max.y * size.y))};
+					ImRect bounds = {ImVec2(min.x * size.x, size.y - (min.y * size.y)), ImVec2(max.x * size.x, size.y - (max.y * size.y))};
 					if (ImGui::EditableRect("##spritebounds", &bounds.Min.x, &bounds.Max.x, 10.0f))
 					{
 

@@ -21,8 +21,8 @@ namespace BHive
 
 		auto &input = InputManager::GetInputManager();
 
-		auto forward = mTransform.get_forward();
-		auto right = mTransform.get_right();
+		auto forward = mTransform.GetForward();
+		auto right = mTransform.GetRight();
 		auto delta = input.get_mouse_delta() * .003f;
 
 		if (input.is_pressed(Key::Left_Alt) || input.is_pressed(Key::Right_Alt))
@@ -44,22 +44,22 @@ namespace BHive
 
 			if (input.is_pressed(Key::Up) || input.is_pressed(Key::W))
 			{
-				mTransform.add_translation(-forward * MovementSpeed());
+				mTransform.AddTranslation(-forward * MovementSpeed());
 			}
 
 			if (input.is_pressed(Key::Down) || input.is_pressed(Key::S))
 			{
-				mTransform.add_translation(forward * MovementSpeed());
+				mTransform.AddTranslation(forward * MovementSpeed());
 			}
 
 			if (input.is_pressed(Key::Left) || input.is_pressed(Key::A))
 			{
-				mTransform.add_translation(right * MovementSpeed());
+				mTransform.AddTranslation(right * MovementSpeed());
 			}
 
 			if (input.is_pressed(Key::Right) || input.is_pressed(Key::D))
 			{
-				mTransform.add_translation(-right * MovementSpeed());
+				mTransform.AddTranslation(-right * MovementSpeed());
 			}
 		}
 	}
@@ -95,7 +95,7 @@ namespace BHive
 
 	void EditorCamera::Focus(const FTransform &target, const glm::vec3 &distance)
 	{
-		mTarget = target.get_translation();
+		mTarget = target.GetTranslation();
 		auto eye = mTarget + distance * 2.0f;
 		auto target_pos = mTarget;
 		mTransform = glm::lookAt(eye, target_pos, {0, 1, 0});
@@ -140,20 +140,20 @@ namespace BHive
 
 	float EditorCamera::Distance() const
 	{
-		return glm::length(mTransform.get_translation());
+		return glm::length(mTransform.GetTranslation());
 	}
 
 	void EditorCamera::Zoom(float delta)
 	{
 		auto offset = delta * ZoomSpeed();
-		auto new_position = mTransform.get_forward() * offset + mTransform.get_translation();
+		auto new_position = mTransform.GetForward() * offset + mTransform.GetTranslation();
 
 		if (Distance() < 1.0f)
 		{
-			mTarget -= mTransform.get_forward();
+			mTarget -= mTransform.GetForward();
 		}
 
-		mTransform.set_translation(new_position);
+		mTransform.SetTranslation(new_position);
 	}
 
 	void EditorCamera::Pan(const glm::vec2 &delta)
@@ -161,21 +161,21 @@ namespace BHive
 		float distance = Distance();
 
 		auto speed = PanSpeed();
-		auto translation = mTransform.get_translation();
-		auto deltax = mTransform.get_right() * delta.x * speed.x * distance;
-		auto deltay = mTransform.get_up() * delta.y * speed.y * distance;
+		auto translation = mTransform.GetTranslation();
+		auto deltax = mTransform.GetRight() * delta.x * speed.x * distance;
+		auto deltay = mTransform.GetUp() * delta.y * speed.y * distance;
 
-		mTransform.set_translation(translation + deltax + deltay);
+		mTransform.SetTranslation(translation + deltax + deltay);
 	}
 
 	void EditorCamera::Rotate(const glm::vec2 &delta)
 	{
-		float yaw_sign = mTransform.get_up().y < 0 ? -1.0f : 1.0f;
+		float yaw_sign = mTransform.GetUp().y < 0 ? -1.0f : 1.0f;
 		auto yaw = yaw_sign * delta.x * RotationSpeed();
 		auto pitch = delta.y * RotationSpeed();
 
-		auto rotation = mTransform.get_rotation();
-		mTransform.set_rotation(rotation + glm::vec3{pitch, yaw, 0.0f});
+		auto rotation = mTransform.GetRotation();
+		mTransform.SetRotation(rotation + glm::vec3{pitch, yaw, 0.0f});
 	}
 
 	float EditorCamera::ZoomSpeed() const

@@ -2,7 +2,7 @@
 
 namespace BHive
 {
-	void PrefabEditor::OnWindowRender()
+	void PrefabEditor::OnContentUpdate()
 	{
 		bool add_child_entity = false;
 
@@ -17,7 +17,7 @@ namespace BHive
 
 			if (ImGui::BeginChild("#Root", {}, ImGuiChildFlags_AlwaysUseWindowPadding))
 			{
-				mSceneHierarchy.OnGuiRender();
+				mSceneHierarchy.OnUpdate();
 			}
 
 			ImGui::EndChild();

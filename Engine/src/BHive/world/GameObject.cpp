@@ -75,7 +75,7 @@ namespace BHive
 		if (auto parent = GetParent())
 		{
 			auto parent_transform = parent->GetWorldTransform();
-			SetLocalTransform(parent_transform.inverse().to_mat4() * transform.to_mat4());
+			SetLocalTransform(parent_transform.Inverse().to_mat4() * transform.to_mat4());
 			return;
 		}
 
@@ -211,7 +211,7 @@ namespace BHive
 		auto rel = GetComponent<RelationshipComponent>();
 		if (rel->Children.contains(object->GetID()))
 		{
-			object->remove_from_parent();
+			object->RemoveFromParent();
 		}
 		else
 		{
@@ -219,7 +219,7 @@ namespace BHive
 		}
 	}
 
-	void GameObject::remove_from_parent()
+	void GameObject::RemoveFromParent()
 	{
 		auto rel = GetComponent<RelationshipComponent>();
 
@@ -235,7 +235,7 @@ namespace BHive
 
 	void GameObject::Destroy()
 	{
-		remove_from_parent();
+		RemoveFromParent();
 		OnDestroyedEvent.invoke(this);
 		mWorld->Destroy(GetID());
 	}

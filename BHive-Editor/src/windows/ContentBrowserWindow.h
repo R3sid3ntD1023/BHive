@@ -1,7 +1,7 @@
 #pragma once
 
 #include "asset/Asset.h"
-#include "WindowBase.h"
+#include "ImWindowBase.h"
 
 #define DRAG_DROP_SOURCE_TYPE "CONTENT_BROWSER_ITEM"
 
@@ -23,7 +23,7 @@ namespace BHive
 		FContentBrowerColors mColors;
 	};
 
-	class ContentBrowserPanel : public WindowBase
+	class ImContentBrowserWindow : public ImWindowBase
 	{
 		using ContentBrowserActionFunc = std::function<void()>;
 
@@ -36,10 +36,10 @@ namespace BHive
 		using EntryItems = std::vector<FileEntry>;
 
 	public:
-		ContentBrowserPanel();
-		ContentBrowserPanel(const std::filesystem::path &directory);
+		ImContentBrowserWindow();
+		ImContentBrowserWindow(const std::filesystem::path &directory);
 
-		void OnGuiRender();
+		void OnUpdate() override;
 
 		void SetBaseDirectory(const std::filesystem::path &directory);
 		const std::filesystem::path &CurrentDirectory() const { return mCurrentDirectory; }

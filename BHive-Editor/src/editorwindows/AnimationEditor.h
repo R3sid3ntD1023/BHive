@@ -8,6 +8,6 @@ namespace BHive
 	class AnimationEditor : public TAssetEditor<SkeletalAnimation>
 	{
 	public:
-		virtual void OnWindowRender();
+		virtual void OnContentUpdate() override;
 	};
 } // namespace BHive

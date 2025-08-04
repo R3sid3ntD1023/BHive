@@ -90,7 +90,7 @@ namespace BHive
 		void SetParent(GameObject *object);
 		void AddChild(GameObject *object);
 		void RemoveChild(GameObject *object);
-		void remove_from_parent();
+		void RemoveFromParent();
 		void Destroy();
 
 		const UUID &GetID() const;

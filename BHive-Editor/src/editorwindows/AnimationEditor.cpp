@@ -3,11 +3,11 @@
 
 namespace BHive
 {
-	void AnimationEditor::OnWindowRender()
+	void AnimationEditor::OnContentUpdate()
 	{
-		Inspect::get().inspect("Duration", mAsset, mAsset->GetDuration(), false);
-		Inspect::get().inspect("TicksPerSecond", mAsset, mAsset->GetTicksPerSecond(), false);
-		Inspect::get().inspect("Length (seconds)", mAsset, mAsset->GetLengthInSeconds(), false);
-		Inspect::get().inspect("Skeleton", mAsset, mAsset->GetSkeleton(), false);
+		Inspect::get().inspect("Duration", mAsset, mAsset->GetDuration());
+		Inspect::get().inspect("TicksPerSecond", mAsset, mAsset->GetTicksPerSecond());
+		Inspect::get().inspect("Length (seconds)", mAsset, mAsset->GetLengthInSeconds());
+		Inspect::get().inspect("Skeleton", mAsset, mAsset->GetSkeleton());
 	}
 } // namespace BHive

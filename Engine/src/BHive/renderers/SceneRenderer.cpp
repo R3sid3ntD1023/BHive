@@ -23,8 +23,7 @@ namespace BHive
 		FramebufferSpecification specs;
 		specs.Width = width;
 		specs.Height = height;
-		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
-			.attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE}).attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 
 		mFramebuffer = CreateRef<Framebuffer>(specs);
 
@@ -34,8 +33,7 @@ namespace BHive
 
 		// Create a final framebuffer for post-processing effects
 		specs.Attachments.reset();
-		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
-			.attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE}).attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 		mFinalFramebuffer = CreateRef<Framebuffer>(specs);
 
 		// Create a quad for rendering the final output
@@ -62,7 +60,7 @@ namespace BHive
 		RenderCommand::Clear();
 
 		Renderer::Begin();
-		Renderer::SubmitCamera(camera->GetProjection(), view.inverse());
+		Renderer::SubmitCamera(camera->GetProjection(), view.Inverse());
 	}
 
 	void SceneRenderer::End()

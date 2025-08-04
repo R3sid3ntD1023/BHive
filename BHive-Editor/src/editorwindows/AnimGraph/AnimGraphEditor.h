@@ -12,7 +12,7 @@ namespace BHive
 	public:
 		AnimGraphEditor() = default;
 
-		virtual void OnWindowRender() override;
+		virtual void OnContentUpdate() override;
 
 		virtual void OnSetContext(const Ref<AnimGraph> &asset);
 

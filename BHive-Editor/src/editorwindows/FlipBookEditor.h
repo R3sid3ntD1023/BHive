@@ -9,9 +9,9 @@ namespace BHive
 	class FlipBookEditor : public TAssetEditor<FlipBook>
 	{
 	protected:
-		virtual void OnWindowRender();
+		virtual void OnContentUpdate() override;
 
 	private:
 		int mCurrentFrame = 0;
 	};
-}
+} // namespace BHive

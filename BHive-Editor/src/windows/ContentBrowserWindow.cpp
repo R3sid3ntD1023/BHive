@@ -1,5 +1,4 @@
-
-#include "ContentBrowser.h"
+#include "ContentBrowserWindow.h"
 #include "core/FileDialog.h"
 #include "gfx/textures/Texture2D.h"
 #include "gui/PayloadHelpers.h"
@@ -9,9 +8,9 @@
 
 namespace BHive
 {
-	struct TreeFolder
+	struct ImTreeFolder
 	{
-		TreeFolder(const std::filesystem::directory_entry &entry)
+		ImTreeFolder(const std::filesystem::directory_entry &entry)
 			: mEntry(entry)
 		{
 		}
@@ -42,13 +41,13 @@ namespace BHive
 		std::filesystem::directory_entry mEntry;
 	};
 
-	struct DirectoryEntry
+	struct ImDirectoryEntry
 	{
 		using EntryEventCallback = std::function<void(const std::filesystem::directory_entry &, bool directory)>;
 		using EntryDragDropCallback = std::function<void(const std::filesystem::directory_entry &)>;
 		using EntryRenamedCallback = std::function<void(const std::filesystem::path &_old, const std::filesystem::path &_new)>;
 
-		DirectoryEntry(const std::filesystem::directory_entry &entry, ImTextureID icon, const ImVec2 &size = {20, 20})
+		ImDirectoryEntry(const std::filesystem::directory_entry &entry, ImTextureID icon, const ImVec2 &size = {20, 20})
 			: mEntry(entry),
 			  mIcon(icon),
 			  mSize(size)
@@ -158,13 +157,13 @@ namespace BHive
 		EntryEventCallback mOnContextMenu;
 	};
 
-	ContentBrowserPanel::ContentBrowserPanel()
+	ImContentBrowserWindow::ImContentBrowserWindow()
 	{
 		mItems.reserve(200);
 	}
 
-	ContentBrowserPanel::ContentBrowserPanel(const std::filesystem::path &directory)
-		: WindowBase(ImGuiWindowFlags_MenuBar),
+	ImContentBrowserWindow::ImContentBrowserWindow(const std::filesystem::path &directory)
+		: ImWindowBase(ImGuiWindowFlags_MenuBar),
 		  mBaseDirectory(directory),
 		  mCurrentDirectory(directory)
 	{
@@ -184,7 +183,7 @@ namespace BHive
 		SetCurrentDirectory(directory);
 	}
 
-	void ContentBrowserPanel::OnGuiRender()
+	void ImContentBrowserWindow::OnUpdate()
 	{
 
 		static bool open_settings = false;
@@ -280,13 +279,13 @@ namespace BHive
 		}
 	}
 
-	void ContentBrowserPanel::SetBaseDirectory(const std::filesystem::path &directory)
+	void ImContentBrowserWindow::SetBaseDirectory(const std::filesystem::path &directory)
 	{
 		mBaseDirectory = directory;
 		SetCurrentDirectory(mBaseDirectory);
 	}
 
-	void ContentBrowserPanel::ShowFileSystemTree(const std::filesystem::directory_entry &directory)
+	void ImContentBrowserWindow::ShowFileSystemTree(const std::filesystem::directory_entry &directory)
 	{
 		auto name = directory.path().stem().string();
 		auto id = ImGui::GetID(directory.path().filename().string().c_str());
@@ -298,7 +297,7 @@ namespace BHive
 		ImGui::SameLine();
 
 		auto icon = OnGetIcon(directory);
-		TreeFolder folder(directory);
+		ImTreeFolder folder(directory);
 		auto pressed = folder.draw((ImTextureID)(uint64_t)(uint32_t)*icon, 200.0f, mStyle.mColors.mFolder, mStyle.mColors.mFolderHovered);
 		if (pressed)
 		{
@@ -329,7 +328,7 @@ namespace BHive
 		ImGui::PopID();
 	}
 
-	void ContentBrowserPanel::ShowFileSystem()
+	void ImContentBrowserWindow::ShowFileSystem()
 	{
 		if (mCurrentDirectory.empty())
 			return;
@@ -444,7 +443,7 @@ namespace BHive
 
 					ImGui::SetNextItemSelectionUserData(i);
 
-					DirectoryEntry directory_entry(file_entry.Entry, (ImTextureID)(uint64_t)(uint32_t)*icon, mThumbnailSize);
+					ImDirectoryEntry directory_entry(file_entry.Entry, (ImTextureID)(uint64_t)(uint32_t)*icon, mThumbnailSize);
 					directory_entry.set_double_clicked_callback(double_clicked_callback);
 					directory_entry.set_drag_drop_target_callback(drag_drop_target_callback);
 					directory_entry.set_drag_drop_source_callback(drag_drop_source_callback);
@@ -470,7 +469,7 @@ namespace BHive
 		}
 	}
 
-	void ContentBrowserPanel::OnDeleteFolder(const std::filesystem::directory_entry &entry)
+	void ImContentBrowserWindow::OnDeleteFolder(const std::filesystem::directory_entry &entry)
 	{
 		if (!entry.is_directory())
 		{
@@ -486,20 +485,20 @@ namespace BHive
 		}
 	}
 
-	void ContentBrowserPanel::DeleteFolder(const std::filesystem::directory_entry &item)
+	void ImContentBrowserWindow::DeleteFolder(const std::filesystem::directory_entry &item)
 	{
 		OnDeleteFolder(item);
 
 		FileDialogs::MoveToRecycleBin(item.path().string());
 	}
 
-	void ContentBrowserPanel::SetCurrentDirectory(const std::filesystem::path &path)
+	void ImContentBrowserWindow::SetCurrentDirectory(const std::filesystem::path &path)
 	{
 		mCurrentDirectory = path;
 		mSelection.Clear();
 	}
 
-	void ContentBrowserPanel::ApplyDragDropTarget(const std::filesystem::directory_entry &entry)
+	void ImContentBrowserWindow::ApplyDragDropTarget(const std::filesystem::directory_entry &entry)
 	{
 		mContentBrowerAction = [=]()
 		{
@@ -517,7 +516,7 @@ namespace BHive
 		};
 	}
 
-	void ContentBrowserPanel::OnCreateAssetMenu()
+	void ImContentBrowserWindow::OnCreateAssetMenu()
 	{
 		if (ImGui::Selectable("Create Folder"))
 		{

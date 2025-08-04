@@ -92,14 +92,12 @@ namespace BHive
 					sMeshRenderData->BoneBuffer->BindBufferBase(SSBO_BONE_BINDING);
 				}
 
-				RenderCommand::DrawElementsBaseVertex(
-					EDrawMode::Triangles, *vao, submesh.StartVertex, submesh.StartIndex, submesh.IndexCount, instanceCount);
+				RenderCommand::DrawElementsBaseVertex(EDrawMode::Triangles, *vao, submesh.StartVertex, submesh.StartIndex, submesh.IndexCount, instanceCount);
 			}
 		}
 	}
 
-	void MeshRenderer::DrawMesh(
-		const Ref<StaticMesh> &mesh, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
+	void MeshRenderer::DrawMesh(const Ref<StaticMesh> &mesh, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
 	{
 		// TODO: CullMeshes
 		ASSERT(sMeshRenderData);
@@ -117,20 +115,13 @@ namespace BHive
 				return;
 
 			auto data = ObjectData{
-				.ModelMatrix = transform,
-				.SubMesh = sub_mesh,
-				.VertexArray = mesh->GetVertexArray(),
-				.Bounds = mesh->GetBoundingBox(),
-				.Instances = instances,
-				.InstanceCount = instanceCount};
+				.ModelMatrix = transform, .SubMesh = sub_mesh, .VertexArray = mesh->GetVertexArray(), .Bounds = mesh->GetBoundingBox(), .Instances = instances, .InstanceCount = instanceCount};
 
 			sMeshRenderData->ObjectData[material].emplace_back(data);
 		}
 	}
 
-	void MeshRenderer::DrawMesh(
-		const Ref<SkeletalMesh> &mesh, const SkeletalPose &pose, const glm::mat4 &transform, const glm::mat4 *instances,
-		size_t instanceCount)
+	void MeshRenderer::DrawMesh(const Ref<SkeletalMesh> &mesh, const SkeletalPose &pose, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
 	{
 		// TODO: CullMeshes
 		ASSERT(sMeshRenderData);
@@ -168,7 +159,7 @@ namespace BHive
 		const auto &bounds = mesh->GetBoundingBox();
 		const auto &frustum = Renderer::GetFrustum();
 
-		auto volume = FSphereVolume(bounds.get_center(), bounds.get_radius());
+		auto volume = FSphereVolume(bounds.GetCenter(), bounds.GetRadius());
 		return !volume.InFrustum(frustum, FTransform(transform));
 	}
 } // namespace BHive

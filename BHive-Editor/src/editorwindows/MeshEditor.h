@@ -13,8 +13,9 @@ namespace BHive
 	public:
 		MeshEditor();
 
-		virtual void OnWindowRender() override;
-		virtual void OnEvent(Event &event) override;
+		virtual void OnContentUpdate() override;
+
+		void OnEvent(Event &event);
 
 	private:
 		EditorCamera mCamera;

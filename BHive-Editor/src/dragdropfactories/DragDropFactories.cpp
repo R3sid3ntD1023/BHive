@@ -12,45 +12,45 @@
 
 namespace BHive
 {
-	bool DragDropAudio::can_create(const rttr::type &type)
+	bool DragDropAudio::CanCreate(const rttr::type &type)
 	{
 		return type.is_derived_from<AudioSource>();
 	}
 
-	void DragDropAudio::post_create(const Ref<Asset> &asset, Ref<GameObject> &object)
+	void DragDropAudio::PostCreate(const Ref<Asset> &asset, Ref<GameObject> &object)
 	{
 		if (auto audio = Cast<AudioSource>(asset))
 			object->AddComponent<AudioComponent>()->Audio = audio;
 	}
 
-	bool DragDropSkeletalMesh::can_create(const rttr::type &type)
+	bool DragDropSkeletalMesh::CanCreate(const rttr::type &type)
 	{
 		return type.is_derived_from<SkeletalMesh>();
 	}
 
-	void DragDropSkeletalMesh::post_create(const Ref<Asset> &asset, Ref<GameObject> &object)
+	void DragDropSkeletalMesh::PostCreate(const Ref<Asset> &asset, Ref<GameObject> &object)
 	{
 		if (auto mesh = Cast<SkeletalMesh>(asset))
 			object->AddComponent<SkeletalMeshComponent>()->SkeletalMeshAsset = mesh;
 	}
 
-	bool DragDropStaticMesh::can_create(const rttr::type &type)
+	bool DragDropStaticMesh::CanCreate(const rttr::type &type)
 	{
 		return type.is_derived_from<StaticMesh>();
 	}
 
-	void DragDropStaticMesh::post_create(const Ref<Asset> &asset, Ref<GameObject> &object)
+	void DragDropStaticMesh::PostCreate(const Ref<Asset> &asset, Ref<GameObject> &object)
 	{
 		if (auto mesh = Cast<StaticMesh>(asset))
 			object->AddComponent<StaticMeshComponent>()->StaticMeshAsset = mesh;
 	}
 
-	bool DragDropPrefab::can_create(const rttr::type &type)
+	bool DragDropPrefab::CanCreate(const rttr::type &type)
 	{
 		return type.is_derived_from<Prefab>();
 	}
 
-	void DragDropPrefab::post_create(const Ref<Asset> &asset, Ref<GameObject> &object)
+	void DragDropPrefab::PostCreate(const Ref<Asset> &asset, Ref<GameObject> &object)
 	{
 		if (auto prefab = Cast<Prefab>(asset))
 		{
@@ -59,7 +59,7 @@ namespace BHive
 
 			for (const auto &[id, gameobject] : instance_world->GetGameObjects())
 			{
-				auto duplicated = world->duplicate_gameobject(gameobject.get());
+				auto duplicated = world->DuplicateGameobject(gameobject.get());
 				if (duplicated)
 					object->AddChild(duplicated);
 			}

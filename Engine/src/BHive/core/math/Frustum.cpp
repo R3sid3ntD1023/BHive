@@ -30,12 +30,12 @@ namespace BHive
 		const glm::vec3 frontMultFar = far * forward;
 		const glm::vec3 pos = view_inv[3].xyz;
 
-		mPlanes[0] = MathFunctionLibrary::create_plane(pos + near * forward, forward);						// near
-		mPlanes[1] = MathFunctionLibrary::create_plane(pos + frontMultFar, -forward);						// far
-		mPlanes[2] = MathFunctionLibrary::create_plane(pos, glm::cross(frontMultFar - right * half_h, up)); // right
-		mPlanes[3] = MathFunctionLibrary::create_plane(pos, glm::cross(up, frontMultFar + right * half_h)); // left
-		mPlanes[4] = MathFunctionLibrary::create_plane(pos, glm::cross(right, frontMultFar - up * half_v)); // top
-		mPlanes[5] = MathFunctionLibrary::create_plane(pos, glm::cross(frontMultFar + up * half_v, right)); // bottom
+		mPlanes[0] = MathFunctionLibrary::CreatePlane(pos + near * forward, forward);					   // near
+		mPlanes[1] = MathFunctionLibrary::CreatePlane(pos + frontMultFar, -forward);					   // far
+		mPlanes[2] = MathFunctionLibrary::CreatePlane(pos, glm::cross(frontMultFar - right * half_h, up)); // right
+		mPlanes[3] = MathFunctionLibrary::CreatePlane(pos, glm::cross(up, frontMultFar + right * half_h)); // left
+		mPlanes[4] = MathFunctionLibrary::CreatePlane(pos, glm::cross(right, frontMultFar - up * half_v)); // top
+		mPlanes[5] = MathFunctionLibrary::CreatePlane(pos, glm::cross(frontMultFar + up * half_v, right)); // bottom
 	}
 
 	void Frustum::Update(const glm::mat4 &view, float aspect, float fov, float near, float far)
@@ -49,12 +49,12 @@ namespace BHive
 		const glm::vec3 frontMultFar = far * forward;
 		const glm::vec3 pos = view[3].xyz;
 
-		mPlanes[0] = MathFunctionLibrary::create_plane(pos + near * forward, forward);						// near
-		mPlanes[1] = MathFunctionLibrary::create_plane(pos + frontMultFar, -forward);						// far
-		mPlanes[2] = MathFunctionLibrary::create_plane(pos, glm::cross(frontMultFar - right * half_h, up)); // right
-		mPlanes[3] = MathFunctionLibrary::create_plane(pos, glm::cross(up, frontMultFar + right * half_h)); // left
-		mPlanes[4] = MathFunctionLibrary::create_plane(pos, glm::cross(right, frontMultFar - up * half_v)); // top
-		mPlanes[5] = MathFunctionLibrary::create_plane(pos, glm::cross(frontMultFar + up * half_v, right)); // bottom
+		mPlanes[0] = MathFunctionLibrary::CreatePlane(pos + near * forward, forward);					   // near
+		mPlanes[1] = MathFunctionLibrary::CreatePlane(pos + frontMultFar, -forward);					   // far
+		mPlanes[2] = MathFunctionLibrary::CreatePlane(pos, glm::cross(frontMultFar - right * half_h, up)); // right
+		mPlanes[3] = MathFunctionLibrary::CreatePlane(pos, glm::cross(up, frontMultFar + right * half_h)); // left
+		mPlanes[4] = MathFunctionLibrary::CreatePlane(pos, glm::cross(right, frontMultFar - up * half_v)); // top
+		mPlanes[5] = MathFunctionLibrary::CreatePlane(pos, glm::cross(frontMultFar + up * half_v, right)); // bottom
 	}
 
 	FrustumViewer::FrustumViewer(const glm::mat4 &projection, const glm::mat4 &view)
@@ -90,8 +90,7 @@ namespace BHive
 		mPoints[6] /= mPoints[6].w;
 		mPoints[7] /= mPoints[7].w;
 
-		mPosition =
-			(mPoints[0] + mPoints[1] + mPoints[2] + mPoints[3] + mPoints[4] + mPoints[5] + mPoints[6] + mPoints[7]) / 8.f;
+		mPosition = (mPoints[0] + mPoints[1] + mPoints[2] + mPoints[3] + mPoints[4] + mPoints[5] + mPoints[6] + mPoints[7]) / 8.f;
 	}
 
 } // namespace BHive

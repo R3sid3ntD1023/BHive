@@ -1,6 +1,6 @@
+#include "SceneHeirarchyWindow.h"
 #include "core/subsystem/SubSystem.h"
 #include "gui/GUICore.h"
-#include "SceneHeirarchyPanel.h"
 #include "subsystems/SelectionSubSystem.h"
 #include "world/GameObject.h"
 #include "world/World.h"
@@ -10,12 +10,12 @@ namespace BHive
 {
 #define DRAG_DROP_GAMEOBJECT "GAMEOBJECT"
 
-	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<World> &world)
+	ImSceneHierarchy::ImSceneHierarchy(const Ref<World> &world)
 		: mWorld(world)
 	{
 	}
 
-	void SceneHierarchyPanel::OnGuiRender()
+	void ImSceneHierarchy::OnUpdate()
 	{
 		auto &selection = GetSubSystem<SelectionSubSystem>();
 
@@ -37,7 +37,7 @@ namespace BHive
 
 		ImGui::EndChild();
 
-		if (ImGui::BeginPopupContextItem("SceneHierarchyPanel", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonDefault_))
+		if (ImGui::BeginPopupContextItem("ImSceneHierarchy", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonDefault_))
 		{
 
 			if (ImGui::MenuItem("Add New GameObject"))
@@ -46,7 +46,7 @@ namespace BHive
 				selection.Select(new_obj.get());
 			}
 
-			auto &entity_types = GetSpawnableEntites();
+			auto &entity_types = GetSpawnableGameobjects();
 			for (auto &type : entity_types)
 			{
 				if (ImGui::MenuItem(type.get_name().data()))
@@ -65,7 +65,7 @@ namespace BHive
 			if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_GAMEOBJECT))
 			{
 				auto id = *(UUID *)payload->Data;
-				mWorld->GetGameObject(id)->remove_from_parent();
+				mWorld->GetGameObject(id)->RemoveFromParent();
 			}
 
 			ImGui::EndDragDropTarget();
@@ -89,12 +89,12 @@ namespace BHive
 		ImGui::EndChild();
 	}
 
-	void SceneHierarchyPanel::SetContext(const Ref<World> &world)
+	void ImSceneHierarchy::SetContext(const Ref<World> &world)
 	{
 		mWorld = world;
 	}
 
-	void SceneHierarchyPanel::DrawNode(GameObject *obj)
+	void ImSceneHierarchy::DrawNode(GameObject *obj)
 	{
 		auto &selection = GetSubSystem<SelectionSubSystem>();
 
@@ -145,7 +145,7 @@ namespace BHive
 		{
 			if ((ImGui::IsKeyDown(ImGuiKey_ModAlt) && ImGui::IsKeyPressed(ImGuiKey_P)))
 			{
-				obj->remove_from_parent();
+				obj->RemoveFromParent();
 			}
 			else if (ImGui::IsKeyPressed(ImGuiKey_Delete))
 			{
@@ -173,9 +173,9 @@ namespace BHive
 		}
 	}
 
-	const std::vector<rttr::type> &SceneHierarchyPanel::GetSpawnableEntites()
+	const std::vector<rttr::type> &ImSceneHierarchy::GetSpawnableGameobjects()
 	{
-		auto &cache = mEntityTypeCache;
+		auto &cache = mTypeCache;
 		if (cache.size())
 			return cache;
 

@@ -12,11 +12,9 @@
 #include "gui/ImGuiExtended.h"
 #include "ImGuizmo.h"
 #include "inspectors/Inspect.h"
-#include "LogPanel.h"
 #include "renderers/Renderer.h"
 #include "renderers/SceneRenderer.h"
 #include "subsystems/SelectionSubSystem.h"
-#include "subsystems/WindowSubSystem.h"
 #include "world/GameObject.h"
 #include "undoredo/UndoRedo.h"
 #include "windows//HistoryWindow.h"
@@ -25,6 +23,12 @@
 #include "dragdropfactories/DragDropFactory.h"
 #include "core/math/MathFunctionLibrary.h"
 #include <rttr/library.h>
+
+// windows
+#include "windows/LogWindow.h"
+#include "windows/ImWindowSystem.h"
+#include "windows/SceneHeirarchyWindow.h"
+#include "windows/ContentBrowserWindow.h"
 
 namespace BHive
 {
@@ -83,18 +87,18 @@ namespace BHive
 		AddSubSystem<SelectionSubSystem>();
 		AddSubSystem<ThumbnailCache>();
 
-		auto &window_system = AddSubSystem<WindowSubSystem>();
-		window_system.CreateWindow<LogPanel>();
-		window_system.CreateWindow<HistoryWindow>();
+		auto &window_system = AddSubSystem<ImWindowSystem>();
+		window_system.ConstructWindow<ImLogWindow>();
+		window_system.ConstructWindow<ImHistoryWindow>();
 
-		mSceneHeirarchyPanel = window_system.CreateWindow<SceneHierarchyPanel>();
+		mSceneHeirarchyPanel = window_system.ConstructWindow<ImSceneHierarchy>();
 
 		CreateWorld();
 
 		mAssetManager = CreateRef<EditorAssetManager>(Project::GetResourceDirectory(), "AssetRegistry.json");
 		AssetManager::SetAssetManager(mAssetManager.get());
 
-		mContentBrowser = window_system.CreateWindow<EditorContentBrowser<EditorAssetManager>>(Project::GetResourceDirectory());
+		mContentBrowser = window_system.ConstructWindow<EditorContentBrowser<EditorAssetManager>>(Project::GetResourceDirectory());
 
 		SetupDefaultCommands();
 
@@ -124,7 +128,7 @@ namespace BHive
 
 		mRenderer->Begin(&mEditorCamera, mEditorCamera.GetView());
 
-		Renderer::SubmitCamera(mEditorCamera.GetProjection(), mEditorCamera.GetView().inverse());
+		Renderer::SubmitCamera(mEditorCamera.GetProjection(), mEditorCamera.GetView().Inverse());
 
 		RenderCommand::Clear();
 
@@ -208,7 +212,7 @@ namespace BHive
 
 		ImGui::End();
 
-		SubSystemContext::Get().GetSubSystem<WindowSubSystem>().UpdateWindows();
+		SubSystemContext::Get().GetSubSystem<ImWindowSystem>().Update();
 	}
 
 	void EditorLayer::SetupDefaultCommands()
@@ -344,7 +348,7 @@ namespace BHive
 				mViewportBounds[0] = {viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y};
 				mViewportBounds[1] = {viewport_max_region.x + viewport_offset.x, viewport_max_region.y + viewport_offset.y};
 
-				glm::mat4 view = mEditorCamera.GetView().inverse();
+				glm::mat4 view = mEditorCamera.GetView().Inverse();
 				const glm::mat4 projection = mEditorCamera.GetProjection();
 
 				auto color_attachment = mRenderer->GetColorAttachment();
@@ -399,7 +403,7 @@ namespace BHive
 						{
 							auto mouse_pos = ImGui::GetMousePos();
 							auto mouse_ray =
-								MathFunctionLibrary::get_mouse_ray(mouse_pos.x, mouse_pos.y, mViewportSize.x, mViewportSize.y, mEditorCamera.GetProjection(), mEditorCamera.GetView().inverse());
+								MathFunctionLibrary::GetMouseRay(mouse_pos.x, mouse_pos.y, mViewportSize.x, mViewportSize.y, mEditorCamera.GetProjection(), mEditorCamera.GetView().Inverse());
 
 							auto relative = std::filesystem::relative(entry, Project::GetResourceDirectory());
 							auto metadata = mAssetManager->GetMetaData(relative);
@@ -409,9 +413,9 @@ namespace BHive
 								auto handle = mAssetManager->GetHandle(metadata.Path);
 								if (auto asset = mAssetManager->GetAsset(handle))
 								{
-									auto factory = DragDropFactory::get_factory_from_type(metadata.Type);
-									if (factory->can_create(metadata.Type))
-										factory->create_from(asset, metadata.Name, mActiveWorld.get(), mouse_ray * 100.f);
+									auto factory = DragDropFactory::GetFactoryFromType(metadata.Type);
+									if (factory->CanCreate(metadata.Type))
+										factory->CreateFrom(asset, metadata.Name, mActiveWorld.get(), mouse_ray * 100.f);
 								}
 							}
 						}

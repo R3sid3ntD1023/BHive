@@ -14,26 +14,26 @@ namespace BHive
 	class DragDropFactory
 	{
 	public:
-		virtual Ref<GameObject> create_from(const Ref<Asset> &asset, const std::string &name, World *world, const FTransform &transform);
+		virtual Ref<GameObject> CreateFrom(const Ref<Asset> &asset, const std::string &name, World *world, const FTransform &transform);
 
-		virtual bool can_create(const rttr::type &type) { return false; }
+		virtual bool CanCreate(const rttr::type &type) { return false; }
 
 	protected:
-		virtual void post_create(const Ref<Asset> &asset, Ref<GameObject> &object) {};
+		virtual void PostCreate(const Ref<Asset> &asset, Ref<GameObject> &object) {};
 
 	public:
-		static Ref<DragDropFactory> get_factory_from_type(const rttr::type &type);
+		static Ref<DragDropFactory> GetFactoryFromType(const rttr::type &type);
 
 		template <typename TFactory>
-		static void register_drag_drop_factory(const rttr::type &type)
+		static void RegisterDragDropFactory(const rttr::type &type)
 		{
-			register_factory(type, CreateRef<TFactory>());
+			RegisterFactory(type, CreateRef<TFactory>());
 		}
 
 	private:
-		static void register_factory(const rttr::type &type, const Ref<DragDropFactory> &factory);
+		static void RegisterFactory(const rttr::type &type, const Ref<DragDropFactory> &factory);
 
-		static DragDropFactoryRegistry &get_registry();
+		static DragDropFactoryRegistry &GetRegistry();
 	};
 
 } // namespace BHive

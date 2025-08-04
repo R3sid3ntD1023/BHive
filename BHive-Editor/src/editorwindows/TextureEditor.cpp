@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	void TextureEditor::OnWindowRender()
+	void TextureEditor::OnContentUpdate()
 	{
 		if (mAsset)
 		{
@@ -27,7 +27,7 @@ namespace BHive
 
 			ImGui::TableNextColumn();
 
-			TAssetEditor::OnWindowRender();
+			TAssetEditor::OnContentUpdate();
 
 			// Creates subtexture from texture
 			ImGui::SeparatorText("Create SubTexture");

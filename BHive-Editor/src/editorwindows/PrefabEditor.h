@@ -2,17 +2,17 @@
 
 #include "TAssetEditor.h"
 #include "prefab/Prefab.h"
-#include "SceneHeirarchyPanel.h"
+#include "windows/SceneHeirarchyWindow.h"
 
 namespace BHive
 {
 	struct PrefabEditor : public TAssetEditor<Prefab>
 	{
 	protected:
-		virtual void OnWindowRender();
+		virtual void OnContentUpdate() override;
 		virtual void OnSetContext(const Ref<Prefab> &asset) override;
 
 	private:
-		SceneHierarchyPanel mSceneHierarchy;
+		ImSceneHierarchy mSceneHierarchy;
 	};
 } // namespace BHive

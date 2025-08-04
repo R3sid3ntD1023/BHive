@@ -42,7 +42,7 @@ namespace BHive
 					ImGui::PushID(key_id);
 					{
 
-						if (Inspect::get().inspect(owner, key, is_read_only))
+						if (Inspect::get().inspect(owner, key, false, is_read_only))
 						{
 							edit_func = [key, old_key, value](rttr::variant_associative_view &view)
 							{
@@ -72,7 +72,7 @@ namespace BHive
 
 					ImGui::PushID(value_id);
 
-					if (Inspect::get().inspect(owner, value, is_read_only))
+					if (Inspect::get().inspect(owner, value, false, is_read_only))
 					{
 						edit_func = [key, old_key, value](rttr::variant_associative_view &view)
 						{

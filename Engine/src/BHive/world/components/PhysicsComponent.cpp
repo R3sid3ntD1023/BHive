@@ -16,9 +16,9 @@ namespace BHive
 			auto t = object->GetWorldTransform();
 
 			auto global_pose = rb->getGlobalPose();
-			auto scale = t.get_scale();
+			auto scale = t.GetScale();
 			auto global = physics::utils::Convert(global_pose);
-			global.set_scale(scale);
+			global.SetScale(scale);
 
 			object->SetWorldTransform(global);
 		}
@@ -111,7 +111,6 @@ namespace BHive
 
 	REFLECT(PhysicsComponent)
 	{
-		BEGIN_REFLECT(PhysicsComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR()
-			REFLECT_PROPERTY(Settings) COMPONENT_IMPL();
+		BEGIN_REFLECT(PhysicsComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Settings) COMPONENT_IMPL();
 	}
 } // namespace BHive

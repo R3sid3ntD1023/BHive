@@ -1,17 +1,17 @@
 #pragma once
 
-#include "WindowBase.h"
+#include "ImWindowBase.h"
 
 namespace BHive
 {
-	class HistoryWindow : public WindowBase
+	class ImHistoryWindow : public ImWindowBase
 	{
 	public:
-		HistoryWindow() = default;
+		ImHistoryWindow() = default;
 
 	protected:
-		void OnGuiRender() override;
+		void OnUpdate() override;
 
-		virtual const char *GetName() const { return "History"; }
+		virtual const char *GetName() const override { return "History"; }
 	};
 } // namespace BHive

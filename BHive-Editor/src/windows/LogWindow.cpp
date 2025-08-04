@@ -1,12 +1,11 @@
-#include "LogPanel.h"
-#include "gui/ImGuiExtended.h"
+#include "LogWindow.h"
 
 namespace BHive
 {
 	const std::unordered_map<spdlog::level::level_enum, ImVec4> sLogColors = {
 		{spdlog::level::trace, {1, 1, 1, 1}}, {spdlog::level::info, {0, 1, 0, 1}}, {spdlog::level::warn, {1, 1, 0, 1}}, {spdlog::level::err, {1, 0, 0, 1}}, {spdlog::level::critical, {1, 0, 0, 1}}};
 
-	void LogPanel::OnGuiRender()
+	void ImLogWindow ::OnUpdate()
 	{
 		if (ImGui::BeginMenuBar())
 		{
@@ -40,16 +39,16 @@ namespace BHive
 		}
 	}
 
-	LogPanel::LogPanel()
-		: WindowBase(ImGuiWindowFlags_MenuBar)
+	ImLogWindow ::ImLogWindow()
+		: ImWindowBase(ImGuiWindowFlags_MenuBar)
 	{
 		if (!Log::OnMessageLogged)
 		{
-			Log::OnMessageLogged = [](const spdlog::details::log_msg &msg) { LogPanel::LogMessage(msg); };
+			Log::OnMessageLogged = [](const spdlog::details::log_msg &msg) { ImLogWindow::OnMessageLogged(msg); };
 		}
 	}
 
-	void LogPanel::LogMessage(const spdlog::details::log_msg &msg)
+	void ImLogWindow::OnMessageLogged(const spdlog::details::log_msg &msg)
 	{
 		sMessages.push_back({msg.level, std::string(msg.payload.data(), msg.payload.size())});
 		sScroll = true;

@@ -14,8 +14,8 @@ namespace BHive
 
 		inline physx::PxTransform Convert(const FTransform &transform)
 		{
-			const auto &t = transform.get_translation();
-			const auto &o = transform.get_quaternion();
+			const auto &t = transform.GetTranslation();
+			const auto &o = transform.GetQuaternion();
 
 			physx::PxVec3 pos(t.x, t.y, t.z);
 			physx::PxQuat orientation(o.x, o.y, o.z, o.w);

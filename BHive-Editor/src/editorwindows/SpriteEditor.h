@@ -9,7 +9,7 @@ namespace BHive
 	{
 
 	protected:
-		virtual void OnWindowRender();
+		virtual void OnContentUpdate() override;
 	};
 
 } // namespace BHive

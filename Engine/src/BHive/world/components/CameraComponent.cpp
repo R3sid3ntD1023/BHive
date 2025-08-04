@@ -10,7 +10,7 @@ namespace BHive
 		{
 			auto owner = GetOwner();
 			auto transform = owner->GetWorldTransform();
-			Renderer::SubmitCamera(Camera.GetProjection(), transform.inverse());
+			Renderer::SubmitCamera(Camera.GetProjection(), transform.Inverse());
 		}
 	}
 
@@ -33,7 +33,6 @@ namespace BHive
 
 	REFLECT(CameraComponent)
 	{
-		BEGIN_REFLECT(CameraComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR()
-			REFLECT_PROPERTY(Camera) REFLECT_PROPERTY(IsPrimary) COMPONENT_IMPL();
+		BEGIN_REFLECT(CameraComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Camera) REFLECT_PROPERTY(IsPrimary) COMPONENT_IMPL();
 	}
 } // namespace BHive

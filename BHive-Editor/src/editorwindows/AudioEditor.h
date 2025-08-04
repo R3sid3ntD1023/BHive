@@ -6,15 +6,15 @@
 namespace BHive
 {
 
-    class AudioEditor : public TAssetEditor<AudioSource>
-    {
-    public:
-        ~AudioEditor();
+	class AudioEditor : public TAssetEditor<AudioSource>
+	{
+	public:
+		~AudioEditor();
 
-    protected:
-        virtual void OnWindowRender();
+	protected:
+		virtual void OnContentUpdate() override;
 
-    private:
-        static inline Ref<AudioSource> mCurrentAudioPlaying;
-    };
-}
+	private:
+		static inline Ref<AudioSource> mCurrentAudioPlaying;
+	};
+} // namespace BHive

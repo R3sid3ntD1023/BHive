@@ -31,15 +31,15 @@ namespace BHive
 
 		AABB(const glm::vec3 &min, const glm::vec3 &max);
 
-		glm::vec3 get_center() const;
+		glm::vec3 GetCenter() const;
 
-		glm::vec3 get_extent() const;
+		glm::vec3 GetExtent() const;
 
-		float get_radius() const;
+		float GetRadius() const;
 
-		FBox get_box() const;
+		FBox GetBox() const;
 
-		FSphere get_sphere() const;
+		FSphere GetSphere() const;
 
 		AABB &operator=(const AABB &rhs);
 

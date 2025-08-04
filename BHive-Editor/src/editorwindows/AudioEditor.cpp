@@ -2,37 +2,37 @@
 
 namespace BHive
 {
-    AudioEditor::~AudioEditor()
-    {
-        if (mCurrentAudioPlaying)
-            mCurrentAudioPlaying->Stop();
-    }
+	AudioEditor::~AudioEditor()
+	{
+		if (mCurrentAudioPlaying)
+			mCurrentAudioPlaying->Stop();
+	}
 
-    void AudioEditor::OnWindowRender()
+	void AudioEditor::OnContentUpdate()
 
-    {
-        if (!mAsset)
-            return;
+	{
+		if (!mAsset)
+			return;
 
-        TAssetEditor::OnWindowRender();
+		TAssetEditor::OnContentUpdate();
 
-        if (ImGui::Button(!mAsset->IsPlaying() ? "Play" : "Stop"))
-        {
-            if (mAsset->IsPlaying())
-            {
-                mAsset->Stop();
-                mCurrentAudioPlaying.reset();
-            }
-            else
-            {
-                if (mCurrentAudioPlaying)
-                {
-                    mCurrentAudioPlaying->Stop();
-                }
+		if (ImGui::Button(!mAsset->IsPlaying() ? "Play" : "Stop"))
+		{
+			if (mAsset->IsPlaying())
+			{
+				mAsset->Stop();
+				mCurrentAudioPlaying.reset();
+			}
+			else
+			{
+				if (mCurrentAudioPlaying)
+				{
+					mCurrentAudioPlaying->Stop();
+				}
 
-                mAsset->Play();
-                mCurrentAudioPlaying = mAsset;
-            }
-        }
-    }
-}
+				mAsset->Play();
+				mCurrentAudioPlaying = mAsset;
+			}
+		}
+	}
+} // namespace BHive

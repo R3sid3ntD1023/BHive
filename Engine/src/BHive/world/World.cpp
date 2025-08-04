@@ -473,7 +473,7 @@ namespace BHive
 		LOG_TRACE("Added gameobject with ID: {}", (std::string)id);
 	}
 
-	GameObject *World::duplicate_gameobject(GameObject *object)
+	GameObject *World::DuplicateGameobject(GameObject *object)
 	{
 		if (!object)
 			return nullptr;

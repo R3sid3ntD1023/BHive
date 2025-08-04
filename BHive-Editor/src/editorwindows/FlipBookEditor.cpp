@@ -3,7 +3,7 @@
 
 namespace BHive
 {
-	void FlipBookEditor::OnWindowRender()
+	void FlipBookEditor::OnContentUpdate()
 	{
 		if (mAsset)
 		{
@@ -17,7 +17,7 @@ namespace BHive
 
 			if (ImGui::BeginChild("Data", {width, 0}, ImGuiChildFlags_ResizeX | ImGuiChildFlags_AlwaysUseWindowPadding))
 			{
-				TAssetEditor::OnWindowRender();
+				TAssetEditor::OnContentUpdate();
 			}
 
 			ImGui::EndChild();
@@ -43,9 +43,7 @@ namespace BHive
 					}
 
 					float item_width = ImGui::GetContentRegionAvail().x;
-					ImGui::Image(
-						(ImTextureID)(uint64_t)(uint32_t)texture_id, {item_width, item_width}, {min.x, max.y},
-						{max.x, min.y});
+					ImGui::Image((ImTextureID)(uint64_t)(uint32_t)texture_id, {item_width, item_width}, {min.x, max.y}, {max.x, min.y});
 
 					if (ImGui::Timeline("##timeline", &mCurrentFrame, (int)frames.size()))
 					{

@@ -107,7 +107,7 @@ namespace BHive
 	template <typename T>
 	inline void ArithmeticNode<T>::draw()
 	{
-		Inspect::get().inspect(typeid(T).name(), this, mValue, false, 100.0f);
+		Inspect::get().inspect(typeid(T).name(), this, mValue, false, false, 100.0f);
 	}
 
 } // namespace BHive
