@@ -24,12 +24,13 @@ namespace BHive
 
 	void *SphereColliderComponent::GetGeometry()
 	{
-		return new physx::PxSphereGeometry(Radius);
+		auto scale = GetOwner()->GetWorldTransform().GetScale();
+		return new physx::PxSphereGeometry(Radius * glm::compMax(scale));
 	}
 
 	REFLECT(SphereColliderComponent)
 	{
-		BEGIN_REFLECT(SphereColliderComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR()
-			COMPONENT_IMPL() REFLECT_PROPERTY(Radius)(META_DATA(EPropertyMetaData_Default, .5f));
+		BEGIN_REFLECT(SphereColliderComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() COMPONENT_IMPL()
+			REFLECT_PROPERTY(Radius)(META_DATA(EPropertyMetaData_Default, .5f));
 	}
 } // namespace BHive

@@ -24,15 +24,14 @@ namespace BHive
 
 	void *BoxColliderComponent::GetGeometry()
 	{
-		return new physx::PxBoxGeometry(Extents.x, Extents.y, Extents.z);
+		auto scale = GetOwner()->GetWorldTransform().GetScale();
+		return new physx::PxBoxGeometry(Extents.x * scale.x, Extents.y * scale.y, Extents.z * scale.z);
 	}
 
 	REFLECT(BoxColliderComponent)
 	{
 		BEGIN_REFLECT(BoxColliderComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR()
-			REFLECT_PROPERTY(Extents)(META_DATA(EPropertyMetaData_Default, glm::vec3{.5f COMMA.5f COMMA.5f}))
-				COMPONENT_IMPL();
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Extents)(META_DATA(EPropertyMetaData_Default, glm::vec3{.5f COMMA.5f COMMA.5f})) COMPONENT_IMPL();
 	}
 
 } // namespace BHive
