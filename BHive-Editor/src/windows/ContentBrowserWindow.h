@@ -1,7 +1,7 @@
 #pragma once
 
-#include "asset/Asset.h"
 #include "ImWindowBase.h"
+#include "ContentBrowserItems.h"
 
 #define DRAG_DROP_SOURCE_TYPE "CONTENT_BROWSER_ITEM"
 
@@ -9,6 +9,7 @@ namespace BHive
 {
 	class Texture2D;
 	class Project;
+	struct ImTreeFolder;
 
 	struct FContentBrowerColors
 	{
@@ -59,12 +60,13 @@ namespace BHive
 		virtual const char *GetName() const { return "Content Browser"; }
 
 	private:
-		void ShowFileSystemTree(const std::filesystem::directory_entry &directory);
+		void ShowFileSystemTree(ImTreeFolder &folder);
 		void ShowFileSystem();
 		void OnDeleteFolder(const std::filesystem::directory_entry &entry);
 		void DeleteFolder(const std::filesystem::directory_entry &entry);
 		void SetCurrentDirectory(const std::filesystem::path &path);
 		void ApplyDragDropTarget(const std::filesystem::directory_entry &entry);
+		void ConstructTree(ImTreeFolder &);
 
 	private:
 		std::filesystem::path mBaseDirectory;
@@ -78,5 +80,6 @@ namespace BHive
 
 		ImGuiSelectionBasicStorage mSelection;
 		EntryItems mItems;
+		ImTreeFolder mTree;
 	};
 } // namespace BHive

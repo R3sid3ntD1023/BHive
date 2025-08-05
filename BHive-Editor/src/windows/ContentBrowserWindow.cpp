@@ -8,154 +8,6 @@
 
 namespace BHive
 {
-	struct ImTreeFolder
-	{
-		ImTreeFolder(const std::filesystem::directory_entry &entry)
-			: mEntry(entry)
-		{
-		}
-
-		bool draw(ImTextureID texture, float width, ImU32 icon_color, ImU32 icon_hovered_color)
-		{
-			auto label = mEntry.path().stem().string();
-
-			ImVec2 size = {width, ImGui::GetFontSize()};
-
-			bool pressed = ImGui::InvisibleButton("##icon", size, 0);
-
-			auto rect = ImGui::GetItemRect();
-			auto hovered = ImGui::IsItemHovered();
-			auto active = ImGui::IsItemActive();
-			auto color = hovered || active ? icon_hovered_color : icon_color;
-			auto frame_color = hovered ? ImGui::GetColorU32(ImGuiCol_FrameBgHovered) : IM_COL32(0, 0, 0, 0);
-
-			auto drawlist = ImGui::GetWindowDrawList();
-			drawlist->AddRectFilled(rect.Min, rect.Max, frame_color);
-			drawlist->AddImage(texture, rect.Min, rect.Min + ImVec2{size.y, size.y}, {0, 1}, {1, 0}, color);
-			drawlist->AddText({rect.Min.x + size.y + GImGui->Style.FramePadding.x, rect.Min.y}, IM_COL32_WHITE, label.c_str());
-
-			return pressed;
-		}
-
-	private:
-		std::filesystem::directory_entry mEntry;
-	};
-
-	struct ImDirectoryEntry
-	{
-		using EntryEventCallback = std::function<void(const std::filesystem::directory_entry &, bool directory)>;
-		using EntryDragDropCallback = std::function<void(const std::filesystem::directory_entry &)>;
-		using EntryRenamedCallback = std::function<void(const std::filesystem::path &_old, const std::filesystem::path &_new)>;
-
-		ImDirectoryEntry(const std::filesystem::directory_entry &entry, ImTextureID icon, const ImVec2 &size = {20, 20})
-			: mEntry(entry),
-			  mIcon(icon),
-			  mSize(size)
-		{
-		}
-
-		void set_double_clicked_callback(const EntryEventCallback &e) { mOnDoubleClicked = e; }
-		void set_drag_drop_source_callback(const EntryDragDropCallback &e) { mOnDragDropSource = e; }
-		void set_drag_drop_target_callback(const EntryDragDropCallback &e) { mOnDragDropTarget = e; }
-		void set_renamed_callback(const EntryRenamedCallback &e) { mOnRenamed = e; }
-		void set_context_menu_callback(const EntryEventCallback &e) { mOnContextMenu = e; }
-
-		bool is_directory() const { return mEntry.is_directory(); }
-
-		bool draw(bool selected, bool show_checkmark, ImU32 image_color)
-		{
-
-			const bool directory = is_directory();
-			const auto path = mEntry.path();
-			const auto name = path.stem().string();
-			const auto id = ImGui::GetID(path.string().c_str());
-
-			ImGui::PushID(id);
-
-			bool clicked = ImGui::Selectable("", selected, ImGuiSelectableFlags_SelectOnClick | ImGuiSelectableFlags_AllowDoubleClick, mSize);
-			auto rect = ImGui::GetItemRect();
-
-			if (ImGui::BeginPopupContextItem(name.c_str()))
-			{
-				mOnContextMenu(mEntry, directory);
-
-				ImGui::EndPopup();
-			}
-
-			auto drawlist = ImGui::GetWindowDrawList();
-			auto color = directory ? image_color : IM_COL32_WHITE;
-			drawlist->AddImage(mIcon, rect.Min, rect.Max, {0, 1}, {1, 0}, color);
-
-			if (selected)
-			{
-				auto hightlight = ImGui::GetColorU32(ImGuiCol_NavHighlight);
-				drawlist->AddRect(rect.Min, rect.Max, hightlight);
-			}
-
-			if (clicked)
-			{
-				if (ImGui::IsMouseDoubleClicked(0) && mOnDoubleClicked)
-				{
-					mOnDoubleClicked(mEntry, directory);
-				}
-			}
-
-			if (directory)
-			{
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (mOnDragDropTarget)
-						mOnDragDropTarget(mEntry);
-
-					ImGui::EndDragDropTarget();
-				}
-			}
-
-			if (ImGui::BeginDragDropSource())
-			{
-				if (mOnDragDropSource)
-					mOnDragDropSource(mEntry);
-
-				ImGui::Image(mIcon, mSize);
-				ImGui::TextUnformatted(name.c_str());
-
-				ImGui::EndDragDropSource();
-			}
-
-			if (show_checkmark && !directory)
-			{
-				auto checkmark_size = 20.0f;
-				auto color = ImGui::GetColorU32(ImGuiCol_CheckMark);
-				ImGui::RenderCheckMark(drawlist, {rect.Max.x - checkmark_size, rect.Max.y - checkmark_size}, color, checkmark_size);
-			}
-
-			if (mOnRenamed)
-			{
-				std::string new_name;
-				bool edited_name = ImGui::DrawEditableText(name, new_name);
-
-				if (edited_name)
-				{
-					auto new_path = path.parent_path() / (new_name + path.extension().string());
-					mOnRenamed(path, new_path);
-				}
-			}
-
-			ImGui::PopID();
-
-			return clicked;
-		}
-
-	private:
-		std::filesystem::directory_entry mEntry;
-		ImTextureID mIcon;
-		ImVec2 mSize;
-		EntryEventCallback mOnDoubleClicked;
-		EntryDragDropCallback mOnDragDropSource;
-		EntryDragDropCallback mOnDragDropTarget;
-		EntryRenamedCallback mOnRenamed;
-		EntryEventCallback mOnContextMenu;
-	};
 
 	ImContentBrowserWindow::ImContentBrowserWindow()
 	{
@@ -180,7 +32,7 @@ namespace BHive
 				LOG_ERROR("Failed to create directory - {}", error.message());
 		}
 
-		SetCurrentDirectory(directory);
+		SetBaseDirectory(directory);
 	}
 
 	void ImContentBrowserWindow::OnUpdateContent()
@@ -237,7 +89,9 @@ namespace BHive
 		}
 
 		ImGui::BeginChild("##TreeView", {200, 0}, ImGuiChildFlags_ResizeX, ImGuiWindowFlags_AlwaysUseWindowPadding);
-		ShowFileSystemTree(std::filesystem::directory_entry(mBaseDirectory));
+
+		ShowFileSystemTree(mTree);
+
 		ImGui::EndChild();
 
 		ImGui::SameLine();
@@ -283,22 +137,27 @@ namespace BHive
 	{
 		mBaseDirectory = directory;
 		SetCurrentDirectory(mBaseDirectory);
+
+		if (std::filesystem::is_directory(directory))
+		{
+			mTree = ImTreeFolder(std::filesystem::directory_entry(directory));
+			ConstructTree(mTree);
+		}
 	}
 
-	void ImContentBrowserWindow::ShowFileSystemTree(const std::filesystem::directory_entry &directory)
+	void ImContentBrowserWindow::ShowFileSystemTree(ImTreeFolder &folder)
 	{
-		auto name = directory.path().stem().string();
-		auto id = ImGui::GetID(directory.path().filename().string().c_str());
+		auto directory = folder.GetEntry();
+		auto id = folder.GetID();
 
-		ImGui::PushID(id);
+		ImGui::PushID(directory.path().string().c_str());
 
 		bool opened = ImGui::TreeNodeEx("##TreeNode", ImGuiTreeNodeFlags_SpanTextWidth);
 
 		ImGui::SameLine();
 
 		auto icon = OnGetIcon(directory);
-		ImTreeFolder folder(directory);
-		auto pressed = folder.draw((ImTextureID)(uint64_t)(uint32_t)*icon, 200.0f, mStyle.mColors.mFolder, mStyle.mColors.mFolderHovered);
+		auto pressed = folder.Draw((ImTextureID)(uint64_t)(uint32_t)*icon, 200.0f, mStyle.mColors.mFolder, mStyle.mColors.mFolderHovered);
 		if (pressed)
 		{
 			SetCurrentDirectory(mCurrentDirectory / directory);
@@ -316,10 +175,9 @@ namespace BHive
 
 		if (opened)
 		{
-			for (auto &entry : std::filesystem::directory_iterator(directory))
+			for (auto &child : folder.GetChildren())
 			{
-				if (entry.is_directory())
-					ShowFileSystemTree(entry);
+				ShowFileSystemTree(child);
 			}
 
 			ImGui::TreePop();
@@ -443,13 +301,13 @@ namespace BHive
 
 					ImGui::SetNextItemSelectionUserData(i);
 
-					ImDirectoryEntry directory_entry(file_entry.Entry, (ImTextureID)(uint64_t)(uint32_t)*icon, mThumbnailSize);
-					directory_entry.set_double_clicked_callback(double_clicked_callback);
-					directory_entry.set_drag_drop_target_callback(drag_drop_target_callback);
-					directory_entry.set_drag_drop_source_callback(drag_drop_source_callback);
-					directory_entry.set_renamed_callback(renamed_callback);
-					directory_entry.set_context_menu_callback(context_menu_callback);
-					directory_entry.draw(is_selected, is_valid_handle, mStyle.mColors.mFolder);
+					ImDirectoryEntry directory_entry(file_entry.Entry);
+					directory_entry.SetDoubleClickedCallback(double_clicked_callback);
+					directory_entry.SetDragDropTargetCallback(drag_drop_target_callback);
+					directory_entry.SetDragDropSourceCallback(drag_drop_source_callback);
+					directory_entry.SetRenamedCallback(renamed_callback);
+					directory_entry.SetContextMenuCallback(context_menu_callback);
+					directory_entry.Draw((ImTextureID)(uint64_t)(uint32_t)*icon, mThumbnailSize, is_selected, is_valid_handle, mStyle.mColors.mFolder);
 
 					ImGui::TableNextColumn();
 				}
@@ -514,6 +372,19 @@ namespace BHive
 				}
 			}
 		};
+	}
+
+	void ImContentBrowserWindow::ConstructTree(ImTreeFolder &folder)
+	{
+		for (auto &entry : std::filesystem::directory_iterator(folder.GetEntry()))
+		{
+			if (!entry.is_directory())
+				continue;
+
+			auto child = ImTreeFolder(entry);
+			ConstructTree(child);
+			folder.AddChild(child);
+		}
 	}
 
 	void ImContentBrowserWindow::OnCreateAssetMenu()
