@@ -51,9 +51,7 @@ namespace BHive
 			ASSERT(HasComponent<T>())
 
 			T *component = GetComponent<T>();
-			auto it = std::find_if(mComponents.begin(), mComponents.end(), [component](Component *comp) { return component == comp; });
-
-			mComponents.erase(it);
+			mComponents.erase(component);
 			mWorld->mRegistry.remove<T>(mEntity);
 		}
 
