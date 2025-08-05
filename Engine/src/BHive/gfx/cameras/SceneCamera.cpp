@@ -68,14 +68,45 @@ namespace BHive
 		case BHive::EProjectionType::Orthographic:
 		{
 			auto &settings = mOrthographicSettings;
-			mProjection = glm::ortho(
-				settings.Left * mAspectRatio, settings.Right * mAspectRatio, settings.Bottom, settings.Top, settings.Near,
-				settings.Far);
+			mProjection = glm::ortho(settings.Left * mAspectRatio, settings.Right * mAspectRatio, settings.Bottom, settings.Top, settings.Near, settings.Far);
 		}
 		break;
 		default:
 			break;
 		}
+	}
+
+	REFLECT(EProjectionType)
+	{
+		BEGIN_REFLECT_ENUM(EProjectionType)
+		(ENUM_VALUE(Perspective), ENUM_VALUE(Orthographic));
+	}
+
+	REFLECT(FPerspectiveSettings)
+	{
+		BEGIN_REFLECT(FPerspectiveSettings)
+		REFLECT_PROPERTY(Fov)
+		REFLECT_PROPERTY(Far)
+		REFLECT_PROPERTY(Near);
+	}
+
+	REFLECT(FOrthographicSettings)
+	{
+		BEGIN_REFLECT(FOrthographicSettings)
+		REFLECT_PROPERTY(Left)
+		REFLECT_PROPERTY(Right)
+		REFLECT_PROPERTY(Bottom)
+		REFLECT_PROPERTY(Top)
+		REFLECT_PROPERTY(Far)
+		REFLECT_PROPERTY(Near);
+	}
+
+	REFLECT(SceneCamera)
+	{
+		BEGIN_REFLECT(SceneCamera)
+		REFLECT_PROPERTY("Projection", GetProjectionType, SetProjectionType)
+		REFLECT_PROPERTY("Perspective", GetPerspectiveSettings, SetPerspectiveSettings)
+		REFLECT_PROPERTY("Orthographic", GetOrthographicSettings, SetOrthographicSettings);
 	}
 
 } // namespace BHive
