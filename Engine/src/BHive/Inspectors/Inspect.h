@@ -13,7 +13,7 @@ namespace BHive
 
 		bool inspect(const rttr::variant &instance, rttr::variant &var, bool skip_custom = false, bool read_only = false, float width = 0.0f, const MetaGetter &get_meta_data = meta_data_empty);
 
-		bool inspect(const rttr::variant &instance, rttr::variant &object, rttr::property &property, bool skip_custom = false, bool read_only = false, float width = 0.0f);
+		bool inspect(const rttr::variant &instance, rttr::variant &object, rttr::property &property, bool read_only = false, float width = 0.0f);
 
 		// inspect readonly data
 		template <typename T, typename U>

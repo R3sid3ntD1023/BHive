@@ -39,7 +39,8 @@ namespace BHive
 
 		ImGui::SeparatorText("Components");
 
-		for (auto component : data->GetComponents())
+		auto components = data->GetComponents();
+		for (auto component : components)
 		{
 			changed |= Inspect::get().inspect("", data, component, false, is_read_only);
 		}
