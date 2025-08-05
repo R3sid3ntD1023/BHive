@@ -30,6 +30,8 @@
 #include "windows/ContentBrowserWindow.h"
 #include "windows/HistoryWindow.h"
 
+#include "core/profiler/ProfilerViewer.h"
+
 namespace BHive
 {
 	std::unordered_map<uint8_t, float> sSnapValues = {{ImGuizmo::TRANSLATE, 10.f}, {ImGuizmo::ROTATE, 15.f}, {ImGuizmo::SCALE, .25f}};
@@ -155,8 +157,7 @@ namespace BHive
 
 	void EditorLayer::OnGuiRender()
 	{
-		static bool scene_heirarchy_status = true;
-		static bool content_browser_status = true;
+		static std::unordered_map<const char *, bool> window_statuses = {{"Scene Hierarchy", true}, {"Content Browser", true}, {"Profiler", true}};
 
 		if (ImGui::BeginMainMenuBar())
 		{
@@ -186,8 +187,10 @@ namespace BHive
 
 			if (ImGui::BeginMenu("Windows"))
 			{
-				ImGui::Checkbox("Scene Hierarchy", &scene_heirarchy_status);
-				ImGui::Checkbox("Content Browser", &content_browser_status);
+				for (auto &[name, status] : window_statuses)
+				{
+					ImGui::Checkbox(name, &status);
+				}
 				ImGui::EndMenu();
 			}
 
@@ -211,6 +214,17 @@ namespace BHive
 		}
 
 		ImGui::End();
+
+		if (bool &status = window_statuses["Profiler"])
+		{
+			if (ImGui::Begin("Profiler", &status))
+			{
+				ProfilerViewer::ViewFPS();
+				ProfilerViewer::ViewCPUGPU();
+			}
+
+			ImGui::End();
+		}
 
 		SubSystemContext::Get().GetSubSystem<ImWindowSystem>().Update();
 	}
