@@ -3,11 +3,11 @@
 
 namespace BHive
 {
-	void SpriteSheetEditor::OnContentUpdate()
+	void SpriteSheetEditor::OnUpdateContent()
 	{
 		if (mAsset)
 		{
-			TAssetEditor::OnContentUpdate();
+			TAssetEditor::OnUpdateContent();
 
 			if (ImGui::BeginChild("##children", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeY))
 			{

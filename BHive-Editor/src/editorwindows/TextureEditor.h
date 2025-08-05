@@ -8,7 +8,7 @@ namespace BHive
 	class TextureEditor : public TAssetEditor<Texture2D>
 	{
 	protected:
-		virtual void OnContentUpdate() override;
+		virtual void OnUpdateContent() override;
 
 		virtual void OnSetContext(const Ref<Texture2D> &asset) override;
 

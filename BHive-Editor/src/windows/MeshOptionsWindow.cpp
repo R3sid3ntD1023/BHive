@@ -21,7 +21,7 @@ namespace BHive
 		mOptions.OverideMaterials.resize(data.mMaterialData.size());
 	}
 
-	void MeshOptionsWindow::OnUpdate()
+	void MeshOptionsWindow::OnUpdateContent()
 	{
 		bool animations_enabled = mImportData.mBoneData.size() > 0 && mOptions.MeshType != EMeshType::StaticMesh;
 

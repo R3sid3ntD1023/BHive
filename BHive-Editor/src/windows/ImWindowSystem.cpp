@@ -4,11 +4,10 @@ namespace BHive
 {
 	void ImWindowSystem::Update()
 	{
-		std::remove_if(mWindows.begin(), mWindows.end(), [](const Ref<ImWindow> &window) { return window->ShouldClose(); });
-
+		auto windows_count = std::erase_if(mWindows, [](const Ref<ImWindow> &window) { return window->ShouldClose(); });
 		for (auto &window : mWindows)
 		{
-			window->Update();
+			window->OnUpdate();
 		}
 	}
 
@@ -26,7 +25,7 @@ namespace BHive
 
 	void ImWindowSystem::EmplaceWindow(const Ref<ImWindow> &window)
 	{
-		mWindows.emplace_back(window);
+		mWindows.insert(window);
 	}
 
 	void ImWindowSystem::Clear()

@@ -43,16 +43,18 @@ namespace BHive
 
 		virtual ~ImWindowBase();
 
-		void Update() override;
+		virtual void OnUpdate() final override;
 
 		bool ShouldClose() const override { return !mIsOpen; };
 
 		virtual bool IsFocused() const override { return mIsFocused || mIsHovered; }
 
 	protected:
-		virtual void OnUpdate() {}
-
 		virtual const char *GetName() const { return "Window"; }
+
+		virtual void OnMenuBar() {};
+
+		virtual void OnUpdateContent() {};
 
 	private:
 		uint32_t mWindowFlags;

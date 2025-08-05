@@ -17,18 +17,18 @@
 #include "subsystems/SelectionSubSystem.h"
 #include "world/GameObject.h"
 #include "undoredo/UndoRedo.h"
-#include "windows//HistoryWindow.h"
 #include "undoredo/Commands.h"
 #include "gui/PayloadHelpers.h"
 #include "dragdropfactories/DragDropFactory.h"
 #include "core/math/MathFunctionLibrary.h"
-#include <rttr/library.h>
+#include "core/math/RayCasting.h"
 
 // windows
 #include "windows/LogWindow.h"
 #include "windows/ImWindowSystem.h"
 #include "windows/SceneHeirarchyWindow.h"
 #include "windows/ContentBrowserWindow.h"
+#include "windows/HistoryWindow.h"
 
 namespace BHive
 {
@@ -401,9 +401,12 @@ namespace BHive
 
 						for (auto &entry : entries)
 						{
-							auto mouse_pos = ImGui::GetMousePos();
-							auto mouse_ray =
-								MathFunctionLibrary::GetMouseRay(mouse_pos.x, mouse_pos.y, mViewportSize.x, mViewportSize.y, mEditorCamera.GetProjection(), mEditorCamera.GetView().Inverse());
+							const auto &camera_view = mEditorCamera.GetView();
+							const auto mouse_pos = ImGui::GetMousePos();
+							auto mouse_ray = MathFunctionLibrary::GetMouseRay(mouse_pos.x, mouse_pos.y, mViewportSize.x, mViewportSize.y, mEditorCamera.GetProjection(), camera_view.Inverse());
+
+							auto distance = glm::distance(camera_view[0], {0, 0, 0});
+							auto point = RayCast::GetPointOnRay(mEditorCamera.GetView()[0], mouse_ray, distance);
 
 							auto relative = std::filesystem::relative(entry, Project::GetResourceDirectory());
 							auto metadata = mAssetManager->GetMetaData(relative);
@@ -415,7 +418,7 @@ namespace BHive
 								{
 									auto factory = DragDropFactory::GetFactoryFromType(metadata.Type);
 									if (factory->CanCreate(metadata.Type))
-										factory->CreateFrom(asset, metadata.Name, mActiveWorld.get(), mouse_ray * 100.f);
+										factory->CreateFrom(asset, metadata.Name, mActiveWorld.get(), point);
 								}
 							}
 						}

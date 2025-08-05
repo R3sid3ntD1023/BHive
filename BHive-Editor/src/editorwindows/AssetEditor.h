@@ -12,21 +12,14 @@ namespace BHive
 
 		virtual ~AssetEditor() = default;
 
-		void OnUpdate() override;
-
-		bool IsOpen() const { return mIsOpened; }
+		void OnMenuBar() override;
 
 		virtual void SetContext(const UUID &handle) {};
 
 	protected:
 		virtual bool OnSave(const std::filesystem::path &) const { return false; };
 
-		virtual void OnMenuBar() {};
-
-		virtual void OnContentUpdate() = 0;
-
 	protected:
 		std::filesystem::path mCurrentSavePath;
-		bool mIsOpened = true;
 	};
 } // namespace BHive

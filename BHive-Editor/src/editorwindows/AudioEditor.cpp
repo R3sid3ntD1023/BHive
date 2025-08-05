@@ -8,13 +8,13 @@ namespace BHive
 			mCurrentAudioPlaying->Stop();
 	}
 
-	void AudioEditor::OnContentUpdate()
+	void AudioEditor::OnUpdateContent()
 
 	{
 		if (!mAsset)
 			return;
 
-		TAssetEditor::OnContentUpdate();
+		TAssetEditor::OnUpdateContent();
 
 		if (ImGui::Button(!mAsset->IsPlaying() ? "Play" : "Stop"))
 		{

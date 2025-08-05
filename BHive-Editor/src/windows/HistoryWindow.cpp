@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	void ImHistoryWindow::OnUpdate()
+	void ImHistoryWindow::OnUpdateContent()
 	{
 		auto &undo_system = GetSubSystem<UndoRedo>();
 		const auto &index = undo_system.get_current_command_index();

@@ -8,38 +8,29 @@ namespace BHive
 	{
 	}
 
-	void AssetEditor::OnUpdate()
+	void AssetEditor::OnMenuBar()
 	{
-		if (ImGui::BeginMenuBar())
+		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::BeginMenu("File"))
+			if (ImGui::MenuItem("Save"))
 			{
-				if (ImGui::MenuItem("Save"))
-				{
-					OnSave(mCurrentSavePath);
-				}
-
-				if (ImGui::MenuItem("SaveAs"))
-				{
-					auto path = FileDialogs::SaveFile("Asset (*.asset)\0*.asset");
-					if (!path.empty())
-					{
-						if (OnSave(path))
-						{
-							mCurrentSavePath = path;
-						}
-					}
-				}
-
-				ImGui::EndMenu();
+				OnSave(mCurrentSavePath);
 			}
 
-			OnMenuBar();
+			if (ImGui::MenuItem("SaveAs"))
+			{
+				auto path = FileDialogs::SaveFile("Asset (*.asset)\0*.asset");
+				if (!path.empty())
+				{
+					if (OnSave(path))
+					{
+						mCurrentSavePath = path;
+					}
+				}
+			}
 
-			ImGui::EndMenuBar();
+			ImGui::EndMenu();
 		}
-
-		OnContentUpdate();
 	}
 
 } // namespace BHive

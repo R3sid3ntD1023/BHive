@@ -13,7 +13,7 @@ namespace BHive
 	public:
 		MeshOptionsWindow(MeshFactory *factory, const std::filesystem::path &filePath, const FMeshImportData &data);
 
-		virtual void OnUpdate() final override;
+		virtual void OnUpdateContent() final override;
 
 		bool ShouldClose() const override { return ImWindowBase::ShouldClose() || mShouldClose; };
 
@@ -21,7 +21,6 @@ namespace BHive
 		virtual const char *GetName() const override { return "Mesh Import"; }
 
 	private:
-		bool mIsOpen = true;
 		bool mShouldClose{false};
 
 		FMeshImportData mImportData;

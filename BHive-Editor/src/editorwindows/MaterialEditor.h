@@ -15,7 +15,7 @@ namespace BHive
 		MaterialEditor();
 
 	protected:
-		virtual void OnContentUpdate() override;
+		virtual void OnUpdateContent() override;
 
 		void OnSetContext(const Ref<Material> &asset) override;
 

@@ -16,7 +16,7 @@ namespace BHive
 		{
 		}
 
-		virtual void OnUpdate() final override
+		virtual void OnUpdateContent() override
 		{
 			Inspect::get().inspect("Skeleton", this, mSkeleton);
 

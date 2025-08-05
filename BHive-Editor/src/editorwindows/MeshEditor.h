@@ -13,7 +13,7 @@ namespace BHive
 	public:
 		MeshEditor();
 
-		virtual void OnContentUpdate() override;
+		virtual void OnUpdateContent() override;
 
 		void OnEvent(Event &event);
 

@@ -183,7 +183,7 @@ namespace BHive
 		SetCurrentDirectory(directory);
 	}
 
-	void ImContentBrowserWindow::OnUpdate()
+	void ImContentBrowserWindow::OnUpdateContent()
 	{
 
 		static bool open_settings = false;

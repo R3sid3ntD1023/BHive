@@ -21,7 +21,7 @@ namespace BHive
 		static void OnMessageLogged(const spdlog::details::log_msg &msg);
 
 	protected:
-		void OnUpdate() override;
+		void OnUpdateContent() override;
 
 		virtual const char *GetName() const override { return "Log"; }
 

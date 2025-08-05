@@ -15,7 +15,7 @@ namespace BHive
 		ImSceneHierarchy(const Ref<World> &world);
 		~ImSceneHierarchy() = default;
 
-		void OnUpdate();
+		void OnUpdateContent() override;
 
 		void SetContext(const Ref<World> &world);
 

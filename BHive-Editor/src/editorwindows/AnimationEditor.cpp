@@ -3,7 +3,7 @@
 
 namespace BHive
 {
-	void AnimationEditor::OnContentUpdate()
+	void AnimationEditor::OnUpdateContent()
 	{
 		Inspect::get().inspect("Duration", mAsset, mAsset->GetDuration());
 		Inspect::get().inspect("TicksPerSecond", mAsset, mAsset->GetTicksPerSecond());

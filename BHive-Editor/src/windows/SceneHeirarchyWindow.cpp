@@ -15,7 +15,7 @@ namespace BHive
 	{
 	}
 
-	void ImSceneHierarchy::OnUpdate()
+	void ImSceneHierarchy::OnUpdateContent()
 	{
 		auto &selection = GetSubSystem<SelectionSubSystem>();
 

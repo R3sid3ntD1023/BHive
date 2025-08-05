@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	void SpriteEditor::OnContentUpdate()
+	void SpriteEditor::OnUpdateContent()
 	{
 		if (mAsset)
 		{
@@ -16,7 +16,7 @@ namespace BHive
 			if (ImGui::BeginChild("##Texture", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeY))
 			{
 
-				TAssetEditor::OnContentUpdate();
+				TAssetEditor::OnUpdateContent();
 
 				if (texture)
 				{

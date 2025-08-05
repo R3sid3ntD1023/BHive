@@ -16,7 +16,7 @@ namespace BHive
 		mSceneRenderer->Initialize(300, 300);
 	}
 
-	void MeshEditor::OnContentUpdate()
+	void MeshEditor::OnUpdateContent()
 	{
 		mCamera.ProcessInput();
 
@@ -44,6 +44,7 @@ namespace BHive
 
 		mSceneRenderer->End();
 
+		// imgui
 		ImGui::BeginTable("##content", 2, ImGuiTableFlags_Resizable);
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
@@ -64,7 +65,7 @@ namespace BHive
 
 		ImGui::TableNextColumn();
 
-		TAssetEditor::OnContentUpdate();
+		TAssetEditor::OnUpdateContent();
 
 		ImGui::EndTable();
 	}

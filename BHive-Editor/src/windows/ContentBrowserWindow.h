@@ -39,7 +39,7 @@ namespace BHive
 		ImContentBrowserWindow();
 		ImContentBrowserWindow(const std::filesystem::path &directory);
 
-		void OnUpdate() override;
+		void OnUpdateContent() override;
 
 		void SetBaseDirectory(const std::filesystem::path &directory);
 		const std::filesystem::path &CurrentDirectory() const { return mCurrentDirectory; }

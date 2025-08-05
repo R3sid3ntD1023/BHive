@@ -2,7 +2,7 @@
 
 namespace BHive
 {
-	void PrefabEditor::OnContentUpdate()
+	void PrefabEditor::OnUpdateContent()
 	{
 		bool add_child_entity = false;
 

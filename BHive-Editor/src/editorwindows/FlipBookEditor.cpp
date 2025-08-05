@@ -3,7 +3,7 @@
 
 namespace BHive
 {
-	void FlipBookEditor::OnContentUpdate()
+	void FlipBookEditor::OnUpdateContent()
 	{
 		if (mAsset)
 		{
@@ -17,7 +17,7 @@ namespace BHive
 
 			if (ImGui::BeginChild("Data", {width, 0}, ImGuiChildFlags_ResizeX | ImGuiChildFlags_AlwaysUseWindowPadding))
 			{
-				TAssetEditor::OnContentUpdate();
+				TAssetEditor::OnUpdateContent();
 			}
 
 			ImGui::EndChild();

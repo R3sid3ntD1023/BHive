@@ -6,7 +6,7 @@ namespace BHive
 {
 	struct ImWindow
 	{
-		virtual void Update() = 0;
+		virtual void OnUpdate() {};
 
 		virtual bool ShouldClose() const = 0;
 

@@ -14,7 +14,7 @@ namespace BHive
 		mCounter.RemoveName(GetName(), mWindowID);
 	}
 
-	void ImWindowBase::Update()
+	void ImWindowBase::OnUpdate()
 	{
 		if (!mIsOpen)
 			return;
@@ -34,10 +34,18 @@ namespace BHive
 
 			Application::Get().GetImGuiLayer().BlockEvents(!mIsHovered);
 
-			OnUpdate();
+			if (ImGui::BeginMenuBar())
+			{
+				OnMenuBar();
+
+				ImGui::EndMenuBar();
+			}
+
+			OnUpdateContent();
 		}
 
 		ImGui::PopStyleVar(3);
 		ImGui::End();
 	}
+
 } // namespace BHive

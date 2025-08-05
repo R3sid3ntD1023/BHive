@@ -36,11 +36,14 @@ namespace BHive
 
 		virtual void OnSetContext(const Ref<T> &asset) {}
 
-		virtual void OnContentUpdate()
+		virtual void OnUpdateContent() override
 		{
+			if (!mAsset)
+				return;
+
 			auto ptr = mAsset.get();
 			rttr::variant var = ptr;
-			if (Inspect::get().inspect("Asset", this, var, true))
+			if (Inspect::get().inspect("", this, var, true))
 			{
 				ptr = var.get_value<T *>();
 			}

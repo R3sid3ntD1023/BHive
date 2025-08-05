@@ -12,7 +12,7 @@ namespace BHive
 		~AudioEditor();
 
 	protected:
-		virtual void OnContentUpdate() override;
+		virtual void OnUpdateContent() override;
 
 	private:
 		static inline Ref<AudioSource> mCurrentAudioPlaying;

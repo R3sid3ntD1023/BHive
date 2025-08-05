@@ -26,6 +26,6 @@ namespace BHive
 		void Clear();
 
 	private:
-		std::vector<Ref<ImWindow>> mWindows;
+		std::unordered_set<Ref<ImWindow>> mWindows;
 	};
 } // namespace BHive

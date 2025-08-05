@@ -9,7 +9,7 @@ namespace BHive
 	struct PrefabEditor : public TAssetEditor<Prefab>
 	{
 	protected:
-		virtual void OnContentUpdate() override;
+		virtual void OnUpdateContent() override;
 		virtual void OnSetContext(const Ref<Prefab> &asset) override;
 
 	private:

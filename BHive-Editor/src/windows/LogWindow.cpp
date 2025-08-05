@@ -5,7 +5,7 @@ namespace BHive
 	const std::unordered_map<spdlog::level::level_enum, ImVec4> sLogColors = {
 		{spdlog::level::trace, {1, 1, 1, 1}}, {spdlog::level::info, {0, 1, 0, 1}}, {spdlog::level::warn, {1, 1, 0, 1}}, {spdlog::level::err, {1, 0, 0, 1}}, {spdlog::level::critical, {1, 0, 0, 1}}};
 
-	void ImLogWindow ::OnUpdate()
+	void ImLogWindow::OnUpdateContent()
 	{
 		if (ImGui::BeginMenuBar())
 		{
