@@ -2,10 +2,10 @@
 
 namespace BHive
 {
-	glm::vec3 MathFunctionLibrary::NormalizeDeviceCoordinates(float x, float y, float width, float height)
+	glm::vec3 MathFunctionLibrary::NormalizeDeviceCoordinates(float mouse_x, float mouse_y, float width, float height)
 	{
-		float X = (2.0f * x) / width - 1.0f;
-		float Y = 1.0f - (2.0f * y) / height;
+		float X = (2.0f * mouse_x) / width - 1.0f;
+		float Y = 1.0f - (2.0f * mouse_y) / height;
 		float Z = 1.0f;
 
 		return {X, Y, Z};
@@ -25,9 +25,9 @@ namespace BHive
 		return glm::normalize(RayWorld);
 	}
 
-	glm::vec3 MathFunctionLibrary::GetMouseRay(float x, float y, float width, float height, const glm::mat4 &ProjectionMatrix, const glm::mat4 &ViewMatrix)
+	glm::vec3 MathFunctionLibrary::GetMouseRay(float mouse_x, float mouse_y, float width, float height, const glm::mat4 &ProjectionMatrix, const glm::mat4 &ViewMatrix)
 	{
-		auto NormlizedCoords = NormalizeDeviceCoordinates(x, y, width, height);
+		auto NormlizedCoords = NormalizeDeviceCoordinates(mouse_x, mouse_y, width, height);
 		auto eyecoords = NdcToEyeCoordinates(NormlizedCoords, ProjectionMatrix);
 		auto WorldCoords = EyeToWorldCoordinates(eyecoords, ViewMatrix);
 		return WorldCoords;

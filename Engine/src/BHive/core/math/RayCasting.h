@@ -7,6 +7,13 @@ namespace BHive
 {
 	struct BHIVE_API FRay
 	{
+		FRay() = default;
+		FRay(const glm::vec3 &origin, const glm::vec3 &dir)
+			: Origin(origin),
+			  Direction(dir)
+		{
+		}
+
 		glm::vec3 Origin;
 		glm::vec3 Direction;
 	};
