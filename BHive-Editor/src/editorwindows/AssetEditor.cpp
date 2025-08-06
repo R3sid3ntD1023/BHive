@@ -12,25 +12,53 @@ namespace BHive
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("Save"))
+			if (ImGui::MenuItem("Save", "Ctrl + S"))
 			{
-				OnSave(mCurrentSavePath);
+				Save();
 			}
 
-			if (ImGui::MenuItem("SaveAs"))
+			if (ImGui::MenuItem("SaveAs", "Ctrl +Alt + S"))
 			{
-				auto path = FileDialogs::SaveFile("Asset (*.asset)\0*.asset");
-				if (!path.empty())
-				{
-					if (OnSave(path))
-					{
-						mCurrentSavePath = path;
-					}
-				}
+				SaveAs();
 			}
 
 			ImGui::EndMenu();
 		}
+
+		if (IsFocused())
+		{
+			if (ImGui::IsKeyPressed(ImGuiKey_S))
+			{
+				if (ImGui::IsKeyDown(ImGuiKey_ModCtrl))
+				{
+
+					if (ImGui::IsKeyDown(ImGuiKey_ModAlt))
+					{
+						SaveAs();
+					}
+					else
+					{
+						Save();
+					}
+				}
+			}
+		}
+	}
+
+	void AssetEditor::SaveAs()
+	{
+		auto path = FileDialogs::SaveFile("Asset (*.asset)\0*.asset");
+		if (!path.empty())
+		{
+			mCurrentSavePath = path;
+			Save();
+		}
+	}
+
+	void AssetEditor::Save()
+	{
+		OnSave(mCurrentSavePath);
+		LOG_TRACE("Saved Asset {} at", mCurrentSavePath);
 	}
 
 } // namespace BHive

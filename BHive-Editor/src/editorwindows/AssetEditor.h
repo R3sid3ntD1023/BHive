@@ -19,6 +19,10 @@ namespace BHive
 	protected:
 		virtual bool OnSave(const std::filesystem::path &) const { return false; };
 
+	private:
+		void SaveAs();
+		void Save();
+
 	protected:
 		std::filesystem::path mCurrentSavePath;
 	};
