@@ -21,7 +21,7 @@ namespace BHive
 		virtual void OnAssetDoubleClicked(const std::filesystem::path &path) override;
 		virtual bool IsAssetValid(const std::filesystem::path &path) const override;
 
-		virtual Ref<Texture2D> OnGetIcon(const std::filesystem::directory_entry &entry) override;
+		virtual Ref<Texture2D> OnGetIcon(const std::filesystem::path &path) override;
 		virtual void OnCreateAssetMenu() override;
 
 	private:

@@ -13,26 +13,6 @@
 
 namespace BHive
 {
-	struct AssetThumbnailCache
-	{
-		AssetThumbnailCache()
-		{
-			mAssetIcons["BDRFMaterial"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/material.png");
-			mAssetIcons["StaticMesh"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/static_mesh.png");
-			mAssetIcons["SkeletalMesh"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/skeletal_mesh.png");
-			mAssetIcons["Skeleton"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/skeleton.png");
-			mAssetIcons["SkeletalAnimation"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/animation.png");
-			mAssetIcons["Texture2D"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/texture_2d.png");
-			mAssetIcons["World"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/world.png");
-			mAssetIcons["AnimGraph"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/graph.png");
-		}
-
-		const Ref<Texture2D> &Get(const std::string &type_name) { return mAssetIcons[type_name]; }
-
-	private:
-		std::unordered_map<std::string, Ref<Texture2D>> mAssetIcons;
-	};
-
 	template <typename T>
 	void FinishAssetImport(const std::filesystem::path &dir, const std::filesystem::path &rel, const Ref<Asset> &asset, const std::vector<Ref<Asset>> &others)
 	{
@@ -210,36 +190,35 @@ namespace BHive
 	}
 
 	template <typename T>
-	Ref<Texture2D> EditorContentBrowser<T>::OnGetIcon(const std::filesystem::directory_entry &entry)
+	Ref<Texture2D> EditorContentBrowser<T>::OnGetIcon(const std::filesystem::path &path)
 	{
-		static AssetThumbnailCache asset_cache;
 		auto &thumbnail_cache = GetSubSystem<ThumbnailCache>();
 		Ref<Texture2D> texture;
 
 		auto asset_manager = AssetManager::GetAssetManager<EditorAssetManager>();
 		if (asset_manager)
 		{
-			auto relative = std::filesystem::relative(entry, Project::GetResourceDirectory());
+			auto relative = std::filesystem::relative(path, Project::GetResourceDirectory());
 			auto handle = asset_manager->GetHandle(relative);
 			if (auto type = AssetManager::GetAssetType(handle))
 			{
-				texture = asset_cache.Get(type.get_name().data());
+				texture = thumbnail_cache.GetAssetIcon(type.get_name().data());
 			}
 		}
 
 		if (!texture)
 		{
-			if (entry.is_directory())
+			if (std::filesystem::is_directory(path))
 			{
-				bool is_empty = std::filesystem::is_empty(entry);
+				bool is_empty = std::filesystem::is_empty(path);
 				return thumbnail_cache.Get(is_empty ? "FolderIconEmpty" : "FolderIcon");
 			}
 
-			auto ext = entry.path().extension().string();
+			auto ext = path.extension().string();
 
 			if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
 			{
-				texture = thumbnail_cache.Get(entry.path());
+				texture = thumbnail_cache.Get(path);
 			}
 
 			if (!texture)
