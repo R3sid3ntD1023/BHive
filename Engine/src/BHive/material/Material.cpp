@@ -82,6 +82,8 @@ namespace BHive
 	{
 		BEGIN_REFLECT(Material)
 		REFLECT_PROPERTY("Textures", mTextures);
+
+		rttr::type::register_wrapper_converter_for_base_classes<Ref<Material>>();
 	}
 
 } // namespace BHive
