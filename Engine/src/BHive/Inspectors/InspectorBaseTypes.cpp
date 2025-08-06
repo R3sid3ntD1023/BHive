@@ -103,9 +103,10 @@ namespace BHive
 		if (ImGui::ColorEdit4("##ColorEdit", &data.r, flags))
 		{
 			var = data;
+			return true;
 		}
 
-		return ImGui::IsItemDeactivatedAfterEdit();
+		return false;
 	}
 
 	REFLECT_INSPECTOR(Inspector_UUID, UUID)
