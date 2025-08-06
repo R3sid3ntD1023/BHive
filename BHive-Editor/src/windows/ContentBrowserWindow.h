@@ -26,16 +26,6 @@ namespace BHive
 
 	class ImContentBrowserWindow : public ImWindowBase
 	{
-		using ContentBrowserActionFunc = std::function<void()>;
-
-		struct FileEntry
-		{
-			ImGuiID ID;
-			std::filesystem::directory_entry Entry;
-		};
-
-		using EntryItems = std::vector<FileEntry>;
-
 	public:
 		ImContentBrowserWindow();
 		ImContentBrowserWindow(const std::filesystem::path &directory);
@@ -53,20 +43,20 @@ namespace BHive
 		virtual void OnAssetDoubleClicked(const std::filesystem::path &relative) {}
 		virtual bool IsAssetValid(const std::filesystem::path &relative) const { return false; };
 
-		virtual Ref<Texture2D> OnGetIcon(const std::filesystem::directory_entry &entry) { return nullptr; };
+		virtual Ref<Texture2D> OnGetIcon(const std::filesystem::path &path) { return nullptr; };
 
 	protected:
 		virtual void OnCreateAssetMenu();
 		virtual const char *GetName() const { return "Content Browser"; }
 
 	private:
-		void ShowFileSystemTree(ImTreeFolder &folder);
+		void ShowFileSystemTree(const std::filesystem::path &path);
 		void ShowFileSystem();
 		void OnDeleteFolder(const std::filesystem::directory_entry &entry);
 		void DeleteFolder(const std::filesystem::directory_entry &entry);
 		void SetCurrentDirectory(const std::filesystem::path &path);
 		void ApplyDragDropTarget(const std::filesystem::directory_entry &entry);
-		void ConstructTree(ImTreeFolder &);
+		void RebuildDirectory();
 
 	private:
 		std::filesystem::path mBaseDirectory;
@@ -74,12 +64,7 @@ namespace BHive
 
 		float mPadding = 16.f, mThumbnailSize = 90.f;
 		FContentBrowserStyle mStyle{};
-
-		// content browser actions
-		ContentBrowserActionFunc mContentBrowerAction;
-
 		ImGuiSelectionBasicStorage mSelection;
-		EntryItems mItems;
-		ImTreeFolder mTree;
+		std::vector<ImDirectoryEntry> mEntries;
 	};
 } // namespace BHive

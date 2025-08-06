@@ -1,5 +1,6 @@
 #include "ContentBrowserItems.h"
 #include "gui/ImGuiExtended.h"
+#include "gfx/textures/Texture2D.h"
 
 namespace BHive
 {
@@ -9,7 +10,7 @@ namespace BHive
 	{
 	}
 
-	bool ImTreeFolder::Draw(ImTextureID texture, float width, ImU32 icon_color, ImU32 icon_hovered_color)
+	bool ImTreeFolder::Draw(const Ref<Texture2D> &texture, float width, ImU32 icon_color, ImU32 icon_hovered_color)
 	{
 		auto label = mEntry.path().stem().string();
 
@@ -17,7 +18,7 @@ namespace BHive
 
 		bool pressed = ImGui::InvisibleButton("##icon", size, 0);
 
-		auto rect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+		auto rect = ImGui::GetItemRect();
 		auto hovered = ImGui::IsItemHovered();
 		auto active = ImGui::IsItemActive();
 		auto color = hovered || active ? icon_hovered_color : icon_color;
@@ -25,15 +26,10 @@ namespace BHive
 
 		auto drawlist = ImGui::GetWindowDrawList();
 		drawlist->AddRectFilled(rect.Min, rect.Max, frame_color);
-		drawlist->AddImage(texture, rect.Min, rect.Min + ImVec2{size.y, size.y}, {0, 1}, {1, 0}, color);
+		drawlist->AddImage((ImTextureID)(uint64_t)(uint32_t)*texture, rect.Min, rect.Min + ImVec2{size.y, size.y}, {0, 1}, {1, 0}, color);
 		drawlist->AddText({rect.Min.x + size.y + GImGui->Style.FramePadding.x, rect.Min.y}, IM_COL32_WHITE, label.c_str());
 
 		return pressed;
-	}
-
-	void ImTreeFolder::AddChild(const ImTreeFolder &child)
-	{
-		mChildren.push_back(child);
 	}
 
 	ImDirectoryEntry::ImDirectoryEntry(const std::filesystem::directory_entry &entry)
@@ -67,17 +63,16 @@ namespace BHive
 		return mEntry.is_directory();
 	}
 
-	bool ImDirectoryEntry::Draw(ImTextureID icon, const ImVec2 &size, bool selected, bool show_checkmark, ImU32 image_color)
+	bool ImDirectoryEntry::Draw(const Ref<Texture2D> &texture, const ImVec2 &size, bool selected, bool show_checkmark, ImU32 image_color)
 	{
-		mID = ImGui::GetID(mEntry.path().string().c_str());
-
 		ImGui::PushID(mID);
 
 		const bool directory = IsDirectory();
 		const auto path = mEntry.path();
 		const auto name = path.stem().string();
+		const auto icon = (ImTextureID)(uint64_t)(uint32_t)*texture;
 
-		bool clicked = ImGui::Selectable("", selected, ImGuiSelectableFlags_SelectOnClick | ImGuiSelectableFlags_AllowDoubleClick, size);
+		bool clicked = ImGui::Selectable("##entry", selected, ImGuiSelectableFlags_SelectOnClick | ImGuiSelectableFlags_AllowDoubleClick, size);
 
 		auto rect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
 
@@ -91,20 +86,6 @@ namespace BHive
 		auto drawlist = ImGui::GetWindowDrawList();
 		auto color = directory ? image_color : IM_COL32_WHITE;
 		drawlist->AddImage(icon, rect.Min, rect.Max, {0, 1}, {1, 0}, color);
-
-		if (selected)
-		{
-			auto hightlight = ImGui::GetColorU32(ImGuiCol_NavHighlight);
-			drawlist->AddRect(rect.Min, rect.Max, hightlight);
-		}
-
-		if (clicked)
-		{
-			if (ImGui::IsMouseDoubleClicked(0) && mOnDoubleClicked)
-			{
-				mOnDoubleClicked(mEntry, directory);
-			}
-		}
 
 		if (directory)
 		{
@@ -122,10 +103,24 @@ namespace BHive
 			if (mOnDragDropSource)
 				mOnDragDropSource(mEntry);
 
-			ImGui::Image(icon, size);
+			ImGui::Image(icon, size, {0, 1}, {1, 0});
 			ImGui::TextUnformatted(name.c_str());
 
 			ImGui::EndDragDropSource();
+		}
+
+		if (selected)
+		{
+			auto hightlight = ImGui::GetColorU32(ImGuiCol_NavHighlight);
+			drawlist->AddRect(rect.Min, rect.Max, hightlight);
+		}
+
+		if (clicked)
+		{
+			if (ImGui::IsMouseDoubleClicked(0) && mOnDoubleClicked)
+			{
+				mOnDoubleClicked(mEntry, directory);
+			}
 		}
 
 		if (show_checkmark && !directory)
@@ -150,5 +145,10 @@ namespace BHive
 		ImGui::PopID();
 
 		return clicked;
+	}
+
+	void ImDirectoryEntry::SetID(ImGuiID id)
+	{
+		mID = id;
 	}
 } // namespace BHive

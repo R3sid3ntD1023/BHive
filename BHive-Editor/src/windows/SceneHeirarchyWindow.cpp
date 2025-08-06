@@ -1,10 +1,11 @@
 #include "SceneHeirarchyWindow.h"
 #include "core/subsystem/SubSystem.h"
 #include "gui/GUICore.h"
-#include "subsystems/SelectionSubSystem.h"
+#include "subsystems/Selection.h"
 #include "world/GameObject.h"
 #include "world/World.h"
 #include "inspectors/Inspect.h"
+#include "core/threading/Threading.h"
 
 namespace BHive
 {
@@ -17,7 +18,7 @@ namespace BHive
 
 	void ImSceneHierarchy::OnUpdateContent()
 	{
-		auto &selection = GetSubSystem<SelectionSubSystem>();
+		auto &selection = GetSubSystem<Selection>();
 
 		if (ImGui::BeginChild("##GameObjects", {}, ImGuiChildFlags_ResizeY | ImGuiChildFlags_AlwaysUseWindowPadding))
 
@@ -35,9 +36,7 @@ namespace BHive
 			}
 		}
 
-		ImGui::EndChild();
-
-		if (ImGui::BeginPopupContextItem("ImSceneHierarchy", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonDefault_))
+		if (ImGui::BeginPopupContextWindow("ImSceneHierarchy", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonDefault_))
 		{
 
 			if (ImGui::MenuItem("Add New GameObject"))
@@ -46,8 +45,8 @@ namespace BHive
 				selection.Select(new_obj.get());
 			}
 
-			auto &entity_types = GetSpawnableGameobjects();
-			for (auto &type : entity_types)
+			auto derived = rttr::type::get<GameObject>().get_derived_classes();
+			for (auto &type : derived)
 			{
 				if (ImGui::MenuItem(type.get_name().data()))
 				{
@@ -59,6 +58,8 @@ namespace BHive
 
 			ImGui::EndPopup();
 		}
+
+		ImGui::EndChild();
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -96,13 +97,11 @@ namespace BHive
 
 	void ImSceneHierarchy::DrawNode(GameObject *obj)
 	{
-		auto &selection = GetSubSystem<SelectionSubSystem>();
-
-		bool destroyed = false;
+		auto &selection = GetSubSystem<Selection>();
 
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
 
-		bool selected = selection.GetSelection() == obj;
+		bool selected = selection.IsSelected(obj);
 
 		flags |= (selected ? ImGuiTreeNodeFlags_Selected : 0);
 
@@ -111,8 +110,7 @@ namespace BHive
 
 		if (ImGui::IsItemClicked())
 		{
-			if (!selected)
-				selection.Select(obj);
+			selection.Select(obj);
 		}
 
 		if (ImGui::BeginDragDropSource())
@@ -135,8 +133,21 @@ namespace BHive
 		{
 			if (ImGui::MenuItem("Delete", "Delete"))
 			{
-				destroyed = true;
+				Thread::Dispatch(
+					[obj, &selection]()
+					{
+						if (selection.GetSelection() == obj)
+							selection.Clear();
+
+						obj->Destroy();
+					});
 			}
+
+			if (ImGui::MenuItem("Duplicate", "Ctr + D"))
+			{
+				Thread::Dispatch([=]() { mWorld->DuplicateGameobject(obj); });
+			}
+
 			ImGui::EndPopup();
 		}
 
@@ -149,7 +160,14 @@ namespace BHive
 			}
 			else if (ImGui::IsKeyPressed(ImGuiKey_Delete))
 			{
-				destroyed = true;
+				Thread::Dispatch(
+					[obj, &selection]()
+					{
+						if (selection.GetSelection() == obj)
+							selection.Clear();
+
+						obj->Destroy();
+					});
 			}
 		}
 
@@ -163,31 +181,6 @@ namespace BHive
 		}
 
 		ImGui::PopID();
-
-		if (destroyed && obj)
-		{
-			if (selection.GetSelection() == obj)
-				selection.Clear();
-
-			obj->Destroy();
-		}
 	}
 
-	const std::vector<rttr::type> &ImSceneHierarchy::GetSpawnableGameobjects()
-	{
-		auto &cache = mTypeCache;
-		if (cache.size())
-			return cache;
-
-		auto derived = rttr::type::get<GameObject>().get_derived_classes();
-		for (auto &type : derived)
-		{
-			if (type.get_metadata(ClassMetaData_Spawnable))
-			{
-				cache.push_back(type);
-			}
-		}
-
-		return cache;
-	}
 } // namespace BHive

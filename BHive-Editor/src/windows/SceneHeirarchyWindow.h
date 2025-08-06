@@ -24,11 +24,7 @@ namespace BHive
 	private:
 		void DrawNode(GameObject *obj);
 
-		const std::vector<rttr::type> &GetSpawnableGameobjects();
-
 	private:
 		Ref<World> mWorld;
-
-		std::vector<rttr::type> mTypeCache;
 	};
 } // namespace BHive

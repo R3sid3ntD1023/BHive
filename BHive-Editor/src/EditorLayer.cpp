@@ -14,7 +14,7 @@
 #include "inspectors/Inspect.h"
 #include "renderers/Renderer.h"
 #include "renderers/SceneRenderer.h"
-#include "subsystems/SelectionSubSystem.h"
+#include "subsystems/Selection.h"
 #include "world/GameObject.h"
 #include "undoredo/UndoRedo.h"
 #include "undoredo/Commands.h"
@@ -64,7 +64,7 @@ namespace BHive
 
 				if (asset)
 				{
-					SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().Clear();
+					SubSystemContext::Get().GetSubSystem<Selection>().Clear();
 					mEditorWorld = asset;
 					SetActiveWorld(mEditorWorld);
 
@@ -86,7 +86,7 @@ namespace BHive
 		float aspect = size.x / (float)size.y;
 		mEditorCamera = EditorCamera(75.f, aspect, .01f, 1000.f);
 
-		AddSubSystem<SelectionSubSystem>();
+		AddSubSystem<Selection>();
 		AddSubSystem<ThumbnailCache>();
 
 		auto &window_system = AddSubSystem<ImWindowSystem>();
@@ -275,7 +275,7 @@ namespace BHive
 
 	void EditorLayer::CreateWorld()
 	{
-		SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().Clear();
+		SubSystemContext::Get().GetSubSystem<Selection>().Clear();
 
 		mEditorWorld = CreateRef<World>();
 		mEditorWorld->SetName("New World");
@@ -368,7 +368,7 @@ namespace BHive
 				auto color_attachment = mRenderer->GetColorAttachment();
 				ImGui::Image((ImTextureID)(uint64_t)*color_attachment, size, {0, 1}, {1, 0});
 
-				auto &selection = SubSystemContext::Get().GetSubSystem<SelectionSubSystem>();
+				auto &selection = SubSystemContext::Get().GetSubSystem<Selection>();
 				auto selected_object = selection.GetSelection();
 
 				ImGuizmo::SetOrthographic(false);
@@ -427,6 +427,7 @@ namespace BHive
 
 							if (metadata)
 							{
+
 								auto handle = mAssetManager->GetHandle(metadata.Path);
 								if (auto asset = mAssetManager->GetAsset(handle))
 								{
@@ -491,7 +492,7 @@ namespace BHive
 
 			if (ImGui::ImageButton("Viewport##PlayIcon", (ImTextureID)(uint64_t)*icon, {icon_size}, {0, 1}, {1, 0}))
 			{
-				SubSystemContext::Get().GetSubSystem<SelectionSubSystem>().Clear();
+				SubSystemContext::Get().GetSubSystem<Selection>().Clear();
 				if (running)
 				{
 
