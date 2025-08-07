@@ -10,11 +10,7 @@ downloads/
 **.vcxproj.user
 **.lib
 **.dll
-*.json
 *.log
-**.asset
-*rp3d_profiling_.txt
-*imgui.ini
 
 #include
 !CMakeSettings.json
