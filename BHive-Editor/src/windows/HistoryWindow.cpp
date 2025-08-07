@@ -5,6 +5,11 @@
 
 namespace BHive
 {
+	ImHistoryWindow::ImHistoryWindow()
+		: ImWindowBase(ImGuiWindowFlags_NoSavedSettings)
+	{
+	}
+
 	void ImHistoryWindow::OnUpdateContent()
 	{
 		auto &undo_system = GetSubSystem<UndoRedo>();

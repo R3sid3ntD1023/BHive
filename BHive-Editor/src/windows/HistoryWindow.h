@@ -7,7 +7,7 @@ namespace BHive
 	class ImHistoryWindow : public ImWindowBase
 	{
 	public:
-		ImHistoryWindow() = default;
+		ImHistoryWindow();
 
 	protected:
 		void OnUpdateContent() override;
