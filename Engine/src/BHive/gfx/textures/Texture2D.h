@@ -9,9 +9,7 @@ namespace BHive
 	{
 	public:
 		Texture2D() = default;
-		Texture2D(
-			uint32_t w, uint32_t h, const FTextureSpecification &specification = {}, const void *buffer = nullptr,
-			size_t size = 0);
+		Texture2D(uint32_t w, uint32_t h, const FTextureSpecification &specification = {}, const void *buffer = nullptr, size_t size = 0);
 
 		virtual ~Texture2D();
 
@@ -37,6 +35,8 @@ namespace BHive
 		Ref<Texture2D> CreateSubTexture(const FSubTexture &texture);
 
 		void GetSubImage(const FSubTexture &texture, size_t size, uint8_t *data) const;
+
+		const Buffer &GetBuffer() const { return mBuffer; }
 
 		/*Begin Asset*/
 		void Save(cereal::BinaryOutputArchive &ar) const override;
