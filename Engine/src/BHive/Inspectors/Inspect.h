@@ -7,8 +7,6 @@ namespace BHive
 
 	struct BHIVE_API Inspect
 	{
-		using PropertyChangedCallback = std::function<void(rttr::variant, const rttr::property &, rttr::variant)>;
-
 		static rttr::variant meta_data_empty(const rttr::variant &);
 
 		bool inspect(const rttr::variant &instance, rttr::variant &var, bool skip_custom = false, bool read_only = false, float width = 0.0f, const MetaGetter &get_meta_data = meta_data_empty);
@@ -39,8 +37,6 @@ namespace BHive
 			return false;
 		}
 
-		void set_property_changed_callback(const PropertyChangedCallback &callback);
-
 		static Inspect &get()
 		{
 			static Inspect instance;
@@ -49,8 +45,6 @@ namespace BHive
 
 	private:
 		rttr::type get_instance_type(const rttr::instance &object);
-
-		PropertyChangedCallback mPropertyChangedCallback;
 	};
 
 } // namespace BHive

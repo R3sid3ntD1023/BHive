@@ -15,6 +15,10 @@
 #include "Inspector_Blackboard.h"
 #include "InspectorComponent.h"
 
+#include "undoredo/UndoRedo.h"
+#include "undoredo/Commands.h"
+#include "core/subsystem/SubSystem.h"
+
 namespace BHive
 {
 	struct InspectorRegistry
@@ -200,10 +204,9 @@ namespace BHive
 			auto meta_getter = [property](const rttr::variant &key) -> rttr::variant { return property.get_metadata(key); };
 			changed |= inspect(instance, prop_var, false, is_read_only, width, meta_getter);
 
-			if (mPropertyChangedCallback && changed && !is_read_only)
+			if (changed && !is_read_only)
 			{
-				mPropertyChangedCallback(object, property, prop_var);
-
+				GetSubSystem<UndoRedo>().add_history_command(std::format("{} Property Changed", property.get_name().data()), new FCommandProperty(object, property, prop_var));
 				property.set_value(object, prop_var);
 			}
 		}
@@ -222,10 +225,5 @@ namespace BHive
 		}
 
 		return changed;
-	}
-
-	void Inspect::set_property_changed_callback(const PropertyChangedCallback &callback)
-	{
-		mPropertyChangedCallback = callback;
 	}
 } // namespace BHive
