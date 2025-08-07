@@ -47,7 +47,11 @@ namespace BHive
 
 		const Ref<Texture> &GetColorAttachment(uint32_t index = 0) const;
 
+		const Ref<Texture> &GetDepthAttachment() const;
+
 		const Ref<Texture2D> &GetEnvironmentMap() const;
+
+		void RenderToScreen();
 
 		glm::uvec2 GetSize() const;
 
@@ -63,7 +67,6 @@ namespace BHive
 
 		static inline PMREMGenerator EnvironmentMapGenerator;
 		static inline Ref<Texture2D> sEnvironmentMap = nullptr; // Static environment map
-
 		REFLECTABLE()
 	};
 

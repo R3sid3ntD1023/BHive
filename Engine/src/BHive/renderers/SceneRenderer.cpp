@@ -123,6 +123,11 @@ namespace BHive
 		return mFinalFramebuffer->GetColorAttachment(index);
 	}
 
+	const Ref<Texture> &SceneRenderer::GetDepthAttachment() const
+	{
+		return mFinalFramebuffer->GetDepthAttachment();
+	}
+
 	const Ref<Texture2D> &SceneRenderer::GetEnvironmentMap() const
 	{
 		return sEnvironmentMap;
@@ -131,6 +136,17 @@ namespace BHive
 	glm::uvec2 SceneRenderer::GetSize() const
 	{
 		return mRenderSize;
+	}
+
+	void SceneRenderer::RenderToScreen()
+	{
+		RenderCommand::Clear();
+
+		mQuadShader->Bind();
+
+		mFinalFramebuffer->GetColorAttachment()->Bind();
+
+		RenderCommand::DrawElements(EDrawMode::Triangles, *mQuad->GetVertexArray());
 	}
 
 	REFLECT(FRenderSettings)
