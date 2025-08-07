@@ -127,9 +127,7 @@ namespace BHive
 
 		struct IncludeHandler : public shaderc::CompileOptions::IncluderInterface
 		{
-			shaderc_include_result *GetInclude(
-				const char *requested_source, shaderc_include_type type, const char *requesting_source,
-				size_t include_depth) override
+			shaderc_include_result *GetInclude(const char *requested_source, shaderc_include_type type, const char *requesting_source, size_t include_depth) override
 			{
 				std::string content;
 
@@ -198,6 +196,13 @@ namespace BHive
 	void Shader::GetOrCreateVulkanBinaries(bool recompile)
 	{
 		mVulkanSpirv.clear();
+		shaderc::Compiler compiler;
+		shaderc::CompileOptions options;
+		// options.SetOptimizationLevel(shaderc_optimization_level_performance);
+		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+		// options.SetSourceLanguage(shaderc_source_language_glsl);
+		options.SetIncluder(std::make_unique<utils::IncludeHandler>());
+
 		for (const auto &[type, source] : mSources)
 		{
 			auto cache_path = utils::GetCacheDirectory() / (mName + utils::GetCacheVulkanFileExtension(type));
@@ -207,18 +212,10 @@ namespace BHive
 				continue;
 			}
 
-			shaderc::Compiler compiler;
-			shaderc::CompileOptions options;
-			// options.SetOptimizationLevel(shaderc_optimization_level_performance);
-			options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-			// options.SetSourceLanguage(shaderc_source_language_glsl);
-			options.SetIncluder(std::make_unique<utils::IncludeHandler>());
 			auto spirv_binary = compiler.CompileGlslToSpv(source, utils::GetShadercType(type), mName.c_str(), options);
 			if (spirv_binary.GetCompilationStatus() != shaderc_compilation_status_success)
 			{
-				LOG_ERROR(
-					"Failed to compile shader {}, stage {}-{}", mName, utils::GetTypeString(type),
-					spirv_binary.GetErrorMessage());
+				LOG_ERROR("Failed to compile shader {}, stage {}-{}", mName, utils::GetTypeString(type), spirv_binary.GetErrorMessage());
 				ASSERT(false);
 			}
 			else
@@ -233,7 +230,16 @@ namespace BHive
 	{
 		mOpenglSpirv.clear();
 		mOpenglSources.clear();
-		for (auto &[type, source] : mSources)
+
+		shaderc::Compiler compiler;
+		shaderc::CompileOptions options;
+		// options.SetOptimizationLevel(shaderc_optimization_level_performance);
+		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
+		// options.SetSourceLanguage(shaderc_source_language_glsl);
+		options.SetIncluder(std::make_unique<utils::IncludeHandler>());
+		options.SetAutoMapLocations(true);
+
+		for (auto &[type, spirv] : mVulkanSpirv)
 		{
 			auto cache_path = utils::GetCacheDirectory() / (mName + utils::GetCacheOpenglFileExtension(type));
 			if (std::filesystem::exists(cache_path) && !recompile)
@@ -241,18 +247,13 @@ namespace BHive
 				FileSystem::ReadFile(cache_path, mOpenglSpirv[type]);
 				continue;
 			}
-			shaderc::Compiler compiler;
-			shaderc::CompileOptions options;
-			// options.SetOptimizationLevel(shaderc_optimization_level_performance);
-			options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
-			// options.SetSourceLanguage(shaderc_source_language_glsl);
-			options.SetIncluder(std::make_unique<utils::IncludeHandler>());
 
-			// spirv_cross::CompilerGLSL glsl_compiler(spirv);
-			// mOpenglSources[type] = glsl_compiler.compile();
-			// auto &source = mOpenglSources[type];
+			spirv_cross::CompilerGLSL glsl_compiler(spirv);
+			mOpenglSources[type] = glsl_compiler.compile();
+			auto &source = mOpenglSources[type];
 
 			auto spirv_binary = compiler.CompileGlslToSpv(source, utils::GetShadercType(type), mName.c_str(), options);
+
 			if (spirv_binary.GetCompilationStatus() == shaderc_compilation_status_success)
 			{
 				mOpenglSpirv[type] = std::vector<uint32_t>(spirv_binary.cbegin(), spirv_binary.cend());
@@ -260,9 +261,7 @@ namespace BHive
 			}
 			else
 			{
-				LOG_ERROR(
-					"Failed to compile shader {} : stage:{}-{}", utils::GetTypeString(type), mName,
-					spirv_binary.GetErrorMessage());
+				LOG_ERROR("Failed to compile shader {} : stage:{}-{}", utils::GetTypeString(type), mName, spirv_binary.GetErrorMessage());
 				ASSERT(false);
 			}
 		}
