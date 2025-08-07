@@ -1,5 +1,6 @@
 #include "ImageUtils.h"
 #include "gfx/Framebuffer.h"
+#include "gfx/textures/Texture2D.h"
 #include <stb_image_write.h>
 #include <glad/glad.h>
 
@@ -40,5 +41,23 @@ namespace BHive
 		{
 			LOG_ERROR("Failed to save image");
 		}
+	}
+
+	void ImageUtils::SaveImage(const std::filesystem::path &path, const Ref<Texture2D> &texture)
+	{
+		auto &specs = texture->GetSpecification();
+		const auto c = specs.Channels;
+		const auto w = texture->GetWidth();
+		const auto h = texture->GetHeight();
+		const auto data = texture->GetBuffer();
+
+		if (!std::filesystem::exists(path.parent_path()))
+		{
+			std::filesystem::create_directory(path.parent_path());
+		}
+
+		unsigned stride = c * w;
+		stbi_flip_vertically_on_write(true);
+		stbi_write_png(path.string().c_str(), w, h, c, data.GetData(), stride);
 	}
 } // namespace BHive
