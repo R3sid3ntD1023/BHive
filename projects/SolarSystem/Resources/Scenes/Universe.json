@@ -1,5 +1,5 @@
 {
-  "Universe": [
+  "Objects": [
     {
       "Type": "GameObject",
       "Components": [
@@ -44,18 +44,15 @@
         {
           "Type": "RelationshipComponent",
           "Parent": "00000000-0000-0000-0000-000000000000",
-          "Children": [ "4abb75f1-9117-4c5d-bbf8-c9ec60999c90", "f7aa675a-ac4b-4ad7-a4ac-1fb6c870b9f8" ]
+          "Children": [ "4abb75f1-9117-4c5d-bbf8-c9ec60999c90", "f7aa675a-ac4b-4ad7-a4ac-1fb6c870b9f8", "95c95b1c-ec3e-4bc0-9fef-cb9a60c7f269" ]
         },
         {
-          "Type": "MeshComponent",
-          "Color": [ 1, 1, 1, 1 ],
-          "Emission": [ 1, 1, 1, 1 ],
-          "Flags": 0,
-          "Texture": "ecdd6cfa-e368-4953-94f1-e9a7c0f307b5",
-          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+          "Type": "StaticMeshComponent",
+          "OverrideMaterials": [ "2ebffba0-ed86-445d-8963-cdd90cccb001" ],
+          "StaticMesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
         },
         {
-          "Type": "StarComponent",
+          "Type": "PointLightComponent",
           "Brightness": 1,
           "Radius": 100000,
           "Color": [ 1, 1, 1, 1 ]
@@ -85,12 +82,9 @@
           "Children": []
         },
         {
-          "Type": "MeshComponent",
-          "Color": [ 1, 1, 1, 1 ],
-          "Emission": [ 0, 0, 0, 0 ],
-          "Flags": 0,
-          "Texture": "e9a0a76f-b53d-4dfc-8197-7a985740d31f",
-          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+          "Type": "StaticMeshComponent",
+          "OverrideMaterials": [ "7539dd52-1632-4dfe-af37-fc7aeea2440a" ],
+          "StaticMesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
         },
         {
           "Type": "PlanetComponent",
@@ -122,12 +116,9 @@
           "Children": []
         },
         {
-          "Type": "MeshComponent",
-          "Color": [ 1, 1, 1, 1 ],
-          "Emission": [ 0, 0, 0, 0 ],
-          "Flags": 0,
-          "Texture": "8ed71410-b378-4752-b7f3-6e3b2fd06604",
-          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+          "Type": "StaticMeshComponent",
+          "OverrideMaterials": [ "c542e609-5abf-47c6-930e-72978a9ff4de" ],
+          "StaticMesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
         },
         {
           "Type": "PlanetComponent",
@@ -156,7 +147,7 @@
         {
           "Type": "RelationshipComponent",
           "Parent": "8a82173a-866e-49b0-bca5-45d2d038299d",
-          "Children": []
+          "Children": [ "ce19bb35-3928-4d1e-ba09-b081de940d27", "a9d2dd32-09e4-468a-bfdf-cd1479c64c02" ]
         },
         {
           "Type": "PlanetComponent",
@@ -188,12 +179,9 @@
           "Children": []
         },
         {
-          "Type": "MeshComponent",
-          "Color": [ 1, 1, 1, 1 ],
-          "Emission": [ 0, 0, 0, 0 ],
-          "Flags": 0,
-          "Texture": "50903826-6bd9-4aea-ba82-71813a1c0c27",
-          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+          "Type": "StaticMeshComponent",
+          "OverrideMaterials": [ "c9c23b44-4658-4782-8c6b-60d9681c8aa9" ],
+          "StaticMesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
         },
         {
           "Type": "PlanetComponent",
@@ -225,12 +213,9 @@
           "Children": []
         },
         {
-          "Type": "MeshComponent",
-          "Color": [ 1, 1, 1, 1 ],
-          "Emission": [ 0, 0, 0, 0 ],
-          "Flags": 1,
-          "Texture": "6f5ff122-9a63-4c61-8181-9493fdc2d3cf",
-          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+          "Type": "StaticMeshComponent",
+          "OverrideMaterials": [ "81a6ccdc-c138-421b-ba2b-31226b8640f6" ],
+          "StaticMesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
         },
         {
           "Type": "PlanetComponent",
@@ -262,12 +247,9 @@
           "Children": []
         },
         {
-          "Type": "MeshComponent",
-          "Color": [ 1, 1, 1, 1 ],
-          "Emission": [ 0, 0, 0, 0 ],
-          "Flags": 0,
-          "Texture": "da486c26-b4d0-4a6b-a909-41b88e24cb0a",
-          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+          "Type": "StaticMeshComponent",
+          "OverrideMaterials": [ "c06b3622-6dd9-477f-ab3e-d38e58fd1e42" ],
+          "StaticMesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
         },
         {
           "Type": "PlanetComponent",
@@ -299,12 +281,9 @@
           "Children": []
         },
         {
-          "Type": "MeshComponent",
-          "Color": [ 1, 1, 1, 1 ],
-          "Emission": [ 0, 0, 0, 0 ],
-          "Flags": 0,
-          "Texture": "2cb659cd-82d4-4309-b434-386e0cac01a3",
-          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+          "Type": "StaticMeshComponent",
+          "OverrideMaterials": [ "84dd8bfb-ca87-4c80-8ddc-7977d487fe64" ],
+          "StaticMesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
         },
         {
           "Type": "PlanetComponent",
@@ -336,12 +315,9 @@
           "Children": []
         },
         {
-          "Type": "MeshComponent",
-          "Color": [ 1, 1, 1, 1 ],
-          "Emission": [ 0, 0, 0, 0 ],
-          "Flags": 0,
-          "Texture": "d69c7bed-ac41-48e2-abf4-dd13b5f31b88",
-          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+          "Type": "StaticMeshComponent",
+          "OverrideMaterials": [ "96a5fdb6-0aca-4249-98e0-7c06f871d4c8" ],
+          "StaticMesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
         },
         {
           "Type": "PlanetComponent",
@@ -373,12 +349,9 @@
           "Children": []
         },
         {
-          "Type": "MeshComponent",
-          "Color": [ 1, 1, 1, 1 ],
-          "Emission": [ 0, 0, 0, 0 ],
-          "Flags": 0,
-          "Texture": "b2a44a50-3a59-426f-952e-32bf706697d2",
-          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+          "Type": "StaticMeshComponent",
+          "OverrideMaterials": [ "cd6b9c21-cebc-43bc-85ea-3583634ee401" ],
+          "StaticMesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
         },
         {
           "Type": "PlanetComponent",
@@ -410,12 +383,9 @@
           "Children": []
         },
         {
-          "Type": "MeshComponent",
-          "Color": [ 1, 1, 1, 1 ],
-          "Emission": [ 0, 0, 0, 0 ],
-          "Flags": 0,
-          "Texture": "b5d12f83-6ecb-463d-a92c-4288c7e1d6cd",
-          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+          "Type": "StaticMeshComponent",
+          "OverrideMaterials": [ "82a6cd69-d51d-4613-9218-a12e723a2630" ],
+          "StaticMesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
         },
         {
           "Type": "PlanetComponent",
@@ -444,7 +414,7 @@
         {
           "Type": "RelationshipComponent",
           "Parent": "8a82173a-866e-49b0-bca5-45d2d038299d",
-          "Children": []
+          "Children": [ "8942985f-f7b3-465e-8a9c-962a403cc4e3", "e2619dec-585b-4c5f-90c0-5833f143ee7a" ]
         },
         {
           "Type": "PlanetComponent",
@@ -476,12 +446,9 @@
           "Children": []
         },
         {
-          "Type": "MeshComponent",
-          "Color": [ 1, 1, 1, 1 ],
-          "Emission": [ 0, 0, 0, 0 ],
-          "Flags": 0,
-          "Texture": "9459613c-44b2-4366-98fd-5a579ce75a50",
-          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+          "Type": "StaticMeshComponent",
+          "OverrideMaterials": [ "f1b6cf1f-f901-40b7-9aec-738aed5a2a38" ],
+          "StaticMesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
         },
         {
           "Type": "PlanetComponent",
@@ -513,12 +480,9 @@
           "Children": []
         },
         {
-          "Type": "MeshComponent",
-          "Color": [ 1, 1, 1, 1 ],
-          "Emission": [ 0, 0, 0, 0 ],
-          "Flags": 0,
-          "Texture": "efc7558e-f2be-4803-b282-4cf8d23345d9",
-          "Mesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
+          "Type": "StaticMeshComponent",
+          "OverrideMaterials": [ "d9fd639b-751e-45db-9467-acdf1d4ef5a5" ],
+          "StaticMesh": "5d95f7aa-36f2-4f5d-8b91-fe2163859429"
         },
         {
           "Type": "PlanetComponent",

@@ -1,0 +1,17 @@
+{
+  "Type": "PlanetMaterial",
+  "Handle": "84dd8bfb-ca87-4c80-8ddc-7977d487fe64",
+  "Name": "M_Jupiter",
+  "TextureSlots": [
+    {
+      "key": "Texture",
+      "value": {
+        "Binding": 0,
+        "Texture": "2cb659cd-82d4-4309-b434-386e0cac01a3"
+      }
+    }
+  ],
+  "Color": [ 1, 1, 1, 1 ],
+  "Emission": [ 0, 0, 0, 0 ],
+  "Flags": 0
+}

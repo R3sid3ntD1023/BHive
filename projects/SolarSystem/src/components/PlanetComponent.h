@@ -29,7 +29,7 @@ struct PlanetTime
 	}
 };
 
-struct PlanetComponent : public Component
+struct PlanetComponent : public Component, public ITickable
 {
 	PlanetComponent() = default;
 

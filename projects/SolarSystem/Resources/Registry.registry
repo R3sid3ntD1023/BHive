@@ -1,5 +1,101 @@
 {
-  "value0": [
+  "Assets": [
+    {
+      "key": "2ebffba0-ed86-445d-8963-cdd90cccb001",
+      "value": {
+        "Type": "PlanetMaterial",
+        "Path": "Materials\\M_Sun.json",
+        "Name": "M_Sun"
+      }
+    },
+    {
+      "key": "7539dd52-1632-4dfe-af37-fc7aeea2440a",
+      "value": {
+        "Type": "PlanetMaterial",
+        "Path": "Materials\\M_Mercury.json",
+        "Name": "M_Mercury"
+      }
+    },
+    {
+      "key": "c542e609-5abf-47c6-930e-72978a9ff4de",
+      "value": {
+        "Type": "PlanetMaterial",
+        "Path": "Materials\\M_Venus.json",
+        "Name": "M_Venus"
+      }
+    },
+    {
+      "key": "c9c23b44-4658-4782-8c6b-60d9681c8aa9",
+      "value": {
+        "Type": "PlanetMaterial",
+        "Path": "Materials\\M_Earth.json",
+        "Name": "M_Earth"
+      }
+    },
+    {
+      "key": "81a6ccdc-c138-421b-ba2b-31226b8640f6",
+      "value": {
+        "Type": "PlanetMaterial",
+        "Path": "Materials\\M_Moon.json",
+        "Name": "M_Moon"
+      }
+    },
+    {
+      "key": "c06b3622-6dd9-477f-ab3e-d38e58fd1e42",
+      "value": {
+        "Type": "PlanetMaterial",
+        "Path": "Materials\\M_Mars.json",
+        "Name": "M_Mars"
+      }
+    },
+    {
+      "key": "84dd8bfb-ca87-4c80-8ddc-7977d487fe64",
+      "value": {
+        "Type": "PlanetMaterial",
+        "Path": "Materials\\M_Jupiter.json",
+        "Name": "M_Jupiter"
+      }
+    },
+    {
+      "key": "96a5fdb6-0aca-4249-98e0-7c06f871d4c8",
+      "value": {
+        "Type": "PlanetMaterial",
+        "Path": "Materials\\M_Saturn.json",
+        "Name": "M_Saturn"
+      }
+    },
+    {
+      "key": "cd6b9c21-cebc-43bc-85ea-3583634ee401",
+      "value": {
+        "Type": "PlanetMaterial",
+        "Path": "Materials\\M_Uranus.json",
+        "Name": "M_Uranus"
+      }
+    },
+    {
+      "key": "82a6cd69-d51d-4613-9218-a12e723a2630",
+      "value": {
+        "Type": "PlanetMaterial",
+        "Path": "Materials\\M_Neptune.json",
+        "Name": "M_Neptune"
+      }
+    },
+    {
+      "key": "f1b6cf1f-f901-40b7-9aec-738aed5a2a38",
+      "value": {
+        "Type": "PlanetMaterial",
+        "Path": "Materials\\M_Pluto.json",
+        "Name": "M_Pluto"
+      }
+    },
+    {
+      "key": "d9fd639b-751e-45db-9467-acdf1d4ef5a5",
+      "value": {
+        "Type": "PlanetMaterial",
+        "Path": "Materials\\M_Charon.json",
+        "Name": "M_Charon"
+      }
+    },
     {
       "key": "b2a44a50-3a59-426f-952e-32bf706697d2",
       "value": {

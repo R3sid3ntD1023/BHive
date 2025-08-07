@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Component.h"
-#include "Universe.h"
+#include "world/Component.h"
 #include "world/GameObject.h"
 
 BEGIN_NAMESPACE(BHive)

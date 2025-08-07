@@ -68,12 +68,12 @@ layout(location = 0) in struct VS_OUT
 	vec3 normal;
 } vs_in;
 
-layout(std430, binding = 3) uniform Material
+layout(push_constant) uniform Material
 {
 	vec3 uColor;
 	vec3 uEmission;
 	uint uFlags;
-};
+} material;
 
 layout(binding = 0) uniform sampler2D uTexture;
 
@@ -96,20 +96,18 @@ float LinerizeDepth(float depth, float near, float far);
 
 void main()
 {
-	uint is_single_channel = (uFlags & SINGLE_CHANNEL);
+	uint is_single_channel = (material.uFlags & SINGLE_CHANNEL);
 
 	vec3 color = pow(texture(uTexture, vs_in.texcoord).rgb, vec3(2.2));
 	color.rgb = mix(color.rgb, vec3(color.r), is_single_channel);
 
-	color += vec3(.1);
-	color *= uColor;
-
+	color += vec3(.1) * material.uColor;
 	fColor = vec4(color, 1);
 	fPosition = vec4(vs_in.position, 1);
 	fNormal = vec4(normalize(vs_in.normal), 1);
-	fEmission = vec4(uEmission, 1);
+	fEmission = vec4(material.uEmission, 1);
 
-	gl_FragDepth = LinerizeDepth(gl_FragCoord.z, u_near_far.x, u_near_far.y);
+	//gl_FragDepth = LinerizeDepth(gl_FragCoord.z, u_near_far.x, u_near_far.y);
 }
 
 float LinerizeDepth(float depth, float near, float far)

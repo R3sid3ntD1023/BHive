@@ -1,0 +1,17 @@
+{
+  "Type": "PlanetMaterial",
+  "Handle": "f1b6cf1f-f901-40b7-9aec-738aed5a2a38",
+  "Name": "M_Pluto",
+  "TextureSlots": [
+    {
+      "key": "Texture",
+      "value": {
+        "Binding": 0,
+        "Texture": "9459613c-44b2-4366-98fd-5a579ce75a50"
+      }
+    }
+  ],
+  "Color": [ 1, 1, 1, 1 ],
+  "Emission": [ 0, 0, 0, 0 ],
+  "Flags": 0
+}

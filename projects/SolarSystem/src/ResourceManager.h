@@ -16,7 +16,7 @@ namespace BHive
 
 		virtual bool IsAssetHandleValid(UUID handle) const override;
 		virtual bool IsAssetLoaded(UUID handle) const override;
-		virtual AssetType GetAssetType(UUID handle) const override;
+		virtual rttr::type GetAssetType(UUID handle) const override;
 
 	private:
 		void SaveRegistry();

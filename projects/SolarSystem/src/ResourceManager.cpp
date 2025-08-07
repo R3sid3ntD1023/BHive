@@ -8,23 +8,24 @@
 #include <renderers/Renderer.h>
 #include <audio/AudioSource.h>
 #include <audio/AudioImporter.h>
+#include <asset/AssetFactory.h>
 
 namespace BHive
 {
-	AssetType GetTypeFromExtension(const std::string &ext)
+	rttr::type GetTypeFromExtension(const std::string &ext)
 	{
 		if (ext == ".glb" || ext == ".gltf" || ext == ".obj")
 		{
-			return AssetType::get<StaticMesh>();
+			return rttr::type::get<StaticMesh>();
 		}
 
 		else if (ext == ".jpg" || ext == ".png")
 		{
-			return AssetType::get<Texture2D>();
+			return rttr::type::get<Texture2D>();
 		}
 		else if (ext == ".wav" || ext == ".ogg")
 		{
-			return AssetType::get<AudioSource>();
+			return rttr::type::get<AudioSource>();
 		}
 
 		ASSERT(false);
@@ -78,6 +79,15 @@ namespace BHive
 		Ref<Asset> &asset = mLoadedAssets[handle];
 
 		auto &metadata = mMetaData.at(handle);
+
+		auto ext = metadata.Path.extension().string();
+		if (ext == ".asset" || ext == ".json")
+		{
+			auto path = mDirectory / metadata.Path;
+			AssetFactory::ImportAsJSON(asset, path);
+			return asset;
+		}
+
 		auto &importer = mLoadFunctions.at(metadata.Type);
 		asset = importer(mDirectory / metadata.Path);
 
@@ -94,7 +104,7 @@ namespace BHive
 		return mLoadedAssets.contains(handle) && mLoadedAssets.at(handle);
 	}
 
-	AssetType ResourceManager::GetAssetType(UUID handle) const
+	rttr::type ResourceManager::GetAssetType(UUID handle) const
 	{
 		static FAssetMetaData null_data{};
 
@@ -154,8 +164,7 @@ namespace BHive
 
 		mMemoryAssets["5d95f7aa-36f2-4f5d-8b91-fe2163859429"] = CreateRef<PSphere>(1.f, 32, 32);
 		mMemoryAssets["ecdd6cfa-e368-4953-94f1-e9a7c0f307b5"] = Renderer::GetWhiteTexture();
-		mMemoryAssets["31d7563b-3025-4e86-9551-655affbe7380"] =
-			CreateRef<Texture2D>(1, 1, FTextureSpecification{.Channels = 4, .InternalFormat = EFormat::RGBA8}, &grey);
+		mMemoryAssets["31d7563b-3025-4e86-9551-655affbe7380"] = CreateRef<Texture2D>(1, 1, FTextureSpecification{.Channels = 4, .InternalFormat = EFormat::RGBA8}, &grey);
 		mMemoryAssets["1933c64d-fd73-4a3d-9406-e8c611d6a03b"] = Renderer::GetBlackTexture();
 	}
 

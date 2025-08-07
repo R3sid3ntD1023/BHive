@@ -1,0 +1,17 @@
+{
+  "Type": "PlanetMaterial",
+  "Handle": "96a5fdb6-0aca-4249-98e0-7c06f871d4c8",
+  "Name": "M_Saturn",
+  "TextureSlots": [
+    {
+      "key": "Texture",
+      "value": {
+        "Binding": 0,
+        "Texture": "d69c7bed-ac41-48e2-abf4-dd13b5f31b88"
+      }
+    }
+  ],
+  "Color": [ 1, 1, 1, 1 ],
+  "Emission": [ 0, 0, 0, 0 ],
+  "Flags": 0
+}

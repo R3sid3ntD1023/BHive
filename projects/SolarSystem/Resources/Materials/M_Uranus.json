@@ -1,0 +1,17 @@
+{
+	"Type": "PlanetMaterial",
+	"Handle": "cd6b9c21-cebc-43bc-85ea-3583634ee401",
+	"Name": "M_Uranus",
+	"TextureSlots": [
+		{
+			"key": "Texture",
+			"value": {
+				"Binding" :  0,
+				"Texture": "b2a44a50-3a59-426f-952e-32bf706697d2"
+			}
+		}
+	],
+	"Color": [ 1, 1, 1, 1 ],
+	"Emission": [ 0, 0, 0, 0 ],
+	"Flags": 0
+}

@@ -1,0 +1,17 @@
+{
+	"Type": "PlanetMaterial",
+	"Handle": "7539dd52-1632-4dfe-af37-fc7aeea2440a",
+	"Name": "M_Mercury",
+	"TextureSlots": [
+		{
+			"key": "Texture",
+			"value": {
+				"Binding": 0,
+				"Texture": "e9a0a76f-b53d-4dfc-8197-7a985740d31f"
+			}
+		}
+	],
+	"Color": [ 1, 1, 1, 1 ],
+	"Emission": [ 0, 0, 0, 0 ],
+	"Flags": 0
+}

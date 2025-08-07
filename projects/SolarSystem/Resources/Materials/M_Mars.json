@@ -1,0 +1,17 @@
+{
+  "Type": "PlanetMaterial",
+  "Handle": "c06b3622-6dd9-477f-ab3e-d38e58fd1e42",
+  "Name": "M_Mars",
+  "TextureSlots": [
+    {
+      "key": "Texture",
+      "value": {
+        "Binding": 0,
+        "Texture": "da486c26-b4d0-4a6b-a909-41b88e24cb0a"
+      }
+    }
+  ],
+  "Color": [ 1, 1, 1, 1 ],
+  "Emission": [ 0, 0, 0, 0 ],
+  "Flags": 0
+}

@@ -19,7 +19,7 @@ uint32_t PlanetTime::ToSeconds()
 
 void PlanetComponent::Begin()
 {
-	mOrbitalOrigin = GetOwner()->GetLocalTransform().get_translation();
+	mOrbitalOrigin = GetOwner()->GetLocalTransform().GetTranslation();
 	if (auto seconds = RotationTime.ToSeconds(); seconds > 0.f)
 		mTheta = 360.f / seconds;
 
@@ -29,7 +29,7 @@ void PlanetComponent::Begin()
 
 void PlanetComponent::Update(float dt)
 {
-	GetOwner()->GetLocalTransform().add_rotation({0.f, mTheta * dt * 1000.f, 0.f});
+	GetOwner()->GetLocalTransform().AddRotation({0.f, mTheta * dt * 1000.f, 0.f});
 
 	float theta_radians = glm::radians(mOrbitalTheta);
 
@@ -40,7 +40,7 @@ void PlanetComponent::Update(float dt)
 	float x = glm::cos(theta_radians * time * 100000.f) * radius;
 	float y = 0;
 	float z = glm::sin(theta_radians * time * 100000.f) * radius;
-	GetOwner()->GetLocalTransform().set_translation({x, y, z});
+	GetOwner()->GetLocalTransform().SetTranslation({x, y, z});
 }
 
 void PlanetComponent::Save(cereal::JSONOutputArchive &ar) const
