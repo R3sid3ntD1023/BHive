@@ -1,12 +1,3 @@
-#ifdef VULKAN
-#define INSTANCE_ID gl_InstanceIndex
-#define IS_INSTANCED (INSTANCE_ID != -1)
-#else
-#define INSTANCE_ID gl_InstanceID
-#define IS_INSTANCED (INSTANCE_ID != 0)
-#endif
-
-
 #define EPSILON 1.0e-4
 #define BIT(x) 1 << x
 #define UNLIT BIT(0)
@@ -93,5 +84,14 @@ vec4 CompositeWeightedTransparency(in sampler2D reveal, in sampler2D accum, ivec
 	vec3 average_color = accumulaton.rgb / max(accumulaton.a, EPSILON);
 
 	return vec4(average_color, 1.0 - revealage);
+}
+
+
+float LinerizeDepth(float depth, float near, float far)
+{
+    float ndc = 2 * depth - 1;
+    float eye = (2 * near * far) / ((far + near) - ndc * (far -near));
+    float linearDepth = (eye - near) / (far - near);
+    return linearDepth;
 }
 

@@ -1,4 +1,4 @@
-
+#define USE_LIGHTING
 #define BLINN_PHONG 1
 #define LIGHTING_TYPE BLINN_PHONG
 #define MAX_LIGHTS 32
@@ -15,6 +15,14 @@ struct Light
 	float innerCutoff;
 	float outerCutoff;
 	uint type;
+};
+
+struct ReflectedLight
+{
+	vec3 DirectDiffuse;
+	vec3 DirectSpecular;
+	vec3 IndirectDiffuse;
+	vec3 IndirectSpecular;
 };
 
 layout(std430, binding = 1) uniform LightBuffer
