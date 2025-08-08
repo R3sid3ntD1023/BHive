@@ -14,23 +14,23 @@ namespace BHive
 	{
 		Material::Save(ar);
 
-		ar(MAKE_NVP("Color", Color), MAKE_NVP("Emission", Emission), MAKE_NVP("Flags", Flags));
+		ar(MAKE_NVP("Color", DiffuseColor), MAKE_NVP("Emission", EmissionColor), MAKE_NVP("Flags", Flags));
 	}
 
 	void PlanetMaterial::Load(cereal::JSONInputArchive &ar)
 	{
 		Material::Load(ar);
 
-		ar(MAKE_NVP("Color", Color), MAKE_NVP("Emission", Emission), MAKE_NVP("Flags", Flags));
+		ar(MAKE_NVP("Color", DiffuseColor), MAKE_NVP("Emission", EmissionColor), MAKE_NVP("Flags", Flags));
 	}
 
 	void PlanetMaterial::Submit(const Ref<Shader> &shader)
 	{
 		Material::Submit(shader);
 
-		shader->SetUniform<glm::vec3>("material.uColor", Color);
-		shader->SetUniform<glm::vec3>("material.uEmission", Emission);
-		shader->SetUniform("material.uFlags", (uint32_t)Flags);
+		shader->SetUniform<glm::vec4>("constants.u_Material.DiffuseColor", DiffuseColor);
+		shader->SetUniform<glm::vec3>("constants.u_Material.EmissionColor", EmissionColor);
+		shader->SetUniform("constants.u_Flags", (uint32_t)Flags);
 	}
 
 	Ref<Shader> PlanetMaterial::GetShader() const

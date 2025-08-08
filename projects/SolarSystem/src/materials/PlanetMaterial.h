@@ -16,9 +16,9 @@ namespace BHive
 	public:
 		PlanetMaterial();
 
-		FColor Color = Colors::White;
+		FColor DiffuseColor = Colors::White;
 
-		FColor Emission = Colors::Black;
+		FColor EmissionColor = Colors::Black;
 
 		EFlags Flags = EFlags::None;
 
