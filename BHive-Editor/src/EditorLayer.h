@@ -61,6 +61,8 @@ namespace BHive
 		void LoadWorld();
 		void SetActiveWorld(const Ref<World> &world);
 
+		void OpenProject();
+
 #pragma region GUI
 		void ViewportGUI();
 		void Viewport();

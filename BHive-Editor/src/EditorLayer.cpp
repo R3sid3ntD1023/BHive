@@ -29,8 +29,7 @@
 #include "windows/SceneHeirarchyWindow.h"
 #include "windows/ContentBrowserWindow.h"
 #include "windows/HistoryWindow.h"
-
-#include "core/profiler/ProfilerViewer.h"
+#include "windows/AssetWindow.h"
 
 namespace BHive
 {
@@ -40,21 +39,7 @@ namespace BHive
 	{
 		if (!Project::GetActive())
 		{
-			auto project_path = FileDialogs::OpenFile("BHive-Project (*proj)\0 *.proj\0");
-			if (project_path.empty())
-			{
-				Application::Get().Close();
-				return;
-			}
-
-			Project::LoadProject(project_path);
-		}
-
-		auto project_name = Project::GetProjectName();
-		mProjectLib = new rttr::library(project_name);
-		if (!mProjectLib->is_loaded())
-		{
-			mProjectLib->load();
+			Project::New({});
 		}
 
 		FWorldContentMenu::OnAssetOpenedEvent.bind(
@@ -91,7 +76,6 @@ namespace BHive
 
 		auto &window_system = AddSubSystem<ImWindowSystem>();
 		window_system.ConstructWindow<ImLogWindow>();
-		window_system.ConstructWindow<ImHistoryWindow>();
 
 		mSceneHeirarchyPanel = window_system.ConstructWindow<ImSceneHierarchy>();
 
@@ -103,13 +87,6 @@ namespace BHive
 		mContentBrowser = window_system.ConstructWindow<EditorContentBrowser<EditorAssetManager>>(Project::GetResourceDirectory());
 
 		SetupDefaultCommands();
-
-		Inspect::get().set_property_changed_callback(
-			[](auto object, const auto &prop, auto var)
-			{
-				auto &undo_system = GetSubSystem<UndoRedo>();
-				undo_system.add_history_command<FCommandProperty>(std::format("{} Property Changed", prop.get_name().data()), object, prop, var);
-			});
 	}
 
 	void EditorLayer::OnDetach()
@@ -157,7 +134,8 @@ namespace BHive
 
 	void EditorLayer::OnGuiRender()
 	{
-		static std::unordered_map<const char *, bool> window_statuses = {{"Scene Hierarchy", true}, {"Content Browser", true}, {"Profiler", true}};
+
+		auto &window_system = SubSystemContext::Get().GetSubSystem<ImWindowSystem>();
 
 		if (ImGui::BeginMainMenuBar())
 		{
@@ -182,15 +160,55 @@ namespace BHive
 				{
 					SaveWorldAs();
 				}
+
+				if (ImGui::MenuItem("Open Project", "Ctrl + P"))
+				{
+					OpenProject();
+				}
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Layouts"))
+			{
+				if (ImGui::MenuItem("Save Layout"))
+				{
+					auto path = FileDialogs::SaveFile("Layout (*ini)\0 *.ini\0");
+					if (!path.empty())
+					{
+						ImGui::SaveIniSettingsToDisk(path.c_str());
+					}
+				}
+
+				if (ImGui::MenuItem("Load Layout"))
+				{
+					auto path = FileDialogs::OpenFile("Layout (*ini)\0 *.ini\0");
+					if (!path.empty())
+					{
+						ImGui::LoadIniSettingsFromDisk(path.c_str());
+					}
+				}
+
 				ImGui::EndMenu();
 			}
 
 			if (ImGui::BeginMenu("Windows"))
 			{
-				for (auto &[name, status] : window_statuses)
+				if (ImGui::MenuItem("Asset Manager"))
 				{
-					ImGui::Checkbox(name, &status);
+					auto window = window_system.ConstructWindow<ImAssetWindow>();
+					window->SetContext(mAssetManager);
 				}
+
+				if (ImGui::MenuItem("Profiier"))
+				{
+					window_system.ConstructWindow<ImProfilerWindow>();
+				}
+
+				if (ImGui::MenuItem("History"))
+				{
+					window_system.ConstructWindow<ImHistoryWindow>();
+				}
+
 				ImGui::EndMenu();
 			}
 
@@ -199,34 +217,7 @@ namespace BHive
 
 		Viewport();
 
-		if (ImGui::Begin("Render Settings"))
-		{
-
-			Inspect::get().inspect("Renderer", this, mRenderer);
-		}
-
-		ImGui::End();
-
-		if (ImGui::Begin("Assets"))
-		{
-			const auto &registry = mAssetManager->GetAssetRegistry();
-			Inspect::get().inspect("", mAssetManager.get(), registry);
-		}
-
-		ImGui::End();
-
-		if (bool &status = window_statuses["Profiler"])
-		{
-			if (ImGui::Begin("Profiler", &status))
-			{
-				ProfilerViewer::ViewFPS();
-				ProfilerViewer::ViewCPUGPU();
-			}
-
-			ImGui::End();
-		}
-
-		SubSystemContext::Get().GetSubSystem<ImWindowSystem>().Update();
+		window_system.Update();
 	}
 
 	void EditorLayer::SetupDefaultCommands()
@@ -332,6 +323,22 @@ namespace BHive
 	{
 		mActiveWorld = world;
 		mSceneHeirarchyPanel->SetContext(mActiveWorld);
+	}
+
+	void EditorLayer::OpenProject()
+	{
+		auto project_path = FileDialogs::OpenFile("BHive-Project (*proj)\0 *.proj\0");
+		if (!project_path.empty())
+		{
+			Project::LoadProject(project_path);
+		}
+
+		auto project_name = Project::GetProjectName();
+		mProjectLib = new rttr::library(project_name);
+		if (!mProjectLib->is_loaded())
+		{
+			mProjectLib->load();
+		}
 	}
 
 	void EditorLayer::Viewport()
