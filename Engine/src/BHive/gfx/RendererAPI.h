@@ -33,14 +33,10 @@ namespace BHive
 
 		virtual void DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count = 0);
 		virtual void DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count = 0);
-		virtual void DrawElementsBaseVertex(
-			EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0,
-			uint32_t instance_count = 0);
-		virtual void
-		DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count = 0);
+		virtual void DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0);
+		virtual void DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count = 0);
 		virtual void DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count = 0);
-		virtual void MultiDrawElementsIndirect(
-			uint32_t buffer, EDrawMode mode, const VertexArray &vao, size_t numMeshes, size_t stride = 0);
+		virtual void MultiDrawElementsIndirect(uint32_t buffer, EDrawMode mode, const VertexArray &vao, size_t numMeshes, size_t stride = 0);
 
 		virtual void EnableDepth();
 		virtual void DisableDepth();
