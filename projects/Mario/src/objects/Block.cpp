@@ -42,4 +42,18 @@ namespace BHive
 		}*/
 	}
 
+	RTTR_REGISTRATION
+	{
+		{
+			BEGIN_REFLECT(Block)
+			REFLECT_CONSTRUCTOR(const entt::entity &, World *);
+		}
+
+		{
+			BEGIN_REFLECT(QuestionBlock)
+			REFLECT_CONSTRUCTOR(const entt::entity &, World *)
+			REFLECT_PROPERTY("BlockToSpawn", SpawnedBlock);
+		}
+	}
+
 } // namespace BHive

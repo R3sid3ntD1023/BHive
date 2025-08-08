@@ -88,4 +88,10 @@ namespace BHive
 			LOG_TRACE("Destroyed Block");
 		}
 	}
+
+	RTTR_REGISTRATION
+	{
+		BEGIN_REFLECT(Player)
+		REFLECT_CONSTRUCTOR(const entt::entity &, World *);
+	}
 } // namespace BHive

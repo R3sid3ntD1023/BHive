@@ -27,4 +27,5 @@ namespace BHive
 	private:
 		void OnCollisionEnter(struct ColliderComponent *component, GameObject *other);
 	};
+
 } // namespace BHive

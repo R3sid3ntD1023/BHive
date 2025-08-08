@@ -12,4 +12,10 @@ namespace BHive
 	void Item::OnCollisionTriggerEnter(ColliderComponent *component, GameObject *other)
 	{
 	}
+
+	RTTR_REGISTRATION
+	{
+		BEGIN_REFLECT(Item)
+		REFLECT_CONSTRUCTOR(const entt::entity &, World *);
+	}
 } // namespace BHive
