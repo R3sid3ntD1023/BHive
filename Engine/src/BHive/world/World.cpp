@@ -111,14 +111,13 @@ namespace BHive
 	void World::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
+		ar(cereal::make_size_tag(mObjects.size()));
 
-		ar(mObjects.size());
 		for (auto &[id, obj] : mObjects)
 		{
-			ar(obj ? true : false);
+			ar(obj ? obj->get_type() : InvalidType);
 			if (obj)
 			{
-				ar(obj->get_type());
 				obj->Save(ar);
 			}
 		}
@@ -129,8 +128,9 @@ namespace BHive
 		Asset::Load(ar);
 
 		size_t num_objects = 0;
-		ar(num_objects);
+		ar(cereal::make_size_tag(num_objects));
 
+		// TODO: remove is valid
 		for (size_t i = 0; i < num_objects; i++)
 		{
 			bool is_valid = false;
@@ -155,11 +155,14 @@ namespace BHive
 	void World::Save(cereal::JSONOutputArchive &ar) const
 	{
 		ar(cereal::make_size_tag(mObjects.size()));
+
 		for (auto &[id, body] : mObjects)
 		{
 			ar.startNode();
-			ar(MAKE_NVP("Type", body->get_type()));
-			body->Save(ar);
+
+			ar(MAKE_NVP("Type", body ? body->get_type() : InvalidType));
+			if (body)
+				body->Save(ar);
 
 			ar.finishNode();
 		}
@@ -172,11 +175,13 @@ namespace BHive
 
 		mObjects.reserve(size);
 
+		bool is_valid = false;
+		rttr::type type = InvalidType;
+
 		for (size_t i = 0; i < size; i++)
 		{
-			ar.startNode();
 
-			rttr::type type = BHive::InvalidType;
+			ar.startNode();
 
 			ar(MAKE_NVP("Type", type));
 
@@ -234,7 +239,7 @@ namespace BHive
 		for (auto &object : mObjects)
 			object.second->Render();
 
-#ifdef _DEBUG
+#ifdef WITH_BHIVE_EDITOR
 		RenderPhysicsWorld();
 #endif // DEBUG
 	}
@@ -487,6 +492,8 @@ namespace BHive
 		}
 
 		AddGameObject(obj);
+
+		LOG_TRACE("Duplicated gameObject - {}", object->GetName());
 
 		return obj.get();
 	}
