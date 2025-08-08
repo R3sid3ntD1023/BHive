@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.8)
 
 FETCHCONTENT_DECLARE(
+	mINI
+	GIT_REPOSITORY https://github.com/metayeti/mINI.git
+	GIT_TAG 0.9.18
+	OVERRIDE_FIND_PACKAGE
+)
+
+list(APPEND components mINI)
+
+FETCHCONTENT_DECLARE(
 	rttr
 	GIT_REPOSITORY https://github.com/rttrorg/rttr.git
 	GIT_TAG master
