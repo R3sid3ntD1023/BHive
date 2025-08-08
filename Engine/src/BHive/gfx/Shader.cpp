@@ -127,30 +127,66 @@ namespace BHive
 
 		struct IncludeHandler : public shaderc::CompileOptions::IncluderInterface
 		{
+			using UserDataType = std::pair<std::string, std::string>;
+
 			shaderc_include_result *GetInclude(const char *requested_source, shaderc_include_type type, const char *requesting_source, size_t include_depth) override
 			{
+				auto resolved_path = ResolvePath(requested_source, requesting_source);
 				std::string content;
+				if (!FileSystem::ReadFile(resolved_path, content))
+				{
+					LOG_ERROR("Failed to read file : {}", resolved_path);
 
-				std::filesystem::path directory = std::filesystem::path(requesting_source).parent_path();
-				if (!std::filesystem::exists(directory))
-				{
-					directory = ENGINE_PATH "/data/shaders";
-				}
-				if (!FileSystem::ReadFile(directory / requested_source, content))
-				{
-					LOG_ERROR("Failed to read include file {}", requested_source);
 					return nullptr;
 				}
 
-				auto result = new shaderc_include_result();
-				result->source_name = requested_source;
-				result->source_name_length = strlen(requested_source);
-				result->content_length = content.size();
-				result->content = new char[content.size() + 1];
-				memcpy((char *)result->content, content.c_str(), content.size());
+				return MakeIncludeResult(resolved_path, content);
+			}
+
+			void ReleaseInclude(shaderc_include_result *data) override
+			{
+				if (data)
+				{
+					delete (UserDataType *)data->user_data;
+					delete data;
+				}
+			}
+
+		private:
+			std::string ResolvePath(const std::string &requested, const std::string &requesting)
+			{
+				std::filesystem::path directory = std::filesystem::path(requesting).parent_path();
+
+				// use default engine path, if file isn't relative
+				if (!std::filesystem::exists(directory / requested))
+				{
+					directory = ENGINE_SHADER_LIB_PATH;
+
+					if (!std::filesystem::exists(directory / requested))
+					{
+						directory = ENGINE_SHADER_PATH;
+					}
+				}
+
+				return (directory / requested).string();
+			}
+
+			shaderc_include_result *MakeIncludeResult(const std::filesystem::path &resolved_path, const std::string &content)
+			{
+				auto *result = new shaderc_include_result();
+				auto include_data = new UserDataType(resolved_path.string(), content);
+
+				result->source_name = include_data->first.c_str();
+				result->source_name_length = include_data->first.size();
+
+				result->content = include_data->second.c_str();
+				result->content_length = include_data->second.size();
+
+				result->user_data = include_data;
 				return result;
 			}
-			void ReleaseInclude(shaderc_include_result *data) override { delete data; }
+
+			std::vector<std::string> possible_paths = {ENGINE_SHADER_PATH, ENGINE_SHADER_LIB_PATH};
 		};
 
 	} // namespace utils
@@ -166,7 +202,8 @@ namespace BHive
 	}
 
 	Shader::Shader(const std::string &name, const std::string &vertex_shader, const std::string &fragment_shader)
-		: mName(name)
+		: mName(name),
+		  mFilePath(name)
 	{
 		mSources[GL_VERTEX_SHADER] = vertex_shader;
 		mSources[GL_FRAGMENT_SHADER] = fragment_shader;
@@ -174,7 +211,8 @@ namespace BHive
 	}
 
 	Shader::Shader(const std::string &name, const std::string &compute_shader)
-		: mName(name)
+		: mName(name),
+		  mFilePath(name)
 	{
 		mSources[GL_COMPUTE_SHADER] = compute_shader;
 		Compile();
@@ -212,10 +250,10 @@ namespace BHive
 				continue;
 			}
 
-			auto spirv_binary = compiler.CompileGlslToSpv(source, utils::GetShadercType(type), mName.c_str(), options);
+			auto spirv_binary = compiler.CompileGlslToSpv(source, utils::GetShadercType(type), mFilePath.string().c_str(), options);
 			if (spirv_binary.GetCompilationStatus() != shaderc_compilation_status_success)
 			{
-				LOG_ERROR("Failed to compile shader {}, stage {}-{}", mName, utils::GetTypeString(type), spirv_binary.GetErrorMessage());
+				LOG_ERROR("Vulkan: Failed to compile shader {}, stage {}-{}", mName, utils::GetTypeString(type), spirv_binary.GetErrorMessage());
 				ASSERT(false);
 			}
 			else
@@ -236,8 +274,8 @@ namespace BHive
 		// options.SetOptimizationLevel(shaderc_optimization_level_performance);
 		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
 		// options.SetSourceLanguage(shaderc_source_language_glsl);
-		options.SetIncluder(std::make_unique<utils::IncludeHandler>());
 		options.SetAutoMapLocations(true);
+		options.SetIncluder(std::make_unique<utils::IncludeHandler>());
 
 		for (auto &[type, spirv] : mVulkanSpirv)
 		{
@@ -252,7 +290,7 @@ namespace BHive
 			mOpenglSources[type] = glsl_compiler.compile();
 			auto &source = mOpenglSources[type];
 
-			auto spirv_binary = compiler.CompileGlslToSpv(source, utils::GetShadercType(type), mName.c_str(), options);
+			auto spirv_binary = compiler.CompileGlslToSpv(source, utils::GetShadercType(type), mFilePath.string().c_str(), options);
 
 			if (spirv_binary.GetCompilationStatus() == shaderc_compilation_status_success)
 			{
@@ -261,7 +299,7 @@ namespace BHive
 			}
 			else
 			{
-				LOG_ERROR("Failed to compile shader {} : stage:{}-{}", utils::GetTypeString(type), mName, spirv_binary.GetErrorMessage());
+				LOG_ERROR("GLSL: Failed to compile shader {} : stage:{}-{}", utils::GetTypeString(type), mName, spirv_binary.GetErrorMessage());
 				ASSERT(false);
 			}
 		}

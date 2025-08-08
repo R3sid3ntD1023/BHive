@@ -27,6 +27,7 @@ find_package(EnTT CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(unofficial-omniverse-physx-sdk CONFIG REQUIRED)
 find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
+find_package(mINI CONFIG REQUIRED)
 
 message(STATUS "Vulkan VERSION: ${Vulkan_VERSION}")
 message(STATUS "Vulkan Includes: ${Vulkan_INCLUDE_DIR} - Libs ${Vulkan_LIBRARIES}")
@@ -52,6 +53,8 @@ target_compile_definitions(${TARGET_NAME}
 	PUBLIC IMGUI_DEFINE_MATH_OPERATORS
 	PUBLIC SPDLOG_COMPILED_LIB
 	PUBLIC ENGINE_PATH="${CMAKE_CURRENT_SOURCE_DIR}"
+	PUBLIC ENGINE_SHADER_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/shaders"
+	PUBLIC ENGINE_SHADER_LIB_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/shaders/shaderlibs"
 )
 
 target_link_directories(${TARGET_NAME} PUBLIC ${Vulkan_LIB_DIR})
@@ -72,6 +75,7 @@ target_link_libraries(${TARGET_NAME}
 	PUBLIC implot::implot
 	PUBLIC msdf-atlas-gen::msdf-atlas-gen
 	PUBLIC EnTT::EnTT
+	PUBLIC mINI
 	PUBLIC unofficial::omniverse-physx-sdk::sdk
 	PUBLIC ${Vulkan_LIBRARIES}
 	PUBLIC shaderc_combined$<$<CONFIG:DEBUG>:d>
