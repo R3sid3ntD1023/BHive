@@ -25,8 +25,6 @@ UUID mSelectedID{"f68f4384-d55f-4a9b-872e-efe27fa06659"};
 
 void SolarSystemLayer::OnAttach()
 {
-	ShaderManager::Get().LoadFiles(RESOURCE_PATH "Shaders");
-
 	auto &window = Application::Get().GetWindow();
 	auto window_size = window.GetSize();
 
