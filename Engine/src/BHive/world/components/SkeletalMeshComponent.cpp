@@ -13,7 +13,7 @@ namespace BHive
 			auto pose = SkeletalMeshAsset->GetDefaultPose();
 			auto owner = GetOwner();
 			auto world_transform = owner ? owner->GetWorldTransform() : FTransform{};
-			MeshRenderer::DrawMesh(SkeletalMeshAsset, *pose, world_transform);
+			MeshRenderer::DrawMesh(SkeletalMeshAsset, SkeletalMeshAsset->GetMaterialTable(), *pose, world_transform);
 			LineRenderer::DrawAABB(SkeletalMeshAsset->GetBoundingBox(), Colors::Red, world_transform);
 
 			const auto &joints = pose->GetTransformsJointSpace();
@@ -45,7 +45,6 @@ namespace BHive
 	REFLECT(SkeletalMeshComponent)
 	{
 		BEGIN_REFLECT(SkeletalMeshComponent)
-		(META_DATA(EClassMetaData::ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR()
-			REFLECT_PROPERTY("Skeletal Mesh Asset", SkeletalMeshAsset) COMPONENT_IMPL();
+		(META_DATA(EClassMetaData::ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY("Skeletal Mesh Asset", SkeletalMeshAsset) COMPONENT_IMPL();
 	}
 } // namespace BHive

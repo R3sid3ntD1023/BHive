@@ -66,6 +66,8 @@ namespace BHive
 	{
 		ASSERT(sMeshRenderData);
 
+		SortObjects();
+
 		// display only visible meshes
 		for (auto &[material, objects] : sMeshRenderData->ObjectData)
 		{
@@ -97,7 +99,7 @@ namespace BHive
 		}
 	}
 
-	void MeshRenderer::DrawMesh(const Ref<StaticMesh> &mesh, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
+	void MeshRenderer::DrawMesh(const Ref<StaticMesh> &mesh, const MaterialTable &materials, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
 	{
 		// TODO: CullMeshes
 		ASSERT(sMeshRenderData);
@@ -106,7 +108,6 @@ namespace BHive
 			return;
 
 		auto &sub_meshes = mesh->GetSubMeshes();
-		auto &materials = mesh->GetMaterialTable();
 
 		for (auto &sub_mesh : sub_meshes)
 		{
@@ -121,7 +122,7 @@ namespace BHive
 		}
 	}
 
-	void MeshRenderer::DrawMesh(const Ref<SkeletalMesh> &mesh, const SkeletalPose &pose, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
+	void MeshRenderer::DrawMesh(const Ref<SkeletalMesh> &mesh, const MaterialTable &materials, const SkeletalPose &pose, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
 	{
 		// TODO: CullMeshes
 		ASSERT(sMeshRenderData);
@@ -130,8 +131,6 @@ namespace BHive
 			return;
 
 		auto &sub_meshes = mesh->GetSubMeshes();
-		auto &materials = mesh->GetMaterialTable();
-
 		for (auto &sub_mesh : sub_meshes)
 		{
 			auto material = materials.get_material(sub_mesh.MaterialIndex);
@@ -161,5 +160,26 @@ namespace BHive
 
 		auto volume = FSphereVolume(bounds.GetCenter(), bounds.GetRadius());
 		return !volume.InFrustum(frustum, FTransform(transform));
+	}
+
+	void MeshRenderer::SortObjects()
+	{
+		static auto sorter = [=](const ObjectData &a, const ObjectData &b)
+		{
+			const auto &A = a.ModelMatrix[3];
+			const auto &B = b.ModelMatrix[3];
+			const auto &C = CameraBuffer::Get().GetCameraData().CameraPosition;
+
+			const auto distA = glm::distance(A, C);
+			const auto distB = glm::distance(B, C);
+
+			return distA < distB;
+		};
+
+		for (auto &[mat, objdatas] : sMeshRenderData->ObjectData)
+		{
+			auto &objects = objdatas;
+			std::sort(objects.begin(), objects.end(), sorter);
+		}
 	}
 } // namespace BHive

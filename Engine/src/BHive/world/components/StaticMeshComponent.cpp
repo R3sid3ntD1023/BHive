@@ -7,28 +7,44 @@ namespace BHive
 {
 	void StaticMeshComponent::Render()
 	{
-		if (StaticMeshAsset)
+		if (mStaticMeshAsset)
 		{
 			auto world_transform = GetOwner()->GetWorldTransform();
-			MeshRenderer::DrawMesh(StaticMeshAsset, world_transform);
-			LineRenderer::DrawAABB(StaticMeshAsset->GetBoundingBox(), Colors::Red, world_transform);
+			MeshRenderer::DrawMesh(mStaticMeshAsset, mOverrideMaterials, world_transform);
+			LineRenderer::DrawAABB(mStaticMeshAsset->GetBoundingBox(), Colors::Red, world_transform);
 		}
 	}
 
 	void StaticMeshComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(TAssetHandle(StaticMeshAsset));
+		ar(mOverrideMaterials, TAssetHandle(mStaticMeshAsset));
 	}
 
 	void StaticMeshComponent::Load(cereal::BinaryInputArchive &ar)
 	{
-		ar(TAssetHandle(StaticMeshAsset));
+		ar(TAssetHandle(mStaticMeshAsset));
+	}
+
+	void StaticMeshComponent::Save(cereal::JSONOutputArchive &ar) const
+	{
+		ar(MAKE_NVP("OverrideMaterials", mOverrideMaterials), MAKE_NVP("StaticMesh", TAssetHandle(mStaticMeshAsset)));
+	}
+
+	void StaticMeshComponent::Load(cereal::JSONInputArchive &ar)
+	{
+		ar(MAKE_NVP("OverrideMaterials", mOverrideMaterials), MAKE_NVP("StaticMesh", TAssetHandle(mStaticMeshAsset)));
+	}
+
+	void StaticMeshComponent::SetStaticMesh(const Ref<StaticMesh> &mesh)
+	{
+		mStaticMeshAsset = mesh;
+		mOverrideMaterials = mesh->GetMaterialTable();
 	}
 
 	REFLECT(StaticMeshComponent)
 	{
-		BEGIN_REFLECT(StaticMeshComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR()
-			REFLECT_PROPERTY(StaticMeshAsset) COMPONENT_IMPL();
+		BEGIN_REFLECT(StaticMeshComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY("Material Overrides", mOverrideMaterials)
+			REFLECT_PROPERTY("StaticMesh", GetStaticMesh, SetStaticMesh) COMPONENT_IMPL();
 	}
 
 } // namespace BHive

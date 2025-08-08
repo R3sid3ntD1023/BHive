@@ -7,7 +7,6 @@ namespace BHive
 {
 	struct StaticMeshComponent : public Component
 	{
-		Ref<StaticMesh> StaticMeshAsset;
 
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent &other) = default;
@@ -18,7 +17,19 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLE_CLASS(Component)
+		virtual void Save(cereal::JSONOutputArchive &ar) const override;
+
+		virtual void Load(cereal::JSONInputArchive &ar) override;
+
+		const Ref<StaticMesh> &GetStaticMesh() const { return mStaticMeshAsset; }
+
+		void SetStaticMesh(const Ref<StaticMesh> &mesh);
+
+		REFLECTABLEV(Component)
+
+	private:
+		Ref<StaticMesh> mStaticMeshAsset;
+		MaterialTable mOverrideMaterials;
 	};
 
 	REFLECT_EXTERN(StaticMeshComponent)
