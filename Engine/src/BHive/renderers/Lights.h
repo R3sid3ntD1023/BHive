@@ -29,7 +29,7 @@ namespace BHive
 		template <typename A>
 		inline void Serialize(A &ar)
 		{
-			ar(mColor, mBrightness);
+			ar(MAKE_NVP("Color", mColor), MAKE_NVP("Brightness", mBrightness));
 		}
 
 		REFLECTABLEV()
@@ -47,7 +47,7 @@ namespace BHive
 		inline void Serialize(A &ar)
 		{
 			Light::Serialize(ar);
-			ar(mRadius);
+			ar(MAKE_NVP("Radius", mRadius));
 		}
 
 		REFLECTABLEV(Light)
