@@ -53,9 +53,11 @@
         },
         {
           "Type": "PointLightComponent",
-          "Brightness": 1,
-          "Radius": 100000,
-          "Color": [ 1, 1, 1, 1 ]
+          "Light": {
+            "Color": [ 1, 1, 1, 1 ],
+            "Brightness": 1,
+            "Radius": 100000
+          }
         }
       ]
     },
