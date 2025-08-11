@@ -54,6 +54,8 @@ namespace BHive
 			return GetProjectDirectory() / sActiveProject->mConfig.ResourcesDirectory;
 		}
 
+		static std::filesystem::path GetResourceRelativePath(const std::filesystem::path &path);
+
 		static FProjectConfiguration &GetConfiguration()
 		{
 			ASSERT(sActiveProject);

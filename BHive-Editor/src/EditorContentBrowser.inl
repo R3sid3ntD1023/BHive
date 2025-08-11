@@ -67,7 +67,7 @@ namespace BHive
 	template <typename T>
 	void EditorContentBrowser<T>::OnDeleteAsset(const std::filesystem::path &path)
 	{
-		auto relative = std::filesystem::relative(path, Project::GetResourceDirectory());
+		auto relative = Project::GetResourceRelativePath(path);
 		auto manager = AssetManager::GetAssetManager<T>();
 		manager->RemoveAsset(relative);
 
@@ -82,8 +82,8 @@ namespace BHive
 	template <typename T>
 	void EditorContentBrowser<T>::RenameAsset(const std::filesystem::path &_old, const std::filesystem::path &_new, const std::filesystem::recursive_directory_iterator &it)
 	{
-		auto relative_old = std::filesystem::relative(_old, Project::GetResourceDirectory());
-		auto relative_new = std::filesystem::relative(_new, Project::GetResourceDirectory());
+		auto relative_old = Project::GetResourceRelativePath(_old);
+		auto relative_new = Project::GetResourceRelativePath(_new);
 
 		if (auto manager = AssetManager::GetAssetManager<T>())
 		{
@@ -91,8 +91,8 @@ namespace BHive
 
 			for (auto &entry : it)
 			{
-				auto entry_relative = std::filesystem::relative(entry, Project::GetResourceDirectory());
-				auto new_relative = std::filesystem::relative(_new / entry.path().filename(), Project::GetResourceDirectory());
+				auto entry_relative = Project::GetResourceRelativePath(entry);
+				auto new_relative = Project::GetResourceRelativePath(_new / entry.path().filename());
 
 				manager->RenameAsset(entry_relative, new_relative);
 			}
@@ -140,7 +140,7 @@ namespace BHive
 	template <typename T>
 	void EditorContentBrowser<T>::OnAssetContextMenu(const std::filesystem::path &path)
 	{
-		auto relative = std::filesystem::relative(path, Project::GetResourceDirectory());
+		auto relative = Project::GetResourceRelativePath(path);
 		auto manager = AssetManager::GetAssetManager<T>();
 		auto meta_data = manager->GetMetaData(relative);
 		auto menu = AssetContextMenuRegistry::Get().GetAssetMenu(meta_data.Type);
@@ -156,7 +156,7 @@ namespace BHive
 	template <typename T>
 	void EditorContentBrowser<T>::OnAssetDoubleClicked(const std::filesystem::path &path)
 	{
-		auto relative = std::filesystem::relative(path, Project::GetResourceDirectory());
+		auto relative = Project::GetResourceRelativePath(path);
 		auto manager = AssetManager::GetAssetManager<T>();
 		auto meta_data = manager->GetMetaData(relative);
 		auto menu = AssetContextMenuRegistry::Get().GetAssetMenu(meta_data.Type);
@@ -172,7 +172,7 @@ namespace BHive
 	template <typename T>
 	bool EditorContentBrowser<T>::IsAssetValid(const std::filesystem::path &path) const
 	{
-		auto relative = std::filesystem::relative(path, Project::GetResourceDirectory());
+		auto relative = Project::GetResourceRelativePath(path);
 		auto manager = AssetManager::GetAssetManager<T>();
 		auto handle = manager->GetHandle(relative);
 		return manager->IsAssetHandleValid(handle);
@@ -198,7 +198,7 @@ namespace BHive
 		auto asset_manager = AssetManager::GetAssetManager<EditorAssetManager>();
 		if (asset_manager)
 		{
-			auto relative = std::filesystem::relative(path, Project::GetResourceDirectory());
+			auto relative = Project::GetResourceRelativePath(path);
 			auto handle = asset_manager->GetHandle(relative);
 			if (auto type = AssetManager::GetAssetType(handle))
 			{

@@ -418,7 +418,7 @@ namespace BHive
 					if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_SOURCE_TYPE))
 					{
 						auto data = (const char *)payload->Data;
-						auto entries = PayloadHelpers::get_entries_from_buffer(data, payload->DataSize);
+						auto entries = PayloadHelpers::GetEntriesFromBuffer(data, payload->DataSize);
 
 						for (auto &entry : entries)
 						{

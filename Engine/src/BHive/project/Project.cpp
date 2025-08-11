@@ -42,6 +42,11 @@ namespace BHive
 		return true;
 	}
 
+	std::filesystem::path Project::GetResourceRelativePath(const std::filesystem::path &path)
+	{
+		return std::filesystem::relative(path, GetResourceDirectory());
+	}
+
 	REFLECT(FProjectConfiguration)
 	{
 		BEGIN_REFLECT(FProjectConfiguration)

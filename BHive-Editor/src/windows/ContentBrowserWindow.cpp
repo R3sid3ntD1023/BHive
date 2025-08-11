@@ -300,7 +300,7 @@ namespace BHive
 		if (auto payload = ImGui::AcceptDragDropPayload(DRAG_DROP_SOURCE_TYPE, ImGuiDragDropFlags_SourceAllowNullID))
 		{
 			auto data = (const char *)payload->Data;
-			auto entries = PayloadHelpers::get_entries_from_buffer(data, payload->DataSize);
+			auto entries = PayloadHelpers::GetEntriesFromBuffer(data, payload->DataSize);
 
 			for (const auto &other_entry : entries)
 			{
@@ -332,7 +332,7 @@ namespace BHive
 				}
 
 				size_t data_size = 0;
-				auto buffer = PayloadHelpers::get_entries_buffer(entries, data_size);
+				auto buffer = PayloadHelpers::GetEntriesBuffer(entries, data_size);
 				if (!buffer.empty())
 				{
 					ImGui::SetDragDropPayload(DRAG_DROP_SOURCE_TYPE, buffer.c_str(), data_size);

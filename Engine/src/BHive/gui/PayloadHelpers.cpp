@@ -2,7 +2,7 @@
 
 namespace BHive
 {
-	std::string PayloadHelpers::get_entries_buffer(const std::vector<std::filesystem::directory_entry> &entries, size_t &size)
+	std::string PayloadHelpers::GetEntriesBuffer(const std::vector<std::filesystem::directory_entry> &entries, size_t &size)
 	{
 		std::string buffer;
 		for (const auto &str : entries)
@@ -13,7 +13,7 @@ namespace BHive
 		return buffer;
 	}
 
-	std::vector<std::filesystem::directory_entry> PayloadHelpers::get_entries_from_buffer(const char *buffer, size_t size)
+	std::vector<std::filesystem::directory_entry> PayloadHelpers::GetEntriesFromBuffer(const char *buffer, size_t size)
 	{
 		std::vector<std::filesystem::directory_entry> entries;
 		const char *current = buffer;
