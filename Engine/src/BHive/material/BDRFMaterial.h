@@ -7,17 +7,12 @@ namespace BHive
 	enum EMaterialFlags : uint16_t
 	{
 		MaterialFlag_None = 0,
-		MaterialFlag_Show_Vertex_Colors = BIT(0),
-		MaterialFlag_Alpha_Is_Transparency = BIT(1),
-		MaterialFlag_Use_Metallic_Roughness = BIT(2),
-		MaterialFlag_Use_Normal_Map = BIT(3),
-		MaterialFlag_Use_Depth_Map = BIT(4),
-		MaterialFlag_Cast_Shadows = BIT(5),
-		MaterialFlag_Recieve_Shadows = BIT(6),
-		MaterialFlag_UnLit = BIT(7),
-		MaterialFlag_DoubleSided = BIT(8),
-		MaterialFlag_Transparent = BIT(9),
-		MaterialFlag_DiaElectric = BIT(10),
+		MaterialFlag_Use_Normal_Map = BIT(0),
+		MaterialFlag_DiaElectric = BIT(1),
+		MaterialFlag_Cast_Shadows = BIT(2),
+		MaterialFlag_Recieve_Shadows = BIT(3),
+		MaterialFlag_DoubleSided = BIT(4),
+
 		MaterialFlag_Shadows = MaterialFlag_Cast_Shadows | MaterialFlag_Recieve_Shadows
 	};
 

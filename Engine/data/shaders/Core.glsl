@@ -95,3 +95,37 @@ float LinerizeDepth(float depth, float near, float far)
     return linearDepth;
 }
 
+vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir, float scale, in sampler2D depth)
+{
+	const float min_layers = 8.0;
+	const float max_layers = 32.0;
+	float num_layers = mix(max_layers, min_layers, abs(dot(vec3(0, 0, 1), viewDir)));
+
+	float layerDepth = 1.0 / num_layers;
+
+	float current_layer_depth = 0.0;
+
+	vec2 p = viewDir.xy / viewDir.z * scale;
+	vec2 dcoords = p / num_layers;
+
+	vec2 current_coords = texCoords;
+	float current_depth_map_value = texture(depth, current_coords).r;
+
+	while(current_layer_depth < current_depth_map_value)
+	{
+		current_coords -= dcoords;
+		current_depth_map_value = texture(depth, current_coords).r;
+
+		current_layer_depth += layerDepth;
+	}
+
+	vec2 prevTexCoords = current_coords + dcoords;
+
+	float after_depth = current_depth_map_value - current_layer_depth;
+	float before_depth = texture(depth, prevTexCoords).r - current_layer_depth + layerDepth;
+
+	float weight = after_depth / (after_depth - before_depth);
+
+
+	return prevTexCoords * weight + current_coords * (1.0 - weight);
+}

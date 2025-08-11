@@ -11,14 +11,12 @@ namespace BHive
 	BDRFMaterial::BDRFMaterial()
 		: Material(GetShader())
 	{
-		AddTextureSlot("Albedo", 6);
-		AddTextureSlot("Metallic", 7);
-		AddTextureSlot("Roughness", 8);
-		AddTextureSlot("Normal", 9);
-		AddTextureSlot("Emission", 10);
-		AddTextureSlot("Opacity", 11);
-		AddTextureSlot("Displacment", 12);
-		AddTextureSlot("MetallicRougness", 13);
+		AddTextureSlot("Albedo", 0);
+		AddTextureSlot("Normal", 1);
+		AddTextureSlot("Roughness", 2);
+		AddTextureSlot("Metallic", 3);
+		AddTextureSlot("Emission", 4);
+		AddTextureSlot("Opacity", 5);
 	}
 
 	void BDRFMaterial::Submit(const Ref<Shader> &shader)
@@ -26,19 +24,22 @@ namespace BHive
 
 		Material::Submit(shader);
 
-		shader->SetUniform<glm::vec4>("constants.u_material.Albedo", Albedo);
-		shader->SetUniform("constants.u_material.Metallic", Metallic);
-		shader->SetUniform("constants.u_material.Roughness", Roughness);
-		shader->SetUniform<glm::vec3>("constants.u_material.Emission", Emission);
-		shader->SetUniform("constants.u_material.Opacity", Opacity);
-		shader->SetUniform("constants.u_material.Tiling", Tiling);
-		shader->SetUniform("constants.u_material.DepthScale", DepthScale);
-		shader->SetUniform("constants.u_material.Flags", (int32_t)Flags);
+		auto flags = Flags;
+		if (mTextures.at("Normal").Texture)
+			flags |= EMaterialFlags::MaterialFlag_Use_Normal_Map;
+
+		shader->SetUniform<glm::vec3>("constants.Albedo", Albedo);
+		shader->SetUniform<glm::vec3>("constants.Emission", Emission);
+		shader->SetUniform("constants.Roughness", Roughness);
+		shader->SetUniform("constants.Metalness", Metallic);
+		shader->SetUniform("constants.Opacity", Opacity);
+		shader->SetUniform("constants.Tiling", Tiling);
+		shader->SetUniform("constants.Flags", (uint32_t)flags);
 	}
 
 	Ref<Shader> BDRFMaterial::GetShader() const
 	{
-		static Ref<Shader> shader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/BDRFMaterial.glsl");
+		static Ref<Shader> shader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/BDRFMaterial.glsl");
 		return shader;
 	}
 
@@ -57,9 +58,8 @@ namespace BHive
 	REFLECT(EMaterialFlags)
 	{
 		BEGIN_REFLECT_ENUM(EMaterialFlags)(
-			ENUM_VALUE(MaterialFlag_Show_Vertex_Colors), ENUM_VALUE(MaterialFlag_Alpha_Is_Transparency), ENUM_VALUE(MaterialFlag_Use_Metallic_Roughness), ENUM_VALUE(MaterialFlag_Use_Normal_Map),
-			ENUM_VALUE(MaterialFlag_Use_Depth_Map), ENUM_VALUE(MaterialFlag_Cast_Shadows), ENUM_VALUE(MaterialFlag_Recieve_Shadows), ENUM_VALUE(MaterialFlag_UnLit),
-			ENUM_VALUE(MaterialFlag_DoubleSided), ENUM_VALUE(MaterialFlag_Transparent), ENUM_VALUE(MaterialFlag_DiaElectric), ENUM_VALUE(MaterialFlag_Shadows));
+			ENUM_VALUE(MaterialFlag_Cast_Shadows), ENUM_VALUE(MaterialFlag_Recieve_Shadows), ENUM_VALUE(MaterialFlag_DoubleSided), ENUM_VALUE(MaterialFlag_DiaElectric),
+			ENUM_VALUE(MaterialFlag_Shadows));
 	}
 
 	REFLECT(BDRFMaterial)

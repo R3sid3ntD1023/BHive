@@ -17,6 +17,12 @@ struct Light
 	uint type;
 };
 
+struct IncidentLight
+{
+	vec3 Color;
+	vec3 Direction;
+};
+
 struct ReflectedLight
 {
 	vec3 DirectDiffuse;
@@ -68,44 +74,36 @@ const vec3 v3poissonDisk[9] = vec3[](
 
 const float light_size = 0.07;
 
-float DirectionalLight(vec3 N, vec3 D)
+void GetDirectionLightInfo(const in Light light, inout IncidentLight directLight)
 {
-	vec3 L = normalize(-D);
-	float NdotL = max(dot(N, L), 0.0);
-	return NdotL;
+	directLight.Direction = normalize(-light.direction);
+	directLight.Color = light.color * light.brightness;
 }
 
-float PointLight(vec3 P, vec3 N, vec3 LP, float radius)
+void GetPointLightInfo(const in Light light, const in vec3 geoPosition, inout IncidentLight directLight)
 {
-	float dist = length(LP - P);
-	//if(dist > radius) return 0;
+	directLight.Direction = light.position - geoPosition;
 
-	vec3 dir = LP - P;
-	float ndotl = max(dot(N, dir), 0.0);
-
+	float dist = distance(light.position, geoPosition);
 	//https://lisyarus.github.io/blog/posts/point-light-attenuation.html
-	float s = dist / radius;
-	if(s >= 1.0)
-		return 0.0;
+	float s = dist / light.radius;
 	float s2 = sqrt(s);
 
-	float attenuation = sqrt(1 -s2) / (1 + radius * s);
-	//float attenuation = 1.0 / (radius * radius);
+	float attenuation = sqrt(1 -s2) / (1 + light.radius * s);
+	//float attenuation = 1.0 / (light.radius * light.radius);
 
-	return ndotl * attenuation;
+	directLight.Color = light.brightness * light.color * attenuation;
 }
 
-float SpotLight(vec3 P, vec3 N,  vec3 LP, vec3 LD, float radius, float outerCutoff, float innerCutoff)
+void GetSpotLightInfo(const in Light light, const in vec3 geoPosition, inout IncidentLight directLight)
 {
-	float pointlight =  PointLight(P, N, LP, radius);
+	GetPointLightInfo(light, geoPosition, directLight);
 	
-	vec3 L = normalize(LP - P);
+	float theta = dot(normalize(light.position - geoPosition), normalize(-light.direction ));
+	float epsilon = light.innerCutoff - light.outerCutoff;
+	float intensity = smoothstep(0, 1 , (theta - light.outerCutoff) / epsilon);
 	
-	float theta = dot(L, normalize(-LD ));
-	float epsilon = innerCutoff - outerCutoff;
-	float intensity = smoothstep(0, 1 , (theta - outerCutoff) / epsilon);
-	
-	return pointlight * intensity;
+	directLight.Color *= intensity;
 }
 
 float DirLightShadow(int light, vec3 position, in sampler2DArrayShadow shadow_array_texture)

@@ -54,11 +54,7 @@ namespace BHive
 	{
 		Asset::Save(ar);
 
-		// Save all texture handles
-		for (auto &[name, slot] : mTextures)
-		{
-			ar(TAssetHandle(slot.Texture));
-		}
+		ar(mTextures);
 	}
 
 	void Material::Load(cereal::BinaryInputArchive &ar)
@@ -66,10 +62,21 @@ namespace BHive
 
 		Asset::Load(ar);
 
-		for (auto &[name, slot] : mTextures)
-		{
-			ar(TAssetHandle(slot.Texture));
-		}
+		ar(mTextures);
+	}
+
+	void Material::Save(cereal::JSONOutputArchive &ar) const
+	{
+		Asset::Save(ar);
+
+		ar(MAKE_NVP("TextureSlots", mTextures));
+	}
+
+	void Material::Load(cereal::JSONInputArchive &ar)
+	{
+		Asset::Load(ar);
+
+		ar(MAKE_NVP("TextureSlots", mTextures));
 	}
 
 	REFLECT(Material::TextureSlot)

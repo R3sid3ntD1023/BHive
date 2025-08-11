@@ -17,6 +17,12 @@ namespace BHive
 		{
 			uint32_t Binding;
 			Ref<Texture> Texture;
+
+			template <typename A>
+			void Serialize(A &ar)
+			{
+				ar(MAKE_NVP("Binding", Binding), MAKE_NVP("Texture", TAssetHandle(Texture)));
+			};
 		};
 
 	public:
@@ -34,6 +40,10 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
+
+		virtual void Save(cereal::JSONOutputArchive &ar) const;
+
+		virtual void Load(cereal::JSONInputArchive &ar);
 
 		void AddTextureSlot(const std::string &name, uint32_t binding);
 
