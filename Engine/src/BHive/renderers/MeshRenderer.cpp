@@ -99,6 +99,16 @@ namespace BHive
 		}
 	}
 
+	void MeshRenderer::DrawMesh(const Ref<StaticMesh> &mesh, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
+	{
+		DrawMesh(mesh, mesh->GetMaterialTable(), transform, instances, instanceCount);
+	}
+
+	void MeshRenderer::DrawMesh(const Ref<SkeletalMesh> &mesh, const SkeletalPose &pose, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
+	{
+		DrawMesh(mesh, mesh->GetMaterialTable(), pose, transform, instances, instanceCount);
+	}
+
 	void MeshRenderer::DrawMesh(const Ref<StaticMesh> &mesh, const MaterialTable &materials, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
 	{
 		// TODO: CullMeshes

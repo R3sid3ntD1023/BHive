@@ -20,6 +20,10 @@ namespace BHive
 		static void Begin();
 		static void End();
 
+		static void DrawMesh(const Ref<StaticMesh> &mesh, const glm::mat4 &transform = {1.0f}, const glm::mat4 *instances = nullptr, size_t instanceCount = 0);
+
+		static void DrawMesh(const Ref<SkeletalMesh> &mesh, const SkeletalPose &pose, const glm::mat4 &transform = {1.0f}, const glm::mat4 *instances = nullptr, size_t instanceCount = 0);
+
 		static void DrawMesh(const Ref<StaticMesh> &mesh, const MaterialTable &materials, const glm::mat4 &transform = {1.0f}, const glm::mat4 *instances = nullptr, size_t instanceCount = 0);
 
 		static void DrawMesh(
