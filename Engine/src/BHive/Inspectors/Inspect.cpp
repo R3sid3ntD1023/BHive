@@ -14,6 +14,7 @@
 #include "SequentialContainer.h"
 #include "Inspector_Blackboard.h"
 #include "InspectorComponent.h"
+#include "asset_inspectors/asset_inspectors.h"
 
 #include "undoredo/UndoRedo.h"
 #include "undoredo/Commands.h"

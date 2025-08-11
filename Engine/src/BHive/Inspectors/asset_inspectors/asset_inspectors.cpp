@@ -1,0 +1,18 @@
+#include "asset_inspectors.h"
+// assets
+
+namespace BHive
+{
+
+	REFLECT_ASSET_INSPECTOR(Sprite)
+	REFLECT_ASSET_INSPECTOR(SpriteSheet)
+	REFLECT_ASSET_INSPECTOR(FlipBook)
+
+	REFLECT_ASSET_INSPECTOR(Material)
+	REFLECT_ASSET_INSPECTOR(StaticMesh)
+	REFLECT_ASSET_INSPECTOR(SkeletalMesh)
+	REFLECT_ASSET_INSPECTOR(Texture)
+	REFLECT_ASSET_INSPECTOR(Texture2D)
+
+	REFLECT_ASSET_INSPECTOR(AudioSource)
+} // namespace BHive

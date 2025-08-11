@@ -3,36 +3,23 @@
 #include "gui/ImGuiExtended.h"
 #include "InspectorAsset.h"
 #include "project/Project.h"
+#include "gui/PayloadHelpers.h"
 
 #define ASSET_DRAG_DROP_NAME "CONTENT_BROWSER_ITEM"
 
 namespace BHive
 {
-	static auto get_entries(const char *buffer, size_t size)
-	{
-		std::vector<std::filesystem::directory_entry> entries;
-		const char *current = buffer;
-		const char *end = buffer + size;
 
-		while (current < end)
-		{
-			std::string str(current);
-			if (!str.empty())
-				entries.emplace_back(str);
-			current += str.size() + 1;
-		}
-
-		return entries;
-	}
-
-	bool Inspector_Asset::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
+	template <typename T>
+	bool Inspector_Asset<T>::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
 
 		auto asset_manager = AssetManager::GetAssetManager<EditorAssetManager>();
 		if (!asset_manager)
 			return false;
 
-		auto data = var.get_value<Ref<Asset>>();
+		auto data = rttr::variant_cast<Ref<T>>(var);
+
 		const auto inspected_type = var.extract_wrapped_value().get_type().get_raw_type();
 		const auto type = var.get_type();
 		auto &meta_data = asset_manager->GetMetaData(Asset::GetHandle(data));
@@ -69,7 +56,7 @@ namespace BHive
 
 				if (selected)
 				{
-					data = AssetManager::GetAsset(id);
+					data = AssetManager::GetAsset<T>(id);
 					changed |= true;
 					break;
 				}
@@ -83,15 +70,15 @@ namespace BHive
 			if (auto payload = ImGui::AcceptDragDropPayload(ASSET_DRAG_DROP_NAME))
 			{
 				auto buffer = (const char *)payload->Data;
-				auto entries = get_entries(buffer, payload->DataSize);
+				auto entries = PayloadHelpers::GetEntriesFromBuffer(buffer, payload->DataSize);
 				if (!entries.empty())
 				{
-					auto relative = std::filesystem::relative(entries[0], Project::GetResourceDirectory());
+					auto relative = Project::GetResourceRelativePath(entries[0]);
 					auto handle = asset_manager->GetHandle(relative);
 					auto meta_data = asset_manager->GetMetaData(handle);
 					if (meta_data.Type == inspected_type || meta_data.Type.is_derived_from(inspected_type))
 					{
-						data = AssetManager::GetAsset(handle);
+						data = AssetManager::GetAsset<T>(handle);
 						changed |= true;
 					}
 				}
@@ -110,13 +97,9 @@ namespace BHive
 
 		if (changed)
 		{
-			rttr::variant arg(data);
-			arg.convert(type);
-			var = arg;
+			var = data;
 		}
 
 		return changed;
 	}
-
-	REFLECT_INSPECTOR(Inspector_Asset, Asset)
 } // namespace BHive

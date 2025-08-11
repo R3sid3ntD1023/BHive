@@ -4,6 +4,7 @@
 
 namespace BHive
 {
+	template <typename T>
 	struct Inspector_Asset : public Inspector
 	{
 		INSPECTOR_BODY()
@@ -11,5 +12,8 @@ namespace BHive
 		REFLECTABLEV(Inspector)
 	};
 
-	REFLECT_EXTERN(Inspector_Asset)
 } // namespace BHive
+
+#include "InspectorAsset.inl"
+
+#define REFLECT_ASSET_INSPECTOR(cls) REFLECT_INSPECTOR(Inspector_Asset<cls>, Ref<cls>)
