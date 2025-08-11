@@ -65,9 +65,9 @@ namespace BHive
 
 	void SceneRenderer::End()
 	{
-		EnvironmentMapGenerator.GetPreFilteredEnvironmentTetxure()->Bind(0);
-		EnvironmentMapGenerator.GetIrradianceTexture()->Bind(1);
-		EnvironmentMapGenerator.GetBDRFLUT()->Bind(2);
+		EnvironmentMapGenerator.GetPreFilteredEnvironmentTetxure()->Bind(6);
+		EnvironmentMapGenerator.GetIrradianceTexture()->Bind(7);
+		EnvironmentMapGenerator.GetBDRFLUT()->Bind(8);
 
 		Renderer::End();
 
