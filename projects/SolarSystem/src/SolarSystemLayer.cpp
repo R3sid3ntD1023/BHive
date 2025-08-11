@@ -18,6 +18,7 @@
 #include "world/World.h"
 #include "ResourceManager.h"
 #include "gfx/textures/Texture2D.h"
+#include "material/LambertMaterial.h"
 
 BEGIN_NAMESPACE(BHive)
 
@@ -56,7 +57,8 @@ void SolarSystemLayer::OnAttach()
 	RenderCommand::ClearColor(.1f, .1f, .1f, 1.f);
 	RenderCommand::SetLineWidth(1.0f);
 
-	mWorld->Begin();
+	if (mWorld)
+		mWorld->Begin();
 }
 
 void SolarSystemLayer::OnDetach()

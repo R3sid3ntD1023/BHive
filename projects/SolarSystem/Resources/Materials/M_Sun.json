@@ -1,5 +1,5 @@
 {
-  "Type": "PlanetMaterial",
+  "Type": "LambertMaterial",
   "Handle": "2ebffba0-ed86-445d-8963-cdd90cccb001",
   "Name": "M_Sun",
   "TextureSlots": [
@@ -12,6 +12,5 @@
     }
   ],
   "Color": [ 1, 1, 1, 1 ],
-  "Emission": [ 20, 15, 1, 0 ],
-  "Flags": 0
+  "Emission": [ 20, 15, 1, 0 ]
 }

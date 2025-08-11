@@ -1,5 +1,5 @@
 {
-  "Type": "PlanetMaterial",
+  "Type": "LambertMaterial",
   "Handle": "81a6ccdc-c138-421b-ba2b-31226b8640f6",
   "Name": "M_Moon",
   "TextureSlots": [
@@ -12,6 +12,5 @@
     }
   ],
   "Color": [ 1, 1, 1, 1 ],
-  "Emission": [ 0, 0, 0, 0 ],
-  "Flags": 1
+  "Emission": [ 0, 0, 0, 0 ]
 }

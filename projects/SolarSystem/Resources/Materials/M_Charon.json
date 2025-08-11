@@ -1,5 +1,5 @@
 {
-  "Type": "PlanetMaterial",
+  "Type": "LambertMaterial",
   "Handle": "d9fd639b-751e-45db-9467-acdf1d4ef5a5",
   "Name": "M_Charon",
   "TextureSlots": [
@@ -12,6 +12,5 @@
     }
   ],
   "Color": [ 1, 1, 1, 1 ],
-  "Emission": [ 0, 0, 0, 0 ],
-  "Flags": 0
+  "Emission": [ 0, 0, 0, 0 ]
 }

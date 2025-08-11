@@ -1,5 +1,5 @@
 {
-  "Type": "PlanetMaterial",
+  "Type": "LambertMaterial",
   "Handle": "84dd8bfb-ca87-4c80-8ddc-7977d487fe64",
   "Name": "M_Jupiter",
   "TextureSlots": [
@@ -12,6 +12,5 @@
     }
   ],
   "Color": [ 1, 1, 1, 1 ],
-  "Emission": [ 0, 0, 0, 0 ],
-  "Flags": 0
+  "Emission": [ 0, 0, 0, 0 ]
 }

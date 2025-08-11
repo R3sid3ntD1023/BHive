@@ -1,5 +1,5 @@
 {
-  "Type": "PlanetMaterial",
+  "Type": "LambertMaterial",
   "Handle": "96a5fdb6-0aca-4249-98e0-7c06f871d4c8",
   "Name": "M_Saturn",
   "TextureSlots": [
@@ -12,6 +12,5 @@
     }
   ],
   "Color": [ 1, 1, 1, 1 ],
-  "Emission": [ 0, 0, 0, 0 ],
-  "Flags": 0
+  "Emission": [ 0, 0, 0, 0 ]
 }

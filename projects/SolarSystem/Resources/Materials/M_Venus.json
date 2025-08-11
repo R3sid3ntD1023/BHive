@@ -1,5 +1,5 @@
 {
-  "Type": "PlanetMaterial",
+  "Type": "LambertMaterial",
   "Handle": "c542e609-5abf-47c6-930e-72978a9ff4de",
   "Name": "M_Venus",
   "TextureSlots": [
@@ -12,6 +12,5 @@
     }
   ],
   "Color": [ 1, 1, 1, 1 ],
-  "Emission": [ 0, 0, 0, 0 ],
-  "Flags": 0
+  "Emission": [ 0, 0, 0, 0 ]
 }

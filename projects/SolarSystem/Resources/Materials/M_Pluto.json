@@ -1,5 +1,5 @@
 {
-  "Type": "PlanetMaterial",
+  "Type": "LambertMaterial",
   "Handle": "f1b6cf1f-f901-40b7-9aec-738aed5a2a38",
   "Name": "M_Pluto",
   "TextureSlots": [
@@ -12,6 +12,5 @@
     }
   ],
   "Color": [ 1, 1, 1, 1 ],
-  "Emission": [ 0, 0, 0, 0 ],
-  "Flags": 0
+  "Emission": [ 0, 0, 0, 0 ]
 }
