@@ -9,8 +9,12 @@ namespace BHive
 	class BHIVE_API AudioContext
 	{
 	public:
-		static void Init();
-		static void Shutdown();
-		static void PrintDeviceInfo();
+		void Init();
+		void Shutdown();
+		void PrintDeviceInfo();
+
+	private:
+		void *mAlContext = nullptr;
+		void *mAudioDevice = nullptr;
 	};
 } // namespace BHive

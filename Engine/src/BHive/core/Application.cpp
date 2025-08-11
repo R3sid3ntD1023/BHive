@@ -1,9 +1,7 @@
 #include "Application.h"
-#include "audio/AudioContext.h"
 #include "FPSCounter.h"
 #include "gfx/RenderCommand.h"
 #include "layers/ImGuiLayer.h"
-#include "physics/PhysicsContext.h"
 #include "renderers/Renderer.h"
 #include "threading/Threading.h"
 #include "Time.h"
@@ -37,7 +35,6 @@ namespace BHive
 
 		RenderCommand::Init();
 		Renderer::Init();
-		PhysicsContext::Init();
 
 		mImGuiLayer = new ImGuiLayer(mWindow->GetNative());
 		PushLayer(mImGuiLayer);

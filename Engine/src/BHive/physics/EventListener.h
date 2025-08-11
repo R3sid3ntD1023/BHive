@@ -2,7 +2,7 @@
 
 #include "core/Core.h"
 #include "core/EventDelegate.h"
-#include "PhysicsCore.h"
+#include <physx/PxPhysicsAPI.h>
 
 namespace BHive
 {

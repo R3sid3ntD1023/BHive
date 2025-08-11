@@ -2,7 +2,9 @@
 
 #include "Application.h"
 #include "audio/AudioContext.h"
+#include "physics/PhysicsContext.h"
 #include "debug/Instrumentor.h"
+#include "subsystem/SubSystem.h"
 #include <Windows.h>
 
 namespace BHive
@@ -15,7 +17,10 @@ namespace BHive
 	int main(int argc, char **argv)
 	{
 		BHive::Log::Init();
-		BHive::AudioContext::Init();
+
+		AddSubSystem<AudioContext>().Init();
+		AddSubSystem<PhysicsContext>().Init();
+
 		BH_PROFILE_BEGIN_SESSION("StartUp", "Profile-StartUp.json");
 		auto app = BHive::CreateApplication({argc, argv});
 
@@ -29,7 +34,8 @@ namespace BHive
 		delete app;
 		BH_PROFILE_END_SESSION();
 
-		BHive::AudioContext::Shutdown();
+		GetSubSystem<PhysicsContext>().Shutdown();
+		GetSubSystem<AudioContext>().Shutdown();
 
 		return 0;
 	}

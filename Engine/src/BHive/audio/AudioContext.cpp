@@ -5,20 +5,17 @@
 
 namespace BHive
 {
-	static ALCcontext *sAlContext = nullptr;
-	static ALCdevice *sAudioDevice = nullptr;
-
 	void AudioContext::Init()
 	{
 		auto mDeviceName = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
-		sAudioDevice = alcOpenDevice(mDeviceName);
+		mAudioDevice = alcOpenDevice(mDeviceName);
 
-		int attributes[] = {0};
-		sAlContext = alcCreateContext(sAudioDevice, attributes);
+		ASSERT(mAudioDevice);
 
-		alcMakeContextCurrent(sAlContext);
+		mAlContext = alcCreateContext((ALCdevice *)mAudioDevice, {0});
 
-		PrintDeviceInfo();
+		ASSERT(mAlContext);
+		ASSERT(alcMakeContextCurrent((ALCcontext *)mAlContext));
 
 		ALfloat listenerPos[] = {0, 0, 0};
 		ALfloat listenerVel[] = {0, 0, 0};
@@ -28,26 +25,31 @@ namespace BHive
 		alListenerfv(AL_ORIENTATION, listenerOri);
 
 		LOG_TRACE("Initialized Audio Context");
+
+#ifdef _DEBUG
+		PrintDeviceInfo();
+#endif
 	}
 
 	void AudioContext::Shutdown()
 	{
 		alcMakeContextCurrent(nullptr);
-		alcDestroyContext(sAlContext);
-		alcCloseDevice(sAudioDevice);
+		alcDestroyContext((ALCcontext *)mAlContext);
+		alcCloseDevice((ALCdevice *)mAudioDevice);
 
-		LOG_TRACE("Closed Audio Context");
+		LOG_TRACE("Shutdown OpenAL Audio");
 	}
 
 	void AudioContext::PrintDeviceInfo()
 	{
 		std::string name;
 		int frequency = 0, sources_max = 0, num_mono_sources = 0, num_stereo_sources = 0;
+		auto device = (ALCdevice *)mAudioDevice;
 
-		alcGetIntegerv(sAudioDevice, ALC_FREQUENCY, 1, &frequency);
-		alcGetIntegerv(sAudioDevice, ALC_MONO_SOURCES, 1, &num_mono_sources);
-		alcGetIntegerv(sAudioDevice, ALC_STEREO_SOURCES, 1, &num_stereo_sources);
-		name = alcGetString(sAudioDevice, ALC_DEFAULT_DEVICE_SPECIFIER);
+		alcGetIntegerv(device, ALC_FREQUENCY, 1, &frequency);
+		alcGetIntegerv(device, ALC_MONO_SOURCES, 1, &num_mono_sources);
+		alcGetIntegerv(device, ALC_STEREO_SOURCES, 1, &num_stereo_sources);
+		name = alcGetString(device, ALC_DEFAULT_DEVICE_SPECIFIER);
 
 #if _DEBUG
 		LOG_INFO("Audio Device Info:");
@@ -57,4 +59,4 @@ namespace BHive
 		LOG_INFO("\t\tStereo: {}", num_stereo_sources);
 #endif
 	}
-}
+} // namespace BHive
