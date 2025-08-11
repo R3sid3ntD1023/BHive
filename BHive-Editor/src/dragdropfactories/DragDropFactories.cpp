@@ -42,7 +42,7 @@ namespace BHive
 	void DragDropStaticMesh::PostCreate(const Ref<Asset> &asset, Ref<GameObject> &object)
 	{
 		if (auto mesh = Cast<StaticMesh>(asset))
-			object->AddComponent<StaticMeshComponent>()->StaticMeshAsset = mesh;
+			object->AddComponent<StaticMeshComponent>()->SetStaticMesh(mesh);
 	}
 
 	bool DragDropPrefab::CanCreate(const rttr::type &type)
