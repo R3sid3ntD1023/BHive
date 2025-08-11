@@ -2,7 +2,6 @@
 
 #include "BufferLayout.h"
 #include "BufferBase.h"
-#include "GFXMacros.h"
 
 namespace BHive
 {

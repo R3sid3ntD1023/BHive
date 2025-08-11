@@ -3,7 +3,6 @@
 #include "core/Core.h"
 #include "asset/Asset.h"
 #include "TextureSpecification.h"
-#include "asset/Asset.h"
 #include "core/Buffer.h"
 
 namespace BHive
@@ -43,9 +42,6 @@ namespace BHive
 		REFLECTABLEV(Asset)
 	};
 
-	REFLECT(Texture)
-	{
-		BEGIN_REFLECT(Texture) REFLECT_PROPERTY_READ_ONLY("Width", GetWidth) REFLECT_PROPERTY_READ_ONLY("Height", GetHeight);
-		rttr::type::register_wrapper_converter_for_base_classes<Ref<Texture>>();
-	}
+	REFLECT_EXTERN(Texture)
+
 } // namespace BHive
