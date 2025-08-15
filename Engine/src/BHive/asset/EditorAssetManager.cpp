@@ -94,20 +94,22 @@ namespace BHive
 
 	bool EditorAssetManager::RemoveAsset(UUID handle)
 	{
+		bool removed = false;
+
 		if (mAssetRegistry.contains(handle))
 		{
 			mAssetRegistry.erase(handle);
 			Serialize();
-			return true;
+			removed |= true;
 		}
 
 		if (mLoadedAssets.contains(handle))
 		{
 			mLoadedAssets.erase(handle);
-			return true;
+			removed |= true;
 		}
 
-		return false;
+		return removed;
 	}
 
 	bool EditorAssetManager::RemoveAsset(const std::filesystem::path &path)
@@ -166,8 +168,7 @@ namespace BHive
 	const FAssetMetaData &EditorAssetManager::GetMetaData(const std::filesystem::path &file) const
 	{
 		static FAssetMetaData sNullMetaData;
-		auto it = std::find_if(
-			mAssetRegistry.begin(), mAssetRegistry.end(), [file](const auto &pair) { return pair.second.Path == file; });
+		auto it = std::find_if(mAssetRegistry.begin(), mAssetRegistry.end(), [file](const auto &pair) { return pair.second.Path == file; });
 
 		if (it != mAssetRegistry.end())
 			return (*it).second;
@@ -178,8 +179,7 @@ namespace BHive
 	FAssetMetaData &EditorAssetManager::GetMetaData(const std::filesystem::path &file)
 	{
 		static FAssetMetaData sNullMetaData;
-		auto it = std::find_if(
-			mAssetRegistry.begin(), mAssetRegistry.end(), [file](const auto &pair) { return pair.second.Path == file; });
+		auto it = std::find_if(mAssetRegistry.begin(), mAssetRegistry.end(), [file](const auto &pair) { return pair.second.Path == file; });
 
 		if (it != mAssetRegistry.end())
 			return (*it).second;
@@ -189,9 +189,7 @@ namespace BHive
 
 	UUID EditorAssetManager::GetHandle(const std::filesystem::path &relative_path) const
 	{
-		auto it = std::find_if(
-			mAssetRegistry.begin(), mAssetRegistry.end(),
-			[=](const auto &pair) { return pair.second.Path == relative_path; });
+		auto it = std::find_if(mAssetRegistry.begin(), mAssetRegistry.end(), [=](const auto &pair) { return pair.second.Path == relative_path; });
 
 		if (it != mAssetRegistry.end())
 			return it->first;

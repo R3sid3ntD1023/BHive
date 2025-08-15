@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.8)
 
+include(FETCHCONTENT)
+
+set(MSDF_ATLAS_BUILD_STANDALONE OFF CACHE BOOL "")
+
 FETCHCONTENT_DECLARE(
 	mINI
 	GIT_REPOSITORY https://github.com/metayeti/mINI.git

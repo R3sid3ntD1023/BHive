@@ -1,12 +1,14 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10)
 
-file(GLOB_RECURSE  EDITOR_SRC CMAKE_CONFIGURE_DEPENDS src/** PARENT_SCOPE)
+set(TARGET_NAME BHive-Editor)
 
-add_executable(BHive-Editor ${EDITOR_SRC})
-set_target_properties(BHive-Editor PROPERTIES
-	CXX_STANDARD 20
-	CXX_STANDARD_REQUIRED YES
-)
-target_compile_definitions(BHive-Editor PUBLIC EDITOR_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/")
-target_link_libraries(BHive-Editor PUBLIC BHive-Engine )
-target_include_directories(BHive-Editor PRIVATE src)
+
+file(GLOB_RECURSE  SOURCE_FILES CMAKE_CONFIGURE_DEPENDS src/**.cpp)
+file(GLOB_RECURSE  HEADER_FILES CMAKE_CONFIGURE_DEPENDS src/**.h)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES} ${SOURCE_FILES})
+
+add_executable(${TARGET_NAME} ${HEADER_FILES} ${SOURCE_FILES})
+
+target_compile_definitions(${TARGET_NAME} PUBLIC EDITOR_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/")
+target_link_libraries(${TARGET_NAME} PUBLIC BHive-Engine )
+target_include_directories(${TARGET_NAME} PRIVATE src)
