@@ -2,7 +2,7 @@
 #include "asset/AssetFactory.h"
 #include "contextmenus/ContextMenus.h"
 #include "core/Application.h"
-#include "core/FileDialog.h"
+#include "core/platform/Platform.h"
 #include "core/layers/ImGuiLayer.h"
 #include "core/subsystem/SubSystem.h"
 #include "core/Window.h"
@@ -22,6 +22,7 @@
 #include "dragdropfactories/DragDropFactory.h"
 #include "core/math/MathFunctionLibrary.h"
 #include "core/math/RayCasting.h"
+#include "project/Project.h"
 
 // windows
 #include "windows/LogWindow.h"
@@ -31,16 +32,17 @@
 #include "windows/HistoryWindow.h"
 #include "windows/AssetWindow.h"
 
+#include "utils/ImageUtils.h"
+
 namespace BHive
 {
-	std::unordered_map<uint8_t, float> sSnapValues = {{ImGuizmo::TRANSLATE, 10.f}, {ImGuizmo::ROTATE, 15.f}, {ImGuizmo::SCALE, .25f}};
+	constexpr const char *cImguiLayoutFilter = "Layout (*ini)\0 *.ini\0";
 
 	void EditorLayer::OnAttach()
 	{
-		if (!Project::GetActive())
-		{
-			Project::New({});
-		}
+		mGizmo.SnapValues[ImGuizmo::TRANSLATE] = glm::vec3{10.f};
+		mGizmo.SnapValues[ImGuizmo::ROTATE] = glm::vec3{15.f};
+		mGizmo.SnapValues[ImGuizmo::SCALE] = glm::vec3{.25f};
 
 		FWorldContentMenu::OnAssetOpenedEvent.bind(
 			[&](const UUID &handle)
@@ -69,7 +71,7 @@ namespace BHive
 		RenderCommand::ClearColor(0.1f, 0.1f, 0.1f);
 
 		float aspect = size.x / (float)size.y;
-		mEditorCamera = EditorCamera(75.f, aspect, .01f, 1000.f);
+		mEditorCamera = EditorCamera(45.f, aspect, .01f, 1000.f);
 
 		AddSubSystem<Selection>();
 		AddSubSystem<ThumbnailCache>();
@@ -79,18 +81,30 @@ namespace BHive
 
 		mSceneHeirarchyPanel = window_system.ConstructWindow<ImSceneHierarchy>();
 
-		CreateWorld();
-
 		mAssetManager = CreateRef<EditorAssetManager>(Project::GetResourceDirectory(), "AssetRegistry.json");
 		AssetManager::SetAssetManager(mAssetManager.get());
 
 		mContentBrowser = window_system.ConstructWindow<EditorContentBrowser<EditorAssetManager>>(Project::GetResourceDirectory());
 
 		SetupDefaultCommands();
+		auto project = Project::GetActive();
+		if (project)
+		{
+			OnProjectOpened();
+		}
+
+		if (!mActiveWorld)
+		{
+			CreateWorld();
+		}
+
+		LoadEditorConfigFile();
 	}
 
 	void EditorLayer::OnDetach()
 	{
+
+		SaveEditorConfigFile();
 	}
 
 	void EditorLayer::OnUpdate(float dt)
@@ -134,8 +148,10 @@ namespace BHive
 
 	void EditorLayer::OnGuiRender()
 	{
-
+		static bool edit_project_opened = false;
 		auto &window_system = SubSystemContext::Get().GetSubSystem<ImWindowSystem>();
+
+		GUI::BeginDockSpace("dockspace");
 
 		if (ImGui::BeginMainMenuBar())
 		{
@@ -163,7 +179,10 @@ namespace BHive
 
 				if (ImGui::MenuItem("Open Project", "Ctrl + P"))
 				{
-					OpenProject();
+					if (auto info = Platform::OpenFile(Project::GetFileFilter()))
+					{
+						OpenProject(info);
+					}
 				}
 				ImGui::EndMenu();
 			}
@@ -172,19 +191,17 @@ namespace BHive
 			{
 				if (ImGui::MenuItem("Save Layout"))
 				{
-					auto path = FileDialogs::SaveFile("Layout (*ini)\0 *.ini\0");
-					if (!path.empty())
+					if (auto info = Platform::SaveFile(cImguiLayoutFilter))
 					{
-						ImGui::SaveIniSettingsToDisk(path.c_str());
+						ImGui::SaveIniSettingsToDisk(info.AsString().c_str());
 					}
 				}
 
 				if (ImGui::MenuItem("Load Layout"))
 				{
-					auto path = FileDialogs::OpenFile("Layout (*ini)\0 *.ini\0");
-					if (!path.empty())
+					if (auto info = Platform::OpenFile(cImguiLayoutFilter))
 					{
-						ImGui::LoadIniSettingsFromDisk(path.c_str());
+						ImGui::LoadIniSettingsFromDisk(info.AsString().c_str());
 					}
 				}
 
@@ -212,31 +229,59 @@ namespace BHive
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("Project"))
+			{
+				if (ImGui::MenuItem("Edit"))
+				{
+					edit_project_opened = true;
+				}
+				ImGui::EndMenu();
+			}
 			ImGui::EndMainMenuBar();
+		}
+
+		if (edit_project_opened)
+		{
+			ImGui::OpenPopup("Edit Project");
+
+			if (ImGui::BeginPopupModal("Edit Project", &edit_project_opened, ImGuiWindowFlags_NoSavedSettings))
+			{
+				auto &config = Project::GetConfiguration();
+
+				auto scene = AssetManager::GetAsset<World>(config.StartScene);
+				if (Inspect::get().inspect("Start Scene", config, scene))
+				{
+					config.StartScene = scene->GetHandle();
+					Project::SaveProject();
+				}
+				ImGui::EndPopup();
+			}
 		}
 
 		Viewport();
 
 		window_system.Update();
+
+		GUI::EndDockSpace();
 	}
 
 	void EditorLayer::SetupDefaultCommands()
 	{
-		mCommands.emplace(FCommand{Key::Q}, [&]() { mGizmoOperation = 0; });
-		mCommands.emplace(FCommand{Key::W}, [&]() { mGizmoOperation = ImGuizmo::TRANSLATE; });
-		mCommands.emplace(FCommand{Key::E}, [&]() { mGizmoOperation = ImGuizmo::ROTATE; });
-		mCommands.emplace(FCommand{Key::R}, [&]() { mGizmoOperation = ImGuizmo::SCALE; });
-		mCommands.emplace(FCommand{Key::T}, [&]() { mGizmoOperation = ImGuizmo::UNIVERSAL; });
-		mCommands.emplace(FCommand{Key::B}, [&]() { mGizmoOperation = ImGuizmo::BOUNDS; });
-		mCommands.emplace(FCommand{Key::L}, [&]() { mGizmoMode = ImGuizmo::LOCAL; });
-		mCommands.emplace(FCommand{Key::K}, [&]() { mGizmoMode = ImGuizmo::WORLD; });
+		mCommands.emplace(FCommand{Key::Q}, [&]() { mGizmo.Operation = 0; });
+		mCommands.emplace(FCommand{Key::W}, [&]() { mGizmo.Operation = ImGuizmo::TRANSLATE; });
+		mCommands.emplace(FCommand{Key::E}, [&]() { mGizmo.Operation = ImGuizmo::ROTATE; });
+		mCommands.emplace(FCommand{Key::R}, [&]() { mGizmo.Operation = ImGuizmo::SCALE; });
+		mCommands.emplace(FCommand{Key::T}, [&]() { mGizmo.Operation = ImGuizmo::UNIVERSAL; });
+		mCommands.emplace(FCommand{Key::B}, [&]() { mGizmo.Operation = ImGuizmo::BOUNDS; });
+		mCommands.emplace(FCommand{Key::L}, [&]() { mGizmo.Mode = ImGuizmo::LOCAL; });
+		mCommands.emplace(FCommand{Key::K}, [&]() { mGizmo.Mode = ImGuizmo::WORLD; });
 
 		mCommands.emplace(FCommand{Key::O, Mod::Control}, [&]() { LoadWorld(); });
 		mCommands.emplace(FCommand{Key::N, Mod::Control}, [&]() { CreateWorld(); });
 		mCommands.emplace(FCommand{Key::S, Mod::Control}, [&]() { SaveWorld(); });
 		mCommands.emplace(FCommand{Key::S, Mod::Control_Shift}, [&]() { SaveWorldAs(); });
-		mCommands.emplace(FCommand{Key::Z, Mod::Control}, []() { GetSubSystem<UndoRedo>().undo(); });
-		mCommands.emplace(FCommand{Key::Y, Mod::Control}, []() { GetSubSystem<UndoRedo>().redo(); });
+		mCommands.emplace(FCommand{Key::Z, Mod::Control}, []() { GetSubSystem<UndoRedo>().Undo(); });
+		mCommands.emplace(FCommand{Key::Y, Mod::Control}, []() { GetSubSystem<UndoRedo>().Redo(); });
 	}
 
 	bool EditorLayer::OnWindowResize(WindowResizeEvent &e)
@@ -289,25 +334,31 @@ namespace BHive
 
 		auto &window = Application::Get().GetWindow();
 		window.SetTitle(mCurrentWorldPath.stem().string());
+
+		auto path = Project::GetProjectDirectory() / "snapshot.png";
+		ImageUtils::SaveImage(path, mRenderer->GetFramebuffer(), 0);
 	}
 
 	void EditorLayer::SaveWorldAs()
 	{
-		auto path = FileDialogs::SaveFile(AssetFactory::GetFileFilters());
-		if (path.empty())
-			return;
-
-		AssetFactory::Export(mEditorWorld, path);
-		mCurrentWorldPath = path;
-		mAssetManager->ImportAsset(mCurrentWorldPath, rttr::type::get<World>(), mEditorWorld->GetHandle());
+		if (auto info = Platform::SaveFile(AssetFactory::GetFileFilters()))
+		{
+			AssetFactory::Export(mEditorWorld, info);
+			mCurrentWorldPath = info;
+			mAssetManager->ImportAsset(mCurrentWorldPath, rttr::type::get<World>(), mEditorWorld->GetHandle());
+		}
 	}
 
 	void EditorLayer::LoadWorld()
 	{
-		auto path = FileDialogs::OpenFile(AssetFactory::GetFileFilters());
-		if (path.empty())
-			return;
+		if (auto info = Platform::OpenFile(AssetFactory::GetFileFilters()))
+		{
+			LoadWorld(info);
+		}
+	}
 
+	void EditorLayer::LoadWorld(const std::filesystem::path &path)
+	{
 		Ref<Asset> asset = mEditorWorld;
 		AssetFactory::Import(asset, path);
 
@@ -325,20 +376,59 @@ namespace BHive
 		mSceneHeirarchyPanel->SetContext(mActiveWorld);
 	}
 
-	void EditorLayer::OpenProject()
+	void EditorLayer::LoadLibrary(const std::string &lib)
 	{
-		auto project_path = FileDialogs::OpenFile("BHive-Project (*proj)\0 *.proj\0");
-		if (!project_path.empty())
-		{
-			Project::LoadProject(project_path);
-		}
+		rttr::library project_lib(lib);
+		if (project_lib.is_loaded())
+			project_lib.unload();
 
+		if (project_lib.load())
+			LOG_INFO("Loaded Plugin Library {}", lib);
+	}
+
+	void EditorLayer::OpenProject(const std::filesystem::path &path)
+	{
+		auto proj = Project::LoadProject(path);
+		OnProjectOpened();
+	}
+
+	void EditorLayer::OnProjectOpened()
+	{
 		auto project_name = Project::GetProjectName();
-		mProjectLib = new rttr::library(project_name);
-		if (!mProjectLib->is_loaded())
+		const auto resouce_directory = Project::GetResourceDirectory();
+
+		LoadLibrary(project_name);
+
+		// reload content browser directory
+		mContentBrowser->SetBaseDirectory(resouce_directory);
+		mAssetManager = CreateRef<EditorAssetManager>(resouce_directory, "AssetRegistry.json");
+		AssetManager::SetAssetManager(mAssetManager.get());
+
+		const auto &config = Project::GetConfiguration();
+		if (config.StartScene)
 		{
-			mProjectLib->load();
+			auto &meta_data = mAssetManager->GetMetaData(config.StartScene);
+			LoadWorld(resouce_directory / meta_data.Path);
 		}
+	}
+
+	void EditorLayer::LoadEditorConfigFile()
+	{
+		auto config = Project::GetProjectDirectory() / "EditorConfig.json";
+		if (std::filesystem::exists(config))
+		{
+			std::ifstream in(config, std::ios::in);
+			cereal::JSONInputArchive ar(in);
+			ar(*this);
+		}
+	}
+
+	void EditorLayer::SaveEditorConfigFile()
+	{
+		auto config = Project::GetProjectDirectory() / "EditorConfig.json";
+		std::ofstream out(config, std::ios::out);
+		cereal::JSONOutputArchive ar(out);
+		ar(*this);
 	}
 
 	void EditorLayer::Viewport()
@@ -378,28 +468,24 @@ namespace BHive
 				auto &selection = SubSystemContext::Get().GetSubSystem<Selection>();
 				auto selected_object = selection.GetSelection();
 
-				ImGuizmo::SetOrthographic(false);
+				ImGuizmo::SetOrthographic(mEditorCamera.GetProjectionType() != EProjectionType::Perspective);
 				ImGuizmo::SetDrawlist();
 				ImGuizmo::SetRect(mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x, mViewportBounds[1].y - mViewportBounds[0].y);
 
-				if (selected_object && mGizmoOperation != -1 && !mActiveWorld->IsRunning())
+				if (selected_object && mGizmo.Operation != -1 && !mActiveWorld->IsRunning())
 				{
 
-					glm::mat4 local_transform = selected_object->GetLocalTransform().to_mat4();
 					glm::mat4 world_transform = selected_object->GetWorldTransform();
 
-					float snap_value = mSnappingEnabled ? sSnapValues[(ImGuizmo::OPERATION)mGizmoOperation] : 0.0f;
-					float snap_values[3] = {snap_value, snap_value, snap_value};
+					auto snap_value = mGizmo.IsSnappingEnabled ? mGizmo.SnapValues[(ImGuizmo::OPERATION)mGizmo.Operation] : glm::vec3{0.0f};
 
-					glm::mat4 delta{1.f};
+					glm::mat4 delta{1.0f};
 
-					ImGuizmo::Manipulate(&view[0][0], &projection[0][0], (ImGuizmo::OPERATION)mGizmoOperation, (ImGuizmo::MODE)mGizmoMode, &local_transform[0][0], &delta[0][0], snap_values);
+					ImGuizmo::Manipulate(&view[0][0], &projection[0][0], (ImGuizmo::OPERATION)mGizmo.Operation, (ImGuizmo::MODE)mGizmo.Mode, &world_transform[0][0], &delta[0][0], &snap_value.x);
 
 					if (ImGuizmo::IsUsing())
 					{
-						glm::mat4 parent_transform = glm::inverse(world_transform) * local_transform * delta;
-						glm::mat4 new_transform = glm::inverse(parent_transform) * world_transform;
-
+						glm::mat4 local_transform = delta * selected_object->GetLocalTransform().to_mat4();
 						selected_object->SetLocalTransform(local_transform);
 					}
 				}
@@ -491,8 +577,8 @@ namespace BHive
 				ImGui::EndPopup();
 			}
 
-			ImGui::RadioButton("Local", &mGizmoMode, ImGuizmo::LOCAL);
-			ImGui::RadioButton("World", &mGizmoMode, ImGuizmo::WORLD);
+			ImGui::RadioButton("Local", &mGizmo.Mode, ImGuizmo::LOCAL);
+			ImGui::RadioButton("World", &mGizmo.Mode, ImGuizmo::WORLD);
 
 			ImGui::SetCursorPosX((width * .5f) - (3 * icon_size + spacing * 3.f));
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);

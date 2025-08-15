@@ -11,7 +11,7 @@ namespace BHive
 		{
 			auto world_transform = GetOwner()->GetWorldTransform();
 			MeshRenderer::DrawMesh(mStaticMeshAsset, mOverrideMaterials, world_transform);
-			LineRenderer::DrawAABB(mStaticMeshAsset->GetBoundingBox(), Colors::Red, world_transform);
+			// LineRenderer::DrawAABB(mStaticMeshAsset->GetBoundingBox(), Colors::Red, world_transform);
 		}
 	}
 
@@ -22,7 +22,7 @@ namespace BHive
 
 	void StaticMeshComponent::Load(cereal::BinaryInputArchive &ar)
 	{
-		ar(TAssetHandle(mStaticMeshAsset));
+		ar(mOverrideMaterials, TAssetHandle(mStaticMeshAsset));
 	}
 
 	void StaticMeshComponent::Save(cereal::JSONOutputArchive &ar) const
@@ -38,7 +38,8 @@ namespace BHive
 	void StaticMeshComponent::SetStaticMesh(const Ref<StaticMesh> &mesh)
 	{
 		mStaticMeshAsset = mesh;
-		mOverrideMaterials = mesh->GetMaterialTable();
+		if (mesh)
+			mOverrideMaterials = mesh->GetMaterialTable();
 	}
 
 	REFLECT(StaticMeshComponent)

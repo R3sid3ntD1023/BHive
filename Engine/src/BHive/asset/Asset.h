@@ -17,6 +17,10 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar);
 
+		virtual void Save(cereal::JSONOutputArchive &ar) const;
+
+		virtual void Load(cereal::JSONInputArchive &ar);
+
 		void SetName(const std::string &name) { mName = name; }
 
 		const std::string &GetName() const { return mName; }

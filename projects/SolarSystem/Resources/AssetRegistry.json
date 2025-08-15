@@ -1,0 +1,220 @@
+{
+    "Assets": [
+        {
+            "key": "61d121d6-c669-41d3-b0c4-6c1e9c0dc18e",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Assets\\Textures\\Earth.asset",
+                "Name": "Earth"
+            }
+        },
+        {
+            "key": "ca097dbf-87b4-46b0-964f-d41ebac1e55b",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Assets\\Textures\\Mars.asset",
+                "Name": "Mars"
+            }
+        },
+        {
+            "key": "0f8f604c-605a-421f-b37c-cfa7ad470750",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Assets\\Textures\\Jupiter.asset",
+                "Name": "Jupiter"
+            }
+        },
+        {
+            "key": "201aa927-8ff5-4162-baac-c4cb63d08c53",
+            "value": {
+                "Type": "LambertMaterial",
+                "Path": "Assets\\Materials\\M_Pluto.asset",
+                "Name": "M_Pluto"
+            }
+        },
+        {
+            "key": "a870b7f7-affa-40cb-b009-24b6ca1c059f",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Assets\\Textures\\Saturn.asset",
+                "Name": "Saturn"
+            }
+        },
+        {
+            "key": "010c23a4-4fdf-4aad-8bfd-8ef5931dced8",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Assets\\Textures\\Mercury.asset",
+                "Name": "Mercury"
+            }
+        },
+        {
+            "key": "d6a279b2-8156-4cdd-8855-42691d650c1d",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Assets\\Textures\\Neptune.asset",
+                "Name": "Neptune"
+            }
+        },
+        {
+            "key": "cc635ef3-f381-4963-a60e-3148b8ba9795",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Assets\\Textures\\Pluto.asset",
+                "Name": "Pluto"
+            }
+        },
+        {
+            "key": "c4b647db-f239-403f-bd73-a91a9a141162",
+            "value": {
+                "Type": "LambertMaterial",
+                "Path": "Assets\\Materials\\M_Uranus.asset",
+                "Name": "M_Uranus"
+            }
+        },
+        {
+            "key": "58a4ddac-befd-4666-90c9-a08a83228575",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Assets\\Textures\\Charon.asset",
+                "Name": "Charon"
+            }
+        },
+        {
+            "key": "224352b3-c8b9-45fd-8375-973dd647528c",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Assets\\Textures\\Uranus.asset",
+                "Name": "Uranus"
+            }
+        },
+        {
+            "key": "d055aee2-7875-410f-a2c7-3a91029387db",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Assets\\Textures\\Venus.asset",
+                "Name": "Venus"
+            }
+        },
+        {
+            "key": "6e837622-bff7-4fb4-967d-5345f82843da",
+            "value": {
+                "Type": "StaticMesh",
+                "Path": "Assets\\Meshes\\sphere.asset",
+                "Name": "sphere"
+            }
+        },
+        {
+            "key": "71b6c04d-8d4a-46f8-8cfb-7ebffb5130d5",
+            "value": {
+                "Type": "BDRFMaterial",
+                "Path": "Assets\\Meshes\\sphere(0).asset",
+                "Name": "sphere(0)"
+            }
+        },
+        {
+            "key": "726eefbd-0bab-40b9-bd78-a076a3326a34",
+            "value": {
+                "Type": "LambertMaterial",
+                "Path": "Assets\\Materials\\M_Earth.asset",
+                "Name": "M_Earth"
+            }
+        },
+        {
+            "key": "0e621d75-901b-4186-b24d-739277060184",
+            "value": {
+                "Type": "World",
+                "Path": "Assets\\Scenes\\SolarSystem.asset",
+                "Name": "SolarSystem"
+            }
+        },
+        {
+            "key": "e453c5fb-6374-4242-a013-5d2fd6fdff42",
+            "value": {
+                "Type": "LambertMaterial",
+                "Path": "Assets\\Materials\\M_Venus.asset",
+                "Name": "M_Venus"
+            }
+        },
+        {
+            "key": "98659b30-66e9-426a-a0cc-f93bc95ebc0c",
+            "value": {
+                "Type": "LambertMaterial",
+                "Path": "Assets\\Materials\\M_Mercury.asset",
+                "Name": "M_Mercury"
+            }
+        },
+        {
+            "key": "1a1baf2c-9d54-413f-bf60-95e99f54eb6c",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Assets\\Textures\\white.asset",
+                "Name": "white"
+            }
+        },
+        {
+            "key": "49097c9b-dffd-4bae-afa9-0bfaa564812a",
+            "value": {
+                "Type": "LambertMaterial",
+                "Path": "Assets\\Materials\\M_Moon.asset",
+                "Name": "M_Moon"
+            }
+        },
+        {
+            "key": "f1309b7b-73dd-4297-9478-f1398b4f9471",
+            "value": {
+                "Type": "LambertMaterial",
+                "Path": "Assets\\Materials\\M_Mars.asset",
+                "Name": "M_Mars"
+            }
+        },
+        {
+            "key": "b8f6eed3-c37f-4c42-a306-5feec4e9e9d2",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Assets\\Textures\\Moon.asset",
+                "Name": "Moon"
+            }
+        },
+        {
+            "key": "0bc47b91-83be-4c5d-8b48-ecb83a36d465",
+            "value": {
+                "Type": "EmissiveMaterial",
+                "Path": "Assets\\Materials\\M_Sun.asset",
+                "Name": "M_Sun"
+            }
+        },
+        {
+            "key": "e2df2b29-3323-465a-b088-0c507edd628b",
+            "value": {
+                "Type": "LambertMaterial",
+                "Path": "Assets\\Materials\\M_Jupiter.asset",
+                "Name": "M_Jupiter"
+            }
+        },
+        {
+            "key": "2e14e893-48b5-4db7-8c32-160ba47da9b0",
+            "value": {
+                "Type": "LambertMaterial",
+                "Path": "Assets\\Materials\\M_Saturn.asset",
+                "Name": "M_Saturn"
+            }
+        },
+        {
+            "key": "7ce7e4e0-9da3-4aaf-b91c-d86209e07c1b",
+            "value": {
+                "Type": "LambertMaterial",
+                "Path": "Assets\\Materials\\M_Charon.asset",
+                "Name": "M_Charon"
+            }
+        },
+        {
+            "key": "6b91c5b9-feb7-440d-9ea1-6017978651d2",
+            "value": {
+                "Type": "LambertMaterial",
+                "Path": "Assets\\Materials\\M_Neptune.asset",
+                "Name": "M_Neptune"
+            }
+        }
+    ]
+}

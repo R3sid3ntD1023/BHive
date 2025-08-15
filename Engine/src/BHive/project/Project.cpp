@@ -18,26 +18,64 @@ namespace BHive
 	{
 		sActiveProject = CreateRef<Project>();
 
-		std::ifstream in(path, std::ios::in);
-		if (in)
+		try
 		{
+			std::ifstream in(path, std::ios::in);
 			cereal::JSONInputArchive ar(in);
-			sActiveProject->mConfig.Serialize(ar);
+			ar(sActiveProject->mConfig);
+		}
+		catch (const std::exception &e)
+		{
+			LOG_ERROR("Project Load ERROR : {}", e.what());
+			return nullptr;
 		}
 
 		return sActiveProject;
 	}
 
-	bool Project::SaveProject(const std::filesystem::path &path)
+	bool Project::SaveProject()
 	{
 		ASSERT(sActiveProject);
 
-		std::ofstream out(path, std::ios::out);
+		auto &config = sActiveProject->GetConfiguration();
+		std::ofstream out(config.ProjectDirectory / (config.Name + ".proj"), std::ios::out);
 		if (!out)
 			return false;
 
-		cereal::JSONOutputArchive ar(out);
-		sActiveProject->mConfig.Serialize(ar);
+		try
+		{
+			cereal::JSONOutputArchive ar(out);
+			ar(config);
+
+			LOG_INFO("Saved {} project sucessfully!", config.Name);
+		}
+		catch (const std::exception &e)
+		{
+			LOG_ERROR("Project Save ERROR : {}", e.what());
+			return false;
+		}
+
+		return true;
+	}
+
+	bool Project::SaveProject(const FProjectConfiguration &config)
+	{
+		std::ofstream out(config.ProjectDirectory / (config.Name + ".proj"), std::ios::out);
+		if (!out)
+			return false;
+
+		try
+		{
+			cereal::JSONOutputArchive ar(out);
+			ar(config);
+
+			LOG_INFO("Created {} project sucessfully!", config.Name);
+		}
+		catch (const std::exception &e)
+		{
+			LOG_ERROR("Project Save ERROR : {}", e.what());
+			return false;
+		}
 
 		return true;
 	}

@@ -1,5 +1,4 @@
 #include "asset/EditorAssetManager.h"
-#include "core/FileDialog.h"
 #include "gfx/Texture.h"
 #include "SpriteEditor.h"
 

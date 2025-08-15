@@ -32,9 +32,18 @@ namespace BHive
 		Project(const FProjectConfiguration &config);
 
 		static Ref<Project> New(const FProjectConfiguration &config);
+
 		static Ref<Project> GetActive() { return sActiveProject; }
+
 		static Ref<Project> LoadProject(const std::filesystem::path &path);
-		static bool SaveProject(const std::filesystem::path &path);
+
+		static bool SaveProject();
+
+		static bool SaveProject(const FProjectConfiguration &config);
+
+		static const char *GetFileFilter() { return "BHProj (*bhproj)\0 *.bhproj\0"; }
+
+		static const char *GetExtension() { return ".bhproj"; }
 
 		static std::string GetProjectName()
 		{

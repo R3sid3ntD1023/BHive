@@ -2,26 +2,26 @@
 
 namespace BHive
 {
-	void UndoRedo::add_history_command(const std::string &name, ICommand *cmd)
+	void UndoRedo::AddCommand(const std::string &name, const std::shared_ptr<ICommand> &cmd)
 	{
 		if (mCommandPtr < mCommandSize - 1)
 		{
 			for (int i = mCommandSize - 1; i > mCommandPtr; i--)
 			{
-				delete mCommands[i];
+				mCommands[i] = {};
 			}
 
 			mCommandSize = mCommandPtr + 1;
 		}
 
-		mCommands[mCommandSize] = new FCommand{name, cmd};
+		mCommands[mCommandSize] = {name, cmd};
 		mCommandSize++;
 
-		if (mCommandSize > 1 && mCommands[mCommandSize - 1]->Command->can_merge() && mCommands[mCommandSize - 2]->Command->can_merge())
+		if (mCommandSize > 1 && mCommands[mCommandSize - 1].Command->CanMerge() && mCommands[mCommandSize - 2].Command->CanMerge())
 		{
-			if (mCommands[mCommandSize - 1]->Command->merge(mCommands[mCommandSize - 2]->Command))
+			if (mCommands[mCommandSize - 1].Command->Merge(mCommands[mCommandSize - 2].Command))
 			{
-				delete mCommands[mCommandSize - 1];
+				mCommands[mCommandSize - 1] = {};
 				mCommandSize--;
 			}
 		}
@@ -31,42 +31,39 @@ namespace BHive
 		LOG_TRACE("Added Command : {}", name);
 	}
 
-	void UndoRedo::undo()
+	void UndoRedo::Undo()
 	{
 
 		if (mCommandPtr >= 0)
 		{
-			mCommands[mCommandPtr]->Command->on_undo();
+			mCommands[mCommandPtr].Command->OnUndo();
 			mCommandPtr--;
 		}
 	}
 
-	void UndoRedo::redo()
+	void UndoRedo::Redo()
 	{
 		int command = mCommandPtr + 1;
 		if (command < mCommandSize && command >= 0)
 		{
-			mCommands[command]->Command->on_redo();
+			mCommands[command].Command->OnRedo();
 			mCommandPtr++;
 		}
 	}
 
-	void UndoRedo::clear()
+	void UndoRedo::Clear()
 	{
-		for (uint16_t i = 0; i < mCommandSize; i++)
-		{
-			delete mCommands[i];
-		}
+		mCommands.clear();
 	}
 
-	UndoRedo::Iterator UndoRedo::begin()
+	UndoRedo::CommandList::iterator UndoRedo::begin()
 	{
-		return Iterator(&mCommands[0]);
+		return mCommands.begin();
 	}
 
-	UndoRedo::Iterator UndoRedo::end()
+	UndoRedo::CommandList::iterator UndoRedo::end()
 	{
-		return Iterator(&mCommands[mCommandSize]);
+		return mCommands.begin() + mCommandSize;
 	}
 
 } // namespace BHive

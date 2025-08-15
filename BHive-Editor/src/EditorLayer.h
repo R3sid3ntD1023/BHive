@@ -15,6 +15,20 @@ namespace BHive
 	class SceneRenderer;
 	class ImSceneHierarchy;
 
+	struct FGizmoData
+	{
+		int32_t Operation = 0;
+		int32_t Mode = 0;
+		int32_t IsSnappingEnabled{0};
+		std::unordered_map<uint8_t, glm::vec3> SnapValues;
+
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(MAKE_NVP(Operation), MAKE_NVP(Mode), MAKE_NVP(IsSnappingEnabled), MAKE_NVP(SnapValues));
+		}
+	};
+
 	class EditorLayer : public Layer
 	{
 	private:
@@ -33,15 +47,11 @@ namespace BHive
 		glm::ivec2 mViewportBounds[2] = {};
 		bool mViewportHovered{false}, mViewportFocused{false};
 
-		int32_t mGizmoOperation = 0;
-		int32_t mGizmoMode = 0;
-		bool mSnappingEnabled{false};
-
 		std::unordered_map<FCommand, std::function<void()>> mCommands;
 
 		std::filesystem::path mCurrentWorldPath = "";
 
-		rttr::library *mProjectLib = nullptr;
+		FGizmoData mGizmo;
 
 	public:
 		void OnAttach() override;
@@ -51,6 +61,12 @@ namespace BHive
 		void OnGuiRender() override;
 		void SetupDefaultCommands();
 
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(MAKE_NVP("Camera", mEditorCamera), MAKE_NVP("Gizmo", mGizmo));
+		}
+
 	private:
 		bool OnWindowResize(WindowResizeEvent &e);
 		bool OnKeyEvent(KeyEvent &e);
@@ -59,9 +75,14 @@ namespace BHive
 		void SaveWorld();
 		void SaveWorldAs();
 		void LoadWorld();
+		void LoadWorld(const std::filesystem::path &path);
 		void SetActiveWorld(const Ref<World> &world);
+		void LoadLibrary(const std::string &lib);
 
-		void OpenProject();
+		void OpenProject(const std::filesystem::path &path);
+		void OnProjectOpened();
+		void LoadEditorConfigFile();
+		void SaveEditorConfigFile();
 
 #pragma region GUI
 		void ViewportGUI();

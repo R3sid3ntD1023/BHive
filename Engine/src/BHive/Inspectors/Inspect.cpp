@@ -16,10 +16,6 @@
 #include "InspectorComponent.h"
 #include "asset_inspectors/asset_inspectors.h"
 
-#include "undoredo/UndoRedo.h"
-#include "undoredo/Commands.h"
-#include "core/subsystem/SubSystem.h"
-
 namespace BHive
 {
 	struct InspectorRegistry
@@ -176,7 +172,6 @@ namespace BHive
 		rttr::variant prop_var = property.get_value(object);
 		rttr::variant original_var = prop_var;
 		rttr::instance prop_object = prop_var;
-		rttr::instance obj_instance = object;
 		auto type = get_instance_type(prop_object);
 		auto inspector = InspectorRegistry::get().get_inspector(type);
 		bool is_read_only = property.is_readonly() || read_only;
@@ -207,7 +202,7 @@ namespace BHive
 
 			if (changed && !is_read_only)
 			{
-				GetSubSystem<UndoRedo>().add_history_command(std::format("{} Property Changed", property.get_name().data()), new FCommandProperty(object, property, prop_var));
+				GetSubSystem<UndoRedo>().AddCommand<CommandProperty>(std::format("Changed Property {}", property.get_name().data()), object, property, prop_var);
 				property.set_value(object, prop_var);
 			}
 		}

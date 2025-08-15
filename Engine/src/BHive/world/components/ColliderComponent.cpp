@@ -1,7 +1,7 @@
 #include "ColliderComponent.h"
 #include "GameObject.h"
 #include "physics/PhysicsContext.h"
-#include "Physics/PhysicsCore.h"
+#include "core/subsystem/SubSystem.h"
 
 namespace BHive
 {
@@ -31,14 +31,12 @@ namespace BHive
 	}
 	void ColliderComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(CollisionEnabled, Offset, Color, IsTrigger, CollisionChannel, CollisionChannelMasks,
-		   TAssetHandle(PhysicsMaterial));
+		ar(CollisionEnabled, Offset, Color, IsTrigger, CollisionChannel, CollisionChannelMasks, TAssetHandle(PhysicsMaterial));
 	}
 
 	void ColliderComponent::Load(cereal::BinaryInputArchive &ar)
 	{
-		ar(CollisionEnabled, Offset, Color, IsTrigger, CollisionChannel, CollisionChannelMasks,
-		   TAssetHandle(PhysicsMaterial));
+		ar(CollisionEnabled, Offset, Color, IsTrigger, CollisionChannel, CollisionChannelMasks, TAssetHandle(PhysicsMaterial));
 	}
 
 	void BHive::ColliderComponent::CreateCollsionShape(void *rb, const FTransform &transform)
@@ -50,7 +48,8 @@ namespace BHive
 		if (!geo)
 			return;
 
-		auto physcs = PhysicsContext::GetPhysics();
+		auto physcs = (physx::PxPhysics *)GetSubSystem<PhysicsContext>().GetPhysics();
+
 		physx::PxMaterial *material = physcs->createMaterial(1.f, 1.0f, 0.f);
 
 		if (PhysicsMaterial)
@@ -109,11 +108,9 @@ namespace BHive
 	REFLECT(ECollisionChannel)
 	{
 		BEGIN_REFLECT_ENUM(ECollisionChannel)
-		(ENUM_VALUE(CollisionChannel_None), ENUM_VALUE(CollisionChannel_0), ENUM_VALUE(CollisionChannel_1),
-		 ENUM_VALUE(CollisionChannel_2), ENUM_VALUE(CollisionChannel_3), ENUM_VALUE(CollisionChannel_4),
-		 ENUM_VALUE(CollisionChannel_5), ENUM_VALUE(CollisionChannel_6), ENUM_VALUE(CollisionChannel_7),
-		 ENUM_VALUE(CollisionChannel_8), ENUM_VALUE(CollisionChannel_9), ENUM_VALUE(CollisionChannel_10),
-		 ENUM_VALUE(CollisionChannel_11), ENUM_VALUE(CollisionChannel_12), ENUM_VALUE(CollisionChannel_13),
-		 ENUM_VALUE(CollisionChannel_14), ENUM_VALUE(CollisionChannel_All));
+		(ENUM_VALUE(CollisionChannel_None), ENUM_VALUE(CollisionChannel_0), ENUM_VALUE(CollisionChannel_1), ENUM_VALUE(CollisionChannel_2), ENUM_VALUE(CollisionChannel_3),
+		 ENUM_VALUE(CollisionChannel_4), ENUM_VALUE(CollisionChannel_5), ENUM_VALUE(CollisionChannel_6), ENUM_VALUE(CollisionChannel_7), ENUM_VALUE(CollisionChannel_8), ENUM_VALUE(CollisionChannel_9),
+		 ENUM_VALUE(CollisionChannel_10), ENUM_VALUE(CollisionChannel_11), ENUM_VALUE(CollisionChannel_12), ENUM_VALUE(CollisionChannel_13), ENUM_VALUE(CollisionChannel_14),
+		 ENUM_VALUE(CollisionChannel_All));
 	}
 } // namespace BHive

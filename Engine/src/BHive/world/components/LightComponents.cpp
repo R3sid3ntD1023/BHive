@@ -38,6 +38,16 @@ namespace BHive
 		ar(mLight);
 	}
 
+	void PointLightComponent::Save(cereal::JSONOutputArchive &ar) const
+	{
+		ar(MAKE_NVP("Light", mLight));
+	}
+
+	void PointLightComponent::Load(cereal::JSONInputArchive &ar)
+	{
+		ar(MAKE_NVP("Light", mLight));
+	}
+
 	void SpotLightComponent::Render()
 	{
 		auto owner = GetOwner();

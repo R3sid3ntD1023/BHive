@@ -6,7 +6,7 @@
 #include "renderers/Renderer.h"
 #include "World.h"
 #include <physx/PxPhysicsAPI.h>
-#include "core/serialization/IncludeExternal.h"
+#include "core/subsystem/SubSystem.h"
 
 namespace BHive
 {
@@ -130,16 +130,9 @@ namespace BHive
 		size_t num_objects = 0;
 		ar(cereal::make_size_tag(num_objects));
 
-		// TODO: remove is valid
 		for (size_t i = 0; i < num_objects; i++)
 		{
-			bool is_valid = false;
 			rttr::type obj_type = InvalidType;
-
-			ar(is_valid);
-
-			if (!is_valid)
-				continue;
 
 			ar(obj_type);
 
@@ -239,9 +232,7 @@ namespace BHive
 		for (auto &object : mObjects)
 			object.second->Render();
 
-#ifdef WITH_BHIVE_EDITOR
 		RenderPhysicsWorld();
-#endif // DEBUG
 	}
 
 	void World::End()
@@ -258,7 +249,8 @@ namespace BHive
 	{
 
 		// physx
-		auto physics = PhysicsContext::GetPhysics();
+		auto physics = (physx::PxPhysics *)GetSubSystem<PhysicsContext>().GetPhysics();
+
 		physx::PxSceneDesc sceneDesc(physics->getTolerancesScale());
 		sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 
@@ -312,19 +304,19 @@ namespace BHive
 			{
 			case EBodyType::Static:
 			{
-				auto body = physics->createRigidStatic(physics::utils::Convert(t));
+				auto body = physics->createRigidStatic(PhysicsUtils::Convert(t));
 				rigid_body = body;
 			}
 			break;
 			case EBodyType::Dynamic:
 			case EBodyType::Kinematic:
 			{
-				auto body = physics->createRigidDynamic(physics::utils::Convert(t));
+				auto body = physics->createRigidDynamic(PhysicsUtils::Convert(t));
 				body->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, settings.BodyType == EBodyType::Kinematic);
 				body->setAngularDamping(settings.AngularDamping);
 				body->setLinearDamping(settings.LinearDamping);
 				body->setMass(settings.Mass);
-				body->setRigidDynamicLockFlags(physics::utils::GetLockFlags(settings.LinearLockAxis, settings.AngularLockAxis));
+				body->setRigidDynamicLockFlags(PhysicsUtils::GetLockFlags(settings.LinearLockAxis, settings.AngularLockAxis));
 				body->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, !settings.GravityEnabled);
 				rigid_body = body;
 			}

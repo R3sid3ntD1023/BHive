@@ -16,9 +16,9 @@ namespace BHive
 		{
 		}
 
-		virtual void on_undo() override { mComponentType.get_method(REMOVE_COMPONENT_FUNCTION_NAME).invoke({mObj}); }
+		virtual void OnUndo() override { mComponentType.get_method(REMOVE_COMPONENT_FUNCTION_NAME).invoke({mObj}); }
 
-		virtual void on_redo() override { mComponentType.get_method(ADD_COMPONENT_FUNCTION_NAME).invoke({mObj}); }
+		virtual void OnRedo() override { mComponentType.get_method(ADD_COMPONENT_FUNCTION_NAME).invoke({mObj}); }
 
 	private:
 		GameObject *mObj;
@@ -86,7 +86,7 @@ namespace BHive
 				{
 					type.get_method(ADD_COMPONENT_FUNCTION_NAME).invoke({data});
 
-					GetSubSystem<UndoRedo>().add_history_command<FCommandAddComponent>("Add Component", data, type);
+					GetSubSystem<UndoRedo>().AddCommand<FCommandAddComponent>("Add Component", data, type);
 
 					changed |= true;
 				}

@@ -30,6 +30,12 @@ namespace BHive
 
 		virtual void Resize(uint32_t w, uint32_t h) override;
 
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(MAKE_NVP("Transform", mTransform));
+		}
+
 	public:
 		float ZoomSpeed() const;
 		glm::vec2 PanSpeed() const;

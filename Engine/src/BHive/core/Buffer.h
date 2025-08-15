@@ -7,6 +7,8 @@ namespace BHive
 	template <typename T>
 	struct TBuffer
 	{
+		static constexpr size_t ValueSize = sizeof(T);
+
 	private:
 		T *mData = nullptr;
 		uint64_t mSize = 0;

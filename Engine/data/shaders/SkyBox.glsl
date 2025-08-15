@@ -1,20 +1,9 @@
 #type vertex
 #version 460 core
 
-layout(location = 0) in vec3 vPosition;
-
-layout(std140, binding = 0) uniform ObjectBuffer
-{
-	mat4 u_projection;
-	mat4 u_view;
-    vec2 u_near_far;
-};
-
-layout(location = 0) out struct vertex_output
-{
-	vec3 position;
-} vs_out;
-
+#include <params/position_param.glsl>
+#include <buffers/object_buffer.glsl>
+#include <CommonParamsVert.glsl>
 
 void main()
 {

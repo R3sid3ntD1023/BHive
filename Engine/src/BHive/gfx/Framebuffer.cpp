@@ -11,8 +11,7 @@ namespace BHive
 {
 	static const uint32_t sMaxFramebufferSize = 8192;
 
-	Ref<Texture>
-	CreateFramebufferTexture(ETextureType type, uint32_t w, uint32_t h, uint32_t d, uint32_t samples, FFramebufferTexture specification)
+	Ref<Texture> CreateFramebufferTexture(ETextureType type, uint32_t w, uint32_t h, uint32_t d, uint32_t samples, FFramebufferTexture specification)
 	{
 		if (samples > 1 && type == ETextureType::TEXTURE_2D)
 			return CreateRef<Texture2DMultisample>(w, h, samples, specification.mSpecification);
@@ -115,28 +114,27 @@ namespace BHive
 			glNamedFramebufferReadBuffer(read_target, GL_COLOR_ATTACHMENT0 + i);
 			glNamedFramebufferDrawBuffer(draw_target, GL_COLOR_ATTACHMENT0 + i);
 
-			glBlitNamedFramebuffer(
-				read_target, draw_target, 0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height,
-				GL_COLOR_BUFFER_BIT, GL_NEAREST);
+			glBlitNamedFramebuffer(read_target, draw_target, 0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		}
 
 		if (target->GetDepthAttachment() && GetDepthAttachment())
 		{
-			glBlitNamedFramebuffer(
-				read_target, draw_target, 0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height,
-				GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+			glBlitNamedFramebuffer(read_target, draw_target, 0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height, GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 		}
 	}
 
-	void Framebuffer::ReadPixel(
-		uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data) const
+	void Framebuffer::ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data) const
 	{
 		ASSERT(attachmentIndex < mColorSpecifications.size());
 
 		auto &spec = mColorSpecifications[attachmentIndex];
+		auto &attachment = mColorAttachments[attachmentIndex];
+		auto texture = attachment->GetRendererID();
+		auto format = GetGLFormat(spec.mSpecification.InternalFormat);
 
-		glNamedFramebufferReadBuffer(mFramebufferID, GL_COLOR_ATTACHMENT0 + attachmentIndex);
-		glReadPixels(x, y, w, h, GetGLFormat(spec.mSpecification.InternalFormat), type, data);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glGetTexImage(GL_TEXTURE_2D, 0, format, type, data);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	Ref<Texture> Framebuffer::GetColorAttachment(uint32_t index) const
@@ -175,21 +173,17 @@ namespace BHive
 				auto &specification = mColorSpecifications[i];
 				auto &attachment = mColorAttachments[i];
 
-				attachment = CreateFramebufferTexture(
-					specification.TextureType, mSpecification.Width, mSpecification.Height, mSpecification.Depth, mSpecification.Samples,
-					specification);
+				attachment = CreateFramebufferTexture(specification.TextureType, mSpecification.Width, mSpecification.Height, mSpecification.Depth, mSpecification.Samples, specification);
 			}
 		}
 
 		if (mDepthSpecification.mSpecification.InternalFormat != EFormat::Invalid)
 		{
-			mDepthAttachment = CreateFramebufferTexture(
-				mDepthSpecification.TextureType, mSpecification.Width, mSpecification.Height, mSpecification.Depth,
-				mSpecification.Samples,
-				mDepthSpecification);
+			mDepthAttachment =
+				CreateFramebufferTexture(mDepthSpecification.TextureType, mSpecification.Width, mSpecification.Height, mSpecification.Depth, mSpecification.Samples, mDepthSpecification);
 		}
 
-		//create framebuffer and attach textures
+		// create framebuffer and attach textures
 		glCreateFramebuffers(1, &mFramebufferID);
 		auto num_attachments = mColorAttachments.size();
 		for (size_t i = 0; i < num_attachments; i++)
@@ -199,9 +193,7 @@ namespace BHive
 
 		if (mDepthAttachment)
 		{
-			glNamedFramebufferTexture(
-				mFramebufferID, GetDepthAttachmentType(mDepthSpecification.mSpecification.InternalFormat), *mDepthAttachment,
-				0);
+			glNamedFramebufferTexture(mFramebufferID, GetDepthAttachmentType(mDepthSpecification.mSpecification.InternalFormat), *mDepthAttachment, 0);
 		}
 
 		if (num_attachments > 1)

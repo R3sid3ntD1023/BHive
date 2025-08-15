@@ -1,5 +1,5 @@
-#include "core/FileDialog.h"
 #include "SpriteSheetEditor.h"
+#include "core/platform/Platform.h"
 
 namespace BHive
 {
@@ -46,15 +46,9 @@ namespace BHive
 			int index = 0;
 			if (ImGui::Button("Extract"))
 			{
-				std::filesystem::path extract_path = FileDialogs::SaveFile("Sprite (*.sprite)\0*.sprite\0");
-				if (!extract_path.empty())
+				if (auto info = Platform::SaveFile(AssetFactory::GetFileFilters()))
 				{
-					auto file_name = extract_path.stem();
-					auto parent_directory = extract_path.parent_path();
-					auto ext = extract_path.extension();
-
-					ExtractSprites(parent_directory, file_name.string(), ext.string());
-					LOG_TRACE("Extractd Sprites");
+					ExtractSprites(info);
 				}
 			}
 
@@ -101,25 +95,32 @@ namespace BHive
 		}
 	}
 
-	void SpriteSheetEditor::ExtractSprites(const std::filesystem::path &directory, const std::string &filename, const std::string &ext)
+	void SpriteSheetEditor::ExtractSprites(const std::filesystem::path &path)
 	{
 		auto manager = AssetManager::GetAssetManager<EditorAssetManager>();
 		if (!manager)
 			return;
 
+		const auto directory = path.parent_path();
+		const auto ext = path.extension().string();
+		const auto name = path.stem().string();
+
 		auto &sprites = mAsset->GetSprites();
 		for (size_t i = 0; i < sprites.size(); i++)
 		{
 			auto &sprite = sprites[i];
-			auto name = filename + std::to_string(i);
-			auto export_path = directory / (name + ext);
+			auto filename = std::format("{}_{}{}", name, i, ext);
+			auto export_path = directory / filename;
 
-			if (AssetFactory::Export(&sprite, export_path))
+			if (!AssetFactory::Export(&sprite, export_path))
 			{
-				LOG_TRACE("Extracted Sprite {}", name);
+				LOG_TRACE("Failed to extract Sprite {}", filename);
 			}
 
+			LOG_TRACE("Extracted Sprite {}", filename);
 			manager->ImportAsset(export_path, sprite.get_type(), sprite.GetHandle());
 		}
+
+		LOG_TRACE("Extracted Sprites");
 	}
 } // namespace BHive

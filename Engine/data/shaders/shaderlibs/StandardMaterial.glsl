@@ -7,6 +7,8 @@ struct StandardMaterial
 	vec3 IrradianceF0;
 };
 
+#include <BDRFFunctions.glsl>
+
 void Direct_Standard(const in vec3 geoPosition, const in vec3 geoNormal, const in vec3 geoViewDir, const in IncidentLight light, const in StandardMaterial material, inout ReflectedLight reflectedLight)
 {
 	vec3 bdrf = CalculateBDRF(material.IrradianceF0, geoNormal, geoViewDir, light.Direction, material.Albedo, material.Metalness, material.Roughness);

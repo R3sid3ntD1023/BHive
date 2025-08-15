@@ -1,5 +1,5 @@
 #include "ContentBrowserWindow.h"
-#include "core/FileDialog.h"
+#include "core/platform/Platform.h"
 #include "gfx/textures/Texture2D.h"
 #include "gui/PayloadHelpers.h"
 #include "core/threading/Threading.h"
@@ -73,9 +73,8 @@ namespace BHive
 
 			if (ImGui::Button("Import"))
 			{
-				auto path_str = FileDialogs::OpenFile("All (*.*)\0*.*\0 Mesh (*.glb;*.gltf)\0*.glb;*.gltf\0");
-				if (!path_str.empty())
-					OnImportAsset(mCurrentDirectory, path_str);
+				if (auto info = Platform::OpenFile("All (*.*)\0*.*\0 Mesh (*.glb;*.gltf)\0*.glb;*.gltf\0"))
+					OnImportAsset(mCurrentDirectory, info);
 			}
 
 			if (mCurrentDirectory != mBaseDirectory)
@@ -286,7 +285,7 @@ namespace BHive
 	{
 		OnDeleteFolder(item);
 
-		FileDialogs::MoveToRecycleBin(item.path().string());
+		Platform::MoveToRecycleBin(item);
 	}
 
 	void ImContentBrowserWindow::SetCurrentDirectory(const std::filesystem::path &path)

@@ -6,12 +6,14 @@ namespace BHive
 {
 	struct ICommand
 	{
-		virtual void on_undo() = 0;
+		virtual ~ICommand() = default;
 
-		virtual void on_redo() = 0;
+		virtual void OnUndo() = 0;
 
-		virtual bool can_merge() const { return false; }
+		virtual void OnRedo() = 0;
 
-		virtual bool merge(ICommand *other) { return false; }
+		virtual bool CanMerge() const { return false; }
+
+		virtual bool Merge(const std::shared_ptr<ICommand> &other) { return false; }
 	};
 } // namespace BHive

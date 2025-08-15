@@ -58,10 +58,6 @@ namespace BHive
 		ImGuiLayer &GetImGuiLayer() { return *mImGuiLayer; }
 		static Application &Get() { return *sInstance; }
 
-	protected:
-		virtual void OnBeginGUIRender();
-		virtual void OnEndGUIRender();
-
 	private:
 		void UpdateLayersAndWindow();
 		bool OnWindowResized(WindowResizeEvent &event);

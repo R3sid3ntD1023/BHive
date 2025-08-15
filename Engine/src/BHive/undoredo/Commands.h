@@ -5,24 +5,94 @@
 
 namespace BHive
 {
-	struct FCommandProperty : public ICommand
+	template <typename T>
+	struct TCommandProperty : public ICommand
 	{
-		FCommandProperty(rttr::variant obj, const rttr::property &prop, const rttr::variant &new_value);
+		TCommandProperty(T *obj, const T &new_value)
+			: mProperty(obj),
+			  mOldValue(*obj),
+			  mValue(new_value)
+		{
+		}
 
-		virtual void on_undo() override;
+		TCommandProperty(const TCommandProperty &other)
+			: mProperty(other.mProperty),
+			  mOldValue(other.mOldValue),
+			  mValue(other.mValue)
+		{
+		}
 
-		virtual void on_redo() override;
+		virtual void OnUndo() override { *mProperty = mOldValue; }
 
-		virtual bool can_merge() const { return true; }
+		virtual void OnRedo() override { *mProperty = mValue; }
 
-		virtual bool merge(ICommand *other) override;
+		virtual bool CanMerge() const { return true; }
+
+		virtual bool Merge(const std::shared_ptr<ICommand> &other) override
+		{
+			auto command = std::dynamic_pointer_cast<TCommandProperty<T>>(other);
+			if (command)
+			{
+				if (command->mProperty == mProperty && mOldValue == command->mOldValue)
+				{
+					command->mValue = mValue;
+					return true;
+				}
+
+				return false;
+			}
+		}
 
 	private:
+		T *mProperty;
+		T mValue;
+		T mOldValue;
+	};
+
+	struct CommandProperty : public ICommand
+	{
+		CommandProperty(rttr::variant obj, rttr::property prop, const rttr::variant &new_value)
+			: mInstance(obj),
+			  mProperty(prop),
+			  mOldValue(mProperty.get_value(mInstance)),
+			  mValue(new_value)
+		{
+		}
+
+		CommandProperty(const CommandProperty &other)
+			: mInstance(other.mInstance),
+			  mProperty(other.mProperty),
+			  mOldValue(other.mOldValue),
+			  mValue(other.mValue)
+		{
+		}
+
+		virtual void OnUndo() override { mProperty.set_value(mInstance, mOldValue); }
+
+		virtual void OnRedo() override { mProperty.set_value(mInstance, mValue); }
+
+		virtual bool CanMerge() const { return true; }
+
+		virtual bool Merge(const std::shared_ptr<ICommand> &other) override
+		{
+			auto command = std::dynamic_pointer_cast<CommandProperty>(other);
+			if (command)
+			{
+				if (command->mProperty == mProperty && mOldValue == command->mOldValue)
+				{
+					command->mValue = mValue;
+					return true;
+				}
+
+				return false;
+			}
+		}
+
+	private:
+		rttr::instance mInstance;
+		rttr::property mProperty;
 		rttr::variant mValue;
 		rttr::variant mOldValue;
-
-		rttr::property mProperty;
-		rttr::variant mInstance;
 	};
 
 } // namespace BHive

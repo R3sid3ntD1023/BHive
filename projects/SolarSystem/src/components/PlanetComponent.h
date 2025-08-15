@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Component.h"
+#include "world/Component.h"
+
+#define SOLAR_SYSTEM_API __declspec(dllexport)
 
 BEGIN_NAMESPACE(BHive)
 
-struct PlanetTime
+struct SOLAR_SYSTEM_API PlanetTime
 {
 	uint32_t Years = 0;
 	uint32_t Days = 0;
@@ -29,7 +31,7 @@ struct PlanetTime
 	}
 };
 
-struct PlanetComponent : public Component, public ITickable
+struct SOLAR_SYSTEM_API PlanetComponent : public Component, public ITickable
 {
 	PlanetComponent() = default;
 
@@ -39,8 +41,8 @@ struct PlanetComponent : public Component, public ITickable
 	PlanetTime RotationTime;
 	PlanetTime OrbitalTime;
 
-	virtual void Save(cereal::JSONOutputArchive &ar) const override;
-	virtual void Load(cereal::JSONInputArchive &ar) override;
+	virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+	virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 	REFLECTABLEV(Component)
 

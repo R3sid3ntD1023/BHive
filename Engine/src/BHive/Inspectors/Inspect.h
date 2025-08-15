@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Inspector.h"
+#include "undoredo/UndoRedo.h"
+#include "undoredo/Commands.h"
+#include "core/subsystem/SubSystem.h"
 
 namespace BHive
 {
@@ -30,6 +33,7 @@ namespace BHive
 			rttr::variant var = obj;
 			if (inspect(owning_object, var, skip_custom, read_only, width, get_meta_data))
 			{
+
 				obj = var.get_value<T>();
 				return true;
 			}

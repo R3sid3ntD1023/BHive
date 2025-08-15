@@ -1,4 +1,4 @@
-#include "CelestrialBody.h"
+#include "world/GameObject.h"
 #include "PlanetComponent.h"
 #include <core/Time.h>
 
@@ -43,20 +43,31 @@ void PlanetComponent::Update(float dt)
 	GetOwner()->GetLocalTransform().SetTranslation({x, y, z});
 }
 
-void PlanetComponent::Save(cereal::JSONOutputArchive &ar) const
+void PlanetComponent::Save(cereal::BinaryOutputArchive &ar) const
 {
 	ar(MAKE_NVP(RotationTime), MAKE_NVP(OrbitalTime));
 }
 
-void PlanetComponent::Load(cereal::JSONInputArchive &ar)
+void PlanetComponent::Load(cereal::BinaryInputArchive &ar)
 {
 	ar(MAKE_NVP(RotationTime), MAKE_NVP(OrbitalTime));
-}
-
-REFLECT(PlanetComponent)
-{
-	BEGIN_REFLECT(PlanetComponent)
-	REFLECT_CONSTRUCTOR() COMPONENT_IMPL();
 }
 
 END_NAMESPACE
+
+RTTR_REGISTRATION
+{
+	{
+		BEGIN_REFLECT(BHive::PlanetTime, "PlanetTime")
+		REFLECT_PROPERTY(Years)
+		REFLECT_PROPERTY(Days)
+		REFLECT_PROPERTY(Hours)
+		REFLECT_PROPERTY(Minutes)
+		REFLECT_PROPERTY(Seconds);
+	}
+
+	{
+		BEGIN_REFLECT(BHive::PlanetComponent, "PlanetComponent")(META_DATA(BHive::ClassMetaData_ComponentSpawnable, true)) REFLECT_PROPERTY(RotationTime) REFLECT_PROPERTY(OrbitalTime)
+			REFLECT_CONSTRUCTOR() COMPONENT_IMPL();
+	}
+}

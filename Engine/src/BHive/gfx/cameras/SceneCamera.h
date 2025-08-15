@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core/reflection/Reflection.h"
 #include "gfx/Camera.h"
 
 namespace BHive

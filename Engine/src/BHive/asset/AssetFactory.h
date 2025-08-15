@@ -13,6 +13,8 @@ namespace BHive
 
 		static bool Export(const Asset *asset, const std::filesystem::path &path);
 
+		static bool ImportAsJSON(Ref<Asset> &asset, const std::filesystem::path &path);
+
 		static const char *GetFileFilters() { return "Asset (*.asset)\0*.asset\0"; }
 	};
 } // namespace BHive

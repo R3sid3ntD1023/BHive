@@ -3,6 +3,16 @@
 #define UNLIT BIT(0)
 #define PI 3.14159265359
 
+//bones
+#define MAX_BONES 200
+#define MAX_BONE_INFLUENCE 4
+
+struct PerObjectData
+{
+	mat4 WorldMatrix;
+};
+
+
 bool IsApproximatelyEqual(float a, float b)
 {
 	return abs(a - b) <= (abs(a) < abs(b) ? abs(b) : abs(a)) * EPSILON;
@@ -128,4 +138,35 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir, float scale, in sampler2D dep
 
 
 	return prevTexCoords * weight + current_coords * (1.0 - weight);
+}
+
+bool HasBones(ivec4 indices)
+{
+	return indices.x != -1 || indices.y != -1 || indices.z != -1 || indices.w != -1;
+}
+
+mat4 GetBoneMatrix(const in vec4 weights, const in ivec4 indices, const in mat4[MAX_BONES] _bones)
+{
+	if(!HasBones(indices)) return mat4(1.0f);
+
+	mat4 bone_transform = mat4(0.0f);
+
+	for(int i = 0; i < MAX_BONE_INFLUENCE; i++)
+	{
+		if(indices[i] == -1)
+		{
+			continue;
+		}
+
+		if(indices[i] >= MAX_BONES)
+		{
+			break;
+		}
+
+		
+		bone_transform += _bones[indices[i]] * weights[i];
+
+	}
+
+	return bone_transform;
 }

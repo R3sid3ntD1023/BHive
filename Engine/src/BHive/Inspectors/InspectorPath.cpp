@@ -1,6 +1,6 @@
 #include "InspectorPath.h"
 #include "gui/ImGuiExtended.h"
-#include "core/FileDialog.h"
+#include "core/platform/Platform.h"
 
 namespace BHive
 {
@@ -26,10 +26,9 @@ namespace BHive
 
 		if (ImGui::Button("...##"))
 		{
-			auto path_str = FileDialogs::GetDirectory();
-			if (!path_str.empty())
+			if (auto info = Platform::GetDirectory())
 			{
-				data = path_str;
+				data = info;
 				changed |= true;
 			}
 		}

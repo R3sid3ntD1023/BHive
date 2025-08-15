@@ -15,4 +15,5 @@ namespace BHive
 	REFLECT_ASSET_INSPECTOR(Texture2D)
 
 	REFLECT_ASSET_INSPECTOR(AudioSource)
+	REFLECT_ASSET_INSPECTOR(World)
 } // namespace BHive

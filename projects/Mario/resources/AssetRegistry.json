@@ -1,0 +1,412 @@
+{
+    "Assets": [
+        {
+            "key": "114843c9-1884-498b-b174-becaded1c5d0",
+            "value": {
+                "Type": "SpriteSheet",
+                "Path": "SpriteSheets\\Characters.asset",
+                "Name": "Characters"
+            }
+        },
+        {
+            "key": "13db978f-d5c5-4873-a59c-4598518d24be",
+            "value": {
+                "Type": "AudioSource",
+                "Path": "Audio\\Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).asset",
+                "Name": "Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers)"
+            }
+        },
+        {
+            "key": "67275bd2-5b9e-4265-bda7-2e18b031ddda",
+            "value": {
+                "Type": "FlipBook",
+                "Path": "Flipbooks\\Characters\\FB_Mario.asset",
+                "Name": "FB_Mario"
+            }
+        },
+        {
+            "key": "c2d6ac6a-47a3-4076-9419-68635c194ba5",
+            "value": {
+                "Type": "World",
+                "Path": "Scenes\\TestScene_00.asset",
+                "Name": "TestScene_00"
+            }
+        },
+        {
+            "key": "b44e5d94-a4e4-405d-b89f-a77edf39bfd9",
+            "value": {
+                "Type": "SkeletalMesh",
+                "Path": "Characters\\Erika\\Erika.asset",
+                "Name": "Erika"
+            }
+        },
+        {
+            "key": "56e50ba5-22cb-46f9-9e31-ecabb29e335e",
+            "value": {
+                "Type": "Sprite",
+                "Path": "sprites\\Question0.asset",
+                "Name": "Question0"
+            }
+        },
+        {
+            "key": "13122c68-045b-42ba-ae6e-e53fe2863701",
+            "value": {
+                "Type": "FlipBook",
+                "Path": "Flipbooks\\Blocks\\Question\\FB_Question.asset",
+                "Name": "FB_Question"
+            }
+        },
+        {
+            "key": "73408b8c-7d11-4184-b9f7-b7e698d4869e",
+            "value": {
+                "Type": "Sprite",
+                "Path": "sprites\\Question1.asset",
+                "Name": "Question1"
+            }
+        },
+        {
+            "key": "f3111564-54b9-4024-8a7c-292681386119",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "textures\\character_and_enemies_32.asset",
+                "Name": "character_and_enemies_32"
+            }
+        },
+        {
+            "key": "2cf3c3ce-e409-4b08-b501-bdb8936ce689",
+            "value": {
+                "Type": "World",
+                "Path": "Scenes\\TestScene_00.asset",
+                "Name": "TestScene_00"
+            }
+        },
+        {
+            "key": "90362962-b20e-431d-9875-de111d532fe3",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "textures\\block.asset",
+                "Name": "block"
+            }
+        },
+        {
+            "key": "0ebcdf2a-af43-4618-bb7c-08fe3f0ab797",
+            "value": {
+                "Type": "Sprite",
+                "Path": "sprites\\Block.asset",
+                "Name": "Block"
+            }
+        },
+        {
+            "key": "487af30c-f66a-4dd6-9744-0ed1dbd0b9c5",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Characters\\Erika\\FemaleFitA_StdNM.png.asset",
+                "Name": "FemaleFitA_StdNM.png"
+            }
+        },
+        {
+            "key": "63b2c871-90c4-47bd-91e7-43d5520b8c2a",
+            "value": {
+                "Type": "InputContext",
+                "Path": "Input\\PlayerInput.asset",
+                "Name": "PlayerInput"
+            }
+        },
+        {
+            "key": "3810f021-0617-46d2-b2e1-4f0228b1fbb8",
+            "value": {
+                "Type": "Sprite",
+                "Path": "sprites\\Question2.asset",
+                "Name": "Question2"
+            }
+        },
+        {
+            "key": "a0d9167c-fb97-405b-9792-dd2c72493385",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "HDRs\\rosendal_plains_1_1k.asset",
+                "Name": "rosendal_plains_1_1k"
+            }
+        },
+        {
+            "key": "b5191bed-9c5a-49d3-a71a-e62938b3b2eb",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "HDRs\\kloofendal_43d_clear_puresky_1k.asset",
+                "Name": "kloofendal_43d_clear_puresky_1k"
+            }
+        },
+        {
+            "key": "63349f8b-fb98-43a0-aa93-bcb28de188db",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "textures\\items.asset",
+                "Name": "items"
+            }
+        },
+        {
+            "key": "23d29800-1d75-429e-a23d-9f0cc53f28ed",
+            "value": {
+                "Type": "BDRFMaterial",
+                "Path": "Characters\\Erika\\phong1.001.asset",
+                "Name": "phong1.001"
+            }
+        },
+        {
+            "key": "edbd7ef9-e804-4369-bb0c-00c6ca69c6fc",
+            "value": {
+                "Type": "BDRFMaterial",
+                "Path": "textures\\Fence\\M_ChainLinkFence.asset",
+                "Name": "M_ChainLinkFence"
+            }
+        },
+        {
+            "key": "d0231e6b-307f-482a-8b2a-16d9de26c4c4",
+            "value": {
+                "Type": "Skeleton",
+                "Path": "Characters\\Erika\\Erika_Skeleton.asset",
+                "Name": "Erika_Skeleton"
+            }
+        },
+        {
+            "key": "f027ac12-1176-4cb6-8e7d-b749bccee7ae",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "textures\\Fence\\DiamondChainLinkFenceWoodenSlatsClean_opacity.asset",
+                "Name": "DiamondChainLinkFenceWoodenSlatsClean_opacity"
+            }
+        },
+        {
+            "key": "41d8dad1-81a2-4228-abe8-619e2eacc944",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Characters\\Erika\\Erika_Archer_Clothes_normal.png.asset",
+                "Name": "Erika_Archer_Clothes_normal.png"
+            }
+        },
+        {
+            "key": "02b13457-0299-48f4-ad3e-bd2654a45e8f",
+            "value": {
+                "Type": "Prefab",
+                "Path": "Prefabs\\NewPrefab.asset",
+                "Name": "NewPrefab"
+            }
+        },
+        {
+            "key": "72aa713a-e05f-4d18-bc37-d4c16c4674ad",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Characters\\Erika\\Erika_Archer_Clothes_diffuse.png.asset",
+                "Name": "Erika_Archer_Clothes_diffuse.png"
+            }
+        },
+        {
+            "key": "a4bf7927-85a6-403e-9bf8-fcc44c5c21ca",
+            "value": {
+                "Type": "LambertMaterial",
+                "Path": "Materials\\NewLambertMaterial.asset",
+                "Name": "NewLambertMaterial"
+            }
+        },
+        {
+            "key": "02458e79-97e4-45b4-b2fd-433d1021942b",
+            "value": {
+                "Type": "BDRFMaterial",
+                "Path": "Characters\\Erika\\Akai_MAT1.001.asset",
+                "Name": "Akai_MAT1.001"
+            }
+        },
+        {
+            "key": "6d67a23c-4681-4f79-840c-7206aca6e7b2",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Characters\\Erika\\Bow_NM.jpg.asset",
+                "Name": "Bow_NM.jpg"
+            }
+        },
+        {
+            "key": "e79f1245-a90e-4c45-9254-5f2d6db94da5",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Characters\\Erika\\Bow_DIFF.jpg.asset",
+                "Name": "Bow_DIFF.jpg"
+            }
+        },
+        {
+            "key": "a91996b3-7a57-4369-b903-a6c30f7ab4c6",
+            "value": {
+                "Type": "BDRFMaterial",
+                "Path": "Meshes\\Cube\\Cube(0).asset",
+                "Name": "Cube(0)"
+            }
+        },
+        {
+            "key": "53fa55b7-aed6-4c0d-b2e4-3f455d45fa5b",
+            "value": {
+                "Type": "BDRFMaterial",
+                "Path": "Characters\\Erika\\Bow_MAT.001.asset",
+                "Name": "Bow_MAT.001"
+            }
+        },
+        {
+            "key": "d2b1aade-14fe-44d2-9d04-5113d08ae2b3",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Characters\\Erika\\FemaleFitA_Body_diffuse.png.asset",
+                "Name": "FemaleFitA_Body_diffuse.png"
+            }
+        },
+        {
+            "key": "aacf48d6-51a2-49ed-a2b1-74724db97744",
+            "value": {
+                "Type": "BDRFMaterial",
+                "Path": "Characters\\Erika\\EyeSpec_MAT1.001.asset",
+                "Name": "EyeSpec_MAT1.001"
+            }
+        },
+        {
+            "key": "6367299e-fbbf-48f1-8f15-536c8cd3a5d1",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Characters\\Erika\\FemaleFitA_eyelash_diffuse.png.asset",
+                "Name": "FemaleFitA_eyelash_diffuse.png"
+            }
+        },
+        {
+            "key": "bb82baeb-23d0-438a-bac3-177a4ad4fd09",
+            "value": {
+                "Type": "BDRFMaterial",
+                "Path": "Characters\\Erika\\Body_MAT1.001.asset",
+                "Name": "Body_MAT1.001"
+            }
+        },
+        {
+            "key": "2faff767-497e-4347-86ee-bc1a78c4e445",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "textures\\Fence\\DiamondChainLinkFenceWoodenSlatsClean_metallic.asset",
+                "Name": "DiamondChainLinkFenceWoodenSlatsClean_metallic"
+            }
+        },
+        {
+            "key": "766c0d73-97a9-4e82-b8fb-ca5e28f2c6dc",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Characters\\Erika\\Arrow_NM.jpg.asset",
+                "Name": "Arrow_NM.jpg"
+            }
+        },
+        {
+            "key": "1f621053-4f99-4d0b-8909-bab28476b428",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "Characters\\Erika\\Arrow_DIFF.png.asset",
+                "Name": "Arrow_DIFF.png"
+            }
+        },
+        {
+            "key": "9b10a8e3-9f8a-4585-a091-2bad49024f21",
+            "value": {
+                "Type": "BDRFMaterial",
+                "Path": "Characters\\Erika\\Arrow_MAT.001.asset",
+                "Name": "Arrow_MAT.001"
+            }
+        },
+        {
+            "key": "1e5dc2d3-a638-4554-bcfd-77aaabd4496c",
+            "value": {
+                "Type": "BDRFMaterial",
+                "Path": "Characters\\Erika\\Erika(6).asset",
+                "Name": "Erika(6)"
+            }
+        },
+        {
+            "key": "5319d164-9dd8-40ef-86d6-1ed3ae8abf15",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "textures\\Fence\\DiamondChainLinkFenceWoodenSlatsClean_normal.asset",
+                "Name": "DiamondChainLinkFenceWoodenSlatsClean_normal"
+            }
+        },
+        {
+            "key": "4b92bbb5-5b3d-4eae-baa1-72ce3fa666d3",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "textures\\Fence\\DiamondChainLinkFenceWoodenSlatsClean_roughness.asset",
+                "Name": "DiamondChainLinkFenceWoodenSlatsClean_roughness"
+            }
+        },
+        {
+            "key": "f856a65b-6338-4437-aa52-051d16898b10",
+            "value": {
+                "Type": "Texture2D",
+                "Path": "textures\\Fence\\DiamondChainLinkFenceWoodenSlatsClean_basecolor.asset",
+                "Name": "DiamondChainLinkFenceWoodenSlatsClean_basecolor"
+            }
+        },
+        {
+            "key": "c67d2bc3-fa95-40f1-8805-679919d7cf9f",
+            "value": {
+                "Type": "World",
+                "Path": "Scenes\\Fence.asset",
+                "Name": "Fence"
+            }
+        },
+        {
+            "key": "645fdfd5-2f9f-4d7b-b80c-94831b1e05d0",
+            "value": {
+                "Type": "StaticMesh",
+                "Path": "Meshes\\Cube\\Cube.asset",
+                "Name": "Cube"
+            }
+        },
+        {
+            "key": "ef7947d8-e295-40b2-a8a6-5fbd2726dc38",
+            "value": {
+                "Type": "StaticMesh",
+                "Path": "Meshes\\Cube\\Container.asset",
+                "Name": "Container"
+            }
+        },
+        {
+            "key": "18576f3d-354c-42ff-b201-0d377a04e194",
+            "value": {
+                "Type": "BDRFMaterial",
+                "Path": "Meshes\\Cube\\Container(0).asset",
+                "Name": "Container(0)"
+            }
+        },
+        {
+            "key": "56393360-4763-4b6b-87fc-cf17cf5a64f0",
+            "value": {
+                "Type": "StaticMesh",
+                "Path": "Meshes\\Sphere\\Sphere.asset",
+                "Name": "Sphere"
+            }
+        },
+        {
+            "key": "6670bd22-4d8a-41a7-9d4b-0e8d0ab12701",
+            "value": {
+                "Type": "BDRFMaterial",
+                "Path": "Meshes\\Sphere\\Sphere(0).asset",
+                "Name": "Sphere(0)"
+            }
+        },
+        {
+            "key": "5670721d-697e-4cda-9506-912670d6a3e3",
+            "value": {
+                "Type": "StaticMesh",
+                "Path": "Meshes\\Plane\\Plane.asset",
+                "Name": "Plane"
+            }
+        },
+        {
+            "key": "8787fc51-ae0e-4917-a92b-ee99d2cb9016",
+            "value": {
+                "Type": "BDRFMaterial",
+                "Path": "Meshes\\Plane\\Plane(0).asset",
+                "Name": "Plane(0)"
+            }
+        }
+    ]
+}

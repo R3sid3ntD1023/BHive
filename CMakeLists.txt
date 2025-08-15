@@ -17,11 +17,9 @@ foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_SOURCE_DIR}/bin/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE} )
 endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
-
 add_subdirectory(Engine)
 add_subdirectory(projects)
 add_subdirectory(BHive-Editor)
-#add_subdirectory(ReflectionBuilder)
 
 
 

@@ -1,5 +1,4 @@
 #include "GameObject.h"
-#include "physics/PhysicsCore.h"
 #include "physics/PhysicsUtils.h"
 #include "PhysicsComponent.h"
 
@@ -17,7 +16,7 @@ namespace BHive
 
 			auto global_pose = rb->getGlobalPose();
 			auto scale = t.GetScale();
-			auto global = physics::utils::Convert(global_pose);
+			auto global = PhysicsUtils::Convert(global_pose);
 			global.SetScale(scale);
 
 			object->SetWorldTransform(global);

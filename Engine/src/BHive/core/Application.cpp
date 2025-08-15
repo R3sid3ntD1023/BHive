@@ -109,16 +109,6 @@ namespace BHive
 		}
 	}
 
-	void Application::OnBeginGUIRender()
-	{
-		mImGuiLayer->BeginFrame();
-	}
-
-	void Application::OnEndGUIRender()
-	{
-		mImGuiLayer->EndFrame();
-	}
-
 	void Application::UpdateLayersAndWindow()
 	{
 
@@ -132,14 +122,14 @@ namespace BHive
 			layer->OnUpdate(deltatime);
 		}
 
-		OnBeginGUIRender();
+		mImGuiLayer->BeginFrame();
 
 		for (auto &layer : mLayerStack)
 		{
 			layer->OnGuiRender();
 		}
 
-		OnEndGUIRender();
+		mImGuiLayer->EndFrame();
 
 		mWindow->Update();
 

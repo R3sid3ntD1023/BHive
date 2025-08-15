@@ -1,6 +1,5 @@
 #include "asset/AssetManager.h"
 #include "asset/EditorAssetManager.h"
-#include "core/FileDialog.h"
 #include "factories/MaterialFactory.h"
 #include "factories/MeshFactory.h"
 #include "factories/TextureFactory.h"
@@ -79,7 +78,7 @@ namespace BHive
 			};
 			auto create_material = []() -> Ref<Material>
 			{
-				MaterialFactory factory;
+				StandardMaterialFactory factory;
 				return Cast<Material>(factory.CreateNew());
 			};
 
@@ -95,6 +94,8 @@ namespace BHive
 
 				mFactory->OnImportCompleted.invoke(asset);
 			}
+
+			mShouldClose = true;
 		}
 	}
 

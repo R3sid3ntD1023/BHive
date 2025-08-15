@@ -1,5 +1,4 @@
 #include "CapsuleColliderComponent.h"
-#include "physics/PhysicsCore.h"
 #include "renderers/LineRenderer.h"
 #include <physx/PxPhysicsAPI.h>
 #include "GameObject.h"
@@ -8,6 +7,7 @@ namespace BHive
 {
 	void CapsuleColliderComponent::Render()
 	{
+
 		LineRenderer::DrawCapsule(Radius, HalfHeight, 16, Offset, Color, GetWorldTransform());
 	}
 

@@ -16,9 +16,9 @@ namespace BHive
 		{
 		}
 
-		virtual void on_undo() override { mComponent->get_type().get_method(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME).invoke({mObj}, mComponent); }
+		virtual void OnUndo() override { mComponent->get_type().get_method(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME).invoke({mObj}, mComponent); }
 
-		virtual void on_redo() override { mComponent->get_type().get_method(REMOVE_COMPONENT_FUNCTION_NAME).invoke({mObj}); }
+		virtual void OnRedo() override { mComponent->get_type().get_method(REMOVE_COMPONENT_FUNCTION_NAME).invoke({mObj}); }
 
 	private:
 		GameObject *mObj;
@@ -52,7 +52,7 @@ namespace BHive
 
 				if (ImGui::Button("Remove", button_size))
 				{
-					GetSubSystem<UndoRedo>().add_history_command<FCommandRemoveComponent>("Removed Component", data->GetOwner(), data);
+					GetSubSystem<UndoRedo>().AddCommand<FCommandRemoveComponent>("Removed Component", data->GetOwner(), data);
 					removed |= true;
 				}
 			}

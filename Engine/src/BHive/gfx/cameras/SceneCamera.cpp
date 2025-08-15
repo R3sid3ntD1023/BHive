@@ -51,7 +51,7 @@ namespace BHive
 
 	void SceneCamera::Resize(uint32_t width, uint32_t height)
 	{
-		mAspectRatio = width / (float)height;
+		mAspectRatio = (float)width / (float)height;
 		RecalculateProjection();
 	}
 

@@ -1,5 +1,6 @@
 #include "AssetEditor.h"
-#include "core/FileDialog.h"
+#include "core/platform/Platform.h"
+#include "asset/AssetFactory.h"
 
 namespace BHive
 {
@@ -47,10 +48,9 @@ namespace BHive
 
 	void AssetEditor::SaveAs()
 	{
-		auto path = FileDialogs::SaveFile("Asset (*.asset)\0*.asset");
-		if (!path.empty())
+		if (auto info = Platform::SaveFile(AssetFactory::GetFileFilters()))
 		{
-			mCurrentSavePath = path;
+			mCurrentSavePath = info;
 			Save();
 		}
 	}

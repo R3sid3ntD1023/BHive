@@ -1,7 +1,7 @@
 #include "TextureEditor.h"
 #include "asset/AssetFactory.h"
 #include "asset/EditorAssetManager.h"
-#include "core/FileDialog.h"
+#include "core/platform/Platform.h"
 
 namespace BHive
 {
@@ -41,12 +41,11 @@ namespace BHive
 
 				if (ImGui::Button("Create"))
 				{
-					auto path = FileDialogs::SaveFile(AssetFactory::GetFileFilters());
-					if (!path.empty())
+					if (auto info = Platform::SaveFile(AssetFactory::GetFileFilters()))
 					{
 						auto texture = mAsset->CreateSubTexture(mSubTexture);
-						AssetFactory::Export(texture, path);
-						AssetManager::GetAssetManager<EditorAssetManager>()->ImportAsset(path, texture->get_type(), texture->GetHandle());
+						AssetFactory::Export(texture, info);
+						AssetManager::GetAssetManager<EditorAssetManager>()->ImportAsset(info, texture->get_type(), texture->GetHandle());
 					}
 				}
 				ImGui::EndChild();

@@ -1,9 +1,8 @@
 #include "core/Application.h"
 #include "core/EntryPoint.h"
-#include "EditorLayer.h"
-#include "ProjectLauncherLayer.h"
-#include "gui/Gui.h"
+#include "gui/GUICore.h"
 #include "core/layers/ImGuiLayer.h"
+#include "ProjectLauncherLayer.h"
 #include <mini/ini.h>
 
 #define EDITOR_CONFIG_FILE "EditorConfig.ini"
@@ -16,8 +15,6 @@ namespace BHive
 		BHiveEditor(const FApplicationSpecification &spec)
 			: Application(spec)
 		{
-
-			PushLayer(new ProjectLauncherLayer());
 
 			if (std::filesystem::exists(EDITOR_CONFIG_FILE))
 			{
@@ -37,23 +34,11 @@ namespace BHive
 					}
 				}
 			}
+
+			PushLayer<ProjectLauncherLayer>();
 		}
 
 		~BHiveEditor() {}
-
-		void OnBeginGUIRender() override
-		{
-			Application::OnBeginGUIRender();
-
-			GUI::BeginDockSpace("DockSpace", nullptr);
-		}
-
-		void OnEndGUIRender() override
-		{
-			GUI::EndDockSpace();
-
-			Application::OnEndGUIRender();
-		}
 	};
 
 	Application *CreateApplication(const FCommandLine &cmd)

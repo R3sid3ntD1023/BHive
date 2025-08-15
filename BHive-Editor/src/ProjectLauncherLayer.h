@@ -1,8 +1,13 @@
-#include "BHive.h"
-#include "project/Project.h"
+#pragma once
+
+#include "core/Core.h"
+#include "core/Layer.h"
 
 namespace BHive
 {
+	struct FProjectConfiguration;
+	class Texture2D;
+
 	// stores launcher settings
 	struct FProjectLauncherSettings
 	{
@@ -30,6 +35,7 @@ namespace BHive
 	private:
 		FProjectLauncherSettings mSettings;
 		std::string mMessage;
+		std::unordered_map<std::string, Ref<Texture2D>> mSnapshots;
 	};
 
 } // namespace BHive

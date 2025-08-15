@@ -11,69 +11,35 @@ namespace BHive
 		{
 			std::string Name = "";
 
-			ICommand *Command = nullptr;
-
-			~FCommand() { delete Command; }
+			std::shared_ptr<ICommand> Command;
 		};
 
-		struct Iterator
-		{
-			using iterator_category = std::forward_iterator_tag;
-			using differnce_type = std::ptrdiff_t;
-			using value_type = FCommand;
-			using pointer = FCommand **;
-			using reference = FCommand *;
+		using CommandList = std::vector<FCommand>;
 
-			Iterator(pointer ptr)
-				: m_ptr(ptr)
-			{
-			}
+		void AddCommand(const std::string &name, const std::shared_ptr<ICommand> &command);
 
-			reference operator*() const { return *m_ptr; }
-			pointer operator->() { return m_ptr; }
-			Iterator &operator++()
-			{
-				m_ptr++;
-				return *this;
-			}
-			Iterator &operator++(int)
-			{
-				Iterator temp = *this;
-				++(*this);
-				return temp;
-			}
+		void Undo();
 
-			operator bool() const { return m_ptr != nullptr; }
-			friend bool operator==(const Iterator &a, const Iterator &b) { return a.m_ptr == b.m_ptr; }
+		void Redo();
 
-		private:
-			pointer m_ptr;
-		};
+		void Clear();
 
-		void add_history_command(const std::string &name, ICommand *command);
+		int32_t GetCommandSize() const { return mCommandSize; }
 
-		void undo();
-
-		void redo();
-
-		void clear();
-
-		int32_t get_command_size() const { return mCommandSize; }
-
-		int32_t get_current_command_index() const { return mCommandPtr; }
+		int32_t GetCurrentCommandIndex() const { return mCommandPtr; }
 
 		template <typename T, typename... TArgs>
-		void add_history_command(const std::string &name, TArgs &&...args)
+		void AddCommand(const std::string &name, TArgs &&...args)
 		{
-			add_history_command(name, new T(std::forward<TArgs>(args)...));
+			AddCommand(name, std::make_shared<T>(std::forward<TArgs>(args)...));
 		}
 
-		Iterator begin();
+		CommandList::iterator begin();
 
-		Iterator end();
+		CommandList::iterator end();
 
 	private:
-		FCommand *mCommands[1000] = {};
+		CommandList mCommands{1000};
 
 		int32_t mCommandSize = 0;
 		int32_t mCommandPtr = 0;

@@ -73,5 +73,40 @@ namespace BHive
 		return false;
 	}
 
+	bool AssetFactory::ImportAsJSON(Ref<Asset> &asset, const std::filesystem::path &path)
+	{
+		try
+		{
+			std::ifstream in(path, std::ios::in);
+
+			cereal::JSONInputArchive ar(in);
+
+			rttr::type type = InvalidType;
+			ar(type);
+
+			if (!type.get_constructor())
+			{
+				LOG_ERROR("AssetFactory::Import() no default constructor found for type", type);
+				return false;
+			}
+
+			auto var = type.create();
+			auto obj = var.get_value<Ref<Asset>>();
+			obj->Load(ar);
+
+			asset = obj;
+
+			LOG_TRACE("AssetFactory::Import() Imported asset from {}", path);
+
+			return true;
+		}
+		catch (std::exception &e)
+		{
+			LOG_ERROR("AssetFactory::Import() Exception - {}", e.what());
+		}
+
+		return false;
+	}
+
 	REFLECT_FACTORY(AssetFactory)
 } // namespace BHive

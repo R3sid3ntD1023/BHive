@@ -12,7 +12,7 @@ namespace BHive
 
 	private:
 		void DrawSprites();
-		void ExtractSprites(const std::filesystem::path &directory, const std::string &filename, const std::string &ext);
+		void ExtractSprites(const std::filesystem::path &path);
 
 	private:
 		float mScale = .75f;

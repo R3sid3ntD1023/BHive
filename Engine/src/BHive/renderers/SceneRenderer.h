@@ -51,6 +51,8 @@ namespace BHive
 
 		const Ref<Texture2D> &GetEnvironmentMap() const;
 
+		const Ref<Framebuffer> &GetFramebuffer() const { return mFinalFramebuffer; }
+
 		void RenderToScreen();
 
 		glm::uvec2 GetSize() const;

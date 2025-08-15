@@ -1,132 +1,149 @@
-#include "core/FileDialog.h"
-#include "core/serialization/Serialization.h"
+#include "ProjectLauncherLayer.h"
 #include "core/threading/Threading.h"
-#include "EditorLayer.h"
 #include "gui/ImGuiExtended.h"
 #include "project/Project.h"
-#include "ProjectLauncherLayer.h"
 #include "inspectors/Inspect.h"
 #include "gui/Gui.h"
-#include <Windows.h>
+#include "core/Application.h"
+#include "core/platform/Platform.h"
+#include "EditorLayer.h"
+#include "gfx/Texture.h"
+#include "importers/TextureImporter.h"
 
 namespace BHive
 {
+	constexpr const char *cSettingsFileName = "Settings.projlncher";
 
 	void ProjectLauncherLayer::OnAttach()
 	{
 		auto &app = Application::Get();
 		auto &cmd = app.GetSpecification().CommandLine;
 
-		std::ifstream in("Settings.projlncher", std::ios::in);
-		if (in)
+		if (std::filesystem::exists(cSettingsFileName))
 		{
-			cereal::BinaryInputArchive ar(in);
-			ar(mSettings);
+			std::ifstream in(cSettingsFileName, std::ios::in);
+			try
+			{
+				cereal::BinaryInputArchive ar(in);
+				ar(mSettings);
+			}
+			catch (const std::exception &e)
+			{
+				LOG_ERROR("{}", e.what())
+			}
+		}
+
+		for (auto &[name, path] : mSettings.mRecentProjectPaths)
+		{
+			auto snapshot_path = path.parent_path() / "snapshot.png";
+			if (std::filesystem::exists(snapshot_path))
+				mSnapshots[name] = TextureLoader::Import(snapshot_path);
 		}
 	}
 
 	void ProjectLauncherLayer::OnDetach()
 	{
 
-		std::ofstream out("Settings.projlncher", std::ios::out | std::ios::binary);
-		if (out)
+		std::ofstream out(cSettingsFileName, std::ios::out | std::ios::binary);
+		try
 		{
 
 			cereal::BinaryOutputArchive ar(out);
 			ar(mSettings);
 			return;
 		}
-
-		DWORD error_message = GetLastError();
-		LPSTR message_buffer = nullptr;
-		size_t size = FormatMessage(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, error_message, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&message_buffer, 0,
-			NULL);
-
-		std::string message(message_buffer, size);
-		LocalFree(message_buffer);
-
-		LOG_ERROR(message);
+		catch (const std::exception &e)
+		{
+			LOG_ERROR("{}", e.what())
+		}
 	}
 
 	void ProjectLauncherLayer::OnGuiRender()
 	{
 		static FProjectConfiguration project_configuration{"Untitled", "", "resources"};
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
 
-		auto dock_name = GUI::GetDockSpaceID();
-		ImGuiID dockspace_id = ImGui::GetID(dock_name);
+		const ImGuiViewport *viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-		ImGui::DockBuilderDockWindow("ProjectLauncher", dockspace_id);
+		ImGui::Begin("ProjectLauncher", nullptr, window_flags);
 
-		auto flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
-		if (ImGui::Begin("ProjectLauncher", nullptr, flags))
+		ImGui::PopStyleVar(2);
+
+		// display recent projects
+		auto size = ImGui::GetContentRegionAvail().x;
+		float thumbnail_size = 256.f;
+
+		if (auto count = mSettings.mRecentProjectPaths.size())
 		{
-			ImGui::BeginTable("##projectlauncher", 2, ImGuiTableFlags_BordersInnerV);
+			int columns = floor(size / thumbnail_size);
+
+			ImGui::BeginTable("##projectlauncher", columns);
 			ImGui::TableNextRow();
-			ImGui::TableNextColumn();
-
-			auto path_str = project_configuration.ProjectDirectory.string();
-			auto resoucre_str = project_configuration.ResourcesDirectory.string();
-			auto name = project_configuration.Name;
-
 			ImGui::TableNextColumn();
 
 			for (auto &[name, path] : mSettings.mRecentProjectPaths)
 			{
-				if (ImGui::Button(name.c_str(), {200, 200}))
+				bool clicked = false;
+
+				if (mSnapshots.contains(name))
 				{
-					OpenProject(path);
+					clicked = ImGui::ImageButton(name.c_str(), (ImTextureID)(uint64_t)(uint32_t)*mSnapshots.at(name), {thumbnail_size}, {0, 1}, {1, 0});
 				}
+				else
+				{
+					clicked = ImGui::Button(name.c_str(), thumbnail_size);
+				}
+
+				if (clicked)
+					OpenProject(path);
+
+				ImGui::TableNextColumn();
 			}
 
 			ImGui::EndTable();
-
-			Inspect::get().inspect("Project Name", project_configuration, project_configuration.Name, false, false);
-			Inspect::get().inspect("Project Directory", project_configuration, project_configuration.ProjectDirectory, false, false);
-			Inspect::get().inspect("Resource Directory", project_configuration, project_configuration.ResourcesDirectory, false, false);
-
-			if (ImGui::Button("Create"))
-			{
-				CreateProject(project_configuration, mMessage);
-			}
-
-			ImGui::SameLine();
-
-			if (ImGui::Button("Open"))
-			{
-				auto path_str = FileDialogs::OpenFile("Project (*.proj)\0*.proj\0");
-				if (!path_str.empty())
-				{
-					OpenProject(path_str);
-				}
-			}
-
-			ImGui::TextUnformatted(mMessage.c_str());
 		}
+
+		Inspect::get().inspect("Project Name", project_configuration, project_configuration.Name, false, false);
+		Inspect::get().inspect("Project Directory", project_configuration, project_configuration.ProjectDirectory, false, false);
+		Inspect::get().inspect("Resource Directory", project_configuration, project_configuration.ResourcesDirectory, false, false);
+
+		if (ImGui::Button("Create"))
+		{
+			CreateProject(project_configuration, mMessage);
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Open"))
+		{
+			if (auto info = Platform::OpenFile(Project::GetFileFilter()))
+			{
+				OpenProject(info);
+			}
+		}
+
+		ImGui::TextUnformatted(mMessage.c_str());
 
 		ImGui::End();
 	}
 
 	void ProjectLauncherLayer::OpenProject(const std::filesystem::path &path)
 	{
-		/*STARTUPINFO si;
-		PROCESS_INFORMATION pi;
 
-		ZeroMemory(&si, sizeof(si));
-		si.cb = sizeof(si);
-		ZeroMemory(&pi, sizeof(pi));
+		mSettings.mRecentProjectPaths.emplace(path.stem().string().c_str(), path);
 
-		auto command_line = "C:/users/dariu/Documents/BHive/bin/Windows/Debug/Editor.exe " + path.string();
-		CreateProcess(
-			"C:/users/dariu/Documents/BHive/bin/Windows/Debug/Editor.exe ", command_line.data(), NULL, NULL, FALSE, 0, NULL,
-			NULL, &si, &pi);*/
-
-		mSettings.mRecentProjectPaths.emplace(path.stem().string(), path);
-		Project::LoadProject(path);
-
-		Application::Get().SubmitToMainQueue(
-			[this]()
+		Thread::Dispatch(
+			[=]()
 			{
+				Project::LoadProject(path);
+
 				auto &app = Application::Get();
 				app.PopLayer(this);
 				app.PushLayer<EditorLayer>();
@@ -135,7 +152,7 @@ namespace BHive
 
 	void ProjectLauncherLayer::CreateProject(const FProjectConfiguration &config, std::string &message)
 	{
-		auto path = config.ProjectDirectory / (config.Name + ".proj");
+		auto path = config.ProjectDirectory / (config.Name + Project::GetExtension());
 		if (std::filesystem::exists(path))
 		{
 			message = "Project Already exists";
@@ -147,19 +164,10 @@ namespace BHive
 			std::filesystem::create_directory(config.ProjectDirectory);
 		}
 
-		std::ofstream out(path, std::ios::out);
-
-		if (!out)
-			return;
-
-		cereal::JSONOutputArchive ar(out);
-		const_cast<FProjectConfiguration &>(config).Serialize(ar);
-
-		message = std::format("Created {} project sucessfully!", config.Name);
-
-		mSettings.mRecentProjectPaths.emplace(config.Name, path);
-
-		OpenProject(path);
+		if (Project::SaveProject(config))
+		{
+			message = "Created Project";
+		}
 	}
 
 } // namespace BHive
