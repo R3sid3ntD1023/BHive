@@ -165,6 +165,9 @@ namespace BHive
 
 	Component *GameObject::GetOrAddComponent(const rttr::type &type)
 	{
+		if (!type)
+			return nullptr;
+
 		if (type.get_method(HAS_COMPONENT_FUNCTION_NAME).invoke({this}).to_bool())
 		{
 			return type.get_method(GET_COMPONENT_FUNCTION_NAME).invoke({this}).get_value<Component *>();

@@ -76,15 +76,7 @@ namespace BHive
 		AddSubSystem<Selection>();
 		AddSubSystem<ThumbnailCache>();
 
-		auto &window_system = AddSubSystem<ImWindowSystem>();
-		window_system.ConstructWindow<ImLogWindow>();
-
-		mSceneHeirarchyPanel = window_system.ConstructWindow<ImSceneHierarchy>();
-
-		mAssetManager = CreateRef<EditorAssetManager>(Project::GetResourceDirectory(), "AssetRegistry.json");
-		AssetManager::SetAssetManager(mAssetManager.get());
-
-		mContentBrowser = window_system.ConstructWindow<EditorContentBrowser<EditorAssetManager>>(Project::GetResourceDirectory());
+		AddSubSystem<ImWindowSystem>().ConstructWindow<ImLogWindow>();
 
 		SetupDefaultCommands();
 		auto project = Project::GetActive();
@@ -359,10 +351,9 @@ namespace BHive
 
 	void EditorLayer::LoadWorld(const std::filesystem::path &path)
 	{
-		Ref<Asset> asset = mEditorWorld;
-		AssetFactory::Import(asset, path);
+		if (!AssetFactory::Import(mEditorWorld, path))
+			return;
 
-		mEditorWorld = Cast<World>(asset);
 		SetActiveWorld(mEditorWorld);
 		mCurrentWorldPath = path;
 
@@ -382,8 +373,8 @@ namespace BHive
 		if (project_lib.is_loaded())
 			project_lib.unload();
 
-		if (project_lib.load())
-			LOG_INFO("Loaded Plugin Library {}", lib);
+		bool loaded = project_lib.load();
+		LOG_INFO("Plugin Library {} was loaded : {}", lib, loaded);
 	}
 
 	void EditorLayer::OpenProject(const std::filesystem::path &path)
@@ -394,21 +385,25 @@ namespace BHive
 
 	void EditorLayer::OnProjectOpened()
 	{
+		auto &window_system = GetSubSystem<ImWindowSystem>();
 		auto project_name = Project::GetProjectName();
-		const auto resouce_directory = Project::GetResourceDirectory();
+		const auto resource_directory = Project::GetResourceDirectory();
+		const auto module_path = Project::GetModulePath();
 
-		LoadLibrary(project_name);
+		LoadLibrary(module_path.string());
 
 		// reload content browser directory
-		mContentBrowser->SetBaseDirectory(resouce_directory);
-		mAssetManager = CreateRef<EditorAssetManager>(resouce_directory, "AssetRegistry.json");
+		mContentBrowser = window_system.ConstructWindow<EditorContentBrowser<EditorAssetManager>>(resource_directory);
+		mSceneHeirarchyPanel = window_system.ConstructWindow<ImSceneHierarchy>();
+		mContentBrowser->SetBaseDirectory(resource_directory);
+		mAssetManager = CreateRef<EditorAssetManager>(resource_directory, "AssetRegistry.json");
 		AssetManager::SetAssetManager(mAssetManager.get());
 
 		const auto &config = Project::GetConfiguration();
 		if (config.StartScene)
 		{
 			auto &meta_data = mAssetManager->GetMetaData(config.StartScene);
-			LoadWorld(resouce_directory / meta_data.Path);
+			LoadWorld(resource_directory / meta_data.Path);
 		}
 	}
 
@@ -421,6 +416,9 @@ namespace BHive
 			cereal::JSONInputArchive ar(in);
 			ar(*this);
 		}
+
+		auto layout = std::filesystem::path(EDITOR_RESOURCE_PATH) / ("layouts/" + mCurrentLayout.Name);
+		ImGui::LoadIniSettingsFromDisk(layout.string().c_str());
 	}
 
 	void EditorLayer::SaveEditorConfigFile()
@@ -524,8 +522,7 @@ namespace BHive
 								auto handle = mAssetManager->GetHandle(metadata.Path);
 								if (auto asset = mAssetManager->GetAsset(handle))
 								{
-									auto factory = DragDropFactory::GetFactoryFromType(metadata.Type);
-									if (factory->CanCreate(metadata.Type))
+									if (auto factory = DragDropFactory::GetFactoryFromType(metadata.Type); factory && factory->CanCreate(metadata.Type))
 										factory->CreateFrom(asset, metadata.Name, mActiveWorld.get(), point);
 								}
 							}

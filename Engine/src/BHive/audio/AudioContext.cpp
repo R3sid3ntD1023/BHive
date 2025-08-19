@@ -33,9 +33,9 @@ namespace BHive
 
 	void AudioContext::Shutdown()
 	{
-		alcMakeContextCurrent(nullptr);
+		alcMakeContextCurrent(NULL);
 		alcDestroyContext((ALCcontext *)mAlContext);
-		alcCloseDevice((ALCdevice *)mAudioDevice);
+		ASSERT(alcCloseDevice((ALCdevice *)mAudioDevice));
 
 		LOG_TRACE("Shutdown OpenAL Audio");
 	}

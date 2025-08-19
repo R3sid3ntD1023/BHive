@@ -14,17 +14,15 @@ namespace BHive
 			rttr::type type = InvalidType;
 			ar(type);
 
-			if (!type.get_constructor())
+			if (!type || !type.get_constructor())
 			{
 				LOG_ERROR("AssetFactory::Import() no default constructor found for type", type);
 				return false;
 			}
 
 			auto var = type.create();
-			auto obj = var.get_value<Ref<Asset>>();
-			obj->Load(ar);
-
-			asset = obj;
+			asset = var.get_value<Ref<Asset>>();
+			asset->Load(ar);
 
 			LOG_TRACE("AssetFactory::Import() Imported asset from {}", path);
 

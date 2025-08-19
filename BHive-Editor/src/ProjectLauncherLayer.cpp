@@ -136,8 +136,8 @@ namespace BHive
 
 	void ProjectLauncherLayer::OpenProject(const std::filesystem::path &path)
 	{
-
-		mSettings.mRecentProjectPaths.emplace(path.stem().string().c_str(), path);
+		const auto file_name = path.stem().string();
+		mSettings.mRecentProjectPaths[file_name] = path;
 
 		Thread::Dispatch(
 			[=]()

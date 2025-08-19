@@ -39,7 +39,7 @@ namespace BHive
 
 	public:
 		Application(const FApplicationSpecification &specification);
-		~Application();
+		virtual ~Application();
 
 		void Run();
 		void Close();
@@ -50,7 +50,6 @@ namespace BHive
 		void PopLayer(Layer *layer);
 
 		virtual void OnEvent(Event &event);
-		void SubmitToMainQueue(const std::function<void()> &func);
 
 	public:
 		const FApplicationSpecification &GetSpecification() const { return mSpecification; }
@@ -62,7 +61,6 @@ namespace BHive
 		void UpdateLayersAndWindow();
 		bool OnWindowResized(WindowResizeEvent &event);
 		bool OnWindowClosed(WindowCloseEvent &event);
-		void ProcessMainQueue();
 
 	private:
 		bool mIsRunning = true;
@@ -70,7 +68,6 @@ namespace BHive
 		LayerStack mLayerStack;
 		FApplicationSpecification mSpecification;
 		ImGuiLayer *mImGuiLayer = nullptr;
-		std::queue<std::function<void()>> mMainQueue;
 
 		static inline Application *sInstance;
 	};

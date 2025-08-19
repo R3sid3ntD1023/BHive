@@ -30,6 +30,8 @@ namespace BHive
 			const Ref<SkeletalMesh> &mesh, const MaterialTable &materials, const SkeletalPose &pose, const glm::mat4 &transform = {1.0f}, const glm::mat4 *instances = nullptr,
 			size_t instanceCount = 0);
 
+		static void DrawMeshes();
+
 	private:
 		static bool IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform);
 

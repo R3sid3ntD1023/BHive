@@ -7,6 +7,20 @@ namespace BHive
 	class BHIVE_API AssetFactory
 	{
 	public:
+		template <typename U>
+			requires(std::is_base_of_v<Asset, U>)
+		static bool Import(Ref<U> &asset, const std::filesystem::path &path)
+		{
+			auto temp = Cast<Asset>(asset);
+			if (Import(temp, path))
+			{
+				asset = Cast<U>(temp);
+				return true;
+			}
+
+			return false;
+		}
+
 		static bool Import(Ref<Asset> &asset, const std::filesystem::path &path);
 
 		static bool Export(const Ref<Asset> &asset, const std::filesystem::path &path);

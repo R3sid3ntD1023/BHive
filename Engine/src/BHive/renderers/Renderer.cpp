@@ -95,36 +95,38 @@ namespace BHive
 
 	void Renderer::SubmitDirectionalLight(const glm::vec3 &direction, const DirectionalLight &light)
 	{
+		auto &camera = CameraBuffer::Get().GetCameraData();
 		SubmitLight(direction, {}, light.mColor, light.mBrightness, 0.0f, 0.0f, 0.0f, ELightType::Directional);
+		ShadowRenderer::SubmitDirectionalLight(direction, camera.Projection, camera.View);
 	}
 
 	void Renderer::SubmitPointLight(const glm::vec3 &position, const PointLight &light)
 	{
 
 		SubmitLight({}, position, light.mColor, light.mBrightness, light.mRadius, 0.0f, 0.0f, ELightType::Point);
+		ShadowRenderer::SubmitPointLight(position, light.mRadius);
 	}
 
 	void Renderer::SubmitSpotLight(const glm::vec3 &direction, const glm::vec3 &position, const SpotLight &light)
 	{
-		SubmitLight(
-			direction, position, light.mColor, light.mBrightness, light.mRadius, glm::cos(glm::radians(light.mInnerCutOff)),
-			glm::cos(glm::radians(light.mOuterCutOff)), ELightType::SpotLight);
+		SubmitLight(direction, position, light.mColor, light.mBrightness, light.mRadius, glm::cos(glm::radians(light.mInnerCutOff)), glm::cos(glm::radians(light.mOuterCutOff)), ELightType::SpotLight);
+		ShadowRenderer::SubmitSpotLight(direction, position, light.mRadius);
 	}
 
-	void Renderer::SubmitLight(
-		const glm::vec3 &direction, const glm::vec3 &position, const FColor &color, float brightness, float radius,
-		float cutoff, float outercutoff, ELightType type)
+	void Renderer::SubmitLight(const glm::vec3 &direction, const glm::vec3 &position, const FColor &color, float brightness, float radius, float cutoff, float outercutoff, ELightType type)
 	{
 		auto current_index = sData->mLightData.mNumLights % MAX_LIGHTS;
-		sData->mLightData.mLights[current_index] = LightData{
-			.Position = position,
-			.Direction = direction,
-			.Color = color,
-			.Brightness = brightness,
-			.Radius = radius,
-			.Cutoff = cutoff,
-			.OuterCutOff = outercutoff,
-			.Type = (uint32_t)type};
+		LightData data{};
+		data.Position = position;
+		data.Direction = direction;
+		data.Color = (glm::vec3)color;
+		data.Brightness = brightness;
+		data.Radius = radius;
+		data.Cutoff = cutoff;
+		data.OuterCutOff = outercutoff;
+		data.Type = (uint32_t)type;
+
+		sData->mLightData.mLights[current_index] = data;
 
 		sData->mLightData.mNumLights++;
 		sData->mLightBuffer->SetData(&sData->mLightData, sizeof(RenderData::FLightData));

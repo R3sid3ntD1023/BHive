@@ -9,6 +9,11 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES} ${SOURCE_FIL
 
 add_executable(${TARGET_NAME} ${HEADER_FILES} ${SOURCE_FILES})
 
+set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON FOLDER "BHive")
 target_compile_definitions(${TARGET_NAME} PUBLIC EDITOR_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/")
-target_link_libraries(${TARGET_NAME} PUBLIC BHive-Engine )
+target_link_libraries(${TARGET_NAME} PRIVATE BHive-Engine )
 target_include_directories(${TARGET_NAME} PRIVATE src)
+
+set(INSTALL_BIN "bin/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}")
+
+install(TARGETS ${TARGET_NAME} DESTINATION ${INSTALL_BIN})

@@ -141,7 +141,6 @@ namespace BHive
 
 			auto obj = obj_type.create({mRegistry.create(), this}).get_value<Ref<GameObject>>();
 			obj->Load(ar);
-
 			AddGameObject(obj);
 		}
 	}

@@ -11,6 +11,8 @@
 #include "core/math/volumes/SphereVolume.h"
 #include "material/BDRFMaterial.h"
 
+#include "core/threading/Threading.h"
+
 #define SSBO_INDEX_PER_OBJECT_BINDING 1
 #define SSBO_INSTANCE_BINDING 2
 #define SSBO_BONE_BINDING 3
@@ -19,7 +21,7 @@
 namespace BHive
 {
 
-	struct ObjectData
+	struct FObjectData
 	{
 		glm::mat4 ModelMatrix;
 		FSubMesh SubMesh;
@@ -34,13 +36,41 @@ namespace BHive
 
 	struct MeshRenderData
 	{
-		std::unordered_map<Ref<Material>, std::vector<ObjectData>> ObjectData;
+		std::unordered_map<Ref<Material>, std::vector<FObjectData>> ObjectData;
 		Ref<StorageBuffer> BoneBuffer;
 		Ref<StorageBuffer> WorldMatrixBuffer;
 		Ref<StorageBuffer> InstanceBuffer;
 	};
 
 	static MeshRenderData *sMeshRenderData = nullptr;
+
+	void MeshRenderer::DrawMeshes()
+	{
+		for (auto &[mat, objects] : sMeshRenderData->ObjectData)
+		{
+			for (auto &[transform, submesh, vao, bounds, pose, instances, instanceCount] : objects)
+			{
+				auto matrix = transform * submesh.Transformation;
+				sMeshRenderData->WorldMatrixBuffer->SetData(&matrix, sizeof(glm::mat4));
+				sMeshRenderData->WorldMatrixBuffer->BindBufferBase(SSBO_INDEX_PER_OBJECT_BINDING);
+
+				if (instanceCount > 0)
+				{
+					sMeshRenderData->InstanceBuffer->SetData(instances, sizeof(glm::mat4) * instanceCount);
+					sMeshRenderData->InstanceBuffer->BindBufferBase(SSBO_INSTANCE_BINDING);
+				}
+
+				if (pose)
+				{
+					const auto &joints = pose->GetTransformsJointSpace();
+					sMeshRenderData->BoneBuffer->SetData(joints.data(), joints.size() * sizeof(glm::mat4));
+					sMeshRenderData->BoneBuffer->BindBufferBase(SSBO_BONE_BINDING);
+				}
+
+				RenderCommand::DrawElementsBaseVertex(EDrawMode::Triangles, *vao, submesh.StartVertex, submesh.StartIndex, submesh.IndexCount, instanceCount);
+			}
+		}
+	}
 
 	void MeshRenderer::Init()
 	{
@@ -125,7 +155,7 @@ namespace BHive
 			if (!material)
 				return;
 
-			auto data = ObjectData{
+			auto data = FObjectData{
 				.ModelMatrix = transform, .SubMesh = sub_mesh, .VertexArray = mesh->GetVertexArray(), .Bounds = mesh->GetBoundingBox(), .Instances = instances, .InstanceCount = instanceCount};
 
 			sMeshRenderData->ObjectData[material].emplace_back(data);
@@ -147,7 +177,7 @@ namespace BHive
 			if (!material)
 				return;
 
-			auto data = ObjectData{
+			auto data = FObjectData{
 				.ModelMatrix = transform,
 				.SubMesh = sub_mesh,
 				.VertexArray = mesh->GetVertexArray(),
@@ -174,7 +204,7 @@ namespace BHive
 
 	void MeshRenderer::SortObjects()
 	{
-		static auto sorter = [=](const ObjectData &a, const ObjectData &b)
+		static auto sorter = [=](const FObjectData &a, const FObjectData &b)
 		{
 			const auto &A = a.ModelMatrix[3];
 			const auto &B = b.ModelMatrix[3];

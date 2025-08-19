@@ -11,9 +11,9 @@ namespace BHive
 	public:
 		LambertMaterial();
 
-		FColor DiffuseColor = Colors::White;
+		FColor DiffuseColor = FColor::White;
 
-		FColor EmissionColor = Colors::Black;
+		FColor EmissionColor = FColor::Black;
 
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 

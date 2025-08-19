@@ -61,11 +61,6 @@ namespace BHive
 		}
 	}
 
-	void Application::SubmitToMainQueue(const std::function<void()> &func)
-	{
-		mMainQueue.push(func);
-	}
-
 	void Application::Close()
 	{
 		mIsRunning = false;
@@ -99,16 +94,6 @@ namespace BHive
 		}
 	}
 
-	void Application::ProcessMainQueue()
-	{
-		while (!mMainQueue.empty())
-		{
-			auto func = mMainQueue.front();
-			mMainQueue.pop();
-			func();
-		}
-	}
-
 	void Application::UpdateLayersAndWindow()
 	{
 
@@ -132,8 +117,6 @@ namespace BHive
 		mImGuiLayer->EndFrame();
 
 		mWindow->Update();
-
-		ProcessMainQueue();
 
 		Thread::Update();
 	}

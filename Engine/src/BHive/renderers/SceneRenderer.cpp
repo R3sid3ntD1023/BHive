@@ -12,6 +12,7 @@
 #include "importers/TextureImporter.h"
 #include "postprocessing/Aces.h"
 #include "gfx/textures/Texture2D.h"
+#include "ShadowRenderer.h"
 
 namespace BHive
 {
@@ -38,7 +39,7 @@ namespace BHive
 
 		// Create a quad for rendering the final output
 		mQuad = CreateRef<PQuad>();
-		mQuadShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/ScreenQuad.glsl");
+		mQuadShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/ScreenQuad.glsl");
 
 		// Initialize the PMREM generator
 		EnvironmentMapGenerator.Initialize();
@@ -55,16 +56,37 @@ namespace BHive
 
 	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
 	{
-		mFramebuffer->Bind();
-
-		RenderCommand::Clear();
 
 		Renderer::Begin();
+		ShadowRenderer::Begin();
 		Renderer::SubmitCamera(camera->GetProjection(), view.Inverse());
 	}
 
 	void SceneRenderer::End()
 	{
+		// Shadows
+		{
+			RenderCommand::CullFront();
+
+			ShadowRenderer::BeginPointShadowPass();
+
+			MeshRenderer::DrawMeshes();
+
+			ShadowRenderer::EndPointShadowPass();
+
+			ShadowRenderer::End();
+
+			RenderCommand::CullBack();
+		}
+
+		mFramebuffer->Bind();
+
+		RenderCommand::Clear();
+
+		ShadowRenderer::GetShadowFBO()->GetDepthAttachment()->Bind(9);
+		ShadowRenderer::GetPointShadowFBO()->GetDepthAttachment()->Bind(10);
+		ShadowRenderer::GetSpotShadowFBO()->GetDepthAttachment()->Bind(11);
+
 		EnvironmentMapGenerator.GetPreFilteredEnvironmentTetxure()->Bind(6);
 		EnvironmentMapGenerator.GetIrradianceTexture()->Bind(7);
 		EnvironmentMapGenerator.GetBDRFLUT()->Bind(8);

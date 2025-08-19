@@ -64,7 +64,7 @@ namespace BHive
 
 		std::filesystem::path GetCacheDirectory()
 		{
-			return "cache/shaders/opengl";
+			return "cache/shaders";
 		}
 
 		const char *GetCacheOpenglFileExtension(uint32_t type)
@@ -72,7 +72,7 @@ namespace BHive
 			switch (type)
 			{
 			case GL_VERTEX_SHADER:
-				return ".cached_oepngl.vert";
+				return ".cached_opengl.vert";
 			case GL_FRAGMENT_SHADER:
 				return ".cached_opengl.frag";
 			case GL_COMPUTE_SHADER:
@@ -135,8 +135,7 @@ namespace BHive
 				std::string content;
 				if (!FileSystem::ReadFile(resolved_path, content))
 				{
-					LOG_ERROR("Failed to read file : {}", resolved_path);
-
+					LOG_ERROR("ShaderIncluder::ERROR -Failed to read file : {}", requested_source);
 					return nullptr;
 				}
 
@@ -168,6 +167,12 @@ namespace BHive
 					}
 				}
 
+				if (!std::filesystem::exists(directory / requested))
+				{
+					LOG_ERROR("ShaderIncluder::ERROR - Failed to find file : {} requsted from {}", requested, requesting);
+					return "";
+				}
+
 				return (directory / requested).string();
 			}
 
@@ -196,7 +201,9 @@ namespace BHive
 		  mFilePath(path)
 	{
 		std::string source;
-		FileSystem::ReadFile(path, source);
+		if (!FileSystem::ReadFile(path, source))
+			return;
+
 		PreProcess(source);
 		Compile();
 	}
@@ -238,7 +245,6 @@ namespace BHive
 		shaderc::CompileOptions options;
 		// options.SetOptimizationLevel(shaderc_optimization_level_performance);
 		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-		// options.SetSourceLanguage(shaderc_source_language_glsl);
 		options.SetIncluder(std::make_unique<utils::IncludeHandler>());
 
 		for (const auto &[type, source] : mSources)
@@ -273,7 +279,6 @@ namespace BHive
 		shaderc::CompileOptions options;
 		// options.SetOptimizationLevel(shaderc_optimization_level_performance);
 		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
-		// options.SetSourceLanguage(shaderc_source_language_glsl);
 		options.SetAutoMapLocations(true);
 		options.SetIncluder(std::make_unique<utils::IncludeHandler>());
 
@@ -502,7 +507,10 @@ namespace BHive
 		for (auto &[type, source] : mVulkanSpirv)
 		{
 			mReflectionData.Reflect(source);
+
+#ifdef PRINT_SHADER_REFLECTION_DATA
 			LOG_TRACE("{}\n", mReflectionData.to_string());
+#endif
 		}
 	}
 

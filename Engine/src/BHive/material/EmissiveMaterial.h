@@ -11,7 +11,7 @@ namespace BHive
 	public:
 		EmissiveMaterial();
 
-		FColor EmissionColor = Colors::Black;
+		FColor EmissionColor = FColor::Black;
 
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 

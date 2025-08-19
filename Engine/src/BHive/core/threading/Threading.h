@@ -39,4 +39,4 @@ namespace BHive
 #define BEGIN_THREAD_DISPATCH(...) Thread::Dispatch([__VA_ARGS__](){
 #define END_THREAD_DISPATCH() \
 	});
-}
+} // namespace BHive

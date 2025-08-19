@@ -29,6 +29,17 @@ namespace BHive
 		}
 	};
 
+	struct FWindowLayout
+	{
+		std::string Name;
+
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(MAKE_NVP(Name));
+		}
+	};
+
 	class EditorLayer : public Layer
 	{
 	private:
@@ -52,6 +63,7 @@ namespace BHive
 		std::filesystem::path mCurrentWorldPath = "";
 
 		FGizmoData mGizmo;
+		FWindowLayout mCurrentLayout{"default.ini"};
 
 	public:
 		void OnAttach() override;
@@ -64,7 +76,7 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(MAKE_NVP("Camera", mEditorCamera), MAKE_NVP("Gizmo", mGizmo));
+			ar(MAKE_NVP("Layout", mCurrentLayout), MAKE_NVP("Camera", mEditorCamera), MAKE_NVP("Gizmo", mGizmo));
 		}
 
 	private:

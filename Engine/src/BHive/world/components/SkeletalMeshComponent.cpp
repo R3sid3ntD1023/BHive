@@ -14,7 +14,7 @@ namespace BHive
 			auto owner = GetOwner();
 			auto world_transform = owner ? owner->GetWorldTransform() : FTransform{};
 			MeshRenderer::DrawMesh(SkeletalMeshAsset, SkeletalMeshAsset->GetMaterialTable(), *pose, world_transform);
-			LineRenderer::DrawAABB(SkeletalMeshAsset->GetBoundingBox(), Colors::Red, world_transform);
+			LineRenderer::DrawAABB(SkeletalMeshAsset->GetBoundingBox(), FColor::Red, world_transform);
 
 			const auto &joints = pose->GetTransformsJointSpace();
 
@@ -27,7 +27,7 @@ namespace BHive
 					continue; // skip last joint, as it has no child
 
 				const glm::mat4 child = world_transform * joints[i + 1];
-				LineRenderer::DrawLine(parent[3], child[3], Colors::Cyan, world_transform);
+				LineRenderer::DrawLine(parent[3], child[3], FColor::Cyan, world_transform);
 			}
 		}
 	}

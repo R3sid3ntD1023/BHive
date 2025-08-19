@@ -9,7 +9,7 @@ namespace BHive
 
 		if (!in)
 		{
-			LOG_ERROR("Failed to open file {}", filepath.string());
+			LOG_ERROR("FileSystem::ERROR - Failed to open file {}", filepath.string());
 			return false;
 		}
 
@@ -19,7 +19,7 @@ namespace BHive
 
 		if (size <= 0)
 		{
-			LOG_ERROR("Failed to read file {}", filepath.string());
+			LOG_ERROR("FileSystem::ERROR -Failed to read file {}", filepath.string());
 			return false;
 		}
 

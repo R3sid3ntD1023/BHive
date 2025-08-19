@@ -3,6 +3,7 @@
 #include "gui/GUICore.h"
 #include "core/layers/ImGuiLayer.h"
 #include "ProjectLauncherLayer.h"
+#include "project/Project.h"
 #include <mini/ini.h>
 
 #define EDITOR_CONFIG_FILE "EditorConfig.ini"
@@ -16,26 +17,14 @@ namespace BHive
 			: Application(spec)
 		{
 
-			if (std::filesystem::exists(EDITOR_CONFIG_FILE))
+			if (spec.CommandLine.Count > 1)
 			{
-				mINI::INIStructure ini;
-				auto config = mINI::INIFile(EDITOR_CONFIG_FILE);
-				config.read(ini);
-
-				if (ini.has("Editor"))
-				{
-					auto settings = ini.get("Editor");
-					if (settings.has("Layout"))
-					{
-						std::string filename = "";
-						std::istringstream(settings.get("Layout")) >> filename;
-						auto layout = std::filesystem::path(EDITOR_RESOURCE_PATH) / ("layouts/" + filename);
-						ImGui::LoadIniSettingsFromDisk(layout.string().c_str());
-					}
-				}
+				Project::LoadProject(spec.CommandLine[1]);
 			}
-
-			PushLayer<ProjectLauncherLayer>();
+			else
+			{
+				PushLayer<ProjectLauncherLayer>();
+			}
 		}
 
 		~BHiveEditor() {}
@@ -49,35 +38,6 @@ namespace BHive
 		spec.Size = {1280, 720};
 		spec.Maximize = true;
 		spec.VSync = false;
-
-		mINI::INIStructure ini;
-
-		if (std::filesystem::exists(EDITOR_CONFIG_FILE))
-		{
-			auto config = mINI::INIFile(EDITOR_CONFIG_FILE);
-			config.read(ini);
-		}
-
-		if (ini.has("Application"))
-		{
-			char delimiter;
-
-			auto settings = ini.get("Application");
-			if (settings.has("Size"))
-			{
-				std::istringstream(settings.get("Size")) >> spec.Size.x >> delimiter >> spec.Size.y;
-			}
-
-			if (settings.has("Maximize"))
-			{
-				std::istringstream(settings.get("Maximize")) >> spec.Maximize;
-			}
-
-			if (settings.has("Vsync"))
-			{
-				std::istringstream(settings.get("VSync")) >> spec.VSync;
-			}
-		}
 
 		return new BHiveEditor(spec);
 	}

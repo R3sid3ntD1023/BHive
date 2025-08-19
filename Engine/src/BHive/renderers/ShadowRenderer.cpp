@@ -10,6 +10,7 @@
 #include "core/math/Frustum.h"
 #include "ShadowRenderer.h"
 
+#define SHADOW_SSBO_BINDING 4
 #define DIRECTIONAL_SHADOWMAP_SIZE 1024
 #define POINT_SHADOWMAP_SIZE 1024
 #define SPOT_SHADOWMAP_SIZE 512
@@ -23,8 +24,7 @@ namespace BHive
 	};
 
 	static LightDirections point_directions[] = {
-		{{1, 0, 0}, {0, -1, 0}},  {{-1, 0, 0}, {0, -1, 0}}, {{0, 1, 0}, {0, 0, 1}},
-		{{0, -1, 0}, {0, 0, -1}}, {{0, 0, 1}, {0, -1, 0}},	{{0, 0, -1}, {0, -1, 0}},
+		{{1, 0, 0}, {0, -1, 0}}, {{-1, 0, 0}, {0, -1, 0}}, {{0, 1, 0}, {0, 0, 1}}, {{0, -1, 0}, {0, 0, -1}}, {{0, 0, 1}, {0, -1, 0}}, {{0, 0, -1}, {0, -1, 0}},
 	};
 
 	struct FShadowData
@@ -46,7 +46,6 @@ namespace BHive
 		Ref<Framebuffer> mPointShadowPassFBO;
 
 		Ref<StorageBuffer> mShadowBuffer;
-		uint32_t ShadowSSBOBinding = 0;
 		FShadowData mShadowData;
 	};
 
@@ -97,9 +96,7 @@ namespace BHive
 		shadow_fbo_specs.Height = POINT_SHADOWMAP_SIZE;
 		shadow_fbo_specs.Depth = max_lights * 6;
 		shadow_fbo_specs.Attachments.reset()
-			.attach(
-				{.InternalFormat = EFormat::RG32F, .WrapMode = EWrapMode::CLAMP_TO_BORDER, .BorderColor = 0xffffffff},
-				ETextureType::TEXTURE_CUBE_MAP_ARRAY)
+			.attach({.InternalFormat = EFormat::RG32F, .WrapMode = EWrapMode::CLAMP_TO_BORDER, .BorderColor = 0xffffffff}, ETextureType::TEXTURE_CUBE_MAP_ARRAY)
 			.attach(
 				{
 					.InternalFormat = EFormat::DEPTH_COMPONENT_32F,
@@ -112,28 +109,18 @@ namespace BHive
 
 		mShadowRenderData.mShadowBuffer = CreateRef<StorageBuffer>(sizeof(FShadowData));
 
-		mShadowRenderData.mShadowPassShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/ShadowPass.glsl");
-		mShadowRenderData.mSpotShadowPassShader = ShaderManager::Get().Load(ENGINE_PATH "/data/shaders/SpotShadowPass.glsl");
-		auto point_shadow_shader = mShadowRenderData.mPointShadowPassShader =
-			ShaderManager::Get().Load(ENGINE_PATH "/data/Shaders/ShadowPointPass.glsl");
-
-		auto &data = point_shadow_shader->GetRelectionData();
-		if (data.StorageBuffers.contains("ShadowSSBO"))
-		{
-			mShadowRenderData.ShadowSSBOBinding = data.StorageBuffers.at("ShadowSSBO").Binding;
-		}
+		mShadowRenderData.mShadowPassShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/DirShadowPass.glsl");
+		mShadowRenderData.mSpotShadowPassShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/SpotShadowPass.glsl");
+		mShadowRenderData.mPointShadowPassShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowPointPass.glsl");
 	}
 
 	void ShadowRenderer::Begin()
 	{
 		mShadowRenderData.mShadowData.NumShadowMaps = {0, 0, 0, 0};
-
-		RenderCommand::CullFront();
 	}
 
 	void ShadowRenderer::End()
 	{
-		RenderCommand::CullBack();
 	}
 
 	void ShadowRenderer::BeginShadowPass()
@@ -152,6 +139,7 @@ namespace BHive
 	void ShadowRenderer::BeginSpotShadowPass()
 	{
 		mShadowRenderData.mShadowSpotPassFBO->Bind();
+
 		RenderCommand::Clear(Buffer_Depth);
 
 		mShadowRenderData.mSpotShadowPassShader->Bind();
@@ -167,6 +155,7 @@ namespace BHive
 	{
 		mShadowRenderData.mPointShadowPassFBO->Bind();
 		RenderCommand::Clear(Buffer_Depth | Buffer_Color);
+		RenderCommand::CullFront();
 
 		mShadowRenderData.mPointShadowPassShader->Bind();
 	}
@@ -177,8 +166,7 @@ namespace BHive
 		mShadowRenderData.mPointShadowPassFBO->UnBind();
 	}
 
-	void ShadowRenderer::SubmitDirectionalLight(
-		const glm::vec3 &direction, const glm::mat4 &camera_proj, const glm::mat4 &camera_view)
+	void ShadowRenderer::SubmitDirectionalLight(const glm::vec3 &direction, const glm::mat4 &camera_proj, const glm::mat4 &camera_view)
 	{
 
 		auto frustum = FrustumViewer(camera_proj, camera_view);
@@ -229,7 +217,7 @@ namespace BHive
 
 		shadow_data.NumShadowMaps.x++;
 
-		mShadowRenderData.mShadowBuffer->BindBufferBase(mShadowRenderData.ShadowSSBOBinding);
+		mShadowRenderData.mShadowBuffer->BindBufferBase(SHADOW_SSBO_BINDING);
 		mShadowRenderData.mShadowBuffer->SetData(&mShadowRenderData.mShadowData, sizeof(FShadowData));
 	}
 
@@ -242,12 +230,9 @@ namespace BHive
 		auto k = shadow_data.NumShadowMaps.z % MAX_LIGHTS;
 		shadow_data.SpotProjections[k] = proj * view;
 
-		FrustumViewer viewer(proj, view);
-		LineRenderer::DrawFrustum(viewer, {1, .5f, 1, 1});
-
 		shadow_data.NumShadowMaps.z++;
 
-		mShadowRenderData.mShadowBuffer->BindBufferBase(mShadowRenderData.ShadowSSBOBinding);
+		mShadowRenderData.mShadowBuffer->BindBufferBase(SHADOW_SSBO_BINDING);
 		mShadowRenderData.mShadowBuffer->SetData(&mShadowRenderData.mShadowData, sizeof(FShadowData));
 	}
 
@@ -262,14 +247,11 @@ namespace BHive
 
 			auto k = ((shadow_data.NumShadowMaps.y % MAX_LIGHTS) * 6) + j;
 			shadow_data.PointProjections[k] = proj * view;
-
-			FrustumViewer viewer(proj, view);
-			LineRenderer::DrawFrustum(viewer, {1, .5f, 0, 1});
 		}
 
 		shadow_data.NumShadowMaps.y++;
 
-		mShadowRenderData.mShadowBuffer->BindBufferBase(mShadowRenderData.ShadowSSBOBinding);
+		mShadowRenderData.mShadowBuffer->BindBufferBase(SHADOW_SSBO_BINDING);
 		mShadowRenderData.mShadowBuffer->SetData(&mShadowRenderData.mShadowData, sizeof(FShadowData));
 	}
 
