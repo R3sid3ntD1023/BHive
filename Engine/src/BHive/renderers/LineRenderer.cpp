@@ -5,7 +5,6 @@
 #include "gfx/VertexArray.h"
 #include "LineRenderer.h"
 #include "Renderer.h"
-#include "shaders/LineShader.h"
 
 namespace BHive
 {
@@ -37,7 +36,7 @@ namespace BHive
 			mVertexArray = CreateRef<VertexArray>();
 			mVertexArray->AddVertexBuffer(mVertexBuffer);
 
-			mLineShader = ShaderManager::Get().Load("Line", line_vert, line_frag);
+			mLineShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Line.glsl");
 		}
 
 		~RenderData()

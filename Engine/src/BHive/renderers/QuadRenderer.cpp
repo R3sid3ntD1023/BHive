@@ -10,10 +10,6 @@
 #include "gfx/VertexArray.h"
 #include "QuadRenderer.h"
 #include "Renderer.h"
-#include "renderers/Renderer.h"
-#include "shaders/CircleShader.h"
-#include "shaders/TextShader.h"
-#include "shaders/QuadShader.h"
 #include "sprite/Sprite.h"
 
 namespace BHive
@@ -29,8 +25,7 @@ namespace BHive
 
 		static BufferLayout Layout()
 		{
-			return {{EShaderDataType::Float4}, {EShaderDataType::Float3}, {EShaderDataType::Float2},
-					{EShaderDataType::Float4}, {EShaderDataType::Int},	  {EShaderDataType::Int}};
+			return {{EShaderDataType::Float4}, {EShaderDataType::Float3}, {EShaderDataType::Float2}, {EShaderDataType::Float4}, {EShaderDataType::Int}, {EShaderDataType::Int}};
 		}
 	};
 
@@ -59,15 +54,7 @@ namespace BHive
 		float Thickness;
 		float Fade;
 
-		static BufferLayout Layout()
-		{
-			return {
-				{EShaderDataType::Float4},
-				{EShaderDataType::Float3},
-				{EShaderDataType::Float4},
-				{EShaderDataType::Float},
-				{EShaderDataType::Float}};
-		}
+		static BufferLayout Layout() { return {{EShaderDataType::Float4}, {EShaderDataType::Float3}, {EShaderDataType::Float4}, {EShaderDataType::Float}, {EShaderDataType::Float}}; }
 	};
 
 	struct TextureData
@@ -164,7 +151,7 @@ namespace BHive
 			mVertexArray->SetIndexBuffer(mIndexBuffer);
 			mVertexArray->AddVertexBuffer(mVertexBuffer);
 
-			mShader = ShaderManager::Get().Load("Quad", quad_vert, quad_frag);
+			mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Quad.glsl");
 		}
 
 		void StartBatch() override
@@ -211,7 +198,7 @@ namespace BHive
 			mVertexArray = CreateRef<VertexArray>();
 			mVertexArray->SetIndexBuffer(mIndexBuffer);
 			mVertexArray->AddVertexBuffer(mVertexBuffer);
-			mShader = mShader = ShaderManager::Get().Load("Text", text_vert, text_frag);
+			mShader = mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Text.glsl");
 		}
 
 		void StartBatch() override
@@ -259,7 +246,7 @@ namespace BHive
 			mVertexArray->SetIndexBuffer(mIndexBuffer);
 			mVertexArray->AddVertexBuffer(mVertexBuffer);
 
-			mShader = ShaderManager::Get().Load("Circle", circle_vert, circle_frag);
+			mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Circle.glsl");
 		}
 
 		void Flush() override
@@ -315,8 +302,7 @@ namespace BHive
 
 		for (int i = 0; i < 4; i++)
 		{
-			sCircleData->mVertexCurrentPtr->WorldPosition =
-				transform.to_mat4() * glm::vec4(positions[i] * params.Radius, 1.f);
+			sCircleData->mVertexCurrentPtr->WorldPosition = transform.to_mat4() * glm::vec4(positions[i] * params.Radius, 1.f);
 			sCircleData->mVertexCurrentPtr->LocalPosition = positions[i] * 2.f;
 			sCircleData->mVertexCurrentPtr->Color = params.LineColor;
 			sCircleData->mVertexCurrentPtr->Thickness = params.Thickness;
@@ -351,9 +337,7 @@ namespace BHive
 
 		static glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
 
-		DrawQuad(
-			positions, sprite->GetCoords(), params.Size, params.Color, transform.to_mat4(), sprite->GetSourceTexture(),
-			params.Tiling, params.Flags);
+		DrawQuad(positions, sprite->GetCoords(), params.Size, params.Color, transform.to_mat4(), sprite->GetSourceTexture(), params.Tiling, params.Flags);
 	}
 
 	void QuadRenderer::DrawBillboard(const FQuadParams &params, const Ref<Texture> &texture, const FTransform &transform)
@@ -376,8 +360,8 @@ namespace BHive
 	}
 
 	void QuadRenderer::DrawQuad(
-		const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FColor &color,
-		const glm::mat4 &transform, const Ref<Texture> &texture, const glm::vec2 &tiling, QuadRendererFlags flags)
+		const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FColor &color, const glm::mat4 &transform, const Ref<Texture> &texture, const glm::vec2 &tiling,
+		QuadRendererFlags flags)
 	{
 		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
 
@@ -411,16 +395,13 @@ namespace BHive
 		sData->mIndexCount += 6;
 	}
 
-	void
-	QuadRenderer::DrawText(float size_arg, const std::string &text, const FTextParams &params, const FTransform &transform)
+	void QuadRenderer::DrawText(float size_arg, const std::string &text, const FTextParams &params, const FTransform &transform)
 	{
 		auto font = FontManager::Get().GetDefaultFont();
 		DrawText(font, size_arg, text, params, transform);
 	}
 
-	void QuadRenderer::DrawText(
-		const Ref<Font> &font, float size_arg, const std::string &text, const FTextParams &params,
-		const FTransform &transform)
+	void QuadRenderer::DrawText(const Ref<Font> &font, float size_arg, const std::string &text, const FTextParams &params, const FTransform &transform)
 	{
 		if (!font)
 			return;
@@ -497,9 +478,7 @@ namespace BHive
 		}
 	}
 
-	void QuadRenderer::DrawTextQuad(
-		const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style,
-		const glm::mat4 &transform, const Ref<Texture> &texture)
+	void QuadRenderer::DrawTextQuad(const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, const Ref<Texture> &texture)
 	{
 		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
 

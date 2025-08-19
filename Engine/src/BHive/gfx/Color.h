@@ -8,9 +8,17 @@ namespace BHive
 {
 	struct BHIVE_API FColor
 	{
-		float r = 0, g = 0, b = 0, a = 1;
+		union
+		{
+			struct
+			{
+				float r, g, b, a;
+			};
 
-		FColor() = default;
+			float c[4];
+		};
+
+		FColor();
 
 		FColor(const FColor &);
 
@@ -22,11 +30,13 @@ namespace BHive
 
 		FColor(float _r, float _g, float _b, float _a = 1.0f);
 
+		float &operator[](int index);
+
+		float operator[](int index) const;
+
 		FColor &operator=(const FColor &rhs);
 
 		bool operator==(const FColor &rhs) const;
-
-		operator ImVec4() const;
 
 		operator glm::vec4() const;
 
@@ -53,25 +63,22 @@ namespace BHive
 			ar(cereal::make_size_tag(size));
 			ar(r, g, b, a);
 		}
+
+		// predefined colors
+		static const FColor Blue;
+		static const FColor Red;
+		static const FColor Green;
+		static const FColor White;
+		static const FColor Black;
+		static const FColor Yellow;
+		static const FColor Magenta;
+		static const FColor Cyan;
+		static const FColor Gray;
+		static const FColor DarkGray;
+		static const FColor LightGray;
+		static const FColor Orange;
+		static const FColor Pink;
+		static const FColor Purple;
+		static const FColor Brown;
 	};
-
-	namespace Colors
-	{
-		static const FColor Blue = 0xFF0000FF;
-		static const FColor Red = 0xFFFF0000;
-		static const FColor Green = 0xFF00FF00;
-		static const FColor White = 0xFFFFFFFF;
-		static const FColor Black = 0xFF000000;
-		static const FColor Yellow = 0xFFFFFF00;
-		static const FColor Magenta = 0xFFFF00FF;
-		static const FColor Cyan = 0xFF00FFFF;
-		static const FColor Gray = 0xFF808080;
-		static const FColor DarkGray = 0xFF404040;
-		static const FColor LightGray = 0xFFC0C0C0;
-		static const FColor Orange = 0xFFFFA500;
-		static const FColor Pink = 0xFFFFC0CB;
-		static const FColor Purple = 0xFF800080;
-		static const FColor Brown = 0xFFA52A2A;
-
-	} // namespace Colors
 } // namespace BHive

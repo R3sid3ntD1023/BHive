@@ -1,6 +1,4 @@
-#pragma once
-
-const char *quad_vert = R"(
+#type vertex
 #version 460 core
 
 layout(location = 0) in vec4 vPosition;
@@ -34,7 +32,7 @@ void main()
 {
 	gl_Position = u_projection * u_view * vPosition;
 
-	vs_out.view = inverse(u_view)[3].xyz;
+	vs_out.view = u_camera_position;
 	vs_out.position = vPosition.xyz;
 	vs_out.normal = vNormal;
 	vs_out.texcoord = vTexCoord;
@@ -42,14 +40,13 @@ void main()
 
 	v_TextureID = vTextureID;
 	v_Flags = vFlags;
-})";
+}
 
-const char *quad_frag = R"(
+#type fragment
+
 #version 460 core
 
 #include <Core.glsl>
-
-#define LIT BIT(0)
 
 layout(location = 0) in flat int v_TextureID;
 layout(location = 1) in flat int v_Flags;
@@ -72,4 +69,4 @@ void main()
 	vec4 color = texture(uTextures[v_TextureID], vs_in.texcoord);
 
 	fs_out = color * vs_in.color;
-})";
+}

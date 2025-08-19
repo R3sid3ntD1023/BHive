@@ -13,6 +13,11 @@ struct PerObjectData
 };
 
 
+float median(float r, float g, float b)
+{
+    return max(min(r, g), min(max(r, g), b));
+}
+
 bool IsApproximatelyEqual(float a, float b)
 {
 	return abs(a - b) <= (abs(a) < abs(b) ? abs(b) : abs(a)) * EPSILON;

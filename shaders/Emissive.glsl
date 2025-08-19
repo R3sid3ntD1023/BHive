@@ -3,6 +3,7 @@
 #version 460 core
 
 #include <Core.glsl>
+
 layout(location = 0) in vec3 vPosition;
 layout(location = 1) in vec2 vTexCoord;
 layout(location = 2) in vec3 vNormal;
@@ -36,29 +37,10 @@ layout(std430, binding = 3) restrict readonly buffer Bones
 	mat4 bones[MAX_BONES];
 };
 
+
 void main()
 {
-	mat4 bone_matrix = GetBoneMatrix(vWeights, vBoneIds, bones);
-	mat4 model = object[gl_DrawID].WorldMatrix * bone_matrix;
-	
-	bool instanced = gl_InstanceIndex != -1; 
-	mat4 instance = mix( instances[gl_InstanceIndex],  mat4(1), float(instanced));
-	vec4 worldPos = instance * model * vec4(vPosition, 1);
-
-	mat3 normal_matrix = transpose(inverse(mat3(model)));
-	vec3 T = normalize(normal_matrix * vTangent);
-	vec3 N = normalize(normal_matrix * vNormal);
-	vec3 B = normalize(normal_matrix * vBiNormal);
-	
-	
-	vs_out.Position = worldPos.xyz;
-	vs_out.TBN = mat3(T, B, N);
-	vs_out.Texcoord = vTexCoord;
-	vs_out.Normal = N;
-	vs_out.CameraPosition = u_camera_position;
-	vs_out.Color = vColor;
-
-	gl_Position *= u_projection * u_view * worldPos;
+	#include <includes/Common.vert>
 }
 
 #type fragment

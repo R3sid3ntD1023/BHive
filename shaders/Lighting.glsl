@@ -37,7 +37,7 @@ layout(std430, binding = 1) uniform LightBuffer
 	Light uLights[MAX_LIGHTS];
 };
 
-layout(std430, binding = 0) restrict readonly buffer ShadowSSBO
+layout(std430, binding = 4) restrict readonly buffer ShadowSSBO
 {
 	uvec4 uNumShadowMaps;
 	mat4 uDirViewProjections[MAX_LIGHTS];
@@ -87,8 +87,11 @@ void GetPointLightInfo(const in Light light, const in vec3 geoPosition, inout In
 	float dist = distance(light.position, geoPosition);
 	//https://lisyarus.github.io/blog/posts/point-light-attenuation.html
 	float s = dist / light.radius;
-	float s2 = sqrt(s);
 
+	if(s >= 1.0)
+		return;
+
+	float s2 = sqrt(s);
 	float attenuation = sqrt(1 -s2) / (1 + light.radius * s);
 	//float attenuation = 1.0 / (light.radius * light.radius);
 

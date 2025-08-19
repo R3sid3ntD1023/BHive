@@ -49,19 +49,9 @@ layout(location = 0) out struct VS_OUT
 
 void main()
 {
-	mat4 bone_matrix = GetBoneMatrix(vWeights, vBoneIds, bones);
-	mat4 model = object[gl_DrawID].WorldMatrix * bone_matrix;
-	
-	bool instanced = gl_InstanceIndex != -1; 
-	mat4 instance = mix( instances[gl_InstanceIndex],  mat4(1), float(instanced));
-	vec4 worldPos = instance * model * vec4(vPosition, 1);
+	#include <includes/Common.vert>
 
-	mat3 normal_matrix = transpose(inverse(mat3(model)));
-	vec3 T = normalize(normal_matrix * vTangent);
-	vec3 N = normalize(normal_matrix * vNormal);
-	vec3 B = normalize(normal_matrix * vBiNormal);
-	
-	
+		
 	vs_out.Position = worldPos.xyz;
 	vs_out.TBN = mat3(T, B, N);
 	vs_out.Texcoord = vTexCoord;
@@ -69,7 +59,6 @@ void main()
 	vs_out.CameraPosition = u_camera_position;
 	vs_out.Color = vColor;
 
-	gl_Position *= u_projection * u_view * worldPos;
 }
 
 #type fragment
@@ -97,7 +86,7 @@ layout(binding = 8) uniform sampler2D BRDFLutMap;
 #include <Core.glsl>
 #include <Lighting.glsl>
 #include <StandardMaterial.glsl>
-
+#include <shadow_passes/Shadow.frag>
 
 layout(location = 0) in struct VS_OUT
 {
@@ -122,14 +111,6 @@ layout(push_constant) uniform PushConstants
 	uint Flags;
 } constants;
 
-//layout(binding = 3) uniform sampler2DArrayShadow u_shadow_map;
-//layout(binding = 4) uniform sampler2DArrayShadow u_shadow_spot_map;
-//layout(binding = 5) uniform samplerCubeArrayShadow u_shadow_point_map;
-
-
-
-
-#define SHADOW_MAP_BINDING 7
 
 #define HAS_NORMAL_MAP 1 << 0
 #define IS_DIAELECTRIC 1 << 1

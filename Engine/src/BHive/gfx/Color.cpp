@@ -2,6 +2,14 @@
 
 namespace BHive
 {
+	FColor::FColor()
+		: r(0.0f),
+		  g(0.0f),
+		  b(0.0f),
+		  a(1.0f)
+	{
+	}
+
 	FColor::FColor(const FColor &other)
 	{
 		r = other.r;
@@ -52,14 +60,21 @@ namespace BHive
 		return *this;
 	}
 
+	float &FColor::operator[](int index)
+	{
+		ASSERT(index >= 0 && index < 4);
+		return c[index];
+	}
+
+	float FColor::operator[](int index) const
+	{
+		ASSERT(index >= 0 && index < 4);
+		return c[index];
+	}
+
 	bool FColor::operator==(const FColor &rhs) const
 	{
 		return r == rhs.r && g == rhs.g && b == rhs.b && a == rhs.a;
-	}
-
-	FColor::operator ImVec4() const
-	{
-		return ImVec4(r, g, b, a);
 	}
 
 	FColor::operator glm::vec4() const
@@ -91,5 +106,21 @@ namespace BHive
 	{
 		return std::format("[{}, {}, {}, {}]", r, g, b, a);
 	}
+
+	const FColor FColor::Blue = 0xFF0000FF;
+	const FColor FColor::Red = 0xFFFF0000;
+	const FColor FColor::Green = 0xFF00FF00;
+	const FColor FColor::White = 0xFFFFFFFF;
+	const FColor FColor::Black = 0xFF000000;
+	const FColor FColor::Yellow = 0xFFFFFF00;
+	const FColor FColor::Magenta = 0xFFFF00FF;
+	const FColor FColor::Cyan = 0xFF00FFFF;
+	const FColor FColor::Gray = 0xFF808080;
+	const FColor FColor::DarkGray = 0xFF404040;
+	const FColor FColor::LightGray = 0xFFC0C0C0;
+	const FColor FColor::Orange = 0xFFFFA500;
+	const FColor FColor::Pink = 0xFFFFC0CB;
+	const FColor FColor::Purple = 0xFF800080;
+	const FColor FColor::Brown = 0xFFA52A2A;
 
 } // namespace BHive
