@@ -1,11 +1,13 @@
 #pragma once
 
 #include "core/Core.h"
-#include "core/EventDelegateHandle.h"
+#include "core/UUID.h"
 #include "core/Traits.hpp"
 
 namespace BHive
 {
+	using EventDelegateHandle = UUID;
+
 	namespace utils
 	{
 		template <typename T, typename... Types>
@@ -64,7 +66,6 @@ namespace BHive
 		EventDelegateHandle bind(T *instance, ReturnType (T::*func)(TArgs...))
 		{
 			mCallback = utils::bind_object<ReturnType, T, TArgs...>(instance, func);
-			mHandle.GenerateNewID();
 			return GetHandle();
 		}
 
@@ -72,14 +73,12 @@ namespace BHive
 		EventDelegateHandle bind(std::shared_ptr<T> instance, ReturnType (T::*func)(TArgs...))
 		{
 			mCallback = utils::bind_object<ReturnType, T, TArgs...>(instance.get(), func);
-			mHandle.GenerateNewID();
 			return GetHandle();
 		}
 
 		EventDelegateHandle bind(ReturnType (*func)(TArgs...))
 		{
 			mCallback = func;
-			mHandle.GenerateNewID();
 			return GetHandle();
 		}
 
@@ -87,7 +86,6 @@ namespace BHive
 		EventDelegateHandle bind(TFunction &&func)
 		{
 			mCallback = std::move(func);
-			mHandle.GenerateNewID();
 			return GetHandle();
 		}
 
