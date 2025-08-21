@@ -234,6 +234,7 @@ namespace BHive
 	{
 		RemoveFromParent();
 		OnDestroyedEvent.invoke(this);
+		mIsPendingDestroy = true;
 		mWorld->Destroy(GetID());
 	}
 

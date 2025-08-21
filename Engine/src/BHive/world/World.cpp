@@ -209,23 +209,32 @@ namespace BHive
 			{
 				Simulate(dt);
 
-				for (auto &object : mObjects)
-					object.second->Update(dt);
+				for (auto &[id, object] : mObjects)
+				{
+					if (object->IsPendingDestroy())
+					{
+						object->End();
+					}
+					else
+					{
+						object->Update(dt);
+					}
+				}
 			}
 		}
 
 		mRenderSystem->OnUpdate(renderer, this);
 		RenderPhysicsWorld();
 
-		for (auto &object : mDestoryedObjects)
+		while (!mDestroyQueue.empty())
 		{
-			if (mIsRunning)
-				object->End();
+			auto &identifier = mDestroyQueue.front();
 
-			mObjects.erase(object->GetID());
+			mObjects.erase(identifier.first);
+			mEnttMap.erase(identifier.second);
+			mRegistry.destroy(identifier.second);
+			mDestroyQueue.pop();
 		}
-
-		mDestoryedObjects.clear();
 	}
 
 	void World::End()
@@ -491,12 +500,13 @@ namespace BHive
 		return nullptr;
 	}
 
-	void World::Destroy(const UUID &id)
+	void World::Destroy(const UUID &gameObjectID)
 	{
-		if (!mObjects.contains(id))
+		if (!mObjects.contains(gameObjectID))
 			return;
 
-		mDestoryedObjects.push_back(mObjects.at(id));
+		entt::entity entity = *mObjects.at(gameObjectID);
+		mDestroyQueue.push({gameObjectID, entity});
 	}
 
 	bool World::RayCast(const glm::vec3 &start, const glm::vec3 &dir, float maxDistance, FHitResult &result, uint16_t categoryMasks)

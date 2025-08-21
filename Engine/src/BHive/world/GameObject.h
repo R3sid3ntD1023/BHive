@@ -19,12 +19,18 @@ namespace BHive
 	public:
 		using TickableComponents = std::vector<ITickable *>;
 
+		FOnDestroyedEvent OnDestroyedEvent;
+
 		GameObject(const entt::entity &handle, World *world);
+
 		GameObject(const std::string &name, const entt::entity &handle, World *world);
+
 		GameObject(const GameObject &) = default;
 
 		virtual void Begin();
+
 		virtual void Update(float dt);
+
 		virtual void End();
 
 		template <typename T, typename... TArgs>
@@ -73,38 +79,56 @@ namespace BHive
 		}
 
 		void SetName(const std::string &name);
+
 		void SetLocalTransform(const FTransform &transform);
+
 		void SetWorldTransform(const FTransform &transform);
 
 		PhysicsComponent *GetPhysicsComponent();
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const;
+
 		virtual void Load(cereal::BinaryInputArchive &ar);
 
 		virtual void Save(cereal::JSONOutputArchive &ar) const;
+
 		virtual void Load(cereal::JSONInputArchive &ar);
 
 		void SetParent(GameObject *object);
+
 		void AddChild(GameObject *object);
+
 		void RemoveChild(GameObject *object);
+
 		void RemoveFromParent();
+
 		void Destroy();
 
 		const UUID &GetID() const;
+
 		const std::string &GetName() const;
+
 		FTransform GetWorldTransform() const;
+
 		FTransform &GetLocalTransform();
+
 		const FTransform &GetLocalTransform() const;
+
 		const uint64_t GetGroup() const;
+
 		bool IsInGroup(uint16_t group) const;
 
-		World *GetWorld() const { return mWorld; }
-		Ref<GameObject> GetParent() const;
-		std::unordered_set<Ref<GameObject>> GetChildren() const;
-		const ComponentList &GetComponents() const { return mComponents; }
-		ComponentList &GetComponents() { return mComponents; }
+		bool IsPendingDestroy() const { return mIsPendingDestroy; }
 
-		FOnDestroyedEvent OnDestroyedEvent;
+		World *GetWorld() const { return mWorld; }
+
+		Ref<GameObject> GetParent() const;
+
+		std::unordered_set<Ref<GameObject>> GetChildren() const;
+
+		const ComponentList &GetComponents() const { return mComponents; }
+
+		ComponentList &GetComponents() { return mComponents; }
 
 		operator entt::entity() const { return mEntity; }
 
@@ -112,6 +136,7 @@ namespace BHive
 
 	private:
 		void AddComponent(Component *component);
+
 		Component *GetOrAddComponent(const rttr::type &type);
 
 	protected:
@@ -122,6 +147,8 @@ namespace BHive
 		ComponentList mComponents;
 
 		TickableComponents mTickableComponents;
+
+		bool mIsPendingDestroy{false};
 	};
 
 } // namespace BHive

@@ -21,8 +21,10 @@ namespace BHive
 	class Camera;
 	class SceneRenderer;
 
+	using ObjectIdentifier = std::pair<UUID, entt::entity>;
 	using ObjectList = std::unordered_map<UUID, Ref<GameObject>>;
 	using EnTTList = std::unordered_map<entt::entity, UUID>;
+	using PendingDestroyQueue = std::queue<ObjectIdentifier>;
 
 	class BHIVE_API World : public Asset
 	{
@@ -71,7 +73,7 @@ namespace BHive
 
 		const ObjectList &GetGameObjects() const { return mObjects; }
 
-		void Destroy(const UUID &id);
+		void Destroy(const UUID &gameObjectID);
 
 		bool RayCast(const glm::vec3 &start, const glm::vec3 &dir, float maxDistance, FHitResult &result, uint16_t categoryMasks = 65535U);
 
@@ -86,24 +88,26 @@ namespace BHive
 		REFLECTABLEV(Asset);
 
 	protected:
+		entt::registry mRegistry;
 		ObjectList mObjects;
 		EnTTList mEnttMap;
+		PendingDestroyQueue mDestroyQueue;
 
-		std::vector<Ref<GameObject>> mDestoryedObjects;
-
-		// entt
-		entt::registry mRegistry;
-		Ref<struct RenderSystem> mRenderSystem;
+		bool mIsRunning = false;
+		bool mIsPaused = false;
 
 #pragma region Physics
 		float mAccumulatedTime{0.0f};
-		bool mIsRunning = false;
-		bool mIsPaused = false;
+
 		int32_t mFrames = 1;
 		physx::PxScene *mPhyxWorld = nullptr;
 		physx::PxDefaultCpuDispatcher *mCpuDispatcher = nullptr;
 		physx::PxSimulationEventCallback *mSimulationEventCallback = nullptr;
 		physx::PxRaycastCallback *mHitCallback = nullptr;
+#pragma endregion
+
+#pragma region SYSTEMS
+		Ref<struct RenderSystem> mRenderSystem;
 #pragma endregion
 
 		friend class GameObject;
