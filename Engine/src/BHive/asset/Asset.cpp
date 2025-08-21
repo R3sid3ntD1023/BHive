@@ -12,16 +12,6 @@ namespace BHive
 		ar(mHandle, mName);
 	}
 
-	void Asset::Save(cereal::JSONOutputArchive &ar) const
-	{
-		ar(MAKE_NVP("Handle", mHandle), MAKE_NVP("Name", mName));
-	}
-
-	void Asset::Load(cereal::JSONInputArchive &ar)
-	{
-		ar(MAKE_NVP("Handle", mHandle), MAKE_NVP("Name", mName));
-	}
-
 	REFLECT(Asset)
 	{
 		BEGIN_REFLECT(Asset);
