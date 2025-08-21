@@ -19,10 +19,6 @@ namespace BHive
 
 		void Load(cereal::BinaryInputArchive &ar) override;
 
-		void Save(cereal::JSONOutputArchive &ar) const override;
-
-		void Load(cereal::JSONInputArchive &ar) override;
-
 		void Submit(const Ref<Shader> &shader) override;
 
 		Ref<Shader> GetShader() const;

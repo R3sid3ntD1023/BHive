@@ -21,20 +21,6 @@ namespace BHive
 		ar(MAKE_NVP("Emission", EmissionColor));
 	}
 
-	void EmissiveMaterial ::Save(cereal::JSONOutputArchive &ar) const
-	{
-		Material::Save(ar);
-
-		ar(MAKE_NVP("Emission", EmissionColor));
-	}
-
-	void EmissiveMaterial ::Load(cereal::JSONInputArchive &ar)
-	{
-		Material::Load(ar);
-
-		ar(MAKE_NVP("Emission", EmissionColor));
-	}
-
 	void EmissiveMaterial ::Submit(const Ref<Shader> &shader)
 	{
 		Material::Submit(shader);

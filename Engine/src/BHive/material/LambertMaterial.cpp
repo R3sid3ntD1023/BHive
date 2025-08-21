@@ -22,20 +22,6 @@ namespace BHive
 		ar(MAKE_NVP("Color", DiffuseColor), MAKE_NVP("Emission", EmissionColor));
 	}
 
-	void LambertMaterial::Save(cereal::JSONOutputArchive &ar) const
-	{
-		Material::Save(ar);
-
-		ar(MAKE_NVP("Color", DiffuseColor), MAKE_NVP("Emission", EmissionColor));
-	}
-
-	void LambertMaterial::Load(cereal::JSONInputArchive &ar)
-	{
-		Material::Load(ar);
-
-		ar(MAKE_NVP("Color", DiffuseColor), MAKE_NVP("Emission", EmissionColor));
-	}
-
 	void LambertMaterial::Submit(const Ref<Shader> &shader)
 	{
 		Material::Submit(shader);

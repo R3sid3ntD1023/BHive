@@ -41,10 +41,6 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const;
-
-		virtual void Load(cereal::JSONInputArchive &ar);
-
 		void AddTextureSlot(const std::string &name, uint32_t binding);
 
 		REFLECTABLEV(Asset)

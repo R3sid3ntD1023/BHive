@@ -65,20 +65,6 @@ namespace BHive
 		ar(mTextures);
 	}
 
-	void Material::Save(cereal::JSONOutputArchive &ar) const
-	{
-		Asset::Save(ar);
-
-		ar(MAKE_NVP("TextureSlots", mTextures));
-	}
-
-	void Material::Load(cereal::JSONInputArchive &ar)
-	{
-		Asset::Load(ar);
-
-		ar(MAKE_NVP("TextureSlots", mTextures));
-	}
-
 	REFLECT(Material::TextureSlot)
 	{
 		BEGIN_REFLECT(Material::TextureSlot)
