@@ -1,14 +1,9 @@
 #include "BoxColliderComponent.h"
 #include "GameObject.h"
-#include "renderers/Renderer.h"
 #include <physx/PxPhysicsAPI.h>
 
 namespace BHive
 {
-	void BoxColliderComponent::Render()
-	{
-		LineRenderer::DrawBox(Extents, Offset, Color, GetWorldTransform());
-	}
 
 	void BoxColliderComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{

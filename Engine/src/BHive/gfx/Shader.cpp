@@ -508,9 +508,7 @@ namespace BHive
 		{
 			mReflectionData.Reflect(source);
 
-#ifdef PRINT_SHADER_REFLECTION_DATA
 			LOG_TRACE("{}\n", mReflectionData.to_string());
-#endif
 		}
 	}
 

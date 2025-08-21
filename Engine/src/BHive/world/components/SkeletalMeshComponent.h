@@ -11,8 +11,6 @@ namespace BHive
 	public:
 		SkeletalMeshComponent() = default;
 
-		void Render() override;
-
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;

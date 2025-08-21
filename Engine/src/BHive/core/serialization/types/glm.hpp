@@ -6,18 +6,21 @@
 #include <string>
 
 template <typename A>
-constexpr bool is_json_archive_v =
-	std::is_same_v<A, cereal::JSONOutputArchive> || std::is_same_v<A, cereal::JSONInputArchive>;
+constexpr bool is_json_archive_v = std::is_same_v<A, cereal::JSONOutputArchive> || std::is_same_v<A, cereal::JSONInputArchive>;
 
 template <typename A>
-constexpr bool is_binary_archive_v =
-	std::is_same_v<A, cereal::BinaryOutputArchive> || std::is_same_v<A, cereal::BinaryInputArchive>;
+constexpr bool is_binary_input_archive_v = std::is_same_v<A, cereal::BinaryInputArchive>;
+
+template <typename A>
+constexpr bool is_binary_output_archive_v = std::is_same_v<A, cereal::BinaryOutputArchive>;
+
+template <typename A>
+constexpr bool is_binary_archive_v = is_binary_input_archive_v<A> || is_binary_output_archive_v<A>;
 
 namespace glm
 {
 
-	template <
-		typename A, length_t C, length_t R, typename T, qualifier Q, std::enable_if_t<is_json_archive_v<A>, bool> = true>
+	template <typename A, length_t C, length_t R, typename T, qualifier Q, std::enable_if_t<is_json_archive_v<A>, bool> = true>
 	inline void CEREAL_SERIALIZE_FUNCTION_NAME(A &ar, mat<C, R, T, Q> &obj)
 	{
 		size_t size = C * R;
@@ -50,8 +53,7 @@ namespace glm
 		}
 	}
 
-	template <
-		typename A, length_t C, length_t R, typename T, qualifier Q, std::enable_if_t<is_binary_archive_v<A>, bool> = true>
+	template <typename A, length_t C, length_t R, typename T, qualifier Q, std::enable_if_t<is_binary_archive_v<A>, bool> = true>
 	inline void CEREAL_SERIALIZE_FUNCTION_NAME(A &ar, mat<C, R, T, Q> &obj)
 	{
 		ar(cereal::binary_data(&obj, sizeof(T) * C * R));

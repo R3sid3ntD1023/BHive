@@ -7,6 +7,7 @@
 #include "World.h"
 #include <physx/PxPhysicsAPI.h>
 #include "core/subsystem/SubSystem.h"
+#include "RenderSystem.h"
 
 namespace BHive
 {
@@ -102,6 +103,7 @@ namespace BHive
 	World::World(const World &world)
 		: Asset(world)
 	{
+		mRenderSystem = CreateRef<RenderSystem>();
 	}
 
 	World::~World()
@@ -199,7 +201,7 @@ namespace BHive
 		mIsRunning = true;
 	}
 
-	void World::Update(float dt)
+	void World::Update(float dt, SceneRenderer *renderer)
 	{
 		if (mIsRunning)
 		{
@@ -212,7 +214,8 @@ namespace BHive
 			}
 		}
 
-		Render();
+		mRenderSystem->OnUpdate(renderer, this);
+		RenderPhysicsWorld();
 
 		for (auto &object : mDestoryedObjects)
 		{
@@ -223,15 +226,6 @@ namespace BHive
 		}
 
 		mDestoryedObjects.clear();
-	}
-
-	void World::Render()
-	{
-
-		for (auto &object : mObjects)
-			object.second->Render();
-
-		RenderPhysicsWorld();
 	}
 
 	void World::End()

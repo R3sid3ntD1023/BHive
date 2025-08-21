@@ -1,20 +1,8 @@
-#include "GameObject.h"
-#include "Renderers/Renderer.h"
 #include "SpriteComponent.h"
+#include "GameObject.h"
 
 namespace BHive
 {
-	void SpriteComponent::Render()
-	{
-		auto owner = GetOwner();
-		auto transform = owner->GetWorldTransform();
-
-		FQuadParams params{};
-		params.Color = Color;
-		params.Size = Size;
-		params.Tiling = Tiling;
-		QuadRenderer::DrawSprite(params, SpriteAsset, transform);
-	}
 
 	void SpriteComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
@@ -28,8 +16,7 @@ namespace BHive
 
 	REFLECT(SpriteComponent)
 	{
-		BEGIN_REFLECT(SpriteComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR()
-			REFLECT_PROPERTY(Color) REFLECT_PROPERTY(Size) REFLECT_PROPERTY(Tiling) REFLECT_PROPERTY(SpriteAsset)
-				COMPONENT_IMPL();
+		BEGIN_REFLECT(SpriteComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Color) REFLECT_PROPERTY(Size) REFLECT_PROPERTY(Tiling)
+			REFLECT_PROPERTY(SpriteAsset) COMPONENT_IMPL();
 	}
 } // namespace BHive

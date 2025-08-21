@@ -19,7 +19,4 @@ namespace BHive
 		glNamedBufferSubData(mBufferID, offset, size, data);
 	}
 
-	void BHive::BufferBase::BindBufferBase(uint32_t binding) const
-	{
-	}
 } // namespace BHive

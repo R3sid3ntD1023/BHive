@@ -113,17 +113,9 @@ namespace BHive
 
 		mRenderer->Begin(&mEditorCamera, mEditorCamera.GetView());
 
-		Renderer::SubmitCamera(mEditorCamera.GetProjection(), mEditorCamera.GetView().Inverse());
+		mActiveWorld->Update(dt, mRenderer.get());
 
-		RenderCommand::Clear();
-
-		Renderer::Begin();
-
-		mActiveWorld->Update(dt);
-
-		LineRenderer::DrawGrid(FGrid{.size = 40.f, .divisions = 20, .color = 0xffffffff, .stepcolor = 0xff808080});
-
-		Renderer::End();
+		mRenderer->SubmitCommand([]() { LineRenderer::DrawGrid(FGrid{.size = 40.f, .divisions = 20, .color = 0xffffffff, .stepcolor = 0xff808080}); });
 
 		mRenderer->End();
 	}

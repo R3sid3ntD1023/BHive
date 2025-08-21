@@ -100,7 +100,7 @@ namespace BHive
 		auto hdr_var = GetMetaData(EPropertyMetaData_HDR);
 		auto flags = (hdr_var ? ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float : 0);
 
-		if (ImGui::ColorEdit4("##ColorEdit", &data.r, flags))
+		if (ImGui::ColorEdit4("##ColorEdit", &data[0], flags))
 		{
 			var = data;
 			return true;

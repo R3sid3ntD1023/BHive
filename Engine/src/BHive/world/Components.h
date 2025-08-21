@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Component.h"
+#include "components/TransformComponent.h"
 #include "components/CameraComponent.h"
 #include "components/FlipBookComponent.h"
 #include "components/SpriteComponent.h"

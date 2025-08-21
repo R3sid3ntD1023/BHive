@@ -82,11 +82,12 @@ layout(binding = 5) uniform sampler2D OpacityMap;
 layout(binding = 6) uniform samplerCube PreFilterMap;
 layout(binding = 7) uniform samplerCube IrradianceMap;
 layout(binding = 8) uniform sampler2D BRDFLutMap;
+#include <shadow_passes/Shadow.frag>
 
 #include <Core.glsl>
 #include <Lighting.glsl>
 #include <StandardMaterial.glsl>
-#include <shadow_passes/Shadow.frag>
+
 
 layout(location = 0) in struct VS_OUT
 {

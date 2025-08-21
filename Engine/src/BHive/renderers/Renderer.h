@@ -3,7 +3,6 @@
 #include "core/Core.h"
 #include "LineRenderer.h"
 #include "QuadRenderer.h"
-#include "MeshRenderer.h"
 #include "gfx/Camera.h"
 #include "Lights.h"
 #include "core/math/Frustum.h"
@@ -30,12 +29,10 @@ namespace BHive
 		static void Begin();
 		static void SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view);
 
-		static void SubmitDirectionalLight(const glm::vec3 &direction, const DirectionalLight &light);
-		static void SubmitPointLight(const glm::vec3 &position, const PointLight &light);
-		static void SubmitSpotLight(const glm::vec3 &direction, const glm::vec3 &position, const SpotLight &light);
-		static void SubmitLight(
-			const glm::vec3 &direction, const glm::vec3 &position, const FColor &color, float brightness, float radius,
-			float cutoff, float outercutoff, ELightType type);
+		static void SubmitLight(const DirectionalLight &light, const glm::vec3 &direction);
+		static void SubmitLight(const PointLight &light, const glm::vec3 &position);
+		static void SubmitLight(const SpotLight &light, const glm::vec3 &direction, const glm::vec3 &position);
+		static glm::uvec3 GetNumLights();
 
 		static void End();
 
@@ -62,8 +59,8 @@ namespace BHive
 		{
 			glm::mat4 Projection{1.0f};
 			glm::mat4 View{1.0f};
-			glm::vec4 NearFar;
-			glm::vec4 CameraPosition;
+			glm::vec4 NearFar{0.0f, 0.0f, 0.0f, 0.0f};
+			glm::vec4 CameraPosition{0.0f, 0.0f, 0.0f, 1.0f};
 			Frustum ViewFrustum;
 		};
 

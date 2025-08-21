@@ -2,33 +2,19 @@
 
 namespace BHive
 {
-	bool Light::operator==(const Light &rhs) const
+	bool LightBase::operator==(const LightBase &rhs) const
 	{
-		return rhs.mBrightness == mBrightness && rhs.mColor == mColor;
+		return rhs.Color == Color;
 	}
 
 	bool PointLight::operator==(const PointLight &rhs) const
 	{
-		return rhs.mRadius == mRadius;
+		return rhs.Radius == Radius;
 	}
 
 	bool SpotLight::operator==(const SpotLight &rhs) const
 	{
-		return rhs.mInnerCutOff == mInnerCutOff && mOuterCutOff == rhs.mOuterCutOff;
+		return rhs.InnerCutOff == InnerCutOff && OuterCutOff == rhs.OuterCutOff;
 	}
 
-	ELightType PointLight::GetLightType() const
-	{
-		return ELightType::Point;
-	}
-
-	ELightType SpotLight::GetLightType() const
-	{
-		return ELightType::SpotLight;
-	}
-
-	ELightType DirectionalLight::GetLightType() const
-	{
-		return ELightType::Directional;
-	}
 } // namespace BHive

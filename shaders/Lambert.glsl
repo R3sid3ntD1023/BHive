@@ -72,7 +72,7 @@ void main()
 #include <LambertMaterial.glsl>
 
 layout(binding = 0) uniform sampler2D DiffuseMap;
-#include <shadow_passes/Shadow.frag>
+//#include <shadow_passes/Shadow.frag>
 
 layout(push_constant) uniform PushConstants
 {

@@ -11,8 +11,6 @@ namespace BHive
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent &other) = default;
 
-		void Render() override;
-
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
@@ -24,6 +22,8 @@ namespace BHive
 		const Ref<StaticMesh> &GetStaticMesh() const { return mStaticMeshAsset; }
 
 		void SetStaticMesh(const Ref<StaticMesh> &mesh);
+
+		const MaterialTable &GetMaterials() const { return mOverrideMaterials; }
 
 		REFLECTABLEV(Component)
 

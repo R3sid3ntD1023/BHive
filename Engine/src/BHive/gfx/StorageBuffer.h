@@ -8,6 +8,7 @@ namespace BHive
 	class StorageBuffer : public BufferBase
 	{
 	public:
+		StorageBuffer() = default;
 		StorageBuffer(uint32_t binding, size_t size);
 		StorageBuffer(const void *data, size_t size);
 		StorageBuffer(size_t size);

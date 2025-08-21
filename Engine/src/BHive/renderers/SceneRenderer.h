@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "Renderer.h"
 #include "PMREMGenerator.h"
+#include "mesh/MeshData.h"
 
 namespace BHive
 {
@@ -16,6 +17,12 @@ namespace BHive
 	class PostProcessor;
 	struct FTransform;
 	class PMREMGenerator;
+	class BaseMesh;
+	class SkeletalMesh;
+	class StaticMesh;
+	class SkeletalPose;
+	class MaterialTable;
+	struct FRenderData;
 
 	/**
 	 * @brief The SceneRenderer class is responsible for rendering the scene.
@@ -43,6 +50,18 @@ namespace BHive
 
 		void AddPostProcessingEffect(const Ref<PostProcessor> &processor);
 
+		void SubmitMesh(const Ref<StaticMesh> &mesh, const glm::mat4 &transform = {1.0f}, const glm::mat4 *instances = nullptr, size_t instanceCount = 0);
+
+		void SubmitMesh(const Ref<SkeletalMesh> &mesh, const SkeletalPose &pose, const glm::mat4 &transform = {1.0f}, const glm::mat4 *instances = nullptr, size_t instanceCount = 0);
+
+		void SubmitMesh(const Ref<StaticMesh> &mesh, const MaterialTable &materials, const glm::mat4 &transform = {1.0f}, const glm::mat4 *instances = nullptr, size_t instanceCount = 0);
+
+		void SubmitMesh(
+			const Ref<SkeletalMesh> &mesh, const MaterialTable &materials, const SkeletalPose &pose, const glm::mat4 &transform = {1.0f}, const glm::mat4 *instances = nullptr,
+			size_t instanceCount = 0);
+
+		void SubmitCommand(const std::function<void()> cmd);
+
 		void Resize(uint32_t width, uint32_t height);
 
 		const Ref<Texture> &GetColorAttachment(uint32_t index = 0) const;
@@ -58,6 +77,15 @@ namespace BHive
 		glm::uvec2 GetSize() const;
 
 	private:
+		void DrawMeshes();
+
+		void DrawMeshes(const std::vector<FRenderData> &datas);
+
+		bool IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform);
+
+		void SortObjects();
+
+	private:
 		Ref<Framebuffer> mFramebuffer;
 		Ref<Framebuffer> mFinalFramebuffer; // Final framebuffer for post-processing effects
 		Ref<PQuad> mQuad;
@@ -69,7 +97,26 @@ namespace BHive
 
 		static inline PMREMGenerator EnvironmentMapGenerator;
 		static inline Ref<Texture2D> sEnvironmentMap = nullptr; // Static environment map
+
+		Ref<struct FMeshRenderData> mMeshRenderData;
+		std::stack<std::function<void()>> mCommands;
+
 		REFLECTABLE()
+	};
+
+	struct FRenderData
+	{
+		Ref<VertexArray> VertexArray;
+		FSubMesh SubMesh;
+		glm::mat4 Transform;
+		AABB Bounds;
+
+		// skeletal
+		const SkeletalPose *Pose = nullptr;
+
+		// instances
+		const glm::mat4 *Instances = nullptr;
+		size_t InstanceCount = 0;
 	};
 
 	REFLECT_EXTERN(SceneRenderer)

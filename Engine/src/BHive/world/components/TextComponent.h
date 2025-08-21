@@ -7,8 +7,6 @@ namespace BHive
 {
 	struct TextComponent : public Component
 	{
-		virtual void Render() override;
-
 		float Size = 10.f;
 
 		FTextParams Params{};
@@ -19,4 +17,4 @@ namespace BHive
 	};
 
 	REFLECT_EXTERN(TextComponent)
-}
+} // namespace BHive

@@ -2,57 +2,82 @@
 #include "gfx/Shader.h"
 #include "gfx/textures/Texture2D.h"
 #include "gfx/UniformBuffer.h"
+#include "gfx/StorageBuffer.h"
 #include "Renderer.h"
 #include "ShadowRenderer.h"
 
 #include <glad/glad.h>
 
 #define CAMERA_UBO_BINDING 0
-#define LIGHT_UBO_BINDING 1
+#define LIGHT_BUFFER_BINDING 4
+#define DIR_LIGHT_STORAGE_BINDING 4
+#define POINT_LIGHT_STORAGE_BINDING 5
+#define SPOT_LIGHT_STORAGE_BINDING 6
 
 namespace BHive
 {
-	struct LightData
+	struct FDirectionalLightInfo
 	{
-		alignas(16) glm::vec3 Position{0.f};
-		alignas(16) glm::vec3 Direction{0.f};
-		alignas(16) glm::vec3 Color{1.f};
-		float Brightness{1.f};
-		float Radius{1.f};
-		float Cutoff{12.5f};
-		float OuterCutOff{20.0f};
-		uint32_t Type = 0;
+		alignas(16) glm::vec3 Color;
+		alignas(16) glm::vec3 Direction;
+	};
+
+	struct FPointLightInfo
+	{
+		alignas(16) glm::vec3 Color;
+		alignas(16) glm::vec3 Position;
+		float Radius;
+	};
+
+	struct FSpotLightInfo
+	{
+		alignas(16) glm::vec3 Color;
+		alignas(16) glm::vec3 Position;
+		alignas(16) glm::vec3 Direction;
+		float Radius;
+		float InnerCutoff;
+		float OuterCutoff;
+	};
+
+	struct FLightInfo
+	{
+		uint32_t NumDirectionalLights = 0;
+		uint32_t NumPointLights = 0;
+		uint32_t NumSpotLights = 0;
+
+		std::array<FDirectionalLightInfo, MAX_LIGHTS> DirectionalLightInfo;
+		std::array<FPointLightInfo, MAX_LIGHTS> PointLightInfo;
+		std::array<FSpotLightInfo, MAX_LIGHTS> SpotLightInfo;
 	};
 
 	struct Renderer::RenderData
 	{
 
-		struct FLightData
-		{
-			uint32_t mNumLights = 0;
-			LightData mLights[MAX_LIGHTS] = {};
-		};
+		Ref<UniformBuffer> LightBuffer;
 
-		Ref<UniformBuffer> mObjectBuffer;
-		Ref<UniformBuffer> mLightBuffer;
+		Ref<Texture> WhiteTexture;
+		Ref<Texture> BlackTexture;
+		Ref<Texture> BlueTexture;
 
-		Ref<Texture> mWhiteTexture;
-		Ref<Texture> mBlackTexture;
-		FLightData mLightData{};
+		FLightInfo LightInfo{};
 
 		RenderData()
 		{
-			mLightBuffer = CreateRef<UniformBuffer>(LIGHT_UBO_BINDING, sizeof(FLightData));
+			constexpr uint32_t i = MAX_LIGHTS * sizeof(FPointLightInfo) + sizeof(uint32_t);
+			LightBuffer = CreateRef<UniformBuffer>(LIGHT_BUFFER_BINDING, sizeof(FLightInfo));
 
 			uint32_t white = 0xFFFFFFFF;
 			FTextureSpecification texture_specs{};
 			texture_specs.Channels = 3;
 			texture_specs.InternalFormat = EFormat::RGB8;
 
-			mWhiteTexture = CreateRef<Texture2D>(1, 1, texture_specs, &white, sizeof(uint32_t));
+			WhiteTexture = CreateRef<Texture2D>(1, 1, texture_specs, &white, sizeof(uint32_t));
 
 			uint32_t black = 0xFF000000;
-			mBlackTexture = CreateRef<Texture2D>(1, 1, texture_specs, &black, sizeof(uint32_t));
+			BlackTexture = CreateRef<Texture2D>(1, 1, texture_specs, &black, sizeof(uint32_t));
+
+			uint32_t blue = 0xFF0000FF;
+			BlueTexture = CreateRef<Texture2D>(1, 1, texture_specs, &blue, sizeof(uint32_t));
 		}
 	};
 
@@ -63,7 +88,6 @@ namespace BHive
 		ShadowRenderer::Init(MAX_LIGHTS);
 		LineRenderer::Init();
 		QuadRenderer::Init();
-		MeshRenderer::Init();
 	}
 
 	void Renderer::Shutdown()
@@ -71,7 +95,7 @@ namespace BHive
 
 		LineRenderer::Shutdown();
 		QuadRenderer::Shutdown();
-		MeshRenderer::Shutdown();
+		ShadowRenderer::Shutdown();
 
 		delete sData;
 	}
@@ -80,12 +104,12 @@ namespace BHive
 	{
 		ResetStats();
 
-		sData->mLightData.mNumLights = 0;
-		sData->mLightBuffer->SetData(&sData->mLightData.mNumLights, sizeof(uint32_t));
+		sData->LightInfo.NumDirectionalLights = 0;
+		sData->LightInfo.NumPointLights = 0;
+		sData->LightInfo.NumSpotLights = 0;
 
 		LineRenderer::Begin();
 		QuadRenderer::Begin();
-		MeshRenderer::Begin();
 	}
 
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
@@ -93,60 +117,60 @@ namespace BHive
 		CameraBuffer::Get().Submit(projection, view);
 	}
 
-	void Renderer::SubmitDirectionalLight(const glm::vec3 &direction, const DirectionalLight &light)
+	void Renderer::SubmitLight(const DirectionalLight &light, const glm::vec3 &direction)
 	{
 		auto &camera = CameraBuffer::Get().GetCameraData();
-		SubmitLight(direction, {}, light.mColor, light.mBrightness, 0.0f, 0.0f, 0.0f, ELightType::Directional);
+
+		auto num_lights = sData->LightInfo.NumDirectionalLights++ % MAX_LIGHTS;
+		sData->LightInfo.DirectionalLightInfo[num_lights] = {light.Color, direction};
+
+		sData->LightBuffer->SetData(&sData->LightInfo, sizeof(FLightInfo));
+
 		ShadowRenderer::SubmitDirectionalLight(direction, camera.Projection, camera.View);
 	}
 
-	void Renderer::SubmitPointLight(const glm::vec3 &position, const PointLight &light)
+	void Renderer::SubmitLight(const PointLight &light, const glm::vec3 &position)
 	{
+		auto num_lights = sData->LightInfo.NumPointLights++ % MAX_LIGHTS;
+		sData->LightInfo.PointLightInfo[num_lights] = {light.Color, position, light.Radius};
 
-		SubmitLight({}, position, light.mColor, light.mBrightness, light.mRadius, 0.0f, 0.0f, ELightType::Point);
-		ShadowRenderer::SubmitPointLight(position, light.mRadius);
+		sData->LightBuffer->SetData(&sData->LightInfo, sizeof(FLightInfo));
+
+		ShadowRenderer::SubmitPointLight(position, light.Radius);
 	}
 
-	void Renderer::SubmitSpotLight(const glm::vec3 &direction, const glm::vec3 &position, const SpotLight &light)
+	void Renderer::SubmitLight(const SpotLight &light, const glm::vec3 &direction, const glm::vec3 &position)
 	{
-		SubmitLight(direction, position, light.mColor, light.mBrightness, light.mRadius, glm::cos(glm::radians(light.mInnerCutOff)), glm::cos(glm::radians(light.mOuterCutOff)), ELightType::SpotLight);
-		ShadowRenderer::SubmitSpotLight(direction, position, light.mRadius);
+		auto num_lights = sData->LightInfo.NumSpotLights++ % MAX_LIGHTS;
+		sData->LightInfo.SpotLightInfo[num_lights] = {light.Color, position, direction, light.Radius, glm::cos(glm::radians(light.InnerCutOff)), glm::cos(glm::radians(light.OuterCutOff))};
+
+		sData->LightBuffer->SetData(&sData->LightInfo, sizeof(FLightInfo));
+
+		ShadowRenderer::SubmitSpotLight(direction, position, light.Radius);
 	}
 
-	void Renderer::SubmitLight(const glm::vec3 &direction, const glm::vec3 &position, const FColor &color, float brightness, float radius, float cutoff, float outercutoff, ELightType type)
+	glm::uvec3 Renderer::GetNumLights()
 	{
-		auto current_index = sData->mLightData.mNumLights % MAX_LIGHTS;
-		LightData data{};
-		data.Position = position;
-		data.Direction = direction;
-		data.Color = (glm::vec3)color;
-		data.Brightness = brightness;
-		data.Radius = radius;
-		data.Cutoff = cutoff;
-		data.OuterCutOff = outercutoff;
-		data.Type = (uint32_t)type;
+		auto &light_info = sData->LightInfo;
 
-		sData->mLightData.mLights[current_index] = data;
-
-		sData->mLightData.mNumLights++;
-		sData->mLightBuffer->SetData(&sData->mLightData, sizeof(RenderData::FLightData));
+		return {light_info.NumDirectionalLights, light_info.NumPointLights, light_info.NumSpotLights};
 	}
 
 	void Renderer::End()
 	{
+
 		LineRenderer::End();
 		QuadRenderer::End();
-		MeshRenderer::End();
 	}
 
 	Ref<Texture> Renderer::GetWhiteTexture()
 	{
-		return sData->mWhiteTexture;
+		return sData->WhiteTexture;
 	}
 
 	Ref<Texture> Renderer::GetBlackTexture()
 	{
-		return sData->mBlackTexture;
+		return sData->BlackTexture;
 	}
 
 	void Renderer::ResetStats()

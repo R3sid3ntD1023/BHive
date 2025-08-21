@@ -7,80 +7,65 @@
 
 namespace BHive
 {
-	enum class ELightType : uint32_t
+
+	struct BHIVE_API LightBase
 	{
-		Directional = 0,
-		Point = 1,
-		SpotLight = 2
-	};
+		virtual ~LightBase() = default;
 
-	struct BHIVE_API Light
-	{
-		virtual ~Light() = default;
+		FColor Color = 0xFFFFFFFF;
 
-		FColor mColor = 0xFFFFFFFF;
+		float Brightness = 1.0f;
 
-		float mBrightness = 1.0f;
-
-		bool operator==(const Light &rhs) const;
-
-		virtual ELightType GetLightType() const = 0;
+		bool operator==(const LightBase &rhs) const;
 
 		template <typename A>
 		inline void Serialize(A &ar)
 		{
-			ar(MAKE_NVP("Color", mColor), MAKE_NVP("Brightness", mBrightness));
+			ar(MAKE_NVP(Color));
 		}
 
 		REFLECTABLEV()
 	};
 
-	struct BHIVE_API PointLight : public Light
+	struct BHIVE_API PointLight : public LightBase
 	{
-		float mRadius = 1.0f;
+		float Radius = 1.0f;
 
 		bool operator==(const PointLight &rhs) const;
-
-		virtual ELightType GetLightType() const override;
 
 		template <typename A>
 		inline void Serialize(A &ar)
 		{
-			Light::Serialize(ar);
-			ar(MAKE_NVP("Radius", mRadius));
+			ar(cereal::base_class<LightBase>(this), MAKE_NVP(Radius));
 		}
 
-		REFLECTABLEV(Light)
+		REFLECTABLEV(LightBase)
 	};
 
 	struct BHIVE_API SpotLight : public PointLight
 	{
 
-		float mInnerCutOff = 25.0f;
-		float mOuterCutOff = 75.0f;
+		float InnerCutOff = 25.0f;
+
+		float OuterCutOff = 75.0f;
 
 		bool operator==(const SpotLight &rhs) const;
-
-		virtual ELightType GetLightType() const override;
 
 		template <typename A>
 		inline void Serialize(A &ar)
 		{
-			PointLight::Serialize(ar);
-			ar(mInnerCutOff, mOuterCutOff);
+			ar(cereal::base_class<PointLight>(this), MAKE_NVP(InnerCutOff), MAKE_NVP(OuterCutOff));
 		}
 
 		REFLECTABLEV(PointLight)
 	};
 
-	struct BHIVE_API DirectionalLight : public Light
+	struct BHIVE_API DirectionalLight : public LightBase
 	{
 		DirectionalLight() = default;
 		DirectionalLight(const DirectionalLight &) = default;
 
-		virtual ELightType GetLightType() const override;
-
-		REFLECTABLEV(Light)
+		REFLECTABLEV(LightBase)
 	};
 
 } // namespace BHive

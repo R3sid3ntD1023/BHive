@@ -8,44 +8,34 @@ namespace BHive
 	class DirectionalLightComponent : public Component
 	{
 	public:
-		virtual void Render() override;
-
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-	private:
-		REFLECTABLEV(Component)
+		DirectionalLight Light;
 
-		DirectionalLight mLight;
+		REFLECTABLEV(Component)
 	};
 
 	class PointLightComponent : public Component
 	{
 	public:
-		virtual void Render() override;
-
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-		virtual void Load(cereal::JSONInputArchive &ar) override;
+		PointLight Light;
 
-	private:
 		REFLECTABLEV(Component)
-
-		PointLight mLight;
 	};
 
 	class SpotLightComponent : public Component
 	{
 	public:
-		virtual void Render() override;
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-	private:
+		SpotLight Light;
+
 		REFLECTABLEV(Component)
-		SpotLight mLight;
 	};
 
 	REFLECT_EXTERN(DirectionalLightComponent)

@@ -1,19 +1,8 @@
 #include "StaticMeshComponent.h"
-#include "Renderers/MeshRenderer.h"
-#include "Renderers/LineRenderer.h"
 #include "GameObject.h"
 
 namespace BHive
 {
-	void StaticMeshComponent::Render()
-	{
-		if (mStaticMeshAsset)
-		{
-			auto world_transform = GetOwner()->GetWorldTransform();
-			MeshRenderer::DrawMesh(mStaticMeshAsset, mOverrideMaterials, world_transform);
-			// LineRenderer::DrawAABB(mStaticMeshAsset->GetBoundingBox(), Colors::Red, world_transform);
-		}
-	}
 
 	void StaticMeshComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{

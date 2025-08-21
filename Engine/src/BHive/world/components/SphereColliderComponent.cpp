@@ -1,15 +1,9 @@
-#include "GameObject.h"
-#include "renderers/Renderer.h"
 #include "SphereColliderComponent.h"
+#include "GameObject.h"
 #include <physx/PxPhysicsAPI.h>
 
 namespace BHive
 {
-	void SphereColliderComponent::Render()
-	{
-		LineRenderer::DrawSphere(Radius, 16, Offset, Color, GetWorldTransform());
-	}
-
 	void SphereColliderComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ColliderComponent::Save(ar);

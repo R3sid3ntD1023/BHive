@@ -1,43 +1,27 @@
 #include "FlipBookComponent.h"
 #include "GameObject.h"
-#include "renderers/Renderer.h"
 
 namespace BHive
 {
 	void FlipBookComponent::Begin()
 	{
-		Instance = new FlipBook(*FlipBookAsset);
+		mInstance = new FlipBook(*FlipBookAsset);
 
 		if (AutoPlay)
-			Instance->Play();
+			mInstance->Play();
 	}
 
 	void FlipBookComponent::End()
 	{
-		delete Instance;
+		delete mInstance;
 	}
 
 	void FlipBookComponent::Update(float dt)
 	{
-		if (Instance)
+		if (mInstance)
 		{
-			Instance->Update(dt);
+			mInstance->Update(dt);
 		}
-	}
-	void FlipBookComponent::Render()
-	{
-		if (!FlipBookAsset)
-			return;
-
-		auto owner = GetOwner();
-		auto t = owner->GetWorldTransform();
-		FQuadParams params{};
-		params.Color = Color;
-		params.Size = Size;
-		params.Tiling = Tiling;
-
-		auto sprite = Instance ? Instance->GetCurrentSprite() : FlipBookAsset->GetCurrentSprite();
-		QuadRenderer::DrawSprite(params, sprite, t);
 	}
 
 	void FlipBookComponent::Save(cereal::BinaryOutputArchive &ar) const
@@ -53,8 +37,7 @@ namespace BHive
 	REFLECT(FlipBookComponent)
 	{
 		BEGIN_REFLECT(FlipBookComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(AutoPlay)
-			REFLECT_PROPERTY(Color) REFLECT_PROPERTY(Size) REFLECT_PROPERTY(Tiling) REFLECT_PROPERTY(FlipBookAsset)
-				COMPONENT_IMPL();
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(AutoPlay) REFLECT_PROPERTY(Color) REFLECT_PROPERTY(Size) REFLECT_PROPERTY(Tiling)
+			REFLECT_PROPERTY(FlipBookAsset) COMPONENT_IMPL();
 	}
 } // namespace BHive

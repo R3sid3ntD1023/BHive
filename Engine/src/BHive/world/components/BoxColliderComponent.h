@@ -9,7 +9,6 @@ namespace BHive
 
 		glm::vec3 Extents{0.5f};
 
-		virtual void Render() override;
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 

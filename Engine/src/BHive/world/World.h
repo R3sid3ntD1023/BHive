@@ -19,6 +19,7 @@ namespace BHive
 	class GameObject;
 	class Texture2D;
 	class Camera;
+	class SceneRenderer;
 
 	using ObjectList = std::unordered_map<UUID, Ref<GameObject>>;
 	using EnTTList = std::unordered_map<entt::entity, UUID>;
@@ -37,8 +38,7 @@ namespace BHive
 		virtual void Load(cereal::JSONInputArchive &ar);
 
 		void Begin();
-		void Update(float dt);
-		void Render();
+		void Update(float dt, SceneRenderer *renderer);
 		void End();
 
 		void SimulateBegin();
@@ -76,9 +76,12 @@ namespace BHive
 		bool RayCast(const glm::vec3 &start, const glm::vec3 &dir, float maxDistance, FHitResult &result, uint16_t categoryMasks = 65535U);
 
 		bool IsRunning() const { return mIsRunning; }
+
 		bool IsPaused() const { return mIsPaused; }
 
 		std::pair<Camera *, FTransform> GetPrimaryCamera();
+
+		const entt::registry &GetRegistry() const { return mRegistry; }
 
 		REFLECTABLEV(Asset);
 
@@ -90,6 +93,7 @@ namespace BHive
 
 		// entt
 		entt::registry mRegistry;
+		Ref<struct RenderSystem> mRenderSystem;
 
 #pragma region Physics
 		float mAccumulatedTime{0.0f};

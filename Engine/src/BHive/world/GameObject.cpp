@@ -43,12 +43,6 @@ namespace BHive
 		}
 	}
 
-	void GameObject::Render()
-	{
-		for (auto &component : mComponents)
-			component->Render();
-	}
-
 	void GameObject::End()
 	{
 		for (auto component : mComponents)

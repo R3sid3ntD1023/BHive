@@ -3,6 +3,7 @@
 
 namespace BHive
 {
+
 	StorageBuffer::StorageBuffer(uint32_t binding, size_t size)
 	{
 		glNamedBufferStorage(mBufferID, size, nullptr, GL_DYNAMIC_STORAGE_BIT);

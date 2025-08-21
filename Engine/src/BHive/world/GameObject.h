@@ -25,7 +25,6 @@ namespace BHive
 
 		virtual void Begin();
 		virtual void Update(float dt);
-		virtual void Render();
 		virtual void End();
 
 		template <typename T, typename... TArgs>

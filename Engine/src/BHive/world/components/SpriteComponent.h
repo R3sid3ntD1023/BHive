@@ -19,8 +19,6 @@ namespace BHive
 
 		Ref<Sprite> SpriteAsset;
 
-		void Render() override;
-
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 

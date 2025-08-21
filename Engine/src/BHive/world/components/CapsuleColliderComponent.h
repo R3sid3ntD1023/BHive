@@ -9,8 +9,8 @@ namespace BHive
 		float Radius = .5f;
 		float HalfHeight = 1.f;
 
-		virtual void Render() override;
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		virtual AABB GetBoundingBox() const { return FBox(); }

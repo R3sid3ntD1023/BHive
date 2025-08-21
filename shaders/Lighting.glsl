@@ -4,17 +4,27 @@
 #define MAX_LIGHTS 32
 #define USE_POISSONDISK 1
 
-
-struct Light
+struct DirectionalLight
 {
-	vec3 position;
-	vec3 direction;
-	vec3 color;
-	float brightness;
-	float radius;
-	float innerCutoff;
-	float outerCutoff;
-	uint type;
+	vec3 Color;
+	vec3 Direction;
+};
+
+struct PointLight
+{
+	vec3 Color;
+	vec3 Position;
+	float Radius;
+};
+
+struct SpotLight
+{
+	vec3 Color;
+	vec3 Position;
+	vec3 Direction;
+	float Radius;
+	float InnerCutoff;
+	float OuterCutoff;
 };
 
 struct IncidentLight
@@ -31,20 +41,67 @@ struct ReflectedLight
 	vec3 IndirectSpecular;
 };
 
-layout(std430, binding = 1) uniform LightBuffer
+struct PointLightShadow
 {
-	uint uNumLights;
-	Light uLights[MAX_LIGHTS];
+	vec2 ShadowNearFar;
 };
 
-layout(std430, binding = 4) restrict readonly buffer ShadowSSBO
+layout(std430, binding = 4) uniform LightBuffer
+{
+	uint uNumDirLights;
+	uint uNumPointLights;
+	uint uNumSpotLights;
+	DirectionalLight uDirectionalLights[MAX_LIGHTS];
+	PointLight uPointLights[MAX_LIGHTS];
+	SpotLight uSpotLights[MAX_LIGHTS];
+};
+
+
+layout(std430, binding = 5) restrict readonly buffer ShadowSSBO
 {
 	uvec4 uNumShadowMaps;
 	mat4 uDirViewProjections[MAX_LIGHTS];
 	mat4 uPointViewProjections[MAX_LIGHTS * 6];
 	mat4 uSpotViewProjections[MAX_LIGHTS];
+	PointLightShadow uPointShadows[MAX_LIGHTS];
 };
 
+void GetDirectionLightInfo(const in DirectionalLight light, inout IncidentLight directLight)
+{
+	directLight.Direction = normalize(-light.Direction);
+	directLight.Color = light.Color;
+}
+
+void GetPointLightInfo(const in PointLight light, const in vec3 geoPosition, inout IncidentLight directLight)
+{
+	float radius = light.Radius;
+	directLight.Direction = light.Position - geoPosition;
+
+	float dist = distance(light.Position, geoPosition);
+	//https://lisyarus.github.io/blog/posts/point-light-attenuation.html
+	float s = dist / radius;
+
+	if(s >= 1.0)
+		return;
+
+	float s2 = sqrt(s);
+	float attenuation = sqrt(1 -s2) / (1 + radius * s);
+	//float attenuation = 1.0 / (radius * radius);
+
+	directLight.Color = light.Color * attenuation;
+}
+
+void GetSpotLightInfo(const in SpotLight light, const in vec3 geoPosition, inout IncidentLight directLight)
+{
+	PointLight point_light = PointLight(light.Color, light.Position, light.Radius);
+	GetPointLightInfo(point_light, geoPosition, directLight);
+	
+	float theta = dot(normalize(light.Position - geoPosition), normalize(-light.Direction ));
+	float epsilon = light.InnerCutoff - light.OuterCutoff;
+	float intensity = smoothstep(0, 1 , (theta - light.OuterCutoff) / epsilon);
+	
+	directLight.Color *= intensity;
+}
 
 
 const vec2 poissonDisk[9] = vec2[]
@@ -74,40 +131,7 @@ const vec3 v3poissonDisk[9] = vec3[](
 
 const float light_size = 0.07;
 
-void GetDirectionLightInfo(const in Light light, inout IncidentLight directLight)
-{
-	directLight.Direction = normalize(-light.direction);
-	directLight.Color = light.color * light.brightness;
-}
 
-void GetPointLightInfo(const in Light light, const in vec3 geoPosition, inout IncidentLight directLight)
-{
-	directLight.Direction = light.position - geoPosition;
-
-	float dist = distance(light.position, geoPosition);
-	//https://lisyarus.github.io/blog/posts/point-light-attenuation.html
-	float s = dist / light.radius;
-
-	if(s >= 1.0)
-		return;
-
-	float s2 = sqrt(s);
-	float attenuation = sqrt(1 -s2) / (1 + light.radius * s);
-	//float attenuation = 1.0 / (light.radius * light.radius);
-
-	directLight.Color = light.brightness * light.color * attenuation;
-}
-
-void GetSpotLightInfo(const in Light light, const in vec3 geoPosition, inout IncidentLight directLight)
-{
-	GetPointLightInfo(light, geoPosition, directLight);
-	
-	float theta = dot(normalize(light.position - geoPosition), normalize(-light.direction ));
-	float epsilon = light.innerCutoff - light.outerCutoff;
-	float intensity = smoothstep(0, 1 , (theta - light.outerCutoff) / epsilon);
-	
-	directLight.Color *= intensity;
-}
 
 float DirLightShadow(int light, vec3 position, in sampler2DArrayShadow shadow_array_texture)
 {
@@ -141,7 +165,7 @@ float DirLightShadow(int light, vec3 position, in sampler2DArrayShadow shadow_ar
 
 }
 
-float SpotLightShadow(int light, vec3 position, in sampler2DArrayShadow shadow_array_texture)
+float GetSpotLightShadow(int light, vec3 position, in sampler2DArrayShadow shadow_array_texture)
 {
 	vec4 fragLightPos = uSpotViewProjections[light] * vec4(position, 1.0f);
 	vec3 projCoords = fragLightPos.xyz / fragLightPos.w;
@@ -173,7 +197,7 @@ float SpotLightShadow(int light, vec3 position, in sampler2DArrayShadow shadow_a
 #endif
 }
 
-float PointLightShadow(int light, vec3 position, vec3 lightDirection, vec3 lightDirectionUN,  vec2 near_far, 
+float GetPointShadow(int light, vec3 position, vec3 lightDirection, vec3 lightDirectionUN,  vec2 near_far, 
 	in samplerCubeArrayShadow point_shadow_array_texture)
 {
 	vec3 absDirect = abs(lightDirectionUN);

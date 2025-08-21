@@ -1,16 +1,9 @@
 #include "CapsuleColliderComponent.h"
-#include "renderers/LineRenderer.h"
 #include <physx/PxPhysicsAPI.h>
 #include "GameObject.h"
 
 namespace BHive
 {
-	void CapsuleColliderComponent::Render()
-	{
-
-		LineRenderer::DrawCapsule(Radius, HalfHeight, 16, Offset, Color, GetWorldTransform());
-	}
-
 	void CapsuleColliderComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		ColliderComponent::Save(ar);

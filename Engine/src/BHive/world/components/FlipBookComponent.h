@@ -25,15 +25,16 @@ namespace BHive
 		virtual void Begin() override;
 		virtual void End() override;
 		virtual void Update(float dt) override;
-		virtual void Render() override;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
+		FlipBook *Instance() const { return mInstance; }
+
 		REFLECTABLE_CLASS(Component, ITickable)
 
 	private:
-		FlipBook *Instance = nullptr;
+		FlipBook *mInstance = nullptr;
 	};
 
 	REFLECT_EXTERN(FlipBookComponent)

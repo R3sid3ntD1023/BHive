@@ -12,8 +12,6 @@ namespace BHive
 	{
 
 		virtual void Begin() {};
-
-		virtual void Render() {}
 		virtual void End() {};
 
 		void SetOwner(GameObject *owner);

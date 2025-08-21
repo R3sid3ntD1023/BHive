@@ -30,16 +30,16 @@ namespace BHive
 		mSceneRenderer->Begin(&mCamera, mCamera.GetView());
 
 		LineRenderer::DrawGrid({});
-		Renderer::SubmitDirectionalLight({0, 0, -1}, DirectionalLight{});
+		Renderer::SubmitLight(DirectionalLight{}, {0, 0, -1});
 
 		if (auto skeletal_mesh = Cast<SkeletalMesh>(mAsset))
 		{
 			auto pose = skeletal_mesh->GetDefaultPose();
-			MeshRenderer::DrawMesh(skeletal_mesh, *pose, FTransform());
+			mSceneRenderer->SubmitMesh(skeletal_mesh, *pose, FTransform());
 		}
 		else if (auto static_mesh = Cast<StaticMesh>(mAsset))
 		{
-			MeshRenderer::DrawMesh(static_mesh, FTransform());
+			mSceneRenderer->SubmitMesh(static_mesh, FTransform());
 		}
 
 		mSceneRenderer->End();

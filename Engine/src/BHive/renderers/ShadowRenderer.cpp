@@ -10,7 +10,7 @@
 #include "core/math/Frustum.h"
 #include "ShadowRenderer.h"
 
-#define SHADOW_SSBO_BINDING 4
+#define SHADOW_SSBO_BINDING 5
 #define DIRECTIONAL_SHADOWMAP_SIZE 1024
 #define POINT_SHADOWMAP_SIZE 1024
 #define SPOT_SHADOWMAP_SIZE 512
@@ -27,143 +27,119 @@ namespace BHive
 		{{1, 0, 0}, {0, -1, 0}}, {{-1, 0, 0}, {0, -1, 0}}, {{0, 1, 0}, {0, 0, 1}}, {{0, -1, 0}, {0, 0, -1}}, {{0, 0, 1}, {0, -1, 0}}, {{0, 0, -1}, {0, -1, 0}},
 	};
 
+	struct FPointShadow
+	{
+		glm::vec2 ShadowNearFar;
+	};
+
 	struct FShadowData
 	{
 		glm::uvec4 NumShadowMaps = {0, 0, 0, 0}; // {Dir, Point, Spot}
 		std::array<glm::mat4, MAX_LIGHTS> DirProjections = {};
 		std::array<glm::mat4, MAX_LIGHTS * 6> PointProjections = {};
 		std::array<glm::mat4, MAX_LIGHTS> SpotProjections = {};
+		std::array<FPointShadow, MAX_LIGHTS> PointShadows = {};
 	};
 
-	struct ShadowBuffersData
+	// 0 = dir, 1 = point, 2 = spot
+	struct FShadowPasses
 	{
-		Ref<Shader> mShadowPassShader;
-		Ref<Shader> mSpotShadowPassShader;
-		Ref<Shader> mPointShadowPassShader;
-
-		Ref<Framebuffer> mShadowPassFBO;
-		Ref<Framebuffer> mShadowSpotPassFBO;
-		Ref<Framebuffer> mPointShadowPassFBO;
-
-		Ref<StorageBuffer> mShadowBuffer;
-		FShadowData mShadowData;
+		std::array<Ref<Shader>, 3> Shaders;
+		std::array<Ref<Framebuffer>, 3> FBOs;
 	};
 
-	static ShadowBuffersData mShadowRenderData;
+	struct FShadowRenderData
+	{
+		FShadowPasses ShadowPasses;
+		Ref<StorageBuffer> ShadowBuffer;
+		FShadowData ShadowData;
+	};
+
+	static FShadowRenderData *sShadowRenderData = nullptr;
 
 	void ShadowRenderer::Init(uint32_t max_lights, uint32_t cascaded_levels)
 	{
-		FramebufferSpecification shadow_fbo_specs{};
-		shadow_fbo_specs.Width = DIRECTIONAL_SHADOWMAP_SIZE;
-		shadow_fbo_specs.Height = DIRECTIONAL_SHADOWMAP_SIZE;
-		shadow_fbo_specs.Depth = max_lights;
-		shadow_fbo_specs.Attachments.attach(
-			{
-				.InternalFormat = EFormat::DEPTH_COMPONENT_32F,
-				.WrapMode = EWrapMode::CLAMP_TO_EDGE,
-				.BorderColor = {0, 0, 0, 1.f},
-				.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
-				.CompareFunc = ETextureCompareFunc::LEQUAL,
+		sShadowRenderData = new FShadowRenderData();
 
-			},
-			ETextureType::TEXTURE_2D_ARRAY);
+		FramebufferSpecification dir_shadow_fbo_spec{.Width = DIRECTIONAL_SHADOWMAP_SIZE, .Height = DIRECTIONAL_SHADOWMAP_SIZE, .Depth = max_lights};
+		FramebufferSpecification spot_shadow_fbo_spec{.Width = SPOT_SHADOWMAP_SIZE, .Height = SPOT_SHADOWMAP_SIZE, .Depth = max_lights};
+		FramebufferSpecification point_shadow_fbo_spec{.Width = POINT_SHADOWMAP_SIZE, .Height = POINT_SHADOWMAP_SIZE, .Depth = max_lights * 6};
 
-		mShadowRenderData.mShadowPassFBO = CreateRef<Framebuffer>(shadow_fbo_specs);
+		FTextureSpecification shadow_texture_specs{
+			.InternalFormat = EFormat::DEPTH_COMPONENT_32F,
+			.WrapMode = EWrapMode::CLAMP_TO_EDGE,
+			.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
+			.CompareFunc = ETextureCompareFunc::LEQUAL};
 
-		shadow_fbo_specs.Width = SPOT_SHADOWMAP_SIZE;
-		shadow_fbo_specs.Height = SPOT_SHADOWMAP_SIZE;
-		shadow_fbo_specs.Depth = max_lights;
-		shadow_fbo_specs.Attachments.reset()
-			.attach(
-				{
-					.InternalFormat = EFormat::RG32F,
-					.WrapMode = EWrapMode::CLAMP_TO_EDGE,
-				},
-				ETextureType::TEXTURE_2D_ARRAY)
-			.attach(
-				{
-					.InternalFormat = EFormat::DEPTH_COMPONENT_32F,
-					.WrapMode = EWrapMode::CLAMP_TO_EDGE,
-					.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
-					.CompareFunc = ETextureCompareFunc::LEQUAL,
+		dir_shadow_fbo_spec.Attachments.attach(shadow_texture_specs, ETextureType::TEXTURE_2D_ARRAY);
+		point_shadow_fbo_spec.Attachments.attach(shadow_texture_specs, ETextureType::TEXTURE_CUBE_MAP_ARRAY);
+		spot_shadow_fbo_spec.Attachments.attach(shadow_texture_specs, ETextureType::TEXTURE_2D_ARRAY);
 
-				},
-				ETextureType::TEXTURE_2D_ARRAY);
+		auto &shadow_passes = sShadowRenderData->ShadowPasses;
+		shadow_passes.FBOs[0] = CreateRef<Framebuffer>(dir_shadow_fbo_spec);
+		shadow_passes.FBOs[1] = CreateRef<Framebuffer>(point_shadow_fbo_spec);
+		shadow_passes.FBOs[2] = CreateRef<Framebuffer>(spot_shadow_fbo_spec);
+		shadow_passes.Shaders[0] = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowDirectionalLight.glsl");
+		shadow_passes.Shaders[1] = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowPointLight.glsl");
+		shadow_passes.Shaders[2] = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowSpotLight.glsl");
 
-		mShadowRenderData.mShadowSpotPassFBO = CreateRef<Framebuffer>(shadow_fbo_specs);
+		sShadowRenderData->ShadowBuffer = CreateRef<StorageBuffer>(sizeof(FShadowData));
+	}
 
-		shadow_fbo_specs.Width = POINT_SHADOWMAP_SIZE;
-		shadow_fbo_specs.Height = POINT_SHADOWMAP_SIZE;
-		shadow_fbo_specs.Depth = max_lights * 6;
-		shadow_fbo_specs.Attachments.reset()
-			.attach({.InternalFormat = EFormat::RG32F, .WrapMode = EWrapMode::CLAMP_TO_BORDER, .BorderColor = 0xffffffff}, ETextureType::TEXTURE_CUBE_MAP_ARRAY)
-			.attach(
-				{
-					.InternalFormat = EFormat::DEPTH_COMPONENT_32F,
-					.WrapMode = EWrapMode::CLAMP_TO_EDGE,
-					.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
-					.CompareFunc = ETextureCompareFunc::LEQUAL,
-				},
-				ETextureType::TEXTURE_2D_ARRAY);
-		mShadowRenderData.mPointShadowPassFBO = CreateRef<Framebuffer>(shadow_fbo_specs);
-
-		mShadowRenderData.mShadowBuffer = CreateRef<StorageBuffer>(sizeof(FShadowData));
-
-		mShadowRenderData.mShadowPassShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/DirShadowPass.glsl");
-		mShadowRenderData.mSpotShadowPassShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/SpotShadowPass.glsl");
-		mShadowRenderData.mPointShadowPassShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowPointPass.glsl");
+	void ShadowRenderer::Shutdown()
+	{
+		delete sShadowRenderData;
 	}
 
 	void ShadowRenderer::Begin()
 	{
-		mShadowRenderData.mShadowData.NumShadowMaps = {0, 0, 0, 0};
+		sShadowRenderData->ShadowData.NumShadowMaps = {0, 0, 0, 0};
 	}
 
 	void ShadowRenderer::End()
 	{
+
+		sShadowRenderData->ShadowBuffer->BindBufferBase(SHADOW_SSBO_BINDING);
+		sShadowRenderData->ShadowBuffer->SetData(&sShadowRenderData->ShadowData, sizeof(FShadowData));
 	}
 
 	void ShadowRenderer::BeginShadowPass()
 	{
-		mShadowRenderData.mShadowPassFBO->Bind();
+		sShadowRenderData->ShadowPasses.FBOs[0]->Bind();
 		RenderCommand::Clear(Buffer_Depth);
-		mShadowRenderData.mShadowPassShader->Bind();
+		sShadowRenderData->ShadowPasses.Shaders[0]->Bind();
 	}
 
 	void ShadowRenderer::EndShadowPass()
 	{
-		mShadowRenderData.mShadowPassShader->UnBind();
-		mShadowRenderData.mShadowPassFBO->UnBind();
+		sShadowRenderData->ShadowPasses.Shaders[0]->UnBind();
+		sShadowRenderData->ShadowPasses.FBOs[0]->UnBind();
 	}
 
 	void ShadowRenderer::BeginSpotShadowPass()
 	{
-		mShadowRenderData.mShadowSpotPassFBO->Bind();
-
+		sShadowRenderData->ShadowPasses.FBOs[2]->Bind();
 		RenderCommand::Clear(Buffer_Depth);
-
-		mShadowRenderData.mSpotShadowPassShader->Bind();
+		sShadowRenderData->ShadowPasses.Shaders[2]->Bind();
 	}
 
 	void ShadowRenderer::EndSpotShadowPass()
 	{
-		mShadowRenderData.mSpotShadowPassShader->UnBind();
-		mShadowRenderData.mShadowSpotPassFBO->UnBind();
+		sShadowRenderData->ShadowPasses.Shaders[2]->UnBind();
+		sShadowRenderData->ShadowPasses.FBOs[2]->UnBind();
 	}
 
 	void ShadowRenderer::BeginPointShadowPass()
 	{
-		mShadowRenderData.mPointShadowPassFBO->Bind();
-		RenderCommand::Clear(Buffer_Depth | Buffer_Color);
-		RenderCommand::CullFront();
-
-		mShadowRenderData.mPointShadowPassShader->Bind();
+		sShadowRenderData->ShadowPasses.FBOs[1]->Bind();
+		RenderCommand::Clear(Buffer_Depth);
+		sShadowRenderData->ShadowPasses.Shaders[1]->Bind();
 	}
 
 	void ShadowRenderer::EndPointShadowPass()
 	{
-		mShadowRenderData.mPointShadowPassShader->UnBind();
-		mShadowRenderData.mPointShadowPassFBO->UnBind();
+		sShadowRenderData->ShadowPasses.Shaders[1]->UnBind();
+		sShadowRenderData->ShadowPasses.FBOs[1]->UnBind();
 	}
 
 	void ShadowRenderer::SubmitDirectionalLight(const glm::vec3 &direction, const glm::mat4 &camera_proj, const glm::mat4 &camera_view)
@@ -210,15 +186,11 @@ namespace BHive
 			max_z *= z_multi;
 		}
 
-		auto &shadow_data = mShadowRenderData.mShadowData;
+		auto &shadow_data = sShadowRenderData->ShadowData;
 		auto k = shadow_data.NumShadowMaps.x % MAX_LIGHTS;
 		auto projection = glm::ortho<float>(min_x, max_x, min_y, max_y, min_z, max_z);
 		shadow_data.DirProjections[k] = projection * light_view;
-
 		shadow_data.NumShadowMaps.x++;
-
-		mShadowRenderData.mShadowBuffer->BindBufferBase(SHADOW_SSBO_BINDING);
-		mShadowRenderData.mShadowBuffer->SetData(&mShadowRenderData.mShadowData, sizeof(FShadowData));
 	}
 
 	void ShadowRenderer::SubmitSpotLight(const glm::vec3 &direction, const glm::vec3 &position, float radius)
@@ -226,19 +198,16 @@ namespace BHive
 		auto view = glm::lookAt(position, position + direction, {0, 1, 0});
 		auto proj = glm::perspective<float>(glm::radians(120.f), 1.f, .1f, radius);
 
-		auto &shadow_data = mShadowRenderData.mShadowData;
+		auto &shadow_data = sShadowRenderData->ShadowData;
 		auto k = shadow_data.NumShadowMaps.z % MAX_LIGHTS;
 		shadow_data.SpotProjections[k] = proj * view;
-
 		shadow_data.NumShadowMaps.z++;
-
-		mShadowRenderData.mShadowBuffer->BindBufferBase(SHADOW_SSBO_BINDING);
-		mShadowRenderData.mShadowBuffer->SetData(&mShadowRenderData.mShadowData, sizeof(FShadowData));
 	}
 
 	void ShadowRenderer::SubmitPointLight(const glm::vec3 &position, float radius)
 	{
-		auto &shadow_data = mShadowRenderData.mShadowData;
+		auto &shadow_data = sShadowRenderData->ShadowData;
+
 		auto proj = glm::perspective(glm::radians(90.0f), 1.f, 1.f, radius);
 
 		for (int j = 0; j < 6; j++)
@@ -249,24 +218,18 @@ namespace BHive
 			shadow_data.PointProjections[k] = proj * view;
 		}
 
+		shadow_data.PointShadows[shadow_data.NumShadowMaps.y] = {.ShadowNearFar = {1.f, radius * 1.4f}};
 		shadow_data.NumShadowMaps.y++;
-
-		mShadowRenderData.mShadowBuffer->BindBufferBase(SHADOW_SSBO_BINDING);
-		mShadowRenderData.mShadowBuffer->SetData(&mShadowRenderData.mShadowData, sizeof(FShadowData));
 	}
 
-	Ref<Framebuffer> ShadowRenderer::GetShadowFBO()
+	void ShadowRenderer::BindShadowMaps(uint32_t *bindings)
 	{
-		return mShadowRenderData.mShadowPassFBO;
-	}
-
-	Ref<Framebuffer> ShadowRenderer::GetSpotShadowFBO()
-	{
-		return mShadowRenderData.mShadowSpotPassFBO;
-	}
-
-	Ref<Framebuffer> ShadowRenderer::GetPointShadowFBO()
-	{
-		return mShadowRenderData.mPointShadowPassFBO;
+		if (bindings)
+		{
+			auto &fbos = sShadowRenderData->ShadowPasses.FBOs;
+			fbos[0]->GetDepthAttachment()->Bind(bindings[0]);
+			fbos[1]->GetDepthAttachment()->Bind(bindings[1]);
+			fbos[2]->GetDepthAttachment()->Bind(bindings[2]);
+		}
 	}
 } // namespace BHive
