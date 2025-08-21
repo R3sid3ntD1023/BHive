@@ -104,6 +104,8 @@ namespace BHive
 	{
 		ResetStats();
 
+		sData->LightBuffer->SetData(&sData->LightInfo, sizeof(FLightInfo));
+
 		sData->LightInfo.NumDirectionalLights = 0;
 		sData->LightInfo.NumPointLights = 0;
 		sData->LightInfo.NumSpotLights = 0;
@@ -124,8 +126,6 @@ namespace BHive
 		auto num_lights = sData->LightInfo.NumDirectionalLights++ % MAX_LIGHTS;
 		sData->LightInfo.DirectionalLightInfo[num_lights] = {light.Color, direction};
 
-		sData->LightBuffer->SetData(&sData->LightInfo, sizeof(FLightInfo));
-
 		ShadowRenderer::SubmitDirectionalLight(direction, camera.Projection, camera.View);
 	}
 
@@ -134,8 +134,6 @@ namespace BHive
 		auto num_lights = sData->LightInfo.NumPointLights++ % MAX_LIGHTS;
 		sData->LightInfo.PointLightInfo[num_lights] = {light.Color, position, light.Radius};
 
-		sData->LightBuffer->SetData(&sData->LightInfo, sizeof(FLightInfo));
-
 		ShadowRenderer::SubmitPointLight(position, light.Radius);
 	}
 
@@ -143,8 +141,6 @@ namespace BHive
 	{
 		auto num_lights = sData->LightInfo.NumSpotLights++ % MAX_LIGHTS;
 		sData->LightInfo.SpotLightInfo[num_lights] = {light.Color, position, direction, light.Radius, glm::cos(glm::radians(light.InnerCutOff)), glm::cos(glm::radians(light.OuterCutOff))};
-
-		sData->LightBuffer->SetData(&sData->LightInfo, sizeof(FLightInfo));
 
 		ShadowRenderer::SubmitSpotLight(direction, position, light.Radius);
 	}
