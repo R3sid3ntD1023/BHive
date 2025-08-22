@@ -513,7 +513,7 @@ namespace BHive
 		{
 			mReflectionData.Reflect(source);
 
-			LOG_TRACE("{}\n", mReflectionData.to_string());
+			LOG_TRACE("Stage: {}\n{}\n", utils::GetTypeString(type), mReflectionData.to_string());
 		}
 	}
 
