@@ -195,7 +195,7 @@ namespace BHive
 
 	void SceneRenderer::SubmitLight(const DirectionalLight &light, const glm::vec3 &direction)
 	{
-		auto &camera = CameraBuffer::Get().GetCameraData();
+		auto &camera = Renderer::GetCamera().GetCameraData();
 		mMeshRenderData->Lights.Submit(FDirectionalLightInfo{light.Color, direction});
 		ShadowRenderer::SubmitDirectionalLight(direction, camera.Projection, camera.View);
 	}
@@ -275,7 +275,7 @@ namespace BHive
 
 	float SceneRenderer::GetDistanceToCamera(const FTransform &transform)
 	{
-		const auto &C = CameraBuffer::Get().GetCameraData().CameraPosition;
+		const auto &C = Renderer::GetCamera().GetCameraData().Position;
 		return glm::distance(glm::vec3(C), transform[2]);
 	}
 
@@ -369,7 +369,7 @@ namespace BHive
 			return true;
 
 		const auto &bounds = mesh->GetBoundingBox();
-		const auto &frustum = CameraBuffer::Get().GetCameraData().ViewFrustum;
+		const auto &frustum = Renderer::GetCamera().GetViewFrustum();
 
 		auto volume = FSphereVolume(bounds.GetCenter(), bounds.GetRadius());
 		return !volume.InFrustum(frustum, FTransform(transform));

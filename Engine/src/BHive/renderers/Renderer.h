@@ -4,8 +4,7 @@
 #include "LineRenderer.h"
 #include "QuadRenderer.h"
 #include "gfx/Camera.h"
-#include "Lights.h"
-#include "core/math/Frustum.h"
+#include "buffers/CameraBuffer.h"
 
 namespace BHive
 {
@@ -33,10 +32,11 @@ namespace BHive
 
 		static Ref<Texture> GetWhiteTexture();
 		static Ref<Texture> GetBlackTexture();
+		static const Frustum &GetFrustum();
+		static CameraBuffer &GetCamera();
 
 		static void ResetStats();
 		static Statitics &GetStats() { return sStats; }
-		static const Frustum &GetFrustum();
 
 	private:
 		struct RenderData;
@@ -44,31 +44,4 @@ namespace BHive
 		static inline Statitics sStats;
 	};
 
-	class UniformBuffer;
-
-	struct CameraBuffer
-	{
-
-	public:
-		struct FCameraData
-		{
-			glm::mat4 Projection{1.0f};
-			glm::mat4 View{1.0f};
-			glm::vec4 NearFar{0.0f, 0.0f, 0.0f, 0.0f};
-			glm::vec4 CameraPosition{0.0f, 0.0f, 0.0f, 1.0f};
-			Frustum ViewFrustum;
-		};
-
-		CameraBuffer();
-
-		void Submit(const glm::mat4 &proj, const glm::mat4 &view);
-
-		const FCameraData &GetCameraData() { return mData; }
-
-		static CameraBuffer &Get();
-
-	private:
-		Ref<UniformBuffer> mBuffer;
-		FCameraData mData;
-	};
 } // namespace BHive
