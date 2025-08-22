@@ -31,7 +31,7 @@ namespace BHive
 			for (const auto &e : view)
 			{
 				auto &c = view.get<DirectionalLightComponent>(e);
-				Renderer::SubmitLight(c.Light, c.GetWorldTransform().GetForward());
+				renderer->SubmitLight(c.Light, c.GetWorldTransform().GetForward());
 			}
 		}
 
@@ -41,7 +41,7 @@ namespace BHive
 			{
 				auto &c = view.get<PointLightComponent>(e);
 				const auto world_transform = c.GetWorldTransform();
-				Renderer::SubmitLight(c.Light, world_transform.GetTranslation());
+				renderer->SubmitLight(c.Light, world_transform.GetTranslation());
 				LineRenderer::DrawSphere(c.Light.Radius, 16, {}, c.Light.Color, world_transform);
 			}
 		}
@@ -52,7 +52,7 @@ namespace BHive
 			{
 				auto &c = view.get<SpotLightComponent>(e);
 				const auto world_transform = c.GetWorldTransform();
-				Renderer::SubmitLight(c.Light, world_transform.GetForward(), world_transform.GetTranslation());
+				renderer->SubmitLight(c.Light, world_transform.GetForward(), world_transform.GetTranslation());
 				LineRenderer::DrawCone(c.Light.Radius, c.Light.Radius, 16, c.Light.Color, world_transform);
 			}
 		}

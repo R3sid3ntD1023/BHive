@@ -9,7 +9,6 @@
 #include <glad/glad.h>
 
 #define CAMERA_UBO_BINDING 0
-#define LIGHT_BUFFER_BINDING 4
 
 namespace BHive
 {
@@ -50,8 +49,6 @@ namespace BHive
 	struct Renderer::RenderData
 	{
 
-		Ref<UniformBuffer> LightBuffer;
-
 		Ref<Texture> WhiteTexture;
 		Ref<Texture> BlackTexture;
 		Ref<Texture> BlueTexture;
@@ -60,9 +57,6 @@ namespace BHive
 
 		RenderData()
 		{
-			constexpr uint32_t i = MAX_LIGHTS * sizeof(FPointLightInfo) + sizeof(uint32_t);
-			LightBuffer = CreateRef<UniformBuffer>(LIGHT_BUFFER_BINDING, sizeof(FLightInfo));
-
 			uint32_t white = 0xFFFFFFFF;
 			FTextureSpecification texture_specs{};
 			texture_specs.Channels = 3;
@@ -101,12 +95,6 @@ namespace BHive
 	{
 		ResetStats();
 
-		sData->LightBuffer->SetData(&sData->LightInfo, sizeof(FLightInfo));
-
-		sData->LightInfo.NumDirectionalLights = 0;
-		sData->LightInfo.NumPointLights = 0;
-		sData->LightInfo.NumSpotLights = 0;
-
 		LineRenderer::Begin();
 		QuadRenderer::Begin();
 	}
@@ -114,39 +102,6 @@ namespace BHive
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
 	{
 		CameraBuffer::Get().Submit(projection, view);
-	}
-
-	void Renderer::SubmitLight(const DirectionalLight &light, const glm::vec3 &direction)
-	{
-		auto &camera = CameraBuffer::Get().GetCameraData();
-
-		auto num_lights = sData->LightInfo.NumDirectionalLights++ % MAX_LIGHTS;
-		sData->LightInfo.DirectionalLightInfo[num_lights] = {light.Color, direction};
-
-		ShadowRenderer::SubmitDirectionalLight(direction, camera.Projection, camera.View);
-	}
-
-	void Renderer::SubmitLight(const PointLight &light, const glm::vec3 &position)
-	{
-		auto num_lights = sData->LightInfo.NumPointLights++ % MAX_LIGHTS;
-		sData->LightInfo.PointLightInfo[num_lights] = {light.Color, position, light.Radius};
-
-		ShadowRenderer::SubmitPointLight(position, light.Radius);
-	}
-
-	void Renderer::SubmitLight(const SpotLight &light, const glm::vec3 &direction, const glm::vec3 &position)
-	{
-		auto num_lights = sData->LightInfo.NumSpotLights++ % MAX_LIGHTS;
-		sData->LightInfo.SpotLightInfo[num_lights] = {light.Color, position, direction, light.Radius, glm::cos(glm::radians(light.InnerCutOff)), glm::cos(glm::radians(light.OuterCutOff))};
-
-		ShadowRenderer::SubmitSpotLight(direction, position, light.Radius);
-	}
-
-	glm::uvec3 Renderer::GetNumLights()
-	{
-		auto &light_info = sData->LightInfo;
-
-		return {light_info.NumDirectionalLights, light_info.NumPointLights, light_info.NumSpotLights};
 	}
 
 	void Renderer::End()

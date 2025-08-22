@@ -29,11 +29,6 @@ namespace BHive
 		static void Begin();
 		static void SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view);
 
-		static void SubmitLight(const DirectionalLight &light, const glm::vec3 &direction);
-		static void SubmitLight(const PointLight &light, const glm::vec3 &position);
-		static void SubmitLight(const SpotLight &light, const glm::vec3 &direction, const glm::vec3 &position);
-		static glm::uvec3 GetNumLights();
-
 		static void End();
 
 		static Ref<Texture> GetWhiteTexture();

@@ -46,11 +46,9 @@ struct PointLightShadow
 	vec2 ShadowNearFar;
 };
 
-layout(std430, binding = 4) uniform LightBuffer
+layout(std430, binding = 4) restrict readonly buffer LightSSBO
 {
-	uint uNumDirLights;
-	uint uNumPointLights;
-	uint uNumSpotLights;
+	uvec3 NumLights; //dir, point, spot
 	DirectionalLight uDirectionalLights[MAX_LIGHTS];
 	PointLight uPointLights[MAX_LIGHTS];
 	SpotLight uSpotLights[MAX_LIGHTS];

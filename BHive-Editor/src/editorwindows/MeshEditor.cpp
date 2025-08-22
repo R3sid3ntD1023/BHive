@@ -10,7 +10,6 @@ namespace BHive
 	MeshEditor::MeshEditor()
 	{
 		mCamera = EditorCamera(45.0f, 1.0f, .01f, 1000.f);
-		mCamera.SetView(FTransform({0, 3, 10}, {-45.f, 0.f, 0.f}));
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Initialize(300, 300);
@@ -28,9 +27,8 @@ namespace BHive
 		}
 
 		mSceneRenderer->Begin(&mCamera, mCamera.GetView());
-
-		LineRenderer::DrawGrid({});
-		Renderer::SubmitLight(DirectionalLight{}, {0, 0, -1});
+		mSceneRenderer->SubmitCommand([]() { LineRenderer::DrawGrid(FGrid{.color = 0xffffffff, .stepcolor = 0xffffffff}); });
+		mSceneRenderer->SubmitLight(DirectionalLight{}, {0, 0, -1});
 
 		if (auto skeletal_mesh = Cast<SkeletalMesh>(mAsset))
 		{

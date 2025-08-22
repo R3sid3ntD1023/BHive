@@ -6,7 +6,7 @@ vec3 geometry_view_dir = normalize(vs_in.CameraPosition - vs_in.Position);
 	#if defined (Direct)
 		#pragma unroll_loop_start
 
-		for(int i = 0; i < uNumDirLights; i++)
+		for(int i = 0; i < NumLights.x; i++)
 		{
 			DirectionalLight light = uDirectionalLights[i];
 			IncidentLight direct_light;
@@ -16,7 +16,7 @@ vec3 geometry_view_dir = normalize(vs_in.CameraPosition - vs_in.Position);
 		#pragma unroll_loop_end
 
 		#pragma unroll_loop_start
-		for(int i = 0; i < uNumPointLights; i++)
+		for(int i = 0; i < NumLights.y; i++)
 		{
 				PointLight light = uPointLights[i];
 				IncidentLight direct_light;
@@ -34,7 +34,7 @@ vec3 geometry_view_dir = normalize(vs_in.CameraPosition - vs_in.Position);
 		#pragma unroll_loop_end
 
 		#pragma unroll_loop_start
-		for(int i = 0; i < uNumSpotLights; i++)
+		for(int i = 0; i < NumLights.z; i++)
 		{
 			SpotLight light = uSpotLights[i];
 			IncidentLight direct_light;

@@ -17,7 +17,6 @@ namespace BHive
 		}
 
 		mCamera = EditorCamera(45.0f, 1.f, 0.01f, 1000.f);
-		mCamera.SetView(FTransform({0, 3, 5}, {-45.f, 0.f, 0.f}));
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Initialize(300, 300);
@@ -35,11 +34,9 @@ namespace BHive
 		}
 
 		mSceneRenderer->Begin(&mCamera, mCamera.GetView());
-
-		Renderer::SubmitLight(DirectionalLight{}, {-1, -.5, 0});
+		mSceneRenderer->SubmitLight(DirectionalLight{}, {-1, -.5, 0});
 		mSceneRenderer->SubmitMesh(mSphere, FTransform());
-		LineRenderer::DrawGrid(FGrid{.color = 0xffffffff, .stepcolor = 0xffffffff});
-
+		mSceneRenderer->SubmitCommand([]() { LineRenderer::DrawGrid(FGrid{.color = 0xffffffff, .stepcolor = 0xffffffff}); });
 		mSceneRenderer->End();
 
 		// imgui

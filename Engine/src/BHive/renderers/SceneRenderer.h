@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "PMREMGenerator.h"
 #include "mesh/MeshData.h"
+#include "Lights.h"
 
 namespace BHive
 {
@@ -23,6 +24,7 @@ namespace BHive
 	class SkeletalPose;
 	class MaterialTable;
 	struct FRenderData;
+	class VertexArray;
 
 	/**
 	 * @brief The SceneRenderer class is responsible for rendering the scene.
@@ -37,6 +39,8 @@ namespace BHive
 	{
 		FRenderSettings mRenderSettings; // Render settings for the scene renderer
 
+		using RenderData = std::map<float, FRenderData>;
+
 	public:
 		SceneRenderer() = default;
 
@@ -49,6 +53,12 @@ namespace BHive
 		void End();
 
 		void AddPostProcessingEffect(const Ref<PostProcessor> &processor);
+
+		void SubmitLight(const DirectionalLight &light, const glm::vec3 &direction);
+
+		void SubmitLight(const PointLight &light, const glm::vec3 &position);
+
+		void SubmitLight(const SpotLight &light, const glm::vec3 &direction, const glm::vec3 &position);
 
 		void SubmitMesh(const Ref<StaticMesh> &mesh, const glm::mat4 &transform = {1.0f}, const glm::mat4 *instances = nullptr, size_t instanceCount = 0);
 
@@ -79,11 +89,11 @@ namespace BHive
 	private:
 		void DrawMeshes();
 
-		void DrawMeshes(const std::vector<FRenderData> &datas);
+		void DrawMeshes(const RenderData &datas);
 
 		bool IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform);
 
-		void SortObjects();
+		float GetDistanceToCamera(const FTransform &transform);
 
 	private:
 		Ref<Framebuffer> mFramebuffer;

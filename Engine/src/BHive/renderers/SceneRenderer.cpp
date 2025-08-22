@@ -20,6 +20,7 @@
 #include "core/math/volumes/SphereVolume.h"
 #include "gfx/StorageBuffer.h"
 #include "gfx/UniformBuffer.h"
+#include "buffers/LightBuffer.h"
 
 namespace BHive
 {
@@ -30,18 +31,25 @@ namespace BHive
 
 	struct FMeshRenderData
 	{
-		std::unordered_map<Ref<Material>, std::vector<FRenderData>> RenderData;
+		std::unordered_map<Ref<Material>, std::map<float, FRenderData>> RenderData;
 		Ref<StorageBuffer> BoneBuffer;
 		Ref<StorageBuffer> WorldMatrixBuffer;
 		Ref<StorageBuffer> InstanceBuffer;
+		LightBuffer Lights;
+
+		void Init()
+		{
+			BoneBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * MAX_BONES);
+			WorldMatrixBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4));
+			InstanceBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * 1000);
+			Lights.Init();
+		}
 	};
 
 	void SceneRenderer::Initialize(uint32_t width, uint32_t height)
 	{
 		mMeshRenderData = CreateRef<FMeshRenderData>();
-		mMeshRenderData->BoneBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * MAX_BONES);
-		mMeshRenderData->WorldMatrixBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4));
-		mMeshRenderData->InstanceBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * 1000);
+		mMeshRenderData->Init();
 
 		// Initialize the framebuffer or any other resources needed for rendering
 		FramebufferSpecification specs;
@@ -79,19 +87,21 @@ namespace BHive
 
 	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
 	{
-
 		Renderer::Begin();
 		ShadowRenderer::Begin();
 		Renderer::SubmitCamera(camera->GetProjection(), view.Inverse());
 
+		mMeshRenderData->Lights.Begin();
 		mMeshRenderData->RenderData.clear();
 	}
 
 	void SceneRenderer::End()
 	{
+		mMeshRenderData->Lights.End();
+
 		ShadowRenderer::End();
 
-		auto num_lights = Renderer::GetNumLights();
+		auto num_lights = mMeshRenderData->Lights.NumLights();
 		if (glm::compAdd(num_lights) > 0)
 		{
 
@@ -183,6 +193,25 @@ namespace BHive
 		mPostProcessingEffects.push_back(processor);
 	}
 
+	void SceneRenderer::SubmitLight(const DirectionalLight &light, const glm::vec3 &direction)
+	{
+		auto &camera = CameraBuffer::Get().GetCameraData();
+		mMeshRenderData->Lights.Submit(FDirectionalLightInfo{light.Color, direction});
+		ShadowRenderer::SubmitDirectionalLight(direction, camera.Projection, camera.View);
+	}
+
+	void SceneRenderer::SubmitLight(const PointLight &light, const glm::vec3 &position)
+	{
+		mMeshRenderData->Lights.Submit(FPointLightInfo{light.Color, position, light.Radius});
+		ShadowRenderer::SubmitPointLight(position, light.Radius);
+	}
+
+	void SceneRenderer::SubmitLight(const SpotLight &light, const glm::vec3 &direction, const glm::vec3 &position)
+	{
+		mMeshRenderData->Lights.Submit(FSpotLightInfo{light.Color, position, direction, light.Radius, glm::cos(glm::radians(light.InnerCutOff)), glm::cos(glm::radians(light.OuterCutOff))});
+		ShadowRenderer::SubmitSpotLight(direction, position, light.Radius);
+	}
+
 	void SceneRenderer::SubmitMesh(const Ref<StaticMesh> &mesh, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
 	{
 		SubmitMesh(mesh, mesh->GetMaterialTable(), transform, instances, instanceCount);
@@ -209,7 +238,7 @@ namespace BHive
 			auto data = FRenderData{
 				.VertexArray = mesh->GetVertexArray(), .SubMesh = sub_mesh, .Transform = transform, .Bounds = mesh->GetBoundingBox(), .Instances = instances, .InstanceCount = instanceCount};
 
-			mMeshRenderData->RenderData[material].emplace_back(data);
+			mMeshRenderData->RenderData[material].emplace(GetDistanceToCamera(transform), data);
 		}
 	}
 
@@ -235,13 +264,19 @@ namespace BHive
 				.Instances = instances,
 				.InstanceCount = instanceCount};
 
-			mMeshRenderData->RenderData[material].emplace_back(data);
+			mMeshRenderData->RenderData[material].emplace(GetDistanceToCamera(transform), data);
 		}
 	}
 
 	void SceneRenderer::SubmitCommand(const std::function<void()> cmd)
 	{
 		mCommands.push(cmd);
+	}
+
+	float SceneRenderer::GetDistanceToCamera(const FTransform &transform)
+	{
+		const auto &C = CameraBuffer::Get().GetCameraData().CameraPosition;
+		return glm::distance(glm::vec3(C), transform[2]);
 	}
 
 	void SceneRenderer::Resize(uint32_t width, uint32_t height)
@@ -303,9 +338,9 @@ namespace BHive
 		}
 	}
 
-	void SceneRenderer::DrawMeshes(const std::vector<FRenderData> &datas)
+	void SceneRenderer::DrawMeshes(const RenderData &datas)
 	{
-		for (const auto &data : datas)
+		for (const auto &[dist, data] : datas)
 		{
 			auto matrix = data.Transform * data.SubMesh.Transformation;
 			mMeshRenderData->WorldMatrixBuffer->SetData(&matrix, sizeof(glm::mat4));
@@ -334,31 +369,10 @@ namespace BHive
 			return true;
 
 		const auto &bounds = mesh->GetBoundingBox();
-		const auto &frustum = Renderer::GetFrustum();
+		const auto &frustum = CameraBuffer::Get().GetCameraData().ViewFrustum;
 
 		auto volume = FSphereVolume(bounds.GetCenter(), bounds.GetRadius());
 		return !volume.InFrustum(frustum, FTransform(transform));
-	}
-
-	void SceneRenderer::SortObjects()
-	{
-		static auto sorter = [=](const FRenderData &a, const FRenderData &b)
-		{
-			const auto &A = a.Transform[3];
-			const auto &B = b.Transform[3];
-			const auto &C = CameraBuffer::Get().GetCameraData().CameraPosition;
-
-			const auto distA = glm::distance(A, C);
-			const auto distB = glm::distance(B, C);
-
-			return distA < distB;
-		};
-
-		for (auto &[mat, objdatas] : mMeshRenderData->RenderData)
-		{
-			auto &objects = objdatas;
-			std::sort(objects.begin(), objects.end(), sorter);
-		}
 	}
 
 	REFLECT(FRenderSettings)
