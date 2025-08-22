@@ -99,6 +99,9 @@ namespace BHive
 			{
 				for (auto &[mat, objects] : mMeshRenderData->RenderData)
 				{
+					if (!mat || !mat->ShouldCastShadows())
+						continue;
+
 					DrawMeshes(objects);
 				};
 			};

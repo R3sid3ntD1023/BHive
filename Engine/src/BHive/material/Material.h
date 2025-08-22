@@ -35,18 +35,21 @@ namespace BHive
 
 		virtual void SetTexture(const char *name, const Ref<Texture> &texture);
 
-		virtual Ref<Shader> GetShader() const;
-
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		void AddTextureSlot(const std::string &name, uint32_t binding);
 
+		virtual Ref<Shader> GetShader() const;
+
+		virtual bool ShouldCastShadows() const { return true; }
+
 		REFLECTABLEV(Asset)
 
 	protected:
 		TextureSlots mTextures;
+
 		Ref<Shader> mShader;
 	};
 

@@ -109,17 +109,22 @@ layout(push_constant) uniform PushConstants
 	float Opacity;
 	vec2 Tiling;
 	float DepthScale;
+	uint HasNormalMap;
 	uint Flags;
 } constants;
 
 
-#define HAS_NORMAL_MAP 1 << 0
-#define IS_DIAELECTRIC 1 << 1
+#define RECEIVE_SHADOWS 1 << 1
+#define IS_DIAELECTRIC 1 << 2
 
 layout(location = 0) out vec4 fs_out;
 
 void main()
 {
+	bool ReceiveShadows = (constants.Flags & RECEIVE_SHADOWS) != 0;
+	bool IsDielectric = (constants.Flags & IS_DIAELECTRIC) != 0;
+	bool HasNormalMap = constants.HasNormalMap != 0;
+
 	vec4 diffuseColor = vec4(constants.Albedo, constants.Opacity);
 	vec3 totalEmissiveRadiance = constants.Emission;
 	vec2 texCoord = vs_in.Texcoord * constants.Tiling;
@@ -134,8 +139,9 @@ void main()
 	#include <maps/EmissionMap.glsl>
 	#include <maps/OpacityMap.glsl>
 
-	bool isDielectric = (constants.Flags & (IS_DIAELECTRIC)) != 0;
-	vec3 F0 = isDielectric ? vec3(0.04) : diffuseColor.rgb;
+	
+
+	vec3 F0 = IsDielectric ? vec3(0.04) : diffuseColor.rgb;
 	F0 =  mix(F0, diffuseColor.rgb, metalnessFactor);
 
 

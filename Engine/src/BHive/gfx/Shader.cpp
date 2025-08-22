@@ -439,6 +439,11 @@ namespace BHive
 		glProgramUniform1i(mShaderID, location, value);
 	}
 
+	void Shader::SetUniform(int location, bool value) const
+	{
+		SetUniform(location, static_cast<uint32_t>(value));
+	}
+
 	void Shader::SetUniform(int location, uint32_t value) const
 	{
 		glProgramUniform1ui(mShaderID, location, value);

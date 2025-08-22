@@ -1,14 +1,14 @@
+#include "StandardMaterial.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
-#include "BDRFMaterial.h"
 #include "renderers/Renderer.h"
 #include "gfx/UniformBuffer.h"
 
 namespace BHive
 {
-	BDRFMaterial::BDRFMaterial()
+	StandardMaterial::StandardMaterial()
 		: Material(GetShader())
 	{
 		AddTextureSlot("Albedo", 0);
@@ -19,14 +19,10 @@ namespace BHive
 		AddTextureSlot("Opacity", 5);
 	}
 
-	void BDRFMaterial::Submit(const Ref<Shader> &shader)
+	void StandardMaterial::Submit(const Ref<Shader> &shader)
 	{
 
 		Material::Submit(shader);
-
-		auto flags = Flags;
-		if (mTextures.at("Normal").Texture)
-			flags |= EMaterialFlags::MaterialFlag_Use_Normal_Map;
 
 		shader->SetUniform<glm::vec3>("constants.Albedo", Albedo);
 		shader->SetUniform<glm::vec3>("constants.Emission", Emission);
@@ -34,37 +30,41 @@ namespace BHive
 		shader->SetUniform("constants.Metalness", Metallic);
 		shader->SetUniform("constants.Opacity", Opacity);
 		shader->SetUniform("constants.Tiling", Tiling);
-		shader->SetUniform("constants.Flags", (uint32_t)flags);
+		shader->SetUniform("constants.Flags", (uint32_t)Flags);
+		shader->SetUniform("constants.HasNormalMap", mTextures.at("Normal").Texture != nullptr);
 	}
 
-	Ref<Shader> BDRFMaterial::GetShader() const
+	Ref<Shader> StandardMaterial::GetShader() const
 	{
 		static Ref<Shader> shader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/BDRFMaterial.glsl");
 		return shader;
 	}
 
-	void BDRFMaterial::Save(cereal::BinaryOutputArchive &ar) const
+	void StandardMaterial::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Material::Save(ar);
 		ar(Albedo, Emission, Metallic, Roughness, Opacity, DepthScale, Tiling, Flags);
 	}
 
-	void BDRFMaterial::Load(cereal::BinaryInputArchive &ar)
+	void StandardMaterial::Load(cereal::BinaryInputArchive &ar)
 	{
 		Material::Load(ar);
 		ar(Albedo, Emission, Metallic, Roughness, Opacity, DepthScale, Tiling, Flags);
 	}
 
-	REFLECT(EMaterialFlags)
+	bool StandardMaterial::ShouldCastShadows() const
 	{
-		BEGIN_REFLECT_ENUM(EMaterialFlags)(
-			ENUM_VALUE(MaterialFlag_Cast_Shadows), ENUM_VALUE(MaterialFlag_Recieve_Shadows), ENUM_VALUE(MaterialFlag_DoubleSided), ENUM_VALUE(MaterialFlag_DiaElectric),
-			ENUM_VALUE(MaterialFlag_Shadows));
+		return (Flags & CastShadows) != 0;
 	}
 
-	REFLECT(BDRFMaterial)
+	REFLECT(StandardMaterial::EFlags)
 	{
-		BEGIN_REFLECT(BDRFMaterial)
+		BEGIN_REFLECT_ENUM(StandardMaterial::EFlags)(ENUM_VALUE(CastShadows), ENUM_VALUE(ReceiveShadows), ENUM_VALUE(DiaElectric), ENUM_VALUE(Shadows));
+	}
+
+	REFLECT(StandardMaterial)
+	{
+		BEGIN_REFLECT(StandardMaterial)
 		REFLECT_CONSTRUCTOR()
 		REFLECT_PROPERTY("Albedo", Albedo)
 		REFLECT_PROPERTY("Metallic", Metallic)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Roughness", Roughness)(
@@ -72,6 +72,6 @@ namespace BHive
 			REFLECT_PROPERTY("Opacity", Opacity)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Tiling", Tiling)
 				REFLECT_PROPERTY("DepthScale", DepthScale) REFLECT_PROPERTY("Flags", Flags)(META_DATA(EPropertyFlags_BitFlags, true));
 
-		rttr::type::register_wrapper_converter_for_base_classes<Ref<BDRFMaterial>>();
+		rttr::type::register_wrapper_converter_for_base_classes<Ref<StandardMaterial>>();
 	}
 } // namespace BHive

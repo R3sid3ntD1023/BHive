@@ -1,6 +1,6 @@
 #include "material/Material.h"
 #include "MaterialFactory.h"
-#include "material/BDRFMaterial.h"
+#include "material/StandardMaterial.h"
 #include "material/LambertMaterial.h"
 #include "material/EmissiveMaterial.h"
 
@@ -8,7 +8,7 @@ namespace BHive
 {
 	Ref<Asset> StandardMaterialFactory::CreateNew()
 	{
-		auto material = CreateRef<BDRFMaterial>();
+		auto material = CreateRef<StandardMaterial>();
 		OnAssetCreated.invoke(material);
 		return material;
 	}
