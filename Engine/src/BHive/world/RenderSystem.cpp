@@ -31,7 +31,12 @@ namespace BHive
 			for (const auto &e : view)
 			{
 				auto &c = view.get<DirectionalLightComponent>(e);
-				renderer->SubmitLight(c.Light, c.GetWorldTransform().GetForward());
+
+				FDirectionalLightCreateInfo create_info{};
+				create_info.Color = c.Color;
+				create_info.Direction = c.GetWorldTransform().GetForward();
+
+				renderer->SubmitLight(create_info);
 			}
 		}
 
@@ -41,8 +46,16 @@ namespace BHive
 			{
 				auto &c = view.get<PointLightComponent>(e);
 				const auto world_transform = c.GetWorldTransform();
-				renderer->SubmitLight(c.Light, world_transform.GetTranslation());
-				LineRenderer::DrawSphere(c.Light.Radius, 16, {}, c.Light.Color, world_transform);
+				const auto max_scale = glm::compMax(world_transform.GetScale());
+
+				FPointLightCreateInfo create_info{};
+				create_info.Color = c.Color;
+				create_info.Position = world_transform.GetTranslation();
+				create_info.Radius = c.Radius * max_scale;
+
+				renderer->SubmitLight(create_info);
+
+				LineRenderer::DrawSphere(c.Radius, 16, {}, c.Color, world_transform);
 			}
 		}
 
@@ -52,8 +65,19 @@ namespace BHive
 			{
 				auto &c = view.get<SpotLightComponent>(e);
 				const auto world_transform = c.GetWorldTransform();
-				renderer->SubmitLight(c.Light, world_transform.GetForward(), world_transform.GetTranslation());
-				LineRenderer::DrawCone(c.Light.Radius, c.Light.Radius, 16, c.Light.Color, world_transform);
+				const auto max_scale = glm::compMax(world_transform.GetScale());
+
+				FSpotLightCreateInfo create_info{};
+				create_info.Color = c.Color;
+				create_info.Radius = c.Radius * max_scale;
+				create_info.Direction = world_transform.GetForward();
+				create_info.Position = world_transform.GetTranslation();
+				create_info.InnerCutoff = c.InnerCutoff;
+				create_info.OuterCutoff = c.OuterCutoff;
+
+				renderer->SubmitLight(create_info);
+
+				LineRenderer::DrawCone(c.Radius, c.Radius, 16, c.Color, world_transform);
 			}
 		}
 

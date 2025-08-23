@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
+#include "renderers/RenderData.h"
 
 namespace BHive
 {
@@ -9,35 +10,12 @@ namespace BHive
 	static constexpr uint32_t sLightBufferBinding = 4;
 	static constexpr uint32_t sMaxLights = 32;
 
-	struct FDirectionalLightInfo
-	{
-		alignas(16) glm::vec3 Color;
-		alignas(16) glm::vec3 Direction;
-	};
-
-	struct FPointLightInfo
-	{
-		alignas(16) glm::vec3 Color;
-		alignas(16) glm::vec3 Position;
-		float Radius;
-	};
-
-	struct FSpotLightInfo
-	{
-		alignas(16) glm::vec3 Color;
-		alignas(16) glm::vec3 Position;
-		alignas(16) glm::vec3 Direction;
-		float Radius;
-		float InnerCutoff;
-		float OuterCutoff;
-	};
-
 	struct FLightInfo
 	{
 		alignas(16) glm::uvec3 NumLights = {0, 0, 0};
-		std::array<FDirectionalLightInfo, sMaxLights> DirectionalLightInfo;
-		std::array<FPointLightInfo, sMaxLights> PointLightInfo;
-		std::array<FSpotLightInfo, sMaxLights> SpotLightInfo;
+		std::array<FDirectionalLightCreateInfo, sMaxLights> DirectionalLightInfo;
+		std::array<FPointLightCreateInfo, sMaxLights> PointLightInfo;
+		std::array<FSpotLightCreateInfo, sMaxLights> SpotLightInfo;
 	};
 
 	struct LightBuffer
@@ -48,11 +26,11 @@ namespace BHive
 
 		void End();
 
-		void Submit(const FDirectionalLightInfo &info);
+		void Submit(const FDirectionalLightCreateInfo &info);
 
-		void Submit(const FPointLightInfo &info);
+		void Submit(const FPointLightCreateInfo &info);
 
-		void Submit(const FSpotLightInfo &info);
+		void Submit(const FSpotLightCreateInfo &info);
 
 		const glm::uvec3 &NumLights() const;
 

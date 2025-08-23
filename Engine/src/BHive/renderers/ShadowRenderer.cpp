@@ -96,6 +96,10 @@ namespace BHive
 
 	void ShadowRenderer::Render(const FMeshRenderDatas &datas)
 	{
+		const auto &num_shadow_maps = glm::compAdd(mShadowRenderData->ShadowData.NumShadowMaps);
+		if (num_shadow_maps == 0)
+			return;
+
 		RenderCommand::CullFront();
 
 		auto draw_meshes = [=]()

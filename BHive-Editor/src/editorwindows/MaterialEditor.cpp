@@ -34,7 +34,7 @@ namespace BHive
 		}
 
 		mSceneRenderer->Begin(&mCamera, mCamera.GetView());
-		mSceneRenderer->SubmitLight(DirectionalLight{}, {-1, -.5, 0});
+		mSceneRenderer->SubmitLight(FDirectionalLightCreateInfo{.Color = {1, 1, 1}, .Direction = {-1, -.5, 0}});
 		mSceneRenderer->SubmitMesh(mSphere, FTransform());
 		mSceneRenderer->SubmitCommand([]() { LineRenderer::DrawGrid(FGrid{.color = 0xffffffff, .stepcolor = 0xffffffff}); });
 		mSceneRenderer->End();

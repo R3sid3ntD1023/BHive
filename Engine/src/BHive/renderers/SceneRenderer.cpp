@@ -167,44 +167,44 @@ namespace BHive
 		mPostProcessingEffects.push_back(processor);
 	}
 
-	void SceneRenderer::SubmitLight(const DirectionalLight &light, const glm::vec3 &direction)
+	void SceneRenderer::SubmitLight(const FDirectionalLightCreateInfo &info)
 	{
 		auto &camera = Renderer::GetCamera().GetCameraData();
-		mSceneRenderData->Lights.Submit(FDirectionalLightInfo{light.Color, direction});
+		mSceneRenderData->Lights.Submit(info);
 
-		FShadowCascadedCreateInfo info{};
-		info.LightDirection = direction;
-		info.CameraProj = camera.Projection;
-		info.InverseCameraView = camera.View;
-		info.CameraNearFar = camera.NearFar;
-		info.LightCascadeFrustumNear = 1.0f;
+		FShadowCascadedCreateInfo shadow_info{};
+		shadow_info.LightDirection = info.Direction;
+		shadow_info.CameraProj = camera.Projection;
+		shadow_info.InverseCameraView = camera.View;
+		shadow_info.CameraNearFar = camera.NearFar;
+		shadow_info.LightCascadeFrustumNear = 1.0f;
 
-		mSceneRenderData->ShadowRenderer.SubmitDirectionalLight(info);
+		mSceneRenderData->ShadowRenderer.SubmitDirectionalLight(shadow_info);
 	}
 
-	void SceneRenderer::SubmitLight(const PointLight &light, const glm::vec3 &position)
+	void SceneRenderer::SubmitLight(const FPointLightCreateInfo &info)
 	{
-		mSceneRenderData->Lights.Submit(FPointLightInfo{light.Color, position, light.Radius});
+		mSceneRenderData->Lights.Submit(info);
 
-		FShadowCubeCreateInfo info{};
-		info.LightPosition = position;
-		info.LightNearFar = {1.0f, light.Radius};
+		FShadowCubeCreateInfo shadow_info{};
+		shadow_info.LightPosition = info.Position;
+		shadow_info.LightNearFar = {1.0f, info.Radius};
 
-		mSceneRenderData->ShadowRenderer.SubmitPointLight(info);
+		mSceneRenderData->ShadowRenderer.SubmitPointLight(shadow_info);
 	}
 
-	void SceneRenderer::SubmitLight(const SpotLight &light, const glm::vec3 &direction, const glm::vec3 &position)
+	void SceneRenderer::SubmitLight(const FSpotLightCreateInfo &info)
 	{
-		auto inner = glm::cos(glm::radians(light.InnerCutOff));
-		auto outer = glm::cos(glm::radians(light.OuterCutOff));
-		mSceneRenderData->Lights.Submit(FSpotLightInfo{light.Color, position, direction, light.Radius, inner, outer});
+		auto inner = glm::cos(glm::radians(info.InnerCutoff));
+		auto outer = glm::cos(glm::radians(info.OuterCutoff));
+		mSceneRenderData->Lights.Submit(info);
 
-		FShadowFrustumCreateInfo info;
-		info.LightDirection = direction;
-		info.LightAngleNearFar = {light.OuterCutOff, .1f, light.Radius};
-		info.LightPosition = position;
+		FShadowFrustumCreateInfo shadow_info;
+		shadow_info.LightDirection = info.Direction;
+		shadow_info.LightAngleNearFar = {info.OuterCutoff, .1f, info.Radius};
+		shadow_info.LightPosition = info.Position;
 
-		mSceneRenderData->ShadowRenderer.SubmitSpotLight(info);
+		mSceneRenderData->ShadowRenderer.SubmitSpotLight(shadow_info);
 	}
 
 	void SceneRenderer::SubmitMesh(const Ref<StaticMesh> &mesh, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)

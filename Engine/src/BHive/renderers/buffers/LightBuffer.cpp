@@ -21,19 +21,19 @@ namespace BHive
 		LightBuffer->SetData(&LightInfo, sizeof(FLightInfo));
 	}
 
-	void LightBuffer::Submit(const FDirectionalLightInfo &info)
+	void LightBuffer::Submit(const FDirectionalLightCreateInfo &info)
 	{
 		auto num_lights = LightInfo.NumLights[0]++ % sMaxLights;
 		LightInfo.DirectionalLightInfo[num_lights] = info;
 	}
 
-	void LightBuffer::Submit(const FPointLightInfo &info)
+	void LightBuffer::Submit(const FPointLightCreateInfo &info)
 	{
 		auto num_lights = LightInfo.NumLights[1]++ % sMaxLights;
 		LightInfo.PointLightInfo[num_lights] = info;
 	}
 
-	void LightBuffer::Submit(const FSpotLightInfo &info)
+	void LightBuffer::Submit(const FSpotLightCreateInfo &info)
 	{
 		auto num_lights = LightInfo.NumLights[2]++ % sMaxLights;
 		LightInfo.SpotLightInfo[num_lights] = info;

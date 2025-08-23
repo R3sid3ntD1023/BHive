@@ -32,6 +32,29 @@ namespace BHive
 		std::vector<glm::mat4> Bones;
 	};
 
+	struct FDirectionalLightCreateInfo
+	{
+		alignas(16) glm::vec3 Color;
+		alignas(16) glm::vec3 Direction;
+	};
+
+	struct FPointLightCreateInfo
+	{
+		alignas(16) glm::vec3 Color;
+		alignas(16) glm::vec3 Position;
+		float Radius;
+	};
+
+	struct FSpotLightCreateInfo
+	{
+		alignas(16) glm::vec3 Color;
+		alignas(16) glm::vec3 Position;
+		alignas(16) glm::vec3 Direction;
+		float Radius;
+		float InnerCutoff;
+		float OuterCutoff;
+	};
+
 	struct FShadowCascadedCreateInfo
 	{
 		glm::vec3 LightDirection;

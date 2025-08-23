@@ -28,7 +28,7 @@ namespace BHive
 
 		mSceneRenderer->Begin(&mCamera, mCamera.GetView());
 		mSceneRenderer->SubmitCommand([]() { LineRenderer::DrawGrid(FGrid{.color = 0xffffffff, .stepcolor = 0xffffffff}); });
-		mSceneRenderer->SubmitLight(DirectionalLight{}, {0, 0, -1});
+		mSceneRenderer->SubmitLight(FDirectionalLightCreateInfo{.Color = {1, 1, 1}, .Direction = {0, 0, -1}});
 
 		if (auto skeletal_mesh = Cast<SkeletalMesh>(mAsset))
 		{

@@ -3,7 +3,6 @@
 #include "core/Core.h"
 #include "Renderer.h"
 #include "PMREMGenerator.h"
-#include "Lights.h"
 #include "RenderData.h"
 
 namespace BHive
@@ -50,11 +49,11 @@ namespace BHive
 
 		void AddPostProcessingEffect(const Ref<PostProcessor> &processor);
 
-		void SubmitLight(const DirectionalLight &light, const glm::vec3 &direction);
+		void SubmitLight(const FDirectionalLightCreateInfo &info);
 
-		void SubmitLight(const PointLight &light, const glm::vec3 &position);
+		void SubmitLight(const FPointLightCreateInfo &info);
 
-		void SubmitLight(const SpotLight &light, const glm::vec3 &direction, const glm::vec3 &position);
+		void SubmitLight(const FSpotLightCreateInfo &info);
 
 		void SubmitMesh(const Ref<StaticMesh> &mesh, const glm::mat4 &transform = {1.0f}, const glm::mat4 *instances = nullptr, size_t instanceCount = 0);
 

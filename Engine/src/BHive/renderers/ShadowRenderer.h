@@ -2,7 +2,6 @@
 
 #include "core/Core.h"
 #include "core/math/Transform.h"
-#include "renderers/Lights.h"
 #include "RenderData.h"
 
 namespace BHive

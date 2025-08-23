@@ -27,7 +27,7 @@ namespace BHive
 	{
 		BEGIN_REFLECT(FTransform)
 			.property("Translation", &FTransform::GetTranslation, rttr::select_overload<void(const glm::vec3 &)>(&FTransform::SetTranslation)) REFLECT_PROPERTY("Rotation", GetRotation, SetRotation)
-				REFLECT_PROPERTY("Scale", GetScale, SetScale);
+				REFLECT_PROPERTY("Scale", GetScale, SetScale)(META_DATA(EPropertyMetaData_Default, glm::vec3(1)));
 	}
 
 	REFLECT(TransformComponent)

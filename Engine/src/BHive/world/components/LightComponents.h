@@ -1,7 +1,7 @@
 #pragma once
 
 #include "world/Component.h"
-#include "renderers/Lights.h"
+#include "gfx/Color.h"
 
 namespace BHive
 {
@@ -11,7 +11,7 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		DirectionalLight Light;
+		FColor Color{0xFFFFFFFF};
 
 		REFLECTABLEV(Component)
 	};
@@ -22,7 +22,9 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		PointLight Light;
+		FColor Color{0xFFFFFFFF};
+
+		float Radius{1.f};
 
 		REFLECTABLEV(Component)
 	};
@@ -33,7 +35,13 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		SpotLight Light;
+		FColor Color{0xFFFFFFFF};
+
+		float Radius{1.f};
+
+		float InnerCutoff{45.f};
+
+		float OuterCutoff{75.f};
 
 		REFLECTABLEV(Component)
 	};
