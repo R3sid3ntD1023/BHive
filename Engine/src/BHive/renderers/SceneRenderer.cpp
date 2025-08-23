@@ -24,32 +24,32 @@
 
 namespace BHive
 {
-#define SSBO_INDEX_PER_OBJECT_BINDING 1
-#define SSBO_INSTANCE_BINDING 2
-#define SSBO_BONE_BINDING 3
-#define MAX_BONES 200
 
-	struct FMeshRenderData
+	struct FSceneRenderData
 	{
-		std::unordered_map<Ref<Material>, std::map<float, FRenderData>> RenderData;
-		Ref<StorageBuffer> BoneBuffer;
-		Ref<StorageBuffer> WorldMatrixBuffer;
-		Ref<StorageBuffer> InstanceBuffer;
+		std::unordered_map<Ref<Material>, FMeshRenderDatas> RenderData;
+		FMeshRenderDatas ShadowPassRenderData;
+
 		LightBuffer Lights;
+		ShadowRenderer ShadowRenderer;
 
 		void Init()
 		{
-			BoneBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * MAX_BONES);
-			WorldMatrixBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4));
-			InstanceBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * 1000);
 			Lights.Init();
+			ShadowRenderer.Init(MAX_LIGHTS);
+		}
+
+		void Reset()
+		{
+			RenderData.clear();
+			ShadowPassRenderData.clear();
 		}
 	};
 
 	void SceneRenderer::Initialize(uint32_t width, uint32_t height)
 	{
-		mMeshRenderData = CreateRef<FMeshRenderData>();
-		mMeshRenderData->Init();
+		mSceneRenderData = CreateRef<FSceneRenderData>();
+		mSceneRenderData->Init();
 
 		// Initialize the framebuffer or any other resources needed for rendering
 		FramebufferSpecification specs;
@@ -88,56 +88,19 @@ namespace BHive
 	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
 	{
 		Renderer::Begin();
-		ShadowRenderer::Begin();
 		Renderer::SubmitCamera(camera->GetProjection(), view.Inverse());
 
-		mMeshRenderData->Lights.Begin();
-		mMeshRenderData->RenderData.clear();
+		mSceneRenderData->ShadowRenderer.Begin();
+		mSceneRenderData->Lights.Begin();
+		mSceneRenderData->Reset();
 	}
 
 	void SceneRenderer::End()
 	{
-		mMeshRenderData->Lights.End();
+		mSceneRenderData->Lights.End();
+		mSceneRenderData->ShadowRenderer.End();
 
-		ShadowRenderer::End();
-
-		auto num_lights = mMeshRenderData->Lights.NumLights();
-		if (glm::compAdd(num_lights) > 0)
-		{
-
-			auto draw_meshes = [=]()
-			{
-				for (auto &[mat, objects] : mMeshRenderData->RenderData)
-				{
-					if (!mat || !mat->ShouldCastShadows())
-						continue;
-
-					DrawMeshes(objects);
-				};
-			};
-
-			RenderCommand::CullFront();
-			if (num_lights.y > 0)
-			{
-
-				ShadowRenderer::BeginPointShadowPass();
-
-				draw_meshes();
-
-				ShadowRenderer::EndPointShadowPass();
-			}
-
-			if (num_lights.z > 0)
-			{
-				ShadowRenderer::BeginSpotShadowPass();
-
-				draw_meshes();
-
-				ShadowRenderer::EndSpotShadowPass();
-			}
-
-			RenderCommand::CullBack();
-		}
+		mSceneRenderData->ShadowRenderer.Render(mSceneRenderData->ShadowPassRenderData);
 
 		mFramebuffer->Bind();
 
@@ -148,9 +111,20 @@ namespace BHive
 		EnvironmentMapGenerator.GetBDRFLUT()->Bind(8);
 
 		static uint32_t shadow_map_bindings[] = {9, 10, 11};
-		ShadowRenderer::BindShadowMaps(shadow_map_bindings);
+		mSceneRenderData->ShadowRenderer.BindShadowMaps(shadow_map_bindings);
 
-		DrawMeshes();
+		// render meshes
+		for (auto &[mat, objects] : mSceneRenderData->RenderData)
+		{
+			auto shader = mat->GetShader();
+			shader->Bind();
+			mat->Submit(shader);
+
+			for (auto [dist, object] : objects)
+				Renderer::SubmitMesh(object);
+
+			shader->UnBind();
+		}
 
 		while (mCommands.size())
 		{
@@ -196,20 +170,41 @@ namespace BHive
 	void SceneRenderer::SubmitLight(const DirectionalLight &light, const glm::vec3 &direction)
 	{
 		auto &camera = Renderer::GetCamera().GetCameraData();
-		mMeshRenderData->Lights.Submit(FDirectionalLightInfo{light.Color, direction});
-		ShadowRenderer::SubmitDirectionalLight(direction, camera.Projection, camera.View);
+		mSceneRenderData->Lights.Submit(FDirectionalLightInfo{light.Color, direction});
+
+		FShadowCascadedCreateInfo info{};
+		info.LightDirection = direction;
+		info.CameraProj = camera.Projection;
+		info.InverseCameraView = camera.View;
+		info.CameraNearFar = camera.NearFar;
+		info.LightCascadeFrustumNear = 1.0f;
+
+		mSceneRenderData->ShadowRenderer.SubmitDirectionalLight(info);
 	}
 
 	void SceneRenderer::SubmitLight(const PointLight &light, const glm::vec3 &position)
 	{
-		mMeshRenderData->Lights.Submit(FPointLightInfo{light.Color, position, light.Radius});
-		ShadowRenderer::SubmitPointLight(position, light.Radius);
+		mSceneRenderData->Lights.Submit(FPointLightInfo{light.Color, position, light.Radius});
+
+		FShadowCubeCreateInfo info{};
+		info.LightPosition = position;
+		info.LightNearFar = {1.0f, light.Radius};
+
+		mSceneRenderData->ShadowRenderer.SubmitPointLight(info);
 	}
 
 	void SceneRenderer::SubmitLight(const SpotLight &light, const glm::vec3 &direction, const glm::vec3 &position)
 	{
-		mMeshRenderData->Lights.Submit(FSpotLightInfo{light.Color, position, direction, light.Radius, glm::cos(glm::radians(light.InnerCutOff)), glm::cos(glm::radians(light.OuterCutOff))});
-		ShadowRenderer::SubmitSpotLight(direction, position, light.Radius);
+		auto inner = glm::cos(glm::radians(light.InnerCutOff));
+		auto outer = glm::cos(glm::radians(light.OuterCutOff));
+		mSceneRenderData->Lights.Submit(FSpotLightInfo{light.Color, position, direction, light.Radius, inner, outer});
+
+		FShadowFrustumCreateInfo info;
+		info.LightDirection = direction;
+		info.LightAngleNearFar = {light.OuterCutOff, .1f, light.Radius};
+		info.LightPosition = position;
+
+		mSceneRenderData->ShadowRenderer.SubmitSpotLight(info);
 	}
 
 	void SceneRenderer::SubmitMesh(const Ref<StaticMesh> &mesh, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
@@ -235,10 +230,18 @@ namespace BHive
 			if (!material)
 				return;
 
-			auto data = FRenderData{
-				.VertexArray = mesh->GetVertexArray(), .SubMesh = sub_mesh, .Transform = transform, .Bounds = mesh->GetBoundingBox(), .Instances = instances, .InstanceCount = instanceCount};
+			auto data = CreateRef<FMeshRenderData>();
+			data->VertexArray = mesh->GetVertexArray();
+			data->SubMesh = sub_mesh;
+			data->Transform = transform;
+			data->Instances = instances;
+			data->InstanceCount = instanceCount;
 
-			mMeshRenderData->RenderData[material].emplace(GetDistanceToCamera(transform), data);
+			float distance = GetDistanceToCamera(transform);
+			mSceneRenderData->RenderData[material].emplace(distance, data);
+
+			if (material->ShouldCastShadows())
+				mSceneRenderData->ShadowPassRenderData.emplace(distance, data);
 		}
 	}
 
@@ -255,16 +258,20 @@ namespace BHive
 			if (!material)
 				return;
 
-			auto data = FRenderData{
-				.VertexArray = mesh->GetVertexArray(),
-				.SubMesh = sub_mesh,
-				.Transform = transform,
-				.Bounds = mesh->GetBoundingBox(),
-				.Pose = &pose,
-				.Instances = instances,
-				.InstanceCount = instanceCount};
+			auto bones = pose.GetTransformsJointSpace();
+			auto data = CreateRef<FSkeletalMeshRenderData>();
+			data->VertexArray = mesh->GetVertexArray();
+			data->SubMesh = sub_mesh;
+			data->Transform = transform;
+			data->Instances = instances;
+			data->InstanceCount = instanceCount;
+			data->Bones = bones;
 
-			mMeshRenderData->RenderData[material].emplace(GetDistanceToCamera(transform), data);
+			float distance = GetDistanceToCamera(transform);
+			mSceneRenderData->RenderData[material].emplace(distance, data);
+
+			if (material->ShouldCastShadows())
+				mSceneRenderData->ShadowPassRenderData.emplace(distance, data);
 		}
 	}
 
@@ -322,45 +329,6 @@ namespace BHive
 		mFinalFramebuffer->GetColorAttachment()->Bind();
 
 		RenderCommand::DrawElements(EDrawMode::Triangles, *mQuad->GetVertexArray());
-	}
-
-	void SceneRenderer::DrawMeshes()
-	{
-		for (auto &[mat, objects] : mMeshRenderData->RenderData)
-		{
-			auto shader = mat->GetShader();
-			shader->Bind();
-			mat->Submit(shader);
-
-			DrawMeshes(objects);
-
-			shader->UnBind();
-		}
-	}
-
-	void SceneRenderer::DrawMeshes(const RenderData &datas)
-	{
-		for (const auto &[dist, data] : datas)
-		{
-			auto matrix = data.Transform * data.SubMesh.Transformation;
-			mMeshRenderData->WorldMatrixBuffer->SetData(&matrix, sizeof(glm::mat4));
-			mMeshRenderData->WorldMatrixBuffer->BindBufferBase(SSBO_INDEX_PER_OBJECT_BINDING);
-
-			if (data.InstanceCount > 0)
-			{
-				mMeshRenderData->InstanceBuffer->SetData(data.Instances, sizeof(glm::mat4) * data.InstanceCount);
-				mMeshRenderData->InstanceBuffer->BindBufferBase(SSBO_INSTANCE_BINDING);
-			}
-
-			if (data.Pose)
-			{
-				const auto &joints = data.Pose->GetTransformsJointSpace();
-				mMeshRenderData->BoneBuffer->SetData(joints.data(), joints.size() * sizeof(glm::mat4));
-				mMeshRenderData->BoneBuffer->BindBufferBase(SSBO_BONE_BINDING);
-			}
-
-			RenderCommand::DrawElementsBaseVertex(EDrawMode::Triangles, *data.VertexArray, data.SubMesh.StartVertex, data.SubMesh.StartIndex, data.SubMesh.IndexCount, data.InstanceCount);
-		}
 	}
 
 	bool SceneRenderer::IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform)

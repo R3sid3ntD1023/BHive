@@ -24,8 +24,8 @@ vec3 geometry_view_dir = normalize(vs_in.CameraPosition - vs_in.Position);
 				GetPointLightInfo(light, geometry_position, direct_light);
 
 				#if defined(USE_SHADOWMAPS)
-					PointLightShadow pointLightShadow = uPointShadows[i];
-					direct_light.Color *= ( (direct_light.Color != vec3(0.0f)) && ReceiveShadows) ? GetPointShadow(i, geometry_position, normalize(direct_light.Direction), direct_light.Direction, pointLightShadow.ShadowNearFar, u_shadow_point_map) : 1.0f;
+					PointLightShadowInfo shadow_info = uPointShadowInfo[i];
+					direct_light.Color *= ( (direct_light.Color != vec3(0.0f)) && ReceiveShadows) ? GetPointShadow(i, geometry_position, normalize(direct_light.Direction), direct_light.Direction, shadow_info.ShadowNearFar, u_shadow_point_map) : 1.0f;
 				#endif
 
 				Direct(geometry_position, geometry_normal, geometry_view_dir, direct_light, material, reflected_light);

@@ -41,8 +41,9 @@ struct ReflectedLight
 	vec3 IndirectSpecular;
 };
 
-struct PointLightShadow
+struct PointLightShadowInfo
 {
+	mat4 ViewProjections[6];
 	vec2 ShadowNearFar;
 };
 
@@ -59,9 +60,8 @@ layout(std430, binding = 5) restrict readonly buffer ShadowSSBO
 {
 	uvec4 uNumShadowMaps;
 	mat4 uDirViewProjections[MAX_LIGHTS];
-	mat4 uPointViewProjections[MAX_LIGHTS * 6];
+	PointLightShadowInfo uPointShadowInfo[MAX_LIGHTS];
 	mat4 uSpotViewProjections[MAX_LIGHTS];
-	PointLightShadow uPointShadows[MAX_LIGHTS];
 };
 
 void GetDirectionLightInfo(const in DirectionalLight light, inout IncidentLight directLight)

@@ -3,8 +3,6 @@
 #include "core/Core.h"
 #include "gfx/Color.h"
 
-#define MAX_LIGHTS 32
-
 namespace BHive
 {
 

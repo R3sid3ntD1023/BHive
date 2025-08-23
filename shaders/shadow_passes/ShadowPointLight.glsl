@@ -34,7 +34,7 @@ void main()
 			for(int i = 0; i < 3; i++)
 			{
 				vec4 pos = gl_in[i].gl_Position;
-				gl_Position = uPointViewProjections[layer] * pos;
+				gl_Position = uPointShadowInfo[gl_InvocationID].ViewProjections[f] * pos;
 				gl_Layer = layer;
 				
 				EmitVertex();

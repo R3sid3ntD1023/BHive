@@ -1,14 +1,6 @@
-#include "gfx/RenderCommand.h"
-#include "gfx/Shader.h"
-#include "gfx/textures/Texture2D.h"
-#include "gfx/UniformBuffer.h"
-#include "gfx/StorageBuffer.h"
 #include "Renderer.h"
-#include "buffers/CameraBuffer.h"
-#include "ShadowRenderer.h"
-#include <glad/glad.h>
-
-#define CAMERA_UBO_BINDING 0
+#include "gfx/textures/Texture2D.h"
+#include "buffers/ModelBuffer.h"
 
 namespace BHive
 {
@@ -16,6 +8,8 @@ namespace BHive
 	struct Renderer::RenderData
 	{
 		CameraBuffer Camera;
+		ModelBuffer Model;
+
 		Ref<Texture> WhiteTexture;
 		Ref<Texture> BlackTexture;
 		Ref<Texture> BlueTexture;
@@ -36,6 +30,7 @@ namespace BHive
 			BlueTexture = CreateRef<Texture2D>(1, 1, texture_specs, &blue, sizeof(uint32_t));
 
 			Camera.Init();
+			Model.Init();
 		}
 	};
 
@@ -43,7 +38,6 @@ namespace BHive
 	{
 		sData = new RenderData();
 
-		ShadowRenderer::Init(MAX_LIGHTS);
 		LineRenderer::Init();
 		QuadRenderer::Init();
 	}
@@ -53,7 +47,6 @@ namespace BHive
 
 		LineRenderer::Shutdown();
 		QuadRenderer::Shutdown();
-		ShadowRenderer::Shutdown();
 
 		delete sData;
 	}
@@ -69,6 +62,11 @@ namespace BHive
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
 	{
 		sData->Camera.Begin(projection, view);
+	}
+
+	void Renderer::SubmitMesh(const Ref<FMeshRenderData> &data)
+	{
+		sData->Model.Submit(data);
 	}
 
 	void Renderer::End()

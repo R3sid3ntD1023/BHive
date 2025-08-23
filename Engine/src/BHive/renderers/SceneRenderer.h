@@ -3,8 +3,8 @@
 #include "core/Core.h"
 #include "Renderer.h"
 #include "PMREMGenerator.h"
-#include "mesh/MeshData.h"
 #include "Lights.h"
+#include "RenderData.h"
 
 namespace BHive
 {
@@ -23,8 +23,6 @@ namespace BHive
 	class StaticMesh;
 	class SkeletalPose;
 	class MaterialTable;
-	struct FRenderData;
-	class VertexArray;
 
 	/**
 	 * @brief The SceneRenderer class is responsible for rendering the scene.
@@ -38,8 +36,6 @@ namespace BHive
 	class BHIVE_API SceneRenderer
 	{
 		FRenderSettings mRenderSettings; // Render settings for the scene renderer
-
-		using RenderData = std::map<float, FRenderData>;
 
 	public:
 		SceneRenderer() = default;
@@ -87,10 +83,6 @@ namespace BHive
 		glm::uvec2 GetSize() const;
 
 	private:
-		void DrawMeshes();
-
-		void DrawMeshes(const RenderData &datas);
-
 		bool IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform);
 
 		float GetDistanceToCamera(const FTransform &transform);
@@ -104,29 +96,14 @@ namespace BHive
 
 		// Post-processing effects
 		std::vector<Ref<PostProcessor>> mPostProcessingEffects; // effects for post-processing
+		Ref<struct FSceneRenderData> mSceneRenderData;
+
+		std::stack<std::function<void()>> mCommands;
 
 		static inline PMREMGenerator EnvironmentMapGenerator;
 		static inline Ref<Texture2D> sEnvironmentMap = nullptr; // Static environment map
 
-		Ref<struct FMeshRenderData> mMeshRenderData;
-		std::stack<std::function<void()>> mCommands;
-
 		REFLECTABLE()
-	};
-
-	struct FRenderData
-	{
-		Ref<VertexArray> VertexArray;
-		FSubMesh SubMesh;
-		glm::mat4 Transform;
-		AABB Bounds;
-
-		// skeletal
-		const SkeletalPose *Pose = nullptr;
-
-		// instances
-		const glm::mat4 *Instances = nullptr;
-		size_t InstanceCount = 0;
 	};
 
 	REFLECT_EXTERN(SceneRenderer)

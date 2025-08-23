@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "core/math/Transform.h"
 #include "renderers/Lights.h"
+#include "RenderData.h"
 
 namespace BHive
 {
@@ -13,25 +14,20 @@ namespace BHive
 	class ShadowRenderer
 	{
 	public:
-		static void Init(uint32_t max_lights, uint32_t cascaded_levels = 5);
-		static void Shutdown();
+		void Init(uint32_t max_lights, uint32_t cascaded_levels = 5);
 
-		static void Begin();
-		static void End();
+		void Begin();
+		void End();
 
-		static void BeginShadowPass();
-		static void EndShadowPass();
+		void Render(const FMeshRenderDatas &data);
 
-		static void BeginSpotShadowPass();
-		static void EndSpotShadowPass();
+		void SubmitDirectionalLight(const FShadowCascadedCreateInfo &info);
+		void SubmitSpotLight(const FShadowFrustumCreateInfo &info);
+		void SubmitPointLight(const FShadowCubeCreateInfo &info);
 
-		static void BeginPointShadowPass();
-		static void EndPointShadowPass();
+		void BindShadowMaps(uint32_t *bindings);
 
-		static void SubmitDirectionalLight(const glm::vec3 &direction, const glm::mat4 &camera_proj, const glm::mat4 &camera_view);
-		static void SubmitSpotLight(const glm::vec3 &direction, const glm::vec3 &position, float radius);
-		static void SubmitPointLight(const glm::vec3 &position, float radius);
-
-		static void BindShadowMaps(uint32_t *bindings);
+	private:
+		Ref<struct FShadowRenderData> mShadowRenderData;
 	};
 } // namespace BHive

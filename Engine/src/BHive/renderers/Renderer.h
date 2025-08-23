@@ -5,6 +5,7 @@
 #include "QuadRenderer.h"
 #include "gfx/Camera.h"
 #include "buffers/CameraBuffer.h"
+#include "RenderData.h"
 
 namespace BHive
 {
@@ -27,6 +28,7 @@ namespace BHive
 
 		static void Begin();
 		static void SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view);
+		static void SubmitMesh(const Ref<FMeshRenderData> &data);
 
 		static void End();
 
