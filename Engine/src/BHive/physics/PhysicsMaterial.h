@@ -15,6 +15,8 @@ namespace BHive
 
 		float MassDensity = 1.0f;
 
+		float Damping = 0.0f;
+
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;

@@ -9,6 +9,7 @@
 #include "sprite/SpriteSheet.h"
 #include "sprite/FlipBook.h"
 #include "world/World.h"
+#include "physics/PhysicsMaterial.h"
 
 namespace BHive
 {
@@ -22,4 +23,5 @@ namespace BHive
 	REFLECT_EXTERN(Inspector_Asset<Texture2D>)
 	REFLECT_EXTERN(Inspector_Asset<AudioSource>)
 	REFLECT_EXTERN(Inspector_Asset<World>)
+	REFLECT_EXTERN(Inspector_Asset<PhysicsMaterial>)
 } // namespace BHive

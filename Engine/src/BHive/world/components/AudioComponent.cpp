@@ -1,6 +1,6 @@
 #include "AudioComponent.h"
 #include "audio/AudioSource.h"
-#include "GameObject.h"
+#include "World/GameObject.h"
 
 namespace BHive
 {
@@ -39,9 +39,6 @@ namespace BHive
 	REFLECT(AudioComponent)
 	{
 		BEGIN_REFLECT(AudioComponent)
-		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR()
-		REFLECT_PROPERTY(AutoPlay)
-		REFLECT_PROPERTY(Audio)
-		COMPONENT_IMPL();
+		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(AutoPlay) REFLECT_PROPERTY(Audio) COMPONENT_IMPL();
 	}
 } // namespace BHive

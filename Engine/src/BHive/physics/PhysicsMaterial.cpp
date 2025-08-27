@@ -5,20 +5,20 @@ namespace BHive
 	void PhysicsMaterial::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(FrictionCoefficient, Bounciness, MassDensity);
+		ar(FrictionCoefficient, Bounciness, MassDensity, Damping);
 	}
 
 	void PhysicsMaterial::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(FrictionCoefficient, Bounciness, MassDensity);
+		ar(FrictionCoefficient, Bounciness, MassDensity, Damping);
 	}
 
 	REFLECT(PhysicsMaterial)
 	{
 		BEGIN_REFLECT(PhysicsMaterial)
 		REFLECT_CONSTRUCTOR()
-		REFLECT_PROPERTY(FrictionCoefficient) REFLECT_PROPERTY(Bounciness) REFLECT_PROPERTY(MassDensity);
+		REFLECT_PROPERTY(FrictionCoefficient) REFLECT_PROPERTY(Bounciness) REFLECT_PROPERTY(MassDensity) REFLECT_PROPERTY(Damping);
 		rttr::type::register_wrapper_converter_for_base_classes<Ref<PhysicsMaterial>>();
 	}
 

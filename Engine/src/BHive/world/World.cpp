@@ -1,13 +1,13 @@
 #include "Components.h"
+#include "core/subsystem/SubSystem.h"
 #include "GameObject.h"
 #include "gfx/RenderCommand.h"
 #include "physics/EventListener.h"
 #include "physics/PhysicsUtils.h"
 #include "renderers/Renderer.h"
+#include "RenderSystem.h"
 #include "World.h"
 #include <physx/PxPhysicsAPI.h>
-#include "core/subsystem/SubSystem.h"
-#include "RenderSystem.h"
 
 namespace BHive
 {
@@ -144,50 +144,6 @@ namespace BHive
 			auto obj = obj_type.create({mRegistry.create(), this}).get_value<Ref<GameObject>>();
 			obj->Load(ar);
 			AddGameObject(obj);
-		}
-	}
-	void World::Save(cereal::JSONOutputArchive &ar) const
-	{
-		ar(cereal::make_size_tag(mObjects.size()));
-
-		for (auto &[id, body] : mObjects)
-		{
-			ar.startNode();
-
-			ar(MAKE_NVP("Type", body ? body->get_type() : InvalidType));
-			if (body)
-				body->Save(ar);
-
-			ar.finishNode();
-		}
-	}
-
-	void World::Load(cereal::JSONInputArchive &ar)
-	{
-		size_t size = 0;
-		ar(cereal::make_size_tag(size));
-
-		mObjects.reserve(size);
-
-		bool is_valid = false;
-		rttr::type type = InvalidType;
-
-		for (size_t i = 0; i < size; i++)
-		{
-
-			ar.startNode();
-
-			ar(MAKE_NVP("Type", type));
-
-			if (type)
-			{
-				auto body = type.create({mRegistry.create(), this}).get_value<Ref<GameObject>>();
-				body->Load(ar);
-
-				mObjects.emplace(body->GetID(), body);
-			}
-
-			ar.finishNode();
 		}
 	}
 
@@ -500,6 +456,15 @@ namespace BHive
 		return nullptr;
 	}
 
+	Ref<GameObject> World::GetGameObject(int32_t id) const
+	{
+		auto entity = (entt::entity)(uint32_t)id;
+		if (mEnttMap.contains(entity))
+			return mObjects.at(mEnttMap.at(entity));
+
+		return nullptr;
+	}
+
 	void World::Destroy(const UUID &gameObjectID)
 	{
 		if (!mObjects.contains(gameObjectID))
@@ -531,12 +496,6 @@ namespace BHive
 		}
 
 		return status;
-	}
-
-	std::pair<Camera *, FTransform> World::GetPrimaryCamera()
-	{
-
-		return {nullptr, FTransform()};
 	}
 
 	REFLECT(World)

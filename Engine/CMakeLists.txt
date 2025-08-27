@@ -1,6 +1,5 @@
 cmake_minimum_required( VERSION 3.10 )
 
-set(TARGET_NAME BHive-Engine)
 
 include(cmake/vulkan.cmake)
 include(FindVulkan)
@@ -8,15 +7,7 @@ include(GNUInstallDirs)
 
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 
-set(IMGUI_DEMO ON CACHE BOOL "" FORCE)
-set(BUILD_DOCUMENTATION OFF CACHE BOOL "" FORCE)
-set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-#set(BUILD_INSTALLER OFF CACHE BOOL "" FORCE)
-#set(BUILD_PACKAGE OFF CACHE BOOL "" FORCE)
-set(BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
-
 add_subdirectory(vendor)
-
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
@@ -42,6 +33,8 @@ set(Vulkan_LIB_DIR $ENV{VULKAN_SDK}/Lib)
 file(GLOB_RECURSE HEADER_FILES CMAKE_CONFIGURE_DEPENDS src/**.h src/**.inl)
 file(GLOB_RECURSE SOURCE_FILES CMAKE_CONFIGURE_DEPENDS src/**.cpp src/**.hpp)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES} ${SOURCE_FILES} )
+
+set(TARGET_NAME BHive-Engine)
 
 add_library(${TARGET_NAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
@@ -86,7 +79,6 @@ target_link_libraries(${TARGET_NAME} PUBLIC spirv-cross-glsl$<$<CONFIG:DEBUG>:d>
 target_include_directories(${TARGET_NAME} PUBLIC 
 	${CMAKE_CURRENT_SOURCE_DIR}/src 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/BHive 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/BHive/world
 	${VENDOR_DIR}
 	${Vulkan_INCLUDE_DIRS}
 	${Stb_INCLUDE_DIR}

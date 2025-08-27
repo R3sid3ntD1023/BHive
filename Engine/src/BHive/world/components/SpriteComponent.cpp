@@ -1,5 +1,5 @@
 #include "SpriteComponent.h"
-#include "GameObject.h"
+#include "World/GameObject.h"
 
 namespace BHive
 {

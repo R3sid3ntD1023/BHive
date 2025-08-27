@@ -152,6 +152,8 @@ namespace BHive
 			return GL_RGB_INTEGER;
 		case BHive::EFormat::RGB_INTEGER:
 			return GL_RGB_INTEGER;
+		case BHive::EFormat::RGBA_INTEGER:
+			return GL_RGBA_INTEGER;
 		case BHive::EFormat::DEPTH24_STENCIL8:
 			return GL_DEPTH_STENCIL;
 		case BHive::EFormat::DEPTH_COMPONENT:
@@ -199,6 +201,8 @@ namespace BHive
 			return GL_RGB32F;
 		case BHive::EFormat::RED_INTEGER:
 			return GL_R32I;
+		case BHive::EFormat::RGBA_INTEGER:
+			return GL_RGBA32I;
 		case BHive::EFormat::RGB_UINTEGER:
 			return GL_RGB32UI;
 		case BHive::EFormat::RGB_INTEGER:
@@ -227,39 +231,29 @@ namespace BHive
 		switch (format)
 		{
 		case BHive::EFormat::R8:
-			return GL_UNSIGNED_BYTE;
-		case BHive::EFormat::R8F:
-			return GL_FLOAT;
 		case BHive::EFormat::RG8:
-			return GL_UNSIGNED_BYTE;
-		case BHive::EFormat::RG16F:
-			return GL_FLOAT;
 		case BHive::EFormat::RGB8:
+		case BHive::EFormat::RGBA8:
 			return GL_UNSIGNED_BYTE;
 		case BHive::EFormat::RGB16F:
 			return GL_HALF_FLOAT;
-		case BHive::EFormat::RGBA8:
-			return GL_UNSIGNED_BYTE;
+		case BHive::EFormat::R8F:
+		case BHive::EFormat::RG16F:
 		case BHive::EFormat::RGBA16F:
-			return GL_FLOAT;
 		case BHive::EFormat::RGB32F:
-			return GL_FLOAT;
 		case BHive::EFormat::RGBA32F:
-			return GL_FLOAT;
-		case BHive::EFormat::RED_INTEGER:
-			return GL_INT;
-		case BHive::EFormat::RGB_UINTEGER:
-			return GL_UNSIGNED_INT;
-		case BHive::EFormat::RGB_INTEGER:
-			return GL_INT;
 		case BHive::EFormat::R11_G11_B10:
-			return GL_FLOAT;
-		case BHive::EFormat::DEPTH24_STENCIL8:
-			return GL_UNSIGNED_INT_24_8;
 		case BHive::EFormat::DEPTH_COMPONENT_32F:
 			return GL_FLOAT;
+		case BHive::EFormat::RED_INTEGER:
+		case BHive::EFormat::RGB_INTEGER:
+		case BHive::EFormat::RGBA_INTEGER:
+			return GL_INT;
+		case BHive::EFormat::RGB_UINTEGER:
 		case BHive::EFormat::DEPTH_COMPONENT_24:
 			return GL_UNSIGNED_INT;
+		case BHive::EFormat::DEPTH24_STENCIL8:
+			return GL_UNSIGNED_INT_24_8;
 			break;
 		default:
 			break;

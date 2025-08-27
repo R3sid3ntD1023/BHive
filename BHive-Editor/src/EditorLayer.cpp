@@ -1,41 +1,44 @@
-#include "EditorLayer.h"
 #include "asset/AssetFactory.h"
 #include "contextmenus/ContextMenus.h"
 #include "core/Application.h"
-#include "core/platform/Platform.h"
 #include "core/layers/ImGuiLayer.h"
+#include "core/math/MathFunctionLibrary.h"
+#include "core/math/RayCasting.h"
+#include "core/platform/Platform.h"
 #include "core/subsystem/SubSystem.h"
 #include "core/Window.h"
+#include "dragdropfactories/DragDropFactory.h"
+#include "EditorLayer.h"
 #include "gfx/Framebuffer.h"
 #include "gfx/RenderCommand.h"
 #include "GUI/Gui.h"
 #include "gui/ImGuiExtended.h"
+#include "gui/PayloadHelpers.h"
 #include "ImGuizmo.h"
 #include "inspectors/Inspect.h"
+#include "project/Project.h"
 #include "renderers/Renderer.h"
 #include "renderers/SceneRenderer.h"
 #include "subsystems/Selection.h"
-#include "world/GameObject.h"
-#include "undoredo/UndoRedo.h"
 #include "undoredo/Commands.h"
-#include "gui/PayloadHelpers.h"
-#include "dragdropfactories/DragDropFactory.h"
-#include "core/math/MathFunctionLibrary.h"
-#include "core/math/RayCasting.h"
-#include "project/Project.h"
-
+#include "undoredo/UndoRedo.h"
+#include "world/GameObject.h"
+#include "world/World.h"
 // windows
-#include "windows/LogWindow.h"
-#include "windows/ImWindowSystem.h"
-#include "windows/SceneHeirarchyWindow.h"
+#include "windows/AssetWindow.h"
 #include "windows/ContentBrowserWindow.h"
 #include "windows/HistoryWindow.h"
-#include "windows/AssetWindow.h"
+#include "windows/ImWindowSystem.h"
+#include "windows/LogWindow.h"
+#include "windows/SceneHeirarchyWindow.h"
 
 #include "utils/ImageUtils.h"
+#include <Windows.h>
 
 namespace BHive
 {
+#define RENDER_SETTINGS_POPUP_NAME "RenderSettingsPopup"
+
 	constexpr const char *cImguiLayoutFilter = "Layout (*ini)\0 *.ini\0";
 
 	void EditorLayer::OnAttach()
@@ -67,6 +70,7 @@ namespace BHive
 
 		mRenderer = CreateRef<SceneRenderer>();
 		mRenderer->Initialize(size.x, size.y);
+		mRenderer->GetPickerRenderPass().OnEntityPicked.bind(this, &EditorLayer::OnGameObjectPicked);
 
 		RenderCommand::ClearColor(0.1f, 0.1f, 0.1f);
 
@@ -133,6 +137,7 @@ namespace BHive
 	void EditorLayer::OnGuiRender()
 	{
 		static bool edit_project_opened = false;
+
 		auto &window_system = SubSystemContext::Get().GetSubSystem<ImWindowSystem>();
 
 		GUI::BeginDockSpace("dockspace");
@@ -221,6 +226,14 @@ namespace BHive
 				}
 				ImGui::EndMenu();
 			}
+
+			if (ImGui::BeginMenu("Renderer"))
+			{
+				Inspect::get().inspect("Renderer", this, mRenderer);
+
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMainMenuBar();
 		}
 
@@ -359,14 +372,20 @@ namespace BHive
 		mSceneHeirarchyPanel->SetContext(mActiveWorld);
 	}
 
-	void EditorLayer::LoadLibrary(const std::string &lib)
+	bool EditorLayer::LoadProjectLibrary(const std::string &lib)
 	{
 		rttr::library project_lib(lib);
 		if (project_lib.is_loaded())
 			project_lib.unload();
 
-		bool loaded = project_lib.load();
-		LOG_INFO("Plugin Library {} was loaded : {}", lib, loaded);
+		if (!project_lib.load())
+		{
+			LOG_ERROR("RTTR::ERROR - Library {}", project_lib.get_error_string());
+			return false;
+		}
+
+		LOG_INFO("Plugin Library {} loaded", lib);
+		return true;
 	}
 
 	void EditorLayer::OpenProject(const std::filesystem::path &path)
@@ -382,14 +401,16 @@ namespace BHive
 		const auto resource_directory = Project::GetResourceDirectory();
 		const auto module_path = Project::GetModulePath();
 
-		LoadLibrary(module_path.string());
-
-		// reload content browser directory
 		mContentBrowser = window_system.ConstructWindow<EditorContentBrowser<EditorAssetManager>>(resource_directory);
 		mSceneHeirarchyPanel = window_system.ConstructWindow<ImSceneHierarchy>();
 		mContentBrowser->SetBaseDirectory(resource_directory);
 		mAssetManager = CreateRef<EditorAssetManager>(resource_directory, "AssetRegistry.json");
 		AssetManager::SetAssetManager(mAssetManager.get());
+
+		if (!LoadProjectLibrary(module_path.string()))
+			return;
+
+		// reload content browser directory
 
 		const auto &config = Project::GetConfiguration();
 		if (config.StartScene)
@@ -419,6 +440,12 @@ namespace BHive
 		std::ofstream out(config, std::ios::out);
 		cereal::JSONOutputArchive ar(out);
 		ar(*this);
+	}
+
+	void EditorLayer::OnGameObjectPicked(int32_t id)
+	{
+		auto &selection = SubSystemContext::Get().GetSubSystem<Selection>();
+		selection.Select(mActiveWorld->GetGameObject(id).get());
 	}
 
 	void EditorLayer::Viewport()
@@ -453,6 +480,7 @@ namespace BHive
 				const glm::mat4 projection = mEditorCamera.GetProjection();
 
 				auto color_attachment = mRenderer->GetColorAttachment();
+
 				ImGui::Image((ImTextureID)(uint64_t)*color_attachment, size, {0, 1}, {1, 0});
 
 				auto &selection = SubSystemContext::Get().GetSubSystem<Selection>();
@@ -525,6 +553,21 @@ namespace BHive
 				}
 
 				ImGui::EndChild();
+
+				if (mViewportFocused || mViewportHovered)
+				{
+					if (ImGui::IsItemClicked())
+					{
+						auto [mx, my] = ImGui::GetMousePos();
+						mx -= mViewportBounds[0].x;
+						my -= mViewportBounds[0].y;
+						my = mViewportSize.y - my;
+						int mouse_x = (int)mx;
+						int mouse_y = (int)my;
+
+						mRenderer->GetPickerRenderPass().Pick({mouse_x, mouse_y});
+					}
+				}
 			}
 		}
 

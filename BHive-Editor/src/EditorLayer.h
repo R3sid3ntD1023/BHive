@@ -7,13 +7,12 @@
 #include "core/Layer.h"
 #include "EditorContentBrowser.h"
 #include "gfx/cameras/EditorCamera.h"
-#include "rttr/library.h"
-#include "world/World.h"
 
 namespace BHive
 {
 	class SceneRenderer;
 	class ImSceneHierarchy;
+	class World;
 
 	struct FGizmoData
 	{
@@ -89,12 +88,14 @@ namespace BHive
 		void LoadWorld();
 		void LoadWorld(const std::filesystem::path &path);
 		void SetActiveWorld(const Ref<World> &world);
-		void LoadLibrary(const std::string &lib);
+		bool LoadProjectLibrary(const std::string &lib);
 
 		void OpenProject(const std::filesystem::path &path);
 		void OnProjectOpened();
 		void LoadEditorConfigFile();
 		void SaveEditorConfigFile();
+
+		void OnGameObjectPicked(int32_t id);
 
 #pragma region GUI
 		void ViewportGUI();

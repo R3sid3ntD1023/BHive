@@ -19,23 +19,35 @@ namespace BHive
 
 	void ModelBuffer::Submit(const Ref<FMeshRenderData> &data)
 	{
-		auto matrix = data->Transform * data->SubMesh.Transformation;
-		WorldMatrixBuffer->SetData(&matrix, sizeof(glm::mat4));
-		WorldMatrixBuffer->BindBufferBase(SSBO_INDEX_PER_OBJECT_BINDING);
+		uint32_t instance_count = 0;
 
-		if (data->InstanceCount > 0)
+		if (data->InstanceInfo)
 		{
-			InstanceBuffer->SetData(data->Instances, sizeof(glm::mat4) * data->InstanceCount);
+			const auto &instances = data->InstanceInfo->Transforms;
+
+			InstanceBuffer->SetData(instances.data(), sizeof(glm::mat4) * instances.size());
 			InstanceBuffer->BindBufferBase(SSBO_INSTANCE_BINDING);
+			instance_count = static_cast<uint32_t>(instances.size());
 		}
 
-		if (const auto skeletaldata = Cast<FSkeletalMeshRenderData>(data))
+		if (data->GetRenderDataType() == FMeshRenderData::Skeletal)
 		{
-			const auto &joints = skeletaldata->Bones;
+			auto skeletaldata = std::static_pointer_cast<FSkeletalMeshRenderData>(data);
+
+			if (!skeletaldata->BoneInfo)
+			{
+				LOG_WARN("Skeletal mesh render data has no bone info!");
+				return;
+			}
+			const auto &joints = skeletaldata->BoneInfo->Bones;
 			BoneBuffer->SetData(joints.data(), joints.size() * sizeof(glm::mat4));
 			BoneBuffer->BindBufferBase(SSBO_BONE_BINDING);
 		}
 
-		RenderCommand::DrawElementsBaseVertex(EDrawMode::Triangles, *data->VertexArray, data->SubMesh.StartVertex, data->SubMesh.StartIndex, data->SubMesh.IndexCount, data->InstanceCount);
+		auto matrix = data->ObjectInfo.Transform.to_mat4() * data->SubMesh.Transformation;
+		WorldMatrixBuffer->SetData(&matrix, sizeof(glm::mat4));
+		WorldMatrixBuffer->BindBufferBase(SSBO_INDEX_PER_OBJECT_BINDING);
+
+		RenderCommand::DrawElementsBaseVertex(EDrawMode::Triangles, *data->VertexArray, data->SubMesh.StartVertex, data->SubMesh.StartIndex, data->SubMesh.IndexCount, instance_count);
 	}
 } // namespace BHive

@@ -34,24 +34,29 @@ namespace BHive
 		~World();
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const;
-		virtual void Load(cereal::JSONInputArchive &ar);
-
 		void Begin();
+
 		void Update(float dt, SceneRenderer *renderer);
+
 		void End();
 
 		void SimulateBegin();
+
 		void Simulate(float dt);
+
 		void SimulateEnd();
+
 		void SetPaused(bool paused);
+
 		void Step(int32_t frames = 1);
 
 		Ref<World> Copy() const;
 
 		void RenderPhysicsWorld();
+
 		void Resize(uint32_t w, uint32_t h);
 
 		template <typename T = GameObject>
@@ -69,6 +74,8 @@ namespace BHive
 
 		GameObject *DuplicateGameobject(GameObject *object);
 
+		Ref<GameObject> GetGameObject(int32_t id) const;
+
 		Ref<GameObject> GetGameObject(const UUID &id) const;
 
 		const ObjectList &GetGameObjects() const { return mObjects; }
@@ -80,8 +87,6 @@ namespace BHive
 		bool IsRunning() const { return mIsRunning; }
 
 		bool IsPaused() const { return mIsPaused; }
-
-		std::pair<Camera *, FTransform> GetPrimaryCamera();
 
 		const entt::registry &GetRegistry() const { return mRegistry; }
 

@@ -9,10 +9,10 @@ void WaveLoggerCallback(WAVE::Logger::LogLevel level, const char *message)
 	switch (level)
 	{
 	case WAVE::Logger::info:
-		//LOG_INFO(message);
+		// LOG_INFO(message);
 		break;
 	case WAVE::Logger::trace:
-		//LOG_TRACE(message);
+		// LOG_TRACE(message);
 		break;
 	case WAVE::Logger::warn:
 		LOG_WARN(message);
@@ -59,7 +59,6 @@ namespace BHive
 			specification.mNumSamples = wave.get_num_samples_per_channel();
 			specification.mSampleRate = wave.fmt.sample_rate;
 
-
 			if (wave.list.id3_chunk.has_tag("LOOP_START"))
 			{
 				auto value = wave.list.id3_chunk.get_tag<WAVE::id3_Frame_TXXX>("LOOP_START")->Value;
@@ -80,4 +79,4 @@ namespace BHive
 
 		return nullptr;
 	}
-}
+} // namespace BHive

@@ -16,4 +16,5 @@ namespace BHive
 
 	REFLECT_ASSET_INSPECTOR(AudioSource)
 	REFLECT_ASSET_INSPECTOR(World)
+	REFLECT_ASSET_INSPECTOR(PhysicsMaterial)
 } // namespace BHive

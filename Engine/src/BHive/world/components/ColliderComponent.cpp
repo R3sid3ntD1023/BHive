@@ -1,5 +1,5 @@
 #include "ColliderComponent.h"
-#include "GameObject.h"
+#include "World/GameObject.h"
 #include "physics/PhysicsContext.h"
 #include "core/subsystem/SubSystem.h"
 
@@ -50,15 +50,21 @@ namespace BHive
 
 		auto physcs = (physx::PxPhysics *)GetSubSystem<PhysicsContext>().GetPhysics();
 
-		physx::PxMaterial *material = physcs->createMaterial(1.f, 1.0f, 0.f);
+		auto material = physcs->createMaterial(1.f, 1.0f, 0.f);
 
 		if (PhysicsMaterial)
 		{
 			auto friction = PhysicsMaterial->FrictionCoefficient;
 			auto resitution = PhysicsMaterial->Bounciness;
-			material->setStaticFriction(friction);
-			material->setDynamicFriction(friction);
+			auto damping = PhysicsMaterial->Damping;
+
+			material->setFlags(physx::PxMaterialFlag::eCOMPLIANT_CONTACT);
+			// material->setStaticFriction(friction);
+			// material->setDynamicFriction(friction);
 			material->setRestitution(resitution);
+			// material->setDamping(damping);
+			// material->setFrictionCombineMode(physx::PxCombineMode::eAVERAGE);
+			// material->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 		}
 
 		physx::PxTransform relative_transform({Offset.x, Offset.y, Offset.z});
@@ -68,6 +74,7 @@ namespace BHive
 		{
 			relative_transform.q = physx::PxQuat(PxHalfPi, {0, 0, 1});
 		}
+
 		auto shape = physcs->createShape(*geo, *material, true);
 		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, IsTrigger);
 		shape->userData = this;
@@ -80,8 +87,9 @@ namespace BHive
 #endif // _DEBUG
 
 		((physx::PxRigidActor *)rb)->attachShape(*shape);
+
 		mCollisionShape = shape;
-		material->release();
+		mShapeMaterial = material;
 		delete geo;
 	}
 
@@ -92,6 +100,7 @@ namespace BHive
 
 		auto shape = (physx::PxShape *)mCollisionShape;
 		((physx::PxRigidActor *)rb)->detachShape(*shape);
+		((physx::PxMaterial *)mShapeMaterial)->release();
 	}
 
 	REFLECT(ColliderComponent)

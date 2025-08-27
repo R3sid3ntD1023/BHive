@@ -33,9 +33,13 @@ namespace BHive
 			mCamera.Resize(mViewportSize.x, mViewportSize.y);
 		}
 
+		FMeshInfo info{};
+		info.Mesh = mSphere;
+		info.Materials = mSphere->GetMaterialTable();
+
 		mSceneRenderer->Begin(&mCamera, mCamera.GetView());
 		mSceneRenderer->SubmitLight(FDirectionalLightCreateInfo{.Color = {1, 1, 1}, .Direction = {-1, -.5, 0}});
-		mSceneRenderer->SubmitMesh(mSphere, FTransform());
+		mSceneRenderer->SubmitMesh(info);
 		mSceneRenderer->SubmitCommand([]() { LineRenderer::DrawGrid(FGrid{.color = 0xffffffff, .stepcolor = 0xffffffff}); });
 		mSceneRenderer->End();
 

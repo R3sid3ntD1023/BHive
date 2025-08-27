@@ -30,15 +30,22 @@ namespace BHive
 		mSceneRenderer->SubmitCommand([]() { LineRenderer::DrawGrid(FGrid{.color = 0xffffffff, .stepcolor = 0xffffffff}); });
 		mSceneRenderer->SubmitLight(FDirectionalLightCreateInfo{.Color = {1, 1, 1}, .Direction = {0, 0, -1}});
 
+		FMeshInfo info{};
 		if (auto skeletal_mesh = Cast<SkeletalMesh>(mAsset))
 		{
-			auto pose = skeletal_mesh->GetDefaultPose();
-			mSceneRenderer->SubmitMesh(skeletal_mesh, *pose, FTransform());
+			info.Mesh = skeletal_mesh;
+			info.Materials = skeletal_mesh->GetMaterialTable();
+			info.BoneInfo = CreateRef<FBoneInfo>();
+			info.BoneInfo->Bones = skeletal_mesh->GetDefaultPose()->GetTransformsJointSpace();
 		}
 		else if (auto static_mesh = Cast<StaticMesh>(mAsset))
 		{
-			mSceneRenderer->SubmitMesh(static_mesh, FTransform());
+			FMeshInfo info{};
+			info.Mesh = static_mesh;
+			info.Materials = static_mesh->GetMaterialTable();
 		}
+
+		mSceneRenderer->SubmitMesh(info);
 
 		mSceneRenderer->End();
 

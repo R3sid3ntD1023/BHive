@@ -1,6 +1,6 @@
-#include "GameObject.h"
-#include "physics/PhysicsUtils.h"
 #include "PhysicsComponent.h"
+#include "World/GameObject.h"
+#include "physics/PhysicsUtils.h"
 
 namespace BHive
 {

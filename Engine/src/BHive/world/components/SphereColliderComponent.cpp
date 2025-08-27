@@ -1,5 +1,5 @@
 #include "SphereColliderComponent.h"
-#include "GameObject.h"
+#include "World/GameObject.h"
 #include <physx/PxPhysicsAPI.h>
 
 namespace BHive

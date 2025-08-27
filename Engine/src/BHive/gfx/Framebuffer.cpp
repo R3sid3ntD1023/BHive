@@ -83,13 +83,15 @@ namespace BHive
 		Initialize();
 	}
 
-	void Framebuffer::ClearAttachment(uint32_t attachmentIndex, unsigned type, const float *data)
+	void Framebuffer::ClearAttachment(uint32_t attachmentIndex, const int *data)
 	{
 		ASSERT(attachmentIndex < mColorAttachments.size());
 
-		auto &attachment = mColorAttachments[attachmentIndex];
-		auto &spec = mColorSpecifications[attachmentIndex];
+		glClearNamedFramebufferiv(mFramebufferID, GL_COLOR, attachmentIndex, data);
+	}
 
+	void Framebuffer::ClearAttachment(uint32_t attachmentIndex, const float *data)
+	{
 		glClearNamedFramebufferfv(mFramebufferID, GL_COLOR, attachmentIndex, data);
 	}
 
@@ -123,18 +125,18 @@ namespace BHive
 		}
 	}
 
-	void Framebuffer::ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, unsigned type, void *data) const
+	void Framebuffer::ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, void *data) const
 	{
 		ASSERT(attachmentIndex < mColorSpecifications.size());
 
 		auto &spec = mColorSpecifications[attachmentIndex];
-		auto &attachment = mColorAttachments[attachmentIndex];
-		auto texture = attachment->GetRendererID();
 		auto format = GetGLFormat(spec.mSpecification.InternalFormat);
+		auto type = GetGLType(spec.mSpecification.InternalFormat);
 
-		glBindTexture(GL_TEXTURE_2D, texture);
-		glGetTexImage(GL_TEXTURE_2D, 0, format, type, data);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		glNamedFramebufferReadBuffer(mFramebufferID, GL_COLOR_ATTACHMENT0 + attachmentIndex);
+		glBindFramebuffer(GL_FRAMEBUFFER, mFramebufferID);
+		glReadPixels(x, y, w, h, format, type, data);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	Ref<Texture> Framebuffer::GetColorAttachment(uint32_t index) const

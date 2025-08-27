@@ -1,5 +1,5 @@
-#include "GameObject.h"
 #include "InputComponent.h"
+#include "World/GameObject.h"
 
 namespace BHive
 {
@@ -42,7 +42,6 @@ namespace BHive
 
 	REFLECT(InputComponent)
 	{
-		BEGIN_REFLECT(InputComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR()
-			REFLECT_PROPERTY(Context) COMPONENT_IMPL();
+		BEGIN_REFLECT(InputComponent)(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(Context) COMPONENT_IMPL();
 	}
 } // namespace BHive

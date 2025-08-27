@@ -83,6 +83,9 @@ namespace BHive
 		}
 
 		mRenderSize = {width, height};
+
+		mPickerRenderPass.Init();
+		mPickerRenderPass.CreateResizableObjects({width, height});
 	}
 
 	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
@@ -97,8 +100,19 @@ namespace BHive
 
 	void SceneRenderer::End()
 	{
+
 		mSceneRenderData->Lights.End();
 		mSceneRenderData->ShadowRenderer.End();
+
+		if (mPickerRenderPass.IsEnabled())
+		{
+			mPickerRenderPass.Begin();
+			for (auto &[mat, objects] : mSceneRenderData->RenderData)
+			{
+				mPickerRenderPass.Render(objects);
+			}
+			mPickerRenderPass.End();
+		}
 
 		mSceneRenderData->ShadowRenderer.Render(mSceneRenderData->ShadowPassRenderData);
 
@@ -207,22 +221,20 @@ namespace BHive
 		mSceneRenderData->ShadowRenderer.SubmitSpotLight(shadow_info);
 	}
 
-	void SceneRenderer::SubmitMesh(const Ref<StaticMesh> &mesh, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
+	void SceneRenderer::SubmitMesh(const FMeshInfo &info)
 	{
-		SubmitMesh(mesh, mesh->GetMaterialTable(), transform, instances, instanceCount);
-	}
+		const auto &mesh = info.Mesh;
+		const auto &transform = info.ObjectInfo.Transform;
+		const auto &materials = info.Materials;
 
-	void SceneRenderer::SubmitMesh(const Ref<SkeletalMesh> &mesh, const SkeletalPose &pose, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
-	{
-		SubmitMesh(mesh, mesh->GetMaterialTable(), pose, transform, instances, instanceCount);
-	}
+		Ref<FMeshRenderData> data;
 
-	void SceneRenderer::SubmitMesh(const Ref<StaticMesh> &mesh, const MaterialTable &materials, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
-	{
+		// Cull the mesh if it is not visible
 		if (!mesh || IsMeshCulled(mesh, transform))
 			return;
 
 		auto &sub_meshes = mesh->GetSubMeshes();
+		float distance = GetDistanceToCamera(transform);
 
 		for (auto &sub_mesh : sub_meshes)
 		{
@@ -230,44 +242,24 @@ namespace BHive
 			if (!material)
 				return;
 
-			auto data = CreateRef<FMeshRenderData>();
+			if (mesh->get_type() == rttr::type::get<SkeletalMesh>())
+			{
+				auto skeletal_data = CreateRef<FSkeletalMeshRenderData>();
+				skeletal_data->SubMesh = sub_mesh;
+				skeletal_data->BoneInfo = info.BoneInfo;
+				data = skeletal_data;
+			}
+			else
+			{
+				auto static_data = CreateRef<FStaticMeshRenderData>();
+				static_data->SubMesh = sub_mesh;
+				data = static_data;
+			}
+
 			data->VertexArray = mesh->GetVertexArray();
-			data->SubMesh = sub_mesh;
-			data->Transform = transform;
-			data->Instances = instances;
-			data->InstanceCount = instanceCount;
+			data->ObjectInfo = info.ObjectInfo;
+			data->InstanceInfo = info.InstanceInfo;
 
-			float distance = GetDistanceToCamera(transform);
-			mSceneRenderData->RenderData[material].emplace(distance, data);
-
-			if (material->ShouldCastShadows())
-				mSceneRenderData->ShadowPassRenderData.emplace(distance, data);
-		}
-	}
-
-	void
-	SceneRenderer::SubmitMesh(const Ref<SkeletalMesh> &mesh, const MaterialTable &materials, const SkeletalPose &pose, const glm::mat4 &transform, const glm::mat4 *instances, size_t instanceCount)
-	{
-		if (!mesh || IsMeshCulled(mesh, transform))
-			return;
-
-		auto &sub_meshes = mesh->GetSubMeshes();
-		for (auto &sub_mesh : sub_meshes)
-		{
-			auto material = materials.get_material(sub_mesh.MaterialIndex);
-			if (!material)
-				return;
-
-			auto bones = pose.GetTransformsJointSpace();
-			auto data = CreateRef<FSkeletalMeshRenderData>();
-			data->VertexArray = mesh->GetVertexArray();
-			data->SubMesh = sub_mesh;
-			data->Transform = transform;
-			data->Instances = instances;
-			data->InstanceCount = instanceCount;
-			data->Bones = bones;
-
-			float distance = GetDistanceToCamera(transform);
 			mSceneRenderData->RenderData[material].emplace(distance, data);
 
 			if (material->ShouldCastShadows())
@@ -291,6 +283,8 @@ namespace BHive
 		mFramebuffer->Resize(width, height);
 
 		mFinalFramebuffer->Resize(width, height);
+
+		mPickerRenderPass.Resize({width, height});
 
 		for (auto &effect : mPostProcessingEffects)
 		{
@@ -345,12 +339,14 @@ namespace BHive
 
 	REFLECT(FRenderSettings)
 	{
-		BEGIN_REFLECT(FRenderSettings);
+		BEGIN_REFLECT(FRenderSettings)
+		REFLECT_PROPERTY(DrawColliders);
 	}
 
 	REFLECT(SceneRenderer)
 	{
 		BEGIN_REFLECT(SceneRenderer)
+		REFLECT_PROPERTY("RenderSettings", mRenderSettings)
 		REFLECT_PROPERTY("PostProcessEffects", mPostProcessingEffects)
 		REFLECT_PROPERTY("EnvironmentMap", GetEnvironmentMap, SetEnvironmentMap);
 	}

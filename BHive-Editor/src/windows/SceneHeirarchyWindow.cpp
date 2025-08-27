@@ -1,9 +1,9 @@
 #include "SceneHeirarchyWindow.h"
 #include "core/subsystem/SubSystem.h"
 #include "gui/GUICore.h"
-#include "subsystems/Selection.h"
 #include "world/GameObject.h"
 #include "world/World.h"
+#include "subsystems/Selection.h"
 #include "inspectors/Inspect.h"
 #include "core/threading/Threading.h"
 

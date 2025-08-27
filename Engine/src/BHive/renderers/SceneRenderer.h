@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "PMREMGenerator.h"
 #include "RenderData.h"
+#include "renderers/render_passes/PickerRenderPass.h"
 
 namespace BHive
 {
@@ -30,11 +31,11 @@ namespace BHive
 
 	struct FRenderSettings
 	{
+		bool DrawColliders{true};
 	};
 
 	class BHIVE_API SceneRenderer
 	{
-		FRenderSettings mRenderSettings; // Render settings for the scene renderer
 
 	public:
 		SceneRenderer() = default;
@@ -55,15 +56,7 @@ namespace BHive
 
 		void SubmitLight(const FSpotLightCreateInfo &info);
 
-		void SubmitMesh(const Ref<StaticMesh> &mesh, const glm::mat4 &transform = {1.0f}, const glm::mat4 *instances = nullptr, size_t instanceCount = 0);
-
-		void SubmitMesh(const Ref<SkeletalMesh> &mesh, const SkeletalPose &pose, const glm::mat4 &transform = {1.0f}, const glm::mat4 *instances = nullptr, size_t instanceCount = 0);
-
-		void SubmitMesh(const Ref<StaticMesh> &mesh, const MaterialTable &materials, const glm::mat4 &transform = {1.0f}, const glm::mat4 *instances = nullptr, size_t instanceCount = 0);
-
-		void SubmitMesh(
-			const Ref<SkeletalMesh> &mesh, const MaterialTable &materials, const SkeletalPose &pose, const glm::mat4 &transform = {1.0f}, const glm::mat4 *instances = nullptr,
-			size_t instanceCount = 0);
+		void SubmitMesh(const FMeshInfo &info);
 
 		void SubmitCommand(const std::function<void()> cmd);
 
@@ -77,9 +70,15 @@ namespace BHive
 
 		const Ref<Framebuffer> &GetFramebuffer() const { return mFinalFramebuffer; }
 
+		FRenderSettings &GetRenderSettings() { return mRenderSettings; }
+
+		const FRenderSettings &GetRenderSettings() const { return mRenderSettings; }
+
 		void RenderToScreen();
 
 		glm::uvec2 GetSize() const;
+
+		PickerRenderPass &GetPickerRenderPass() { return mPickerRenderPass; }
 
 	private:
 		bool IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform);
@@ -87,6 +86,8 @@ namespace BHive
 		float GetDistanceToCamera(const FTransform &transform);
 
 	private:
+		FRenderSettings mRenderSettings; // Render settings for the scene renderer
+
 		Ref<Framebuffer> mFramebuffer;
 		Ref<Framebuffer> mFinalFramebuffer; // Final framebuffer for post-processing effects
 		Ref<PQuad> mQuad;
@@ -101,6 +102,8 @@ namespace BHive
 
 		static inline PMREMGenerator EnvironmentMapGenerator;
 		static inline Ref<Texture2D> sEnvironmentMap = nullptr; // Static environment map
+
+		PickerRenderPass mPickerRenderPass;
 
 		REFLECTABLE()
 	};

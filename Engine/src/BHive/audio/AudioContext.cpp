@@ -2,9 +2,13 @@
 #include <al/al.h>
 #include <al/alc.h>
 #include <al/alext.h>
+#include <AL/efx.h>
 
 namespace BHive
 {
+	auto alDebugMessageCallbackEXT = LPALDEBUGMESSAGECALLBACKEXT{};
+	auto alDebugMessageControlEXT = LPALDEBUGMESSAGECONTROLEXT{};
+
 	void AudioContext::Init()
 	{
 		auto mDeviceName = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
@@ -13,9 +17,50 @@ namespace BHive
 		ASSERT(mAudioDevice);
 
 		mAlContext = alcCreateContext((ALCdevice *)mAudioDevice, {0});
-
 		ASSERT(mAlContext);
 		ASSERT(alcMakeContextCurrent((ALCcontext *)mAlContext));
+
+#if _DEBUG
+		auto debug_supported = alcIsExtensionPresent((ALCdevice *)mAudioDevice, "ALC_EXT_debug");
+		if (!debug_supported)
+		{
+			LOG_WARN("alc debugging not supported");
+		}
+
+	#define LOAD_AL_FUNC(N) N = reinterpret_cast<decltype(N)>(alcGetProcAddress((ALCdevice *)mAudioDevice, #N))
+
+		LOAD_AL_FUNC(alDebugMessageControlEXT);
+		LOAD_AL_FUNC(alDebugMessageCallbackEXT);
+
+	#undef LOAD_AL_FUNC
+
+		static constexpr auto al_debug_callback = [](ALenum source, ALenum type, ALuint id, ALenum severity, ALsizei length, const ALchar *message, void *userParam) noexcept -> void
+		{
+			// Ignore non-significant error/warning codes
+			/*if (severity == AL_DEBUG_SEVERITY_NOTIFICATION_EXT)
+				return;*/
+			switch (severity)
+			{
+			case AL_DEBUG_SEVERITY_HIGH_EXT:
+				LOG_ERROR("OpenAL Debug: {}", message);
+				break;
+			case AL_DEBUG_SEVERITY_MEDIUM_EXT:
+				LOG_WARN("OpenAL Debug: {}", message);
+				break;
+			case AL_DEBUG_SEVERITY_LOW_EXT:
+				LOG_INFO("OpenAL Debug: {}", message);
+				break;
+			default:
+				LOG_TRACE("OpenAL Debug: {}", message);
+				break;
+			}
+		};
+
+		// Enable all debug messages
+		alDebugMessageControlEXT(AL_DONT_CARE_EXT, AL_DONT_CARE_EXT, AL_DEBUG_SEVERITY_LOW_EXT, 0, nullptr, AL_TRUE);
+		alDebugMessageCallbackEXT(al_debug_callback, nullptr);
+
+#endif
 
 		ALfloat listenerPos[] = {0, 0, 0};
 		ALfloat listenerVel[] = {0, 0, 0};
@@ -35,7 +80,11 @@ namespace BHive
 	{
 		alcMakeContextCurrent(NULL);
 		alcDestroyContext((ALCcontext *)mAlContext);
-		ASSERT(alcCloseDevice((ALCdevice *)mAudioDevice));
+		alcCloseDevice((ALCdevice *)mAudioDevice);
+
+#if _DEBUG
+		alDebugMessageCallbackEXT(nullptr, nullptr);
+#endif //  _DEBUG
 
 		LOG_TRACE("Shutdown OpenAL Audio");
 	}

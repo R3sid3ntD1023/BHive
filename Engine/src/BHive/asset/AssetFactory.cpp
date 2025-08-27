@@ -21,6 +21,12 @@ namespace BHive
 			}
 
 			auto var = type.create();
+			if (!var.is_valid())
+			{
+				LOG_ERROR("AssetFactory::Import() failed to create instance of type", type);
+				return false;
+			}
+
 			asset = var.get_value<Ref<Asset>>();
 			asset->Load(ar);
 

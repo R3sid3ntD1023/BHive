@@ -4,54 +4,6 @@
 #include "Math.h"
 #include "Plane.h"
 
-template <glm::length_t L, typename T, glm::qualifier Q>
-struct fmt::formatter<glm::vec<L, T, Q>> : fmt::formatter<std::string>
-{
-	using formatted_type = glm::vec<L, T, Q>;
-
-	template <typename ParseContext>
-	constexpr auto parse(ParseContext &ctx)
-	{
-		return ctx.begin();
-	}
-
-	template <typename FormatContext>
-	auto format(const formatted_type &v, FormatContext &ctx) const
-	{
-		return fmt::format_to(ctx.out(), "{}", glm::to_string(v));
-	}
-};
-
-namespace glm
-{
-	template <typename Ostream, length_t L, typename T, qualifier Q>
-	inline Ostream &operator<<(Ostream &os, const vec<L, T, Q> &vec)
-	{
-		os << '(';
-		for (length_t i{}; i < L; i++)
-		{
-			os << vec[i];
-			if (i < L - 1)
-				os << ',';
-		}
-
-		os << ')';
-		return os;
-	}
-
-	template <typename Istream, length_t L, typename T, qualifier Q>
-	inline Istream &operator>>(Istream &is, vec<L, T, Q> &vec)
-	{
-		char token;
-		is >> token;
-		for (length_t i{}; i < L; i++)
-			is >> vec[i] >> token;
-
-		return is;
-	}
-
-} // namespace glm
-
 namespace BHive
 {
 	struct BHIVE_API MathFunctionLibrary

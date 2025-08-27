@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Component.h"
+#include "World/Component.h"
 #include "gfx/cameras/SceneCamera.h"
 
 namespace BHive

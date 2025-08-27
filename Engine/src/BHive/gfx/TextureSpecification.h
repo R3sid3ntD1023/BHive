@@ -57,6 +57,7 @@ namespace BHive
 		RED_INTEGER,
 		RGB_UINTEGER,
 		RGB_INTEGER,
+		RGBA_INTEGER,
 		R11_G11_B10,
 		DEPTH24_STENCIL8,
 		DEPTH_COMPONENT,
@@ -125,9 +126,8 @@ namespace BHive
 	template <typename A>
 	void Serialize(A &ar, FTextureSpecification &spec)
 	{
-		ar(MAKE_NVP(spec.Format), MAKE_NVP(spec.InternalFormat), MAKE_NVP(spec.Channels), MAKE_NVP(spec.WrapMode),
-		   MAKE_NVP(spec.MinFilter), MAKE_NVP(spec.MagFilter), MAKE_NVP(spec.BorderColor), MAKE_NVP(spec.Levels),
-		   MAKE_NVP(spec.CompareMode), MAKE_NVP(spec.CompareFunc));
+		ar(MAKE_NVP(spec.Format), MAKE_NVP(spec.InternalFormat), MAKE_NVP(spec.Channels), MAKE_NVP(spec.WrapMode), MAKE_NVP(spec.MinFilter), MAKE_NVP(spec.MagFilter), MAKE_NVP(spec.BorderColor),
+		   MAKE_NVP(spec.Levels), MAKE_NVP(spec.CompareMode), MAKE_NVP(spec.CompareFunc));
 	}
 
 } // namespace BHive

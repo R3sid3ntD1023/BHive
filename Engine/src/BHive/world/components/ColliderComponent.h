@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Component.h"
+#include "World/Component.h"
 #include "core/EnumAsByte.h"
 #include "core/EventDelegate.h"
 #include "gfx/Color.h"
@@ -36,22 +36,29 @@ namespace BHive
 		Ref<PhysicsMaterial> PhysicsMaterial;
 
 		OnCollisonEvent OnCollisionEnter;
+
 		OnCollisonEvent OnCollisionExit;
+
 		OnCollisonEvent OnCollisionStay;
 
 		OnTriggerEvent OnTriggerEnter;
+
 		OnTriggerEvent OnTriggerExit;
+
 		OnTriggerEvent OnTriggerStay;
 
 		OnHitEvent OnRaycastHit;
 
 		void Begin() override;
+
 		void End() override;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		void CreateCollsionShape(void *rb, const FTransform &transform);
+
 		void ReleaseCollisionShape(void *rb);
 
 		virtual void *GetGeometry() = 0;
@@ -59,6 +66,7 @@ namespace BHive
 	protected:
 		// void *mCollider = nullptr;
 		void *mCollisionShape = nullptr;
+		void *mShapeMaterial = nullptr;
 
 		REFLECTABLEV(Component)
 	};

@@ -1,0 +1,91 @@
+#include "PickerRenderPass.h"
+#include "gfx/Framebuffer.h"
+#include "gfx/RenderCommand.h"
+#include "gfx/Shader.h"
+#include "gfx/ShaderManager.h"
+#include "renderers/Renderer.h"
+#include <glad/glad.h>
+
+namespace BHive
+{
+	void PickerRenderPass::Init()
+	{
+		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Picker.glsl");
+		ASSERT(mShader);
+	}
+
+	void PickerRenderPass::CreateResizableObjects(const glm::uvec2 &size)
+	{
+		ASSERT(size.x && size.y);
+
+		mSize = size;
+
+		CreateFramebuffer();
+	}
+
+	void PickerRenderPass::Resize(const glm::uvec2 &size)
+	{
+		mSize = size;
+		mFrambuffer->Resize(size.x, size.y);
+	}
+
+	void PickerRenderPass::Begin()
+	{
+		mFrambuffer->Bind();
+		mShader->Bind();
+
+		RenderCommand::Clear();
+
+		static int32_t clear_id = -1;
+		mFrambuffer->ClearAttachment(0, &clear_id);
+	}
+
+	void PickerRenderPass::End()
+	{
+		int32_t pixel_id = -1;
+		mFrambuffer->ReadPixel(0, mMousePos.x, mMousePos.y, 1, 1, &pixel_id);
+
+		LOG_INFO("Picked ID: {}", pixel_id);
+		if (pixel_id != -1)
+		{
+
+			OnEntityPicked.invoke(pixel_id);
+		}
+
+		mFrambuffer->UnBind();
+		mShader->UnBind();
+
+		mEnabled = false;
+	}
+
+	void PickerRenderPass::Render(const FMeshRenderDatas &data)
+	{
+
+		for (const auto &[dist, obj] : data)
+		{
+			mShader->SetUniform("constants.uEntityID", obj->ObjectInfo.EntityID);
+			Renderer::SubmitMesh(obj);
+		}
+	}
+
+	void PickerRenderPass::Pick(const glm::uvec2 mousePos)
+	{
+		mMousePos = mousePos;
+
+		if (mMousePos.x < mSize.x && mMousePos.y < mSize.y)
+		{
+			mEnabled = true;
+		}
+	}
+
+	void PickerRenderPass::CreateFramebuffer()
+	{
+		FramebufferSpecification spec{};
+		spec.Width = mSize.x;
+		spec.Height = mSize.y;
+		spec.Attachments.attach({.InternalFormat = EFormat::RED_INTEGER, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
+			.attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+		mFrambuffer = CreateRef<Framebuffer>(spec);
+	}
+
+} // namespace BHive

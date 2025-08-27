@@ -38,7 +38,7 @@ namespace BHive
 					int32_t buffersize = stride * h;
 					std::vector<uint8_t> buffer(buffersize);
 
-					target->ReadPixel(attachment, 0, 0, w, h, GL_UNSIGNED_BYTE, buffer.data());
+					target->ReadPixel(attachment, 0, 0, w, h, buffer.data());
 					ImageUtils::SaveImage(path, w, h, channels, buffer.data());
 				});
 		}

@@ -10,6 +10,7 @@ namespace BHive
 	struct ModelBuffer
 	{
 		void Init();
+
 		void Submit(const Ref<FMeshRenderData> &data);
 
 	private:

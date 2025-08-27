@@ -1,6 +1,6 @@
 #include "CapsuleColliderComponent.h"
 #include <physx/PxPhysicsAPI.h>
-#include "GameObject.h"
+#include "World/GameObject.h"
 
 namespace BHive
 {

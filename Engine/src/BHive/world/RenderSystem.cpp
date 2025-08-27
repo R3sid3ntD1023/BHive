@@ -1,27 +1,37 @@
 #include "RenderSystem.h"
 #include "renderers/SceneRenderer.h"
-#include "World.h"
-
-#include "Components.h"
-#include "mesh/SkeletalMesh.h"
-#include "renderers/LineRenderer.h"
-#include "renderers/QuadRenderer.h"
+#include "world/GameObject.h"
+#include "world/World.h"
+#include "world/Components.h"
 
 namespace BHive
 {
 	void RenderSystem::OnUpdate(SceneRenderer *renderer, const World *world)
 	{
+		auto &render_settings = renderer->GetRenderSettings();
 		auto &registry = world->GetRegistry();
 
 		{
-			auto view = registry.view<CameraComponent>();
-			for (const auto &e : view)
+
+			auto camera_components = registry.view<TransformComponent, CameraComponent>();
+			for (const auto &[e, transform, component] : camera_components.each())
 			{
-				auto &c = view.get<CameraComponent>(e);
-				if (c.IsPrimary)
+				if (component.IsPrimary)
 				{
-					auto world_transform = c.GetWorldTransform();
-					Renderer::SubmitCamera(c.Camera.GetProjection(), world_transform.Inverse());
+					const auto proj = component.Camera.GetProjection();
+					const auto view = transform.GetWorldTransform().Inverse();
+
+					if (world->IsRunning())
+						Renderer::SubmitCamera(proj, view);
+
+					if (render_settings.DrawColliders)
+					{
+						FrustumViewer viewer(proj, view);
+
+						LineRenderer::DrawFrustum(viewer, FColor::Green);
+					}
+
+					break;
 				}
 			}
 		}
@@ -90,7 +100,13 @@ namespace BHive
 				if (!mesh)
 					continue;
 
-				renderer->SubmitMesh(mesh, sc.GetMaterials(), sc.GetWorldTransform());
+				FMeshInfo info{};
+				info.Mesh = mesh;
+				info.Materials = sc.GetMaterials();
+				info.ObjectInfo.Transform = sc.GetWorldTransform();
+				info.ObjectInfo.EntityID = (int32_t)e;
+
+				renderer->SubmitMesh(info);
 			}
 		}
 
@@ -100,13 +116,22 @@ namespace BHive
 			{
 				auto &sc = view.get<SkeletalMeshComponent>(e);
 
-				if (!sc.SkeletalMeshAsset)
+				if (!sc.GetSkeletalMesh())
 					continue;
 
 				auto t = sc.GetWorldTransform();
-				auto pose = sc.SkeletalMeshAsset->GetDefaultPose();
-				renderer->SubmitMesh(sc.SkeletalMeshAsset, *pose, t);
-				LineRenderer::DrawAABB(sc.SkeletalMeshAsset->GetBoundingBox(), FColor::Red, t);
+				auto pose = sc.GetSkeletalMesh()->GetDefaultPose();
+
+				FMeshInfo info{};
+				info.Mesh = sc.GetSkeletalMesh();
+				info.Materials = sc.GetMaterials();
+				info.ObjectInfo.Transform = t;
+				info.ObjectInfo.EntityID = (int32_t)e;
+				info.BoneInfo = CreateRef<FBoneInfo>();
+				info.BoneInfo->Bones = pose->GetTransformsJointSpace();
+
+				renderer->SubmitMesh(info);
+				LineRenderer::DrawAABB(sc.GetSkeletalMesh()->GetBoundingBox(), FColor::Red, t);
 			}
 		}
 
@@ -155,33 +180,25 @@ namespace BHive
 			}
 		}
 
+		if (render_settings.DrawColliders)
 		{
-			auto view = registry.view<BoxColliderComponent>();
-			for (const auto &e : view)
-			{
-				auto &c = view.get<BoxColliderComponent>(e);
+			auto box_colliders = registry.view<BoxColliderComponent>();
+			auto sphere_colliders = registry.view<SphereColliderComponent>();
+			auto capsule_colliders = registry.view<CapsuleColliderComponent>();
 
-				LineRenderer::DrawBox(c.Extents, c.Offset, c.Color, c.GetWorldTransform());
+			for (const auto &[e, collider] : box_colliders.each())
+			{
+				LineRenderer::DrawBox(collider.Extents, collider.Offset, collider.Color, collider.GetWorldTransform());
 			}
-		}
 
-		{
-			auto view = registry.view<SphereColliderComponent>();
-			for (const auto &e : view)
+			for (const auto &[e, collider] : sphere_colliders.each())
 			{
-				auto &c = view.get<SphereColliderComponent>(e);
-
-				LineRenderer::DrawSphere(c.Radius, 32, c.Offset, c.Color, c.GetWorldTransform());
+				LineRenderer::DrawSphere(collider.Radius, 32, collider.Offset, collider.Color, collider.GetWorldTransform());
 			}
-		}
 
-		{
-			auto view = registry.view<CapsuleColliderComponent>();
-			for (const auto &e : view)
+			for (const auto &[e, collider] : capsule_colliders.each())
 			{
-				auto &c = view.get<CapsuleColliderComponent>(e);
-
-				LineRenderer::DrawCapsule(c.Radius, c.HalfHeight, 16, c.Offset, c.Color, c.GetWorldTransform());
+				LineRenderer::DrawCapsule(collider.Radius, collider.HalfHeight, 16, collider.Offset, collider.Color, collider.GetWorldTransform());
 			}
 		}
 	}

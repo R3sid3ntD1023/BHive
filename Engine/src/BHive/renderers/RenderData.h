@@ -2,6 +2,8 @@
 
 #include "core/Core.h"
 #include "mesh/MeshData.h"
+#include "material/MaterialTable.h"
+#include "core/math/Transform.h"
 
 #define MAX_LIGHTS 32
 
@@ -10,26 +12,54 @@ namespace BHive
 	class VertexArray;
 	class SkeletalPose;
 
+	struct FInstanceInfo
+	{
+		std::vector<glm::mat4> Transforms;
+	};
+
+	struct FBoneInfo
+	{
+		std::vector<glm::mat4> Bones;
+	};
+
+	struct FObjectInfo
+	{
+		FTransform Transform;
+
+		int32_t EntityID = -1;
+	};
+
 	struct FMeshRenderData
 	{
-		Ref<VertexArray> VertexArray;
-		FSubMesh SubMesh;
-		glm::mat4 Transform;
+		enum Type
+		{
+			Static,
+			Skeletal
+		};
 
-		// instances
-		const glm::mat4 *Instances = nullptr;
-		size_t InstanceCount = 0;
+		FObjectInfo ObjectInfo;
+
+		Ref<VertexArray> VertexArray;
+
+		FSubMesh SubMesh;
+
+		Ref<FInstanceInfo> InstanceInfo;
 
 		virtual ~FMeshRenderData() = default;
+
+		virtual Type GetRenderDataType() const = 0;
 	};
 
 	struct FStaticMeshRenderData : public FMeshRenderData
 	{
+		Type GetRenderDataType() const override { return Type::Static; }
 	};
 
 	struct FSkeletalMeshRenderData : public FMeshRenderData
 	{
-		std::vector<glm::mat4> Bones;
+		Ref<FBoneInfo> BoneInfo;
+
+		Type GetRenderDataType() const override { return Type::Skeletal; }
 	};
 
 	struct FDirectionalLightCreateInfo
@@ -85,5 +115,20 @@ namespace BHive
 	};
 
 	using FMeshRenderDatas = std::map<float, Ref<FMeshRenderData>>;
+
+	class BaseMesh;
+
+	struct FMeshInfo
+	{
+		Ref<BaseMesh> Mesh;
+
+		MaterialTable Materials;
+
+		FObjectInfo ObjectInfo;
+
+		Ref<FInstanceInfo> InstanceInfo;
+
+		Ref<FBoneInfo> BoneInfo;
+	};
 
 } // namespace BHive

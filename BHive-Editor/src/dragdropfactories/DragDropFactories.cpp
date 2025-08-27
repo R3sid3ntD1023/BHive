@@ -31,7 +31,7 @@ namespace BHive
 	void DragDropSkeletalMesh::PostCreate(const Ref<Asset> &asset, Ref<GameObject> &object)
 	{
 		if (auto mesh = Cast<SkeletalMesh>(asset))
-			object->AddComponent<SkeletalMeshComponent>()->SkeletalMeshAsset = mesh;
+			object->AddComponent<SkeletalMeshComponent>()->SetSkeletalMesh(mesh);
 	}
 
 	bool DragDropStaticMesh::CanCreate(const rttr::type &type)
