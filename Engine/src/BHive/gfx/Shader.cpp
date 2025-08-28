@@ -1,431 +1,136 @@
 #include "core/FileSystem.h"
-#include "GraphicsContext.h"
 #include "Shader.h"
+#include "utils/shader/ShaderCompiler.h"
+#include "utils/shader/ShaderUtils.h"
 #include <glad/glad.h>
-#include <shaderc/shaderc.hpp>
-#include <spirv_cross/spirv_cross.hpp>
-#include <spirv_cross/spirv_glsl.hpp>
 
 namespace BHive
 {
-
-	namespace utils
-	{
-		uint32_t GetTypeFromString(const std::string &type)
-		{
-			if (type == "vertex")
-				return GL_VERTEX_SHADER;
-			if (type == "fragment")
-				return GL_FRAGMENT_SHADER;
-			if (type == "compute")
-				return GL_COMPUTE_SHADER;
-			if (type == "geometry")
-				return GL_GEOMETRY_SHADER;
-
-			ASSERT(false, "Invalid shader type ");
-			return 0;
-		}
-
-		const char *GetTypeString(uint32_t type)
-		{
-			switch (type)
-			{
-			case GL_VERTEX_SHADER:
-				return "VERTEX_SHADER";
-			case GL_FRAGMENT_SHADER:
-				return "FRAGMENT_SHADER";
-			case GL_COMPUTE_SHADER:
-				return "COMPUTE_SHADER";
-			case GL_GEOMETRY_SHADER:
-				return "GEOMETRY_SHADER";
-			default:
-				break;
-			}
-			return "";
-		}
-
-		shaderc_shader_kind GetShadercType(uint32_t type)
-		{
-			switch (type)
-			{
-			case GL_VERTEX_SHADER:
-				return shaderc_glsl_vertex_shader;
-			case GL_FRAGMENT_SHADER:
-				return shaderc_glsl_fragment_shader;
-			case GL_COMPUTE_SHADER:
-				return shaderc_glsl_compute_shader;
-			case GL_GEOMETRY_SHADER:
-				return shaderc_glsl_geometry_shader;
-			default:
-				break;
-			}
-			return shaderc_glsl_infer_from_source;
-		}
-
-		std::filesystem::path GetCacheDirectory()
-		{
-			return "cache/shaders";
-		}
-
-		const char *GetCacheOpenglFileExtension(uint32_t type)
-		{
-			switch (type)
-			{
-			case GL_VERTEX_SHADER:
-				return ".cached_opengl.vert";
-			case GL_FRAGMENT_SHADER:
-				return ".cached_opengl.frag";
-			case GL_COMPUTE_SHADER:
-				return ".cached_opengl.comp";
-			case GL_GEOMETRY_SHADER:
-				return ".cached_opengl.geom";
-
-			default:
-				break;
-			}
-			ASSERT(false)
-			return "";
-		}
-
-		const char *GetCacheVulkanFileExtension(uint32_t type)
-		{
-			switch (type)
-			{
-			case GL_VERTEX_SHADER:
-				return ".cached_vulkan.vert";
-			case GL_FRAGMENT_SHADER:
-				return ".cached_vulkan.frag";
-			case GL_COMPUTE_SHADER:
-				return ".cached_vulkan.comp";
-			case GL_GEOMETRY_SHADER:
-				return ".cached_vulkan.geom";
-			default:
-				break;
-			}
-			ASSERT(false)
-			return "";
-		}
-
-		EShaderType GetShaderTypeFromGL(uint32_t type)
-		{
-			switch (type)
-			{
-			case GL_VERTEX_SHADER:
-				return ShaderType_Vertex;
-			case GL_FRAGMENT_SHADER:
-				return ShaderType_Fragment;
-			case GL_COMPUTE_SHADER:
-				return ShaderType_Compute;
-			case GL_GEOMETRY_SHADER:
-				return ShaderType_Geometry;
-			default:
-				break;
-			}
-			ASSERT(false)
-			return ShaderType_None;
-		}
-
-		struct IncludeHandler : public shaderc::CompileOptions::IncluderInterface
-		{
-			using UserDataType = std::pair<std::string, std::string>;
-
-			shaderc_include_result *GetInclude(const char *requested_source, shaderc_include_type type, const char *requesting_source, size_t include_depth) override
-			{
-				auto resolved_path = ResolvePath(requested_source, requesting_source);
-				std::string content;
-				if (!FileSystem::ReadFile(resolved_path, content))
-				{
-					LOG_ERROR("ShaderIncluder::ERROR -Failed to read file : {}", requested_source);
-					return nullptr;
-				}
-
-				return MakeIncludeResult(resolved_path, content);
-			}
-
-			void ReleaseInclude(shaderc_include_result *data) override
-			{
-				if (data)
-				{
-					delete (UserDataType *)data->user_data;
-					delete data;
-				}
-			}
-
-		private:
-			std::string ResolvePath(const std::string &requested, const std::string &requesting)
-			{
-				std::filesystem::path directory = std::filesystem::path(requesting).parent_path();
-
-				// use default engine path, if file isn't relative
-				if (!std::filesystem::exists(directory / requested))
-				{
-					directory = ENGINE_SHADER_LIB_PATH;
-
-					if (!std::filesystem::exists(directory / requested))
-					{
-						directory = ENGINE_SHADER_PATH;
-					}
-				}
-
-				if (!std::filesystem::exists(directory / requested))
-				{
-					LOG_ERROR("ShaderIncluder::ERROR - Failed to find file : {} requsted from {}", requested, requesting);
-					return "";
-				}
-
-				return (directory / requested).string();
-			}
-
-			shaderc_include_result *MakeIncludeResult(const std::filesystem::path &resolved_path, const std::string &content)
-			{
-				auto *result = new shaderc_include_result();
-				auto include_data = new UserDataType(resolved_path.string(), content);
-
-				result->source_name = include_data->first.c_str();
-				result->source_name_length = include_data->first.size();
-
-				result->content = include_data->second.c_str();
-				result->content_length = include_data->second.size();
-
-				result->user_data = include_data;
-				return result;
-			}
-
-			std::vector<std::string> possible_paths = {ENGINE_SHADER_PATH, ENGINE_SHADER_LIB_PATH};
-		};
-
-	} // namespace utils
 
 	Shader::Shader(const std::filesystem::path &path)
 		: mName(path.stem().string()),
 		  mFilePath(path)
 	{
-		std::string source;
-		if (!FileSystem::ReadFile(path, source))
-			return;
+		if (!ShaderCompiler::ReadProgramBinary(path, mProgramID))
+		{
+			std::string source;
+			if (!FileSystem::ReadFile(path, source))
+				return;
 
-		PreProcess(source);
-		Compile();
-	}
+			PreProcess(source);
+			Compile();
+		}
 
-	Shader::Shader(const std::string &name, const std::string &vertex_shader, const std::string &fragment_shader)
-		: mName(name),
-		  mFilePath(name)
-	{
-		mSources[GL_VERTEX_SHADER] = vertex_shader;
-		mSources[GL_FRAGMENT_SHADER] = fragment_shader;
-		Compile();
-	}
+		if (mProgramID)
+		{
+			mUniformSetter = CreateScope<ShaderUniformSetter>(mProgramID);
 
-	Shader::Shader(const std::string &name, const std::string &compute_shader)
-		: mName(name),
-		  mFilePath(name)
-	{
-		mSources[GL_COMPUTE_SHADER] = compute_shader;
-		Compile();
+			Reflect();
+		}
 	}
 
 	Shader::~Shader()
 	{
 
-		glDeleteProgram(mShaderID);
+		glDeleteProgram(mProgramID);
 	}
 
-	void Shader::CreateCacheDirectoryIfNeeded()
+	void Shader::Compile()
 	{
-		auto cache_dir = utils::GetCacheDirectory();
-		if (!std::filesystem::exists(cache_dir))
-			std::filesystem::create_directories(cache_dir);
-	}
+		ShaderCompiler compiler;
+		compiler.Init();
 
-	void Shader::GetOrCreateVulkanBinaries(bool recompile)
-	{
-		mVulkanSpirv.clear();
-		shaderc::Compiler compiler;
-		shaderc::CompileOptions options;
-		// options.SetOptimizationLevel(shaderc_optimization_level_performance);
-		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-		options.SetIncluder(std::make_unique<utils::IncludeHandler>());
-
-		for (const auto &[type, source] : mSources)
+		for (auto &[stage, source] : mSources)
 		{
-			auto cache_path = utils::GetCacheDirectory() / (mName + utils::GetCacheVulkanFileExtension(type));
-			if (std::filesystem::exists(cache_path) && !recompile)
-			{
-				FileSystem::ReadFile(cache_path, mVulkanSpirv[type]);
-				continue;
-			}
+			source.VulkanSpirv.clear();
+			source.OpenglSpirv.clear();
+			source.OpenglCompiledSource.clear();
 
-			auto spirv_binary = compiler.CompileGlslToSpv(source, utils::GetShadercType(type), mFilePath.string().c_str(), options);
-			if (spirv_binary.GetCompilationStatus() != shaderc_compilation_status_success)
-			{
-				LOG_ERROR("Vulkan: Failed to compile shader {}, stage {}-{}", mName, utils::GetTypeString(type), spirv_binary.GetErrorMessage());
-				ASSERT(false);
-			}
-			else
-			{
-				mVulkanSpirv[type] = std::vector<uint32_t>(spirv_binary.cbegin(), spirv_binary.cend());
-				FileSystem::WriteFile(cache_path, mVulkanSpirv[type]);
-			}
-		}
-	}
-
-	void Shader::GetOrCreateOpenGLBinaries(bool recompile)
-	{
-		mOpenglSpirv.clear();
-		mOpenglSources.clear();
-
-		shaderc::Compiler compiler;
-		shaderc::CompileOptions options;
-		// options.SetOptimizationLevel(shaderc_optimization_level_performance);
-		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
-		options.SetAutoMapLocations(true);
-		options.SetIncluder(std::make_unique<utils::IncludeHandler>());
-
-		for (auto &[type, spirv] : mVulkanSpirv)
-		{
-			auto cache_path = utils::GetCacheDirectory() / (mName + utils::GetCacheOpenglFileExtension(type));
-			if (std::filesystem::exists(cache_path) && !recompile)
-			{
-				FileSystem::ReadFile(cache_path, mOpenglSpirv[type]);
-				continue;
-			}
-
-			spirv_cross::CompilerGLSL glsl_compiler(spirv);
-			mOpenglSources[type] = glsl_compiler.compile();
-			auto &source = mOpenglSources[type];
-
-			auto spirv_binary = compiler.CompileGlslToSpv(source, utils::GetShadercType(type), mFilePath.string().c_str(), options);
-
-			if (spirv_binary.GetCompilationStatus() == shaderc_compilation_status_success)
-			{
-				mOpenglSpirv[type] = std::vector<uint32_t>(spirv_binary.cbegin(), spirv_binary.cend());
-				FileSystem::WriteFile(cache_path, mOpenglSpirv[type]);
-			}
-			else
-			{
-				LOG_ERROR("GLSL: Failed to compile shader {} : stage:{}-{}", utils::GetTypeString(type), mName, spirv_binary.GetErrorMessage());
-				ASSERT(false);
-			}
-		}
-	}
-
-	void Shader::Recompile()
-	{
-		if (mFilePath.empty())
-			return;
-
-		LOG_TRACE("Recompiling Shader...");
-
-		std::string source;
-		FileSystem::ReadFile(mFilePath, source);
-		PreProcess(source);
-		Compile(true);
-	}
-
-	void Shader::Compile(bool recompile)
-	{
-		CreateCacheDirectoryIfNeeded();
-		GetOrCreateVulkanBinaries(recompile);
-		GetOrCreateOpenGLBinaries(recompile);
-
-		if (mShaderID != 0)
-		{
-			glDeleteProgram(mShaderID);
+			compiler.CompileToVulkan(mFilePath, stage, source.Code, source.VulkanSpirv);
+			compiler.CompileToOpengl(mFilePath, stage, source.OpenglCompiledSource, source.VulkanSpirv, source.OpenglSpirv);
 		}
 
-		mShaderID = glCreateProgram();
+		if (mProgramID != 0)
+		{
+			glDeleteProgram(mProgramID);
+		}
+
+		mProgramID = glCreateProgram();
 
 		GLint status = 0;
 		GLchar infoLog[512];
 		std::vector<uint32_t> shaders;
-		for (auto &[type, source] : mOpenglSpirv)
+		for (auto &[stage, source] : mSources)
 		{
-			auto shader = glCreateShader(type);
-			glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, source.data(), source.size() * sizeof(uint32_t));
+			auto shader_type = ShaderUtils::GetAPIShaderStage(stage);
+			auto shader = glCreateShader(shader_type);
+			const auto &binary = source.OpenglSpirv;
+
+			glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, binary.data(), binary.size() * sizeof(uint32_t));
 			glSpecializeShader(shader, "main", 0, nullptr, nullptr);
-			glAttachShader(mShaderID, shader);
+			glAttachShader(mProgramID, shader);
 
 			glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
 			if (!status)
 			{
 				glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-				LOG_ERROR("SHADER::COMPILE ERROR {} - {}, {}", mName, utils::GetTypeString(type), infoLog);
+				LOG_ERROR("SHADER::COMPILE ERROR {} - {}, {}", mName, ShaderUtils::ToString(stage), infoLog);
 				ASSERT(false);
 			}
 
 			shaders.emplace_back(shader);
 		}
 
-		glLinkProgram(mShaderID);
+		glLinkProgram(mProgramID);
 
-		glGetProgramiv(mShaderID, GL_LINK_STATUS, &status);
+		glGetProgramiv(mProgramID, GL_LINK_STATUS, &status);
 		if (!status)
 		{
-			glGetProgramInfoLog(mShaderID, 512, nullptr, infoLog);
+			glGetProgramInfoLog(mProgramID, 512, nullptr, infoLog);
 			LOG_ERROR("SHADER::PROGRAM LINKING : {} - {}", mName, infoLog);
 			ASSERT(false);
 		}
 
 		for (auto &shader : shaders)
 		{
-			glDetachShader(mShaderID, shader);
+			glDetachShader(mProgramID, shader);
 			glDeleteShader(shader);
 		}
 
 		if (!status)
 		{
-			glDeleteProgram(mShaderID);
+			glDeleteProgram(mProgramID);
 
 			return;
 		}
 
-		Reflect();
+		compiler.WriteProgramBinary(mFilePath, mProgramID);
 	}
 
 	void Shader::PreProcess(const std::string &source)
 	{
-		mSources.clear();
-
-		auto token = "#type";
-		auto version_token = "#version";
-
-		auto token_length = strlen(token);
-		auto version_length = strlen(version_token);
-
-		std::string preprocessors =
+		static std::string preprocessors =
 			R"(
 				#extension GL_EXT_scalar_block_layout: enable
 				#extension GL_ARB_enhanced_layouts : enable
 			)";
 
-		auto pos = source.find(token, 0);
-		while (pos != std::string::npos)
+		mSources.clear();
+
+		auto data = ShaderUtils::PreProcess(source, preprocessors);
+		for (const auto &[stage, code] : data)
 		{
-			auto eol = source.find_first_of("\r\n", pos);
-			ASSERT(eol != std::string::npos);
-			auto begin = pos + token_length + 1;
-			auto type = source.substr(begin, eol - begin);
-			ASSERT(utils::GetTypeFromString(type), mName);
 
-			auto next_pos = source.find_first_not_of("\r\n", eol);
-			ASSERT(next_pos != std::string::npos);
-			pos = source.find(token, next_pos);
-
-			auto code = (pos == std::string::npos) ? source.substr(next_pos) : source.substr(next_pos, pos - next_pos);
-			{
-				auto v_start = code.find_first_of(version_token);
-				auto v_end = code.find_first_of('\r\n', v_start);
-				code.insert(code.begin() + v_end, preprocessors.begin(), preprocessors.end());
-			}
-			mSources.emplace(utils::GetTypeFromString(type), code);
+			FShaderData data{};
+			data.Code = code;
+			mSources.emplace(stage, data);
 		}
 	}
 
 	void Shader::Bind() const
 	{
 
-		glUseProgram(mShaderID);
+		glUseProgram(mProgramID);
 	}
 
 	void Shader::UnBind() const
@@ -434,87 +139,70 @@ namespace BHive
 		glUseProgram(0);
 	}
 
-	void Shader::SetUniform(int location, int value) const
-	{
-		glProgramUniform1i(mShaderID, location, value);
-	}
-
-	void Shader::SetUniform(int location, bool value) const
-	{
-		SetUniform(location, static_cast<uint32_t>(value));
-	}
-
-	void Shader::SetUniform(int location, uint32_t value) const
-	{
-		glProgramUniform1ui(mShaderID, location, value);
-	}
-
-	void Shader::SetUniform(int location, uint16_t value) const
-	{
-		SetUniform(location, static_cast<uint32_t>(value));
-	}
-
-	void Shader::SetUniform(int location, float value) const
-	{
-		glProgramUniform1f(mShaderID, location, value);
-	}
-
-	void Shader::SetUniform(int location, const glm::vec2 &value) const
-	{
-		glProgramUniform2fv(mShaderID, location, 1, &value.x);
-	}
-
-	void Shader::SetUniform(int location, const glm::ivec2 &value) const
-	{
-		glProgramUniform2iv(mShaderID, location, 1, &value.x);
-	}
-
-	void Shader::SetUniform(int location, const glm::vec3 &value) const
-	{
-		glProgramUniform3fv(mShaderID, location, 1, &value.x);
-	}
-
-	void Shader::SetUniform(int location, const glm::vec4 &value) const
-	{
-		glProgramUniform4fv(mShaderID, location, 1, &value.x);
-	}
-
-	void Shader::SetUniform(int location, const glm::mat4 &value) const
-	{
-		glProgramUniformMatrix4fv(mShaderID, location, 1, GL_FALSE, &value[0].x);
-	}
-
-	void Shader::SetUniform(int location, uint64_t texture) const
-	{
-		glProgramUniformHandleui64NV(mShaderID, location, texture);
-	}
-
 	void Shader::Dispatch(uint32_t w, uint32_t h, uint32_t d)
 	{
 		glDispatchCompute(w, h, d);
 		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	}
 
-	int Shader::GetUniformLocation(const std::string &name) const
+	ShaderUniformSetter *Shader::GetSetter() const
 	{
-		if (mUniformLocationCache.contains(name))
-			return mUniformLocationCache.at(name);
-
-		int location = glGetUniformLocation(mShaderID, name.c_str());
-		mUniformLocationCache[name] = location;
-		return location;
+		return mUniformSetter.get();
 	}
 
 	void Shader::Reflect()
 	{
 		LOG_TRACE("Reflecting Shader... {}\n", mName);
 
-		for (auto &[type, source] : mVulkanSpirv)
+		for (auto &[stage, source] : mSources)
 		{
-			mReflectionData.Reflect(source);
+			mReflectionData.Reflect(source.VulkanSpirv);
 
-			LOG_TRACE("Stage: {}\n{}\n", utils::GetTypeString(type), mReflectionData.to_string());
+			LOG_TRACE("Stage: {}\n{}\n", ShaderUtils::ToString(stage), mReflectionData.to_string());
 		}
+	}
+
+	PipelineShader::PipelineShader(const std::filesystem::path &path)
+	{
+		std::string source;
+		if (!FileSystem::ReadFile(path, source))
+			return;
+
+		auto data = ShaderUtils::PreProcess(path.string());
+		for (const auto &[stage, code] : data)
+		{
+			FShaderData data{};
+			data.Code = code;
+			mSources.emplace(stage, data);
+		}
+
+		ShaderCompiler compiler;
+		compiler.Init();
+
+		for (auto &[stage, source] : mSources)
+		{
+			source.VulkanSpirv.clear();
+			source.OpenglSpirv.clear();
+			source.OpenglCompiledSource.clear();
+
+			compiler.CompileToVulkan(path, stage, source.Code, source.VulkanSpirv);
+			compiler.CompileToOpengl(path, stage, source.OpenglCompiledSource, source.VulkanSpirv, source.OpenglSpirv);
+
+			uint32_t shader = 0;
+			glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, source.OpenglSpirv.data(), source.OpenglSpirv.size() * sizeof(uint32_t));
+			glSpecializeShader(shader, "main", 0, nullptr, nullptr);
+		}
+	}
+
+	void PipelineShader::Dispatch(uint32_t w, uint32_t h, uint32_t d)
+	{
+		glDispatchCompute(w, h, d);
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	}
+
+	ShaderUniformSetter *PipelineShader::GetSetter() const
+	{
+		return mUniformSetter.get();
 	}
 
 } // namespace BHive

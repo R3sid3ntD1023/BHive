@@ -49,7 +49,7 @@ layout(location = 0) out struct VS_OUT
 
 void main()
 {
-	#include <includes/Common.vert>
+	#include <Common.vert>
 
 		
 	vs_out.Position = worldPos.xyz;
@@ -132,12 +132,12 @@ void main()
 	float metalness = constants.Metalness;
 	vec3 normal = normalize(vs_in.Normal);
 	
-	#include <maps/DiffuseMap.glsl>
-	#include <maps/NormalMap.glsl>
-	#include <maps/RoughnessMap.glsl>
-	#include <maps/MetalnessMap.glsl>
-	#include <maps/EmissionMap.glsl>
-	#include <maps/OpacityMap.glsl>
+	#include <DiffuseMap.glsl>
+	#include <NormalMap.glsl>
+	#include <RoughnessMap.glsl>
+	#include <MetalnessMap.glsl>
+	#include <EmissionMap.glsl>
+	#include <OpacityMap.glsl>
 
 	
 
@@ -154,7 +154,7 @@ void main()
 	ReflectedLight reflected_light = ReflectedLight(vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
 
 	#include <LightingFragBegin.glsl>
-	#include <maps/EnvironmentMaps.glsl>
+	#include <EnvironmentMaps.glsl>
 	#include <LightingFragEnd.glsl>
 	
 

@@ -57,7 +57,11 @@ namespace BHive
 
 	bool FileSystem::WriteFile(const std::filesystem::path &filepath, const std::vector<uint32_t> &data)
 	{
+		if (!std::filesystem::exists(filepath.parent_path()))
+			std::filesystem::create_directories(filepath.parent_path());
+
 		std::ofstream out(filepath.string().c_str(), std::ios::out | std::ios::binary);
+
 		if (!out)
 		{
 			LOG_ERROR("Failed to open file {}", filepath.string());

@@ -1,0 +1,267 @@
+#include "core/FileSystem.h"
+#include "ShaderCompiler.h"
+#include "ShaderUtils.h"
+#include <glad/glad.h>
+
+#include <spirv_cross/spirv_cross.hpp>
+#include <spirv_cross/spirv_glsl.hpp>
+
+namespace BHive
+{
+	namespace utils
+	{
+		shaderc_shader_kind GetShadercType(EShaderStage stage)
+		{
+			switch (stage)
+			{
+			case ShaderStage_Vertex:
+				return shaderc_glsl_vertex_shader;
+			case ShaderStage_Fragment:
+				return shaderc_glsl_fragment_shader;
+			case ShaderStage_Compute:
+				return shaderc_glsl_compute_shader;
+			case ShaderStage_Geometry:
+				return shaderc_glsl_geometry_shader;
+			default:
+				break;
+			}
+			return shaderc_glsl_infer_from_source;
+		}
+
+		std::filesystem::path GetCacheDirectory()
+		{
+			return "cache/shaders";
+		}
+
+		const char *GetCacheOpenglFileExtension(EShaderStage stage)
+		{
+			switch (stage)
+			{
+			case ShaderStage_Vertex:
+				return ".cached_opengl.vert";
+			case ShaderStage_Fragment:
+				return ".cached_opengl.frag";
+			case ShaderStage_Compute:
+				return ".cached_opengl.comp";
+			case ShaderStage_Geometry:
+				return ".cached_opengl.geom";
+
+			default:
+				break;
+			}
+			ASSERT(false)
+			return "";
+		}
+
+		const char *GetCacheVulkanFileExtension(EShaderStage stage)
+		{
+			switch (stage)
+			{
+			case ShaderStage_Vertex:
+				return ".cached_vulkan.vert";
+			case ShaderStage_Fragment:
+				return ".cached_vulkan.frag";
+			case ShaderStage_Compute:
+				return ".cached_vulkan.comp";
+			case ShaderStage_Geometry:
+				return ".cached_vulkan.geom";
+			default:
+				break;
+			}
+			ASSERT(false)
+			return "";
+		}
+
+		struct IncludeHandler : public shaderc::CompileOptions::IncluderInterface
+		{
+			using UserDataType = std::pair<std::string, std::string>;
+
+			shaderc_include_result *GetInclude(const char *requested_source, shaderc_include_type type, const char *requesting_source, size_t include_depth) override
+			{
+				auto resolved_path = ResolvePath(requested_source, requesting_source);
+				std::string content;
+				if (!FileSystem::ReadFile(resolved_path, content))
+				{
+					LOG_ERROR("ShaderIncluder::ERROR -Failed to read file : {}", requested_source);
+					return nullptr;
+				}
+
+				return MakeIncludeResult(resolved_path, content);
+			}
+
+			void ReleaseInclude(shaderc_include_result *data) override
+			{
+				if (data)
+				{
+					delete (UserDataType *)data->user_data;
+					delete data;
+				}
+			}
+
+		private:
+			std::string ResolvePath(const std::string &requested, const std::string &requesting)
+			{
+				std::filesystem::path directory = std::filesystem::path(requesting).parent_path();
+				std::filesystem::path resolved_path = directory / requested;
+
+				// use default engine path, if file isn't relative
+				if (!std::filesystem::exists(resolved_path))
+				{
+					std::filesystem::recursive_directory_iterator it(ENGINE_SHADER_PATH);
+					for (auto &entry : it)
+					{
+						auto file = entry.path().string();
+						if (file.find(requested) != std::string::npos)
+						{
+							resolved_path = entry;
+							break;
+						}
+					}
+				}
+
+				if (!std::filesystem::exists(resolved_path))
+				{
+					LOG_ERROR("ShaderIncluder::ERROR - Failed to find file : {} requsted from {}", requested, requesting);
+					return "";
+				}
+
+				return resolved_path.string();
+			}
+
+			shaderc_include_result *MakeIncludeResult(const std::filesystem::path &resolved_path, const std::string &content)
+			{
+				auto *result = new shaderc_include_result();
+				auto include_data = new UserDataType(resolved_path.string(), content);
+
+				result->source_name = include_data->first.c_str();
+				result->source_name_length = include_data->first.size();
+
+				result->content = include_data->second.c_str();
+				result->content_length = include_data->second.size();
+
+				result->user_data = include_data;
+				return result;
+			}
+		};
+
+		void CreateCacheDirectory()
+		{
+			auto cache_dir = GetCacheDirectory();
+			if (!std::filesystem::exists(cache_dir))
+				std::filesystem::create_directories(cache_dir);
+		}
+
+	} // namespace utils
+
+	void ShaderCompiler::Init()
+	{
+		mVulkanCompileOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+		mVulkanCompileOptions.SetIncluder(std::make_unique<utils::IncludeHandler>());
+
+		mOpenglCompileOptions.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
+		mOpenglCompileOptions.SetAutoMapLocations(true);
+		mOpenglCompileOptions.SetIncluder(std::make_unique<utils::IncludeHandler>());
+	}
+
+	void ShaderCompiler::CompileToVulkan(const std::filesystem::path &filename, EShaderStage stage, const std::string &src, std::vector<uint32_t> &binary)
+	{
+		auto name = filename.stem().string();
+		auto cache_path = utils::GetCacheDirectory() / name / (name + utils::GetCacheVulkanFileExtension(stage));
+		if (std::filesystem::exists(cache_path))
+		{
+			FileSystem::ReadFile(cache_path, binary);
+			return;
+		}
+
+		auto spirv_binary = mVulkanCompiler.CompileGlslToSpv(src, utils::GetShadercType(stage), filename.string().c_str(), mVulkanCompileOptions);
+		if (spirv_binary.GetCompilationStatus() != shaderc_compilation_status_success)
+		{
+			LOG_ERROR("Vulkan: Failed to compile shader = {}, stage = {} : \n{}", filename, ShaderUtils::ToString(stage), spirv_binary.GetErrorMessage());
+			ASSERT(false);
+		}
+		else
+		{
+			binary = std::vector<uint32_t>(spirv_binary.cbegin(), spirv_binary.cend());
+			FileSystem::WriteFile(cache_path, binary);
+		}
+	}
+
+	void ShaderCompiler::CompileToOpengl(const std::filesystem::path &filename, EShaderStage stage, std::string &src, const std::vector<uint32_t> &spirv, std::vector<uint32_t> &opengl_spirv)
+	{
+		auto name = filename.stem().string();
+		auto cache_path = utils::GetCacheDirectory() / name / (name + utils::GetCacheOpenglFileExtension(stage));
+		if (std::filesystem::exists(cache_path))
+		{
+			FileSystem::ReadFile(cache_path, opengl_spirv);
+			return;
+		}
+
+		spirv_cross::CompilerGLSL glsl_compiler(spirv);
+		src = glsl_compiler.compile();
+
+		auto spirv_binary = mOpenglCompiler.CompileGlslToSpv(src, utils::GetShadercType(stage), filename.string().c_str(), mOpenglCompileOptions);
+
+		if (spirv_binary.GetCompilationStatus() == shaderc_compilation_status_success)
+		{
+			opengl_spirv = std::vector<uint32_t>(spirv_binary.cbegin(), spirv_binary.cend());
+			FileSystem::WriteFile(cache_path, opengl_spirv);
+		}
+		else
+		{
+			LOG_ERROR("GLSL: Failed to compile shader = {}, stage = {}: \n{}", filename, ShaderUtils::ToString(stage), spirv_binary.GetErrorMessage());
+			ASSERT(false);
+		}
+	}
+
+	void ShaderCompiler::WriteProgramBinary(const std::filesystem::path &filename, uint32_t program)
+	{
+		auto name = filename.stem().string();
+		auto cached_path = utils::GetCacheDirectory() / name / (name + ".cached.program");
+		if (!std::filesystem::exists(cached_path.parent_path()))
+		{
+			std::filesystem::create_directories(cached_path.parent_path());
+		}
+
+		GLint binary_size = 0;
+		GLenum binary_format;
+		glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &binary_size);
+
+		std::vector<uint32_t> program_binary(binary_size / sizeof(uint32_t));
+		glGetProgramBinary(program, binary_size, nullptr, &binary_format, program_binary.data());
+
+		std::ofstream out(cached_path, std::ios::out | std::ios::binary | std::ios::ate);
+		out.write(reinterpret_cast<const char *>(&binary_format), sizeof(GLenum));
+		out.write(reinterpret_cast<const char *>(&binary_size), sizeof(GLint));
+		out.write(reinterpret_cast<const char *>(program_binary.data()), binary_size);
+
+		LOG_INFO("Wrote Program Binary to: {}", cached_path);
+	}
+
+	bool ShaderCompiler::ReadProgramBinary(const std::filesystem::path &filename, uint32_t &program)
+	{
+		auto name = filename.stem().string();
+		auto cached_path = utils::GetCacheDirectory() / name / (name + ".cached.program");
+		if (!std::filesystem::exists(cached_path))
+			return false;
+
+		GLenum format;
+		GLint size;
+		std::vector<uint32_t> data;
+
+		std::ifstream in(cached_path, std::ios::in | std::ios::binary);
+		in.read(reinterpret_cast<char *>(&format), sizeof(GLenum));
+		in.read(reinterpret_cast<char *>(&size), sizeof(GLint));
+
+		ASSERT(size);
+		data.resize(size / sizeof(uint32_t));
+
+		in.read(reinterpret_cast<char *>(data.data()), size);
+
+		program = glCreateProgram();
+		glProgramBinary(program, format, data.data(), size);
+
+		LOG_INFO("Read Program Binary from: {}", cached_path);
+
+		return true;
+	}
+} // namespace BHive

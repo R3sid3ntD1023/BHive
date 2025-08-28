@@ -1,8 +1,10 @@
 #pragma once
 
+#include <stdint.h>
+
 namespace BHive
 {
-	enum class EShaderDataType
+	enum class EShaderDataType : uint8_t
 	{
 		Float,
 		Float2,

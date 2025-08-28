@@ -24,10 +24,6 @@ namespace BHive
 
 		void Add(const char *name, const Ref<Shader> &shader);
 
-		Ref<Shader> Load(const char *name, const std::string &vertex_src, const std::string &fragment_src);
-
-		Ref<Shader> Load(const char *name, const std::string &comp_src);
-
 		Ref<Shader> Load(const std::filesystem::path &file);
 
 		Ref<Shader> Get(const char *name);

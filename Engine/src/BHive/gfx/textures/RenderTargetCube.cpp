@@ -1,5 +1,5 @@
-#include "RenderTargetCube.h"
 #include "gfx/TextureUtils.h"
+#include "RenderTargetCube.h"
 #include <glad/glad.h>
 
 namespace BHive
@@ -8,9 +8,7 @@ namespace BHive
 	RenderTargetCube::RenderTargetCube(uint32_t size, EFormat format)
 		: mSize(size)
 	{
-		mTargetTexture = CreateRef<TextureCube>(
-			size, FTextureSpecification{
-					  .InternalFormat = format, .WrapMode = EWrapMode::CLAMP_TO_EDGE, .MinFilter = EMinFilter::LINEAR});
+		mTargetTexture = CreateRef<TextureCube>(size, FTextureSpecification{.InternalFormat = format, .WrapMode = EWrapMode::CLAMP_TO_EDGE, .MinFilter = EMinFilter::LINEAR});
 
 		glCreateFramebuffers(1, &mFramebufferID);
 		glNamedFramebufferDrawBuffer(mFramebufferID, GL_COLOR_ATTACHMENT0);

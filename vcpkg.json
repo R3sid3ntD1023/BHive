@@ -10,6 +10,9 @@
       "name": "entt"
     },
     {
+      "name": "openal-soft"
+    },
+    {
       "name": "physx"
     },
     {

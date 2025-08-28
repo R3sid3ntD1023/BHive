@@ -100,7 +100,7 @@ void main()
 	vec2 texCoord = vs_in.Texcoord;
 	vec3 normal = vs_in.Normal;
 
-	#include <maps/DiffuseMap.glsl>
+	#include <DiffuseMap.glsl>
 
 	LambertMaterial material;
 	material.DiffuseColor = diffuseColor;

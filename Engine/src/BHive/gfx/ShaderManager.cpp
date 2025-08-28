@@ -1,5 +1,5 @@
-#include "ShaderManager.h"
 #include "Shader.h"
+#include "ShaderManager.h"
 
 #define SHADER_EXTENSION ".glsl"
 
@@ -33,42 +33,34 @@ namespace BHive
 		}
 	}
 
-	Ref<Shader> ShaderManager::Load(const char *name, const std::string &vertex_src, const std::string &fragment_src)
-	{
-		if (!Contains(name))
-		{
-			auto shader = CreateRef<Shader>(name, vertex_src, fragment_src);
-			auto operation = mShaders.emplace(name, shader);
-			return (*operation.first).second;
-		}
-
-		return mShaders.at(name);
-	}
-
-	Ref<Shader> ShaderManager::Load(const char *name, const std::string &comp_src)
-	{
-		if (!Contains(name))
-		{
-			auto shader = CreateRef<Shader>(name, comp_src);
-			auto operation = mShaders.emplace(name, shader);
-			return (*operation.first).second;
-		}
-
-		return mShaders.at(name);
-	}
-
 	Ref<Shader> ShaderManager::Load(const std::filesystem::path &file)
 	{
-		auto name = file.filename().string();
+		std::filesystem::path resolved_path = file;
+		if (!file.is_absolute())
+		{
+			std::filesystem::recursive_directory_iterator directory(ENGINE_SHADER_PATH);
+			for (auto &entry : directory)
+			{
+				auto filename = entry.path().string();
+
+				if (filename.find(file.string()) != std::string::npos)
+				{
+					resolved_path = entry;
+					break;
+				}
+			}
+		}
+
+		auto name = resolved_path.stem().string();
 		if (Contains(name))
 		{
 			return mShaders.at(name);
 		}
 
 		auto &shader = mShaders[name];
-		mShaderMetaDatas[name].Path = file;
+		mShaderMetaDatas[name].Path = resolved_path;
 
-		shader = CreateRef<Shader>(file);
+		shader = CreateRef<Shader>(resolved_path);
 		return shader;
 	}
 

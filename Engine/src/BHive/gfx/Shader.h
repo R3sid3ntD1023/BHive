@@ -2,116 +2,99 @@
 
 #include "core/Core.h"
 #include "ShaderReflection.h"
+#include "ShaderStages.h"
+#include "utils/shader/ShaderUniformSetter.h"
 #include <glm/glm.hpp>
 
 namespace BHive
 {
-	enum EShaderType : uint8_t
+	class ShaderBase
 	{
-		ShaderType_None = 0,
-		ShaderType_Vertex,
-		ShaderType_Fragment,
-		ShaderType_Compute,
-		ShaderType_Geometry,
+	public:
+		virtual ~ShaderBase() = default;
+
+		template <typename T>
+		void SetUniform(const std::string &name, const T &val)
+		{
+			if (GetSetter())
+				GetSetter()->SetUniform<T>(name, val);
+		}
+
+		virtual uint32_t GetRendererID() const = 0;
+
+		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1) {}
+
+	protected:
+		virtual ShaderUniformSetter *GetSetter() const = 0;
+
+		struct FShaderData
+		{
+			std::string Code;
+			std::vector<uint32_t> VulkanSpirv;
+			std::vector<uint32_t> OpenglSpirv;
+			std::string OpenglCompiledSource;
+		};
 	};
 
-	class BHIVE_API Shader
+	class BHIVE_API Shader : public ShaderBase
 	{
 	public:
 		Shader(const std::filesystem::path &path);
 
-		Shader(const std::string &name, const std::string &vertex_shader, const std::string &fragment_shader);
-
-		Shader(const std::string &name, const std::string &comp_shader);
-
 		virtual ~Shader();
-
-		virtual void Compile(bool recompile = false);
-
-		virtual void Recompile();
 
 		virtual void Bind() const;
 
 		virtual void UnBind() const;
 
-		template <typename T>
-		void SetUniform(const std::string &name, const T &v) const
-		{
-			int location = GetUniformLocation(name);
-			if (location == -1)
-			{
-				LOG_ERROR("Failed to find Uniform {} for {}", name, GetName());
-				return;
-			}
-
-			SetUniform(location, v);
-		}
-
-		virtual uint32_t GetRendererID() const { return mShaderID; }
+		virtual uint32_t GetRendererID() const override { return mProgramID; }
 
 		virtual const std::string &GetName() const { return mName; }
 
-		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1);
+		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1) override;
+
+		ShaderUniformSetter *GetSetter() const override;
 
 		virtual const FShaderReflectionData &GetRelectionData() const { return mReflectionData; }
 
 		operator uint32_t() const { return GetRendererID(); }
 
 	private:
-		virtual void SetUniform(int location, int value) const;
-
-		virtual void SetUniform(int location, bool value) const;
-
-		virtual void SetUniform(int location, uint32_t value) const;
-
-		virtual void SetUniform(int location, uint16_t value) const;
-
-		virtual void SetUniform(int location, float value) const;
-
-		virtual void SetUniform(int location, const glm::vec2 &value) const;
-
-		virtual void SetUniform(int location, const glm::ivec2 &value) const;
-
-		virtual void SetUniform(int location, const glm::vec3 &value) const;
-
-		virtual void SetUniform(int location, const glm::vec4 &value) const;
-
-		virtual void SetUniform(int location, const glm::mat4 &value) const;
-
-		virtual void SetUniform(int location, uint64_t value) const;
-
-		virtual int GetUniformLocation(const std::string &name) const;
+		void Compile();
 
 		void PreProcess(const std::string &source);
 
 		void Reflect();
 
-		void GetOrCreateVulkanBinaries(bool recompile = false);
-
-		void GetOrCreateOpenGLBinaries(bool recompile = false);
-
-		void CreateCacheDirectoryIfNeeded();
-
 	private:
 		std::string mName;
 
-		uint32_t mShaderID{0};
-
-		uint32_t mPipelineID{0};
+		uint32_t mProgramID{0};
 
 		FShaderReflectionData mReflectionData;
 
-		mutable std::unordered_map<std::string, int> mUniformLocationCache;
-
 		std::filesystem::path mFilePath;
 
-		std::unordered_map<uint32_t, std::string> mSources;
+		std::unordered_map<EShaderStage, FShaderData> mSources;
 
-		std::unordered_map<uint32_t, std::vector<uint32_t>> mVulkanSpirv;
+		Scope<ShaderUniformSetter> mUniformSetter;
+	};
 
-		std::unordered_map<uint32_t, std::vector<uint32_t>> mOpenglSpirv;
+	class PipelineShader : public ShaderBase
+	{
+	public:
+		PipelineShader(const std::filesystem::path &path);
 
-		std::unordered_map<uint32_t, std::string> mOpenglSources;
+		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1) override;
+
+		ShaderUniformSetter *GetSetter() const override;
+
+		virtual uint32_t GetRendererID() const override { return mShaderProgramID; }
+
+	private:
+		uint32_t mShaderProgramID{0};
+		Scope<ShaderUniformSetter> mUniformSetter;
+		std::unordered_map<EShaderStage, FShaderData> mSources;
 	};
 
 } // namespace BHive

@@ -49,13 +49,6 @@ namespace BHive
 
 		CubeCamera mCubeCamera{.1f, 10.f};
 
-		const std::string GetCommonVertexShader() const;
-		const std::string GetEquirectangularShader() const;
-		const std::string GetIrradianceShader() const;
-		const std::string GetBRDFLUTShader() const;
-		const std::string GetPreFilterEnvironmentShader() const;
-		const std::string GetCommmonFunctions() const;
-
 		bool mInitialized = false;
 	};
 } // namespace BHive

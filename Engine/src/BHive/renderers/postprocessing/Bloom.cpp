@@ -5,11 +5,6 @@
 #include "gfx/textures/Texture2D.h"
 #include "gfx/TextureUtils.h"
 #include "gfx/UniformBuffer.h"
-#include "glad/glad.h"
-#include "shaders/DownSample.h"
-#include "shaders/PreFilter.h"
-#include "shaders/UpSample.h"
-#include "shaders/CombineTexture.h"
 
 namespace BHive
 {
@@ -18,10 +13,10 @@ namespace BHive
 		: mSettings(data),
 		  mSize(width, height)
 	{
-		mPreFilterShader = ShaderManager::Get().Load("PreFilter", prefiler_comp);
-		mDownSamplerShader = ShaderManager::Get().Load("DownSample", downsample_comp);
-		mUpSamplerShader = ShaderManager::Get().Load("UpSample", upsample_comp);
-		mCombineShader = ShaderManager::Get().Load("Combine", combine_texture_comp);
+		mPreFilterShader = ShaderManager::Get().Load("PreFilter.glsl");
+		mDownSamplerShader = ShaderManager::Get().Load("DownSample.glsl");
+		mUpSamplerShader = ShaderManager::Get().Load("UpSample.glsl");
+		mCombineShader = ShaderManager::Get().Load("CombineTex.glsl");
 
 		mMipMaps.resize(iterations);
 

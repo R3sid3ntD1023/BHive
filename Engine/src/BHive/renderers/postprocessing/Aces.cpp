@@ -1,15 +1,14 @@
 #include "Aces.h"
 #include "gfx/Shader.h"
-#include "gfx/UniformBuffer.h"
-#include "shaders/AcesFilter.h"
-#include "gfx/textures/Texture2D.h"
 #include "gfx/ShaderManager.h"
+#include "gfx/textures/Texture2D.h"
+#include "gfx/UniformBuffer.h"
 
 namespace BHive
 {
 	Aces::Aces(uint32_t w, uint32_t h)
 	{
-		mComputeShader = ShaderManager::Get().Load("Aces", aces_comp);
+		mComputeShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/compute/Aces.glsl");
 
 		Initialize(w, h);
 	}
