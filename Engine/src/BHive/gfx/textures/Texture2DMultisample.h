@@ -15,8 +15,6 @@ namespace BHive
 
 		virtual void UnBind(uint32_t slot = 0) const;
 
-		virtual void BindAsImage(uint32_t unit, EImageAccess access, uint32_t level = 0) const;
-
 		virtual uint32_t GetWidth() const { return mWidth; }
 
 		virtual uint32_t GetHeight() const { return mHeight; }

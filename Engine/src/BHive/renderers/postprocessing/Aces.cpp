@@ -1,4 +1,5 @@
 #include "Aces.h"
+#include "gfx/Image.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/textures/Texture2D.h"
@@ -17,7 +18,7 @@ namespace BHive
 	{
 		mComputeShader->Bind();
 		texture->Bind();
-		mOutput->BindAsImage(0, EImageAccess::WRITE);
+		mOutputImage->Bind(0, EImageAccess::WRITE);
 		mComputeShader->Dispatch(texture->GetWidth(), texture->GetHeight());
 		mComputeShader->UnBind();
 		return mOutput;
@@ -36,5 +37,8 @@ namespace BHive
 		specs.Channels = 3;
 		specs.InternalFormat = EFormat::R11_G11_B10;
 		mOutput = CreateRef<Texture2D>(w, h, specs);
+
+		mOutputImage = CreateRef<Image>();
+		mOutputImage->SetTexture(mOutput);
 	}
 } // namespace BHive

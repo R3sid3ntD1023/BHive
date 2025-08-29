@@ -1,5 +1,6 @@
 #include "Bloom.h"
 #include "core/profiler/CPUGPUProfiler.h"
+#include "gfx/Image.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/textures/Texture2D.h"
@@ -24,9 +25,12 @@ namespace BHive
 
 	Ref<Texture> Bloom::Process(const Ref<Texture> &texture)
 	{
+		Image output_image;
+		output_image.SetTexture(mPreFilterTexture);
+
 		mPreFilterShader->Bind();
 		texture->Bind();
-		mPreFilterTexture->BindAsImage(0, EImageAccess::WRITE);
+		output_image.Bind(0, EImageAccess::WRITE);
 		mPreFilterShader->SetUniform("constants.u_FilterThreshold", mSettings.mFilterThreshold);
 		mPreFilterShader->Dispatch(mPreFilterTexture->GetWidth(), mPreFilterTexture->GetHeight());
 
@@ -39,9 +43,10 @@ namespace BHive
 		for (auto &mip : mMipMaps)
 		{
 			glm::ivec2 size = {mip->GetWidth(), mip->GetHeight()};
+			output_image.SetTexture(mip);
 
 			current_texture->Bind();
-			mip->BindAsImage(0, EImageAccess::WRITE);
+			output_image.Bind(0, EImageAccess::WRITE);
 			mDownSamplerShader->Dispatch(size.x, size.y);
 
 			current_texture = mip;
@@ -55,9 +60,10 @@ namespace BHive
 		{
 			const auto &mip = mMipMaps[i];
 			const auto &next_mip = mMipMaps[i - 1];
+			output_image.SetTexture(next_mip);
 
 			mip->Bind();
-			next_mip->BindAsImage(0, EImageAccess::WRITE);
+			output_image.Bind(0, EImageAccess::WRITE);
 			mUpSamplerShader->Dispatch(next_mip->GetWidth(), next_mip->GetHeight());
 		}
 
@@ -68,7 +74,8 @@ namespace BHive
 		texture->Bind(0);
 		mMipMaps[0]->Bind(1);
 
-		mOutputTexture->BindAsImage(0, EImageAccess::WRITE);
+		output_image.SetTexture(mOutputTexture);
+		output_image.Bind(0, EImageAccess::WRITE);
 		mCombineShader->Dispatch(mSize.x, mSize.y);
 		mCombineShader->UnBind();
 

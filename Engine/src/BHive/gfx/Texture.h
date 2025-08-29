@@ -19,9 +19,8 @@ namespace BHive
 		virtual ~Texture() = default;
 
 		virtual void Bind(uint32_t slot = 0) const = 0;
-		virtual void UnBind(uint32_t slot = 0) const = 0;
 
-		virtual void BindAsImage(uint32_t unit, EImageAccess access, uint32_t level = 0) const = 0;
+		virtual void UnBind(uint32_t slot = 0) const = 0;
 
 		virtual uint32_t GetWidth() const = 0;
 

@@ -19,8 +19,6 @@ namespace BHive
 
 		void UnBind(uint32_t slot = 0) const override;
 
-		void BindAsImage(uint32_t unit, EImageAccess access, uint32_t level = 0) const;
-
 		virtual void GenerateMipMaps() const;
 
 		virtual void SetData(const void *data, uint32_t offsetX = 0, uint32_t offsetY = 0);

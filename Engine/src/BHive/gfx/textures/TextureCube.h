@@ -16,8 +16,6 @@ namespace BHive
 
 		virtual void Bind(uint32_t slot = 0) const;
 
-		void BindAsImage(uint32_t unit, EImageAccess access, uint32_t level = 0) const;
-
 		virtual void UnBind(uint32_t slot = 0) const;
 
 		virtual void GenerateMipMaps() const;

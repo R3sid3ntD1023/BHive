@@ -1,4 +1,5 @@
 #include "gfx/Framebuffer.h"
+#include "gfx/Image.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
@@ -122,6 +123,8 @@ namespace BHive
 
 	void PMREMGenerator::CreatePreFilteredEnvironmentMap()
 	{
+		Image image(mPreFilteredEnvironmentTexture);
+
 		mPreFilterEnironmentShader->Bind();
 		mEnvironmentCapture->GetTargetTexture()->Bind();
 
@@ -138,7 +141,7 @@ namespace BHive
 			mPreFilterEnironmentShader->SetUniform("constants.u_width", w);
 			mPreFilterEnironmentShader->SetUniform("constants.u_height", h);
 
-			mPreFilteredEnvironmentTexture->BindAsImage(0, EImageAccess::WRITE, i);
+			image.Bind(0, EImageAccess::WRITE, i);
 
 			mPreFilterEnironmentShader->Dispatch(w / PREFILTER_WORK_GROUP_SIZE, h / PREFILTER_WORK_GROUP_SIZE, 6);
 		}
@@ -148,9 +151,11 @@ namespace BHive
 
 	void PMREMGenerator::CreateBRDFLUTMap()
 	{
+		Image image(mBRDFLUTTexture);
+
 		mBRDFLUTShader->Bind();
 
-		mBRDFLUTTexture->BindAsImage(0, EImageAccess::WRITE);
+		image.Bind(0, EImageAccess::WRITE);
 		mBRDFLUTShader->Dispatch(BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE, BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE);
 
 		mBRDFLUTShader->UnBind();

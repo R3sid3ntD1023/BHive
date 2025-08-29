@@ -29,10 +29,6 @@ namespace BHive
 		glBindTextureUnit(slot, 0);
 	}
 
-	void Texture2DMultisample::BindAsImage(uint32_t unit, EImageAccess access, uint32_t level) const
-	{
-	}
-
 	void Texture2DMultisample::GenerateMipMaps() const
 	{
 	}

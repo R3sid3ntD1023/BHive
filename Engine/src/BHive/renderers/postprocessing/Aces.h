@@ -5,6 +5,7 @@
 namespace BHive
 {
 	class Shader;
+	class Image;
 
 	class Aces : public PostProcessor
 	{
@@ -22,5 +23,6 @@ namespace BHive
 	private:
 		Ref<Texture> mOutput;
 		Ref<Shader> mComputeShader;
+		Ref<Image> mOutputImage;
 	};
 } // namespace BHive

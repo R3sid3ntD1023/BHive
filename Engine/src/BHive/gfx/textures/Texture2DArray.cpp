@@ -63,12 +63,6 @@ namespace BHive
 		glBindTextureUnit(slot, 0);
 	}
 
-	void Texture2DArray::BindAsImage(uint32_t unit, EImageAccess image_access, uint32_t level) const
-	{
-		auto access = TextureUtils::GetAPIImageAccess(image_access);
-		glBindImageTexture(unit, mTextureID, level, GL_FALSE, 0, access, mInfo.InternalFormat);
-	}
-
 	void Texture2DArray::GenerateMipMaps() const
 	{
 
