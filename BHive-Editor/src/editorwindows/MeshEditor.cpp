@@ -1,8 +1,8 @@
-#include "MeshEditor.h"
-#include "mesh/StaticMesh.h"
 #include "mesh/SkeletalMesh.h"
-#include "mesh/Skeleton.h"
 #include "mesh/SkeletalPose.h"
+#include "mesh/Skeleton.h"
+#include "mesh/StaticMesh.h"
+#include "MeshEditor.h"
 #include "renderers/SceneRenderer.h"
 
 namespace BHive
@@ -40,7 +40,6 @@ namespace BHive
 		}
 		else if (auto static_mesh = Cast<StaticMesh>(mAsset))
 		{
-			FMeshInfo info{};
 			info.Mesh = static_mesh;
 			info.Materials = static_mesh->GetMaterialTable();
 		}
