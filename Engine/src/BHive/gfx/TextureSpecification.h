@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/reflection/Reflection.h"
 #include "Color.h"
+#include "core/reflection/Reflection.h"
 #include <optional>
 #include <stdint.h>
 
@@ -104,30 +104,55 @@ namespace BHive
 		READ_WRITE
 	};
 
-	struct FTextureSpecification
+	struct FTextureAPIInfo
+	{
+		uint32_t Levels = 0;
+		uint32_t InternalFormat = 0;
+		uint32_t Format = 0;
+		uint32_t Type = 0;
+
+		uint32_t WrapMode = 0;
+		uint32_t FilterModes[2] = {};
+
+		uint32_t CompareMode = 0;
+		uint32_t CompareFunc = 0;
+
+		float BorderColor[4] = {};
+
+		uint32_t IsDepth = 0;
+	};
+
+	struct FTextureCreateInfo
 	{
 		uint32_t Channels = 0;
 		EFormat InternalFormat = EFormat::Invalid;
-		ETextureFormat Format = ETextureFormat::RGBA;
 		EWrapMode WrapMode = EWrapMode::REPEAT;
 		EMinFilter MinFilter = EMinFilter::LINEAR;
 		EMagFilter MagFilter = EMagFilter::LINEAR;
 		FColor BorderColor = 0xFFFFFFFF;
 		uint32_t Levels = 1;
-		std::optional<EImageAccess> ImageAccess;
 		std::optional<ETextureCompareMode> CompareMode; // Depth Compare Mode
 		std::optional<ETextureCompareFunc> CompareFunc; // Depth Compare Funcs
+
+		operator FTextureAPIInfo() const;
+
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(MAKE_NVP(InternalFormat));
+			ar(MAKE_NVP(Channels));
+			ar(MAKE_NVP(WrapMode));
+			ar(MAKE_NVP(MinFilter));
+			ar(MAKE_NVP(MagFilter));
+			ar(MAKE_NVP(BorderColor));
+			ar(MAKE_NVP(Levels));
+			ar(MAKE_NVP(CompareMode));
+			ar(MAKE_NVP(CompareFunc));
+		}
 
 		REFLECTABLE()
 	};
 
-	REFLECT_EXTERN(FTextureSpecification)
-
-	template <typename A>
-	void Serialize(A &ar, FTextureSpecification &spec)
-	{
-		ar(MAKE_NVP(spec.Format), MAKE_NVP(spec.InternalFormat), MAKE_NVP(spec.Channels), MAKE_NVP(spec.WrapMode), MAKE_NVP(spec.MinFilter), MAKE_NVP(spec.MagFilter), MAKE_NVP(spec.BorderColor),
-		   MAKE_NVP(spec.Levels), MAKE_NVP(spec.CompareMode), MAKE_NVP(spec.CompareFunc));
-	}
+	REFLECT_EXTERN(FTextureCreateInfo)
 
 } // namespace BHive

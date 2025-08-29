@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/Core.h"
-#include "Texture.h"
 #include "core/math/Math.h"
+#include "Texture.h"
 
 namespace BHive
 {
@@ -11,7 +11,7 @@ namespace BHive
 
 	struct FFramebufferTexture
 	{
-		FTextureSpecification mSpecification{};
+		FTextureCreateInfo CreateInfo{};
 		ETextureType TextureType = ETextureType::TEXTURE_2D;
 	};
 
@@ -22,6 +22,7 @@ namespace BHive
 
 	struct BHIVE_API FramebufferAttachments
 	{
+
 		FramebufferAttachments() = default;
 		FramebufferAttachments(std::initializer_list<FFramebufferTexture> attachments)
 			: Attachments(attachments)
@@ -34,16 +35,19 @@ namespace BHive
 			return *this;
 		}
 
-		FramebufferAttachments &attach(const FTextureSpecification &specification, ETextureType type = ETextureType::TEXTURE_2D)
+		FramebufferAttachments &attach(const FTextureCreateInfo &create_info, ETextureType type = ETextureType::TEXTURE_2D)
 		{
-			Attachments.push_back(FFramebufferTexture{specification, type});
+			Attachments.push_back(FFramebufferTexture{create_info, type});
 			return *this;
 		}
+
+		FramebufferAttachments &attach(const FRenderbufferTexture &format) { mRenderBufferSpecification = format; }
 
 		const std::vector<FFramebufferTexture> &GetAttachments() const { return Attachments; }
 
 	protected:
 		std::vector<FFramebufferTexture> Attachments;
+		FRenderbufferTexture mRenderBufferSpecification;
 
 		friend class Framebuffer;
 	};
@@ -53,7 +57,6 @@ namespace BHive
 		FramebufferAttachments Attachments;
 		uint32_t Width = 800, Height = 600, Depth = 1;
 		uint32_t Samples = 1;
-		FRenderbufferTexture mRenderBufferSpecification;
 	};
 
 	class BHIVE_API Framebuffer
@@ -97,8 +100,12 @@ namespace BHive
 		virtual void Release();
 
 	private:
-		std::vector<FFramebufferTexture> mColorSpecifications{};
+		std::vector<FFramebufferTexture> mColorAttachmentSpecifications{};
+		std::vector<FTextureAPIInfo> mColorAttachmentAPIInfos;
+
 		FFramebufferTexture mDepthSpecification{};
+		FTextureAPIInfo mDepthAPIInfo;
+
 		FRenderbufferTexture mRenderBufferSpecification{};
 
 		std::vector<Ref<Texture>> mColorAttachments;

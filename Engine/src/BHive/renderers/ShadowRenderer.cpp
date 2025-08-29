@@ -1,12 +1,12 @@
-#include "ShadowRenderer.h"
+#include "core/math/Frustum.h"
 #include "gfx/Framebuffer.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/StorageBuffer.h"
-#include "core/math/Frustum.h"
-#include "Renderer.h"
 #include "material/Material.h"
+#include "Renderer.h"
+#include "ShadowRenderer.h"
 
 #define SHADOW_SSBO_BINDING 5
 #define DIRECTIONAL_SHADOWMAP_SIZE 1024
@@ -61,7 +61,7 @@ namespace BHive
 		FramebufferSpecification spot_shadow_fbo_spec{.Width = SPOT_SHADOWMAP_SIZE, .Height = SPOT_SHADOWMAP_SIZE, .Depth = max_lights};
 		FramebufferSpecification point_shadow_fbo_spec{.Width = POINT_SHADOWMAP_SIZE, .Height = POINT_SHADOWMAP_SIZE, .Depth = max_lights * 6};
 
-		FTextureSpecification shadow_texture_specs{
+		FTextureCreateInfo shadow_texture_specs{
 			.InternalFormat = EFormat::DEPTH_COMPONENT_32F,
 			.WrapMode = EWrapMode::CLAMP_TO_EDGE,
 			.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,

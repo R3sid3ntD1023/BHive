@@ -4,7 +4,7 @@
 namespace BHive
 {
 
-	uint32_t GetTextureCompareMode(ETextureCompareMode mode)
+	uint32_t TextureUtils::GetAPITextureCompareMode(ETextureCompareMode mode)
 	{
 		switch (mode)
 		{
@@ -19,7 +19,7 @@ namespace BHive
 		return 0;
 	}
 
-	uint32_t GetTextureCompareFunc(ETextureCompareFunc func)
+	uint32_t TextureUtils::GetAPITextureCompareFunc(ETextureCompareFunc func)
 	{
 		switch (func)
 		{
@@ -46,7 +46,7 @@ namespace BHive
 		return 0;
 	}
 
-	uint32_t GetTextureFormat(ETextureFormat format)
+	uint32_t TextureUtils::GetTextureFormat(ETextureFormat format)
 	{
 		switch (format)
 		{
@@ -66,7 +66,7 @@ namespace BHive
 		return 0;
 	}
 
-	uint32_t GetGLFilterMode(EMinFilter mode)
+	uint32_t TextureUtils::GetAPIFilterMode(EMinFilter mode)
 	{
 		switch (mode)
 		{
@@ -90,7 +90,7 @@ namespace BHive
 		return 0;
 	}
 
-	uint32_t GetGLFilterMode(EMagFilter mode)
+	uint32_t TextureUtils::GetAPIFilterMode(EMagFilter mode)
 	{
 		switch (mode)
 		{
@@ -106,7 +106,7 @@ namespace BHive
 		return 0;
 	}
 
-	uint32_t GetGLWrapMode(EWrapMode mode)
+	uint32_t TextureUtils::GetAPIWrapMode(EWrapMode mode)
 	{
 		switch (mode)
 		{
@@ -125,7 +125,7 @@ namespace BHive
 		return 0;
 	}
 
-	uint32_t GetGLFormat(EFormat format)
+	uint32_t TextureUtils::GetAPIFormat(EFormat format)
 	{
 		switch (format)
 		{
@@ -157,9 +157,7 @@ namespace BHive
 		case BHive::EFormat::DEPTH24_STENCIL8:
 			return GL_DEPTH_STENCIL;
 		case BHive::EFormat::DEPTH_COMPONENT:
-			return GL_DEPTH_COMPONENT;
 		case BHive::EFormat::DEPTH_COMPONENT_32F:
-			return GL_DEPTH_COMPONENT;
 		case BHive::EFormat::DEPTH_COMPONENT_24:
 			return GL_DEPTH_COMPONENT;
 			break;
@@ -171,7 +169,7 @@ namespace BHive
 		return 0;
 	}
 
-	uint32_t GetGLInternalFormat(EFormat format)
+	uint32_t TextureUtils::GetAPIInternalFormat(EFormat format)
 	{
 		switch (format)
 		{
@@ -226,7 +224,7 @@ namespace BHive
 		return 0;
 	}
 
-	uint32_t GetGLType(EFormat format)
+	uint32_t TextureUtils::GetAPIType(EFormat format)
 	{
 		switch (format)
 		{
@@ -263,29 +261,12 @@ namespace BHive
 		return 0;
 	}
 
-	EFormat BHive::GetFormat(uint32_t channels)
-	{
-		switch (channels)
-		{
-		case 1:
-			return EFormat::R8;
-		case 2:
-			return EFormat::RG8;
-		case 3:
-			return EFormat::RGB8;
-		case 4:
-			return EFormat::RGBA8;
-		}
-		ASSERT(false);
-		return (EFormat)0;
-	}
-
-	bool IsDepthFormat(EFormat format)
+	bool TextureUtils::IsDepthFormat(EFormat format)
 	{
 		return format == EFormat::Depth || format == EFormat::DEPTH_COMPONENT_32F || format == EFormat::DEPTH_COMPONENT_24;
 	}
 
-	uint32_t GetDepthAttachmentType(EFormat format)
+	uint32_t TextureUtils::GetAPIDepthAttachmentType(EFormat format)
 	{
 		switch (format)
 		{
@@ -302,56 +283,7 @@ namespace BHive
 		return 0;
 	}
 
-	EFormat GetFormatFromChannels(bool hdr, int channels)
-	{
-		if (hdr)
-		{
-			switch (channels)
-			{
-			case 3:
-				return EFormat::RGB32F;
-			case 4:
-				return EFormat::RGBA32F;
-			default:
-				break;
-			}
-		}
-		else
-		{
-			switch (channels)
-			{
-			case 1:
-				return EFormat::R8;
-			case 2:
-				return EFormat::RG8;
-			case 3:
-				return EFormat::RGB8;
-			case 4:
-				return EFormat::RGBA8;
-			default:
-				break;
-			}
-		}
-
-		switch (channels)
-		{
-		case 1:
-			return EFormat::R8;
-		case 2:
-			return EFormat::RG8;
-		case 3:
-			return EFormat::RGB8;
-		case 4:
-			return EFormat::RGBA8;
-		default:
-			break;
-		}
-
-		ASSERT(false);
-		return EFormat::Invalid;
-	}
-
-	uint32_t GetGLAccess(EImageAccess access)
+	uint32_t TextureUtils::GetAPIImageAccess(EImageAccess access)
 	{
 		switch (access)
 		{

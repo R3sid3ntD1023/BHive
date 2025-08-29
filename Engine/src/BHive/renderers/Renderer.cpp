@@ -1,6 +1,6 @@
-#include "Renderer.h"
-#include "gfx/textures/Texture2D.h"
 #include "buffers/ModelBuffer.h"
+#include "gfx/textures/Texture2D.h"
+#include "Renderer.h"
 
 namespace BHive
 {
@@ -17,17 +17,17 @@ namespace BHive
 		RenderData()
 		{
 			uint32_t white = 0xFFFFFFFF;
-			FTextureSpecification texture_specs{};
-			texture_specs.Channels = 3;
-			texture_specs.InternalFormat = EFormat::RGB8;
+			FTextureCreateInfo create_info{};
+			create_info.Channels = 3;
+			create_info.InternalFormat = EFormat::RGB8;
 
-			WhiteTexture = CreateRef<Texture2D>(1, 1, texture_specs, &white, sizeof(uint32_t));
+			WhiteTexture = CreateRef<Texture2D>(1, 1, create_info, &white, sizeof(uint32_t));
 
 			uint32_t black = 0xFF000000;
-			BlackTexture = CreateRef<Texture2D>(1, 1, texture_specs, &black, sizeof(uint32_t));
+			BlackTexture = CreateRef<Texture2D>(1, 1, create_info, &black, sizeof(uint32_t));
 
 			uint32_t blue = 0xFF0000FF;
-			BlueTexture = CreateRef<Texture2D>(1, 1, texture_specs, &blue, sizeof(uint32_t));
+			BlueTexture = CreateRef<Texture2D>(1, 1, create_info, &blue, sizeof(uint32_t));
 
 			Camera.Init();
 			Model.Init();

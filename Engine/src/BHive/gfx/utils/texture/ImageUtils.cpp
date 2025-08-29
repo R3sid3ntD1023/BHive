@@ -1,9 +1,9 @@
-#include "ImageUtils.h"
+#include "core/threading/Threading.h"
 #include "gfx/Framebuffer.h"
 #include "gfx/textures/Texture2D.h"
-#include <stb_image_write.h>
+#include "ImageUtils.h"
 #include <glad/glad.h>
-#include "core/threading/Threading.h"
+#include <stb_image_write.h>
 
 namespace BHive
 {
@@ -50,7 +50,7 @@ namespace BHive
 
 	void ImageUtils::SaveImage(const std::filesystem::path &path, const Ref<Texture2D> &texture)
 	{
-		auto &specs = texture->GetSpecification();
+		auto &specs = texture->GetInfo();
 		const auto c = specs.Channels;
 		const auto w = texture->GetWidth();
 		const auto h = texture->GetHeight();

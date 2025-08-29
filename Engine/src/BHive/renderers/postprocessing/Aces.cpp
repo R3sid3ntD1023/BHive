@@ -32,10 +32,9 @@ namespace BHive
 
 	void Aces::Initialize(uint32_t w, uint32_t h)
 	{
-		FTextureSpecification specs;
+		FTextureCreateInfo specs;
 		specs.Channels = 3;
 		specs.InternalFormat = EFormat::R11_G11_B10;
-		specs.ImageAccess = EImageAccess::WRITE;
 		mOutput = CreateRef<Texture2D>(w, h, specs);
 	}
 } // namespace BHive

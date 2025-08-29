@@ -1,7 +1,7 @@
 #include "Font.h"
-#include <glad/glad.h>
-#include <gfx/textures/Texture2D.h>
 #include "MSDFData.h"
+#include <gfx/textures/Texture2D.h>
+#include <glad/glad.h>
 
 using namespace msdf_atlas;
 
@@ -9,9 +9,7 @@ namespace BHive
 {
 
 	template <typename T, typename S, int N, msdf_atlas::GeneratorFunction<S, N> GenFunc>
-	Ref<Texture2D> CreateAndCacheAtlas(
-		float fontSize, const std::vector<msdf_atlas::GlyphGeometry> &glyphs, const msdf_atlas::FontGeometry &fontGeomerty,
-		uint32_t w, uint32_t h)
+	Ref<Texture2D> CreateAndCacheAtlas(float fontSize, const std::vector<msdf_atlas::GlyphGeometry> &glyphs, const msdf_atlas::FontGeometry &fontGeomerty, uint32_t w, uint32_t h)
 	{
 
 		GeneratorAttributes attributes;
@@ -25,11 +23,11 @@ namespace BHive
 
 		msdfgen::BitmapConstRef<T, N> bitmap = (msdfgen::BitmapConstRef<T, N>)generator.atlasStorage();
 
-		FTextureSpecification specification{};
-		specification.InternalFormat = EFormat::RGB8;
-		specification.Channels = 3;
+		FTextureCreateInfo create_info{};
+		create_info.InternalFormat = EFormat::RGB8;
+		create_info.Channels = 3;
 
-		Ref<Texture2D> texture = CreateRef<Texture2D>(w, h, specification, bitmap.pixels, w * h * 3);
+		Ref<Texture2D> texture = CreateRef<Texture2D>(w, h, create_info, bitmap.pixels, w * h * 3);
 		return texture;
 	};
 
@@ -100,8 +98,7 @@ namespace BHive
 			glyph.edgeColoring(msdfgen::edgeColoringInkTrap, DEFAULT_ANGLE_THRESHOLD, glyphSeed);
 		}
 
-		mTextureAtlas = CreateAndCacheAtlas<uint8_t, float, 3, msdf_atlas::msdfGenerator>(
-			(float)emSize, mData->Glyphs, mData->FontGeometry, w, h);
+		mTextureAtlas = CreateAndCacheAtlas<uint8_t, float, 3, msdf_atlas::msdfGenerator>((float)emSize, mData->Glyphs, mData->FontGeometry, w, h);
 
 		msdfgen::destroyFont(font);
 		msdfgen::deinitializeFreetype(ft);

@@ -1,18 +1,17 @@
 #include "Texture2DMultisample.h"
 #include <glad/glad.h>
-#include "gfx/TextureUtils.h"
 
 namespace BHive
 {
-	Texture2DMultisample::Texture2DMultisample(
-		uint32_t width, uint32_t height, uint32_t samples, const FTextureSpecification &specs)
+	Texture2DMultisample::Texture2DMultisample(uint32_t width, uint32_t height, uint32_t samples, const FTextureCreateInfo &create_info)
 		: mWidth(width),
 		  mHeight(height),
 		  mSamples(samples),
-		  mSpecification(specs)
+		  mCreateInfo(create_info),
+		  mInfo(create_info)
 	{
 		glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &mTextureID);
-		glTextureStorage2DMultisample(mTextureID, samples, GetGLInternalFormat(specs.InternalFormat), width, height, false);
+		glTextureStorage2DMultisample(mTextureID, samples, mInfo.InternalFormat, width, height, false);
 	}
 
 	Texture2DMultisample::~Texture2DMultisample()

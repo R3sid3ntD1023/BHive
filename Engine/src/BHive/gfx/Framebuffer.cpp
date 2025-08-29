@@ -1,31 +1,33 @@
 #include "Framebuffer.h"
-#include <glad/glad.h>
-#include "TextureUtils.h"
 #include "textures/Texture2D.h"
 #include "textures/Texture2DArray.h"
+#include "textures/Texture2DMultisample.h"
 #include "textures/TextureCube.h"
 #include "textures/TextureCubeArray.h"
-#include "textures/Texture2DMultisample.h"
+#include "utils/texture/TextureUtils.h"
+#include <glad/glad.h>
 
 namespace BHive
 {
 	static const uint32_t sMaxFramebufferSize = 8192;
 
-	Ref<Texture> CreateFramebufferTexture(ETextureType type, uint32_t w, uint32_t h, uint32_t d, uint32_t samples, FFramebufferTexture specification)
+	Ref<Texture> CreateFramebufferTexture(uint32_t w, uint32_t h, uint32_t d, uint32_t samples, FFramebufferTexture specification)
 	{
+		auto &type = specification.TextureType;
+
 		if (samples > 1 && type == ETextureType::TEXTURE_2D)
-			return CreateRef<Texture2DMultisample>(w, h, samples, specification.mSpecification);
+			return CreateRef<Texture2DMultisample>(w, h, samples, specification.CreateInfo);
 
 		switch (type)
 		{
 		case ETextureType::TEXTURE_2D:
-			return CreateRef<Texture2D>(w, h, specification.mSpecification);
+			return CreateRef<Texture2D>(w, h, specification.CreateInfo);
 		case ETextureType::TEXTURE_CUBE_MAP:
-			return CreateRef<TextureCube>(w, specification.mSpecification);
+			return CreateRef<TextureCube>(w, specification.CreateInfo);
 		case ETextureType::TEXTURE_2D_ARRAY:
-			return CreateRef<Texture2DArray>(w, h, d, specification.mSpecification);
+			return CreateRef<Texture2DArray>(w, h, d, specification.CreateInfo);
 		case ETextureType::TEXTURE_CUBE_MAP_ARRAY:
-			return CreateRef<TextureCubeArray>(w, h, d, specification.mSpecification);
+			return CreateRef<TextureCubeArray>(w, h, d, specification.CreateInfo);
 		default:
 			break;
 		}
@@ -39,13 +41,15 @@ namespace BHive
 	{
 		for (auto &spec : mSpecification.Attachments.GetAttachments())
 		{
-			if (IsDepthFormat(spec.mSpecification.InternalFormat))
+			if (TextureUtils::IsDepthFormat(spec.CreateInfo.InternalFormat))
 			{
 				mDepthSpecification = spec;
+				mDepthAPIInfo = spec.CreateInfo;
 				continue;
 			}
 
-			mColorSpecifications.push_back(spec);
+			mColorAttachmentSpecifications.emplace_back(spec);
+			mColorAttachmentAPIInfos.emplace_back(spec.CreateInfo);
 		}
 
 		Initialize();
@@ -127,15 +131,13 @@ namespace BHive
 
 	void Framebuffer::ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, void *data) const
 	{
-		ASSERT(attachmentIndex < mColorSpecifications.size());
+		ASSERT(attachmentIndex < mColorAttachmentSpecifications.size());
 
-		auto &spec = mColorSpecifications[attachmentIndex];
-		auto format = GetGLFormat(spec.mSpecification.InternalFormat);
-		auto type = GetGLType(spec.mSpecification.InternalFormat);
+		auto &spec = mColorAttachmentAPIInfos[attachmentIndex];
 
 		glNamedFramebufferReadBuffer(mFramebufferID, GL_COLOR_ATTACHMENT0 + attachmentIndex);
 		glBindFramebuffer(GL_FRAMEBUFFER, mFramebufferID);
-		glReadPixels(x, y, w, h, format, type, data);
+		glReadPixels(x, y, w, h, spec.Format, spec.Type, data);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
@@ -166,23 +168,22 @@ namespace BHive
 			Release();
 		}
 
-		auto numColorAttachments = mColorSpecifications.size();
+		auto numColorAttachments = mColorAttachmentSpecifications.size();
 		if (numColorAttachments)
 		{
 			mColorAttachments.resize(numColorAttachments);
 			for (size_t i = 0; i < numColorAttachments; i++)
 			{
-				auto &specification = mColorSpecifications[i];
+				auto &specs = mColorAttachmentSpecifications[i];
 				auto &attachment = mColorAttachments[i];
 
-				attachment = CreateFramebufferTexture(specification.TextureType, mSpecification.Width, mSpecification.Height, mSpecification.Depth, mSpecification.Samples, specification);
+				attachment = CreateFramebufferTexture(mSpecification.Width, mSpecification.Height, mSpecification.Depth, mSpecification.Samples, specs);
 			}
 		}
 
-		if (mDepthSpecification.mSpecification.InternalFormat != EFormat::Invalid)
+		if (mDepthSpecification.CreateInfo.InternalFormat != EFormat::Invalid)
 		{
-			mDepthAttachment =
-				CreateFramebufferTexture(mDepthSpecification.TextureType, mSpecification.Width, mSpecification.Height, mSpecification.Depth, mSpecification.Samples, mDepthSpecification);
+			mDepthAttachment = CreateFramebufferTexture(mSpecification.Width, mSpecification.Height, mSpecification.Depth, mSpecification.Samples, mDepthSpecification);
 		}
 
 		// create framebuffer and attach textures
@@ -195,7 +196,7 @@ namespace BHive
 
 		if (mDepthAttachment)
 		{
-			glNamedFramebufferTexture(mFramebufferID, GetDepthAttachmentType(mDepthSpecification.mSpecification.InternalFormat), *mDepthAttachment, 0);
+			glNamedFramebufferTexture(mFramebufferID, TextureUtils::GetAPIDepthAttachmentType(mDepthSpecification.CreateInfo.InternalFormat), *mDepthAttachment, 0);
 		}
 
 		if (num_attachments > 1)
@@ -214,7 +215,7 @@ namespace BHive
 
 		if (mRenderBufferSpecification.Format != EFormat::Invalid && !mDepthAttachment)
 		{
-			auto depth_format = GetDepthAttachmentType(mRenderBufferSpecification.Format);
+			auto depth_format = TextureUtils::GetAPIDepthAttachmentType(mRenderBufferSpecification.Format);
 			glCreateRenderbuffers(1, &mRenderbufferID);
 			glNamedRenderbufferStorage(mRenderbufferID, depth_format, mSpecification.Width, mSpecification.Height);
 			glNamedFramebufferRenderbuffer(mFramebufferID, depth_format, GL_RENDERBUFFER, mRenderbufferID);

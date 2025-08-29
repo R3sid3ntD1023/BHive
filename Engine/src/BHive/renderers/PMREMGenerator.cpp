@@ -28,7 +28,7 @@ namespace BHive
 		mEnvironmentCapture = CreateRef<RenderTargetCube>(ENVIRONMENT_MAP_SIZE, EFormat::RGBA32F);
 		mIrradianceCapture = CreateRef<RenderTargetCube>(IRRANDIANCE_CUBEMAP_SIZE, EFormat::RGBA32F);
 
-		FTextureSpecification pre_filter_specification;
+		FTextureCreateInfo pre_filter_specification;
 		pre_filter_specification.InternalFormat = EFormat::RGBA16F;
 		pre_filter_specification.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		pre_filter_specification.MinFilter = EMinFilter::MIPMAP_LINEAR;
@@ -39,12 +39,7 @@ namespace BHive
 
 		mBRDFLUTTexture = CreateRef<Texture2D>(
 			BRDF_LUT_SIZE, BRDF_LUT_SIZE,
-			FTextureSpecification{
-				.InternalFormat = EFormat::RG16F,
-				.WrapMode = EWrapMode::CLAMP_TO_EDGE,
-				.MinFilter = EMinFilter::NEAREST,
-				.MagFilter = EMagFilter::NEAREST,
-			});
+			FTextureCreateInfo{.InternalFormat = EFormat::RG16F, .WrapMode = EWrapMode::CLAMP_TO_EDGE, .MinFilter = EMinFilter::NEAREST, .MagFilter = EMagFilter::NEAREST});
 
 		mCube = CreateRef<PCube>(2.0f);
 

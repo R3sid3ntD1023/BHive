@@ -7,7 +7,7 @@ namespace BHive
 	class Texture2DMultisample : public Texture
 	{
 	public:
-		Texture2DMultisample(uint32_t width, uint32_t height, uint32_t samples, const FTextureSpecification &specs);
+		Texture2DMultisample(uint32_t width, uint32_t height, uint32_t samples, const FTextureCreateInfo &create_info);
 
 		~Texture2DMultisample();
 
@@ -27,11 +27,12 @@ namespace BHive
 
 		virtual void GenerateMipMaps() const;
 
-		virtual const FTextureSpecification &GetSpecification() const { return mSpecification; }
+		virtual const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
 
 	private:
 		uint32_t mWidth = 0, mHeight = 0, mSamples = 1;
-		FTextureSpecification mSpecification;
+		FTextureCreateInfo mCreateInfo;
+		FTextureAPIInfo mInfo;
 		uint32_t mTextureID = 0;
 	};
 } // namespace BHive

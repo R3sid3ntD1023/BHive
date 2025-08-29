@@ -3,7 +3,6 @@
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/textures/Texture2D.h"
-#include "gfx/TextureUtils.h"
 #include "gfx/UniformBuffer.h"
 
 namespace BHive
@@ -88,10 +87,9 @@ namespace BHive
 
 		Reset();
 
-		FTextureSpecification specs{};
+		FTextureCreateInfo specs{};
 		specs.InternalFormat = EFormat::R11_G11_B10;
 		specs.WrapMode = EWrapMode::CLAMP_TO_BORDER;
-		specs.ImageAccess = EImageAccess::READ_WRITE;
 
 		mPreFilterTexture = CreateRef<Texture2D>(width, height, specs);
 

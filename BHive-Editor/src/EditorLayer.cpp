@@ -32,7 +32,7 @@
 #include "windows/LogWindow.h"
 #include "windows/SceneHeirarchyWindow.h"
 
-#include "utils/ImageUtils.h"
+#include "gfx/utils/texture/ImageUtils.h"
 #include <Windows.h>
 
 namespace BHive

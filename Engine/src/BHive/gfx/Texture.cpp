@@ -1,4 +1,6 @@
 #include "Texture.h"
+#include "utils/texture/TextureUtils.h"
+#include <glad/glad.h>
 
 namespace BHive
 {

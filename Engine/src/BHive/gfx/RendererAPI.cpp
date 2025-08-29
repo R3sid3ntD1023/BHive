@@ -65,9 +65,11 @@ namespace BHive
 		{
 		case GL_DEBUG_SEVERITY_HIGH:
 			LOG_CRITICAL("{} {} {} {}", id, source_name, type_name, message);
+			ASSERT(false);
 			return;
 		case GL_DEBUG_SEVERITY_MEDIUM:
 			LOG_ERROR("{} {} {} {}", id, source_name, type_name, message);
+			ASSERT(false);
 			return;
 		case GL_DEBUG_SEVERITY_LOW:
 			LOG_WARN("{} {} {} {}", id, source_name, type_name, message);

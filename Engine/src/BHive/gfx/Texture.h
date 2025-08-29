@@ -1,9 +1,9 @@
 #pragma once
 
-#include "core/Core.h"
 #include "asset/Asset.h"
-#include "TextureSpecification.h"
 #include "core/Buffer.h"
+#include "core/Core.h"
+#include "TextureSpecification.h"
 
 namespace BHive
 {
@@ -35,7 +35,7 @@ namespace BHive
 
 		virtual void GenerateMipMaps() const = 0;
 
-		virtual const FTextureSpecification &GetSpecification() const = 0;
+		virtual const FTextureCreateInfo &GetInfo() const = 0;
 
 		operator uint32_t() const { return GetRendererID(); }
 
