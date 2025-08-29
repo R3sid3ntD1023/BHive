@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	class PipelineShader;
+	class Shader;
 
 	class Pipeline
 	{
@@ -22,7 +22,7 @@ namespace BHive
 
 		void UnBind();
 
-		void UseShaderStage(EShaderStage stage, const Ref<PipelineShader> &shader);
+		void UseShaderStage(EShaderStage stage, const Ref<Shader> &shader);
 
 	private:
 		uint32_t mPipelineID{0};

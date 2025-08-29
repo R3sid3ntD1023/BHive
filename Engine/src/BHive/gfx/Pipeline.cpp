@@ -32,7 +32,7 @@ namespace BHive
 		glBindProgramPipeline(0);
 	}
 
-	void Pipeline::UseShaderStage(EShaderStage stage, const Ref<PipelineShader> &shader)
+	void Pipeline::UseShaderStage(EShaderStage stage, const Ref<Shader> &shader)
 	{
 		glUseProgramStages(mPipelineID, stage, shader->GetRendererID());
 	}

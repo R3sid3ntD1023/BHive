@@ -1,28 +1,13 @@
+#include "core/subsystem/SubSystem.h"
 #include "Shader.h"
 #include "ShaderManager.h"
-
-#define SHADER_EXTENSION ".glsl"
+#include "utils/shader/ShaderTimeCache.h"
 
 namespace BHive
 {
-	void ShaderManager::LoadFiles(const std::filesystem::path &directory)
+	ShaderManager::ShaderManager()
 	{
-		if (!std::filesystem::exists(directory))
-		{
-			ASSERT(false, directory);
-		}
-
-		for (auto &entry : std::filesystem::recursive_directory_iterator(directory))
-		{
-			auto path = entry.path();
-			auto extension = path.extension().string();
-
-			if (extension == SHADER_EXTENSION)
-			{
-				Load(path);
-				LOG_INFO("Loaded shader file {}", path);
-			}
-		}
+		AddSubSystem<ShaderTimeCache>();
 	}
 
 	void ShaderManager::Add(const char *name, const Ref<Shader> &shader)

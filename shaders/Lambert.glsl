@@ -90,7 +90,6 @@ layout(location = 0) in struct VS_OUT
 	vec3 CameraPosition;
 } vs_in;
 
-
 layout(location = 0) out vec4 fs_out;
 
 void main()

@@ -28,11 +28,6 @@ namespace BHive
 			return shaderc_glsl_infer_from_source;
 		}
 
-		std::filesystem::path GetCacheDirectory()
-		{
-			return "cache/shaders";
-		}
-
 		const char *GetCacheOpenglFileExtension(EShaderStage stage)
 		{
 			switch (stage)
@@ -146,7 +141,7 @@ namespace BHive
 
 		void CreateCacheDirectory()
 		{
-			auto cache_dir = GetCacheDirectory();
+			auto cache_dir = ShaderUtils::GetCacheDirectory();
 			if (!std::filesystem::exists(cache_dir))
 				std::filesystem::create_directories(cache_dir);
 		}
@@ -165,8 +160,9 @@ namespace BHive
 
 	void ShaderCompiler::CompileToVulkan(const std::filesystem::path &filename, EShaderStage stage, const std::string &src, std::vector<uint32_t> &binary)
 	{
+
 		auto name = filename.stem().string();
-		auto cache_path = utils::GetCacheDirectory() / name / (name + utils::GetCacheVulkanFileExtension(stage));
+		auto cache_path = ShaderUtils::GetCacheDirectory() / name / (name + utils::GetCacheVulkanFileExtension(stage));
 		if (std::filesystem::exists(cache_path))
 		{
 			FileSystem::ReadFile(cache_path, binary);
@@ -188,8 +184,9 @@ namespace BHive
 
 	void ShaderCompiler::CompileToOpengl(const std::filesystem::path &filename, EShaderStage stage, std::string &src, const std::vector<uint32_t> &spirv, std::vector<uint32_t> &opengl_spirv)
 	{
+
 		auto name = filename.stem().string();
-		auto cache_path = utils::GetCacheDirectory() / name / (name + utils::GetCacheOpenglFileExtension(stage));
+		auto cache_path = ShaderUtils::GetCacheDirectory() / name / (name + utils::GetCacheOpenglFileExtension(stage));
 		if (std::filesystem::exists(cache_path))
 		{
 			FileSystem::ReadFile(cache_path, opengl_spirv);
@@ -213,55 +210,4 @@ namespace BHive
 		}
 	}
 
-	void ShaderCompiler::WriteProgramBinary(const std::filesystem::path &filename, uint32_t program)
-	{
-		auto name = filename.stem().string();
-		auto cached_path = utils::GetCacheDirectory() / name / (name + ".cached.program");
-		if (!std::filesystem::exists(cached_path.parent_path()))
-		{
-			std::filesystem::create_directories(cached_path.parent_path());
-		}
-
-		GLint binary_size = 0;
-		GLenum binary_format;
-		glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &binary_size);
-
-		std::vector<uint32_t> program_binary(binary_size / sizeof(uint32_t));
-		glGetProgramBinary(program, binary_size, nullptr, &binary_format, program_binary.data());
-
-		std::ofstream out(cached_path, std::ios::out | std::ios::binary | std::ios::ate);
-		out.write(reinterpret_cast<const char *>(&binary_format), sizeof(GLenum));
-		out.write(reinterpret_cast<const char *>(&binary_size), sizeof(GLint));
-		out.write(reinterpret_cast<const char *>(program_binary.data()), binary_size);
-
-		LOG_INFO("Wrote Program Binary to: {}", cached_path);
-	}
-
-	bool ShaderCompiler::ReadProgramBinary(const std::filesystem::path &filename, uint32_t &program)
-	{
-		auto name = filename.stem().string();
-		auto cached_path = utils::GetCacheDirectory() / name / (name + ".cached.program");
-		if (!std::filesystem::exists(cached_path))
-			return false;
-
-		GLenum format;
-		GLint size;
-		std::vector<uint32_t> data;
-
-		std::ifstream in(cached_path, std::ios::in | std::ios::binary);
-		in.read(reinterpret_cast<char *>(&format), sizeof(GLenum));
-		in.read(reinterpret_cast<char *>(&size), sizeof(GLint));
-
-		ASSERT(size);
-		data.resize(size / sizeof(uint32_t));
-
-		in.read(reinterpret_cast<char *>(data.data()), size);
-
-		program = glCreateProgram();
-		glProgramBinary(program, format, data.data(), size);
-
-		LOG_INFO("Read Program Binary from: {}", cached_path);
-
-		return true;
-	}
 } // namespace BHive

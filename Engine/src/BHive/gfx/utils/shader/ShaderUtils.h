@@ -20,5 +20,7 @@ namespace BHive
 		using PreProcessData = std::unordered_map<EShaderStage, std::string>;
 
 		static PreProcessData PreProcess(const std::string &source, const std::string &preprocessors = "");
+
+		static std::filesystem::path GetCacheDirectory();
 	};
 } // namespace BHive

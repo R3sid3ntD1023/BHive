@@ -14,13 +14,11 @@ namespace BHive
 	class ShaderManager
 	{
 	public:
-		ShaderManager() = default;
+		ShaderManager();
 		ShaderManager(const ShaderManager &) = delete;
 
 		using Shaders = std::unordered_map<std::string, Ref<Shader>>;
 		using ShaderMetaDatas = std::unordered_map<std::string, ShaderMetaData>;
-
-		void LoadFiles(const std::filesystem::path &directory);
 
 		void Add(const char *name, const Ref<Shader> &shader);
 

@@ -4,28 +4,11 @@
 #include "ShaderReflection.h"
 #include "ShaderStages.h"
 #include "utils/shader/ShaderUniformSetter.h"
-#include <glm/glm.hpp>
 
 namespace BHive
 {
-	class ShaderBase
+	class BHIVE_API Shader
 	{
-	public:
-		virtual ~ShaderBase() = default;
-
-		template <typename T>
-		void SetUniform(const std::string &name, const T &val)
-		{
-			if (GetSetter())
-				GetSetter()->SetUniform<T>(name, val);
-		}
-
-		virtual uint32_t GetRendererID() const = 0;
-
-		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1) {}
-
-	protected:
-		virtual ShaderUniformSetter *GetSetter() const = 0;
 
 		struct FShaderData
 		{
@@ -33,11 +16,14 @@ namespace BHive
 			std::vector<uint32_t> VulkanSpirv;
 			std::vector<uint32_t> OpenglSpirv;
 			std::string OpenglCompiledSource;
-		};
-	};
 
-	class BHIVE_API Shader : public ShaderBase
-	{
+			template <typename A>
+			void Serialize(A &ar)
+			{
+				ar(Code, VulkanSpirv, OpenglSpirv, OpenglCompiledSource);
+			}
+		};
+
 	public:
 		Shader(const std::filesystem::path &path);
 
@@ -47,17 +33,28 @@ namespace BHive
 
 		virtual void UnBind() const;
 
-		virtual uint32_t GetRendererID() const override { return mProgramID; }
+		virtual uint32_t GetRendererID() const { return mProgramID; }
+
+		uint32_t GetSeperableProgram(EShaderStage stage) const;
 
 		virtual const std::string &GetName() const { return mName; }
 
-		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1) override;
+		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1);
 
-		ShaderUniformSetter *GetSetter() const override;
+		template <typename T>
+		void SetUniform(const std::string &name, const T &val)
+		{
+			if (mUniformSetter)
+				mUniformSetter->SetUniform<T>(name, val);
+		}
 
 		virtual const FShaderReflectionData &GetRelectionData() const { return mReflectionData; }
 
 		operator uint32_t() const { return GetRendererID(); }
+
+		void Save(cereal::BinaryOutputArchive &ar) const;
+
+		void Load(cereal::BinaryInputArchive &ar);
 
 	private:
 		void Compile();
@@ -77,24 +74,11 @@ namespace BHive
 
 		std::unordered_map<EShaderStage, FShaderData> mSources;
 
+		std::unordered_map<EShaderStage, uint32_t> mSeperablePrograms;
+
 		Scope<ShaderUniformSetter> mUniformSetter;
-	};
 
-	class PipelineShader : public ShaderBase
-	{
-	public:
-		PipelineShader(const std::filesystem::path &path);
-
-		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1) override;
-
-		ShaderUniformSetter *GetSetter() const override;
-
-		virtual uint32_t GetRendererID() const override { return mShaderProgramID; }
-
-	private:
-		uint32_t mShaderProgramID{0};
-		Scope<ShaderUniformSetter> mUniformSetter;
-		std::unordered_map<EShaderStage, FShaderData> mSources;
+		friend class ShaderSerializer;
 	};
 
 } // namespace BHive
