@@ -2,19 +2,19 @@
 #include "PropertyLayout.h"
 #include <imgui.h>
 
+#include "asset_inspectors/asset_inspectors.h"
+#include "AssociativeContainer.h"
+#include "Inspector_Blackboard.h"
+#include "InspectorAsset.h"
 #include "InspectorBaseTypes.h"
+#include "InspectorComponent.h"
 #include "InspectorCoreTypes.h"
 #include "InspectorEnum.h"
-#include "InspectorPath.h"
-#include "InspectorType.h"
 #include "InspectorGameObject.h"
-#include "InspectorAsset.h"
+#include "InspectorPath.h"
 #include "InspectorSubClassOf.h"
-#include "AssociativeContainer.h"
+#include "InspectorType.h"
 #include "SequentialContainer.h"
-#include "Inspector_Blackboard.h"
-#include "InspectorComponent.h"
-#include "asset_inspectors/asset_inspectors.h"
 
 namespace BHive
 {
@@ -196,7 +196,7 @@ namespace BHive
 		if (opened)
 		{
 
-			PropertyLayout layout(property);
+			PropertyLayout layout(property, true, width);
 			auto meta_getter = [property](const rttr::variant &key) -> rttr::variant { return property.get_metadata(key); };
 			changed |= inspect(instance, prop_var, false, is_read_only, width, meta_getter);
 

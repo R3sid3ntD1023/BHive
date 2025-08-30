@@ -7,9 +7,11 @@
 #include "core/Layer.h"
 #include "EditorContentBrowser.h"
 #include "gfx/cameras/EditorCamera.h"
+#include "renderers/LineRenderer.h"
 
 namespace BHive
 {
+	class PickerRenderPass;
 	class SceneRenderer;
 	class ImSceneHierarchy;
 	class World;
@@ -39,10 +41,16 @@ namespace BHive
 		}
 	};
 
+	struct EditorStyles
+	{
+		FGrid GridStyle{.size = 40.f, .divisions = 20, .color = 0xffffffff, .stepcolor = 0xff808080};
+	};
+
 	class EditorLayer : public Layer
 	{
 	private:
 		Ref<SceneRenderer> mRenderer;
+		Ref<PickerRenderPass> mPickerRenderPass;
 
 		Ref<World> mEditorWorld;
 		Ref<World> mActiveWorld;
@@ -63,6 +71,7 @@ namespace BHive
 
 		FGizmoData mGizmo;
 		FWindowLayout mCurrentLayout{"default.ini"};
+		EditorStyles mStyles;
 
 	public:
 		void OnAttach() override;

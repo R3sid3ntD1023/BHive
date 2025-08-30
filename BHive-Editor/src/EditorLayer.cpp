@@ -9,8 +9,6 @@
 #include "core/Window.h"
 #include "dragdropfactories/DragDropFactory.h"
 #include "EditorLayer.h"
-#include "gfx/Framebuffer.h"
-#include "gfx/RenderCommand.h"
 #include "GUI/Gui.h"
 #include "gui/ImGuiExtended.h"
 #include "gui/PayloadHelpers.h"
@@ -31,9 +29,9 @@
 #include "windows/ImWindowSystem.h"
 #include "windows/LogWindow.h"
 #include "windows/SceneHeirarchyWindow.h"
+#include "renderers/render_passes/PickerRenderPass.h"
 
 #include "gfx/utils/texture/ImageUtils.h"
-#include <Windows.h>
 
 namespace BHive
 {
@@ -69,10 +67,11 @@ namespace BHive
 		auto &size = window.GetSize();
 
 		mRenderer = CreateRef<SceneRenderer>();
-		mRenderer->Initialize(size.x, size.y);
-		mRenderer->GetPickerRenderPass().OnEntityPicked.bind(this, &EditorLayer::OnGameObjectPicked);
+		mRenderer->Init(size);
 
-		RenderCommand::ClearColor(0.1f, 0.1f, 0.1f);
+		// add editor-only render passes
+		mPickerRenderPass = mRenderer->PushRenderPass<PickerRenderPass>();
+		mPickerRenderPass->OnEntityPicked.bind(this, &EditorLayer::OnGameObjectPicked);
 
 		float aspect = size.x / (float)size.y;
 		mEditorCamera = EditorCamera(45.f, aspect, .01f, 1000.f);
@@ -109,7 +108,7 @@ namespace BHive
 		if ((mViewportSize.x > 0.f && mViewportSize.y > 0.f) && (mViewportSize.x != size.x || mViewportSize.y != size.y))
 		{
 			mEditorCamera.Resize(mViewportSize.x, mViewportSize.y);
-			mRenderer->Resize(mViewportSize.x, mViewportSize.y);
+			mRenderer->Resize(mViewportSize);
 		}
 
 		if (mViewportHovered)
@@ -119,7 +118,7 @@ namespace BHive
 
 		mActiveWorld->Update(dt, mRenderer.get());
 
-		mRenderer->SubmitCommand([]() { LineRenderer::DrawGrid(FGrid{.size = 40.f, .divisions = 20, .color = 0xffffffff, .stepcolor = 0xff808080}); });
+		mRenderer->SubmitCommand([=]() { LineRenderer::DrawGrid(mStyles.GridStyle); });
 
 		mRenderer->End();
 	}
@@ -136,7 +135,7 @@ namespace BHive
 
 	void EditorLayer::OnGuiRender()
 	{
-		static bool edit_project_opened = false;
+		static std::unordered_map<const char *, bool> windows = {{"ProjectEditor", false}, {"StyleEditor", false}};
 
 		auto &window_system = SubSystemContext::Get().GetSubSystem<ImWindowSystem>();
 
@@ -222,7 +221,7 @@ namespace BHive
 			{
 				if (ImGui::MenuItem("Edit"))
 				{
-					edit_project_opened = true;
+					windows["ProjectEditor"] = true;
 				}
 				ImGui::EndMenu();
 			}
@@ -234,14 +233,36 @@ namespace BHive
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("Editor Style"))
+			{
+				windows["StyleEditor"] = true;
+
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMainMenuBar();
 		}
 
-		if (edit_project_opened)
+		if (windows["StyleEditor"])
 		{
-			ImGui::OpenPopup("Edit Project");
+			if (ImGui::Begin("StyleEditor", &windows["StyleEditor"]))
+			{
+				ImGui::SeparatorText("Grid");
 
-			if (ImGui::BeginPopupModal("Edit Project", &edit_project_opened, ImGuiWindowFlags_NoSavedSettings))
+				Inspect::get().inspect("Color", this, mStyles.GridStyle.color);
+				Inspect::get().inspect("StepColor", this, mStyles.GridStyle.stepcolor);
+				Inspect::get().inspect("Divisions", this, mStyles.GridStyle.divisions);
+				Inspect::get().inspect("size", this, mStyles.GridStyle.size);
+
+				ImGui::ShowStyleEditor();
+
+				ImGui::End();
+			}
+		}
+
+		if (windows["ProjectEditor"])
+		{
+			if (ImGui::Begin("ProjectEditor", &windows["ProjectEditor"], ImGuiWindowFlags_NoSavedSettings))
 			{
 				auto &config = Project::GetConfiguration();
 
@@ -251,7 +272,7 @@ namespace BHive
 					config.StartScene = scene->GetHandle();
 					Project::SaveProject();
 				}
-				ImGui::EndPopup();
+				ImGui::End();
 			}
 		}
 
@@ -565,7 +586,7 @@ namespace BHive
 						int mouse_x = (int)mx;
 						int mouse_y = (int)my;
 
-						mRenderer->GetPickerRenderPass().Pick({mouse_x, mouse_y});
+						mPickerRenderPass->Pick({mouse_x, mouse_y});
 					}
 				}
 			}

@@ -16,10 +16,6 @@ namespace BHive
 	public:
 		void Init() override;
 
-		void CreateResizableObjects(const glm::uvec2 &size) override;
-
-		void Resize(const glm::uvec2 &size) override;
-
 		void Render(const FMeshRenderDatas &data);
 
 		void Pick(const glm::uvec2 mousePos);

@@ -12,7 +12,7 @@ namespace BHive
 		mCamera = EditorCamera(45.0f, 1.0f, .01f, 1000.f);
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
-		mSceneRenderer->Initialize(300, 300);
+		mSceneRenderer->Init({300, 300});
 	}
 
 	void MeshEditor::OnUpdateContent()
@@ -23,7 +23,7 @@ namespace BHive
 		{
 			mViewportSize = mViewportPanelSize;
 			mCamera.Resize(mViewportSize.x, mViewportSize.y);
-			mSceneRenderer->Resize((unsigned)mViewportPanelSize.x, (unsigned)mViewportPanelSize.y);
+			mSceneRenderer->Resize(mViewportPanelSize);
 		}
 
 		mSceneRenderer->Begin(&mCamera, mCamera.GetView());

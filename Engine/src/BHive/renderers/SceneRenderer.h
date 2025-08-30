@@ -14,8 +14,7 @@ namespace BHive
 	class Texture;
 	class Texture2D;
 	class PQuad;
-	class Bloom;
-	class PostProcessor;
+
 	struct FTransform;
 	class PMREMGenerator;
 	class BaseMesh;
@@ -23,7 +22,9 @@ namespace BHive
 	class StaticMesh;
 	class SkeletalPose;
 	class MaterialTable;
+
 	class RenderPass;
+	class PostProcessRenderPass;
 
 	/**
 	 * @brief The SceneRenderer class is responsible for rendering the scene.
@@ -41,15 +42,11 @@ namespace BHive
 	public:
 		SceneRenderer() = default;
 
-		void Initialize(uint32_t width, uint32_t height);
+		void Init(const glm::uvec2 &size);
 
 		void Begin(const Camera *camera, const FTransform &view);
 
-		void SetEnvironmentMap(const Ref<Texture2D> &environment);
-
 		void End();
-
-		void AddPostProcessingEffect(const Ref<PostProcessor> &processor);
 
 		void SubmitLight(const FDirectionalLightCreateInfo &info);
 
@@ -61,7 +58,9 @@ namespace BHive
 
 		void SubmitCommand(const std::function<void()> cmd);
 
-		void Resize(uint32_t width, uint32_t height);
+		void Resize(const glm::uvec2 &size);
+
+		void SetEnvironmentMap(const Ref<Texture2D> &environment);
 
 		const Ref<Texture> &GetColorAttachment(uint32_t index = 0) const;
 
@@ -77,7 +76,7 @@ namespace BHive
 
 		void RenderToScreen();
 
-		glm::uvec2 GetSize() const;
+		void PushPostProcessRenderPass(const Ref<PostProcessRenderPass> &pass);
 
 		void PushRenderPass(const Ref<RenderPass> &render_pass);
 
@@ -88,6 +87,8 @@ namespace BHive
 			PushRenderPass(pass);
 			return pass;
 		}
+
+		const glm::uvec2 &GetSize() const { return mSize; }
 
 	private:
 		bool IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform);
@@ -100,23 +101,18 @@ namespace BHive
 		Ref<Framebuffer> mFramebuffer;
 		Ref<Framebuffer> mFinalFramebuffer; // Final framebuffer for post-processing effects
 		Ref<PQuad> mQuad;
-		Ref<Shader> mQuadShader;	  // Shader used for rendering the quad
-		glm::uvec2 mRenderSize{0, 0}; // Size of the renderer
+		Ref<Shader> mQuadShader; // Shader used for rendering the quad
 
-		// Post-processing effects
-		std::vector<Ref<PostProcessor>> mPostProcessingEffects; // effects for post-processing
 		Ref<struct FSceneRenderData> mSceneRenderData;
 
 		std::stack<std::function<void()>> mCommands;
 
+		std::vector<Ref<RenderPass>> mRenderPasses;
+		std::vector<Ref<PostProcessRenderPass>> mPostProcessRenderPasses;
+
 		static inline PMREMGenerator EnvironmentMapGenerator;
 		static inline Ref<Texture2D> sEnvironmentMap = nullptr; // Static environment map
 
-		std::vector<Ref<RenderPass>> mRenderPasses;
-
-		REFLECTABLE()
+		glm::uvec2 mSize;
 	};
-
-	REFLECT_EXTERN(SceneRenderer)
-	REFLECT_EXTERN(FRenderSettings)
 } // namespace BHive

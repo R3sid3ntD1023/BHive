@@ -3,10 +3,6 @@
 
 namespace BHive
 {
-	void RenderPass::Init()
-	{
-	}
-
 	void RenderPass::CreateResizableObjects(const glm::uvec2 &size)
 	{
 		mSize = size;
@@ -19,10 +15,6 @@ namespace BHive
 
 		if (mFrambuffer)
 			mFrambuffer->Resize(size.x, size.y);
-	}
-
-	void RenderPass::CreateFramebuffer()
-	{
 	}
 
 	bool RenderPass::IsEnabled() const

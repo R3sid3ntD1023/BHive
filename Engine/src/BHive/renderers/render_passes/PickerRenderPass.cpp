@@ -14,21 +14,6 @@ namespace BHive
 		ASSERT(mShader);
 	}
 
-	void PickerRenderPass::CreateResizableObjects(const glm::uvec2 &size)
-	{
-		ASSERT(size.x && size.y);
-
-		mSize = size;
-
-		CreateFramebuffer();
-	}
-
-	void PickerRenderPass::Resize(const glm::uvec2 &size)
-	{
-		mSize = size;
-		mFrambuffer->Resize(size.x, size.y);
-	}
-
 	void PickerRenderPass::Render(const FMeshRenderDatas &data)
 	{
 		mFrambuffer->Bind();

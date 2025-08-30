@@ -8,22 +8,45 @@
 
 namespace BHive
 {
+#define BLOOM_ITERATIONS 5
 
-	Bloom::Bloom(uint32_t iterations, uint32_t width, uint32_t height, const FBloomSettings &data)
-		: mSettings(data),
-		  mSize(width, height)
+	void BloomRenderPass::Init()
 	{
 		mPreFilterShader = ShaderManager::Get().Load("PreFilter.glsl");
 		mDownSamplerShader = ShaderManager::Get().Load("DownSample.glsl");
 		mUpSamplerShader = ShaderManager::Get().Load("UpSample.glsl");
 		mCombineShader = ShaderManager::Get().Load("CombineTex.glsl");
 
-		mMipMaps.resize(iterations);
-
-		Initialize(width, height);
+		mMipMaps.resize(BLOOM_ITERATIONS);
 	}
 
-	Ref<Texture> Bloom::Process(const Ref<Texture> &texture)
+	void BloomRenderPass::CreateResizableObjects(const glm::uvec2 &size)
+	{
+		PostProcessRenderPass::CreateResizableObjects(size);
+
+		FTextureCreateInfo specs{};
+		specs.InternalFormat = EFormat::R11_G11_B10;
+		specs.WrapMode = EWrapMode::CLAMP_TO_BORDER;
+
+		mPreFilterTexture = CreateRef<Texture2D>(size.x, size.y, specs);
+
+		specs.InternalFormat = EFormat::RGBA32F;
+		mOutputTexture = CreateRef<Texture2D>(size.x, size.y, specs);
+
+		glm::uvec2 mps = mSize;
+		for (auto &mip : mMipMaps)
+		{
+			mip = CreateRef<Texture2D>(mps.x, mps.y, specs);
+
+			mps /= 2;
+			if (mps.x < 1)
+				mps.x = 1;
+			if (mps.y < 1)
+				mps.y = 1;
+		}
+	}
+
+	void BloomRenderPass::Process(const Ref<Texture> &texture)
 	{
 		Image output_image;
 		output_image.SetTexture(mPreFilterTexture);
@@ -36,7 +59,7 @@ namespace BHive
 
 		mPreFilterShader->UnBind();
 
-		// downsample
+		// downsample image
 		mDownSamplerShader->Bind();
 
 		auto current_texture = mPreFilterTexture;
@@ -53,6 +76,7 @@ namespace BHive
 		}
 		mDownSamplerShader->UnBind();
 
+		// upsample image
 		mUpSamplerShader->Bind();
 		mUpSamplerShader->SetUniform("constants.u_FilterRadius", mSettings.mFilterRadius);
 
@@ -78,62 +102,16 @@ namespace BHive
 		output_image.Bind(0, EImageAccess::WRITE);
 		mCombineShader->Dispatch(mSize.x, mSize.y);
 		mCombineShader->UnBind();
+	}
 
+	void BloomRenderPass::SetBloomSettings(const FBloomSettings &settings)
+	{
+		mSettings = settings;
+	}
+
+	Ref<Texture> BloomRenderPass::GetOutputTexture() const
+	{
 		return mOutputTexture;
 	}
 
-	void Bloom::Resize(uint32_t width, uint32_t height)
-	{
-		mSize = {width, height};
-
-		Initialize(width, height);
-	}
-
-	void Bloom::Initialize(uint32_t width, uint32_t height)
-	{
-
-		Reset();
-
-		FTextureCreateInfo specs{};
-		specs.InternalFormat = EFormat::R11_G11_B10;
-		specs.WrapMode = EWrapMode::CLAMP_TO_BORDER;
-
-		mPreFilterTexture = CreateRef<Texture2D>(width, height, specs);
-
-		specs.InternalFormat = EFormat::RGBA32F;
-		mOutputTexture = CreateRef<Texture2D>(width, height, specs);
-
-		glm::uvec2 mps = mSize;
-		for (auto &mip : mMipMaps)
-		{
-			mip = CreateRef<Texture2D>(mps.x, mps.y, specs);
-
-			mps /= 2;
-			if (mps.x < 1)
-				mps.x = 1;
-			if (mps.y < 1)
-				mps.y = 1;
-		}
-	}
-
-	void Bloom::Reset()
-	{
-		for (auto &mip : mMipMaps)
-			mip.reset();
-
-		mPreFilterTexture.reset();
-	}
-
-	REFLECT(FBloomSettings)
-	{
-		BEGIN_REFLECT(FBloomSettings)
-		REFLECT_PROPERTY("FilterThreshold", mFilterThreshold)
-		REFLECT_PROPERTY("FilterRadius", mFilterRadius);
-	}
-
-	REFLECT(Bloom)
-	{
-		BEGIN_REFLECT(Bloom)
-		REFLECT_PROPERTY("Settings", mSettings);
-	}
 } // namespace BHive

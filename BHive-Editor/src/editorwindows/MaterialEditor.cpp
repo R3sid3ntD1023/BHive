@@ -1,10 +1,9 @@
+#include "gfx/Framebuffer.h"
+#include "gfx/RenderCommand.h"
 #include "MaterialEditor.h"
 #include "mesh/primitives/Sphere.h"
 #include "renderers/Renderer.h"
-#include "gfx/Framebuffer.h"
-#include "gfx/RenderCommand.h"
 #include "renderers/SceneRenderer.h"
-#include "renderers/postprocessing/Bloom.h"
 
 namespace BHive
 {
@@ -19,7 +18,7 @@ namespace BHive
 		mCamera = EditorCamera(45.0f, 1.f, 0.01f, 1000.f);
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
-		mSceneRenderer->Initialize(300, 300);
+		mSceneRenderer->Init({300, 300});
 	}
 
 	void MaterialEditor::OnUpdateContent()
@@ -28,7 +27,7 @@ namespace BHive
 
 		if ((mViewportPanelSize.x != mViewportSize.x || mViewportPanelSize.y != mViewportSize.y) && mViewportPanelSize.x != 0 && mViewportPanelSize.y != 0)
 		{
-			mSceneRenderer->Resize((unsigned)mViewportPanelSize.x, (unsigned)mViewportPanelSize.y);
+			mSceneRenderer->Resize(mViewportPanelSize);
 			mViewportSize = mViewportPanelSize;
 			mCamera.Resize(mViewportSize.x, mViewportSize.y);
 		}

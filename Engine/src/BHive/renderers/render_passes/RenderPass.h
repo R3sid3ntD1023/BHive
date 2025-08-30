@@ -10,7 +10,7 @@ namespace BHive
 	class RenderPass
 	{
 	public:
-		virtual void Init();
+		virtual void Init() {};
 
 		virtual void CreateResizableObjects(const glm::uvec2 &size);
 
@@ -18,7 +18,7 @@ namespace BHive
 
 		virtual void Render(const FMeshRenderDatas &data) = 0;
 
-		virtual void CreateFramebuffer();
+		virtual void CreateFramebuffer() {};
 
 		virtual bool IsEnabled() const;
 

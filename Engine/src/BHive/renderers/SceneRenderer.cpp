@@ -7,9 +7,9 @@
 #include "gfx/textures/Texture2D.h"
 #include "importers/TextureImporter.h"
 #include "mesh/primitives/Quad.h"
-#include "postprocessing/Aces.h"
+#include "render_passes/Aces.h"
+#include "render_passes/Bloom.h"
 #include "renderers/PMREMGenerator.h"
-#include "renderers/postprocessing/Bloom.h"
 #include "renderers/Renderer.h"
 #include "SceneRenderer.h"
 #include "ShadowRenderer.h"
@@ -47,22 +47,24 @@ namespace BHive
 		}
 	};
 
-	void SceneRenderer::Initialize(uint32_t width, uint32_t height)
+	void SceneRenderer::Init(const glm::uvec2 &size)
 	{
+		mSize = size;
+
 		mSceneRenderData = CreateRef<FSceneRenderData>();
 		mSceneRenderData->Init();
 
 		// Initialize the framebuffer or any other resources needed for rendering
 		FramebufferSpecification specs;
-		specs.Width = width;
-		specs.Height = height;
+		specs.Width = mSize.x;
+		specs.Height = mSize.y;
 		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE}).attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 
 		mFramebuffer = CreateRef<Framebuffer>(specs);
 
 		// Initialize bloom post-processing effect if enabled
-		AddPostProcessingEffect(CreateRef<Bloom>(5, width, height, FBloomSettings{}));
-		AddPostProcessingEffect(CreateRef<Aces>(width, height));
+		PushPostProcessRenderPass(CreateRef<BloomRenderPass>());
+		PushPostProcessRenderPass(CreateRef<AcesRenderPass>());
 
 		// Create a final framebuffer for post-processing effects
 		specs.Attachments.reset();
@@ -82,8 +84,6 @@ namespace BHive
 			sEnvironmentMap = TextureLoader::Import(ENGINE_PATH "/data/hdr/industrial_sunset_puresky_2k.hdr");
 			EnvironmentMapGenerator.SetEnvironmentMap(sEnvironmentMap);
 		}
-
-		mRenderSize = {width, height};
 	}
 
 	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
@@ -152,9 +152,13 @@ namespace BHive
 
 		auto texture = mFramebuffer->GetColorAttachment(0);
 
-		for (const auto &effect : mPostProcessingEffects)
+		for (const auto &effect : mPostProcessRenderPasses)
 		{
-			texture = effect->Process(texture);
+			if (!effect->IsEnabled())
+				continue;
+
+			effect->Process(texture);
+			texture = effect->GetOutputTexture();
 		}
 
 		mFinalFramebuffer->Bind();
@@ -174,11 +178,6 @@ namespace BHive
 	{
 		sEnvironmentMap = environment;
 		EnvironmentMapGenerator.SetEnvironmentMap(environment);
-	}
-
-	void SceneRenderer::AddPostProcessingEffect(const Ref<PostProcessor> &processor)
-	{
-		mPostProcessingEffects.push_back(processor);
 	}
 
 	void SceneRenderer::SubmitLight(const FDirectionalLightCreateInfo &info)
@@ -279,23 +278,23 @@ namespace BHive
 		return glm::distance(glm::vec3(C), transform[2]);
 	}
 
-	void SceneRenderer::Resize(uint32_t width, uint32_t height)
+	void SceneRenderer::Resize(const glm::uvec2 &size)
 	{
-		mFramebuffer->Resize(width, height);
+		mSize = size;
 
-		mFinalFramebuffer->Resize(width, height);
+		mFramebuffer->Resize(size.x, size.y);
+
+		mFinalFramebuffer->Resize(size.x, size.y);
 
 		for (auto &render_pass : mRenderPasses)
 		{
-			render_pass->Resize({width, height});
+			render_pass->Resize(size);
 		}
 
-		for (auto &effect : mPostProcessingEffects)
+		for (auto &post_process : mPostProcessRenderPasses)
 		{
-			effect->Resize(width, height);
+			post_process->Resize(size);
 		}
-
-		mRenderSize = {width, height};
 	}
 
 	const Ref<Texture> &SceneRenderer::GetColorAttachment(uint32_t index) const
@@ -311,11 +310,6 @@ namespace BHive
 	const Ref<Texture2D> &SceneRenderer::GetEnvironmentMap() const
 	{
 		return sEnvironmentMap;
-	}
-
-	glm::uvec2 SceneRenderer::GetSize() const
-	{
-		return mRenderSize;
 	}
 
 	void SceneRenderer::RenderToScreen()
@@ -341,24 +335,17 @@ namespace BHive
 		return !volume.InFrustum(frustum, FTransform(transform));
 	}
 
+	void SceneRenderer::PushPostProcessRenderPass(const Ref<PostProcessRenderPass> &pass)
+	{
+		mPostProcessRenderPasses.emplace_back(pass);
+		pass->Init();
+		pass->CreateResizableObjects(mSize);
+	}
+
 	void SceneRenderer::PushRenderPass(const Ref<RenderPass> &render_pass)
 	{
 		mRenderPasses.emplace_back(render_pass);
 		render_pass->Init();
-		render_pass->CreateResizableObjects(mRenderSize);
-	}
-
-	REFLECT(FRenderSettings)
-	{
-		BEGIN_REFLECT(FRenderSettings)
-		REFLECT_PROPERTY(DrawColliders);
-	}
-
-	REFLECT(SceneRenderer)
-	{
-		BEGIN_REFLECT(SceneRenderer)
-		REFLECT_PROPERTY("RenderSettings", mRenderSettings)
-		REFLECT_PROPERTY("PostProcessEffects", mPostProcessingEffects)
-		REFLECT_PROPERTY("EnvironmentMap", GetEnvironmentMap, SetEnvironmentMap);
+		render_pass->CreateResizableObjects(mSize);
 	}
 } // namespace BHive
