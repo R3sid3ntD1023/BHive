@@ -24,28 +24,20 @@ namespace BHive
 		unsigned num_attachments = target->GetSpecification().Attachments.GetAttachments().size();
 		ASSERT(attachment < num_attachments);
 
-		try
-		{
+		Thread::Dispatch(
+			[target, attachment, path]()
+			{
+				auto w = target->GetSpecification().Width;
+				auto h = target->GetSpecification().Height;
 
-			Thread::Dispatch(
-				[target, attachment, path]()
-				{
-					auto w = target->GetSpecification().Width;
-					auto h = target->GetSpecification().Height;
+				int32_t channels = 4;
+				int32_t stride = channels * w;
+				int32_t buffersize = stride * h;
+				std::vector<uint8_t> buffer(buffersize);
 
-					int32_t channels = 4;
-					int32_t stride = channels * w;
-					int32_t buffersize = stride * h;
-					std::vector<uint8_t> buffer(buffersize);
-
-					target->ReadPixel(attachment, 0, 0, w, h, buffer.data());
-					ImageUtils::SaveImage(path, w, h, channels, buffer.data());
-				});
-		}
-		catch (const std::exception &e)
-		{
-			LOG_ERROR("Failed to save image");
-		}
+				target->ReadPixel(attachment, 0, 0, w, h, buffer.data());
+				ImageUtils::SaveImage(path, w, h, channels, buffer.data());
+			});
 	}
 
 	void ImageUtils::SaveImage(const std::filesystem::path &path, const Ref<Texture2D> &texture)
