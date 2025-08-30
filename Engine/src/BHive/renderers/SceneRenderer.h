@@ -1,9 +1,9 @@
 #pragma once
 
 #include "core/Core.h"
-#include "Renderer.h"
 #include "PMREMGenerator.h"
 #include "RenderData.h"
+#include "Renderer.h"
 #include "renderers/render_passes/PickerRenderPass.h"
 
 namespace BHive
@@ -23,6 +23,7 @@ namespace BHive
 	class StaticMesh;
 	class SkeletalPose;
 	class MaterialTable;
+	class RenderPass;
 
 	/**
 	 * @brief The SceneRenderer class is responsible for rendering the scene.
@@ -78,7 +79,15 @@ namespace BHive
 
 		glm::uvec2 GetSize() const;
 
-		PickerRenderPass &GetPickerRenderPass() { return mPickerRenderPass; }
+		void PushRenderPass(const Ref<RenderPass> &render_pass);
+
+		template <typename T = RenderPass>
+		Ref<T> PushRenderPass()
+		{
+			auto pass = CreateRef<T>();
+			PushRenderPass(pass);
+			return pass;
+		}
 
 	private:
 		bool IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform);
@@ -103,7 +112,7 @@ namespace BHive
 		static inline PMREMGenerator EnvironmentMapGenerator;
 		static inline Ref<Texture2D> sEnvironmentMap = nullptr; // Static environment map
 
-		PickerRenderPass mPickerRenderPass;
+		std::vector<Ref<RenderPass>> mRenderPasses;
 
 		REFLECTABLE()
 	};

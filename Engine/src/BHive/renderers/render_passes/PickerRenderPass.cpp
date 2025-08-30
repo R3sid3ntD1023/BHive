@@ -1,8 +1,8 @@
-#include "PickerRenderPass.h"
 #include "gfx/Framebuffer.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
+#include "PickerRenderPass.h"
 #include "renderers/Renderer.h"
 #include <glad/glad.h>
 
@@ -29,7 +29,7 @@ namespace BHive
 		mFrambuffer->Resize(size.x, size.y);
 	}
 
-	void PickerRenderPass::Begin()
+	void PickerRenderPass::Render(const FMeshRenderDatas &data)
 	{
 		mFrambuffer->Bind();
 		mShader->Bind();
@@ -38,10 +38,13 @@ namespace BHive
 
 		static int32_t clear_id = -1;
 		mFrambuffer->ClearAttachment(0, &clear_id);
-	}
 
-	void PickerRenderPass::End()
-	{
+		for (const auto &[dist, obj] : data)
+		{
+			mShader->SetUniform("constants.uEntityID", obj->ObjectInfo.EntityID);
+			Renderer::SubmitMesh(obj);
+		}
+
 		int32_t pixel_id = -1;
 		mFrambuffer->ReadPixel(0, mMousePos.x, mMousePos.y, 1, 1, &pixel_id);
 
@@ -56,16 +59,6 @@ namespace BHive
 		mShader->UnBind();
 
 		mEnabled = false;
-	}
-
-	void PickerRenderPass::Render(const FMeshRenderDatas &data)
-	{
-
-		for (const auto &[dist, obj] : data)
-		{
-			mShader->SetUniform("constants.uEntityID", obj->ObjectInfo.EntityID);
-			Renderer::SubmitMesh(obj);
-		}
 	}
 
 	void PickerRenderPass::Pick(const glm::uvec2 mousePos)

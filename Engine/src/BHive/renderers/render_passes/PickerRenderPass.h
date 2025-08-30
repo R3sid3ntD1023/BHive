@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/Core.h"
-#include "renderers/RenderData.h"
 #include "core/EventDelegate.h"
+#include "RenderPass.h"
 
 namespace BHive
 {
@@ -11,26 +11,22 @@ namespace BHive
 
 	DECLARE_EVENT(FOnEntityPicked, int32_t);
 
-	class PickerRenderPass
+	class PickerRenderPass : public RenderPass
 	{
 	public:
-		void Init();
+		void Init() override;
 
-		void CreateResizableObjects(const glm::uvec2 &size);
+		void CreateResizableObjects(const glm::uvec2 &size) override;
 
-		void Resize(const glm::uvec2 &size);
-
-		void Begin();
-
-		void End();
+		void Resize(const glm::uvec2 &size) override;
 
 		void Render(const FMeshRenderDatas &data);
 
 		void Pick(const glm::uvec2 mousePos);
 
-		void CreateFramebuffer();
+		void CreateFramebuffer() override;
 
-		bool IsEnabled() const { return mEnabled; }
+		bool IsEnabled() const { return RenderPass::IsEnabled() && mEnabled; }
 
 		Ref<Framebuffer> GetFramebuffer() const { return mFrambuffer; }
 
@@ -38,11 +34,7 @@ namespace BHive
 
 	private:
 		bool mEnabled{false};
-
-		Ref<Framebuffer> mFrambuffer;
 		Ref<Shader> mShader;
-
-		glm::uvec2 mSize;
 		glm::uvec2 mMousePos;
 	};
 } // namespace BHive

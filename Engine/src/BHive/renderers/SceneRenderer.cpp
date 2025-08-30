@@ -1,26 +1,26 @@
-#include "SceneRenderer.h"
-#include "renderers/Renderer.h"
+#include "core/math/Transform.h"
 #include "gfx/Camera.h"
 #include "gfx/Framebuffer.h"
+#include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
-#include "mesh/primitives/Quad.h"
-#include "gfx/RenderCommand.h"
-#include "core/math/Transform.h"
-#include "renderers/postprocessing/Bloom.h"
-#include "renderers/PMREMGenerator.h"
-#include "importers/TextureImporter.h"
-#include "postprocessing/Aces.h"
 #include "gfx/textures/Texture2D.h"
+#include "importers/TextureImporter.h"
+#include "mesh/primitives/Quad.h"
+#include "postprocessing/Aces.h"
+#include "renderers/PMREMGenerator.h"
+#include "renderers/postprocessing/Bloom.h"
+#include "renderers/Renderer.h"
+#include "SceneRenderer.h"
 #include "ShadowRenderer.h"
 
-#include "mesh/StaticMesh.h"
-#include "mesh/SkeletalMesh.h"
+#include "buffers/LightBuffer.h"
 #include "core/math/boundingbox/AABB.h"
 #include "core/math/volumes/SphereVolume.h"
 #include "gfx/StorageBuffer.h"
 #include "gfx/UniformBuffer.h"
-#include "buffers/LightBuffer.h"
+#include "mesh/SkeletalMesh.h"
+#include "mesh/StaticMesh.h"
 
 namespace BHive
 {
@@ -29,6 +29,7 @@ namespace BHive
 	{
 		std::unordered_map<Ref<Material>, FMeshRenderDatas> RenderData;
 		FMeshRenderDatas ShadowPassRenderData;
+		FMeshRenderDatas RenderPassRenderData;
 
 		LightBuffer Lights;
 		ShadowRenderer ShadowRenderer;
@@ -83,9 +84,6 @@ namespace BHive
 		}
 
 		mRenderSize = {width, height};
-
-		mPickerRenderPass.Init();
-		mPickerRenderPass.CreateResizableObjects({width, height});
 	}
 
 	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
@@ -104,19 +102,21 @@ namespace BHive
 		mSceneRenderData->Lights.End();
 		mSceneRenderData->ShadowRenderer.End();
 
-		if (mPickerRenderPass.IsEnabled())
+		for (auto &render_pass : mRenderPasses)
 		{
-			mPickerRenderPass.Begin();
-			for (auto &[mat, objects] : mSceneRenderData->RenderData)
+			if (!render_pass->IsEnabled())
 			{
-				mPickerRenderPass.Render(objects);
+				continue;
 			}
-			mPickerRenderPass.End();
+
+			render_pass->Render(mSceneRenderData->RenderPassRenderData);
 		}
 
 		mSceneRenderData->ShadowRenderer.Render(mSceneRenderData->ShadowPassRenderData);
 
 		mFramebuffer->Bind();
+
+		RenderCommand::ClearColor(0.1f, 0.1f, 0.1f);
 
 		RenderCommand::Clear();
 
@@ -260,6 +260,7 @@ namespace BHive
 			data->ObjectInfo = info.ObjectInfo;
 			data->InstanceInfo = info.InstanceInfo;
 
+			mSceneRenderData->RenderPassRenderData.emplace(distance, data);
 			mSceneRenderData->RenderData[material].emplace(distance, data);
 
 			if (material->ShouldCastShadows())
@@ -284,7 +285,10 @@ namespace BHive
 
 		mFinalFramebuffer->Resize(width, height);
 
-		mPickerRenderPass.Resize({width, height});
+		for (auto &render_pass : mRenderPasses)
+		{
+			render_pass->Resize({width, height});
+		}
 
 		for (auto &effect : mPostProcessingEffects)
 		{
@@ -335,6 +339,13 @@ namespace BHive
 
 		auto volume = FSphereVolume(bounds.GetCenter(), bounds.GetRadius());
 		return !volume.InFrustum(frustum, FTransform(transform));
+	}
+
+	void SceneRenderer::PushRenderPass(const Ref<RenderPass> &render_pass)
+	{
+		mRenderPasses.emplace_back(render_pass);
+		render_pass->Init();
+		render_pass->CreateResizableObjects(mRenderSize);
 	}
 
 	REFLECT(FRenderSettings)
