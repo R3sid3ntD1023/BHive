@@ -41,11 +41,17 @@ namespace BHive
 			return *this;
 		}
 
-		FramebufferAttachments &attach(const FRenderbufferTexture &format) { mRenderBufferSpecification = format; }
+		FramebufferAttachments &attach(const FRenderbufferTexture &format)
+		{
+			mRenderBufferSpecification = format;
+			return *this;
+		}
 
 		const std::vector<FFramebufferTexture> &GetAttachments() const { return Attachments; }
 
-	protected:
+		const FRenderbufferTexture &GetRenderBuffer() const { return mRenderBufferSpecification; }
+
+	private:
 		std::vector<FFramebufferTexture> Attachments;
 		FRenderbufferTexture mRenderBufferSpecification;
 

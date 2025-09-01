@@ -15,6 +15,7 @@ namespace BHive
 	Application::Application(const FApplicationSpecification &specification)
 		: mSpecification(specification)
 	{
+
 		ASSERT(!sInstance);
 		sInstance = this;
 
@@ -53,6 +54,7 @@ namespace BHive
 	{
 		while (mIsRunning)
 		{
+
 			FPSCounter::Get().Frame();
 
 			UpdateLayersAndWindow();

@@ -18,8 +18,6 @@ namespace BHive
 
 		virtual void UnBind(uint32_t slot = 0) const;
 
-		virtual void GenerateMipMaps() const;
-
 		virtual uint32_t GetWidth() const { return mSize; }
 
 		virtual uint32_t GetHeight() const { return mSize; }

@@ -25,13 +25,7 @@ namespace BHive
 
 		if (!loaded_program_data)
 		{
-			std::string source;
-			if (!FileSystem::ReadFile(path, source))
-				return;
-
-			PreProcess(source);
-			Compile();
-			Reflect();
+			CompileFromSource();
 		}
 
 		if (mProgramID)
@@ -49,38 +43,39 @@ namespace BHive
 	void Shader::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		GLsizei binary_length = 0;
+		GLenum binary_format = 0;
+		std::vector<char> binary;
+
 		glGetProgramiv(mProgramID, GL_PROGRAM_BINARY_LENGTH, &binary_length);
 
-		GLenum binary_format = 0;
-		void *binary = malloc(binary_length);
+		binary.resize(binary_length);
 
-		glGetProgramBinary(mProgramID, binary_length, nullptr, &binary_format, binary);
+		glGetProgramBinary(mProgramID, binary_length, nullptr, &binary_format, binary.data());
 
-		ar(mSources, binary_format, binary_length, cereal::binary_data(binary, binary_length));
-
-		free(binary);
+		ar(mFilePath, mSources, binary_format, binary);
 	}
 
 	void Shader::Load(cereal::BinaryInputArchive &ar)
 	{
 
 		GLenum binary_format = 0;
-		GLsizei binary_length = 0;
+		std::vector<char> binary;
 
-		ar(mSources, binary_format, binary_length);
-		void *binary = malloc(binary_length);
-		ar(cereal::binary_data(binary, binary_length));
+		ar(mFilePath, mSources, binary_format, binary);
 
 		mProgramID = glCreateProgram();
-		glProgramBinary(mProgramID, binary_format, binary, binary_length);
-
-		glValidateProgram(mProgramID);
+		glProgramBinary(mProgramID, binary_format, binary.data(), binary.size());
 
 		GLint status = 0;
-		glGetProgramiv(mProgramID, GL_VALIDATE_STATUS, &status);
-		ASSERT(status, "Shader::Load() Failed to validate program");
+		glGetProgramiv(mProgramID, GL_LINK_STATUS, &status);
 
-		free(binary);
+		if (!status)
+		{
+			GLchar infoLog[512];
+			glGetProgramInfoLog(mProgramID, 512, nullptr, infoLog);
+			LOG_ERROR("SHADER::PROGRAM BINARY PROGRAM LINKING : {} - {}", mName, infoLog);
+			Compile();
+		}
 	}
 
 	void Shader::Compile()
@@ -127,48 +122,10 @@ namespace BHive
 				ASSERT(false);
 			}
 
-			auto program = glCreateProgram();
-			glProgramParameteri(program, GL_PROGRAM_SEPARABLE, GL_TRUE);
-			glAttachShader(program, shader);
-
-			glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-			if (!status)
-			{
-				glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-				LOG_ERROR("SHADER::COMPILE ERROR {} - {}, {}", mName, ShaderUtils::ToString(stage), infoLog);
-				ASSERT(false);
-			}
-
-			glLinkProgram(program);
-
-			glGetProgramiv(program, GL_LINK_STATUS, &status);
-			if (!status)
-			{
-				glGetProgramInfoLog(program, 512, nullptr, infoLog);
-				LOG_ERROR("SHADER::PROGRAM LINKING : {} - {}", mName, infoLog);
-				ASSERT(false);
-			}
-
-			glDetachShader(program, shader);
-
-			if (!status)
-			{
-				glDeleteProgram(program);
-			}
-
 			shaders.emplace_back(shader);
-			mSeperablePrograms.emplace(stage, program);
 		}
 
 		glLinkProgram(mProgramID);
-
-		glGetProgramiv(mProgramID, GL_LINK_STATUS, &status);
-		if (!status)
-		{
-			glGetProgramInfoLog(mProgramID, 512, nullptr, infoLog);
-			LOG_ERROR("SHADER::PROGRAM LINKING : {} - {}", mName, infoLog);
-			ASSERT(false);
-		}
 
 		for (auto &shader : shaders)
 		{
@@ -185,6 +142,17 @@ namespace BHive
 
 		ShaderSerializer serializer;
 		serializer.Serialize(mFilePath, *this);
+	}
+
+	void Shader::CompileFromSource()
+	{
+		std::string source;
+		if (!FileSystem::ReadFile(mFilePath, source))
+			return;
+
+		PreProcess(source);
+		Compile();
+		Reflect();
 	}
 
 	void Shader::PreProcess(const std::string &source)
@@ -219,15 +187,10 @@ namespace BHive
 		glUseProgram(0);
 	}
 
-	uint32_t Shader::GetSeperableProgram(EShaderStage stage) const
-	{
-		return mSeperablePrograms.at(stage);
-	}
-
 	void Shader::Dispatch(uint32_t w, uint32_t h, uint32_t d)
 	{
 		glDispatchCompute(w, h, d);
-		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 	}
 
 	void Shader::Reflect()

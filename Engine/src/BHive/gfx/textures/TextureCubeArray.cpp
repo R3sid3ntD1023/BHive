@@ -42,7 +42,7 @@ namespace BHive
 			}
 		}
 
-		if (mInfo.Levels > 1)
+		if (mInfo.Levels > 1 || mInfo.GenerateMipMaps)
 		{
 			glGenerateTextureMipmap(mTextureID);
 		}
@@ -65,14 +65,12 @@ namespace BHive
 		glBindTextureUnit(slot, 0);
 	}
 
-	void TextureCubeArray::GenerateMipMaps() const
-	{
-
-		glGenerateTextureMipmap(mTextureID);
-	}
-
 	void TextureCubeArray::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
 	{
 		glTextureSubImage3D(mTextureID, 0, offsetX, offsetY, 0, mWidth, mHeight, mDepth, mInfo.Format, mInfo.Type, data);
+		if (mInfo.Levels > 1 || mInfo.GenerateMipMaps)
+		{
+			glGenerateTextureMipmap(mTextureID);
+		}
 	}
 } // namespace BHive

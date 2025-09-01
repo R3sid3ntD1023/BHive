@@ -9,7 +9,7 @@ namespace BHive
 	class Framebuffer;
 	class Shader;
 
-	DECLARE_EVENT(FOnEntityPicked, int32_t);
+	DECLARE_EVENT(FOnEntityPicked, int32_t, const Ref<FMeshRenderData> &);
 
 	class PickerRenderPass : public RenderPass
 	{
@@ -24,13 +24,11 @@ namespace BHive
 
 		bool IsEnabled() const { return RenderPass::IsEnabled() && mEnabled; }
 
-		Ref<Framebuffer> GetFramebuffer() const { return mFrambuffer; }
-
 		FOnEntityPickedEvent OnEntityPicked;
 
 	private:
 		bool mEnabled{false};
 		Ref<Shader> mShader;
-		glm::uvec2 mMousePos;
+		glm::uvec2 mMousePos{0, 0};
 	};
 } // namespace BHive

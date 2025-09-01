@@ -33,7 +33,7 @@ namespace BHive
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, mInfo.InternalFormat, size, size, 0, mInfo.Format, mInfo.Type, NULL);
 		}
 
-		if (mInfo.Levels > 1)
+		if (mInfo.Levels > 1 || mInfo.GenerateMipMaps)
 		{
 			glGenerateTextureMipmap(mTextureID);
 		}
@@ -54,12 +54,6 @@ namespace BHive
 	{
 
 		glBindTextureUnit(slot, 0);
-	}
-
-	void TextureCube::GenerateMipMaps() const
-	{
-
-		glGenerateTextureMipmap(mTextureID);
 	}
 
 } // namespace BHive

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "asset/AssetMetaData.h"
-#include "gfx/textures/Texture2D.h"
 #include "core/Buffer.h"
+#include "gfx/textures/Texture2D.h"
 
 namespace BHive
 {
@@ -16,6 +16,8 @@ namespace BHive
 
 	struct BHIVE_API TextureLoader
 	{
+		static bool LoadImageData(const std::filesystem::path &file, int32_t &w, int32_t &h, int32_t &c, uint8_t *&data, int32_t flip = 1);
+
 		static Ref<Texture2D> Import(const std::filesystem::path &file, const FTextureImportData &import_data = {});
 
 		static Ref<Texture2D> LoadFromMemory(const uint8_t *data, int length);

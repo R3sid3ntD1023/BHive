@@ -4,12 +4,12 @@
 
 namespace BHive
 {
-	class TextureCubeArray : public Texture
+	class BHIVE_API Texture3D : public Texture
 	{
 	public:
-		TextureCubeArray(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification);
+		Texture3D(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &create_info, const void *data = nullptr);
 
-		~TextureCubeArray();
+		~Texture3D();
 
 		virtual uint32_t GetWidth() const { return mWidth; }
 
@@ -21,14 +21,14 @@ namespace BHive
 
 		virtual void SetData(const void *data, uint32_t offsetX = 0, uint32_t offsetY = 0);
 
-		virtual const FTextureCreateInfo &GetInfo() const { return mCreateInfo; }
+		virtual const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
 
-		virtual uint32_t GetRendererID() const { return mTextureID; }
+		virtual uint32_t GetRendererID() const override { return mTextureID; }
 
 	private:
-		uint32_t mTextureID = 0;
 		uint32_t mWidth, mHeight, mDepth;
 		FTextureCreateInfo mCreateInfo;
 		FTextureAPIInfo mInfo;
+		uint32_t mTextureID = 0;
 	};
 } // namespace BHive

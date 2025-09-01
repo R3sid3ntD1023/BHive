@@ -20,6 +20,7 @@ namespace BHive
 		info.BorderColor[2] = BorderColor.b;
 		info.BorderColor[3] = BorderColor.a;
 		info.IsDepth = TextureUtils::IsDepthFormat(InternalFormat);
+		info.GenerateMipMaps = GenerateMipMaps;
 
 		return info;
 	}

@@ -36,8 +36,14 @@ namespace BHive
 		LOG_INFO("Picked ID: {}", pixel_id);
 		if (pixel_id != -1)
 		{
+			auto lambda = [pixel_id](const std::pair<float, Ref<FMeshRenderData>> &pair) { return pair.second->ObjectInfo.EntityID == pixel_id; };
+			auto picked = std::find_if(data.begin(), data.end(), lambda);
 
-			OnEntityPicked.invoke(pixel_id);
+			OnEntityPicked.invoke(pixel_id, picked->second);
+		}
+		else
+		{
+			OnEntityPicked.invoke(-1, nullptr);
 		}
 
 		mFrambuffer->UnBind();

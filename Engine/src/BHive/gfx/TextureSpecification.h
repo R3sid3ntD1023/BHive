@@ -106,13 +106,14 @@ namespace BHive
 
 	struct FTextureAPIInfo
 	{
-		uint32_t Levels = 0;
+		uint32_t Levels = 1;
 		uint32_t InternalFormat = 0;
 		uint32_t Format = 0;
 		uint32_t Type = 0;
 
 		uint32_t WrapMode = 0;
 		uint32_t FilterModes[2] = {};
+		uint32_t GenerateMipMaps = 0;
 
 		uint32_t CompareMode = 0;
 		uint32_t CompareFunc = 0;
@@ -131,6 +132,7 @@ namespace BHive
 		EMagFilter MagFilter = EMagFilter::LINEAR;
 		FColor BorderColor = 0xFFFFFFFF;
 		uint32_t Levels = 1;
+		uint32_t GenerateMipMaps = 0;
 		std::optional<ETextureCompareMode> CompareMode; // Depth Compare Mode
 		std::optional<ETextureCompareFunc> CompareFunc; // Depth Compare Funcs
 

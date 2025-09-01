@@ -95,8 +95,6 @@ namespace BHive
 
 			RenderCommand::CullBack();
 		}
-
-		mEnvironmentCapture->GetTargetTexture()->GenerateMipMaps();
 	}
 
 	void PMREMGenerator::CreateIrradianceMap()

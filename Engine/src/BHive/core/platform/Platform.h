@@ -30,5 +30,9 @@ namespace BHive
 		static FileInfo GetDirectory();
 
 		static bool MoveToRecycleBin(const std::filesystem::path &path);
+
+		static void *GetNativeWindow();
+
+		static void *GetAPIContext();
 	};
 } // namespace BHive

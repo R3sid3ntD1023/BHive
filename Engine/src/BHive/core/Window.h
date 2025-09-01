@@ -24,23 +24,34 @@ namespace BHive
 	{
 	public:
 		Window(const FWindowProperties &properties = {});
+
 		~Window();
 
 		void Update();
+
 		void SetVysnc(bool enabled);
+
 		void Maximize();
+
 		void Minimize();
+
 		void SetPosition(int x, int y);
+
 		void SetTitle(const std::string &title);
+
 		void SetEventCallback(FOnWindowInputEvent &event);
 
 		static void PollEvents();
 
 	public:
 		GLFWwindow *GetNative() { return mWindow; }
+
 		GraphicsContext &GetContext() { return *mContext; }
+
 		const std::string &GetTitle() const { return mData.Title; }
+
 		const glm::ivec2 &GetSize() const { return mData.mSize; }
+
 		bool IsVSyncEnabled() const { return mData.VSync; }
 
 	private:

@@ -28,9 +28,10 @@ namespace BHive
 	{
 		PostProcessRenderPass::CreateResizableObjects(size);
 
-		FTextureCreateInfo specs;
-		specs.Channels = 3;
+		FTextureCreateInfo specs{};
+		specs.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		specs.InternalFormat = EFormat::R11_G11_B10;
+
 		mOutputTexture = CreateRef<Texture2D>(mSize.x, mSize.y, specs);
 	}
 } // namespace BHive

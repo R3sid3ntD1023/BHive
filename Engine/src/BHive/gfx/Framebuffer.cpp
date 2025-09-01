@@ -52,6 +52,8 @@ namespace BHive
 			mColorAttachmentAPIInfos.emplace_back(spec.CreateInfo);
 		}
 
+		mRenderBufferSpecification = mSpecification.Attachments.GetRenderBuffer();
+
 		Initialize();
 	}
 
@@ -215,10 +217,12 @@ namespace BHive
 
 		if (mRenderBufferSpecification.Format != EFormat::Invalid && !mDepthAttachment)
 		{
-			auto depth_format = TextureUtils::GetAPIDepthAttachmentType(mRenderBufferSpecification.Format);
+			auto depth_attachment = TextureUtils::GetAPIDepthAttachmentType(mRenderBufferSpecification.Format);
+			auto depth_internal_format = TextureUtils::GetAPIInternalFormat(mRenderBufferSpecification.Format);
+
 			glCreateRenderbuffers(1, &mRenderbufferID);
-			glNamedRenderbufferStorage(mRenderbufferID, depth_format, mSpecification.Width, mSpecification.Height);
-			glNamedFramebufferRenderbuffer(mFramebufferID, depth_format, GL_RENDERBUFFER, mRenderbufferID);
+			glNamedRenderbufferStorage(mRenderbufferID, depth_internal_format, mSpecification.Width, mSpecification.Height);
+			glNamedFramebufferRenderbuffer(mFramebufferID, depth_attachment, GL_RENDERBUFFER, mRenderbufferID);
 		}
 
 		ASSERT(glCheckNamedFramebufferStatus(mFramebufferID, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);

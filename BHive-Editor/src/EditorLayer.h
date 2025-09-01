@@ -12,6 +12,8 @@
 namespace BHive
 {
 	class PickerRenderPass;
+	class OutlineRenderPass;
+	class OutlinePostProcessRenderPass;
 	class SceneRenderer;
 	class ImSceneHierarchy;
 	class World;
@@ -51,6 +53,8 @@ namespace BHive
 	private:
 		Ref<SceneRenderer> mRenderer;
 		Ref<PickerRenderPass> mPickerRenderPass;
+		Ref<OutlineRenderPass> mOutlineRenderPass;
+		Ref<OutlinePostProcessRenderPass> mOutlinePostProcessPass;
 
 		Ref<World> mEditorWorld;
 		Ref<World> mActiveWorld;
@@ -88,6 +92,11 @@ namespace BHive
 		}
 
 	private:
+		void InitRenderer(const glm::uvec2 &size);
+
+		// add editor-only render passes
+		void InitRenderPasses();
+
 		bool OnWindowResize(WindowResizeEvent &e);
 		bool OnKeyEvent(KeyEvent &e);
 
@@ -103,8 +112,6 @@ namespace BHive
 		void OnProjectOpened();
 		void LoadEditorConfigFile();
 		void SaveEditorConfigFile();
-
-		void OnGameObjectPicked(int32_t id);
 
 #pragma region GUI
 		void ViewportGUI();

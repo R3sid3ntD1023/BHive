@@ -11,4 +11,9 @@ namespace BHive
 	{
 		mSize = size;
 	}
+
+	void PostProcessRenderPass::SetEnabled(bool enabled)
+	{
+		mEnabled = enabled;
+	}
 } // namespace BHive

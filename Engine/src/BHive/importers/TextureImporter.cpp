@@ -1,3 +1,4 @@
+#include "core/threading/Threading.h"
 #include "gfx/textures/Texture2D.h"
 #include "gfx/utils/texture/TextureUtils.h"
 #include "TextureImporter.h"
@@ -45,6 +46,30 @@ namespace BHive
 		}
 	} // namespace utils
 
+	bool TextureLoader::LoadImageData(const std::filesystem::path &file, int32_t &w, int32_t &h, int32_t &c, uint8_t *&data, int32_t flip)
+	{
+		auto path_str = file.string();
+		bool is_hdr = stbi_is_hdr(path_str.c_str());
+		stbi_set_flip_vertically_on_load(flip);
+
+		if (is_hdr)
+		{
+			data = (stbi_uc *)stbi_loadf(path_str.c_str(), &w, &h, &c, 0);
+		}
+		else
+		{
+			data = stbi_load(path_str.c_str(), &w, &h, &c, 0);
+		}
+
+		if (!data)
+		{
+			LOG_ERROR("TextureImporter::Stbi - {}", stbi_failure_reason());
+			return false;
+		}
+
+		return true;
+	}
+
 	Ref<Texture2D> TextureLoader::Import(const std::filesystem::path &file, const FTextureImportData &import_data)
 	{
 		int w = 0, h = 0, c = 0;
@@ -78,6 +103,7 @@ namespace BHive
 		create_info.MinFilter = EMinFilter::LINEAR;
 		create_info.MagFilter = EMagFilter::LINEAR;
 		create_info.WrapMode = EWrapMode::REPEAT;
+		create_info.GenerateMipMaps = 1;
 
 		Ref<Texture2D> texture = nullptr;
 
@@ -131,6 +157,7 @@ namespace BHive
 		create_info.MinFilter = EMinFilter::LINEAR;
 		create_info.MagFilter = EMagFilter::LINEAR;
 		create_info.WrapMode = EWrapMode::REPEAT;
+		create_info.GenerateMipMaps = 1;
 
 		auto texture = CreateRef<Texture2D>((unsigned)x, (unsigned)y, create_info, image_data, data_size);
 

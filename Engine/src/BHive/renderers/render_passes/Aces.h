@@ -21,6 +21,8 @@ namespace BHive
 
 		Ref<Texture> GetOutputTexture() const override { return mOutputTexture; }
 
+		const char *GetName() const override { return "Aces"; }
+
 	private:
 		Ref<Texture> mOutputTexture;
 		Ref<Shader> mComputeShader;

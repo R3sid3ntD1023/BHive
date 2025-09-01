@@ -29,6 +29,8 @@ namespace BHive
 
 		void SetBloomSettings(const FBloomSettings &settings);
 
+		const char *GetName() const override { return "Bloom"; }
+
 		Ref<Texture> GetOutputTexture() const override;
 
 	private:

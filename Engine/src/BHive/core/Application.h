@@ -42,24 +42,32 @@ namespace BHive
 		virtual ~Application();
 
 		void Run();
+
 		void Close();
 
 		template <typename TLayer>
 		void PushLayer();
+
 		void PushLayer(Layer *layer);
+
 		void PopLayer(Layer *layer);
 
 		virtual void OnEvent(Event &event);
 
 	public:
 		const FApplicationSpecification &GetSpecification() const { return mSpecification; }
+
 		Window &GetWindow() { return *mWindow; }
+
 		ImGuiLayer &GetImGuiLayer() { return *mImGuiLayer; }
+
 		static Application &Get() { return *sInstance; }
 
 	private:
 		void UpdateLayersAndWindow();
+
 		bool OnWindowResized(WindowResizeEvent &event);
+
 		bool OnWindowClosed(WindowCloseEvent &event);
 
 	private:

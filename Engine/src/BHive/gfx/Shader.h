@@ -35,8 +35,6 @@ namespace BHive
 
 		virtual uint32_t GetRendererID() const { return mProgramID; }
 
-		uint32_t GetSeperableProgram(EShaderStage stage) const;
-
 		virtual const std::string &GetName() const { return mName; }
 
 		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1);
@@ -59,6 +57,8 @@ namespace BHive
 	private:
 		void Compile();
 
+		void CompileFromSource();
+
 		void PreProcess(const std::string &source);
 
 		void Reflect();
@@ -73,8 +73,6 @@ namespace BHive
 		std::filesystem::path mFilePath;
 
 		std::unordered_map<EShaderStage, FShaderData> mSources;
-
-		std::unordered_map<EShaderStage, uint32_t> mSeperablePrograms;
 
 		Scope<ShaderUniformSetter> mUniformSetter;
 

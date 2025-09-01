@@ -185,4 +185,15 @@ namespace BHive
 
 		return success;
 	}
+
+	void *Platform::GetNativeWindow()
+	{
+		auto native = Application::Get().GetWindow().GetNative();
+		return glfwGetWin32Window(native);
+	}
+
+	void *Platform::GetAPIContext()
+	{
+		return glfwGetCurrentContext();
+	}
 } // namespace BHive

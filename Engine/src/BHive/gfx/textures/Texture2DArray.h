@@ -19,8 +19,6 @@ namespace BHive
 
 		void UnBind(uint32_t slot = 0) const override;
 
-		virtual void GenerateMipMaps() const;
-
 		virtual void SetData(const void *data, uint32_t offsetX = 0, uint32_t offsetY = 0);
 
 		virtual const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }

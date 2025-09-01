@@ -32,8 +32,6 @@ namespace BHive
 
 		virtual uint32_t GetRendererID() const = 0;
 
-		virtual void GenerateMipMaps() const = 0;
-
 		virtual const FTextureCreateInfo &GetInfo() const = 0;
 
 		operator uint32_t() const { return GetRendererID(); }

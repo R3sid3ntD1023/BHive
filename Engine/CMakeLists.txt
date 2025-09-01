@@ -6,6 +6,9 @@ include(FindVulkan)
 include(GNUInstallDirs)
 
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
+set(RENDERDOC_Dir "C:/Program Files/RenderDoc")
+
+
 
 add_subdirectory(vendor)
 
@@ -81,6 +84,7 @@ target_include_directories(${TARGET_NAME} PUBLIC
 	${VENDOR_DIR}
 	${Vulkan_INCLUDE_DIRS}
 	${Stb_INCLUDE_DIR}
+	${RENDERDOC_Dir}
 )
 
 target_precompile_headers(${TARGET_NAME} PUBLIC src/BHivePCH.h)

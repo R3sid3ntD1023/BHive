@@ -25,8 +25,6 @@ namespace BHive
 
 		virtual uint32_t GetRendererID() const { return mTextureID; }
 
-		virtual void GenerateMipMaps() const;
-
 		virtual const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
 
 		void SetInfo(const FTextureCreateInfo &specs);

@@ -21,9 +21,14 @@ namespace BHive
 
 		virtual Ref<Texture> GetOutputTexture() const = 0;
 
-		virtual bool IsEnabled() { return mSize.x > 0 && mSize.y > 0; }
+		void SetEnabled(bool enabled);
+
+		virtual const char *GetName() const = 0;
+
+		virtual bool IsEnabled() const { return mSize.x > 0 && mSize.y > 0 && mEnabled; }
 
 	protected:
 		glm::uvec2 mSize{0, 0};
+		bool mEnabled{true};
 	};
 } // namespace BHive

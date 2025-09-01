@@ -58,13 +58,14 @@ namespace BHive
 		FramebufferSpecification specs;
 		specs.Width = mSize.x;
 		specs.Height = mSize.y;
-		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE}).attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+		specs.Attachments.attach({.InternalFormat = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
+			.attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 
 		mFramebuffer = CreateRef<Framebuffer>(specs);
 
 		// Initialize bloom post-processing effect if enabled
-		PushPostProcessRenderPass(CreateRef<BloomRenderPass>());
 		PushPostProcessRenderPass(CreateRef<AcesRenderPass>());
+		PushPostProcessRenderPass(CreateRef<BloomRenderPass>());
 
 		// Create a final framebuffer for post-processing effects
 		specs.Attachments.reset();
@@ -152,7 +153,7 @@ namespace BHive
 
 		auto texture = mFramebuffer->GetColorAttachment(0);
 
-		for (const auto &effect : mPostProcessRenderPasses)
+		for (auto &effect : mPostProcessRenderPasses)
 		{
 			if (!effect->IsEnabled())
 				continue;
@@ -337,15 +338,20 @@ namespace BHive
 
 	void SceneRenderer::PushPostProcessRenderPass(const Ref<PostProcessRenderPass> &pass)
 	{
-		mPostProcessRenderPasses.emplace_back(pass);
+		mPostProcessRenderPasses.push_back(pass);
 		pass->Init();
 		pass->CreateResizableObjects(mSize);
 	}
 
 	void SceneRenderer::PushRenderPass(const Ref<RenderPass> &render_pass)
 	{
-		mRenderPasses.emplace_back(render_pass);
+		mRenderPasses.push_back(render_pass);
 		render_pass->Init();
 		render_pass->CreateResizableObjects(mSize);
+	}
+
+	SceneRenderer::PostProcessPasses &SceneRenderer::GetPostProcessPasses()
+	{
+		return mPostProcessRenderPasses;
 	}
 } // namespace BHive

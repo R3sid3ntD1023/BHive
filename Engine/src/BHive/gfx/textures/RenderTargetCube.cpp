@@ -7,7 +7,13 @@ namespace BHive
 	RenderTargetCube::RenderTargetCube(uint32_t size, EFormat format)
 		: mSize(size)
 	{
-		mTargetTexture = CreateRef<TextureCube>(size, FTextureCreateInfo{.InternalFormat = format, .WrapMode = EWrapMode::CLAMP_TO_EDGE, .MinFilter = EMinFilter::LINEAR});
+		FTextureCreateInfo create_info{};
+		create_info.InternalFormat = format;
+		create_info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		create_info.MinFilter = EMinFilter::LINEAR;
+		create_info.GenerateMipMaps = 1;
+
+		mTargetTexture = CreateRef<TextureCube>(size, create_info);
 
 		glCreateFramebuffers(1, &mFramebufferID);
 		glNamedFramebufferDrawBuffer(mFramebufferID, GL_COLOR_ATTACHMENT0);

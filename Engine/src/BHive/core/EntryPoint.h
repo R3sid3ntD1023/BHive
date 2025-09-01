@@ -2,10 +2,9 @@
 
 #include "Application.h"
 #include "audio/AudioContext.h"
-#include "physics/PhysicsContext.h"
 #include "debug/Instrumentor.h"
+#include "physics/PhysicsContext.h"
 #include "subsystem/SubSystem.h"
-#include <Windows.h>
 
 namespace BHive
 {
@@ -14,6 +13,7 @@ namespace BHive
 
 namespace BHive
 {
+
 	int main(int argc, char **argv)
 	{
 		BHive::Log::Init();

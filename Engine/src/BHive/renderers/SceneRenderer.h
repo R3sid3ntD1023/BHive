@@ -40,6 +40,8 @@ namespace BHive
 	{
 
 	public:
+		using PostProcessPasses = std::vector<Ref<PostProcessRenderPass>>;
+
 		SceneRenderer() = default;
 
 		void Init(const glm::uvec2 &size);
@@ -81,12 +83,24 @@ namespace BHive
 		void PushRenderPass(const Ref<RenderPass> &render_pass);
 
 		template <typename T = RenderPass>
+		Ref<T> PushPostProcessRenderPass()
+			requires(std::is_base_of_v<PostProcessRenderPass, T>)
+		{
+			auto post_process = CreateRef<T>();
+			PushPostProcessRenderPass(post_process);
+			return post_process;
+		}
+
+		template <typename T = RenderPass>
 		Ref<T> PushRenderPass()
+			requires(std::is_base_of_v<RenderPass, T>)
 		{
 			auto pass = CreateRef<T>();
 			PushRenderPass(pass);
 			return pass;
 		}
+
+		PostProcessPasses &GetPostProcessPasses();
 
 		const glm::uvec2 &GetSize() const { return mSize; }
 
@@ -108,11 +122,11 @@ namespace BHive
 		std::stack<std::function<void()>> mCommands;
 
 		std::vector<Ref<RenderPass>> mRenderPasses;
-		std::vector<Ref<PostProcessRenderPass>> mPostProcessRenderPasses;
+		PostProcessPasses mPostProcessRenderPasses;
 
 		static inline PMREMGenerator EnvironmentMapGenerator;
 		static inline Ref<Texture2D> sEnvironmentMap = nullptr; // Static environment map
 
-		glm::uvec2 mSize;
+		glm::uvec2 mSize{0, 0};
 	};
 } // namespace BHive

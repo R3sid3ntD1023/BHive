@@ -30,6 +30,7 @@
 #include "windows/LogWindow.h"
 #include "windows/SceneHeirarchyWindow.h"
 #include "renderers/render_passes/PickerRenderPass.h"
+#include "renderers/render_passes/OutlineRenderPass.h"
 
 #include "gfx/utils/texture/ImageUtils.h"
 
@@ -41,6 +42,7 @@ namespace BHive
 
 	void EditorLayer::OnAttach()
 	{
+
 		mGizmo.SnapValues[ImGuizmo::TRANSLATE] = glm::vec3{10.f};
 		mGizmo.SnapValues[ImGuizmo::ROTATE] = glm::vec3{15.f};
 		mGizmo.SnapValues[ImGuizmo::SCALE] = glm::vec3{.25f};
@@ -66,12 +68,8 @@ namespace BHive
 		auto &window = Application::Get().GetWindow();
 		auto &size = window.GetSize();
 
-		mRenderer = CreateRef<SceneRenderer>();
-		mRenderer->Init(size);
-
-		// add editor-only render passes
-		mPickerRenderPass = mRenderer->PushRenderPass<PickerRenderPass>();
-		mPickerRenderPass->OnEntityPicked.bind(this, &EditorLayer::OnGameObjectPicked);
+		InitRenderer(size);
+		InitRenderPasses();
 
 		float aspect = size.x / (float)size.y;
 		mEditorCamera = EditorCamera(45.f, aspect, .01f, 1000.f);
@@ -255,9 +253,9 @@ namespace BHive
 				Inspect::get().inspect("size", this, mStyles.GridStyle.size);
 
 				ImGui::ShowStyleEditor();
-
-				ImGui::End();
 			}
+
+			ImGui::End();
 		}
 
 		if (windows["ProjectEditor"])
@@ -272,9 +270,27 @@ namespace BHive
 					config.StartScene = scene->GetHandle();
 					Project::SaveProject();
 				}
-				ImGui::End();
+			}
+
+			ImGui::End();
+		}
+
+		if (ImGui::Begin("PostProcesses", nullptr, ImGuiWindowFlags_NoSavedSettings))
+		{
+			auto &post_proccesses = mRenderer->GetPostProcessPasses();
+
+			for (auto &process : post_proccesses)
+			{
+				bool enabled = process->IsEnabled();
+
+				if (ImGui::Checkbox(process->GetName(), &enabled))
+				{
+					process->SetEnabled(enabled);
+				}
 			}
 		}
+
+		ImGui::End();
 
 		Viewport();
 
@@ -300,6 +316,33 @@ namespace BHive
 		mCommands.emplace(FCommand{Key::S, Mod::Control_Shift}, [&]() { SaveWorldAs(); });
 		mCommands.emplace(FCommand{Key::Z, Mod::Control}, []() { GetSubSystem<UndoRedo>().Undo(); });
 		mCommands.emplace(FCommand{Key::Y, Mod::Control}, []() { GetSubSystem<UndoRedo>().Redo(); });
+	}
+
+	void EditorLayer::InitRenderer(const glm::uvec2 &size)
+	{
+		mRenderer = CreateRef<SceneRenderer>();
+		mRenderer->Init(size);
+	}
+
+	void EditorLayer::InitRenderPasses()
+	{
+		if (!mRenderer)
+			return;
+
+		mOutlineRenderPass = mRenderer->PushRenderPass<OutlineRenderPass>();
+		mOutlinePostProcessPass = mRenderer->PushPostProcessRenderPass<OutlinePostProcessRenderPass>();
+
+		mPickerRenderPass = mRenderer->PushRenderPass<PickerRenderPass>();
+		mPickerRenderPass->OnEntityPicked.bind(
+			[&](int32_t id, const Ref<FMeshRenderData> &data)
+			{
+				auto &selection = SubSystemContext::Get().GetSubSystem<Selection>();
+				selection.Select(mActiveWorld->GetGameObject(id).get());
+				mOutlineRenderPass->SetSelected(data);
+
+				mOutlinePostProcessPass->SetSelected(id != -1);
+				mOutlinePostProcessPass->SetOutlineTexture(mOutlineRenderPass->GetOutputTetxure());
+			});
 	}
 
 	bool EditorLayer::OnWindowResize(WindowResizeEvent &e)
@@ -461,12 +504,6 @@ namespace BHive
 		std::ofstream out(config, std::ios::out);
 		cereal::JSONOutputArchive ar(out);
 		ar(*this);
-	}
-
-	void EditorLayer::OnGameObjectPicked(int32_t id)
-	{
-		auto &selection = SubSystemContext::Get().GetSubSystem<Selection>();
-		selection.Select(mActiveWorld->GetGameObject(id).get());
 	}
 
 	void EditorLayer::Viewport()

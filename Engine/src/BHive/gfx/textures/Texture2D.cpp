@@ -38,12 +38,6 @@ namespace BHive
 		glBindTextureUnit(slot, 0);
 	}
 
-	void Texture2D::GenerateMipMaps() const
-	{
-
-		glGenerateTextureMipmap(mTextureID);
-	}
-
 	void Texture2D::SetInfo(const FTextureCreateInfo &info)
 	{
 		mCreateInfo.MinFilter = info.MinFilter;
@@ -55,11 +49,21 @@ namespace BHive
 		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, mInfo.FilterModes[1]);
 		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, mInfo.WrapMode);
 		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, mInfo.WrapMode);
+
+		if (mInfo.Levels > 1 || mInfo.GenerateMipMaps)
+		{
+			glGenerateTextureMipmap(mTextureID);
+		}
 	}
 
 	void Texture2D::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
 	{
 		glTextureSubImage2D(mTextureID, 0, offsetX, offsetY, mWidth, mHeight, mInfo.Format, mInfo.Type, data);
+
+		if (mInfo.Levels > 1 || mInfo.GenerateMipMaps)
+		{
+			glGenerateTextureMipmap(mTextureID);
+		}
 	}
 
 	Ref<Texture2D> Texture2D::CreateSubTexture(const FSubTexture &texture)
@@ -88,8 +92,6 @@ namespace BHive
 		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, mInfo.FilterModes[1]);
 		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, mInfo.WrapMode);
 		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, mInfo.WrapMode);
-
-		glGenerateTextureMipmap(mTextureID);
 	}
 
 	void Texture2D::Release()
