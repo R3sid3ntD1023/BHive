@@ -93,7 +93,7 @@ namespace BHive
 
 		if (!image_data)
 		{
-			LOG_ERROR("TextureImporter::Stbi - {}", stbi_failure_reason());
+			LOG_ERROR("TextureImporter::Stbi : {} - {}", file, stbi_failure_reason());
 			return nullptr;
 		}
 

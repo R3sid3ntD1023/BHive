@@ -82,7 +82,7 @@ namespace BHive
 	{
 		switch (e.Key)
 		{
-		case Key::F:
+		case Key::Home:
 		{
 			mTransform = mInitialTransform;
 			return true;
@@ -93,12 +93,11 @@ namespace BHive
 		return false;
 	}
 
-	void EditorCamera::Focus(const FTransform &target, const glm::vec3 &distance)
+	void EditorCamera::Focus(const FTransform &target, const glm::vec3 &bounds)
 	{
-		mTarget = target.GetTranslation();
-		auto eye = mTarget + distance * 2.0f;
-		auto target_pos = mTarget;
-		mTransform = glm::lookAt(eye, target_pos, {0, 1, 0});
+		auto target_location = target.GetTranslation();
+		auto eye = target_location + (bounds * 1.1f);
+		mTransform = glm::inverse(glm::lookAt(eye, target_location, {0, 1, 0}));
 	}
 
 	const FTransform &EditorCamera::GetView() const

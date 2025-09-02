@@ -23,7 +23,7 @@ namespace BHive
 		bool OnMouseScrolled(MouseScrolledEvent &event);
 		bool OnKeyEvent(KeyEvent &e);
 
-		void Focus(const FTransform &target, const glm::vec3 &distance);
+		void Focus(const FTransform &target, const glm::vec3 &bounds);
 
 		virtual const FTransform &GetView() const;
 		void SetView(const FTransform &view);

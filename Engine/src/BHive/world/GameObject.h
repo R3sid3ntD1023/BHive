@@ -5,6 +5,7 @@
 #include "core/EventDelegate.h"
 #include "core/UUID.h"
 #include "core/math/Transform.h"
+#include "core/math/boundingbox/AABB.h"
 #include "World.h"
 #include "world/Component.h"
 
@@ -113,6 +114,8 @@ namespace BHive
 		FTransform &GetLocalTransform();
 
 		const FTransform &GetLocalTransform() const;
+
+		const AABB &GetBounds() const;
 
 		const uint64_t GetGroup() const;
 

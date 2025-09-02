@@ -33,12 +33,19 @@
 #include "renderers/render_passes/OutlineRenderPass.h"
 
 #include "gfx/utils/texture/ImageUtils.h"
+#include "world/components/LightComponents.h"
 
 namespace BHive
 {
 #define RENDER_SETTINGS_POPUP_NAME "RenderSettingsPopup"
 
 	constexpr const char *cImguiLayoutFilter = "Layout (*ini)\0 *.ini\0";
+
+	static struct FSelectedData
+	{
+		Ref<FMeshRenderData> RenderData;
+		GameObject *Object = nullptr;
+	} sSelectedRenderData;
 
 	void EditorLayer::OnAttach()
 	{
@@ -47,23 +54,22 @@ namespace BHive
 		mGizmo.SnapValues[ImGuizmo::ROTATE] = glm::vec3{15.f};
 		mGizmo.SnapValues[ImGuizmo::SCALE] = glm::vec3{.25f};
 
-		FWorldContentMenu::OnAssetOpenedEvent.bind(
-			[&](const UUID &handle)
+		auto set_world_lamda = [&](const UUID &handle)
+		{
+			auto asset = AssetManager::GetAsset<World>(handle);
+
+			if (asset)
 			{
-				auto asset = AssetManager::GetAsset<World>(handle);
 
-				if (asset)
-				{
-					SubSystemContext::Get().GetSubSystem<Selection>().Clear();
-					mEditorWorld = asset;
-					SetActiveWorld(mEditorWorld);
+				mEditorWorld = asset;
+				SetActiveWorld(asset);
 
-					auto &meta_data = mAssetManager->GetMetaData(handle);
-					mCurrentWorldPath = Project::GetResourceDirectory() / meta_data.Path;
-					auto &window = Application::Get().GetWindow();
-					window.SetTitle(mCurrentWorldPath.stem().string());
-				}
-			});
+				auto &meta_data = mAssetManager->GetMetaData(handle);
+				mCurrentWorldPath = Project::GetResourceDirectory() / meta_data.Path;
+			}
+		};
+
+		FWorldContentMenu::OnAssetOpenedEvent.bind(set_world_lamda);
 
 		auto &window = Application::Get().GetWindow();
 		auto &size = window.GetSize();
@@ -102,6 +108,9 @@ namespace BHive
 
 	void EditorLayer::OnUpdate(float dt)
 	{
+		if (!mActiveWorld)
+			return;
+
 		auto size = mRenderer->GetSize();
 		if ((mViewportSize.x > 0.f && mViewportSize.y > 0.f) && (mViewportSize.x != size.x || mViewportSize.y != size.y))
 		{
@@ -117,6 +126,31 @@ namespace BHive
 		mActiveWorld->Update(dt, mRenderer.get());
 
 		mRenderer->SubmitCommand([=]() { LineRenderer::DrawGrid(mStyles.GridStyle); });
+
+		mRenderer->SubmitCommand(
+			[=]()
+			{
+				auto &thumbnail_cache = GetSubSystem<ThumbnailCache>();
+				auto &registry = mActiveWorld->GetRegistry();
+				static auto icon = thumbnail_cache.GetAssetIcon("PointLight");
+				static FQuadParams params{};
+				params.Size = {5, 5};
+
+				auto lambda = [=](const entt::entity &e, const PointLightComponent &component)
+				{
+					auto gameobject = mActiveWorld->GetGameObject((int32_t)e);
+					auto transform = gameobject->GetWorldTransform();
+					QuadRenderer::DrawBillboard(params, icon, transform);
+				};
+
+				registry.view<PointLightComponent>().each(lambda);
+			});
+
+		if (sSelectedRenderData.Object)
+			sSelectedRenderData.RenderData->ObjectInfo.Transform = sSelectedRenderData.Object->GetWorldTransform();
+		mOutlineRenderPass->SetSelected(sSelectedRenderData.RenderData);
+		mOutlinePostProcessPass->SetSelected(sSelectedRenderData.Object);
+		mOutlinePostProcessPass->SetOutlineTexture(mOutlineRenderPass->GetOutputTetxure());
 
 		mRenderer->End();
 	}
@@ -275,6 +309,7 @@ namespace BHive
 			ImGui::End();
 		}
 
+#if 0
 		if (ImGui::Begin("PostProcesses", nullptr, ImGuiWindowFlags_NoSavedSettings))
 		{
 			auto &post_proccesses = mRenderer->GetPostProcessPasses();
@@ -291,6 +326,8 @@ namespace BHive
 		}
 
 		ImGui::End();
+
+#endif
 
 		Viewport();
 
@@ -316,6 +353,16 @@ namespace BHive
 		mCommands.emplace(FCommand{Key::S, Mod::Control_Shift}, [&]() { SaveWorldAs(); });
 		mCommands.emplace(FCommand{Key::Z, Mod::Control}, []() { GetSubSystem<UndoRedo>().Undo(); });
 		mCommands.emplace(FCommand{Key::Y, Mod::Control}, []() { GetSubSystem<UndoRedo>().Redo(); });
+		mCommands.emplace(
+			FCommand{Key::F},
+			[&]()
+			{
+				auto selection = GetSubSystem<Selection>().GetSelection();
+				if (selection)
+				{
+					mEditorCamera.Focus(selection->GetWorldTransform(), selection->GetBounds().Max);
+				}
+			});
 	}
 
 	void EditorLayer::InitRenderer(const glm::uvec2 &size)
@@ -337,11 +384,11 @@ namespace BHive
 			[&](int32_t id, const Ref<FMeshRenderData> &data)
 			{
 				auto &selection = SubSystemContext::Get().GetSubSystem<Selection>();
-				selection.Select(mActiveWorld->GetGameObject(id).get());
-				mOutlineRenderPass->SetSelected(data);
 
-				mOutlinePostProcessPass->SetSelected(id != -1);
-				mOutlinePostProcessPass->SetOutlineTexture(mOutlineRenderPass->GetOutputTetxure());
+				auto object = mActiveWorld->GetGameObject(id).get();
+				selection.Select(object);
+
+				sSelectedRenderData = {data, object};
 			});
 	}
 
@@ -368,6 +415,22 @@ namespace BHive
 			}
 		}
 		return false;
+	}
+
+	bool EditorLayer::OnMouseButton(MouseButtonEvent &e)
+	{
+		return false;
+	}
+
+	bool EditorLayer::OnMouseMoved(MouseMovedEvent &e)
+	{
+		return false;
+	}
+
+	void EditorLayer::ClearSelection()
+	{
+		sSelectedRenderData = {};
+		SubSystemContext::Get().GetSubSystem<Selection>().Clear();
 	}
 
 	void EditorLayer::CreateWorld()
@@ -425,15 +488,20 @@ namespace BHive
 
 		SetActiveWorld(mEditorWorld);
 		mCurrentWorldPath = path;
-
-		auto &window = Application::Get().GetWindow();
-		window.SetTitle(mCurrentWorldPath.stem().string());
 	}
 
 	void EditorLayer::SetActiveWorld(const Ref<World> &world)
 	{
+		if (!world)
+			return;
+
+		ClearSelection();
+
 		mActiveWorld = world;
 		mSceneHeirarchyPanel->SetContext(mActiveWorld);
+
+		auto &window = Application::Get().GetWindow();
+		window.SetTitle(world->GetName());
 	}
 
 	bool EditorLayer::LoadProjectLibrary(const std::string &lib)
@@ -516,6 +584,7 @@ namespace BHive
 		{
 
 			bool shown = ImGui::BeginChild("Viewport##Image", {}, 0, ImGuiWindowFlags_MenuBar);
+			bool is_using_gizmo = false;
 
 			if (shown)
 			{
@@ -559,11 +628,14 @@ namespace BHive
 
 					ImGuizmo::Manipulate(&view[0][0], &projection[0][0], (ImGuizmo::OPERATION)mGizmo.Operation, (ImGuizmo::MODE)mGizmo.Mode, &world_transform[0][0], &delta[0][0], &snap_value.x);
 
-					if (ImGuizmo::IsUsing())
+					is_using_gizmo = ImGuizmo::IsUsing();
+					if (is_using_gizmo)
 					{
 						glm::mat4 local_transform = delta * selected_object->GetLocalTransform().to_mat4();
 						selected_object->SetLocalTransform(local_transform);
 					}
+
+					mPickerRenderPass->SetCanPick(!is_using_gizmo);
 				}
 
 				auto view_size = 100.0f;
@@ -573,6 +645,22 @@ namespace BHive
 				if (ImGuizmo::IsUsingViewManipulate())
 				{
 					mEditorCamera.SetView(glm::inverse(view));
+				}
+
+				if (mViewportFocused || mViewportHovered)
+				{
+
+					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsMouseReleased(ImGuiMouseButton_Left) && !is_using_gizmo)
+					{
+						auto [mx, my] = ImGui::GetMousePos();
+						mx -= mViewportBounds[0].x;
+						my -= mViewportBounds[0].y;
+						my = mViewportSize.y - my;
+						int mouse_x = (int)mx;
+						int mouse_y = (int)my;
+
+						mPickerRenderPass->Pick({mouse_x, mouse_y});
+					}
 				}
 
 				if (ImGui::BeginDragDropTarget())
@@ -611,21 +699,6 @@ namespace BHive
 				}
 
 				ImGui::EndChild();
-
-				if (mViewportFocused || mViewportHovered)
-				{
-					if (ImGui::IsItemClicked())
-					{
-						auto [mx, my] = ImGui::GetMousePos();
-						mx -= mViewportBounds[0].x;
-						my -= mViewportBounds[0].y;
-						my = mViewportSize.y - my;
-						int mouse_x = (int)mx;
-						int mouse_y = (int)my;
-
-						mPickerRenderPass->Pick({mouse_x, mouse_y});
-					}
-				}
 			}
 		}
 

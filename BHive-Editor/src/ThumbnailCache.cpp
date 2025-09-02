@@ -24,6 +24,8 @@ namespace BHive
 		mAssetIconCache["Texture2D"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/texture_2d.png");
 		mAssetIconCache["World"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/world.png");
 		mAssetIconCache["AnimGraph"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/graph.png");
+
+		mAssetIconCache["PointLight"] = TextureLoader::Import(EDITOR_RESOURCE_PATH "icons/pointlight.png");
 	}
 
 	const Ref<Texture2D> &ThumbnailCache::Get(const std::filesystem::path &path)

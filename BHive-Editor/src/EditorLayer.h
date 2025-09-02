@@ -99,6 +99,8 @@ namespace BHive
 
 		bool OnWindowResize(WindowResizeEvent &e);
 		bool OnKeyEvent(KeyEvent &e);
+		bool OnMouseButton(MouseButtonEvent &e);
+		bool OnMouseMoved(MouseMovedEvent &e);
 
 		void CreateWorld();
 		void SaveWorld();
@@ -112,6 +114,8 @@ namespace BHive
 		void OnProjectOpened();
 		void LoadEditorConfigFile();
 		void SaveEditorConfigFile();
+
+		void ClearSelection();
 
 #pragma region GUI
 		void ViewportGUI();

@@ -263,6 +263,15 @@ namespace BHive
 	{
 		return GetComponent<TransformComponent>()->Transform;
 	}
+
+	const AABB &GameObject::GetBounds() const
+	{
+		FSphere sphere{};
+		sphere.Radius = 10.f;
+		sphere.Origin = {};
+		return sphere;
+	}
+
 	const FTransform &GameObject::GetLocalTransform() const
 	{
 		return GetComponent<TransformComponent>()->Transform;
