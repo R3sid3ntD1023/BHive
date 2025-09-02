@@ -417,16 +417,6 @@ namespace BHive
 		return false;
 	}
 
-	bool EditorLayer::OnMouseButton(MouseButtonEvent &e)
-	{
-		return false;
-	}
-
-	bool EditorLayer::OnMouseMoved(MouseMovedEvent &e)
-	{
-		return false;
-	}
-
 	void EditorLayer::ClearSelection()
 	{
 		sSelectedRenderData = {};
@@ -634,8 +624,6 @@ namespace BHive
 						glm::mat4 local_transform = delta * selected_object->GetLocalTransform().to_mat4();
 						selected_object->SetLocalTransform(local_transform);
 					}
-
-					mPickerRenderPass->SetCanPick(!is_using_gizmo);
 				}
 
 				auto view_size = 100.0f;

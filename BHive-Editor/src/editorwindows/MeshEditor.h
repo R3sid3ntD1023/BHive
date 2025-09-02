@@ -6,8 +6,6 @@
 
 namespace BHive
 {
-	class Framebuffer;
-
 	class MeshEditor : public TAssetEditor<BaseMesh>
 	{
 	public:

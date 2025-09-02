@@ -32,6 +32,7 @@ namespace BHive
 		FramebufferAttachments &reset()
 		{
 			Attachments.clear();
+			mRenderBufferSpecification = {};
 			return *this;
 		}
 

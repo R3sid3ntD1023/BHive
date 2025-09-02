@@ -6,7 +6,7 @@
 layout(local_size_x = LOCAL_SIZE,local_size_y = LOCAL_SIZE,local_size_z = LOCAL_SIZE) in;
 
 layout(binding = 0) uniform sampler2D color_texture_sampler;
-layout(binding = 0, rgba8) uniform image2D output_texture;
+layout(binding = 0, rgba32f) uniform image2D output_texture;
 
 #define OUTLINE_THICKNESS 2
 #define EPSILON 0.001

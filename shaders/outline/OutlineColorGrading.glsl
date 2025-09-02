@@ -8,7 +8,7 @@ layout(binding = 0) uniform sampler2D color_texture_sampler;
 layout(binding = 1) uniform sampler2D outline_texture_sampler;
 layout(binding = 2) uniform sampler3D color_grading_lut_texture_sampler;
 
-layout(binding = 0, rgba8) uniform image2D output_texture;
+layout(binding = 0, rgba32f) uniform image2D output_texture;
 
 #define OUTLINE_COLOR vec4(0.89, 0.61, 0.0003, 1.0)
 

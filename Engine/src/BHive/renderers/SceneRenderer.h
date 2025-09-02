@@ -4,7 +4,6 @@
 #include "PMREMGenerator.h"
 #include "RenderData.h"
 #include "Renderer.h"
-#include "renderers/render_passes/PickerRenderPass.h"
 
 namespace BHive
 {
@@ -41,6 +40,9 @@ namespace BHive
 
 	public:
 		using PostProcessPasses = std::vector<Ref<PostProcessRenderPass>>;
+		using RenderPasses = std::vector<Ref<RenderPass>>;
+		using Command = std::function<void()>;
+		using Commands = std::stack<Command>;
 
 		SceneRenderer() = default;
 
@@ -58,7 +60,7 @@ namespace BHive
 
 		void SubmitMesh(const FMeshInfo &info);
 
-		void SubmitCommand(const std::function<void()> cmd);
+		void SubmitCommand(const Command &cmd);
 
 		void Resize(const glm::uvec2 &size);
 
@@ -119,9 +121,8 @@ namespace BHive
 
 		Ref<struct FSceneRenderData> mSceneRenderData;
 
-		std::stack<std::function<void()>> mCommands;
-
-		std::vector<Ref<RenderPass>> mRenderPasses;
+		Commands mCommands;
+		RenderPasses mRenderPasses;
 		PostProcessPasses mPostProcessRenderPasses;
 
 		static inline PMREMGenerator EnvironmentMapGenerator;

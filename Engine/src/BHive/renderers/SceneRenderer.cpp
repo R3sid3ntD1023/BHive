@@ -22,6 +22,8 @@
 #include "mesh/SkeletalMesh.h"
 #include "mesh/StaticMesh.h"
 
+#include "renderers/render_passes/RenderPass.h"
+
 namespace BHive
 {
 
@@ -63,13 +65,10 @@ namespace BHive
 
 		mFramebuffer = CreateRef<Framebuffer>(specs);
 
-		// Initialize bloom post-processing effect if enabled
-		PushPostProcessRenderPass(CreateRef<AcesRenderPass>());
-		PushPostProcessRenderPass(CreateRef<BloomRenderPass>());
-
 		// Create a final framebuffer for post-processing effects
 		specs.Attachments.reset();
-		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE}).attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+		specs.Attachments.attach({EFormat::DEPTH24_STENCIL8});
 		mFinalFramebuffer = CreateRef<Framebuffer>(specs);
 
 		// Create a quad for rendering the final output
@@ -85,6 +84,10 @@ namespace BHive
 			sEnvironmentMap = TextureLoader::Import(ENGINE_PATH "/data/hdr/industrial_sunset_puresky_2k.hdr");
 			EnvironmentMapGenerator.SetEnvironmentMap(sEnvironmentMap);
 		}
+
+		// add default post-processing effects
+		PushPostProcessRenderPass(CreateRef<BloomRenderPass>());
+		PushPostProcessRenderPass(CreateRef<AcesRenderPass>());
 	}
 
 	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
@@ -102,6 +105,7 @@ namespace BHive
 
 		mSceneRenderData->Lights.End();
 		mSceneRenderData->ShadowRenderer.End();
+		mSceneRenderData->ShadowRenderer.Render(mSceneRenderData->ShadowPassRenderData);
 
 		for (auto &render_pass : mRenderPasses)
 		{
@@ -113,26 +117,25 @@ namespace BHive
 			render_pass->Render(mSceneRenderData->RenderPassRenderData);
 		}
 
-		mSceneRenderData->ShadowRenderer.Render(mSceneRenderData->ShadowPassRenderData);
-
 		mFramebuffer->Bind();
 
-		RenderCommand::ClearColor(0.1f, 0.1f, 0.1f);
+		RenderCommand::ClearColor(0.1f, 0.1f, 0.1f, 0.0f);
 
 		RenderCommand::Clear();
-
-		EnvironmentMapGenerator.GetPreFilteredEnvironmentTetxure()->Bind(6);
-		EnvironmentMapGenerator.GetIrradianceTexture()->Bind(7);
-		EnvironmentMapGenerator.GetBDRFLUT()->Bind(8);
-
-		static uint32_t shadow_map_bindings[] = {9, 10, 11};
-		mSceneRenderData->ShadowRenderer.BindShadowMaps(shadow_map_bindings);
 
 		// render meshes
 		for (auto &[mat, objects] : mSceneRenderData->RenderData)
 		{
 			auto shader = mat->GetShader();
 			shader->Bind();
+
+			EnvironmentMapGenerator.GetPreFilteredEnvironmentTetxure()->Bind(6);
+			EnvironmentMapGenerator.GetIrradianceTexture()->Bind(7);
+			EnvironmentMapGenerator.GetBDRFLUT()->Bind(8);
+
+			static uint32_t shadow_map_bindings[] = {9, 10, 11};
+			mSceneRenderData->ShadowRenderer.BindShadowMaps(shadow_map_bindings);
+
 			mat->Submit(shader);
 
 			for (auto [dist, object] : objects)
@@ -268,7 +271,7 @@ namespace BHive
 		}
 	}
 
-	void SceneRenderer::SubmitCommand(const std::function<void()> cmd)
+	void SceneRenderer::SubmitCommand(const Command &cmd)
 	{
 		mCommands.push(cmd);
 	}

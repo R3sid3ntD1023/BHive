@@ -4,6 +4,9 @@
 #define LOCAL_SIZE 1
 layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = LOCAL_SIZE) in;
 
+layout(binding = 0) uniform sampler2D u_Texture;
+layout(binding = 0, rgba8) uniform image2D uOutput;
+
 
 //https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl
 /*
@@ -69,8 +72,7 @@ vec3 filmic(vec3 x) {
     return pow(result, vec3(2.2));
 }
 
-layout(binding = 0) uniform sampler2D u_Texture;
-layout(binding = 0, r11f_g11f_b10f) uniform image2D uOutput;
+
 
 void main()
 {

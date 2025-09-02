@@ -1,5 +1,3 @@
-#include "gfx/Framebuffer.h"
-#include "gfx/RenderCommand.h"
 #include "MaterialEditor.h"
 #include "mesh/primitives/Sphere.h"
 #include "renderers/Renderer.h"
@@ -70,6 +68,19 @@ namespace BHive
 
 	void MaterialEditor::OnSetContext(const Ref<Material> &asset)
 	{
+		/*	mTempMaterialAsset = asset->Clone();*/
 		mSphere->GetMaterialTable().set_material(asset);
 	}
+
+	/*bool MaterialEditor::OnSave(const std::filesystem::path &path)
+	{
+		auto original_ptr = mAsset.get();
+		*original_ptr = *mTempMaterialAsset.get();
+		return TAssetEditor::OnSave(path);
+	}
+
+	Ref<Material> MaterialEditor::GetEditedAssetOverride() const
+	{
+		return mTempMaterialAsset;
+	}*/
 } // namespace BHive

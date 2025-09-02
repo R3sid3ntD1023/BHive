@@ -22,14 +22,11 @@ namespace BHive
 
 		void CreateFramebuffer() override;
 
-		void SetCanPick(bool can_pick);
-
-		bool IsEnabled() const { return RenderPass::IsEnabled() && mEnabled && mCanPick; }
+		bool IsEnabled() const { return RenderPass::IsEnabled() && mEnabled; }
 
 		FOnEntityPickedEvent OnEntityPicked;
 
 	private:
-		bool mCanPick{true};
 		bool mEnabled{false};
 		Ref<Shader> mShader;
 		glm::uvec2 mMousePos{0, 0};

@@ -9,7 +9,7 @@ namespace BHive
 	struct FBloomSettings
 	{
 		glm::vec4 mFilterThreshold{0.2126, 0.7152, 0.0722, 1.0};
-		float mFilterRadius{0.001f};
+		float mFilterRadius{0.0001f};
 	};
 
 	class BloomRenderPass : public PostProcessRenderPass
@@ -34,7 +34,7 @@ namespace BHive
 		Ref<Texture> GetOutputTexture() const override;
 
 	private:
-		FBloomSettings mSettings;
+		FBloomSettings mSettings{};
 		MipMaps mMipMaps;
 
 		Ref<Texture> mPreFilterTexture;

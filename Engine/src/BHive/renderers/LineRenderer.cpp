@@ -146,7 +146,7 @@ namespace BHive
 	void LineRenderer::DrawArc(float radius, uint32_t sides, float start, float end, const glm::vec3 &offset, const FColor &color, const FTransform &transform)
 	{
 		float step = glm::radians(360.0f / (float)sides);
-		for (float theta = start; theta < end - step; theta += step)
+		for (float theta = start; theta < end; theta += step)
 		{
 			float x0 = cos(theta);
 			float y0 = 0.0f;

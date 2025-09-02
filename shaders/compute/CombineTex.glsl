@@ -14,8 +14,8 @@ void main()
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
 
     vec2 uv;
-    uv.x = (float(texelCoord.x) + .5)/ float(gl_NumWorkGroups.x);
-    uv.y = (float(texelCoord.y) + .5)/ float(gl_NumWorkGroups.y);
+    uv.x = float(texelCoord.x) / float(gl_NumWorkGroups.x);
+    uv.y = float(texelCoord.y) / float(gl_NumWorkGroups.y);
 
     vec4 color_a = texture(u_TextureA, uv );
     vec4 color_b = texture(u_TextureB, uv );

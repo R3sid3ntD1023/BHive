@@ -72,8 +72,4 @@ namespace BHive
 		mFrambuffer = CreateRef<Framebuffer>(spec);
 	}
 
-	void PickerRenderPass::SetCanPick(bool can_pick)
-	{
-		mCanPick = can_pick;
-	}
 } // namespace BHive

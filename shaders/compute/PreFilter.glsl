@@ -5,7 +5,7 @@
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 layout(binding = 0) uniform sampler2D u_Texture;   
-layout(binding = 0 , r11f_g11f_b10f) uniform image2D uOutput;
+layout(binding = 0 , rgba32f) uniform image2D uOutput;
    
 layout(push_constant) uniform PushConstants
 {

@@ -36,6 +36,11 @@ namespace BHive
 		return shader;
 	}
 
+	Ref<Material> LambertMaterial::Clone() const
+	{
+		return CreateRef<LambertMaterial>(*this);
+	}
+
 	REFLECT(LambertMaterial)
 	{
 		BEGIN_REFLECT(LambertMaterial)

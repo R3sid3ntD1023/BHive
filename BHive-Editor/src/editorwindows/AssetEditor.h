@@ -17,7 +17,7 @@ namespace BHive
 		virtual void SetContext(const UUID &handle) {};
 
 	protected:
-		virtual bool OnSave(const std::filesystem::path &) const { return false; };
+		virtual bool OnSave(const std::filesystem::path &) { return false; };
 
 	private:
 		void SaveAs();

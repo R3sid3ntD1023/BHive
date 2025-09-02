@@ -352,11 +352,11 @@ namespace BHive
 		for (uint32_t i = 0; i < 4; i++)
 		{
 			auto newposition = glm::vec4(positions[i] * glm::vec3(params.Size, 1), 1.0f);
-			glm::vec3 world_space_center = transform.to_mat4() * glm::vec4(0.0f, 0.f, 0.f, 1.f);
+			glm::vec3 world_space_center = transform.GetTranslation();
 			positions[i] = world_space_center + camera_right * newposition.x + camera_up * newposition.y;
 		}
 
-		DrawQuad(positions, texcoords, params.Size, params.Color, {1.f}, texture, params.Tiling, params.Flags);
+		DrawQuad(positions, texcoords, {1, 1}, params.Color, glm::identity<glm::mat4>(), texture, params.Tiling, params.Flags);
 	}
 
 	void QuadRenderer::DrawQuad(

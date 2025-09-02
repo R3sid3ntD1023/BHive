@@ -46,6 +46,8 @@ namespace BHive
 
 		virtual bool ShouldCastShadows() const override;
 
+		Ref<Material> Clone() const override;
+
 		REFLECTABLEV(Material)
 	};
 

@@ -39,6 +39,8 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
+		virtual Ref<Material> Clone() const { return nullptr; }
+
 		void AddTextureSlot(const std::string &name, uint32_t binding);
 
 		virtual Ref<Shader> GetShader() const;

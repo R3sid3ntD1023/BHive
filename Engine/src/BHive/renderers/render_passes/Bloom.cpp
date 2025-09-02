@@ -25,35 +25,29 @@ namespace BHive
 		PostProcessRenderPass::CreateResizableObjects(size);
 
 		FTextureCreateInfo specs{};
-		specs.InternalFormat = EFormat::R11_G11_B10;
-		specs.WrapMode = EWrapMode::CLAMP_TO_BORDER;
+		specs.InternalFormat = EFormat::RGBA32F;
+		specs.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 
 		mPreFilterTexture = CreateRef<Texture2D>(size.x, size.y, specs);
 
 		specs.InternalFormat = EFormat::RGBA32F;
 		mOutputTexture = CreateRef<Texture2D>(size.x, size.y, specs);
 
-		glm::uvec2 mps = mSize;
+		glm::uvec2 mps = size;
 		for (auto &mip : mMipMaps)
 		{
 			mip = CreateRef<Texture2D>(mps.x, mps.y, specs);
 
 			mps /= 2;
-			if (mps.x < 1)
-				mps.x = 1;
-			if (mps.y < 1)
-				mps.y = 1;
+			mps = glm::max({1, 1}, mps);
 		}
 	}
 
 	void BloomRenderPass::Process(const Ref<Texture> &texture)
 	{
-		Image output_image;
-		output_image.SetTexture(mPreFilterTexture);
-
 		mPreFilterShader->Bind();
 		texture->Bind();
-		output_image.Bind(0, EImageAccess::WRITE);
+		Image(mPreFilterTexture).Bind(0, EImageAccess::WRITE);
 		mPreFilterShader->SetUniform("constants.u_FilterThreshold", mSettings.mFilterThreshold);
 		mPreFilterShader->Dispatch(mPreFilterTexture->GetWidth(), mPreFilterTexture->GetHeight());
 
@@ -66,10 +60,8 @@ namespace BHive
 		for (auto &mip : mMipMaps)
 		{
 			glm::ivec2 size = {mip->GetWidth(), mip->GetHeight()};
-			output_image.SetTexture(mip);
-
 			current_texture->Bind();
-			output_image.Bind(0, EImageAccess::WRITE);
+			Image(mip).Bind(0, EImageAccess::WRITE);
 			mDownSamplerShader->Dispatch(size.x, size.y);
 
 			current_texture = mip;
@@ -84,10 +76,9 @@ namespace BHive
 		{
 			const auto &mip = mMipMaps[i];
 			const auto &next_mip = mMipMaps[i - 1];
-			output_image.SetTexture(next_mip);
 
 			mip->Bind();
-			output_image.Bind(0, EImageAccess::WRITE);
+			Image(next_mip).Bind(0, EImageAccess::WRITE);
 			mUpSamplerShader->Dispatch(next_mip->GetWidth(), next_mip->GetHeight());
 		}
 
@@ -97,10 +88,8 @@ namespace BHive
 
 		texture->Bind(0);
 		mMipMaps[0]->Bind(1);
-
-		output_image.SetTexture(mOutputTexture);
-		output_image.Bind(0, EImageAccess::WRITE);
-		mCombineShader->Dispatch(mSize.x, mSize.y);
+		Image(mOutputTexture).Bind(0, EImageAccess::WRITE);
+		mCombineShader->Dispatch(mOutputTexture->GetWidth(), mOutputTexture->GetHeight());
 		mCombineShader->UnBind();
 	}
 

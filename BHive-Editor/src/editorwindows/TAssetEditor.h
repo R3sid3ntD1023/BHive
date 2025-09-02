@@ -41,6 +41,10 @@ namespace BHive
 			if (!mAsset)
 				return;
 
+			/*auto edited_asset_override = GetEditedAssetOverride();
+
+			auto ptr = edited_asset_override ? edited_asset_override.get() : mAsset.get();*/
+
 			auto ptr = mAsset.get();
 			rttr::variant var = ptr;
 			if (Inspect::get().inspect("", this, var, true))
@@ -51,11 +55,13 @@ namespace BHive
 
 		virtual const char *GetName() const override { return mLabel.c_str(); };
 
-		bool OnSave(const std::filesystem::path &path) const
+		virtual bool OnSave(const std::filesystem::path &path)
 		{
 			AssetFactory factory;
 			return factory.Export(mAsset, path);
 		}
+
+		// virtual Ref<T> GetEditedAssetOverride() const { return nullptr; }
 
 	protected:
 		Ref<T> mAsset;

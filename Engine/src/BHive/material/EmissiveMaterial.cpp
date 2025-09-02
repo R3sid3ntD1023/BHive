@@ -28,10 +28,15 @@ namespace BHive
 		shader->SetUniform<glm::vec3>("constants.EmissiveColor", EmissionColor);
 	}
 
-	Ref<Shader> EmissiveMaterial ::GetShader() const
+	Ref<Shader> EmissiveMaterial::GetShader() const
 	{
 		static Ref<Shader> shader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Emissive.glsl");
 		return shader;
+	}
+
+	Ref<Material> EmissiveMaterial::Clone() const
+	{
+		return CreateRef<EmissiveMaterial>(*this);
 	}
 
 	REFLECT(EmissiveMaterial)

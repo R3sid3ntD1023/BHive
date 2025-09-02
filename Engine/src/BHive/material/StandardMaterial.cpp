@@ -57,6 +57,11 @@ namespace BHive
 		return (Flags & CastShadows) != 0;
 	}
 
+	Ref<Material> StandardMaterial::Clone() const
+	{
+		return CreateRef<StandardMaterial>(*this);
+	}
+
 	REFLECT(StandardMaterial::EFlags)
 	{
 		BEGIN_REFLECT_ENUM(StandardMaterial::EFlags)(ENUM_VALUE(CastShadows), ENUM_VALUE(ReceiveShadows), ENUM_VALUE(DiaElectric), ENUM_VALUE(Shadows));
