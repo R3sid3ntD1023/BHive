@@ -5,50 +5,19 @@
 #include "gfx/VertexArray.h"
 #include "LineRenderer.h"
 #include "Renderer.h"
+#include "batches/LineRenderBatch.h"
 
 namespace BHive
 {
 	struct LineRenderer::RenderData
 	{
-		const static uint32_t sMaxVertexCount = 20'000;
-
-		struct FLineVertex
-		{
-			glm::vec3 position;
-			glm::vec4 color;
-		};
-
-		Ref<Shader> mLineShader;
-		Ref<VertexBuffer> mVertexBuffer;
-		Ref<VertexArray> mVertexArray;
-
-		FLineVertex *mVertexDataBuffer = nullptr;
-		FLineVertex *mVertexDataPtr = nullptr;
-		uint32_t mVertexCount = 0;
-
-		RenderData()
-		{
-			mVertexDataBuffer = new FLineVertex[sMaxVertexCount];
-
-			mVertexBuffer = CreateRef<VertexBuffer>(RenderData::sMaxVertexCount * sizeof(FLineVertex));
-			mVertexBuffer->SetLayout({{EShaderDataType::Float3}, {EShaderDataType::Float4}});
-
-			mVertexArray = CreateRef<VertexArray>();
-			mVertexArray->AddVertexBuffer(mVertexBuffer);
-
-			mLineShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Line.glsl");
-		}
-
-		~RenderData()
-		{
-			mVertexDataPtr = nullptr;
-			delete[] mVertexDataBuffer;
-		}
+		LineRenderBatch LineBatch;
 	};
 
 	void LineRenderer::Init()
 	{
 		sData = new RenderData();
+		sData->LineBatch.Init();
 	}
 
 	void LineRenderer::Shutdown()
@@ -63,22 +32,20 @@ namespace BHive
 
 	void LineRenderer::End()
 	{
-		Flush();
+		sData->LineBatch.End();
 	}
 
 	void LineRenderer::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const FColor &color, const FTransform &transform)
 	{
 		NextBatch();
 
-		sData->mVertexDataPtr->position = transform.to_mat4() * glm::vec4(p0, 1.0f);
-		sData->mVertexDataPtr->color = color;
-		sData->mVertexDataPtr++;
+		sData->LineBatch->position = transform.to_mat4() * glm::vec4(p0, 1.0f);
+		sData->LineBatch->color = color;
+		sData->LineBatch++;
 
-		sData->mVertexDataPtr->position = transform.to_mat4() * glm::vec4(p1, 1.0f);
-		sData->mVertexDataPtr->color = color;
-		sData->mVertexDataPtr++;
-
-		sData->mVertexCount += 2;
+		sData->LineBatch->position = transform.to_mat4() * glm::vec4(p1, 1.0f);
+		sData->LineBatch->color = color;
+		sData->LineBatch++;
 	}
 
 	void LineRenderer::DrawLine(const Line &line, const FTransform &transform)
@@ -321,35 +288,19 @@ namespace BHive
 
 	void LineRenderer::StartBatch()
 	{
-		sData->mVertexDataPtr = sData->mVertexDataBuffer;
-		sData->mVertexCount = 0;
+		sData->LineBatch.StartBatch();
 	}
 
 	void LineRenderer::NextBatch()
 	{
-		if (sData->mVertexCount >= RenderData::sMaxVertexCount)
-		{
-			Flush();
-			StartBatch();
-		}
+		sData->LineBatch.NextBatch();
 	}
 
 	void LineRenderer::Flush()
 	{
 		GPU_PROFILER_FUNCTION();
 
-		if (sData->mVertexCount > 0)
-		{
-			sData->mLineShader->Bind();
-
-			uint32_t size = (uint32_t)((uint8_t *)sData->mVertexDataPtr - (uint8_t *)sData->mVertexDataBuffer);
-			sData->mVertexBuffer->SetData(sData->mVertexDataBuffer, size);
-
-			RenderCommand::DrawArrays(Lines, *sData->mVertexArray, sData->mVertexCount);
-			Renderer::GetStats().DrawCalls++;
-
-			sData->mLineShader->UnBind();
-		}
+		sData->LineBatch.Flush();
 	}
 
 	LineRenderer::RenderData *LineRenderer::sData = nullptr;

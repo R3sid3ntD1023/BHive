@@ -51,6 +51,30 @@ namespace BHive
 		QuadRendererFlags Flags{0};
 	};
 
+	struct FQuadCreateInfo
+	{
+		const glm::vec3 *Positions;
+		const glm::vec2 *TexCoords;
+
+		FColor Color = FColor::White;
+		Ref<Texture> TextureRef{nullptr};
+		glm::vec2 Size{1, 1};
+		glm::vec2 Tiling{1, 1};
+		glm::mat4 Transform{1.0f};
+		QuadRendererFlags Flags = 0;
+	};
+
+	struct FBillboardCreateInfo
+	{
+		glm::vec2 Size{1, 1};
+		glm::vec2 Tiling{1, 1};
+		FColor Color{0xffffffff};
+		QuadRendererFlags Flags{0};
+		Ref<Texture> TextureRef{nullptr};
+		FTransform Transform;
+		int32_t EntityID = -1;
+	};
+
 	class QuadRenderer
 	{
 	public:
@@ -60,44 +84,29 @@ namespace BHive
 		static void Begin();
 		static void End();
 
-		static void DrawCircle(const FCircleParams &params, const FTransform &transform);
+		static void DrawCircle(const FCircleParams &params, const FTransform &transform, int32_t entity = -1);
 
-		static void DrawQuad(const FQuadParams &params, const Ref<Texture> &texture, const FTransform &transform);
+		static void DrawQuad(const FQuadParams &params, const Ref<Texture> &texture, const FTransform &transform, int32_t entity = -1);
 
-		static void DrawSprite(const FQuadParams &params, const Ref<Sprite> &sprite, const FTransform &transform);
+		static void DrawSprite(const FQuadParams &params, const Ref<Sprite> &sprite, const FTransform &transform, int32_t entity = -1);
 
-		static void DrawBillboard(const FQuadParams &params, const Ref<Texture> &texture, const FTransform &transform);
+		static void DrawBillboard(const FQuadParams &params, const Ref<Texture> &texture, const FTransform &transform, int32_t entity = -1);
 
-		static void DrawQuad(
-			const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FColor &color,
-			const glm::mat4 &transform, const Ref<Texture> &texture, const glm::vec2 &tiling, QuadRendererFlags flags = 0);
+		static void DrawQuad(const FQuadCreateInfo &create_info, int32_t entity = -1);
 
-		static void
-		DrawText(float size, const std::string &text, const FTextParams &params = {}, const FTransform &transform = {});
+		static void DrawText(float size, const std::string &text, const FTextParams &params = {}, const FTransform &transform = {}, int32_t entity = -1);
 
-		static void DrawText(
-			const Ref<Font> &font, float size, const std::string &text, const FTextParams &params = {},
-			const FTransform &transform = {});
+		static void DrawText(const Ref<Font> &font, float size, const std::string &text, const FTextParams &params = {}, const FTransform &transform = {}, int32_t entity = -1);
+
+		static void Flush();
 
 	private:
-		static void DrawTextQuad(
-			const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style,
-			const glm::mat4 &transform, const Ref<Texture> &texture);
-
-		static uint32_t
-		GetTextureIndex(struct IRenderDataBase *data, struct TextureData &textures, const Ref<Texture> &texture);
+		static void
+		DrawTextQuad(const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, const Ref<Texture> &texture, int32_t entity = -1);
 
 	private:
 		static void StartBatch();
-		static void Flush();
 
-	protected:
-		struct RenderData;
-		struct TextData;
-		struct CircleData;
-
-		static inline RenderData *sData = nullptr;
-		static inline TextData *sTextData = nullptr;
-		static inline CircleData *sCircleData = nullptr;
+		static inline struct RenderData2D *sRenderData2D = nullptr;
 	};
 } // namespace BHive
