@@ -1,6 +1,7 @@
 #include "ModelBuffer.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/StorageBuffer.h"
+#include "renderers/QuadRenderer.h"
 
 namespace BHive
 {
@@ -17,7 +18,16 @@ namespace BHive
 		InstanceBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * MAX_INSTANCES);
 	}
 
-	void ModelBuffer::Submit(const Ref<FMeshRenderData> &data)
+	void ModelBuffer::Draw(const Ref<FMeshRenderData> &data)
+	{
+		auto type = data->GetRenderDataType();
+		if (type == FMeshRenderData::Type::Skeletal || type == FMeshRenderData::Static)
+		{
+			DrawMesh(Cast<FStaticMeshRenderData>(data));
+		}
+	}
+
+	void ModelBuffer::DrawMesh(const Ref<FStaticMeshRenderData> &data)
 	{
 		uint32_t instance_count = 0;
 

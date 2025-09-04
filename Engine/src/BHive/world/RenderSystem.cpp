@@ -65,7 +65,7 @@ namespace BHive
 
 				renderer->SubmitLight(create_info);
 
-				LineRenderer::DrawSphere(c.Radius, 16, {}, c.Color, world_transform);
+				renderer->SubmitCommand([=]() { LineRenderer::DrawSphere(c.Radius, 16, {}, 0xFFFFFFFF, world_transform); });
 			}
 		}
 
@@ -87,7 +87,7 @@ namespace BHive
 
 				renderer->SubmitLight(create_info);
 
-				LineRenderer::DrawCone(c.Radius, c.Radius, 16, c.Color, world_transform);
+				LineRenderer::DrawCone(c.Radius, c.Radius, 16, 0xFFFFFFFF, world_transform);
 			}
 		}
 
@@ -149,7 +149,7 @@ namespace BHive
 				params.Tiling = c.Tiling;
 
 				auto sprite = c.Instance() ? c.Instance()->GetCurrentSprite() : c.FlipBookAsset->GetCurrentSprite();
-				QuadRenderer::DrawSprite(params, sprite, c.GetWorldTransform());
+				QuadRenderer::DrawSprite(params, sprite, c.GetWorldTransform(), (int32_t)e);
 			}
 		}
 
@@ -166,7 +166,7 @@ namespace BHive
 				params.Size = c.Size;
 				params.Tiling = c.Tiling;
 
-				QuadRenderer::DrawSprite(params, c.SpriteAsset, c.GetWorldTransform());
+				QuadRenderer::DrawSprite(params, c.SpriteAsset, c.GetWorldTransform(), (int32_t)e);
 			}
 		}
 
@@ -176,7 +176,7 @@ namespace BHive
 			{
 				auto &c = view.get<TextComponent>(e);
 
-				QuadRenderer::DrawText(c.Size, c.Text, c.Params, c.GetWorldTransform());
+				QuadRenderer::DrawText(c.Size, c.Text, c.Params, c.GetWorldTransform(), (int32_t)e);
 			}
 		}
 

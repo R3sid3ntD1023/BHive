@@ -7,12 +7,12 @@ namespace BHive
 
 	void SkeletalMeshComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(TAssetHandle(SkeletalMeshAsset));
+		ar(mOverrideMaterials, TAssetHandle(SkeletalMeshAsset));
 	}
 
 	void SkeletalMeshComponent::Load(cereal::BinaryInputArchive &ar)
 	{
-		ar(TAssetHandle(SkeletalMeshAsset));
+		ar(mOverrideMaterials, TAssetHandle(SkeletalMeshAsset));
 	}
 
 	void SkeletalMeshComponent::SetSkeletalMesh(const Ref<SkeletalMesh> &mesh)

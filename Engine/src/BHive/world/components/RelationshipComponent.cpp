@@ -13,16 +13,6 @@ namespace BHive
 		ar(Parent, Children);
 	}
 
-	void RelationshipComponent::Save(cereal::JSONOutputArchive &ar) const
-	{
-		ar(MAKE_NVP(Parent), MAKE_NVP(Parent));
-	}
-
-	void RelationshipComponent::Load(cereal::JSONInputArchive &ar)
-	{
-		ar(MAKE_NVP(Parent), MAKE_NVP(Parent));
-	}
-
 	REFLECT(RelationshipComponent)
 	{
 		BEGIN_REFLECT(RelationshipComponent)

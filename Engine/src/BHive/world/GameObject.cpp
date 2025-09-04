@@ -112,51 +112,6 @@ namespace BHive
 		}
 	}
 
-	void GameObject::Save(cereal::JSONOutputArchive &ar) const
-	{
-		auto &components = GetComponents();
-
-		ar.setNextName("Components");
-		ar.startNode();
-		ar(cereal::make_size_tag(components.size()));
-
-		for (auto &component : components)
-		{
-			ar.startNode();
-			ar(component->get_type());
-			component->Save(ar);
-			ar.finishNode();
-		}
-
-		ar.finishNode();
-	}
-
-	void GameObject::Load(cereal::JSONInputArchive &ar)
-	{
-		size_t num_components = 0;
-
-		ar.setNextName("Components");
-		ar.startNode();
-		ar(cereal::make_size_tag(num_components));
-
-		for (size_t i = 0; i < num_components; i++)
-		{
-			rttr::type component_type = BHive::InvalidType;
-
-			ar.startNode();
-			ar(component_type);
-
-			Component *component = GetOrAddComponent(component_type);
-
-			if (component)
-				component->Load(ar);
-
-			ar.finishNode();
-		}
-
-		ar.finishNode();
-	}
-
 	Component *GameObject::GetOrAddComponent(const rttr::type &type)
 	{
 		if (!type)

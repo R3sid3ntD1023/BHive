@@ -15,9 +15,6 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const;
 		virtual void Load(cereal::BinaryInputArchive &ar);
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const;
-		virtual void Load(cereal::JSONInputArchive &ar);
-
 		bool AutoPlay{false};
 
 		Ref<AudioSource> Audio;

@@ -15,10 +15,6 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		virtual void Save(cereal::JSONOutputArchive &ar) const override;
-
-		virtual void Load(cereal::JSONInputArchive &ar) override;
-
 		const Ref<StaticMesh> &GetStaticMesh() const { return mStaticMeshAsset; }
 
 		void SetStaticMesh(const Ref<StaticMesh> &mesh);

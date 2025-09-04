@@ -11,10 +11,8 @@
 
 namespace BHive
 {
-	class PickerRenderPass;
-	class OutlineRenderPass;
-	class OutlinePostProcessRenderPass;
-	class SceneRenderer;
+
+	class EditorSceneRenderer;
 	class ImSceneHierarchy;
 	class World;
 
@@ -51,11 +49,7 @@ namespace BHive
 	class EditorLayer : public Layer
 	{
 	private:
-		Ref<SceneRenderer> mRenderer;
-		Ref<PickerRenderPass> mPickerRenderPass;
-		Ref<OutlineRenderPass> mOutlineRenderPass;
-		Ref<OutlinePostProcessRenderPass> mOutlinePostProcessPass;
-
+		Ref<EditorSceneRenderer> mRenderer;
 		Ref<World> mEditorWorld;
 		Ref<World> mActiveWorld;
 
@@ -93,9 +87,6 @@ namespace BHive
 
 	private:
 		void InitRenderer(const glm::uvec2 &size);
-
-		// add editor-only render passes
-		void InitRenderPasses();
 
 		bool OnWindowResize(WindowResizeEvent &e);
 		bool OnKeyEvent(KeyEvent &e);

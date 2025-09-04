@@ -13,7 +13,8 @@ namespace BHive
 {
 	void OutlineRenderPass::Init()
 	{
-		mShader = ShaderManager::Get().Load("Outline.glsl");
+		mOutlineMeshShader = ShaderManager::Get().Load("Outline.glsl");
+		mOutlineQuadShader = ShaderManager::Get().Load("OutlineQuad.glsl");
 	}
 
 	void OutlineRenderPass::Render(const FMeshRenderDatas &data)
@@ -23,9 +24,17 @@ namespace BHive
 		RenderCommand::ClearColor(0, 0, 0, 0);
 		RenderCommand::Clear();
 
-		mShader->Bind();
+		switch (mSelectedRenderData->GetRenderDataType())
+		{
+		case FMeshRenderData::Billboard:
+			mOutlineQuadShader->Bind();
+			break;
+		default:
+			mOutlineMeshShader->Bind();
+			break;
+		}
 
-		Renderer::SubmitMesh(mSelectedRenderData);
+		Renderer::Draw(mSelectedRenderData);
 
 		mFrambuffer->UnBind();
 	}

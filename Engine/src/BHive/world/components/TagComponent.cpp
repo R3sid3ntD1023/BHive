@@ -13,16 +13,6 @@ namespace BHive
 		ar(mID, Name, Group);
 	}
 
-	void TagComponent::Save(cereal::JSONOutputArchive &ar) const
-	{
-		ar(MAKE_NVP("ID", mID), MAKE_NVP(Name), MAKE_NVP(Group));
-	}
-
-	void TagComponent::Load(cereal::JSONInputArchive &ar)
-	{
-		ar(MAKE_NVP("ID", mID), MAKE_NVP(Name), MAKE_NVP(Group));
-	}
-
 	REFLECT(TagComponent)
 	{
 		BEGIN_REFLECT(TagComponent)

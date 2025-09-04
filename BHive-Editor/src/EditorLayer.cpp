@@ -16,7 +16,7 @@
 #include "inspectors/Inspect.h"
 #include "project/Project.h"
 #include "renderers/Renderer.h"
-#include "renderers/SceneRenderer.h"
+#include "renderers/EditorSceneRenderer.h"
 #include "subsystems/Selection.h"
 #include "undoredo/Commands.h"
 #include "undoredo/UndoRedo.h"
@@ -75,7 +75,6 @@ namespace BHive
 		auto &size = window.GetSize();
 
 		InitRenderer(size);
-		InitRenderPasses();
 
 		float aspect = size.x / (float)size.y;
 		mEditorCamera = EditorCamera(45.f, aspect, .01f, 1000.f);
@@ -127,30 +126,20 @@ namespace BHive
 
 		mRenderer->SubmitCommand([=]() { LineRenderer::DrawGrid(mStyles.GridStyle); });
 
-		mRenderer->SubmitCommand(
-			[=]()
-			{
-				auto &thumbnail_cache = GetSubSystem<ThumbnailCache>();
-				auto &registry = mActiveWorld->GetRegistry();
-				static auto icon = thumbnail_cache.GetAssetIcon("PointLight");
-				static FQuadParams params{};
-				params.Size = {5, 5};
+		auto &thumbnail_cache = GetSubSystem<ThumbnailCache>();
+		auto &registry = mActiveWorld->GetRegistry();
+		static auto icon = thumbnail_cache.GetAssetIcon("PointLight");
+		static FQuadParams params{};
+		params.Size = {5, 5};
 
-				auto lambda = [=](const entt::entity &e, const PointLightComponent &component)
-				{
-					auto gameobject = mActiveWorld->GetGameObject((int32_t)e);
-					auto transform = gameobject->GetWorldTransform();
-					QuadRenderer::DrawBillboard(params, icon, transform);
-				};
+		auto lambda = [=](const entt::entity &e, const PointLightComponent &component)
+		{
+			auto gameobject = mActiveWorld->GetGameObject((int32_t)e);
+			auto transform = gameobject->GetWorldTransform();
+			mRenderer->SubmitCommand([=]() { QuadRenderer::DrawBillboard(params, icon, transform, (int32_t)e); });
+		};
 
-				registry.view<PointLightComponent>().each(lambda);
-			});
-
-		if (sSelectedRenderData.Object)
-			sSelectedRenderData.RenderData->ObjectInfo.Transform = sSelectedRenderData.Object->GetWorldTransform();
-		mOutlineRenderPass->SetSelected(sSelectedRenderData.RenderData);
-		mOutlinePostProcessPass->SetSelected(sSelectedRenderData.Object);
-		mOutlinePostProcessPass->SetOutlineTexture(mOutlineRenderPass->GetOutputTetxure());
+		registry.view<PointLightComponent>().each(lambda);
 
 		mRenderer->End();
 	}
@@ -328,7 +317,6 @@ namespace BHive
 		ImGui::End();
 
 #endif
-
 		Viewport();
 
 		window_system.Update();
@@ -367,28 +355,14 @@ namespace BHive
 
 	void EditorLayer::InitRenderer(const glm::uvec2 &size)
 	{
-		mRenderer = CreateRef<SceneRenderer>();
+		mRenderer = CreateRef<EditorSceneRenderer>();
 		mRenderer->Init(size);
-	}
-
-	void EditorLayer::InitRenderPasses()
-	{
-		if (!mRenderer)
-			return;
-
-		mOutlineRenderPass = mRenderer->PushRenderPass<OutlineRenderPass>();
-		mOutlinePostProcessPass = mRenderer->PushPostProcessRenderPass<OutlinePostProcessRenderPass>();
-
-		mPickerRenderPass = mRenderer->PushRenderPass<PickerRenderPass>();
-		mPickerRenderPass->OnEntityPicked.bind(
-			[&](int32_t id, const Ref<FMeshRenderData> &data)
+		mRenderer->OnEntitySelectedEvent.bind(
+			[&](int32_t entity)
 			{
+				auto object = mActiveWorld->GetGameObject(entity);
 				auto &selection = SubSystemContext::Get().GetSubSystem<Selection>();
-
-				auto object = mActiveWorld->GetGameObject(id).get();
-				selection.Select(object);
-
-				sSelectedRenderData = {data, object};
+				selection.Select(object.get());
 			});
 	}
 
@@ -419,8 +393,8 @@ namespace BHive
 
 	void EditorLayer::ClearSelection()
 	{
-		sSelectedRenderData = {};
 		SubSystemContext::Get().GetSubSystem<Selection>().Clear();
+		mRenderer->ClearPicked();
 	}
 
 	void EditorLayer::CreateWorld()
@@ -647,7 +621,7 @@ namespace BHive
 						int mouse_x = (int)mx;
 						int mouse_y = (int)my;
 
-						mPickerRenderPass->Pick({mouse_x, mouse_y});
+						mRenderer->Pick({mouse_x, mouse_y});
 					}
 				}
 

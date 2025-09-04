@@ -4,33 +4,35 @@
 #include "gfx/ShaderManager.h"
 #include "PickerRenderPass.h"
 #include "renderers/Renderer.h"
+#include "renderers/QuadRenderer.h"
 #include <glad/glad.h>
 
 namespace BHive
 {
 	void PickerRenderPass::Init()
 	{
-		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Picker.glsl");
+		mShader = ShaderManager::Get().Load("Picker.glsl");
 		ASSERT(mShader);
 	}
 
 	void PickerRenderPass::Render(const FMeshRenderDatas &data)
 	{
 		mFrambuffer->Bind();
-		mShader->Bind();
 
 		RenderCommand::Clear();
 
-		static int32_t clear_id = -1;
+		static int clear_id = -1;
 		mFrambuffer->ClearAttachment(0, &clear_id);
 
+		mShader->Bind();
 		for (const auto &[dist, obj] : data)
 		{
 			mShader->SetUniform("constants.uEntityID", obj->ObjectInfo.EntityID);
-			Renderer::SubmitMesh(obj);
+			Renderer::Draw(obj);
 		}
+		mShader->UnBind();
 
-		int32_t pixel_id = -1;
+		int pixel_id = -1;
 		mFrambuffer->ReadPixel(0, mMousePos.x, mMousePos.y, 1, 1, &pixel_id);
 
 		LOG_INFO("Picked ID: {}", pixel_id);
@@ -39,7 +41,8 @@ namespace BHive
 			auto lambda = [pixel_id](const std::pair<float, Ref<FMeshRenderData>> &pair) { return pair.second->ObjectInfo.EntityID == pixel_id; };
 			auto picked = std::find_if(data.begin(), data.end(), lambda);
 
-			OnEntityPicked.invoke(pixel_id, picked->second);
+			auto render_data = picked != data.end() ? picked->second : nullptr;
+			OnEntityPicked.invoke(pixel_id, render_data);
 		}
 		else
 		{
@@ -47,7 +50,6 @@ namespace BHive
 		}
 
 		mFrambuffer->UnBind();
-		mShader->UnBind();
 
 		mEnabled = false;
 	}
@@ -67,8 +69,8 @@ namespace BHive
 		FramebufferSpecification spec{};
 		spec.Width = mSize.x;
 		spec.Height = mSize.y;
-		spec.Attachments.attach({.InternalFormat = EFormat::RED_INTEGER, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
-			.attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+
+		spec.Attachments.attach({.InternalFormat = EFormat::RED_INTEGER, .WrapMode = EWrapMode::CLAMP_TO_EDGE}).attach({EFormat::DEPTH24_STENCIL8});
 		mFrambuffer = CreateRef<Framebuffer>(spec);
 	}
 

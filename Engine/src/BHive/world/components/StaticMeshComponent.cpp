@@ -14,16 +14,6 @@ namespace BHive
 		ar(mOverrideMaterials, TAssetHandle(mStaticMeshAsset));
 	}
 
-	void StaticMeshComponent::Save(cereal::JSONOutputArchive &ar) const
-	{
-		ar(MAKE_NVP("OverrideMaterials", mOverrideMaterials), MAKE_NVP("StaticMesh", TAssetHandle(mStaticMeshAsset)));
-	}
-
-	void StaticMeshComponent::Load(cereal::JSONInputArchive &ar)
-	{
-		ar(MAKE_NVP("OverrideMaterials", mOverrideMaterials), MAKE_NVP("StaticMesh", TAssetHandle(mStaticMeshAsset)));
-	}
-
 	void StaticMeshComponent::SetStaticMesh(const Ref<StaticMesh> &mesh)
 	{
 		mStaticMeshAsset = mesh;

@@ -27,7 +27,8 @@ namespace BHive
 
 	private:
 		Ref<FMeshRenderData> mSelectedRenderData;
-		Ref<Shader> mShader;
+		Ref<Shader> mOutlineMeshShader;
+		Ref<Shader> mOutlineQuadShader;
 	};
 
 	class OutlinePostProcessRenderPass : public PostProcessRenderPass

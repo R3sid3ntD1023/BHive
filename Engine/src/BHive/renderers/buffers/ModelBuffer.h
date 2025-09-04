@@ -11,7 +11,9 @@ namespace BHive
 	{
 		void Init();
 
-		void Submit(const Ref<FMeshRenderData> &data);
+		void Draw(const Ref<FMeshRenderData> &data);
+
+		void DrawMesh(const Ref<FStaticMeshRenderData> &data);
 
 	private:
 		Ref<StorageBuffer> BoneBuffer;

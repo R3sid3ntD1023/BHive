@@ -46,11 +46,13 @@ namespace BHive
 
 		SceneRenderer() = default;
 
-		void Init(const glm::uvec2 &size);
+		virtual ~SceneRenderer() = default;
+
+		virtual void Init(const glm::uvec2 &size);
 
 		void Begin(const Camera *camera, const FTransform &view);
 
-		void End();
+		virtual void End();
 
 		void SubmitLight(const FDirectionalLightCreateInfo &info);
 

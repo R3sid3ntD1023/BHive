@@ -364,13 +364,31 @@ namespace BHive
 
 	void ImContentBrowserWindow::OnCreateAssetMenu()
 	{
-		if (ImGui::Selectable("Create Folder"))
+		static auto create_folder_lambda = [](const std::filesystem::path &file)
 		{
+			if (std::filesystem::exists(file))
+			{
+				return false;
+			}
+
 			std::error_code error;
-			std::filesystem::create_directory(mCurrentDirectory / "NewFolder", error);
+			std::filesystem::create_directory(file, error);
 			if (error)
 			{
 				LOG_ERROR("{}", error.message());
+			}
+
+			return true;
+		};
+
+		if (ImGui::Selectable("Create Folder"))
+		{
+			auto new_folder_name = mCurrentDirectory / "NewFolder";
+
+			int32_t index = 1;
+			while (!create_folder_lambda(new_folder_name))
+			{
+				new_folder_name = mCurrentDirectory / ("NewFolder" + std::to_string(index++));
 			}
 		}
 	}

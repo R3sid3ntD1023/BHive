@@ -46,6 +46,7 @@ namespace BHive
 		{
 			RenderData.clear();
 			ShadowPassRenderData.clear();
+			RenderPassRenderData.clear();
 		}
 	};
 
@@ -102,6 +103,11 @@ namespace BHive
 
 	void SceneRenderer::End()
 	{
+		while (mCommands.size())
+		{
+			mCommands.top()();
+			mCommands.pop();
+		}
 
 		mSceneRenderData->Lights.End();
 		mSceneRenderData->ShadowRenderer.End();
@@ -139,15 +145,9 @@ namespace BHive
 			mat->Submit(shader);
 
 			for (auto [dist, object] : objects)
-				Renderer::SubmitMesh(object);
+				Renderer::Draw(object);
 
 			shader->UnBind();
-		}
-
-		while (mCommands.size())
-		{
-			mCommands.top()();
-			mCommands.pop();
 		}
 
 		Renderer::End();
@@ -230,7 +230,7 @@ namespace BHive
 		const auto &transform = info.ObjectInfo.Transform;
 		const auto &materials = info.Materials;
 
-		Ref<FMeshRenderData> data;
+		Ref<FStaticMeshRenderData> data;
 
 		// Cull the mesh if it is not visible
 		if (!mesh || IsMeshCulled(mesh, transform))

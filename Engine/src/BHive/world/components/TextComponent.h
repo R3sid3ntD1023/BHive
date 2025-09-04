@@ -13,6 +13,10 @@ namespace BHive
 
 		std::string Text;
 
+		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+
+		virtual void Load(cereal::BinaryInputArchive &ar) override;
+
 		REFLECTABLEV(Component)
 	};
 

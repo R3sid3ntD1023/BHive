@@ -34,16 +34,11 @@ namespace BHive
 		enum Type
 		{
 			Static,
-			Skeletal
+			Skeletal,
+			Billboard
 		};
 
 		FObjectInfo ObjectInfo;
-
-		Ref<VertexArray> VertexArray;
-
-		FSubMesh SubMesh;
-
-		Ref<FInstanceInfo> InstanceInfo;
 
 		virtual ~FMeshRenderData() = default;
 
@@ -52,10 +47,16 @@ namespace BHive
 
 	struct FStaticMeshRenderData : public FMeshRenderData
 	{
+		Ref<VertexArray> VertexArray;
+
+		FSubMesh SubMesh;
+
+		Ref<FInstanceInfo> InstanceInfo;
+
 		Type GetRenderDataType() const override { return Type::Static; }
 	};
 
-	struct FSkeletalMeshRenderData : public FMeshRenderData
+	struct FSkeletalMeshRenderData : public FStaticMeshRenderData
 	{
 		Ref<FBoneInfo> BoneInfo;
 

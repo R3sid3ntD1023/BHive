@@ -24,7 +24,6 @@ layout(location = 2) out struct VS_OUT
 	vec3 normal;
 	vec2 texcoord;
 	vec4 color;
-	vec3 view;
 }
 vs_out;
 
@@ -32,7 +31,6 @@ void main()
 {
 	gl_Position = u_projection * u_view * vPosition;
 
-	vs_out.view = u_camera_position;
 	vs_out.position = vPosition.xyz;
 	vs_out.normal = vNormal;
 	vs_out.texcoord = vTexCoord;
@@ -56,7 +54,6 @@ layout(location = 2) in struct VS_OUT
 	vec3 normal;
 	vec2 texcoord;
 	vec4 color;
-	vec3 view;
 }
 vs_in;
 

@@ -64,9 +64,9 @@ namespace BHive
 		sData->Camera.Begin(projection, view);
 	}
 
-	void Renderer::SubmitMesh(const Ref<FMeshRenderData> &data)
+	void Renderer::Draw(const Ref<FMeshRenderData> &data)
 	{
-		sData->Model.Submit(data);
+		sData->Model.Draw(data);
 	}
 
 	void Renderer::End()

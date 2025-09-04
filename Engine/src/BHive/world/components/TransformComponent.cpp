@@ -13,16 +13,6 @@ namespace BHive
 		ar(Transform);
 	}
 
-	void TransformComponent::Save(cereal::JSONOutputArchive &ar) const
-	{
-		ar(MAKE_NVP(Transform));
-	}
-
-	void TransformComponent::Load(cereal::JSONInputArchive &ar)
-	{
-		ar(MAKE_NVP(Transform));
-	}
-
 	RTTR_REGISTRATION
 	{
 		BEGIN_REFLECT(FTransform)

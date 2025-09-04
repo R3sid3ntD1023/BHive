@@ -26,16 +26,6 @@ namespace BHive
 		ar(AutoPlay, TAssetHandle(Audio));
 	}
 
-	void AudioComponent::Save(cereal::JSONOutputArchive &ar) const
-	{
-		ar(MAKE_NVP(AutoPlay), MAKE_NVP("Audio", TAssetHandle(Audio)));
-	}
-
-	void AudioComponent::Load(cereal::JSONInputArchive &ar)
-	{
-		ar(MAKE_NVP(AutoPlay), MAKE_NVP("Audio", TAssetHandle(Audio)));
-	}
-
 	REFLECT(AudioComponent)
 	{
 		BEGIN_REFLECT(AudioComponent)

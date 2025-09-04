@@ -38,11 +38,12 @@ layout(std430, binding = 3) restrict readonly buffer Bones
 
 void main()
 {
-	#include <includes/Common.vert>
+	#include <Common.vert>
 }
 
 #type fragment
 #version 460
+
 
 layout(push_constant) uniform PushConstants
 {
@@ -53,7 +54,6 @@ layout(location = 0) out int fs_out;
 
 void main()
 {	
-	
 	fs_out = constants.uEntityID;
 
 }

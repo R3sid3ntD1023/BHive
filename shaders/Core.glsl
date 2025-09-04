@@ -12,6 +12,16 @@ struct PerObjectData
 	mat4 WorldMatrix;
 };
 
+vec4 EncodeEntityID(in int id)
+{
+	vec4 color = vec4(-1, -1, -1, 1);
+	id += 1;
+	color.r = (id & 0xFF) / 255.0;
+	color.g = ((id << 8) & 0xFF) / 255.0;
+	color.b = ((id << 16) & 0xFF) / 255.0;
+	return color;
+}
+
 
 float median(float r, float g, float b)
 {

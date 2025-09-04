@@ -22,6 +22,8 @@ namespace BHive
 
 		virtual bool IsEnabled() const;
 
+		const Ref<Framebuffer> &GetFramebuffer() const { return mFrambuffer; }
+
 	protected:
 		Ref<Framebuffer> mFrambuffer;
 		glm::uvec2 mSize{0, 0};
