@@ -18,9 +18,17 @@ namespace BHive
 
 		bool loaded_program_data = false;
 		auto &shader_time_cache = GetSubSystem<ShaderTimeCache>();
-		if (!shader_time_cache.WasFileModified(path))
+
+		ShaderTimeCache::FileTime time{};
+		bool was_modified = shader_time_cache.WasFileModified(path, &time);
+
+		if (!was_modified)
 		{
 			loaded_program_data = serializer.Deserialize(path, *this);
+		}
+		else
+		{
+			LOG_TRACE("Shader::Shader() Shader was modified. Recompiling... {}", path);
 		}
 
 		if (!loaded_program_data)

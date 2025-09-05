@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	class PerspectiveCamera : public Camera
+	class BHIVE_API PerspectiveCamera : public Camera
 	{
 	public:
 		PerspectiveCamera();

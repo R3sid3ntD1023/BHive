@@ -6,7 +6,7 @@ namespace BHive
 {
 	class Texture;
 
-	class PostProcessRenderPass
+	class BHIVE_API PostProcessRenderPass
 	{
 	public:
 		virtual ~PostProcessRenderPass() = default;

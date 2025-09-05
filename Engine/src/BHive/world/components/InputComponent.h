@@ -6,7 +6,7 @@
 namespace BHive
 {
 
-	struct InputComponent : public Component, public ITickable
+	struct BHIVE_API InputComponent : public Component, public ITickable
 	{
 
 		InputComponent() = default;

@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-	struct Bone
+	struct BHIVE_API Bone
 	{
 		std::string Name;
 		int32_t ID;

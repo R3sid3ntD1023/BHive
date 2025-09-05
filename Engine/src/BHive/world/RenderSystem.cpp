@@ -11,6 +11,8 @@ namespace BHive
 		auto &render_settings = renderer->GetRenderSettings();
 		auto &registry = world->GetRegistry();
 
+		LineRenderer::SetLineWidth(3.f);
+
 		{
 
 			auto camera_components = registry.view<TransformComponent, CameraComponent>();
@@ -28,7 +30,7 @@ namespace BHive
 					{
 						FrustumViewer viewer(proj, view);
 
-						LineRenderer::DrawFrustum(viewer, FColor::Green);
+						LineRenderer::DrawFrustum(viewer, FColor::Green, (int32_t)e);
 					}
 
 					break;
@@ -87,7 +89,7 @@ namespace BHive
 
 				renderer->SubmitLight(create_info);
 
-				LineRenderer::DrawCone(c.Radius, c.Radius, 16, 0xFFFFFFFF, world_transform);
+				LineRenderer::DrawCone(c.Radius, c.Radius, 16, 0xFFFFFFFF, world_transform, (int32_t)e);
 			}
 		}
 
@@ -131,7 +133,7 @@ namespace BHive
 				info.BoneInfo->Bones = pose->GetTransformsJointSpace();
 
 				renderer->SubmitMesh(info);
-				LineRenderer::DrawAABB(sc.GetSkeletalMesh()->GetBoundingBox(), FColor::Red, t);
+				LineRenderer::DrawAABB(sc.GetSkeletalMesh()->GetBoundingBox(), FColor::Red, t, (int32_t)e);
 			}
 		}
 
@@ -188,17 +190,17 @@ namespace BHive
 
 			for (const auto &[e, collider] : box_colliders.each())
 			{
-				LineRenderer::DrawBox(collider.Extents, collider.Offset, collider.Color, collider.GetWorldTransform());
+				LineRenderer::DrawBox(collider.Extents, collider.Offset, collider.Color, collider.GetWorldTransform(), (int32_t)e);
 			}
 
 			for (const auto &[e, collider] : sphere_colliders.each())
 			{
-				LineRenderer::DrawSphere(collider.Radius, 32, collider.Offset, collider.Color, collider.GetWorldTransform());
+				LineRenderer::DrawSphere(collider.Radius, 32, collider.Offset, collider.Color, collider.GetWorldTransform(), (int32_t)e);
 			}
 
 			for (const auto &[e, collider] : capsule_colliders.each())
 			{
-				LineRenderer::DrawCapsule(collider.Radius, collider.HalfHeight, 16, collider.Offset, collider.Color, collider.GetWorldTransform());
+				LineRenderer::DrawCapsule(collider.Radius, collider.HalfHeight, 16, collider.Offset, collider.Color, collider.GetWorldTransform(), (int32_t)e);
 			}
 		}
 	}

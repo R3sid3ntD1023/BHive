@@ -25,6 +25,7 @@ namespace BHive
 		const std::vector<glm::mat4> &GetRestPoseTransforms() const { return mRestPoseTransforms; };
 
 		Bones &GetBones() { return mBones; }
+
 		const Bones &GetBones() const { return mBones; }
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;

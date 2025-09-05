@@ -16,7 +16,7 @@ namespace BHive
 	DECLARE_EVENT(OnTrigger, struct ColliderComponent *, GameObject *);
 	DECLARE_EVENT(OnHit, const glm::vec3 &, const glm::vec3 &, float);
 
-	struct ColliderComponent : public Component
+	struct BHIVE_API ColliderComponent : public Component
 	{
 		ColliderComponent() = default;
 		ColliderComponent(const ColliderComponent &other) = default;

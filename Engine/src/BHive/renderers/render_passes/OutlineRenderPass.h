@@ -9,7 +9,7 @@ namespace BHive
 	class Shader;
 	class Texture;
 
-	class OutlineRenderPass : public RenderPass
+	class BHIVE_API OutlineRenderPass : public RenderPass
 	{
 	public:
 		void Init() override;
@@ -31,7 +31,7 @@ namespace BHive
 		Ref<Shader> mOutlineQuadShader;
 	};
 
-	class OutlinePostProcessRenderPass : public PostProcessRenderPass
+	class BHIVE_API OutlinePostProcessRenderPass : public PostProcessRenderPass
 	{
 	public:
 		void Init() override;

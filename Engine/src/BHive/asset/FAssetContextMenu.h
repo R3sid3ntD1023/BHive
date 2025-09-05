@@ -23,7 +23,7 @@ namespace BHive
 	}
 
 	template <typename T>
-	struct BHIVE_API AssetContextMenuBuilder
+	struct AssetContextMenuBuilder
 	{
 		AssetContextMenuBuilder(const std::string &className)
 			: mClass(rttr::registration::class_<T>(className))

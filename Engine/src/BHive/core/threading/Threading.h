@@ -4,12 +4,13 @@
 #include <functional>
 #include <queue>
 #include <mutex>
+#include "core/CoreAPI.h"
 
 namespace BHive
 {
 	using ThreadFunction = std::function<void()>;
 
-	class IJob
+	class BHIVE_API IJob
 	{
 	public:
 		virtual ~IJob() = default;
@@ -17,7 +18,7 @@ namespace BHive
 		virtual ThreadFunction GetDispatchedFunction() = 0;
 	};
 
-	class Thread
+	class BHIVE_API Thread
 	{
 	public:
 		Thread() = default;

@@ -10,7 +10,7 @@ namespace BHive
 		Orthographic
 	};
 
-	struct FPerspectiveSettings
+	struct BHIVE_API FPerspectiveSettings
 	{
 		float Fov = 45.0f;
 
@@ -25,7 +25,7 @@ namespace BHive
 		}
 	};
 
-	struct FOrthographicSettings
+	struct BHIVE_API FOrthographicSettings
 	{
 		float Left = -10.0f;
 

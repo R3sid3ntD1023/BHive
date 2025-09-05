@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	struct TextComponent : public Component
+	struct BHIVE_API TextComponent : public Component
 	{
 		float Size = 10.f;
 

@@ -6,7 +6,7 @@ namespace BHive
 {
 	class World;
 
-	class Prefab : public Asset
+	class BHIVE_API Prefab : public Asset
 	{
 	public:
 		Prefab();

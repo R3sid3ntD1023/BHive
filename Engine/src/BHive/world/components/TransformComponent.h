@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	struct TransformComponent : public Component
+	struct BHIVE_API TransformComponent : public Component
 	{
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent &) = default;

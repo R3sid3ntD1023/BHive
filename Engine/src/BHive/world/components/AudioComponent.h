@@ -6,7 +6,7 @@ namespace BHive
 {
 	class AudioSource;
 
-	struct AudioComponent : public Component
+	struct BHIVE_API AudioComponent : public Component
 	{
 	public:
 		void Begin() override;

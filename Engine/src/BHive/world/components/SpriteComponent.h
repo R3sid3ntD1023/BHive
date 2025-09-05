@@ -6,7 +6,7 @@
 namespace BHive
 {
 
-	struct SpriteComponent : public Component
+	struct BHIVE_API SpriteComponent : public Component
 	{
 		SpriteComponent() = default;
 		SpriteComponent(const SpriteComponent &other) = default;

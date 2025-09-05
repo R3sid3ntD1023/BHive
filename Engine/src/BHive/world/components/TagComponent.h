@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	struct TagComponent : public Component
+	struct BHIVE_API TagComponent : public Component
 	{
 		TagComponent() = default;
 		TagComponent(const TagComponent &) = default;

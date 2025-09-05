@@ -9,7 +9,7 @@ namespace BHive
 
 	using ChildrenList = std::unordered_set<UUID>;
 
-	struct RelationshipComponent : public Component
+	struct BHIVE_API RelationshipComponent : public Component
 	{
 		RelationshipComponent() = default;
 

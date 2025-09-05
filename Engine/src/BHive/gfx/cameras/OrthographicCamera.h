@@ -4,13 +4,12 @@
 
 namespace BHive
 {
-	class OrthographicCamera : public Camera
+	class BHIVE_API OrthographicCamera : public Camera
 	{
 	public:
 		OrthographicCamera();
 
-		OrthographicCamera(
-			float left, float right, float bottom, float top, float aspect, float nearClip = 0, float farClip = 1);
+		OrthographicCamera(float left, float right, float bottom, float top, float aspect, float nearClip = 0, float farClip = 1);
 		OrthographicCamera(float size, float aspect, float nearClip = 0, float farClip = 1);
 
 		virtual void Resize(uint32_t w, uint32_t h);

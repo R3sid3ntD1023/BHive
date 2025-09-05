@@ -123,7 +123,7 @@ namespace BHive
 		uint32_t IsDepth = 0;
 	};
 
-	struct FTextureCreateInfo
+	struct BHIVE_API FTextureCreateInfo
 	{
 		uint32_t Channels = 0;
 		EFormat InternalFormat = EFormat::Invalid;

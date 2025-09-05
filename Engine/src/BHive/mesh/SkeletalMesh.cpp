@@ -10,21 +10,30 @@ namespace BHive
 		mDefaultPose = CreateRef<SkeletalPose>(mSkeleton.get());
 	}
 
+	const AABB &SkeletalMesh::GetBoundingBox() const
+	{
+		const auto &root_node = mSkeleton->GetRoot().mName;
+		const auto &root_transform = mSkeleton->FindBone(root_node)->LocalBindPoseMatrix;
+		const auto &bounds = GetData().mBoundingBox;
+
+		auto min = root_transform * glm::vec4(bounds.Min, 1);
+		auto max = root_transform * glm::vec4(bounds.Max, 1);
+
+		return {min, max};
+	}
+
 	void SkeletalMesh::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		BaseMesh::Save(ar);
 
-		TAssetHandle<Skeleton> handle = mSkeleton;
-
-		ar(handle);
+		ar(TAssetHandle(mSkeleton));
 	}
 
 	void SkeletalMesh::Load(cereal::BinaryInputArchive &ar)
 	{
 		BaseMesh::Load(ar);
 
-		TAssetHandle<Skeleton> handle(mSkeleton);
-		ar(handle);
+		ar(TAssetHandle(mSkeleton));
 
 		if (mSkeleton)
 			mDefaultPose = CreateRef<SkeletalPose>(mSkeleton.get());

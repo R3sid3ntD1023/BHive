@@ -5,6 +5,13 @@ namespace BHive
 {
 	ShaderTimeCache::ShaderTimeCache()
 	{
+		std::filesystem::recursive_directory_iterator it(ENGINE_SHADER_PATH);
+		for (const auto &entry : it)
+		{
+			auto modified_time = std::chrono::duration_cast<std::chrono::seconds>(std::filesystem::last_write_time(entry).time_since_epoch()).count();
+			mTimes.emplace(entry, FileTime{.Modified = modified_time});
+		}
+
 		size_t count = 0;
 		auto file = ShaderUtils::GetCacheDirectory() / "ShaderWriteTimes.txt";
 		char token;
@@ -16,20 +23,13 @@ namespace BHive
 			for (size_t i = 0; i < count; i++)
 			{
 				std::string path;
-				long long time;
+				int64_t last_time = 0;
 
 				in >> path >> token;
-				in >> time;
+				in >> last_time;
 
-				mModifiedTimes.emplace(path, time);
+				mTimes[path].Last = last_time;
 			}
-		}
-
-		std::filesystem::recursive_directory_iterator it(ENGINE_SHADER_PATH);
-		for (const auto &entry : it)
-		{
-			auto modified_time = std::chrono::duration_cast<std::chrono::seconds>(std::filesystem::last_write_time(entry).time_since_epoch()).count();
-			mLastTimes.emplace(entry, modified_time);
 		}
 	}
 
@@ -40,20 +40,26 @@ namespace BHive
 		if (!out)
 			return;
 
-		auto count = mLastTimes.size();
+		auto count = mTimes.size();
 		out << count << '\n';
 
-		for (const auto &[path, time] : mLastTimes)
+		for (const auto &[path, time] : mTimes)
 		{
 			auto path_str = path.string();
 
-			out << path_str << " : " << time;
+			out << path_str << " : " << time.Last;
 			out << '\n';
 		}
 	}
 
-	bool ShaderTimeCache::WasFileModified(const std::filesystem::path &file)
+	bool ShaderTimeCache::WasFileModified(const std::filesystem::path &file, FileTime *time)
 	{
-		return mModifiedTimes[file] != mLastTimes[file];
+		if (!mTimes.contains(file))
+			return false;
+
+		if (time)
+			*time = mTimes[file];
+
+		return !time;
 	}
 } // namespace BHive

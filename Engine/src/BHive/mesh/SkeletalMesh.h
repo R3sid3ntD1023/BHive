@@ -18,6 +18,8 @@ namespace BHive
 
 		Ref<class SkeletalPose> GetDefaultPose() const { return mDefaultPose; }
 
+		const AABB &GetBoundingBox() const override;
+
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;

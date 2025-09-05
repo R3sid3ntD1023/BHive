@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	struct BoxColliderComponent : public ColliderComponent
+	struct BHIVE_API BoxColliderComponent : public ColliderComponent
 	{
 
 		glm::vec3 Extents{0.5f};

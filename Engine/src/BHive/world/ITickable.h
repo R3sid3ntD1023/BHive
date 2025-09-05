@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	struct ITickable
+	struct BHIVE_API ITickable
 	{
 		virtual void Update(float) {};
 

@@ -25,7 +25,7 @@ namespace BHive
 
 		Ref<VertexArray> &GetVertexArray() { return mVertexArray; }
 
-		const AABB &GetBoundingBox() const { return mData.mBoundingBox; }
+		virtual const AABB &GetBoundingBox() const { return mData.mBoundingBox; }
 
 		const FMeshData &GetData() const { return mData; }
 

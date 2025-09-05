@@ -8,8 +8,9 @@ namespace BHive
 {
 	struct FLineVertex
 	{
-		glm::vec3 position;
-		glm::vec4 color;
+		glm::vec3 Position;
+		glm::vec4 Color;
+		int32_t EntityID = -1;
 	};
 
 	struct LineRenderBatch : public IRenderBatch

@@ -7,7 +7,7 @@ namespace BHive
 {
 	class SkeletalMesh;
 
-	class SkeletalMeshComponent : public Component
+	class BHIVE_API SkeletalMeshComponent : public Component
 	{
 	public:
 		SkeletalMeshComponent() = default;

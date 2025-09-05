@@ -5,7 +5,7 @@
 namespace BHive
 {
 
-	class EmissiveMaterial : public Material
+	class BHIVE_API EmissiveMaterial : public Material
 	{
 
 	public:

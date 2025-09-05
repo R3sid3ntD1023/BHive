@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	class DirectionalLightComponent : public Component
+	class BHIVE_API DirectionalLightComponent : public Component
 	{
 	public:
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;

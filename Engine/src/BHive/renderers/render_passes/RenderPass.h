@@ -7,7 +7,7 @@ namespace BHive
 {
 	class Framebuffer;
 
-	class RenderPass
+	class BHIVE_API RenderPass
 	{
 	public:
 		virtual void Init() {};

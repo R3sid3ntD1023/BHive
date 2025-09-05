@@ -16,7 +16,7 @@ namespace BHive
 		Dynamic
 	};
 
-	struct PhysicsSettings
+	struct BHIVE_API PhysicsSettings
 	{
 		bool PhysicsEnabled{true};
 
@@ -37,12 +37,11 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(PhysicsEnabled, BodyType, Mass, LinearDamping, AngularDamping, LinearLockAxis, AngularLockAxis,
-			   GravityEnabled);
+			ar(PhysicsEnabled, BodyType, Mass, LinearDamping, AngularDamping, LinearLockAxis, AngularLockAxis, GravityEnabled);
 		}
 	};
 
-	struct PhysicsComponent : public Component, public ITickable
+	struct BHIVE_API PhysicsComponent : public Component, public ITickable
 	{
 		PhysicsComponent() = default;
 		PhysicsComponent(const PhysicsComponent &) = default;

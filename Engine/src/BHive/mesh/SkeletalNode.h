@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	struct SkeletalNode
+	struct BHIVE_API SkeletalNode
 	{
 		std::string mName;
 		glm::mat4 ParentTransformation{1.f};

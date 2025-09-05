@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	struct CapsuleColliderComponent : public ColliderComponent
+	struct BHIVE_API CapsuleColliderComponent : public ColliderComponent
 	{
 		float Radius = .5f;
 		float HalfHeight = 1.f;

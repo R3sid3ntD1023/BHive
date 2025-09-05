@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	struct StaticMeshComponent : public Component
+	struct BHIVE_API StaticMeshComponent : public Component
 	{
 
 		StaticMeshComponent() = default;

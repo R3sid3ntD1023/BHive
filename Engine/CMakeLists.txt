@@ -1,5 +1,6 @@
 cmake_minimum_required( VERSION 3.10 )
 
+option(BUILD_SHARED_LIB "Build Engine dll" ON)
 
 include(cmake/vulkan.cmake)
 include(FindVulkan)
@@ -39,7 +40,13 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES} ${SOURCE_FIL
 
 set(TARGET_NAME BHive-Engine)
 
-add_library(${TARGET_NAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
+if(BUILD_SHARED_LIB)
+	add_library(${TARGET_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
+	target_compile_definitions(${TARGET_NAME} 	PUBLIC BUILD_SHARED PRIVATE BUILD_DLL)
+else()
+	add_library(${TARGET_NAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
+endif()
+
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 
 target_compile_options(${TARGET_NAME} PUBLIC /ZI /INCREMETAL /MP /bigobj /W0 )
@@ -51,6 +58,7 @@ target_compile_definitions(${TARGET_NAME}
 	PUBLIC SPDLOG_COMPILED_LIB
 	PUBLIC ENGINE_PATH="${CMAKE_CURRENT_SOURCE_DIR}"
 	PUBLIC ENGINE_SHADER_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../shaders"
+
 )
 
 target_link_directories(${TARGET_NAME} PUBLIC ${Vulkan_LIB_DIR})

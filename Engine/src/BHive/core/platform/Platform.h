@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	struct Platform
+	struct BHIVE_API Platform
 	{
 		struct FileInfo
 		{

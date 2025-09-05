@@ -5,7 +5,7 @@
 namespace BHive
 {
 
-	struct UndoRedo
+	struct BHIVE_API UndoRedo
 	{
 		struct FCommand
 		{

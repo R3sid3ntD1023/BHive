@@ -6,7 +6,7 @@
 namespace BHive
 {
 
-	struct FlipBookComponent : public Component, public ITickable
+	struct BHIVE_API FlipBookComponent : public Component, public ITickable
 	{
 		FlipBookComponent() = default;
 

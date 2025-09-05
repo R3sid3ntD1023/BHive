@@ -5,7 +5,7 @@
 namespace BHive
 {
 
-	class LambertMaterial : public Material
+	class BHIVE_API LambertMaterial : public Material
 	{
 
 	public:

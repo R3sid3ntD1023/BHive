@@ -72,10 +72,7 @@ namespace BHive
 				std::string bone_name = mesh->mBones[bone_index]->mName.C_Str();
 				if (!bones.contains(bone_name))
 				{
-					Bone bone{
-						.Name = bone_name,
-						.ID = bone_counter,
-						.LocalBindPoseMatrix = make_mat4(mesh->mBones[bone_index]->mOffsetMatrix)};
+					Bone bone{.Name = bone_name, .ID = bone_counter, .LocalBindPoseMatrix = make_mat4(mesh->mBones[bone_index]->mOffsetMatrix)};
 					bones[bone_name] = bone;
 					bone_id = bone_counter;
 					bone_counter++;
