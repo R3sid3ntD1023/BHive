@@ -11,8 +11,11 @@ namespace BHive
 {
 	void PickerRenderPass::Init()
 	{
-		mShader = ShaderManager::Get().Load("Picker.glsl");
-		ASSERT(mShader);
+		mShaders[0] = ShaderManager::Get().Load("PickMesh.glsl");
+		mShaders[1] = ShaderManager::Get().Load("PickQuad.glsl");
+		mShaders[2] = ShaderManager::Get().Load("PickLine.glsl");
+
+		ASSERT(mShaders);
 	}
 
 	void PickerRenderPass::Render(const FMeshRenderDatas &data)
@@ -24,13 +27,21 @@ namespace BHive
 		static int clear_id = -1;
 		mFrambuffer->ClearAttachment(0, &clear_id);
 
-		mShader->Bind();
+		mShaders[0]->Bind();
 		for (const auto &[dist, obj] : data)
 		{
-			mShader->SetUniform("constants.uEntityID", obj->ObjectInfo.EntityID);
+			mShaders[0]->SetUniform("constants.uEntityID", obj->ObjectInfo.EntityID);
 			Renderer::Draw(obj);
 		}
-		mShader->UnBind();
+		mShaders[0]->UnBind();
+
+		mShaders[1]->Bind();
+		QuadRenderer::Flush();
+		mShaders[1]->UnBind();
+
+		mShaders[2]->Bind();
+		LineRenderer::Flush();
+		mShaders[2]->UnBind();
 
 		int pixel_id = -1;
 		mFrambuffer->ReadPixel(0, mMousePos.x, mMousePos.y, 1, 1, &pixel_id);

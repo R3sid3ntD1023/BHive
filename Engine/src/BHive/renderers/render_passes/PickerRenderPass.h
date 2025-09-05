@@ -11,7 +11,7 @@ namespace BHive
 
 	DECLARE_EVENT(FOnEntityPicked, int32_t, const Ref<FMeshRenderData> &);
 
-	class PickerRenderPass : public RenderPass
+	class BHIVE_API PickerRenderPass : public RenderPass
 	{
 	public:
 		void Init() override;
@@ -28,7 +28,7 @@ namespace BHive
 
 	private:
 		bool mEnabled{false};
-		Ref<Shader> mShader;
+		Ref<Shader> mShaders[3];
 		glm::uvec2 mMousePos{0, 0};
 	};
 } // namespace BHive
