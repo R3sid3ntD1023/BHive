@@ -6,7 +6,7 @@
 namespace BHive
 {
 
-	class AnimationNodeBlend : public AnimationNodePoseBase
+	class BHIVE_API AnimationNodeBlend : public AnimationNodePoseBase
 	{
 	public:
 		AnimationNodeBlend() = default;

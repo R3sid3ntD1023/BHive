@@ -3,14 +3,6 @@
 #include "BlackBoardKey.h"
 #include "core/Core.h"
 
-#define REFLECT_BLACKBOARD_KEY(cls, name)        \
-	REFLECT(TBlackBoardKey<cls>)                 \
-	{                                            \
-		BEGIN_REFLECT(TBlackBoardKey<cls>, name) \
-		REFLECT_CONSTRUCTOR()                    \
-		REFLECT_PROPERTY("Value", mValue);       \
-	}
-
 namespace BHive
 {
 	template <typename T>
@@ -26,19 +18,31 @@ namespace BHive
 
 		virtual void Set(const std::any &value) { mValue = std::any_cast<T>(value); }
 
-		virtual bool Compare(const std::any &value) const
-		{
-			return value.type() == typeid(T) && mValue == std::any_cast<T>(value);
-		}
+		virtual bool Compare(const std::any &value) const { return value.type() == typeid(T) && mValue == std::any_cast<T>(value); }
 
 		REFLECTABLEV(BlackBoardKey)
 
-	private:
+	protected:
 		T mValue{};
 	};
 
-	REFLECT_BLACKBOARD_KEY(int, "IntKey")
-	REFLECT_BLACKBOARD_KEY(float, "FloatKey")
-	REFLECT_BLACKBOARD_KEY(bool, "BoolKey")
+	struct BlackBoardKeyInt : public TBlackBoardKey<int32_t>
+	{
+		REFLECTABLEV(TBlackBoardKey)
+	};
+
+	struct BlackBoardKeyFloat : public TBlackBoardKey<float>
+	{
+		REFLECTABLEV(TBlackBoardKey)
+	};
+
+	struct BlackBoardKeyBool : public TBlackBoardKey<bool>
+	{
+		REFLECTABLEV(TBlackBoardKey)
+	};
+
+	REFLECT_EXTERN(BlackBoardKeyInt)
+	REFLECT_EXTERN(BlackBoardKeyFloat)
+	REFLECT_EXTERN(BlackBoardKeyBool)
 
 } // namespace BHive

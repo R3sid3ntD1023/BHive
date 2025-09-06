@@ -56,4 +56,6 @@ namespace BHive
 		Buffer mBuffer;
 	};
 
+	REFLECT_EXTERN(Texture2D)
+
 } // namespace BHive

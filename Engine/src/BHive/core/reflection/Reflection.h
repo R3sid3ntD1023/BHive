@@ -26,30 +26,36 @@
 
 #define SELECT_OVERLOAD(function, ...) rttr::select_overload<__VA_ARGS__>(&T::##function)
 
-#define REFLECT_IMPL(cls)                                               \
-	template <>                                                         \
-	inline void ::BHive::reflection::auto_register_reflection_t<cls>(); \
-	static const auto ANONYMOUS_VARIABLE(auto_register__) = ::BHive::reflection::refl(&::BHive::reflection::auto_register_reflection_t<cls>);
+#define AUTO_REFLECTION_FUNCTION_NAME rttr_auto_register_reflection_function_t
+#define REFLECT_IMPLEMTATION(cls) static const auto ANONYMOUS_VARIABLE(auto_register__) = reflect_detail::refl(&AUTO_REFLECTION_FUNCTION_NAME<cls>);
+#define REFLECT_INLINE(cls)                              \
+	template <typename T>                                \
+	extern void AUTO_REFLECTION_FUNCTION_NAME();         \
+	template <>                                          \
+	void BHIVE_API AUTO_REFLECTION_FUNCTION_NAME<cls>(); \
+	REFLECT_IMPLEMTATION(cls)                            \
+	template <>                                          \
+	inline void AUTO_REFLECTION_FUNCTION_NAME<cls>()
 
-#define REFLECT(cls)  \
-	REFLECT_IMPL(cls) \
-	template <>       \
-	inline void ::BHive::reflection::auto_register_reflection_t<cls>()
+#define REFLECT(cls) \
+	template <>      \
+	void AUTO_REFLECTION_FUNCTION_NAME<cls>()
 
-#define REFLECT_EXTERN(cls) \
-	REFLECT_IMPL(cls)       \
-	template <>             \
-	extern void ::BHive::reflection::auto_register_reflection_t<cls>();
+#define REFLECT_EXTERN(cls)                              \
+	template <typename T>                                \
+	extern void AUTO_REFLECTION_FUNCTION_NAME();         \
+	template <>                                          \
+	void BHIVE_API AUTO_REFLECTION_FUNCTION_NAME<cls>(); \
+	REFLECT_IMPLEMTATION(cls)
 
-#define REFLECTABLE_FRIEND() \
-	template <typename T>    \
-	friend void ::BHive::reflection::auto_register_reflection_t<T>();
+#define REFLECTABLE_FRIEND()                     \
+	template <typename T>                        \
+	friend void AUTO_REFLECTION_FUNCTION_NAME(); \
+	RTTR_REGISTRATION_FRIEND
 
 #define REFLECTABLE() REFLECTABLE_FRIEND()
-
-#define REFLECTABLEV(...) \
-	REFLECTABLE_FRIEND()  \
-	RTTR_ENABLE(__VA_ARGS__)
+#define REFLECTABLE_CLASS(...) REFLECTABLE_FRIEND() RTTR_ENABLE(__VA_ARGS__)
+#define REFLECTABLEV(...) REFLECTABLE_FRIEND() RTTR_ENABLE(__VA_ARGS__)
 
 #define BEGIN_REFLECT_IMPL(cls, name) \
 	using T = cls;                    \
@@ -83,21 +89,16 @@
 #define DECLARE_FUNCTION(...)
 #define DECLARE_ENUM(...)
 
-#define REFLECTABLE_CLASS(...) RTTR_REGISTRATION_FRIEND RTTR_ENABLE(__VA_ARGS__)
-
 namespace BHive
 {
 	static const rttr::type InvalidType = rttr::type::get<rttr::detail::invalid_type>();
+}
 
-	namespace reflection
+namespace reflect_detail
+{
+	struct BHIVE_API refl
 	{
-		template <typename T>
-		void auto_register_reflection_t();
+		refl(void (*f)()) { f(); };
+	};
 
-		struct BHIVE_API refl{refl(void (*f)()){f();
-	} // namespace reflection
-}; // namespace BHive
-
-} // namespace reflection
-
-} // namespace BHive
+} // namespace reflect_detail

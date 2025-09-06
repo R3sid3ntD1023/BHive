@@ -75,7 +75,7 @@ namespace BHive
 		int32_t EntityID = -1;
 	};
 
-	class QuadRenderer
+	class BHIVE_API QuadRenderer
 	{
 	public:
 		static void Init();

@@ -79,4 +79,6 @@ namespace BHive
 		float mCurrentTime = 0.0f;
 	};
 
+	REFLECT_EXTERN(FlipBook)
+
 } // namespace BHive

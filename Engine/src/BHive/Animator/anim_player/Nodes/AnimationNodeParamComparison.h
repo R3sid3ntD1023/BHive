@@ -4,23 +4,23 @@
 
 namespace BHive
 {
-    enum class EComparisonOperation
-    {
-        OPERATION_EQUAL,
-        OPERATION_NOTEQUAL
-    };
+	enum class EComparisonOperation
+	{
+		OPERATION_EQUAL,
+		OPERATION_NOTEQUAL
+	};
 
-    class AnimationNodeParamComparison : public AnimationNodeBase
-    {
-    public:
-        AnimationNodeParamComparison(const std::string& param_name, const std::any& value, EComparisonOperation operation);
+	class BHIVE_API AnimationNodeParamComparison : public AnimationNodeBase
+	{
+	public:
+		AnimationNodeParamComparison(const std::string &param_name, const std::any &value, EComparisonOperation operation);
 
-    protected:
-        void ExecuteImpl(const AnimPlayerContext& context, std::any& out_result) override;
+	protected:
+		void ExecuteImpl(const AnimPlayerContext &context, std::any &out_result) override;
 
-    private:
-        std::string mParamName;
-        std::any mValue;
-        EComparisonOperation mOperation;
-    };
+	private:
+		std::string mParamName;
+		std::any mValue;
+		EComparisonOperation mOperation;
+	};
 } // namespace BHive

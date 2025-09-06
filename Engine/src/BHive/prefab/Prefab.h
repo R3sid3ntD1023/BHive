@@ -23,4 +23,6 @@ namespace BHive
 		Ref<World> mInstance;
 	};
 
+	REFLECT_EXTERN(Prefab)
+
 } // namespace BHive

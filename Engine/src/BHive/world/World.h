@@ -3,16 +3,8 @@
 #include "core/Core.h"
 #include "asset/Asset.h"
 #include "core/math/Transform.h"
-#include "physics/EventListener.h"
-#include "physics/PhysicsContext.h"
+#include "physics/HitResult.h"
 #include <entt/entt.hpp>
-
-namespace physx
-{
-	class PxScene;
-	class PxDefaultCpuDispatcher;
-	class PxSimulationEventCallback;
-} // namespace physx
 
 namespace BHive
 {
@@ -55,8 +47,6 @@ namespace BHive
 
 		Ref<World> Copy() const;
 
-		void RenderPhysicsWorld();
-
 		void Resize(uint32_t w, uint32_t h);
 
 		template <typename T = GameObject>
@@ -88,6 +78,8 @@ namespace BHive
 
 		bool IsPaused() const { return mIsPaused; }
 
+		entt::registry &GetRegistry() { return mRegistry; }
+
 		const entt::registry &GetRegistry() const { return mRegistry; }
 
 		REFLECTABLEV(Asset);
@@ -100,18 +92,10 @@ namespace BHive
 
 		bool mIsRunning = false;
 		bool mIsPaused = false;
-
-#pragma region Physics
-		float mAccumulatedTime{0.0f};
-
 		int32_t mFrames = 1;
-		physx::PxScene *mPhyxWorld = nullptr;
-		physx::PxDefaultCpuDispatcher *mCpuDispatcher = nullptr;
-		physx::PxSimulationEventCallback *mSimulationEventCallback = nullptr;
-		physx::PxRaycastCallback *mHitCallback = nullptr;
-#pragma endregion
 
 #pragma region SYSTEMS
+		Ref<struct PhysicsSystem> mPhysicsSystem;
 		Ref<struct RenderSystem> mRenderSystem;
 #pragma endregion
 

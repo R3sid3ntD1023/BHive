@@ -57,19 +57,22 @@ namespace BHive
 		}
 	}
 
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<SpriteEditor>, Sprite)
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<FlipBookEditor>, FlipBook)
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<SpriteSheetEditor>, SpriteSheet)
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<AudioEditor>, AudioSource)
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<TAssetEditor<PhysicsMaterial>>, PhysicsMaterial)
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<TAssetEditor<InputContext>>, InputContext)
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<TextureEditor>, Texture2D)
-	REFLECT_ASSET_MENU(FWorldContentMenu, World);
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<MeshEditor>, StaticMesh, SkeletalMesh);
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<MaterialEditor>, Material);
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<AnimationEditor>, SkeletalAnimation);
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<SkeletonEditor>, Skeleton);
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<AnimGraphEditor>, AnimGraph);
-	REFLECT_ASSET_MENU(FAssetContextMenuBase<PrefabEditor>, Prefab);
+	RTTR_REGISTRATION
+	{
+		REFLECT_ASSET_MENU(FAssetContextMenuBase<SpriteEditor>, Sprite)
+		REFLECT_ASSET_MENU(FAssetContextMenuBase<FlipBookEditor>, FlipBook)
+		REFLECT_ASSET_MENU(FAssetContextMenuBase<SpriteSheetEditor>, SpriteSheet)
+		REFLECT_ASSET_MENU(FAssetContextMenuBase<AudioEditor>, AudioSource)
+		REFLECT_ASSET_MENU(FAssetContextMenuBase<TAssetEditor<PhysicsMaterial>>, PhysicsMaterial)
+		REFLECT_ASSET_MENU(FAssetContextMenuBase<TAssetEditor<InputContext>>, InputContext)
+		REFLECT_ASSET_MENU(FAssetContextMenuBase<TextureEditor>, Texture2D)
+		REFLECT_ASSET_MENU(FWorldContentMenu, World);
+		REFLECT_ASSET_MENU(FAssetContextMenuBase<MeshEditor>, StaticMesh, SkeletalMesh);
+		REFLECT_ASSET_MENU(FAssetContextMenuBase<MaterialEditor>, Material);
+		REFLECT_ASSET_MENU(FAssetContextMenuBase<AnimationEditor>, SkeletalAnimation);
+		REFLECT_ASSET_MENU(FAssetContextMenuBase<SkeletonEditor>, Skeleton);
+		REFLECT_ASSET_MENU(FAssetContextMenuBase<AnimGraphEditor>, AnimGraph);
+		REFLECT_ASSET_MENU(FAssetContextMenuBase<PrefabEditor>, Prefab);
+	}
 
 } // namespace BHive

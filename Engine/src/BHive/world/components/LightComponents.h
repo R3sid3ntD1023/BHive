@@ -16,7 +16,7 @@ namespace BHive
 		REFLECTABLEV(Component)
 	};
 
-	class PointLightComponent : public Component
+	class BHIVE_API PointLightComponent : public Component
 	{
 	public:
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
@@ -29,7 +29,7 @@ namespace BHive
 		REFLECTABLEV(Component)
 	};
 
-	class SpotLightComponent : public Component
+	class BHIVE_API SpotLightComponent : public Component
 	{
 	public:
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;

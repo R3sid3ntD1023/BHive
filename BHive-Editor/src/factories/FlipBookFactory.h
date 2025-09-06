@@ -18,4 +18,6 @@ namespace BHive
 		REFLECTABLEV(Factory)
 	};
 
+	REFLECT_EXTERN(FlipBookFactory)
+
 } // namespace BHive

@@ -25,18 +25,4 @@ namespace BHive
 		virtual void onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count);
 	};
 
-	struct FHitResult
-	{
-		bool InitalOverlap{};
-
-		glm::vec3 Normal{};
-		glm::vec3 Position{};
-		float Distance{};
-
-		struct GameObject *Object = nullptr;
-		struct Component *Component = nullptr;
-
-		bool isValid() const { return Object && Component; }
-	};
-
 } // namespace BHive

@@ -299,6 +299,8 @@ namespace BHive
 		{
 			post_process->Resize(size);
 		}
+
+		RenderCommand::SetViewport(0, 0, size.x, size.y);
 	}
 
 	const Ref<Texture> &SceneRenderer::GetColorAttachment(uint32_t index) const

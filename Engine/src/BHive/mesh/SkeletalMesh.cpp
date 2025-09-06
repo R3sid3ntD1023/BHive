@@ -12,8 +12,8 @@ namespace BHive
 
 	const AABB &SkeletalMesh::GetBoundingBox() const
 	{
-		const auto &root_node = mSkeleton->GetRoot().mName;
-		const auto &root_transform = mSkeleton->FindBone(root_node)->LocalBindPoseMatrix;
+		const auto &root_transform = mSkeleton->GetRoot().mTransformation;
+		// const auto &root_transform = mSkeleton->FindBone(root_node)->LocalBindPoseMatrix;
 		const auto &bounds = GetData().mBoundingBox;
 
 		auto min = root_transform * glm::vec4(bounds.Min, 1);

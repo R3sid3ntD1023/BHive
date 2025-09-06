@@ -49,8 +49,12 @@ namespace BHive
 	void ImGuiLayer::Init()
 	{
 		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImPlot::CreateContext();
+		auto ctx = ImGui::CreateContext();
+		auto implot_ctx = ImPlot::CreateContext();
+
+		ImGui::SetCurrentContext(ctx);
+		ImPlot::SetCurrentContext(implot_ctx);
+
 		ImGuiIO &io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
 		// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
@@ -151,5 +155,15 @@ namespace BHive
 	void ImGuiLayer::BlockEvents(bool block)
 	{
 		mBlockEvents = block;
+	}
+
+	void *ImGuiLayer::GetContext() const
+	{
+		return ImGui::GetCurrentContext();
+	}
+
+	void ImGuiLayer::GetAllocatorCallbacks(void *alloc_func, void *free_func, void **user_data) const
+	{
+		ImGui::GetAllocatorFunctions((ImGuiMemAllocFunc *)alloc_func, (ImGuiMemFreeFunc *)free_func, user_data);
 	}
 } // namespace BHive

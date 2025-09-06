@@ -23,6 +23,7 @@ namespace BHive
 			std::ifstream in(path, std::ios::in);
 			cereal::JSONInputArchive ar(in);
 			ar(sActiveProject->mConfig);
+			sActiveProject->mConfig.ProjectDirectory = path.parent_path();
 		}
 		catch (const std::exception &e)
 		{

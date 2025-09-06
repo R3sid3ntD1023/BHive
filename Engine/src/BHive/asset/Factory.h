@@ -37,7 +37,7 @@ namespace BHive
 		REFLECTABLEV()
 	};
 
-	REFLECT(Factory)
+	REFLECT_INLINE(Factory)
 	{
 		BEGIN_REFLECT(Factory);
 	}

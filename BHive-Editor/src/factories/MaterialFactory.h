@@ -46,4 +46,8 @@ namespace BHive
 		REFLECTABLEV(Factory)
 	};
 
+	REFLECT_EXTERN(StandardMaterialFactory)
+	REFLECT_EXTERN(LambertMaterialFactory)
+	REFLECT_EXTERN(EmissiveMaterialFactory)
+
 } // namespace BHive

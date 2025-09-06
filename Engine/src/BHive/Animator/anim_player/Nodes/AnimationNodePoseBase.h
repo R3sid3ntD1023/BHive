@@ -4,43 +4,46 @@
 
 namespace BHive
 {
-    class AnimationNodePoseBase : public AnimationNodeBase
-    {
-    public:     
+	class BHIVE_API AnimationNodePoseBase : public AnimationNodeBase
+	{
+	public:
+		virtual void Update(const AnimPlayerContext &context);
 
-        virtual void Update(const AnimPlayerContext& context);
+		float GetDuration() const { return mDuration; };
 
-        float GetDuration() const { return mDuration; };
+		float GetPhase() const { return mPhase; };
 
-        float GetPhase() const { return mPhase; };
+		float GetNextPhaseUnwrapped(const AnimPlayerContext &context) const;
 
-        float GetNextPhaseUnwrapped(const AnimPlayerContext& context) const;
-        
-        void SetDuration(float duration);
+		void SetDuration(float duration);
 
-    protected:
-          enum EPhaseRules : uint8_t { COPY = BIT(0), WRAP = BIT(1), SYNC = BIT(2), REVSERSED = BIT(3)};
+	protected:
+		enum EPhaseRules : uint8_t
+		{
+			COPY = BIT(0),
+			WRAP = BIT(1),
+			SYNC = BIT(2),
+			REVSERSED = BIT(3)
+		};
 
-        virtual void ExecuteImpl(const AnimPlayerContext& context, std::any& out_result);
+		virtual void ExecuteImpl(const AnimPlayerContext &context, std::any &out_result);
 
-      
-        void ApplyNextPhase(const AnimPlayerContext& context);
+		void ApplyNextPhase(const AnimPlayerContext &context);
 
-        void SetPhaseRules(uint8_t rules);
+		void SetPhaseRules(uint8_t rules);
 
-        void SetPhaseRules(EPhaseRules rules, bool value);
+		void SetPhaseRules(EPhaseRules rules, bool value);
 
-        void SetPhaseCopySource(const AnimationNodePoseBase* source);
+		void SetPhaseCopySource(const AnimationNodePoseBase *source);
 
-private:
-        float mDuration{0.f};
+	private:
+		float mDuration{0.f};
 
-        float mPhase{0.f};
+		float mPhase{0.f};
 
-        uint8_t mPhaseRules{EPhaseRules::WRAP | EPhaseRules::SYNC};
-        const AnimationNodePoseBase* mPhaseCopySource{nullptr};
+		uint8_t mPhaseRules{EPhaseRules::WRAP | EPhaseRules::SYNC};
+		const AnimationNodePoseBase *mPhaseCopySource{nullptr};
 
-        std::optional<int32_t> mLastUpdatePlayCounter;
-
-    };
+		std::optional<int32_t> mLastUpdatePlayCounter;
+	};
 } // namespace BHive

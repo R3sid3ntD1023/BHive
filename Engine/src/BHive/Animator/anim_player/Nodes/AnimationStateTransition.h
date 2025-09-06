@@ -9,7 +9,7 @@ namespace BHive
 {
 	class AnimationState;
 
-	class AnimationStateTransition : public AnimationNodePoseBase
+	class BHIVE_API AnimationStateTransition : public AnimationNodePoseBase
 	{
 	public:
 		AnimationStateTransition(const float duration, bool reversible);

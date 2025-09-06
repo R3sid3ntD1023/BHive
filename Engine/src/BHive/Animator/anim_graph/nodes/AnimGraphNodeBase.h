@@ -9,7 +9,7 @@ namespace BHive
 	class AnimGraph;
 	class AnimationNodeBase;
 
-	class AnimGraphNodeBase : public ImFlow::BaseNode
+	class BHIVE_API AnimGraphNodeBase : public ImFlow::BaseNode
 	{
 	public:
 		AnimGraphNodeBase() = default;

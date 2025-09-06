@@ -7,7 +7,7 @@ namespace BHive
 {
 	class AnimationClip;
 
-	class AnimationClipNode : public AnimationNodePoseBase
+	class BHIVE_API AnimationClipNode : public AnimationNodePoseBase
 	{
 	public:
 		AnimationClipNode() = default;

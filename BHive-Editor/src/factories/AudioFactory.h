@@ -20,4 +20,5 @@ namespace BHive
 		REFLECTABLEV(Factory)
 	};
 
+	REFLECT_EXTERN(AudioFactory)
 } // namespace BHive

@@ -30,7 +30,7 @@ namespace BHive
 		friend struct GameObject;
 	};
 
-	REFLECT(Component)
+	REFLECT_INLINE(Component)
 	{
 		BEGIN_REFLECT(Component);
 	}

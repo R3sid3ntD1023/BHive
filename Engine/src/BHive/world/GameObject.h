@@ -150,6 +150,8 @@ namespace BHive
 		bool mIsPendingDestroy{false};
 	};
 
+	REFLECT_EXTERN(GameObject)
+
 } // namespace BHive
 
 #define ADD_COMPONENT_FUNCTION_NAME "AddComponent"

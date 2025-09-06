@@ -70,4 +70,6 @@ namespace BHive
 		std::array<glm::vec2, 4> mCoords = {};
 	};
 
+	REFLECT_EXTERN(Sprite)
+
 } // namespace BHive

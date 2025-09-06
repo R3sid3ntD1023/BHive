@@ -34,6 +34,7 @@
 
 #include "gfx/utils/texture/ImageUtils.h"
 #include "world/components/LightComponents.h"
+#include "core/profiler/CPUGPUProfiler.h"
 
 namespace BHive
 {
@@ -107,6 +108,9 @@ namespace BHive
 
 	void EditorLayer::OnUpdate(float dt)
 	{
+		GPU_PROFILER_SCOPED("GPUUpdate")
+		CPU_PROFILER_FUNCTION()
+
 		if (!mActiveWorld)
 			return;
 
@@ -577,6 +581,7 @@ namespace BHive
 				auto &selection = SubSystemContext::Get().GetSubSystem<Selection>();
 				auto selected_object = selection.GetSelection();
 
+				ImGui::SetCurrentContext(ImGui::GetCurrentContext());
 				ImGuizmo::SetOrthographic(mEditorCamera.GetProjectionType() != EProjectionType::Perspective);
 				ImGuizmo::SetDrawlist();
 				ImGuizmo::SetRect(mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x, mViewportBounds[1].y - mViewportBounds[0].y);
@@ -593,6 +598,7 @@ namespace BHive
 					ImGuizmo::Manipulate(&view[0][0], &projection[0][0], (ImGuizmo::OPERATION)mGizmo.Operation, (ImGuizmo::MODE)mGizmo.Mode, &world_transform[0][0], &delta[0][0], &snap_value.x);
 
 					is_using_gizmo = ImGuizmo::IsUsing();
+
 					if (is_using_gizmo)
 					{
 						glm::mat4 local_transform = delta * selected_object->GetLocalTransform().to_mat4();

@@ -17,4 +17,6 @@ namespace BHive
 
 		REFLECTABLEV(Factory)
 	};
+
+	REFLECT_EXTERN(AnimGraphFactory)
 } // namespace BHive

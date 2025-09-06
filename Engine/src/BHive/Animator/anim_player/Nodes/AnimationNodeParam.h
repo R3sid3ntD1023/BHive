@@ -5,7 +5,7 @@
 namespace BHive
 {
 
-	class AnimationNodeParam : public AnimationNodePoseBase
+	class BHIVE_API AnimationNodeParam : public AnimationNodePoseBase
 	{
 	public:
 		AnimationNodeParam(const std::string &param_name);

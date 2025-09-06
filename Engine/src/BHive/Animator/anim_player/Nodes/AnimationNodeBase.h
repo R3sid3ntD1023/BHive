@@ -7,7 +7,7 @@ namespace BHive
 	class SkeletalPose;
 	struct AnimPlayerContext;
 
-	class AnimationNodeBase
+	class BHIVE_API AnimationNodeBase
 	{
 	public:
 		virtual ~AnimationNodeBase() = default;

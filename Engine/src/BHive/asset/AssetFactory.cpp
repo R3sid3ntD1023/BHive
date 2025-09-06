@@ -16,7 +16,7 @@ namespace BHive
 
 			if (!type || !type.get_constructor())
 			{
-				LOG_ERROR("AssetFactory::Import() no default constructor found for type", type);
+				LOG_ERROR("AssetFactory::Import() no default constructor found for type {} for {}", type, path);
 				return false;
 			}
 

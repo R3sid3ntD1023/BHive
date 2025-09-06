@@ -35,7 +35,7 @@ namespace BHive
 		friend class FInputAction;
 	};
 
-	REFLECT(FInputKey)
+	REFLECT_INLINE(FInputKey)
 	{
 		BEGIN_REFLECT(FInputKey)
 		REFLECT_PROPERTY("Key", GetKey, SetKey)

@@ -24,6 +24,9 @@ namespace BHive
 
 		void BlockEvents(bool block);
 
+		void *GetContext() const;
+		void GetAllocatorCallbacks(void *alloc_func, void *free_func, void **user_data) const;
+
 	private:
 		void Init();
 		void Shutdown();

@@ -5,6 +5,7 @@
 #include "ProjectLauncherLayer.h"
 #include "project/Project.h"
 #include <mini/ini.h>
+#include <ImGuizmo.h>
 
 #define EDITOR_CONFIG_FILE "EditorConfig.ini"
 
@@ -16,6 +17,7 @@ namespace BHive
 		BHiveEditor(const FApplicationSpecification &spec)
 			: Application(spec)
 		{
+			SetImGuiContext();
 
 			if (spec.CommandLine.Count > 1)
 			{
@@ -28,6 +30,21 @@ namespace BHive
 		}
 
 		~BHiveEditor() {}
+
+		void SetImGuiContext()
+		{
+			ImGuiMemAllocFunc alloc_func = nullptr;
+			ImGuiMemFreeFunc free_func = nullptr;
+			void *user_data = nullptr;
+
+			ImGuiLayer &layer = GetImGuiLayer();
+			auto ctx = layer.GetContext();
+
+			layer.GetAllocatorCallbacks(&alloc_func, &free_func, &user_data);
+
+			ImGui::SetCurrentContext((ImGuiContext *)ctx);
+			ImGui::SetAllocatorFunctions(alloc_func, free_func, user_data);
+		}
 	};
 
 	Application *CreateApplication(const FCommandLine &cmd)

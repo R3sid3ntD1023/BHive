@@ -22,7 +22,7 @@ namespace BHive
 		PropertyLayout mLayout;
 	};
 
-	REFLECT(Inspector)
+	REFLECT_INLINE(Inspector)
 	{
 		auto Factory = rttr::registration::class_<Inspector>("Inspector");
 	}

@@ -24,9 +24,7 @@ namespace BHive
 		REFLECTABLE()
 	};
 
-	REFLECT_EXTERN(FAssetMetaData)
-
-	REFLECT(FAssetMetaData)
+	REFLECT_INLINE(FAssetMetaData)
 	{
 		BEGIN_REFLECT(FAssetMetaData)
 		REFLECT_PROPERTY("Type", Type)

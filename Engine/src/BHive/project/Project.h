@@ -9,7 +9,7 @@ namespace BHive
 	class StreamWriter;
 	class World;
 
-	struct FProjectConfiguration
+	struct BHIVE_API FProjectConfiguration
 	{
 		std::string Name = "Untitled";
 		std::filesystem::path ProjectDirectory;
@@ -25,6 +25,8 @@ namespace BHive
 
 		REFLECTABLE()
 	};
+
+	REFLECT_EXTERN(FProjectConfiguration)
 
 	class BHIVE_API Project
 	{
@@ -78,4 +80,5 @@ namespace BHive
 		FProjectConfiguration mConfig;
 		static inline Ref<Project> sActiveProject;
 	};
+
 } // namespace BHive

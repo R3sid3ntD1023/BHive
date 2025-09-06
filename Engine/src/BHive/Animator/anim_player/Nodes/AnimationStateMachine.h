@@ -5,38 +5,38 @@
 
 namespace BHive
 {
-    class AnimationState;
-    class AnimationStateTransition;
+	class AnimationState;
+	class AnimationStateTransition;
 
-    class AnimationStateMachine : public AnimationNodePoseBase
-    {
-    public:
-        AnimationStateMachine();
+	class BHIVE_API AnimationStateMachine : public AnimationNodePoseBase
+	{
+	public:
+		AnimationStateMachine();
 
-        static const AnimationStateMachine* GetCurrent();
+		static const AnimationStateMachine *GetCurrent();
 
-        void Update(const AnimPlayerContext& context);
+		void Update(const AnimPlayerContext &context);
 
-        void AddState(const Ref<AnimationState>& node);
+		void AddState(const Ref<AnimationState> &node);
 
-        Ref<AnimationState> GetTransitionSource() const { return mTransitionSource; }
+		Ref<AnimationState> GetTransitionSource() const { return mTransitionSource; }
 
-        float GetTransitionSourcePhase() const { return mTransitionSourceCandidatePhase; };
+		float GetTransitionSourcePhase() const { return mTransitionSourceCandidatePhase; };
 
-    protected:
-        void ExecuteImpl(const AnimPlayerContext& context, std::any& out_result) override;
+	protected:
+		void ExecuteImpl(const AnimPlayerContext &context, std::any &out_result) override;
 
-        bool UpdateState(const AnimPlayerContext& context, float pending_phase);
+		bool UpdateState(const AnimPlayerContext &context, float pending_phase);
 
-        void UpdatePhaseCopySource();
+		void UpdatePhaseCopySource();
 
-        inline static std::stack<AnimationStateMachine*> sActiveStateMachines;
+		inline static std::stack<AnimationStateMachine *> sActiveStateMachines;
 
-        std::vector<Ref<AnimationState>> mNodes;
+		std::vector<Ref<AnimationState>> mNodes;
 
-        Ref<AnimationNodePoseBase> mCurrentNode;
-        Ref<AnimationState> mTransitionSourceCandidate;
-        float mTransitionSourceCandidatePhase{0.f};
-        Ref<AnimationState> mTransitionSource{nullptr};
-    };
+		Ref<AnimationNodePoseBase> mCurrentNode;
+		Ref<AnimationState> mTransitionSourceCandidate;
+		float mTransitionSourceCandidatePhase{0.f};
+		Ref<AnimationState> mTransitionSource{nullptr};
+	};
 } // namespace BHive

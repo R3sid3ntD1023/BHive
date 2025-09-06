@@ -2,6 +2,7 @@
 #include "World/GameObject.h"
 #include "physics/PhysicsContext.h"
 #include "core/subsystem/SubSystem.h"
+#include <physx/PxPhysicsAPI.h>
 
 namespace BHive
 {
@@ -72,7 +73,7 @@ namespace BHive
 
 		if (geo->getType() == physx::PxGeometryType::eCAPSULE)
 		{
-			relative_transform.q = physx::PxQuat(PxHalfPi, {0, 0, 1});
+			relative_transform.q = physx::PxQuat(physx::PxHalfPi, {0, 0, 1});
 		}
 
 		auto shape = physcs->createShape(*geo, *material, true);

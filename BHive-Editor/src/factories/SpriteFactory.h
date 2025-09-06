@@ -18,4 +18,6 @@ namespace BHive
 		REFLECTABLEV(Factory)
 	};
 
+	REFLECT_EXTERN(SpriteFactory)
+
 } // namespace BHive

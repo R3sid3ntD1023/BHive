@@ -18,9 +18,6 @@ namespace BHive
 	{
 		BHive::Log::Init();
 
-		AddSubSystem<AudioContext>().Init();
-		AddSubSystem<PhysicsContext>().Init();
-
 		BH_PROFILE_BEGIN_SESSION("StartUp", "Profile-StartUp.json");
 		auto app = BHive::CreateApplication({argc, argv});
 
@@ -33,9 +30,6 @@ namespace BHive
 		BH_PROFILE_BEGIN_SESSION("Shutdown", "Profile-Shutdown.json");
 		delete app;
 		BH_PROFILE_END_SESSION();
-
-		GetSubSystem<PhysicsContext>().Shutdown();
-		GetSubSystem<AudioContext>().Shutdown();
 
 		return 0;
 	}

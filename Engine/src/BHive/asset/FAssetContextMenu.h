@@ -17,7 +17,7 @@ namespace BHive
 		REFLECTABLEV()
 	};
 
-	REFLECT(FAssetContextMenu)
+	REFLECT_INLINE(FAssetContextMenu)
 	{
 		BEGIN_REFLECT(FAssetContextMenu);
 	}
@@ -47,7 +47,6 @@ namespace BHive
 } // namespace BHive
 
 #define REFLECT_ASSET_MENU(cls, ...)                         \
-	REFLECT(cls)                                             \
 	{                                                        \
 		::BHive::AssetContextMenuBuilder<cls> builder(#cls); \
 		builder.RegisterSupportedTypes<__VA_ARGS__>();       \

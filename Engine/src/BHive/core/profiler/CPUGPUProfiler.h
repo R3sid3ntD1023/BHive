@@ -52,7 +52,7 @@ namespace BHive
 		const char *mName;
 	};
 
-	struct ScopedGPUProfiler : public ScopedProfiler
+	struct BHIVE_API ScopedGPUProfiler : public ScopedProfiler
 	{
 		ScopedGPUProfiler(const char *name);
 		~ScopedGPUProfiler();
@@ -61,7 +61,7 @@ namespace BHive
 		Ref<Query> mQueryInstance;
 	};
 
-	struct ScopedCPUProfiler : public ScopedProfiler
+	struct BHIVE_API ScopedCPUProfiler : public ScopedProfiler
 	{
 		ScopedCPUProfiler(const char *name);
 		~ScopedCPUProfiler();
@@ -88,8 +88,7 @@ namespace BHive
 			while (srcIndex < N)
 			{
 				size_t matchIndex = 0;
-				while (matchIndex < K - 1 && srcIndex + matchIndex < N - 1 &&
-					   expr[srcIndex + matchIndex] == remove[matchIndex])
+				while (matchIndex < K - 1 && srcIndex + matchIndex < N - 1 && expr[srcIndex + matchIndex] == remove[matchIndex])
 					matchIndex++;
 
 				if (matchIndex == K - 1)
@@ -115,11 +114,11 @@ namespace BHive
 
 	#define GPU_PROFILER_SCOPED_IMPL(name, line)                                          \
 		constexpr auto fixedname##line = ::BHive::utils::CleanupString(name, "__cdecl "); \
-		::BHive::ScopedGPUProfiler profiler##line(fixedname##line.Data)
+		::BHive::ScopedGPUProfiler profiler##line(fixedname##line.Data);
 
 	#define CPU_PROFILER_SCOPED_IMPL(name, line)                                          \
 		constexpr auto fixedname##line = ::BHive::utils::CleanupString(name, "__cdecl "); \
-		::BHive::ScopedCPUProfiler profiler##line(fixedname##line.Data)
+		::BHive::ScopedCPUProfiler profiler##line(fixedname##line.Data);
 
 	#define CPU_PROFILER_SCOPED_LINE(name, line) CPU_PROFILER_SCOPED_IMPL(name, line)
 	#define GPU_PROFILER_SCOPED_LINE(name, line) GPU_PROFILER_SCOPED_IMPL(name, line)

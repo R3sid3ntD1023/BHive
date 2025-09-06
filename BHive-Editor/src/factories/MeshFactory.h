@@ -24,4 +24,6 @@ namespace BHive
 
 		friend class MeshOptionsWindow;
 	};
+
+	REFLECT_EXTERN(MeshFactory)
 } // namespace BHive

@@ -31,7 +31,7 @@ namespace BHive
 		REFLECTABLE()
 	};
 
-	REFLECT(AudioTime)
+	REFLECT_INLINE(AudioTime)
 	{
 		BEGIN_REFLECT(AudioTime)
 		REFLECT_PROPERTY_READ_ONLY("Hours", mHours)

@@ -3,6 +3,7 @@
 #include "world/GameObject.h"
 #include "world/World.h"
 #include "world/Components.h"
+#include <physx/PxPhysicsAPI.h>
 
 namespace BHive
 {
@@ -202,6 +203,19 @@ namespace BHive
 			{
 				LineRenderer::DrawCapsule(collider.Radius, collider.HalfHeight, 16, collider.Offset, collider.Color, collider.GetWorldTransform(), (int32_t)e);
 			}
+		}
+	}
+
+	void RenderSystem::OnResize(const glm::uvec2 &size, World *world)
+	{
+		if (!world)
+			return;
+
+		auto &registry = world->GetRegistry();
+		auto camera_components = registry.view<CameraComponent>();
+		for (const auto &[e, component] : camera_components.each())
+		{
+			component.Camera.Resize(size.x, size.y);
 		}
 	}
 

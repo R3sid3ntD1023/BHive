@@ -34,8 +34,7 @@ namespace BHive
 			{
 				if (Log::GetLogger())
 				{
-					LOG_ERROR(
-						"Instrumentor::BeginSession('{0}') when session '{1}' already open.", name, mCurrentSession->Name);
+					LOG_ERROR("Instrumentor::BeginSession('{0}') when session '{1}' already open.", name, mCurrentSession->Name);
 				}
 
 				InternalEndSession();
@@ -65,6 +64,8 @@ namespace BHive
 
 		void WriteProfile(const ProfileResult &result)
 		{
+			mMutex.unlock();
+
 			std::stringstream json;
 
 			json << std::setprecision(5) << std::fixed;
@@ -149,8 +150,8 @@ namespace BHive
 		{
 			auto end_point = std::chrono::steady_clock::now();
 			auto high_res_start = FloatingPointMicroSeconds{mStartTimePoint.time_since_epoch()};
-			auto elaped_time = std::chrono::time_point_cast<std::chrono::microseconds>(end_point).time_since_epoch() -
-							   std::chrono::time_point_cast<std::chrono::microseconds>(mStartTimePoint).time_since_epoch();
+			auto elaped_time =
+				std::chrono::time_point_cast<std::chrono::microseconds>(end_point).time_since_epoch() - std::chrono::time_point_cast<std::chrono::microseconds>(mStartTimePoint).time_since_epoch();
 
 			Instrumentor::Get().WriteProfile({mName, high_res_start, elaped_time, std::this_thread::get_id()});
 
@@ -181,8 +182,7 @@ namespace BHive
 			while (srcIndex < N)
 			{
 				size_t matchIndex = 0;
-				while (matchIndex < K - 1 && srcIndex + matchIndex < N - 1 &&
-					   expr[srcIndex + matchIndex] == remove[matchIndex])
+				while (matchIndex < K - 1 && srcIndex + matchIndex < N - 1 && expr[srcIndex + matchIndex] == remove[matchIndex])
 					matchIndex++;
 
 				if (matchIndex == K - 1)
