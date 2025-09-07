@@ -105,6 +105,7 @@ namespace BHive
 		void SaveEditorConfigFile();
 
 		void ClearSelection();
+		void DrawGimzos();
 
 #pragma region GUI
 		void ViewportGUI();

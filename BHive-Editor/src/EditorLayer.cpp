@@ -35,6 +35,7 @@
 #include "gfx/utils/texture/ImageUtils.h"
 #include "world/components/LightComponents.h"
 #include "core/profiler/CPUGPUProfiler.h"
+#include "gui/Gimzo.h"
 
 namespace BHive
 {
@@ -401,6 +402,49 @@ namespace BHive
 		mRenderer->ClearPicked();
 	}
 
+	void EditorLayer::DrawGimzos()
+	{
+		auto &selection = SubSystemContext::Get().GetSubSystem<Selection>();
+		auto selected_object = selection.GetSelection();
+
+		GizmoContext::SetOrthographic(mEditorCamera.GetProjectionType() != EProjectionType::Perspective);
+		GizmoContext::SetRect(mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x, mViewportBounds[1].y - mViewportBounds[0].y);
+
+		glm::mat4 view = mEditorCamera.GetView().Inverse();
+		const glm::mat4 projection = mEditorCamera.GetProjection();
+
+		if (selected_object && mGizmo.Operation != -1 && !mActiveWorld->IsRunning())
+		{
+
+			Gizmo gizmo{};
+			gizmo.SetOperationAndMode(mGizmo.Operation, mGizmo.Mode);
+
+			glm::mat4 world_transform = selected_object->GetWorldTransform();
+
+			auto snap_value = mGizmo.IsSnappingEnabled ? mGizmo.SnapValues[(ImGuizmo::OPERATION)mGizmo.Operation] : glm::vec3{0.0f};
+
+			glm::mat4 delta{1.0f};
+
+			gizmo.Manipulate(view, projection, world_transform, delta, snap_value);
+
+			if (gizmo)
+			{
+				glm::mat4 local_transform = delta * selected_object->GetLocalTransform().to_mat4();
+				selected_object->SetLocalTransform(local_transform);
+			}
+		}
+
+		auto view_size = 100.0f;
+		auto view_position = ImVec2(mViewportBounds[1].x - view_size, mViewportBounds[0].y);
+		ViewGizmo view_gizmo{};
+		view_gizmo.ViewManipulate(view, mEditorCamera.Distance(), view_position, {view_size, view_size}, 0x00000000);
+
+		if (view_gizmo)
+		{
+			mEditorCamera.SetView(glm::inverse(view));
+		}
+	}
+
 	void EditorLayer::CreateWorld()
 	{
 		SubSystemContext::Get().GetSubSystem<Selection>().Clear();
@@ -552,7 +596,6 @@ namespace BHive
 		{
 
 			bool shown = ImGui::BeginChild("Viewport##Image", {}, 0, ImGuiWindowFlags_MenuBar);
-			bool is_using_gizmo = false;
 
 			if (shown)
 			{
@@ -571,54 +614,16 @@ namespace BHive
 				mViewportBounds[0] = {viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y};
 				mViewportBounds[1] = {viewport_max_region.x + viewport_offset.x, viewport_max_region.y + viewport_offset.y};
 
-				glm::mat4 view = mEditorCamera.GetView().Inverse();
-				const glm::mat4 projection = mEditorCamera.GetProjection();
-
 				auto color_attachment = mRenderer->GetColorAttachment();
 
 				ImGui::Image((ImTextureID)(uint64_t)*color_attachment, size, {0, 1}, {1, 0});
 
-				auto &selection = SubSystemContext::Get().GetSubSystem<Selection>();
-				auto selected_object = selection.GetSelection();
-
-				ImGui::SetCurrentContext(ImGui::GetCurrentContext());
-				ImGuizmo::SetOrthographic(mEditorCamera.GetProjectionType() != EProjectionType::Perspective);
-				ImGuizmo::SetDrawlist();
-				ImGuizmo::SetRect(mViewportBounds[0].x, mViewportBounds[0].y, mViewportBounds[1].x - mViewportBounds[0].x, mViewportBounds[1].y - mViewportBounds[0].y);
-
-				if (selected_object && mGizmo.Operation != -1 && !mActiveWorld->IsRunning())
-				{
-
-					glm::mat4 world_transform = selected_object->GetWorldTransform();
-
-					auto snap_value = mGizmo.IsSnappingEnabled ? mGizmo.SnapValues[(ImGuizmo::OPERATION)mGizmo.Operation] : glm::vec3{0.0f};
-
-					glm::mat4 delta{1.0f};
-
-					ImGuizmo::Manipulate(&view[0][0], &projection[0][0], (ImGuizmo::OPERATION)mGizmo.Operation, (ImGuizmo::MODE)mGizmo.Mode, &world_transform[0][0], &delta[0][0], &snap_value.x);
-
-					is_using_gizmo = ImGuizmo::IsUsing();
-
-					if (is_using_gizmo)
-					{
-						glm::mat4 local_transform = delta * selected_object->GetLocalTransform().to_mat4();
-						selected_object->SetLocalTransform(local_transform);
-					}
-				}
-
-				auto view_size = 100.0f;
-				auto view_position = ImVec2(mViewportBounds[1].x - view_size, mViewportBounds[0].y);
-				ImGuizmo::ViewManipulate(&view[0][0], mEditorCamera.Distance(), view_position, {view_size, view_size}, 0x00000000);
-
-				if (ImGuizmo::IsUsingViewManipulate())
-				{
-					mEditorCamera.SetView(glm::inverse(view));
-				}
+				DrawGimzos();
 
 				if (mViewportFocused || mViewportHovered)
 				{
 
-					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsMouseReleased(ImGuiMouseButton_Left) && !is_using_gizmo)
+					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsMouseReleased(ImGuiMouseButton_Left) && !GizmoContext::IsUsing())
 					{
 						auto [mx, my] = ImGui::GetMousePos();
 						mx -= mViewportBounds[0].x;
