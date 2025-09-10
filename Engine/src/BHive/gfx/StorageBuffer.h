@@ -11,6 +11,7 @@ namespace BHive
 		StorageBuffer() = default;
 		StorageBuffer(uint32_t binding, size_t size);
 		StorageBuffer(const void *data, size_t size);
+		StorageBuffer(uint32_t binding, const void *data, size_t size);
 		StorageBuffer(size_t size);
 
 		virtual ~StorageBuffer() = default;

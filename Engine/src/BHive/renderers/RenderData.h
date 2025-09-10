@@ -22,13 +22,6 @@ namespace BHive
 		std::vector<glm::mat4> Bones;
 	};
 
-	struct FObjectInfo
-	{
-		FTransform Transform;
-
-		int32_t EntityID = -1;
-	};
-
 	struct FMeshRenderData
 	{
 		enum Type
@@ -38,7 +31,9 @@ namespace BHive
 			Billboard
 		};
 
-		FObjectInfo ObjectInfo;
+		FTransform Transform;
+
+		int32_t EntityID = -1;
 
 		virtual ~FMeshRenderData() = default;
 
@@ -51,14 +46,14 @@ namespace BHive
 
 		FSubMesh SubMesh;
 
-		Ref<FInstanceInfo> InstanceInfo;
+		FInstanceInfo InstanceInfo;
 
 		Type GetRenderDataType() const override { return Type::Static; }
 	};
 
 	struct FSkeletalMeshRenderData : public FStaticMeshRenderData
 	{
-		Ref<FBoneInfo> BoneInfo;
+		FBoneInfo BoneInfo;
 
 		Type GetRenderDataType() const override { return Type::Skeletal; }
 	};
@@ -125,11 +120,13 @@ namespace BHive
 
 		MaterialTable Materials;
 
-		FObjectInfo ObjectInfo;
+		FTransform Transform;
 
-		Ref<FInstanceInfo> InstanceInfo;
+		int32_t EntityID = -1;
 
-		Ref<FBoneInfo> BoneInfo;
+		FInstanceInfo InstanceInfo;
+
+		FBoneInfo BoneInfo;
 	};
 
 } // namespace BHive

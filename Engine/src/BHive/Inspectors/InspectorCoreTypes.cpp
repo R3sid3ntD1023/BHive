@@ -45,7 +45,7 @@ namespace BHive
 
 		if (is_read_only)
 		{
-			ImGui::Text("%.2f", data);
+			ImGui::Text("%.5f", data);
 			return false;
 		}
 
@@ -58,7 +58,7 @@ namespace BHive
 		float min = min_var ? min_var.to_float() : 0.0f;
 		float max = max_var ? max_var.to_float() : 0.0f;
 		float step = step_var ? step_var.to_float() : 0.01f;
-		std::string format = format_var ? format_var.to_string() : "%.2f";
+		std::string format = format_var ? format_var.to_string() : "%.5f";
 		auto flags = flags_var ? flags_var.to_uint32() : 0;
 
 		if ((flags & EPropertyFlags_Slider) != 0)

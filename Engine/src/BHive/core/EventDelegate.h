@@ -97,7 +97,7 @@ namespace BHive
 			return *this;
 		}
 
-		EventDelegateBase &operator=(EventDelegateBase &&rhs)
+		EventDelegateBase &operator=(EventDelegateBase &&rhs) noexcept
 		{
 
 			mCallback = std::move(rhs.mCallback);

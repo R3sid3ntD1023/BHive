@@ -20,6 +20,12 @@ namespace BHive
 		glNamedBufferStorage(mBufferID, size, data, 0);
 	}
 
+	StorageBuffer::StorageBuffer(uint32_t binding, const void *data, size_t size)
+	{
+		glNamedBufferStorage(mBufferID, size, data, GL_DYNAMIC_STORAGE_BIT);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, mBufferID);
+	}
+
 	void StorageBuffer::BindBufferBase(uint32_t binding) const
 	{
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, mBufferID);

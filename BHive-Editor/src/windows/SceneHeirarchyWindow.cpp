@@ -59,6 +59,11 @@ namespace BHive
 			ImGui::EndPopup();
 		}
 
+		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
+		{
+			selection.Clear();
+		}
+
 		ImGui::EndChild();
 
 		if (ImGui::BeginDragDropTarget())
@@ -70,11 +75,6 @@ namespace BHive
 			}
 
 			ImGui::EndDragDropTarget();
-		}
-
-		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
-		{
-			selection.Clear();
 		}
 
 		ImGui::SeparatorText("Properties");
@@ -104,6 +104,7 @@ namespace BHive
 		bool selected = selection.IsSelected(obj);
 
 		flags |= (selected ? ImGuiTreeNodeFlags_Selected : 0);
+		flags |= (!obj->HasChildren() ? ImGuiTreeNodeFlags_Leaf : 0);
 
 		ImGui::PushID(obj);
 		bool opened = ImGui::TreeNodeEx(obj->GetName().c_str(), flags);

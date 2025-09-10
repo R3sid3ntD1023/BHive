@@ -227,7 +227,7 @@ namespace BHive
 	void SceneRenderer::SubmitMesh(const FMeshInfo &info)
 	{
 		const auto &mesh = info.Mesh;
-		const auto &transform = info.ObjectInfo.Transform;
+		const auto &transform = info.Transform;
 		const auto &materials = info.Materials;
 
 		Ref<FStaticMeshRenderData> data;
@@ -260,7 +260,8 @@ namespace BHive
 			}
 
 			data->VertexArray = mesh->GetVertexArray();
-			data->ObjectInfo = info.ObjectInfo;
+			data->Transform = info.Transform;
+			data->EntityID = info.EntityID;
 			data->InstanceInfo = info.InstanceInfo;
 
 			mSceneRenderData->RenderPassRenderData.emplace(distance, data);

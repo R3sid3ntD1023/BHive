@@ -30,4 +30,6 @@ namespace BHive
 		MeshFactory *mFactory = nullptr;
 	};
 
+	REFLECT_EXTERN(EMeshType)
+
 } // namespace BHive

@@ -15,3 +15,4 @@
 #include "components/StaticMeshComponent.h"
 #include "components/SkeletalMeshComponent.h"
 #include "components/LightComponents.h"
+#include "components/InstancedStaticMeshComponent.h"

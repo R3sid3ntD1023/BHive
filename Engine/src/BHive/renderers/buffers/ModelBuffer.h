@@ -19,5 +19,6 @@ namespace BHive
 		Ref<StorageBuffer> BoneBuffer;
 		Ref<StorageBuffer> WorldMatrixBuffer;
 		Ref<StorageBuffer> InstanceBuffer;
+		Ref<StorageBuffer> mIndirectBuffer;
 	};
 } // namespace BHive

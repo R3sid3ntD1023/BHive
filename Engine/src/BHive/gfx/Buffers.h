@@ -36,4 +36,5 @@ namespace BHive
 	private:
 		BufferLayout mLayout;
 	};
+
 } // namespace BHive

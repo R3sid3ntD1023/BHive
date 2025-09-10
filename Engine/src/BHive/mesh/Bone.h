@@ -8,11 +8,12 @@ namespace BHive
 {
 	struct BHIVE_API Bone
 	{
-		std::string Name;
-		int32_t ID;
+		std::string Name = "None";
+
+		int32_t ID = -1;
 
 		// glm::mat4 GlobalBindPoseMatrix;
-		glm::mat4 LocalBindPoseMatrix;
+		glm::mat4 LocalBindPoseMatrix = {1.0f};
 
 		// uint8_t Parent = INVALID_BONE_INDEX;
 		// std::vector<uint8_t> Children;

@@ -1,9 +1,10 @@
 mat4 bone_matrix = GetBoneMatrix(vWeights, vBoneIds, bones);
-mat4 model = object[gl_DrawID].WorldMatrix * bone_matrix;
-	
-bool instanced = gl_InstanceIndex != -1; 
-mat4 instance = mix( instances[gl_InstanceIndex],  mat4(1), float(instanced));
-vec4 worldPos = instance * model * vec4(vPosition, 1);
+
+bool instanced = (gl_InstanceIndex > 1); 
+int index = max(gl_InstanceIndex - 1, 0);
+mat4 instance = mix(  mat4(1), instances[index],  float(instanced));
+mat4 model =   instance * object[gl_DrawID].WorldMatrix *bone_matrix;
+vec4 worldPos = model * vec4(vPosition, 1);
 
 mat3 normal_matrix = transpose(inverse(mat3(model)));
 vec3 T = normalize(normal_matrix * vTangent);

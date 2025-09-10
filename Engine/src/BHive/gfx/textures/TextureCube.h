@@ -29,7 +29,7 @@ namespace BHive
 		virtual uint32_t GetRendererID() const { return mTextureID; }
 
 	private:
-		uint32_t mSize;
+		uint32_t mSize{0};
 		FTextureCreateInfo mCreateInfo;
 		FTextureAPIInfo mInfo;
 		uint32_t mTextureID{0};

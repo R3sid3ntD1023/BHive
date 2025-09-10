@@ -26,7 +26,7 @@ namespace BHive
 
 		auto &selection = GetSubSystem<Selection>();
 		if (auto object = selection.GetSelection(); object && mSelectedRenderData)
-			mSelectedRenderData->ObjectInfo.Transform = object->GetWorldTransform();
+			mSelectedRenderData->Transform = object->GetWorldTransform();
 
 		mOutlinePass->SetSelected(mSelectedRenderData);
 		mOutlinePostProcess->SetSelected(mSelectedRenderData != nullptr);

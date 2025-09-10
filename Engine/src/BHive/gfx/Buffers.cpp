@@ -53,4 +53,5 @@ namespace BHive
 	{
 		mLayout = layout;
 	}
+
 } // namespace BHive

@@ -19,6 +19,8 @@ namespace BHive
 		virtual const Ref<IndexBuffer> &GetIndexBuffer() const { return mIndexBuffer; }
 		virtual void BindBuffersBase(uint32_t binding) const;
 
+		virtual Ref<VertexBuffer> GetVertexBuffer(uint32_t index) const;
+
 	private:
 		uint32_t mVertexBufferIndex{0};
 		uint32_t mVertexArrayID{0};

@@ -30,7 +30,7 @@ namespace BHive
 		mShaders[0]->Bind();
 		for (const auto &[dist, obj] : data)
 		{
-			mShaders[0]->SetUniform("constants.uEntityID", obj->ObjectInfo.EntityID);
+			mShaders[0]->SetUniform("constants.uEntityID", obj->EntityID);
 			Renderer::Draw(obj);
 		}
 		mShaders[0]->UnBind();
@@ -49,7 +49,7 @@ namespace BHive
 		LOG_INFO("Picked ID: {}", pixel_id);
 		if (pixel_id != -1)
 		{
-			auto lambda = [pixel_id](const std::pair<float, Ref<FMeshRenderData>> &pair) { return pair.second->ObjectInfo.EntityID == pixel_id; };
+			auto lambda = [pixel_id](const std::pair<float, Ref<FMeshRenderData>> &pair) { return pair.second->EntityID == pixel_id; };
 			auto picked = std::find_if(data.begin(), data.end(), lambda);
 
 			auto render_data = picked != data.end() ? picked->second : nullptr;

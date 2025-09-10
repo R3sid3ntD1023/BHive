@@ -202,7 +202,7 @@ namespace BHive
 
 			if (changed && !is_read_only)
 			{
-				GetSubSystem<UndoRedo>().AddCommand<CommandProperty>(std::format("Changed Property {}", property.get_name().data()), object, property, prop_var);
+				// GetSubSystem<UndoRedo>().AddCommand<CommandProperty>(std::format("Changed Property {}", property.get_name().data()), object, property, prop_var);
 				property.set_value(object, prop_var);
 			}
 		}

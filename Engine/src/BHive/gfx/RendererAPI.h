@@ -18,6 +18,15 @@ namespace BHive
 		Buffer_Color = 0x00004000,
 	};
 
+	struct MultiDrawIndirectCommand
+	{
+		uint32_t Count;
+		uint32_t InstanceCount;
+		uint32_t FirstIndex;
+		int32_t BaseVertex;
+		uint32_t BaseInstance;
+	};
+
 	class BHIVE_API RendererAPI
 	{
 	public:
@@ -36,7 +45,7 @@ namespace BHive
 		virtual void DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0);
 		virtual void DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count = 0);
 		virtual void DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count = 0);
-		virtual void MultiDrawElementsIndirect(uint32_t buffer, EDrawMode mode, const VertexArray &vao, size_t numMeshes, size_t stride = 0);
+		virtual void MultiDrawElementsIndirect(EDrawMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride = 0);
 
 		virtual void EnableDepth();
 		virtual void DisableDepth();

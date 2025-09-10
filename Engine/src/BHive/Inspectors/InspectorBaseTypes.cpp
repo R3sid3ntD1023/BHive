@@ -76,7 +76,7 @@ namespace BHive
 		auto default_value = default_value_var ? default_value_var.get_value<T>() : zero;
 		auto min_value = min_value_var ? min_value_var.get_value<T>() : zero;
 		auto max_value = max_value_var ? max_value_var.get_value<T>() : zero;
-		auto format = format_var ? format_var.to_string() : "%.2f";
+		auto format = format_var ? format_var.to_string() : "%.5f";
 
 		if (OnInspectVector(data, default_value, min_value, max_value, format.c_str()))
 		{

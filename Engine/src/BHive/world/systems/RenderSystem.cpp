@@ -106,8 +106,27 @@ namespace BHive
 				FMeshInfo info{};
 				info.Mesh = mesh;
 				info.Materials = sc.GetMaterials();
-				info.ObjectInfo.Transform = sc.GetWorldTransform();
-				info.ObjectInfo.EntityID = (int32_t)e;
+				info.Transform = sc.GetWorldTransform();
+				info.EntityID = (int32_t)e;
+
+				renderer->SubmitMesh(info);
+			}
+		}
+
+		{
+			auto view = registry.view<InstancedStaticMeshComponent>();
+			for (const auto &[e, component] : view.each())
+			{
+				auto mesh = component.GetStaticMesh();
+				if (!mesh)
+					continue;
+
+				FMeshInfo info{};
+				info.Mesh = mesh;
+				info.Materials = component.GetMaterials();
+				info.Transform = component.GetWorldTransform();
+				info.EntityID = (int32_t)e;
+				info.InstanceInfo.Transforms = component.GetInstances();
 
 				renderer->SubmitMesh(info);
 			}
@@ -128,10 +147,9 @@ namespace BHive
 				FMeshInfo info{};
 				info.Mesh = sc.GetSkeletalMesh();
 				info.Materials = sc.GetMaterials();
-				info.ObjectInfo.Transform = t;
-				info.ObjectInfo.EntityID = (int32_t)e;
-				info.BoneInfo = CreateRef<FBoneInfo>();
-				info.BoneInfo->Bones = pose->GetTransformsJointSpace();
+				info.Transform = t;
+				info.EntityID = (int32_t)e;
+				info.BoneInfo.Bones = pose->GetTransformsJointSpace();
 
 				renderer->SubmitMesh(info);
 				LineRenderer::DrawAABB(sc.GetSkeletalMesh()->GetBoundingBox(), FColor::Red, t, (int32_t)e);

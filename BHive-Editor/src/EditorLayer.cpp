@@ -79,7 +79,7 @@ namespace BHive
 		InitRenderer(size);
 
 		float aspect = size.x / (float)size.y;
-		mEditorCamera = EditorCamera(45.f, aspect, .01f, 1000.f);
+		mEditorCamera = EditorCamera(45.f, aspect, 0.001f, 5000.f);
 
 		AddSubSystem<Selection>();
 		AddSubSystem<ThumbnailCache>();

@@ -20,18 +20,18 @@ layout(std430, binding = 0) uniform CameraBuffer
 	vec3 u_camera_position;
 };
 
-layout(std430, binding = 1) restrict readonly buffer PerObjectSSBO
+layout(std430, binding = 0) restrict readonly buffer PerObjectSSBO
 {
 	PerObjectData object[];
 };
 
 
-layout(std430, binding = 2) restrict readonly buffer InstanceSSBO
+layout(std430, binding = 1) restrict readonly buffer InstanceSSBO
 {
 	mat4 instances[];
 };
 
-layout(std430, binding = 3) restrict readonly buffer Bones
+layout(std430, binding = 2) restrict readonly buffer Bones
 {
 	mat4 bones[MAX_BONES];
 };
@@ -45,13 +45,13 @@ layout(location = 0) out struct VS_OUT
 	vec4 Color;
 	mat3 TBN;
 	vec3 CameraPosition;
+	float InstanceID;
+	float DrawID;
 } vs_out;
-
 
 void main()
 {
 	#include <includes/Common.vert>
-	
 	
 	vs_out.Position = worldPos.xyz;
 	vs_out.TBN = mat3(T, B, N);
@@ -59,6 +59,8 @@ void main()
 	vs_out.Normal = N;
 	vs_out.CameraPosition = u_camera_position;
 	vs_out.Color = vColor;
+	vs_out.InstanceID = float(gl_InstanceIndex);
+	vs_out.DrawID = float(gl_DrawID);
 }
 
 #type fragment
@@ -88,6 +90,8 @@ layout(location = 0) in struct VS_OUT
 	vec4 Color;
 	mat3 TBN;
 	vec3 CameraPosition;
+	float InstanceID;
+	float DrawID;
 } vs_in;
 
 layout(location = 0) out vec4 fs_out;

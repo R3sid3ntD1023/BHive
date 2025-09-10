@@ -18,6 +18,6 @@ namespace BHive
 		virtual void Resize(uint32_t w, uint32_t h) = 0;
 
 	protected:
-		glm::mat4 mProjection;
+		glm::mat4 mProjection{1.0f};
 	};
 } // namespace BHive

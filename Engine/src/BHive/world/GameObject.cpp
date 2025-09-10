@@ -264,6 +264,11 @@ namespace BHive
 		return children;
 	}
 
+	bool GameObject::HasChildren() const
+	{
+		return GetComponent<RelationshipComponent>()->Children.size() > 0;
+	}
+
 	REFLECT(GameObject)
 	{
 		BEGIN_REFLECT(GameObject)

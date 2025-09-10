@@ -228,14 +228,12 @@ namespace BHive
 							{
 								OnAssetContextMenu(e);
 							}
-							else
+
+							if (e.path().extension() == ".asset")
 							{
-								if (e.path().extension() == ".asset")
+								if (ImGui::MenuItem("Import"))
 								{
-									if (ImGui::MenuItem("Import"))
-									{
-										OnReimportAsset(e);
-									}
+									OnReimportAsset(e);
 								}
 							}
 						}

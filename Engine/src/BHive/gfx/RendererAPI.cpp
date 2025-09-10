@@ -145,9 +145,9 @@ namespace BHive
 		auto _count = count ? count : index_buffer->GetCount();
 
 		if (instance_count > 0)
-			glDrawElementsInstancedBaseVertexBaseInstance(mode, _count, GL_UNSIGNED_INT, (void *)(sizeof(uint32_t) * start_index), instance_count, start, start_index);
+			glDrawElementsInstancedBaseVertexBaseInstance(mode, _count, GL_UNSIGNED_INT, nullptr, (GLsizei)instance_count, (GLint)start, 1);
 		else
-			glDrawElementsBaseVertex(mode, _count, GL_UNSIGNED_INT, (void *)(sizeof(uint32_t) * start_index), start);
+			glDrawElementsBaseVertex(mode, _count, GL_UNSIGNED_INT, nullptr, start);
 	}
 
 	void RendererAPI::DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
@@ -168,17 +168,17 @@ namespace BHive
 		glDrawElementsInstanced(mode, _count, GL_UNSIGNED_INT, nullptr, instances);
 	}
 
-	void RendererAPI::MultiDrawElementsIndirect(uint32_t buffer, EDrawMode mode, const VertexArray &vao, size_t numMeshes, size_t stride)
+	void RendererAPI::MultiDrawElementsIndirect(EDrawMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride)
 	{
 		vao.Bind();
 
-		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, buffer);
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirect.GetBufferID());
 
-		glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, NULL, numMeshes, stride);
+		glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, nullptr, drawCount, stride);
 
-		// glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 
-		// vao.UnBind();
+		vao.UnBind();
 	}
 
 	void RendererAPI::EnableDepth()

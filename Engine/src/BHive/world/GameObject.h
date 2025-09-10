@@ -125,6 +125,8 @@ namespace BHive
 
 		std::unordered_set<Ref<GameObject>> GetChildren() const;
 
+		bool HasChildren() const;
+
 		const ComponentList &GetComponents() const { return mComponents; }
 
 		ComponentList &GetComponents() { return mComponents; }
