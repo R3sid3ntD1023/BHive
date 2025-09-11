@@ -7,10 +7,6 @@
 #define MAX_BONES 200
 #define MAX_BONE_INFLUENCE 4
 
-struct PerObjectData
-{
-	mat4 WorldMatrix;
-};
 
 vec4 EncodeEntityID(in int id)
 {

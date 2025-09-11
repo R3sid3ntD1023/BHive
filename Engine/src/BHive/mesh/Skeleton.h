@@ -10,7 +10,7 @@ namespace BHive
 	typedef std::map<std::string, Bone> Bones;
 	typedef std::vector<SkeletalNode> SkeletalNodes;
 
-	class Skeleton : public Asset
+	class BHIVE_API Skeleton : public Asset
 	{
 	public:
 		Skeleton() = default;

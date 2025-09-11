@@ -18,6 +18,7 @@ namespace BHive
 	class SkeletalPose;
 	class Framebuffer;
 	class PQuad;
+	class SceneRenderer;
 
 	class SandboxLayer : public Layer
 	{
@@ -30,7 +31,6 @@ namespace BHive
 
 	private:
 		bool OnWindowResize(WindowResizeEvent &e);
-		void DrawScene();
 
 	private:
 		EditorCamera mCamera;
@@ -41,11 +41,8 @@ namespace BHive
 		Ref<SkeletalMesh> mCharacter;
 		Ref<SkeletalAnimation> mAnimation;
 		Ref<AnimationClip> mAnimationClip;
-		Ref<Shader> mShader;
 		Ref<SkeletalPose> mPose;
 
-		Ref<Framebuffer> mFramebuffer;
-		Ref<PQuad> mScreenQuad;
-		Ref<Shader> mScreenQuadShader;
+		Ref<SceneRenderer> mRenderer;
 	};
 } // namespace BHive

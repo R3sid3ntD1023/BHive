@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	struct FPSCounter
+	struct BHIVE_API FPSCounter
 	{
 		FPSCounter();
 

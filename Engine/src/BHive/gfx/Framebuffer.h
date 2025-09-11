@@ -83,7 +83,9 @@ namespace BHive
 
 		virtual void ClearAttachment(uint32_t attachmentIndex, const float *data);
 
-		virtual void Blit(Ref<Framebuffer> &target);
+		virtual void Blit(const Ref<Framebuffer> &target);
+
+		virtual void BlitToWindow(unsigned x, unsigned y, unsigned w, unsigned h);
 
 		virtual void ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, void *data) const;
 

@@ -10,6 +10,7 @@ layout(std140, binding = 0) uniform CameraBuffer
 	mat4 u_projection;
 	mat4 u_view;
 	vec2 u_near_far;
+	vec3 u_camera_position;
 };
 
 void main()

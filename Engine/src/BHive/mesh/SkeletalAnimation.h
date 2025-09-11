@@ -10,13 +10,11 @@ namespace BHive
 
 	typedef std::map<std::string, FrameData> Frames;
 
-	class SkeletalAnimation : public Asset
+	class BHIVE_API SkeletalAnimation : public Asset
 	{
 	public:
 		SkeletalAnimation() = default;
-		SkeletalAnimation(
-			float duration, float ticksPerSecond, const Frames &frames, Ref<Skeleton> skeleton,
-			const glm::mat4 &globalInverseMatrix);
+		SkeletalAnimation(float duration, float ticksPerSecond, const Frames &frames, Ref<Skeleton> skeleton, const glm::mat4 &globalInverseMatrix);
 
 		bool Contains(const std::string &name) const;
 

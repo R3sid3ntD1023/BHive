@@ -11,11 +11,17 @@ namespace BHive
 #define MAX_BONES 200
 #define MAX_INSTANCES 10'000
 
+	struct FPerObjectData
+	{
+		glm::mat4 WorldMatrix = {1.0f};
+		uint32_t InstanceCount = 0;
+	};
+
 	void ModelBuffer::Init()
 	{
-		BoneBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * MAX_BONES);
-		WorldMatrixBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4));
-		InstanceBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * MAX_INSTANCES);
+		mBoneBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * MAX_BONES);
+		mPerObjectBuffer = CreateRef<StorageBuffer>(sizeof(FPerObjectData));
+		mInstanceBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * MAX_INSTANCES);
 		mIndirectBuffer = CreateRef<StorageBuffer>(sizeof(MultiDrawIndirectCommand));
 	}
 
@@ -33,46 +39,47 @@ namespace BHive
 		if (!data)
 			return;
 
-		uint32_t instance_count = (uint32_t)data->InstanceInfo.Transforms.size();
-
-		MultiDrawIndirectCommand command{};
-		command.InstanceCount = 1;
-		command.BaseInstance = 1;
-		command.BaseVertex = data->SubMesh.StartVertex;
-		command.FirstIndex = data->SubMesh.StartIndex;
-		command.Count = data->SubMesh.IndexCount;
+		uint32_t instance_count = (uint32_t)data->Instances.Transforms.size();
 
 		if (instance_count)
 		{
-			const auto &instances = data->InstanceInfo.Transforms;
+			const auto &instances = data->Instances.Transforms;
 
-			InstanceBuffer->SetData(instances.data(), sizeof(glm::mat4) * instances.size());
-			InstanceBuffer->BindBufferBase(SSBO_INSTANCE_BINDING);
-			command.InstanceCount = instance_count;
+			mInstanceBuffer->SetData(instances.data(), sizeof(glm::mat4) * instances.size());
+			mInstanceBuffer->BindBufferBase(SSBO_INSTANCE_BINDING);
 		}
 
 		if (data->GetRenderDataType() == FMeshRenderData::Skeletal)
 		{
 			auto skeletaldata = std::static_pointer_cast<FSkeletalMeshRenderData>(data);
 
-			if (!skeletaldata->BoneInfo.Bones.size())
+			if (!skeletaldata->Bones.Bones.size())
 			{
 				LOG_WARN("Skeletal mesh render data has no bone info!");
 				return;
 			}
-			const auto &joints = skeletaldata->BoneInfo.Bones;
+			const auto &joints = skeletaldata->Bones.Bones;
 
-			BoneBuffer->SetData(joints.data(), joints.size() * sizeof(glm::mat4));
-			BoneBuffer->BindBufferBase(SSBO_BONE_BINDING);
+			mBoneBuffer->SetData(joints.data(), joints.size() * sizeof(glm::mat4));
+			mBoneBuffer->BindBufferBase(SSBO_BONE_BINDING);
 		}
 
-		auto matrix = data->Transform.to_mat4() * data->SubMesh.Transformation;
-		WorldMatrixBuffer->SetData(&matrix, sizeof(glm::mat4));
-		WorldMatrixBuffer->BindBufferBase(SSBO_INDEX_PER_OBJECT_BINDING);
+		FPerObjectData object_data{};
+		object_data.InstanceCount = instance_count;
+		object_data.WorldMatrix = data->Transform.to_mat4() * data->SubMesh.Transformation;
+
+		mPerObjectBuffer->SetData(&object_data, sizeof(FPerObjectData));
+		mPerObjectBuffer->BindBufferBase(SSBO_INDEX_PER_OBJECT_BINDING);
+
+		MultiDrawIndirectCommand command{};
+		command.InstanceCount = instance_count ? instance_count : 1;
+		command.BaseInstance = 1;
+		command.BaseVertex = data->SubMesh.StartVertex;
+		command.FirstIndex = data->SubMesh.StartIndex;
+		command.Count = data->SubMesh.IndexCount;
 
 		mIndirectBuffer->SetData(&command, sizeof(MultiDrawIndirectCommand));
 
-		// RenderCommand::DrawElementsBaseVertex(EDrawMode::Triangles, *data->VertexArray, data->SubMesh.StartVertex, data->SubMesh.StartIndex, data->SubMesh.IndexCount, instance_count);
 		RenderCommand::MultiDrawElementsIndirect(EDrawMode::Triangles, *mIndirectBuffer, *data->VertexArray, &command, 1, 0);
 	}
 } // namespace BHive

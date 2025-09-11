@@ -8,7 +8,7 @@ namespace BHive
 	struct SkeletalNode;
 	class SkeletalPose;
 
-	class AnimationClip
+	class BHIVE_API AnimationClip
 	{
 	public:
 		AnimationClip(const Ref<SkeletalAnimation> &animation);

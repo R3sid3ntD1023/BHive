@@ -35,7 +35,7 @@ namespace BHive
 		{
 			info.Mesh = skeletal_mesh;
 			info.Materials = skeletal_mesh->GetMaterialTable();
-			info.BoneInfo.Bones = skeletal_mesh->GetDefaultPose()->GetTransformsJointSpace();
+			info.Bones.Bones = skeletal_mesh->GetDefaultPose()->GetTransformsJointSpace();
 		}
 		else if (auto static_mesh = Cast<StaticMesh>(mAsset))
 		{

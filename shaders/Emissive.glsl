@@ -21,21 +21,7 @@ layout(std430, binding = 0) uniform CameraBuffer
 	vec3 u_camera_position;
 };
 
-layout(std430, binding = 0) restrict readonly buffer PerObjectSSBO
-{
-	PerObjectData object[];
-};
-
-
-layout(std430, binding = 1) restrict readonly buffer InstanceSSBO
-{
-	mat4 instances[];
-};
-
-layout(std430, binding = 2) restrict readonly buffer Bones
-{
-	mat4 bones[MAX_BONES];
-};
+#include <ObjectBuffers.glsl>
 
 
 void main()

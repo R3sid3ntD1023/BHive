@@ -109,9 +109,6 @@ namespace BHive
 
 	void EditorLayer::OnUpdate(float dt)
 	{
-		GPU_PROFILER_SCOPED("GPUUpdate")
-		CPU_PROFILER_FUNCTION()
-
 		if (!mActiveWorld)
 			return;
 

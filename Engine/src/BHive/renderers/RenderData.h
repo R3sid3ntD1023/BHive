@@ -46,14 +46,14 @@ namespace BHive
 
 		FSubMesh SubMesh;
 
-		FInstanceInfo InstanceInfo;
+		FInstanceInfo Instances;
 
 		Type GetRenderDataType() const override { return Type::Static; }
 	};
 
 	struct FSkeletalMeshRenderData : public FStaticMeshRenderData
 	{
-		FBoneInfo BoneInfo;
+		FBoneInfo Bones;
 
 		Type GetRenderDataType() const override { return Type::Skeletal; }
 	};
@@ -110,7 +110,7 @@ namespace BHive
 		glm::vec3 LightAngleNearFar;
 	};
 
-	using FMeshRenderDatas = std::map<float, Ref<FMeshRenderData>>;
+	using FMeshRenderDatas = std::vector<Ref<FMeshRenderData>>;
 
 	class BaseMesh;
 
@@ -124,9 +124,9 @@ namespace BHive
 
 		int32_t EntityID = -1;
 
-		FInstanceInfo InstanceInfo;
+		FInstanceInfo Instances;
 
-		FBoneInfo BoneInfo;
+		FBoneInfo Bones;
 	};
 
 } // namespace BHive

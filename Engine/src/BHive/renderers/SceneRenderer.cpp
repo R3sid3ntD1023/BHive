@@ -26,6 +26,16 @@
 
 namespace BHive
 {
+	struct Distance
+	{
+		static bool Sort(const Ref<FMeshRenderData> &lhs, const Ref<FMeshRenderData> &rhs)
+		{
+			glm::vec3 position = Renderer::GetCamera().GetCameraData().Position;
+			auto distanceA = glm::distance(lhs->Transform.GetTranslation(), position);
+			auto distanceB = glm::distance(rhs->Transform.GetTranslation(), position);
+			return distanceA < distanceB;
+		}
+	};
 
 	struct FSceneRenderData
 	{
@@ -103,6 +113,14 @@ namespace BHive
 
 	void SceneRenderer::End()
 	{
+		for (auto &[mat, data] : mSceneRenderData->RenderData)
+		{
+			std::sort(data.begin(), data.end(), Distance::Sort);
+		}
+
+		std::sort(mSceneRenderData->ShadowPassRenderData.begin(), mSceneRenderData->ShadowPassRenderData.end(), Distance::Sort);
+		std::sort(mSceneRenderData->RenderPassRenderData.begin(), mSceneRenderData->RenderPassRenderData.end(), Distance::Sort);
+
 		while (mCommands.size())
 		{
 			mCommands.top()();
@@ -144,7 +162,7 @@ namespace BHive
 
 			mat->Submit(shader);
 
-			for (auto [dist, object] : objects)
+			for (const auto &object : objects)
 				Renderer::Draw(object);
 
 			shader->UnBind();
@@ -249,7 +267,7 @@ namespace BHive
 			{
 				auto skeletal_data = CreateRef<FSkeletalMeshRenderData>();
 				skeletal_data->SubMesh = sub_mesh;
-				skeletal_data->BoneInfo = info.BoneInfo;
+				skeletal_data->Bones = info.Bones;
 				data = skeletal_data;
 			}
 			else
@@ -262,13 +280,13 @@ namespace BHive
 			data->VertexArray = mesh->GetVertexArray();
 			data->Transform = info.Transform;
 			data->EntityID = info.EntityID;
-			data->InstanceInfo = info.InstanceInfo;
+			data->Instances = info.Instances;
 
-			mSceneRenderData->RenderPassRenderData.emplace(distance, data);
-			mSceneRenderData->RenderData[material].emplace(distance, data);
+			mSceneRenderData->RenderPassRenderData.emplace_back(data);
+			mSceneRenderData->RenderData[material].emplace_back(data);
 
 			if (material->ShouldCastShadows())
-				mSceneRenderData->ShadowPassRenderData.emplace(distance, data);
+				mSceneRenderData->ShadowPassRenderData.emplace_back(data);
 		}
 	}
 
@@ -321,13 +339,7 @@ namespace BHive
 
 	void SceneRenderer::RenderToScreen()
 	{
-		RenderCommand::Clear();
-
-		mQuadShader->Bind();
-
-		mFinalFramebuffer->GetColorAttachment()->Bind();
-
-		RenderCommand::DrawElements(EDrawMode::Triangles, *mQuad->GetVertexArray());
+		mFinalFramebuffer->BlitToWindow(0, 0, mSize.x, mSize.y);
 	}
 
 	bool SceneRenderer::IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform)

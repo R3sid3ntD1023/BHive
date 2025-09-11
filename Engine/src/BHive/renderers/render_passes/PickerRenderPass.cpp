@@ -28,7 +28,7 @@ namespace BHive
 		mFrambuffer->ClearAttachment(0, &clear_id);
 
 		mShaders[0]->Bind();
-		for (const auto &[dist, obj] : data)
+		for (const auto &obj : data)
 		{
 			mShaders[0]->SetUniform("constants.uEntityID", obj->EntityID);
 			Renderer::Draw(obj);
@@ -49,10 +49,10 @@ namespace BHive
 		LOG_INFO("Picked ID: {}", pixel_id);
 		if (pixel_id != -1)
 		{
-			auto lambda = [pixel_id](const std::pair<float, Ref<FMeshRenderData>> &pair) { return pair.second->EntityID == pixel_id; };
+			auto lambda = [pixel_id](const auto &pair) { return pair->EntityID == pixel_id; };
 			auto picked = std::find_if(data.begin(), data.end(), lambda);
 
-			auto render_data = picked != data.end() ? picked->second : nullptr;
+			auto render_data = picked != data.end() ? *picked : nullptr;
 			OnEntityPicked.invoke(pixel_id, render_data);
 		}
 		else

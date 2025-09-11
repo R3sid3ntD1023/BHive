@@ -16,9 +16,9 @@ namespace BHive
 		void DrawMesh(const Ref<FStaticMeshRenderData> &data);
 
 	private:
-		Ref<StorageBuffer> BoneBuffer;
-		Ref<StorageBuffer> WorldMatrixBuffer;
-		Ref<StorageBuffer> InstanceBuffer;
+		Ref<StorageBuffer> mBoneBuffer;
+		Ref<StorageBuffer> mPerObjectBuffer;
+		Ref<StorageBuffer> mInstanceBuffer;
 		Ref<StorageBuffer> mIndirectBuffer;
 	};
 } // namespace BHive

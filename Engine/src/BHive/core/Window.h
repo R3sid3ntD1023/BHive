@@ -52,6 +52,8 @@ namespace BHive
 
 		const glm::ivec2 &GetSize() const { return mData.mSize; }
 
+		float GetAspectRatio() const { return (float)mData.mSize.x / (float)mData.mSize.y; }
+
 		bool IsVSyncEnabled() const { return mData.VSync; }
 
 	private:

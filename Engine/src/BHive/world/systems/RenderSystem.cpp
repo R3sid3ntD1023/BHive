@@ -12,8 +12,6 @@ namespace BHive
 		auto &render_settings = renderer->GetRenderSettings();
 		auto &registry = world->GetRegistry();
 
-		LineRenderer::SetLineWidth(3.f);
-
 		{
 
 			auto camera_components = registry.view<TransformComponent, CameraComponent>();
@@ -96,25 +94,6 @@ namespace BHive
 
 		{
 			auto view = registry.view<StaticMeshComponent>();
-			for (const auto &e : view)
-			{
-				auto &sc = view.get<StaticMeshComponent>(e);
-				auto mesh = sc.GetStaticMesh();
-				if (!mesh)
-					continue;
-
-				FMeshInfo info{};
-				info.Mesh = mesh;
-				info.Materials = sc.GetMaterials();
-				info.Transform = sc.GetWorldTransform();
-				info.EntityID = (int32_t)e;
-
-				renderer->SubmitMesh(info);
-			}
-		}
-
-		{
-			auto view = registry.view<InstancedStaticMeshComponent>();
 			for (const auto &[e, component] : view.each())
 			{
 				auto mesh = component.GetStaticMesh();
@@ -126,7 +105,28 @@ namespace BHive
 				info.Materials = component.GetMaterials();
 				info.Transform = component.GetWorldTransform();
 				info.EntityID = (int32_t)e;
-				info.InstanceInfo.Transforms = component.GetInstances();
+
+				renderer->SubmitMesh(info);
+			}
+		}
+
+		{
+			auto view = registry.view<InstancedStaticMeshComponent>();
+			for (const auto &e : view)
+			{
+				auto &component = view.get<InstancedStaticMeshComponent>(e);
+				auto mesh = component.GetStaticMesh();
+				if (!mesh)
+					continue;
+
+				const auto &instances = component.GetInstances();
+
+				FMeshInfo info{};
+				info.Mesh = mesh;
+				info.Materials = component.GetMaterials();
+				info.Transform = component.GetWorldTransform();
+				info.EntityID = (int32_t)e;
+				info.Instances = {instances};
 
 				renderer->SubmitMesh(info);
 			}
@@ -149,7 +149,7 @@ namespace BHive
 				info.Materials = sc.GetMaterials();
 				info.Transform = t;
 				info.EntityID = (int32_t)e;
-				info.BoneInfo.Bones = pose->GetTransformsJointSpace();
+				info.Bones.Bones = pose->GetTransformsJointSpace();
 
 				renderer->SubmitMesh(info);
 				LineRenderer::DrawAABB(sc.GetSkeletalMesh()->GetBoundingBox(), FColor::Red, t, (int32_t)e);

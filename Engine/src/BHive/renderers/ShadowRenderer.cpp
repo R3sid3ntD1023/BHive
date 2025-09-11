@@ -106,7 +106,7 @@ namespace BHive
 		{
 			shader->Bind();
 
-			for (auto &[dist, obj] : datas)
+			for (const auto &obj : datas)
 			{
 				Renderer::Draw(obj);
 			}

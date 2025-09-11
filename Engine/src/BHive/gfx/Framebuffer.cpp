@@ -101,7 +101,7 @@ namespace BHive
 		glClearNamedFramebufferfv(mFramebufferID, GL_COLOR, attachmentIndex, data);
 	}
 
-	void Framebuffer::Blit(Ref<Framebuffer> &target)
+	void Framebuffer::Blit(const Ref<Framebuffer> &target)
 	{
 		if (!target || mSpecification.Width == 0 || mSpecification.Height == 0)
 			return;
@@ -115,7 +115,7 @@ namespace BHive
 		auto count = dst_specs.Attachments.GetAttachments().size();
 
 		const auto read_target = mFramebufferID;
-		const auto draw_target = target->GetRendererID();
+		const auto draw_target = target ? target->GetRendererID() : 0;
 
 		for (size_t i = 0; i < count; i++)
 		{
@@ -129,6 +129,21 @@ namespace BHive
 		{
 			glBlitNamedFramebuffer(read_target, draw_target, 0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height, GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 		}
+	}
+
+	void Framebuffer::BlitToWindow(unsigned x, unsigned y, unsigned w, unsigned h)
+	{
+		const auto &specs = mSpecification;
+
+		if (specs.Width == 0 || specs.Height == 0)
+			return;
+
+		const auto read_target = mFramebufferID;
+		const auto draw_target = 0;
+
+		glNamedFramebufferReadBuffer(read_target, GL_COLOR_ATTACHMENT0);
+
+		glBlitNamedFramebuffer(read_target, draw_target, 0, 0, specs.Width, specs.Height, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 	}
 
 	void Framebuffer::ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, void *data) const

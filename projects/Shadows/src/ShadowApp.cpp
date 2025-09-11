@@ -31,6 +31,7 @@ namespace BHive
 		specs.Size = {800, 600};
 		specs.Title = "TestApp";
 		specs.CommandLine = cmd;
+		specs.VSync = false;
 
 		return new Sandbox(specs);
 	}
