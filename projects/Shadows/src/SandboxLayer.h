@@ -33,16 +33,17 @@ namespace BHive
 		bool OnWindowResize(WindowResizeEvent &e);
 
 	private:
-		EditorCamera mCamera;
-		Ref<PCube> mPlane;
-		Ref<StaticMesh> mLightPost;
+		EditorCamera mCamera{};
+		Ref<PCube> mPlane{};
+		Ref<StaticMesh> mLightPost{};
 
-		Ref<Skeleton> mSkeleton;
-		Ref<SkeletalMesh> mCharacter;
-		Ref<SkeletalAnimation> mAnimation;
-		Ref<AnimationClip> mAnimationClip;
-		Ref<SkeletalPose> mPose;
+		Ref<Skeleton> mSkeleton{};
+		Ref<SkeletalMesh> mCharacter{};
+		Ref<SkeletalAnimation> mAnimation{};
+		Ref<AnimationClip> mAnimationClip{};
+		Ref<SkeletalPose> mPose{};
 
-		Ref<SceneRenderer> mRenderer;
+		Ref<SceneRenderer> mRenderer{};
+		std::vector<glm::mat4> mInstances{};
 	};
 } // namespace BHive

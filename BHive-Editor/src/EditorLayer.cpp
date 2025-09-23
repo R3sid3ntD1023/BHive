@@ -396,7 +396,6 @@ namespace BHive
 	void EditorLayer::ClearSelection()
 	{
 		SubSystemContext::Get().GetSubSystem<Selection>().Clear();
-		mRenderer->ClearPicked();
 	}
 
 	void EditorLayer::DrawGimzos()

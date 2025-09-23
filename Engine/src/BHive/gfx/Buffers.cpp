@@ -23,20 +23,13 @@ namespace BHive
 
 	VertexBuffer::VertexBuffer(const float *data, const uint64_t size)
 	{
-#ifdef USE_VERTEX_PULLING
-		glNamedBufferStorage(mBufferID, size, data, 0);
-#else
+
 		glNamedBufferData(GetBufferID(), size, data, GL_STATIC_DRAW);
-#endif
 	}
 
 	VertexBuffer::VertexBuffer(const uint64_t size)
 	{
-#ifdef USE_VERTEX_PULLING
-		glNamedBufferStorage(mBufferID, size, nullptr, _DYNAMIC_STORAGE_BIT);
-#else
 		glNamedBufferData(GetBufferID(), size, nullptr, GL_DYNAMIC_DRAW);
-#endif
 	}
 
 	void VertexBuffer::BindBufferBase(uint32_t binding) const

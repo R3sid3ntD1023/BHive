@@ -6,8 +6,6 @@
 namespace BHive
 {
 	class PickerRenderPass;
-	class OutlineRenderPass;
-	class OutlinePostProcessRenderPass;
 
 	DECLARE_EVENT(FOnEntitySelected, int32_t)
 
@@ -22,16 +20,9 @@ namespace BHive
 
 		void OnEntityPicked(int32_t i, const Ref<FMeshRenderData> &render_data);
 
-		void ClearPicked();
-
-		FOnEntitySelectedEvent OnEntitySelectedEvent;
-
-		void OnImGuiRender();
+		FOnEntitySelectedEvent OnEntitySelectedEvent{};
 
 	private:
-		Ref<PickerRenderPass> mPickPass;
-		Ref<OutlineRenderPass> mOutlinePass;
-		Ref<OutlinePostProcessRenderPass> mOutlinePostProcess;
-		Ref<FMeshRenderData> mSelectedRenderData;
+		Ref<PickerRenderPass> mPickPass{};
 	};
 } // namespace BHive

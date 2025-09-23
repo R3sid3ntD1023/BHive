@@ -11,6 +11,7 @@
 #include "gui/ImGuiExtended.h"
 #include "renderers/SceneRenderer.h"
 #include "material/StandardMaterial.h"
+#include "material/LambertMaterial.h"
 #include "mesh/MeshImportResolver.h"
 #include "core/FPSCounter.h"
 
@@ -23,14 +24,34 @@ namespace BHive
 
 	FTransform sDirectionalLightTransform{};
 
+	float GetRandomDisplacement(float offset)
+	{
+		return (rand() % (int)(2 * offset * 100)) / 100.f - offset;
+	}
+
 	void SandboxLayer::OnAttach()
 	{
+		mInstances.resize(1000);
+		for (uint32_t i = 0; i < 1000; i++)
+		{
+			glm::mat4 model = glm::mat4(1.0f);
+			float angle = (float)i / 1000.0f * 360.f;
+			float displacement = GetRandomDisplacement(offset);
+			float x = sin(angle) * radius + displacement;
+			displacement = GetRandomDisplacement(offset);
+			float y = displacement * 0.4f;
+			displacement = GetRandomDisplacement(offset);
+			float z = cos(angle) * radius + displacement;
+			model = glm::translate(model, glm::vec3(x, y, z));
+
+			mInstances[i] = model;
+		}
 
 		auto &window = Application::Get().GetWindow();
 
 		mCamera = EditorCamera(45.0f, window.GetAspectRatio(), .01f, 1000.f);
 
-		auto material = CreateRef<StandardMaterial>();
+		auto material = CreateRef<LambertMaterial>();
 		mPlane = CreateRef<PCube>(1.f);
 		mPlane->GetMaterialTable().add_material(material);
 
@@ -89,7 +110,7 @@ namespace BHive
 		mCamera.ProcessInput();
 
 		FPointLightCreateInfo light{};
-		light.Position = {0, 0, 0};
+		light.Position = {0, 1, 2};
 		light.Color = {1, 1, 1};
 		light.Radius = lightRadius;
 
@@ -118,7 +139,7 @@ namespace BHive
 		FMeshInfo plane_info{};
 		plane_info.Mesh = mPlane;
 		plane_info.Materials = mPlane->GetMaterialTable();
-		plane_info.Instances = {matrices2};
+		plane_info.Instances = {mInstances};
 
 		mRenderer->SubmitMesh(mesh_info_post);
 		mRenderer->SubmitMesh(plane_info);

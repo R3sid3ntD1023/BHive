@@ -2,6 +2,8 @@
 #include "gfx/RenderCommand.h"
 #include "gfx/StorageBuffer.h"
 #include "renderers/QuadRenderer.h"
+#include "gfx/ShaderManager.h"
+#include "gfx/Shader.h"
 
 namespace BHive
 {
@@ -14,7 +16,7 @@ namespace BHive
 	struct FPerObjectData
 	{
 		glm::mat4 WorldMatrix = {1.0f};
-		uint32_t InstanceCount = 0;
+		// uint32_t InstanceCount = 0;
 	};
 
 	void ModelBuffer::Init()
@@ -23,6 +25,8 @@ namespace BHive
 		mPerObjectBuffer = CreateRef<StorageBuffer>(sizeof(FPerObjectData));
 		mInstanceBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * MAX_INSTANCES);
 		mIndirectBuffer = CreateRef<StorageBuffer>(sizeof(MultiDrawIndirectCommand));
+
+		mComputeInstanceShader = ShaderManager::Get().Load("ComputeInstances.glsl");
 	}
 
 	void ModelBuffer::Draw(const Ref<FMeshRenderData> &data)
@@ -47,6 +51,7 @@ namespace BHive
 
 			mInstanceBuffer->SetData(instances.data(), sizeof(glm::mat4) * instances.size());
 			mInstanceBuffer->BindBufferBase(SSBO_INSTANCE_BINDING);
+			mComputeInstanceShader->Dispatch(instance_count, 1, 1);
 		}
 
 		if (data->GetRenderDataType() == FMeshRenderData::Skeletal)
@@ -65,7 +70,6 @@ namespace BHive
 		}
 
 		FPerObjectData object_data{};
-		object_data.InstanceCount = instance_count;
 		object_data.WorldMatrix = data->Transform.to_mat4() * data->SubMesh.Transformation;
 
 		mPerObjectBuffer->SetData(&object_data, sizeof(FPerObjectData));
@@ -73,7 +77,7 @@ namespace BHive
 
 		MultiDrawIndirectCommand command{};
 		command.InstanceCount = instance_count ? instance_count : 1;
-		command.BaseInstance = 1;
+		command.BaseInstance = 0;
 		command.BaseVertex = data->SubMesh.StartVertex;
 		command.FirstIndex = data->SubMesh.StartIndex;
 		command.Count = data->SubMesh.IndexCount;

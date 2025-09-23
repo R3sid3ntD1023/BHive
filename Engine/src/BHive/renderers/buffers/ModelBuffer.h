@@ -6,6 +6,7 @@
 namespace BHive
 {
 	class StorageBuffer;
+	class VertexBuffer;
 
 	struct ModelBuffer
 	{
@@ -16,9 +17,10 @@ namespace BHive
 		void DrawMesh(const Ref<FStaticMeshRenderData> &data);
 
 	private:
-		Ref<StorageBuffer> mBoneBuffer;
-		Ref<StorageBuffer> mPerObjectBuffer;
-		Ref<StorageBuffer> mInstanceBuffer;
-		Ref<StorageBuffer> mIndirectBuffer;
+		Ref<StorageBuffer> mBoneBuffer{};
+		Ref<StorageBuffer> mPerObjectBuffer{};
+		Ref<StorageBuffer> mInstanceBuffer{};
+		Ref<StorageBuffer> mIndirectBuffer{};
+		Ref<Shader> mComputeInstanceShader{};
 	};
 } // namespace BHive
