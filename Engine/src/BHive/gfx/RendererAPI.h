@@ -2,6 +2,9 @@
 
 #include "core/Core.h"
 #include "gfx/VertexArray.h"
+#include "vulkan/vulkan.h"
+#define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
+#include "vulkan/vulkan_raii.hpp"
 
 namespace BHive
 {
@@ -34,6 +37,8 @@ namespace BHive
 		virtual ~RendererAPI() = default;
 
 		virtual void Init();
+		virtual void Shutdown();
+
 		virtual void ClearColor(float r, float g, float b, float a = 1.0f);
 		virtual void Clear(int mask = Buffer_Color | Buffer_Depth | Buffer_Stencil);
 
@@ -61,5 +66,7 @@ namespace BHive
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer);
 
 		virtual unsigned CheckError(const char *file, int line);
+
+	private:
 	};
 } // namespace BHive

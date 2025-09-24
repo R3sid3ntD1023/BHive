@@ -1,5 +1,6 @@
 #include "RendererAPI.h"
 #include <glad/glad.h>
+#include <glfw/glfw3.h>
 
 namespace BHive
 {
@@ -95,6 +96,10 @@ namespace BHive
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 		glEnable(GL_LINE_SMOOTH);
 		// glEnable(GL_FRAMEBUFFER_SRGB);
+	}
+
+	void RendererAPI::Shutdown()
+	{
 	}
 
 	void RendererAPI::ClearColor(float r, float g, float b, float a)

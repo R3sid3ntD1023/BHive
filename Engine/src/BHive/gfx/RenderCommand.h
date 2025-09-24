@@ -46,6 +46,8 @@ namespace BHive
 
 		static unsigned CheckError(const char *file, int line);
 
+		static RendererAPI *GetAPI() { return sRendererAPI.get(); }
+
 	private:
 		static Scope<RendererAPI> sRendererAPI;
 	};
