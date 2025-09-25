@@ -5,7 +5,7 @@
 #include <any>
 #include <array>
 #include <queue>
-#include <stdint.h>
+#include <cstdint>
 #include <filesystem>
 #include <functional>
 #include <unordered_map>

@@ -21,6 +21,31 @@ namespace BHive
 
 		vk::raii::Instance &GetInstance() { return mVulkanInstance; }
 
+		vk::raii::Device &GetDevice() { return mDevice; }
+
+	private:
+		void CreateIntance();
+
+		void CreateDebugMessenger();
+
+		void PickPhysicalDevice();
+
+		void CreateSwapChain();
+
+		uint32_t FindQueueFamilies(vk::PhysicalDevice device);
+
+		void CreateLogicalDevice();
+
+		void CreateSurface();
+
+		vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR> &availableFormats);
+
+		vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR> &availablePresentModes);
+
+		vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities);
+
+		uint32_t ChooseMinImageCount(vk::SurfaceCapabilitiesKHR capabilities);
+
 	private:
 		GLFWwindow *mWindowHandle;
 
@@ -30,8 +55,22 @@ namespace BHive
 
 		vk::raii::DebugUtilsMessengerEXT mDebugMessenger = nullptr;
 
-		Scope<vk::raii::PhysicalDevice> mPhysicalDevice = nullptr;
+		vk::raii::PhysicalDevice mPhysicalDevice = nullptr;
 
 		vk::raii::Device mDevice = nullptr;
+
+		vk::raii::Queue mGraphicsQueue = nullptr;
+
+		vk::raii::Queue mPresentQueue = nullptr;
+
+		vk::raii::SurfaceKHR mSurface = nullptr;
+
+		vk::Extent2D mSwapChainExtent;
+
+		vk::SurfaceFormatKHR mSwapChainImageFormat;
+
+		vk::raii::SwapchainKHR mSwapChain = nullptr;
+
+		std::vector<vk::Image> mSwapChainImages{};
 	};
 } // namespace BHive
