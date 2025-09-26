@@ -21,6 +21,16 @@ namespace BHive
 		}
 	};
 
+	enum EApplicationFlags : uint32_t
+	{
+		None = 0,
+		EnableImGui = BIT(0),
+		EnableAudio = BIT(1),
+		EnableRendering = BIT(2),
+		EnablePhysics = BIT(3),
+		EnableAll = EnableImGui | EnableAudio | EnableRendering | EnablePhysics
+	};
+
 	struct BHIVE_API FApplicationSpecification
 	{
 		FCommandLine CommandLine;
@@ -32,6 +42,7 @@ namespace BHive
 		// window
 		bool CenterWindow = true;
 		bool Maximize = false;
+		uint32_t Flags = EApplicationFlags::EnableAll;
 	};
 
 	class BHIVE_API Application

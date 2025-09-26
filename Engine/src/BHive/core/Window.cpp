@@ -68,7 +68,7 @@ namespace BHive
 
 	void Window::SetVysnc(bool enabled)
 	{
-		glfwSwapInterval(enabled ? 1 : 0);
+		// glfwSwapInterval(enabled ? 1 : 0);
 	}
 
 	void Window::Maximize()

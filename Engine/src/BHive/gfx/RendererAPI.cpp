@@ -1,6 +1,8 @@
 #include "RendererAPI.h"
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
+#include "core/Application.h"
+#include "GraphicsContext.h"
 
 namespace BHive
 {
@@ -81,21 +83,6 @@ namespace BHive
 
 	void RendererAPI::Init()
 	{
-
-#if _DEBUG
-		glEnable(GL_DEBUG_OUTPUT);
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		glDebugMessageCallback(OpenGLCallback, nullptr);
-		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
-#endif
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_CULL_FACE);
-		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-		glEnable(GL_LINE_SMOOTH);
-		// glEnable(GL_FRAMEBUFFER_SRGB);
 	}
 
 	void RendererAPI::Shutdown()

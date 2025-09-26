@@ -36,25 +36,49 @@ namespace BHive
 		window_callback.bind(this, &Application::OnEvent);
 		mWindow->SetEventCallback(window_callback);
 
-		RenderCommand::Init();
-		Renderer::Init();
+		if (specification.Flags & EApplicationFlags::EnableRendering)
+		{
+			RenderCommand::Init();
+			Renderer::Init();
+		}
 
-		mImGuiLayer = new ImGuiLayer(mWindow->GetNative());
-		PushLayer(mImGuiLayer);
+		if (specification.Flags & EApplicationFlags::EnableImGui)
+		{
+			mImGuiLayer = new ImGuiLayer(mWindow->GetNative());
+			PushLayer(mImGuiLayer);
+		}
+
+		if (specification.Flags & EApplicationFlags::EnableAudio)
+		{
+			GetSubSystem<AudioContext>().Init();
+		}
+
+		if (mSpecification.Flags & EApplicationFlags::EnablePhysics)
+		{
+			AddSubSystem<PhysicsContext>().Init();
+		}
 
 		AddSubSystem<UndoRedo>();
-		AddSubSystem<AudioContext>().Init();
-		AddSubSystem<PhysicsContext>().Init();
 	}
 
 	Application::~Application()
 	{
-		Renderer::Shutdown();
+		if (mSpecification.Flags & EApplicationFlags::EnableRendering)
+		{
+			Renderer::Shutdown();
 
-		GetSubSystem<PhysicsContext>().Shutdown();
-		GetSubSystem<AudioContext>().Shutdown();
+			sInstance = nullptr;
+		}
 
-		sInstance = nullptr;
+		if (mSpecification.Flags & EApplicationFlags::EnableAudio)
+		{
+			GetSubSystem<AudioContext>().Shutdown();
+		}
+
+		if (mSpecification.Flags & EApplicationFlags::EnablePhysics)
+		{
+			GetSubSystem<PhysicsContext>().Shutdown();
+		}
 	}
 
 	void Application::Run()
@@ -116,14 +140,17 @@ namespace BHive
 			layer->OnUpdate(deltatime);
 		}
 
-		mImGuiLayer->BeginFrame();
-
-		for (auto &layer : mLayerStack)
+		if (mImGuiLayer)
 		{
-			layer->OnGuiRender();
-		}
+			mImGuiLayer->BeginFrame();
 
-		mImGuiLayer->EndFrame();
+			for (auto &layer : mLayerStack)
+			{
+				layer->OnGuiRender();
+			}
+
+			mImGuiLayer->EndFrame();
+		}
 
 		mWindow->Update();
 

@@ -13,7 +13,7 @@ namespace BHive
 	public:
 		GraphicsContext(GLFWwindow *window);
 
-		virtual ~GraphicsContext() = default;
+		virtual ~GraphicsContext();
 
 		virtual void Init();
 
@@ -22,6 +22,8 @@ namespace BHive
 		vk::raii::Instance &GetInstance() { return mVulkanInstance; }
 
 		vk::raii::Device &GetDevice() { return mDevice; }
+
+		uint32_t GetGraphicsFamilyIndex() const { return mGraphicsFamilyIndex; }
 
 	private:
 		void CreateIntance();
@@ -32,6 +34,25 @@ namespace BHive
 
 		void CreateSwapChain();
 
+		void CreateImageViews();
+
+		void CreateGraphicsPipeline();
+
+		void CreateCommandPool();
+
+		void CreateCommandBuffers();
+
+		void RecordCommandBuffer(vk::raii::CommandBuffer &cmd, uint32_t imageIndex);
+
+		void CreateSyncObjects();
+
+		void RecreateSwapChain();
+
+		void CleanupSwapChain();
+
+		void transition_image_layout(
+			uint32_t imageIndex, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask, vk::PipelineStageFlags2 srcStageMask,
+			vk::PipelineStageFlags2 dstStageMask);
 		uint32_t FindQueueFamilies(vk::PhysicalDevice device);
 
 		void CreateLogicalDevice();
@@ -72,5 +93,23 @@ namespace BHive
 		vk::raii::SwapchainKHR mSwapChain = nullptr;
 
 		std::vector<vk::Image> mSwapChainImages{};
+
+		std::vector<vk::raii::ImageView> mSwapChainImageViews{};
+
+		uint32_t mGraphicsFamilyIndex;
+
+		vk::raii::CommandPool mCommandPool = nullptr;
+
+		std::vector<vk::raii::CommandBuffer> mCommandBuffers{};
+
+		std::vector<vk::raii::Semaphore> mImageAvailableSemaphores{};
+
+		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores{};
+
+		std::vector<vk::raii::Fence> mInFlightFences{};
+
+		vk::raii::Pipeline mGraphicsPipeline = nullptr;
+
+		uint32_t mCurrentFrame = 0;
 	};
 } // namespace BHive

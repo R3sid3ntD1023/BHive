@@ -2,8 +2,6 @@
 
 #include "core/Core.h"
 #include "gfx/VertexArray.h"
-#include "vulkan/vulkan.h"
-#define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
 #include "vulkan/vulkan_raii.hpp"
 
 namespace BHive
