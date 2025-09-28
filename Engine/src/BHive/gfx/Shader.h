@@ -4,23 +4,24 @@
 #include "ShaderReflection.h"
 #include "ShaderStages.h"
 #include "utils/shader/ShaderUniformSetter.h"
+#include "VulkanCore.h"
 
 namespace BHive
 {
 	class BHIVE_API Shader
 	{
+		using Stages = std::vector<vk::PipelineShaderStageCreateInfo>;
 
 		struct FShaderData
 		{
 			std::string Code;
 			std::vector<uint32_t> VulkanSpirv;
-			std::vector<uint32_t> OpenglSpirv;
-			std::string OpenglCompiledSource;
+			vk::PipelineShaderStageCreateInfo VulkanShaderStageInfo{};
 
 			template <typename A>
 			void Serialize(A &ar)
 			{
-				ar(Code, VulkanSpirv, OpenglSpirv, OpenglCompiledSource);
+				ar(Code, VulkanSpirv);
 			}
 		};
 
@@ -54,6 +55,10 @@ namespace BHive
 
 		void Load(cereal::BinaryInputArchive &ar);
 
+		const FShaderData &GetShaderData(EShaderStage stage) const;
+
+		const Stages &GetStageCreateInfos() const { return mVulkanShaderStages; }
+
 	private:
 		void Compile();
 
@@ -73,6 +78,10 @@ namespace BHive
 		std::filesystem::path mFilePath;
 
 		std::unordered_map<EShaderStage, FShaderData> mSources;
+
+		std::vector<vk::raii::ShaderModule> mVulkanShaderModules{};
+
+		Stages mVulkanShaderStages{};
 
 		Scope<ShaderUniformSetter> mUniformSetter;
 

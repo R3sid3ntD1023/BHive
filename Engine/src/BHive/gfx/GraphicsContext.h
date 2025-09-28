@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
-#include "vulkan/vulkan_raii.hpp"
+#include "VulkanCore.h"
 
 struct GLFWwindow;
 
@@ -19,11 +19,9 @@ namespace BHive
 
 		virtual void SwapBuffers();
 
-		vk::raii::Instance &GetInstance() { return mVulkanInstance; }
+		static vk::raii::Instance &GetInstance() { return mVulkanInstance; }
 
-		vk::raii::Device &GetDevice() { return mDevice; }
-
-		uint32_t GetGraphicsFamilyIndex() const { return mGraphicsFamilyIndex; }
+		static vk::raii::Device &GetDevice() { return mDevice; }
 
 	private:
 		void CreateIntance();
@@ -72,17 +70,15 @@ namespace BHive
 
 		vk::raii::Context mVulkanContext;
 
-		vk::raii::Instance mVulkanInstance = nullptr;
+		static inline vk::raii::Instance mVulkanInstance = nullptr;
 
 		vk::raii::DebugUtilsMessengerEXT mDebugMessenger = nullptr;
 
 		vk::raii::PhysicalDevice mPhysicalDevice = nullptr;
 
-		vk::raii::Device mDevice = nullptr;
+		static inline vk::raii::Device mDevice = nullptr;
 
-		vk::raii::Queue mGraphicsQueue = nullptr;
-
-		vk::raii::Queue mPresentQueue = nullptr;
+		vk::raii::Queue mQueue = nullptr;
 
 		vk::raii::SurfaceKHR mSurface = nullptr;
 
@@ -96,19 +92,23 @@ namespace BHive
 
 		std::vector<vk::raii::ImageView> mSwapChainImageViews{};
 
-		uint32_t mGraphicsFamilyIndex;
+		uint32_t mQueueIndex = 0;
 
 		vk::raii::CommandPool mCommandPool = nullptr;
 
 		std::vector<vk::raii::CommandBuffer> mCommandBuffers{};
 
-		std::vector<vk::raii::Semaphore> mImageAvailableSemaphores{};
+		std::vector<vk::raii::Semaphore> mPresetCompleteSemaphores{};
 
 		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores{};
 
 		std::vector<vk::raii::Fence> mInFlightFences{};
 
 		vk::raii::Pipeline mGraphicsPipeline = nullptr;
+
+		vk::PipelineLayout mPipelineLayout = nullptr;
+
+		uint32_t mCurrentSemasphore = 0;
 
 		uint32_t mCurrentFrame = 0;
 	};

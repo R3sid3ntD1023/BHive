@@ -5,10 +5,32 @@
 #include "utils/shader/ShaderSerializer.h"
 #include "utils/shader/ShaderTimeCache.h"
 #include "utils/shader/ShaderUtils.h"
-#include <glad/glad.h>
+#include "core/Application.h"
+#include "GraphicsContext.h"
 
 namespace BHive
 {
+	namespace utils
+	{
+		vk::ShaderStageFlagBits GetAPIShaderStage(EShaderStage stage)
+		{
+			switch (stage)
+			{
+			case ShaderStage_Vertex:
+				return vk::ShaderStageFlagBits::eVertex;
+			case ShaderStage_Fragment:
+				return vk::ShaderStageFlagBits::eFragment;
+			case ShaderStage_Compute:
+				return vk::ShaderStageFlagBits::eCompute;
+			case ShaderStage_Geometry:
+				return vk::ShaderStageFlagBits::eGeometry;
+			default:
+				break;
+			}
+			ASSERT(false)
+			return vk::ShaderStageFlagBits::eAll;
+		}
+	} // namespace utils
 
 	Shader::Shader(const std::filesystem::path &path)
 		: mName(path.stem().string()),
@@ -19,7 +41,7 @@ namespace BHive
 		bool loaded_program_data = false;
 		auto &shader_time_cache = GetSubSystem<ShaderTimeCache>();
 
-		ShaderTimeCache::FileTime time{};
+		/*ShaderTimeCache::FileTime time{};
 		bool was_modified = shader_time_cache.WasFileModified(path, &time);
 
 		if (!was_modified)
@@ -34,7 +56,9 @@ namespace BHive
 		if (!loaded_program_data)
 		{
 			CompileFromSource();
-		}
+		}*/
+
+		CompileFromSource();
 
 		if (mProgramID)
 		{
@@ -44,13 +68,11 @@ namespace BHive
 
 	Shader::~Shader()
 	{
-
-		glDeleteProgram(mProgramID);
 	}
 
 	void Shader::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		GLsizei binary_length = 0;
+		/*GLsizei binary_length = 0;
 		GLenum binary_format = 0;
 		std::vector<char> binary;
 
@@ -60,13 +82,13 @@ namespace BHive
 
 		glGetProgramBinary(mProgramID, binary_length, nullptr, &binary_format, binary.data());
 
-		ar(mFilePath, mSources, binary_format, binary);
+		ar(mFilePath, mSources, binary_format, binary);*/
 	}
 
 	void Shader::Load(cereal::BinaryInputArchive &ar)
 	{
 
-		GLenum binary_format = 0;
+		/*GLenum binary_format = 0;
 		std::vector<char> binary;
 
 		ar(mFilePath, mSources, binary_format, binary);
@@ -83,69 +105,38 @@ namespace BHive
 			glGetProgramInfoLog(mProgramID, 512, nullptr, infoLog);
 			LOG_ERROR("SHADER::PROGRAM BINARY PROGRAM LINKING : {} - {}", mName, infoLog);
 			Compile();
-		}
+		}*/
+	}
+
+	const Shader::FShaderData &Shader::GetShaderData(EShaderStage stage) const
+	{
+		return mSources.at(stage);
 	}
 
 	void Shader::Compile()
 	{
+		auto &device = GraphicsContext::GetDevice();
+
 		ShaderCompiler compiler;
 		compiler.Init();
 
 		for (auto &[stage, source] : mSources)
 		{
 			source.VulkanSpirv.clear();
-			source.OpenglSpirv.clear();
-			source.OpenglCompiledSource.clear();
 
 			compiler.CompileToVulkan(mFilePath, stage, source.Code, source.VulkanSpirv);
-			compiler.CompileToOpengl(mFilePath, stage, source.OpenglCompiledSource, source.VulkanSpirv, source.OpenglSpirv);
-		}
 
-		if (mProgramID != 0)
-		{
-			glDeleteProgram(mProgramID);
-		}
+			vk::ShaderModuleCreateInfo create_info{};
+			create_info.codeSize = source.VulkanSpirv.size() * sizeof(uint32_t);
+			create_info.pCode = source.VulkanSpirv.data();
 
-		mProgramID = glCreateProgram();
+			auto &shader_module = mVulkanShaderModules.emplace_back(device.createShaderModule(create_info));
 
-		GLint status = 0;
-		GLchar infoLog[512];
-		std::vector<uint32_t> shaders;
-		for (auto &[stage, source] : mSources)
-		{
-			auto shader_type = ShaderUtils::GetAPIShaderStage(stage);
-
-			auto shader = glCreateShader(shader_type);
-			const auto &binary = source.OpenglSpirv;
-
-			glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, binary.data(), binary.size() * sizeof(uint32_t));
-			glSpecializeShader(shader, "main", 0, nullptr, nullptr);
-			glAttachShader(mProgramID, shader);
-
-			glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-			if (!status)
-			{
-				glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-				LOG_ERROR("SHADER::COMPILE ERROR {} - {}, {}", mName, ShaderUtils::ToString(stage), infoLog);
-				ASSERT(false);
-			}
-
-			shaders.emplace_back(shader);
-		}
-
-		glLinkProgram(mProgramID);
-
-		for (auto &shader : shaders)
-		{
-			glDetachShader(mProgramID, shader);
-			glDeleteShader(shader);
-		}
-
-		if (!status)
-		{
-			glDeleteProgram(mProgramID);
-
-			return;
+			vk::PipelineShaderStageCreateInfo stage_info{};
+			stage_info.stage = utils::GetAPIShaderStage(stage);
+			stage_info.module = *shader_module;
+			stage_info.pName = "main";
+			mVulkanShaderStages.emplace_back(stage_info);
 		}
 
 		ShaderSerializer serializer;
@@ -185,20 +176,14 @@ namespace BHive
 
 	void Shader::Bind() const
 	{
-
-		glUseProgram(mProgramID);
 	}
 
 	void Shader::UnBind() const
 	{
-
-		glUseProgram(0);
 	}
 
 	void Shader::Dispatch(uint32_t w, uint32_t h, uint32_t d)
 	{
-		glDispatchCompute(w, h, d);
-		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 	}
 
 	void Shader::Reflect()

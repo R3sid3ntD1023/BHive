@@ -16,9 +16,8 @@ namespace BHive
 		FApplicationSpecification specs{};
 		specs.CommandLine = cmd;
 		specs.CenterWindow = true;
-		specs.Maximize = true;
 		specs.Title = "BHive Runtime";
-		specs.Size = {1280, 720};
+		specs.Size = {800, 600};
 		specs.Flags = 0;
 		return new RuntimeApp(specs);
 	}
