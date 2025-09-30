@@ -88,9 +88,9 @@ namespace BHive
 
 			FPSCounter::Get().Frame();
 
-			UpdateLayersAndWindow();
-
 			Window::PollEvents();
+
+			UpdateLayersAndWindow();
 		}
 	}
 

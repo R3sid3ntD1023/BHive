@@ -1,4 +1,5 @@
 #pragma once
 
-// #define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
-#include "vulkan/vulkan_raii.hpp"
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_raii.hpp>
+#include <vulkan/vk_platform.h>

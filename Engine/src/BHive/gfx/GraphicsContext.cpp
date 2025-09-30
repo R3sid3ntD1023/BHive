@@ -5,13 +5,15 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include <vulkan/vulkan_to_string.hpp>
-
 #include "ShaderManager.h"
 #include "Shader.h"
 
 namespace BHive
 {
-	constexpr bool enabledValidateLayers = true;
+#ifdef _DEBUG
+	#define ENABLE_VALIDATION_LAYERS
+#endif
+
 	const std::vector<const char *> validationLayers = {
 		"VK_LAYER_KHRONOS_validation",
 	};
@@ -81,15 +83,11 @@ namespace BHive
 
 	void GraphicsContext::SwapBuffers()
 	{
-		auto &present_semaphore = mPresetCompleteSemaphores[mCurrentSemasphore];
-		auto &render_semaphore = mRenderFinishedSemaphores[mCurrentFrame];
-		auto &in_flight_fence = mInFlightFences[mCurrentFrame];
-		auto &cmd_buffer = mCommandBuffers[mCurrentFrame];
 
-		while (vk::Result::eTimeout == mDevice.waitForFences(*in_flight_fence, VK_TRUE, UINT64_MAX))
+		while (vk::Result::eTimeout == mDevice.waitForFences(*mInFlightFences[mCurrentFrame], VK_TRUE, UINT64_MAX))
 			;
 
-		auto [result, imageIndex] = mSwapChain.acquireNextImage(UINT64_MAX, *present_semaphore, nullptr);
+		auto [result, imageIndex] = mSwapChain.acquireNextImage(UINT64_MAX, mPresetCompleteSemaphores[mCurrentFrame], nullptr);
 		if (result == vk::Result::eErrorOutOfDateKHR)
 		{
 			RecreateSwapChain();
@@ -102,29 +100,23 @@ namespace BHive
 			ASSERT(false);
 		}
 
-		mDevice.resetFences(*in_flight_fence);
-		cmd_buffer.reset();
+		mDevice.resetFences(*mInFlightFences[mCurrentFrame]);
+		mCommandBuffers[mCurrentFrame].reset();
 
-		RecordCommandBuffer(cmd_buffer, imageIndex);
+		RecordCommandBuffer(imageIndex);
 
-		vk::PipelineStageFlags waitStages = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-		const vk::SubmitInfo submitInfo(*present_semaphore, waitStages, *cmd_buffer, *render_semaphore);
+		vk::PipelineStageFlags waitStages(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 
-		mQueue.submit(submitInfo, *in_flight_fence);
+		const vk::SubmitInfo submitInfo(*mPresetCompleteSemaphores[mCurrentFrame], waitStages, *mCommandBuffers[mCurrentFrame], *mRenderFinishedSemaphores[imageIndex]);
+		mQueue.submit(submitInfo, *mInFlightFences[mCurrentFrame]);
 
-		vk::PresentInfoKHR presentInfo{};
-		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = &*render_semaphore;
-		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = &*mSwapChain;
-		presentInfo.pImageIndices = &imageIndex;
+		const vk::PresentInfoKHR presentInfoKHR(*mRenderFinishedSemaphores[imageIndex], *mSwapChain, imageIndex, result);
 
-		result = mQueue.presentKHR(presentInfo);
+		result = mQueue.presentKHR(presentInfoKHR);
 		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || sFramebufferResized)
 		{
 			sFramebufferResized = false;
 			RecreateSwapChain();
-			return;
 		}
 		else if (result != vk::Result::eSuccess)
 		{
@@ -147,11 +139,12 @@ namespace BHive
 
 		std::vector required_extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 		std::vector<const char *> requiredLayers;
-		if (enabledValidateLayers)
-		{
-			requiredLayers.assign(validationLayers.begin(), validationLayers.end());
-			required_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-		}
+
+#ifdef ENABLE_VALIDATION_LAYERS
+		requiredLayers.assign(validationLayers.begin(), validationLayers.end());
+		required_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+#endif
 
 		if (std::ranges::any_of(
 				requiredLayers, [layerProperties](const char *layerName)
@@ -182,16 +175,12 @@ namespace BHive
 
 	void GraphicsContext::CreateDebugMessenger()
 	{
-#if defined(_DEBUG)
+#ifdef ENABLE_VALIDATION_LAYERS
 
-		if (enabledValidateLayers)
-		{
-
-			vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo(
-				{}, vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-				vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance, &debugCallback);
-			mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mVulkanInstance, debugCreateInfo);
-		}
+		vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo(
+			{}, vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+			vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance, &debugCallback);
+		mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mVulkanInstance, debugCreateInfo);
 #endif
 	}
 
@@ -234,8 +223,9 @@ namespace BHive
 	void GraphicsContext::CreateSwapChain()
 	{
 		auto surfaceCapabilities = mPhysicalDevice.getSurfaceCapabilitiesKHR(*mSurface);
-		mSwapChainImageFormat = ChooseSwapSurfaceFormat(mPhysicalDevice.getSurfaceFormatsKHR(*mSurface));
 		mSwapChainExtent = ChooseSwapExtent(surfaceCapabilities);
+		mSwapChainImageFormat = ChooseSwapSurfaceFormat(mPhysicalDevice.getSurfaceFormatsKHR(*mSurface));
+
 		auto minImageCount = ChooseMinImageCount(surfaceCapabilities);
 
 		auto present_mode = ChooseSwapPresentMode(mPhysicalDevice.getSurfacePresentModesKHR(*mSurface));
@@ -249,7 +239,7 @@ namespace BHive
 
 	void GraphicsContext::CreateImageViews()
 	{
-		mSwapChainImageViews.clear();
+		ASSERT(mSwapChainImageViews.empty())
 
 		vk::ImageViewCreateInfo view_info({}, {}, vk::ImageViewType::e2D, mSwapChainImageFormat.format, {}, {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
 
@@ -351,15 +341,16 @@ namespace BHive
 		mCommandBuffers = vk::raii::CommandBuffers(mDevice, alloc_info);
 	}
 
-	void GraphicsContext::RecordCommandBuffer(vk::raii::CommandBuffer &cmd, uint32_t imageIndex)
+	void GraphicsContext::RecordCommandBuffer(uint32_t imageIndex)
 	{
+		auto &cmd = mCommandBuffers[mCurrentFrame];
 		cmd.begin({});
 
 		transition_image_layout(
 			imageIndex, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eTopOfPipe,
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput);
 
-		vk::ClearValue clearColor = vk::ClearColorValue(1, 0, 0, 1);
+		vk::ClearValue clearColor = vk::ClearColorValue(1.f, 0.f, 0.f, 1.f);
 		vk::RenderingAttachmentInfo attachmentInfo;
 		attachmentInfo.imageView = mSwapChainImageViews[imageIndex];
 		attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal;
@@ -531,19 +522,18 @@ namespace BHive
 
 	vk::Extent2D GraphicsContext::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities)
 	{
-		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+		if (capabilities.currentExtent.width != 0xFFFFFFF)
 		{
 			return capabilities.currentExtent;
 		}
-		else
-		{
-			int width, height;
-			glfwGetFramebufferSize(mWindowHandle, &width, &height);
-			vk::Extent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
-			actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-			actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-			return actualExtent;
-		}
+
+		int width, height;
+		glfwGetFramebufferSize(mWindowHandle, &width, &height);
+
+		vk::Extent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+		actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+		return actualExtent;
 	}
 
 	uint32_t GraphicsContext::ChooseMinImageCount(vk::SurfaceCapabilitiesKHR capabilities)

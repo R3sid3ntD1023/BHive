@@ -40,7 +40,7 @@ namespace BHive
 
 		void CreateCommandBuffers();
 
-		void RecordCommandBuffer(vk::raii::CommandBuffer &cmd, uint32_t imageIndex);
+		void RecordCommandBuffer(uint32_t imageIndex);
 
 		void CreateSyncObjects();
 

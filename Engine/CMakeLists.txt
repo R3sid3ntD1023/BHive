@@ -1,6 +1,5 @@
 cmake_minimum_required( VERSION 3.10 )
 
-option(BUILD_SHARED_LIB "Build Engine dll" ON)
 
 include(cmake/vulkan.cmake)
 include(FindVulkan)
@@ -40,11 +39,15 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES} ${SOURCE_FIL
 
 set(TARGET_NAME BHive-Engine)
 
+set(BUILD_SHARED_LIB ON CACHE BOOL "Build Engine as a shared library" FORCE)
+
 if(BUILD_SHARED_LIB)
 	add_library(${TARGET_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 	target_compile_definitions(${TARGET_NAME} 	PUBLIC BUILD_SHARED PRIVATE BUILD_DLL)
+	message(STATUS "Building Engine as Shared Library")
 else()
 	add_library(${TARGET_NAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
+	message(STATUS "Building Engine as Static Library")
 endif()
 
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
