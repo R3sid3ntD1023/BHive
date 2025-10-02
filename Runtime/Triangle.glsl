@@ -2,8 +2,15 @@
 
 #version 460 core
 
-vec2 vPositions[3] = {vec2(0, -.5), vec2(.5, .5), vec2(-.5, .5)};
-vec3 vColors[3] = {vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1)};
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec3 inColor;
+
+layout(std140, binding = 0) uniform Matrices
+{
+	mat4 Projection;
+	mat4 View;
+	mat4 Model;
+};
 
 layout(location  = 0) out struct VERT_OUT 
 {
@@ -12,8 +19,8 @@ layout(location  = 0) out struct VERT_OUT
 
 void main()
 {
-	vs_out.Color = vColors[gl_VertexIndex]; 
-	gl_Position = vec4(vPositions[gl_VertexIndex], 0, 1);
+	vs_out.Color = inColor; 
+	gl_Position = Projection * View * Model * vec4(inPosition, 1);
 }
 
 

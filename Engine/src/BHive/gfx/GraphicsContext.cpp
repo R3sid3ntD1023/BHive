@@ -8,6 +8,39 @@
 #include "ShaderManager.h"
 #include "Shader.h"
 
+struct Vertex
+{
+	glm::vec3 Position;
+	glm::vec3 Color;
+
+	static vk::VertexInputBindingDescription getBindingDescription()
+	{
+		return vk::VertexInputBindingDescription(0, sizeof(Vertex), vk::VertexInputRate::eVertex);
+	}
+
+	static std::array<vk::VertexInputAttributeDescription, 2> getAttributeDescriptions()
+	{
+		return
+		{
+			vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, Position)),
+			vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, Color))
+		};
+	}
+};
+
+struct UniformBufferObject
+{
+	alignas(16) glm::mat4 proj;
+	alignas(16) glm::mat4 view;
+	alignas(16) glm::mat4 model;
+};
+
+static const std::vector<Vertex> sVertices = {
+	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+	{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}}, {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}, {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 0.0f}}};
+
+static const std::vector<uint32_t> sIndices = {0, 1, 2, 2, 3, 0};
+
 namespace BHive
 {
 #ifdef _DEBUG
@@ -75,8 +108,14 @@ namespace BHive
 		CreateLogicalDevice();
 		CreateSwapChain();
 		CreateImageViews();
+		CreateDescriptorSetLayout();	
 		CreateGraphicsPipeline();
 		CreateCommandPool();
+		CreateVertexBuffer();
+		CreateIndexBuffer();
+		CreateUniformBuffers();
+		CreateDescriptorPool();
+		CreateDescriptorSets();
 		CreateCommandBuffers();
 		CreateSyncObjects();
 	}
@@ -102,6 +141,8 @@ namespace BHive
 
 		mDevice.resetFences(*mInFlightFences[mCurrentFrame]);
 		mCommandBuffers[mCurrentFrame].reset();
+
+		UpdateUniformBuffer(mCurrentFrame);
 
 		RecordCommandBuffer(imageIndex);
 
@@ -250,10 +291,151 @@ namespace BHive
 		}
 	}
 
+	void GraphicsContext::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer, vk::raii::DeviceMemory &bufferMemory)
+	{
+		vk::BufferCreateInfo bufferCreateInfo({}, size, usage, vk::SharingMode::eExclusive);
+		buffer = mDevice.createBuffer(bufferCreateInfo);
+
+		vk::MemoryRequirements memRequirements = buffer.getMemoryRequirements();
+		vk::MemoryAllocateInfo allocInfo(memRequirements.size, FindMemoryType(memRequirements.memoryTypeBits, properties));
+		bufferMemory = mDevice.allocateMemory(allocInfo);
+		buffer.bindMemory(*bufferMemory, 0);
+	}
+
+	void GraphicsContext::CreateDescriptorSetLayout()
+	{
+		vk::DescriptorSetLayoutBinding uboLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr);
+		vk::DescriptorSetLayoutCreateInfo layoutInfo({}, 1, &uboLayoutBinding);
+		mDescriptorSetLayout = mDevice.createDescriptorSetLayout(layoutInfo);
+	}
+
+	void GraphicsContext::CreateDescriptorPool()
+	{
+		vk::DescriptorPoolSize poolSize(vk::DescriptorType::eUniformBuffer, static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT));
+		vk::DescriptorPoolCreateInfo poolInfo(
+			vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT), 1, &poolSize);
+
+		mDescriptorPool = mDevice.createDescriptorPool(poolInfo);
+	}
+
+	void GraphicsContext::CreateDescriptorSets()
+	{
+		
+
+		std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, *mDescriptorSetLayout);
+		vk::DescriptorSetAllocateInfo allocInfo(*mDescriptorPool, static_cast<uint32_t>(layouts.size()), layouts.data());
+		mDescriptorSets = mDevice.allocateDescriptorSets(allocInfo);
+
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			vk::DescriptorBufferInfo bufferInfo(*mUniformBuffers[i], 0, sizeof(UniformBufferObject));
+			vk::WriteDescriptorSet descriptorWrite(mDescriptorSets[i], 0, 0, 1, vk::DescriptorType::eUniformBuffer, nullptr, &bufferInfo, nullptr);
+			mDevice.updateDescriptorSets(descriptorWrite, nullptr);
+		}
+	}
+
+	void GraphicsContext::CreateVertexBuffer()
+	{
+		vk::DeviceSize bufferSize = sizeof(Vertex) * sVertices.size();
+
+		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
+		vk::raii::Buffer stagingBuffer = nullptr;
+
+		CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer,stagingBufferMemory);
+
+		void *stagingdata = stagingBufferMemory.mapMemory(0, bufferSize);
+		memcpy(stagingdata, sVertices.data(), bufferSize);
+		stagingBufferMemory.unmapMemory();
+
+
+		CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal , mVertexBuffer, mVertexBufferMemory);
+
+		CopyBuffer(stagingBuffer, mVertexBuffer, bufferSize);
+	}
+
+	void GraphicsContext::CreateIndexBuffer()
+	{
+		vk::DeviceSize bufferSize = sizeof(uint32_t) * sIndices.size();
+
+		vk::raii::Buffer stagingBuffer({});
+		vk::raii::DeviceMemory stagingBufferMemory({});
+		CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+
+		void *stagingdata = stagingBufferMemory.mapMemory(0, bufferSize);
+		memcpy(stagingdata, sIndices.data(), bufferSize);
+		stagingBufferMemory.unmapMemory();
+
+		CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mIndexBuffer, mIndexBufferMemory);
+		CopyBuffer(stagingBuffer, mIndexBuffer, bufferSize);
+	}
+
+	void GraphicsContext::CreateUniformBuffers()
+	{
+		mUniformBuffers.clear();
+		mUniformBuffersMemory.clear();
+		mUniformBuffersMapped.clear();
+
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
+			vk::raii::Buffer uniformBuffer = nullptr;
+			vk::raii::DeviceMemory uniformBufferMemory = nullptr;
+
+			CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, uniformBuffer, uniformBufferMemory);
+			mUniformBuffers.emplace_back(std::move(uniformBuffer));
+			mUniformBuffersMemory.emplace_back(std::move(uniformBufferMemory));
+			void *data = mUniformBuffersMemory[i].mapMemory(0, bufferSize);
+			mUniformBuffersMapped.emplace_back(data);
+		}
+	}
+
+	void GraphicsContext::UpdateUniformBuffer(uint32_t currentImage)
+	{
+		static auto startTime = std::chrono::high_resolution_clock::now();
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+		UniformBufferObject ubo{};
+		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.proj = glm::perspective(glm::radians(45.0f), mSwapChainExtent.width / (float)mSwapChainExtent.height, 0.1f, 10.0f);
+		ubo.proj[1][1] *= -1; // for vulkan coordinate system
+
+		memcpy(mUniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
+	}
+
+	void GraphicsContext::CopyBuffer(vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size)
+	{
+		vk::CommandBufferAllocateInfo allocInfo(*mCommandPool, vk::CommandBufferLevel::ePrimary, 1);
+		vk::raii::CommandBuffer commandBuffer = std::move(vk::raii::CommandBuffers(mDevice, allocInfo).front());
+		commandBuffer.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
+		commandBuffer.copyBuffer(*srcBuffer, *dstBuffer, vk::BufferCopy(0, 0, size));
+		commandBuffer.end();
+		vk::SubmitInfo submitInfo({}, {}, *commandBuffer, {});
+		mQueue.submit(submitInfo, nullptr);
+		mQueue.waitIdle();
+	}
+
+	uint32_t GraphicsContext::FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties)
+	{
+		auto memoryProperties = mPhysicalDevice.getMemoryProperties();
+		for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+		{
+			if ((typeFilter & (1 << i)) &&(memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+			{
+				return i;
+			}
+		}
+
+		ASSERT(false, "Failed to find suitable memory type!")
+	}
+
 	void GraphicsContext::CreateGraphicsPipeline()
 	{
+		auto bindingDescription = Vertex::getBindingDescription();
+		auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
-		vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
+		vk::PipelineVertexInputStateCreateInfo vertexInputInfo({}, bindingDescription, attributeDescriptions);
 		vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
 		inputAssemblyInfo.topology = vk::PrimitiveTopology::eTriangleList;
 
@@ -266,7 +448,7 @@ namespace BHive
 		rasterizerInfo.rasterizerDiscardEnable = VK_FALSE;
 		rasterizerInfo.polygonMode = vk::PolygonMode::eFill;
 		rasterizerInfo.cullMode = vk::CullModeFlagBits::eBack;
-		rasterizerInfo.frontFace = vk::FrontFace::eClockwise;
+		rasterizerInfo.frontFace = vk::FrontFace::eCounterClockwise;
 		rasterizerInfo.depthBiasEnable = VK_FALSE;
 		rasterizerInfo.depthBiasSlopeFactor = 1.0f;
 		rasterizerInfo.lineWidth = 1.0f;
@@ -292,9 +474,10 @@ namespace BHive
 		dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 
 		vk::PipelineLayoutCreateInfo pipeline_layout_create_info{};
-		pipeline_layout_create_info.setLayoutCount = 0;
+		pipeline_layout_create_info.setLayoutCount = 1;
+		pipeline_layout_create_info.pSetLayouts = &*mDescriptorSetLayout;
 		pipeline_layout_create_info.pushConstantRangeCount = 0;
-		auto layout = mDevice.createPipelineLayout(pipeline_layout_create_info);
+		mPipelineLayout = mDevice.createPipelineLayout(pipeline_layout_create_info);
 
 		auto shader = ShaderManager::Get().Load("C:/Users/dariu/Documents/BHive/Runtime/Triangle.glsl");
 
@@ -315,7 +498,7 @@ namespace BHive
 		pipeline_info.pMultisampleState = &multismapling;
 		pipeline_info.pColorBlendState = &blend_state_create_info;
 		pipeline_info.pDynamicState = &dynamicStateInfo;
-		pipeline_info.layout = layout;
+		pipeline_info.layout = mPipelineLayout;
 		pipeline_info.renderPass = nullptr;
 
 		mGraphicsPipeline = mDevice.createGraphicsPipeline(nullptr, pipeline_info);
@@ -350,7 +533,7 @@ namespace BHive
 			imageIndex, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eTopOfPipe,
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput);
 
-		vk::ClearValue clearColor = vk::ClearColorValue(1.f, 0.f, 0.f, 1.f);
+		vk::ClearValue clearColor = vk::ClearColorValue(0.f, 0.f, 0.f, 1.f);
 		vk::RenderingAttachmentInfo attachmentInfo;
 		attachmentInfo.imageView = mSwapChainImageViews[imageIndex];
 		attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal;
@@ -366,9 +549,14 @@ namespace BHive
 
 		cmd.beginRendering(renderingInfo);
 		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mGraphicsPipeline);
+		
 		cmd.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(mSwapChainExtent.width), static_cast<float>(mSwapChainExtent.height), 0.0f, 1.0f));
 		cmd.setScissor(0, vk::Rect2D({0, 0}, mSwapChainExtent));
-		cmd.draw(3, 1, 0, 0);
+
+		cmd.bindVertexBuffers(0, *mVertexBuffer, {0});
+		cmd.bindIndexBuffer(*mIndexBuffer, 0, vk::IndexType::eUint32);
+		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, *mDescriptorSets[mCurrentFrame], nullptr);
+		cmd.drawIndexed(sIndices.size(), 1, 0, 0, 0);
 		cmd.endRendering();
 
 		transition_image_layout(

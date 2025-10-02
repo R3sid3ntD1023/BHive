@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gfx/Texture.h"
+#include "gfx/VulkanCore.h"
 
 namespace BHive
 {
@@ -54,6 +55,9 @@ namespace BHive
 		FTextureAPIInfo mInfo;
 		uint32_t mTextureID = 0;
 		Buffer mBuffer;
+
+		vk::raii::Image mTextureImage;
+		vk::raii::DeviceMemory mTextureImageMemory;
 	};
 
 	REFLECT_EXTERN(Texture2D)
