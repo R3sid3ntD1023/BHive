@@ -30,12 +30,12 @@ namespace BHive
 	void Texture2D::Bind(uint32_t slot) const
 	{
 
-		//glBindTextureUnit(slot, mTextureID);
+		// glBindTextureUnit(slot, mTextureID);
 	}
 
 	void Texture2D::UnBind(uint32_t slot) const
 	{
-		//glBindTextureUnit(slot, 0);
+		// glBindTextureUnit(slot, 0);
 	}
 
 	void Texture2D::SetInfo(const FTextureCreateInfo &info)
@@ -64,8 +64,8 @@ namespace BHive
 		{
 			glGenerateTextureMipmap(mTextureID);
 		}*/
-		
-		vk::DeviceSize size = mWidth * mHeight * mCreateInfo.Channels ;
+
+		vk::DeviceSize size = mWidth * mHeight * mCreateInfo.Channels;
 
 		vk::raii::Buffer stagingBuffer = nullptr;
 		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
@@ -75,6 +75,10 @@ namespace BHive
 		void *stagingData = stagingBufferMemory.mapMemory(0, size);
 		memcpy(stagingData, data, size);
 		stagingBufferMemory.unmapMemory();
+
+		GraphicsContext::transition_image_layout(mTextureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+		GraphicsContext::CopyBufferToImage(stagingBuffer, mTextureImage, mWidth, mHeight);
+		GraphicsContext::transition_image_layout(mTextureImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
 	Ref<Texture2D> Texture2D::CreateSubTexture(const FSubTexture &texture)
@@ -90,7 +94,7 @@ namespace BHive
 
 	void Texture2D::GetSubImage(const FSubTexture &texture, size_t size, uint8_t *data) const
 	{
-		//glGetTextureSubImage(mTextureID, 0, texture.x, texture.y, texture.z, texture.width, texture.height, texture.depth, mInfo.Format, mInfo.Type, size, data);
+		// glGetTextureSubImage(mTextureID, 0, texture.x, texture.y, texture.z, texture.width, texture.height, texture.depth, mInfo.Format, mInfo.Type, size, data);
 	}
 
 	void Texture2D::Initialize()
@@ -107,7 +111,7 @@ namespace BHive
 		auto tiling = vk::ImageTiling::eOptimal;
 		auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
 		auto format = vk::Format::eR8G8B8A8Unorm;
-		vk::ImageCreateInfo imageInfo({}, vk::ImageType::e2D, format,{mWidth, mHeight,1},1,1, vk::SampleCountFlagBits::e1, tiling, usage, vk::SharingMode::eExclusive,0);
+		vk::ImageCreateInfo imageInfo({}, vk::ImageType::e2D, format, {mWidth, mHeight, 1}, 1, 1, vk::SampleCountFlagBits::e1, tiling, usage, vk::SharingMode::eExclusive, 0);
 		mTextureImage = vk::raii::Image(GraphicsContext::GetDevice(), imageInfo);
 
 		vk::MemoryRequirements memRequirements = mTextureImage.getMemoryRequirements();
@@ -118,7 +122,7 @@ namespace BHive
 
 	void Texture2D::Release()
 	{
-		//glDeleteTextures(1, &mTextureID);
+		// glDeleteTextures(1, &mTextureID);
 
 		mBuffer.Release();
 	}

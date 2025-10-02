@@ -29,9 +29,17 @@ namespace BHive
 			uint32_t imageIndex, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask, vk::PipelineStageFlags2 srcStageMask,
 			vk::PipelineStageFlags2 dstStageMask);
 
+		static void transition_image_layout(const vk::raii::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
+
+		static void CopyBufferToImage(vk::raii::Buffer &buffer, vk::raii::Image &image, uint32_t width, uint32_t height);
+
 		static vk::raii::Instance &GetInstance() { return mVulkanInstance; }
 
 		static vk::raii::Device &GetDevice() { return mDevice; }
+
+		static vk::raii::CommandBuffer BeginSingleTimeCommands();
+
+		static void EndSingleTimeCommands(vk::raii::CommandBuffer &commandBuffer);
 
 	private:
 		void CreateIntance();
@@ -58,7 +66,6 @@ namespace BHive
 
 		void CleanupSwapChain();
 
-	
 		uint32_t FindQueueFamilies(vk::PhysicalDevice device);
 
 		void CreateLogicalDevice();
@@ -85,7 +92,8 @@ namespace BHive
 
 		void CreateDescriptorSets();
 
-	
+		void CreateTextureImage();
+
 		void UpdateUniformBuffer(uint32_t currentImage);
 
 	private:
@@ -151,5 +159,7 @@ namespace BHive
 
 		vk::raii::DescriptorPool mDescriptorPool = nullptr;
 		std::vector<vk::raii::DescriptorSet> mDescriptorSets{};
+
+		Ref<class Texture> mTexture;
 	};
 } // namespace BHive

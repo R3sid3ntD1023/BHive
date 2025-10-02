@@ -7,24 +7,20 @@
 #include <vulkan/vulkan_to_string.hpp>
 #include "ShaderManager.h"
 #include "Shader.h"
+#include "importers/TextureImporter.h"
 
 struct Vertex
 {
 	glm::vec3 Position;
 	glm::vec3 Color;
 
-	static vk::VertexInputBindingDescription getBindingDescription()
-	{
-		return vk::VertexInputBindingDescription(0, sizeof(Vertex), vk::VertexInputRate::eVertex);
-	}
+	static vk::VertexInputBindingDescription getBindingDescription() { return vk::VertexInputBindingDescription(0, sizeof(Vertex), vk::VertexInputRate::eVertex); }
 
 	static std::array<vk::VertexInputAttributeDescription, 2> getAttributeDescriptions()
 	{
-		return
-		{
+		return {
 			vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, Position)),
-			vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, Color))
-		};
+			vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, Color))};
 	}
 };
 
@@ -36,8 +32,7 @@ struct UniformBufferObject
 };
 
 static const std::vector<Vertex> sVertices = {
-	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-	{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}}, {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}, {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 0.0f}}};
+	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}}, {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}}, {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}, {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 0.0f}}};
 
 static const std::vector<uint32_t> sIndices = {0, 1, 2, 2, 3, 0};
 
@@ -108,9 +103,10 @@ namespace BHive
 		CreateLogicalDevice();
 		CreateSwapChain();
 		CreateImageViews();
-		CreateDescriptorSetLayout();	
+		CreateDescriptorSetLayout();
 		CreateGraphicsPipeline();
 		CreateCommandPool();
+		CreateTextureImage();
 		CreateVertexBuffer();
 		CreateIndexBuffer();
 		CreateUniformBuffers();
@@ -312,15 +308,13 @@ namespace BHive
 	void GraphicsContext::CreateDescriptorPool()
 	{
 		vk::DescriptorPoolSize poolSize(vk::DescriptorType::eUniformBuffer, static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT));
-		vk::DescriptorPoolCreateInfo poolInfo(
-			vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT), 1, &poolSize);
+		vk::DescriptorPoolCreateInfo poolInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT), 1, &poolSize);
 
 		mDescriptorPool = mDevice.createDescriptorPool(poolInfo);
 	}
 
 	void GraphicsContext::CreateDescriptorSets()
 	{
-		
 
 		std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, *mDescriptorSetLayout);
 		vk::DescriptorSetAllocateInfo allocInfo(*mDescriptorPool, static_cast<uint32_t>(layouts.size()), layouts.data());
@@ -334,6 +328,11 @@ namespace BHive
 		}
 	}
 
+	void GraphicsContext::CreateTextureImage()
+	{
+		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
+	}
+
 	void GraphicsContext::CreateVertexBuffer()
 	{
 		vk::DeviceSize bufferSize = sizeof(Vertex) * sVertices.size();
@@ -341,14 +340,13 @@ namespace BHive
 		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
 		vk::raii::Buffer stagingBuffer = nullptr;
 
-		CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer,stagingBufferMemory);
+		CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
 		void *stagingdata = stagingBufferMemory.mapMemory(0, bufferSize);
 		memcpy(stagingdata, sVertices.data(), bufferSize);
 		stagingBufferMemory.unmapMemory();
 
-
-		CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal , mVertexBuffer, mVertexBufferMemory);
+		CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mVertexBuffer, mVertexBufferMemory);
 
 		CopyBuffer(stagingBuffer, mVertexBuffer, bufferSize);
 	}
@@ -406,14 +404,9 @@ namespace BHive
 
 	void GraphicsContext::CopyBuffer(vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size)
 	{
-		vk::CommandBufferAllocateInfo allocInfo(*mCommandPool, vk::CommandBufferLevel::ePrimary, 1);
-		vk::raii::CommandBuffer commandBuffer = std::move(vk::raii::CommandBuffers(mDevice, allocInfo).front());
-		commandBuffer.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
-		commandBuffer.copyBuffer(*srcBuffer, *dstBuffer, vk::BufferCopy(0, 0, size));
-		commandBuffer.end();
-		vk::SubmitInfo submitInfo({}, {}, *commandBuffer, {});
-		mQueue.submit(submitInfo, nullptr);
-		mQueue.waitIdle();
+		auto cmd = BeginSingleTimeCommands();
+		cmd.copyBuffer(*srcBuffer, *dstBuffer, vk::BufferCopy(0, 0, size));
+		EndSingleTimeCommands(cmd);
 	}
 
 	uint32_t GraphicsContext::FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties)
@@ -421,7 +414,7 @@ namespace BHive
 		auto memoryProperties = mPhysicalDevice.getMemoryProperties();
 		for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
 		{
-			if ((typeFilter & (1 << i)) &&(memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+			if ((typeFilter & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
 			{
 				return i;
 			}
@@ -549,7 +542,7 @@ namespace BHive
 
 		cmd.beginRendering(renderingInfo);
 		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mGraphicsPipeline);
-		
+
 		cmd.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(mSwapChainExtent.width), static_cast<float>(mSwapChainExtent.height), 0.0f, 1.0f));
 		cmd.setScissor(0, vk::Rect2D({0, 0}, mSwapChainExtent));
 
@@ -629,6 +622,63 @@ namespace BHive
 		depInfo.pImageMemoryBarriers = &barrier;
 		mCommandBuffers[mCurrentFrame].pipelineBarrier2(depInfo);
 	};
+
+	void GraphicsContext::transition_image_layout(const vk::raii::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
+	{
+		auto cmd = BeginSingleTimeCommands();
+		vk::ImageMemoryBarrier barrier({}, {}, oldLayout, newLayout, {}, {}, image, {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
+
+		vk::PipelineStageFlags sourceStage;
+		vk::PipelineStageFlags destinationStage;
+
+		if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eTransferDstOptimal)
+		{
+			barrier.srcAccessMask = {};
+			barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+			sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+			destinationStage = vk::PipelineStageFlagBits::eTransfer;
+		}
+		else if (oldLayout == vk::ImageLayout::eTransferDstOptimal && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
+		{
+			barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+			barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+			sourceStage = vk::PipelineStageFlagBits::eTransfer;
+			destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+		}
+		else
+		{
+			LOG_ERROR("Unsupported layout transition!");
+			ASSERT(false);
+		}
+
+		cmd.pipelineBarrier(sourceStage, destinationStage, {}, nullptr, nullptr, barrier);
+		EndSingleTimeCommands(cmd);
+	}
+
+	void GraphicsContext::CopyBufferToImage(vk::raii::Buffer &buffer, vk::raii::Image &image, uint32_t width, uint32_t height)
+	{
+		auto cmd = BeginSingleTimeCommands();
+		vk::BufferImageCopy region(0, 0, 0, {vk::ImageAspectFlagBits::eColor, 0, 0, 1}, {0, 0, 0}, {width, height, 1});
+		cmd.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, region);
+		EndSingleTimeCommands(cmd);
+	}
+
+	vk::raii::CommandBuffer GraphicsContext::BeginSingleTimeCommands()
+	{
+		vk::CommandBufferAllocateInfo allocInfo(mCommandPool, vk::CommandBufferLevel::ePrimary, 1);
+		vk::raii::CommandBuffer commandBuffer = std::move(mDevice.allocateCommandBuffers(allocInfo).front());
+		commandBuffer.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
+		return commandBuffer;
+	}
+
+	void GraphicsContext::EndSingleTimeCommands(vk::raii::CommandBuffer &commandBuffer)
+	{
+		commandBuffer.end();
+
+		vk::SubmitInfo submitInfo({}, {}, *commandBuffer);
+		mQueue.submit(submitInfo, nullptr);
+		mQueue.waitIdle();
+	}
 
 	uint32_t GraphicsContext::FindQueueFamilies(vk::PhysicalDevice device)
 	{

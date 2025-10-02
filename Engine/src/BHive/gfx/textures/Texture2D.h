@@ -56,8 +56,8 @@ namespace BHive
 		uint32_t mTextureID = 0;
 		Buffer mBuffer;
 
-		vk::raii::Image mTextureImage;
-		vk::raii::DeviceMemory mTextureImageMemory;
+		vk::raii::Image mTextureImage = nullptr;
+		vk::raii::DeviceMemory mTextureImageMemory = nullptr;
 	};
 
 	REFLECT_EXTERN(Texture2D)
