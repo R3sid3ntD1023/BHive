@@ -1,6 +1,6 @@
 #include "gfx/utils/texture/TextureUtils.h"
 #include "Texture2D.h"
-#include "gfx/GraphicsContext.h"
+#include "gfx/VulkanUtils.h"
 
 namespace BHive
 {
@@ -69,16 +69,16 @@ namespace BHive
 
 		vk::raii::Buffer stagingBuffer = nullptr;
 		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
-		GraphicsContext::CreateBuffer(
+		VulkanUtils::CreateBuffer(
 			size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
 		void *stagingData = stagingBufferMemory.mapMemory(0, size);
 		memcpy(stagingData, data, size);
 		stagingBufferMemory.unmapMemory();
 
-		GraphicsContext::transition_image_layout(mTextureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-		GraphicsContext::CopyBufferToImage(stagingBuffer, mTextureImage, mWidth, mHeight);
-		GraphicsContext::transition_image_layout(mTextureImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+		VulkanUtils::TransitionImageLayout(mTextureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+		VulkanUtils::CopyBufferToImage(stagingBuffer, mTextureImage, mWidth, mHeight);
+		VulkanUtils::TransitionImageLayout(mTextureImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
 	Ref<Texture2D> Texture2D::CreateSubTexture(const FSubTexture &texture)
@@ -108,27 +108,18 @@ namespace BHive
 		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, mInfo.WrapMode);
 		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, mInfo.WrapMode);*/
 
-		auto &device = GraphicsContext::GetDevice();
-		auto &physical_device = GraphicsContext::GetPhysicalDevice();
-		auto channels = mCreateInfo.Channels;	
+		auto channels = mCreateInfo.Channels;
 
 		vk::Format format = vk::Format::eR8G8B8A8Srgb;
-		vk::ImageCreateInfo imageInfo(
-			{}, vk::ImageType::e2D, format, {mWidth, mHeight, 1}, 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
-			vk::SharingMode::eExclusive, 0);
-		mTextureImage = vk::raii::Image(device, imageInfo);
+		VulkanUtils::CreateImage2D(
+			mWidth, mHeight, format, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mTextureImage,
+			mTextureImageMemory);
 
-		vk::MemoryRequirements memRequirements = mTextureImage.getMemoryRequirements();
-		vk::MemoryAllocateInfo allocInfo(memRequirements.size, GraphicsContext::FindMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal));
-		mTextureImageMemory = vk::raii::DeviceMemory(device, allocInfo);
-		mTextureImage.bindMemory(*mTextureImageMemory, 0);
+		mTextureImageView = VulkanUtils::CreateImageView2D(mTextureImage, format);
 
-		vk::ImageViewCreateInfo image_view_create_info({}, mTextureImage, vk::ImageViewType::e2D, format, {}, {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
-		mTextureImageView = vk::raii::ImageView(device, image_view_create_info);
-
-
-		vk::SamplerCreateInfo sampler_info({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat, 0, 0,
-			1, VK_FALSE, vk::CompareOp::eAlways);
+		vk::SamplerCreateInfo sampler_info(
+			{}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat, 0, 0, 1,
+			VK_FALSE, vk::CompareOp::eAlways);
 		sampler_info.borderColor = vk::BorderColor::eIntOpaqueBlack;
 		sampler_info.unnormalizedCoordinates = VK_FALSE;
 		sampler_info.compareEnable = VK_FALSE;
@@ -138,7 +129,7 @@ namespace BHive
 		sampler_info.minLod = 0.f;
 		sampler_info.maxLod = 0.f;
 
-		mTextureSampler = vk::raii::Sampler(device, sampler_info);
+		mTextureSampler = VulkanUtils::CreateImageSampler(sampler_info);
 	}
 
 	void Texture2D::Release()

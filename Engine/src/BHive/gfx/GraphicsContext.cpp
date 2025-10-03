@@ -8,6 +8,7 @@
 #include "ShaderManager.h"
 #include "Shader.h"
 #include "importers/TextureImporter.h"
+#include "VulkanUtils.h"
 
 struct Vertex
 {
@@ -90,6 +91,10 @@ namespace BHive
 	GraphicsContext::GraphicsContext(GLFWwindow *window)
 		: mWindowHandle(window)
 	{
+		ASSERT(!sInstance);
+		sInstance = this;
+		ASSERT(sInstance);
+
 		glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 	}
 
@@ -134,11 +139,7 @@ namespace BHive
 			return;
 		}
 
-		if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
-		{
-			LOG_ERROR("Failed to acquire swap chain image!");
-			ASSERT(false);
-		}
+		ASSERT(result == vk::Result::eSuccess || result == vk::Result::eSuboptimalKHR, "Failed to acquire swap chain image!");
 
 		mDevice.resetFences(*mInFlightFences[mCurrentFrame]);
 		mCommandBuffers[mCurrentFrame].reset();
@@ -150,23 +151,20 @@ namespace BHive
 		vk::PipelineStageFlags waitStages(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 
 		const vk::SubmitInfo submitInfo(*mPresetCompleteSemaphores[mCurrentFrame], waitStages, *mCommandBuffers[mCurrentFrame], *mRenderFinishedSemaphores[imageIndex]);
+
 		mQueue.submit(submitInfo, *mInFlightFences[mCurrentFrame]);
 
 		const vk::PresentInfoKHR presentInfoKHR(*mRenderFinishedSemaphores[imageIndex], *mSwapChain, imageIndex, result);
-
 		result = mQueue.presentKHR(presentInfoKHR);
+
 		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || sFramebufferResized)
 		{
 			sFramebufferResized = false;
 			RecreateSwapChain();
 		}
-		else if (result != vk::Result::eSuccess)
-		{
-			LOG_ERROR("Failed to present swap chain image!");
-			ASSERT(false);
-		}
 
-		mCurrentSemasphore = (mCurrentSemasphore + 1) % mPresetCompleteSemaphores.size();
+		ASSERT(result == vk::Result::eSuccess, "Failed to present swap chain image!")
+
 		mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
 
@@ -292,22 +290,11 @@ namespace BHive
 		}
 	}
 
-	void GraphicsContext::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer, vk::raii::DeviceMemory &bufferMemory)
-	{
-		vk::BufferCreateInfo bufferCreateInfo({}, size, usage, vk::SharingMode::eExclusive);
-		buffer = mDevice.createBuffer(bufferCreateInfo);
-
-		vk::MemoryRequirements memRequirements = buffer.getMemoryRequirements();
-		vk::MemoryAllocateInfo allocInfo(memRequirements.size, FindMemoryType(memRequirements.memoryTypeBits, properties));
-		bufferMemory = mDevice.allocateMemory(allocInfo);
-		buffer.bindMemory(*bufferMemory, 0);
-	}
-
 	void GraphicsContext::CreateDescriptorSetLayout()
 	{
-		std::array bindings = { vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr),
-			vk::DescriptorSetLayoutBinding (1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr)
-	};
+		std::array bindings = {
+			vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr),
+			vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr)};
 		vk::DescriptorSetLayoutCreateInfo layoutInfo({}, bindings);
 		mDescriptorSetLayout = mDevice.createDescriptorSetLayout(layoutInfo);
 	}
@@ -334,11 +321,10 @@ namespace BHive
 		{
 			vk::DescriptorBufferInfo bufferInfo(*mUniformBuffers[i], 0, sizeof(UniformBufferObject));
 			vk::DescriptorImageInfo image_info(mTexture->GetSampler(), mTexture->GetView(), vk::ImageLayout::eShaderReadOnlyOptimal);
-			
-			std::array descriptorWrites = { 
+
+			std::array descriptorWrites = {
 				vk::WriteDescriptorSet(mDescriptorSets[i], 0, 0, 1, vk::DescriptorType::eUniformBuffer, nullptr, &bufferInfo, nullptr),
-				vk::WriteDescriptorSet(mDescriptorSets[i], 1, 0, 1, vk::DescriptorType::eCombinedImageSampler,&image_info)
-			};
+				vk::WriteDescriptorSet(mDescriptorSets[i], 1, 0, 1, vk::DescriptorType::eCombinedImageSampler, &image_info)};
 			mDevice.updateDescriptorSets(descriptorWrites, nullptr);
 		}
 	}
@@ -355,15 +341,17 @@ namespace BHive
 		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
 		vk::raii::Buffer stagingBuffer = nullptr;
 
-		CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+		VulkanUtils::CreateBuffer(
+			bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
 		void *stagingdata = stagingBufferMemory.mapMemory(0, bufferSize);
 		memcpy(stagingdata, sVertices.data(), bufferSize);
 		stagingBufferMemory.unmapMemory();
 
-		CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mVertexBuffer, mVertexBufferMemory);
+		VulkanUtils::CreateBuffer(
+			bufferSize, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mVertexBuffer, mVertexBufferMemory);
 
-		CopyBuffer(stagingBuffer, mVertexBuffer, bufferSize);
+		VulkanUtils::CopyBuffer(stagingBuffer, mVertexBuffer, bufferSize);
 	}
 
 	void GraphicsContext::CreateIndexBuffer()
@@ -372,14 +360,16 @@ namespace BHive
 
 		vk::raii::Buffer stagingBuffer({});
 		vk::raii::DeviceMemory stagingBufferMemory({});
-		CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+		VulkanUtils::CreateBuffer(
+			bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
 		void *stagingdata = stagingBufferMemory.mapMemory(0, bufferSize);
 		memcpy(stagingdata, sIndices.data(), bufferSize);
 		stagingBufferMemory.unmapMemory();
 
-		CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mIndexBuffer, mIndexBufferMemory);
-		CopyBuffer(stagingBuffer, mIndexBuffer, bufferSize);
+		VulkanUtils::CreateBuffer(
+			bufferSize, vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mIndexBuffer, mIndexBufferMemory);
+		VulkanUtils::CopyBuffer(stagingBuffer, mIndexBuffer, bufferSize);
 	}
 
 	void GraphicsContext::CreateUniformBuffers()
@@ -394,7 +384,8 @@ namespace BHive
 			vk::raii::Buffer uniformBuffer = nullptr;
 			vk::raii::DeviceMemory uniformBufferMemory = nullptr;
 
-			CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, uniformBuffer, uniformBufferMemory);
+			VulkanUtils::CreateBuffer(
+				bufferSize, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, uniformBuffer, uniformBufferMemory);
 			mUniformBuffers.emplace_back(std::move(uniformBuffer));
 			mUniformBuffersMemory.emplace_back(std::move(uniformBufferMemory));
 			void *data = mUniformBuffersMemory[i].mapMemory(0, bufferSize);
@@ -415,27 +406,6 @@ namespace BHive
 		ubo.proj[1][1] *= -1; // for vulkan coordinate system
 
 		memcpy(mUniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
-	}
-
-	void GraphicsContext::CopyBuffer(vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size)
-	{
-		auto cmd = BeginSingleTimeCommands();
-		cmd.copyBuffer(*srcBuffer, *dstBuffer, vk::BufferCopy(0, 0, size));
-		EndSingleTimeCommands(cmd);
-	}
-
-	uint32_t GraphicsContext::FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties)
-	{
-		auto memoryProperties = mPhysicalDevice.getMemoryProperties();
-		for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
-		{
-			if ((typeFilter & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
-			{
-				return i;
-			}
-		}
-
-		ASSERT(false, "Failed to find suitable memory type!")
 	}
 
 	void GraphicsContext::CreateGraphicsPipeline()
@@ -637,63 +607,6 @@ namespace BHive
 		depInfo.pImageMemoryBarriers = &barrier;
 		mCommandBuffers[mCurrentFrame].pipelineBarrier2(depInfo);
 	};
-
-	void GraphicsContext::transition_image_layout(const vk::raii::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
-	{
-		auto cmd = BeginSingleTimeCommands();
-		vk::ImageMemoryBarrier barrier({}, {}, oldLayout, newLayout, {}, {}, image, {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
-
-		vk::PipelineStageFlags sourceStage;
-		vk::PipelineStageFlags destinationStage;
-
-		if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eTransferDstOptimal)
-		{
-			barrier.srcAccessMask = {};
-			barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
-			sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
-			destinationStage = vk::PipelineStageFlagBits::eTransfer;
-		}
-		else if (oldLayout == vk::ImageLayout::eTransferDstOptimal && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
-		{
-			barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-			barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
-			sourceStage = vk::PipelineStageFlagBits::eTransfer;
-			destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
-		}
-		else
-		{
-			LOG_ERROR("Unsupported layout transition!");
-			ASSERT(false);
-		}
-
-		cmd.pipelineBarrier(sourceStage, destinationStage, {}, {}, nullptr, barrier);
-		EndSingleTimeCommands(cmd);
-	}
-
-	void GraphicsContext::CopyBufferToImage(vk::raii::Buffer &buffer, vk::raii::Image &image, uint32_t width, uint32_t height)
-	{
-		auto cmd = BeginSingleTimeCommands();
-		vk::BufferImageCopy region(0, 0, 0, {vk::ImageAspectFlagBits::eColor, 0, 0, 1}, {0, 0, 0}, {width, height, 1});
-		cmd.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, region);
-		EndSingleTimeCommands(cmd);
-	}
-
-	vk::raii::CommandBuffer GraphicsContext::BeginSingleTimeCommands()
-	{
-		vk::CommandBufferAllocateInfo allocInfo(mCommandPool, vk::CommandBufferLevel::ePrimary, 1);
-		vk::raii::CommandBuffer commandBuffer = std::move(mDevice.allocateCommandBuffers(allocInfo).front());
-		commandBuffer.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
-		return commandBuffer;
-	}
-
-	void GraphicsContext::EndSingleTimeCommands(vk::raii::CommandBuffer &commandBuffer)
-	{
-		commandBuffer.end();
-
-		vk::SubmitInfo submitInfo({}, {}, *commandBuffer);
-		mQueue.submit(submitInfo, nullptr);
-		mQueue.waitIdle();
-	}
 
 	uint32_t GraphicsContext::FindQueueFamilies(vk::PhysicalDevice device)
 	{

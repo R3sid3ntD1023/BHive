@@ -6,7 +6,7 @@
 #include "utils/shader/ShaderTimeCache.h"
 #include "utils/shader/ShaderUtils.h"
 #include "core/Application.h"
-#include "GraphicsContext.h"
+#include "VulkanUtils.h"
 
 namespace BHive
 {
@@ -115,8 +115,6 @@ namespace BHive
 
 	void Shader::Compile()
 	{
-		auto &device = GraphicsContext::GetDevice();
-
 		ShaderCompiler compiler;
 		compiler.Init();
 
@@ -126,16 +124,10 @@ namespace BHive
 
 			compiler.CompileToVulkan(mFilePath, stage, source.Code, source.VulkanSpirv);
 
-			vk::ShaderModuleCreateInfo create_info{};
-			create_info.codeSize = source.VulkanSpirv.size() * sizeof(uint32_t);
-			create_info.pCode = source.VulkanSpirv.data();
+			vk::ShaderModuleCreateInfo create_info({}, source.VulkanSpirv);
+			auto &shader_module = mVulkanShaderModules.emplace_back(VulkanUtils::CreateShaderModule(create_info));
 
-			auto &shader_module = mVulkanShaderModules.emplace_back(device.createShaderModule(create_info));
-
-			vk::PipelineShaderStageCreateInfo stage_info{};
-			stage_info.stage = utils::GetAPIShaderStage(stage);
-			stage_info.module = *shader_module;
-			stage_info.pName = "main";
+			vk::PipelineShaderStageCreateInfo stage_info({}, utils::GetAPIShaderStage(stage), shader_module, "main");
 			mVulkanShaderStages.emplace_back(stage_info);
 		}
 
