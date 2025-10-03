@@ -36,6 +36,10 @@ namespace BHive
 
 		const Buffer &GetBuffer() const { return mBuffer; }
 
+		vk::raii::ImageView& GetView()  { return mTextureImageView; }
+
+		vk::raii::Sampler& GetSampler() { return mTextureSampler; }
+
 		/*Begin Asset*/
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 		void Load(cereal::BinaryInputArchive &ar) override;
@@ -58,6 +62,8 @@ namespace BHive
 
 		vk::raii::Image mTextureImage = nullptr;
 		vk::raii::DeviceMemory mTextureImageMemory = nullptr;
+		vk::raii::ImageView mTextureImageView = nullptr;
+		vk::raii::Sampler mTextureSampler = nullptr;
 	};
 
 	REFLECT_EXTERN(Texture2D)

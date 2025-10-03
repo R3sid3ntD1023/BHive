@@ -108,16 +108,37 @@ namespace BHive
 		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, mInfo.WrapMode);
 		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, mInfo.WrapMode);*/
 
-		auto tiling = vk::ImageTiling::eOptimal;
-		auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
-		auto format = vk::Format::eR8G8B8A8Unorm;
-		vk::ImageCreateInfo imageInfo({}, vk::ImageType::e2D, format, {mWidth, mHeight, 1}, 1, 1, vk::SampleCountFlagBits::e1, tiling, usage, vk::SharingMode::eExclusive, 0);
-		mTextureImage = vk::raii::Image(GraphicsContext::GetDevice(), imageInfo);
+		auto &device = GraphicsContext::GetDevice();
+		auto &physical_device = GraphicsContext::GetPhysicalDevice();
+		auto channels = mCreateInfo.Channels;	
+
+		vk::Format format = vk::Format::eR8G8B8A8Srgb;
+		vk::ImageCreateInfo imageInfo(
+			{}, vk::ImageType::e2D, format, {mWidth, mHeight, 1}, 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
+			vk::SharingMode::eExclusive, 0);
+		mTextureImage = vk::raii::Image(device, imageInfo);
 
 		vk::MemoryRequirements memRequirements = mTextureImage.getMemoryRequirements();
 		vk::MemoryAllocateInfo allocInfo(memRequirements.size, GraphicsContext::FindMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal));
-		mTextureImageMemory = vk::raii::DeviceMemory(GraphicsContext::GetDevice(), allocInfo);
+		mTextureImageMemory = vk::raii::DeviceMemory(device, allocInfo);
 		mTextureImage.bindMemory(*mTextureImageMemory, 0);
+
+		vk::ImageViewCreateInfo image_view_create_info({}, mTextureImage, vk::ImageViewType::e2D, format, {}, {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
+		mTextureImageView = vk::raii::ImageView(device, image_view_create_info);
+
+
+		vk::SamplerCreateInfo sampler_info({}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat, 0, 0,
+			1, VK_FALSE, vk::CompareOp::eAlways);
+		sampler_info.borderColor = vk::BorderColor::eIntOpaqueBlack;
+		sampler_info.unnormalizedCoordinates = VK_FALSE;
+		sampler_info.compareEnable = VK_FALSE;
+		sampler_info.compareOp = vk::CompareOp::eAlways;
+		sampler_info.mipmapMode = vk::SamplerMipmapMode::eLinear;
+		sampler_info.mipLodBias = 0.f;
+		sampler_info.minLod = 0.f;
+		sampler_info.maxLod = 0.f;
+
+		mTextureSampler = vk::raii::Sampler(device, sampler_info);
 	}
 
 	void Texture2D::Release()

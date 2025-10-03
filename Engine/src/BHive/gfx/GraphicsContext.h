@@ -37,6 +37,8 @@ namespace BHive
 
 		static vk::raii::Device &GetDevice() { return mDevice; }
 
+		static vk::raii::PhysicalDevice &GetPhysicalDevice() { return mPhysicalDevice; }
+
 		static vk::raii::CommandBuffer BeginSingleTimeCommands();
 
 		static void EndSingleTimeCommands(vk::raii::CommandBuffer &commandBuffer);
@@ -160,6 +162,6 @@ namespace BHive
 		vk::raii::DescriptorPool mDescriptorPool = nullptr;
 		std::vector<vk::raii::DescriptorSet> mDescriptorSets{};
 
-		Ref<class Texture> mTexture;
+		Ref<class Texture2D> mTexture;
 	};
 } // namespace BHive

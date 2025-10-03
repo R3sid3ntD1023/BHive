@@ -54,11 +54,11 @@ namespace BHive
 
 		if (is_hdr)
 		{
-			data = (stbi_uc *)stbi_loadf(path_str.c_str(), &w, &h, &c, 0);
+			data = (stbi_uc *)stbi_loadf(path_str.c_str(), &w, &h, &c, 4);
 		}
 		else
 		{
-			data = stbi_load(path_str.c_str(), &w, &h, &c, 0);
+			data = stbi_load(path_str.c_str(), &w, &h, &c, 4);
 		}
 
 		if (!data)
@@ -81,13 +81,13 @@ namespace BHive
 		size_t data_size = 0;
 		if (is_hdr)
 		{
-			image_data = (stbi_uc *)stbi_loadf(path_str.c_str(), &w, &h, &c, 0);
+			image_data = (stbi_uc *)stbi_loadf(path_str.c_str(), &w, &h, &c, 4);
 			data_size = w * h * c * sizeof(float);
 		}
 		else
 		{
 
-			image_data = stbi_load(path_str.c_str(), &w, &h, &c, 0);
+			image_data = stbi_load(path_str.c_str(), &w, &h, &c, 4);
 			data_size = w * h * c;
 		}
 
@@ -99,7 +99,7 @@ namespace BHive
 
 		FTextureCreateInfo create_info{};
 		create_info.InternalFormat = is_hdr ? utils::GetFormatFromChannelsHDR(c) : utils::GetFormatFromChannels(c);
-		create_info.Channels = c;
+		create_info.Channels = 4;
 		create_info.MinFilter = EMinFilter::LINEAR;
 		create_info.MagFilter = EMagFilter::LINEAR;
 		create_info.WrapMode = EWrapMode::REPEAT;
@@ -136,12 +136,12 @@ namespace BHive
 
 		if (is_hdr)
 		{
-			image_data = (stbi_uc *)stbi_loadf_from_memory(data, length, &x, &y, &c, 0);
+			image_data = (stbi_uc *)stbi_loadf_from_memory(data, length, &x, &y, &c, 4);
 			data_size = x * y * c * sizeof(float);
 		}
 		else
 		{
-			image_data = stbi_load_from_memory(data, length, &x, &y, &c, 0);
+			image_data = stbi_load_from_memory(data, length, &x, &y, &c, 4);
 			data_size = x * y * c;
 		}
 

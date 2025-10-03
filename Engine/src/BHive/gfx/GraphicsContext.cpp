@@ -13,14 +13,16 @@ struct Vertex
 {
 	glm::vec3 Position;
 	glm::vec3 Color;
+	glm::vec2 TexCoord;
 
 	static vk::VertexInputBindingDescription getBindingDescription() { return vk::VertexInputBindingDescription(0, sizeof(Vertex), vk::VertexInputRate::eVertex); }
 
-	static std::array<vk::VertexInputAttributeDescription, 2> getAttributeDescriptions()
+	static std::array<vk::VertexInputAttributeDescription, 3> getAttributeDescriptions()
 	{
 		return {
 			vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, Position)),
-			vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, Color))};
+			vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, Color)),
+			vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, TexCoord))};
 	}
 };
 
@@ -32,7 +34,10 @@ struct UniformBufferObject
 };
 
 static const std::vector<Vertex> sVertices = {
-	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}}, {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}}, {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}, {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 0.0f}}};
+	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.f, 0.0f}},
+	{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.f, 0.0f}},
+	{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.f, 1.0f}},
+	{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 0.0f}, {1.f, 1.0f}}};
 
 static const std::vector<uint32_t> sIndices = {0, 1, 2, 2, 3, 0};
 
@@ -300,15 +305,19 @@ namespace BHive
 
 	void GraphicsContext::CreateDescriptorSetLayout()
 	{
-		vk::DescriptorSetLayoutBinding uboLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr);
-		vk::DescriptorSetLayoutCreateInfo layoutInfo({}, 1, &uboLayoutBinding);
+		std::array bindings = { vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr),
+			vk::DescriptorSetLayoutBinding (1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr)
+	};
+		vk::DescriptorSetLayoutCreateInfo layoutInfo({}, bindings);
 		mDescriptorSetLayout = mDevice.createDescriptorSetLayout(layoutInfo);
 	}
 
 	void GraphicsContext::CreateDescriptorPool()
 	{
-		vk::DescriptorPoolSize poolSize(vk::DescriptorType::eUniformBuffer, static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT));
-		vk::DescriptorPoolCreateInfo poolInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT), 1, &poolSize);
+		std::array poolSize = {
+			vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, MAX_FRAMES_IN_FLIGHT), vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, MAX_FRAMES_IN_FLIGHT)};
+
+		vk::DescriptorPoolCreateInfo poolInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, MAX_FRAMES_IN_FLIGHT, poolSize);
 
 		mDescriptorPool = mDevice.createDescriptorPool(poolInfo);
 	}
@@ -317,14 +326,20 @@ namespace BHive
 	{
 
 		std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, *mDescriptorSetLayout);
-		vk::DescriptorSetAllocateInfo allocInfo(*mDescriptorPool, static_cast<uint32_t>(layouts.size()), layouts.data());
+		vk::DescriptorSetAllocateInfo allocInfo(*mDescriptorPool, layouts);
+
 		mDescriptorSets = mDevice.allocateDescriptorSets(allocInfo);
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			vk::DescriptorBufferInfo bufferInfo(*mUniformBuffers[i], 0, sizeof(UniformBufferObject));
-			vk::WriteDescriptorSet descriptorWrite(mDescriptorSets[i], 0, 0, 1, vk::DescriptorType::eUniformBuffer, nullptr, &bufferInfo, nullptr);
-			mDevice.updateDescriptorSets(descriptorWrite, nullptr);
+			vk::DescriptorImageInfo image_info(mTexture->GetSampler(), mTexture->GetView(), vk::ImageLayout::eShaderReadOnlyOptimal);
+			
+			std::array descriptorWrites = { 
+				vk::WriteDescriptorSet(mDescriptorSets[i], 0, 0, 1, vk::DescriptorType::eUniformBuffer, nullptr, &bufferInfo, nullptr),
+				vk::WriteDescriptorSet(mDescriptorSets[i], 1, 0, 1, vk::DescriptorType::eCombinedImageSampler,&image_info)
+			};
+			mDevice.updateDescriptorSets(descriptorWrites, nullptr);
 		}
 	}
 
@@ -651,7 +666,7 @@ namespace BHive
 			ASSERT(false);
 		}
 
-		cmd.pipelineBarrier(sourceStage, destinationStage, {}, nullptr, nullptr, barrier);
+		cmd.pipelineBarrier(sourceStage, destinationStage, {}, {}, nullptr, barrier);
 		EndSingleTimeCommands(cmd);
 	}
 
