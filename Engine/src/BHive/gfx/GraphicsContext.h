@@ -3,10 +3,13 @@
 #include "core/Core.h"
 #include "VulkanCore.h"
 
+
 struct GLFWwindow;
 
 namespace BHive
 {
+	class VulkanSwapChain;
+
 	struct QueueFamilyIndices
 	{
 	};
@@ -22,9 +25,7 @@ namespace BHive
 
 		virtual void SwapBuffers();
 
-		void transition_image_layout(
-			uint32_t imageIndex, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask, vk::PipelineStageFlags2 srcStageMask,
-			vk::PipelineStageFlags2 dstStageMask);
+		
 
 		vk::raii::Instance &GetInstance() { return mVulkanInstance; }
 
@@ -35,6 +36,8 @@ namespace BHive
 		vk::raii::CommandPool &GetCommandPool() { return mCommandPool; };
 
 		vk::raii::Queue &GetGraphicsQueue() { return mQueue; }
+
+		vk::raii::CommandBuffer &GetCommandBuffer() { return mCommandBuffers[mCurrentFrame]; }
 
 		static GraphicsContext &Get()
 		{
@@ -51,8 +54,6 @@ namespace BHive
 
 		void CreateSwapChain();
 
-		void CreateImageViews();
-
 		void CreateGraphicsPipeline();
 
 		void CreateCommandPool();
@@ -65,21 +66,11 @@ namespace BHive
 
 		void RecreateSwapChain();
 
-		void CleanupSwapChain();
-
-		uint32_t FindQueueFamilies(vk::PhysicalDevice device);
-
 		void CreateLogicalDevice();
 
 		void CreateSurface();
 
-		vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR> &availableFormats);
-
-		vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR> &availablePresentModes);
-
-		vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities);
-
-		uint32_t ChooseMinImageCount(vk::SurfaceCapabilitiesKHR capabilities);
+		
 
 		void CreateVertexBuffer();
 
@@ -102,27 +93,19 @@ namespace BHive
 
 		vk::raii::Context mVulkanContext;
 
-		vk::raii::Instance mVulkanInstance = nullptr;
+		static inline vk::raii::Instance mVulkanInstance = nullptr;
 
 		vk::raii::DebugUtilsMessengerEXT mDebugMessenger = nullptr;
 
 		vk::raii::PhysicalDevice mPhysicalDevice = nullptr;
 
-		vk::raii::Device mDevice = nullptr;
+		static inline vk::raii::Device mDevice = nullptr;
 
 		vk::raii::Queue mQueue = nullptr;
 
 		vk::raii::SurfaceKHR mSurface = nullptr;
 
-		vk::Extent2D mSwapChainExtent;
-
-		vk::SurfaceFormatKHR mSwapChainImageFormat;
-
-		vk::raii::SwapchainKHR mSwapChain = nullptr;
-
-		std::vector<vk::Image> mSwapChainImages{};
-
-		std::vector<vk::raii::ImageView> mSwapChainImageViews{};
+	
 
 		uint32_t mQueueIndex = 0;
 
@@ -144,10 +127,6 @@ namespace BHive
 
 		uint32_t mCurrentFrame = 0;
 
-		vk::raii::Buffer mVertexBuffer = nullptr;
-
-		vk::raii::DeviceMemory mVertexBufferMemory = nullptr;
-
 		vk::raii::Buffer mIndexBuffer = nullptr;
 
 		vk::raii::DeviceMemory mIndexBufferMemory = nullptr;
@@ -160,7 +139,10 @@ namespace BHive
 		std::vector<vk::raii::DescriptorSet> mDescriptorSets{};
 
 		Ref<class Texture2D> mTexture;
+		Ref<class VertexBuffer> mVertexBuffer;
 
 		static inline GraphicsContext *sInstance = nullptr;
+
+		Ref<VulkanSwapChain> mSwapChain;
 	};
 } // namespace BHive

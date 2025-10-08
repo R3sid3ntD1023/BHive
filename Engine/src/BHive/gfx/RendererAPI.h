@@ -2,7 +2,8 @@
 
 #include "core/Core.h"
 #include "gfx/VertexArray.h"
-#include "vulkan/vulkan_raii.hpp"
+#include "VulkanCore.h"
+#include "VulkanUtils.h"
 
 namespace BHive
 {
@@ -32,7 +33,7 @@ namespace BHive
 	{
 	public:
 		RendererAPI() = default;
-		virtual ~RendererAPI() = default;
+		virtual ~RendererAPI() ;
 
 		virtual void Init();
 		virtual void Shutdown();
@@ -65,6 +66,14 @@ namespace BHive
 
 		virtual unsigned CheckError(const char *file, int line);
 
+		virtual void* CreateShader(const uint32_t *data, size_t size);
+
+		virtual void BeginFrame();
+
+		virtual void EndFrame();
+
 	private:
+		vk::ClearColorValue mCurrentClearColor{0, 0, 0, 1};
+		std::vector<vk::ShaderModule> mVulkanShaders{};
 	};
 } // namespace BHive

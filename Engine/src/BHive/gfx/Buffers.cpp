@@ -1,19 +1,19 @@
 #include "Buffers.h"
-#include <glad/glad.h>
+#include "VulkanUtils.h"
 
 namespace BHive
 {
 	IndexBuffer::IndexBuffer(const uint32_t *data, const uint32_t count)
 		: mCount(count)
 	{
-		glNamedBufferData(mBufferID, count * sizeof(uint32_t), data, GL_STATIC_DRAW);
+		
 	}
 
 	IndexBuffer::IndexBuffer(const uint32_t count)
 		: mCount(count)
 	{
 
-		glNamedBufferData(mBufferID, count * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
+		
 	}
 
 	void IndexBuffer::SetData(const void *data, uint64_t size, uint32_t offset)
@@ -21,25 +21,36 @@ namespace BHive
 		BufferBase::SetData(data, size, offset);
 	}
 
-	VertexBuffer::VertexBuffer(const float *data, const uint64_t size)
+	VertexBuffer::VertexBuffer(const float *data, const uint64_t size): VertexBuffer(size * sizeof(float))
 	{
-
-		glNamedBufferData(GetBufferID(), size, data, GL_STATIC_DRAW);
+		SetData(data, size * sizeof(float), 0);
 	}
 
 	VertexBuffer::VertexBuffer(const uint64_t size)
 	{
-		glNamedBufferData(GetBufferID(), size, nullptr, GL_DYNAMIC_DRAW);
+		VulkanUtils::CreateBuffer(
+			size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mBuffer, mMemory);
+	
 	}
 
 	void VertexBuffer::BindBufferBase(uint32_t binding) const
 	{
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, mBufferID);
+		
 	}
 
 	void VertexBuffer::SetData(const void *data, uint64_t size, uint32_t offset)
 	{
-		BufferBase::SetData(data, size, offset);
+		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
+		vk::raii::Buffer stagingBuffer = nullptr;
+
+		VulkanUtils::CreateBuffer(
+			size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+
+		void *stagingdata = stagingBufferMemory.mapMemory(offset, size);
+		memcpy(stagingdata, data, size);
+		stagingBufferMemory.unmapMemory();
+
+		VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
 	}
 
 	void VertexBuffer::SetLayout(const BufferLayout &layout)

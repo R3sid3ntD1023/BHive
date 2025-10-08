@@ -108,10 +108,24 @@ namespace BHive
 		sRendererAPI->AttachTextureToFramebuffer(attachment, texture, framebuffer);
 	}
 
+	void *RenderCommand::CreateShader(const uint32_t *data, size_t size)
+	{
+		return sRendererAPI->CreateShader(data, size);
+	}
+
+	
+	void RenderCommand::BeginFrame()
+	{
+		sRendererAPI->BeginFrame();
+	}
+
+	void RenderCommand::EndFrame()
+	{
+		sRendererAPI->EndFrame();
+	}
+
 	unsigned RenderCommand::CheckError(const char *file, int line)
 	{
 		return sRendererAPI->CheckError(file, line);
 	}
-
-	Scope<RendererAPI> RenderCommand::sRendererAPI = CreateScope<RendererAPI>();
 } // namespace BHive

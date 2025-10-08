@@ -7,6 +7,7 @@
 #include "utils/shader/ShaderUtils.h"
 #include "core/Application.h"
 #include "VulkanUtils.h"
+#include "RenderCommand.h"
 
 namespace BHive
 {
@@ -41,7 +42,7 @@ namespace BHive
 		bool loaded_program_data = false;
 		auto &shader_time_cache = GetSubSystem<ShaderTimeCache>();
 
-		/*ShaderTimeCache::FileTime time{};
+		ShaderTimeCache::FileTime time{};
 		bool was_modified = shader_time_cache.WasFileModified(path, &time);
 
 		if (!was_modified)
@@ -56,9 +57,7 @@ namespace BHive
 		if (!loaded_program_data)
 		{
 			CompileFromSource();
-		}*/
-
-		CompileFromSource();
+		}
 
 		if (mProgramID)
 		{
@@ -72,40 +71,15 @@ namespace BHive
 
 	void Shader::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		/*GLsizei binary_length = 0;
-		GLenum binary_format = 0;
-		std::vector<char> binary;
+		ar(mName, mFilePath, mSources);
 
-		glGetProgramiv(mProgramID, GL_PROGRAM_BINARY_LENGTH, &binary_length);
-
-		binary.resize(binary_length);
-
-		glGetProgramBinary(mProgramID, binary_length, nullptr, &binary_format, binary.data());
-
-		ar(mFilePath, mSources, binary_format, binary);*/
 	}
 
 	void Shader::Load(cereal::BinaryInputArchive &ar)
 	{
 
-		/*GLenum binary_format = 0;
-		std::vector<char> binary;
-
-		ar(mFilePath, mSources, binary_format, binary);
-
-		mProgramID = glCreateProgram();
-		glProgramBinary(mProgramID, binary_format, binary.data(), binary.size());
-
-		GLint status = 0;
-		glGetProgramiv(mProgramID, GL_LINK_STATUS, &status);
-
-		if (!status)
-		{
-			GLchar infoLog[512];
-			glGetProgramInfoLog(mProgramID, 512, nullptr, infoLog);
-			LOG_ERROR("SHADER::PROGRAM BINARY PROGRAM LINKING : {} - {}", mName, infoLog);
-			Compile();
-		}*/
+		ar(mName, mFilePath, mSources);
+		Compile();
 	}
 
 	const Shader::FShaderData &Shader::GetShaderData(EShaderStage stage) const
@@ -124,11 +98,9 @@ namespace BHive
 
 			compiler.CompileToVulkan(mFilePath, stage, source.Code, source.VulkanSpirv);
 
-			vk::ShaderModuleCreateInfo create_info({}, source.VulkanSpirv);
-			auto &shader_module = mVulkanShaderModules.emplace_back(VulkanUtils::CreateShaderModule(create_info));
+			vk::ShaderModule* shader_module = (vk::ShaderModule*)(RenderCommand::CreateShader(source.VulkanSpirv.data(), source.VulkanSpirv.size() * sizeof(uint32_t)));
 
-			vk::PipelineShaderStageCreateInfo stage_info({}, utils::GetAPIShaderStage(stage), shader_module, "main");
-			mVulkanShaderStages.emplace_back(stage_info);
+			mVulkanShaderStages.emplace_back(vk::PipelineShaderStageCreateFlags{}, utils::GetAPIShaderStage(stage), *shader_module, "main");
 		}
 
 		ShaderSerializer serializer;

@@ -46,10 +46,17 @@ namespace BHive
 
 		static unsigned CheckError(const char *file, int line);
 
+		static void *CreateShader(const uint32_t *data, size_t size);
+
+		static void BeginFrame();
+
+		static void EndFrame();
+
+
 		static RendererAPI *GetAPI() { return sRendererAPI.get(); }
 
 	private:
-		static Scope<RendererAPI> sRendererAPI;
+		static inline Scope<RendererAPI> sRendererAPI = CreateScope<RendererAPI>();
 	};
 } // namespace BHive
 

@@ -7,6 +7,16 @@ namespace BHive
 {
 	struct VulkanUtils
 	{
+		static uint32_t FindQueueFamilies(vk::PhysicalDevice device);
+
+		static vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR> &availableFormats);
+
+		static vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR> &availablePresentModes);
+
+		static vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities, uint32_t w, uint32_t h);
+
+		static uint32_t ChooseMinImageCount(vk::SurfaceCapabilitiesKHR capabilities);
+
 		static vk::raii::CommandBuffer BeginSingleTimeCommands();
 
 		static void EndSingleTimeCommands(vk::raii::CommandBuffer &commandBuffer);
@@ -25,12 +35,16 @@ namespace BHive
 
 		static void TransitionImageLayout(const vk::raii::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
 
+		static void TransitionImageLayout(
+			vk::raii::CommandBuffer &cmd, vk::Image &image, uint32_t imageIndex, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
+			vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask);
+
 		static uint32_t FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
 
 		static void CopyBufferToImage(vk::raii::Buffer &buffer, vk::raii::Image &image, uint32_t width, uint32_t height);
 
 		static void SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size);
 
-		static vk::raii::ShaderModule CreateShaderModule(const vk::ShaderModuleCreateInfo &info);
+		static vk::ShaderModule CreateShaderModule(const vk::ShaderModuleCreateInfo &info);
 	};
 } // namespace BHive

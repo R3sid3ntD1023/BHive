@@ -3,6 +3,53 @@
 
 namespace BHive
 {
+	uint32_t VulkanUtils::FindQueueFamilies(vk::PhysicalDevice device)
+	{
+		std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
+		auto graphicsQueueFamilyProperty =
+			std::find_if(queueFamilies.begin(), queueFamilies.end(), [](const vk::QueueFamilyProperties &qfp) { return (qfp.queueFlags & vk::QueueFlagBits::eGraphics); });
+
+		return static_cast<uint32_t>(std::distance(queueFamilies.begin(), graphicsQueueFamilyProperty));
+	}
+
+	
+	vk::SurfaceFormatKHR VulkanUtils::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR> &availableFormats)
+	{
+		ASSERT(!availableFormats.empty());
+
+		auto formatItr = std::ranges::find_if(availableFormats, [](auto format) { return format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear; });
+		return formatItr != availableFormats.end() ? *formatItr : availableFormats[0];
+	}
+
+	vk::PresentModeKHR VulkanUtils::ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR> &availablePresentModes)
+	{
+		ASSERT(std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eFifo; }));
+		return std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eMailbox; }) ? vk::PresentModeKHR::eMailbox : vk::PresentModeKHR::eFifo;
+	}
+
+	vk::Extent2D VulkanUtils::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities, uint32_t w, uint32_t h)
+	{
+		if (capabilities.currentExtent.width != 0xFFFFFFF)
+		{
+			return capabilities.currentExtent;
+		}
+
+		vk::Extent2D actualExtent = {w, h};
+		actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+		return actualExtent;
+	}
+
+	uint32_t VulkanUtils::ChooseMinImageCount(vk::SurfaceCapabilitiesKHR capabilities)
+	{
+		auto minImageCount = std::max(3u, capabilities.minImageCount);
+		if (capabilities.maxImageCount > 0 && minImageCount > capabilities.maxImageCount)
+		{
+			minImageCount = capabilities.maxImageCount;
+		}
+
+		return minImageCount;
+	}
 
 	vk::raii::CommandBuffer VulkanUtils::BeginSingleTimeCommands()
 	{
@@ -105,6 +152,29 @@ namespace BHive
 		EndSingleTimeCommands(cmd);
 	}
 
+	void VulkanUtils::TransitionImageLayout(
+		vk::raii::CommandBuffer &cmd, vk::Image& image, uint32_t imageIndex, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
+		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask)
+	{
+		vk::ImageMemoryBarrier2 barrier{};
+		barrier.srcStageMask = srcStageMask;
+		barrier.srcAccessMask = srcAccessMask;
+		barrier.dstStageMask = dstStageMask;
+		barrier.dstAccessMask = dstAccessMask;
+		barrier.oldLayout = oldLayout;
+		barrier.newLayout = newLayout;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = image;
+		barrier.subresourceRange = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
+
+		vk::DependencyInfo depInfo{};
+		depInfo.dependencyFlags = {};
+		depInfo.imageMemoryBarrierCount = 1;
+		depInfo.pImageMemoryBarriers = &barrier;
+		cmd.pipelineBarrier2(depInfo);
+	}
+
 	uint32_t VulkanUtils::FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties)
 	{
 		auto &physical_device = GraphicsContext::Get().GetPhysicalDevice();
@@ -135,10 +205,13 @@ namespace BHive
 		memory.unmapMemory();
 	}
 
-	vk::raii::ShaderModule VulkanUtils::CreateShaderModule(const vk::ShaderModuleCreateInfo &info)
+	vk::ShaderModule VulkanUtils::CreateShaderModule(const vk::ShaderModuleCreateInfo &info)
 	{
 		auto &device = GraphicsContext::Get().GetDevice();
-		return device.createShaderModule(info);
+		VkShaderModule module = nullptr;
+		VkShaderModuleCreateInfo create_info = info;
+		vkCreateShaderModule(*device, &create_info, nullptr, &module);
+		return vk::ShaderModule(module);
 	}
 
 } // namespace BHive

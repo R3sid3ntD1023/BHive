@@ -9,6 +9,8 @@
 #include "Shader.h"
 #include "importers/TextureImporter.h"
 #include "VulkanUtils.h"
+#include "VulkanSwapChain.h"
+#include "Buffers.h"
 
 struct Vertex
 {
@@ -101,7 +103,6 @@ namespace BHive
 	GraphicsContext::~GraphicsContext()
 	{
 		mDevice.waitIdle();
-		CleanupSwapChain();
 	}
 
 	void GraphicsContext::Init()
@@ -112,7 +113,6 @@ namespace BHive
 		PickPhysicalDevice();
 		CreateLogicalDevice();
 		CreateSwapChain();
-		CreateImageViews();
 		CreateDescriptorSetLayout();
 		CreateGraphicsPipeline();
 		CreateCommandPool();
@@ -132,7 +132,7 @@ namespace BHive
 		while (vk::Result::eTimeout == mDevice.waitForFences(*mInFlightFences[mCurrentFrame], VK_TRUE, UINT64_MAX))
 			;
 
-		auto [result, imageIndex] = mSwapChain.acquireNextImage(UINT64_MAX, mPresetCompleteSemaphores[mCurrentFrame], nullptr);
+		auto [result, imageIndex] = mSwapChain->AquireNextImage(mPresetCompleteSemaphores[mCurrentFrame]);
 		if (result == vk::Result::eErrorOutOfDateKHR)
 		{
 			RecreateSwapChain();
@@ -154,16 +154,22 @@ namespace BHive
 
 		mQueue.submit(submitInfo, *mInFlightFences[mCurrentFrame]);
 
-		const vk::PresentInfoKHR presentInfoKHR(*mRenderFinishedSemaphores[imageIndex], *mSwapChain, imageIndex, result);
-		result = mQueue.presentKHR(presentInfoKHR);
 
+		const vk::PresentInfoKHR presentInfoKHR(*mRenderFinishedSemaphores[imageIndex], ***mSwapChain, imageIndex, result);
+		const VkPresentInfoKHR info = presentInfoKHR;
+		result = (vk::Result)vkQueuePresentKHR(*mQueue, &info);
+		
 		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || sFramebufferResized)
 		{
 			sFramebufferResized = false;
 			RecreateSwapChain();
 		}
+		else if (result != vk::Result::eSuccess)
+		{
+			ASSERT(false, "Failed to present swap chain image!")
+		}
 
-		ASSERT(result == vk::Result::eSuccess, "Failed to present swap chain image!")
+		
 
 		mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
@@ -262,33 +268,24 @@ namespace BHive
 
 	void GraphicsContext::CreateSwapChain()
 	{
+		int w = 0, h = 0;
+		glfwGetFramebufferSize(mWindowHandle, &w, &h);
+
 		auto surfaceCapabilities = mPhysicalDevice.getSurfaceCapabilitiesKHR(*mSurface);
-		mSwapChainExtent = ChooseSwapExtent(surfaceCapabilities);
-		mSwapChainImageFormat = ChooseSwapSurfaceFormat(mPhysicalDevice.getSurfaceFormatsKHR(*mSurface));
-
-		auto minImageCount = ChooseMinImageCount(surfaceCapabilities);
-
-		auto present_mode = ChooseSwapPresentMode(mPhysicalDevice.getSurfacePresentModesKHR(*mSurface));
-		vk::SwapchainCreateInfoKHR create_info(
-			{}, *mSurface, minImageCount, mSwapChainImageFormat.format, mSwapChainImageFormat.colorSpace, mSwapChainExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive,
-			{}, surfaceCapabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, present_mode, true, nullptr);
-
-		mSwapChain = vk::raii::SwapchainKHR(mDevice, create_info);
-		mSwapChainImages = mSwapChain.getImages();
+		auto formats = mPhysicalDevice.getSurfaceFormatsKHR(*mSurface);
+		auto presentModes = mPhysicalDevice.getSurfacePresentModesKHR(*mSurface);
+		
+		VulkanSwapChainCreateInfo create_info{};
+		create_info.Width = w;
+		create_info.Height = h;
+		create_info.Capabilities = surfaceCapabilities;
+		create_info.Formats = formats;
+		create_info.PresentModes = presentModes;
+		mSwapChain = CreateRef<VulkanSwapChain>();
+		mSwapChain->Init(mDevice, mSurface, create_info);
 	}
 
-	void GraphicsContext::CreateImageViews()
-	{
-		ASSERT(mSwapChainImageViews.empty())
 
-		vk::ImageViewCreateInfo view_info({}, {}, vk::ImageViewType::e2D, mSwapChainImageFormat.format, {}, {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
-
-		for (auto &image : mSwapChainImages)
-		{
-			view_info.image = image;
-			mSwapChainImageViews.emplace_back(mDevice, view_info);
-		}
-	}
 
 	void GraphicsContext::CreateDescriptorSetLayout()
 	{
@@ -336,22 +333,8 @@ namespace BHive
 
 	void GraphicsContext::CreateVertexBuffer()
 	{
-		vk::DeviceSize bufferSize = sizeof(Vertex) * sVertices.size();
-
-		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
-		vk::raii::Buffer stagingBuffer = nullptr;
-
-		VulkanUtils::CreateBuffer(
-			bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
-
-		void *stagingdata = stagingBufferMemory.mapMemory(0, bufferSize);
-		memcpy(stagingdata, sVertices.data(), bufferSize);
-		stagingBufferMemory.unmapMemory();
-
-		VulkanUtils::CreateBuffer(
-			bufferSize, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mVertexBuffer, mVertexBufferMemory);
-
-		VulkanUtils::CopyBuffer(stagingBuffer, mVertexBuffer, bufferSize);
+		mVertexBuffer = CreateRef<VertexBuffer>(sVertices.size() * sizeof(Vertex));
+		mVertexBuffer->SetData(sVertices.data(), sVertices.size() * sizeof(Vertex));
 	}
 
 	void GraphicsContext::CreateIndexBuffer()
@@ -402,7 +385,7 @@ namespace BHive
 		UniformBufferObject ubo{};
 		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.proj = glm::perspective(glm::radians(45.0f), mSwapChainExtent.width / (float)mSwapChainExtent.height, 0.1f, 10.0f);
+		ubo.proj = glm::perspective(glm::radians(45.0f), mSwapChain->GetWidth() / (float)mSwapChain->GetHeight(), 0.1f, 10.0f);
 		ubo.proj[1][1] *= -1; // for vulkan coordinate system
 
 		memcpy(mUniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
@@ -463,7 +446,7 @@ namespace BHive
 
 		vk::PipelineRenderingCreateInfo pipeline_renderingCreateInfo{};
 		pipeline_renderingCreateInfo.colorAttachmentCount = 1;
-		pipeline_renderingCreateInfo.pColorAttachmentFormats = &mSwapChainImageFormat.format;
+		pipeline_renderingCreateInfo.pColorAttachmentFormats = &mSwapChain->GetFormat().format;
 
 		vk::GraphicsPipelineCreateInfo pipeline_info{};
 		pipeline_info.pNext = &pipeline_renderingCreateInfo;
@@ -507,20 +490,25 @@ namespace BHive
 		auto &cmd = mCommandBuffers[mCurrentFrame];
 		cmd.begin({});
 
-		transition_image_layout(
+		auto& image = mSwapChain->GetImage(imageIndex);
+		auto &image_view = mSwapChain->GetImageView(imageIndex);
+		auto extent = mSwapChain->GetExtent();
+
+		VulkanUtils::TransitionImageLayout(
+			cmd, image,
 			imageIndex, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eTopOfPipe,
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput);
 
 		vk::ClearValue clearColor = vk::ClearColorValue(0.f, 0.f, 0.f, 1.f);
 		vk::RenderingAttachmentInfo attachmentInfo;
-		attachmentInfo.imageView = mSwapChainImageViews[imageIndex];
+		attachmentInfo.imageView = image_view;
 		attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal;
 		attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear;
 		attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore;
 		attachmentInfo.clearValue = clearColor;
 
 		vk::RenderingInfo renderingInfo;
-		renderingInfo.renderArea = vk::Rect2D({0, 0}, mSwapChainExtent);
+		renderingInfo.renderArea = vk::Rect2D({0, 0}, extent);
 		renderingInfo.layerCount = 1;
 		renderingInfo.colorAttachmentCount = 1;
 		renderingInfo.pColorAttachments = &attachmentInfo;
@@ -528,16 +516,18 @@ namespace BHive
 		cmd.beginRendering(renderingInfo);
 		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, mGraphicsPipeline);
 
-		cmd.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(mSwapChainExtent.width), static_cast<float>(mSwapChainExtent.height), 0.0f, 1.0f));
-		cmd.setScissor(0, vk::Rect2D({0, 0}, mSwapChainExtent));
+		cmd.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(extent.width), static_cast<float>(extent.height), 0.0f, 1.0f));
+		cmd.setScissor(0, vk::Rect2D({0, 0}, extent));
 
-		cmd.bindVertexBuffers(0, *mVertexBuffer, {0});
+		const vk::raii::Buffer& buffer = *mVertexBuffer;
+		cmd.bindVertexBuffers(0, *buffer, {0});
 		cmd.bindIndexBuffer(*mIndexBuffer, 0, vk::IndexType::eUint32);
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, *mDescriptorSets[mCurrentFrame], nullptr);
 		cmd.drawIndexed(sIndices.size(), 1, 0, 0, 0);
 		cmd.endRendering();
 
-		transition_image_layout(
+		VulkanUtils::TransitionImageLayout(
+			cmd, image,
 			imageIndex, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eColorAttachmentWrite, {}, vk::PipelineStageFlagBits2::eColorAttachmentOutput,
 			vk::PipelineStageFlagBits2::eBottomOfPipe);
 
@@ -550,7 +540,7 @@ namespace BHive
 		mRenderFinishedSemaphores.clear();
 		mInFlightFences.clear();
 
-		for (size_t i = 0; i < mSwapChainImages.size(); i++)
+		for (size_t i = 0; i < mSwapChain->GetNumImages(); i++)
 		{
 			mPresetCompleteSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo{});
 			mRenderFinishedSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo{});
@@ -573,48 +563,8 @@ namespace BHive
 		}
 
 		mDevice.waitIdle();
-
-		CleanupSwapChain();
 		CreateSwapChain();
-		CreateImageViews();
-	}
 
-	void GraphicsContext::CleanupSwapChain()
-	{
-		mSwapChainImages.clear();
-		mSwapChain = nullptr;
-	}
-
-	void GraphicsContext::transition_image_layout(
-		uint32_t imageIndex, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask, vk::PipelineStageFlags2 srcStageMask,
-		vk::PipelineStageFlags2 dstStageMask)
-	{
-		vk::ImageMemoryBarrier2 barrier{};
-		barrier.srcStageMask = srcStageMask;
-		barrier.srcAccessMask = srcAccessMask;
-		barrier.dstStageMask = dstStageMask;
-		barrier.dstAccessMask = dstAccessMask;
-		barrier.oldLayout = oldLayout;
-		barrier.newLayout = newLayout;
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = mSwapChainImages[imageIndex];
-		barrier.subresourceRange = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
-
-		vk::DependencyInfo depInfo{};
-		depInfo.dependencyFlags = {};
-		depInfo.imageMemoryBarrierCount = 1;
-		depInfo.pImageMemoryBarriers = &barrier;
-		mCommandBuffers[mCurrentFrame].pipelineBarrier2(depInfo);
-	};
-
-	uint32_t GraphicsContext::FindQueueFamilies(vk::PhysicalDevice device)
-	{
-		std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
-		auto graphicsQueueFamilyProperty =
-			std::find_if(queueFamilies.begin(), queueFamilies.end(), [](const vk::QueueFamilyProperties &qfp) { return (qfp.queueFlags & vk::QueueFlagBits::eGraphics); });
-
-		return static_cast<uint32_t>(std::distance(queueFamilies.begin(), graphicsQueueFamilyProperty));
 	}
 
 	void GraphicsContext::CreateLogicalDevice()
@@ -672,45 +622,5 @@ namespace BHive
 		mSurface = vk::raii::SurfaceKHR(mVulkanInstance, _surface);
 	}
 
-	vk::SurfaceFormatKHR GraphicsContext::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR> &availableFormats)
-	{
-		ASSERT(!availableFormats.empty());
-
-		auto formatItr = std::ranges::find_if(availableFormats, [](auto format) { return format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear; });
-		return formatItr != availableFormats.end() ? *formatItr : availableFormats[0];
-	}
-
-	vk::PresentModeKHR GraphicsContext::ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR> &availablePresentModes)
-	{
-		ASSERT(std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eFifo; }));
-		return std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eMailbox; }) ? vk::PresentModeKHR::eMailbox : vk::PresentModeKHR::eFifo;
-	}
-
-	vk::Extent2D GraphicsContext::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities)
-	{
-		if (capabilities.currentExtent.width != 0xFFFFFFF)
-		{
-			return capabilities.currentExtent;
-		}
-
-		int width, height;
-		glfwGetFramebufferSize(mWindowHandle, &width, &height);
-
-		vk::Extent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
-		actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-		return actualExtent;
-	}
-
-	uint32_t GraphicsContext::ChooseMinImageCount(vk::SurfaceCapabilitiesKHR capabilities)
-	{
-		auto minImageCount = std::max(3u, capabilities.minImageCount);
-		if (capabilities.maxImageCount > 0 && minImageCount > capabilities.maxImageCount)
-		{
-			minImageCount = capabilities.maxImageCount;
-		}
-
-		return minImageCount;
-	}
 
 } // namespace BHive

@@ -79,8 +79,6 @@ namespace BHive
 
 		std::unordered_map<EShaderStage, FShaderData> mSources;
 
-		std::vector<vk::raii::ShaderModule> mVulkanShaderModules{};
-
 		Stages mVulkanShaderStages{};
 
 		Scope<ShaderUniformSetter> mUniformSetter;

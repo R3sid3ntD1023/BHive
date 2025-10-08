@@ -6,17 +6,17 @@ namespace BHive
 {
 	BufferBase::BufferBase()
 	{
-		glCreateBuffers(1, &mBufferID);
+		//glCreateBuffers(1, &mBufferID);
 	}
 
 	BufferBase::~BufferBase()
 	{
-		glDeleteBuffers(1, &mBufferID);
+		//glDeleteBuffers(1, &mBufferID);
 	}
 
 	void BufferBase::SetData(const void *data, size_t size, uint32_t offset)
 	{
-		glNamedBufferSubData(mBufferID, offset, size, data);
+		//glNamedBufferSubData(mBufferID, offset, size, data);
 	}
 
 } // namespace BHive

@@ -1,5 +1,6 @@
 #include "TextureUtils.h"
 #include <glad/glad.h>
+#include "gfx/VulkanCore.h"
 
 namespace BHive
 {
@@ -9,9 +10,9 @@ namespace BHive
 		switch (mode)
 		{
 		case BHive::ETextureCompareMode::NONE:
-			return GL_NONE;
+			return VK_FALSE;
 		case BHive::ETextureCompareMode::COMPARE_REF_TO_TEXTURE:
-			return GL_COMPARE_REF_TO_TEXTURE;
+			return VK_TRUE;
 		default:
 			break;
 		}
@@ -24,21 +25,21 @@ namespace BHive
 		switch (func)
 		{
 		case BHive::ETextureCompareFunc::LEQUAL:
-			return GL_LEQUAL;
+			return VK_COMPARE_OP_LESS_OR_EQUAL;
 		case BHive::ETextureCompareFunc::GEQUAL:
-			return GL_GEQUAL;
+			return VK_COMPARE_OP_GREATER_OR_EQUAL;
 		case BHive::ETextureCompareFunc::LESS:
-			return GL_LESS;
+			return VK_COMPARE_OP_LESS;
 		case BHive::ETextureCompareFunc::GREATER:
-			return GL_GREATER;
+			return VK_COMPARE_OP_GREATER;
 		case BHive::ETextureCompareFunc::EQUAL:
-			return GL_EQUAL;
+			return VK_COMPARE_OP_EQUAL;
 		case BHive::ETextureCompareFunc::NOTEQUAL:
-			return GL_NOTEQUAL;
+			return VK_COMPARE_OP_NOT_EQUAL;
 		case BHive::ETextureCompareFunc::ALWAYS:
-			return GL_ALWAYS;
+			return VK_COMPARE_OP_ALWAYS;
 		case BHive::ETextureCompareFunc::NEVER:
-			return GL_NEVER;
+			return VK_COMPARE_OP_NEVER;
 		default:
 			break;
 		}
@@ -71,9 +72,9 @@ namespace BHive
 		switch (mode)
 		{
 		case BHive::EMinFilter::LINEAR:
-			return GL_LINEAR;
+			return VK_FILTER_LINEAR;
 		case BHive::EMinFilter::NEAREST:
-			return GL_NEAREST;
+			return VK_FILTER_NEAREST;
 		case BHive::EMinFilter::MIPMAP_LINEAR:
 			return GL_LINEAR_MIPMAP_LINEAR;
 		case BHive::EMinFilter::MIPMAP_NEAREST:
@@ -95,9 +96,9 @@ namespace BHive
 		switch (mode)
 		{
 		case BHive::EMagFilter::LINEAR:
-			return GL_LINEAR;
+			return VK_FILTER_LINEAR;
 		case BHive::EMagFilter::NEAREST:
-			return GL_NEAREST;
+			return VK_FILTER_NEAREST;
 		default:
 			break;
 		}
@@ -111,13 +112,13 @@ namespace BHive
 		switch (mode)
 		{
 		case BHive::EWrapMode::REPEAT:
-			return GL_REPEAT;
+			return VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		case BHive::EWrapMode::CLAMP_TO_EDGE:
-			return GL_CLAMP_TO_EDGE;
+			return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 		case BHive::EWrapMode::MIRRORED_REPEAT:
-			return GL_MIRRORED_REPEAT;
+			return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 		case BHive::EWrapMode::CLAMP_TO_BORDER:
-			return GL_CLAMP_TO_BORDER;
+			return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 		default:
 			break;
 		}

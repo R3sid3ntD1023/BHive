@@ -3,82 +3,25 @@
 #include <glfw/glfw3.h>
 #include "core/Application.h"
 #include "GraphicsContext.h"
+#include "VulkanUtils.h"
 
 namespace BHive
 {
-	const char *get_debug_source_name(unsigned source)
-	{
-		switch (source)
-		{
-		case GL_DEBUG_SOURCE_API:
-			return "API";
-		case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-			return "Window System";
-		case GL_DEBUG_SOURCE_APPLICATION:
-			return "Application";
-		case GL_DEBUG_SOURCE_SHADER_COMPILER:
-			return "Shader Compiler";
-		case GL_DEBUG_SOURCE_THIRD_PARTY:
-			return "Third Party";
-		case GL_DEBUG_SOURCE_OTHER:
-			return "Other";
-		default:
-			break;
-		}
 
-		ASSERT(false, source);
-		return "";
+
+	RendererAPI::~RendererAPI()
+	{
+		
 	}
 
-	const char *get_debug_type_name(unsigned type)
+	void RendererAPI::BeginFrame()
 	{
-		switch (type)
-		{
-		case GL_DEBUG_TYPE_ERROR:
-			return "Error";
-		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-			return "Deprecated Behaviour";
-		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-			return "Undefined Behaviour";
-		case GL_DEBUG_TYPE_PORTABILITY:
-			return "Portability";
-		case GL_DEBUG_TYPE_PERFORMANCE:
-			return "Performance";
-		case GL_DEBUG_TYPE_MARKER:
-			return "Marker";
-		case GL_DEBUG_TYPE_PUSH_GROUP:
-			return "Push Group";
-		case GL_DEBUG_TYPE_POP_GROUP:
-			return "Pop Group";
-		case GL_DEBUG_TYPE_OTHER:
-			return "Other";
-		default:
-			break;
-		}
-		ASSERT(false, type);
-		return "";
+		auto &cmd = GraphicsContext::Get().GetCommandBuffer();
 	}
 
-	void OpenGLCallback(unsigned source, unsigned type, unsigned id, unsigned severity, int length, const char *message, const void *userdata)
+	void RendererAPI::EndFrame()
 	{
-		auto source_name = get_debug_source_name(source);
-		auto type_name = get_debug_type_name(type);
-
-		switch (severity)
-		{
-		case GL_DEBUG_SEVERITY_HIGH:
-			LOG_CRITICAL("{} {} {} {}", id, source_name, type_name, message);
-			return;
-		case GL_DEBUG_SEVERITY_MEDIUM:
-			LOG_ERROR("{} {} {} {}", id, source_name, type_name, message);
-			return;
-		case GL_DEBUG_SEVERITY_LOW:
-			LOG_WARN("{} {} {} {}", id, source_name, type_name, message);
-			return;
-		case GL_DEBUG_SEVERITY_NOTIFICATION:
-			LOG_TRACE("{} {} {} {}", id, source_name, type_name, message);
-			return;
-		}
+		auto &cmd = GraphicsContext::Get().GetCommandBuffer();
 	}
 
 	void RendererAPI::Init()
@@ -91,8 +34,7 @@ namespace BHive
 
 	void RendererAPI::ClearColor(float r, float g, float b, float a)
 	{
-
-		glClearColor(r, g, b, a);
+		mCurrentClearColor = {r, g, b, a};
 	}
 
 	void RendererAPI::Clear(int mask)
@@ -267,4 +209,15 @@ namespace BHive
 		}
 		return errorCode;
 	}
+
+	void *RendererAPI::CreateShader(const uint32_t *data, size_t size)
+	{
+		vk::ShaderModuleCreateInfo create_info({}, size, data);
+		auto shader_module = VulkanUtils::CreateShaderModule(create_info);
+		mVulkanShaders.push_back(shader_module);
+		return &mVulkanShaders.back();
+		return nullptr;
+	}
+
+
 } // namespace BHive
