@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Buffers.h"
+#include "VulkanCore.h"
 
 namespace BHive
 {
@@ -21,11 +22,17 @@ namespace BHive
 
 		virtual Ref<VertexBuffer> GetVertexBuffer(uint32_t index) const;
 
+		const vk::VertexInputBindingDescription &GetBindingDescription() const { return mBinding; }
+
+		const std::vector<vk::VertexInputAttributeDescription> &GetAttributeDescriptions() const { return mAttributes; }
+
 	private:
-		uint32_t mVertexBufferIndex{0};
-		uint32_t mVertexArrayID{0};
+		vk::VertexInputBindingDescription mBinding;
+		std::vector<vk::VertexInputAttributeDescription> mAttributes;
 
 		Ref<IndexBuffer> mIndexBuffer;
 		std::vector<Ref<VertexBuffer>> mVertexBuffers;
+
+		uint32_t mVertexBufferIndex{0};
 	};
 } // namespace BHive

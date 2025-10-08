@@ -11,6 +11,7 @@
 #include "VulkanUtils.h"
 #include "VulkanSwapChain.h"
 #include "Buffers.h"
+#include "VertexArray.h"
 
 struct Vertex
 {
@@ -18,15 +19,7 @@ struct Vertex
 	glm::vec3 Color;
 	glm::vec2 TexCoord;
 
-	static vk::VertexInputBindingDescription getBindingDescription() { return vk::VertexInputBindingDescription(0, sizeof(Vertex), vk::VertexInputRate::eVertex); }
-
-	static std::array<vk::VertexInputAttributeDescription, 3> getAttributeDescriptions()
-	{
-		return {
-			vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, Position)),
-			vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, Color)),
-			vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, TexCoord))};
-	}
+	static BHive::BufferLayout GetLayout() { return {{BHive::EShaderDataType::Float3}, {BHive::EShaderDataType::Float3}, {BHive::EShaderDataType::Float2}}; };
 };
 
 struct UniformBufferObject
@@ -113,12 +106,15 @@ namespace BHive
 		PickPhysicalDevice();
 		CreateLogicalDevice();
 		CreateSwapChain();
+
 		CreateDescriptorSetLayout();
-		CreateGraphicsPipeline();
 		CreateCommandPool();
-		CreateTextureImage();
 		CreateVertexBuffer();
 		CreateIndexBuffer();
+		CreateGraphicsPipeline();
+
+		CreateTextureImage();
+
 		CreateUniformBuffers();
 		CreateDescriptorPool();
 		CreateDescriptorSets();
@@ -154,11 +150,10 @@ namespace BHive
 
 		mQueue.submit(submitInfo, *mInFlightFences[mCurrentFrame]);
 
-
 		const vk::PresentInfoKHR presentInfoKHR(*mRenderFinishedSemaphores[imageIndex], ***mSwapChain, imageIndex, result);
 		const VkPresentInfoKHR info = presentInfoKHR;
 		result = (vk::Result)vkQueuePresentKHR(*mQueue, &info);
-		
+
 		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || sFramebufferResized)
 		{
 			sFramebufferResized = false;
@@ -168,8 +163,6 @@ namespace BHive
 		{
 			ASSERT(false, "Failed to present swap chain image!")
 		}
-
-		
 
 		mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
@@ -274,7 +267,7 @@ namespace BHive
 		auto surfaceCapabilities = mPhysicalDevice.getSurfaceCapabilitiesKHR(*mSurface);
 		auto formats = mPhysicalDevice.getSurfaceFormatsKHR(*mSurface);
 		auto presentModes = mPhysicalDevice.getSurfacePresentModesKHR(*mSurface);
-		
+
 		VulkanSwapChainCreateInfo create_info{};
 		create_info.Width = w;
 		create_info.Height = h;
@@ -284,8 +277,6 @@ namespace BHive
 		mSwapChain = CreateRef<VulkanSwapChain>();
 		mSwapChain->Init(mDevice, mSurface, create_info);
 	}
-
-
 
 	void GraphicsContext::CreateDescriptorSetLayout()
 	{
@@ -335,24 +326,15 @@ namespace BHive
 	{
 		mVertexBuffer = CreateRef<VertexBuffer>(sVertices.size() * sizeof(Vertex));
 		mVertexBuffer->SetData(sVertices.data(), sVertices.size() * sizeof(Vertex));
+		mVertexBuffer->SetLayout(Vertex::GetLayout());
 	}
 
 	void GraphicsContext::CreateIndexBuffer()
 	{
-		vk::DeviceSize bufferSize = sizeof(uint32_t) * sIndices.size();
-
-		vk::raii::Buffer stagingBuffer({});
-		vk::raii::DeviceMemory stagingBufferMemory({});
-		VulkanUtils::CreateBuffer(
-			bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
-
-		void *stagingdata = stagingBufferMemory.mapMemory(0, bufferSize);
-		memcpy(stagingdata, sIndices.data(), bufferSize);
-		stagingBufferMemory.unmapMemory();
-
-		VulkanUtils::CreateBuffer(
-			bufferSize, vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mIndexBuffer, mIndexBufferMemory);
-		VulkanUtils::CopyBuffer(stagingBuffer, mIndexBuffer, bufferSize);
+		mIndexBuffer = CreateRef<IndexBuffer>(sIndices.data(), (uint32_t)sIndices.size());
+		mVertexArray = CreateRef<VertexArray>();
+		mVertexArray->AddVertexBuffer(mVertexBuffer);
+		mVertexArray->SetIndexBuffer(mIndexBuffer);
 	}
 
 	void GraphicsContext::CreateUniformBuffers()
@@ -393,8 +375,8 @@ namespace BHive
 
 	void GraphicsContext::CreateGraphicsPipeline()
 	{
-		auto bindingDescription = Vertex::getBindingDescription();
-		auto attributeDescriptions = Vertex::getAttributeDescriptions();
+		auto bindingDescription = mVertexArray->GetBindingDescription();
+		auto attributeDescriptions = mVertexArray->GetAttributeDescriptions();
 
 		vk::PipelineVertexInputStateCreateInfo vertexInputInfo({}, bindingDescription, attributeDescriptions);
 		vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
@@ -490,13 +472,12 @@ namespace BHive
 		auto &cmd = mCommandBuffers[mCurrentFrame];
 		cmd.begin({});
 
-		auto& image = mSwapChain->GetImage(imageIndex);
+		auto &image = mSwapChain->GetImage(imageIndex);
 		auto &image_view = mSwapChain->GetImageView(imageIndex);
 		auto extent = mSwapChain->GetExtent();
 
 		VulkanUtils::TransitionImageLayout(
-			cmd, image,
-			imageIndex, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eTopOfPipe,
+			cmd, image, imageIndex, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eTopOfPipe,
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput);
 
 		vk::ClearValue clearColor = vk::ClearColorValue(0.f, 0.f, 0.f, 1.f);
@@ -519,17 +500,17 @@ namespace BHive
 		cmd.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(extent.width), static_cast<float>(extent.height), 0.0f, 1.0f));
 		cmd.setScissor(0, vk::Rect2D({0, 0}, extent));
 
-		const vk::raii::Buffer& buffer = *mVertexBuffer;
-		cmd.bindVertexBuffers(0, *buffer, {0});
-		cmd.bindIndexBuffer(*mIndexBuffer, 0, vk::IndexType::eUint32);
+		const vk::raii::Buffer &vertex_buffer = *mVertexBuffer;
+		const vk::raii::Buffer &index_buffer = *mIndexBuffer;
+		cmd.bindVertexBuffers(0, *vertex_buffer, {0});
+		cmd.bindIndexBuffer(index_buffer, 0, vk::IndexType::eUint32);
 		cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, *mDescriptorSets[mCurrentFrame], nullptr);
 		cmd.drawIndexed(sIndices.size(), 1, 0, 0, 0);
 		cmd.endRendering();
 
 		VulkanUtils::TransitionImageLayout(
-			cmd, image,
-			imageIndex, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eColorAttachmentWrite, {}, vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-			vk::PipelineStageFlagBits2::eBottomOfPipe);
+			cmd, image, imageIndex, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eColorAttachmentWrite, {},
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eBottomOfPipe);
 
 		cmd.end();
 	}
@@ -564,7 +545,6 @@ namespace BHive
 
 		mDevice.waitIdle();
 		CreateSwapChain();
-
 	}
 
 	void GraphicsContext::CreateLogicalDevice()
@@ -621,6 +601,5 @@ namespace BHive
 		}
 		mSurface = vk::raii::SurfaceKHR(mVulkanInstance, _surface);
 	}
-
 
 } // namespace BHive

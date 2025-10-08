@@ -18,12 +18,12 @@ namespace BHive
 
 		virtual void SetData(const void *data, uint64_t size, uint32_t offset = 0);
 
-		operator const vk::raii::Buffer&() const { return mBuffer; }
+		operator const vk::raii::Buffer &() const { return mBuffer; }
 
 	private:
 		uint32_t mCount;
 		vk::raii::Buffer mBuffer = VK_NULL_HANDLE;
-		vk::raii::DeviceMemory mBufferMemory = VK_NULL_HANDLE;
+		vk::raii::DeviceMemory mMemory = VK_NULL_HANDLE;
 	};
 
 	class BHIVE_API VertexBuffer : public BufferBase

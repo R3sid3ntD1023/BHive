@@ -3,7 +3,6 @@
 #include "core/Core.h"
 #include "VulkanCore.h"
 
-
 struct GLFWwindow;
 
 namespace BHive
@@ -24,8 +23,6 @@ namespace BHive
 		virtual void Init();
 
 		virtual void SwapBuffers();
-
-		
 
 		vk::raii::Instance &GetInstance() { return mVulkanInstance; }
 
@@ -70,8 +67,6 @@ namespace BHive
 
 		void CreateSurface();
 
-		
-
 		void CreateVertexBuffer();
 
 		void CreateIndexBuffer();
@@ -93,19 +88,17 @@ namespace BHive
 
 		vk::raii::Context mVulkanContext;
 
-		static inline vk::raii::Instance mVulkanInstance = nullptr;
+		vk::raii::Instance mVulkanInstance = nullptr;
 
 		vk::raii::DebugUtilsMessengerEXT mDebugMessenger = nullptr;
 
 		vk::raii::PhysicalDevice mPhysicalDevice = nullptr;
 
-		static inline vk::raii::Device mDevice = nullptr;
+		vk::raii::Device mDevice = nullptr;
 
 		vk::raii::Queue mQueue = nullptr;
 
 		vk::raii::SurfaceKHR mSurface = nullptr;
-
-	
 
 		uint32_t mQueueIndex = 0;
 
@@ -127,10 +120,6 @@ namespace BHive
 
 		uint32_t mCurrentFrame = 0;
 
-		vk::raii::Buffer mIndexBuffer = nullptr;
-
-		vk::raii::DeviceMemory mIndexBufferMemory = nullptr;
-
 		std::vector<vk::raii::Buffer> mUniformBuffers{};
 		std::vector<vk::raii::DeviceMemory> mUniformBuffersMemory{};
 		std::vector<void *> mUniformBuffersMapped{};
@@ -140,6 +129,8 @@ namespace BHive
 
 		Ref<class Texture2D> mTexture;
 		Ref<class VertexBuffer> mVertexBuffer;
+		Ref<class IndexBuffer> mIndexBuffer;
+		Ref<class VertexArray> mVertexArray;
 
 		static inline GraphicsContext *sInstance = nullptr;
 

@@ -5,32 +5,22 @@ namespace BHive
 {
 	VertexArray::VertexArray()
 	{
-		glCreateVertexArrays(1, &mVertexArrayID);
 	}
 
 	VertexArray::~VertexArray()
 	{
-
-		glDeleteVertexArrays(1, &mVertexArrayID);
 	}
 
 	void VertexArray::Bind() const
 	{
-
-		glBindVertexArray(mVertexArrayID);
 	}
 
 	void VertexArray::UnBind() const
 	{
-
-		glBindVertexArray(0);
 	}
 
 	void VertexArray::SetIndexBuffer(const Ref<IndexBuffer> &indexbuffer)
 	{
-
-		glVertexArrayElementBuffer(mVertexArrayID, indexbuffer->GetBufferID());
-
 		mIndexBuffer = indexbuffer;
 	}
 
@@ -44,6 +34,8 @@ namespace BHive
 		if (elements.size() == 0)
 			return;
 
+		mBinding = vk::VertexInputBindingDescription(0, stride, vk::VertexInputRate::eVertex);
+
 		for (const auto &element : elements)
 		{
 			auto type = element.Type;
@@ -51,24 +43,34 @@ namespace BHive
 			switch (type)
 			{
 			case BHive::EShaderDataType::Float:
+				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32Sfloat, element.Offset);
+				break;
 			case BHive::EShaderDataType::Float2:
+				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32G32Sfloat, element.Offset);
+				break;
 			case BHive::EShaderDataType::Float3:
+				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32G32B32Sfloat, element.Offset);
+				break;
 			case BHive::EShaderDataType::Float4:
 			{
-				glEnableVertexArrayAttrib(mVertexArrayID, mVertexBufferIndex);
-				glVertexArrayVertexBuffer(mVertexArrayID, mVertexBufferIndex, vertexbuffer->GetBufferID(), element.Offset, stride);
-				mVertexBufferIndex++;
+				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32G32B32A32Sfloat, element.Offset);
 				break;
 			}
 			case BHive::EShaderDataType::Int:
+				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32Sint, element.Offset);
+				break;
 			case BHive::EShaderDataType::Int2:
+				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32G32Sint, element.Offset);
+				break;
 			case BHive::EShaderDataType::Int3:
+				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32G32B32Sfloat, element.Offset);
+				break;
 			case BHive::EShaderDataType::Int4:
+				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32Sfloat, element.Offset);
+				break;
 			case BHive::EShaderDataType::Bool:
 			{
-				glEnableVertexArrayAttrib(mVertexArrayID, mVertexBufferIndex);
-				glVertexArrayVertexBuffer(mVertexArrayID, mVertexBufferIndex, vertexbuffer->GetBufferID(), element.Offset, stride);
-				mVertexBufferIndex++;
+				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32Sint, element.Offset);
 				break;
 			}
 			case BHive::EShaderDataType::Mat3:
@@ -77,9 +79,7 @@ namespace BHive
 				auto count = element.ComponentCount;
 				for (uint8_t i = 0; i < count; i++)
 				{
-					glEnableVertexArrayAttrib(mVertexArrayID, mVertexBufferIndex);
-					glVertexArrayVertexBuffer(mVertexArrayID, mVertexBufferIndex, vertexbuffer->GetBufferID(), element.Offset + sizeof(float) * count * i, stride);
-					glVertexArrayBindingDivisor(mVertexArrayID, mVertexBufferIndex, 1);
+					mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32G32B32A32Sfloat, element.Offset + sizeof(float) * count * i);
 					mVertexBufferIndex++;
 				}
 				break;
