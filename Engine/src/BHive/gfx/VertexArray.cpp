@@ -3,6 +3,40 @@
 
 namespace BHive
 {
+	namespace utils
+	{
+		vk::Format GetVulkanFormat(EShaderDataType type)
+		{
+			switch (type)
+			{
+			case BHive::EShaderDataType::Float:
+				return vk::Format::eR32Sfloat ;
+			case BHive::EShaderDataType::Float2:
+				return vk::Format::eR32G32Sfloat;
+			case BHive::EShaderDataType::Float3:
+				return vk::Format::eR32G32B32Sfloat;
+			case BHive::EShaderDataType::Float4:
+				return vk::Format::eR32G32B32A32Sfloat;
+			case BHive::EShaderDataType::Int:
+				return vk::Format::eR32Sint;
+			case BHive::EShaderDataType::Int2:
+				return vk::Format::eR32G32Sint;
+			case BHive::EShaderDataType::Int3:
+				return vk::Format::eR32G32B32Sint;
+			case BHive::EShaderDataType::Int4:
+				return vk::Format::eR32G32B32A32Sint;
+			case BHive::EShaderDataType::Bool:
+				return vk::Format::eR32Sint;
+			case BHive::EShaderDataType::Mat3:
+				return vk::Format::eR32G32B32Sfloat;
+			case BHive::EShaderDataType::Mat4:
+				return vk::Format::eR32G32B32A32Sfloat;
+			}
+		
+			ASSERT(false);
+		}
+	}
+
 	VertexArray::VertexArray()
 	{
 	}
@@ -39,38 +73,19 @@ namespace BHive
 		for (const auto &element : elements)
 		{
 			auto type = element.Type;
-			auto divisor = element.Divisor;
 			switch (type)
 			{
 			case BHive::EShaderDataType::Float:
-				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32Sfloat, element.Offset);
-				break;
 			case BHive::EShaderDataType::Float2:
-				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32G32Sfloat, element.Offset);
-				break;
 			case BHive::EShaderDataType::Float3:
-				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32G32B32Sfloat, element.Offset);
-				break;
 			case BHive::EShaderDataType::Float4:
-			{
-				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32G32B32A32Sfloat, element.Offset);
-				break;
-			}
 			case BHive::EShaderDataType::Int:
-				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32Sint, element.Offset);
-				break;
 			case BHive::EShaderDataType::Int2:
-				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32G32Sint, element.Offset);
-				break;
 			case BHive::EShaderDataType::Int3:
-				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32G32B32Sfloat, element.Offset);
-				break;
 			case BHive::EShaderDataType::Int4:
-				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32Sfloat, element.Offset);
-				break;
 			case BHive::EShaderDataType::Bool:
 			{
-				mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32Sint, element.Offset);
+				mAttributes.emplace_back(mVertexBufferIndex++, 0, utils::GetVulkanFormat(type), (uint32_t)element.Offset);
 				break;
 			}
 			case BHive::EShaderDataType::Mat3:
@@ -79,8 +94,7 @@ namespace BHive
 				auto count = element.ComponentCount;
 				for (uint8_t i = 0; i < count; i++)
 				{
-					mAttributes.emplace_back(mVertexBufferIndex++, 0, vk::Format::eR32G32B32A32Sfloat, element.Offset + sizeof(float) * count * i);
-					mVertexBufferIndex++;
+					mAttributes.emplace_back(mVertexBufferIndex++, 0, utils::GetVulkanFormat(type), (uint32_t)(element.Offset + sizeof(float) * count * i));
 				}
 				break;
 			}

@@ -1,13 +1,13 @@
+#include "core/Application.h"
 #include "core/FileSystem.h"
 #include "core/subsystem/SubSystem.h"
+#include "RenderCommand.h"
 #include "Shader.h"
 #include "utils/shader/ShaderCompiler.h"
 #include "utils/shader/ShaderSerializer.h"
 #include "utils/shader/ShaderTimeCache.h"
 #include "utils/shader/ShaderUtils.h"
-#include "core/Application.h"
 #include "VulkanUtils.h"
-#include "RenderCommand.h"
 
 namespace BHive
 {

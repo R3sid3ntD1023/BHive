@@ -8,6 +8,11 @@ namespace BHive
 		sRendererAPI->Init();
 	}
 
+	void RenderCommand::Shutdown()
+	{
+		sRendererAPI->Shutdown();
+	}
+
 	void RenderCommand::ClearColor(float r, float g, float b, float a)
 	{
 		sRendererAPI->ClearColor(r, g, b, a);
@@ -124,8 +129,4 @@ namespace BHive
 		sRendererAPI->EndFrame();
 	}
 
-	unsigned RenderCommand::CheckError(const char *file, int line)
-	{
-		return sRendererAPI->CheckError(file, line);
-	}
 } // namespace BHive

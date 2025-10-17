@@ -11,7 +11,7 @@ namespace BHive
 		std::filesystem::path Path;
 	};
 
-	class ShaderManager
+	class BHIVE_API ShaderManager
 	{
 	public:
 		ShaderManager();

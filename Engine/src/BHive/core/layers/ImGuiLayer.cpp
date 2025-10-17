@@ -1,12 +1,25 @@
 #include "core/Application.h"
 #include "core/events/Event.h"
 #include "core/Window.h"
+#include "gfx/GraphicsContext.h"
+#include "gfx/RenderCommand.h"
+#include "gfx/VulkanSwapChain.h"
 #include "ImGuiLayer.h"
-#include <glfw/glfw3.h>
-#include <backends/imgui_impl_opengl3.cpp>
 #include <backends/imgui_impl_glfw.cpp>
 #include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
+//#include <backends/imgui_impl_opengl3.cpp>
+//#include <backends/imgui_impl_opengl3.h>
+
+#define GLFW_INCLUDE_VULKAN
+#include <glfw/glfw3.h>
+
+//#define IMGUI_IMPL_VULKAN_USE_VOLK
+//#define VOLK_IMPLEMENTATION
+//#include <vol>
+
+#include "gfx/VulkanUtils.h"
+#include <backends/imgui_impl_vulkan.cpp>
+#include <backends/imgui_impl_vulkan.h>
 
 #include <imgui.h>
 #include <implot.h>
@@ -20,6 +33,13 @@
 
 namespace BHive
 {
+	static void CheckVkResult(VkResult result)
+	{
+		auto result_str = vk::to_string((vk::Result)result);
+		ASSERT(result == VK_SUCCESS, result_str);
+		return;
+	}
+
 	ImGuiLayer::ImGuiLayer(GLFWwindow *window)
 		: mWindow(window)
 	{
@@ -74,16 +94,60 @@ namespace BHive
 
 		SetColorsDark();
 
-		// Setup Platform/Renderer backends
-		ImGui_ImplGlfw_InitForOpenGL(mWindow, true); // Second param install_callback=true will install GLFW callbacks and
-													 // chain to existing ones.
-		ImGui_ImplOpenGL3_Init();
+
+		auto &context = GraphicsContext::Get();
+		auto &device = context.GetDevice();
+		auto &swap_chain = context.GetSwapChain();
+		auto extent = swap_chain->GetExtent();
+		auto image_count = swap_chain->GetImageCount();
+		auto api = RenderCommand::GetAPI();
+		auto &command_pool = api->GetCommandPool();
+
+		//create descriptor pool
+		vk::DescriptorPoolSize pool_sizes[] = {{vk::DescriptorType::eCombinedImageSampler,IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE}};
+		vk::DescriptorPoolCreateInfo pool_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 0, pool_sizes);
+		for (auto &pool_size : pool_sizes)
+			pool_info.maxSets += pool_size.descriptorCount;
+
+		mDescriptorPool = device.createDescriptorPool(pool_info);
+
+
+		ImGui_ImplGlfw_InitForVulkan(mWindow, true);
+
+		vk::CommandBufferAllocateInfo alloc_info(command_pool,vk::CommandBufferLevel::ePrimary, image_count );
+		mCommandBuffers = device.allocateCommandBuffers(alloc_info);
+
+		auto format = swap_chain->GetFormat().format;
+		vk::PipelineRenderingCreateInfo rendering_info(0, format);
+
+		ImGui_ImplVulkan_InitInfo init_info{};
+		init_info.ApiVersion = VK_API_VERSION_1_4;
+		init_info.Instance = *context.GetInstance();
+		init_info.PhysicalDevice = *context.GetPhysicalDevice();
+		init_info.Device = *device;
+		init_info.Queue = *context.GetQueueFamilies().GraphicsQueue;
+		init_info.QueueFamily = context.GetQueueFamilies().GraphicsQueueIndex;
+		init_info.DescriptorPool = *mDescriptorPool;
+		init_info.MinImageCount = swap_chain->GetMinImageCount();
+		init_info.ImageCount = image_count;
+		init_info.PipelineCache = VK_NULL_HANDLE;
+		init_info.Allocator = VK_NULL_HANDLE;
+		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		init_info.PipelineInfoMain.RenderPass = VK_NULL_HANDLE;
+		init_info.PipelineInfoMain.Subpass = 0;
+		init_info.CheckVkResultFn = CheckVkResult;
+		init_info.UseDynamicRendering = true;
+		init_info.PipelineInfoMain.PipelineRenderingCreateInfo = rendering_info;
+
+		ImGui_ImplVulkan_Init(&init_info);
+
 	}
 
 	void ImGuiLayer::Shutdown()
 	{
-		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
+		
 
 		ImPlot::DestroyContext();
 		ImGui::DestroyContext();
@@ -91,7 +155,7 @@ namespace BHive
 
 	void ImGuiLayer::BeginFrame()
 	{
-		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
@@ -106,8 +170,45 @@ namespace BHive
 		io.DisplaySize = {(float)size.x, (float)size.y};
 
 		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		auto api = RenderCommand::GetAPI();
 
+		auto imgui_command = [=](const FRenderCommand::FCommandData& data) {
+
+			auto &context = GraphicsContext::Get();
+			auto &swap_chain = context.GetSwapChain();
+			auto current_frame = data.Frame;
+			auto image_index = data.ImageIndex;
+			auto &cmd = mCommandBuffers[current_frame];
+			auto &image_view = swap_chain->GetImageView(image_index);
+			auto &image = swap_chain->GetImage(image_index);
+
+			vk::ClearValue clear_color = vk::ClearColorValue({0, 0, 0, 1});
+			vk::RenderingAttachmentInfoKHR color_attachment(
+				image_view, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+				clear_color);
+
+			vk::RenderingInfo render_info({}, {{0, 0}, {(uint32_t)size.x, (uint32_t)size.y}}, 1, 0, color_attachment);
+			cmd.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
+			cmd.beginRendering(render_info);
+
+			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), *cmd);
+
+			cmd.endRendering();
+
+			/*VulkanUtils::TransitionImageLayout(
+				cmd, image, image_index, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eColorAttachmentWrite, {},
+				vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eBottomOfPipe);*/
+
+			cmd.end();
+
+			api->SubmitCommandBuffer(cmd);
+	};
+
+		
+
+		api->SubmitSecondaryCommand(imgui_command);
+
+		
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			GLFWwindow *backup_current_context = glfwGetCurrentContext();

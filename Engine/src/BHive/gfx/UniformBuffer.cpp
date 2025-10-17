@@ -1,22 +1,23 @@
 #include "UniformBuffer.h"
-#include <glad/glad.h>
+#include "VulkanUtils.h"
 
 namespace BHive
 {
-	UniformBuffer::UniformBuffer(uint32_t binding, uint64_t size)
+	UniformBuffer::UniformBuffer(uint32_t binding, uint64_t size, const void *data)
+		: mBinding(binding)
 	{
-		glNamedBufferData(mBufferID, size, nullptr, GL_DYNAMIC_DRAW);
-		glBindBufferBase(GL_UNIFORM_BUFFER, binding, mBufferID);
+		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, mBuffer, mMemory);
+		if (data)
+		{
+			SetData(data, size, 0);
+		}
 	}
 
-	UniformBuffer::UniformBuffer(uint64_t size, const void *data)
+	void UniformBuffer::SetData(const void* data, size_t size, uint32_t offset)
 	{
-		glNamedBufferData(mBufferID, size, data, GL_DYNAMIC_DRAW);
-	}
-
-	void UniformBuffer::BindBufferBase(uint32_t binding) const
-	{
-		glBindBufferBase(GL_UNIFORM_BUFFER, binding, mBufferID);
+		void* buffer_memory = mMemory.mapMemory(offset, size);
+		memcpy(buffer_memory, data, size);
+		mMemory.unmapMemory();
 	}
 
 } // namespace BHive

@@ -1,15 +1,15 @@
 #include "Application.h"
+#include "audio/AudioContext.h"
 #include "FPSCounter.h"
 #include "gfx/RenderCommand.h"
 #include "layers/ImGuiLayer.h"
+#include "physics/PhysicsContext.h"
 #include "renderers/Renderer.h"
+#include "subsystem/SubSystem.h"
 #include "threading/Threading.h"
 #include "Time.h"
-#include "WindowInput.h"
-#include "subsystem/SubSystem.h"
 #include "undoredo/UndoRedo.h"
-#include "physics/PhysicsContext.h"
-#include "audio/AudioContext.h"
+#include "WindowInput.h"
 
 namespace BHive
 {
@@ -39,7 +39,7 @@ namespace BHive
 		if (specification.Flags & EApplicationFlags::EnableRendering)
 		{
 			RenderCommand::Init();
-			Renderer::Init();
+			//Renderer::Init();
 		}
 
 		if (specification.Flags & EApplicationFlags::EnableImGui)

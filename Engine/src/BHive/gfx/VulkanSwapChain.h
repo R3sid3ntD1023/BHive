@@ -2,6 +2,7 @@
 
 #include "Core/Core.h"
 #include "VulkanCore.h"
+#include "VulkanDevice.h"
 
 namespace BHive
 {
@@ -36,11 +37,20 @@ namespace BHive
 
 		vk::Extent2D GetExtent() const { return mExtent; }
 
-		std::pair<vk::Result, uint32_t> AquireNextImage(vk::raii::Semaphore &semaphore);
+		std::pair<vk::Result, uint32_t> AquireNextImage();
 
-		uint32_t GetNumImages() const { return mImages.size(); }
+		vk::Result SubmitCommandBuffers(const std::vector<vk::CommandBuffer>& buffers,  uint32_t imageIndex);
+
+		void ResetCommandBuffer(const vk::raii::CommandBuffer &buffer);
+
+		uint32_t GetCurrentFrame() const { return mCurrentFrame; }
+
+		uint32_t GetMinImageCount() const { return mMinImageCount; }
+
+		uint32_t GetImageCount() const { return mImages.size(); }
 
 	private:
+
 		vk::Extent2D mExtent{};
 
 		vk::SurfaceFormatKHR mImageFormat{};
@@ -51,6 +61,17 @@ namespace BHive
 
 		std::vector<vk::raii::ImageView> mImageViews{};
 
-		
+		std::vector<vk::raii::Semaphore> mPresetCompleteSemaphores{};
+
+		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores{};
+
+		std::vector<vk::raii::Fence> mInFlightFences{};
+
+		uint32_t mCurrentFrame = 0;
+
+		uint32_t mSemaphoreIndex = 0;
+
+		uint32_t mMinImageCount = 0;
+
 	};
 }

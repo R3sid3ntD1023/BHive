@@ -1,34 +1,26 @@
 #include "StorageBuffer.h"
-#include <glad/glad.h>
+#include "VulkanUtils.h"
 
 namespace BHive
 {
 
-	StorageBuffer::StorageBuffer(uint32_t binding, size_t size)
+	StorageBuffer::StorageBuffer(uint32_t binding, size_t size, const void *data)
 	{
-		glNamedBufferStorage(mBufferID, size, nullptr, GL_DYNAMIC_STORAGE_BIT);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, mBufferID);
 	}
 
 	StorageBuffer::StorageBuffer(size_t size)
 	{
-		glNamedBufferStorage(mBufferID, size, nullptr, GL_DYNAMIC_STORAGE_BIT);
+		
 	}
 
-	StorageBuffer::StorageBuffer(const void *data, size_t size)
+	void StorageBuffer::SetData(const void *data, size_t, uint32_t offset)
 	{
-		glNamedBufferStorage(mBufferID, size, data, 0);
 	}
 
-	StorageBuffer::StorageBuffer(uint32_t binding, const void *data, size_t size)
-	{
-		glNamedBufferStorage(mBufferID, size, data, GL_DYNAMIC_STORAGE_BIT);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, mBufferID);
-	}
-
+	
 	void StorageBuffer::BindBufferBase(uint32_t binding) const
 	{
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, mBufferID);
+		
 	}
 
 } // namespace BHive

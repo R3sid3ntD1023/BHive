@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Layer.h"
+#include "gfx/VulkanCore.h"
 
 struct GLFWwindow;
 struct ImGuiContext;
@@ -32,6 +33,11 @@ namespace BHive
 		void Shutdown();
 
 		bool mBlockEvents{false};
+
 		GLFWwindow *mWindow = nullptr;
+
+		vk::raii::DescriptorPool mDescriptorPool = VK_NULL_HANDLE;
+
+		std::vector<vk::raii::CommandBuffer> mCommandBuffers;
 	};
 } // namespace BHive

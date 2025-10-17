@@ -10,6 +10,8 @@ namespace BHive
 	public:
 		static void Init();
 
+		static void Shutdown();
+
 		static void ClearColor(float r, float g, float b, float a = 1.0f);
 
 		static void Clear(int mask = Buffer_Color | Buffer_Depth | Buffer_Stencil);
@@ -44,8 +46,6 @@ namespace BHive
 
 		static void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer);
 
-		static unsigned CheckError(const char *file, int line);
-
 		static void *CreateShader(const uint32_t *data, size_t size);
 
 		static void BeginFrame();
@@ -59,5 +59,3 @@ namespace BHive
 		static inline Scope<RendererAPI> sRendererAPI = CreateScope<RendererAPI>();
 	};
 } // namespace BHive
-
-#define GL_CHECK_ERROR() ::BHive::RenderCommand::CheckError(__FILE__, __LINE__)

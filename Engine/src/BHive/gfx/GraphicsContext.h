@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
+#include "core/EventDelegate.h"
 #include "VulkanCore.h"
 
 struct GLFWwindow;
@@ -8,14 +9,23 @@ struct GLFWwindow;
 namespace BHive
 {
 	class VulkanSwapChain;
-
-	struct QueueFamilyIndices
-	{
-	};
+	class VulkanDevice;
+	class VulkanPipeline;
 
 	class BHIVE_API GraphicsContext
 	{
 	public:
+		struct FQueueFamilies
+		{
+			vk::raii::Queue PresentQueue = VK_NULL_HANDLE;
+			vk::raii::Queue GraphicsQueue = VK_NULL_HANDLE;
+			vk::raii::Queue ComputeQueue = VK_NULL_HANDLE;
+
+			int32_t PresentQueueIndex = -1;
+			int32_t GraphicsQueueIndex = -1;
+			int32_t ComputeQueueIndex = -1;
+		};
+
 		GraphicsContext(GLFWwindow *window);
 
 		virtual ~GraphicsContext();
@@ -24,17 +34,19 @@ namespace BHive
 
 		virtual void SwapBuffers();
 
+		const Ref<VulkanSwapChain>& GetSwapChain() const { return mSwapChain; }
+
 		vk::raii::Instance &GetInstance() { return mVulkanInstance; }
 
 		vk::raii::Device &GetDevice() { return mDevice; }
 
 		vk::raii::PhysicalDevice &GetPhysicalDevice() { return mPhysicalDevice; }
 
-		vk::raii::CommandPool &GetCommandPool() { return mCommandPool; };
+		const FQueueFamilies &GetQueueFamilies() const { return mQueueFamilies; }
 
-		vk::raii::Queue &GetGraphicsQueue() { return mQueue; }
+		uint32_t GetImageIndex() const { return mImageIndex; }
 
-		vk::raii::CommandBuffer &GetCommandBuffer() { return mCommandBuffers[mCurrentFrame]; }
+		static constexpr uint32_t GetInstanceVersion();
 
 		static GraphicsContext &Get()
 		{
@@ -43,46 +55,23 @@ namespace BHive
 		}
 
 	private:
+		
 		void CreateIntance();
 
 		void CreateDebugMessenger();
 
 		void PickPhysicalDevice();
 
-		void CreateSwapChain();
-
-		void CreateGraphicsPipeline();
-
-		void CreateCommandPool();
-
-		void CreateCommandBuffers();
-
-		void RecordCommandBuffer(uint32_t imageIndex);
-
-		void CreateSyncObjects();
-
-		void RecreateSwapChain();
-
 		void CreateLogicalDevice();
 
 		void CreateSurface();
 
-		void CreateVertexBuffer();
+		void CreateSwapChain();
 
-		void CreateIndexBuffer();
+		std::vector<const char *> GetRequiredExtensions();
 
-		void CreateUniformBuffers();
-
-		void CreateDescriptorSetLayout();
-
-		void CreateDescriptorPool();
-
-		void CreateDescriptorSets();
-
-		void CreateTextureImage();
-
-		void UpdateUniformBuffer(uint32_t currentImage);
-
+		void RecreateSwapChain();
+			
 	private:
 		GLFWwindow *mWindowHandle;
 
@@ -96,44 +85,14 @@ namespace BHive
 
 		vk::raii::Device mDevice = nullptr;
 
-		vk::raii::Queue mQueue = nullptr;
-
 		vk::raii::SurfaceKHR mSurface = nullptr;
 
-		uint32_t mQueueIndex = 0;
+		Ref<VulkanSwapChain> mSwapChain;
 
-		vk::raii::CommandPool mCommandPool = nullptr;
-
-		std::vector<vk::raii::CommandBuffer> mCommandBuffers{};
-
-		std::vector<vk::raii::Semaphore> mPresetCompleteSemaphores{};
-
-		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores{};
-
-		std::vector<vk::raii::Fence> mInFlightFences{};
-
-		vk::raii::Pipeline mGraphicsPipeline = nullptr;
-
-		vk::raii::DescriptorSetLayout mDescriptorSetLayout = nullptr;
-
-		vk::raii::PipelineLayout mPipelineLayout = nullptr;
-
-		uint32_t mCurrentFrame = 0;
-
-		std::vector<vk::raii::Buffer> mUniformBuffers{};
-		std::vector<vk::raii::DeviceMemory> mUniformBuffersMemory{};
-		std::vector<void *> mUniformBuffersMapped{};
-
-		vk::raii::DescriptorPool mDescriptorPool = nullptr;
-		std::vector<vk::raii::DescriptorSet> mDescriptorSets{};
-
-		Ref<class Texture2D> mTexture;
-		Ref<class VertexBuffer> mVertexBuffer;
-		Ref<class IndexBuffer> mIndexBuffer;
-		Ref<class VertexArray> mVertexArray;
+		FQueueFamilies mQueueFamilies{};
 
 		static inline GraphicsContext *sInstance = nullptr;
 
-		Ref<VulkanSwapChain> mSwapChain;
+		uint32_t mImageIndex = 0;
 	};
 } // namespace BHive

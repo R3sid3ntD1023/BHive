@@ -1,4 +1,5 @@
 #include "core/EntryPoint.h"
+#include "RuntimeLayer.h"
 
 namespace BHive
 {
@@ -8,6 +9,7 @@ namespace BHive
 		RuntimeApp(const FApplicationSpecification &specs)
 			: Application(specs)
 		{
+			PushLayer(new RuntimeLayer());
 		}
 	};
 
@@ -18,7 +20,7 @@ namespace BHive
 		specs.CenterWindow = true;
 		specs.Title = "BHive Runtime";
 		specs.Size = {800, 600};
-		specs.Flags = 0;
+		specs.Flags = EApplicationFlags::EnableImGui | EApplicationFlags::EnableRendering;
 		return new RuntimeApp(specs);
 	}
 } // namespace BHive

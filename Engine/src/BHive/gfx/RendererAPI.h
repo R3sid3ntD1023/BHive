@@ -29,8 +29,36 @@ namespace BHive
 		uint32_t BaseInstance;
 	};
 
+	struct FRenderCommand
+	{
+		struct FCommandData
+		{
+			vk::raii::CommandBuffer &CommandBuffer;
+
+			uint32_t Frame;
+
+			uint32_t ImageIndex;
+		};
+
+		FRenderCommand(std::function<void(const FCommandData&)> &&cmd)
+			: mCommand(std::move(cmd))
+		{
+
+		}
+
+		void Execute(const FCommandData& data ) { 
+			if (mCommand)
+				mCommand(data);
+		}
+
+	private:
+		std::function<void(const FCommandData&)> mCommand = nullptr;
+	};
+
 	class BHIVE_API RendererAPI
 	{
+		
+
 	public:
 		RendererAPI() = default;
 		virtual ~RendererAPI() ;
@@ -64,16 +92,50 @@ namespace BHive
 		virtual void EnableBlend(bool enabled);
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer);
 
-		virtual unsigned CheckError(const char *file, int line);
-
 		virtual void* CreateShader(const uint32_t *data, size_t size);
 
 		virtual void BeginFrame();
 
 		virtual void EndFrame();
 
+		virtual void BindPipeline(const class VulkanPipeline &pipeline);
+
+		virtual void BindDescriptorSets(const vk::raii::PipelineLayout& layout, const std::vector<vk::raii::DescriptorSet>& sets);
+
+		virtual void SubmitCommand(std::function<void(const FRenderCommand::FCommandData &)> &&command);
+
+		virtual void SubmitSecondaryCommand(std::function<void(const FRenderCommand::FCommandData &)> &&command);
+
+		vk::raii::CommandBuffer &GetCommandBuffer(uint32_t index) { return mCommandBuffers.at(index); }
+
+		vk::raii::CommandBuffer &GetCurrentCommandBuffer();
+
+		vk::raii::CommandPool &GetCommandPool() { return mCommandPool; }
+
+		void SubmitCommandBuffer(const vk::CommandBuffer &cmdBuffer);
+
+		std::queue<vk::CommandBuffer> &GetAdditonalCommandBuffers() { return mAdditionalCommandBuffers; }
+
 	private:
-		vk::ClearColorValue mCurrentClearColor{0, 0, 0, 1};
-		std::vector<vk::ShaderModule> mVulkanShaders{};
+		
+		void CreateCommandPool();
+
+		void CreateCommandBuffers();
+
+	private:
+
+		vk::raii::CommandPool mCommandPool = nullptr;
+
+		std::vector<vk::raii::CommandBuffer> mCommandBuffers;
+
+		vk::ClearColorValue mClearColor{0, 0, 0, 1};
+
+		std::vector<VkShaderModule> mVulkanShaders{};
+
+		std::queue<FRenderCommand> mCommands;
+
+		std::queue<FRenderCommand> mSecondaryCommands;
+
+		std::queue<vk::CommandBuffer> mAdditionalCommandBuffers;
 	};
 } // namespace BHive

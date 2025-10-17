@@ -21,6 +21,7 @@ namespace BHive
 		virtual void BindBuffersBase(uint32_t binding) const;
 
 		virtual Ref<VertexBuffer> GetVertexBuffer(uint32_t index) const;
+		virtual std::vector<Ref<VertexBuffer>> GetVertexBuffers() const { return mVertexBuffers; }
 
 		const vk::VertexInputBindingDescription &GetBindingDescription() const { return mBinding; }
 
