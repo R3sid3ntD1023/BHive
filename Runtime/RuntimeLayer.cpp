@@ -13,6 +13,7 @@
 #include "gfx/VulkanSwapChain.h"
 #include "gui/Gui.h"
 #include "importers/TextureImporter.h"
+#include "core/layers/ImGuiLayer.h"
 
 namespace BHive
 {
@@ -54,11 +55,32 @@ namespace BHive
 		CreateDescriptorSets();
 		CreateGraphicsPipeline();
 
+		auto &context = GraphicsContext::Get();
+		auto &device = context.GetDevice();
+		auto &swap_chain = context.GetSwapChain();
+		auto image_count = swap_chain->GetImageCount();
+		auto &app = Application::Get();
+		auto &imgui_layer = app.GetImGuiLayer();
+
+		std::array bindings = {vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr)};
+		vk::DescriptorSetLayoutCreateInfo layoutInfo({}, bindings);
+		mImguiDescriptorSetLayout = device.createDescriptorSetLayout(layoutInfo);
+
+		std::vector<vk::DescriptorSetLayout> layouts(image_count, *mImguiDescriptorSetLayout);
+		vk::DescriptorSetAllocateInfo alloc_info(imgui_layer.GetDescriptorPool(), layouts);
+		mImguiDescriptorSets = vk::raii::DescriptorSets(device, alloc_info);
+
+		for (uint32_t i = 0; i < image_count; i++)
+		{
+
+			vk::DescriptorImageInfo image_info(mTexture->GetSampler(), mTexture->GetView(), vk::ImageLayout::eShaderReadOnlyOptimal);
+			vk::WriteDescriptorSet descriptor_writes(mImguiDescriptorSets[i], 0, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
+			device.updateDescriptorSets(descriptor_writes, nullptr);
+		}
 	}
 
 	void RuntimeLayer::OnDetach()
 	{
-	
 	}
 
 	void RuntimeLayer::OnUpdate(float)
@@ -80,8 +102,6 @@ namespace BHive
 
 		api->BindDescriptorSets(mPipelineLayout, mDescriptorSets);
 		api->DrawElements(EDrawMode::Triangles, *mVertexArray);
-
-		
 	}
 
 	void RuntimeLayer::OnGuiRender()
@@ -99,6 +119,15 @@ namespace BHive
 		{
 			ImGui::DragFloat("Test", &value);
 		}
+
+		auto &context = GraphicsContext::Get();
+		auto &device = context.GetDevice();
+		auto &swap_chain = context.GetSwapChain();
+		auto image_count = swap_chain->GetImageCount();
+		auto current_frame = swap_chain->GetCurrentFrame();
+
+		ImTextureRef texture = (void *)*mImguiDescriptorSets[current_frame];
+		ImGui::Image(texture, {200, 200}, {0, 1}, {1, 0});
 
 		ImGui::End();
 
@@ -120,7 +149,6 @@ namespace BHive
 	void RuntimeLayer::CreateIndexBuffer()
 	{
 		mIndexBuffer = CreateRef<IndexBuffer>(sIndices.data(), (uint32_t)sIndices.size());
-		
 	}
 
 	void RuntimeLayer::CreateVertexArray()
@@ -147,7 +175,7 @@ namespace BHive
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 		auto &app = Application::Get();
-		auto& window = app.GetWindow();
+		auto &window = app.GetWindow();
 		auto aspect = window.GetAspectRatio();
 
 		UniformBufferObject ubo{};
@@ -162,7 +190,7 @@ namespace BHive
 	void RuntimeLayer::CreateDescriptorSetLayout()
 	{
 		auto &context = GraphicsContext::Get();
-		auto& device = context.GetDevice();
+		auto &device = context.GetDevice();
 
 		std::array bindings = {
 			vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr),
@@ -176,8 +204,7 @@ namespace BHive
 		auto &context = GraphicsContext::Get();
 		auto &device = context.GetDevice();
 
-		std::array poolSize = {
-			vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 2), vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 2)};
+		std::array poolSize = {vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 2), vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 2)};
 
 		vk::DescriptorPoolCreateInfo poolInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 2, poolSize);
 
@@ -237,4 +264,4 @@ namespace BHive
 		mGraphicsPipeline->Init(device, {shader}, config);
 	}
 
-}
+} // namespace BHive

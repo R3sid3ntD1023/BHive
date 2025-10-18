@@ -21,17 +21,17 @@ namespace BHive
 
 		~VulkanSwapChain();
 
-		void Init(vk::raii::Device& device, vk::raii::SurfaceKHR& surface, const VulkanSwapChainCreateInfo& create_info);
-		
+		void Init(vk::raii::Device &device, vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info);
+
 		uint32_t GetWidth() const { return mExtent.width; }
 
 		uint32_t GetHeight() const { return mExtent.height; }
 
-		const vk::SurfaceFormatKHR& GetFormat() const { return mImageFormat; }
+		const vk::SurfaceFormatKHR &GetFormat() const { return mImageFormat; }
 
-		vk::raii::SwapchainKHR& operator*() { return mSwapChain; }
+		vk::raii::SwapchainKHR &operator*() { return mSwapChain; }
 
-		vk::Image& GetImage(uint32_t index);
+		vk::Image &GetImage(uint32_t index);
 
 		vk::raii::ImageView &GetImageView(uint32_t index);
 
@@ -39,7 +39,7 @@ namespace BHive
 
 		std::pair<vk::Result, uint32_t> AquireNextImage();
 
-		vk::Result SubmitCommandBuffers(const std::vector<vk::CommandBuffer>& buffers,  uint32_t imageIndex);
+		vk::Result SubmitCommandBuffers(const std::vector<vk::CommandBuffer> &buffers, uint32_t imageIndex);
 
 		void ResetCommandBuffer(const vk::raii::CommandBuffer &buffer);
 
@@ -50,7 +50,6 @@ namespace BHive
 		uint32_t GetImageCount() const { return mImages.size(); }
 
 	private:
-
 		vk::Extent2D mExtent{};
 
 		vk::SurfaceFormatKHR mImageFormat{};
@@ -72,6 +71,5 @@ namespace BHive
 		uint32_t mSemaphoreIndex = 0;
 
 		uint32_t mMinImageCount = 0;
-
 	};
-}
+} // namespace BHive

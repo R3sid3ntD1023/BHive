@@ -12,7 +12,7 @@ namespace BHive
 		mSwapChain = nullptr;
 	}
 
-	void VulkanSwapChain::Init(vk::raii::Device& device, vk::raii::SurfaceKHR& surface, const VulkanSwapChainCreateInfo &create_info)
+	void VulkanSwapChain::Init(vk::raii::Device &device, vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info)
 	{
 		mExtent = VulkanUtils::ChooseSwapExtent(create_info.Capabilities, create_info.Width, create_info.Height);
 		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(create_info.Formats);
@@ -21,12 +21,11 @@ namespace BHive
 
 		auto present_mode = VulkanUtils::ChooseSwapPresentMode(create_info.PresentModes);
 		vk::SwapchainCreateInfoKHR swap_chain_create_info(
-			{}, *surface, mMinImageCount, mImageFormat.format, mImageFormat.colorSpace, mExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive,
-			{}, create_info.Capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, present_mode, true, nullptr);
+			{}, *surface, mMinImageCount, mImageFormat.format, mImageFormat.colorSpace, mExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, {},
+			create_info.Capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, present_mode, true, nullptr);
 
-		mSwapChain =device.createSwapchainKHR(swap_chain_create_info);
+		mSwapChain = device.createSwapchainKHR(swap_chain_create_info);
 		mImages = mSwapChain.getImages();
-
 
 		ASSERT(mImageViews.empty())
 
@@ -38,7 +37,7 @@ namespace BHive
 			mImageViews.emplace_back(device, view_info);
 		}
 
-		//create sync objects
+		// create sync objects
 		for (size_t i = 0; i < mImages.size(); i++)
 		{
 			mPresetCompleteSemaphores.emplace_back(device, vk::SemaphoreCreateInfo());
@@ -51,7 +50,7 @@ namespace BHive
 		}
 	}
 
-	vk::Image& VulkanSwapChain::GetImage(uint32_t index)
+	vk::Image &VulkanSwapChain::GetImage(uint32_t index)
 	{
 		return mImages[index];
 	}
@@ -61,43 +60,41 @@ namespace BHive
 		return mImageViews[index];
 	}
 
-	std::pair<vk::Result,uint32_t> VulkanSwapChain::AquireNextImage()
+	std::pair<vk::Result, uint32_t> VulkanSwapChain::AquireNextImage()
 	{
 
 		auto device = mSwapChain.getDevice();
 		while (vk::Result::eTimeout == device.waitForFences(*mInFlightFences[mCurrentFrame], VK_TRUE, UINT64_MAX))
 			;
-		
+
 		return mSwapChain.acquireNextImage(UINT64_MAX, *mPresetCompleteSemaphores[mSemaphoreIndex], nullptr);
 	}
 
-	vk::Result VulkanSwapChain::SubmitCommandBuffers(const std::vector<vk::CommandBuffer>& buffers,  uint32_t imageIndex)
+	vk::Result VulkanSwapChain::SubmitCommandBuffers(const std::vector<vk::CommandBuffer> &buffers, uint32_t imageIndex)
 	{
 		auto device = mSwapChain.getDevice();
 
 		vk::PipelineStageFlags waitStages(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 		const vk::SubmitInfo submitInfo(*mPresetCompleteSemaphores[mSemaphoreIndex], waitStages, buffers, *mRenderFinishedSemaphores[imageIndex]);
-	
-		auto& graphics_queue = GraphicsContext::Get().GetQueueFamilies().GraphicsQueue;
+
+		auto &graphics_queue = GraphicsContext::Get().GetQueueFamilies().GraphicsQueue;
 		graphics_queue.submit(submitInfo, *mInFlightFences[mCurrentFrame]);
 
 		const vk::PresentInfoKHR presentInfoKHR(*mRenderFinishedSemaphores[imageIndex], *mSwapChain, imageIndex);
 		const VkPresentInfoKHR info = presentInfoKHR;
 		auto result = vkQueuePresentKHR(*graphics_queue, &info);
-		
+
 		mSemaphoreIndex = (mSemaphoreIndex + 1) % mPresetCompleteSemaphores.size();
 		mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-		
 
 		return (vk::Result)result;
 	}
 
-	void VulkanSwapChain::ResetCommandBuffer(const vk::raii::CommandBuffer& buffer)
+	void VulkanSwapChain::ResetCommandBuffer(const vk::raii::CommandBuffer &buffer)
 	{
 		auto device = mSwapChain.getDevice();
 		device.resetFences(*mInFlightFences[mCurrentFrame]);
 		buffer.reset();
 	}
-
 
 } // namespace BHive

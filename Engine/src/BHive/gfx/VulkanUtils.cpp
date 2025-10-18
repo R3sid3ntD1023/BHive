@@ -14,7 +14,6 @@ namespace BHive
 		return static_cast<uint32_t>(std::distance(queueFamilies.begin(), graphicsQueueFamilyProperty));
 	}
 
-	
 	vk::SurfaceFormatKHR VulkanUtils::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR> &availableFormats)
 	{
 		ASSERT(!availableFormats.empty());
@@ -45,7 +44,7 @@ namespace BHive
 	uint32_t VulkanUtils::ChooseMinImageCount(vk::SurfaceCapabilitiesKHR capabilities)
 	{
 		auto minImageCount = std::max(3u, capabilities.minImageCount);
-		if ((0 <capabilities.maxImageCount ) && (capabilities.maxImageCount < minImageCount))
+		if ((0 < capabilities.maxImageCount) && (capabilities.maxImageCount < minImageCount))
 		{
 			minImageCount = capabilities.maxImageCount;
 		}
@@ -57,7 +56,7 @@ namespace BHive
 	{
 		auto api = RenderCommand::GetAPI();
 		auto &cmdPool = api->GetCommandPool();
-		auto& device = GraphicsContext::Get().GetDevice();
+		auto &device = GraphicsContext::Get().GetDevice();
 
 		vk::CommandBufferAllocateInfo allocInfo(cmdPool, vk::CommandBufferLevel::ePrimary, 1);
 		vk::raii::CommandBuffer commandBuffer = std::move(device.allocateCommandBuffers(allocInfo).front());
@@ -71,14 +70,14 @@ namespace BHive
 
 		vk::SubmitInfo submitInfo({}, {}, *commandBuffer);
 
-		auto& graphics_queue = GraphicsContext::Get().GetQueueFamilies().GraphicsQueue;
+		auto &graphics_queue = GraphicsContext::Get().GetQueueFamilies().GraphicsQueue;
 		graphics_queue.submit(submitInfo, nullptr);
 		graphics_queue.waitIdle();
 	}
 
 	void VulkanUtils::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer, vk::raii::DeviceMemory &bufferMemory)
 	{
-		auto& device = GraphicsContext::Get().GetDevice();
+		auto &device = GraphicsContext::Get().GetDevice();
 		vk::BufferCreateInfo bufferCreateInfo({}, size, usage, vk::SharingMode::eExclusive);
 		buffer = device.createBuffer(bufferCreateInfo);
 
@@ -91,7 +90,7 @@ namespace BHive
 	void VulkanUtils::CreateImage2D(
 		uint32_t w, uint32_t h, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image &image, vk::raii::DeviceMemory &imageMemory)
 	{
-		auto& device = GraphicsContext::Get().GetDevice();
+		auto &device = GraphicsContext::Get().GetDevice();
 		vk::ImageCreateInfo imageInfo(
 			{}, vk::ImageType::e2D, format, {w, h, 1}, 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
 			vk::SharingMode::eExclusive, 0);
@@ -105,14 +104,14 @@ namespace BHive
 
 	vk::raii::ImageView VulkanUtils::CreateImageView2D(vk::raii::Image &image, vk::Format format)
 	{
-		auto& device = GraphicsContext::Get().GetDevice();
+		auto &device = GraphicsContext::Get().GetDevice();
 		vk::ImageViewCreateInfo image_view_create_info({}, image, vk::ImageViewType::e2D, format, {}, {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
 		return device.createImageView(image_view_create_info);
 	}
 
 	vk::raii::Sampler VulkanUtils::CreateImageSampler(const vk::SamplerCreateInfo &info)
 	{
-		auto& device = GraphicsContext::Get().GetDevice();
+		auto &device = GraphicsContext::Get().GetDevice();
 		return device.createSampler(info);
 	}
 
@@ -156,7 +155,7 @@ namespace BHive
 	}
 
 	void VulkanUtils::TransitionImageLayout(
-		vk::raii::CommandBuffer &cmd, vk::Image& image, uint32_t imageIndex, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
+		vk::raii::CommandBuffer &cmd, vk::Image &image, uint32_t imageIndex, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask)
 	{
 		vk::ImageMemoryBarrier2 barrier{};
@@ -180,7 +179,7 @@ namespace BHive
 
 	uint32_t VulkanUtils::FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties)
 	{
-		auto &physical_device = GraphicsContext::Get().GetPhysicalDevice();
+		auto &physical_device = VulkanCore::GetPhysicalDevice();
 		auto memoryProperties = physical_device.getMemoryProperties();
 		for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
 		{
@@ -210,7 +209,7 @@ namespace BHive
 
 	vk::ShaderModule VulkanUtils::CreateShaderModule(const vk::ShaderModuleCreateInfo &info)
 	{
-		auto& device = GraphicsContext::Get().GetDevice();
+		auto &device = GraphicsContext::Get().GetDevice();
 		VkShaderModule module = nullptr;
 		VkShaderModuleCreateInfo create_info = info;
 		ASSERT(vkCreateShaderModule(*device, &create_info, nullptr, &module) == VK_SUCCESS, "Failed to create shader module!");

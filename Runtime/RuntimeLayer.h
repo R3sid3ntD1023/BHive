@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "core/Core.h"
 #include "core/Layer.h"
 #include "gfx/VulkanCore.h"
@@ -17,7 +16,6 @@ namespace BHive
 	class RuntimeLayer : public Layer
 	{
 	public:
-
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnUpdate(float) override;
@@ -65,5 +63,8 @@ namespace BHive
 
 		std::vector<vk::raii::DescriptorSet> mDescriptorSets;
 
+		vk::raii::DescriptorSets mImguiDescriptorSets = nullptr;
+
+		vk::raii::DescriptorSetLayout mImguiDescriptorSetLayout = nullptr;
 	};
-}
+} // namespace BHive

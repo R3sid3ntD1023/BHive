@@ -36,9 +36,11 @@ namespace BHive
 
 		const Buffer &GetBuffer() const { return mBuffer; }
 
-		vk::raii::ImageView& GetView()  { return mTextureImageView; }
+		vk::raii::Image &GetImage() { return mTextureImage; }
 
-		vk::raii::Sampler& GetSampler() { return mTextureSampler; }
+		vk::raii::ImageView &GetView() { return mTextureImageView; }
+
+		vk::raii::Sampler &GetSampler() { return mTextureSampler; }
 
 		/*Begin Asset*/
 		void Save(cereal::BinaryOutputArchive &ar) const override;

@@ -7,14 +7,11 @@
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 
-
 namespace BHive
 {
-	
 
 	RendererAPI::~RendererAPI()
 	{
-		
 	}
 
 	void RendererAPI::BeginFrame()
@@ -29,13 +26,13 @@ namespace BHive
 		auto &image_view = swap_chain->GetImageView(image_index);
 		auto extent = swap_chain->GetExtent();
 
-		auto &command_buffer = mCommandBuffers[current_frame];
+		auto &command_buffer = mCommandBuffers[0][current_frame];
 
 		command_buffer.begin({});
 
 		VulkanUtils::TransitionImageLayout(
-			command_buffer, image, image_index, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eTopOfPipe,
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput);
+			command_buffer, image, image_index, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
+			vk::PipelineStageFlagBits2::eTopOfPipe, vk::PipelineStageFlagBits2::eColorAttachmentOutput);
 
 		vk::ClearValue clearColor = mClearColor;
 		vk::RenderingAttachmentInfo attachmentInfo;
@@ -61,7 +58,7 @@ namespace BHive
 		auto current_frame = swap_chain->GetCurrentFrame();
 		auto image_index = context.GetImageIndex();
 
-		auto &command_buffer = mCommandBuffers[current_frame];
+		auto &command_buffer = mCommandBuffers[0][current_frame];
 		auto &image = swap_chain->GetImage(image_index);
 		auto &image_view = swap_chain->GetImageView(image_index);
 
@@ -69,7 +66,7 @@ namespace BHive
 
 		while (!mCommands.empty())
 		{
-			auto& cmd = mCommands.front();
+			auto &cmd = mCommands.front();
 			cmd.Execute(command_data);
 			mCommands.pop();
 		}
@@ -92,11 +89,7 @@ namespace BHive
 
 	void RendererAPI::BindPipeline(const VulkanPipeline &pipeline)
 	{
-		mCommands.emplace(
-			[&](const FRenderCommand::FCommandData& data)
-			{
-				data.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
-			});
+		mCommands.emplace([&](const FRenderCommand::FCommandData &data) { data.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline); });
 	}
 
 	void RendererAPI::BindDescriptorSets(const vk::raii::PipelineLayout &layout, const std::vector<vk::raii::DescriptorSet> &sets)
@@ -120,7 +113,7 @@ namespace BHive
 	}
 
 	void RendererAPI::Init()
-	{		
+	{
 		CreateCommandPool();
 		CreateCommandBuffers();
 	}
@@ -139,12 +132,16 @@ namespace BHive
 		auto &context = GraphicsContext::Get();
 		auto &swap_chain = context.GetSwapChain();
 		auto current_frame = swap_chain->GetCurrentFrame();
-		return mCommandBuffers.at(current_frame);
+		return mCommandBuffers[0].at(current_frame);
 	}
 
-	void RendererAPI::SubmitCommandBuffer(const vk::CommandBuffer &cmdBuffer)
+	vk::raii::CommandBuffers *RendererAPI::AllocateCommandBuffers(uint32_t count)
 	{
-		mAdditionalCommandBuffers.emplace(cmdBuffer);
+		auto &context = GraphicsContext::Get();
+		auto &device = context.GetDevice();
+
+		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, count);
+		return &mCommandBuffers.emplace_back(device, alloc_info);
 	}
 
 	void RendererAPI::CreateCommandPool()
@@ -162,16 +159,8 @@ namespace BHive
 
 	void RendererAPI::CreateCommandBuffers()
 	{
-		auto &context = GraphicsContext::Get();
-		auto &device = context.GetDevice();
-
-		vk::CommandBufferAllocateInfo alloc_info;
-		alloc_info.commandPool = *mCommandPool;
-		alloc_info.level = vk::CommandBufferLevel::ePrimary;
-		alloc_info.commandBufferCount = 2;
-		mCommandBuffers = vk::raii::CommandBuffers(device, alloc_info);
+		AllocateCommandBuffers(2);
 	}
-
 
 	void RendererAPI::ClearColor(float r, float g, float b, float a)
 	{
@@ -180,14 +169,10 @@ namespace BHive
 
 	void RendererAPI::Clear(int mask)
 	{
-
-		
 	}
 
 	void RendererAPI::SetLineWidth(float width)
 	{
-
-		
 	}
 
 	void RendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
@@ -196,9 +181,8 @@ namespace BHive
 			[=](const FRenderCommand::FCommandData &data)
 			{
 				data.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)y, (float)w, (float)h, 0.0f, 1.0f));
-				data.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y }, {w, h}));
+				data.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, {w, h}));
 			});
-		
 	}
 
 	void RendererAPI::DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count)
@@ -239,10 +223,10 @@ namespace BHive
 
 		auto _count = count ? count : index_buffer->GetCount();
 
-	/*	if (instance_count > 0)
-			glDrawElementsInstancedBaseVertexBaseInstance(mode, _count, GL_UNSIGNED_INT, nullptr, (GLsizei)instance_count, (GLint)start, 1);
-		else
-			glDrawElementsBaseVertex(mode, _count, GL_UNSIGNED_INT, nullptr, start);*/
+		/*	if (instance_count > 0)
+				glDrawElementsInstancedBaseVertexBaseInstance(mode, _count, GL_UNSIGNED_INT, nullptr, (GLsizei)instance_count, (GLint)start, 1);
+			else
+				glDrawElementsBaseVertex(mode, _count, GL_UNSIGNED_INT, nullptr, start);*/
 	}
 
 	void RendererAPI::DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
@@ -251,7 +235,7 @@ namespace BHive
 		auto index_buffer = vao.GetIndexBuffer();
 
 		auto _count = count ? count : index_buffer->GetCount();
-		//glDrawRangeElements(mode, start, end, _count, GL_UNSIGNED_INT, nullptr);
+		// glDrawRangeElements(mode, start, end, _count, GL_UNSIGNED_INT, nullptr);
 	}
 
 	void RendererAPI::DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count)
@@ -260,7 +244,7 @@ namespace BHive
 		auto index_buffer = vao.GetIndexBuffer();
 
 		auto _count = count ? count : index_buffer->GetCount();
-		//glDrawElementsInstanced(mode, _count, GL_UNSIGNED_INT, nullptr, instances);
+		// glDrawElementsInstanced(mode, _count, GL_UNSIGNED_INT, nullptr, instances);
 	}
 
 	void RendererAPI::MultiDrawElementsIndirect(EDrawMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride)
@@ -279,60 +263,60 @@ namespace BHive
 	void RendererAPI::EnableDepth()
 	{
 
-		//glEnable(GL_DEPTH_TEST);
+		// glEnable(GL_DEPTH_TEST);
 	}
 
 	void RendererAPI::DisableDepth()
 	{
 
-		//glDisable(GL_DEPTH_TEST);
+		// glDisable(GL_DEPTH_TEST);
 	}
 
 	void RendererAPI::DepthFunc(uint32_t func)
 	{
 
-		//glDepthFunc(func);
+		// glDepthFunc(func);
 	}
 
 	void RendererAPI::CullFront()
 	{
 
-		//glCullFace(GL_FRONT);
+		// glCullFace(GL_FRONT);
 	}
 
 	void RendererAPI::CullBack()
 	{
 
-		//glCullFace(GL_BACK);
+		// glCullFace(GL_BACK);
 	}
 
 	void RendererAPI::SetCullEnabled(bool enabled)
 	{
 
-		//enabled ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+		// enabled ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
 	}
 
 	void RendererAPI::ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 	{
-		//glColorMask(r, g, b, a);
+		// glColorMask(r, g, b, a);
 	}
 
 	void RendererAPI::EnableDepthMask(bool mask)
 	{
 
-		//glDepthMask(mask ? GL_TRUE : GL_FALSE);
+		// glDepthMask(mask ? GL_TRUE : GL_FALSE);
 	}
 
 	void RendererAPI::EnableBlend(bool enabled)
 	{
 
-		//enabled ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
+		// enabled ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
 	}
 
 	void RendererAPI::AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer)
 	{
 
-		//glFramebufferTexture(GL_FRAMEBUFFER, attachment, texture, framebuffer);
+		// glFramebufferTexture(GL_FRAMEBUFFER, attachment, texture, framebuffer);
 	}
 
 	void *RendererAPI::CreateShader(const uint32_t *data, size_t size)
@@ -342,6 +326,5 @@ namespace BHive
 		mVulkanShaders.push_back(shader_module);
 		return &mVulkanShaders.back();
 	}
-
 
 } // namespace BHive

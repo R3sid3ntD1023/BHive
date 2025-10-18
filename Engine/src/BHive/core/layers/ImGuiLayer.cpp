@@ -7,15 +7,15 @@
 #include "ImGuiLayer.h"
 #include <backends/imgui_impl_glfw.cpp>
 #include <backends/imgui_impl_glfw.h>
-//#include <backends/imgui_impl_opengl3.cpp>
-//#include <backends/imgui_impl_opengl3.h>
+// #include <backends/imgui_impl_opengl3.cpp>
+// #include <backends/imgui_impl_opengl3.h>
 
 #define GLFW_INCLUDE_VULKAN
 #include <glfw/glfw3.h>
 
-//#define IMGUI_IMPL_VULKAN_USE_VOLK
-//#define VOLK_IMPLEMENTATION
-//#include <vol>
+// #define IMGUI_IMPL_VULKAN_USE_VOLK
+// #define VOLK_IMPLEMENTATION
+// #include <vol>
 
 #include "gfx/VulkanUtils.h"
 #include <backends/imgui_impl_vulkan.cpp>
@@ -94,7 +94,6 @@ namespace BHive
 
 		SetColorsDark();
 
-
 		auto &context = GraphicsContext::Get();
 		auto &device = context.GetDevice();
 		auto &swap_chain = context.GetSwapChain();
@@ -103,27 +102,25 @@ namespace BHive
 		auto api = RenderCommand::GetAPI();
 		auto &command_pool = api->GetCommandPool();
 
-		//create descriptor pool
-		vk::DescriptorPoolSize pool_sizes[] = {{vk::DescriptorType::eCombinedImageSampler,IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE}};
+		// create descriptor pool
+		vk::DescriptorPoolSize pool_sizes[] = {{vk::DescriptorType::eCombinedImageSampler, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE}};
 		vk::DescriptorPoolCreateInfo pool_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 0, pool_sizes);
 		for (auto &pool_size : pool_sizes)
 			pool_info.maxSets += pool_size.descriptorCount;
 
 		mDescriptorPool = device.createDescriptorPool(pool_info);
 
-
 		ImGui_ImplGlfw_InitForVulkan(mWindow, true);
 
-		vk::CommandBufferAllocateInfo alloc_info(command_pool,vk::CommandBufferLevel::ePrimary, image_count );
-		mCommandBuffers = device.allocateCommandBuffers(alloc_info);
+		mCommandBuffers = api->AllocateCommandBuffers(image_count);
 
 		auto format = swap_chain->GetFormat().format;
 		vk::PipelineRenderingCreateInfo rendering_info(0, format);
 
 		ImGui_ImplVulkan_InitInfo init_info{};
 		init_info.ApiVersion = VK_API_VERSION_1_4;
-		init_info.Instance = *context.GetInstance();
-		init_info.PhysicalDevice = *context.GetPhysicalDevice();
+		init_info.Instance = *VulkanCore::GetInstance();
+		init_info.PhysicalDevice = *VulkanCore::GetPhysicalDevice();
 		init_info.Device = *device;
 		init_info.Queue = *context.GetQueueFamilies().GraphicsQueue;
 		init_info.QueueFamily = context.GetQueueFamilies().GraphicsQueueIndex;
@@ -140,14 +137,12 @@ namespace BHive
 		init_info.PipelineInfoMain.PipelineRenderingCreateInfo = rendering_info;
 
 		ImGui_ImplVulkan_Init(&init_info);
-
 	}
 
 	void ImGuiLayer::Shutdown()
 	{
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
-		
 
 		ImPlot::DestroyContext();
 		ImGui::DestroyContext();
@@ -172,13 +167,13 @@ namespace BHive
 		ImGui::Render();
 		auto api = RenderCommand::GetAPI();
 
-		auto imgui_command = [=](const FRenderCommand::FCommandData& data) {
-
+		auto imgui_command = [=](const FRenderCommand::FCommandData &data)
+		{
 			auto &context = GraphicsContext::Get();
 			auto &swap_chain = context.GetSwapChain();
 			auto current_frame = data.Frame;
 			auto image_index = data.ImageIndex;
-			auto &cmd = mCommandBuffers[current_frame];
+			auto &cmd = mCommandBuffers->at(current_frame);
 			auto &image_view = swap_chain->GetImageView(image_index);
 			auto &image = swap_chain->GetImage(image_index);
 
@@ -200,15 +195,10 @@ namespace BHive
 				vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eBottomOfPipe);*/
 
 			cmd.end();
-
-			api->SubmitCommandBuffer(cmd);
-	};
-
-		
+		};
 
 		api->SubmitSecondaryCommand(imgui_command);
 
-		
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			GLFWwindow *backup_current_context = glfwGetCurrentContext();

@@ -40,28 +40,27 @@ namespace BHive
 			uint32_t ImageIndex;
 		};
 
-		FRenderCommand(std::function<void(const FCommandData&)> &&cmd)
+		FRenderCommand(std::function<void(const FCommandData &)> &&cmd)
 			: mCommand(std::move(cmd))
 		{
-
 		}
 
-		void Execute(const FCommandData& data ) { 
+		void Execute(const FCommandData &data)
+		{
 			if (mCommand)
 				mCommand(data);
 		}
 
 	private:
-		std::function<void(const FCommandData&)> mCommand = nullptr;
+		std::function<void(const FCommandData &)> mCommand = nullptr;
 	};
 
 	class BHIVE_API RendererAPI
 	{
-		
 
 	public:
 		RendererAPI() = default;
-		virtual ~RendererAPI() ;
+		virtual ~RendererAPI();
 
 		virtual void Init();
 		virtual void Shutdown();
@@ -92,7 +91,7 @@ namespace BHive
 		virtual void EnableBlend(bool enabled);
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer);
 
-		virtual void* CreateShader(const uint32_t *data, size_t size);
+		virtual void *CreateShader(const uint32_t *data, size_t size);
 
 		virtual void BeginFrame();
 
@@ -100,33 +99,29 @@ namespace BHive
 
 		virtual void BindPipeline(const class VulkanPipeline &pipeline);
 
-		virtual void BindDescriptorSets(const vk::raii::PipelineLayout& layout, const std::vector<vk::raii::DescriptorSet>& sets);
+		virtual void BindDescriptorSets(const vk::raii::PipelineLayout &layout, const std::vector<vk::raii::DescriptorSet> &sets);
 
 		virtual void SubmitCommand(std::function<void(const FRenderCommand::FCommandData &)> &&command);
 
 		virtual void SubmitSecondaryCommand(std::function<void(const FRenderCommand::FCommandData &)> &&command);
 
-		vk::raii::CommandBuffer &GetCommandBuffer(uint32_t index) { return mCommandBuffers.at(index); }
+		vk::raii::CommandBuffer &GetCommandBuffer(uint32_t index) { return mCommandBuffers[0].at(index); }
 
 		vk::raii::CommandBuffer &GetCurrentCommandBuffer();
 
 		vk::raii::CommandPool &GetCommandPool() { return mCommandPool; }
 
-		void SubmitCommandBuffer(const vk::CommandBuffer &cmdBuffer);
+		vk::raii::CommandBuffers *AllocateCommandBuffers(uint32_t count);
 
-		std::queue<vk::CommandBuffer> &GetAdditonalCommandBuffers() { return mAdditionalCommandBuffers; }
+		const std::vector<vk::raii::CommandBuffers> &GetCommandBuffers() const { return mCommandBuffers; }
 
 	private:
-		
 		void CreateCommandPool();
 
 		void CreateCommandBuffers();
 
 	private:
-
 		vk::raii::CommandPool mCommandPool = nullptr;
-
-		std::vector<vk::raii::CommandBuffer> mCommandBuffers;
 
 		vk::ClearColorValue mClearColor{0, 0, 0, 1};
 
@@ -136,6 +131,6 @@ namespace BHive
 
 		std::queue<FRenderCommand> mSecondaryCommands;
 
-		std::queue<vk::CommandBuffer> mAdditionalCommandBuffers;
+		std::vector<vk::raii::CommandBuffers> mCommandBuffers;
 	};
 } // namespace BHive

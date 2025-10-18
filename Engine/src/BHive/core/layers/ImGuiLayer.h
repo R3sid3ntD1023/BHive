@@ -26,7 +26,10 @@ namespace BHive
 		void BlockEvents(bool block);
 
 		void *GetContext() const;
+
 		void GetAllocatorCallbacks(void *alloc_func, void *free_func, void **user_data) const;
+
+		const vk::raii::DescriptorPool &GetDescriptorPool() const { return mDescriptorPool; }
 
 	private:
 		void Init();
@@ -38,6 +41,6 @@ namespace BHive
 
 		vk::raii::DescriptorPool mDescriptorPool = VK_NULL_HANDLE;
 
-		std::vector<vk::raii::CommandBuffer> mCommandBuffers;
+		vk::raii::CommandBuffers *mCommandBuffers = nullptr;
 	};
 } // namespace BHive
