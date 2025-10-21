@@ -29,30 +29,34 @@ namespace BHive
 		uint32_t BaseInstance;
 	};
 
+	struct FVulkanFrameData
+	{
+		vk::raii::CommandBuffer &CommandBuffer;
+
+		vk::Image Image;
+
+		vk::ImageView ImageView;
+
+		uint32_t Frame;
+	};
+
+
 	struct FRenderCommand
 	{
-		struct FCommandData
-		{
-			vk::raii::CommandBuffer &CommandBuffer;
-
-			uint32_t Frame;
-
-			uint32_t ImageIndex;
-		};
-
-		FRenderCommand(std::function<void(const FCommandData &)> &&cmd)
+		
+		FRenderCommand(std::function<void(const FVulkanFrameData &)> &&cmd)
 			: mCommand(std::move(cmd))
 		{
 		}
 
-		void Execute(const FCommandData &data)
+		void Execute(const FVulkanFrameData &data)
 		{
 			if (mCommand)
 				mCommand(data);
 		}
 
 	private:
-		std::function<void(const FCommandData &)> mCommand = nullptr;
+		std::function<void(const FVulkanFrameData &)> mCommand = nullptr;
 	};
 
 	class BHIVE_API RendererAPI
@@ -101,9 +105,9 @@ namespace BHive
 
 		virtual void BindDescriptorSets(const vk::raii::PipelineLayout &layout, const std::vector<vk::raii::DescriptorSet> &sets);
 
-		virtual void SubmitCommand(std::function<void(const FRenderCommand::FCommandData &)> &&command);
+		virtual void SubmitCommand(std::function<void(const FVulkanFrameData &)> &&command);
 
-		virtual void SubmitSecondaryCommand(std::function<void(const FRenderCommand::FCommandData &)> &&command);
+		virtual void SubmitSecondaryCommand(std::function<void(const FVulkanFrameData &)> &&command);
 
 		vk::raii::CommandBuffer &GetCommandBuffer(uint32_t index) { return mCommandBuffers[0].at(index); }
 
@@ -132,5 +136,6 @@ namespace BHive
 		std::queue<FRenderCommand> mSecondaryCommands;
 
 		std::vector<vk::raii::CommandBuffers> mCommandBuffers;
+
 	};
 } // namespace BHive

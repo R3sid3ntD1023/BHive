@@ -71,5 +71,11 @@ namespace BHive
 		uint32_t mSemaphoreIndex = 0;
 
 		uint32_t mMinImageCount = 0;
+
+		vk::raii::Image mDepthImage = nullptr;
+
+		vk::raii::ImageView mDepthImageView = nullptr;
+
+		vk::raii::DeviceMemory mDepthImageMemory = nullptr;
 	};
 } // namespace BHive

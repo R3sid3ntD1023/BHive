@@ -65,7 +65,13 @@ namespace BHive
 		config.Rasterazation.depthBiasSlopeFactor = 1.0f;
 		config.Rasterazation.lineWidth = 1.0f;
 
-		config.ColorBlendAttachment.blendEnable = VK_FALSE;
+		config.ColorBlendAttachment.blendEnable = vk::True;
+		config.ColorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
+		config.ColorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
+		config.ColorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd;
+		config.ColorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOne;
+		config.ColorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero;
+		config.ColorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd;
 		config.ColorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
 
 		

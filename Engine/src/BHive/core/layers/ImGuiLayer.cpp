@@ -115,10 +115,11 @@ namespace BHive
 		mCommandBuffers = api->AllocateCommandBuffers(image_count);
 
 		auto format = swap_chain->GetFormat().format;
-		vk::PipelineRenderingCreateInfo rendering_info(0, format);
+		auto depth_format = swap_chain->GetDepthFormat().format;
+		vk::PipelineRenderingCreateInfo rendering_info(0, format, depth_format,vk::Format::eUndefined);
 
 		ImGui_ImplVulkan_InitInfo init_info{};
-		init_info.ApiVersion = VK_API_VERSION_1_4;
+		init_info.ApiVersion = VulkanCore::GetInstanceVersion();
 		init_info.Instance = *VulkanCore::GetInstance();
 		init_info.PhysicalDevice = *VulkanCore::GetPhysicalDevice();
 		init_info.Device = *device;
@@ -131,10 +132,14 @@ namespace BHive
 		init_info.Allocator = VK_NULL_HANDLE;
 		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		init_info.PipelineInfoMain.RenderPass = VK_NULL_HANDLE;
+		init_info.PipelineInfoMain.PipelineRenderingCreateInfo = rendering_info;
+
+		init_info.PipelineInfoForViewports.PipelineRenderingCreateInfo = rendering_info;
+		init_info.PipelineInfoForViewports.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		init_info.PipelineInfoMain.Subpass = 0;
 		init_info.CheckVkResultFn = CheckVkResult;
 		init_info.UseDynamicRendering = true;
-		init_info.PipelineInfoMain.PipelineRenderingCreateInfo = rendering_info;
+		
 
 		ImGui_ImplVulkan_Init(&init_info);
 	}
@@ -167,23 +172,21 @@ namespace BHive
 		ImGui::Render();
 		auto api = RenderCommand::GetAPI();
 
-		auto imgui_command = [=](const FRenderCommand::FCommandData &data)
+		auto imgui_command = [=](const FVulkanFrameData &data)
 		{
 			auto &context = GraphicsContext::Get();
-			auto &swap_chain = context.GetSwapChain();
 			auto current_frame = data.Frame;
-			auto image_index = data.ImageIndex;
 			auto &cmd = mCommandBuffers->at(current_frame);
-			auto &image_view = swap_chain->GetImageView(image_index);
-			auto &image = swap_chain->GetImage(image_index);
 
 			vk::ClearValue clear_color = vk::ClearColorValue({0, 0, 0, 1});
 			vk::RenderingAttachmentInfoKHR color_attachment(
-				image_view, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+				data.ImageView, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eLoad, vk::AttachmentStoreOp::eStore,
 				clear_color);
 
 			vk::RenderingInfo render_info({}, {{0, 0}, {(uint32_t)size.x, (uint32_t)size.y}}, 1, 0, color_attachment);
-			cmd.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
+
+			cmd.reset();
+			cmd.begin({});
 			cmd.beginRendering(render_info);
 
 			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), *cmd);

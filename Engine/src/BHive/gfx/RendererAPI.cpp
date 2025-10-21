@@ -28,27 +28,19 @@ namespace BHive
 
 		auto &command_buffer = mCommandBuffers[0][current_frame];
 
-		command_buffer.begin({});
+		vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
+		command_buffer.begin(begin_info);
 
 		VulkanUtils::TransitionImageLayout(
 			command_buffer, image, image_index, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
 			vk::PipelineStageFlagBits2::eTopOfPipe, vk::PipelineStageFlagBits2::eColorAttachmentOutput);
 
+
 		vk::ClearValue clearColor = mClearColor;
-		vk::RenderingAttachmentInfo attachmentInfo;
-		attachmentInfo.imageView = image_view;
-		attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal;
-		attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear;
-		attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore;
-		attachmentInfo.clearValue = clearColor;
-
-		vk::RenderingInfo renderingInfo;
-		renderingInfo.renderArea = vk::Rect2D({0, 0}, extent);
-		renderingInfo.layerCount = 1;
-		renderingInfo.colorAttachmentCount = 1;
-		renderingInfo.pColorAttachments = &attachmentInfo;
-
+		vk::RenderingAttachmentInfo attachmentInfo(image_view, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearColor);
+		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo);
 		command_buffer.beginRendering(renderingInfo);
+
 	}
 
 	void RendererAPI::EndFrame()
@@ -62,7 +54,7 @@ namespace BHive
 		auto &image = swap_chain->GetImage(image_index);
 		auto &image_view = swap_chain->GetImageView(image_index);
 
-		FRenderCommand::FCommandData command_data{command_buffer, current_frame, image_index};
+		FVulkanFrameData command_data{command_buffer, image, image_view, current_frame};
 
 		while (!mCommands.empty())
 		{
@@ -71,6 +63,7 @@ namespace BHive
 			mCommands.pop();
 		}
 
+		
 		command_buffer.endRendering();
 
 		VulkanUtils::TransitionImageLayout(
@@ -89,25 +82,25 @@ namespace BHive
 
 	void RendererAPI::BindPipeline(const VulkanPipeline &pipeline)
 	{
-		mCommands.emplace([&](const FRenderCommand::FCommandData &data) { data.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline); });
+		mCommands.emplace([&](const FVulkanFrameData &data) { data.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline); });
 	}
 
 	void RendererAPI::BindDescriptorSets(const vk::raii::PipelineLayout &layout, const std::vector<vk::raii::DescriptorSet> &sets)
 	{
 		mCommands.emplace(
-			[&](const FRenderCommand::FCommandData &data)
+			[&](const FVulkanFrameData &data)
 			{
 				auto &cmd = GetCurrentCommandBuffer();
 				data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 0, *sets[data.Frame], nullptr);
 			});
 	}
 
-	void RendererAPI::SubmitCommand(std::function<void(const FRenderCommand::FCommandData &)> &&command)
+	void RendererAPI::SubmitCommand(std::function<void(const FVulkanFrameData &)> &&command)
 	{
 		mCommands.push(FRenderCommand(std::move(command)));
 	}
 
-	void RendererAPI::SubmitSecondaryCommand(std::function<void(const FRenderCommand::FCommandData &)> &&command)
+	void RendererAPI::SubmitSecondaryCommand(std::function<void(const FVulkanFrameData &)> &&command)
 	{
 		mSecondaryCommands.push(FRenderCommand(std::move(command)));
 	}
@@ -178,7 +171,7 @@ namespace BHive
 	void RendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 	{
 		mCommands.emplace(
-			[=](const FRenderCommand::FCommandData &data)
+			[=](const FVulkanFrameData &data)
 			{
 				data.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)y, (float)w, (float)h, 0.0f, 1.0f));
 				data.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, {w, h}));
@@ -193,7 +186,7 @@ namespace BHive
 	void RendererAPI::DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count)
 	{
 		mCommands.emplace(
-			[=](const FRenderCommand::FCommandData &data)
+			[=](const FVulkanFrameData &data)
 			{
 				std::vector<vk::Buffer> vk_vertex_buffers;
 

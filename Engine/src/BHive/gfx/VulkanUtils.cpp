@@ -28,6 +28,14 @@ namespace BHive
 		return std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eMailbox; }) ? vk::PresentModeKHR::eMailbox : vk::PresentModeKHR::eFifo;
 	}
 
+	vk::Format VulkanUtils::FindSupportedFormat(vk::PhysicalDevice device, const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlagBits features)
+	{
+		for (auto &format : candidates)
+		{
+			vk::FormatProperties props = device.getFormatProperties(format);
+		}
+	}
+
 	vk::Extent2D VulkanUtils::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities, uint32_t w, uint32_t h)
 	{
 		if (capabilities.currentExtent.width != 0xFFFFFFF)

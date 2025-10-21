@@ -1,13 +1,13 @@
 #pragma once
 
 #include "core/Core.h"
+#include <vulkan/vk_platform.h>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
-#include <vulkan/vk_platform.h>
 
 namespace BHive
 {
-	class VulkanCore
+	class BHIVE_API VulkanCore
 	{
 	public:
 		static void Init();

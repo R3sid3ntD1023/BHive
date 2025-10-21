@@ -1,6 +1,7 @@
 #include "RuntimeLayer.h"
 
 #include "core/Application.h"
+#include "core/layers/ImGuiLayer.h"
 #include "gfx/Buffers.h"
 #include "gfx/GraphicsContext.h"
 #include "gfx/RenderCommand.h"
@@ -13,7 +14,6 @@
 #include "gfx/VulkanSwapChain.h"
 #include "gui/Gui.h"
 #include "importers/TextureImporter.h"
-#include "core/layers/ImGuiLayer.h"
 
 namespace BHive
 {
@@ -96,7 +96,7 @@ namespace BHive
 		auto *api = RenderCommand::GetAPI();
 		api->BindPipeline(*mGraphicsPipeline);
 
-		RenderCommand::ClearColor(0.f, 0.f, 0.f);
+		RenderCommand::ClearColor(0.01f, 0.01f, 0.01f, 1.f);
 		RenderCommand::SetViewport(0, 0, extents.width, extents.height);
 		UpdateUniformBuffer(current_frame);
 
@@ -108,12 +108,12 @@ namespace BHive
 	{
 		static float value = 0.f;
 
-		GUI::BeginDockSpace("Dockspace");
+		/*GUI::BeginDockSpace("Dockspace");
 
 		if (ImGui::BeginMainMenuBar())
 		{
 			ImGui::EndMainMenuBar();
-		}
+		}*/
 
 		if (ImGui::Begin("Window"))
 		{
@@ -131,7 +131,7 @@ namespace BHive
 
 		ImGui::End();
 
-		GUI::EndDockSpace();
+		//GUI::EndDockSpace();
 	}
 
 	void RuntimeLayer::CreateTextureImage()
@@ -241,6 +241,7 @@ namespace BHive
 		auto &context = GraphicsContext::Get();
 		auto &device = context.GetDevice();
 		auto &swap_chain = context.GetSwapChain();
+		auto api = RenderCommand::GetAPI();
 
 		const auto &bindingDescription = mVertexArray->GetBindingDescription();
 		const auto &attributeDescriptions = mVertexArray->GetAttributeDescriptions();
