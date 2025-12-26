@@ -24,6 +24,7 @@ namespace BHive
 		if (!mSpecification.WorkingDirectory.empty())
 			std::filesystem::current_path(mSpecification.WorkingDirectory);
 
+		
 		FWindowProperties props{};
 		props.Title = specification.Title;
 		props.Size = specification.Size;
@@ -39,8 +40,8 @@ namespace BHive
 		if (specification.Flags & EApplicationFlags::EnableRendering)
 		{
 			RenderCommand::Init();
-			//Renderer::Init();
 		}
+
 
 		if (specification.Flags & EApplicationFlags::EnableImGui)
 		{

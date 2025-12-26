@@ -52,6 +52,20 @@ namespace BHive
 
 	void VulkanCore::Shutdown()
 	{
+		if (!mInitialized)
+			return;
+
+		mLogicalDevice.waitIdle();
+	}
+
+	void VulkanCore::RegisterOnDeviceCreated(const DeviceCallback& callback)
+	{
+		mOnDeviceCreatedCallbacks.push_back(std::move(callback));
+	}
+
+	void VulkanCore::RegisterOnDeviceDestroy(const DeviceCallback& callback)
+	{
+		mOnDeviceDestroyedCallbacks.push_back(std::move(callback));
 	}
 
 	constexpr uint32_t VulkanCore::GetInstanceVersion()
@@ -70,6 +84,20 @@ namespace BHive
 		for (uint32_t qfpIndex = 0; qfpIndex < static_cast<uint32_t>(queueFamilyProperties.size()); qfpIndex++)
 		{
 			if ((queueFamilyProperties[qfpIndex].queueFlags & queue_type) && mPhysicalDevice.getSurfaceSupportKHR(qfpIndex, surface))
+			{
+				return qfpIndex;
+			}
+		}
+
+		return ~0;
+	}
+
+	uint32_t VulkanCore::SelectQueueIndex(vk::QueueFlags queue_type)
+	{
+		std::vector<vk::QueueFamilyProperties> queueFamilyProperties = mPhysicalDevice.getQueueFamilyProperties();
+		for (uint32_t qfpIndex = 0; qfpIndex < static_cast<uint32_t>(queueFamilyProperties.size()); qfpIndex++)
+		{
+			if ((queueFamilyProperties[qfpIndex].queueFlags & queue_type))
 			{
 				return qfpIndex;
 			}
@@ -167,6 +195,202 @@ namespace BHive
 		{
 			LOG_ERROR("Failed to find a suitable GPU!");
 			ASSERT(false);
+		}
+	}
+
+	vk::raii::SurfaceKHR VulkanCore::CreateSurface(GLFWwindow *window)
+	{
+		VkSurfaceKHR _surface;
+		auto &instance = VulkanCore::GetInstance();
+		if (glfwCreateWindowSurface(*instance, window, nullptr, &_surface) != VK_SUCCESS)
+		{
+			LOG_ERROR("Failed to create window surface!");
+			ASSERT(false);
+		}
+
+		return  vk::raii::SurfaceKHR(instance, _surface);
+	}
+
+	void VulkanCore::EnsurePresentSupportForSurface(const vk::SurfaceKHR &surface)
+	{
+		if (mLogicalDevice == VK_NULL_HANDLE)
+		{
+			CreateLogicalDevice(surface);
+			return;
+		}
+
+		if (mPhysicalDevice.getSurfaceSupportKHR(mQueueFamilies.GraphicsQueueIndex, surface))
+		{
+			mQueueFamilies.PresentQueueIndex = mQueueFamilies.GraphicsQueueIndex;
+			mQueueFamilies.PresentQueue = mQueueFamilies.GraphicsQueue;
+			return;
+		}
+
+		auto present_family_index = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics, surface);
+		if (present_family_index == ~0)
+		{
+			LOG_ERROR("Failed to find a suitable queue family for presenting!");
+			ASSERT(false);
+		}
+
+		if (present_family_index == mQueueFamilies.PresentQueueIndex)
+		{
+			return;
+		}
+
+		LOG_INFO("Recreating logical device to support presenting on a different queue family.");
+
+		if (mLogicalDevice != VK_NULL_HANDLE)
+		{
+			try
+			{
+				mLogicalDevice.waitIdle();		
+			}
+			catch (...)
+			{
+			}
+
+			for (const auto &callback : mOnDeviceDestroyedCallbacks)
+			{
+				callback();
+			}
+			
+			mQueueFamilies.PresentQueue = nullptr;
+			mQueueFamilies.GraphicsQueue = nullptr;
+			mLogicalDevice = nullptr;
+		}
+
+		std::vector<uint32_t> families = {static_cast<uint32_t>(mQueueFamilies.GraphicsQueueIndex), present_family_index};
+		std::sort(families.begin(), families.end());
+		families.erase(std::unique(families.begin(), families.end()), families.end());
+
+		auto queue_priority = 1.0f;
+		std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+		for (auto f : families)
+		{
+			vk::DeviceQueueCreateInfo queueCreateInfo{};
+			queueCreateInfo.queueFamilyIndex = f;
+			queueCreateInfo.queueCount = 1;
+			queueCreateInfo.pQueuePriorities = &queue_priority;
+			queueCreateInfos.push_back(queueCreateInfo);
+		}
+
+		auto requiredDeviceExtensions = VulkanCore::GetRequiredExtensions();
+
+		vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain;
+		featureChain.assign<vk::PhysicalDeviceFeatures2>({}); // default initialize all features to false
+		featureChain.get<vk::PhysicalDeviceVulkan11Features>().shaderDrawParameters = true;
+		featureChain.get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering = true;
+		featureChain.get<vk::PhysicalDeviceVulkan13Features>().synchronization2 = true;
+		featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().extendedDynamicState = true;
+
+		vk::DeviceCreateInfo device_createInfo{};
+		device_createInfo.pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>();
+		device_createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+		device_createInfo.pQueueCreateInfos = queueCreateInfos.data();
+		device_createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
+		device_createInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
+
+		mLogicalDevice = mPhysicalDevice.createDevice(device_createInfo);
+
+		mQueueFamilies.GraphicsQueue = mLogicalDevice.getQueue(mQueueFamilies.GraphicsQueueIndex, 0);
+		if (present_family_index == mQueueFamilies.GraphicsQueueIndex)
+		{
+			mQueueFamilies.PresentQueueIndex = mQueueFamilies.GraphicsQueueIndex;
+			mQueueFamilies.PresentQueue = mQueueFamilies.GraphicsQueue;
+		}
+		else
+		{
+			mQueueFamilies.PresentQueueIndex = present_family_index;
+			mQueueFamilies.PresentQueue = mLogicalDevice.getQueue(mQueueFamilies.PresentQueueIndex, 0);
+		}
+
+		for (auto &callback : mOnDeviceCreatedCallbacks)
+		{
+			callback();
+		}
+	}
+
+	void VulkanCore::CreateLogicalDevice(const vk::SurfaceKHR &surface)
+	{
+		if (mLogicalDevice != VK_NULL_HANDLE)
+		{
+			if (!surface)
+				return;
+
+			EnsurePresentSupportForSurface(surface);
+			return;
+		}
+
+		auto graphics_index = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics);
+		if (graphics_index == ~0)
+		{
+			LOG_ERROR("Failed to find a suitable queue family!");
+			ASSERT(false);
+		}
+
+		uint32_t present_index = graphics_index;
+
+		if (surface)
+		{
+			if (!mPhysicalDevice.getSurfaceSupportKHR(graphics_index, surface))
+			{
+				auto found = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics, surface);
+				if (found == ~0)
+				{
+					LOG_ERROR("Failed to find a suitable queue family for presenting!");
+					ASSERT(false);
+				}
+
+				present_index = found;
+			}
+		}
+
+		std::vector<uint32_t> families = {graphics_index, present_index};
+		std::sort(families.begin(), families.end());
+		families.erase(std::unique(families.begin(), families.end()), families.end());
+
+		auto queue_priority = 1.0f;
+		std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+		for (auto f : families)
+		{
+			vk::DeviceQueueCreateInfo queueCreateInfo{};
+			queueCreateInfo.queueFamilyIndex = f;
+			queueCreateInfo.queueCount = 1;
+			queueCreateInfo.pQueuePriorities = &queue_priority;
+			queueCreateInfos.push_back(queueCreateInfo);
+		}
+
+		auto requiredDeviceExtensions = VulkanCore::GetRequiredExtensions();
+
+		vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain;
+		featureChain.assign<vk::PhysicalDeviceFeatures2>({}); // default initialize all features to false
+		featureChain.get<vk::PhysicalDeviceVulkan11Features>().shaderDrawParameters = true;
+		featureChain.get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering = true;
+		featureChain.get<vk::PhysicalDeviceVulkan13Features>().synchronization2 = true;
+		featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().extendedDynamicState = true;
+
+		vk::DeviceCreateInfo device_createInfo{};
+		device_createInfo.pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>();
+		device_createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+		device_createInfo.pQueueCreateInfos = queueCreateInfos.data();
+		device_createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
+		device_createInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
+
+		mLogicalDevice = mPhysicalDevice.createDevice(device_createInfo);
+
+		mQueueFamilies.GraphicsQueueIndex = graphics_index;
+		mQueueFamilies.GraphicsQueue = mLogicalDevice.getQueue(mQueueFamilies.GraphicsQueueIndex, 0);
+
+		if (families.size() > 1)
+		{
+			mQueueFamilies.PresentQueueIndex = present_index;
+			mQueueFamilies.PresentQueue = mLogicalDevice.getQueue(mQueueFamilies.PresentQueueIndex, 0);
+		}
+		else
+		{
+			mQueueFamilies.PresentQueueIndex = mQueueFamilies.GraphicsQueueIndex;
+			mQueueFamilies.PresentQueue = mQueueFamilies.GraphicsQueue;
 		}
 	}
 } // namespace BHive

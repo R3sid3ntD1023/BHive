@@ -77,7 +77,7 @@ namespace BHive
 		vk::PipelineStageFlags waitStages(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 		const vk::SubmitInfo submitInfo(*mPresetCompleteSemaphores[mSemaphoreIndex], waitStages, buffers, *mRenderFinishedSemaphores[imageIndex]);
 
-		auto &graphics_queue = GraphicsContext::Get().GetQueueFamilies().GraphicsQueue;
+		auto &graphics_queue = VulkanCore::GetQueueFamilies().GraphicsQueue;
 		graphics_queue.submit(submitInfo, *mInFlightFences[mCurrentFrame]);
 
 		const vk::PresentInfoKHR presentInfoKHR(*mRenderFinishedSemaphores[imageIndex], *mSwapChain, imageIndex);

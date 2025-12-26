@@ -5,10 +5,25 @@
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
+struct GLFWwindow;	
+
 namespace BHive
 {
+	struct VkQueueFamilies
+	{
+		vk::raii::Queue PresentQueue = VK_NULL_HANDLE;
+		vk::raii::Queue GraphicsQueue = VK_NULL_HANDLE;
+		vk::raii::Queue ComputeQueue = VK_NULL_HANDLE;
+
+		int32_t PresentQueueIndex = -1;
+		int32_t GraphicsQueueIndex = -1;
+		int32_t ComputeQueueIndex = -1;
+	};
+
 	class BHIVE_API VulkanCore
 	{
+	public:
+		using DeviceCallback = std::function<void()>;
 	public:
 		static void Init();
 
@@ -18,11 +33,28 @@ namespace BHive
 
 		static const vk::raii::PhysicalDevice &GetPhysicalDevice() { return mPhysicalDevice; }
 
+		static vk::raii::Device& GetLogicalDevice() { return mLogicalDevice; }
+
 		static constexpr uint32_t GetInstanceVersion();
 
 		static std::vector<const char *> GetRequiredExtensions();
 
 		static uint32_t SelectQueueIndex(vk::QueueFlags queue_type, const vk::SurfaceKHR &surface);
+
+		static uint32_t SelectQueueIndex(vk::QueueFlags queue_type);
+
+		static vk::raii::SurfaceKHR CreateSurface(GLFWwindow *window);
+
+		static void CreateLogicalDevice(const vk::SurfaceKHR& surface);
+
+		static const VkQueueFamilies &GetQueueFamilies() { return mQueueFamilies; };
+
+		static void EnsurePresentSupportForSurface(const vk::SurfaceKHR &surface);
+
+		// device lifecycle callbacks
+		static void RegisterOnDeviceCreated(const DeviceCallback &callback);
+
+		static void RegisterOnDeviceDestroy(const DeviceCallback &callback);
 
 	private:
 		static void CreateIntance();
@@ -30,6 +62,8 @@ namespace BHive
 		static void CreateDebugMessenger();
 
 		static void PickPhysicalDevice();
+
+		static void CreateLogicalDevice();
 
 	private:
 		static inline vk::raii::Context mVulkanContext;
@@ -40,6 +74,15 @@ namespace BHive
 
 		static inline vk::raii::PhysicalDevice mPhysicalDevice = nullptr;
 
+		static inline vk::raii::Device mLogicalDevice = nullptr;
+
+		static inline VkQueueFamilies mQueueFamilies;
+
+
 		static inline bool mInitialized = false;
+
+		static inline std::vector<DeviceCallback> mOnDeviceDestroyedCallbacks;
+
+		static inline std::vector<DeviceCallback> mOnDeviceCreatedCallbacks;
 	};
 } // namespace BHive

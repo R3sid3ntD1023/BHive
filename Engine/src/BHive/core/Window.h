@@ -62,9 +62,14 @@ namespace BHive
 		struct FWindowData
 		{
 			std::string Title;
+
 			glm::ivec2 mSize;
+
 			bool VSync;
+
 			WindowInput Input;
+
+			GraphicsContext *Context = nullptr;
 		};
 
 	private:

@@ -56,7 +56,7 @@ namespace BHive
 		CreateGraphicsPipeline();
 
 		auto &context = GraphicsContext::Get();
-		auto &device = context.GetDevice();
+		auto &device = VulkanCore::GetLogicalDevice();
 		auto &swap_chain = context.GetSwapChain();
 		auto image_count = swap_chain->GetImageCount();
 		auto &app = Application::Get();
@@ -121,7 +121,7 @@ namespace BHive
 		}
 
 		auto &context = GraphicsContext::Get();
-		auto &device = context.GetDevice();
+		auto &device = VulkanCore::GetLogicalDevice();
 		auto &swap_chain = context.GetSwapChain();
 		auto image_count = swap_chain->GetImageCount();
 		auto current_frame = swap_chain->GetCurrentFrame();
@@ -189,8 +189,7 @@ namespace BHive
 
 	void RuntimeLayer::CreateDescriptorSetLayout()
 	{
-		auto &context = GraphicsContext::Get();
-		auto &device = context.GetDevice();
+		auto &device = VulkanCore::GetLogicalDevice();
 
 		std::array bindings = {
 			vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr),
@@ -201,8 +200,7 @@ namespace BHive
 
 	void RuntimeLayer::CreateDescriptorPool()
 	{
-		auto &context = GraphicsContext::Get();
-		auto &device = context.GetDevice();
+		auto &device = VulkanCore::GetLogicalDevice();
 
 		std::array poolSize = {vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 2), vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 2)};
 
@@ -213,8 +211,7 @@ namespace BHive
 
 	void RuntimeLayer::CreateDescriptorSets()
 	{
-		auto &context = GraphicsContext::Get();
-		auto &device = context.GetDevice();
+		auto &device = VulkanCore::GetLogicalDevice();
 
 		std::vector<vk::DescriptorSetLayout> layouts(2, *mDescriptorSetLayout);
 		vk::DescriptorSetAllocateInfo allocInfo(*mDescriptorPool, layouts);
@@ -239,7 +236,7 @@ namespace BHive
 		auto shader = ShaderManager::Get().Load("C:/Users/dariu/Documents/BHive/Runtime/Triangle.glsl");
 
 		auto &context = GraphicsContext::Get();
-		auto &device = context.GetDevice();
+		auto &device = VulkanCore::GetLogicalDevice();
 		auto &swap_chain = context.GetSwapChain();
 		auto api = RenderCommand::GetAPI();
 

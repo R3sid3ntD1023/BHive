@@ -15,16 +15,7 @@ namespace BHive
 	class BHIVE_API GraphicsContext
 	{
 	public:
-		struct FQueueFamilies
-		{
-			vk::raii::Queue PresentQueue = VK_NULL_HANDLE;
-			vk::raii::Queue GraphicsQueue = VK_NULL_HANDLE;
-			vk::raii::Queue ComputeQueue = VK_NULL_HANDLE;
-
-			int32_t PresentQueueIndex = -1;
-			int32_t GraphicsQueueIndex = -1;
-			int32_t ComputeQueueIndex = -1;
-		};
+		
 
 		GraphicsContext(GLFWwindow *window);
 
@@ -36,11 +27,9 @@ namespace BHive
 
 		const Ref<VulkanSwapChain> &GetSwapChain() const { return mSwapChain; }
 
-		const FQueueFamilies &GetQueueFamilies() const { return mQueueFamilies; }
+		void OnFramebufferResized(uint32_t w, uint32_t h);
 
 		uint32_t GetImageIndex() const { return mImageIndex; }
-
-		vk::raii::Device &GetDevice() { return mDevice; }
 
 		static GraphicsContext &Get()
 		{
@@ -49,9 +38,6 @@ namespace BHive
 		}
 
 	private:
-		void CreateLogicalDevice();
-
-		void CreateSurface();
 
 		void CreateSwapChain();
 
@@ -64,12 +50,14 @@ namespace BHive
 
 		vk::raii::Device mDevice = nullptr;
 
-		Ref<VulkanSwapChain> mSwapChain;
+		VkQueueFamilies mQueueFamilies;
 
-		FQueueFamilies mQueueFamilies{};
+		Ref<VulkanSwapChain> mSwapChain;
 
 		static inline GraphicsContext *sInstance = nullptr;
 
 		uint32_t mImageIndex = 0;
+
+		bool mFramebufferResized = false;
 	};
 } // namespace BHive

@@ -48,5 +48,9 @@ namespace BHive
 		static void SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size);
 
 		static vk::ShaderModule CreateShaderModule(const vk::ShaderModuleCreateInfo &info);
+
+		static vk::Format FindDepthFormat(vk::PhysicalDevice physical_device);
+
+		static bool HasStencilComponent(vk::Format format);
 	};
 } // namespace BHive

@@ -13,35 +13,35 @@
 
 namespace BHive
 {
-	static bool sFramebufferResized = false;
-
-	static void framebufferResizeCallback(GLFWwindow *window, int width, int height)
-	{
-		sFramebufferResized = true;
-	}
-
 	GraphicsContext::GraphicsContext(GLFWwindow *window)
 		: mWindowHandle(window)
 	{
 		ASSERT(!sInstance);
 		sInstance = this;
 		ASSERT(sInstance);
-
-		glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-
-		VulkanCore::Init();
 	}
 
 	GraphicsContext::~GraphicsContext()
 	{
-		mDevice.waitIdle();
+		VulkanCore::Shutdown();
+	}
+
+	void GraphicsContext::OnFramebufferResized(uint32_t w, uint32_t h)
+	{
+		mFramebufferResized = true;
 	}
 
 	void GraphicsContext::Init()
 	{
+		VulkanCore::Init();
 
-		CreateSurface();
-		CreateLogicalDevice();
+		mSurface = VulkanCore::CreateSurface(mWindowHandle);
+
+		VulkanCore::CreateLogicalDevice(mSurface);
+		VulkanCore::EnsurePresentSupportForSurface(*mSurface);
+
+		mQueueFamilies = VulkanCore::GetQueueFamilies();
+
 		CreateSwapChain();
 	}
 
@@ -77,9 +77,9 @@ namespace BHive
 
 		result = mSwapChain->SubmitCommandBuffers(buffers_to_submit, imageIndex);
 
-		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || sFramebufferResized)
+		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || mFramebufferResized)
 		{
-			sFramebufferResized = false;
+			mFramebufferResized = false;
 			RecreateSwapChain();
 		}
 		else if (result != vk::Result::eSuccess)
@@ -88,50 +88,13 @@ namespace BHive
 		}
 	}
 
-	void GraphicsContext::CreateLogicalDevice()
-	{
-
-		mQueueFamilies.GraphicsQueueIndex = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics, *mSurface);
-		if (mQueueFamilies.GraphicsQueueIndex == ~0)
-		{
-			LOG_ERROR("Failed to find a suitable queue family!");
-			ASSERT(false);
-		}
-
-		auto queue_priority = 0.0f;
-		auto requiredDeviceExtensions = VulkanCore::GetRequiredExtensions();
-
-		vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain;
-		featureChain.assign<vk::PhysicalDeviceFeatures2>({}); // default initialize all features to false
-		featureChain.get<vk::PhysicalDeviceVulkan11Features>().shaderDrawParameters = true;
-		featureChain.get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering = true;
-		featureChain.get<vk::PhysicalDeviceVulkan13Features>().synchronization2 = true;
-		featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().extendedDynamicState = true;
-
-		vk::DeviceQueueCreateInfo queueCreateInfo{};
-		queueCreateInfo.queueFamilyIndex = mQueueFamilies.GraphicsQueueIndex;
-		queueCreateInfo.queueCount = 1;
-		queueCreateInfo.pQueuePriorities = &queue_priority;
-
-		vk::DeviceCreateInfo device_createInfo{};
-		device_createInfo.pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>();
-		device_createInfo.queueCreateInfoCount = 1;
-		device_createInfo.pQueueCreateInfos = &queueCreateInfo;
-		device_createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
-		device_createInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
-
-		auto &physical_device = VulkanCore::GetPhysicalDevice();
-		mDevice = physical_device.createDevice(device_createInfo);
-
-		mQueueFamilies.GraphicsQueue = mDevice.getQueue(mQueueFamilies.GraphicsQueueIndex, 0);
-	}
-
 	void GraphicsContext::CreateSwapChain()
 	{
 		int w = 0, h = 0;
 		glfwGetFramebufferSize(mWindowHandle, &w, &h);
 
 		auto &physical_device = VulkanCore::GetPhysicalDevice();
+		auto &device = VulkanCore::GetLogicalDevice();
 		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(*mSurface);
 		auto formats = physical_device.getSurfaceFormatsKHR(*mSurface);
 		auto presentModes = physical_device.getSurfacePresentModesKHR(*mSurface);
@@ -143,7 +106,7 @@ namespace BHive
 		create_info.Formats = formats;
 		create_info.PresentModes = presentModes;
 		mSwapChain = CreateRef<VulkanSwapChain>();
-		mSwapChain->Init(mDevice, mSurface, create_info);
+		mSwapChain->Init(device, mSurface, create_info);
 	}
 
 	void GraphicsContext::RecreateSwapChain()
@@ -156,20 +119,8 @@ namespace BHive
 			glfwWaitEvents();
 		}
 
-		mDevice.waitIdle();
+		auto &device = VulkanCore::GetLogicalDevice();
+		device.waitIdle();
 		CreateSwapChain();
 	}
-
-	void GraphicsContext::CreateSurface()
-	{
-		VkSurfaceKHR _surface;
-		auto &instance = VulkanCore::GetInstance();
-		if (glfwCreateWindowSurface(*instance, mWindowHandle, nullptr, &_surface) != VK_SUCCESS)
-		{
-			LOG_ERROR("Failed to create window surface!");
-			ASSERT(false);
-		}
-		mSurface = vk::raii::SurfaceKHR(instance, _surface);
-	}
-
 } // namespace BHive

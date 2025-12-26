@@ -109,15 +109,38 @@ namespace BHive
 	{
 		CreateCommandPool();
 		CreateCommandBuffers();
+
+		VulkanCore::RegisterOnDeviceCreated([this]()
+		{
+			CreateCommandPool();
+			CreateCommandBuffers();
+		});
+
+		VulkanCore::RegisterOnDeviceDestroy(
+			[this]()
+			{
+				try
+				{
+					VulkanCore::GetLogicalDevice().waitIdle();
+				}
+				catch (...)
+				{
+				}
+
+				mCommandBuffers.clear();
+
+				for (auto& module : mVulkanShaders)
+					vkDestroyShaderModule(*VulkanCore::GetLogicalDevice(), module, nullptr);
+				mVulkanShaders.clear();
+			});
 	}
 
 	void RendererAPI::Shutdown()
 	{
-		auto &context = GraphicsContext::Get();
-		auto &device = context.GetDevice();
+		/*auto &device = VulkanCore::GetLogicalDevice();
 
 		for (auto &module : mVulkanShaders)
-			vkDestroyShaderModule(*device, module, nullptr);
+			vkDestroyShaderModule(*device, module, nullptr);*/
 	}
 
 	vk::raii::CommandBuffer &RendererAPI::GetCurrentCommandBuffer()
@@ -130,8 +153,7 @@ namespace BHive
 
 	vk::raii::CommandBuffers *RendererAPI::AllocateCommandBuffers(uint32_t count)
 	{
-		auto &context = GraphicsContext::Get();
-		auto &device = context.GetDevice();
+		auto &device = VulkanCore::GetLogicalDevice();
 
 		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, count);
 		return &mCommandBuffers.emplace_back(device, alloc_info);
@@ -139,9 +161,8 @@ namespace BHive
 
 	void RendererAPI::CreateCommandPool()
 	{
-		auto &context = GraphicsContext::Get();
-		auto &device = context.GetDevice();
-		auto graphics_queue_index = context.GetQueueFamilies().GraphicsQueueIndex;
+		auto &device = VulkanCore::GetLogicalDevice();
+		auto graphics_queue_index = VulkanCore::GetQueueFamilies().GraphicsQueueIndex;
 
 		vk::CommandPoolCreateInfo pool_info;
 		pool_info.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;

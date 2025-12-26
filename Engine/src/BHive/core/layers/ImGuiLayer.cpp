@@ -95,7 +95,9 @@ namespace BHive
 		SetColorsDark();
 
 		auto &context = GraphicsContext::Get();
-		auto &device = context.GetDevice();
+		auto &instance = VulkanCore::GetInstance();
+		auto &physical_device = VulkanCore::GetPhysicalDevice();
+		auto &device = VulkanCore::GetLogicalDevice();
 		auto &swap_chain = context.GetSwapChain();
 		auto extent = swap_chain->GetExtent();
 		auto image_count = swap_chain->GetImageCount();
@@ -115,16 +117,18 @@ namespace BHive
 		mCommandBuffers = api->AllocateCommandBuffers(image_count);
 
 		auto format = swap_chain->GetFormat().format;
-		auto depth_format = swap_chain->GetDepthFormat().format;
+		auto depth_format = VulkanUtils::FindDepthFormat(physical_device);
 		vk::PipelineRenderingCreateInfo rendering_info(0, format, depth_format,vk::Format::eUndefined);
+
+		auto& queue_familes = VulkanCore::GetQueueFamilies();
 
 		ImGui_ImplVulkan_InitInfo init_info{};
 		init_info.ApiVersion = VulkanCore::GetInstanceVersion();
-		init_info.Instance = *VulkanCore::GetInstance();
-		init_info.PhysicalDevice = *VulkanCore::GetPhysicalDevice();
+		init_info.Instance = *instance;
+		init_info.PhysicalDevice = *physical_device;
 		init_info.Device = *device;
-		init_info.Queue = *context.GetQueueFamilies().GraphicsQueue;
-		init_info.QueueFamily = context.GetQueueFamilies().GraphicsQueueIndex;
+		init_info.Queue = *queue_familes.GraphicsQueue;
+		init_info.QueueFamily = queue_familes.GraphicsQueueIndex;
 		init_info.DescriptorPool = *mDescriptorPool;
 		init_info.MinImageCount = swap_chain->GetMinImageCount();
 		init_info.ImageCount = image_count;

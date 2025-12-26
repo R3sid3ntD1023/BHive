@@ -170,6 +170,14 @@ namespace BHive
 				input->Input.OnKeyTypedEvent(codepoint);
 			});
 
+		glfwSetFramebufferSizeCallback(
+			mWindow,
+			[](GLFWwindow *window, int width, int height)
+			{
+				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+				input->Context->OnFramebufferResized(width, height);
+			});
+
 		glfwSetJoystickCallback(WindowInput::OnJoyStickConnected);
 
 		for (int i = 0; i < GLFW_JOYSTICK_LAST; i++)
