@@ -1,6 +1,6 @@
+#include "gfx/VulkanCore.h"
 #include "TextureUtils.h"
 #include <glad/glad.h>
-#include "gfx/VulkanCore.h"
 
 namespace BHive
 {
@@ -172,57 +172,45 @@ namespace BHive
 
 	uint32_t TextureUtils::GetAPIInternalFormat(EFormat format)
 	{
+		return VK_FORMAT_R8G8B8A8_SRGB;
+
 		switch (format)
 		{
 		case BHive::EFormat::R8:
-			return GL_R8;
+			return VK_FORMAT_R8_UNORM;
 		case BHive::EFormat::R8F:
-			return GL_R8;
+			return VK_FORMAT_R8_SRGB;
 		case BHive::EFormat::R32F:
-			return GL_R32F;
-		case BHive::EFormat::RG16F:
-			return GL_RG16F;
-		case BHive::EFormat::RG32F:
-			return GL_RG32F;
+			return VK_FORMAT_R32_SFLOAT;
 		case BHive::EFormat::RG8:
-			return GL_RG8;
+			return VK_FORMAT_R8G8_UNORM;
+		case BHive::EFormat::RG16F:
+			return VK_FORMAT_R16G16_SFLOAT;
+		case BHive::EFormat::RG32F:
+			return VK_FORMAT_R32G32_SFLOAT;
 		case BHive::EFormat::RGB8:
-			return GL_RGB8;
+			return VK_FORMAT_R8G8B8_SRGB;
 		case BHive::EFormat::RGBA8:
-			return GL_RGBA8;
+			return VK_FORMAT_R8G8B8A8_SRGB;
 		case BHive::EFormat::RGB16F:
-			return GL_RGB16F;
+			return VK_FORMAT_R16G16B16_SFLOAT;
 		case BHive::EFormat::RGBA16F:
-			return GL_RGBA16F;
-		case BHive::EFormat::RGBA32F:
-			return GL_RGBA32F;
+			return VK_FORMAT_R16G16B16A16_SFLOAT;
 		case BHive::EFormat::RGB32F:
-			return GL_RGB32F;
-		case BHive::EFormat::RED_INTEGER:
-			return GL_R32I;
-		case BHive::EFormat::RGBA_INTEGER:
-			return GL_RGBA32I;
-		case BHive::EFormat::RGB_UINTEGER:
-			return GL_RGB32UI;
-		case BHive::EFormat::RGB_INTEGER:
-			return GL_RGB32I;
-		case BHive::EFormat::R11_G11_B10:
-			return GL_R11F_G11F_B10F;
-		case BHive::EFormat::DEPTH24_STENCIL8:
-			return GL_DEPTH24_STENCIL8;
-		case BHive::EFormat::DEPTH_COMPONENT:
-			return GL_DEPTH_COMPONENT;
-		case BHive::EFormat::DEPTH_COMPONENT_32F:
-			return GL_DEPTH_COMPONENT32F;
+			return VK_FORMAT_R32G32B32_SFLOAT;
+		case BHive::EFormat::RGBA32F:
+			return VK_FORMAT_R32G32B32A32_SFLOAT;
 		case BHive::EFormat::DEPTH_COMPONENT_24:
-			return GL_DEPTH_COMPONENT24;
-			break;
+			return VK_FORMAT_D24_UNORM_S8_UINT;
+		case BHive::EFormat::DEPTH_COMPONENT_32F:
+			return VK_FORMAT_D32_SFLOAT;
+		case BHive::EFormat::DEPTH24_STENCIL8:
+			return VK_FORMAT_D24_UNORM_S8_UINT;
 		default:
 			break;
 		}
-
 		ASSERT(false);
-		return 0;
+		return VK_FORMAT_UNDEFINED;
 	}
 
 	uint32_t TextureUtils::GetAPIType(EFormat format)

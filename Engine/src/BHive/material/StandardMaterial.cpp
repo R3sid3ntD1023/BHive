@@ -1,10 +1,10 @@
-#include "StandardMaterial.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
-#include "renderers/Renderer.h"
 #include "gfx/UniformBuffer.h"
+#include "renderers/Renderer.h"
+#include "StandardMaterial.h"
 
 namespace BHive
 {
@@ -57,10 +57,10 @@ namespace BHive
 		return (Flags & CastShadows) != 0;
 	}
 
-	Ref<Material> StandardMaterial::Clone() const
+	/*Ref<Material> StandardMaterial::Clone() const
 	{
 		return CreateRef<StandardMaterial>(*this);
-	}
+	}*/
 
 	REFLECT(StandardMaterial::EFlags)
 	{

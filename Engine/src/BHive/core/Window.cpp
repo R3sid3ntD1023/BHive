@@ -37,6 +37,7 @@ namespace BHive
 
 		mContext = CreateScope<GraphicsContext>(mWindow);
 		mContext->Init();
+		mData.Context = mContext.get();
 
 		glfwSetWindowUserPointer(mWindow, &mData);
 

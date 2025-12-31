@@ -1,6 +1,6 @@
-#include "LambertMaterial.h"
-#include "gfx/ShaderManager.h"
 #include "gfx/Shader.h"
+#include "gfx/ShaderManager.h"
+#include "LambertMaterial.h"
 
 namespace BHive
 {
@@ -36,10 +36,10 @@ namespace BHive
 		return shader;
 	}
 
-	Ref<Material> LambertMaterial::Clone() const
+	/*Ref<Material> LambertMaterial::Clone() const
 	{
 		return CreateRef<LambertMaterial>(*this);
-	}
+	}*/
 
 	REFLECT(LambertMaterial)
 	{

@@ -38,12 +38,33 @@ namespace BHive
 		return VK_FALSE;
 	}
 
+	namespace detials
+	{
+		vk::StructureChain<
+			vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>
+			GetPhysicalDeviceFeaturesChain()
+		{
+			vk::StructureChain<
+				vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features,
+				vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>
+				featureChain;
+			featureChain.assign<vk::PhysicalDeviceFeatures2>({}); // default initialize all features to false
+			featureChain.get<vk::PhysicalDeviceVulkan11Features>().setShaderDrawParameters(true);
+			featureChain.get<vk::PhysicalDeviceVulkan12Features>()
+				.setDescriptorBindingSampledImageUpdateAfterBind(true)
+				.setDescriptorBindingPartiallyBound(true)
+				.setDescriptorBindingUpdateUnusedWhilePending(true)
+				.setDescriptorBindingStorageBufferUpdateAfterBind(true)
+				.setDescriptorBindingUniformBufferUpdateAfterBind(true);
+			featureChain.get<vk::PhysicalDeviceVulkan13Features>().setDynamicRendering(true).setSynchronization2(true).setDescriptorBindingInlineUniformBlockUpdateAfterBind(true);
+			featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().setExtendedDynamicState(true);
+
+			return featureChain;
+		}
+	}
+
 	void VulkanCore::Init()
 	{
-		if (mInitialized)
-			return;
-
-		mInitialized = true;
 
 		CreateIntance();
 		CreateDebugMessenger();
@@ -52,25 +73,17 @@ namespace BHive
 
 	void VulkanCore::Shutdown()
 	{
-		if (!mInitialized)
-			return;
-
 		mLogicalDevice.waitIdle();
 	}
 
 	void VulkanCore::RegisterOnDeviceCreated(const DeviceCallback& callback)
 	{
-		mOnDeviceCreatedCallbacks.push_back(std::move(callback));
+		mOnDeviceCreatedCallbacks.push_back(callback);
 	}
 
 	void VulkanCore::RegisterOnDeviceDestroy(const DeviceCallback& callback)
 	{
-		mOnDeviceDestroyedCallbacks.push_back(std::move(callback));
-	}
-
-	constexpr uint32_t VulkanCore::GetInstanceVersion()
-	{
-		return vk::ApiVersion14;
+		mOnDeviceDestroyedCallbacks.push_back(callback);
 	}
 
 	std::vector<const char *> VulkanCore::GetRequiredExtensions()
@@ -108,7 +121,7 @@ namespace BHive
 
 	void VulkanCore::CreateIntance()
 	{
-		constexpr auto appInfo = vk::ApplicationInfo{"BHive", 1, "No Engine", 1, GetInstanceVersion()};
+		constexpr auto appInfo = vk::ApplicationInfo{"BHive", 1, "No Engine", 1, MINIMUM_VULKAN_API_VERSION};
 
 		uint32_t glfwExtensionCount = 0;
 		const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -276,14 +289,8 @@ namespace BHive
 		}
 
 		auto requiredDeviceExtensions = VulkanCore::GetRequiredExtensions();
-
-		vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain;
-		featureChain.assign<vk::PhysicalDeviceFeatures2>({}); // default initialize all features to false
-		featureChain.get<vk::PhysicalDeviceVulkan11Features>().shaderDrawParameters = true;
-		featureChain.get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering = true;
-		featureChain.get<vk::PhysicalDeviceVulkan13Features>().synchronization2 = true;
-		featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().extendedDynamicState = true;
-
+		auto featureChain = detials::GetPhysicalDeviceFeaturesChain();
+		
 		vk::DeviceCreateInfo device_createInfo{};
 		device_createInfo.pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>();
 		device_createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
@@ -362,13 +369,7 @@ namespace BHive
 		}
 
 		auto requiredDeviceExtensions = VulkanCore::GetRequiredExtensions();
-
-		vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain;
-		featureChain.assign<vk::PhysicalDeviceFeatures2>({}); // default initialize all features to false
-		featureChain.get<vk::PhysicalDeviceVulkan11Features>().shaderDrawParameters = true;
-		featureChain.get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering = true;
-		featureChain.get<vk::PhysicalDeviceVulkan13Features>().synchronization2 = true;
-		featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().extendedDynamicState = true;
+		auto featureChain = detials::GetPhysicalDeviceFeaturesChain();
 
 		vk::DeviceCreateInfo device_createInfo{};
 		device_createInfo.pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>();
@@ -392,5 +393,11 @@ namespace BHive
 			mQueueFamilies.PresentQueueIndex = mQueueFamilies.GraphicsQueueIndex;
 			mQueueFamilies.PresentQueue = mQueueFamilies.GraphicsQueue;
 		}
+
+		for (auto &callback : mOnDeviceCreatedCallbacks)
+		{
+			callback();
+		}
 	}
+
 } // namespace BHive

@@ -153,7 +153,7 @@ namespace BHive
 
 		FTextureCreateInfo create_info{};
 		create_info.InternalFormat = is_hdr ? utils::GetFormatFromChannelsHDR(c) : utils::GetFormatFromChannels(c);
-		create_info.Channels = c;
+		create_info.Channels = 4;
 		create_info.MinFilter = EMinFilter::LINEAR;
 		create_info.MagFilter = EMagFilter::LINEAR;
 		create_info.WrapMode = EWrapMode::REPEAT;

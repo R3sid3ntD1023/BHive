@@ -102,19 +102,39 @@ namespace BHive
 		auto extent = swap_chain->GetExtent();
 		auto image_count = swap_chain->GetImageCount();
 		auto api = RenderCommand::GetAPI();
-		auto &command_pool = api->GetCommandPool();
+		auto pool_size = IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE;
 
-		// create descriptor pool
-		vk::DescriptorPoolSize pool_sizes[] = {{vk::DescriptorType::eCombinedImageSampler, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE}};
-		vk::DescriptorPoolCreateInfo pool_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 0, pool_sizes);
-		for (auto &pool_size : pool_sizes)
-			pool_info.maxSets += pool_size.descriptorCount;
+		//mDescriptorSetLayout = FDescriptorSetLayout::Builder().AddBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, 1).Build();
+		mDescriptorPool = FDescriptorPool::Builder().SetMaxSets(8)
+									.AddPoolSize(vk::DescriptorType::eSampler, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+									.AddPoolSize(vk::DescriptorType::eCombinedImageSampler, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+									.AddPoolSize(vk::DescriptorType::eSampledImage, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+									.AddPoolSize(vk::DescriptorType::eStorageImage, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+									.AddPoolSize(vk::DescriptorType::eUniformTexelBuffer, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+									.AddPoolSize(vk::DescriptorType::eStorageTexelBuffer, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+									.AddPoolSize(vk::DescriptorType::eUniformBuffer, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+									.AddPoolSize(vk::DescriptorType::eStorageBuffer, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+									.AddPoolSize(vk::DescriptorType::eUniformBufferDynamic, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+									.AddPoolSize(vk::DescriptorType::eStorageBufferDynamic, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+									.AddPoolSize(vk::DescriptorType::eInputAttachment, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+									.Build();
 
-		mDescriptorPool = device.createDescriptorPool(pool_info);
+
+		//FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).Build(mDescriptorSets);
 
 		ImGui_ImplGlfw_InitForVulkan(mWindow, true);
 
 		mCommandBuffers = api->AllocateCommandBuffers(image_count);
+
+		VulkanCore::RegisterOnDeviceCreated([this, &device, image_count]()
+		{
+			auto &device = VulkanCore::GetLogicalDevice();
+			auto api = RenderCommand::GetAPI();
+			mCommandBuffers = api->AllocateCommandBuffers(image_count); 
+		});
+
+		VulkanCore::RegisterOnDeviceDestroy([this]() { mCommandBuffers = nullptr; });
+
 
 		auto format = swap_chain->GetFormat().format;
 		auto depth_format = VulkanUtils::FindDepthFormat(physical_device);
@@ -123,13 +143,13 @@ namespace BHive
 		auto& queue_familes = VulkanCore::GetQueueFamilies();
 
 		ImGui_ImplVulkan_InitInfo init_info{};
-		init_info.ApiVersion = VulkanCore::GetInstanceVersion();
+		init_info.ApiVersion = VulkanCore::MINIMUM_VULKAN_API_VERSION;
 		init_info.Instance = *instance;
 		init_info.PhysicalDevice = *physical_device;
 		init_info.Device = *device;
 		init_info.Queue = *queue_familes.GraphicsQueue;
 		init_info.QueueFamily = queue_familes.GraphicsQueueIndex;
-		init_info.DescriptorPool = *mDescriptorPool;
+		init_info.DescriptorPool = *mDescriptorPool->GetPool();
 		init_info.MinImageCount = swap_chain->GetMinImageCount();
 		init_info.ImageCount = image_count;
 		init_info.PipelineCache = VK_NULL_HANDLE;
@@ -146,10 +166,14 @@ namespace BHive
 		
 
 		ImGui_ImplVulkan_Init(&init_info);
+		
 	}
 
 	void ImGuiLayer::Shutdown()
 	{
+		auto& device = VulkanCore::GetLogicalDevice();
+		device.waitIdle();
+
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 
@@ -178,9 +202,7 @@ namespace BHive
 
 		auto imgui_command = [=](const FVulkanFrameData &data)
 		{
-			auto &context = GraphicsContext::Get();
-			auto current_frame = data.Frame;
-			auto &cmd = mCommandBuffers->at(current_frame);
+			auto &cmd = mCommandBuffers->at(data.Frame);
 
 			vk::ClearValue clear_color = vk::ClearColorValue({0, 0, 0, 1});
 			vk::RenderingAttachmentInfoKHR color_attachment(
@@ -189,22 +211,11 @@ namespace BHive
 
 			vk::RenderingInfo render_info({}, {{0, 0}, {(uint32_t)size.x, (uint32_t)size.y}}, 1, 0, color_attachment);
 
-			cmd.reset();
-			cmd.begin({});
-			cmd.beginRendering(render_info);
-
-			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), *cmd);
-
-			cmd.endRendering();
-
-			/*VulkanUtils::TransitionImageLayout(
-				cmd, image, image_index, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eColorAttachmentWrite, {},
-				vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eBottomOfPipe);*/
-
-			cmd.end();
+			RecordImGuiDrawCommands(ImGui::GetDrawData(), cmd, render_info);
 		};
 
-		api->SubmitSecondaryCommand(imgui_command);
+		api->SubmitCommand(imgui_command);
+
 
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
@@ -214,6 +225,19 @@ namespace BHive
 			if (backup_current_context != glfwGetCurrentContext())
 				glfwMakeContextCurrent(backup_current_context);
 		}
+	}
+
+	void ImGuiLayer::RecordImGuiDrawCommands(ImDrawData *drawData, vk::raii::CommandBuffer &cmd, const vk::RenderingInfo &renderingInfo)
+	{
+		cmd.reset();
+		cmd.begin({});
+		cmd.beginRendering(renderingInfo);
+
+		ImGui_ImplVulkan_RenderDrawData(drawData, *cmd);
+
+		cmd.endRendering();
+
+		cmd.end();
 	}
 
 	void ImGuiLayer::SetColorsDark()

@@ -2,11 +2,11 @@
 
 #include "Application.h"
 #include "audio/AudioContext.h"
+#include "core/layers/ImGuiLayer.h"
 #include "debug/Instrumentor.h"
+#include "gui/GUICore.h"
 #include "physics/PhysicsContext.h"
 #include "subsystem/SubSystem.h"
-#include "core/layers/ImGuiLayer.h"
-#include "gui/GUICore.h"
 
 namespace BHive
 {
@@ -24,10 +24,10 @@ namespace BHive
 		ImGuiMemFreeFunc free_func = nullptr;
 		void *user_data = nullptr;
 
-		ImGuiLayer &layer = app->GetImGuiLayer();
-		auto ctx = layer.GetContext();
+		auto layer = app->GetImGuiLayer();
+		auto ctx = layer->GetContext();
 
-		layer.GetAllocatorCallbacks(&alloc_func, &free_func, &user_data);
+		layer->GetAllocatorCallbacks(&alloc_func, &free_func, &user_data);
 
 		ImGui::SetCurrentContext((ImGuiContext *)ctx);
 		ImGui::SetAllocatorFunctions(alloc_func, free_func, user_data);

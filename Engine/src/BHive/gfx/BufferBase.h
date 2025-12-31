@@ -17,6 +17,8 @@ namespace BHive
 
 		uint32_t GetBufferID() const { return mBufferID; }
 
+		virtual uintptr_t GetNativeHandle() const { return mBufferID; }
+
 	protected:
 		uint32_t mBufferID = 0;
 	};

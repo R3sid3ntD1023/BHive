@@ -2,8 +2,6 @@
 #include "VulkanSwapChain.h"
 #include "VulkanUtils.h"
 
-#define MAX_FRAMES_IN_FLIGHT 2
-
 namespace BHive
 {
 	VulkanSwapChain::~VulkanSwapChain()
@@ -44,7 +42,7 @@ namespace BHive
 			mRenderFinishedSemaphores.emplace_back(device, vk::SemaphoreCreateInfo());
 		}
 
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		for (size_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			mInFlightFences.emplace_back(device, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
 		}
@@ -85,7 +83,7 @@ namespace BHive
 		auto result = vkQueuePresentKHR(*graphics_queue, &info);
 
 		mSemaphoreIndex = (mSemaphoreIndex + 1) % mPresetCompleteSemaphores.size();
-		mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+		mCurrentFrame = (mCurrentFrame + 1) % VulkanCore::MAX_FRAMES_IN_FLIGHT;
 
 		return (vk::Result)result;
 	}

@@ -30,15 +30,9 @@ namespace BHive
 
 		void CreateUniformBuffers();
 
-		void CreateDescriptorSetLayout();
+		void CreateDescriptors();
 
-		void CreateDescriptorPool();
-
-		void CreateDescriptorSets();
-
-		void CreateTextureImage();
-
-		void UpdateUniformBuffer(uint32_t currentImage);
+		void UpdateUniformBuffer();
 
 		void CreateGraphicsPipeline();
 
@@ -53,18 +47,10 @@ namespace BHive
 
 		Ref<VulkanPipeline> mGraphicsPipeline = nullptr;
 
-		vk::raii::DescriptorSetLayout mDescriptorSetLayout = nullptr;
-
 		vk::raii::PipelineLayout mPipelineLayout = nullptr;
 
-		std::vector<Ref<UniformBuffer>> mUniformBuffers;
-
-		vk::raii::DescriptorPool mDescriptorPool = nullptr;
-
-		std::vector<vk::raii::DescriptorSet> mDescriptorSets;
-
-		vk::raii::DescriptorSets mImguiDescriptorSets = nullptr;
-
-		vk::raii::DescriptorSetLayout mImguiDescriptorSetLayout = nullptr;
+		Ref<UniformBuffer> mUniformBuffer;
+		Ref<class Shader> mShader;
+		Ref<class Material> mMaterial;
 	};
 } // namespace BHive

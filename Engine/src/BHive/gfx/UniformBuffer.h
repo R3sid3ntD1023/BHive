@@ -12,13 +12,15 @@ namespace BHive
 
 		void SetData(const void *data, size_t size, uint32_t offset = 0);
 
+		void WriteDescriptor(const vk::raii::DescriptorSet &set) const;
+
 		uint32_t GetBinding() const { return mBinding; }
 
-		operator const vk::raii::Buffer&() const { return mBuffer; }
+		uintptr_t GetNativeHandle() const override { return reinterpret_cast<uintptr_t>(&mBufferInfo); }
 
 	private:
-		vk::raii::Buffer mBuffer = VK_NULL_HANDLE;
-		vk::raii::DeviceMemory mMemory = VK_NULL_HANDLE;
+		AllocatedVulkanBuffer mBuffer;
 		uint32_t mBinding{0};
+		vk::DescriptorBufferInfo mBufferInfo;
 	};
 } // namespace BHive

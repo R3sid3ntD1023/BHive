@@ -40,6 +40,7 @@ namespace BHive
 		if (specification.Flags & EApplicationFlags::EnableRendering)
 		{
 			RenderCommand::Init();
+			Renderer::Init();
 		}
 
 

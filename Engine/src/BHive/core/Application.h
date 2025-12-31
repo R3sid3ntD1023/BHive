@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/Core.h"
-#include "core/Window.h"
 #include "core/Layer.h"
+#include "core/Window.h"
 #include "events/ApplicationEvents.h"
 
 namespace BHive
@@ -70,7 +70,7 @@ namespace BHive
 
 		Window &GetWindow() { return *mWindow; }
 
-		ImGuiLayer &GetImGuiLayer() { return *mImGuiLayer; }
+		ImGuiLayer* GetImGuiLayer() { return mImGuiLayer; }
 
 		static Application &Get() { return *sInstance; }
 

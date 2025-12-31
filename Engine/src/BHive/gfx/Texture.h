@@ -36,6 +36,8 @@ namespace BHive
 
 		operator uint32_t() const { return GetRendererID(); }
 
+		virtual uintptr_t GetNativeHandle() const { return GetRendererID(); };
+
 		REFLECTABLEV(Asset)
 	};
 

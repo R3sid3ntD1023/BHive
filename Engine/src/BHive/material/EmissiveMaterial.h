@@ -19,7 +19,7 @@ namespace BHive
 
 		void Submit(const Ref<Shader> &shader) override;
 
-		Ref<Material> Clone() const override;
+		///Ref<Material> Clone() const override;
 
 		Ref<Shader> GetShader() const;
 

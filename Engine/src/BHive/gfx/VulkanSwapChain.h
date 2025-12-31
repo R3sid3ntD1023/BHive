@@ -16,6 +16,7 @@ namespace BHive
 
 	class VulkanSwapChain
 	{
+	
 	public:
 		VulkanSwapChain() = default;
 

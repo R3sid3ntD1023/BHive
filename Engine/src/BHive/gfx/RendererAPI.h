@@ -41,22 +41,8 @@ namespace BHive
 	};
 
 
-	struct FRenderCommand
+	struct FRenderCommand : std::function<void(const FVulkanFrameData &)>
 	{
-		
-		FRenderCommand(std::function<void(const FVulkanFrameData &)> &&cmd)
-			: mCommand(std::move(cmd))
-		{
-		}
-
-		void Execute(const FVulkanFrameData &data)
-		{
-			if (mCommand)
-				mCommand(data);
-		}
-
-	private:
-		std::function<void(const FVulkanFrameData &)> mCommand = nullptr;
 	};
 
 	class BHIVE_API RendererAPI
@@ -103,7 +89,7 @@ namespace BHive
 
 		virtual void BindPipeline(const class VulkanPipeline &pipeline);
 
-		virtual void BindDescriptorSets(const vk::raii::PipelineLayout &layout, const std::vector<vk::raii::DescriptorSet> &sets);
+		virtual void BindDescriptorSets(const vk::raii::PipelineLayout &layout, const vk::raii::DescriptorSets &sets);
 
 		virtual void SubmitCommand(std::function<void(const FVulkanFrameData &)> &&command);
 
@@ -136,6 +122,8 @@ namespace BHive
 		std::queue<FRenderCommand> mSecondaryCommands;
 
 		std::vector<vk::raii::CommandBuffers> mCommandBuffers;
+
+		std::atomic<bool> mDeviceRecreationInProgress{false};
 
 	};
 } // namespace BHive

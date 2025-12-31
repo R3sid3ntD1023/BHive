@@ -20,10 +20,29 @@ namespace BHive
 		int32_t ComputeQueueIndex = -1;
 	};
 
+	struct AllocatedVulkanTexture
+	{
+		vk::raii::Image Image = VK_NULL_HANDLE;
+		vk::raii::ImageView ImageView = VK_NULL_HANDLE;
+		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
+		vk::raii::Sampler Sampler = VK_NULL_HANDLE;
+	};
+
+	struct AllocatedVulkanBuffer
+	{
+		vk::raii::Buffer Buffer = VK_NULL_HANDLE;
+		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
+	};
+
 	class BHIVE_API VulkanCore
 	{
 	public:
 		using DeviceCallback = std::function<void()>;
+
+		static constexpr uint32_t MINIMUM_VULKAN_API_VERSION = vk::ApiVersion14;
+
+		static constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+
 	public:
 		static void Init();
 
@@ -34,8 +53,6 @@ namespace BHive
 		static const vk::raii::PhysicalDevice &GetPhysicalDevice() { return mPhysicalDevice; }
 
 		static vk::raii::Device& GetLogicalDevice() { return mLogicalDevice; }
-
-		static constexpr uint32_t GetInstanceVersion();
 
 		static std::vector<const char *> GetRequiredExtensions();
 
@@ -55,6 +72,7 @@ namespace BHive
 		static void RegisterOnDeviceCreated(const DeviceCallback &callback);
 
 		static void RegisterOnDeviceDestroy(const DeviceCallback &callback);
+
 
 	private:
 		static void CreateIntance();

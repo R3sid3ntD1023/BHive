@@ -3,6 +3,7 @@
 #include "asset/Asset.h"
 #include "core/EnumAsByte.h"
 #include "gfx/Color.h"
+#include "gfx/DescriptorBuilder.h"
 #include "gfx/Texture.h"
 
 namespace BHive
@@ -25,11 +26,15 @@ namespace BHive
 			};
 		};
 
-	public:
+		
 		using TextureSlots = std::unordered_map<std::string, TextureSlot>;
 
 	public:
 		Material(const Ref<Shader> &shader);
+		virtual ~Material()
+		{
+			DestroyDescriptorResources(); 
+		}
 
 		virtual void Submit(const Ref<Shader> &shader);
 
@@ -39,7 +44,7 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		virtual Ref<Material> Clone() const { return nullptr; }
+		//virtual Ref<Material> Clone() const { return nullptr; }
 
 		void AddTextureSlot(const std::string &name, uint32_t binding);
 
@@ -47,12 +52,28 @@ namespace BHive
 
 		virtual bool ShouldCastShadows() const { return true; }
 
+		const vk::raii::DescriptorSets &GetDescriptorSets() const { return mDescriptorSets; }
+
+		const Ref<FDescriptorSetLayout> &GetDescriptorSetLayout() const { return mDescriptorSetLayout; }
+
 		REFLECTABLEV(Asset)
+
+	private:
+		void CreateDescriptorResources();
+
+		void DestroyDescriptorResources();
+
+		void UpdateDescriptorResources();
 
 	protected:
 		TextureSlots mTextures;
 
 		Ref<Shader> mShader;
+
+	private:
+		Ref<FDescriptorSetLayout> mDescriptorSetLayout;
+		Ref<FDescriptorPool> mDescriptorPool;
+		vk::raii::DescriptorSets mDescriptorSets = VK_NULL_HANDLE;
 	};
 
 	REFLECT_EXTERN(Material);

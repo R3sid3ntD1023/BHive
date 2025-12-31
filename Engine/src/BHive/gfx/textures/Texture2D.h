@@ -24,7 +24,7 @@ namespace BHive
 
 		virtual void SetData(const void *data, uint32_t offsetX = 0, uint32_t offsetY = 0);
 
-		virtual uint32_t GetRendererID() const { return mTextureID; }
+		virtual uint32_t GetRendererID() const { return 0; }
 
 		virtual const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
 
@@ -36,11 +36,7 @@ namespace BHive
 
 		const Buffer &GetBuffer() const { return mBuffer; }
 
-		vk::raii::Image &GetImage() { return mTextureImage; }
-
-		vk::raii::ImageView &GetView() { return mTextureImageView; }
-
-		vk::raii::Sampler &GetSampler() { return mTextureSampler; }
+		virtual uintptr_t GetNativeHandle() const override { return reinterpret_cast<uintptr_t>(&mDescriptorInfo); }
 
 		/*Begin Asset*/
 		void Save(cereal::BinaryOutputArchive &ar) const override;
@@ -59,13 +55,11 @@ namespace BHive
 		uint32_t mHeight = 0;
 		FTextureCreateInfo mCreateInfo;
 		FTextureAPIInfo mInfo;
-		uint32_t mTextureID = 0;
 		Buffer mBuffer;
 
-		vk::raii::Image mTextureImage = nullptr;
-		vk::raii::DeviceMemory mTextureImageMemory = nullptr;
-		vk::raii::ImageView mTextureImageView = nullptr;
-		vk::raii::Sampler mTextureSampler = nullptr;
+		AllocatedVulkanTexture mVulkanTexture;
+
+		vk::DescriptorImageInfo mDescriptorInfo{};
 	};
 
 	REFLECT_EXTERN(Texture2D)

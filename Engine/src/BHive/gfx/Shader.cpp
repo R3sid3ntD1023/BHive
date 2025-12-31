@@ -80,6 +80,7 @@ namespace BHive
 
 		ar(mName, mFilePath, mSources);
 		Compile();
+		Reflect();
 	}
 
 	const Shader::FShaderData &Shader::GetShaderData(EShaderStage stage) const

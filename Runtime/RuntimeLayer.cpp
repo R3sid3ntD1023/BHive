@@ -3,6 +3,7 @@
 #include "core/Application.h"
 #include "core/layers/ImGuiLayer.h"
 #include "gfx/Buffers.h"
+#include "gfx/DescriptorBuilder.h"
 #include "gfx/GraphicsContext.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
@@ -14,6 +15,7 @@
 #include "gfx/VulkanSwapChain.h"
 #include "gui/Gui.h"
 #include "importers/TextureImporter.h"
+#include "material/Material.h"
 
 namespace BHive
 {
@@ -47,36 +49,10 @@ namespace BHive
 		CreateIndexBuffer();
 		CreateVertexBuffer();
 		CreateVertexArray();
-		CreateTextureImage();
 		CreateUniformBuffers();
 
-		CreateDescriptorPool();
-		CreateDescriptorSetLayout();
-		CreateDescriptorSets();
+		CreateDescriptors();
 		CreateGraphicsPipeline();
-
-		auto &context = GraphicsContext::Get();
-		auto &device = VulkanCore::GetLogicalDevice();
-		auto &swap_chain = context.GetSwapChain();
-		auto image_count = swap_chain->GetImageCount();
-		auto &app = Application::Get();
-		auto &imgui_layer = app.GetImGuiLayer();
-
-		std::array bindings = {vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr)};
-		vk::DescriptorSetLayoutCreateInfo layoutInfo({}, bindings);
-		mImguiDescriptorSetLayout = device.createDescriptorSetLayout(layoutInfo);
-
-		std::vector<vk::DescriptorSetLayout> layouts(image_count, *mImguiDescriptorSetLayout);
-		vk::DescriptorSetAllocateInfo alloc_info(imgui_layer.GetDescriptorPool(), layouts);
-		mImguiDescriptorSets = vk::raii::DescriptorSets(device, alloc_info);
-
-		for (uint32_t i = 0; i < image_count; i++)
-		{
-
-			vk::DescriptorImageInfo image_info(mTexture->GetSampler(), mTexture->GetView(), vk::ImageLayout::eShaderReadOnlyOptimal);
-			vk::WriteDescriptorSet descriptor_writes(mImguiDescriptorSets[i], 0, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
-			device.updateDescriptorSets(descriptor_writes, nullptr);
-		}
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -93,14 +69,18 @@ namespace BHive
 		auto extents = swap_chain->GetExtent();
 		auto current_frame = swap_chain->GetCurrentFrame();
 
+		auto &sets = mMaterial->GetDescriptorSets();
+		mUniformBuffer->WriteDescriptor(sets[current_frame]);
+		mMaterial->Submit(mShader);
+
 		auto *api = RenderCommand::GetAPI();
 		api->BindPipeline(*mGraphicsPipeline);
 
 		RenderCommand::ClearColor(0.01f, 0.01f, 0.01f, 1.f);
 		RenderCommand::SetViewport(0, 0, extents.width, extents.height);
-		UpdateUniformBuffer(current_frame);
+		UpdateUniformBuffer();
 
-		api->BindDescriptorSets(mPipelineLayout, mDescriptorSets);
+		api->BindDescriptorSets(mPipelineLayout, sets);
 		api->DrawElements(EDrawMode::Triangles, *mVertexArray);
 	}
 
@@ -125,19 +105,21 @@ namespace BHive
 		auto &swap_chain = context.GetSwapChain();
 		auto image_count = swap_chain->GetImageCount();
 		auto current_frame = swap_chain->GetCurrentFrame();
+		auto &app = Application::Get();
+		auto imgui_layer = app.GetImGuiLayer();
 
-		ImTextureRef texture = (void *)*mImguiDescriptorSets[current_frame];
-		ImGui::Image(texture, {200, 200}, {0, 1}, {1, 0});
+	/*	auto image_info = reinterpret_cast<const vk::DescriptorImageInfo *>(mTexture->GetNativeHandle());
+		FDescriptorWriter(imgui_layer->GetDescriptorSetLayout(), imgui_layer->GetDescriptorPool())
+			.WriteImage(0, *image_info).Overwrite(imgui_layer->GetDescriptorSets());
+
+		ImTextureRef texture(*imgui_layer->GetDescriptorSet(current_frame));
+		ImGui::Image(texture, {200, 200}, {0, 1}, {1, 0});*/
 
 		ImGui::End();
 
 		//GUI::EndDockSpace();
 	}
 
-	void RuntimeLayer::CreateTextureImage()
-	{
-		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
-	}
 
 	void RuntimeLayer::CreateVertexBuffer()
 	{
@@ -160,15 +142,24 @@ namespace BHive
 
 	void RuntimeLayer::CreateUniformBuffers()
 	{
-		mUniformBuffers.clear();
-
-		for (size_t i = 0; i < 2; i++)
-		{
-			mUniformBuffers.emplace_back(CreateRef<UniformBuffer>(0, sizeof(UniformBufferObject)));
-		}
+		mUniformBuffer = CreateRef<UniformBuffer>(0, sizeof(UniformBufferObject));
 	}
 
-	void RuntimeLayer::UpdateUniformBuffer(uint32_t currentImage)
+	void RuntimeLayer::CreateDescriptors()
+	{
+		/*mDescriptorSetLayout = FDescriptorSetLayout::Builder()
+								   .AddBinding(0, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex, 1)
+								   .AddBinding(1, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, 1)
+								   .Build();
+
+		mDescriptorPool = FDescriptorPool::Builder().SetMaxSets(2).AddPoolSize(vk::DescriptorType::eUniformBuffer, 2).AddPoolSize(vk::DescriptorType::eCombinedImageSampler, 2).Build();
+
+		auto buffer_info = reinterpret_cast<const vk::DescriptorBufferInfo *>(mUniformBuffer->GetNativeHandle());
+		auto image_info = reinterpret_cast<const vk::DescriptorImageInfo *>(mTexture->GetNativeHandle());
+		FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteBuffer(0, *buffer_info).WriteImage(1, *image_info).Build(mDescriptorSets);*/
+	}
+
+	void RuntimeLayer::UpdateUniformBuffer()
 	{
 		static auto startTime = std::chrono::high_resolution_clock::now();
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -184,56 +175,15 @@ namespace BHive
 		ubo.proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 10.0f);
 		ubo.proj[1][1] *= -1; // for vulkan coordinate system
 
-		mUniformBuffers[currentImage]->SetData(&ubo, sizeof(ubo));
-	}
-
-	void RuntimeLayer::CreateDescriptorSetLayout()
-	{
-		auto &device = VulkanCore::GetLogicalDevice();
-
-		std::array bindings = {
-			vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr),
-			vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr)};
-		vk::DescriptorSetLayoutCreateInfo layoutInfo({}, bindings);
-		mDescriptorSetLayout = device.createDescriptorSetLayout(layoutInfo);
-	}
-
-	void RuntimeLayer::CreateDescriptorPool()
-	{
-		auto &device = VulkanCore::GetLogicalDevice();
-
-		std::array poolSize = {vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 2), vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 2)};
-
-		vk::DescriptorPoolCreateInfo poolInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 2, poolSize);
-
-		mDescriptorPool = device.createDescriptorPool(poolInfo);
-	}
-
-	void RuntimeLayer::CreateDescriptorSets()
-	{
-		auto &device = VulkanCore::GetLogicalDevice();
-
-		std::vector<vk::DescriptorSetLayout> layouts(2, *mDescriptorSetLayout);
-		vk::DescriptorSetAllocateInfo allocInfo(*mDescriptorPool, layouts);
-
-		mDescriptorSets = device.allocateDescriptorSets(allocInfo);
-
-		for (size_t i = 0; i < 2; i++)
-		{
-			const vk::raii::Buffer &buffer = *mUniformBuffers[i];
-			vk::DescriptorBufferInfo bufferInfo(buffer, 0, sizeof(UniformBufferObject));
-			vk::DescriptorImageInfo image_info(mTexture->GetSampler(), mTexture->GetView(), vk::ImageLayout::eShaderReadOnlyOptimal);
-
-			std::array descriptorWrites = {
-				vk::WriteDescriptorSet(mDescriptorSets[i], 0, 0, 1, vk::DescriptorType::eUniformBuffer, nullptr, &bufferInfo, nullptr),
-				vk::WriteDescriptorSet(mDescriptorSets[i], 1, 0, 1, vk::DescriptorType::eCombinedImageSampler, &image_info)};
-			device.updateDescriptorSets(descriptorWrites, nullptr);
-		}
+		mUniformBuffer->SetData(&ubo, sizeof(ubo));
 	}
 
 	void RuntimeLayer::CreateGraphicsPipeline()
 	{
-		auto shader = ShaderManager::Get().Load("C:/Users/dariu/Documents/BHive/Runtime/Triangle.glsl");
+		mShader = ShaderManager::Get().Load("C:/Users/dariu/Documents/BHive/Runtime/Triangle.glsl");
+		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
+		mMaterial = CreateRef<Material>(mShader);
+		mMaterial->SetTexture("u_Texture", mTexture);
 
 		auto &context = GraphicsContext::Get();
 		auto &device = VulkanCore::GetLogicalDevice();
@@ -243,15 +193,10 @@ namespace BHive
 		const auto &bindingDescription = mVertexArray->GetBindingDescription();
 		const auto &attributeDescriptions = mVertexArray->GetAttributeDescriptions();
 
-		vk::PipelineLayoutCreateInfo pipeline_layout_create_info{};
-		pipeline_layout_create_info.setLayoutCount = 1;
-		pipeline_layout_create_info.pSetLayouts = &*mDescriptorSetLayout;
-		pipeline_layout_create_info.pushConstantRangeCount = 0;
+		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, *mMaterial->GetDescriptorSetLayout()->GetLayout());
 		mPipelineLayout = device.createPipelineLayout(pipeline_layout_create_info);
 
-		vk::PipelineRenderingCreateInfo pipeline_renderingCreateInfo{};
-		pipeline_renderingCreateInfo.colorAttachmentCount = 1;
-		pipeline_renderingCreateInfo.pColorAttachmentFormats = &swap_chain->GetFormat().format;
+		vk::PipelineRenderingCreateInfo pipeline_renderingCreateInfo({}, {swap_chain->GetFormat().format});
 
 		FPipelineConfigInfo config = VulkanPipeline::GetDefaultConfigInfo(swap_chain->GetWidth(), swap_chain->GetHeight());
 		config.Layout = mPipelineLayout;
@@ -259,7 +204,7 @@ namespace BHive
 		config.InputState = vk::PipelineVertexInputStateCreateInfo({}, bindingDescription, attributeDescriptions);
 
 		mGraphicsPipeline = CreateRef<VulkanPipeline>();
-		mGraphicsPipeline->Init(device, {shader}, config);
+		mGraphicsPipeline->Init(device, {mShader}, config);
 	}
 
 } // namespace BHive

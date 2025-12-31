@@ -1,9 +1,10 @@
 #include "gfx/utils/texture/TextureUtils.h"
-#include "Texture2D.h"
 #include "gfx/VulkanUtils.h"
+#include "Texture2D.h"
 
 namespace BHive
 {
+	
 
 	Texture2D::Texture2D(uint32_t w, uint32_t h, const FTextureCreateInfo &info, const void *buffer, size_t size)
 		: mWidth(w),
@@ -30,12 +31,12 @@ namespace BHive
 	void Texture2D::Bind(uint32_t slot) const
 	{
 
-		// glBindTextureUnit(slot, mTextureID);
+	
 	}
 
 	void Texture2D::UnBind(uint32_t slot) const
 	{
-		// glBindTextureUnit(slot, 0);
+		
 	}
 
 	void Texture2D::SetInfo(const FTextureCreateInfo &info)
@@ -44,27 +45,10 @@ namespace BHive
 		mCreateInfo.MagFilter = info.MagFilter;
 		mCreateInfo.WrapMode = info.WrapMode;
 		mInfo = mCreateInfo;
-
-		/*glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, mInfo.FilterModes[0]);
-		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, mInfo.FilterModes[1]);
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, mInfo.WrapMode);
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, mInfo.WrapMode);
-
-		if (mInfo.Levels > 1 || mInfo.GenerateMipMaps)
-		{
-			glGenerateTextureMipmap(mTextureID);
-		}*/
 	}
 
 	void Texture2D::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
 	{
-		/*glTextureSubImage2D(mTextureID, 0, offsetX, offsetY, mWidth, mHeight, mInfo.Format, mInfo.Type, data);
-
-		if (mInfo.Levels > 1 || mInfo.GenerateMipMaps)
-		{
-			glGenerateTextureMipmap(mTextureID);
-		}*/
-
 		vk::DeviceSize size = mWidth * mHeight * mCreateInfo.Channels;
 
 		vk::raii::Buffer stagingBuffer = nullptr;
@@ -76,9 +60,10 @@ namespace BHive
 		memcpy(stagingData, data, size);
 		stagingBufferMemory.unmapMemory();
 
-		VulkanUtils::TransitionImageLayout(mTextureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-		VulkanUtils::CopyBufferToImage(stagingBuffer, mTextureImage, mWidth, mHeight);
-		VulkanUtils::TransitionImageLayout(mTextureImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+		auto& image = mVulkanTexture.Image;
+		VulkanUtils::TransitionImageLayout(image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+		VulkanUtils::CopyBufferToImage(stagingBuffer, image, mWidth, mHeight);
+		VulkanUtils::TransitionImageLayout(image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
 	Ref<Texture2D> Texture2D::CreateSubTexture(const FSubTexture &texture)
@@ -99,15 +84,6 @@ namespace BHive
 
 	void Texture2D::Initialize()
 	{
-		/*glCreateTextures(GL_TEXTURE_2D, 1, &mTextureID);
-
-		glTextureStorage2D(mTextureID, mInfo.Levels, mInfo.InternalFormat, mWidth, mHeight);
-
-		glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, mInfo.FilterModes[0]);
-		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, mInfo.FilterModes[1]);
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, mInfo.WrapMode);
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, mInfo.WrapMode);*/
-
 
 		auto channels = mCreateInfo.Channels;
 		auto mag_filter = (vk::Filter)mInfo.FilterModes[0];
@@ -115,13 +91,13 @@ namespace BHive
 		auto wrap_mode = (vk::SamplerAddressMode)mInfo.WrapMode;
 		auto compare_enabled = (vk::Bool32)mInfo.CompareMode;
 		auto compare_operation = (vk::CompareOp)mInfo.CompareFunc;
+		auto format = (vk::Format)mInfo.InternalFormat;
 
-		vk::Format format = vk::Format::eR8G8B8A8Srgb;
 		VulkanUtils::CreateImage2D(
-			mWidth, mHeight, format, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mTextureImage,
-			mTextureImageMemory);
+			mWidth, mHeight, format, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mVulkanTexture.Image,
+			mVulkanTexture.Memory);
 
-		mTextureImageView = VulkanUtils::CreateImageView2D(mTextureImage, format);
+		mVulkanTexture.ImageView = VulkanUtils::CreateImageView2D(mVulkanTexture.Image, format);
 
 		vk::SamplerCreateInfo sampler_info(
 			{}, min_filter, mag_filter, vk::SamplerMipmapMode::eLinear,wrap_mode, wrap_mode, wrap_mode, 0, 0, 1,
@@ -133,7 +109,9 @@ namespace BHive
 		sampler_info.minLod = 0.f;
 		sampler_info.maxLod = 0.f;
 
-		mTextureSampler = VulkanUtils::CreateImageSampler(sampler_info);
+		mVulkanTexture.Sampler = VulkanUtils::CreateImageSampler(sampler_info);
+
+		mDescriptorInfo = vk::DescriptorImageInfo(*mVulkanTexture.Sampler, *mVulkanTexture.ImageView, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
 	void Texture2D::Release()

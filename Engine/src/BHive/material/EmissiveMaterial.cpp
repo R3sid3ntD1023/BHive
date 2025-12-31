@@ -1,6 +1,6 @@
 #include "EmissiveMaterial.h"
-#include "gfx/ShaderManager.h"
 #include "gfx/Shader.h"
+#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
@@ -34,10 +34,10 @@ namespace BHive
 		return shader;
 	}
 
-	Ref<Material> EmissiveMaterial::Clone() const
-	{
-		return CreateRef<EmissiveMaterial>(*this);
-	}
+	//Ref<Material> EmissiveMaterial::Clone() const
+	//{
+	//	return CreateRef<EmissiveMaterial>(std::move(*this));
+	//}
 
 	REFLECT(EmissiveMaterial)
 	{
