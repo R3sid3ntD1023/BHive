@@ -1,11 +1,16 @@
 #pragma once
 
-#include "RenderBatch.h"
-#include "gfx/VertexArray.h"
 #include "gfx/Buffers.h"
+#include "gfx/VertexArray.h"
+#include "gfx/VulkanCore.h"
+#include "RenderBatch.h"
 
 namespace BHive
 {
+	class VulkanPipeline;
+	class FDescriptorSetLayout;
+	class FDescriptorPool;
+
 	struct FLineVertex
 	{
 		glm::vec3 Position;
@@ -46,5 +51,13 @@ namespace BHive
 		FLineVertex *mVertexDataBuffer = nullptr;
 		FLineVertex *mVertexDataPtr = nullptr;
 		uint32_t mVertexCount = 0;
+
+		Ref<VulkanPipeline> mGraphicsPipeline = nullptr;
+
+		vk::raii::PipelineLayout mPipelineLayout = nullptr;
+
+		Ref<FDescriptorSetLayout> mDescriptorSetLayout;
+		Ref<FDescriptorPool> mDescriptorPool;
+		vk::raii::DescriptorSets mDescriptorSets = nullptr;
 	};
 } // namespace BHive

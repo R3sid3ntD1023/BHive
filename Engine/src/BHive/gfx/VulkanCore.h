@@ -32,6 +32,13 @@ namespace BHive
 	{
 		vk::raii::Buffer Buffer = VK_NULL_HANDLE;
 		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
+
+		void SetData(const void* data, size_t size, uint32_t offset = 0)
+		{
+			void* mappedData = Memory.mapMemory(offset, size);
+			memcpy(mappedData, data, size);
+			Memory.unmapMemory();
+		}
 	};
 
 	class BHIVE_API VulkanCore

@@ -22,15 +22,7 @@ namespace BHive
 		void OnGuiRender() override;
 
 	private:
-		void CreateVertexBuffer();
-
-		void CreateIndexBuffer();
-
-		void CreateVertexArray();
-
 		void CreateUniformBuffers();
-
-		void CreateDescriptors();
 
 		void UpdateUniformBuffer();
 
@@ -39,11 +31,7 @@ namespace BHive
 	private:
 		Ref<Texture2D> mTexture = nullptr;
 
-		Ref<VertexBuffer> mVertexBuffer = nullptr;
-
-		Ref<IndexBuffer> mIndexBuffer = nullptr;
-
-		Ref<VertexArray> mVertexArray = nullptr;
+		Ref<class StaticMesh> mMesh = nullptr;
 
 		Ref<VulkanPipeline> mGraphicsPipeline = nullptr;
 

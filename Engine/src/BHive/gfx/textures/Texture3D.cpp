@@ -1,5 +1,5 @@
+#include "gfx/VulkanUtils.h"
 #include "Texture3D.h"
-#include <glad/glad.h>
 
 namespace BHive
 {
@@ -11,38 +11,43 @@ namespace BHive
 		  mInfo(create_info),
 		  mCreateInfo(create_info)
 	{
-		glCreateTextures(GL_TEXTURE_3D, 1, &mTextureID);
+		auto channels = mCreateInfo.Channels;
+		auto mag_filter = (vk::Filter)mInfo.FilterModes[0];
+		auto min_filter = (vk::Filter)mInfo.FilterModes[1];
+		auto wrap_mode = (vk::SamplerAddressMode)mInfo.WrapMode;
+		auto compare_enabled = (vk::Bool32)mInfo.CompareMode;
+		auto compare_operation = (vk::CompareOp)mInfo.CompareFunc;
+		auto format = (vk::Format)mInfo.InternalFormat;
 
-		glTextureStorage3D(mTextureID, mInfo.Levels, mInfo.InternalFormat, mWidth, mHeight, mDepth);
+		VulkanUtils::CreateImage(
+			width, height, depth, vk::ImageType::e3D, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
+			vk::MemoryPropertyFlagBits::eDeviceLocal, mTextureHandle);
 
-		glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, mInfo.FilterModes[0]);
-		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, mInfo.FilterModes[1]);
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_R, mInfo.WrapMode);
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, mInfo.WrapMode);
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, mInfo.WrapMode);
+		VulkanUtils::CreateImageView(mTextureHandle, vk::ImageViewType::e3D, format);
 
-		if (data)
-		{
-			glTextureSubImage3D(mTextureID, 0, 0, 0, 0, mWidth, mHeight, mDepth, mInfo.Format, mInfo.Type, data);
-		}
+		vk::SamplerCreateInfo sampler_info({}, min_filter, mag_filter, vk::SamplerMipmapMode::eLinear, wrap_mode, wrap_mode, wrap_mode, 0, 0, 1, compare_enabled, compare_operation);
+		sampler_info.borderColor = vk::BorderColor::eIntOpaqueBlack;
+		sampler_info.unnormalizedCoordinates = VK_FALSE;
+		sampler_info.mipmapMode = vk::SamplerMipmapMode::eLinear;
+		sampler_info.mipLodBias = 0.f;
+		sampler_info.minLod = 0.f;
+		sampler_info.maxLod = 0.f;
 
-		if (mInfo.GenerateMipMaps)
-			glGenerateTextureMipmap(mTextureID);
+		VulkanUtils::CreateImageSampler(mTextureHandle, sampler_info);
+
+		mDescriptorInfo = VulkanUtils::CreateDescriptorImageInfo(mTextureHandle, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
 	Texture3D::~Texture3D()
 	{
-		glDeleteTextures(1, &mTextureID);
 	}
 
 	void Texture3D::Bind(uint32_t slot) const
 	{
-		glBindTextureUnit(slot, mTextureID);
 	}
 
 	void Texture3D::UnBind(uint32_t slot) const
 	{
-		glBindTextureUnit(slot, 0);
 	}
 
 	void Texture3D::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)

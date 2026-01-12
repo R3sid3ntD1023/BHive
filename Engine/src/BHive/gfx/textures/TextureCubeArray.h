@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gfx/Texture.h"
+#include "gfx/VulkanUtils.h"
 
 namespace BHive
 {
@@ -30,5 +31,7 @@ namespace BHive
 		uint32_t mWidth, mHeight, mDepth;
 		FTextureCreateInfo mCreateInfo;
 		FTextureAPIInfo mInfo;
+		AllocatedVulkanTexture mTextureHandle;
+		vk::DescriptorImageInfo mDescriptorInfo;
 	};
 } // namespace BHive

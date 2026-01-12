@@ -1,3 +1,4 @@
+#include "batches/LineRenderBatch.h"
 #include "core/profiler/CPUGPUProfiler.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
@@ -5,7 +6,6 @@
 #include "gfx/VertexArray.h"
 #include "LineRenderer.h"
 #include "Renderer.h"
-#include "batches/LineRenderBatch.h"
 
 namespace BHive
 {

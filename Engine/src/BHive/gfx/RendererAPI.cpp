@@ -35,12 +35,12 @@ namespace BHive
 			command_buffer, image, image_index, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
 			vk::PipelineStageFlagBits2::eTopOfPipe, vk::PipelineStageFlagBits2::eColorAttachmentOutput);
 
-
 		vk::ClearValue clearColor = mClearColor;
-		vk::RenderingAttachmentInfo attachmentInfo(image_view, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearColor);
+		vk::RenderingAttachmentInfo attachmentInfo(
+			image_view, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+			clearColor);
 		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo);
 		command_buffer.beginRendering(renderingInfo);
-
 	}
 
 	void RendererAPI::EndFrame()
@@ -63,7 +63,6 @@ namespace BHive
 			mCommands.pop();
 		}
 
-		
 		command_buffer.endRendering();
 
 		VulkanUtils::TransitionImageLayout(
@@ -79,7 +78,6 @@ namespace BHive
 			mSecondaryCommands.pop();
 		}
 	}
-
 
 	void RendererAPI::BindPipeline(const VulkanPipeline &pipeline)
 	{
@@ -118,14 +116,15 @@ namespace BHive
 		CreateCommandBuffers();
 
 		// called on device creation
-		VulkanCore::RegisterOnDeviceCreated([this]()
-		{
-			CreateCommandPool();
-			CreateCommandBuffers();
+		VulkanCore::RegisterOnDeviceCreated(
+			[this]()
+			{
+				CreateCommandPool();
+				CreateCommandBuffers();
 
-			// allow subsequent commands to be submitted
-			mDeviceRecreationInProgress.store(false);
-		});
+				// allow subsequent commands to be submitted
+				mDeviceRecreationInProgress.store(false);
+			});
 
 		// cleanup on device destroy
 		VulkanCore::RegisterOnDeviceDestroy(
@@ -152,16 +151,14 @@ namespace BHive
 				}
 				catch (...)
 				{
-
 				}
-				
+
 				mVulkanShaders.clear();
 			});
 	}
 
 	void RendererAPI::Shutdown()
 	{
-		
 	}
 
 	vk::raii::CommandBuffer &RendererAPI::GetCurrentCommandBuffer()
@@ -172,13 +169,13 @@ namespace BHive
 		return mCommandBuffers[0].at(current_frame);
 	}
 
-	vk::raii::CommandBuffers* RendererAPI::AllocateCommandBuffers(uint32_t count)
+	vk::raii::CommandBuffers *RendererAPI::AllocateCommandBuffers(uint32_t count)
 	{
 		auto &device = VulkanCore::GetLogicalDevice();
 
 		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, count);
 		mCommandBuffers.emplace_back(device, alloc_info);
-	
+
 		return &mCommandBuffers.back();
 	}
 
@@ -224,7 +221,22 @@ namespace BHive
 
 	void RendererAPI::DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count)
 	{
-		vao.Bind();
+		mCommands.emplace(
+			[=](const FVulkanFrameData &data)
+			{
+				std::vector<vk::Buffer> vk_vertex_buffers;
+
+				auto vertex_buffers = vao.GetVertexBuffers();
+
+				for (auto &vb : vertex_buffers)
+				{
+					const vk::raii::Buffer &vk_buffer = *vb;
+					vk_vertex_buffers.push_back(*vk_buffer);
+				}
+
+				data.CommandBuffer.bindVertexBuffers(0, vk_vertex_buffers, {0});
+				data.CommandBuffer.draw(count, 1, 0, 0);
+			});
 	}
 
 	void RendererAPI::DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count)

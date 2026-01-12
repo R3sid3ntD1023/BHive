@@ -7,7 +7,7 @@ namespace BHive
 	UniformBuffer::UniformBuffer(uint32_t binding, uint64_t size, const void *data)
 		: mBinding(binding)
 	{
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, mBuffer.Buffer, mBuffer.Memory);
+		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, mBuffer);
 		if (data)
 		{
 			SetData(data, size, 0);
@@ -18,9 +18,7 @@ namespace BHive
 
 	void UniformBuffer::SetData(const void* data, size_t size, uint32_t offset)
 	{
-		void* buffer_memory = mBuffer.Memory.mapMemory(offset, size);
-		memcpy(buffer_memory, data, size);
-		mBuffer.Memory.unmapMemory();
+		mBuffer.SetData(data, size, offset);
 	}
 
 	void UniformBuffer::WriteDescriptor(const vk::raii::DescriptorSet &set) const

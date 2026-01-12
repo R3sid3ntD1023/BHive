@@ -30,7 +30,7 @@ namespace BHive
 			BlueTexture = CreateRef<Texture2D>(1, 1, create_info, &blue, sizeof(uint32_t));
 
 			Camera.Init();
-			//Model.Init();
+			// Model.Init();
 		}
 	};
 
@@ -38,15 +38,15 @@ namespace BHive
 	{
 		sData = new RenderData();
 
-		/*LineRenderer::Init();
-		QuadRenderer::Init();*/
+		LineRenderer::Init();
+		// QuadRenderer::Init();
 	}
 
 	void Renderer::Shutdown()
 	{
 
-		/*LineRenderer::Shutdown();
-		QuadRenderer::Shutdown();*/
+		LineRenderer::Shutdown();
+		// QuadRenderer::Shutdown();
 
 		delete sData;
 	}
@@ -55,8 +55,8 @@ namespace BHive
 	{
 		ResetStats();
 
-		/*LineRenderer::Begin();
-		QuadRenderer::Begin();*/
+		LineRenderer::Begin();
+		// QuadRenderer::Begin();
 	}
 
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
@@ -66,14 +66,14 @@ namespace BHive
 
 	void Renderer::Draw(const Ref<FMeshRenderData> &data)
 	{
-		//sData->Model.Draw(data);
+		// sData->Model.Draw(data);
 	}
 
 	void Renderer::End()
 	{
 
-		/*LineRenderer::End();
-		QuadRenderer::End();*/
+		LineRenderer::End();
+		// QuadRenderer::End();
 	}
 
 	Ref<Texture> Renderer::GetWhiteTexture()

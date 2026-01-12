@@ -94,7 +94,6 @@ namespace BHive
 		glfwGetFramebufferSize(mWindowHandle, &w, &h);
 
 		auto &physical_device = VulkanCore::GetPhysicalDevice();
-		auto &device = VulkanCore::GetLogicalDevice();
 		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(*mSurface);
 		auto formats = physical_device.getSurfaceFormatsKHR(*mSurface);
 		auto presentModes = physical_device.getSurfacePresentModesKHR(*mSurface);
@@ -106,7 +105,7 @@ namespace BHive
 		create_info.Formats = formats;
 		create_info.PresentModes = presentModes;
 		mSwapChain = CreateRef<VulkanSwapChain>();
-		mSwapChain->Init(device, mSurface, create_info);
+		mSwapChain->Init(mSurface, create_info);
 	}
 
 	void GraphicsContext::RecreateSwapChain()

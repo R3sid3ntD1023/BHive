@@ -10,7 +10,7 @@ namespace BHive
 		mSwapChain = nullptr;
 	}
 
-	void VulkanSwapChain::Init(vk::raii::Device &device, vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info)
+	void VulkanSwapChain::Init(vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info)
 	{
 		mExtent = VulkanUtils::ChooseSwapExtent(create_info.Capabilities, create_info.Width, create_info.Height);
 		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(create_info.Formats);
@@ -22,6 +22,7 @@ namespace BHive
 			{}, *surface, mMinImageCount, mImageFormat.format, mImageFormat.colorSpace, mExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, {},
 			create_info.Capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, present_mode, true, nullptr);
 
+		auto &device = VulkanCore::GetLogicalDevice();
 		mSwapChain = device.createSwapchainKHR(swap_chain_create_info);
 		mImages = mSwapChain.getImages();
 

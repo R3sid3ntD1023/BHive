@@ -30,6 +30,7 @@
 #endif
 
 #include <ImGuizmo.h>
+#include "gfx/Texture.h"
 
 namespace BHive
 {
@@ -104,43 +105,43 @@ namespace BHive
 		auto api = RenderCommand::GetAPI();
 		auto pool_size = IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE;
 
-		//mDescriptorSetLayout = FDescriptorSetLayout::Builder().AddBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, 1).Build();
-		mDescriptorPool = FDescriptorPool::Builder().SetMaxSets(8)
-									.AddPoolSize(vk::DescriptorType::eSampler, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
-									.AddPoolSize(vk::DescriptorType::eCombinedImageSampler, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
-									.AddPoolSize(vk::DescriptorType::eSampledImage, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
-									.AddPoolSize(vk::DescriptorType::eStorageImage, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
-									.AddPoolSize(vk::DescriptorType::eUniformTexelBuffer, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
-									.AddPoolSize(vk::DescriptorType::eStorageTexelBuffer, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
-									.AddPoolSize(vk::DescriptorType::eUniformBuffer, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
-									.AddPoolSize(vk::DescriptorType::eStorageBuffer, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
-									.AddPoolSize(vk::DescriptorType::eUniformBufferDynamic, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
-									.AddPoolSize(vk::DescriptorType::eStorageBufferDynamic, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
-									.AddPoolSize(vk::DescriptorType::eInputAttachment, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
-									.Build();
+		// mDescriptorSetLayout = FDescriptorSetLayout::Builder().AddBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, 1).Build();
+		mDescriptorPool = FDescriptorPool::Builder()
+							  .SetMaxSets(8)
+							  .AddPoolSize(vk::DescriptorType::eSampler, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+							  .AddPoolSize(vk::DescriptorType::eCombinedImageSampler, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+							  .AddPoolSize(vk::DescriptorType::eSampledImage, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+							  .AddPoolSize(vk::DescriptorType::eStorageImage, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+							  .AddPoolSize(vk::DescriptorType::eUniformTexelBuffer, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+							  .AddPoolSize(vk::DescriptorType::eStorageTexelBuffer, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+							  .AddPoolSize(vk::DescriptorType::eUniformBuffer, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+							  .AddPoolSize(vk::DescriptorType::eStorageBuffer, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+							  .AddPoolSize(vk::DescriptorType::eUniformBufferDynamic, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+							  .AddPoolSize(vk::DescriptorType::eStorageBufferDynamic, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+							  .AddPoolSize(vk::DescriptorType::eInputAttachment, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+							  .Build();
 
-
-		//FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).Build(mDescriptorSets);
+		// FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).Build(mDescriptorSets);
 
 		ImGui_ImplGlfw_InitForVulkan(mWindow, true);
 
 		mCommandBuffers = api->AllocateCommandBuffers(image_count);
 
-		VulkanCore::RegisterOnDeviceCreated([this, &device, image_count]()
-		{
-			auto &device = VulkanCore::GetLogicalDevice();
-			auto api = RenderCommand::GetAPI();
-			mCommandBuffers = api->AllocateCommandBuffers(image_count); 
-		});
+		VulkanCore::RegisterOnDeviceCreated(
+			[this, &device, image_count]()
+			{
+				auto &device = VulkanCore::GetLogicalDevice();
+				auto api = RenderCommand::GetAPI();
+				mCommandBuffers = api->AllocateCommandBuffers(image_count);
+			});
 
 		VulkanCore::RegisterOnDeviceDestroy([this]() { mCommandBuffers = nullptr; });
 
-
 		auto format = swap_chain->GetFormat().format;
 		auto depth_format = VulkanUtils::FindDepthFormat(physical_device);
-		vk::PipelineRenderingCreateInfo rendering_info(0, format, depth_format,vk::Format::eUndefined);
+		vk::PipelineRenderingCreateInfo rendering_info(0, format, depth_format, vk::Format::eUndefined);
 
-		auto& queue_familes = VulkanCore::GetQueueFamilies();
+		auto &queue_familes = VulkanCore::GetQueueFamilies();
 
 		ImGui_ImplVulkan_InitInfo init_info{};
 		init_info.ApiVersion = VulkanCore::MINIMUM_VULKAN_API_VERSION;
@@ -163,16 +164,16 @@ namespace BHive
 		init_info.PipelineInfoMain.Subpass = 0;
 		init_info.CheckVkResultFn = CheckVkResult;
 		init_info.UseDynamicRendering = true;
-		
 
 		ImGui_ImplVulkan_Init(&init_info);
-		
 	}
 
 	void ImGuiLayer::Shutdown()
 	{
-		auto& device = VulkanCore::GetLogicalDevice();
+		auto &device = VulkanCore::GetLogicalDevice();
 		device.waitIdle();
+
+		ClearTextureMap();
 
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
@@ -215,7 +216,6 @@ namespace BHive
 		};
 
 		api->SubmitCommand(imgui_command);
-
 
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
@@ -272,6 +272,25 @@ namespace BHive
 		colors[ImGuiCol_TitleBg] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
 		colors[ImGuiCol_TitleBgActive] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
 		colors[ImGuiCol_TitleBgCollapsed] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
+	}
+
+	VkDescriptorSet ImGuiLayer::GetTextureID(const Ref<Texture> &texture)
+	{
+		if (s_ImGuiTextureMap.contains(texture))
+			return s_ImGuiTextureMap[texture];
+
+		auto handle = reinterpret_cast<const vk::DescriptorImageInfo *>(texture->GetNativeHandle());
+		auto set = ImGui_ImplVulkan_AddTexture(handle->sampler, handle->imageView, (VkImageLayout)handle->imageLayout);
+		return s_ImGuiTextureMap[texture] = set;
+	}
+
+	void ImGuiLayer::ClearTextureMap()
+	{
+		for (auto [_, set] : s_ImGuiTextureMap)
+		{
+			ImGui_ImplVulkan_RemoveTexture(set);
+		}
+		s_ImGuiTextureMap.clear();
 	}
 
 	void ImGuiLayer::BlockEvents(bool block)

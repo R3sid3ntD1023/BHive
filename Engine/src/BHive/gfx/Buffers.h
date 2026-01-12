@@ -1,7 +1,7 @@
 #pragma once
 
-#include "BufferLayout.h"
 #include "BufferBase.h"
+#include "BufferLayout.h"
 #include "VulkanCore.h"
 
 namespace BHive
@@ -18,12 +18,11 @@ namespace BHive
 
 		virtual void SetData(const void *data, uint64_t size, uint32_t offset = 0);
 
-		operator const vk::raii::Buffer &() const { return mBuffer; }
+		operator const vk::raii::Buffer &() const { return mBuffer.Buffer; }
 
 	private:
 		uint32_t mCount;
-		vk::raii::Buffer mBuffer = VK_NULL_HANDLE;
-		vk::raii::DeviceMemory mMemory = VK_NULL_HANDLE;
+		AllocatedVulkanBuffer mBuffer;
 	};
 
 	class BHIVE_API VertexBuffer : public BufferBase
@@ -38,12 +37,11 @@ namespace BHive
 		virtual const BufferLayout &GetLayout() const { return mLayout; }
 		virtual void BindBufferBase(uint32_t binding) const override;
 
-		operator const vk::raii::Buffer &() const { return mBuffer; }
+		operator const vk::raii::Buffer &() const { return mBuffer.Buffer; }
 
 	private:
 		BufferLayout mLayout{};
-		vk::raii::Buffer mBuffer = VK_NULL_HANDLE;
-		vk::raii::DeviceMemory mMemory = VK_NULL_HANDLE;
+		AllocatedVulkanBuffer mBuffer;
 	};
 
 } // namespace BHive

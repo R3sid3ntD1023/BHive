@@ -26,15 +26,11 @@ namespace BHive
 			};
 		};
 
-		
 		using TextureSlots = std::unordered_map<std::string, TextureSlot>;
 
 	public:
 		Material(const Ref<Shader> &shader);
-		virtual ~Material()
-		{
-			DestroyDescriptorResources(); 
-		}
+		virtual ~Material() { DestroyDescriptorResources(); }
 
 		virtual void Submit(const Ref<Shader> &shader);
 
@@ -44,7 +40,7 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		//virtual Ref<Material> Clone() const { return nullptr; }
+		// virtual Ref<Material> Clone() const { return nullptr; }
 
 		void AddTextureSlot(const std::string &name, uint32_t binding);
 

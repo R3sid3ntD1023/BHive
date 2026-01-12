@@ -30,6 +30,8 @@ namespace BHive
 
 		const FCameraData &GetCameraData() { return mData; }
 
+		Ref<UniformBuffer> GetUniformBuffer() const { return mBuffer; }
+
 	private:
 		Ref<UniformBuffer> mBuffer;
 		FCameraData mData;

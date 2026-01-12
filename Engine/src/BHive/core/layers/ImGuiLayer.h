@@ -33,33 +33,27 @@ namespace BHive
 
 		void GetAllocatorCallbacks(void *alloc_func, void *free_func, void **user_data) const;
 
-
 		const Ref<FDescriptorPool> &GetDescriptorPool() const { return mDescriptorPool; }
 
-		const Ref<FDescriptorSetLayout> &GetDescriptorSetLayout() const { return mDescriptorSetLayout; }
+		static VkDescriptorSet GetTextureID(const Ref<Texture> &texture);
 
-		vk::raii::DescriptorSets &GetDescriptorSets() { return mDescriptorSets; }
-
-		vk::raii::DescriptorSet &GetDescriptorSet(uint32_t index) { return mDescriptorSets[index]; }
+		static void ClearTextureMap();
 
 	private:
 		void Init();
 
 		void Shutdown();
 
-		void RecordImGuiDrawCommands(ImDrawData* drawData, vk::raii::CommandBuffer& cmd, const vk::RenderingInfo& renderingInfo);
+		void RecordImGuiDrawCommands(ImDrawData *drawData, vk::raii::CommandBuffer &cmd, const vk::RenderingInfo &renderingInfo);
 
 		bool mBlockEvents{false};
 
 		GLFWwindow *mWindow = nullptr;
 
-		Ref<FDescriptorSetLayout> mDescriptorSetLayout;
-
 		Ref<FDescriptorPool> mDescriptorPool;
 
-		vk::raii::DescriptorSets mDescriptorSets = nullptr;
-	
-		vk::raii::CommandBuffers* mCommandBuffers = nullptr;
+		vk::raii::CommandBuffers *mCommandBuffers = nullptr;
 
+		static inline std::unordered_map<Ref<Texture>, VkDescriptorSet> s_ImGuiTextureMap;
 	};
 } // namespace BHive

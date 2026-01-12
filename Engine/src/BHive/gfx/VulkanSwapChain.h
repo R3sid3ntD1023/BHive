@@ -16,13 +16,13 @@ namespace BHive
 
 	class VulkanSwapChain
 	{
-	
+
 	public:
 		VulkanSwapChain() = default;
 
 		~VulkanSwapChain();
 
-		void Init(vk::raii::Device &device, vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info);
+		void Init(vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info);
 
 		uint32_t GetWidth() const { return mExtent.width; }
 

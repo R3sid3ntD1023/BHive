@@ -1,8 +1,8 @@
-#include "MeshImportResolver.h"
 #include "mesh/SkeletalAnimation.h"
 #include "mesh/SkeletalMesh.h"
 #include "mesh/Skeleton.h"
 #include "mesh/StaticMesh.h"
+#include "MeshImportResolver.h"
 
 namespace BHive
 {
@@ -42,17 +42,14 @@ namespace BHive
 		std::unordered_map<std::string, Ref<Texture>> mLoadedTextures;
 	};
 
-	MeshImportResolver::MeshImportResolver(
-		const FMeshImportData &data, const FMeshImportOptions &options, AdditionalAssets &additional)
+	MeshImportResolver::MeshImportResolver(const FMeshImportData &data, const FMeshImportOptions &options, AdditionalAssets &additional)
 		: mData(data),
 		  mOptions(options),
 		  mAdditionalAssets(additional)
 	{
 	}
 
-	void MeshImportResolver::SetLoaders(
-		LoadTextureSigniture load_texture, LoadTextureMemorySigniture load_texture_memory,
-		CreateMaterialSigniture create_material)
+	void MeshImportResolver::SetLoaders(LoadTextureSigniture load_texture, LoadTextureMemorySigniture load_texture_memory, CreateMaterialSigniture create_material)
 	{
 		LoadTextureFunc = std::move(load_texture);
 		LoadTextureMemoryFunc = std::move(load_texture_memory);
@@ -131,8 +128,7 @@ namespace BHive
 
 			std::string anim_name = std::format("{}_Animation({})", mAssetName, i);
 
-			animations[i] = CreateRef<SkeletalAnimation>(
-				data.mDuration, data.TicksPerSecond, data.mFrames, mSkeleton, data.mGlobalInverseMatrix);
+			animations[i] = CreateRef<SkeletalAnimation>(data.mDuration, data.TicksPerSecond, data.mFrames, mSkeleton, data.mGlobalInverseMatrix);
 			animations[i]->SetName(anim_name);
 		}
 
@@ -149,9 +145,12 @@ namespace BHive
 
 	void MeshImportResolver::ResolveMaterials(MaterialTable &material_table)
 	{
-		ASSERT(LoadTextureFunc);
+		/*ASSERT(LoadTextureFunc);
 		ASSERT(LoadTextureMemoryFunc);
-		ASSERT(CreateMaterialFunc);
+		ASSERT(CreateMaterialFunc);*/
+
+		if (!LoadTextureFunc || !LoadTextureMemoryFunc || !CreateMaterialFunc)
+			return;
 
 		TextureResolver texture_resolver(LoadTextureFunc, LoadTextureMemoryFunc);
 
@@ -185,8 +184,7 @@ namespace BHive
 					}
 				}
 
-				auto material_name =
-					material_data.mName.empty() ? std::format("{}({})", mAssetName, i) : material_data.mName;
+				auto material_name = material_data.mName.empty() ? std::format("{}({})", mAssetName, i) : material_data.mName;
 
 				material->SetName(material_name);
 

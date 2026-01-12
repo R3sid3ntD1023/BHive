@@ -1,6 +1,6 @@
 #include "gfx/utils/texture/TextureUtils.h"
+#include "gfx/VulkanUtils.h"
 #include "Texture2DArray.h"
-#include <glad/glad.h>
 
 namespace BHive
 {
@@ -11,64 +11,58 @@ namespace BHive
 		  mCreateInfo(specification),
 		  mInfo(specification)
 	{
+		auto channels = mCreateInfo.Channels;
+		auto mag_filter = (vk::Filter)mInfo.FilterModes[0];
+		auto min_filter = (vk::Filter)mInfo.FilterModes[1];
+		auto wrap_mode = (vk::SamplerAddressMode)mInfo.WrapMode;
+		auto compare_enabled = (vk::Bool32)mInfo.CompareMode;
+		auto compare_operation = (vk::CompareOp)mInfo.CompareFunc;
+		auto format = (vk::Format)mInfo.InternalFormat;
 
-		glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &mTextureID);
+		VulkanUtils::CreateImage(
+			mWidth, mHeight, 1, vk::ImageType::e2D, format, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
+			vk::MemoryPropertyFlagBits::eDeviceLocal, mTextureHandle);
 
-		glTextureStorage3D(mTextureID, specification.Levels, mInfo.InternalFormat, width, height, depth);
+		VulkanUtils::CreateImageView(mTextureHandle, vk::ImageViewType::e2DArray, format);
 
-		glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, mInfo.FilterModes[0]);
-		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, mInfo.FilterModes[1]);
+		vk::SamplerCreateInfo sampler_info({}, min_filter, mag_filter, vk::SamplerMipmapMode::eLinear, wrap_mode, wrap_mode, wrap_mode, 0, 0, 1, compare_enabled, compare_operation);
+		sampler_info.borderColor = vk::BorderColor::eIntOpaqueBlack;
+		sampler_info.unnormalizedCoordinates = VK_FALSE;
+		sampler_info.mipmapMode = vk::SamplerMipmapMode::eLinear;
+		sampler_info.mipLodBias = 0.f;
+		sampler_info.minLod = 0.f;
+		sampler_info.maxLod = 0.f;
 
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, mInfo.WrapMode);
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, mInfo.WrapMode);
+		VulkanUtils::CreateImageSampler(mTextureHandle, sampler_info);
 
-		if (mInfo.WrapMode == GL_CLAMP_TO_BORDER)
-		{
-			glTextureParameterfv(mTextureID, GL_TEXTURE_BORDER_COLOR, mInfo.BorderColor);
-		}
-
-		if (mInfo.IsDepth)
-		{
-			if (mInfo.CompareMode)
-			{
-				glTextureParameteri(mTextureID, GL_TEXTURE_COMPARE_MODE, mInfo.CompareMode);
-			}
-
-			if (mInfo.CompareFunc)
-			{
-				glTextureParameteri(mTextureID, GL_TEXTURE_COMPARE_FUNC, mInfo.CompareFunc);
-			}
-		}
-
-		if (mInfo.Levels > 1 || mInfo.GenerateMipMaps)
-		{
-			glGenerateTextureMipmap(mTextureID);
-		}
+		mDescriptorInfo = VulkanUtils::CreateDescriptorImageInfo(mTextureHandle, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
 	Texture2DArray::~Texture2DArray()
 	{
-		glDeleteTextures(1, &mTextureID);
 	}
 
 	void Texture2DArray::Bind(uint32_t slot) const
 	{
-
-		glBindTextureUnit(slot, mTextureID);
 	}
 
 	void Texture2DArray::UnBind(uint32_t slot) const
 	{
-
-		glBindTextureUnit(slot, 0);
 	}
 
 	void Texture2DArray::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
 	{
-		glTextureSubImage3D(mTextureID, 0, offsetX, offsetY, 0, mWidth, mHeight, mDepth, mInfo.Format, mInfo.Type, data);
-		if (mInfo.Levels > 1 || mInfo.GenerateMipMaps)
-		{
-			glGenerateTextureMipmap(mTextureID);
-		}
+
+		vk::DeviceSize size = mWidth * mHeight * mDepth * mCreateInfo.Channels;
+
+		AllocatedVulkanBuffer stagingBuffer;
+		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
+
+		stagingBuffer.SetData(data, size, offsetX);
+
+		auto &image = mTextureHandle.Image;
+		VulkanUtils::TransitionImageLayout(image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+		VulkanUtils::CopyBufferToImage(stagingBuffer, mTextureHandle, mWidth, mHeight);
+		VulkanUtils::TransitionImageLayout(image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 } // namespace BHive

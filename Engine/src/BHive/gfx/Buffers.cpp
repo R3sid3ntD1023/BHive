@@ -12,20 +12,16 @@ namespace BHive
 	IndexBuffer::IndexBuffer(const uint32_t count)
 		: mCount(count)
 	{
-		VulkanUtils::CreateBuffer(count * sizeof(uint32_t), vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mBuffer, mMemory);
+		VulkanUtils::CreateBuffer(count * sizeof(uint32_t), vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mBuffer);
 	}
 
 	void IndexBuffer::SetData(const void *data, uint64_t size, uint32_t offset)
 	{
-		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
-		vk::raii::Buffer stagingBuffer = nullptr;
+		AllocatedVulkanBuffer stagingBuffer;
 
 		VulkanUtils::CreateBuffer(
-			size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
-
-		void *stagingdata = stagingBufferMemory.mapMemory(offset, size);
-		memcpy(stagingdata, data, size);
-		stagingBufferMemory.unmapMemory();
+			size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
+		stagingBuffer.SetData(data, size, 0);
 
 		VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
 	}
@@ -38,7 +34,7 @@ namespace BHive
 
 	VertexBuffer::VertexBuffer(const uint64_t size)
 	{
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mBuffer, mMemory);
+		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mBuffer);
 	}
 
 	void VertexBuffer::BindBufferBase(uint32_t binding) const
@@ -47,15 +43,11 @@ namespace BHive
 
 	void VertexBuffer::SetData(const void *data, uint64_t size, uint32_t offset)
 	{
-		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
-		vk::raii::Buffer stagingBuffer = nullptr;
+		AllocatedVulkanBuffer stagingBuffer;
 
 		VulkanUtils::CreateBuffer(
-			size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
-
-		void *stagingdata = stagingBufferMemory.mapMemory(offset, size);
-		memcpy(stagingdata, data, size);
-		stagingBufferMemory.unmapMemory();
+			size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
+		stagingBuffer.SetData(data, size, offset);
 
 		VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
 	}
