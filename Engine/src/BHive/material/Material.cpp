@@ -4,6 +4,10 @@
 #include "gfx/Texture.h"
 #include "Material.h"
 #include "renderers/Renderer.h"
+#include "renderers/buffers/GlobalBuffers.h"
+#include "gfx/UniformBuffer.h"
+#include "gfx/GraphicsContext.h"
+#include "gfx/VulkanSwapChain.h"
 
 namespace BHive
 {
@@ -25,20 +29,12 @@ namespace BHive
 
 	void Material::Submit(const Ref<Shader> &shader)
 	{
-		for (auto &[name, slot] : mTextures)
-		{
-			if (slot.Texture)
-			{
-				slot.Texture->Bind(slot.Binding);
-			}
-			else
-			{
-				Renderer::GetWhiteTexture()->Bind(slot.Binding);
-				continue;
-			}
-		}
-
 		UpdateDescriptorResources();
+
+		mShader->Bind();
+
+		auto *api = RenderCommand::GetAPI();
+		api->BindDescriptorSets(mShader->GetPipelineLayout(), mDescriptorSets);
 	}
 
 	void Material::AddTextureSlot(const std::string &name, uint32_t binding)
@@ -83,47 +79,63 @@ namespace BHive
 
 		const auto &reflection_data = mShader->GetRelectionData();
 
-		if (reflection_data.Samplers.empty())
-			return;
-
-		FDescriptorSetLayout::Builder builder;
 		for (auto &[name, sampler] : reflection_data.Samplers)
 		{
-			builder.AddBinding(sampler.Binding, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, 1);
 			mTextures.emplace(name, TextureSlot{static_cast<uint32_t>(sampler.Binding), nullptr});
 		}
 
-		for (auto &[name, uniform_buffers] : reflection_data.UniformBuffers)
+		for (auto &[name, data] : reflection_data.UniformBuffers)
 		{
-			builder.AddBinding(uniform_buffers.Binding, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 1);
+			mUniformBufferBindings.push_back(data.Binding);
 		}
+
 
 		auto num_samplers = static_cast<uint32_t>(reflection_data.Samplers.size());
 		auto num_uniform_buffers = static_cast<uint32_t>(reflection_data.UniformBuffers.size());
 		auto max_sets = num_samplers + num_uniform_buffers;
+		FDescriptorPool::Builder pool_builder;
+		pool_builder.SetMaxSets(max_sets * 2);
 
-		mDescriptorSetLayout = builder.Build();
-		mDescriptorPool = FDescriptorPool::Builder()
-							  .SetMaxSets(max_sets * 2)
-							  .AddPoolSize(vk::DescriptorType::eCombinedImageSampler, num_samplers * VulkanCore::MAX_FRAMES_IN_FLIGHT)
-							  .AddPoolSize(vk::DescriptorType::eUniformBuffer, num_uniform_buffers * VulkanCore::MAX_FRAMES_IN_FLIGHT)
-							  .Build();
-		FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).Build(mDescriptorSets);
+		if (num_uniform_buffers)
+		{
+			pool_builder.AddPoolSize(vk::DescriptorType::eUniformBuffer, num_uniform_buffers * VulkanCore::MAX_FRAMES_IN_FLIGHT);
+		}
+
+		if (num_samplers)
+		{
+			pool_builder.AddPoolSize(vk::DescriptorType::eCombinedImageSampler, num_samplers * VulkanCore::MAX_FRAMES_IN_FLIGHT);
+		}
+			
+			
+		mDescriptorPool = pool_builder.Build();
+
+		auto& descriptor_set_layout = mShader->GetDescriptorSetLayout();
+		FDescriptorWriter(descriptor_set_layout, mDescriptorPool).Build(mDescriptorSets);
 	}
 
 	void Material::DestroyDescriptorResources()
 	{
 		mDescriptorSets.clear();
 		mDescriptorPool = nullptr;
-		mDescriptorSetLayout = nullptr;
 	}
 
 	void Material::UpdateDescriptorResources()
 	{
-		if (!mDescriptorSetLayout || !mDescriptorPool)
+		if (!mDescriptorPool)
 			return;
 
-		auto api = RenderCommand::GetAPI();
+		auto &context = GraphicsContext::Get();
+		auto &swap_chain = context.GetSwapChain();
+		auto current_frame = swap_chain->GetCurrentFrame();
+
+
+		for (const auto& binding : mUniformBufferBindings)
+		{
+			auto ubo = GlobalBuffers::GetUniformBuffer(binding);
+			for (const auto& set : mDescriptorSets)
+				ubo->WriteDescriptor(set);
+		}
+
 		for (auto &[name, slot] : mTextures)
 		{
 			
@@ -138,12 +150,12 @@ namespace BHive
 			}
 
 			auto image_info = reinterpret_cast<vk::DescriptorImageInfo *>(texture->GetNativeHandle());
-			FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteImage(slot.Binding, *image_info).Overwrite(mDescriptorSets);
+			auto &descriptor_set_layout = mShader->GetDescriptorSetLayout();
+			FDescriptorWriter(descriptor_set_layout, mDescriptorPool).WriteImage(slot.Binding, *image_info).Overwrite(mDescriptorSets);
 			
 		}
-
-		
 	}
+
 
 	REFLECT(Material::TextureSlot)
 	{

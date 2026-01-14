@@ -68,7 +68,7 @@ namespace BHive
 		if (elements.size() == 0)
 			return;
 
-		mBinding = vk::VertexInputBindingDescription(0, stride, vk::VertexInputRate::eVertex);
+		mBinding = vk::VertexInputBindingDescription2EXT(0, stride, vk::VertexInputRate::eVertex, 1);
 
 		for (const auto &element : elements)
 		{

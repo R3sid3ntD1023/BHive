@@ -3,11 +3,13 @@
 #include "core/Core.h"
 #include "ShaderReflection.h"
 #include "ShaderStages.h"
-#include "utils/shader/ShaderUniformSetter.h"
 #include "VulkanCore.h"
 
 namespace BHive
 {
+	class VulkanPipeline;
+	class FDescriptorSetLayout;
+
 	class BHIVE_API Shader
 	{
 		using Stages = std::vector<vk::PipelineShaderStageCreateInfo>;
@@ -41,11 +43,13 @@ namespace BHive
 		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1);
 
 		template <typename T>
-		void SetUniform(const std::string &name, const T &val)
-		{
-			if (mUniformSetter)
-				mUniformSetter->SetUniform<T>(name, val);
-		}
+		void SetUniform(const std::string &name, const T &val);
+
+		template <typename T, glm::length_t L, glm::qualifier Q>
+		void SetUniform(const std::string &name, const glm::vec<L, T, Q> &val);
+
+		template <typename T, glm::length_t C, glm::length_t R, glm::qualifier Q>
+		void SetUniform(const std::string &name, const glm::mat<C, R, T, Q> &val);
 
 		virtual const FShaderReflectionData &GetRelectionData() const { return mReflectionData; }
 
@@ -59,6 +63,12 @@ namespace BHive
 
 		const Stages &GetStageCreateInfos() const { return mVulkanShaderStages; }
 
+		const VulkanPipeline &GetPipeline() const { return *mGraphicsPipeline; }
+
+		const vk::raii::PipelineLayout &GetPipelineLayout() const { return mPipelineLayout; }
+
+		const Ref<FDescriptorSetLayout> &GetDescriptorSetLayout() const { return mDescriptorSetLayout; }
+
 	private:
 		void Compile();
 
@@ -67,6 +77,8 @@ namespace BHive
 		void PreProcess(const std::string &source);
 
 		void Reflect();
+
+		void CreatePipeline();
 
 	private:
 		std::string mName;
@@ -81,9 +93,17 @@ namespace BHive
 
 		Stages mVulkanShaderStages{};
 
-		Scope<ShaderUniformSetter> mUniformSetter;
+		Scope<VulkanPipeline> mGraphicsPipeline;
+
+		Ref<FDescriptorSetLayout> mDescriptorSetLayout;
+
+		vk::raii::PipelineLayout mPipelineLayout = nullptr;
 
 		friend class ShaderSerializer;
 	};
 
+
+
 } // namespace BHive
+
+#include "Shader.inl"

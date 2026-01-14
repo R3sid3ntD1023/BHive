@@ -23,13 +23,13 @@ namespace BHive
 		virtual Ref<VertexBuffer> GetVertexBuffer(uint32_t index) const;
 		virtual std::vector<Ref<VertexBuffer>> GetVertexBuffers() const { return mVertexBuffers; }
 
-		const vk::VertexInputBindingDescription &GetBindingDescription() const { return mBinding; }
+		const vk::VertexInputBindingDescription2EXT &GetBindingDescription() const { return mBinding; }
 
-		const std::vector<vk::VertexInputAttributeDescription> &GetAttributeDescriptions() const { return mAttributes; }
+		const std::vector<vk::VertexInputAttributeDescription2EXT> &GetAttributeDescriptions() const { return mAttributes; }
 
 	private:
-		vk::VertexInputBindingDescription mBinding;
-		std::vector<vk::VertexInputAttributeDescription> mAttributes;
+		vk::VertexInputBindingDescription2EXT mBinding;
+		std::vector<vk::VertexInputAttributeDescription2EXT> mAttributes;
 
 		Ref<IndexBuffer> mIndexBuffer;
 		std::vector<Ref<VertexBuffer>> mVertexBuffers;

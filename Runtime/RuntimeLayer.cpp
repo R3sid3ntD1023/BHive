@@ -21,22 +21,16 @@
 #include "mesh/MeshImporter.h"
 #include "mesh/MeshImportResolver.h"
 #include "mesh/StaticMesh.h"
-#include "renderers/LineRenderer.h"
+#include "renderers/Renderer.h"
 
 namespace BHive
 {
 
-	struct UniformBufferObject
-	{
-		alignas(16) glm::mat4 proj;
-		alignas(16) glm::mat4 view;
-		alignas(16) glm::mat4 model;
-	};
-
 	void RuntimeLayer::OnAttach()
 	{
-		CreateUniformBuffers();
 		CreateGraphicsPipeline();
+
+		mCamera.SetView(FTransform({0, 1, -5}));
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -48,34 +42,36 @@ namespace BHive
 		auto &app = Application::Get();
 		auto &window = app.GetWindow();
 		auto size = window.GetSize();
+		auto aspect = window.GetAspectRatio();
+
 		auto &context = GraphicsContext::Get();
 		auto &swap_chain = context.GetSwapChain();
 
 		auto current_frame = swap_chain->GetCurrentFrame();
 
+		
+
 		RenderCommand::ClearColor(0.01f, 0.01f, 0.01f, 1.f);
 		RenderCommand::SetViewport(0, 0, size.x, size.y);
 
-		LineRenderer::Begin();
-		LineRenderer::DrawLine({0, 0, 0}, {1, 1, 1}, FColor::Green);
-		LineRenderer::End();
+		Renderer::Begin();
 
-		if (mGraphicsPipeline)
+		Renderer::SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
+		LineRenderer::DrawLine({-1, 0, 0}, {1, 0, 0}, FColor::Green);
+		
+		if (mMaterial)
 		{
-			auto &sets = mMaterial->GetDescriptorSets();
-			mUniformBuffer->WriteDescriptor(sets[current_frame]);
+	/*		auto &sets = mMaterial->GetDescriptorSets();
+			uniform_buffer->WriteDescriptor(sets[current_frame]);
+
+	*/
 			mMaterial->Submit(mShader);
 
-			auto *api = RenderCommand::GetAPI();
-			api->BindPipeline(*mGraphicsPipeline);
-
-			UpdateUniformBuffer();
-
-			api->BindDescriptorSets(mPipelineLayout, sets);
-
 			if (mMesh)
-				api->DrawElements(EDrawMode::Triangles, *mMesh->GetVertexArray());
+				RenderCommand::DrawElements(EDrawMode::Triangles, *mMesh->GetVertexArray());
 		}
+
+		Renderer::End();
 	}
 
 	void RuntimeLayer::OnGuiRender()
@@ -94,14 +90,6 @@ namespace BHive
 			ImGui::DragFloat("Test", &value);
 		}
 
-		auto &context = GraphicsContext::Get();
-		auto &device = VulkanCore::GetLogicalDevice();
-		auto &swap_chain = context.GetSwapChain();
-		auto image_count = swap_chain->GetImageCount();
-		auto current_frame = swap_chain->GetCurrentFrame();
-		auto &app = Application::Get();
-		auto imgui_layer = app.GetImGuiLayer();
-
 		auto texture_id = ImGuiLayer::GetTextureID(mTexture);
 		ImGui::Image(texture_id, {200, 200}, {0, 1}, {1, 0});
 
@@ -118,25 +106,6 @@ namespace BHive
 					std::vector<Ref<Asset>> additional_assets;
 					MeshImportResolver resolver(import_data, import_options, additional_assets);
 					mMesh = Cast<StaticMesh>(resolver.Resolve());
-
-					if (mMesh)
-					{
-						const auto &bindingDescription = mMesh->GetVertexArray()->GetBindingDescription();
-						const auto &attributeDescriptions = mMesh->GetVertexArray()->GetAttributeDescriptions();
-
-						vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, *mMaterial->GetDescriptorSetLayout()->GetLayout());
-						mPipelineLayout = device.createPipelineLayout(pipeline_layout_create_info);
-
-						vk::PipelineRenderingCreateInfo pipeline_renderingCreateInfo({}, {swap_chain->GetFormat().format});
-
-						FPipelineConfigInfo config = VulkanPipeline::GetDefaultConfigInfo(swap_chain->GetWidth(), swap_chain->GetHeight());
-						config.Layout = mPipelineLayout;
-						config.Next = &pipeline_renderingCreateInfo;
-						config.InputState = vk::PipelineVertexInputStateCreateInfo({}, bindingDescription, attributeDescriptions);
-
-						mGraphicsPipeline = CreateRef<VulkanPipeline>();
-						mGraphicsPipeline->Init(device, {mShader}, config);
-					}
 				}
 			}
 		}
@@ -146,29 +115,6 @@ namespace BHive
 		// GUI::EndDockSpace();
 	}
 
-	void RuntimeLayer::CreateUniformBuffers()
-	{
-		mUniformBuffer = CreateRef<UniformBuffer>(0, sizeof(UniformBufferObject));
-	}
-
-	void RuntimeLayer::UpdateUniformBuffer()
-	{
-		static auto startTime = std::chrono::high_resolution_clock::now();
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-		auto &app = Application::Get();
-		auto &window = app.GetWindow();
-		auto aspect = window.GetAspectRatio();
-
-		UniformBufferObject ubo{};
-		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 10.0f);
-		ubo.proj[1][1] *= -1; // for vulkan coordinate system
-
-		mUniformBuffer->SetData(&ubo, sizeof(ubo));
-	}
 
 	void RuntimeLayer::CreateGraphicsPipeline()
 	{

@@ -7,7 +7,9 @@ namespace BHive
 	UniformBuffer::UniformBuffer(uint32_t binding, uint64_t size, const void *data)
 		: mBinding(binding)
 	{
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, mBuffer);
+		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible , mBuffer);
+		mBuffer.Map(size);
+
 		if (data)
 		{
 			SetData(data, size, 0);

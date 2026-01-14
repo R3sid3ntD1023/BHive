@@ -29,8 +29,7 @@ namespace BHive
 	{
 	public:
 
-		void Init(vk::raii::Device& device, const std::vector<Ref<Shader>> & shaders, const FPipelineConfigInfo& config);
-
+		void Init(vk::raii::Device &device, const std::vector<vk::PipelineShaderStageCreateInfo> &shaders, const FPipelineConfigInfo &config);
 
 		operator const vk::raii::Pipeline &() const { return mPipeline; }
 

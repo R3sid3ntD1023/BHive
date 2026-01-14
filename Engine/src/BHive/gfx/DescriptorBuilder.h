@@ -23,7 +23,9 @@ namespace BHive
 			{
 
 				ASSERT(!mBindings.contains(binding), "Binding already in use");
-				mBindings.emplace(binding, vk::DescriptorSetLayoutBinding(binding, type, count, stageFlags, nullptr));
+
+				auto layout = vk::DescriptorSetLayoutBinding(binding, type, count, stageFlags, nullptr);
+				mBindings.emplace(binding, layout);
 				return *this;
 			}
 

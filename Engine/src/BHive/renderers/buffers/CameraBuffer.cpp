@@ -1,11 +1,13 @@
 #include "CameraBuffer.h"
 #include "gfx/UniformBuffer.h"
+#include "GlobalBuffers.h"
 
 namespace BHive
 {
 	void CameraBuffer::Init()
 	{
-		mBuffer = CreateRef<UniformBuffer>(sCameraBufferBinding, sizeof(FCameraData));
+		mBuffer = CreateRef<UniformBuffer>(0, sizeof(FCameraData));
+		GlobalBuffers::AddGlobalUniformBuffer(0, mBuffer);
 	}
 
 	void CameraBuffer::Begin(const glm::mat4 &proj, const glm::mat4 &view)

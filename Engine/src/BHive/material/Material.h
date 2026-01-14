@@ -50,8 +50,6 @@ namespace BHive
 
 		const vk::raii::DescriptorSets &GetDescriptorSets() const { return mDescriptorSets; }
 
-		const Ref<FDescriptorSetLayout> &GetDescriptorSetLayout() const { return mDescriptorSetLayout; }
-
 		REFLECTABLEV(Asset)
 
 	private:
@@ -67,9 +65,9 @@ namespace BHive
 		Ref<Shader> mShader;
 
 	private:
-		Ref<FDescriptorSetLayout> mDescriptorSetLayout;
 		Ref<FDescriptorPool> mDescriptorPool;
 		vk::raii::DescriptorSets mDescriptorSets = VK_NULL_HANDLE;
+		std::vector<uint32_t> mUniformBufferBindings;
 	};
 
 	REFLECT_EXTERN(Material);

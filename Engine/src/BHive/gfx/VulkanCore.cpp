@@ -38,17 +38,21 @@ namespace BHive
 		return VK_FALSE;
 	}
 
-	namespace detials
+	namespace details
 	{
-		vk::StructureChain<
-			vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>
-			GetPhysicalDeviceFeaturesChain()
+		auto GetPhysicalDeviceFeaturesChain()
 		{
+
+			vk::PhysicalDeviceFeatures features{};
+			features.setFillModeNonSolid(true)
+				.setWideLines(true);
+
 			vk::StructureChain<
 				vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features,
-				vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>
+				vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>
 				featureChain;
 			featureChain.assign<vk::PhysicalDeviceFeatures2>({}); // default initialize all features to false
+			featureChain.get<vk::PhysicalDeviceFeatures2>().setFeatures(features);
 			featureChain.get<vk::PhysicalDeviceVulkan11Features>().setShaderDrawParameters(true);
 			featureChain.get<vk::PhysicalDeviceVulkan12Features>()
 				.setDescriptorBindingSampledImageUpdateAfterBind(true)
@@ -56,12 +60,16 @@ namespace BHive
 				.setDescriptorBindingUpdateUnusedWhilePending(true)
 				.setDescriptorBindingStorageBufferUpdateAfterBind(true)
 				.setDescriptorBindingUniformBufferUpdateAfterBind(true);
-			featureChain.get<vk::PhysicalDeviceVulkan13Features>().setDynamicRendering(true).setSynchronization2(true).setDescriptorBindingInlineUniformBlockUpdateAfterBind(true);
+			featureChain.get<vk::PhysicalDeviceVulkan13Features>().setDynamicRendering(true)
+				.setSynchronization2(true)
+				.setDescriptorBindingInlineUniformBlockUpdateAfterBind(true);
 			featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().setExtendedDynamicState(true);
-
+			featureChain.get<vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>().setVertexInputDynamicState(true);
+			
 			return featureChain;
 		}
 	}
+
 
 	void VulkanCore::Init()
 	{
@@ -88,7 +96,7 @@ namespace BHive
 
 	std::vector<const char *> VulkanCore::GetRequiredExtensions()
 	{
-		return {vk::KHRSwapchainExtensionName, vk::KHRSpirv14ExtensionName, vk::KHRSynchronization2ExtensionName, vk::KHRCreateRenderpass2ExtensionName};
+		return {vk::KHRSwapchainExtensionName, vk::KHRSpirv14ExtensionName, vk::KHRSynchronization2ExtensionName, vk::KHRCreateRenderpass2ExtensionName, vk::EXTVertexInputDynamicStateExtensionName};
 	}
 
 	uint32_t VulkanCore::SelectQueueIndex(vk::QueueFlags queue_type, const vk::SurfaceKHR &surface)
@@ -289,7 +297,7 @@ namespace BHive
 		}
 
 		auto requiredDeviceExtensions = VulkanCore::GetRequiredExtensions();
-		auto featureChain = detials::GetPhysicalDeviceFeaturesChain();
+		auto featureChain = details::GetPhysicalDeviceFeaturesChain();
 		
 		vk::DeviceCreateInfo device_createInfo{};
 		device_createInfo.pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>();
@@ -369,7 +377,7 @@ namespace BHive
 		}
 
 		auto requiredDeviceExtensions = VulkanCore::GetRequiredExtensions();
-		auto featureChain = detials::GetPhysicalDeviceFeaturesChain();
+		auto featureChain = details::GetPhysicalDeviceFeaturesChain();
 
 		vk::DeviceCreateInfo device_createInfo{};
 		device_createInfo.pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>();

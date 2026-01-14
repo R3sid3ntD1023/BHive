@@ -9,6 +9,22 @@
 
 namespace BHive
 {
+	namespace details
+	{
+
+		vk::PrimitiveTopology GetTopology(EDrawMode mode)
+		{
+			switch (mode)
+			{
+			case BHive::Lines:
+				return vk::PrimitiveTopology::eLineList;
+			default:
+				break;
+			}
+
+			return vk::PrimitiveTopology::eTriangleList;
+		}
+	}
 
 	RendererAPI::~RendererAPI()
 	{
@@ -89,6 +105,9 @@ namespace BHive
 		mCommands.emplace(
 			[&](const FVulkanFrameData &data)
 			{
+				if (!sets.size())
+					return;
+
 				auto &cmd = GetCurrentCommandBuffer();
 				data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 0, *sets[data.Frame], nullptr);
 			});
@@ -207,6 +226,8 @@ namespace BHive
 
 	void RendererAPI::SetLineWidth(float width)
 	{
+		mCommands.emplace([=](const FVulkanFrameData &data) { data.CommandBuffer.setLineWidth(width);
+			});
 	}
 
 	void RendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
@@ -234,7 +255,11 @@ namespace BHive
 					vk_vertex_buffers.push_back(*vk_buffer);
 				}
 
+				const auto &binding_description = vao.GetBindingDescription();
+				const auto &attribute_descriptions = vao.GetAttributeDescriptions();
+				data.CommandBuffer.setVertexInputEXT(binding_description, attribute_descriptions);
 				data.CommandBuffer.bindVertexBuffers(0, vk_vertex_buffers, {0});
+				data.CommandBuffer.setPrimitiveTopology(details::GetTopology(mode));
 				data.CommandBuffer.draw(count, 1, 0, 0);
 			});
 	}
@@ -259,8 +284,12 @@ namespace BHive
 
 				auto _count = count ? count : index_buffer->GetCount();
 
+				const auto &binding_description = vao.GetBindingDescription();
+				const auto &attribute_descriptions = vao.GetAttributeDescriptions();
+				data.CommandBuffer.setVertexInputEXT(binding_description, attribute_descriptions);
 				data.CommandBuffer.bindVertexBuffers(0, vk_vertex_buffers, {0});
 				data.CommandBuffer.bindIndexBuffer(vk_index_buffer, 0, vk::IndexType::eUint32);
+				data.CommandBuffer.setPrimitiveTopology(details::GetTopology(mode));
 				data.CommandBuffer.drawIndexed(_count, 1, 0, 0, 0);
 			});
 	}

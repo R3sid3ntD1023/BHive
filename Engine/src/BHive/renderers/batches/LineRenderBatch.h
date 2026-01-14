@@ -2,14 +2,11 @@
 
 #include "gfx/Buffers.h"
 #include "gfx/VertexArray.h"
-#include "gfx/VulkanCore.h"
 #include "RenderBatch.h"
 
 namespace BHive
 {
-	class VulkanPipeline;
-	class FDescriptorSetLayout;
-	class FDescriptorPool;
+	class Material;
 
 	struct FLineVertex
 	{
@@ -52,12 +49,6 @@ namespace BHive
 		FLineVertex *mVertexDataPtr = nullptr;
 		uint32_t mVertexCount = 0;
 
-		Ref<VulkanPipeline> mGraphicsPipeline = nullptr;
-
-		vk::raii::PipelineLayout mPipelineLayout = nullptr;
-
-		Ref<FDescriptorSetLayout> mDescriptorSetLayout;
-		Ref<FDescriptorPool> mDescriptorPool;
-		vk::raii::DescriptorSets mDescriptorSets = nullptr;
+		Ref<Material> mLineMaterial;
 	};
 } // namespace BHive

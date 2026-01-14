@@ -7,9 +7,10 @@ layout(location = 1) in vec2 inTexCoord;
 
 layout(std140, binding = 0) uniform Matrices
 {
-	mat4 Projection;
-	mat4 View;
-	mat4 Model;
+	mat4 uProjection;
+    mat4 uView;
+    vec2 uNearFar;
+    vec3 uCameraPosition;
 };
 
 layout(location  = 0) out struct VERT_OUT 
@@ -20,7 +21,7 @@ layout(location  = 0) out struct VERT_OUT
 void main()
 {
 	vs_out.TexCoord = inTexCoord;
-	gl_Position = Projection * View * Model * vec4(inPosition, 1);
+	gl_Position = uProjection * uView * vec4(inPosition, 1);
 }
 
 

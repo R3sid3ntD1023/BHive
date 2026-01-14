@@ -8,6 +8,9 @@
 #include "utils/shader/ShaderTimeCache.h"
 #include "utils/shader/ShaderUtils.h"
 #include "VulkanUtils.h"
+#include "VulkanPipeline.h"
+#include "VulkanSwapChain.h"
+#include "DescriptorBuilder.h"
 
 namespace BHive
 {
@@ -58,11 +61,6 @@ namespace BHive
 		{
 			CompileFromSource();
 		}
-
-		if (mProgramID)
-		{
-			mUniformSetter = CreateScope<ShaderUniformSetter>(mProgramID);
-		}
 	}
 
 	Shader::~Shader()
@@ -81,6 +79,7 @@ namespace BHive
 		ar(mName, mFilePath, mSources);
 		Compile();
 		Reflect();
+		CreatePipeline();
 	}
 
 	const Shader::FShaderData &Shader::GetShaderData(EShaderStage stage) const
@@ -117,6 +116,7 @@ namespace BHive
 		PreProcess(source);
 		Compile();
 		Reflect();
+		CreatePipeline();
 	}
 
 	void Shader::PreProcess(const std::string &source)
@@ -141,6 +141,9 @@ namespace BHive
 
 	void Shader::Bind() const
 	{
+
+		auto *api = RenderCommand::GetAPI();
+		api->BindPipeline(*mGraphicsPipeline);
 	}
 
 	void Shader::UnBind() const
@@ -161,6 +164,38 @@ namespace BHive
 
 			LOG_TRACE("Stage: {}\n{}\n", ShaderUtils::ToString(stage), mReflectionData.to_string());
 		}
+	}
+
+	void Shader::CreatePipeline()
+	{
+		auto& device = VulkanCore::GetLogicalDevice();
+		auto swap_chain = GraphicsContext::Get().GetSwapChain();
+
+		FDescriptorSetLayout::Builder builder;
+		for (auto &[name, sampler] : mReflectionData.Samplers)
+		{
+			builder.AddBinding(sampler.Binding, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, 1);
+		}
+
+		for (auto &[name, uniform_buffers] : mReflectionData.UniformBuffers)
+		{
+			builder.AddBinding(uniform_buffers.Binding, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 1);
+		}
+
+		mDescriptorSetLayout = builder.Build();
+
+		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, *mDescriptorSetLayout->GetLayout());
+		mPipelineLayout = device.createPipelineLayout(pipeline_layout_create_info);
+
+		vk::PipelineRenderingCreateInfo pipeline_renderingCreateInfo({}, {swap_chain->GetFormat().format});
+
+		FPipelineConfigInfo config = VulkanPipeline::GetDefaultConfigInfo(swap_chain->GetWidth(), swap_chain->GetHeight());
+		config.Layout = mPipelineLayout;
+		config.Next = &pipeline_renderingCreateInfo;
+		//config.InputAssembly.setTopology(vk::PrimitiveTopology::eLineList);
+
+		mGraphicsPipeline = CreateScope<VulkanPipeline>();
+		mGraphicsPipeline->Init(device, mVulkanShaderStages, config);
 	}
 
 } // namespace BHive

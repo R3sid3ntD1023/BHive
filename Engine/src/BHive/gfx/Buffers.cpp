@@ -21,6 +21,8 @@ namespace BHive
 
 		VulkanUtils::CreateBuffer(
 			size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
+
+		stagingBuffer.Map(size);
 		stagingBuffer.SetData(data, size, 0);
 
 		VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
@@ -47,6 +49,8 @@ namespace BHive
 
 		VulkanUtils::CreateBuffer(
 			size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
+
+		stagingBuffer.Map(size);
 		stagingBuffer.SetData(data, size, offset);
 
 		VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);

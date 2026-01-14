@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "core/Layer.h"
 #include "gfx/VulkanCore.h"
+#include "gfx/cameras/EditorCamera.h"
 
 namespace BHive
 {
@@ -22,10 +23,6 @@ namespace BHive
 		void OnGuiRender() override;
 
 	private:
-		void CreateUniformBuffers();
-
-		void UpdateUniformBuffer();
-
 		void CreateGraphicsPipeline();
 
 	private:
@@ -33,12 +30,8 @@ namespace BHive
 
 		Ref<class StaticMesh> mMesh = nullptr;
 
-		Ref<VulkanPipeline> mGraphicsPipeline = nullptr;
-
-		vk::raii::PipelineLayout mPipelineLayout = nullptr;
-
-		Ref<UniformBuffer> mUniformBuffer;
 		Ref<class Shader> mShader;
 		Ref<class Material> mMaterial;
+		EditorCamera mCamera;
 	};
 } // namespace BHive

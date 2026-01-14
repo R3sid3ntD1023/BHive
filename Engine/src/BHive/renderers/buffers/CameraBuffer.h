@@ -7,8 +7,6 @@ namespace BHive
 {
 	class UniformBuffer;
 
-	static constexpr uint32_t sCameraBufferBinding = 0;
-
 	struct CameraBuffer
 	{
 
@@ -29,8 +27,6 @@ namespace BHive
 		const Frustum &GetViewFrustum() const { return mViewFrustum; }
 
 		const FCameraData &GetCameraData() { return mData; }
-
-		Ref<UniformBuffer> GetUniformBuffer() const { return mBuffer; }
 
 	private:
 		Ref<UniformBuffer> mBuffer;
