@@ -1,7 +1,9 @@
 #include "core/Application.h"
 #include "GraphicsContext.h"
+#include "Platform/Vulkan/VulkanPipeline.h"
+#include "Platform/Vulkan/VulkanShader.h"
+#include "Platform/Vulkan/VulkanVertexArray.h"
 #include "RendererAPI.h"
-#include "VulkanPipeline.h"
 #include "VulkanSwapChain.h"
 #include "VulkanUtils.h"
 #include <glad/glad.h>
@@ -24,7 +26,7 @@ namespace BHive
 
 			return vk::PrimitiveTopology::eTriangleList;
 		}
-	}
+	} // namespace details
 
 	RendererAPI::~RendererAPI()
 	{
@@ -93,11 +95,6 @@ namespace BHive
 			cmd(command_data);
 			mSecondaryCommands.pop();
 		}
-	}
-
-	void RendererAPI::BindPipeline(const VulkanPipeline &pipeline)
-	{
-		mCommands.emplace([&](const FVulkanFrameData &data) { data.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline); });
 	}
 
 	void RendererAPI::BindDescriptorSets(const vk::raii::PipelineLayout &layout, const vk::raii::DescriptorSets &sets)
@@ -226,8 +223,7 @@ namespace BHive
 
 	void RendererAPI::SetLineWidth(float width)
 	{
-		mCommands.emplace([=](const FVulkanFrameData &data) { data.CommandBuffer.setLineWidth(width);
-			});
+		mCommands.emplace([=](const FVulkanFrameData &data) { data.CommandBuffer.setLineWidth(width); });
 	}
 
 	void RendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
@@ -243,20 +239,22 @@ namespace BHive
 	void RendererAPI::DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count)
 	{
 		mCommands.emplace(
-			[=](const FVulkanFrameData &data)
+			[&](const FVulkanFrameData &data)
 			{
+				auto vulkan_vao = (const VulkanVertexArray &)vao;
+
 				std::vector<vk::Buffer> vk_vertex_buffers;
 
-				auto vertex_buffers = vao.GetVertexBuffers();
+				auto vertex_buffers = vulkan_vao.GetVertexBuffers();
 
 				for (auto &vb : vertex_buffers)
 				{
-					const vk::raii::Buffer &vk_buffer = *vb;
+					const vk::raii::Buffer &vk_buffer = *reinterpret_cast<const vk::raii::Buffer *>(vb->GetNativeHandle());
 					vk_vertex_buffers.push_back(*vk_buffer);
 				}
 
-				const auto &binding_description = vao.GetBindingDescription();
-				const auto &attribute_descriptions = vao.GetAttributeDescriptions();
+				const auto &binding_description = vulkan_vao.GetBindingDescription();
+				const auto &attribute_descriptions = vulkan_vao.GetAttributeDescriptions();
 				data.CommandBuffer.setVertexInputEXT(binding_description, attribute_descriptions);
 				data.CommandBuffer.bindVertexBuffers(0, vk_vertex_buffers, {0});
 				data.CommandBuffer.setPrimitiveTopology(details::GetTopology(mode));
@@ -267,8 +265,9 @@ namespace BHive
 	void RendererAPI::DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count)
 	{
 		mCommands.emplace(
-			[=](const FVulkanFrameData &data)
+			[&](const FVulkanFrameData &data)
 			{
+				auto vulkan_vao = (const VulkanVertexArray &)vao;
 				std::vector<vk::Buffer> vk_vertex_buffers;
 
 				auto index_buffer = vao.GetIndexBuffer();
@@ -276,16 +275,16 @@ namespace BHive
 
 				for (auto &vb : vertex_buffers)
 				{
-					const vk::raii::Buffer &vk_buffer = *vb;
+					const vk::raii::Buffer &vk_buffer = *reinterpret_cast<const vk::raii::Buffer *>(vb->GetNativeHandle());
 					vk_vertex_buffers.push_back(*vk_buffer);
 				}
 
-				const vk::raii::Buffer &vk_index_buffer = *index_buffer;
+				const vk::raii::Buffer &vk_index_buffer = *reinterpret_cast<const vk::raii::Buffer *>(index_buffer->GetNativeHandle());
 
 				auto _count = count ? count : index_buffer->GetCount();
 
-				const auto &binding_description = vao.GetBindingDescription();
-				const auto &attribute_descriptions = vao.GetAttributeDescriptions();
+				const auto &binding_description = vulkan_vao.GetBindingDescription();
+				const auto &attribute_descriptions = vulkan_vao.GetAttributeDescriptions();
 				data.CommandBuffer.setVertexInputEXT(binding_description, attribute_descriptions);
 				data.CommandBuffer.bindVertexBuffers(0, vk_vertex_buffers, {0});
 				data.CommandBuffer.bindIndexBuffer(vk_index_buffer, 0, vk::IndexType::eUint32);
@@ -300,11 +299,6 @@ namespace BHive
 		auto index_buffer = vao.GetIndexBuffer();
 
 		auto _count = count ? count : index_buffer->GetCount();
-
-		/*	if (instance_count > 0)
-				glDrawElementsInstancedBaseVertexBaseInstance(mode, _count, GL_UNSIGNED_INT, nullptr, (GLsizei)instance_count, (GLint)start, 1);
-			else
-				glDrawElementsBaseVertex(mode, _count, GL_UNSIGNED_INT, nullptr, start);*/
 	}
 
 	void RendererAPI::DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
@@ -313,7 +307,6 @@ namespace BHive
 		auto index_buffer = vao.GetIndexBuffer();
 
 		auto _count = count ? count : index_buffer->GetCount();
-		// glDrawRangeElements(mode, start, end, _count, GL_UNSIGNED_INT, nullptr);
 	}
 
 	void RendererAPI::DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count)
@@ -322,20 +315,30 @@ namespace BHive
 		auto index_buffer = vao.GetIndexBuffer();
 
 		auto _count = count ? count : index_buffer->GetCount();
-		// glDrawElementsInstanced(mode, _count, GL_UNSIGNED_INT, nullptr, instances);
 	}
 
 	void RendererAPI::MultiDrawElementsIndirect(EDrawMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride)
 	{
 		vao.Bind();
 
-		/*glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirect.GetBufferID());
-
-		glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, nullptr, drawCount, stride);
-
-		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);*/
-
 		vao.UnBind();
+	}
+
+	void RendererAPI::BindShader(const Shader *shader)
+	{
+		auto func = [=](const FVulkanFrameData &data)
+		{
+			auto vulkan_shader = (const VulkanShader *)shader;
+			auto &layout = vulkan_shader->GetPipelineLayout();
+			auto &sets = vulkan_shader->GetDescriptorSets();
+			auto pipeline = Cast<VulkanPipeline>(vulkan_shader->GetPipeline());
+
+			data.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, **pipeline);
+
+			data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 0, *sets[data.Frame], nullptr);
+		};
+
+		mCommands.emplace(func);
 	}
 
 	void RendererAPI::EnableDepth()

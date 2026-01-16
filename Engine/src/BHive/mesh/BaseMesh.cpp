@@ -1,7 +1,7 @@
-#include "gfx/VertexArray.h"
 #include "BaseMesh.h"
-#include "glad/glad.h"
 #include "gfx/StorageBuffer.h"
+#include "gfx/VertexArray.h"
+#include "glad/glad.h"
 
 namespace BHive
 {
@@ -34,14 +34,12 @@ namespace BHive
 	void BaseMesh::CreateVertexArrayBuffer()
 	{
 		auto &data = mData;
-		auto indexbuffer = CreateRef<IndexBuffer>(data.mIndices.data(), (uint32_t)data.mIndices.size());
-		auto vertexbuffer = CreateRef<VertexBuffer>(data.mVertices.size() * sizeof(FVertex));
+		auto indexbuffer = IndexBuffer::Create((uint32_t)data.mIndices.size(), data.mIndices.data());
+		auto vertexbuffer = VertexBuffer::Create(data.mVertices.size() * sizeof(FVertex));
 		vertexbuffer->SetData(data.mVertices.data(), data.mVertices.size() * sizeof(FVertex));
 		vertexbuffer->SetLayout(FVertex::Layout());
 
-		mVertexArray = CreateRef<VertexArray>();
-		mVertexArray->AddVertexBuffer(vertexbuffer);
-		mVertexArray->SetIndexBuffer(indexbuffer);
+		mVertexArray = VertexArray::Create({vertexbuffer}, indexbuffer);
 	}
 
 	REFLECT(BaseMesh)

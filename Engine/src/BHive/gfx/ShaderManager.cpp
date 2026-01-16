@@ -45,7 +45,7 @@ namespace BHive
 		auto &shader = mShaders[name];
 		mShaderMetaDatas[name].Path = resolved_path;
 
-		shader = CreateRef<Shader>(resolved_path);
+		shader = Shader::Create(resolved_path);
 		return shader;
 	}
 

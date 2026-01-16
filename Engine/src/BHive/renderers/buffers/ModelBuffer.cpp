@@ -1,9 +1,9 @@
-#include "ModelBuffer.h"
 #include "gfx/RenderCommand.h"
-#include "gfx/StorageBuffer.h"
-#include "renderers/QuadRenderer.h"
-#include "gfx/ShaderManager.h"
 #include "gfx/Shader.h"
+#include "gfx/ShaderManager.h"
+#include "gfx/StorageBuffer.h"
+#include "ModelBuffer.h"
+#include "renderers/QuadRenderer.h"
 
 namespace BHive
 {
@@ -50,7 +50,7 @@ namespace BHive
 			const auto &instances = data->Instances.Transforms;
 
 			mInstanceBuffer->SetData(instances.data(), sizeof(glm::mat4) * instances.size());
-			mInstanceBuffer->BindBufferBase(SSBO_INSTANCE_BINDING);
+			// mInstanceBuffer->BindBufferBase(SSBO_INSTANCE_BINDING);
 			mComputeInstanceShader->Dispatch(instance_count, 1, 1);
 		}
 
@@ -66,14 +66,14 @@ namespace BHive
 			const auto &joints = skeletaldata->Bones.Bones;
 
 			mBoneBuffer->SetData(joints.data(), joints.size() * sizeof(glm::mat4));
-			mBoneBuffer->BindBufferBase(SSBO_BONE_BINDING);
+			// mBoneBuffer->BindBufferBase(SSBO_BONE_BINDING);
 		}
 
 		FPerObjectData object_data{};
 		object_data.WorldMatrix = data->Transform.to_mat4() * data->SubMesh.Transformation;
 
 		mPerObjectBuffer->SetData(&object_data, sizeof(FPerObjectData));
-		mPerObjectBuffer->BindBufferBase(SSBO_INDEX_PER_OBJECT_BINDING);
+		// mPerObjectBuffer->BindBufferBase(SSBO_INDEX_PER_OBJECT_BINDING);
 
 		MultiDrawIndirectCommand command{};
 		command.InstanceCount = instance_count ? instance_count : 1;

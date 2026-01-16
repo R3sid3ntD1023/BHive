@@ -1,39 +1,15 @@
 #include "Pipeline.h"
-#include "Shader.h"
-#include <glad/glad.h>
+#include "Platform/Vulkan/VulkanPipeline.h"
+#include "RenderCommand.h"
 
 namespace BHive
 {
-	Pipeline::Pipeline()
+	Ref<Pipeline> BHive::Pipeline::Create(const Configuration &configuration)
 	{
-	}
-	Pipeline::~Pipeline()
-	{
-		Release();
-	}
-
-	void Pipeline::Init()
-	{
-		glGenProgramPipelines(1, &mPipelineID);
-	}
-
-	void Pipeline::Release()
-	{
-		glDeleteProgramPipelines(1, &mPipelineID);
-	}
-
-	void Pipeline::Bind()
-	{
-		glBindProgramPipeline(mPipelineID);
-	}
-
-	void Pipeline::UnBind()
-	{
-		glBindProgramPipeline(0);
-	}
-
-	void Pipeline::UseShaderStage(EShaderStage stage, const Ref<Shader> &shader)
-	{
-		glUseProgramStages(mPipelineID, stage, shader->GetRendererID());
+		switch (RenderCommand::GetRendererAPI())
+		{
+		case RendererAPI::Vulkan:
+			return CreateRef<VulkanPipeline>((const FVulkanPipelineConfigInfo &)configuration);
+		}
 	}
 } // namespace BHive

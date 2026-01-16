@@ -10,17 +10,17 @@ namespace BHive
 {
 	namespace utils
 	{
-		shaderc_shader_kind GetShadercType(EShaderStage stage)
+		shaderc_shader_kind GetShadercType(Shader::EShaderStage stage)
 		{
 			switch (stage)
 			{
-			case ShaderStage_Vertex:
+			case Shader::ShaderStage_Vertex:
 				return shaderc_glsl_vertex_shader;
-			case ShaderStage_Fragment:
+			case Shader::ShaderStage_Fragment:
 				return shaderc_glsl_fragment_shader;
-			case ShaderStage_Compute:
+			case Shader::ShaderStage_Compute:
 				return shaderc_glsl_compute_shader;
-			case ShaderStage_Geometry:
+			case Shader::ShaderStage_Geometry:
 				return shaderc_glsl_geometry_shader;
 			default:
 				break;
@@ -28,17 +28,17 @@ namespace BHive
 			return shaderc_glsl_infer_from_source;
 		}
 
-		const char *GetCacheOpenglFileExtension(EShaderStage stage)
+		const char *GetCacheOpenglFileExtension(Shader::EShaderStage stage)
 		{
 			switch (stage)
 			{
-			case ShaderStage_Vertex:
+			case Shader::ShaderStage_Vertex:
 				return ".cached_opengl.vert";
-			case ShaderStage_Fragment:
+			case Shader::ShaderStage_Fragment:
 				return ".cached_opengl.frag";
-			case ShaderStage_Compute:
+			case Shader::ShaderStage_Compute:
 				return ".cached_opengl.comp";
-			case ShaderStage_Geometry:
+			case Shader::ShaderStage_Geometry:
 				return ".cached_opengl.geom";
 
 			default:
@@ -48,17 +48,17 @@ namespace BHive
 			return "";
 		}
 
-		const char *GetCacheVulkanFileExtension(EShaderStage stage)
+		const char *GetCacheVulkanFileExtension(Shader::EShaderStage stage)
 		{
 			switch (stage)
 			{
-			case ShaderStage_Vertex:
+			case Shader::ShaderStage_Vertex:
 				return ".cached_vulkan.vert";
-			case ShaderStage_Fragment:
+			case Shader::ShaderStage_Fragment:
 				return ".cached_vulkan.frag";
-			case ShaderStage_Compute:
+			case Shader::ShaderStage_Compute:
 				return ".cached_vulkan.comp";
-			case ShaderStage_Geometry:
+			case Shader::ShaderStage_Geometry:
 				return ".cached_vulkan.geom";
 			default:
 				break;
@@ -148,6 +148,11 @@ namespace BHive
 
 	} // namespace utils
 
+	ShaderCompiler::ShaderCompiler(const std::filesystem::path &filepath)
+		: mFilePath(filepath)
+	{
+	}
+
 	void ShaderCompiler::Init()
 	{
 		mVulkanCompileOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
@@ -158,34 +163,34 @@ namespace BHive
 		mOpenglCompileOptions.SetIncluder(std::make_unique<utils::IncludeHandler>());
 	}
 
-	void ShaderCompiler::CompileToVulkan(const std::filesystem::path &filename, EShaderStage stage, const std::string &src, std::vector<uint32_t> &binary)
+	void ShaderCompiler::CompileToVulkan(Shader::EShaderStage stage, const std::string &src, std::vector<uint32_t> &spirv)
 	{
 
-		auto name = filename.stem().string();
+		auto name = mFilePath.stem().string();
 		auto cache_path = ShaderUtils::GetCacheDirectory() / name / (name + utils::GetCacheVulkanFileExtension(stage));
 		if (std::filesystem::exists(cache_path))
 		{
-			FileSystem::ReadFile(cache_path, binary);
+			FileSystem::ReadFile(cache_path, spirv);
 			return;
 		}
 
-		auto spirv_binary = mVulkanCompiler.CompileGlslToSpv(src, utils::GetShadercType(stage), filename.string().c_str(), mVulkanCompileOptions);
+		auto spirv_binary = mVulkanCompiler.CompileGlslToSpv(src, utils::GetShadercType(stage), mFilePath.string().c_str(), mVulkanCompileOptions);
 		if (spirv_binary.GetCompilationStatus() != shaderc_compilation_status_success)
 		{
-			LOG_ERROR("Vulkan: Failed to compile shader = {}, stage = {} : \n{}", filename, ShaderUtils::ToString(stage), spirv_binary.GetErrorMessage());
+			LOG_ERROR("Vulkan: Failed to compile shader = {}, stage = {} : \n{}", mFilePath, ShaderUtils::ToString(stage), spirv_binary.GetErrorMessage());
 			ASSERT(false);
 		}
 		else
 		{
-			binary = std::vector<uint32_t>(spirv_binary.cbegin(), spirv_binary.cend());
-			FileSystem::WriteFile(cache_path, binary);
+			spirv = std::vector<uint32_t>(spirv_binary.cbegin(), spirv_binary.cend());
+			FileSystem::WriteFile(cache_path, spirv);
 		}
 	}
 
-	void ShaderCompiler::CompileToOpengl(const std::filesystem::path &filename, EShaderStage stage, std::string &src, const std::vector<uint32_t> &spirv, std::vector<uint32_t> &opengl_spirv)
+	void ShaderCompiler::CompileToOpengl(Shader::EShaderStage stage, std::string &src, const std::vector<uint32_t> &spirv, std::vector<uint32_t> &opengl_spirv)
 	{
 
-		auto name = filename.stem().string();
+		auto name = mFilePath.stem().string();
 		auto cache_path = ShaderUtils::GetCacheDirectory() / name / (name + utils::GetCacheOpenglFileExtension(stage));
 		if (std::filesystem::exists(cache_path))
 		{
@@ -196,7 +201,7 @@ namespace BHive
 		spirv_cross::CompilerGLSL glsl_compiler(spirv);
 		src = glsl_compiler.compile();
 
-		auto spirv_binary = mOpenglCompiler.CompileGlslToSpv(src, utils::GetShadercType(stage), filename.string().c_str(), mOpenglCompileOptions);
+		auto spirv_binary = mOpenglCompiler.CompileGlslToSpv(src, utils::GetShadercType(stage), mFilePath.string().c_str(), mOpenglCompileOptions);
 
 		if (spirv_binary.GetCompilationStatus() == shaderc_compilation_status_success)
 		{
@@ -205,7 +210,7 @@ namespace BHive
 		}
 		else
 		{
-			LOG_ERROR("GLSL: Failed to compile shader = {}, stage = {}: \n{}", filename, ShaderUtils::ToString(stage), spirv_binary.GetErrorMessage());
+			LOG_ERROR("GLSL: Failed to compile shader = {}, stage = {}: \n{}", mFilePath, ShaderUtils::ToString(stage), spirv_binary.GetErrorMessage());
 			ASSERT(false);
 		}
 	}

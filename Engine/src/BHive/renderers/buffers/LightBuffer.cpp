@@ -1,5 +1,5 @@
-#include "LightBuffer.h"
 #include "gfx/StorageBuffer.h"
+#include "LightBuffer.h"
 
 namespace BHive
 {
@@ -17,7 +17,7 @@ namespace BHive
 	{
 		ASSERT(LightBuffer, "Did you forget to call init()");
 
-		LightBuffer->BindBufferBase(sLightBufferBinding);
+		// LightBuffer->BindBufferBase(sLightBufferBinding);
 		LightBuffer->SetData(&LightInfo, sizeof(FLightInfo));
 	}
 

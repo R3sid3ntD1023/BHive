@@ -6,7 +6,7 @@ namespace BHive
 {
 	void CameraBuffer::Init()
 	{
-		mBuffer = CreateRef<UniformBuffer>(0, sizeof(FCameraData));
+		mBuffer = UniformBuffer::Create(0, sizeof(FCameraData));
 		GlobalBuffers::AddGlobalUniformBuffer(0, mBuffer);
 	}
 

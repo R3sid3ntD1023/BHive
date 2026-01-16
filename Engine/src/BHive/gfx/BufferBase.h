@@ -7,19 +7,10 @@ namespace BHive
 	class BHIVE_API BufferBase
 	{
 	public:
-		BufferBase();
+		virtual ~BufferBase() = default;
 
-		virtual ~BufferBase();
+		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) = 0;
 
-		virtual void SetData(const void *data, size_t size, uint32_t offset = 0);
-
-		virtual void BindBufferBase(uint32_t binding) const {};
-
-		uint32_t GetBufferID() const { return mBufferID; }
-
-		virtual uintptr_t GetNativeHandle() const { return mBufferID; }
-
-	protected:
-		uint32_t mBufferID = 0;
+		virtual uintptr_t GetNativeHandle() const = 0;
 	};
 } // namespace BHive

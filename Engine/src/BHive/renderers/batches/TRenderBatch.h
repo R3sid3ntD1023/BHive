@@ -1,9 +1,9 @@
 #pragma once
 
-#include "RenderBatch.h"
 #include "gfx/Buffers.h"
 #include "gfx/Shader.h"
 #include "gfx/VertexArray.h"
+#include "RenderBatch.h"
 
 namespace BHive
 {
@@ -30,13 +30,11 @@ namespace BHive
 			mVertexBufferPtr = new T[vcount];
 			mIndexBufferPtr = new uint32_t[icount];
 
-			mIndexBuffer = CreateRef<IndexBuffer>((uint32_t)icount);
-			mVertexBuffer = CreateRef<VertexBuffer>(vcount * sizeof(T));
+			mIndexBuffer = IndexBuffer::Create((uint32_t)icount);
+			mVertexBuffer = VertexBuffer::Create(vcount * sizeof(T));
 			mVertexBuffer->SetLayout(T::GetLayout());
 
-			mVertexArray = CreateRef<VertexArray>();
-			mVertexArray->SetIndexBuffer(mIndexBuffer);
-			mVertexArray->AddVertexBuffer(mVertexBuffer);
+			mVertexArray = VertexArray::Create({mVertexBuffer}, mIndexBuffer);
 		}
 
 		virtual ~TRenderBatch()

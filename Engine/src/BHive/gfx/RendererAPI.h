@@ -7,6 +7,9 @@
 
 namespace BHive
 {
+	class Shader;
+	class Pipeline;
+
 	enum EDrawMode
 	{
 		Lines = 0x0001,
@@ -40,13 +43,18 @@ namespace BHive
 		uint32_t Frame;
 	};
 
-
 	struct FRenderCommand : std::function<void(const FVulkanFrameData &)>
 	{
 	};
 
 	class BHIVE_API RendererAPI
 	{
+	public:
+		enum EAPI
+		{
+			Opengl,
+			Vulkan
+		};
 
 	public:
 		RendererAPI() = default;
@@ -87,7 +95,7 @@ namespace BHive
 
 		virtual void EndFrame();
 
-		virtual void BindPipeline(const class VulkanPipeline &pipeline);
+		virtual void BindShader(const Shader *shader);
 
 		virtual void BindDescriptorSets(const vk::raii::PipelineLayout &layout, const vk::raii::DescriptorSets &sets);
 
@@ -104,6 +112,8 @@ namespace BHive
 		vk::raii::CommandBuffers *AllocateCommandBuffers(uint32_t count);
 
 		const std::vector<vk::raii::CommandBuffers> &GetCommandBuffers() const { return mCommandBuffers; }
+
+		virtual EAPI GetAPI() const { return EAPI::Vulkan; }
 
 	private:
 		void CreateCommandPool();
@@ -124,6 +134,5 @@ namespace BHive
 		std::vector<vk::raii::CommandBuffers> mCommandBuffers;
 
 		std::atomic<bool> mDeviceRecreationInProgress{false};
-
 	};
 } // namespace BHive

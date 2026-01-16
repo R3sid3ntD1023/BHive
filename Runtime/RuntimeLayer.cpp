@@ -13,7 +13,6 @@
 #include "gfx/Texture.h"
 #include "gfx/UniformBuffer.h"
 #include "gfx/VertexArray.h"
-#include "gfx/VulkanPipeline.h"
 #include "gfx/VulkanSwapChain.h"
 #include "gui/Gui.h"
 #include "importers/TextureImporter.h"
@@ -30,7 +29,7 @@ namespace BHive
 	{
 		CreateGraphicsPipeline();
 
-		mCamera.SetView(FTransform({0, 1, -5}));
+		mCamera.SetView(FTransform({0, 0, -5}));
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -44,28 +43,19 @@ namespace BHive
 		auto size = window.GetSize();
 		auto aspect = window.GetAspectRatio();
 
-		auto &context = GraphicsContext::Get();
-		auto &swap_chain = context.GetSwapChain();
-
-		auto current_frame = swap_chain->GetCurrentFrame();
-
-		
-
 		RenderCommand::ClearColor(0.01f, 0.01f, 0.01f, 1.f);
+
 		RenderCommand::SetViewport(0, 0, size.x, size.y);
 
 		Renderer::Begin();
 
 		Renderer::SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
+
 		LineRenderer::DrawLine({-1, 0, 0}, {1, 0, 0}, FColor::Green);
-		
+
 		if (mMaterial)
 		{
-	/*		auto &sets = mMaterial->GetDescriptorSets();
-			uniform_buffer->WriteDescriptor(sets[current_frame]);
-
-	*/
-			mMaterial->Submit(mShader);
+			mMaterial->Submit();
 
 			if (mMesh)
 				RenderCommand::DrawElements(EDrawMode::Triangles, *mMesh->GetVertexArray());
@@ -114,7 +104,6 @@ namespace BHive
 
 		// GUI::EndDockSpace();
 	}
-
 
 	void RuntimeLayer::CreateGraphicsPipeline()
 	{

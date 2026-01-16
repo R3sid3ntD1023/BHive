@@ -3,57 +3,17 @@
 
 namespace BHive
 {
-	uint32_t ShaderUtils::GetAPIShaderStage(EShaderStage stage)
+	std::string ShaderUtils::ToString(Shader::EShaderStage stage)
 	{
 		switch (stage)
 		{
-		case BHive::ShaderStage_Vertex:
-			return GL_VERTEX_SHADER;
-		case BHive::ShaderStage_Fragment:
-			return GL_FRAGMENT_SHADER;
-		case BHive::ShaderStage_Compute:
-			return GL_COMPUTE_SHADER;
-		case BHive::ShaderStage_Geometry:
-			return GL_GEOMETRY_SHADER;
-		default:
-			break;
-		}
-
-		ASSERT(false, "Invalid Shader Stage");
-		return 0;
-	}
-
-	uint32_t ShaderUtils::GetAPIShaderBit(EShaderStage stage)
-	{
-		switch (stage)
-		{
-		case BHive::ShaderStage_Vertex:
-			return GL_VERTEX_SHADER_BIT;
-		case BHive::ShaderStage_Fragment:
-			return GL_FRAGMENT_SHADER_BIT;
-		case BHive::ShaderStage_Compute:
-			return GL_COMPUTE_SHADER_BIT;
-		case BHive::ShaderStage_Geometry:
-			return GL_GEOMETRY_SHADER_BIT;
-		default:
-			break;
-		}
-
-		ASSERT(false, "Invalid Shader Stage");
-		return 0;
-	}
-
-	std::string ShaderUtils::ToString(EShaderStage stage)
-	{
-		switch (stage)
-		{
-		case BHive::ShaderStage_Vertex:
+		case BHive::Shader::ShaderStage_Vertex:
 			return "Vertex Stage";
-		case BHive::ShaderStage_Fragment:
+		case BHive::Shader::ShaderStage_Fragment:
 			return "Fragment Stage";
-		case BHive::ShaderStage_Compute:
+		case BHive::Shader::ShaderStage_Compute:
 			return "Compute Stage";
-		case BHive::ShaderStage_Geometry:
+		case BHive::Shader::ShaderStage_Geometry:
 			return "Geometry Stage";
 		default:
 			break;
@@ -63,19 +23,19 @@ namespace BHive
 		return "";
 	}
 
-	EShaderStage ShaderUtils::FromString(const std::string &str)
+	Shader::EShaderStage ShaderUtils::FromString(const std::string &str)
 	{
 		if (str == "vertex")
-			return ShaderStage_Vertex;
+			return Shader::ShaderStage_Vertex;
 		if (str == "fragment")
-			return ShaderStage_Fragment;
+			return Shader::ShaderStage_Fragment;
 		if (str == "compute")
-			return ShaderStage_Compute;
+			return Shader::ShaderStage_Compute;
 		if (str == "geometry")
-			return ShaderStage_Geometry;
+			return Shader::ShaderStage_Geometry;
 
 		ASSERT(false, "Invalid shader type string");
-		return ShaderStage_None;
+		return Shader::ShaderStage_None;
 	}
 
 	std::filesystem::path ShaderUtils::GetCacheDirectory()

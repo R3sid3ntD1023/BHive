@@ -1,39 +1,28 @@
 #pragma once
 
 #include "Buffers.h"
-#include "VulkanCore.h"
 
 namespace BHive
 {
 	class BHIVE_API VertexArray
 	{
 	public:
-		VertexArray();
-		virtual ~VertexArray();
+		virtual ~VertexArray() = default;
 
-		virtual void Bind() const;
-		virtual void UnBind() const;
+		virtual void Bind() const = 0;
 
-		virtual void SetIndexBuffer(const Ref<IndexBuffer> &indexbuffer);
-		virtual void AddVertexBuffer(const Ref<VertexBuffer> &vertexbuffer);
+		virtual void UnBind() const = 0;
 
-		virtual const Ref<IndexBuffer> &GetIndexBuffer() const { return mIndexBuffer; }
-		virtual void BindBuffersBase(uint32_t binding) const;
+		virtual void SetIndexBuffer(const Ref<IndexBuffer> &indexbuffer) = 0;
 
-		virtual Ref<VertexBuffer> GetVertexBuffer(uint32_t index) const;
-		virtual std::vector<Ref<VertexBuffer>> GetVertexBuffers() const { return mVertexBuffers; }
+		virtual void AddVertexBuffer(const Ref<VertexBuffer> &vertexbuffer) = 0;
 
-		const vk::VertexInputBindingDescription2EXT &GetBindingDescription() const { return mBinding; }
+		virtual const Ref<IndexBuffer> &GetIndexBuffer() const = 0;
 
-		const std::vector<vk::VertexInputAttributeDescription2EXT> &GetAttributeDescriptions() const { return mAttributes; }
+		virtual const std::vector<Ref<VertexBuffer>> &GetVertexBuffers() const = 0;
 
-	private:
-		vk::VertexInputBindingDescription2EXT mBinding;
-		std::vector<vk::VertexInputAttributeDescription2EXT> mAttributes;
+		static Ref<VertexArray> Create();
 
-		Ref<IndexBuffer> mIndexBuffer;
-		std::vector<Ref<VertexBuffer>> mVertexBuffers;
-
-		uint32_t mVertexBufferIndex{0};
+		static Ref<VertexArray> Create(const std::initializer_list<Ref<VertexBuffer>> vertex_buffers, const Ref<IndexBuffer> &index_buffer = nullptr);
 	};
 } // namespace BHive

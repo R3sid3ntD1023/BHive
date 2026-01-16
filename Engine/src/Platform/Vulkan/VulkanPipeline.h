@@ -1,13 +1,14 @@
 #pragma once
 
 #include "core/Core.h"
-#include "VulkanCore.h"
+#include "gfx/Pipeline.h"
+#include "gfx/VulkanCore.h"
 
 namespace BHive
 {
 	class Shader;
 
-	struct FPipelineConfigInfo
+	struct FVulkanPipelineConfigInfo : public Pipeline::Configuration
 	{
 		vk::Viewport Viewport;
 		vk::Rect2D Scissor;
@@ -23,22 +24,29 @@ namespace BHive
 		vk::RenderPass RenderPass = VK_NULL_HANDLE;
 		uint32_t SubPass = 0;
 		void *Next = nullptr;
+		std::vector<vk::PipelineShaderStageCreateInfo> ShaderCreateInfos;
 	};
 
-	class BHIVE_API VulkanPipeline
+	class BHIVE_API VulkanPipeline : public Pipeline
 	{
 	public:
+		VulkanPipeline(const FVulkanPipelineConfigInfo &configuration);
 
-		void Init(vk::raii::Device &device, const std::vector<vk::PipelineShaderStageCreateInfo> &shaders, const FPipelineConfigInfo &config);
+		virtual void Init() override;
 
-		operator const vk::raii::Pipeline &() const { return mPipeline; }
+		virtual void Bind() override;
 
-		operator const vk::Pipeline &() const { return mPipeline; }
+		virtual void UnBind() override;
 
-		static FPipelineConfigInfo GetDefaultConfigInfo(uint32_t width, uint32_t height);
+		const vk::Pipeline &operator*() const { return mPipeline; }
+
+		static FVulkanPipelineConfigInfo GetDefaultConfigInfo(uint32_t width, uint32_t height);
 
 	private:
-		std::vector<vk::PipelineShaderStageCreateInfo> mStages;
+		vk::raii::Device &mDevice;
+
+		FVulkanPipelineConfigInfo mConfiguration;
+
 		vk::raii::Pipeline mPipeline = VK_NULL_HANDLE;
 	};
-}
+} // namespace BHive

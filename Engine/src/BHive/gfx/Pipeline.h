@@ -1,30 +1,24 @@
 #pragma once
 
 #include "core/Core.h"
-#include "ShaderStages.h"
 
 namespace BHive
 {
-	class Shader;
-
 	class Pipeline
 	{
 	public:
-		Pipeline();
+		struct Configuration
+		{
+		};
 
-		~Pipeline();
+		virtual ~Pipeline() = default;
 
-		void Init();
+		virtual void Init() = 0;
 
-		void Release();
+		virtual void Bind() = 0;
 
-		void Bind();
+		virtual void UnBind() = 0;
 
-		void UnBind();
-
-		void UseShaderStage(EShaderStage stage, const Ref<Shader> &shader);
-
-	private:
-		uint32_t mPipelineID{0};
+		static Ref<Pipeline> Create(const Configuration &configuration);
 	};
 } // namespace BHive

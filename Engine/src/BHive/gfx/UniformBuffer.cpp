@@ -1,33 +1,22 @@
 #include "DescriptorBuilder.h"
+#include "Platform/Vulkan/VulkanUniformBuffer.h"
+#include "RenderCommand.h"
 #include "UniformBuffer.h"
-#include "VulkanUtils.h"
 
 namespace BHive
 {
-	UniformBuffer::UniformBuffer(uint32_t binding, uint64_t size, const void *data)
-		: mBinding(binding)
+	Ref<UniformBuffer> UniformBuffer::Create(uint32_t binding, uint64_t size, const void *data)
 	{
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible , mBuffer);
-		mBuffer.Map(size);
-
-		if (data)
+		switch (RenderCommand::GetRendererAPI())
 		{
-			SetData(data, size, 0);
+		case BHive::RendererAPI::Opengl:
+			break;
+		case BHive::RendererAPI::Vulkan:
+			return CreateRef<VulkanUniformBuffer>(binding, size, data);
 		}
 
-		mBufferInfo = vk::DescriptorBufferInfo(mBuffer.Buffer, 0, vk::DeviceSize(size));
-	}
-
-	void UniformBuffer::SetData(const void* data, size_t size, uint32_t offset)
-	{
-		mBuffer.SetData(data, size, offset);
-	}
-
-	void UniformBuffer::WriteDescriptor(const vk::raii::DescriptorSet &set) const
-	{
-		vk::WriteDescriptorSet write(set, mBinding, 0, vk::DescriptorType::eUniformBuffer, {}, {mBufferInfo});
-		auto device = set.getDevice();
-		device.updateDescriptorSets({write}, {});
+		ASSERT(false);
+		return nullptr;
 	}
 
 } // namespace BHive

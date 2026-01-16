@@ -118,7 +118,6 @@ namespace BHive
 		return sRendererAPI->CreateShader(data, size);
 	}
 
-	
 	void RenderCommand::BeginFrame()
 	{
 		sRendererAPI->BeginFrame();
@@ -127,6 +126,11 @@ namespace BHive
 	void RenderCommand::EndFrame()
 	{
 		sRendererAPI->EndFrame();
+	}
+
+	void RenderCommand::BindShader(const Shader *shader)
+	{
+		sRendererAPI->BindShader(shader);
 	}
 
 } // namespace BHive

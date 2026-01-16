@@ -2,107 +2,51 @@
 
 #include "core/Core.h"
 #include "ShaderReflection.h"
-#include "ShaderStages.h"
-#include "VulkanCore.h"
 
 namespace BHive
 {
-	class VulkanPipeline;
-	class FDescriptorSetLayout;
+	class Texture;
 
 	class BHIVE_API Shader
 	{
-		using Stages = std::vector<vk::PipelineShaderStageCreateInfo>;
-
-		struct FShaderData
+	public:
+		enum EShaderStage
 		{
-			std::string Code;
-			std::vector<uint32_t> VulkanSpirv;
-			vk::PipelineShaderStageCreateInfo VulkanShaderStageInfo{};
-
-			template <typename A>
-			void Serialize(A &ar)
-			{
-				ar(Code, VulkanSpirv);
-			}
+			ShaderStage_None = 0,
+			ShaderStage_Vertex,
+			ShaderStage_Fragment,
+			ShaderStage_Compute,
+			ShaderStage_Geometry,
 		};
 
 	public:
-		Shader(const std::filesystem::path &path);
+		virtual ~Shader() = default;
 
-		virtual ~Shader();
+		virtual void Bind() = 0;
 
-		virtual void Bind() const;
+		virtual void UnBind() = 0;
 
-		virtual void UnBind() const;
+		virtual const std::string &GetName() const = 0;
 
-		virtual uint32_t GetRendererID() const { return mProgramID; }
-
-		virtual const std::string &GetName() const { return mName; }
-
-		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1);
+		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1) = 0;
 
 		template <typename T>
-		void SetUniform(const std::string &name, const T &val);
+		void SetUniform(const std::string &name, const T &val) {};
 
-		template <typename T, glm::length_t L, glm::qualifier Q>
-		void SetUniform(const std::string &name, const glm::vec<L, T, Q> &val);
+		virtual void BindTexture(uint32_t binding, const Ref<Texture> &texture) = 0;
 
-		template <typename T, glm::length_t C, glm::length_t R, glm::qualifier Q>
-		void SetUniform(const std::string &name, const glm::mat<C, R, T, Q> &val);
+		virtual const FShaderReflectionData &GetRelectionData() const = 0;
 
-		virtual const FShaderReflectionData &GetRelectionData() const { return mReflectionData; }
+		virtual void Save(cereal::BinaryOutputArchive &ar) const {};
 
-		operator uint32_t() const { return GetRendererID(); }
+		virtual void Load(cereal::BinaryInputArchive &ar) {};
 
-		void Save(cereal::BinaryOutputArchive &ar) const;
+		static Ref<Shader> Create(const std::filesystem::path &path);
 
-		void Load(cereal::BinaryInputArchive &ar);
-
-		const FShaderData &GetShaderData(EShaderStage stage) const;
-
-		const Stages &GetStageCreateInfos() const { return mVulkanShaderStages; }
-
-		const VulkanPipeline &GetPipeline() const { return *mGraphicsPipeline; }
-
-		const vk::raii::PipelineLayout &GetPipelineLayout() const { return mPipelineLayout; }
-
-		const Ref<FDescriptorSetLayout> &GetDescriptorSetLayout() const { return mDescriptorSetLayout; }
-
-	private:
-		void Compile();
-
-		void CompileFromSource();
-
-		void PreProcess(const std::string &source);
-
-		void Reflect();
-
-		void CreatePipeline();
-
-	private:
-		std::string mName;
-
-		uint32_t mProgramID{0};
-
-		FShaderReflectionData mReflectionData;
-
-		std::filesystem::path mFilePath;
-
-		std::unordered_map<EShaderStage, FShaderData> mSources;
-
-		Stages mVulkanShaderStages{};
-
-		Scope<VulkanPipeline> mGraphicsPipeline;
-
-		Ref<FDescriptorSetLayout> mDescriptorSetLayout;
-
-		vk::raii::PipelineLayout mPipelineLayout = nullptr;
+		static Ref<Shader> Create(const std::string &name, const std::string &vert, const std::string &frag);
 
 		friend class ShaderSerializer;
 	};
-
-
 
 } // namespace BHive
 

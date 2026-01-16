@@ -5,7 +5,7 @@
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
-struct GLFWwindow;	
+struct GLFWwindow;
 
 namespace BHive
 {
@@ -33,29 +33,12 @@ namespace BHive
 		vk::raii::Buffer Buffer = VK_NULL_HANDLE;
 		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
 
-		void Map(size_t size, uint32_t offset = 0) { mMappedMemory = Memory.mapMemory(offset, size);}
-
-		void UnMap()
+		void SetData(const void *data, size_t size, uint32_t offset = 0)
 		{
-			Memory.unmapMemory();
-			mMappedMemory = nullptr;
-		}
-
-		void SetData(const void* data, size_t size, uint32_t offset = 0)
-		{
-			char *mapped = (char *)mMappedMemory + offset;
+			void *mapped = Memory.mapMemory(offset, size);
 			memcpy(mapped, data, size);
+			Memory.unmapMemory();
 		}
-
-		~AllocatedVulkanBuffer()
-		{ 
-			Buffer.getDevice().waitIdle();
-
-			UnMap();
-		}
-
-	private:
-		void *mMappedMemory = nullptr;
 	};
 
 	class BHIVE_API VulkanCore
@@ -76,7 +59,7 @@ namespace BHive
 
 		static const vk::raii::PhysicalDevice &GetPhysicalDevice() { return mPhysicalDevice; }
 
-		static vk::raii::Device& GetLogicalDevice() { return mLogicalDevice; }
+		static vk::raii::Device &GetLogicalDevice() { return mLogicalDevice; }
 
 		static std::vector<const char *> GetRequiredExtensions();
 
@@ -86,7 +69,7 @@ namespace BHive
 
 		static vk::raii::SurfaceKHR CreateSurface(GLFWwindow *window);
 
-		static void CreateLogicalDevice(const vk::SurfaceKHR& surface);
+		static void CreateLogicalDevice(const vk::SurfaceKHR &surface);
 
 		static const VkQueueFamilies &GetQueueFamilies() { return mQueueFamilies; };
 
@@ -96,7 +79,6 @@ namespace BHive
 		static void RegisterOnDeviceCreated(const DeviceCallback &callback);
 
 		static void RegisterOnDeviceDestroy(const DeviceCallback &callback);
-
 
 	private:
 		static void CreateIntance();
@@ -119,7 +101,6 @@ namespace BHive
 		static inline vk::raii::Device mLogicalDevice = nullptr;
 
 		static inline VkQueueFamilies mQueueFamilies;
-
 
 		static inline bool mInitialized = false;
 

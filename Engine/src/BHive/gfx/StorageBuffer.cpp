@@ -10,17 +10,10 @@ namespace BHive
 
 	StorageBuffer::StorageBuffer(size_t size)
 	{
-		
 	}
 
 	void StorageBuffer::SetData(const void *data, size_t, uint32_t offset)
 	{
-	}
-
-	
-	void StorageBuffer::BindBufferBase(uint32_t binding) const
-	{
-		
 	}
 
 } // namespace BHive

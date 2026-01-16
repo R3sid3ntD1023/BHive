@@ -90,7 +90,7 @@ namespace BHive
 	void ShadowRenderer::End()
 	{
 
-		mShadowRenderData->ShadowBuffer->BindBufferBase(SHADOW_SSBO_BINDING);
+		// mShadowRenderData->ShadowBuffer->BindBufferBase(SHADOW_SSBO_BINDING);
 		mShadowRenderData->ShadowBuffer->SetData(&mShadowRenderData->ShadowData, sizeof(FShadowData));
 	}
 

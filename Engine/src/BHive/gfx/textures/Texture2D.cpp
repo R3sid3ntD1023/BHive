@@ -50,7 +50,6 @@ namespace BHive
 		AllocatedVulkanBuffer stagingBuffer;
 		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
 
-		stagingBuffer.Map(size);
 		stagingBuffer.SetData(data, size, 0);
 
 		auto &image = mVulkanTexture.Image;

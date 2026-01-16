@@ -18,7 +18,7 @@ namespace BHive
 
 		cereal::BinaryOutputArchive ar(out);
 
-		ar(shader);
+		shader.Save(ar);
 
 		LOG_INFO("Wrote Program Binary to: {}", cached_path);
 	}
@@ -34,7 +34,7 @@ namespace BHive
 
 		cereal::BinaryInputArchive ar(in);
 
-		ar(shader);
+		shader.Load(ar);
 
 		LOG_INFO("Read Program Binary from: {}", cached_path);
 

@@ -52,6 +52,9 @@ namespace BHive
 
 		static void EndFrame();
 
+		static void BindShader(const Shader *shader);
+
+		static RendererAPI::EAPI GetRendererAPI() { return sRendererAPI->GetAPI(); }
 
 		static RendererAPI *GetAPI() { return sRendererAPI.get(); }
 

@@ -4,11 +4,10 @@
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/UniformBuffer.h"
-#include "gfx/VulkanPipeline.h"
 #include "gfx/VulkanSwapChain.h"
 #include "LineRenderBatch.h"
-#include "renderers/Renderer.h"
 #include "material/Material.h"
+#include "renderers/Renderer.h"
 
 namespace BHive
 {
@@ -16,11 +15,10 @@ namespace BHive
 	{
 		mVertexDataBuffer = new FLineVertex[sMaxVertexCount];
 
-		mVertexBuffer = CreateRef<VertexBuffer>(sMaxVertexCount * sizeof(FLineVertex));
+		mVertexBuffer = VertexBuffer::Create(sMaxVertexCount * sizeof(FLineVertex));
 		mVertexBuffer->SetLayout({{EShaderDataType::Float3}, {EShaderDataType::Float4}, {EShaderDataType::Int}});
 
-		mVertexArray = CreateRef<VertexArray>();
-		mVertexArray->AddVertexBuffer(mVertexBuffer);
+		mVertexArray = VertexArray::Create({mVertexBuffer});
 
 		mLineShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Line.glsl");
 		mLineMaterial = CreateRef<Material>(mLineShader);
@@ -50,14 +48,16 @@ namespace BHive
 	{
 		if (mVertexCount > 0)
 		{
-
-			mLineMaterial->Submit(mLineShader);
+			mLineMaterial->Submit();
 
 			uint32_t size = (uint32_t)((uint8_t *)mVertexDataPtr - (uint8_t *)mVertexDataBuffer);
+
 			mVertexBuffer->SetData(mVertexDataBuffer, size);
 
 			RenderCommand::SetLineWidth(2.0f);
+
 			RenderCommand::DrawArrays(Lines, *mVertexArray, mVertexCount);
+
 			Renderer::GetStats().DrawCalls++;
 		}
 	}
