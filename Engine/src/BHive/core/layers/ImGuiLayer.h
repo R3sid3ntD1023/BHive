@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/Layer.h"
-#include "gfx/DescriptorBuilder.h"
 #include "gfx/VulkanCore.h"
+#include "Platform/Vulkan/DescriptorBuilder.h"
 
 struct GLFWwindow;
 struct ImGuiContext;

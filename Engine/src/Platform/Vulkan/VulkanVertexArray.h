@@ -45,5 +45,7 @@ namespace BHive
 		Bindings mBinding;
 
 		Attributes mAttributes;
+
+		uint32_t mVertexAttributeIndex{0};
 	};
 } // namespace BHive

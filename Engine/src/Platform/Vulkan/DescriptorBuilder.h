@@ -1,6 +1,6 @@
 #pragma once
 
-#include "VulkanCore.h"
+#include "gfx/VulkanCore.h"
 
 namespace BHive
 {
@@ -19,7 +19,7 @@ namespace BHive
 		public:
 			Builder() {}
 
-			Builder& AddBinding(uint32_t binding, vk::DescriptorType type, vk::ShaderStageFlags stageFlags, uint32_t count)
+			Builder &AddBinding(uint32_t binding, vk::DescriptorType type, vk::ShaderStageFlags stageFlags, uint32_t count)
 			{
 
 				ASSERT(!mBindings.contains(binding), "Binding already in use");
@@ -29,25 +29,19 @@ namespace BHive
 				return *this;
 			}
 
-			Ref<FDescriptorSetLayout> Build() const
-			{
-				return CreateRef<FDescriptorSetLayout>(mBindings); 
-			}
+			Ref<FDescriptorSetLayout> Build() const { return CreateRef<FDescriptorSetLayout>(mBindings); }
 
 		private:
-			std::unordered_map< uint32_t, vk::DescriptorSetLayoutBinding> mBindings;
-
+			std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> mBindings;
 		};
 
 	private:
-		const vk::raii::Device& mDevice = VK_NULL_HANDLE;
+		const vk::raii::Device &mDevice = VK_NULL_HANDLE;
 		vk::raii::DescriptorSetLayout mLayout = VK_NULL_HANDLE;
 		std::unordered_map<uint32_t, vk::DescriptorSetLayoutBinding> mBindings;
-		
 
 		friend class FDescriptorWriter;
 	};
-
 
 	class BHIVE_API FDescriptorPool
 	{
@@ -68,7 +62,7 @@ namespace BHive
 		public:
 			Builder() {}
 
-			Builder&AddPoolSize(vk::DescriptorType type, uint32_t count)
+			Builder &AddPoolSize(vk::DescriptorType type, uint32_t count)
 			{
 				mPoolSizes.emplace_back(type, count);
 				return *this;
@@ -86,16 +80,12 @@ namespace BHive
 				return *this;
 			}
 
-			Ref<FDescriptorPool> Build() const
-			{
-				return CreateRef<FDescriptorPool>(mMaxSets, mPoolSizes, mFlags); 
-			}
+			Ref<FDescriptorPool> Build() const { return CreateRef<FDescriptorPool>(mMaxSets, mPoolSizes, mFlags); }
 
 		private:
 			uint32_t mMaxSets = 1000;
 			vk::DescriptorPoolCreateFlags mFlags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind;
 			std::vector<vk::DescriptorPoolSize> mPoolSizes;
-				
 		};
 
 	private:

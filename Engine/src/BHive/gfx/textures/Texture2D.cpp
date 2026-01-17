@@ -48,6 +48,7 @@ namespace BHive
 		vk::DeviceSize size = mWidth * mHeight * mCreateInfo.Channels;
 
 		AllocatedVulkanBuffer stagingBuffer;
+
 		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
 
 		stagingBuffer.SetData(data, size, 0);

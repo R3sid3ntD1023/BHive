@@ -77,7 +77,6 @@ namespace BHive
 		auto &layout = vertexbuffer->GetLayout();
 		auto &elements = layout.GetElements();
 		auto stride = layout.GetStride();
-		auto index = (uint32_t)mVertexBuffers.size();
 
 		if (elements.size() == 0)
 			return;
@@ -99,7 +98,7 @@ namespace BHive
 			case BHive::EShaderDataType::Int4:
 			case BHive::EShaderDataType::Bool:
 			{
-				mAttributes.emplace_back(index++, 0, utils::GetVulkanFormat(type), (uint32_t)element.Offset);
+				mAttributes.emplace_back(mVertexAttributeIndex++, 0, utils::GetVulkanFormat(type), (uint32_t)element.Offset);
 				break;
 			}
 			case BHive::EShaderDataType::Mat3:
@@ -108,7 +107,7 @@ namespace BHive
 				auto count = element.ComponentCount;
 				for (uint8_t i = 0; i < count; i++)
 				{
-					mAttributes.emplace_back(index++, 0, utils::GetVulkanFormat(type), (uint32_t)(element.Offset + sizeof(float) * count * i));
+					mAttributes.emplace_back(mVertexAttributeIndex++, 0, utils::GetVulkanFormat(type), (uint32_t)(element.Offset + sizeof(float) * count * i));
 				}
 				break;
 			}

@@ -238,11 +238,11 @@ namespace BHive
 
 	void RendererAPI::DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count)
 	{
-		mCommands.emplace(
-			[&](const FVulkanFrameData &data)
-			{
-				auto vulkan_vao = (const VulkanVertexArray &)vao;
+		auto vulkan_vao = dynamic_cast<const VulkanVertexArray &>(vao);
 
+		mCommands.emplace(
+			[=](const FVulkanFrameData &data)
+			{
 				std::vector<vk::Buffer> vk_vertex_buffers;
 
 				auto vertex_buffers = vulkan_vao.GetVertexBuffers();
@@ -264,14 +264,15 @@ namespace BHive
 
 	void RendererAPI::DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count)
 	{
+		auto vulkan_vao = dynamic_cast<const VulkanVertexArray &>(vao);
+
 		mCommands.emplace(
-			[&](const FVulkanFrameData &data)
+			[=](const FVulkanFrameData &data)
 			{
-				auto vulkan_vao = (const VulkanVertexArray &)vao;
 				std::vector<vk::Buffer> vk_vertex_buffers;
 
-				auto index_buffer = vao.GetIndexBuffer();
-				auto vertex_buffers = vao.GetVertexBuffers();
+				auto index_buffer = vulkan_vao.GetIndexBuffer();
+				auto vertex_buffers = vulkan_vao.GetVertexBuffers();
 
 				for (auto &vb : vertex_buffers)
 				{

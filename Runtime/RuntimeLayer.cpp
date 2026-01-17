@@ -4,16 +4,10 @@
 
 #include "core/layers/ImGuiLayer.h"
 #include "core/platform/Platform.h"
-#include "gfx/Buffers.h"
-#include "gfx/DescriptorBuilder.h"
 #include "gfx/GraphicsContext.h"
 #include "gfx/RenderCommand.h"
-#include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
-#include "gfx/UniformBuffer.h"
-#include "gfx/VertexArray.h"
-#include "gfx/VulkanSwapChain.h"
 #include "gui/Gui.h"
 #include "importers/TextureImporter.h"
 #include "material/Material.h"
@@ -29,7 +23,7 @@ namespace BHive
 	{
 		CreateGraphicsPipeline();
 
-		mCamera.SetView(FTransform({0, 0, -5}));
+		mCamera.SetView(FTransform({0, 1, -5}));
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -43,7 +37,7 @@ namespace BHive
 		auto size = window.GetSize();
 		auto aspect = window.GetAspectRatio();
 
-		RenderCommand::ClearColor(0.01f, 0.01f, 0.01f, 1.f);
+		RenderCommand::ClearColor(0.1f, 0.1f, 0.1f, 1.f);
 
 		RenderCommand::SetViewport(0, 0, size.x, size.y);
 

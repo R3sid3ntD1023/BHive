@@ -20,27 +20,6 @@ namespace BHive
 		int32_t ComputeQueueIndex = -1;
 	};
 
-	struct AllocatedVulkanTexture
-	{
-		vk::raii::Image Image = VK_NULL_HANDLE;
-		vk::raii::ImageView ImageView = VK_NULL_HANDLE;
-		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
-		vk::raii::Sampler Sampler = VK_NULL_HANDLE;
-	};
-
-	struct AllocatedVulkanBuffer
-	{
-		vk::raii::Buffer Buffer = VK_NULL_HANDLE;
-		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
-
-		void SetData(const void *data, size_t size, uint32_t offset = 0)
-		{
-			void *mapped = Memory.mapMemory(offset, size);
-			memcpy(mapped, data, size);
-			Memory.unmapMemory();
-		}
-	};
-
 	class BHIVE_API VulkanCore
 	{
 	public:
@@ -107,5 +86,29 @@ namespace BHive
 		static inline std::vector<DeviceCallback> mOnDeviceDestroyedCallbacks;
 
 		static inline std::vector<DeviceCallback> mOnDeviceCreatedCallbacks;
+	};
+
+	struct AllocatedVulkanTexture
+	{
+		vk::raii::Image Image = VK_NULL_HANDLE;
+		vk::raii::ImageView ImageView = VK_NULL_HANDLE;
+		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
+		vk::raii::Sampler Sampler = VK_NULL_HANDLE;
+	};
+
+	struct AllocatedVulkanBuffer
+	{
+		vk::raii::Buffer Buffer = VK_NULL_HANDLE;
+		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
+
+		void SetData(const void *data, size_t size, uint32_t offset = 0)
+		{
+			if (!data)
+				return;
+
+			auto *mapped = Memory.mapMemory(offset, size);
+			memcpy(mapped, data, size);
+			Memory.unmapMemory();
+		}
 	};
 } // namespace BHive

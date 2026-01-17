@@ -1,3 +1,4 @@
+#include "gfx/RenderCommand.h"
 #include "gfx/VulkanUtils.h"
 #include "VulkanBuffers.h"
 
@@ -17,13 +18,18 @@ namespace BHive
 		if (!data)
 			return;
 
-		AllocatedVulkanBuffer stagingBuffer;
+		auto cmd = [=](const FVulkanFrameData &frame)
+		{
+			AllocatedVulkanBuffer stagingBuffer;
 
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
+			VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
 
-		stagingBuffer.SetData(data, size, 0);
+			stagingBuffer.SetData(data, size, 0);
 
-		VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
+			VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
+		};
+
+		RenderCommand::GetAPI()->SubmitCommand(cmd);
 	}
 
 	VulkanVertexBuffer::VulkanVertexBuffer(const uint64_t size, const float *data)
@@ -38,13 +44,18 @@ namespace BHive
 		if (!data)
 			return;
 
-		AllocatedVulkanBuffer stagingBuffer;
+		auto cmd = [=](const FVulkanFrameData &frame)
+		{
+			AllocatedVulkanBuffer stagingBuffer;
 
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
+			VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
 
-		stagingBuffer.SetData(data, size, offset);
+			stagingBuffer.SetData(data, size, offset);
 
-		VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
+			VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
+		};
+
+		RenderCommand::GetAPI()->SubmitCommand(cmd);
 	}
 
 	void VulkanVertexBuffer::SetLayout(const BufferLayout &layout)

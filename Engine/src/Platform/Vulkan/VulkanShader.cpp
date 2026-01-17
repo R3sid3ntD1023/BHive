@@ -1,7 +1,7 @@
 #include "core/Application.h"
 #include "core/FileSystem.h"
 #include "core/subsystem/SubSystem.h"
-#include "gfx/DescriptorBuilder.h"
+#include "DescriptorBuilder.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Texture.h"
 #include "gfx/UniformBuffer.h"
@@ -219,16 +219,16 @@ namespace BHive
 
 	void VulkanShader::UpdateDescriptorResources()
 	{
-		for (const auto &binding : mUniformBufferBindings)
+		auto cmd = [=](const FVulkanFrameData &frame)
 		{
-			auto ubo = Cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(binding));
-			for (const auto &set : mDescriptorSets)
+			for (const auto &binding : mUniformBufferBindings)
 			{
-				auto buffer_info = reinterpret_cast<const vk::DescriptorBufferInfo *>(ubo->GetNativeHandle());
-				vk::WriteDescriptorSet writer(set, binding, 0, vk::DescriptorType::eUniformBuffer, {}, {*buffer_info});
-				mDevice.updateDescriptorSets(writer, nullptr);
+				auto ubo = std::dynamic_pointer_cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(binding));
+				ubo->WriteDescriptor(mDescriptorSets[frame.Frame]);
 			}
-		}
+		};
+
+		RenderCommand::GetAPI()->SubmitCommand(cmd);
 	}
 
 	void VulkanShader::Reflect()
