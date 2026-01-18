@@ -40,11 +40,7 @@ namespace BHive
 	void VulkanPipeline::Bind()
 	{
 		vk::Pipeline pipelineHandle = *mPipeline;
-		auto cmd = [=](const FVulkanFrameData &data)
-		{
-			data.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipelineHandle);
-			LOG_TRACE("Bind Pipeline");
-		};
+		auto cmd = [=](const FVulkanFrameData &data) { data.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipelineHandle); };
 
 		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
 	}

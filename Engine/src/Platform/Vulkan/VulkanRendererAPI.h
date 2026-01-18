@@ -112,5 +112,7 @@ namespace BHive
 		std::vector<vk::raii::CommandBuffers> mCommandBuffers;
 
 		std::atomic<bool> mDeviceRecreationInProgress{false};
+
+		Ref<class RenderDocAPI> mRenderDoc;
 	};
 } // namespace BHive

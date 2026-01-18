@@ -6,7 +6,7 @@ include(FindVulkan)
 include(GNUInstallDirs)
 
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
-set(RENDERDOC_Dir "C:/Program Files/RenderDoc")
+
 
 #set(AFTERMATH_DIR ${VENDOR_DIR}/aftermath)
 #set(AFTERMATH_INCLUDE_DIR ${AFTERMATH_DIR}/include)
@@ -51,6 +51,10 @@ else()
 	add_library(${TARGET_NAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
 	message(STATUS "Building Engine as Static Library")
 endif()
+
+#find renderdoc
+set(RENDERDOC_DIR "C:/Program Files/RenderDoc")
+target_include_directories(${TARGET_NAME} PRIVATE "${RENDERDOC_DIR}")
 
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 
@@ -98,7 +102,6 @@ target_include_directories(${TARGET_NAME} PUBLIC
 	${VENDOR_DIR}
 	${Vulkan_INCLUDE_DIRS}
 	${Stb_INCLUDE_DIR}
-	${RENDERDOC_Dir}
 )
 
 target_precompile_headers(${TARGET_NAME} PUBLIC src/BHivePCH.h)

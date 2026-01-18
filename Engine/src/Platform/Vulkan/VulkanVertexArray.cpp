@@ -39,10 +39,6 @@ namespace BHive
 		}
 	} // namespace utils
 
-	VulkanVertexArray::VulkanVertexArray()
-	{
-	}
-
 	VulkanVertexArray::VulkanVertexArray(const std::vector<Ref<VertexBuffer>> &vertex_buffers, const Ref<IndexBuffer> &index_buffer)
 		: mVertexBuffers(vertex_buffers),
 		  mIndexBuffer(index_buffer)
@@ -55,30 +51,31 @@ namespace BHive
 
 	void VulkanVertexArray::Bind() const
 	{
+		auto size = mVertexBuffers.size();
+		std::vector<vk::Buffer> vk_vertex_buffers(size);
+		std::vector<vk::DeviceSize> offsets(size);
+		vk::Buffer index_buffer;
+
+		if (mIndexBuffer)
+			index_buffer = *std::dynamic_pointer_cast<VulkanIndexBuffer>(mIndexBuffer);
+
+		for (uint32_t i = 0; i < size; i++)
+		{
+			auto &vb = mVertexBuffers[i];
+			vk_vertex_buffers[i] = (*std::dynamic_pointer_cast<VulkanVertexBuffer>(vb));
+			offsets[i] = 0;
+		}
+
 		auto cmd = [=](const FVulkanFrameData &data)
 		{
-			auto size = mVertexBuffers.size();
-			std::vector<vk::Buffer> vk_vertex_buffers(size);
-			std::vector<vk::DeviceSize> offsets(size);
-
-			for (uint32_t i = 0; i < size; i++)
-			{
-				auto &vb = mVertexBuffers[i];
-				vk_vertex_buffers[i] = (*std::dynamic_pointer_cast<VulkanVertexBuffer>(vb));
-				offsets[i] = 0;
-			}
-
 			data.CommandBuffer.setVertexInputEXT(mBindings, mAttributes);
-			data.CommandBuffer.bindVertexBuffers(0, vk_vertex_buffers, offsets);
 
-			LOG_TRACE("Bind vertex buffers");
-
-			if (mIndexBuffer)
+			if (index_buffer)
 			{
-				data.CommandBuffer.bindIndexBuffer(*std::dynamic_pointer_cast<VulkanIndexBuffer>(mIndexBuffer), 0, vk::IndexType::eUint32);
-
-				LOG_TRACE("Bind index buffers");
+				data.CommandBuffer.bindIndexBuffer(index_buffer, 0, vk::IndexType::eUint32);
 			}
+
+			data.CommandBuffer.bindVertexBuffers(0, vk_vertex_buffers, offsets);
 		};
 
 		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
@@ -95,7 +92,7 @@ namespace BHive
 
 	void VulkanVertexArray::AddVertexBuffer(const Ref<VertexBuffer> &vertexbuffer)
 	{
-		mVertexBuffers.emplace_back(vertexbuffer);
+		mVertexBuffers.push_back(vertexbuffer);
 		CreateBindingsAndAttributes(vertexbuffer);
 	}
 

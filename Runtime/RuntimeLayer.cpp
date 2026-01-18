@@ -35,17 +35,16 @@ namespace BHive
 		auto &app = Application::Get();
 		auto &window = app.GetWindow();
 		auto size = window.GetSize();
-		auto aspect = window.GetAspectRatio();
 
 		RenderCommand::ClearColor(0.1f, 0.1f, 0.1f, 1.f);
-
+		RenderCommand::Clear();
 		RenderCommand::SetViewport(0, 0, size.x, size.y);
 
 		Renderer::Begin();
 
 		Renderer::SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
 
-		LineRenderer::DrawLine({-1, 0, 0}, {1, 0, 0}, FColor::Green);
+		LineRenderer::DrawLine({0, 0, 0}, {1, 1, 1}, FColor::Green);
 
 		if (mMesh && mMaterial)
 		{
@@ -61,13 +60,6 @@ namespace BHive
 	void RuntimeLayer::OnGuiRender()
 	{
 		static float value = 0.f;
-
-		/*GUI::BeginDockSpace("Dockspace");
-
-		if (ImGui::BeginMainMenuBar())
-		{
-			ImGui::EndMainMenuBar();
-		}*/
 
 		if (ImGui::Begin("Window"))
 		{

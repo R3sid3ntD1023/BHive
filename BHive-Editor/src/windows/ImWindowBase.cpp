@@ -1,6 +1,6 @@
 #include "core/Application.h"
-#include "ImWindowBase.h"
 #include "core/layers/ImGuiLayer.h"
+#include "ImWindowBase.h"
 
 namespace BHive
 {
@@ -32,7 +32,7 @@ namespace BHive
 			mIsHovered = ImGui::IsWindowHovered();
 			mIsFocused = ImGui::IsWindowFocused();
 
-			Application::Get().GetImGuiLayer().BlockEvents(!mIsHovered);
+			Application::Get().GetImGuiLayer()->BlockEvents(!mIsHovered);
 
 			if (ImGui::BeginMenuBar())
 			{

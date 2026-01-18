@@ -1,4 +1,5 @@
 #include "core/Application.h"
+#include "gfx/debug/RenderDoc.h"
 #include "gfx/GraphicsContext.h"
 #include "Platform/Vulkan/VulkanGraphicsContext.h"
 #include "Platform/Vulkan/VulkanPipeline.h"
@@ -35,6 +36,8 @@ namespace BHive
 
 	void VulkanRendererAPI::BeginFrame()
 	{
+		mRenderDoc->StartCaptureWithFile();
+
 		auto &context = static_cast<VulkanGraphicsContext &>(GraphicsContext::Get());
 		auto &swap_chain = context.GetSwapChain();
 
@@ -45,7 +48,7 @@ namespace BHive
 		auto &image_view = swap_chain->GetImageView(image_index);
 		auto extent = swap_chain->GetExtent();
 
-		auto &command_buffer = mCommandBuffers[0][current_frame];
+		auto &command_buffer = GetCurrentCommandBuffer();
 
 		vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
 		command_buffer.begin(begin_info);
@@ -96,6 +99,8 @@ namespace BHive
 			cmd(command_data);
 			mSecondaryCommands.pop();
 		}
+
+		mRenderDoc->EndCapture();
 	}
 
 	void VulkanRendererAPI::SubmitCommand(std::function<void(const FVulkanFrameData &)> &&command)
@@ -116,6 +121,9 @@ namespace BHive
 
 	void VulkanRendererAPI::Init()
 	{
+		mRenderDoc = CreateRef<RenderDocAPI>();
+		mRenderDoc->Init();
+
 		CreateCommandPool();
 		CreateCommandBuffers();
 
@@ -210,8 +218,6 @@ namespace BHive
 		{
 			data.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)y, (float)w, (float)h, 0.0f, 1.0f));
 			data.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, {w, h}));
-
-			LOG_TRACE("Set Viewport");
 		};
 
 		SubmitCommand(cmd);
@@ -225,8 +231,6 @@ namespace BHive
 		{
 			data.CommandBuffer.setPrimitiveTopology(details::GetTopology(mode));
 			data.CommandBuffer.draw(count, 1, 0, 0);
-
-			LOG_TRACE("Draw Arrays");
 		};
 
 		SubmitCommand(cmd);

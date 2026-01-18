@@ -19,27 +19,20 @@ namespace BHive
 		if (!data)
 			return;
 
-		auto cmd = [=](const FVulkanFrameData &frame)
-		{
-			AllocatedVulkanBuffer stagingBuffer;
+		AllocatedVulkanBuffer stagingBuffer;
 
-			VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
+		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
 
-			stagingBuffer.SetData(data, size, 0);
+		stagingBuffer.SetData(data, size, offset);
 
-			VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
-
-			LOG_TRACE("Set Data");
-		};
-
-		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
+		VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
 	}
 
 	VulkanVertexBuffer::VulkanVertexBuffer(const uint64_t size, const void *data)
 		: mDevice(VulkanCore::GetLogicalDevice())
 	{
 		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mBuffer);
-		SetData(data, size * sizeof(float), 0);
+		SetData(data, size, 0);
 	}
 
 	void VulkanVertexBuffer::SetData(const void *data, uint64_t size, uint32_t offset)
@@ -47,20 +40,13 @@ namespace BHive
 		if (!data)
 			return;
 
-		auto cmd = [=](const FVulkanFrameData &frame)
-		{
-			AllocatedVulkanBuffer stagingBuffer;
+		AllocatedVulkanBuffer stagingBuffer;
 
-			VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
+		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
 
-			stagingBuffer.SetData(data, size, offset);
+		stagingBuffer.SetData(data, size, offset);
 
-			VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
-
-			LOG_TRACE("Set Data");
-		};
-
-		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
+		VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
 	}
 
 	void VulkanVertexBuffer::SetLayout(const BufferLayout &layout)

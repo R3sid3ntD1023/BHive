@@ -154,13 +154,12 @@ namespace BHive
 
 		UpdateDescriptorResources();
 
-		auto cmd = [=](const FVulkanFrameData &data)
+		if (mDescriptorSets.size())
 		{
-			data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, *mDescriptorSets[data.Frame], nullptr);
-			LOG_TRACE("Bind Descriptor Sets");
-		};
+			auto cmd = [=](const FVulkanFrameData &data) { data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, *mDescriptorSets[data.Frame], nullptr); };
 
-		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
+			RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
+		}
 	}
 
 	void VulkanShader::UnBind()
@@ -189,6 +188,10 @@ namespace BHive
 	{
 		DestroyDescriptorResources();
 
+		auto num_samplers = static_cast<uint32_t>(mReflectionData.Samplers.size());
+		auto num_uniform_buffers = static_cast<uint32_t>(mReflectionData.UniformBuffers.size());
+		auto max_sets = num_samplers + num_uniform_buffers;
+
 		for (auto &[name, data] : mReflectionData.UniformBuffers)
 		{
 			mUniformBufferBindings.push_back(data.Binding);
@@ -207,9 +210,9 @@ namespace BHive
 
 		mDescriptorSetLayout = builder.Build();
 
-		auto num_samplers = static_cast<uint32_t>(mReflectionData.Samplers.size());
-		auto num_uniform_buffers = static_cast<uint32_t>(mReflectionData.UniformBuffers.size());
-		auto max_sets = num_samplers + num_uniform_buffers;
+		if (max_sets == 0)
+			return;
+
 		FDescriptorPool::Builder pool_builder;
 		pool_builder.SetMaxSets(max_sets * 2);
 

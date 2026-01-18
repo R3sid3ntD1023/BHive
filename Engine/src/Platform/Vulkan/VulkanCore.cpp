@@ -17,19 +17,19 @@ namespace BHive
 		switch (messageSeverity)
 		{
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-			LOG_TRACE("validation layer type: {} - {}", std::to_string(messageType), pCallbackData->pMessage);
+			LOG_TRACE("{} : {}", std::to_string(messageType), pCallbackData->pMessage);
 			break;
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-			LOG_INFO("validation layer type: {} - {}", std::to_string(messageType), pCallbackData->pMessage);
+			LOG_INFO("{} : {}", std::to_string(messageType), pCallbackData->pMessage);
 			break;
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-			LOG_WARN("validation layer type: {} - {}", std::to_string(messageType), pCallbackData->pMessage);
+			LOG_WARN("{} : {}", std::to_string(messageType), pCallbackData->pMessage);
 			break;
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-			LOG_ERROR("validation layer type: {} - {}", std::to_string(messageType), pCallbackData->pMessage);
+			LOG_ERROR("{} : {}", std::to_string(messageType), pCallbackData->pMessage);
 			break;
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
-			LOG_CRITICAL("validation layer type: {} - {}", std::to_string(messageType), pCallbackData->pMessage);
+			LOG_CRITICAL("{} : {}", std::to_string(messageType), pCallbackData->pMessage);
 			break;
 		default:
 			break;
