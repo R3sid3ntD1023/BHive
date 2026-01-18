@@ -1,6 +1,7 @@
 #include "gfx/RenderCommand.h"
-#include "gfx/VulkanUtils.h"
 #include "VulkanBuffers.h"
+#include "VulkanRendererAPI.h"
+#include "VulkanUtils.h"
 
 namespace BHive
 {
@@ -27,12 +28,14 @@ namespace BHive
 			stagingBuffer.SetData(data, size, 0);
 
 			VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
+
+			LOG_TRACE("Set Data");
 		};
 
-		RenderCommand::GetAPI()->SubmitCommand(cmd);
+		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
 	}
 
-	VulkanVertexBuffer::VulkanVertexBuffer(const uint64_t size, const float *data)
+	VulkanVertexBuffer::VulkanVertexBuffer(const uint64_t size, const void *data)
 		: mDevice(VulkanCore::GetLogicalDevice())
 	{
 		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mBuffer);
@@ -53,9 +56,11 @@ namespace BHive
 			stagingBuffer.SetData(data, size, offset);
 
 			VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
+
+			LOG_TRACE("Set Data");
 		};
 
-		RenderCommand::GetAPI()->SubmitCommand(cmd);
+		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
 	}
 
 	void VulkanVertexBuffer::SetLayout(const BufferLayout &layout)

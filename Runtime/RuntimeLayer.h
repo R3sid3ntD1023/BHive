@@ -2,17 +2,11 @@
 
 #include "core/Core.h"
 #include "core/Layer.h"
-#include "gfx/VulkanCore.h"
 #include "gfx/cameras/EditorCamera.h"
 
 namespace BHive
 {
 	class Texture2D;
-	class VertexBuffer;
-	class IndexBuffer;
-	class VertexArray;
-	class UniformBuffer;
-	class VulkanPipeline;
 
 	class RuntimeLayer : public Layer
 	{

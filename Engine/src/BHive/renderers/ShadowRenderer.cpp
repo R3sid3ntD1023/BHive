@@ -79,7 +79,7 @@ namespace BHive
 		shadow_passes.Shaders[1] = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowPointLight.glsl");
 		shadow_passes.Shaders[2] = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowSpotLight.glsl");
 
-		mShadowRenderData->ShadowBuffer = CreateRef<StorageBuffer>(sizeof(FShadowData));
+		mShadowRenderData->ShadowBuffer = StorageBuffer::Create(sizeof(FShadowData));
 	}
 
 	void ShadowRenderer::Begin()

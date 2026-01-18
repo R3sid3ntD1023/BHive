@@ -1,14 +1,11 @@
 #pragma once
 
 #include "core/Core.h"
-#include "gfx/VertexArray.h"
-#include "VulkanCore.h"
-#include "VulkanUtils.h"
 
 namespace BHive
 {
-	class Shader;
-	class Pipeline;
+	class VertexArray;
+	class BufferBase;
 
 	enum EDrawMode
 	{
@@ -32,21 +29,6 @@ namespace BHive
 		uint32_t BaseInstance;
 	};
 
-	struct FVulkanFrameData
-	{
-		vk::raii::CommandBuffer &CommandBuffer;
-
-		vk::Image Image;
-
-		vk::ImageView ImageView;
-
-		uint32_t Frame;
-	};
-
-	struct FRenderCommand : std::function<void(const FVulkanFrameData &)>
-	{
-	};
-
 	class BHIVE_API RendererAPI
 	{
 	public:
@@ -57,82 +39,54 @@ namespace BHive
 		};
 
 	public:
-		RendererAPI() = default;
-		virtual ~RendererAPI();
+		virtual ~RendererAPI() = default;
 
-		virtual void Init();
-		virtual void Shutdown();
+		virtual void Init() = 0;
 
-		virtual void ClearColor(float r, float g, float b, float a = 1.0f);
-		virtual void Clear(int mask = Buffer_Color | Buffer_Depth | Buffer_Stencil);
+		virtual void Shutdown() = 0;
 
-		virtual void SetLineWidth(float width);
-		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+		virtual void ClearColor(float r, float g, float b, float a = 1.0f) = 0;
 
-		virtual void DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count = 0);
-		virtual void DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count = 0);
-		virtual void DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0);
-		virtual void DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count = 0);
-		virtual void DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count = 0);
-		virtual void MultiDrawElementsIndirect(EDrawMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride = 0);
+		virtual void Clear(int mask = Buffer_Color | Buffer_Depth | Buffer_Stencil) = 0;
 
-		virtual void EnableDepth();
-		virtual void DisableDepth();
-		virtual void DepthFunc(uint32_t func);
+		virtual void SetLineWidth(float width) = 0;
 
-		virtual void CullFront();
-		virtual void CullBack();
-		virtual void SetCullEnabled(bool enabled);
+		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h) = 0;
 
-		virtual void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-		virtual void EnableDepthMask(bool mask);
-		virtual void EnableBlend(bool enabled);
-		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer);
+		virtual void DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count = 0) = 0;
 
-		virtual void *CreateShader(const uint32_t *data, size_t size);
+		virtual void DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count = 0) = 0;
 
-		virtual void BeginFrame();
+		virtual void DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0) = 0;
 
-		virtual void EndFrame();
+		virtual void DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count = 0) = 0;
 
-		virtual void BindShader(const Shader *shader);
+		virtual void DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count = 0) = 0;
 
-		virtual void BindDescriptorSets(const vk::raii::PipelineLayout &layout, const vk::raii::DescriptorSets &sets);
+		virtual void MultiDrawElementsIndirect(EDrawMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride = 0) = 0;
 
-		virtual void SubmitCommand(std::function<void(const FVulkanFrameData &)> &&command);
+		virtual void EnableDepth() = 0;
 
-		virtual void SubmitSecondaryCommand(std::function<void(const FVulkanFrameData &)> &&command);
+		virtual void DisableDepth() = 0;
 
-		vk::raii::CommandBuffer &GetCommandBuffer(uint32_t index) { return mCommandBuffers[0].at(index); }
+		virtual void DepthFunc(uint32_t func) = 0;
 
-		vk::raii::CommandBuffer &GetCurrentCommandBuffer();
+		virtual void CullFront() = 0;
 
-		vk::raii::CommandPool &GetCommandPool() { return mCommandPool; }
+		virtual void CullBack() = 0;
 
-		vk::raii::CommandBuffers *AllocateCommandBuffers(uint32_t count);
+		virtual void SetCullEnabled(bool enabled) = 0;
 
-		const std::vector<vk::raii::CommandBuffers> &GetCommandBuffers() const { return mCommandBuffers; }
+		virtual void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a) = 0;
 
-		virtual EAPI GetAPI() const { return EAPI::Vulkan; }
+		virtual void EnableDepthMask(bool mask) = 0;
 
-	private:
-		void CreateCommandPool();
+		virtual void EnableBlend(bool enabled) = 0;
 
-		void CreateCommandBuffers();
+		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) = 0;
 
-	private:
-		vk::raii::CommandPool mCommandPool = nullptr;
+		virtual EAPI GetAPI() const = 0;
 
-		vk::ClearColorValue mClearColor{0, 0, 0, 1};
-
-		std::vector<VkShaderModule> mVulkanShaders{};
-
-		std::queue<FRenderCommand> mCommands;
-
-		std::queue<FRenderCommand> mSecondaryCommands;
-
-		std::vector<vk::raii::CommandBuffers> mCommandBuffers;
-
-		std::atomic<bool> mDeviceRecreationInProgress{false};
+		static Scope<RendererAPI> Create();
 	};
 } // namespace BHive

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gfx/Buffers.h"
+#include "VulkanCore.h"
 
 namespace BHive
 {
@@ -15,7 +16,9 @@ namespace BHive
 
 		operator const vk::raii::Buffer &() const { return mBuffer.Buffer; }
 
-		virtual uintptr_t GetNativeHandle() const override { return reinterpret_cast<uintptr_t>(&mBuffer.Buffer); }
+		virtual uintptr_t GetNativeHandle() const override { return 0; }
+
+		operator const vk::Buffer &() const { return mBuffer.Buffer; }
 
 	private:
 		vk::raii::Device &mDevice;
@@ -26,7 +29,7 @@ namespace BHive
 	class BHIVE_API VulkanVertexBuffer : public VertexBuffer
 	{
 	public:
-		VulkanVertexBuffer(const uint64_t size, const float *data);
+		VulkanVertexBuffer(const uint64_t size, const void *data);
 
 		virtual void SetData(const void *data, uint64_t size, uint32_t offset = 0) override;
 
@@ -34,9 +37,9 @@ namespace BHive
 
 		virtual const BufferLayout &GetLayout() const override { return mLayout; }
 
-		operator const vk::raii::Buffer &() const { return mBuffer.Buffer; }
+		operator const vk::Buffer &() const { return mBuffer.Buffer; }
 
-		virtual uintptr_t GetNativeHandle() const override { return reinterpret_cast<uintptr_t>(&mBuffer.Buffer); }
+		virtual uintptr_t GetNativeHandle() const override { return 0; }
 
 	private:
 		vk::raii::Device &mDevice;

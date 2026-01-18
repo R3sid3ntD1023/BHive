@@ -1,5 +1,6 @@
-#include "gfx/VulkanUtils.h"
+#include "gfx/RenderCommand.h"
 #include "VulkanUniformBuffer.h"
+#include "VulkanUtils.h"
 
 namespace BHive
 {
@@ -16,13 +17,10 @@ namespace BHive
 
 	void VulkanUniformBuffer::SetData(const void *data, size_t size, uint32_t offset)
 	{
-		mBuffer.SetData(data, size, offset);
-	}
+		if (!data)
+			return;
 
-	void VulkanUniformBuffer::WriteDescriptor(const vk::raii::DescriptorSet &set)
-	{
-		vk::WriteDescriptorSet writer(set, mBinding, 0, vk::DescriptorType::eUniformBuffer, {}, {mBufferInfo});
-		mDevice.updateDescriptorSets(writer, nullptr);
+		mBuffer.SetData(data, size, offset);
 	}
 
 } // namespace BHive

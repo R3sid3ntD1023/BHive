@@ -30,7 +30,7 @@ namespace BHive
 	{
 		static bool Sort(const Ref<FMeshRenderData> &lhs, const Ref<FMeshRenderData> &rhs)
 		{
-			glm::vec3 position = Renderer::GetCamera().GetCameraData().Position;
+			glm::vec3 position = Renderer::GetCamera().GetCameraData().Data.Position;
 			auto distanceA = glm::distance(lhs->Transform.GetTranslation(), position);
 			auto distanceB = glm::distance(rhs->Transform.GetTranslation(), position);
 			return distanceA < distanceB;
@@ -204,7 +204,7 @@ namespace BHive
 
 	void SceneRenderer::SubmitLight(const FDirectionalLightCreateInfo &info)
 	{
-		auto &camera = Renderer::GetCamera().GetCameraData();
+		auto &camera = Renderer::GetCamera().GetCameraData().Data;
 		mSceneRenderData->Lights.Submit(info);
 
 		FShadowCascadedCreateInfo shadow_info{};
@@ -297,7 +297,7 @@ namespace BHive
 
 	float SceneRenderer::GetDistanceToCamera(const FTransform &transform)
 	{
-		const auto &C = Renderer::GetCamera().GetCameraData().Position;
+		const auto &C = Renderer::GetCamera().GetCameraData().Data.Position;
 		return glm::distance(glm::vec3(C), transform[2]);
 	}
 

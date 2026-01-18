@@ -1,7 +1,7 @@
+#include "buffers/GlobalBuffers.h"
 #include "buffers/ModelBuffer.h"
 #include "gfx/textures/Texture2D.h"
 #include "Renderer.h"
-#include "buffers/GlobalBuffers.h"
 
 namespace BHive
 {

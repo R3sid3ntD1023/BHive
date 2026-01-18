@@ -2,7 +2,6 @@
 
 #include "BufferBase.h"
 #include "BufferLayout.h"
-#include "VulkanCore.h"
 
 namespace BHive
 {
@@ -25,7 +24,7 @@ namespace BHive
 
 		virtual const BufferLayout &GetLayout() const = 0;
 
-		static Ref<VertexBuffer> Create(const uint64_t size, const float *data = nullptr);
+		static Ref<VertexBuffer> Create(const uint64_t size, const void *data = nullptr);
 	};
 
 } // namespace BHive

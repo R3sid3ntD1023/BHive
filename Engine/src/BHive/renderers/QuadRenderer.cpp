@@ -1,3 +1,7 @@
+#include "batches/CircleRenderBatch.h"
+#include "batches/QuadRenderBatch.h"
+#include "batches/TextRenderBatch.h"
+#include "batches/TextureBatch.h"
 #include "core/profiler/CPUGPUProfiler.h"
 #include "font/Font.h"
 #include "font/FontManager.h"
@@ -8,10 +12,6 @@
 #include "QuadRenderer.h"
 #include "Renderer.h"
 #include "sprite/Sprite.h"
-#include "batches/QuadRenderBatch.h"
-#include "batches/TextRenderBatch.h"
-#include "batches/CircleRenderBatch.h"
-#include "batches/TextureBatch.h"
 
 namespace BHive
 {
@@ -128,7 +128,7 @@ namespace BHive
 
 	void QuadRenderer::DrawBillboard(const FQuadParams &params, const Ref<Texture> &texture, const FTransform &transform, int32_t entity_id)
 	{
-		const auto &view = Renderer::GetCamera().GetCameraData().View;
+		const auto &view = Renderer::GetCamera().GetCameraData().Data.View;
 		glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
 
 		const static glm::vec2 texcoords[4] = {{0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}, {0.f, 1.f}};

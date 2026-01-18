@@ -1,4 +1,6 @@
+#include "gfx/RenderCommand.h"
 #include "VulkanBuffers.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanVertexArray.h"
 
 namespace BHive
@@ -38,13 +40,11 @@ namespace BHive
 	} // namespace utils
 
 	VulkanVertexArray::VulkanVertexArray()
-		: mDevice(VulkanCore::GetLogicalDevice())
 	{
 	}
 
-	VulkanVertexArray::VulkanVertexArray(const std::initializer_list<Ref<VertexBuffer>> vertex_buffers, const Ref<IndexBuffer> &index_buffer)
-		: mDevice(VulkanCore::GetLogicalDevice()),
-		  mVertexBuffers(vertex_buffers),
+	VulkanVertexArray::VulkanVertexArray(const std::vector<Ref<VertexBuffer>> &vertex_buffers, const Ref<IndexBuffer> &index_buffer)
+		: mVertexBuffers(vertex_buffers),
 		  mIndexBuffer(index_buffer)
 	{
 		for (auto &vb : vertex_buffers)
@@ -55,6 +55,33 @@ namespace BHive
 
 	void VulkanVertexArray::Bind() const
 	{
+		auto cmd = [=](const FVulkanFrameData &data)
+		{
+			auto size = mVertexBuffers.size();
+			std::vector<vk::Buffer> vk_vertex_buffers(size);
+			std::vector<vk::DeviceSize> offsets(size);
+
+			for (uint32_t i = 0; i < size; i++)
+			{
+				auto &vb = mVertexBuffers[i];
+				vk_vertex_buffers[i] = (*std::dynamic_pointer_cast<VulkanVertexBuffer>(vb));
+				offsets[i] = 0;
+			}
+
+			data.CommandBuffer.setVertexInputEXT(mBindings, mAttributes);
+			data.CommandBuffer.bindVertexBuffers(0, vk_vertex_buffers, offsets);
+
+			LOG_TRACE("Bind vertex buffers");
+
+			if (mIndexBuffer)
+			{
+				data.CommandBuffer.bindIndexBuffer(*std::dynamic_pointer_cast<VulkanIndexBuffer>(mIndexBuffer), 0, vk::IndexType::eUint32);
+
+				LOG_TRACE("Bind index buffers");
+			}
+		};
+
+		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
 	}
 
 	void VulkanVertexArray::UnBind() const
@@ -81,7 +108,9 @@ namespace BHive
 		if (elements.size() == 0)
 			return;
 
-		mBinding = vk::VertexInputBindingDescription2EXT(0, stride, vk::VertexInputRate::eVertex, 1);
+		uint32_t binding = mBindings.size();
+
+		mBindings.emplace_back(vk::VertexInputBindingDescription2EXT(binding, stride, vk::VertexInputRate::eVertex, 1));
 
 		for (const auto &element : elements)
 		{
@@ -107,6 +136,8 @@ namespace BHive
 				auto count = element.ComponentCount;
 				for (uint8_t i = 0; i < count; i++)
 				{
+					// For matrices we create one attribute per column (or row depending on layout),
+					// offset each attribute by the size of a column (count * sizeof(float)).
 					mAttributes.emplace_back(mVertexAttributeIndex++, 0, utils::GetVulkanFormat(type), (uint32_t)(element.Offset + sizeof(float) * count * i));
 				}
 				break;

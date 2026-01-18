@@ -1,42 +1,52 @@
 #include "gfx/RenderCommand.h"
 #include "VulkanPipeline.h"
+#include "VulkanRendererAPI.h"
 
 namespace BHive
 {
 
-	VulkanPipeline::VulkanPipeline(const FVulkanPipelineConfigInfo &configuration)
-		: mDevice(VulkanCore::GetLogicalDevice()),
-		  mConfiguration(configuration)
+	VulkanPipeline::VulkanPipeline()
+		: mDevice(VulkanCore::GetLogicalDevice())
 
 	{
 	}
 
-	void VulkanPipeline::Init()
+	void VulkanPipeline::Init(const Configuration &configuration)
 	{
+		auto &config = static_cast<const FVulkanPipelineConfigInfo &>(configuration);
+
 		static const std::vector dynamicStates = {
 			vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eVertexInputEXT, vk::DynamicState::ePrimitiveTopologyEXT, vk::DynamicState::eLineWidth};
 
 		vk::PipelineDynamicStateCreateInfo dynamicStateInfo({}, dynamicStates);
 
 		vk::GraphicsPipelineCreateInfo pipeline_info{};
-		pipeline_info.setPNext(mConfiguration.Next)
-			.setStages(mConfiguration.ShaderCreateInfos)
+		pipeline_info.setStages(config.ShaderCreateInfos)
 			.setPVertexInputState(nullptr)
-			.setPInputAssemblyState(&mConfiguration.InputAssembly)
-			.setPViewportState(&mConfiguration.ViewportState)
-			.setPRasterizationState(&mConfiguration.Rasterazation)
-			.setPMultisampleState(&mConfiguration.MultiSampling)
-			.setPColorBlendState(&mConfiguration.ColorBlend)
+			.setPInputAssemblyState(&config.InputAssembly)
+			.setPViewportState(&config.ViewportState)
+			.setPRasterizationState(&config.Rasterazation)
+			.setPMultisampleState(&config.MultiSampling)
+			.setPColorBlendState(&config.ColorBlend)
 			.setPDynamicState(&dynamicStateInfo)
-			.setLayout(mConfiguration.Layout)
-			.setRenderPass(mConfiguration.RenderPass)
-			.setSubpass(mConfiguration.SubPass);
+			.setLayout(config.Layout)
+			.setRenderPass(config.RenderPass)
+			.setSubpass(config.SubPass)
+			.setPNext(config.Next);
 
 		mPipeline = mDevice.createGraphicsPipeline(nullptr, pipeline_info);
 	}
 
 	void VulkanPipeline::Bind()
 	{
+		vk::Pipeline pipelineHandle = *mPipeline;
+		auto cmd = [=](const FVulkanFrameData &data)
+		{
+			data.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipelineHandle);
+			LOG_TRACE("Bind Pipeline");
+		};
+
+		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
 	}
 
 	void VulkanPipeline::UnBind()
@@ -52,7 +62,6 @@ namespace BHive
 		config.Scissor.setOffset(vk::Offset2D{0, 0}).setExtent(vk::Extent2D{width, height});
 
 		config.ViewportState.setViewportCount(1).setScissorCount(1);
-		config.InputAssembly.setTopology(vk::PrimitiveTopology::eTriangleList);
 
 		config.Rasterazation.setDepthClampEnable(false)
 			.setRasterizerDiscardEnable(false)
@@ -74,7 +83,7 @@ namespace BHive
 
 		config.InputAssembly.setTopology(vk::PrimitiveTopology::eTriangleList);
 
-		config.ColorBlend.setLogicOpEnable(false).setLogicOp(vk::LogicOp::eCopy).setAttachmentCount(1).setPAttachments(&config.ColorBlendAttachment);
+		config.ColorBlend.setLogicOpEnable(false).setLogicOp(vk::LogicOp::eCopy).setAttachments(config.ColorBlendAttachment);
 
 		config.MultiSampling.setRasterizationSamples(vk::SampleCountFlagBits::e1).setSampleShadingEnable(false);
 

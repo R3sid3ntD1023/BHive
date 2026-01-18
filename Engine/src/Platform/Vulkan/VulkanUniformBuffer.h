@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gfx/UniformBuffer.h"
-#include "gfx/VulkanCore.h"
+#include "VulkanCore.h"
 
 namespace BHive
 {
@@ -11,8 +11,6 @@ namespace BHive
 		VulkanUniformBuffer(uint32_t binding, uint64_t size, const void *data = nullptr);
 
 		void SetData(const void *data, size_t size, uint32_t offset = 0) override;
-
-		void WriteDescriptor(const vk::raii::DescriptorSet &set);
 
 		uintptr_t GetNativeHandle() const override { return reinterpret_cast<uintptr_t>(&mBufferInfo); }
 

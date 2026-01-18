@@ -1,19 +1,36 @@
+#include "Platform/Vulkan/VulkanStorageBuffer.h"
+#include "RenderCommand.h"
 #include "StorageBuffer.h"
-#include "VulkanUtils.h"
 
 namespace BHive
 {
 
-	StorageBuffer::StorageBuffer(uint32_t binding, size_t size, const void *data)
+	Ref<StorageBuffer> StorageBuffer::Create(uint32_t binding, size_t size, const void *data)
 	{
+		switch (RenderCommand::GetRendererAPI())
+		{
+		case RendererAPI::Vulkan:
+			return CreateRef<VulkanStorageBuffer>(binding, size, data);
+		default:
+			break;
+		}
+
+		ASSERT(false)
+		return nullptr;
 	}
 
-	StorageBuffer::StorageBuffer(size_t size)
+	Ref<StorageBuffer> StorageBuffer::Create(size_t size)
 	{
-	}
+		switch (RenderCommand::GetRendererAPI())
+		{
+		case RendererAPI::Vulkan:
+			return CreateRef<VulkanStorageBuffer>(size);
+		default:
+			break;
+		}
 
-	void StorageBuffer::SetData(const void *data, size_t, uint32_t offset)
-	{
+		ASSERT(false)
+		return nullptr;
 	}
 
 } // namespace BHive

@@ -8,7 +8,9 @@ include(GNUInstallDirs)
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 set(RENDERDOC_Dir "C:/Program Files/RenderDoc")
 
-
+#set(AFTERMATH_DIR ${VENDOR_DIR}/aftermath)
+#set(AFTERMATH_INCLUDE_DIR ${AFTERMATH_DIR}/include)
+#set(AFTERMATH_LIBRARIES ${AFTERMATH_DIR}/lib/x64/GFSDK_Aftermath_Lib.x64)
 
 add_subdirectory(vendor)
 

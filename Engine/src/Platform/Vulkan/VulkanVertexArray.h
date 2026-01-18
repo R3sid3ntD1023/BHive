@@ -1,20 +1,20 @@
 #pragma once
 
 #include "gfx/VertexArray.h"
-#include "gfx/VulkanCore.h"
+#include "VulkanCore.h"
 
 namespace BHive
 {
 	class BHIVE_API VulkanVertexArray : public VertexArray
 	{
 	public:
-		using Bindings = vk::VertexInputBindingDescription2EXT;
+		using Bindings = std::vector<vk::VertexInputBindingDescription2EXT>;
 		using Attributes = std::vector<vk::VertexInputAttributeDescription2EXT>;
 
 	public:
 		VulkanVertexArray();
 
-		VulkanVertexArray(const std::initializer_list<Ref<VertexBuffer>> vertex_buffers, const Ref<IndexBuffer> &index_buffer = nullptr);
+		VulkanVertexArray(const std::vector<Ref<VertexBuffer>> &vertex_buffers, const Ref<IndexBuffer> &index_buffer = nullptr);
 
 		virtual void Bind() const override;
 
@@ -28,21 +28,15 @@ namespace BHive
 
 		virtual const std::vector<Ref<VertexBuffer>> &GetVertexBuffers() const override { return mVertexBuffers; }
 
-		const Bindings &GetBindingDescription() const { return mBinding; }
-
-		const Attributes &GetAttributeDescriptions() const { return mAttributes; }
-
 	private:
 		void CreateBindingsAndAttributes(const Ref<VertexBuffer> &vertexbuffer);
 
 	private:
-		vk::raii::Device &mDevice;
-
 		Ref<IndexBuffer> mIndexBuffer;
 
 		std::vector<Ref<VertexBuffer>> mVertexBuffers;
 
-		Bindings mBinding;
+		Bindings mBindings;
 
 		Attributes mAttributes;
 

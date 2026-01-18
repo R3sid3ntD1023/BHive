@@ -5,7 +5,7 @@ namespace BHive
 {
 	void LightBuffer::Init()
 	{
-		LightBuffer = CreateRef<StorageBuffer>(sizeof(FLightInfo));
+		LightBuffer = StorageBuffer::Create(sizeof(FLightInfo));
 	}
 
 	void LightBuffer::Begin()

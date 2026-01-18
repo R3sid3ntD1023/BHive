@@ -3,7 +3,7 @@
 #include "core/Core.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderReflection.h"
-#include "gfx/VulkanCore.h"
+#include "VulkanCore.h"
 
 namespace BHive
 {

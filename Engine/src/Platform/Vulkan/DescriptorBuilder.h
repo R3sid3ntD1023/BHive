@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gfx/VulkanCore.h"
+#include "VulkanCore.h"
 
 namespace BHive
 {

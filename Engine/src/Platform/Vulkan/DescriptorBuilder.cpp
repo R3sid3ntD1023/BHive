@@ -26,10 +26,10 @@ namespace BHive
 		mLayout = mDevice.createDescriptorSetLayout(layout_create_info);
 	}
 
-	FDescriptorPool::FDescriptorPool(uint32_t maxSets, const std::vector<vk::DescriptorPoolSize> &poolSizes, vk::DescriptorPoolCreateFlags flags )
+	FDescriptorPool::FDescriptorPool(uint32_t maxSets, const std::vector<vk::DescriptorPoolSize> &poolSizes, vk::DescriptorPoolCreateFlags flags)
 		: mDevice(VulkanCore::GetLogicalDevice())
 	{
-		
+
 		vk::DescriptorPoolCreateInfo poolInfo(flags, maxSets, poolSizes);
 		mPool = std::move(mDevice.createDescriptorPool(poolInfo));
 	}
@@ -53,7 +53,7 @@ namespace BHive
 	{
 		mPool.reset(vk::DescriptorPoolResetFlags());
 	}
-	
+
 	FDescriptorWriter::FDescriptorWriter(const Ref<FDescriptorSetLayout> &layout, const Ref<FDescriptorPool> &pool)
 		: mLayout(layout),
 		  mPool(pool)
@@ -78,11 +78,10 @@ namespace BHive
 		ASSERT(mLayout->mBindings.contains(binding), "Layout does not contain specified binding");
 		auto &bindingDescription = mLayout->mBindings[binding];
 		ASSERT(bindingDescription.descriptorCount == 1, "Binding single descriptor info, but binding expects multiple");
-	
+
 		vk::WriteDescriptorSet write({}, binding, 0, bindingDescription.descriptorType, imageInfo, {});
 		mWrites.push_back(write);
 		return *this;
-		
 	}
 
 	bool FDescriptorWriter::Build(vk::raii::DescriptorSets &set)
@@ -99,7 +98,7 @@ namespace BHive
 
 	void FDescriptorWriter::Overwrite(vk::raii::DescriptorSets &sets)
 	{
-		for (auto& set : sets)
+		for (auto &set : sets)
 		{
 			for (auto &write : mWrites)
 			{
@@ -111,4 +110,3 @@ namespace BHive
 	}
 
 } // namespace BHive
-

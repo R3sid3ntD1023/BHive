@@ -23,7 +23,7 @@ namespace BHive
 	{
 		CreateGraphicsPipeline();
 
-		mCamera.SetView(FTransform({0, 1, -5}));
+		mCamera.SetView(FTransform({0, 0, -5}));
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -47,7 +47,7 @@ namespace BHive
 
 		LineRenderer::DrawLine({-1, 0, 0}, {1, 0, 0}, FColor::Green);
 
-		if (mMaterial)
+		if (mMesh && mMaterial)
 		{
 			mMaterial->Submit();
 

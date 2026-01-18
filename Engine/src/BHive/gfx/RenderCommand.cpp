@@ -1,5 +1,4 @@
 #include "RenderCommand.h"
-#include <glad/glad.h>
 
 namespace BHive
 {
@@ -113,24 +112,6 @@ namespace BHive
 		sRendererAPI->AttachTextureToFramebuffer(attachment, texture, framebuffer);
 	}
 
-	void *RenderCommand::CreateShader(const uint32_t *data, size_t size)
-	{
-		return sRendererAPI->CreateShader(data, size);
-	}
-
-	void RenderCommand::BeginFrame()
-	{
-		sRendererAPI->BeginFrame();
-	}
-
-	void RenderCommand::EndFrame()
-	{
-		sRendererAPI->EndFrame();
-	}
-
-	void RenderCommand::BindShader(const Shader *shader)
-	{
-		sRendererAPI->BindShader(shader);
-	}
+	Scope<RendererAPI> RenderCommand::sRendererAPI = RendererAPI::Create();
 
 } // namespace BHive

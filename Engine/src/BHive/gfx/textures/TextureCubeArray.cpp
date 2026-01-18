@@ -1,5 +1,5 @@
 #include "gfx/utils/texture/TextureUtils.h"
-#include "gfx/VulkanUtils.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 #include "TextureCubeArray.h"
 
 namespace BHive

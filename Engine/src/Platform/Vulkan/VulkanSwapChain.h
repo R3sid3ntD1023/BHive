@@ -2,7 +2,6 @@
 
 #include "Core/Core.h"
 #include "VulkanCore.h"
-#include "VulkanDevice.h"
 
 namespace BHive
 {

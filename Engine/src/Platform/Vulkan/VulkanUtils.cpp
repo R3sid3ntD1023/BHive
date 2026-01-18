@@ -1,6 +1,6 @@
-#include "GraphicsContext.h"
-#include "RenderCommand.h"
+#include "gfx/RenderCommand.h"
 #include "VulkanDevice.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanUtils.h"
 
 namespace BHive
@@ -72,7 +72,7 @@ namespace BHive
 
 	vk::raii::CommandBuffer VulkanUtils::BeginSingleTimeCommands()
 	{
-		auto api = RenderCommand::GetAPI();
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 		auto &cmdPool = api->GetCommandPool();
 		auto &device = VulkanCore::GetLogicalDevice();
 

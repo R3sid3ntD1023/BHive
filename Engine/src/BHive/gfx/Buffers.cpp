@@ -1,7 +1,6 @@
 #include "Buffers.h"
 #include "Platform/Vulkan/VulkanBuffers.h"
 #include "RenderCommand.h"
-#include "VulkanUtils.h"
 
 namespace BHive
 {
@@ -20,7 +19,7 @@ namespace BHive
 		return nullptr;
 	}
 
-	Ref<VertexBuffer> BHive::VertexBuffer::Create(const uint64_t size, const float *data)
+	Ref<VertexBuffer> BHive::VertexBuffer::Create(const uint64_t size, const void *data)
 	{
 		switch (RenderCommand::GetRendererAPI())
 		{

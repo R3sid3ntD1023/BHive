@@ -1,63 +1,25 @@
 #pragma once
 
 #include "core/Core.h"
-#include "core/EventDelegate.h"
-#include "VulkanCore.h"
-
-struct GLFWwindow;
 
 namespace BHive
 {
-	class VulkanSwapChain;
-	class VulkanDevice;
-	class VulkanPipeline;
-
 	class BHIVE_API GraphicsContext
 	{
 	public:
-		
+		virtual ~GraphicsContext() = default;
 
-		GraphicsContext(GLFWwindow *window);
+		virtual void Init() = 0;
 
-		virtual ~GraphicsContext();
+		virtual void SwapBuffers() = 0;
 
-		virtual void Init();
+		virtual void OnFramebufferResized(uint32_t w, uint32_t h) = 0;
 
-		virtual void SwapBuffers();
+		static GraphicsContext &Get() { return *sInstance; }
 
-		const Ref<VulkanSwapChain> &GetSwapChain() const { return mSwapChain; }
-
-		void OnFramebufferResized(uint32_t w, uint32_t h);
-
-		uint32_t GetImageIndex() const { return mImageIndex; }
-
-		static GraphicsContext &Get()
-		{
-			ASSERT(sInstance);
-			return *sInstance;
-		}
+		static Scope<GraphicsContext> Create(void *windowHandle);
 
 	private:
-
-		void CreateSwapChain();
-
-		void RecreateSwapChain();
-
-	private:
-		GLFWwindow *mWindowHandle;
-
-		vk::raii::SurfaceKHR mSurface = nullptr;
-
-		vk::raii::Device mDevice = nullptr;
-
-		VkQueueFamilies mQueueFamilies;
-
-		Ref<VulkanSwapChain> mSwapChain;
-
 		static inline GraphicsContext *sInstance = nullptr;
-
-		uint32_t mImageIndex = 0;
-
-		bool mFramebufferResized = false;
 	};
 } // namespace BHive

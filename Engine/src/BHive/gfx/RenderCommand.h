@@ -27,38 +27,41 @@ namespace BHive
 		static void DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0);
 
 		static void DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count = 0);
+
 		static void DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count = 0);
 
 		static void MultiDrawElementsIndirect(EDrawMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride = 0);
 
 		static void EnableDepth();
+
 		static void DisableDepth();
+
 		static void DepthFunc(uint32_t func);
 
 		static void CullFront();
+
 		static void CullBack();
 
 		static void SetCullEnabled(bool enabled);
 
 		static void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+
 		static void EnableDepthMask(bool mask);
+
 		static void EnableBlend(bool enabled);
 
 		static void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer);
 
-		static void *CreateShader(const uint32_t *data, size_t size);
-
-		static void BeginFrame();
-
-		static void EndFrame();
-
-		static void BindShader(const Shader *shader);
-
 		static RendererAPI::EAPI GetRendererAPI() { return sRendererAPI->GetAPI(); }
 
-		static RendererAPI *GetAPI() { return sRendererAPI.get(); }
+		template <typename TAPI>
+			requires(std::is_base_of_v<RendererAPI, TAPI>)
+		static TAPI *GetAPI()
+		{
+			return dynamic_cast<TAPI *>(sRendererAPI.get());
+		}
 
 	private:
-		static inline Scope<RendererAPI> sRendererAPI = CreateScope<RendererAPI>();
+		static Scope<RendererAPI> sRendererAPI;
 	};
 } // namespace BHive

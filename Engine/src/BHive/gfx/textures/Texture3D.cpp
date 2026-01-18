@@ -1,4 +1,4 @@
-#include "gfx/VulkanUtils.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 #include "Texture3D.h"
 
 namespace BHive

@@ -2,7 +2,7 @@
 
 #include "core/Core.h"
 #include "gfx/Pipeline.h"
-#include "gfx/VulkanCore.h"
+#include "VulkanCore.h"
 
 namespace BHive
 {
@@ -30,9 +30,9 @@ namespace BHive
 	class BHIVE_API VulkanPipeline : public Pipeline
 	{
 	public:
-		VulkanPipeline(const FVulkanPipelineConfigInfo &configuration);
+		VulkanPipeline();
 
-		virtual void Init() override;
+		virtual void Init(const Configuration &configuration) override;
 
 		virtual void Bind() override;
 
@@ -44,8 +44,6 @@ namespace BHive
 
 	private:
 		vk::raii::Device &mDevice;
-
-		FVulkanPipelineConfigInfo mConfiguration;
 
 		vk::raii::Pipeline mPipeline = VK_NULL_HANDLE;
 	};

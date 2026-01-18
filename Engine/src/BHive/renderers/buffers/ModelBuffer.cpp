@@ -21,10 +21,10 @@ namespace BHive
 
 	void ModelBuffer::Init()
 	{
-		mBoneBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * MAX_BONES);
-		mPerObjectBuffer = CreateRef<StorageBuffer>(sizeof(FPerObjectData));
-		mInstanceBuffer = CreateRef<StorageBuffer>(sizeof(glm::mat4) * MAX_INSTANCES);
-		mIndirectBuffer = CreateRef<StorageBuffer>(sizeof(MultiDrawIndirectCommand));
+		mBoneBuffer = StorageBuffer::Create(sizeof(glm::mat4) * MAX_BONES);
+		mPerObjectBuffer = StorageBuffer::Create(sizeof(FPerObjectData));
+		mInstanceBuffer = StorageBuffer::Create(sizeof(glm::mat4) * MAX_INSTANCES);
+		mIndirectBuffer = StorageBuffer::Create(sizeof(MultiDrawIndirectCommand));
 
 		mComputeInstanceShader = ShaderManager::Get().Load("ComputeInstances.glsl");
 	}

@@ -38,14 +38,17 @@ namespace BHive
 		return VK_FALSE;
 	}
 
+	static void GpuCrashDumpCallback(const void *pGpuCrashDump, const uint32_t gpuCrashDumpSize, void *pUserData)
+	{
+	}
+
 	namespace details
 	{
 		auto GetPhysicalDeviceFeaturesChain()
 		{
 
 			vk::PhysicalDeviceFeatures features{};
-			features.setFillModeNonSolid(true)
-				.setWideLines(true);
+			features.setFillModeNonSolid(true).setWideLines(true);
 
 			vk::StructureChain<
 				vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features,
@@ -60,16 +63,13 @@ namespace BHive
 				.setDescriptorBindingUpdateUnusedWhilePending(true)
 				.setDescriptorBindingStorageBufferUpdateAfterBind(true)
 				.setDescriptorBindingUniformBufferUpdateAfterBind(true);
-			featureChain.get<vk::PhysicalDeviceVulkan13Features>().setDynamicRendering(true)
-				.setSynchronization2(true)
-				.setDescriptorBindingInlineUniformBlockUpdateAfterBind(true);
+			featureChain.get<vk::PhysicalDeviceVulkan13Features>().setDynamicRendering(true).setSynchronization2(true).setDescriptorBindingInlineUniformBlockUpdateAfterBind(true);
 			featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().setExtendedDynamicState(true);
 			featureChain.get<vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>().setVertexInputDynamicState(true);
-			
+
 			return featureChain;
 		}
-	}
-
+	} // namespace details
 
 	void VulkanCore::Init()
 	{
@@ -84,12 +84,12 @@ namespace BHive
 		mLogicalDevice.waitIdle();
 	}
 
-	void VulkanCore::RegisterOnDeviceCreated(const DeviceCallback& callback)
+	void VulkanCore::RegisterOnDeviceCreated(const DeviceCallback &callback)
 	{
 		mOnDeviceCreatedCallbacks.push_back(callback);
 	}
 
-	void VulkanCore::RegisterOnDeviceDestroy(const DeviceCallback& callback)
+	void VulkanCore::RegisterOnDeviceDestroy(const DeviceCallback &callback)
 	{
 		mOnDeviceDestroyedCallbacks.push_back(callback);
 	}
@@ -229,7 +229,7 @@ namespace BHive
 			ASSERT(false);
 		}
 
-		return  vk::raii::SurfaceKHR(instance, _surface);
+		return vk::raii::SurfaceKHR(instance, _surface);
 	}
 
 	void VulkanCore::EnsurePresentSupportForSurface(const vk::SurfaceKHR &surface)
@@ -265,7 +265,7 @@ namespace BHive
 		{
 			try
 			{
-				mLogicalDevice.waitIdle();		
+				mLogicalDevice.waitIdle();
 			}
 			catch (...)
 			{
@@ -275,7 +275,7 @@ namespace BHive
 			{
 				callback();
 			}
-			
+
 			mQueueFamilies.PresentQueue = nullptr;
 			mQueueFamilies.GraphicsQueue = nullptr;
 			mLogicalDevice = nullptr;
@@ -298,7 +298,7 @@ namespace BHive
 
 		auto requiredDeviceExtensions = VulkanCore::GetRequiredExtensions();
 		auto featureChain = details::GetPhysicalDeviceFeaturesChain();
-		
+
 		vk::DeviceCreateInfo device_createInfo{};
 		device_createInfo.pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>();
 		device_createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());

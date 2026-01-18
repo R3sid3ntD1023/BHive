@@ -1,25 +1,17 @@
 #pragma once
 
 #include "BufferBase.h"
-#include "core/Core.h"
-#include "VulkanCore.h"
 
 namespace BHive
 {
-	class StorageBuffer : public BufferBase
+	class BHIVE_API StorageBuffer : public BufferBase
 	{
 	public:
-		StorageBuffer() = default;
-		StorageBuffer(uint32_t binding, size_t size, const void *data = nullptr);
-		StorageBuffer(size_t size);
+		virtual ~StorageBuffer() = default;
 
-		void SetData(const void *data, size_t, uint32_t offset = 0) override;
+		static Ref<StorageBuffer> Create(uint32_t binding, size_t size, const void *data = nullptr);
 
-		virtual uintptr_t GetNativeHandle() const { return 0; }
-
-	private:
-		vk::raii::Buffer mBuffer = VK_NULL_HANDLE;
-		vk::raii::DeviceMemory mMemory = VK_NULL_HANDLE;
+		static Ref<StorageBuffer> Create(size_t size);
 	};
 
 } // namespace BHive

@@ -13,12 +13,12 @@ namespace BHive
 
 		virtual ~Pipeline() = default;
 
-		virtual void Init() = 0;
+		virtual void Init(const Configuration &configuration) = 0;
 
 		virtual void Bind() = 0;
 
 		virtual void UnBind() = 0;
 
-		static Ref<Pipeline> Create(const Configuration &configuration);
+		static Ref<Pipeline> Create();
 	};
 } // namespace BHive

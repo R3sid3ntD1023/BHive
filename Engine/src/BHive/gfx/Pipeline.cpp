@@ -4,12 +4,15 @@
 
 namespace BHive
 {
-	Ref<Pipeline> BHive::Pipeline::Create(const Configuration &configuration)
+	Ref<Pipeline> BHive::Pipeline::Create()
 	{
 		switch (RenderCommand::GetRendererAPI())
 		{
 		case RendererAPI::Vulkan:
-			return CreateRef<VulkanPipeline>((const FVulkanPipelineConfigInfo &)configuration);
+			return CreateRef<VulkanPipeline>();
 		}
+
+		ASSERT(false)
+		return nullptr;
 	}
 } // namespace BHive

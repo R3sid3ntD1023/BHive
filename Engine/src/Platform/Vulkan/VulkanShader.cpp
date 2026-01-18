@@ -9,12 +9,14 @@
 #include "gfx/utils/shader/ShaderSerializer.h"
 #include "gfx/utils/shader/ShaderTimeCache.h"
 #include "gfx/utils/shader/ShaderUtils.h"
-#include "gfx/VulkanSwapChain.h"
-#include "gfx/VulkanUtils.h"
+#include "Platform/Vulkan/VulkanGraphicsContext.h"
+#include "Platform/Vulkan/VulkanSwapChain.h"
 #include "Platform/Vulkan/VulkanUniformBuffer.h"
 #include "renderers/buffers/GlobalBuffers.h"
 #include "VulkanPipeline.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanShader.h"
+#include "VulkanUtils.h"
 
 namespace BHive
 {
@@ -131,8 +133,6 @@ namespace BHive
 	{
 		static std::string preprocessors =
 			R"(
-				#extension GL_EXT_scalar_block_layout: enable
-				#extension GL_ARB_enhanced_layouts : enable
 			)";
 
 		mSources.clear();
@@ -150,9 +150,17 @@ namespace BHive
 	void VulkanShader::Bind()
 	{
 
-		RenderCommand::BindShader(this);
+		mGraphicsPipeline->Bind();
 
 		UpdateDescriptorResources();
+
+		auto cmd = [=](const FVulkanFrameData &data)
+		{
+			data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, *mDescriptorSets[data.Frame], nullptr);
+			LOG_TRACE("Bind Descriptor Sets");
+		};
+
+		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
 	}
 
 	void VulkanShader::UnBind()
@@ -165,8 +173,16 @@ namespace BHive
 
 	void VulkanShader::BindTexture(uint32_t binding, const Ref<Texture> &texture)
 	{
-		auto image_info = reinterpret_cast<vk::DescriptorImageInfo *>(texture->GetNativeHandle());
-		FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteImage(binding, *image_info).Overwrite(mDescriptorSets);
+		if (!texture)
+			return;
+
+		auto cmd = [=](const FVulkanFrameData &data)
+		{
+			auto image_info = reinterpret_cast<vk::DescriptorImageInfo *>(texture->GetNativeHandle());
+			FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteImage(binding, *image_info).Overwrite(mDescriptorSets);
+		};
+
+		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
 	}
 
 	void VulkanShader::CreateDescriptorResources()
@@ -208,6 +224,7 @@ namespace BHive
 		}
 
 		mDescriptorPool = pool_builder.Build();
+
 		FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).Build(mDescriptorSets);
 	}
 
@@ -219,16 +236,17 @@ namespace BHive
 
 	void VulkanShader::UpdateDescriptorResources()
 	{
-		auto cmd = [=](const FVulkanFrameData &frame)
+		auto cmd = [=](const FVulkanFrameData &data)
 		{
 			for (const auto &binding : mUniformBufferBindings)
 			{
 				auto ubo = std::dynamic_pointer_cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(binding));
-				ubo->WriteDescriptor(mDescriptorSets[frame.Frame]);
+				auto buffer = reinterpret_cast<vk::DescriptorBufferInfo *>(ubo->GetNativeHandle());
+				FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteBuffer(binding, *buffer).Overwrite(mDescriptorSets);
 			}
 		};
 
-		RenderCommand::GetAPI()->SubmitCommand(cmd);
+		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
 	}
 
 	void VulkanShader::Reflect()
@@ -245,9 +263,10 @@ namespace BHive
 
 	void VulkanShader::CreatePipeline()
 	{
-		auto swap_chain = GraphicsContext::Get().GetSwapChain();
+		auto swap_chain = static_cast<VulkanGraphicsContext &>(GraphicsContext::Get()).GetSwapChain();
 
 		std::vector<vk::PipelineShaderStageCreateInfo> create_infos;
+
 		for (auto &[stage, module] : mShaderModules)
 		{
 			create_infos.emplace_back(vk::PipelineShaderStageCreateFlags{}, utils::GetAPIShaderStage(stage), module, "main");
@@ -262,10 +281,9 @@ namespace BHive
 		config.Layout = mPipelineLayout;
 		config.Next = &pipeline_renderingCreateInfo;
 		config.ShaderCreateInfos = create_infos;
-		config.InputAssembly.setTopology(vk::PrimitiveTopology::eLineList);
 
-		mGraphicsPipeline = Pipeline::Create(config);
-		mGraphicsPipeline->Init();
+		mGraphicsPipeline = Pipeline::Create();
+		mGraphicsPipeline->Init(config);
 	}
 
 } // namespace BHive

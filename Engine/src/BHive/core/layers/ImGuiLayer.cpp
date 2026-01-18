@@ -1,10 +1,11 @@
 #include "core/Application.h"
 #include "core/events/Event.h"
 #include "core/Window.h"
-#include "gfx/GraphicsContext.h"
 #include "gfx/RenderCommand.h"
-#include "gfx/VulkanSwapChain.h"
 #include "ImGuiLayer.h"
+#include "Platform/Vulkan/VulkanGraphicsContext.h"
+#include "Platform/Vulkan/VulkanRendererAPI.h"
+#include "Platform/Vulkan/VulkanSwapChain.h"
 #include <backends/imgui_impl_glfw.cpp>
 #include <backends/imgui_impl_glfw.h>
 // #include <backends/imgui_impl_opengl3.cpp>
@@ -17,7 +18,7 @@
 // #define VOLK_IMPLEMENTATION
 // #include <vol>
 
-#include "gfx/VulkanUtils.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 #include <backends/imgui_impl_vulkan.cpp>
 #include <backends/imgui_impl_vulkan.h>
 
@@ -95,14 +96,14 @@ namespace BHive
 
 		SetColorsDark();
 
-		auto &context = GraphicsContext::Get();
+		auto &context = static_cast<VulkanGraphicsContext &>(GraphicsContext::Get());
 		auto &instance = VulkanCore::GetInstance();
 		auto &physical_device = VulkanCore::GetPhysicalDevice();
 		auto &device = VulkanCore::GetLogicalDevice();
 		auto &swap_chain = context.GetSwapChain();
 		auto extent = swap_chain->GetExtent();
 		auto image_count = swap_chain->GetImageCount();
-		auto api = RenderCommand::GetAPI();
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 		auto pool_size = IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE;
 
 		// mDescriptorSetLayout = FDescriptorSetLayout::Builder().AddBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, 1).Build();
@@ -131,7 +132,7 @@ namespace BHive
 			[this, &device, image_count]()
 			{
 				auto &device = VulkanCore::GetLogicalDevice();
-				auto api = RenderCommand::GetAPI();
+				auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 				mCommandBuffers = api->AllocateCommandBuffers(image_count);
 			});
 
@@ -199,7 +200,7 @@ namespace BHive
 		io.DisplaySize = {(float)size.x, (float)size.y};
 
 		ImGui::Render();
-		auto api = RenderCommand::GetAPI();
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 
 		auto imgui_command = [=](const FVulkanFrameData &data)
 		{

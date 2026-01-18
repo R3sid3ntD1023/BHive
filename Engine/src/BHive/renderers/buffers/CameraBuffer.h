@@ -11,13 +11,18 @@ namespace BHive
 	{
 
 	public:
-		struct FCameraData
+		struct FBufferData
 		{
 			glm::mat4 Projection{1.0f};
 			glm::mat4 View{1.0f};
-			glm::vec4 NearFar{0.0f, 0.0f, 0.0f, 0.0f};
+			glm::vec2 NearFar{0.0f, 0.0f};
 			glm::vec4 Position{0.0f, 0.0f, 0.0f, 1.0f};
-			Frustum frustum;
+		};
+
+		struct FCameraData
+		{
+			FBufferData Data;
+			Frustum CameraFrustum;
 		};
 
 		void Init();
