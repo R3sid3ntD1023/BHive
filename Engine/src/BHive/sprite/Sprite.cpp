@@ -1,4 +1,4 @@
-#include "gfx/textures/Texture2D.h"
+#include "gfx/Texture.h"
 #include "Sprite.h"
 
 namespace BHive

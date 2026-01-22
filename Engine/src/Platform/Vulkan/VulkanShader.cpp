@@ -40,11 +40,25 @@ namespace BHive
 			ASSERT(false)
 			return vk::ShaderStageFlagBits::eAll;
 		}
+
+		vk::PrimitiveTopology GetTopology(EDrawMode mode)
+		{
+			switch (mode)
+			{
+			case BHive::Lines:
+				return vk::PrimitiveTopology::eLineList;
+			default:
+				break;
+			}
+
+			return vk::PrimitiveTopology::eTriangleList;
+		}
 	} // namespace utils
 
-	VulkanShader::VulkanShader(const std::filesystem::path &path)
+	VulkanShader::VulkanShader(const std::filesystem::path &path, const FRenderOptions &options)
 		: mDevice(VulkanCore::GetLogicalDevice()),
-		  mFilePath(path)
+		  mFilePath(path),
+		  mRenderOptions(options)
 	{
 		ShaderSerializer serializer;
 
@@ -69,9 +83,10 @@ namespace BHive
 		}
 	}
 
-	VulkanShader::VulkanShader(const std::string &name, const std::string &vert, const std::string &frag)
+	VulkanShader::VulkanShader(const std::string &name, const std::string &vert, const std::string &frag, const FRenderOptions &options)
 		: mDevice(VulkanCore::GetLogicalDevice()),
-		  mFilePath(name)
+		  mFilePath(name),
+		  mRenderOptions(options)
 	{
 		mSources[Shader::ShaderStage_Vertex] = FShaderData(vert);
 		mSources[Shader::ShaderStage_Fragment] = FShaderData(frag);
@@ -149,10 +164,9 @@ namespace BHive
 
 	void VulkanShader::Bind()
 	{
+		UpdateDescriptorResources();
 
 		mGraphicsPipeline->Bind();
-
-		UpdateDescriptorResources();
 
 		if (mDescriptorSets.size())
 		{
@@ -177,7 +191,7 @@ namespace BHive
 
 		auto cmd = [=](const FVulkanFrameData &data)
 		{
-			auto image_info = reinterpret_cast<vk::DescriptorImageInfo *>(texture->GetNativeHandle());
+			auto image_info = reinterpret_cast<const vk::DescriptorImageInfo *>(texture->GetNativeHandle());
 			FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteImage(binding, *image_info).Overwrite(mDescriptorSets);
 		};
 
@@ -188,8 +202,8 @@ namespace BHive
 	{
 		DestroyDescriptorResources();
 
-		auto num_samplers = static_cast<uint32_t>(mReflectionData.Samplers.size());
-		auto num_uniform_buffers = static_cast<uint32_t>(mReflectionData.UniformBuffers.size());
+		auto num_samplers = (uint32_t)mReflectionData.Samplers.size();
+		auto num_uniform_buffers = (uint32_t)mReflectionData.UniformBuffers.size();
 		auto max_sets = num_samplers + num_uniform_buffers;
 
 		for (auto &[name, data] : mReflectionData.UniformBuffers)
@@ -284,6 +298,7 @@ namespace BHive
 		config.Layout = mPipelineLayout;
 		config.Next = &pipeline_renderingCreateInfo;
 		config.ShaderCreateInfos = create_infos;
+		config.InputAssembly.setTopology(utils::GetTopology(mRenderOptions.DrawMode));
 
 		mGraphicsPipeline = Pipeline::Create();
 		mGraphicsPipeline->Init(config);

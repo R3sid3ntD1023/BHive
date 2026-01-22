@@ -26,9 +26,9 @@ namespace BHive
 		};
 
 	public:
-		VulkanShader(const std::filesystem::path &path);
+		VulkanShader(const std::filesystem::path &path, const FRenderOptions &options = {});
 
-		VulkanShader(const std::string &name, const std::string &vert, const std::string &frag);
+		VulkanShader(const std::string &name, const std::string &vert, const std::string &frag, const FRenderOptions &options = {});
 
 		virtual ~VulkanShader();
 
@@ -93,6 +93,8 @@ namespace BHive
 		FShaderReflectionData mReflectionData;
 
 		std::unordered_map<EShaderStage, FShaderData> mSources;
+
+		FRenderOptions mRenderOptions;
 	};
 
 } // namespace BHive

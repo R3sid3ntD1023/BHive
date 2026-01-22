@@ -1,5 +1,6 @@
 #type vertex
 #version 460  core
+
 #extension GL_EXT_scalar_block_layout: require
 
 layout(location = 0) in vec3 vPosition;

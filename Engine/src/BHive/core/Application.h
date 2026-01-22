@@ -70,7 +70,7 @@ namespace BHive
 
 		Window &GetWindow() { return *mWindow; }
 
-		ImGuiLayer* GetImGuiLayer() { return mImGuiLayer; }
+		ImGuiLayer *GetImGuiLayer() { return mImGuiLayer; }
 
 		static Application &Get() { return *sInstance; }
 
@@ -83,10 +83,14 @@ namespace BHive
 
 	private:
 		bool mIsRunning = true;
+
 		Scope<Window> mWindow;
-		LayerStack mLayerStack;
-		FApplicationSpecification mSpecification;
+
 		ImGuiLayer *mImGuiLayer = nullptr;
+
+		LayerStack mLayerStack;
+
+		FApplicationSpecification mSpecification;
 
 		static inline Application *sInstance;
 	};

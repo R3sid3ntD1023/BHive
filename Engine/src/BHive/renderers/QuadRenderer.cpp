@@ -7,7 +7,7 @@
 #include "font/FontManager.h"
 #include "font/MSDFData.h"
 #include "gfx/RenderCommand.h"
-#include "gfx/textures/Texture2D.h"
+#include "gfx/Texture.h"
 #include "gfx/VertexArray.h"
 #include "QuadRenderer.h"
 #include "Renderer.h"

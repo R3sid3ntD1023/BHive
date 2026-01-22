@@ -1,12 +1,17 @@
 #include "gfx/utils/texture/TextureUtils.h"
 #include "Platform/Vulkan/VulkanUtils.h"
-#include "Texture2D.h"
+#include "VulkanTexture2D.h"
 
 namespace BHive
 {
+	VulkanTexture2D::VulkanTexture2D()
+		: mDevice(VulkanCore::GetLogicalDevice())
+	{
+	}
 
-	Texture2D::Texture2D(uint32_t w, uint32_t h, const FTextureCreateInfo &info, const void *buffer, size_t size)
-		: mWidth(w),
+	VulkanTexture2D::VulkanTexture2D(uint32_t w, uint32_t h, const FTextureCreateInfo &info, const void *buffer, size_t size)
+		: mDevice(VulkanCore::GetLogicalDevice()),
+		  mWidth(w),
 		  mHeight(h),
 		  mCreateInfo(info),
 		  mInfo(info)
@@ -21,21 +26,21 @@ namespace BHive
 		}
 	}
 
-	Texture2D::~Texture2D()
+	VulkanTexture2D::~VulkanTexture2D()
 	{
 		Release();
 		mBuffer.Release();
 	}
 
-	void Texture2D::Bind(uint32_t slot) const
+	void VulkanTexture2D::Bind(uint32_t slot) const
 	{
 	}
 
-	void Texture2D::UnBind(uint32_t slot) const
+	void VulkanTexture2D::UnBind(uint32_t slot) const
 	{
 	}
 
-	void Texture2D::SetInfo(const FTextureCreateInfo &info)
+	void VulkanTexture2D::SetInfo(const FTextureCreateInfo &info)
 	{
 		mCreateInfo.MinFilter = info.MinFilter;
 		mCreateInfo.MagFilter = info.MagFilter;
@@ -43,7 +48,7 @@ namespace BHive
 		mInfo = mCreateInfo;
 	}
 
-	void Texture2D::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
+	void VulkanTexture2D::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
 	{
 		vk::DeviceSize size = mWidth * mHeight * mCreateInfo.Channels;
 
@@ -59,7 +64,7 @@ namespace BHive
 		VulkanUtils::TransitionImageLayout(image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
-	Ref<Texture2D> Texture2D::CreateSubTexture(const FSubTexture &texture)
+	Ref<Texture2D> VulkanTexture2D::CreateSubTexture(const FSubTexture &texture)
 	{
 		auto c = mCreateInfo.Channels;
 		size_t size = texture.width * texture.height * c;
@@ -67,15 +72,15 @@ namespace BHive
 		Buffer pixels(size);
 		GetSubImage(texture, size, &pixels[0]);
 
-		return CreateRef<Texture2D>(texture.width, texture.height, mCreateInfo, pixels);
+		return Texture2D::Create(texture.width, texture.height, mCreateInfo, pixels);
 	}
 
-	void Texture2D::GetSubImage(const FSubTexture &texture, size_t size, uint8_t *data) const
+	void VulkanTexture2D::GetSubImage(const FSubTexture &texture, size_t size, uint8_t *data) const
 	{
 		// glGetTextureSubImage(mTextureID, 0, texture.x, texture.y, texture.z, texture.width, texture.height, texture.depth, mInfo.Format, mInfo.Type, size, data);
 	}
 
-	void Texture2D::Initialize()
+	void VulkanTexture2D::Initialize()
 	{
 
 		auto channels = mCreateInfo.Channels;
@@ -105,18 +110,18 @@ namespace BHive
 		mDescriptorInfo = VulkanUtils::CreateDescriptorImageInfo(mVulkanTexture, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
-	void Texture2D::Release()
+	void VulkanTexture2D::Release()
 	{
 		mBuffer.Release();
 	}
 
-	void Texture2D::Save(cereal::BinaryOutputArchive &ar) const
+	void VulkanTexture2D::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
 		ar(mWidth, mHeight, mCreateInfo, mBuffer);
 	}
 
-	void Texture2D::Load(cereal::BinaryInputArchive &ar)
+	void VulkanTexture2D::Load(cereal::BinaryInputArchive &ar)
 	{
 
 		Asset::Load(ar);
@@ -131,9 +136,4 @@ namespace BHive
 		}
 	}
 
-	REFLECT(Texture2D)
-	{
-		BEGIN_REFLECT(Texture2D) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY("Specification", GetInfo, SetInfo);
-		rttr::type::register_wrapper_converter_for_base_classes<Ref<Texture2D>>();
-	}
 } // namespace BHive

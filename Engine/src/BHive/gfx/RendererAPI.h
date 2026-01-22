@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
+#include "core/events/Event.h"
 
 namespace BHive
 {
@@ -86,6 +87,8 @@ namespace BHive
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) = 0;
 
 		virtual EAPI GetAPI() const = 0;
+
+		virtual void OnEvent(Event &event) {};
 
 		static Scope<RendererAPI> Create();
 	};

@@ -1,3 +1,5 @@
+#include "gfx/RenderCommand.h"
+#include "Platform/Vulkan/debug/VulkanRenderDocAPI.h"
 #include "RenderDoc.h"
 #include <renderdoc_app.h>
 #include <windows.h>
@@ -22,15 +24,18 @@ namespace BHive
 			DWORD pid = GetCurrentProcessId();
 
 			std::filesystem::path dir = folder.empty() ? (std::filesystem::current_path() / "captures") : folder;
-			std::error_code ec;
-			std::filesystem::create_directories(dir, ec);
+			if (!std::filesystem::exists(dir))
+			{
+				std::error_code ec;
+				std::filesystem::create_directories(dir, ec);
+			}
 
 			std::string filename = std::string("capture_") + ss.str() + "_pid" + std::to_string(pid) + ".rdc";
 			return dir / filename;
 		}
 	} // namespace details
 
-	void RenderDocAPI::Init()
+	/*void RenderDocAPI::Init()
 	{
 		if (rdoc_api)
 			return;
@@ -59,7 +64,10 @@ namespace BHive
 
 		if (rdoc_api)
 		{
-			RENDERDOC_DevicePointer device = {};
+			RENDERDOC_InputButton buttons[] = {RENDERDOC_InputButton::eRENDERDOC_Key_F2};
+			rdoc_api->SetCaptureTitle("RenderDoc Capture");
+			rdoc_api->SetCaptureKeys(buttons, 1);
+			rdoc_api->ShowReplayUI();
 		}
 	}
 
@@ -72,8 +80,8 @@ namespace BHive
 			return;
 
 		auto output_path = details::GenerateTiemStampedCapturePath(path);
-		rdoc_api->SetCaptureFilePathTemplate(output_path.string().c_str());
-		rdoc_api->StartFrameCapture(nullptr, nullptr);
+		rdoc_api->SetLogFilePathTemplate(output_path.string().c_str());
+		rdoc_api->StartFrameCapture(GetDevice(), GetWindowHandle());
 	}
 
 	void RenderDocAPI::StartCapture()
@@ -82,12 +90,33 @@ namespace BHive
 			Init();
 
 		if (rdoc_api)
-			rdoc_api->StartFrameCapture(nullptr, nullptr);
+			rdoc_api->StartFrameCapture(GetDevice(), GetWindowHandle());
 	}
 
 	void RenderDocAPI::EndCapture()
 	{
 		if (rdoc_api)
-			rdoc_api->EndFrameCapture(nullptr, nullptr);
+			rdoc_api->EndFrameCapture(GetDevice(), GetWindowHandle());
 	}
+
+	void RenderDocAPI::TriggerCapture()
+	{
+		if (rdoc_api)
+			rdoc_api->TriggerCapture();
+	}*/
+
+	Ref<APIDebugger> APIDebugger::Create()
+	{
+		switch (RenderCommand::GetRendererAPI())
+		{
+		case RendererAPI::EAPI::Vulkan:
+			return CreateRef<VulkanAPIDebugger>();
+		default:
+			break;
+		}
+
+		ASSERT(false)
+		return nullptr;
+	}
+
 } // namespace BHive

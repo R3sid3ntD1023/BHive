@@ -4,16 +4,14 @@
 
 namespace BHive
 {
-	class Texture2DMultisample : public Texture
+	class VulkanTexture2DMultisample : public Texture2DMultisample
 	{
 	public:
-		Texture2DMultisample(uint32_t width, uint32_t height, uint32_t samples, const FTextureCreateInfo &create_info);
+		VulkanTexture2DMultisample(uint32_t width, uint32_t height, uint32_t samples, const FTextureCreateInfo &create_info);
 
-		~Texture2DMultisample();
+		virtual void Bind(uint32_t slot = 0) const {};
 
-		virtual void Bind(uint32_t slot = 0) const;
-
-		virtual void UnBind(uint32_t slot = 0) const;
+		virtual void UnBind(uint32_t slot = 0) const {};
 
 		virtual uint32_t GetWidth() const { return mWidth; }
 
@@ -21,16 +19,13 @@ namespace BHive
 
 		virtual void SetData(const void *data, uint32_t offsetX = 0, uint32_t offsetY = 0) {};
 
-		virtual uint32_t GetRendererID() const { return mTextureID; }
-
-		virtual void GenerateMipMaps() const;
-
 		virtual const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
+
+		virtual uintptr_t GetNativeHandle() const { return 0; }
 
 	private:
 		uint32_t mWidth = 0, mHeight = 0, mSamples = 1;
 		FTextureCreateInfo mCreateInfo;
 		FTextureAPIInfo mInfo;
-		uint32_t mTextureID = 0;
 	};
 } // namespace BHive

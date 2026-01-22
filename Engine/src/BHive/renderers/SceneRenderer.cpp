@@ -4,7 +4,7 @@
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
-#include "gfx/textures/Texture2D.h"
+#include "gfx/Texture.h"
 #include "importers/TextureImporter.h"
 #include "mesh/primitives/Quad.h"
 #include "render_passes/Aces.h"

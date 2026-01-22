@@ -17,7 +17,9 @@ namespace BHive
 		mVertexArray = VertexArray::Create();
 		mVertexArray->AddVertexBuffer(mVertexBuffer);
 
-		mLineShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Line.glsl");
+		Shader::FRenderOptions options{};
+		options.DrawMode = EDrawMode::Lines;
+		mLineShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Line.glsl", options);
 		mLineMaterial = CreateRef<Material>(mLineShader);
 	}
 

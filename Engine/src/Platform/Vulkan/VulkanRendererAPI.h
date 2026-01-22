@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
+#include "core/events/KeyEvents.h"
 #include "gfx/RendererAPI.h"
 #include "gfx/VertexArray.h"
 #include "VulkanCore.h"
@@ -19,15 +20,13 @@ namespace BHive
 		uint32_t Frame;
 	};
 
-	struct FRenderCommand : std::function<void(const FVulkanFrameData &)>
-	{
-	};
+	typedef std::function<void(const FVulkanFrameData &)> FRenderCommand;
 
 	class BHIVE_API VulkanRendererAPI : public RendererAPI
 	{
 
 	public:
-		VulkanRendererAPI() = default;
+		VulkanRendererAPI();
 
 		virtual ~VulkanRendererAPI();
 
@@ -75,13 +74,15 @@ namespace BHive
 
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) override;
 
+		virtual void OnEvent(Event &e) override;
+
 		void BeginFrame();
 
 		void EndFrame();
 
-		void SubmitCommand(std::function<void(const FVulkanFrameData &)> &&command);
+		void SubmitCommand(const FRenderCommand &command);
 
-		void SubmitSecondaryCommand(std::function<void(const FVulkanFrameData &)> &&command);
+		void SubmitSecondaryCommand(const FRenderCommand &command);
 
 		vk::raii::CommandBuffer &GetCommandBuffer(uint32_t index) { return mCommandBuffers[0].at(index); }
 
@@ -100,8 +101,14 @@ namespace BHive
 
 		void CreateCommandBuffers();
 
+		bool OnKey(KeyEvent &e);
+
 	private:
+		vk::raii::Device &mDevice;
+
 		vk::raii::CommandPool mCommandPool = nullptr;
+
+		std::vector<vk::raii::CommandBuffers> mCommandBuffers;
 
 		vk::ClearColorValue mClearColor{0, 0, 0, 1};
 
@@ -109,10 +116,8 @@ namespace BHive
 
 		std::queue<FRenderCommand> mSecondaryCommands;
 
-		std::vector<vk::raii::CommandBuffers> mCommandBuffers;
-
 		std::atomic<bool> mDeviceRecreationInProgress{false};
 
-		Ref<class RenderDocAPI> mRenderDoc;
+		Ref<class APIDebugger> mAPIDebugger;
 	};
 } // namespace BHive

@@ -1,6 +1,6 @@
 #include "buffers/GlobalBuffers.h"
 #include "buffers/ModelBuffer.h"
-#include "gfx/textures/Texture2D.h"
+#include "gfx/Texture.h"
 #include "Renderer.h"
 
 namespace BHive
@@ -21,13 +21,13 @@ namespace BHive
 			create_info.Channels = 4;
 			create_info.InternalFormat = EFormat::RGBA8;
 
-			WhiteTexture = CreateRef<Texture2D>(1, 1, create_info, &white, sizeof(uint32_t));
+			WhiteTexture = Texture2D::Create(1, 1, create_info, &white, sizeof(uint32_t));
 
 			uint32_t black = 0xFF000000;
-			BlackTexture = CreateRef<Texture2D>(1, 1, create_info, &black, sizeof(uint32_t));
+			BlackTexture = Texture2D::Create(1, 1, create_info, &black, sizeof(uint32_t));
 
 			uint32_t blue = 0xFF0000FF;
-			BlueTexture = CreateRef<Texture2D>(1, 1, create_info, &blue, sizeof(uint32_t));
+			BlueTexture = Texture2D::Create(1, 1, create_info, &blue, sizeof(uint32_t));
 
 			GlobalBuffers::CameraData.Init();
 			// Model.Init();

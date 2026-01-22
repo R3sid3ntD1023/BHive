@@ -8,9 +8,10 @@ include(GNUInstallDirs)
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 
 
-#set(AFTERMATH_DIR ${VENDOR_DIR}/aftermath)
-#set(AFTERMATH_INCLUDE_DIR ${AFTERMATH_DIR}/include)
-#set(AFTERMATH_LIBRARIES ${AFTERMATH_DIR}/lib/x64/GFSDK_Aftermath_Lib.x64)
+set(AFTERMATH_DIR ${VENDOR_DIR}/aftermath)
+set(AFTERMATH_INCLUDE_DIR ${AFTERMATH_DIR}/include)
+set(AFTERMATH_LIB_DIR ${AFTERMATH_DIR}/lib/x64)
+set(AFTERMATH_LIBRARY ${AFTERMATH_LIB_DIR}/GFSDK_Aftermath_Lib.x64.lib)
 
 add_subdirectory(vendor)
 
@@ -95,6 +96,7 @@ target_link_libraries(${TARGET_NAME} PUBLIC shaderc_combined$<$<CONFIG:DEBUG>:d>
 target_link_libraries(${TARGET_NAME} PUBLIC spirv-cross-core$<$<CONFIG:DEBUG>:d>)
 target_link_libraries(${TARGET_NAME} PUBLIC spirv-cross-glsl$<$<CONFIG:DEBUG>:d>)
 target_link_libraries(${TARGET_NAME} PUBLIC vk-bootstrap::vk-bootstrap)
+target_link_libraries(${TARGET_NAME} PUBLIC ${AFTERMATH_LIBRARY})
 
 target_include_directories(${TARGET_NAME} PUBLIC 
 	${CMAKE_CURRENT_SOURCE_DIR}/src 
@@ -102,6 +104,13 @@ target_include_directories(${TARGET_NAME} PUBLIC
 	${VENDOR_DIR}
 	${Vulkan_INCLUDE_DIRS}
 	${Stb_INCLUDE_DIR}
+	${AFTERMATH_INCLUDE_DIR}
+)
+
+add_custom_command(TARGET ${TARGET_NAME} POST_BUILD 
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different
+	"${AFTERMATH_LIB_DIR}/GFSDK_Aftermath_Lib.x64.dll"
+	$<TARGET_FILE_DIR:BHive-Engine>
 )
 
 target_precompile_headers(${TARGET_NAME} PUBLIC src/BHivePCH.h)

@@ -2,7 +2,7 @@
 #include "gfx/Image.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
-#include "gfx/textures/Texture2D.h"
+#include "gfx/Texture.h"
 #include "gfx/UniformBuffer.h"
 
 namespace BHive
@@ -32,6 +32,6 @@ namespace BHive
 		specs.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		specs.InternalFormat = EFormat::RGBA8;
 
-		mOutputTexture = CreateRef<Texture2D>(mSize.x, mSize.y, specs);
+		mOutputTexture = Texture2D::Create(mSize.x, mSize.y, specs);
 	}
 } // namespace BHive

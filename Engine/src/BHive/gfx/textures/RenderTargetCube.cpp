@@ -7,7 +7,7 @@ namespace BHive
 	RenderTargetCube::RenderTargetCube(uint32_t size, EFormat format)
 		: mSize(size)
 	{
-		FTextureCreateInfo create_info{};
+		/*FTextureCreateInfo create_info{};
 		create_info.InternalFormat = format;
 		create_info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		create_info.MinFilter = EMinFilter::LINEAR;
@@ -22,27 +22,27 @@ namespace BHive
 		glNamedRenderbufferStorage(mRenderBufferID, GL_DEPTH_COMPONENT24, size, size);
 		glNamedFramebufferRenderbuffer(mFramebufferID, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mRenderBufferID);
 
-		ASSERT(glCheckNamedFramebufferStatus(mFramebufferID, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+		ASSERT(glCheckNamedFramebufferStatus(mFramebufferID, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);*/
 	}
 
 	RenderTargetCube::~RenderTargetCube()
 	{
-		glDeleteFramebuffers(1, &mFramebufferID);
-		glDeleteRenderbuffers(1, &mRenderBufferID);
+		/*glDeleteFramebuffers(1, &mFramebufferID);
+		glDeleteRenderbuffers(1, &mRenderBufferID);*/
 	}
 
 	void RenderTargetCube::Bind(uint32_t face)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, mFramebufferID);
+		/*glBindFramebuffer(GL_FRAMEBUFFER, mFramebufferID);
 		glNamedFramebufferTextureLayer(mFramebufferID, GL_COLOR_ATTACHMENT0, mTargetTexture->GetRendererID(), 0, face);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glViewport(0, 0, mSize, mSize);
+		glViewport(0, 0, mSize, mSize);*/
 	}
 
 	void RenderTargetCube::UnBind()
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		// glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 } // namespace BHive

@@ -6,18 +6,16 @@
 namespace BHive
 {
 
-	class BHIVE_API TextureCube : public Texture
+	class BHIVE_API VulkanTextureCube : public TextureCube
 	{
 	public:
-		TextureCube() = default;
+		VulkanTextureCube() = default;
 
-		TextureCube(uint32_t size, const FTextureCreateInfo &info);
+		VulkanTextureCube(uint32_t size, const FTextureCreateInfo &info);
 
-		~TextureCube();
+		virtual void Bind(uint32_t slot = 0) const {};
 
-		virtual void Bind(uint32_t slot = 0) const;
-
-		virtual void UnBind(uint32_t slot = 0) const;
+		virtual void UnBind(uint32_t slot = 0) const {};
 
 		virtual uint32_t GetWidth() const { return mSize; }
 
@@ -27,16 +25,13 @@ namespace BHive
 
 		virtual const FTextureCreateInfo &GetInfo() const { return mCreateInfo; }
 
-		virtual uint32_t GetRendererID() const { return mTextureID; }
-
 		virtual uintptr_t GetNativeHandle() const { return reinterpret_cast<uintptr_t>(&mDescriptorInfo); }
 
 	private:
+		vk::raii::Device &mDevice;
 		uint32_t mSize{0};
 		FTextureCreateInfo mCreateInfo;
 		FTextureAPIInfo mInfo;
-		uint32_t mTextureID{0};
-		uint32_t mTextureTarget{0};
 		AllocatedVulkanTexture mTextureHandle;
 		vk::DescriptorImageInfo mDescriptorInfo;
 	};

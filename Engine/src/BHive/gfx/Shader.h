@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
+#include "RendererAPI.h"
 #include "ShaderReflection.h"
 
 namespace BHive
@@ -17,6 +18,11 @@ namespace BHive
 			ShaderStage_Fragment,
 			ShaderStage_Compute,
 			ShaderStage_Geometry,
+		};
+
+		struct FRenderOptions
+		{
+			EDrawMode DrawMode = EDrawMode::Triangles;
 		};
 
 	public:
@@ -41,9 +47,9 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) {};
 
-		static Ref<Shader> Create(const std::filesystem::path &path);
+		static Ref<Shader> Create(const std::filesystem::path &path, const FRenderOptions &options = {});
 
-		static Ref<Shader> Create(const std::string &name, const std::string &vert, const std::string &frag);
+		static Ref<Shader> Create(const std::string &name, const std::string &vert, const std::string &frag, const FRenderOptions &options = {});
 
 		friend class ShaderSerializer;
 	};

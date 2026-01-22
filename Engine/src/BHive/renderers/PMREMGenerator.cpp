@@ -3,8 +3,7 @@
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
-#include "gfx/textures/Texture2D.h"
-#include "gfx/textures/TextureCube.h"
+#include "gfx/Texture.h"
 #include "gfx/UniformBuffer.h"
 #include "mesh/primitives/Cube.h"
 #include "PMREMGenerator.h"
@@ -36,9 +35,9 @@ namespace BHive
 		pre_filter_specification.MagFilter = EMagFilter::LINEAR;
 		pre_filter_specification.Levels = PREFILTER_MIP_LEVELS;
 
-		mPreFilteredEnvironmentTexture = CreateRef<TextureCube>(PREFILTER_MAP_SIZE, pre_filter_specification);
+		mPreFilteredEnvironmentTexture = TextureCube::Create(PREFILTER_MAP_SIZE, pre_filter_specification);
 
-		mBRDFLUTTexture = CreateRef<Texture2D>(
+		mBRDFLUTTexture = Texture2D::Create(
 			BRDF_LUT_SIZE, BRDF_LUT_SIZE,
 			FTextureCreateInfo{.InternalFormat = EFormat::RG16F, .WrapMode = EWrapMode::CLAMP_TO_EDGE, .MinFilter = EMinFilter::NEAREST, .MagFilter = EMagFilter::NEAREST});
 

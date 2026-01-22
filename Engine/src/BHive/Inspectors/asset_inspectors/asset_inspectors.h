@@ -1,15 +1,15 @@
 #pragma once
-#include "Inspectors/InspectorAsset.h"
 #include "audio/AudioSource.h"
-#include "gfx/textures/Texture2D.h"
-#include "mesh/StaticMesh.h"
-#include "mesh/SkeletalMesh.h"
+#include "gfx/Texture.h"
+#include "Inspectors/InspectorAsset.h"
 #include "material/Material.h"
+#include "mesh/SkeletalMesh.h"
+#include "mesh/StaticMesh.h"
+#include "physics/PhysicsMaterial.h"
+#include "sprite/FlipBook.h"
 #include "sprite/Sprite.h"
 #include "sprite/SpriteSheet.h"
-#include "sprite/FlipBook.h"
 #include "world/World.h"
-#include "physics/PhysicsMaterial.h"
 
 namespace BHive
 {

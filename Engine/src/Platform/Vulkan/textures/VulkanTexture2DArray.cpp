@@ -1,11 +1,12 @@
+#include "../VulkanCore.h"
 #include "gfx/utils/texture/TextureUtils.h"
-#include "Platform/Vulkan/VulkanUtils.h"
-#include "Texture2DArray.h"
+#include "VulkanTexture2DArray.h"
 
 namespace BHive
 {
-	Texture2DArray::Texture2DArray(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification)
-		: mWidth(width),
+	VulkanTexture2DArray::VulkanTexture2DArray(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification)
+		: mDevice(VulkanCore::GetLogicalDevice()),
+		  mWidth(width),
 		  mHeight(height),
 		  mDepth(depth),
 		  mCreateInfo(specification),
@@ -38,19 +39,15 @@ namespace BHive
 		mDescriptorInfo = VulkanUtils::CreateDescriptorImageInfo(mTextureHandle, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
-	Texture2DArray::~Texture2DArray()
+	void VulkanTexture2DArray::Bind(uint32_t slot) const
 	{
 	}
 
-	void Texture2DArray::Bind(uint32_t slot) const
+	void VulkanTexture2DArray::UnBind(uint32_t slot) const
 	{
 	}
 
-	void Texture2DArray::UnBind(uint32_t slot) const
-	{
-	}
-
-	void Texture2DArray::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
+	void VulkanTexture2DArray::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
 	{
 
 		vk::DeviceSize size = mWidth * mHeight * mDepth * mCreateInfo.Channels;

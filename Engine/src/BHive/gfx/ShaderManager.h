@@ -1,11 +1,10 @@
 #pragma once
 
 #include "core/Core.h"
+#include "Shader.h"
 
 namespace BHive
 {
-	class Shader;
-
 	struct ShaderMetaData
 	{
 		std::filesystem::path Path;
@@ -22,7 +21,7 @@ namespace BHive
 
 		void Add(const char *name, const Ref<Shader> &shader);
 
-		Ref<Shader> Load(const std::filesystem::path &file);
+		Ref<Shader> Load(const std::filesystem::path &file, const Shader::FRenderOptions &options = {});
 
 		Ref<Shader> Get(const char *name);
 

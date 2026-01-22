@@ -55,7 +55,7 @@ namespace BHive
 
 		config.Viewport.setX(0.0f).setY(0.0f).setWidth((float)width).setHeight((float)height).setMinDepth(0.f).setMaxDepth(1.f);
 
-		config.Scissor.setOffset(vk::Offset2D{0, 0}).setExtent(vk::Extent2D{width, height});
+		config.Scissor.setOffset({0, 0}).setExtent({width, height});
 
 		config.ViewportState.setViewportCount(1).setScissorCount(1);
 

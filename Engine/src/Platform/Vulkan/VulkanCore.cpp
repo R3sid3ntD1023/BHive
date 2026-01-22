@@ -1,3 +1,4 @@
+
 #include "VulkanCore.h"
 #include <GLFW/glfw3.h>
 
@@ -96,7 +97,12 @@ namespace BHive
 
 	std::vector<const char *> VulkanCore::GetRequiredExtensions()
 	{
-		return {vk::KHRSwapchainExtensionName, vk::KHRSpirv14ExtensionName, vk::KHRSynchronization2ExtensionName, vk::KHRCreateRenderpass2ExtensionName, vk::EXTVertexInputDynamicStateExtensionName};
+		return {vk::KHRSwapchainExtensionName,
+				vk::KHRSpirv14ExtensionName,
+				vk::KHRSynchronization2ExtensionName,
+				vk::KHRCreateRenderpass2ExtensionName,
+				vk::EXTVertexInputDynamicStateExtensionName,
+				vk::EXTExtendedDynamicStateExtensionName};
 	}
 
 	uint32_t VulkanCore::SelectQueueIndex(vk::QueueFlags queue_type, const vk::SurfaceKHR &surface)
@@ -162,13 +168,7 @@ namespace BHive
 				ASSERT(false);
 			}
 		}
-		vk::InstanceCreateInfo instanceCreateInfo;
-		instanceCreateInfo.pApplicationInfo = &appInfo;
-		instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(required_extensions.size());
-		instanceCreateInfo.ppEnabledExtensionNames = required_extensions.data();
-		instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(requiredLayers.size());
-		instanceCreateInfo.ppEnabledLayerNames = requiredLayers.data();
-
+		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, requiredLayers, required_extensions);
 		mVulkanInstance = vk::raii::Instance(mVulkanContext, instanceCreateInfo);
 	}
 
@@ -191,7 +191,7 @@ namespace BHive
 			[&](const auto &device)
 			{
 				auto queueFamilies = device.getQueueFamilyProperties();
-				bool isSuitable = device.getProperties().apiVersion >= VK_API_VERSION_1_4;
+				bool isSuitable = device.getProperties().apiVersion >= VK_API_VERSION_1_0;
 				const auto qfpIter = std::ranges::find_if(queueFamilies, [](const vk::QueueFamilyProperties &qfp) { return (qfp.queueFlags & vk::QueueFlagBits::eGraphics) != (vk::QueueFlags)0; });
 				isSuitable = isSuitable && (qfpIter != queueFamilies.end());
 
@@ -289,22 +289,19 @@ namespace BHive
 		std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
 		for (auto f : families)
 		{
-			vk::DeviceQueueCreateInfo queueCreateInfo{};
-			queueCreateInfo.queueFamilyIndex = f;
-			queueCreateInfo.queueCount = 1;
-			queueCreateInfo.pQueuePriorities = &queue_priority;
+			vk::DeviceQueueCreateInfo queueCreateInfo({}, f, 1, &queue_priority);
 			queueCreateInfos.push_back(queueCreateInfo);
 		}
 
 		auto requiredDeviceExtensions = VulkanCore::GetRequiredExtensions();
 		auto featureChain = details::GetPhysicalDeviceFeaturesChain();
 
-		vk::DeviceCreateInfo device_createInfo{};
-		device_createInfo.pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>();
-		device_createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-		device_createInfo.pQueueCreateInfos = queueCreateInfos.data();
-		device_createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
-		device_createInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
+		vk::DeviceDiagnosticsConfigFlagsNV aftermath_flags = vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableAutomaticCheckpoints | vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableResourceTracking |
+															 vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderDebugInfo | vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderErrorReporting;
+
+		vk::DeviceDiagnosticsConfigCreateInfoNV aftermath_info(aftermath_flags, &featureChain.get<vk::PhysicalDeviceFeatures2>());
+
+		vk::DeviceCreateInfo device_createInfo({}, queueCreateInfos, {}, requiredDeviceExtensions, nullptr, &aftermath_info);
 
 		mLogicalDevice = mPhysicalDevice.createDevice(device_createInfo);
 
@@ -365,27 +362,23 @@ namespace BHive
 		std::sort(families.begin(), families.end());
 		families.erase(std::unique(families.begin(), families.end()), families.end());
 
+		auto requiredDeviceExtensions = VulkanCore::GetRequiredExtensions();
+		auto featureChain = details::GetPhysicalDeviceFeaturesChain();
+
 		auto queue_priority = 1.0f;
 		std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
 		for (auto f : families)
 		{
-			vk::DeviceQueueCreateInfo queueCreateInfo{};
-			queueCreateInfo.queueFamilyIndex = f;
-			queueCreateInfo.queueCount = 1;
-			queueCreateInfo.pQueuePriorities = &queue_priority;
+			vk::DeviceQueueCreateInfo queueCreateInfo({}, f, 1, &queue_priority);
 			queueCreateInfos.push_back(queueCreateInfo);
 		}
 
-		auto requiredDeviceExtensions = VulkanCore::GetRequiredExtensions();
-		auto featureChain = details::GetPhysicalDeviceFeaturesChain();
+		vk::DeviceDiagnosticsConfigFlagsNV aftermath_flags = vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableAutomaticCheckpoints | vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableResourceTracking |
+															 vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderDebugInfo | vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderErrorReporting;
 
-		vk::DeviceCreateInfo device_createInfo{};
-		device_createInfo.pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>();
-		device_createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-		device_createInfo.pQueueCreateInfos = queueCreateInfos.data();
-		device_createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
-		device_createInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
+		vk::DeviceDiagnosticsConfigCreateInfoNV aftermath_info(aftermath_flags, &featureChain.get<vk::PhysicalDeviceFeatures2>());
 
+		vk::DeviceCreateInfo device_createInfo({}, queueCreateInfos, {}, requiredDeviceExtensions, nullptr, &aftermath_info);
 		mLogicalDevice = mPhysicalDevice.createDevice(device_createInfo);
 
 		mQueueFamilies.GraphicsQueueIndex = graphics_index;

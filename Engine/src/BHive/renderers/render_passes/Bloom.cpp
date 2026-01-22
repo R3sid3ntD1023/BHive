@@ -3,7 +3,7 @@
 #include "gfx/Image.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
-#include "gfx/textures/Texture2D.h"
+#include "gfx/Texture.h"
 #include "gfx/UniformBuffer.h"
 
 namespace BHive
@@ -28,15 +28,15 @@ namespace BHive
 		specs.InternalFormat = EFormat::RGBA32F;
 		specs.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 
-		mPreFilterTexture = CreateRef<Texture2D>(size.x, size.y, specs);
+		mPreFilterTexture = Texture2D::Create(size.x, size.y, specs);
 
 		specs.InternalFormat = EFormat::RGBA32F;
-		mOutputTexture = CreateRef<Texture2D>(size.x, size.y, specs);
+		mOutputTexture = Texture2D::Create(size.x, size.y, specs);
 
 		glm::uvec2 mps = size;
 		for (auto &mip : mMipMaps)
 		{
-			mip = CreateRef<Texture2D>(mps.x, mps.y, specs);
+			mip = Texture2D::Create(mps.x, mps.y, specs);
 
 			mps /= 2;
 			mps = glm::max({1, 1}, mps);

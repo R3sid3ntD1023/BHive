@@ -112,6 +112,11 @@ namespace BHive
 		sRendererAPI->AttachTextureToFramebuffer(attachment, texture, framebuffer);
 	}
 
+	void RenderCommand::OnEvent(Event &event)
+	{
+		sRendererAPI->OnEvent(event);
+	}
+
 	Scope<RendererAPI> RenderCommand::sRendererAPI = RendererAPI::Create();
 
 } // namespace BHive

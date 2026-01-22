@@ -44,7 +44,7 @@ namespace BHive
 
 		if (specification.Flags & EApplicationFlags::EnableImGui)
 		{
-			mImGuiLayer = new ImGuiLayer(mWindow->GetNative());
+			mImGuiLayer = ImGuiLayer::Create(mWindow->GetNative());
 			PushLayer(mImGuiLayer);
 		}
 

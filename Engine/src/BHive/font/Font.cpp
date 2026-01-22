@@ -1,7 +1,6 @@
 #include "Font.h"
+#include "gfx/Texture.h"
 #include "MSDFData.h"
-#include <gfx/textures/Texture2D.h>
-#include <glad/glad.h>
 
 using namespace msdf_atlas;
 
@@ -27,7 +26,7 @@ namespace BHive
 		create_info.InternalFormat = EFormat::RGB8;
 		create_info.Channels = 3;
 
-		Ref<Texture2D> texture = CreateRef<Texture2D>(w, h, create_info, bitmap.pixels, w * h * 3);
+		Ref<Texture2D> texture = Texture2D::Create(w, h, create_info, bitmap.pixels, w * h * 3);
 		return texture;
 	};
 

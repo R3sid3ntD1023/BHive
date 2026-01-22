@@ -7,6 +7,8 @@
 #include "Platform/Vulkan/VulkanSwapChain.h"
 #include "Platform/Vulkan/VulkanVertexArray.h"
 #include "VulkanRendererAPI.h"
+#include "VulkanRendererAPI.h"
+#include "VulkanRendererAPI.h"
 #include "VulkanUtils.h"
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
@@ -30,14 +32,19 @@ namespace BHive
 		}
 	} // namespace details
 
+	static bool sStartCapture = false;
+
+	VulkanRendererAPI::VulkanRendererAPI()
+		: mDevice(VulkanCore::GetLogicalDevice())
+	{
+	}
+
 	VulkanRendererAPI::~VulkanRendererAPI()
 	{
 	}
 
 	void VulkanRendererAPI::BeginFrame()
 	{
-		mRenderDoc->StartCaptureWithFile();
-
 		auto &context = static_cast<VulkanGraphicsContext &>(GraphicsContext::Get());
 		auto &swap_chain = context.GetSwapChain();
 
@@ -99,63 +106,34 @@ namespace BHive
 			cmd(command_data);
 			mSecondaryCommands.pop();
 		}
-
-		mRenderDoc->EndCapture();
 	}
 
-	void VulkanRendererAPI::SubmitCommand(std::function<void(const FVulkanFrameData &)> &&command)
+	void VulkanRendererAPI::SubmitCommand(const FRenderCommand &command)
+	{
+		if (mDeviceRecreationInProgress.load())
+		{
+			LOG_TRACE("Device Recreation in Progress");
+			return;
+		}
+
+		mCommands.emplace(command);
+	}
+
+	void VulkanRendererAPI::SubmitSecondaryCommand(const FRenderCommand &command)
 	{
 		if (mDeviceRecreationInProgress.load())
 			return;
 
-		mCommands.push(FRenderCommand(std::move(command)));
-	}
-
-	void VulkanRendererAPI::SubmitSecondaryCommand(std::function<void(const FVulkanFrameData &)> &&command)
-	{
-		if (mDeviceRecreationInProgress.load())
-			return;
-
-		mSecondaryCommands.push(FRenderCommand(std::move(command)));
+		mSecondaryCommands.emplace(command);
 	}
 
 	void VulkanRendererAPI::Init()
 	{
-		mRenderDoc = CreateRef<RenderDocAPI>();
-		mRenderDoc->Init();
+		mAPIDebugger = APIDebugger::Create();
+		mAPIDebugger->Init();
 
 		CreateCommandPool();
 		CreateCommandBuffers();
-
-		// called on device creation
-		VulkanCore::RegisterOnDeviceCreated(
-			[this]()
-			{
-				CreateCommandPool();
-				CreateCommandBuffers();
-
-				// allow subsequent commands to be submitted
-				mDeviceRecreationInProgress.store(false);
-			});
-
-		// cleanup on device destroy
-		VulkanCore::RegisterOnDeviceDestroy(
-			[this]()
-			{
-				mDeviceRecreationInProgress.store(true);
-
-				try
-				{
-					VulkanCore::GetLogicalDevice().waitIdle();
-				}
-				catch (...)
-				{
-				}
-
-				mCommandBuffers.clear();
-
-				mCommandPool = nullptr;
-			});
 	}
 
 	void VulkanRendererAPI::Shutdown()
@@ -172,29 +150,31 @@ namespace BHive
 
 	vk::raii::CommandBuffers *VulkanRendererAPI::AllocateCommandBuffers(uint32_t count)
 	{
-		auto &device = VulkanCore::GetLogicalDevice();
-
 		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, count);
-		mCommandBuffers.emplace_back(device, alloc_info);
+		mCommandBuffers.emplace_back(mDevice, alloc_info);
 
 		return &mCommandBuffers.back();
 	}
 
 	void VulkanRendererAPI::CreateCommandPool()
 	{
-		auto &device = VulkanCore::GetLogicalDevice();
 		auto graphics_queue_index = VulkanCore::GetQueueFamilies().GraphicsQueueIndex;
 
 		vk::CommandPoolCreateInfo pool_info;
 		pool_info.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
 		pool_info.queueFamilyIndex = graphics_queue_index;
 
-		mCommandPool = device.createCommandPool(pool_info);
+		mCommandPool = mDevice.createCommandPool(pool_info);
 	}
 
 	void VulkanRendererAPI::CreateCommandBuffers()
 	{
 		AllocateCommandBuffers(2);
+	}
+
+	bool VulkanRendererAPI::OnKey(KeyEvent &e)
+	{
+		return false;
 	}
 
 	void VulkanRendererAPI::ClearColor(float r, float g, float b, float a)
@@ -217,7 +197,7 @@ namespace BHive
 		auto cmd = [=](const FVulkanFrameData &data)
 		{
 			data.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)y, (float)w, (float)h, 0.0f, 1.0f));
-			data.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, {w, h}));
+			data.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, vk::Extent2D(w, h)));
 		};
 
 		SubmitCommand(cmd);
@@ -340,6 +320,12 @@ namespace BHive
 	{
 
 		// glFramebufferTexture(GL_FRAMEBUFFER, attachment, texture, framebuffer);
+	}
+
+	void VulkanRendererAPI::OnEvent(Event &e)
+	{
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch(this, &VulkanRendererAPI::OnKey);
 	}
 
 } // namespace BHive

@@ -2,8 +2,8 @@
 
 #include "asset/Asset.h"
 #include "core/Core.h"
-#include "gfx/textures/Texture2D.h"
 #include "core/math/Math.h"
+#include "gfx/Texture.h"
 
 namespace BHive
 {
@@ -56,6 +56,7 @@ namespace BHive
 
 	private:
 		void Initialize();
+
 		void CalculateMinMax(const FSpriteGenerator &generator);
 
 	private:

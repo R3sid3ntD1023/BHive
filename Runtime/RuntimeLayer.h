@@ -15,6 +15,7 @@ namespace BHive
 		void OnDetach() override;
 		void OnUpdate(float) override;
 		void OnGuiRender() override;
+		void OnEvent(Event &e) override;
 
 	private:
 		void CreateGraphicsPipeline();

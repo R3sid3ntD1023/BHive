@@ -22,8 +22,10 @@ namespace BHive
 
 	private:
 		vk::raii::Device &mDevice;
-		uint32_t mCount;
+
 		AllocatedVulkanBuffer mBuffer;
+
+		uint32_t mCount;
 	};
 
 	class BHIVE_API VulkanVertexBuffer : public VertexBuffer
@@ -43,7 +45,9 @@ namespace BHive
 
 	private:
 		vk::raii::Device &mDevice;
-		BufferLayout mLayout{};
+
 		AllocatedVulkanBuffer mBuffer;
+
+		BufferLayout mLayout{};
 	};
 } // namespace BHive

@@ -1,8 +1,7 @@
 #include "core/threading/Threading.h"
 #include "gfx/Framebuffer.h"
-#include "gfx/textures/Texture2D.h"
+#include "gfx/Texture.h"
 #include "ImageUtils.h"
-#include <glad/glad.h>
 #include <stb_image_write.h>
 
 namespace BHive

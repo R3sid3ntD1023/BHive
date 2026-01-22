@@ -90,16 +90,16 @@ namespace BHive
 
 	struct AllocatedVulkanTexture
 	{
+		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
 		vk::raii::Image Image = VK_NULL_HANDLE;
 		vk::raii::ImageView ImageView = VK_NULL_HANDLE;
-		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
 		vk::raii::Sampler Sampler = VK_NULL_HANDLE;
 	};
 
 	struct AllocatedVulkanBuffer
 	{
-		vk::raii::Buffer Buffer = VK_NULL_HANDLE;
 		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
+		vk::raii::Buffer Buffer = VK_NULL_HANDLE;
 
 		void SetData(const void *data, size_t size, uint32_t offset = 0)
 		{

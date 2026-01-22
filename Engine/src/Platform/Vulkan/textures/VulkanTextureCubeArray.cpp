@@ -1,15 +1,16 @@
+#include "gfx/utils/texture/TextureUtils.h"
 #include "Platform/Vulkan/VulkanUtils.h"
-#include "Texture3D.h"
+#include "VulkanTextureCubeArray.h"
 
 namespace BHive
 {
-
-	Texture3D::Texture3D(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &create_info, const void *data)
-		: mWidth(width),
+	VulkanTextureCubeArray::VulkanTextureCubeArray(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &spec)
+		: mDevice(VulkanCore::GetLogicalDevice()),
+		  mWidth(width),
 		  mHeight(height),
 		  mDepth(depth),
-		  mInfo(create_info),
-		  mCreateInfo(create_info)
+		  mCreateInfo(spec),
+		  mInfo(spec)
 	{
 		auto channels = mCreateInfo.Channels;
 		auto mag_filter = (vk::Filter)mInfo.FilterModes[0];
@@ -20,10 +21,10 @@ namespace BHive
 		auto format = (vk::Format)mInfo.InternalFormat;
 
 		VulkanUtils::CreateImage(
-			width, height, depth, vk::ImageType::e3D, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
+			width, height, 1, vk::ImageType::e3D, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
 			vk::MemoryPropertyFlagBits::eDeviceLocal, mTextureHandle);
 
-		VulkanUtils::CreateImageView(mTextureHandle, vk::ImageViewType::e3D, format);
+		VulkanUtils::CreateImageView(mTextureHandle, vk::ImageViewType::eCubeArray, format);
 
 		vk::SamplerCreateInfo sampler_info({}, min_filter, mag_filter, vk::SamplerMipmapMode::eLinear, wrap_mode, wrap_mode, wrap_mode, 0, 0, 1, compare_enabled, compare_operation);
 		sampler_info.borderColor = vk::BorderColor::eIntOpaqueBlack;
@@ -38,19 +39,15 @@ namespace BHive
 		mDescriptorInfo = VulkanUtils::CreateDescriptorImageInfo(mTextureHandle, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
-	Texture3D::~Texture3D()
+	void VulkanTextureCubeArray::Bind(uint32_t slot) const
 	{
 	}
 
-	void Texture3D::Bind(uint32_t slot) const
+	void VulkanTextureCubeArray::UnBind(uint32_t slot) const
 	{
 	}
 
-	void Texture3D::UnBind(uint32_t slot) const
-	{
-	}
-
-	void Texture3D::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
+	void VulkanTextureCubeArray::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
 	{
 	}
 } // namespace BHive

@@ -1,9 +1,5 @@
 #include "Framebuffer.h"
-#include "textures/Texture2D.h"
-#include "textures/Texture2DArray.h"
-#include "textures/Texture2DMultisample.h"
-#include "textures/TextureCube.h"
-#include "textures/TextureCubeArray.h"
+#include "gfx/Texture.h"
 #include "utils/texture/TextureUtils.h"
 #include <glad/glad.h>
 
@@ -16,18 +12,18 @@ namespace BHive
 		auto &type = specification.TextureType;
 
 		if (samples > 1 && type == ETextureType::TEXTURE_2D)
-			return CreateRef<Texture2DMultisample>(w, h, samples, specification.CreateInfo);
+			return Texture2DMultisample::Create(w, h, samples, specification.CreateInfo);
 
 		switch (type)
 		{
 		case ETextureType::TEXTURE_2D:
-			return CreateRef<Texture2D>(w, h, specification.CreateInfo);
+			return Texture2D::Create(w, h, specification.CreateInfo);
 		case ETextureType::TEXTURE_CUBE_MAP:
-			return CreateRef<TextureCube>(w, specification.CreateInfo);
+			return TextureCube::Create(w, specification.CreateInfo);
 		case ETextureType::TEXTURE_2D_ARRAY:
-			return CreateRef<Texture2DArray>(w, h, d, specification.CreateInfo);
+			return Texture2DArray::Create(w, h, d, specification.CreateInfo);
 		case ETextureType::TEXTURE_CUBE_MAP_ARRAY:
-			return CreateRef<TextureCubeArray>(w, h, d, specification.CreateInfo);
+			return TextureCubeArray::Create(w, h, d, specification.CreateInfo);
 		default:
 			break;
 		}

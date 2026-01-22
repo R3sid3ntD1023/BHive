@@ -1,29 +1,30 @@
 #pragma once
 
 #include "core/Layer.h"
-#include "Platform/Vulkan/DescriptorBuilder.h"
-#include "Platform/Vulkan/VulkanCore.h"
+#include "gui/GUICore.h"
 
 struct GLFWwindow;
-struct ImGuiContext;
 struct ImDrawData;
 
 namespace BHive
 {
+	class Window;
 	class Texture;
 
 	/*gui class that uses imgui*/
 	struct BHIVE_API ImGuiLayer : public Layer
 	{
-		ImGuiLayer(GLFWwindow *window);
-		~ImGuiLayer() = default;
+		virtual ~ImGuiLayer() = default;
 
 		void OnAttach() override;
+
 		void OnDetach() override;
+
 		void OnEvent(Event &event) override;
 
-		void BeginFrame();
-		void EndFrame();
+		virtual void BeginFrame();
+
+		virtual void EndFrame();
 
 		void SetColorsDark();
 
@@ -33,27 +34,20 @@ namespace BHive
 
 		void GetAllocatorCallbacks(void *alloc_func, void *free_func, void **user_data) const;
 
-		const Ref<FDescriptorPool> &GetDescriptorPool() const { return mDescriptorPool; }
+		static ImTextureRef GetTextureID(const Texture &texture);
 
-		static VkDescriptorSet GetTextureID(const Ref<Texture> &texture);
+		static ImGuiLayer *Create(GLFWwindow *window);
 
-		static void ClearTextureMap();
+	protected:
+		virtual void Init();
+
+		virtual void Shutdown();
+
+		virtual void OnRender(ImDrawData *drawData, const glm::uvec2 &displaySize) {};
+
+		virtual ImTextureRef GetTextureIDImpl(const Texture &texture) = 0;
 
 	private:
-		void Init();
-
-		void Shutdown();
-
-		void RecordImGuiDrawCommands(ImDrawData *drawData, vk::raii::CommandBuffer &cmd, const vk::RenderingInfo &renderingInfo);
-
 		bool mBlockEvents{false};
-
-		GLFWwindow *mWindow = nullptr;
-
-		Ref<FDescriptorPool> mDescriptorPool;
-
-		vk::raii::CommandBuffers *mCommandBuffers = nullptr;
-
-		static inline std::unordered_map<Ref<Texture>, VkDescriptorSet> s_ImGuiTextureMap;
 	};
 } // namespace BHive

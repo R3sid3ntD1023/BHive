@@ -18,7 +18,7 @@ namespace BHive
 		}
 	}
 
-	Ref<Shader> ShaderManager::Load(const std::filesystem::path &file)
+	Ref<Shader> ShaderManager::Load(const std::filesystem::path &file, const Shader::FRenderOptions &options)
 	{
 		std::filesystem::path resolved_path = file;
 		if (!file.is_absolute())
@@ -45,7 +45,7 @@ namespace BHive
 		auto &shader = mShaders[name];
 		mShaderMetaDatas[name].Path = resolved_path;
 
-		shader = Shader::Create(resolved_path);
+		shader = Shader::Create(resolved_path, options);
 		return shader;
 	}
 

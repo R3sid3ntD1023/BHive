@@ -3,8 +3,7 @@
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
-#include "gfx/textures/Texture2D.h"
-#include "gfx/textures/Texture3D.h"
+#include "gfx/Texture.h"
 #include "importers/TextureImporter.h"
 #include "OutlineRenderPass.h"
 #include "renderers/Renderer.h"
@@ -75,7 +74,7 @@ namespace BHive
 
 		if (loaded)
 		{
-			mColorGradingLUTTexture = CreateRef<Texture3D>(width, width, height / width, create_info_lut, data);
+			mColorGradingLUTTexture = Texture3D::Create(width, width, height / width, create_info_lut, data);
 			free(data);
 		}
 	}
@@ -88,8 +87,8 @@ namespace BHive
 		create_info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		create_info.InternalFormat = EFormat::RGBA32F;
 
-		mOutputTexture = CreateRef<Texture2D>(size.x, size.y, create_info);
-		mOutlineOutput = CreateRef<Texture2D>(size.x, size.y, create_info);
+		mOutputTexture = Texture2D::Create(size.x, size.y, create_info);
+		mOutlineOutput = Texture2D::Create(size.x, size.y, create_info);
 	}
 
 	void OutlinePostProcessRenderPass::Process(const Ref<Texture> &texture)

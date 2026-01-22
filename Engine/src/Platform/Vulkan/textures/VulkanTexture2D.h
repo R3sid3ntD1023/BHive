@@ -6,13 +6,14 @@
 namespace BHive
 {
 
-	class BHIVE_API Texture2D : public Texture
+	class BHIVE_API VulkanTexture2D : public Texture2D
 	{
 	public:
-		Texture2D() = default;
-		Texture2D(uint32_t w, uint32_t h, const FTextureCreateInfo &info = {}, const void *buffer = nullptr, size_t size = 0);
+		VulkanTexture2D();
 
-		virtual ~Texture2D();
+		VulkanTexture2D(uint32_t w, uint32_t h, const FTextureCreateInfo &info = {}, const void *buffer = nullptr, size_t size = 0);
+
+		~VulkanTexture2D();
 
 		virtual void Bind(uint32_t slot = 0) const;
 
@@ -40,28 +41,34 @@ namespace BHive
 
 		/*Begin Asset*/
 		void Save(cereal::BinaryOutputArchive &ar) const override;
+
 		void Load(cereal::BinaryInputArchive &ar) override;
 
-		REFLECTABLEV(Texture)
+		REFLECTABLEV(Texture2D)
 
 		/*End Asset*/
 
 	private:
 		void Initialize();
+
 		void Release();
 
 	private:
+		vk::raii::Device &mDevice;
+
 		uint32_t mWidth = 0;
+
 		uint32_t mHeight = 0;
+
 		FTextureCreateInfo mCreateInfo;
+
 		FTextureAPIInfo mInfo;
+
 		Buffer mBuffer;
 
 		AllocatedVulkanTexture mVulkanTexture;
 
 		vk::DescriptorImageInfo mDescriptorInfo{};
 	};
-
-	REFLECT_EXTERN(Texture2D)
 
 } // namespace BHive

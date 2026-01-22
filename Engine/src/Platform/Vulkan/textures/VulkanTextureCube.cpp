@@ -1,11 +1,11 @@
-#include "gfx/Framebuffer.h"
 #include "gfx/utils/texture/TextureUtils.h"
-#include "TextureCube.h"
+#include "VulkanTextureCube.h"
 
 namespace BHive
 {
-	TextureCube::TextureCube(uint32_t size, const FTextureCreateInfo &create_info)
-		: mSize(size),
+	VulkanTextureCube::VulkanTextureCube(uint32_t size, const FTextureCreateInfo &create_info)
+		: mDevice(VulkanCore::GetLogicalDevice()),
+		  mSize(size),
 		  mCreateInfo(create_info),
 		  mInfo(create_info)
 	{
@@ -34,18 +34,6 @@ namespace BHive
 		VulkanUtils::CreateImageSampler(mTextureHandle, sampler_info);
 
 		mDescriptorInfo = VulkanUtils::CreateDescriptorImageInfo(mTextureHandle, vk::ImageLayout::eShaderReadOnlyOptimal);
-	}
-
-	TextureCube::~TextureCube()
-	{
-	}
-
-	void TextureCube::Bind(uint32_t slot) const
-	{
-	}
-
-	void TextureCube::UnBind(uint32_t slot) const
-	{
 	}
 
 } // namespace BHive

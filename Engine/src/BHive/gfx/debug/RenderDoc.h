@@ -4,17 +4,13 @@
 
 namespace BHive
 {
-	class BHIVE_API RenderDocAPI
+	class BHIVE_API APIDebugger
 	{
 	public:
-		RenderDocAPI() = default;
+		virtual ~APIDebugger() = default;
 
-		void Init();
+		virtual void Init() {};
 
-		void StartCaptureWithFile(const std::filesystem::path &path = "");
-
-		void StartCapture();
-
-		void EndCapture();
+		static Ref<APIDebugger> Create();
 	};
 } // namespace BHive

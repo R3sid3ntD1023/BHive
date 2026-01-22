@@ -17,7 +17,7 @@ namespace BHive
 	{
 
 	public:
-		VulkanSwapChain() = default;
+		VulkanSwapChain();
 
 		~VulkanSwapChain();
 
@@ -50,6 +50,7 @@ namespace BHive
 		uint32_t GetImageCount() const { return mImages.size(); }
 
 	private:
+		vk::raii::Device &mDevice;
 		vk::Extent2D mExtent{};
 
 		vk::SurfaceFormatKHR mImageFormat{};

@@ -3,7 +3,6 @@
 #include "asset/Asset.h"
 #include "core/EnumAsByte.h"
 #include "gfx/Color.h"
-
 #include "gfx/Texture.h"
 
 namespace BHive

@@ -1,6 +1,7 @@
-#include "ImGuiExtended.h"
+#include "core/layers/ImGuiLayer.h"
 #include "gfx/Color.h"
 #include "gfx/Texture.h"
+#include "ImGuiExtended.h"
 #include <imgui_stdlib.h>
 
 namespace ImGui
@@ -10,7 +11,7 @@ namespace ImGui
 		if (!texture)
 			return;
 
-		ImGui::Image((ImTextureID)(uint64_t)(uint32_t)texture->GetRendererID(), size, {0, 1}, {1, 0}, tint_col, border_col);
+		ImGui::Image(BHive::ImGuiLayer::GetTextureID(*texture), size, {0, 1}, {1, 0}, tint_col, border_col);
 	}
 
 	bool DrawIcon(const std::string &label, BHive::Texture *icon, float size, ImGuiButtonFlags flags)

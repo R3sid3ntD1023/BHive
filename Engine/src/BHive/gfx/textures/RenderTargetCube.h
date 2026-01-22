@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gfx/textures/TextureCube.h"
 #include "gfx/cameras/CubeCamera.h"
+#include "gfx/Texture.h"
 
 namespace BHive
 {

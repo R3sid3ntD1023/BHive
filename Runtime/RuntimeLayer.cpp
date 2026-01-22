@@ -23,7 +23,7 @@ namespace BHive
 	{
 		CreateGraphicsPipeline();
 
-		mCamera.SetView(FTransform({0, 0, -5}));
+		mCamera.SetView(FTransform({0, 0, 5}));
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -48,10 +48,14 @@ namespace BHive
 
 		if (mMesh && mMaterial)
 		{
-			mMaterial->Submit();
+			mShader->Bind();
+			mShader->BindTexture(1, mTexture);
+
+			RenderCommand::DrawElements(EDrawMode::Triangles, *mMesh->GetVertexArray());
+			/*mMaterial->Submit();
 
 			if (mMesh)
-				RenderCommand::DrawElements(EDrawMode::Triangles, *mMesh->GetVertexArray());
+				RenderCommand::DrawElements(EDrawMode::Triangles, *mMesh->GetVertexArray());*/
 		}
 
 		Renderer::End();
@@ -66,7 +70,7 @@ namespace BHive
 			ImGui::DragFloat("Test", &value);
 		}
 
-		auto texture_id = ImGuiLayer::GetTextureID(mTexture);
+		auto texture_id = ImGuiLayer::GetTextureID(*mTexture);
 		ImGui::Image(texture_id, {200, 200}, {0, 1}, {1, 0});
 
 		if (ImGui::Button("Load Mesh"))
@@ -89,6 +93,11 @@ namespace BHive
 		ImGui::End();
 
 		// GUI::EndDockSpace();
+	}
+
+	void RuntimeLayer::OnEvent(Event &e)
+	{
+		RenderCommand::OnEvent(e);
 	}
 
 	void RuntimeLayer::CreateGraphicsPipeline()

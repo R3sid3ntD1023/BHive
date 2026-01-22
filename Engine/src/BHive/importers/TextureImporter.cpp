@@ -1,5 +1,5 @@
 #include "core/threading/Threading.h"
-#include "gfx/textures/Texture2D.h"
+#include "gfx/Texture.h"
 #include "gfx/utils/texture/TextureUtils.h"
 #include "TextureImporter.h"
 
@@ -113,11 +113,11 @@ namespace BHive
 			stbi_uc *resized_buffer = (stbi_uc *)malloc(size);
 			stbir_resize_uint8_linear(image_data, w, h, 0, resized_buffer, import_data.mWidth, import_data.mHeight, 0, (stbir_pixel_layout)c);
 
-			texture = CreateRef<Texture2D>((unsigned)import_data.mWidth, (unsigned)import_data.mHeight, create_info, resized_buffer, size);
+			texture = Texture2D::Create((unsigned)import_data.mWidth, (unsigned)import_data.mHeight, create_info, resized_buffer, size);
 		}
 		else
 		{
-			texture = CreateRef<Texture2D>((unsigned)w, (unsigned)h, create_info, image_data, data_size);
+			texture = Texture2D::Create((unsigned)w, (unsigned)h, create_info, image_data, data_size);
 		}
 
 		stbi_image_free(image_data);
@@ -159,7 +159,7 @@ namespace BHive
 		create_info.WrapMode = EWrapMode::REPEAT;
 		create_info.GenerateMipMaps = 1;
 
-		auto texture = CreateRef<Texture2D>((unsigned)x, (unsigned)y, create_info, image_data, data_size);
+		auto texture = Texture2D::Create((unsigned)x, (unsigned)y, create_info, image_data, data_size);
 
 		stbi_image_free(image_data);
 
