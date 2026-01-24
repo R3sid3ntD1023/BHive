@@ -53,7 +53,7 @@ namespace BHive
 
 			vk::StructureChain<
 				vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features,
-				vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>
+				vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexAttributeDivisorFeaturesEXT>
 				featureChain;
 			featureChain.assign<vk::PhysicalDeviceFeatures2>({}); // default initialize all features to false
 			featureChain.get<vk::PhysicalDeviceFeatures2>().setFeatures(features);
@@ -67,6 +67,7 @@ namespace BHive
 			featureChain.get<vk::PhysicalDeviceVulkan13Features>().setDynamicRendering(true).setSynchronization2(true).setDescriptorBindingInlineUniformBlockUpdateAfterBind(true);
 			featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().setExtendedDynamicState(true);
 			featureChain.get<vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>().setVertexInputDynamicState(true);
+			featureChain.get<vk::PhysicalDeviceVertexAttributeDivisorFeaturesEXT>().setVertexAttributeInstanceRateZeroDivisor(true);
 
 			return featureChain;
 		}
@@ -97,12 +98,14 @@ namespace BHive
 
 	std::vector<const char *> VulkanCore::GetRequiredExtensions()
 	{
-		return {vk::KHRSwapchainExtensionName,
-				vk::KHRSpirv14ExtensionName,
-				vk::KHRSynchronization2ExtensionName,
-				vk::KHRCreateRenderpass2ExtensionName,
-				vk::EXTVertexInputDynamicStateExtensionName,
-				vk::EXTExtendedDynamicStateExtensionName};
+		return {
+			vk::KHRSwapchainExtensionName,
+			vk::KHRSpirv14ExtensionName,
+			vk::KHRSynchronization2ExtensionName,
+			vk::KHRCreateRenderpass2ExtensionName,
+			vk::EXTVertexInputDynamicStateExtensionName,
+			vk::EXTExtendedDynamicStateExtensionName,
+			vk::EXTVertexAttributeDivisorExtensionName};
 	}
 
 	uint32_t VulkanCore::SelectQueueIndex(vk::QueueFlags queue_type, const vk::SurfaceKHR &surface)
@@ -148,6 +151,7 @@ namespace BHive
 #ifdef ENABLE_VALIDATION_LAYERS
 		requiredLayers.assign(validationLayers.begin(), validationLayers.end());
 		required_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		required_extensions.push_back(VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME);
 
 #endif
 
@@ -168,7 +172,20 @@ namespace BHive
 				ASSERT(false);
 			}
 		}
+
 		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, requiredLayers, required_extensions);
+
+#ifdef ENABLE_VALIDATION_LAYERS
+		vk::ValidationFeatureEnableEXT enabled_features[] = {
+			vk::ValidationFeatureEnableEXT::eBestPractices,
+			vk::ValidationFeatureEnableEXT::eDebugPrintf,
+			vk::ValidationFeatureEnableEXT::eSynchronizationValidation,
+		};
+		vk::ValidationFeaturesEXT validationFeatures(enabled_features, {}, nullptr);
+		instanceCreateInfo.pNext = &validationFeatures;
+
+#endif
+
 		mVulkanInstance = vk::raii::Instance(mVulkanContext, instanceCreateInfo);
 	}
 
@@ -176,9 +193,12 @@ namespace BHive
 	{
 #ifdef ENABLE_VALIDATION_LAYERS
 
-		vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo(
-			{}, vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-			vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance, &debugCallback);
+		auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError |
+						 vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
+		auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
+							vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding;
+
+		vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, &debugCallback);
 		mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mVulkanInstance, debugCreateInfo);
 #endif
 	}

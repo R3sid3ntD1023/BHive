@@ -74,7 +74,8 @@ namespace BHive
 		std::vector<vk::CommandBuffer> buffers_to_submit;
 		for (auto &cmd : buffers)
 		{
-			buffers_to_submit.push_back(cmd.at(current_frame));
+			auto &current_cmd = cmd.at(current_frame);
+			buffers_to_submit.push_back(current_cmd);
 		}
 
 		result = mSwapChain->SubmitCommandBuffers(buffers_to_submit, imageIndex);

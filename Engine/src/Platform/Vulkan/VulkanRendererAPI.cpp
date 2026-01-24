@@ -88,7 +88,8 @@ namespace BHive
 		while (!mCommands.empty())
 		{
 			auto &cmd = mCommands.front();
-			cmd(command_data);
+			if (cmd)
+				cmd(command_data);
 			mCommands.pop();
 		}
 
@@ -103,7 +104,8 @@ namespace BHive
 		while (!mSecondaryCommands.empty())
 		{
 			auto &cmd = mSecondaryCommands.front();
-			cmd(command_data);
+			if (cmd)
+				cmd(command_data);
 			mSecondaryCommands.pop();
 		}
 	}

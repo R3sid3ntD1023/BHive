@@ -36,6 +36,7 @@ namespace BHive
 			}
 
 			ASSERT(false);
+			return vk::Format::eR32G32B32A32Sfloat;
 		}
 	} // namespace utils
 
@@ -51,25 +52,29 @@ namespace BHive
 
 	void VulkanVertexArray::Bind() const
 	{
+		auto bindings = mBindings;
+		auto attributes = mAttributes;
+		auto vertex_buffers = mVertexBuffers;
+		auto index_buffer_ref = mIndexBuffer;
 
 		auto cmd = [=](const FVulkanFrameData &data)
 		{
-			auto size = mVertexBuffers.size();
+			auto size = vertex_buffers.size();
 			std::vector<vk::Buffer> vk_vertex_buffers(size);
 			std::vector<vk::DeviceSize> offsets(size);
 			vk::Buffer index_buffer;
 
-			if (mIndexBuffer)
-				index_buffer = *std::dynamic_pointer_cast<VulkanIndexBuffer>(mIndexBuffer);
+			if (index_buffer_ref)
+				index_buffer = *std::dynamic_pointer_cast<VulkanIndexBuffer>(index_buffer_ref);
 
 			for (uint32_t i = 0; i < size; i++)
 			{
-				auto &vb = mVertexBuffers[i];
+				auto &vb = vertex_buffers[i];
 				vk_vertex_buffers[i] = (*std::dynamic_pointer_cast<VulkanVertexBuffer>(vb));
 				offsets[i] = 0;
 			}
 
-			data.CommandBuffer.setVertexInputEXT(mBindings, mAttributes);
+			data.CommandBuffer.setVertexInputEXT(bindings, attributes);
 			data.CommandBuffer.bindVertexBuffers(0, vk_vertex_buffers, offsets);
 
 			if (index_buffer)
@@ -107,7 +112,12 @@ namespace BHive
 
 		uint32_t binding = mBindings.size();
 
-		mBindings.emplace_back(vk::VertexInputBindingDescription2EXT(binding, stride, vk::VertexInputRate::eVertex, 1));
+		mBindings.emplace_back(vk::VertexInputBindingDescription2EXT(binding, stride, vk::VertexInputRate::eVertex, 0));
+
+		{
+			const auto &b = mBindings.back();
+			LOG_INFO("VulkanVertexArray: Created binding index={} stride={} inputRate={} divisor={}", b.binding, b.stride, (uint32_t)b.inputRate, b.divisor);
+		}
 
 		for (const auto &element : elements)
 		{
@@ -124,7 +134,11 @@ namespace BHive
 			case BHive::EShaderDataType::Int4:
 			case BHive::EShaderDataType::Bool:
 			{
-				mAttributes.emplace_back(mVertexAttributeIndex++, 0, utils::GetVulkanFormat(type), (uint32_t)element.Offset);
+				mAttributes.emplace_back(mVertexAttributeIndex++, binding, utils::GetVulkanFormat(type), (uint32_t)element.Offset);
+				{
+					const auto &a = mAttributes.back();
+					LOG_INFO("VulkanVertexArray: Attr loc={} binding={} format={} offset={} (elem type={} size={})", a.location, a.binding, (int)a.format, a.offset, (int)type, element.Size);
+				}
 				break;
 			}
 			case BHive::EShaderDataType::Mat3:
@@ -135,7 +149,14 @@ namespace BHive
 				{
 					// For matrices we create one attribute per column (or row depending on layout),
 					// offset each attribute by the size of a column (count * sizeof(float)).
-					mAttributes.emplace_back(mVertexAttributeIndex++, 0, utils::GetVulkanFormat(type), (uint32_t)(element.Offset + sizeof(float) * count * i));
+					mAttributes.emplace_back(mVertexAttributeIndex++, binding, utils::GetVulkanFormat(type), (uint32_t)(element.Offset + sizeof(float) * count * i));
+
+					{
+						const auto &a = mAttributes.back();
+						LOG_INFO(
+							"VulkanVertexArray: Mat Attr loc={} binding={} format={} offset={} (mat col {} of {}, elem type={} size={})", a.location, a.binding, (int)a.format, a.offset, (int)i,
+							(int)count, (int)type, element.Size);
+					}
 				}
 				break;
 			}
