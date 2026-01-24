@@ -2,10 +2,10 @@
 
 #version 460 core
 
-layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec2 inTexCoord;
+layout(location = 0) in vec3 vPosition;
+layout(location = 1) in vec2 vTexCoord;
 
-layout(std140, binding = 0) uniform Matrices
+layout(std140, binding = 0) uniform CameraBuffer
 {
 	mat4 uProjection;
     mat4 uView;
@@ -20,8 +20,8 @@ layout(location  = 0) out struct VERT_OUT
 
 void main()
 {
-	vs_out.TexCoord = inTexCoord;
-	gl_Position = uProjection * uView * vec4(inPosition, 1);
+	vs_out.TexCoord = vTexCoord;
+	gl_Position = uProjection * uView * vec4(vPosition, 1);
 }
 
 

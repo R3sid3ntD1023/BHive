@@ -204,7 +204,7 @@ namespace BHive
 
 		auto num_samplers = (uint32_t)mReflectionData.Samplers.size();
 		auto num_uniform_buffers = (uint32_t)mReflectionData.UniformBuffers.size();
-		auto max_sets = num_samplers + num_uniform_buffers;
+		auto max_sets = (num_samplers + num_uniform_buffers) * 2;
 
 		for (auto &[name, data] : mReflectionData.UniformBuffers)
 		{
@@ -219,7 +219,7 @@ namespace BHive
 
 		for (auto &[name, uniform_buffers] : mReflectionData.UniformBuffers)
 		{
-			builder.AddBinding(uniform_buffers.Binding, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 1);
+			builder.AddBinding(uniform_buffers.Binding, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex, 1);
 		}
 
 		mDescriptorSetLayout = builder.Build();
@@ -228,7 +228,7 @@ namespace BHive
 			return;
 
 		FDescriptorPool::Builder pool_builder;
-		pool_builder.SetMaxSets(max_sets * 2);
+		pool_builder.SetMaxSets(max_sets);
 
 		if (num_uniform_buffers)
 		{
@@ -258,7 +258,7 @@ namespace BHive
 			for (const auto &binding : mUniformBufferBindings)
 			{
 				auto ubo = std::dynamic_pointer_cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(binding));
-				auto buffer = reinterpret_cast<vk::DescriptorBufferInfo *>(ubo->GetNativeHandle());
+				auto buffer = reinterpret_cast<const vk::DescriptorBufferInfo *>(ubo->GetNativeHandle());
 				FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteBuffer(binding, *buffer).Overwrite(mDescriptorSets);
 			}
 		};
