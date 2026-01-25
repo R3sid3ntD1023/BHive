@@ -3,7 +3,10 @@
 #include <GLFW/glfw3.h>
 
 #ifdef _DEBUG
-	#define ENABLE_VALIDATION_LAYERS
+	#define VALIDATION_LAYERS_ENABLED
+	#ifdef VALIDATION_LAYERS_ENABLED
+		#define ENABLE_VALIDATION_LAYERS
+	#endif
 #endif
 
 namespace BHive
@@ -15,32 +18,31 @@ namespace BHive
 	static VKAPI_ATTR vk::Bool32 VKAPI_CALL
 	debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
 	{
+		auto message_type = static_cast<vk::DebugUtilsMessageTypeFlagsEXT>(messageType);
+		auto message_type_string = vk::to_string(message_type);
+
 		switch (messageSeverity)
 		{
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-			LOG_TRACE("{} : {}", std::to_string(messageType), pCallbackData->pMessage);
+			LOG_TRACE("{} : {}", message_type_string, pCallbackData->pMessage);
 			break;
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-			LOG_INFO("{} : {}", std::to_string(messageType), pCallbackData->pMessage);
+			LOG_INFO("{} : {}", message_type_string, pCallbackData->pMessage);
 			break;
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-			LOG_WARN("{} : {}", std::to_string(messageType), pCallbackData->pMessage);
+			LOG_WARN("{} : {}", message_type_string, pCallbackData->pMessage);
 			break;
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-			LOG_ERROR("{} : {}", std::to_string(messageType), pCallbackData->pMessage);
+			LOG_ERROR("{} : {}", message_type_string, pCallbackData->pMessage);
 			break;
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
-			LOG_CRITICAL("{} : {}", std::to_string(messageType), pCallbackData->pMessage);
+			LOG_CRITICAL("{} : {}", message_type_string, pCallbackData->pMessage);
 			break;
 		default:
 			break;
 		}
 
-		return VK_FALSE;
-	}
-
-	static void GpuCrashDumpCallback(const void *pGpuCrashDump, const uint32_t gpuCrashDumpSize, void *pUserData)
-	{
+		return false;
 	}
 
 	namespace details
@@ -151,8 +153,6 @@ namespace BHive
 #ifdef ENABLE_VALIDATION_LAYERS
 		requiredLayers.assign(validationLayers.begin(), validationLayers.end());
 		required_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-		required_extensions.push_back(VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME);
-
 #endif
 
 		if (std::ranges::any_of(
@@ -174,18 +174,6 @@ namespace BHive
 		}
 
 		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, requiredLayers, required_extensions);
-
-#ifdef ENABLE_VALIDATION_LAYERS
-		vk::ValidationFeatureEnableEXT enabled_features[] = {
-			vk::ValidationFeatureEnableEXT::eBestPractices,
-			vk::ValidationFeatureEnableEXT::eDebugPrintf,
-			vk::ValidationFeatureEnableEXT::eSynchronizationValidation,
-		};
-		vk::ValidationFeaturesEXT validationFeatures(enabled_features, {}, nullptr);
-		instanceCreateInfo.pNext = &validationFeatures;
-
-#endif
-
 		mVulkanInstance = vk::raii::Instance(mVulkanContext, instanceCreateInfo);
 	}
 
@@ -195,8 +183,7 @@ namespace BHive
 
 		auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError |
 						 vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
-		auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
-							vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding;
+		auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
 		vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, &debugCallback);
 		mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mVulkanInstance, debugCreateInfo);
@@ -211,7 +198,7 @@ namespace BHive
 			[&](const auto &device)
 			{
 				auto queueFamilies = device.getQueueFamilyProperties();
-				bool isSuitable = device.getProperties().apiVersion >= VK_API_VERSION_1_0;
+				bool isSuitable = device.getProperties().apiVersion >= vk::ApiVersion14;
 				const auto qfpIter = std::ranges::find_if(queueFamilies, [](const vk::QueueFamilyProperties &qfp) { return (qfp.queueFlags & vk::QueueFlagBits::eGraphics) != (vk::QueueFlags)0; });
 				isSuitable = isSuitable && (qfpIter != queueFamilies.end());
 
@@ -220,7 +207,12 @@ namespace BHive
 				for (const auto &extension : GetRequiredExtensions())
 				{
 					auto extensionIter = std::ranges::find_if(extensions, [extension](const auto &ext) { return strcmp(ext.extensionName, extension) == 0; });
-					found = found && (extensionIter != extensions.end());
+					found = (extensionIter != extensions.end());
+					if (!found)
+					{
+						LOG_ERROR("Required device extension not found: {}", extension);
+						isSuitable = false;
+					}
 				}
 
 				isSuitable = isSuitable && found;
@@ -336,11 +328,6 @@ namespace BHive
 			mQueueFamilies.PresentQueueIndex = present_family_index;
 			mQueueFamilies.PresentQueue = mLogicalDevice.getQueue(mQueueFamilies.PresentQueueIndex, 0);
 		}
-
-		for (auto &callback : mOnDeviceCreatedCallbacks)
-		{
-			callback();
-		}
 	}
 
 	void VulkanCore::CreateLogicalDevice(const vk::SurfaceKHR &surface)
@@ -413,11 +400,6 @@ namespace BHive
 		{
 			mQueueFamilies.PresentQueueIndex = mQueueFamilies.GraphicsQueueIndex;
 			mQueueFamilies.PresentQueue = mQueueFamilies.GraphicsQueue;
-		}
-
-		for (auto &callback : mOnDeviceCreatedCallbacks)
-		{
-			callback();
 		}
 	}
 
