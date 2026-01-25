@@ -1,8 +1,6 @@
-cmake_minimum_required( VERSION 3.10 )
+cmake_minimum_required( VERSION 3.8...3.24 )
 
 
-include(cmake/vulkan.cmake)
-include(FindVulkan)
 include(GNUInstallDirs)
 
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
@@ -31,9 +29,6 @@ find_package(unofficial-omniverse-physx-sdk CONFIG REQUIRED)
 find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
 find_package(mINI CONFIG REQUIRED)
 
-message(STATUS "Vulkan VERSION: ${Vulkan_VERSION}")
-message(STATUS "Vulkan Includes: ${Vulkan_INCLUDE_DIR} - Libs ${Vulkan_LIBRARIES}")
-set(Vulkan_LIB_DIR $ENV{VULKAN_SDK}/Lib)
 
 
 file(GLOB_RECURSE HEADER_FILES CMAKE_CONFIGURE_DEPENDS src/**.h src/**.inl)
@@ -42,7 +37,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES} ${SOURCE_FIL
 
 set(TARGET_NAME BHive-Engine)
 
-set(BUILD_SHARED_LIB ON CACHE BOOL "Build Engine as a shared library" FORCE)
+set(BUILD_SHARED_LIB FALSE CACHE BOOL "Build Engine as a shared library" FORCE)
 
 if(BUILD_SHARED_LIB)
 	add_library(${TARGET_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
@@ -52,10 +47,6 @@ else()
 	add_library(${TARGET_NAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
 	message(STATUS "Building Engine as Static Library")
 endif()
-
-#find renderdoc
-set(RENDERDOC_DIR "C:/Program Files/RenderDoc")
-target_include_directories(${TARGET_NAME} PRIVATE "${RENDERDOC_DIR}")
 
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 
@@ -72,7 +63,6 @@ target_compile_definitions(${TARGET_NAME}
 
 )
 
-target_link_directories(${TARGET_NAME} PUBLIC ${Vulkan_LIB_DIR})
 target_link_libraries(${TARGET_NAME} PUBLIC glfw)
 target_link_libraries(${TARGET_NAME} PUBLIC glad::glad)
 target_link_libraries(${TARGET_NAME} PUBLIC opengl32 )
@@ -95,14 +85,13 @@ target_link_libraries(${TARGET_NAME} PUBLIC ${Vulkan_LIBRARIES})
 target_link_libraries(${TARGET_NAME} PUBLIC shaderc_combined$<$<CONFIG:DEBUG>:d>)
 target_link_libraries(${TARGET_NAME} PUBLIC spirv-cross-core$<$<CONFIG:DEBUG>:d>)
 target_link_libraries(${TARGET_NAME} PUBLIC spirv-cross-glsl$<$<CONFIG:DEBUG>:d>)
-target_link_libraries(${TARGET_NAME} PUBLIC vk-bootstrap::vk-bootstrap)
 target_link_libraries(${TARGET_NAME} PUBLIC ${AFTERMATH_LIBRARY})
+target_link_libraries(${TARGET_NAME} PUBLIC VulkanSDK)
 
 target_include_directories(${TARGET_NAME} PUBLIC 
 	${CMAKE_CURRENT_SOURCE_DIR}/src 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/BHive 
 	${VENDOR_DIR}
-	${Vulkan_INCLUDE_DIRS}
 	${Stb_INCLUDE_DIR}
 	${AFTERMATH_INCLUDE_DIR}
 )
