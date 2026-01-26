@@ -11,7 +11,7 @@ set(AFTERMATH_INCLUDE_DIR ${AFTERMATH_DIR}/include)
 set(AFTERMATH_LIB_DIR ${AFTERMATH_DIR}/lib/x64)
 set(AFTERMATH_LIBRARY ${AFTERMATH_LIB_DIR}/GFSDK_Aftermath_Lib.x64.lib)
 
-add_subdirectory(vendor)
+add_subdirectory(${VENDOR_DIR})
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
@@ -26,8 +26,21 @@ find_package(OpenAL CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(unofficial-omniverse-physx-sdk CONFIG REQUIRED)
-find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
 find_package(mINI CONFIG REQUIRED)
+
+if(TARGET vulkan )
+	message(STATUS "Vulkan found and target available")
+else()
+	include(FindVulkan)
+	find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
+	if(TARGET Vulkan::Vulkan OR TARGET Vulkan)
+		message(STATUS "Vulkan target provided by find_package")
+	elseif(Vulkan_FOUND)
+		message(STATUS "Vulkan found via find_package")
+	else()
+		message(FATAL_ERROR "Vulkan found but Vulkan::Vulkan target not available")
+	endif()
+endif()
 
 
 
@@ -81,13 +94,7 @@ target_link_libraries(${TARGET_NAME} PUBLIC msdf-atlas-gen::msdf-atlas-gen)
 target_link_libraries(${TARGET_NAME} PUBLIC EnTT::EnTT)
 target_link_libraries(${TARGET_NAME} PUBLIC mINI)
 target_link_libraries(${TARGET_NAME} PUBLIC unofficial::omniverse-physx-sdk::sdk)
-target_link_libraries(${TARGET_NAME} PUBLIC ${Vulkan_LIBRARIES})
-target_link_libraries(${TARGET_NAME} PUBLIC shaderc_combined$<$<CONFIG:DEBUG>:d>)
-target_link_libraries(${TARGET_NAME} PUBLIC spirv-cross-core$<$<CONFIG:DEBUG>:d>)
-target_link_libraries(${TARGET_NAME} PUBLIC spirv-cross-glsl$<$<CONFIG:DEBUG>:d>)
 target_link_libraries(${TARGET_NAME} PUBLIC ${AFTERMATH_LIBRARY})
-target_link_libraries(${TARGET_NAME} PUBLIC VulkanSDK)
-
 target_include_directories(${TARGET_NAME} PUBLIC 
 	${CMAKE_CURRENT_SOURCE_DIR}/src 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/BHive 
@@ -95,6 +102,20 @@ target_include_directories(${TARGET_NAME} PUBLIC
 	${Stb_INCLUDE_DIR}
 	${AFTERMATH_INCLUDE_DIR}
 )
+
+if(TARGET vulkan)
+	target_link_libraries(${TARGET_NAME} PUBLIC vulkan::vulkan)
+else()
+	target_link_libraries(${TARGET_NAME} PUBLIC ${Vulkan_LIBRARIES})
+	message(STATUS "Linking Vulkan libraries directly ${Vulkan_LIBRARIES}")
+
+	if(Vulkan_INCLUDE_DIRS)
+		target_include_directories(${TARGET_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
+		message(STATUS "Adding Vulkan include directories: ${Vulkan_INCLUDE_DIRS}")
+	endif()
+endif()
+
+
 
 add_custom_command(TARGET ${TARGET_NAME} POST_BUILD 
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different

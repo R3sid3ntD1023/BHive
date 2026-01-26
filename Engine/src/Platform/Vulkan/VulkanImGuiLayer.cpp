@@ -139,7 +139,7 @@ namespace BHive
 			cmd.end();
 		};
 
-		api->SubmitSecondaryCommand(imgui_command);
+		api->SubmitCommand(imgui_command);
 	}
 
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)

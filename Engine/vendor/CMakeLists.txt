@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8...3.24)
 
 include(FETCHCONTENT)
 
-include(cmake/vulkan.cmake)
+include(cmake/vulkan/vulkan.cmake)
 include(cmake/imgui.cmake)
 include(cmake/imguizmo.cmake)
 include(cmake/imnodeflow.cmake)

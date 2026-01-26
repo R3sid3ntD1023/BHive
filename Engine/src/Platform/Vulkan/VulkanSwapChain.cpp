@@ -61,7 +61,7 @@ namespace BHive
 		return mImageViews[index];
 	}
 
-	std::pair<vk::Result, uint32_t> VulkanSwapChain::AquireNextImage()
+	vk::ResultValue<uint32_t> VulkanSwapChain::AquireNextImage()
 	{
 
 		while (vk::Result::eTimeout == mDevice.waitForFences(*mInFlightFences[mCurrentFrame], VK_TRUE, UINT64_MAX))

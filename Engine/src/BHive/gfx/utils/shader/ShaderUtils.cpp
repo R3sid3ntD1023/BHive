@@ -1,5 +1,4 @@
 #include "ShaderUtils.h"
-#include <glad/glad.h>
 
 namespace BHive
 {

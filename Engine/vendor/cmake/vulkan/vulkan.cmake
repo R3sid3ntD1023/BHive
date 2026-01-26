@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.8...3.24)
+
 execute_process(COMMAND ${CMAKE_COMMAND} -E echo "Configuring Vulkan SDK")
 
 if(DEFINED ENV{VULKAN_SDK})
@@ -99,26 +101,39 @@ if(Vulkan_FOUND)
         set(Vulkan_LIBRARIES "")
     endif()
 
-    if(NOT TARGET VulkanSDK)
-        add_library(VulkanSDK UNKNOWN IMPORTED)
-        if(Vulkan_INCLUDE_DIRS)   
-            set_target_properties(VulkanSDK PROPERTIES
-                INTERFACE_INCLUDE_DIRECTORIES "${Vulkan_INCLUDE_DIRS}"
-            )
+    set(TARGET_NAME vulkan)
+    if(NOT TARGET ${TARGET_NAME})
+        file(GLOB_RECURSE HEADER_FILES CMAKE_CONFIGURE_DEPENDS ${Vulkan_INCLUDE_DIRS}/**.h)
+
+        add_library(${TARGET_NAME} INTERFACE ${HEADER_FILES})
+        add_library(${TARGET_NAME}::${TARGET_NAME} ALIAS ${TARGET_NAME})
+        
+         # Provide include dirs to consumers
+        if(Vulkan_INCLUDE_DIRS)
+            target_include_directories(${TARGET_NAME} INTERFACE ${Vulkan_INCLUDE_DIRS})
         endif()
 
+        # Provide link library (loader) to consumers
         if(Vulkan_LIBRARIES)
-            get_filename_component(Vulkan_LIB_DIR "${Vulkan_LIBRARIES}" DIRECTORY)
-            if(Vulkan_LIB_DIR)
-                set_target_properties(VulkanSDK PROPERTIES
+            # If Vulkan_LIBRARIES is a full path, set IMPORTED_LOCATION so linking works.
+            # Otherwise set INTERFACE_LINK_LIBRARIES to the library name.
+            get_filename_component(_maybe_lib_dir "${Vulkan_LIBRARIES}" DIRECTORY)
+            if(_maybe_lib_dir)
+                set_target_properties(${TARGET_NAME} PROPERTIES
                     IMPORTED_LOCATION "${Vulkan_LIBRARIES}"
                     INTERFACE_LINK_LIBRARIES "${Vulkan_LIBRARIES}"
                 )
             else()
-                set_target_properties(VulkanSDK PROPERTIES
+                set_target_properties(${TARGET_NAME} PROPERTIES
                     INTERFACE_LINK_LIBRARIES "${Vulkan_LIBRARIES}"
                 )
             endif()
         endif()
     endif()
 endif()
+
+include(cmake/vulkan/shaderc.cmake)
+include(cmake/vulkan/spirv_cross_core.cmake)
+include(cmake/vulkan/spirv_cross_glsl.cmake)
+
+

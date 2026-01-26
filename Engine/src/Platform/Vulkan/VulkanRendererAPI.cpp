@@ -100,14 +100,6 @@ namespace BHive
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eBottomOfPipe);
 
 		command_buffer.end();
-
-		while (!mSecondaryCommands.empty())
-		{
-			auto &cmd = mSecondaryCommands.front();
-			if (cmd)
-				cmd(command_data);
-			mSecondaryCommands.pop();
-		}
 	}
 
 	void VulkanRendererAPI::SubmitCommand(const FRenderCommand &command)

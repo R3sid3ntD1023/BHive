@@ -1,12 +1,10 @@
 #include "gfx/RenderCommand.h"
 #include "Platform/Vulkan/debug/VulkanRenderDocAPI.h"
 #include "RenderDoc.h"
-#include <renderdoc_app.h>
 #include <windows.h>
 
 namespace BHive
 {
-	static RENDERDOC_API_1_6_0 *rdoc_api = nullptr;
 
 	namespace details
 	{

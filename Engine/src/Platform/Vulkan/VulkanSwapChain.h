@@ -37,7 +37,7 @@ namespace BHive
 
 		vk::Extent2D GetExtent() const { return mExtent; }
 
-		std::pair<vk::Result, uint32_t> AquireNextImage();
+		vk::ResultValue<uint32_t> AquireNextImage();
 
 		vk::Result SubmitCommandBuffers(const std::vector<vk::CommandBuffer> &buffers, uint32_t imageIndex);
 

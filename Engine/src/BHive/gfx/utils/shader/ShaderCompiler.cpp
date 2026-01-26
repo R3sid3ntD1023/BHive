@@ -1,8 +1,6 @@
 #include "core/FileSystem.h"
 #include "ShaderCompiler.h"
 #include "ShaderUtils.h"
-#include <glad/glad.h>
-
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
 
