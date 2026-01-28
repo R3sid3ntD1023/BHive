@@ -5,6 +5,7 @@ build/
 downloads/
 
 **.sln
+**.slnx
 **.vcxproj
 **.vcxproj.filters
 **.vcxproj.user
@@ -15,4 +16,3 @@ downloads/
 #include
 !CMakeSettings.json
 !CMakePresets.json
-!.vscode/*.json
