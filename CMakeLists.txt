@@ -20,10 +20,9 @@ set(CMAKE_INSTALL_PREFIX "${BHIVE_ROOT_DIR}/install")
 #enable_testing()
 
 
-add_subdirectory(Engine)
+add_subdirectory(BHive-Engine)
 add_subdirectory(BHive-Editor)
-add_subdirectory(projects)
-add_subdirectory(Runtime)
+add_subdirectory(BHive-Runtime)
 
 
 
