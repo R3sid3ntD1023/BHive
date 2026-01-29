@@ -2,6 +2,7 @@ project "BHive-Engine"
     kind "SharedLib"
     language "C++"
     cppdialect "C++20"
+    staticruntime "off"
 
     targetdir ("%{wks.location}/bin/" .. outputdir)
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
@@ -17,13 +18,19 @@ project "BHive-Engine"
         "%{IncludeDir.glm}",
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.entt}",
-        "%{IncludeDir.imgui}"
+        "%{IncludeDir.imgui}",
+        "%{IncludeDir.imguizmo}",
+        "%{IncludeDir.implot}",
+        "%{IncludeDir.stb}",
+        "%{IncludeDir.freetype}"
     }
 
     links { 
         "glfw", 
         "spdlog", 
         "imgui",
+        "imguizmo",
+        "implot",
         "%{Library.vulkan}"
     }
 

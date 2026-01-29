@@ -2,6 +2,7 @@ project "BHive-Editor"
     kind "ConsoleApp" -- change to "WindowedApp" or other if appropriate
     language "C++"
     cppdialect "C++20"
+    staticruntime "off"
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
