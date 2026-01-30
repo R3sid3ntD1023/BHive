@@ -45,7 +45,7 @@ if(NOT TARGET  spirv-cross-core)
 
 		set_target_properties( ${TARGET_NAME} PROPERTIES
 				IMPORTED_LOCATION_DEBUG "${_spirv_core_debug}"
-				IMPORTED_LOCATION_RELEASE "${_spirv_core_release}"
+				IMPORTED_LOCATION "${_spirv_core_release}"
 				IMPORTED_LOCATION_RELWITHDEBINFO "${_spirv_core_release}"
 				IMPORTED_LOCATION_MINSIZEREL "${_spirv_core_release}"
 				INTERFACE_LINK_LIBRARIES "${_spirv_release}"

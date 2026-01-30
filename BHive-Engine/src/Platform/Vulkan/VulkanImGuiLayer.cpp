@@ -127,9 +127,11 @@ namespace BHive
 				clear_color);
 
 			vk::RenderingInfo render_info({}, {{0, 0}, {displaySize.x, displaySize.y}}, 1, 0, color_attachment);
+			vk::CommandBufferBeginInfo begin_info{};
 
 			cmd.reset();
-			cmd.begin({});
+			cmd.begin(begin_info);
+
 			cmd.beginRendering(render_info);
 
 			ImGui_ImplVulkan_RenderDrawData(drawData, *cmd);
@@ -139,7 +141,7 @@ namespace BHive
 			cmd.end();
 		};
 
-		api->SubmitCommand(imgui_command);
+		api->SubmitSecondaryCommand(imgui_command);
 	}
 
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)

@@ -1,5 +1,4 @@
 #include "core/Application.h"
-#include "gfx/debug/RenderDoc.h"
 #include "gfx/GraphicsContext.h"
 #include "Platform/Vulkan/VulkanGraphicsContext.h"
 #include "Platform/Vulkan/VulkanPipeline.h"
@@ -56,9 +55,11 @@ namespace BHive
 		auto extent = swap_chain->GetExtent();
 
 		auto &command_buffer = GetCurrentCommandBuffer();
+		command_buffer.reset();
 
 		vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
 		command_buffer.begin(begin_info);
+		
 
 		VulkanUtils::TransitionImageLayout(
 			command_buffer, image, image_index, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
@@ -100,6 +101,15 @@ namespace BHive
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eBottomOfPipe);
 
 		command_buffer.end();
+
+		
+		while (!mSecondaryCommands.empty())
+		{
+			auto &cmd = mSecondaryCommands.front();
+			if (cmd)
+				cmd(command_data);
+			mSecondaryCommands.pop();
+		}
 	}
 
 	void VulkanRendererAPI::SubmitCommand(const FRenderCommand &command)
@@ -123,9 +133,6 @@ namespace BHive
 
 	void VulkanRendererAPI::Init()
 	{
-		mAPIDebugger = APIDebugger::Create();
-		mAPIDebugger->Init();
-
 		CreateCommandPool();
 		CreateCommandBuffers();
 	}
@@ -164,11 +171,6 @@ namespace BHive
 	void VulkanRendererAPI::CreateCommandBuffers()
 	{
 		AllocateCommandBuffers(2);
-	}
-
-	bool VulkanRendererAPI::OnKey(KeyEvent &e)
-	{
-		return false;
 	}
 
 	void VulkanRendererAPI::ClearColor(float r, float g, float b, float a)
@@ -271,55 +273,34 @@ namespace BHive
 
 	void VulkanRendererAPI::DepthFunc(uint32_t func)
 	{
-
-		// glDepthFunc(func);
 	}
 
 	void VulkanRendererAPI::CullFront()
-	{
-
-		// glCullFace(GL_FRONT);
+	{	
 	}
 
 	void VulkanRendererAPI::CullBack()
-	{
-
-		// glCullFace(GL_BACK);
+	{	
 	}
 
 	void VulkanRendererAPI::SetCullEnabled(bool enabled)
-	{
-
-		// enabled ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+	{	
 	}
 
 	void VulkanRendererAPI::ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-	{
-		// glColorMask(r, g, b, a);
+	{	
 	}
 
 	void VulkanRendererAPI::EnableDepthMask(bool mask)
 	{
-
-		// glDepthMask(mask ? GL_TRUE : GL_FALSE);
 	}
 
 	void VulkanRendererAPI::EnableBlend(bool enabled)
-	{
-
-		// enabled ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
+	{	
 	}
 
 	void VulkanRendererAPI::AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer)
-	{
-
-		// glFramebufferTexture(GL_FRAMEBUFFER, attachment, texture, framebuffer);
-	}
-
-	void VulkanRendererAPI::OnEvent(Event &e)
-	{
-		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch(this, &VulkanRendererAPI::OnKey);
+	{	
 	}
 
 } // namespace BHive

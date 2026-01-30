@@ -2,10 +2,12 @@
 
 #version 460 core
 
+#extension GL_EXT_scalar_block_layout: require
+
 layout(location = 0) in vec3 vPosition;
 layout(location = 1) in vec2 vTexCoord;
 
-layout(std140, binding = 0) uniform CameraBuffer
+layout(std430, binding = 0) uniform CameraBuffer
 {
 	mat4 uProjection;
     mat4 uView;

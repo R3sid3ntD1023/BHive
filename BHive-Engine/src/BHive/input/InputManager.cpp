@@ -1,4 +1,5 @@
 #include "InputManager.h"
+#include "core/Application.h"
 #include <glfw/glfw3.h>
 
 namespace BHive
@@ -31,7 +32,8 @@ namespace BHive
 
 	const glm::vec2 InputManager::get_mouse_pos() const
 	{
-		auto window = glfwGetCurrentContext();
+		auto &app = Application::Get();
+		auto window = app.GetWindow().GetNative();
 		ASSERT(window);
 
 		double x = 0.0, y = 0.0;

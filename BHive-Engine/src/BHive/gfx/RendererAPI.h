@@ -88,8 +88,6 @@ namespace BHive
 
 		virtual EAPI GetAPI() const = 0;
 
-		virtual void OnEvent(Event &event) {};
-
 		static Scope<RendererAPI> Create();
 	};
 } // namespace BHive

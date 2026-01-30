@@ -23,7 +23,7 @@ namespace BHive
 	{
 		CreateGraphicsPipeline();
 
-		mCamera.SetView(FTransform({0, 0, 5}));
+		mCamera.SetView(FTransform({0, 0, -5}));
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -32,6 +32,8 @@ namespace BHive
 
 	void RuntimeLayer::OnUpdate(float)
 	{
+		mCamera.ProcessInput();
+
 		auto &app = Application::Get();
 		auto &window = app.GetWindow();
 		auto size = window.GetSize();
@@ -44,7 +46,7 @@ namespace BHive
 
 		Renderer::SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
 
-		LineRenderer::DrawLine({0, 0, 0}, {1, 1, 1}, FColor::Green);
+		LineRenderer::DrawLine({-1, 0, 0}, {1, 0, 0}, FColor::Green);
 
 		if (mMesh && mMaterial)
 		{
@@ -52,6 +54,7 @@ namespace BHive
 			mShader->BindTexture(1, mTexture);
 
 			RenderCommand::DrawElements(EDrawMode::Triangles, *mMesh->GetVertexArray());
+
 			/*mMaterial->Submit();
 
 			if (mMesh)
@@ -97,12 +100,12 @@ namespace BHive
 
 	void RuntimeLayer::OnEvent(Event &e)
 	{
-		RenderCommand::OnEvent(e);
+		mCamera.OnEvent(e);
 	}
 
 	void RuntimeLayer::CreateGraphicsPipeline()
 	{
-		mShader = ShaderManager::Get().Load("C:/Users/dariu/Documents/BHive/Runtime/Triangle.glsl");
+		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH"/Triangle.glsl");
 		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
 		mMaterial = CreateRef<Material>(mShader);
 		mMaterial->SetTexture("u_Texture", mTexture);

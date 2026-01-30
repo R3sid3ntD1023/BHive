@@ -74,8 +74,6 @@ namespace BHive
 
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) override;
 
-		virtual void OnEvent(Event &e) override;
-
 		void BeginFrame();
 
 		void EndFrame();
@@ -101,8 +99,6 @@ namespace BHive
 
 		void CreateCommandBuffers();
 
-		bool OnKey(KeyEvent &e);
-
 	private:
 		vk::raii::Device &mDevice;
 
@@ -117,7 +113,5 @@ namespace BHive
 		std::queue<FRenderCommand> mSecondaryCommands;
 
 		std::atomic<bool> mDeviceRecreationInProgress{false};
-
-		Ref<class APIDebugger> mAPIDebugger;
 	};
 } // namespace BHive

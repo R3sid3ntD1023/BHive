@@ -9,9 +9,6 @@
 #include "VulkanSwapChain.h"
 #include "gfx/RenderCommand.h"
 #include "Platform/Vulkan/VulkanRendererAPI.h"
-#include "GFSDK_Aftermath.h"
-#include "GFSDK_Aftermath_GpuCrashDump.h"
-
 #define MAX_FRAMES_IN_FLIGHT 2
 
 namespace BHive
@@ -25,7 +22,6 @@ namespace BHive
 	{
 		VulkanCore::Shutdown();
 
-		GFSDK_Aftermath_DisableGpuCrashDumps();
 	}
 
 	void VulkanGraphicsContext::OnFramebufferResized(uint32_t w, uint32_t h)
@@ -84,32 +80,6 @@ namespace BHive
 		{
 			mFramebufferResized = false;
 			RecreateSwapChain();
-		}
-		else if (result == vk::Result::eErrorDeviceLost)
-		{
-			GFSDK_Aftermath_CrashDump_Status status = GFSDK_Aftermath_CrashDump_Status_Unknown;
-			GFSDK_AFTERMATH_CALL(GFSDK_Aftermath_GetCrashDumpStatus(&status));
-
-			auto start = std::chrono::steady_clock::now();
-			auto elasped = std::chrono::milliseconds::zero();
-
-			while (status != GFSDK_Aftermath_CrashDump_Status_CollectingDataFailed && status != GFSDK_Aftermath_CrashDump_Status_Finished && elasped.count() < 50)
-			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(50));
-				GFSDK_AFTERMATH_CALL(GFSDK_Aftermath_GetCrashDumpStatus(&status));
-
-				elasped = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start);
-			}
-
-			if (status == GFSDK_Aftermath_CrashDump_Status_Finished)
-			{
-				LOG_TRACE("Aftermath finished processing crash dump");
-			}
-			else
-			{
-				LOG_TRACE("Unexpected crash dump status after timeout");
-				exit(-1);
-			}
 		}
 		else if (result != vk::Result::eSuccess)
 		{

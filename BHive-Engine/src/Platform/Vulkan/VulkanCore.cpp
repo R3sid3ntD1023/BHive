@@ -308,12 +308,7 @@ namespace BHive
 		auto requiredDeviceExtensions = VulkanCore::GetRequiredExtensions();
 		auto featureChain = details::GetPhysicalDeviceFeaturesChain();
 
-		vk::DeviceDiagnosticsConfigFlagsNV aftermath_flags = vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableAutomaticCheckpoints | vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableResourceTracking |
-															 vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderDebugInfo | vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderErrorReporting;
-
-		vk::DeviceDiagnosticsConfigCreateInfoNV aftermath_info(aftermath_flags, &featureChain.get<vk::PhysicalDeviceFeatures2>());
-
-		vk::DeviceCreateInfo device_createInfo({}, queueCreateInfos, {}, requiredDeviceExtensions, nullptr, &aftermath_info);
+		vk::DeviceCreateInfo device_createInfo({}, queueCreateInfos, {}, requiredDeviceExtensions, nullptr, &featureChain.get<vk::PhysicalDeviceFeatures2>());
 
 		mLogicalDevice = mPhysicalDevice.createDevice(device_createInfo);
 

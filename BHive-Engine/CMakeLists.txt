@@ -94,13 +94,11 @@ target_link_libraries(${TARGET_NAME} PUBLIC msdf-atlas-gen::msdf-atlas-gen)
 target_link_libraries(${TARGET_NAME} PUBLIC EnTT::EnTT)
 target_link_libraries(${TARGET_NAME} PUBLIC mINI)
 target_link_libraries(${TARGET_NAME} PUBLIC unofficial::omniverse-physx-sdk::sdk)
-target_link_libraries(${TARGET_NAME} PUBLIC ${AFTERMATH_LIBRARY})
 target_include_directories(${TARGET_NAME} PUBLIC 
 	${CMAKE_CURRENT_SOURCE_DIR}/src 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/BHive 
 	${VENDOR_DIR}
 	${Stb_INCLUDE_DIR}
-	${AFTERMATH_INCLUDE_DIR}
 )
 
 if(TARGET vulkan)
@@ -114,14 +112,6 @@ else()
 		message(STATUS "Adding Vulkan include directories: ${Vulkan_INCLUDE_DIRS}")
 	endif()
 endif()
-
-
-
-add_custom_command(TARGET ${TARGET_NAME} POST_BUILD 
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different
-	"${AFTERMATH_LIB_DIR}/GFSDK_Aftermath_Lib.x64.dll"
-	$<TARGET_FILE_DIR:BHive-Engine>
-)
 
 target_precompile_headers(${TARGET_NAME} PUBLIC src/BHivePCH.h)
 
