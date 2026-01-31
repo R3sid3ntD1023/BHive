@@ -2,24 +2,14 @@
 
 #include "core/Core.h"
 #include "core/events/Event.h"
+#include "Enumerations.h"
 
 namespace BHive
 {
 	class VertexArray;
 	class BufferBase;
 
-	enum EDrawMode
-	{
-		Lines = 0x0001,
-		Triangles = 0x0004
-	};
-
-	enum ClearBitMask : int
-	{
-		Buffer_Depth = 0x00000100,
-		Buffer_Stencil = 0x00000400,
-		Buffer_Color = 0x00004000,
-	};
+	
 
 	struct MultiDrawIndirectCommand
 	{

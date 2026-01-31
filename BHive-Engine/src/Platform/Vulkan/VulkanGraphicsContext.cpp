@@ -16,6 +16,7 @@ namespace BHive
 	VulkanGraphicsContext::VulkanGraphicsContext(void *windowHandle)
 		: mWindowHandle(static_cast<GLFWwindow *>(windowHandle))
 	{
+		ASSERT(mWindowHandle, "Window handle is null!");
 	}
 
 	VulkanGraphicsContext::~VulkanGraphicsContext()
@@ -38,8 +39,6 @@ namespace BHive
 		VulkanCore::CreateLogicalDevice(mSurface);
 		VulkanCore::EnsurePresentSupportForSurface(*mSurface);
 
-		mQueueFamilies = VulkanCore::GetQueueFamilies();
-
 		CreateSwapChain();
 	}
 
@@ -47,9 +46,8 @@ namespace BHive
 	{
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 		auto &command_buffer = api->GetCurrentCommandBuffer();
-		auto &buffers = api->GetCommandBuffers();
-		auto current_frame = mSwapChain->GetCurrentFrame();
-		auto [result, imageIndex] = mSwapChain->AquireNextImage();
+		auto current_frame = api->GetCurrentFrame();
+		auto [result, imageIndex] = mSwapChain->AquireNextImage(current_frame);
 
 		mImageIndex = imageIndex;
 
@@ -61,20 +59,9 @@ namespace BHive
 
 		ASSERT(result == vk::Result::eSuccess || result == vk::Result::eSuboptimalKHR, "Failed to acquire swap chain image!");
 
-		mSwapChain->ResetCommandBuffer(command_buffer);
+		api->RenderFrame();
 
-		api->BeginFrame();
-
-		api->EndFrame();
-
-		std::vector<vk::CommandBuffer> buffers_to_submit;
-		for (auto &cmd : buffers)
-		{
-			auto &current_cmd = cmd.at(current_frame);
-			buffers_to_submit.push_back(current_cmd);
-		}
-
-		result = mSwapChain->SubmitCommandBuffers(buffers_to_submit, imageIndex);
+		result = mSwapChain->Present({command_buffer}, imageIndex, current_frame);
 
 		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || mFramebufferResized)
 		{
@@ -85,6 +72,8 @@ namespace BHive
 		{
 			ASSERT(false, "Failed to present swap chain image!")
 		}
+
+		api->AdvanceFrame();
 	}
 
 	void VulkanGraphicsContext::CreateSwapChain()

@@ -74,25 +74,20 @@ namespace BHive
 
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) override;
 
-		void BeginFrame();
-
-		void EndFrame();
+		void RenderFrame();
 
 		void SubmitCommand(const FRenderCommand &command);
 
-		void SubmitSecondaryCommand(const FRenderCommand &command);
-
-		vk::raii::CommandBuffer &GetCommandBuffer(uint32_t index) { return mCommandBuffers[0].at(index); }
-
-		vk::raii::CommandBuffer &GetCurrentCommandBuffer();
+		vk::raii::CommandBuffer &GetCurrentCommandBuffer() { return mCommandBuffers[mCurrentFrame]; }
 
 		vk::raii::CommandPool &GetCommandPool() { return mCommandPool; }
 
-		vk::raii::CommandBuffers *AllocateCommandBuffers(uint32_t count);
-
-		const std::vector<vk::raii::CommandBuffers> &GetCommandBuffers() const { return mCommandBuffers; }
-
 		virtual EAPI GetAPI() const override { return EAPI::Vulkan; }
+
+		uint32_t GetCurrentFrame() const { return mCurrentFrame; }
+
+		void AdvanceFrame();
+
 
 	private:
 		void CreateCommandPool();
@@ -104,14 +99,14 @@ namespace BHive
 
 		vk::raii::CommandPool mCommandPool = nullptr;
 
-		std::vector<vk::raii::CommandBuffers> mCommandBuffers;
+		vk::raii::CommandBuffers mCommandBuffers = nullptr;
 
 		vk::ClearColorValue mClearColor{0, 0, 0, 1};
 
 		std::queue<FRenderCommand> mCommands;
 
-		std::queue<FRenderCommand> mSecondaryCommands;
-
 		std::atomic<bool> mDeviceRecreationInProgress{false};
+
+		uint32_t mCurrentFrame = 0;
 	};
 } // namespace BHive

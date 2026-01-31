@@ -40,8 +40,6 @@ namespace BHive
 
 		vk::raii::Device mDevice = nullptr;
 
-		VkQueueFamilies mQueueFamilies;
-
 		Ref<VulkanSwapChain> mSwapChain;
 
 		uint32_t mImageIndex = 0;

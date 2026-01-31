@@ -53,6 +53,22 @@ namespace BHive
 
 			return vk::PrimitiveTopology::eTriangleList;
 		}
+
+		vk::CullModeFlagBits GetCullMode(ECullMode mode)
+		{
+			switch (mode)
+			{
+			case ECullMode::Cull_Back:
+				return vk::CullModeFlagBits::eBack;
+			case ECullMode::Cull_Front:
+				return vk::CullModeFlagBits::eFront;
+			case ECullMode::Cull_None:
+				return vk::CullModeFlagBits::eNone;
+			default:
+				break;
+			}
+			return vk::CullModeFlagBits::eBack;
+		}
 	} // namespace utils
 
 	VulkanShader::VulkanShader(const std::filesystem::path &path, const FRenderOptions &options)
@@ -294,11 +310,13 @@ namespace BHive
 
 		vk::PipelineRenderingCreateInfo pipeline_renderingCreateInfo({}, {swap_chain->GetFormat().format});
 
-		FVulkanPipelineConfigInfo config = VulkanPipeline::GetDefaultConfigInfo(swap_chain->GetWidth(), swap_chain->GetHeight());
+		FVulkanPipelineConfigInfo config = VulkanPipeline::GetDefaultConfigInfo(swap_chain->GetExtent());
 		config.Layout = mPipelineLayout;
 		config.Next = &pipeline_renderingCreateInfo;
 		config.ShaderCreateInfos = create_infos;
 		config.InputAssembly.setTopology(utils::GetTopology(mRenderOptions.DrawMode));
+		config.Rasterazation.setCullMode(utils::GetCullMode(mRenderOptions.CullMode));
+		config.DepthStencil.setDepthTestEnable(mRenderOptions.EnableDepthTest).setDepthWriteEnable(mRenderOptions.EnableDepthWrite);
 
 		mGraphicsPipeline = Pipeline::Create();
 		mGraphicsPipeline->Init(config);

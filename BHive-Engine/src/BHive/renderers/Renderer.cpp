@@ -16,17 +16,19 @@ namespace BHive
 
 		RenderData()
 		{
-			uint32_t white = 0xFFFFFFFF;
+			
+			static constexpr uint32_t white = 0xFFFFFFFF;
+			static constexpr uint32_t black = 0xFF000000;
+			static constexpr uint32_t blue	= 0xFF0000FF;
+
 			FTextureCreateInfo create_info{};
 			create_info.Channels = 4;
 			create_info.InternalFormat = EFormat::RGBA8;
 
 			WhiteTexture = Texture2D::Create(1, 1, create_info, &white, sizeof(uint32_t));
-
-			uint32_t black = 0xFF000000;
+			
 			BlackTexture = Texture2D::Create(1, 1, create_info, &black, sizeof(uint32_t));
-
-			uint32_t blue = 0xFF0000FF;
+	
 			BlueTexture = Texture2D::Create(1, 1, create_info, &blue, sizeof(uint32_t));
 
 			GlobalBuffers::CameraData.Init();

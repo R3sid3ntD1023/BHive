@@ -50,15 +50,10 @@ namespace BHive
 
 		if (mMesh && mMaterial)
 		{
-			mShader->Bind();
-			mShader->BindTexture(1, mTexture);
-
-			RenderCommand::DrawElements(EDrawMode::Triangles, *mMesh->GetVertexArray());
-
-			/*mMaterial->Submit();
+			mMaterial->Submit();
 
 			if (mMesh)
-				RenderCommand::DrawElements(EDrawMode::Triangles, *mMesh->GetVertexArray());*/
+				RenderCommand::DrawElements(EDrawMode::Triangles, *mMesh->GetVertexArray());
 		}
 
 		Renderer::End();

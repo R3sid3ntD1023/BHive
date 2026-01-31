@@ -70,23 +70,23 @@ namespace BHive
 		return minImageCount;
 	}
 
-	vk::raii::CommandBuffer VulkanUtils::BeginSingleTimeCommands()
+	vk::raii::CommandBuffers VulkanUtils::BeginSingleTimeCommands()
 	{
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 		auto &cmdPool = api->GetCommandPool();
 		auto &device = VulkanCore::GetLogicalDevice();
 
 		vk::CommandBufferAllocateInfo allocInfo(cmdPool, vk::CommandBufferLevel::ePrimary, 1);
-		vk::raii::CommandBuffer commandBuffer = std::move(device.allocateCommandBuffers(allocInfo).front());
-		commandBuffer.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
-		return commandBuffer;
+		vk::raii::CommandBuffers commandBuffers = vk::raii::CommandBuffers(device, allocInfo);
+		commandBuffers[0].begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
+		return commandBuffers;
 	}
 
-	void VulkanUtils::EndSingleTimeCommands(vk::raii::CommandBuffer &commandBuffer)
+	void VulkanUtils::EndSingleTimeCommands(vk::raii::CommandBuffers &commandBuffers)
 	{
-		commandBuffer.end();
+		commandBuffers[0].end();
 
-		vk::SubmitInfo submitInfo({}, {}, *commandBuffer);
+		vk::SubmitInfo submitInfo({}, {}, *commandBuffers[0]);
 
 		auto &graphics_queue = VulkanCore::GetQueueFamilies().GraphicsQueue;
 		graphics_queue.submit(submitInfo, nullptr);
@@ -103,6 +103,7 @@ namespace BHive
 		vk::MemoryAllocateInfo allocInfo(memRequirements.size, FindMemoryType(memRequirements.memoryTypeBits, properties));
 		buffer.Memory = device.allocateMemory(allocInfo);
 		buffer.Buffer.bindMemory(*buffer.Memory, 0);
+		buffer.Size = size;
 	}
 
 	void VulkanUtils::CreateImage(
@@ -142,7 +143,7 @@ namespace BHive
 	void VulkanUtils::CopyBuffer(vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size)
 	{
 		auto cmd = BeginSingleTimeCommands();
-		cmd.copyBuffer(*srcBuffer, *dstBuffer, vk::BufferCopy(0, 0, size));
+		cmd[0].copyBuffer(*srcBuffer, *dstBuffer, vk::BufferCopy(0, 0, size));
 		EndSingleTimeCommands(cmd);
 	}
 
@@ -179,7 +180,7 @@ namespace BHive
 			ASSERT(false);
 		}
 
-		cmd.pipelineBarrier(sourceStage, destinationStage, {}, {}, nullptr, barrier);
+		cmd[0].pipelineBarrier(sourceStage, destinationStage, {}, {}, nullptr, barrier);
 		EndSingleTimeCommands(cmd);
 	}
 
@@ -225,7 +226,7 @@ namespace BHive
 	{
 		auto cmd = BeginSingleTimeCommands();
 		vk::BufferImageCopy region(0, 0, 0, {vk::ImageAspectFlagBits::eColor, 0, 0, 1}, {0, 0, 0}, {width, height, 1});
-		cmd.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, region);
+		cmd[0].copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, region);
 		EndSingleTimeCommands(cmd);
 	}
 

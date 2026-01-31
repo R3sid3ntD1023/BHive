@@ -31,8 +31,6 @@ namespace BHive
 		}
 	} // namespace details
 
-	static bool sStartCapture = false;
-
 	VulkanRendererAPI::VulkanRendererAPI()
 		: mDevice(VulkanCore::GetLogicalDevice())
 	{
@@ -42,19 +40,17 @@ namespace BHive
 	{
 	}
 
-	void VulkanRendererAPI::BeginFrame()
+	void VulkanRendererAPI::RenderFrame()
 	{
 		auto &context = static_cast<VulkanGraphicsContext &>(GraphicsContext::Get());
 		auto &swap_chain = context.GetSwapChain();
-
-		auto current_frame = swap_chain->GetCurrentFrame();
 		auto image_index = context.GetImageIndex();
 
 		auto &image = swap_chain->GetImage(image_index);
 		auto &image_view = swap_chain->GetImageView(image_index);
 		auto extent = swap_chain->GetExtent();
+		auto &command_buffer = mCommandBuffers[mCurrentFrame];
 
-		auto &command_buffer = GetCurrentCommandBuffer();
 		command_buffer.reset();
 
 		vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
@@ -71,20 +67,8 @@ namespace BHive
 			clearColor);
 		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo);
 		command_buffer.beginRendering(renderingInfo);
-	}
 
-	void VulkanRendererAPI::EndFrame()
-	{
-		auto &context = static_cast<VulkanGraphicsContext &>(GraphicsContext::Get());
-		auto &swap_chain = context.GetSwapChain();
-		auto current_frame = swap_chain->GetCurrentFrame();
-		auto image_index = context.GetImageIndex();
-
-		auto &command_buffer = mCommandBuffers[0][current_frame];
-		auto &image = swap_chain->GetImage(image_index);
-		auto &image_view = swap_chain->GetImageView(image_index);
-
-		FVulkanFrameData command_data{command_buffer, image, image_view, current_frame};
+		FVulkanFrameData command_data{command_buffer, image, image_view, mCurrentFrame};
 
 		while (!mCommands.empty())
 		{
@@ -101,15 +85,6 @@ namespace BHive
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eBottomOfPipe);
 
 		command_buffer.end();
-
-		
-		while (!mSecondaryCommands.empty())
-		{
-			auto &cmd = mSecondaryCommands.front();
-			if (cmd)
-				cmd(command_data);
-			mSecondaryCommands.pop();
-		}
 	}
 
 	void VulkanRendererAPI::SubmitCommand(const FRenderCommand &command)
@@ -123,14 +98,6 @@ namespace BHive
 		mCommands.emplace(command);
 	}
 
-	void VulkanRendererAPI::SubmitSecondaryCommand(const FRenderCommand &command)
-	{
-		if (mDeviceRecreationInProgress.load())
-			return;
-
-		mSecondaryCommands.emplace(command);
-	}
-
 	void VulkanRendererAPI::Init()
 	{
 		CreateCommandPool();
@@ -141,20 +108,9 @@ namespace BHive
 	{
 	}
 
-	vk::raii::CommandBuffer &VulkanRendererAPI::GetCurrentCommandBuffer()
+	void VulkanRendererAPI::AdvanceFrame()
 	{
-		auto &context = static_cast<VulkanGraphicsContext &>(GraphicsContext::Get());
-		auto &swap_chain = context.GetSwapChain();
-		auto current_frame = swap_chain->GetCurrentFrame();
-		return mCommandBuffers[0].at(current_frame);
-	}
-
-	vk::raii::CommandBuffers *VulkanRendererAPI::AllocateCommandBuffers(uint32_t count)
-	{
-		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, count);
-		mCommandBuffers.emplace_back(mDevice, alloc_info);
-
-		return &mCommandBuffers.back();
+		mCurrentFrame = (mCurrentFrame + 1) % VulkanCore::MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void VulkanRendererAPI::CreateCommandPool()
@@ -170,7 +126,8 @@ namespace BHive
 
 	void VulkanRendererAPI::CreateCommandBuffers()
 	{
-		AllocateCommandBuffers(2);
+		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, 2);
+		mCommandBuffers = vk::raii::CommandBuffers(mDevice, alloc_info);
 	}
 
 	void VulkanRendererAPI::ClearColor(float r, float g, float b, float a)
@@ -302,5 +259,6 @@ namespace BHive
 	void VulkanRendererAPI::AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer)
 	{	
 	}
+
 
 } // namespace BHive

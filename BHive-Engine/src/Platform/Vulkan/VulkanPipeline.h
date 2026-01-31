@@ -40,7 +40,7 @@ namespace BHive
 
 		const vk::Pipeline &operator*() const { return mPipeline; }
 
-		static FVulkanPipelineConfigInfo GetDefaultConfigInfo(uint32_t width, uint32_t height);
+		static FVulkanPipelineConfigInfo GetDefaultConfigInfo(const vk::Extent2D& extent);
 
 	private:
 		vk::raii::Device &mDevice;

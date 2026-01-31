@@ -23,6 +23,9 @@ namespace BHive
 		struct FRenderOptions
 		{
 			EDrawMode DrawMode = EDrawMode::Triangles;
+			ECullMode CullMode = ECullMode::Cull_Back;		
+			uint8_t EnableDepthTest = 1;
+			uint8_t EnableDepthWrite = 1;
 		};
 
 	public:

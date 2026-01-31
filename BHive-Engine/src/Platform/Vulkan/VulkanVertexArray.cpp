@@ -134,6 +134,7 @@ namespace BHive
 			case BHive::EShaderDataType::Int4:
 			case BHive::EShaderDataType::Bool:
 			{
+			
 				mAttributes.emplace_back(mVertexAttributeIndex++, binding, utils::GetVulkanFormat(type), (uint32_t)element.Offset);
 				{
 					const auto &a = mAttributes.back();
@@ -149,7 +150,7 @@ namespace BHive
 				{
 					// For matrices we create one attribute per column (or row depending on layout),
 					// offset each attribute by the size of a column (count * sizeof(float)).
-					mAttributes.emplace_back(mVertexAttributeIndex++, binding, utils::GetVulkanFormat(type), (uint32_t)(element.Offset + sizeof(float) * count * i));
+					mAttributes.emplace_back(mVertexAttributeIndex++, binding, utils::GetVulkanFormat(type), (uint32_t)(element.Offset + 16 * i));
 
 					{
 						const auto &a = mAttributes.back();

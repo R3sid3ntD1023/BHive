@@ -30,10 +30,6 @@ namespace BHive
 
 		GLFWwindow *mWindowHandle = nullptr;
 
-		// vk::raii::CommandPool mCommandPool = nullptr;
-
-		vk::raii::CommandBuffers *mCommandBuffers = nullptr;
-
 		Ref<FDescriptorPool> mDescriptorPool;
 
 		static inline std::unordered_map<const vk::DescriptorImageInfo *, VkDescriptorSet> s_ImGuiTextureMap;

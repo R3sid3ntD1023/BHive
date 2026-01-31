@@ -19,6 +19,10 @@ namespace BHive
 
 		Shader::FRenderOptions options{};
 		options.DrawMode = EDrawMode::Lines;
+		options.CullMode = ECullMode::Cull_None;
+		options.EnableDepthTest = 0;
+		options.EnableDepthWrite = 0;
+
 		mLineShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Line.glsl", options);
 		mLineMaterial = CreateRef<Material>(mLineShader);
 	}
@@ -49,6 +53,9 @@ namespace BHive
 		{
 
 			uint32_t size = (uint32_t)((uint8_t *)mVertexDataPtr - (uint8_t *)mVertexDataBuffer);
+			auto uploaded_bytes = size;
+			auto required_bytes = mVertexCount * sizeof(FLineVertex);
+			ASSERT(required_bytes <= uploaded_bytes);
 
 			mVertexBuffer->SetData(mVertexDataBuffer, size);
 

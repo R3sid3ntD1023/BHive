@@ -19,9 +19,9 @@ namespace BHive
 
 		static uint32_t ChooseMinImageCount(vk::SurfaceCapabilitiesKHR capabilities);
 
-		static vk::raii::CommandBuffer BeginSingleTimeCommands();
+		static vk::raii::CommandBuffers BeginSingleTimeCommands();
 
-		static void EndSingleTimeCommands(vk::raii::CommandBuffer &commandBuffer);
+		static void EndSingleTimeCommands(vk::raii::CommandBuffers &commandBuffers);
 
 		static void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, AllocatedVulkanBuffer &buffer);
 

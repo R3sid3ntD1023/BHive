@@ -50,7 +50,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES} ${SOURCE_FIL
 
 set(TARGET_NAME BHive-Engine)
 
-set(BUILD_SHARED_LIB FALSE CACHE BOOL "Build Engine as a shared library" FORCE)
+set(BUILD_SHARED_LIB TRUE CACHE BOOL "Build Engine as a shared library" FORCE)
 
 if(BUILD_SHARED_LIB)
 	add_library(${TARGET_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

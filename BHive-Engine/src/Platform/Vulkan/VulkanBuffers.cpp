@@ -19,7 +19,7 @@ namespace BHive
 		if (!data)
 			return;
 
-		AllocatedVulkanBuffer stagingBuffer;
+		AllocatedVulkanBuffer stagingBuffer{};
 
 		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
 
@@ -40,7 +40,9 @@ namespace BHive
 		if (!data)
 			return;
 
-		AllocatedVulkanBuffer stagingBuffer;
+		ASSERT(size <= mBuffer.Size, "Data size exceeds buffer size!");
+		
+		AllocatedVulkanBuffer stagingBuffer{};
 
 		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
 

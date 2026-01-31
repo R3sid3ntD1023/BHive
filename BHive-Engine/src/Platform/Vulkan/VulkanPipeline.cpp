@@ -2,6 +2,8 @@
 #include "VulkanPipeline.h"
 #include "VulkanRendererAPI.h"
 
+
+
 namespace BHive
 {
 
@@ -22,7 +24,7 @@ namespace BHive
 
 		vk::GraphicsPipelineCreateInfo pipeline_info{};
 		pipeline_info.setStages(config.ShaderCreateInfos)
-			.setPVertexInputState(nullptr)
+			.setPVertexInputState(nullptr) // Using dynamic state for vertex input
 			.setPInputAssemblyState(&config.InputAssembly)
 			.setPViewportState(&config.ViewportState)
 			.setPRasterizationState(&config.Rasterazation)
@@ -49,13 +51,13 @@ namespace BHive
 	{
 	}
 
-	FVulkanPipelineConfigInfo VulkanPipeline::GetDefaultConfigInfo(uint32_t width, uint32_t height)
+	FVulkanPipelineConfigInfo VulkanPipeline::GetDefaultConfigInfo(const vk::Extent2D& extent)
 	{
 		FVulkanPipelineConfigInfo config{};
 
-		config.Viewport.setX(0.0f).setY(0.0f).setWidth((float)width).setHeight((float)height).setMinDepth(0.f).setMaxDepth(1.f);
+		config.Viewport.setX(0.0f).setY(0.0f).setWidth((float)extent.width).setHeight((float)extent.height).setMinDepth(0.f).setMaxDepth(1.f);
 
-		config.Scissor.setOffset({0, 0}).setExtent({width, height});
+		config.Scissor.setOffset({0, 0}).setExtent(extent);
 
 		config.ViewportState.setViewportCount(1).setScissorCount(1);
 

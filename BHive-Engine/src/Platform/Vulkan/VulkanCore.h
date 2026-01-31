@@ -1,9 +1,11 @@
 #pragma once
 
 #include "core/Core.h"
+#include <vulkan/vulkan.h>
 #include <vulkan/vk_platform.h>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
+
 
 struct GLFWwindow;
 
@@ -100,6 +102,7 @@ namespace BHive
 	{
 		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
 		vk::raii::Buffer Buffer = VK_NULL_HANDLE;
+		vk::DeviceSize Size = 0;
 
 		void SetData(const void *data, size_t size, uint32_t offset = 0)
 		{

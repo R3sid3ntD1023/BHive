@@ -11,8 +11,13 @@
 
 namespace BHive
 {
-	const std::vector<const char *> validationLayers = {
+	static const std::vector<const char *> s_validationLayers = {
 		"VK_LAYER_KHRONOS_validation",
+		//"VK_LAYER_NV_optimus",
+		//"VK_LAYER_NV_present",
+		//"VK_LAYER_NV_GPU_Trace_release_public_2025_1_1", 
+		//"VK_LAYER_NV_nomad_release_public_2025_1_1", 
+		//"VK_LAYER_NV_shader_debugger_release_public_2025_1_1"
 	};
 
 	static VKAPI_ATTR vk::Bool32 VKAPI_CALL
@@ -140,7 +145,7 @@ namespace BHive
 
 	void VulkanCore::CreateIntance()
 	{
-		constexpr auto appInfo = vk::ApplicationInfo{"BHive", 1, "No Engine", 1, MINIMUM_VULKAN_API_VERSION};
+		constexpr auto appInfo = vk::ApplicationInfo{"BHive", 1, "BHiveEngine", 1, MINIMUM_VULKAN_API_VERSION};
 
 		uint32_t glfwExtensionCount = 0;
 		const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -148,15 +153,15 @@ namespace BHive
 		auto layerProperties = mVulkanContext.enumerateInstanceLayerProperties();
 
 		std::vector required_extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-		std::vector<const char *> requiredLayers;
+		std::vector<const char *> enabled_layers;
 
 #ifdef ENABLE_VALIDATION_LAYERS
-		requiredLayers.assign(validationLayers.begin(), validationLayers.end());
-		required_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		enabled_layers.assign(s_validationLayers.begin(), s_validationLayers.end());
+		required_extensions.push_back(vk::EXTDebugUtilsExtensionName);
 #endif
 
 		if (std::ranges::any_of(
-				requiredLayers, [layerProperties](const char *layerName)
+				enabled_layers, [layerProperties](const char *layerName)
 				{ return std::ranges::none_of(layerProperties, [layerName](const vk::LayerProperties &prop) { return strcmp(prop.layerName, layerName) == 0; }); }))
 		{
 			LOG_ERROR("Missing required Vulkan validation layers");
@@ -173,7 +178,7 @@ namespace BHive
 			}
 		}
 
-		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, requiredLayers, required_extensions);
+		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions);
 		mVulkanInstance = vk::raii::Instance(mVulkanContext, instanceCreateInfo);
 	}
 
@@ -197,8 +202,10 @@ namespace BHive
 			devices,
 			[&](const auto &device)
 			{
+				auto props = device.getProperties();
+				const char *name = props.deviceName;
 				auto queueFamilies = device.getQueueFamilyProperties();
-				bool isSuitable = device.getProperties().apiVersion >= vk::ApiVersion14;
+				bool isSuitable = props.apiVersion >= vk::ApiVersion14;
 				const auto qfpIter = std::ranges::find_if(queueFamilies, [](const vk::QueueFamilyProperties &qfp) { return (qfp.queueFlags & vk::QueueFlagBits::eGraphics) != (vk::QueueFlags)0; });
 				isSuitable = isSuitable && (qfpIter != queueFamilies.end());
 
@@ -210,7 +217,7 @@ namespace BHive
 					found = (extensionIter != extensions.end());
 					if (!found)
 					{
-						LOG_ERROR("Required device extension not found: {}", extension);
+						LOG_ERROR("Required device extension {} not found for gpu: {}", extension, name);
 						isSuitable = false;
 					}
 				}
@@ -219,6 +226,8 @@ namespace BHive
 				if (isSuitable)
 				{
 					mPhysicalDevice = device;
+					
+					LOG_INFO("Selected GPU: {}", name);
 				}
 
 				return isSuitable;
@@ -375,12 +384,7 @@ namespace BHive
 			queueCreateInfos.push_back(queueCreateInfo);
 		}
 
-		vk::DeviceDiagnosticsConfigFlagsNV aftermath_flags = vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableAutomaticCheckpoints | vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableResourceTracking |
-															 vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderDebugInfo | vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderErrorReporting;
-
-		vk::DeviceDiagnosticsConfigCreateInfoNV aftermath_info(aftermath_flags, &featureChain.get<vk::PhysicalDeviceFeatures2>());
-
-		vk::DeviceCreateInfo device_createInfo({}, queueCreateInfos, {}, requiredDeviceExtensions, nullptr, &aftermath_info);
+		vk::DeviceCreateInfo device_createInfo({}, queueCreateInfos, {}, requiredDeviceExtensions, nullptr, &featureChain.get<vk::PhysicalDeviceFeatures2>());
 		mLogicalDevice = mPhysicalDevice.createDevice(device_createInfo);
 
 		mQueueFamilies.GraphicsQueueIndex = graphics_index;

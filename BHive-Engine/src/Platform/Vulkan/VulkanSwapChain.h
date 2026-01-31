@@ -19,31 +19,23 @@ namespace BHive
 	public:
 		VulkanSwapChain();
 
-		~VulkanSwapChain();
-
 		void Init(vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info);
 
-		uint32_t GetWidth() const { return mExtent.width; }
+		vk::ResultValue<uint32_t> AquireNextImage(uint32_t frame);
 
-		uint32_t GetHeight() const { return mExtent.height; }
+		vk::Result Present(const std::vector<vk::CommandBuffer>& buffers, uint32_t imageIndex, uint32_t frame);
+
+		vk::Extent2D GetExtent() const { return mExtent; }
 
 		const vk::SurfaceFormatKHR &GetFormat() const { return mImageFormat; }
 
 		vk::raii::SwapchainKHR &operator*() { return mSwapChain; }
 
-		vk::Image &GetImage(uint32_t index);
+		vk::Image &GetImage(uint32_t index)  { return mImages[index]; };
 
-		vk::raii::ImageView &GetImageView(uint32_t index);
+		vk::raii::ImageView &GetImageView(uint32_t index)  { return mImageViews[index]; }
 
-		vk::Extent2D GetExtent() const { return mExtent; }
-
-		vk::ResultValue<uint32_t> AquireNextImage();
-
-		vk::Result SubmitCommandBuffers(const std::vector<vk::CommandBuffer> &buffers, uint32_t imageIndex);
-
-		void ResetCommandBuffer(const vk::raii::CommandBuffer &buffer);
-
-		uint32_t GetCurrentFrame() const { return mCurrentFrame; }
+		vk::raii::Fence &GetInFlightFence(uint32_t frame)  { return mInFlightFences[frame]; };
 
 		uint32_t GetMinImageCount() const { return mMinImageCount; }
 
@@ -51,6 +43,7 @@ namespace BHive
 
 	private:
 		vk::raii::Device &mDevice;
+
 		vk::Extent2D mExtent{};
 
 		vk::SurfaceFormatKHR mImageFormat{};
@@ -67,16 +60,7 @@ namespace BHive
 
 		std::vector<vk::raii::Fence> mInFlightFences{};
 
-		uint32_t mCurrentFrame = 0;
-
-		uint32_t mSemaphoreIndex = 0;
-
 		uint32_t mMinImageCount = 0;
 
-		vk::raii::Image mDepthImage = nullptr;
-
-		vk::raii::ImageView mDepthImageView = nullptr;
-
-		vk::raii::DeviceMemory mDepthImageMemory = nullptr;
 	};
 } // namespace BHive

@@ -3,21 +3,17 @@
 
 namespace BHive
 {
+
 	VulkanSwapChain::VulkanSwapChain()
 		: mDevice(VulkanCore::GetLogicalDevice())
 	{
-	}
-	VulkanSwapChain::~VulkanSwapChain()
-	{
-		mImages.clear();
-		mSwapChain = nullptr;
+		
 	}
 
 	void VulkanSwapChain::Init(vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info)
 	{
 		mExtent = VulkanUtils::ChooseSwapExtent(create_info.Capabilities, create_info.Width, create_info.Height);
 		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(create_info.Formats);
-
 		mMinImageCount = VulkanUtils::ChooseMinImageCount(create_info.Capabilities);
 
 		auto present_mode = VulkanUtils::ChooseSwapPresentMode(create_info.PresentModes);
@@ -39,59 +35,36 @@ namespace BHive
 		}
 
 		// create sync objects
-		for (size_t i = 0; i < mImages.size(); i++)
+		for (uint32_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			mPresetCompleteSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
 			mRenderFinishedSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
-		}
-
-		for (size_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
-		{
 			mInFlightFences.emplace_back(mDevice, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
 		}
 	}
 
-	vk::Image &VulkanSwapChain::GetImage(uint32_t index)
+	vk::ResultValue<uint32_t> VulkanSwapChain::AquireNextImage(uint32_t frame)
 	{
-		return mImages[index];
-	}
-
-	vk::raii::ImageView &VulkanSwapChain::GetImageView(uint32_t index)
-	{
-		return mImageViews[index];
-	}
-
-	vk::ResultValue<uint32_t> VulkanSwapChain::AquireNextImage()
-	{
-
-		while (vk::Result::eTimeout == mDevice.waitForFences(*mInFlightFences[mCurrentFrame], VK_TRUE, UINT64_MAX))
+		while (vk::Result::eTimeout == mDevice.waitForFences(*mInFlightFences[frame], VK_TRUE, UINT64_MAX))
 			;
-
-		return mSwapChain.acquireNextImage(UINT64_MAX, *mPresetCompleteSemaphores[mSemaphoreIndex], nullptr);
+		mDevice.resetFences(*mInFlightFences[frame]);
+		return mSwapChain.acquireNextImage(UINT64_MAX, mPresetCompleteSemaphores[frame], nullptr);
 	}
 
-	vk::Result VulkanSwapChain::SubmitCommandBuffers(const std::vector<vk::CommandBuffer> &buffers, uint32_t imageIndex)
+	vk::Result VulkanSwapChain::Present(const std::vector<vk::CommandBuffer> &buffers, uint32_t imageIndex, uint32_t frame)
 	{
 		vk::PipelineStageFlags waitStages(vk::PipelineStageFlagBits::eColorAttachmentOutput);
-		const vk::SubmitInfo submitInfo(*mPresetCompleteSemaphores[mSemaphoreIndex], waitStages, buffers, *mRenderFinishedSemaphores[imageIndex]);
+		const vk::SubmitInfo submitInfo(*mPresetCompleteSemaphores[frame], waitStages, buffers, *mRenderFinishedSemaphores[frame]);
 
 		auto &graphics_queue = VulkanCore::GetQueueFamilies().GraphicsQueue;
-		graphics_queue.submit(submitInfo, *mInFlightFences[mCurrentFrame]);
+		graphics_queue.submit(submitInfo, *mInFlightFences[frame]);
 
-		const vk::PresentInfoKHR presentInfoKHR(*mRenderFinishedSemaphores[imageIndex], *mSwapChain, imageIndex);
-		const VkPresentInfoKHR info = presentInfoKHR;
-		auto result = vkQueuePresentKHR(*graphics_queue, &info);
+		const vk::PresentInfoKHR presentInfoKHR(*mRenderFinishedSemaphores[frame], *mSwapChain, imageIndex);
+		auto result = graphics_queue.presentKHR(presentInfoKHR);
 
-		mSemaphoreIndex = (mSemaphoreIndex + 1) % mPresetCompleteSemaphores.size();
-		mCurrentFrame = (mCurrentFrame + 1) % VulkanCore::MAX_FRAMES_IN_FLIGHT;
 
 		return (vk::Result)result;
 	}
 
-	void VulkanSwapChain::ResetCommandBuffer(const vk::raii::CommandBuffer &buffer)
-	{
-		mDevice.resetFences(*mInFlightFences[mCurrentFrame]);
-		buffer.reset();
-	}
 
 } // namespace BHive

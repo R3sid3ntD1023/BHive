@@ -65,14 +65,6 @@ namespace BHive
 
 		ImGui_ImplGlfw_InitForVulkan(mWindowHandle, true);
 
-		/*vk::CommandPoolCreateInfo pool_info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, queue_familes.GraphicsQueueIndex);
-		mCommandPool = mDevice.createCommandPool(pool_info);*/
-
-		// vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, image_count);
-		// mCommandBuffers = vk::raii::CommandBuffers(mDevice, alloc_info);
-
-		mCommandBuffers = api->AllocateCommandBuffers(image_count);
-
 		auto format = swap_chain->GetFormat().format;
 		auto depth_format = VulkanUtils::FindDepthFormat(physical_device);
 		vk::PipelineRenderingCreateInfo rendering_info(0, format, depth_format, vk::Format::eUndefined);
@@ -119,29 +111,18 @@ namespace BHive
 
 		auto imgui_command = [=](const FVulkanFrameData &data)
 		{
-			auto &cmd = mCommandBuffers->at(data.Frame);
+			auto &cmd = data.CommandBuffer;
 
-			vk::ClearValue clear_color = vk::ClearColorValue({0, 0, 0, 1});
-			vk::RenderingAttachmentInfoKHR color_attachment(
-				data.ImageView, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eLoad, vk::AttachmentStoreOp::eStore,
-				clear_color);
-
-			vk::RenderingInfo render_info({}, {{0, 0}, {displaySize.x, displaySize.y}}, 1, 0, color_attachment);
-			vk::CommandBufferBeginInfo begin_info{};
-
-			cmd.reset();
-			cmd.begin(begin_info);
-
-			cmd.beginRendering(render_info);
+			vk::Viewport viewport(0.0f, 0.0f, (float)displaySize.x, (float)displaySize.y, 0.0f, 1.0f);
+			vk::Rect2D scissor({0, 0}, {(uint32_t)displaySize.x, (uint32_t)displaySize.y});
+		
+			cmd.setViewport(0, viewport);
+			cmd.setScissor(0, scissor);
 
 			ImGui_ImplVulkan_RenderDrawData(drawData, *cmd);
-
-			cmd.endRendering();
-
-			cmd.end();
 		};
 
-		api->SubmitSecondaryCommand(imgui_command);
+		api->SubmitCommand(imgui_command);
 	}
 
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)
