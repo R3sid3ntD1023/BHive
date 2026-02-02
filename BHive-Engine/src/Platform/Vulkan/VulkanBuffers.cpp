@@ -1,6 +1,4 @@
-#include "gfx/RenderCommand.h"
 #include "VulkanBuffers.h"
-#include "VulkanRendererAPI.h"
 #include "VulkanUtils.h"
 
 namespace BHive
@@ -12,9 +10,10 @@ namespace BHive
 	{
 		VulkanUtils::CreateBuffer(count * sizeof(uint32_t), vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mBuffer);
 		SetData(data, count * sizeof(uint32_t));
+
 	}
 
-	void VulkanIndexBuffer::SetData(const void *data, uint64_t size, uint32_t offset)
+	void VulkanIndexBuffer::SetData(const void *data, size_t size, uint32_t offset)
 	{
 		if (!data)
 			return;
@@ -28,20 +27,18 @@ namespace BHive
 		VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
 	}
 
-	VulkanVertexBuffer::VulkanVertexBuffer(const uint64_t size, const void *data)
+	VulkanVertexBuffer::VulkanVertexBuffer(const size_t size, const void *data)
 		: mDevice(VulkanCore::GetLogicalDevice())
 	{
 		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mBuffer);
 		SetData(data, size, 0);
 	}
 
-	void VulkanVertexBuffer::SetData(const void *data, uint64_t size, uint32_t offset)
+	void VulkanVertexBuffer::SetData(const void *data, size_t size, uint32_t offset)
 	{
 		if (!data)
 			return;
 
-		ASSERT(size <= mBuffer.Size, "Data size exceeds buffer size!");
-		
 		AllocatedVulkanBuffer stagingBuffer{};
 
 		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);

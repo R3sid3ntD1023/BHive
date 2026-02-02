@@ -12,7 +12,7 @@ namespace BHive
 
 		virtual uint32_t GetCount() const override { return mCount; }
 
-		virtual void SetData(const void *data, uint64_t size, uint32_t offset = 0) override;
+		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 
 		operator const vk::raii::Buffer &() const { return mBuffer.Buffer; }
 
@@ -31,9 +31,9 @@ namespace BHive
 	class BHIVE_API VulkanVertexBuffer : public VertexBuffer
 	{
 	public:
-		VulkanVertexBuffer(const uint64_t size, const void *data);
+		VulkanVertexBuffer(const size_t size, const void *data);
 
-		virtual void SetData(const void *data, uint64_t size, uint32_t offset = 0) override;
+		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 
 		virtual void SetLayout(const BufferLayout &layout) override;
 
