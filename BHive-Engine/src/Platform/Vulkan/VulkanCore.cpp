@@ -1,5 +1,6 @@
 
 #include "VulkanCore.h"
+#include "core/debug/CrashHandler.h"
 #include <GLFW/glfw3.h>
 
 #ifdef _DEBUG
@@ -12,12 +13,7 @@
 namespace BHive
 {
 	static const std::vector<const char *> s_validationLayers = {
-		"VK_LAYER_KHRONOS_validation",
-		//"VK_LAYER_NV_optimus",
-		//"VK_LAYER_NV_present",
-		//"VK_LAYER_NV_GPU_Trace_release_public_2025_1_1", 
-		//"VK_LAYER_NV_nomad_release_public_2025_1_1", 
-		//"VK_LAYER_NV_shader_debugger_release_public_2025_1_1"
+		"VK_LAYER_KHRONOS_validation"
 	};
 
 	static VKAPI_ATTR vk::Bool32 VKAPI_CALL
@@ -86,6 +82,24 @@ namespace BHive
 		CreateIntance();
 		CreateDebugMessenger();
 		PickPhysicalDevice();
+
+		auto log_info = [=](std::ofstream &log)
+		{
+			if (mPhysicalDevice != VK_NULL_HANDLE)
+			{
+				auto props = mPhysicalDevice.getProperties();
+				log << "GPU: " << props.deviceName << "\n";
+				log << "Driver Version: " << props.driverVersion << "\n";
+				log << "Vulkan API Version: " << VK_VERSION_MAJOR(props.apiVersion) << "." << VK_VERSION_MINOR(props.apiVersion) << "." << VK_VERSION_PATCH(props.apiVersion) << "\n";
+			}
+			else
+			{
+				log << "No Vulkan physical device information avialable\n"; 
+			}
+		};
+			
+
+		CrashHandler::Get().SetLogInfo(log_info);
 	}
 
 	void VulkanCore::Shutdown()
@@ -345,7 +359,7 @@ namespace BHive
 			return;
 		}
 
-		auto graphics_index = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics);
+		auto graphics_index = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics | vk::QueueFlagBits::eCompute | vk::QueueFlagBits::eTransfer);
 		if (graphics_index == ~0)
 		{
 			LOG_ERROR("Failed to find a suitable queue family!");

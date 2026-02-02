@@ -7,6 +7,7 @@ namespace BHive
 {
 	struct VulkanUtils
 	{
+
 		static uint32_t FindQueueFamilies(vk::PhysicalDevice device);
 
 		static vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR> &availableFormats);
@@ -52,8 +53,6 @@ namespace BHive
 		static void CopyBufferToImage(AllocatedVulkanBuffer &buffer, AllocatedVulkanTexture &image, uint32_t width, uint32_t height);
 
 		static void SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size);
-
-		static vk::ShaderModule CreateShaderModule(const vk::ShaderModuleCreateInfo &info);
 
 		static vk::Format FindDepthFormat(vk::PhysicalDevice physical_device);
 

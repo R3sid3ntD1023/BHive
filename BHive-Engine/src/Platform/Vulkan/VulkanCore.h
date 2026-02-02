@@ -98,6 +98,42 @@ namespace BHive
 		vk::raii::Sampler Sampler = VK_NULL_HANDLE;
 	};
 
+	struct VulkanMemoryWriter
+	{
+		VulkanMemoryWriter(vk::raii::Device& device, vk::raii::DeviceMemory& memory)
+			: mDevice(device),
+			  mMemory(memory)
+		{
+			mAtomSize = VulkanCore::GetPhysicalDevice().getProperties().limits.nonCoherentAtomSize;
+		}
+
+		void SetData(const void* src, size_t size, size_t offset, vk::DeviceSize bufferSize) 
+		{
+			if (!src || size == 0)
+				return;
+
+			size_t aligned_size = AlignToAtom(size);
+
+			ASSERT(offset + aligned_size <= bufferSize);
+		
+			void *mapped = mMemory.mapMemory(offset, aligned_size);
+			std::memcpy(mapped, src, size);
+
+			vk::MappedMemoryRange range(mMemory, offset, aligned_size);
+			mDevice.flushMappedMemoryRanges(range);
+
+			mMemory.unmapMemory();
+		}
+
+	private:
+		size_t AlignToAtom(size_t size) { return (size + mAtomSize - 1) & ~(mAtomSize - 1);}
+
+	private:
+		vk::raii::Device &mDevice;
+		vk::raii::DeviceMemory &mMemory;
+		size_t mAtomSize = 0;
+	};
+
 	struct AllocatedVulkanBuffer
 	{
 		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
@@ -109,9 +145,8 @@ namespace BHive
 			if (!data)
 				return;
 
-			auto *mapped = Memory.mapMemory(offset, size);
-			memcpy(mapped, data, size);
-			Memory.unmapMemory();
+			VulkanMemoryWriter writer(VulkanCore::GetLogicalDevice(), Memory);
+			writer.SetData(data, size, offset, Size);
 		}
 	};
 } // namespace BHive

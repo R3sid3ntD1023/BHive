@@ -18,7 +18,7 @@ namespace BHive
 	{
 		ASSERT(!availableFormats.empty());
 
-		auto formatItr = std::ranges::find_if(availableFormats, [](auto format) { return format == vk::Format::eB8G8R8A8Unorm && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear; });
+		auto formatItr = std::ranges::find_if(availableFormats, [](auto format) { return format == vk::Format::eR8G8B8A8Unorm && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear; });
 		return formatItr != availableFormats.end() ? *formatItr : availableFormats[0];
 	}
 
@@ -95,15 +95,26 @@ namespace BHive
 
 	void VulkanUtils::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, AllocatedVulkanBuffer &buffer)
 	{
+		
 		auto &device = VulkanCore::GetLogicalDevice();
+		auto &physical_device = VulkanCore::GetPhysicalDevice();
+
+		vk::DeviceSize atom = physical_device.getProperties().limits.nonCoherentAtomSize;
+		vk::DeviceSize requested = size;
+		vk::DeviceSize minAlloc = (requested + atom - 1) & ~(atom - 1);
+
 		vk::BufferCreateInfo bufferCreateInfo({}, size, usage, vk::SharingMode::eExclusive);
 		buffer.Buffer = device.createBuffer(bufferCreateInfo);
 
+	
 		vk::MemoryRequirements memRequirements = buffer.Buffer.getMemoryRequirements();
-		vk::MemoryAllocateInfo allocInfo(memRequirements.size, FindMemoryType(memRequirements.memoryTypeBits, properties));
+		vk::DeviceSize alloc_size = std::max(memRequirements.size, minAlloc);
+
+		vk::MemoryAllocateInfo allocInfo(alloc_size, FindMemoryType(memRequirements.memoryTypeBits, properties));
+
 		buffer.Memory = device.allocateMemory(allocInfo);
 		buffer.Buffer.bindMemory(*buffer.Memory, 0);
-		buffer.Size = size;
+		buffer.Size = alloc_size;
 	}
 
 	void VulkanUtils::CreateImage(
@@ -240,15 +251,6 @@ namespace BHive
 		void *stagingData = memory.mapMemory(0, size);
 		memcpy(stagingData, data, size);
 		memory.unmapMemory();
-	}
-
-	vk::ShaderModule VulkanUtils::CreateShaderModule(const vk::ShaderModuleCreateInfo &info)
-	{
-		auto &device = VulkanCore::GetLogicalDevice();
-		VkShaderModule module = nullptr;
-		VkShaderModuleCreateInfo create_info = info;
-		ASSERT(vkCreateShaderModule(*device, &create_info, nullptr, &module) == VK_SUCCESS, "Failed to create shader module!");
-		return module;
 	}
 
 	vk::Format VulkanUtils::FindDepthFormat(vk::PhysicalDevice physical_device)
