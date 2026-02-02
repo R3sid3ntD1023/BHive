@@ -7,6 +7,7 @@
 #include "gui/GUICore.h"
 #include "physics/PhysicsContext.h"
 #include "subsystem/SubSystem.h"
+#include "debug/CrashHandler.h"
 
 namespace BHive
 {
@@ -45,9 +46,22 @@ namespace BHive
 
 		BH_PROFILE_END_SESSION();
 
-		BH_PROFILE_BEGIN_SESSION("Runtime", "Profile-Runtime.json");
-		app->Run();
-		BH_PROFILE_END_SESSION();
+		auto &crash_handler = CrashHandler::Get();
+		crash_handler.Init(app->GetSpecification().Title, "Crash_Report.log");
+
+		try
+		{
+			BH_PROFILE_BEGIN_SESSION("Runtime", "Profile-Runtime.json");
+			app->Run();
+			BH_PROFILE_END_SESSION();
+		}
+		catch (const std::exception &e)
+		{
+			crash_handler.HandleException(e);
+
+			return 1;
+		}
+		
 
 		BH_PROFILE_BEGIN_SESSION("Shutdown", "Profile-Shutdown.json");
 		delete app;
