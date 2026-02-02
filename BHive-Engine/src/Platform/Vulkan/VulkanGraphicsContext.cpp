@@ -44,36 +44,44 @@ namespace BHive
 
 	void VulkanGraphicsContext::SwapBuffers()
 	{
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto &command_buffer = api->GetCurrentCommandBuffer();
-		auto current_frame = api->GetCurrentFrame();
-		auto [result, imageIndex] = mSwapChain->AquireNextImage(current_frame);
-
-		mImageIndex = imageIndex;
-
-		if (result == vk::Result::eErrorOutOfDateKHR)
+		try
 		{
-			RecreateSwapChain();
-			return;
+			auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+			auto &command_buffer = api->GetCurrentCommandBuffer();
+			auto current_frame = api->GetCurrentFrame();
+			auto [result, imageIndex] = mSwapChain->AquireNextImage(current_frame);
+			auto &image = mSwapChain->GetImage(imageIndex);
+			auto &image_view = mSwapChain->GetImageView(imageIndex);
+			auto extent = mSwapChain->GetExtent();
+
+			if (result == vk::Result::eErrorOutOfDateKHR)
+			{
+				RecreateSwapChain();
+				return;
+			}
+
+			ASSERT(result == vk::Result::eSuccess || result == vk::Result::eSuboptimalKHR, "Failed to acquire swap chain image!");
+
+			api->RenderFrame(imageIndex, image, image_view, extent);
+
+			result = mSwapChain->Present(command_buffer, imageIndex, current_frame);
+
+			if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || mFramebufferResized)
+			{
+				mFramebufferResized = false;
+				RecreateSwapChain();
+			}
+			else if (result != vk::Result::eSuccess)
+			{
+				ASSERT(false, "Failed to present swap chain image!")
+			}
+
+			api->AdvanceFrame();
 		}
-
-		ASSERT(result == vk::Result::eSuccess || result == vk::Result::eSuboptimalKHR, "Failed to acquire swap chain image!");
-
-		api->RenderFrame();
-
-		result = mSwapChain->Present({command_buffer}, imageIndex, current_frame);
-
-		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || mFramebufferResized)
+		catch (const vk::SystemError& e)
 		{
-			mFramebufferResized = false;
-			RecreateSwapChain();
+			LOG_ERROR("Vulkan System Error: {}", e.what());
 		}
-		else if (result != vk::Result::eSuccess)
-		{
-			ASSERT(false, "Failed to present swap chain image!")
-		}
-
-		api->AdvanceFrame();
 	}
 
 	void VulkanGraphicsContext::CreateSwapChain()
@@ -92,6 +100,8 @@ namespace BHive
 		create_info.Capabilities = surfaceCapabilities;
 		create_info.Formats = formats;
 		create_info.PresentModes = presentModes;
+		create_info.OldSwapChain = mSwapChain ? ***mSwapChain : VK_NULL_HANDLE;
+
 		mSwapChain = CreateRef<VulkanSwapChain>();
 		mSwapChain->Init(mSurface, create_info);
 	}
@@ -102,12 +112,14 @@ namespace BHive
 		glfwGetFramebufferSize(mWindowHandle, &width, &height);
 		while (width == 0 || height == 0)
 		{
-			glfwGetFramebufferSize(mWindowHandle, &width, &height);
 			glfwWaitEvents();
+			glfwGetFramebufferSize(mWindowHandle, &width, &height);
+			
 		}
 
 		auto &device = VulkanCore::GetLogicalDevice();
 		device.waitIdle();
+
 		CreateSwapChain();
 	}
 } // namespace BHive

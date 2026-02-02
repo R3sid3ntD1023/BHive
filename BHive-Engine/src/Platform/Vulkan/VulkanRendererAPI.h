@@ -74,7 +74,7 @@ namespace BHive
 
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) override;
 
-		void RenderFrame();
+		void RenderFrame(uint32_t imageIndex, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D& extent);
 
 		void SubmitCommand(const FRenderCommand &command);
 
@@ -87,7 +87,6 @@ namespace BHive
 		uint32_t GetCurrentFrame() const { return mCurrentFrame; }
 
 		void AdvanceFrame();
-
 
 	private:
 		void CreateCommandPool();
@@ -108,5 +107,6 @@ namespace BHive
 		std::atomic<bool> mDeviceRecreationInProgress{false};
 
 		uint32_t mCurrentFrame = 0;
+
 	};
 } // namespace BHive

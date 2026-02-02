@@ -1,16 +1,7 @@
-#include "core/Application.h"
-#include "gfx/GraphicsContext.h"
-#include "Platform/Vulkan/VulkanGraphicsContext.h"
 #include "Platform/Vulkan/VulkanPipeline.h"
 #include "Platform/Vulkan/VulkanShader.h"
-#include "Platform/Vulkan/VulkanSwapChain.h"
 #include "Platform/Vulkan/VulkanVertexArray.h"
 #include "VulkanRendererAPI.h"
-#include "VulkanRendererAPI.h"
-#include "VulkanRendererAPI.h"
-#include "VulkanUtils.h"
-#include <glad/glad.h>
-#include <glfw/glfw3.h>
 
 namespace BHive
 {
@@ -40,15 +31,19 @@ namespace BHive
 	{
 	}
 
-	void VulkanRendererAPI::RenderFrame()
+	void VulkanRendererAPI::Init()
 	{
-		auto &context = static_cast<VulkanGraphicsContext &>(GraphicsContext::Get());
-		auto &swap_chain = context.GetSwapChain();
-		auto image_index = context.GetImageIndex();
+		CreateCommandPool();
+		CreateCommandBuffers();
+	}
 
-		auto &image = swap_chain->GetImage(image_index);
-		auto &image_view = swap_chain->GetImageView(image_index);
-		auto extent = swap_chain->GetExtent();
+	void VulkanRendererAPI::Shutdown()
+	{
+
+	}
+
+	void VulkanRendererAPI::RenderFrame(uint32_t imageIndex, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D &extent)
+	{
 		auto &command_buffer = mCommandBuffers[mCurrentFrame];
 
 		command_buffer.reset();
@@ -56,10 +51,9 @@ namespace BHive
 		vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
 		command_buffer.begin(begin_info);
 		
-
 		VulkanUtils::TransitionImageLayout(
-			command_buffer, image, image_index, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
-			vk::PipelineStageFlagBits2::eTopOfPipe, vk::PipelineStageFlagBits2::eColorAttachmentOutput);
+			command_buffer, image, imageIndex, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eColorAttachmentOutput);
 
 		vk::ClearValue clearColor = mClearColor;
 		vk::RenderingAttachmentInfo attachmentInfo(
@@ -81,7 +75,7 @@ namespace BHive
 		command_buffer.endRendering();
 
 		VulkanUtils::TransitionImageLayout(
-			command_buffer, image, image_index, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eColorAttachmentWrite, {},
+			command_buffer, image, imageIndex, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eColorAttachmentWrite, {},
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eBottomOfPipe);
 
 		command_buffer.end();
@@ -98,16 +92,7 @@ namespace BHive
 		mCommands.emplace(command);
 	}
 
-	void VulkanRendererAPI::Init()
-	{
-		CreateCommandPool();
-		CreateCommandBuffers();
-	}
-
-	void VulkanRendererAPI::Shutdown()
-	{
-	}
-
+	
 	void VulkanRendererAPI::AdvanceFrame()
 	{
 		mCurrentFrame = (mCurrentFrame + 1) % VulkanCore::MAX_FRAMES_IN_FLIGHT;
@@ -260,5 +245,6 @@ namespace BHive
 	{	
 	}
 
+	
 
 } // namespace BHive
