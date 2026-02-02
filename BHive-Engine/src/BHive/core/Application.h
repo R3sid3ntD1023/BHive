@@ -68,7 +68,7 @@ namespace BHive
 	public:
 		const FApplicationSpecification &GetSpecification() const { return mSpecification; }
 
-		Window &GetWindow() { return *mWindow; }
+		Window &GetWindow() { return *mMainWindow; }
 
 		ImGuiLayer *GetImGuiLayer() { return mImGuiLayer; }
 
@@ -84,7 +84,7 @@ namespace BHive
 	private:
 		bool mIsRunning = true;
 
-		Scope<Window> mWindow;
+		Window* mMainWindow = nullptr;
 
 		ImGuiLayer *mImGuiLayer = nullptr;
 

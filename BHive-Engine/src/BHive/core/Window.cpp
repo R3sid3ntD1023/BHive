@@ -1,5 +1,5 @@
 #include "Window.h"
-
+#include "gfx/RenderCommand.h"
 #include <glfw/glfw3.h>
 
 namespace BHive
@@ -23,16 +23,24 @@ namespace BHive
 		GLFWmonitor *primary_monitor = glfwGetPrimaryMonitor();
 		const GLFWvidmode *video_mode = glfwGetVideoMode(primary_monitor);
 
+		GLFWwindow *shared_context = nullptr;
+		if (RenderCommand::GetRendererAPI() == RendererAPI::Opengl)
+		{
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #if _DEBUG
-		// glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+			glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif // _DEBUG
+			shared_context = glfwGetCurrentContext();
+		}
+		else
+		{
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+			shared_context = nullptr;
+		}
 
-		// glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		// glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-		// glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		// glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-		mWindow = glfwCreateWindow(properties.Size.x, properties.Size.y, properties.Title.c_str(), nullptr, glfwGetCurrentContext());
+		mWindow = glfwCreateWindow(properties.Size.x, properties.Size.y, properties.Title.c_str(), nullptr, shared_context);
 		sWindowCount++;
 
 		mContext = GraphicsContext::Create(mWindow);
@@ -112,74 +120,58 @@ namespace BHive
 		glfwPollEvents();
 	}
 
-	void Window::RegisterCallbacks()
+	void Window::OnWindowCloseCallback(GLFWwindow *window)
 	{
-		glfwSetWindowCloseCallback(
-			mWindow,
-			[](GLFWwindow *window)
-			{
-				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
-				input->Input.OnWindowClose();
-			});
+		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		input->Input.OnWindowClose();
+	}
 
-		glfwSetWindowSizeCallback(
-			mWindow,
-			[](GLFWwindow *window, int x, int y)
-			{
-				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
-				input->Input.OnWindowResize(x, y);
-				input->mSize = {x, y};
-			});
+	void Window::OnWindowResizeCallback(GLFWwindow *window, int width, int height)
+	{
+		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		input->Input.OnWindowResize(width, height);
+		input->mSize = {width, height};
+	}
 
-		glfwSetKeyCallback(
-			mWindow,
-			[](GLFWwindow *window, int key, int scancode, int action, int mods)
-			{
-				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
-				input->Input.OnKeyEvent(key, scancode, action, mods);
-			});
+	void Window::OnKeyEventCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
+	{
+		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		input->Input.OnKeyEvent(key, scancode, action, mods);
+	}
 
-		glfwSetMouseButtonCallback(
-			mWindow,
-			[](GLFWwindow *window, int button, int action, int mods)
-			{
-				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
-				input->Input.OnMouseButton(button, action, mods);
-			});
+	void Window::OnMouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
+	{
+		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		input->Input.OnMouseButton(button, action, mods);
+	}
 
-		glfwSetScrollCallback(
-			mWindow,
-			[](GLFWwindow *window, double x, double y)
-			{
-				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
-				input->Input.OnMouseScroll(x, y);
-			});
+	void Window::OnMouseScrollCallback(GLFWwindow *window, double x, double y)
+	{
+		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		input->Input.OnMouseScroll(x, y);
+	}
 
-		glfwSetCursorPosCallback(
-			mWindow,
-			[](GLFWwindow *window, double x, double y)
-			{
-				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
-				input->Input.OnMouseMoved(x, y);
-			});
+	void Window::OnMouseMovedCallback(GLFWwindow *window, double x, double y)
+	{
+		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		input->Input.OnMouseMoved(x, y);
+	}
 
-		glfwSetCharCallback(
-			mWindow,
-			[](GLFWwindow *window, unsigned codepoint)
-			{
-				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
-				input->Input.OnKeyTypedEvent(codepoint);
-			});
+	void Window::OnCharCallback(GLFWwindow *window, unsigned codepoint)
+	{
+		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		input->Input.OnKeyTypedEvent(codepoint);
+	}
 
-		glfwSetFramebufferSizeCallback(
-			mWindow,
-			[](GLFWwindow *window, int width, int height)
-			{
-				auto input = (FWindowData *)glfwGetWindowUserPointer(window);
-				input->Context->OnFramebufferResized(width, height);
-			});
+	void Window::OnFramebufferSizeCallback(GLFWwindow *window, int width, int height)
+	{
+		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		input->Context->OnFramebufferResized(width, height);
+	}
 
-		glfwSetJoystickCallback(WindowInput::OnJoyStickConnected);
+	void Window::OnJoyStickCallback(int joystick, int status)
+	{
+		WindowInput::OnJoyStickConnected(joystick, status);
 
 		for (int i = 0; i < GLFW_JOYSTICK_LAST; i++)
 		{
@@ -192,4 +184,63 @@ namespace BHive
 		}
 	}
 
+	GLFWwindow* Window::GetFocusedWindow()
+	{
+		if (RenderCommand::GetRendererAPI() == RendererAPI::Opengl)
+			return glfwGetCurrentContext();
+
+		return sFocusedWindow;
+	}
+
+	void Window::OnWindowFocusCallback(GLFWwindow* window, int focused)
+	{
+		if (focused)
+		{
+			Window::sFocusedWindow = window;
+		}
+		else
+		{
+			Window::sFocusedWindow = nullptr;
+		}
+	}
+
+
+	void Window::RegisterCallbacks()
+	{
+		glfwSetWindowCloseCallback(mWindow, OnWindowCloseCallback);
+
+		glfwSetWindowSizeCallback(mWindow, OnWindowResizeCallback);
+
+		glfwSetKeyCallback(mWindow, OnKeyEventCallback);
+
+		glfwSetMouseButtonCallback(mWindow,OnMouseButtonCallback);
+
+		glfwSetScrollCallback(mWindow, OnMouseMovedCallback);
+
+		glfwSetCursorPosCallback(mWindow, OnMouseMovedCallback);
+
+		glfwSetCharCallback(mWindow, OnCharCallback);
+
+		glfwSetFramebufferSizeCallback(mWindow, OnFramebufferSizeCallback);
+
+		glfwSetWindowFocusCallback(mWindow, OnWindowFocusCallback);
+
+		glfwSetJoystickCallback(OnJoyStickCallback);
+	}
+	
+	GLFWwindow *Window::sFocusedWindow = nullptr;
+
+	WindowManager &WindowManager::Get()
+	{
+		static WindowManager instance;
+		return instance;
+	}
+
+	Window* WindowManager::Create(const FWindowProperties &properties)
+	{
+		auto window = CreateScope<Window>(properties);
+		auto raw = window.get();
+		mWindows.push_back(std::move(window));
+		return raw;
+	}
 } // namespace BHive

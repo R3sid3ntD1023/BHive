@@ -30,11 +30,11 @@ namespace BHive
 		props.VSync = specification.VSync;
 		props.mCenterWindow = specification.CenterWindow;
 		props.Maximize = specification.Maximize;
-		mWindow = CreateScope<Window>(props);
+		mMainWindow = WindowManager::Get().Create(props);
 
 		FOnWindowInputEvent window_callback;
 		window_callback.bind(this, &Application::OnEvent);
-		mWindow->SetEventCallback(window_callback);
+		mMainWindow->SetEventCallback(window_callback);
 
 		if (specification.Flags & EApplicationFlags::EnableRendering)
 		{
@@ -44,7 +44,7 @@ namespace BHive
 
 		if (specification.Flags & EApplicationFlags::EnableImGui)
 		{
-			mImGuiLayer = ImGuiLayer::Create(mWindow->GetNative());
+			mImGuiLayer = ImGuiLayer::Create(mMainWindow->GetNative());
 			PushLayer(mImGuiLayer);
 		}
 
@@ -152,7 +152,11 @@ namespace BHive
 			mImGuiLayer->EndFrame();
 		}
 
-		mWindow->Update();
+		auto &window_manager = WindowManager::Get();
+		for (auto &window : window_manager.GetWindows())
+		{
+			window->Update();
+		}
 
 		Thread::Update();
 	}
