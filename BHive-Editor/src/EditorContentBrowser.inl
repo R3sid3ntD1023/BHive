@@ -5,7 +5,7 @@
 #include "asset/FactoryRegistry.h"
 #include "asset/FAssetContextMenu.h"
 #include "EditorContentBrowser.h"
-#include "gfx/textures/Texture2D.h"
+#include "gfx/Texture.h"
 #include "project/Project.h"
 #include "core/subsystem/subsystem.h"
 #include "ThumbnailCache.h"
