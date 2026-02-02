@@ -308,11 +308,11 @@ namespace BHive
 		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, *mDescriptorSetLayout->GetLayout());
 		mPipelineLayout = mDevice.createPipelineLayout(pipeline_layout_create_info);
 
-		vk::PipelineRenderingCreateInfo pipeline_renderingCreateInfo({}, {swap_chain->GetFormat().format});
+		vk::PipelineRenderingCreateInfo rendering_info(0, swap_chain->GetFormat().format);
 
-		FVulkanPipelineConfigInfo config = VulkanPipeline::GetDefaultConfigInfo(swap_chain->GetExtent());
+		FVulkanPipelineConfigInfo config = VulkanPipeline::GetDefaultConfigInfo();
 		config.Layout = mPipelineLayout;
-		config.Next = &pipeline_renderingCreateInfo;
+		config.Next = &rendering_info;
 		config.ShaderCreateInfos = create_infos;
 		config.InputAssembly.setTopology(utils::GetTopology(mRenderOptions.DrawMode));
 		config.Rasterazation.setCullMode(utils::GetCullMode(mRenderOptions.CullMode));
