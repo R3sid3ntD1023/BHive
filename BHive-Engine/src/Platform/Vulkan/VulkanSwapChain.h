@@ -11,6 +11,7 @@ namespace BHive
 		vk::SurfaceCapabilitiesKHR Capabilities;
 		std::vector<vk::SurfaceFormatKHR> Formats;
 		std::vector<vk::PresentModeKHR> PresentModes;
+		vk::SwapchainKHR OldSwapChain = nullptr;
 	};
 
 	class VulkanSwapChain
@@ -23,7 +24,7 @@ namespace BHive
 
 		vk::ResultValue<uint32_t> AquireNextImage(uint32_t frame);
 
-		vk::Result Present(const std::vector<vk::CommandBuffer>& buffers, uint32_t imageIndex, uint32_t frame);
+		vk::Result Present(const vk::raii::CommandBuffer& buffer, uint32_t imageIndex, uint32_t frame);
 
 		vk::Extent2D GetExtent() const { return mExtent; }
 
@@ -62,5 +63,6 @@ namespace BHive
 
 		uint32_t mMinImageCount = 0;
 
+		uint32_t mSemaphoreIndex = 0;
 	};
 } // namespace BHive

@@ -19,7 +19,7 @@ namespace BHive
 		auto present_mode = VulkanUtils::ChooseSwapPresentMode(create_info.PresentModes);
 		vk::SwapchainCreateInfoKHR swap_chain_create_info(
 			{}, *surface, mMinImageCount, mImageFormat.format, mImageFormat.colorSpace, mExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, {},
-			create_info.Capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, present_mode, true, nullptr);
+			create_info.Capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, present_mode, true, create_info.OldSwapChain, nullptr);
 
 		mSwapChain = mDevice.createSwapchainKHR(swap_chain_create_info);
 		mImages = mSwapChain.getImages();
@@ -35,10 +35,14 @@ namespace BHive
 		}
 
 		// create sync objects
-		for (uint32_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < mImages.size(); i++)
 		{
 			mPresetCompleteSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
 			mRenderFinishedSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
+		}
+
+		for (uint32_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
+		{
 			mInFlightFences.emplace_back(mDevice, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
 		}
 	}
@@ -48,20 +52,21 @@ namespace BHive
 		while (vk::Result::eTimeout == mDevice.waitForFences(*mInFlightFences[frame], VK_TRUE, UINT64_MAX))
 			;
 		mDevice.resetFences(*mInFlightFences[frame]);
-		return mSwapChain.acquireNextImage(UINT64_MAX, mPresetCompleteSemaphores[frame], nullptr);
+		return mSwapChain.acquireNextImage(UINT64_MAX, mPresetCompleteSemaphores[mSemaphoreIndex], nullptr);
 	}
 
-	vk::Result VulkanSwapChain::Present(const std::vector<vk::CommandBuffer> &buffers, uint32_t imageIndex, uint32_t frame)
+	vk::Result VulkanSwapChain::Present(const vk::raii::CommandBuffer &buffers, uint32_t imageIndex, uint32_t frame)
 	{
 		vk::PipelineStageFlags waitStages(vk::PipelineStageFlagBits::eColorAttachmentOutput);
-		const vk::SubmitInfo submitInfo(*mPresetCompleteSemaphores[frame], waitStages, buffers, *mRenderFinishedSemaphores[frame]);
+		const vk::SubmitInfo submitInfo(*mPresetCompleteSemaphores[mSemaphoreIndex], waitStages, *buffers, *mRenderFinishedSemaphores[imageIndex]);
 
 		auto &graphics_queue = VulkanCore::GetQueueFamilies().GraphicsQueue;
 		graphics_queue.submit(submitInfo, *mInFlightFences[frame]);
 
-		const vk::PresentInfoKHR presentInfoKHR(*mRenderFinishedSemaphores[frame], *mSwapChain, imageIndex);
-		auto result = graphics_queue.presentKHR(presentInfoKHR);
+		const vk::PresentInfoKHR presentInfoKHR(*mRenderFinishedSemaphores[imageIndex], *mSwapChain, imageIndex);
+		auto result = vkQueuePresentKHR(*graphics_queue, &*presentInfoKHR);
 
+		mSemaphoreIndex = (mSemaphoreIndex + 1) % mPresetCompleteSemaphores.size();
 
 		return (vk::Result)result;
 	}
