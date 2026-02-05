@@ -46,7 +46,11 @@ namespace BHive
 
 		BH_PROFILE_END_SESSION();
 
-		auto &crash_handler = CrashHandler::Get();
+		BH_PROFILE_BEGIN_SESSION("Runtime", "Profile-Runtime.json");
+		app->Run();
+		BH_PROFILE_END_SESSION();
+
+		/*auto &crash_handler = CrashHandler::Get();
 		crash_handler.Init(app->GetSpecification().Title, "Crash_Report.log");
 
 		try
@@ -60,9 +64,8 @@ namespace BHive
 			crash_handler.HandleException(e);
 
 			return 1;
-		}
+		}*/
 		
-
 		BH_PROFILE_BEGIN_SESSION("Shutdown", "Profile-Shutdown.json");
 		delete app;
 		BH_PROFILE_END_SESSION();
