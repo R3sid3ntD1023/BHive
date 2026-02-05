@@ -16,7 +16,7 @@ namespace BHive
 	public:
 		VulkanGraphicsContext(void *windowHandle);
 
-		~VulkanGraphicsContext() override;
+		~VulkanGraphicsContext() ;
 
 		virtual void Init();
 
@@ -41,5 +41,7 @@ namespace BHive
 		Ref<VulkanSwapChain> mSwapChain;
 
 		bool mFramebufferResized = false;
+
+		uint32_t mCurrentFrame = 0;
 	};
 } // namespace BHive

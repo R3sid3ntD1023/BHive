@@ -186,7 +186,9 @@ namespace BHive
 
 		if (mDescriptorSets.size())
 		{
-			auto cmd = [=](const FVulkanFrameData &data) { data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, *mDescriptorSets[data.Frame], nullptr); };
+			auto cmd = [=](const FVulkanFrameData &data) { 
+				vk::DescriptorSet set = mDescriptorSets[data.Frame];
+				data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, set, nullptr); };
 
 			RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
 		}
@@ -205,13 +207,8 @@ namespace BHive
 		if (!texture)
 			return;
 
-		auto cmd = [=](const FVulkanFrameData &data)
-		{
-			auto image_info = reinterpret_cast<const vk::DescriptorImageInfo *>(texture->GetNativeHandle());
-			FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteImage(binding, *image_info).Overwrite(mDescriptorSets);
-		};
-
-		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
+		auto image_info = reinterpret_cast<const vk::DescriptorImageInfo *>(texture->GetNativeHandle());
+		FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteImage(binding, *image_info).Overwrite(mDescriptorSets);
 	}
 
 	void VulkanShader::CreateDescriptorResources()
@@ -220,7 +217,7 @@ namespace BHive
 
 		auto num_samplers = (uint32_t)mReflectionData.Samplers.size();
 		auto num_uniform_buffers = (uint32_t)mReflectionData.UniformBuffers.size();
-		auto max_sets = (num_samplers + num_uniform_buffers) * 2;
+		auto max_sets = (num_samplers + num_uniform_buffers) * 3;
 
 		for (auto &[name, data] : mReflectionData.UniformBuffers)
 		{
@@ -248,12 +245,12 @@ namespace BHive
 
 		if (num_uniform_buffers)
 		{
-			pool_builder.AddPoolSize(vk::DescriptorType::eUniformBuffer, num_uniform_buffers * VulkanCore::MAX_FRAMES_IN_FLIGHT);
+			pool_builder.AddPoolSize(vk::DescriptorType::eUniformBuffer, num_uniform_buffers * 3);
 		}
 
 		if (num_samplers)
 		{
-			pool_builder.AddPoolSize(vk::DescriptorType::eCombinedImageSampler, num_samplers * VulkanCore::MAX_FRAMES_IN_FLIGHT);
+			pool_builder.AddPoolSize(vk::DescriptorType::eCombinedImageSampler, num_samplers * 3);
 		}
 
 		mDescriptorPool = pool_builder.Build();
@@ -269,17 +266,12 @@ namespace BHive
 
 	void VulkanShader::UpdateDescriptorResources()
 	{
-		auto cmd = [=](const FVulkanFrameData &data)
+		for (const auto &binding : mUniformBufferBindings)
 		{
-			for (const auto &binding : mUniformBufferBindings)
-			{
-				auto ubo = std::dynamic_pointer_cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(binding));
-				auto buffer = reinterpret_cast<const vk::DescriptorBufferInfo *>(ubo->GetNativeHandle());
-				FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteBuffer(binding, *buffer).Overwrite(mDescriptorSets);
-			}
-		};
-
-		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
+			auto ubo = std::dynamic_pointer_cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(binding));
+			auto buffer = reinterpret_cast<const vk::DescriptorBufferInfo *>(ubo->GetNativeHandle());
+			FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteBuffer(binding, *buffer).Overwrite(mDescriptorSets);
+		}
 	}
 
 	void VulkanShader::Reflect()

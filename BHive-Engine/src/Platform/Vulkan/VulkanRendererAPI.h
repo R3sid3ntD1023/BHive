@@ -74,24 +74,13 @@ namespace BHive
 
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) override;
 
-		void RenderFrame(uint32_t imageIndex, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D& extent);
+		vk::raii::CommandBuffer& RenderFrame(uint32_t frame, uint32_t imageIndex, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D& extent);
 
 		void SubmitCommand(const FRenderCommand &command);
-
-		vk::raii::CommandBuffer &GetCurrentCommandBuffer() { return mCommandBuffers[mCurrentFrame]; }
 
 		vk::raii::CommandPool &GetCommandPool() { return mCommandPool; }
 
 		virtual EAPI GetAPI() const override { return EAPI::Vulkan; }
-
-		uint32_t GetCurrentFrame() const { return mCurrentFrame; }
-
-		void AdvanceFrame();
-
-	private:
-		void CreateCommandPool();
-
-		void CreateCommandBuffers();
 
 	private:
 		vk::raii::Device &mDevice;
@@ -105,8 +94,5 @@ namespace BHive
 		std::queue<FRenderCommand> mCommands;
 
 		std::atomic<bool> mDeviceRecreationInProgress{false};
-
-		uint32_t mCurrentFrame = 0;
-
 	};
 } // namespace BHive

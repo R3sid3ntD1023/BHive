@@ -9,7 +9,6 @@
 #include "VulkanSwapChain.h"
 #include "gfx/RenderCommand.h"
 #include "Platform/Vulkan/VulkanRendererAPI.h"
-#define MAX_FRAMES_IN_FLIGHT 2
 
 namespace BHive
 {
@@ -44,44 +43,36 @@ namespace BHive
 
 	void VulkanGraphicsContext::SwapBuffers()
 	{
-		try
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto [result, imageIndex] = mSwapChain->AquireNextImage(mCurrentFrame);
+		auto &image = mSwapChain->GetImage(imageIndex);
+		auto &image_view = mSwapChain->GetImageView(imageIndex);
+		auto extent = mSwapChain->GetExtent();
+
+		if (result == vk::Result::eErrorOutOfDateKHR)
 		{
-			auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-			auto &command_buffer = api->GetCurrentCommandBuffer();
-			auto current_frame = api->GetCurrentFrame();
-			auto [result, imageIndex] = mSwapChain->AquireNextImage(current_frame);
-			auto &image = mSwapChain->GetImage(imageIndex);
-			auto &image_view = mSwapChain->GetImageView(imageIndex);
-			auto extent = mSwapChain->GetExtent();
-
-			if (result == vk::Result::eErrorOutOfDateKHR)
-			{
-				RecreateSwapChain();
-				return;
-			}
-
-			ASSERT(result == vk::Result::eSuccess || result == vk::Result::eSuboptimalKHR, "Failed to acquire swap chain image!");
-
-			api->RenderFrame(imageIndex, image, image_view, extent);
-
-			result = mSwapChain->Present(command_buffer, imageIndex, current_frame);
-
-			if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || mFramebufferResized)
-			{
-				mFramebufferResized = false;
-				RecreateSwapChain();
-			}
-			else if (result != vk::Result::eSuccess)
-			{
-				ASSERT(false, "Failed to present swap chain image!")
-			}
-
-			api->AdvanceFrame();
+			RecreateSwapChain();
+			return;
 		}
-		catch (const vk::SystemError& e)
+
+		ASSERT(result == vk::Result::eSuccess || result == vk::Result::eSuboptimalKHR, "Failed to acquire swap chain image!");
+
+
+		auto& cmd = api->RenderFrame(mCurrentFrame, imageIndex, image, image_view, extent);
+
+		result = mSwapChain->Present(cmd, imageIndex, mCurrentFrame);
+
+		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || mFramebufferResized)
 		{
-			LOG_ERROR("Vulkan System Error: {}", e.what());
+			mFramebufferResized = false;
+			RecreateSwapChain();
 		}
+		else if (result != vk::Result::eSuccess)
+		{
+			ASSERT(false, "Failed to present swap chain image!")
+		}
+
+		mCurrentFrame = (mCurrentFrame + 1) % VulkanCore::MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void VulkanGraphicsContext::CreateSwapChain()
@@ -121,5 +112,6 @@ namespace BHive
 		device.waitIdle();
 
 		CreateSwapChain();
+		LOG_TRACE("Recreated swap chain!");
 	}
 } // namespace BHive

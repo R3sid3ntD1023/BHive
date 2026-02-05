@@ -84,29 +84,30 @@ namespace BHive
 		return *this;
 	}
 
-	bool FDescriptorWriter::Build(vk::raii::DescriptorSets &set)
+	bool FDescriptorWriter::Build(vk::raii::DescriptorSets &sets)
 	{
-		bool success = mPool->AllocateDescriptors(mLayout->GetLayout(), set);
+		bool success = mPool->AllocateDescriptors(mLayout->GetLayout(), sets);
 		if (!success)
 		{
 			return false;
 		}
 
-		Overwrite(set);
+		Overwrite(sets);
+
 		return true;
 	}
 
 	void FDescriptorWriter::Overwrite(vk::raii::DescriptorSets &sets)
 	{
-		for (auto &set : sets)
+		for (auto& set : sets)
 		{
 			for (auto &write : mWrites)
 			{
 				write.dstSet = set;
 			}
-
-			mLayout->mDevice.updateDescriptorSets(mWrites, {});
 		}
+
+		//mLayout->mDevice.updateDescriptorSets(mWrites, {});
 	}
 
 } // namespace BHive

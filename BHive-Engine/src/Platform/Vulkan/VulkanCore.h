@@ -6,7 +6,7 @@
 #include <vulkan/vk_platform.h>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
-
+#include "Helpers.h"
 
 struct GLFWwindow;
 
@@ -17,10 +17,12 @@ namespace BHive
 		vk::raii::Queue PresentQueue = VK_NULL_HANDLE;
 		vk::raii::Queue GraphicsQueue = VK_NULL_HANDLE;
 		vk::raii::Queue ComputeQueue = VK_NULL_HANDLE;
+		vk::raii::Queue TransferQueue = VK_NULL_HANDLE;
 
 		int32_t PresentQueueIndex = -1;
 		int32_t GraphicsQueueIndex = -1;
 		int32_t ComputeQueueIndex = -1;
+		int32_t TransferQueueIndex = -1;
 	};
 
 	class BHIVE_API VulkanCore
@@ -89,55 +91,5 @@ namespace BHive
 		static inline std::vector<DeviceCallback> mOnDeviceCreatedCallbacks;
 	};
 
-	struct AllocatedVulkanTexture
-	{
-		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
-		vk::raii::Image Image = VK_NULL_HANDLE;
-		vk::raii::ImageView ImageView = VK_NULL_HANDLE;
-		vk::raii::Sampler Sampler = VK_NULL_HANDLE;
-	};
-
-	struct VulkanMemoryWriter
-	{
-		VulkanMemoryWriter(vk::raii::Device& device, vk::raii::DeviceMemory& memory)
-			: mDevice(device),
-			  mMemory(memory)
-		{
-			mAtomSize = VulkanCore::GetPhysicalDevice().getProperties().limits.nonCoherentAtomSize;
-		}
-
-		void SetData(const void* src, size_t size, size_t offset, vk::DeviceSize bufferSize) 
-		{
-			if (!src || size == 0)
-				return;
-
-			void *mapped = mMemory.mapMemory(offset, size);
-			std::memcpy(mapped, src, size);
-			mMemory.unmapMemory();
-		}
-
-	private:
-		size_t AlignToAtom(size_t size) { return (size + mAtomSize - 1) & ~(mAtomSize - 1);}
-
-	private:
-		vk::raii::Device &mDevice;
-		vk::raii::DeviceMemory &mMemory;
-		size_t mAtomSize = 0;
-	};
-
-	struct AllocatedVulkanBuffer
-	{
-		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
-		vk::raii::Buffer Buffer = VK_NULL_HANDLE;
-		vk::DeviceSize Size = 0;
-
-		void SetData(const void *data, size_t size, uint32_t offset = 0)
-		{
-			if (!data)
-				return;
-
-			VulkanMemoryWriter writer(VulkanCore::GetLogicalDevice(), Memory);
-			writer.SetData(data, size, offset, Size);
-		}
-	};
+	
 } // namespace BHive

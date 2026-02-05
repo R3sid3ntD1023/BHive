@@ -59,6 +59,7 @@ namespace BHive
 				vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexAttributeDivisorFeaturesEXT>
 				featureChain;
 			featureChain.assign<vk::PhysicalDeviceFeatures2>({}); // default initialize all features to false
+			
 			featureChain.get<vk::PhysicalDeviceFeatures2>().setFeatures(features);
 			featureChain.get<vk::PhysicalDeviceVulkan11Features>().setShaderDrawParameters(true);
 			featureChain.get<vk::PhysicalDeviceVulkan12Features>()
@@ -172,6 +173,7 @@ namespace BHive
 #ifdef ENABLE_VALIDATION_LAYERS
 		enabled_layers.assign(s_validationLayers.begin(), s_validationLayers.end());
 		required_extensions.push_back(vk::EXTDebugUtilsExtensionName);
+		required_extensions.push_back(vk::EXTValidationFeaturesExtensionName);
 #endif
 
 		if (std::ranges::any_of(
@@ -192,7 +194,13 @@ namespace BHive
 			}
 		}
 
-		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions);
+		vk::ValidationFeatureEnableEXT enabled_features[] = {
+			vk::ValidationFeatureEnableEXT::eBestPractices, 
+			vk::ValidationFeatureEnableEXT::eSynchronizationValidation, 
+			vk::ValidationFeatureEnableEXT::eDebugPrintf};
+
+		vk::ValidationFeaturesEXT enabled(enabled_features);
+		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions, &enabled);
 		mVulkanInstance = vk::raii::Instance(mVulkanContext, instanceCreateInfo);
 	}
 
@@ -201,8 +209,9 @@ namespace BHive
 #ifdef ENABLE_VALIDATION_LAYERS
 
 		auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError |
-						 vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
-		auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+						 vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo ;
+		auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
+			| vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding;
 
 		vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, &debugCallback);
 		mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mVulkanInstance, debugCreateInfo);
@@ -282,7 +291,7 @@ namespace BHive
 			return;
 		}
 
-		auto present_family_index = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics, surface);
+		auto present_family_index = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics , surface);
 		if (present_family_index == ~0)
 		{
 			LOG_ERROR("Failed to find a suitable queue family for presenting!");
@@ -344,7 +353,7 @@ namespace BHive
 		else
 		{
 			mQueueFamilies.PresentQueueIndex = present_family_index;
-			mQueueFamilies.PresentQueue = mLogicalDevice.getQueue(mQueueFamilies.PresentQueueIndex, 0);
+			mQueueFamilies.PresentQueue = mLogicalDevice.getQueue(present_family_index, 0);
 		}
 	}
 
@@ -359,7 +368,7 @@ namespace BHive
 			return;
 		}
 
-		auto graphics_index = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics | vk::QueueFlagBits::eCompute | vk::QueueFlagBits::eTransfer);
+		auto graphics_index = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics );
 		if (graphics_index == ~0)
 		{
 			LOG_ERROR("Failed to find a suitable queue family!");
@@ -372,7 +381,7 @@ namespace BHive
 		{
 			if (!mPhysicalDevice.getSurfaceSupportKHR(graphics_index, surface))
 			{
-				auto found = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics, surface);
+				auto found = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics , surface);
 				if (found == ~0)
 				{
 					LOG_ERROR("Failed to find a suitable queue family for presenting!");
@@ -402,12 +411,12 @@ namespace BHive
 		mLogicalDevice = mPhysicalDevice.createDevice(device_createInfo);
 
 		mQueueFamilies.GraphicsQueueIndex = graphics_index;
-		mQueueFamilies.GraphicsQueue = mLogicalDevice.getQueue(mQueueFamilies.GraphicsQueueIndex, 0);
+		mQueueFamilies.GraphicsQueue = mLogicalDevice.getQueue(graphics_index, 0);
 
 		if (families.size() > 1)
 		{
 			mQueueFamilies.PresentQueueIndex = present_index;
-			mQueueFamilies.PresentQueue = mLogicalDevice.getQueue(mQueueFamilies.PresentQueueIndex, 0);
+			mQueueFamilies.PresentQueue = mLogicalDevice.getQueue(present_index, 0);
 		}
 		else
 		{

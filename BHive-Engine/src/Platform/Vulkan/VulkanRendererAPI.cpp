@@ -33,8 +33,16 @@ namespace BHive
 
 	void VulkanRendererAPI::Init()
 	{
-		CreateCommandPool();
-		CreateCommandBuffers();
+		auto graphics_queue_index = VulkanCore::GetQueueFamilies().GraphicsQueueIndex;
+
+		vk::CommandPoolCreateInfo pool_info;
+		pool_info.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+		pool_info.queueFamilyIndex = graphics_queue_index;
+
+		mCommandPool = mDevice.createCommandPool(pool_info);
+
+		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, 2);
+		mCommandBuffers = vk::raii::CommandBuffers(mDevice, alloc_info);
 	}
 
 	void VulkanRendererAPI::Shutdown()
@@ -42,9 +50,9 @@ namespace BHive
 
 	}
 
-	void VulkanRendererAPI::RenderFrame(uint32_t imageIndex, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D &extent)
+	vk::raii::CommandBuffer& VulkanRendererAPI::RenderFrame(uint32_t frame, uint32_t imageIndex, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D &extent)
 	{
-		auto &command_buffer = mCommandBuffers[mCurrentFrame];
+		auto &command_buffer = mCommandBuffers[frame];
 
 		command_buffer.reset();
 
@@ -62,7 +70,7 @@ namespace BHive
 		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo);
 		command_buffer.beginRendering(renderingInfo);
 
-		FVulkanFrameData command_data{command_buffer, image, image_view, mCurrentFrame};
+		FVulkanFrameData command_data{command_buffer, image, image_view, frame};
 
 		while (!mCommands.empty())
 		{
@@ -79,6 +87,8 @@ namespace BHive
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eBottomOfPipe);
 
 		command_buffer.end();
+
+		return command_buffer;
 	}
 
 	void VulkanRendererAPI::SubmitCommand(const FRenderCommand &command)
@@ -90,29 +100,6 @@ namespace BHive
 		}
 
 		mCommands.emplace(command);
-	}
-
-	
-	void VulkanRendererAPI::AdvanceFrame()
-	{
-		mCurrentFrame = (mCurrentFrame + 1) % VulkanCore::MAX_FRAMES_IN_FLIGHT;
-	}
-
-	void VulkanRendererAPI::CreateCommandPool()
-	{
-		auto graphics_queue_index = VulkanCore::GetQueueFamilies().GraphicsQueueIndex;
-
-		vk::CommandPoolCreateInfo pool_info;
-		pool_info.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
-		pool_info.queueFamilyIndex = graphics_queue_index;
-
-		mCommandPool = mDevice.createCommandPool(pool_info);
-	}
-
-	void VulkanRendererAPI::CreateCommandBuffers()
-	{
-		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, 2);
-		mCommandBuffers = vk::raii::CommandBuffers(mDevice, alloc_info);
 	}
 
 	void VulkanRendererAPI::ClearColor(float r, float g, float b, float a)
