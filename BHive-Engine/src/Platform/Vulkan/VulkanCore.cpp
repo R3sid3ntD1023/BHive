@@ -94,7 +94,7 @@ namespace BHive
 			}
 			else
 			{
-				log << "No Vulkan physical device information avialable\n"; 
+				log << "No Vulkan physical device information available\n"; 
 			}
 		};
 			
