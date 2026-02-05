@@ -70,24 +70,23 @@ namespace BHive
 		return minImageCount;
 	}
 
-	vk::raii::CommandBuffers VulkanUtils::BeginSingleTimeCommands()
+	vk::raii::CommandBuffer VulkanUtils::BeginSingleTimeCommands()
 	{
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 		auto &cmdPool = api->GetCommandPool();
 		auto &device = VulkanCore::GetLogicalDevice();
 
 		vk::CommandBufferAllocateInfo allocInfo(cmdPool, vk::CommandBufferLevel::ePrimary, 1);
-		vk::raii::CommandBuffers commandBuffers = vk::raii::CommandBuffers(device, allocInfo);
-		commandBuffers[0].begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
-		return commandBuffers;
+		vk::raii::CommandBuffer cmdbuffer = std::move(device.allocateCommandBuffers(allocInfo).front());
+		cmdbuffer.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
+		return cmdbuffer;
 	}
 
-	void VulkanUtils::EndSingleTimeCommands(vk::raii::CommandBuffers &commandBuffers)
+	void VulkanUtils::EndSingleTimeCommands(vk::raii::CommandBuffer &commandBuffer)
 	{
-		commandBuffers[0].end();
+		commandBuffer.end();
 
-		vk::SubmitInfo submitInfo({}, {}, *commandBuffers[0]);
-
+		vk::SubmitInfo submitInfo({}, {}, *commandBuffer);
 		auto &graphics_queue = VulkanCore::GetQueueFamilies().GraphicsQueue;
 		graphics_queue.submit(submitInfo, nullptr);
 		graphics_queue.waitIdle();
@@ -104,15 +103,17 @@ namespace BHive
 		vk::DeviceSize minAlloc = (requested + atom - 1) & ~(atom - 1);
 
 		vk::BufferCreateInfo bufferCreateInfo({}, size, usage, vk::SharingMode::eExclusive);
-		buffer.Buffer = device.createBuffer(bufferCreateInfo);
+		buffer.Buffer = vk::raii::Buffer(device, bufferCreateInfo);
 
 	
 		vk::MemoryRequirements memRequirements = buffer.Buffer.getMemoryRequirements();
 		vk::DeviceSize alloc_size = std::max(memRequirements.size, minAlloc);
 
+		LOG_TRACE("Create Buffer: AllocSize = {}", alloc_size);
+
 		vk::MemoryAllocateInfo allocInfo(alloc_size, FindMemoryType(memRequirements.memoryTypeBits, properties));
 
-		buffer.Memory = device.allocateMemory(allocInfo);
+		buffer.Memory = vk::raii::DeviceMemory(device, allocInfo);
 		buffer.Buffer.bindMemory(*buffer.Memory, 0);
 		buffer.Size = alloc_size;
 	}
@@ -151,14 +152,14 @@ namespace BHive
 		return vk::DescriptorImageInfo(texture.Sampler, texture.ImageView, layout);
 	}
 
-	void VulkanUtils::CopyBuffer(vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size)
+	void VulkanUtils::CopyBuffer(const vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size)
 	{
 		auto cmd = BeginSingleTimeCommands();
-		cmd[0].copyBuffer(*srcBuffer, *dstBuffer, vk::BufferCopy(0, 0, size));
+		cmd.copyBuffer(srcBuffer, dstBuffer, vk::BufferCopy(0, 0, size));
 		EndSingleTimeCommands(cmd);
 	}
 
-	void VulkanUtils::CopyBuffer(AllocatedVulkanBuffer &srcBuffer, AllocatedVulkanBuffer &dstBuffer, vk::DeviceSize size)
+	void VulkanUtils::CopyBuffer(const AllocatedVulkanBuffer &srcBuffer, AllocatedVulkanBuffer &dstBuffer, vk::DeviceSize size)
 	{
 		CopyBuffer(srcBuffer.Buffer, dstBuffer.Buffer, size);
 	}
@@ -166,24 +167,25 @@ namespace BHive
 	void VulkanUtils::TransitionImageLayout(const vk::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
 	{
 		auto cmd = BeginSingleTimeCommands();
-		vk::ImageMemoryBarrier barrier({}, {}, oldLayout, newLayout, {}, {}, image, {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
 
-		vk::PipelineStageFlags sourceStage;
-		vk::PipelineStageFlags destinationStage;
+		vk::PipelineStageFlags src_stage;
+		vk::PipelineStageFlags dst_stage;
+		vk::AccessFlags src_access_mask;
+		vk::AccessFlags dst_access_mask;
 
 		if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eTransferDstOptimal)
 		{
-			barrier.srcAccessMask = {};
-			barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
-			sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
-			destinationStage = vk::PipelineStageFlagBits::eTransfer;
+			src_access_mask = vk::AccessFlagBits::eNone;
+			dst_access_mask = vk::AccessFlagBits::eTransferWrite;
+			src_stage = vk::PipelineStageFlagBits::eTopOfPipe;
+			dst_stage = vk::PipelineStageFlagBits::eTransfer;
 		}
 		else if (oldLayout == vk::ImageLayout::eTransferDstOptimal && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
 		{
-			barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-			barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
-			sourceStage = vk::PipelineStageFlagBits::eTransfer;
-			destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+			src_access_mask = vk::AccessFlagBits::eTransferWrite;
+			dst_access_mask = vk::AccessFlagBits::eShaderRead;
+			src_stage = vk::PipelineStageFlagBits::eTransfer;
+			dst_stage = vk::PipelineStageFlagBits::eFragmentShader;
 		}
 		else
 		{
@@ -191,7 +193,9 @@ namespace BHive
 			ASSERT(false);
 		}
 
-		cmd[0].pipelineBarrier(sourceStage, destinationStage, {}, {}, nullptr, barrier);
+		vk::ImageSubresourceRange range(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 );
+		vk::ImageMemoryBarrier barrier(src_access_mask, dst_access_mask, oldLayout, newLayout, {}, {}, image, range);
+		cmd.pipelineBarrier(src_stage, dst_stage, {}, {}, nullptr, barrier);
 		EndSingleTimeCommands(cmd);
 	}
 
@@ -199,22 +203,20 @@ namespace BHive
 		vk::raii::CommandBuffer &cmd, vk::Image &image, uint32_t imageIndex, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask)
 	{
-		vk::ImageMemoryBarrier2 barrier{};
-		barrier.srcStageMask = srcStageMask;
-		barrier.srcAccessMask = srcAccessMask;
-		barrier.dstStageMask = dstStageMask;
-		barrier.dstAccessMask = dstAccessMask;
-		barrier.oldLayout = oldLayout;
-		barrier.newLayout = newLayout;
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = image;
-		barrier.subresourceRange = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
+		vk::ImageSubresourceRange range{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
+		vk::ImageMemoryBarrier2 barrier(
+			srcStageMask,
+			srcAccessMask, 
+			dstStageMask, 
+			dstAccessMask, 
+			oldLayout, 
+			newLayout, 
+			VK_QUEUE_FAMILY_IGNORED,
+			VK_QUEUE_FAMILY_IGNORED, 
+			image, 
+			range);
 
-		vk::DependencyInfo depInfo{};
-		depInfo.dependencyFlags = {};
-		depInfo.imageMemoryBarrierCount = 1;
-		depInfo.pImageMemoryBarriers = &barrier;
+		vk::DependencyInfo depInfo({}, {}, {}, barrier);
 		cmd.pipelineBarrier2(depInfo);
 	}
 
@@ -233,15 +235,15 @@ namespace BHive
 		ASSERT(false, "Failed to find suitable memory type!")
 	}
 
-	void VulkanUtils::CopyBufferToImage(vk::raii::Buffer &buffer, vk::raii::Image &image, uint32_t width, uint32_t height)
+	void VulkanUtils::CopyBufferToImage(const vk::raii::Buffer &buffer, vk::raii::Image &image, uint32_t width, uint32_t height)
 	{
 		auto cmd = BeginSingleTimeCommands();
 		vk::BufferImageCopy region(0, 0, 0, {vk::ImageAspectFlagBits::eColor, 0, 0, 1}, {0, 0, 0}, {width, height, 1});
-		cmd[0].copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, region);
+		cmd.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, region);
 		EndSingleTimeCommands(cmd);
 	}
 
-	void VulkanUtils::CopyBufferToImage(AllocatedVulkanBuffer &buffer, AllocatedVulkanTexture &image, uint32_t width, uint32_t height)
+	void VulkanUtils::CopyBufferToImage(const AllocatedVulkanBuffer &buffer, AllocatedVulkanTexture &image, uint32_t width, uint32_t height)
 	{
 		CopyBufferToImage(buffer.Buffer, image.Image, width, height);
 	}

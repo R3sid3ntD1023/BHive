@@ -20,9 +20,9 @@ namespace BHive
 
 		static uint32_t ChooseMinImageCount(vk::SurfaceCapabilitiesKHR capabilities);
 
-		static vk::raii::CommandBuffers BeginSingleTimeCommands();
+		static vk::raii::CommandBuffer BeginSingleTimeCommands();
 
-		static void EndSingleTimeCommands(vk::raii::CommandBuffers &commandBuffers);
+		static void EndSingleTimeCommands(vk::raii::CommandBuffer &commandBuffer);
 
 		static void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, AllocatedVulkanBuffer &buffer);
 
@@ -36,9 +36,9 @@ namespace BHive
 
 		static vk::DescriptorImageInfo CreateDescriptorImageInfo(const AllocatedVulkanTexture &texture, vk::ImageLayout layout);
 
-		static void CopyBuffer(vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size);
+		static void CopyBuffer(const vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size);
 
-		static void CopyBuffer(AllocatedVulkanBuffer &srcBuffer, AllocatedVulkanBuffer &dstBuffer, vk::DeviceSize size);
+		static void CopyBuffer(const AllocatedVulkanBuffer &srcBuffer, AllocatedVulkanBuffer &dstBuffer, vk::DeviceSize size);
 
 		static void TransitionImageLayout(const vk::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
 
@@ -48,9 +48,9 @@ namespace BHive
 
 		static uint32_t FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
 
-		static void CopyBufferToImage(vk::raii::Buffer &buffer, vk::raii::Image &image, uint32_t width, uint32_t height);
+		static void CopyBufferToImage(const vk::raii::Buffer &buffer, vk::raii::Image &image, uint32_t width, uint32_t height);
 
-		static void CopyBufferToImage(AllocatedVulkanBuffer &buffer, AllocatedVulkanTexture &image, uint32_t width, uint32_t height);
+		static void CopyBufferToImage(const AllocatedVulkanBuffer &buffer, AllocatedVulkanTexture &image, uint32_t width, uint32_t height);
 
 		static void SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size);
 
