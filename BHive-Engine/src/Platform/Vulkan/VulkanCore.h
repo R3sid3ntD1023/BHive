@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
+#define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_platform.h>
 #include <vulkan/vulkan.hpp>
@@ -68,8 +69,6 @@ namespace BHive
 
 		static void PickPhysicalDevice();
 
-		static void CreateLogicalDevice();
-
 	private:
 		static inline vk::raii::Context mVulkanContext;
 
@@ -112,16 +111,8 @@ namespace BHive
 			if (!src || size == 0)
 				return;
 
-			size_t aligned_size = AlignToAtom(size);
-
-			ASSERT(offset + aligned_size <= bufferSize);
-		
-			void *mapped = mMemory.mapMemory(offset, aligned_size);
+			void *mapped = mMemory.mapMemory(offset, size);
 			std::memcpy(mapped, src, size);
-
-			vk::MappedMemoryRange range(mMemory, offset, aligned_size);
-			mDevice.flushMappedMemoryRanges(range);
-
 			mMemory.unmapMemory();
 		}
 
