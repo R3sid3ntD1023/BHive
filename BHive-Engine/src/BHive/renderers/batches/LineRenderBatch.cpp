@@ -7,6 +7,12 @@
 
 namespace BHive
 {
+	LineRenderBatch::~LineRenderBatch()
+	{
+		mVertexDataPtr = nullptr;
+		delete[] mVertexDataBuffer;
+	}
+
 	void LineRenderBatch::Init()
 	{
 		mVertexDataBuffer = new FLineVertex[sMaxVertexCount];
@@ -27,6 +33,8 @@ namespace BHive
 		mLineMaterial = CreateRef<Material>(mLineShader);
 	}
 
+
+
 	void LineRenderBatch::End()
 	{
 		Flush();
@@ -34,7 +42,7 @@ namespace BHive
 
 	void LineRenderBatch::NextBatch()
 	{
-		if (mVertexCount >= sMaxVertexCount)
+		if (mVertexCount + 2 >= sMaxVertexCount)
 		{
 			End();
 			StartBatch();
@@ -49,29 +57,37 @@ namespace BHive
 
 	void LineRenderBatch::Flush()
 	{
-		if (mVertexCount > 0)
-		{
+		if (mVertexCount == 0)
+			return;
 
-			uint32_t size = (uint32_t)((uint8_t *)mVertexDataPtr - (uint8_t *)mVertexDataBuffer);
-			auto uploaded_bytes = size;
-			auto required_bytes = mVertexCount * sizeof(FLineVertex);
-			ASSERT(required_bytes <= uploaded_bytes);
+		size_t size = (size_t)((uint8_t *)mVertexDataPtr - (uint8_t *)mVertexDataBuffer);
+		ASSERT(size <= sMaxVertexCount * sizeof(FLineVertex))
 
-			mVertexBuffer->SetData(mVertexDataBuffer, size);
+		mVertexBuffer->SetData(mVertexDataBuffer, size);
 
-			mLineMaterial->Submit();
+		mLineMaterial->Submit();
 
-			RenderCommand::SetLineWidth(2.0f);
+		RenderCommand::SetLineWidth(2.0f);
 
-			RenderCommand::DrawArrays(Lines, *mVertexArray, mVertexCount);
+		RenderCommand::DrawArrays(Lines, *mVertexArray, mVertexCount);
 
-			Renderer::GetStats().DrawCalls++;
-		}
+		Renderer::GetStats().DrawCalls++;
 	}
 
-	LineRenderBatch::~LineRenderBatch()
+
+
+	FLineVertex *LineRenderBatch::operator->()
 	{
-		mVertexDataPtr = nullptr;
-		delete[] mVertexDataBuffer;
+		return mVertexDataPtr;
+	}
+
+	LineRenderBatch &LineRenderBatch::operator++(int)
+	{
+		ASSERT(mVertexCount < sMaxVertexCount);
+		ASSERT(mVertexDataPtr < mVertexDataBuffer + sMaxVertexCount);
+
+		mVertexDataPtr++;
+		mVertexCount++;
+		return *this;
 	}
 } // namespace BHive

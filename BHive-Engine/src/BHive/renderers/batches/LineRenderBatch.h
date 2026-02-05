@@ -29,14 +29,9 @@ namespace BHive
 
 		void Flush() override;
 
-		FLineVertex *operator->() { return mVertexDataPtr; }
+		FLineVertex *operator->();
 
-		LineRenderBatch &operator++(int)
-		{
-			mVertexDataPtr++;
-			mVertexCount++;
-			return *this;
-		}
+		LineRenderBatch &operator++(int);
 
 		~LineRenderBatch();
 
