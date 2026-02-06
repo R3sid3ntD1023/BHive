@@ -14,7 +14,9 @@ namespace BHive
 
 	struct AllocatedVulkanBuffer
 	{
-		AllocatedVulkanBuffer();
+		AllocatedVulkanBuffer() = default;
+
+		AllocatedVulkanBuffer(AllocatedVulkanBuffer &&other) noexcept;
 
 		~AllocatedVulkanBuffer();
 
@@ -24,8 +26,6 @@ namespace BHive
 		void SetData(const void *data, size_t size, uint32_t offset = 0);
 
 	private:
-		
-		vk::raii::Device & mDevice;
 		vk::DeviceSize Size = 0;
 		void *MappedMemory = nullptr;
 

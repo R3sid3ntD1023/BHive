@@ -72,6 +72,8 @@ namespace BHive
 			ASSERT(false, "Failed to present swap chain image!")
 		}
 
+		api->GetFrameResources(mCurrentFrame).StagingBuffers.clear();
+
 		mCurrentFrame = (mCurrentFrame + 1) % VulkanCore::MAX_FRAMES_IN_FLIGHT;
 	}
 

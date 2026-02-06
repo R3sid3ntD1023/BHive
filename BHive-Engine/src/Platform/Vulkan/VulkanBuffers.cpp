@@ -1,5 +1,7 @@
 #include "VulkanBuffers.h"
 #include "VulkanUtils.h"
+#include "gfx/RenderCommand.h"
+#include "VulkanRendererAPI.h"
 
 namespace BHive
 {
@@ -30,7 +32,9 @@ namespace BHive
 	VulkanVertexBuffer::VulkanVertexBuffer(const size_t size, const void *data)
 		: mDevice(VulkanCore::GetLogicalDevice())
 	{
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mBuffer);
+		for (uint32_t i = 0; i < 2; i++)
+			VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mBuffer[i]);
+
 		SetData(data, size, 0);
 	}
 
@@ -39,17 +43,40 @@ namespace BHive
 		if (!data)
 			return;
 
-		AllocatedVulkanBuffer stagingBuffer{};
+		auto ownedData = CreateRef<std::vector<std::byte>>();
+		ownedData->resize(size);
+		std::memcpy(ownedData->data(), data, size);
 
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto cmd = [=](const FVulkanFrameData& frame)
+			{
+				AllocatedVulkanBuffer stagingBuffer{};
 
-		stagingBuffer.SetData(data, size, offset);
+				VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
 
-		VulkanUtils::CopyBuffer(stagingBuffer, mBuffer, size);
+				stagingBuffer.SetData(ownedData->data(), size, offset);
+
+				auto& dst_buffer = mBuffer[frame.Frame].Buffer;
+				vk::BufferCopy copy_region(0, offset, size);
+				frame.CommandBuffer.copyBuffer(stagingBuffer.Buffer, dst_buffer, copy_region);
+
+				api->GetFrameResources(frame.Frame).StagingBuffers.emplace_back(std::move(stagingBuffer));
+
+				vk::BufferMemoryBarrier2 barrier(
+				vk::PipelineStageFlagBits2::eCopy, vk::AccessFlagBits2::eTransferWrite, vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead,
+				VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, dst_buffer, 0, VK_WHOLE_SIZE);
+
+				vk::DependencyInfo dependency_info({}, {}, barrier);
+
+				frame.CommandBuffer.pipelineBarrier2(dependency_info);
+			};
+		
+		api->SubmitCommand(cmd, ECommandType_PreCommand);
 	}
 
 	void VulkanVertexBuffer::SetLayout(const BufferLayout &layout)
 	{
 		mLayout = layout;
 	}
+
 } // namespace BHive

@@ -39,14 +39,16 @@ namespace BHive
 
 		virtual const BufferLayout &GetLayout() const override { return mLayout; }
 
-		operator const vk::Buffer &() const { return mBuffer.Buffer; }
+		const vk::Buffer & operator[](int frame) const { return mBuffer[frame].Buffer; }
+
+		const vk::Buffer & GetBuffer(uint32_t frame) const { return mBuffer[frame].Buffer; }
 
 		virtual uintptr_t GetNativeHandle() const override { return 0; }
 
 	private:
 		vk::raii::Device &mDevice;
 
-		AllocatedVulkanBuffer mBuffer;
+		AllocatedVulkanBuffer mBuffer[2];
 
 		BufferLayout mLayout{};
 	};

@@ -3,14 +3,22 @@
 
 namespace BHive
 {
-	AllocatedVulkanBuffer::AllocatedVulkanBuffer()
-		: mDevice(VulkanCore::GetLogicalDevice())
+	AllocatedVulkanBuffer::AllocatedVulkanBuffer(AllocatedVulkanBuffer &&other) noexcept
+		: Memory(std::move(other.Memory)),
+		  Buffer(std::move(other.Buffer)),
+		  Size(other.Size),
+		  MappedMemory(other.MappedMemory)
 	{
+		other.Buffer = VK_NULL_HANDLE;
+		other.Memory = VK_NULL_HANDLE;
+		other.MappedMemory = nullptr;
+		other.Size = 0;
 	}
 
 	AllocatedVulkanBuffer::~AllocatedVulkanBuffer()
 	{
-		Memory.unmapMemory();
+		if (MappedMemory)
+			Memory.unmapMemory();
 	}
 
 	void AllocatedVulkanBuffer::SetData(const void *data, size_t size, uint32_t offset)

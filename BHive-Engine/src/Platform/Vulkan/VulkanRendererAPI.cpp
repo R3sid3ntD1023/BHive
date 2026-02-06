@@ -53,11 +53,23 @@ namespace BHive
 	vk::raii::CommandBuffer& VulkanRendererAPI::RenderFrame(uint32_t frame, uint32_t imageIndex, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D &extent)
 	{
 		auto &command_buffer = mCommandBuffers[frame];
+		FVulkanFrameData command_data{command_buffer, image, image_view, frame};
 
 		command_buffer.reset();
 
 		vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
 		command_buffer.begin(begin_info);
+
+		auto& pre_commands = mCommands[ECommandType_PreCommand];
+		auto& commands = mCommands[ECommandType_Command];
+
+		while (!pre_commands.empty())
+		{
+			auto &cmd = pre_commands.front();
+			if (cmd)
+				cmd(command_data);
+			pre_commands.pop();
+		}
 		
 		VulkanUtils::TransitionImageLayout(
 			command_buffer, image, imageIndex, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
@@ -70,14 +82,13 @@ namespace BHive
 		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo);
 		command_buffer.beginRendering(renderingInfo);
 
-		FVulkanFrameData command_data{command_buffer, image, image_view, frame};
-
-		while (!mCommands.empty())
+		
+		while (!commands.empty())
 		{
-			auto &cmd = mCommands.front();
+			auto &cmd = commands.front();
 			if (cmd)
 				cmd(command_data);
-			mCommands.pop();
+			commands.pop();
 		}
 
 		command_buffer.endRendering();
@@ -91,7 +102,7 @@ namespace BHive
 		return command_buffer;
 	}
 
-	void VulkanRendererAPI::SubmitCommand(const FRenderCommand &command)
+	void VulkanRendererAPI::SubmitCommand(const FRenderCommand &command, ECommandType type)
 	{
 		if (mDeviceRecreationInProgress.load())
 		{
@@ -99,7 +110,7 @@ namespace BHive
 			return;
 		}
 
-		mCommands.emplace(command);
+		mCommands[type].emplace(command);
 	}
 
 	void VulkanRendererAPI::ClearColor(float r, float g, float b, float a)

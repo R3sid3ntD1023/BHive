@@ -70,7 +70,7 @@ namespace BHive
 			for (uint32_t i = 0; i < size; i++)
 			{
 				auto &vb = vertex_buffers[i];
-				vk_vertex_buffers[i] = (*std::dynamic_pointer_cast<VulkanVertexBuffer>(vb));
+				vk_vertex_buffers[i] = std::dynamic_pointer_cast<VulkanVertexBuffer>(vb)->GetBuffer(data.Frame);
 				offsets[i] = 0;
 			}
 
