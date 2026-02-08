@@ -17,9 +17,9 @@ namespace BHive
 					OnMessageLogged(msg);
 			});
 
-		sinks[0]->set_pattern("%^[%T] %n: %v%$");
-		sinks[1]->set_pattern("[%T] [%l] %n: %v");
-		sinks[2]->set_pattern("%^[%T] %n: %v%$");
+		sinks[0]->set_pattern("%^[%T] %n: %v%$ \n");
+		sinks[1]->set_pattern("[%T] [%l] %n: %v \n");
+		sinks[2]->set_pattern("%^[%T] %n: %v%$ \n");
 
 		sLogger = std::make_shared<spdlog::logger>("BHive", sinks.begin(), sinks.end());
 		spdlog::register_logger(sLogger);
