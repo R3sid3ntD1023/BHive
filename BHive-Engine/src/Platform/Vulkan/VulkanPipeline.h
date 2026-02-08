@@ -46,5 +46,7 @@ namespace BHive
 		vk::raii::Device &mDevice;
 
 		vk::raii::Pipeline mPipeline = VK_NULL_HANDLE;
+
+		FVulkanPipelineConfigInfo mConfigration;
 	};
 } // namespace BHive

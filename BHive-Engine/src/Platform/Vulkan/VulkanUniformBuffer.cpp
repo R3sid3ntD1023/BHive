@@ -1,17 +1,31 @@
 #include "VulkanUniformBuffer.h"
 #include "VulkanUtils.h"
+#include "gfx/RenderCommand.h"
+#include "VulkanRendererAPI.h"
 
 namespace BHive
 {
 	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t binding, uint64_t size, const void *data)
 		: mDevice(VulkanCore::GetLogicalDevice()),
-		  mBinding(binding)
+		  mSize(size)
 	{
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible, mBuffer);
+		
+		for (size_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible, mBuffer[i]);
+			mMappedMemory[i] = mBuffer[i].Memory.mapMemory(0, size);
+		}
 
-		SetData(data, size, 0);
+		SetData(data, size, 0);	
+	}
 
-		mBufferInfo = vk::DescriptorBufferInfo(mBuffer.Buffer, 0, size);
+	VulkanUniformBuffer::~VulkanUniformBuffer()
+	{
+		for (size_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			mMappedMemory[i] = nullptr;
+			mBuffer[i].Memory.unmapMemory();
+		}
 	}
 
 	void VulkanUniformBuffer::SetData(const void *data, size_t size, uint32_t offset)
@@ -19,7 +33,25 @@ namespace BHive
 		if (!data)
 			return;
 
-		mBuffer.SetData(data, size, offset);
+		auto ownedData = CreateRef<std::vector<std::byte>>();
+		ownedData->resize(size);
+		std::memcpy(ownedData->data(), data, size);
+
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto cmd = [=](const FVulkanFrameData& frame)
+			{
+				const auto current_frame = frame.Frame;
+				ASSERT(current_frame < VulkanCore::MAX_FRAMES_IN_FLIGHT);
+				std::memcpy(mMappedMemory[current_frame], ownedData->data(), size);
+			};
+		
+		api->SubmitCommand(cmd, ECommandType_PreCommand);
+	}
+
+	vk::DescriptorBufferInfo VulkanUniformBuffer::GetBufferInfo(uint32_t frame) const
+	{
+		ASSERT(frame < VulkanCore::MAX_FRAMES_IN_FLIGHT);
+		return vk::DescriptorBufferInfo(mBuffer[frame].Buffer, 0, mSize);
 	}
 
 } // namespace BHive

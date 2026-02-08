@@ -172,8 +172,6 @@ namespace BHive
 
 	uint32_t TextureUtils::GetAPIInternalFormat(EFormat format)
 	{
-		return VK_FORMAT_R8G8B8A8_SRGB;
-
 		switch (format)
 		{
 		case BHive::EFormat::R8:

@@ -23,7 +23,7 @@ namespace BHive
 	{
 		CreateGraphicsPipeline();
 
-		mCamera.SetView(FTransform({0, 0, -5}));
+		mCamera.SetView(FTransform({0, 0, 5}));
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -53,7 +53,7 @@ namespace BHive
 			mMaterial->Submit();
 
 			if (mMesh)
-				RenderCommand::DrawElements(EDrawMode::Triangles, *mMesh->GetVertexArray());
+				RenderCommand::DrawElements(EDrawMode::Triangles, mMesh->GetVertexArray());
 		}
 
 		Renderer::End();

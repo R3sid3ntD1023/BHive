@@ -94,7 +94,11 @@ namespace BHive
 
 	void VulkanUtils::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, AllocatedVulkanBuffer &buffer)
 	{
-		
+		CreateBuffer(size, usage, properties, buffer.Buffer, buffer.Memory);
+	}
+
+	void VulkanUtils::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer, vk::raii::DeviceMemory &memory)
+	{
 		auto &device = VulkanCore::GetLogicalDevice();
 		auto &physical_device = VulkanCore::GetPhysicalDevice();
 
@@ -103,19 +107,17 @@ namespace BHive
 		vk::DeviceSize minAlloc = (requested + atom - 1) & ~(atom - 1);
 
 		vk::BufferCreateInfo bufferCreateInfo({}, size, usage, vk::SharingMode::eExclusive);
-		buffer.Buffer = vk::raii::Buffer(device, bufferCreateInfo);
+		buffer = vk::raii::Buffer(device, bufferCreateInfo);
 
-	
-		vk::MemoryRequirements memRequirements = buffer.Buffer.getMemoryRequirements();
+		vk::MemoryRequirements memRequirements = buffer.getMemoryRequirements();
 		vk::DeviceSize alloc_size = std::max(memRequirements.size, minAlloc);
 
 		LOG_TRACE("Create Buffer: AllocSize = {}", alloc_size);
 
 		vk::MemoryAllocateInfo allocInfo(alloc_size, FindMemoryType(memRequirements.memoryTypeBits, properties));
 
-		buffer.Memory = vk::raii::DeviceMemory(device, allocInfo);
-		buffer.Buffer.bindMemory(*buffer.Memory, 0);
-		buffer.Size = alloc_size;
+		memory = vk::raii::DeviceMemory(device, allocInfo);
+		buffer.bindMemory(memory, 0);
 	}
 
 	void VulkanUtils::CreateImage(
@@ -200,7 +202,7 @@ namespace BHive
 	}
 
 	void VulkanUtils::TransitionImageLayout(
-		vk::raii::CommandBuffer &cmd, vk::Image &image, uint32_t imageIndex, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
+		vk::raii::CommandBuffer &cmd, vk::Image &image,  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask)
 	{
 		vk::ImageSubresourceRange range{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};

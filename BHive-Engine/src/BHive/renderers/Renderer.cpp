@@ -63,7 +63,7 @@ namespace BHive
 
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
 	{
-		GlobalBuffers::CameraData.Begin(projection, view);
+		GlobalBuffers::CameraData.Begin(projection, glm::inverse(view));
 	}
 
 	void Renderer::Draw(const Ref<FMeshRenderData> &data)

@@ -74,6 +74,7 @@ namespace BHive
 	VulkanShader::VulkanShader(const std::filesystem::path &path, const FRenderOptions &options)
 		: mDevice(VulkanCore::GetLogicalDevice()),
 		  mFilePath(path),
+		  mName(path.stem().string()),
 		  mRenderOptions(options)
 	{
 		ShaderSerializer serializer;
@@ -102,6 +103,7 @@ namespace BHive
 	VulkanShader::VulkanShader(const std::string &name, const std::string &vert, const std::string &frag, const FRenderOptions &options)
 		: mDevice(VulkanCore::GetLogicalDevice()),
 		  mFilePath(name),
+		  mName(name),
 		  mRenderOptions(options)
 	{
 		mSources[Shader::ShaderStage_Vertex] = FShaderData(vert);
@@ -186,9 +188,12 @@ namespace BHive
 
 		if (mDescriptorSets.size())
 		{
-			auto cmd = [=](const FVulkanFrameData &data) { 
-				vk::DescriptorSet set = mDescriptorSets[data.Frame];
-				data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, set, nullptr); };
+			auto cmd = [=](const FVulkanFrameData &data) 
+				{
+				//LOG_INFO("CMD: Shader::Bind, frame={}", data.Frame);
+				ASSERT(data.Frame < mDescriptorSets.size());
+				data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, *mDescriptorSets[data.Frame], {});
+			};
 
 			RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
 		}
@@ -207,8 +212,18 @@ namespace BHive
 		if (!texture)
 			return;
 
-		auto image_info = reinterpret_cast<const vk::DescriptorImageInfo *>(texture->GetNativeHandle());
-		FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteImage(binding, *image_info).Overwrite(mDescriptorSets);
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto cmd = [=](const FVulkanFrameData &data)
+		{
+			auto image_info = *reinterpret_cast<const vk::DescriptorImageInfo *>(texture->GetNativeHandle());
+			//FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteImage(binding, *image_info).Overwrite(mDescriptorSets[data.Frame]);
+
+			vk::WriteDescriptorSet descriptor_write(mDescriptorSets[data.Frame], binding, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
+			mDevice.updateDescriptorSets(descriptor_write, {});
+		};
+
+		api->SubmitCommand(cmd, ECommandType_PreCommand);
+		
 	}
 
 	void VulkanShader::CreateDescriptorResources()
@@ -217,25 +232,41 @@ namespace BHive
 
 		auto num_samplers = (uint32_t)mReflectionData.Samplers.size();
 		auto num_uniform_buffers = (uint32_t)mReflectionData.UniformBuffers.size();
-		auto max_sets = (num_samplers + num_uniform_buffers) * 3;
+		auto max_sets = (num_samplers + num_uniform_buffers) * VulkanCore::MAX_FRAMES_IN_FLIGHT;
 
 		for (auto &[name, data] : mReflectionData.UniformBuffers)
 		{
 			mUniformBufferBindings.push_back(data.Binding);
 		}
 
-		FDescriptorSetLayout::Builder builder;
+		std::vector<vk::DescriptorSetLayoutBinding> bindings;
+		std::vector<vk::DescriptorPoolSize> pool_sizes;
+		//FDescriptorSetLayout::Builder builder;
 		for (auto &[name, sampler] : mReflectionData.Samplers)
 		{
-			builder.AddBinding(sampler.Binding, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, 1);
+			//builder.AddBinding(sampler.Binding, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, 1);
+			bindings.emplace_back(sampler.Binding, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment);
+			pool_sizes.emplace_back(vk::DescriptorType::eCombinedImageSampler, VulkanCore::MAX_FRAMES_IN_FLIGHT);
 		}
 
-		for (auto &[name, uniform_buffers] : mReflectionData.UniformBuffers)
+		for (auto &[name, uniform_buffer] : mReflectionData.UniformBuffers)
 		{
-			builder.AddBinding(uniform_buffers.Binding, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex, 1);
+			//builder.AddBinding(uniform_buffers.Binding, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex, 1);
+			bindings.emplace_back(uniform_buffer.Binding, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex);
+			pool_sizes.emplace_back(vk::DescriptorType::eUniformBuffer, VulkanCore::MAX_FRAMES_IN_FLIGHT);
 		}
 
-		mDescriptorSetLayout = builder.Build();
+		vk::DescriptorSetLayoutCreateInfo layout_info({}, bindings, nullptr);
+		mDescriptorSetLayout = mDevice.createDescriptorSetLayout(layout_info);
+
+		vk::DescriptorPoolCreateInfo pool_create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, VulkanCore::MAX_FRAMES_IN_FLIGHT, pool_sizes);
+		mDescriptorPool = mDevice.createDescriptorPool(pool_create_info);
+
+		std::vector<vk::DescriptorSetLayout> layouts(VulkanCore::MAX_FRAMES_IN_FLIGHT, mDescriptorSetLayout);
+		vk::DescriptorSetAllocateInfo alloc_info(mDescriptorPool, layouts);
+		mDescriptorSets = std::move(vk::raii::DescriptorSets(mDevice, alloc_info));
+
+		/*mDescriptorSetLayout = builder.Build();
 
 		if (max_sets == 0)
 			return;
@@ -243,19 +274,22 @@ namespace BHive
 		FDescriptorPool::Builder pool_builder;
 		pool_builder.SetMaxSets(max_sets);
 
-		if (num_uniform_buffers)
-		{
-			pool_builder.AddPoolSize(vk::DescriptorType::eUniformBuffer, num_uniform_buffers * 3);
-		}
-
 		if (num_samplers)
 		{
-			pool_builder.AddPoolSize(vk::DescriptorType::eCombinedImageSampler, num_samplers * 3);
+			pool_builder.AddPoolSize(vk::DescriptorType::eCombinedImageSampler, num_samplers * VulkanCore::MAX_FRAMES_IN_FLIGHT);
+		}
+
+
+		if (num_uniform_buffers)
+		{
+			pool_builder.AddPoolSize(vk::DescriptorType::eUniformBuffer, num_uniform_buffers * VulkanCore::MAX_FRAMES_IN_FLIGHT);
 		}
 
 		mDescriptorPool = pool_builder.Build();
 
 		FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).Build(mDescriptorSets);
+
+		ASSERT(mDescriptorSets.size() == VulkanCore::MAX_FRAMES_IN_FLIGHT)*/
 	}
 
 	void VulkanShader::DestroyDescriptorResources()
@@ -266,12 +300,22 @@ namespace BHive
 
 	void VulkanShader::UpdateDescriptorResources()
 	{
-		for (const auto &binding : mUniformBufferBindings)
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto cmd = [=](const FVulkanFrameData &data)
 		{
-			auto ubo = std::dynamic_pointer_cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(binding));
-			auto buffer = reinterpret_cast<const vk::DescriptorBufferInfo *>(ubo->GetNativeHandle());
-			FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteBuffer(binding, *buffer).Overwrite(mDescriptorSets);
-		}
+			ASSERT(data.Frame < mDescriptorSets.size());
+
+			for (const auto &binding : mUniformBufferBindings)
+			{
+				auto ubo = std::dynamic_pointer_cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(binding));
+				auto buffer_info = ubo->GetBufferInfo(data.Frame);
+				//FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteBuffer(binding, buffer_info).Overwrite(mDescriptorSets[data.Frame]);
+				vk::WriteDescriptorSet descriptor_write(mDescriptorSets[data.Frame], binding, 0, vk::DescriptorType::eUniformBuffer, {}, buffer_info);
+				mDevice.updateDescriptorSets(descriptor_write, {});
+			}
+		};
+		
+		api->SubmitCommand(cmd, ECommandType_PreCommand);
 	}
 
 	void VulkanShader::Reflect()
@@ -297,10 +341,11 @@ namespace BHive
 			create_infos.emplace_back(vk::PipelineShaderStageCreateFlags{}, utils::GetAPIShaderStage(stage), module, "main");
 		}
 
-		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, *mDescriptorSetLayout->GetLayout());
+		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, *mDescriptorSetLayout);
 		mPipelineLayout = mDevice.createPipelineLayout(pipeline_layout_create_info);
 
-		vk::PipelineRenderingCreateInfo rendering_info(0, swap_chain->GetFormat().format);
+		vk::PipelineRenderingCreateInfo rendering_info{};
+		rendering_info.setViewMask(0).setColorAttachmentCount(1).setColorAttachmentFormats(swap_chain->GetFormat().format);
 
 		FVulkanPipelineConfigInfo config = VulkanPipeline::GetDefaultConfigInfo();
 		config.Layout = mPipelineLayout;
@@ -308,7 +353,7 @@ namespace BHive
 		config.ShaderCreateInfos = create_infos;
 		config.InputAssembly.setTopology(utils::GetTopology(mRenderOptions.DrawMode));
 		config.Rasterazation.setCullMode(utils::GetCullMode(mRenderOptions.CullMode));
-		config.DepthStencil.setDepthTestEnable(mRenderOptions.EnableDepthTest).setDepthWriteEnable(mRenderOptions.EnableDepthWrite);
+	//	config.DepthStencil.setDepthTestEnable(VK_FALSE).setDepthWriteEnable(VK_FALSE);
 
 		mGraphicsPipeline = Pipeline::Create();
 		mGraphicsPipeline->Init(config);

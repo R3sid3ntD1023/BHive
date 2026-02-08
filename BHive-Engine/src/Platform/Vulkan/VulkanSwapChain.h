@@ -42,6 +42,8 @@ namespace BHive
 
 		uint32_t GetImageCount() const { return mImages.size(); }
 
+		vk::ImageLayout &GetImageLayout(uint32_t imageIndex);
+
 	private:
 		vk::raii::Device &mDevice;
 
@@ -55,6 +57,8 @@ namespace BHive
 
 		std::vector<vk::raii::ImageView> mImageViews{};
 
+		std::vector<vk::ImageLayout> mImageLayouts{};
+
 		std::vector<vk::raii::Semaphore> mPresetCompleteSemaphores{};
 
 		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores{};
@@ -63,6 +67,5 @@ namespace BHive
 
 		uint32_t mMinImageCount = 0;
 
-		uint32_t mSemaphoreIndex = 0;
 	};
 } // namespace BHive

@@ -13,18 +13,8 @@ namespace BHive
 	{
 		vk::raii::CommandBuffer& CommandBuffer;
 
-		vk::Image Image;
-
-		vk::ImageView ImageView;
-
 		uint32_t Frame;
 
-	};
-
-	struct FFrameResources
-	{
-
-		std::vector<AllocatedVulkanBuffer> StagingBuffers;
 	};
 
 	typedef std::function<void(const FVulkanFrameData &)> FRenderCommand;
@@ -55,9 +45,9 @@ namespace BHive
 
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h) override;
 
-		virtual void DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count = 0) override;
+		virtual void DrawArrays(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count = 0) override;
 
-		virtual void DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count = 0) override;
+		virtual void DrawElements(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count = 0) override;
 
 		virtual void DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0) override;
 
@@ -87,15 +77,13 @@ namespace BHive
 
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) override;
 
-		vk::raii::CommandBuffer& RenderFrame(uint32_t frame, uint32_t imageIndex, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D& extent);
+		vk::raii::CommandBuffer& RenderFrame(uint32_t frame, uint32_t imageIndex, vk::ImageLayout& layout, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D& extent);
 
 		void SubmitCommand(const FRenderCommand &command, ECommandType type = ECommandType_Command);
 
 		vk::raii::CommandPool &GetCommandPool() { return mCommandPool; }
 
 		virtual EAPI GetAPI() const override { return EAPI::Vulkan; }
-
-		FFrameResources &GetFrameResources(uint32_t frame) { return mFrameResources[frame]; };
 
 	private:
 		vk::raii::Device &mDevice;
@@ -109,7 +97,5 @@ namespace BHive
 		std::unordered_map<ECommandType, std::queue<FRenderCommand>> mCommands;
 
 		std::atomic<bool> mDeviceRecreationInProgress{false};
-
-		std::array<FFrameResources, VulkanCore::MAX_FRAMES_IN_FLIGHT> mFrameResources;
 	};
 } // namespace BHive

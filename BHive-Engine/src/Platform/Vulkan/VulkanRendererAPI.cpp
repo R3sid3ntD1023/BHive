@@ -1,7 +1,8 @@
-#include "Platform/Vulkan/VulkanPipeline.h"
-#include "Platform/Vulkan/VulkanShader.h"
-#include "Platform/Vulkan/VulkanVertexArray.h"
+#include "VulkanPipeline.h"
+#include "VulkanShader.h"
+#include "VulkanVertexArray.h"
 #include "VulkanRendererAPI.h"
+#include "VulkanBuffers.h"
 
 namespace BHive
 {
@@ -20,6 +21,7 @@ namespace BHive
 
 			return vk::PrimitiveTopology::eTriangleList;
 		}
+		
 	} // namespace details
 
 	VulkanRendererAPI::VulkanRendererAPI()
@@ -35,13 +37,10 @@ namespace BHive
 	{
 		auto graphics_queue_index = VulkanCore::GetQueueFamilies().GraphicsQueueIndex;
 
-		vk::CommandPoolCreateInfo pool_info;
-		pool_info.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
-		pool_info.queueFamilyIndex = graphics_queue_index;
+		vk::CommandPoolCreateInfo pool_info( vk::CommandPoolCreateFlagBits::eResetCommandBuffer, graphics_queue_index);
+		mCommandPool = vk::raii::CommandPool(mDevice, pool_info);
 
-		mCommandPool = mDevice.createCommandPool(pool_info);
-
-		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, 2);
+		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, VulkanCore::MAX_FRAMES_IN_FLIGHT);
 		mCommandBuffers = vk::raii::CommandBuffers(mDevice, alloc_info);
 	}
 
@@ -50,18 +49,16 @@ namespace BHive
 
 	}
 
-	vk::raii::CommandBuffer& VulkanRendererAPI::RenderFrame(uint32_t frame, uint32_t imageIndex, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D &extent)
+	vk::raii::CommandBuffer &VulkanRendererAPI::RenderFrame(uint32_t frame, uint32_t imageIndex, vk::ImageLayout& layout, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D &extent)
 	{
 		auto &command_buffer = mCommandBuffers[frame];
-		FVulkanFrameData command_data{command_buffer, image, image_view, frame};
+		auto &pre_commands = mCommands[ECommandType_PreCommand];
+		auto &commands = mCommands[ECommandType_Command];
+		FVulkanFrameData command_data{command_buffer, frame};
+		ASSERT(frame < mCommandBuffers.size());
 
 		command_buffer.reset();
-
-		vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
-		command_buffer.begin(begin_info);
-
-		auto& pre_commands = mCommands[ECommandType_PreCommand];
-		auto& commands = mCommands[ECommandType_Command];
+		command_buffer.begin({});
 
 		while (!pre_commands.empty())
 		{
@@ -72,8 +69,10 @@ namespace BHive
 		}
 		
 		VulkanUtils::TransitionImageLayout(
-			command_buffer, image, imageIndex, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
+			command_buffer, image, layout, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eColorAttachmentOutput);
+
+		layout = vk::ImageLayout::eColorAttachmentOptimal;
 
 		vk::ClearValue clearColor = mClearColor;
 		vk::RenderingAttachmentInfo attachmentInfo(
@@ -94,8 +93,10 @@ namespace BHive
 		command_buffer.endRendering();
 
 		VulkanUtils::TransitionImageLayout(
-			command_buffer, image, imageIndex, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eColorAttachmentWrite, {},
+			command_buffer, image, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eColorAttachmentWrite, {},
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eBottomOfPipe);
+
+		layout = vk::ImageLayout::ePresentSrcKHR;
 
 		command_buffer.end();
 
@@ -132,6 +133,7 @@ namespace BHive
 	{
 		auto cmd = [=](const FVulkanFrameData &data)
 		{
+			//LOG_INFO("CMD: SetViewport, frame={}", data.Frame);
 			data.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)y, (float)w, (float)h, 0.0f, 1.0f));
 			data.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, vk::Extent2D(w, h)));
 		};
@@ -139,30 +141,32 @@ namespace BHive
 		SubmitCommand(cmd);
 	}
 
-	void VulkanRendererAPI::DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count)
+	void VulkanRendererAPI::DrawArrays(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count)
 	{
-		vao.Bind();
+		vao->Bind();
 
-		auto cmd = [=](const FVulkanFrameData &data)
+		auto topology = details::GetTopology(mode);
+
+		auto cmd = [topology, count](const FVulkanFrameData &data)
 		{
-			data.CommandBuffer.setPrimitiveTopology(details::GetTopology(mode));
+			data.CommandBuffer.setPrimitiveTopology(topology);
 			data.CommandBuffer.draw(count, 1, 0, 0);
 		};
 
 		SubmitCommand(cmd);
 	}
 
-	void VulkanRendererAPI::DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count)
+	void VulkanRendererAPI::DrawElements(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count)
 	{
-		vao.Bind();
+		vao->Bind();
+		auto index_buffer =vao->GetIndexBuffer();
+		auto index_count = count ? count : index_buffer->GetCount();
+		auto topology = details::GetTopology(mode);
 
-		auto cmd = [=, &vao](const FVulkanFrameData &data)
+		auto cmd = [topology, index_count](const FVulkanFrameData &data)
 		{
-			auto index_buffer = vao.GetIndexBuffer();
-			auto _count = count ? count : index_buffer->GetCount();
-
-			data.CommandBuffer.setPrimitiveTopology(details::GetTopology(mode));
-			data.CommandBuffer.drawIndexed(_count, 1, 0, 0, 0);
+			data.CommandBuffer.setPrimitiveTopology(topology);
+			data.CommandBuffer.drawIndexed(index_count, 1, 0, 0, 0);
 		};
 
 		SubmitCommand(cmd);

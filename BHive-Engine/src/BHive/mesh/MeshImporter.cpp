@@ -149,7 +149,7 @@ namespace BHive
 				}
 
 				FVertex vertex{};
-				vertex.Position = glm::vec4(position, 1.0f);
+				vertex.Position = position;
 				vertex.TexCoord = texcoord;
 				vertex.Normal = normal;
 				vertex.BiNormal = bitangent;

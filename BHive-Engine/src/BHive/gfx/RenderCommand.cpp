@@ -32,12 +32,12 @@ namespace BHive
 		sRendererAPI->SetViewport(x, y, w, h);
 	}
 
-	void RenderCommand::DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count)
+	void RenderCommand::DrawArrays(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count)
 	{
 		sRendererAPI->DrawArrays(mode, vao, count);
 	}
 
-	void RenderCommand::DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count)
+	void RenderCommand::DrawElements(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count)
 	{
 		sRendererAPI->DrawElements(mode, vao, count);
 	}

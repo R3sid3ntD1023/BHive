@@ -20,9 +20,9 @@ namespace BHive
 
 		static void SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
-		static void DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count = 0);
+		static void DrawArrays(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count = 0);
 
-		static void DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count = 0);
+		static void DrawElements(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count = 0);
 
 		static void DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0);
 

@@ -44,9 +44,9 @@ namespace BHive
 
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h) = 0;
 
-		virtual void DrawArrays(EDrawMode mode, const VertexArray &vao, uint32_t count = 0) = 0;
+		virtual void DrawArrays(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count = 0) = 0;
 
-		virtual void DrawElements(EDrawMode mode, const VertexArray &vao, uint32_t count = 0) = 0;
+		virtual void DrawElements(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count = 0) = 0;
 
 		virtual void DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0) = 0;
 

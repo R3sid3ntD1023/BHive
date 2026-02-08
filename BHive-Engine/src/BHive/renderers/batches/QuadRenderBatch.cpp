@@ -24,7 +24,7 @@ namespace BHive
 			if (mTextureBatch)
 				mTextureBatch->Flush();
 
-			RenderCommand::DrawElements(Triangles, *mVertexArray, mIndexCount);
+			RenderCommand::DrawElements(Triangles, mVertexArray, mIndexCount);
 
 			Renderer::GetStats().DrawCalls++;
 		}

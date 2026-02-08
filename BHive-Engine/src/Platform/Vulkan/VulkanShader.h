@@ -36,7 +36,7 @@ namespace BHive
 
 		virtual void UnBind() override;
 
-		virtual const std::string &GetName() const override { return mFilePath.stem().string(); }
+		virtual const std::string &GetName() const override { return mName; }
 
 		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1) override;
 
@@ -76,19 +76,25 @@ namespace BHive
 
 		Ref<Pipeline> mGraphicsPipeline;
 
-		Ref<FDescriptorSetLayout> mDescriptorSetLayout;
+		//Ref<FDescriptorSetLayout> mDescriptorSetLayout;
 
 		vk::raii::PipelineLayout mPipelineLayout = nullptr;
 
 		std::unordered_map<EShaderStage, vk::raii::ShaderModule> mShaderModules;
 
-		Ref<FDescriptorPool> mDescriptorPool;
+		//Ref<FDescriptorPool> mDescriptorPool;
+
+		vk::raii::DescriptorSetLayout mDescriptorSetLayout = VK_NULL_HANDLE;
 
 		vk::raii::DescriptorSets mDescriptorSets = VK_NULL_HANDLE;
+
+		vk::raii::DescriptorPool mDescriptorPool = VK_NULL_HANDLE;
 
 		std::vector<uint32_t> mUniformBufferBindings;
 
 		std::filesystem::path mFilePath;
+
+		std::string mName;
 
 		FShaderReflectionData mReflectionData;
 

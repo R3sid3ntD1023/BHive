@@ -25,7 +25,7 @@ namespace BHive
 	{
 		auto shader_instance = shader ? shader : mShader;
 
-		shader_instance->Bind();
+		shader_instance->Bind(); //binds shaders pipeline + descriptor set
 
 		for (auto &[name, slot] : mTextures)
 		{

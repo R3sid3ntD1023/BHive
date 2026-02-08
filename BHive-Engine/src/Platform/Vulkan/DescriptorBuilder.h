@@ -106,7 +106,7 @@ namespace BHive
 
 		bool Build(vk::raii::DescriptorSets &set);
 
-		void Overwrite(vk::raii::DescriptorSets &set);
+		void Overwrite(vk::raii::DescriptorSet &set);
 
 	private:
 		Ref<FDescriptorSetLayout> mLayout;

@@ -56,7 +56,9 @@ namespace BHive
 
 		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
 
-		stagingBuffer.SetData(data, size, 0);
+		void *map_memory = stagingBuffer.Memory.mapMemory(0, size);
+		std::memcpy(map_memory, data, size);
+		stagingBuffer.Memory.unmapMemory();
 
 		auto &image = mVulkanTexture.Image;
 		VulkanUtils::TransitionImageLayout(image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);

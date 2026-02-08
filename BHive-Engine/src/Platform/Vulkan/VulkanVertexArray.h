@@ -5,6 +5,7 @@
 
 namespace BHive
 {
+
 	class BHIVE_API VulkanVertexArray : public VertexArray
 	{
 	public:
@@ -31,6 +32,7 @@ namespace BHive
 	private:
 		void CreateBindingsAndAttributes(const Ref<VertexBuffer> &vertexbuffer);
 
+		
 	private:
 		Ref<IndexBuffer> mIndexBuffer;
 

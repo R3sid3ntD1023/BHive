@@ -25,7 +25,7 @@ namespace BHive
 		if (!data)
 			return;
 
-		mBuffer.SetData(data, size, offset);
+		//mBuffer.SetData(data, size, offset);
 	}
 
 } // namespace BHive

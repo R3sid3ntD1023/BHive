@@ -36,7 +36,7 @@ namespace BHive
 
 	bool FDescriptorPool::AllocateDescriptors(const vk::DescriptorSetLayout &layout, vk::raii::DescriptorSets &sets)
 	{
-		std::vector<vk::DescriptorSetLayout> layouts = {VulkanCore::MAX_FRAMES_IN_FLIGHT, layout};
+		std::vector<vk::DescriptorSetLayout> layouts(VulkanCore::MAX_FRAMES_IN_FLIGHT, layout);
 		vk::DescriptorSetAllocateInfo allocInfo(*mPool, layouts);
 		auto allocated_sets = vk::raii::DescriptorSets(mDevice, allocInfo);
 
@@ -92,22 +92,20 @@ namespace BHive
 			return false;
 		}
 
-		Overwrite(sets);
+		for (auto& set : sets)
+			Overwrite(set);
 
 		return true;
 	}
 
-	void FDescriptorWriter::Overwrite(vk::raii::DescriptorSets &sets)
+	void FDescriptorWriter::Overwrite(vk::raii::DescriptorSet &set)
 	{
-		for (auto& set : sets)
+		for (auto &write : mWrites)
 		{
-			for (auto &write : mWrites)
-			{
-				write.dstSet = set;
-			}
+			write.dstSet = set;
 		}
 
-		//mLayout->mDevice.updateDescriptorSets(mWrites, {});
+		mLayout->mDevice.updateDescriptorSets(mWrites, {});
 	}
 
 } // namespace BHive

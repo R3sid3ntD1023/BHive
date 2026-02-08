@@ -191,7 +191,7 @@ namespace BHive
 
 		texture->Bind();
 
-		RenderCommand::DrawElements(EDrawMode::Triangles, *mQuad->GetVertexArray());
+		RenderCommand::DrawElements(EDrawMode::Triangles, mQuad->GetVertexArray());
 
 		mFinalFramebuffer->UnBind();
 	}

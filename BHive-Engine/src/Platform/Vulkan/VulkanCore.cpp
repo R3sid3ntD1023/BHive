@@ -56,7 +56,7 @@ namespace BHive
 
 			vk::StructureChain<
 				vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features,
-				vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexAttributeDivisorFeaturesEXT>
+				vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>
 				featureChain;
 			featureChain.assign<vk::PhysicalDeviceFeatures2>({}); // default initialize all features to false
 			
@@ -71,7 +71,7 @@ namespace BHive
 			featureChain.get<vk::PhysicalDeviceVulkan13Features>().setDynamicRendering(true).setSynchronization2(true).setDescriptorBindingInlineUniformBlockUpdateAfterBind(true);
 			featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().setExtendedDynamicState(true);
 			featureChain.get<vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>().setVertexInputDynamicState(true);
-			featureChain.get<vk::PhysicalDeviceVertexAttributeDivisorFeaturesEXT>().setVertexAttributeInstanceRateZeroDivisor(true);
+
 
 			return featureChain;
 		}
@@ -194,28 +194,41 @@ namespace BHive
 			}
 		}
 
-		vk::ValidationFeatureEnableEXT enabled_features[] = {
-			vk::ValidationFeatureEnableEXT::eBestPractices, 
-			vk::ValidationFeatureEnableEXT::eSynchronizationValidation, 
-			vk::ValidationFeatureEnableEXT::eDebugPrintf};
+		
+
+#ifdef ENABLE_VALIDATION_LAYERS
+
+		vk::ValidationFeatureEnableEXT enabled_features[] =
+			{
+				vk::ValidationFeatureEnableEXT::eBestPractices, 
+				vk::ValidationFeatureEnableEXT::eSynchronizationValidation, 
+				vk::ValidationFeatureEnableEXT::eDebugPrintf,
+				vk::ValidationFeatureEnableEXT::eGpuAssisted
+			};
 
 		vk::ValidationFeaturesEXT enabled(enabled_features);
+	
+		auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError |
+						 vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
+		auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+
+		vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, debugCallback);
 		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions, &enabled);
+#else
+		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions);
+#endif
+		
 		mVulkanInstance = vk::raii::Instance(mVulkanContext, instanceCreateInfo);
+
+#ifdef ENABLE_VALIDATION_LAYERS
+		mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mVulkanInstance, debugCreateInfo);
+		
+#endif
 	}
 
 	void VulkanCore::CreateDebugMessenger()
 	{
-#ifdef ENABLE_VALIDATION_LAYERS
 
-		auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError |
-						 vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo ;
-		auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
-			| vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding;
-
-		vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, &debugCallback);
-		mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mVulkanInstance, debugCreateInfo);
-#endif
 	}
 
 	void VulkanCore::PickPhysicalDevice()

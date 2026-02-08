@@ -61,13 +61,27 @@ namespace BHive
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 		auto &queue_familes = VulkanCore::GetQueueFamilies();
 
-		mDescriptorPool = FDescriptorPool::Builder().SetMaxSets(2).AddPoolSize(vk::DescriptorType::eCombinedImageSampler, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE).Build();
+		mDescriptorPool = FDescriptorPool::Builder()
+								.SetMaxSets(1000)
+								.AddPoolSize(vk::DescriptorType::eSampler, 1000)
+								.AddPoolSize(vk::DescriptorType::eCombinedImageSampler, 1000)
+								.AddPoolSize(vk::DescriptorType::eSampledImage, 1000)
+								.AddPoolSize(vk::DescriptorType::eStorageImage, 1000)
+								.AddPoolSize(vk::DescriptorType::eUniformTexelBuffer, 1000)
+								.AddPoolSize(vk::DescriptorType::eStorageTexelBuffer, 1000)
+								.AddPoolSize(vk::DescriptorType::eUniformBuffer, 1000)
+								.AddPoolSize(vk::DescriptorType::eStorageBuffer, 1000)
+								.AddPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1000)
+								.AddPoolSize(vk::DescriptorType::eStorageBufferDynamic, 1000)
+								.AddPoolSize(vk::DescriptorType::eInputAttachment, 1000)
+								.Build();
 
 		ImGui_ImplGlfw_InitForVulkan(mWindowHandle, true);
 
 		auto format = swap_chain->GetFormat().format;
 		auto depth_format = VulkanUtils::FindDepthFormat(physical_device);
-		vk::PipelineRenderingCreateInfo rendering_info(0, format, depth_format, vk::Format::eUndefined);
+		vk::PipelineRenderingCreateInfo rendering_info{};
+		rendering_info.setViewMask(0).setColorAttachmentCount(1).setColorAttachmentFormats(format).setDepthAttachmentFormat(vk::Format::eUndefined).setStencilAttachmentFormat(vk::Format::eUndefined);
 
 		ImGui_ImplVulkan_InitInfo init_info{};
 		init_info.ApiVersion = VulkanCore::MINIMUM_VULKAN_API_VERSION;
@@ -84,7 +98,6 @@ namespace BHive
 		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		init_info.PipelineInfoMain.RenderPass = VK_NULL_HANDLE;
 		init_info.PipelineInfoMain.PipelineRenderingCreateInfo = rendering_info;
-
 		init_info.PipelineInfoForViewports.PipelineRenderingCreateInfo = rendering_info;
 		init_info.PipelineInfoForViewports.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		init_info.PipelineInfoMain.Subpass = 0;
@@ -111,7 +124,9 @@ namespace BHive
 
 		auto imgui_command = [=](const FVulkanFrameData &data)
 		{
-			auto &cmd = data.CommandBuffer;
+			auto& cmd = data.CommandBuffer;
+
+			//LOG_INFO("CMD: Imgui Render, frame={}", data.Frame);
 
 			vk::Viewport viewport(0.0f, 0.0f, (float)displaySize.x, (float)displaySize.y, 0.0f, 1.0f);
 			vk::Rect2D scissor({0, 0}, {(uint32_t)displaySize.x, (uint32_t)displaySize.y});
@@ -119,6 +134,7 @@ namespace BHive
 			cmd.setViewport(0, viewport);
 			cmd.setScissor(0, scissor);
 
+	
 			ImGui_ImplVulkan_RenderDrawData(drawData, *cmd);
 		};
 

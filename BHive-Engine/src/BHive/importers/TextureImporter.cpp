@@ -72,7 +72,10 @@ namespace BHive
 
 	Ref<Texture2D> TextureLoader::Import(const std::filesystem::path &file, const FTextureImportData &import_data)
 	{
-		int w = 0, h = 0, c = 0;
+		int w = 0, h = 0, c_in = 0;
+		const int forced_channels = 4;
+		const int c_out = forced_channels;
+
 		stbi_uc *image_data = nullptr;
 		auto path_str = file.string();
 		bool is_hdr = stbi_is_hdr(path_str.c_str());
@@ -81,14 +84,15 @@ namespace BHive
 		size_t data_size = 0;
 		if (is_hdr)
 		{
-			image_data = (stbi_uc *)stbi_loadf(path_str.c_str(), &w, &h, &c, 4);
-			data_size = w * h * c * sizeof(float);
+			image_data = (stbi_uc *)stbi_loadf(path_str.c_str(), &w, &h, &c_in, forced_channels);
+			
+			data_size = size_t(w ) * h * c_out * sizeof(float);
 		}
 		else
 		{
 
-			image_data = stbi_load(path_str.c_str(), &w, &h, &c, 4);
-			data_size = w * h * c;
+			image_data = stbi_load(path_str.c_str(), &w, &h, &c_in, 4);
+			data_size = size_t(w) * h * c_out;
 		}
 
 		if (!image_data)
@@ -98,8 +102,8 @@ namespace BHive
 		}
 
 		FTextureCreateInfo create_info{};
-		create_info.InternalFormat = is_hdr ? utils::GetFormatFromChannelsHDR(c) : utils::GetFormatFromChannels(c);
-		create_info.Channels = 4;
+		create_info.InternalFormat = is_hdr ? utils::GetFormatFromChannelsHDR(c_out) : utils::GetFormatFromChannels(c_out);
+		create_info.Channels = c_out;
 		create_info.MinFilter = EMinFilter::LINEAR;
 		create_info.MagFilter = EMagFilter::LINEAR;
 		create_info.WrapMode = EWrapMode::REPEAT;
@@ -109,9 +113,9 @@ namespace BHive
 
 		if (import_data.mWidth != 0 && import_data.mHeight != 0)
 		{
-			auto size = import_data.mWidth * import_data.mHeight * c;
+			auto size = import_data.mWidth * import_data.mHeight * c_out;
 			stbi_uc *resized_buffer = (stbi_uc *)malloc(size);
-			stbir_resize_uint8_linear(image_data, w, h, 0, resized_buffer, import_data.mWidth, import_data.mHeight, 0, (stbir_pixel_layout)c);
+			stbir_resize_uint8_linear(image_data, w, h, 0, resized_buffer, import_data.mWidth, import_data.mHeight, 0, (stbir_pixel_layout)c_out);
 
 			texture = Texture2D::Create((unsigned)import_data.mWidth, (unsigned)import_data.mHeight, create_info, resized_buffer, size);
 		}

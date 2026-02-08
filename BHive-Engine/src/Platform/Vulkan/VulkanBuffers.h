@@ -10,20 +10,25 @@ namespace BHive
 	public:
 		VulkanIndexBuffer(const uint32_t count, const uint32_t *data);
 
+		~VulkanIndexBuffer();
+
 		virtual uint32_t GetCount() const override { return mCount; }
 
 		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 
-		operator const vk::raii::Buffer &() const { return mBuffer.Buffer; }
-
 		virtual uintptr_t GetNativeHandle() const override { return 0; }
 
-		operator const vk::Buffer &() const { return mBuffer.Buffer; }
+		const vk::Buffer &GetBuffer() const
+		{
+			return mBuffer.Buffer;
+		}
 
 	private:
 		vk::raii::Device &mDevice;
 
 		AllocatedVulkanBuffer mBuffer;
+		AllocatedVulkanBuffer mStagingBuffer;
+		void * mMappedMemory = nullptr;
 
 		uint32_t mCount;
 	};
@@ -33,23 +38,40 @@ namespace BHive
 	public:
 		VulkanVertexBuffer(const size_t size, const void *data);
 
+		~VulkanVertexBuffer();
+
 		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 
 		virtual void SetLayout(const BufferLayout &layout) override;
 
 		virtual const BufferLayout &GetLayout() const override { return mLayout; }
 
-		const vk::Buffer & operator[](int frame) const { return mBuffer[frame].Buffer; }
-
-		const vk::Buffer & GetBuffer(uint32_t frame) const { return mBuffer[frame].Buffer; }
+		const vk::Buffer &GetBuffer(uint32_t frame) const
+		{
+			ASSERT(frame < VulkanCore::MAX_FRAMES_IN_FLIGHT);
+			return mPerFrameBuffer[frame].Buffer.Buffer;
+		}
 
 		virtual uintptr_t GetNativeHandle() const override { return 0; }
 
 	private:
+		struct PerFrameBuffer
+		{
+			AllocatedVulkanBuffer Buffer;
+			AllocatedVulkanBuffer StagingBuffer;
+			void *MappedMemory = nullptr;
+
+			void Init(size_t size);
+
+			void SetData(vk::raii::CommandBuffer& cmd, const void *data, size_t size, uint32_t offset);
+
+			void Release();
+		};
+
+	private:
 		vk::raii::Device &mDevice;
-
-		AllocatedVulkanBuffer mBuffer[2];
-
+		std::array<PerFrameBuffer, VulkanCore::MAX_FRAMES_IN_FLIGHT> mPerFrameBuffer;
 		BufferLayout mLayout{};
+		
 	};
 } // namespace BHive

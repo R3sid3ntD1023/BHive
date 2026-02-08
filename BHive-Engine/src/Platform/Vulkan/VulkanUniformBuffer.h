@@ -10,14 +10,19 @@ namespace BHive
 	public:
 		VulkanUniformBuffer(uint32_t binding, uint64_t size, const void *data = nullptr);
 
+		~VulkanUniformBuffer();
+
 		void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 
 		uintptr_t GetNativeHandle() const override { return reinterpret_cast<uintptr_t>(&mBufferInfo); }
 
+		vk::DescriptorBufferInfo GetBufferInfo(uint32_t frame) const;
+
 	private:
 		vk::raii::Device &mDevice;
-		AllocatedVulkanBuffer mBuffer;
+		std::array<AllocatedVulkanBuffer, VulkanCore::MAX_FRAMES_IN_FLIGHT> mBuffer;
+		std::array<void *, VulkanCore::MAX_FRAMES_IN_FLIGHT> mMappedMemory;
 		vk::DescriptorBufferInfo mBufferInfo;
-		uint32_t mBinding{0};
+		vk::DeviceSize mSize;
 	};
 } // namespace BHive

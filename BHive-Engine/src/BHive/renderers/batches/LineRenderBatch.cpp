@@ -60,16 +60,13 @@ namespace BHive
 		if (mVertexCount == 0)
 			return;
 
-		size_t size = (size_t)((uint8_t *)mVertexDataPtr - (uint8_t *)mVertexDataBuffer);
-		ASSERT(size <= sMaxVertexCount * sizeof(FLineVertex))
-
-		mVertexBuffer->SetData(mVertexDataBuffer, size);
+		mVertexBuffer->SetData(mVertexDataBuffer, mVertexCount * sizeof(FLineVertex));
 
 		mLineMaterial->Submit();
 
 		RenderCommand::SetLineWidth(2.0f);
 
-		RenderCommand::DrawArrays(Lines, *mVertexArray, mVertexCount);
+		RenderCommand::DrawArrays(Lines, mVertexArray, mVertexCount);
 
 		Renderer::GetStats().DrawCalls++;
 	}
