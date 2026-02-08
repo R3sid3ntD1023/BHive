@@ -40,8 +40,6 @@ namespace BHive
 
 		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1) override;
 
-		virtual void BindTexture(uint32_t binding, const Ref<Texture> &texture) override;
-
 		virtual const FShaderReflectionData &GetRelectionData() const override { return mReflectionData; }
 
 		void Save(cereal::BinaryOutputArchive &ar) const override;
@@ -50,7 +48,7 @@ namespace BHive
 
 		const vk::raii::PipelineLayout &GetPipelineLayout() const { return mPipelineLayout; }
 
-		const vk::raii::DescriptorSets &GetDescriptorSets() const { return mDescriptorSets; }
+		const vk::raii::DescriptorSetLayout &GetDescriptorSetLayout() const { return mDescriptorSetLayout; }
 
 		const Ref<Pipeline> &GetPipeline() const { return mGraphicsPipeline; }
 
@@ -67,30 +65,17 @@ namespace BHive
 
 		void CreateDescriptorResources();
 
-		void DestroyDescriptorResources();
-
-		void UpdateDescriptorResources();
 
 	private:
 		vk::raii::Device &mDevice;
 
 		Ref<Pipeline> mGraphicsPipeline;
 
-		//Ref<FDescriptorSetLayout> mDescriptorSetLayout;
-
 		vk::raii::PipelineLayout mPipelineLayout = nullptr;
 
 		std::unordered_map<EShaderStage, vk::raii::ShaderModule> mShaderModules;
 
-		//Ref<FDescriptorPool> mDescriptorPool;
-
 		vk::raii::DescriptorSetLayout mDescriptorSetLayout = VK_NULL_HANDLE;
-
-		vk::raii::DescriptorSets mDescriptorSets = VK_NULL_HANDLE;
-
-		vk::raii::DescriptorPool mDescriptorPool = VK_NULL_HANDLE;
-
-		std::vector<uint32_t> mUniformBufferBindings;
 
 		std::filesystem::path mFilePath;
 
@@ -101,6 +86,27 @@ namespace BHive
 		std::unordered_map<EShaderStage, FShaderData> mSources;
 
 		FRenderOptions mRenderOptions;
+	};
+
+	class VulkanBackendMaterial : public IMaterialBackendInterface
+	{
+	public:
+
+		VulkanBackendMaterial();
+
+		void Init(const Ref<Shader> &shader) override;
+
+		void Bind() override;
+
+		void BindTexture(uint32_t binding, const Ref<Texture> &texture) override;
+
+	private:		
+		vk::raii::Device &mDevice;
+		Ref<VulkanShader> mShader;
+		vk::raii::DescriptorSets mDescriptorSets = VK_NULL_HANDLE;
+		std::vector<uint32_t> mUniformBufferBindings;
+		std::unordered_map < uint32_t, Ref<Texture>> mTextures;
+
 	};
 
 } // namespace BHive

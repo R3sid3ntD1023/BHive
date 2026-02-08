@@ -114,7 +114,7 @@ namespace BHive
 
 	VulkanShader::~VulkanShader()
 	{
-		DestroyDescriptorResources();
+		
 	}
 
 	void VulkanShader::Save(cereal::BinaryOutputArchive &ar) const
@@ -182,21 +182,7 @@ namespace BHive
 
 	void VulkanShader::Bind()
 	{
-		UpdateDescriptorResources();
-
 		mGraphicsPipeline->Bind();
-
-		if (mDescriptorSets.size())
-		{
-			auto cmd = [=](const FVulkanFrameData &data) 
-				{
-				//LOG_INFO("CMD: Shader::Bind, frame={}", data.Frame);
-				ASSERT(data.Frame < mDescriptorSets.size());
-				data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipelineLayout, 0, *mDescriptorSets[data.Frame], {});
-			};
-
-			RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
-		}
 	}
 
 	void VulkanShader::UnBind()
@@ -207,115 +193,25 @@ namespace BHive
 	{
 	}
 
-	void VulkanShader::BindTexture(uint32_t binding, const Ref<Texture> &texture)
-	{
-		if (!texture)
-			return;
-
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto cmd = [=](const FVulkanFrameData &data)
-		{
-			auto image_info = *reinterpret_cast<const vk::DescriptorImageInfo *>(texture->GetNativeHandle());
-			//FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteImage(binding, *image_info).Overwrite(mDescriptorSets[data.Frame]);
-
-			vk::WriteDescriptorSet descriptor_write(mDescriptorSets[data.Frame], binding, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
-			mDevice.updateDescriptorSets(descriptor_write, {});
-		};
-
-		api->SubmitCommand(cmd, ECommandType_PreCommand);
-		
-	}
-
 	void VulkanShader::CreateDescriptorResources()
 	{
-		DestroyDescriptorResources();
-
 		auto num_samplers = (uint32_t)mReflectionData.Samplers.size();
 		auto num_uniform_buffers = (uint32_t)mReflectionData.UniformBuffers.size();
-		auto max_sets = (num_samplers + num_uniform_buffers) * VulkanCore::MAX_FRAMES_IN_FLIGHT;
-
-		for (auto &[name, data] : mReflectionData.UniformBuffers)
-		{
-			mUniformBufferBindings.push_back(data.Binding);
-		}
 
 		std::vector<vk::DescriptorSetLayoutBinding> bindings;
-		std::vector<vk::DescriptorPoolSize> pool_sizes;
-		//FDescriptorSetLayout::Builder builder;
+
 		for (auto &[name, sampler] : mReflectionData.Samplers)
 		{
-			//builder.AddBinding(sampler.Binding, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment, 1);
 			bindings.emplace_back(sampler.Binding, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment);
-			pool_sizes.emplace_back(vk::DescriptorType::eCombinedImageSampler, VulkanCore::MAX_FRAMES_IN_FLIGHT);
 		}
 
 		for (auto &[name, uniform_buffer] : mReflectionData.UniformBuffers)
 		{
-			//builder.AddBinding(uniform_buffers.Binding, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex, 1);
 			bindings.emplace_back(uniform_buffer.Binding, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex);
-			pool_sizes.emplace_back(vk::DescriptorType::eUniformBuffer, VulkanCore::MAX_FRAMES_IN_FLIGHT);
 		}
 
 		vk::DescriptorSetLayoutCreateInfo layout_info({}, bindings, nullptr);
 		mDescriptorSetLayout = mDevice.createDescriptorSetLayout(layout_info);
-
-		vk::DescriptorPoolCreateInfo pool_create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, VulkanCore::MAX_FRAMES_IN_FLIGHT, pool_sizes);
-		mDescriptorPool = mDevice.createDescriptorPool(pool_create_info);
-
-		std::vector<vk::DescriptorSetLayout> layouts(VulkanCore::MAX_FRAMES_IN_FLIGHT, mDescriptorSetLayout);
-		vk::DescriptorSetAllocateInfo alloc_info(mDescriptorPool, layouts);
-		mDescriptorSets = std::move(vk::raii::DescriptorSets(mDevice, alloc_info));
-
-		/*mDescriptorSetLayout = builder.Build();
-
-		if (max_sets == 0)
-			return;
-
-		FDescriptorPool::Builder pool_builder;
-		pool_builder.SetMaxSets(max_sets);
-
-		if (num_samplers)
-		{
-			pool_builder.AddPoolSize(vk::DescriptorType::eCombinedImageSampler, num_samplers * VulkanCore::MAX_FRAMES_IN_FLIGHT);
-		}
-
-
-		if (num_uniform_buffers)
-		{
-			pool_builder.AddPoolSize(vk::DescriptorType::eUniformBuffer, num_uniform_buffers * VulkanCore::MAX_FRAMES_IN_FLIGHT);
-		}
-
-		mDescriptorPool = pool_builder.Build();
-
-		FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).Build(mDescriptorSets);
-
-		ASSERT(mDescriptorSets.size() == VulkanCore::MAX_FRAMES_IN_FLIGHT)*/
-	}
-
-	void VulkanShader::DestroyDescriptorResources()
-	{
-		mDescriptorSets.clear();
-		mDescriptorPool = nullptr;
-	}
-
-	void VulkanShader::UpdateDescriptorResources()
-	{
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto cmd = [=](const FVulkanFrameData &data)
-		{
-			ASSERT(data.Frame < mDescriptorSets.size());
-
-			for (const auto &binding : mUniformBufferBindings)
-			{
-				auto ubo = std::dynamic_pointer_cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(binding));
-				auto buffer_info = ubo->GetBufferInfo(data.Frame);
-				//FDescriptorWriter(mDescriptorSetLayout, mDescriptorPool).WriteBuffer(binding, buffer_info).Overwrite(mDescriptorSets[data.Frame]);
-				vk::WriteDescriptorSet descriptor_write(mDescriptorSets[data.Frame], binding, 0, vk::DescriptorType::eUniformBuffer, {}, buffer_info);
-				mDevice.updateDescriptorSets(descriptor_write, {});
-			}
-		};
-		
-		api->SubmitCommand(cmd, ECommandType_PreCommand);
 	}
 
 	void VulkanShader::Reflect()
@@ -357,6 +253,70 @@ namespace BHive
 
 		mGraphicsPipeline = Pipeline::Create();
 		mGraphicsPipeline->Init(config);
+	}
+
+	VulkanBackendMaterial::VulkanBackendMaterial()
+		: mDevice(VulkanCore::GetLogicalDevice())
+	{
+		
+	}
+
+	void VulkanBackendMaterial::Init(const Ref<Shader> &shader)
+	{	
+		auto vulkan_shader = Cast<VulkanShader>(shader);
+		
+		ASSERT(vulkan_shader)
+
+		mShader = vulkan_shader;
+
+		const auto &shader_reflection = vulkan_shader->GetRelectionData();
+
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+
+		std::vector<vk::DescriptorSetLayout> layouts(VulkanCore::MAX_FRAMES_IN_FLIGHT, vulkan_shader->GetDescriptorSetLayout());
+		vk::DescriptorSetAllocateInfo alloc_info(api->GetDescriptorPool(), layouts);
+		mDescriptorSets = std::move(vk::raii::DescriptorSets(mDevice, alloc_info));
+
+		for (auto &[name, data] : shader_reflection.UniformBuffers)
+		{
+			mUniformBufferBindings.push_back(data.Binding);
+		}
+	}
+
+	void VulkanBackendMaterial::Bind()
+	{
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto cmd = [=](const FVulkanFrameData &data)
+		{
+			const auto& pipeline_layout = mShader->GetPipelineLayout();
+			std::vector<vk::WriteDescriptorSet> descriptor_writes;
+
+			for (const auto &binding : mUniformBufferBindings)
+			{
+				auto ubo = std::dynamic_pointer_cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(binding));
+				auto buffer_info = ubo->GetBufferInfo(data.Frame);
+				
+				vk::WriteDescriptorSet descriptor_write(mDescriptorSets[data.Frame], binding, 0, vk::DescriptorType::eUniformBuffer, {}, buffer_info);
+				descriptor_writes.emplace_back(descriptor_write);
+			}
+
+			for (auto &[binding, texture] : mTextures)
+			{
+				auto image_info = *reinterpret_cast<const vk::DescriptorImageInfo *>(texture->GetNativeHandle());
+				vk::WriteDescriptorSet descriptor_write(mDescriptorSets[data.Frame], binding, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
+				descriptor_writes.emplace_back(descriptor_write);
+			}
+
+			mDevice.updateDescriptorSets(descriptor_writes, {});
+			data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, 0, *mDescriptorSets[data.Frame], {});
+		};
+
+		api->SubmitCommand(cmd, ECommandType_PreCommand);
+	}
+
+	void VulkanBackendMaterial::BindTexture(uint32_t binding, const Ref<Texture> &texture)
+	{
+		mTextures[binding] = texture;
 	}
 
 } // namespace BHive

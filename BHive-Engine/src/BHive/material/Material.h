@@ -8,6 +8,7 @@
 namespace BHive
 {
 	class Shader;
+	class IMaterialBackendInterface;
 	class Texture;
 
 	class BHIVE_API Material : public Asset
@@ -53,10 +54,14 @@ namespace BHive
 	private:
 		void UpdateTextureSlots();
 
+		void CreateBackendMaterial();
+
 	protected:
 		TextureSlots mTextures;
 
 		Ref<Shader> mShader;
+
+		Ref<IMaterialBackendInterface> mBackendMaterial;
 
 	private:
 	};

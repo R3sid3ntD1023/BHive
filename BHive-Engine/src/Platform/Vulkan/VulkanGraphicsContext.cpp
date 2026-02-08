@@ -59,7 +59,7 @@ namespace BHive
 		ASSERT(result == vk::Result::eSuccess || result == vk::Result::eSuboptimalKHR, "Failed to acquire swap chain image!");
 
 
-		auto& cmd = api->RenderFrame(mCurrentFrame, imageIndex, imagelayout, image, image_view, extent);
+		auto& cmd = api->RenderFrame(mCurrentFrame, imagelayout, image, image_view, extent);
 
 		result = mSwapChain->Present(cmd, imageIndex, mCurrentFrame);
 

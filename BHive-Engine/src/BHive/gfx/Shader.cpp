@@ -28,4 +28,16 @@ namespace BHive
 		return nullptr;
 	}
 
+	Ref<IMaterialBackendInterface> IMaterialBackendInterface::Create()
+	{
+		switch (RenderCommand::GetRendererAPI())
+		{
+		case RendererAPI::Vulkan:
+			return CreateRef<VulkanBackendMaterial>();
+		}
+
+		ASSERT(false);
+		return nullptr;
+	}
+
 } // namespace BHive

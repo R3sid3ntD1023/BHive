@@ -11,13 +11,17 @@ namespace BHive
 		ASSERT(shader)
 
 		UpdateTextureSlots();
+
+		CreateBackendMaterial();
 	}
 
 	void Material::SetTexture(const char *name, const Ref<Texture> &texture)
 	{
 		if (mTextures.contains(name))
 		{
-			mTextures[name].Texture = texture;
+			auto &slot = mTextures[name];
+			slot.Texture = texture;
+			mBackendMaterial->BindTexture(slot.Binding, texture);
 		}
 	}
 
@@ -25,12 +29,9 @@ namespace BHive
 	{
 		auto shader_instance = shader ? shader : mShader;
 
-		shader_instance->Bind(); //binds shaders pipeline + descriptor set
+		shader_instance->Bind(); // binds shaders pipeline 
 
-		for (auto &[name, slot] : mTextures)
-		{
-			shader_instance->BindTexture(slot.Binding, slot.Texture);
-		}
+		mBackendMaterial->Bind(); //update descriptor sets
 	}
 
 	void Material::AddTextureSlot(const std::string &name, uint32_t binding)
@@ -48,6 +49,12 @@ namespace BHive
 		{
 			mTextures.emplace(name, TextureSlot{(uint32_t)info.Binding, nullptr});
 		}
+	}
+
+	void Material::CreateBackendMaterial()
+	{
+		mBackendMaterial = IMaterialBackendInterface::Create();
+		mBackendMaterial->Init(mShader);
 	}
 
 	Ref<Shader> Material::GetShader() const

@@ -42,8 +42,6 @@ namespace BHive
 		template <typename T>
 		void SetUniform(const std::string &name, const T &val) {};
 
-		virtual void BindTexture(uint32_t binding, const Ref<Texture> &texture) = 0;
-
 		virtual const FShaderReflectionData &GetRelectionData() const = 0;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const {};
@@ -55,6 +53,20 @@ namespace BHive
 		static Ref<Shader> Create(const std::string &name, const std::string &vert, const std::string &frag, const FRenderOptions &options = {});
 
 		friend class ShaderSerializer;
+	};
+
+	class IMaterialBackendInterface
+	{
+	public:
+		virtual ~IMaterialBackendInterface() = default;
+
+		virtual void Init(const Ref<Shader>& shader)  = 0;
+
+		virtual void Bind() = 0;
+
+		virtual void BindTexture(uint32_t slot, const Ref<Texture> &texture) = 0;
+
+		static Ref<IMaterialBackendInterface> Create();
 	};
 
 } // namespace BHive
