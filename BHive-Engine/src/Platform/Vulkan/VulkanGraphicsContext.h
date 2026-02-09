@@ -41,7 +41,5 @@ namespace BHive
 		Ref<VulkanSwapChain> mSwapChain;
 
 		bool mFramebufferResized = false;
-
-		uint32_t mCurrentFrame = 0;
 	};
 } // namespace BHive

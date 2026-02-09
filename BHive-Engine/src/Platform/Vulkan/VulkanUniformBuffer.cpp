@@ -12,7 +12,7 @@ namespace BHive
 		
 		for (size_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible, mBuffer[i]);
+			VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible , mBuffer[i]);
 			mMappedMemory[i] = mBuffer[i].Memory.mapMemory(0, size);
 		}
 
@@ -33,16 +33,13 @@ namespace BHive
 		if (!data)
 			return;
 
-		auto ownedData = CreateRef<std::vector<std::byte>>();
-		ownedData->resize(size);
-		std::memcpy(ownedData->data(), data, size);
-
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 		auto cmd = [=](const FVulkanFrameData& frame)
-			{
+			{		
+				ASSERT(offset + size <= mSize);
+
 				const auto current_frame = frame.Frame;
-				ASSERT(current_frame < VulkanCore::MAX_FRAMES_IN_FLIGHT);
-				std::memcpy(mMappedMemory[current_frame], ownedData->data(), size);
+				std::memcpy(static_cast<std::byte*>(mMappedMemory[current_frame]) + offset, data, size);
 			};
 		
 		api->SubmitCommand(cmd, ECommandType_PreCommand);

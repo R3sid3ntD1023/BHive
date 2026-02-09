@@ -11,9 +11,8 @@ namespace BHive
 		  mCount(count)
 	{
 		auto size = count * sizeof(uint32_t);
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, mBuffer);
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, mStagingBuffer);
-		mMappedMemory = mStagingBuffer.Memory.mapMemory(0, size);
+		
+		mBuffer.Init(size, vk::BufferUsageFlagBits::eIndexBuffer);
 
 		if (data && size)
 			SetData(data, size, 0);
@@ -21,40 +20,23 @@ namespace BHive
 
 	VulkanIndexBuffer::~VulkanIndexBuffer()
 	{
-		mMappedMemory = nullptr;
-		mStagingBuffer.Memory.unmapMemory();
+		mBuffer.Release();
 	}
 
 	void VulkanIndexBuffer::SetData(const void *data, size_t size, uint32_t offset)
 	{
-		if (!data)
-			return;
-
 		if (!data || size == 0)
 			return;
 
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-
-		auto ownedData = CreateRef<std::vector<std::byte>>(size);
-		std::memcpy(ownedData->data(), data, size);
-
 		auto cmd = [=](const FVulkanFrameData &frame)
 		{
-			if (mMappedMemory)
+			auto cmd = [this, data, size, offset](const FVulkanFrameData &frame)
 			{
-				std::memcpy(static_cast<std::byte *>(mMappedMemory) + offset, ownedData->data(), size);
-			}
+				mBuffer.SetData(frame.CommandBuffer, data, size, offset, vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead);
+			};
 
-			vk::BufferCopy copy_region(0, offset, size);
-			frame.CommandBuffer.copyBuffer(mStagingBuffer.Buffer, mBuffer.Buffer, copy_region);
-
-			vk::BufferMemoryBarrier2 barrier(
-				vk::PipelineStageFlagBits2::eCopy, vk::AccessFlagBits2::eTransferWrite, vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead,
-				VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, mBuffer.Buffer, 0, size);
-
-			vk::DependencyInfo dependency_info({}, {}, barrier);
-
-			frame.CommandBuffer.pipelineBarrier2(dependency_info);
+			api->SubmitCommand(cmd, ECommandType_PreCommand);
 		};
 
 		api->SubmitCommand(cmd, ECommandType_PreCommand);
@@ -65,8 +47,7 @@ namespace BHive
 	{
 		for (uint32_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			mPerFrameBuffer[i].Init(size);
-			
+			mPerFrameBuffer[i].Init(size, vk::BufferUsageFlagBits::eVertexBuffer);	
 		}
 
 		if (data && size)
@@ -88,13 +69,13 @@ namespace BHive
 
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 
-		auto ownedData = CreateRef<std::vector<std::byte>>(size);
-		std::memcpy(ownedData->data(), data, size);
-
-		auto cmd = [this, ownedData, size, offset](const FVulkanFrameData &frame)
+		auto cmd = [this, data, size, offset](const FVulkanFrameData &frame)
 		{
-			auto &current_frame_buffer = mPerFrameBuffer[frame.Frame];
-			current_frame_buffer.SetData(frame.CommandBuffer, ownedData->data(), size, offset);
+			for (uint32_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
+			{
+				auto &current_frame_buffer = mPerFrameBuffer[i];
+				current_frame_buffer.SetData(frame.CommandBuffer, data, size, offset, vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead);
+			}
 		};
 
 		api->SubmitCommand(cmd, ECommandType_PreCommand);
@@ -105,14 +86,14 @@ namespace BHive
 		mLayout = layout;
 	}
 
-	void VulkanVertexBuffer::PerFrameBuffer::Init(size_t size)
+	void PerFrameBuffer::Init(size_t size, vk::BufferUsageFlags usage)
 	{
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, Buffer);
+		VulkanUtils::CreateBuffer(size, usage | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, Buffer);
 		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, StagingBuffer);
 		MappedMemory = StagingBuffer.Memory.mapMemory(0, size);
 	}
 
-	void VulkanVertexBuffer::PerFrameBuffer::SetData(vk::raii::CommandBuffer &cmd, const void *data, size_t size, uint32_t offset)
+	void PerFrameBuffer::SetData(vk::raii::CommandBuffer &cmd, const void *data, size_t size, uint32_t offset, vk::PipelineStageFlags2 flags, vk::AccessFlags2 access)
 	{
 		if (MappedMemory)
 		{
@@ -123,7 +104,7 @@ namespace BHive
 		cmd.copyBuffer(StagingBuffer.Buffer, Buffer.Buffer, copy_region);
 
 		vk::BufferMemoryBarrier2 barrier(
-			vk::PipelineStageFlagBits2::eCopy, vk::AccessFlagBits2::eTransferWrite, vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead,
+			vk::PipelineStageFlagBits2::eCopy, vk::AccessFlagBits2::eTransferWrite, flags, access,
 			VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, Buffer.Buffer, 0, size);
 
 		vk::DependencyInfo dependency_info({}, {}, barrier);
@@ -131,7 +112,7 @@ namespace BHive
 		cmd.pipelineBarrier2(dependency_info);
 	}
 
-	void VulkanVertexBuffer::PerFrameBuffer::Release()
+	void PerFrameBuffer::Release()
 	{
 		MappedMemory = nullptr;
 		StagingBuffer.Memory.unmapMemory();

@@ -31,7 +31,7 @@ namespace BHive
 
 		shader_instance->Bind(); // binds shaders pipeline 
 
-		mBackendMaterial->Bind(); //update descriptor sets
+		mBackendMaterial->Bind(mShader); //update descriptor sets
 	}
 
 	void Material::AddTextureSlot(const std::string &name, uint32_t binding)

@@ -212,6 +212,8 @@ namespace BHive
 
 		vk::DescriptorSetLayoutCreateInfo layout_info({}, bindings, nullptr);
 		mDescriptorSetLayout = mDevice.createDescriptorSetLayout(layout_info);
+
+		
 	}
 
 	void VulkanShader::Reflect()
@@ -267,15 +269,12 @@ namespace BHive
 		
 		ASSERT(vulkan_shader)
 
-		mShader = vulkan_shader;
-
-		const auto &shader_reflection = vulkan_shader->GetRelectionData();
-
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-
 		std::vector<vk::DescriptorSetLayout> layouts(VulkanCore::MAX_FRAMES_IN_FLIGHT, vulkan_shader->GetDescriptorSetLayout());
 		vk::DescriptorSetAllocateInfo alloc_info(api->GetDescriptorPool(), layouts);
 		mDescriptorSets = std::move(vk::raii::DescriptorSets(mDevice, alloc_info));
+
+		const auto &shader_reflection = vulkan_shader->GetRelectionData();
 
 		for (auto &[name, data] : shader_reflection.UniformBuffers)
 		{
@@ -283,12 +282,18 @@ namespace BHive
 		}
 	}
 
-	void VulkanBackendMaterial::Bind()
+	void VulkanBackendMaterial::Bind(const Ref<Shader> &shader)
 	{
+		auto vulkan_shader = Cast<VulkanShader>(shader);
+
+		ASSERT(vulkan_shader)
+
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto cmd = [=](const FVulkanFrameData &data)
+		auto pre_cmd = [=](const FVulkanFrameData &data)
 		{
-			const auto& pipeline_layout = mShader->GetPipelineLayout();
+			
+			const auto &descriptor_set = mDescriptorSets[data.Frame];
+
 			std::vector<vk::WriteDescriptorSet> descriptor_writes;
 
 			for (const auto &binding : mUniformBufferBindings)
@@ -296,22 +301,30 @@ namespace BHive
 				auto ubo = std::dynamic_pointer_cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(binding));
 				auto buffer_info = ubo->GetBufferInfo(data.Frame);
 				
-				vk::WriteDescriptorSet descriptor_write(mDescriptorSets[data.Frame], binding, 0, vk::DescriptorType::eUniformBuffer, {}, buffer_info);
+				vk::WriteDescriptorSet descriptor_write(descriptor_set, binding, 0, vk::DescriptorType::eUniformBuffer, {}, buffer_info);
 				descriptor_writes.emplace_back(descriptor_write);
 			}
 
 			for (auto &[binding, texture] : mTextures)
 			{
 				auto image_info = *reinterpret_cast<const vk::DescriptorImageInfo *>(texture->GetNativeHandle());
-				vk::WriteDescriptorSet descriptor_write(mDescriptorSets[data.Frame], binding, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
+				vk::WriteDescriptorSet descriptor_write(descriptor_set, binding, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
 				descriptor_writes.emplace_back(descriptor_write);
 			}
 
 			mDevice.updateDescriptorSets(descriptor_writes, {});
+			
+		};
+
+		api->SubmitCommand(pre_cmd, ECommandType_PreCommand);
+
+		auto cmd = [=](const FVulkanFrameData &data)
+		{
+			const auto &pipeline_layout = vulkan_shader->GetPipelineLayout();
 			data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, 0, *mDescriptorSets[data.Frame], {});
 		};
 
-		api->SubmitCommand(cmd, ECommandType_PreCommand);
+		api->SubmitCommand(cmd);
 	}
 
 	void VulkanBackendMaterial::BindTexture(uint32_t binding, const Ref<Texture> &texture)

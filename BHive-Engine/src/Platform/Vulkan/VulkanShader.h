@@ -77,6 +77,7 @@ namespace BHive
 
 		vk::raii::DescriptorSetLayout mDescriptorSetLayout = VK_NULL_HANDLE;
 
+
 		std::filesystem::path mFilePath;
 
 		std::string mName;
@@ -96,16 +97,15 @@ namespace BHive
 
 		void Init(const Ref<Shader> &shader) override;
 
-		void Bind() override;
+		void Bind(const Ref<Shader> &shader) override;
 
 		void BindTexture(uint32_t binding, const Ref<Texture> &texture) override;
 
 	private:		
 		vk::raii::Device &mDevice;
-		Ref<VulkanShader> mShader;
-		vk::raii::DescriptorSets mDescriptorSets = VK_NULL_HANDLE;
 		std::vector<uint32_t> mUniformBufferBindings;
 		std::unordered_map < uint32_t, Ref<Texture>> mTextures;
+		vk::raii::DescriptorSets mDescriptorSets = VK_NULL_HANDLE;
 
 	};
 

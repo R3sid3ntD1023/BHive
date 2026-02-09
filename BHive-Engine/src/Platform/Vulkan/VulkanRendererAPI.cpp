@@ -68,13 +68,13 @@ namespace BHive
 
 	}
 
-	vk::raii::CommandBuffer &VulkanRendererAPI::RenderFrame(uint32_t frame, vk::ImageLayout& layout, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D &extent)
+	vk::raii::CommandBuffer &VulkanRendererAPI::RenderFrame(vk::ImageLayout& layout, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D &extent)
 	{
-		auto &command_buffer = mCommandBuffers[frame];
+		auto &command_buffer = mCommandBuffers[mCurrentFrame];
 		auto &pre_commands = mCommands[ECommandType_PreCommand];
 		auto &commands = mCommands[ECommandType_Command];
-		FVulkanFrameData command_data{command_buffer, frame};
-		ASSERT(frame < mCommandBuffers.size());
+		FVulkanFrameData command_data{command_buffer, mCurrentFrame};
+		ASSERT(mCurrentFrame < mCommandBuffers.size());
 
 		command_buffer.reset();
 		command_buffer.begin({});
@@ -131,6 +131,11 @@ namespace BHive
 		}
 
 		mCommands[type].emplace(command);
+	}
+
+	void VulkanRendererAPI::AdvanceFrame()
+	{
+		mCurrentFrame = (mCurrentFrame + 1) % VulkanCore::MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void VulkanRendererAPI::ClearColor(float r, float g, float b, float a)

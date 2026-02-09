@@ -45,7 +45,7 @@ namespace BHive
 		for (uint32_t i = 0; i < mImages.size(); i++)
 		{
 			mRenderFinishedSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
-			LOG_TRACE("Init() FinishedSemaphore: {}",  (void *)(VkSemaphore)*mRenderFinishedSemaphores[i]);
+			//LOG_TRACE("Init() FinishedSemaphore: {}",  (void *)(VkSemaphore)*mRenderFinishedSemaphores[i]);
 		}
 
 		for (uint32_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
@@ -53,7 +53,7 @@ namespace BHive
 			mPresetCompleteSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
 			mInFlightFences.emplace_back(mDevice, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
 
-			LOG_TRACE("Init() PresentSemaphore: {}", (void *)(VkSemaphore)*mPresetCompleteSemaphores[i]);
+			//LOG_TRACE("Init() PresentSemaphore: {}", (void *)(VkSemaphore)*mPresetCompleteSemaphores[i]);
 		}
 
 		mImageLayouts.resize(mImages.size(), vk::ImageLayout::eUndefined);
@@ -61,7 +61,7 @@ namespace BHive
 
 	vk::ResultValue<uint32_t> VulkanSwapChain::AquireNextImage(uint32_t frame)
 	{
-		LOG_TRACE("AquireNextImage() Frame : {} \n PresentSemaphore: {}", frame, (void *)(VkSemaphore)*mPresetCompleteSemaphores[frame]);
+		//LOG_TRACE("AquireNextImage() Frame : {} \n PresentSemaphore: {}", frame, (void *)(VkSemaphore)*mPresetCompleteSemaphores[frame]);
 
 		while (vk::Result::eTimeout == mDevice.waitForFences(*mInFlightFences[frame], VK_TRUE, UINT64_MAX))
 			;
@@ -71,8 +71,8 @@ namespace BHive
 
 	vk::Result VulkanSwapChain::Present(const vk::raii::CommandBuffer &buffers, uint32_t imageIndex, uint32_t frame)
 	{
-		LOG_TRACE("Present() ImageIndex : {} \n FinishedSemaphore: {}", imageIndex, (void*)(VkSemaphore)*mRenderFinishedSemaphores[imageIndex]);
-		LOG_TRACE("Present() Frame : {} \n PresentSemaphore: {}", frame, (void *)(VkSemaphore)*mPresetCompleteSemaphores[frame]);
+		/*LOG_TRACE("Present() ImageIndex : {} \n FinishedSemaphore: {}", imageIndex, (void*)(VkSemaphore)*mRenderFinishedSemaphores[imageIndex]);
+		LOG_TRACE("Present() Frame : {} \n PresentSemaphore: {}", frame, (void *)(VkSemaphore)*mPresetCompleteSemaphores[frame]);*/
 
 		vk::SemaphoreSubmitInfo wait_info(*mPresetCompleteSemaphores[frame], 0, vk::PipelineStageFlagBits2::eAllCommands);
 		vk::CommandBufferSubmitInfo cmd_submit_info(buffers);

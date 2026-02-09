@@ -5,6 +5,19 @@
 
 namespace BHive
 {
+	struct PerFrameBuffer
+	{
+		AllocatedVulkanBuffer Buffer;
+		AllocatedVulkanBuffer StagingBuffer;
+		void *MappedMemory = nullptr;
+
+		void Init(size_t size, vk::BufferUsageFlags usage);
+
+		void SetData(vk::raii::CommandBuffer &cmd, const void *data, size_t size, uint32_t offset, vk::PipelineStageFlags2 flags, vk::AccessFlags2 access);
+
+		void Release();
+	};
+
 	class BHIVE_API VulkanIndexBuffer : public IndexBuffer
 	{
 	public:
@@ -20,16 +33,12 @@ namespace BHive
 
 		const vk::Buffer &GetBuffer() const
 		{
-			return mBuffer.Buffer;
+			return mBuffer.Buffer.Buffer;
 		}
 
 	private:
 		vk::raii::Device &mDevice;
-
-		AllocatedVulkanBuffer mBuffer;
-		AllocatedVulkanBuffer mStagingBuffer;
-		void * mMappedMemory = nullptr;
-
+		PerFrameBuffer mBuffer;
 		uint32_t mCount;
 	};
 
@@ -55,19 +64,7 @@ namespace BHive
 		virtual uintptr_t GetNativeHandle() const override { return 0; }
 
 	private:
-		struct PerFrameBuffer
-		{
-			AllocatedVulkanBuffer Buffer;
-			AllocatedVulkanBuffer StagingBuffer;
-			void *MappedMemory = nullptr;
-
-			void Init(size_t size);
-
-			void SetData(vk::raii::CommandBuffer& cmd, const void *data, size_t size, uint32_t offset);
-
-			void Release();
-		};
-
+		
 	private:
 		vk::raii::Device &mDevice;
 		std::array<PerFrameBuffer, VulkanCore::MAX_FRAMES_IN_FLIGHT> mPerFrameBuffer;

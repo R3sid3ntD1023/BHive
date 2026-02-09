@@ -22,6 +22,8 @@ namespace BHive
 
 		void Init(vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info);
 
+		void WaitForFences(uint32_t frame);
+
 		vk::ResultValue<uint32_t> AquireNextImage(uint32_t frame);
 
 		vk::Result Present(const vk::raii::CommandBuffer& buffer, uint32_t imageIndex, uint32_t frame);

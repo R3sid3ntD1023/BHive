@@ -62,7 +62,7 @@ namespace BHive
 
 		virtual void Init(const Ref<Shader>& shader)  = 0;
 
-		virtual void Bind() = 0;
+		virtual void Bind(const Ref<Shader> &shader) = 0;
 
 		virtual void BindTexture(uint32_t slot, const Ref<Texture> &texture) = 0;
 

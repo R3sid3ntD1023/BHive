@@ -44,7 +44,8 @@ namespace BHive
 	void VulkanGraphicsContext::SwapBuffers()
 	{
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto [result, imageIndex] = mSwapChain->AquireNextImage(mCurrentFrame);
+		const auto current_frame = api->GetCurrentFrame();
+		auto [result, imageIndex] = mSwapChain->AquireNextImage(current_frame);
 		auto &image = mSwapChain->GetImage(imageIndex);
 		auto &image_view = mSwapChain->GetImageView(imageIndex);
 		auto extent = mSwapChain->GetExtent();
@@ -59,9 +60,9 @@ namespace BHive
 		ASSERT(result == vk::Result::eSuccess || result == vk::Result::eSuboptimalKHR, "Failed to acquire swap chain image!");
 
 
-		auto& cmd = api->RenderFrame(mCurrentFrame, imagelayout, image, image_view, extent);
+		auto& cmd = api->RenderFrame(imagelayout, image, image_view, extent);
 
-		result = mSwapChain->Present(cmd, imageIndex, mCurrentFrame);
+		result = mSwapChain->Present(cmd, imageIndex, current_frame);
 
 		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || mFramebufferResized)
 		{
@@ -73,7 +74,7 @@ namespace BHive
 			ASSERT(false, "Failed to present swap chain image!")
 		}
 
-		mCurrentFrame = (mCurrentFrame + 1) % VulkanCore::MAX_FRAMES_IN_FLIGHT;
+		api->AdvanceFrame();
 	}
 
 	void VulkanGraphicsContext::CreateSwapChain()
