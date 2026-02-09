@@ -42,11 +42,11 @@ namespace BHive
 		RenderCommand::Clear();
 		RenderCommand::SetViewport(0, 0, size.x, size.y);
 
-		//Renderer::Begin();
+		Renderer::Begin();
 
 		Renderer::SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
 
-		//LineRenderer::DrawLine({-1, 0, 0}, {1, 0, 0}, FColor::Green);
+		LineRenderer::DrawLine({-1, 0, 0}, {1, 0, 0}, FColor::Green);
 
 		if (mMesh && mMaterial)
 		{
@@ -56,7 +56,7 @@ namespace BHive
 				RenderCommand::DrawElements(EDrawMode::Triangles, mMesh->GetVertexArray());
 		}
 
-		//Renderer::End();
+		Renderer::End();
 	}
 
 	void RuntimeLayer::OnGuiRender()

@@ -16,13 +16,10 @@ namespace BHive
 
 	class VulkanSwapChain
 	{
-
 	public:
 		VulkanSwapChain();
 
 		void Init(vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info);
-
-		void WaitForFences(uint32_t frame);
 
 		vk::ResultValue<uint32_t> AquireNextImage(uint32_t frame);
 
@@ -37,8 +34,6 @@ namespace BHive
 		vk::Image &GetImage(uint32_t index)  { return mImages[index]; };
 
 		vk::raii::ImageView &GetImageView(uint32_t index)  { return mImageViews[index]; }
-
-		vk::raii::Fence &GetInFlightFence(uint32_t frame)  { return mInFlightFences[frame]; };
 
 		uint32_t GetMinImageCount() const { return mMinImageCount; }
 
@@ -59,15 +54,12 @@ namespace BHive
 
 		std::vector<vk::raii::ImageView> mImageViews{};
 
-		std::vector<vk::ImageLayout> mImageLayouts{};
+		std::vector<vk::raii::Semaphore> mPresentSemaphores;
+		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores;
+		std::vector<vk::ImageLayout> mImageLayouts;
 
-		std::vector<vk::raii::Semaphore> mPresetCompleteSemaphores{};
-
-		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores{};
-
-		std::vector<vk::raii::Fence> mInFlightFences{};
-
+		std::vector<vk::raii::Fence> mInFlightFences;
+		
 		uint32_t mMinImageCount = 0;
-
 	};
 } // namespace BHive

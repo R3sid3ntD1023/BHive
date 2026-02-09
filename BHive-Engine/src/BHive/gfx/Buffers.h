@@ -5,6 +5,12 @@
 
 namespace BHive
 {
+	enum class EBufferUsage
+	{
+		Static,
+		Dynamic
+	};
+
 	class BHIVE_API IndexBuffer : public BufferBase
 	{
 	public:
@@ -12,7 +18,7 @@ namespace BHive
 
 		virtual uint32_t GetCount() const = 0;
 
-		static Ref<IndexBuffer> Create(const uint32_t count, const uint32_t *data = nullptr);
+		static Ref<IndexBuffer> Create(const uint32_t count,  EBufferUsage usage = EBufferUsage::Static);
 	};
 
 	class BHIVE_API VertexBuffer : public BufferBase
@@ -24,7 +30,7 @@ namespace BHive
 
 		virtual const BufferLayout &GetLayout() const = 0;
 
-		static Ref<VertexBuffer> Create(const uint64_t size, const void *data = nullptr);
+		static Ref<VertexBuffer> Create(const uint64_t size,  EBufferUsage usage = EBufferUsage::Static);
 	};
 
 } // namespace BHive

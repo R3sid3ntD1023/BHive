@@ -42,5 +42,5 @@ layout(location = 0) out vec4 f_out;
 void main()
 {
 	vec4 color = texture(u_Texture, vs_in.TexCoord);
-	f_out = vec4(1, 0, 0, 1);
+	f_out = vec4(vs_in.TexCoord, 0, 1);
 }

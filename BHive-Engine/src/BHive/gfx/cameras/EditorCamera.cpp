@@ -44,12 +44,12 @@ namespace BHive
 
 			if (input.is_pressed(Key::Up) || input.is_pressed(Key::W))
 			{
-				mTransform.AddTranslation(-forward * MovementSpeed());
+				mTransform.AddTranslation(forward * MovementSpeed());
 			}
 
 			if (input.is_pressed(Key::Down) || input.is_pressed(Key::S))
 			{
-				mTransform.AddTranslation(forward * MovementSpeed());
+				mTransform.AddTranslation(-forward * MovementSpeed());
 			}
 
 			if (input.is_pressed(Key::Left) || input.is_pressed(Key::A))

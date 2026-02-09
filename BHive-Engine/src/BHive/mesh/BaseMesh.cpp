@@ -34,8 +34,10 @@ namespace BHive
 	void BaseMesh::CreateVertexArrayBuffer()
 	{
 		auto &data = mData;
-		auto indexbuffer = IndexBuffer::Create((uint32_t)data.mIndices.size(), data.mIndices.data());
-		auto vertexbuffer = VertexBuffer::Create(data.mVertices.size() * sizeof(FVertex));
+		auto indexbuffer = IndexBuffer::Create((uint32_t)data.mIndices.size(), EBufferUsage::Static);
+		indexbuffer->SetData(data.mIndices.data(), data.mIndices.size() * sizeof(uint32_t));
+
+		auto vertexbuffer = VertexBuffer::Create(data.mVertices.size() * sizeof(FVertex), EBufferUsage::Static);
 		vertexbuffer->SetData(data.mVertices.data(), data.mVertices.size() * sizeof(FVertex));
 		vertexbuffer->SetLayout(FVertex::Layout());
 

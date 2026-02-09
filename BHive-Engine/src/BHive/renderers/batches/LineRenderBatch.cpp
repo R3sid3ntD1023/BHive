@@ -17,7 +17,7 @@ namespace BHive
 	{
 		mVertexDataBuffer = new FLineVertex[sMaxVertexCount];
 
-		mVertexBuffer = VertexBuffer::Create(sMaxVertexCount * sizeof(FLineVertex));
+		mVertexBuffer = VertexBuffer::Create(sMaxVertexCount * sizeof(FLineVertex), EBufferUsage::Dynamic);
 		mVertexBuffer->SetLayout({{EShaderDataType::Float3}, {EShaderDataType::Float4}, {EShaderDataType::Int}});
 
 		mVertexArray = VertexArray::Create();
@@ -32,8 +32,6 @@ namespace BHive
 		mLineShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Line.glsl", options);
 		mLineMaterial = CreateRef<Material>(mLineShader);
 	}
-
-
 
 	void LineRenderBatch::End()
 	{
