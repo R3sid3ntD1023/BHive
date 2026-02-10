@@ -3,6 +3,7 @@
 #include "VulkanVertexArray.h"
 #include "VulkanRendererAPI.h"
 #include "VulkanBuffers.h"
+#include "VulkanSwapChain.h"
 
 namespace BHive
 {
@@ -68,7 +69,7 @@ namespace BHive
 
 	}
 
-	vk::raii::CommandBuffer &VulkanRendererAPI::RenderFrame(vk::ImageLayout& layout, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D &extent)
+	vk::Result VulkanRendererAPI::RenderFrame(const Ref<VulkanSwapChain>& swapChain)
 	{
 		auto &command_buffer = mCommandBuffers[mCurrentFrame];
 		auto &pre_commands = mCommands[ECommandType_PreCommand];
@@ -76,7 +77,20 @@ namespace BHive
 		FVulkanFrameData command_data{command_buffer, mCurrentFrame};
 		ASSERT(mCurrentFrame < mCommandBuffers.size());
 
+		
+		swapChain->WaitForFence(mCurrentFrame);
+
 		command_buffer.reset();
+
+		auto [result, imageIndex] = swapChain->AquireNextImage(mCurrentFrame);
+		auto &image = swapChain->GetImage(imageIndex);
+		auto &image_view = swapChain->GetImageView(imageIndex);
+		auto extent = swapChain->GetExtent();
+		auto &image_layout = swapChain->GetImageLayout(imageIndex);
+
+		if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
+			return result;
+
 		command_buffer.begin({});
 
 		while (!pre_commands.empty())
@@ -88,10 +102,10 @@ namespace BHive
 		}
 		
 		VulkanUtils::TransitionImageLayout(
-			command_buffer, image, layout, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
+			command_buffer, image, image_layout, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eColorAttachmentOutput);
 
-		layout = vk::ImageLayout::eColorAttachmentOptimal;
+		image_layout = vk::ImageLayout::eColorAttachmentOptimal;
 
 		vk::ClearValue clearColor = mClearColor;
 		vk::RenderingAttachmentInfo attachmentInfo(
@@ -115,11 +129,18 @@ namespace BHive
 			command_buffer, image, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eColorAttachmentWrite, {},
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eBottomOfPipe);
 
-		layout = vk::ImageLayout::ePresentSrcKHR;
+		image_layout = vk::ImageLayout::ePresentSrcKHR;
 
 		command_buffer.end();
 
-		return command_buffer;
+		result = swapChain->Present(command_buffer, imageIndex, mCurrentFrame);
+
+		if (result != vk::Result::eSuccess)
+			return result;
+
+		mCurrentFrame = (mCurrentFrame + 1) % VulkanCore::MAX_FRAMES_IN_FLIGHT;
+
+		return vk::Result::eSuccess;
 	}
 
 	void VulkanRendererAPI::SubmitCommand(const FRenderCommand &command, ECommandType type)
@@ -131,11 +152,6 @@ namespace BHive
 		}
 
 		mCommands[type].emplace(command);
-	}
-
-	void VulkanRendererAPI::AdvanceFrame()
-	{
-		mCurrentFrame = (mCurrentFrame + 1) % VulkanCore::MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void VulkanRendererAPI::ClearColor(float r, float g, float b, float a)

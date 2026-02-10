@@ -13,7 +13,7 @@ namespace BHive
 		using Attributes = std::vector<vk::VertexInputAttributeDescription2EXT>;
 
 	public:
-		VulkanVertexArray() = default;
+		VulkanVertexArray();
 
 		VulkanVertexArray(const std::vector<Ref<VertexBuffer>> &vertex_buffers, const Ref<IndexBuffer> &index_buffer = nullptr);
 
@@ -42,6 +42,6 @@ namespace BHive
 
 		Attributes mAttributes;
 
-		uint32_t mVertexAttributeIndex{0};
+		uint32_t mVertexAttributeIndex = 0;
 	};
 } // namespace BHive

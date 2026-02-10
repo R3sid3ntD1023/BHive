@@ -46,24 +46,27 @@ namespace BHive
 
 		for (uint32_t i = 0; i < mImages.size(); i++)
 		{
-			mRenderFinishedSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
-			mPresentSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
+			mRenderFinishedSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());			
 		}
 
 		for (uint32_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			
+			mPresentSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
 			mInFlightFences.emplace_back(mDevice, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
 		}
+	}
+
+	void VulkanSwapChain::WaitForFence(uint32_t frame)
+	{
+		vk::Fence fence = mInFlightFences[frame];
+		while (vk::Result::eTimeout == mDevice.waitForFences(fence, VK_TRUE, UINT64_MAX))
+			;
+		mDevice.resetFences(fence);
 	}
 
 	vk::ResultValue<uint32_t> VulkanSwapChain::AquireNextImage(uint32_t frame)
 	{
 		vk::Semaphore present = mPresentSemaphores[frame];
-
-		auto [result, image_index] = mSwapChain.acquireNextImage(UINT64_MAX, present, VK_NULL_HANDLE);
-
-		present = mPresentSemaphores[image_index];
 		return mSwapChain.acquireNextImage(UINT64_MAX, present, VK_NULL_HANDLE);
 	}
 
@@ -71,12 +74,7 @@ namespace BHive
 	{
 		
 		vk::Fence fence = mInFlightFences[frame];
-
-		while (vk::Result::eTimeout == mDevice.waitForFences(fence, VK_TRUE, UINT64_MAX))
-			;
-		mDevice.resetFences(fence);
-
-		vk::Semaphore wait_semaphore = mPresentSemaphores[imageIndex];
+		vk::Semaphore wait_semaphore = mPresentSemaphores[frame];
 		vk::Semaphore signal_semaphore = mRenderFinishedSemaphores[imageIndex];
 
 		vk::SemaphoreSubmitInfo wait_info(wait_semaphore, 0, vk::PipelineStageFlagBits2::eAllCommands);
@@ -89,9 +87,8 @@ namespace BHive
 		graphics_queue.submit2(submitInfo2, fence);
 
 		const vk::PresentInfoKHR presentInfoKHR(signal_semaphore, *mSwapChain, imageIndex);
-		auto result = graphics_queue.presentKHR(presentInfoKHR);
-
-		return result;
+		return (vk::Result)vkQueuePresentKHR(*graphics_queue, &*presentInfoKHR);
+		//return graphics_queue.presentKHR(presentInfoKHR);
 	}
 
 	vk::ImageLayout &VulkanSwapChain::GetImageLayout(uint32_t imageIndex)

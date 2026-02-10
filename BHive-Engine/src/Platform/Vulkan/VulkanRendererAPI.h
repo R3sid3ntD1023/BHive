@@ -9,15 +9,17 @@
 
 namespace BHive
 {
+	class VulkanSwapChain;
+
 	struct FVulkanFrameData
 	{
 		vk::raii::CommandBuffer& CommandBuffer;
 
 		uint32_t Frame;
-
 	};
 
 	typedef std::function<void(const FVulkanFrameData &)> FRenderCommand;
+	typedef std::function<void(vk::Result)> CheckResultCallback;
 
 	enum ECommandType
 	{
@@ -77,7 +79,7 @@ namespace BHive
 
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) override;
 
-		vk::raii::CommandBuffer& RenderFrame(vk::ImageLayout& layout, vk::Image &image, vk::raii::ImageView &image_view, const vk::Extent2D& extent);
+		vk::Result RenderFrame(const Ref<VulkanSwapChain>& swapChain);
 
 		void SubmitCommand(const FRenderCommand &command, ECommandType type = ECommandType_Command);
 
@@ -86,10 +88,6 @@ namespace BHive
 		vk::raii::DescriptorPool &GetDescriptorPool() { return mDescriptorPool; }
 
 		virtual EAPI GetAPI() const override { return EAPI::Vulkan; }
-
-		uint32_t GetCurrentFrame() const { return mCurrentFrame; }
-
-		void AdvanceFrame();
 
 	private:
 		vk::raii::Device &mDevice;

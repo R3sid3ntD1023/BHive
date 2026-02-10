@@ -1,9 +1,8 @@
 #include "gfx/RenderCommand.h"
-#include "Platform/Vulkan/DescriptorBuilder.h"
-#include "Platform/Vulkan/VulkanGraphicsContext.h"
-#include "Platform/Vulkan/VulkanRendererAPI.h"
-#include "Platform/Vulkan/VulkanSwapChain.h"
-#include "Platform/Vulkan/VulkanUtils.h"
+#include "VulkanGraphicsContext.h"
+#include "VulkanRendererAPI.h"
+#include "VulkanSwapChain.h"
+#include "VulkanUtils.h"
 #include "VulkanImGuiLayer.h"
 
 #include <backends/imgui_impl_glfw.h>
@@ -60,21 +59,24 @@ namespace BHive
 		auto image_count = swap_chain->GetImageCount();
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 		auto &queue_familes = VulkanCore::GetQueueFamilies();
+		auto &device = VulkanCore::GetLogicalDevice();
 
-		mDescriptorPool = FDescriptorPool::Builder()
-								.SetMaxSets(1000)
-								.AddPoolSize(vk::DescriptorType::eSampler, 1000)
-								.AddPoolSize(vk::DescriptorType::eCombinedImageSampler, 1000)
-								.AddPoolSize(vk::DescriptorType::eSampledImage, 1000)
-								.AddPoolSize(vk::DescriptorType::eStorageImage, 1000)
-								.AddPoolSize(vk::DescriptorType::eUniformTexelBuffer, 1000)
-								.AddPoolSize(vk::DescriptorType::eStorageTexelBuffer, 1000)
-								.AddPoolSize(vk::DescriptorType::eUniformBuffer, 1000)
-								.AddPoolSize(vk::DescriptorType::eStorageBuffer, 1000)
-								.AddPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1000)
-								.AddPoolSize(vk::DescriptorType::eStorageBufferDynamic, 1000)
-								.AddPoolSize(vk::DescriptorType::eInputAttachment, 1000)
-								.Build();
+		std::vector<vk::DescriptorPoolSize> pool_sizes;
+		pool_sizes.emplace_back(vk::DescriptorType::eSampler, 1000);
+		pool_sizes.emplace_back(vk::DescriptorType::eCombinedImageSampler, 1000);
+		pool_sizes.emplace_back(vk::DescriptorType::eSampledImage, 1000);
+		pool_sizes.emplace_back(vk::DescriptorType::eStorageImage, 1000);
+		pool_sizes.emplace_back(vk::DescriptorType::eUniformTexelBuffer, 1000);
+		pool_sizes.emplace_back(vk::DescriptorType::eStorageTexelBuffer, 1000);
+		pool_sizes.emplace_back(vk::DescriptorType::eUniformBuffer, 1000);
+		pool_sizes.emplace_back(vk::DescriptorType::eStorageBuffer, 1000);
+		pool_sizes.emplace_back(vk::DescriptorType::eUniformBufferDynamic, 1000);
+		pool_sizes.emplace_back(vk::DescriptorType::eStorageBufferDynamic, 1000);
+		pool_sizes.emplace_back(vk::DescriptorType::eInputAttachment, 1000);
+		
+		vk::DescriptorPoolCreateInfo pool_create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 1000, pool_sizes );
+		mDescriptorPool = vk::raii::DescriptorPool(device, pool_create_info);
+								
 
 		ImGui_ImplGlfw_InitForVulkan(mWindowHandle, true);
 
@@ -90,7 +92,7 @@ namespace BHive
 		init_info.Device = *mDevice;
 		init_info.Queue = *queue_familes.GraphicsQueue;
 		init_info.QueueFamily = queue_familes.GraphicsQueueIndex;
-		init_info.DescriptorPool = *mDescriptorPool->GetPool();
+		init_info.DescriptorPool = *mDescriptorPool;
 		init_info.MinImageCount = swap_chain->GetMinImageCount();
 		init_info.ImageCount = image_count;
 		init_info.PipelineCache = VK_NULL_HANDLE;

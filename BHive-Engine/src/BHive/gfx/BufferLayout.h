@@ -39,6 +39,8 @@ namespace BHive
 			  mElements(elements)
 		{
 			CalculateOffsetsAndStride();
+
+			
 		}
 
 		const uint32_t GetStride() const { return mStride; }

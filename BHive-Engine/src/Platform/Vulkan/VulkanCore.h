@@ -1,12 +1,14 @@
 #pragma once
 
 #include "core/Core.h"
+#include "Helpers.h"
+
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_platform.h>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
-#include "Helpers.h"
+
 
 struct GLFWwindow;
 
