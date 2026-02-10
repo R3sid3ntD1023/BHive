@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "core/Layer.h"
 #include "gfx/cameras/EditorCamera.h"
+#include "core/events/ApplicationEvents.h"
 
 namespace BHive
 {
@@ -18,7 +19,7 @@ namespace BHive
 		void OnEvent(Event &e) override;
 
 	private:
-		void CreateGraphicsPipeline();
+		bool OnWindowResize(WindowResizeEvent& e);
 
 	private:
 		Ref<Texture2D> mTexture = nullptr;

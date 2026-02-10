@@ -42,9 +42,6 @@ namespace BHive
 		vertexbuffer->SetLayout(FVertex::Layout());
 
 		mVertexArray = VertexArray::Create({vertexbuffer}, indexbuffer);
-
-		LOG_TRACE("Sizeof Vertex: {}" , FVertex::Layout().GetStride());
-		LOG_TRACE("Sizeof Vertex: {}" , sizeof(FVertex));
 	}
 
 	REFLECT(BaseMesh)

@@ -42,6 +42,7 @@ namespace BHive
 		  mCount(count)
 	{
 		mBuffer.Init(count * sizeof(uint32_t), vk::BufferUsageFlagBits::eIndexBuffer);
+		LOG_TRACE("Created Static Index Buffer");
 	}
 
 	StaticVulkanIndexBuffer::~StaticVulkanIndexBuffer()
@@ -54,9 +55,12 @@ namespace BHive
 		if (!data || size == 0)
 			return;
 
+		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
+		std::memcpy(buffer_copy->data(), data, size);
+
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto cmd = [this, data, size, offset](const FVulkanFrameData &frame)
-		{ mBuffer.SetData(frame.CommandBuffer, data, size, offset, vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead); };
+		auto cmd = [this, buffer_copy, size, offset](const FVulkanFrameData &frame)
+		{ mBuffer.SetData(frame.CommandBuffer, buffer_copy->data(), size, offset, vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead); };
 
 		api->SubmitCommand(cmd, ECommandType_PreCommand);
 	}
@@ -65,6 +69,7 @@ namespace BHive
 		: mDevice(VulkanCore::GetLogicalDevice())
 	{
 		mBuffer.Init(size, vk::BufferUsageFlagBits::eVertexBuffer);
+		LOG_TRACE("Created Static Vertex Buffer")
 	}
 
 	StaticVulkanVertexBuffer::~StaticVulkanVertexBuffer()
@@ -77,9 +82,12 @@ namespace BHive
 		if (!data || size == 0)
 			return;
 
+		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
+		std::memcpy(buffer_copy->data(), data, size);
+
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto cmd = [this, data, size, offset](const FVulkanFrameData &frame)
-		{ mBuffer.SetData(frame.CommandBuffer, data, size, offset, vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead); };
+		auto cmd = [this, buffer_copy, size, offset](const FVulkanFrameData &frame)
+		{ mBuffer.SetData(frame.CommandBuffer, buffer_copy->data(), size, offset, vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead); };
 
 		api->SubmitCommand(cmd, ECommandType_PreCommand);
 	}

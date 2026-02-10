@@ -97,6 +97,8 @@ namespace BHive
 		{
 			CompileFromSource();
 		}
+
+		CompileFromSource();
 	}
 
 	VulkanShader::VulkanShader(const std::string &name, const std::string &vert, const std::string &frag, const FRenderOptions &options)
@@ -182,6 +184,7 @@ namespace BHive
 	void VulkanShader::Bind()
 	{
 		mGraphicsPipeline->Bind();
+		//LOG_TRACE("Current Pipeline Bound : {}", (void*)mGraphicsPipeline.get());
 	}
 
 	void VulkanShader::UnBind()
@@ -230,19 +233,24 @@ namespace BHive
 	void VulkanShader::CreatePipeline()
 	{
 		auto swap_chain = static_cast<VulkanGraphicsContext &>(GraphicsContext::Get()).GetSwapChain();
+		auto format = swap_chain->GetFormat().format;
+	
+		//LOG_TRACE("Pipeline RenderInfo Format : {}", vk::to_string(format));
 
 		std::vector<vk::PipelineShaderStageCreateInfo> create_infos;
 
 		for (auto &[stage, module] : mShaderModules)
 		{
 			create_infos.emplace_back(vk::PipelineShaderStageCreateFlags{}, utils::GetAPIShaderStage(stage), module, "main");
+			//LOG_TRACE("Creating pipeline with module {}", (void*) & module);
 		}
 
 		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, *mDescriptorSetLayout);
 		mPipelineLayout = mDevice.createPipelineLayout(pipeline_layout_create_info);
 
 		vk::PipelineRenderingCreateInfo rendering_info{};
-		rendering_info.setViewMask(0).setColorAttachmentCount(1).setColorAttachmentFormats(swap_chain->GetFormat().format);
+		rendering_info.setViewMask(0).setColorAttachmentCount(1).setColorAttachmentFormats(format);
+
 
 		FVulkanPipelineConfigInfo config = VulkanPipeline::GetDefaultConfigInfo();
 		config.Layout = mPipelineLayout;
@@ -250,10 +258,14 @@ namespace BHive
 		config.ShaderCreateInfos = create_infos;
 		config.InputAssembly.setTopology(utils::GetTopology(mRenderOptions.DrawMode));
 		config.Rasterazation.setCullMode(utils::GetCullMode(mRenderOptions.CullMode));
+		config.DepthStencil.setDepthTestEnable(VK_FALSE).setDepthWriteEnable(VK_FALSE).setDepthBoundsTestEnable(VK_FALSE).setStencilTestEnable(VK_FALSE);
+			//.setDepthCompareOp(vk::CompareOp::eLessOrEqual);
 	//	config.DepthStencil.setDepthTestEnable(VK_FALSE).setDepthWriteEnable(VK_FALSE);
 
 		mGraphicsPipeline = Pipeline::Create();
 		mGraphicsPipeline->Init(config);
+
+		
 	}
 
 	VulkanBackendMaterial::VulkanBackendMaterial()

@@ -12,7 +12,7 @@ namespace BHive
 		
 		for (size_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible , mBuffer[i]);
+			VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent , mBuffer[i]);
 			mMappedMemory[i] = mBuffer[i].Memory.mapMemory(0, size);
 		}
 

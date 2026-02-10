@@ -187,9 +187,9 @@ namespace BHive
 		case BHive::EFormat::RG32F:
 			return VK_FORMAT_R32G32_SFLOAT;
 		case BHive::EFormat::RGB8:
-			return VK_FORMAT_R8G8B8_SRGB;
+			return VK_FORMAT_R8G8B8_UNORM;
 		case BHive::EFormat::RGBA8:
-			return VK_FORMAT_R8G8B8A8_SRGB;
+			return VK_FORMAT_R8G8B8A8_UNORM;
 		case BHive::EFormat::RGB16F:
 			return VK_FORMAT_R16G16B16_SFLOAT;
 		case BHive::EFormat::RGBA16F:

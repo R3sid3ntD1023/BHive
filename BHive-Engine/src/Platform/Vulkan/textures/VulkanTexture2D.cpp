@@ -93,6 +93,8 @@ namespace BHive
 		auto compare_operation = (vk::CompareOp)mInfo.CompareFunc;
 		auto format = (vk::Format)mInfo.InternalFormat;
 
+		//LOG_TRACE("Texture Format : {}", vk::to_string(format));
+
 		VulkanUtils::CreateImage(
 			mWidth, mHeight, 1, vk::ImageType::e2D, format, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
 			vk::MemoryPropertyFlagBits::eDeviceLocal, mVulkanTexture);

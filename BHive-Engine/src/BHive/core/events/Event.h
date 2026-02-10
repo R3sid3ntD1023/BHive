@@ -57,13 +57,27 @@ namespace BHive
 		}
 
 		template <typename T, typename U, typename TEvent, typename = is_derived_from<T, U>>
-		void Dispatch(T *instance, bool (U::*func)(TEvent &))
+		EventDispatcher& Dispatch(T *instance, bool (U::*func)(TEvent &))
 		{
 			if (TEvent::GetStaticType() == mEvent.GetType() && !mEvent.mHandled)
 			{
 				mEvent.mHandled |= (instance->*func)(static_cast<TEvent &>(mEvent));
 			}
+
+			return *this;
 		}
+
+		template <typename TEvent, typename = is_derived_from<TEvent, Event>>
+		EventDispatcher &Dispatch(bool (*func)(TEvent &))
+		{
+			if (TEvent::GetStaticType() == mEvent.GetType() && !mEvent.mHandled)
+			{
+				mEvent.mHandled |= (*func)(static_cast<TEvent &>(mEvent));
+			}
+
+			return *this;
+		}
+
 
 	private:
 		Event &mEvent;

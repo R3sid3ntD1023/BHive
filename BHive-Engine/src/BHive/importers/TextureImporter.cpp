@@ -91,7 +91,7 @@ namespace BHive
 		else
 		{
 
-			image_data = stbi_load(path_str.c_str(), &w, &h, &c_in, 4);
+			image_data = stbi_load(path_str.c_str(), &w, &h, &c_in, forced_channels);
 			data_size = size_t(w) * h * c_out;
 		}
 
@@ -131,7 +131,8 @@ namespace BHive
 
 	Ref<Texture2D> TextureLoader::LoadFromMemory(const uint8_t *data, int length)
 	{
-		int x = 0, y = 0, c = 0;
+		int x = 0, y = 0, c_in = 0;
+		int c_out  = 4, forced_channels = 4;
 		stbi_uc *image_data = nullptr;
 
 		stbi_set_flip_vertically_on_load(1);
@@ -140,13 +141,13 @@ namespace BHive
 
 		if (is_hdr)
 		{
-			image_data = (stbi_uc *)stbi_loadf_from_memory(data, length, &x, &y, &c, 4);
-			data_size = x * y * c * sizeof(float);
+			image_data = (stbi_uc *)stbi_loadf_from_memory(data, length, &x, &y, &c_in, forced_channels);
+			data_size = x * y * c_out * sizeof(float);
 		}
 		else
 		{
-			image_data = stbi_load_from_memory(data, length, &x, &y, &c, 4);
-			data_size = x * y * c;
+			image_data = stbi_load_from_memory(data, length, &x, &y, &c_in, forced_channels);
+			data_size = x * y * c_out;
 		}
 
 		if (!image_data)
@@ -156,8 +157,8 @@ namespace BHive
 		}
 
 		FTextureCreateInfo create_info{};
-		create_info.InternalFormat = is_hdr ? utils::GetFormatFromChannelsHDR(c) : utils::GetFormatFromChannels(c);
-		create_info.Channels = 4;
+		create_info.InternalFormat = is_hdr ? utils::GetFormatFromChannelsHDR(c_out) : utils::GetFormatFromChannels(c_out);
+		create_info.Channels = c_out;
 		create_info.MinFilter = EMinFilter::LINEAR;
 		create_info.MagFilter = EMagFilter::LINEAR;
 		create_info.WrapMode = EWrapMode::REPEAT;

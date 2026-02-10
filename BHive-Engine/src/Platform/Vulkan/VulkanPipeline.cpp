@@ -15,26 +15,29 @@ namespace BHive
 
 	void VulkanPipeline::Init(const Configuration &configuration)
 	{	
-		mConfigration = static_cast<const FVulkanPipelineConfigInfo &>(configuration);
+		mConfiguration = static_cast<const FVulkanPipelineConfigInfo &>(configuration);
 
 		std::vector dynamicStates = {vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eLineWidth, vk::DynamicState::ePrimitiveTopologyEXT, vk::DynamicState::eVertexInputEXT};
 
 		vk::PipelineDynamicStateCreateInfo dynamicStateInfo({}, dynamicStates);
 
+		mConfiguration.ColorBlend.setAttachments(mConfiguration.ColorBlendAttachment);
+
 		vk::GraphicsPipelineCreateInfo pipeline_info{};
 		pipeline_info
-			.setStages(mConfigration.ShaderCreateInfos)
-			.setPVertexInputState(&mConfigration.InputState)
-			.setPInputAssemblyState(&mConfigration.InputAssembly)
-			.setPViewportState(&mConfigration.ViewportState)
-			.setPRasterizationState(&mConfigration.Rasterazation)
-			.setPMultisampleState(&mConfigration.MultiSampling)
-			.setPColorBlendState(&mConfigration.ColorBlend)
+			.setStages(mConfiguration.ShaderCreateInfos)
+			.setPVertexInputState(&mConfiguration.InputState)
+			.setPInputAssemblyState(&mConfiguration.InputAssembly)
+			.setPViewportState(&mConfiguration.ViewportState)
+			.setPRasterizationState(&mConfiguration.Rasterazation)
+			.setPMultisampleState(&mConfiguration.MultiSampling)
+			.setPColorBlendState(&mConfiguration.ColorBlend)
+			//.setPDepthStencilState(&mConfiguration.DepthStencil)
 			.setPDynamicState(&dynamicStateInfo)
-			.setLayout(mConfigration.Layout)
-			.setRenderPass(mConfigration.RenderPass)
-			.setSubpass(mConfigration.SubPass)
-			.setPNext(mConfigration.Next);
+			.setLayout(mConfiguration.Layout)
+			.setRenderPass(mConfiguration.RenderPass)
+			.setSubpass(mConfiguration.SubPass)
+			.setPNext(mConfiguration.Next);
 
 
 		mPipeline = vk::raii::Pipeline(mDevice, nullptr, pipeline_info);
@@ -82,7 +85,8 @@ namespace BHive
 
 		config.InputAssembly.setTopology(vk::PrimitiveTopology::eTriangleList);
 
-		config.ColorBlend.setLogicOpEnable(false).setLogicOp(vk::LogicOp::eCopy).setAttachments(config.ColorBlendAttachment);
+		config.ColorBlend.setLogicOpEnable(false).setLogicOp(vk::LogicOp::eCopy);
+		//.setAttachmentCount(1).setPAttachments(&config.ColorBlendAttachment);
 
 		config.MultiSampling.setRasterizationSamples(vk::SampleCountFlagBits::e1).setSampleShadingEnable(false);
 

@@ -24,6 +24,8 @@ namespace BHive
 		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(create_info.Formats);
 		mMinImageCount = VulkanUtils::ChooseMinImageCount(create_info.Capabilities);
 
+		//LOG_TRACE("Swapchain Format: {} ; ColorSpace: {}", vk::to_string(mImageFormat.format), vk::to_string(mImageFormat.colorSpace));
+
 		auto present_mode = VulkanUtils::ChooseSwapPresentMode(create_info.PresentModes);
 		vk::SwapchainCreateInfoKHR swap_chain_create_info(
 			{}, *surface, mMinImageCount, mImageFormat.format, mImageFormat.colorSpace, mExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, {},

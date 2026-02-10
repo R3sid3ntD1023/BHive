@@ -21,7 +21,21 @@ namespace BHive
 
 	void RuntimeLayer::OnAttach()
 	{
-		CreateGraphicsPipeline();
+		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Triangle.glsl");
+		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
+		mMaterial = CreateRef<Material>(mShader);
+		mMaterial->SetTexture("u_Texture", mTexture);
+
+		// create mesh
+		FMeshImportData import_data{};
+		FMeshImportOptions import_options{};
+
+		if (MeshImporter::Import("C:/Users/dariu/Documents/Cube.glb ", import_data))
+		{
+			std::vector<Ref<Asset>> additional_assets;
+			MeshImportResolver resolver(import_data, import_options, additional_assets);
+			mMesh = Cast<StaticMesh>(resolver.Resolve());
+		}
 
 		mCamera.SetView(FTransform({0, 0, 5}));
 	}
@@ -96,25 +110,17 @@ namespace BHive
 	void RuntimeLayer::OnEvent(Event &e)
 	{
 		mCamera.OnEvent(e);
+
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch(this, &RuntimeLayer::OnWindowResize);
 	}
 
-	void RuntimeLayer::CreateGraphicsPipeline()
+	bool RuntimeLayer::OnWindowResize(WindowResizeEvent &e)
 	{
-		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH"/Triangle.glsl");
-		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
-		mMaterial = CreateRef<Material>(mShader);
-		mMaterial->SetTexture("u_Texture", mTexture);
+		mCamera.Resize(e.x , e.y);
 
-		//create mesh
-		FMeshImportData import_data{};
-		FMeshImportOptions import_options{};
-
-		if (MeshImporter::Import("C:/Users/dariu/Documents/Cube.glb ", import_data))
-		{
-			std::vector<Ref<Asset>> additional_assets;
-			MeshImportResolver resolver(import_data, import_options, additional_assets);
-			mMesh = Cast<StaticMesh>(resolver.Resolve());
-		}
+		return false;
 	}
+
 
 } // namespace BHive

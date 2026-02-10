@@ -18,7 +18,7 @@ namespace BHive
 		return nullptr;
 	}
 
-	Ref<VertexArray> VertexArray::Create(const std::initializer_list<Ref<VertexBuffer>> vertex_buffers, const Ref<IndexBuffer> &index_buffer)
+	Ref<VertexArray> VertexArray::Create(const std::vector<Ref<VertexBuffer>>& vertex_buffers, const Ref<IndexBuffer> &index_buffer)
 	{
 		switch (RenderCommand::GetRendererAPI())
 		{

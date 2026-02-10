@@ -18,7 +18,7 @@ namespace BHive
 	{
 		ASSERT(!availableFormats.empty());
 
-		auto formatItr = std::ranges::find_if(availableFormats, [](auto format) { return format == vk::Format::eR8G8B8A8Unorm && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear; });
+		auto formatItr = std::ranges::find_if(availableFormats, [](auto f) { return f.format == vk::Format::eR8G8B8A8Unorm && f.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear; });
 		return formatItr != availableFormats.end() ? *formatItr : availableFormats[0];
 	}
 
@@ -112,8 +112,6 @@ namespace BHive
 		vk::MemoryRequirements memRequirements = buffer.getMemoryRequirements();
 		vk::DeviceSize alloc_size = std::max(memRequirements.size, minAlloc);
 
-		LOG_TRACE("Create Buffer: AllocSize = {}", alloc_size);
-
 		vk::MemoryAllocateInfo allocInfo(alloc_size, FindMemoryType(memRequirements.memoryTypeBits, properties));
 
 		memory = vk::raii::DeviceMemory(device, allocInfo);
@@ -126,7 +124,7 @@ namespace BHive
 	{
 		auto &device = VulkanCore::GetLogicalDevice();
 		vk::ImageCreateInfo imageInfo(
-			{}, type, format, {w, h, d}, 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
+			{}, type, format, {w, h, d}, 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage,
 			vk::SharingMode::eExclusive, 0);
 		texture.Image = device.createImage(imageInfo);
 

@@ -65,6 +65,12 @@ namespace BHive
 		int w = 0, h = 0;
 		glfwGetFramebufferSize(mWindowHandle, &w, &h);
 
+		while (w == 0 || h == 0)
+		{
+			glfwWaitEvents();
+			glfwGetFramebufferSize(mWindowHandle, &w, &h);
+		}
+
 		auto &physical_device = VulkanCore::GetPhysicalDevice();
 		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(*mSurface);
 		auto formats = physical_device.getSurfaceFormatsKHR(*mSurface);
@@ -84,15 +90,6 @@ namespace BHive
 
 	void VulkanGraphicsContext::RecreateSwapChain()
 	{
-		int width = 0, height = 0;
-		glfwGetFramebufferSize(mWindowHandle, &width, &height);
-		while (width == 0 || height == 0)
-		{
-			glfwWaitEvents();
-			glfwGetFramebufferSize(mWindowHandle, &width, &height);
-			
-		}
-
 		auto &device = VulkanCore::GetLogicalDevice();
 		device.waitIdle();
 

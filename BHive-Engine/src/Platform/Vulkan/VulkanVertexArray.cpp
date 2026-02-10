@@ -70,11 +70,6 @@ namespace BHive
 			std::vector<vk::DeviceSize> offsets(size, 0);
 			vk::Buffer index_buffer;
 
-			for (auto &b : bindings)
-			{
-				LOG_TRACE("binding={} stride={} rate={} divisor={}", b.binding, b.stride, (int)b.inputRate, b.divisor);
-			}
-
 			if (index_buffer_ref)
 				index_buffer = std::dynamic_pointer_cast<IVulkanBufferBase>(index_buffer_ref)->GetBuffer(data.Frame);
 
@@ -124,7 +119,7 @@ namespace BHive
 
 		uint32_t binding = mBindings.size();
 
-		mBindings.emplace_back(vk::VertexInputBindingDescription2EXT(binding, stride, vk::VertexInputRate::eVertex, 0));
+		mBindings.emplace_back(vk::VertexInputBindingDescription2EXT(binding, stride, vk::VertexInputRate::eVertex));
 
 		for (const auto &element : elements)
 		{
@@ -159,11 +154,6 @@ namespace BHive
 			default:
 				break;
 			}
-		}
-
-		for (auto &a : mAttributes)
-		{
-			LOG_TRACE("attr loc={} binding={} format={} offset={}", a.location, a.binding, (int)a.format, a.offset);
 		}
 	}
 

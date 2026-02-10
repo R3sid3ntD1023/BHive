@@ -23,6 +23,6 @@ namespace BHive
 
 		static Ref<VertexArray> Create();
 
-		static Ref<VertexArray> Create(const std::initializer_list<Ref<VertexBuffer>> vertex_buffers, const Ref<IndexBuffer> &index_buffer = nullptr);
+		static Ref<VertexArray> Create(const std::vector<Ref<VertexBuffer>>& vertex_buffers, const Ref<IndexBuffer> &index_buffer = nullptr);
 	};
 } // namespace BHive

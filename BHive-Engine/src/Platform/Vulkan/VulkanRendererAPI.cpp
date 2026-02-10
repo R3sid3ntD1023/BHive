@@ -107,7 +107,7 @@ namespace BHive
 
 		image_layout = vk::ImageLayout::eColorAttachmentOptimal;
 
-		vk::ClearValue clearColor = mClearColor;
+		vk::ClearValue clearColor(mClearColor);
 		vk::RenderingAttachmentInfo attachmentInfo(
 			image_view, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 			clearColor);
@@ -174,7 +174,6 @@ namespace BHive
 	{
 		auto cmd = [=](const FVulkanFrameData &data)
 		{
-			//LOG_INFO("CMD: SetViewport, frame={}", data.Frame);
 			data.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)y, (float)w, (float)h, 0.0f, 1.0f));
 			data.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, vk::Extent2D(w, h)));
 		};

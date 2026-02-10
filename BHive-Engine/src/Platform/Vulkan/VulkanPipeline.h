@@ -10,16 +10,14 @@ namespace BHive
 
 	struct FVulkanPipelineConfigInfo : public Pipeline::Configuration
 	{
-		vk::Viewport Viewport;
-		vk::Rect2D Scissor;
-		vk::PipelineVertexInputStateCreateInfo InputState;
-		vk::PipelineViewportStateCreateInfo ViewportState;
-		vk::PipelineInputAssemblyStateCreateInfo InputAssembly;
-		vk::PipelineRasterizationStateCreateInfo Rasterazation;
-		vk::PipelineMultisampleStateCreateInfo MultiSampling;
-		vk::PipelineColorBlendAttachmentState ColorBlendAttachment;
-		vk::PipelineColorBlendStateCreateInfo ColorBlend;
-		vk::PipelineDepthStencilStateCreateInfo DepthStencil;
+		vk::PipelineVertexInputStateCreateInfo InputState{};
+		vk::PipelineViewportStateCreateInfo ViewportState{};
+		vk::PipelineInputAssemblyStateCreateInfo InputAssembly{};
+		vk::PipelineRasterizationStateCreateInfo Rasterazation{};
+		vk::PipelineMultisampleStateCreateInfo MultiSampling{};
+		vk::PipelineColorBlendAttachmentState ColorBlendAttachment{};
+		vk::PipelineColorBlendStateCreateInfo ColorBlend{};
+		vk::PipelineDepthStencilStateCreateInfo DepthStencil{};
 		vk::PipelineLayout Layout = VK_NULL_HANDLE;
 		vk::RenderPass RenderPass = VK_NULL_HANDLE;
 		uint32_t SubPass = 0;
@@ -47,6 +45,6 @@ namespace BHive
 
 		vk::raii::Pipeline mPipeline = VK_NULL_HANDLE;
 
-		FVulkanPipelineConfigInfo mConfigration;
+		FVulkanPipelineConfigInfo mConfiguration;
 	};
 } // namespace BHive
