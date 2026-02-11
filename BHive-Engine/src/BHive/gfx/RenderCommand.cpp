@@ -12,6 +12,11 @@ namespace BHive
 		sRendererAPI->Shutdown();
 	}
 
+	void RenderCommand::WaitIdle()
+	{
+		sRendererAPI->WaitIdle();
+	}
+
 	void RenderCommand::ClearColor(float r, float g, float b, float a)
 	{
 		sRendererAPI->ClearColor(r, g, b, a);

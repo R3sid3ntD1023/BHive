@@ -10,6 +10,8 @@
 #include "Time.h"
 #include "undoredo/UndoRedo.h"
 #include "WindowInput.h"
+#include "gfx/ShaderManager.h"
+#include "renderers/buffers/GlobalBuffers.h"
 
 namespace BHive
 {
@@ -65,7 +67,12 @@ namespace BHive
 	{
 		if (mSpecification.Flags & EApplicationFlags::EnableRendering)
 		{
-			Renderer::Shutdown();
+			RenderCommand::WaitIdle();
+			Renderer::Shutdown();	
+			GlobalBuffers::Shutdown();
+			ShaderManager::Get().Clear();
+			WindowManager::Get().Shutdown();
+			RenderCommand::Shutdown();
 
 			sInstance = nullptr;
 		}

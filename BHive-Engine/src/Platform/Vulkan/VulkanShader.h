@@ -101,10 +101,12 @@ namespace BHive
 
 		void BindTexture(uint32_t binding, const Ref<Texture> &texture) override;
 
+		void Shutdown() override;
+
 	private:		
 		vk::raii::Device &mDevice;
 		std::vector<uint32_t> mUniformBufferBindings;
-		std::unordered_map < uint32_t, Ref<Texture>> mTextures;
+		std::unordered_map <uint32_t, Ref<Texture>> mBoundTextures;
 		vk::raii::DescriptorSets mDescriptorSets = VK_NULL_HANDLE;
 
 	};

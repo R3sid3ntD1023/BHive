@@ -56,7 +56,8 @@ namespace BHive
 
 			vk::StructureChain<
 				vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features,
-				vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexAttributeDivisorFeaturesEXT>
+				vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexAttributeDivisorFeaturesEXT,
+				vk::PhysicalDeviceRobustness2FeaturesKHR>
 				featureChain;
 			featureChain.assign<vk::PhysicalDeviceFeatures2>({}); // default initialize all features to false
 			
@@ -72,7 +73,7 @@ namespace BHive
 			featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().setExtendedDynamicState(true);
 			featureChain.get<vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>().setVertexInputDynamicState(true);
 			featureChain.get<vk::PhysicalDeviceVertexAttributeDivisorFeaturesEXT>().setVertexAttributeInstanceRateZeroDivisor(true);
-
+			featureChain.get<vk::PhysicalDeviceRobustness2FeaturesKHR>().setNullDescriptor(true).setRobustImageAccess2(true);
 
 			return featureChain;
 		}
@@ -106,7 +107,14 @@ namespace BHive
 
 	void VulkanCore::Shutdown()
 	{
-		mLogicalDevice.waitIdle();
+		LOG_TRACE("VulkanCore Shutdown Called")
+
+
+		mLogicalDevice = VK_NULL_HANDLE;
+
+		mDebugMessenger = VK_NULL_HANDLE;
+
+		mVulkanInstance = VK_NULL_HANDLE;
 	}
 
 	void VulkanCore::RegisterOnDeviceCreated(const DeviceCallback &callback)
@@ -117,6 +125,12 @@ namespace BHive
 	void VulkanCore::RegisterOnDeviceDestroy(const DeviceCallback &callback)
 	{
 		mOnDeviceDestroyedCallbacks.push_back(callback);
+	}
+
+	void VulkanCore::CallOnDeviceDestroyed()
+	{
+		for (auto &callback : mOnDeviceDestroyedCallbacks)
+			callback();
 	}
 
 	std::vector<const char *> VulkanCore::GetRequiredExtensions()

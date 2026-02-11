@@ -28,6 +28,7 @@ namespace BHive
 	VulkanRendererAPI::VulkanRendererAPI()
 		: mDevice(VulkanCore::GetLogicalDevice())
 	{
+
 	}
 
 	VulkanRendererAPI::~VulkanRendererAPI()
@@ -66,7 +67,19 @@ namespace BHive
 
 	void VulkanRendererAPI::Shutdown()
 	{
+		LOG_TRACE("RendererAPI Shutdown Called")
 
+		mCommandBuffers.clear();
+		mCommandPool = VK_NULL_HANDLE;
+		mDescriptorPool = VK_NULL_HANDLE;
+
+		VulkanCore::Shutdown();
+	}
+
+	void VulkanRendererAPI::WaitIdle()
+	{
+		LOG_TRACE("RendererAPI Wait Idle")
+		VulkanCore::GetLogicalDevice().waitIdle();
 	}
 
 	vk::Result VulkanRendererAPI::RenderFrame(const Ref<VulkanSwapChain>& swapChain)

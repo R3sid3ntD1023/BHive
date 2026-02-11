@@ -64,6 +64,11 @@ namespace BHive
 		return mShaders.contains(name);
 	}
 
+	void ShaderManager::Clear()
+	{
+		mShaders.clear();
+	}
+
 	ShaderManager &ShaderManager::Get()
 	{
 		if (!sInstance)

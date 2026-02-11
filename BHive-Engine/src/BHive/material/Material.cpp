@@ -1,6 +1,7 @@
 #include "gfx/Shader.h"
 #include "gfx/Texture.h"
 #include "Material.h"
+#include "renderers/Renderer.h"
 
 namespace BHive
 {
@@ -19,9 +20,7 @@ namespace BHive
 	{
 		if (mTextures.contains(name))
 		{
-			auto &slot = mTextures[name];
-			slot.Texture = texture;
-			mBackendMaterial->BindTexture(slot.Binding, texture);
+			mTextures[name].Texture = texture;
 		}
 	}
 
@@ -30,6 +29,12 @@ namespace BHive
 		auto shader_instance = shader ? shader : mShader;
 
 		shader_instance->Bind(); // binds shaders pipeline 
+
+		for (auto& [name, slot] : mTextures)
+		{
+			auto tex = slot.Texture ? slot.Texture  : Renderer::GetWhiteTexture();
+			mBackendMaterial->BindTexture(slot.Binding, tex);
+		}
 
 		mBackendMaterial->Bind(mShader); //update descriptor sets
 	}

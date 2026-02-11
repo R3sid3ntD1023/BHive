@@ -10,6 +10,19 @@ namespace BHive
 		
 	}
 
+	VulkanSwapChain::~VulkanSwapChain()
+	{
+		LOG_TRACE("SwapChain Destructor Called")
+
+		/*mSwapChain.clear();
+		mPresentSemaphores.clear();
+		mRenderFinishedSemaphores.clear();
+		mInFlightFences.clear();
+		mImages.clear();
+		mImageViews.clear();*/
+		
+	}
+
 	void VulkanSwapChain::Init(vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info)
 	{
 		mImages.clear();

@@ -37,6 +37,11 @@ namespace BHive
 			mMesh = Cast<StaticMesh>(resolver.Resolve());
 		}
 
+		auto &app = Application::Get();
+		auto &window = app.GetWindow();
+		auto aspect = window.GetAspectRatio();
+
+		mCamera = EditorCamera(45.f, aspect, 0.1f, 1000.f);
 		mCamera.SetView(FTransform({0, 0, 5}));
 	}
 

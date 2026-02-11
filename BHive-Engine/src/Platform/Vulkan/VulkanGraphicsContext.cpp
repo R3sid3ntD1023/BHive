@@ -20,8 +20,11 @@ namespace BHive
 
 	VulkanGraphicsContext::~VulkanGraphicsContext()
 	{
-		VulkanCore::Shutdown();
+		LOG_TRACE("GraphicsContext Destructor Called")
 
+		//VulkanCore::Shutdown();
+
+		//mSwapChain.reset();
 	}
 
 	void VulkanGraphicsContext::OnFramebufferResized(uint32_t w, uint32_t h)

@@ -9,11 +9,12 @@ namespace BHive
 	public:
 		struct Configuration
 		{
+			virtual ~Configuration() = default;
 		};
 
 		virtual ~Pipeline() = default;
 
-		virtual void Init(const Configuration &configuration) = 0;
+		virtual void Init(const Ref<Configuration>& configuration) = 0;
 
 		virtual void Bind() = 0;
 

@@ -9,7 +9,6 @@
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
-
 struct GLFWwindow;
 
 namespace BHive
@@ -65,6 +64,8 @@ namespace BHive
 		static void RegisterOnDeviceCreated(const DeviceCallback &callback);
 
 		static void RegisterOnDeviceDestroy(const DeviceCallback &callback);
+
+		static void CallOnDeviceDestroyed();
 
 	private:
 		static void CreateIntance();

@@ -16,6 +16,8 @@ namespace BHive
 		void SetData(vk::raii::CommandBuffer &cmd, const void *data, size_t size, uint32_t offset, vk::PipelineStageFlags2 flags, vk::AccessFlags2 access);
 
 		void Release();
+
+		~PerFrameBuffer();
 	};
 
 	class BHIVE_API IVulkanBufferBase

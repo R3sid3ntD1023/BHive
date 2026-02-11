@@ -32,8 +32,15 @@ namespace BHive
 
 	void PerFrameBuffer::Release()
 	{
+		LOG_TRACE("PerFrameBuffer Release Called")
+
 		MappedMemory = nullptr;
 		StagingBuffer.Memory.unmapMemory();
+	}
+
+	PerFrameBuffer::~PerFrameBuffer()
+	{
+		LOG_TRACE("PerFrameBuffer Destructor Called");
 	}
 
 	//-------------------Static Buffers---------------------------------------------//
@@ -47,7 +54,9 @@ namespace BHive
 
 	StaticVulkanIndexBuffer::~StaticVulkanIndexBuffer()
 	{
+
 		mBuffer.Release();
+
 	}
 
 	void StaticVulkanIndexBuffer::SetData(const void *data, size_t size, uint32_t offset)

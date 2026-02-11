@@ -1,13 +1,15 @@
-#include "buffers/GlobalBuffers.h"
+#include "buffers/CameraBuffer.h"
 #include "buffers/ModelBuffer.h"
 #include "gfx/Texture.h"
 #include "Renderer.h"
+#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
 
 	struct Renderer::RenderData
 	{
+		CameraBuffer Camera;
 		ModelBuffer Model;
 
 		Ref<Texture> WhiteTexture;
@@ -31,7 +33,8 @@ namespace BHive
 	
 			BlueTexture = Texture2D::Create(1, 1, create_info, &blue, sizeof(uint32_t));
 
-			GlobalBuffers::CameraData.Init();
+			Camera.Init();
+			Model.Init();
 			// Model.Init();
 		}
 	};
@@ -63,7 +66,7 @@ namespace BHive
 
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
 	{
-		GlobalBuffers::CameraData.Begin(projection, glm::inverse(view));
+		sData->Camera.Begin(projection, glm::inverse(view));
 	}
 
 	void Renderer::Draw(const Ref<FMeshRenderData> &data)
@@ -95,12 +98,12 @@ namespace BHive
 
 	const Frustum &Renderer::GetFrustum()
 	{
-		return GlobalBuffers::CameraData.GetViewFrustum();
+		return sData->Camera.GetViewFrustum();
 	}
 
 	CameraBuffer &Renderer::GetCamera()
 	{
-		return GlobalBuffers::CameraData;
+		return sData->Camera;
 	}
 
 	Renderer::RenderData *Renderer::sData = nullptr;

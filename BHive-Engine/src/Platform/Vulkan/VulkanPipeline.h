@@ -30,7 +30,9 @@ namespace BHive
 	public:
 		VulkanPipeline();
 
-		virtual void Init(const Configuration &configuration) override;
+		~VulkanPipeline();
+
+		virtual void Init(const Ref<Configuration>& configuration) override;
 
 		virtual void Bind() override;
 
@@ -38,13 +40,14 @@ namespace BHive
 
 		const vk::Pipeline &operator*() const { return mPipeline; }
 
-		static FVulkanPipelineConfigInfo GetDefaultConfigInfo();
+		static Ref<FVulkanPipelineConfigInfo> GetDefaultConfigInfo();
 
 	private:
 		vk::raii::Device &mDevice;
 
 		vk::raii::Pipeline mPipeline = VK_NULL_HANDLE;
 
-		FVulkanPipelineConfigInfo mConfiguration;
+		Ref<FVulkanPipelineConfigInfo> mConfiguration;
+
 	};
 } // namespace BHive

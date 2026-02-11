@@ -28,6 +28,8 @@ namespace BHive
 
 	VulkanTexture2D::~VulkanTexture2D()
 	{
+		LOG_TRACE("VulkanTexture2D Descructor Called")
+
 		Release();
 		mBuffer.Release();
 	}

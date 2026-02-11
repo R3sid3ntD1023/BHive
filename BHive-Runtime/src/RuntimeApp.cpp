@@ -20,7 +20,7 @@ namespace BHive
 		specs.CenterWindow = true;
 		specs.Title = "BHive Runtime";
 		specs.Size = {800, 600};
-		specs.Flags = EApplicationFlags::EnableImGui | EApplicationFlags::EnableRendering;
+		specs.Flags = /*EApplicationFlags::EnableImGui |*/ EApplicationFlags::EnableRendering;
 		return new RuntimeApp(specs);
 	}
 } // namespace BHive

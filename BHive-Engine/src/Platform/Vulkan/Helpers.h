@@ -14,8 +14,9 @@ namespace BHive
 
 	struct AllocatedVulkanBuffer
 	{
-		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
 		vk::raii::Buffer Buffer = VK_NULL_HANDLE;
+		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
+		
 	};
 
 	

@@ -39,6 +39,8 @@ namespace BHive
 
 		virtual void Shutdown() override;
 
+		virtual void WaitIdle() override;
+
 		virtual void ClearColor(float r, float g, float b, float a = 1.0f) override;
 
 		virtual void Clear(int mask = Buffer_Color | Buffer_Depth | Buffer_Stencil) override;

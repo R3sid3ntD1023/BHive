@@ -34,11 +34,11 @@ layout(location  = 0) in struct VERT_OUT
 	vec2 TexCoord;
 } vs_in;
 
-//layout(binding = 1) uniform sampler2D u_Texture;
+layout(binding = 1) uniform sampler2D u_Texture;
 layout(location = 0) out vec4 f_out;
 
 void main()
 {
-	//vec4 color = texture(u_Texture, vs_in.TexCoord);
-	f_out = vec4(1,1,1,1);
+	vec4 color = texture(u_Texture, vs_in.TexCoord);
+	f_out = color;
 }

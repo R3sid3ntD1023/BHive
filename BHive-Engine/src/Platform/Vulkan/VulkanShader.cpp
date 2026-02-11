@@ -115,7 +115,7 @@ namespace BHive
 
 	VulkanShader::~VulkanShader()
 	{
-		
+		LOG_TRACE("VulkanShader Destructor Called")
 	}
 
 	void VulkanShader::Save(cereal::BinaryOutputArchive &ar) const
@@ -252,13 +252,13 @@ namespace BHive
 		rendering_info.setViewMask(0).setColorAttachmentCount(1).setColorAttachmentFormats(format);
 
 
-		FVulkanPipelineConfigInfo config = VulkanPipeline::GetDefaultConfigInfo();
-		config.Layout = mPipelineLayout;
-		config.Next = &rendering_info;
-		config.ShaderCreateInfos = create_infos;
-		config.InputAssembly.setTopology(utils::GetTopology(mRenderOptions.DrawMode));
-		config.Rasterazation.setCullMode(utils::GetCullMode(mRenderOptions.CullMode));
-		config.DepthStencil.setDepthTestEnable(VK_FALSE).setDepthWriteEnable(VK_FALSE).setDepthBoundsTestEnable(VK_FALSE).setStencilTestEnable(VK_FALSE);
+		auto config = VulkanPipeline::GetDefaultConfigInfo();
+		config->Layout = mPipelineLayout;
+		config->Next = &rendering_info;
+		config->ShaderCreateInfos = create_infos;
+		config->InputAssembly.setTopology(utils::GetTopology(mRenderOptions.DrawMode));
+		config->Rasterazation.setCullMode(utils::GetCullMode(mRenderOptions.CullMode));
+		config->DepthStencil.setDepthTestEnable(VK_FALSE).setDepthWriteEnable(VK_FALSE).setDepthBoundsTestEnable(VK_FALSE).setStencilTestEnable(VK_FALSE);
 			//.setDepthCompareOp(vk::CompareOp::eLessOrEqual);
 	//	config.DepthStencil.setDepthTestEnable(VK_FALSE).setDepthWriteEnable(VK_FALSE);
 
@@ -291,6 +291,13 @@ namespace BHive
 		{
 			mUniformBufferBindings.push_back(data.Binding);
 		}
+
+		for (auto& [name, sampler] : shader_reflection.Samplers)
+		{
+			mBoundTextures.emplace(sampler.Binding, nullptr);
+		}
+
+		VulkanCore::RegisterOnDeviceDestroy([this]() { Shutdown();});
 	}
 
 	void VulkanBackendMaterial::Bind(const Ref<Shader> &shader)
@@ -316,9 +323,13 @@ namespace BHive
 				descriptor_writes.emplace_back(descriptor_write);
 			}
 
-			for (auto &[binding, texture] : mTextures)
+			for (auto &[binding, slot] : mBoundTextures)
 			{
-				auto image_info = *reinterpret_cast<const vk::DescriptorImageInfo *>(texture->GetNativeHandle());
+				auto texture = mBoundTextures[binding];
+				if (!texture)
+					continue;
+
+				vk::DescriptorImageInfo image_info = *reinterpret_cast<const vk::DescriptorImageInfo *>(texture->GetNativeHandle());
 				vk::WriteDescriptorSet descriptor_write(descriptor_set, binding, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
 				descriptor_writes.emplace_back(descriptor_write);
 			}
@@ -340,7 +351,24 @@ namespace BHive
 
 	void VulkanBackendMaterial::BindTexture(uint32_t binding, const Ref<Texture> &texture)
 	{
-		mTextures[binding] = texture;
+		if (!mBoundTextures.contains(binding))
+		{
+			LOG_ERROR("Binding {} not found for shader!");
+			return;
+		}
+
+		mBoundTextures[binding] = texture;
+	}
+
+	void VulkanBackendMaterial::Shutdown()
+	{
+		LOG_TRACE("Shutdown VulkanBackendMaterial Called")
+
+		/*mBoundTextures.clear();
+
+		mUniformBufferBindings.clear();
+
+		mDescriptorSets.clear();*/
 	}
 
 } // namespace BHive

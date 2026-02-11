@@ -74,7 +74,7 @@ namespace BHive
 		pool_sizes.emplace_back(vk::DescriptorType::eStorageBufferDynamic, 1000);
 		pool_sizes.emplace_back(vk::DescriptorType::eInputAttachment, 1000);
 		
-		vk::DescriptorPoolCreateInfo pool_create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 1000, pool_sizes );
+		vk::DescriptorPoolCreateInfo pool_create_info({}, 1000, pool_sizes);
 		mDescriptorPool = vk::raii::DescriptorPool(device, pool_create_info);
 								
 
@@ -111,13 +111,19 @@ namespace BHive
 
 	void VulkanImGuiLayer::Shutdown()
 	{
+		LOG_TRACE("ImguiLayer Shutdown Called")
+
 		mDevice.waitIdle();
 
 		ClearTextureMap();
 
+		mDescriptorPool.reset();
+
 		ImGui_ImplVulkan_Shutdown();
 
 		ImGuiLayer::Shutdown();
+
+		
 	}
 
 	void VulkanImGuiLayer::OnRender(ImDrawData *drawData, const glm::uvec2 &displaySize)

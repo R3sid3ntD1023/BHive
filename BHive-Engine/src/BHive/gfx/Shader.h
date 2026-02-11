@@ -64,6 +64,8 @@ namespace BHive
 
 		virtual void Bind(const Ref<Shader> &shader) = 0;
 
+		virtual void Shutdown() = 0;
+
 		virtual void BindTexture(uint32_t slot, const Ref<Texture> &texture) = 0;
 
 		static Ref<IMaterialBackendInterface> Create();

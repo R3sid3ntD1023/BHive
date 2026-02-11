@@ -19,6 +19,8 @@ namespace BHive
 	public:
 		VulkanSwapChain();
 
+		~VulkanSwapChain();
+
 		void Init(vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info);
 
 		void WaitForFence(uint32_t frame);
@@ -57,7 +59,9 @@ namespace BHive
 		std::vector<vk::raii::ImageView> mImageViews{};
 
 		std::vector<vk::raii::Semaphore> mPresentSemaphores;
+
 		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores;
+
 		std::vector<vk::ImageLayout> mImageLayouts;
 
 		std::vector<vk::raii::Fence> mInFlightFences;

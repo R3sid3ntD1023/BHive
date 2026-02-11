@@ -119,6 +119,8 @@ namespace BHive
 
 		BHIVE_API const std::vector<Scope<Window>> &GetWindows() const { return mWindows; }
 
+		BHIVE_API void Shutdown();
+
 		BHIVE_API static WindowManager &Get();
 
 	private:

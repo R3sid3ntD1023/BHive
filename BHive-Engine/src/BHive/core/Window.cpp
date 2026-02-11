@@ -61,6 +61,8 @@ namespace BHive
 
 	Window::~Window()
 	{
+		mContext.reset();
+
 		sWindowCount--;
 		glfwDestroyWindow(mWindow);
 
@@ -68,6 +70,8 @@ namespace BHive
 		{
 			glfwTerminate();
 		}
+
+		LOG_TRACE("Window Descructor Called")
 	}
 
 	void Window::Update()
@@ -242,5 +246,10 @@ namespace BHive
 		auto raw = window.get();
 		mWindows.push_back(std::move(window));
 		return raw;
+	}
+
+	void WindowManager::Shutdown()
+	{
+		mWindows.clear();
 	}
 } // namespace BHive

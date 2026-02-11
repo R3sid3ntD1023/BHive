@@ -27,6 +27,8 @@ namespace BHive
 
 		bool Contains(const std::string &name);
 
+		void Clear();
+
 		static ShaderManager &Get();
 
 	private:
