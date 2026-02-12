@@ -290,13 +290,6 @@ namespace BHive
 		{
 			mUniformBufferBindings.push_back(data.Binding);
 		}
-
-		for (auto& [name, sampler] : shader_reflection.Samplers)
-		{
-			mBoundTextures.emplace(sampler.Binding, nullptr);
-		}
-
-		VulkanBackend::Get().RegisterOnDeviceDestroy([this]() { Shutdown();});
 	}
 
 	void VulkanBackendMaterial::Bind(const Ref<Shader> &shader)
@@ -322,17 +315,6 @@ namespace BHive
 				descriptor_writes.emplace_back(descriptor_write);
 			}
 
-			for (auto &[binding, slot] : mBoundTextures)
-			{
-				auto texture = mBoundTextures[binding];
-				if (!texture)
-					continue;
-
-				vk::DescriptorImageInfo image_info = *texture->GetNativeHandle().As<vk::DescriptorImageInfo>();
-				vk::WriteDescriptorSet descriptor_write(descriptor_set, binding, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
-				descriptor_writes.emplace_back(descriptor_write);
-			}
-
 			mDevice.updateDescriptorSets(descriptor_writes, {});
 			
 		};
@@ -350,24 +332,24 @@ namespace BHive
 
 	void VulkanBackendMaterial::BindTexture(uint32_t binding, const Ref<Texture> &texture)
 	{
-		if (!mBoundTextures.contains(binding))
-		{
-			LOG_ERROR("Binding {} not found for shader!");
+		if (!texture)
 			return;
-		}
 
-		mBoundTextures[binding] = texture;
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto pre_cmd = [=](const FVulkanFrameData &data)
+		{
+			const auto &descriptor_set = mDescriptorSets[data.Frame];
+			vk::DescriptorImageInfo image_info = *texture->GetNativeHandle().As<vk::DescriptorImageInfo>();
+			vk::WriteDescriptorSet descriptor_write(descriptor_set, binding, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
+			mDevice.updateDescriptorSets(descriptor_write, {});
+		};
+
+		api->SubmitCommand(pre_cmd, ECommandType_PreCommand);
 	}
 
 	void VulkanBackendMaterial::Shutdown()
 	{
 		LOG_TRACE("Shutdown VulkanBackendMaterial Called")
-
-		/*mBoundTextures.clear();
-
-		mUniformBufferBindings.clear();
-
-		mDescriptorSets.clear();*/
 	}
 
 } // namespace BHive

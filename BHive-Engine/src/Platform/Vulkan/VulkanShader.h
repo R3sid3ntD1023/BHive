@@ -94,6 +94,8 @@ namespace BHive
 
 		VulkanBackendMaterial();
 
+		~VulkanBackendMaterial() = default;
+
 		void Init(const Ref<Shader> &shader) override;
 
 		void Bind(const Ref<Shader> &shader) override;
@@ -105,7 +107,6 @@ namespace BHive
 	private:		
 		vk::raii::Device &mDevice;
 		std::vector<uint32_t> mUniformBufferBindings;
-		std::unordered_map <uint32_t, Ref<Texture>> mBoundTextures;
 		vk::raii::DescriptorSets mDescriptorSets = VK_NULL_HANDLE;
 
 	};
