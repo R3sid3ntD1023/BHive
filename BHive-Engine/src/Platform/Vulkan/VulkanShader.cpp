@@ -8,14 +8,13 @@
 #include "gfx/utils/shader/ShaderSerializer.h"
 #include "gfx/utils/shader/ShaderTimeCache.h"
 #include "gfx/utils/shader/ShaderUtils.h"
-#include "Platform/Vulkan/VulkanGraphicsContext.h"
-#include "Platform/Vulkan/VulkanSwapChain.h"
-#include "Platform/Vulkan/VulkanUniformBuffer.h"
+#include "VulkanWindowContext.h"
+#include "VulkanSwapChain.h"
+#include "VulkanUniformBuffer.h"
 #include "renderers/buffers/GlobalBuffers.h"
 #include "VulkanPipeline.h"
 #include "VulkanRendererAPI.h"
 #include "VulkanShader.h"
-#include "VulkanUtils.h"
 
 namespace BHive
 {
@@ -71,7 +70,7 @@ namespace BHive
 	} // namespace utils
 
 	VulkanShader::VulkanShader(const std::filesystem::path &path, const FRenderOptions &options)
-		: mDevice(VulkanCore::GetLogicalDevice()),
+		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mFilePath(path),
 		  mName(path.stem().string()),
 		  mRenderOptions(options)
@@ -102,7 +101,7 @@ namespace BHive
 	}
 
 	VulkanShader::VulkanShader(const std::string &name, const std::string &vert, const std::string &frag, const FRenderOptions &options)
-		: mDevice(VulkanCore::GetLogicalDevice()),
+		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mFilePath(name),
 		  mName(name),
 		  mRenderOptions(options)
@@ -232,7 +231,7 @@ namespace BHive
 
 	void VulkanShader::CreatePipeline()
 	{
-		auto swap_chain = static_cast<VulkanGraphicsContext &>(GraphicsContext::Get()).GetSwapChain();
+		auto swap_chain = static_cast<VulkanWindowContext &>(WindowContext::Get()).GetSwapChain();
 		auto format = swap_chain->GetFormat().format;
 	
 		//LOG_TRACE("Pipeline RenderInfo Format : {}", vk::to_string(format));
@@ -269,7 +268,7 @@ namespace BHive
 	}
 
 	VulkanBackendMaterial::VulkanBackendMaterial()
-		: mDevice(VulkanCore::GetLogicalDevice())
+		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
 		
 	}
@@ -281,7 +280,7 @@ namespace BHive
 		ASSERT(vulkan_shader)
 
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		std::vector<vk::DescriptorSetLayout> layouts(VulkanCore::MAX_FRAMES_IN_FLIGHT, vulkan_shader->GetDescriptorSetLayout());
+		std::vector<vk::DescriptorSetLayout> layouts(VulkanBackend::MAX_FRAMES_IN_FLIGHT, vulkan_shader->GetDescriptorSetLayout());
 		vk::DescriptorSetAllocateInfo alloc_info(api->GetDescriptorPool(), layouts);
 		mDescriptorSets = std::move(vk::raii::DescriptorSets(mDevice, alloc_info));
 
@@ -297,7 +296,7 @@ namespace BHive
 			mBoundTextures.emplace(sampler.Binding, nullptr);
 		}
 
-		VulkanCore::RegisterOnDeviceDestroy([this]() { Shutdown();});
+		VulkanBackend::Get().RegisterOnDeviceDestroy([this]() { Shutdown();});
 	}
 
 	void VulkanBackendMaterial::Bind(const Ref<Shader> &shader)
@@ -329,7 +328,7 @@ namespace BHive
 				if (!texture)
 					continue;
 
-				vk::DescriptorImageInfo image_info = *reinterpret_cast<const vk::DescriptorImageInfo *>(texture->GetNativeHandle());
+				vk::DescriptorImageInfo image_info = *static_cast<const vk::DescriptorImageInfo *>(texture->GetNativeHandle().Ptr);
 				vk::WriteDescriptorSet descriptor_write(descriptor_set, binding, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
 				descriptor_writes.emplace_back(descriptor_write);
 			}

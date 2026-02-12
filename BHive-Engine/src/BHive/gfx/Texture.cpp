@@ -1,7 +1,6 @@
 #include "gfx/RenderCommand.h"
 #include "Platform/Vulkan/textures/VulkanTexture2D.h"
 #include "Platform/Vulkan/textures/VulkanTexture2DArray.h"
-#include "Platform/Vulkan/textures/VulkanTexture2DMultisample.h"
 #include "Platform/Vulkan/textures/VulkanTexture3D.h"
 #include "Platform/Vulkan/textures/VulkanTextureCube.h"
 #include "Platform/Vulkan/textures/VulkanTextureCubeArray.h"
@@ -99,7 +98,8 @@ namespace BHive
 		switch (RenderCommand::GetRendererAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
-			return CreateRef<VulkanTexture2DMultisample>(width, height, samples, create_info);
+			//return CreateRef<VulkanTexture2DMultisample>(width, height, samples, create_info);
+			break;
 		default:
 			break;
 		}

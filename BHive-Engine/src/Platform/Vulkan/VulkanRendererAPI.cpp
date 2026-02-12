@@ -26,7 +26,7 @@ namespace BHive
 	} // namespace details
 
 	VulkanRendererAPI::VulkanRendererAPI()
-		: mDevice(VulkanCore::GetLogicalDevice())
+		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
 
 	}
@@ -37,12 +37,12 @@ namespace BHive
 
 	void VulkanRendererAPI::Init()
 	{
-		auto graphics_queue_index = VulkanCore::GetQueueFamilies().GraphicsQueueIndex;
+		auto graphics_queue_index = VulkanBackend::GetQueueFamilies().GraphicsQueueIndex;
 
 		vk::CommandPoolCreateInfo pool_info( vk::CommandPoolCreateFlagBits::eResetCommandBuffer, graphics_queue_index);
 		mCommandPool = vk::raii::CommandPool(mDevice, pool_info);
 
-		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, VulkanCore::MAX_FRAMES_IN_FLIGHT);
+		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, VulkanBackend::MAX_FRAMES_IN_FLIGHT);
 		mCommandBuffers = vk::raii::CommandBuffers(mDevice, alloc_info);
 
 		const uint32_t descriptor_count = 1000;
@@ -73,13 +73,13 @@ namespace BHive
 		mCommandPool = VK_NULL_HANDLE;
 		mDescriptorPool = VK_NULL_HANDLE;
 
-		VulkanCore::Shutdown();
+		VulkanBackend::Get().Shutdown();
 	}
 
 	void VulkanRendererAPI::WaitIdle()
 	{
 		LOG_TRACE("RendererAPI Wait Idle")
-		VulkanCore::GetLogicalDevice().waitIdle();
+		VulkanBackend::GetLogicalDevice().waitIdle();
 	}
 
 	vk::Result VulkanRendererAPI::RenderFrame(const Ref<VulkanSwapChain>& swapChain)
@@ -151,7 +151,7 @@ namespace BHive
 		if (result != vk::Result::eSuccess)
 			return result;
 
-		mCurrentFrame = (mCurrentFrame + 1) % VulkanCore::MAX_FRAMES_IN_FLIGHT;
+		mCurrentFrame = (mCurrentFrame + 1) % VulkanBackend::MAX_FRAMES_IN_FLIGHT;
 
 		return vk::Result::eSuccess;
 	}

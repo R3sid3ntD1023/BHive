@@ -2,7 +2,7 @@
 
 #include "core/Core.h"
 #include "gfx/Pipeline.h"
-#include "VulkanCore.h"
+#include  "VulkanBackend.h"
 
 namespace BHive
 {

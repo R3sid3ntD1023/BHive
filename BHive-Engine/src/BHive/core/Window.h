@@ -3,13 +3,13 @@
 #include "core/Core.h"
 #include "core/EventDelegate.h"
 #include "events/Event.h"
-#include "gfx/GraphicsContext.h"
 #include "WindowInput.h"
 
 struct GLFWwindow;
 
 namespace BHive
 {
+	class WindowContext;
 
 	struct BHIVE_API FWindowProperties
 	{
@@ -47,13 +47,13 @@ namespace BHive
 	public:
 		GLFWwindow *GetNative() { return mWindow; }
 
-		GraphicsContext &GetContext() { return *mContext; }
+		WindowContext &GetContext() { return *mContext; }
 
 		const std::string &GetTitle() const { return mData.Title; }
 
-		const glm::ivec2 &GetSize() const { return mData.mSize; }
+		const glm::ivec2 &GetSize() const { return mData.Size; }
 
-		float GetAspectRatio() const { return (float)mData.mSize.x / (float)mData.mSize.y; }
+		float GetAspectRatio() const { return (float)mData.Size.x / (float)mData.Size.y; }
 
 		bool IsVSyncEnabled() const { return mData.VSync; }
 
@@ -89,15 +89,13 @@ namespace BHive
 		{
 			std::string Title;
 
-			glm::ivec2 mSize;
+			glm::ivec2 Size;
 
 			bool VSync;
 
 			WindowInput Input;
 
-			GraphicsContext *Context = nullptr;
-
-			
+			Window *Instance;
 		};
 
 
@@ -105,7 +103,7 @@ namespace BHive
 		bool mIsMaximized = false;
 		GLFWwindow *mWindow = nullptr;
 		FWindowData mData;
-		Scope<GraphicsContext> mContext;
+		Scope<WindowContext> mContext;
 		static GLFWwindow *sFocusedWindow;
 
 		friend void OnWindowFocusCallback(GLFWwindow *window, int focused);

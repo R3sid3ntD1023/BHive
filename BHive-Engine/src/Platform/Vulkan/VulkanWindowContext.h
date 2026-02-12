@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gfx/GraphicsContext.h"
-#include "VulkanCore.h"
+#include "gfx/WindowContext.h"
+#include "VulkanBackend.h"
 
 struct GLFWwindow;
 
@@ -11,12 +11,12 @@ namespace BHive
 	class VulkanDevice;
 	class VulkanPipeline;
 
-	class BHIVE_API VulkanGraphicsContext : public GraphicsContext
+	class BHIVE_API VulkanWindowContext : public WindowContext
 	{
 	public:
-		VulkanGraphicsContext(void *windowHandle);
+		VulkanWindowContext(void *windowHandle);
 
-		~VulkanGraphicsContext() ;
+		~VulkanWindowContext() ;
 
 		virtual void Init();
 

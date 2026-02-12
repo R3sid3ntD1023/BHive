@@ -4,7 +4,6 @@
 
 #include "core/layers/ImGuiLayer.h"
 #include "core/platform/Platform.h"
-#include "gfx/GraphicsContext.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"

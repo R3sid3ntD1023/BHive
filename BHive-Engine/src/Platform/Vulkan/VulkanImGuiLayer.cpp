@@ -1,5 +1,5 @@
 #include "gfx/RenderCommand.h"
-#include "VulkanGraphicsContext.h"
+#include "VulkanWindowContext.h"
 #include "VulkanRendererAPI.h"
 #include "VulkanSwapChain.h"
 #include "VulkanUtils.h"
@@ -26,7 +26,7 @@ namespace BHive
 	} // namespace callbacks
 
 	VulkanImGuiLayer::VulkanImGuiLayer(GLFWwindow *windowHandle)
-		: mDevice(VulkanCore::GetLogicalDevice()),
+		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mWindowHandle(windowHandle)
 	{
 	}
@@ -51,15 +51,15 @@ namespace BHive
 	{
 		ImGuiLayer::Init();
 
-		auto &context = static_cast<VulkanGraphicsContext &>(GraphicsContext::Get());
-		auto &instance = VulkanCore::GetInstance();
-		auto &physical_device = VulkanCore::GetPhysicalDevice();
+		auto &context = static_cast<VulkanWindowContext &>(WindowContext::Get());
+		auto &instance = VulkanBackend::GetInstance();
+		auto &physical_device = VulkanBackend::GetPhysicalDevice();
 		auto &swap_chain = context.GetSwapChain();
 		auto extent = swap_chain->GetExtent();
 		auto image_count = swap_chain->GetImageCount();
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto &queue_familes = VulkanCore::GetQueueFamilies();
-		auto &device = VulkanCore::GetLogicalDevice();
+		auto &queue_familes = VulkanBackend::GetQueueFamilies();
+		auto &device = VulkanBackend::GetLogicalDevice();
 
 		std::vector<vk::DescriptorPoolSize> pool_sizes;
 		pool_sizes.emplace_back(vk::DescriptorType::eSampler, 1000);
@@ -86,7 +86,7 @@ namespace BHive
 		rendering_info.setViewMask(0).setColorAttachmentCount(1).setColorAttachmentFormats(format).setDepthAttachmentFormat(vk::Format::eUndefined).setStencilAttachmentFormat(vk::Format::eUndefined);
 
 		ImGui_ImplVulkan_InitInfo init_info{};
-		init_info.ApiVersion = VulkanCore::MINIMUM_VULKAN_API_VERSION;
+		init_info.ApiVersion = VulkanBackend::MINIMUM_VULKAN_API_VERSION;
 		init_info.Instance = *instance;
 		init_info.PhysicalDevice = *physical_device;
 		init_info.Device = *mDevice;
@@ -152,7 +152,7 @@ namespace BHive
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)
 	{
 
-		auto handle = reinterpret_cast<const vk::DescriptorImageInfo *>(texture.GetNativeHandle());
+		auto handle = static_cast<const vk::DescriptorImageInfo *>(texture.GetNativeHandle().Ptr);
 
 		if (s_ImGuiTextureMap.contains(handle))
 			return s_ImGuiTextureMap[handle];

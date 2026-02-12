@@ -1,24 +1,23 @@
-#include "VulkanGraphicsContext.h"
+#include "VulkanWindowContext.h"
 #define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include <vulkan/vulkan_to_string.hpp>
-#include "VulkanUtils.h"
 #include "VulkanSwapChain.h"
 #include "gfx/RenderCommand.h"
-#include "Platform/Vulkan/VulkanRendererAPI.h"
+#include "VulkanRendererAPI.h"
 
 namespace BHive
 {
-	VulkanGraphicsContext::VulkanGraphicsContext(void *windowHandle)
+	VulkanWindowContext::VulkanWindowContext(void *windowHandle)
 		: mWindowHandle(static_cast<GLFWwindow *>(windowHandle))
 	{
 		ASSERT(mWindowHandle, "Window handle is null!");
 	}
 
-	VulkanGraphicsContext::~VulkanGraphicsContext()
+	VulkanWindowContext::~VulkanWindowContext()
 	{
 		LOG_TRACE("GraphicsContext Destructor Called")
 
@@ -27,24 +26,32 @@ namespace BHive
 		//mSwapChain.reset();
 	}
 
-	void VulkanGraphicsContext::OnFramebufferResized(uint32_t w, uint32_t h)
+	void VulkanWindowContext::OnFramebufferResized(uint32_t w, uint32_t h)
 	{
 		mFramebufferResized = true;
 	}
 
-	void VulkanGraphicsContext::Init()
+	void VulkanWindowContext::Init()
 	{
-		VulkanCore::Init();
+		VulkanBackend::Get().Init();
 
-		mSurface = VulkanCore::CreateSurface(mWindowHandle);
+		VkSurfaceKHR _surface;
+		auto &instance = VulkanBackend::GetInstance();
+		if (glfwCreateWindowSurface(*instance, mWindowHandle, nullptr, &_surface) != VK_SUCCESS)
+		{
+			LOG_ERROR("Failed to create window surface!");
+			ASSERT(false);
+		}
 
-		VulkanCore::CreateLogicalDevice(mSurface);
-		VulkanCore::EnsurePresentSupportForSurface(*mSurface);
+		mSurface = vk::raii::SurfaceKHR(instance, _surface);
+
+		VulkanBackend::Get().CreateLogicalDevice(mSurface);
+		VulkanBackend::Get().EnsurePresentSupportForSurface(*mSurface);
 
 		CreateSwapChain();
 	}
 
-	void VulkanGraphicsContext::SwapBuffers()
+	void VulkanWindowContext::SwapBuffers()
 	{
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 
@@ -63,7 +70,7 @@ namespace BHive
 
 	}
 
-	void VulkanGraphicsContext::CreateSwapChain()
+	void VulkanWindowContext::CreateSwapChain()
 	{
 		int w = 0, h = 0;
 		glfwGetFramebufferSize(mWindowHandle, &w, &h);
@@ -74,7 +81,7 @@ namespace BHive
 			glfwGetFramebufferSize(mWindowHandle, &w, &h);
 		}
 
-		auto &physical_device = VulkanCore::GetPhysicalDevice();
+		auto &physical_device = VulkanBackend::GetPhysicalDevice();
 		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(*mSurface);
 		auto formats = physical_device.getSurfaceFormatsKHR(*mSurface);
 		auto presentModes = physical_device.getSurfacePresentModesKHR(*mSurface);
@@ -91,9 +98,9 @@ namespace BHive
 		mSwapChain->Init(mSurface, create_info);
 	}
 
-	void VulkanGraphicsContext::RecreateSwapChain()
+	void VulkanWindowContext::RecreateSwapChain()
 	{
-		auto &device = VulkanCore::GetLogicalDevice();
+		auto &device = VulkanBackend::GetLogicalDevice();
 		device.waitIdle();
 
 		CreateSwapChain();

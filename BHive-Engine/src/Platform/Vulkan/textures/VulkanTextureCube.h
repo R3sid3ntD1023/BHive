@@ -1,7 +1,8 @@
 #pragma once
 
 #include "gfx/Texture.h"
-#include "Platform/Vulkan/VulkanUtils.h"
+#include "Platform/Vulkan/VulkanBackend.h"
+#include "VulkanImage.h"
 
 namespace BHive
 {
@@ -25,14 +26,13 @@ namespace BHive
 
 		virtual const FTextureCreateInfo &GetInfo() const { return mCreateInfo; }
 
-		virtual uintptr_t GetNativeHandle() const { return reinterpret_cast<uintptr_t>(&mDescriptorInfo); }
+		virtual NativeHandle GetNativeHandle() const;
 
 	private:
 		vk::raii::Device &mDevice;
 		uint32_t mSize{0};
 		FTextureCreateInfo mCreateInfo;
 		FTextureAPIInfo mInfo;
-		AllocatedVulkanTexture mTextureHandle;
-		vk::DescriptorImageInfo mDescriptorInfo;
+		VulkanImage mImage;
 	};
 } // namespace BHive

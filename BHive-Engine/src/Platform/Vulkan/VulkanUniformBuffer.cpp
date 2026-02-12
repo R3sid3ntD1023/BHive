@@ -1,16 +1,15 @@
 #include "VulkanUniformBuffer.h"
-#include "VulkanUtils.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
 
 namespace BHive
 {
 	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t binding, uint64_t size, const void *data)
-		: mDevice(VulkanCore::GetLogicalDevice()),
+		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mSize(size)
 	{
 		
-		for (size_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
+		for (size_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent , mBuffer[i]);
 			mMappedMemory[i] = mBuffer[i].Memory.mapMemory(0, size);
@@ -21,7 +20,7 @@ namespace BHive
 
 	VulkanUniformBuffer::~VulkanUniformBuffer()
 	{
-		for (size_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
+		for (size_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			mMappedMemory[i] = nullptr;
 			mBuffer[i].Memory.unmapMemory();
@@ -47,7 +46,7 @@ namespace BHive
 
 	vk::DescriptorBufferInfo VulkanUniformBuffer::GetBufferInfo(uint32_t frame) const
 	{
-		ASSERT(frame < VulkanCore::MAX_FRAMES_IN_FLIGHT);
+		ASSERT(frame < VulkanBackend::MAX_FRAMES_IN_FLIGHT);
 		return vk::DescriptorBufferInfo(mBuffer[frame].Buffer, 0, mSize);
 	}
 

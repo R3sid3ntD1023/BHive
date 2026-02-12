@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gfx/StorageBuffer.h"
-#include "VulkanCore.h"
+#include "VulkanBackend.h"
 
 namespace BHive
 {
@@ -18,7 +18,7 @@ namespace BHive
 
 	private:
 		vk::raii::Device &mDevice;
-		AllocatedVulkanBuffer mBuffer;
+		Vulkan::AllocatedBuffer mBuffer;
 		uint32_t mBinding{0};
 		vk::DescriptorBufferInfo mBufferInfo;
 	};

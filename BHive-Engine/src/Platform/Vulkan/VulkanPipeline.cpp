@@ -1,14 +1,14 @@
 #include "gfx/RenderCommand.h"
 #include "VulkanPipeline.h"
 #include "VulkanRendererAPI.h"
-#include "VulkanGraphicsContext.h"
+#include "VulkanWindowContext.h"
 #include "VulkanSwapChain.h"
 
 namespace BHive
 {
 
 	VulkanPipeline::VulkanPipeline()
-		: mDevice(VulkanCore::GetLogicalDevice())
+		: mDevice(VulkanBackend::GetLogicalDevice())
 
 	{
 	}

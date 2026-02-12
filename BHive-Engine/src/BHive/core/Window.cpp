@@ -1,5 +1,6 @@
 #include "Window.h"
 #include "gfx/RenderCommand.h"
+#include "gfx/WindowContext.h"
 #include <glfw/glfw3.h>
 
 namespace BHive
@@ -43,9 +44,9 @@ namespace BHive
 		mWindow = glfwCreateWindow(properties.Size.x, properties.Size.y, properties.Title.c_str(), nullptr, shared_context);
 		sWindowCount++;
 
-		mContext = GraphicsContext::Create(mWindow);
+		mContext = WindowContext::Create(mWindow);
 		mContext->Init();
-		mData.Context = mContext.get();
+		mData.Instance = this;
 
 		glfwSetWindowUserPointer(mWindow, &mData);
 
@@ -134,7 +135,7 @@ namespace BHive
 	{
 		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
 		input->Input.OnWindowResize(width, height);
-		input->mSize = {width, height};
+		input->Size = {width, height};
 	}
 
 	void Window::OnKeyEventCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -170,7 +171,7 @@ namespace BHive
 	void Window::OnFramebufferSizeCallback(GLFWwindow *window, int width, int height)
 	{
 		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
-		input->Context->OnFramebufferResized(width, height);
+		input->Instance->GetContext().OnFramebufferResized(width, height);
 	}
 
 	void Window::OnJoyStickCallback(int joystick, int status)

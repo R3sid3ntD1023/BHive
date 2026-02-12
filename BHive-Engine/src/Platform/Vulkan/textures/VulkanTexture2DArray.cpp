@@ -1,11 +1,10 @@
-#include "../VulkanCore.h"
 #include "gfx/utils/texture/TextureUtils.h"
 #include "VulkanTexture2DArray.h"
 
 namespace BHive
 {
 	VulkanTexture2DArray::VulkanTexture2DArray(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification)
-		: mDevice(VulkanCore::GetLogicalDevice()),
+		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mWidth(width),
 		  mHeight(height),
 		  mDepth(depth),
@@ -20,12 +19,6 @@ namespace BHive
 		auto compare_operation = (vk::CompareOp)mInfo.CompareFunc;
 		auto format = (vk::Format)mInfo.InternalFormat;
 
-		VulkanUtils::CreateImage(
-			mWidth, mHeight, 1, vk::ImageType::e2D, format, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
-			vk::MemoryPropertyFlagBits::eDeviceLocal, mTextureHandle);
-
-		VulkanUtils::CreateImageView(mTextureHandle, vk::ImageViewType::e2DArray, format);
-
 		vk::SamplerCreateInfo sampler_info({}, min_filter, mag_filter, vk::SamplerMipmapMode::eLinear, wrap_mode, wrap_mode, wrap_mode, 0, 0, 1, compare_enabled, compare_operation);
 		sampler_info.borderColor = vk::BorderColor::eIntOpaqueBlack;
 		sampler_info.unnormalizedCoordinates = VK_FALSE;
@@ -34,9 +27,9 @@ namespace BHive
 		sampler_info.minLod = 0.f;
 		sampler_info.maxLod = 0.f;
 
-		VulkanUtils::CreateImageSampler(mTextureHandle, sampler_info);
-
-		mDescriptorInfo = VulkanUtils::CreateDescriptorImageInfo(mTextureHandle, vk::ImageLayout::eShaderReadOnlyOptimal);
+		mImage.Create(
+			width, height, depth, vk::ImageType::e2D, vk::ImageViewType::e2DArray, format, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst, vk::ImageAspectFlagBits::eColor,
+			sampler_info);
 	}
 
 	void VulkanTexture2DArray::Bind(uint32_t slot) const
@@ -52,13 +45,10 @@ namespace BHive
 
 		vk::DeviceSize size = mWidth * mHeight * mDepth * mCreateInfo.Channels;
 
-		AllocatedVulkanBuffer stagingBuffer;
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
-		//stagingBuffer.SetData(data, size, offsetX);
-
-		auto &image = mTextureHandle.Image;
-		VulkanUtils::TransitionImageLayout(image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-		VulkanUtils::CopyBufferToImage(stagingBuffer, mTextureHandle, mWidth, mHeight);
-		VulkanUtils::TransitionImageLayout(image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+		mImage.Upload(data, size);
+	}
+	NativeHandle VulkanTexture2DArray::GetNativeHandle() const
+	{
+		return NativeHandle{.Ptr = &mImage.GetDescriptor()};
 	}
 } // namespace BHive

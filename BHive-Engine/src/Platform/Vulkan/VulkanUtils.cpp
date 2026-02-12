@@ -73,7 +73,7 @@ namespace BHive
 	{
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 		auto &cmdPool = api->GetCommandPool();
-		auto &device = VulkanCore::GetLogicalDevice();
+		auto &device = VulkanBackend::GetLogicalDevice();
 
 		vk::CommandBufferAllocateInfo allocInfo(cmdPool, vk::CommandBufferLevel::ePrimary, 1);
 		vk::raii::CommandBuffer cmdbuffer = std::move(device.allocateCommandBuffers(allocInfo).front());
@@ -86,20 +86,20 @@ namespace BHive
 		commandBuffer.end();
 
 		vk::SubmitInfo submitInfo({}, {}, *commandBuffer);
-		auto &graphics_queue = VulkanCore::GetQueueFamilies().GraphicsQueue;
+		auto &graphics_queue = VulkanBackend::GetQueueFamilies().GraphicsQueue;
 		graphics_queue.submit(submitInfo, nullptr);
 		graphics_queue.waitIdle();
 	}
 
-	void VulkanUtils::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, AllocatedVulkanBuffer &buffer)
+	void VulkanUtils::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, Vulkan::AllocatedBuffer &buffer)
 	{
 		CreateBuffer(size, usage, properties, buffer.Buffer, buffer.Memory);
 	}
 
 	void VulkanUtils::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer, vk::raii::DeviceMemory &memory)
 	{
-		auto &device = VulkanCore::GetLogicalDevice();
-		auto &physical_device = VulkanCore::GetPhysicalDevice();
+		auto &device = VulkanBackend::GetLogicalDevice();
+		auto &physical_device = VulkanBackend::GetPhysicalDevice();
 
 		vk::DeviceSize atom = physical_device.getProperties().limits.nonCoherentAtomSize;
 		vk::DeviceSize requested = size;
@@ -119,9 +119,9 @@ namespace BHive
 
 	void VulkanUtils::CreateImage(
 		uint32_t w, uint32_t h, uint32_t d, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties,
-		AllocatedVulkanTexture &texture)
+		Vulkan::AllocatedTexture &texture)
 	{
-		auto &device = VulkanCore::GetLogicalDevice();
+		auto &device = VulkanBackend::GetLogicalDevice();
 		vk::ImageCreateInfo imageInfo(
 			{}, type, format, {w, h, d}, 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage,
 			vk::SharingMode::eExclusive, 0);
@@ -133,22 +133,17 @@ namespace BHive
 		texture.Image.bindMemory(*texture.Memory, 0);
 	}
 
-	void VulkanUtils::CreateImageView(AllocatedVulkanTexture &image, vk::ImageViewType type, vk::Format format)
+	void VulkanUtils::CreateImageView(Vulkan::AllocatedTexture &image, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect)
 	{
-		auto &device = VulkanCore::GetLogicalDevice();
-		vk::ImageViewCreateInfo image_view_create_info({}, image.Image, type, format, {}, {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
+		auto &device = VulkanBackend::GetLogicalDevice();
+		vk::ImageViewCreateInfo image_view_create_info({}, image.Image, type, format, {}, {aspect, 0, 1, 0, 1});
 		image.ImageView = device.createImageView(image_view_create_info);
 	}
 
-	void VulkanUtils::CreateImageSampler(AllocatedVulkanTexture &image, const vk::SamplerCreateInfo &info)
+	void VulkanUtils::CreateImageSampler(Vulkan::AllocatedTexture &image, const vk::SamplerCreateInfo &info)
 	{
-		auto &device = VulkanCore::GetLogicalDevice();
+		auto &device = VulkanBackend::GetLogicalDevice();
 		image.Sampler = device.createSampler(info);
-	}
-
-	vk::DescriptorImageInfo VulkanUtils::CreateDescriptorImageInfo(const AllocatedVulkanTexture &texture, vk::ImageLayout layout)
-	{
-		return vk::DescriptorImageInfo(texture.Sampler, texture.ImageView, layout);
 	}
 
 	void VulkanUtils::CopyBuffer(const vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size)
@@ -158,7 +153,7 @@ namespace BHive
 		EndSingleTimeCommands(cmd);
 	}
 
-	void VulkanUtils::CopyBuffer(const AllocatedVulkanBuffer &srcBuffer, AllocatedVulkanBuffer &dstBuffer, vk::DeviceSize size)
+	void VulkanUtils::CopyBuffer(const Vulkan::AllocatedBuffer &srcBuffer, Vulkan::AllocatedBuffer &dstBuffer, vk::DeviceSize size)
 	{
 		CopyBuffer(srcBuffer.Buffer, dstBuffer.Buffer, size);
 	}
@@ -221,7 +216,7 @@ namespace BHive
 
 	uint32_t VulkanUtils::FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties)
 	{
-		auto &physical_device = VulkanCore::GetPhysicalDevice();
+		auto &physical_device = VulkanBackend::GetPhysicalDevice();
 		auto memoryProperties = physical_device.getMemoryProperties();
 		for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
 		{
@@ -242,7 +237,7 @@ namespace BHive
 		EndSingleTimeCommands(cmd);
 	}
 
-	void VulkanUtils::CopyBufferToImage(const AllocatedVulkanBuffer &buffer, AllocatedVulkanTexture &image, uint32_t width, uint32_t height)
+	void VulkanUtils::CopyBufferToImage(const Vulkan::AllocatedBuffer &buffer, Vulkan::AllocatedTexture &image, uint32_t width, uint32_t height)
 	{
 		CopyBufferToImage(buffer.Buffer, image.Image, width, height);
 	}

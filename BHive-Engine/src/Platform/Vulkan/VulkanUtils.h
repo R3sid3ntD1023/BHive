@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Core.h"
-#include "VulkanCore.h"
+#include "VulkanMemory.h"
 
 namespace BHive
 {
@@ -24,23 +24,21 @@ namespace BHive
 
 		static void EndSingleTimeCommands(vk::raii::CommandBuffer &commandBuffer);
 
-		static void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, AllocatedVulkanBuffer &buffer);
+		static void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, Vulkan::AllocatedBuffer &buffer);
 
 		static void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer, vk::raii::DeviceMemory& memory);
 
 		static void CreateImage(
 			uint32_t w, uint32_t h, uint32_t d, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties,
-			AllocatedVulkanTexture &texture);
+			Vulkan::AllocatedTexture &texture);
 
-		static void CreateImageView(AllocatedVulkanTexture &image, vk::ImageViewType type, vk::Format format);
+		static void CreateImageView(Vulkan::AllocatedTexture &image, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect);
 
-		static void CreateImageSampler(AllocatedVulkanTexture &image, const vk::SamplerCreateInfo &info);
-
-		static vk::DescriptorImageInfo CreateDescriptorImageInfo(const AllocatedVulkanTexture &texture, vk::ImageLayout layout);
+		static void CreateImageSampler(Vulkan::AllocatedTexture &image, const vk::SamplerCreateInfo &info);
 
 		static void CopyBuffer(const vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size);
 
-		static void CopyBuffer(const AllocatedVulkanBuffer &srcBuffer, AllocatedVulkanBuffer &dstBuffer, vk::DeviceSize size);
+		static void CopyBuffer(const Vulkan::AllocatedBuffer &srcBuffer, Vulkan::AllocatedBuffer &dstBuffer, vk::DeviceSize size);
 
 		static void TransitionImageLayout(const vk::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
 
@@ -52,7 +50,7 @@ namespace BHive
 
 		static void CopyBufferToImage(const vk::raii::Buffer &buffer, vk::raii::Image &image, uint32_t width, uint32_t height);
 
-		static void CopyBufferToImage(const AllocatedVulkanBuffer &buffer, AllocatedVulkanTexture &image, uint32_t width, uint32_t height);
+		static void CopyBufferToImage(const Vulkan::AllocatedBuffer &buffer, Vulkan::AllocatedTexture &image, uint32_t width, uint32_t height);
 
 		static void SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size);
 

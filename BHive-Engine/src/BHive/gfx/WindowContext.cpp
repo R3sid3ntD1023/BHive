@@ -1,17 +1,17 @@
-#include "GraphicsContext.h"
-#include "Platform/Vulkan/VulkanGraphicsContext.h"
+#include "WindowContext.h"
+#include "Platform/Vulkan/VulkanWindowContext.h"
 #include "RenderCommand.h"
 
 namespace BHive
 {
-	Scope<GraphicsContext> GraphicsContext::Create(void *windowHandle)
+	Scope<WindowContext> WindowContext::Create(void *windowHandle)
 	{
-		Scope<GraphicsContext> instance;
+		Scope<WindowContext> instance;
 
 		switch (RenderCommand::GetRendererAPI())
 		{
 		case RendererAPI::Vulkan:
-			instance = CreateScope<VulkanGraphicsContext>(windowHandle);
+			instance = CreateScope<VulkanWindowContext>(windowHandle);
 			break;
 		default:
 			break;

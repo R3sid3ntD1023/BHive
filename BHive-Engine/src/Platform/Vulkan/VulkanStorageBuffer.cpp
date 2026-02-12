@@ -1,11 +1,10 @@
 #include "VulkanStorageBuffer.h"
-#include "VulkanUtils.h"
 
 namespace BHive
 {
 
 	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t binding, size_t size, const void *data)
-		: mDevice(VulkanCore::GetLogicalDevice()),
+		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mBinding(binding)
 	{
 		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eStorageBuffer, vk::MemoryPropertyFlagBits::eHostVisible, mBuffer);
@@ -16,7 +15,7 @@ namespace BHive
 	}
 
 	VulkanStorageBuffer::VulkanStorageBuffer(size_t size)
-		: mDevice(VulkanCore::GetLogicalDevice())
+		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
 	}
 

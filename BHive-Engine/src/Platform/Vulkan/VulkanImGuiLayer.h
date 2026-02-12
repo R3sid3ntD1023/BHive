@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/layers/ImGuiLayer.h"
-#include "Platform/Vulkan/VulkanCore.h"
+#include "VulkanBackend.h"
 
 namespace BHive
 {

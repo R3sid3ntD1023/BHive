@@ -4,6 +4,7 @@
 #include "core/Buffer.h"
 #include "core/Core.h"
 #include "TextureSpecification.h"
+#include "NativeHandle.h"
 
 namespace BHive
 {
@@ -32,9 +33,7 @@ namespace BHive
 
 		virtual const FTextureCreateInfo &GetInfo() const = 0;
 
-		virtual uintptr_t GetNativeHandle() const = 0;
-
-		operator uintptr_t() const { return GetNativeHandle(); }
+		virtual NativeHandle GetNativeHandle() const = 0;
 
 		REFLECTABLEV(Asset)
 	};

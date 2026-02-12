@@ -1,5 +1,4 @@
-
-#include "VulkanCore.h"
+#include "VulkanBackend.h"
 #include "core/debug/CrashHandler.h"
 #include <GLFW/glfw3.h>
 
@@ -79,7 +78,7 @@ namespace BHive
 		}
 	} // namespace details
 
-	void VulkanCore::Init()
+	void VulkanBackend::Init()
 	{
 
 		CreateIntance();
@@ -105,7 +104,7 @@ namespace BHive
 		CrashHandler::Get().SetLogInfo(log_info);
 	}
 
-	void VulkanCore::Shutdown()
+	void VulkanBackend::Shutdown()
 	{
 		LOG_TRACE("VulkanCore Shutdown Called")
 
@@ -117,23 +116,23 @@ namespace BHive
 		mVulkanInstance = VK_NULL_HANDLE;
 	}
 
-	void VulkanCore::RegisterOnDeviceCreated(const DeviceCallback &callback)
+	void VulkanBackend::RegisterOnDeviceCreated(const DeviceCallback &callback)
 	{
 		mOnDeviceCreatedCallbacks.push_back(callback);
 	}
 
-	void VulkanCore::RegisterOnDeviceDestroy(const DeviceCallback &callback)
+	void VulkanBackend::RegisterOnDeviceDestroy(const DeviceCallback &callback)
 	{
 		mOnDeviceDestroyedCallbacks.push_back(callback);
 	}
 
-	void VulkanCore::CallOnDeviceDestroyed()
+	void VulkanBackend::CallOnDeviceDestroyed()
 	{
 		for (auto &callback : mOnDeviceDestroyedCallbacks)
 			callback();
 	}
 
-	std::vector<const char *> VulkanCore::GetRequiredExtensions()
+	std::vector<const char *> VulkanBackend::GetRequiredExtensions()
 	{
 		return {
 			vk::KHRSwapchainExtensionName,
@@ -145,7 +144,7 @@ namespace BHive
 			vk::EXTVertexAttributeDivisorExtensionName};
 	}
 
-	uint32_t VulkanCore::SelectQueueIndex(vk::QueueFlags queue_type, const vk::SurfaceKHR &surface)
+	uint32_t VulkanBackend::SelectQueueIndex(vk::QueueFlags queue_type, const vk::SurfaceKHR &surface)
 	{
 		std::vector<vk::QueueFamilyProperties> queueFamilyProperties = mPhysicalDevice.getQueueFamilyProperties();
 		for (uint32_t qfpIndex = 0; qfpIndex < static_cast<uint32_t>(queueFamilyProperties.size()); qfpIndex++)
@@ -159,7 +158,7 @@ namespace BHive
 		return ~0;
 	}
 
-	uint32_t VulkanCore::SelectQueueIndex(vk::QueueFlags queue_type)
+	uint32_t VulkanBackend::SelectQueueIndex(vk::QueueFlags queue_type)
 	{
 		std::vector<vk::QueueFamilyProperties> queueFamilyProperties = mPhysicalDevice.getQueueFamilyProperties();
 		for (uint32_t qfpIndex = 0; qfpIndex < static_cast<uint32_t>(queueFamilyProperties.size()); qfpIndex++)
@@ -173,7 +172,7 @@ namespace BHive
 		return ~0;
 	}
 
-	void VulkanCore::CreateIntance()
+	void VulkanBackend::CreateIntance()
 	{
 		constexpr auto appInfo = vk::ApplicationInfo{"BHive", 1, "BHiveEngine", 1, MINIMUM_VULKAN_API_VERSION};
 
@@ -241,12 +240,12 @@ namespace BHive
 #endif
 	}
 
-	void VulkanCore::CreateDebugMessenger()
+	void VulkanBackend::CreateDebugMessenger()
 	{
 
 	}
 
-	void VulkanCore::PickPhysicalDevice()
+	void VulkanBackend::PickPhysicalDevice()
 	{
 		auto devices = mVulkanInstance.enumeratePhysicalDevices();
 		const auto devIter = std::ranges::find_if(
@@ -291,20 +290,7 @@ namespace BHive
 		}
 	}
 
-	vk::raii::SurfaceKHR VulkanCore::CreateSurface(GLFWwindow *window)
-	{
-		VkSurfaceKHR _surface;
-		auto &instance = VulkanCore::GetInstance();
-		if (glfwCreateWindowSurface(*instance, window, nullptr, &_surface) != VK_SUCCESS)
-		{
-			LOG_ERROR("Failed to create window surface!");
-			ASSERT(false);
-		}
-
-		return vk::raii::SurfaceKHR(instance, _surface);
-	}
-
-	void VulkanCore::EnsurePresentSupportForSurface(const vk::SurfaceKHR &surface)
+	void VulkanBackend::EnsurePresentSupportForSurface(const vk::SurfaceKHR &surface)
 	{
 		if (mLogicalDevice == VK_NULL_HANDLE)
 		{
@@ -319,7 +305,7 @@ namespace BHive
 			return;
 		}
 
-		auto present_family_index = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics , surface);
+		auto present_family_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics , surface);
 		if (present_family_index == ~0)
 		{
 			LOG_ERROR("Failed to find a suitable queue family for presenting!");
@@ -365,7 +351,7 @@ namespace BHive
 			queueCreateInfos.push_back(queueCreateInfo);
 		}
 
-		auto requiredDeviceExtensions = VulkanCore::GetRequiredExtensions();
+		auto requiredDeviceExtensions = VulkanBackend::GetRequiredExtensions();
 		auto featureChain = details::GetPhysicalDeviceFeaturesChain();
 
 		vk::DeviceCreateInfo device_createInfo({}, queueCreateInfos, {}, requiredDeviceExtensions, nullptr, &featureChain.get<vk::PhysicalDeviceFeatures2>());
@@ -385,7 +371,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanCore::CreateLogicalDevice(const vk::SurfaceKHR &surface)
+	void VulkanBackend::CreateLogicalDevice(const vk::SurfaceKHR &surface)
 	{
 		if (mLogicalDevice != VK_NULL_HANDLE)
 		{
@@ -396,7 +382,7 @@ namespace BHive
 			return;
 		}
 
-		auto graphics_index = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics );
+		auto graphics_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics );
 		if (graphics_index == ~0)
 		{
 			LOG_ERROR("Failed to find a suitable queue family!");
@@ -409,7 +395,7 @@ namespace BHive
 		{
 			if (!mPhysicalDevice.getSurfaceSupportKHR(graphics_index, surface))
 			{
-				auto found = VulkanCore::SelectQueueIndex(vk::QueueFlagBits::eGraphics , surface);
+				auto found = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics , surface);
 				if (found == ~0)
 				{
 					LOG_ERROR("Failed to find a suitable queue family for presenting!");
@@ -424,7 +410,7 @@ namespace BHive
 		std::sort(families.begin(), families.end());
 		families.erase(std::unique(families.begin(), families.end()), families.end());
 
-		auto requiredDeviceExtensions = VulkanCore::GetRequiredExtensions();
+		auto requiredDeviceExtensions = VulkanBackend::GetRequiredExtensions();
 		auto featureChain = details::GetPhysicalDeviceFeaturesChain();
 
 		auto queue_priority = 1.0f;

@@ -167,8 +167,8 @@ namespace BHive
 
 	void Framebuffer::Release()
 	{
-		glDeleteRenderbuffers(1, &mRenderbufferID);
-		glDeleteFramebuffers(1, &mFramebufferID);
+		/*glDeleteRenderbuffers(1, &mRenderbufferID);
+		glDeleteFramebuffers(1, &mFramebufferID);*/
 	}
 
 	void Framebuffer::Initialize()
@@ -199,44 +199,44 @@ namespace BHive
 			mDepthAttachment = CreateFramebufferTexture(mSpecification.Width, mSpecification.Height, mSpecification.Depth, mSpecification.Samples, mDepthSpecification);
 		}
 
-		// create framebuffer and attach textures
-		glCreateFramebuffers(1, &mFramebufferID);
-		auto num_attachments = mColorAttachments.size();
-		for (size_t i = 0; i < num_attachments; i++)
-		{
-			glNamedFramebufferTexture(mFramebufferID, GL_COLOR_ATTACHMENT0 + (uint32_t)i, *mColorAttachments[i], 0);
-		}
+		//// create framebuffer and attach textures
+		//glCreateFramebuffers(1, &mFramebufferID);
+		//auto num_attachments = mColorAttachments.size();
+		//for (size_t i = 0; i < num_attachments; i++)
+		//{
+		//	glNamedFramebufferTexture(mFramebufferID, GL_COLOR_ATTACHMENT0 + (uint32_t)i, *mColorAttachments[i], 0);
+		//}
 
-		if (mDepthAttachment)
-		{
-			glNamedFramebufferTexture(mFramebufferID, TextureUtils::GetAPIDepthAttachmentType(mDepthSpecification.CreateInfo.InternalFormat), *mDepthAttachment, 0);
-		}
+		//if (mDepthAttachment)
+		//{
+		//	glNamedFramebufferTexture(mFramebufferID, TextureUtils::GetAPIDepthAttachmentType(mDepthSpecification.CreateInfo.InternalFormat), *mDepthAttachment, 0);
+		//}
 
-		if (num_attachments > 1)
-		{
-			std::vector<GLenum> buffers(num_attachments);
-			for (size_t i = 0; i < num_attachments; i++)
-			{
-				buffers[i] = GL_COLOR_ATTACHMENT0 + (int32_t)i;
-			}
-			glNamedFramebufferDrawBuffers(mFramebufferID, (uint32_t)buffers.size(), buffers.data());
-		}
-		else if (num_attachments == 0)
-		{
-			glNamedFramebufferDrawBuffer(mFramebufferID, GL_NONE);
-		}
+		//if (num_attachments > 1)
+		//{
+		//	std::vector<GLenum> buffers(num_attachments);
+		//	for (size_t i = 0; i < num_attachments; i++)
+		//	{
+		//		buffers[i] = GL_COLOR_ATTACHMENT0 + (int32_t)i;
+		//	}
+		//	glNamedFramebufferDrawBuffers(mFramebufferID, (uint32_t)buffers.size(), buffers.data());
+		//}
+		//else if (num_attachments == 0)
+		//{
+		//	glNamedFramebufferDrawBuffer(mFramebufferID, GL_NONE);
+		//}
 
-		if (mRenderBufferSpecification.Format != EFormat::Invalid && !mDepthAttachment)
-		{
-			auto depth_attachment = TextureUtils::GetAPIDepthAttachmentType(mRenderBufferSpecification.Format);
-			auto depth_internal_format = TextureUtils::GetAPIInternalFormat(mRenderBufferSpecification.Format);
+		//if (mRenderBufferSpecification.Format != EFormat::Invalid && !mDepthAttachment)
+		//{
+		//	auto depth_attachment = TextureUtils::GetAPIDepthAttachmentType(mRenderBufferSpecification.Format);
+		//	auto depth_internal_format = TextureUtils::GetAPIInternalFormat(mRenderBufferSpecification.Format);
 
-			glCreateRenderbuffers(1, &mRenderbufferID);
-			glNamedRenderbufferStorage(mRenderbufferID, depth_internal_format, mSpecification.Width, mSpecification.Height);
-			glNamedFramebufferRenderbuffer(mFramebufferID, depth_attachment, GL_RENDERBUFFER, mRenderbufferID);
-		}
+		//	glCreateRenderbuffers(1, &mRenderbufferID);
+		//	glNamedRenderbufferStorage(mRenderbufferID, depth_internal_format, mSpecification.Width, mSpecification.Height);
+		//	glNamedFramebufferRenderbuffer(mFramebufferID, depth_attachment, GL_RENDERBUFFER, mRenderbufferID);
+		//}
 
-		ASSERT(glCheckNamedFramebufferStatus(mFramebufferID, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+		//ASSERT(glCheckNamedFramebufferStatus(mFramebufferID, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 	}
 
 } // namespace BHive

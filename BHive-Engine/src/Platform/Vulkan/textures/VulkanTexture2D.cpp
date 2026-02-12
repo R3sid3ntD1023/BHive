@@ -5,16 +5,16 @@
 namespace BHive
 {
 	VulkanTexture2D::VulkanTexture2D()
-		: mDevice(VulkanCore::GetLogicalDevice())
+		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
 	}
 
 	VulkanTexture2D::VulkanTexture2D(uint32_t w, uint32_t h, const FTextureCreateInfo &info, const void *buffer, size_t size)
-		: mDevice(VulkanCore::GetLogicalDevice()),
-		  mWidth(w),
-		  mHeight(h),
+		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mCreateInfo(info),
-		  mInfo(info)
+		  mInfo(info),
+		  mWidth(w),
+		  mHeight(h)
 	{
 
 		Initialize();
@@ -54,18 +54,7 @@ namespace BHive
 	{
 		vk::DeviceSize size = mWidth * mHeight * mCreateInfo.Channels;
 
-		AllocatedVulkanBuffer stagingBuffer;
-
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
-
-		void *map_memory = stagingBuffer.Memory.mapMemory(0, size);
-		std::memcpy(map_memory, data, size);
-		stagingBuffer.Memory.unmapMemory();
-
-		auto &image = mVulkanTexture.Image;
-		VulkanUtils::TransitionImageLayout(image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-		VulkanUtils::CopyBufferToImage(stagingBuffer, mVulkanTexture, mWidth, mHeight);
-		VulkanUtils::TransitionImageLayout(image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+		mImage.Upload(data, size);
 	}
 
 	Ref<Texture2D> VulkanTexture2D::CreateSubTexture(const FSubTexture &texture)
@@ -81,7 +70,7 @@ namespace BHive
 
 	void VulkanTexture2D::GetSubImage(const FSubTexture &texture, size_t size, uint8_t *data) const
 	{
-		// glGetTextureSubImage(mTextureID, 0, texture.x, texture.y, texture.z, texture.width, texture.height, texture.depth, mInfo.Format, mInfo.Type, size, data);
+		
 	}
 
 	void VulkanTexture2D::Initialize()
@@ -95,14 +84,6 @@ namespace BHive
 		auto compare_operation = (vk::CompareOp)mInfo.CompareFunc;
 		auto format = (vk::Format)mInfo.InternalFormat;
 
-		//LOG_TRACE("Texture Format : {}", vk::to_string(format));
-
-		VulkanUtils::CreateImage(
-			mWidth, mHeight, 1, vk::ImageType::e2D, format, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
-			vk::MemoryPropertyFlagBits::eDeviceLocal, mVulkanTexture);
-
-		VulkanUtils::CreateImageView(mVulkanTexture, vk::ImageViewType::e2D, format);
-
 		vk::SamplerCreateInfo sampler_info({}, min_filter, mag_filter, vk::SamplerMipmapMode::eLinear, wrap_mode, wrap_mode, wrap_mode, 0, 0, 1, compare_enabled, compare_operation);
 		sampler_info.borderColor = vk::BorderColor::eIntOpaqueBlack;
 		sampler_info.unnormalizedCoordinates = VK_FALSE;
@@ -111,9 +92,7 @@ namespace BHive
 		sampler_info.minLod = 0.f;
 		sampler_info.maxLod = 0.f;
 
-		VulkanUtils::CreateImageSampler(mVulkanTexture, sampler_info);
-
-		mDescriptorInfo = VulkanUtils::CreateDescriptorImageInfo(mVulkanTexture, vk::ImageLayout::eShaderReadOnlyOptimal);
+		mImage.Create(mWidth, mHeight, 1, vk::ImageType::e2D, vk::ImageViewType::e2D, format, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst, vk::ImageAspectFlagBits::eColor, sampler_info);
 	}
 
 	void VulkanTexture2D::Release()
@@ -121,18 +100,23 @@ namespace BHive
 		mBuffer.Release();
 	}
 
+	NativeHandle VulkanTexture2D::GetNativeHandle() const
+	{
+		return NativeHandle{.Ptr = &mImage.GetDescriptor()};
+	}
+
 	void VulkanTexture2D::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(mWidth, mHeight, mCreateInfo, mBuffer);
+		ar(mImage.GetWidth(), mImage.GetHeight(), mCreateInfo, mBuffer);
 	}
 
 	void VulkanTexture2D::Load(cereal::BinaryInputArchive &ar)
 	{
-
+		uint32_t width = 0, height = 0;
 		Asset::Load(ar);
 
-		ar(mWidth, mHeight, mCreateInfo, mBuffer);
+		ar(width, height, mCreateInfo, mBuffer);
 		mInfo = mCreateInfo;
 
 		if (mBuffer)

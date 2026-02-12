@@ -4,7 +4,7 @@
 namespace BHive
 {
 	VulkanTextureCube::VulkanTextureCube(uint32_t size, const FTextureCreateInfo &create_info)
-		: mDevice(VulkanCore::GetLogicalDevice()),
+		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mSize(size),
 		  mCreateInfo(create_info),
 		  mInfo(create_info)
@@ -17,12 +17,6 @@ namespace BHive
 		auto compare_operation = (vk::CompareOp)mInfo.CompareFunc;
 		auto format = (vk::Format)mInfo.InternalFormat;
 
-		VulkanUtils::CreateImage(
-			size, size, 1, vk::ImageType::e2D, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
-			vk::MemoryPropertyFlagBits::eDeviceLocal, mTextureHandle);
-
-		VulkanUtils::CreateImageView(mTextureHandle, vk::ImageViewType::eCube, format);
-
 		vk::SamplerCreateInfo sampler_info({}, min_filter, mag_filter, vk::SamplerMipmapMode::eLinear, wrap_mode, wrap_mode, wrap_mode, 0, 0, 1, compare_enabled, compare_operation);
 		sampler_info.borderColor = vk::BorderColor::eIntOpaqueBlack;
 		sampler_info.unnormalizedCoordinates = VK_FALSE;
@@ -31,9 +25,14 @@ namespace BHive
 		sampler_info.minLod = 0.f;
 		sampler_info.maxLod = 0.f;
 
-		VulkanUtils::CreateImageSampler(mTextureHandle, sampler_info);
+		mImage.Create(
+			size, size, size, vk::ImageType::e2D, vk::ImageViewType::eCube, format, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst, vk::ImageAspectFlagBits::eColor,
+			sampler_info);
+	}
 
-		mDescriptorInfo = VulkanUtils::CreateDescriptorImageInfo(mTextureHandle, vk::ImageLayout::eShaderReadOnlyOptimal);
+	NativeHandle VulkanTextureCube::GetNativeHandle() const
+	{
+		return NativeHandle{.Ptr = &mImage.GetDescriptor()};
 	}
 
 } // namespace BHive

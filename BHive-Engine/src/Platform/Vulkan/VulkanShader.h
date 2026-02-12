@@ -2,8 +2,7 @@
 
 #include "core/Core.h"
 #include "gfx/Shader.h"
-#include "gfx/ShaderReflection.h"
-#include "VulkanCore.h"
+#include "VulkanBackend.h"
 
 namespace BHive
 {

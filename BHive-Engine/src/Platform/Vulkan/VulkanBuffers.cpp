@@ -1,5 +1,4 @@
 #include "VulkanBuffers.h"
-#include "VulkanUtils.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
 
@@ -45,7 +44,7 @@ namespace BHive
 
 	//-------------------Static Buffers---------------------------------------------//
 	StaticVulkanIndexBuffer::StaticVulkanIndexBuffer(uint32_t count)
-		: mDevice(VulkanCore::GetLogicalDevice()),
+		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mCount(count)
 	{
 		mBuffer.Init(count * sizeof(uint32_t), vk::BufferUsageFlagBits::eIndexBuffer);
@@ -75,7 +74,7 @@ namespace BHive
 	}
 
 	StaticVulkanVertexBuffer::StaticVulkanVertexBuffer(size_t size)
-		: mDevice(VulkanCore::GetLogicalDevice())
+		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
 		mBuffer.Init(size, vk::BufferUsageFlagBits::eVertexBuffer);
 		LOG_TRACE("Created Static Vertex Buffer")
@@ -103,10 +102,10 @@ namespace BHive
 
 	//------------------------Dynamic Buffers---------------------------------//
 	DynamicVulkanIndexBuffer::DynamicVulkanIndexBuffer(uint32_t count)
-		: mDevice(VulkanCore::GetLogicalDevice()),
+		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mCount(count)
 	{
-		for (uint32_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			mPerFrameBuffer[i].Init(count * sizeof(uint32_t), vk::BufferUsageFlagBits::eIndexBuffer);
 		}
@@ -114,7 +113,7 @@ namespace BHive
 
 	DynamicVulkanIndexBuffer::~DynamicVulkanIndexBuffer()
 	{
-		for (uint32_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			mPerFrameBuffer[i].Release();
 		}
@@ -136,9 +135,9 @@ namespace BHive
 	}
 
 	DynamicVulkanVertexBuffer::DynamicVulkanVertexBuffer(const size_t size)
-		: mDevice(VulkanCore::GetLogicalDevice())
+		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
-		for (uint32_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			mPerFrameBuffer[i].Init(size, vk::BufferUsageFlagBits::eVertexBuffer);	
 		}
@@ -146,7 +145,7 @@ namespace BHive
 
 	DynamicVulkanVertexBuffer::~DynamicVulkanVertexBuffer()
 	{
-		for (uint32_t i = 0; i < VulkanCore::MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			mPerFrameBuffer[i].Release();
 		}

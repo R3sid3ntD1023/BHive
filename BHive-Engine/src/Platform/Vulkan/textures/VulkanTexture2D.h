@@ -1,7 +1,8 @@
 #pragma once
 
 #include "gfx/Texture.h"
-#include "Platform/Vulkan/VulkanCore.h"
+#include "Platform/Vulkan/VulkanBackend.h"
+#include "VulkanImage.h"
 
 namespace BHive
 {
@@ -37,7 +38,7 @@ namespace BHive
 
 		const Buffer &GetBuffer() const { return mBuffer; }
 
-		virtual uintptr_t GetNativeHandle() const override { return reinterpret_cast<uintptr_t>(&mDescriptorInfo); }
+		virtual NativeHandle GetNativeHandle() const override;
 
 		/*Begin Asset*/
 		void Save(cereal::BinaryOutputArchive &ar) const override;
@@ -56,9 +57,7 @@ namespace BHive
 	private:
 		vk::raii::Device &mDevice;
 
-		uint32_t mWidth = 0;
-
-		uint32_t mHeight = 0;
+		VulkanImage mImage;
 
 		FTextureCreateInfo mCreateInfo;
 
@@ -66,9 +65,7 @@ namespace BHive
 
 		Buffer mBuffer;
 
-		AllocatedVulkanTexture mVulkanTexture;
-
-		vk::DescriptorImageInfo mDescriptorInfo{};
+		uint32_t mWidth = 0, mHeight = 0;
 	};
 
 } // namespace BHive

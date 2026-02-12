@@ -21,7 +21,7 @@ namespace ImGui
 		if (icon)
 		{
 			auto id = ImGui::GetID(label.c_str());
-			pressed = ImageButtonEx(id, (ImTextureID)(uint64_t)(uint32_t)*icon, {size, size}, {0, 1}, {1, 0}, {0, 0, 0, 0}, {1, 1, 1, 1}, flags);
+			pressed = ImageButtonEx(id, (ImTextureID)(uint64_t)(uint32_t)icon->GetHandle(), {size, size}, {0, 1}, {1, 0}, {0, 0, 0, 0}, {1, 1, 1, 1}, flags);
 		}
 		else
 		{

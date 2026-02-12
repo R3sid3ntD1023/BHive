@@ -2,10 +2,8 @@
 
 #include "core/Core.h"
 #include "core/events/KeyEvents.h"
+#include "VulkanBackend.h"
 #include "gfx/RendererAPI.h"
-#include "gfx/VertexArray.h"
-#include "VulkanCore.h"
-#include "VulkanUtils.h"
 
 namespace BHive
 {

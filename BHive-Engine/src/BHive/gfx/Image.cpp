@@ -23,7 +23,7 @@ namespace BHive
 	{
 		ASSERT(mTexture, "No valid texture set!");
 
-		auto api_access = TextureUtils::GetAPIImageAccess(access);
-		glBindImageTexture(slot, *mTexture, level, layered, layer, api_access, mTextureInfo.InternalFormat);
+		/*auto api_access = TextureUtils::GetAPIImageAccess(access);
+		glBindImageTexture(slot, *mTexture-, level, layered, layer, api_access, mTextureInfo.InternalFormat);*/
 	}
 } // namespace BHive
