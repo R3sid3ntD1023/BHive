@@ -27,6 +27,7 @@ namespace BHive
 		int32_t TransferQueueIndex = -1;
 	};
 
+
 	class BHIVE_API VulkanBackend
 	{
 	public:

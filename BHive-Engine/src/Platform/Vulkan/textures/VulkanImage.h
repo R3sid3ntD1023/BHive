@@ -26,6 +26,8 @@ namespace BHive
 
 		uint32_t GetDepth() const { return mDepth; }
 
+		NativeHandle GetNativeHandle() const { return Vulkan::Handle::ImageInfo(&mDescriptor); }
+
 	private:
 		vk::raii::Device &mDevice;
 		Vulkan::AllocatedTexture mTexture{};

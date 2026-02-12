@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan_raii.hpp>
+#include "gfx/NativeHandle.h"
 
 namespace BHive
 {
@@ -20,6 +21,12 @@ namespace BHive
 			vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
 		};
 
+		struct Handle 
+		{
+			static NativeHandle BufferInfo(const vk::DescriptorBufferInfo *info) { return NativeHandle::FromPtr(info); }
+			static NativeHandle ImageInfo(const vk::DescriptorImageInfo *info) { return NativeHandle::FromPtr(info); }
+			static NativeHandle Buffer(const vk::raii::Buffer *buffer) { return NativeHandle::FromPtr(buffer); }
+		};
+		
 	}
-	
 } // namespace BHive

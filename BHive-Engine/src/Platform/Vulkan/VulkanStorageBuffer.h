@@ -14,7 +14,7 @@ namespace BHive
 
 		void SetData(const void *data, size_t, uint32_t offset = 0) override;
 
-		virtual uintptr_t GetNativeHandle() const { return reinterpret_cast<uintptr_t>(&mBufferInfo); }
+		NativeHandle GetNativeHandle(uint32_t frame) const override { return Vulkan::Handle::BufferInfo(&mBufferInfo); }
 
 	private:
 		vk::raii::Device &mDevice;

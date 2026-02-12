@@ -71,12 +71,15 @@ namespace BHive
 			vk::Buffer index_buffer;
 
 			if (index_buffer_ref)
-				index_buffer = std::dynamic_pointer_cast<IVulkanBufferBase>(index_buffer_ref)->GetBuffer(data.Frame);
+			{
+				index_buffer = *index_buffer_ref->GetNativeHandle(data.Frame).As<vk::raii::Buffer>();
+			}
+				
 
 			for (uint32_t i = 0; i < size; i++)
 			{
 				auto &vb = vertex_buffers[i];
-				vk_vertex_buffers[i] = std::dynamic_pointer_cast<IVulkanBufferBase>(vb)->GetBuffer(data.Frame);
+				vk_vertex_buffers[i] = *vb->GetNativeHandle(data.Frame).As<vk::raii::Buffer>();
 			}
 
 			ASSERT(bindings.size() && attributes.size());

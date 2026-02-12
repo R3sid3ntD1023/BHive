@@ -74,13 +74,13 @@ namespace BHive
 		specs.Attachments.attach({.InternalFormat = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
 			.attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 
-		mFramebuffer = CreateRef<Framebuffer>(specs);
+		mFramebuffer = Framebuffer::Create(specs);
 
 		// Create a final framebuffer for post-processing effects
 		specs.Attachments.reset();
 		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 		specs.Attachments.attach({EFormat::DEPTH24_STENCIL8});
-		mFinalFramebuffer = CreateRef<Framebuffer>(specs);
+		mFinalFramebuffer = Framebuffer::Create(specs);
 
 		// Create a quad for rendering the final output
 		mQuad = CreateRef<PQuad>();

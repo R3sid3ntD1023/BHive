@@ -72,9 +72,9 @@ namespace BHive
 		spot_shadow_fbo_spec.Attachments.attach(shadow_texture_specs, ETextureType::TEXTURE_2D_ARRAY);
 
 		auto &shadow_passes = mShadowRenderData->ShadowPasses;
-		shadow_passes.FBOs[0] = CreateRef<Framebuffer>(dir_shadow_fbo_spec);
-		shadow_passes.FBOs[1] = CreateRef<Framebuffer>(point_shadow_fbo_spec);
-		shadow_passes.FBOs[2] = CreateRef<Framebuffer>(spot_shadow_fbo_spec);
+		shadow_passes.FBOs[0] = Framebuffer::Create(dir_shadow_fbo_spec);
+		shadow_passes.FBOs[1] = Framebuffer::Create(point_shadow_fbo_spec);
+		shadow_passes.FBOs[2] = Framebuffer::Create(spot_shadow_fbo_spec);
 		shadow_passes.Shaders[0] = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowDirectionalLight.glsl");
 		shadow_passes.Shaders[1] = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowPointLight.glsl");
 		shadow_passes.Shaders[2] = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowSpotLight.glsl");

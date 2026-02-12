@@ -151,8 +151,7 @@ namespace BHive
 
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)
 	{
-
-		auto handle = static_cast<const vk::DescriptorImageInfo *>(texture.GetNativeHandle().Ptr);
+		auto handle = texture.GetNativeHandle().As<vk::DescriptorImageInfo>();
 
 		if (s_ImGuiTextureMap.contains(handle))
 			return s_ImGuiTextureMap[handle];

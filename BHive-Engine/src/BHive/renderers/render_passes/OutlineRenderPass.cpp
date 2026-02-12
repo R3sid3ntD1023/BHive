@@ -45,7 +45,7 @@ namespace BHive
 		specs.Height = mSize.y;
 		specs.Attachments.attach(FTextureCreateInfo{.InternalFormat = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE}, ETextureType::TEXTURE_2D);
 		specs.Attachments.attach(FRenderbufferTexture{.Format = EFormat::DEPTH24_STENCIL8});
-		mFrambuffer = CreateRef<Framebuffer>(specs);
+		mFrambuffer = Framebuffer::Create(specs);
 	}
 
 	void OutlineRenderPass::SetSelected(const Ref<FMeshRenderData> &data)

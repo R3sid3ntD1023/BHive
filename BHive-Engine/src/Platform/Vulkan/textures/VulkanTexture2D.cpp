@@ -102,7 +102,7 @@ namespace BHive
 
 	NativeHandle VulkanTexture2D::GetNativeHandle() const
 	{
-		return NativeHandle{.Ptr = &mImage.GetDescriptor()};
+		return mImage.GetNativeHandle();
 	}
 
 	void VulkanTexture2D::Save(cereal::BinaryOutputArchive &ar) const

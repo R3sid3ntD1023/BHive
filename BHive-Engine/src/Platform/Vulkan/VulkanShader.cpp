@@ -316,7 +316,7 @@ namespace BHive
 			for (const auto &binding : mUniformBufferBindings)
 			{
 				auto ubo = std::dynamic_pointer_cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(binding));
-				auto buffer_info = ubo->GetBufferInfo(data.Frame);
+				auto buffer_info = *ubo->GetNativeHandle(data.Frame).As<vk::DescriptorBufferInfo>();
 				
 				vk::WriteDescriptorSet descriptor_write(descriptor_set, binding, 0, vk::DescriptorType::eUniformBuffer, {}, buffer_info);
 				descriptor_writes.emplace_back(descriptor_write);
@@ -328,7 +328,7 @@ namespace BHive
 				if (!texture)
 					continue;
 
-				vk::DescriptorImageInfo image_info = *static_cast<const vk::DescriptorImageInfo *>(texture->GetNativeHandle().Ptr);
+				vk::DescriptorImageInfo image_info = *texture->GetNativeHandle().As<vk::DescriptorImageInfo>();
 				vk::WriteDescriptorSet descriptor_write(descriptor_set, binding, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
 				descriptor_writes.emplace_back(descriptor_write);
 			}

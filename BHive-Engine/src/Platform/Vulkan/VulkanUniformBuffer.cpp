@@ -39,15 +39,16 @@ namespace BHive
 
 				const auto current_frame = frame.Frame;
 				std::memcpy(static_cast<std::byte*>(mMappedMemory[current_frame]) + offset, data, size);
+				mBufferInfos[current_frame] = vk::DescriptorBufferInfo(mBuffer[current_frame].Buffer, 0, mSize);
 			};
 		
 		api->SubmitCommand(cmd, ECommandType_PreCommand);
 	}
 
-	vk::DescriptorBufferInfo VulkanUniformBuffer::GetBufferInfo(uint32_t frame) const
+	NativeHandle VulkanUniformBuffer::GetNativeHandle(uint32_t frame) const
 	{
 		ASSERT(frame < VulkanBackend::MAX_FRAMES_IN_FLIGHT);
-		return vk::DescriptorBufferInfo(mBuffer[frame].Buffer, 0, mSize);
+		return Vulkan::Handle::BufferInfo(&mBufferInfos[frame]);
 	}
 
 } // namespace BHive

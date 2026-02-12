@@ -82,7 +82,7 @@ namespace BHive
 		spec.Height = mSize.y;
 
 		spec.Attachments.attach({.InternalFormat = EFormat::RED_INTEGER, .WrapMode = EWrapMode::CLAMP_TO_EDGE}).attach({EFormat::DEPTH24_STENCIL8});
-		mFrambuffer = CreateRef<Framebuffer>(spec);
+		mFrambuffer = Framebuffer::Create(spec);
 	}
 
 } // namespace BHive

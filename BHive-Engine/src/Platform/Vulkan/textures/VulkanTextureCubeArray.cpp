@@ -45,6 +45,6 @@ namespace BHive
 
 	NativeHandle VulkanTextureCubeArray::GetNativeHandle() const
 	{
-		return NativeHandle{.Ptr = &mImage.GetDescriptor()};
+		return mImage.GetNativeHandle();
 	}
 } // namespace BHive

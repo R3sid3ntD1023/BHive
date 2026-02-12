@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
+#include "NativeHandle.h"
 
 namespace BHive
 {
@@ -11,6 +12,6 @@ namespace BHive
 
 		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) = 0;
 
-		virtual uintptr_t GetNativeHandle() const = 0;
+		virtual NativeHandle GetNativeHandle(uint32_t frame = 0) const = 0;
 	};
 } // namespace BHive
