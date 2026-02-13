@@ -32,7 +32,6 @@ namespace BHive
 		vk::raii::Device &mDevice;
 		uint32_t mSize{0};
 		FTextureCreateInfo mCreateInfo;
-		FTextureAPIInfo mInfo;
 		VulkanImage mImage;
 	};
 } // namespace BHive

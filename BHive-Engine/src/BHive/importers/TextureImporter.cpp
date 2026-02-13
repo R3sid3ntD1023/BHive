@@ -1,6 +1,5 @@
-#include "core/threading/Threading.h"
 #include "gfx/Texture.h"
-#include "gfx/utils/texture/TextureUtils.h"
+#include "gfx/Enumerations.h"
 #include "TextureImporter.h"
 
 #include <stb_image.h>
@@ -26,7 +25,7 @@ namespace BHive
 				break;
 			}
 			ASSERT(false);
-			return EFormat::Invalid;
+			return EFormat::None;
 		}
 
 		EFormat GetFormatFromChannelsHDR(int32_t channels)
@@ -42,7 +41,7 @@ namespace BHive
 			}
 
 			ASSERT(false);
-			return EFormat::Invalid;
+			return EFormat::None;
 		}
 	} // namespace utils
 
@@ -102,12 +101,12 @@ namespace BHive
 		}
 
 		FTextureCreateInfo create_info{};
-		create_info.InternalFormat = is_hdr ? utils::GetFormatFromChannelsHDR(c_out) : utils::GetFormatFromChannels(c_out);
+		create_info.Format = is_hdr ? utils::GetFormatFromChannelsHDR(c_out) : utils::GetFormatFromChannels(c_out);
 		create_info.Channels = c_out;
 		create_info.MinFilter = EMinFilter::LINEAR;
 		create_info.MagFilter = EMagFilter::LINEAR;
 		create_info.WrapMode = EWrapMode::REPEAT;
-		create_info.GenerateMipMaps = 1;
+		create_info.GenerateMipMaps = true;
 
 		Ref<Texture2D> texture = nullptr;
 
@@ -157,12 +156,12 @@ namespace BHive
 		}
 
 		FTextureCreateInfo create_info{};
-		create_info.InternalFormat = is_hdr ? utils::GetFormatFromChannelsHDR(c_out) : utils::GetFormatFromChannels(c_out);
+		create_info.Format= is_hdr ? utils::GetFormatFromChannelsHDR(c_out) : utils::GetFormatFromChannels(c_out);
 		create_info.Channels = c_out;
 		create_info.MinFilter = EMinFilter::LINEAR;
 		create_info.MagFilter = EMagFilter::LINEAR;
 		create_info.WrapMode = EWrapMode::REPEAT;
-		create_info.GenerateMipMaps = 1;
+		create_info.GenerateMipMaps = true;
 
 		auto texture = Texture2D::Create((unsigned)x, (unsigned)y, create_info, image_data, data_size);
 

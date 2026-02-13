@@ -1,24 +1,62 @@
 #pragma once
 
 #include "core/Core.h"
+#include "gfx/Enumerations.h"
 
 namespace BHive
 {
+	class Shader;
+
 	class Pipeline
 	{
 	public:
-		struct Configuration
+		struct RasterState
 		{
-			virtual ~Configuration() = default;
+			bool CullEnabled;
+			ECullMode CullMode;
+			EFrontFace FrontFace;
+			EPolygonMode FillMode;
+		};
+
+		struct DepthState
+		{
+			bool DepthTest;
+			bool DepthWrite;
+			ECompareOp DepthCompare;
+		};
+
+		struct BlendState
+		{
+			bool Enabled;
+			EBlendFactor SrcColor;
+			EBlendFactor DstColor;
+			EBlendOp ColorOp;
+			EBlendFactor SrcAlpha;
+			EBlendFactor DstAlpha;
+			EBlendOp AlphaOp;
+		};
+
+		struct PipelineState
+		{
+			Ref<Shader> Shader;
+			//VertexLayout Layout;
+			ETopologyMode DrawMode;
+			RasterState Raster;
+			DepthState Depth;
+			BlendState Blend;
+			std::vector<EFormat> ColorAttachmentFormats;
+			EFormat DepthAttachmentFormat = EFormat::None;
 		};
 
 		virtual ~Pipeline() = default;
 
-		virtual void Init(const Ref<Configuration>& configuration) = 0;
+		virtual void Init(const PipelineState& state) = 0;
 
 		virtual void Bind() = 0;
 
 		virtual void UnBind() = 0;
+
+		static PipelineState GetDeafultPipelineState();
 
 		static Ref<Pipeline> Create();
 	};

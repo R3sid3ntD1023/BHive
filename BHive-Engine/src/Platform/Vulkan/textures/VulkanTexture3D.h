@@ -32,8 +32,6 @@ namespace BHive
 
 		FTextureCreateInfo mCreateInfo;
 
-		FTextureAPIInfo mInfo;
-
 		VulkanImage mImage;
 	};
 } // namespace BHive

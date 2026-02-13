@@ -1,6 +1,6 @@
-#include "gfx/utils/texture/TextureUtils.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "VulkanTexture2D.h"
+#include "Platform/Vulkan/VulkanConverters.h"
 
 namespace BHive
 {
@@ -12,7 +12,6 @@ namespace BHive
 	VulkanTexture2D::VulkanTexture2D(uint32_t w, uint32_t h, const FTextureCreateInfo &info, const void *buffer, size_t size)
 		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mCreateInfo(info),
-		  mInfo(info),
 		  mWidth(w),
 		  mHeight(h)
 	{
@@ -44,10 +43,7 @@ namespace BHive
 
 	void VulkanTexture2D::SetInfo(const FTextureCreateInfo &info)
 	{
-		mCreateInfo.MinFilter = info.MinFilter;
-		mCreateInfo.MagFilter = info.MagFilter;
-		mCreateInfo.WrapMode = info.WrapMode;
-		mInfo = mCreateInfo;
+		mCreateInfo = info;
 	}
 
 	void VulkanTexture2D::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
@@ -75,16 +71,10 @@ namespace BHive
 
 	void VulkanTexture2D::Initialize()
 	{
+		auto api_info = Vulkan::Convert(mCreateInfo);
 
-		auto channels = mCreateInfo.Channels;
-		auto mag_filter = (vk::Filter)mInfo.FilterModes[0];
-		auto min_filter = (vk::Filter)mInfo.FilterModes[1];
-		auto wrap_mode = (vk::SamplerAddressMode)mInfo.WrapMode;
-		auto compare_enabled = (vk::Bool32)mInfo.CompareMode;
-		auto compare_operation = (vk::CompareOp)mInfo.CompareFunc;
-		auto format = (vk::Format)mInfo.InternalFormat;
-
-		vk::SamplerCreateInfo sampler_info({}, min_filter, mag_filter, vk::SamplerMipmapMode::eLinear, wrap_mode, wrap_mode, wrap_mode, 0, 0, 1, compare_enabled, compare_operation);
+		vk::SamplerCreateInfo sampler_info({}, api_info.MinFilter, api_info.MagFilter, 
+			vk::SamplerMipmapMode::eLinear, api_info.WrapMode, api_info.WrapMode, api_info.WrapMode, 0, 0, 1, api_info.CompareEnabled, api_info.CompareOp);
 		sampler_info.borderColor = vk::BorderColor::eIntOpaqueBlack;
 		sampler_info.unnormalizedCoordinates = VK_FALSE;
 		sampler_info.mipmapMode = vk::SamplerMipmapMode::eLinear;
@@ -92,7 +82,7 @@ namespace BHive
 		sampler_info.minLod = 0.f;
 		sampler_info.maxLod = 0.f;
 
-		mImage.Create(mWidth, mHeight, 1, vk::ImageType::e2D, vk::ImageViewType::e2D, format, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst, vk::ImageAspectFlagBits::eColor, sampler_info);
+		mImage.Create(mWidth, mHeight, 1, vk::ImageType::e2D, vk::ImageViewType::e2D, api_info.Format, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst, vk::ImageAspectFlagBits::eColor, sampler_info);
 	}
 
 	void VulkanTexture2D::Release()
@@ -117,7 +107,6 @@ namespace BHive
 		Asset::Load(ar);
 
 		ar(width, height, mCreateInfo, mBuffer);
-		mInfo = mCreateInfo;
 
 		if (mBuffer)
 		{

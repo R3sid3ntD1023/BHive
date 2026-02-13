@@ -61,8 +61,6 @@ namespace BHive
 
 		FTextureCreateInfo mCreateInfo;
 
-		FTextureAPIInfo mInfo;
-
 		Buffer mBuffer;
 
 		uint32_t mWidth = 0, mHeight = 0;

@@ -20,7 +20,7 @@ namespace BHive
 {
 	namespace utils
 	{
-		vk::ShaderStageFlagBits GetAPIShaderStage(Shader::EShaderStage stage)
+		vk::ShaderStageFlagBits GetShaderStage(Shader::EShaderStage stage)
 		{
 			switch (stage)
 			{
@@ -39,34 +39,6 @@ namespace BHive
 			return vk::ShaderStageFlagBits::eAll;
 		}
 
-		vk::PrimitiveTopology GetTopology(EDrawMode mode)
-		{
-			switch (mode)
-			{
-			case BHive::Lines:
-				return vk::PrimitiveTopology::eLineList;
-			default:
-				break;
-			}
-
-			return vk::PrimitiveTopology::eTriangleList;
-		}
-
-		vk::CullModeFlagBits GetCullMode(ECullMode mode)
-		{
-			switch (mode)
-			{
-			case ECullMode::Cull_Back:
-				return vk::CullModeFlagBits::eBack;
-			case ECullMode::Cull_Front:
-				return vk::CullModeFlagBits::eFront;
-			case ECullMode::Cull_None:
-				return vk::CullModeFlagBits::eNone;
-			default:
-				break;
-			}
-			return vk::CullModeFlagBits::eBack;
-		}
 	} // namespace utils
 
 	VulkanShader::VulkanShader(const std::filesystem::path &path, const FRenderOptions &options)
@@ -240,7 +212,7 @@ namespace BHive
 
 		for (auto &[stage, module] : mShaderModules)
 		{
-			create_infos.emplace_back(vk::PipelineShaderStageCreateFlags{}, utils::GetAPIShaderStage(stage), module, "main");
+			create_infos.emplace_back(vk::PipelineShaderStageCreateFlags{}, utils::GetShaderStage(stage), module, "main");
 			//LOG_TRACE("Creating pipeline with module {}", (void*) & module);
 		}
 
@@ -251,7 +223,9 @@ namespace BHive
 		rendering_info.setViewMask(0).setColorAttachmentCount(1).setColorAttachmentFormats(format);
 
 
-		auto config = VulkanPipeline::GetDefaultConfigInfo();
+		auto config = Pipeline::GetDeafultPipelineState();
+		config.DrawMode = mRenderOptions.DrawMode;
+		config.Raster.CullMode = 
 		config->Layout = mPipelineLayout;
 		config->Next = &rendering_info;
 		config->ShaderCreateInfos = create_infos;

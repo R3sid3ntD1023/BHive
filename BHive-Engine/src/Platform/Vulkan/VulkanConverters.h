@@ -1,0 +1,49 @@
+#pragma once
+
+#include "gfx/Enumerations.h"
+#include "gfx/TextureSpecification.h"
+#include <vulkan/vulkan.hpp>
+
+namespace BHive
+{
+	namespace Vulkan
+	{
+		struct FVulkanTextureCreateInfo
+		{
+			vk::Format Format;
+			vk::Filter MinFilter;
+			vk::Filter MagFilter;
+			vk::SamplerAddressMode WrapMode;
+			vk::Bool32 CompareEnabled;
+			vk::CompareOp CompareOp;
+			float BorderColor[4];
+			uint32_t Levels;
+			uint32_t Channels;
+			bool GenerateMipMaps;
+		};
+
+		vk::PrimitiveTopology ToVkTopology(ETopologyMode Mode);
+
+		vk::PolygonMode ToVkPolygon(EPolygonMode mode);
+
+		vk::CullModeFlagBits ToVkCull(ECullMode mode);
+
+		vk::FrontFace ToVkFrontFace(EFrontFace face);
+
+		vk::CompareOp ToVkCompare(ECompareOp op);
+
+		vk::BlendFactor ToVkBlendFactor(EBlendFactor factor);
+
+		vk::BlendOp ToVkBlendOp(EBlendOp op);
+
+		vk::Format ToVkFormat(EFormat format);
+
+		vk::Filter ToVkFilter(EMinFilter mode);
+
+		vk::Filter ToVkFilter(EMagFilter mode);
+
+		vk::SamplerAddressMode ToVkWrap(EWrapMode mode);
+
+		FVulkanTextureCreateInfo Convert(const FTextureCreateInfo &info);
+	}
+}

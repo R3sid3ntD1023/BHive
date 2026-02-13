@@ -1,11 +1,61 @@
 #include "gfx/RenderCommand.h"
 #include "VulkanPipeline.h"
 #include "VulkanRendererAPI.h"
-#include "VulkanWindowContext.h"
-#include "VulkanSwapChain.h"
+#include "VulkanConverters.h"
 
 namespace BHive
 {
+	struct FVulkanPipelineConfigInfo
+	{
+		vk::PipelineVertexInputStateCreateInfo InputState{};
+		vk::PipelineViewportStateCreateInfo ViewportState{};
+		vk::PipelineInputAssemblyStateCreateInfo InputAssembly{};
+		vk::PipelineRasterizationStateCreateInfo Rasterazation{};
+		vk::PipelineMultisampleStateCreateInfo MultiSampling{};
+		vk::PipelineColorBlendAttachmentState ColorBlendAttachment{};
+		vk::PipelineColorBlendStateCreateInfo ColorBlend{};
+		vk::PipelineDepthStencilStateCreateInfo DepthStencil{};
+		vk::PipelineLayout Layout = VK_NULL_HANDLE;
+		vk::RenderPass RenderPass = VK_NULL_HANDLE;
+		uint32_t SubPass = 0;
+		void *Next = nullptr;
+		std::vector<vk::PipelineShaderStageCreateInfo> ShaderCreateInfos;
+	};
+
+	Ref<FVulkanPipelineConfigInfo> Convert(const Pipeline::PipelineState& state)
+	{
+		auto config = CreateRef<FVulkanPipelineConfigInfo>();
+
+		config->InputState.setVertexAttributeDescriptionCount(0).setVertexBindingDescriptionCount(0);
+
+		config->ViewportState.setViewportCount(1).setScissorCount(1);
+
+		config->Rasterazation.setDepthClampEnable(false)
+			.setRasterizerDiscardEnable(false)
+			.setPolygonMode(Vulkan::ToVkPolygon(state.Raster.FillMode))
+			.setCullMode(Vulkan::ToVkCull(state.Raster.CullMode))
+			.setFrontFace(Vulkan::ToVkFrontFace(state.Raster.FrontFace))
+			.setDepthBiasEnable(false)
+			.setDepthBiasSlopeFactor(1.0f)
+			.setLineWidth(1.0f);
+
+		config->ColorBlendAttachment.setBlendEnable(state.Blend.Enabled)
+			.setSrcColorBlendFactor(Vulkan::ToVkBlendFactor(state.Blend.SrcColor))
+			.setDstColorBlendFactor(Vulkan::ToVkBlendFactor(state.Blend.DstColor))
+			.setColorBlendOp(Vulkan::ToVkBlendOp(state.Blend.ColorOp))
+			.setSrcAlphaBlendFactor(Vulkan::ToVkBlendFactor(state.Blend.SrcAlpha))
+			.setDstAlphaBlendFactor(Vulkan::ToVkBlendFactor(state.Blend.DstAlpha))
+			.setAlphaBlendOp(Vulkan::ToVkBlendOp(state.Blend.AlphaOp))
+			.setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
+
+		config->InputAssembly.setTopology(Vulkan::ToVkTopology(state.DrawMode));
+
+		config->ColorBlend.setLogicOpEnable(false).setLogicOp(vk::LogicOp::eCopy).setAttachments(config->ColorBlendAttachment);
+
+		config->MultiSampling.setRasterizationSamples(vk::SampleCountFlagBits::e1).setSampleShadingEnable(false);
+
+		return config;
+	}
 
 	VulkanPipeline::VulkanPipeline()
 		: mDevice(VulkanBackend::GetLogicalDevice())
@@ -20,9 +70,9 @@ namespace BHive
 		//mPipeline.clear();
 	}
 
-	void VulkanPipeline::Init(const Ref<Configuration >& configuration)
+	void VulkanPipeline::Init(const PipelineState& configuration)
 	{	
-		mConfiguration = Cast<FVulkanPipelineConfigInfo>(configuration);
+		auto config = Convert(configuration);
 
 		std::vector dynamicStates = {vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eLineWidth, vk::DynamicState::ePrimitiveTopologyEXT, vk::DynamicState::eVertexInputEXT};
 
@@ -30,19 +80,19 @@ namespace BHive
 
 		vk::GraphicsPipelineCreateInfo pipeline_info{};
 		pipeline_info
-			.setStages(mConfiguration->ShaderCreateInfos)
-			.setPVertexInputState(&mConfiguration->InputState)
-			.setPInputAssemblyState(&mConfiguration->InputAssembly)
-			.setPViewportState(&mConfiguration->ViewportState)
-			.setPRasterizationState(&mConfiguration->Rasterazation)
-			.setPMultisampleState(&mConfiguration->MultiSampling)
-			.setPColorBlendState(&mConfiguration->ColorBlend)
-			.setPDepthStencilState(&mConfiguration->DepthStencil)
+			.setStages(config->ShaderCreateInfos)
+			.setPVertexInputState(&config->InputState)
+			.setPInputAssemblyState(&config->InputAssembly)
+			.setPViewportState(&config->ViewportState)
+			.setPRasterizationState(&config->Rasterazation)
+			.setPMultisampleState(&config->MultiSampling)
+			.setPColorBlendState(&config->ColorBlend)
+			.setPDepthStencilState(&config->DepthStencil)
 			.setPDynamicState(&dynamicStateInfo)
-			.setLayout(mConfiguration->Layout)
-			.setRenderPass(mConfiguration->RenderPass)
-			.setSubpass(mConfiguration->SubPass)
-			.setPNext(mConfiguration->Next);
+			.setLayout(config->Layout)
+			.setRenderPass(config->RenderPass)
+			.setSubpass(config->SubPass)
+			.setPNext(config->Next);
 
 
 		mPipeline = vk::raii::Pipeline(mDevice, nullptr, pipeline_info);
@@ -60,43 +110,6 @@ namespace BHive
 
 	void VulkanPipeline::UnBind()
 	{
-	}
-
-	Ref<FVulkanPipelineConfigInfo> VulkanPipeline::GetDefaultConfigInfo()
-	{
-		auto config = CreateRef<FVulkanPipelineConfigInfo>();
-
-		ASSERT(config);
-
-		config->InputState.setVertexAttributeDescriptionCount(0).setVertexBindingDescriptionCount(0);
-
-		config->ViewportState.setViewportCount(1).setScissorCount(1);
-
-		config->Rasterazation.setDepthClampEnable(false)
-			.setRasterizerDiscardEnable(false)
-			.setPolygonMode(vk::PolygonMode::eFill)
-			.setCullMode(vk::CullModeFlagBits::eBack)
-			.setFrontFace(vk::FrontFace::eCounterClockwise)
-			.setDepthBiasEnable(false)
-			.setDepthBiasSlopeFactor(1.0f)
-			.setLineWidth(1.0f);
-
-		config->ColorBlendAttachment.setBlendEnable(false)
-			.setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
-			.setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
-			.setColorBlendOp(vk::BlendOp::eAdd)
-			.setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
-			.setDstAlphaBlendFactor(vk::BlendFactor::eZero)
-			.setAlphaBlendOp(vk::BlendOp::eAdd)
-			.setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
-
-		config->InputAssembly.setTopology(vk::PrimitiveTopology::eTriangleList);
-
-		config->ColorBlend.setLogicOpEnable(false).setLogicOp(vk::LogicOp::eCopy).setAttachments(config->ColorBlendAttachment);
-		
-		config->MultiSampling.setRasterizationSamples(vk::SampleCountFlagBits::e1).setSampleShadingEnable(false);
-
-		return config;
 	}
 
 } // namespace BHive
