@@ -62,10 +62,10 @@ namespace BHive
 		FramebufferSpecification point_shadow_fbo_spec{.Width = POINT_SHADOWMAP_SIZE, .Height = POINT_SHADOWMAP_SIZE, .Depth = max_lights * 6};
 
 		FTextureCreateInfo shadow_texture_specs{
-			.InternalFormat = EFormat::DEPTH_COMPONENT_32F,
+			.Format = EFormat::DEPTH_COMPONENT_32F,
 			.WrapMode = EWrapMode::CLAMP_TO_EDGE,
-			.CompareMode = ETextureCompareMode::COMPARE_REF_TO_TEXTURE,
-			.CompareFunc = ETextureCompareFunc::LEQUAL};
+			.CompareMode = ECompareMode::COMPARE_REF_TO_TEXTURE,
+			.CompareOp = ECompareOp::LessOrEqual};
 
 		dir_shadow_fbo_spec.Attachments.attach(shadow_texture_specs, ETextureType::TEXTURE_2D_ARRAY);
 		point_shadow_fbo_spec.Attachments.attach(shadow_texture_specs, ETextureType::TEXTURE_CUBE_MAP_ARRAY);

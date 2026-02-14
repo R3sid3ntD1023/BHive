@@ -26,7 +26,7 @@ namespace BHive
 				mTextureBatch->Flush();
 
 			RenderCommand::EnableDepthMask(false);
-			RenderCommand::DrawElements(Triangles, mVertexArray, mIndexCount);
+			RenderCommand::DrawElements(ETopologyMode::Triangles, mVertexArray, mIndexCount);
 			RenderCommand::EnableDepthMask(true);
 
 			Renderer::GetStats().DrawCalls++;

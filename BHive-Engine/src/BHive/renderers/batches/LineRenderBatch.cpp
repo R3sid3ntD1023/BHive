@@ -4,6 +4,7 @@
 #include "LineRenderBatch.h"
 #include "material/Material.h"
 #include "renderers/Renderer.h"
+#include "gfx/Pipeline.h"
 
 namespace BHive
 {
@@ -23,14 +24,19 @@ namespace BHive
 		mVertexArray = VertexArray::Create();
 		mVertexArray->AddVertexBuffer(mVertexBuffer);
 
-		Shader::FRenderOptions options{};
-		options.DrawMode = EDrawMode::Lines;
-		options.CullMode = ECullMode::Cull_None;
-		options.EnableDepthTest = 0;
-		options.EnableDepthWrite = 0;
+		mLineShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Line.glsl");
 
-		mLineShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Line.glsl", options);
-		mLineMaterial = CreateRef<Material>(mLineShader);
+		Pipeline::PipelineState state = Pipeline::GetDefaultPipelineState();
+		state.Shader = mLineShader;
+		state.Raster.CullEnabled = false;
+		state.ColorAttachmentFormats = {EFormat::RGBA8};
+		state.DrawMode = ETopologyMode::Lines;
+
+		mPipeline = Pipeline::Create();
+		mPipeline->Init(state);
+
+		
+		mLineMaterial = CreateRef<Material>(mPipeline);
 	}
 
 	void LineRenderBatch::End()
@@ -64,7 +70,7 @@ namespace BHive
 
 		RenderCommand::SetLineWidth(2.0f);
 
-		RenderCommand::DrawArrays(Lines, mVertexArray, mVertexCount);
+		RenderCommand::DrawArrays(ETopologyMode::Lines, mVertexArray, mVertexCount);
 
 		Renderer::GetStats().DrawCalls++;
 	}

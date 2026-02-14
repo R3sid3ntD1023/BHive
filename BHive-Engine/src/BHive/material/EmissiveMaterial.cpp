@@ -5,7 +5,7 @@
 namespace BHive
 {
 	EmissiveMaterial::EmissiveMaterial()
-		: Material(GetShader())
+		: Material(nullptr)
 	{
 	}
 
@@ -21,18 +21,18 @@ namespace BHive
 		ar(MAKE_NVP("Emission", EmissionColor));
 	}
 
-	void EmissiveMaterial ::Submit(const Ref<Shader> &shader)
+	void EmissiveMaterial ::Submit(Ref<Pipeline> pipeline)
 	{
-		Material::Submit(shader);
+		Material::Submit(pipeline);
 
-		shader->SetUniform<glm::vec3>("constants.EmissiveColor", EmissionColor);
+		//shader->SetUniform<glm::vec3>("constants.EmissiveColor", EmissionColor);
 	}
 
-	Ref<Shader> EmissiveMaterial::GetShader() const
+	/*Ref<Shader> EmissiveMaterial::GetShader() const
 	{
 		static Ref<Shader> shader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Emissive.glsl");
 		return shader;
-	}
+	}*/
 
 	//Ref<Material> EmissiveMaterial::Clone() const
 	//{

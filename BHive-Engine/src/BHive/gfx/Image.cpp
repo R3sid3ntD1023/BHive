@@ -1,13 +1,10 @@
 #include "Image.h"
 #include "Texture.h"
-#include "utils/texture/TextureUtils.h"
-#include <glad/glad.h>
 
 namespace BHive
 {
 	Image::Image(const Ref<Texture> &texture)
-		: mTexture(texture),
-		  mTextureInfo(texture->GetInfo())
+		: mTexture(texture)
 	{
 	}
 
@@ -16,7 +13,6 @@ namespace BHive
 		ASSERT(texture, "Texture not set!");
 
 		mTexture = texture;
-		mTextureInfo = texture->GetInfo();
 	}
 
 	void Image::Bind(uint32_t slot, EImageAccess access, uint32_t level, bool layered, uint32_t layer)

@@ -1,5 +1,5 @@
-#include "VulkanEnumConverters.h"
 #include "VulkanConverters.h"
+
 
 namespace BHive
 {
@@ -223,6 +223,25 @@ namespace BHive
 				return vk::SamplerAddressMode::eClampToBorder;
 			}
 			return vk::SamplerAddressMode::eRepeat;
+		}
+
+		vk::ShaderStageFlagBits ToVkShaderStageBit(EShaderStage s)
+		{
+			switch (s)
+			{
+			case EShaderStage::Vertex:
+				return vk::ShaderStageFlagBits::eVertex;
+			case EShaderStage::Fragment:
+				return vk::ShaderStageFlagBits::eFragment;
+			case EShaderStage::Compute:
+				return vk::ShaderStageFlagBits::eCompute;
+			case EShaderStage::Geometry:
+				return vk::ShaderStageFlagBits::eGeometry;
+			default:
+				break;
+			}
+			ASSERT(false)
+			return vk::ShaderStageFlagBits::eAll;
 		}
 
 		FVulkanTextureCreateInfo Vulkan::Convert(const FTextureCreateInfo &info)

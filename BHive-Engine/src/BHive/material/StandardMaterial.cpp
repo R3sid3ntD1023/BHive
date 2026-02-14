@@ -9,7 +9,7 @@
 namespace BHive
 {
 	StandardMaterial::StandardMaterial()
-		: Material(GetShader())
+		: Material(nullptr)
 	{
 		AddTextureSlot("Albedo", 0);
 		AddTextureSlot("Normal", 1);
@@ -19,26 +19,26 @@ namespace BHive
 		AddTextureSlot("Opacity", 5);
 	}
 
-	void StandardMaterial::Submit(const Ref<Shader> &shader)
+	void StandardMaterial::Submit(Ref<Pipeline> pipeline)
 	{
 
-		Material::Submit(shader);
+		Material::Submit(pipeline);
 
-		shader->SetUniform<glm::vec3>("constants.Albedo", Albedo);
+		/*shader->SetUniform<glm::vec3>("constants.Albedo", Albedo);
 		shader->SetUniform<glm::vec3>("constants.Emission", Emission);
 		shader->SetUniform("constants.Roughness", Roughness);
 		shader->SetUniform("constants.Metalness", Metallic);
 		shader->SetUniform("constants.Opacity", Opacity);
 		shader->SetUniform("constants.Tiling", Tiling);
 		shader->SetUniform("constants.Flags", (uint32_t)Flags);
-		shader->SetUniform("constants.HasNormalMap", mTextures.at("Normal").Texture != nullptr);
+		shader->SetUniform("constants.HasNormalMap", mTextures.at("Normal").Texture != nullptr);*/
 	}
 
-	Ref<Shader> StandardMaterial::GetShader() const
+	/*Ref<Shader> StandardMaterial::GetShader() const
 	{
 		static Ref<Shader> shader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/BDRFMaterial.glsl");
 		return shader;
-	}
+	}*/
 
 	void StandardMaterial::Save(cereal::BinaryOutputArchive &ar) const
 	{

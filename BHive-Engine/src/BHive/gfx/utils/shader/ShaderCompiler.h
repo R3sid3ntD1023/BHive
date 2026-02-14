@@ -13,9 +13,9 @@ namespace BHive
 
 		void Init();
 
-		void CompileToVulkan(Shader::EShaderStage stage, const std::string &src, std::vector<uint32_t> &spirv);
+		void CompileToVulkan(EShaderStage stage, const std::string &src, std::vector<uint32_t> &spirv);
 
-		void CompileToOpengl(Shader::EShaderStage stage, std::string &src, const std::vector<uint32_t> &spirv, std::vector<uint32_t> &opengl_spirv);
+		void CompileToOpengl(EShaderStage stage, std::string &src, const std::vector<uint32_t> &spirv, std::vector<uint32_t> &opengl_spirv);
 
 	private:
 		shaderc::Compiler mVulkanCompiler;

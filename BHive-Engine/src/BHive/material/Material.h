@@ -7,7 +7,7 @@
 
 namespace BHive
 {
-	class Shader;
+	class Pipeline;
 	class IMaterialBackendInterface;
 	class Texture;
 
@@ -29,11 +29,11 @@ namespace BHive
 		using TextureSlots = std::unordered_map<std::string, TextureSlot>;
 
 	public:
-		Material(const Ref<Shader> &shader);
+		Material(Ref<Pipeline> pipeline);
 
 		virtual ~Material() = default;
 
-		virtual void Submit(const Ref<Shader> &shader = nullptr);
+		virtual void Submit(Ref<Pipeline> pipeline = nullptr);
 
 		virtual void SetTexture(const char *name, const Ref<Texture> &texture);
 
@@ -44,8 +44,6 @@ namespace BHive
 		// virtual Ref<Material> Clone() const { return nullptr; }
 
 		void AddTextureSlot(const std::string &name, uint32_t binding);
-
-		virtual Ref<Shader> GetShader() const;
 
 		virtual bool ShouldCastShadows() const { return true; }
 
@@ -59,7 +57,7 @@ namespace BHive
 	protected:
 		TextureSlots mTextures;
 
-		Ref<Shader> mShader;
+		Ref<Pipeline> mPipeline;
 
 		Ref<IMaterialBackendInterface> mBackendMaterial;
 

@@ -36,9 +36,7 @@ namespace BHive
 	public:
 		StandardMaterial();
 
-		void Submit(const Ref<Shader> &shader) override;
-
-		Ref<Shader> GetShader() const;
+		void Submit(Ref<Pipeline> pipeline) override;
 
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 

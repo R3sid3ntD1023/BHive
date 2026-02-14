@@ -18,7 +18,7 @@ namespace BHive
 		}
 	}
 
-	Ref<Shader> ShaderManager::Load(const std::filesystem::path &file, const Shader::FRenderOptions &options)
+	Ref<Shader> ShaderManager::Load(const std::filesystem::path &file)
 	{
 		std::filesystem::path resolved_path = file;
 		if (!file.is_absolute())
@@ -43,9 +43,9 @@ namespace BHive
 		}
 
 		auto &shader = mShaders[name];
-		mShaderMetaDatas[name].Path = resolved_path;
 
-		shader = Shader::Create(resolved_path, options);
+		shader = Shader::Create(resolved_path);
+
 		return shader;
 	}
 
@@ -59,6 +59,7 @@ namespace BHive
 		return {};
 	}
 
+
 	bool ShaderManager::Contains(const std::string &name)
 	{
 		return mShaders.contains(name);
@@ -71,11 +72,7 @@ namespace BHive
 
 	ShaderManager &ShaderManager::Get()
 	{
-		if (!sInstance)
-		{
-			sInstance = CreateScope<ShaderManager>();
-		}
-
-		return *sInstance;
+		static ShaderManager manager;
+		return manager;
 	}
 } // namespace BHive

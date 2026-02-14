@@ -4,27 +4,10 @@
 #include "VulkanRendererAPI.h"
 #include "VulkanBuffers.h"
 #include "VulkanSwapChain.h"
+#include "VulkanConverters.h"
 
 namespace BHive
 {
-	namespace details
-	{
-
-		vk::PrimitiveTopology GetTopology(EDrawMode mode)
-		{
-			switch (mode)
-			{
-			case BHive::Lines:
-				return vk::PrimitiveTopology::eLineList;
-			default:
-				break;
-			}
-
-			return vk::PrimitiveTopology::eTriangleList;
-		}
-		
-	} // namespace details
-
 	VulkanRendererAPI::VulkanRendererAPI()
 		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
@@ -194,11 +177,11 @@ namespace BHive
 		SubmitCommand(cmd);
 	}
 
-	void VulkanRendererAPI::DrawArrays(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count)
+	void VulkanRendererAPI::DrawArrays(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t count)
 	{
 		vao->Bind();
 
-		auto topology = details::GetTopology(mode);
+		auto topology = Vulkan::ToVkTopology(mode);
 
 		auto cmd = [topology, count](const FVulkanFrameData &data)
 		{
@@ -209,12 +192,12 @@ namespace BHive
 		SubmitCommand(cmd);
 	}
 
-	void VulkanRendererAPI::DrawElements(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count)
+	void VulkanRendererAPI::DrawElements(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t count)
 	{
 		vao->Bind();
 		auto index_buffer =vao->GetIndexBuffer();
 		auto index_count = count ? count : index_buffer->GetCount();
-		auto topology = details::GetTopology(mode);
+		auto topology = Vulkan::ToVkTopology(mode);
 
 		auto cmd = [topology, index_count](const FVulkanFrameData &data)
 		{
@@ -225,7 +208,7 @@ namespace BHive
 		SubmitCommand(cmd);
 	}
 
-	void VulkanRendererAPI::DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count, uint32_t instance_count)
+	void VulkanRendererAPI::DrawElementsBaseVertex(ETopologyMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count, uint32_t instance_count)
 	{
 		vao.Bind();
 		auto index_buffer = vao.GetIndexBuffer();
@@ -233,7 +216,7 @@ namespace BHive
 		auto _count = count ? count : index_buffer->GetCount();
 	}
 
-	void VulkanRendererAPI::DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
+	void VulkanRendererAPI::DrawElementsRanged(ETopologyMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
 	{
 		vao.Bind();
 		auto index_buffer = vao.GetIndexBuffer();
@@ -241,7 +224,7 @@ namespace BHive
 		auto _count = count ? count : index_buffer->GetCount();
 	}
 
-	void VulkanRendererAPI::DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count)
+	void VulkanRendererAPI::DrawElementsInstanced(ETopologyMode mode, const VertexArray &vao, uint32_t instances, uint32_t count)
 	{
 		vao.Bind();
 		auto index_buffer = vao.GetIndexBuffer();
@@ -249,7 +232,7 @@ namespace BHive
 		auto _count = count ? count : index_buffer->GetCount();
 	}
 
-	void VulkanRendererAPI::MultiDrawElementsIndirect(EDrawMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride)
+	void VulkanRendererAPI::MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride)
 	{
 		vao.Bind();
 

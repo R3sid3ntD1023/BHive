@@ -44,6 +44,8 @@ namespace BHive
 
 		vk::SamplerAddressMode ToVkWrap(EWrapMode mode);
 
+		vk::ShaderStageFlagBits ToVkShaderStageBit(EShaderStage stage);
+
 		FVulkanTextureCreateInfo Convert(const FTextureCreateInfo &info);
 	}
 }

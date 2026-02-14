@@ -153,7 +153,17 @@ namespace BHive
 		Buffer_Color = 0x00004000,
 	};
 
-	bool IsDepthFormat(EFormat format)
+	enum class EShaderStage
+	{
+		None,
+		Vertex,
+		Fragment,
+		Compute,
+		Geometry,
+	};
+
+
+	inline bool IsDepthFormat(EFormat format)
 	{
 		return format == EFormat::DEPTH24_STENCIL8 || format == EFormat::DEPTH_COMPONENT || format == EFormat::DEPTH_COMPONENT_24 || format == EFormat::DEPTH_COMPONENT_32F;
 	}

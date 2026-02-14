@@ -2,14 +2,17 @@
 #include "gfx/Texture.h"
 #include "Material.h"
 #include "renderers/Renderer.h"
+#include "BackendMaterial.h"
+#include "gfx/Pipeline.h"
+#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
 
-	Material::Material(const Ref<Shader> &shader)
-		: mShader(shader)
+	Material::Material(Ref<Pipeline> pipeline)
+		: mPipeline(pipeline)
 	{
-		ASSERT(shader)
+		ASSERT(pipeline)
 
 		UpdateTextureSlots();
 
@@ -24,11 +27,10 @@ namespace BHive
 		}
 	}
 
-	void Material::Submit(const Ref<Shader> &shader)
+	void Material::Submit(Ref<Pipeline> pipeline)
 	{
-		auto shader_instance = shader ? shader : mShader;
-
-		shader_instance->Bind(); // binds shaders pipeline 
+		auto current_pipeline = pipeline ? pipeline : mPipeline;
+		current_pipeline->Bind(); // binds shaders pipeline 
 
 		for (auto& [name, slot] : mTextures)
 		{
@@ -36,7 +38,7 @@ namespace BHive
 			mBackendMaterial->BindTexture(slot.Binding, tex);
 		}
 
-		mBackendMaterial->Bind(mShader); //update descriptor sets
+		mBackendMaterial->Bind(mPipeline); //update descriptor sets
 	}
 
 	void Material::AddTextureSlot(const std::string &name, uint32_t binding)
@@ -49,7 +51,7 @@ namespace BHive
 
 	void Material::UpdateTextureSlots()
 	{
-		auto &refl = mShader->GetRelectionData();
+		auto &refl = mPipeline->GetShader()->GetRefl();
 		for (auto &[name, info] : refl.Samplers)
 		{
 			mTextures.emplace(name, TextureSlot{(uint32_t)info.Binding, nullptr});
@@ -59,12 +61,7 @@ namespace BHive
 	void Material::CreateBackendMaterial()
 	{
 		mBackendMaterial = IMaterialBackendInterface::Create();
-		mBackendMaterial->Init(mShader);
-	}
-
-	Ref<Shader> Material::GetShader() const
-	{
-		return mShader;
+		mBackendMaterial->Init(mPipeline);
 	}
 
 	void Material::Save(cereal::BinaryOutputArchive &ar) const

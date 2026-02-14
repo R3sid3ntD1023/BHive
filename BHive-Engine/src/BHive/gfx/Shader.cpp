@@ -4,40 +4,29 @@
 
 namespace BHive
 {
-	Ref<Shader> Shader::Create(const std::filesystem::path &path, const FRenderOptions &options)
+	Ref<Shader> Shader::Create(const std::filesystem::path &path)
 	{
 		switch (RenderCommand::GetRendererAPI())
 		{
 		case RendererAPI::Vulkan:
-			return CreateRef<VulkanShader>(path, options);
+			return CreateRef<VulkanShader>(path);
 		}
 
 		ASSERT(false);
 		return nullptr;
 	}
 
-	Ref<Shader> Shader::Create(const std::string &name, const std::string &vert, const std::string &frag, const FRenderOptions &options)
+	Ref<Shader> Shader::Create(const std::string &name, const std::string &vert, const std::string &frag)
 	{
 		switch (RenderCommand::GetRendererAPI())
 		{
 		case RendererAPI::Vulkan:
-			return CreateRef<VulkanShader>(name, vert, frag, options);
+			return CreateRef<VulkanShader>(name, vert, frag);
 		}
 
 		ASSERT(false);
 		return nullptr;
 	}
 
-	Ref<IMaterialBackendInterface> IMaterialBackendInterface::Create()
-	{
-		switch (RenderCommand::GetRendererAPI())
-		{
-		case RendererAPI::Vulkan:
-			return CreateRef<VulkanBackendMaterial>();
-		}
-
-		ASSERT(false);
-		return nullptr;
-	}
-
+	
 } // namespace BHive

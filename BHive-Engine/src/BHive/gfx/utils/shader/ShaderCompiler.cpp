@@ -8,17 +8,17 @@ namespace BHive
 {
 	namespace utils
 	{
-		shaderc_shader_kind GetShadercType(Shader::EShaderStage stage)
+		shaderc_shader_kind GetShadercType(EShaderStage stage)
 		{
 			switch (stage)
 			{
-			case Shader::ShaderStage_Vertex:
+			case EShaderStage::Vertex:
 				return shaderc_glsl_vertex_shader;
-			case Shader::ShaderStage_Fragment:
+			case EShaderStage::Fragment:
 				return shaderc_glsl_fragment_shader;
-			case Shader::ShaderStage_Compute:
+			case EShaderStage::Compute:
 				return shaderc_glsl_compute_shader;
-			case Shader::ShaderStage_Geometry:
+			case EShaderStage::Geometry:
 				return shaderc_glsl_geometry_shader;
 			default:
 				break;
@@ -26,17 +26,17 @@ namespace BHive
 			return shaderc_glsl_infer_from_source;
 		}
 
-		const char *GetCacheOpenglFileExtension(Shader::EShaderStage stage)
+		const char *GetCacheOpenglFileExtension(EShaderStage stage)
 		{
 			switch (stage)
 			{
-			case Shader::ShaderStage_Vertex:
+			case EShaderStage::Vertex:
 				return ".cached_opengl.vert";
-			case Shader::ShaderStage_Fragment:
+			case EShaderStage::Fragment:
 				return ".cached_opengl.frag";
-			case Shader::ShaderStage_Compute:
+			case EShaderStage::Compute:
 				return ".cached_opengl.comp";
-			case Shader::ShaderStage_Geometry:
+			case EShaderStage::Geometry:
 				return ".cached_opengl.geom";
 
 			default:
@@ -46,17 +46,17 @@ namespace BHive
 			return "";
 		}
 
-		const char *GetCacheVulkanFileExtension(Shader::EShaderStage stage)
+		const char *GetCacheVulkanFileExtension(EShaderStage stage)
 		{
 			switch (stage)
 			{
-			case Shader::ShaderStage_Vertex:
+			case EShaderStage::Vertex:
 				return ".cached_vulkan.vert";
-			case Shader::ShaderStage_Fragment:
+			case EShaderStage::Fragment:
 				return ".cached_vulkan.frag";
-			case Shader::ShaderStage_Compute:
+			case EShaderStage::Compute:
 				return ".cached_vulkan.comp";
-			case Shader::ShaderStage_Geometry:
+			case EShaderStage::Geometry:
 				return ".cached_vulkan.geom";
 			default:
 				break;
@@ -161,7 +161,7 @@ namespace BHive
 		mOpenglCompileOptions.SetIncluder(std::make_unique<utils::IncludeHandler>());
 	}
 
-	void ShaderCompiler::CompileToVulkan(Shader::EShaderStage stage, const std::string &src, std::vector<uint32_t> &spirv)
+	void ShaderCompiler::CompileToVulkan(EShaderStage stage, const std::string &src, std::vector<uint32_t> &spirv)
 	{
 
 		auto name = mFilePath.stem().string();
@@ -185,7 +185,7 @@ namespace BHive
 		}
 	}
 
-	void ShaderCompiler::CompileToOpengl(Shader::EShaderStage stage, std::string &src, const std::vector<uint32_t> &spirv, std::vector<uint32_t> &opengl_spirv)
+	void ShaderCompiler::CompileToOpengl(EShaderStage stage, std::string &src, const std::vector<uint32_t> &spirv, std::vector<uint32_t> &opengl_spirv)
 	{
 
 		auto name = mFilePath.stem().string();

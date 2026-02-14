@@ -8,6 +8,7 @@
 namespace BHive
 {
 	class Texture2D;
+	class Pipeline;
 
 	class RuntimeLayer : public Layer
 	{
@@ -26,6 +27,7 @@ namespace BHive
 		Ref<class Shader> mShader = nullptr;
 		Ref<class Material> mMaterial = nullptr;
 		Ref<class StaticMesh> mMesh = nullptr;
+		Ref<Pipeline> mPipeline;
 
 		EditorCamera mCamera;
 	};

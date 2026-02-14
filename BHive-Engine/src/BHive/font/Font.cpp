@@ -23,7 +23,7 @@ namespace BHive
 		msdfgen::BitmapConstRef<T, N> bitmap = (msdfgen::BitmapConstRef<T, N>)generator.atlasStorage();
 
 		FTextureCreateInfo create_info{};
-		create_info.InternalFormat = EFormat::RGB8;
+		create_info.Format = EFormat::RGB8;
 		create_info.Channels = 3;
 
 		Ref<Texture2D> texture = Texture2D::Create(w, h, create_info, bitmap.pixels, w * h * 3);

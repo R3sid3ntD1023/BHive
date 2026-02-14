@@ -6,6 +6,8 @@
 
 namespace BHive
 {
+	class VulkanShader;
+
 	class BHIVE_API VulkanPipeline : public Pipeline
 	{
 	public:
@@ -19,12 +21,17 @@ namespace BHive
 
 		virtual void UnBind() override;
 
-		const vk::Pipeline &operator*() const { return mPipeline; }
+		Ref<Shader> GetShader() const override;
 
+		const vk::raii::PipelineLayout &GetLayout() const { return mPipelineLayout; }
 	
 	private:
 		vk::raii::Device &mDevice;
 
+		vk::raii::PipelineLayout mPipelineLayout = VK_NULL_HANDLE;
+
 		vk::raii::Pipeline mPipeline = VK_NULL_HANDLE;
+
+		Ref<VulkanShader> mShader;
 	};
 } // namespace BHive

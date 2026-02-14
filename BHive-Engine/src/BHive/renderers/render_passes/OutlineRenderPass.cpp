@@ -43,7 +43,7 @@ namespace BHive
 		FramebufferSpecification specs{};
 		specs.Width = mSize.x;
 		specs.Height = mSize.y;
-		specs.Attachments.attach(FTextureCreateInfo{.InternalFormat = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE}, ETextureType::TEXTURE_2D);
+		specs.Attachments.attach(FTextureCreateInfo{.Format = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE}, ETextureType::TEXTURE_2D);
 		specs.Attachments.attach(FRenderbufferTexture{.Format = EFormat::DEPTH24_STENCIL8});
 		mFrambuffer = Framebuffer::Create(specs);
 	}
@@ -64,7 +64,7 @@ namespace BHive
 		mBoxBlurShader = ShaderManager::Get().Load("BoxBlur.glsl");
 
 		FTextureCreateInfo create_info_lut{};
-		create_info_lut.InternalFormat = EFormat::RGBA32F;
+		create_info_lut.Format = EFormat::RGBA32F;
 		create_info_lut.WrapMode = EWrapMode::REPEAT;
 		create_info_lut.MinFilter = EMinFilter::LINEAR;
 
@@ -85,7 +85,7 @@ namespace BHive
 
 		FTextureCreateInfo create_info{};
 		create_info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-		create_info.InternalFormat = EFormat::RGBA32F;
+		create_info.Format = EFormat::RGBA32F;
 
 		mOutputTexture = Texture2D::Create(size.x, size.y, create_info);
 		mOutlineOutput = Texture2D::Create(size.x, size.y, create_info);

@@ -29,7 +29,7 @@ namespace BHive
 		mIrradianceCapture = CreateRef<RenderTargetCube>(IRRANDIANCE_CUBEMAP_SIZE, EFormat::RGBA32F);
 
 		FTextureCreateInfo pre_filter_specification;
-		pre_filter_specification.InternalFormat = EFormat::RGBA16F;
+		pre_filter_specification.Format = EFormat::RGBA16F;
 		pre_filter_specification.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		pre_filter_specification.MinFilter = EMinFilter::MIPMAP_LINEAR;
 		pre_filter_specification.MagFilter = EMagFilter::LINEAR;
@@ -39,7 +39,7 @@ namespace BHive
 
 		mBRDFLUTTexture = Texture2D::Create(
 			BRDF_LUT_SIZE, BRDF_LUT_SIZE,
-			FTextureCreateInfo{.InternalFormat = EFormat::RG16F, .WrapMode = EWrapMode::CLAMP_TO_EDGE, .MinFilter = EMinFilter::NEAREST, .MagFilter = EMagFilter::NEAREST});
+			FTextureCreateInfo{.Format = EFormat::RG16F, .WrapMode = EWrapMode::CLAMP_TO_EDGE, .MinFilter = EMinFilter::NEAREST, .MagFilter = EMagFilter::NEAREST});
 
 		mCube = CreateRef<PCube>(2.0f);
 
@@ -164,7 +164,7 @@ namespace BHive
 		Renderer::SubmitCamera(mCubeCamera.GetProjection(), mCubeCamera.GetView({}, face));
 
 		auto &submesh = mCube->GetSubMeshes()[0];
-		RenderCommand::DrawElementsBaseVertex(EDrawMode::Triangles, *mCube->GetVertexArray(), submesh.StartVertex, submesh.StartIndex, submesh.IndexCount);
+		RenderCommand::DrawElementsBaseVertex(ETopologyMode::Triangles, *mCube->GetVertexArray(), submesh.StartVertex, submesh.StartIndex, submesh.IndexCount);
 
 		Renderer::End();
 	}

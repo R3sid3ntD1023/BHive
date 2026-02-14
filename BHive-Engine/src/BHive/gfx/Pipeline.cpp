@@ -4,16 +4,16 @@
 
 namespace BHive
 {
-	Pipeline::PipelineState Pipeline::GetDeafultPipelineState()
+	Pipeline::PipelineState Pipeline::GetDefaultPipelineState()
 	{
 		PipelineState state{};
 
 		state.Raster.CullEnabled = true;
-		state.Raster.CullMode = ECullMode::Back;
+		state.Raster.CullMode = ECullMode::Front;
 		state.Raster.FrontFace = EFrontFace::CWW;
 		state.Raster.FillMode = EPolygonMode::Fill;
 
-		state.DrawMode = ETopologyMode::TriangleStrip;
+		state.DrawMode = ETopologyMode::Triangles;
 		state.Blend.Enabled = false;
 		state.Depth.DepthTest = false;
 		state.Depth.DepthWrite = false;

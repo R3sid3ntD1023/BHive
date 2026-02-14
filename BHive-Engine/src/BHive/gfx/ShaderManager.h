@@ -2,14 +2,11 @@
 
 #include "core/Core.h"
 #include "Shader.h"
+#include "ShaderReflection.h"
+
 
 namespace BHive
 {
-	struct ShaderMetaData
-	{
-		std::filesystem::path Path;
-	};
-
 	class BHIVE_API ShaderManager
 	{
 	public:
@@ -17,11 +14,10 @@ namespace BHive
 		ShaderManager(const ShaderManager &) = delete;
 
 		using Shaders = std::unordered_map<std::string, Ref<Shader>>;
-		using ShaderMetaDatas = std::unordered_map<std::string, ShaderMetaData>;
 
 		void Add(const char *name, const Ref<Shader> &shader);
 
-		Ref<Shader> Load(const std::filesystem::path &file, const Shader::FRenderOptions &options = {});
+		Ref<Shader> Load(const std::filesystem::path &file);
 
 		Ref<Shader> Get(const char *name);
 
@@ -33,8 +29,5 @@ namespace BHive
 
 	private:
 		Shaders mShaders;
-		ShaderMetaDatas mShaderMetaDatas;
-
-		static inline Scope<ShaderManager> sInstance = nullptr;
 	};
 } // namespace BHive

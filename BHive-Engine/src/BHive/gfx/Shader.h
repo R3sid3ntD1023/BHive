@@ -11,24 +11,6 @@ namespace BHive
 	class BHIVE_API Shader
 	{
 	public:
-		enum EShaderStage
-		{
-			ShaderStage_None = 0,
-			ShaderStage_Vertex,
-			ShaderStage_Fragment,
-			ShaderStage_Compute,
-			ShaderStage_Geometry,
-		};
-
-		struct FRenderOptions
-		{
-			EDrawMode DrawMode = EDrawMode::Triangles;
-			ECullMode CullMode = ECullMode::Cull_Back;		
-			uint8_t EnableDepthTest = 1;
-			uint8_t EnableDepthWrite = 1;
-		};
-
-	public:
 		virtual ~Shader() = default;
 
 		virtual void Bind() = 0;
@@ -42,34 +24,22 @@ namespace BHive
 		template <typename T>
 		void SetUniform(const std::string &name, const T &val) {};
 
-		virtual const FShaderReflectionData &GetRelectionData() const = 0;
-
 		virtual void Save(cereal::BinaryOutputArchive &ar) const {};
 
 		virtual void Load(cereal::BinaryInputArchive &ar) {};
 
-		static Ref<Shader> Create(const std::filesystem::path &path, const FRenderOptions &options = {});
+		virtual const FShaderReflectionData& GetRefl() const = 0;
 
-		static Ref<Shader> Create(const std::string &name, const std::string &vert, const std::string &frag, const FRenderOptions &options = {});
+		static Ref<Shader> Create(const std::filesystem::path &path);
+
+		static Ref<Shader> Create(const std::string &name, const std::string &vert, const std::string &frag);
+
+		virtual void Reflect() = 0;
 
 		friend class ShaderSerializer;
 	};
 
-	class IMaterialBackendInterface
-	{
-	public:
-		virtual ~IMaterialBackendInterface() = default;
-
-		virtual void Init(const Ref<Shader>& shader)  = 0;
-
-		virtual void Bind(const Ref<Shader> &shader) = 0;
-
-		virtual void Shutdown() = 0;
-
-		virtual void BindTexture(uint32_t slot, const Ref<Texture> &texture) = 0;
-
-		static Ref<IMaterialBackendInterface> Create();
-	};
+	
 
 } // namespace BHive
 

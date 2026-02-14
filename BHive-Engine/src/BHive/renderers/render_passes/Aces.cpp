@@ -30,7 +30,7 @@ namespace BHive
 
 		FTextureCreateInfo specs{};
 		specs.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-		specs.InternalFormat = EFormat::RGBA8;
+		specs.Format = EFormat::RGBA8;
 
 		mOutputTexture = Texture2D::Create(mSize.x, mSize.y, specs);
 	}

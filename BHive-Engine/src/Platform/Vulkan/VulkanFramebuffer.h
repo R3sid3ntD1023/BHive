@@ -47,10 +47,8 @@ namespace BHive
 
 	private:
 		std::vector<FFramebufferTexture> mColorAttachmentSpecifications{};
-		std::vector<FTextureAPIInfo> mColorAttachmentAPIInfos;
 
 		FFramebufferTexture mDepthSpecification{};
-		FTextureAPIInfo mDepthAPIInfo;
 
 		FRenderbufferTexture mRenderBufferSpecification{};
 

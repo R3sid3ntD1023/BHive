@@ -5,7 +5,6 @@
 #include "Platform/Vulkan/textures/VulkanTextureCube.h"
 #include "Platform/Vulkan/textures/VulkanTextureCubeArray.h"
 #include "Texture.h"
-#include "utils/texture/TextureUtils.h"
 
 namespace BHive
 {

@@ -1,6 +1,5 @@
 #include "VulkanFramebuffer.h"
 #include "gfx/Texture.h"
-#include "gfx/utils/texture/TextureUtils.h"
 
 namespace BHive
 {
@@ -36,15 +35,13 @@ namespace BHive
 	{
 		for (auto &spec : mSpecification.Attachments.GetAttachments())
 		{
-			if (TextureUtils::IsDepthFormat(spec.CreateInfo.InternalFormat))
+			if (IsDepthFormat(spec.CreateInfo.Format))
 			{
 				mDepthSpecification = spec;
-				mDepthAPIInfo = spec.CreateInfo;
 				continue;
 			}
 
 			mColorAttachmentSpecifications.emplace_back(spec);
-			mColorAttachmentAPIInfos.emplace_back(spec.CreateInfo);
 		}
 
 		mRenderBufferSpecification = mSpecification.Attachments.GetRenderBuffer();
@@ -145,7 +142,7 @@ namespace BHive
 	{
 		ASSERT(attachmentIndex < mColorAttachmentSpecifications.size());
 
-		auto &spec = mColorAttachmentAPIInfos[attachmentIndex];
+		//auto &spec = mColorAttachmentAPIInfos[attachmentIndex];
 
 	/*	glNamedFramebufferReadBuffer(mFramebufferID, GL_COLOR_ATTACHMENT0 + attachmentIndex);
 		glBindFramebuffer(GL_FRAMEBUFFER, mFramebufferID);
@@ -193,7 +190,7 @@ namespace BHive
 			}
 		}
 
-		if (mDepthSpecification.CreateInfo.InternalFormat != EFormat::Invalid)
+		if (mDepthSpecification.CreateInfo.Format != EFormat::None)
 		{
 			mDepthAttachment = CreateFramebufferTexture(mSpecification.Width, mSpecification.Height, mSpecification.Depth, mSpecification.Samples, mDepthSpecification);
 		}

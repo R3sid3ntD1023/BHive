@@ -1,20 +1,18 @@
 #pragma once
 
 #include "core/Core.h"
-#include "gfx/Shader.h"
-#include "gfx/ShaderDataType.h"
+#include "gfx/Enumerations.h"
 
 namespace BHive
 {
 
 	struct ShaderUtils
 	{
+		static std::string ToString(EShaderStage stage);
 
-		static std::string ToString(Shader::EShaderStage stage);
+		static EShaderStage FromString(const std::string &str);
 
-		static Shader::EShaderStage FromString(const std::string &str);
-
-		using PreProcessData = std::unordered_map<Shader::EShaderStage, std::string>;
+		using PreProcessData = std::unordered_map<EShaderStage, std::string>;
 
 		static PreProcessData PreProcess(const std::string &source, const std::string &preprocessors = "");
 

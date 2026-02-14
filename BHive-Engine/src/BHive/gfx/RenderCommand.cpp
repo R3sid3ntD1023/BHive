@@ -37,32 +37,32 @@ namespace BHive
 		sRendererAPI->SetViewport(x, y, w, h);
 	}
 
-	void RenderCommand::DrawArrays(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count)
+	void RenderCommand::DrawArrays(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t count)
 	{
 		sRendererAPI->DrawArrays(mode, vao, count);
 	}
 
-	void RenderCommand::DrawElements(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count)
+	void RenderCommand::DrawElements(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t count)
 	{
 		sRendererAPI->DrawElements(mode, vao, count);
 	}
 
-	void RenderCommand::DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count, uint32_t instance_count)
+	void RenderCommand::DrawElementsBaseVertex(ETopologyMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count, uint32_t instance_count)
 	{
 		sRendererAPI->DrawElementsBaseVertex(mode, vao, start, start_index, count, instance_count);
 	}
 
-	void RenderCommand::DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
+	void RenderCommand::DrawElementsRanged(ETopologyMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
 	{
 		sRendererAPI->DrawElementsRanged(mode, vao, start, end, count);
 	}
 
-	void RenderCommand::DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count)
+	void RenderCommand::DrawElementsInstanced(ETopologyMode mode, const VertexArray &vao, uint32_t instances, uint32_t count)
 	{
 		sRendererAPI->DrawElementsInstanced(mode, vao, instances, count);
 	}
 
-	void RenderCommand::MultiDrawElementsIndirect(EDrawMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride)
+	void RenderCommand::MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride)
 	{
 		sRendererAPI->MultiDrawElementsIndirect(mode, indirect, vao, data, drawCount, stride);
 	}

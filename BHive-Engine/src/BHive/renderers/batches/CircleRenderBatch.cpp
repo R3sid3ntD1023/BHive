@@ -21,7 +21,7 @@ namespace BHive
 		{
 			TRenderBatch::Flush();
 
-			RenderCommand::DrawElements(Triangles, mVertexArray, mIndexCount);
+			RenderCommand::DrawElements(ETopologyMode::Triangles, mVertexArray, mIndexCount);
 
 			Renderer::GetStats().DrawCalls++;
 		}

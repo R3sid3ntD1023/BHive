@@ -14,6 +14,7 @@
 #include "mesh/MeshImportResolver.h"
 #include "mesh/StaticMesh.h"
 #include "renderers/Renderer.h"
+#include "gfx/Pipeline.h"
 
 namespace BHive
 {
@@ -21,8 +22,16 @@ namespace BHive
 	void RuntimeLayer::OnAttach()
 	{
 		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Triangle.glsl");
+
+		Pipeline::PipelineState state = Pipeline::GetDefaultPipelineState();
+		state.Shader = mShader;
+		state.ColorAttachmentFormats = {EFormat::RGBA8};
+
+		mPipeline = Pipeline::Create();
+		mPipeline->Init(state);
+
 		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
-		mMaterial = CreateRef<Material>(mShader);
+		mMaterial = CreateRef<Material>(mPipeline);
 		mMaterial->SetTexture("u_Texture", mTexture);
 
 		// create mesh
@@ -71,7 +80,7 @@ namespace BHive
 			mMaterial->Submit();
 
 			if (mMesh)
-				RenderCommand::DrawElements(EDrawMode::Triangles, mMesh->GetVertexArray());
+				RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
 		}
 
 		Renderer::End();

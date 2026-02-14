@@ -81,7 +81,7 @@ namespace BHive
 		spec.Width = mSize.x;
 		spec.Height = mSize.y;
 
-		spec.Attachments.attach({.InternalFormat = EFormat::RED_INTEGER, .WrapMode = EWrapMode::CLAMP_TO_EDGE}).attach({EFormat::DEPTH24_STENCIL8});
+		spec.Attachments.attach({.Format = EFormat::RED_INTEGER, .WrapMode = EWrapMode::CLAMP_TO_EDGE}).attach({EFormat::DEPTH24_STENCIL8});
 		mFrambuffer = Framebuffer::Create(spec);
 	}
 

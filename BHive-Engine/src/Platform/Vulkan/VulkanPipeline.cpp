@@ -2,6 +2,7 @@
 #include "VulkanPipeline.h"
 #include "VulkanRendererAPI.h"
 #include "VulkanConverters.h"
+#include "VulkanShader.h"
 
 namespace BHive
 {
@@ -15,10 +16,8 @@ namespace BHive
 		vk::PipelineColorBlendAttachmentState ColorBlendAttachment{};
 		vk::PipelineColorBlendStateCreateInfo ColorBlend{};
 		vk::PipelineDepthStencilStateCreateInfo DepthStencil{};
-		vk::PipelineLayout Layout = VK_NULL_HANDLE;
 		vk::RenderPass RenderPass = VK_NULL_HANDLE;
 		uint32_t SubPass = 0;
-		void *Next = nullptr;
 		std::vector<vk::PipelineShaderStageCreateInfo> ShaderCreateInfos;
 	};
 
@@ -30,12 +29,12 @@ namespace BHive
 
 		config->ViewportState.setViewportCount(1).setScissorCount(1);
 
-		config->Rasterazation.setDepthClampEnable(false)
-			.setRasterizerDiscardEnable(false)
+		config->Rasterazation.setDepthClampEnable(VK_FALSE)
+			.setRasterizerDiscardEnable(VK_FALSE)
 			.setPolygonMode(Vulkan::ToVkPolygon(state.Raster.FillMode))
 			.setCullMode(Vulkan::ToVkCull(state.Raster.CullMode))
 			.setFrontFace(Vulkan::ToVkFrontFace(state.Raster.FrontFace))
-			.setDepthBiasEnable(false)
+			.setDepthBiasEnable(VK_FALSE)
 			.setDepthBiasSlopeFactor(1.0f)
 			.setLineWidth(1.0f);
 
@@ -50,16 +49,23 @@ namespace BHive
 
 		config->InputAssembly.setTopology(Vulkan::ToVkTopology(state.DrawMode));
 
-		config->ColorBlend.setLogicOpEnable(false).setLogicOp(vk::LogicOp::eCopy).setAttachments(config->ColorBlendAttachment);
+		config->ColorBlend.setLogicOpEnable(VK_FALSE).setLogicOp(vk::LogicOp::eCopy).setAttachments(config->ColorBlendAttachment);
 
-		config->MultiSampling.setRasterizationSamples(vk::SampleCountFlagBits::e1).setSampleShadingEnable(false);
+		config->MultiSampling.setRasterizationSamples(vk::SampleCountFlagBits::e1).setSampleShadingEnable(VK_FALSE);
 
+		for (auto &[stage, module] : Cast<VulkanShader>(state.Shader)->GetModules())
+			config->ShaderCreateInfos.emplace_back(vk::PipelineShaderStageCreateFlags{}, Vulkan::ToVkShaderStageBit(stage), module, "main");
+
+		config->DepthStencil.setDepthTestEnable(state.Depth.DepthTest)
+			.setDepthWriteEnable(state.Depth.DepthWrite)
+			.setDepthCompareOp(Vulkan::ToVkCompare(state.Depth.DepthCompare))
+			.setStencilTestEnable(VK_FALSE);
+	
 		return config;
 	}
 
 	VulkanPipeline::VulkanPipeline()
 		: mDevice(VulkanBackend::GetLogicalDevice())
-
 	{
 	}
 
@@ -70,13 +76,28 @@ namespace BHive
 		//mPipeline.clear();
 	}
 
-	void VulkanPipeline::Init(const PipelineState& configuration)
+	void VulkanPipeline::Init(const PipelineState& state)
 	{	
-		auto config = Convert(configuration);
+		auto config = Convert(state);
+
+		mShader = Cast<VulkanShader>(state.Shader);
+
+		ASSERT(mShader)
+
+		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, *mShader->GetDescriptorSetLayout());
+		mPipelineLayout = mDevice.createPipelineLayout(pipeline_layout_create_info);
 
 		std::vector dynamicStates = {vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eLineWidth, vk::DynamicState::ePrimitiveTopologyEXT, vk::DynamicState::eVertexInputEXT};
 
 		vk::PipelineDynamicStateCreateInfo dynamicStateInfo({}, dynamicStates);
+
+		std::vector<vk::Format> color_attachment_formats;
+		for (auto &format : state.ColorAttachmentFormats)
+			color_attachment_formats.emplace_back(Vulkan::ToVkFormat(format));
+
+		vk::PipelineRenderingCreateInfo rendering_info{};
+		rendering_info.setViewMask(0).setColorAttachmentCount(color_attachment_formats.size()).setColorAttachmentFormats(color_attachment_formats);
+		
 
 		vk::GraphicsPipelineCreateInfo pipeline_info{};
 		pipeline_info
@@ -89,10 +110,10 @@ namespace BHive
 			.setPColorBlendState(&config->ColorBlend)
 			.setPDepthStencilState(&config->DepthStencil)
 			.setPDynamicState(&dynamicStateInfo)
-			.setLayout(config->Layout)
+			.setLayout(mPipelineLayout)
 			.setRenderPass(config->RenderPass)
 			.setSubpass(config->SubPass)
-			.setPNext(config->Next);
+			.setPNext(&rendering_info);
 
 
 		mPipeline = vk::raii::Pipeline(mDevice, nullptr, pipeline_info);
@@ -110,6 +131,11 @@ namespace BHive
 
 	void VulkanPipeline::UnBind()
 	{
+	}
+
+	Ref<Shader> VulkanPipeline::GetShader() const
+	{
+		return mShader;
 	}
 
 } // namespace BHive

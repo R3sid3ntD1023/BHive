@@ -17,7 +17,7 @@ namespace BHive
 
 	struct FRenderbufferTexture
 	{
-		EFormat Format = EFormat::Invalid;
+		EFormat Format = EFormat::None;
 	};
 
 	struct BHIVE_API FramebufferAttachments

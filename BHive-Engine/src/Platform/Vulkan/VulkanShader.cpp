@@ -2,50 +2,20 @@
 #include "core/FileSystem.h"
 #include "core/subsystem/SubSystem.h"
 #include "gfx/RenderCommand.h"
-#include "gfx/Texture.h"
-#include "gfx/UniformBuffer.h"
 #include "gfx/utils/shader/ShaderCompiler.h"
 #include "gfx/utils/shader/ShaderSerializer.h"
 #include "gfx/utils/shader/ShaderTimeCache.h"
 #include "gfx/utils/shader/ShaderUtils.h"
-#include "VulkanWindowContext.h"
-#include "VulkanSwapChain.h"
-#include "VulkanUniformBuffer.h"
-#include "renderers/buffers/GlobalBuffers.h"
-#include "VulkanPipeline.h"
-#include "VulkanRendererAPI.h"
 #include "VulkanShader.h"
+#include "VulkanConverters.h"
+#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
-	namespace utils
-	{
-		vk::ShaderStageFlagBits GetShaderStage(Shader::EShaderStage stage)
-		{
-			switch (stage)
-			{
-			case Shader::ShaderStage_Vertex:
-				return vk::ShaderStageFlagBits::eVertex;
-			case Shader::ShaderStage_Fragment:
-				return vk::ShaderStageFlagBits::eFragment;
-			case Shader::ShaderStage_Compute:
-				return vk::ShaderStageFlagBits::eCompute;
-			case Shader::ShaderStage_Geometry:
-				return vk::ShaderStageFlagBits::eGeometry;
-			default:
-				break;
-			}
-			ASSERT(false)
-			return vk::ShaderStageFlagBits::eAll;
-		}
-
-	} // namespace utils
-
-	VulkanShader::VulkanShader(const std::filesystem::path &path, const FRenderOptions &options)
+	VulkanShader::VulkanShader(const std::filesystem::path &path)
 		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mFilePath(path),
-		  mName(path.stem().string()),
-		  mRenderOptions(options)
+		  mName(path.stem().string())
 	{
 		ShaderSerializer serializer;
 
@@ -72,14 +42,13 @@ namespace BHive
 		CompileFromSource();
 	}
 
-	VulkanShader::VulkanShader(const std::string &name, const std::string &vert, const std::string &frag, const FRenderOptions &options)
+	VulkanShader::VulkanShader(const std::string &name, const std::string &vert, const std::string &frag)
 		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mFilePath(name),
-		  mName(name),
-		  mRenderOptions(options)
+		  mName(name)
 	{
-		mSources[Shader::ShaderStage_Vertex] = FShaderData(vert);
-		mSources[Shader::ShaderStage_Fragment] = FShaderData(frag);
+		mSources[EShaderStage::Vertex] = FShaderData(vert);
+		mSources[EShaderStage::Fragment] = FShaderData(frag);
 
 		Compile();
 	}
@@ -101,6 +70,19 @@ namespace BHive
 		Compile();
 	}
 
+	void VulkanShader::Reflect()
+	{
+		LOG_TRACE("Reflecting Shader... {}\n", GetName());
+
+		for (auto &[stage, source] : mSources)
+		{
+			mRefl.Reflect(source.VulkanSpirv);
+
+			LOG_TRACE("Stage: {}\n{}\n", ShaderUtils::ToString(stage), mRefl.to_string());
+		}
+
+	}
+
 	void VulkanShader::Compile()
 	{
 		ShaderCompiler compiler(mFilePath);
@@ -119,9 +101,7 @@ namespace BHive
 		ShaderSerializer serializer;
 		serializer.Serialize(mFilePath, *this);
 
-		Reflect();
 		CreateDescriptorResources();
-		CreatePipeline();
 	}
 
 	void VulkanShader::CompileFromSource()
@@ -154,8 +134,7 @@ namespace BHive
 
 	void VulkanShader::Bind()
 	{
-		mGraphicsPipeline->Bind();
-		//LOG_TRACE("Current Pipeline Bound : {}", (void*)mGraphicsPipeline.get());
+		
 	}
 
 	void VulkanShader::UnBind()
@@ -168,17 +147,21 @@ namespace BHive
 
 	void VulkanShader::CreateDescriptorResources()
 	{
-		auto num_samplers = (uint32_t)mReflectionData.Samplers.size();
-		auto num_uniform_buffers = (uint32_t)mReflectionData.UniformBuffers.size();
+		Reflect();
+
+		const auto& refl = mRefl;
+
+		auto num_samplers = (uint32_t)refl.Samplers.size();
+		auto num_uniform_buffers = (uint32_t)refl.UniformBuffers.size();
 
 		std::vector<vk::DescriptorSetLayoutBinding> bindings;
 
-		for (auto &[name, sampler] : mReflectionData.Samplers)
+		for (auto &[name, sampler] : refl.Samplers)
 		{
 			bindings.emplace_back(sampler.Binding, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment);
 		}
 
-		for (auto &[name, uniform_buffer] : mReflectionData.UniformBuffers)
+		for (auto &[name, uniform_buffer] : refl.UniformBuffers)
 		{
 			bindings.emplace_back(uniform_buffer.Binding, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex);
 		}
@@ -187,143 +170,6 @@ namespace BHive
 		mDescriptorSetLayout = mDevice.createDescriptorSetLayout(layout_info);
 
 		
-	}
-
-	void VulkanShader::Reflect()
-	{
-		LOG_TRACE("Reflecting Shader... {}\n", GetName());
-
-		for (auto &[stage, source] : mSources)
-		{
-			mReflectionData.Reflect(source.VulkanSpirv);
-
-			LOG_TRACE("Stage: {}\n{}\n", ShaderUtils::ToString(stage), mReflectionData.to_string());
-		}
-	}
-
-	void VulkanShader::CreatePipeline()
-	{
-		auto swap_chain = static_cast<VulkanWindowContext &>(WindowContext::Get()).GetSwapChain();
-		auto format = swap_chain->GetFormat().format;
-	
-		//LOG_TRACE("Pipeline RenderInfo Format : {}", vk::to_string(format));
-
-		std::vector<vk::PipelineShaderStageCreateInfo> create_infos;
-
-		for (auto &[stage, module] : mShaderModules)
-		{
-			create_infos.emplace_back(vk::PipelineShaderStageCreateFlags{}, utils::GetShaderStage(stage), module, "main");
-			//LOG_TRACE("Creating pipeline with module {}", (void*) & module);
-		}
-
-		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, *mDescriptorSetLayout);
-		mPipelineLayout = mDevice.createPipelineLayout(pipeline_layout_create_info);
-
-		vk::PipelineRenderingCreateInfo rendering_info{};
-		rendering_info.setViewMask(0).setColorAttachmentCount(1).setColorAttachmentFormats(format);
-
-
-		auto config = Pipeline::GetDeafultPipelineState();
-		config.DrawMode = mRenderOptions.DrawMode;
-		config.Raster.CullMode = 
-		config->Layout = mPipelineLayout;
-		config->Next = &rendering_info;
-		config->ShaderCreateInfos = create_infos;
-		config->InputAssembly.setTopology(utils::GetTopology(mRenderOptions.DrawMode));
-		config->Rasterazation.setCullMode(utils::GetCullMode(mRenderOptions.CullMode));
-		config->DepthStencil.setDepthTestEnable(VK_FALSE).setDepthWriteEnable(VK_FALSE).setDepthBoundsTestEnable(VK_FALSE).setStencilTestEnable(VK_FALSE);
-			//.setDepthCompareOp(vk::CompareOp::eLessOrEqual);
-	//	config.DepthStencil.setDepthTestEnable(VK_FALSE).setDepthWriteEnable(VK_FALSE);
-
-		mGraphicsPipeline = Pipeline::Create();
-		mGraphicsPipeline->Init(config);
-
-		
-	}
-
-	VulkanBackendMaterial::VulkanBackendMaterial()
-		: mDevice(VulkanBackend::GetLogicalDevice())
-	{
-		
-	}
-
-	void VulkanBackendMaterial::Init(const Ref<Shader> &shader)
-	{	
-		auto vulkan_shader = Cast<VulkanShader>(shader);
-		
-		ASSERT(vulkan_shader)
-
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		std::vector<vk::DescriptorSetLayout> layouts(VulkanBackend::MAX_FRAMES_IN_FLIGHT, vulkan_shader->GetDescriptorSetLayout());
-		vk::DescriptorSetAllocateInfo alloc_info(api->GetDescriptorPool(), layouts);
-		mDescriptorSets = std::move(vk::raii::DescriptorSets(mDevice, alloc_info));
-
-		const auto &shader_reflection = vulkan_shader->GetRelectionData();
-
-		for (auto &[name, data] : shader_reflection.UniformBuffers)
-		{
-			mUniformBufferBindings.push_back(data.Binding);
-		}
-	}
-
-	void VulkanBackendMaterial::Bind(const Ref<Shader> &shader)
-	{
-		auto vulkan_shader = Cast<VulkanShader>(shader);
-
-		ASSERT(vulkan_shader)
-
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto pre_cmd = [=](const FVulkanFrameData &data)
-		{
-			
-			const auto &descriptor_set = mDescriptorSets[data.Frame];
-
-			std::vector<vk::WriteDescriptorSet> descriptor_writes;
-
-			for (const auto &binding : mUniformBufferBindings)
-			{
-				auto ubo = std::dynamic_pointer_cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(binding));
-				auto buffer_info = *ubo->GetNativeHandle(data.Frame).As<vk::DescriptorBufferInfo>();
-				
-				vk::WriteDescriptorSet descriptor_write(descriptor_set, binding, 0, vk::DescriptorType::eUniformBuffer, {}, buffer_info);
-				descriptor_writes.emplace_back(descriptor_write);
-			}
-
-			mDevice.updateDescriptorSets(descriptor_writes, {});
-			
-		};
-
-		api->SubmitCommand(pre_cmd, ECommandType_PreCommand);
-
-		auto cmd = [=](const FVulkanFrameData &data)
-		{
-			const auto &pipeline_layout = vulkan_shader->GetPipelineLayout();
-			data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, 0, *mDescriptorSets[data.Frame], {});
-		};
-
-		api->SubmitCommand(cmd);
-	}
-
-	void VulkanBackendMaterial::BindTexture(uint32_t binding, const Ref<Texture> &texture)
-	{
-		if (!texture)
-			return;
-
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto pre_cmd = [=](const FVulkanFrameData &data)
-		{
-			const auto &descriptor_set = mDescriptorSets[data.Frame];
-			vk::DescriptorImageInfo image_info = *texture->GetNativeHandle().As<vk::DescriptorImageInfo>();
-			vk::WriteDescriptorSet descriptor_write(descriptor_set, binding, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
-			mDevice.updateDescriptorSets(descriptor_write, {});
-		};
-
-		api->SubmitCommand(pre_cmd, ECommandType_PreCommand);
-	}
-
-	void VulkanBackendMaterial::Shutdown()
-	{
-		LOG_TRACE("Shutdown VulkanBackendMaterial Called")
 	}
 
 } // namespace BHive

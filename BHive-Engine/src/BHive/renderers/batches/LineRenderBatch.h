@@ -7,6 +7,7 @@
 namespace BHive
 {
 	class Material;
+	class Pipeline;
 
 	struct FLineVertex
 	{
@@ -45,5 +46,6 @@ namespace BHive
 		uint32_t mVertexCount = 0;
 
 		Ref<Material> mLineMaterial;
+		Ref<Pipeline> mPipeline;
 	};
 } // namespace BHive

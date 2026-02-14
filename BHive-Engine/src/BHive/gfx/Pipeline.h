@@ -7,7 +7,7 @@ namespace BHive
 {
 	class Shader;
 
-	class Pipeline
+	class BHIVE_API Pipeline
 	{
 	public:
 		struct RasterState
@@ -56,7 +56,9 @@ namespace BHive
 
 		virtual void UnBind() = 0;
 
-		static PipelineState GetDeafultPipelineState();
+		virtual Ref<Shader> GetShader() const = 0;
+
+		static PipelineState GetDefaultPipelineState();
 
 		static Ref<Pipeline> Create();
 	};

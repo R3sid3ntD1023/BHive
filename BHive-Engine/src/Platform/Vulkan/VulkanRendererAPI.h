@@ -47,17 +47,17 @@ namespace BHive
 
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h) override;
 
-		virtual void DrawArrays(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count = 0) override;
+		virtual void DrawArrays(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t count = 0) override;
 
-		virtual void DrawElements(EDrawMode mode, const Ref<VertexArray> &vao, uint32_t count = 0) override;
+		virtual void DrawElements(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t count = 0) override;
 
-		virtual void DrawElementsBaseVertex(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0) override;
+		virtual void DrawElementsBaseVertex(ETopologyMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0) override;
 
-		virtual void DrawElementsRanged(EDrawMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count = 0) override;
+		virtual void DrawElementsRanged(ETopologyMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count = 0) override;
 
-		virtual void DrawElementsInstanced(EDrawMode mode, const VertexArray &vao, uint32_t instances, uint32_t count = 0) override;
+		virtual void DrawElementsInstanced(ETopologyMode mode, const VertexArray &vao, uint32_t instances, uint32_t count = 0) override;
 
-		virtual void MultiDrawElementsIndirect(EDrawMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride = 0) override;
+		virtual void MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride = 0) override;
 
 		virtual void EnableDepth() override;
 

@@ -17,11 +17,9 @@ namespace BHive
 
 		void Load(cereal::BinaryInputArchive &ar) override;
 
-		void Submit(const Ref<Shader> &shader) override;
+		void Submit(Ref<Pipeline> pipeline) override;
 
 		///Ref<Material> Clone() const override;
-
-		Ref<Shader> GetShader() const;
 
 		REFLECTABLEV(Material)
 	};

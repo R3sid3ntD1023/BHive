@@ -20,6 +20,5 @@ namespace BHive
 
 	private:
 		Ref<Texture> mTexture;
-		FTextureAPIInfo mTextureInfo;
 	};
 } // namespace BHive

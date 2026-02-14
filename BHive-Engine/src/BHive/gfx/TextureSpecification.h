@@ -26,7 +26,7 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(MAKE_NVP(Channels))
+			ar(MAKE_NVP(Channels));
 			ar(MAKE_NVP(Levels));
 			ar(MAKE_NVP(GenerateMipMaps));
 			ar(MAKE_NVP(Format));

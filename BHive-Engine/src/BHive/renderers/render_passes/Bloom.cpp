@@ -25,12 +25,12 @@ namespace BHive
 		PostProcessRenderPass::CreateResizableObjects(size);
 
 		FTextureCreateInfo specs{};
-		specs.InternalFormat = EFormat::RGBA32F;
+		specs.Format = EFormat::RGBA32F;
 		specs.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 
 		mPreFilterTexture = Texture2D::Create(size.x, size.y, specs);
 
-		specs.InternalFormat = EFormat::RGBA32F;
+		specs.Format = EFormat::RGBA32F;
 		mOutputTexture = Texture2D::Create(size.x, size.y, specs);
 
 		glm::uvec2 mps = size;

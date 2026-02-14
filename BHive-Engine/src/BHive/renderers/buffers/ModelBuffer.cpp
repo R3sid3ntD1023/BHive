@@ -84,6 +84,6 @@ namespace BHive
 
 		mIndirectBuffer->SetData(&command, sizeof(MultiDrawIndirectCommand));
 
-		RenderCommand::MultiDrawElementsIndirect(EDrawMode::Triangles, *mIndirectBuffer, *data->VertexArray, &command, 1, 0);
+		RenderCommand::MultiDrawElementsIndirect(ETopologyMode::Triangles, *mIndirectBuffer, *data->VertexArray, &command, 1, 0);
 	}
 } // namespace BHive

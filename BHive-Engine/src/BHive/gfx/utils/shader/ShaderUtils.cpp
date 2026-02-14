@@ -1,18 +1,19 @@
 #include "ShaderUtils.h"
+#include "gfx/Enumerations.h"
 
 namespace BHive
 {
-	std::string ShaderUtils::ToString(Shader::EShaderStage stage)
+	std::string ShaderUtils::ToString(EShaderStage stage)
 	{
 		switch (stage)
 		{
-		case BHive::Shader::ShaderStage_Vertex:
+		case EShaderStage::Vertex:
 			return "Vertex Stage";
-		case BHive::Shader::ShaderStage_Fragment:
+		case EShaderStage::Fragment:
 			return "Fragment Stage";
-		case BHive::Shader::ShaderStage_Compute:
+		case EShaderStage::Compute:
 			return "Compute Stage";
-		case BHive::Shader::ShaderStage_Geometry:
+		case EShaderStage::Geometry:
 			return "Geometry Stage";
 		default:
 			break;
@@ -22,19 +23,19 @@ namespace BHive
 		return "";
 	}
 
-	Shader::EShaderStage ShaderUtils::FromString(const std::string &str)
+	EShaderStage ShaderUtils::FromString(const std::string &str)
 	{
 		if (str == "vertex")
-			return Shader::ShaderStage_Vertex;
+			return EShaderStage::Vertex;
 		if (str == "fragment")
-			return Shader::ShaderStage_Fragment;
+			return EShaderStage::Fragment;
 		if (str == "compute")
-			return Shader::ShaderStage_Compute;
+			return EShaderStage::Compute;
 		if (str == "geometry")
-			return Shader::ShaderStage_Geometry;
+			return EShaderStage::Geometry;
 
 		ASSERT(false, "Invalid shader type string");
-		return Shader::ShaderStage_None;
+		return EShaderStage::None;
 	}
 
 	std::filesystem::path ShaderUtils::GetCacheDirectory()
@@ -66,8 +67,8 @@ namespace BHive
 			ASSERT(eol != std::string::npos);
 			auto begin = pos + token_length + 1;
 			auto type = source.substr(begin, eol - begin);
-			auto stage = ShaderUtils::FromString(type);
-			ASSERT(stage);
+			auto stage = FromString(type);
+			ASSERT(stage != EShaderStage::None);
 
 			auto next_pos = source.find_first_not_of("\r\n", eol);
 			ASSERT(next_pos != std::string::npos);

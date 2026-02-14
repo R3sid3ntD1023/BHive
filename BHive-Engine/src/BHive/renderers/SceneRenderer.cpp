@@ -71,14 +71,14 @@ namespace BHive
 		FramebufferSpecification specs;
 		specs.Width = mSize.x;
 		specs.Height = mSize.y;
-		specs.Attachments.attach({.InternalFormat = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
-			.attach({.InternalFormat = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+		specs.Attachments.attach({.Format = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
+			.attach({.Format = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 
 		mFramebuffer = Framebuffer::Create(specs);
 
 		// Create a final framebuffer for post-processing effects
 		specs.Attachments.reset();
-		specs.Attachments.attach({.InternalFormat = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+		specs.Attachments.attach({.Format = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 		specs.Attachments.attach({EFormat::DEPTH24_STENCIL8});
 		mFinalFramebuffer = Framebuffer::Create(specs);
 
@@ -150,9 +150,6 @@ namespace BHive
 		// render meshes
 		for (auto &[mat, objects] : mSceneRenderData->RenderData)
 		{
-			auto shader = mat->GetShader();
-			shader->Bind();
-
 			EnvironmentMapGenerator.GetPreFilteredEnvironmentTetxure()->Bind(6);
 			EnvironmentMapGenerator.GetIrradianceTexture()->Bind(7);
 			EnvironmentMapGenerator.GetBDRFLUT()->Bind(8);
@@ -160,12 +157,10 @@ namespace BHive
 			static uint32_t shadow_map_bindings[] = {9, 10, 11};
 			mSceneRenderData->ShadowRenderer.BindShadowMaps(shadow_map_bindings);
 
-			mat->Submit(shader);
+			mat->Submit();
 
 			for (const auto &object : objects)
 				Renderer::Draw(object);
-
-			shader->UnBind();
 		}
 
 		Renderer::End();
@@ -191,7 +186,7 @@ namespace BHive
 
 		texture->Bind();
 
-		RenderCommand::DrawElements(EDrawMode::Triangles, mQuad->GetVertexArray());
+		RenderCommand::DrawElements(ETopologyMode::Triangles, mQuad->GetVertexArray());
 
 		mFinalFramebuffer->UnBind();
 	}

@@ -5,7 +5,7 @@
 namespace BHive
 {
 	LambertMaterial::LambertMaterial()
-		: Material(GetShader())
+		: Material(nullptr)
 	{
 		AddTextureSlot("Texture", 0);
 	}
@@ -22,19 +22,19 @@ namespace BHive
 		ar(MAKE_NVP("Color", DiffuseColor), MAKE_NVP("Emission", EmissionColor));
 	}
 
-	void LambertMaterial::Submit(const Ref<Shader> &shader)
+	void LambertMaterial::Submit(Ref<Pipeline>  pipeline)
 	{
-		Material::Submit(shader);
+		Material::Submit(pipeline);
 
-		shader->SetUniform<glm::vec4>("constants.DiffuseColor", DiffuseColor);
-		shader->SetUniform<glm::vec3>("constants.EmissiveColor", EmissionColor);
+	/*	shader->SetUniform<glm::vec4>("constants.DiffuseColor", DiffuseColor);
+		shader->SetUniform<glm::vec3>("constants.EmissiveColor", EmissionColor);*/
 	}
 
-	Ref<Shader> LambertMaterial::GetShader() const
+	/*Ref<Shader> LambertMaterial::GetShader() const
 	{
 		static Ref<Shader> shader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Lambert.glsl");
 		return shader;
-	}
+	}*/
 
 	/*Ref<Material> LambertMaterial::Clone() const
 	{

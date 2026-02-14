@@ -7,6 +7,7 @@ namespace BHive
 {
 	class StorageBuffer;
 	class VertexBuffer;
+	class Shader;
 
 	struct ModelBuffer
 	{
