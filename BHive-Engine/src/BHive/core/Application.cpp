@@ -106,13 +106,15 @@ namespace BHive
 		mIsRunning = false;
 	}
 
-	void Application::PushLayer(Layer *layer)
+	void Application::PushLayer(const Ref<Layer> &layer)
 	{
 		mLayerStack.Push(layer);
+		layer->OnAttach(*this);
 	}
 
-	void Application::PopLayer(Layer *layer)
+	void Application::PopLayer(const Ref<Layer> &layer)
 	{
+		layer->OnDetach();
 		mLayerStack.Pop(layer);
 	}
 
@@ -137,14 +139,11 @@ namespace BHive
 	void Application::UpdateLayersAndWindow()
 	{
 
-		static float lasttime = 0;
-		float time = Time::Get();
-		float deltatime = time - lasttime;
-		lasttime = time;
+		Time::Update();
 
 		for (auto &layer : mLayerStack)
 		{
-			layer->OnUpdate(deltatime);
+			layer->OnUpdate(Time::DeltaTime());
 		}
 
 		if (mImGuiLayer)

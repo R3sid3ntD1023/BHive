@@ -50,6 +50,7 @@ namespace BHive
 
 	public:
 		Application(const FApplicationSpecification &specification);
+
 		virtual ~Application();
 
 		void Run();
@@ -59,9 +60,9 @@ namespace BHive
 		template <typename TLayer>
 		void PushLayer();
 
-		void PushLayer(Layer *layer);
+		void PushLayer(const Ref<Layer> &layer);
 
-		void PopLayer(Layer *layer);
+		void PopLayer(const Ref<Layer> &layer);
 
 		virtual void OnEvent(Event &event);
 
@@ -70,7 +71,7 @@ namespace BHive
 
 		Window &GetWindow() { return *mMainWindow; }
 
-		ImGuiLayer *GetImGuiLayer() { return mImGuiLayer; }
+		ImGuiLayer* GetImGuiLayer() { return mImGuiLayer.get(); }
 
 		static Application &Get() { return *sInstance; }
 
@@ -86,7 +87,7 @@ namespace BHive
 
 		Window* mMainWindow = nullptr;
 
-		ImGuiLayer *mImGuiLayer = nullptr;
+		Ref<ImGuiLayer> mImGuiLayer = nullptr;
 
 		LayerStack mLayerStack;
 
@@ -100,6 +101,6 @@ namespace BHive
 	template <typename TLayer>
 	inline void Application::PushLayer()
 	{
-		PushLayer(new TLayer());
+		PushLayer(CreateRef<TLayer>());
 	}
 } // namespace BHive

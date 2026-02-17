@@ -20,7 +20,7 @@
 namespace BHive
 {
 
-	void RuntimeLayer::OnAttach()
+	void RuntimeLayer::OnAttach(Application& app)
 	{
 		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Triangle.glsl");
 
@@ -46,8 +46,6 @@ namespace BHive
 			MeshImportResolver resolver(import_data, import_options, additional_assets);
 			mMesh = Cast<StaticMesh>(resolver.Resolve());
 		}
-
-		auto &app = Application::Get();
 		auto &window = app.GetWindow();
 		auto aspect = window.GetAspectRatio();
 
@@ -61,7 +59,10 @@ namespace BHive
 	}
 
 	void RuntimeLayer::OnUpdate(float time)
-	{
+	{	
+		static FTransform transform{};
+		transform.AddRotation({0, time * 10.f, 0});
+
 		mCamera.ProcessInput();
 
 		auto &app = Application::Get();
@@ -78,16 +79,13 @@ namespace BHive
 
 		LineRenderer::DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
 		LineRenderer::DrawGrid({});
+		LineRenderer::DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
 
 		if (mMesh && mMaterial)
 		{
-			static float rot = 0.0f;
-
 			mMaterial->Submit();
-			mMaterial->Set("u_Time", Time::Get());
-
-			rot += time * 10.0f;
-			FTransform transform({0, 0, 0}, {0, rot, 0});
+			mMaterial->Set("u_Time", Time::Raw());
+	
 			Renderer::SubmitModel(transform);
 
 			if (mMesh)

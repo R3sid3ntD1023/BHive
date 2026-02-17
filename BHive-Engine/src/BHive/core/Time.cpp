@@ -3,9 +3,21 @@
 
 namespace BHive
 {
-	float Time::Get()
+	float Time::Raw()
 	{
 		return (float)glfwGetTime();
+	}
+
+	float Time::DeltaTime()
+	{
+		return mDeltaTime;
+	}
+
+	void Time::Update()
+	{
+		mTime = Raw();
+		mDeltaTime = mTime - mLastTime;
+		mLastTime = mTime;
 	}
 
 	Timer::Timer()

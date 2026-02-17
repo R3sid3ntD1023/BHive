@@ -7,7 +7,16 @@ namespace BHive
 	class BHIVE_API Time
 	{
 	public:
-		static float Get();
+		static float Raw();
+
+		static float DeltaTime();
+
+		static void Update();
+
+	private:
+		static inline float mTime = 0.0f;
+		static inline float mDeltaTime = 0.0f;
+		static inline float mLastTime = 0.0f;
 	};
 
 	class BHIVE_API Timer

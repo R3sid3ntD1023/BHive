@@ -5,13 +5,14 @@
 namespace BHive
 {
 	class Event;
+	class Application;
 
 	class BHIVE_API Layer
 	{
 	public:
 		virtual ~Layer() = default;
 
-		virtual void OnAttach() {};
+		virtual void OnAttach(Application&) {};
 		virtual void OnDetach() {};
 		virtual void OnUpdate(float) {};
 		virtual void OnEvent(Event &) {};
@@ -21,14 +22,16 @@ namespace BHive
 	class BHIVE_API LayerStack
 	{
 	public:
-		using Layers = std::vector<Layer *>;
+		using Layers = std::vector<Ref<Layer>>;
 
 	public:
 		LayerStack() = default;
+
 		~LayerStack();
 
-		void Push(Layer *layer);
-		void Pop(Layer *layer);
+		void Push(const Ref<Layer>& layer);
+
+		void Pop(const Ref<Layer> &layer);
 
 		Layers::iterator begin() { return mLayers.begin(); }
 		Layers::iterator end() { return mLayers.end(); }

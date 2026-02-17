@@ -7,22 +7,20 @@ namespace BHive
 		for (auto layer : mLayers)
 		{
 			layer->OnDetach();
-			delete layer;
 		}
 	}
-	void LayerStack::Push(Layer* layer)
+
+	void LayerStack::Push(const Ref<Layer> &layer)
 	{
 		mLayers.emplace_back(layer);
-		layer->OnAttach();
 	}
 
-	void LayerStack::Pop(Layer* layer)
+	void LayerStack::Pop(const Ref<Layer> &layer)
 	{
 		auto it = std::find(begin(), end(), layer);
 
 		if (it != end())
 		{
-			layer->OnDetach();
 			mLayers.erase(it);
 		}
 	}

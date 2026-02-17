@@ -5,6 +5,7 @@
 #include "VulkanBuffers.h"
 #include "VulkanSwapChain.h"
 #include "VulkanConverters.h"
+#include "gfx/BufferBase.h"
 
 namespace BHive
 {
@@ -167,7 +168,7 @@ namespace BHive
 
 	void VulkanRendererAPI::Clear(ClearMask mask)
 	{
-
+		
 	}
 
 	void VulkanRendererAPI::SetLineWidth(float width)
@@ -222,8 +223,8 @@ namespace BHive
 	{
 		vao.Bind();
 		auto index_buffer = vao.GetIndexBuffer();
-
-		auto _count = count ? count : index_buffer->GetCount();
+		auto index_count = count ? count : index_buffer->GetCount();
+		auto topology = Vulkan::ToVkTopology(mode);
 	}
 
 	void VulkanRendererAPI::DrawElementsRanged(ETopologyMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
@@ -242,9 +243,18 @@ namespace BHive
 		auto _count = count ? count : index_buffer->GetCount();
 	}
 
-	void VulkanRendererAPI::MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride)
+	void VulkanRendererAPI::MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const VertexArray &vao, size_t drawCount, size_t stride)
 	{
 		vao.Bind();
+
+		auto buffer = indirect.GetNativeHandle().As<vk::Buffer>();
+		auto topology = Vulkan::ToVkTopology(mode);
+
+		auto cmd = [buffer, topology, drawCount, stride](const FVulkanFrameData &data)
+		{		
+			data.CommandBuffer.setPrimitiveTopology(topology);
+			data.CommandBuffer.drawIndexedIndirect(*buffer, 0, drawCount, stride);
+		};
 
 		vao.UnBind();
 	}
@@ -252,13 +262,13 @@ namespace BHive
 	void VulkanRendererAPI::EnableDepth()
 	{
 
-		// glEnable(GL_DEPTH_TEST);
+		
 	}
 
 	void VulkanRendererAPI::DisableDepth()
 	{
 
-		// glDisable(GL_DEPTH_TEST);
+		
 	}
 
 	void VulkanRendererAPI::DepthFunc(uint32_t func)

@@ -16,7 +16,7 @@ namespace BHive
 	{
 		virtual ~ImGuiLayer() = default;
 
-		void OnAttach() override;
+		void OnAttach(Application&) override;
 
 		void OnDetach() override;
 
@@ -36,7 +36,7 @@ namespace BHive
 
 		static ImTextureRef GetTextureID(const Texture &texture);
 
-		static ImGuiLayer *Create(GLFWwindow *window);
+		static Ref<ImGuiLayer> Create(GLFWwindow *window);
 
 	protected:
 		virtual void Init();

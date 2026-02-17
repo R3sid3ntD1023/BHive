@@ -13,7 +13,7 @@ namespace BHive
 	class RuntimeLayer : public Layer
 	{
 	public:
-		void OnAttach() override;
+		void OnAttach(Application& app) override;
 		void OnDetach() override;
 		void OnUpdate(float) override;
 		void OnGuiRender() override;

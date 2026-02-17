@@ -62,9 +62,9 @@ namespace BHive
 		sRendererAPI->DrawElementsInstanced(mode, vao, instances, count);
 	}
 
-	void RenderCommand::MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride)
+	void RenderCommand::MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const VertexArray &vao, size_t drawCount, size_t stride)
 	{
-		sRendererAPI->MultiDrawElementsIndirect(mode, indirect, vao, data, drawCount, stride);
+		sRendererAPI->MultiDrawElementsIndirect(mode, indirect, vao,  drawCount, stride);
 	}
 
 	void RenderCommand::EnableDepth()

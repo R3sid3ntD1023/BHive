@@ -1,13 +1,12 @@
 #include "core/Application.h"
-#include "core/events/Event.h"
 #include "core/Window.h"
 #include "ImGuiLayer.h"
+#include "core/Time.h"
 
 #include "Platform/Vulkan/VulkanImGuiLayer.h"
 #include <backends/imgui_impl_glfw.h>
 
 #include <glfw/glfw3.h>
-
 #include "gfx/RenderCommand.h"
 
 #include <imgui.h>
@@ -16,7 +15,7 @@
 
 namespace BHive
 {
-	void ImGuiLayer::OnAttach()
+	void ImGuiLayer::OnAttach(Application& app)
 	{
 		Init();
 	}
@@ -88,6 +87,7 @@ namespace BHive
 
 		ImGuiIO &io = ImGui::GetIO();
 		io.DisplaySize = {(float)size.x, (float)size.y};
+		io.DeltaTime = Time::DeltaTime();
 
 		ImGui::Render();
 
@@ -159,12 +159,12 @@ namespace BHive
 		ImGui::GetAllocatorFunctions((ImGuiMemAllocFunc *)alloc_func, (ImGuiMemFreeFunc *)free_func, user_data);
 	}
 
-	ImGuiLayer *ImGuiLayer::Create(GLFWwindow *window)
+	Ref<ImGuiLayer> ImGuiLayer::Create(GLFWwindow *window)
 	{
 		switch (RenderCommand::GetRendererAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
-			return new VulkanImGuiLayer(window);
+			return CreateRef<VulkanImGuiLayer>(window);
 		default:
 			break;
 		}

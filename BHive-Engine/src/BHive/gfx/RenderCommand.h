@@ -32,7 +32,7 @@ namespace BHive
 
 		static void DrawElementsInstanced(ETopologyMode mode, const VertexArray &vao, uint32_t instances, uint32_t count = 0);
 
-		static void MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const VertexArray &vao, const void *data, size_t drawCount, size_t stride = 0);
+		static void MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const VertexArray &vao,  size_t drawCount, size_t stride = 0);
 
 		static void EnableDepth();
 
