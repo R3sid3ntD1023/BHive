@@ -16,6 +16,7 @@ namespace BHive
 			auto& ub = UniformBuffers[ubo.name];
 			ub.Binding = compiler.get_decoration(ubo.id, spv::DecorationBinding);
 			ub.Size = compiler.get_declared_struct_size(buffer_type);
+			ub.Stages |= stage;
 
 			for (size_t i = 0; i < buffer_type.member_types.size(); i++)
 			{
@@ -27,6 +28,7 @@ namespace BHive
 				u.Size = member_type.width / 8;
 				u.Offset = compiler.type_struct_member_offset(buffer_type, i);
 				u.Location = compiler.get_decoration(member, spv::DecorationLocation);
+				u.Stages |= stage;
 			}
 		}
 
@@ -88,13 +90,14 @@ namespace BHive
 	std::string FShaderReflection::to_string() const
 	{
 		std::string result;
+
 		for (const auto &[name, sampler] : Samplers)
 		{
-			result += fmt::format("\t\tSampler: {} - Binding: {}\n", name, sampler.Binding);
+			result += fmt::format("\t\tSampler: {} - Set: {} - Binding: {}\n", name, sampler.Set, sampler.Binding);
 		}
 		for (const auto &[name, buffer] : UniformBuffers)
 		{
-			result += fmt::format("\t\tUniform Buffer: {} - Binding: {} - Size: {}\n", name, buffer.Binding, buffer.Size);
+			result += fmt::format("\t\tUniform Buffer: {} - Set: {} - Binding: {} - Size: {}\n", name, buffer.Set, buffer.Binding, buffer.Size);
 			for (const auto &[uniform_name, uniform] : buffer.Members)
 			{
 				result += fmt::format("\t\tMember: {} - Type: {} - Size: {} - Offset: {} - Location: {}\n", uniform_name, uniform.Type, uniform.Size, uniform.Offset, uniform.Location);
@@ -114,7 +117,7 @@ namespace BHive
 		}
 		for (const auto &[name, buffer] : StorageBuffers)
 		{
-			result += fmt::format("\t\tStorage Buffer: {} - Binding: {} - Size: {}\n", name, buffer.Binding, buffer.Size);
+			result += fmt::format("\t\tStorage Buffer: {} - Set: {} - Binding: {} - Size: {}\n", name, buffer.Set, buffer.Binding, buffer.Size);
 		}
 		return result;
 	}

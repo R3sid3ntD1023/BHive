@@ -15,6 +15,7 @@
 #include "mesh/StaticMesh.h"
 #include "renderers/Renderer.h"
 #include "gfx/Pipeline.h"
+#include "core/Time.h"
 
 namespace BHive
 {
@@ -81,8 +82,11 @@ namespace BHive
 		{
 			mMaterial->Submit();
 
-			/*FTransform transform({0, 0, 0}, {0, time, 0});
-			Renderer::SubmitModel(transform);*/
+			static float rot = 0.0f;
+
+			rot += time * 10.0f;
+			FTransform transform({0, 0, 0}, {0, rot, 0});
+			Renderer::SubmitModel(transform);
 
 			if (mMesh)
 				RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());

@@ -23,10 +23,14 @@ namespace BHive
 		auto& descriptor_set_layouts = vkPipeline->GetDescriptorLayouts();
 
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		std::vector<vk::DescriptorSetLayout> layouts;
+		layouts.reserve(descriptor_set_layouts.size());
+
+		std::transform(descriptor_set_layouts.begin(), descriptor_set_layouts.end(), std::back_inserter(layouts), [](const vk::raii::DescriptorSetLayout& l) ->vk::DescriptorSetLayout { return l; });
 
 		for (uint32_t frame = 0; frame < VulkanBackend::MAX_FRAMES_IN_FLIGHT; frame++)
 		{
-			vk::DescriptorSetAllocateInfo alloc_info(api->GetDescriptorPool(), descriptor_set_layouts);
+			vk::DescriptorSetAllocateInfo alloc_info(api->GetDescriptorPool(),layouts);
 			mDescriptorSets.emplace_back(std::move(vk::raii::DescriptorSets(mDevice, alloc_info)));
 		}
 		
@@ -57,6 +61,11 @@ namespace BHive
 				auto& target_set = frame_set[ub.Set];
 				auto ubo = Cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(ub.Binding));
 				auto buffer_info = *ubo->GetNativeHandle(data.Frame).As<vk::DescriptorBufferInfo>();
+				if (!buffer_info)
+				{
+					LOG_ERROR("Buffer Info is null {}", name);
+					continue;
+				}
 
 				vk::WriteDescriptorSet descriptor_write(target_set, ub.Binding, 0, vk::DescriptorType::eUniformBuffer, {}, buffer_info);
 				descriptor_writes.emplace_back(descriptor_write);
@@ -67,6 +76,11 @@ namespace BHive
 				auto &target_set = frame_set[sb.Set];
 				auto sbo = Cast<VulkanStorageBuffer>(GlobalBuffers::GetStorageBuffer(sb.Binding));
 				auto buffer_info = *sbo->GetNativeHandle(data.Frame).As<vk::DescriptorBufferInfo>();
+				if (!buffer_info)
+				{
+					LOG_ERROR("Buffer Info is null {}", name);
+					continue;
+				}
 
 				vk::WriteDescriptorSet descriptor_write(target_set, sb.Binding, 0, vk::DescriptorType::eStorageBuffer, {}, buffer_info);
 				descriptor_writes.emplace_back(descriptor_write);
@@ -82,10 +96,9 @@ namespace BHive
 			const auto &frame_sets = mDescriptorSets[data.Frame];
 			std::vector<vk::DescriptorSet> raw_sets;
 			raw_sets.reserve(frame_sets.size());
-			for (auto& s : frame_sets)
-			{
-				raw_sets.push_back(s);
-			}
+			
+
+			std::transform(frame_sets.begin(), frame_sets.end(), std::back_inserter(raw_sets), [](const auto &l) { return *l; });
 
 			data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, *pipeline_layout, 0, raw_sets, {});
 
@@ -131,6 +144,11 @@ namespace BHive
 			const vk::DescriptorSet& target_set = frame_set[setIndex];
 
 			vk::DescriptorImageInfo image_info = *texture->GetNativeHandle().As<vk::DescriptorImageInfo>();
+			if (!image_info)
+			{
+				LOG_ERROR("Image info is NULL for {}", texture->GetName());
+				return;
+			}
 			vk::WriteDescriptorSet descriptor_write(target_set, sampler.Binding, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
 			mDevice.updateDescriptorSets(descriptor_write, {});
 		};

@@ -26,7 +26,7 @@ namespace BHive
 
 		const vk::raii::PipelineLayout &GetLayout() const { return mPipelineLayout; }
 
-		const std::vector<vk::DescriptorSetLayout> &GetDescriptorLayouts() const;
+		const std::vector<vk::raii::DescriptorSetLayout> &GetDescriptorLayouts() const;
 
 	private:
 		vk::raii::Device &mDevice;

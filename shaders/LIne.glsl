@@ -7,7 +7,7 @@ layout(location = 0) in vec3 vPosition;
 layout(location = 1) in vec4 vColor;
 layout(location = 2) in int vEntityID;
 
-layout(std140, binding = 0) uniform CameraBuffer
+layout(set = 0, binding = 0) uniform CameraBuffer
 {
     mat4 uProjection;
     mat4 uView;

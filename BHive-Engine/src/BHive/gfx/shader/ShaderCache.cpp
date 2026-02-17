@@ -1,4 +1,4 @@
-#include "ShaderTimeCache.h"
+#include "ShaderCache.h"
 #include "gfx/RenderCommand.h"
 #include "ShaderUtils.h"
 #include "core/FileSystem.h"
@@ -86,7 +86,7 @@ namespace BHive
 			return meta;
 
 		std::ifstream in(meta_path);
-		cereal::BinaryInputArchive ar(in);
+		cereal::JSONInputArchive ar(in);
 
 		ar(meta);
 
@@ -97,7 +97,7 @@ namespace BHive
 	void ShaderCache::StoreMeta(const std::string &name, const MetaData &meta)
 	{
 		std::ofstream out(GetMetaPath(name));
-		cereal::BinaryOutputArchive ar(out);
+		cereal::JSONOutputArchive ar(out);
 		ar(meta);
 	}
 
@@ -110,6 +110,15 @@ namespace BHive
 
 		if (meta.Hash != ComputeHash(source))
 			return false;
+
+		if (meta.Stages.size() != asset.Stages.size())
+			return false; 
+		
+		for (auto& [stage, _] : asset.Stages) 
+		{
+			if (std::find(meta.Stages.begin(), meta.Stages.end(), stage) == meta.Stages.end()) 
+				return false; 
+		}
 
 		for (auto& [stage, _] : asset.Stages)
 		{
@@ -151,8 +160,11 @@ namespace BHive
 		MetaData meta;
 		meta.Hash = ComputeHash(source);
 
+		
+
 		for (auto &[stage, _] : asset.Stages)
 			meta.Stages.push_back(stage);
+
 
 		StoreMeta(asset.Name, meta);
 	}

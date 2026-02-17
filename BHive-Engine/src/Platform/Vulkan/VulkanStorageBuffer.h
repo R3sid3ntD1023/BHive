@@ -16,15 +16,17 @@ namespace BHive
 
 		void SetData(const void *data, size_t, uint32_t offset = 0) override;
 
-		NativeHandle GetNativeHandle(uint32_t frame) const override { return Vulkan::Handle::BufferInfo(&mBufferInfo); }
+		NativeHandle GetNativeHandle(uint32_t frame) const override;
 
 	private:
 		vk::raii::Device &mDevice;
-		Vulkan::AllocatedBuffer mBuffer;
+		std::array<Vulkan::AllocatedBuffer, VulkanBackend::MAX_FRAMES_IN_FLIGHT> mBuffer;
+		std::array<vk::DescriptorBufferInfo, VulkanBackend::MAX_FRAMES_IN_FLIGHT> mBufferInfo;
+		std::array<void *, VulkanBackend::MAX_FRAMES_IN_FLIGHT> mMappedMemory;
+
 		uint32_t mBinding{0};
 		uint32_t mSize{0};
-		vk::DescriptorBufferInfo mBufferInfo;
-		void *mMappedMemory = nullptr;
+		
 	};
 
 } // namespace BHive

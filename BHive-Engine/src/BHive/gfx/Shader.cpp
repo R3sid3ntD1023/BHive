@@ -4,7 +4,7 @@
 #include "shader/ShaderUtils.h"
 #include "core/FileSystem.h"
 #include "shader/ShaderProgram.h"
-#include "shader/ShaderTimeCache.h"
+#include "shader/ShaderCache.h"
 
 namespace BHive
 {

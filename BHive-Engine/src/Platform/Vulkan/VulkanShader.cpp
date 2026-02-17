@@ -30,7 +30,7 @@ namespace BHive
 	{
 		auto merged = FShaderReflection::Merge(asset.Reflection);
 
-		std::unordered_map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> bindings;
+		std::map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> bindings;
 
 		for (auto &[name, sampler] : merged.Samplers)
 		{

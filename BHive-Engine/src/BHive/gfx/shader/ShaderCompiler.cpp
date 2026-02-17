@@ -127,16 +127,17 @@ namespace BHive
 
 	void ShaderCompiler::Compile(ShaderAsset& asset)
 	{
+		CompileToVulkan(asset);
+
 		switch (RenderCommand::GetRendererAPI())
 		{
-		
+		case RendererAPI::Vulkan:
+			break;
 		case RendererAPI::Opengl:
 			CompileToOpengl(asset);
-		case RendererAPI::Vulkan:
-			CompileToVulkan(asset);
 			break;
 		default:
-			ASSERT(false);
+			break;
 		}
 	}
 
@@ -155,8 +156,10 @@ namespace BHive
 
 			// reflect
 			LOG_TRACE("Reflecting Shader... {}", asset.Name)
-				asset.Reflection[stage].Reflect(stage, data.Spirv);
-			LOG_TRACE(asset.Reflection[stage].to_string())
+			auto& refl = asset.Reflection[stage];
+			refl.Reflect(stage, data.Spirv);
+
+			LOG_TRACE(refl.to_string())
 		}
 	}
 

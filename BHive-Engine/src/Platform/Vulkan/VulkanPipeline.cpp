@@ -99,11 +99,13 @@ namespace BHive
 			push_constant_ranges.emplace_back(Vulkan::ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size);
 		}
 
-		std::vector<vk::DescriptorSetLayout> layouts;
-		for (auto &l : mBackendShader->GetDescriptorSetLayouts())
-			layouts.emplace_back(l);
+		auto &layout_in = mBackendShader->GetDescriptorSetLayouts();
+		std::vector<vk::DescriptorSetLayout> layouts_out;
+		layouts_out.reserve(layout_in.size());
 
-		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, layouts, push_constant_ranges );
+		std::transform(layout_in.begin(), layout_in.end(), std::back_inserter(layouts_out), [](const vk::raii::DescriptorSetLayout &l) { return *l; });
+
+		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, layouts_out, push_constant_ranges );
 		mPipelineLayout = mDevice.createPipelineLayout(pipeline_layout_create_info);
 
 		std::vector dynamicStates = {vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eLineWidth, vk::DynamicState::ePrimitiveTopologyEXT, vk::DynamicState::eVertexInputEXT};
@@ -160,7 +162,7 @@ namespace BHive
 		return mProgram;
 	}
 
-	const std::vector<vk::DescriptorSetLayout> &VulkanPipeline::GetDescriptorLayouts() const
+	const std::vector<vk::raii::DescriptorSetLayout> &VulkanPipeline::GetDescriptorLayouts() const
 	{
 		return mBackendShader->GetDescriptorSetLayouts();
 	}

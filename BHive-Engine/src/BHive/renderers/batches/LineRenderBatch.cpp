@@ -35,7 +35,6 @@ namespace BHive
 		mPipeline = Pipeline::Create();
 		mPipeline->Init(state);
 
-		
 		mLineMaterial = CreateRef<Material>(mPipeline);
 	}
 

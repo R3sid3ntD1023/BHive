@@ -31,7 +31,9 @@ layout(location  = 0) out struct VERT_OUT
 void main()
 {
 	vs_out.TexCoord = vTexCoord;
-	gl_Position = uProjection * uView * object[gl_InstanceIndex].Model * vec4(vPosition, 1);
+
+	mat4 model = object[gl_DrawID].Model;
+	gl_Position = uProjection * uView * model * vec4(vPosition, 1);
 }
 
 
