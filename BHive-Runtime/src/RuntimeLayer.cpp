@@ -34,6 +34,7 @@ namespace BHive
 		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
 		mMaterial = CreateRef<Material>(mPipeline);
 		mMaterial->SetTexture("u_Texture", mTexture);
+		mMaterial->Set("u_Color", glm::vec3(1, .5f, 0));
 
 		// create mesh
 		FMeshImportData import_data{};
@@ -80,9 +81,10 @@ namespace BHive
 
 		if (mMesh && mMaterial)
 		{
-			mMaterial->Submit();
-
 			static float rot = 0.0f;
+
+			mMaterial->Submit();
+			mMaterial->Set("u_Time", Time::Get());
 
 			rot += time * 10.0f;
 			FTransform transform({0, 0, 0}, {0, rot, 0});

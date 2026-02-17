@@ -96,21 +96,15 @@ namespace BHive
 			const auto &frame_sets = mDescriptorSets[data.Frame];
 			std::vector<vk::DescriptorSet> raw_sets;
 			raw_sets.reserve(frame_sets.size());
-			
 
 			std::transform(frame_sets.begin(), frame_sets.end(), std::back_inserter(raw_sets), [](const auto &l) { return *l; });
 
 			data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, *pipeline_layout, 0, raw_sets, {});
 
-			if (mPushConstantDirty)
+			for (auto &pc : mReflectionPtr->PushConstants)
 			{
-				for (auto& pc : mReflectionPtr->PushConstants)
-				{
-					vk::PushConstantsInfo push_info(*pipeline_layout, Vulkan::ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size, mPushConstantData.data() + pc.Offset);
-					data.CommandBuffer.pushConstants2(push_info);
-				}
-
-				mPushConstantDirty = false;
+				vk::PushConstantsInfo push_info(*pipeline_layout, Vulkan::ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size, mPushConstantData.data() + pc.Offset);
+				data.CommandBuffer.pushConstants2(push_info);
 			}
 		};
 
@@ -167,7 +161,6 @@ namespace BHive
 				const auto &u = pc.Members.at(name);
 
 				memcpy(mPushConstantData.data() + u.Offset, data, size);
-				mPushConstantDirty = true;
 				return;
 			}
 		}

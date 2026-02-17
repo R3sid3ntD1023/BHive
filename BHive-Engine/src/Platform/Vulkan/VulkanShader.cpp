@@ -55,6 +55,11 @@ namespace BHive
 			vk::DescriptorSetLayoutCreateInfo layout_info({}, bindingsList, nullptr);
 			mDescriptorSetLayouts.emplace_back(mDevice.createDescriptorSetLayout(layout_info));
 		}
+
+		for (auto& pc : merged.PushConstants)
+		{
+			mPushConstantRanges.emplace_back(Vulkan::ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size);
+		}
 	}
 
 

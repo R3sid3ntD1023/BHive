@@ -153,7 +153,19 @@ namespace BHive
 					dstMember = member;
 					dstMember.Stages |= member.Stages;
 				}
-			} // Merge SSBOs
+			}
+
+			//Merge Push Constants
+			for (auto & pc : refl.PushConstants)
+			{
+				auto &dst = merged.PushConstants.emplace_back();
+				dst.Size = pc.Size;
+				dst.Offset = pc.Offset;
+				dst.Stages |= pc.Stages;
+				dst.Members = pc.Members;
+			}
+
+			// Merge SSBOs
 
 			for (auto &[name, ssbo] : refl.StorageBuffers)
 			{

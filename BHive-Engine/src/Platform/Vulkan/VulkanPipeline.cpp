@@ -93,12 +93,7 @@ namespace BHive
 			shader_create_infos.emplace_back(info);
 		}
 
-		std::vector<vk::PushConstantRange> push_constant_ranges;
-		for (auto& pc : mProgram->GetRefl().PushConstants)
-		{
-			push_constant_ranges.emplace_back(Vulkan::ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size);
-		}
-
+		auto& push_constant_ranges = mBackendShader->GetPushConstantRanges();
 		auto &layout_in = mBackendShader->GetDescriptorSetLayouts();
 		std::vector<vk::DescriptorSetLayout> layouts_out;
 		layouts_out.reserve(layout_in.size());

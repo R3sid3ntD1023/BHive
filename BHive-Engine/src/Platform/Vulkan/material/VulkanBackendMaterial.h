@@ -35,10 +35,7 @@ namespace BHive
 		vk::raii::Device &mDevice;
 		std::vector<vk::raii::DescriptorSets> mDescriptorSets;
 		Ref<ShaderProgram> mProgram;
-		
 		const FShaderReflection *mReflectionPtr = nullptr; 
-		
 		std::vector<uint8_t> mPushConstantData;
-		bool mPushConstantDirty = false;
 	};
 }

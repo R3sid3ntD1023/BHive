@@ -48,10 +48,17 @@ layout(location  = 0) in struct VERT_OUT
 
 layout(set = 1, binding = 0) uniform sampler2D u_Texture;
 
+layout(push_constant) uniform Constants
+{
+	vec3 u_Color;
+	float u_Time;
+};
+
 layout(location = 0) out vec4 f_out;
 
 void main()
 {
-	vec4 color = texture(u_Texture, vs_in.TexCoord);
+	vec4 color = vec4(u_Color, 1) * texture(u_Texture, vs_in.TexCoord) ;
+	color.rgb *= (.5f * sin(u_Time) + .5f);
 	f_out = color;
 }

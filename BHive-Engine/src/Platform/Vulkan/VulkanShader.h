@@ -12,6 +12,7 @@ namespace BHive
 
 	using ShaderModules = std::unordered_map<EShaderStage, vk::raii::ShaderModule> ;
 	using DescriptorSetLayouts = std::vector<vk::raii::DescriptorSetLayout>;
+	using PushConstantRanges = std::vector<vk::PushConstantRange>;
 
 	class BHIVE_API VulkanShader 
 	{
@@ -29,6 +30,8 @@ namespace BHive
 
 		const ShaderModules &GetModules() const { return mShaderModules; }
 
+		const PushConstantRanges &GetPushConstantRanges() const { return mPushConstantRanges; }
+
 	private:
 		void CreateModules(const ShaderAsset& asset);
 
@@ -40,6 +43,8 @@ namespace BHive
 		ShaderModules mShaderModules;
 
 		DescriptorSetLayouts mDescriptorSetLayouts;
+
+		PushConstantRanges mPushConstantRanges;
 	};
 
 	
