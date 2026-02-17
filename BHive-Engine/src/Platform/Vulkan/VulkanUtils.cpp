@@ -36,7 +36,8 @@ namespace BHive
 			{
 				return format;
 			}
-			else if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features)
+
+			if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features)
 			{
 				return format;
 			}
@@ -119,7 +120,7 @@ namespace BHive
 
 	void VulkanUtils::CreateImage(
 		uint32_t w, uint32_t h, uint32_t d, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties,
-		Vulkan::AllocatedTexture &texture)
+		Vulkan::AllocatedImage &texture)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
 		vk::ImageCreateInfo imageInfo(
@@ -133,14 +134,14 @@ namespace BHive
 		texture.Image.bindMemory(*texture.Memory, 0);
 	}
 
-	void VulkanUtils::CreateImageView(Vulkan::AllocatedTexture &image, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect)
+	void VulkanUtils::CreateImageView(Vulkan::AllocatedImage &image, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
 		vk::ImageViewCreateInfo image_view_create_info({}, image.Image, type, format, {}, {aspect, 0, 1, 0, 1});
-		image.ImageView = device.createImageView(image_view_create_info);
+		image.View = device.createImageView(image_view_create_info);
 	}
 
-	void VulkanUtils::CreateImageSampler(Vulkan::AllocatedTexture &image, const vk::SamplerCreateInfo &info)
+	void VulkanUtils::CreateImageSampler(Vulkan::AllocatedImage &image, const vk::SamplerCreateInfo &info)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
 		image.Sampler = device.createSampler(info);
@@ -194,10 +195,10 @@ namespace BHive
 	}
 
 	void VulkanUtils::TransitionImageLayout(
-		vk::raii::CommandBuffer &cmd, vk::Image &image,  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
-		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask)
+		vk::raii::CommandBuffer &cmd, const vk::Image &image,  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
+		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags)
 	{
-		vk::ImageSubresourceRange range{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1};
+		vk::ImageSubresourceRange range{aspect_flags, 0, 1, 0, 1};
 		vk::ImageMemoryBarrier2 barrier(
 			srcStageMask,
 			srcAccessMask, 
@@ -237,7 +238,7 @@ namespace BHive
 		EndSingleTimeCommands(cmd);
 	}
 
-	void VulkanUtils::CopyBufferToImage(const Vulkan::AllocatedBuffer &buffer, Vulkan::AllocatedTexture &image, uint32_t width, uint32_t height)
+	void VulkanUtils::CopyBufferToImage(const Vulkan::AllocatedBuffer &buffer, Vulkan::AllocatedImage &image, uint32_t width, uint32_t height)
 	{
 		CopyBufferToImage(buffer.Buffer, image.Image, width, height);
 	}
@@ -249,10 +250,11 @@ namespace BHive
 		memory.unmapMemory();
 	}
 
-	vk::Format VulkanUtils::FindDepthFormat(vk::PhysicalDevice physical_device)
+	vk::Format VulkanUtils::FindDepthFormat()
 	{
+		auto physical_device = VulkanBackend::GetPhysicalDevice();
 		return FindSupportedFormat(
-			physical_device, {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint}, vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment);
+			physical_device, {vk::Format::eD24UnormS8Uint, vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint}, vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment);
 	}
 
 	bool VulkanUtils::HasStencilComponent(vk::Format format)

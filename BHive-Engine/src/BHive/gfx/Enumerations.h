@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/EnumFlags.h"
+
 namespace BHive
 {
 	enum class ETopologyMode
@@ -146,20 +148,40 @@ namespace BHive
 		CLAMP_TO_BORDER
 	};
 
-	enum ClearBitMask : int
+	enum class ClearMask : uint32_t
 	{
-		Buffer_Depth = 0x00000100,
-		Buffer_Stencil = 0x00000400,
-		Buffer_Color = 0x00004000,
+		None			= 0,
+		DepthStencil	= 1 << 0,
+		Color			= 1 << 1,
+		All				= Color | DepthStencil
 	};
 
-	enum class EShaderStage
+	ENUM_FLAGS(ClearMask)
+
+	enum class EShaderStage : uint32_t
 	{
-		None,
-		Vertex,
-		Fragment,
-		Compute,
-		Geometry,
+		None		= 0,
+		Vertex		= 1 << 0,
+		Fragment	= 1 << 1,
+		Compute		= 1 << 2,
+		Geometry	= 1 << 3,
+	};
+
+	ENUM_FLAGS(EShaderStage)
+
+	enum class EShaderDataType
+	{
+		Float,
+		Float2,
+		Float3,
+		Float4,
+		Int,
+		Int2,
+		Int3,
+		Int4,
+		Bool,
+		Mat3,
+		Mat4
 	};
 
 

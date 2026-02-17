@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
-#include "gfx/Shader.h"
+#include "gfx/shader/ShaderAsset.h"
 #include "VulkanBackend.h"
 
 namespace BHive
@@ -11,71 +11,35 @@ namespace BHive
 	class FDescriptorPool;
 
 	using ShaderModules = std::unordered_map<EShaderStage, vk::raii::ShaderModule> ;
+	using DescriptorSetLayouts = std::vector<vk::raii::DescriptorSetLayout>;
 
-	class BHIVE_API VulkanShader : public Shader
+	class BHIVE_API VulkanShader 
 	{
-		struct FShaderData
-		{
-			std::string Code;
-			std::vector<uint32_t> VulkanSpirv;
-
-			template <typename A>
-			void Serialize(A &ar)
-			{
-				ar(Code, VulkanSpirv);
-			}
-		};
-
 	public:
-		VulkanShader(const std::filesystem::path &path);
+		VulkanShader();
 
-		VulkanShader(const std::string &name, const std::string &vert, const std::string &frag);
+		VulkanShader(const VulkanShader &) = delete;
+		VulkanShader &operator=(const VulkanShader &) = delete; 
+		VulkanShader(VulkanShader&&) noexcept = default; 
+		VulkanShader& operator=(VulkanShader&&) noexcept = default;
 
-		virtual ~VulkanShader();
+		void Init(const Ref<ShaderAsset> &asset);
 
-		virtual void Bind() override;
-
-		virtual void UnBind() override;
-
-		virtual const std::string &GetName() const override { return mName; }
-
-		virtual void Dispatch(uint32_t w, uint32_t h, uint32_t d = 1) override;
-
-		void Save(cereal::BinaryOutputArchive &ar) const override;
-
-		void Load(cereal::BinaryInputArchive &ar) override;
-
-		const vk::raii::DescriptorSetLayout &GetDescriptorSetLayout() const { return mDescriptorSetLayout; }
+		const DescriptorSetLayouts &GetDescriptorSetLayouts() const { return mDescriptorSetLayouts; }
 
 		const ShaderModules &GetModules() const { return mShaderModules; }
 
-		void Reflect()  override;
-
-		const FShaderReflectionData &GetRefl() const override { return mRefl; }
-
 	private:
-		void Compile();
+		void CreateModules(const ShaderAsset& asset);
 
-		void CompileFromSource();
-
-		void PreProcess(const std::string &source);
-
-		void CreateDescriptorResources();
+		void CreateDescriptorResources(const ShaderAsset& asset);
 
 	private:
 		vk::raii::Device &mDevice;
 
 		ShaderModules mShaderModules;
 
-		vk::raii::DescriptorSetLayout mDescriptorSetLayout = VK_NULL_HANDLE;
-
-		std::filesystem::path mFilePath;
-
-		std::string mName;
-
-		std::unordered_map<EShaderStage, FShaderData> mSources;
-
-		FShaderReflectionData mRefl;
+		DescriptorSetLayouts mDescriptorSetLayouts;
 	};
 
 	

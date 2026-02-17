@@ -22,7 +22,7 @@ namespace BHive
 		sRendererAPI->ClearColor(r, g, b, a);
 	}
 
-	void RenderCommand::Clear(int mask)
+	void RenderCommand::Clear(ClearMask mask)
 	{
 		sRendererAPI->Clear(mask);
 	}

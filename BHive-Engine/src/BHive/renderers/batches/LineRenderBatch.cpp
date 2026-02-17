@@ -27,7 +27,7 @@ namespace BHive
 		mLineShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Line.glsl");
 
 		Pipeline::PipelineState state = Pipeline::GetDefaultPipelineState();
-		state.Shader = mLineShader;
+		state.ShaderProgram = mLineShader;
 		state.Raster.CullEnabled = false;
 		state.ColorAttachmentFormats = {EFormat::RGBA8};
 		state.DrawMode = ETopologyMode::Lines;

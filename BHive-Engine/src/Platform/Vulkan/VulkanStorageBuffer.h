@@ -12,6 +12,8 @@ namespace BHive
 
 		VulkanStorageBuffer(size_t size);
 
+		~VulkanStorageBuffer();
+
 		void SetData(const void *data, size_t, uint32_t offset = 0) override;
 
 		NativeHandle GetNativeHandle(uint32_t frame) const override { return Vulkan::Handle::BufferInfo(&mBufferInfo); }
@@ -20,7 +22,9 @@ namespace BHive
 		vk::raii::Device &mDevice;
 		Vulkan::AllocatedBuffer mBuffer;
 		uint32_t mBinding{0};
+		uint32_t mSize{0};
 		vk::DescriptorBufferInfo mBufferInfo;
+		void *mMappedMemory = nullptr;
 	};
 
 } // namespace BHive

@@ -1,10 +1,8 @@
 #pragma once
 
-#include "core/Core.h"
-
 namespace BHive
 {
-	class Shader;
+	class ShaderProgram;
 
 	struct IRenderBatch
 	{

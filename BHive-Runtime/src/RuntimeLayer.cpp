@@ -24,7 +24,7 @@ namespace BHive
 		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Triangle.glsl");
 
 		Pipeline::PipelineState state = Pipeline::GetDefaultPipelineState();
-		state.Shader = mShader;
+		state.ShaderProgram = mShader;
 		state.ColorAttachmentFormats = {EFormat::RGBA8};
 
 		mPipeline = Pipeline::Create();
@@ -49,15 +49,16 @@ namespace BHive
 		auto &window = app.GetWindow();
 		auto aspect = window.GetAspectRatio();
 
-		mCamera = EditorCamera(45.f, aspect, 0.1f, 1000.f);
-		mCamera.SetView(FTransform({0, 0, 5}));
+		mCamera = EditorCamera(75.f, aspect, 0.1f, 1000.f);
+		mCamera.SetView(FTransform({5, 5, 5}));
+		mCamera.Focus(FTransform({0, 0, 0}));
 	}
 
 	void RuntimeLayer::OnDetach()
 	{
 	}
 
-	void RuntimeLayer::OnUpdate(float)
+	void RuntimeLayer::OnUpdate(float time)
 	{
 		mCamera.ProcessInput();
 
@@ -73,15 +74,20 @@ namespace BHive
 
 		Renderer::SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
 
-		LineRenderer::DrawLine({-1, 0, 0}, {1, 0, 0}, FColor::Green);
+		LineRenderer::DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
+		LineRenderer::DrawGrid({});
 
 		if (mMesh && mMaterial)
 		{
 			mMaterial->Submit();
 
+			/*FTransform transform({0, 0, 0}, {0, time, 0});
+			Renderer::SubmitModel(transform);*/
+
 			if (mMesh)
 				RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
 		}
+
 
 		Renderer::End();
 	}

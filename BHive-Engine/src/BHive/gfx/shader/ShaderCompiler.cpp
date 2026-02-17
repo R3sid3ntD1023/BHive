@@ -1,8 +1,9 @@
 #include "core/FileSystem.h"
 #include "ShaderCompiler.h"
 #include "ShaderUtils.h"
-#include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
+#include "ShaderReflection.h"
+#include "gfx/RenderCommand.h"
 
 namespace BHive
 {
@@ -26,44 +27,7 @@ namespace BHive
 			return shaderc_glsl_infer_from_source;
 		}
 
-		const char *GetCacheOpenglFileExtension(EShaderStage stage)
-		{
-			switch (stage)
-			{
-			case EShaderStage::Vertex:
-				return ".cached_opengl.vert";
-			case EShaderStage::Fragment:
-				return ".cached_opengl.frag";
-			case EShaderStage::Compute:
-				return ".cached_opengl.comp";
-			case EShaderStage::Geometry:
-				return ".cached_opengl.geom";
-
-			default:
-				break;
-			}
-			ASSERT(false)
-			return "";
-		}
-
-		const char *GetCacheVulkanFileExtension(EShaderStage stage)
-		{
-			switch (stage)
-			{
-			case EShaderStage::Vertex:
-				return ".cached_vulkan.vert";
-			case EShaderStage::Fragment:
-				return ".cached_vulkan.frag";
-			case EShaderStage::Compute:
-				return ".cached_vulkan.comp";
-			case EShaderStage::Geometry:
-				return ".cached_vulkan.geom";
-			default:
-				break;
-			}
-			ASSERT(false)
-			return "";
-		}
+		
 
 		struct IncludeHandler : public shaderc::CompileOptions::IncluderInterface
 		{
@@ -146,7 +110,7 @@ namespace BHive
 
 	} // namespace utils
 
-	ShaderCompiler::ShaderCompiler(const std::filesystem::path &filepath)
+	ShaderCompiler::ShaderCompiler(const std::filesystem::path& filepath)
 		: mFilePath(filepath)
 	{
 	}
@@ -161,55 +125,59 @@ namespace BHive
 		mOpenglCompileOptions.SetIncluder(std::make_unique<utils::IncludeHandler>());
 	}
 
-	void ShaderCompiler::CompileToVulkan(EShaderStage stage, const std::string &src, std::vector<uint32_t> &spirv)
+	void ShaderCompiler::Compile(ShaderAsset& asset)
 	{
-
-		auto name = mFilePath.stem().string();
-		auto cache_path = ShaderUtils::GetCacheDirectory() / name / (name + utils::GetCacheVulkanFileExtension(stage));
-		if (std::filesystem::exists(cache_path))
+		switch (RenderCommand::GetRendererAPI())
 		{
-			FileSystem::ReadFile(cache_path, spirv);
-			return;
-		}
-
-		auto spirv_binary = mVulkanCompiler.CompileGlslToSpv(src, utils::GetShadercType(stage), mFilePath.string().c_str(), mVulkanCompileOptions);
-		if (spirv_binary.GetCompilationStatus() != shaderc_compilation_status_success)
-		{
-			LOG_ERROR("Vulkan: Failed to compile shader = {}, stage = {} : \n{}", mFilePath, ShaderUtils::ToString(stage), spirv_binary.GetErrorMessage());
+		
+		case RendererAPI::Opengl:
+			CompileToOpengl(asset);
+		case RendererAPI::Vulkan:
+			CompileToVulkan(asset);
+			break;
+		default:
 			ASSERT(false);
-		}
-		else
-		{
-			spirv = std::vector<uint32_t>(spirv_binary.cbegin(), spirv_binary.cend());
-			FileSystem::WriteFile(cache_path, spirv);
 		}
 	}
 
-	void ShaderCompiler::CompileToOpengl(EShaderStage stage, std::string &src, const std::vector<uint32_t> &spirv, std::vector<uint32_t> &opengl_spirv)
+	void ShaderCompiler::CompileToVulkan(ShaderAsset& asset)
 	{
-
-		auto name = mFilePath.stem().string();
-		auto cache_path = ShaderUtils::GetCacheDirectory() / name / (name + utils::GetCacheOpenglFileExtension(stage));
-		if (std::filesystem::exists(cache_path))
+		for (auto& [stage, data] : asset.Stages)
 		{
-			FileSystem::ReadFile(cache_path, opengl_spirv);
-			return;
+			auto spirv_binary = mVulkanCompiler.CompileGlslToSpv(data.Code, utils::GetShadercType(stage), mFilePath.string().c_str(), mVulkanCompileOptions);
+			if (spirv_binary.GetCompilationStatus() != shaderc_compilation_status_success)
+			{
+				LOG_ERROR("Vulkan: Failed to compile shader = {}, stage = {} : \n{}", mFilePath, ShaderUtils::ToString(stage), spirv_binary.GetErrorMessage());
+				ASSERT(false);
+			}
+
+			data.Spirv.assign(spirv_binary.cbegin(), spirv_binary.cend());
+
+			// reflect
+			LOG_TRACE("Reflecting Shader... {}", asset.Name)
+				asset.Reflection[stage].Reflect(stage, data.Spirv);
+			LOG_TRACE(asset.Reflection[stage].to_string())
 		}
+	}
 
-		spirv_cross::CompilerGLSL glsl_compiler(spirv);
-		src = glsl_compiler.compile();
-
-		auto spirv_binary = mOpenglCompiler.CompileGlslToSpv(src, utils::GetShadercType(stage), mFilePath.string().c_str(), mOpenglCompileOptions);
-
-		if (spirv_binary.GetCompilationStatus() == shaderc_compilation_status_success)
+	void ShaderCompiler::CompileToOpengl(ShaderAsset& asset)
+	{
+		for (auto& [stage, data] : asset.Stages)
 		{
-			opengl_spirv = std::vector<uint32_t>(spirv_binary.cbegin(), spirv_binary.cend());
-			FileSystem::WriteFile(cache_path, opengl_spirv);
-		}
-		else
-		{
-			LOG_ERROR("GLSL: Failed to compile shader = {}, stage = {}: \n{}", mFilePath, ShaderUtils::ToString(stage), spirv_binary.GetErrorMessage());
-			ASSERT(false);
+			spirv_cross::CompilerGLSL glsl_compiler(data.Spirv);
+			std::string glsl_source = glsl_compiler.compile();
+
+			auto spirv_binary = mOpenglCompiler.CompileGlslToSpv(glsl_source, utils::GetShadercType(stage), mFilePath.string().c_str(), mOpenglCompileOptions);
+
+			if (spirv_binary.GetCompilationStatus() != shaderc_compilation_status_success)
+			{
+				LOG_ERROR("GLSL: Failed to compile shader = {}, stage = {}: \n{}", mFilePath, ShaderUtils::ToString(stage), spirv_binary.GetErrorMessage());
+				ASSERT(false);
+
+			}
+
+			data.Spirv.assign(spirv_binary.cbegin(), spirv_binary.cend());
+			data.Code = std::move(glsl_source);
 		}
 	}
 

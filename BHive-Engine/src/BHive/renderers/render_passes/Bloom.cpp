@@ -45,52 +45,52 @@ namespace BHive
 
 	void BloomRenderPass::Process(const Ref<Texture> &texture)
 	{
-		mPreFilterShader->Bind();
-		texture->Bind();
-		Image(mPreFilterTexture).Bind(0, EImageAccess::WRITE);
-		mPreFilterShader->SetUniform("constants.u_FilterThreshold", mSettings.mFilterThreshold);
-		mPreFilterShader->Dispatch(mPreFilterTexture->GetWidth(), mPreFilterTexture->GetHeight());
+		//mPreFilterShader->Bind();
+		//texture->Bind();
+		//Image(mPreFilterTexture).Bind(0, EImageAccess::WRITE);
+		//mPreFilterShader->SetUniform("constants.u_FilterThreshold", mSettings.mFilterThreshold);
+		//mPreFilterShader->Dispatch(mPreFilterTexture->GetWidth(), mPreFilterTexture->GetHeight());
 
-		mPreFilterShader->UnBind();
+		//mPreFilterShader->UnBind();
 
-		// downsample image
-		mDownSamplerShader->Bind();
+		//// downsample image
+		//mDownSamplerShader->Bind();
 
-		auto current_texture = mPreFilterTexture;
-		for (auto &mip : mMipMaps)
-		{
-			glm::ivec2 size = {mip->GetWidth(), mip->GetHeight()};
-			current_texture->Bind();
-			Image(mip).Bind(0, EImageAccess::WRITE);
-			mDownSamplerShader->Dispatch(size.x, size.y);
+		//auto current_texture = mPreFilterTexture;
+		//for (auto &mip : mMipMaps)
+		//{
+		//	glm::ivec2 size = {mip->GetWidth(), mip->GetHeight()};
+		//	current_texture->Bind();
+		//	Image(mip).Bind(0, EImageAccess::WRITE);
+		//	mDownSamplerShader->Dispatch(size.x, size.y);
 
-			current_texture = mip;
-		}
-		mDownSamplerShader->UnBind();
+		//	current_texture = mip;
+		//}
+		//mDownSamplerShader->UnBind();
 
-		// upsample image
-		mUpSamplerShader->Bind();
-		mUpSamplerShader->SetUniform("constants.u_FilterRadius", mSettings.mFilterRadius);
+		//// upsample image
+		//mUpSamplerShader->Bind();
+		//mUpSamplerShader->SetUniform("constants.u_FilterRadius", mSettings.mFilterRadius);
 
-		for (size_t i = mMipMaps.size() - 1; i > 0; i--)
-		{
-			const auto &mip = mMipMaps[i];
-			const auto &next_mip = mMipMaps[i - 1];
+		//for (size_t i = mMipMaps.size() - 1; i > 0; i--)
+		//{
+		//	const auto &mip = mMipMaps[i];
+		//	const auto &next_mip = mMipMaps[i - 1];
 
-			mip->Bind();
-			Image(next_mip).Bind(0, EImageAccess::WRITE);
-			mUpSamplerShader->Dispatch(next_mip->GetWidth(), next_mip->GetHeight());
-		}
+		//	mip->Bind();
+		//	Image(next_mip).Bind(0, EImageAccess::WRITE);
+		//	mUpSamplerShader->Dispatch(next_mip->GetWidth(), next_mip->GetHeight());
+		//}
 
-		mUpSamplerShader->UnBind();
+		//mUpSamplerShader->UnBind();
 
-		mCombineShader->Bind();
+		//mCombineShader->Bind();
 
-		texture->Bind(0);
-		mMipMaps[0]->Bind(1);
-		Image(mOutputTexture).Bind(0, EImageAccess::WRITE);
-		mCombineShader->Dispatch(mOutputTexture->GetWidth(), mOutputTexture->GetHeight());
-		mCombineShader->UnBind();
+		//texture->Bind(0);
+		//mMipMaps[0]->Bind(1);
+		//Image(mOutputTexture).Bind(0, EImageAccess::WRITE);
+		//mCombineShader->Dispatch(mOutputTexture->GetWidth(), mOutputTexture->GetHeight());
+		//mCombineShader->UnBind();
 	}
 
 	void BloomRenderPass::SetBloomSettings(const FBloomSettings &settings)

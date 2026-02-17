@@ -17,6 +17,8 @@ namespace BHive
 
 		void DrawMesh(const Ref<FStaticMeshRenderData> &data);
 
+		void SubmitModel(const FTransform &transform);
+
 	private:
 		Ref<StorageBuffer> mBoneBuffer{};
 		Ref<StorageBuffer> mPerObjectBuffer{};

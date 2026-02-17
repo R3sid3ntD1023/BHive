@@ -1,8 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
-#include "Shader.h"
-#include "ShaderReflection.h"
+#include "gfx/shader/ShaderProgram.h"
 
 
 namespace BHive
@@ -13,13 +12,13 @@ namespace BHive
 		ShaderManager();
 		ShaderManager(const ShaderManager &) = delete;
 
-		using Shaders = std::unordered_map<std::string, Ref<Shader>>;
+		using Shaders = std::unordered_map<std::string, Ref<ShaderProgram>>;
 
-		void Add(const char *name, const Ref<Shader> &shader);
+		void Add(const char *name, const Ref<ShaderProgram> &shader);
 
-		Ref<Shader> Load(const std::filesystem::path &file);
+		Ref<ShaderProgram> Load(const std::filesystem::path &file);
 
-		Ref<Shader> Get(const char *name);
+		Ref<ShaderProgram> Get(const char *name);
 
 		bool Contains(const std::string &name);
 

@@ -7,7 +7,7 @@ namespace BHive
 	LambertMaterial::LambertMaterial()
 		: Material(nullptr)
 	{
-		AddTextureSlot("Texture", 0);
+		
 	}
 
 	void LambertMaterial::Save(cereal::BinaryOutputArchive &ar) const

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
-#include "ShaderDataType.h"
+#include "Enumerations.h"
 
 namespace BHive
 {

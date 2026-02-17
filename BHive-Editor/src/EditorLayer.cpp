@@ -32,7 +32,7 @@
 #include "renderers/render_passes/PickerRenderPass.h"
 #include "renderers/render_passes/OutlineRenderPass.h"
 
-#include "gfx/utils/texture/ImageUtils.h"
+#include "gfx/texture/ImageUtils.h"
 #include "world/components/LightComponents.h"
 #include "core/profiler/CPUGPUProfiler.h"
 #include "gui/Gimzo.h"

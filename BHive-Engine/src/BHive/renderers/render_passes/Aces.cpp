@@ -12,11 +12,11 @@ namespace BHive
 	{
 		Image image(mOutputTexture);
 
-		mComputeShader->Bind();
+		/*mComputeShader->Bind();
 		texture->Bind();
 		image.Bind(0, EImageAccess::WRITE);
 		mComputeShader->Dispatch(texture->GetWidth(), texture->GetHeight());
-		mComputeShader->UnBind();
+		mComputeShader->UnBind();*/
 	}
 
 	void AcesRenderPass::Init()

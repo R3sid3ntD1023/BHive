@@ -37,7 +37,7 @@ namespace BHive
 		~LineRenderBatch();
 
 	private:
-		Ref<Shader> mLineShader;
+		Ref<ShaderProgram> mLineShader;
 		Ref<VertexBuffer> mVertexBuffer;
 		Ref<VertexArray> mVertexArray;
 

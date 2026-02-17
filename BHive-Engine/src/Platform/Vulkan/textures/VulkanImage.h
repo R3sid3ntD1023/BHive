@@ -16,7 +16,7 @@ namespace BHive
 
 		void Transition(vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
 
-		const Vulkan::AllocatedTexture &GetAllocatedTexture() { return mTexture; };
+		const Vulkan::AllocatedImage &GetAllocatedTexture() { return mTexture; };
 
 		const vk::DescriptorImageInfo &GetDescriptor() const { return mDescriptor; }
 
@@ -30,7 +30,7 @@ namespace BHive
 
 	private:
 		vk::raii::Device &mDevice;
-		Vulkan::AllocatedTexture mTexture{};
+		Vulkan::AllocatedImage mTexture{};
 		vk::DescriptorImageInfo mDescriptor{};
 		uint32_t mWidth = 0, mHeight = 0, mDepth = 0;
 		vk::Format mFormat = vk::Format::eUndefined;

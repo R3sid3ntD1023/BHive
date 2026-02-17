@@ -84,12 +84,12 @@ namespace BHive
 			RenderCommand::CullFront();
 			RenderCommand::Clear();
 
-			mEquirectangularShader->Bind();
+			//mEquirectangularShader->Bind();
 			mEnvironmentTexture->Bind(0);
 
 			RenderCube(i);
 
-			mEquirectangularShader->UnBind();
+			//mEquirectangularShader->UnBind();
 			mEnvironmentCapture->UnBind();
 
 			RenderCommand::CullBack();
@@ -106,12 +106,12 @@ namespace BHive
 			RenderCommand::CullFront();
 			RenderCommand::Clear();
 
-			mIrradianceShader->Bind();
+			//mIrradianceShader->Bind();
 			mEnvironmentCapture->GetTargetTexture()->Bind();
 
 			RenderCube(i);
 
-			mIrradianceShader->UnBind();
+			//mIrradianceShader->UnBind();
 			mIrradianceCapture->UnBind();
 
 			RenderCommand::CullBack();
@@ -122,7 +122,7 @@ namespace BHive
 	{
 		Image image(mPreFilteredEnvironmentTexture);
 
-		mPreFilterEnironmentShader->Bind();
+		//mPreFilterEnironmentShader->Bind();
 		mEnvironmentCapture->GetTargetTexture()->Bind();
 
 		int mip_level = (ENVIRONMENT_MAP_SIZE / PREFILTER_MAP_SIZE) - 1;
@@ -133,29 +133,29 @@ namespace BHive
 
 			float roughness = (float)i / (float)(PREFILTER_MIP_LEVELS - 1);
 
-			mPreFilterEnironmentShader->SetUniform("constants.u_roughness", roughness);
+			/*mPreFilterEnironmentShader->SetUniform("constants.u_roughness", roughness);
 			mPreFilterEnironmentShader->SetUniform("constants.u_mip_level", mip_level);
 			mPreFilterEnironmentShader->SetUniform("constants.u_width", w);
-			mPreFilterEnironmentShader->SetUniform("constants.u_height", h);
+			mPreFilterEnironmentShader->SetUniform("constants.u_height", h);*/
 
 			image.Bind(0, EImageAccess::WRITE, i);
 
-			mPreFilterEnironmentShader->Dispatch(w / PREFILTER_WORK_GROUP_SIZE, h / PREFILTER_WORK_GROUP_SIZE, 6);
+			//mPreFilterEnironmentShader->Dispatch(w / PREFILTER_WORK_GROUP_SIZE, h / PREFILTER_WORK_GROUP_SIZE, 6);
 		}
 
-		mPreFilterEnironmentShader->UnBind();
+		//mPreFilterEnironmentShader->UnBind();
 	}
 
 	void PMREMGenerator::CreateBRDFLUTMap()
 	{
-		Image image(mBRDFLUTTexture);
+		/*Image image(mBRDFLUTTexture);
 
 		mBRDFLUTShader->Bind();
 
 		image.Bind(0, EImageAccess::WRITE);
 		mBRDFLUTShader->Dispatch(BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE, BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE);
 
-		mBRDFLUTShader->UnBind();
+		mBRDFLUTShader->UnBind();*/
 	}
 
 	void PMREMGenerator::RenderCube(uint32_t face)

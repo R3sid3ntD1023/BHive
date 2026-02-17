@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
-#include "gfx/Shader.h"
+#include "gfx/shader/ShaderAsset.h"
 #include <shaderc/shaderc.hpp>
 
 namespace BHive
@@ -12,10 +12,12 @@ namespace BHive
 		ShaderCompiler(const std::filesystem::path &filepath);
 
 		void Init();
+		
+		void Compile(ShaderAsset& asset);
 
-		void CompileToVulkan(EShaderStage stage, const std::string &src, std::vector<uint32_t> &spirv);
+		void CompileToVulkan(ShaderAsset& asset);
 
-		void CompileToOpengl(EShaderStage stage, std::string &src, const std::vector<uint32_t> &spirv, std::vector<uint32_t> &opengl_spirv);
+		void CompileToOpengl(ShaderAsset& asset);
 
 	private:
 		shaderc::Compiler mVulkanCompiler;

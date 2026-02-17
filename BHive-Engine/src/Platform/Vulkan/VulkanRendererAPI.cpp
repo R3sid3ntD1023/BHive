@@ -80,9 +80,8 @@ namespace BHive
 
 		auto [result, imageIndex] = swapChain->AquireNextImage(mCurrentFrame);
 		auto &image = swapChain->GetImage(imageIndex);
-		auto &image_view = swapChain->GetImageView(imageIndex);
+		auto &depth_image = swapChain->GetDepthImage();
 		auto extent = swapChain->GetExtent();
-		auto &image_layout = swapChain->GetImageLayout(imageIndex);
 
 		if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
 			return result;
@@ -98,16 +97,27 @@ namespace BHive
 		}
 		
 		VulkanUtils::TransitionImageLayout(
-			command_buffer, image, image_layout, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eColorAttachmentOutput);
+			command_buffer, image.ImageSrc, image.Layout, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::ImageAspectFlagBits::eColor);
 
-		image_layout = vk::ImageLayout::eColorAttachmentOptimal;
+		VulkanUtils::TransitionImageLayout(
+			command_buffer, depth_image.Image, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
+			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests, vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil);
+
+		image.Layout = vk::ImageLayout::eColorAttachmentOptimal;
 
 		vk::ClearValue clearColor(mClearColor);
+		vk::ClearValue clearDepth(vk::ClearDepthStencilValue(1.0f, 0));
+
 		vk::RenderingAttachmentInfo attachmentInfo(
-			image_view, vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+			image.View, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 			clearColor);
-		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo);
+
+		vk::RenderingAttachmentInfo depth_attachment_info(
+			depth_image.View, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, clearDepth);
+
+		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
 		command_buffer.beginRendering(renderingInfo);
 
 		
@@ -122,10 +132,10 @@ namespace BHive
 		command_buffer.endRendering();
 
 		VulkanUtils::TransitionImageLayout(
-			command_buffer, image, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eColorAttachmentWrite, {},
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eBottomOfPipe);
+			command_buffer, image.ImageSrc, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eColorAttachmentWrite, {},
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eBottomOfPipe, vk::ImageAspectFlagBits::eColor);
 
-		image_layout = vk::ImageLayout::ePresentSrcKHR;
+		image.Layout = vk::ImageLayout::ePresentSrcKHR;
 
 		command_buffer.end();
 
@@ -155,7 +165,7 @@ namespace BHive
 		mClearColor = {r, g, b, a};
 	}
 
-	void VulkanRendererAPI::Clear(int mask)
+	void VulkanRendererAPI::Clear(ClearMask mask)
 	{
 
 	}
@@ -170,7 +180,7 @@ namespace BHive
 	{
 		auto cmd = [=](const FVulkanFrameData &data)
 		{
-			data.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)y, (float)w, (float)h, 0.0f, 1.0f));
+			data.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)(y + h), (float)w, -(float)h, 0.0f, 1.0f));
 			data.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, vk::Extent2D(w, h)));
 		};
 

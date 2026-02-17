@@ -1,32 +1,63 @@
-#include "Platform/Vulkan/VulkanShader.h"
-#include "RenderCommand.h"
 #include "Shader.h"
+#include "shader/ShaderAsset.h" 
+#include "shader/ShaderCompiler.h" 
+#include "shader/ShaderUtils.h"
+#include "core/FileSystem.h"
+#include "shader/ShaderProgram.h"
+#include "shader/ShaderTimeCache.h"
 
 namespace BHive
 {
-	Ref<Shader> Shader::Create(const std::filesystem::path &path)
+	Ref<ShaderProgram> Shader::Create(const std::filesystem::path &path)
 	{
-		switch (RenderCommand::GetRendererAPI())
+		auto asset = CreateRef<ShaderAsset>();
+		asset->Name = path.stem().string();
+		asset->SourcePath = path;
+
+		//load source
+		std::string source;
+		if (!FileSystem::ReadFile(path, source))
 		{
-		case RendererAPI::Vulkan:
-			return CreateRef<VulkanShader>(path);
+			LOG_ERROR("Failed to load shader file: {}", path.string());
+			return nullptr;
 		}
 
-		ASSERT(false);
-		return nullptr;
-	}
+		auto source_stages = ShaderUtils::PreProcess(source);
 
-	Ref<Shader> Shader::Create(const std::string &name, const std::string &vert, const std::string &frag)
-	{
-		switch (RenderCommand::GetRendererAPI())
+		//detect stages from preprocess
+		for (auto& [stage, code] : source_stages)
 		{
-		case RendererAPI::Vulkan:
-			return CreateRef<VulkanShader>(name, vert, frag);
+			asset->Stages[stage].Code = code;
 		}
 
-		ASSERT(false);
-		return nullptr;
+		//Cache Check
+		if (ShaderCache::HasValidCache(*asset, source))
+		{
+			ShaderCache::LoadCache(*asset);
+			return CreateRef<ShaderProgram>(asset);
+		}
+
+		ShaderCompiler compiler(path);
+		compiler.Init();
+		compiler.Compile(*asset);
+
+		ShaderCache::StoreCache(*asset, source);
+
+		return CreateRef<ShaderProgram>(asset);
 	}
 
-	
+	Ref<ShaderProgram> Shader::Create(const std::string &name, const std::string &vert, const std::string &frag)
+	{
+		auto asset = CreateRef<ShaderAsset>();
+		asset->Name = name;
+
+		asset->Stages[EShaderStage::Vertex].Code = vert;
+		asset->Stages[EShaderStage::Fragment].Code = frag;
+
+		ShaderCompiler compiler(name);
+		compiler.Init();
+		compiler.Compile(*asset);
+
+		return CreateRef<ShaderProgram>(asset);
+	}
 } // namespace BHive

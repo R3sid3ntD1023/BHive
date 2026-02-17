@@ -14,6 +14,7 @@ namespace BHive
 		vk::SwapchainKHR OldSwapChain = nullptr;
 	};
 
+
 	class VulkanSwapChain
 	{
 	public:
@@ -33,17 +34,15 @@ namespace BHive
 
 		const vk::SurfaceFormatKHR &GetFormat() const { return mImageFormat; }
 
-		vk::raii::SwapchainKHR &operator*() { return mSwapChain; }
+		vk::Format GetDepthStencilFormat() const { return mDepthFormat; };
 
-		vk::Image &GetImage(uint32_t index)  { return mImages[index]; };
+		Vulkan::Image &GetImage(uint32_t index)  { return mImages[index]; };
 
-		vk::raii::ImageView &GetImageView(uint32_t index)  { return mImageViews[index]; }
+		Vulkan::AllocatedImage &GetDepthImage() { return mDepthImage; }
 
 		uint32_t GetMinImageCount() const { return mMinImageCount; }
 
 		uint32_t GetImageCount() const { return mImages.size(); }
-
-		vk::ImageLayout &GetImageLayout(uint32_t imageIndex);
 
 	private:
 		vk::raii::Device &mDevice;
@@ -54,17 +53,17 @@ namespace BHive
 
 		vk::raii::SwapchainKHR mSwapChain = nullptr;
 
-		std::vector<vk::Image> mImages{};
-
-		std::vector<vk::raii::ImageView> mImageViews{};
+		std::vector<Vulkan::Image> mImages{};
 
 		std::vector<vk::raii::Semaphore> mPresentSemaphores;
 
 		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores;
 
-		std::vector<vk::ImageLayout> mImageLayouts;
-
 		std::vector<vk::raii::Fence> mInFlightFences;
+
+		Vulkan::AllocatedImage mDepthImage;
+
+		vk::Format mDepthFormat;
 		
 		uint32_t mMinImageCount = 0;
 	};

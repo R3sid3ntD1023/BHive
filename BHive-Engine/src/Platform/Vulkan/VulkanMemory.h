@@ -7,11 +7,18 @@ namespace BHive
 {
 	namespace Vulkan
 	{
-		struct AllocatedTexture
+		struct Image
+		{
+			vk::Image ImageSrc = VK_NULL_HANDLE;
+			vk::raii::ImageView View = VK_NULL_HANDLE;
+			vk::ImageLayout Layout = vk::ImageLayout::eUndefined;
+		};
+
+		struct AllocatedImage
 		{
 			vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
 			vk::raii::Image Image = VK_NULL_HANDLE;
-			vk::raii::ImageView ImageView = VK_NULL_HANDLE;
+			vk::raii::ImageView View = VK_NULL_HANDLE;
 			vk::raii::Sampler Sampler = VK_NULL_HANDLE;
 		};
 

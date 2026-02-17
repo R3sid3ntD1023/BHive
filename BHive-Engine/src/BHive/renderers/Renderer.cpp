@@ -1,20 +1,29 @@
-#include "buffers/CameraBuffer.h"
 #include "buffers/ModelBuffer.h"
 #include "gfx/Texture.h"
 #include "Renderer.h"
-#include "gfx/ShaderManager.h"
+#include "gfx/UniformBuffer.h"
+#include "buffers/GlobalBuffers.h"
+#include "gfx/StorageBuffer.h"
 
 namespace BHive
 {
+	struct FObjectData
+	{
+		glm::mat4 WorldMatrix = {1.0f};
+	};
 
 	struct Renderer::RenderData
 	{
-		CameraBuffer Camera;
+		FCameraData CameraData;
+		Frustum CameraFrustum;
+
 		ModelBuffer Model;
 
 		Ref<Texture> WhiteTexture;
 		Ref<Texture> BlackTexture;
 		Ref<Texture> BlueTexture;
+
+		Ref<UniformBuffer> CameraUniformBuffer;
 
 		RenderData()
 		{
@@ -33,10 +42,13 @@ namespace BHive
 	
 			BlueTexture = Texture2D::Create(1, 1, create_info, &blue, sizeof(uint32_t));
 
-			Camera.Init();
+			CameraUniformBuffer = UniformBuffer::Create(0, sizeof(FCameraData));
+			GlobalBuffers::AddGlobalUniformBuffer(0, CameraUniformBuffer);
+
 			Model.Init();
-			// Model.Init();
 		}
+
+		~RenderData() { CameraUniformBuffer.reset();}
 	};
 
 	void Renderer::Init()
@@ -66,12 +78,25 @@ namespace BHive
 
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
 	{
-		sData->Camera.Begin(projection, glm::inverse(view));
+		sData->CameraData.Projection =projection;
+		sData->CameraData.View = glm::inverse(view);
+		sData->CameraData.NearFar.x = projection[3][2] / (projection[2][2] - 1.0f);
+		sData->CameraData.NearFar.y = projection[3][2] / (projection[2][2] + 1.0f);
+		sData->CameraData.Position = glm::inverse(view)[3];
+
+		sData->CameraUniformBuffer->SetData(&sData->CameraData, sizeof(FCameraData));
+
+		sData->CameraFrustum.Update(projection, view);
 	}
 
 	void Renderer::Draw(const Ref<FMeshRenderData> &data)
 	{
-		// sData->Model.Draw(data);
+		sData->Model.Draw(data);
+	}
+
+	void Renderer::SubmitModel(const FTransform &transform)
+	{
+		sData->Model.SubmitModel(transform);
 	}
 
 	void Renderer::End()
@@ -98,12 +123,14 @@ namespace BHive
 
 	const Frustum &Renderer::GetFrustum()
 	{
-		return sData->Camera.GetViewFrustum();
+		ASSERT(sData);
+		return sData->CameraFrustum;
 	}
 
-	CameraBuffer &Renderer::GetCamera()
+	FCameraData &Renderer::GetCameraData()
 	{
-		return sData->Camera;
+		ASSERT(sData);
+		return sData->CameraData;
 	}
 
 	Renderer::RenderData *Renderer::sData = nullptr;

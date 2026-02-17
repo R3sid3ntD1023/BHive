@@ -81,9 +81,9 @@ namespace BHive
 		ImGui_ImplGlfw_InitForVulkan(mWindowHandle, true);
 
 		auto format = swap_chain->GetFormat().format;
-		auto depth_format = VulkanUtils::FindDepthFormat(physical_device);
+		auto depth_format = swap_chain->GetDepthStencilFormat();
 		vk::PipelineRenderingCreateInfo rendering_info{};
-		rendering_info.setViewMask(0).setColorAttachmentCount(1).setColorAttachmentFormats(format).setDepthAttachmentFormat(vk::Format::eUndefined).setStencilAttachmentFormat(vk::Format::eUndefined);
+		rendering_info.setViewMask(0).setColorAttachmentCount(1).setColorAttachmentFormats(format).setDepthAttachmentFormat(depth_format).setStencilAttachmentFormat(depth_format);
 
 		ImGui_ImplVulkan_InitInfo init_info{};
 		init_info.ApiVersion = VulkanBackend::MINIMUM_VULKAN_API_VERSION;

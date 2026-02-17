@@ -23,7 +23,7 @@ namespace BHive
 		RenderCommand::ClearColor(0, 0, 0, 0);
 		RenderCommand::Clear();
 
-		switch (mSelectedRenderData->GetRenderDataType())
+		/*switch (mSelectedRenderData->GetRenderDataType())
 		{
 		case FMeshRenderData::Billboard:
 			mOutlineQuadShader->Bind();
@@ -31,7 +31,7 @@ namespace BHive
 		default:
 			mOutlineMeshShader->Bind();
 			break;
-		}
+		}*/
 
 		Renderer::Draw(mSelectedRenderData);
 
@@ -96,13 +96,13 @@ namespace BHive
 		Image output_image(mOutputTexture);
 		Image outline_image(mOutlineOutput);
 
-		mBoxBlurShader->Bind();
-		mOutlineTexture->Bind(0);
-		outline_image.Bind(0, EImageAccess::WRITE);
-		mBoxBlurShader->Dispatch(mSize.x, mSize.y);
-		mBoxBlurShader->UnBind();
+		//mBoxBlurShader->Bind();
+		//mOutlineTexture->Bind(0);
+		//outline_image.Bind(0, EImageAccess::WRITE);
+		//mBoxBlurShader->Dispatch(mSize.x, mSize.y);
+		//mBoxBlurShader->UnBind();
 
-		mOutlineColorGradingShader->Bind();
+		//mOutlineColorGradingShader->Bind();
 
 		texture->Bind(0);		 // color sampler
 		mOutlineOutput->Bind(1); // blurred outline texture
@@ -110,8 +110,8 @@ namespace BHive
 
 		output_image.Bind(0, EImageAccess::WRITE);
 
-		mOutlineColorGradingShader->Dispatch(mSize.x, mSize.y);
-		mOutlineColorGradingShader->UnBind();
+		/*mOutlineColorGradingShader->Dispatch(mSize.x, mSize.y);
+		mOutlineColorGradingShader->UnBind();*/
 	}
 
 	void OutlinePostProcessRenderPass::SetSelected(bool selected)

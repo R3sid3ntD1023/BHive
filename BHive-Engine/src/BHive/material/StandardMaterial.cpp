@@ -11,12 +11,7 @@ namespace BHive
 	StandardMaterial::StandardMaterial()
 		: Material(nullptr)
 	{
-		AddTextureSlot("Albedo", 0);
-		AddTextureSlot("Normal", 1);
-		AddTextureSlot("Roughness", 2);
-		AddTextureSlot("Metallic", 3);
-		AddTextureSlot("Emission", 4);
-		AddTextureSlot("Opacity", 5);
+		
 	}
 
 	void StandardMaterial::Submit(Ref<Pipeline> pipeline)

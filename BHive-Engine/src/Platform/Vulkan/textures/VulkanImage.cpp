@@ -25,7 +25,7 @@ namespace BHive
 
 		VulkanUtils::CreateImageSampler(mTexture, samplerInfo);
 
-		mDescriptor = vk::DescriptorImageInfo(mTexture.Sampler, mTexture.ImageView, vk::ImageLayout::eShaderReadOnlyOptimal);
+		mDescriptor = vk::DescriptorImageInfo(mTexture.Sampler, mTexture.View, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
 	void VulkanImage::Upload(const void *data, size_t size)

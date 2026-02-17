@@ -44,12 +44,12 @@ namespace BHive
 
 			if (input.is_pressed(Key::Up) || input.is_pressed(Key::W))
 			{
-				mTransform.AddTranslation(forward * MovementSpeed());
+				mTransform.AddTranslation(-forward * MovementSpeed());
 			}
 
 			if (input.is_pressed(Key::Down) || input.is_pressed(Key::S))
 			{
-				mTransform.AddTranslation(-forward * MovementSpeed());
+				mTransform.AddTranslation(forward * MovementSpeed());
 			}
 
 			if (input.is_pressed(Key::Left) || input.is_pressed(Key::A))
@@ -96,7 +96,7 @@ namespace BHive
 	void EditorCamera::Focus(const FTransform &target, const glm::vec3 &bounds)
 	{
 		auto target_location = target.GetTranslation();
-		auto eye = target_location + (bounds * 1.1f);
+		auto eye = mTransform.GetTranslation() + (bounds * 1.1f);
 		mTransform = glm::inverse(glm::lookAt(eye, target_location, {0, 1, 0}));
 	}
 

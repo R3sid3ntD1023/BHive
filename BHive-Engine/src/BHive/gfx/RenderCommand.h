@@ -16,7 +16,7 @@ namespace BHive
 
 		static void ClearColor(float r, float g, float b, float a = 1.0f);
 
-		static void Clear(int mask = Buffer_Color | Buffer_Depth | Buffer_Stencil);
+		static void Clear(ClearMask mask = ClearMask::All);
 
 		static void SetLineWidth(float width);
 

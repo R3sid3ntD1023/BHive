@@ -3,6 +3,7 @@
 #include "VulkanRendererAPI.h"
 #include "VulkanConverters.h"
 #include "VulkanShader.h"
+#include "gfx/shader/ShaderProgram.h"
 
 namespace BHive
 {
@@ -18,7 +19,6 @@ namespace BHive
 		vk::PipelineDepthStencilStateCreateInfo DepthStencil{};
 		vk::RenderPass RenderPass = VK_NULL_HANDLE;
 		uint32_t SubPass = 0;
-		std::vector<vk::PipelineShaderStageCreateInfo> ShaderCreateInfos;
 	};
 
 	Ref<FVulkanPipelineConfigInfo> Convert(const Pipeline::PipelineState& state)
@@ -53,13 +53,10 @@ namespace BHive
 
 		config->MultiSampling.setRasterizationSamples(vk::SampleCountFlagBits::e1).setSampleShadingEnable(VK_FALSE);
 
-		for (auto &[stage, module] : Cast<VulkanShader>(state.Shader)->GetModules())
-			config->ShaderCreateInfos.emplace_back(vk::PipelineShaderStageCreateFlags{}, Vulkan::ToVkShaderStageBit(stage), module, "main");
-
 		config->DepthStencil.setDepthTestEnable(state.Depth.DepthTest)
 			.setDepthWriteEnable(state.Depth.DepthWrite)
 			.setDepthCompareOp(Vulkan::ToVkCompare(state.Depth.DepthCompare))
-			.setStencilTestEnable(VK_FALSE);
+			.setStencilTestEnable(VK_TRUE);
 	
 		return config;
 	}
@@ -78,13 +75,35 @@ namespace BHive
 
 	void VulkanPipeline::Init(const PipelineState& state)
 	{	
+		mProgram = state.ShaderProgram;
+
+		ASSERT(mProgram)
+
+		const auto &asset = mProgram->GetAsset();
+		mBackendShader = CreateScope<VulkanShader>();
+		mBackendShader->Init(mProgram->GetAssetRef());
+
 		auto config = Convert(state);
 
-		mShader = Cast<VulkanShader>(state.Shader);
+		std::vector<vk::PipelineShaderStageCreateInfo> shader_create_infos;
+		auto &modules = mBackendShader->GetModules();
+		for (auto& [stage, module] : modules)
+		{
+			vk::PipelineShaderStageCreateInfo info({} , Vulkan::ToSingleVkStage(stage), *module, "main");
+			shader_create_infos.emplace_back(info);
+		}
 
-		ASSERT(mShader)
+		std::vector<vk::PushConstantRange> push_constant_ranges;
+		for (auto& pc : mProgram->GetRefl().PushConstants)
+		{
+			push_constant_ranges.emplace_back(Vulkan::ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size);
+		}
 
-		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, *mShader->GetDescriptorSetLayout());
+		std::vector<vk::DescriptorSetLayout> layouts;
+		for (auto &l : mBackendShader->GetDescriptorSetLayouts())
+			layouts.emplace_back(l);
+
+		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, layouts, push_constant_ranges );
 		mPipelineLayout = mDevice.createPipelineLayout(pipeline_layout_create_info);
 
 		std::vector dynamicStates = {vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eLineWidth, vk::DynamicState::ePrimitiveTopologyEXT, vk::DynamicState::eVertexInputEXT};
@@ -92,16 +111,19 @@ namespace BHive
 		vk::PipelineDynamicStateCreateInfo dynamicStateInfo({}, dynamicStates);
 
 		std::vector<vk::Format> color_attachment_formats;
+		vk::Format depth_attachment_format = Vulkan::ToVkFormat(state.DepthAttachmentFormat);
+
 		for (auto &format : state.ColorAttachmentFormats)
 			color_attachment_formats.emplace_back(Vulkan::ToVkFormat(format));
 
 		vk::PipelineRenderingCreateInfo rendering_info{};
-		rendering_info.setViewMask(0).setColorAttachmentCount(color_attachment_formats.size()).setColorAttachmentFormats(color_attachment_formats);
+		rendering_info.setViewMask(0).setColorAttachmentCount(color_attachment_formats.size()).setColorAttachmentFormats(color_attachment_formats)
+			.setDepthAttachmentFormat(depth_attachment_format);
 		
 
 		vk::GraphicsPipelineCreateInfo pipeline_info{};
 		pipeline_info
-			.setStages(config->ShaderCreateInfos)
+			.setStages(shader_create_infos)
 			.setPVertexInputState(&config->InputState)
 			.setPInputAssemblyState(&config->InputAssembly)
 			.setPViewportState(&config->ViewportState)
@@ -133,9 +155,15 @@ namespace BHive
 	{
 	}
 
-	Ref<Shader> VulkanPipeline::GetShader() const
+	Ref<ShaderProgram> VulkanPipeline::GetShaderProgram() const
 	{
-		return mShader;
+		return mProgram;
 	}
+
+	const std::vector<vk::DescriptorSetLayout> &VulkanPipeline::GetDescriptorLayouts() const
+	{
+		return mBackendShader->GetDescriptorSetLayouts();
+	}
+
 
 } // namespace BHive

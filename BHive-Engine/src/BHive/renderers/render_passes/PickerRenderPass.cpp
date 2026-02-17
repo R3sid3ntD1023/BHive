@@ -27,7 +27,7 @@ namespace BHive
 		static int clear_id = -1;
 		mFrambuffer->ClearAttachment(0, &clear_id);
 
-		mShaders[0]->Bind();
+		/*mShaders[0]->Bind();
 		for (const auto &obj : data)
 		{
 			mShaders[0]->SetUniform("constants.uEntityID", obj->EntityID);
@@ -41,7 +41,7 @@ namespace BHive
 
 		mShaders[2]->Bind();
 		LineRenderer::Flush();
-		mShaders[2]->UnBind();
+		mShaders[2]->UnBind();*/
 
 		int pixel_id = -1;
 		mFrambuffer->ReadPixel(0, mMousePos.x, mMousePos.y, 1, 1, &pixel_id);

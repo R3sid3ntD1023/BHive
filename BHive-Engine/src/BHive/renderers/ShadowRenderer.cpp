@@ -104,21 +104,21 @@ namespace BHive
 
 		auto draw_meshes = [=](const Ref<Shader> &shader)
 		{
-			shader->Bind();
+			/*shader->Bind();
 
 			for (const auto &obj : datas)
 			{
 				Renderer::Draw(obj);
 			}
 
-			shader->UnBind();
+			shader->UnBind();*/
 		};
 
 		if (mShadowRenderData->ShadowData.NumShadowMaps.x > 0)
 		{
 			mShadowRenderData->ShadowPasses.FBOs[0]->Bind();
 
-			RenderCommand::Clear(Buffer_Depth);
+			//RenderCommand::Clear(Buffer_Depth);
 
 			draw_meshes(mShadowRenderData->ShadowPasses.Shaders[0]);
 
@@ -129,22 +129,22 @@ namespace BHive
 		{
 			mShadowRenderData->ShadowPasses.FBOs[1]->Bind();
 
-			RenderCommand::Clear(Buffer_Depth);
+			//RenderCommand::Clear(Buffer_Depth);
 
 			draw_meshes(mShadowRenderData->ShadowPasses.Shaders[1]);
 
-			mShadowRenderData->ShadowPasses.Shaders[1]->UnBind();
+			//mShadowRenderData->ShadowPasses.Shaders[1]->UnBind();
 		}
 
 		if (mShadowRenderData->ShadowData.NumShadowMaps.z > 0)
 		{
 			mShadowRenderData->ShadowPasses.FBOs[2]->Bind();
 
-			RenderCommand::Clear(Buffer_Depth);
+			//RenderCommand::Clear(Buffer_Depth);
 
 			draw_meshes(mShadowRenderData->ShadowPasses.Shaders[2]);
 
-			mShadowRenderData->ShadowPasses.Shaders[2]->UnBind();
+			//mShadowRenderData->ShadowPasses.Shaders[2]->UnBind();
 		}
 
 		RenderCommand::CullBack();

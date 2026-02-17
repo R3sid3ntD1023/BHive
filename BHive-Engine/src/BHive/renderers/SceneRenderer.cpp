@@ -30,7 +30,7 @@ namespace BHive
 	{
 		static bool Sort(const Ref<FMeshRenderData> &lhs, const Ref<FMeshRenderData> &rhs)
 		{
-			glm::vec3 position = Renderer::GetCamera().GetCameraData().Data.Position;
+			glm::vec3 position = Renderer::GetCameraData().Position;
 			auto distanceA = glm::distance(lhs->Transform.GetTranslation(), position);
 			auto distanceB = glm::distance(rhs->Transform.GetTranslation(), position);
 			return distanceA < distanceB;
@@ -182,7 +182,7 @@ namespace BHive
 
 		RenderCommand::Clear();
 
-		mQuadShader->Bind();
+		//mQuadShader->Bind();
 
 		texture->Bind();
 
@@ -199,7 +199,7 @@ namespace BHive
 
 	void SceneRenderer::SubmitLight(const FDirectionalLightCreateInfo &info)
 	{
-		auto &camera = Renderer::GetCamera().GetCameraData().Data;
+		auto &camera = Renderer::GetCameraData();
 		mSceneRenderData->Lights.Submit(info);
 
 		FShadowCascadedCreateInfo shadow_info{};
@@ -292,7 +292,7 @@ namespace BHive
 
 	float SceneRenderer::GetDistanceToCamera(const FTransform &transform)
 	{
-		const auto &C = Renderer::GetCamera().GetCameraData().Data.Position;
+		const auto &C = Renderer::GetCameraData().Position;
 		return glm::distance(glm::vec3(C), transform[2]);
 	}
 
@@ -343,7 +343,7 @@ namespace BHive
 			return true;
 
 		const auto &bounds = mesh->GetBoundingBox();
-		const auto &frustum = Renderer::GetCamera().GetViewFrustum();
+		const auto &frustum = Renderer::GetFrustum();
 
 		auto volume = FSphereVolume(bounds.GetCenter(), bounds.GetRadius());
 		return !volume.InFrustum(frustum, FTransform(transform));

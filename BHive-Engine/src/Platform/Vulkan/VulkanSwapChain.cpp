@@ -25,12 +25,9 @@ namespace BHive
 	void VulkanSwapChain::Init(vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info)
 	{
 		mImages.clear();
-		mImageViews.clear();
 		mPresentSemaphores.clear();
 		mRenderFinishedSemaphores.clear();
 		mInFlightFences.clear();
-
-		mImageLayouts.clear();
 
 		mExtent = VulkanUtils::ChooseSwapExtent(create_info.Capabilities, create_info.Width, create_info.Height);
 		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(create_info.Formats);
@@ -44,19 +41,13 @@ namespace BHive
 			create_info.Capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, present_mode, true, create_info.OldSwapChain, nullptr);
 
 		mSwapChain = mDevice.createSwapchainKHR(swap_chain_create_info);
-		mImages = mSwapChain.getImages();
+		auto images = mSwapChain.getImages();
 
-		ASSERT(mImageViews.empty())
-
-		vk::ImageViewCreateInfo view_info({}, {}, vk::ImageViewType::e2D, mImageFormat.format, {}, {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
-
-		for (auto &image : mImages)
+		for (auto& image : images)
 		{
-			view_info.image = image;
-			mImageViews.emplace_back(mDevice, view_info);
+			vk::ImageViewCreateInfo view_info({}, image, vk::ImageViewType::e2D, mImageFormat.format, {}, {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
+			mImages.emplace_back(image, mDevice.createImageView(view_info), vk::ImageLayout::eUndefined);
 		}
-
-		mImageLayouts.resize(mImages.size(), vk::ImageLayout::eUndefined);
 
 		for (uint32_t i = 0; i < mImages.size(); i++)
 		{
@@ -68,6 +59,13 @@ namespace BHive
 			mPresentSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
 			mInFlightFences.emplace_back(mDevice, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
 		}
+
+		mDepthFormat = VulkanUtils::FindDepthFormat();
+		VulkanUtils::CreateImage(
+			mExtent.width, mExtent.height, 1, vk::ImageType::e2D, mDepthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal,
+			mDepthImage);
+
+		VulkanUtils::CreateImageView(mDepthImage, vk::ImageViewType::e2D, mDepthFormat, vk::ImageAspectFlagBits::eDepth);
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)
@@ -103,11 +101,6 @@ namespace BHive
 		const vk::PresentInfoKHR presentInfoKHR(signal_semaphore, *mSwapChain, imageIndex);
 		return (vk::Result)vkQueuePresentKHR(*graphics_queue, &*presentInfoKHR);
 		//return graphics_queue.presentKHR(presentInfoKHR);
-	}
-
-	vk::ImageLayout &VulkanSwapChain::GetImageLayout(uint32_t imageIndex)
-	{
-		return mImageLayouts[imageIndex];
 	}
 
 } // namespace BHive

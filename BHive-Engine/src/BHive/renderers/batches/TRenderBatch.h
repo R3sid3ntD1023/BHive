@@ -66,10 +66,10 @@ namespace BHive
 
 		virtual void End()
 		{
-			auto shader = GetShader();
-			shader->Bind();
+			//auto shader = GetShader();
+			/*shader->Bind();
 			Flush();
-			shader->UnBind();
+			shader->UnBind();*/
 		}
 
 		virtual Ref<Shader> GetShader() const = 0;

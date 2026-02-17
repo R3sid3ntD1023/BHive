@@ -2,11 +2,10 @@
 
 #include "core/Core.h"
 #include "gfx/Enumerations.h"
+#include "gfx/shader/ShaderProgram.h"
 
 namespace BHive
 {
-	class Shader;
-
 	class BHIVE_API Pipeline
 	{
 	public:
@@ -38,7 +37,7 @@ namespace BHive
 
 		struct PipelineState
 		{
-			Ref<Shader> Shader;
+			Ref<ShaderProgram> ShaderProgram;
 			//VertexLayout Layout;
 			ETopologyMode DrawMode;
 			RasterState Raster;
@@ -56,7 +55,7 @@ namespace BHive
 
 		virtual void UnBind() = 0;
 
-		virtual Ref<Shader> GetShader() const = 0;
+		virtual Ref<ShaderProgram> GetShaderProgram() const = 0;
 
 		static PipelineState GetDefaultPipelineState();
 

@@ -225,7 +225,26 @@ namespace BHive
 			return vk::SamplerAddressMode::eRepeat;
 		}
 
-		vk::ShaderStageFlagBits ToVkShaderStageBit(EShaderStage s)
+		vk::ShaderStageFlags ToVkShaderStageBit(EShaderStage s)
+		{
+			vk::ShaderStageFlags flags{};
+
+			if ((s & EShaderStage::Vertex) != EShaderStage::None)
+				flags |= vk::ShaderStageFlagBits::eVertex;
+
+			if ((s & EShaderStage::Fragment) != EShaderStage::None)
+				flags |= vk::ShaderStageFlagBits::eFragment;
+
+			if ((s & EShaderStage::Compute) != EShaderStage::None)
+				flags |= vk::ShaderStageFlagBits::eCompute;
+
+			if ((s & EShaderStage::Geometry) != EShaderStage::None)
+				flags |= vk::ShaderStageFlagBits::eGeometry;
+
+			return flags;
+		}
+
+		vk::ShaderStageFlagBits ToSingleVkStage(EShaderStage s)
 		{
 			switch (s)
 			{
@@ -238,10 +257,8 @@ namespace BHive
 			case EShaderStage::Geometry:
 				return vk::ShaderStageFlagBits::eGeometry;
 			default:
-				break;
+				throw std::runtime_error("Invalid or multi-stage passed to ToSingleVkStage");
 			}
-			ASSERT(false)
-			return vk::ShaderStageFlagBits::eAll;
 		}
 
 		FVulkanTextureCreateInfo Vulkan::Convert(const FTextureCreateInfo &info)

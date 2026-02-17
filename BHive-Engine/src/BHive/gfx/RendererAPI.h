@@ -40,7 +40,7 @@ namespace BHive
 
 		virtual void ClearColor(float r, float g, float b, float a = 1.0f) = 0;
 
-		virtual void Clear(int mask = Buffer_Color | Buffer_Depth | Buffer_Stencil) = 0;
+		virtual void Clear(ClearMask mask = ClearMask::All) = 0;
 
 		virtual void SetLineWidth(float width) = 0;
 

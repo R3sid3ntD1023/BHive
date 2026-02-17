@@ -2,9 +2,7 @@
 #include "gfx/Texture.h"
 #include "Material.h"
 #include "renderers/Renderer.h"
-#include "BackendMaterial.h"
 #include "gfx/Pipeline.h"
-#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
@@ -24,7 +22,10 @@ namespace BHive
 		if (mTextures.contains(name))
 		{
 			mTextures[name].Texture = texture;
+			return;
 		}
+
+		LOG_ERROR("Texture slot with name : {} doesnt exist!", name);
 	}
 
 	void Material::Submit(Ref<Pipeline> pipeline)
@@ -35,26 +36,18 @@ namespace BHive
 		for (auto& [name, slot] : mTextures)
 		{
 			auto tex = slot.Texture ? slot.Texture  : Renderer::GetWhiteTexture();
-			mBackendMaterial->BindTexture(slot.Binding, tex);
+			mBackendMaterial->BindTexture(name, tex);
 		}
 
 		mBackendMaterial->Bind(mPipeline); //update descriptor sets
 	}
 
-	void Material::AddTextureSlot(const std::string &name, uint32_t binding)
-	{
-		if (!mTextures.contains(name))
-		{
-			mTextures.emplace(name, TextureSlot{binding, nullptr});
-		}
-	}
-
 	void Material::UpdateTextureSlots()
 	{
-		auto &refl = mPipeline->GetShader()->GetRefl();
+		auto &refl = mPipeline->GetShaderProgram()->GetRefl();
 		for (auto &[name, info] : refl.Samplers)
 		{
-			mTextures.emplace(name, TextureSlot{(uint32_t)info.Binding, nullptr});
+			mTextures.emplace(name, TextureSlot{nullptr});
 		}
 	}
 
@@ -79,9 +72,9 @@ namespace BHive
 		ar(mTextures);
 	}
 
-	REFLECT(Material::TextureSlot)
+	REFLECT(TextureSlot)
 	{
-		BEGIN_REFLECT(Material::TextureSlot)
+		BEGIN_REFLECT(TextureSlot)
 		REFLECT_PROPERTY("Texture", Texture);
 	}
 

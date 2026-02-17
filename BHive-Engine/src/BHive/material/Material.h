@@ -4,30 +4,28 @@
 #include "core/EnumAsByte.h"
 #include "gfx/Color.h"
 #include "gfx/Texture.h"
+#include "BackendMaterial.h"
 
 namespace BHive
 {
 	class Pipeline;
-	class IMaterialBackendInterface;
 	class Texture;
+
+	struct TextureSlot
+	{
+		Ref<Texture> Texture;
+
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(TAssetHandle(Texture));
+		};
+	};
+
+	using TextureSlots = std::unordered_map<std::string, TextureSlot>;
 
 	class BHIVE_API Material : public Asset
 	{
-	public:
-		struct TextureSlot
-		{
-			uint32_t Binding;
-			Ref<Texture> Texture;
-
-			template <typename A>
-			void Serialize(A &ar)
-			{
-				ar(MAKE_NVP("Binding", Binding), MAKE_NVP("Texture", TAssetHandle(Texture)));
-			};
-		};
-
-		using TextureSlots = std::unordered_map<std::string, TextureSlot>;
-
 	public:
 		Material(Ref<Pipeline> pipeline);
 
@@ -43,9 +41,10 @@ namespace BHive
 
 		// virtual Ref<Material> Clone() const { return nullptr; }
 
-		void AddTextureSlot(const std::string &name, uint32_t binding);
-
 		virtual bool ShouldCastShadows() const { return true; }
+
+		template<typename T>
+		void Set(const std::string &name, const T &val);
 
 		REFLECTABLEV(Asset)
 
@@ -63,6 +62,12 @@ namespace BHive
 
 	private:
 	};
+
+	template <typename T>
+	inline void Material::Set(const std::string &name, const T &val)
+	{
+		mBackendMaterial->Set(name, &val, sizeof(T));
+	}
 
 	REFLECT_EXTERN(Material);
 

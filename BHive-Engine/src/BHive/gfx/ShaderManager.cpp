@@ -1,16 +1,15 @@
 #include "core/subsystem/SubSystem.h"
 #include "Shader.h"
 #include "ShaderManager.h"
-#include "utils/shader/ShaderTimeCache.h"
 
 namespace BHive
 {
 	ShaderManager::ShaderManager()
 	{
-		AddSubSystem<ShaderTimeCache>();
+		
 	}
 
-	void ShaderManager::Add(const char *name, const Ref<Shader> &shader)
+	void ShaderManager::Add(const char *name, const Ref<ShaderProgram> &shader)
 	{
 		if (!Contains(name))
 		{
@@ -18,7 +17,7 @@ namespace BHive
 		}
 	}
 
-	Ref<Shader> ShaderManager::Load(const std::filesystem::path &file)
+	Ref<ShaderProgram> ShaderManager::Load(const std::filesystem::path &file)
 	{
 		std::filesystem::path resolved_path = file;
 		if (!file.is_absolute())
@@ -42,14 +41,14 @@ namespace BHive
 			return mShaders.at(name);
 		}
 
-		auto &shader = mShaders[name];
+		//creates shader program (compiles + reflects internally)
+		auto program = Shader::Create(resolved_path);
+		mShaders[name] = program;
 
-		shader = Shader::Create(resolved_path);
-
-		return shader;
+		return program;
 	}
 
-	Ref<Shader> ShaderManager::Get(const char *name)
+	Ref<ShaderProgram> ShaderManager::Get(const char *name)
 	{
 		if (Contains(name))
 		{
