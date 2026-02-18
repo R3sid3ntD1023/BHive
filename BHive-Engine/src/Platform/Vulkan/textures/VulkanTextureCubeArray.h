@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-	class VulkanTextureCubeArray : public TextureCubeArray
+	class VulkanTextureCubeArray : public TextureCubeArray, public IVulkanTexture
 	{
 	public:
 		VulkanTextureCubeArray(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification);
@@ -24,6 +24,8 @@ namespace BHive
 		virtual const FTextureCreateInfo &GetInfo() const { return mCreateInfo; }
 
 		virtual NativeHandle GetNativeHandle() const override;
+
+		virtual const vk::ImageView &GetImageView() const override { return mImage.GetAllocatedTexture().View; }
 
 	private:
 		vk::raii::Device &mDevice;

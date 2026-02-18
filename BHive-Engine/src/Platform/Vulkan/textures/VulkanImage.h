@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Platform/Vulkan/VulkanBackend.h"
+#include "Platform/Vulkan/IVulkanTexture.h"
 
 namespace BHive
 {
@@ -16,7 +17,7 @@ namespace BHive
 
 		void Transition(vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
 
-		const Vulkan::AllocatedImage &GetAllocatedTexture() { return mTexture; };
+		const Vulkan::AllocatedImage &GetAllocatedTexture() const { return mTexture; };
 
 		const vk::DescriptorImageInfo &GetDescriptor() const { return mDescriptor; }
 

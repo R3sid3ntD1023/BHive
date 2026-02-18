@@ -6,6 +6,10 @@
 #include "VulkanSwapChain.h"
 #include "VulkanConverters.h"
 #include "gfx/BufferBase.h"
+#include "VulkanFramebuffer.h"
+#include "core/Window.h"
+#include "VulkanWindowContext.h"
+#include "gfx/RenderCommand.h"
 
 namespace BHive
 {
@@ -108,20 +112,6 @@ namespace BHive
 
 		image.Layout = vk::ImageLayout::eColorAttachmentOptimal;
 
-		vk::ClearValue clearColor(mClearColor);
-		vk::ClearValue clearDepth(vk::ClearDepthStencilValue(1.0f, 0));
-
-		vk::RenderingAttachmentInfo attachmentInfo(
-			image.View, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-			clearColor);
-
-		vk::RenderingAttachmentInfo depth_attachment_info(
-			depth_image.View, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, clearDepth);
-
-		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
-		command_buffer.beginRendering(renderingInfo);
-
-		
 		while (!commands.empty())
 		{
 			auto &cmd = commands.front();
@@ -159,6 +149,26 @@ namespace BHive
 		}
 
 		mCommands[type].emplace(command);
+	}
+
+	void VulkanRendererAPI::BeginSwapchainRendering(const FVulkanFrameData &frame, Window *window)
+	{
+		auto swapChain = Cast<VulkanWindowContext>(window->GetContext())->GetSwapChain();
+		auto& image = swapChain->GetImage(frame.Frame);
+		auto &depth = swapChain->GetDepthImage();
+		auto extent = swapChain->GetExtent();
+
+		vk::ClearValue clearColor(mClearColor);
+		vk::ClearValue clearDepth(vk::ClearDepthStencilValue(1.0f, 0));
+
+		vk::RenderingAttachmentInfo attachmentInfo(
+			image.View, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearColor);
+
+		vk::RenderingAttachmentInfo depth_attachment_info(
+			depth.View, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, clearDepth);
+
+		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
+		frame.CommandBuffer.beginRendering(renderingInfo);
 	}
 
 	void VulkanRendererAPI::ClearColor(float r, float g, float b, float a)
@@ -303,6 +313,26 @@ namespace BHive
 	{	
 	}
 
-	
+	void VulkanRendererAPI::ExecuteGraph(const RenderGraph &graph, Window *defaultWindow)
+	{
+		for (auto &pass : graph.GetPasses())
+		{
+			if (pass.Target)
+			{
+				auto native = Cast<VulkanFramebuffer>(pass.Target);
+				auto info = native->BuildRenderingInfo();
+				SubmitCommand([info](const FVulkanFrameData &frame) { frame.CommandBuffer.beginRendering(info); });
+			}
+			else
+			{
+				Window *window = pass.TargetWindow;
+				SubmitCommand([=](const FVulkanFrameData &frame) { BeginSwapchainRendering(frame, window); });
+			}
+
+			SubmitCommand([fn = pass.Execute](const FVulkanFrameData &frame) { fn(); });
+
+			SubmitCommand([](const FVulkanFrameData &frame) { frame.CommandBuffer.endRendering(); });
+		}
+	}
 
 } // namespace BHive

@@ -171,7 +171,7 @@ namespace BHive
 	void Window::OnFramebufferSizeCallback(GLFWwindow *window, int width, int height)
 	{
 		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
-		input->Instance->GetContext().OnFramebufferResized(width, height);
+		input->Instance->GetContext()->OnFramebufferResized(width, height);
 	}
 
 	void Window::OnJoyStickCallback(int joystick, int status)

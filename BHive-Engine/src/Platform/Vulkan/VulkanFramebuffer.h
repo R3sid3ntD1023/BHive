@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "gfx/Texture.h"
 #include "gfx/Framebuffer.h"
+#include "VulkanBackend.h"
 
 namespace BHive
 {
@@ -12,7 +13,7 @@ namespace BHive
 	public:
 		VulkanFramebuffer(const FramebufferSpecification &specification);
 
-		virtual ~VulkanFramebuffer();
+		virtual ~VulkanFramebuffer() = default;
 
 		virtual void Bind() const;
 
@@ -40,10 +41,10 @@ namespace BHive
 
 		virtual uint32_t GetHeight() const { return mSpecification.Height; }
 
-	private:
-		virtual void Initialize();
+		vk::RenderingInfo BuildRenderingInfo() const;
 
-		virtual void Release();
+	private:
+		void Initialize();
 
 	private:
 		std::vector<FFramebufferTexture> mColorAttachmentSpecifications{};
@@ -57,7 +58,6 @@ namespace BHive
 
 		FramebufferSpecification mSpecification;
 
-		uint32_t mFramebufferID = 0, mRenderbufferID = 0;
 	};
 
 } // namespace BHive

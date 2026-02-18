@@ -45,9 +45,9 @@ namespace BHive
 		static void PollEvents();
 
 	public:
-		GLFWwindow *GetNative() { return mWindow; }
+		GLFWwindow *GetNative() const { return mWindow; }
 
-		WindowContext &GetContext() { return *mContext; }
+		WindowContext* GetContext() const { return mContext.get(); }
 
 		const std::string &GetTitle() const { return mData.Title; }
 

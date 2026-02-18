@@ -7,11 +7,19 @@ namespace BHive
 {
 	namespace Vulkan
 	{
+		struct ImageState
+		{
+			vk::ImageLayout Layout = vk::ImageLayout::eUndefined;
+			vk::AccessFlagBits2 Access = {};
+			vk::PipelineStageFlagBits2 stage = {};
+		};
+
 		struct Image
 		{
 			vk::Image ImageSrc = VK_NULL_HANDLE;
 			vk::raii::ImageView View = VK_NULL_HANDLE;
-			vk::ImageLayout Layout = vk::ImageLayout::eUndefined;
+			ImageState State;
+			vk::ImageAspectFlags Aspect;
 		};
 
 		struct AllocatedImage

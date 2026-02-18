@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-	class BHIVE_API VulkanTexture3D : public Texture3D
+	class BHIVE_API VulkanTexture3D : public Texture3D, public IVulkanTexture
 	{
 	public:
 		VulkanTexture3D(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &create_info, const void *data = nullptr);
@@ -24,6 +24,8 @@ namespace BHive
 		virtual const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
 
 		virtual NativeHandle GetNativeHandle() const;
+
+		virtual const vk::ImageView &GetImageView() const override { return mImage.GetAllocatedTexture().View; }
 
 	private:
 		vk::raii::Device &mDevice;

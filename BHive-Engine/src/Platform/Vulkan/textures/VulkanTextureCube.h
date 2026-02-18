@@ -7,7 +7,7 @@
 namespace BHive
 {
 
-	class BHIVE_API VulkanTextureCube : public TextureCube
+	class BHIVE_API VulkanTextureCube : public TextureCube, public IVulkanTexture
 	{
 	public:
 		VulkanTextureCube() = default;
@@ -27,6 +27,8 @@ namespace BHive
 		virtual const FTextureCreateInfo &GetInfo() const { return mCreateInfo; }
 
 		virtual NativeHandle GetNativeHandle() const;
+
+		virtual const vk::ImageView &GetImageView() const override { return mImage.GetAllocatedTexture().View; }
 
 	private:
 		vk::raii::Device &mDevice;

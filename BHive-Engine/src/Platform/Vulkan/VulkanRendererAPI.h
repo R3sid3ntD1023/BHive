@@ -8,6 +8,9 @@
 namespace BHive
 {
 	class VulkanSwapChain;
+	class VulkanFramebuffer;
+	class VulkanRendererAPI;
+	class Window;
 
 	struct FVulkanFrameData
 	{
@@ -16,14 +19,16 @@ namespace BHive
 		uint32_t Frame;
 	};
 
-	typedef std::function<void(const FVulkanFrameData &)> FRenderCommand;
-	typedef std::function<void(vk::Result)> CheckResultCallback;
+	using RGExecuteFn = std::function<void(const FVulkanFrameData&)>;
+	using FRenderCommand = std::function<void(const FVulkanFrameData &)>;
 
+	
 	enum ECommandType
 	{
 		ECommandType_PreCommand,
 		ECommandType_Command
 	};
+
 
 	class BHIVE_API VulkanRendererAPI : public RendererAPI
 	{
@@ -79,6 +84,8 @@ namespace BHive
 
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) override;
 
+		virtual void ExecuteGraph(const RenderGraph &graph, Window *defaultWindow) override;
+
 		vk::Result RenderFrame(const Ref<VulkanSwapChain>& swapChain);
 
 		void SubmitCommand(const FRenderCommand &command, ECommandType type = ECommandType_Command);
@@ -88,6 +95,9 @@ namespace BHive
 		vk::raii::DescriptorPool &GetDescriptorPool() { return mDescriptorPool; }
 
 		virtual EAPI GetAPI() const override { return EAPI::Vulkan; }
+
+		void BeginSwapchainRendering(const FVulkanFrameData &frame, Window* window);
+
 
 	private:
 		vk::raii::Device &mDevice;
@@ -105,5 +115,6 @@ namespace BHive
 		std::atomic<bool> mDeviceRecreationInProgress{false};
 
 		uint32_t mCurrentFrame = 0;
+
 	};
 } // namespace BHive

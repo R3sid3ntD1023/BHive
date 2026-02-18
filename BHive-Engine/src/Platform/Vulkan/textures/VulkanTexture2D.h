@@ -7,7 +7,7 @@
 namespace BHive
 {
 
-	class BHIVE_API VulkanTexture2D : public Texture2D
+	class BHIVE_API VulkanTexture2D : public Texture2D, public IVulkanTexture
 	{
 	public:
 		VulkanTexture2D();
@@ -26,8 +26,6 @@ namespace BHive
 
 		virtual void SetData(const void *data, uint32_t offsetX = 0, uint32_t offsetY = 0);
 
-		virtual uint32_t GetRendererID() const { return 0; }
-
 		virtual const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
 
 		void SetInfo(const FTextureCreateInfo &specs);
@@ -39,6 +37,8 @@ namespace BHive
 		const Buffer &GetBuffer() const { return mBuffer; }
 
 		virtual NativeHandle GetNativeHandle() const override;
+
+		virtual const vk::ImageView &GetImageView() const override { return mImage.GetAllocatedTexture().View; }
 
 		/*Begin Asset*/
 		void Save(cereal::BinaryOutputArchive &ar) const override;

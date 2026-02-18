@@ -1,5 +1,8 @@
 #include "VulkanFramebuffer.h"
 #include "gfx/Texture.h"
+#include "textures/VulkanTexture2D.h"
+#include "gfx/RenderCommand.h"
+#include "VulkanRendererAPI.h"
 
 namespace BHive
 {
@@ -49,22 +52,28 @@ namespace BHive
 		Initialize();
 	}
 
-	VulkanFramebuffer::~VulkanFramebuffer()
-	{
-		Release();
-	}
-
 	void VulkanFramebuffer::Bind() const
 	{
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 
-	/*	glBindFramebuffer(GL_FRAMEBUFFER, mFramebufferID);
-		glViewport(0, 0, mSpecification.Width, mSpecification.Height);*/
+		auto cmd = [this, api](const FVulkanFrameData &frame) 
+		{
+			api->BeginFramebuffer(this);
+
+			frame.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)(y + h), (float)w, -(float)h, 0.0f, 1.0f));
+			frame.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, vk::Extent2D(w, h)));
+		};
+
+		api->SubmitCommand(cmd);
 	}
 
 	void VulkanFramebuffer::UnBind() const
 	{
 
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto cmd = [api](const FVulkanFrameData &frame) { api->EndFramebuffer(); };
+
+		api->SubmitCommand(cmd);
 	}
 
 	void VulkanFramebuffer::Resize(uint32_t width, uint32_t height)
@@ -130,9 +139,6 @@ namespace BHive
 		if (specs.Width == 0 || specs.Height == 0)
 			return;
 
-		const auto read_target = mFramebufferID;
-		const auto draw_target = 0;
-
 		//glNamedFramebufferReadBuffer(read_target, GL_COLOR_ATTACHMENT0);
 
 		//glBlitNamedFramebuffer(read_target, draw_target, 0, 0, specs.Width, specs.Height, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
@@ -161,22 +167,39 @@ namespace BHive
 		return mDepthAttachment;
 	}
 
-	void VulkanFramebuffer::Release()
+
+	vk::RenderingInfo VulkanFramebuffer::BuildRenderingInfo() const
 	{
-		/*glDeleteRenderbuffers(1, &mRenderbufferID);
-		glDeleteFramebuffers(1, &mFramebufferID);*/
+		std::vector<vk::RenderingAttachmentInfo> color_infos;
+		color_infos.reserve(mColorAttachments.size());
+
+		for (auto& tex : mColorAttachments)
+		{
+			auto vkTex = Cast<IVulkanTexture>(tex);
+
+			auto info = vk::RenderingAttachmentInfo(
+				vkTex->GetImageView(), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+				vk::ClearDepthStencilValue(1.0f, 0));
+
+			color_infos.push_back(info);
+		}
+
+		vk::RenderingAttachmentInfo depth_info{};
+
+		if (mDepthAttachment)
+		{
+			auto vkTex = Cast<IVulkanTexture>(mDepthAttachment);
+
+			depth_info =  vk::RenderingAttachmentInfo(
+				vkTex->GetImageView(), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear,
+				vk::AttachmentStoreOp::eStore, vk::ClearDepthStencilValue(1.0f, 0));
+		}
+
+		return vk::RenderingInfo({}, vk::Rect2D{0, 0}, mSpecification.Width, mSpecification.Height, color_infos, mDepthAttachment ? &depth_info : nullptr);
 	}
 
 	void VulkanFramebuffer::Initialize()
 	{
-		if (mFramebufferID)
-		{
-			mColorAttachments.clear();
-			mDepthAttachment.reset();
-
-			Release();
-		}
-
 		auto numColorAttachments = mColorAttachmentSpecifications.size();
 		if (numColorAttachments)
 		{
@@ -195,44 +218,7 @@ namespace BHive
 			mDepthAttachment = CreateFramebufferTexture(mSpecification.Width, mSpecification.Height, mSpecification.Depth, mSpecification.Samples, mDepthSpecification);
 		}
 
-		//// create framebuffer and attach textures
-		//glCreateFramebuffers(1, &mFramebufferID);
-		//auto num_attachments = mColorAttachments.size();
-		//for (size_t i = 0; i < num_attachments; i++)
-		//{
-		//	glNamedFramebufferTexture(mFramebufferID, GL_COLOR_ATTACHMENT0 + (uint32_t)i, *mColorAttachments[i], 0);
-		//}
-
-		//if (mDepthAttachment)
-		//{
-		//	glNamedFramebufferTexture(mFramebufferID, TextureUtils::GetAPIDepthAttachmentType(mDepthSpecification.CreateInfo.InternalFormat), *mDepthAttachment, 0);
-		//}
-
-		//if (num_attachments > 1)
-		//{
-		//	std::vector<GLenum> buffers(num_attachments);
-		//	for (size_t i = 0; i < num_attachments; i++)
-		//	{
-		//		buffers[i] = GL_COLOR_ATTACHMENT0 + (int32_t)i;
-		//	}
-		//	glNamedFramebufferDrawBuffers(mFramebufferID, (uint32_t)buffers.size(), buffers.data());
-		//}
-		//else if (num_attachments == 0)
-		//{
-		//	glNamedFramebufferDrawBuffer(mFramebufferID, GL_NONE);
-		//}
-
-		//if (mRenderBufferSpecification.Format != EFormat::Invalid && !mDepthAttachment)
-		//{
-		//	auto depth_attachment = TextureUtils::GetAPIDepthAttachmentType(mRenderBufferSpecification.Format);
-		//	auto depth_internal_format = TextureUtils::GetAPIInternalFormat(mRenderBufferSpecification.Format);
-
-		//	glCreateRenderbuffers(1, &mRenderbufferID);
-		//	glNamedRenderbufferStorage(mRenderbufferID, depth_internal_format, mSpecification.Width, mSpecification.Height);
-		//	glNamedFramebufferRenderbuffer(mFramebufferID, depth_attachment, GL_RENDERBUFFER, mRenderbufferID);
-		//}
-
-		//ASSERT(glCheckNamedFramebufferStatus(mFramebufferID, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+		
 	}
 
 } // namespace BHive

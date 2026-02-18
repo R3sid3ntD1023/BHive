@@ -54,6 +54,8 @@ namespace BHive
 
 		static void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer);
 
+		virtual void ExecuteGraph(const RenderGraph &graph, Window *defaultWindow);
+
 		static RendererAPI::EAPI GetRendererAPI() { return sRendererAPI->GetAPI(); }
 
 		template <typename TAPI>
