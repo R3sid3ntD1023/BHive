@@ -24,21 +24,18 @@ namespace BHive
 
 		static void EndSingleTimeCommands(vk::raii::CommandBuffer &commandBuffer);
 
-		static void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, Vulkan::AllocatedBuffer &buffer);
-
 		static void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer, vk::raii::DeviceMemory& memory);
 
 		static void CreateImage(
 			uint32_t w, uint32_t h, uint32_t d, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties,
-			Vulkan::AllocatedImage &texture);
+			vk::raii::Image& image, vk::raii::DeviceMemory& memory);
 
-		static void CreateImageView(Vulkan::AllocatedImage &image, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect);
+		static void CreateImageView(const vk::raii::Image& image, vk::raii::ImageView& view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect);
 
-		static void CreateImageSampler(Vulkan::AllocatedImage &image, const vk::SamplerCreateInfo &info);
+		static void CreateImageSampler(vk::raii::Sampler& sampler, const vk::SamplerCreateInfo &info);
 
 		static void CopyBuffer(const vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size);
 
-		static void CopyBuffer(const Vulkan::AllocatedBuffer &srcBuffer, Vulkan::AllocatedBuffer &dstBuffer, vk::DeviceSize size);
 
 		static void TransitionImageLayout(const vk::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
 
@@ -48,9 +45,7 @@ namespace BHive
 
 		static uint32_t FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
 
-		static void CopyBufferToImage(const vk::raii::Buffer &buffer, vk::raii::Image &image, uint32_t width, uint32_t height);
-
-		static void CopyBufferToImage(const Vulkan::AllocatedBuffer &buffer, Vulkan::AllocatedImage &image, uint32_t width, uint32_t height);
+		static void CopyBufferToImage(const vk::Buffer &buffer, vk::Image &image, uint32_t width, uint32_t height);
 
 		static void SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size);
 

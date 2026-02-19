@@ -1,4 +1,7 @@
 #include "VulkanImage.h"
+#include "Platform/Vulkan/GPUResourceManager.h"
+#include "gfx/RenderCommand.h"
+#include "Platform/Vulkan/VulkanRendererAPI.h"
 
 namespace BHive
 {
@@ -6,6 +9,17 @@ namespace BHive
 		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
 
+	}
+
+	VulkanImage::~VulkanImage()
+	{
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		api->QueueDeletion(
+			[image = mImage](uint32_t)
+			{
+				auto &gpu_r_m = GPUResourceManager::Get();
+				gpu_r_m.DestroyImage(image);
+			});
 	}
 
 	void VulkanImage::Create(
@@ -17,34 +31,49 @@ namespace BHive
 		mDepth = depth;
 		mFormat = format;
 
-		VulkanUtils::CreateImage(
-			mWidth, mHeight, mDepth, type, format, vk::ImageTiling::eOptimal, usage,
-			vk::MemoryPropertyFlagBits::eDeviceLocal,mTexture);
+		auto &gpu_r_m = GPUResourceManager::Get();
 
-		VulkanUtils::CreateImageView(mTexture, viewType, format, aspect);
+		ImageDesc desc{};
+		desc.Width = width;
+		desc.Height = height;
+		desc.Depth = 1;
+		desc.Format = format;
+		desc.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
+		desc.Tiling = vk::ImageTiling::eOptimal;
+		desc.Usage = usage;
+		desc.Type = type;
 
-		VulkanUtils::CreateImageSampler(mTexture, samplerInfo);
+		mImage = gpu_r_m.CreateImage(desc);
 
-		mDescriptor = vk::DescriptorImageInfo(mTexture.Sampler, mTexture.View, vk::ImageLayout::eShaderReadOnlyOptimal);
+		ImageViewDesc view_desc{};
+		view_desc.Aspect = aspect;
+		view_desc.Format = format;
+		view_desc.Type = viewType;
+		gpu_r_m.CreateImageView(mImage, view_desc);
+
+		gpu_r_m.CreateSampler(mImage, samplerInfo);
+
+		mDescriptor = vk::DescriptorImageInfo(mImage.Sampler, mImage.View, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
 	void VulkanImage::Upload(const void *data, size_t size)
 	{
-		Vulkan::AllocatedBuffer stagingBuffer;
+		vk::raii::Buffer stagingBuffer = nullptr;
+		vk::raii::DeviceMemory stagingMemory = nullptr;
 
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer);
+		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingMemory);
 
-		void *map_memory = stagingBuffer.Memory.mapMemory(0, size);
+		void *map_memory = stagingMemory.mapMemory(0, size);
 		std::memcpy(map_memory, data, size);
-		stagingBuffer.Memory.unmapMemory();
+		stagingMemory.unmapMemory();
 
 		Transition(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-		VulkanUtils::CopyBufferToImage(stagingBuffer, mTexture, mWidth, mHeight);
+		VulkanUtils::CopyBufferToImage(stagingBuffer, mImage.Image, mWidth, mHeight);
 		Transition(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
 	void VulkanImage::Transition(vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
 	{
-		VulkanUtils::TransitionImageLayout(mTexture.Image, oldLayout, newLayout);
+		VulkanUtils::TransitionImageLayout(mImage.Image, oldLayout, newLayout);
 	}
 } // namespace BHive

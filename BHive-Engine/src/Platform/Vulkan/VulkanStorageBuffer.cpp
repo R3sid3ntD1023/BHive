@@ -1,6 +1,7 @@
 #include "VulkanStorageBuffer.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
+#include "GPUResourceManager.h"
 
 namespace BHive
 {
@@ -12,13 +13,18 @@ namespace BHive
 	{
 		for (uint32_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eStorageBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, mBuffer[i]);
+			BufferDesc desc{};
+			desc.Usage = vk::BufferUsageFlagBits::eStorageBuffer;
+			desc.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+			desc.Size = size;
+			mBuffer[i] = GPUResourceManager::Get().CreateBuffer(desc);
+
+			mMappedMemory[i] = GPUResourceManager::Get().MapMemory(mBuffer[i], 0, size);
 
 			SetData(data, size, 0);
 
-			mMappedMemory[i] = mBuffer[i].Memory.mapMemory(0, size);
-
 			mBufferInfo[i] = vk::DescriptorBufferInfo(mBuffer[i].Buffer, 0, mSize);
+
 		}
 
 		
@@ -30,9 +36,13 @@ namespace BHive
 	{
 		for (uint32_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eStorageBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, mBuffer[i]);
+			BufferDesc desc{};
+			desc.Usage = vk::BufferUsageFlagBits::eStorageBuffer;
+			desc.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+			desc.Size = size;
+			mBuffer[i] = GPUResourceManager::Get().CreateBuffer(desc);
 
-			mMappedMemory[i] = mBuffer[i].Memory.mapMemory(0, size);
+			mMappedMemory[i] = GPUResourceManager::Get().MapMemory(mBuffer[i], 0, size);
 
 			mBufferInfo[i] = vk::DescriptorBufferInfo(mBuffer[i].Buffer, 0, mSize);
 		}
@@ -40,11 +50,7 @@ namespace BHive
 
 	VulkanStorageBuffer::~VulkanStorageBuffer()
 	{
-		for (size_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			mMappedMemory[i] = nullptr;
-			mBuffer[i].Memory.unmapMemory();
-		}
+		
 	}
 
 	void VulkanStorageBuffer::SetData(const void *data, size_t size, uint32_t offset)

@@ -97,6 +97,11 @@ namespace BHive
 
 		void BeginSwapchainRendering(const FVulkanFrame &frame, Window* window);
 
+		void QueueDeletion(std::function<void(uint32_t)> fn);
+
+	private:
+		void ProcessDeletionQueue(uint32_t frame);
+
 	public:
 		void SetCurrentContext(VulkanWindowContext *ctx);
 
@@ -116,5 +121,6 @@ namespace BHive
 
 		VulkanWindowContext *mCurrentContext = nullptr;
 
+		uint32_t  mCompletedFrame = 0;
 	};
 } // namespace BHive

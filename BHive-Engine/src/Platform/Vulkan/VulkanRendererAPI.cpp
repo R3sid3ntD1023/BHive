@@ -13,6 +13,14 @@
 
 namespace BHive
 {
+	struct PendingDeletion
+	{
+		uint32_t Frame = 0;
+		std::function<void(uint32_t)> Fn;
+	};
+
+	static std::queue<PendingDeletion> sDeletionQueue;
+
 	VulkanRendererAPI::VulkanRendererAPI()
 		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
@@ -69,6 +77,8 @@ namespace BHive
 		auto &pre_commands = mCommands[ECommandType_PreCommand];
 		auto &commands = mCommands[ECommandType_Command];
 		FVulkanFrame command_data{cmd, current_frame};
+
+		ProcessDeletionQueue(current_frame);
 
 		auto swap_chain = ctx->GetSwapChain();
 		swap_chain->WaitForFence(current_frame);
@@ -133,6 +143,8 @@ namespace BHive
 
 		result = swap_chain->Present(cmd, imageIndex, current_frame);
 
+		mCompletedFrame = current_frame;
+		
 		if (result != vk::Result::eSuccess)
 			return result;
 
@@ -168,6 +180,23 @@ namespace BHive
 
 		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
 		frame.CommandBuffer.beginRendering(renderingInfo);
+	}
+
+	void VulkanRendererAPI::QueueDeletion(std::function<void(uint32_t)> fn)
+	{
+		sDeletionQueue.emplace(mCompletedFrame, fn);
+	}
+
+	void VulkanRendererAPI::ProcessDeletionQueue(uint32_t frame)
+	{
+		while (!sDeletionQueue.empty())
+		{
+			auto & del = sDeletionQueue.front();
+
+			if (frame < del.Frame)
+				del.Fn(frame);
+			sDeletionQueue.pop();
+		}
 	}
 
 	void VulkanRendererAPI::SetCurrentContext(VulkanWindowContext *ctx)

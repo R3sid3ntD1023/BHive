@@ -91,11 +91,6 @@ namespace BHive
 		graphics_queue.waitIdle();
 	}
 
-	void VulkanUtils::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, Vulkan::AllocatedBuffer &buffer)
-	{
-		CreateBuffer(size, usage, properties, buffer.Buffer, buffer.Memory);
-	}
-
 	void VulkanUtils::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer, vk::raii::DeviceMemory &memory)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
@@ -118,32 +113,32 @@ namespace BHive
 	}
 
 	void VulkanUtils::CreateImage(
-		uint32_t w, uint32_t h, uint32_t d, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties,
-		Vulkan::AllocatedImage &texture)
+		uint32_t w, uint32_t h, uint32_t d, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image &image,
+		vk::raii::DeviceMemory &memory)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
 		vk::ImageCreateInfo imageInfo(
 			{}, type, format, {w, h, d}, 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage,
 			vk::SharingMode::eExclusive, 0);
-		texture.Image = device.createImage(imageInfo);
+		image = device.createImage(imageInfo);
 
-		vk::MemoryRequirements memRequirements = texture.Image.getMemoryRequirements();
+		vk::MemoryRequirements memRequirements = image.getMemoryRequirements();
 		vk::MemoryAllocateInfo allocInfo(memRequirements.size, FindMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal));
-		texture.Memory = device.allocateMemory(allocInfo);
-		texture.Image.bindMemory(*texture.Memory, 0);
+		memory = device.allocateMemory(allocInfo);
+		image.bindMemory(memory, 0);
 	}
 
-	void VulkanUtils::CreateImageView(Vulkan::AllocatedImage &image, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect)
+	void VulkanUtils::CreateImageView(const vk::raii::Image &image, vk::raii::ImageView &view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
-		vk::ImageViewCreateInfo image_view_create_info({}, image.Image, type, format, {}, {aspect, 0, 1, 0, 1});
-		image.View = device.createImageView(image_view_create_info);
+		vk::ImageViewCreateInfo image_view_create_info({}, image, type, format, {}, {aspect, 0, 1, 0, 1});
+		view = device.createImageView(image_view_create_info);
 	}
 
-	void VulkanUtils::CreateImageSampler(Vulkan::AllocatedImage &image, const vk::SamplerCreateInfo &info)
+	void VulkanUtils::CreateImageSampler(vk::raii::Sampler& sampler, const vk::SamplerCreateInfo &info)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
-		image.Sampler = device.createSampler(info);
+		sampler = device.createSampler(info);
 	}
 
 	void VulkanUtils::CopyBuffer(const vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size)
@@ -151,11 +146,6 @@ namespace BHive
 		auto cmd = BeginSingleTimeCommands();
 		cmd.copyBuffer(srcBuffer, dstBuffer, vk::BufferCopy(0, 0, size));
 		EndSingleTimeCommands(cmd);
-	}
-
-	void VulkanUtils::CopyBuffer(const Vulkan::AllocatedBuffer &srcBuffer, Vulkan::AllocatedBuffer &dstBuffer, vk::DeviceSize size)
-	{
-		CopyBuffer(srcBuffer.Buffer, dstBuffer.Buffer, size);
 	}
 
 	void VulkanUtils::TransitionImageLayout(const vk::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
@@ -229,17 +219,12 @@ namespace BHive
 		ASSERT(false, "Failed to find suitable memory type!")
 	}
 
-	void VulkanUtils::CopyBufferToImage(const vk::raii::Buffer &buffer, vk::raii::Image &image, uint32_t width, uint32_t height)
+	void VulkanUtils::CopyBufferToImage(const vk::Buffer &buffer, vk::Image &image, uint32_t width, uint32_t height)
 	{
 		auto cmd = BeginSingleTimeCommands();
 		vk::BufferImageCopy region(0, 0, 0, {vk::ImageAspectFlagBits::eColor, 0, 0, 1}, {0, 0, 0}, {width, height, 1});
 		cmd.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, region);
 		EndSingleTimeCommands(cmd);
-	}
-
-	void VulkanUtils::CopyBufferToImage(const Vulkan::AllocatedBuffer &buffer, Vulkan::AllocatedImage &image, uint32_t width, uint32_t height)
-	{
-		CopyBufferToImage(buffer.Buffer, image.Image, width, height);
 	}
 
 	void VulkanUtils::SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size)

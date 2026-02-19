@@ -1,6 +1,7 @@
 #include "VulkanUniformBuffer.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
+#include "GPUResourceManager.h"
 
 namespace BHive
 {
@@ -11,8 +12,13 @@ namespace BHive
 		
 		for (size_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent , mBuffer[i]);
-			mMappedMemory[i] = mBuffer[i].Memory.mapMemory(0, size);
+			BufferDesc desc{};
+			desc.Usage = vk::BufferUsageFlagBits::eUniformBuffer;
+			desc.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+			desc.Size = size;
+			mBuffer[i] = GPUResourceManager::Get().CreateBuffer(desc);
+
+			mMappedMemory[i] = GPUResourceManager::Get().MapMemory(mBuffer[i], 0, size);
 		}
 
 		SetData(data, size, 0);	
@@ -20,11 +26,7 @@ namespace BHive
 
 	VulkanUniformBuffer::~VulkanUniformBuffer()
 	{
-		for (size_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			mMappedMemory[i] = nullptr;
-			mBuffer[i].Memory.unmapMemory();
-		}
+		
 	}
 
 	void VulkanUniformBuffer::SetData(const void *data, size_t size, uint32_t offset)

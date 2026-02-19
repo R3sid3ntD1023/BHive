@@ -1,4 +1,5 @@
 #include "VulkanSwapChain.h"
+#include "GPUResourceManager.h"
 
 namespace BHive
 {
@@ -54,11 +55,23 @@ namespace BHive
 		}
 
 		mDepthFormat = VulkanUtils::FindDepthFormat();
-		VulkanUtils::CreateImage(
-			mExtent.width, mExtent.height, 1, vk::ImageType::e2D, mDepthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal,
-			mDepthImage);
 
-		VulkanUtils::CreateImageView(mDepthImage, vk::ImageViewType::e2D, mDepthFormat, vk::ImageAspectFlagBits::eDepth);
+		ImageDesc desc{};
+		desc.Width = mExtent.width;
+		desc.Height = mExtent.height;
+		desc.Format = mDepthFormat;
+		desc.Tiling = vk::ImageTiling::eOptimal;
+		desc.Type = vk::ImageType::e2D;
+		desc.Usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
+		desc.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
+		mDepthImage = GPUResourceManager().Get().CreateImage(desc);
+
+		ImageViewDesc view_desc{};
+		view_desc.Type = vk::ImageViewType::e2D;
+		view_desc.Format = mDepthFormat;
+		view_desc.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+		GPUResourceManager().Get().CreateImageView(mDepthImage, view_desc);
+
 		mDepthImage.State = {vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eDepthStencilAttachmentWrite, vk::PipelineStageFlagBits2::eLateFragmentTests | vk::PipelineStageFlagBits2::eEarlyFragmentTests};
 		mDepthImage.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 	}

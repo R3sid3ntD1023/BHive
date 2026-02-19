@@ -22,7 +22,7 @@ namespace BHive
 		vk::raii::Device &mDevice;
 		std::array<Vulkan::AllocatedBuffer, VulkanBackend::MAX_FRAMES_IN_FLIGHT> mBuffer;
 		std::array<vk::DescriptorBufferInfo, VulkanBackend::MAX_FRAMES_IN_FLIGHT> mBufferInfo;
-		std::array<void *, VulkanBackend::MAX_FRAMES_IN_FLIGHT> mMappedMemory;
+		std::array<void *, VulkanBackend::MAX_FRAMES_IN_FLIGHT> mMappedMemory{nullptr};
 
 		uint32_t mBinding{0};
 		uint32_t mSize{0};

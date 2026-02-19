@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan_raii.hpp>
 #include "gfx/NativeHandle.h"
+#include "core/UUID.h"
 
 namespace BHive
 {
@@ -26,20 +27,23 @@ namespace BHive
 
 		struct AllocatedImage
 		{
-			vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
-			vk::raii::Image Image = VK_NULL_HANDLE;
-			vk::raii::ImageView View = VK_NULL_HANDLE;
-			vk::raii::Sampler Sampler = VK_NULL_HANDLE;
+			vk::Image Image = VK_NULL_HANDLE;
+			vk::DeviceMemory Memory = VK_NULL_HANDLE;
+			UUID Handle;
+			vk::ImageView View = VK_NULL_HANDLE;
+			vk::Sampler Sampler = VK_NULL_HANDLE;
 			ImageState State;
 			vk::ImageAspectFlags Aspect;
+			
 
 			void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState);
 		};
 
 		struct AllocatedBuffer
 		{
-			vk::raii::Buffer Buffer = VK_NULL_HANDLE;
-			vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
+			vk::Buffer Buffer = VK_NULL_HANDLE;
+			vk::DeviceMemory Memory = VK_NULL_HANDLE;
+			UUID Handle;
 		};
 
 		struct Handle 

@@ -59,6 +59,6 @@ layout(location = 0) out vec4 f_out;
 void main()
 {
 	vec4 color = vec4(u_Color, 1) * texture(u_Texture, vs_in.TexCoord) ;
-	color.rgb *= (.5f * sin(u_Time) + .5f);
+	color.rgb *= max(.5f * sin(u_Time) + .5f, .5);
 	f_out = color;
 }

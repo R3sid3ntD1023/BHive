@@ -15,9 +15,7 @@ namespace BHive
 
 		void SetData(vk::raii::CommandBuffer &cmd, const void *data, size_t size, uint32_t offset, vk::PipelineStageFlags2 flags, vk::AccessFlags2 access);
 
-		void Release();
-
-		NativeHandle GetNativeHandle() const { return Vulkan::Handle::Buffer(&Buffer.Buffer); }
+		NativeHandle GetNativeHandle() const;
 
 		~PerFrameBuffer();
 	};
@@ -29,8 +27,6 @@ namespace BHive
 	{
 	public:
 		StaticVulkanIndexBuffer(uint32_t count);
-
-		~StaticVulkanIndexBuffer();
 
 		virtual uint32_t GetCount() const override { return mCount; }
 
@@ -48,8 +44,6 @@ namespace BHive
 	{
 	public:
 		StaticVulkanVertexBuffer(size_t size);
-
-		~StaticVulkanVertexBuffer();
 
 		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 
@@ -72,8 +66,6 @@ namespace BHive
 	public:
 		DynamicVulkanIndexBuffer(uint32_t count);
 
-		~DynamicVulkanIndexBuffer();
-
 		virtual uint32_t GetCount() const override { return mCount; }
 
 		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override;
@@ -94,8 +86,6 @@ namespace BHive
 	{
 	public:
 		DynamicVulkanVertexBuffer(const size_t size);
-
-		~DynamicVulkanVertexBuffer();
 
 		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 

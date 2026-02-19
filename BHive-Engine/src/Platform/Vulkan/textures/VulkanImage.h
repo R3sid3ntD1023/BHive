@@ -10,6 +10,8 @@ namespace BHive
 	public:
 		VulkanImage();
 
+		~VulkanImage();
+
 		void
 		Create(uint32_t width, uint32_t height, uint32_t depth, vk::ImageType type, vk::ImageViewType viewType, vk::Format format, vk::ImageUsageFlags usage, vk::ImageAspectFlags aspect, vk::SamplerCreateInfo samplerInfo = {});
 
@@ -17,7 +19,7 @@ namespace BHive
 
 		void Transition(vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
 
-		const Vulkan::AllocatedImage &GetAllocatedTexture() const { return mTexture; };
+		const Vulkan::AllocatedImage &GetAllocatedTexture() const { return mImage; };
 
 		const vk::DescriptorImageInfo &GetDescriptor() const { return mDescriptor; }
 
@@ -31,7 +33,7 @@ namespace BHive
 
 	private:
 		vk::raii::Device &mDevice;
-		Vulkan::AllocatedImage mTexture{};
+		Vulkan::AllocatedImage mImage{};
 		vk::DescriptorImageInfo mDescriptor{};
 		uint32_t mWidth = 0, mHeight = 0, mDepth = 0;
 		vk::Format mFormat = vk::Format::eUndefined;

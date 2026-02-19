@@ -3,70 +3,96 @@
 
 namespace BHive
 {
-	BufferHandle GPUResourceManager::CreateBuffer(const BufferDesc &desc)
+	struct GPUBuffer
+	{
+		vk::raii::Buffer Buffer = VK_NULL_HANDLE;
+		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
+		void *MappedMemory = nullptr;
+	};
+
+	struct GPUImage
+	{
+		vk::raii::Image Image = VK_NULL_HANDLE;
+		vk::raii::ImageView View = VK_NULL_HANDLE;
+		vk::raii::Sampler Sampler = VK_NULL_HANDLE;
+		vk::raii::DeviceMemory Memory = VK_NULL_HANDLE;
+	};
+
+	struct GPUStorage
+	{
+		static inline std::unordered_map<BufferHandle, GPUBuffer> Buffers;
+		static inline std::unordered_map<ImageHandle, GPUImage> Images;
+	};
+
+	Vulkan::AllocatedBuffer GPUResourceManager::CreateBuffer(const BufferDesc &desc)
 	{
 		auto handle = BufferHandle();
-		auto& buffer = mBuffers[handle];
-		VulkanUtils::CreateBuffer(desc.Size, desc.Usage, desc.MemoryFlags, buffer);
-
-		return handle;
+		auto& buffer = GPUStorage::Buffers[handle];
+		VulkanUtils::CreateBuffer(desc.Size, desc.Usage, desc.MemoryFlags, buffer.Buffer, buffer.Memory);
+		return {buffer.Buffer, buffer.Memory, handle};
 	}
 
-	ImageHandle GPUResourceManager::CreateImage(const ImageDesc &desc)
+	Vulkan::AllocatedImage GPUResourceManager::CreateImage(const ImageDesc &desc)
 	{
 		auto handle = ImageHandle();
-		auto &image = mImages[handle];
-		VulkanUtils::CreateImage(desc.Width, desc.Height, desc.Depth, desc.Type, desc.Format, desc.Tiling, desc.Usage, desc.MemoryFlags, image);
+		auto &image = GPUStorage::Images[handle];
+		VulkanUtils::CreateImage(desc.Width, desc.Height, desc.Depth, desc.Type, desc.Format, desc.Tiling, desc.Usage, desc.MemoryFlags, image.Image, image.Memory);
 
-		return handle;
+		return {image.Image, image.Memory, handle};
 	}
 
-	void GPUResourceManager::CreateImageView(ImageHandle h, const ImageViewDesc &desc)
+	void *GPUResourceManager::MapMemory(const Vulkan::AllocatedBuffer &buffer, vk::DeviceSize offset, vk::DeviceSize size)
 	{
-		if (!mImages.contains(h))
+		if (!buffer.Handle)
+			ASSERT(false, "Buffer is not valid");
+
+		auto &gpu_buffer = GPUStorage::Buffers[buffer.Handle];
+		return gpu_buffer.MappedMemory = gpu_buffer.Memory.mapMemory(offset, size);
+	}
+
+	void GPUResourceManager::CreateImageView(Vulkan::AllocatedImage &image, const ImageViewDesc &desc)
+	{
+		if (!GPUStorage::Images.contains(image.Handle))
 			return;
 
-		auto &image = mImages[h];
-		VulkanUtils::CreateImageView(image, desc.Type, desc.Format, desc.Aspect);
+		auto &gpu_image = GPUStorage::Images[image.Handle];
+		VulkanUtils::CreateImageView(gpu_image.Image, gpu_image.View, desc.Type, desc.Format, desc.Aspect);
+		image.View = gpu_image.View;
 	}
 
-	void GPUResourceManager::CreateSampler(ImageHandle h, const vk::SamplerCreateInfo &create_info)
+	void GPUResourceManager::CreateSampler(Vulkan::AllocatedImage &image, const vk::SamplerCreateInfo &create_info)
 	{
-		if (!mImages.contains(h))
+		if (!GPUStorage::Images.contains(image.Handle))
 			return;
 
-		auto &image = mImages[h];
-		VulkanUtils::CreateImageSampler(image, create_info);
+		auto &gpu_image = GPUStorage::Images[image.Handle];
+		VulkanUtils::CreateImageSampler(gpu_image.Sampler, create_info);
+		image.Sampler = gpu_image.Sampler;
 	}
 
-	void GPUResourceManager::DestroyBuffer(BufferHandle h)
+	void GPUResourceManager::DestroyBuffer(Vulkan::AllocatedBuffer buffer)
 	{
-		if (mBuffers.contains(h))
-			mBuffers.erase(h);
+		auto h = buffer.Handle;
+		if (GPUStorage::Buffers.contains(h))
+		{
+			auto &gpu_buffer = GPUStorage::Buffers.at(h);
+			if (gpu_buffer.MappedMemory)
+			{
+				gpu_buffer.MappedMemory = nullptr;
+				gpu_buffer.Memory.unmapMemory();
+			}
+			
+			GPUStorage::Buffers.erase(h);	
+		}
 	}
 
-	void GPUResourceManager::DestroyImage(ImageHandle &h)
+	void GPUResourceManager::DestroyImage(Vulkan::AllocatedImage image)
 	{
-		if (mImages.contains(h))
-			mImages.erase(h);
-	}
-
-	Vulkan::AllocatedBuffer &GPUResourceManager::GetBuffer(BufferHandle &h)
-	{
-		static Vulkan::AllocatedBuffer empty;
-		if (!mBuffers.contains(h))
-			return empty;
-
-		return mBuffers.at(h);
-	}
-
-	Vulkan::AllocatedImage &GPUResourceManager::GetImage(ImageHandle &h)
-	{
-		static Vulkan::AllocatedImage empty;
-		if (!mImages.contains(h))
-			return empty;
-
-		return mImages.at(h);
+		auto h = image.Handle;
+		if (GPUStorage::Images.contains(h))
+		{
+			GPUStorage::Images.erase(h);
+		}
 	}
 
 	GPUResourceManager &GPUResourceManager::Get()

@@ -17,7 +17,6 @@ namespace BHive
 
 	struct ImageDesc
 	{
-		size_t Size = 0;
 		uint32_t Width = 0, Height = 0, Depth = 1;
 		vk::ImageType Type{};
 		vk::ImageTiling Tiling{};
@@ -33,30 +32,26 @@ namespace BHive
 		vk::ImageAspectFlags Aspect;
 	};
 
+	
+
 	class GPUResourceManager
 	{
 	public:
 
-		BufferHandle CreateBuffer(const BufferDesc& desc);
+		Vulkan::AllocatedBuffer CreateBuffer(const BufferDesc& desc);
 
-		ImageHandle CreateImage(const ImageDesc& desc);
+		Vulkan::AllocatedImage CreateImage(const ImageDesc& desc);
 
-		void CreateImageView(ImageHandle h, const ImageViewDesc& desc);
+		void *MapMemory(const Vulkan::AllocatedBuffer &buffer, vk::DeviceSize offset, vk::DeviceSize size);
 
-		void CreateSampler(ImageHandle h, const vk::SamplerCreateInfo &create_info);
+		void CreateImageView(Vulkan::AllocatedImage& image, const ImageViewDesc& desc);
 
-		void DestroyBuffer(BufferHandle h);
+		void CreateSampler(Vulkan::AllocatedImage& image, const vk::SamplerCreateInfo &create_info);
 
-		void DestroyImage(ImageHandle &h);
+		void DestroyBuffer(Vulkan::AllocatedBuffer buffer);
 
-		Vulkan::AllocatedBuffer& GetBuffer(BufferHandle &h);
-
-		Vulkan::AllocatedImage& GetImage(ImageHandle &h);
+		void DestroyImage(Vulkan::AllocatedImage image);
 
 		static GPUResourceManager &Get();
-
-	private:
-		std::unordered_map<BufferHandle, Vulkan::AllocatedBuffer> mBuffers;
-		std::unordered_map<ImageHandle, Vulkan::AllocatedImage> mImages;
 	};
 }
