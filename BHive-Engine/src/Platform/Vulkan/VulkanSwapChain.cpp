@@ -12,14 +12,6 @@ namespace BHive
 	VulkanSwapChain::~VulkanSwapChain()
 	{
 		LOG_TRACE("SwapChain Destructor Called")
-
-		/*mSwapChain.clear();
-		mPresentSemaphores.clear();
-		mRenderFinishedSemaphores.clear();
-		mInFlightFences.clear();
-		mImages.clear();
-		mImageViews.clear();*/
-		
 	}
 
 	void VulkanSwapChain::Init(vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info)
@@ -46,7 +38,8 @@ namespace BHive
 		for (auto& image : images)
 		{
 			vk::ImageViewCreateInfo view_info({}, image, vk::ImageViewType::e2D, mImageFormat.format, {}, {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
-			mImages.emplace_back(image, mDevice.createImageView(view_info), vk::ImageLayout::eUndefined);
+			auto state = Vulkan::ImageState{vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
+			mImages.emplace_back(image, mDevice.createImageView(view_info), state, vk::ImageAspectFlagBits::eColor);
 		}
 
 		for (uint32_t i = 0; i < mImages.size(); i++)
@@ -66,6 +59,8 @@ namespace BHive
 			mDepthImage);
 
 		VulkanUtils::CreateImageView(mDepthImage, vk::ImageViewType::e2D, mDepthFormat, vk::ImageAspectFlagBits::eDepth);
+		mDepthImage.State = {vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eDepthStencilAttachmentWrite, vk::PipelineStageFlagBits2::eLateFragmentTests | vk::PipelineStageFlagBits2::eEarlyFragmentTests};
+		mDepthImage.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)

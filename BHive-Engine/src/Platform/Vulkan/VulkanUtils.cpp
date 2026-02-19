@@ -72,8 +72,7 @@ namespace BHive
 
 	vk::raii::CommandBuffer VulkanUtils::BeginSingleTimeCommands()
 	{
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto &cmdPool = api->GetCommandPool();
+		auto &cmdPool = VulkanBackend::GetImmediateCommandPool();
 		auto &device = VulkanBackend::GetLogicalDevice();
 
 		vk::CommandBufferAllocateInfo allocInfo(cmdPool, vk::CommandBufferLevel::ePrimary, 1);

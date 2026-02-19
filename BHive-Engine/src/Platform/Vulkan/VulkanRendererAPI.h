@@ -11,6 +11,7 @@ namespace BHive
 	class VulkanFramebuffer;
 	class VulkanRendererAPI;
 	class Window;
+	class VulkanWindowContext;
 
 	struct FVulkanFrameData
 	{
@@ -86,11 +87,9 @@ namespace BHive
 
 		virtual void ExecuteGraph(const RenderGraph &graph, Window *defaultWindow) override;
 
-		vk::Result RenderFrame(const Ref<VulkanSwapChain>& swapChain);
+		vk::Result RenderFrame(VulkanWindowContext* ctx);
 
 		void SubmitCommand(const FRenderCommand &command, ECommandType type = ECommandType_Command);
-
-		vk::raii::CommandPool &GetCommandPool() { return mCommandPool; }
 
 		vk::raii::DescriptorPool &GetDescriptorPool() { return mDescriptorPool; }
 
@@ -98,13 +97,14 @@ namespace BHive
 
 		void BeginSwapchainRendering(const FVulkanFrameData &frame, Window* window);
 
+	public:
+		void SetCurrentContext(VulkanWindowContext *ctx);
+
+		VulkanWindowContext *GetCurrentContext() const { return mCurrentContext; }
 
 	private:
 		vk::raii::Device &mDevice;
 
-		vk::raii::CommandPool mCommandPool = nullptr;
-
-		vk::raii::CommandBuffers mCommandBuffers = nullptr;
 
 		vk::raii::DescriptorPool mDescriptorPool = nullptr;
 
@@ -114,7 +114,7 @@ namespace BHive
 
 		std::atomic<bool> mDeviceRecreationInProgress{false};
 
-		uint32_t mCurrentFrame = 0;
+		VulkanWindowContext *mCurrentContext = nullptr;
 
 	};
 } // namespace BHive

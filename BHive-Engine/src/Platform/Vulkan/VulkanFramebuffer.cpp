@@ -56,24 +56,24 @@ namespace BHive
 	{
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 
-		auto cmd = [this, api](const FVulkanFrameData &frame) 
-		{
-			api->BeginFramebuffer(this);
+		//auto cmd = [this, api](const FVulkanFrameData &frame) 
+		//{
+		//	/*api->BeginFramebuffer(this);
 
-			frame.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)(y + h), (float)w, -(float)h, 0.0f, 1.0f));
-			frame.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, vk::Extent2D(w, h)));
-		};
+		//	frame.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)(y + h), (float)w, -(float)h, 0.0f, 1.0f));
+		//	frame.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, vk::Extent2D(w, h)));*/
+		//};
 
-		api->SubmitCommand(cmd);
+		//api->SubmitCommand(cmd);
 	}
 
 	void VulkanFramebuffer::UnBind() const
 	{
 
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		/*auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 		auto cmd = [api](const FVulkanFrameData &frame) { api->EndFramebuffer(); };
 
-		api->SubmitCommand(cmd);
+		api->SubmitCommand(cmd);*/
 	}
 
 	void VulkanFramebuffer::Resize(uint32_t width, uint32_t height)

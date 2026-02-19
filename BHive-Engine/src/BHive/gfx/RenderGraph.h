@@ -12,7 +12,6 @@ namespace BHive
 		{
 			std::string Name;
 			Framebuffer *Target = nullptr;
-			Window *TargetWindow = nullptr;
 			std::function<void()> Execute;
 		};
 

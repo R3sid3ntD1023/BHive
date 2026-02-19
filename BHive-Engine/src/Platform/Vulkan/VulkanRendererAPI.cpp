@@ -25,13 +25,7 @@ namespace BHive
 
 	void VulkanRendererAPI::Init()
 	{
-		auto graphics_queue_index = VulkanBackend::GetQueueFamilies().GraphicsQueueIndex;
-
-		vk::CommandPoolCreateInfo pool_info( vk::CommandPoolCreateFlagBits::eResetCommandBuffer, graphics_queue_index);
-		mCommandPool = vk::raii::CommandPool(mDevice, pool_info);
-
-		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, VulkanBackend::MAX_FRAMES_IN_FLIGHT);
-		mCommandBuffers = vk::raii::CommandBuffers(mDevice, alloc_info);
+		
 
 		const uint32_t descriptor_count = 1000;
 
@@ -57,8 +51,6 @@ namespace BHive
 	{
 		LOG_TRACE("RendererAPI Shutdown Called")
 
-		mCommandBuffers.clear();
-		mCommandPool = VK_NULL_HANDLE;
 		mDescriptorPool = VK_NULL_HANDLE;
 
 		VulkanBackend::Get().Shutdown();
@@ -70,29 +62,30 @@ namespace BHive
 		VulkanBackend::GetLogicalDevice().waitIdle();
 	}
 
-	vk::Result VulkanRendererAPI::RenderFrame(const Ref<VulkanSwapChain>& swapChain)
+	vk::Result VulkanRendererAPI::RenderFrame(VulkanWindowContext *ctx)
 	{
-		auto &command_buffer = mCommandBuffers[mCurrentFrame];
+		auto current_frame = ctx->GetCurrentFrame();
+		auto &cmd = ctx->GetCommandBuffer();
 		auto &pre_commands = mCommands[ECommandType_PreCommand];
 		auto &commands = mCommands[ECommandType_Command];
-		FVulkanFrameData command_data{command_buffer, mCurrentFrame};
-		ASSERT(mCurrentFrame < mCommandBuffers.size());
+		FVulkanFrameData command_data{cmd, current_frame};
 
-		
-		swapChain->WaitForFence(mCurrentFrame);
+		auto swap_chain = ctx->GetSwapChain();
+		swap_chain->WaitForFence(current_frame);
 
-		command_buffer.reset();
+		cmd.reset();
 
-		auto [result, imageIndex] = swapChain->AquireNextImage(mCurrentFrame);
-		auto &image = swapChain->GetImage(imageIndex);
-		auto &depth_image = swapChain->GetDepthImage();
-		auto extent = swapChain->GetExtent();
+		auto [result, imageIndex] = swap_chain->AquireNextImage(current_frame);
+		auto &image = swap_chain->GetImage(imageIndex);
+		auto &depth = swap_chain->GetDepthImage();
+		auto extent = swap_chain->GetExtent();
 
 		if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
 			return result;
 
-		command_buffer.begin({});
-
+		cmd.begin({});
+		
+		
 		while (!pre_commands.empty())
 		{
 			auto &cmd = pre_commands.front();
@@ -100,17 +93,24 @@ namespace BHive
 				cmd(command_data);
 			pre_commands.pop();
 		}
-		
-		VulkanUtils::TransitionImageLayout(
-			command_buffer, image.ImageSrc, image.Layout, vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::ImageAspectFlagBits::eColor);
 
-		VulkanUtils::TransitionImageLayout(
-			command_buffer, depth_image.Image, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
-			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
-			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests, vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil);
+		image.Transition(cmd, {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput});
 
-		image.Layout = vk::ImageLayout::eColorAttachmentOptimal;
+		depth.Transition(
+			cmd, {vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+				  vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests});
+
+		vk::ClearValue clearColor(mClearColor);
+		vk::ClearValue clearDepth(vk::ClearDepthStencilValue(1.0f, 0));
+
+		vk::RenderingAttachmentInfo attachmentInfo(
+			image.View, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearColor);
+
+		vk::RenderingAttachmentInfo depth_attachment_info(
+			depth.View, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, clearDepth);
+
+		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
+		cmd.beginRendering(renderingInfo);
 
 		while (!commands.empty())
 		{
@@ -120,22 +120,21 @@ namespace BHive
 			commands.pop();
 		}
 
-		command_buffer.endRendering();
+		cmd.endRendering();
 
-		VulkanUtils::TransitionImageLayout(
-			command_buffer, image.ImageSrc, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eColorAttachmentWrite, {},
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput, vk::PipelineStageFlagBits2::eBottomOfPipe, vk::ImageAspectFlagBits::eColor);
+		image.Transition(
+			cmd, {
+					 vk::ImageLayout::ePresentSrcKHR,
+					 {},
+					 vk::PipelineStageFlagBits2::eBottomOfPipe,
+				 });
 
-		image.Layout = vk::ImageLayout::ePresentSrcKHR;
+		cmd.end();
 
-		command_buffer.end();
-
-		result = swapChain->Present(command_buffer, imageIndex, mCurrentFrame);
+		result = swap_chain->Present(cmd, imageIndex, current_frame);
 
 		if (result != vk::Result::eSuccess)
 			return result;
-
-		mCurrentFrame = (mCurrentFrame + 1) % VulkanBackend::MAX_FRAMES_IN_FLIGHT;
 
 		return vk::Result::eSuccess;
 	}
@@ -169,6 +168,11 @@ namespace BHive
 
 		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
 		frame.CommandBuffer.beginRendering(renderingInfo);
+	}
+
+	void VulkanRendererAPI::SetCurrentContext(VulkanWindowContext *ctx)
+	{
+		mCurrentContext = ctx;
 	}
 
 	void VulkanRendererAPI::ClearColor(float r, float g, float b, float a)
@@ -325,8 +329,8 @@ namespace BHive
 			}
 			else
 			{
-				Window *window = pass.TargetWindow;
-				SubmitCommand([=](const FVulkanFrameData &frame) { BeginSwapchainRendering(frame, window); });
+				/*Window *window = pass.TargetWindow;
+				SubmitCommand([=](const FVulkanFrameData &frame) { BeginSwapchainRendering(frame, window); });*/
 			}
 
 			SubmitCommand([fn = pass.Execute](const FVulkanFrameData &frame) { fn(); });

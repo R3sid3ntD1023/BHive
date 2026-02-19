@@ -73,12 +73,18 @@ namespace BHive
 
 		static vk::raii::Instance &GetInstance() { return Get().mVulkanInstance; }
 
+		static vk::raii::CommandPool &GetImmediateCommandPool() { return Get().mImmediateCommandPool; }
+
 	private:
 		void CreateIntance();
 
 		void CreateDebugMessenger();
 
 		void PickPhysicalDevice();
+
+		void CreateImmediateCommandPool();
+
+		void CreateDeviceInternal(uint32_t graphicsIndex, uint32_t presentIndex);
 
 	private:
 		vk::raii::Context mVulkanContext;
@@ -90,6 +96,8 @@ namespace BHive
 		vk::raii::PhysicalDevice mPhysicalDevice = nullptr;
 
 		vk::raii::Device mLogicalDevice = nullptr;
+
+		vk::raii::CommandPool mImmediateCommandPool = nullptr;
 
 		VkQueueFamilies mQueueFamilies;
 

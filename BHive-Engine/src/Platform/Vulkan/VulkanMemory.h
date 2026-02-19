@@ -10,8 +10,8 @@ namespace BHive
 		struct ImageState
 		{
 			vk::ImageLayout Layout = vk::ImageLayout::eUndefined;
-			vk::AccessFlagBits2 Access = {};
-			vk::PipelineStageFlagBits2 stage = {};
+			vk::AccessFlags2 Access = {};
+			vk::PipelineStageFlags2 Stage = {};
 		};
 
 		struct Image
@@ -20,6 +20,8 @@ namespace BHive
 			vk::raii::ImageView View = VK_NULL_HANDLE;
 			ImageState State;
 			vk::ImageAspectFlags Aspect;
+
+			void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState);
 		};
 
 		struct AllocatedImage
@@ -28,6 +30,10 @@ namespace BHive
 			vk::raii::Image Image = VK_NULL_HANDLE;
 			vk::raii::ImageView View = VK_NULL_HANDLE;
 			vk::raii::Sampler Sampler = VK_NULL_HANDLE;
+			ImageState State;
+			vk::ImageAspectFlags Aspect;
+
+			void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState);
 		};
 
 		struct AllocatedBuffer

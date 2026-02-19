@@ -12,7 +12,9 @@
 namespace BHive
 {
 	VulkanWindowContext::VulkanWindowContext(void *windowHandle)
-		: mWindowHandle(static_cast<GLFWwindow *>(windowHandle))
+		: mDevice(VulkanBackend::GetLogicalDevice()),
+		mWindowHandle(static_cast<GLFWwindow *>(windowHandle))
+		 
 	{
 		ASSERT(mWindowHandle, "Window handle is null!");
 	}
@@ -21,9 +23,9 @@ namespace BHive
 	{
 		LOG_TRACE("GraphicsContext Destructor Called")
 
-		//VulkanCore::Shutdown();
-
-		//mSwapChain.reset();
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		if (api->GetCurrentContext() == this)
+			api->SetCurrentContext(nullptr);
 	}
 
 	void VulkanWindowContext::OnFramebufferResized(uint32_t w, uint32_t h)
@@ -49,13 +51,17 @@ namespace BHive
 		VulkanBackend::Get().EnsurePresentSupportForSurface(*mSurface);
 
 		CreateSwapChain();
+		CreateCommandBuffers();
 	}
 
 	void VulkanWindowContext::SwapBuffers()
 	{
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		ASSERT(mCurrentFrame < mCommandBuffers.size());
 
-		auto result = api->RenderFrame(mSwapChain);
+		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		api->SetCurrentContext(this);
+
+		auto result = api->RenderFrame(this);
 
 		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || mFramebufferResized)
 		{
@@ -68,7 +74,22 @@ namespace BHive
 			ASSERT(false, "Failed to present swap chain image!")
 		}
 
+
+
+		mCurrentFrame = (mCurrentFrame + 1) % VulkanBackend::MAX_FRAMES_IN_FLIGHT; 
 	}
+
+	void VulkanWindowContext::CreateCommandBuffers()
+	{
+		auto graphics_queue_index = VulkanBackend::GetQueueFamilies().GraphicsQueueIndex;
+
+		vk::CommandPoolCreateInfo pool_info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, graphics_queue_index);
+		mCommandPool = vk::raii::CommandPool(mDevice, pool_info);
+
+		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, VulkanBackend::MAX_FRAMES_IN_FLIGHT);
+		mCommandBuffers = vk::raii::CommandBuffers(mDevice, alloc_info);
+	}
+
 
 	void VulkanWindowContext::CreateSwapChain()
 	{

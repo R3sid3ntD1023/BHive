@@ -290,11 +290,54 @@ namespace BHive
 		}
 	}
 
+	void VulkanBackend::CreateImmediateCommandPool()
+	{
+		vk::CommandPoolCreateInfo pool_info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, mQueueFamilies.GraphicsQueueIndex);
+		mImmediateCommandPool = mLogicalDevice.createCommandPool(pool_info);
+	}
+
+	void VulkanBackend::CreateDeviceInternal(uint32_t graphicsIndex, uint32_t presentIndex)
+	{
+		std::vector<uint32_t> families = {static_cast<uint32_t>(graphicsIndex), presentIndex};
+		std::sort(families.begin(), families.end());
+		families.erase(std::unique(families.begin(), families.end()), families.end());
+
+		auto queue_priority = 1.0f;
+		std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+		for (auto f : families)
+		{
+			vk::DeviceQueueCreateInfo queueCreateInfo({}, f, 1, &queue_priority);
+			queueCreateInfos.push_back(queueCreateInfo);
+		}
+
+		auto requiredDeviceExtensions = VulkanBackend::GetRequiredExtensions();
+		auto featureChain = details::GetPhysicalDeviceFeaturesChain();
+
+		vk::DeviceCreateInfo device_createInfo({}, queueCreateInfos, {}, requiredDeviceExtensions, nullptr, &featureChain.get<vk::PhysicalDeviceFeatures2>());
+
+		mLogicalDevice = mPhysicalDevice.createDevice(device_createInfo);
+
+		mQueueFamilies.GraphicsQueue = mLogicalDevice.getQueue(graphicsIndex, 0);
+		mQueueFamilies.GraphicsQueueIndex = graphicsIndex;
+
+		if (presentIndex == graphicsIndex)
+		{
+			mQueueFamilies.PresentQueueIndex = graphicsIndex;
+			mQueueFamilies.PresentQueue = mQueueFamilies.GraphicsQueue;
+		}
+		else
+		{
+			mQueueFamilies.PresentQueueIndex = presentIndex;
+			mQueueFamilies.PresentQueue = mLogicalDevice.getQueue(presentIndex, 0);
+		}
+
+		CreateImmediateCommandPool();
+	}
+
 	void VulkanBackend::EnsurePresentSupportForSurface(const vk::SurfaceKHR &surface)
 	{
-		if (mLogicalDevice == VK_NULL_HANDLE)
+		if (!surface)
 		{
-			CreateLogicalDevice(surface);
 			return;
 		}
 
@@ -305,69 +348,17 @@ namespace BHive
 			return;
 		}
 
-		auto present_family_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics , surface);
-		if (present_family_index == ~0)
+		auto present_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics , surface);
+		if (present_index == ~0)
 		{
-			LOG_ERROR("Failed to find a suitable queue family for presenting!");
-			ASSERT(false);
+			ASSERT(false, "No present queue found");
 		}
 
-		if (present_family_index == mQueueFamilies.PresentQueueIndex)
+		if (present_index != mQueueFamilies.PresentQueueIndex)
 		{
-			return;
-		}
-
-		LOG_INFO("Recreating logical device to support presenting on a different queue family.");
-
-		if (mLogicalDevice != VK_NULL_HANDLE)
-		{
-			try
-			{
-				mLogicalDevice.waitIdle();
-			}
-			catch (...)
-			{
-			}
-
-			for (const auto &callback : mOnDeviceDestroyedCallbacks)
-			{
-				callback();
-			}
-
-			mQueueFamilies.PresentQueue = nullptr;
-			mQueueFamilies.GraphicsQueue = nullptr;
+			mLogicalDevice.waitIdle();
 			mLogicalDevice = nullptr;
-		}
-
-		std::vector<uint32_t> families = {static_cast<uint32_t>(mQueueFamilies.GraphicsQueueIndex), present_family_index};
-		std::sort(families.begin(), families.end());
-		families.erase(std::unique(families.begin(), families.end()), families.end());
-
-		auto queue_priority = 1.0f;
-		std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
-		for (auto f : families)
-		{
-			vk::DeviceQueueCreateInfo queueCreateInfo({}, f, 1, &queue_priority);
-			queueCreateInfos.push_back(queueCreateInfo);
-		}
-
-		auto requiredDeviceExtensions = VulkanBackend::GetRequiredExtensions();
-		auto featureChain = details::GetPhysicalDeviceFeaturesChain();
-
-		vk::DeviceCreateInfo device_createInfo({}, queueCreateInfos, {}, requiredDeviceExtensions, nullptr, &featureChain.get<vk::PhysicalDeviceFeatures2>());
-
-		mLogicalDevice = mPhysicalDevice.createDevice(device_createInfo);
-
-		mQueueFamilies.GraphicsQueue = mLogicalDevice.getQueue(mQueueFamilies.GraphicsQueueIndex, 0);
-		if (present_family_index == mQueueFamilies.GraphicsQueueIndex)
-		{
-			mQueueFamilies.PresentQueueIndex = mQueueFamilies.GraphicsQueueIndex;
-			mQueueFamilies.PresentQueue = mQueueFamilies.GraphicsQueue;
-		}
-		else
-		{
-			mQueueFamilies.PresentQueueIndex = present_family_index;
-			mQueueFamilies.PresentQueue = mLogicalDevice.getQueue(present_family_index, 0);
+			CreateDeviceInternal(mQueueFamilies.GraphicsQueueIndex, present_index);
 		}
 	}
 
@@ -375,68 +366,21 @@ namespace BHive
 	{
 		if (mLogicalDevice != VK_NULL_HANDLE)
 		{
-			if (!surface)
-				return;
-
-			EnsurePresentSupportForSurface(surface);
 			return;
 		}
 
 		auto graphics_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics );
-		if (graphics_index == ~0)
-		{
-			LOG_ERROR("Failed to find a suitable queue family!");
-			ASSERT(false);
-		}
-
-		uint32_t present_index = graphics_index;
+		auto present_index = graphics_index;
 
 		if (surface)
 		{
 			if (!mPhysicalDevice.getSurfaceSupportKHR(graphics_index, surface))
 			{
-				auto found = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics , surface);
-				if (found == ~0)
-				{
-					LOG_ERROR("Failed to find a suitable queue family for presenting!");
-					ASSERT(false);
-				}
-
-				present_index = found;
+				present_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics , surface);
 			}
 		}
 
-		std::vector<uint32_t> families = {graphics_index, present_index};
-		std::sort(families.begin(), families.end());
-		families.erase(std::unique(families.begin(), families.end()), families.end());
-
-		auto requiredDeviceExtensions = VulkanBackend::GetRequiredExtensions();
-		auto featureChain = details::GetPhysicalDeviceFeaturesChain();
-
-		auto queue_priority = 1.0f;
-		std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
-		for (auto f : families)
-		{
-			vk::DeviceQueueCreateInfo queueCreateInfo({}, f, 1, &queue_priority);
-			queueCreateInfos.push_back(queueCreateInfo);
-		}
-
-		vk::DeviceCreateInfo device_createInfo({}, queueCreateInfos, {}, requiredDeviceExtensions, nullptr, &featureChain.get<vk::PhysicalDeviceFeatures2>());
-		mLogicalDevice = mPhysicalDevice.createDevice(device_createInfo);
-
-		mQueueFamilies.GraphicsQueueIndex = graphics_index;
-		mQueueFamilies.GraphicsQueue = mLogicalDevice.getQueue(graphics_index, 0);
-
-		if (families.size() > 1)
-		{
-			mQueueFamilies.PresentQueueIndex = present_index;
-			mQueueFamilies.PresentQueue = mLogicalDevice.getQueue(present_index, 0);
-		}
-		else
-		{
-			mQueueFamilies.PresentQueueIndex = mQueueFamilies.GraphicsQueueIndex;
-			mQueueFamilies.PresentQueue = mQueueFamilies.GraphicsQueue;
-		}
+		CreateDeviceInternal(graphics_index, present_index);
 	}
 
 } // namespace BHive
