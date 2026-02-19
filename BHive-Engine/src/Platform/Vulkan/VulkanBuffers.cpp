@@ -67,7 +67,7 @@ namespace BHive
 		std::memcpy(buffer_copy->data(), data, size);
 
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto cmd = [this, buffer_copy, size, offset](const FVulkanFrameData &frame)
+		auto cmd = [this, buffer_copy, size, offset](const FVulkanFrame &frame)
 		{ mBuffer.SetData(frame.CommandBuffer, buffer_copy->data(), size, offset, vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead); };
 
 		api->SubmitCommand(cmd, ECommandType_PreCommand);
@@ -94,7 +94,7 @@ namespace BHive
 		std::memcpy(buffer_copy->data(), data, size);
 
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto cmd = [this, buffer_copy, size, offset](const FVulkanFrameData &frame)
+		auto cmd = [this, buffer_copy, size, offset](const FVulkanFrame &frame)
 		{ mBuffer.SetData(frame.CommandBuffer, buffer_copy->data(), size, offset, vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead); };
 
 		api->SubmitCommand(cmd, ECommandType_PreCommand);
@@ -126,7 +126,7 @@ namespace BHive
 
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 
-		auto cmd = [this, data, size, offset](const FVulkanFrameData &frame)
+		auto cmd = [this, data, size, offset](const FVulkanFrame &frame)
 		{ 
 			mPerFrameBuffer[frame.Frame].SetData(frame.CommandBuffer, data, size, offset, vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead);
 		};
@@ -158,7 +158,7 @@ namespace BHive
 
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 
-		auto cmd = [this, data, size, offset](const FVulkanFrameData &frame)
+		auto cmd = [this, data, size, offset](const FVulkanFrame &frame)
 		{ 
 			mPerFrameBuffer[frame.Frame].SetData(frame.CommandBuffer, data, size, offset, vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead);
 		};

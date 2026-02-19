@@ -130,7 +130,7 @@ namespace BHive
 	{
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 
-		auto imgui_command = [=](const FVulkanFrameData &data)
+		auto imgui_command = [=](const FVulkanFrame &data)
 		{
 			auto& cmd = data.CommandBuffer;
 

@@ -68,7 +68,7 @@ namespace BHive
 		auto &cmd = ctx->GetCommandBuffer();
 		auto &pre_commands = mCommands[ECommandType_PreCommand];
 		auto &commands = mCommands[ECommandType_Command];
-		FVulkanFrameData command_data{cmd, current_frame};
+		FVulkanFrame command_data{cmd, current_frame};
 
 		auto swap_chain = ctx->GetSwapChain();
 		swap_chain->WaitForFence(current_frame);
@@ -150,7 +150,7 @@ namespace BHive
 		mCommands[type].emplace(command);
 	}
 
-	void VulkanRendererAPI::BeginSwapchainRendering(const FVulkanFrameData &frame, Window *window)
+	void VulkanRendererAPI::BeginSwapchainRendering(const FVulkanFrame &frame, Window *window)
 	{
 		auto swapChain = Cast<VulkanWindowContext>(window->GetContext())->GetSwapChain();
 		auto& image = swapChain->GetImage(frame.Frame);
@@ -187,13 +187,13 @@ namespace BHive
 
 	void VulkanRendererAPI::SetLineWidth(float width)
 	{
-		auto cmd = [=](const FVulkanFrameData &data) { data.CommandBuffer.setLineWidth(width); };
+		auto cmd = [=](const FVulkanFrame &data) { data.CommandBuffer.setLineWidth(width); };
 		SubmitCommand(cmd);
 	}
 
 	void VulkanRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 	{
-		auto cmd = [=](const FVulkanFrameData &data)
+		auto cmd = [=](const FVulkanFrame &data)
 		{
 			data.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)(y + h), (float)w, -(float)h, 0.0f, 1.0f));
 			data.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, vk::Extent2D(w, h)));
@@ -208,7 +208,7 @@ namespace BHive
 
 		auto topology = Vulkan::ToVkTopology(mode);
 
-		auto cmd = [topology, count](const FVulkanFrameData &data)
+		auto cmd = [topology, count](const FVulkanFrame &data)
 		{
 			data.CommandBuffer.setPrimitiveTopology(topology);
 			data.CommandBuffer.draw(count, 1, 0, 0);
@@ -224,7 +224,7 @@ namespace BHive
 		auto index_count = count ? count : index_buffer->GetCount();
 		auto topology = Vulkan::ToVkTopology(mode);
 
-		auto cmd = [topology, index_count](const FVulkanFrameData &data)
+		auto cmd = [topology, index_count](const FVulkanFrame &data)
 		{
 			data.CommandBuffer.setPrimitiveTopology(topology);
 			data.CommandBuffer.drawIndexed(index_count, 1, 0, 0, 0);
@@ -264,7 +264,7 @@ namespace BHive
 		auto buffer = indirect.GetNativeHandle().As<vk::Buffer>();
 		auto topology = Vulkan::ToVkTopology(mode);
 
-		auto cmd = [buffer, topology, drawCount, stride](const FVulkanFrameData &data)
+		auto cmd = [buffer, topology, drawCount, stride](const FVulkanFrame &data)
 		{		
 			data.CommandBuffer.setPrimitiveTopology(topology);
 			data.CommandBuffer.drawIndexedIndirect(*buffer, 0, drawCount, stride);
@@ -325,7 +325,7 @@ namespace BHive
 			{
 				auto native = Cast<VulkanFramebuffer>(pass.Target);
 				auto info = native->BuildRenderingInfo();
-				SubmitCommand([info](const FVulkanFrameData &frame) { frame.CommandBuffer.beginRendering(info); });
+				SubmitCommand([info](const FVulkanFrame &frame) { frame.CommandBuffer.beginRendering(info); });
 			}
 			else
 			{
@@ -333,9 +333,9 @@ namespace BHive
 				SubmitCommand([=](const FVulkanFrameData &frame) { BeginSwapchainRendering(frame, window); });*/
 			}
 
-			SubmitCommand([fn = pass.Execute](const FVulkanFrameData &frame) { fn(); });
+			SubmitCommand([fn = pass.Execute](const FVulkanFrame &frame) { fn(); });
 
-			SubmitCommand([](const FVulkanFrameData &frame) { frame.CommandBuffer.endRendering(); });
+			SubmitCommand([](const FVulkanFrame &frame) { frame.CommandBuffer.endRendering(); });
 		}
 	}
 

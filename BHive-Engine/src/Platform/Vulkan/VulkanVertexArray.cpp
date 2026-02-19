@@ -63,7 +63,7 @@ namespace BHive
 		auto vertex_buffers = mVertexBuffers;
 		auto index_buffer_ref = mIndexBuffer;
 
-		auto cmd = [=](const FVulkanFrameData &data)
+		auto cmd = [=](const FVulkanFrame &data)
 		{
 			auto size = vertex_buffers.size();
 			std::vector<vk::Buffer> vk_vertex_buffers(size);

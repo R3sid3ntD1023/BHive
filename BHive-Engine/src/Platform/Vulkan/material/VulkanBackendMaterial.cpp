@@ -50,7 +50,7 @@ namespace BHive
 		auto &pipeline_layout = Cast<VulkanPipeline>(pipeline)->GetLayout();
 
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto pre_cmd = [=](const FVulkanFrameData &data)
+		auto pre_cmd = [=](const FVulkanFrame &data)
 		{
 			const auto &frame_set = mDescriptorSets[data.Frame];
 
@@ -91,7 +91,7 @@ namespace BHive
 
 		api->SubmitCommand(pre_cmd, ECommandType_PreCommand);
 
-		auto cmd = [this, &pipeline_layout](const FVulkanFrameData &data)
+		auto cmd = [this, &pipeline_layout](const FVulkanFrame &data)
 		{ 
 			const auto &frame_sets = mDescriptorSets[data.Frame];
 			std::vector<vk::DescriptorSet> raw_sets;
@@ -117,7 +117,7 @@ namespace BHive
 			return;
 
 		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto pre_cmd = [=](const FVulkanFrameData &data)
+		auto pre_cmd = [=](const FVulkanFrame &data)
 		{
 			const auto &frame_set = mDescriptorSets[data.Frame];
 

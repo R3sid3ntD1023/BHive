@@ -140,7 +140,7 @@ namespace BHive
 
 	void VulkanPipeline::Bind()
 	{
-		auto cmd = [=](const FVulkanFrameData &data) 
+		auto cmd = [=](const FVulkanFrame &data) 
 			{
 				data.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline); 
 			};

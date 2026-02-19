@@ -13,15 +13,15 @@ namespace BHive
 	class Window;
 	class VulkanWindowContext;
 
-	struct FVulkanFrameData
+	struct FVulkanFrame
 	{
 		vk::raii::CommandBuffer& CommandBuffer;
 
 		uint32_t Frame;
 	};
 
-	using RGExecuteFn = std::function<void(const FVulkanFrameData&)>;
-	using FRenderCommand = std::function<void(const FVulkanFrameData &)>;
+	using RGExecuteFn = std::function<void(const FVulkanFrame&)>;
+	using FRenderCommand = std::function<void(const FVulkanFrame &)>;
 
 	
 	enum ECommandType
@@ -95,7 +95,7 @@ namespace BHive
 
 		virtual EAPI GetAPI() const override { return EAPI::Vulkan; }
 
-		void BeginSwapchainRendering(const FVulkanFrameData &frame, Window* window);
+		void BeginSwapchainRendering(const FVulkanFrame &frame, Window* window);
 
 	public:
 		void SetCurrentContext(VulkanWindowContext *ctx);
