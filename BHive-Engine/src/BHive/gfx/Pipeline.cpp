@@ -34,7 +34,7 @@ namespace BHive
 
 	Ref<Pipeline> BHive::Pipeline::Create()
 	{
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::Vulkan:
 			return CreateRef<VulkanPipeline>();

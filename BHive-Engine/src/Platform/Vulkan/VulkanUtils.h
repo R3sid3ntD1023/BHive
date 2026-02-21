@@ -30,7 +30,7 @@ namespace BHive
 			uint32_t w, uint32_t h, uint32_t d, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties,
 			vk::raii::Image& image, vk::raii::DeviceMemory& memory);
 
-		static void CreateImageView(const vk::raii::Image& image, vk::raii::ImageView& view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect);
+		static void CreateImageView(const vk::Image& image, vk::raii::ImageView& view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect);
 
 		static void CreateImageSampler(vk::raii::Sampler& sampler, const vk::SamplerCreateInfo &info);
 
@@ -45,7 +45,7 @@ namespace BHive
 
 		static uint32_t FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
 
-		static void CopyBufferToImage(const vk::Buffer &buffer, vk::Image &image, uint32_t width, uint32_t height);
+		static void CopyBufferToImage(const vk::raii::CommandBuffer& cmd ,const vk::Buffer &buffer, vk::Image &image, uint32_t width, uint32_t height);
 
 		static void SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size);
 

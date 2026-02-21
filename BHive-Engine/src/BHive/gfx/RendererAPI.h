@@ -3,7 +3,6 @@
 #include "core/Core.h"
 #include "core/events/Event.h"
 #include "Enumerations.h"
-#include "RenderGraph.h"
 
 namespace BHive
 {
@@ -79,7 +78,6 @@ namespace BHive
 
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) = 0;
 
-		virtual void ExecuteGraph(const RenderGraph &graph, Window *defaultWindow) = 0;
 
 		virtual EAPI GetAPI() const = 0;
 

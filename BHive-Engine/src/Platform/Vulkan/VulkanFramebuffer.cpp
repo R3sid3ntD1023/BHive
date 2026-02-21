@@ -8,23 +8,23 @@ namespace BHive
 {
 	static const uint32_t sMaxFramebufferSize = 8192;
 
-	Ref<Texture> CreateFramebufferTexture(uint32_t w, uint32_t h, uint32_t d, uint32_t samples, FFramebufferTexture specification)
+	Ref<Texture> CreateFramebufferTexture(const glm::uvec2& size, uint32_t depth, uint32_t samples, FFramebufferTexture specification)
 	{
 		auto &type = specification.TextureType;
 
 		if (samples > 1 && type == ETextureType::TEXTURE_2D)
-			return Texture2DMultisample::Create(w, h, samples, specification.CreateInfo);
+			return Texture2DMultisample::Create(size.x, size.y, samples, specification.CreateInfo);
 
 		switch (type)
 		{
 		case ETextureType::TEXTURE_2D:
-			return Texture2D::Create(w, h, specification.CreateInfo);
+			return Texture2D::Create(size.x, size.y, specification.CreateInfo);
 		case ETextureType::TEXTURE_CUBE_MAP:
-			return TextureCube::Create(w, specification.CreateInfo);
+			return TextureCube::Create(size.x, specification.CreateInfo);
 		case ETextureType::TEXTURE_2D_ARRAY:
-			return Texture2DArray::Create(w, h, d, specification.CreateInfo);
+			return Texture2DArray::Create(size.x, size.y, depth, specification.CreateInfo);
 		case ETextureType::TEXTURE_CUBE_MAP_ARRAY:
-			return TextureCubeArray::Create(w, h, d, specification.CreateInfo);
+			return TextureCubeArray::Create(size.x, size.y, depth, specification.CreateInfo);
 		default:
 			break;
 		}
@@ -41,51 +41,119 @@ namespace BHive
 			if (IsDepthFormat(spec.CreateInfo.Format))
 			{
 				mDepthSpecification = spec;
+				mDepthSpecification.CreateInfo.Aspect = ETextureAspect::DepthStencil;
+				mDepthSpecification.CreateInfo.Usage = ETextureUsage::DepthAttachment | ETextureUsage::Sampled;
 				continue;
 			}
 
-			mColorAttachmentSpecifications.emplace_back(spec);
+			auto color_attachment_info = spec;
+			color_attachment_info.CreateInfo.Aspect = ETextureAspect::Color;
+			color_attachment_info.CreateInfo.Usage = ETextureUsage::ColorAttachment | ETextureUsage::Sampled;
+			mColorAttachmentSpecifications.emplace_back(color_attachment_info);
 		}
 
-		mRenderBufferSpecification = mSpecification.Attachments.GetRenderBuffer();
+		mColorAttachments.reserve(mColorAttachmentSpecifications.size());
 
 		Initialize();
 	}
 
 	void VulkanFramebuffer::Bind() const
 	{
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
 
-		//auto cmd = [this, api](const FVulkanFrameData &frame) 
-		//{
-		//	/*api->BeginFramebuffer(this);
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 
-		//	frame.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)(y + h), (float)w, -(float)h, 0.0f, 1.0f));
-		//	frame.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, vk::Extent2D(w, h)));*/
-		//};
+		auto color_attachmnets = mColorAttachments;
+		auto depth_attachment = mDepthAttachment;
+		auto spec = mSpecification;
 
-		//api->SubmitCommand(cmd);
+		auto cmd = [color_attachmnets, depth_attachment, spec](const FVulkanFrame &frame)
+		{
+			
+			//transition images
+			for (size_t i = 0; i < color_attachmnets.size(); i++)
+			{
+				auto tex = Cast<IVulkanTexture>(color_attachmnets[i]);
+				Vulkan::ImageState attchmentState = {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
+				tex->GetImage().Transition(frame.CommandBuffer, attchmentState);
+			}
+
+			if (auto tex = Cast<IVulkanTexture>(depth_attachment))
+			{
+				Vulkan::ImageState depthState = {
+					vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+					vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests};
+				tex->GetImage().Transition(frame.CommandBuffer, depthState);
+			}
+
+
+			//render
+			std::vector<vk::RenderingAttachmentInfo> color_infos;
+			vk::RenderingAttachmentInfo depth_info{};
+
+			color_infos.reserve(color_attachmnets.size());
+
+			for (auto &tex : color_attachmnets)
+			{
+				auto vkTex = Cast<IVulkanTexture>(tex);
+				
+				auto info = vk::RenderingAttachmentInfo(
+					vkTex->GetImage().View, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+					vk::ClearColorValue(0, 0, 0, 1));
+
+				color_infos.emplace_back(info);
+			}
+
+			if (depth_attachment)
+			{
+				auto vkTex = Cast<IVulkanTexture>(depth_attachment);
+
+				depth_info = vk::RenderingAttachmentInfo(
+					vkTex->GetImage().View, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+					vk::ClearDepthStencilValue(1.0f, 0));
+			}
+
+			auto rect = vk::Rect2D({0, 0}, {spec.Size.x, spec.Size.y});
+			auto depth = depth_attachment ? &depth_info : nullptr;
+			auto info = vk::RenderingInfo({}, rect, 1, 0, color_infos, depth);
+
+			frame.CommandBuffer.beginRendering(info);
+
+		};
+
+		api->SubmitCommand(cmd);
 	}
 
 	void VulkanFramebuffer::UnBind() const
 	{
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		auto color_attachments = mColorAttachments;
 
-		/*auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
-		auto cmd = [api](const FVulkanFrameData &frame) { api->EndFramebuffer(); };
+		auto cmd = [color_attachments](const FVulkanFrame &frame)
+		{
+			frame.CommandBuffer.endRendering();
 
-		api->SubmitCommand(cmd);*/
+			Vulkan::ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
+
+			for (size_t i = 0; i < color_attachments.size(); i++)
+			{
+				auto tex = Cast<IVulkanTexture>(color_attachments[i]);
+				auto &image = tex->GetImage();
+				image.Transition(frame.CommandBuffer, shaderRead);
+			}
+		};
+
+		api->SubmitCommand(cmd);
 	}
 
-	void VulkanFramebuffer::Resize(uint32_t width, uint32_t height)
+	void VulkanFramebuffer::Resize(const glm::uvec2 &newSize)
 	{
-		if (width == 0 || height == 0 || width > sMaxFramebufferSize || height > sMaxFramebufferSize)
+		if (newSize.x == 0 || newSize.y == 0 ||  newSize.x > sMaxFramebufferSize || newSize.y > sMaxFramebufferSize)
 		{
-			LOG_WARN("Attempted to resize framebuffer to <{},{}>", width, height);
+			LOG_WARN("Attempted to resize framebuffer to {}", newSize);
 			return;
 		}
 
-		mSpecification.Width = width;
-		mSpecification.Height = height;
+		mSpecification.Size = newSize;
 
 		Initialize();
 	}
@@ -94,66 +162,27 @@ namespace BHive
 	{
 		ASSERT(attachmentIndex < mColorAttachments.size());
 
-		//glClearNamedFramebufferiv(mFramebufferID, GL_COLOR, attachmentIndex, data);
+		
 	}
 
 	void VulkanFramebuffer::ClearAttachment(uint32_t attachmentIndex, const float *data)
 	{
-		//glClearNamedFramebufferfv(mFramebufferID, GL_COLOR, attachmentIndex, data);
+		
 	}
 
 	void VulkanFramebuffer::Blit(const Ref<Framebuffer> &target)
 	{
-		if (!target || mSpecification.Width == 0 || mSpecification.Height == 0)
-			return;
-
-		const auto &specs = mSpecification;
-
-		if (!target || specs.Width == 0 || specs.Height == 0)
-			return;
-
-		const auto &dst_specs = target->GetSpecification();
-		auto count = dst_specs.Attachments.GetAttachments().size();
-
-		/*const auto read_target = mFramebufferID;
-		const auto draw_target = target ? target->GetRendererID() : 0;*/
-
-		for (size_t i = 0; i < count; i++)
-		{
-			/*glNamedFramebufferReadBuffer(read_target, GL_COLOR_ATTACHMENT0 + i);
-			glNamedFramebufferDrawBuffer(draw_target, GL_COLOR_ATTACHMENT0 + i);
-
-			glBlitNamedFramebuffer(read_target, draw_target, 0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height, GL_COLOR_BUFFER_BIT, GL_NEAREST);*/
-		}
-
-		if (target->GetDepthAttachment() && GetDepthAttachment())
-		{
-			//glBlitNamedFramebuffer(read_target, draw_target, 0, 0, specs.Width, specs.Height, 0, 0, dst_specs.Width, dst_specs.Height, GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
-		}
 	}
 
 	void VulkanFramebuffer::BlitToWindow(unsigned x, unsigned y, unsigned w, unsigned h)
 	{
-		const auto &specs = mSpecification;
-
-		if (specs.Width == 0 || specs.Height == 0)
-			return;
-
-		//glNamedFramebufferReadBuffer(read_target, GL_COLOR_ATTACHMENT0);
-
-		//glBlitNamedFramebuffer(read_target, draw_target, 0, 0, specs.Width, specs.Height, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		
 	}
 
 	void VulkanFramebuffer::ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, void *data) const
 	{
 		ASSERT(attachmentIndex < mColorAttachmentSpecifications.size());
 
-		//auto &spec = mColorAttachmentAPIInfos[attachmentIndex];
-
-	/*	glNamedFramebufferReadBuffer(mFramebufferID, GL_COLOR_ATTACHMENT0 + attachmentIndex);
-		glBindFramebuffer(GL_FRAMEBUFFER, mFramebufferID);
-		glReadPixels(x, y, w, h, spec.Format, spec.Type, data);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 	}
 
 	Ref<Texture> VulkanFramebuffer::GetColorAttachment(uint32_t index) const
@@ -168,38 +197,11 @@ namespace BHive
 	}
 
 
-	vk::RenderingInfo VulkanFramebuffer::BuildRenderingInfo() const
-	{
-		std::vector<vk::RenderingAttachmentInfo> color_infos;
-		color_infos.reserve(mColorAttachments.size());
-
-		for (auto& tex : mColorAttachments)
-		{
-			auto vkTex = Cast<IVulkanTexture>(tex);
-
-			auto info = vk::RenderingAttachmentInfo(
-				vkTex->GetImageView(), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-				vk::ClearDepthStencilValue(1.0f, 0));
-
-			color_infos.push_back(info);
-		}
-
-		vk::RenderingAttachmentInfo depth_info{};
-
-		if (mDepthAttachment)
-		{
-			auto vkTex = Cast<IVulkanTexture>(mDepthAttachment);
-
-			depth_info =  vk::RenderingAttachmentInfo(
-				vkTex->GetImageView(), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear,
-				vk::AttachmentStoreOp::eStore, vk::ClearDepthStencilValue(1.0f, 0));
-		}
-
-		return vk::RenderingInfo({}, vk::Rect2D{0, 0}, mSpecification.Width, mSpecification.Height, color_infos, mDepthAttachment ? &depth_info : nullptr);
-	}
-
 	void VulkanFramebuffer::Initialize()
 	{
+		mColorAttachments.clear();
+		mDepthAttachment.reset();
+
 		auto numColorAttachments = mColorAttachmentSpecifications.size();
 		if (numColorAttachments)
 		{
@@ -207,17 +209,27 @@ namespace BHive
 			for (size_t i = 0; i < numColorAttachments; i++)
 			{
 				auto &specs = mColorAttachmentSpecifications[i];
-				auto &attachment = mColorAttachments[i];
-
-				attachment = CreateFramebufferTexture(mSpecification.Width, mSpecification.Height, mSpecification.Depth, mSpecification.Samples, specs);
+				mColorAttachments[i] = CreateFramebufferTexture(mSpecification.Size, mSpecification.Depth, mSpecification.Samples, specs);
 			}
 		}
 
 		if (mDepthSpecification.CreateInfo.Format != EFormat::None)
 		{
-			mDepthAttachment = CreateFramebufferTexture(mSpecification.Width, mSpecification.Height, mSpecification.Depth, mSpecification.Samples, mDepthSpecification);
+			mDepthAttachment = CreateFramebufferTexture(mSpecification.Size, mSpecification.Depth, mSpecification.Samples, mDepthSpecification);
 		}
 
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		auto colorAttachments = mColorAttachments;
+		auto cmd = [colorAttachments](const FVulkanFrame &frame)
+		{
+			Vulkan::ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
+			for (auto &tex : colorAttachments)
+			{
+				auto vkTex = Cast<IVulkanTexture>(tex);
+				vkTex->GetImage().Transition(frame.CommandBuffer, shaderRead);
+			}
+		};
+		api->SubmitCommand(cmd);
 		
 	}
 

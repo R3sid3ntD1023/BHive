@@ -7,7 +7,7 @@ namespace BHive
 
 	Ref<StorageBuffer> StorageBuffer::Create(uint32_t binding, size_t size, const void *data)
 	{
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::Vulkan:
 			return CreateRef<VulkanStorageBuffer>(binding, size, data);
@@ -21,7 +21,7 @@ namespace BHive
 
 	Ref<StorageBuffer> StorageBuffer::Create(size_t size)
 	{
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::Vulkan:
 			return CreateRef<VulkanStorageBuffer>(size);

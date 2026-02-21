@@ -22,7 +22,7 @@ namespace BHive
 		mProgram = Cast<ShaderProgram>(vkPipeline->GetShaderProgram());
 		auto& descriptor_set_layouts = vkPipeline->GetDescriptorLayouts();
 
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		std::vector<vk::DescriptorSetLayout> layouts;
 		layouts.reserve(descriptor_set_layouts.size());
 
@@ -49,7 +49,7 @@ namespace BHive
 	{
 		auto &pipeline_layout = Cast<VulkanPipeline>(pipeline)->GetLayout();
 
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		auto pre_cmd = [=](const FVulkanFrame &data)
 		{
 			const auto &frame_set = mDescriptorSets[data.Frame];
@@ -116,7 +116,7 @@ namespace BHive
 		if (!texture)
 			return;
 
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		auto pre_cmd = [=](const FVulkanFrame &data)
 		{
 			const auto &frame_set = mDescriptorSets[data.Frame];

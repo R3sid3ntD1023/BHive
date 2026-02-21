@@ -128,7 +128,7 @@ namespace BHive
 		image.bindMemory(memory, 0);
 	}
 
-	void VulkanUtils::CreateImageView(const vk::raii::Image &image, vk::raii::ImageView &view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect)
+	void VulkanUtils::CreateImageView(const vk::Image &image, vk::raii::ImageView &view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
 		vk::ImageViewCreateInfo image_view_create_info({}, image, type, format, {}, {aspect, 0, 1, 0, 1});
@@ -187,6 +187,9 @@ namespace BHive
 		vk::raii::CommandBuffer &cmd, const vk::Image &image,  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags)
 	{
+		bool valid = aspect_flags != vk::ImageAspectFlagBits::eNone;
+		ASSERT(valid)
+
 		vk::ImageSubresourceRange range{aspect_flags, 0, 1, 0, 1};
 		vk::ImageMemoryBarrier2 barrier(
 			srcStageMask,
@@ -219,12 +222,10 @@ namespace BHive
 		ASSERT(false, "Failed to find suitable memory type!")
 	}
 
-	void VulkanUtils::CopyBufferToImage(const vk::Buffer &buffer, vk::Image &image, uint32_t width, uint32_t height)
+	void VulkanUtils::CopyBufferToImage(const vk::raii::CommandBuffer &cmd ,const vk::Buffer &buffer, vk::Image &image, uint32_t width, uint32_t height)
 	{
-		auto cmd = BeginSingleTimeCommands();
 		vk::BufferImageCopy region(0, 0, 0, {vk::ImageAspectFlagBits::eColor, 0, 0, 1}, {0, 0, 0}, {width, height, 1});
 		cmd.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, region);
-		EndSingleTimeCommands(cmd);
 	}
 
 	void VulkanUtils::SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size)

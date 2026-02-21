@@ -129,7 +129,7 @@ namespace BHive
 	{
 		CompileToVulkan(asset);
 
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::Vulkan:
 			break;

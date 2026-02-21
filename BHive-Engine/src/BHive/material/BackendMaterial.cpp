@@ -6,7 +6,7 @@ namespace BHive
 {
 	Ref<IMaterialBackendInterface> IMaterialBackendInterface::Create()
 	{
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::Vulkan:
 			return CreateRef<VulkanBackendMaterial>();

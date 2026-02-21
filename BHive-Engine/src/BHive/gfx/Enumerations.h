@@ -97,6 +97,24 @@ namespace BHive
 		Depth = DEPTH24_STENCIL8
 	};
 
+	enum class ETextureAspect 
+	{
+		Color,
+		DepthStencil
+	};
+	
+	enum class ETextureUsage : uint32_t
+	{
+		None				= 0 ,
+		Sampled				= 1 << 0,
+		ColorAttachment		= 1 << 1,
+		DepthAttachment		= 1 << 2,
+		Storage				= 1 << 3,
+		TransferSrc			= 1 << 4,
+		TransferDst			= 1 << 5
+	};
+
+	ENUM_FLAGS(ETextureUsage)
 	
 	enum class ETextureType
 	{

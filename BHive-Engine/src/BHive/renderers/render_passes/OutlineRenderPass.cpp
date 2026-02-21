@@ -41,8 +41,7 @@ namespace BHive
 	void OutlineRenderPass::CreateFramebuffer()
 	{
 		FramebufferSpecification specs{};
-		specs.Width = mSize.x;
-		specs.Height = mSize.y;
+		specs.Size = mSize;
 		specs.Attachments.attach(FTextureCreateInfo{.Format = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE}, ETextureType::TEXTURE_2D);
 		specs.Attachments.attach(FRenderbufferTexture{.Format = EFormat::DEPTH24_STENCIL8});
 		mFrambuffer = Framebuffer::Create(specs);

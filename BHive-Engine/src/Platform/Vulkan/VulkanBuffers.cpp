@@ -53,7 +53,7 @@ namespace BHive
 		auto buffer = Buffer;
 		auto stagingBuffer = StagingBuffer;
 
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		api->QueueDeletion([buffer, stagingBuffer](uint32_t) { 
 				auto& gpu_r_m = GPUResourceManager::Get();
 				gpu_r_m.DestroyBuffer(buffer);
@@ -78,7 +78,7 @@ namespace BHive
 		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
 		std::memcpy(buffer_copy->data(), data, size);
 
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		auto cmd = [this, buffer_copy, size, offset](const FVulkanFrame &frame)
 		{ mBuffer.SetData(frame.CommandBuffer, buffer_copy->data(), size, offset, vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead); };
 
@@ -100,7 +100,7 @@ namespace BHive
 		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
 		std::memcpy(buffer_copy->data(), data, size);
 
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		auto cmd = [this, buffer_copy, size, offset](const FVulkanFrame &frame)
 		{ mBuffer.SetData(frame.CommandBuffer, buffer_copy->data(), size, offset, vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead); };
 
@@ -123,7 +123,7 @@ namespace BHive
 		if (!data || size == 0)
 			return;
 
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 
 		auto cmd = [this, data, size, offset](const FVulkanFrame &frame)
 		{ 
@@ -147,7 +147,7 @@ namespace BHive
 		if (!data || size == 0)
 			return;
 
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 
 		auto cmd = [this, data, size, offset](const FVulkanFrame &frame)
 		{ 

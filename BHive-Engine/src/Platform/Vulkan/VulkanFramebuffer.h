@@ -19,7 +19,7 @@ namespace BHive
 
 		virtual void UnBind() const;
 
-		virtual void Resize(uint32_t width, uint32_t height);
+		virtual void Resize(const glm::uvec2 &newSize);
 
 		virtual void ClearAttachment(uint32_t attachmentIndex, const int *data);
 
@@ -31,17 +31,15 @@ namespace BHive
 
 		virtual void ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, void *data) const;
 
+		virtual uint32_t GetNumColorAttachments() const override { return (uint32_t)mColorAttachments.size(); }
+
 		virtual Ref<Texture> GetColorAttachment(uint32_t index = 0) const;
 
 		virtual Ref<Texture> GetDepthAttachment() const;
 
 		virtual const FramebufferSpecification &GetSpecification() const { return mSpecification; }
 
-		virtual uint32_t GetWidth() const { return mSpecification.Width; }
-
-		virtual uint32_t GetHeight() const { return mSpecification.Height; }
-
-		vk::RenderingInfo BuildRenderingInfo() const;
+		virtual const glm::uvec2& GetSize() const { return mSpecification.Size; }
 
 	private:
 		void Initialize();
@@ -50,8 +48,6 @@ namespace BHive
 		std::vector<FFramebufferTexture> mColorAttachmentSpecifications{};
 
 		FFramebufferTexture mDepthSpecification{};
-
-		FRenderbufferTexture mRenderBufferSpecification{};
 
 		std::vector<Ref<Texture>> mColorAttachments;
 		Ref<Texture> mDepthAttachment;

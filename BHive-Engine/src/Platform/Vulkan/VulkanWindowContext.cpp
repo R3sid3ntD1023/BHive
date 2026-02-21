@@ -23,7 +23,7 @@ namespace BHive
 	{
 		LOG_TRACE("GraphicsContext Destructor Called")
 
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		if (api->GetCurrentContext() == this)
 			api->SetCurrentContext(nullptr);
 	}
@@ -58,7 +58,7 @@ namespace BHive
 	{
 		ASSERT(mCurrentFrame < mCommandBuffers.size());
 
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		api->SetCurrentContext(this);
 
 		auto result = api->RenderFrame(this);
@@ -113,7 +113,6 @@ namespace BHive
 		create_info.Capabilities = surfaceCapabilities;
 		create_info.Formats = formats;
 		create_info.PresentModes = presentModes;
-		create_info.OldSwapChain =  VK_NULL_HANDLE;
 
 		mSwapChain = CreateRef<VulkanSwapChain>();
 		mSwapChain->Init(mSurface, create_info);

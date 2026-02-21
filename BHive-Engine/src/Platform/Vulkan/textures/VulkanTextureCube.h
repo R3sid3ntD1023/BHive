@@ -27,8 +27,10 @@ namespace BHive
 		virtual const FTextureCreateInfo &GetInfo() const { return mCreateInfo; }
 
 		virtual NativeHandle GetNativeHandle() const;
+	
+		virtual const Vulkan::AllocatedImage &GetImage() const override { return mImage.GetImage(); };
 
-		virtual const vk::ImageView &GetImageView() const override { return mImage.GetAllocatedTexture().View; }
+		virtual Vulkan::AllocatedImage &GetImage() override { return mImage.GetImage(); };
 
 	private:
 		vk::raii::Device &mDevice;

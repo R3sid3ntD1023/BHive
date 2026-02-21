@@ -117,11 +117,6 @@ namespace BHive
 		sRendererAPI->AttachTextureToFramebuffer(attachment, texture, framebuffer);
 	}
 
-	void RenderCommand::ExecuteGraph(const RenderGraph &graph, Window *defaultWindow)
-	{
-		sRendererAPI->ExecuteGraph(graph, defaultWindow);
-	}
-
 	Scope<RendererAPI> RenderCommand::sRendererAPI = RendererAPI::Create();
 
 } // namespace BHive

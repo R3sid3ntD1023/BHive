@@ -26,12 +26,10 @@ namespace BHive
 		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(create_info.Formats);
 		mMinImageCount = VulkanUtils::ChooseMinImageCount(create_info.Capabilities);
 
-		//LOG_TRACE("Swapchain Format: {} ; ColorSpace: {}", vk::to_string(mImageFormat.format), vk::to_string(mImageFormat.colorSpace));
-
 		auto present_mode = VulkanUtils::ChooseSwapPresentMode(create_info.PresentModes);
 		vk::SwapchainCreateInfoKHR swap_chain_create_info(
 			{}, *surface, mMinImageCount, mImageFormat.format, mImageFormat.colorSpace, mExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, {},
-			create_info.Capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, present_mode, true, create_info.OldSwapChain, nullptr);
+			create_info.Capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, present_mode, true, nullptr, nullptr);
 
 		mSwapChain = mDevice.createSwapchainKHR(swap_chain_create_info);
 		auto images = mSwapChain.getImages();
@@ -39,19 +37,28 @@ namespace BHive
 		for (auto& image : images)
 		{
 			vk::ImageViewCreateInfo view_info({}, image, vk::ImageViewType::e2D, mImageFormat.format, {}, {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
-			auto state = Vulkan::ImageState{vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
+			auto state = Vulkan::ImageState{vk::ImageLayout::eUndefined, {}, vk::PipelineStageFlagBits2::eTopOfPipe};
 			mImages.emplace_back(image, mDevice.createImageView(view_info), state, vk::ImageAspectFlagBits::eColor);
 		}
 
-		for (uint32_t i = 0; i < mImages.size(); i++)
-		{
-			mRenderFinishedSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());			
-		}
+		auto image_count = static_cast<uint32_t>(mImages.size());
+		auto frame_count = VulkanBackend::MAX_FRAMES_IN_FLIGHT;
 
-		for (uint32_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			mPresentSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
-			mInFlightFences.emplace_back(mDevice, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
+		
+		mRenderFinishedSemaphores.reserve(image_count);
+		mPresentSemaphores.reserve(frame_count);
+		mInFlightFences.reserve(frame_count);
+
+		for (uint32_t i = 0; i < image_count; i++)
+		{	
+			mRenderFinishedSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());	
+
+			if (i < frame_count)
+			{
+				mPresentSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
+
+				mInFlightFences.emplace_back(mDevice, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
+			}
 		}
 
 		mDepthFormat = VulkanUtils::FindDepthFormat();
@@ -72,22 +79,24 @@ namespace BHive
 		view_desc.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 		GPUResourceManager().Get().CreateImageView(mDepthImage, view_desc);
 
-		mDepthImage.State = {vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eDepthStencilAttachmentWrite, vk::PipelineStageFlagBits2::eLateFragmentTests | vk::PipelineStageFlagBits2::eEarlyFragmentTests};
+		mDepthImage.State = {vk::ImageLayout::eUndefined, {}, vk::PipelineStageFlagBits2::eTopOfPipe};
 		mDepthImage.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)
 	{
 		vk::Fence fence = mInFlightFences[frame];
-		while (vk::Result::eTimeout == mDevice.waitForFences(fence, VK_TRUE, UINT64_MAX))
-			;
-		mDevice.resetFences(fence);
+		if (fence)
+		{
+			while(vk::Result::eTimeout ==  mDevice.waitForFences(fence, VK_TRUE, UINT64_MAX));
+			mDevice.resetFences(fence);
+		}	
 	}
 
 	vk::ResultValue<uint32_t> VulkanSwapChain::AquireNextImage(uint32_t frame)
 	{
-		vk::Semaphore present = mPresentSemaphores[frame];
-		return mSwapChain.acquireNextImage(UINT64_MAX, present, VK_NULL_HANDLE);
+		vk::Semaphore present = mPresentSemaphores[frame]; //per frame
+		return  mSwapChain.acquireNextImage(UINT64_MAX, present, VK_NULL_HANDLE);
 	}
 
 	vk::Result VulkanSwapChain::Present(const vk::raii::CommandBuffer &buffers, uint32_t imageIndex, uint32_t frame)
@@ -108,7 +117,6 @@ namespace BHive
 
 		const vk::PresentInfoKHR presentInfoKHR(signal_semaphore, *mSwapChain, imageIndex);
 		return (vk::Result)vkQueuePresentKHR(*graphics_queue, &*presentInfoKHR);
-		//return graphics_queue.presentKHR(presentInfoKHR);
 	}
 
 } // namespace BHive

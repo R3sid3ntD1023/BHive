@@ -10,6 +10,8 @@
 #include "core/Window.h"
 #include "VulkanWindowContext.h"
 #include "gfx/RenderCommand.h"
+#include "IVulkanTexture.h"
+#include "GPUResourceManager.h"
 
 namespace BHive
 {
@@ -29,6 +31,7 @@ namespace BHive
 
 	VulkanRendererAPI::~VulkanRendererAPI()
 	{
+		
 	}
 
 	void VulkanRendererAPI::Init()
@@ -61,6 +64,8 @@ namespace BHive
 
 		mDescriptorPool = VK_NULL_HANDLE;
 
+		GPUResourceManager::Get().Shutdown();
+
 		VulkanBackend::Get().Shutdown();
 	}
 
@@ -74,18 +79,21 @@ namespace BHive
 	{
 		auto current_frame = ctx->GetCurrentFrame();
 		auto &cmd = ctx->GetCommandBuffer();
+
 		auto &pre_commands = mCommands[ECommandType_PreCommand];
 		auto &commands = mCommands[ECommandType_Command];
-		FVulkanFrame command_data{cmd, current_frame};
-
+		auto &screen_commands = mCommands[ECommandType_ToScreen];
+		
 		ProcessDeletionQueue(current_frame);
 
 		auto swap_chain = ctx->GetSwapChain();
+
 		swap_chain->WaitForFence(current_frame);
 
 		cmd.reset();
 
 		auto [result, imageIndex] = swap_chain->AquireNextImage(current_frame);
+
 		auto &image = swap_chain->GetImage(imageIndex);
 		auto &depth = swap_chain->GetDepthImage();
 		auto extent = swap_chain->GetExtent();
@@ -95,20 +103,32 @@ namespace BHive
 
 		cmd.begin({});
 		
+		FVulkanFrame frame{cmd, current_frame, imageIndex};
 		
 		while (!pre_commands.empty())
 		{
 			auto &cmd = pre_commands.front();
 			if (cmd)
-				cmd(command_data);
+				cmd(frame);
 			pre_commands.pop();
 		}
 
-		image.Transition(cmd, {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput});
+		while (!commands.empty())
+		{
+			auto &cmd = commands.front();
+			if (cmd)
+				cmd(frame);
+			commands.pop();
+		}
 
-		depth.Transition(
-			cmd, {vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
-				  vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests});
+
+		Vulkan::ImageState colorAttachmentState = {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
+		Vulkan::ImageState depthAttachmentState = {
+			vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests};
+
+		image.Transition(frame.CommandBuffer, colorAttachmentState );
+		depth.Transition(frame.CommandBuffer, depthAttachmentState);
 
 		vk::ClearValue clearColor(mClearColor);
 		vk::ClearValue clearDepth(vk::ClearDepthStencilValue(1.0f, 0));
@@ -120,24 +140,20 @@ namespace BHive
 			depth.View, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, clearDepth);
 
 		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
-		cmd.beginRendering(renderingInfo);
+		frame.CommandBuffer.beginRendering(renderingInfo);
 
-		while (!commands.empty())
+		while (!screen_commands.empty())
 		{
-			auto &cmd = commands.front();
+			auto &cmd = screen_commands.front();
 			if (cmd)
-				cmd(command_data);
-			commands.pop();
+				cmd(frame);
+			screen_commands.pop();
 		}
 
-		cmd.endRendering();
+		frame.CommandBuffer.endRendering();
 
-		image.Transition(
-			cmd, {
-					 vk::ImageLayout::ePresentSrcKHR,
-					 {},
-					 vk::PipelineStageFlagBits2::eBottomOfPipe,
-				 });
+		Vulkan::ImageState present = {vk::ImageLayout::ePresentSrcKHR, {}, vk::PipelineStageFlagBits2::eBottomOfPipe};
+		image.Transition(frame.CommandBuffer, present);
 
 		cmd.end();
 
@@ -160,26 +176,6 @@ namespace BHive
 		}
 
 		mCommands[type].emplace(command);
-	}
-
-	void VulkanRendererAPI::BeginSwapchainRendering(const FVulkanFrame &frame, Window *window)
-	{
-		auto swapChain = Cast<VulkanWindowContext>(window->GetContext())->GetSwapChain();
-		auto& image = swapChain->GetImage(frame.Frame);
-		auto &depth = swapChain->GetDepthImage();
-		auto extent = swapChain->GetExtent();
-
-		vk::ClearValue clearColor(mClearColor);
-		vk::ClearValue clearDepth(vk::ClearDepthStencilValue(1.0f, 0));
-
-		vk::RenderingAttachmentInfo attachmentInfo(
-			image.View, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearColor);
-
-		vk::RenderingAttachmentInfo depth_attachment_info(
-			depth.View, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, clearDepth);
-
-		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
-		frame.CommandBuffer.beginRendering(renderingInfo);
 	}
 
 	void VulkanRendererAPI::QueueDeletion(std::function<void(uint32_t)> fn)
@@ -344,28 +340,6 @@ namespace BHive
 
 	void VulkanRendererAPI::AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer)
 	{	
-	}
-
-	void VulkanRendererAPI::ExecuteGraph(const RenderGraph &graph, Window *defaultWindow)
-	{
-		for (auto &pass : graph.GetPasses())
-		{
-			if (pass.Target)
-			{
-				auto native = Cast<VulkanFramebuffer>(pass.Target);
-				auto info = native->BuildRenderingInfo();
-				SubmitCommand([info](const FVulkanFrame &frame) { frame.CommandBuffer.beginRendering(info); });
-			}
-			else
-			{
-				/*Window *window = pass.TargetWindow;
-				SubmitCommand([=](const FVulkanFrameData &frame) { BeginSwapchainRendering(frame, window); });*/
-			}
-
-			SubmitCommand([fn = pass.Execute](const FVulkanFrame &frame) { fn(); });
-
-			SubmitCommand([](const FVulkanFrame &frame) { frame.CommandBuffer.endRendering(); });
-		}
 	}
 
 } // namespace BHive

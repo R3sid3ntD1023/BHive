@@ -62,7 +62,8 @@ namespace BHive
 	struct BHIVE_API FramebufferSpecification
 	{
 		FramebufferAttachments Attachments;
-		uint32_t Width = 800, Height = 600, Depth = 1;
+		glm::uvec2 Size{800, 600};
+		uint32_t Depth = 1;
 		uint32_t Samples = 1;
 	};
 
@@ -76,7 +77,7 @@ namespace BHive
 
 		virtual void UnBind() const = 0;
 
-		virtual void Resize(uint32_t width, uint32_t height) = 0;
+		virtual void Resize(const glm::uvec2 &newSize) = 0;
 
 		virtual void ClearAttachment(uint32_t attachmentIndex, const int *data) = 0;
 
@@ -88,15 +89,15 @@ namespace BHive
 
 		virtual void ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, void *data) const = 0;
 
+		virtual uint32_t GetNumColorAttachments() const = 0;
+
 		virtual Ref<Texture> GetColorAttachment(uint32_t index = 0) const = 0;
 
 		virtual Ref<Texture> GetDepthAttachment() const = 0;
 
 		virtual const FramebufferSpecification &GetSpecification() const = 0;
 
-		virtual uint32_t GetWidth() const = 0;
-
-		virtual uint32_t GetHeight() const = 0;
+		virtual const glm::uvec2& GetSize() const = 0;
 
 		static Ref<Framebuffer> Create(const FramebufferSpecification &specification);
 	};

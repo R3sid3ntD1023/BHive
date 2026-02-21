@@ -8,7 +8,7 @@ namespace BHive
 	{
 		Scope<WindowContext> instance;
 
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::Vulkan:
 			instance = CreateScope<VulkanWindowContext>(windowHandle);

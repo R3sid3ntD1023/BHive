@@ -26,16 +26,15 @@ namespace BHive
 		Thread::Dispatch(
 			[target, attachment, path]()
 			{
-				auto w = target->GetSpecification().Width;
-				auto h = target->GetSpecification().Height;
+				auto size = target->GetSpecification().Size;
 
 				int32_t channels = 4;
-				int32_t stride = channels * w;
-				int32_t buffersize = stride * h;
+				int32_t stride = channels * size.x;
+				int32_t buffersize = stride * size.y;
 				std::vector<uint8_t> buffer(buffersize);
 
-				target->ReadPixel(attachment, 0, 0, w, h, buffer.data());
-				ImageUtils::SaveImage(path, w, h, channels, buffer.data());
+				target->ReadPixel(attachment, 0, 0, size.x, size.y, buffer.data());
+				ImageUtils::SaveImage(path, size.x, size.y, channels, buffer.data());
 			});
 	}
 

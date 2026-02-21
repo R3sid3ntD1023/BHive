@@ -5,10 +5,12 @@
 #include "gfx/Enumerations.h"
 
 namespace BHive
-{
-	
+{;
+
 	struct FTextureCreateInfo
 	{
+		ETextureUsage Usage = ETextureUsage::Sampled;
+		ETextureAspect Aspect = ETextureAspect::Color;
 		uint32_t Levels = 1;
 		uint32_t Channels = 0;
 		bool GenerateMipMaps = false;
@@ -35,6 +37,8 @@ namespace BHive
 			ar(MAKE_NVP(CompareMode));
 			ar(MAKE_NVP(CompareOp));
 			ar(MAKE_NVP(BorderColor));
+			ar(MAKE_NVP(Usage));
+			ar(MAKE_NVP(Aspect));
 		}
 
 		REFLECTABLE()

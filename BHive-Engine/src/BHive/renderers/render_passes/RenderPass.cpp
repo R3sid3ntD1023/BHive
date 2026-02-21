@@ -14,7 +14,7 @@ namespace BHive
 		mSize = size;
 
 		if (mFrambuffer)
-			mFrambuffer->Resize(size.x, size.y);
+			mFrambuffer->Resize(size);
 	}
 
 	bool RenderPass::IsEnabled() const

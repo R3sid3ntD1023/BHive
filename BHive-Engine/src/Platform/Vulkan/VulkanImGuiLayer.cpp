@@ -57,7 +57,7 @@ namespace BHive
 		auto &swap_chain = context.GetSwapChain();
 		auto extent = swap_chain->GetExtent();
 		auto image_count = swap_chain->GetImageCount();
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		auto &queue_familes = VulkanBackend::GetQueueFamilies();
 		auto &device = VulkanBackend::GetLogicalDevice();
 
@@ -128,25 +128,22 @@ namespace BHive
 
 	void VulkanImGuiLayer::OnRender(ImDrawData *drawData, const glm::uvec2 &displaySize)
 	{
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 
-		auto imgui_command = [=](const FVulkanFrame &data)
+		auto cmd = [drawData, displaySize](const FVulkanFrame &f)
 		{
-			auto& cmd = data.CommandBuffer;
-
-			//LOG_INFO("CMD: Imgui Render, frame={}", data.Frame);
-
 			vk::Viewport viewport(0.0f, 0.0f, (float)displaySize.x, (float)displaySize.y, 0.0f, 1.0f);
 			vk::Rect2D scissor({0, 0}, {(uint32_t)displaySize.x, (uint32_t)displaySize.y});
-		
-			cmd.setViewport(0, viewport);
-			cmd.setScissor(0, scissor);
 
-	
-			ImGui_ImplVulkan_RenderDrawData(drawData, *cmd);
+			f.CommandBuffer.setViewport(0, viewport);
+			f.CommandBuffer.setScissor(0, scissor);
+
+			ImGui_ImplVulkan_RenderDrawData(drawData, *f.CommandBuffer);
+
 		};
 
-		api->SubmitCommand(imgui_command);
+		
+		api->SubmitCommand(cmd, ECommandType_ToScreen);
 	}
 
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)

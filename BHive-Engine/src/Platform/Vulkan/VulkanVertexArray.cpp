@@ -93,7 +93,7 @@ namespace BHive
 			}
 		};
 
-		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
+		RenderCommand::GetRendererAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
 	}
 
 	void VulkanVertexArray::UnBind() const

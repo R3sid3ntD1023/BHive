@@ -29,7 +29,6 @@ namespace BHive
 	{
 		LOG_TRACE("VulkanTexture2D Descructor Called")
 
-		Release();
 		mBuffer.Release();
 	}
 
@@ -82,12 +81,7 @@ namespace BHive
 		sampler_info.minLod = 0.f;
 		sampler_info.maxLod = 0.f;
 
-		mImage.Create(mWidth, mHeight, 1, vk::ImageType::e2D, vk::ImageViewType::e2D, api_info.Format, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst, vk::ImageAspectFlagBits::eColor, sampler_info);
-	}
-
-	void VulkanTexture2D::Release()
-	{
-		mBuffer.Release();
+		mImage.Create(mWidth, mHeight, 1, vk::ImageType::e2D, vk::ImageViewType::e2D, api_info.Format, api_info.Usage, api_info.Aspect, sampler_info);
 	}
 
 	NativeHandle VulkanTexture2D::GetNativeHandle() const

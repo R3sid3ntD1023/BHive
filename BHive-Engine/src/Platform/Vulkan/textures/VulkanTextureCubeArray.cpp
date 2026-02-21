@@ -21,7 +21,7 @@ namespace BHive
 		sampler_info.minLod = 0.f;
 		sampler_info.maxLod = 0.f;
 
-		mImage.Create(mWidth, mHeight, mDepth, vk::ImageType::e3D, vk::ImageViewType::eCubeArray, api_info.Format, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst, vk::ImageAspectFlagBits::eColor, sampler_info);
+		mImage.Create(mWidth, mHeight, mDepth, vk::ImageType::e3D, vk::ImageViewType::eCubeArray, api_info.Format, api_info.Usage, api_info.Aspect, sampler_info);
 	}
 
 	void VulkanTextureCubeArray::Bind(uint32_t slot) const

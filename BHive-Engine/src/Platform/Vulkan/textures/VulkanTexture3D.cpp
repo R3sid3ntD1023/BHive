@@ -21,8 +21,7 @@ namespace BHive
 		sampler_info.mipLodBias = 0.f;
 		sampler_info.minLod = 0.f;
 		sampler_info.maxLod = 0.f;
-		mImage.Create(
-			width, height, depth, vk::ImageType::e3D, vk::ImageViewType::e3D, api_info.Format, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst, vk::ImageAspectFlagBits::eColor,
+		mImage.Create(width, height, depth, vk::ImageType::e3D, vk::ImageViewType::e3D, api_info.Format, api_info.Usage, api_info.Aspect,
 			sampler_info);
 	}
 

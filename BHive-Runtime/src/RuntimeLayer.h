@@ -28,6 +28,7 @@ namespace BHive
 		Ref<class Material> mMaterial = nullptr;
 		Ref<class StaticMesh> mMesh = nullptr;
 		Ref<Pipeline> mPipeline;
+		Ref<class Framebuffer> mFramebuffer;
 
 		EditorCamera mCamera;
 	};

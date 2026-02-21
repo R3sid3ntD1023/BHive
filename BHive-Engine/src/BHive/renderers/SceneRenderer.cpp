@@ -69,8 +69,7 @@ namespace BHive
 
 		// Initialize the framebuffer or any other resources needed for rendering
 		FramebufferSpecification specs;
-		specs.Width = mSize.x;
-		specs.Height = mSize.y;
+		specs.Size = size;
 		specs.Attachments.attach({.Format = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
 			.attach({.Format = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 
@@ -300,9 +299,9 @@ namespace BHive
 	{
 		mSize = size;
 
-		mFramebuffer->Resize(size.x, size.y);
+		mFramebuffer->Resize(size);
 
-		mFinalFramebuffer->Resize(size.x, size.y);
+		mFinalFramebuffer->Resize(size);
 
 		for (auto &render_pass : mRenderPasses)
 		{

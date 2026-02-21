@@ -38,7 +38,9 @@ namespace BHive
 
 		virtual NativeHandle GetNativeHandle() const override;
 
-		virtual const vk::ImageView &GetImageView() const override { return mImage.GetAllocatedTexture().View; }
+		virtual const Vulkan::AllocatedImage &GetImage() const override { return mImage.GetImage(); };
+
+		virtual Vulkan::AllocatedImage &GetImage() override { return mImage.GetImage(); };
 
 		/*Begin Asset*/
 		void Save(cereal::BinaryOutputArchive &ar) const override;
@@ -51,8 +53,6 @@ namespace BHive
 
 	private:
 		void Initialize();
-
-		void Release();
 
 	private:
 		vk::raii::Device &mDevice;

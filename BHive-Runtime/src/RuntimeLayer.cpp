@@ -16,9 +16,12 @@
 #include "renderers/Renderer.h"
 #include "gfx/Pipeline.h"
 #include "core/Time.h"
+#include "Inspectors/Inspect.h"
+#include "gfx/Framebuffer.h"
 
 namespace BHive
 {
+	FTransform transform{};
 
 	void RuntimeLayer::OnAttach(Application& app)
 	{
@@ -34,7 +37,7 @@ namespace BHive
 		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
 		mMaterial = CreateRef<Material>(mPipeline);
 		mMaterial->SetTexture("u_Texture", mTexture);
-		mMaterial->Set("u_Color", glm::vec3(1, .5f, 0));
+		mMaterial->Set("u_Color", glm::vec3(1, 1, 1));
 
 		// create mesh
 		FMeshImportData import_data{};
@@ -52,6 +55,14 @@ namespace BHive
 		mCamera = EditorCamera(75.f, aspect, 0.1f, 1000.f);
 		mCamera.SetView(FTransform({5, 5, 5}));
 		mCamera.Focus(FTransform({0, 0, 0}));
+
+		FramebufferSpecification fb_specs;
+		fb_specs.Size = window.GetSize();
+		fb_specs.Attachments.attach(FTextureCreateInfo{
+				.Format = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
+			.attach(FTextureCreateInfo{.Format = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+
+		mFramebuffer = Framebuffer::Create(fb_specs);
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -60,7 +71,7 @@ namespace BHive
 
 	void RuntimeLayer::OnUpdate(float time)
 	{	
-		static FTransform transform{};
+
 		transform.AddRotation({0, time * 10.f, 0});
 
 		mCamera.ProcessInput();
@@ -68,6 +79,8 @@ namespace BHive
 		auto &app = Application::Get();
 		auto &window = app.GetWindow();
 		auto size = window.GetSize();
+
+		mFramebuffer->Bind();
 
 		RenderCommand::ClearColor(0.1f, 0.1f, 0.1f, 1.f);
 		RenderCommand::Clear();
@@ -85,49 +98,74 @@ namespace BHive
 		{
 			mMaterial->Submit();
 			mMaterial->Set("u_Time", Time::Raw());
-	
+
 			Renderer::SubmitModel(transform);
 
 			if (mMesh)
 				RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
 		}
 
-
 		Renderer::End();
+
+		mFramebuffer->UnBind();
 	}
 
 	void RuntimeLayer::OnGuiRender()
 	{
 		static float value = 0.f;
 
+		GUI::BeginDockSpace("Dockspace");
+
+		if (ImGui::Begin("Scene"))
+		{
+			auto fbSize = mFramebuffer->GetSize();
+			auto viewportSize = ImGui::GetContentRegionAvail();
+			glm::uvec2 size = {viewportSize.x, viewportSize.y};
+
+			if (size != fbSize)
+			{
+				mFramebuffer->Resize(size);
+			}
+
+			auto texture_id = ImGuiLayer::GetTextureID(*mFramebuffer->GetColorAttachment(0));
+			ImGui::Image(texture_id, viewportSize);
+		}
+
+		ImGui::End();
+
 		if (ImGui::Begin("Window"))
 		{
 			ImGui::DragFloat("Test", &value);
-		}
 
-		auto texture_id = ImGuiLayer::GetTextureID(*mTexture);
-		ImGui::Image(texture_id, {200, 200}, {0, 1}, {1, 0});
+			auto texture_id = ImGuiLayer::GetTextureID(*mTexture);
+			ImGui::Image(texture_id, {200, 200}, {0, 1}, {1, 0});
 
-		if (ImGui::Button("Load Mesh"))
-		{
-			auto info = Platform::OpenFile("Mesh (*.glb;*.gltf)\0*.glb;*.gltf\0");
-			if (info)
+			rttr::variant var = transform;
+
+			if (Inspect::get().inspect({}, var))
+				transform = var.get_value<FTransform>();
+
+			if (ImGui::Button("Load Mesh"))
 			{
-				FMeshImportData import_data{};
-				FMeshImportOptions import_options{};
-
-				if (MeshImporter::Import(info, import_data))
+				auto info = Platform::OpenFile("Mesh (*.glb;*.gltf)\0*.glb;*.gltf\0");
+				if (info)
 				{
-					std::vector<Ref<Asset>> additional_assets;
-					MeshImportResolver resolver(import_data, import_options, additional_assets);
-					mMesh = Cast<StaticMesh>(resolver.Resolve());
+					FMeshImportData import_data{};
+					FMeshImportOptions import_options{};
+
+					if (MeshImporter::Import(info, import_data))
+					{
+						std::vector<Ref<Asset>> additional_assets;
+						MeshImportResolver resolver(import_data, import_options, additional_assets);
+						mMesh = Cast<StaticMesh>(resolver.Resolve());
+					}
 				}
 			}
 		}
 
 		ImGui::End();
 
-		// GUI::EndDockSpace();
+		GUI::EndDockSpace();
 	}
 
 	void RuntimeLayer::OnEvent(Event &e)

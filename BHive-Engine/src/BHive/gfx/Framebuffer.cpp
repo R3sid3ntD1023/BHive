@@ -6,7 +6,7 @@ namespace BHive
 {
 	Ref<Framebuffer> Framebuffer::Create(const FramebufferSpecification &specification)
 	{
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::Vulkan:
 			return CreateRef<VulkanFramebuffer>(specification);

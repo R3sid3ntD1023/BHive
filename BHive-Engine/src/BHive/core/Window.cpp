@@ -25,7 +25,7 @@ namespace BHive
 		const GLFWvidmode *video_mode = glfwGetVideoMode(primary_monitor);
 
 		GLFWwindow *shared_context = nullptr;
-		if (RenderCommand::GetRendererAPI() == RendererAPI::Opengl)
+		if (RenderCommand::GetGraphicsAPI() == RendererAPI::Opengl)
 		{
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -191,7 +191,7 @@ namespace BHive
 
 	GLFWwindow* Window::GetFocusedWindow()
 	{
-		if (RenderCommand::GetRendererAPI() == RendererAPI::Opengl)
+		if (RenderCommand::GetGraphicsAPI() == RendererAPI::Opengl)
 			return glfwGetCurrentContext();
 
 		return sFocusedWindow;

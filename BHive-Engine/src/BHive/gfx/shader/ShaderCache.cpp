@@ -57,10 +57,10 @@ namespace BHive
 
 	std::filesystem::path ShaderCache::GetStageCachePath(const std::string &name, EShaderStage stage)
 	{
-		if (RenderCommand::GetRendererAPI() == RendererAPI::Vulkan)
+		if (RenderCommand::GetGraphicsAPI() == RendererAPI::Vulkan)
 			return GetShaderCacheDir( name) / (name + GetCacheVulkanFileExtension(stage));
 
-		if (RenderCommand::GetRendererAPI() == RendererAPI::Opengl)
+		if (RenderCommand::GetGraphicsAPI() == RendererAPI::Opengl)
 			return GetShaderCacheDir(name) / (name + GetCacheOpenglFileExtension(stage));
 
 		ASSERT(false)

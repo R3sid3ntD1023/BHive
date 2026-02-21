@@ -69,7 +69,32 @@ namespace BHive
 		return true;
 	}
 
-	Ref<Texture2D> TextureLoader::Import(const std::filesystem::path &file, const FTextureImportData &import_data)
+	Ref<Texture2D> TextureLoader::CreateOrResizeTexture(int32_t w, int32_t h, int32_t c, uint8_t *data, bool hdr, const FTextureOverride &override)
+	{
+		FTextureCreateInfo create_info{};
+		create_info.Format = hdr ? utils::GetFormatFromChannelsHDR(c) : utils::GetFormatFromChannels(c);
+		create_info.Channels = c;
+		create_info.MinFilter = EMinFilter::LINEAR;
+		create_info.MagFilter = EMagFilter::LINEAR;
+		create_info.WrapMode = EWrapMode::REPEAT;
+		create_info.GenerateMipMaps = true;
+		create_info.Usage = ETextureUsage::Sampled | ETextureUsage::TransferDst;
+		create_info.Aspect = ETextureAspect::Color;
+
+		auto size = w * h * c;
+		if (override.Resize())
+		{
+			auto new_size = override.Width * override.Height * c;
+			stbi_uc *resized_buffer = (stbi_uc *)malloc(new_size);
+			stbir_resize_uint8_linear(data, w, h, 0, resized_buffer, override.Width, override.Height, 0, (stbir_pixel_layout)c);
+
+			return Texture2D::Create(override.Width, override.Height, create_info, resized_buffer,size);
+		}
+
+		return Texture2D::Create(w, h, create_info, data, size);
+	}
+
+	Ref<Texture2D> TextureLoader::Import(const std::filesystem::path &file, const const FTextureOverride &override)
 	{
 		int w = 0, h = 0, c_in = 0;
 		const int forced_channels = 4;
@@ -78,7 +103,7 @@ namespace BHive
 		stbi_uc *image_data = nullptr;
 		auto path_str = file.string();
 		bool is_hdr = stbi_is_hdr(path_str.c_str());
-		stbi_set_flip_vertically_on_load((int)import_data.mFlip);
+		stbi_set_flip_vertically_on_load(1);
 
 		size_t data_size = 0;
 		if (is_hdr)
@@ -100,28 +125,8 @@ namespace BHive
 			return nullptr;
 		}
 
-		FTextureCreateInfo create_info{};
-		create_info.Format = is_hdr ? utils::GetFormatFromChannelsHDR(c_out) : utils::GetFormatFromChannels(c_out);
-		create_info.Channels = c_out;
-		create_info.MinFilter = EMinFilter::LINEAR;
-		create_info.MagFilter = EMagFilter::LINEAR;
-		create_info.WrapMode = EWrapMode::REPEAT;
-		create_info.GenerateMipMaps = true;
 
-		Ref<Texture2D> texture = nullptr;
-
-		if (import_data.mWidth != 0 && import_data.mHeight != 0)
-		{
-			auto size = import_data.mWidth * import_data.mHeight * c_out;
-			stbi_uc *resized_buffer = (stbi_uc *)malloc(size);
-			stbir_resize_uint8_linear(image_data, w, h, 0, resized_buffer, import_data.mWidth, import_data.mHeight, 0, (stbir_pixel_layout)c_out);
-
-			texture = Texture2D::Create((unsigned)import_data.mWidth, (unsigned)import_data.mHeight, create_info, resized_buffer, size);
-		}
-		else
-		{
-			texture = Texture2D::Create((unsigned)w, (unsigned)h, create_info, image_data, data_size);
-		}
+		Ref<Texture2D> texture = CreateOrResizeTexture(w, h, c_out, image_data, is_hdr, override);
 
 		stbi_image_free(image_data);
 
@@ -130,7 +135,7 @@ namespace BHive
 
 	Ref<Texture2D> TextureLoader::LoadFromMemory(const uint8_t *data, int length)
 	{
-		int x = 0, y = 0, c_in = 0;
+		int w = 0, h = 0, c_in = 0;
 		int c_out  = 4, forced_channels = 4;
 		stbi_uc *image_data = nullptr;
 
@@ -140,13 +145,13 @@ namespace BHive
 
 		if (is_hdr)
 		{
-			image_data = (stbi_uc *)stbi_loadf_from_memory(data, length, &x, &y, &c_in, forced_channels);
-			data_size = x * y * c_out * sizeof(float);
+			image_data = (stbi_uc *)stbi_loadf_from_memory(data, length, &w, &h, &c_in, forced_channels);
+			data_size = w * h * c_out * sizeof(float);
 		}
 		else
 		{
-			image_data = stbi_load_from_memory(data, length, &x, &y, &c_in, forced_channels);
-			data_size = x * y * c_out;
+			image_data = stbi_load_from_memory(data, length, &w, &h, &c_in, forced_channels);
+			data_size = w * h * c_out;
 		}
 
 		if (!image_data)
@@ -155,15 +160,7 @@ namespace BHive
 			return nullptr;
 		}
 
-		FTextureCreateInfo create_info{};
-		create_info.Format= is_hdr ? utils::GetFormatFromChannelsHDR(c_out) : utils::GetFormatFromChannels(c_out);
-		create_info.Channels = c_out;
-		create_info.MinFilter = EMinFilter::LINEAR;
-		create_info.MagFilter = EMagFilter::LINEAR;
-		create_info.WrapMode = EWrapMode::REPEAT;
-		create_info.GenerateMipMaps = true;
-
-		auto texture = Texture2D::Create((unsigned)x, (unsigned)y, create_info, image_data, data_size);
+		auto texture = CreateOrResizeTexture(w, h, c_out, image_data, is_hdr, {});
 
 		stbi_image_free(image_data);
 

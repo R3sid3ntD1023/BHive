@@ -13,7 +13,7 @@ namespace BHive
 
 	VulkanImage::~VulkanImage()
 	{
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		api->QueueDeletion(
 			[image = mImage](uint32_t)
 			{
@@ -45,6 +45,8 @@ namespace BHive
 
 		mImage = gpu_r_m.CreateImage(desc);
 
+		mImage.Aspect = aspect;
+
 		ImageViewDesc view_desc{};
 		view_desc.Aspect = aspect;
 		view_desc.Format = format;
@@ -58,6 +60,7 @@ namespace BHive
 
 	void VulkanImage::Upload(const void *data, size_t size)
 	{
+		
 		vk::raii::Buffer stagingBuffer = nullptr;
 		vk::raii::DeviceMemory stagingMemory = nullptr;
 
@@ -67,13 +70,23 @@ namespace BHive
 		std::memcpy(map_memory, data, size);
 		stagingMemory.unmapMemory();
 
-		Transition(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-		VulkanUtils::CopyBufferToImage(stagingBuffer, mImage.Image, mWidth, mHeight);
-		Transition(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+		Vulkan::ImageState transerDst{
+			vk::ImageLayout::eTransferDstOptimal,
+			vk::AccessFlagBits2::eTransferWrite,
+			vk::PipelineStageFlagBits2::eTransfer
+		};
+
+		Vulkan::ImageState shaderRead{
+			vk::ImageLayout::eShaderReadOnlyOptimal,
+			vk::AccessFlagBits2::eShaderRead,
+			vk::PipelineStageFlagBits2::eFragmentShader
+		};
+
+		auto cmd = VulkanUtils::BeginSingleTimeCommands();
+		mImage.Transition(cmd, transerDst);
+		VulkanUtils::CopyBufferToImage(cmd, stagingBuffer, mImage.Image, mWidth, mHeight);
+		mImage.Transition(cmd, shaderRead);
+		VulkanUtils::EndSingleTimeCommands(cmd);
 	}
 
-	void VulkanImage::Transition(vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
-	{
-		VulkanUtils::TransitionImageLayout(mImage.Image, oldLayout, newLayout);
-	}
 } // namespace BHive

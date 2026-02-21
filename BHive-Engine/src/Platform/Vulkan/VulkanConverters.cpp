@@ -5,6 +5,48 @@ namespace BHive
 {
 	namespace Vulkan
 	{
+		vk::ImageAspectFlags ToVkAspect(ETextureAspect aspect)
+		{
+			switch (aspect)
+			{
+			case BHive::ETextureAspect::Color:
+				return vk::ImageAspectFlagBits::eColor;
+			case BHive::ETextureAspect::DepthStencil:
+				return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+			default:
+				break;
+			}
+
+			ASSERT(false);
+			return {};
+		}
+
+		vk::ImageUsageFlags ToVKImageUsage(ETextureUsage usage)
+		{
+			vk::ImageUsageFlags flags;
+
+
+			if((usage & ETextureUsage::Sampled) != ETextureUsage::None)
+				flags |= vk::ImageUsageFlagBits::eSampled;
+			
+			if ((usage & ETextureUsage::ColorAttachment) != ETextureUsage::None)
+				flags |= vk::ImageUsageFlagBits::eColorAttachment;
+
+			if ((usage & ETextureUsage::DepthAttachment) != ETextureUsage::None)
+				flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
+
+			if ((usage & ETextureUsage::Storage) != ETextureUsage::None)
+				flags |= vk::ImageUsageFlagBits::eStorage;
+
+			if ((usage & ETextureUsage::TransferSrc) != ETextureUsage::None)
+				flags |= vk::ImageUsageFlagBits::eTransferSrc;
+
+			if ((usage & ETextureUsage::TransferDst) != ETextureUsage::None)
+				flags |= vk::ImageUsageFlagBits::eTransferDst;
+
+			return flags;
+		}
+
 		vk::PrimitiveTopology ToVkTopology(ETopologyMode m)
 		{
 			switch (m)
@@ -268,7 +310,8 @@ namespace BHive
 			out.MinFilter = ToVkFilter(info.MinFilter);
 			out.MagFilter = ToVkFilter(info.MagFilter);
 			out.WrapMode = ToVkWrap(info.WrapMode);
-
+			out.Usage = ToVKImageUsage(info.Usage);
+			out.Aspect = ToVkAspect(info.Aspect);
 
 			out.CompareEnabled = info.CompareMode.has_value();
 			out.CompareOp = info.CompareOp.has_value() ? ToVkCompare(*info.CompareOp) : vk::CompareOp::eAlways;

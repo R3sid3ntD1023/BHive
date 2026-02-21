@@ -35,6 +35,8 @@ namespace BHive
 			FTextureCreateInfo create_info{};
 			create_info.Channels = 4;
 			create_info.Format = EFormat::RGBA8;
+			create_info.Usage = ETextureUsage::Sampled | ETextureUsage::TransferDst;
+			create_info.Aspect = ETextureAspect::Color;
 
 			WhiteTexture = Texture2D::Create(1, 1, create_info, &white, sizeof(uint32_t));
 			

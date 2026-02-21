@@ -57,9 +57,9 @@ namespace BHive
 	{
 		mShadowRenderData = CreateRef<FShadowRenderData>();
 
-		FramebufferSpecification dir_shadow_fbo_spec{.Width = DIRECTIONAL_SHADOWMAP_SIZE, .Height = DIRECTIONAL_SHADOWMAP_SIZE, .Depth = max_lights};
-		FramebufferSpecification spot_shadow_fbo_spec{.Width = SPOT_SHADOWMAP_SIZE, .Height = SPOT_SHADOWMAP_SIZE, .Depth = max_lights};
-		FramebufferSpecification point_shadow_fbo_spec{.Width = POINT_SHADOWMAP_SIZE, .Height = POINT_SHADOWMAP_SIZE, .Depth = max_lights * 6};
+		FramebufferSpecification dir_shadow_fbo_spec{.Size = {DIRECTIONAL_SHADOWMAP_SIZE, DIRECTIONAL_SHADOWMAP_SIZE}, .Depth = max_lights};
+		FramebufferSpecification spot_shadow_fbo_spec{.Size = {SPOT_SHADOWMAP_SIZE, SPOT_SHADOWMAP_SIZE} ,.Depth = max_lights};
+		FramebufferSpecification point_shadow_fbo_spec{.Size = {POINT_SHADOWMAP_SIZE, POINT_SHADOWMAP_SIZE}, .Depth = max_lights * 6};
 
 		FTextureCreateInfo shadow_texture_specs{
 			.Format = EFormat::DEPTH_COMPONENT_32F,

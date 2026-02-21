@@ -8,6 +8,8 @@ namespace BHive
 	{
 	public:
 
-		virtual const vk::ImageView &GetImageView() const = 0;
+		virtual const Vulkan::AllocatedImage &GetImage() const = 0;
+
+		virtual Vulkan::AllocatedImage &GetImage() = 0;
 	};
 }

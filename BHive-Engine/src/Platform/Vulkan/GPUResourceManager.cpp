@@ -24,6 +24,12 @@ namespace BHive
 		static inline std::unordered_map<ImageHandle, GPUImage> Images;
 	};
 
+	void GPUResourceManager::Shutdown()
+	{
+		GPUStorage::Buffers.clear();
+		GPUStorage::Images.clear();
+	}
+
 	Vulkan::AllocatedBuffer GPUResourceManager::CreateBuffer(const BufferDesc &desc)
 	{
 		auto handle = BufferHandle();

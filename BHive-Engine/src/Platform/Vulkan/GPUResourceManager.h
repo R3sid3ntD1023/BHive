@@ -38,6 +38,8 @@ namespace BHive
 	{
 	public:
 
+		void Shutdown();
+
 		Vulkan::AllocatedBuffer CreateBuffer(const BufferDesc& desc);
 
 		Vulkan::AllocatedImage CreateImage(const ImageDesc& desc);

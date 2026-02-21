@@ -11,7 +11,6 @@ namespace BHive
 		vk::SurfaceCapabilitiesKHR Capabilities;
 		std::vector<vk::SurfaceFormatKHR> Formats;
 		std::vector<vk::PresentModeKHR> PresentModes;
-		vk::SwapchainKHR OldSwapChain = nullptr;
 	};
 
 
@@ -55,16 +54,17 @@ namespace BHive
 
 		std::vector<Vulkan::Image> mImages{};
 
-		std::vector<vk::raii::Semaphore> mPresentSemaphores;
+		std::vector<vk::raii::Semaphore> mPresentSemaphores; //per frame
 
-		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores;
+		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores; //per image
 
-		std::vector<vk::raii::Fence> mInFlightFences;
+		std::vector<vk::raii::Fence> mInFlightFences; //per frame
 
 		Vulkan::AllocatedImage mDepthImage;
 
-		vk::Format mDepthFormat;
+		vk::Format mDepthFormat = vk::Format::eUndefined;
 		
 		uint32_t mMinImageCount = 0;
+
 	};
 } // namespace BHive

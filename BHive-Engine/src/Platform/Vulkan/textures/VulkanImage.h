@@ -17,9 +17,9 @@ namespace BHive
 
 		void Upload(const void *data, size_t size);
 
-		void Transition(vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
+		const Vulkan::AllocatedImage &GetImage() const { return mImage; };
 
-		const Vulkan::AllocatedImage &GetAllocatedTexture() const { return mImage; };
+		Vulkan::AllocatedImage &GetImage() { return mImage; };
 
 		const vk::DescriptorImageInfo &GetDescriptor() const { return mDescriptor; }
 

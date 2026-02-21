@@ -7,7 +7,7 @@ namespace BHive
 
 	Ref<IndexBuffer> IndexBuffer::Create(const uint32_t count, EBufferUsage usage)
 	{
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case BHive::RendererAPI::Opengl:
 			break;
@@ -24,7 +24,7 @@ namespace BHive
 
 	Ref<VertexBuffer> BHive::VertexBuffer::Create(const uint64_t size,  EBufferUsage usage)
 	{
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case BHive::RendererAPI::Opengl:
 			break;

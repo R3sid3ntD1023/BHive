@@ -13,6 +13,8 @@ namespace BHive
 			vk::Format Format;
 			vk::Filter MinFilter;
 			vk::Filter MagFilter;
+			vk::ImageUsageFlags Usage;
+			vk::ImageAspectFlags Aspect;
 			vk::SamplerAddressMode WrapMode;
 			vk::Bool32 CompareEnabled;
 			vk::CompareOp CompareOp;
@@ -21,6 +23,10 @@ namespace BHive
 			uint32_t Channels;
 			bool GenerateMipMaps;
 		};
+
+		vk::ImageAspectFlags ToVkAspect(ETextureAspect aspect);
+
+		vk::ImageUsageFlags ToVKImageUsage(ETextureUsage usage);
 
 		vk::PrimitiveTopology ToVkTopology(ETopologyMode Mode);
 

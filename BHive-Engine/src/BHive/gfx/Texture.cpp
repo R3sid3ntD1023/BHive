@@ -10,7 +10,7 @@ namespace BHive
 {
 	Ref<Texture2D> Texture2D::Create()
 	{
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
 			return CreateRef<VulkanTexture2D>();
@@ -24,7 +24,7 @@ namespace BHive
 
 	Ref<Texture2D> Texture2D::Create(uint32_t w, uint32_t h, const FTextureCreateInfo &info, const void *buffer, size_t size)
 	{
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
 			return CreateRef<VulkanTexture2D>(w, h, info, buffer, size);
@@ -38,7 +38,7 @@ namespace BHive
 
 	Ref<Texture2DArray> Texture2DArray::Create(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification)
 	{
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
 			return CreateRef<VulkanTexture2DArray>(width, height, depth, specification);
@@ -52,7 +52,7 @@ namespace BHive
 
 	Ref<Texture3D> Texture3D::Create(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &create_info, const void *data)
 	{
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
 			return CreateRef<VulkanTexture3D>(width, height, depth, create_info, data);
@@ -66,7 +66,7 @@ namespace BHive
 
 	Ref<TextureCube> TextureCube::Create(uint32_t size, const FTextureCreateInfo &info)
 	{
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
 			return CreateRef<VulkanTextureCube>(size, info);
@@ -80,7 +80,7 @@ namespace BHive
 
 	Ref<TextureCubeArray> TextureCubeArray::Create(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification)
 	{
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
 			return CreateRef<VulkanTextureCubeArray>(width, height, depth, specification);
@@ -94,7 +94,7 @@ namespace BHive
 
 	Ref<Texture2DMultisample> Texture2DMultisample::Create(uint32_t width, uint32_t height, uint32_t samples, const FTextureCreateInfo &create_info)
 	{
-		switch (RenderCommand::GetRendererAPI())
+		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
 			//return CreateRef<VulkanTexture2DMultisample>(width, height, samples, create_info);

@@ -145,7 +145,7 @@ namespace BHive
 				data.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline); 
 			};
 
-		RenderCommand::GetAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
+		RenderCommand::GetRendererAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
 	}
 
 	void VulkanPipeline::UnBind()

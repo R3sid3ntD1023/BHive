@@ -61,7 +61,7 @@ namespace BHive
 		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
 		std::memcpy(buffer_copy->data(), data, size);
 
-		auto api = RenderCommand::GetAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		auto cmd = [=](const FVulkanFrame &frame)
 		{
 			const auto current_frame = frame.Frame;

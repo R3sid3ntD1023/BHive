@@ -18,6 +18,8 @@ namespace BHive
 		vk::raii::CommandBuffer& CommandBuffer;
 
 		uint32_t Frame;
+
+		uint32_t ImageIndex;
 	};
 
 	using RGExecuteFn = std::function<void(const FVulkanFrame&)>;
@@ -27,7 +29,8 @@ namespace BHive
 	enum ECommandType
 	{
 		ECommandType_PreCommand,
-		ECommandType_Command
+		ECommandType_Command,
+		ECommandType_ToScreen
 	};
 
 
@@ -85,8 +88,6 @@ namespace BHive
 
 		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) override;
 
-		virtual void ExecuteGraph(const RenderGraph &graph, Window *defaultWindow) override;
-
 		vk::Result RenderFrame(VulkanWindowContext* ctx);
 
 		void SubmitCommand(const FRenderCommand &command, ECommandType type = ECommandType_Command);
@@ -94,8 +95,6 @@ namespace BHive
 		vk::raii::DescriptorPool &GetDescriptorPool() { return mDescriptorPool; }
 
 		virtual EAPI GetAPI() const override { return EAPI::Vulkan; }
-
-		void BeginSwapchainRendering(const FVulkanFrame &frame, Window* window);
 
 		void QueueDeletion(std::function<void(uint32_t)> fn);
 
@@ -110,7 +109,6 @@ namespace BHive
 	private:
 		vk::raii::Device &mDevice;
 
-
 		vk::raii::DescriptorPool mDescriptorPool = nullptr;
 
 		vk::ClearColorValue mClearColor{0, 0, 0, 1};
@@ -122,5 +120,7 @@ namespace BHive
 		VulkanWindowContext *mCurrentContext = nullptr;
 
 		uint32_t  mCompletedFrame = 0;
+
+		friend class VulkanFramebuffer;
 	};
 } // namespace BHive
