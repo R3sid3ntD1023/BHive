@@ -68,25 +68,9 @@ namespace BHive
 
 		virtual void MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const VertexArray &vao, size_t drawCount, size_t stride = 0) override;
 
-		virtual void EnableDepth() override;
-
-		virtual void DisableDepth() override;
-
-		virtual void DepthFunc(uint32_t func) override;
-
-		virtual void CullFront() override;
-
-		virtual void CullBack() override;
-
-		virtual void SetCullEnabled(bool enabled) override;
+		virtual void Dispath(uint32_t x, uint32_t y, uint32_t z) override;
 
 		virtual void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a) override;
-
-		virtual void EnableDepthMask(bool mask) override;
-
-		virtual void EnableBlend(bool enabled) override;
-
-		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) override;
 
 		vk::Result RenderFrame(VulkanWindowContext* ctx);
 

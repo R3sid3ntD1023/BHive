@@ -67,54 +67,15 @@ namespace BHive
 		sRendererAPI->MultiDrawElementsIndirect(mode, indirect, vao,  drawCount, stride);
 	}
 
-	void RenderCommand::EnableDepth()
+	void RenderCommand::Dispath(uint32_t x, uint32_t y, uint32_t z)
 	{
-		sRendererAPI->EnableDepth();
+		sRendererAPI->Dispath(x, y, z);
 	}
 
-	void RenderCommand::DisableDepth()
-	{
-		sRendererAPI->DisableDepth();
-	}
-
-	void RenderCommand::DepthFunc(uint32_t func)
-	{
-		sRendererAPI->DepthFunc(func);
-	}
-
-	void RenderCommand::CullFront()
-	{
-		sRendererAPI->CullFront();
-	}
-
-	void RenderCommand::CullBack()
-	{
-		sRendererAPI->CullBack();
-	}
-
-	void RenderCommand::SetCullEnabled(bool enabled)
-	{
-		sRendererAPI->SetCullEnabled(enabled);
-	}
-
+	
 	void RenderCommand::ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 	{
 		sRendererAPI->ColorMask(r, g, b, a);
-	}
-
-	void RenderCommand::EnableDepthMask(bool mask)
-	{
-		sRendererAPI->EnableDepthMask(mask);
-	}
-
-	void RenderCommand::EnableBlend(bool enabled)
-	{
-		sRendererAPI->EnableBlend(enabled);
-	}
-
-	void RenderCommand::AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer)
-	{
-		sRendererAPI->AttachTextureToFramebuffer(attachment, texture, framebuffer);
 	}
 
 	Scope<RendererAPI> RenderCommand::sRendererAPI = RendererAPI::Create();

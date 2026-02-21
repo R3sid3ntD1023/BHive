@@ -34,25 +34,9 @@ namespace BHive
 
 		static void MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const VertexArray &vao,  size_t drawCount, size_t stride = 0);
 
-		static void EnableDepth();
-
-		static void DisableDepth();
-
-		static void DepthFunc(uint32_t func);
-
-		static void CullFront();
-
-		static void CullBack();
-
-		static void SetCullEnabled(bool enabled);
+		static void Dispath(uint32_t x, uint32_t y, uint32_t z);
 
 		static void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-
-		static void EnableDepthMask(bool mask);
-
-		static void EnableBlend(bool enabled);
-
-		static void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer);
 
 		static RendererAPI::EAPI GetGraphicsAPI() { return sRendererAPI->GetAPI(); }
 

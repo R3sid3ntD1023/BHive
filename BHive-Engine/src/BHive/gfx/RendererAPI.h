@@ -58,26 +58,9 @@ namespace BHive
 
 		virtual void MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const VertexArray &vao, size_t drawCount, size_t stride = 0) = 0;
 
-		virtual void EnableDepth() = 0;
-
-		virtual void DisableDepth() = 0;
-
-		virtual void DepthFunc(uint32_t func) = 0;
-
-		virtual void CullFront() = 0;
-
-		virtual void CullBack() = 0;
-
-		virtual void SetCullEnabled(bool enabled) = 0;
+		virtual void Dispath(uint32_t x, uint32_t y, uint32_t z) = 0;
 
 		virtual void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a) = 0;
-
-		virtual void EnableDepthMask(bool mask) = 0;
-
-		virtual void EnableBlend(bool enabled) = 0;
-
-		virtual void AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer) = 0;
-
 
 		virtual EAPI GetAPI() const = 0;
 

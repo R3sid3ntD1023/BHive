@@ -298,47 +298,17 @@ namespace BHive
 		vao.UnBind();
 	}
 
-	void VulkanRendererAPI::EnableDepth()
+	void VulkanRendererAPI::Dispath(uint32_t x, uint32_t y, uint32_t z)
 	{
+		auto cmd = [x, y, z](const FVulkanFrame &data)
+		{
+			data.CommandBuffer.dispatch(x, y, z);
+		};
 
-		
-	}
-
-	void VulkanRendererAPI::DisableDepth()
-	{
-
-		
-	}
-
-	void VulkanRendererAPI::DepthFunc(uint32_t func)
-	{
-	}
-
-	void VulkanRendererAPI::CullFront()
-	{	
-	}
-
-	void VulkanRendererAPI::CullBack()
-	{	
-	}
-
-	void VulkanRendererAPI::SetCullEnabled(bool enabled)
-	{	
+		SubmitCommand(cmd);
 	}
 
 	void VulkanRendererAPI::ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-	{	
-	}
-
-	void VulkanRendererAPI::EnableDepthMask(bool mask)
-	{
-	}
-
-	void VulkanRendererAPI::EnableBlend(bool enabled)
-	{	
-	}
-
-	void VulkanRendererAPI::AttachTextureToFramebuffer(uint32_t attachment, uint32_t texture, uint32_t framebuffer)
 	{	
 	}
 
