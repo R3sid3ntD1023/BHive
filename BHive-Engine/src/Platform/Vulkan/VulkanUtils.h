@@ -7,6 +7,13 @@ namespace BHive
 {
 	struct VulkanUtils
 	{
+		struct CopyImageRegion
+		{
+			uint32_t BaseArrayLayer = 0;
+			uint32_t LayerCount = 1;
+			vk::Offset3D Offset = {0, 0, 0};
+			vk::Extent3D Extents = {0, 0, 1};
+		};
 
 		static uint32_t FindQueueFamilies(vk::PhysicalDevice device);
 
@@ -45,7 +52,7 @@ namespace BHive
 
 		static uint32_t FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
 
-		static void CopyBufferToImage(const vk::raii::CommandBuffer& cmd ,const vk::Buffer &buffer, vk::Image &image, uint32_t width, uint32_t height);
+		static void CopyBufferToImage(const vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, vk::Image &image, const CopyImageRegion& region);
 
 		static void SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size);
 

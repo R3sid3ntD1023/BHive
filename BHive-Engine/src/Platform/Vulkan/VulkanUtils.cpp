@@ -222,10 +222,11 @@ namespace BHive
 		ASSERT(false, "Failed to find suitable memory type!")
 	}
 
-	void VulkanUtils::CopyBufferToImage(const vk::raii::CommandBuffer &cmd ,const vk::Buffer &buffer, vk::Image &image, uint32_t width, uint32_t height)
+	void VulkanUtils::CopyBufferToImage(const vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, vk::Image &image, const CopyImageRegion &region)
 	{
-		vk::BufferImageCopy region(0, 0, 0, {vk::ImageAspectFlagBits::eColor, 0, 0, 1}, {0, 0, 0}, {width, height, 1});
-		cmd.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, region);
+		vk::ImageSubresourceLayers layers(vk::ImageAspectFlagBits::eColor, 0, region.BaseArrayLayer, region.LayerCount);
+		vk::BufferImageCopy image_region(0, 0, 0, layers, region.Offset, region.Extents);
+		cmd.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, image_region);
 	}
 
 	void VulkanUtils::SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size)
