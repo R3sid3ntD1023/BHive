@@ -28,14 +28,14 @@ namespace BHive
 
 	void VulkanShader::CreateDescriptorResources(const ShaderAsset &asset)
 	{
-		auto merged = FShaderReflection::Merge(asset.Reflection);
+		const auto& merged = asset.MergedReflection;
 
 		std::map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> bindings;
 
 		for (auto &[name, sampler] : merged.Samplers)
 		{
 			auto vk_stage = Vulkan::ToVkShaderStageBit(sampler.Stages);
-			bindings[sampler.Set].emplace_back(sampler.Binding, vk::DescriptorType::eCombinedImageSampler, 1, vk_stage);
+			bindings[sampler.Set].emplace_back(sampler.Binding, vk::DescriptorType::eCombinedImageSampler, sampler.ArraySize, vk_stage);
 		}
 
 		for (auto &[name, ubo] : merged.UniformBuffers)
@@ -52,7 +52,20 @@ namespace BHive
 
 		for (auto &[setIndex, bindingsList] : bindings)
 		{
-			vk::DescriptorSetLayoutCreateInfo layout_info({}, bindingsList, nullptr);
+			std::vector<vk::DescriptorBindingFlags> binding_flags(bindingsList.size(), {});
+
+			for (size_t i = 0; i < bindingsList.size(); i++)
+			{
+				auto &b = bindingsList[i];
+
+				if (b.descriptorType == vk::DescriptorType::eCombinedImageSampler)
+				{
+					binding_flags[i] = vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eUpdateUnusedWhilePending | vk::DescriptorBindingFlagBits::eUpdateAfterBind;
+				}
+			}
+
+			vk::DescriptorSetLayoutBindingFlagsCreateInfo flags(binding_flags);
+			vk::DescriptorSetLayoutCreateInfo layout_info(vk::DescriptorSetLayoutCreateFlagBits::eUpdateAfterBindPool, bindingsList, &flags);
 			mDescriptorSetLayouts.emplace_back(mDevice.createDescriptorSetLayout(layout_info));
 		}
 
