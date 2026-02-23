@@ -53,7 +53,7 @@ namespace BHive
 		pool_sizes.emplace_back(vk::DescriptorType::eStorageTexelBuffer, descriptor_count);
 		pool_sizes.emplace_back(vk::DescriptorType::eInputAttachment, descriptor_count);
 
-		vk::DescriptorPoolCreateInfo pool_create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 1000, pool_sizes);
+		vk::DescriptorPoolCreateInfo pool_create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind, 1000, pool_sizes);
 		mDescriptorPool = mDevice.createDescriptorPool(pool_create_info);
 
 	}
