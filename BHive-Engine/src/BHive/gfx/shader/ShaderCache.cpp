@@ -47,7 +47,7 @@ namespace BHive
 	template <typename A>
 	void Serialize(A& ar, ShaderCache::MetaData& meta)
 	{
-		ar(meta.Hash, meta.Stages);
+		ar(meta.Hash, meta.Stages, meta.MergedReflection);
 	}
 	
 	std::filesystem::path ShaderCache::GetShaderCacheDir(const std::string &name)
@@ -85,8 +85,8 @@ namespace BHive
 		if (!std::filesystem::exists(meta_path))
 			return meta;
 
-		std::ifstream in(meta_path);
-		cereal::JSONInputArchive ar(in);
+		std::ifstream in(meta_path, std::ios::in | std::ios::binary);
+		cereal::BinaryInputArchive ar(in);
 
 		ar(meta);
 
@@ -96,8 +96,8 @@ namespace BHive
 
 	void ShaderCache::StoreMeta(const std::string &name, const MetaData &meta)
 	{
-		std::ofstream out(GetMetaPath(name));
-		cereal::JSONOutputArchive ar(out);
+		std::ofstream out(GetMetaPath(name), std::ios::out | std::ios::binary);
+		cereal::BinaryOutputArchive ar(out);
 		ar(meta);
 	}
 
@@ -132,15 +132,15 @@ namespace BHive
 
 	void ShaderCache::LoadCache(ShaderAsset &asset)
 	{
+		auto meta = LoadMeta(asset.Name);
+
 		for (auto& [stage, data] : asset.Stages)
 		{
 			auto path = GetStageCachePath(asset.Name, stage);
 			FileSystem::ReadFile(path, data.Spirv);
-
-			//reflect
-			asset.Reflection[stage].Reflect(stage, data.Spirv);
 		}
 
+		asset.MergedReflection = meta.MergedReflection;
 	}
 
 	void ShaderCache::StoreCache(const ShaderAsset &asset, const std::string& source)
@@ -159,12 +159,11 @@ namespace BHive
 		//write metadata
 		MetaData meta;
 		meta.Hash = ComputeHash(source);
-
 		
-
 		for (auto &[stage, _] : asset.Stages)
 			meta.Stages.push_back(stage);
 
+		meta.MergedReflection = asset.MergedReflection;
 
 		StoreMeta(asset.Name, meta);
 	}

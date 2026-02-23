@@ -25,11 +25,12 @@ namespace BHive
 		int32_t Set{};
 		int32_t Binding{};
 		EShaderStage Stages{};
+		uint32_t ArraySize{};
 
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(Set, Binding, Stages);
+			ar(Set, Binding, Stages, ArraySize);
 		}
 	};
 
@@ -95,6 +96,7 @@ namespace BHive
 		{
 			ar(Uniforms, Samplers, UniformBuffers, PushConstants, StorageBuffers);
 		}
+
 	};
 
 	using FShaderReflectionDatas = std::unordered_map<EShaderStage, FShaderReflection>;

@@ -4,6 +4,7 @@
 #include <spirv_cross/spirv_glsl.hpp>
 #include "ShaderReflection.h"
 #include "gfx/RenderCommand.h"
+#include <regex>
 
 namespace BHive
 {
@@ -108,6 +109,24 @@ namespace BHive
 				std::filesystem::create_directories(cache_dir);
 		}
 
+		void ParseShaderArraySizes(const std::string& code, FShaderReflection& refl)
+		{
+			std::regex r(R"(uniform\s+sampler2D\s+([A-Za-z0-9_]+)\s*\[\s*([0-9]+)\s*\])");
+
+			std::smatch match;
+
+			std::string::const_iterator searchStart(code.begin());
+			while (std::regex_search(searchStart, code.end(), match, r))
+			{
+				std::string name = match[1];
+				uint32_t size = std::stoi(match[2]);
+
+				refl.Samplers[name].ArraySize = size;
+
+				searchStart = match.suffix().first;
+			}
+		}
+
 	} // namespace utils
 
 	ShaderCompiler::ShaderCompiler(const std::filesystem::path& filepath)
@@ -156,11 +175,27 @@ namespace BHive
 
 			// reflect
 			LOG_TRACE("Reflecting Shader... {}", asset.Name)
-			auto& refl = asset.Reflection[stage];
+
+			
+		}
+
+		std::unordered_map<EShaderStage, FShaderReflection> refl_map;
+
+		for (auto &[stage, data] : asset.Stages)
+		{
+			FShaderReflection refl;
 			refl.Reflect(stage, data.Spirv);
 
-			LOG_TRACE(refl.to_string())
+			utils::ParseShaderArraySizes(data.Code, refl);
+
+			refl_map[stage] = refl;
 		}
+
+		LOG_TRACE("Merging Reflection");
+
+		asset.MergedReflection = FShaderReflection::Merge(refl_map);
+
+		LOG_TRACE(asset.MergedReflection.to_string())
 	}
 
 	void ShaderCompiler::CompileToOpengl(ShaderAsset& asset)

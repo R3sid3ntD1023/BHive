@@ -1,6 +1,8 @@
 #include "ShaderReflection.h"
 #include <glad/glad.h>
 #include <spirv_cross/spirv_cpp.hpp>
+#include <spirv_cross/spirv_parser.hpp>
+#include <spirv_cross/spirv_reflect.hpp>
 
 namespace BHive
 {
@@ -54,7 +56,7 @@ namespace BHive
 			}
 		}
 
-		for (auto &uniform : resources.gl_plain_uniforms)
+		for (const auto &uniform : resources.gl_plain_uniforms)
 		{
 			auto &type = compiler.get_type(uniform.base_type_id);
 			
@@ -66,16 +68,17 @@ namespace BHive
 			u.Stages |= stage;
 		}
 
-		for (auto &sampler : resources.sampled_images)
+		for (const auto &sampler : resources.sampled_images)
 		{
 			auto &type = compiler.get_type(sampler.base_type_id);
 			auto &s = Samplers[sampler.name];
 			s.Set = compiler.get_decoration(sampler.id, spv::DecorationDescriptorSet);
 			s.Binding = compiler.get_decoration(sampler.id, spv::DecorationBinding);
+			s.ArraySize = 1;
 			s.Stages |= stage;
 		}
 
-		for (auto &storage : resources.storage_buffers)
+		for (const auto &storage : resources.storage_buffers)
 		{
 			auto &type = compiler.get_type(storage.base_type_id);
 			
@@ -93,7 +96,7 @@ namespace BHive
 
 		for (const auto &[name, sampler] : Samplers)
 		{
-			result += fmt::format("\t\tSampler: {} - Set: {} - Binding: {}\n", name, sampler.Set, sampler.Binding);
+			result += fmt::format("\t\tSampler: {} - Set: {} - Binding: {} - ArraySize: {}\n", name, sampler.Set, sampler.Binding, sampler.ArraySize);
 		}
 		for (const auto &[name, buffer] : UniformBuffers)
 		{
@@ -135,6 +138,7 @@ namespace BHive
 				dst.Set = s.Set;
 				dst.Binding = s.Binding;
 				dst.Stages |= s.Stages;
+				dst.ArraySize = s.ArraySize;
 			}
 
 			// Merge UBOs
@@ -187,4 +191,5 @@ namespace BHive
 
 		return merged;
 	}
+
 } // namespace BHive

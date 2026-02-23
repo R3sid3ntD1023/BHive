@@ -20,8 +20,7 @@ namespace BHive
 			uint64_t Hash = 0;
 			std::vector<EShaderStage> Stages;
 			bool Valid = false;
-
-			
+			FShaderReflection MergedReflection;
 		};
 
 	private:
