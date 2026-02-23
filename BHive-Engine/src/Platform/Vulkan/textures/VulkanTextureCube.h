@@ -22,11 +22,13 @@ namespace BHive
 
 		virtual uint32_t GetHeight() const { return mSize; }
 
-		virtual void SetData(const void *data, uint32_t offsetX = 0, uint32_t offsetY = 0) {}
+		virtual void SetData(const void *data, const glm::uvec3 &offset = {0, 0, 0}) {}
 
 		virtual const FTextureCreateInfo &GetInfo() const { return mCreateInfo; }
 
-		virtual NativeHandle GetNativeHandle() const;
+		NativeHandle GetNativeHandle() const override { return mImage.GetNativeHandle(); }
+
+		const vk::DescriptorImageInfo GetDescriptor() const override { return mImage.GetDescriptor(); }
 	
 		virtual const Vulkan::AllocatedImage &GetImage() const override { return mImage.GetImage(); };
 

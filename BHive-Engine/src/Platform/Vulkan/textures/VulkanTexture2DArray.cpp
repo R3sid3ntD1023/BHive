@@ -33,15 +33,11 @@ namespace BHive
 	{
 	}
 
-	void VulkanTexture2DArray::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
+	void VulkanTexture2DArray::SetData(const void *data, const glm::uvec3 &offset)
 	{
 
 		vk::DeviceSize size = mWidth * mHeight * mDepth * mCreateInfo.Channels;
 
-		mImage.Upload(data, size);
-	}
-	NativeHandle VulkanTexture2DArray::GetNativeHandle() const
-	{
-		return mImage.GetNativeHandle();
+		mImage.Upload(data, size, {offset.x, offset.y, offset.z});
 	}
 } // namespace BHive

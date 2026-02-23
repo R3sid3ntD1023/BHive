@@ -5,6 +5,7 @@
 #include "Platform/Vulkan/textures/VulkanTextureCube.h"
 #include "Platform/Vulkan/textures/VulkanTextureCubeArray.h"
 #include "Texture.h"
+#include <stb_image_resize2.h>
 
 namespace BHive
 {
@@ -34,6 +35,22 @@ namespace BHive
 
 		ASSERT(false);
 		return nullptr;
+	}
+
+	void Texture2DArray::AddTexture(const Ref<Texture2D> &tex)
+	{
+		const auto& buffer = tex->GetBuffer();
+		const auto size = glm::uvec2{tex->GetWidth(), tex->GetHeight()};
+
+		const auto stride = GetWidth() * GetHeight();
+		Buffer output( stride);
+		stbir_resize(buffer.As<uint8_t>(), size.x, size.y, stride, output, GetWidth(), GetHeight());
+	}
+
+	const Texture2DArray::LayerInfo &Texture2DArray::GetLayerInfo(uint32_t layer) const
+	{
+		ASSERT(layer >= 0 && layer < mLayerInfo.size());
+		return mLayerInfo.at(layer);
 	}
 
 	Ref<Texture2DArray> Texture2DArray::Create(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification)

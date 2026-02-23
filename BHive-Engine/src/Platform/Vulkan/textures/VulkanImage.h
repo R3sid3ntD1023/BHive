@@ -15,13 +15,15 @@ namespace BHive
 		void
 		Create(uint32_t width, uint32_t height, uint32_t depth, vk::ImageType type, vk::ImageViewType viewType, vk::Format format, vk::ImageUsageFlags usage, vk::ImageAspectFlags aspect, vk::SamplerCreateInfo samplerInfo = {});
 
-		void Upload(const void *data, size_t size);
+		void Upload(const void *data, size_t size, const vk::Offset3D &offset = {0, 0, 0});
 
 		const Vulkan::AllocatedImage &GetImage() const { return mImage; };
 
 		Vulkan::AllocatedImage &GetImage() { return mImage; };
 
-		const vk::DescriptorImageInfo &GetDescriptor() const { return mDescriptor; }
+		const vk::DescriptorImageInfo GetDescriptor() const;
+
+		NativeHandle GetNativeHandle() const { return NativeHandle::FromPtr(&mImage); }
 
 		uint32_t GetWidth() const { return mWidth; }
 
@@ -29,12 +31,9 @@ namespace BHive
 
 		uint32_t GetDepth() const { return mDepth; }
 
-		NativeHandle GetNativeHandle() const { return Vulkan::Handle::ImageInfo(&mDescriptor); }
-
 	private:
 		vk::raii::Device &mDevice;
 		Vulkan::AllocatedImage mImage{};
-		vk::DescriptorImageInfo mDescriptor{};
 		uint32_t mWidth = 0, mHeight = 0, mDepth = 0;
 		vk::Format mFormat = vk::Format::eUndefined;
 	};

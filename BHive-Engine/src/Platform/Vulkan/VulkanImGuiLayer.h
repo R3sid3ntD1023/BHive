@@ -7,6 +7,19 @@ namespace BHive
 {
 	class FDescriptorPool;
 
+	struct TextureKey
+	{
+		VkImageView View;
+		VkSampler Sampler;
+
+		bool operator==(const TextureKey& rhs) const { return View == rhs.View && Sampler == rhs.Sampler;}
+	};
+
+	struct TextureKeyHash
+	{
+		size_t operator()(const TextureKey &k) const { return std::hash<VkImageView>()(k.View) ^ (std::hash<VkSampler>()(k.Sampler) << 1); }
+	};
+
 	class BHIVE_API VulkanImGuiLayer : public ImGuiLayer
 	{
 	public:
@@ -32,7 +45,7 @@ namespace BHive
 
 		vk::raii::DescriptorPool mDescriptorPool = VK_NULL_HANDLE;
 
-		static inline std::unordered_map<const vk::DescriptorImageInfo *, VkDescriptorSet> s_ImGuiTextureMap;
+		static inline std::unordered_map<TextureKey, VkDescriptorSet, TextureKeyHash> s_ImGuiTextureMap;
 	};
 
 } // namespace BHive

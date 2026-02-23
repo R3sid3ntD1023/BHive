@@ -45,22 +45,22 @@ namespace BHive
 		mCreateInfo = info;
 	}
 
-	void VulkanTexture2D::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
+	void VulkanTexture2D::SetData(const void *data, const glm::uvec3 &offset)
 	{
 		vk::DeviceSize size = mWidth * mHeight * mCreateInfo.Channels;
 
-		mImage.Upload(data, size);
+		mImage.Upload(data, size, {offset.x, offset.y, 0});
 	}
 
 	Ref<Texture2D> VulkanTexture2D::CreateSubTexture(const FSubTexture &texture)
 	{
 		auto c = mCreateInfo.Channels;
-		size_t size = texture.width * texture.height * c;
+		size_t size = texture.Size.x * texture.Size.y * c;
 
 		Buffer pixels(size);
 		GetSubImage(texture, size, &pixels[0]);
 
-		return Texture2D::Create(texture.width, texture.height, mCreateInfo, pixels);
+		return Texture2D::Create(texture.Size.x, texture.Size.y, mCreateInfo, pixels);
 	}
 
 	void VulkanTexture2D::GetSubImage(const FSubTexture &texture, size_t size, uint8_t *data) const
@@ -82,11 +82,6 @@ namespace BHive
 		sampler_info.maxLod = 0.f;
 
 		mImage.Create(mWidth, mHeight, 1, vk::ImageType::e2D, vk::ImageViewType::e2D, api_info.Format, api_info.Usage, api_info.Aspect, sampler_info);
-	}
-
-	NativeHandle VulkanTexture2D::GetNativeHandle() const
-	{
-		return mImage.GetNativeHandle();
 	}
 
 	void VulkanTexture2D::Save(cereal::BinaryOutputArchive &ar) const

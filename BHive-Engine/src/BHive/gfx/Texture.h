@@ -10,8 +10,8 @@ namespace BHive
 {
 	struct FSubTexture
 	{
-		uint32_t x = 0, y = 0, z = 0;
-		uint32_t width = 1, height = 1, depth = 1;
+		glm::uvec3 Offset = {0, 0, 0};
+		glm::uvec3 Size = {0, 0, 1};
 	};
 
 	class Texture : public Asset
@@ -29,7 +29,7 @@ namespace BHive
 
 		float GetAspectRatio() const { return (float)GetWidth() / (float)GetHeight(); }
 
-		virtual void SetData(const void *data, uint32_t offsetX = 0, uint32_t offsetY = 0) = 0;
+		virtual void SetData(const void *data, const glm::uvec3 &offset = {0, 0, 0}) = 0;
 
 		virtual const FTextureCreateInfo &GetInfo() const = 0;
 
@@ -56,14 +56,33 @@ namespace BHive
 		static Ref<Texture2D> Create(uint32_t w, uint32_t h, const FTextureCreateInfo &info = {}, const void *buffer = nullptr, size_t size = 0);
 
 		REFLECTABLEV(Texture)
+
+	private:
+		uint32_t mLayerIndex; //used by texture2d array
+
+		friend class Tetxure2DArray;
 	};
 
 	class BHIVE_API Texture2DArray : public Texture
 	{
 	public:
+		struct LayerInfo
+		{
+			glm::vec2 UvScale = {1.f, 1.f};
+			glm::uvec2 OrginalSize = {0, 0};
+		};
+	public:
 		virtual ~Texture2DArray() = default;
 
+		virtual void AddTexture(const Ref<Texture2D> &tex);
+
+		const LayerInfo& GetLayerInfo(uint32_t layer) const;
+
 		static Ref<Texture2DArray> Create(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification);
+
+
+	private:
+		std::vector<LayerInfo> mLayerInfo;
 	};
 
 	class BHIVE_API Texture3D : public Texture

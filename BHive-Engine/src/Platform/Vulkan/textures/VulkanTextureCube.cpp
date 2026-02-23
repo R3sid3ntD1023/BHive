@@ -23,9 +23,4 @@ namespace BHive
 			sampler_info);
 	}
 
-	NativeHandle VulkanTextureCube::GetNativeHandle() const
-	{
-		return mImage.GetNativeHandle();
-	}
-
 } // namespace BHive

@@ -4,6 +4,8 @@
 #include "VulkanSwapChain.h"
 #include "VulkanUtils.h"
 #include "VulkanImGuiLayer.h"
+#include "IVulkanTexture.h"
+#include "gfx/Texture.h"
 
 #include <backends/imgui_impl_glfw.h>
 
@@ -148,13 +150,14 @@ namespace BHive
 
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)
 	{
-		auto handle = texture.GetNativeHandle().As<vk::DescriptorImageInfo>();
+		auto handle = dynamic_cast<const IVulkanTexture&>(texture).GetDescriptor();
+		auto key = TextureKey{(VkImageView)handle.imageView, (VkSampler)handle.sampler};
 
-		if (s_ImGuiTextureMap.contains(handle))
-			return s_ImGuiTextureMap[handle];
+		if (s_ImGuiTextureMap.contains(key))
+			return s_ImGuiTextureMap[key];
 
-		auto set = ImGui_ImplVulkan_AddTexture(handle->sampler, handle->imageView, (VkImageLayout)handle->imageLayout);
-		return s_ImGuiTextureMap[handle] = set;
+		auto set = ImGui_ImplVulkan_AddTexture(handle.sampler, handle.imageView, (VkImageLayout)handle.imageLayout);
+		return s_ImGuiTextureMap[key] = set;
 	}
 
 } // namespace BHive

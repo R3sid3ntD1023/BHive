@@ -54,11 +54,9 @@ namespace BHive
 		gpu_r_m.CreateImageView(mImage, view_desc);
 
 		gpu_r_m.CreateSampler(mImage, samplerInfo);
-
-		mDescriptor = vk::DescriptorImageInfo(mImage.Sampler, mImage.View, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
-	void VulkanImage::Upload(const void *data, size_t size)
+	void VulkanImage::Upload(const void *data, size_t size, const vk::Offset3D &offset)
 	{
 		
 		vk::raii::Buffer stagingBuffer = nullptr;
@@ -82,11 +80,20 @@ namespace BHive
 			vk::PipelineStageFlagBits2::eFragmentShader
 		};
 
+		VulkanUtils::CopyImageRegion region
+		{
+			0, mDepth, offset, {mWidth, mHeight, mDepth}
+		};
 		auto cmd = VulkanUtils::BeginSingleTimeCommands();
 		mImage.Transition(cmd, transerDst);
-		VulkanUtils::CopyBufferToImage(cmd, stagingBuffer, mImage.Image, mWidth, mHeight);
+		VulkanUtils::CopyBufferToImage(cmd, stagingBuffer, mImage.Image, region);
 		mImage.Transition(cmd, shaderRead);
 		VulkanUtils::EndSingleTimeCommands(cmd);
+	}
+
+	const vk::DescriptorImageInfo VulkanImage::GetDescriptor() const
+	{
+		return vk::DescriptorImageInfo(mImage.Sampler, mImage.View, vk::ImageLayout::eShaderReadOnlyOptimal);
 	}
 
 } // namespace BHive

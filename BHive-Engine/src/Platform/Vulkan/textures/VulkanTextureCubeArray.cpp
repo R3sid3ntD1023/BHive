@@ -32,13 +32,8 @@ namespace BHive
 	{
 	}
 
-	void VulkanTextureCubeArray::SetData(const void *data, uint32_t offsetX, uint32_t offsetY)
+	void VulkanTextureCubeArray::SetData(const void *data, const glm::uvec3& offset)
 	{
 		//mImage.Upload(data, size);
-	}
-
-	NativeHandle VulkanTextureCubeArray::GetNativeHandle() const
-	{
-		return mImage.GetNativeHandle();
 	}
 } // namespace BHive
