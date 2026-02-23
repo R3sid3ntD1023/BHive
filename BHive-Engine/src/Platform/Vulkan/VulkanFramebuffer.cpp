@@ -66,6 +66,7 @@ namespace BHive
 		auto depth_attachment = mDepthAttachment;
 		auto spec = mSpecification;
 
+
 		auto cmd = [color_attachmnets, depth_attachment, spec](const FVulkanFrame &frame)
 		{
 			
@@ -117,6 +118,12 @@ namespace BHive
 			auto info = vk::RenderingInfo({}, rect, 1, 0, color_infos, depth);
 
 			frame.CommandBuffer.beginRendering(info);
+
+			vk::Viewport viewport(0.f, 0.f, (float)spec.Size.x, (float)spec.Size.y, 0.0f, 1.0f );
+			vk::Rect2D scissor({0, 0}, {spec.Size.x, spec.Size.y});
+
+			frame.CommandBuffer.setViewport(0, viewport);
+			frame.CommandBuffer.setScissor(0, scissor);
 
 		};
 
