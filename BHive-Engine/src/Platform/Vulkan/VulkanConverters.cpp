@@ -316,10 +316,9 @@ namespace BHive
 			out.CompareEnabled = info.CompareMode.has_value();
 			out.CompareOp = info.CompareOp.has_value() ? ToVkCompare(*info.CompareOp) : vk::CompareOp::eAlways;
 
-			memcpy(out.BorderColor, info.BorderColor, sizeof(float) * 4);
 			out.Levels = info.Levels;
+			out.ArrayLayers = info.ArrayLayers;
 			out.GenerateMipMaps = info.GenerateMipMaps;
-			out.Channels = info.Channels;
 
 			return out;
 

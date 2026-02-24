@@ -38,7 +38,7 @@ namespace BHive
 		mPreFilteredEnvironmentTexture = TextureCube::Create(PREFILTER_MAP_SIZE, pre_filter_specification);
 
 		mBRDFLUTTexture = Texture2D::Create(
-			BRDF_LUT_SIZE, BRDF_LUT_SIZE,
+			{BRDF_LUT_SIZE, BRDF_LUT_SIZE},
 			FTextureCreateInfo{.Format = EFormat::RG16F, .WrapMode = EWrapMode::CLAMP_TO_EDGE, .MinFilter = EMinFilter::NEAREST, .MagFilter = EMagFilter::NEAREST});
 
 		mCube = CreateRef<PCube>(2.0f);
@@ -81,18 +81,18 @@ namespace BHive
 		{
 			mEnvironmentCapture->Bind(i);
 
-			RenderCommand::CullFront();
+			//RenderCommand::CullFront();
 			RenderCommand::Clear();
 
 			//mEquirectangularShader->Bind();
-			mEnvironmentTexture->Bind(0);
+			//mEnvironmentTexture->Bind(0);
 
 			RenderCube(i);
 
 			//mEquirectangularShader->UnBind();
 			mEnvironmentCapture->UnBind();
 
-			RenderCommand::CullBack();
+			//RenderCommand::CullBack();
 		}
 	}
 
@@ -103,18 +103,18 @@ namespace BHive
 		{
 			mIrradianceCapture->Bind(i);
 
-			RenderCommand::CullFront();
+			//RenderCommand::CullFront();
 			RenderCommand::Clear();
 
 			//mIrradianceShader->Bind();
-			mEnvironmentCapture->GetTargetTexture()->Bind();
+			//mEnvironmentCapture->GetTargetTexture()->Bind();
 
 			RenderCube(i);
 
 			//mIrradianceShader->UnBind();
 			mIrradianceCapture->UnBind();
 
-			RenderCommand::CullBack();
+			//RenderCommand::CullBack();
 		}
 	}
 
@@ -123,7 +123,7 @@ namespace BHive
 		Image image(mPreFilteredEnvironmentTexture);
 
 		//mPreFilterEnironmentShader->Bind();
-		mEnvironmentCapture->GetTargetTexture()->Bind();
+		//mEnvironmentCapture->GetTargetTexture()->Bind();
 
 		int mip_level = (ENVIRONMENT_MAP_SIZE / PREFILTER_MAP_SIZE) - 1;
 		for (int i = 0; i < PREFILTER_MIP_LEVELS; i++)

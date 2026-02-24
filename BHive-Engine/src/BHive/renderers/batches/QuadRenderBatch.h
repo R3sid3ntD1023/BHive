@@ -18,10 +18,16 @@ namespace BHive
 		static BufferLayout GetLayout();
 	};
 
+	class IMaterialBackendInterface;
+
 	struct QuadRenderBatch : public TRenderBatch<QuadVertex>
 	{
 
-		Ref<Shader> GetShader() const override;
+		~QuadRenderBatch();
+
+		void Init(size_t vcount, size_t icount) override;
+
+		Ref<Pipeline> GetPipeline() const override;
 
 		void Flush() override;
 
@@ -29,5 +35,10 @@ namespace BHive
 
 	private:
 		TextureBatchData *mTextureBatch;
+
+		Ref<Pipeline> mPipeline;
+
+		Ref<IMaterialBackendInterface> mMaterial;
+
 	};
 } // namespace BHive

@@ -19,7 +19,7 @@ namespace BHive
 		sampler_info.minLod = 0.f;
 		sampler_info.maxLod = 0.f;
 
-		mImage.Create(size, size, size, vk::ImageType::e2D, vk::ImageViewType::eCube, api_info.Format, api_info.Usage, api_info.Aspect,
+		mImage.Create(size, size, size, 1, vk::ImageType::e2D, vk::ImageViewType::eCube, api_info.Format, api_info.Usage, api_info.Aspect,
 			sampler_info);
 	}
 

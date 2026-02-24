@@ -2,6 +2,7 @@
 #include "gfx/ShaderManager.h"
 #include "gfx/RenderCommand.h"
 #include "renderers/Renderer.h"
+#include "material/BackendMaterial.h"
 
 namespace BHive
 {
@@ -10,9 +11,43 @@ namespace BHive
 		return {{EShaderDataType::Float4}, {EShaderDataType::Float3}, {EShaderDataType::Float4}, {EShaderDataType::Float}, {EShaderDataType::Float}, {EShaderDataType::Int}};
 	}
 
-	Ref<Shader> CircleRenderBatch::GetShader() const
+	
+	CircleRenderBatch::~CircleRenderBatch()
 	{
-		return ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Circle.glsl");
+		mMaterial->Shutdown();
+	}
+
+	void CircleRenderBatch::Init(size_t vcount, size_t icount)
+	{
+		TRenderBatch::Init(vcount, icount);
+
+		auto shaderProgram = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Circle.glsl");
+		mPipeline = Pipeline::Create();
+
+		Pipeline::PipelineState state{};
+		state.ShaderProgram = shaderProgram;
+		state.ColorAttachmentFormats = {EFormat::RGBA8};
+		state.DepthAttachmentFormat = EFormat::DEPTH24_STENCIL8;
+		state.Depth.DepthTest = true;
+		state.Depth.DepthWrite = true;
+		state.Depth.DepthCompare = ECompareOp::LessOrEqual;
+		state.DrawMode = ETopologyMode::Triangles;
+		state.Blend.AlphaOp = EBlendOp::Add;
+		state.Blend.ColorOp = EBlendOp::Add;
+		state.Blend.DstAlpha = EBlendFactor::OneMinusSrcAlpha;
+		state.Blend.SrcAlpha = EBlendFactor::One;
+		state.Blend.DstColor = EBlendFactor::One;
+		state.Blend.SrcColor = EBlendFactor::OneMinusSrcAlpha;
+		state.Raster.CullEnabled = false;
+		mPipeline->Init(state);
+
+		mMaterial = IMaterialBackendInterface::Create();
+		mMaterial->Init(mPipeline);
+	}
+
+	Ref<Pipeline> CircleRenderBatch::GetPipeline() const
+	{
+		return mPipeline;
 	}
 
 	void CircleRenderBatch::Flush()

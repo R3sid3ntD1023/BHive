@@ -23,7 +23,7 @@ namespace BHive
 	}
 
 	void VulkanImage::Create(
-		uint32_t width, uint32_t height, uint32_t depth, vk::ImageType type, vk::ImageViewType viewType, vk::Format format, vk::ImageUsageFlags usage, vk::ImageAspectFlags aspect,
+		uint32_t width, uint32_t height, uint32_t depth, uint32_t layers, vk::ImageType type, vk::ImageViewType viewType, vk::Format format, vk::ImageUsageFlags usage, vk::ImageAspectFlags aspect,
 		vk::SamplerCreateInfo samplerInfo)
 	{
 		mWidth = width;
@@ -36,7 +36,8 @@ namespace BHive
 		ImageDesc desc{};
 		desc.Width = width;
 		desc.Height = height;
-		desc.Depth = 1;
+		desc.Depth = depth;
+		desc.ArrayLayers = layers;
 		desc.Format = format;
 		desc.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
 		desc.Tiling = vk::ImageTiling::eOptimal;
@@ -56,7 +57,7 @@ namespace BHive
 		gpu_r_m.CreateSampler(mImage, samplerInfo);
 	}
 
-	void VulkanImage::Upload(const void *data, size_t size, const vk::Offset3D &offset)
+	void VulkanImage::Upload(const void *data, size_t size, const ImageCopyRegion& region, const ImageSubresource& sub)
 	{
 		
 		vk::raii::Buffer stagingBuffer = nullptr;
@@ -80,14 +81,10 @@ namespace BHive
 			vk::PipelineStageFlagBits2::eFragmentShader
 		};
 
-		VulkanUtils::CopyImageRegion region
-		{
-			0, mDepth, offset, {mWidth, mHeight, mDepth}
-		};
 		auto cmd = VulkanUtils::BeginSingleTimeCommands();
-		mImage.Transition(cmd, transerDst);
+		mImage.Transition(cmd, transerDst, sub);
 		VulkanUtils::CopyBufferToImage(cmd, stagingBuffer, mImage.Image, region);
-		mImage.Transition(cmd, shaderRead);
+		mImage.Transition(cmd, shaderRead,sub);
 		VulkanUtils::EndSingleTimeCommands(cmd);
 	}
 

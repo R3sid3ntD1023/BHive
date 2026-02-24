@@ -42,9 +42,11 @@ namespace BHive
 	{
 		auto handle = ImageHandle();
 		auto &image = GPUStorage::Images[handle];
-		VulkanUtils::CreateImage(desc.Width, desc.Height, desc.Depth, desc.Type, desc.Format, desc.Tiling, desc.Usage, desc.MemoryFlags, image.Image, image.Memory);
+		VulkanUtils::CreateImage(desc.Width, desc.Height, desc.Depth, desc.ArrayLayers, desc.Type, desc.Format, desc.Tiling, desc.Usage, desc.MemoryFlags, image.Image, image.Memory);
 
-		return {image.Image, image.Memory, handle};
+		auto out = Vulkan::AllocatedImage{image.Image, image.Memory, handle};
+		out.ArrayLayers = desc.ArrayLayers;
+		return out;
 	}
 
 	void *GPUResourceManager::MapMemory(const Vulkan::AllocatedBuffer &buffer, vk::DeviceSize offset, vk::DeviceSize size)

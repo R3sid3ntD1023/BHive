@@ -8,23 +8,20 @@ namespace BHive
 {
 	static const uint32_t sMaxFramebufferSize = 8192;
 
-	Ref<Texture> CreateFramebufferTexture(const glm::uvec2& size, uint32_t depth, uint32_t samples, FFramebufferTexture specification)
+	Ref<Texture> CreateFramebufferTexture(const glm::uvec2& size, uint32_t samples, FFramebufferTexture specification)
 	{
 		auto &type = specification.TextureType;
-
-		if (samples > 1 && type == ETextureType::TEXTURE_2D)
-			return Texture2DMultisample::Create(size.x, size.y, samples, specification.CreateInfo);
 
 		switch (type)
 		{
 		case ETextureType::TEXTURE_2D:
-			return Texture2D::Create(size.x, size.y, specification.CreateInfo);
+			return Texture2D::Create({size.x, size.y}, specification.CreateInfo);
 		case ETextureType::TEXTURE_CUBE_MAP:
 			return TextureCube::Create(size.x, specification.CreateInfo);
 		case ETextureType::TEXTURE_2D_ARRAY:
-			return Texture2DArray::Create(size.x, size.y, depth, specification.CreateInfo);
+			return Texture2DArray::Create({size.x, size.y}, specification.CreateInfo);
 		case ETextureType::TEXTURE_CUBE_MAP_ARRAY:
-			return TextureCubeArray::Create(size.x, size.y, depth, specification.CreateInfo);
+			return TextureCubeArray::Create(size.x, specification.CreateInfo);
 		default:
 			break;
 		}
@@ -216,13 +213,13 @@ namespace BHive
 			for (size_t i = 0; i < numColorAttachments; i++)
 			{
 				auto &specs = mColorAttachmentSpecifications[i];
-				mColorAttachments[i] = CreateFramebufferTexture(mSpecification.Size, mSpecification.Depth, mSpecification.Samples, specs);
+				mColorAttachments[i] = CreateFramebufferTexture(mSpecification.Size, mSpecification.Samples, specs);
 			}
 		}
 
 		if (mDepthSpecification.CreateInfo.Format != EFormat::None)
 		{
-			mDepthAttachment = CreateFramebufferTexture(mSpecification.Size, mSpecification.Depth, mSpecification.Samples, mDepthSpecification);
+			mDepthAttachment = CreateFramebufferTexture(mSpecification.Size,  mSpecification.Samples, mDepthSpecification);
 		}
 
 		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();

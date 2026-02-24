@@ -9,6 +9,7 @@
 
 namespace BHive
 {
+
 	Ref<Texture2D> Texture2D::Create()
 	{
 		switch (RenderCommand::GetGraphicsAPI())
@@ -23,12 +24,12 @@ namespace BHive
 		return nullptr;
 	}
 
-	Ref<Texture2D> Texture2D::Create(uint32_t w, uint32_t h, const FTextureCreateInfo &info, const void *buffer, size_t size)
+	Ref<Texture2D> Texture2D::Create(const glm::uvec2& size, const FTextureCreateInfo &createInfo, const Buffer& data)
 	{
 		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
-			return CreateRef<VulkanTexture2D>(w, h, info, buffer, size);
+			return CreateRef<VulkanTexture2D>(size, createInfo, data);
 		default:
 			break;
 		}
@@ -37,14 +38,44 @@ namespace BHive
 		return nullptr;
 	}
 
-	void Texture2DArray::AddTexture(const Ref<Texture2D> &tex)
+	int32_t Texture2DArray::AddTexture(const Ref<Texture2D> &tex)
 	{
-		const auto& buffer = tex->GetBuffer();
-		const auto size = glm::uvec2{tex->GetWidth(), tex->GetHeight()};
+		if (!tex)
+		{
+			return 0;
+		}
 
-		const auto stride = GetWidth() * GetHeight();
-		Buffer output( stride);
-		stbir_resize(buffer.As<uint8_t>(), size.x, size.y, stride, output, GetWidth(), GetHeight());
+		if (mLayerInfo.size() >= GetInfo().ArrayLayers)
+		{
+			return -1;
+		}
+
+		const auto& buffer = tex->GetBuffer();
+		const glm::ivec2 size = tex->GetSize();
+		const glm::ivec2 output_size = GetSize();
+		const auto format_layout = GetFormatLayout(GetInfo().Format);
+		const auto buffer_size = output_size.x * output_size.y * format_layout ;
+		Buffer output( buffer_size);
+		stbir_resize_uint8_linear(buffer.As<uint8_t>(), size.x, size.y, 0 , output, output_size.x, output_size.y, 0, (stbir_pixel_layout)format_layout);
+
+		FTextureUploadInfo info{
+			.Data = output.GetData(),
+			.ArrayLayer = mCurrentLayer,
+			.LayerCount = 1,
+		};
+		SetData(info);
+
+		mLayerInfo.push_back({{(float)size.x / output_size.x, (float)size.y / output_size.y}, size});
+
+		tex->mLayerIndex = mCurrentLayer;
+
+		return mCurrentLayer++;
+	}
+
+	void Texture2DArray::Clear()
+	{
+		mCurrentLayer = mStartLayer;
+		mLayerInfo.erase(mLayerInfo.begin() + mCurrentLayer, mLayerInfo.end());
 	}
 
 	const Texture2DArray::LayerInfo &Texture2DArray::GetLayerInfo(uint32_t layer) const
@@ -53,12 +84,12 @@ namespace BHive
 		return mLayerInfo.at(layer);
 	}
 
-	Ref<Texture2DArray> Texture2DArray::Create(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification)
+	Ref<Texture2DArray> Texture2DArray::Create(const glm::uvec2& size, const FTextureCreateInfo &createInfo)
 	{
 		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
-			return CreateRef<VulkanTexture2DArray>(width, height, depth, specification);
+			return CreateRef<VulkanTexture2DArray>(size, createInfo);
 		default:
 			break;
 		}
@@ -67,12 +98,12 @@ namespace BHive
 		return nullptr;
 	}
 
-	Ref<Texture3D> Texture3D::Create(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &create_info, const void *data)
+	Ref<Texture3D> Texture3D::Create(const glm::uvec3& size, const FTextureCreateInfo &createInfo, const Buffer& data)
 	{
 		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
-			return CreateRef<VulkanTexture3D>(width, height, depth, create_info, data);
+			return CreateRef<VulkanTexture3D>(size, createInfo, data);
 		default:
 			break;
 		}
@@ -81,12 +112,12 @@ namespace BHive
 		return nullptr;
 	}
 
-	Ref<TextureCube> TextureCube::Create(uint32_t size, const FTextureCreateInfo &info)
+	Ref<TextureCube> TextureCube::Create(uint32_t size, const FTextureCreateInfo &createInfo)
 	{
 		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
-			return CreateRef<VulkanTextureCube>(size, info);
+			return CreateRef<VulkanTextureCube>(size, createInfo);
 		default:
 			break;
 		}
@@ -95,12 +126,12 @@ namespace BHive
 		return nullptr;
 	}
 
-	Ref<TextureCubeArray> TextureCubeArray::Create(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification)
+	Ref<TextureCubeArray> TextureCubeArray::Create(uint32_t size, const FTextureCreateInfo &createInfo)
 	{
 		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
-			return CreateRef<VulkanTextureCubeArray>(width, height, depth, specification);
+			return CreateRef<VulkanTextureCubeArray>(size, createInfo);
 		default:
 			break;
 		}
@@ -109,24 +140,10 @@ namespace BHive
 		return nullptr;
 	}
 
-	Ref<Texture2DMultisample> Texture2DMultisample::Create(uint32_t width, uint32_t height, uint32_t samples, const FTextureCreateInfo &create_info)
-	{
-		switch (RenderCommand::GetGraphicsAPI())
-		{
-		case RendererAPI::EAPI::Vulkan:
-			//return CreateRef<VulkanTexture2DMultisample>(width, height, samples, create_info);
-			break;
-		default:
-			break;
-		}
-
-		ASSERT(false);
-		return nullptr;
-	}
 
 	REFLECT(Texture)
 	{
-		BEGIN_REFLECT(Texture) REFLECT_PROPERTY_READ_ONLY("Width", GetWidth) REFLECT_PROPERTY_READ_ONLY("Height", GetHeight);
+		BEGIN_REFLECT(Texture) REFLECT_PROPERTY_READ_ONLY("Size", GetSize);
 		rttr::type::register_wrapper_converter_for_base_classes<Ref<Texture>>();
 	}
 

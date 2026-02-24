@@ -12,17 +12,11 @@ namespace BHive
 	public:
 		VulkanTextureCube() = default;
 
-		VulkanTextureCube(uint32_t size, const FTextureCreateInfo &info);
+		VulkanTextureCube(uint32_t size, const FTextureCreateInfo &createInfo);
 
-		virtual void Bind(uint32_t slot = 0) const {};
+		const glm::uvec2& GetSize() const  override{ return {mSize, mSize}; }
 
-		virtual void UnBind(uint32_t slot = 0) const {};
-
-		virtual uint32_t GetWidth() const { return mSize; }
-
-		virtual uint32_t GetHeight() const { return mSize; }
-
-		virtual void SetData(const void *data, const glm::uvec3 &offset = {0, 0, 0}) {}
+		virtual void SetData(const FTextureUploadInfo &info) {}
 
 		virtual const FTextureCreateInfo &GetInfo() const { return mCreateInfo; }
 

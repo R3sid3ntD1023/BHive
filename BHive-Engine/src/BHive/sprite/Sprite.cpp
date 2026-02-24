@@ -68,7 +68,7 @@ namespace BHive
 		ASSERT(mSource, "Source texture is null!");
 
 		auto texture = mSource;
-		glm::vec2 texture_size = {texture->GetWidth(), texture->GetHeight()};
+		glm::vec2 texture_size = texture->GetSize();
 		mMin = (generator.Coordinates * generator.CellSize) / texture_size;
 		mMax = ((generator.Coordinates + generator.Size) * generator.CellSize) / texture_size;
 	}

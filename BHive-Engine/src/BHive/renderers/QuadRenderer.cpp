@@ -164,12 +164,13 @@ namespace BHive
 		}
 
 		uint32_t texture_index = sRenderData2D->TextureBatch.GetTextureIndex(sRenderData2D->QuadBatch, create_info.TextureRef);
+		auto layer_info = sRenderData2D->TextureBatch.GetTexture()->GetLayerInfo(texture_index);
 
 		for (uint32_t i = 0; i < 4; i++)
 		{
 			sRenderData2D->QuadBatch.mVertexCurrentPtr->Position = create_info.Transform * (glm::vec4(create_info.Positions[i], 1.0f) * glm::vec4(create_info.Size, 1.f, 1.f));
 			sRenderData2D->QuadBatch.mVertexCurrentPtr->Normal = glm::transpose(glm::inverse(create_info.Transform)) * glm::vec4(0, 0, 1, 0);
-			sRenderData2D->QuadBatch.mVertexCurrentPtr->TexCoord = create_info.TexCoords[i] * create_info.Tiling;
+			sRenderData2D->QuadBatch.mVertexCurrentPtr->TexCoord = create_info.TexCoords[i] * layer_info.UvScale * create_info.Tiling;
 			sRenderData2D->QuadBatch.mVertexCurrentPtr->Color = create_info.Color;
 			sRenderData2D->QuadBatch.mVertexCurrentPtr->Texture = texture_index;
 			sRenderData2D->QuadBatch.mVertexCurrentPtr->Flags = create_info.Flags;
@@ -207,7 +208,7 @@ namespace BHive
 		double scale = (1.0 / (metrics.ascenderY - metrics.descenderY)) * size_arg;
 		const float spaceGlyphAdvance = fontgeometry.getGlyph(' ')->getAdvance();
 
-		glm::vec2 texel_size = 1.0f / glm::vec2{texture->GetWidth(), texture->GetHeight()};
+		glm::vec2 texel_size = 1.0f / glm::vec2(texture->GetSize());
 
 		glm::vec2 coords[4];
 
@@ -283,11 +284,12 @@ namespace BHive
 		}
 
 		uint32_t texture_index = sRenderData2D->TextureBatch.GetTextureIndex(sRenderData2D->TextBatch, texture);
+		auto layer_info = sRenderData2D->TextureBatch.GetTexture()->GetLayerInfo(texture_index);
 
 		for (uint32_t i = 0; i < 4; i++)
 		{
 			sRenderData2D->TextBatch.mVertexCurrentPtr->Position = transform * (glm::vec4(points[i], 1.0f) * glm::vec4(size, 1.f, 1.f));
-			sRenderData2D->TextBatch.mVertexCurrentPtr->TexCoord = texcoords[i];
+			sRenderData2D->TextBatch.mVertexCurrentPtr->TexCoord = texcoords[i] * layer_info.UvScale;
 			sRenderData2D->TextBatch.mVertexCurrentPtr->Color = style.TextColor;
 			sRenderData2D->TextBatch.mVertexCurrentPtr->Thickness = {style.Thickness, style.Smoothness};
 			sRenderData2D->TextBatch.mVertexCurrentPtr->Outline = {style.OutlineThickness, style.OutlineSmoothness};

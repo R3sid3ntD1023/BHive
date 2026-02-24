@@ -3,11 +3,15 @@
 #include <vulkan/vulkan_raii.hpp>
 #include "gfx/NativeHandle.h"
 #include "core/UUID.h"
+#include "VulkanImageRegions.h"
 
 namespace BHive
 {
+	struct ImageSubresource;
+
 	namespace Vulkan
 	{
+		
 		struct ImageState
 		{
 			vk::ImageLayout Layout = vk::ImageLayout::eUndefined;
@@ -34,9 +38,9 @@ namespace BHive
 			vk::Sampler Sampler = VK_NULL_HANDLE;
 			ImageState State;
 			vk::ImageAspectFlags Aspect;
-			
+			uint32_t ArrayLayers = 1;
 
-			void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState);
+			void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, UINT32_MAX});
 		};
 
 		struct AllocatedBuffer

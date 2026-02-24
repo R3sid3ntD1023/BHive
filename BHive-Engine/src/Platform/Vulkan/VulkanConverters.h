@@ -18,9 +18,8 @@ namespace BHive
 			vk::SamplerAddressMode WrapMode;
 			vk::Bool32 CompareEnabled;
 			vk::CompareOp CompareOp;
-			float BorderColor[4];
 			uint32_t Levels;
-			uint32_t Channels;
+			uint32_t ArrayLayers;
 			bool GenerateMipMaps;
 		};
 

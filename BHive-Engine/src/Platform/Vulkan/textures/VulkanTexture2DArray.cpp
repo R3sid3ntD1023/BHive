@@ -3,12 +3,10 @@
 
 namespace BHive
 {
-	VulkanTexture2DArray::VulkanTexture2DArray(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification)
+	VulkanTexture2DArray::VulkanTexture2DArray(const glm::uvec2& size, const FTextureCreateInfo &createInfo)
 		: mDevice(VulkanBackend::GetLogicalDevice()),
-		  mWidth(width),
-		  mHeight(height),
-		  mDepth(depth),
-		  mCreateInfo(specification)
+		  mSize(size),
+		  mCreateInfo(createInfo)
 	{
 		auto api_info = Vulkan::Convert(mCreateInfo);
 
@@ -21,23 +19,18 @@ namespace BHive
 		sampler_info.minLod = 0.f;
 		sampler_info.maxLod = 0.f;
 
-		mImage.Create(width, height, depth, vk::ImageType::e2D, vk::ImageViewType::e2DArray, api_info.Format, api_info.Usage, api_info.Aspect,
+		mImage.Create(size.x, size.y, 1, api_info.ArrayLayers, vk::ImageType::e2D, vk::ImageViewType::e2DArray, api_info.Format, api_info.Usage, api_info.Aspect,
 			sampler_info);
 	}
 
-	void VulkanTexture2DArray::Bind(uint32_t slot) const
+	void VulkanTexture2DArray::SetData(const FTextureUploadInfo &info)
 	{
+		size_t size = mSize.x * mSize.y * GetFormatLayout(mCreateInfo.Format);
+
+		glm::uvec3 extents = glm::compMul(info.Extent) == 0 ? glm::uvec3{mSize, 1} : info.Extent;
+		ImageCopyRegion region{.BaseArrayLayer = info.ArrayLayer, .LayerCount = info.LayerCount, .Offset = info.Offset, .Extents = extents};
+		ImageSubresource sub{.MipLevel = info.MipLevel, .BaseArrayLayer = info.ArrayLayer, .LayerCount = info.LayerCount};
+		mImage.Upload(info.Data, size, region, sub);
 	}
 
-	void VulkanTexture2DArray::UnBind(uint32_t slot) const
-	{
-	}
-
-	void VulkanTexture2DArray::SetData(const void *data, const glm::uvec3 &offset)
-	{
-
-		vk::DeviceSize size = mWidth * mHeight * mDepth * mCreateInfo.Channels;
-
-		mImage.Upload(data, size, {offset.x, offset.y, offset.z});
-	}
 } // namespace BHive

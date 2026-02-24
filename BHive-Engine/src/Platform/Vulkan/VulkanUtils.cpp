@@ -113,12 +113,12 @@ namespace BHive
 	}
 
 	void VulkanUtils::CreateImage(
-		uint32_t w, uint32_t h, uint32_t d, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image &image,
+		uint32_t w, uint32_t h, uint32_t d, uint32_t layers, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image &image,
 		vk::raii::DeviceMemory &memory)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
 		vk::ImageCreateInfo imageInfo(
-			{}, type, format, {w, h, d}, 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage,
+			{}, type, format, {w, h, d}, 1, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage,
 			vk::SharingMode::eExclusive, 0);
 		image = device.createImage(imageInfo);
 
@@ -185,12 +185,12 @@ namespace BHive
 
 	void VulkanUtils::TransitionImageLayout(
 		vk::raii::CommandBuffer &cmd, const vk::Image &image,  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
-		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags)
+		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, const ImageSubresource &sub)
 	{
 		bool valid = aspect_flags != vk::ImageAspectFlagBits::eNone;
 		ASSERT(valid)
 
-		vk::ImageSubresourceRange range{aspect_flags, 0, 1, 0, 1};
+		vk::ImageSubresourceRange range{aspect_flags, sub.MipLevel, 1, sub.BaseArrayLayer, sub.LayerCount};
 		vk::ImageMemoryBarrier2 barrier(
 			srcStageMask,
 			srcAccessMask, 
@@ -222,10 +222,13 @@ namespace BHive
 		ASSERT(false, "Failed to find suitable memory type!")
 	}
 
-	void VulkanUtils::CopyBufferToImage(const vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, vk::Image &image, const CopyImageRegion &region)
+	void VulkanUtils::CopyBufferToImage(const vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, vk::Image &image, const ImageCopyRegion &region)
 	{
+		vk::Offset3D offset(region.Offset.x, region.Offset.y, region.Offset.z);
+		vk::Extent3D extent(region.Extents.x, region.Extents.y, region.Extents.z);
+
 		vk::ImageSubresourceLayers layers(vk::ImageAspectFlagBits::eColor, 0, region.BaseArrayLayer, region.LayerCount);
-		vk::BufferImageCopy image_region(0, 0, 0, layers, region.Offset, region.Extents);
+		vk::BufferImageCopy image_region(0, 0, 0, layers, offset, extent);
 		cmd.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, image_region);
 	}
 

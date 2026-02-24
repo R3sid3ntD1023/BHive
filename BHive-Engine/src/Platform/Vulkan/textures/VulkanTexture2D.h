@@ -12,21 +12,15 @@ namespace BHive
 	public:
 		VulkanTexture2D();
 
-		VulkanTexture2D(uint32_t w, uint32_t h, const FTextureCreateInfo &info = {}, const void *buffer = nullptr, size_t size = 0);
+		VulkanTexture2D(const glm::uvec2 &size, const FTextureCreateInfo &createInfo, const Buffer &data);
 
 		~VulkanTexture2D();
 
-		virtual void Bind(uint32_t slot = 0) const;
+		const glm::uvec2& GetSize() const override { return mSize; }
 
-		virtual void UnBind(uint32_t slot = 0) const;
+		void SetData(const FTextureUploadInfo &info) override;
 
-		virtual uint32_t GetWidth() const { return mWidth; }
-
-		virtual uint32_t GetHeight() const { return mHeight; }
-
-		virtual void SetData(const void *data, const glm::uvec3 &offset = {0, 0, 0}) override;
-
-		virtual const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
+		const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
 
 		void SetInfo(const FTextureCreateInfo &specs);
 
@@ -40,9 +34,9 @@ namespace BHive
 
 		const vk::DescriptorImageInfo GetDescriptor() const override { return mImage.GetDescriptor(); }
 
-		virtual const Vulkan::AllocatedImage &GetImage() const override { return mImage.GetImage(); };
+		const Vulkan::AllocatedImage &GetImage() const override { return mImage.GetImage(); };
 
-		virtual Vulkan::AllocatedImage &GetImage() override { return mImage.GetImage(); };
+		Vulkan::AllocatedImage &GetImage() override { return mImage.GetImage(); };
 
 		/*Begin Asset*/
 		void Save(cereal::BinaryOutputArchive &ar) const override;
@@ -59,13 +53,13 @@ namespace BHive
 	private:
 		vk::raii::Device &mDevice;
 
-		VulkanImage mImage;
-
-		FTextureCreateInfo mCreateInfo;
+		glm::uvec2 mSize{0, 0};
 
 		Buffer mBuffer;
 
-		uint32_t mWidth = 0, mHeight = 0;
+		FTextureCreateInfo mCreateInfo;
+
+		VulkanImage mImage;
 	};
 
 } // namespace BHive

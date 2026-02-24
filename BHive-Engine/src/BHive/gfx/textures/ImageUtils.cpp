@@ -41,9 +41,8 @@ namespace BHive
 	void ImageUtils::SaveImage(const std::filesystem::path &path, const Ref<Texture2D> &texture)
 	{
 		auto &specs = texture->GetInfo();
-		const auto c = specs.Channels;
-		const auto w = texture->GetWidth();
-		const auto h = texture->GetHeight();
+		const auto c = GetFormatLayout(specs.Format);
+		const auto size = texture->GetSize();
 		const auto &data = texture->GetBuffer();
 
 		if (!std::filesystem::exists(path.parent_path()))
@@ -51,8 +50,8 @@ namespace BHive
 			std::filesystem::create_directory(path.parent_path());
 		}
 
-		unsigned stride = c * w * data.ValueSize;
+		unsigned stride = c * size.x * data.ValueSize;
 		stbi_flip_vertically_on_write(true);
-		stbi_write_png(path.string().c_str(), w, h, c, data, stride);
+		stbi_write_png(path.string().c_str(), size.x, size.y, c, data, stride);
 	}
 } // namespace BHive

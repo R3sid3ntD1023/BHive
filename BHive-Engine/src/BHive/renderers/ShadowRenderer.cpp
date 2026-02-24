@@ -100,7 +100,7 @@ namespace BHive
 		if (num_shadow_maps == 0)
 			return;
 
-		RenderCommand::CullFront();
+		//RenderCommand::CullFront();
 
 		auto draw_meshes = [=](const Ref<Shader> &shader)
 		{
@@ -147,7 +147,7 @@ namespace BHive
 			//mShadowRenderData->ShadowPasses.Shaders[2]->UnBind();
 		}
 
-		RenderCommand::CullBack();
+		//RenderCommand::CullBack();
 	}
 
 	void ShadowRenderer::SubmitDirectionalLight(const FShadowCascadedCreateInfo &info)
@@ -234,9 +234,9 @@ namespace BHive
 		if (bindings)
 		{
 			auto &fbos = mShadowRenderData->ShadowPasses.FBOs;
-			fbos[0]->GetDepthAttachment()->Bind(bindings[0]);
+			/*fbos[0]->GetDepthAttachment()->Bind(bindings[0]);
 			fbos[1]->GetDepthAttachment()->Bind(bindings[1]);
-			fbos[2]->GetDepthAttachment()->Bind(bindings[2]);
+			fbos[2]->GetDepthAttachment()->Bind(bindings[2]);*/
 		}
 	}
 } // namespace BHive

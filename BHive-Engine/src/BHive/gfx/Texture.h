@@ -14,22 +14,26 @@ namespace BHive
 		glm::uvec3 Size = {0, 0, 1};
 	};
 
+	struct FTextureUploadInfo
+	{
+		const void *Data = nullptr;
+		glm::ivec3 Offset = {0, 0, 0};
+		glm::uvec3 Extent = {0, 0, 1}; // if 0, texture decides full size 
+		uint32_t MipLevel = 0; 
+		uint32_t ArrayLayer = 0; 
+		uint32_t LayerCount = 1;
+	};
+
 	class Texture : public Asset
 	{
 	public:
 		virtual ~Texture() = default;
 
-		virtual void Bind(uint32_t slot = 0) const = 0;
+		virtual const glm::uvec2& GetSize() const = 0;
 
-		virtual void UnBind(uint32_t slot = 0) const = 0;
+		float GetAspectRatio() const { return (float)GetSize().x / (float)GetSize().y; }
 
-		virtual uint32_t GetWidth() const = 0;
-
-		virtual uint32_t GetHeight() const = 0;
-
-		float GetAspectRatio() const { return (float)GetWidth() / (float)GetHeight(); }
-
-		virtual void SetData(const void *data, const glm::uvec3 &offset = {0, 0, 0}) = 0;
+		virtual void SetData(const FTextureUploadInfo& info) = 0;
 
 		virtual const FTextureCreateInfo &GetInfo() const = 0;
 
@@ -45,7 +49,7 @@ namespace BHive
 
 		virtual Ref<Texture2D> CreateSubTexture(const FSubTexture &subTexture) = 0;
 
-		virtual const FTextureCreateInfo &GetInfo() const override = 0;
+		virtual const FTextureCreateInfo &GetInfo() const = 0;
 
 		virtual void SetInfo(const FTextureCreateInfo &specs) = 0;
 
@@ -53,14 +57,14 @@ namespace BHive
 
 		static Ref<Texture2D> Create();
 
-		static Ref<Texture2D> Create(uint32_t w, uint32_t h, const FTextureCreateInfo &info = {}, const void *buffer = nullptr, size_t size = 0);
+		static Ref<Texture2D> Create(const glm::uvec2 &size, const FTextureCreateInfo &info = {}, const Buffer &data = {});
 
 		REFLECTABLEV(Texture)
 
 	private:
 		uint32_t mLayerIndex; //used by texture2d array
 
-		friend class Tetxure2DArray;
+		friend class Texture2DArray;
 	};
 
 	class BHIVE_API Texture2DArray : public Texture
@@ -74,15 +78,21 @@ namespace BHive
 	public:
 		virtual ~Texture2DArray() = default;
 
-		virtual void AddTexture(const Ref<Texture2D> &tex);
+		void SetStartLayer(uint32_t layer) { mStartLayer = layer; }
+
+		int32_t AddTexture(const Ref<Texture2D> &tex);
+
+		void Clear();
 
 		const LayerInfo& GetLayerInfo(uint32_t layer) const;
 
-		static Ref<Texture2DArray> Create(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification);
+		static Ref<Texture2DArray> Create(const glm::uvec2& size, const FTextureCreateInfo &createInfo);
 
 
 	private:
 		std::vector<LayerInfo> mLayerInfo;
+		uint32_t mCurrentLayer = 0;
+		uint32_t mStartLayer = 0;
 	};
 
 	class BHIVE_API Texture3D : public Texture
@@ -90,7 +100,7 @@ namespace BHive
 	public:
 		virtual ~Texture3D() = default;
 
-		static Ref<Texture3D> Create(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &create_info, const void *data = nullptr);
+		static Ref<Texture3D> Create(const glm::uvec3 &size, const FTextureCreateInfo &createInfo, const Buffer &data = {});
 	};
 
 	class BHIVE_API TextureCube : public Texture
@@ -98,7 +108,7 @@ namespace BHive
 	public:
 		virtual ~TextureCube() = default;
 
-		static Ref<TextureCube> Create(uint32_t size, const FTextureCreateInfo &info);
+		static Ref<TextureCube> Create(uint32_t size, const FTextureCreateInfo &createInfo);
 	};
 
 	class BHIVE_API TextureCubeArray : public Texture
@@ -106,16 +116,9 @@ namespace BHive
 	public:
 		virtual ~TextureCubeArray() = default;
 
-		static Ref<TextureCubeArray> Create(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification);
+		static Ref<TextureCubeArray> Create(uint32_t size, const FTextureCreateInfo &createInfo);
 	};
 
-	class BHIVE_API Texture2DMultisample : public Texture
-	{
-	public:
-		virtual ~Texture2DMultisample() = default;
-
-		static Ref<Texture2DMultisample> Create(uint32_t width, uint32_t height, uint32_t samples, const FTextureCreateInfo &create_info);
-	};
 
 	REFLECT_EXTERN(Texture);
 	REFLECT_EXTERN(Texture2D);

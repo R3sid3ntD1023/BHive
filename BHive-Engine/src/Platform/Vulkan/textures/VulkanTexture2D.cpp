@@ -9,19 +9,21 @@ namespace BHive
 	{
 	}
 
-	VulkanTexture2D::VulkanTexture2D(uint32_t w, uint32_t h, const FTextureCreateInfo &info, const void *buffer, size_t size)
-		: mDevice(VulkanBackend::GetLogicalDevice()),
-		  mCreateInfo(info),
-		  mWidth(w),
-		  mHeight(h)
+	VulkanTexture2D::VulkanTexture2D(const glm::uvec2& size, const FTextureCreateInfo &createInfo, const Buffer& data)
+		: mDevice(VulkanBackend::GetLogicalDevice()),	
+		  mSize(size),
+		  mBuffer(data),
+		  mCreateInfo(createInfo)
 	{
 
 		Initialize();
 
-		if (buffer)
+		if (data)
 		{
-			mBuffer.Allocate(buffer, size);
-			SetData(buffer);
+			FTextureUploadInfo info{
+				.Data = data.As<uint8_t>(),
+			};
+			SetData(info);
 		}
 	}
 
@@ -32,35 +34,30 @@ namespace BHive
 		mBuffer.Release();
 	}
 
-	void VulkanTexture2D::Bind(uint32_t slot) const
-	{
-	}
-
-	void VulkanTexture2D::UnBind(uint32_t slot) const
-	{
-	}
-
 	void VulkanTexture2D::SetInfo(const FTextureCreateInfo &info)
 	{
 		mCreateInfo = info;
 	}
 
-	void VulkanTexture2D::SetData(const void *data, const glm::uvec3 &offset)
+	void VulkanTexture2D::SetData(const FTextureUploadInfo &info)
 	{
-		vk::DeviceSize size = mWidth * mHeight * mCreateInfo.Channels;
+		size_t size = mSize.x * mSize.y * GetFormatLayout(mCreateInfo.Format);
 
-		mImage.Upload(data, size, {offset.x, offset.y, 0});
+		glm::uvec3 extents = glm::compMul(info.Extent) == 0 ? glm::uvec3{mSize, 1} : info.Extent;
+		ImageCopyRegion region{.BaseArrayLayer = info.ArrayLayer, .LayerCount = info.LayerCount, .Offset = info.Offset, .Extents = extents};
+		ImageSubresource sub{.MipLevel = info.MipLevel, .BaseArrayLayer = info.ArrayLayer, .LayerCount = info.LayerCount};
+		mImage.Upload(info.Data, size, region, sub);
 	}
 
 	Ref<Texture2D> VulkanTexture2D::CreateSubTexture(const FSubTexture &texture)
 	{
-		auto c = mCreateInfo.Channels;
+		auto c = GetFormatLayout(mCreateInfo.Format);
 		size_t size = texture.Size.x * texture.Size.y * c;
 
 		Buffer pixels(size);
 		GetSubImage(texture, size, &pixels[0]);
 
-		return Texture2D::Create(texture.Size.x, texture.Size.y, mCreateInfo, pixels);
+		return Texture2D::Create(texture.Size, mCreateInfo, pixels);
 	}
 
 	void VulkanTexture2D::GetSubImage(const FSubTexture &texture, size_t size, uint8_t *data) const
@@ -81,7 +78,7 @@ namespace BHive
 		sampler_info.minLod = 0.f;
 		sampler_info.maxLod = 0.f;
 
-		mImage.Create(mWidth, mHeight, 1, vk::ImageType::e2D, vk::ImageViewType::e2D, api_info.Format, api_info.Usage, api_info.Aspect, sampler_info);
+		mImage.Create(mSize.x, mSize.y, 1, 1, vk::ImageType::e2D, vk::ImageViewType::e2D, api_info.Format, api_info.Usage, api_info.Aspect, sampler_info);
 	}
 
 	void VulkanTexture2D::Save(cereal::BinaryOutputArchive &ar) const
@@ -97,10 +94,14 @@ namespace BHive
 
 		ar(width, height, mCreateInfo, mBuffer);
 
+		Initialize();
+
 		if (mBuffer)
-		{
-			Initialize();
-			SetData(mBuffer);
+		{	
+			FTextureUploadInfo info{
+				.Data = mBuffer.As<uint8_t>(),
+			};
+			SetData(info);
 		}
 	}
 

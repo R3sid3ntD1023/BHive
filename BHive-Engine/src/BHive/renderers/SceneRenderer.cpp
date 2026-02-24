@@ -149,9 +149,9 @@ namespace BHive
 		// render meshes
 		for (auto &[mat, objects] : mSceneRenderData->RenderData)
 		{
-			EnvironmentMapGenerator.GetPreFilteredEnvironmentTetxure()->Bind(6);
+			/*EnvironmentMapGenerator.GetPreFilteredEnvironmentTetxure()->Bind(6);
 			EnvironmentMapGenerator.GetIrradianceTexture()->Bind(7);
-			EnvironmentMapGenerator.GetBDRFLUT()->Bind(8);
+			EnvironmentMapGenerator.GetBDRFLUT()->Bind(8);*/
 
 			static uint32_t shadow_map_bindings[] = {9, 10, 11};
 			mSceneRenderData->ShadowRenderer.BindShadowMaps(shadow_map_bindings);
@@ -183,7 +183,7 @@ namespace BHive
 
 		//mQuadShader->Bind();
 
-		texture->Bind();
+		//texture->Bind();
 
 		RenderCommand::DrawElements(ETopologyMode::Triangles, mQuad->GetVertexArray());
 

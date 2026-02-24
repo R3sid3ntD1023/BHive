@@ -94,6 +94,12 @@ namespace BHive
 		LineRenderer::DrawGrid({});
 		LineRenderer::DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
 
+		FQuadParams params{
+			.Size = {1, 1},.Color = FColor::Red
+		};
+		QuadRenderer::DrawQuad(params, nullptr, FTransform({0,0,2}));
+		QuadRenderer::DrawQuad(params, mTexture, FTransform({0, 0, -2}));
+
 		if (mMesh && mMaterial)
 		{
 			mMaterial->Submit();

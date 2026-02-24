@@ -7,7 +7,7 @@ layout(location = 2) in vec4 vColor;
 layout(location = 3) in float vThickness;
 layout(location = 4) in float vFade;
 
-layout(std430, binding = 0) uniform Camera
+layout(std140, set = 0, binding = 0) uniform Camera
 {
     mat4 uProjection;
     mat4 uView;

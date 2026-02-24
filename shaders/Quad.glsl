@@ -7,8 +7,9 @@ layout(location = 2) in vec2 vTexCoord;
 layout(location = 3) in vec4 vColor;
 layout(location = 4) in int vTextureID;
 layout(location = 5) in int vFlags;
+layout(location = 6) in int vEntityID;
 
-layout(std140, binding = 0) uniform CameraBuffer
+layout(std140, set = 0, binding = 0) uniform CameraBuffer
 {
 	mat4 u_projection;
 	mat4 u_view;
@@ -57,13 +58,13 @@ layout(location = 2) in struct VS_OUT
 }
 vs_in;
 
-layout(binding = 0) uniform sampler2D uTextures[32];
+layout(set = 1, binding = 0) uniform sampler2DArray uTextures;
 
 layout(location = 0) out vec4 fs_out;
 
 void main()
 {
-	vec4 color = texture(uTextures[v_TextureID], vs_in.texcoord);
+	vec4 color = texture(uTextures, vec3(vs_in.texcoord, v_TextureID));
 
 	fs_out = color * vs_in.color;
 }

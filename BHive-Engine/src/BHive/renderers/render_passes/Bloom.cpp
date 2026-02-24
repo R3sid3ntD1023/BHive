@@ -28,15 +28,15 @@ namespace BHive
 		specs.Format = EFormat::RGBA32F;
 		specs.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 
-		mPreFilterTexture = Texture2D::Create(size.x, size.y, specs);
+		mPreFilterTexture = Texture2D::Create(size, specs);
 
 		specs.Format = EFormat::RGBA32F;
-		mOutputTexture = Texture2D::Create(size.x, size.y, specs);
+		mOutputTexture = Texture2D::Create(size, specs);
 
 		glm::uvec2 mps = size;
 		for (auto &mip : mMipMaps)
 		{
-			mip = Texture2D::Create(mps.x, mps.y, specs);
+			mip = Texture2D::Create(mps, specs);
 
 			mps /= 2;
 			mps = glm::max({1, 1}, mps);

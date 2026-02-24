@@ -1,6 +1,8 @@
 #pragma once
 
+#include "core/Core.h"
 #include "core/EnumFlags.h"
+
 
 namespace BHive
 {
@@ -201,6 +203,45 @@ namespace BHive
 		Mat3,
 		Mat4
 	};
+
+	inline uint32_t GetFormatLayout(EFormat f)
+	{
+		switch (f)
+		{
+		case BHive::EFormat::None:
+			break;
+		case BHive::EFormat::R8:
+		case BHive::EFormat::R16F:
+		case BHive::EFormat::R32F:
+		case BHive::EFormat::RED_INTEGER:
+			return 1;
+		case BHive::EFormat::RG8:
+		case BHive::EFormat::RG16F:
+		case BHive::EFormat::RG32F:
+			return 2;
+		case BHive::EFormat::RGB8:
+		case BHive::EFormat::RGB16F:
+		case BHive::EFormat::RGB32F:
+		case BHive::EFormat::RGB_UINTEGER:
+		case BHive::EFormat::RGB_INTEGER:
+		case BHive::EFormat::R11_G11_B10:
+			return 3;
+		case BHive::EFormat::RGBA8:
+		case BHive::EFormat::RGBA16F:
+		case BHive::EFormat::RGBA32F:
+		case BHive::EFormat::RGBA_INTEGER:
+			return 4;
+		case BHive::EFormat::DEPTH24_STENCIL8:
+		case BHive::EFormat::DEPTH_COMPONENT:
+		case BHive::EFormat::DEPTH_COMPONENT_32F:
+		case BHive::EFormat::DEPTH_COMPONENT_24:
+		default:
+			break;
+		}
+
+		ASSERT(false);
+		return 0;
+	}
 
 
 	inline bool IsDepthFormat(EFormat format)

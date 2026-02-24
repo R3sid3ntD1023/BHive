@@ -32,6 +32,6 @@ namespace BHive
 		specs.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		specs.Format = EFormat::RGBA8;
 
-		mOutputTexture = Texture2D::Create(mSize.x, mSize.y, specs);
+		mOutputTexture = Texture2D::Create({mSize.x, mSize.y}, specs);
 	}
 } // namespace BHive

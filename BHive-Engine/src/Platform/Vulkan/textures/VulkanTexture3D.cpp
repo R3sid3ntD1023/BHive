@@ -4,12 +4,10 @@
 namespace BHive
 {
 
-	VulkanTexture3D::VulkanTexture3D(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &create_info, const void *data)
+	VulkanTexture3D::VulkanTexture3D(const glm::uvec3 &size, const FTextureCreateInfo &createInfo, const Buffer &data)
 		: mDevice(VulkanBackend::GetLogicalDevice()),
-		  mWidth(width),
-		  mHeight(height),
-		  mDepth(depth),
-		  mCreateInfo(create_info)
+		  mSize(size),
+		  mCreateInfo(createInfo)
 	{
 		auto api_info = Vulkan::Convert(mCreateInfo);
 
@@ -21,7 +19,7 @@ namespace BHive
 		sampler_info.mipLodBias = 0.f;
 		sampler_info.minLod = 0.f;
 		sampler_info.maxLod = 0.f;
-		mImage.Create(width, height, depth, vk::ImageType::e3D, vk::ImageViewType::e3D, api_info.Format, api_info.Usage, api_info.Aspect,
+		mImage.Create(size.x, size.y, size.z, 1, vk::ImageType::e3D, vk::ImageViewType::e3D, api_info.Format, api_info.Usage, api_info.Aspect,
 			sampler_info);
 	}
 

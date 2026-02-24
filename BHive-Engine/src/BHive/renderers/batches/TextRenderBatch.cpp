@@ -2,6 +2,7 @@
 #include "gfx/ShaderManager.h"
 #include "gfx/RenderCommand.h"
 #include "renderers/Renderer.h"
+#include "material/BackendMaterial.h"
 
 namespace BHive
 {
@@ -11,9 +12,31 @@ namespace BHive
 				{EShaderDataType::Float2}, {EShaderDataType::Float2}, {EShaderDataType::Float4}, {EShaderDataType::Int}};
 	}
 
-	Ref<Shader> TextRenderBatch::GetShader() const
+	TextRenderBatch::~TextRenderBatch()
 	{
-		return ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Text.glsl");
+	}
+
+	void TextRenderBatch::Init(size_t vcount, size_t icount)
+	{
+		TRenderBatch::Init(vcount, icount);
+
+		auto shaderProgram = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Text.glsl");
+
+		mPipeline = Pipeline::Create();
+
+		Pipeline::PipelineState state = Pipeline::GetDefaultPipelineState();
+		state.ShaderProgram = shaderProgram;
+		state.Raster.CullEnabled = false;
+
+		mPipeline->Init(state);
+
+		mMaterial = IMaterialBackendInterface::Create();
+		mMaterial->Init(mPipeline);
+	}
+
+	Ref<Pipeline> TextRenderBatch::GetPipeline() const
+	{
+		return mPipeline;
 	}
 
 	void TextRenderBatch::Flush()
@@ -22,12 +45,13 @@ namespace BHive
 		{
 			TRenderBatch::Flush();
 
-			if (mTextureBatch)
-				mTextureBatch->Flush();
+			auto& textures = mTextureBatch->GetTexture();
+			mMaterial->Bind(mPipeline);
+			mMaterial->BindTexture("uTextures", textures);
 
-			RenderCommand::EnableDepthMask(false);
+		//	RenderCommand::EnableDepthMask(false);
 			RenderCommand::DrawElements(ETopologyMode::Triangles, mVertexArray, mIndexCount);
-			RenderCommand::EnableDepthMask(true);
+			//RenderCommand::EnableDepthMask(true);
 
 			Renderer::GetStats().DrawCalls++;
 		}

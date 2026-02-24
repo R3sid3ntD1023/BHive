@@ -8,6 +8,8 @@
 #include "Platform/Vulkan/VulkanStorageBuffer.h"
 #include "gfx/shader/ShaderProgram.h"
 #include "Platform/Vulkan/VulkanConverters.h"
+#include "renderers/Renderer.h"
+#include "Platform/Vulkan/IVulkanTexture.h"
 
 namespace BHive
 {
@@ -137,13 +139,64 @@ namespace BHive
 
 			const vk::DescriptorSet& target_set = frame_set[setIndex];
 
-			vk::DescriptorImageInfo image_info = *texture->GetNativeHandle().As<vk::DescriptorImageInfo>();
+			vk::DescriptorImageInfo image_info = Cast<IVulkanTexture>(texture)->GetDescriptor();
 			if (!image_info)
 			{
 				LOG_ERROR("Image info is NULL for {}", texture->GetName());
 				return;
 			}
 			vk::WriteDescriptorSet descriptor_write(target_set, sampler.Binding, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
+			mDevice.updateDescriptorSets(descriptor_write, {});
+		};
+
+		api->SubmitCommand(pre_cmd, ECommandType_PreCommand);
+	}
+
+	void VulkanBackendMaterial::BindTexture(const std::string &name, const std::vector<Ref<Texture>> &textures)
+	{
+		if (!textures.size())
+			return;
+
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		auto pre_cmd = [=, texs = textures](const FVulkanFrame &data)
+		{
+			if (!mReflectionPtr->Samplers.contains(name))
+			{
+				LOG_ERROR("VulkanBackendMaterial::BindTexture - No sampler reflection for name {}", name);
+				return;
+			}
+
+			const auto &sampler = mReflectionPtr->Samplers.at(name);
+			const auto array_size = sampler.ArraySize;
+			const auto count = std::min<uint32_t>(array_size, texs.size());
+
+			if (texs.size() > array_size)
+				LOG_WARN("Too many textures for '{}': {} provided, {} allowed", name, texs.size(), array_size);
+
+			if (texs.size() < array_size)
+				LOG_WARN("Texture array '{}' partially filled: {} of {}", name, texs.size(), array_size);
+
+			const auto &frame_set = mDescriptorSets[data.Frame];
+
+			uint32_t setIndex = sampler.Set;
+			if (setIndex >= frame_set.size())
+			{
+				LOG_ERROR("VulkanBackendMaterial::BindTexture - Set index {} out of range", setIndex);
+				return;
+			}
+
+			const vk::DescriptorSet &target_set = frame_set[setIndex];
+			std::vector<vk::DescriptorImageInfo> infos(count, vk::DescriptorImageInfo(VK_NULL_HANDLE, VK_NULL_HANDLE, vk::ImageLayout::eUndefined));
+
+			for (uint32_t i = 0; i < count; i++)
+			{
+				if (!texs[i])
+					continue;
+
+				infos[i] = Cast<IVulkanTexture>(texs[i])->GetDescriptor();
+			}
+			
+			vk::WriteDescriptorSet descriptor_write(target_set, sampler.Binding, 0, vk::DescriptorType::eCombinedImageSampler, infos);
 			mDevice.updateDescriptorSets(descriptor_write, {});
 		};
 

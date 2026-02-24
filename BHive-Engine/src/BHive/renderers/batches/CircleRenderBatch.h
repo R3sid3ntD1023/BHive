@@ -16,11 +16,22 @@ namespace BHive
 		static BufferLayout GetLayout();
 	};
 
+	class IMaterialBackendInterface;
+
 	struct CircleRenderBatch : public TRenderBatch<CircleVertex>
 	{
+		~CircleRenderBatch();
 
-		Ref<Shader> GetShader() const override;
+		void Init(size_t vcount, size_t icount) override;
+
+		Ref<Pipeline> GetPipeline() const override;
 
 		void Flush() override;
+
+	private:
+		Ref<Pipeline> mPipeline;
+
+		Ref<IMaterialBackendInterface> mMaterial;
+
 	};
 } // namespace BHive

@@ -6,7 +6,17 @@ namespace BHive
 {
 	void TextureBatchData::Init()
 	{
-		mTextures[0] = Renderer::GetWhiteTexture();
+		FTextureCreateInfo create_info{};
+		create_info.Format = EFormat::RGBA8;
+		create_info.Aspect = ETextureAspect::Color;
+		create_info.Usage = ETextureUsage::Sampled | ETextureUsage::TransferDst;
+		create_info.ArrayLayers = sMaxTextureCount;
+
+		mTextureArray = Texture2DArray::Create({512, 512}, create_info);
+		auto white =  Cast<Texture2D>(Renderer::GetWhiteTexture());
+
+		mTextureArray->AddTexture(white);
+		mTextureArray->SetStartLayer(1);
 	}
 
 	void TextureBatchData::End()
@@ -26,35 +36,20 @@ namespace BHive
 
 	void TextureBatchData::Flush()
 	{
-		for (size_t i = 0; i < mTextureCount; i++)
-			mTextures[i]->Bind(i);
+		
 	}
 
 	uint32_t TextureBatchData::GetTextureIndex(IRenderBatch &data, const Ref<Texture> &texture)
 	{
-		uint32_t texture_index = 0;
-		for (uint32_t t = 0; t < mTextureCount; t++)
+		auto tex = Cast<Texture2D>(texture);
+		auto index = mTextureArray->AddTexture(tex);
+		
+		if (index == -1)
 		{
-			if (texture && mTextures[t] == texture)
-			{
-				texture_index = t;
-				break;
-			}
+			data.Flush();	
+			mTextureArray->Clear();
+			index = mTextureArray->AddTexture(tex);
 		}
-
-		if (texture_index == 0 && texture)
-		{
-			if (mTextureCount >= sMaxTextureCount)
-			{
-				NextBatch();
-				data.NextBatch();
-			}
-
-			texture_index = mTextureCount;
-			mTextures[mTextureCount] = texture;
-			mTextureCount++;
-		}
-
-		return texture_index;
+		return index;
 	}
 } // namespace BHive

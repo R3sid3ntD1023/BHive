@@ -5,16 +5,10 @@
 
 namespace BHive
 {
+	
+
 	struct VulkanUtils
 	{
-		struct CopyImageRegion
-		{
-			uint32_t BaseArrayLayer = 0;
-			uint32_t LayerCount = 1;
-			vk::Offset3D Offset = {0, 0, 0};
-			vk::Extent3D Extents = {0, 0, 1};
-		};
-
 		static uint32_t FindQueueFamilies(vk::PhysicalDevice device);
 
 		static vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR> &availableFormats);
@@ -34,7 +28,7 @@ namespace BHive
 		static void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer, vk::raii::DeviceMemory& memory);
 
 		static void CreateImage(
-			uint32_t w, uint32_t h, uint32_t d, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties,
+			uint32_t w, uint32_t h, uint32_t d, uint32_t layers, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties,
 			vk::raii::Image& image, vk::raii::DeviceMemory& memory);
 
 		static void CreateImageView(const vk::Image& image, vk::raii::ImageView& view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect);
@@ -48,11 +42,11 @@ namespace BHive
 
 		static void TransitionImageLayout(
 			vk::raii::CommandBuffer &cmd, const vk::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
-			vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags);
+			vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, const ImageSubresource& sub);
 
 		static uint32_t FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
 
-		static void CopyBufferToImage(const vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, vk::Image &image, const CopyImageRegion& region);
+		static void CopyBufferToImage(const vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, vk::Image &image, const ImageCopyRegion& region);
 
 		static void SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size);
 

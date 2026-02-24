@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gfx/Buffers.h"
-#include "gfx/Shader.h"
+#include "gfx/Pipeline.h"
 #include "gfx/VertexArray.h"
 #include "RenderBatch.h"
 
@@ -64,15 +64,11 @@ namespace BHive
 			StartBatch();
 		}
 
-		virtual void End()
-		{
-			//auto shader = GetShader();
-			/*shader->Bind();
-			Flush();
-			shader->UnBind();*/
+		virtual void End() { Flush();
+
 		}
 
-		virtual Ref<Shader> GetShader() const = 0;
+		virtual Ref<Pipeline> GetPipeline() const = 0;
 
 		size_t GetVertexBufferSize() { return (size_t)((uint8_t *)mVertexCurrentPtr - (uint8_t *)mVertexBufferPtr); }
 		size_t GetIndexBufferSize() { return (size_t)((uint8_t *)mIndexCurrentPtr - (uint8_t *)mIndexBufferPtr); }

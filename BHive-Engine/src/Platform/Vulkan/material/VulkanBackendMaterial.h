@@ -27,6 +27,8 @@ namespace BHive
 
 		void BindTexture(const std::string& name, const Ref<Texture> &texture) override;
 
+		void BindTexture(const std::string &name, const std::vector<Ref<Texture>> &textures) override;
+
 		void Set(const std::string &name, const void *data, size_t size) override;
 
 		void Shutdown() override;

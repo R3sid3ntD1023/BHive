@@ -73,7 +73,6 @@ namespace BHive
 	{
 		FTextureCreateInfo create_info{};
 		create_info.Format = hdr ? utils::GetFormatFromChannelsHDR(c) : utils::GetFormatFromChannels(c);
-		create_info.Channels = c;
 		create_info.MinFilter = EMinFilter::LINEAR;
 		create_info.MagFilter = EMagFilter::LINEAR;
 		create_info.WrapMode = EWrapMode::REPEAT;
@@ -85,13 +84,13 @@ namespace BHive
 		if (override.Resize())
 		{
 			auto new_size = override.Width * override.Height * c;
-			stbi_uc *resized_buffer = (stbi_uc *)malloc(new_size);
-			stbir_resize_uint8_linear(data, w, h, 0, resized_buffer, override.Width, override.Height, 0, (stbir_pixel_layout)c);
+			Buffer buffer(new_size);
+			stbir_resize_uint8_linear(data, w, h, 0, buffer.As<uint8_t>(), override.Width, override.Height, 0, (stbir_pixel_layout)c);
 
-			return Texture2D::Create(override.Width, override.Height, create_info, resized_buffer,size);
+			return Texture2D::Create({override.Width, override.Height}, create_info, buffer);
 		}
 
-		return Texture2D::Create(w, h, create_info, data, size);
+		return Texture2D::Create({w, h}, create_info, Buffer(data, size));
 	}
 
 	Ref<Texture2D> TextureLoader::Import(const std::filesystem::path &file, const const FTextureOverride &override)

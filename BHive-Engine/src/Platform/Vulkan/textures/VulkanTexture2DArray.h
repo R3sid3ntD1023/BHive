@@ -9,32 +9,28 @@ namespace BHive
 	class BHIVE_API VulkanTexture2DArray : public Texture2DArray, public IVulkanTexture
 	{
 	public:
-		VulkanTexture2DArray(uint32_t width, uint32_t height, uint32_t depth, const FTextureCreateInfo &specification);
+		VulkanTexture2DArray(const glm::uvec2& size, const FTextureCreateInfo &specification);
 
-		virtual uint32_t GetWidth() const { return mWidth; }
+		const glm::uvec2 &GetSize() const override { return {mSize.x, mSize.y}; }
 
-		virtual uint32_t GetHeight() const { return mHeight; }
+		void SetData(const FTextureUploadInfo &info) override;
 
-		void Bind(uint32_t slot = 0) const override;
+		void SetLayerData(const void *data, const glm::ivec3 &offset, uint32_t layer);
 
-		void UnBind(uint32_t slot = 0) const override;
-
-		virtual void SetData(const void *data, const glm::uvec3 &offset = {0, 0 ,0}) override;
-
-		virtual const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
+		const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
 
 		NativeHandle GetNativeHandle() const override { return mImage.GetNativeHandle(); }
 
 		const vk::DescriptorImageInfo GetDescriptor() const override { return mImage.GetDescriptor(); }
 
-		virtual const Vulkan::AllocatedImage &GetImage() const override { return mImage.GetImage(); };
+		const Vulkan::AllocatedImage &GetImage() const override { return mImage.GetImage(); };
 
-		virtual Vulkan::AllocatedImage &GetImage() override { return mImage.GetImage(); };
+		Vulkan::AllocatedImage &GetImage() override { return mImage.GetImage(); };
 
 	private:
 		vk::raii::Device &mDevice;
 
-		uint32_t mWidth, mHeight, mDepth;
+		glm::uvec2 mSize;
 
 		FTextureCreateInfo mCreateInfo;
 

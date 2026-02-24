@@ -19,10 +19,15 @@ namespace BHive
 		static BufferLayout GetLayout();
 	};
 
+	class IMaterialBackendInterface;
+
 	struct TextRenderBatch : public TRenderBatch<TextVertex>
 	{
+		~TextRenderBatch();
 
-		Ref<Shader> GetShader() const override;
+		void Init(size_t vcount, size_t icount) override;
+
+		Ref<Pipeline> GetPipeline() const override;
 
 		void Flush() override;
 
@@ -30,5 +35,9 @@ namespace BHive
 
 	private:
 		TextureBatchData *mTextureBatch;
+
+		Ref<Pipeline> mPipeline;
+
+		Ref<IMaterialBackendInterface> mMaterial;
 	};
 } // namespace BHive

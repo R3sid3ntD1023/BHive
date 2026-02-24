@@ -23,6 +23,7 @@ namespace BHive
 		vk::Format Format{};
 		vk::ImageUsageFlags Usage{};
 		vk::MemoryPropertyFlags MemoryFlags{};
+		uint32_t ArrayLayers = 1;
 	};
 
 	struct ImageViewDesc

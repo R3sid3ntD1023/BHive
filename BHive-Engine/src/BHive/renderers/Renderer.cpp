@@ -27,22 +27,21 @@ namespace BHive
 
 		RenderData()
 		{
-			
+
 			static constexpr uint32_t white = 0xFFFFFFFF;
 			static constexpr uint32_t black = 0xFF000000;
-			static constexpr uint32_t blue	= 0xFF0000FF;
+			static constexpr uint32_t blue = 0xFF0000FF;
 
 			FTextureCreateInfo create_info{};
-			create_info.Channels = 4;
 			create_info.Format = EFormat::RGBA8;
 			create_info.Usage = ETextureUsage::Sampled | ETextureUsage::TransferDst;
 			create_info.Aspect = ETextureAspect::Color;
 
-			WhiteTexture = Texture2D::Create(1, 1, create_info, &white, sizeof(uint32_t));
-			
-			BlackTexture = Texture2D::Create(1, 1, create_info, &black, sizeof(uint32_t));
-	
-			BlueTexture = Texture2D::Create(1, 1, create_info, &blue, sizeof(uint32_t));
+			WhiteTexture = Texture2D::Create({1, 1}, create_info, Buffer(& white, sizeof(uint32_t)));
+
+			BlackTexture = Texture2D::Create({1, 1}, create_info, Buffer(&black, sizeof(uint32_t)));
+
+			BlueTexture = Texture2D::Create({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
 
 			CameraUniformBuffer = UniformBuffer::Create(0, sizeof(FCameraData));
 			GlobalBuffers::AddGlobalUniformBuffer(0, CameraUniformBuffer);
@@ -58,14 +57,14 @@ namespace BHive
 		sData = new RenderData();
 
 		LineRenderer::Init();
-		// QuadRenderer::Init();
+		QuadRenderer::Init();
 	}
 
 	void Renderer::Shutdown()
 	{
 
 		LineRenderer::Shutdown();
-		// QuadRenderer::Shutdown();
+		QuadRenderer::Shutdown();
 
 		delete sData;
 	}
@@ -75,7 +74,7 @@ namespace BHive
 		ResetStats();
 
 		LineRenderer::Begin();
-		// QuadRenderer::Begin();
+		QuadRenderer::Begin();
 	}
 
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
@@ -105,7 +104,7 @@ namespace BHive
 	{
 
 		LineRenderer::End();
-		// QuadRenderer::End();
+		QuadRenderer::End();
 	}
 
 	Ref<Texture> Renderer::GetWhiteTexture()
