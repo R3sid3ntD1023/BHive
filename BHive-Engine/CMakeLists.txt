@@ -5,12 +5,6 @@ include(GNUInstallDirs)
 
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 
-
-set(AFTERMATH_DIR ${VENDOR_DIR}/aftermath)
-set(AFTERMATH_INCLUDE_DIR ${AFTERMATH_DIR}/include)
-set(AFTERMATH_LIB_DIR ${AFTERMATH_DIR}/lib/x64)
-set(AFTERMATH_LIBRARY ${AFTERMATH_LIB_DIR}/GFSDK_Aftermath_Lib.x64.lib)
-
 add_subdirectory(${VENDOR_DIR})
 
 find_package(glfw3 CONFIG REQUIRED)

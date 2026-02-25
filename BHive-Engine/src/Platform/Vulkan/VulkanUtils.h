@@ -31,7 +31,7 @@ namespace BHive
 			uint32_t w, uint32_t h, uint32_t d, uint32_t layers, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties,
 			vk::raii::Image& image, vk::raii::DeviceMemory& memory);
 
-		static void CreateImageView(const vk::Image& image, vk::raii::ImageView& view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect);
+		static void CreateImageView(const vk::Image &image, vk::raii::ImageView &view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect, uint32_t layerCount);
 
 		static void CreateImageSampler(vk::raii::Sampler& sampler, const vk::SamplerCreateInfo &info);
 

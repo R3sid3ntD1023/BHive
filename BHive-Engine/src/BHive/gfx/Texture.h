@@ -70,12 +70,6 @@ namespace BHive
 	class BHIVE_API Texture2DArray : public Texture
 	{
 	public:
-		struct LayerInfo
-		{
-			glm::vec2 UvScale = {1.f, 1.f};
-			glm::uvec2 OrginalSize = {0, 0};
-		};
-	public:
 		virtual ~Texture2DArray() = default;
 
 		void SetStartLayer(uint32_t layer) { mStartLayer = layer; }
@@ -84,13 +78,10 @@ namespace BHive
 
 		void Clear();
 
-		const LayerInfo& GetLayerInfo(uint32_t layer) const;
-
 		static Ref<Texture2DArray> Create(const glm::uvec2& size, const FTextureCreateInfo &createInfo);
 
 
 	private:
-		std::vector<LayerInfo> mLayerInfo;
 		uint32_t mCurrentLayer = 0;
 		uint32_t mStartLayer = 0;
 	};

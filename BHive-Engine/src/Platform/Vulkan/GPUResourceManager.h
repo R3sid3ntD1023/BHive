@@ -31,6 +31,7 @@ namespace BHive
 		vk::ImageViewType Type;
 		vk::Format Format;
 		vk::ImageAspectFlags Aspect;
+		uint32_t ArrayLayers = 1;
 	};
 
 	

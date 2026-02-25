@@ -24,7 +24,7 @@ namespace BHive
 
 		const Ref<Texture2DArray>& GetTexture() const { return mTextureArray; }
 
-		uint32_t GetTextureIndex(IRenderBatch &data, const Ref<Texture> &texture);
+		int32_t GetTextureIndex(IRenderBatch &data, const Ref<Texture> &texture);
 
 	private:
 		uint32_t mTextureCount = 1;

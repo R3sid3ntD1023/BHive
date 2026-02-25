@@ -19,6 +19,8 @@ namespace BHive
 				return vk::Format::eR32G32B32Sfloat;
 			case BHive::EShaderDataType::Float4:
 				return vk::Format::eR32G32B32A32Sfloat;
+			case BHive::EShaderDataType::UInt:
+				return vk::Format::eR32Uint;
 			case BHive::EShaderDataType::Int:
 				return vk::Format::eR32Sint;
 			case BHive::EShaderDataType::Int2:
@@ -133,6 +135,7 @@ namespace BHive
 			case BHive::EShaderDataType::Float2:
 			case BHive::EShaderDataType::Float3:
 			case BHive::EShaderDataType::Float4:
+			case BHive::EShaderDataType::UInt:
 			case BHive::EShaderDataType::Int:
 			case BHive::EShaderDataType::Int2:
 			case BHive::EShaderDataType::Int3:

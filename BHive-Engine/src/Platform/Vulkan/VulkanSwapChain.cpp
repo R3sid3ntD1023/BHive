@@ -12,7 +12,7 @@ namespace BHive
 
 	VulkanSwapChain::~VulkanSwapChain()
 	{
-		LOG_TRACE("SwapChain Destructor Called")
+		
 	}
 
 	void VulkanSwapChain::Init(vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info)

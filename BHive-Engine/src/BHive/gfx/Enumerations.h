@@ -195,6 +195,7 @@ namespace BHive
 		Float2,
 		Float3,
 		Float4,
+		UInt,
 		Int,
 		Int2,
 		Int3,

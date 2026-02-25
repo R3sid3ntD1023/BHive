@@ -31,8 +31,8 @@ namespace BHive
 
 		config->Rasterazation.setDepthClampEnable(VK_FALSE)
 			.setRasterizerDiscardEnable(VK_FALSE)
+			.setCullMode(state.Raster.CullEnabled ? Vulkan::ToVkCull(state.Raster.CullMode) : vk::CullModeFlagBits::eNone)
 			.setPolygonMode(Vulkan::ToVkPolygon(state.Raster.FillMode))
-			.setCullMode(Vulkan::ToVkCull(state.Raster.CullMode))
 			.setFrontFace(Vulkan::ToVkFrontFace(state.Raster.FrontFace))
 			.setDepthBiasEnable(VK_FALSE)
 			.setDepthBiasSlopeFactor(1.0f)

@@ -17,7 +17,8 @@
             "binaryDir": "${sourceDir}/build/${presetName}",
           "cacheVariables": {
             "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-            "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}"
+            "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
+            "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
           }
         },
         {

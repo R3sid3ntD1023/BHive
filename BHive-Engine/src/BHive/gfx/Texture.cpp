@@ -51,7 +51,7 @@ namespace BHive
 		}
 
 		const auto &tex_info = GetInfo();
-		if (mLayerInfo.size() >= tex_info.ArrayLayers)
+		if (mCurrentLayer >= tex_info.ArrayLayers)
 		{
 			return -1;
 		}
@@ -72,8 +72,6 @@ namespace BHive
 		};
 		SetData(info);
 
-		mLayerInfo.push_back({{(float)size.x / output_size.x, (float)size.y / output_size.y}, size});
-
 		tex->mLayerIndex = (int32_t)mCurrentLayer;
 
 		return mCurrentLayer++;
@@ -82,13 +80,6 @@ namespace BHive
 	void Texture2DArray::Clear()
 	{
 		mCurrentLayer = mStartLayer;
-		mLayerInfo.resize(mStartLayer);
-	}
-
-	const Texture2DArray::LayerInfo &Texture2DArray::GetLayerInfo(uint32_t layer) const
-	{
-		ASSERT(layer >= 0 && layer < mLayerInfo.size());
-		return mLayerInfo.at(layer);
 	}
 
 	Ref<Texture2DArray> Texture2DArray::Create(const glm::uvec2& size, const FTextureCreateInfo &createInfo)

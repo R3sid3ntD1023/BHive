@@ -128,10 +128,12 @@ namespace BHive
 		image.bindMemory(memory, 0);
 	}
 
-	void VulkanUtils::CreateImageView(const vk::Image &image, vk::raii::ImageView &view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect)
+	void VulkanUtils::CreateImageView(const vk::Image &image, vk::raii::ImageView &view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect,
+		uint32_t layerCount)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
-		vk::ImageViewCreateInfo image_view_create_info({}, image, type, format, {}, {aspect, 0, 1, 0, 1});
+		vk::ImageSubresourceRange range(aspect, 0, 1, 0, layerCount);
+		vk::ImageViewCreateInfo image_view_create_info({}, image, type, format, {}, range);
 		view = device.createImageView(image_view_create_info);
 	}
 
@@ -187,8 +189,10 @@ namespace BHive
 		vk::raii::CommandBuffer &cmd, const vk::Image &image,  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, const ImageSubresource &sub)
 	{
-		bool valid = aspect_flags != vk::ImageAspectFlagBits::eNone;
-		ASSERT(valid)
+		bool valid = oldLayout == vk::ImageLayout::eUndefined &&
+			newLayout == vk::ImageLayout::eShaderReadOnlyOptimal;
+		if (valid)
+			__debugbreak();
 
 		vk::ImageSubresourceRange range{aspect_flags, sub.MipLevel, 1, sub.BaseArrayLayer, sub.LayerCount};
 		vk::ImageMemoryBarrier2 barrier(

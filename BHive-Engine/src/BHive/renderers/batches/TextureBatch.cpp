@@ -39,7 +39,7 @@ namespace BHive
 		
 	}
 
-	uint32_t TextureBatchData::GetTextureIndex(IRenderBatch &data, const Ref<Texture> &texture)
+	int32_t TextureBatchData::GetTextureIndex(IRenderBatch &data, const Ref<Texture> &texture)
 	{
 		auto tex = Cast<Texture2D>(texture);
 		auto index = mTextureArray->AddTexture(tex);

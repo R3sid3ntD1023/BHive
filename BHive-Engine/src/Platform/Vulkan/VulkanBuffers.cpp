@@ -48,8 +48,6 @@ namespace BHive
 
 	PerFrameBuffer::~PerFrameBuffer()
 	{
-		LOG_TRACE("PerFrameBuffer Destructor Called");
-
 		auto buffer = Buffer;
 		auto stagingBuffer = StagingBuffer;
 
@@ -67,7 +65,6 @@ namespace BHive
 		  mCount(count)
 	{
 		mBuffer.Init(count * sizeof(uint32_t), vk::BufferUsageFlagBits::eIndexBuffer);
-		LOG_TRACE("Created Static Index Buffer");
 	}
 
 	void StaticVulkanIndexBuffer::SetData(const void *data, size_t size, uint32_t offset)
@@ -89,7 +86,6 @@ namespace BHive
 		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
 		mBuffer.Init(size, vk::BufferUsageFlagBits::eVertexBuffer);
-		LOG_TRACE("Created Static Vertex Buffer")
 	}
 
 	void StaticVulkanVertexBuffer::SetData(const void *data, size_t size, uint32_t offset)

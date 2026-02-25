@@ -41,6 +41,7 @@ namespace BHive
 		view_desc.Aspect = aspect;
 		view_desc.Format = format;
 		view_desc.Type = viewType;
+		view_desc.ArrayLayers = layers;
 		gpu_r_m.CreateImageView(mImage, view_desc);
 
 		gpu_r_m.CreateSampler(mImage, samplerInfo);

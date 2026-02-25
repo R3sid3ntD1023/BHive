@@ -21,8 +21,6 @@ namespace BHive
 
 	VulkanWindowContext::~VulkanWindowContext()
 	{
-		LOG_TRACE("GraphicsContext Destructor Called")
-
 		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		if (api->GetCurrentContext() == this)
 			api->SetCurrentContext(nullptr);

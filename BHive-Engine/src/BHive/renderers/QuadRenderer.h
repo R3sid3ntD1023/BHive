@@ -29,10 +29,10 @@ namespace BHive
 
 	struct FCircleParams
 	{
+		float Radius = 1.f;
 		FColor LineColor = 0xffffffff;
 		float Thickness = 1.0f;
 		float Fade = 0.005f;
-		float Radius = 1.f;
 	};
 
 	enum QuadRendererFlags_

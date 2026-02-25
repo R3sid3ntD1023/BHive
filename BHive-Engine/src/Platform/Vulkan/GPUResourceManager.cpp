@@ -65,7 +65,7 @@ namespace BHive
 	void GPUResourceManager::CreateImageView(Vulkan::Image &image, const ImageViewDesc &desc)
 	{
 		auto &gpu_image = GPUStorage::Images[UUID()];
-		VulkanUtils::CreateImageView(image.ImageSrc, gpu_image.View, desc.Type, desc.Format, desc.Aspect);
+		VulkanUtils::CreateImageView(image.ImageSrc, gpu_image.View, desc.Type, desc.Format, desc.Aspect, desc.ArrayLayers);
 		image.View = gpu_image.View;
 		image.Aspect = desc.Aspect;
 	}
@@ -76,7 +76,7 @@ namespace BHive
 			return;
 
 		auto &gpu_image = GPUStorage::Images[image.Handle];
-		VulkanUtils::CreateImageView(gpu_image.Image, gpu_image.View, desc.Type, desc.Format, desc.Aspect);
+		VulkanUtils::CreateImageView(gpu_image.Image, gpu_image.View, desc.Type, desc.Format, desc.Aspect, desc.ArrayLayers);
 		image.View = gpu_image.View;
 		image.Aspect = desc.Aspect;
 	}

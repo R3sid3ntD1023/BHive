@@ -226,11 +226,16 @@ namespace BHive
 		auto colorAttachments = mColorAttachments;
 		auto cmd = [colorAttachments](const FVulkanFrame &frame)
 		{
+			Vulkan::ImageState transferDst{vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
 			Vulkan::ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
+
 			for (auto &tex : colorAttachments)
 			{
 				auto vkTex = Cast<IVulkanTexture>(tex);
-				vkTex->GetImage().Transition(frame.CommandBuffer, shaderRead);
+				auto& image = vkTex->GetImage();
+
+				image.Transition(frame.CommandBuffer, transferDst);
+				image.Transition(frame.CommandBuffer, shaderRead);
 			}
 		};
 		api->SubmitCommand(cmd);

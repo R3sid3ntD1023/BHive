@@ -24,20 +24,8 @@ namespace BHive
 		auto shaderProgram = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Circle.glsl");
 		mPipeline = Pipeline::Create();
 
-		Pipeline::PipelineState state{};
+		Pipeline::PipelineState state = Pipeline::GetDefaultPipelineState();
 		state.ShaderProgram = shaderProgram;
-		state.ColorAttachmentFormats = {EFormat::RGBA8};
-		state.DepthAttachmentFormat = EFormat::DEPTH24_STENCIL8;
-		state.Depth.DepthTest = true;
-		state.Depth.DepthWrite = true;
-		state.Depth.DepthCompare = ECompareOp::LessOrEqual;
-		state.DrawMode = ETopologyMode::Triangles;
-		state.Blend.AlphaOp = EBlendOp::Add;
-		state.Blend.ColorOp = EBlendOp::Add;
-		state.Blend.DstAlpha = EBlendFactor::OneMinusSrcAlpha;
-		state.Blend.SrcAlpha = EBlendFactor::One;
-		state.Blend.DstColor = EBlendFactor::One;
-		state.Blend.SrcColor = EBlendFactor::OneMinusSrcAlpha;
 		state.Raster.CullEnabled = false;
 		mPipeline->Init(state);
 
@@ -55,6 +43,9 @@ namespace BHive
 		if (mIndexCount)
 		{
 			TRenderBatch::Flush();
+
+			mPipeline->Bind();
+			mMaterial->Bind(mPipeline);
 
 			RenderCommand::DrawElements(ETopologyMode::Triangles, mVertexArray, mIndexCount);
 

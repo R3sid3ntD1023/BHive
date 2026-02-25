@@ -11,7 +11,7 @@ namespace BHive
 		glm::vec3 Normal;
 		glm::vec2 TexCoord;
 		glm::vec4 Color;
-		uint32_t TextureIndex;
+		int32_t TextureIndex;
 		int32_t Flags;
 		int32_t EntityID{-1};
 
