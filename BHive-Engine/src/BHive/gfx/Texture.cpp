@@ -66,6 +66,7 @@ namespace BHive
 
 		FTextureUploadInfo info{
 			.Data = output.GetData(),
+			.Extent = {output_size.x, output_size.y, 1},
 			.ArrayLayer = mCurrentLayer,
 			.LayerCount = 1,
 		};
@@ -81,7 +82,7 @@ namespace BHive
 	void Texture2DArray::Clear()
 	{
 		mCurrentLayer = mStartLayer;
-		mLayerInfo.erase(mLayerInfo.begin() + mCurrentLayer, mLayerInfo.end());
+		mLayerInfo.resize(mStartLayer);
 	}
 
 	const Texture2DArray::LayerInfo &Texture2DArray::GetLayerInfo(uint32_t layer) const

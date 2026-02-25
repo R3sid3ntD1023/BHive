@@ -172,7 +172,7 @@ namespace BHive
 			sRenderData2D->QuadBatch.mVertexCurrentPtr->Normal = glm::transpose(glm::inverse(create_info.Transform)) * glm::vec4(0, 0, 1, 0);
 			sRenderData2D->QuadBatch.mVertexCurrentPtr->TexCoord = create_info.TexCoords[i] * layer_info.UvScale * create_info.Tiling;
 			sRenderData2D->QuadBatch.mVertexCurrentPtr->Color = create_info.Color;
-			sRenderData2D->QuadBatch.mVertexCurrentPtr->Texture = texture_index;
+			sRenderData2D->QuadBatch.mVertexCurrentPtr->TextureIndex = texture_index;
 			sRenderData2D->QuadBatch.mVertexCurrentPtr->Flags = create_info.Flags;
 			sRenderData2D->QuadBatch.mVertexCurrentPtr->EntityID = entity_id;
 			sRenderData2D->QuadBatch.mVertexCurrentPtr++;

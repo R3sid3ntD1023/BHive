@@ -58,13 +58,13 @@ layout(location = 2) in struct VS_OUT
 }
 vs_in;
 
-layout(set = 1, binding = 0) uniform sampler2DArray uTextures;
+layout(set = 1, binding = 0) uniform sampler2DArray uTexture;
 
 layout(location = 0) out vec4 fs_out;
 
 void main()
 {
-	vec4 color = texture(uTextures, vec3(vs_in.texcoord, v_TextureID));
+	vec4 color = texture(uTexture, vec3(vs_in.texcoord, v_TextureID));
 
 	fs_out = color * vs_in.color;
 }

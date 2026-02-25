@@ -98,7 +98,12 @@ namespace BHive
 			.Size = {1, 1},.Color = FColor::Red
 		};
 		QuadRenderer::DrawQuad(params, nullptr, FTransform({0,0,2}));
+
+		params.Color = FColor::Green;
 		QuadRenderer::DrawQuad(params, mTexture, FTransform({0, 0, -2}));
+
+		/*FTextParams tex_params{};
+		QuadRenderer::DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));*/
 
 		if (mMesh && mMaterial)
 		{

@@ -51,7 +51,7 @@ namespace BHive
 
 			mPipeline->Bind();
 			mMaterial->Bind(mPipeline);
-			mMaterial->BindTexture("uTextures", texture);
+			mMaterial->BindTexture("uTexture", texture);
 
 			RenderCommand::DrawElements(ETopologyMode::Triangles, mVertexArray, mIndexCount);
 
