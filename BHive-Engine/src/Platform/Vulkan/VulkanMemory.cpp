@@ -12,17 +12,20 @@ namespace BHive
 		}
 
 
+		const vk::DescriptorImageInfo AllocatedImage::GetDescriptor() const
+		{
+			return vk::DescriptorImageInfo(Sampler, View, vk::ImageLayout::eShaderReadOnlyOptimal);
+		}
+
 		void AllocatedImage::Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub)
 		{
-			ImageSubresource s = sub;
-			if (s.LayerCount == 1 && s.BaseArrayLayer == 0 && State.Layout != vk::ImageLayout::eUndefined)
+			for (uint32_t layer = sub.BaseArrayLayer; layer < sub.BaseArrayLayer + sub.LayerCount; layer++)
 			{
-				s.LayerCount = ArrayLayers;
+				auto &State = LayerStates[layer];
+				VulkanUtils::TransitionImageLayout(cmd, Image, State.Layout, newState.Layout, State.Access, newState.Access, State.Stage, newState.Stage, Aspect, sub);
+				State = newState;
 			}
-
-				s.LayerCount = UINT32_MAX;
-			VulkanUtils::TransitionImageLayout(cmd, Image, State.Layout, newState.Layout, State.Access, newState.Access, State.Stage, newState.Stage, Aspect, sub);
-			State = newState;
+			
 		}
 
 	} // namespace Vulkan

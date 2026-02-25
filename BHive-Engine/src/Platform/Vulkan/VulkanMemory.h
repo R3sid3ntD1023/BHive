@@ -8,6 +8,7 @@
 namespace BHive
 {
 	struct ImageSubresource;
+	class GPUResourceManager;
 
 	namespace Vulkan
 	{
@@ -21,26 +22,48 @@ namespace BHive
 
 		struct Image
 		{
+			void SetImage(const vk::Image &img) { ImageSrc = img;}
+			
+			vk::ImageView &GetView() { return View; }
+	
+			void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState);
+
+		private:
 			vk::Image ImageSrc = VK_NULL_HANDLE;
-			vk::raii::ImageView View = VK_NULL_HANDLE;
-			ImageState State;
+
+			vk::ImageView View = VK_NULL_HANDLE;
+			
 			vk::ImageAspectFlags Aspect;
 
-			void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState);
+			ImageState State = {vk::ImageLayout::eUndefined, {}, vk::PipelineStageFlagBits2::eTopOfPipe};
+
+			friend GPUResourceManager;
 		};
 
 		struct AllocatedImage
 		{
+			vk::Image& GetImage()  { return Image; }
+
+			vk::ImageView& GetView() { return View; }
+
+			vk::Sampler& GetSampler() { return Sampler; }
+
+			const vk::DescriptorImageInfo GetDescriptor() const;
+
+			void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, 1});
+
+		private:
+
 			vk::Image Image = VK_NULL_HANDLE;
 			vk::DeviceMemory Memory = VK_NULL_HANDLE;
-			UUID Handle;
 			vk::ImageView View = VK_NULL_HANDLE;
 			vk::Sampler Sampler = VK_NULL_HANDLE;
-			ImageState State;
+			std::vector<ImageState> LayerStates;
 			vk::ImageAspectFlags Aspect;
 			uint32_t ArrayLayers = 1;
+			UUID Handle;
 
-			void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, UINT32_MAX});
+			friend GPUResourceManager;
 		};
 
 		struct AllocatedBuffer

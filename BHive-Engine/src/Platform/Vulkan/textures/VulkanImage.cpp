@@ -5,12 +5,6 @@
 
 namespace BHive
 {
-	VulkanImage::VulkanImage()
-		: mDevice(VulkanBackend::GetLogicalDevice())
-	{
-
-	}
-
 	VulkanImage::~VulkanImage()
 	{
 		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
@@ -26,9 +20,6 @@ namespace BHive
 		uint32_t width, uint32_t height, uint32_t depth, uint32_t layers, vk::ImageType type, vk::ImageViewType viewType, vk::Format format, vk::ImageUsageFlags usage, vk::ImageAspectFlags aspect,
 		vk::SamplerCreateInfo samplerInfo)
 	{
-		mWidth = width;
-		mHeight = height;
-		mDepth = depth;
 		mFormat = format;
 
 		auto &gpu_r_m = GPUResourceManager::Get();
@@ -46,8 +37,6 @@ namespace BHive
 
 		mImage = gpu_r_m.CreateImage(desc);
 
-		mImage.Aspect = aspect;
-
 		ImageViewDesc view_desc{};
 		view_desc.Aspect = aspect;
 		view_desc.Format = format;
@@ -57,9 +46,8 @@ namespace BHive
 		gpu_r_m.CreateSampler(mImage, samplerInfo);
 	}
 
-	void VulkanImage::Upload(const void *data, size_t size, const ImageCopyRegion& region, const ImageSubresource& sub)
+	void VulkanImage::Upload(const void *data, size_t size, const ImageCopyRegion &region, const ImageSubresource &sub)
 	{
-		
 		vk::raii::Buffer stagingBuffer = nullptr;
 		vk::raii::DeviceMemory stagingMemory = nullptr;
 
@@ -69,28 +57,20 @@ namespace BHive
 		std::memcpy(map_memory, data, size);
 		stagingMemory.unmapMemory();
 
-		Vulkan::ImageState transerDst{
-			vk::ImageLayout::eTransferDstOptimal,
-			vk::AccessFlagBits2::eTransferWrite,
-			vk::PipelineStageFlagBits2::eTransfer
-		};
+		Vulkan::ImageState transerDst{vk::ImageLayout::eTransferDstOptimal, vk::AccessFlagBits2::eTransferWrite, vk::PipelineStageFlagBits2::eTransfer};
 
-		Vulkan::ImageState shaderRead{
-			vk::ImageLayout::eShaderReadOnlyOptimal,
-			vk::AccessFlagBits2::eShaderRead,
-			vk::PipelineStageFlagBits2::eFragmentShader
-		};
+		Vulkan::ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
 
 		auto cmd = VulkanUtils::BeginSingleTimeCommands();
 		mImage.Transition(cmd, transerDst, sub);
-		VulkanUtils::CopyBufferToImage(cmd, stagingBuffer, mImage.Image, region);
-		mImage.Transition(cmd, shaderRead,sub);
+		VulkanUtils::CopyBufferToImage(cmd, stagingBuffer, mImage.GetImage(), region);
+		mImage.Transition(cmd, shaderRead, sub);
 		VulkanUtils::EndSingleTimeCommands(cmd);
 	}
 
 	const vk::DescriptorImageInfo VulkanImage::GetDescriptor() const
 	{
-		return vk::DescriptorImageInfo(mImage.Sampler, mImage.View, vk::ImageLayout::eShaderReadOnlyOptimal);
+		return mImage.GetDescriptor();
 	}
 
 } // namespace BHive

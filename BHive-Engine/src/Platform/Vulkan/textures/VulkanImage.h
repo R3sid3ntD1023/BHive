@@ -1,14 +1,13 @@
 #pragma once
 
 #include "Platform/Vulkan/VulkanBackend.h"
-#include "Platform/Vulkan/IVulkanTexture.h"
 
 namespace BHive
 {
 	class VulkanImage
 	{
 	public:
-		VulkanImage();
+		VulkanImage() = default;
 
 		~VulkanImage();
 
@@ -26,16 +25,8 @@ namespace BHive
 
 		NativeHandle GetNativeHandle() const { return NativeHandle::FromPtr(&mImage); }
 
-		uint32_t GetWidth() const { return mWidth; }
-
-		uint32_t GetHeight() const { return mHeight; }
-
-		uint32_t GetDepth() const { return mDepth; }
-
 	private:
-		vk::raii::Device &mDevice;
 		Vulkan::AllocatedImage mImage{};
-		uint32_t mWidth = 0, mHeight = 0, mDepth = 0;
 		vk::Format mFormat = vk::Format::eUndefined;
 	};
 }

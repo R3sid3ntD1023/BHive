@@ -45,7 +45,13 @@ namespace BHive
 			return 0;
 		}
 
-		if (mLayerInfo.size() >= GetInfo().ArrayLayers)
+		if (tex->mLayerIndex != -1)
+		{
+			return tex->mLayerIndex;
+		}
+
+		const auto &tex_info = GetInfo();
+		if (mLayerInfo.size() >= tex_info.ArrayLayers)
 		{
 			return -1;
 		}
@@ -53,7 +59,7 @@ namespace BHive
 		const auto& buffer = tex->GetBuffer();
 		const glm::ivec2 size = tex->GetSize();
 		const glm::ivec2 output_size = GetSize();
-		const auto format_layout = GetFormatLayout(GetInfo().Format);
+		const auto format_layout = GetFormatLayout(tex_info.Format);
 		const auto buffer_size = output_size.x * output_size.y * format_layout ;
 		Buffer output( buffer_size);
 		stbir_resize_uint8_linear(buffer.As<uint8_t>(), size.x, size.y, 0 , output, output_size.x, output_size.y, 0, (stbir_pixel_layout)format_layout);
@@ -67,7 +73,7 @@ namespace BHive
 
 		mLayerInfo.push_back({{(float)size.x / output_size.x, (float)size.y / output_size.y}, size});
 
-		tex->mLayerIndex = mCurrentLayer;
+		tex->mLayerIndex = (int32_t)mCurrentLayer;
 
 		return mCurrentLayer++;
 	}

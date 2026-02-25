@@ -84,15 +84,14 @@ namespace BHive
 	void VulkanTexture2D::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(mImage.GetWidth(), mImage.GetHeight(), mCreateInfo, mBuffer);
+		ar(mSize, mCreateInfo, mBuffer);
 	}
 
 	void VulkanTexture2D::Load(cereal::BinaryInputArchive &ar)
 	{
-		uint32_t width = 0, height = 0;
 		Asset::Load(ar);
 
-		ar(width, height, mCreateInfo, mBuffer);
+		ar(mSize, mCreateInfo, mBuffer);
 
 		Initialize();
 

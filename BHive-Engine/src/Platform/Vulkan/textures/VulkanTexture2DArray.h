@@ -1,8 +1,8 @@
 #pragma once
 
 #include "gfx/Texture.h"
-#include "Platform/Vulkan/VulkanBackend.h"
 #include "VulkanImage.h"
+#include "Platform/Vulkan/IVulkanTexture.h"
 
 namespace BHive
 {
@@ -14,8 +14,6 @@ namespace BHive
 		const glm::uvec2 &GetSize() const override { return {mSize.x, mSize.y}; }
 
 		void SetData(const FTextureUploadInfo &info) override;
-
-		void SetLayerData(const void *data, const glm::ivec3 &offset, uint32_t layer);
 
 		const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
 

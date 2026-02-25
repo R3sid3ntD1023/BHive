@@ -44,8 +44,12 @@ namespace BHive
 		auto &image = GPUStorage::Images[handle];
 		VulkanUtils::CreateImage(desc.Width, desc.Height, desc.Depth, desc.ArrayLayers, desc.Type, desc.Format, desc.Tiling, desc.Usage, desc.MemoryFlags, image.Image, image.Memory);
 
-		auto out = Vulkan::AllocatedImage{image.Image, image.Memory, handle};
+		auto out = Vulkan::AllocatedImage();
+		out.Image = image.Image;
+		out.Memory = image.Memory;
+		out.Handle = handle;
 		out.ArrayLayers = desc.ArrayLayers;
+		out.LayerStates.resize(desc.ArrayLayers, {vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eNone, vk::PipelineStageFlagBits2::eTopOfPipe});
 		return out;
 	}
 
@@ -58,6 +62,14 @@ namespace BHive
 		return gpu_buffer.MappedMemory = gpu_buffer.Memory.mapMemory(offset, size);
 	}
 
+	void GPUResourceManager::CreateImageView(Vulkan::Image &image, const ImageViewDesc &desc)
+	{
+		auto &gpu_image = GPUStorage::Images[UUID()];
+		VulkanUtils::CreateImageView(image.ImageSrc, gpu_image.View, desc.Type, desc.Format, desc.Aspect);
+		image.View = gpu_image.View;
+		image.Aspect = desc.Aspect;
+	}
+
 	void GPUResourceManager::CreateImageView(Vulkan::AllocatedImage &image, const ImageViewDesc &desc)
 	{
 		if (!GPUStorage::Images.contains(image.Handle))
@@ -66,6 +78,7 @@ namespace BHive
 		auto &gpu_image = GPUStorage::Images[image.Handle];
 		VulkanUtils::CreateImageView(gpu_image.Image, gpu_image.View, desc.Type, desc.Format, desc.Aspect);
 		image.View = gpu_image.View;
+		image.Aspect = desc.Aspect;
 	}
 
 	void GPUResourceManager::CreateSampler(Vulkan::AllocatedImage &image, const vk::SamplerCreateInfo &create_info)

@@ -36,9 +36,16 @@ namespace BHive
 
 		for (auto& image : images)
 		{
-			vk::ImageViewCreateInfo view_info({}, image, vk::ImageViewType::e2D, mImageFormat.format, {}, {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
-			auto state = Vulkan::ImageState{vk::ImageLayout::eUndefined, {}, vk::PipelineStageFlagBits2::eTopOfPipe};
-			mImages.emplace_back(image, mDevice.createImageView(view_info), state, vk::ImageAspectFlagBits::eColor);
+			Vulkan::Image img;
+			img.SetImage(image);
+
+			ImageViewDesc desc{};
+			desc.Type = vk::ImageViewType::e2D;
+			desc.Aspect = vk::ImageAspectFlagBits::eColor;
+			desc.Format = mImageFormat.format;
+			GPUResourceManager::Get().CreateImageView(img, desc);
+
+			mImages.emplace_back(img);
 		}
 
 		auto image_count = static_cast<uint32_t>(mImages.size());
@@ -78,9 +85,6 @@ namespace BHive
 		view_desc.Format = mDepthFormat;
 		view_desc.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 		GPUResourceManager().Get().CreateImageView(mDepthImage, view_desc);
-
-		mDepthImage.State = {vk::ImageLayout::eUndefined, {}, vk::PipelineStageFlagBits2::eTopOfPipe};
-		mDepthImage.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)

@@ -47,6 +47,8 @@ namespace BHive
 
 		void *MapMemory(const Vulkan::AllocatedBuffer &buffer, vk::DeviceSize offset, vk::DeviceSize size);
 
+		void CreateImageView(Vulkan::Image &image, const ImageViewDesc &desc);
+
 		void CreateImageView(Vulkan::AllocatedImage& image, const ImageViewDesc& desc);
 
 		void CreateSampler(Vulkan::AllocatedImage& image, const vk::SamplerCreateInfo &create_info);

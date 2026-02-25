@@ -1,6 +1,6 @@
 #include "VulkanFramebuffer.h"
 #include "gfx/Texture.h"
-#include "textures/VulkanTexture2D.h"
+#include "IVulkanTexture.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
 
@@ -95,7 +95,7 @@ namespace BHive
 				auto vkTex = Cast<IVulkanTexture>(tex);
 				
 				auto info = vk::RenderingAttachmentInfo(
-					vkTex->GetImage().View, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+					vkTex->GetImage().GetView(), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 					vk::ClearColorValue(0, 0, 0, 1));
 
 				color_infos.emplace_back(info);
@@ -106,7 +106,7 @@ namespace BHive
 				auto vkTex = Cast<IVulkanTexture>(depth_attachment);
 
 				depth_info = vk::RenderingAttachmentInfo(
-					vkTex->GetImage().View, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+					vkTex->GetImage().GetView(), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 					vk::ClearDepthStencilValue(1.0f, 0));
 			}
 

@@ -62,7 +62,7 @@ namespace BHive
 		REFLECTABLEV(Texture)
 
 	private:
-		uint32_t mLayerIndex; //used by texture2d array
+		int32_t mLayerIndex = -1; //used by texture2d array
 
 		friend class Texture2DArray;
 	};

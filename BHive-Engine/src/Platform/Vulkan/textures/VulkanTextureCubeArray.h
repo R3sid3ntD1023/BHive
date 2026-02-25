@@ -1,8 +1,8 @@
 #pragma once
 
 #include "gfx/Texture.h"
-#include "Platform/Vulkan/VulkanBackend.h"
 #include "VulkanImage.h"
+#include "Platform/Vulkan/IVulkanTexture.h"
 
 namespace BHive
 {
