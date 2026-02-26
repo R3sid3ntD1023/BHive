@@ -1,84 +1,78 @@
 #pragma once
 
-#include <vulkan/vulkan_raii.hpp>
 #include "gfx/NativeHandle.h"
 #include "core/UUID.h"
 #include "VulkanImageRegions.h"
+#include "MemoryAllocator.h"
 
 namespace BHive
 {
 	struct ImageSubresource;
 	class GPUResourceManager;
 
-	namespace Vulkan
+	struct ImageState
 	{
-		
-		struct ImageState
-		{
-			vk::ImageLayout Layout = vk::ImageLayout::eUndefined;
-			vk::AccessFlags2 Access = {};
-			vk::PipelineStageFlags2 Stage = {};
-		};
+		vk::ImageLayout Layout = vk::ImageLayout::eUndefined;
+		vk::AccessFlags2 Access = {};
+		vk::PipelineStageFlags2 Stage = {};
+	};
 
-		struct Image
-		{
-			void SetImage(const vk::Image &img) { ImageSrc = img;}
-			
-			vk::ImageView &GetView() { return View; }
-	
-			void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState);
+	struct Image
+	{
+		void SetImage(const vk::Image &img) { ImageSrc = img; }
 
-		private:
-			vk::Image ImageSrc = VK_NULL_HANDLE;
+		vk::ImageView &GetView() { return View; }
 
-			vk::ImageView View = VK_NULL_HANDLE;
-			
-			vk::ImageAspectFlags Aspect;
+		void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState);
 
-			ImageState State = {vk::ImageLayout::eUndefined, {}, vk::PipelineStageFlagBits2::eTopOfPipe};
+	private:
+		vk::Image ImageSrc = VK_NULL_HANDLE;
 
-			friend GPUResourceManager;
-		};
+		vk::ImageView View = VK_NULL_HANDLE;
 
-		struct AllocatedImage
-		{
-			vk::Image& GetImage()  { return Image; }
+		vk::ImageAspectFlags Aspect;
 
-			vk::ImageView& GetView() { return View; }
+		ImageState State = {vk::ImageLayout::eUndefined, {}, vk::PipelineStageFlagBits2::eTopOfPipe};
 
-			vk::Sampler& GetSampler() { return Sampler; }
+		friend GPUResourceManager;
+	};
 
-			const vk::DescriptorImageInfo GetDescriptor() const;
+	struct AllocatedImage
+	{
+		vk::Image &GetImage() { return Image; }
 
-			void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, 1});
+		vk::ImageView &GetView() { return View; }
 
-		private:
+		vk::Sampler &GetSampler() { return Sampler; }
 
-			vk::Image Image = VK_NULL_HANDLE;
-			vk::DeviceMemory Memory = VK_NULL_HANDLE;
-			vk::ImageView View = VK_NULL_HANDLE;
-			vk::Sampler Sampler = VK_NULL_HANDLE;
-			std::vector<ImageState> LayerStates;
-			vk::ImageAspectFlags Aspect;
-			uint32_t ArrayLayers = 1;
-			UUID Handle;
+		const vk::DescriptorImageInfo GetDescriptor() const;
 
-			friend GPUResourceManager;
-		};
+		void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, 1});
 
-		struct AllocatedBuffer
-		{
-			vk::Buffer Buffer = VK_NULL_HANDLE;
-			vk::DeviceMemory Memory = VK_NULL_HANDLE;
-			UUID Handle;
-		};
+	private:
+		vk::Image Image = VK_NULL_HANDLE;
+		vk::ImageView View = VK_NULL_HANDLE;
+		vk::Sampler Sampler = VK_NULL_HANDLE;
+		std::vector<ImageState> LayerStates;
+		vk::ImageAspectFlags Aspect;
+		uint32_t ArrayLayers = 1;
+		MemoryAllocation Allocation;
+		UUID Handle;
 
-		struct Handle 
-		{
-			static NativeHandle BufferInfo(const vk::DescriptorBufferInfo *info) { return NativeHandle::FromPtr(info); }
-			static NativeHandle ImageInfo(const vk::DescriptorImageInfo *info) { return NativeHandle::FromPtr(info); }
-			static NativeHandle Buffer(const vk::raii::Buffer *buffer) { return NativeHandle::FromPtr(buffer); }
-		};
-		
-	}
+		friend GPUResourceManager;
+	};
+
+	struct AllocatedBuffer
+	{
+		vk::Buffer Buffer = VK_NULL_HANDLE;
+		MemoryAllocation Allocation;
+		UUID Handle;
+	};
+
+	struct Handle
+	{
+		static NativeHandle BufferInfo(const vk::DescriptorBufferInfo *info) { return NativeHandle::FromPtr(info); }
+		static NativeHandle ImageInfo(const vk::DescriptorImageInfo *info) { return NativeHandle::FromPtr(info); }
+		static NativeHandle Buffer(const vk::raii::Buffer *buffer) { return NativeHandle::FromPtr(buffer); }
+	};
 } // namespace BHive

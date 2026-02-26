@@ -11,7 +11,6 @@
 #include "VulkanWindowContext.h"
 #include "gfx/RenderCommand.h"
 #include "IVulkanTexture.h"
-#include "GPUResourceManager.h"
 
 namespace BHive
 {
@@ -63,8 +62,6 @@ namespace BHive
 		LOG_TRACE("RendererAPI Shutdown Called")
 
 		mDescriptorPool = VK_NULL_HANDLE;
-
-		GPUResourceManager::Get().Shutdown();
 
 		VulkanBackend::Get().Shutdown();
 	}
@@ -122,8 +119,8 @@ namespace BHive
 		}
 
 
-		Vulkan::ImageState colorAttachmentState = {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
-		Vulkan::ImageState depthAttachmentState = {
+		ImageState colorAttachmentState = {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
+		ImageState depthAttachmentState = {
 			vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
 			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests};
 
@@ -152,7 +149,7 @@ namespace BHive
 
 		frame.CommandBuffer.endRendering();
 
-		Vulkan::ImageState present = {vk::ImageLayout::ePresentSrcKHR, {}, vk::PipelineStageFlagBits2::eBottomOfPipe};
+		ImageState present = {vk::ImageLayout::ePresentSrcKHR, {}, vk::PipelineStageFlagBits2::eBottomOfPipe};
 		image.Transition(frame.CommandBuffer, present);
 
 		cmd.end();
@@ -231,7 +228,7 @@ namespace BHive
 	{
 		vao->Bind();
 
-		auto topology = Vulkan::ToVkTopology(mode);
+		auto topology = ToVkTopology(mode);
 
 		auto cmd = [topology, count](const FVulkanFrame &data)
 		{
@@ -247,7 +244,7 @@ namespace BHive
 		vao->Bind();
 		auto index_buffer =vao->GetIndexBuffer();
 		auto index_count = count ? count : index_buffer->GetCount();
-		auto topology = Vulkan::ToVkTopology(mode);
+		auto topology = ToVkTopology(mode);
 
 		auto cmd = [topology, index_count](const FVulkanFrame &data)
 		{
@@ -263,7 +260,7 @@ namespace BHive
 		vao.Bind();
 		auto index_buffer = vao.GetIndexBuffer();
 		auto index_count = count ? count : index_buffer->GetCount();
-		auto topology = Vulkan::ToVkTopology(mode);
+		auto topology = ToVkTopology(mode);
 	}
 
 	void VulkanRendererAPI::DrawElementsRanged(ETopologyMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
@@ -287,7 +284,7 @@ namespace BHive
 		vao.Bind();
 
 		auto buffer = indirect.GetNativeHandle().As<vk::Buffer>();
-		auto topology = Vulkan::ToVkTopology(mode);
+		auto topology = ToVkTopology(mode);
 
 		auto cmd = [buffer, topology, drawCount, stride](const FVulkanFrame &data)
 		{		

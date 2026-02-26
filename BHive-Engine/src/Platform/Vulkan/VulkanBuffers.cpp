@@ -1,7 +1,7 @@
 #include "VulkanBuffers.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
-#include "GPUResourceManager.h"
+#include "VulkanBackend.h"
 
 namespace BHive
 {
@@ -11,23 +11,23 @@ namespace BHive
 		desc.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
 		desc.Size = size;
 		desc.Usage = usage | vk::BufferUsageFlagBits::eTransferDst;
-		Buffer =  GPUResourceManager::Get().CreateBuffer(desc);
+		Buffer = VulkanBackend::GetGPUResourceManager().CreateBuffer(desc);
 
 
 		desc.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
 		desc.Size = size;
 		desc.Usage = vk::BufferUsageFlagBits::eTransferSrc;
-		StagingBuffer = GPUResourceManager::Get().CreateBuffer(desc);
+		StagingBuffer = VulkanBackend::GetGPUResourceManager().CreateBuffer(desc);
 
-		MappedMemory = GPUResourceManager::Get().MapMemory(StagingBuffer,0, size);
+		VulkanBackend::GetGPUResourceManager().MapMemory(StagingBuffer, 0, size);
+
 	}
 
 	void PerFrameBuffer::SetData(vk::raii::CommandBuffer &cmd, const void *data, size_t size, uint32_t offset, vk::PipelineStageFlags2 flags, vk::AccessFlags2 access)
-	{
-		if (MappedMemory)
-		{
-			std::memcpy(static_cast<std::byte *>(MappedMemory) + offset, data, size);
-		}
+	{	
+		auto mapped_memory = StagingBuffer.Allocation.MappedPtr;
+		if (mapped_memory)
+			std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, data, size);
 
 		vk::BufferCopy copy_region(0, offset, size);
 		cmd.copyBuffer(StagingBuffer.Buffer, Buffer.Buffer, copy_region);
@@ -53,9 +53,8 @@ namespace BHive
 
 		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		api->QueueDeletion([buffer, stagingBuffer](uint32_t) { 
-				auto& gpu_r_m = GPUResourceManager::Get();
-				gpu_r_m.DestroyBuffer(buffer);
-				gpu_r_m.DestroyBuffer(stagingBuffer);
+				VulkanBackend::GetGPUResourceManager().DestroyBuffer(buffer);
+				VulkanBackend::GetGPUResourceManager().DestroyBuffer(stagingBuffer);
 			});
 	}
 
@@ -108,7 +107,7 @@ namespace BHive
 		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mCount(count)
 	{
-		for (uint32_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			mPerFrameBuffer[i].Init(count * sizeof(uint32_t), vk::BufferUsageFlagBits::eIndexBuffer);
 		}
@@ -132,7 +131,7 @@ namespace BHive
 	DynamicVulkanVertexBuffer::DynamicVulkanVertexBuffer(const size_t size)
 		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
-		for (uint32_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			mPerFrameBuffer[i].Init(size, vk::BufferUsageFlagBits::eVertexBuffer);	
 		}

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gfx/UniformBuffer.h"
-#include "VulkanBackend.h"
+#include "VulkanMemory.h"
 
 namespace BHive
 {
@@ -18,9 +18,8 @@ namespace BHive
 
 	private:
 		vk::raii::Device &mDevice;
-		std::array<Vulkan::AllocatedBuffer, VulkanBackend::MAX_FRAMES_IN_FLIGHT> mBuffer;
-		std::array<void *, VulkanBackend::MAX_FRAMES_IN_FLIGHT> mMappedMemory;
+		std::array<AllocatedBuffer, MAX_FRAMES_IN_FLIGHT> mBuffer;
 		vk::DeviceSize mSize;
-		std::array<vk::DescriptorBufferInfo, VulkanBackend::MAX_FRAMES_IN_FLIGHT> mBufferInfos;
+		std::array<vk::DescriptorBufferInfo, MAX_FRAMES_IN_FLIGHT> mBufferInfos;
 	};
 } // namespace BHive

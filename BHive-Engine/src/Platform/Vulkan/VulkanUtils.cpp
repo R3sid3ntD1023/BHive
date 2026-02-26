@@ -91,7 +91,7 @@ namespace BHive
 		graphics_queue.waitIdle();
 	}
 
-	void VulkanUtils::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer, vk::raii::DeviceMemory &memory)
+	void VulkanUtils::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
 		auto &physical_device = VulkanBackend::GetPhysicalDevice();
@@ -102,30 +102,16 @@ namespace BHive
 
 		vk::BufferCreateInfo bufferCreateInfo({}, size, usage, vk::SharingMode::eExclusive);
 		buffer = vk::raii::Buffer(device, bufferCreateInfo);
-
-		vk::MemoryRequirements memRequirements = buffer.getMemoryRequirements();
-		vk::DeviceSize alloc_size = std::max(memRequirements.size, minAlloc);
-
-		vk::MemoryAllocateInfo allocInfo(alloc_size, FindMemoryType(memRequirements.memoryTypeBits, properties));
-
-		memory = vk::raii::DeviceMemory(device, allocInfo);
-		buffer.bindMemory(memory, 0);
 	}
 
 	void VulkanUtils::CreateImage(
-		uint32_t w, uint32_t h, uint32_t d, uint32_t layers, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image &image,
-		vk::raii::DeviceMemory &memory)
+		uint32_t w, uint32_t h, uint32_t d, uint32_t layers, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image &image)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
 		vk::ImageCreateInfo imageInfo(
 			{}, type, format, {w, h, d}, 1, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage,
 			vk::SharingMode::eExclusive, 0);
 		image = device.createImage(imageInfo);
-
-		vk::MemoryRequirements memRequirements = image.getMemoryRequirements();
-		vk::MemoryAllocateInfo allocInfo(memRequirements.size, FindMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal));
-		memory = device.allocateMemory(allocInfo);
-		image.bindMemory(memory, 0);
 	}
 
 	void VulkanUtils::CreateImageView(const vk::Image &image, vk::raii::ImageView &view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect,
@@ -209,21 +195,6 @@ namespace BHive
 
 		vk::DependencyInfo depInfo({}, {}, {}, barrier);
 		cmd.pipelineBarrier2(depInfo);
-	}
-
-	uint32_t VulkanUtils::FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties)
-	{
-		auto &physical_device = VulkanBackend::GetPhysicalDevice();
-		auto memoryProperties = physical_device.getMemoryProperties();
-		for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
-		{
-			if ((typeFilter & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
-			{
-				return i;
-			}
-		}
-
-		ASSERT(false, "Failed to find suitable memory type!")
 	}
 
 	void VulkanUtils::CopyBufferToImage(const vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, vk::Image &image, const ImageCopyRegion &region)

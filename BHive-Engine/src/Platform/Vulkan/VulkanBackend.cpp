@@ -1,5 +1,6 @@
 #include "VulkanBackend.h"
 #include "core/debug/CrashHandler.h"
+#include "VulkanUtils.h"
 #include <GLFW/glfw3.h>
 
 #ifdef _DEBUG
@@ -106,14 +107,7 @@ namespace BHive
 
 	void VulkanBackend::Shutdown()
 	{
-		LOG_TRACE("VulkanCore Shutdown Called")
-
-
-		mLogicalDevice = VK_NULL_HANDLE;
-
-		mDebugMessenger = VK_NULL_HANDLE;
-
-		mVulkanInstance = VK_NULL_HANDLE;
+		mGPUResourceManager->Shutdown();
 	}
 
 	void VulkanBackend::RegisterOnDeviceCreated(const DeviceCallback &callback)
@@ -296,6 +290,16 @@ namespace BHive
 		mImmediateCommandPool = mLogicalDevice.createCommandPool(pool_info);
 	}
 
+	void VulkanBackend::CreateMemoryAllocator()
+	{
+		mMemoryAllocator = CreateScope<MemoryAllocator>(mLogicalDevice, mPhysicalDevice);
+	}
+
+	void VulkanBackend::CreateGPUResourceManager()
+	{
+		mGPUResourceManager = CreateScope<GPUResourceManager>();
+	}
+
 	void VulkanBackend::CreateDeviceInternal(uint32_t graphicsIndex, uint32_t presentIndex)
 	{
 		std::vector<uint32_t> families = {static_cast<uint32_t>(graphicsIndex), presentIndex};
@@ -332,6 +336,8 @@ namespace BHive
 		}
 
 		CreateImmediateCommandPool();
+		CreateMemoryAllocator();
+		CreateGPUResourceManager();
 	}
 
 	void VulkanBackend::EnsurePresentSupportForSurface(const vk::SurfaceKHR &surface)

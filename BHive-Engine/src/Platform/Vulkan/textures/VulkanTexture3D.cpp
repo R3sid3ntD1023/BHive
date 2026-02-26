@@ -1,5 +1,6 @@
 #include "VulkanTexture3D.h"
 #include "Platform/Vulkan/VulkanConverters.h"
+#include "Platform/Vulkan/VulkanBackend.h"
 
 namespace BHive
 {
@@ -9,7 +10,7 @@ namespace BHive
 		  mSize(size),
 		  mCreateInfo(createInfo)
 	{
-		auto api_info = Vulkan::Convert(mCreateInfo);
+		auto api_info = Convert(mCreateInfo);
 
 		vk::SamplerCreateInfo sampler_info(
 			{}, api_info.MinFilter, api_info.MagFilter, vk::SamplerMipmapMode::eLinear, api_info.WrapMode, api_info.WrapMode, api_info.WrapMode, 0, 0, 1, api_info.CompareEnabled, api_info.CompareOp);

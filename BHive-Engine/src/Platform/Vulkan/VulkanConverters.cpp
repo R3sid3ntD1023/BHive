@@ -3,8 +3,6 @@
 
 namespace BHive
 {
-	namespace Vulkan
-	{
 		vk::ImageAspectFlags ToVkAspect(ETextureAspect aspect)
 		{
 			switch (aspect)
@@ -303,7 +301,7 @@ namespace BHive
 			}
 		}
 
-		FVulkanTextureCreateInfo Vulkan::Convert(const FTextureCreateInfo &info)
+		FVulkanTextureCreateInfo Convert(const FTextureCreateInfo &info)
 		{
 			FVulkanTextureCreateInfo out{};
 			out.Format = ToVkFormat(info.Format);
@@ -321,7 +319,5 @@ namespace BHive
 			out.GenerateMipMaps = info.GenerateMipMaps;
 
 			return out;
-
-		}
 	} // namespace Vulkan
 }

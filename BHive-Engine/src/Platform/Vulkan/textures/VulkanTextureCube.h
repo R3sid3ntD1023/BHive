@@ -24,9 +24,9 @@ namespace BHive
 
 		const vk::DescriptorImageInfo GetDescriptor() const override { return mImage.GetDescriptor(); }
 	
-		virtual const Vulkan::AllocatedImage &GetImage() const override { return mImage.GetImage(); };
+		virtual const AllocatedImage &GetImage() const override { return mImage.GetImage(); };
 
-		virtual Vulkan::AllocatedImage &GetImage() override { return mImage.GetImage(); };
+		virtual AllocatedImage &GetImage() override { return mImage.GetImage(); };
 
 	private:
 		vk::raii::Device &mDevice;

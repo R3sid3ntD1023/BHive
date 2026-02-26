@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Core/Core.h"
-#include "VulkanMemory.h"
+#include "VulkanCore.h"
+#include "VulkanImageRegions.h"
 
 namespace BHive
 {
-	
 
 	struct VulkanUtils
 	{
@@ -25,11 +25,11 @@ namespace BHive
 
 		static void EndSingleTimeCommands(vk::raii::CommandBuffer &commandBuffer);
 
-		static void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer, vk::raii::DeviceMemory& memory);
+		static void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer);
 
 		static void CreateImage(
 			uint32_t w, uint32_t h, uint32_t d, uint32_t layers, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties,
-			vk::raii::Image& image, vk::raii::DeviceMemory& memory);
+			vk::raii::Image& image);
 
 		static void CreateImageView(const vk::Image &image, vk::raii::ImageView &view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect, uint32_t layerCount);
 
@@ -44,8 +44,6 @@ namespace BHive
 			vk::raii::CommandBuffer &cmd, const vk::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 			vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, const ImageSubresource& sub);
 
-		static uint32_t FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
-
 		static void CopyBufferToImage(const vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, vk::Image &image, const ImageCopyRegion& region);
 
 		static void SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size);
@@ -53,5 +51,6 @@ namespace BHive
 		static vk::Format FindDepthFormat();
 
 		static bool HasStencilComponent(vk::Format format);
+
 	};
 } // namespace BHive

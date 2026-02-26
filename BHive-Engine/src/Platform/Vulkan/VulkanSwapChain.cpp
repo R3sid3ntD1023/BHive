@@ -1,5 +1,6 @@
 #include "VulkanSwapChain.h"
-#include "GPUResourceManager.h"
+#include "VulkanUtils.h"
+#include "VulkanBackend.h"
 
 namespace BHive
 {
@@ -36,31 +37,29 @@ namespace BHive
 
 		for (auto& image : images)
 		{
-			Vulkan::Image img;
+			Image img;
 			img.SetImage(image);
 
 			ImageViewDesc desc{};
 			desc.Type = vk::ImageViewType::e2D;
 			desc.Aspect = vk::ImageAspectFlagBits::eColor;
 			desc.Format = mImageFormat.format;
-			GPUResourceManager::Get().CreateImageView(img, desc);
+			VulkanBackend::GetGPUResourceManager().CreateImageView(img, desc);
 
 			mImages.emplace_back(img);
 		}
 
 		auto image_count = static_cast<uint32_t>(mImages.size());
-		auto frame_count = VulkanBackend::MAX_FRAMES_IN_FLIGHT;
 
-		
 		mRenderFinishedSemaphores.reserve(image_count);
-		mPresentSemaphores.reserve(frame_count);
-		mInFlightFences.reserve(frame_count);
+		mPresentSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
+		mInFlightFences.reserve(MAX_FRAMES_IN_FLIGHT);
 
 		for (uint32_t i = 0; i < image_count; i++)
 		{	
 			mRenderFinishedSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());	
 
-			if (i < frame_count)
+			if (i < MAX_FRAMES_IN_FLIGHT)
 			{
 				mPresentSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
 
@@ -78,13 +77,13 @@ namespace BHive
 		desc.Type = vk::ImageType::e2D;
 		desc.Usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
 		desc.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
-		mDepthImage = GPUResourceManager().Get().CreateImage(desc);
+		mDepthImage = VulkanBackend::GetGPUResourceManager().CreateImage(desc);
 
 		ImageViewDesc view_desc{};
 		view_desc.Type = vk::ImageViewType::e2D;
 		view_desc.Format = mDepthFormat;
 		view_desc.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
-		GPUResourceManager().Get().CreateImageView(mDepthImage, view_desc);
+		VulkanBackend::GetGPUResourceManager().CreateImageView(mDepthImage, view_desc);
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)

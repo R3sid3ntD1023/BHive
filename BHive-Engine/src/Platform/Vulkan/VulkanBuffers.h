@@ -1,15 +1,14 @@
 #pragma once
 
 #include "gfx/Buffers.h"
-#include "VulkanBackend.h"
+#include "VulkanMemory.h"
 
 namespace BHive
 {
 	struct PerFrameBuffer
 	{
-		Vulkan::AllocatedBuffer Buffer;
-		Vulkan::AllocatedBuffer StagingBuffer;
-		void *MappedMemory = nullptr;
+		AllocatedBuffer Buffer;
+		AllocatedBuffer StagingBuffer;
 
 		void Init(size_t size, vk::BufferUsageFlags usage);
 
@@ -72,13 +71,13 @@ namespace BHive
 
 		virtual NativeHandle GetNativeHandle(uint32_t frame) const override
 		{
-			ASSERT(frame < VulkanBackend::MAX_FRAMES_IN_FLIGHT);
+			ASSERT(frame < MAX_FRAMES_IN_FLIGHT);
 			return mPerFrameBuffer[frame].GetNativeHandle();
 		};
 
 	private:
 		vk::raii::Device &mDevice;
-		std::array<PerFrameBuffer, VulkanBackend::MAX_FRAMES_IN_FLIGHT> mPerFrameBuffer;
+		std::array<PerFrameBuffer, MAX_FRAMES_IN_FLIGHT> mPerFrameBuffer;
 		uint32_t mCount;
 	};
 
@@ -95,14 +94,14 @@ namespace BHive
 
 		virtual NativeHandle GetNativeHandle(uint32_t frame) const override
 		{
-			ASSERT(frame < VulkanBackend::MAX_FRAMES_IN_FLIGHT);
+			ASSERT(frame < MAX_FRAMES_IN_FLIGHT);
 			return mPerFrameBuffer[frame].GetNativeHandle();
 		};
 
 
 	private:
 		vk::raii::Device &mDevice;
-		std::array<PerFrameBuffer, VulkanBackend::MAX_FRAMES_IN_FLIGHT> mPerFrameBuffer;
+		std::array<PerFrameBuffer, MAX_FRAMES_IN_FLIGHT> mPerFrameBuffer;
 		BufferLayout mLayout{};
 		
 	};

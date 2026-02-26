@@ -88,7 +88,7 @@ namespace BHive
 		rendering_info.setViewMask(0).setColorAttachmentCount(1).setColorAttachmentFormats(format).setDepthAttachmentFormat(depth_format).setStencilAttachmentFormat(depth_format);
 
 		ImGui_ImplVulkan_InitInfo init_info{};
-		init_info.ApiVersion = VulkanBackend::MINIMUM_VULKAN_API_VERSION;
+		init_info.ApiVersion = MINIMUM_VULKAN_API_VERSION;
 		init_info.Instance = *instance;
 		init_info.PhysicalDevice = *physical_device;
 		init_info.Device = *mDevice;

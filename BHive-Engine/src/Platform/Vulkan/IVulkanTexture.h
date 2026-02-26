@@ -1,6 +1,6 @@
 #pragma once
 
-#include "VulkanBackend.h"
+#include "VulkanMemory.h"
 
 namespace BHive
 {
@@ -8,9 +8,9 @@ namespace BHive
 	{
 	public:
 
-		virtual const Vulkan::AllocatedImage &GetImage() const = 0;
+		virtual const AllocatedImage &GetImage() const = 0;
 
-		virtual Vulkan::AllocatedImage &GetImage() = 0;
+		virtual AllocatedImage &GetImage() = 0;
 
 		virtual const vk::DescriptorImageInfo GetDescriptor() const = 0;
 	};

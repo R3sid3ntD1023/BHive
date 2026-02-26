@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Core.h"
-#include "VulkanBackend.h"
+#include "VulkanMemory.h"
 
 namespace BHive
 {
@@ -35,9 +35,9 @@ namespace BHive
 
 		vk::Format GetDepthStencilFormat() const { return mDepthFormat; };
 
-		Vulkan::Image &GetImage(uint32_t index)  { return mImages[index]; };
+		Image &GetImage(uint32_t index)  { return mImages[index]; };
 
-		Vulkan::AllocatedImage &GetDepthImage() { return mDepthImage; }
+		AllocatedImage &GetDepthImage() { return mDepthImage; }
 
 		uint32_t GetMinImageCount() const { return mMinImageCount; }
 
@@ -52,7 +52,7 @@ namespace BHive
 
 		vk::raii::SwapchainKHR mSwapChain = nullptr;
 
-		std::vector<Vulkan::Image> mImages{};
+		std::vector<Image> mImages{};
 
 		std::vector<vk::raii::Semaphore> mPresentSemaphores; //per frame
 
@@ -60,7 +60,7 @@ namespace BHive
 
 		std::vector<vk::raii::Fence> mInFlightFences; //per frame
 
-		Vulkan::AllocatedImage mDepthImage;
+		AllocatedImage mDepthImage;
 
 		vk::Format mDepthFormat = vk::Format::eUndefined;
 		

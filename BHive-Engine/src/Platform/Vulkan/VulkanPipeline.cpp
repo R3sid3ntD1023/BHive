@@ -31,23 +31,23 @@ namespace BHive
 
 		config->Rasterazation.setDepthClampEnable(VK_FALSE)
 			.setRasterizerDiscardEnable(VK_FALSE)
-			.setCullMode(state.Raster.CullEnabled ? Vulkan::ToVkCull(state.Raster.CullMode) : vk::CullModeFlagBits::eNone)
-			.setPolygonMode(Vulkan::ToVkPolygon(state.Raster.FillMode))
-			.setFrontFace(Vulkan::ToVkFrontFace(state.Raster.FrontFace))
+			.setCullMode(state.Raster.CullEnabled ? ToVkCull(state.Raster.CullMode) : vk::CullModeFlagBits::eNone)
+			.setPolygonMode(ToVkPolygon(state.Raster.FillMode))
+			.setFrontFace(ToVkFrontFace(state.Raster.FrontFace))
 			.setDepthBiasEnable(VK_FALSE)
 			.setDepthBiasSlopeFactor(1.0f)
 			.setLineWidth(1.0f);
 
 		config->ColorBlendAttachment.setBlendEnable(state.Blend.Enabled)
-			.setSrcColorBlendFactor(Vulkan::ToVkBlendFactor(state.Blend.SrcColor))
-			.setDstColorBlendFactor(Vulkan::ToVkBlendFactor(state.Blend.DstColor))
-			.setColorBlendOp(Vulkan::ToVkBlendOp(state.Blend.ColorOp))
-			.setSrcAlphaBlendFactor(Vulkan::ToVkBlendFactor(state.Blend.SrcAlpha))
-			.setDstAlphaBlendFactor(Vulkan::ToVkBlendFactor(state.Blend.DstAlpha))
-			.setAlphaBlendOp(Vulkan::ToVkBlendOp(state.Blend.AlphaOp))
+			.setSrcColorBlendFactor(ToVkBlendFactor(state.Blend.SrcColor))
+			.setDstColorBlendFactor(ToVkBlendFactor(state.Blend.DstColor))
+			.setColorBlendOp(ToVkBlendOp(state.Blend.ColorOp))
+			.setSrcAlphaBlendFactor(ToVkBlendFactor(state.Blend.SrcAlpha))
+			.setDstAlphaBlendFactor(ToVkBlendFactor(state.Blend.DstAlpha))
+			.setAlphaBlendOp(ToVkBlendOp(state.Blend.AlphaOp))
 			.setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
 
-		config->InputAssembly.setTopology(Vulkan::ToVkTopology(state.DrawMode));
+		config->InputAssembly.setTopology(ToVkTopology(state.DrawMode));
 
 		config->ColorBlend.setLogicOpEnable(VK_FALSE).setLogicOp(vk::LogicOp::eCopy).setAttachments(config->ColorBlendAttachment);
 
@@ -55,7 +55,7 @@ namespace BHive
 
 		config->DepthStencil.setDepthTestEnable(state.Depth.DepthTest)
 			.setDepthWriteEnable(state.Depth.DepthWrite)
-			.setDepthCompareOp(Vulkan::ToVkCompare(state.Depth.DepthCompare))
+			.setDepthCompareOp(ToVkCompare(state.Depth.DepthCompare))
 			.setStencilTestEnable(VK_TRUE);
 	
 		return config;
@@ -89,7 +89,7 @@ namespace BHive
 		auto &modules = mBackendShader->GetModules();
 		for (auto& [stage, module] : modules)
 		{
-			vk::PipelineShaderStageCreateInfo info({} , Vulkan::ToSingleVkStage(stage), *module, "main");
+			vk::PipelineShaderStageCreateInfo info({} , ToSingleVkStage(stage), *module, "main");
 			shader_create_infos.emplace_back(info);
 		}
 
@@ -108,10 +108,10 @@ namespace BHive
 		vk::PipelineDynamicStateCreateInfo dynamicStateInfo({}, dynamicStates);
 
 		std::vector<vk::Format> color_attachment_formats;
-		vk::Format depth_attachment_format = Vulkan::ToVkFormat(state.DepthAttachmentFormat);
+		vk::Format depth_attachment_format = ToVkFormat(state.DepthAttachmentFormat);
 
 		for (auto &format : state.ColorAttachmentFormats)
-			color_attachment_formats.emplace_back(Vulkan::ToVkFormat(format));
+			color_attachment_formats.emplace_back(ToVkFormat(format));
 
 		vk::PipelineRenderingCreateInfo rendering_info{};
 		rendering_info.setViewMask(0).setColorAttachmentCount(color_attachment_formats.size()).setColorAttachmentFormats(color_attachment_formats)

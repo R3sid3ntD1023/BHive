@@ -6,53 +6,50 @@
 
 namespace BHive
 {
-	namespace Vulkan
+	struct FVulkanTextureCreateInfo
 	{
-		struct FVulkanTextureCreateInfo
-		{
-			vk::Format Format;
-			vk::Filter MinFilter;
-			vk::Filter MagFilter;
-			vk::ImageUsageFlags Usage;
-			vk::ImageAspectFlags Aspect;
-			vk::SamplerAddressMode WrapMode;
-			vk::Bool32 CompareEnabled;
-			vk::CompareOp CompareOp;
-			uint32_t Levels;
-			uint32_t ArrayLayers;
-			bool GenerateMipMaps;
-		};
+		vk::Format Format;
+		vk::Filter MinFilter;
+		vk::Filter MagFilter;
+		vk::ImageUsageFlags Usage;
+		vk::ImageAspectFlags Aspect;
+		vk::SamplerAddressMode WrapMode;
+		vk::Bool32 CompareEnabled;
+		vk::CompareOp CompareOp;
+		uint32_t Levels;
+		uint32_t ArrayLayers;
+		bool GenerateMipMaps;
+	};
 
-		vk::ImageAspectFlags ToVkAspect(ETextureAspect aspect);
+	vk::ImageAspectFlags ToVkAspect(ETextureAspect aspect);
 
-		vk::ImageUsageFlags ToVKImageUsage(ETextureUsage usage);
+	vk::ImageUsageFlags ToVKImageUsage(ETextureUsage usage);
 
-		vk::PrimitiveTopology ToVkTopology(ETopologyMode Mode);
+	vk::PrimitiveTopology ToVkTopology(ETopologyMode Mode);
 
-		vk::PolygonMode ToVkPolygon(EPolygonMode mode);
+	vk::PolygonMode ToVkPolygon(EPolygonMode mode);
 
-		vk::CullModeFlagBits ToVkCull(ECullMode mode);
+	vk::CullModeFlagBits ToVkCull(ECullMode mode);
 
-		vk::FrontFace ToVkFrontFace(EFrontFace face);
+	vk::FrontFace ToVkFrontFace(EFrontFace face);
 
-		vk::CompareOp ToVkCompare(ECompareOp op);
+	vk::CompareOp ToVkCompare(ECompareOp op);
 
-		vk::BlendFactor ToVkBlendFactor(EBlendFactor factor);
+	vk::BlendFactor ToVkBlendFactor(EBlendFactor factor);
 
-		vk::BlendOp ToVkBlendOp(EBlendOp op);
+	vk::BlendOp ToVkBlendOp(EBlendOp op);
 
-		vk::Format ToVkFormat(EFormat format);
+	vk::Format ToVkFormat(EFormat format);
 
-		vk::Filter ToVkFilter(EMinFilter mode);
+	vk::Filter ToVkFilter(EMinFilter mode);
 
-		vk::Filter ToVkFilter(EMagFilter mode);
+	vk::Filter ToVkFilter(EMagFilter mode);
 
-		vk::SamplerAddressMode ToVkWrap(EWrapMode mode);
+	vk::SamplerAddressMode ToVkWrap(EWrapMode mode);
 
-		vk::ShaderStageFlags ToVkShaderStageBit(EShaderStage stage);
+	vk::ShaderStageFlags ToVkShaderStageBit(EShaderStage stage);
 
-		vk::ShaderStageFlagBits ToSingleVkStage(EShaderStage stage);
+	vk::ShaderStageFlagBits ToSingleVkStage(EShaderStage stage);
 
-		FVulkanTextureCreateInfo Convert(const FTextureCreateInfo &info);
-	}
+	FVulkanTextureCreateInfo Convert(const FTextureCreateInfo &info);
 }

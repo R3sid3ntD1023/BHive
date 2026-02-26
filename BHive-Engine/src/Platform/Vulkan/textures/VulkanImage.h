@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Platform/Vulkan/VulkanBackend.h"
+#include "Platform/Vulkan/VulkanMemory.h"
+#include "Platform/Vulkan/VulkanImageRegions.h"
 
 namespace BHive
 {
@@ -17,16 +18,16 @@ namespace BHive
 
 		void Upload(const void *data, size_t size, const ImageCopyRegion &region = {}, const ImageSubresource &sub = {});
 
-		const Vulkan::AllocatedImage &GetImage() const { return mImage; };
+		const AllocatedImage &GetImage() const { return mImage; };
 
-		Vulkan::AllocatedImage &GetImage() { return mImage; };
+		AllocatedImage &GetImage() { return mImage; };
 
 		const vk::DescriptorImageInfo GetDescriptor() const;
 
 		NativeHandle GetNativeHandle() const { return NativeHandle::FromPtr(&mImage); }
 
 	private:
-		Vulkan::AllocatedImage mImage{};
+		AllocatedImage mImage{};
 		vk::Format mFormat = vk::Format::eUndefined;
 	};
 }

@@ -42,22 +42,23 @@ namespace BHive
 
 		void Shutdown();
 
-		Vulkan::AllocatedBuffer CreateBuffer(const BufferDesc& desc);
+		AllocatedBuffer CreateBuffer(const BufferDesc& desc);
 
-		Vulkan::AllocatedImage CreateImage(const ImageDesc& desc);
+		AllocatedImage CreateImage(const ImageDesc& desc);
 
-		void *MapMemory(const Vulkan::AllocatedBuffer &buffer, vk::DeviceSize offset, vk::DeviceSize size);
+		void* MapMemory(AllocatedBuffer &buffer, vk::DeviceSize offset, vk::DeviceSize size);
 
-		void CreateImageView(Vulkan::Image &image, const ImageViewDesc &desc);
+		void UnmapMemory(AllocatedBuffer &buffer);
 
-		void CreateImageView(Vulkan::AllocatedImage& image, const ImageViewDesc& desc);
+		void CreateImageView(Image &image, const ImageViewDesc &desc);
 
-		void CreateSampler(Vulkan::AllocatedImage& image, const vk::SamplerCreateInfo &create_info);
+		void CreateImageView(AllocatedImage& image, const ImageViewDesc& desc);
 
-		void DestroyBuffer(Vulkan::AllocatedBuffer buffer);
+		void CreateSampler(AllocatedImage& image, const vk::SamplerCreateInfo &create_info);
 
-		void DestroyImage(Vulkan::AllocatedImage image);
+		void DestroyBuffer(AllocatedBuffer buffer);
 
-		static GPUResourceManager &Get();
+		void DestroyImage(AllocatedImage image);
+
 	};
 }

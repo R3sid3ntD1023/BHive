@@ -34,19 +34,19 @@ namespace BHive
 
 		for (auto &[name, sampler] : merged.Samplers)
 		{
-			auto vk_stage = Vulkan::ToVkShaderStageBit(sampler.Stages);
+			auto vk_stage = ToVkShaderStageBit(sampler.Stages);
 			bindings[sampler.Set].emplace_back(sampler.Binding, vk::DescriptorType::eCombinedImageSampler, sampler.ArraySize, vk_stage);
 		}
 
 		for (auto &[name, ubo] : merged.UniformBuffers)
 		{
-			auto vk_stage = Vulkan::ToVkShaderStageBit(ubo.Stages);
+			auto vk_stage = ToVkShaderStageBit(ubo.Stages);
 			bindings[ubo.Set].emplace_back(ubo.Binding, vk::DescriptorType::eUniformBuffer, 1, vk_stage);
 		}
 
 		for (auto &[name, sbo] : merged.StorageBuffers)
 		{
-			auto vk_stage = Vulkan::ToVkShaderStageBit(sbo.Stages);
+			auto vk_stage = ToVkShaderStageBit(sbo.Stages);
 			bindings[sbo.Set].emplace_back(sbo.Binding, vk::DescriptorType::eStorageBuffer, 1, vk_stage);
 		}
 
@@ -71,7 +71,7 @@ namespace BHive
 
 		for (auto& pc : merged.PushConstants)
 		{
-			mPushConstantRanges.emplace_back(Vulkan::ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size);
+			mPushConstantRanges.emplace_back(ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size);
 		}
 	}
 

@@ -1,14 +1,9 @@
 #pragma once
 
 #include "core/Core.h"
-
-#define VK_USE_PLATFORM_WIN32_KHR
-#include <vulkan/vulkan.h>
-#include <vulkan/vk_platform.h>
-#include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_raii.hpp>
-#include "VulkanMemory.h"
-#include "VulkanUtils.h"
+#include "VulkanCore.h"
+#include "MemoryAllocator.h"
+#include "GPUResourceManager.h"
 
 struct GLFWwindow;
 
@@ -32,10 +27,6 @@ namespace BHive
 	{
 	public:
 		using DeviceCallback = std::function<void()>;
-
-		static const uint32_t MINIMUM_VULKAN_API_VERSION = vk::ApiVersion14;
-
-		static const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
 	public:
 		void Init();
@@ -65,6 +56,7 @@ namespace BHive
 			return sBackend;
 		}
 
+
 		static vk::raii::Device &GetLogicalDevice() { return Get().mLogicalDevice; }
 
 		static vk::raii::PhysicalDevice &GetPhysicalDevice() { return Get().mPhysicalDevice; }
@@ -75,6 +67,11 @@ namespace BHive
 
 		static vk::raii::CommandPool &GetImmediateCommandPool() { return Get().mImmediateCommandPool; }
 
+		static MemoryAllocator &GetMemoryAllocator() { return *Get().mMemoryAllocator; }
+
+		static GPUResourceManager &GetGPUResourceManager() { return *Get().mGPUResourceManager; }
+
+
 	private:
 		void CreateIntance();
 
@@ -83,6 +80,10 @@ namespace BHive
 		void PickPhysicalDevice();
 
 		void CreateImmediateCommandPool();
+
+		void CreateMemoryAllocator();
+
+		void CreateGPUResourceManager();
 
 		void CreateDeviceInternal(uint32_t graphicsIndex, uint32_t presentIndex);
 
@@ -106,6 +107,10 @@ namespace BHive
 		std::vector<DeviceCallback> mOnDeviceDestroyedCallbacks;
 
 		std::vector<DeviceCallback> mOnDeviceCreatedCallbacks;
+
+		Scope<MemoryAllocator> mMemoryAllocator;
+
+		Scope<GPUResourceManager> mGPUResourceManager;
 	};
 
 	

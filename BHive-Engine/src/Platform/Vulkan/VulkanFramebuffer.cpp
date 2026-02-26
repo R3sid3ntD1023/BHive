@@ -71,13 +71,13 @@ namespace BHive
 			for (size_t i = 0; i < color_attachmnets.size(); i++)
 			{
 				auto tex = Cast<IVulkanTexture>(color_attachmnets[i]);
-				Vulkan::ImageState attchmentState = {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
+				ImageState attchmentState = {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
 				tex->GetImage().Transition(frame.CommandBuffer, attchmentState);
 			}
 
 			if (auto tex = Cast<IVulkanTexture>(depth_attachment))
 			{
-				Vulkan::ImageState depthState = {
+				ImageState depthState = {
 					vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
 					vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests};
 				tex->GetImage().Transition(frame.CommandBuffer, depthState);
@@ -136,7 +136,7 @@ namespace BHive
 		{
 			frame.CommandBuffer.endRendering();
 
-			Vulkan::ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
+			ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
 
 			for (size_t i = 0; i < color_attachments.size(); i++)
 			{
@@ -226,8 +226,8 @@ namespace BHive
 		auto colorAttachments = mColorAttachments;
 		auto cmd = [colorAttachments](const FVulkanFrame &frame)
 		{
-			Vulkan::ImageState transferDst{vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
-			Vulkan::ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
+			ImageState transferDst{vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
+			ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
 
 			for (auto &tex : colorAttachments)
 			{

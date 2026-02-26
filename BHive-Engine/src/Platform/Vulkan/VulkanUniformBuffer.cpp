@@ -1,7 +1,7 @@
 #include "VulkanUniformBuffer.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
-#include "GPUResourceManager.h"
+#include "VulkanBackend.h"
 
 namespace BHive
 {
@@ -10,15 +10,15 @@ namespace BHive
 		  mSize(size)
 	{
 		
-		for (size_t i = 0; i < VulkanBackend::MAX_FRAMES_IN_FLIGHT; i++)
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			BufferDesc desc{};
 			desc.Usage = vk::BufferUsageFlagBits::eUniformBuffer;
 			desc.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
 			desc.Size = size;
-			mBuffer[i] = GPUResourceManager::Get().CreateBuffer(desc);
+			mBuffer[i] = VulkanBackend::GetGPUResourceManager().CreateBuffer(desc);
 
-			mMappedMemory[i] = GPUResourceManager::Get().MapMemory(mBuffer[i], 0, size);
+			VulkanBackend::GetGPUResourceManager().MapMemory(mBuffer[i], 0, size);
 		}
 
 		SetData(data, size, 0);	
@@ -26,6 +26,18 @@ namespace BHive
 
 	VulkanUniformBuffer::~VulkanUniformBuffer()
 	{
+		auto buffers = mBuffer;
+
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			api->QueueDeletion(
+				[buffers, i](uint32_t)
+				{
+					VulkanBackend::GetGPUResourceManager().DestroyBuffer(buffers[i]);
+				});
+		}
 		
 	}
 
@@ -43,7 +55,8 @@ namespace BHive
 				ASSERT(offset + size <= mSize);
 
 				const auto current_frame = frame.Frame;
-				std::memcpy(static_cast<std::byte *>(mMappedMemory[current_frame]) + offset, buffer_copy->data(), size);
+				auto mapped_memory = mBuffer[current_frame].Allocation.MappedPtr;
+				std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, buffer_copy->data(), size);
 				mBufferInfos[current_frame] = vk::DescriptorBufferInfo(mBuffer[current_frame].Buffer, 0, mSize);
 			};
 		
@@ -52,8 +65,8 @@ namespace BHive
 
 	NativeHandle VulkanUniformBuffer::GetNativeHandle(uint32_t frame) const
 	{
-		ASSERT(frame < VulkanBackend::MAX_FRAMES_IN_FLIGHT);
-		return Vulkan::Handle::BufferInfo(&mBufferInfos[frame]);
+		ASSERT(frame < MAX_FRAMES_IN_FLIGHT);
+		return Handle::BufferInfo(&mBufferInfos[frame]);
 	}
 
 } // namespace BHive

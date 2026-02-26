@@ -34,9 +34,9 @@ namespace BHive
 
 		const vk::DescriptorImageInfo GetDescriptor() const override { return mImage.GetDescriptor(); }
 
-		const Vulkan::AllocatedImage &GetImage() const override { return mImage.GetImage(); };
+		const AllocatedImage &GetImage() const override { return mImage.GetImage(); };
 
-		Vulkan::AllocatedImage &GetImage() override { return mImage.GetImage(); };
+		AllocatedImage &GetImage() override { return mImage.GetImage(); };
 
 		/*Begin Asset*/
 		void Save(cereal::BinaryOutputArchive &ar) const override;

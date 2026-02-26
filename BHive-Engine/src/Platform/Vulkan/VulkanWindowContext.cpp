@@ -74,7 +74,7 @@ namespace BHive
 
 
 
-		mCurrentFrame = (mCurrentFrame + 1) % VulkanBackend::MAX_FRAMES_IN_FLIGHT; 
+		mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT; 
 	}
 
 	void VulkanWindowContext::CreateCommandBuffers()
@@ -84,7 +84,7 @@ namespace BHive
 		vk::CommandPoolCreateInfo pool_info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, graphics_queue_index);
 		mCommandPool = vk::raii::CommandPool(mDevice, pool_info);
 
-		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, VulkanBackend::MAX_FRAMES_IN_FLIGHT);
+		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, MAX_FRAMES_IN_FLIGHT);
 		mCommandBuffers = vk::raii::CommandBuffers(mDevice, alloc_info);
 	}
 

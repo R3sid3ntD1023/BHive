@@ -2,6 +2,7 @@
 #include "Platform/Vulkan/GPUResourceManager.h"
 #include "gfx/RenderCommand.h"
 #include "Platform/Vulkan/VulkanRendererAPI.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 
 namespace BHive
 {
@@ -11,8 +12,7 @@ namespace BHive
 		api->QueueDeletion(
 			[image = mImage](uint32_t)
 			{
-				auto &gpu_r_m = GPUResourceManager::Get();
-				gpu_r_m.DestroyImage(image);
+				VulkanBackend::GetGPUResourceManager().DestroyImage(image);
 			});
 	}
 
@@ -22,7 +22,7 @@ namespace BHive
 	{
 		mFormat = format;
 
-		auto &gpu_r_m = GPUResourceManager::Get();
+		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
 
 		ImageDesc desc{};
 		desc.Width = width;
@@ -49,24 +49,33 @@ namespace BHive
 
 	void VulkanImage::Upload(const void *data, size_t size, const ImageCopyRegion &region, const ImageSubresource &sub)
 	{
-		vk::raii::Buffer stagingBuffer = nullptr;
-		vk::raii::DeviceMemory stagingMemory = nullptr;
+		AllocatedBuffer stagingBuffer{};
 
-		VulkanUtils::CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingMemory);
+		BufferDesc staging_desc{};
+		staging_desc.Size = size;
+		staging_desc.Usage = vk::BufferUsageFlagBits::eTransferSrc;
+		staging_desc.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
 
-		void *map_memory = stagingMemory.mapMemory(0, size);
-		std::memcpy(map_memory, data, size);
-		stagingMemory.unmapMemory();
+		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
+		stagingBuffer = gpu_r_m.CreateBuffer(staging_desc);
 
-		Vulkan::ImageState transerDst{vk::ImageLayout::eTransferDstOptimal, vk::AccessFlagBits2::eTransferWrite, vk::PipelineStageFlagBits2::eTransfer};
+		if (auto mapped = gpu_r_m.MapMemory(stagingBuffer, 0, size))
+		{
+			std::memcpy(mapped, data, size);
+			gpu_r_m.UnmapMemory(stagingBuffer);
+		}
 
-		Vulkan::ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
+		ImageState transerDst{vk::ImageLayout::eTransferDstOptimal, vk::AccessFlagBits2::eTransferWrite, vk::PipelineStageFlagBits2::eTransfer};
+
+		ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
 
 		auto cmd = VulkanUtils::BeginSingleTimeCommands();
 		mImage.Transition(cmd, transerDst, sub);
-		VulkanUtils::CopyBufferToImage(cmd, stagingBuffer, mImage.GetImage(), region);
+		VulkanUtils::CopyBufferToImage(cmd, stagingBuffer.Buffer, mImage.GetImage(), region);
 		mImage.Transition(cmd, shaderRead, sub);
 		VulkanUtils::EndSingleTimeCommands(cmd);
+
+		gpu_r_m.DestroyBuffer(stagingBuffer);
 	}
 
 	const vk::DescriptorImageInfo VulkanImage::GetDescriptor() const

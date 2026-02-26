@@ -30,7 +30,7 @@ namespace BHive
 
 		std::transform(descriptor_set_layouts.begin(), descriptor_set_layouts.end(), std::back_inserter(layouts), [](const vk::raii::DescriptorSetLayout& l) ->vk::DescriptorSetLayout { return l; });
 
-		for (uint32_t frame = 0; frame < VulkanBackend::MAX_FRAMES_IN_FLIGHT; frame++)
+		for (uint32_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
 		{
 			vk::DescriptorSetAllocateInfo alloc_info(api->GetDescriptorPool(),layouts);
 			mDescriptorSets.emplace_back(std::move(vk::raii::DescriptorSets(mDevice, alloc_info)));
@@ -105,7 +105,7 @@ namespace BHive
 
 			for (auto &pc : mReflectionPtr->PushConstants)
 			{
-				vk::PushConstantsInfo push_info(*pipeline_layout, Vulkan::ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size, mPushConstantData.data() + pc.Offset);
+				vk::PushConstantsInfo push_info(*pipeline_layout, ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size, mPushConstantData.data() + pc.Offset);
 				data.CommandBuffer.pushConstants2(push_info);
 			}
 		};
