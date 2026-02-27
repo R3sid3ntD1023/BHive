@@ -27,6 +27,7 @@ namespace BHive
 		Pipeline::PipelineState state = Pipeline::GetDefaultPipelineState();
 		state.ShaderProgram = shaderProgram;
 		state.Raster.CullEnabled = false;
+		state.Depth.DepthWrite = false;
 
 		mPipeline->Init(state);
 
@@ -46,12 +47,12 @@ namespace BHive
 			TRenderBatch::Flush();
 
 			auto& textures = mTextureBatch->GetTexture();
-			mMaterial->Bind(mPipeline);
-			mMaterial->BindTexture("uTextures", textures);
 
-		//	RenderCommand::EnableDepthMask(false);
+			mPipeline->Bind();
+			mMaterial->Bind(mPipeline);
+			mMaterial->BindTexture("uTexture", textures);
+
 			RenderCommand::DrawElements(ETopologyMode::Triangles, mVertexArray, mIndexCount);
-			//RenderCommand::EnableDepthMask(true);
 
 			Renderer::GetStats().DrawCalls++;
 		}

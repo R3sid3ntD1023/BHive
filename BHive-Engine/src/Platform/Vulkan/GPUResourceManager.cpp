@@ -35,7 +35,7 @@ namespace BHive
 		VulkanUtils::CreateBuffer(desc.Size, desc.Usage, desc.MemoryFlags, buffer.Buffer);
 
 		auto& allocator = VulkanBackend::GetMemoryAllocator();
-		MemoryAllocation allocation = allocator.Allocate(buffer.Buffer, desc.MemoryFlags);
+		MemoryAllocation allocation = allocator.Allocate(buffer.Buffer, desc.MemoryFlags, desc.Size);
 
 		buffer.Buffer.bindMemory(allocation.Memory, allocation.Offset);
 
@@ -49,7 +49,7 @@ namespace BHive
 		VulkanUtils::CreateImage(desc.Width, desc.Height, desc.Depth, desc.ArrayLayers, desc.Type, desc.Format, desc.Tiling, desc.Usage, desc.MemoryFlags, image.Image);
 
 		auto &allocator = VulkanBackend::GetMemoryAllocator();
-		MemoryAllocation allocation = allocator.Allocate(image.Image, desc.MemoryFlags);
+		MemoryAllocation allocation = allocator.Allocate(image.Image, desc.MemoryFlags, desc.Size());
 
 		image.Image.bindMemory(allocation.Memory, allocation.Offset);
 
@@ -64,11 +64,11 @@ namespace BHive
 
 	void* GPUResourceManager::MapMemory(AllocatedBuffer &buffer, vk::DeviceSize offset, vk::DeviceSize size)
 	{
-		if (!buffer.Handle)
-			ASSERT(false, "Buffer is not valid");
+		if (!buffer.Handle )
+			return nullptr;
 
 		auto &allocation = buffer.Allocation;
-		if (allocation.MappedPtr)
+		if (allocation.IsMapped)
 		{
 			return static_cast<char *>(allocation.MappedPtr) + offset;
 		}
@@ -79,8 +79,8 @@ namespace BHive
 
 	void GPUResourceManager::UnmapMemory(AllocatedBuffer &buffer)
 	{
-		if (!buffer.Handle)
-			ASSERT(false, "Buffer is not valid");
+		if (!buffer.Handle || !buffer.Allocation.IsMapped || buffer.Allocation.IsDedicated)
+			return;
 
 		MemoryAllocator &allocator = VulkanBackend::GetMemoryAllocator();
 		allocator.UnMap(buffer.Allocation);

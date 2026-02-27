@@ -59,10 +59,10 @@ namespace BHive
 		const auto& buffer = tex->GetBuffer();
 		const glm::ivec2 size = tex->GetSize();
 		const glm::ivec2 output_size = GetSize();
-		const auto format_layout = GetFormatLayout(tex_info.Format);
-		const auto buffer_size = output_size.x * output_size.y * format_layout ;
+		const auto bytes_per_pixel = GetBytesPerPixel(tex_info.Format);
+		const auto buffer_size = output_size.x * output_size.y * bytes_per_pixel ;
 		Buffer output( buffer_size);
-		stbir_resize_uint8_linear(buffer.As<uint8_t>(), size.x, size.y, 0 , output, output_size.x, output_size.y, 0, (stbir_pixel_layout)format_layout);
+		stbir_resize_uint8_linear(buffer.As<uint8_t>(), size.x, size.y, 0 , output, output_size.x, output_size.y, 0, (stbir_pixel_layout)bytes_per_pixel);
 
 		FTextureUploadInfo info{
 			.Data = output.GetData(),

@@ -10,7 +10,7 @@ namespace BHive
 		glm::vec4 Position;
 		glm::vec2 TexCoord;
 		glm::vec4 Color;
-		uint32_t Texture;
+		int32_t Texture;
 		glm::vec2 Thickness;
 		glm::vec2 Outline;
 		glm::vec4 OutlineColor;

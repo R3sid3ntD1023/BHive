@@ -205,7 +205,7 @@ namespace BHive
 		Mat4
 	};
 
-	inline uint32_t GetFormatLayout(EFormat f)
+	inline uint32_t GetBytesPerPixel(EFormat f)
 	{
 		switch (f)
 		{
@@ -240,7 +240,6 @@ namespace BHive
 			break;
 		}
 
-		ASSERT(false);
 		return 0;
 	}
 

@@ -29,7 +29,7 @@ namespace BHive
 
 		void Focus(const FTransform &target, const glm::vec3 &bounds = {});
 
-		virtual const FTransform &GetView() const;
+		virtual const glm::mat4 GetView() const;
 
 		void SetView(const FTransform &view);
 

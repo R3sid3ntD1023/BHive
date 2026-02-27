@@ -102,9 +102,9 @@ namespace BHive
 		params.Color = FColor::White;
 		QuadRenderer::DrawQuad(params, mTexture, FTransform({0, 0, -2}));
 		
-
-		/*FTextParams tex_params{};
-		QuadRenderer::DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));*/
+		FTextParams tex_params{};
+		QuadRenderer::DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
+		QuadRenderer::DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));
 
 		if (mMesh && mMaterial)
 		{
@@ -116,8 +116,6 @@ namespace BHive
 			if (mMesh)
 				RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
 		}
-
-		QuadRenderer::DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));
 
 		Renderer::End();
 

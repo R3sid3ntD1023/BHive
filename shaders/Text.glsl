@@ -9,6 +9,8 @@ layout(location = 3) in int vTexture;
 layout(location = 4) in vec2 vThickness;
 layout(location = 5) in vec2 vOutline;
 layout(location = 6) in vec4 vOutlineColor;
+layout(location = 7) in int vEntityID;
+
 
 layout(std140 , set = 0, binding = 0) uniform CameraBuffer
 {
@@ -18,7 +20,7 @@ layout(std140 , set = 0, binding = 0) uniform CameraBuffer
     vec3 CameraPosition;
 };
 
-layout(location = 0) out flat uint v_TextureID;
+layout(location = 0) out flat int v_TextureID;
 layout(location = 1) out struct VS_OUT
 {
     vec2 texCoord;
@@ -45,7 +47,7 @@ void main()
 
 #include <Core.glsl>
 
-layout(location = 0) in flat uint v_TextureID;
+layout(location = 0) in flat int v_TextureID;
 layout(location = 1) in struct VS_OUT
 {
     vec2 texCoord;
@@ -55,7 +57,7 @@ layout(location = 1) in struct VS_OUT
     vec4 outlineColor;
 } vs_in;
 
-layout(set = 1, binding = 0) uniform sampler2DArray uTextures;
+layout(set = 1, binding = 0) uniform sampler2DArray uTexture;
 
 layout(location = 0) out vec4 fColor;
 
@@ -69,10 +71,10 @@ void main()
     float outline_smoothness = vs_in.outline.y;
     vec4 outline_color = vs_in.outlineColor;
 
-    vec4 tex_color = texture(uTextures, vec3(vs_in.texCoord, v_TextureID));
+    vec4 tex_color = texture(uTexture, vec3(vs_in.texCoord, v_TextureID));
     vec3 msd = tex_color.rgb;
     float sd  = median(msd.r, msd.g, msd.b);
-    float screenPxDistance = screenPxRange(uTextures, vs_in.texCoord)  * (sd - .5);
+    float screenPxDistance = screenPxRange(uTexture, vs_in.texCoord)  * (sd - .5);
     float opacity = clamp(screenPxDistance + 0.5, 0, 1);
 
     float a = opacity;

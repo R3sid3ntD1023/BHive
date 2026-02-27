@@ -39,12 +39,12 @@ namespace BHive
 	{
 		NextBatch();
 
-		sData->LineBatch->Position = transform.to_mat4() * glm::vec4(p0, 1.0f);
+		sData->LineBatch->Position = transform.ToMat4() * glm::vec4(p0, 1.0f);
 		sData->LineBatch->Color = color;
 		sData->LineBatch->EntityID = entityID;
 		sData->LineBatch++;
 
-		sData->LineBatch->Position = transform.to_mat4() * glm::vec4(p1, 1.0f);
+		sData->LineBatch->Position = transform.ToMat4() * glm::vec4(p1, 1.0f);
 		sData->LineBatch->Color = color;
 		sData->LineBatch->EntityID = entityID;
 		sData->LineBatch++;

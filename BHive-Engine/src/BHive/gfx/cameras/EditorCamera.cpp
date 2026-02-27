@@ -97,12 +97,14 @@ namespace BHive
 	{
 		auto target_location = target.GetTranslation();
 		auto eye = mTransform.GetTranslation() + (bounds * 1.1f);
-		mTransform = glm::inverse(glm::lookAt(eye, target_location, {0, 1, 0}));
+		glm::mat4 view = glm::lookAt(eye, target_location, {0, 1, 0});
+		glm::mat4 world = glm::inverse(view);
+		mTransform = FTransform(world);
 	}
 
-	const FTransform &EditorCamera::GetView() const
+	const glm::mat4 EditorCamera::GetView() const
 	{
-		return mTransform;
+		return glm::inverse(mTransform.ToMat4());
 	}
 
 	void EditorCamera::SetView(const FTransform &view)

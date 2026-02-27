@@ -41,7 +41,7 @@ namespace BHive
 	void ImageUtils::SaveImage(const std::filesystem::path &path, const Ref<Texture2D> &texture)
 	{
 		auto &specs = texture->GetInfo();
-		const auto c = GetFormatLayout(specs.Format);
+		const auto c = GetBytesPerPixel(specs.Format);
 		const auto size = texture->GetSize();
 		const auto &data = texture->GetBuffer();
 

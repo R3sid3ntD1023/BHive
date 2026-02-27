@@ -27,6 +27,8 @@ namespace BHive
 		Pipeline::PipelineState state = Pipeline::GetDefaultPipelineState();
 		state.ShaderProgram = shaderProgram;
 		state.Raster.CullEnabled = false;
+		state.Depth.DepthWrite = false;
+	
 		mPipeline->Init(state);
 
 		mMaterial = IMaterialBackendInterface::Create();

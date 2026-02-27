@@ -15,7 +15,7 @@ namespace BHive
 
 		state.DrawMode = ETopologyMode::Triangles;
 		state.Blend.Enabled = true;
-		state.Blend.SrcColor = EBlendFactor::SrcAlpha;
+		state.Blend.SrcColor = EBlendFactor::One;
 		state.Blend.DstColor = EBlendFactor::OneMinusSrcAlpha;
 		state.Blend.ColorOp = EBlendOp::Add;
 		state.Blend.SrcAlpha = EBlendFactor::One;

@@ -79,8 +79,8 @@ namespace BHive
 
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
 	{
-		sData->CameraData.Projection =projection;
-		sData->CameraData.View = glm::inverse(view);
+		sData->CameraData.Projection = projection;
+		sData->CameraData.View = view;
 		sData->CameraData.NearFar.x = projection[3][2] / (projection[2][2] - 1.0f);
 		sData->CameraData.NearFar.y = projection[3][2] / (projection[2][2] + 1.0f);
 		sData->CameraData.Position = glm::inverse(view)[3];

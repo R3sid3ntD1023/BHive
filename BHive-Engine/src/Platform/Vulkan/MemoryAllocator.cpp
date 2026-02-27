@@ -9,11 +9,11 @@ namespace BHive
 	{
 	}
 
-	MemoryAllocation MemoryAllocator::Allocate(const vk::raii::Buffer &buffer, vk::MemoryPropertyFlags props)
+	MemoryAllocation MemoryAllocator::Allocate(const vk::raii::Buffer &buffer, vk::MemoryPropertyFlags props, size_t requestedBufferSize)
 	{
 		vk::MemoryRequirements req = buffer.getMemoryRequirements();
 		auto memoryTypeIndex = FindMemoryType(req.memoryTypeBits, props);
-		if (ShouldUseDedicatedAllocation(req))
+		if (ShouldUseDedicatedAllocation(requestedBufferSize))
 		{
 			return AllocateDedicated(req, memoryTypeIndex);
 		}
@@ -21,11 +21,11 @@ namespace BHive
 		return AllocateFromBlock(req, memoryTypeIndex);
 	}
 
-	MemoryAllocation MemoryAllocator::Allocate(const vk::raii::Image &image, vk::MemoryPropertyFlags props)
+	MemoryAllocation MemoryAllocator::Allocate(const vk::raii::Image &image, vk::MemoryPropertyFlags props, size_t requestedBufferSize)
 	{
 		vk::MemoryRequirements req = image.getMemoryRequirements();
 		auto memoryTypeIndex = FindMemoryType(req.memoryTypeBits, props);
-		if (ShouldUseDedicatedAllocation(req))
+		if (ShouldUseDedicatedAllocation(requestedBufferSize))
 		{
 			return AllocateDedicated(req, memoryTypeIndex);
 		}
@@ -113,10 +113,10 @@ namespace BHive
 		ASSERT(false, "Failed to find suitable memory type!")
 	}
 
-	bool MemoryAllocator::ShouldUseDedicatedAllocation(const vk::MemoryRequirements &req) const
+	bool MemoryAllocator::ShouldUseDedicatedAllocation(size_t requestedBufferSize) const
 	{
 		constexpr vk::DeviceSize DEDICATED_ALLOCATION_THRESHOLD = 1ull << 20; // 1 MB
-		return req.size >= DEDICATED_ALLOCATION_THRESHOLD;
+		return (vk::DeviceSize)requestedBufferSize >= DEDICATED_ALLOCATION_THRESHOLD;
 	}
 
 	MemoryAllocation MemoryAllocator::AllocateDedicated(const vk::MemoryRequirements &req, uint32_t memoryTypeIndex)

@@ -16,7 +16,7 @@ namespace BHive
 	{
 		const glm::vec3 globalScale = transform.GetScale();
 
-		const glm::vec3 globalCenter = transform.to_mat4() * glm::vec4(Center, 1.0f);
+		const glm::vec3 globalCenter = transform.ToMat4() * glm::vec4(Center, 1.0f);
 
 		const float maxScale = glm::compMax(globalScale);
 

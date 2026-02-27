@@ -46,9 +46,9 @@ namespace BHive
 
 		FTransform Inverse() const;
 
-		const glm::mat4 &to_mat4() const { return mModelMatrix; }
+		const glm::mat4 &ToMat4() const { return mModelMatrix; }
 
-		operator const glm::mat4 &() const { return to_mat4(); }
+		operator const glm::mat4 &() const { return ToMat4(); }
 
 		std::string ToString() const;
 

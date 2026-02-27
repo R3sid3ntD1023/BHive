@@ -23,9 +23,10 @@ namespace BHive
 		msdfgen::BitmapConstRef<T, N> bitmap = (msdfgen::BitmapConstRef<T, N>)generator.atlasStorage();
 
 		FTextureCreateInfo create_info{};
-		create_info.Format = EFormat::RGB8;
+		create_info.Format = EFormat::RGBA8;
+		create_info.Usage = ETextureUsage::Sampled | ETextureUsage::TransferDst;
 
-		Ref<Texture2D> texture = Texture2D::Create({w, h}, create_info, Buffer(bitmap.pixels, w * h * 3));
+		Ref<Texture2D> texture = Texture2D::Create({w, h}, create_info, Buffer(bitmap.pixels, w * h * N));
 		return texture;
 	};
 
@@ -96,7 +97,7 @@ namespace BHive
 			glyph.edgeColoring(msdfgen::edgeColoringInkTrap, DEFAULT_ANGLE_THRESHOLD, glyphSeed);
 		}
 
-		mTextureAtlas = CreateAndCacheAtlas<uint8_t, float, 3, msdf_atlas::msdfGenerator>((float)emSize, mData->Glyphs, mData->FontGeometry, w, h);
+		mTextureAtlas = CreateAndCacheAtlas<uint8_t, float, 4, msdf_atlas::mtsdfGenerator>((float)emSize, mData->Glyphs, mData->FontGeometry, w, h);
 
 		msdfgen::destroyFont(font);
 		msdfgen::deinitializeFreetype(ft);

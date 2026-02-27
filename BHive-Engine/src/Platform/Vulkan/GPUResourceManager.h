@@ -17,6 +17,7 @@ namespace BHive
 
 	struct ImageDesc
 	{
+		
 		uint32_t Width = 0, Height = 0, Depth = 1;
 		vk::ImageType Type{};
 		vk::ImageTiling Tiling{};
@@ -24,6 +25,9 @@ namespace BHive
 		vk::ImageUsageFlags Usage{};
 		vk::MemoryPropertyFlags MemoryFlags{};
 		uint32_t ArrayLayers = 1;
+		uint32_t BytesPerPixel = 4;
+
+		uint32_t Size() const { return Width * Height * Depth * BytesPerPixel; }
 	};
 
 	struct ImageViewDesc

@@ -69,7 +69,7 @@ namespace BHive
 		if (auto parent = GetParent())
 		{
 			auto parent_transform = parent->GetWorldTransform();
-			SetLocalTransform(parent_transform.Inverse().to_mat4() * transform.to_mat4());
+			SetLocalTransform(parent_transform.Inverse().ToMat4() * transform.ToMat4());
 			return;
 		}
 
@@ -209,7 +209,7 @@ namespace BHive
 
 		if (auto parent = GetParent())
 		{
-			return parent->GetWorldTransform().to_mat4() * transform.to_mat4();
+			return parent->GetWorldTransform().ToMat4() * transform.ToMat4();
 		}
 
 		return transform;

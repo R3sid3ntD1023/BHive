@@ -40,7 +40,7 @@ namespace BHive
 
 	void VulkanTexture2D::SetData(const FTextureUploadInfo &info)
 	{
-		size_t size = mSize.x * mSize.y * GetFormatLayout(mCreateInfo.Format);
+		size_t size = mSize.x * mSize.y * GetBytesPerPixel(mCreateInfo.Format);
 
 		glm::uvec3 extents = glm::compMul(info.Extent) == 0 ? glm::uvec3{mSize, 1} : info.Extent;
 		ImageCopyRegion region{.BaseArrayLayer = info.ArrayLayer, .LayerCount = info.LayerCount, .Offset = info.Offset, .Extents = extents};
@@ -50,7 +50,7 @@ namespace BHive
 
 	Ref<Texture2D> VulkanTexture2D::CreateSubTexture(const FSubTexture &texture)
 	{
-		auto c = GetFormatLayout(mCreateInfo.Format);
+		auto c = GetBytesPerPixel(mCreateInfo.Format);
 		size_t size = texture.Size.x * texture.Size.y * c;
 
 		Buffer pixels(size);
@@ -66,18 +66,7 @@ namespace BHive
 
 	void VulkanTexture2D::Initialize()
 	{
-		auto api_info = Convert(mCreateInfo);
-
-		vk::SamplerCreateInfo sampler_info({}, api_info.MinFilter, api_info.MagFilter, 
-			vk::SamplerMipmapMode::eLinear, api_info.WrapMode, api_info.WrapMode, api_info.WrapMode, 0, 0, 1, api_info.CompareEnabled, api_info.CompareOp);
-		sampler_info.borderColor = vk::BorderColor::eIntOpaqueBlack;
-		sampler_info.unnormalizedCoordinates = VK_FALSE;
-		sampler_info.mipmapMode = vk::SamplerMipmapMode::eLinear;
-		sampler_info.mipLodBias = 0.f;
-		sampler_info.minLod = 0.f;
-		sampler_info.maxLod = 0.f;
-
-		mImage.Create(mSize.x, mSize.y, 1, 1, vk::ImageType::e2D, vk::ImageViewType::e2D, api_info.Format, api_info.Usage, api_info.Aspect, sampler_info);
+		mImage.Create(mSize.x, mSize.y, 1, vk::ImageType::e2D, vk::ImageViewType::e2D, Convert(mCreateInfo));
 	}
 
 	void VulkanTexture2D::Save(cereal::BinaryOutputArchive &ar) const

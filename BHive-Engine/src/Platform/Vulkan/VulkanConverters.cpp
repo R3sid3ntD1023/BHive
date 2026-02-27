@@ -310,6 +310,7 @@ namespace BHive
 			out.WrapMode = ToVkWrap(info.WrapMode);
 			out.Usage = ToVKImageUsage(info.Usage);
 			out.Aspect = ToVkAspect(info.Aspect);
+			out.BytesPerPixel = GetBytesPerPixel(info.Format);
 
 			out.CompareEnabled = info.CompareMode.has_value();
 			out.CompareOp = info.CompareOp.has_value() ? ToVkCompare(*info.CompareOp) : vk::CompareOp::eAlways;

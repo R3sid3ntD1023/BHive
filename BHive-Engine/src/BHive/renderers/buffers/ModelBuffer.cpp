@@ -72,7 +72,7 @@ namespace BHive
 		//}
 
 		FPerObjectData object_data{};
-		object_data.WorldMatrix = data->Transform.to_mat4() * data->SubMesh.Transformation;
+		object_data.WorldMatrix = data->Transform.ToMat4() * data->SubMesh.Transformation;
 
 		mPerObjectBuffer->SetData(&object_data, sizeof(FPerObjectData));
 		// mPerObjectBuffer->BindBufferBase(SSBO_INDEX_PER_OBJECT_BINDING);

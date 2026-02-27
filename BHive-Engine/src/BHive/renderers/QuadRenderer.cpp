@@ -69,7 +69,7 @@ namespace BHive
 
 		for (int i = 0; i < 4; i++)
 		{
-			sRenderData2D->CircleBatch.mVertexCurrentPtr->WorldPosition = transform.to_mat4() * glm::vec4(positions[i] * params.Radius, 1.f);
+			sRenderData2D->CircleBatch.mVertexCurrentPtr->WorldPosition = transform.ToMat4() * glm::vec4(positions[i] * params.Radius, 1.f);
 			sRenderData2D->CircleBatch.mVertexCurrentPtr->LocalPosition = positions[i] * 2.f;
 			sRenderData2D->CircleBatch.mVertexCurrentPtr->Color = params.LineColor;
 			sRenderData2D->CircleBatch.mVertexCurrentPtr->Thickness = params.Thickness;

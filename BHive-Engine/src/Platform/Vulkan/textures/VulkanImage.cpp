@@ -17,10 +17,9 @@ namespace BHive
 	}
 
 	void VulkanImage::Create(
-		uint32_t width, uint32_t height, uint32_t depth, uint32_t layers, vk::ImageType type, vk::ImageViewType viewType, vk::Format format, vk::ImageUsageFlags usage, vk::ImageAspectFlags aspect,
-		vk::SamplerCreateInfo samplerInfo)
+		uint32_t width, uint32_t height, uint32_t depth, vk::ImageType type, vk::ImageViewType viewType, const FVulkanTextureCreateInfo& createInfo)
 	{
-		mFormat = format;
+		mFormat = createInfo.Format;
 
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
 
@@ -28,23 +27,34 @@ namespace BHive
 		desc.Width = width;
 		desc.Height = height;
 		desc.Depth = depth;
-		desc.ArrayLayers = layers;
-		desc.Format = format;
+		desc.ArrayLayers = createInfo.ArrayLayers;
+		desc.Format = createInfo.Format;
 		desc.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
 		desc.Tiling = vk::ImageTiling::eOptimal;
-		desc.Usage = usage;
+		desc.Usage = createInfo.Usage;
 		desc.Type = type;
+		desc.BytesPerPixel = createInfo.BytesPerPixel;
 
 		mImage = gpu_r_m.CreateImage(desc);
 
 		ImageViewDesc view_desc{};
-		view_desc.Aspect = aspect;
-		view_desc.Format = format;
+		view_desc.Aspect = createInfo.Aspect;
+		view_desc.Format = createInfo.Format;
 		view_desc.Type = viewType;
-		view_desc.ArrayLayers = layers;
+		view_desc.ArrayLayers = createInfo.ArrayLayers;
 		gpu_r_m.CreateImageView(mImage, view_desc);
 
-		gpu_r_m.CreateSampler(mImage, samplerInfo);
+		vk::SamplerCreateInfo sampler_info(
+			{}, createInfo.MinFilter, createInfo.MagFilter, vk::SamplerMipmapMode::eLinear, createInfo.WrapMode, createInfo.WrapMode, createInfo.WrapMode, 0, 0, 1, createInfo.CompareEnabled,
+			createInfo.CompareOp);
+		sampler_info.borderColor = vk::BorderColor::eIntOpaqueBlack;
+		sampler_info.unnormalizedCoordinates = VK_FALSE;
+		sampler_info.mipmapMode = vk::SamplerMipmapMode::eLinear;
+		sampler_info.mipLodBias = 0.f;
+		sampler_info.minLod = 0.f;
+		sampler_info.maxLod = 0.f;
+
+		gpu_r_m.CreateSampler(mImage, sampler_info);
 	}
 
 	void VulkanImage::Upload(const void *data, size_t size, const ImageCopyRegion &region, const ImageSubresource &sub)
