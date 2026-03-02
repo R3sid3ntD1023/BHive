@@ -1,18 +1,22 @@
 #include "VulkanBackendMaterial.h"
-#include "renderers/buffers/GlobalBuffers.h"
-#include "Platform/Vulkan/VulkanUniformBuffer.h"
 #include "Platform/Vulkan/VulkanPipeline.h"
 #include "gfx/RenderCommand.h"
 #include "Platform/Vulkan/VulkanRendererAPI.h"
 #include "gfx/Texture.h"
-#include "Platform/Vulkan/VulkanStorageBuffer.h"
+#include "gfx/BufferBase.h"
 #include "gfx/shader/ShaderProgram.h"
 #include "Platform/Vulkan/VulkanConverters.h"
 #include "renderers/Renderer.h"
 #include "Platform/Vulkan/IVulkanTexture.h"
+#include "Platform/Vulkan/VulkanShader.h"
+#include "gfx/shader/ShaderReflection.h"
+#include "Platform/Vulkan/textures/VulkanImage.h"
+#include "gfx/UniformBuffer.h"
+#include "gfx/StorageBuffer.h"
 
 namespace BHive
 {
+	
 	VulkanBackendMaterial::VulkanBackendMaterial()
 		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
@@ -20,26 +24,38 @@ namespace BHive
 
 	void VulkanBackendMaterial::Init(const Ref<Pipeline> &pipeline)
 	{
+		
 		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
+		auto& shader = vkPipeline->GetVulkanShader();
+		auto material_set_layout = shader.GetDescriptorSetLayout(MATERIAL_SET_INDEX);
+
+		if (!material_set_layout)
+			return;
+
 		mProgram = Cast<ShaderProgram>(vkPipeline->GetShaderProgram());
-		auto& descriptor_set_layouts = vkPipeline->GetDescriptorLayouts();
+		mReflectionPtr = &mProgram->GetRefl();
+		mTargetSet = mReflectionPtr->Sets.at(MATERIAL_SET_INDEX);
 
 		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		std::vector<vk::DescriptorSetLayout> layouts;
-		layouts.reserve(descriptor_set_layouts.size());
 
-		std::transform(descriptor_set_layouts.begin(), descriptor_set_layouts.end(), std::back_inserter(layouts), [](const vk::raii::DescriptorSetLayout& l) ->vk::DescriptorSetLayout { return l; });
+		mMaterialSetManager = CreateScope<SetManager>(mTargetSet, MATERIAL_SET_INDEX);
+		mMaterialSetManager->Init(mDevice, api->GetDescriptorPool(), material_set_layout);
 
-		for (uint32_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
+		// create local buffers
+		for (auto& [name, ubo] : mTargetSet.UniformBuffers)
 		{
-			vk::DescriptorSetAllocateInfo alloc_info(api->GetDescriptorPool(),layouts);
-			mDescriptorSets.emplace_back(std::move(vk::raii::DescriptorSets(mDevice, alloc_info)));
+			mLocalUBOs.emplace(name, UniformBuffer::Create(ubo.Binding, ubo.Size));
 		}
-		
-		mReflectionPtr = &mProgram->GetRefl();
 
-		ASSERT(mReflectionPtr);
+		for (auto& [name, ssbo] : mTargetSet.StorageBuffers)
+		{
+			mLocalSSBOs.emplace(name, StorageBuffer::Create(ssbo.Binding, ssbo.Size));
+		}
+			
 
+		vkPipeline->SetMaterialSet(mMaterialSetManager.get());
+	
+		//create push constant buffer
 		size_t total_size = 0;
 		for (auto &pc : mReflectionPtr->PushConstants)
 			total_size = std::max(total_size, (size_t)pc.Offset + pc.Size);
@@ -49,160 +65,63 @@ namespace BHive
 
 	void VulkanBackendMaterial::Bind(const Ref<Pipeline> & pipeline)
 	{
+		if (!mMaterialSetManager)
+			return;
+
 		auto &pipeline_layout = Cast<VulkanPipeline>(pipeline)->GetLayout();
 
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		auto pre_cmd = [=](const FVulkanFrame &data)
-		{
-			const auto &frame_set = mDescriptorSets[data.Frame];
-
-			std::vector<vk::WriteDescriptorSet> descriptor_writes;
-
-			for (const auto &[name, ub] : mReflectionPtr->UniformBuffers)
+		auto &pass = RenderCommand::GetActivePass();
+		pass.CommandList.Push(
+			"Update MaterialSets",
+			[=, &pipeline_layout](IRendererContext &ctx)
 			{
-				auto& target_set = frame_set[ub.Set];
-				auto ubo = Cast<VulkanUniformBuffer>(GlobalBuffers::GetUniformBuffer(ub.Binding));
-				auto buffer_info = *ubo->GetNativeHandle(data.Frame).As<vk::DescriptorBufferInfo>();
-				if (!buffer_info)
+				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+
+				for (auto& [name, ub] : mTargetSet.UniformBuffers)
 				{
-					LOG_ERROR("Buffer Info is null {}", name);
-					continue;
+					auto ubo = mLocalUBOs.at(name); 
+					auto buffer_info = ubo->GetNativeHandle().As<vk::DescriptorBufferInfo>();
+					if (buffer_info)
+						mMaterialSetManager->BindBuffer(ub.Binding, vk::DescriptorType::eUniformBuffer, *buffer_info);
 				}
 
-				vk::WriteDescriptorSet descriptor_write(target_set, ub.Binding, 0, vk::DescriptorType::eUniformBuffer, {}, buffer_info);
-				descriptor_writes.emplace_back(descriptor_write);
-			}
-
-			for (const auto &[name,sb] : mReflectionPtr->StorageBuffers)
-			{
-				auto &target_set = frame_set[sb.Set];
-				auto sbo = Cast<VulkanStorageBuffer>(GlobalBuffers::GetStorageBuffer(sb.Binding));
-				auto buffer_info = *sbo->GetNativeHandle(data.Frame).As<vk::DescriptorBufferInfo>();
-				if (!buffer_info)
+				for (auto &[name, ssb] : mTargetSet.StorageBuffers)
 				{
-					LOG_ERROR("Buffer Info is null {}", name);
-					continue;
+					auto ssbo = mLocalSSBOs.at(name);
+					auto buffer_info = ssbo->GetNativeHandle().As<vk::DescriptorBufferInfo>();
+					if (buffer_info)
+						mMaterialSetManager->BindBuffer(ssb.Binding,vk::DescriptorType::eStorageBuffer ,*buffer_info);
 				}
 
-				vk::WriteDescriptorSet descriptor_write(target_set, sb.Binding, 0, vk::DescriptorType::eStorageBuffer, {}, buffer_info);
-				descriptor_writes.emplace_back(descriptor_write);
-			}
+				mMaterialSetManager->Update(vk_ctx.Frame, mDevice);
 
-			mDevice.updateDescriptorSets(descriptor_writes, {});
-		};
-
-		api->SubmitCommand(pre_cmd, ECommandType_PreCommand);
-
-		auto cmd = [this, &pipeline_layout](const FVulkanFrame &data)
-		{ 
-			const auto &frame_sets = mDescriptorSets[data.Frame];
-			std::vector<vk::DescriptorSet> raw_sets;
-			raw_sets.reserve(frame_sets.size());
-
-			std::transform(frame_sets.begin(), frame_sets.end(), std::back_inserter(raw_sets), [](const auto &l) { return *l; });
-
-			data.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, *pipeline_layout, 0, raw_sets, {});
-
-			for (auto &pc : mReflectionPtr->PushConstants)
-			{
-				vk::PushConstantsInfo push_info(*pipeline_layout, ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size, mPushConstantData.data() + pc.Offset);
-				data.CommandBuffer.pushConstants2(push_info);
-			}
-		};
-
-		api->SubmitCommand(cmd);
+				//Update push constants
+				for (auto &pc : mReflectionPtr->PushConstants)
+				{
+					vk::PushConstantsInfo push_info(*pipeline_layout, ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size, mPushConstantData.data() + pc.Offset);
+					vk_ctx.CommandBuffer.pushConstants2(push_info);
+				}
+			});
 	}
 
 	void VulkanBackendMaterial::BindTexture(const std::string& name, const Ref<Texture> &texture)
 	{
-		if (!texture)
+		if (!texture || !mMaterialSetManager)
 			return;
 
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		auto pre_cmd = [=](const FVulkanFrame &data)
+		if (!mTargetSet.Samplers.contains(name))
 		{
-			const auto &frame_set = mDescriptorSets[data.Frame];
-
-			if (!mReflectionPtr->Samplers.contains(name))
-			{
-				LOG_ERROR("VulkanBackendMaterial::BindTexture - No sampler reflection for name {}", name);
-				return;
-			}
-
-			auto &sampler = mReflectionPtr->Samplers.at(name);
-			uint32_t setIndex = sampler.Set;
-			if (setIndex >= frame_set.size())
-			{
-				LOG_ERROR("VulkanBackendMaterial::BindTexture - Set index {} out of range", setIndex);
-				return;
-			}
-
-			const vk::DescriptorSet& target_set = frame_set[setIndex];
-
-			vk::DescriptorImageInfo image_info = Cast<IVulkanTexture>(texture)->GetDescriptor();
-			if (!image_info)
-			{
-				LOG_ERROR("Image info is NULL for {}", texture->GetName());
-				return;
-			}
-			vk::WriteDescriptorSet descriptor_write(target_set, sampler.Binding, 0, vk::DescriptorType::eCombinedImageSampler, image_info);
-			mDevice.updateDescriptorSets(descriptor_write, {});
-		};
-
-		api->SubmitCommand(pre_cmd, ECommandType_PreCommand);
-	}
-
-	void VulkanBackendMaterial::BindTexture(const std::string &name, const std::vector<Ref<Texture>> &textures)
-	{
-		if (!textures.size())
+			LOG_ERROR("VulkanBackendMaterial::BindTexture - No sampler reflection for name {}", name);
 			return;
+		}
 
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		auto pre_cmd = [=, texs = textures](const FVulkanFrame &data)
-		{
-			if (!mReflectionPtr->Samplers.contains(name))
-			{
-				LOG_ERROR("VulkanBackendMaterial::BindTexture - No sampler reflection for name {}", name);
-				return;
-			}
-
-			const auto &sampler = mReflectionPtr->Samplers.at(name);
-			const auto array_size = sampler.ArraySize;
-			const auto count = std::min<uint32_t>(array_size, texs.size());
-
-			if (texs.size() > array_size)
-				LOG_WARN("Too many textures for '{}': {} provided, {} allowed", name, texs.size(), array_size);
-
-			if (texs.size() < array_size)
-				LOG_WARN("Texture array '{}' partially filled: {} of {}", name, texs.size(), array_size);
-
-			const auto &frame_set = mDescriptorSets[data.Frame];
-
-			uint32_t setIndex = sampler.Set;
-			if (setIndex >= frame_set.size())
-			{
-				LOG_ERROR("VulkanBackendMaterial::BindTexture - Set index {} out of range", setIndex);
-				return;
-			}
-
-			const vk::DescriptorSet &target_set = frame_set[setIndex];
-			std::vector<vk::DescriptorImageInfo> infos(count, vk::DescriptorImageInfo(VK_NULL_HANDLE, VK_NULL_HANDLE, vk::ImageLayout::eUndefined));
-
-			for (uint32_t i = 0; i < count; i++)
-			{
-				if (!texs[i])
-					continue;
-
-				infos[i] = Cast<IVulkanTexture>(texs[i])->GetDescriptor();
-			}
-			
-			vk::WriteDescriptorSet descriptor_write(target_set, sampler.Binding, 0, vk::DescriptorType::eCombinedImageSampler, infos);
-			mDevice.updateDescriptorSets(descriptor_write, {});
-		};
-
-		api->SubmitCommand(pre_cmd, ECommandType_PreCommand);
+		auto &sampler = mTargetSet.Samplers.at(name);
+		auto image = texture->GetNativeHandle().As<AllocatedImage>();
+		vk::DescriptorImageInfo image_info = image->GetDescriptor();
+		mMaterialSetManager->BindSampler(sampler.Binding, image_info);
 	}
 
+	
 	void VulkanBackendMaterial::Set(const std::string &name, const void *data, size_t size)
 	{
 		auto &refl = mProgram->GetRefl();
@@ -218,15 +137,22 @@ namespace BHive
 			}
 		}
 
-		for (auto& [stage, ub] : refl.UniformBuffers)
+		for (auto& [ubo_name, ub] : mTargetSet.UniformBuffers)
 		{
 			if (ub.Members.contains(name))
 			{
 				auto &u = ub.Members.at(name);
-				auto ubo = GlobalBuffers::GetUniformBuffer(ub.Binding);
+				auto ubo = mLocalUBOs.at(ubo_name);
 				ubo->SetData(data, size, u.Offset);
 				return;
 			}
+		}
+
+		for (auto &[name, ssb] : mTargetSet.StorageBuffers)
+		{
+			auto ssbo = mLocalSSBOs.at(name);
+			ssbo->SetData(data, size);
+			return;
 		}
 
 		LOG_ERROR("Uniform '{}' not found in shader '{}'", name, mProgram->GetName());

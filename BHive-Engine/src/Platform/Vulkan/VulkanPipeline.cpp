@@ -4,6 +4,7 @@
 #include "VulkanConverters.h"
 #include "VulkanShader.h"
 #include "gfx/shader/ShaderProgram.h"
+#include "SetManager.h"
 
 namespace BHive
 {
@@ -80,25 +81,27 @@ namespace BHive
 		ASSERT(mProgram)
 
 		const auto &asset = mProgram->GetAsset();
-		mBackendShader = CreateScope<VulkanShader>();
-		mBackendShader->Init(mProgram->GetAssetRef());
+		mShader = CreateScope<VulkanShader>();
+		mShader->Init(mProgram->GetAssetRef());
 
 		auto config = Convert(state);
 
 		std::vector<vk::PipelineShaderStageCreateInfo> shader_create_infos;
-		auto &modules = mBackendShader->GetModules();
+		auto &modules = mShader->GetModules();
 		for (auto& [stage, module] : modules)
 		{
 			vk::PipelineShaderStageCreateInfo info({} , ToSingleVkStage(stage), *module, "main");
 			shader_create_infos.emplace_back(info);
 		}
 
-		auto& push_constant_ranges = mBackendShader->GetPushConstantRanges();
-		auto &layout_in = mBackendShader->GetDescriptorSetLayouts();
+		auto& push_constant_ranges = mShader->GetPushConstantRanges();
+		auto &layout_in = mShader->GetLayouts();
+
 		std::vector<vk::DescriptorSetLayout> layouts_out;
 		layouts_out.reserve(layout_in.size());
 
-		std::transform(layout_in.begin(), layout_in.end(), std::back_inserter(layouts_out), [](const vk::raii::DescriptorSetLayout &l) { return *l; });
+		for (auto &[set, layout] : layout_in)
+			layouts_out.emplace_back(*layout);
 
 		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, layouts_out, push_constant_ranges );
 		mPipelineLayout = mDevice.createPipelineLayout(pipeline_layout_create_info);
@@ -140,16 +143,49 @@ namespace BHive
 
 	void VulkanPipeline::Bind()
 	{
-		auto cmd = [=](const FVulkanFrame &data) 
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		auto& shader = *mShader;
+		auto& set_hashes = shader.GetSetHashes();
+		auto &refl = mProgram->GetRefl();
+		auto& layout = mPipelineLayout;
+
+		RenderCommand::SubmitResourceUpdate(
+			[=, &shader, &set_hashes, &refl](IRendererContext &ctx)
 			{
-				data.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline); 
-			};
+				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+				if (set_hashes.contains(0))
+				{
+					auto global_set = refl.Sets.at(GLOBAL_SET_INDEX);
+					api->UpdateGlobalSet(shader, global_set, vk_ctx.Frame);
+				}
+					
 
-		RenderCommand::GetRendererAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
-	}
+				if (mMaterialSetManager)
+					mMaterialSetManager->Update(vk_ctx.Frame, mDevice);
+			});
 
-	void VulkanPipeline::UnBind()
-	{
+		auto &pass = RenderCommand::GetActivePass();
+		pass.CommandList.Push("Bind Pipeline && Descriptor Sets",
+			[=, &layout](IRendererContext &ctx) 
+			{
+				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+				vk_ctx.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline); 
+
+				std::vector<vk::DescriptorSet> sets;
+
+				if (set_hashes.contains(0))
+				{
+					uint64_t h0 = set_hashes.at(GLOBAL_SET_INDEX);
+					sets.push_back(api->GetGlobalSet(h0, vk_ctx.Frame));
+				}
+					
+
+				if (mMaterialSetManager)
+					sets.push_back(mMaterialSetManager->Get(vk_ctx.Frame));
+
+				if (!sets.empty())
+					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 0, sets, {});
+			});
 	}
 
 	Ref<ShaderProgram> VulkanPipeline::GetShaderProgram() const
@@ -157,10 +193,9 @@ namespace BHive
 		return mProgram;
 	}
 
-	const std::vector<vk::raii::DescriptorSetLayout> &VulkanPipeline::GetDescriptorLayouts() const
+	void VulkanPipeline::SetMaterialSet(SetManager *materialSet)
 	{
-		return mBackendShader->GetDescriptorSetLayouts();
+		mMaterialSetManager = materialSet;
 	}
-
 
 } // namespace BHive

@@ -28,6 +28,18 @@ inline T *Cast(U *ptr)
 }
 
 template <typename T, typename U>
+inline T & CastRef(U& ref)
+{
+	return static_cast<T &>(ref);
+}
+
+template <typename T, typename U>
+inline const T &CastRef(const U &ref)
+{
+	return static_cast<const T &>(ref);
+}
+
+template <typename T, typename U>
 inline std::shared_ptr<T> Cast(const std::shared_ptr<U> &ptr)
 {
 	return std::dynamic_pointer_cast<T>(ptr);

@@ -3,13 +3,12 @@
 #include "core/Core.h"
 #include "core/events/Event.h"
 #include "Enumerations.h"
+#include "RenderGraph.h"
 
 namespace BHive
 {
 	class VertexArray;
 	class BufferBase;
-
-	
 
 	struct MultiDrawIndirectCommand
 	{
@@ -61,6 +60,12 @@ namespace BHive
 		virtual void Dispath(uint32_t x, uint32_t y, uint32_t z) = 0;
 
 		virtual void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a) = 0;
+
+		virtual void SubmitGraph(const RenderGraph &graph, FResourceUpdateList &updateResources) = 0;
+
+		virtual void SubmitResourceUpdate(FResourceUpdateList::UpdateCommand cmd) = 0;
+
+		virtual void DebugPass(const std::string &msg) = 0;
 
 		virtual EAPI GetAPI() const = 0;
 

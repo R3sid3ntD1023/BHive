@@ -1,0 +1,92 @@
+#pragma once
+
+namespace BHive
+{
+	struct IRendererContext
+	{
+		virtual ~IRendererContext() = default;
+	};
+
+	class FResourceUpdateList
+	{
+	public:
+		using UpdateCommand = std::function<void(IRendererContext&)>;
+
+		void Push(UpdateCommand cmd) { mUpdateCommands.push_back(std::move(cmd));}
+
+		void Append(FResourceUpdateList &updates) { mUpdateCommands.insert(mUpdateCommands.end(), updates.mUpdateCommands.begin(), updates.mUpdateCommands.end()); }
+
+		void Execute(IRendererContext & ctx) const
+		{
+			for (auto &cmd : mUpdateCommands)
+				cmd(ctx);
+		}
+
+		bool Empty() const { return mUpdateCommands.empty(); }
+
+	private:
+		std::vector<UpdateCommand> mUpdateCommands;
+	};
+
+	struct FRenderCommandList
+	{
+		using RenderCommand = std::function<void(IRendererContext &)>;
+
+		void Push(const std::string &name, RenderCommand cmd) { mCommands.push_back({name, std::move(cmd)}); }
+
+		void Execute(IRendererContext &ctx) const
+		{
+			for (auto &cmd : mCommands)
+				cmd.Func(ctx);
+		}
+
+	private:
+		struct FEntry
+		{
+			std::string Name;
+			RenderCommand Func;
+		};
+
+		std::vector<FEntry> mCommands;
+	};
+
+	enum class EPassType : uint8_t
+	{
+		OffScreen,
+		SwapChain,
+		Compute
+	};
+
+	struct FRenderGraphPass
+	{
+		std::string Name;
+		EPassType Type;
+		FRenderCommandList CommandList;
+	};
+
+	class RenderGraph
+	{
+	public:
+		FRenderGraphPass &AddPass(const std::string &name, EPassType type)
+		{
+			auto &pass = mPasses.emplace_back();
+			pass.Name = name;
+			pass.Type = type;
+			return pass;
+		}
+
+		void Append(const RenderGraph &graph)
+		{
+			auto& passes = graph.GetPasses();
+			mPasses.insert(mPasses.end(), passes.begin(), passes.end());
+		}
+
+		bool Empty() const { return mPasses.empty(); }
+
+		const std::vector<FRenderGraphPass> &GetPasses() const { return mPasses; }
+		
+	private:
+		std::vector<FRenderGraphPass> mPasses;
+	};
+
+}

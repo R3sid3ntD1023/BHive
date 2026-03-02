@@ -4,10 +4,26 @@
 
 namespace BHive
 {
+	struct PassConfig
+	{
+		std::string DefaultPassName = "Default Pass";
+		EPassType DefaultPassType = EPassType::SwapChain;
+		bool DebugMarkers = true;
+	};
 
 	class BHIVE_API RenderCommand
 	{
 	public:
+		
+		template <typename TAPI>
+			requires(std::is_base_of_v<RendererAPI, TAPI>)
+		static TAPI *GetRendererAPI()
+		{
+			return Cast<TAPI>(sRendererAPI.get());
+		}
+
+		static RendererAPI::EAPI GetGraphicsAPI() { return sRendererAPI->GetAPI(); }
+
 		static void Init();
 
 		static void Shutdown();
@@ -38,16 +54,40 @@ namespace BHive
 
 		static void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
-		static RendererAPI::EAPI GetGraphicsAPI() { return sRendererAPI->GetAPI(); }
+		static void SubmitGraph(const RenderGraph &graph, FResourceUpdateList &updateResources);
 
-		template <typename TAPI>
-			requires(std::is_base_of_v<RendererAPI, TAPI>)
-		static TAPI *GetRendererAPI()
+		static void BeginFrame(); // resets graph
+
+		static RenderGraph &EndFrame(); //returns final graph
+
+		static RenderGraph &GetActiveGraph();
+
+		static FRenderGraphPass &GetActivePass();
+
+		static FRenderGraphPass &BeginPass(const std::string &name, EPassType type);
+
+		static void EndPass();
+
+		static void SubmitResourceUpdate(FResourceUpdateList::UpdateCommand cmd);
+
+		class PassScope
 		{
-			return Cast<TAPI>(sRendererAPI.get());
-		}
+			PassScope(const std::string &name, EPassType type) { RenderCommand::BeginPass(name, type);}
+
+			~PassScope() { RenderCommand::EndPass();}
+		};
+
+		static void SetPassConfig(const PassConfig& config);
+
+		static const PassConfig &GetPassConfig() { return sPassConfig; }; 
+
+		static void DebugPass(const std::string &msg);
 
 	private:
 		static Scope<RendererAPI> sRendererAPI;
+		static inline RenderGraph sGraph{};
+		static inline FRenderGraphPass *sActivePass = nullptr;
+		static inline bool sFrameActive = false;
+		static inline PassConfig sPassConfig{};
 	};
 } // namespace BHive

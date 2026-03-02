@@ -120,6 +120,7 @@ namespace BHive
 		Renderer::End();
 
 		mFramebuffer->UnBind();
+
 	}
 
 	void RuntimeLayer::OnGuiRender()

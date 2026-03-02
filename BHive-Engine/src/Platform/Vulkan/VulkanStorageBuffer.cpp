@@ -71,17 +71,17 @@ namespace BHive
 		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
 		std::memcpy(buffer_copy->data(), data, size);
 
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		auto cmd = [=](const FVulkanFrame &frame)
-		{
-			const auto current_frame = frame.Frame;
+		RenderCommand::SubmitResourceUpdate(
+			[=](IRendererContext &ctx)
+			{
+				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
 
-			auto mapped_memory = mBuffer[current_frame].Allocation.MappedPtr;
-			std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, buffer_copy->data(), size);
-			mBufferInfo[current_frame] = vk::DescriptorBufferInfo(mBuffer[current_frame].Buffer, 0, mSize);
-		};
+				const auto current_frame = vk_ctx.Frame;
 
-		api->SubmitCommand(cmd, ECommandType_PreCommand);
+				auto mapped_memory = mBuffer[current_frame].Allocation.MappedPtr;
+				std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, buffer_copy->data(), size);
+				mBufferInfo[current_frame] = vk::DescriptorBufferInfo(mBuffer[current_frame].Buffer, 0, mSize);
+			});
 	}
 
 	NativeHandle VulkanStorageBuffer::GetNativeHandle(uint32_t frame) const

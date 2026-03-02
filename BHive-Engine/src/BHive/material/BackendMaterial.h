@@ -2,10 +2,12 @@
 
 #include "core/Core.h"
 
+
 namespace BHive
 {
 	class Pipeline;
 	class Texture;
+	struct FSetReflection;
 
 	class IMaterialBackendInterface
 	{
@@ -20,9 +22,9 @@ namespace BHive
 
 		virtual void BindTexture(const std::string& name, const Ref<Texture> &texture) = 0;
 
-		virtual void BindTexture(const std::string &name, const std::vector<Ref<Texture>> &textures) = 0;
-
 		virtual void Set(const std::string &name, const void *data, size_t size) = 0;
+
+		virtual const FSetReflection &GetTargetSet() const = 0;
 
 		static Ref<IMaterialBackendInterface> Create();
 	};

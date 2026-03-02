@@ -12,9 +12,11 @@ namespace BHive
 	{
 		ASSERT(pipeline)
 
+	
+		CreateBackendMaterial();
+
 		UpdateTextureSlots();
 
-		CreateBackendMaterial();
 	}
 
 	void Material::SetTexture(const char *name, const Ref<Texture> &texture)
@@ -44,8 +46,8 @@ namespace BHive
 
 	void Material::UpdateTextureSlots()
 	{
-		auto &refl = mPipeline->GetShaderProgram()->GetRefl();
-		for (auto &[name, info] : refl.Samplers)
+		const auto &set = mBackendMaterial->GetTargetSet();
+		for (auto &[name, info] : set.Samplers)
 		{
 			mTextures.emplace(name, TextureSlot{nullptr});
 		}

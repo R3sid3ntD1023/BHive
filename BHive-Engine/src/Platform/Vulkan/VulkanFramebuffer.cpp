@@ -56,85 +56,85 @@ namespace BHive
 
 	void VulkanFramebuffer::Bind() const
 	{
-
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-
 		auto color_attachmnets = mColorAttachments;
 		auto depth_attachment = mDepthAttachment;
 		auto spec = mSpecification;
 
+		RenderCommand::BeginFrame();
+		auto &pass = RenderCommand::BeginPass("Framebuffer", EPassType::OffScreen);
 
-		auto cmd = [color_attachmnets, depth_attachment, spec](const FVulkanFrame &frame)
-		{
-			
-			//transition images
-			for (size_t i = 0; i < color_attachmnets.size(); i++)
+		pass.CommandList.Push(
+			"Bind Framebuffer",
+			[color_attachmnets, depth_attachment, spec](IRendererContext &ctx)
 			{
-				auto tex = Cast<IVulkanTexture>(color_attachmnets[i]);
-				ImageState attchmentState = {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
-				tex->GetImage().Transition(frame.CommandBuffer, attchmentState);
-			}
+				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+				// transition images
+				for (size_t i = 0; i < color_attachmnets.size(); i++)
+				{
+					auto tex = Cast<IVulkanTexture>(color_attachmnets[i]);
+					ImageState attchmentState = {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
+					tex->GetImage().Transition(vk_ctx.CommandBuffer, attchmentState);
+				}
 
-			if (auto tex = Cast<IVulkanTexture>(depth_attachment))
-			{
-				ImageState depthState = {
-					vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
-					vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests};
-				tex->GetImage().Transition(frame.CommandBuffer, depthState);
-			}
+				if (auto tex = Cast<IVulkanTexture>(depth_attachment))
+				{
+					ImageState depthState = {
+						vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+						vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests};
+					tex->GetImage().Transition(vk_ctx.CommandBuffer, depthState);
+				}
 
+				// render
+				std::vector<vk::RenderingAttachmentInfo> color_infos;
+				vk::RenderingAttachmentInfo depth_info{};
 
-			//render
-			std::vector<vk::RenderingAttachmentInfo> color_infos;
-			vk::RenderingAttachmentInfo depth_info{};
+				color_infos.reserve(color_attachmnets.size());
 
-			color_infos.reserve(color_attachmnets.size());
+				for (auto &tex : color_attachmnets)
+				{
+					auto vkTex = Cast<IVulkanTexture>(tex);
 
-			for (auto &tex : color_attachmnets)
-			{
-				auto vkTex = Cast<IVulkanTexture>(tex);
-				
-				auto info = vk::RenderingAttachmentInfo(
-					vkTex->GetImage().GetView(), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-					vk::ClearColorValue(0, 0, 0, 1));
+					auto info = vk::RenderingAttachmentInfo(
+						vkTex->GetImage().GetView(), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+						vk::ClearColorValue(0, 0, 0, 1));
 
-				color_infos.emplace_back(info);
-			}
+					color_infos.emplace_back(info);
+				}
 
-			if (depth_attachment)
-			{
-				auto vkTex = Cast<IVulkanTexture>(depth_attachment);
+				if (depth_attachment)
+				{
+					auto vkTex = Cast<IVulkanTexture>(depth_attachment);
 
-				depth_info = vk::RenderingAttachmentInfo(
-					vkTex->GetImage().GetView(), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-					vk::ClearDepthStencilValue(1.0f, 0));
-			}
+					depth_info = vk::RenderingAttachmentInfo(
+						vkTex->GetImage().GetView(), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+						vk::ClearDepthStencilValue(1.0f, 0));
+				}
 
-			auto rect = vk::Rect2D({0, 0}, {spec.Size.x, spec.Size.y});
-			auto depth = depth_attachment ? &depth_info : nullptr;
-			auto info = vk::RenderingInfo({}, rect, 1, 0, color_infos, depth);
+				auto rect = vk::Rect2D({0, 0}, {spec.Size.x, spec.Size.y});
+				auto depth = depth_attachment ? &depth_info : nullptr;
+				auto info = vk::RenderingInfo({}, rect, 1, 0, color_infos, depth);
 
-			frame.CommandBuffer.beginRendering(info);
+				vk_ctx.CommandBuffer.beginRendering(info);
 
-			vk::Viewport viewport(0.f, 0.f, (float)spec.Size.x, (float)spec.Size.y, 0.0f, 1.0f );
-			vk::Rect2D scissor({0, 0}, {spec.Size.x, spec.Size.y});
+				vk::Viewport viewport(0.f, 0.f, (float)spec.Size.x, (float)spec.Size.y, 0.0f, 1.0f);
+				vk::Rect2D scissor({0, 0}, {spec.Size.x, spec.Size.y});
 
-			frame.CommandBuffer.setViewport(0, viewport);
-			frame.CommandBuffer.setScissor(0, scissor);
-
-		};
-
-		api->SubmitCommand(cmd);
+				vk_ctx.CommandBuffer.setViewport(0, viewport);
+				vk_ctx.CommandBuffer.setScissor(0, scissor);
+			});
 	}
 
 	void VulkanFramebuffer::UnBind() const
 	{
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		auto color_attachments = mColorAttachments;
 
-		auto cmd = [color_attachments](const FVulkanFrame &frame)
+		auto &pass = RenderCommand::GetActivePass();
+
+		pass.CommandList.Push("UnBind Framebuffer",
+		[color_attachments](IRendererContext & ctx)
 		{
-			frame.CommandBuffer.endRendering();
+			auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+			vk_ctx.CommandBuffer.endRendering();
 
 			ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
 
@@ -142,11 +142,15 @@ namespace BHive
 			{
 				auto tex = Cast<IVulkanTexture>(color_attachments[i]);
 				auto &image = tex->GetImage();
-				image.Transition(frame.CommandBuffer, shaderRead);
+				image.Transition(vk_ctx.CommandBuffer, shaderRead);
 			}
-		};
+		});
 
-		api->SubmitCommand(cmd);
+		RenderCommand::EndPass();
+		auto& graph = RenderCommand::EndFrame();
+		FResourceUpdateList list{};
+		RenderCommand::SubmitGraph(graph, list);
+
 	}
 
 	void VulkanFramebuffer::Resize(const glm::uvec2 &newSize)
@@ -222,10 +226,13 @@ namespace BHive
 			mDepthAttachment = CreateFramebufferTexture(mSpecification.Size,  mSpecification.Samples, mDepthSpecification);
 		}
 
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		auto &pass = RenderCommand::GetActivePass();
 		auto colorAttachments = mColorAttachments;
-		auto cmd = [colorAttachments](const FVulkanFrame &frame)
+
+		RenderCommand::SubmitResourceUpdate([colorAttachments](const IRendererContext &ctx)
 		{
+			auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+
 			ImageState transferDst{vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
 			ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
 
@@ -234,12 +241,10 @@ namespace BHive
 				auto vkTex = Cast<IVulkanTexture>(tex);
 				auto& image = vkTex->GetImage();
 
-				image.Transition(frame.CommandBuffer, transferDst);
-				image.Transition(frame.CommandBuffer, shaderRead);
+				image.Transition(vk_ctx.CommandBuffer, transferDst);
+				image.Transition(vk_ctx.CommandBuffer, shaderRead);
 			}
-		};
-		api->SubmitCommand(cmd);
-		
+		});
 	}
 
 } // namespace BHive

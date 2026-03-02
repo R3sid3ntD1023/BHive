@@ -20,9 +20,8 @@ namespace BHive
 		}
 	};
 
-	struct FSampler2D
+	struct FSampler
 	{
-		int32_t Set{};
 		int32_t Binding{};
 		EShaderStage Stages{};
 		uint32_t ArraySize{};
@@ -30,13 +29,12 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(Set, Binding, Stages, ArraySize);
+			ar(Binding, Stages, ArraySize);
 		}
 	};
 
-	struct FUniformBufferData
+	struct FUniformBuffer
 	{
-		int32_t Set{};
 		int32_t Binding{};
 		int32_t Size{};
 		EShaderStage Stages{};
@@ -45,7 +43,7 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(Set, Binding, Size, Stages, Members);
+			ar(Binding, Size, Stages, Members);
 		}
 	};
 
@@ -65,7 +63,6 @@ namespace BHive
 
 	struct FStorageBuffer
 	{
-		int32_t Set{};
 		int32_t Binding{};
 		int32_t Size{};
 		EShaderStage Stages{};
@@ -73,7 +70,24 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(Set, Binding, Size, Stages);
+			ar(Binding, Size, Stages);
+		}
+	};
+
+	struct FSetReflection
+	{
+		std::unordered_map<std::string, FUniformBuffer> UniformBuffers;
+		std::unordered_map<std::string, FStorageBuffer> StorageBuffers;
+		std::unordered_map<std::string, FSampler> Samplers;
+
+		/*void Find();
+
+		bool Contains();*/
+
+		template <typename A>
+		void Serialize(A &ar)
+		{
+			ar(UniformBuffers, StorageBuffers, Samplers);
 		}
 	};
 
@@ -85,16 +99,14 @@ namespace BHive
 
 		static FShaderReflection Merge(const std::unordered_map<EShaderStage, FShaderReflection>& refl);
 
-		std::unordered_map<std::string, FUniform> Uniforms;
-		std::unordered_map<std::string, FSampler2D> Samplers;
-		std::unordered_map<std::string, FUniformBufferData> UniformBuffers;
+		std::unordered_map<uint32_t, FSetReflection> Sets;
+		std::unordered_map<std::string, FUniform> Uniforms; //unused in vulkan
 		std::vector<FPushConstantsRange> PushConstants; //unused in opengl
-		std::unordered_map<std::string, FStorageBuffer> StorageBuffers;
-
+	
 		template<typename A>
 		void Serialize(A& ar)
 		{
-			ar(Uniforms, Samplers, UniformBuffers, PushConstants, StorageBuffers);
+			ar(Sets, Uniforms, PushConstants);
 		}
 
 	};

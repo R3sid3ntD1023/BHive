@@ -74,11 +74,12 @@ namespace BHive
 		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
 		std::memcpy(buffer_copy->data(), data, size);
 
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		auto cmd = [this, buffer_copy, size, offset](const FVulkanFrame &frame)
-		{ mBuffer.SetData(frame.CommandBuffer, buffer_copy->data(), size, offset, vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead); };
-
-		api->SubmitCommand(cmd, ECommandType_PreCommand);
+		RenderCommand::SubmitResourceUpdate(
+			[this, buffer_copy, size, offset](IRendererContext &ctx)
+			{
+				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+				mBuffer.SetData(vk_ctx.CommandBuffer, buffer_copy->data(), size, offset, vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead);
+			});
 	}
 
 	StaticVulkanVertexBuffer::StaticVulkanVertexBuffer(size_t size)
@@ -95,11 +96,12 @@ namespace BHive
 		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
 		std::memcpy(buffer_copy->data(), data, size);
 
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		auto cmd = [this, buffer_copy, size, offset](const FVulkanFrame &frame)
-		{ mBuffer.SetData(frame.CommandBuffer, buffer_copy->data(), size, offset, vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead); };
-
-		api->SubmitCommand(cmd, ECommandType_PreCommand);
+		RenderCommand::SubmitResourceUpdate(
+			[this, buffer_copy, size, offset](IRendererContext &ctx)
+			{
+				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+				mBuffer.SetData(vk_ctx.CommandBuffer, buffer_copy->data(), size, offset, vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead);
+			});
 	}
 
 	//------------------------Dynamic Buffers---------------------------------//
@@ -118,14 +120,13 @@ namespace BHive
 		if (!data || size == 0)
 			return;
 
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		RenderCommand::SubmitResourceUpdate(
+			[this, data, size, offset](IRendererContext &ctx)
+			{
+				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
 
-		auto cmd = [this, data, size, offset](const FVulkanFrame &frame)
-		{ 
-			mPerFrameBuffer[frame.Frame].SetData(frame.CommandBuffer, data, size, offset, vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead);
-		};
-
-		api->SubmitCommand(cmd, ECommandType_PreCommand);
+				mPerFrameBuffer[vk_ctx.Frame].SetData(vk_ctx.CommandBuffer, data, size, offset, vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead);
+			});
 	}
 
 	DynamicVulkanVertexBuffer::DynamicVulkanVertexBuffer(const size_t size)
@@ -142,14 +143,13 @@ namespace BHive
 		if (!data || size == 0)
 			return;
 
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		RenderCommand::SubmitResourceUpdate(
+			[this, data, size, offset](IRendererContext &ctx)
+			{
+				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
 
-		auto cmd = [this, data, size, offset](const FVulkanFrame &frame)
-		{ 
-			mPerFrameBuffer[frame.Frame].SetData(frame.CommandBuffer, data, size, offset, vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead);
-		};
-
-		api->SubmitCommand(cmd, ECommandType_PreCommand);
+				mPerFrameBuffer[vk_ctx.Frame].SetData(vk_ctx.CommandBuffer, data, size, offset, vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead);
+			});
 	}
 
 	void DynamicVulkanVertexBuffer::SetLayout(const BufferLayout &layout)

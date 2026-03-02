@@ -1,18 +1,14 @@
 #pragma once
 
 #include "material/BackendMaterial.h"
-#include "Platform/Vulkan/VulkanBackend.h"
-#include "gfx/shader/ShaderReflection.h"
+#include "Platform/Vulkan/SetManager.h"
 
 namespace BHive
 {
 	class ShaderProgram;
-
-	struct BufferBinding
-	{
-		uint32_t Set;
-		uint32_t Binding;
-	};
+	struct FShaderReflection;
+	class UniformBuffer;
+	class StorageBuffer;
 
 	class VulkanBackendMaterial : public IMaterialBackendInterface
 	{
@@ -27,17 +23,27 @@ namespace BHive
 
 		void BindTexture(const std::string& name, const Ref<Texture> &texture) override;
 
-		void BindTexture(const std::string &name, const std::vector<Ref<Texture>> &textures) override;
-
 		void Set(const std::string &name, const void *data, size_t size) override;
 
 		void Shutdown() override;
 
+		const FSetReflection &GetTargetSet() const { return mTargetSet; }
+
 	private:
 		vk::raii::Device &mDevice;
-		std::vector<vk::raii::DescriptorSets> mDescriptorSets;
+
+		Scope<SetManager> mMaterialSetManager;
+
 		Ref<ShaderProgram> mProgram;
-		const FShaderReflection *mReflectionPtr = nullptr; 
+		
 		std::vector<uint8_t> mPushConstantData;
+
+		std::unordered_map<std::string, Ref<UniformBuffer>> mLocalUBOs;
+
+		std::unordered_map<std::string, Ref<StorageBuffer>> mLocalSSBOs;
+
+		const FShaderReflection *mReflectionPtr = nullptr; 
+
+		FSetReflection mTargetSet;
 	};
 }

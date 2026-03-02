@@ -78,6 +78,80 @@ namespace BHive
 		sRendererAPI->ColorMask(r, g, b, a);
 	}
 
+	void RenderCommand::SubmitGraph(const RenderGraph &graph, FResourceUpdateList &updateResources)
+	{
+		sRendererAPI->SubmitGraph(graph, updateResources);
+	}
+
+	void RenderCommand::BeginFrame()
+	{
+		sGraph = RenderGraph{};
+		sActivePass = nullptr;
+		sFrameActive = true;
+	}
+
+	RenderGraph &RenderCommand::EndFrame()
+	{
+		sFrameActive = false;
+		return sGraph;
+	}
+
+	RenderGraph &RenderCommand::GetActiveGraph()
+	{
+		if (!sFrameActive)
+			BeginFrame();
+
+		return sGraph;
+	}
+
+	FRenderGraphPass &RenderCommand::GetActivePass()
+	{
+		if (!sActivePass)
+		{
+			auto &graph = GetActiveGraph();
+			sActivePass = &graph.AddPass(sPassConfig.DefaultPassName, sPassConfig.DefaultPassType);
+
+			if (sPassConfig.DebugMarkers)
+				DebugPass("AutoDefaultPass: " + sPassConfig.DefaultPassName);
+		}
+
+		return *sActivePass;
+	}
+
+	FRenderGraphPass &RenderCommand::BeginPass(const std::string &name, EPassType type)
+	{
+		auto& graph = GetActiveGraph();
+		sActivePass = &graph.AddPass(name, type);
+
+		if (sPassConfig.DebugMarkers)
+			DebugPass("Begin Pass: " + name);
+
+		return *sActivePass;
+	}
+
+	void RenderCommand::EndPass()
+	{
+		if (sActivePass && sPassConfig.DebugMarkers)
+			DebugPass("EndPass: " + sActivePass->Name);
+
+		sActivePass = nullptr;
+	}
+
+	void RenderCommand::SubmitResourceUpdate(FResourceUpdateList::UpdateCommand cmd)
+	{
+		sRendererAPI->SubmitResourceUpdate(std::move(cmd));
+	}
+
+	void RenderCommand::SetPassConfig(const PassConfig &config)
+	{
+		sPassConfig = config;
+	}
+
+	void RenderCommand::DebugPass(const std::string &msg)
+	{
+		sRendererAPI->DebugPass(msg);
+	}
+
 	Scope<RendererAPI> RenderCommand::sRendererAPI = RendererAPI::Create();
 
 } // namespace BHive

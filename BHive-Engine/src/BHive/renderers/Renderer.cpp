@@ -2,8 +2,9 @@
 #include "gfx/Texture.h"
 #include "Renderer.h"
 #include "gfx/UniformBuffer.h"
-#include "buffers/GlobalBuffers.h"
+#include "gfx/GlobalBuffers.h"
 #include "gfx/StorageBuffer.h"
+#include "core/subsystem/SubSystem.h"
 
 namespace BHive
 {
@@ -16,8 +17,7 @@ namespace BHive
 	{
 		FCameraData CameraData;
 		Frustum CameraFrustum;
-
-		ModelBuffer Model;
+		ModelBuffer ModelBuffer;
 
 		Ref<Texture> WhiteTexture;
 		Ref<Texture> BlackTexture;
@@ -27,6 +27,7 @@ namespace BHive
 
 		RenderData()
 		{
+			AddSubSystem<GlobalBuffers>();
 
 			static constexpr uint32_t white = 0xFFFFFFFF;
 			static constexpr uint32_t black = 0xFF000000;
@@ -44,12 +45,13 @@ namespace BHive
 			BlueTexture = Texture2D::Create({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
 
 			CameraUniformBuffer = UniformBuffer::Create(0, sizeof(FCameraData));
-			GlobalBuffers::AddGlobalUniformBuffer(0, CameraUniformBuffer);
+			GetSubSystem<GlobalBuffers>().Register(0, {CameraUniformBuffer});
 
-			Model.Init();
+			ModelBuffer.Init();
 		}
 
-		~RenderData() { CameraUniformBuffer.reset();}
+		~RenderData() { RemoveSubSystem<GlobalBuffers>();
+		}
 	};
 
 	void Renderer::Init()
@@ -120,6 +122,11 @@ namespace BHive
 	void Renderer::ResetStats()
 	{
 		memset(&sStats, 0, sizeof(Statitics));
+	}
+
+	ModelBuffer &Renderer::GetModelBuffer()
+	{
+		return sData->ModelBuffer;
 	}
 
 	const Frustum &Renderer::GetFrustum()

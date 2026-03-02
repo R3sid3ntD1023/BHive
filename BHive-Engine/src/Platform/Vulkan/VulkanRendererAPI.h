@@ -4,6 +4,8 @@
 #include "core/events/KeyEvents.h"
 #include "VulkanBackend.h"
 #include "gfx/RendererAPI.h"
+#include "SetManager.h"
+#include "gfx/RenderGraph.h"
 
 namespace BHive
 {
@@ -12,27 +14,22 @@ namespace BHive
 	class VulkanRendererAPI;
 	class Window;
 	class VulkanWindowContext;
+	class VulkanShader;
 
-	struct FVulkanFrame
+	struct FVulkanRendererContext : public IRendererContext
 	{
+		FVulkanRendererContext(vk::raii::CommandBuffer& cmd, uint32_t frame, uint32_t imageIndex)
+			: CommandBuffer(cmd),
+			  Frame(frame),
+			  ImageIndex(imageIndex)
+		{}
+
 		vk::raii::CommandBuffer& CommandBuffer;
 
 		uint32_t Frame;
 
 		uint32_t ImageIndex;
 	};
-
-	using RGExecuteFn = std::function<void(const FVulkanFrame&)>;
-	using FRenderCommand = std::function<void(const FVulkanFrame &)>;
-
-	
-	enum ECommandType
-	{
-		ECommandType_PreCommand,
-		ECommandType_Command,
-		ECommandType_ToScreen
-	};
-
 
 	class BHIVE_API VulkanRendererAPI : public RendererAPI
 	{
@@ -72,9 +69,13 @@ namespace BHive
 
 		virtual void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a) override;
 
+		virtual void DebugPass(const std::string &msg) override;
+
 		vk::Result RenderFrame(VulkanWindowContext* ctx);
 
-		void SubmitCommand(const FRenderCommand &command, ECommandType type = ECommandType_Command);
+		void SubmitGraph(const RenderGraph &graph, FResourceUpdateList &updateResources) override;
+
+		virtual void SubmitResourceUpdate(FResourceUpdateList::UpdateCommand cmd) override;
 
 		vk::raii::DescriptorPool &GetDescriptorPool() { return mDescriptorPool; }
 
@@ -82,8 +83,15 @@ namespace BHive
 
 		void QueueDeletion(std::function<void(uint32_t)> fn);
 
+		void UpdateGlobalSet(const VulkanShader &shader, const FSetReflection& refl, uint32_t frame);
+
+		vk::DescriptorSet GetGlobalSet(uint64_t setHash, uint32_t frame) const;
+
 	private:
 		void ProcessDeletionQueue(uint32_t frame);
+
+		vk::Result ExecuteFinalGraph(VulkanWindowContext *ctx, FResourceUpdateList &updates, const RenderGraph &graph);
+
 
 	public:
 		void SetCurrentContext(VulkanWindowContext *ctx);
@@ -97,14 +105,19 @@ namespace BHive
 
 		vk::ClearColorValue mClearColor{0, 0, 0, 1};
 
-		std::unordered_map<ECommandType, std::queue<FRenderCommand>> mCommands;
-
 		std::atomic<bool> mDeviceRecreationInProgress{false};
 
 		VulkanWindowContext *mCurrentContext = nullptr;
 
 		uint32_t  mCompletedFrame = 0;
 
+		GlobalSetSystem mGlobalSetSystem;
+
+		std::vector<RenderGraph> mSubmittedGraphs;
+
+		std::vector<FResourceUpdateList> mSubmittedUpdates;
+
 		friend class VulkanFramebuffer;
+
 	};
 } // namespace BHive

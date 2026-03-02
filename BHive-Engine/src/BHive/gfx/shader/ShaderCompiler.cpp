@@ -111,17 +111,20 @@ namespace BHive
 
 		void ParseShaderArraySizes(const std::string& code, FShaderReflection& refl)
 		{
-			std::regex r(R"(uniform\s+sampler2D\s+([A-Za-z0-9_]+)\s*\[\s*([0-9]+)\s*\])");
+			std::regex r(R"(layout\s*\(\s*set\s*=\s*(\d+)[^)]*\)\s*uniform\s+\w+\s+(\w+)\s* \[\s*(\d+)\s*\])");
 
 			std::smatch match;
 
 			std::string::const_iterator searchStart(code.begin());
 			while (std::regex_search(searchStart, code.end(), match, r))
 			{
-				std::string name = match[1];
-				uint32_t size = std::stoi(match[2]);
+				uint32_t set = std::stoi(match[1]);
+				std::string name = match[2];
+				uint32_t size = std::stoi(match[3]);
 
-				refl.Samplers[name].ArraySize = size;
+				auto& target_set = refl.Sets[set];
+				if (target_set.Samplers.contains(name))
+					target_set.Samplers[name].ArraySize = size;
 
 				searchStart = match.suffix().first;
 			}

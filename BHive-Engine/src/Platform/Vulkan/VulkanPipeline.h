@@ -8,6 +8,7 @@ namespace BHive
 {
 	class VulkanShader;
 	class ShaderProgram;
+	class SetManager;
 
 	class BHIVE_API VulkanPipeline : public Pipeline
 	{
@@ -20,13 +21,15 @@ namespace BHive
 
 		virtual void Bind() override;
 
-		virtual void UnBind() override;
+		virtual void UnBind() override {};
 
 		Ref<ShaderProgram> GetShaderProgram() const override;
 
+		const VulkanShader& GetVulkanShader() const { return *mShader.get(); }
+
 		const vk::raii::PipelineLayout &GetLayout() const { return mPipelineLayout; }
 
-		const std::vector<vk::raii::DescriptorSetLayout> &GetDescriptorLayouts() const;
+		void SetMaterialSet(SetManager *materialSet);
 
 	private:
 		vk::raii::Device &mDevice;
@@ -37,6 +40,10 @@ namespace BHive
 
 		Ref<ShaderProgram> mProgram;
 
-		Scope<VulkanShader> mBackendShader;
+		Scope<VulkanShader> mShader;
+
+		std::vector<vk::raii::DescriptorSetLayout> mDescriptorSetLayouts;
+
+		SetManager *mMaterialSetManager = nullptr;
 	};
 } // namespace BHive

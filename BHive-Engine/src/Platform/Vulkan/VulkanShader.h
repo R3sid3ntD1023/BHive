@@ -11,8 +11,8 @@ namespace BHive
 	class FDescriptorPool;
 
 	using ShaderModules = std::unordered_map<EShaderStage, vk::raii::ShaderModule> ;
-	using DescriptorSetLayouts = std::vector<vk::raii::DescriptorSetLayout>;
 	using PushConstantRanges = std::vector<vk::PushConstantRange>;
+	using SetHashes = std::map<uint64_t, uint64_t>;
 
 	class BHIVE_API VulkanShader 
 	{
@@ -26,27 +26,34 @@ namespace BHive
 
 		void Init(const Ref<ShaderAsset> &asset);
 
-		const DescriptorSetLayouts &GetDescriptorSetLayouts() const { return mDescriptorSetLayouts; }
+		const std::map<uint32_t, vk::raii::DescriptorSetLayout> &GetLayouts() const { return mDescriptorSetLayouts; }
+
+		const uint32_t GetSetCount() const { return (uint32_t)mDescriptorSetLayouts.size(); }
+
+		vk::DescriptorSetLayout GetDescriptorSetLayout(uint32_t set) const;
 
 		const ShaderModules &GetModules() const { return mShaderModules; }
 
 		const PushConstantRanges &GetPushConstantRanges() const { return mPushConstantRanges; }
+
+		const SetHashes& GetSetHashes() const { return mSetHashes; }
 
 	private:
 		void CreateModules(const ShaderAsset& asset);
 
 		void CreateDescriptorResources(const ShaderAsset& asset);
 
+		uint64_t HashSetLayout(const FShaderReflection& merged, uint32_t set);
+
 	private:
 		vk::raii::Device &mDevice;
 
 		ShaderModules mShaderModules;
 
-		DescriptorSetLayouts mDescriptorSetLayouts;
+		std::map<uint32_t, vk::raii::DescriptorSetLayout> mDescriptorSetLayouts;
+
+		SetHashes mSetHashes;
 
 		PushConstantRanges mPushConstantRanges;
 	};
-
-	
-
 } // namespace BHive

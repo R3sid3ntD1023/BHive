@@ -6,24 +6,28 @@
 namespace BHive
 {
 	class StorageBuffer;
-	class VertexBuffer;
-	class Shader;
+
+	struct FPerObjectData
+	{
+		glm::mat4 WorldMatrix = {1.0f};
+	};
 
 	struct ModelBuffer
 	{
-		void Init();
+		void Init(uint32_t maxObjects = 10000);
 
-		void Draw(const Ref<FMeshRenderData> &data);
+		uint32_t Submit(const FTransform &transform);
 
-		void DrawMesh(const Ref<FStaticMeshRenderData> &data);
+		void Upload();
 
-		void SubmitModel(const FTransform &transform);
+		void Reset();
 
 	private:
 		Ref<StorageBuffer> mBoneBuffer{};
-		Ref<StorageBuffer> mPerObjectBuffer{};
+		Ref<StorageBuffer> mObjectBuffer{};
 		Ref<StorageBuffer> mInstanceBuffer{};
 		Ref<StorageBuffer> mIndirectBuffer{};
-		Ref<Shader> mComputeInstanceShader{};
+		std::vector<FPerObjectData> mBatch;
+		uint32_t mMaxObjects = 0;
 	};
 } // namespace BHive

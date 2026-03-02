@@ -65,37 +65,39 @@ namespace BHive
 		auto vertex_buffers = mVertexBuffers;
 		auto index_buffer_ref = mIndexBuffer;
 
-		auto cmd = [=](const FVulkanFrame &data)
-		{
-			auto size = vertex_buffers.size();
-			std::vector<vk::Buffer> vk_vertex_buffers(size);
-			std::vector<vk::DeviceSize> offsets(size, 0);
-			vk::Buffer index_buffer;
-
-			if (index_buffer_ref)
+		auto &pass = RenderCommand::GetActivePass();
+		pass.CommandList.Push(
+			"Bind vertexArray",
+			[=](IRendererContext &ctx)
 			{
-				index_buffer = *index_buffer_ref->GetNativeHandle(data.Frame).As<vk::Buffer>();
-			}
-				
+				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
 
-			for (uint32_t i = 0; i < size; i++)
-			{
-				auto &vb = vertex_buffers[i];
-				vk_vertex_buffers[i] = *vb->GetNativeHandle(data.Frame).As<vk::Buffer>();
-			}
+				auto size = vertex_buffers.size();
+				std::vector<vk::Buffer> vk_vertex_buffers(size);
+				std::vector<vk::DeviceSize> offsets(size, 0);
+				vk::Buffer index_buffer;
 
-			ASSERT(bindings.size() && attributes.size());
+				if (index_buffer_ref)
+				{
+					index_buffer = *index_buffer_ref->GetNativeHandle(vk_ctx.Frame).As<vk::Buffer>();
+				}
 
-			data.CommandBuffer.setVertexInputEXT(bindings, attributes);
-			data.CommandBuffer.bindVertexBuffers(0, vk_vertex_buffers, offsets);
-			
-			if (index_buffer)
-			{
-				data.CommandBuffer.bindIndexBuffer(index_buffer, 0, vk::IndexType::eUint32);
-			}
-		};
+				for (uint32_t i = 0; i < size; i++)
+				{
+					auto &vb = vertex_buffers[i];
+					vk_vertex_buffers[i] = *vb->GetNativeHandle(vk_ctx.Frame).As<vk::Buffer>();
+				}
 
-		RenderCommand::GetRendererAPI<VulkanRendererAPI>()->SubmitCommand(cmd);
+				ASSERT(bindings.size() && attributes.size());
+
+				vk_ctx.CommandBuffer.setVertexInputEXT(bindings, attributes);
+				vk_ctx.CommandBuffer.bindVertexBuffers(0, vk_vertex_buffers, offsets);
+
+				if (index_buffer)
+				{
+					vk_ctx.CommandBuffer.bindIndexBuffer(index_buffer, 0, vk::IndexType::eUint32);
+				}
+			});
 	}
 
 	void VulkanVertexArray::UnBind() const

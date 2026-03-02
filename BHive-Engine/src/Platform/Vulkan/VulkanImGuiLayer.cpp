@@ -130,22 +130,24 @@ namespace BHive
 
 	void VulkanImGuiLayer::OnRender(ImDrawData *drawData, const glm::uvec2 &displaySize)
 	{
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-
-		auto cmd = [drawData, displaySize](const FVulkanFrame &f)
+		RenderGraph graph{};
+		auto& pass = graph.AddPass("ImGui", EPassType::SwapChain);
+		
+		pass.CommandList.Push("Draw Imgui", [drawData, displaySize](IRendererContext& ctx)
 		{
+			auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
 			vk::Viewport viewport(0.0f, 0.0f, (float)displaySize.x, (float)displaySize.y, 0.0f, 1.0f);
 			vk::Rect2D scissor({0, 0}, {(uint32_t)displaySize.x, (uint32_t)displaySize.y});
 
-			f.CommandBuffer.setViewport(0, viewport);
-			f.CommandBuffer.setScissor(0, scissor);
+			vk_ctx.CommandBuffer.setViewport(0, viewport);
+			vk_ctx.CommandBuffer.setScissor(0, scissor);
 
-			ImGui_ImplVulkan_RenderDrawData(drawData, *f.CommandBuffer);
+			ImGui_ImplVulkan_RenderDrawData(drawData, *vk_ctx.CommandBuffer);
 
-		};
+		});
 
-		
-		api->SubmitCommand(cmd, ECommandType_ToScreen);
+		FResourceUpdateList list{};
+		RenderCommand::SubmitGraph(graph, list);
 	}
 
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)

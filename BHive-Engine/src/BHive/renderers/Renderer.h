@@ -5,6 +5,7 @@
 #include "QuadRenderer.h"
 #include "gfx/Camera.h"
 #include "RenderData.h"
+#include "buffers/ModelBuffer.h"
 
 namespace BHive
 {
@@ -56,6 +57,7 @@ namespace BHive
 		static void ResetStats();
 		static Statitics &GetStats() { return sStats; }
 
+		static ModelBuffer &GetModelBuffer();
 
 	private:
 		struct RenderData;
