@@ -79,13 +79,13 @@ namespace BHive
 
 				if (index_buffer_ref)
 				{
-					index_buffer = *index_buffer_ref->GetNativeHandle(vk_ctx.Frame).As<vk::Buffer>();
+					index_buffer = index_buffer_ref->GetNativeHandle(vk_ctx.Frame).As<AllocatedBuffer>()->Buffer;
 				}
 
 				for (uint32_t i = 0; i < size; i++)
 				{
 					auto &vb = vertex_buffers[i];
-					vk_vertex_buffers[i] = *vb->GetNativeHandle(vk_ctx.Frame).As<vk::Buffer>();
+					vk_vertex_buffers[i] = vb->GetNativeHandle(vk_ctx.Frame).As<AllocatedBuffer>()->Buffer;
 				}
 
 				ASSERT(bindings.size() && attributes.size());

@@ -9,6 +9,8 @@ namespace BHive
 	public:
 		virtual ~UniformBuffer() = default;
 
+		virtual Type GetType() const override { return BufferBase::UniformBuffer; }
+
 		static Ref<UniformBuffer> Create(uint32_t binding, uint64_t size, const void *data = nullptr);
 	};
 } // namespace BHive

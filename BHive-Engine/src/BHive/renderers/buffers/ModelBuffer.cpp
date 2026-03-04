@@ -1,8 +1,5 @@
-#include "gfx/RenderCommand.h"
-#include "gfx/Shader.h"
-#include "gfx/ShaderManager.h"
-#include "gfx/StorageBuffer.h"
 #include "ModelBuffer.h"
+#include "gfx/StorageBuffer.h"
 #include "gfx/GlobalBuffers.h"
 #include "core/subsystem/SubSystem.h"
 
@@ -15,16 +12,17 @@ namespace BHive
 	#define MAX_INSTANCES 10'000
 
 	
-	void ModelBuffer::Init(uint32_t maxObjects)
+	void FModelBuffer::Init(uint32_t maxObjects)
 	{
 		mMaxObjects = maxObjects;
 		mBatch.reserve(maxObjects);
 
 		mObjectBuffer = StorageBuffer::Create(sizeof(FPerObjectData) * maxObjects);
 		GetSubSystem<GlobalBuffers>().Register(SSBO_OBJECT_BATCH_BINDING, {.Buffer  = mObjectBuffer});
+
 	}
 
-	uint32_t ModelBuffer::Submit(const FTransform &transform)
+	uint32_t FModelBuffer::Submit(const FTransform &transform)
 	{
 		FPerObjectData data{};
 		data.WorldMatrix = transform.ToMat4();
@@ -32,7 +30,7 @@ namespace BHive
 		return (uint32_t)(mBatch.size()) - 1; //gl_DrawID
 	}
 	
-	void ModelBuffer::Upload()
+	void FModelBuffer::Upload()
 	{
 		if (mBatch.empty())
 			return;
@@ -40,9 +38,10 @@ namespace BHive
 		mObjectBuffer->SetData(mBatch.data(), mBatch.size() * sizeof(FPerObjectData));
 	}
 
-	void ModelBuffer::Reset()
+	void FModelBuffer::Reset()
 	{
 		mBatch.clear();
 	}
+
 
 } // namespace BHive

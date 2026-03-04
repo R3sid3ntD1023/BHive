@@ -4,11 +4,13 @@
 #include "core/events/Event.h"
 #include "Enumerations.h"
 #include "RenderGraph.h"
+#include "ISetManager.h"
 
 namespace BHive
 {
 	class VertexArray;
 	class BufferBase;
+	class Pipeline;
 
 	struct MultiDrawIndirectCommand
 	{
@@ -66,6 +68,8 @@ namespace BHive
 		virtual void SubmitResourceUpdate(FResourceUpdateList::UpdateCommand cmd) = 0;
 
 		virtual void DebugPass(const std::string &msg) = 0;
+
+		virtual Ref<ISetManager> CreateSetManager(const Pipeline *pipeline, uint32_t setIndex) = 0;
 
 		virtual EAPI GetAPI() const = 0;
 

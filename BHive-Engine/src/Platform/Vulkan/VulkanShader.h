@@ -38,6 +38,8 @@ namespace BHive
 
 		const SetHashes& GetSetHashes() const { return mSetHashes; }
 
+		uint32_t GetMaxSet() const { return mMaxSet; }
+
 	private:
 		void CreateModules(const ShaderAsset& asset);
 
@@ -55,5 +57,7 @@ namespace BHive
 		SetHashes mSetHashes;
 
 		PushConstantRanges mPushConstantRanges;
+
+		uint32_t mMaxSet = 0;
 	};
 } // namespace BHive

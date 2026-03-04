@@ -78,6 +78,11 @@ namespace BHive
 		sRendererAPI->ColorMask(r, g, b, a);
 	}
 
+	Ref<ISetManager> RenderCommand::CreateSetManager(const Pipeline *pipeline, uint32_t setIndex)
+	{
+		return sRendererAPI->CreateSetManager(pipeline, setIndex);
+	}
+
 	void RenderCommand::SubmitGraph(const RenderGraph &graph, FResourceUpdateList &updateResources)
 	{
 		sRendererAPI->SubmitGraph(graph, updateResources);

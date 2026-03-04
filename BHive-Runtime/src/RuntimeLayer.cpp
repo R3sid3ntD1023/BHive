@@ -18,6 +18,7 @@
 #include "core/Time.h"
 #include "Inspectors/Inspect.h"
 #include "gfx/Framebuffer.h"
+#include "gfx/ISetManager.h"
 
 namespace BHive
 {
@@ -63,6 +64,10 @@ namespace BHive
 			.attach(FTextureCreateInfo{.Format = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 
 		mFramebuffer = Framebuffer::Create(fb_specs);
+
+		mSet3Manager = RenderCommand::CreateSetManager(mPipeline.get(), 3);
+	
+		mPipeline->SetBatchSetManager(mSet3Manager.get());
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -111,7 +116,10 @@ namespace BHive
 			mMaterial->Submit();
 			mMaterial->Set("u_Time", Time::Raw());
 
-			Renderer::SubmitModel(transform);
+			Renderer::GetModelBuffer().Reset();
+			Renderer::GetModelBuffer().Submit(transform);
+			Renderer::GetModelBuffer().Upload();
+			mSet3Manager->BindBuffer(1, Renderer::GetModelBuffer().GetObjectBuffer());
 
 			if (mMesh)
 				RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());

@@ -21,9 +21,9 @@ namespace BHive
 
 		AllocatedImage &GetImage() { return mImage; };
 
-		const vk::DescriptorImageInfo GetDescriptor() const;
+		NativeHandle GetNativeHandle() const { return Handle::Image(&mImage); }
 
-		NativeHandle GetNativeHandle() const { return NativeHandle::FromPtr(&mImage); }
+		NativeHandle GetNativeHandle() { return Handle::Image(&mImage); }
 
 	private:
 		AllocatedImage mImage{};

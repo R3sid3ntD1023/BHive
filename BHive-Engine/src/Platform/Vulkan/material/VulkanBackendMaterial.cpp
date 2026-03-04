@@ -6,13 +6,12 @@
 #include "gfx/BufferBase.h"
 #include "gfx/shader/ShaderProgram.h"
 #include "Platform/Vulkan/VulkanConverters.h"
-#include "renderers/Renderer.h"
-#include "Platform/Vulkan/IVulkanTexture.h"
 #include "Platform/Vulkan/VulkanShader.h"
 #include "gfx/shader/ShaderReflection.h"
 #include "Platform/Vulkan/textures/VulkanImage.h"
 #include "gfx/UniformBuffer.h"
 #include "gfx/StorageBuffer.h"
+#include "Platform/Vulkan/VulkanSetManager.h"
 
 namespace BHive
 {
@@ -26,34 +25,32 @@ namespace BHive
 	{
 		
 		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
-		auto& shader = vkPipeline->GetVulkanShader();
-		auto material_set_layout = shader.GetDescriptorSetLayout(MATERIAL_SET_INDEX);
-
-		if (!material_set_layout)
-			return;
 
 		mProgram = Cast<ShaderProgram>(vkPipeline->GetShaderProgram());
 		mReflectionPtr = &mProgram->GetRefl();
-		mTargetSet = mReflectionPtr->Sets.at(MATERIAL_SET_INDEX);
 
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-
-		mMaterialSetManager = CreateScope<SetManager>(mTargetSet, MATERIAL_SET_INDEX);
-		mMaterialSetManager->Init(mDevice, api->GetDescriptorPool(), material_set_layout);
-
-		// create local buffers
-		for (auto& [name, ubo] : mTargetSet.UniformBuffers)
+		//init set manager
+		if (mReflectionPtr->Sets.contains(MATERIAL_SET_INDEX))
 		{
-			mLocalUBOs.emplace(name, UniformBuffer::Create(ubo.Binding, ubo.Size));
+			mTargetSet = mReflectionPtr->Sets.at(MATERIAL_SET_INDEX);
+
+			mMaterialSetManager = RenderCommand::CreateSetManager(pipeline.get(), MATERIAL_SET_INDEX);
+
+			// create local buffers
+			for (auto &[name, ubo] : mTargetSet.UniformBuffers)
+			{
+				mLocalUBOs.emplace(name, UniformBuffer::Create(ubo.Binding, ubo.Size));
+			}
+
+			for (auto &[name, ssbo] : mTargetSet.StorageBuffers)
+			{
+				mLocalSSBOs.emplace(name, StorageBuffer::Create(ssbo.Binding, ssbo.Size));
+			}
+
+			vkPipeline->SetMaterialSetManager(mMaterialSetManager.get());
 		}
 
-		for (auto& [name, ssbo] : mTargetSet.StorageBuffers)
-		{
-			mLocalSSBOs.emplace(name, StorageBuffer::Create(ssbo.Binding, ssbo.Size));
-		}
-			
-
-		vkPipeline->SetMaterialSet(mMaterialSetManager.get());
+		
 	
 		//create push constant buffer
 		size_t total_size = 0;
@@ -80,21 +77,16 @@ namespace BHive
 				for (auto& [name, ub] : mTargetSet.UniformBuffers)
 				{
 					auto ubo = mLocalUBOs.at(name); 
-					auto buffer_info = ubo->GetNativeHandle().As<vk::DescriptorBufferInfo>();
-					if (buffer_info)
-						mMaterialSetManager->BindBuffer(ub.Binding, vk::DescriptorType::eUniformBuffer, *buffer_info);
+					mMaterialSetManager->BindBuffer(ub.Binding, ubo);
 				}
 
 				for (auto &[name, ssb] : mTargetSet.StorageBuffers)
 				{
 					auto ssbo = mLocalSSBOs.at(name);
-					auto buffer_info = ssbo->GetNativeHandle().As<vk::DescriptorBufferInfo>();
-					if (buffer_info)
-						mMaterialSetManager->BindBuffer(ssb.Binding,vk::DescriptorType::eStorageBuffer ,*buffer_info);
+					mMaterialSetManager->BindBuffer(ssb.Binding, ssbo);
 				}
 
-				mMaterialSetManager->Update(vk_ctx.Frame, mDevice);
-
+				
 				//Update push constants
 				for (auto &pc : mReflectionPtr->PushConstants)
 				{
@@ -116,9 +108,7 @@ namespace BHive
 		}
 
 		auto &sampler = mTargetSet.Samplers.at(name);
-		auto image = texture->GetNativeHandle().As<AllocatedImage>();
-		vk::DescriptorImageInfo image_info = image->GetDescriptor();
-		mMaterialSetManager->BindSampler(sampler.Binding, image_info);
+		mMaterialSetManager->BindSampler(sampler.Binding, texture);
 	}
 
 	

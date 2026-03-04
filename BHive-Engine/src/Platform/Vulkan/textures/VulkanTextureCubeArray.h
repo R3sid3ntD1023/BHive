@@ -19,11 +19,8 @@ namespace BHive
 
 		NativeHandle GetNativeHandle() const override { return mImage.GetNativeHandle(); }
 
-		const vk::DescriptorImageInfo GetDescriptor() const override { return mImage.GetDescriptor(); }
+		NativeHandle GetNativeHandle() override { return mImage.GetNativeHandle(); }
 
-		const AllocatedImage &GetImage() const override { return mImage.GetImage(); };
-
-		AllocatedImage &GetImage() override { return mImage.GetImage(); };
 
 	private:
 		vk::raii::Device &mDevice;

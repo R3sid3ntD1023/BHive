@@ -152,13 +152,14 @@ namespace BHive
 
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)
 	{
-		auto handle = dynamic_cast<const IVulkanTexture&>(texture).GetDescriptor();
-		auto key = TextureKey{(VkImageView)handle.imageView, (VkSampler)handle.sampler};
+		auto handle = texture.GetNativeHandle().As<AllocatedImage>();
+
+		auto key = TextureKey{(VkImageView)handle->GetView(), (VkSampler)handle->GetSampler()};
 
 		if (s_ImGuiTextureMap.contains(key))
 			return s_ImGuiTextureMap[key];
 
-		auto set = ImGui_ImplVulkan_AddTexture(handle.sampler, handle.imageView, (VkImageLayout)handle.imageLayout);
+		auto set = ImGui_ImplVulkan_AddTexture(handle->GetSampler(), handle->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return s_ImGuiTextureMap[key] = set;
 	}
 

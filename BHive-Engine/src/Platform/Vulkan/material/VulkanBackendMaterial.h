@@ -1,7 +1,8 @@
 #pragma once
 
+#include "Platform/Vulkan/VulkanCore.h"
 #include "material/BackendMaterial.h"
-#include "Platform/Vulkan/SetManager.h"
+#include "gfx/shader/ShaderReflection.h"
 
 namespace BHive
 {
@@ -9,6 +10,7 @@ namespace BHive
 	struct FShaderReflection;
 	class UniformBuffer;
 	class StorageBuffer;
+	class ISetManager;
 
 	class VulkanBackendMaterial : public IMaterialBackendInterface
 	{
@@ -32,7 +34,7 @@ namespace BHive
 	private:
 		vk::raii::Device &mDevice;
 
-		Scope<SetManager> mMaterialSetManager;
+		Ref<ISetManager> mMaterialSetManager;
 
 		Ref<ShaderProgram> mProgram;
 		

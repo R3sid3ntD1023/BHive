@@ -40,10 +40,6 @@ namespace BHive
 
 		static void SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view);
 
-		static void Draw(const Ref<FMeshRenderData> &data);
-
-		static void SubmitModel(const FTransform &transform);
-
 		static void End();
 
 		static Ref<Texture> GetWhiteTexture();
@@ -57,7 +53,7 @@ namespace BHive
 		static void ResetStats();
 		static Statitics &GetStats() { return sStats; }
 
-		static ModelBuffer &GetModelBuffer();
+		static FModelBuffer &GetModelBuffer();
 
 	private:
 		struct RenderData;

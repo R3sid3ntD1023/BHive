@@ -43,7 +43,7 @@ namespace BHive
 
 	NativeHandle PerFrameBuffer::GetNativeHandle() const
 	{
-		return NativeHandle::FromPtr(&Buffer.Buffer);
+		return NativeHandle::FromPtr(&Buffer);
 	}
 
 	PerFrameBuffer::~PerFrameBuffer()

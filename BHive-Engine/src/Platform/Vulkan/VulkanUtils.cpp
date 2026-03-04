@@ -1,6 +1,7 @@
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
 #include "VulkanUtils.h"
+#include "VulkanBackend.h"
 
 namespace BHive
 {

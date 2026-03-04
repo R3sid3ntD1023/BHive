@@ -9,11 +9,6 @@ namespace BHive
 		State = newState;
 	}
 
-	const vk::DescriptorImageInfo AllocatedImage::GetDescriptor() const
-	{
-		return vk::DescriptorImageInfo(Sampler, View, vk::ImageLayout::eShaderReadOnlyOptimal);
-	}
-
 	void AllocatedImage::Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub)
 	{
 		for (uint32_t layer = sub.BaseArrayLayer; layer < sub.BaseArrayLayer + sub.LayerCount; layer++)

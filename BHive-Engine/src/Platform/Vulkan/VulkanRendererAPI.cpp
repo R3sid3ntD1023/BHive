@@ -13,6 +13,7 @@
 #include "IVulkanTexture.h"
 #include "gfx/GlobalBuffers.h"
 #include "VulkanUniformBuffer.h"
+#include "VulkanSetManager.h"
 
 namespace BHive
 {
@@ -124,26 +125,36 @@ namespace BHive
 		sDeletionQueue.emplace(mCompletedFrame, fn);
 	}
 
-	void VulkanRendererAPI::UpdateGlobalSet(const VulkanShader &shader, const FSetReflection &set, uint32_t frame)
+	void VulkanRendererAPI::UpdateGlobalSet(const VulkanPipeline* pipeline, uint32_t frame)
 	{
-		auto& device = VulkanBackend::GetLogicalDevice();
+		auto& shader = pipeline->GetVulkanShader();
 
 		uint64_t set_hash = shader.GetSetHashes().at(GLOBAL_SET_INDEX);
 		if (!mGlobalSetSystem.Contains(set_hash))
 		{
-			auto manager = CreateScope<SetManager>(set, GLOBAL_SET_INDEX);
-			manager->Init(device, mDescriptorPool, shader.GetDescriptorSetLayout(0));
-
+			auto manager = CreateSetManager(pipeline, GLOBAL_SET_INDEX);
 			mGlobalSetSystem.Register(set_hash, manager);
 		}
 
 		auto manager = mGlobalSetSystem.Get(set_hash);
-		manager->Update(frame, device);
+		manager->Update(frame);
 	}
 
-	vk::DescriptorSet VulkanRendererAPI::GetGlobalSet(uint64_t setHash, uint32_t frame) const
+	vk::raii::DescriptorSet* VulkanRendererAPI::GetGlobalSet(uint64_t setHash, uint32_t frame) const
 	{
-		return mGlobalSetSystem.Get(setHash)->Get(frame);
+		return mGlobalSetSystem.Get(setHash)->GetNativeSet(frame).As<vk::raii::DescriptorSet>();
+	}
+
+	Ref<ISetManager> VulkanRendererAPI::CreateSetManager(const Pipeline* pipeline, uint32_t setIndex)
+	{
+		auto program = pipeline->GetShaderProgram();
+		auto& refl = program->GetRefl();
+		auto vKpipeline = Cast<VulkanPipeline>(pipeline);
+		auto layout = vKpipeline->GetSetLayout(setIndex);
+
+		auto manager = CreateRef<VulkanSetManager>(VulkanBackend::GetLogicalDevice(), mDescriptorPool, layout, setIndex,
+			refl);
+		return manager;
 	}
 
 	void VulkanRendererAPI::ProcessDeletionQueue(uint32_t frame)
@@ -330,7 +341,7 @@ namespace BHive
 	{
 		vao.Bind();
 
-		auto buffer = indirect.GetNativeHandle().As<vk::Buffer>();
+		auto buffer = indirect.GetNativeHandle().As<AllocatedBuffer>()->Buffer;
 		auto topology = ToVkTopology(mode);
 
 		auto &pass = RenderCommand::GetActivePass();
@@ -338,7 +349,7 @@ namespace BHive
 		{		
 			auto &vk_ctx = static_cast<const FVulkanRendererContext &>(ctx);
 			vk_ctx.CommandBuffer.setPrimitiveTopology(topology);
-			vk_ctx.CommandBuffer.drawIndexedIndirect(*buffer, 0, drawCount, stride);
+			vk_ctx.CommandBuffer.drawIndexedIndirect(buffer, 0, drawCount, stride);
 		});
 
 		vao.UnBind();

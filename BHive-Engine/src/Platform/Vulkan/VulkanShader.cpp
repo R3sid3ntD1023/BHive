@@ -48,37 +48,49 @@ namespace BHive
 	{
 		const auto& merged = asset.MergedReflection;
 
-		std::map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> bindings;
+		mMaxSet = 0;
+		mDescriptorSetLayouts.clear();
 
-		for (auto& [set, refl] : merged.Sets)
+		for (auto &[set, _] : merged.Sets)
+			mMaxSet = std::max(mMaxSet, set);
+
+		for (uint32_t set = 0; set <= mMaxSet; set++)
 		{
+			
+			if (!merged.Sets.contains(set))
+			{
+				vk::DescriptorSetLayoutCreateInfo empty_info{};
+				mDescriptorSetLayouts.emplace(set, mDevice.createDescriptorSetLayout(empty_info));
+				continue;
+			}
+
+			auto &refl = merged.Sets.at(set);
+
+			std::vector<vk::DescriptorSetLayoutBinding> bindings;
+
 			for (auto &[name, sampler] : refl.Samplers)
 			{
 				auto vk_stage = ToVkShaderStageBit(sampler.Stages);
-				bindings[set].emplace_back(sampler.Binding, vk::DescriptorType::eCombinedImageSampler, sampler.ArraySize, vk_stage);
+				bindings.emplace_back(sampler.Binding, vk::DescriptorType::eCombinedImageSampler, sampler.ArraySize, vk_stage);
 			}
 
 			for (auto &[name, ubo] : refl.UniformBuffers)
 			{
 				auto vk_stage = ToVkShaderStageBit(ubo.Stages);
-				bindings[set].emplace_back(ubo.Binding, vk::DescriptorType::eUniformBuffer, 1, vk_stage);
+				bindings.emplace_back(ubo.Binding, vk::DescriptorType::eUniformBuffer, 1, vk_stage);
 			}
 
 			for (auto &[name, sbo] : refl.StorageBuffers)
 			{
 				auto vk_stage = ToVkShaderStageBit(sbo.Stages);
-				bindings[set].emplace_back(sbo.Binding, vk::DescriptorType::eStorageBuffer, 1, vk_stage);
+				bindings.emplace_back(sbo.Binding, vk::DescriptorType::eStorageBuffer, 1, vk_stage);
 			}
-		}
-		
 
-		for (auto &[setIndex, bindingsList] : bindings)
-		{
-			std::vector<vk::DescriptorBindingFlags> binding_flags(bindingsList.size(), {});
+			std::vector<vk::DescriptorBindingFlags> binding_flags(bindings.size(), {});
 
-			for (size_t i = 0; i < bindingsList.size(); i++)
+			for (size_t i = 0; i < bindings.size(); i++)
 			{
-				auto &b = bindingsList[i];
+				auto &b = bindings[i];
 
 				if (b.descriptorType == vk::DescriptorType::eCombinedImageSampler)
 				{
@@ -87,10 +99,18 @@ namespace BHive
 			}
 
 			vk::DescriptorSetLayoutBindingFlagsCreateInfo flags(binding_flags);
-			vk::DescriptorSetLayoutCreateInfo layout_info(vk::DescriptorSetLayoutCreateFlagBits::eUpdateAfterBindPool, bindingsList, &flags);
-			mDescriptorSetLayouts.emplace(setIndex, mDevice.createDescriptorSetLayout(layout_info));
+			vk::DescriptorSetLayoutCreateInfo layout_info(vk::DescriptorSetLayoutCreateFlagBits::eUpdateAfterBindPool, bindings, bindings.empty() ? nullptr : &flags);
+			mDescriptorSetLayouts.emplace(set, mDevice.createDescriptorSetLayout(layout_info));
 		}
 
+		//for (auto &[set, layout] : mDescriptorSetLayouts)
+		//{ 
+		//	// query binding count via reflection, not Vulkan 
+		//	auto it = asset.MergedReflection.Sets.find(set);
+		//	size_t reflCount = (it == asset.MergedReflection.Sets.end()) ? 0 : it->second.UniformBuffers.size() + it->second.StorageBuffers.size() + it->second.Samplers.size();
+		//	LOG_INFO("Set {}: refl bindings = {}", set, reflCount);
+		//}
+		
 		for (auto& pc : merged.PushConstants)
 		{
 			mPushConstantRanges.emplace_back(ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size);
@@ -105,6 +125,9 @@ namespace BHive
 		{
 			h ^= v += 0x9e3779b9 + (h << 6) + (h >> 2);
 		};
+
+		if (!merged.Sets.contains(set))
+			return h;
 
 		const auto &target_set = merged.Sets.at(set);
 

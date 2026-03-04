@@ -17,7 +17,7 @@ namespace BHive
 	{
 		FCameraData CameraData;
 		Frustum CameraFrustum;
-		ModelBuffer ModelBuffer;
+		FModelBuffer ModelBuffer;
 
 		Ref<Texture> WhiteTexture;
 		Ref<Texture> BlackTexture;
@@ -92,16 +92,6 @@ namespace BHive
 		sData->CameraFrustum.Update(projection, view);
 	}
 
-	void Renderer::Draw(const Ref<FMeshRenderData> &data)
-	{
-		sData->Model.Draw(data);
-	}
-
-	void Renderer::SubmitModel(const FTransform &transform)
-	{
-		sData->Model.SubmitModel(transform);
-	}
-
 	void Renderer::End()
 	{
 
@@ -124,7 +114,7 @@ namespace BHive
 		memset(&sStats, 0, sizeof(Statitics));
 	}
 
-	ModelBuffer &Renderer::GetModelBuffer()
+	FModelBuffer &Renderer::GetModelBuffer()
 	{
 		return sData->ModelBuffer;
 	}

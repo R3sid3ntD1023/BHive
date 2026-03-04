@@ -39,7 +39,7 @@ namespace BHive
 
 		buffer.Buffer.bindMemory(allocation.Memory, allocation.Offset);
 
-		return {buffer.Buffer, std::move(allocation), handle};
+		return {buffer.Buffer, std::move(allocation),desc.Size, handle};
 	}
 
 	AllocatedImage GPUResourceManager::CreateImage(const ImageDesc &desc)

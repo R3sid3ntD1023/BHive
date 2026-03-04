@@ -33,7 +33,7 @@ namespace BHive
 			break;
 		}*/
 
-		Renderer::Draw(mSelectedRenderData);
+		//Renderer::Draw(mSelectedRenderData);
 
 		mFrambuffer->UnBind();
 	}

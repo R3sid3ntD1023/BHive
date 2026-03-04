@@ -20,6 +20,12 @@ namespace BHive
 			};
 		}
 
+		template <typename T>
+		T *As()
+		{
+			return reinterpret_cast<T *>(Handle);
+		}
+
 		template<typename T>
 		const T* As() const
 		{

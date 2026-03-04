@@ -1,11 +1,9 @@
 #pragma once
 
-#include "core/Core.h"
+#include "VulkanCore.h"
 #include "core/events/KeyEvents.h"
-#include "VulkanBackend.h"
 #include "gfx/RendererAPI.h"
-#include "SetManager.h"
-#include "gfx/RenderGraph.h"
+
 
 namespace BHive
 {
@@ -15,6 +13,7 @@ namespace BHive
 	class Window;
 	class VulkanWindowContext;
 	class VulkanShader;
+	class VulkanPipeline;
 
 	struct FVulkanRendererContext : public IRendererContext
 	{
@@ -83,9 +82,11 @@ namespace BHive
 
 		void QueueDeletion(std::function<void(uint32_t)> fn);
 
-		void UpdateGlobalSet(const VulkanShader &shader, const FSetReflection& refl, uint32_t frame);
+		void UpdateGlobalSet(const VulkanPipeline* pipeline, uint32_t frame);
 
-		vk::DescriptorSet GetGlobalSet(uint64_t setHash, uint32_t frame) const;
+		vk::raii::DescriptorSet* GetGlobalSet(uint64_t setHash, uint32_t frame) const;
+
+		Ref<ISetManager> CreateSetManager(const Pipeline* pipeline, uint32_t setIndex) override;
 
 	private:
 		void ProcessDeletionQueue(uint32_t frame);

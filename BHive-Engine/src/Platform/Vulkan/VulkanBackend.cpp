@@ -35,6 +35,7 @@ namespace BHive
 			break;
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
 			LOG_ERROR("{} : {}", message_type_string, pCallbackData->pMessage);
+			__debugbreak();
 			break;
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
 			LOG_CRITICAL("{} : {}", message_type_string, pCallbackData->pMessage);

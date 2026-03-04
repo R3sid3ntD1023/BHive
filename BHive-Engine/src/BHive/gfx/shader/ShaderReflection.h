@@ -7,11 +7,11 @@ namespace BHive
 {
 	struct FUniform
 	{
-		int32_t Type{};
-		int32_t Size{};
-		int32_t Offset{};
-		int32_t Location{};
-		EShaderStage Stages{};
+		int32_t Type;
+		int32_t Size;
+		int32_t Offset;
+		int32_t Location;
+		EShaderStage Stages;
 
 		template <typename A>
 		void Serialize(A &ar)
@@ -22,36 +22,39 @@ namespace BHive
 
 	struct FSampler
 	{
-		int32_t Binding{};
-		EShaderStage Stages{};
-		uint32_t ArraySize{};
+		int32_t Set;
+		int32_t Binding;
+		EShaderStage Stages;
+		uint32_t ArraySize;
 
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(Binding, Stages, ArraySize);
+			ar(Set, Binding, Stages, ArraySize);
 		}
 	};
 
 	struct FUniformBuffer
 	{
-		int32_t Binding{};
-		int32_t Size{};
-		EShaderStage Stages{};
+		int32_t Set;
+		int32_t Binding;
+		int32_t Size;
+		EShaderStage Stages;
 		std::unordered_map<std::string, FUniform> Members;
 
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(Binding, Size, Stages, Members);
+			ar(Set, Binding, Size, Stages, Members);
 		}
 	};
 
 	struct FPushConstantsRange
 	{
-		int32_t Size{};
-		int32_t Offset{};
-		EShaderStage Stages{};
+		
+		int32_t Size;
+		int32_t Offset;
+		EShaderStage Stages;
 		std::unordered_map<std::string, FUniform> Members;
 
 		template <typename A>
@@ -63,14 +66,15 @@ namespace BHive
 
 	struct FStorageBuffer
 	{
-		int32_t Binding{};
-		int32_t Size{};
-		EShaderStage Stages{};
+		int32_t Set;
+		int32_t Binding;
+		int32_t Size;
+		EShaderStage Stages;
 
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(Binding, Size, Stages);
+			ar(Set, Binding, Size, Stages);
 		}
 	};
 
@@ -91,6 +95,7 @@ namespace BHive
 		}
 	};
 
+	
 	struct FShaderReflection
 	{
 		void Reflect(EShaderStage stage, const std::vector<uint32_t> &source);
@@ -108,8 +113,50 @@ namespace BHive
 		{
 			ar(Sets, Uniforms, PushConstants);
 		}
-
 	};
 
-	using FShaderReflectionDatas = std::unordered_map<EShaderStage, FShaderReflection>;
+	struct FReflectedResource
+	{
+		enum class Kind
+		{
+			None,
+			UBO,
+			SSBO,
+			Sampler,
+			PushConstant,
+			PlainUniform
+		};
+
+		Kind kind = Kind::None;
+		uint32_t set = 0;
+		uint32_t binding = 0;
+		uint32_t offset = 0;
+		uint32_t size = 0;
+		uint32_t location = 0;
+	};
+
+
+	class FShaderReflectionLookUp
+	{
+	public:
+		FShaderReflectionLookUp() = default;
+		FShaderReflectionLookUp(const FShaderReflection &merged);
+
+		const FReflectedResource *FindByName(const std::string &name) const;
+
+		const FReflectedResource *FindBySetBinding(uint32_t set, uint32_t binding) const;
+
+		const std::vector<FReflectedResource> &GetSetBindings(uint32_t set) const;
+
+		uint32_t GetMaxSet() const { return mMaxSet; }
+
+	private:
+		void Build(const FShaderReflection &merged);
+
+	private:
+		std::unordered_map<std::string, FReflectedResource> mByName;
+		std::unordered_map < uint32_t, std::unordered_map<uint32_t, FReflectedResource>> mBySetBinding;
+		std::unordered_map<uint32_t, std::vector<FReflectedResource>> mSets;
+		uint32_t mMaxSet = 0;
+	};
 } // namespace BHive

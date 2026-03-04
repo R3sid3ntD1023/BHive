@@ -20,6 +20,5 @@ namespace BHive
 		vk::raii::Device &mDevice;
 		std::array<AllocatedBuffer, MAX_FRAMES_IN_FLIGHT> mBuffer;
 		vk::DeviceSize mSize;
-		std::array<vk::DescriptorBufferInfo, MAX_FRAMES_IN_FLIGHT> mBufferInfos;
 	};
 } // namespace BHive

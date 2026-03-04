@@ -4,7 +4,7 @@
 #include "VulkanConverters.h"
 #include "VulkanShader.h"
 #include "gfx/shader/ShaderProgram.h"
-#include "SetManager.h"
+#include "gfx/ISetManager.h"
 
 namespace BHive
 {
@@ -95,14 +95,22 @@ namespace BHive
 		}
 
 		auto& push_constant_ranges = mShader->GetPushConstantRanges();
-		auto &layout_in = mShader->GetLayouts();
+		auto &layouts_in = mShader->GetLayouts();
+		auto maxSet = mShader->GetMaxSet();
 
-		std::vector<vk::DescriptorSetLayout> layouts_out;
-		layouts_out.reserve(layout_in.size());
+		std::vector<vk::DescriptorSetLayout> layouts_out(maxSet + 1, VK_NULL_HANDLE);
 
-		for (auto &[set, layout] : layout_in)
-			layouts_out.emplace_back(*layout);
-
+		for (uint32_t set = 0; set <= maxSet; set++)
+		{
+			if (layouts_in.contains(set))
+				layouts_out[set] = *layouts_in.at(set);
+			else
+			{
+				vk::DescriptorSetLayoutCreateInfo empty_info{};
+				layouts_out[set] = mDevice.createDescriptorSetLayout(empty_info);
+			}
+		}
+			
 		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, layouts_out, push_constant_ranges );
 		mPipelineLayout = mDevice.createPipelineLayout(pipeline_layout_create_info);
 
@@ -148,6 +156,7 @@ namespace BHive
 		auto& set_hashes = shader.GetSetHashes();
 		auto &refl = mProgram->GetRefl();
 		auto& layout = mPipelineLayout;
+		auto maxSet = mShader->GetMaxSet();
 
 		RenderCommand::SubmitResourceUpdate(
 			[=, &shader, &set_hashes, &refl](IRendererContext &ctx)
@@ -156,12 +165,17 @@ namespace BHive
 				if (set_hashes.contains(0))
 				{
 					auto global_set = refl.Sets.at(GLOBAL_SET_INDEX);
-					api->UpdateGlobalSet(shader, global_set, vk_ctx.Frame);
+					api->UpdateGlobalSet(this, vk_ctx.Frame);
 				}
-					
 
 				if (mMaterialSetManager)
-					mMaterialSetManager->Update(vk_ctx.Frame, mDevice);
+					mMaterialSetManager->Update(vk_ctx.Frame);
+
+				if (mObjectSetManager)
+					mObjectSetManager->Update(vk_ctx.Frame);
+
+				if (mBatchSetManager)
+					mBatchSetManager->Update(vk_ctx.Frame);
 			});
 
 		auto &pass = RenderCommand::GetActivePass();
@@ -171,20 +185,31 @@ namespace BHive
 				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
 				vk_ctx.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline); 
 
-				std::vector<vk::DescriptorSet> sets;
-
 				if (set_hashes.contains(0))
 				{
 					uint64_t h0 = set_hashes.at(GLOBAL_SET_INDEX);
-					sets.push_back(api->GetGlobalSet(h0, vk_ctx.Frame));
+					auto set = api->GetGlobalSet(h0, vk_ctx.Frame);
+					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, GLOBAL_SET_INDEX, **set, {});
 				}
 					
-
 				if (mMaterialSetManager)
-					sets.push_back(mMaterialSetManager->Get(vk_ctx.Frame));
+				{
+					auto set = mMaterialSetManager->GetNativeSet(vk_ctx.Frame).As<vk::raii::DescriptorSet>();
+					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, MATERIAL_SET_INDEX, **set, {});
+				}
 
-				if (!sets.empty())
-					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 0, sets, {});
+				if (mObjectSetManager)
+				{
+					auto set = mObjectSetManager->GetNativeSet(vk_ctx.Frame).As<vk::raii::DescriptorSet>();
+					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, OBJECT_SET_INDEX, **set, {});
+				}
+
+				if (mBatchSetManager)
+
+				{
+					auto set = mBatchSetManager->GetNativeSet(vk_ctx.Frame).As<vk::raii::DescriptorSet>();
+					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, BATCH_SET_INDEX, **set, {});
+				}
 			});
 	}
 
@@ -193,9 +218,24 @@ namespace BHive
 		return mProgram;
 	}
 
-	void VulkanPipeline::SetMaterialSet(SetManager *materialSet)
+	vk::DescriptorSetLayout VulkanPipeline::GetSetLayout(uint32_t set) const
 	{
-		mMaterialSetManager = materialSet;
+		return mShader->GetDescriptorSetLayout(set);
+	}
+
+	void VulkanPipeline::SetMaterialSetManager(ISetManager *manager)
+	{
+		mMaterialSetManager = manager;
+	}
+
+	void VulkanPipeline::SetObjectSetManager(ISetManager *manager)
+	{
+		mObjectSetManager = manager;
+	}
+
+	void VulkanPipeline::SetBatchSetManager(ISetManager *manager)
+	{
+		mBatchSetManager = manager;
 	}
 
 } // namespace BHive

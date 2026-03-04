@@ -8,7 +8,7 @@ namespace BHive
 	{
 		std::string DefaultPassName = "Default Pass";
 		EPassType DefaultPassType = EPassType::SwapChain;
-		bool DebugMarkers = true;
+		bool DebugMarkers = false;
 	};
 
 	class BHIVE_API RenderCommand
@@ -53,6 +53,8 @@ namespace BHive
 		static void Dispath(uint32_t x, uint32_t y, uint32_t z);
 
 		static void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+
+		static Ref<ISetManager> CreateSetManager(const Pipeline *pipeline, uint32_t setIndex);
 
 		static void SubmitGraph(const RenderGraph &graph, FResourceUpdateList &updateResources);
 

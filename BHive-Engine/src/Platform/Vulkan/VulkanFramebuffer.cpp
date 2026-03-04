@@ -71,17 +71,18 @@ namespace BHive
 				// transition images
 				for (size_t i = 0; i < color_attachmnets.size(); i++)
 				{
-					auto tex = Cast<IVulkanTexture>(color_attachmnets[i]);
+					auto tex = color_attachmnets[i]->GetNativeHandle().As<AllocatedImage>();
 					ImageState attchmentState = {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
-					tex->GetImage().Transition(vk_ctx.CommandBuffer, attchmentState);
+					tex->Transition(vk_ctx.CommandBuffer, attchmentState);
 				}
 
-				if (auto tex = Cast<IVulkanTexture>(depth_attachment))
+				if (depth_attachment)
 				{
+					auto tex = depth_attachment->GetNativeHandle().As<AllocatedImage>();
 					ImageState depthState = {
 						vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
 						vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests};
-					tex->GetImage().Transition(vk_ctx.CommandBuffer, depthState);
+					tex->Transition(vk_ctx.CommandBuffer, depthState);
 				}
 
 				// render
@@ -92,10 +93,10 @@ namespace BHive
 
 				for (auto &tex : color_attachmnets)
 				{
-					auto vkTex = Cast<IVulkanTexture>(tex);
+					auto vkTex = tex->GetNativeHandle().As<AllocatedImage>();
 
 					auto info = vk::RenderingAttachmentInfo(
-						vkTex->GetImage().GetView(), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+						vkTex->GetView(), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 						vk::ClearColorValue(0, 0, 0, 1));
 
 					color_infos.emplace_back(info);
@@ -103,10 +104,10 @@ namespace BHive
 
 				if (depth_attachment)
 				{
-					auto vkTex = Cast<IVulkanTexture>(depth_attachment);
+					auto vkTex = depth_attachment->GetNativeHandle().As<AllocatedImage>();
 
 					depth_info = vk::RenderingAttachmentInfo(
-						vkTex->GetImage().GetView(), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+						vkTex->GetView(), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 						vk::ClearDepthStencilValue(1.0f, 0));
 				}
 
@@ -140,9 +141,8 @@ namespace BHive
 
 			for (size_t i = 0; i < color_attachments.size(); i++)
 			{
-				auto tex = Cast<IVulkanTexture>(color_attachments[i]);
-				auto &image = tex->GetImage();
-				image.Transition(vk_ctx.CommandBuffer, shaderRead);
+				auto tex = color_attachments[i]->GetNativeHandle().As<AllocatedImage>();
+				tex->Transition(vk_ctx.CommandBuffer, shaderRead);
 			}
 		});
 
@@ -238,11 +238,9 @@ namespace BHive
 
 			for (auto &tex : colorAttachments)
 			{
-				auto vkTex = Cast<IVulkanTexture>(tex);
-				auto& image = vkTex->GetImage();
-
-				image.Transition(vk_ctx.CommandBuffer, transferDst);
-				image.Transition(vk_ctx.CommandBuffer, shaderRead);
+				auto vkTex = tex->GetNativeHandle().As<AllocatedImage>();
+				vkTex->Transition(vk_ctx.CommandBuffer, transferDst);
+				vkTex->Transition(vk_ctx.CommandBuffer, shaderRead);
 			}
 		});
 	}

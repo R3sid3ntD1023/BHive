@@ -39,6 +39,8 @@ namespace BHive
 
 		virtual NativeHandle GetNativeHandle() const = 0;
 
+		virtual NativeHandle GetNativeHandle() = 0;
+
 		REFLECTABLEV(Asset)
 	};
 

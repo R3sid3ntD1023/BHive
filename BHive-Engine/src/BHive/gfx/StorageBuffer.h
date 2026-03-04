@@ -9,6 +9,8 @@ namespace BHive
 	public:
 		virtual ~StorageBuffer() = default;
 
+		virtual Type GetType() const override { return BufferBase::StorageBuffer; }
+
 		static Ref<StorageBuffer> Create(uint32_t binding, size_t size, const void *data = nullptr);
 
 		static Ref<StorageBuffer> Create(size_t size);

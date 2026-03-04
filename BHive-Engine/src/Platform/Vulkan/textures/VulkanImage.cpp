@@ -3,6 +3,7 @@
 #include "gfx/RenderCommand.h"
 #include "Platform/Vulkan/VulkanRendererAPI.h"
 #include "Platform/Vulkan/VulkanUtils.h"
+#include "Platform/Vulkan/VulkanBackend.h"
 
 namespace BHive
 {
@@ -87,10 +88,4 @@ namespace BHive
 
 		gpu_r_m.DestroyBuffer(stagingBuffer);
 	}
-
-	const vk::DescriptorImageInfo VulkanImage::GetDescriptor() const
-	{
-		return mImage.GetDescriptor();
-	}
-
 } // namespace BHive

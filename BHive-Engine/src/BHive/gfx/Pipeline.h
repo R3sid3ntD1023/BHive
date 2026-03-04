@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "gfx/Enumerations.h"
 #include "gfx/shader/ShaderProgram.h"
+#include "gfx/ISetManager.h"
 
 namespace BHive
 {
@@ -56,6 +57,12 @@ namespace BHive
 		virtual void UnBind() = 0;
 
 		virtual Ref<ShaderProgram> GetShaderProgram() const = 0;
+
+		virtual void SetMaterialSetManager(ISetManager *manager) = 0;
+
+		virtual void SetObjectSetManager(ISetManager *manager) = 0;
+
+		virtual void SetBatchSetManager(ISetManager *manager) = 0;
 
 		static PipelineState GetDefaultPipelineState();
 

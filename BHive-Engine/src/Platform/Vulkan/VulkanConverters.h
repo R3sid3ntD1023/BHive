@@ -1,8 +1,9 @@
 #pragma once
 
+#include "VulkanCore.h"
 #include "gfx/Enumerations.h"
 #include "gfx/TextureSpecification.h"
-#include <vulkan/vulkan.hpp>
+#include "gfx/BufferBase.h"
 
 namespace BHive
 {
@@ -21,6 +22,8 @@ namespace BHive
 		uint32_t ArrayLayers;
 		bool GenerateMipMaps;
 	};
+
+	vk::DescriptorType ToVkBufferType(BufferBase::Type type);
 
 	vk::ImageAspectFlags ToVkAspect(ETextureAspect aspect);
 

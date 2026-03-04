@@ -40,7 +40,7 @@ namespace BHive
 
 	std::filesystem::path ShaderUtils::GetCacheDirectory()
 	{
-		return ENGINE_SHADER_PATH"cache/";
+		return ENGINE_SHADER_PATH"/cache/";
 	}
 
 	ShaderUtils::PreProcessData ShaderUtils::PreProcess(const std::string &source, const std::string &preprocessors)

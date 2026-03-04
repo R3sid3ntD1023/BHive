@@ -58,14 +58,12 @@ namespace BHive
 
 				auto mapped_memory = mBuffer[current_frame].Allocation.MappedPtr;
 				std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, buffer_copy->data(), size);
-				mBufferInfos[current_frame] = vk::DescriptorBufferInfo(mBuffer[current_frame].Buffer, 0, mSize);
 			});
 	}
 
 	NativeHandle VulkanUniformBuffer::GetNativeHandle(uint32_t frame) const
 	{
-		ASSERT(frame < MAX_FRAMES_IN_FLIGHT);
-		return Handle::BufferInfo(&mBufferInfos[frame]);
+		return Handle::Buffer(&mBuffer[frame]);
 	}
 
 } // namespace BHive

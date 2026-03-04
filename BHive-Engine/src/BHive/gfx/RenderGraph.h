@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/Core.h"
+
 namespace BHive
 {
 	struct IRendererContext
@@ -18,8 +20,10 @@ namespace BHive
 
 		void Execute(IRendererContext & ctx) const
 		{
-			for (auto &cmd : mUpdateCommands)
+			for (auto& cmd : mUpdateCommands)
+			{
 				cmd(ctx);
+			}
 		}
 
 		bool Empty() const { return mUpdateCommands.empty(); }
@@ -36,8 +40,13 @@ namespace BHive
 
 		void Execute(IRendererContext &ctx) const
 		{
-			for (auto &cmd : mCommands)
+			
+			for (auto& cmd : mCommands)
+			{
+				//LOG_INFO(cmd.Name);
 				cmd.Func(ctx);
+			}
+				
 		}
 
 	private:

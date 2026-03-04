@@ -45,7 +45,11 @@ namespace BHive
 
 		vk::Sampler &GetSampler() { return Sampler; }
 
-		const vk::DescriptorImageInfo GetDescriptor() const;
+		const vk::Image &GetImage() const { return Image; }
+
+		const vk::ImageView &GetView() const { return View; }
+
+		const vk::Sampler &GetSampler() const { return Sampler; }
 
 		void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, 1});
 
@@ -66,13 +70,13 @@ namespace BHive
 	{
 		vk::Buffer Buffer = VK_NULL_HANDLE;
 		MemoryAllocation Allocation;
+		vk::DeviceSize Size;
 		UUID Handle;
 	};
 
 	struct Handle
 	{
-		static NativeHandle BufferInfo(const vk::DescriptorBufferInfo *info) { return NativeHandle::FromPtr(info); }
-		static NativeHandle ImageInfo(const vk::DescriptorImageInfo *info) { return NativeHandle::FromPtr(info); }
-		static NativeHandle Buffer(const vk::raii::Buffer *buffer) { return NativeHandle::FromPtr(buffer); }
+		static NativeHandle Image(const AllocatedImage *image) { return NativeHandle::FromPtr(image); }
+		static NativeHandle Buffer(const AllocatedBuffer *buffer) { return NativeHandle::FromPtr(buffer); }
 	};
 } // namespace BHive

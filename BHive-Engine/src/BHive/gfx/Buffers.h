@@ -18,6 +18,8 @@ namespace BHive
 
 		virtual uint32_t GetCount() const = 0;
 
+		virtual Type GetType() const override { return BufferBase::IndexBuffer; }
+
 		static Ref<IndexBuffer> Create(const uint32_t count,  EBufferUsage usage = EBufferUsage::Static);
 	};
 
@@ -29,6 +31,8 @@ namespace BHive
 		virtual void SetLayout(const BufferLayout &layout) = 0;
 
 		virtual const BufferLayout &GetLayout() const = 0;
+
+		virtual Type GetType() const override { return BufferBase::VertexBuffer; }
 
 		static Ref<VertexBuffer> Create(const uint64_t size,  EBufferUsage usage = EBufferUsage::Static);
 	};

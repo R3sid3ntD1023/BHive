@@ -23,11 +23,7 @@ namespace BHive
 
 			SetData(data, size, 0);
 
-			mBufferInfo[i] = vk::DescriptorBufferInfo(mBuffer[i].Buffer, 0, mSize);
-
 		}
-
-		
 	}
 
 	VulkanStorageBuffer::VulkanStorageBuffer(size_t size)
@@ -43,7 +39,6 @@ namespace BHive
 			mBuffer[i] = VulkanBackend::GetGPUResourceManager().CreateBuffer(desc);
 
 			VulkanBackend::GetGPUResourceManager().MapMemory(mBuffer[i], 0, size);
-			mBufferInfo[i] = vk::DescriptorBufferInfo(mBuffer[i].Buffer, 0, mSize);
 		}
 	}
 
@@ -80,13 +75,12 @@ namespace BHive
 
 				auto mapped_memory = mBuffer[current_frame].Allocation.MappedPtr;
 				std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, buffer_copy->data(), size);
-				mBufferInfo[current_frame] = vk::DescriptorBufferInfo(mBuffer[current_frame].Buffer, 0, mSize);
 			});
 	}
 
 	NativeHandle VulkanStorageBuffer::GetNativeHandle(uint32_t frame) const
 	{
-		return NativeHandle::FromPtr(&mBufferInfo[frame]);
+		return Handle::Buffer(&mBuffer[frame]);
 	}
 
 } // namespace BHive

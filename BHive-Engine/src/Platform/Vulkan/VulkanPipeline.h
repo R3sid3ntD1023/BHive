@@ -1,14 +1,13 @@
 #pragma once
 
-#include "core/Core.h"
+#include "VulkanCore.h"
 #include "gfx/Pipeline.h"
-#include  "VulkanBackend.h"
 
 namespace BHive
 {
 	class VulkanShader;
 	class ShaderProgram;
-	class SetManager;
+	class ISetManager;
 
 	class BHIVE_API VulkanPipeline : public Pipeline
 	{
@@ -29,10 +28,18 @@ namespace BHive
 
 		const vk::raii::PipelineLayout &GetLayout() const { return mPipelineLayout; }
 
-		void SetMaterialSet(SetManager *materialSet);
+		vk::DescriptorSetLayout GetSetLayout(uint32_t set) const;
+
+		void SetMaterialSetManager(ISetManager *manager);
+
+		void SetObjectSetManager(ISetManager *manager);
+
+		void SetBatchSetManager(ISetManager *manager);
 
 	private:
 		vk::raii::Device &mDevice;
+
+		std::vector<vk::raii::DescriptorSetLayout> mOwnedEmptyLayouts;
 
 		vk::raii::PipelineLayout mPipelineLayout = VK_NULL_HANDLE;
 
@@ -42,8 +49,10 @@ namespace BHive
 
 		Scope<VulkanShader> mShader;
 
-		std::vector<vk::raii::DescriptorSetLayout> mDescriptorSetLayouts;
+		ISetManager *mMaterialSetManager = nullptr;
 
-		SetManager *mMaterialSetManager = nullptr;
+		ISetManager *mObjectSetManager = nullptr;
+
+		ISetManager *mBatchSetManager = nullptr;
 	};
 } // namespace BHive

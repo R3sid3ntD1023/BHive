@@ -3,7 +3,19 @@
 
 namespace BHive
 {
-		vk::ImageAspectFlags ToVkAspect(ETextureAspect aspect)
+	vk::DescriptorType ToVkBufferType(BufferBase::Type type)
+	{
+		switch (type)
+		{
+		case BHive::BufferBase::UniformBuffer:
+			return vk::DescriptorType::eUniformBuffer;
+		case BHive::BufferBase::StorageBuffer:
+			return vk::DescriptorType::eStorageBuffer;
+		default:
+			break;
+		}
+	}
+	vk::ImageAspectFlags ToVkAspect(ETextureAspect aspect)
 		{
 			switch (aspect)
 			{

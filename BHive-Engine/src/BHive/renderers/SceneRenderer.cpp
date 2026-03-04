@@ -158,8 +158,8 @@ namespace BHive
 
 			mat->Submit();
 
-			for (const auto &object : objects)
-				Renderer::Draw(object);
+			/*for (const auto &object : objects)
+				Renderer::Draw(object);*/
 		}
 
 		Renderer::End();
