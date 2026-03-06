@@ -53,6 +53,45 @@ namespace BHive
 			s.Stages |= stage;
 		}
 
+		for (const auto& storage_image : resources.storage_images)
+		{
+			auto &type = compiler.get_type(storage_image.base_type_id);
+			auto set = compiler.get_decoration(storage_image.id, spv::DecorationDescriptorSet);
+			auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
+
+			auto &s = Sets[set].Samplers[storage_image.name];
+			s.Set = set;
+			s.Binding = binding;
+			s.ArraySize = 1;
+			s.Stages |= stage;
+		}
+
+		for (const auto &storage_image : resources.separate_images)
+		{
+			auto &type = compiler.get_type(storage_image.base_type_id);
+			auto set = compiler.get_decoration(storage_image.id, spv::DecorationDescriptorSet);
+			auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
+
+			auto &s = Sets[set].Samplers[storage_image.name];
+			s.Set = set;
+			s.Binding = binding;
+			s.ArraySize = 1;
+			s.Stages |= stage;
+		}
+
+		for (const auto &storage_image : resources.separate_samplers)
+		{
+			auto &type = compiler.get_type(storage_image.base_type_id);
+			auto set = compiler.get_decoration(storage_image.id, spv::DecorationDescriptorSet);
+			auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
+
+			auto &s = Sets[set].Samplers[storage_image.name];
+			s.Set = set;
+			s.Binding = binding;
+			s.ArraySize = 1;
+			s.Stages |= stage;
+		}
+
 		//get storage buffers
 		for (const auto &storage : resources.storage_buffers)
 		{

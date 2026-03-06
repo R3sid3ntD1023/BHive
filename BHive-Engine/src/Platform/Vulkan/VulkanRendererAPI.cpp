@@ -10,7 +10,6 @@
 #include "core/Window.h"
 #include "VulkanWindowContext.h"
 #include "gfx/RenderCommand.h"
-#include "IVulkanTexture.h"
 #include "gfx/GlobalBuffers.h"
 #include "VulkanUniformBuffer.h"
 #include "VulkanSetManager.h"
@@ -163,7 +162,7 @@ namespace BHive
 		{
 			auto & del = sDeletionQueue.front();
 
-			if (frame < del.Frame)
+			if (frame > del.Frame)
 				del.Fn(frame);
 			sDeletionQueue.pop();
 		}
@@ -174,11 +173,12 @@ namespace BHive
 		auto current_frame = ctx->GetCurrentFrame();
 		auto &cmd = ctx->GetCommandBuffer();
 
-		ProcessDeletionQueue(current_frame);
-
 		auto swap_chain = ctx->GetSwapChain();
 
 		swap_chain->WaitForFence(current_frame);
+
+		ProcessDeletionQueue(current_frame);
+
 
 		cmd.reset();
 

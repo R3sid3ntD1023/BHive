@@ -1,5 +1,4 @@
 #include "gfx/Framebuffer.h"
-#include "gfx/Image.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
@@ -92,8 +91,8 @@ namespace BHive
 
 	void OutlinePostProcessRenderPass::Process(const Ref<Texture> &texture)
 	{
-		Image output_image(mOutputTexture);
-		Image outline_image(mOutlineOutput);
+		/*Image output_image(mOutputTexture);
+		Image outline_image(mOutlineOutput);*/
 
 		//mBoxBlurShader->Bind();
 		//mOutlineTexture->Bind(0);
@@ -107,7 +106,7 @@ namespace BHive
 		//mOutlineOutput->Bind(1); // blurred outline texture
 		//mColorGradingLUTTexture->Bind(2);
 
-		output_image.Bind(0, EImageAccess::WRITE);
+		//output_image.Bind(0, EImageAccess::WRITE);
 
 		/*mOutlineColorGradingShader->Dispatch(mSize.x, mSize.y);
 		mOutlineColorGradingShader->UnBind();*/

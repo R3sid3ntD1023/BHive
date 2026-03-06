@@ -2,11 +2,10 @@
 
 #include "gfx/Texture.h"
 #include "VulkanImage.h"
-#include "Platform/Vulkan/IVulkanTexture.h"
 
 namespace BHive
 {
-	class VulkanTextureCubeArray : public TextureCubeArray, public IVulkanTexture
+	class VulkanTextureCubeArray : public TextureCubeArray
 	{
 	public:
 		VulkanTextureCubeArray(uint32_t size, const FTextureCreateInfo &createInfo);

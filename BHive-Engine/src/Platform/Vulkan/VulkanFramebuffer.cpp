@@ -1,6 +1,5 @@
 #include "VulkanFramebuffer.h"
 #include "gfx/Texture.h"
-#include "IVulkanTexture.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
 
@@ -56,9 +55,9 @@ namespace BHive
 
 	void VulkanFramebuffer::Bind() const
 	{
-		auto color_attachmnets = mColorAttachments;
-		auto depth_attachment = mDepthAttachment;
-		auto spec = mSpecification;
+		auto& color_attachmnets = mColorAttachments;
+		auto& depth_attachment = mDepthAttachment;
+		auto& spec = mSpecification;
 
 		RenderCommand::BeginFrame();
 		auto &pass = RenderCommand::BeginPass("Framebuffer", EPassType::OffScreen);
@@ -161,6 +160,8 @@ namespace BHive
 			return;
 		}
 
+		VulkanBackend::GetLogicalDevice().waitIdle();
+
 		mSpecification.Size = newSize;
 
 		Initialize();
@@ -227,7 +228,7 @@ namespace BHive
 		}
 
 		auto &pass = RenderCommand::GetActivePass();
-		auto colorAttachments = mColorAttachments;
+		auto& colorAttachments = mColorAttachments;
 
 		RenderCommand::SubmitResourceUpdate([colorAttachments](const IRendererContext &ctx)
 		{

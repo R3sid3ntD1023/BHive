@@ -2,11 +2,10 @@
 
 #include "gfx/Texture.h"
 #include "VulkanImage.h"
-#include "Platform/Vulkan/IVulkanTexture.h"
 
 namespace BHive
 {
-	class BHIVE_API VulkanTexture2DArray : public Texture2DArray, public IVulkanTexture
+	class BHIVE_API VulkanTexture2DArray : public Texture2DArray
 	{
 	public:
 		VulkanTexture2DArray(const glm::uvec2& size, const FTextureCreateInfo &specification);

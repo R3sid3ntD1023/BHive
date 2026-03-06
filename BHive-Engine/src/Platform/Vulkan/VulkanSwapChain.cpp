@@ -1,6 +1,8 @@
 #include "VulkanSwapChain.h"
 #include "VulkanUtils.h"
 #include "VulkanBackend.h"
+#include "gfx/RenderCommand.h"
+#include "VulkanRendererAPI.h"
 
 namespace BHive
 {
@@ -13,7 +15,17 @@ namespace BHive
 
 	VulkanSwapChain::~VulkanSwapChain()
 	{
-		
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		api->QueueDeletion(
+			[images = mImages, depth = mDepthImage](uint32_t)
+			{
+				for (auto &img : images)
+				{
+					VulkanBackend::GetGPUResourceManager().DestroyImage(img);	
+				}
+
+				VulkanBackend::GetGPUResourceManager().DestroyImage(depth);
+			});
 	}
 
 	void VulkanSwapChain::Init(vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info)
@@ -35,18 +47,18 @@ namespace BHive
 		mSwapChain = mDevice.createSwapchainKHR(swap_chain_create_info);
 		auto images = mSwapChain.getImages();
 
-		for (auto& image : images)
+		for (const auto& image : images)
 		{
-			Image img;
+			ImageViewDesc view_desc{};
+			view_desc.Type = vk::ImageViewType::e2D;
+			view_desc.Format = mImageFormat.format;
+
+			Image img{};
 			img.SetImage(image);
+			img.SetAspect(vk::ImageAspectFlagBits::eColor);
+			img.CreateView(view_desc);
 
-			ImageViewDesc desc{};
-			desc.Type = vk::ImageViewType::e2D;
-			desc.Aspect = vk::ImageAspectFlagBits::eColor;
-			desc.Format = mImageFormat.format;
-			VulkanBackend::GetGPUResourceManager().CreateImageView(img, desc);
-
-			mImages.emplace_back(img);
+			mImages.emplace_back(std::move(img));
 		}
 
 		auto image_count = static_cast<uint32_t>(mImages.size());
@@ -77,13 +89,13 @@ namespace BHive
 		desc.Type = vk::ImageType::e2D;
 		desc.Usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
 		desc.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
-		mDepthImage = VulkanBackend::GetGPUResourceManager().CreateImage(desc);
+		desc.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 
 		ImageViewDesc view_desc{};
 		view_desc.Type = vk::ImageViewType::e2D;
 		view_desc.Format = mDepthFormat;
-		view_desc.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
-		VulkanBackend::GetGPUResourceManager().CreateImageView(mDepthImage, view_desc);
+
+		mDepthImage = VulkanBackend::GetGPUResourceManager().CreateImage(desc, view_desc);
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)

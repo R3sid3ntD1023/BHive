@@ -8,18 +8,25 @@
 namespace BHive
 {
 	struct ImageSubresource;
+	struct ImageViewDesc;
 	class GPUResourceManager;
 
 	struct ImageState
 	{
 		vk::ImageLayout Layout = vk::ImageLayout::eUndefined;
+
 		vk::AccessFlags2 Access = {};
+
 		vk::PipelineStageFlags2 Stage = {};
 	};
 
 	struct Image
 	{
 		void SetImage(const vk::Image &img) { ImageSrc = img; }
+
+		void SetAspect(vk::ImageAspectFlags aspect) { Aspect = aspect; }
+
+		void CreateView(const ImageViewDesc &desc);
 
 		vk::ImageView &GetView() { return View; }
 
@@ -34,8 +41,12 @@ namespace BHive
 
 		ImageState State = {vk::ImageLayout::eUndefined, {}, vk::PipelineStageFlagBits2::eTopOfPipe};
 
+		UUID Handle;
+
 		friend GPUResourceManager;
 	};
+
+
 
 	struct AllocatedImage
 	{
@@ -55,12 +66,19 @@ namespace BHive
 
 	private:
 		vk::Image Image = VK_NULL_HANDLE;
+
 		vk::ImageView View = VK_NULL_HANDLE;
+
 		vk::Sampler Sampler = VK_NULL_HANDLE;
+
 		std::vector<ImageState> LayerStates;
+
 		vk::ImageAspectFlags Aspect;
+
 		uint32_t ArrayLayers = 1;
+
 		MemoryAllocation Allocation;
+
 		UUID Handle;
 
 		friend GPUResourceManager;
@@ -69,8 +87,11 @@ namespace BHive
 	struct AllocatedBuffer
 	{
 		vk::Buffer Buffer = VK_NULL_HANDLE;
+
 		MemoryAllocation Allocation;
+
 		vk::DeviceSize Size;
+
 		UUID Handle;
 	};
 

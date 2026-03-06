@@ -1,5 +1,4 @@
 #include "Aces.h"
-#include "gfx/Image.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
@@ -10,7 +9,7 @@ namespace BHive
 
 	void AcesRenderPass::Process(const Ref<Texture> &texture)
 	{
-		Image image(mOutputTexture);
+		//Image image(mOutputTexture);
 
 		/*mComputeShader->Bind();
 		texture->Bind();

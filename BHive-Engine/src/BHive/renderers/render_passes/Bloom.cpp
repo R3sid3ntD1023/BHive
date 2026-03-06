@@ -1,6 +1,5 @@
 #include "Bloom.h"
 #include "core/profiler/CPUGPUProfiler.h"
-#include "gfx/Image.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"

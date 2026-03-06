@@ -17,16 +17,11 @@ namespace BHive
 
 		void Upload(const void *data, size_t size, const ImageCopyRegion &region = {}, const ImageSubresource &sub = {});
 
-		const AllocatedImage &GetImage() const { return mImage; };
-
-		AllocatedImage &GetImage() { return mImage; };
-
 		NativeHandle GetNativeHandle() const { return Handle::Image(&mImage); }
 
 		NativeHandle GetNativeHandle() { return Handle::Image(&mImage); }
 
 	private:
 		AllocatedImage mImage{};
-		vk::Format mFormat = vk::Format::eUndefined;
 	};
 }

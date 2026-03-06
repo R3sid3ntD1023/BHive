@@ -42,7 +42,7 @@ namespace BHive
 		return {buffer.Buffer, std::move(allocation),desc.Size, handle};
 	}
 
-	AllocatedImage GPUResourceManager::CreateImage(const ImageDesc &desc)
+	AllocatedImage GPUResourceManager::CreateImage(const ImageDesc &desc, const ImageViewDesc &viewDesc)
 	{
 		auto handle = ImageHandle();
 		auto &image = GPUStorage::Images[handle];
@@ -53,13 +53,28 @@ namespace BHive
 
 		image.Image.bindMemory(allocation.Memory, allocation.Offset);
 
+		VulkanUtils::CreateImageView(image.Image, image.View, viewDesc.Type, viewDesc.Format, desc.Aspect, desc.ArrayLayers);
+
 		AllocatedImage out{};
 		out.Image = image.Image;
 		out.Handle = handle;
 		out.ArrayLayers = desc.ArrayLayers;
 		out.LayerStates.resize(desc.ArrayLayers, {vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eNone, vk::PipelineStageFlagBits2::eTopOfPipe});
 		out.Allocation = std::move(allocation);
+		out.Aspect = desc.Aspect;
+		out.View = image.View;
 		return out;
+	}
+
+	void GPUResourceManager::CreateImageView(Image &image, const ImageViewDesc &desc)
+	{
+		auto handle = UUID();
+		auto &gpu_image = GPUStorage::Images[handle];
+		
+		VulkanUtils::CreateImageView(image.ImageSrc, gpu_image.View, desc.Type, desc.Format, image.Aspect, 1);
+
+		image.Handle = handle;
+		image.View = gpu_image.View;
 	}
 
 	void* GPUResourceManager::MapMemory(AllocatedBuffer &buffer, vk::DeviceSize offset, vk::DeviceSize size)
@@ -84,25 +99,6 @@ namespace BHive
 
 		MemoryAllocator &allocator = VulkanBackend::GetMemoryAllocator();
 		allocator.UnMap(buffer.Allocation);
-	}
-
-	void GPUResourceManager::CreateImageView(Image &image, const ImageViewDesc &desc)
-	{
-		auto &gpu_image = GPUStorage::Images[UUID()];
-		VulkanUtils::CreateImageView(image.ImageSrc, gpu_image.View, desc.Type, desc.Format, desc.Aspect, desc.ArrayLayers);
-		image.View = gpu_image.View;
-		image.Aspect = desc.Aspect;
-	}
-
-	void GPUResourceManager::CreateImageView(AllocatedImage &image, const ImageViewDesc &desc)
-	{
-		if (!GPUStorage::Images.contains(image.Handle))
-			return;
-
-		auto &gpu_image = GPUStorage::Images[image.Handle];
-		VulkanUtils::CreateImageView(gpu_image.Image, gpu_image.View, desc.Type, desc.Format, desc.Aspect, desc.ArrayLayers);
-		image.View = gpu_image.View;
-		image.Aspect = desc.Aspect;
 	}
 
 	void GPUResourceManager::CreateSampler(AllocatedImage &image, const vk::SamplerCreateInfo &create_info)
@@ -133,6 +129,15 @@ namespace BHive
 		{
 			GPUStorage::Images.erase(h);
 			VulkanBackend::GetMemoryAllocator().Free(image.Allocation);
+		}
+	}
+
+	void GPUResourceManager::DestroyImage(Image image)
+	{
+		auto h = image.Handle;
+		if (GPUStorage::Images.contains(h))
+		{
+			GPUStorage::Images.erase(h);
 		}
 	}
 

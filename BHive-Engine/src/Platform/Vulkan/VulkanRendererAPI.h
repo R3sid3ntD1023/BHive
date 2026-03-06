@@ -80,7 +80,7 @@ namespace BHive
 
 		virtual EAPI GetAPI() const override { return EAPI::Vulkan; }
 
-		void QueueDeletion(std::function<void(uint32_t)> fn);
+		void QueueDeletion(std::function<void(uint32_t)> fn); //frame
 
 		void UpdateGlobalSet(const VulkanPipeline* pipeline, uint32_t frame);
 

@@ -1,5 +1,4 @@
 #include "gfx/Framebuffer.h"
-#include "gfx/Image.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
@@ -120,7 +119,7 @@ namespace BHive
 
 	void PMREMGenerator::CreatePreFilteredEnvironmentMap()
 	{
-		Image image(mPreFilteredEnvironmentTexture);
+		//Image image(mPreFilteredEnvironmentTexture);
 
 		//mPreFilterEnironmentShader->Bind();
 		//mEnvironmentCapture->GetTargetTexture()->Bind();
@@ -138,7 +137,7 @@ namespace BHive
 			mPreFilterEnironmentShader->SetUniform("constants.u_width", w);
 			mPreFilterEnironmentShader->SetUniform("constants.u_height", h);*/
 
-			image.Bind(0, EImageAccess::WRITE, i);
+			//image.Bind(0, EImageAccess::WRITE, i);
 
 			//mPreFilterEnironmentShader->Dispatch(w / PREFILTER_WORK_GROUP_SIZE, h / PREFILTER_WORK_GROUP_SIZE, 6);
 		}

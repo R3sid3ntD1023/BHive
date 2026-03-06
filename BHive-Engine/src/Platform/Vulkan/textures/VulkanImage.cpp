@@ -20,8 +20,6 @@ namespace BHive
 	void VulkanImage::Create(
 		uint32_t width, uint32_t height, uint32_t depth, vk::ImageType type, vk::ImageViewType viewType, const FVulkanTextureCreateInfo& createInfo)
 	{
-		mFormat = createInfo.Format;
-
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
 
 		ImageDesc desc{};
@@ -35,15 +33,13 @@ namespace BHive
 		desc.Usage = createInfo.Usage;
 		desc.Type = type;
 		desc.BytesPerPixel = createInfo.BytesPerPixel;
-
-		mImage = gpu_r_m.CreateImage(desc);
+		desc.Aspect = createInfo.Aspect;
 
 		ImageViewDesc view_desc{};
-		view_desc.Aspect = createInfo.Aspect;
 		view_desc.Format = createInfo.Format;
 		view_desc.Type = viewType;
-		view_desc.ArrayLayers = createInfo.ArrayLayers;
-		gpu_r_m.CreateImageView(mImage, view_desc);
+
+		mImage = gpu_r_m.CreateImage(desc, view_desc);
 
 		vk::SamplerCreateInfo sampler_info(
 			{}, createInfo.MinFilter, createInfo.MagFilter, vk::SamplerMipmapMode::eLinear, createInfo.WrapMode, createInfo.WrapMode, createInfo.WrapMode, 0, 0, 1, createInfo.CompareEnabled,

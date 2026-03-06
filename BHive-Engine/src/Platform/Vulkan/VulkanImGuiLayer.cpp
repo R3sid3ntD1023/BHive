@@ -4,7 +4,6 @@
 #include "VulkanSwapChain.h"
 #include "VulkanUtils.h"
 #include "VulkanImGuiLayer.h"
-#include "IVulkanTexture.h"
 #include "gfx/Texture.h"
 
 #include <backends/imgui_impl_glfw.h>

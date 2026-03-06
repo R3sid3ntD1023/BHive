@@ -2,12 +2,11 @@
 
 #include "gfx/Texture.h"
 #include "VulkanImage.h"
-#include "Platform/Vulkan/IVulkanTexture.h"
 
 namespace BHive
 {
 
-	class BHIVE_API VulkanTexture2D : public Texture2D, public IVulkanTexture
+	class BHIVE_API VulkanTexture2D : public Texture2D
 	{
 	public:
 		VulkanTexture2D();
