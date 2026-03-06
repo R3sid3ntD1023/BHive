@@ -31,7 +31,7 @@ namespace BHive
 		auto b = buffer->GetNativeHandle().As<AllocatedBuffer>();
 		vk::DescriptorBufferInfo info(b->Buffer, 0, b->Size);
 		auto type_ = ToVkType(type);
-		mLocalBuffers.emplace(binding, std::pair{type_, info});
+		mLocalBuffers.emplace(binding, std::make_pair(type_, info));
 	}
 
 	void VulkanSetManager::BindSampler(uint32_t binding, EResourceType type, const Ref<Texture> &texture)
@@ -50,7 +50,7 @@ namespace BHive
 		}
 		auto img = texture->GetNativeHandle().As<AllocatedImage>();
 		vk::DescriptorImageInfo info(img->GetSampler(), img->GetView(), layout); 
-		mLocalSamplers.emplace(binding, info);
+		mLocalSamplers.emplace(binding, std::make_pair(vk_type, info));
 	}
 
 	void VulkanSetManager::Update(uint32_t frame)
@@ -85,12 +85,14 @@ namespace BHive
 			writes.emplace_back(target, binding, 0, info.first, VK_NULL_HANDLE, info.second);
 		}
 
-		for (auto &[binding, info] : mLocalSamplers)
+		for (auto &[binding, pair] : mLocalSamplers)
 		{
-			if (info.imageView == VK_NULL_HANDLE || info.sampler == VK_NULL_HANDLE)
+			auto &type = pair.first;
+			auto &smp = pair.second;
+			if (smp.imageView == VK_NULL_HANDLE || smp.sampler == VK_NULL_HANDLE)
 				continue;
 
-			writes.emplace_back(target, binding, 0, vk::DescriptorType::eCombinedImageSampler, info);
+			writes.emplace_back(target, binding, 0, type, smp);
 		}
 
 		if (!writes.empty())

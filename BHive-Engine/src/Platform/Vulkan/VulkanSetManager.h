@@ -30,7 +30,7 @@ namespace BHive
 
 		std::unordered_map<uint32_t, std::pair<vk::DescriptorType, vk::DescriptorBufferInfo>> mLocalBuffers;//bindings
 
-		std::unordered_map<uint32_t, vk::DescriptorImageInfo> mLocalSamplers;//bindings
+		std::unordered_map < uint32_t, std::pair<vk::DescriptorType, vk::DescriptorImageInfo>> mLocalSamplers; // bindings
 	};
 
 	
