@@ -26,11 +26,12 @@ namespace BHive
 		int32_t Binding;
 		EShaderStage Stages;
 		uint32_t ArraySize;
+		EResourceType Type;
 
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(Set, Binding, Stages, ArraySize);
+			ar(Set, Binding, Stages, ArraySize, Type);
 		}
 	};
 
@@ -41,6 +42,7 @@ namespace BHive
 		int32_t Size;
 		EShaderStage Stages;
 		std::unordered_map<std::string, FUniform> Members;
+		static constexpr EResourceType Type = EResourceType::UniformBuffer;
 
 		template <typename A>
 		void Serialize(A &ar)
@@ -70,6 +72,8 @@ namespace BHive
 		int32_t Binding;
 		int32_t Size;
 		EShaderStage Stages;
+
+		static constexpr EResourceType Type = EResourceType::StorageBuffer;
 
 		template <typename A>
 		void Serialize(A &ar)

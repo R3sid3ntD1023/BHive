@@ -50,6 +50,7 @@ namespace BHive
 			s.Set = set;
 			s.Binding = binding;
 			s.ArraySize = 1;
+			s.Type = EResourceType::CombinedImageSampler;
 			s.Stages |= stage;
 		}
 
@@ -63,32 +64,35 @@ namespace BHive
 			s.Set = set;
 			s.Binding = binding;
 			s.ArraySize = 1;
+			s.Type = EResourceType::StorageImage;
 			s.Stages |= stage;
 		}
 
-		for (const auto &storage_image : resources.separate_images)
+		for (const auto &sep_image : resources.separate_images)
 		{
-			auto &type = compiler.get_type(storage_image.base_type_id);
-			auto set = compiler.get_decoration(storage_image.id, spv::DecorationDescriptorSet);
-			auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
+			auto &type = compiler.get_type(sep_image.base_type_id);
+			auto set = compiler.get_decoration(sep_image.id, spv::DecorationDescriptorSet);
+			auto binding = compiler.get_decoration(sep_image.id, spv::DecorationBinding);
 
-			auto &s = Sets[set].Samplers[storage_image.name];
+			auto &s = Sets[set].Samplers[sep_image.name];
 			s.Set = set;
 			s.Binding = binding;
 			s.ArraySize = 1;
+			s.Type = EResourceType::SeperatedImage;
 			s.Stages |= stage;
 		}
 
-		for (const auto &storage_image : resources.separate_samplers)
+		for (const auto &sep_smp : resources.separate_samplers)
 		{
-			auto &type = compiler.get_type(storage_image.base_type_id);
-			auto set = compiler.get_decoration(storage_image.id, spv::DecorationDescriptorSet);
-			auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
+			auto &type = compiler.get_type(sep_smp.base_type_id);
+			auto set = compiler.get_decoration(sep_smp.id, spv::DecorationDescriptorSet);
+			auto binding = compiler.get_decoration(sep_smp.id, spv::DecorationBinding);
 
-			auto &s = Sets[set].Samplers[storage_image.name];
+			auto &s = Sets[set].Samplers[sep_smp.name];
 			s.Set = set;
 			s.Binding = binding;
 			s.ArraySize = 1;
+			s.Type = EResourceType::SeperatedSampler;
 			s.Stages |= stage;
 		}
 
@@ -152,7 +156,7 @@ namespace BHive
 
 			for (const auto &[name, sampler] : resource.Samplers)
 			{
-				result += fmt::format("\t\tSampler: {} -> Set: {}, Binding: {}, ArraySize: {};\n", name, sampler.Set, sampler.Binding, sampler.ArraySize);
+				result += fmt::format("\t\tSampler: {} -> Type: {}, Set: {}, Binding: {}, ArraySize: {};\n", name, ToString(sampler.Type), sampler.Set, sampler.Binding, sampler.ArraySize);
 			}
 			for (const auto &[name, buffer] : resource.UniformBuffers)
 			{
@@ -197,19 +201,21 @@ namespace BHive
 				for (auto &[name, s] : resource.Samplers)
 				{
 					auto &dst = merged.Sets[set].Samplers[name];
-					//dst.Set = s.Set;
 					dst.Binding = s.Binding;
-					dst.Stages |= s.Stages;
 					dst.ArraySize = s.ArraySize;
+					dst.Type = s.Type;
+					dst.Set = s.Set;
+					dst.Stages |= s.Stages;
+					
 				}
 
 				// Merge UBOs
 				for (auto &[name, ubo] : resource.UniformBuffers)
 				{
 					auto &dst = merged.Sets[set].UniformBuffers[name];
-					//dst.Set = ubo.Set;
 					dst.Binding = ubo.Binding;
 					dst.Size = ubo.Size;
+					dst.Set = ubo.Set;
 					dst.Stages |= ubo.Stages;
 
 					// ubo.Stages;
@@ -226,7 +232,7 @@ namespace BHive
 				for (auto &[name, ssbo] : resource.StorageBuffers)
 				{
 					auto &dst = merged.Sets[set].StorageBuffers[name];
-					//dst.Set = ssbo.Set;
+					dst.Set = ssbo.Set;
 					dst.Binding = ssbo.Binding;
 					dst.Size = ssbo.Size;
 					dst.Stages |= ssbo.Stages;

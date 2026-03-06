@@ -243,10 +243,40 @@ namespace BHive
 		return 0;
 	}
 
+	enum class EResourceType
+	{
+		CombinedImageSampler,
+		StorageImage,
+		SeperatedImage,
+		SeperatedSampler,
+		UniformBuffer,
+		StorageBuffer
+	};
 
+	inline const char* ToString(EResourceType type)
+	{
+		switch (type)
+		{
+		case BHive::EResourceType::CombinedImageSampler:
+			return "CombinedImageSampler";
+		case BHive::EResourceType::StorageImage:
+			return "StorageImage";
+		case BHive::EResourceType::SeperatedImage:
+			return "SeperatedImage";
+		case BHive::EResourceType::SeperatedSampler:
+			return "SeperatedSampler";
+		case BHive::EResourceType::UniformBuffer:
+			return "UniformBuffer";
+		case BHive::EResourceType::StorageBuffer:
+			return "StorageBuffer";
+		default:
+			return "";
+		}
+	}
 
 	inline bool IsDepthFormat(EFormat format)
 	{
 		return format == EFormat::DEPTH24_STENCIL8 || format == EFormat::DEPTH_COMPONENT || format == EFormat::DEPTH_COMPONENT_24 || format == EFormat::DEPTH_COMPONENT_32F;
 	}
+
 }

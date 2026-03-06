@@ -119,7 +119,7 @@ namespace BHive
 			Renderer::GetModelBuffer().Reset();
 			Renderer::GetModelBuffer().Submit(transform);
 			Renderer::GetModelBuffer().Upload();
-			mSet3Manager->BindBuffer(1, Renderer::GetModelBuffer().GetObjectBuffer());
+			mSet3Manager->BindBuffer(1, EResourceType::StorageBuffer, Renderer::GetModelBuffer().GetObjectBuffer());
 
 			if (mMesh)
 				RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());

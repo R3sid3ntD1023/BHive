@@ -2,8 +2,6 @@
 
 #include "VulkanCore.h"
 #include "gfx/ISetManager.h"
-#include "gfx/shader/ShaderReflection.h"
-
 
 namespace BHive
 {
@@ -13,9 +11,9 @@ namespace BHive
 		VulkanSetManager(vk::raii::Device& device, vk::raii::DescriptorPool& pool, vk::DescriptorSetLayout layout, uint32_t setIndex,
 			const FShaderReflection& refl);
 
-		virtual void BindBuffer(uint32_t binding, const Ref<BufferBase> &buffer) override;
+		virtual void BindBuffer(uint32_t binding, EResourceType type, const Ref<BufferBase> &buffer) override;
 
-		virtual void BindSampler(uint32_t binding, const Ref<Texture> &texture) override;
+		virtual void BindSampler(uint32_t binding, EResourceType type, const Ref<Texture> &texture) override;
 
 		virtual void Update(uint32_t frame) override;
 

@@ -26,18 +26,30 @@ namespace BHive
 		}
 	}
 
-	void VulkanSetManager::BindBuffer(uint32_t binding, const Ref<BufferBase> &buffer)
+	void VulkanSetManager::BindBuffer(uint32_t binding, EResourceType type, const Ref<BufferBase> &buffer)
 	{
 		auto b = buffer->GetNativeHandle().As<AllocatedBuffer>();
 		vk::DescriptorBufferInfo info(b->Buffer, 0, b->Size);
-		auto type = ToVkBufferType(buffer->GetType());
-		mLocalBuffers.emplace(binding, std::pair{type, info});
+		auto type_ = ToVkType(type);
+		mLocalBuffers.emplace(binding, std::pair{type_, info});
 	}
 
-	void VulkanSetManager::BindSampler(uint32_t binding, const Ref<Texture> &texture)
+	void VulkanSetManager::BindSampler(uint32_t binding, EResourceType type, const Ref<Texture> &texture)
 	{
+		vk::ImageLayout layout = vk::ImageLayout::eShaderReadOnlyOptimal;
+		auto vk_type = ToVkType(type);
+		switch(vk_type)
+		{
+		case vk::DescriptorType::eStorageImage:
+		{
+			layout = vk::ImageLayout::eGeneral;
+			break;
+		}
+		default:
+			break;
+		}
 		auto img = texture->GetNativeHandle().As<AllocatedImage>();
-		vk::DescriptorImageInfo info(img->GetSampler(), img->GetView(), vk::ImageLayout::eShaderReadOnlyOptimal); 
+		vk::DescriptorImageInfo info(img->GetSampler(), img->GetView(), layout); 
 		mLocalSamplers.emplace(binding, info);
 	}
 

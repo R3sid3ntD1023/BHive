@@ -3,13 +3,17 @@
 
 namespace BHive
 {
-	vk::DescriptorType ToVkBufferType(BufferBase::Type type)
+	vk::DescriptorType ToVkType(EResourceType type)
 	{
 		switch (type)
 		{
-		case BHive::BufferBase::UniformBuffer:
+		case EResourceType::CombinedImageSampler:
+			return vk::DescriptorType::eCombinedImageSampler;
+		case EResourceType::StorageImage:
+			return vk::DescriptorType::eStorageImage;
+		case EResourceType::UniformBuffer:
 			return vk::DescriptorType::eUniformBuffer;
-		case BHive::BufferBase::StorageBuffer:
+		case EResourceType::StorageBuffer:
 			return vk::DescriptorType::eStorageBuffer;
 		default:
 			break;

@@ -23,7 +23,7 @@ namespace BHive
 		bool GenerateMipMaps;
 	};
 
-	vk::DescriptorType ToVkBufferType(BufferBase::Type type);
+	vk::DescriptorType ToVkType(EResourceType type);
 
 	vk::ImageAspectFlags ToVkAspect(ETextureAspect aspect);
 

@@ -2,6 +2,7 @@
 
 #include "core/Core.h"
 #include "NativeHandle.h"
+#include "shader/ShaderReflection.h"
 
 namespace BHive
 {
@@ -13,9 +14,9 @@ namespace BHive
 	public:
 		virtual ~ISetManager() = default;
 
-		virtual void BindBuffer(uint32_t binding, const Ref<BufferBase> &buffer) = 0;
+		virtual void BindBuffer(uint32_t binding, EResourceType type, const Ref<BufferBase> &buffer) = 0;
 
-		virtual void BindSampler(uint32_t binding, const Ref<Texture> &texture) = 0;
+		virtual void BindSampler(uint32_t binding, EResourceType type, const Ref<Texture> &texture) = 0;
 
 		virtual void Update(uint32_t frame) = 0;
 

@@ -77,13 +77,13 @@ namespace BHive
 				for (auto& [name, ub] : mTargetSet.UniformBuffers)
 				{
 					auto ubo = mLocalUBOs.at(name); 
-					mMaterialSetManager->BindBuffer(ub.Binding, ubo);
+					mMaterialSetManager->BindBuffer(ub.Binding, ub.Type, ubo);
 				}
 
 				for (auto &[name, ssb] : mTargetSet.StorageBuffers)
 				{
 					auto ssbo = mLocalSSBOs.at(name);
-					mMaterialSetManager->BindBuffer(ssb.Binding, ssbo);
+					mMaterialSetManager->BindBuffer(ssb.Binding, ssb.Type, ssbo);
 				}
 
 				
@@ -108,7 +108,7 @@ namespace BHive
 		}
 
 		auto &sampler = mTargetSet.Samplers.at(name);
-		mMaterialSetManager->BindSampler(sampler.Binding, texture);
+		mMaterialSetManager->BindSampler(sampler.Binding, sampler.Type, texture);
 	}
 
 	
