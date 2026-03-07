@@ -3,6 +3,7 @@ bin-int/
 .vs/
 build/
 downloads/
+shaders/cache
 
 **.sln
 **.slnx

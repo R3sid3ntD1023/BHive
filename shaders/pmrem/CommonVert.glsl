@@ -5,7 +5,7 @@ layout(location = 0) out struct vertex_out
 	vec3 position;
 } vs_out;
 
-layout(std140, binding = 0) uniform CameraBuffer
+layout(std140, set = 0, binding = 0) uniform CameraBuffer
 {
 	mat4 u_projection;
 	mat4 u_view;

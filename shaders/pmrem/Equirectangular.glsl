@@ -13,7 +13,7 @@ layout(location = 0) in struct vertex_out
 	vec3 position;
 } vs_in;
 
-layout(binding =  0) uniform sampler2D equirectangularMap;
+layout(set = 0, binding =  0) uniform sampler2D equirectangularMap;
 
 layout(location =  0 ) out vec4 fs_out;
 

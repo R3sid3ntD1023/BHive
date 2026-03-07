@@ -152,7 +152,7 @@ namespace BHive
 
 		for (auto& [set, resource] : Sets)
 		{
-			result += fmt::format("\tSet {}\n", set);
+			result += fmt::format("Set {}\n", set);
 
 			for (const auto &[name, sampler] : resource.Samplers)
 			{

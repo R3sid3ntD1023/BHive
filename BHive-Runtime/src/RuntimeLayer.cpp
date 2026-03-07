@@ -68,6 +68,13 @@ namespace BHive
 		mSet3Manager = RenderCommand::CreateSetManager(mPipeline.get(), 3);
 	
 		mPipeline->SetBatchSetManager(mSet3Manager.get());
+
+		//TESTS computes
+
+		ShaderManager::Get().Load("Equirectangular.glsl");
+		ShaderManager::Get().Load("Irradiance.glsl");
+		ShaderManager::Get().Load("PrefilterEnvironment.glsl");
+		ShaderManager::Get().Load("BRDFLut.glsl");
 	}
 
 	void RuntimeLayer::OnDetach()
