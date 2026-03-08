@@ -47,7 +47,7 @@ namespace BHive
 	template <typename A>
 	void Serialize(A& ar, ShaderCache::MetaData& meta)
 	{
-		ar(meta.Hash, meta.Stages, meta.MergedReflection);
+		ar(meta.Hash, meta.Stages, meta.MergedReflection, meta.LookupTable);
 	}
 	
 	std::filesystem::path ShaderCache::GetShaderCacheDir(const std::string &name)
@@ -141,6 +141,7 @@ namespace BHive
 		}
 
 		asset.MergedReflection = meta.MergedReflection;
+		asset.LookupTable = meta.LookupTable;
 	}
 
 	void ShaderCache::StoreCache(const ShaderAsset &asset, const std::string& source)
@@ -164,6 +165,7 @@ namespace BHive
 			meta.Stages.push_back(stage);
 
 		meta.MergedReflection = asset.MergedReflection;
+		meta.LookupTable = asset.LookupTable;
 
 		StoreMeta(asset.Name, meta);
 	}

@@ -14,7 +14,9 @@ namespace BHive
 
 		virtual const std::string &GetName() const override { return mAsset->Name; }
 
-		virtual const FShaderReflection &GetRefl() const override { return mAsset->MergedReflection; }
+		virtual const FShaderReflection &GetMergedRefl() const override { return mAsset->MergedReflection; }
+
+		virtual const FShaderReflectionLookUp &GetRefl() const override { return mAsset->LookupTable; }
 
 		const ShaderAsset &GetAsset() const { return *mAsset; }
 

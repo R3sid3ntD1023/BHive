@@ -13,6 +13,7 @@
 #include "gfx/GlobalBuffers.h"
 #include "VulkanUniformBuffer.h"
 #include "VulkanSetManager.h"
+#include "core/subsystem/SubSystem.h"
 
 namespace BHive
 {
@@ -65,8 +66,6 @@ namespace BHive
 	{
 		LOG_TRACE("RendererAPI Shutdown Called")
 
-		mDescriptorPool = VK_NULL_HANDLE;
-
 		VulkanBackend::Get().Shutdown();
 	}
 
@@ -78,6 +77,7 @@ namespace BHive
 
 	vk::Result VulkanRendererAPI::RenderFrame(VulkanWindowContext *ctx)
 	{
+		
 		FResourceUpdateList mergedUpdates;
 		for (auto &u : mSubmittedUpdates)
 			mergedUpdates.Append(u);
@@ -124,24 +124,16 @@ namespace BHive
 		sDeletionQueue.emplace(mCompletedFrame, fn);
 	}
 
-	void VulkanRendererAPI::UpdateGlobalSet(const VulkanPipeline* pipeline, uint32_t frame)
+	vk::DescriptorSet* VulkanRendererAPI::GetGlobalSet(uint64_t setHash, uint32_t frame, const VulkanPipeline* pipeline) 
 	{
-		auto& shader = pipeline->GetVulkanShader();
-
-		uint64_t set_hash = shader.GetSetHashes().at(GLOBAL_SET_INDEX);
-		if (!mGlobalSetSystem.Contains(set_hash))
+		auto it = mGlobalSets.find(setHash);
+		if (it == mGlobalSets.end())
 		{
 			auto manager = CreateSetManager(pipeline, GLOBAL_SET_INDEX);
-			mGlobalSetSystem.Register(set_hash, manager);
+			mGlobalSets[setHash] = {setHash, 0, manager};
 		}
 
-		auto manager = mGlobalSetSystem.Get(set_hash);
-		manager->Update(frame);
-	}
-
-	vk::raii::DescriptorSet* VulkanRendererAPI::GetGlobalSet(uint64_t setHash, uint32_t frame) const
-	{
-		return mGlobalSetSystem.Get(setHash)->GetNativeSet(frame).As<vk::raii::DescriptorSet>();
+		return mGlobalSets.at(setHash).Manager->GetNativeSet(frame).As<vk::DescriptorSet>();
 	}
 
 	Ref<ISetManager> VulkanRendererAPI::CreateSetManager(const Pipeline* pipeline, uint32_t setIndex)
@@ -154,6 +146,59 @@ namespace BHive
 		auto manager = CreateRef<VulkanSetManager>(VulkanBackend::GetLogicalDevice(), mDescriptorPool, layout, setIndex,
 			refl);
 		return manager;
+	}
+
+	void VulkanRendererAPI::OnPipelineCreated(const VulkanPipeline *pipeline)
+	{
+		auto program = pipeline->GetShaderProgram();
+		auto& setHashes = pipeline->GetVulkanShader().GetSetHashes();
+		auto& refl = program->GetRefl();
+		auto &globals = GetSubSystem<GlobalBuffers>();
+
+		for (auto& [set, hash] : setHashes)
+		{
+			if (set != GLOBAL_SET_INDEX)
+				continue;
+
+			Ref<ISetManager> manager;
+			if (!mGlobalSets.contains(hash))
+			{
+				manager = CreateSetManager(pipeline, set);
+				mGlobalSets[hash] = {hash, set, manager};
+			}
+			else
+			{
+				manager = mGlobalSets.at(hash).Manager;
+			}
+
+			auto& setBindings = refl.GetSetBindings(set);
+
+			for (auto& r : setBindings)
+			{
+				if (!IsBuffer(r.kind))
+					continue;
+
+				auto it = globals.GetBuffers().find(r.binding);
+				if (it == globals.GetBuffers().end())
+					continue;
+
+				manager->SetBuffer(r.binding, it->second);
+			}
+
+			for (auto &r : setBindings)
+			{
+				if (!IsTexture(r.kind))
+					continue;
+
+				auto it = globals.GetTextures().find(r.binding);
+				if (it == globals.GetTextures().end())
+					continue;
+
+				manager->SetTexture(r.binding, it->second);
+			}
+
+			manager->WriteStaticBindings();
+		}
 	}
 
 	void VulkanRendererAPI::ProcessDeletionQueue(uint32_t frame)
@@ -179,7 +224,6 @@ namespace BHive
 
 		ProcessDeletionQueue(current_frame);
 
-
 		cmd.reset();
 
 		auto [result, imageIndex] = swap_chain->AquireNextImage(current_frame);
@@ -194,6 +238,9 @@ namespace BHive
 		cmd.begin({});
 
 		FVulkanRendererContext frame(cmd, current_frame, imageIndex);
+
+		for (auto &[_, entry] : mGlobalSets)
+			entry.Manager->Update(current_frame);
 
 		updates.Execute(frame);
 

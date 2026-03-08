@@ -21,6 +21,7 @@ namespace BHive
 			std::vector<EShaderStage> Stages;
 			bool Valid = false;
 			FShaderReflection MergedReflection;
+			FShaderReflectionLookUp LookupTable;
 		};
 
 	private:

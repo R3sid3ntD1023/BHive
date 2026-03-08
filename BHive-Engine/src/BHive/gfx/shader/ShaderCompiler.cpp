@@ -197,6 +197,7 @@ namespace BHive
 		LOG_TRACE("Merging Reflection");
 
 		asset.MergedReflection = FShaderReflection::Merge(refl_map);
+		asset.LookupTable = FShaderReflectionLookUp(asset.MergedReflection);
 
 		LOG_TRACE(asset.MergedReflection.to_string())
 	}

@@ -147,6 +147,8 @@ namespace BHive
 
 
 		mPipeline = vk::raii::Pipeline(mDevice, nullptr, pipeline_info);
+
+		RenderCommand::GetRendererAPI<VulkanRendererAPI>()->OnPipelineCreated(this);
 	}
 
 	void VulkanPipeline::Bind()
@@ -162,11 +164,6 @@ namespace BHive
 			[=, &shader, &set_hashes, &refl](IRendererContext &ctx)
 			{
 				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-				if (set_hashes.contains(0))
-				{
-					auto global_set = refl.Sets.at(GLOBAL_SET_INDEX);
-					api->UpdateGlobalSet(this, vk_ctx.Frame);
-				}
 
 				if (mMaterialSetManager)
 					mMaterialSetManager->Update(vk_ctx.Frame);
@@ -188,27 +185,27 @@ namespace BHive
 				if (set_hashes.contains(0))
 				{
 					uint64_t h0 = set_hashes.at(GLOBAL_SET_INDEX);
-					auto set = api->GetGlobalSet(h0, vk_ctx.Frame);
-					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, GLOBAL_SET_INDEX, **set, {});
+					auto set = api->GetGlobalSet(h0, vk_ctx.Frame, this);
+					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, GLOBAL_SET_INDEX, *set, {});
 				}
 					
 				if (mMaterialSetManager)
 				{
-					auto set = mMaterialSetManager->GetNativeSet(vk_ctx.Frame).As<vk::raii::DescriptorSet>();
-					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, MATERIAL_SET_INDEX, **set, {});
+					auto set = mMaterialSetManager->GetNativeSet(vk_ctx.Frame).As<vk::DescriptorSet>();
+					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, MATERIAL_SET_INDEX, *set, {});
 				}
 
 				if (mObjectSetManager)
 				{
-					auto set = mObjectSetManager->GetNativeSet(vk_ctx.Frame).As<vk::raii::DescriptorSet>();
-					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, OBJECT_SET_INDEX, **set, {});
+					auto set = mObjectSetManager->GetNativeSet(vk_ctx.Frame).As<vk::DescriptorSet>();
+					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, OBJECT_SET_INDEX, *set, {});
 				}
 
 				if (mBatchSetManager)
 
 				{
-					auto set = mBatchSetManager->GetNativeSet(vk_ctx.Frame).As<vk::raii::DescriptorSet>();
-					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, BATCH_SET_INDEX, **set, {});
+					auto set = mBatchSetManager->GetNativeSet(vk_ctx.Frame).As<vk::DescriptorSet>();
+					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, BATCH_SET_INDEX, *set, {});
 				}
 			});
 	}

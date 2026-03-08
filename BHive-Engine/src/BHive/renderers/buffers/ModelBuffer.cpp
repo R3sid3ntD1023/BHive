@@ -18,8 +18,6 @@ namespace BHive
 		mBatch.reserve(maxObjects);
 
 		mObjectBuffer = StorageBuffer::Create(sizeof(FPerObjectData) * maxObjects);
-		GetSubSystem<GlobalBuffers>().Register(SSBO_OBJECT_BATCH_BINDING, {.Buffer  = mObjectBuffer});
-
 	}
 
 	uint32_t FModelBuffer::Submit(const FTransform &transform)

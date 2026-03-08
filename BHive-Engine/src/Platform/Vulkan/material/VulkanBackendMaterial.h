@@ -44,7 +44,9 @@ namespace BHive
 
 		std::unordered_map<std::string, Ref<StorageBuffer>> mLocalSSBOs;
 
-		const FShaderReflection *mReflectionPtr = nullptr; 
+		const FShaderReflection* mReflectionMergedPtr = nullptr;
+
+		const FShaderReflectionLookUp *mReflectionLookupTablePtr = nullptr; 
 
 		FSetReflection mTargetSet;
 	};

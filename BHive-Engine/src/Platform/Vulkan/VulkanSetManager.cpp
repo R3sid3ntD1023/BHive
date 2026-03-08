@@ -1,7 +1,5 @@
 #include "VulkanSetManager.h"
 #include "VulkanBackend.h"
-#include "gfx/GlobalBuffers.h"
-#include "core/subsystem/SubSystem.h"
 #include "gfx/BufferBase.h"
 #include "gfx/Texture.h"
 #include "VulkanConverters.h"
@@ -11,98 +9,203 @@
 namespace BHive
 {
 
-	VulkanSetManager::VulkanSetManager(vk::raii::Device &device, vk::raii::DescriptorPool& pool, vk::DescriptorSetLayout layout, uint32_t setIndex, const FShaderReflection &refl)
+	VulkanSetManager::VulkanSetManager(vk::raii::Device& device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex, const FShaderReflectionLookUp &refl)
 		: mDevice(device),
-		  mSetIndex(setIndex),
-		  mRefl(refl)
+		  mPool(pool),
+		  mLayout(layout),
+		  mSetIndex(setIndex)
 	{
-		mSets.reserve(MAX_FRAMES_IN_FLIGHT);
 
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		BuildBindings(refl);
+		AllocatePerFrameSets();		
+	}
+
+	void VulkanSetManager::SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer)
+	{
+		for (auto &b : mBindings)
 		{
-			vk::DescriptorSetAllocateInfo alloc_info(pool, layout);
-			auto sets = device.allocateDescriptorSets(alloc_info);
-			mSets.emplace_back(std::move(sets[0]));
+			if (b.ReflResource.binding == binding && IsBuffer(b.ReflResource.kind))
+			{
+				b.Buffer = buffer;
+
+				std::vector<vk::WriteDescriptorSet> writes;
+				for (uint32_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; ++frame)
+				{
+					auto &set = *mSets[frame];
+					auto info = BuildBufferInfo(b);
+					writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), nullptr, info);
+				}
+				if (!writes.empty())
+					mDevice.updateDescriptorSets(writes, {});
+
+				break;
+			}
 		}
 	}
 
-	void VulkanSetManager::BindBuffer(uint32_t binding, EResourceType type, const Ref<BufferBase> &buffer)
+	void VulkanSetManager::SetTexture(uint32_t binding, const Ref<Texture> &texture)
 	{
-		auto b = buffer->GetNativeHandle().As<AllocatedBuffer>();
-		vk::DescriptorBufferInfo info(b->Buffer, 0, b->Size);
-		auto type_ = ToVkType(type);
-		mLocalBuffers.emplace(binding, std::make_pair(type_, info));
-	}
+		for (auto& b : mBindings)
+		{
+			if (b.ReflResource.binding == binding && IsTexture(b.ReflResource.kind))
+			{
+				b.Texture = texture;
 
-	void VulkanSetManager::BindSampler(uint32_t binding, EResourceType type, const Ref<Texture> &texture)
-	{
-		vk::ImageLayout layout = vk::ImageLayout::eShaderReadOnlyOptimal;
-		auto vk_type = ToVkType(type);
-		switch(vk_type)
-		{
-		case vk::DescriptorType::eStorageImage:
-		{
-			layout = vk::ImageLayout::eGeneral;
-			break;
+				std::vector<vk::WriteDescriptorSet> writes;
+				for (uint32_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
+				{
+					auto &set = *mSets[frame];
+					auto info = BuildImageInfo(b);
+					writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), info);
+				}
+				if (!writes.empty())
+					mDevice.updateDescriptorSets(writes, {});
+
+				break;
+			}
 		}
-		default:
-			break;
-		}
-		auto img = texture->GetNativeHandle().As<AllocatedImage>();
-		vk::DescriptorImageInfo info(img->GetSampler(), img->GetView(), layout); 
-		mLocalSamplers.emplace(binding, std::make_pair(vk_type, info));
 	}
 
 	void VulkanSetManager::Update(uint32_t frame)
 	{
-		
-		auto& global_buffers = GetSubSystem<GlobalBuffers>();
+		ASSERT(frame < MAX_FRAMES_IN_FLIGHT)
 
-		auto target = *mSets[frame];
-
-		auto &target_refl_set = mRefl.Sets.at(mSetIndex);
+		auto& set = *mSets[frame];
 
 		std::vector<vk::WriteDescriptorSet> writes;
 
-		// Global Buffers
-		if (mSetIndex == GLOBAL_SET_INDEX)
+		for (auto &b : mBindings)
 		{
-			for (auto &[name, ub] : target_refl_set.UniformBuffers)
-			{
-				if (!global_buffers.Contains(ub.Binding))
-					continue;
-
-				auto handle = global_buffers.GetBuffer(ub.Binding).GetHandle(frame);
-				auto buffer = handle.As<AllocatedBuffer>();
-
-				vk::DescriptorBufferInfo info(buffer->Buffer, 0, buffer->Size);
-				writes.emplace_back(target, ub.Binding, 0, vk::DescriptorType::eUniformBuffer, VK_NULL_HANDLE, info);
-			}
-		}
-
-		for (auto &[binding, info] : mLocalBuffers)
-		{
-			writes.emplace_back(target, binding, 0, info.first, VK_NULL_HANDLE, info.second);
-		}
-
-		for (auto &[binding, pair] : mLocalSamplers)
-		{
-			auto &type = pair.first;
-			auto &smp = pair.second;
-			if (smp.imageView == VK_NULL_HANDLE || smp.sampler == VK_NULL_HANDLE)
+			if (b.UpdateRate != EBindingUpdateRate::PerFrame)
 				continue;
 
-			writes.emplace_back(target, binding, 0, type, smp);
+			auto info = BuildBufferInfo(b);
+
+			writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), nullptr, info);
 		}
 
 		if (!writes.empty())
-		{
 			mDevice.updateDescriptorSets(writes, {});
-		}
 	}
 
 	NativeHandle VulkanSetManager::GetNativeSet(uint32_t frame)
 	{
-		return NativeHandle::FromPtr(&mSets[frame]);
+		ASSERT(frame < MAX_FRAMES_IN_FLIGHT)
+		return NativeHandle::FromPtr(&*mSets[frame]);
+	}
+
+	void VulkanSetManager::BuildBindings(const FShaderReflectionLookUp &refl)
+	{
+		auto &setBindings = refl.GetSetBindings(mSetIndex);
+		mBindings.reserve(setBindings.size());
+
+		for (auto& r : setBindings)
+		{
+			BindingInfo info{};
+			info.ReflResource = r;
+			
+			switch (r.kind)
+			{
+			case EResourceType::UniformBuffer:
+			case EResourceType::StorageBuffer:
+			case EResourceType::StorageImage:
+				info.UpdateRate = EBindingUpdateRate::PerFrame;
+				break;
+			case EResourceType::CombinedImageSampler:
+				info.UpdateRate = EBindingUpdateRate::Static;
+				break;
+			default:
+				info.UpdateRate = EBindingUpdateRate::Static;
+				break;
+			}
+
+			mBindings.push_back(info);
+		}
+	}
+
+	void VulkanSetManager::AllocatePerFrameSets()
+	{
+		std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, mLayout);
+
+		vk::DescriptorSetAllocateInfo alloc_info(mPool, layouts);
+
+		mSets.clear();
+		mSets.reserve(MAX_FRAMES_IN_FLIGHT);
+
+		auto sets = mDevice.allocateDescriptorSets(alloc_info);
+		for (auto& s : sets)
+			mSets.emplace_back(std::move(s));
+	}
+
+	void VulkanSetManager::WriteStaticBindings()
+	{
+		std::vector<vk::WriteDescriptorSet> writes;
+
+		for (auto& b : mBindings)
+		{
+			if (b.UpdateRate != EBindingUpdateRate::Static)
+				continue;
+
+			for (uint32_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
+			{
+				auto &set = *mSets[frame];
+				auto info = BuildImageInfo(b);
+				writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), info);
+			}
+			
+		}
+
+		if (!writes.empty())
+			mDevice.updateDescriptorSets(writes, {});
+	}
+
+	vk::DescriptorBufferInfo VulkanSetManager::BuildBufferInfo(const BindingInfo &b) const
+	{
+		ASSERT(b.Buffer)
+
+		auto native = b.Buffer->GetNativeHandle().As<AllocatedBuffer>();
+		return vk::DescriptorBufferInfo(native->Buffer, 0, native->Size);
+	}
+
+	vk::DescriptorImageInfo VulkanSetManager::BuildImageInfo(const BindingInfo &b) const
+	{
+		ASSERT(b.Texture)
+
+		vk::DescriptorImageInfo info{};
+		auto native = b.Texture->GetNativeHandle().As<AllocatedImage>();
+
+		ASSERT(native);
+		ASSERT(native->GetView() != VK_NULL_HANDLE);
+		ASSERT(native->GetSampler() != VK_NULL_HANDLE || b.ReflResource.kind == EResourceType::SeperatedImage);
+
+		switch (b.ReflResource.kind)
+		{
+		case EResourceType::CombinedImageSampler:
+		case EResourceType::SeperatedImage:
+		{
+			info = vk::DescriptorImageInfo(native->GetSampler(), native->GetView(), vk::ImageLayout::eShaderReadOnlyOptimal);
+			break;
+		}
+		case EResourceType::SeperatedSampler:
+		{
+			info = vk::DescriptorImageInfo(native->GetSampler());
+			break;
+		}
+		case EResourceType::StorageImage:
+		{
+			info = vk::DescriptorImageInfo(nullptr, native->GetView(), vk::ImageLayout::eGeneral);
+			break;
+		}
+		case EResourceType::InputAttachment:
+		{
+			info = vk::DescriptorImageInfo(nullptr, native->GetView(), vk::ImageLayout::eShaderReadOnlyOptimal);
+			break;
+		}
+		default:
+			info = vk::DescriptorImageInfo(native->GetSampler(), native->GetView(), vk::ImageLayout::eShaderReadOnlyOptimal);
+			break;
+		}
+
+		return info;
 	}
 } // namespace BHive

@@ -78,6 +78,9 @@ namespace BHive
 	template <typename S>
 	S &GetSubSystem()
 	{
+		if (!SubSystemContext::Get().HasSubSystems<S>())
+			return AddSubSystem<S>();
+
 		return SubSystemContext::Get().GetSubSystem<S>();
 	}
 } // namespace BHive

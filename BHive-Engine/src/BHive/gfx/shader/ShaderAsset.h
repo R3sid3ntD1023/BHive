@@ -16,6 +16,7 @@ namespace BHive
 		std::filesystem::path SourcePath;
 		std::unordered_map<EShaderStage, ShaderStageData> Stages;
 		FShaderReflection MergedReflection;
+		FShaderReflectionLookUp LookupTable;
 	};
 
 }

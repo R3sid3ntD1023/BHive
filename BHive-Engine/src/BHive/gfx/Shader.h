@@ -15,7 +15,9 @@ namespace BHive
 
 		virtual const std::string &GetName() const = 0;
 
-		virtual const FShaderReflection &GetRefl() const = 0;
+		virtual const FShaderReflection &GetMergedRefl() const = 0;
+
+		virtual const FShaderReflectionLookUp &GetRefl() const = 0;
 
 		static Ref<ShaderProgram> Create(const std::filesystem::path &path);
 

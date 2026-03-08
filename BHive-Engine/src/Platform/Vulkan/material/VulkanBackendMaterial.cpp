@@ -27,12 +27,15 @@ namespace BHive
 		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
 
 		mProgram = Cast<ShaderProgram>(vkPipeline->GetShaderProgram());
-		mReflectionPtr = &mProgram->GetRefl();
+
+		mReflectionMergedPtr = &mProgram->GetMergedRefl();
+		mReflectionLookupTablePtr = &mProgram->GetRefl();
 
 		//init set manager
-		if (mReflectionPtr->Sets.contains(MATERIAL_SET_INDEX))
+
+		if (mReflectionMergedPtr->Sets.contains(MATERIAL_SET_INDEX))
 		{
-			mTargetSet = mReflectionPtr->Sets.at(MATERIAL_SET_INDEX);
+			mTargetSet = mReflectionMergedPtr->Sets.at(MATERIAL_SET_INDEX);
 
 			mMaterialSetManager = RenderCommand::CreateSetManager(pipeline.get(), MATERIAL_SET_INDEX);
 
@@ -54,7 +57,7 @@ namespace BHive
 	
 		//create push constant buffer
 		size_t total_size = 0;
-		for (auto &pc : mReflectionPtr->PushConstants)
+		for (auto &pc : mReflectionMergedPtr->PushConstants)
 			total_size = std::max(total_size, (size_t)pc.Offset + pc.Size);
 
 		mPushConstantData.resize(total_size);
@@ -77,18 +80,18 @@ namespace BHive
 				for (auto& [name, ub] : mTargetSet.UniformBuffers)
 				{
 					auto ubo = mLocalUBOs.at(name); 
-					mMaterialSetManager->BindBuffer(ub.Binding, ub.Type, ubo);
+					mMaterialSetManager->SetBuffer(ub.Binding, ubo);
 				}
 
 				for (auto &[name, ssb] : mTargetSet.StorageBuffers)
 				{
 					auto ssbo = mLocalSSBOs.at(name);
-					mMaterialSetManager->BindBuffer(ssb.Binding, ssb.Type, ssbo);
+					mMaterialSetManager->SetBuffer(ssb.Binding, ssbo);
 				}
 
 				
 				//Update push constants
-				for (auto &pc : mReflectionPtr->PushConstants)
+				for (auto &pc : mReflectionMergedPtr->PushConstants)
 				{
 					vk::PushConstantsInfo push_info(*pipeline_layout, ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size, mPushConstantData.data() + pc.Offset);
 					vk_ctx.CommandBuffer.pushConstants2(push_info);
@@ -108,15 +111,15 @@ namespace BHive
 		}
 
 		auto &sampler = mTargetSet.Samplers.at(name);
-		mMaterialSetManager->BindSampler(sampler.Binding, sampler.Type, texture);
+		mMaterialSetManager->SetTexture(sampler.Binding, texture);
 	}
 
 	
 	void VulkanBackendMaterial::Set(const std::string &name, const void *data, size_t size)
 	{
-		auto &refl = mProgram->GetRefl();
+		ASSERT(mReflectionMergedPtr)
 
-		for (auto& pc : refl.PushConstants)
+		for (auto& pc : mReflectionMergedPtr->PushConstants)
 		{
 			if (pc.Members.contains(name))
 			{

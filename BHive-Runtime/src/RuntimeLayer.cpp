@@ -68,13 +68,6 @@ namespace BHive
 		mSet3Manager = RenderCommand::CreateSetManager(mPipeline.get(), 3);
 	
 		mPipeline->SetBatchSetManager(mSet3Manager.get());
-
-		//TESTS computes
-
-		ShaderManager::Get().Load("Equirectangular.glsl");
-		ShaderManager::Get().Load("Irradiance.glsl");
-		ShaderManager::Get().Load("PrefilterEnvironment.glsl");
-		ShaderManager::Get().Load("BRDFLut.glsl");
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -125,11 +118,15 @@ namespace BHive
 
 			Renderer::GetModelBuffer().Reset();
 			Renderer::GetModelBuffer().Submit(transform);
+			Renderer::GetModelBuffer().Submit(FTransform({2, 0, 0}));
 			Renderer::GetModelBuffer().Upload();
-			mSet3Manager->BindBuffer(1, EResourceType::StorageBuffer, Renderer::GetModelBuffer().GetObjectBuffer());
+			mSet3Manager->SetBuffer(1, Renderer::GetModelBuffer().GetObjectBuffer());
 
 			if (mMesh)
+			{
 				RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
+				RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
+			}
 		}
 
 		Renderer::End();

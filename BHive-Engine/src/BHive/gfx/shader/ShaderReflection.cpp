@@ -21,7 +21,6 @@ namespace BHive
 
 			auto& ub = Sets[set].UniformBuffers[ubo.name];
 			ub.Binding = binding;
-			ub.Set = set;
 			ub.Size = size;
 			ub.Stages |= stage;
 
@@ -47,7 +46,6 @@ namespace BHive
 			auto binding = compiler.get_decoration(sampler.id, spv::DecorationBinding);
 
 			auto &s = Sets[set].Samplers[sampler.name];
-			s.Set = set;
 			s.Binding = binding;
 			s.ArraySize = 1;
 			s.Type = EResourceType::CombinedImageSampler;
@@ -61,7 +59,6 @@ namespace BHive
 			auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
 
 			auto &s = Sets[set].Samplers[storage_image.name];
-			s.Set = set;
 			s.Binding = binding;
 			s.ArraySize = 1;
 			s.Type = EResourceType::StorageImage;
@@ -75,7 +72,6 @@ namespace BHive
 			auto binding = compiler.get_decoration(sep_image.id, spv::DecorationBinding);
 
 			auto &s = Sets[set].Samplers[sep_image.name];
-			s.Set = set;
 			s.Binding = binding;
 			s.ArraySize = 1;
 			s.Type = EResourceType::SeperatedImage;
@@ -89,7 +85,6 @@ namespace BHive
 			auto binding = compiler.get_decoration(sep_smp.id, spv::DecorationBinding);
 
 			auto &s = Sets[set].Samplers[sep_smp.name];
-			s.Set = set;
 			s.Binding = binding;
 			s.ArraySize = 1;
 			s.Type = EResourceType::SeperatedSampler;
@@ -105,7 +100,6 @@ namespace BHive
 			auto size = compiler.get_declared_struct_size(type);
 			
 			auto &ssbo = Sets[set].StorageBuffers[storage.name];
-			ssbo.Set = set;
 			ssbo.Binding = binding;
 			ssbo.Size = size;
 			ssbo.Stages |= stage;
@@ -156,11 +150,11 @@ namespace BHive
 
 			for (const auto &[name, sampler] : resource.Samplers)
 			{
-				result += fmt::format("\t\tSampler: {} -> Type: {}, Set: {}, Binding: {}, ArraySize: {};\n", name, ToString(sampler.Type), sampler.Set, sampler.Binding, sampler.ArraySize);
+				result += fmt::format("\t\tSampler: {} -> Type: {}, Binding: {}, ArraySize: {};\n", name, ToString(sampler.Type), sampler.Binding, sampler.ArraySize);
 			}
 			for (const auto &[name, buffer] : resource.UniformBuffers)
 			{
-				result += fmt::format("\t\tUniform Buffer: {} ->  Set: {},  Binding: {}, Size: {}\n", name, buffer.Set,  buffer.Binding, buffer.Size);
+				result += fmt::format("\t\tUniform Buffer: {} ->  Binding: {}, Size: {}\n", name, buffer.Binding, buffer.Size);
 				for (const auto &[uniform_name, uniform] : buffer.Members)
 				{
 					result += fmt::format("\t\tMember: {} - Type: {} - Size: {} - Offset: {} - Location: {}\n", uniform_name, uniform.Type, uniform.Size, uniform.Offset, uniform.Location);
@@ -169,7 +163,7 @@ namespace BHive
 			
 			for (const auto &[name, buffer] : resource.StorageBuffers)
 			{
-				result += fmt::format("\t\tStorage Buffer: {} -> Set: {}, Binding: {}, Size: {}\n", name, buffer.Set, buffer.Binding, buffer.Size);
+				result += fmt::format("\t\tStorage Buffer: {} -> Binding: {}, Size: {}\n", name, buffer.Binding, buffer.Size);
 			}
 		}
 
@@ -204,7 +198,6 @@ namespace BHive
 					dst.Binding = s.Binding;
 					dst.ArraySize = s.ArraySize;
 					dst.Type = s.Type;
-					dst.Set = s.Set;
 					dst.Stages |= s.Stages;
 					
 				}
@@ -215,7 +208,6 @@ namespace BHive
 					auto &dst = merged.Sets[set].UniformBuffers[name];
 					dst.Binding = ubo.Binding;
 					dst.Size = ubo.Size;
-					dst.Set = ubo.Set;
 					dst.Stages |= ubo.Stages;
 
 					// ubo.Stages;
@@ -232,7 +224,6 @@ namespace BHive
 				for (auto &[name, ssbo] : resource.StorageBuffers)
 				{
 					auto &dst = merged.Sets[set].StorageBuffers[name];
-					dst.Set = ssbo.Set;
 					dst.Binding = ssbo.Binding;
 					dst.Size = ssbo.Size;
 					dst.Stages |= ssbo.Stages;
@@ -289,17 +280,17 @@ const FReflectedResource *FShaderReflectionLookUp::FindBySetBinding(uint32_t set
 const std::vector<FReflectedResource> &FShaderReflectionLookUp::GetSetBindings(uint32_t set) const
 {
 	static const std::vector<FReflectedResource> empty;
-	return !mSets.contains(set) ? mSets.at(set) : empty;
+	return mSets.contains(set) ? mSets.at(set) : empty;
 }
 
 void FShaderReflectionLookUp::Build(const FShaderReflection &merged)
 {
-	auto addResource = [&](const std::string &name, const FReflectedResource &r)
+	auto addResource = [&](const std::string &name, uint32_t set, const FReflectedResource &r)
 	{
 		mByName[name] = r;
-		mBySetBinding[r.set][r.binding] = r;
-		mSets[r.set].push_back(r);
-		mMaxSet = std::max(mMaxSet, r.set);
+		mBySetBinding[set][r.binding] = r;
+		mSets[set].emplace_back(r);
+		mMaxSet = std::max(mMaxSet, set);
 	};
 
 	for (auto &[set, resource] : merged.Sets)
@@ -308,27 +299,36 @@ void FShaderReflectionLookUp::Build(const FShaderReflection &merged)
 		{
 			FReflectedResource r;
 			r.binding = ubo.Binding;
-			r.set = ubo.Set;
-			r.kind = FReflectedResource::Kind::UBO;
+			r.kind = ubo.Type;
 			r.size = ubo.Size;
+			r.name = name;
+			addResource(name, set, r);
 		}
 
 		for (auto &[name, ssbo] : resource.StorageBuffers)
 		{
 			FReflectedResource r;
 			r.binding = ssbo.Binding;
-			r.set = ssbo.Set;
-			r.kind = FReflectedResource::Kind::UBO;
+			r.kind = ssbo.Type;
 			r.size = ssbo.Size;
+			r.name = name;
+			addResource(name, set, r);
 		}
 
 		for (auto &[name, smp] : resource.Samplers)
 		{
 			FReflectedResource r;
 			r.binding = smp.Binding;
-			r.set = smp.Set;
-			r.kind = FReflectedResource::Kind::UBO;
+			r.kind = smp.Type;
+			r.name = name;
+			addResource(name, set, r);
 		}
+	}
+
+	// sort each set by binding index
+	for (auto &[set, vec] : mSets)
+	{
+		std::sort(vec.begin(), vec.end(), [](auto &a, auto &b) { return a.binding < b.binding; });
 	}
 }
 } // namespace BHive

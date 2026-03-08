@@ -245,10 +245,12 @@ namespace BHive
 
 	enum class EResourceType
 	{
+		Invalid,
 		CombinedImageSampler,
 		StorageImage,
 		SeperatedImage,
 		SeperatedSampler,
+		InputAttachment,
 		UniformBuffer,
 		StorageBuffer
 	};
@@ -277,6 +279,16 @@ namespace BHive
 	inline bool IsDepthFormat(EFormat format)
 	{
 		return format == EFormat::DEPTH24_STENCIL8 || format == EFormat::DEPTH_COMPONENT || format == EFormat::DEPTH_COMPONENT_24 || format == EFormat::DEPTH_COMPONENT_32F;
+	}
+
+	inline bool IsTexture(EResourceType type)
+	{
+		return type == EResourceType::CombinedImageSampler || type == EResourceType::SeperatedImage || type == EResourceType::SeperatedSampler || type == EResourceType::StorageImage;
+	}
+
+	inline bool IsBuffer(EResourceType type)
+	{
+		return type == EResourceType::UniformBuffer || type == EResourceType::StorageBuffer;
 	}
 
 }

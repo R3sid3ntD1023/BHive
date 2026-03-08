@@ -13,42 +13,23 @@ namespace BHive
 		int32_t Location;
 		EShaderStage Stages;
 
-		template <typename A>
-		void Serialize(A &ar)
-		{
-			ar(Type, Size, Offset, Location, Stages);
-		}
 	};
 
 	struct FSampler
 	{
-		int32_t Set;
 		int32_t Binding;
 		EShaderStage Stages;
 		uint32_t ArraySize;
 		EResourceType Type;
-
-		template <typename A>
-		void Serialize(A &ar)
-		{
-			ar(Set, Binding, Stages, ArraySize, Type);
-		}
 	};
 
 	struct FUniformBuffer
 	{
-		int32_t Set;
 		int32_t Binding;
 		int32_t Size;
 		EShaderStage Stages;
 		std::unordered_map<std::string, FUniform> Members;
 		static constexpr EResourceType Type = EResourceType::UniformBuffer;
-
-		template <typename A>
-		void Serialize(A &ar)
-		{
-			ar(Set, Binding, Size, Stages, Members);
-		}
 	};
 
 	struct FPushConstantsRange
@@ -59,27 +40,15 @@ namespace BHive
 		EShaderStage Stages;
 		std::unordered_map<std::string, FUniform> Members;
 
-		template <typename A>
-		void Serialize(A &ar)
-		{
-			ar(Size, Offset, Stages, Members);
-		}
 	};
 
 	struct FStorageBuffer
 	{
-		int32_t Set;
 		int32_t Binding;
 		int32_t Size;
 		EShaderStage Stages;
 
 		static constexpr EResourceType Type = EResourceType::StorageBuffer;
-
-		template <typename A>
-		void Serialize(A &ar)
-		{
-			ar(Set, Binding, Size, Stages);
-		}
 	};
 
 	struct FSetReflection
@@ -87,16 +56,6 @@ namespace BHive
 		std::unordered_map<std::string, FUniformBuffer> UniformBuffers;
 		std::unordered_map<std::string, FStorageBuffer> StorageBuffers;
 		std::unordered_map<std::string, FSampler> Samplers;
-
-		/*void Find();
-
-		bool Contains();*/
-
-		template <typename A>
-		void Serialize(A &ar)
-		{
-			ar(UniformBuffers, StorageBuffers, Samplers);
-		}
 	};
 
 	
@@ -111,28 +70,12 @@ namespace BHive
 		std::unordered_map<uint32_t, FSetReflection> Sets;
 		std::unordered_map<std::string, FUniform> Uniforms; //unused in vulkan
 		std::vector<FPushConstantsRange> PushConstants; //unused in opengl
-	
-		template<typename A>
-		void Serialize(A& ar)
-		{
-			ar(Sets, Uniforms, PushConstants);
-		}
 	};
 
 	struct FReflectedResource
-	{
-		enum class Kind
-		{
-			None,
-			UBO,
-			SSBO,
-			Sampler,
-			PushConstant,
-			PlainUniform
-		};
-
-		Kind kind = Kind::None;
-		uint32_t set = 0;
+	{	
+		EResourceType kind = EResourceType::Invalid;
+		std::string name;
 		uint32_t binding = 0;
 		uint32_t offset = 0;
 		uint32_t size = 0;
@@ -162,5 +105,12 @@ namespace BHive
 		std::unordered_map < uint32_t, std::unordered_map<uint32_t, FReflectedResource>> mBySetBinding;
 		std::unordered_map<uint32_t, std::vector<FReflectedResource>> mSets;
 		uint32_t mMaxSet = 0;
+
+		template <typename A>
+		friend void SERIALIZE(A &, FShaderReflectionLookUp &);
 	};
+
+
 } // namespace BHive
+
+#include "ShaderReflectionSerialization.inl"

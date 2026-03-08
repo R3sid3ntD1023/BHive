@@ -6,23 +6,26 @@
 namespace BHive
 {
 	class BufferBase;
+	class Texture;
 
 	struct GlobalBuffers
 	{
-		struct BufferHandle
-		{
-			Ref<BufferBase> Buffer;
-			const NativeHandle GetHandle(uint32_t frame) const;
-		};
+		
+		void Register(uint32_t binding, const Ref<BufferBase> & buffer);
 
-		void Register(uint32_t binding, const BufferHandle &buffer);
+		void Register(uint32_t binding, const Ref<Texture>& texture);
 
-		const BufferHandle GetBuffer(uint32_t binding) const { return mBuffers.at(binding); }
+		const Ref<BufferBase> GetBuffer(uint32_t binding) const { return mBuffers.at(binding); }
 
 		bool Contains(uint32_t binding) const;
 
+		auto& GetBuffers() const { return mBuffers; }
+
+		auto& GetTextures() const { return mTextures; }
+
 	private:
-		std::unordered_map<uint32_t, BufferHandle> mBuffers;
+		std::unordered_map<uint32_t, Ref<BufferBase>> mBuffers;
+		std::unordered_map<uint32_t, Ref<Texture>> mTextures;
 	};
 
 }

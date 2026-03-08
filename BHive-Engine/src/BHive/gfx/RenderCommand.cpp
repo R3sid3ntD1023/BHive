@@ -83,6 +83,7 @@ namespace BHive
 		return sRendererAPI->CreateSetManager(pipeline, setIndex);
 	}
 
+
 	void RenderCommand::SubmitGraph(const RenderGraph &graph, FResourceUpdateList &updateResources)
 	{
 		sRendererAPI->SubmitGraph(graph, updateResources);
