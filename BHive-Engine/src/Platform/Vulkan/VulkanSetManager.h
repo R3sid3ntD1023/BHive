@@ -61,7 +61,7 @@ namespace BHive
 
 		std::vector<BindingInfo> mBindings;
 
-		std::vector<vk::raii::DescriptorSet> mSets;
+		vk::raii::DescriptorSets mSets = VK_NULL_HANDLE;
 
 		
 	};

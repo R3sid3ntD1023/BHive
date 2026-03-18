@@ -11,7 +11,7 @@
 #include "Platform/Vulkan/textures/VulkanImage.h"
 #include "gfx/UniformBuffer.h"
 #include "gfx/StorageBuffer.h"
-#include "Platform/Vulkan/VulkanSetManager.h"
+#include "../systems/MaterialSetRegistry.h"
 
 namespace BHive
 {
@@ -26,6 +26,8 @@ namespace BHive
 		
 		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
 
+		
+
 		mProgram = Cast<ShaderProgram>(vkPipeline->GetShaderProgram());
 
 		mReflectionMergedPtr = &mProgram->GetMergedRefl();
@@ -36,8 +38,6 @@ namespace BHive
 		if (mReflectionMergedPtr->Sets.contains(MATERIAL_SET_INDEX))
 		{
 			mTargetSet = mReflectionMergedPtr->Sets.at(MATERIAL_SET_INDEX);
-
-			mMaterialSetManager = RenderCommand::CreateSetManager(pipeline.get(), MATERIAL_SET_INDEX);
 
 			// create local buffers
 			for (auto &[name, ubo] : mTargetSet.UniformBuffers)
@@ -50,11 +50,9 @@ namespace BHive
 				mLocalSSBOs.emplace(name, StorageBuffer::Create(ssbo.Binding, ssbo.Size));
 			}
 
-			vkPipeline->SetMaterialSetManager(mMaterialSetManager.get());
+			GetSubSystem<MaterialSetRegistry>().CreateForMaterial(this, vkPipeline.get());
 		}
 
-		
-	
 		//create push constant buffer
 		size_t total_size = 0;
 		for (auto &pc : mReflectionMergedPtr->PushConstants)
@@ -65,10 +63,8 @@ namespace BHive
 
 	void VulkanBackendMaterial::Bind(const Ref<Pipeline> & pipeline)
 	{
-		if (!mMaterialSetManager)
-			return;
-
 		auto &pipeline_layout = Cast<VulkanPipeline>(pipeline)->GetLayout();
+		auto manager = GetSubSystem<MaterialSetRegistry>().Find(this);
 
 		auto &pass = RenderCommand::GetActivePass();
 		pass.CommandList.Push(
@@ -77,18 +73,12 @@ namespace BHive
 			{
 				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
 
-				for (auto& [name, ub] : mTargetSet.UniformBuffers)
+				
+				if (manager)
 				{
-					auto ubo = mLocalUBOs.at(name); 
-					mMaterialSetManager->SetBuffer(ub.Binding, ubo);
+					auto set = manager->GetNativeSet(vk_ctx.Frame).As<vk::DescriptorSet>();
+					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, MATERIAL_SET_INDEX, *set, {});
 				}
-
-				for (auto &[name, ssb] : mTargetSet.StorageBuffers)
-				{
-					auto ssbo = mLocalSSBOs.at(name);
-					mMaterialSetManager->SetBuffer(ssb.Binding, ssbo);
-				}
-
 				
 				//Update push constants
 				for (auto &pc : mReflectionMergedPtr->PushConstants)
@@ -101,7 +91,9 @@ namespace BHive
 
 	void VulkanBackendMaterial::BindTexture(const std::string& name, const Ref<Texture> &texture)
 	{
-		if (!texture || !mMaterialSetManager)
+		
+
+		if (!texture)
 			return;
 
 		if (!mTargetSet.Samplers.contains(name))
@@ -111,7 +103,9 @@ namespace BHive
 		}
 
 		auto &sampler = mTargetSet.Samplers.at(name);
-		mMaterialSetManager->SetTexture(sampler.Binding, texture);
+
+		auto &registry = GetSubSystem<MaterialSetRegistry>();
+		registry.Find(this)->SetTexture(sampler.Binding, texture);
 	}
 
 	

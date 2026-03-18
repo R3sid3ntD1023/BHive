@@ -82,8 +82,6 @@ namespace BHive
 
 		void QueueDeletion(std::function<void(uint32_t)> fn); //frame
 
-		vk::DescriptorSet *GetGlobalSet(uint64_t setHash, uint32_t frame, const VulkanPipeline *pipeline) ;
-
 		Ref<ISetManager> CreateSetManager(const Pipeline* pipeline, uint32_t setIndex) override;
 
 		void OnPipelineCreated(const VulkanPipeline *pipeline);
@@ -115,15 +113,6 @@ namespace BHive
 		std::vector<RenderGraph> mSubmittedGraphs;
 
 		std::vector<FResourceUpdateList> mSubmittedUpdates;
-
-		struct GlobalSetEntry
-		{
-			uint64_t Hash;
-			uint64_t SetIndex;
-			Ref<ISetManager> Manager;
-		};
-
-		std::unordered_map<uint64_t, GlobalSetEntry> mGlobalSets;
 
 		friend class VulkanFramebuffer;
 

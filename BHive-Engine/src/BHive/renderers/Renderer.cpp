@@ -4,7 +4,6 @@
 #include "gfx/UniformBuffer.h"
 #include "gfx/GlobalBuffers.h"
 #include "gfx/StorageBuffer.h"
-#include "core/subsystem/SubSystem.h"
 
 namespace BHive
 {
@@ -90,6 +89,7 @@ namespace BHive
 		sData->CameraUniformBuffer->SetData(&sData->CameraData, sizeof(FCameraData));
 
 		sData->CameraFrustum.Update(projection, view);
+
 	}
 
 	void Renderer::End()

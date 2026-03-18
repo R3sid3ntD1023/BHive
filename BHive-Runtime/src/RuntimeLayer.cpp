@@ -64,10 +64,21 @@ namespace BHive
 			.attach(FTextureCreateInfo{.Format = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 
 		mFramebuffer = Framebuffer::Create(fb_specs);
+		
+		std::vector<MultiDrawIndirectCommand> commands;
+		for (auto &m : mMesh->GetSubMeshes())
+		{
+			MultiDrawIndirectCommand cmd{};
+			cmd.Count = m.IndexCount;
+			cmd.BaseInstance = 0;
+			cmd.BaseVertex = m.StartVertex;
+			cmd.FirstIndex = m.StartIndex;
+			cmd.InstanceCount = 1;
+			commands.emplace_back(cmd);
+		}
 
-		mSet3Manager = RenderCommand::CreateSetManager(mPipeline.get(), 3);
-	
-		mPipeline->SetBatchSetManager(mSet3Manager.get());
+		mMultiDrawIndirectBuffer = StorageBuffer::Create(sizeof(MultiDrawIndirectCommand) * commands.size());
+		mMultiDrawIndirectBuffer->SetData(commands.data(), sizeof(MultiDrawIndirectCommand) * commands.size());
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -120,12 +131,13 @@ namespace BHive
 			Renderer::GetModelBuffer().Submit(transform);
 			Renderer::GetModelBuffer().Submit(FTransform({2, 0, 0}));
 			Renderer::GetModelBuffer().Upload();
-			mSet3Manager->SetBuffer(1, Renderer::GetModelBuffer().GetObjectBuffer());
+		
 
 			if (mMesh)
 			{
-				RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
-				RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
+				//RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
+				//RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
+				RenderCommand::MultiDrawElementsIndirect(ETopologyMode::Triangles, *mMultiDrawIndirectBuffer, *mMesh->GetVertexArray(), 1, sizeof(MultiDrawIndirectCommand));
 			}
 		}
 

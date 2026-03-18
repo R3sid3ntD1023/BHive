@@ -38,6 +38,8 @@ namespace BHive
 
 		const SetHashes& GetSetHashes() const { return mSetHashes; }
 
+		bool HasSet(uint32_t setIndex) const;
+
 		uint32_t GetMaxSet() const { return mMaxSet; }
 
 	private:

@@ -10,14 +10,13 @@ namespace BHive
 
 	struct GlobalBuffers
 	{
-		
+		void UpdateCPU();
+
+		void Upload();
+
 		void Register(uint32_t binding, const Ref<BufferBase> & buffer);
 
 		void Register(uint32_t binding, const Ref<Texture>& texture);
-
-		const Ref<BufferBase> GetBuffer(uint32_t binding) const { return mBuffers.at(binding); }
-
-		bool Contains(uint32_t binding) const;
 
 		auto& GetBuffers() const { return mBuffers; }
 

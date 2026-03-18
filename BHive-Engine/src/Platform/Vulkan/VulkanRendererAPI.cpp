@@ -13,7 +13,8 @@
 #include "gfx/GlobalBuffers.h"
 #include "VulkanUniformBuffer.h"
 #include "VulkanSetManager.h"
-#include "core/subsystem/SubSystem.h"
+#include "systems/GlobalSetRegistry.h"
+#include "systems/MaterialSetRegistry.h"
 
 namespace BHive
 {
@@ -60,6 +61,8 @@ namespace BHive
 		vk::DescriptorPoolCreateInfo pool_create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind, 1000, pool_sizes);
 		mDescriptorPool = mDevice.createDescriptorPool(pool_create_info);
 
+		AddSubSystem<GlobalSetRegistry>();
+		AddSubSystem<MaterialSetRegistry>();
 	}
 
 	void VulkanRendererAPI::Shutdown()
@@ -124,17 +127,6 @@ namespace BHive
 		sDeletionQueue.emplace(mCompletedFrame, fn);
 	}
 
-	vk::DescriptorSet* VulkanRendererAPI::GetGlobalSet(uint64_t setHash, uint32_t frame, const VulkanPipeline* pipeline) 
-	{
-		auto it = mGlobalSets.find(setHash);
-		if (it == mGlobalSets.end())
-		{
-			auto manager = CreateSetManager(pipeline, GLOBAL_SET_INDEX);
-			mGlobalSets[setHash] = {setHash, 0, manager};
-		}
-
-		return mGlobalSets.at(setHash).Manager->GetNativeSet(frame).As<vk::DescriptorSet>();
-	}
 
 	Ref<ISetManager> VulkanRendererAPI::CreateSetManager(const Pipeline* pipeline, uint32_t setIndex)
 	{
@@ -150,55 +142,8 @@ namespace BHive
 
 	void VulkanRendererAPI::OnPipelineCreated(const VulkanPipeline *pipeline)
 	{
-		auto program = pipeline->GetShaderProgram();
-		auto& setHashes = pipeline->GetVulkanShader().GetSetHashes();
-		auto& refl = program->GetRefl();
-		auto &globals = GetSubSystem<GlobalBuffers>();
-
-		for (auto& [set, hash] : setHashes)
-		{
-			if (set != GLOBAL_SET_INDEX)
-				continue;
-
-			Ref<ISetManager> manager;
-			if (!mGlobalSets.contains(hash))
-			{
-				manager = CreateSetManager(pipeline, set);
-				mGlobalSets[hash] = {hash, set, manager};
-			}
-			else
-			{
-				manager = mGlobalSets.at(hash).Manager;
-			}
-
-			auto& setBindings = refl.GetSetBindings(set);
-
-			for (auto& r : setBindings)
-			{
-				if (!IsBuffer(r.kind))
-					continue;
-
-				auto it = globals.GetBuffers().find(r.binding);
-				if (it == globals.GetBuffers().end())
-					continue;
-
-				manager->SetBuffer(r.binding, it->second);
-			}
-
-			for (auto &r : setBindings)
-			{
-				if (!IsTexture(r.kind))
-					continue;
-
-				auto it = globals.GetTextures().find(r.binding);
-				if (it == globals.GetTextures().end())
-					continue;
-
-				manager->SetTexture(r.binding, it->second);
-			}
-
-			manager->WriteStaticBindings();
-		}
+		auto &registry = GetSubSystem<GlobalSetRegistry>();
+		registry.EnsureGlobalSet(*pipeline, GLOBAL_SET_INDEX);
 	}
 
 	void VulkanRendererAPI::ProcessDeletionQueue(uint32_t frame)
@@ -239,8 +184,8 @@ namespace BHive
 
 		FVulkanRendererContext frame(cmd, current_frame, imageIndex);
 
-		for (auto &[_, entry] : mGlobalSets)
-			entry.Manager->Update(current_frame);
+		GetSubSystem<GlobalSetRegistry>().UpdatePerFrame(current_frame);
+		GetSubSystem<MaterialSetRegistry>().UpdatePerFrame(current_frame);
 
 		updates.Execute(frame);
 

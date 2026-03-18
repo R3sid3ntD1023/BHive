@@ -34,8 +34,6 @@ namespace BHive
 	private:
 		vk::raii::Device &mDevice;
 
-		Ref<ISetManager> mMaterialSetManager;
-
 		Ref<ShaderProgram> mProgram;
 		
 		std::vector<uint8_t> mPushConstantData;
@@ -49,5 +47,7 @@ namespace BHive
 		const FShaderReflectionLookUp *mReflectionLookupTablePtr = nullptr; 
 
 		FSetReflection mTargetSet;
+
+		friend class MaterialSetRegistry;
 	};
 }

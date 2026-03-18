@@ -35,6 +35,11 @@ namespace BHive
 		return VK_NULL_HANDLE;
 	}
 
+	bool VulkanShader::HasSet(uint32_t setIndex) const
+	{
+		return mDescriptorSetLayouts.contains(setIndex);
+	}
+
 	void VulkanShader::CreateModules(const ShaderAsset &asset)
 	{
 		for (auto &[stage, data] : asset.Stages)

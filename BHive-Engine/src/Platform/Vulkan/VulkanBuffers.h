@@ -105,4 +105,26 @@ namespace BHive
 		BufferLayout mLayout{};
 		
 	};
+
+	
+
+	class BHIVE_API VulkanBuffer : public GenericBuffer
+	{
+	public:
+		VulkanBuffer(uint32_t binding, size_t size, EBufferUsage usage, const void *data = nullptr);
+
+		VulkanBuffer(size_t size, EBufferUsage usage);
+
+		~VulkanBuffer();
+
+		void SetData(const void *data, size_t, uint32_t offset = 0) override;
+
+		NativeHandle GetNativeHandle(uint32_t frame) const override;
+
+	private:
+		vk::raii::Device &mDevice;
+		std::array<AllocatedBuffer, MAX_FRAMES_IN_FLIGHT> mBuffer;
+		uint32_t mBinding{0};
+		uint32_t mSize{0};
+	};
 } // namespace BHive

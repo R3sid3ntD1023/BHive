@@ -22,55 +22,71 @@ namespace BHive
 
 	void VulkanSetManager::SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer)
 	{
+		BindingInfo *bindingInfo = nullptr;
+
 		for (auto &b : mBindings)
 		{
 			if (b.ReflResource.binding == binding && IsBuffer(b.ReflResource.kind))
 			{
 				b.Buffer = buffer;
-
-				std::vector<vk::WriteDescriptorSet> writes;
-				for (uint32_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; ++frame)
-				{
-					auto &set = *mSets[frame];
-					auto info = BuildBufferInfo(b);
-					writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), nullptr, info);
-				}
-				if (!writes.empty())
-					mDevice.updateDescriptorSets(writes, {});
-
+				bindingInfo = &b;
 				break;
 			}
 		}
+
+		if (!bindingInfo)
+			return;
+
+		RenderCommand::SubmitResourceUpdate(
+			[=](auto &ctx)
+			{
+				auto vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+
+				auto &set = *mSets[vk_ctx.Frame];
+				auto info = BuildBufferInfo(*bindingInfo);
+				vk::WriteDescriptorSet write(set, bindingInfo->ReflResource.binding, 0, ToVkType(bindingInfo->ReflResource.kind), nullptr, info);
+
+				mDevice.updateDescriptorSets(write, {});
+
+					
+			});
+		
 	}
 
 	void VulkanSetManager::SetTexture(uint32_t binding, const Ref<Texture> &texture)
 	{
-		for (auto& b : mBindings)
+		BindingInfo *bindingInfo = nullptr;
+
+		for (auto &b : mBindings)
 		{
 			if (b.ReflResource.binding == binding && IsTexture(b.ReflResource.kind))
 			{
 				b.Texture = texture;
-
-				std::vector<vk::WriteDescriptorSet> writes;
-				for (uint32_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
-				{
-					auto &set = *mSets[frame];
-					auto info = BuildImageInfo(b);
-					writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), info);
-				}
-				if (!writes.empty())
-					mDevice.updateDescriptorSets(writes, {});
-
+				bindingInfo = &b;
 				break;
+					
 			}
 		}
+
+		if (!bindingInfo)
+			return;
+
+		RenderCommand::SubmitResourceUpdate(
+			[=](auto &ctx)
+			{
+				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+
+				auto &set = *mSets[vk_ctx.Frame];
+				auto info = BuildImageInfo(*bindingInfo);
+				vk::WriteDescriptorSet write(set, bindingInfo->ReflResource.binding, 0, ToVkType(bindingInfo->ReflResource.kind), info);
+
+				mDevice.updateDescriptorSets(write, {});
+			});
 	}
 
 	void VulkanSetManager::Update(uint32_t frame)
 	{
-		ASSERT(frame < MAX_FRAMES_IN_FLIGHT)
-
-		auto& set = *mSets[frame];
+		auto &set = *mSets[frame];
 
 		std::vector<vk::WriteDescriptorSet> writes;
 
@@ -79,9 +95,18 @@ namespace BHive
 			if (b.UpdateRate != EBindingUpdateRate::PerFrame)
 				continue;
 
-			auto info = BuildBufferInfo(b);
-
-			writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), nullptr, info);
+			if (IsBuffer(b.ReflResource.kind))
+			{
+				ASSERT(b.Buffer)
+				auto info = BuildBufferInfo(b);
+				writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), nullptr, info);
+			}
+			else if (IsTexture(b.ReflResource.kind))
+			{
+				ASSERT(b.Texture)
+				auto info = BuildImageInfo(b);
+				writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), info);
+			}
 		}
 
 		if (!writes.empty())
@@ -119,6 +144,13 @@ namespace BHive
 				break;
 			}
 
+			if (mSetIndex == GLOBAL_SET_INDEX)
+				info.UpdateRate = EBindingUpdateRate::Static;
+			else
+				info.UpdateRate = EBindingUpdateRate::PerFrame;
+
+			
+
 			mBindings.push_back(info);
 		}
 	}
@@ -132,31 +164,44 @@ namespace BHive
 		mSets.clear();
 		mSets.reserve(MAX_FRAMES_IN_FLIGHT);
 
-		auto sets = mDevice.allocateDescriptorSets(alloc_info);
-		for (auto& s : sets)
-			mSets.emplace_back(std::move(s));
+		mSets = vk::raii::DescriptorSets(mDevice, alloc_info);
 	}
 
 	void VulkanSetManager::WriteStaticBindings()
 	{
-		std::vector<vk::WriteDescriptorSet> writes;
-
-		for (auto& b : mBindings)
-		{
-			if (b.UpdateRate != EBindingUpdateRate::Static)
-				continue;
-
-			for (uint32_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
+		RenderCommand::SubmitResourceUpdate(
+			[&](auto &ctx)
 			{
-				auto &set = *mSets[frame];
-				auto info = BuildImageInfo(b);
-				writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), info);
-			}
-			
-		}
+				auto& vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+				std::vector<vk::WriteDescriptorSet> writes;
 
-		if (!writes.empty())
-			mDevice.updateDescriptorSets(writes, {});
+				for (auto &b : mBindings)
+				{
+					if (b.UpdateRate != EBindingUpdateRate::Static)
+						continue;
+
+					for (uint32_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
+					{
+						auto &set = *mSets[frame];
+
+						if (IsBuffer(b.ReflResource.kind))
+						{
+							ASSERT(b.Buffer)
+							auto info = BuildBufferInfo(b);
+							writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), nullptr, info);
+						}
+						else if (IsTexture(b.ReflResource.kind))
+						{
+							ASSERT(b.Texture)
+							auto info = BuildImageInfo(b);
+							writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), info);
+						}
+					}
+				}
+
+				if (!writes.empty())
+					mDevice.updateDescriptorSets(writes, {});
+			});
 	}
 
 	vk::DescriptorBufferInfo VulkanSetManager::BuildBufferInfo(const BindingInfo &b) const

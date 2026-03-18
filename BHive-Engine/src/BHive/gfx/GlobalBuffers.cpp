@@ -1,10 +1,16 @@
 #include "GlobalBuffers.h"
 #include "gfx/UniformBuffer.h"
 #include "gfx/StorageBuffer.h"
+#include "Platform/Vulkan/systems/GlobalSetRegistry.h"
 
 namespace BHive
 {
-
+	void GlobalBuffers::UpdateCPU()
+	{
+	}
+	void GlobalBuffers::Upload()
+	{
+	}
 	void GlobalBuffers::Register(uint32_t binding, const Ref<BufferBase> &buffer)
 	{
 		mBuffers.emplace(binding, buffer);
@@ -14,11 +20,5 @@ namespace BHive
 	{
 		mTextures.emplace(binding, texture);
 	}
-
-	bool GlobalBuffers::Contains(uint32_t binding) const
-	{
-		return mBuffers.contains(binding);
-	}
-
 
 } // namespace BHive

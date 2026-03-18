@@ -30,11 +30,9 @@ namespace BHive
 
 		vk::DescriptorSetLayout GetSetLayout(uint32_t set) const;
 
-		void SetMaterialSetManager(ISetManager *manager);
-
 		void SetObjectSetManager(ISetManager *manager);
 
-		void SetBatchSetManager(ISetManager *manager);
+		ISetManager *GetBatchSetManager() const override { return mBatchSetManager.get(); }
 
 	private:
 		vk::raii::Device &mDevice;
@@ -49,10 +47,8 @@ namespace BHive
 
 		Scope<VulkanShader> mShader;
 
-		ISetManager *mMaterialSetManager = nullptr;
-
 		ISetManager *mObjectSetManager = nullptr;
 
-		ISetManager *mBatchSetManager = nullptr;
+		Ref<ISetManager> mBatchSetManager;
 	};
 } // namespace BHive
