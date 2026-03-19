@@ -39,12 +39,12 @@ namespace BHive
 		return nullptr;
 	}
 
-	Ref<GPUBuffer> GPUBuffer::Create(uint32_t binding, size_t size, EBufferType usage, const void *data)
+	Ref<GPUBuffer> GPUBuffer::Create(size_t size, EBufferType usage, const void *data)
 	{
 		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::Vulkan:
-			return CreateRef<VulkanGPUBuffer>(binding, size, usage, data);
+			return CreateRef<VulkanGPUBuffer>(size, usage, data);
 		default:
 			break;
 		}
@@ -53,12 +53,12 @@ namespace BHive
 		return nullptr;
 	}
 
-	Ref<GPUBuffer> GPUBuffer::Create(uint32_t binding, size_t size, EBufferType usage)
+	Ref<GPUBuffer> GPUBuffer::Create(size_t size, EBufferType usage)
 	{
 		switch (RenderCommand::GetGraphicsAPI())
 		{
 		case RendererAPI::Vulkan:
-			return CreateRef<VulkanGPUBuffer>(binding, size, usage);
+			return CreateRef<VulkanGPUBuffer>(size, usage);
 		default:
 			break;
 		}

@@ -1,6 +1,14 @@
 #include "Frustum.h"
 #include "MathFunctionLibrary.h"
 
+#ifdef near
+	#undef near
+#endif
+
+#ifdef far
+	#undef far
+#endif
+
 namespace BHive
 {
 	Frustum::Frustum(const glm::mat4 &projection, const glm::mat4 &view)

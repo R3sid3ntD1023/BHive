@@ -1,6 +1,4 @@
 #include "GlobalBuffers.h"
-#include "gfx/UniformBuffer.h"
-#include "gfx/StorageBuffer.h"
 #include "Platform/Vulkan/systems/GlobalSetRegistry.h"
 
 namespace BHive

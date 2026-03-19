@@ -42,7 +42,7 @@ namespace BHive
 
 			BlueTexture = Texture2D::Create({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
 
-			CameraUniformBuffer = GPUBuffer::Create(0, sizeof(FCameraData), EBufferType::UniformBuffer);
+			CameraUniformBuffer = GPUBuffer::Create(sizeof(FCameraData), EBufferType::UniformBuffer);
 			GetSubSystem<GlobalBuffers>().Register(0, CameraUniformBuffer);
 
 			ModelBuffer.Init();

@@ -5,7 +5,7 @@ namespace BHive
 {
 	void LightBuffer::Init()
 	{
-		LightBuffer = GPUBuffer::Create(sLightBufferBinding, sizeof(FLightInfo), EBufferType::StorageBuffer);
+		LightBuffer = GPUBuffer::Create(sizeof(FLightInfo), EBufferType::StorageBuffer);
 	}
 
 	void LightBuffer::Begin()

@@ -34,9 +34,11 @@ namespace BHive
 	public:
 		virtual ~GPUBuffer() = default;
 
-		static Ref<GPUBuffer> Create(uint32_t binding, size_t size, EBufferType type, const void *data);
+		virtual void BindAtBindingPoint(uint32_t binding) = 0;
 
-		static Ref<GPUBuffer> Create(uint32_t binding, size_t size, EBufferType type);
+		static Ref<GPUBuffer> Create(size_t size, EBufferType type, const void *data);
+
+		static Ref<GPUBuffer> Create(size_t size, EBufferType type);
 	};
 
 

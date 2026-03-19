@@ -111,11 +111,14 @@ namespace BHive
 	class BHIVE_API VulkanGPUBuffer : public GPUBuffer
 	{
 	public:
-		VulkanGPUBuffer(uint32_t binding, size_t size, EBufferType type, const void *data);
+		VulkanGPUBuffer(size_t size, EBufferType type, const void *data);
 
-		VulkanGPUBuffer(uint32_t binding, size_t size, EBufferType type);
+		VulkanGPUBuffer(size_t size, EBufferType type);
 
 		~VulkanGPUBuffer();
+
+		//unused in vulkan
+		void BindAtBindingPoint(uint32_t binding) override {}
 
 		void SetData(const void *data, size_t, uint32_t offset = 0) override;
 
@@ -124,7 +127,6 @@ namespace BHive
 	private:
 		vk::raii::Device &mDevice;
 		std::array<AllocatedBuffer, MAX_FRAMES_IN_FLIGHT> mBuffer;
-		uint32_t mBinding{0};
 		uint32_t mSize{0};
 	};
 } // namespace BHive

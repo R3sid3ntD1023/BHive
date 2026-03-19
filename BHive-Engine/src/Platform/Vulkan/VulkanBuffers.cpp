@@ -158,9 +158,8 @@ namespace BHive
 		mLayout = layout;
 	}
 
-	VulkanGPUBuffer::VulkanGPUBuffer(uint32_t binding, size_t size, EBufferType type, const void *data)
+	VulkanGPUBuffer::VulkanGPUBuffer(size_t size, EBufferType type, const void *data)
 		: mDevice(VulkanBackend::GetLogicalDevice()),
-		  mBinding(binding),
 		  mSize(size)
 	{
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -177,9 +176,8 @@ namespace BHive
 		}
 	}
 
-	VulkanGPUBuffer::VulkanGPUBuffer(uint32_t binding, size_t size, EBufferType type)
+	VulkanGPUBuffer::VulkanGPUBuffer(size_t size, EBufferType type)
 		: mDevice(VulkanBackend::GetLogicalDevice()),
-		  mBinding(binding),
 		  mSize(size)
 	{
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)

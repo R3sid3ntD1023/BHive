@@ -77,7 +77,7 @@ namespace BHive
 			commands.emplace_back(cmd);
 		}
 
-		mMultiDrawIndirectBuffer = GPUBuffer::Create(0, sizeof(MultiDrawIndirectCommand) * commands.size(), EBufferType::IndirectBuffer);
+		mMultiDrawIndirectBuffer = GPUBuffer::Create(sizeof(MultiDrawIndirectCommand) * commands.size(), EBufferType::IndirectBuffer);
 		mMultiDrawIndirectBuffer->SetData(commands.data(), sizeof(MultiDrawIndirectCommand) * commands.size());
 	}
 

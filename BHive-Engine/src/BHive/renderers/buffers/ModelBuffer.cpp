@@ -17,7 +17,7 @@ namespace BHive
 		mMaxObjects = maxObjects;
 		mBatch.reserve(maxObjects);
 
-		mObjectBuffer = GPUBuffer::Create(SSBO_OBJECT_BATCH_BINDING, sizeof(FPerObjectData) * maxObjects, EBufferType::StorageBuffer);
+		mObjectBuffer = GPUBuffer::Create(sizeof(FPerObjectData) * maxObjects, EBufferType::StorageBuffer);
 	}
 
 	uint32_t FModelBuffer::Submit(const FTransform &transform)

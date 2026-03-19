@@ -48,13 +48,14 @@ namespace BHive
 	}
 
 	VulkanVertexArray::VulkanVertexArray(const std::vector<Ref<VertexBuffer>> &vertex_buffers, const Ref<IndexBuffer> &index_buffer)
-		: mVertexAttributeIndex(0),
-			mVertexBuffers(vertex_buffers),
-		  mIndexBuffer(index_buffer)
+		: mVertexAttributeIndex(0)
 	{
+		if (mIndexBuffer)
+			SetIndexBuffer(index_buffer);
+
 		for (auto &vb : vertex_buffers)
 		{
-			CreateBindingsAndAttributes(vb);
+			AddVertexBuffer(vb);
 		}
 	}
 
@@ -62,8 +63,7 @@ namespace BHive
 	{
 		auto bindings = mBindings;
 		auto attributes = mAttributes;
-		auto vertex_buffers = mVertexBuffers;
-		auto index_buffer_ref = mIndexBuffer;
+		auto handles = mCachedHandles;
 
 		auto &pass = RenderCommand::GetActivePass();
 		pass.CommandList.Push(
@@ -72,30 +72,17 @@ namespace BHive
 			{
 				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
 
-				auto size = vertex_buffers.size();
-				std::vector<vk::Buffer> vk_vertex_buffers(size);
-				std::vector<vk::DeviceSize> offsets(size, 0);
-				vk::Buffer index_buffer;
-
-				if (index_buffer_ref)
-				{
-					index_buffer = index_buffer_ref->GetNativeHandle(vk_ctx.Frame).As<AllocatedBuffer>()->Buffer;
-				}
-
-				for (uint32_t i = 0; i < size; i++)
-				{
-					auto &vb = vertex_buffers[i];
-					vk_vertex_buffers[i] = vb->GetNativeHandle(vk_ctx.Frame).As<AllocatedBuffer>()->Buffer;
-				}
+				auto vb_size = handles[vk_ctx.Frame].VertexBuffers.size();
+				std::vector<vk::DeviceSize> offsets(vb_size, 0);
 
 				ASSERT(bindings.size() && attributes.size());
 
 				vk_ctx.CommandBuffer.setVertexInputEXT(bindings, attributes);
-				vk_ctx.CommandBuffer.bindVertexBuffers(0, vk_vertex_buffers, offsets);
+				vk_ctx.CommandBuffer.bindVertexBuffers(0, handles[vk_ctx.Frame].VertexBuffers, offsets);
 
-				if (index_buffer)
+				if (handles[vk_ctx.Frame].IndexBuffer)
 				{
-					vk_ctx.CommandBuffer.bindIndexBuffer(index_buffer, 0, vk::IndexType::eUint32);
+					vk_ctx.CommandBuffer.bindIndexBuffer(handles[vk_ctx.Frame].IndexBuffer, 0, vk::IndexType::eUint32);
 				}
 			});
 	}
@@ -107,11 +94,15 @@ namespace BHive
 	void VulkanVertexArray::SetIndexBuffer(const Ref<IndexBuffer> &indexbuffer)
 	{
 		mIndexBuffer = indexbuffer;
+		for(uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+			mCachedHandles[i].IndexBuffer = mIndexBuffer->GetNativeHandle(i).As<AllocatedBuffer>()->Buffer;
 	}
 
 	void VulkanVertexArray::AddVertexBuffer(const Ref<VertexBuffer> &vertexbuffer)
 	{
 		mVertexBuffers.push_back(vertexbuffer);
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+			mCachedHandles[i].VertexBuffers.push_back(vertexbuffer->GetNativeHandle(i).As<AllocatedBuffer>()->Buffer);
 		CreateBindingsAndAttributes(vertexbuffer);
 	}
 

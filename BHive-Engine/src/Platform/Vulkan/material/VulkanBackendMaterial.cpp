@@ -42,12 +42,12 @@ namespace BHive
 			for (auto &[name, ubo] : mTargetSet.UniformBuffers)
 			{
 
-				mLocalBuffers.emplace(name, GPUBuffer::Create(ubo.Binding, ubo.Size, EBufferType::UniformBuffer));
+				mLocalBuffers.emplace(name, GPUBuffer::Create(ubo.Size, EBufferType::UniformBuffer));
 			}
 
 			for (auto &[name, ssbo] : mTargetSet.StorageBuffers)
 			{
-				mLocalBuffers.emplace(name, GPUBuffer::Create(ssbo.Binding, ssbo.Size, EBufferType::StorageBuffer));
+				mLocalBuffers.emplace(name, GPUBuffer::Create(ssbo.Size, EBufferType::StorageBuffer));
 			}
 
 			GetSubSystem<MaterialSetRegistry>().CreateForMaterial(this, vkPipeline.get());
