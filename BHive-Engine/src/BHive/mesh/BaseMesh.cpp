@@ -1,5 +1,5 @@
 #include "BaseMesh.h"
-#include "gfx/StorageBuffer.h"
+#include "gfx/Buffers.h"
 #include "gfx/VertexArray.h"
 #include "glad/glad.h"
 
@@ -34,10 +34,10 @@ namespace BHive
 	void BaseMesh::CreateVertexArrayBuffer()
 	{
 		auto &data = mData;
-		auto indexbuffer = IndexBuffer::Create((uint32_t)data.mIndices.size(), EBufferUsage::Static);
+		auto indexbuffer = IndexBuffer::Create((uint32_t)data.mIndices.size(), EBufferUsageType::Static);
 		indexbuffer->SetData(data.mIndices.data(), data.mIndices.size() * sizeof(uint32_t));
 
-		auto vertexbuffer = VertexBuffer::Create(data.mVertices.size() * sizeof(FVertex), EBufferUsage::Static);
+		auto vertexbuffer = VertexBuffer::Create(data.mVertices.size() * sizeof(FVertex), EBufferUsageType::Static);
 		vertexbuffer->SetData(data.mVertices.data(), data.mVertices.size() * sizeof(FVertex));
 		vertexbuffer->SetLayout(FVertex::Layout());
 

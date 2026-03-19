@@ -30,8 +30,8 @@ namespace BHive
 			mVertexBufferPtr = new T[vcount];
 			mIndexBufferPtr = new uint32_t[icount];
 
-			mIndexBuffer = IndexBuffer::Create((uint32_t)icount, EBufferUsage::Dynamic);
-			mVertexBuffer = VertexBuffer::Create(vcount * sizeof(T), EBufferUsage::Dynamic);
+			mIndexBuffer = IndexBuffer::Create((uint32_t)icount, EBufferUsageType::Dynamic);
+			mVertexBuffer = VertexBuffer::Create(vcount * sizeof(T), EBufferUsageType::Dynamic);
 			mVertexBuffer->SetLayout(T::GetLayout());
 
 			mVertexArray = VertexArray::Create({mVertexBuffer}, mIndexBuffer);

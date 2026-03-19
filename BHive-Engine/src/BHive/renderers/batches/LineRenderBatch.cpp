@@ -18,7 +18,7 @@ namespace BHive
 	{
 		mVertexDataBuffer = new FLineVertex[sMaxVertexCount];
 
-		mVertexBuffer = VertexBuffer::Create(sMaxVertexCount * sizeof(FLineVertex), EBufferUsage::Dynamic);
+		mVertexBuffer = VertexBuffer::Create(sMaxVertexCount * sizeof(FLineVertex), EBufferUsageType::Dynamic);
 		mVertexBuffer->SetLayout({{EShaderDataType::Float3}, {EShaderDataType::Float4}, {EShaderDataType::Int}});
 
 		mVertexArray = VertexArray::Create();

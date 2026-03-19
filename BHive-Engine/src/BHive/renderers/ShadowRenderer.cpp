@@ -3,7 +3,7 @@
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
-#include "gfx/StorageBuffer.h"
+#include "gfx/Buffers.h"
 #include "material/Material.h"
 #include "Renderer.h"
 #include "ShadowRenderer.h"
@@ -49,7 +49,7 @@ namespace BHive
 	struct FShadowRenderData
 	{
 		FShadowPasses ShadowPasses;
-		Ref<StorageBuffer> ShadowBuffer;
+		Ref<GPUBuffer> ShadowBuffer;
 		FShadowData ShadowData;
 	};
 
@@ -79,7 +79,7 @@ namespace BHive
 		shadow_passes.Shaders[1] = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowPointLight.glsl");
 		shadow_passes.Shaders[2] = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowSpotLight.glsl");
 
-		mShadowRenderData->ShadowBuffer = StorageBuffer::Create(sizeof(FShadowData));
+		mShadowRenderData->ShadowBuffer = GPUBuffer::Create(SHADOW_SSBO_BINDING, sizeof(FShadowData), EBufferType::StorageBuffer);
 	}
 
 	void ShadowRenderer::Begin()

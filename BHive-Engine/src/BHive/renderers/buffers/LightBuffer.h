@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	class StorageBuffer;
+	class GPUBuffer;
 
 	static constexpr uint32_t sLightBufferBinding = 4;
 	static constexpr uint32_t sMaxLights = 32;
@@ -37,7 +37,7 @@ namespace BHive
 	private:
 		FLightInfo LightInfo{};
 
-		Ref<StorageBuffer> LightBuffer;
+		Ref<GPUBuffer> LightBuffer;
 	};
 
 } // namespace BHive

@@ -1,5 +1,5 @@
 #include "ModelBuffer.h"
-#include "gfx/StorageBuffer.h"
+#include "gfx/Buffers.h"
 #include "gfx/GlobalBuffers.h"
 #include "core/subsystem/SubSystem.h"
 
@@ -17,7 +17,7 @@ namespace BHive
 		mMaxObjects = maxObjects;
 		mBatch.reserve(maxObjects);
 
-		mObjectBuffer = StorageBuffer::Create(sizeof(FPerObjectData) * maxObjects);
+		mObjectBuffer = GPUBuffer::Create(SSBO_OBJECT_BATCH_BINDING, sizeof(FPerObjectData) * maxObjects, EBufferType::StorageBuffer);
 	}
 
 	uint32_t FModelBuffer::Submit(const FTransform &transform)

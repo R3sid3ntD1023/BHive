@@ -1,9 +1,8 @@
 #include "buffers/ModelBuffer.h"
 #include "gfx/Texture.h"
 #include "Renderer.h"
-#include "gfx/UniformBuffer.h"
+#include "gfx/Buffers.h"
 #include "gfx/GlobalBuffers.h"
-#include "gfx/StorageBuffer.h"
 
 namespace BHive
 {
@@ -22,7 +21,7 @@ namespace BHive
 		Ref<Texture> BlackTexture;
 		Ref<Texture> BlueTexture;
 
-		Ref<UniformBuffer> CameraUniformBuffer;
+		Ref<GPUBuffer> CameraUniformBuffer;
 
 		RenderData()
 		{
@@ -43,7 +42,7 @@ namespace BHive
 
 			BlueTexture = Texture2D::Create({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
 
-			CameraUniformBuffer = UniformBuffer::Create(0, sizeof(FCameraData));
+			CameraUniformBuffer = GPUBuffer::Create(0, sizeof(FCameraData), EBufferType::UniformBuffer);
 			GetSubSystem<GlobalBuffers>().Register(0, CameraUniformBuffer);
 
 			ModelBuffer.Init();

@@ -3,7 +3,6 @@
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
-#include "gfx/UniformBuffer.h"
 #include "mesh/primitives/Cube.h"
 #include "PMREMGenerator.h"
 #include "Renderer.h"

@@ -276,6 +276,20 @@ namespace BHive
 		}
 	}
 
+	enum class EBufferType
+	{
+		UniformBuffer = 0,
+		StorageBuffer = 1 << 0,
+		IndirectBuffer = 2 << 0
+	};
+
+	enum class EBufferUsageType
+	{
+		Static,
+		Dynamic
+	};
+
+
 	inline bool IsDepthFormat(EFormat format)
 	{
 		return format == EFormat::DEPTH24_STENCIL8 || format == EFormat::DEPTH_COMPONENT || format == EFormat::DEPTH_COMPONENT_24 || format == EFormat::DEPTH_COMPONENT_32F;

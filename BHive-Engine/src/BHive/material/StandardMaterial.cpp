@@ -2,7 +2,6 @@
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
-#include "gfx/UniformBuffer.h"
 #include "renderers/Renderer.h"
 #include "StandardMaterial.h"
 

@@ -1,11 +1,11 @@
-#include "gfx/StorageBuffer.h"
+#include "gfx/Buffers.h"
 #include "LightBuffer.h"
 
 namespace BHive
 {
 	void LightBuffer::Init()
 	{
-		LightBuffer = StorageBuffer::Create(sizeof(FLightInfo));
+		LightBuffer = GPUBuffer::Create(sLightBufferBinding, sizeof(FLightInfo), EBufferType::StorageBuffer);
 	}
 
 	void LightBuffer::Begin()

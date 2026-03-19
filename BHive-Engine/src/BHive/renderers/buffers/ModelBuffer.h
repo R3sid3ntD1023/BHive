@@ -2,7 +2,7 @@
 
 #include "core/Core.h"
 #include "core/math/Transform.h"
-#include "gfx/StorageBuffer.h"
+#include "gfx/Buffers.h"
 
 namespace BHive
 {
@@ -21,13 +21,13 @@ namespace BHive
 
 		void Reset();
 
-		Ref<StorageBuffer> GetObjectBuffer() const { return mObjectBuffer; }
+		Ref<GPUBuffer> GetObjectBuffer() const { return mObjectBuffer; }
 
 	private:
-		Ref<StorageBuffer> mBoneBuffer;
-		Ref<StorageBuffer> mObjectBuffer;
-		Ref<StorageBuffer> mInstanceBuffer;
-		Ref<StorageBuffer> mIndirectBuffer;
+		Ref<GPUBuffer> mBoneBuffer;
+		Ref<GPUBuffer> mObjectBuffer;
+		Ref<GPUBuffer> mInstanceBuffer;
+		Ref<GPUBuffer> mIndirectBuffer;
 		std::vector<FPerObjectData> mBatch;
 		uint32_t mMaxObjects = 0;
 	};

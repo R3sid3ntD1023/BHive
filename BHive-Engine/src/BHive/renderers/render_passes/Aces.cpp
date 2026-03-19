@@ -2,7 +2,7 @@
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
-#include "gfx/UniformBuffer.h"
+#include "gfx/Buffers.h"
 
 namespace BHive
 {

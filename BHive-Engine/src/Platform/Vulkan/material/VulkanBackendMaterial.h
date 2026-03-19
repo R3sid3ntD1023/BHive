@@ -8,8 +8,7 @@ namespace BHive
 {
 	class ShaderProgram;
 	struct FShaderReflection;
-	class UniformBuffer;
-	class StorageBuffer;
+	class GPUBuffer;
 	class ISetManager;
 
 	class VulkanBackendMaterial : public IMaterialBackendInterface
@@ -38,9 +37,7 @@ namespace BHive
 		
 		std::vector<uint8_t> mPushConstantData;
 
-		std::unordered_map<std::string, Ref<UniformBuffer>> mLocalUBOs;
-
-		std::unordered_map<std::string, Ref<StorageBuffer>> mLocalSSBOs;
+		std::unordered_map<std::string, Ref<GPUBuffer>> mLocalBuffers;
 
 		const FShaderReflection* mReflectionMergedPtr = nullptr;
 

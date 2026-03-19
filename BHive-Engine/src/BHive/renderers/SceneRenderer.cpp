@@ -17,8 +17,6 @@
 #include "buffers/LightBuffer.h"
 #include "core/math/boundingbox/AABB.h"
 #include "core/math/volumes/SphereVolume.h"
-#include "gfx/StorageBuffer.h"
-#include "gfx/UniformBuffer.h"
 #include "mesh/SkeletalMesh.h"
 #include "mesh/StaticMesh.h"
 

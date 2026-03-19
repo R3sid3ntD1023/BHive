@@ -9,8 +9,7 @@
 #include "Platform/Vulkan/VulkanShader.h"
 #include "gfx/shader/ShaderReflection.h"
 #include "Platform/Vulkan/textures/VulkanImage.h"
-#include "gfx/UniformBuffer.h"
-#include "gfx/StorageBuffer.h"
+#include "gfx/Buffers.h"
 #include "../systems/MaterialSetRegistry.h"
 
 namespace BHive
@@ -42,12 +41,13 @@ namespace BHive
 			// create local buffers
 			for (auto &[name, ubo] : mTargetSet.UniformBuffers)
 			{
-				mLocalUBOs.emplace(name, UniformBuffer::Create(ubo.Binding, ubo.Size));
+
+				mLocalBuffers.emplace(name, GPUBuffer::Create(ubo.Binding, ubo.Size, EBufferType::UniformBuffer));
 			}
 
 			for (auto &[name, ssbo] : mTargetSet.StorageBuffers)
 			{
-				mLocalSSBOs.emplace(name, StorageBuffer::Create(ssbo.Binding, ssbo.Size));
+				mLocalBuffers.emplace(name, GPUBuffer::Create(ssbo.Binding, ssbo.Size, EBufferType::StorageBuffer));
 			}
 
 			GetSubSystem<MaterialSetRegistry>().CreateForMaterial(this, vkPipeline.get());
@@ -129,7 +129,7 @@ namespace BHive
 			if (ub.Members.contains(name))
 			{
 				auto &u = ub.Members.at(name);
-				auto ubo = mLocalUBOs.at(ubo_name);
+				auto ubo = mLocalBuffers.at(ubo_name);
 				ubo->SetData(data, size, u.Offset);
 				return;
 			}
@@ -137,7 +137,7 @@ namespace BHive
 
 		for (auto &[name, ssb] : mTargetSet.StorageBuffers)
 		{
-			auto ssbo = mLocalSSBOs.at(name);
+			auto ssbo = mLocalBuffers.at(name);
 			ssbo->SetData(data, size);
 			return;
 		}

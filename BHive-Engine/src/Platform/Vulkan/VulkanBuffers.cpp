@@ -2,6 +2,7 @@
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
 #include "VulkanBackend.h"
+#include "VulkanConverters.h"
 
 namespace BHive
 {
@@ -157,7 +158,7 @@ namespace BHive
 		mLayout = layout;
 	}
 
-	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t binding, size_t size, const void *data)
+	VulkanGPUBuffer::VulkanGPUBuffer(uint32_t binding, size_t size, EBufferType type, const void *data)
 		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mBinding(binding),
 		  mSize(size)
@@ -165,7 +166,7 @@ namespace BHive
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			BufferDesc desc{};
-			desc.Usage = vk::BufferUsageFlagBits::eStorageBuffer;
+			desc.Usage = ToVkBufferType(type);
 			desc.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
 			desc.Size = size;
 			mBuffer[i] = VulkanBackend::GetGPUResourceManager().CreateBuffer(desc);
@@ -176,14 +177,15 @@ namespace BHive
 		}
 	}
 
-	VulkanStorageBuffer::VulkanStorageBuffer(size_t size)
+	VulkanGPUBuffer::VulkanGPUBuffer(uint32_t binding, size_t size, EBufferType type)
 		: mDevice(VulkanBackend::GetLogicalDevice()),
+		  mBinding(binding),
 		  mSize(size)
 	{
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			BufferDesc desc{};
-			desc.Usage = vk::BufferUsageFlagBits::eStorageBuffer;
+			desc.Usage = ToVkBufferType(type);
 			desc.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
 			desc.Size = size;
 			mBuffer[i] = VulkanBackend::GetGPUResourceManager().CreateBuffer(desc);
@@ -192,7 +194,7 @@ namespace BHive
 		}
 	}
 
-	VulkanStorageBuffer::~VulkanStorageBuffer()
+	VulkanGPUBuffer::~VulkanGPUBuffer()
 	{
 		auto buffers = mBuffer;
 
@@ -204,7 +206,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanStorageBuffer::SetData(const void *data, size_t size, uint32_t offset)
+	void VulkanGPUBuffer::SetData(const void *data, size_t size, uint32_t offset)
 	{
 		if (!data)
 			return;
@@ -224,63 +226,7 @@ namespace BHive
 			});
 	}
 
-	NativeHandle VulkanStorageBuffer::GetNativeHandle(uint32_t frame) const
-	{
-		return Handle::Buffer(&mBuffer[frame]);
-	}
-
-	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t binding, uint64_t size, const void *data)
-		: mDevice(VulkanBackend::GetLogicalDevice()),
-		  mSize(size)
-	{
-
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			BufferDesc desc{};
-			desc.Usage = vk::BufferUsageFlagBits::eUniformBuffer;
-			desc.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-			desc.Size = size;
-			mBuffer[i] = VulkanBackend::GetGPUResourceManager().CreateBuffer(desc);
-
-			VulkanBackend::GetGPUResourceManager().MapMemory(mBuffer[i], 0, size);
-		}
-
-		SetData(data, size, 0);
-	}
-
-	VulkanUniformBuffer::~VulkanUniformBuffer()
-	{
-		auto buffers = mBuffer;
-
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			api->QueueDeletion([buffers, i](uint32_t) { VulkanBackend::GetGPUResourceManager().DestroyBuffer(buffers[i]); });
-		}
-	}
-
-	void VulkanUniformBuffer::SetData(const void *data, size_t size, uint32_t offset)
-	{
-		if (!data)
-			return;
-
-		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
-		std::memcpy(buffer_copy->data(), data, size);
-
-		RenderCommand::SubmitResourceUpdate(
-			[=](IRendererContext &ctx)
-			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-
-				const auto current_frame = vk_ctx.Frame;
-
-				auto mapped_memory = mBuffer[current_frame].Allocation.MappedPtr;
-				std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, buffer_copy->data(), size);
-			});
-	}
-
-	NativeHandle VulkanUniformBuffer::GetNativeHandle(uint32_t frame) const
+	NativeHandle VulkanGPUBuffer::GetNativeHandle(uint32_t frame) const
 	{
 		return Handle::Buffer(&mBuffer[frame]);
 	}

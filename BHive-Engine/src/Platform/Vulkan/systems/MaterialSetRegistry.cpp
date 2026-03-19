@@ -6,8 +6,7 @@
 #include "../VulkanRendererAPI.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/shader/ShaderReflection.h"
-#include "gfx/UniformBuffer.h"
-#include "gfx/StorageBuffer.h"
+#include "gfx/Buffers.h"
 #include "gfx/Texture.h"
 
 namespace BHive
@@ -66,7 +65,7 @@ namespace BHive
 	{
 		for (auto& [name, ub] : refl.UniformBuffers)
 		{
-			auto ubo = mat->mLocalUBOs.at(name);
+			auto ubo = mat->mLocalBuffers.at(name);
 			if (ubo)
 			{
 				mang->SetBuffer(ub.Binding, ubo);
@@ -75,7 +74,7 @@ namespace BHive
 
 		for (auto &[name, sb] : refl.StorageBuffers)
 		{
-			auto ssbo = mat->mLocalSSBOs.at(name);
+			auto ssbo = mat->mLocalBuffers.at(name);
 			if (ssbo)
 			{
 				mang->SetBuffer(sb.Binding, ssbo);

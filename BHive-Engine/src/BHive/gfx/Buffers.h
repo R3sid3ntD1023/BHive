@@ -5,12 +5,7 @@
 
 namespace BHive
 {
-	enum class EBufferUsage
-	{
-		Static,
-		Dynamic
-	};
-
+	
 	class BHIVE_API IndexBuffer : public BufferBase
 	{
 	public:
@@ -18,7 +13,7 @@ namespace BHive
 
 		virtual uint32_t GetCount() const = 0;
 
-		static Ref<IndexBuffer> Create(const uint32_t count,  EBufferUsage usage = EBufferUsage::Static);
+		static Ref<IndexBuffer> Create(const uint32_t count,  EBufferUsageType usage = EBufferUsageType::Static);
 	};
 
 	class BHIVE_API VertexBuffer : public BufferBase
@@ -30,7 +25,19 @@ namespace BHive
 
 		virtual const BufferLayout &GetLayout() const = 0;
 
-		static Ref<VertexBuffer> Create(const uint64_t size,  EBufferUsage usage = EBufferUsage::Static);
+		static Ref<VertexBuffer> Create(const uint64_t size,  EBufferUsageType usage = EBufferUsageType::Static);
 	};
+
+	
+	class BHIVE_API GPUBuffer : public BufferBase
+	{
+	public:
+		virtual ~GPUBuffer() = default;
+
+		static Ref<GPUBuffer> Create(uint32_t binding, size_t size, EBufferType type, const void *data);
+
+		static Ref<GPUBuffer> Create(uint32_t binding, size_t size, EBufferType type);
+	};
+
 
 } // namespace BHive

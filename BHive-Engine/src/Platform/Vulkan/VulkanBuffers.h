@@ -108,14 +108,14 @@ namespace BHive
 
 	
 
-	class BHIVE_API VulkanBuffer : public GenericBuffer
+	class BHIVE_API VulkanGPUBuffer : public GPUBuffer
 	{
 	public:
-		VulkanBuffer(uint32_t binding, size_t size, EBufferUsage usage, const void *data = nullptr);
+		VulkanGPUBuffer(uint32_t binding, size_t size, EBufferType type, const void *data);
 
-		VulkanBuffer(size_t size, EBufferUsage usage);
+		VulkanGPUBuffer(uint32_t binding, size_t size, EBufferType type);
 
-		~VulkanBuffer();
+		~VulkanGPUBuffer();
 
 		void SetData(const void *data, size_t, uint32_t offset = 0) override;
 

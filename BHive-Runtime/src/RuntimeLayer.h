@@ -29,7 +29,7 @@ namespace BHive
 		Ref<class StaticMesh> mMesh = nullptr;
 		Ref<Pipeline> mPipeline;
 		Ref<class Framebuffer> mFramebuffer;
-		Ref<class StorageBuffer> mMultiDrawIndirectBuffer;
+		Ref<class GPUBuffer> mMultiDrawIndirectBuffer;
 		EditorCamera mCamera;
 	};
 } // namespace BHive
