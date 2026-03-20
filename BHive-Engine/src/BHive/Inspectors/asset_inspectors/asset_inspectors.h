@@ -2,14 +2,14 @@
 #include "audio/AudioSource.h"
 #include "gfx/Texture.h"
 #include "Inspectors/InspectorAsset.h"
-#include "material/Material.h"
-#include "mesh/SkeletalMesh.h"
-#include "mesh/StaticMesh.h"
+#include "gfx/material/Material.h"
+#include "gfx/mesh/SkeletalMesh.h"
+#include "gfx/mesh/StaticMesh.h"
 #include "physics/PhysicsMaterial.h"
-#include "sprite/FlipBook.h"
-#include "sprite/Sprite.h"
-#include "sprite/SpriteSheet.h"
-#include "world/World.h"
+#include "gfx/sprite/FlipBook.h"
+#include "gfx/sprite/Sprite.h"
+#include "gfx/sprite/SpriteSheet.h"
+#include "runtime/World.h"
 
 namespace BHive
 {

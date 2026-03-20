@@ -7,7 +7,7 @@
 #include "gfx/ISetManager.h"
 #include "systems/GlobalSetRegistry.h"
 #include "systems/MaterialSetRegistry.h"
-#include "renderers/Renderer.h"
+#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {

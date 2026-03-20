@@ -43,13 +43,5 @@ namespace BHive
 		Attributes mAttributes;
 
 		uint32_t mVertexAttributeIndex = 0;
-
-		struct PerFrameBindings
-		{
-			vk::Buffer IndexBuffer;
-			std::vector<vk::Buffer> VertexBuffers;
-		};
-
-		std::array<PerFrameBindings, MAX_FRAMES_IN_FLIGHT> mCachedHandles;
 	};
 } // namespace BHive

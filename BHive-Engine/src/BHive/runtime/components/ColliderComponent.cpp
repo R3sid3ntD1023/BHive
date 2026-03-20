@@ -1,0 +1,126 @@
+#include "ColliderComponent.h"
+#include "runtime/GameObject.h"
+#include "physics/PhysicsContext.h"
+#include "core/subsystem/SubSystem.h"
+#include <physx/PxPhysicsAPI.h>
+
+namespace BHive
+{
+	void ColliderComponent::Begin()
+	{
+		auto object = GetOwner();
+		auto physc = object->GetPhysicsComponent();
+
+		if (!physc)
+			return;
+
+		auto rb = physc->GetRigidBody();
+
+		CreateCollsionShape(rb, object->GetLocalTransform());
+	}
+
+	void ColliderComponent::End()
+	{
+		auto object = GetOwner();
+		auto physc = object->GetPhysicsComponent();
+
+		if (!physc)
+			return;
+
+		auto rb = physc->GetRigidBody();
+		ReleaseCollisionShape(rb);
+	}
+	void ColliderComponent::Save(cereal::BinaryOutputArchive &ar) const
+	{
+		ar(CollisionEnabled, Offset, Color, IsTrigger, CollisionChannel, CollisionChannelMasks, TAssetHandle(PhysicsMaterial));
+	}
+
+	void ColliderComponent::Load(cereal::BinaryInputArchive &ar)
+	{
+		ar(CollisionEnabled, Offset, Color, IsTrigger, CollisionChannel, CollisionChannelMasks, TAssetHandle(PhysicsMaterial));
+	}
+
+	void BHive::ColliderComponent::CreateCollsionShape(void *rb, const FTransform &transform)
+	{
+		if (!CollisionEnabled)
+			return;
+
+		auto geo = (physx::PxGeometry *)GetGeometry();
+		if (!geo)
+			return;
+
+		auto physcs = (physx::PxPhysics *)GetSubSystem<PhysicsContext>().GetPhysics();
+
+		auto material = physcs->createMaterial(1.f, 1.0f, 0.f);
+
+		if (PhysicsMaterial)
+		{
+			auto friction = PhysicsMaterial->FrictionCoefficient;
+			auto resitution = PhysicsMaterial->Bounciness;
+			auto damping = PhysicsMaterial->Damping;
+
+			material->setFlags(physx::PxMaterialFlag::eCOMPLIANT_CONTACT);
+			// material->setStaticFriction(friction);
+			// material->setDynamicFriction(friction);
+			material->setRestitution(resitution);
+			// material->setDamping(damping);
+			// material->setFrictionCombineMode(physx::PxCombineMode::eAVERAGE);
+			// material->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
+		}
+
+		physx::PxTransform relative_transform({Offset.x, Offset.y, Offset.z});
+		physx::PxFilterData filter_data(CollisionChannel, CollisionChannelMasks, 0, 0);
+
+		if (geo->getType() == physx::PxGeometryType::eCAPSULE)
+		{
+			relative_transform.q = physx::PxQuat(physx::PxHalfPi, {0, 0, 1});
+		}
+
+		auto shape = physcs->createShape(*geo, *material, true);
+		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, IsTrigger);
+		shape->userData = this;
+		shape->setLocalPose(relative_transform);
+		shape->setQueryFilterData(filter_data);
+		shape->setSimulationFilterData(filter_data);
+
+#ifdef _DEBUG
+		shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, true);
+#endif // _DEBUG
+
+		((physx::PxRigidActor *)rb)->attachShape(*shape);
+
+		mCollisionShape = shape;
+		mShapeMaterial = material;
+		delete geo;
+	}
+
+	void ColliderComponent::ReleaseCollisionShape(void *rb)
+	{
+		if (!CollisionEnabled)
+			return;
+
+		auto shape = (physx::PxShape *)mCollisionShape;
+		((physx::PxRigidActor *)rb)->detachShape(*shape);
+		((physx::PxMaterial *)mShapeMaterial)->release();
+	}
+
+	REFLECT(ColliderComponent)
+	{
+		BEGIN_REFLECT(ColliderComponent)
+		REFLECT_PROPERTY(CollisionEnabled)
+		REFLECT_PROPERTY(Offset)
+		REFLECT_PROPERTY(Color)
+		REFLECT_PROPERTY(IsTrigger)
+		REFLECT_PROPERTY(CollisionChannel)
+		REFLECT_PROPERTY(CollisionChannelMasks) REFLECT_PROPERTY(PhysicsMaterial);
+	}
+
+	REFLECT(ECollisionChannel)
+	{
+		BEGIN_REFLECT_ENUM(ECollisionChannel)
+		(ENUM_VALUE(CollisionChannel_None), ENUM_VALUE(CollisionChannel_0), ENUM_VALUE(CollisionChannel_1), ENUM_VALUE(CollisionChannel_2), ENUM_VALUE(CollisionChannel_3),
+		 ENUM_VALUE(CollisionChannel_4), ENUM_VALUE(CollisionChannel_5), ENUM_VALUE(CollisionChannel_6), ENUM_VALUE(CollisionChannel_7), ENUM_VALUE(CollisionChannel_8), ENUM_VALUE(CollisionChannel_9),
+		 ENUM_VALUE(CollisionChannel_10), ENUM_VALUE(CollisionChannel_11), ENUM_VALUE(CollisionChannel_12), ENUM_VALUE(CollisionChannel_13), ENUM_VALUE(CollisionChannel_14),
+		 ENUM_VALUE(CollisionChannel_All));
+	}
+} // namespace BHive

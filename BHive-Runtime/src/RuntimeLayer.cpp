@@ -9,11 +9,11 @@
 #include "gfx/Texture.h"
 #include "gui/Gui.h"
 #include "importers/TextureImporter.h"
-#include "material/Material.h"
-#include "mesh/MeshImporter.h"
-#include "mesh/MeshImportResolver.h"
-#include "mesh/StaticMesh.h"
-#include "renderers/Renderer.h"
+#include "gfx/material/Material.h"
+#include "importers/MeshImporter.h"
+#include "importers/MeshImportResolver.h"
+#include "gfx/mesh/StaticMesh.h"
+#include "gfx/renderers/Renderer.h"
 #include "gfx/Pipeline.h"
 #include "core/Time.h"
 #include "Inspectors/Inspect.h"
@@ -66,15 +66,19 @@ namespace BHive
 		mFramebuffer = Framebuffer::Create(fb_specs);
 		
 		std::vector<MultiDrawIndirectCommand> commands;
-		for (auto &m : mMesh->GetSubMeshes())
+
+		for (size_t i = 0; i < 2; i++)
 		{
-			MultiDrawIndirectCommand cmd{};
-			cmd.Count = m.IndexCount;
-			cmd.BaseInstance = 0;
-			cmd.BaseVertex = m.StartVertex;
-			cmd.FirstIndex = m.StartIndex;
-			cmd.InstanceCount = 1;
-			commands.emplace_back(cmd);
+			for (auto &m : mMesh->GetSubMeshes())
+			{
+				MultiDrawIndirectCommand cmd{};
+				cmd.Count = m.IndexCount;
+				cmd.BaseInstance = 0;
+				cmd.BaseVertex = m.StartVertex;
+				cmd.FirstIndex = m.StartIndex;
+				cmd.InstanceCount = 1;
+				commands.emplace_back(cmd);
+			}
 		}
 
 		mMultiDrawIndirectBuffer = GPUBuffer::Create(sizeof(MultiDrawIndirectCommand) * commands.size(), EBufferType::IndirectBuffer);
@@ -129,7 +133,7 @@ namespace BHive
 
 			Renderer::GetModelBuffer().Reset();
 			Renderer::GetModelBuffer().Submit(transform);
-			Renderer::GetModelBuffer().Submit(FTransform({2, 0, 0}));
+			Renderer::GetModelBuffer().Submit(FTransform({3, 4, 0}));
 			Renderer::GetModelBuffer().Upload();
 		
 
@@ -137,7 +141,7 @@ namespace BHive
 			{
 				//RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
 				//RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
-				RenderCommand::MultiDrawElementsIndirect(ETopologyMode::Triangles, *mMultiDrawIndirectBuffer, *mMesh->GetVertexArray(), 1, sizeof(MultiDrawIndirectCommand));
+				RenderCommand::MultiDrawElementsIndirect(ETopologyMode::Triangles, *mMultiDrawIndirectBuffer, *mMesh->GetVertexArray(), 2, sizeof(MultiDrawIndirectCommand));
 			}
 		}
 

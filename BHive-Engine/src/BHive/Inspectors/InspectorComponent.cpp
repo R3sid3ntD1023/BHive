@@ -1,6 +1,6 @@
 #include "InspectorComponent.h"
-#include "world/Component.h"
-#include "world/GameObject.h"
+#include "runtime/Component.h"
+#include "runtime/GameObject.h"
 #include "gui/ImGuiExtended.h"
 #include "Inspect.h"
 #include "core/subsystem/SubSystem.h"

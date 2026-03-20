@@ -1,5 +1,5 @@
 #include "InspectorGameObject.h"
-#include "world/GameObject.h"
+#include "runtime/GameObject.h"
 #include "Inspect.h"
 #include "Gui/ImGuiExtended.h"
 #include "undoredo/Command.h"

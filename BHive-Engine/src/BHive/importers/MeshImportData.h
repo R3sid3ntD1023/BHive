@@ -1,0 +1,48 @@
+#pragma once
+
+#include "core/Core.h"
+#include "gfx/mesh/MeshData.h"
+#include "gfx/animation/Skeleton.h"
+#include "gfx/animation/AnimationFrames.h"
+
+namespace BHive
+{
+	struct FImportedAnimationData
+	{
+		std::string mName{""};
+		float mDuration{0.f};
+		float TicksPerSecond{0.f};
+		glm::mat4 mGlobalInverseMatrix{1.0f};
+		std::map<std::string, FrameData> mFrames;
+	};
+
+	struct FTextureData
+	{
+		std::string Type{""};
+		std::filesystem::path Path{""};
+		Buffer EmbeddedData;
+
+		std::string get_name() const { return Path.filename().string(); }
+
+		bool is_embedded() const { return EmbeddedData; }
+	};
+
+	struct FMaterialData
+	{
+		std::string mName;
+		glm::vec4 mAlbedo = {.5f, .5f, .5f, 1.f};
+		float mMetallic = 0.f;
+		float mRoughness = 1.0f;
+		std::unordered_set<std::string> mLoadedTextureNames;
+		std::vector<FTextureData> mTextureData;
+	};
+
+	struct FMeshImportData
+	{
+		FMeshData mMeshData;
+		Bones mBoneData;
+		SkeletalNode mSkeletonHeirarchyData;
+		std::vector<FImportedAnimationData> mAnimationData;
+		std::vector<FMaterialData> mMaterialData;
+	};
+} // namespace BHive

@@ -35,7 +35,6 @@ namespace BHive
 			break;
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
 			LOG_ERROR("{} : {}", message_type_string, pCallbackData->pMessage);
-			ASSERT(false)
 			break;
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
 			LOG_CRITICAL("{} : {}", message_type_string, pCallbackData->pMessage);
@@ -53,7 +52,7 @@ namespace BHive
 		{
 
 			vk::PhysicalDeviceFeatures features{};
-			features.setFillModeNonSolid(true).setWideLines(true);
+			features.setFillModeNonSolid(true).setWideLines(true).setMultiDrawIndirect(true);
 
 			vk::StructureChain<
 				vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features,

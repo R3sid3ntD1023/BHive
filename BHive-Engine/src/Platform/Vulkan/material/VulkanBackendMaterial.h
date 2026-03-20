@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Platform/Vulkan/VulkanCore.h"
-#include "material/BackendMaterial.h"
+#include "gfx/material/BackendMaterial.h"
 #include "gfx/shader/ShaderReflection.h"
 
 namespace BHive

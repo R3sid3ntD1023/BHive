@@ -1,0 +1,16 @@
+#pragma once
+
+#include "core/Core.h"
+#include "MeshImportData.h"
+
+namespace BHive
+{
+	class StaticMesh;
+	class SkeletalMesh;
+	class SkeletalAnimation;
+
+	struct BHIVE_API MeshImporter
+	{
+		static bool Import(const std::filesystem::path &path, FMeshImportData &data);
+	};
+} // namespace BHive
