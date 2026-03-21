@@ -47,7 +47,7 @@ struct PointLightShadowInfo
 	vec2 ShadowNearFar;
 };
 
-layout(std430, binding = 4) restrict readonly buffer LightSSBO
+layout(std140, set = 0, binding = 4) restrict readonly buffer LightSSBO
 {
 	uvec3 NumLights; //dir, point, spot
 	DirectionalLight uDirectionalLights[MAX_LIGHTS];
@@ -55,14 +55,6 @@ layout(std430, binding = 4) restrict readonly buffer LightSSBO
 	SpotLight uSpotLights[MAX_LIGHTS];
 };
 
-
-layout(std430, binding = 5) restrict readonly buffer ShadowSSBO
-{
-	uvec4 uNumShadowMaps;
-	mat4 uDirViewProjections[MAX_LIGHTS];
-	PointLightShadowInfo uPointShadowInfo[MAX_LIGHTS];
-	mat4 uSpotViewProjections[MAX_LIGHTS];
-};
 
 void GetDirectionLightInfo(const in DirectionalLight light, inout IncidentLight directLight)
 {
@@ -129,7 +121,15 @@ const vec3 v3poissonDisk[9] = vec3[](
 
 const float light_size = 0.07;
 
+#if defined(USE_SHADOW_MAPS)
 
+layout(std140, set = 0, binding = 5) restrict readonly buffer ShadowSSBO
+{
+	uvec4 uNumShadowMaps;
+	mat4 uDirViewProjections[MAX_LIGHTS];
+	PointLightShadowInfo uPointShadowInfo[MAX_LIGHTS];
+	mat4 uSpotViewProjections[MAX_LIGHTS];
+};
 
 float DirLightShadow(int light, vec3 position, in sampler2DArrayShadow shadow_array_texture)
 {
@@ -277,3 +277,5 @@ float SampleVarianceSpotLightShadow(int light, vec3 position, in sampler2DArray 
 
 	return SampleVariance(moments, uvc.z);
 }
+
+#endif

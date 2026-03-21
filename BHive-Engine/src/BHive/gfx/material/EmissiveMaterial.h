@@ -11,13 +11,15 @@ namespace BHive
 	public:
 		EmissiveMaterial();
 
+		EmissiveMaterial(const Ref<Pipeline>& pipeline);
+
 		FColor EmissionColor = FColor::Black;
 
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		void Load(cereal::BinaryInputArchive &ar) override;
 
-		void Submit(Ref<Pipeline> pipeline) override;
+		void Submit(Ref<Pipeline> pipeline = nullptr) override;
 
 		///Ref<Material> Clone() const override;
 

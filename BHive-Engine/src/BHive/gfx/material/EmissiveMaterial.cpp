@@ -9,6 +9,11 @@ namespace BHive
 	{
 	}
 
+	EmissiveMaterial::EmissiveMaterial(const Ref<Pipeline> &pipeline)
+		: Material(pipeline)
+	{
+	}
+
 	void EmissiveMaterial::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Material::Save(ar);
@@ -25,7 +30,7 @@ namespace BHive
 	{
 		Material::Submit(pipeline);
 
-		//shader->SetUniform<glm::vec3>("constants.EmissiveColor", EmissionColor);
+		mBackendMaterial->Set("EmissiveColor", EmissionColor);
 	}
 
 	/*Ref<Shader> EmissiveMaterial::GetShader() const

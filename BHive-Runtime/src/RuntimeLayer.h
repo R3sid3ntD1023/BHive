@@ -25,9 +25,13 @@ namespace BHive
 	private:
 		Ref<Texture2D> mTexture = nullptr;
 		Ref<class ShaderProgram> mShader = nullptr;
+		Ref<class ShaderProgram> mEmissiveShader = nullptr;
 		Ref<class Material> mMaterial = nullptr;
+		Ref<class EmissiveMaterial> mEmissiveMaterial = nullptr;
+		Ref<class LambertMaterial> mLambertMaterial = nullptr;
 		Ref<class StaticMesh> mMesh = nullptr;
 		Ref<Pipeline> mPipeline;
+		Ref<Pipeline> mEmmissivePipeline;
 		Ref<class Framebuffer> mFramebuffer;
 		Ref<class GPUBuffer> mMultiDrawIndirectBuffer;
 		EditorCamera mCamera;

@@ -10,6 +10,7 @@
 #include "gui/Gui.h"
 #include "importers/TextureImporter.h"
 #include "gfx/material/Material.h"
+#include "gfx/material/EmissiveMaterial.h"
 #include "importers/MeshImporter.h"
 #include "importers/MeshImportResolver.h"
 #include "gfx/mesh/StaticMesh.h"
@@ -20,6 +21,7 @@
 #include "gfx/Framebuffer.h"
 #include "gfx/ISetManager.h"
 #include "gfx/GlobalBuffers.h"
+#include "gfx/material/LambertMaterial.h"
 
 namespace BHive
 {
@@ -27,26 +29,42 @@ namespace BHive
 
 	void RuntimeLayer::OnAttach(Application& app)
 	{
-		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Triangle.glsl");
-
+		//mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Triangle.glsl");
+		//mEmissiveShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Emissive.glsl");
+		
 		auto environment_tex = TextureLoader::Import(ENGINE_PATH"/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
 		Renderer::SetEnvironmentTexture(environment_tex);
 
 		Pipeline::PipelineState state = Pipeline::GetDefaultPipelineState();
-		state.ShaderProgram = mShader;
+		//state.ShaderProgram = mShader;
 		state.ColorAttachmentFormats = {EFormat::RGBA8};
 
-		mPipeline = Pipeline::Create();
-		mPipeline->Init(state);
+		/*mPipeline = Pipeline::Create();
+		mPipeline->Init(state);*/
 
 		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
-		mMaterial = CreateRef<Material>(mPipeline);
-		mMaterial->SetTexture("u_Texture", mTexture);
-		mMaterial->Set("u_Color", glm::vec3(1, 1, 1));
+		//mMaterial = CreateRef<Material>(mPipeline);
+		//mMaterial->SetTexture("u_Texture", mTexture);
+		//mMaterial->Set("u_Color", glm::vec3(1, 1, 1));
+
+		/*mEmmissivePipeline = Pipeline::Create();
+		state.ShaderProgram = mEmissiveShader;
+		mEmmissivePipeline->Init(state);
+		mEmissiveMaterial = CreateRef<EmissiveMaterial>(mEmmissivePipeline);
+		mEmissiveMaterial->EmissionColor = FColor::Green;*/
+
+		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH"/Lambert.glsl");
+		mPipeline = Pipeline::Create();
+		state.ShaderProgram = mShader;
+		mPipeline->Init(state);
+		mLambertMaterial = CreateRef<LambertMaterial>(mPipeline);
+		mLambertMaterial->DiffuseColor = FColor::Purple;
+		mLambertMaterial->EmissionColor = FColor::Yellow;
+		mLambertMaterial->SetTexture("DiffuseMap", mTexture);
 
 		// create mesh
 		FMeshImportData import_data{};
-		FMeshImportOptions import_options{};
+		FMeshImportOptions import_options{.ImportMaterials = false};
 
 		if (MeshImporter::Import("C:/Users/dariu/Documents/Cube.glb ", import_data))
 		{
@@ -130,10 +148,12 @@ namespace BHive
 		QuadRenderer::DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
 		QuadRenderer::DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));
 
-		if (mMesh && mMaterial)
+		if (mMesh && mLambertMaterial)
 		{
-			mMaterial->Submit();
-			mMaterial->Set("u_Time", Time::Raw());
+			/*mMaterial->Submit();
+			mMaterial->Set("u_Time", Time::Raw());*/
+
+			mLambertMaterial->Submit();
 
 			Renderer::GetModelBuffer().Reset();
 			Renderer::GetModelBuffer().Submit(transform);
@@ -146,6 +166,8 @@ namespace BHive
 				//RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
 				//RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
 				RenderCommand::MultiDrawElementsIndirect(ETopologyMode::Triangles, *mMultiDrawIndirectBuffer, *mMesh->GetVertexArray(), 2, sizeof(MultiDrawIndirectCommand));
+
+				//RenderCommand::MultiDrawElementsIndirect(ETopologyMode::Triangles, *mMultiDrawIndirectBuffer, *mMesh->GetVertexArray(), 1, sizeof(MultiDrawIndirectCommand));
 			}
 		}
 

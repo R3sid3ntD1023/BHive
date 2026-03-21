@@ -7,6 +7,11 @@ namespace BHive
 	LambertMaterial::LambertMaterial()
 		: Material(nullptr)
 	{
+	}
+
+	LambertMaterial::LambertMaterial(const Ref<Pipeline>& pipeline)
+		: Material(pipeline)
+	{
 		
 	}
 
@@ -26,8 +31,8 @@ namespace BHive
 	{
 		Material::Submit(pipeline);
 
-	/*	shader->SetUniform<glm::vec4>("constants.DiffuseColor", DiffuseColor);
-		shader->SetUniform<glm::vec3>("constants.EmissiveColor", EmissionColor);*/
+		mBackendMaterial->Set("DiffuseColor", DiffuseColor);
+		mBackendMaterial->Set("EmissiveColor", EmissionColor);
 	}
 
 	/*Ref<Shader> LambertMaterial::GetShader() const

@@ -1,4 +1,5 @@
 #include "buffers/ModelBuffer.h"
+#include "buffers/LightBuffer.h"
 #include "gfx/Texture.h"
 #include "Renderer.h"
 #include "gfx/Buffers.h"
@@ -17,6 +18,7 @@ namespace BHive
 		FCameraData CameraData;
 		Frustum CameraFrustum;
 		FModelBuffer ModelBuffer;
+		LightBuffer LightingBuffer;
 
 		Ref<Texture> WhiteTexture;
 		Ref<Texture> BlackTexture;
@@ -50,6 +52,7 @@ namespace BHive
 			global.Register(0, CameraUniformBuffer);
 
 			ModelBuffer.Init();
+			LightingBuffer.Init();
 
 			EnvironmentMapGenerator.Initialize();
 		}

@@ -86,7 +86,7 @@ namespace BHive
 			return meta;
 
 		std::ifstream in(meta_path, std::ios::in | std::ios::binary);
-		cereal::BinaryInputArchive ar(in);
+		cereal::JSONInputArchive ar(in);
 
 		ar(meta);
 
@@ -97,7 +97,7 @@ namespace BHive
 	void ShaderCache::StoreMeta(const std::string &name, const MetaData &meta)
 	{
 		std::ofstream out(GetMetaPath(name), std::ios::out | std::ios::binary);
-		cereal::BinaryOutputArchive ar(out);
+		cereal::JSONOutputArchive ar(out);
 		ar(meta);
 	}
 

@@ -24,6 +24,12 @@ namespace BHive
 
 		virtual void Set(const std::string &name, const void *data, size_t size) = 0;
 
+		template<typename TParam>
+		void Set(const std::string &name, const TParam &value)
+		{
+			Set(name, &value, sizeof(TParam));
+		}
+
 		virtual const FSetReflection &GetTargetSet() const = 0;
 
 		static Ref<IMaterialBackendInterface> Create();

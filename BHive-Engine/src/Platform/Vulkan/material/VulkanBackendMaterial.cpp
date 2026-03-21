@@ -25,8 +25,6 @@ namespace BHive
 		
 		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
 
-		
-
 		mProgram = Cast<ShaderProgram>(vkPipeline->GetShaderProgram());
 
 		mReflectionMergedPtr = &mProgram->GetMergedRefl();

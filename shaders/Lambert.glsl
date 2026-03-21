@@ -13,7 +13,7 @@ layout(location = 5) in vec4 vColor;
 layout(location = 6) in ivec4 vBoneIds;
 layout(location = 7) in vec4 vWeights;
 
-layout(std430, binding = 0) uniform CameraBuffer
+layout(std140, set = 0, binding = 0) uniform CameraBuffer
 {
 	mat4 u_projection;
 	mat4 u_view;
@@ -60,7 +60,7 @@ void main()
 #include <Lighting.glsl>
 #include <LambertMaterial.glsl>
 
-layout(binding = 0) uniform sampler2D DiffuseMap;
+layout(set = 1, binding = 0) uniform sampler2D DiffuseMap;
 //#include <shadow_passes/Shadow.frag>
 
 layout(push_constant) uniform PushConstants
@@ -103,4 +103,5 @@ void main()
 	vec3 out_color = reflected_light.DirectDiffuse + totalEmissiveRadiance;
 
 	#include <OutgoingFragment.glsl>
+	fs_out = vec4( 1, 0, 0, 1);
 }

@@ -13,7 +13,7 @@ layout(location = 5) in vec4 vColor;
 layout(location = 6) in ivec4 vBoneIds;
 layout(location = 7) in vec4 vWeights;
 
-layout(std430, binding = 0) uniform CameraBuffer
+layout(std140, set = 0, binding = 0) uniform CameraBuffer
 {
 	mat4 u_projection;
 	mat4 u_view;
