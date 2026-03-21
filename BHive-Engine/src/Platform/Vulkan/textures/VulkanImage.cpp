@@ -17,7 +17,7 @@ namespace BHive
 			});
 	}
 
-	void VulkanImage::Create(
+	void VulkanImage::Create(vk::ImageCreateFlags createFlags,
 		uint32_t width, uint32_t height, uint32_t depth, vk::ImageType type, vk::ImageViewType viewType, const FVulkanTextureCreateInfo& createInfo)
 	{
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
@@ -39,7 +39,7 @@ namespace BHive
 		view_desc.Format = createInfo.Format;
 		view_desc.Type = viewType;
 
-		mImage = gpu_r_m.CreateImage(desc, view_desc);
+		mImage = gpu_r_m.CreateImage(createFlags, desc, view_desc);
 
 		vk::SamplerCreateInfo sampler_info(
 			{}, createInfo.MinFilter, createInfo.MagFilter, vk::SamplerMipmapMode::eLinear, createInfo.WrapMode, createInfo.WrapMode, createInfo.WrapMode, 0, 0, 1, createInfo.CompareEnabled,

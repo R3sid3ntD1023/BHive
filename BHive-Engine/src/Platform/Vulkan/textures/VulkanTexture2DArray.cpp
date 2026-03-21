@@ -9,7 +9,7 @@ namespace BHive
 		  mSize(size),
 		  mCreateInfo(createInfo)
 	{
-		mImage.Create(size.x, size.y, 1, vk::ImageType::e2D, vk::ImageViewType::e2DArray, Convert(mCreateInfo));
+		mImage.Create({} ,size.x, size.y, 1, vk::ImageType::e2D, vk::ImageViewType::e2DArray, Convert(mCreateInfo));
 	}
 
 	void VulkanTexture2DArray::SetData(const FTextureUploadInfo &info)

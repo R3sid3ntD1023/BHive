@@ -69,7 +69,7 @@ namespace BHive
 		return true;
 	}
 
-	Ref<Texture2D> TextureLoader::CreateOrResizeTexture(int32_t w, int32_t h, int32_t c, uint8_t *data, bool hdr, const FTextureOverride &override)
+	Ref<Texture2D> TextureLoader::CreateOrResizeTexture(int32_t w, int32_t h, int32_t c, uint8_t *data, size_t size, bool hdr, const FTextureOverride &override)
 	{
 		FTextureCreateInfo create_info{};
 		create_info.Format = hdr ? utils::GetFormatFromChannelsHDR(c) : utils::GetFormatFromChannels(c);
@@ -80,10 +80,9 @@ namespace BHive
 		create_info.Usage = ETextureUsage::Sampled | ETextureUsage::TransferDst;
 		create_info.Aspect = ETextureAspect::Color;
 
-		auto size = w * h * c;
 		if (override.Resize())
 		{
-			auto new_size = override.Width * override.Height * c;
+			auto new_size = override.Width * override.Height * c * (hdr ? sizeof(float) : sizeof(char)) ;
 			Buffer buffer(new_size);
 			stbir_resize_uint8_linear(data, w, h, 0, buffer.As<uint8_t>(), override.Width, override.Height, 0, (stbir_pixel_layout)c);
 
@@ -107,8 +106,7 @@ namespace BHive
 		size_t data_size = 0;
 		if (is_hdr)
 		{
-			image_data = (stbi_uc *)stbi_loadf(path_str.c_str(), &w, &h, &c_in, forced_channels);
-			
+			image_data = (stbi_uc *)stbi_loadf(path_str.c_str(), &w, &h, &c_in, forced_channels);		
 			data_size = size_t(w ) * h * c_out * sizeof(float);
 		}
 		else
@@ -125,7 +123,7 @@ namespace BHive
 		}
 
 
-		Ref<Texture2D> texture = CreateOrResizeTexture(w, h, c_out, image_data, is_hdr, override);
+		Ref<Texture2D> texture = CreateOrResizeTexture(w, h, c_out, image_data, data_size, is_hdr, override);
 
 		stbi_image_free(image_data);
 
@@ -159,7 +157,7 @@ namespace BHive
 			return nullptr;
 		}
 
-		auto texture = CreateOrResizeTexture(w, h, c_out, image_data, is_hdr, {});
+		auto texture = CreateOrResizeTexture(w, h, c_out, image_data, data_size, is_hdr, {});
 
 		stbi_image_free(image_data);
 

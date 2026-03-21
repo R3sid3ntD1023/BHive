@@ -42,6 +42,8 @@ namespace BHive
 
 		static void End();
 
+		static void SetEnvironmentTexture(const Ref<Texture> &texture);
+
 		static Ref<Texture> GetWhiteTexture();
 
 		static Ref<Texture> GetBlackTexture();
@@ -59,6 +61,7 @@ namespace BHive
 		struct RenderData;
 		static RenderData *sData;
 		static inline Statitics sStats;
+
 	};
 
 } // namespace BHive

@@ -38,6 +38,8 @@ namespace BHive
 
 		uint32_t BytesPerPixel = 4;
 
+		uint32_t Levels = 1;
+
 		uint32_t Size() const { return Width * Height * Depth * BytesPerPixel; }
 	};
 
@@ -56,7 +58,7 @@ namespace BHive
 
 		AllocatedBuffer CreateBuffer(const BufferDesc& desc);
 
-		AllocatedImage CreateImage(const ImageDesc &desc, const ImageViewDesc &viewDesc);
+		AllocatedImage CreateImage(vk::ImageCreateFlags createFlags, const ImageDesc &desc, const ImageViewDesc &viewDesc);
 
 		void CreateImageView(Image &image, const ImageViewDesc &desc);
 

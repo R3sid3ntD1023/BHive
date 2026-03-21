@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	class SubSystemContext
+	class BHIVE_API SubSystemContext
 	{
 	public:
 		static SubSystemContext &Get()

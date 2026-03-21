@@ -42,11 +42,11 @@ namespace BHive
 		return {buffer.Buffer, std::move(allocation),desc.Size, handle};
 	}
 
-	AllocatedImage GPUResourceManager::CreateImage(const ImageDesc &desc, const ImageViewDesc &viewDesc)
+	AllocatedImage GPUResourceManager::CreateImage(vk::ImageCreateFlags createFlags, const ImageDesc &desc, const ImageViewDesc &viewDesc)
 	{
 		auto handle = ImageHandle();
 		auto &image = GPUStorage::Images[handle];
-		VulkanUtils::CreateImage(desc.Width, desc.Height, desc.Depth, desc.ArrayLayers, desc.Type, desc.Format, desc.Tiling, desc.Usage, desc.MemoryFlags, image.Image);
+		VulkanUtils::CreateImage(createFlags, desc.Levels, desc.Width, desc.Height, desc.Depth, desc.ArrayLayers, desc.Type, desc.Format, desc.Tiling, desc.Usage, desc.MemoryFlags, image.Image);
 
 		auto &allocator = VulkanBackend::GetMemoryAllocator();
 		MemoryAllocation allocation = allocator.Allocate(image.Image, desc.MemoryFlags, desc.Size());

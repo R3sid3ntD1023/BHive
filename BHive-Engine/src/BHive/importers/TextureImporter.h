@@ -23,7 +23,7 @@ namespace BHive
 		static Ref<Texture2D> LoadFromMemory(const uint8_t *data, int length);
 
 	private:
-		static Ref<Texture2D> CreateOrResizeTexture(int32_t w, int32_t h, int32_t c, uint8_t *data, bool hdr, const FTextureOverride& override);
+		static Ref<Texture2D> CreateOrResizeTexture(int32_t w, int32_t h, int32_t c, uint8_t *data, size_t size, bool hdr, const FTextureOverride &override);
 
 	};
 } // namespace BHive

@@ -10,7 +10,7 @@ namespace BHive
 		  mSize(size),
 		  mCreateInfo(createInfo)
 	{
-		mImage.Create(size.x, size.y, size.z, vk::ImageType::e3D, vk::ImageViewType::e3D, Convert(mCreateInfo));
+		mImage.Create({} , size.x, size.y, size.z, vk::ImageType::e3D, vk::ImageViewType::e3D, Convert(mCreateInfo));
 	}
 
 } // namespace BHive

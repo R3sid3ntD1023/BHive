@@ -95,7 +95,7 @@ namespace BHive
 		view_desc.Type = vk::ImageViewType::e2D;
 		view_desc.Format = mDepthFormat;
 
-		mDepthImage = VulkanBackend::GetGPUResourceManager().CreateImage(desc, view_desc);
+		mDepthImage = VulkanBackend::GetGPUResourceManager().CreateImage({} ,desc, view_desc);
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)

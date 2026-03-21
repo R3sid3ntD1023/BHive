@@ -13,7 +13,7 @@ namespace BHive
 
 		~VulkanImage();
 
-		void Create(uint32_t width, uint32_t height, uint32_t depth, vk::ImageType type, vk::ImageViewType viewType, const FVulkanTextureCreateInfo &createInfo);
+		void Create(vk::ImageCreateFlags createFlags, uint32_t width, uint32_t height, uint32_t depth, vk::ImageType type, vk::ImageViewType viewType, const FVulkanTextureCreateInfo &createInfo);
 
 		void Upload(const void *data, size_t size, const ImageCopyRegion &region = {}, const ImageSubresource &sub = {});
 

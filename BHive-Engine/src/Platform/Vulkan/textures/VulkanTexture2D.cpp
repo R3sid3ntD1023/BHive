@@ -40,7 +40,7 @@ namespace BHive
 
 	void VulkanTexture2D::SetData(const FTextureUploadInfo &info)
 	{
-		size_t size = mSize.x * mSize.y * GetBytesPerPixel(mCreateInfo.Format);
+		auto size = mBuffer.GetSize();
 
 		glm::uvec3 extents = glm::compMul(info.Extent) == 0 ? glm::uvec3{mSize, 1} : info.Extent;
 		ImageCopyRegion region{.BaseArrayLayer = info.ArrayLayer, .LayerCount = info.LayerCount, .Offset = info.Offset, .Extents = extents};
@@ -50,8 +50,7 @@ namespace BHive
 
 	Ref<Texture2D> VulkanTexture2D::CreateSubTexture(const FSubTexture &texture)
 	{
-		auto c = GetBytesPerPixel(mCreateInfo.Format);
-		size_t size = texture.Size.x * texture.Size.y * c;
+		auto size = mBuffer.GetSize();
 
 		Buffer pixels(size);
 		GetSubImage(texture, size, &pixels[0]);
@@ -66,7 +65,7 @@ namespace BHive
 
 	void VulkanTexture2D::Initialize()
 	{
-		mImage.Create(mSize.x, mSize.y, 1, vk::ImageType::e2D, vk::ImageViewType::e2D, Convert(mCreateInfo));
+		mImage.Create({} , mSize.x, mSize.y, 1, vk::ImageType::e2D, vk::ImageViewType::e2D, Convert(mCreateInfo));
 	}
 
 	void VulkanTexture2D::Save(cereal::BinaryOutputArchive &ar) const

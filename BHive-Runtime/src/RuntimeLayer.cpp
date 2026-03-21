@@ -19,6 +19,7 @@
 #include "Inspectors/Inspect.h"
 #include "gfx/Framebuffer.h"
 #include "gfx/ISetManager.h"
+#include "gfx/GlobalBuffers.h"
 
 namespace BHive
 {
@@ -27,6 +28,9 @@ namespace BHive
 	void RuntimeLayer::OnAttach(Application& app)
 	{
 		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Triangle.glsl");
+
+		auto environment_tex = TextureLoader::Import(ENGINE_PATH"/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
+		Renderer::SetEnvironmentTexture(environment_tex);
 
 		Pipeline::PipelineState state = Pipeline::GetDefaultPipelineState();
 		state.ShaderProgram = mShader;
@@ -170,6 +174,8 @@ namespace BHive
 
 			auto texture_id = ImGuiLayer::GetTextureID(*mFramebuffer->GetColorAttachment(0));
 			ImGui::Image(texture_id, viewportSize);
+
+			
 		}
 
 		ImGui::End();
@@ -202,6 +208,7 @@ namespace BHive
 					}
 				}
 			}
+
 		}
 
 		ImGui::End();

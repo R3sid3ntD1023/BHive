@@ -3,15 +3,16 @@
 #include "Renderer.h"
 #include "gfx/Buffers.h"
 #include "gfx/GlobalBuffers.h"
+#include "PMREMGenerator.h"
 
 namespace BHive
 {
-	struct FObjectData
+	struct BHIVE_API FObjectData
 	{
 		glm::mat4 WorldMatrix = {1.0f};
 	};
 
-	struct Renderer::RenderData
+	struct BHIVE_API Renderer::RenderData
 	{
 		FCameraData CameraData;
 		Frustum CameraFrustum;
@@ -23,9 +24,11 @@ namespace BHive
 
 		Ref<GPUBuffer> CameraUniformBuffer;
 
+		PMREMGenerator EnvironmentMapGenerator;
+
 		RenderData()
 		{
-			AddSubSystem<GlobalBuffers>();
+			auto& global = AddSubSystem<GlobalBuffers>();
 
 			static constexpr uint32_t white = 0xFFFFFFFF;
 			static constexpr uint32_t black = 0xFF000000;
@@ -43,9 +46,12 @@ namespace BHive
 			BlueTexture = Texture2D::Create({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
 
 			CameraUniformBuffer = GPUBuffer::Create(sizeof(FCameraData), EBufferType::UniformBuffer);
-			GetSubSystem<GlobalBuffers>().Register(0, CameraUniformBuffer);
+
+			global.Register(0, CameraUniformBuffer);
 
 			ModelBuffer.Init();
+
+			EnvironmentMapGenerator.Initialize();
 		}
 
 		~RenderData() { RemoveSubSystem<GlobalBuffers>();
@@ -75,6 +81,9 @@ namespace BHive
 
 		LineRenderer::Begin();
 		QuadRenderer::Begin();
+
+		
+		
 	}
 
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
@@ -96,6 +105,21 @@ namespace BHive
 
 		LineRenderer::End();
 		QuadRenderer::End();
+	}
+
+
+	void Renderer::SetEnvironmentTexture(const Ref<Texture> &texture)
+	{
+		sData->EnvironmentMapGenerator.SetEnvironmentMap(texture);
+
+		auto &irradiance = sData->EnvironmentMapGenerator.GetIrradianceTexture();
+		auto &bdrflut = sData->EnvironmentMapGenerator.GetBDRFLUT();
+		auto &prefilter = sData->EnvironmentMapGenerator.GetPreFilteredEnvironmentTetxure();
+
+		auto &global_buffer = GetSubSystem<GlobalBuffers>();
+		global_buffer.Register(0, irradiance);
+		global_buffer.Register(1, bdrflut);
+		global_buffer.Register(2, prefilter);
 	}
 
 	Ref<Texture> Renderer::GetWhiteTexture()

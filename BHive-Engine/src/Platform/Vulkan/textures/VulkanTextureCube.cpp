@@ -9,8 +9,8 @@ namespace BHive
 		  mSize(size),
 		  mCreateInfo(create_info)
 	{
-
-		mImage.Create(size, size, size, vk::ImageType::e2D, vk::ImageViewType::eCube, Convert(mCreateInfo));
+		mCreateInfo.ArrayLayers = 6;
+		mImage.Create(vk::ImageCreateFlagBits::eCubeCompatible ,size, size, 1, vk::ImageType::e2D, vk::ImageViewType::eCube, Convert(mCreateInfo));
 	}
 
 } // namespace BHive

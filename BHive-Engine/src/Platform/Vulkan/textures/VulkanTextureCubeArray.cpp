@@ -9,7 +9,8 @@ namespace BHive
 		  mSize(size),
 		  mCreateInfo(createInfo)
 	{
-		mImage.Create(size, size, size, vk::ImageType::e3D, vk::ImageViewType::eCubeArray, Convert(mCreateInfo));
+		mCreateInfo.ArrayLayers *= 6;
+		mImage.Create(vk::ImageCreateFlagBits::eCubeCompatible , size, size, size, vk::ImageType::e3D, vk::ImageViewType::eCubeArray, Convert(mCreateInfo));
 	}
 
 	void VulkanTextureCubeArray::SetData(const FTextureUploadInfo &info)

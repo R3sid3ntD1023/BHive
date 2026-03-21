@@ -1,5 +1,5 @@
 #include "Inspector_Blackboard.h"
-#include "Animator/anim_player/Blackboard.h"
+#include "runtime/animation/anim_player/Blackboard.h"
 #include "Inspect.h"
 
 #include <imgui.h>

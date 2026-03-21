@@ -28,6 +28,7 @@ namespace BHive
 		static void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer);
 
 		static void CreateImage(
+			vk::ImageCreateFlags flags, uint32_t levels,
 			uint32_t w, uint32_t h, uint32_t d, uint32_t layers, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties,
 			vk::raii::Image& image);
 
