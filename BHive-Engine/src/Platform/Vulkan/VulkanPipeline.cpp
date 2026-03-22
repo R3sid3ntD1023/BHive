@@ -25,7 +25,7 @@ namespace BHive
 		uint32_t SubPass = 0;
 	};
 
-	Ref<FVulkanPipelineConfigInfo> Convert(const Pipeline::PipelineState& state)
+	Ref<FVulkanPipelineConfigInfo> Convert(const Pipeline::GraphicsPipelineState& state)
 	{
 		auto config = CreateRef<FVulkanPipelineConfigInfo>();
 
@@ -77,13 +77,12 @@ namespace BHive
 		//mPipeline.clear();
 	}
 
-	void VulkanPipeline::Init(const PipelineState& state)
+	void VulkanPipeline::Init(const GraphicsPipelineState& state)
 	{	
 		mProgram = state.ShaderProgram;
 
 		ASSERT(mProgram)
 
-		const auto &asset = mProgram->GetAsset();
 		mShader = CreateScope<VulkanShader>();
 		mShader->Init(mProgram->GetAssetRef());
 
@@ -159,6 +158,48 @@ namespace BHive
 		}
 
 		RenderCommand::GetRendererAPI<VulkanRendererAPI>()->OnPipelineCreated(this);
+	}
+
+	void VulkanPipeline::Init(const ComputePipelineState &state)
+	{
+		mProgram = state.ShaderProgram;
+
+		mShader = CreateScope<VulkanShader>();
+		mShader->Init(mProgram->GetAssetRef());
+
+		auto &modules = mShader->GetModules();
+		auto has_compute_stage = modules.contains(EShaderStage::Compute);
+		if (!has_compute_stage)
+			return;
+
+		auto& module = modules.at(EShaderStage::Compute);
+		vk::PipelineShaderStageCreateInfo shader_create_info({}, vk::ShaderStageFlagBits::eCompute, *module, "main");
+
+		auto &push_constant_ranges = mShader->GetPushConstantRanges();
+		auto &layouts_in = mShader->GetLayouts();
+		auto maxSet = mShader->GetMaxSet();
+
+		std::vector<vk::DescriptorSetLayout> layouts_out(maxSet + 1, VK_NULL_HANDLE);
+
+		for (uint32_t set = 0; set <= maxSet; set++)
+		{
+			if (layouts_in.contains(set))
+				layouts_out[set] = *layouts_in.at(set);
+			else
+			{
+				vk::DescriptorSetLayoutCreateInfo empty_info{};
+				layouts_out[set] = mDevice.createDescriptorSetLayout(empty_info);
+			}
+		}
+
+		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, layouts_out, push_constant_ranges);
+		mPipelineLayout = mDevice.createPipelineLayout(pipeline_layout_create_info);
+
+		vk::ComputePipelineCreateInfo createInfo{};
+		createInfo.setStage(shader_create_info);
+		createInfo.setLayout(mPipelineLayout);
+
+		mPipeline = vk::raii::Pipeline(mDevice, nullptr, createInfo);
 	}
 
 	void VulkanPipeline::Bind()

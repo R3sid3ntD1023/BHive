@@ -24,6 +24,7 @@ namespace BHive
 
 	private:
 		Ref<Texture2D> mTexture = nullptr;
+		Ref<Texture2D> mEnvironmentTex;
 		Ref<class ShaderProgram> mShader = nullptr;
 		Ref<class ShaderProgram> mEmissiveShader = nullptr;
 		Ref<class Material> mMaterial = nullptr;

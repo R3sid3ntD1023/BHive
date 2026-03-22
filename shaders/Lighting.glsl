@@ -93,6 +93,7 @@ void GetSpotLightInfo(const in SpotLight light, const in vec3 geoPosition, inout
 	directLight.Color *= intensity;
 }
 
+#if defined(USE_SHADOW_MAPS)
 
 const vec2 poissonDisk[9] = vec2[]
 (
@@ -121,7 +122,6 @@ const vec3 v3poissonDisk[9] = vec3[](
 
 const float light_size = 0.07;
 
-#if defined(USE_SHADOW_MAPS)
 
 layout(std140, set = 0, binding = 5) restrict readonly buffer ShadowSSBO
 {

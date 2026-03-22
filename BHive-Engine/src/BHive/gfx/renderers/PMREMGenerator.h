@@ -11,9 +11,9 @@ namespace BHive
 	class Framebuffer;
 	class TextureCube;
 	class Texture2D;
-	class Shader;
+	class Material;
 
-	class PMREMGenerator
+	class BHIVE_API PMREMGenerator
 	{
 	public:
 		PMREMGenerator() = default;
@@ -38,14 +38,13 @@ namespace BHive
 		Ref<StaticMesh> mCube;
 
 		Ref<Texture> mEnvironmentTexture;
-		Ref<Shader> mEquirectangularShader;
-
 		Ref<TextureCube> mPreFilteredEnvironmentTexture;
 		Ref<Texture2D> mBRDFLUTTexture;
 
-		Ref<Shader> mIrradianceShader;
-		Ref<Shader> mBRDFLUTShader;
-		Ref<Shader> mPreFilterEnironmentShader;
+		Ref<Material> mEquirectangularMat;
+		Ref<Material> mIrradianceMat;
+		Ref<Material> mBRDFLUTMat;
+		Ref<Material> mPreFilterEnironmentMat;
 
 		CubeCamera mCubeCamera{.1f, 10.f};
 

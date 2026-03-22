@@ -65,7 +65,7 @@ namespace BHive
 				if (globals.GetBuffers().contains(r.binding))
 				{
 					mang->SetBuffer(r.binding, globals.GetBuffers().at(r.binding));
-					LOG_INFO("Binding global buffer at binding {}: {}", r.binding, globals.GetBuffers().contains(r.binding));
+					LOG_INFO("Binding global buffer {} at binding {}: {}", r.name, r.binding, globals.GetBuffers().contains(r.binding));
 				}
 				
 			}

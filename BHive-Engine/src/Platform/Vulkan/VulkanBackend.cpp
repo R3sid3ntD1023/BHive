@@ -68,7 +68,8 @@ namespace BHive
 				.setDescriptorBindingPartiallyBound(true)
 				.setDescriptorBindingUpdateUnusedWhilePending(true)
 				.setDescriptorBindingStorageBufferUpdateAfterBind(true)
-				.setDescriptorBindingUniformBufferUpdateAfterBind(true);
+				.setDescriptorBindingUniformBufferUpdateAfterBind(true)
+				.setDescriptorBindingStorageImageUpdateAfterBind(true);
 			featureChain.get<vk::PhysicalDeviceVulkan13Features>().setDynamicRendering(true).setSynchronization2(true).setDescriptorBindingInlineUniformBlockUpdateAfterBind(true);
 			featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().setExtendedDynamicState(true);
 			featureChain.get<vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>().setVertexInputDynamicState(true);

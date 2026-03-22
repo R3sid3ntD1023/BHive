@@ -5,6 +5,14 @@
 
 namespace BHive
 {
+	namespace utils
+	{
+		bool IsImage(vk::DescriptorType type)
+		{
+			return type == vk::DescriptorType::eCombinedImageSampler || type == vk::DescriptorType::eStorageImage;
+		}
+	}
+
 	VulkanShader::VulkanShader()
 		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
@@ -76,7 +84,7 @@ namespace BHive
 			for (auto &[name, sampler] : refl.Samplers)
 			{
 				auto vk_stage = ToVkShaderStageBit(sampler.Stages);
-				bindings.emplace_back(sampler.Binding, vk::DescriptorType::eCombinedImageSampler, sampler.ArraySize, vk_stage);
+				bindings.emplace_back(sampler.Binding,ToVkType(sampler.Type), sampler.ArraySize, vk_stage);
 			}
 
 			for (auto &[name, ubo] : refl.UniformBuffers)
@@ -97,7 +105,7 @@ namespace BHive
 			{
 				auto &b = bindings[i];
 
-				if (b.descriptorType == vk::DescriptorType::eCombinedImageSampler)
+				if (utils::IsImage(b.descriptorType))
 				{
 					binding_flags[i] = vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eUpdateUnusedWhilePending | vk::DescriptorBindingFlagBits::eUpdateAfterBind;
 				}

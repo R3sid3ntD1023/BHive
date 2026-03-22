@@ -4,9 +4,9 @@
 
 namespace BHive
 {
-	Pipeline::PipelineState Pipeline::GetDefaultPipelineState()
+	Pipeline::GraphicsPipelineState Pipeline::GetDefaultPipelineState()
 	{
-		PipelineState state{};
+		GraphicsPipelineState state{};
 
 		state.Raster.CullEnabled = true;
 		state.Raster.CullMode = ECullMode::Back;

@@ -39,6 +39,10 @@ namespace BHive
 		struct PipelineState
 		{
 			Ref<ShaderProgram> ShaderProgram;
+		};
+
+		struct GraphicsPipelineState : public PipelineState
+		{
 			//VertexLayout Layout;
 			ETopologyMode DrawMode;
 			RasterState Raster;
@@ -48,9 +52,15 @@ namespace BHive
 			EFormat DepthAttachmentFormat = EFormat::None;
 		};
 
+		struct ComputePipelineState : public PipelineState
+		{
+		};
+
 		virtual ~Pipeline() = default;
 
-		virtual void Init(const PipelineState& state) = 0;
+		virtual void Init(const GraphicsPipelineState& state) = 0;
+
+		virtual void Init(const ComputePipelineState &state) = 0;
 
 		virtual void Bind() = 0;
 
@@ -62,7 +72,7 @@ namespace BHive
 
 		virtual ISetManager* GetBatchSetManager() const = 0;
 
-		static PipelineState GetDefaultPipelineState();
+		static GraphicsPipelineState GetDefaultPipelineState();
 
 		static Ref<Pipeline> Create();
 	};

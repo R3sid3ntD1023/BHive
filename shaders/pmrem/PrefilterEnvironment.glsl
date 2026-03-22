@@ -7,8 +7,8 @@
 
 layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = 1) in;
 
-layout(rgba16f, set = 0, binding = 0) uniform restrict writeonly imageCube imgOutput;
-layout(set = 0, binding = 1) uniform samplerCube environmentMap;
+layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly imageCube imgOutput;
+layout(set = 1, binding = 1) uniform samplerCube environmentMap;
 
 
 layout(push_constant) uniform PushConstants

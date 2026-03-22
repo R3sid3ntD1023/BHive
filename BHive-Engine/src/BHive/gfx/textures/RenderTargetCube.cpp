@@ -1,5 +1,7 @@
 #include "RenderTargetCube.h"
-#include <glad/glad.h>
+#include "gfx/cameras/CubeCamera.h"
+#include "gfx/Texture.h"
+
 
 namespace BHive
 {
@@ -43,6 +45,11 @@ namespace BHive
 	void RenderTargetCube::UnBind()
 	{
 		// glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	const Ref<Texture> RenderTargetCube::GetTargetTexture() const
+	{
+		return mTargetTexture;
 	}
 
 } // namespace BHive

@@ -6,6 +6,8 @@
 #include "gfx/mesh/primitives/Cube.h"
 #include "PMREMGenerator.h"
 #include "Renderer.h"
+#include "gfx/material/Material.h"
+#include "gfx/Pipeline.h"
 
 #define ENVIRONMENT_MAP_SIZE 512
 #define PREFILTER_MAP_SIZE 128
@@ -41,10 +43,35 @@ namespace BHive
 
 		mCube = CreateRef<PCube>(2.0f);
 
-		mEquirectangularShader = ShaderManager::Get().Load("Equirectangular.glsl");
-		mIrradianceShader = ShaderManager::Get().Load("Irradiance.glsl");
-		mPreFilterEnironmentShader = ShaderManager::Get().Load("PrefilterEnvironment.glsl");
-		mBRDFLUTShader = ShaderManager::Get().Load("BRDFLut.glsl");
+		auto EquirectangularShader = ShaderManager::Get().Load("Equirectangular.glsl");
+		auto IrradianceShader = ShaderManager::Get().Load("Irradiance.glsl");
+		auto PreFilterEnironmentShader = ShaderManager::Get().Load("PrefilterEnvironment.glsl");
+		auto BRDFLUTShader = ShaderManager::Get().Load("BRDFLut.glsl");
+
+		auto equirrectangularPipeline = Pipeline::Create();
+		auto irradiancePipeline = Pipeline::Create();
+		auto preFilterPipeline = Pipeline::Create();
+		auto brdfLUTPipeline = Pipeline::Create();
+
+		auto state = Pipeline::GetDefaultPipelineState();
+
+		state.ShaderProgram = EquirectangularShader;
+		state.Raster.CullMode = ECullMode::Front;
+		equirrectangularPipeline->Init(state);
+		mEquirectangularMat = CreateRef<Material>(equirrectangularPipeline);
+
+		state.ShaderProgram = IrradianceShader;
+		irradiancePipeline->Init(state);
+		mIrradianceMat = CreateRef<Material>(irradiancePipeline);
+
+		Pipeline::ComputePipelineState compute_state{};
+		compute_state.ShaderProgram = PreFilterEnironmentShader;
+		preFilterPipeline->Init(compute_state);
+		mPreFilterEnironmentMat = CreateRef<Material>(preFilterPipeline);
+
+		compute_state.ShaderProgram = BRDFLUTShader;
+		brdfLUTPipeline->Init(compute_state);
+		mBRDFLUTMat = CreateRef<Material>(brdfLUTPipeline);
 
 		mInitialized = true;
 	}
@@ -77,20 +104,16 @@ namespace BHive
 	{
 		for (int i = 0; i < 6; i++)
 		{
-			mEnvironmentCapture->Bind(i);
-
-			//RenderCommand::CullFront();
 			RenderCommand::Clear();
 
-			//mEquirectangularShader->Bind();
-			//mEnvironmentTexture->Bind(0);
+			mEnvironmentCapture->Bind(i);
+
+			mEquirectangularMat->Submit();
+			mEquirectangularMat->SetTexture("equirectangularMap", mEnvironmentTexture);
 
 			RenderCube(i);
 
-			//mEquirectangularShader->UnBind();
 			mEnvironmentCapture->UnBind();
-
-			//RenderCommand::CullBack();
 		}
 	}
 
@@ -101,27 +124,22 @@ namespace BHive
 		{
 			mIrradianceCapture->Bind(i);
 
-			//RenderCommand::CullFront();
 			RenderCommand::Clear();
 
-			//mIrradianceShader->Bind();
-			//mEnvironmentCapture->GetTargetTexture()->Bind();
+			mIrradianceMat->Submit();
+			mIrradianceMat->SetTexture("environmentMap", mEnvironmentCapture->GetTargetTexture());
 
 			RenderCube(i);
 
-			//mIrradianceShader->UnBind();
 			mIrradianceCapture->UnBind();
-
-			//RenderCommand::CullBack();
 		}
 	}
 
 	void PMREMGenerator::CreatePreFilteredEnvironmentMap()
 	{
-		//Image image(mPreFilteredEnvironmentTexture);
 
-		//mPreFilterEnironmentShader->Bind();
-		//mEnvironmentCapture->GetTargetTexture()->Bind();
+		mPreFilterEnironmentMat->Submit();
+		mPreFilterEnironmentMat->SetTexture("environmentMap", mEnvironmentCapture->GetTargetTexture());
 
 		int mip_level = (ENVIRONMENT_MAP_SIZE / PREFILTER_MAP_SIZE) - 1;
 		for (int i = 0; i < PREFILTER_MIP_LEVELS; i++)
@@ -131,29 +149,25 @@ namespace BHive
 
 			float roughness = (float)i / (float)(PREFILTER_MIP_LEVELS - 1);
 
-			/*mPreFilterEnironmentShader->SetUniform("constants.u_roughness", roughness);
-			mPreFilterEnironmentShader->SetUniform("constants.u_mip_level", mip_level);
-			mPreFilterEnironmentShader->SetUniform("constants.u_width", w);
-			mPreFilterEnironmentShader->SetUniform("constants.u_height", h);*/
+			mPreFilterEnironmentMat->Set("u_roughness", roughness);
+			mPreFilterEnironmentMat->Set("u_mip_level", mip_level);
+			mPreFilterEnironmentMat->Set("u_width", w);
+			mPreFilterEnironmentMat->Set("u_height", h);
+
+			mPreFilterEnironmentMat->SetTexture("imgOutput", mPreFilteredEnvironmentTexture);
 
 			//image.Bind(0, EImageAccess::WRITE, i);
 
-			//mPreFilterEnironmentShader->Dispatch(w / PREFILTER_WORK_GROUP_SIZE, h / PREFILTER_WORK_GROUP_SIZE, 6);
+			RenderCommand::Dispath(w / PREFILTER_WORK_GROUP_SIZE, h / PREFILTER_WORK_GROUP_SIZE, 6);
 		}
 
-		//mPreFilterEnironmentShader->UnBind();
 	}
 
 	void PMREMGenerator::CreateBRDFLUTMap()
 	{
-		/*Image image(mBRDFLUTTexture);
-
-		mBRDFLUTShader->Bind();
-
-		image.Bind(0, EImageAccess::WRITE);
-		mBRDFLUTShader->Dispatch(BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE, BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE);
-
-		mBRDFLUTShader->UnBind();*/
+		mBRDFLUTMat->Submit();
+		mBRDFLUTMat->SetTexture("brdfLutTexture", mBRDFLUTTexture);
+		RenderCommand::Dispath(BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE, BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE, 1);
 	}
 
 	void PMREMGenerator::RenderCube(uint32_t face)

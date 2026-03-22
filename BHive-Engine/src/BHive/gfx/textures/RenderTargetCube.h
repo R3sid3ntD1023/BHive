@@ -1,10 +1,13 @@
 #pragma once
 
-#include "gfx/cameras/CubeCamera.h"
-#include "gfx/Texture.h"
+#include "gfx/Enumerations.h"
 
 namespace BHive
 {
+	class Framebuffer;
+	class TextureCube;
+	class Texture;
+
 	class RenderTargetCube
 	{
 	public:
@@ -13,11 +16,11 @@ namespace BHive
 
 		virtual void Bind(uint32_t face);
 		virtual void UnBind();
-		virtual const Ref<Texture> GetTargetTexture() const { return mTargetTexture; }
+		virtual const Ref<Texture> GetTargetTexture() const;
 
 	private:
 		uint32_t mSize;
-		uint32_t mFramebufferID = 0, mRenderBufferID;
+		Ref<Framebuffer> mFrameBuffer;
 		Ref<TextureCube> mTargetTexture;
 	};
 } // namespace BHive

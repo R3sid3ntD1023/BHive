@@ -22,20 +22,22 @@
 #include "gfx/ISetManager.h"
 #include "gfx/GlobalBuffers.h"
 #include "gfx/material/LambertMaterial.h"
+#include "gfx/renderers/PMREMGenerator.h"
 
 namespace BHive
 {
 	FTransform transform{};
+	PMREMGenerator gen;
 
 	void RuntimeLayer::OnAttach(Application& app)
 	{
 		//mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Triangle.glsl");
 		//mEmissiveShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Emissive.glsl");
 		
-		auto environment_tex = TextureLoader::Import(ENGINE_PATH"/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
-		Renderer::SetEnvironmentTexture(environment_tex);
+		mEnvironmentTex = TextureLoader::Import(ENGINE_PATH"/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
+		Renderer::SetEnvironmentTexture(mEnvironmentTex);
 
-		Pipeline::PipelineState state = Pipeline::GetDefaultPipelineState();
+		auto state = Pipeline::GetDefaultPipelineState();
 		//state.ShaderProgram = mShader;
 		state.ColorAttachmentFormats = {EFormat::RGBA8};
 
@@ -105,6 +107,8 @@ namespace BHive
 
 		mMultiDrawIndirectBuffer = GPUBuffer::Create(sizeof(MultiDrawIndirectCommand) * commands.size(), EBufferType::IndirectBuffer);
 		mMultiDrawIndirectBuffer->SetData(commands.data(), sizeof(MultiDrawIndirectCommand) * commands.size());
+
+		gen.Initialize();
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -113,7 +117,8 @@ namespace BHive
 
 	void RuntimeLayer::OnUpdate(float time)
 	{	
-
+		gen.SetEnvironmentMap(mEnvironmentTex);
+		
 		transform.AddRotation({0, time * 10.f, 0});
 
 		mCamera.ProcessInput();
