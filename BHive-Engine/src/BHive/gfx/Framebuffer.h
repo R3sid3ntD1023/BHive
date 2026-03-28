@@ -13,6 +13,10 @@ namespace BHive
 	{
 		FTextureCreateInfo CreateInfo{};
 		ETextureType TextureType = ETextureType::TEXTURE_2D;
+		uint32_t Layer = 0;
+		uint32_t LayerCount = 1;
+		uint32_t MipLevel = 0;
+		Ref<Texture> ExistingTexture;
 	};
 
 	struct FRenderbufferTexture
@@ -36,9 +40,15 @@ namespace BHive
 			return *this;
 		}
 
+		FramebufferAttachments &attach(const FFramebufferTexture& texture)
+		{
+			Attachments.push_back(texture);
+			return *this;
+		}
+
 		FramebufferAttachments &attach(const FTextureCreateInfo &create_info, ETextureType type = ETextureType::TEXTURE_2D)
 		{
-			Attachments.push_back(FFramebufferTexture{create_info, type});
+			Attachments.emplace_back(FFramebufferTexture{create_info, type});
 			return *this;
 		}
 
@@ -74,6 +84,8 @@ namespace BHive
 		virtual ~Framebuffer() = default;
 
 		virtual void Bind() const = 0;
+
+		virtual void BindFace(uint32_t face) = 0;
 
 		virtual void UnBind() const = 0;
 

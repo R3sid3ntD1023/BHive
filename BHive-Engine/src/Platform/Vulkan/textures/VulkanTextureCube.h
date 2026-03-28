@@ -6,7 +6,7 @@
 namespace BHive
 {
 
-	class BHIVE_API VulkanTextureCube : public TextureCube
+	class BHIVE_API VulkanTextureCube final: public TextureCube
 	{
 	public:
 		VulkanTextureCube() = default;
@@ -23,10 +23,13 @@ namespace BHive
 
 		NativeHandle GetNativeHandle() override { return mImage.GetNativeHandle(); }
 
+		NativeHandle GetRenderView(uint32_t layer = 0, uint32_t mip = 0) const override;
+
 	private:
 		vk::raii::Device &mDevice;
 		uint32_t mSize{0};
 		FTextureCreateInfo mCreateInfo;
 		VulkanImage mImage;
+		UUID mFaceViews[6];
 	};
 } // namespace BHive

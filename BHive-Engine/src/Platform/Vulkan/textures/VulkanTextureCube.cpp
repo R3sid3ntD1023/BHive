@@ -11,6 +11,28 @@ namespace BHive
 	{
 		mCreateInfo.ArrayLayers = 6;
 		mImage.Create(vk::ImageCreateFlagBits::eCubeCompatible ,size, size, 1, vk::ImageType::e2D, vk::ImageViewType::eCube, Convert(mCreateInfo));
+
+		auto allocated_image = mImage.GetNativeHandle().As<AllocatedImage>();
+		auto image = allocated_image->CreateImage();
+		
+		for (uint32_t face = 0; face < 6; face++)
+		{
+			ImageViewDesc desc{};
+			desc.Type = vk::ImageViewType::e2D;
+			desc.Format = ToVkFormat(create_info.Format);
+			desc.BaseArrayLayer = face;
+			desc.LayerCount = 1;
+			desc.BaseMipLevel = 0;
+			desc.LayerCount = 1;
+			
+			mFaceViews[face] = VulkanBackend::GetGPUResourceManager().CreateImageView(allocated_image->GetImage(), desc);
+		}
+	}
+
+	NativeHandle VulkanTextureCube::GetRenderView(uint32_t layer, uint32_t mip) const
+	{
+		auto &view = VulkanBackend::GetGPUResourceManager().GetImageView(mFaceViews[layer]);
+		return NativeHandle::FromPtr(&view);
 	}
 
 } // namespace BHive

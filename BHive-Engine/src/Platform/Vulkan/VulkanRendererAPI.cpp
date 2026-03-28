@@ -92,7 +92,7 @@ namespace BHive
 
 		if (finalGraph.Empty())
 		{
-		
+			return vk::Result::eSuccess;
 		}
 
 		return ExecuteFinalGraph(ctx, mergedUpdates, finalGraph);
@@ -168,6 +168,7 @@ namespace BHive
 		ProcessDeletionQueue(current_frame);
 
 		cmd.reset();
+		
 
 		auto [result, imageIndex] = swap_chain->AquireNextImage(current_frame);
 
@@ -179,6 +180,11 @@ namespace BHive
 			return result;
 
 		cmd.begin({});
+
+#ifdef _DEBUG
+		vk::DebugUtilsLabelEXT label_info("Main Pass", std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
+		cmd.beginDebugUtilsLabelEXT(label_info);
+#endif
 
 		FVulkanRendererContext frame(cmd, current_frame, imageIndex);
 
@@ -225,6 +231,9 @@ namespace BHive
 			}
 		}
 
+#ifdef _DEBUG
+		cmd.endDebugUtilsLabelEXT();
+#endif
 		cmd.end();
 
 		result = swap_chain->Present(cmd, imageIndex, current_frame);
@@ -312,26 +321,39 @@ namespace BHive
 			});
 	}
 
-	void VulkanRendererAPI::DrawElementsBaseVertex(ETopologyMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count, uint32_t instance_count)
+	void VulkanRendererAPI::DrawElementsBaseVertex(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t start, uint32_t start_index, uint32_t count, uint32_t instance_count)
 	{
+		vao->Bind();
+		auto index_buffer = vao->GetIndexBuffer();
+		auto index_count = count ? count : index_buffer->GetCount();
+		auto topology = ToVkTopology(mode);
 
+		auto &pass = RenderCommand::GetActivePass();
+		pass.CommandList.Push(
+			"Draw Elements",
+			[=](const IRendererContext &ctx)
+			{
+				auto &vk_ctx = static_cast<const FVulkanRendererContext &>(ctx);
+				vk_ctx.CommandBuffer.setPrimitiveTopology(topology);
+				vk_ctx.CommandBuffer.drawIndexed(index_count, instance_count, start_index, start, 0);
+			});
 	}
 
-	void VulkanRendererAPI::DrawElementsRanged(ETopologyMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
+	void VulkanRendererAPI::DrawElementsRanged(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t start, uint32_t end, uint32_t count)
 	{
 		
 	}
 
-	void VulkanRendererAPI::DrawElementsInstanced(ETopologyMode mode, const VertexArray &vao, uint32_t instances, uint32_t count)
+	void VulkanRendererAPI::DrawElementsInstanced(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t instances, uint32_t count)
 	{
 	
 	}
 
-	void VulkanRendererAPI::MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const VertexArray &vao, size_t drawCount, size_t stride)
+	void VulkanRendererAPI::MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const Ref<VertexArray> &vao, size_t drawCount, size_t stride)
 	{
-		vao.Bind();
+		vao->Bind();
 
-		auto buffer = indirect.GetNativeHandle().As<AllocatedBuffer>()->Buffer;
+		auto buffer = indirect.GetNativeHandle().As<AllocatedBuffer>()->GetBuffer();
 		auto topology = ToVkTopology(mode);
 
 		auto &pass = RenderCommand::GetActivePass();
@@ -342,7 +364,7 @@ namespace BHive
 			vk_ctx.CommandBuffer.drawIndexedIndirect(buffer, 0, drawCount, stride);
 		});
 
-		vao.UnBind();
+		vao->UnBind();
 	}
 
 	void VulkanRendererAPI::Dispath(uint32_t x, uint32_t y, uint32_t z)

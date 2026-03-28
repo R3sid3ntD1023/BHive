@@ -10,18 +10,28 @@ namespace BHive
 	struct FTextureCreateInfo
 	{
 		ETextureUsage Usage = ETextureUsage::Sampled;
+
 		ETextureAspect Aspect = ETextureAspect::Color;
+
 		EFormat Format = EFormat::None;
+
 		EWrapMode WrapMode = EWrapMode::REPEAT;
+
 		EMinFilter MinFilter = EMinFilter::LINEAR;
+
 		EMagFilter MagFilter = EMagFilter::LINEAR;
 
 		std::optional<ECompareMode> CompareMode;
+
 		std::optional<ECompareOp> CompareOp;
 
 		uint32_t Levels = 1;
+
 		uint32_t ArrayLayers = 1;
+
 		bool GenerateMipMaps = false;
+
+		std::string DebugName = "*";
 
 		template <typename A>
 		void Serialize(A &ar)

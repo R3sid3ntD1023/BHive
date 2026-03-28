@@ -106,7 +106,11 @@ namespace BHive
 	}
 
 	void VulkanUtils::CreateImage(vk::ImageCreateFlags flags, uint32_t levels,
-		uint32_t w, uint32_t h, uint32_t d, uint32_t layers, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image &image)
+		uint32_t w, uint32_t h, uint32_t d, uint32_t layers, vk::ImageType type, vk::Format format, 
+		vk::ImageTiling tiling, 
+		vk::ImageUsageFlags usage, 
+		vk::MemoryPropertyFlags properties, 
+		vk::raii::Image &image)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
 		vk::ImageCreateInfo imageInfo(
@@ -115,11 +119,15 @@ namespace BHive
 		image = device.createImage(imageInfo);
 	}
 
-	void VulkanUtils::CreateImageView(const vk::Image &image, vk::raii::ImageView &view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect,
+	void VulkanUtils::CreateImageView(
+		const vk::Image &image, vk::raii::ImageView &view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect, 
+		uint32_t baseMipLevel, 
+		uint32_t LevelCount, 
+		uint32_t baseArrayLayer,
 		uint32_t layerCount)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
-		vk::ImageSubresourceRange range(aspect, 0, 1, 0, layerCount);
+		vk::ImageSubresourceRange range(aspect, baseMipLevel, LevelCount, baseArrayLayer, layerCount);
 		vk::ImageViewCreateInfo image_view_create_info({}, image, type, format, {}, range);
 		view = device.createImageView(image_view_create_info);
 	}
@@ -181,7 +189,7 @@ namespace BHive
 		if (valid)
 			__debugbreak();
 
-		vk::ImageSubresourceRange range{aspect_flags, sub.MipLevel, 1, sub.BaseArrayLayer, sub.LayerCount};
+		vk::ImageSubresourceRange range{aspect_flags, sub.MipLevel, sub.LevelCount, sub.BaseArrayLayer, sub.LayerCount};
 		vk::ImageMemoryBarrier2 barrier(
 			srcStageMask,
 			srcAccessMask, 
@@ -198,7 +206,7 @@ namespace BHive
 		cmd.pipelineBarrier2(depInfo);
 	}
 
-	void VulkanUtils::CopyBufferToImage(const vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, vk::Image &image, const ImageCopyRegion &region)
+	void VulkanUtils::CopyBufferToImage(const vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, const vk::Image &image, const ImageCopyRegion &region)
 	{
 		vk::Offset3D offset(region.Offset.x, region.Offset.y, region.Offset.z);
 		vk::Extent3D extent(region.Extents.x, region.Extents.y, region.Extents.z);

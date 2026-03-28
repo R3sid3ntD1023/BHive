@@ -7,8 +7,11 @@ namespace BHive
 {
 	static const uint32_t sMaxFramebufferSize = 8192;
 
-	Ref<Texture> CreateFramebufferTexture(const glm::uvec2& size, uint32_t samples, FFramebufferTexture specification)
+	Ref<Texture> CreateFramebufferTexture(const glm::uvec2& size, uint32_t samples, const FFramebufferTexture& specification)
 	{
+		if (specification.ExistingTexture)
+			return specification.ExistingTexture;
+
 		auto &type = specification.TextureType;
 
 		switch (type)
@@ -55,32 +58,47 @@ namespace BHive
 
 	void VulkanFramebuffer::Bind() const
 	{
-		auto& color_attachmnets = mColorAttachments;
-		auto& depth_attachment = mDepthAttachment;
-		auto& spec = mSpecification;
+		auto color_attachments = mColorAttachments;
+		auto color_specifications = mColorAttachmentSpecifications;
+		auto depth_attachment = mDepthAttachment;
+		auto depth_specification = mDepthSpecification;
+		auto spec = mSpecification;
+		auto current_face = mCurrentFace;
 
 		RenderCommand::BeginFrame();
 		auto &pass = RenderCommand::BeginPass("Framebuffer", EPassType::OffScreen);
 
 		pass.CommandList.Push(
 			"Bind Framebuffer",
-			[color_attachmnets, depth_attachment, spec](IRendererContext &ctx)
+			[current_face, color_attachments, color_specifications, depth_attachment, depth_specification, spec](IRendererContext &ctx)
 			{
 				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
 				// transition images
-				for (size_t i = 0; i < color_attachmnets.size(); i++)
+				for (size_t i = 0; i < color_attachments.size(); i++)
 				{
-					auto tex = color_attachmnets[i]->GetNativeHandle().As<AllocatedImage>();
+					auto &spec = color_specifications[i];
+					auto tex = color_attachments[i]->GetNativeHandle().As<AllocatedImage>();
 					ImageState attchmentState = {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
-					tex->Transition(vk_ctx.CommandBuffer, attchmentState);
+					ImageSubresource sub{
+						.MipLevel = spec.MipLevel,
+						.BaseArrayLayer = spec.Layer,
+						.LayerCount = spec.LayerCount
+					};
+					tex->Transition(vk_ctx.CommandBuffer, attchmentState, sub);
 				}
 
 				if (depth_attachment)
 				{
+					auto &spec = depth_specification;
 					auto tex = depth_attachment->GetNativeHandle().As<AllocatedImage>();
 					ImageState depthState = {
 						vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
 						vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests};
+
+					ImageSubresource sub{
+						.MipLevel = spec.MipLevel,
+						.BaseArrayLayer = spec.Layer, .LayerCount = spec.LayerCount
+					};
 					tex->Transition(vk_ctx.CommandBuffer, depthState);
 				}
 
@@ -88,14 +106,16 @@ namespace BHive
 				std::vector<vk::RenderingAttachmentInfo> color_infos;
 				vk::RenderingAttachmentInfo depth_info{};
 
-				color_infos.reserve(color_attachmnets.size());
+				const auto num_color_attachments = color_attachments.size();
+				color_infos.reserve(num_color_attachments);
 
-				for (auto &tex : color_attachmnets)
+				for (size_t i = 0; i < num_color_attachments; i++)
 				{
-					auto vkTex = tex->GetNativeHandle().As<AllocatedImage>();
+					auto& spec = color_specifications[i];
+					auto &vkTex = *color_attachments[i]->GetRenderView(current_face, spec.MipLevel).As<vk::ImageView>();
 
 					auto info = vk::RenderingAttachmentInfo(
-						vkTex->GetView(), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+						vkTex, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 						vk::ClearColorValue(0, 0, 0, 1));
 
 					color_infos.emplace_back(info);
@@ -103,10 +123,11 @@ namespace BHive
 
 				if (depth_attachment)
 				{
-					auto vkTex = depth_attachment->GetNativeHandle().As<AllocatedImage>();
+					auto &spec = depth_specification;
+					auto& vkTex = *depth_attachment->GetRenderView(spec.Layer, spec.MipLevel).As<vk::ImageView>();
 
 					depth_info = vk::RenderingAttachmentInfo(
-						vkTex->GetView(), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+						vkTex, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 						vk::ClearDepthStencilValue(1.0f, 0));
 				}
 
@@ -122,6 +143,11 @@ namespace BHive
 				vk_ctx.CommandBuffer.setViewport(0, viewport);
 				vk_ctx.CommandBuffer.setScissor(0, scissor);
 			});
+	}
+
+	void VulkanFramebuffer::BindFace(uint32_t face)
+	{
+		mCurrentFace = face;
 	}
 
 	void VulkanFramebuffer::UnBind() const

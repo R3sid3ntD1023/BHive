@@ -17,6 +17,8 @@ namespace BHive
 
 		virtual void Bind() const;
 
+		virtual void BindFace(uint32_t face);
+
 		virtual void UnBind() const;
 
 		virtual void Resize(const glm::uvec2 &newSize);
@@ -54,6 +56,7 @@ namespace BHive
 
 		FramebufferSpecification mSpecification;
 
+		uint32_t mCurrentFace = 0;
 	};
 
 } // namespace BHive

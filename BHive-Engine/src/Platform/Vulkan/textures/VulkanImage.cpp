@@ -9,12 +9,7 @@ namespace BHive
 {
 	VulkanImage::~VulkanImage()
 	{
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		api->QueueDeletion(
-			[image = mImage](uint32_t)
-			{
-				VulkanBackend::GetGPUResourceManager().DestroyImage(image);
-			});
+		VulkanBackend::GetGPUResourceManager().DestroyImage(mImage);
 	}
 
 	void VulkanImage::Create(vk::ImageCreateFlags createFlags,
@@ -38,8 +33,11 @@ namespace BHive
 		ImageViewDesc view_desc{};
 		view_desc.Format = createInfo.Format;
 		view_desc.Type = viewType;
+		view_desc.LayerCount = createInfo.ArrayLayers;
+		view_desc.Aspect = createInfo.Aspect;
 
 		mImage = gpu_r_m.CreateImage(createFlags, desc, view_desc);
+		
 
 		vk::SamplerCreateInfo sampler_info(
 			{}, createInfo.MinFilter, createInfo.MagFilter, vk::SamplerMipmapMode::eLinear, createInfo.WrapMode, createInfo.WrapMode, createInfo.WrapMode, 0, 0, 1, createInfo.CompareEnabled,
@@ -52,6 +50,10 @@ namespace BHive
 		sampler_info.maxLod = 0.f;
 
 		gpu_r_m.CreateSampler(mImage, sampler_info);
+
+		VulkanBackend::SetObjectName(mImage.GetImage(), std::format("Image_{}", createInfo.DebugName));
+		VulkanBackend::SetObjectName(mImage.GetView(), std::format("ImageView_{}", createInfo.DebugName));
+		VulkanBackend::SetObjectName(mImage.GetSampler(), std::format("ImageSampler_{}", createInfo.DebugName));
 	}
 
 	void VulkanImage::Upload(const void *data, size_t size, const ImageCopyRegion &region, const ImageSubresource &sub)
@@ -76,9 +78,11 @@ namespace BHive
 
 		ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
 
+		auto& staging_buffer = VulkanBackend::GetGPUResourceManager().GetBuffer(stagingBuffer.Buffer);
+
 		auto cmd = VulkanUtils::BeginSingleTimeCommands();
 		mImage.Transition(cmd, transerDst, sub);
-		VulkanUtils::CopyBufferToImage(cmd, stagingBuffer.Buffer, mImage.GetImage(), region);
+		VulkanUtils::CopyBufferToImage(cmd, staging_buffer, mImage.GetImage(), region);
 		mImage.Transition(cmd, shaderRead, sub);
 		VulkanUtils::EndSingleTimeCommands(cmd);
 

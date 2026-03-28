@@ -5,8 +5,7 @@
 
 namespace BHive
 {
-	using BufferHandle = UUID;
-	using ImageHandle = UUID;
+
 
 	struct BufferDesc
 	{
@@ -45,22 +44,78 @@ namespace BHive
 
 	struct ImageViewDesc
 	{
+		vk::ImageAspectFlags Aspect;
+
 		vk::ImageViewType Type;
 
 		vk::Format Format;
+
+		uint32_t BaseArrayLayer = 0;
+
+		uint32_t LayerCount = 1;
+
+		uint32_t BaseMipLevel = 0;
+
+		uint32_t LevelCount = 1;
 	};
 
 	class GPUResourceManager
 	{
 	public:
+		template<typename T>
+		struct Resource
+		{
+			T Handle = VK_NULL_HANDLE;
+		};
 
-		void Shutdown();
+		struct StorageBase
+		{
+			virtual void Remove(const UUID& handle) = 0;
+		};
+
+		template<typename T>
+		struct Storage : public StorageBase
+		{
+			using TContainer = std::unordered_map<UUID, Resource<T>>;
+
+			void Remove(const UUID &handle) override
+			{ 
+				if(mResources.contains(handle))
+				{
+					mResources.erase(handle);
+				}
+			}
+
+			T &Get(const UUID &handle)
+			{
+				if (mResources.contains(handle))
+					return mResources.at(handle).Handle;
+
+				return mResources[handle].Handle;
+			}
+
+			const T& Get(const UUID& handle) const
+			{
+				if(mResources.contains(handle))
+					return mResources.at(handle).Handle;
+
+				ASSERT(false)
+			}
+
+
+			TContainer &GetContainer() { return mResources; }
+
+		private:
+			TContainer mResources;
+		};
 
 		AllocatedBuffer CreateBuffer(const BufferDesc& desc);
 
 		AllocatedImage CreateImage(vk::ImageCreateFlags createFlags, const ImageDesc &desc, const ImageViewDesc &viewDesc);
 
-		void CreateImageView(Image &image, const ImageViewDesc &desc);
+		void CreateImageView(AllocatedImage &image, const ImageViewDesc &desc);
+
+		UUID CreateImageView(const vk::Image &image, const ImageViewDesc &desc);
 
 		void* MapMemory(AllocatedBuffer &buffer, vk::DeviceSize offset, vk::DeviceSize size);
 
@@ -68,10 +123,43 @@ namespace BHive
 
 		void CreateSampler(AllocatedImage& image, const vk::SamplerCreateInfo &create_info);
 
+		void DestroyBuffer(const UUID& handle);
+
+		void DestroyImage(const UUID &handle);
+
+		void DestroyImageView(const UUID &handle);
+
+		void DestroySampler(const UUID &handle);
+
 		void DestroyBuffer(AllocatedBuffer buffer);
 
 		void DestroyImage(AllocatedImage image);
 
 		void DestroyImage(Image image);
+
+		//-------------------getters------------------------------
+
+		const vk::Image& GetImage(const UUID &handle);
+
+		const vk::ImageView& GetImageView(const UUID &handle);
+
+		const vk::Sampler& GetSampler(const UUID &handle);
+
+		const vk::Buffer& GetBuffer(const UUID &handle);
+
+	private:
+		template<typename T>
+		Storage<T>& GetStorage()
+		{
+			size_t id = typeid(T).hash_code();
+			if (mStorages.contains(id))
+				return static_cast<Storage<T> &>(*mStorages.at(id).get());
+
+			mStorages.emplace(id, std::move(CreateScope<Storage<T>>()));
+			return static_cast<Storage<T> &>(*mStorages.at(id).get());
+		}
+
+	private:
+		std::unordered_map<size_t, Scope<StorageBase>> mStorages;
 	};
-}
+} // namespace BHive

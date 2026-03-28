@@ -69,7 +69,7 @@ namespace BHive
 		return true;
 	}
 
-	Ref<Texture2D> TextureLoader::CreateOrResizeTexture(int32_t w, int32_t h, int32_t c, uint8_t *data, size_t size, bool hdr, const FTextureOverride &override)
+	Ref<Texture2D> TextureLoader::CreateOrResizeTexture(const std::string& name, int32_t w, int32_t h, int32_t c, uint8_t *data, size_t size, bool hdr, const FTextureOverride &override)
 	{
 		FTextureCreateInfo create_info{};
 		create_info.Format = hdr ? utils::GetFormatFromChannelsHDR(c) : utils::GetFormatFromChannels(c);
@@ -79,6 +79,7 @@ namespace BHive
 		create_info.GenerateMipMaps = true;
 		create_info.Usage = ETextureUsage::Sampled | ETextureUsage::TransferDst;
 		create_info.Aspect = ETextureAspect::Color;
+		create_info.DebugName = name;
 
 		if (override.Resize())
 		{
@@ -123,7 +124,7 @@ namespace BHive
 		}
 
 
-		Ref<Texture2D> texture = CreateOrResizeTexture(w, h, c_out, image_data, data_size, is_hdr, override);
+		Ref<Texture2D> texture = CreateOrResizeTexture(file.stem().string(),w, h, c_out, image_data, data_size, is_hdr, override);
 
 		stbi_image_free(image_data);
 
@@ -157,7 +158,7 @@ namespace BHive
 			return nullptr;
 		}
 
-		auto texture = CreateOrResizeTexture(w, h, c_out, image_data, data_size, is_hdr, {});
+		auto texture = CreateOrResizeTexture("Memory Created", w, h, c_out, image_data, data_size, is_hdr, {});
 
 		stbi_image_free(image_data);
 

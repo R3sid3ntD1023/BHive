@@ -30,11 +30,14 @@ namespace BHive
 		if (mapped_memory)
 			std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, data, size);
 
+		auto &src_buffer = VulkanBackend::GetGPUResourceManager().GetBuffer(StagingBuffer.Buffer);
+		auto &dst_buffer = VulkanBackend::GetGPUResourceManager().GetBuffer(Buffer.Buffer);
+
 		vk::BufferCopy copy_region(0, offset, size);
-		cmd.copyBuffer(StagingBuffer.Buffer, Buffer.Buffer, copy_region);
+		cmd.copyBuffer(src_buffer, dst_buffer, copy_region);
 
 		vk::BufferMemoryBarrier2 barrier(
-			vk::PipelineStageFlagBits2::eCopy, vk::AccessFlagBits2::eTransferWrite, flags, access, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, Buffer.Buffer, 0, size);
+			vk::PipelineStageFlagBits2::eCopy, vk::AccessFlagBits2::eTransferWrite, flags, access, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, dst_buffer, 0, size);
 
 		vk::DependencyInfo dependency_info({}, {}, barrier);
 
@@ -49,14 +52,8 @@ namespace BHive
 
 	PerFrameBuffer::~PerFrameBuffer()
 	{
-		auto buffer = Buffer;
-		auto stagingBuffer = StagingBuffer;
-
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		api->QueueDeletion([buffer, stagingBuffer](uint32_t) { 
-				VulkanBackend::GetGPUResourceManager().DestroyBuffer(buffer);
-				VulkanBackend::GetGPUResourceManager().DestroyBuffer(stagingBuffer);
-			});
+		VulkanBackend::GetGPUResourceManager().DestroyBuffer(Buffer);
+		VulkanBackend::GetGPUResourceManager().DestroyBuffer(StagingBuffer);
 	}
 
 	//-------------------Static Buffers---------------------------------------------//

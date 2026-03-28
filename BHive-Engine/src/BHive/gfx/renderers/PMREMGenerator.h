@@ -30,7 +30,6 @@ namespace BHive
 		void CreateIrradianceMap();
 		void CreatePreFilteredEnvironmentMap();
 		void CreateBRDFLUTMap();
-		void RenderCube(uint32_t face);
 
 		Ref<RenderTargetCube> mEnvironmentCapture;
 		Ref<RenderTargetCube> mIrradianceCapture;

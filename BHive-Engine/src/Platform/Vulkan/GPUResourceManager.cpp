@@ -1,85 +1,70 @@
 #include "GPUResourceManager.h"
 #include "VulkanUtils.h"
 #include "VulkanBackend.h"
+#include "gfx/RenderCommand.h"
+#include "VulkanRendererAPI.h"
 
 namespace BHive
 {
-	struct GPUBuffer
-	{
-		vk::raii::Buffer Buffer = VK_NULL_HANDLE;
-	};
-
-	struct GPUImage
-	{
-		vk::raii::Image Image = VK_NULL_HANDLE;
-		vk::raii::ImageView View = VK_NULL_HANDLE;
-		vk::raii::Sampler Sampler = VK_NULL_HANDLE;
-	};
-
-	struct GPUStorage
-	{
-		static inline std::unordered_map<BufferHandle, GPUBuffer> Buffers;
-		static inline std::unordered_map<ImageHandle, GPUImage> Images;
-	};
-
-	void GPUResourceManager::Shutdown()
-	{
-		GPUStorage::Buffers.clear();
-		GPUStorage::Images.clear();
-	}
-
 	AllocatedBuffer GPUResourceManager::CreateBuffer(const BufferDesc &desc)
 	{
-		auto handle = BufferHandle();
-		auto& buffer = GPUStorage::Buffers[handle];
-		VulkanUtils::CreateBuffer(desc.Size, desc.Usage, desc.MemoryFlags, buffer.Buffer);
+		auto handle = UUID();
+		auto &buffer = GetStorage<vk::raii::Buffer>().Get(handle);
+
+		VulkanUtils::CreateBuffer(desc.Size, desc.Usage, desc.MemoryFlags, buffer);
 
 		auto& allocator = VulkanBackend::GetMemoryAllocator();
-		MemoryAllocation allocation = allocator.Allocate(buffer.Buffer, desc.MemoryFlags, desc.Size);
+		MemoryAllocation allocation = allocator.Allocate(buffer, desc.MemoryFlags, desc.Size);
 
-		buffer.Buffer.bindMemory(allocation.Memory, allocation.Offset);
+		buffer.bindMemory(allocation.Memory, allocation.Offset);
 
-		return {buffer.Buffer, std::move(allocation),desc.Size, handle};
+		return {handle, std::move(allocation),desc.Size};
 	}
 
 	AllocatedImage GPUResourceManager::CreateImage(vk::ImageCreateFlags createFlags, const ImageDesc &desc, const ImageViewDesc &viewDesc)
 	{
-		auto handle = ImageHandle();
-		auto &image = GPUStorage::Images[handle];
-		VulkanUtils::CreateImage(createFlags, desc.Levels, desc.Width, desc.Height, desc.Depth, desc.ArrayLayers, desc.Type, desc.Format, desc.Tiling, desc.Usage, desc.MemoryFlags, image.Image);
+		AllocatedImage out{};
+
+		auto handle = UUID();
+		auto &image = GetStorage<vk::raii::Image>().Get(handle);
+		auto &view = GetStorage<vk::raii::Sampler>().Get(handle);
+
+		VulkanUtils::CreateImage(createFlags, desc.Levels, desc.Width, desc.Height, desc.Depth, desc.ArrayLayers, desc.Type, desc.Format, desc.Tiling, desc.Usage, desc.MemoryFlags, image);
 
 		auto &allocator = VulkanBackend::GetMemoryAllocator();
-		MemoryAllocation allocation = allocator.Allocate(image.Image, desc.MemoryFlags, desc.Size());
+		MemoryAllocation allocation = allocator.Allocate(image, desc.MemoryFlags, desc.Size());
 
-		image.Image.bindMemory(allocation.Memory, allocation.Offset);
+		image.bindMemory(allocation.Memory, allocation.Offset);
 
-		VulkanUtils::CreateImageView(image.Image, image.View, viewDesc.Type, viewDesc.Format, desc.Aspect, desc.ArrayLayers);
-
-		AllocatedImage out{};
-		out.Image = image.Image;
-		out.Handle = handle;
+		out.ImageHandle = handle;
+		out.ViewHandle = CreateImageView(image, viewDesc);
 		out.ArrayLayers = desc.ArrayLayers;
 		out.LayerStates.resize(desc.ArrayLayers, {vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eNone, vk::PipelineStageFlagBits2::eTopOfPipe});
 		out.Allocation = std::move(allocation);
 		out.Aspect = desc.Aspect;
-		out.View = image.View;
 		return out;
 	}
 
-	void GPUResourceManager::CreateImageView(Image &image, const ImageViewDesc &desc)
+
+	void GPUResourceManager::CreateImageView(AllocatedImage &image, const ImageViewDesc &desc)
+	{
+		auto& vk_image = GetStorage<vk::raii::Image>().Get(image.ImageHandle);
+		auto view_handle = UUID();
+		auto &vk_view = GetStorage<vk::raii::ImageView>().GetContainer()[view_handle];
+		image.ViewHandle = CreateImageView(vk_image, desc);
+	}
+
+	UUID GPUResourceManager::CreateImageView(const vk::Image &image, const ImageViewDesc &desc)
 	{
 		auto handle = UUID();
-		auto &gpu_image = GPUStorage::Images[handle];
-		
-		VulkanUtils::CreateImageView(image.ImageSrc, gpu_image.View, desc.Type, desc.Format, image.Aspect, 1);
-
-		image.Handle = handle;
-		image.View = gpu_image.View;
+		auto &view = GetStorage<vk::raii::ImageView>().Get(handle);
+		VulkanUtils::CreateImageView(image, view, desc.Type, desc.Format, desc.Aspect, desc.BaseMipLevel, desc.LevelCount, desc.BaseArrayLayer, desc.LayerCount);
+		return handle;
 	}
 
 	void* GPUResourceManager::MapMemory(AllocatedBuffer &buffer, vk::DeviceSize offset, vk::DeviceSize size)
 	{
-		if (!buffer.Handle )
+		if (!buffer.Buffer )
 			return nullptr;
 
 		auto &allocation = buffer.Allocation;
@@ -94,7 +79,7 @@ namespace BHive
 
 	void GPUResourceManager::UnmapMemory(AllocatedBuffer &buffer)
 	{
-		if (!buffer.Handle || !buffer.Allocation.IsMapped || buffer.Allocation.IsDedicated)
+		if (!buffer.Buffer || !buffer.Allocation.IsMapped || buffer.Allocation.IsDedicated)
 			return;
 
 		MemoryAllocator &allocator = VulkanBackend::GetMemoryAllocator();
@@ -103,42 +88,108 @@ namespace BHive
 
 	void GPUResourceManager::CreateSampler(AllocatedImage &image, const vk::SamplerCreateInfo &create_info)
 	{
-		if (!GPUStorage::Images.contains(image.Handle))
-			return;
+		auto handle = UUID();
+		auto &sampler = GetStorage<vk::raii::Sampler>().Get(handle);
 
-		auto &gpu_image = GPUStorage::Images[image.Handle];
-		VulkanUtils::CreateImageSampler(gpu_image.Sampler, create_info);
-		image.Sampler = gpu_image.Sampler;
+		VulkanUtils::CreateImageSampler(sampler, create_info);
+		image.SamplerHandle = handle;
+	}
+
+	void GPUResourceManager::DestroyBuffer(const UUID& handle)
+	{
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		api->QueueDeletion([this, handle](uint32_t) {
+				auto &storage = GetStorage<vk::raii::Buffer>();
+				storage.Remove(handle);
+			});
+		
+	}
+
+	void GPUResourceManager::DestroyImage(const UUID& handle)
+	{
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		api->QueueDeletion(
+			[this, handle](uint32_t)
+			{
+				auto &storage = GetStorage<vk::raii::Image>();
+				storage.Remove(handle);
+			});
+	}
+
+	void GPUResourceManager::DestroyImageView(const UUID& handle)
+	{
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		api->QueueDeletion(
+			[this, handle](uint32_t)
+			{
+				auto &storage = GetStorage<vk::raii::ImageView>();
+				storage.Remove(handle);
+			});
+	}
+
+	void GPUResourceManager::DestroySampler(const UUID& handle)
+	{
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		api->QueueDeletion(
+			[this, handle](uint32_t)
+			{
+				auto &storage = GetStorage<vk::raii::Sampler>();
+				storage.Remove(handle);
+			});
 	}
 
 	void GPUResourceManager::DestroyBuffer(AllocatedBuffer buffer)
 	{
-		auto h = buffer.Handle;
-		if (GPUStorage::Buffers.contains(h))
-		{
-			auto &gpu_buffer = GPUStorage::Buffers.at(h);
-			GPUStorage::Buffers.erase(h);	
-			VulkanBackend::GetMemoryAllocator().Free(buffer.Allocation);
-		}
+		DestroyBuffer(buffer.Buffer);
+
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		api->QueueDeletion(
+			[this, alloc = buffer.Allocation](uint32_t)
+			{
+				VulkanBackend::GetMemoryAllocator().Free(alloc);
+			});
 	}
 
 	void GPUResourceManager::DestroyImage(AllocatedImage image)
 	{
-		auto h = image.Handle;
-		if (GPUStorage::Images.contains(h))
-		{
-			GPUStorage::Images.erase(h);
-			VulkanBackend::GetMemoryAllocator().Free(image.Allocation);
-		}
+		DestroySampler(image.SamplerHandle);
+		DestroyImageView(image.ViewHandle);
+		DestroyImage(image.ImageHandle);
+
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		api->QueueDeletion([this, alloc = image.Allocation](uint32_t) {
+			
+			VulkanBackend::GetMemoryAllocator().Free(alloc);
+		});
 	}
 
 	void GPUResourceManager::DestroyImage(Image image)
 	{
-		auto h = image.Handle;
-		if (GPUStorage::Images.contains(h))
-		{
-			GPUStorage::Images.erase(h);
-		}
+		DestroyImageView(image.ViewHandle);
+	}
+
+	const vk::Image &GPUResourceManager::GetImage(const UUID &handle)
+	{
+		auto &storage = GetStorage<vk::raii::Image>();
+		return storage.Get(handle);
+	}
+
+	const vk::ImageView &GPUResourceManager::GetImageView(const UUID &handle)
+	{
+		auto &storage = GetStorage<vk::raii::ImageView>();
+		return storage.Get(handle);
+	}
+
+	const vk::Sampler &GPUResourceManager::GetSampler(const UUID &handle)
+	{
+		auto &storage = GetStorage<vk::raii::Sampler>();
+		return storage.Get(handle);
+	}
+
+	const vk::Buffer &GPUResourceManager::GetBuffer(const UUID &handle)
+	{
+		auto &storage = GetStorage<vk::raii::Buffer>();
+		return storage.Get(handle);
 	}
 
 } // namespace BHive

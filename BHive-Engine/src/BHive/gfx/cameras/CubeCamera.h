@@ -10,7 +10,7 @@ namespace BHive
 		CubeCamera();
 		CubeCamera(float nearClip, float farClip);
 
-		const glm::mat4 &GetView(const glm::vec3 &eye, uint32_t i) const;
+		glm::mat4 GetView(const glm::vec3 &eye, uint32_t i) const;
 
 		const glm::mat4 &GetViewProjection(uint32_t i) const;
 

@@ -22,54 +22,45 @@ namespace BHive
 
 	struct Image
 	{
-		void SetImage(const vk::Image &img) { ImageSrc = img; }
+		void SetImage(vk::Image image) { ImageSrc = image; }
 
 		void SetAspect(vk::ImageAspectFlags aspect) { Aspect = aspect; }
 
 		void CreateView(const ImageViewDesc &desc);
 
-		vk::ImageView &GetView() { return View; }
+		const vk::ImageView& GetView() const;
 
-		void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState);
-
+		void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {});
 	private:
 		vk::Image ImageSrc = VK_NULL_HANDLE;
 
-		vk::ImageView View = VK_NULL_HANDLE;
+		UUID ViewHandle = NullID;
 
 		vk::ImageAspectFlags Aspect;
 
 		ImageState State = {vk::ImageLayout::eUndefined, {}, vk::PipelineStageFlagBits2::eTopOfPipe};
 
-		UUID Handle;
-
 		friend GPUResourceManager;
 	};
 
-
-
 	struct AllocatedImage
 	{
-		vk::Image &GetImage() { return Image; }
+		const vk::Image &GetImage() const;
 
-		vk::ImageView &GetView() { return View; }
+		const vk::ImageView &GetView() const;
 
-		vk::Sampler &GetSampler() { return Sampler; }
-
-		const vk::Image &GetImage() const { return Image; }
-
-		const vk::ImageView &GetView() const { return View; }
-
-		const vk::Sampler &GetSampler() const { return Sampler; }
+		const vk::Sampler &GetSampler() const;
 
 		void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, 1});
 
+		Image CreateImage();
+
 	private:
-		vk::Image Image = VK_NULL_HANDLE;
+		UUID ImageHandle = NullID;
 
-		vk::ImageView View = VK_NULL_HANDLE;
+		UUID ViewHandle = NullID;
 
-		vk::Sampler Sampler = VK_NULL_HANDLE;
+		UUID SamplerHandle = NullID;
 
 		std::vector<ImageState> LayerStates;
 
@@ -79,20 +70,20 @@ namespace BHive
 
 		MemoryAllocation Allocation;
 
-		UUID Handle;
-
 		friend GPUResourceManager;
 	};
 
 	struct AllocatedBuffer
 	{
-		vk::Buffer Buffer = VK_NULL_HANDLE;
+		UUID Buffer = NullID;
 
 		MemoryAllocation Allocation;
 
 		vk::DeviceSize Size;
 
-		UUID Handle;
+		const vk::Buffer& GetBuffer() const;
+
+		~AllocatedBuffer();
 	};
 
 	struct Handle

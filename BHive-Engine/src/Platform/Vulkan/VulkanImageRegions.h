@@ -16,6 +16,7 @@ namespace BHive
 	{
 		uint32_t MipLevel = 0;
 		uint32_t BaseArrayLayer = 0;
+		uint32_t LevelCount = 1;
 		uint32_t LayerCount = 1;
 	};
 } // namespace BHive

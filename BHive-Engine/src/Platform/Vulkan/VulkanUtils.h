@@ -32,7 +32,9 @@ namespace BHive
 			uint32_t w, uint32_t h, uint32_t d, uint32_t layers, vk::ImageType type, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties,
 			vk::raii::Image& image);
 
-		static void CreateImageView(const vk::Image &image, vk::raii::ImageView &view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect, uint32_t layerCount);
+		static void CreateImageView(
+			const vk::Image &image, vk::raii::ImageView &view, vk::ImageViewType type, vk::Format format, vk::ImageAspectFlags aspect, uint32_t baseMipLevel, uint32_t LevelCount,
+			uint32_t baseArrayLayer, uint32_t layerCount);
 
 		static void CreateImageSampler(vk::raii::Sampler& sampler, const vk::SamplerCreateInfo &info);
 
@@ -45,13 +47,15 @@ namespace BHive
 			vk::raii::CommandBuffer &cmd, const vk::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 			vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, const ImageSubresource& sub);
 
-		static void CopyBufferToImage(const vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, vk::Image &image, const ImageCopyRegion& region);
+		static void CopyBufferToImage(const vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, const vk::Image &image, const ImageCopyRegion& region);
 
 		static void SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size);
 
 		static vk::Format FindDepthFormat();
 
 		static bool HasStencilComponent(vk::Format format);
+
+		
 
 	};
 } // namespace BHive

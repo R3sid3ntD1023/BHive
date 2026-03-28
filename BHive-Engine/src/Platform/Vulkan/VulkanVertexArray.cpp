@@ -78,7 +78,7 @@ namespace BHive
 				std::vector<vk::Buffer> vertex_handles(vb_count, VK_NULL_HANDLE);
 				for (size_t i = 0; i < vb_count; i++)
 				{
-					vertex_handles[i] = vertex_buffers[i]->GetNativeHandle(current_frame).As<AllocatedBuffer>()->Buffer;
+					vertex_handles[i] = vertex_buffers[i]->GetNativeHandle(current_frame).As<AllocatedBuffer>()->GetBuffer();
 				}
 
 				std::vector<vk::DeviceSize> offsets(vb_count, 0);
@@ -90,7 +90,7 @@ namespace BHive
 
 				if (index_buffer)
 				{
-					auto index_handle = index_buffer->GetNativeHandle(current_frame).As<AllocatedBuffer>()->Buffer;
+					auto index_handle = index_buffer->GetNativeHandle(current_frame).As<AllocatedBuffer>()->GetBuffer();
 					vk_ctx.CommandBuffer.bindIndexBuffer(index_handle, 0, vk::IndexType::eUint32);
 				}
 			});

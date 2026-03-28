@@ -47,22 +47,22 @@ namespace BHive
 		sRendererAPI->DrawElements(mode, vao, count);
 	}
 
-	void RenderCommand::DrawElementsBaseVertex(ETopologyMode mode, const VertexArray &vao, uint32_t start, uint32_t start_index, uint32_t count, uint32_t instance_count)
+	void RenderCommand::DrawElementsBaseVertex(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t start, uint32_t start_index, uint32_t count, uint32_t instance_count)
 	{
 		sRendererAPI->DrawElementsBaseVertex(mode, vao, start, start_index, count, instance_count);
 	}
 
-	void RenderCommand::DrawElementsRanged(ETopologyMode mode, const VertexArray &vao, uint32_t start, uint32_t end, uint32_t count)
+	void RenderCommand::DrawElementsRanged(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t start, uint32_t end, uint32_t count)
 	{
 		sRendererAPI->DrawElementsRanged(mode, vao, start, end, count);
 	}
 
-	void RenderCommand::DrawElementsInstanced(ETopologyMode mode, const VertexArray &vao, uint32_t instances, uint32_t count)
+	void RenderCommand::DrawElementsInstanced(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t instances, uint32_t count)
 	{
 		sRendererAPI->DrawElementsInstanced(mode, vao, instances, count);
 	}
 
-	void RenderCommand::MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const VertexArray &vao, size_t drawCount, size_t stride)
+	void RenderCommand::MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const Ref<VertexArray> &vao, size_t drawCount, size_t stride)
 	{
 		sRendererAPI->MultiDrawElementsIndirect(mode, indirect, vao,  drawCount, stride);
 	}

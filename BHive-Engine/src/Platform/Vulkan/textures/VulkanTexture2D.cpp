@@ -68,6 +68,11 @@ namespace BHive
 		mImage.Create({} , mSize.x, mSize.y, 1, vk::ImageType::e2D, vk::ImageViewType::e2D, Convert(mCreateInfo));
 	}
 
+	NativeHandle VulkanTexture2D::GetRenderView(uint32_t layer, uint32_t mip) const
+	{
+		return NativeHandle::FromPtr(&mImage.GetNativeHandle().As<AllocatedImage>()->GetView());
+	}
+
 	void VulkanTexture2D::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);

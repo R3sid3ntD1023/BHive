@@ -26,6 +26,7 @@ namespace BHive
 			return;
 
 		mEnvironmentCapture = CreateRef<RenderTargetCube>(ENVIRONMENT_MAP_SIZE, EFormat::RGBA32F);
+
 		mIrradianceCapture = CreateRef<RenderTargetCube>(IRRANDIANCE_CUBEMAP_SIZE, EFormat::RGBA32F);
 
 		FTextureCreateInfo pre_filter_specification;
@@ -34,12 +35,20 @@ namespace BHive
 		pre_filter_specification.MinFilter = EMinFilter::MIPMAP_LINEAR;
 		pre_filter_specification.MagFilter = EMagFilter::LINEAR;
 		pre_filter_specification.Levels = PREFILTER_MIP_LEVELS;
+		pre_filter_specification.Usage |= ETextureUsage::Storage;
+		pre_filter_specification.DebugName = "PreFilterEnvironment Texture";
 
 		mPreFilteredEnvironmentTexture = TextureCube::Create(PREFILTER_MAP_SIZE, pre_filter_specification);
 
-		mBRDFLUTTexture = Texture2D::Create(
-			{BRDF_LUT_SIZE, BRDF_LUT_SIZE},
-			FTextureCreateInfo{.Format = EFormat::RG16F, .WrapMode = EWrapMode::CLAMP_TO_EDGE, .MinFilter = EMinFilter::NEAREST, .MagFilter = EMagFilter::NEAREST});
+		FTextureCreateInfo brdfLUTCreateInfo{};
+		brdfLUTCreateInfo.Format = EFormat::R16F;
+		brdfLUTCreateInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		brdfLUTCreateInfo.MagFilter = EMagFilter::NEAREST;
+		brdfLUTCreateInfo.MinFilter = EMinFilter::NEAREST;
+		brdfLUTCreateInfo.Usage |= ETextureUsage::Storage;
+		brdfLUTCreateInfo.DebugName = "BRDFLUT Texture";
+
+		mBRDFLUTTexture = Texture2D::Create({BRDF_LUT_SIZE, BRDF_LUT_SIZE}, brdfLUTCreateInfo);
 
 		mCube = CreateRef<PCube>(2.0f);
 
@@ -56,6 +65,7 @@ namespace BHive
 		auto state = Pipeline::GetDefaultPipelineState();
 
 		state.ShaderProgram = EquirectangularShader;
+		state.ColorAttachmentFormats = {EFormat::RGBA32F};
 		state.Raster.CullMode = ECullMode::Front;
 		equirrectangularPipeline->Init(state);
 		mEquirectangularMat = CreateRef<Material>(equirrectangularPipeline);
@@ -81,8 +91,8 @@ namespace BHive
 		mEnvironmentTexture = texture;
 		CreateEnvironmentCubeMap();
 		CreateIrradianceMap();
-		CreateBRDFLUTMap();
-		CreatePreFilteredEnvironmentMap();
+		/*CreateBRDFLUTMap();
+		CreatePreFilteredEnvironmentMap();*/
 	}
 
 	const Ref<Texture> &PMREMGenerator::GetIrradianceTexture() const
@@ -101,17 +111,25 @@ namespace BHive
 	}
 
 	void PMREMGenerator::CreateEnvironmentCubeMap()
-	{
+	{	
+		mEquirectangularMat->SetTexture("equirectangularMap", mEnvironmentTexture);
+
 		for (int i = 0; i < 6; i++)
 		{
-			RenderCommand::Clear();
-
 			mEnvironmentCapture->Bind(i);
+	
+			RenderCommand::Clear();
+			RenderCommand::SetViewport(0, 0, 512, 512);
+			Renderer::Begin();
+
+			Renderer::SubmitCamera(mCubeCamera.GetProjection(), mCubeCamera.GetView({}, i));
 
 			mEquirectangularMat->Submit();
-			mEquirectangularMat->SetTexture("equirectangularMap", mEnvironmentTexture);
+			
+			auto &submesh = mCube->GetSubMeshes()[0];
+			RenderCommand::DrawElementsBaseVertex(ETopologyMode::Triangles, mCube->GetVertexArray(), submesh.StartVertex, submesh.StartIndex, submesh.IndexCount);
 
-			RenderCube(i);
+			Renderer::End();
 
 			mEnvironmentCapture->UnBind();
 		}
@@ -119,17 +137,25 @@ namespace BHive
 
 	void PMREMGenerator::CreateIrradianceMap()
 	{
+		mIrradianceMat->SetTexture("environmentMap", mEnvironmentCapture->GetTargetTexture());
 
 		for (int i = 0; i < 6; i++)
-		{
+		{		
 			mIrradianceCapture->Bind(i);
 
 			RenderCommand::Clear();
+			RenderCommand::SetViewport(0, 0, 32, 32);
+
+			Renderer::Begin();
+
+			Renderer::SubmitCamera(mCubeCamera.GetProjection(), mCubeCamera.GetView({}, i));
 
 			mIrradianceMat->Submit();
-			mIrradianceMat->SetTexture("environmentMap", mEnvironmentCapture->GetTargetTexture());
+			
+			auto &submesh = mCube->GetSubMeshes()[0];
+			RenderCommand::DrawElementsBaseVertex(ETopologyMode::Triangles, mCube->GetVertexArray(), submesh.StartVertex, submesh.StartIndex, submesh.IndexCount);
 
-			RenderCube(i);
+			Renderer::End();
 
 			mIrradianceCapture->UnBind();
 		}
@@ -169,16 +195,4 @@ namespace BHive
 		mBRDFLUTMat->SetTexture("brdfLutTexture", mBRDFLUTTexture);
 		RenderCommand::Dispath(BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE, BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE, 1);
 	}
-
-	void PMREMGenerator::RenderCube(uint32_t face)
-	{
-		Renderer::Begin();
-		Renderer::SubmitCamera(mCubeCamera.GetProjection(), mCubeCamera.GetView({}, face));
-
-		auto &submesh = mCube->GetSubMeshes()[0];
-		RenderCommand::DrawElementsBaseVertex(ETopologyMode::Triangles, *mCube->GetVertexArray(), submesh.StartVertex, submesh.StartIndex, submesh.IndexCount);
-
-		Renderer::End();
-	}
-
 } // namespace BHive

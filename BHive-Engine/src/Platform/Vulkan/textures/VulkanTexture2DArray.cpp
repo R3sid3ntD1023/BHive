@@ -22,4 +22,9 @@ namespace BHive
 		mImage.Upload(info.Data, size, region, sub);
 	}
 
+	NativeHandle VulkanTexture2DArray::GetRenderView(uint32_t layer, uint32_t mip) const
+	{
+		return NativeHandle::FromPtr(&mImage.GetNativeHandle().As<AllocatedImage>()->GetView());
+	}
+
 } // namespace BHive

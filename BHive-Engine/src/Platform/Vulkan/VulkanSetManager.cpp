@@ -97,13 +97,17 @@ namespace BHive
 
 			if (IsBuffer(b.ReflResource.kind))
 			{
-				ASSERT(b.Buffer)
+				if (!b.Buffer)
+					continue;
+
 				auto info = BuildBufferInfo(b);
 				writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), nullptr, info);
 			}
 			else if (IsTexture(b.ReflResource.kind))
 			{
-				ASSERT(b.Texture)
+				if (!b.Texture)
+					continue;
+
 				auto info = BuildImageInfo(b);
 				writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), info);
 			}
@@ -209,7 +213,7 @@ namespace BHive
 		ASSERT(b.Buffer)
 
 		auto native = b.Buffer->GetNativeHandle().As<AllocatedBuffer>();
-		return vk::DescriptorBufferInfo(native->Buffer, 0, native->Size);
+		return vk::DescriptorBufferInfo(native->GetBuffer(), 0, native->Size);
 	}
 
 	vk::DescriptorImageInfo VulkanSetManager::BuildImageInfo(const BindingInfo &b) const

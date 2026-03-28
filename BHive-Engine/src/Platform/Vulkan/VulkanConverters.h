@@ -21,6 +21,7 @@ namespace BHive
 		uint32_t Levels;
 		uint32_t ArrayLayers;
 		bool GenerateMipMaps;
+		std::string DebugName;
 	};
 
 	vk::BufferUsageFlags ToVkBufferType(EBufferType type);

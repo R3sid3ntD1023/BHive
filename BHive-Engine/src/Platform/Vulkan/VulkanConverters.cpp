@@ -351,6 +351,7 @@ namespace BHive
 			out.Levels = info.Levels;
 			out.ArrayLayers = info.ArrayLayers;
 			out.GenerateMipMaps = info.GenerateMipMaps;
+			out.DebugName = info.DebugName;
 
 			return out;
 	} // namespace Vulkan

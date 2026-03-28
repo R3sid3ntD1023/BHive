@@ -12,10 +12,11 @@ namespace BHive
 	{
 	public:
 		RenderTargetCube(uint32_t size, EFormat format);
-		~RenderTargetCube();
 
 		virtual void Bind(uint32_t face);
+
 		virtual void UnBind();
+
 		virtual const Ref<Texture> GetTargetTexture() const;
 
 	private:
