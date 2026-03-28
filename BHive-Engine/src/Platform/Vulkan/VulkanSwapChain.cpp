@@ -92,7 +92,7 @@ namespace BHive
 		view_desc.Format = mDepthFormat;
 		view_desc.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 
-		mDepthImage = VulkanBackend::GetGPUResourceManager().CreateImage({} ,desc, view_desc);
+		mDepthImage = VulkanBackend::GetGPUResourceManager().CreateImage(desc, view_desc);
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)

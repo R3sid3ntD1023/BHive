@@ -18,7 +18,8 @@ namespace BHive
 
 	struct ImageDesc
 	{
-		
+		vk::ImageCreateFlags Flags{};
+
 		uint32_t Width = 0, Height = 0, Depth = 1;
 
 		vk::ImageType Type{};
@@ -86,20 +87,18 @@ namespace BHive
 				}
 			}
 
+			T& GetOrCreate(const UUID& handle) { return mResources.try_emplace(handle).first->second.Handle;}
+
 			T &Get(const UUID &handle)
 			{
-				if (mResources.contains(handle))
-					return mResources.at(handle).Handle;
-
-				return mResources[handle].Handle;
+				ASSERT(mResources.contains(handle))
+				return mResources.at(handle).Handle;
 			}
 
 			const T& Get(const UUID& handle) const
 			{
-				if(mResources.contains(handle))
-					return mResources.at(handle).Handle;
-
-				ASSERT(false)
+				ASSERT(mResources.contains(handle))
+				return mResources.at(handle).Handle;
 			}
 
 
@@ -111,7 +110,7 @@ namespace BHive
 
 		AllocatedBuffer CreateBuffer(const BufferDesc& desc);
 
-		AllocatedImage CreateImage(vk::ImageCreateFlags createFlags, const ImageDesc &desc, const ImageViewDesc &viewDesc);
+		AllocatedImage CreateImage(const ImageDesc &desc, const ImageViewDesc &viewDesc);
 
 		void CreateImageView(AllocatedImage &image, const ImageViewDesc &desc);
 

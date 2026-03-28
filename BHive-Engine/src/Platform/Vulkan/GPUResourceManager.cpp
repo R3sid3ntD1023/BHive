@@ -8,8 +8,10 @@ namespace BHive
 {
 	AllocatedBuffer GPUResourceManager::CreateBuffer(const BufferDesc &desc)
 	{
+		AllocatedBuffer out{};
+
 		auto handle = UUID();
-		auto &buffer = GetStorage<vk::raii::Buffer>().Get(handle);
+		auto &buffer = GetStorage<vk::raii::Buffer>().GetOrCreate(handle);
 
 		VulkanUtils::CreateBuffer(desc.Size, desc.Usage, desc.MemoryFlags, buffer);
 
@@ -18,18 +20,20 @@ namespace BHive
 
 		buffer.bindMemory(allocation.Memory, allocation.Offset);
 
-		return {handle, std::move(allocation),desc.Size};
+		out.Buffer = handle;
+		out.Allocation = allocation;
+		out.Size = desc.Size;
+		return out;
 	}
 
-	AllocatedImage GPUResourceManager::CreateImage(vk::ImageCreateFlags createFlags, const ImageDesc &desc, const ImageViewDesc &viewDesc)
+	AllocatedImage GPUResourceManager::CreateImage(const ImageDesc &desc, const ImageViewDesc &viewDesc)
 	{
 		AllocatedImage out{};
 
 		auto handle = UUID();
-		auto &image = GetStorage<vk::raii::Image>().Get(handle);
-		auto &view = GetStorage<vk::raii::Sampler>().Get(handle);
+		auto &image = GetStorage<vk::raii::Image>().GetOrCreate(handle);
 
-		VulkanUtils::CreateImage(createFlags, desc.Levels, desc.Width, desc.Height, desc.Depth, desc.ArrayLayers, desc.Type, desc.Format, desc.Tiling, desc.Usage, desc.MemoryFlags, image);
+		VulkanUtils::CreateImage(desc.Flags, desc.Levels, desc.Width, desc.Height, desc.Depth, desc.ArrayLayers, desc.Type, desc.Format, desc.Tiling, desc.Usage, desc.MemoryFlags, image);
 
 		auto &allocator = VulkanBackend::GetMemoryAllocator();
 		MemoryAllocation allocation = allocator.Allocate(image, desc.MemoryFlags, desc.Size());
@@ -49,15 +53,13 @@ namespace BHive
 	void GPUResourceManager::CreateImageView(AllocatedImage &image, const ImageViewDesc &desc)
 	{
 		auto& vk_image = GetStorage<vk::raii::Image>().Get(image.ImageHandle);
-		auto view_handle = UUID();
-		auto &vk_view = GetStorage<vk::raii::ImageView>().GetContainer()[view_handle];
 		image.ViewHandle = CreateImageView(vk_image, desc);
 	}
 
 	UUID GPUResourceManager::CreateImageView(const vk::Image &image, const ImageViewDesc &desc)
 	{
 		auto handle = UUID();
-		auto &view = GetStorage<vk::raii::ImageView>().Get(handle);
+		auto &view = GetStorage<vk::raii::ImageView>().GetOrCreate(handle);
 		VulkanUtils::CreateImageView(image, view, desc.Type, desc.Format, desc.Aspect, desc.BaseMipLevel, desc.LevelCount, desc.BaseArrayLayer, desc.LayerCount);
 		return handle;
 	}
@@ -89,7 +91,7 @@ namespace BHive
 	void GPUResourceManager::CreateSampler(AllocatedImage &image, const vk::SamplerCreateInfo &create_info)
 	{
 		auto handle = UUID();
-		auto &sampler = GetStorage<vk::raii::Sampler>().Get(handle);
+		auto &sampler = GetStorage<vk::raii::Sampler>().GetOrCreate(handle);
 
 		VulkanUtils::CreateImageSampler(sampler, create_info);
 		image.SamplerHandle = handle;
@@ -171,25 +173,25 @@ namespace BHive
 	const vk::Image &GPUResourceManager::GetImage(const UUID &handle)
 	{
 		auto &storage = GetStorage<vk::raii::Image>();
-		return storage.Get(handle);
+		return *storage.Get(handle);
 	}
 
 	const vk::ImageView &GPUResourceManager::GetImageView(const UUID &handle)
 	{
 		auto &storage = GetStorage<vk::raii::ImageView>();
-		return storage.Get(handle);
+		return *storage.Get(handle);
 	}
 
 	const vk::Sampler &GPUResourceManager::GetSampler(const UUID &handle)
 	{
 		auto &storage = GetStorage<vk::raii::Sampler>();
-		return storage.Get(handle);
+		return *storage.Get(handle);
 	}
 
 	const vk::Buffer &GPUResourceManager::GetBuffer(const UUID &handle)
 	{
 		auto &storage = GetStorage<vk::raii::Buffer>();
-		return storage.Get(handle);
+		return *storage.Get(handle);
 	}
 
 } // namespace BHive

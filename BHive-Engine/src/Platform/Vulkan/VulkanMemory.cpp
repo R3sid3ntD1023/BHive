@@ -8,7 +8,7 @@ namespace BHive
 {
 	void Image::CreateView(const ImageViewDesc &desc)
 	{
-		VulkanBackend::GetGPUResourceManager().CreateImageView(ImageSrc, desc);
+		ViewHandle = VulkanBackend::GetGPUResourceManager().CreateImageView(ImageSrc, desc);
 	}
 
 	const vk::ImageView &Image::GetView() const

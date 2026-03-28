@@ -24,6 +24,7 @@ namespace BHive
 			desc.LayerCount = 1;
 			desc.BaseMipLevel = 0;
 			desc.LayerCount = 1;
+			desc.Aspect = ToVkAspect(create_info.Aspect);
 			
 			mFaceViews[face] = VulkanBackend::GetGPUResourceManager().CreateImageView(allocated_image->GetImage(), desc);
 		}

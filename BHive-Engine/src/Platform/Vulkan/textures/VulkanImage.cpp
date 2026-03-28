@@ -18,6 +18,7 @@ namespace BHive
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
 
 		ImageDesc desc{};
+		desc.Flags = createFlags;
 		desc.Width = width;
 		desc.Height = height;
 		desc.Depth = depth;
@@ -36,7 +37,7 @@ namespace BHive
 		view_desc.LayerCount = createInfo.ArrayLayers;
 		view_desc.Aspect = createInfo.Aspect;
 
-		mImage = gpu_r_m.CreateImage(createFlags, desc, view_desc);
+		mImage = gpu_r_m.CreateImage( desc, view_desc);
 		
 
 		vk::SamplerCreateInfo sampler_info(
