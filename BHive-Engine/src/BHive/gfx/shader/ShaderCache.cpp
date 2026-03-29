@@ -169,4 +169,10 @@ namespace BHive
 
 		StoreMeta(asset.Name, meta);
 	}
+
+	uint64_t ShaderCache::GetStoredHash(const std::string &name)
+	{
+		auto meta = LoadMeta(name);
+		return meta.Valid ? meta.Hash : 0;
+	}
 } // namespace BHive

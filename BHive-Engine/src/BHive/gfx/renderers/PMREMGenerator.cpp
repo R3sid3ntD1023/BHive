@@ -1,11 +1,9 @@
 #include "gfx/Framebuffer.h"
 #include "gfx/RenderCommand.h"
-#include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
 #include "gfx/mesh/primitives/Cube.h"
 #include "PMREMGenerator.h"
-#include "Renderer.h"
 #include "gfx/material/Material.h"
 #include "gfx/Pipeline.h"
 
@@ -116,20 +114,19 @@ namespace BHive
 
 		for (int i = 0; i < 6; i++)
 		{
+			mCubeCamera.SetFace(i);
+			auto viewProjectionMatrix = mCubeCamera.GetViewProjection();
+			mEquirectangularMat->Set("u_ViewProjection", viewProjectionMatrix);
+
 			mEnvironmentCapture->Bind(i);
 	
 			RenderCommand::Clear();
 			RenderCommand::SetViewport(0, 0, 512, 512);
-			Renderer::Begin();
-
-			Renderer::SubmitCamera(mCubeCamera.GetProjection(), mCubeCamera.GetView({}, i));
 
 			mEquirectangularMat->Submit();
 			
 			auto &submesh = mCube->GetSubMeshes()[0];
 			RenderCommand::DrawElementsBaseVertex(ETopologyMode::Triangles, mCube->GetVertexArray(), submesh.StartVertex, submesh.StartIndex, submesh.IndexCount);
-
-			Renderer::End();
 
 			mEnvironmentCapture->UnBind();
 		}
@@ -141,21 +138,19 @@ namespace BHive
 
 		for (int i = 0; i < 6; i++)
 		{		
+			mCubeCamera.SetFace(i);
+			auto viewProjectionMatrix = mCubeCamera.GetViewProjection();
+			mIrradianceMat->Set("u_ViewProjection", viewProjectionMatrix);
+
 			mIrradianceCapture->Bind(i);
 
 			RenderCommand::Clear();
 			RenderCommand::SetViewport(0, 0, 32, 32);
 
-			Renderer::Begin();
-
-			Renderer::SubmitCamera(mCubeCamera.GetProjection(), mCubeCamera.GetView({}, i));
-
 			mIrradianceMat->Submit();
-			
+		
 			auto &submesh = mCube->GetSubMeshes()[0];
 			RenderCommand::DrawElementsBaseVertex(ETopologyMode::Triangles, mCube->GetVertexArray(), submesh.StartVertex, submesh.StartIndex, submesh.IndexCount);
-
-			Renderer::End();
 
 			mIrradianceCapture->UnBind();
 		}
@@ -181,8 +176,6 @@ namespace BHive
 			mPreFilterEnironmentMat->Set("u_height", h);
 
 			mPreFilterEnironmentMat->SetTexture("imgOutput", mPreFilteredEnvironmentTexture);
-
-			//image.Bind(0, EImageAccess::WRITE, i);
 
 			RenderCommand::Dispath(w / PREFILTER_WORK_GROUP_SIZE, h / PREFILTER_WORK_GROUP_SIZE, 6);
 		}

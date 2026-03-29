@@ -22,7 +22,11 @@ namespace BHive
 			return nullptr;
 		}
 
-		auto source_stages = ShaderUtils::PreProcess(source);
+		auto expanded_source = ShaderUtils::ExpandIncludes(source, asset->SourcePath.string());
+		const uint64_t newHash = ShaderCache::ComputeHash(expanded_source);
+		const uint64_t oldHash = ShaderCache::GetStoredHash(asset->Name);
+	
+		auto source_stages = ShaderUtils::PreProcess(expanded_source);
 
 		//detect stages from preprocess
 		for (auto& [stage, code] : source_stages)
@@ -30,8 +34,10 @@ namespace BHive
 			asset->Stages[stage].Code = code;
 		}
 
+		bool changed = (newHash != oldHash);
+
 		//Cache Check
-		if (ShaderCache::HasValidCache(*asset, source))
+		if (!changed && ShaderCache::HasValidCache(*asset, expanded_source))
 		{
 			ShaderCache::LoadCache(*asset);
 			return CreateRef<ShaderProgram>(asset);
@@ -41,7 +47,8 @@ namespace BHive
 		compiler.Init();
 		compiler.Compile(*asset);
 
-		ShaderCache::StoreCache(*asset, source);
+		if (changed)
+			ShaderCache::StoreCache(*asset, expanded_source);
 
 		return CreateRef<ShaderProgram>(asset);
 	}

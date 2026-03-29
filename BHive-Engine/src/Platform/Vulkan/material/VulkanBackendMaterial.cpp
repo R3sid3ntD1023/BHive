@@ -64,14 +64,16 @@ namespace BHive
 		auto &pipeline_layout = Cast<VulkanPipeline>(pipeline)->GetLayout();
 		auto manager = GetSubSystem<MaterialSetRegistry>().Find(this);
 
+		//take snapshot of current push data - copy by value
+		auto pushData = mPushConstantData;
+
 		auto &pass = RenderCommand::GetActivePass();
 		pass.CommandList.Push(
 			"Update MaterialSets",
-			[=, &pipeline_layout](IRendererContext &ctx)
+			[=,&pipeline_layout](IRendererContext &ctx)
 			{
 				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
 
-				
 				if (manager)
 				{
 					auto set = manager->GetNativeSet(vk_ctx.Frame).As<vk::DescriptorSet>();
@@ -81,7 +83,7 @@ namespace BHive
 				//Update push constants
 				for (auto &pc : mReflectionMergedPtr->PushConstants)
 				{
-					vk::PushConstantsInfo push_info(*pipeline_layout, ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size, mPushConstantData.data() + pc.Offset);
+					vk::PushConstantsInfo push_info(*pipeline_layout, ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size, pushData.data() + pc.Offset);
 					vk_ctx.CommandBuffer.pushConstants2(push_info);
 				}
 			});
@@ -89,8 +91,6 @@ namespace BHive
 
 	void VulkanBackendMaterial::BindTexture(const std::string& name, const Ref<Texture> &texture)
 	{
-		
-
 		if (!texture)
 			return;
 

@@ -206,19 +206,14 @@ namespace BHive
 		if (!data)
 			return;
 
-		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
-		std::memcpy(buffer_copy->data(), data, size);
-
-		RenderCommand::SubmitResourceUpdate(
-			[=](IRendererContext &ctx)
-			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-
-				const auto current_frame = vk_ctx.Frame;
-
-				auto mapped_memory = mBuffer[current_frame].Allocation.MappedPtr;
-				std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, buffer_copy->data(), size);
-			});
+		auto& pass = RenderCommand::GetActivePass();
+		pass.CommandList.Push("Update Buffer", [=](IRendererContext& ctx) {
+				for (size_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
+				{
+					auto mapped_memory = mBuffer[frame].Allocation.MappedPtr;
+					std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, data, size);
+				}
+			});	
 	}
 
 	NativeHandle VulkanGPUBuffer::GetNativeHandle(uint32_t frame) const

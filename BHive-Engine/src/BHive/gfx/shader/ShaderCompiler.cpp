@@ -36,7 +36,7 @@ namespace BHive
 
 			shaderc_include_result *GetInclude(const char *requested_source, shaderc_include_type type, const char *requesting_source, size_t include_depth) override
 			{
-				auto resolved_path = ResolvePath(requested_source, requesting_source);
+				auto resolved_path = ShaderUtils::ResolveIncludePath(requested_source, requesting_source);
 				std::string content;
 				if (!FileSystem::ReadFile(resolved_path, content))
 				{
@@ -57,35 +57,7 @@ namespace BHive
 			}
 
 		private:
-			std::string ResolvePath(const std::string &requested, const std::string &requesting)
-			{
-				std::filesystem::path directory = std::filesystem::path(requesting).parent_path();
-				std::filesystem::path resolved_path = directory / requested;
-
-				// use default engine path, if file isn't relative
-				if (!std::filesystem::exists(resolved_path))
-				{
-					std::filesystem::recursive_directory_iterator it(ENGINE_SHADER_PATH);
-					for (auto &entry : it)
-					{
-						auto file = entry.path().string();
-						if (file.find(requested) != std::string::npos)
-						{
-							resolved_path = entry;
-							break;
-						}
-					}
-				}
-
-				if (!std::filesystem::exists(resolved_path))
-				{
-					LOG_ERROR("ShaderIncluder::ERROR - Failed to find file : {} requsted from {}", requested, requesting);
-					return "";
-				}
-
-				return resolved_path.string();
-			}
-
+			
 			shaderc_include_result *MakeIncludeResult(const std::filesystem::path &resolved_path, const std::string &content)
 			{
 				auto *result = new shaderc_include_result();

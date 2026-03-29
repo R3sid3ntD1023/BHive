@@ -32,8 +32,8 @@ namespace BHive
 
 	NativeHandle VulkanTextureCube::GetRenderView(uint32_t layer, uint32_t mip) const
 	{
-		auto &view = VulkanBackend::GetGPUResourceManager().GetImageView(mFaceViews[layer]);
-		return NativeHandle::FromPtr(&view);
+		VkImageView view = VulkanBackend::GetGPUResourceManager().GetImageView(mFaceViews[layer]);
+		return NativeHandle::FromRaw(reinterpret_cast<uint64_t>(view));
 	}
 
 } // namespace BHive

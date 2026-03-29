@@ -20,23 +20,6 @@ namespace BHive
 		create_info.Usage |= ETextureUsage::ColorAttachment | ETextureUsage::Storage;
 		mTargetTexture = TextureCube::Create(size, create_info);
 
-		/*for (uint32_t face = 0; face < 6; face++)
-		{
-			create_info.DebugName = std::format("TargetTexture_{}", face);
-
-			FFramebufferTexture color{};
-			color.ExistingTexture = mTargetTexture;
-			color.Layer = face;
-			color.TextureType = ETextureType::TEXTURE_CUBE_MAP;
-			color.CreateInfo = create_info;
-
-			FramebufferSpecification specification{};
-			specification.Size = {size, size};
-			specification.Attachments.attach(color);
-
-			mFrameBuffers[face] = Framebuffer::Create(specification);
-		}*/
-
 		FFramebufferTexture color{};
 		color.ExistingTexture = mTargetTexture;
 		color.Layer = 0;

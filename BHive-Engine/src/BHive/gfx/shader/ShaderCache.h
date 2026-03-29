@@ -14,6 +14,10 @@ namespace BHive
 
 		static void StoreCache(const ShaderAsset &asset, const std::string& source);
 
+		static uint64_t GetStoredHash(const std::string &name);
+
+		static uint64_t ComputeHash(const std::string &source);
+
 	private:
 		struct MetaData
 		{
@@ -26,11 +30,13 @@ namespace BHive
 
 	private:
 		static std::filesystem::path GetShaderCacheDir(const std::string &name);
+
 		static std::filesystem::path GetStageCachePath(const std::string &name, EShaderStage stage);
+
 		static std::filesystem::path GetMetaPath(const std::string &name);
 
-		static uint64_t ComputeHash(const std::string &source);
 		static MetaData LoadMeta(const std::string &name);
+
 		static void StoreMeta(const std::string &name, const MetaData &meta);
 	};
 } // namespace BHive

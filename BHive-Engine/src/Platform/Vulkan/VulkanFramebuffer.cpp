@@ -112,7 +112,7 @@ namespace BHive
 				for (size_t i = 0; i < num_color_attachments; i++)
 				{
 					auto& spec = color_specifications[i];
-					auto &vkTex = *color_attachments[i]->GetRenderView(current_face, spec.MipLevel).As<vk::ImageView>();
+					auto vkTex = reinterpret_cast<VkImageView>(color_attachments[i]->GetRenderView(current_face, spec.MipLevel).AsRaw());
 
 					auto info = vk::RenderingAttachmentInfo(
 						vkTex, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
@@ -124,7 +124,7 @@ namespace BHive
 				if (depth_attachment)
 				{
 					auto &spec = depth_specification;
-					auto& vkTex = *depth_attachment->GetRenderView(spec.Layer, spec.MipLevel).As<vk::ImageView>();
+					auto vkTex = reinterpret_cast<VkImageView>(depth_attachment->GetRenderView(current_face, spec.MipLevel).AsRaw());
 
 					depth_info = vk::RenderingAttachmentInfo(
 						vkTex, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,

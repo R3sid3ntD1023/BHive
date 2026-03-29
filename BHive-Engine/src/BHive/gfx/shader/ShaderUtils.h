@@ -16,6 +16,10 @@ namespace BHive
 
 		static PreProcessData PreProcess(const std::string &source, const std::string &preprocessors = "");
 
+		static std::string ExpandIncludes(const std::string &source, const std::string &requestingPath);
+
+		static std::string ResolveIncludePath(const std::string &requested, const std::string &requesting);
+
 		static std::filesystem::path GetCacheDirectory();
 	};
 } // namespace BHive

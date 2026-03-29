@@ -1,5 +1,6 @@
 #include "ShaderUtils.h"
 #include "gfx/Enumerations.h"
+#include "core/FileSystem.h"
 
 namespace BHive
 {
@@ -87,4 +88,61 @@ namespace BHive
 		return data;
 	}
 
+	std::string ShaderUtils::ExpandIncludes(const std::string &source, const std::string &requestingPath)
+	{
+		std::stringstream input(source);
+		std::stringstream output;
+
+		std::string line;
+		while (std::getline(input, line))
+		{
+			if (line.starts_with("#include"))
+			{
+				auto start = line.find("<") + 1;
+				auto end = line.find(">", start);
+
+				std::string includeName = line.substr(start, end - start);
+				std::filesystem::path includePath = ResolveIncludePath(includeName, requestingPath);
+
+				std::string includeSource;
+				FileSystem::ReadFile(includePath.string(), includeSource);
+
+				output << ExpandIncludes(includeSource, includePath.string());
+			}
+			else
+			{
+				output << line << "\n";
+			}
+		}
+
+		return output.str();
+	}
+
+	std::string ShaderUtils::ResolveIncludePath(const std::string &requested, const std::string &requesting)
+	{
+		std::filesystem::path directory = std::filesystem::path(requesting).parent_path();
+		std::filesystem::path resolved_path = directory / requested;
+
+		// use default engine path, if file isn't relative
+		if (!std::filesystem::exists(resolved_path))
+		{
+			std::filesystem::recursive_directory_iterator it(ENGINE_SHADER_PATH);
+			for (auto &entry : it)
+			{
+				if (entry.path().filename() == requested)
+				{
+					resolved_path = entry;
+					break;
+				}
+			}
+		}
+
+		if (!std::filesystem::exists(resolved_path))
+		{
+			LOG_ERROR("ShaderIncluder::ERROR - Failed to find file : {} requsted from {}", requested, requesting);
+			return "";
+		}
+
+		return resolved_path.string();
+	}
 } // namespace BHive
