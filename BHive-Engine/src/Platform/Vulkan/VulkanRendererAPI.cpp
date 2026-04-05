@@ -225,9 +225,37 @@ namespace BHive
 				image.Transition(frame.CommandBuffer, present);
 
 			}
-			else
+			else if (pass.Type == EPassType::OffScreen)
 			{
 				pass.CommandList.Execute(frame);
+			}
+			else if (pass.Type == EPassType::Compute)
+			{
+				for (auto &image : pass.Images)
+				{
+					ImageSubresource sub{};
+					sub.MipLevel = image.MipLevel;
+					sub.LevelCount = 1;
+					sub.BaseArrayLayer = 0;
+					sub.LayerCount = image.LayerCount;
+
+					auto img = image.Texture->GetNativeHandle().As<AllocatedImage>();
+					img->Transition(cmd, ImageState::ComputeWrite(), sub);
+				}
+
+				pass.CommandList.Execute(frame);
+
+				for (auto &image : pass.Images)
+				{
+					ImageSubresource sub{};
+					sub.MipLevel = image.MipLevel;
+					sub.LevelCount = 1;
+					sub.BaseArrayLayer = 0;
+					sub.LayerCount = image.LayerCount;
+
+					auto img = image.Texture->GetNativeHandle().As<AllocatedImage>();
+					img->Transition(cmd, ImageState::ShaderRead(), sub);
+				}
 			}
 		}
 
@@ -367,13 +395,13 @@ namespace BHive
 		vao->UnBind();
 	}
 
-	void VulkanRendererAPI::Dispath(uint32_t x, uint32_t y, uint32_t z)
+	void VulkanRendererAPI::Dispatch(const glm::uvec3& size)
 	{
 		auto &pass = RenderCommand::GetActivePass();
-		pass.CommandList.Push("Set Viewport", [x, y, z](const IRendererContext &ctx)
+		pass.CommandList.Push("Dispatch", [size](const IRendererContext &ctx)
 			{
 				auto& vk_ctx = static_cast<const FVulkanRendererContext &>(ctx);
-				vk_ctx.CommandBuffer.dispatch(x, y, z);
+				vk_ctx.CommandBuffer.dispatch(size.x, size.y, size.z);
 		});
 
 	}

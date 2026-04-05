@@ -36,6 +36,8 @@ namespace BHive
 
 		ISetManager *GetBatchSetManager() const override { return mBatchSetManager.get(); }
 
+		vk::PipelineBindPoint GetBindPoint() const { return mBindPoint; }
+
 	private:
 		vk::raii::Device &mDevice;
 
@@ -44,6 +46,8 @@ namespace BHive
 		vk::raii::PipelineLayout mPipelineLayout = VK_NULL_HANDLE;
 
 		vk::raii::Pipeline mPipeline = VK_NULL_HANDLE;
+
+		vk::PipelineBindPoint mBindPoint = vk::PipelineBindPoint::eGraphics;
 
 		Ref<ShaderProgram> mProgram;
 

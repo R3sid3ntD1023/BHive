@@ -33,7 +33,7 @@ namespace BHive
 		auto handle = UUID();
 		auto &image = GetStorage<vk::raii::Image>().GetOrCreate(handle);
 
-		VulkanUtils::CreateImage(desc.Flags, desc.Levels, desc.Width, desc.Height, desc.Depth, desc.ArrayLayers, desc.Type, desc.Format, desc.Tiling, desc.Usage, desc.MemoryFlags, image);
+		VulkanUtils::CreateImage(desc.Flags, desc.MipLevels, desc.Width, desc.Height, desc.Depth, desc.ArrayLayers, desc.Type, desc.Format, desc.Tiling, desc.Usage, desc.MemoryFlags, image);
 
 		auto &allocator = VulkanBackend::GetMemoryAllocator();
 		MemoryAllocation allocation = allocator.Allocate(image, desc.MemoryFlags, desc.Size());
@@ -43,9 +43,15 @@ namespace BHive
 		out.ImageHandle = handle;
 		out.ViewHandle = CreateImageView(image, viewDesc);
 		out.ArrayLayers = desc.ArrayLayers;
-		out.LayerStates.resize(desc.ArrayLayers, {vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eNone, vk::PipelineStageFlagBits2::eTopOfPipe});
 		out.Allocation = std::move(allocation);
 		out.Aspect = desc.Aspect;
+
+		ImageState initialState = {vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eNone, vk::PipelineStageFlagBits2::eTopOfPipe};
+		out.MipStates.resize(desc.ArrayLayers);
+		for (uint32_t layer = 0; layer < desc.ArrayLayers; layer++)
+		{
+			out.MipStates[layer].resize(desc.MipLevels, initialState);
+		}
 		return out;
 	}
 
@@ -156,6 +162,9 @@ namespace BHive
 	{
 		DestroySampler(image.SamplerHandle);
 		DestroyImageView(image.ViewHandle);
+		for (auto &mip : image.MipViews)
+			DestroyImageView(mip);
+
 		DestroyImage(image.ImageHandle);
 
 		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();

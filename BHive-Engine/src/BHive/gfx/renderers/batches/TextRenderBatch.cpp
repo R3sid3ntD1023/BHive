@@ -24,7 +24,7 @@ namespace BHive
 
 		mPipeline = Pipeline::Create();
 
-		auto state = Pipeline::GetDefaultPipelineState();
+		auto state = Pipeline::GetDefaultGraphicsPipelineState();
 		state.ShaderProgram = shaderProgram;
 		state.Raster.CullEnabled = false;
 		state.Depth.DepthWrite = false;

@@ -67,9 +67,25 @@ namespace BHive
 		sRendererAPI->MultiDrawElementsIndirect(mode, indirect, vao,  drawCount, stride);
 	}
 
-	void RenderCommand::Dispath(uint32_t x, uint32_t y, uint32_t z)
+	void RenderCommand::Dispatch(const glm::uvec3 &size)
 	{
-		sRendererAPI->Dispath(x, y, z);
+		sRendererAPI->Dispatch(size);
+	}
+
+	void RenderCommand::AddComputePass(const std::string &name, const std::function<void(FRenderGraphPass&)> &builder)
+	{
+		RenderGraph graph{};
+		auto &pass = graph.AddPass(name, EPassType::Compute);
+
+		auto *previous = sActivePass;
+		sActivePass = &pass;
+
+		builder(pass);
+
+		FResourceUpdateList list{};
+		RenderCommand::SubmitGraph(graph, list);
+
+		sActivePass = previous;
 	}
 
 	

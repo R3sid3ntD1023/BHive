@@ -24,7 +24,7 @@ namespace BHive
 		auto shaderProgram = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Circle.glsl");
 		mPipeline = Pipeline::Create();
 
-		auto state = Pipeline::GetDefaultPipelineState();
+		auto state = Pipeline::GetDefaultGraphicsPipelineState();
 		state.ShaderProgram = shaderProgram;
 		state.Raster.CullEnabled = false;
 		state.Depth.DepthWrite = false;

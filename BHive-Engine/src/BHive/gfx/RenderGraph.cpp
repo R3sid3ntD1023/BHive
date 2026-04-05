@@ -3,4 +3,4 @@
 namespace BHive
 {
 
-}
+} // namespace BHive

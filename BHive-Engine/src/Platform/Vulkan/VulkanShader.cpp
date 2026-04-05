@@ -116,14 +116,6 @@ namespace BHive
 			mDescriptorSetLayouts.emplace(set, mDevice.createDescriptorSetLayout(layout_info));
 		}
 
-		//for (auto &[set, layout] : mDescriptorSetLayouts)
-		//{ 
-		//	// query binding count via reflection, not Vulkan 
-		//	auto it = asset.MergedReflection.Sets.find(set);
-		//	size_t reflCount = (it == asset.MergedReflection.Sets.end()) ? 0 : it->second.UniformBuffers.size() + it->second.StorageBuffers.size() + it->second.Samplers.size();
-		//	LOG_INFO("Set {}: refl bindings = {}", set, reflCount);
-		//}
-		
 		for (auto& pc : merged.PushConstants)
 		{
 			mPushConstantRanges.emplace_back(ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size);

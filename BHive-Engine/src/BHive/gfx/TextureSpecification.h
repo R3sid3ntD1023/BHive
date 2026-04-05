@@ -25,11 +25,9 @@ namespace BHive
 
 		std::optional<ECompareOp> CompareOp;
 
-		uint32_t Levels = 1;
+		uint32_t MipLevels = 1;
 
 		uint32_t ArrayLayers = 1;
-
-		bool GenerateMipMaps = false;
 
 		std::string DebugName = "*";
 
@@ -44,8 +42,8 @@ namespace BHive
 			ar(MAKE_NVP(MagFilter));
 			ar(MAKE_NVP(CompareMode));
 			ar(MAKE_NVP(CompareOp));
-			ar(MAKE_NVP(Levels));
-			ar(MAKE_NVP(GenerateMipMaps));
+			ar(MAKE_NVP(MipLevels));
+			ar(MAKE_NVP(ArrayLayers));
 		}
 
 		REFLECTABLE()

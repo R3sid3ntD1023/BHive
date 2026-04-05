@@ -76,7 +76,7 @@ namespace BHive
 		create_info.MinFilter = EMinFilter::LINEAR;
 		create_info.MagFilter = EMagFilter::LINEAR;
 		create_info.WrapMode = EWrapMode::REPEAT;
-		create_info.GenerateMipMaps = true;
+		create_info.MipLevels = 1;
 		create_info.Usage = ETextureUsage::Sampled | ETextureUsage::TransferDst;
 		create_info.Aspect = ETextureAspect::Color;
 		create_info.DebugName = name;

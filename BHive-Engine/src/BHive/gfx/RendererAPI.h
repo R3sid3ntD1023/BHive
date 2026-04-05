@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/Core.h"
-#include "core/events/Event.h"
 #include "Enumerations.h"
 #include "RenderGraph.h"
 #include "ISetManager.h"
@@ -59,7 +58,7 @@ namespace BHive
 
 		virtual void MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const Ref<VertexArray> &vao, size_t drawCount, size_t stride = 0) = 0;
 
-		virtual void Dispath(uint32_t x, uint32_t y, uint32_t z) = 0;
+		virtual void Dispatch(const glm::uvec3 &size) = 0;
 
 		virtual void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a) = 0;
 

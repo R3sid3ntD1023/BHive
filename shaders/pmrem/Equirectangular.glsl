@@ -1,21 +1,18 @@
-#type vertex
-#version 460 core
-
-#include <CommonVert.glsl>
-
-#type fragment
+#type compute
 #version 460 core
 
 #include <PMREMFuncs.glsl>
 
-layout(location = 0) in struct vertex_out
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 6) in;
+
+layout(rgba32f, set = 1, binding = 0) uniform writeonly imageCube imgOutput;
+layout(set = 1, binding = 1) uniform sampler2D equirectangularMap;
+
+layout(push_constant) uniform PushConstants
 {
-	vec3 position;
-} vs_in;
-
-layout(set = 1, binding =  0) uniform sampler2D equirectangularMap;
-
-layout(location =  0 ) out vec4 fs_out;
+	uint u_width;
+	uint u_height;
+} pc;
 
 vec2 SampleSphericalMap(vec3 v)
 {
@@ -38,9 +35,17 @@ vec3 ACES(vec3 color) {
 
 void main()
 {
-	vec2 uv = SampleSphericalMap(normalize(vs_in.position));
+	uint x = gl_GlobalInvocationID.x;
+	uint y = gl_GlobalInvocationID.y;
+	uint face = gl_GlobalInvocationID.z;
+
+	if(x >= pc.u_width || y >= pc.u_height || face >= 6u)
+		return;
+
+	vec3 N = CalculateDirection(face, x, y, float(pc.u_width), float(pc.u_height));
+	vec2 uv = SampleSphericalMap(normalize(N));
 	vec3 color = texture(equirectangularMap, uv).rgb;
 	color = ACES(color);
 
-	fs_out = vec4(color, 1);
+	imageStore(imgOutput, ivec3(x, y, int(face)), vec4(color, 1.0));
 }

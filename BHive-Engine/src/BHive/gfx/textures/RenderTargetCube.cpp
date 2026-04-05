@@ -15,7 +15,7 @@ namespace BHive
 		create_info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		create_info.MinFilter = EMinFilter::LINEAR;
 		create_info.ArrayLayers = 6;
-		create_info.GenerateMipMaps = 1;
+		create_info.MipLevels = 1;
 		create_info.DebugName = "TargetTexture";
 		create_info.Usage |= ETextureUsage::ColorAttachment | ETextureUsage::Storage;
 		mTargetTexture = TextureCube::Create(size, create_info);

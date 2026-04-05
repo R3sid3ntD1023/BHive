@@ -53,7 +53,7 @@ namespace BHive
 		
 	}
 
-	void VulkanSetManager::SetTexture(uint32_t binding, const Ref<Texture> &texture)
+	void VulkanSetManager::SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip)
 	{
 		BindingInfo *bindingInfo = nullptr;
 
@@ -63,6 +63,7 @@ namespace BHive
 			{
 				b.Texture = texture;
 				bindingInfo = &b;
+				bindingInfo->MipLevel = mip;
 				break;
 					
 			}
@@ -232,7 +233,7 @@ namespace BHive
 		case EResourceType::CombinedImageSampler:
 		case EResourceType::SeperatedImage:
 		{
-			info = vk::DescriptorImageInfo(native->GetSampler(), native->GetView(), vk::ImageLayout::eShaderReadOnlyOptimal);
+			info = vk::DescriptorImageInfo(native->GetSampler(), native->GetMipView(b.MipLevel), vk::ImageLayout::eShaderReadOnlyOptimal);
 			break;
 		}
 		case EResourceType::SeperatedSampler:
@@ -242,16 +243,16 @@ namespace BHive
 		}
 		case EResourceType::StorageImage:
 		{
-			info = vk::DescriptorImageInfo(nullptr, native->GetView(), vk::ImageLayout::eGeneral);
+			info = vk::DescriptorImageInfo(nullptr, native->GetMipView(b.MipLevel), vk::ImageLayout::eGeneral);
 			break;
 		}
 		case EResourceType::InputAttachment:
 		{
-			info = vk::DescriptorImageInfo(nullptr, native->GetView(), vk::ImageLayout::eShaderReadOnlyOptimal);
+			info = vk::DescriptorImageInfo(nullptr, native->GetMipView(b.MipLevel), vk::ImageLayout::eShaderReadOnlyOptimal);
 			break;
 		}
 		default:
-			info = vk::DescriptorImageInfo(native->GetSampler(), native->GetView(), vk::ImageLayout::eShaderReadOnlyOptimal);
+			info = vk::DescriptorImageInfo(native->GetSampler(), native->GetMipView(b.MipLevel), vk::ImageLayout::eShaderReadOnlyOptimal);
 			break;
 		}
 

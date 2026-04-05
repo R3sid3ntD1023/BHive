@@ -111,7 +111,9 @@ namespace BHive
 
 	void ShaderCompiler::Init()
 	{
-		mVulkanCompileOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+		mVulkanCompileOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_4);
+		mVulkanCompileOptions.SetTargetSpirv(shaderc_spirv_version_1_6);
+
 		mVulkanCompileOptions.SetIncluder(std::make_unique<utils::IncludeHandler>());
 
 		mOpenglCompileOptions.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);

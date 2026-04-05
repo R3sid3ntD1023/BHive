@@ -50,7 +50,9 @@ namespace BHive
 
 		static void MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const Ref<VertexArray> &vao, size_t drawCount, size_t stride = 0);
 
-		static void Dispath(uint32_t x, uint32_t y, uint32_t z);
+		static void Dispatch( const glm::uvec3 &size);
+		
+		static void AddComputePass(const std::string &name, const std::function<void(FRenderGraphPass&)> &builder);
 
 		static void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 

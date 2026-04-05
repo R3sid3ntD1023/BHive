@@ -1,30 +1,32 @@
-#type vertex
-#version 460 core
-
-#include <CommonVert.glsl>
-
-#type fragment
+#type compute
 #version 460 core
 
 #include <PMREMFuncs.glsl>
 
-layout(location = 0) in struct vertex_output
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 6) in;
+
+layout(rgba32f, set = 1, binding = 0) uniform restrict writeonly imageCube irradianceMap;
+layout(set = 1, binding = 1) uniform samplerCube environmentMap;
+
+layout(push_constant) uniform PushConstants
 {
-	vec3 position;
-} vs_in;
-
-layout(set = 1, binding = 0) uniform samplerCube environmentMap;
-
-layout(location = 0) out vec4 fs_out;
+	uint u_width;
+	uint u_height;
+} pc;
 
 void main()
 {
-	vec3 normal = normalize(vs_in.position);
+	uint x = gl_GlobalInvocationID.x;
+	uint y = gl_GlobalInvocationID.y;
+	uint face = gl_GlobalInvocationID.z;
+
+	vec3 N = CalculateDirection(face, x, y, float(pc.u_width), float(pc.u_height));
+	N = normalize(N);
 
 	vec3 irradiance = vec3(0);
 	vec3 up = vec3(0, 1, 0);
-	vec3 right = normalize(cross(up, normal));
-	up = normalize(cross(normal, right));
+	vec3 right = normalize(cross(up, N));
+	up = normalize(cross(N, right));
 
 	float samplesDelta = 0.025;
 	float nrSamples = 0;
@@ -33,7 +35,7 @@ void main()
 		for(float theta = 0; theta < 0.5 * PI; theta += samplesDelta)
 		{
 			vec3 tangentSample = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
-			vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;
+			vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N;
 
 			irradiance += texture(environmentMap, sampleVec).rgb * cos(theta) * sin(theta);
 			nrSamples++;
@@ -42,5 +44,5 @@ void main()
 
 	irradiance = PI * irradiance * (1.0 / float(nrSamples));
 
-	fs_out = vec4(irradiance, 1);
+	imageStore(irradianceMap, ivec3(x, y, face), vec4(irradiance, 1.0));
 }

@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	Pipeline::GraphicsPipelineState Pipeline::GetDefaultPipelineState()
+	Pipeline::GraphicsPipelineState Pipeline::GetDefaultGraphicsPipelineState()
 	{
 		GraphicsPipelineState state{};
 

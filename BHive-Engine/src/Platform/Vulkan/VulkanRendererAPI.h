@@ -1,7 +1,6 @@
 #pragma once
 
 #include "VulkanCore.h"
-#include "core/events/KeyEvents.h"
 #include "gfx/RendererAPI.h"
 
 
@@ -64,7 +63,7 @@ namespace BHive
 
 		virtual void MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const Ref<VertexArray> &vao, size_t drawCount, size_t stride = 0) override;
 
-		virtual void Dispath(uint32_t x, uint32_t y, uint32_t z) override;
+		virtual void Dispatch(const glm::uvec3 &size) override;
 
 		virtual void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a) override;
 

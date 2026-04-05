@@ -32,6 +32,11 @@ namespace BHive
 		return VulkanBackend::GetGPUResourceManager().GetImageView(ViewHandle);
 	}
 
+	const vk::ImageView &AllocatedImage::GetMipView(uint32_t mip) const
+	{
+		return VulkanBackend::GetGPUResourceManager().GetImageView(MipViews[mip]);
+	}
+
 	const vk::Sampler& AllocatedImage::GetSampler() const
 	{
 		return VulkanBackend::GetGPUResourceManager().GetSampler(SamplerHandle);
@@ -41,13 +46,34 @@ namespace BHive
 	{
 		for (uint32_t layer = sub.BaseArrayLayer; layer < sub.BaseArrayLayer + sub.LayerCount; layer++)
 		{
-			auto &State = LayerStates[layer];
-			ImageSubresource layerSub = sub;
-			layerSub.BaseArrayLayer = layer;
-			layerSub.LayerCount = 1;
+			for (uint32_t mip = sub.MipLevel; mip < sub.MipLevel + sub.LevelCount; mip++)
+			{
+				auto &State = MipStates[layer][mip];
+				ImageSubresource layerSub = sub;
+				layerSub.BaseArrayLayer = layer;
+				layerSub.LayerCount = 1;
+				layerSub.MipLevel = mip;
+				layerSub.LevelCount = 1;
 
-			VulkanUtils::TransitionImageLayout(cmd, GetImage(), State.Layout, newState.Layout, State.Access, newState.Access, State.Stage, newState.Stage, Aspect, layerSub);
-			State = newState;
+				VulkanUtils::TransitionImageLayout(cmd, GetImage(), State.Layout, newState.Layout, State.Access, newState.Access, State.Stage, newState.Stage, Aspect, layerSub);
+				State = newState;
+			}
+			
+		}
+	}
+
+	void AllocatedImage::GenerateMipViews(ImageViewDesc desc, uint32_t mipLevels)
+	{
+		auto &manager = VulkanBackend::GetGPUResourceManager();
+		auto &image = manager.GetImage(ImageHandle);
+
+		ImageViewDesc mip_desc = desc;
+		for (uint32_t mip = 0; mip < mipLevels; mip++)
+		{
+			mip_desc.BaseMipLevel = mip;
+
+			auto handle = manager.CreateImageView(image, mip_desc);
+			MipViews.push_back(handle);
 		}
 	}
 

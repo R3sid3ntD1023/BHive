@@ -15,6 +15,8 @@ namespace BHive
 	{
 		Ref<Texture> Texture;
 
+		uint32_t MipLevel = 0;
+
 		template <typename A>
 		void Serialize(A &ar)
 		{
@@ -33,7 +35,7 @@ namespace BHive
 
 		virtual void Submit(Ref<Pipeline> pipeline = nullptr);
 
-		virtual void SetTexture(const char *name, const Ref<Texture> &texture);
+		virtual void SetTexture(const char *name, const Ref<Texture> &texture, uint32_t mip = 0);
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 

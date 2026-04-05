@@ -22,33 +22,29 @@
 #include "gfx/ISetManager.h"
 #include "gfx/GlobalBuffers.h"
 #include "gfx/material/LambertMaterial.h"
-#include "gfx/renderers/PMREMGenerator.h"
 
 namespace BHive
 {
 	FTransform transform{};
-	PMREMGenerator gen;
 
 	void RuntimeLayer::OnAttach(Application& app)
 	{
-		//mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Triangle.glsl");
-		//mEmissiveShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Emissive.glsl");
+		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Triangle.glsl");
+		mEmissiveShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Emissive.glsl");
 		
 		mEnvironmentTex = TextureLoader::Import(ENGINE_PATH"/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
-		//Renderer::SetEnvironmentTexture(mEnvironmentTex);
+		Renderer::SetEnvironmentTexture(mEnvironmentTex);
 
-		auto state = Pipeline::GetDefaultPipelineState();
-		//state.ShaderProgram = mShader;
+		auto state = Pipeline::GetDefaultGraphicsPipelineState();
+		state.ShaderProgram = mShader;
 		state.ColorAttachmentFormats = {EFormat::RGBA8};
-
-		/*mPipeline = Pipeline::Create();
-		mPipeline->Init(state);*/
-
-		/*
+		
+		mPipeline = Pipeline::Create();
+		mPipeline->Init(state);
 		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
-		//mMaterial = CreateRef<Material>(mPipeline);
-		//mMaterial->SetTexture("u_Texture", mTexture);
-		//mMaterial->Set("u_Color", glm::vec3(1, 1, 1));
+		mMaterial = CreateRef<Material>(mPipeline);
+		mMaterial->SetTexture("u_Texture", mTexture);
+		mMaterial->Set("u_Color", glm::vec3(1, 1, 1));
 
 		mEmmissivePipeline = Pipeline::Create();
 		state.ShaderProgram = mEmissiveShader;
@@ -56,20 +52,20 @@ namespace BHive
 		mEmissiveMaterial = CreateRef<EmissiveMaterial>(mEmmissivePipeline);
 		mEmissiveMaterial->EmissionColor = FColor::Green;
 
-		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH"/Lambert.glsl");
+		/*mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH"/Lambert.glsl");
 		mPipeline = Pipeline::Create();
 		state.ShaderProgram = mShader;
 		mPipeline->Init(state);
 		mLambertMaterial = CreateRef<LambertMaterial>(mPipeline);
 		mLambertMaterial->DiffuseColor = FColor::Purple;
 		mLambertMaterial->EmissionColor = FColor::Yellow;
-		mLambertMaterial->SetTexture("DiffuseMap", mTexture);
+		mLambertMaterial->SetTexture("DiffuseMap", mTexture);*/
 
 		// create mesh
 		FMeshImportData import_data{};
 		FMeshImportOptions import_options{.ImportMaterials = false};
 
-		if (MeshImporter::Import("C:/Users/dariu/Documents/Cube.glb ", import_data))
+		if (MeshImporter::Import("C:/Users/dariu/Documents/Cube.glb", import_data))
 		{
 			std::vector<Ref<Asset>> additional_assets;
 			MeshImportResolver resolver(import_data, import_options, additional_assets);
@@ -108,9 +104,7 @@ namespace BHive
 
 		mMultiDrawIndirectBuffer = GPUBuffer::Create(sizeof(MultiDrawIndirectCommand) * commands.size(), EBufferType::IndirectBuffer);
 		mMultiDrawIndirectBuffer->SetData(commands.data(), sizeof(MultiDrawIndirectCommand) * commands.size());
-		*/
-
-		gen.Initialize();
+		
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -119,68 +113,62 @@ namespace BHive
 
 	void RuntimeLayer::OnUpdate(float time)
 	{	
-		gen.SetEnvironmentMap(mEnvironmentTex);
-	
-		//transform.AddRotation({0, time * 10.f, 0});
+		transform.AddRotation({0, time * 10.f, 0});
 
-		//mCamera.ProcessInput();
+		mCamera.ProcessInput();
 
-		//auto &app = Application::Get();
-		//auto &window = app.GetWindow();
-		//auto size = window.GetSize();
+		auto &app = Application::Get();
+		auto &window = app.GetWindow();
+		auto size = window.GetSize();
 
-		//mFramebuffer->Bind();
+		mFramebuffer->Bind();
 
-		//RenderCommand::ClearColor(0.1f, 0.1f, 0.1f, 1.f);
-		//RenderCommand::Clear();
-		//RenderCommand::SetViewport(0, 0, size.x, size.y);
+		RenderCommand::ClearColor(0.1f, 0.1f, 0.1f, 1.f);
+		RenderCommand::Clear();
+		RenderCommand::SetViewport(0, 0, size.x, size.y);
 
-		//Renderer::Begin();
+		Renderer::Begin();
 
-		//Renderer::SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
+		Renderer::SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
 
-		//LineRenderer::DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
-		//LineRenderer::DrawGrid({});
-		//LineRenderer::DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
+		LineRenderer::DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
+		LineRenderer::DrawGrid({});
+		LineRenderer::DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
 
-		//FQuadParams params{
-		//	.Size = {1, 1},.Color = FColor::Red
-		//};
-		//QuadRenderer::DrawQuad(params, nullptr, FTransform({0,0,2}));
+		FQuadParams params{
+			.Size = {1, 1},.Color = FColor::Red
+		};
+		QuadRenderer::DrawQuad(params, nullptr, FTransform({0,0,2}));
 
-		//params.Color = FColor::White;
-		//QuadRenderer::DrawQuad(params, mTexture, FTransform({0, 0, -2}));
-		//
-		//FTextParams tex_params{};
-		//QuadRenderer::DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
-		//QuadRenderer::DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));
+		params.Color = FColor::White;
+		QuadRenderer::DrawQuad(params, mTexture, FTransform({0, 0, -2}));
+		
+		FTextParams tex_params{};
+		QuadRenderer::DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
+		QuadRenderer::DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));
 
-		//if (mMesh && mLambertMaterial)
-		//{
-		//	/*mMaterial->Submit();
-		//	mMaterial->Set("u_Time", Time::Raw());*/
+		if (mMesh && mMaterial)
+		{
+			/*mMaterial->Submit();
+			mMaterial->Set("u_Time", Time::Raw());*/
 
-		//	mLambertMaterial->Submit();
+			mMaterial->Submit();
 
-		//	Renderer::GetModelBuffer().Reset();
-		//	Renderer::GetModelBuffer().Submit(transform);
-		//	Renderer::GetModelBuffer().Submit(FTransform({3, 4, 0}));
-		//	Renderer::GetModelBuffer().Upload();
-		//
+			Renderer::GetModelBuffer().Reset();
+			Renderer::GetModelBuffer().Submit(transform);
+			Renderer::GetModelBuffer().Submit(FTransform({3, 4, 0}));
+			Renderer::GetModelBuffer().Upload();
+		
+			// RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
+			// RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
+			RenderCommand::MultiDrawElementsIndirect(ETopologyMode::Triangles, *mMultiDrawIndirectBuffer, mMesh->GetVertexArray(), 2, sizeof(MultiDrawIndirectCommand));
 
-		//	if (mMesh)
-		//	{
-		//		//RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
-		//		//RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
-		//		RenderCommand::MultiDrawElementsIndirect(ETopologyMode::Triangles, *mMultiDrawIndirectBuffer, *mMesh->GetVertexArray(), 2, sizeof(MultiDrawIndirectCommand));
+			// RenderCommand::MultiDrawElementsIndirect(ETopologyMode::Triangles, *mMultiDrawIndirectBuffer, *mMesh->GetVertexArray(), 1, sizeof(MultiDrawIndirectCommand));
+		}
 
-		//		//RenderCommand::MultiDrawElementsIndirect(ETopologyMode::Triangles, *mMultiDrawIndirectBuffer, *mMesh->GetVertexArray(), 1, sizeof(MultiDrawIndirectCommand));
-		//	}
-		//}
+		Renderer::End();
 
-		//Renderer::End();
-
-		//mFramebuffer->UnBind();
+		mFramebuffer->UnBind();
 
 	}
 
@@ -194,19 +182,19 @@ namespace BHive
 
 		if (ImGui::Begin("Scene"))
 		{
-			auto fbSize = mFramebuffer->GetSize();
-			auto viewportSize = ImGui::GetContentRegionAvail();
-			glm::uvec2 size = {viewportSize.x, viewportSize.y};
-
-			if (size != fbSize)
+			if (mFramebuffer)
 			{
-				mFramebuffer->Resize(size);
+				auto fbSize = mFramebuffer->GetSize();
+				auto viewportSize = ImGui::GetContentRegionAvail();
+				glm::uvec2 size = {viewportSize.x, viewportSize.y};
+
+				if (size != fbSize && size.x != 0 && size.y != 0)
+				{
+					mFramebuffer->Resize(size);
+				}
+				auto texture_id = ImGuiLayer::GetTextureID(*mFramebuffer->GetColorAttachment(0));
+				ImGui::Image(texture_id, viewportSize);
 			}
-
-			auto texture_id = ImGuiLayer::GetTextureID(*mFramebuffer->GetColorAttachment(0));
-			ImGui::Image(texture_id, viewportSize);
-
-			
 		}
 
 		ImGui::End();

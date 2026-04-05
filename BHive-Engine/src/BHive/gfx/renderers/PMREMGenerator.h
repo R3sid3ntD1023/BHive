@@ -31,21 +31,16 @@ namespace BHive
 		void CreatePreFilteredEnvironmentMap();
 		void CreateBRDFLUTMap();
 
-		Ref<RenderTargetCube> mEnvironmentCapture;
-		Ref<RenderTargetCube> mIrradianceCapture;
-
-		Ref<StaticMesh> mCube;
-
-		Ref<Texture> mEnvironmentTexture;
-		Ref<TextureCube> mPreFilteredEnvironmentTexture;
-		Ref<Texture2D> mBRDFLUTTexture;
+		Ref<Texture> mEnvironment;
+		Ref<TextureCube> mEnvironmentCube;
+		Ref<TextureCube> mPreFilteredEnvironment;
+		Ref<TextureCube> mIrradiance;
+		Ref<Texture2D> mBRDFLUT;
 
 		Ref<Material> mEquirectangularMat;
 		Ref<Material> mIrradianceMat;
 		Ref<Material> mBRDFLUTMat;
 		Ref<Material> mPreFilterEnironmentMat;
-
-		CubeCamera mCubeCamera{.1f, 10.f};
 
 		bool mInitialized = false;
 	};

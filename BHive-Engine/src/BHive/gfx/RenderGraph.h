@@ -4,6 +4,8 @@
 
 namespace BHive
 {
+	class Texture;
+
 	struct IRendererContext
 	{
 		virtual ~IRendererContext() = default;
@@ -66,16 +68,27 @@ namespace BHive
 		Compute
 	};
 
+	struct FComputeImage
+	{
+		Ref<Texture> Texture;
+		uint32_t MipLevel = 0;
+		uint32_t LayerCount = 0;
+	};
+
 	struct FRenderGraphPass
 	{
 		std::string Name;
 		EPassType Type;
 		FRenderCommandList CommandList;
+		std::vector<FComputeImage> Images;
 	};
+
+
 
 	class RenderGraph
 	{
 	public:
+	
 		FRenderGraphPass &AddPass(const std::string &name, EPassType type)
 		{
 			auto &pass = mPasses.emplace_back();
@@ -93,7 +106,7 @@ namespace BHive
 		bool Empty() const { return mPasses.empty(); }
 
 		const std::vector<FRenderGraphPass> &GetPasses() const { return mPasses; }
-		
+
 	private:
 		std::vector<FRenderGraphPass> mPasses;
 	};

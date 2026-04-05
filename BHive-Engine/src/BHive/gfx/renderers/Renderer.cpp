@@ -84,9 +84,6 @@ namespace BHive
 
 		LineRenderer::Begin();
 		QuadRenderer::Begin();
-
-		
-		
 	}
 
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)

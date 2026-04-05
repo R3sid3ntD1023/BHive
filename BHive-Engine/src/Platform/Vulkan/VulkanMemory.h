@@ -18,6 +18,13 @@ namespace BHive
 		vk::AccessFlags2 Access = {};
 
 		vk::PipelineStageFlags2 Stage = {};
+
+		static ImageState ShaderRead()
+		{
+			return {vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderSampledRead, vk::PipelineStageFlagBits2::eFragmentShader | vk::PipelineStageFlagBits2::eComputeShader};
+		}
+
+		static ImageState ComputeWrite() { return {vk::ImageLayout::eGeneral, vk::AccessFlagBits2::eShaderWrite, vk::PipelineStageFlagBits2::eComputeShader};}
 	};
 
 	struct Image
@@ -49,9 +56,13 @@ namespace BHive
 
 		const vk::ImageView &GetView() const;
 
+		const vk::ImageView &GetMipView(uint32_t mip) const;
+
 		const vk::Sampler &GetSampler() const;
 
 		void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, 1});
+
+		void GenerateMipViews(ImageViewDesc desc, uint32_t mipLevels);
 
 		Image CreateImage();
 
@@ -62,7 +73,9 @@ namespace BHive
 
 		UUID SamplerHandle = NullID;
 
-		std::vector<ImageState> LayerStates;
+		std::vector<UUID> MipViews;
+
+		std::vector<std::vector<ImageState>> MipStates;
 
 		vk::ImageAspectFlags Aspect;
 

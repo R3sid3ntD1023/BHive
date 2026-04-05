@@ -22,7 +22,7 @@ namespace BHive
 
 		void Bind(const Ref<Pipeline> &shader) override;
 
-		void BindTexture(const std::string& name, const Ref<Texture> &texture) override;
+		void BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip = 0) override;
 
 		void Set(const std::string &name, const void *data, size_t size) override;
 
@@ -32,6 +32,8 @@ namespace BHive
 
 	private:
 		vk::raii::Device &mDevice;
+
+		vk::PipelineBindPoint mBindPoint = vk::PipelineBindPoint::eGraphics;
 
 		Ref<ShaderProgram> mProgram;
 		

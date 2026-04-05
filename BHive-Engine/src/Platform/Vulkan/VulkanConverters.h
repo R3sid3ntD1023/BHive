@@ -18,9 +18,8 @@ namespace BHive
 		vk::Bool32 CompareEnabled;
 		vk::CompareOp CompareOp;
 		uint32_t BytesPerPixel;
-		uint32_t Levels;
+		uint32_t MipLevels;
 		uint32_t ArrayLayers;
-		bool GenerateMipMaps;
 		std::string DebugName;
 	};
 

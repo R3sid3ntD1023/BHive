@@ -20,7 +20,7 @@ namespace BHive
 
 		virtual void Shutdown() = 0;
 
-		virtual void BindTexture(const std::string& name, const Ref<Texture> &texture) = 0;
+		virtual void BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip = 0) = 0;
 
 		virtual void Set(const std::string &name, const void *data, size_t size) = 0;
 

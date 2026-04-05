@@ -21,9 +21,9 @@ namespace BHive
 	}
 
 	void VulkanBackendMaterial::Init(const Ref<Pipeline> &pipeline)
-	{
-		
+	{	
 		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
+		mBindPoint = vkPipeline->GetBindPoint();
 
 		mProgram = Cast<ShaderProgram>(vkPipeline->GetShaderProgram());
 
@@ -77,7 +77,7 @@ namespace BHive
 				if (manager)
 				{
 					auto set = manager->GetNativeSet(vk_ctx.Frame).As<vk::DescriptorSet>();
-					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, MATERIAL_SET_INDEX, *set, {});
+					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, pipeline_layout, MATERIAL_SET_INDEX, *set, {});
 				}
 				
 				//Update push constants
@@ -89,7 +89,7 @@ namespace BHive
 			});
 	}
 
-	void VulkanBackendMaterial::BindTexture(const std::string& name, const Ref<Texture> &texture)
+	void VulkanBackendMaterial::BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip)
 	{
 		if (!texture)
 			return;
@@ -103,7 +103,7 @@ namespace BHive
 		auto &sampler = mTargetSet.Samplers.at(name);
 
 		auto &registry = GetSubSystem<MaterialSetRegistry>();
-		registry.Find(this)->SetTexture(sampler.Binding, texture);
+		registry.Find(this)->SetTexture(sampler.Binding, texture, mip);
 	}
 
 	

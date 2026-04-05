@@ -30,6 +30,7 @@ namespace BHive
 		desc.Type = type;
 		desc.BytesPerPixel = createInfo.BytesPerPixel;
 		desc.Aspect = createInfo.Aspect;
+		desc.MipLevels = createInfo.MipLevels;
 
 		ImageViewDesc view_desc{};
 		view_desc.Format = createInfo.Format;
@@ -38,6 +39,7 @@ namespace BHive
 		view_desc.Aspect = createInfo.Aspect;
 
 		mImage = gpu_r_m.CreateImage( desc, view_desc);
+		mImage.GenerateMipViews(view_desc, desc.MipLevels);
 		
 
 		vk::SamplerCreateInfo sampler_info(

@@ -22,6 +22,7 @@ namespace BHive
 
 			Ref<BufferBase> Buffer;
 			Ref<Texture> Texture;
+			uint32_t MipLevel = 0;
 		};
 	public:
 		VulkanSetManager(vk::raii::Device& device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex,
@@ -31,7 +32,7 @@ namespace BHive
 
 		virtual void SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer) override;
 
-		virtual void SetTexture(uint32_t binding, const Ref<Texture> &texture) override;
+		virtual void SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip = 0) override;
 
 		virtual void Update(uint32_t frame) override;
 

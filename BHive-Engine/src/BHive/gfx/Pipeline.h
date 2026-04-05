@@ -72,7 +72,7 @@ namespace BHive
 
 		virtual ISetManager* GetBatchSetManager() const = 0;
 
-		static GraphicsPipelineState GetDefaultPipelineState();
+		static GraphicsPipelineState GetDefaultGraphicsPipelineState();
 
 		static Ref<Pipeline> Create();
 	};

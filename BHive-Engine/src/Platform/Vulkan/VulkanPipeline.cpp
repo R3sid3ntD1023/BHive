@@ -158,10 +158,13 @@ namespace BHive
 		}
 
 		RenderCommand::GetRendererAPI<VulkanRendererAPI>()->OnPipelineCreated(this);
+
+		mBindPoint = vk::PipelineBindPoint::eGraphics;
 	}
 
 	void VulkanPipeline::Init(const ComputePipelineState &state)
 	{
+
 		mProgram = state.ShaderProgram;
 
 		mShader = CreateScope<VulkanShader>();
@@ -200,6 +203,8 @@ namespace BHive
 		createInfo.setLayout(mPipelineLayout);
 
 		mPipeline = vk::raii::Pipeline(mDevice, nullptr, createInfo);
+
+		mBindPoint = vk::PipelineBindPoint::eCompute;
 	}
 
 	void VulkanPipeline::Bind()
@@ -229,7 +234,7 @@ namespace BHive
 					mBatchSetManager->Update(vk_ctx.Frame);
 				}
 
-				vk_ctx.CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline); 
+				vk_ctx.CommandBuffer.bindPipeline(mBindPoint, mPipeline); 
 
 				auto &registry = GetSubSystem<GlobalSetRegistry>();
 
@@ -238,21 +243,21 @@ namespace BHive
 				if (globalManager)
 				{
 					auto set = globalManager->GetNativeSet(vk_ctx.Frame).As<vk::DescriptorSet>();
-					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, GLOBAL_SET_INDEX, *set, {});
+					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, layout, GLOBAL_SET_INDEX, *set, {});
 				}
 					
 
 				if (mObjectSetManager)
 				{
 					auto set = mObjectSetManager->GetNativeSet(vk_ctx.Frame).As<vk::DescriptorSet>();
-					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, OBJECT_SET_INDEX, *set, {});
+					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, layout, OBJECT_SET_INDEX, *set, {});
 				}
 
 				if (mBatchSetManager)
 				{
 					
 					auto set = mBatchSetManager->GetNativeSet(vk_ctx.Frame).As<vk::DescriptorSet>();
-					vk_ctx.CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, BATCH_SET_INDEX, *set, {});
+					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, layout, BATCH_SET_INDEX, *set, {});
 				}
 			});
 	}

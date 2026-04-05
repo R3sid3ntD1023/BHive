@@ -105,7 +105,7 @@ namespace BHive
 		buffer = vk::raii::Buffer(device, bufferCreateInfo);
 	}
 
-	void VulkanUtils::CreateImage(vk::ImageCreateFlags flags, uint32_t levels,
+	void VulkanUtils::CreateImage(vk::ImageCreateFlags flags, uint32_t mipLevels,
 		uint32_t w, uint32_t h, uint32_t d, uint32_t layers, vk::ImageType type, vk::Format format, 
 		vk::ImageTiling tiling, 
 		vk::ImageUsageFlags usage, 
@@ -114,7 +114,7 @@ namespace BHive
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
 		vk::ImageCreateInfo imageInfo(
-			flags, type, format, {w, h, d}, levels, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage,
+			flags, type, format, {w, h, d}, mipLevels, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage,
 			vk::SharingMode::eExclusive, 0);
 		image = device.createImage(imageInfo);
 	}

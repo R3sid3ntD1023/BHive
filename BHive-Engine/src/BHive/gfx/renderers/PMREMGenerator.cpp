@@ -2,7 +2,6 @@
 #include "gfx/RenderCommand.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
-#include "gfx/mesh/primitives/Cube.h"
 #include "PMREMGenerator.h"
 #include "gfx/material/Material.h"
 #include "gfx/Pipeline.h"
@@ -23,32 +22,51 @@ namespace BHive
 		if (mInitialized)
 			return;
 
-		mEnvironmentCapture = CreateRef<RenderTargetCube>(ENVIRONMENT_MAP_SIZE, EFormat::RGBA32F);
+		{
+			FTextureCreateInfo create_info{};
+			create_info.Format = EFormat::RGBA32F;
+			create_info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+			create_info.MinFilter = EMinFilter::LINEAR;
+			create_info.ArrayLayers = 6;
+			create_info.MipLevels = 1;
+			create_info.DebugName = "EnvironmentCube";
+			create_info.Usage |= ETextureUsage::Storage | ETextureUsage::Sampled;
+			mEnvironmentCube = TextureCube::Create(ENVIRONMENT_MAP_SIZE, create_info);
+		}
+		
+		{
+			FTextureCreateInfo create_info{};
+			create_info.Format = EFormat::RGBA32F;
+			create_info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+			create_info.MinFilter = EMinFilter::LINEAR;
+			create_info.Usage |= ETextureUsage::Storage | ETextureUsage::Sampled;
+			create_info.DebugName = "Irradiance";
+			mIrradiance = TextureCube::Create(IRRANDIANCE_CUBEMAP_SIZE, create_info);
+		}
 
-		mIrradianceCapture = CreateRef<RenderTargetCube>(IRRANDIANCE_CUBEMAP_SIZE, EFormat::RGBA32F);
+		{
+			FTextureCreateInfo create_info{};
+			create_info.Format = EFormat::RGBA16F;
+			create_info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+			create_info.MinFilter = EMinFilter::MIPMAP_LINEAR;
+			create_info.MagFilter = EMagFilter::LINEAR;
+			create_info.MipLevels = PREFILTER_MIP_LEVELS;
+			create_info.Usage |= ETextureUsage::Storage;
+			create_info.DebugName = "PreFilterEnvironment";
+			mPreFilteredEnvironment = TextureCube::Create(PREFILTER_MAP_SIZE, create_info);
+		}
 
-		FTextureCreateInfo pre_filter_specification;
-		pre_filter_specification.Format = EFormat::RGBA16F;
-		pre_filter_specification.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-		pre_filter_specification.MinFilter = EMinFilter::MIPMAP_LINEAR;
-		pre_filter_specification.MagFilter = EMagFilter::LINEAR;
-		pre_filter_specification.Levels = PREFILTER_MIP_LEVELS;
-		pre_filter_specification.Usage |= ETextureUsage::Storage;
-		pre_filter_specification.DebugName = "PreFilterEnvironment Texture";
+		{
+			FTextureCreateInfo brdfLUTCreateInfo{};
+			brdfLUTCreateInfo.Format = EFormat::RG16F;
+			brdfLUTCreateInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+			brdfLUTCreateInfo.MagFilter = EMagFilter::NEAREST;
+			brdfLUTCreateInfo.MinFilter = EMinFilter::NEAREST;
+			brdfLUTCreateInfo.Usage |= ETextureUsage::Storage;
+			brdfLUTCreateInfo.DebugName = "BRDFLUT Texture";
 
-		mPreFilteredEnvironmentTexture = TextureCube::Create(PREFILTER_MAP_SIZE, pre_filter_specification);
-
-		FTextureCreateInfo brdfLUTCreateInfo{};
-		brdfLUTCreateInfo.Format = EFormat::R16F;
-		brdfLUTCreateInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-		brdfLUTCreateInfo.MagFilter = EMagFilter::NEAREST;
-		brdfLUTCreateInfo.MinFilter = EMinFilter::NEAREST;
-		brdfLUTCreateInfo.Usage |= ETextureUsage::Storage;
-		brdfLUTCreateInfo.DebugName = "BRDFLUT Texture";
-
-		mBRDFLUTTexture = Texture2D::Create({BRDF_LUT_SIZE, BRDF_LUT_SIZE}, brdfLUTCreateInfo);
-
-		mCube = CreateRef<PCube>(2.0f);
+			mBRDFLUT = Texture2D::Create({BRDF_LUT_SIZE, BRDF_LUT_SIZE}, brdfLUTCreateInfo);
+		}
 
 		auto EquirectangularShader = ShaderManager::Get().Load("Equirectangular.glsl");
 		auto IrradianceShader = ShaderManager::Get().Load("Irradiance.glsl");
@@ -57,110 +75,104 @@ namespace BHive
 
 		auto equirrectangularPipeline = Pipeline::Create();
 		auto irradiancePipeline = Pipeline::Create();
-		auto preFilterPipeline = Pipeline::Create();
-		auto brdfLUTPipeline = Pipeline::Create();
+		
 
-		auto state = Pipeline::GetDefaultPipelineState();
+		{
+			auto state = Pipeline::ComputePipelineState{};
+			state.ShaderProgram = EquirectangularShader;
+			equirrectangularPipeline->Init(state);
+			mEquirectangularMat = CreateRef<Material>(equirrectangularPipeline);
+		}
 
-		state.ShaderProgram = EquirectangularShader;
-		state.ColorAttachmentFormats = {EFormat::RGBA32F};
-		state.Raster.CullMode = ECullMode::Front;
-		equirrectangularPipeline->Init(state);
-		mEquirectangularMat = CreateRef<Material>(equirrectangularPipeline);
+		{
+			auto state = Pipeline::ComputePipelineState();
+			state.ShaderProgram = IrradianceShader;
+			irradiancePipeline->Init(state);
+			mIrradianceMat = CreateRef<Material>(irradiancePipeline);
+		}
 
-		state.ShaderProgram = IrradianceShader;
-		irradiancePipeline->Init(state);
-		mIrradianceMat = CreateRef<Material>(irradiancePipeline);
+		{
+			auto preFilterPipeline = Pipeline::Create();
+			Pipeline::ComputePipelineState state{};
+			state.ShaderProgram = PreFilterEnironmentShader;
+			preFilterPipeline->Init(state);
+			mPreFilterEnironmentMat = CreateRef<Material>(preFilterPipeline);
+		}
 
-		Pipeline::ComputePipelineState compute_state{};
-		compute_state.ShaderProgram = PreFilterEnironmentShader;
-		preFilterPipeline->Init(compute_state);
-		mPreFilterEnironmentMat = CreateRef<Material>(preFilterPipeline);
+		{
+			auto brdfLUTPipeline = Pipeline::Create();
 
-		compute_state.ShaderProgram = BRDFLUTShader;
-		brdfLUTPipeline->Init(compute_state);
-		mBRDFLUTMat = CreateRef<Material>(brdfLUTPipeline);
+			Pipeline::ComputePipelineState state{};
+			state.ShaderProgram = BRDFLUTShader;
+			brdfLUTPipeline->Init(state);
+			mBRDFLUTMat = CreateRef<Material>(brdfLUTPipeline);
+		}
 
 		mInitialized = true;
 	}
 
 	void PMREMGenerator::SetEnvironmentMap(const Ref<Texture> &texture)
 	{
-		mEnvironmentTexture = texture;
+		mEnvironment = texture;
 		CreateEnvironmentCubeMap();
 		CreateIrradianceMap();
-		/*CreateBRDFLUTMap();
-		CreatePreFilteredEnvironmentMap();*/
+		CreatePreFilteredEnvironmentMap();
+		CreateBRDFLUTMap();
 	}
 
 	const Ref<Texture> &PMREMGenerator::GetIrradianceTexture() const
 	{
-		return mIrradianceCapture->GetTargetTexture();
+		return mIrradiance;
 	}
 
 	const Ref<Texture> &PMREMGenerator::GetPreFilteredEnvironmentTetxure() const
 	{
-		return mPreFilteredEnvironmentTexture;
+		return mPreFilteredEnvironment;
 	}
 
 	const Ref<Texture> &PMREMGenerator::GetBDRFLUT() const
 	{
-		return mBRDFLUTTexture;
+		return mBRDFLUT;
 	}
 
 	void PMREMGenerator::CreateEnvironmentCubeMap()
 	{	
-		mEquirectangularMat->SetTexture("equirectangularMap", mEnvironmentTexture);
+		mEquirectangularMat->SetTexture("imgOutput", mEnvironmentCube);
+		mEquirectangularMat->SetTexture("equirectangularMap", mEnvironment);
+		mEquirectangularMat->Set("u_width", ENVIRONMENT_MAP_SIZE);
+		mEquirectangularMat->Set("u_height", ENVIRONMENT_MAP_SIZE);
 
-		for (int i = 0; i < 6; i++)
-		{
-			mCubeCamera.SetFace(i);
-			auto viewProjectionMatrix = mCubeCamera.GetViewProjection();
-			mEquirectangularMat->Set("u_ViewProjection", viewProjectionMatrix);
-
-			mEnvironmentCapture->Bind(i);
-	
-			RenderCommand::Clear();
-			RenderCommand::SetViewport(0, 0, 512, 512);
-
-			mEquirectangularMat->Submit();
-			
-			auto &submesh = mCube->GetSubMeshes()[0];
-			RenderCommand::DrawElementsBaseVertex(ETopologyMode::Triangles, mCube->GetVertexArray(), submesh.StartVertex, submesh.StartIndex, submesh.IndexCount);
-
-			mEnvironmentCapture->UnBind();
-		}
+		RenderCommand::AddComputePass(
+			"Create CubeMap Pass",
+			[=](auto &pass)
+			{
+				mEquirectangularMat->Submit();
+				RenderCommand::Dispatch({(ENVIRONMENT_MAP_SIZE + 7) / 8, (ENVIRONMENT_MAP_SIZE + 7) / 8, 1});
+				pass.Images.push_back({mEnvironmentCube});
+			});
 	}
 
 	void PMREMGenerator::CreateIrradianceMap()
 	{
-		mIrradianceMat->SetTexture("environmentMap", mEnvironmentCapture->GetTargetTexture());
+		mIrradianceMat->SetTexture("irradianceMap", mIrradiance);
+		mIrradianceMat->SetTexture("environmentMap", mEnvironmentCube);
+		mIrradianceMat->Set("u_width", IRRANDIANCE_CUBEMAP_SIZE);
+		mIrradianceMat->Set("u_height", IRRANDIANCE_CUBEMAP_SIZE);
 
-		for (int i = 0; i < 6; i++)
-		{		
-			mCubeCamera.SetFace(i);
-			auto viewProjectionMatrix = mCubeCamera.GetViewProjection();
-			mIrradianceMat->Set("u_ViewProjection", viewProjectionMatrix);
-
-			mIrradianceCapture->Bind(i);
-
-			RenderCommand::Clear();
-			RenderCommand::SetViewport(0, 0, 32, 32);
-
-			mIrradianceMat->Submit();
-		
-			auto &submesh = mCube->GetSubMeshes()[0];
-			RenderCommand::DrawElementsBaseVertex(ETopologyMode::Triangles, mCube->GetVertexArray(), submesh.StartVertex, submesh.StartIndex, submesh.IndexCount);
-
-			mIrradianceCapture->UnBind();
-		}
+		RenderCommand::AddComputePass(
+			"Create Irradiance Map",
+			[=](auto &pass)
+			{
+				mIrradianceMat->Submit();
+				RenderCommand::Dispatch({(ENVIRONMENT_MAP_SIZE + 7) / 8, (ENVIRONMENT_MAP_SIZE + 7) / 8, 1});
+				pass.Images.push_back({mIrradiance});
+			});
 	}
 
 	void PMREMGenerator::CreatePreFilteredEnvironmentMap()
 	{
-
-		mPreFilterEnironmentMat->Submit();
-		mPreFilterEnironmentMat->SetTexture("environmentMap", mEnvironmentCapture->GetTargetTexture());
+		mPreFilterEnironmentMat->SetTexture("environmentMap", mEnvironmentCube);
+		
 
 		int mip_level = (ENVIRONMENT_MAP_SIZE / PREFILTER_MAP_SIZE) - 1;
 		for (int i = 0; i < PREFILTER_MIP_LEVELS; i++)
@@ -175,17 +187,30 @@ namespace BHive
 			mPreFilterEnironmentMat->Set("u_width", w);
 			mPreFilterEnironmentMat->Set("u_height", h);
 
-			mPreFilterEnironmentMat->SetTexture("imgOutput", mPreFilteredEnvironmentTexture);
+			mPreFilterEnironmentMat->SetTexture("imgOutput", mPreFilteredEnvironment, i);
 
-			RenderCommand::Dispath(w / PREFILTER_WORK_GROUP_SIZE, h / PREFILTER_WORK_GROUP_SIZE, 6);
+			RenderCommand::AddComputePass("BrdfLUTPass", [=](auto& pass) {
+					mPreFilterEnironmentMat->Submit();
+					RenderCommand::Dispatch({w / PREFILTER_WORK_GROUP_SIZE, h / PREFILTER_WORK_GROUP_SIZE, 1});
+
+					pass.Images.push_back({mPreFilteredEnvironment, (uint32_t)mip_level, 1});
+				});
 		}
 
 	}
 
 	void PMREMGenerator::CreateBRDFLUTMap()
 	{
-		mBRDFLUTMat->Submit();
-		mBRDFLUTMat->SetTexture("brdfLutTexture", mBRDFLUTTexture);
-		RenderCommand::Dispath(BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE, BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE, 1);
+		mBRDFLUTMat->SetTexture("brdfLutTexture", mBRDFLUT);
+
+		RenderCommand::AddComputePass("BrdfLUTPass", [=](auto& pass) {
+				mBRDFLUTMat->Submit();
+				RenderCommand::Dispatch({BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE, BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE, 1});
+
+				FComputeImage image{};
+				image.Texture = mBRDFLUT;
+				pass.Images.push_back(image);
+			});
+	
 	}
 } // namespace BHive

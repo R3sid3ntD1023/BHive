@@ -38,7 +38,7 @@ namespace BHive
 
 		uint32_t BytesPerPixel = 4;
 
-		uint32_t Levels = 1;
+		uint32_t MipLevels = 1;
 
 		uint32_t Size() const { return Width * Height * Depth * BytesPerPixel; }
 	};

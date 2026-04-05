@@ -19,11 +19,12 @@ namespace BHive
 
 	}
 
-	void Material::SetTexture(const char *name, const Ref<Texture> &texture)
+	void Material::SetTexture(const char *name, const Ref<Texture> &texture, uint32_t mip)
 	{
 		if (mTextures.contains(name))
 		{
 			mTextures[name].Texture = texture;
+			mTextures[name].MipLevel = mip;
 			return;
 		}
 
@@ -38,7 +39,7 @@ namespace BHive
 		for (auto& [name, slot] : mTextures)
 		{
 			auto tex = slot.Texture ? slot.Texture  : Renderer::GetWhiteTexture();
-			mBackendMaterial->BindTexture(name, tex);
+			mBackendMaterial->BindTexture(name, tex, slot.MipLevel);
 		}
 
 		mBackendMaterial->Bind(mPipeline); //update descriptor sets
