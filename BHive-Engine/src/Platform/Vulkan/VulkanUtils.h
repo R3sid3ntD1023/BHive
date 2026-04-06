@@ -47,15 +47,25 @@ namespace BHive
 			vk::raii::CommandBuffer &cmd, const vk::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 			vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, const ImageSubresource& sub);
 
-		static void CopyBufferToImage(const vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, const vk::Image &image, const ImageCopyRegion& region);
+		static void CopyBufferToImage(vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, const vk::Image &image, const ImageCopyRegion &region);
 
 		static void SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size);
 
 		static vk::Format FindDepthFormat();
 
 		static bool HasStencilComponent(vk::Format format);
+	};
 
-		
+	class SingleTimeCommand
+	{
+	public:
+		SingleTimeCommand();
 
+		~SingleTimeCommand();
+
+		operator vk::raii::CommandBuffer &() { return mCommandBuffer; }
+
+	private:
+		vk::raii::CommandBuffer mCommandBuffer = VK_NULL_HANDLE;
 	};
 } // namespace BHive

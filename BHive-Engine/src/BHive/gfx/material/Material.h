@@ -24,6 +24,7 @@ namespace BHive
 		};
 	};
 
+
 	using TextureSlots = std::unordered_map<std::string, TextureSlot>;
 
 	class BHIVE_API Material : public Asset
@@ -56,7 +57,9 @@ namespace BHive
 		void CreateBackendMaterial();
 
 	protected:
-		TextureSlots mTextures;
+		TextureSlots mTextureSlots;
+
+		TextureSlots mImageSlots;
 
 		Ref<Pipeline> mPipeline;
 

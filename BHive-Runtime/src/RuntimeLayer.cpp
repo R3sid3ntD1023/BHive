@@ -176,8 +176,6 @@ namespace BHive
 	{
 		return;
 
-		static float value = 0.f;
-
 		GUI::BeginDockSpace("Dockspace");
 
 		if (ImGui::Begin("Scene"))
@@ -201,8 +199,6 @@ namespace BHive
 
 		if (ImGui::Begin("Window"))
 		{
-			ImGui::DragFloat("Test", &value);
-
 			auto texture_id = ImGuiLayer::GetTextureID(*mTexture);
 			ImGui::Image(texture_id, {200, 200}, {0, 1}, {1, 0});
 

@@ -121,7 +121,7 @@ namespace BHive
 			mPushConstantRanges.emplace_back(ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size);
 		}
 
-		LOG_INFO("Push constants found: {} - {}", asset.Name, merged.PushConstants.size());
+		//LOG_INFO("Push constants found: {} - {}", asset.Name, merged.PushConstants.size());
 	}
 
 	uint64_t VulkanShader::HashSetLayout(const FShaderReflection &merged, uint32_t set)

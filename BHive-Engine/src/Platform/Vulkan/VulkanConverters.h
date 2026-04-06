@@ -3,24 +3,24 @@
 #include "VulkanCore.h"
 #include "gfx/Enumerations.h"
 #include "gfx/TextureSpecification.h"
-#include "gfx/BufferBase.h"
+
 
 namespace BHive
 {
 	struct FVulkanTextureCreateInfo
 	{
-		vk::Format Format;
-		vk::Filter MinFilter;
-		vk::Filter MagFilter;
-		vk::ImageUsageFlags Usage;
-		vk::ImageAspectFlags Aspect;
-		vk::SamplerAddressMode WrapMode;
-		vk::Bool32 CompareEnabled;
-		vk::CompareOp CompareOp;
-		uint32_t BytesPerPixel;
-		uint32_t MipLevels;
-		uint32_t ArrayLayers;
-		std::string DebugName;
+		vk::Format Format{};
+		vk::Filter MinFilter{};
+		vk::Filter MagFilter{};
+		vk::ImageUsageFlags Usage{};
+		vk::ImageAspectFlags Aspect{};
+		vk::SamplerAddressMode WrapMode{};
+		vk::Bool32 CompareEnabled{};
+		vk::CompareOp CompareOp{};
+		uint32_t BytesPerPixel{};
+		uint32_t MipLevels{};
+		uint32_t ArrayLayers{};
+		std::string DebugName{};
 	};
 
 	vk::BufferUsageFlags ToVkBufferType(EBufferType type);

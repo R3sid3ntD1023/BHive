@@ -11,7 +11,6 @@ namespace BHive
 		: mPipeline(pipeline)
 	{
 		ASSERT(pipeline)
-
 	
 		CreateBackendMaterial();
 
@@ -21,14 +20,26 @@ namespace BHive
 
 	void Material::SetTexture(const char *name, const Ref<Texture> &texture, uint32_t mip)
 	{
-		if (mTextures.contains(name))
+		const auto &set = mBackendMaterial->GetTargetSet();
+		const auto &samplers = set.Samplers;
+		if (!samplers.contains(name))
 		{
-			mTextures[name].Texture = texture;
-			mTextures[name].MipLevel = mip;
+			LOG_ERROR("Texture slot with name : {} doesnt exist!", name);
 			return;
 		}
 
-		LOG_ERROR("Texture slot with name : {} doesnt exist!", name);
+		auto slot = TextureSlot{texture, mip};
+		auto &bindingInfo = samplers.at(name);
+		switch (bindingInfo.Type)
+		{
+		case EResourceType::StorageImage:
+			mImageSlots.at(name) =  slot;
+			break;
+		default:
+			mTextureSlots.at(name) = slot;
+		}
+
+		//LOG_INFO("SetTexture('{}') → binding {} kind {}", name, bindingInfo.Binding, (int)bindingInfo.Type);
 	}
 
 	void Material::Submit(Ref<Pipeline> pipeline)
@@ -36,10 +47,18 @@ namespace BHive
 		auto current_pipeline = pipeline ? pipeline : mPipeline;
 		current_pipeline->Bind(); // binds shaders pipeline 
 
-		for (auto& [name, slot] : mTextures)
+		for (auto& [name, slot] : mTextureSlots)
 		{
 			auto tex = slot.Texture ? slot.Texture  : Renderer::GetWhiteTexture();
-			mBackendMaterial->BindTexture(name, tex, slot.MipLevel);
+			mBackendMaterial->BindTexture(name, tex, slot.MipLevel, current_pipeline);
+		}
+
+		for (auto &[name, slot] : mImageSlots)
+		{
+			if (!slot.Texture)
+				continue;
+
+			mBackendMaterial->BindTexture(name, slot.Texture, slot.MipLevel, current_pipeline);
 		}
 
 		mBackendMaterial->Bind(mPipeline); //update descriptor sets
@@ -50,7 +69,14 @@ namespace BHive
 		const auto &set = mBackendMaterial->GetTargetSet();
 		for (auto &[name, info] : set.Samplers)
 		{
-			mTextures.emplace(name, TextureSlot{nullptr});
+			switch (info.Type)
+			{
+			case EResourceType::StorageImage:
+				mImageSlots.emplace(name, TextureSlot{nullptr});
+				break;
+			default:
+				mTextureSlots.emplace(name, TextureSlot{nullptr});
+			};
 		}
 	}
 
@@ -64,7 +90,7 @@ namespace BHive
 	{
 		Asset::Save(ar);
 
-		ar(mTextures);
+		ar(mTextureSlots, mImageSlots);
 	}
 
 	void Material::Load(cereal::BinaryInputArchive &ar)
@@ -72,7 +98,7 @@ namespace BHive
 
 		Asset::Load(ar);
 
-		ar(mTextures);
+		ar(mTextureSlots, mImageSlots);
 	}
 
 	REFLECT(TextureSlot)
@@ -84,7 +110,8 @@ namespace BHive
 	REFLECT(Material)
 	{
 		BEGIN_REFLECT(Material)
-		REFLECT_PROPERTY("Textures", mTextures);
+		REFLECT_PROPERTY("TextureSlots", mTextureSlots)
+		REFLECT_PROPERTY("ImageSlots", mImageSlots);
 
 		rttr::type::register_wrapper_converter_for_base_classes<Ref<Material>>();
 	}

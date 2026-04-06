@@ -16,7 +16,7 @@ namespace BHive
 		return VulkanBackend::GetGPUResourceManager().GetImageView(ViewHandle);
 	}
 
-	void Image::Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource& sub)
+	void Image::Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub)
 	{
 		VulkanUtils::TransitionImageLayout(cmd, ImageSrc, State.Layout, newState.Layout, State.Access, newState.Access, State.Stage, newState.Stage, Aspect, sub);
 		State = newState;

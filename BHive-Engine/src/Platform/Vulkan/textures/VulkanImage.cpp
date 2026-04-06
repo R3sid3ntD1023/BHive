@@ -1,7 +1,5 @@
 #include "VulkanImage.h"
 #include "Platform/Vulkan/GPUResourceManager.h"
-#include "gfx/RenderCommand.h"
-#include "Platform/Vulkan/VulkanRendererAPI.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanBackend.h"
 
@@ -31,6 +29,7 @@ namespace BHive
 		desc.BytesPerPixel = createInfo.BytesPerPixel;
 		desc.Aspect = createInfo.Aspect;
 		desc.MipLevels = createInfo.MipLevels;
+		desc.DebugName = createInfo.DebugName;
 
 		ImageViewDesc view_desc{};
 		view_desc.Format = createInfo.Format;
@@ -77,17 +76,12 @@ namespace BHive
 			gpu_r_m.UnmapMemory(stagingBuffer);
 		}
 
-		ImageState transerDst{vk::ImageLayout::eTransferDstOptimal, vk::AccessFlagBits2::eTransferWrite, vk::PipelineStageFlagBits2::eTransfer};
-
-		ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
-
 		auto& staging_buffer = VulkanBackend::GetGPUResourceManager().GetBuffer(stagingBuffer.Buffer);
 
-		auto cmd = VulkanUtils::BeginSingleTimeCommands();
-		mImage.Transition(cmd, transerDst, sub);
+		SingleTimeCommand cmd{};
+		mImage.Transition(cmd, ImageState::TansferDst(), sub);
 		VulkanUtils::CopyBufferToImage(cmd, staging_buffer, mImage.GetImage(), region);
-		mImage.Transition(cmd, shaderRead, sub);
-		VulkanUtils::EndSingleTimeCommands(cmd);
+		mImage.Transition(cmd, ImageState::ShaderRead(), sub);
 
 		gpu_r_m.DestroyBuffer(stagingBuffer);
 	}

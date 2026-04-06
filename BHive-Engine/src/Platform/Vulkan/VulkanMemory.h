@@ -25,6 +25,19 @@ namespace BHive
 		}
 
 		static ImageState ComputeWrite() { return {vk::ImageLayout::eGeneral, vk::AccessFlagBits2::eShaderWrite, vk::PipelineStageFlagBits2::eComputeShader};}
+
+		static ImageState TansferDst() { return {vk::ImageLayout::eTransferDstOptimal, vk::AccessFlagBits2::eTransferWrite, vk::PipelineStageFlagBits2::eTransfer}; }
+
+		static ImageState ColorAttachment() { return {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput}; }
+
+		static ImageState DepthStencilAttachmentment()
+		{
+			return {
+				vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+				vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests};
+		}
+
+		static ImageState Present() { return {vk::ImageLayout::ePresentSrcKHR, {}, vk::PipelineStageFlagBits2::eBottomOfPipe}; }
 	};
 
 	struct Image
@@ -37,7 +50,7 @@ namespace BHive
 
 		const vk::ImageView& GetView() const;
 
-		void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {});
+		void Transition(vk::raii::CommandBuffer& cmd, const ImageState &newState, const ImageSubresource &sub = {});
 	private:
 		vk::Image ImageSrc = VK_NULL_HANDLE;
 
@@ -60,11 +73,15 @@ namespace BHive
 
 		const vk::Sampler &GetSampler() const;
 
-		void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, 1});
+		void Transition(vk::raii::CommandBuffer& cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, 1});
 
 		void GenerateMipViews(ImageViewDesc desc, uint32_t mipLevels);
 
 		Image CreateImage();
+
+		vk::ImageUsageFlags GetUsage() const { return Usage; }
+
+		const std::string &GetDebugName() const { return DebugName; }
 
 	private:
 		UUID ImageHandle = NullID;
@@ -82,6 +99,10 @@ namespace BHive
 		uint32_t ArrayLayers = 1;
 
 		MemoryAllocation Allocation;
+
+		vk::ImageUsageFlags Usage;
+
+		std::string DebugName;
 
 		friend GPUResourceManager;
 	};

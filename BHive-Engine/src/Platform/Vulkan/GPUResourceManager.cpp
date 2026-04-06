@@ -28,6 +28,8 @@ namespace BHive
 
 	AllocatedImage GPUResourceManager::CreateImage(const ImageDesc &desc, const ImageViewDesc &viewDesc)
 	{
+		LOG_INFO("GPUResourceManager::CreateImage {} usage = 0x{:X}", desc.DebugName, (uint32_t)desc.Usage);
+
 		AllocatedImage out{};
 
 		auto handle = UUID();
@@ -45,6 +47,8 @@ namespace BHive
 		out.ArrayLayers = desc.ArrayLayers;
 		out.Allocation = std::move(allocation);
 		out.Aspect = desc.Aspect;
+		out.DebugName = desc.DebugName;
+		out.Usage = desc.Usage;
 
 		ImageState initialState = {vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eNone, vk::PipelineStageFlagBits2::eTopOfPipe};
 		out.MipStates.resize(desc.ArrayLayers);

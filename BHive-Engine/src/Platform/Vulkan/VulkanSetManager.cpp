@@ -59,18 +59,30 @@ namespace BHive
 
 		for (auto &b : mBindings)
 		{
-			if (b.ReflResource.binding == binding && IsTexture(b.ReflResource.kind))
+			if (b.ReflResource.binding != binding)
+				continue;
+
+			switch (b.ReflResource.kind)
 			{
-				b.Texture = texture;
+			case EResourceType::CombinedImageSampler:
+			case EResourceType::SeperatedImage:
+			case EResourceType::StorageImage:
+			case EResourceType::InputAttachment:
 				bindingInfo = &b;
-				bindingInfo->MipLevel = mip;
 				break;
-					
+			default:
+				break;
 			}
+
+			if (bindingInfo)
+				break;
 		}
 
 		if (!bindingInfo)
 			return;
+
+		bindingInfo->Texture = texture;
+		bindingInfo->MipLevel = mip;
 
 		RenderCommand::SubmitResourceUpdate(
 			[=](auto &ctx)
@@ -81,6 +93,9 @@ namespace BHive
 				auto info = BuildImageInfo(*bindingInfo);
 				vk::WriteDescriptorSet write(set, bindingInfo->ReflResource.binding, 0, ToVkType(bindingInfo->ReflResource.kind), info);
 
+				auto image = texture->GetNativeHandle().As<AllocatedImage>();
+				LOG_ERROR(
+					"Binding texture '{}' to binding {} → actual Vulkan image = {}", bindingInfo->ReflResource.name, binding, image->GetDebugName());
 				mDevice.updateDescriptorSets(write, {});
 			});
 	}
@@ -170,6 +185,10 @@ namespace BHive
 		mSets.reserve(MAX_FRAMES_IN_FLIGHT);
 
 		mSets = vk::raii::DescriptorSets(mDevice, alloc_info);
+		for (size_t i = 0; i < mSets.size(); i++)
+		{
+			VulkanBackend::SetObjectName(*mSets[i], std::format("FrameSet{}", i));
+		}
 	}
 
 	void VulkanSetManager::WriteStaticBindings()
@@ -243,6 +262,11 @@ namespace BHive
 		}
 		case EResourceType::StorageImage:
 		{
+			auto usage = native->GetUsage();
+
+			//LOG_ERROR("Storage Image write: name='{}' binding={} mip={}, usage=0x{:X}", b.ReflResource.name, b.ReflResource.binding, b.MipLevel, (uint32_t)usage);
+			ASSERT((usage & vk::ImageUsageFlagBits::eStorage) != vk::ImageUsageFlags{});
+
 			info = vk::DescriptorImageInfo(nullptr, native->GetMipView(b.MipLevel), vk::ImageLayout::eGeneral);
 			break;
 		}

@@ -78,28 +78,25 @@ namespace BHive
 				{
 					auto &spec = color_specifications[i];
 					auto tex = color_attachments[i]->GetNativeHandle().As<AllocatedImage>();
-					ImageState attchmentState = {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
+
 					ImageSubresource sub{
 						.MipLevel = spec.MipLevel,
 						.BaseArrayLayer = spec.Layer,
 						.LayerCount = spec.LayerCount
 					};
-					tex->Transition(vk_ctx.CommandBuffer, attchmentState, sub);
+					tex->Transition(vk_ctx.CommandBuffer, ImageState::ColorAttachment(), sub);
 				}
 
 				if (depth_attachment)
 				{
 					auto &spec = depth_specification;
 					auto tex = depth_attachment->GetNativeHandle().As<AllocatedImage>();
-					ImageState depthState = {
-						vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
-						vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests};
 
 					ImageSubresource sub{
 						.MipLevel = spec.MipLevel,
 						.BaseArrayLayer = spec.Layer, .LayerCount = spec.LayerCount
 					};
-					tex->Transition(vk_ctx.CommandBuffer, depthState);
+					tex->Transition(vk_ctx.CommandBuffer, ImageState::DepthStencilAttachmentment());
 				}
 
 				// render
@@ -162,12 +159,10 @@ namespace BHive
 			auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
 			vk_ctx.CommandBuffer.endRendering();
 
-			ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
-
 			for (size_t i = 0; i < color_attachments.size(); i++)
 			{
 				auto tex = color_attachments[i]->GetNativeHandle().As<AllocatedImage>();
-				tex->Transition(vk_ctx.CommandBuffer, shaderRead);
+				tex->Transition(vk_ctx.CommandBuffer, ImageState::ShaderRead());
 			}
 		});
 
@@ -260,14 +255,11 @@ namespace BHive
 		{
 			auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
 
-			ImageState transferDst{vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
-			ImageState shaderRead{vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead, vk::PipelineStageFlagBits2::eFragmentShader};
-
 			for (auto &tex : colorAttachments)
 			{
 				auto vkTex = tex->GetNativeHandle().As<AllocatedImage>();
-				vkTex->Transition(vk_ctx.CommandBuffer, transferDst);
-				vkTex->Transition(vk_ctx.CommandBuffer, shaderRead);
+				vkTex->Transition(vk_ctx.CommandBuffer, ImageState::ColorAttachment());
+				vkTex->Transition(vk_ctx.CommandBuffer, ImageState::ShaderRead());
 			}
 		});
 	}

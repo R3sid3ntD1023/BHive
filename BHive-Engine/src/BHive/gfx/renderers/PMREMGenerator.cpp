@@ -30,7 +30,7 @@ namespace BHive
 			create_info.ArrayLayers = 6;
 			create_info.MipLevels = 1;
 			create_info.DebugName = "EnvironmentCube";
-			create_info.Usage |= ETextureUsage::Storage | ETextureUsage::Sampled;
+			create_info.Usage |= ETextureUsage::Storage;
 			mEnvironmentCube = TextureCube::Create(ENVIRONMENT_MAP_SIZE, create_info);
 		}
 		
@@ -39,7 +39,7 @@ namespace BHive
 			create_info.Format = EFormat::RGBA32F;
 			create_info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 			create_info.MinFilter = EMinFilter::LINEAR;
-			create_info.Usage |= ETextureUsage::Storage | ETextureUsage::Sampled;
+			create_info.Usage |= ETextureUsage::Storage;
 			create_info.DebugName = "Irradiance";
 			mIrradiance = TextureCube::Create(IRRANDIANCE_CUBEMAP_SIZE, create_info);
 		}
@@ -68,16 +68,9 @@ namespace BHive
 			mBRDFLUT = Texture2D::Create({BRDF_LUT_SIZE, BRDF_LUT_SIZE}, brdfLUTCreateInfo);
 		}
 
-		auto EquirectangularShader = ShaderManager::Get().Load("Equirectangular.glsl");
-		auto IrradianceShader = ShaderManager::Get().Load("Irradiance.glsl");
-		auto PreFilterEnironmentShader = ShaderManager::Get().Load("PrefilterEnvironment.glsl");
-		auto BRDFLUTShader = ShaderManager::Get().Load("BRDFLut.glsl");
-
-		auto equirrectangularPipeline = Pipeline::Create();
-		auto irradiancePipeline = Pipeline::Create();
-		
-
 		{
+			auto EquirectangularShader = ShaderManager::Get().Load("Equirectangular.glsl");
+			auto equirrectangularPipeline = Pipeline::Create();
 			auto state = Pipeline::ComputePipelineState{};
 			state.ShaderProgram = EquirectangularShader;
 			equirrectangularPipeline->Init(state);
@@ -85,6 +78,8 @@ namespace BHive
 		}
 
 		{
+			auto IrradianceShader = ShaderManager::Get().Load("Irradiance.glsl");
+			auto irradiancePipeline = Pipeline::Create();
 			auto state = Pipeline::ComputePipelineState();
 			state.ShaderProgram = IrradianceShader;
 			irradiancePipeline->Init(state);
@@ -92,16 +87,18 @@ namespace BHive
 		}
 
 		{
+			auto PreFilterEnvironmentShader = ShaderManager::Get().Load("PrefilterEnvironment.glsl");
 			auto preFilterPipeline = Pipeline::Create();
 			Pipeline::ComputePipelineState state{};
-			state.ShaderProgram = PreFilterEnironmentShader;
+			state.ShaderProgram = PreFilterEnvironmentShader;
 			preFilterPipeline->Init(state);
 			mPreFilterEnironmentMat = CreateRef<Material>(preFilterPipeline);
 		}
 
 		{
-			auto brdfLUTPipeline = Pipeline::Create();
 
+			auto BRDFLUTShader = ShaderManager::Get().Load("BRDFLut.glsl");
+			auto brdfLUTPipeline = Pipeline::Create();
 			Pipeline::ComputePipelineState state{};
 			state.ShaderProgram = BRDFLUTShader;
 			brdfLUTPipeline->Init(state);
@@ -115,8 +112,8 @@ namespace BHive
 	{
 		mEnvironment = texture;
 		CreateEnvironmentCubeMap();
-		CreateIrradianceMap();
-		CreatePreFilteredEnvironmentMap();
+		//CreateIrradianceMap();
+		//CreatePreFilteredEnvironmentMap();
 		CreateBRDFLUTMap();
 	}
 
@@ -148,7 +145,7 @@ namespace BHive
 			{
 				mEquirectangularMat->Submit();
 				RenderCommand::Dispatch({(ENVIRONMENT_MAP_SIZE + 7) / 8, (ENVIRONMENT_MAP_SIZE + 7) / 8, 1});
-				pass.Images.push_back({mEnvironmentCube});
+				pass.Images.push_back({mEnvironmentCube, 0, 6});
 			});
 	}
 
@@ -165,7 +162,7 @@ namespace BHive
 			{
 				mIrradianceMat->Submit();
 				RenderCommand::Dispatch({(ENVIRONMENT_MAP_SIZE + 7) / 8, (ENVIRONMENT_MAP_SIZE + 7) / 8, 1});
-				pass.Images.push_back({mIrradiance});
+				pass.Images.push_back({mIrradiance, 0, 6});
 			});
 	}
 
@@ -206,10 +203,7 @@ namespace BHive
 		RenderCommand::AddComputePass("BrdfLUTPass", [=](auto& pass) {
 				mBRDFLUTMat->Submit();
 				RenderCommand::Dispatch({BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE, BRDF_LUT_SIZE / BRDF_WORK_GROUP_SIZE, 1});
-
-				FComputeImage image{};
-				image.Texture = mBRDFLUT;
-				pass.Images.push_back(image);
+				pass.Images.push_back({mBRDFLUT, 0, 1});
 			});
 	
 	}

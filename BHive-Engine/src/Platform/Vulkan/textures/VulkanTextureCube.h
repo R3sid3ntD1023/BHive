@@ -17,6 +17,8 @@ namespace BHive
 
 		virtual void SetData(const FTextureUploadInfo &info) {}
 
+		void Initilaize();
+
 		virtual const FTextureCreateInfo &GetInfo() const { return mCreateInfo; }
 
 		NativeHandle GetNativeHandle() const override { return mImage.GetNativeHandle(); }

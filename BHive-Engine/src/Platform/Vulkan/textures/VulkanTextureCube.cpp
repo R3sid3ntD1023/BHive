@@ -10,22 +10,28 @@ namespace BHive
 		  mCreateInfo(create_info)
 	{
 		mCreateInfo.ArrayLayers = 6;
-		mImage.Create(vk::ImageCreateFlagBits::eCubeCompatible ,size, size, 1, vk::ImageType::e2D, vk::ImageViewType::eCube, Convert(mCreateInfo));
+		Initilaize();
+	}
+
+	void VulkanTextureCube::Initilaize()
+	{
+		LOG_ERROR("Cube CreateInfo.Usage = {}", (uint32_t)mCreateInfo.Usage);
+		mImage.Create(vk::ImageCreateFlagBits::eCubeCompatible, mSize, mSize, 1, vk::ImageType::e2D, vk::ImageViewType::eCube, Convert(mCreateInfo));
 
 		auto allocated_image = mImage.GetNativeHandle().As<AllocatedImage>();
 		auto image = allocated_image->CreateImage();
-		
+
 		for (uint32_t face = 0; face < 6; face++)
 		{
 			ImageViewDesc desc{};
 			desc.Type = vk::ImageViewType::e2D;
-			desc.Format = ToVkFormat(create_info.Format);
+			desc.Format = ToVkFormat(mCreateInfo.Format);
 			desc.BaseArrayLayer = face;
 			desc.LayerCount = 1;
 			desc.BaseMipLevel = 0;
 			desc.LayerCount = 1;
-			desc.Aspect = ToVkAspect(create_info.Aspect);
-			
+			desc.Aspect = ToVkAspect(mCreateInfo.Aspect);
+
 			mFaceViews[face] = VulkanBackend::GetGPUResourceManager().CreateImageView(allocated_image->GetImage(), desc);
 		}
 	}

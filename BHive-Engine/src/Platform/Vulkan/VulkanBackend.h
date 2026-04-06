@@ -51,7 +51,7 @@ namespace BHive
 		void CallOnDeviceDestroyed();
 
 		template <typename THandleType>
-		static void SetObjectName(THandleType handle, const std::string &name)
+		static void SetObjectName(const THandleType& handle, const std::string &name)
 		{
 			auto &device = VulkanBackend::GetLogicalDevice();
 			device.setDebugUtilsObjectNameEXT<THandleType>(handle, name);

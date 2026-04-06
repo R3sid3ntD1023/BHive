@@ -22,7 +22,7 @@ namespace BHive
 
 		void Bind(const Ref<Pipeline> &shader) override;
 
-		void BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip = 0) override;
+		void BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip , const Ref<Pipeline>& pipeline) override;
 
 		void Set(const std::string &name, const void *data, size_t size) override;
 

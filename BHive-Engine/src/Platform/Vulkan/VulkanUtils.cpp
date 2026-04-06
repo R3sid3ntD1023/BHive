@@ -181,7 +181,8 @@ namespace BHive
 	}
 
 	void VulkanUtils::TransitionImageLayout(
-		vk::raii::CommandBuffer &cmd, const vk::Image &image,  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
+		vk::raii::CommandBuffer &cmd,
+		const vk::Image &image,  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, const ImageSubresource &sub)
 	{
 		bool valid = oldLayout == vk::ImageLayout::eUndefined &&
@@ -203,16 +204,18 @@ namespace BHive
 			range);
 
 		vk::DependencyInfo depInfo({}, {}, {}, barrier);
+
 		cmd.pipelineBarrier2(depInfo);
 	}
 
-	void VulkanUtils::CopyBufferToImage(const vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, const vk::Image &image, const ImageCopyRegion &region)
+	void VulkanUtils::CopyBufferToImage(vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, const vk::Image &image, const ImageCopyRegion &region)
 	{
 		vk::Offset3D offset(region.Offset.x, region.Offset.y, region.Offset.z);
 		vk::Extent3D extent(region.Extents.x, region.Extents.y, region.Extents.z);
 
 		vk::ImageSubresourceLayers layers(vk::ImageAspectFlagBits::eColor, 0, region.BaseArrayLayer, region.LayerCount);
 		vk::BufferImageCopy image_region(0, 0, 0, layers, offset, extent);
+
 		cmd.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, image_region);
 	}
 
@@ -233,6 +236,16 @@ namespace BHive
 	bool VulkanUtils::HasStencilComponent(vk::Format format)
 	{
 		return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
+	}
+
+	SingleTimeCommand::SingleTimeCommand()
+	{
+		mCommandBuffer = VulkanUtils::BeginSingleTimeCommands();
+	}
+
+	SingleTimeCommand::~SingleTimeCommand()
+	{
+		VulkanUtils::EndSingleTimeCommands(mCommandBuffer);
 	}
 
 } // namespace BHive

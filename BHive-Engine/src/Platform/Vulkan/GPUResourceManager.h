@@ -40,6 +40,8 @@ namespace BHive
 
 		uint32_t MipLevels = 1;
 
+		std::string DebugName;
+
 		uint32_t Size() const { return Width * Height * Depth * BytesPerPixel; }
 	};
 

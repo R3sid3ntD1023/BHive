@@ -61,8 +61,9 @@ namespace BHive
 
 	void VulkanBackendMaterial::Bind(const Ref<Pipeline> & pipeline)
 	{
-		auto &pipeline_layout = Cast<VulkanPipeline>(pipeline)->GetLayout();
-		auto manager = GetSubSystem<MaterialSetRegistry>().Find(this);
+		auto vk_Pipeline = Cast<VulkanPipeline>(pipeline);
+		auto &pipeline_layout = vk_Pipeline->GetLayout();
+		auto manager = GetSubSystem<MaterialSetRegistry>().Find(this, vk_Pipeline.get());
 
 		//take snapshot of current push data - copy by value
 		auto pushData = mPushConstantData;
@@ -89,7 +90,7 @@ namespace BHive
 			});
 	}
 
-	void VulkanBackendMaterial::BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip)
+	void VulkanBackendMaterial::BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip, const Ref<Pipeline>& pipeline)
 	{
 		if (!texture)
 			return;
@@ -103,7 +104,7 @@ namespace BHive
 		auto &sampler = mTargetSet.Samplers.at(name);
 
 		auto &registry = GetSubSystem<MaterialSetRegistry>();
-		registry.Find(this)->SetTexture(sampler.Binding, texture, mip);
+		registry.Find(this, pipeline.get())->SetTexture(sampler.Binding, texture, mip);
 	}
 
 	

@@ -12,7 +12,7 @@
 namespace BHive
 {
 
-	MaterialSetRegistry::Entry &MaterialSetRegistry::CreateForMaterial(VulkanBackendMaterial *mat, const VulkanPipeline *pipeline)
+	MaterialSetRegistry::Entry &MaterialSetRegistry::CreateForMaterial(VulkanBackendMaterial *mat, const Pipeline *pipeline)
 	{
 		ASSERT(mat);
 
@@ -21,18 +21,19 @@ namespace BHive
 
 		constexpr uint32_t SET = MATERIAL_SET_INDEX;
 
+		Key key{mat, pipeline};
 		if (!merged.Sets.contains(SET))
-			return mEntries[mat]; //empty entry
+			return mEntries[key]; //empty entry
 
 		auto &setRefl = merged.Sets.at(SET);
 
-		auto &shader = pipeline->GetVulkanShader();
+		auto &shader = Cast<VulkanPipeline>(pipeline)->GetVulkanShader();
 		auto &setHashes = shader.GetSetHashes();
 
 		ASSERT(setHashes.contains(SET));
 		uint64_t hash = setHashes.at(SET);
 
-		auto &entry = mEntries[mat];
+		auto &entry = mEntries[key];
 		entry.Owner = mat;
 		entry.SetHash = hash;
 		entry.SetIndex = SET;
@@ -47,12 +48,13 @@ namespace BHive
 		return entry;
 	}
 
-	Ref<ISetManager> MaterialSetRegistry::Find(VulkanBackendMaterial *mat) const
+	Ref<ISetManager> MaterialSetRegistry::Find(VulkanBackendMaterial *mat, Pipeline* pipeline) const
 	{
-		if (!mEntries.contains(mat))
+		Key key{mat, pipeline};
+		if (!mEntries.contains(key))
 			return nullptr;
 
-		return mEntries.at(mat).Manager;
+		return mEntries.at(key).Manager;
 	}
 
 	void MaterialSetRegistry::UpdatePerFrame(uint32_t frame)

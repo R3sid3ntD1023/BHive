@@ -197,13 +197,8 @@ namespace BHive
 		{
 			if (pass.Type == EPassType::SwapChain)
 			{
-				ImageState colorAttachmentState = {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
-				ImageState depthAttachmentState = {
-					vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
-					vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests};
-
-				image.Transition(frame.CommandBuffer, colorAttachmentState);
-				depth.Transition(frame.CommandBuffer, depthAttachmentState);
+				image.Transition(cmd, ImageState::ColorAttachment());
+				depth.Transition(cmd, ImageState::DepthStencilAttachmentment());
 
 				vk::ClearValue clearColor(mClearColor);
 				vk::ClearValue clearDepth(vk::ClearDepthStencilValue(1.0f, 0));
@@ -221,8 +216,7 @@ namespace BHive
 
 				frame.CommandBuffer.endRendering();
 
-				ImageState present = {vk::ImageLayout::ePresentSrcKHR, {}, vk::PipelineStageFlagBits2::eBottomOfPipe};
-				image.Transition(frame.CommandBuffer, present);
+				image.Transition(cmd, ImageState::Present());
 
 			}
 			else if (pass.Type == EPassType::OffScreen)
