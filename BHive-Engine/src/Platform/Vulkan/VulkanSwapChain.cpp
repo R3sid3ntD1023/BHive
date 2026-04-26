@@ -3,6 +3,7 @@
 #include "VulkanBackend.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
+#include "GPUComponents.h"
 
 namespace BHive
 {
@@ -42,19 +43,35 @@ namespace BHive
 		mSwapChain = mDevice.createSwapchainKHR(swap_chain_create_info);
 		auto images = mSwapChain.getImages();
 
-		for (const auto& image : images)
+		mImages.resize(images.size());
+		auto& mng = VulkanBackend::GetGPUResourceManager();
+
+		for (size_t i = 0; i < images.size(); i++)
 		{
+			auto raw = images[i];
+			UUID id = mng.RegisterExternalImage(raw);
+			auto& img = mImages.emplace_back();
+			img.ImageHandle = id;
+			img.ArrayLayers = 1;
+			img.MipLevels = 1;
+			img.Aspect = vk::ImageAspectFlagBits::eColor;
+			img.Usage = vk::ImageUsageFlagBits::eColorAttachment;
+			img.DebugName = std::format("SwapChain Image{}", i);
+
+			auto def = img.AddComponent<DefaultViewComponent>();
+			auto state = img.AddComponent<StateTrackingComponent>();
+
 			ImageViewDesc view_desc{};
 			view_desc.Type = vk::ImageViewType::e2D;
 			view_desc.Format = mImageFormat.format;
 			view_desc.Aspect = vk::ImageAspectFlagBits::eColor;
+			view_desc.BaseArrayLayer = 0;
+			view_desc.BaseMipLevel = 0;
+			view_desc.LayerCount = 1;
+			view_desc.LevelCount = 1;
 
-			Image img{};
-			img.SetImage(image);
-			img.SetAspect(vk::ImageAspectFlagBits::eColor);
-			img.CreateView(view_desc);
-
-			mImages.push_back(std::move(img));
+			def->View = mng.CreateImageView(raw, view_desc);
+			state->Init(1, 1, ImageState::Present());
 		}
 
 		auto image_count = static_cast<uint32_t>(mImages.size());
@@ -92,7 +109,8 @@ namespace BHive
 		view_desc.Format = mDepthFormat;
 		view_desc.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 
-		mDepthImage = VulkanBackend::GetGPUResourceManager().CreateImage(desc, view_desc);
+		mDepthImage = mng.CreateImage(desc);
+		mDepthImage.AddComponent<DefaultViewComponent>()->View = mng.CreateImageView(mDepthImage.GetImage(), view_desc);
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)

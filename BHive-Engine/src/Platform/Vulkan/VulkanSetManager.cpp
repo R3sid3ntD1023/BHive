@@ -5,6 +5,7 @@
 #include "VulkanConverters.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
+#include "GPUComponents.h"	
 
 namespace BHive
 {
@@ -93,9 +94,8 @@ namespace BHive
 				auto info = BuildImageInfo(*bindingInfo);
 				vk::WriteDescriptorSet write(set, bindingInfo->ReflResource.binding, 0, ToVkType(bindingInfo->ReflResource.kind), info);
 
-				auto image = texture->GetNativeHandle().As<AllocatedImage>();
-				LOG_ERROR(
-					"Binding texture '{}' to binding {} → actual Vulkan image = {}", bindingInfo->ReflResource.name, binding, image->GetDebugName());
+				auto image = texture->GetNativeHandle().As<GPUImage>();
+				//LOG_ERROR("Binding texture '{}' to binding {} → actual Vulkan image = {}", bindingInfo->ReflResource.name, binding, image->GetDebugName());
 				mDevice.updateDescriptorSets(write, {});
 			});
 	}
@@ -241,42 +241,49 @@ namespace BHive
 		ASSERT(b.Texture)
 
 		vk::DescriptorImageInfo info{};
-		auto native = b.Texture->GetNativeHandle().As<AllocatedImage>();
+		auto native = b.Texture->GetNativeHandle().As<GPUImage>();
 
 		ASSERT(native);
-		ASSERT(native->GetView() != VK_NULL_HANDLE);
-		ASSERT(native->GetSampler() != VK_NULL_HANDLE || b.ReflResource.kind == EResourceType::SeperatedImage);
+
+		auto smp = native->GetComponent<SamplerComponent>();
+		auto defView = native->GetComponent<DefaultViewComponent>();
+
+		ASSERT(defView, "Image does not have a default view component, cannot be used as a texture resource");
+
+		const uint32_t layer = 0;
+		const uint32_t face = 0;
+		const uint32_t mip = b.MipLevel;
 
 		switch (b.ReflResource.kind)
 		{
 		case EResourceType::CombinedImageSampler:
 		case EResourceType::SeperatedImage:
 		{
-			info = vk::DescriptorImageInfo(native->GetSampler(), native->GetMipView(b.MipLevel), vk::ImageLayout::eShaderReadOnlyOptimal);
+			ASSERT(smp)
+			info = vk::DescriptorImageInfo(smp->Get(), native->GetView(layer, face, mip), vk::ImageLayout::eShaderReadOnlyOptimal);
 			break;
 		}
 		case EResourceType::SeperatedSampler:
 		{
-			info = vk::DescriptorImageInfo(native->GetSampler());
+			ASSERT(smp)
+			info = vk::DescriptorImageInfo(smp->Get());
 			break;
 		}
 		case EResourceType::StorageImage:
 		{
-			auto usage = native->GetUsage();
-
-			//LOG_ERROR("Storage Image write: name='{}' binding={} mip={}, usage=0x{:X}", b.ReflResource.name, b.ReflResource.binding, b.MipLevel, (uint32_t)usage);
-			ASSERT((usage & vk::ImageUsageFlagBits::eStorage) != vk::ImageUsageFlags{});
-
-			info = vk::DescriptorImageInfo(nullptr, native->GetMipView(b.MipLevel), vk::ImageLayout::eGeneral);
+			auto usage = native->Usage;
+			ASSERT(usage & vk::ImageUsageFlagBits::eStorage, "Image is not created with storage usage, cannot be used as a storage image resource");
+			info = vk::DescriptorImageInfo(nullptr, native->GetView(layer, face, mip), vk::ImageLayout::eGeneral);
 			break;
 		}
 		case EResourceType::InputAttachment:
 		{
-			info = vk::DescriptorImageInfo(nullptr, native->GetMipView(b.MipLevel), vk::ImageLayout::eShaderReadOnlyOptimal);
+			info = vk::DescriptorImageInfo(nullptr, native->GetView(layer, face, mip), vk::ImageLayout::eShaderReadOnlyOptimal);
 			break;
 		}
 		default:
-			info = vk::DescriptorImageInfo(native->GetSampler(), native->GetMipView(b.MipLevel), vk::ImageLayout::eShaderReadOnlyOptimal);
+			ASSERT(smp)
+			info = vk::DescriptorImageInfo(smp->Get(), native->GetView(layer, face, mip), vk::ImageLayout::eShaderReadOnlyOptimal);
 			break;
 		}
 

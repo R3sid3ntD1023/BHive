@@ -77,7 +77,7 @@ namespace BHive
 				for (size_t i = 0; i < color_attachments.size(); i++)
 				{
 					auto &spec = color_specifications[i];
-					auto tex = color_attachments[i]->GetNativeHandle().As<AllocatedImage>();
+					auto tex = color_attachments[i]->GetNativeHandle().As<GPUImage>();
 
 					ImageSubresource sub{
 						.MipLevel = spec.MipLevel,
@@ -90,7 +90,7 @@ namespace BHive
 				if (depth_attachment)
 				{
 					auto &spec = depth_specification;
-					auto tex = depth_attachment->GetNativeHandle().As<AllocatedImage>();
+					auto tex = depth_attachment->GetNativeHandle().As<GPUImage>();
 
 					ImageSubresource sub{
 						.MipLevel = spec.MipLevel,
@@ -161,7 +161,7 @@ namespace BHive
 
 			for (size_t i = 0; i < color_attachments.size(); i++)
 			{
-				auto tex = color_attachments[i]->GetNativeHandle().As<AllocatedImage>();
+				auto tex = color_attachments[i]->GetNativeHandle().As<GPUImage>();
 				tex->Transition(vk_ctx.CommandBuffer, ImageState::ShaderRead());
 			}
 		});
@@ -257,7 +257,7 @@ namespace BHive
 
 			for (auto &tex : colorAttachments)
 			{
-				auto vkTex = tex->GetNativeHandle().As<AllocatedImage>();
+				auto vkTex = tex->GetNativeHandle().As<GPUImage>();
 				vkTex->Transition(vk_ctx.CommandBuffer, ImageState::ColorAttachment());
 				vkTex->Transition(vk_ctx.CommandBuffer, ImageState::ShaderRead());
 			}

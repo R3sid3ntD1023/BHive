@@ -204,10 +204,10 @@ namespace BHive
 				vk::ClearValue clearDepth(vk::ClearDepthStencilValue(1.0f, 0));
 
 				vk::RenderingAttachmentInfo attachmentInfo(
-					image.GetView(), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearColor);
+					image.GetView(0,0, 0), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearColor);
 
 				vk::RenderingAttachmentInfo depth_attachment_info(
-					depth.GetView(), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, clearDepth);
+					depth.GetView(0, 0 , 0 ), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, clearDepth);
 
 				vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
 				frame.CommandBuffer.beginRendering(renderingInfo);
@@ -233,7 +233,7 @@ namespace BHive
 					sub.BaseArrayLayer = 0;
 					sub.LayerCount = image.LayerCount;
 
-					auto img = image.Texture->GetNativeHandle().As<AllocatedImage>();
+					auto img = image.Texture->GetNativeHandle().As<GPUImage>();
 					img->Transition(cmd, ImageState::ComputeWrite(), sub);
 				}
 
@@ -247,7 +247,7 @@ namespace BHive
 					sub.BaseArrayLayer = 0;
 					sub.LayerCount = image.LayerCount;
 
-					auto img = image.Texture->GetNativeHandle().As<AllocatedImage>();
+					auto img = image.Texture->GetNativeHandle().As<GPUImage>();
 					img->Transition(cmd, ImageState::ShaderRead(), sub);
 				}
 			}

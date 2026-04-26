@@ -25,13 +25,12 @@ namespace BHive
 
 		NativeHandle GetNativeHandle() override { return mImage.GetNativeHandle(); }
 
-		NativeHandle GetRenderView(uint32_t layer = 0, uint32_t mip = 0) const override;
+		NativeHandle GetRenderView(uint32_t face = 0, uint32_t mip = 0) const override;
 
 	private:
 		vk::raii::Device &mDevice;
 		uint32_t mSize{0};
 		FTextureCreateInfo mCreateInfo;
-		VulkanImage mImage;
-		UUID mFaceViews[6];
+		ImageCube mImage;
 	};
 } // namespace BHive

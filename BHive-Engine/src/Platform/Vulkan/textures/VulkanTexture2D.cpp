@@ -2,6 +2,7 @@
 #include "VulkanTexture2D.h"
 #include "Platform/Vulkan/VulkanConverters.h"
 #include "Platform/Vulkan/VulkanBackend.h"
+#include "Platform/Vulkan/GPUComponents.h"
 
 namespace BHive
 {
@@ -65,12 +66,21 @@ namespace BHive
 
 	void VulkanTexture2D::Initialize()
 	{
-		mImage.Create({} , mSize.x, mSize.y, 1, vk::ImageType::e2D, vk::ImageViewType::e2D, Convert(mCreateInfo));
+		ImageCreateInfo create_info{};
+		create_info.CreateFlags = {};
+		create_info.Width = mSize.x;
+		create_info.Height = mSize.y;
+		create_info.Depth = 1;
+		create_info.Type = vk::ImageType::e2D;
+		create_info.ViewType = vk::ImageViewType::e2D;
+		create_info.CreateInfo = Convert(mCreateInfo);
+		mImage.Initialize(create_info);
 	}
 
 	NativeHandle VulkanTexture2D::GetRenderView(uint32_t layer, uint32_t mip) const
 	{
-		VkImageView view = mImage.GetNativeHandle().As<AllocatedImage>()->GetView();
+		auto image = mImage.GetNativeHandle().As<GPUImage>();
+		VkImageView view = image->GetComponent<MipViewComponent>()->Get(layer, mip);
 		return NativeHandle::FromRaw(reinterpret_cast<uint64_t>(view));
 	}
 

@@ -6,14 +6,21 @@
 
 namespace BHive
 {
+	struct ImageCreateInfo
+	{
+		vk::ImageCreateFlags CreateFlags{};
+		uint32_t Width = 0, Height = 0, Depth = 1;
+		vk::ImageType Type{};
+		vk::ImageViewType ViewType{};
+		FVulkanTextureCreateInfo CreateInfo{};
+	};
+
 	class VulkanImage
 	{
 	public:
-		VulkanImage() = default;
+		virtual ~VulkanImage();
 
-		~VulkanImage();
-
-		void Create(vk::ImageCreateFlags createFlags, uint32_t width, uint32_t height, uint32_t depth, vk::ImageType type, vk::ImageViewType viewType, const FVulkanTextureCreateInfo &createInfo);
+		void Initialize(const ImageCreateInfo &createInfo);
 
 		void Upload(const void *data, size_t size, const ImageCopyRegion &region = {}, const ImageSubresource &sub = {});
 
@@ -21,7 +28,22 @@ namespace BHive
 
 		NativeHandle GetNativeHandle() { return Handle::Image(&mImage); }
 
+	protected:
+		virtual void OnInitialize(GPUImage &image, const ImageCreateInfo &createInfo) = 0;
+
 	private:
-		AllocatedImage mImage{};
+		GPUImage mImage{};
+	};
+
+	class Image2D : public VulkanImage
+	{
+	public:
+		virtual void OnInitialize(GPUImage& image, const ImageCreateInfo &createInfo) override;
+	};
+
+	class ImageCube : public VulkanImage
+	{
+	public:
+		virtual void OnInitialize(GPUImage &image, const ImageCreateInfo &createInfo) override;
 	};
 }

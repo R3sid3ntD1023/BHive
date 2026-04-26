@@ -10,40 +10,33 @@ namespace BHive
 		VulkanBackend::GetGPUResourceManager().DestroyImage(mImage);
 	}
 
-	void VulkanImage::Create(vk::ImageCreateFlags createFlags,
-		uint32_t width, uint32_t height, uint32_t depth, vk::ImageType type, vk::ImageViewType viewType, const FVulkanTextureCreateInfo& createInfo)
+	void VulkanImage::Initialize(const ImageCreateInfo &createInfo)
 	{
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
 
 		ImageDesc desc{};
-		desc.Flags = createFlags;
-		desc.Width = width;
-		desc.Height = height;
-		desc.Depth = depth;
-		desc.ArrayLayers = createInfo.ArrayLayers;
-		desc.Format = createInfo.Format;
+		desc.Flags = createInfo.CreateFlags;
+		desc.Width = createInfo.Width;
+		desc.Height = createInfo.Height;
+		desc.Depth = createInfo.Depth;
+		desc.ArrayLayers = createInfo.CreateInfo.ArrayLayers;
+		desc.Format = createInfo.CreateInfo.Format;
 		desc.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
 		desc.Tiling = vk::ImageTiling::eOptimal;
-		desc.Usage = createInfo.Usage;
-		desc.Type = type;
-		desc.BytesPerPixel = createInfo.BytesPerPixel;
-		desc.Aspect = createInfo.Aspect;
-		desc.MipLevels = createInfo.MipLevels;
-		desc.DebugName = createInfo.DebugName;
+		desc.Usage = createInfo.CreateInfo.Usage;
+		desc.Type = vk::ImageType::e2D;
+		desc.BytesPerPixel = createInfo.CreateInfo.BytesPerPixel;
+		desc.Aspect = createInfo.CreateInfo.Aspect;
+		desc.MipLevels = createInfo.CreateInfo.MipLevels;
+		desc.DebugName = createInfo.CreateInfo.DebugName;
 
-		ImageViewDesc view_desc{};
-		view_desc.Format = createInfo.Format;
-		view_desc.Type = viewType;
-		view_desc.LayerCount = createInfo.ArrayLayers;
-		view_desc.Aspect = createInfo.Aspect;
+		mImage = gpu_r_m.CreateImage(desc);
 
-		mImage = gpu_r_m.CreateImage( desc, view_desc);
-		mImage.GenerateMipViews(view_desc, desc.MipLevels);
-		
+		OnInitialize(mImage, createInfo);
 
 		vk::SamplerCreateInfo sampler_info(
-			{}, createInfo.MinFilter, createInfo.MagFilter, vk::SamplerMipmapMode::eLinear, createInfo.WrapMode, createInfo.WrapMode, createInfo.WrapMode, 0, 0, 1, createInfo.CompareEnabled,
-			createInfo.CompareOp);
+			{}, createInfo.CreateInfo.MinFilter, createInfo.CreateInfo.MagFilter, vk::SamplerMipmapMode::eLinear, createInfo.CreateInfo.WrapMode, createInfo.CreateInfo.WrapMode,
+			createInfo.CreateInfo.WrapMode, 0, 0, 1, createInfo.CreateInfo.CompareEnabled, createInfo.CreateInfo.CompareOp);
 		sampler_info.borderColor = vk::BorderColor::eIntOpaqueBlack;
 		sampler_info.unnormalizedCoordinates = VK_FALSE;
 		sampler_info.mipmapMode = vk::SamplerMipmapMode::eLinear;
@@ -53,9 +46,7 @@ namespace BHive
 
 		gpu_r_m.CreateSampler(mImage, sampler_info);
 
-		VulkanBackend::SetObjectName(mImage.GetImage(), std::format("Image_{}", createInfo.DebugName));
-		VulkanBackend::SetObjectName(mImage.GetView(), std::format("ImageView_{}", createInfo.DebugName));
-		VulkanBackend::SetObjectName(mImage.GetSampler(), std::format("ImageSampler_{}", createInfo.DebugName));
+		VulkanBackend::SetObjectName(mImage.GetImage(), std::format("Image_{}", createInfo.CreateInfo.DebugName));
 	}
 
 	void VulkanImage::Upload(const void *data, size_t size, const ImageCopyRegion &region, const ImageSubresource &sub)
@@ -84,5 +75,30 @@ namespace BHive
 		mImage.Transition(cmd, ImageState::ShaderRead(), sub);
 
 		gpu_r_m.DestroyBuffer(stagingBuffer);
+	}
+
+	void Image2D::OnInitialize(GPUImage &image, const ImageCreateInfo &createInfo)
+	{
+
+		ImageViewDesc view_desc{};
+		view_desc.Format = createInfo.CreateInfo.Format;
+		view_desc.Type = createInfo.ViewType;
+		view_desc.LayerCount = createInfo.CreateInfo.ArrayLayers;
+		view_desc.Aspect = createInfo.CreateInfo.Aspect;
+
+		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
+		gpu_r_m.Create2DViews(image, view_desc);
+	}
+
+	void ImageCube::OnInitialize(GPUImage &image, const ImageCreateInfo &createInfo)
+	{
+		ImageViewDesc view_desc{};
+		view_desc.Format = createInfo.CreateInfo.Format;
+		view_desc.Type = createInfo.ViewType;
+		view_desc.LayerCount = createInfo.CreateInfo.ArrayLayers;
+		view_desc.Aspect = createInfo.CreateInfo.Aspect;
+
+		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
+		gpu_r_m.CreateCubeViews(image, view_desc);
 	}
 } // namespace BHive

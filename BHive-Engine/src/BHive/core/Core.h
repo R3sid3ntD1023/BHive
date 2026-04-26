@@ -39,7 +39,7 @@ Scope<T> CreateScope(TArgs &&...args)
 
 #include "log/Log.h"
 
-#ifdef _DEBUG
+#ifdef _DEBUG 
 	#define ASSERT_IMPL(expression, message, ...) \
 		if (!(expression))                        \
 		{                                         \

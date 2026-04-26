@@ -81,6 +81,11 @@ namespace BHive
 		{
 			using TContainer = std::unordered_map<UUID, Resource<T>>;
 
+			void AddExternal(const UUID &handle, T && resource) 
+			{
+				mResources.emplace(handle, Resource<T>{.Handle = std::move(resource)}); 
+			}
+
 			void Remove(const UUID &handle) override
 			{ 
 				if(mResources.contains(handle))
@@ -112,9 +117,9 @@ namespace BHive
 
 		AllocatedBuffer CreateBuffer(const BufferDesc& desc);
 
-		AllocatedImage CreateImage(const ImageDesc &desc, const ImageViewDesc &viewDesc);
+		GPUImage CreateImage(const ImageDesc &desc);
 
-		void CreateImageView(AllocatedImage &image, const ImageViewDesc &desc);
+		UUID RegisterExternalImage(const vk::Image &image);
 
 		UUID CreateImageView(const vk::Image &image, const ImageViewDesc &desc);
 
@@ -122,7 +127,7 @@ namespace BHive
 
 		void UnmapMemory(AllocatedBuffer &buffer);
 
-		void CreateSampler(AllocatedImage& image, const vk::SamplerCreateInfo &create_info);
+		void CreateSampler(GPUImage& image, const vk::SamplerCreateInfo &create_info);
 
 		void DestroyBuffer(const UUID& handle);
 
@@ -134,10 +139,7 @@ namespace BHive
 
 		void DestroyBuffer(AllocatedBuffer buffer);
 
-		void DestroyImage(AllocatedImage image);
-
-		void DestroyImage(Image image);
-
+		void DestroyImage(GPUImage& image);
 		//-------------------getters------------------------------
 
 		const vk::Image& GetImage(const UUID &handle);
@@ -147,6 +149,10 @@ namespace BHive
 		const vk::Sampler& GetSampler(const UUID &handle);
 
 		const vk::Buffer& GetBuffer(const UUID &handle);
+
+		void Create2DViews(GPUImage &image, const ImageViewDesc &desc);
+
+		void CreateCubeViews(GPUImage &image, const ImageViewDesc &desc);
 
 	private:
 		template<typename T>
@@ -162,5 +168,6 @@ namespace BHive
 
 	private:
 		std::unordered_map<size_t, Scope<StorageBase>> mStorages;
+		std::unordered_set<UUID> mExternalImages;
 	};
 } // namespace BHive

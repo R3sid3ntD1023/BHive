@@ -3,88 +3,56 @@
 #include "VulkanBackend.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
+#include "GPUComponents.h"
 
 namespace BHive
 {
-	void Image::CreateView(const ImageViewDesc &desc)
-	{
-		ViewHandle = VulkanBackend::GetGPUResourceManager().CreateImageView(ImageSrc, desc);
-	}
-
-	const vk::ImageView &Image::GetView() const
-	{
-		return VulkanBackend::GetGPUResourceManager().GetImageView(ViewHandle);
-	}
-
-	void Image::Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub)
-	{
-		VulkanUtils::TransitionImageLayout(cmd, ImageSrc, State.Layout, newState.Layout, State.Access, newState.Access, State.Stage, newState.Stage, Aspect, sub);
-		State = newState;
-	}
-
-	const vk::Image& AllocatedImage::GetImage() const
+	
+	const vk::Image& GPUImage::GetImage() const
 	{
 		return VulkanBackend::GetGPUResourceManager().GetImage(ImageHandle);
 	}
 
-	const vk::ImageView& AllocatedImage::GetView() const
+	void GPUImage::Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub)
 	{
-		return VulkanBackend::GetGPUResourceManager().GetImageView(ViewHandle);
-	}
+		auto *stateComponent = GetComponent<StateTrackingComponent>();
+		ASSERT(stateComponent, "StateTrackingComponent is required for image transitions");
 
-	const vk::ImageView &AllocatedImage::GetMipView(uint32_t mip) const
-	{
-		return VulkanBackend::GetGPUResourceManager().GetImageView(MipViews[mip]);
-	}
-
-	const vk::Sampler& AllocatedImage::GetSampler() const
-	{
-		return VulkanBackend::GetGPUResourceManager().GetSampler(SamplerHandle);
-	}
-
-	void AllocatedImage::Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub)
-	{
 		for (uint32_t layer = sub.BaseArrayLayer; layer < sub.BaseArrayLayer + sub.LayerCount; layer++)
 		{
 			for (uint32_t mip = sub.MipLevel; mip < sub.MipLevel + sub.LevelCount; mip++)
 			{
-				auto &State = MipStates[layer][mip];
+				auto &oldState = stateComponent->MipStates[layer][mip];
+
 				ImageSubresource layerSub = sub;
 				layerSub.BaseArrayLayer = layer;
 				layerSub.LayerCount = 1;
 				layerSub.MipLevel = mip;
 				layerSub.LevelCount = 1;
 
-				VulkanUtils::TransitionImageLayout(cmd, GetImage(), State.Layout, newState.Layout, State.Access, newState.Access, State.Stage, newState.Stage, Aspect, layerSub);
-				State = newState;
+				VulkanUtils::TransitionImageLayout(cmd, GetImage(), oldState.Layout, newState.Layout, oldState.Access, newState.Access, oldState.Stage, newState.Stage, Aspect, layerSub);
+				oldState = newState;
 			}
 			
 		}
 	}
 
-	void AllocatedImage::GenerateMipViews(ImageViewDesc desc, uint32_t mipLevels)
+	vk::ImageView GPUImage::GetView(uint32_t layer, uint32_t face, uint32_t mip)
 	{
-		auto &manager = VulkanBackend::GetGPUResourceManager();
-		auto &image = manager.GetImage(ImageHandle);
+		// 1. Face+mip views (cube or cube array)
+		if (auto *faceMips = GetComponent<FaceMipViewComponent>())
+			return faceMips->Get(layer, face, mip);
 
-		ImageViewDesc mip_desc = desc;
-		for (uint32_t mip = 0; mip < mipLevels; mip++)
-		{
-			mip_desc.BaseMipLevel = mip;
+		// 2. Cube mip views (cube or cube array)
+		if (auto *cubeMips = GetComponent<CubeMipViewComponent>())
+			return cubeMips->Get(layer, mip);
 
-			auto handle = manager.CreateImageView(image, mip_desc);
-			MipViews.push_back(handle);
-		}
-	}
+		// 3. 2D / 2D array mip views
+		if (auto *mips = GetComponent<MipViewComponent>())
+			return mips->Get(layer, mip);
 
-	Image AllocatedImage::CreateImage()
-	{
-		auto &vk_image = VulkanBackend::GetGPUResourceManager().GetImage(ImageHandle);
-
-		Image image{};
-		image.SetImage(vk_image);
-		image.SetAspect(Aspect);
-		return image;
+		// 4. Fallback: default view
+		return GetComponent<DefaultViewComponent>()->Get();
 	}
 
 	const vk::Buffer &AllocatedBuffer::GetBuffer() const

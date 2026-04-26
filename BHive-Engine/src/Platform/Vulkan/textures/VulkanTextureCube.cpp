@@ -1,6 +1,7 @@
 #include "VulkanTextureCube.h"
 #include "Platform/Vulkan/VulkanConverters.h"
 #include "Platform/Vulkan/VulkanBackend.h"
+#include "Platform/Vulkan/GPUComponents.h"
 
 namespace BHive
 {
@@ -9,36 +10,27 @@ namespace BHive
 		  mSize(size),
 		  mCreateInfo(create_info)
 	{
-		mCreateInfo.ArrayLayers = 6;
 		Initilaize();
 	}
 
 	void VulkanTextureCube::Initilaize()
 	{
-		LOG_ERROR("Cube CreateInfo.Usage = {}", (uint32_t)mCreateInfo.Usage);
-		mImage.Create(vk::ImageCreateFlagBits::eCubeCompatible, mSize, mSize, 1, vk::ImageType::e2D, vk::ImageViewType::eCube, Convert(mCreateInfo));
-
-		auto allocated_image = mImage.GetNativeHandle().As<AllocatedImage>();
-		auto image = allocated_image->CreateImage();
-
-		for (uint32_t face = 0; face < 6; face++)
-		{
-			ImageViewDesc desc{};
-			desc.Type = vk::ImageViewType::e2D;
-			desc.Format = ToVkFormat(mCreateInfo.Format);
-			desc.BaseArrayLayer = face;
-			desc.LayerCount = 1;
-			desc.BaseMipLevel = 0;
-			desc.LayerCount = 1;
-			desc.Aspect = ToVkAspect(mCreateInfo.Aspect);
-
-			mFaceViews[face] = VulkanBackend::GetGPUResourceManager().CreateImageView(allocated_image->GetImage(), desc);
-		}
+		ImageCreateInfo create_info{};
+		create_info.CreateFlags = vk::ImageCreateFlagBits::eCubeCompatible;
+		create_info.Width = mSize;
+		create_info.Height = mSize;
+		create_info.Depth = 1;
+		create_info.Type = vk::ImageType::e2D;
+		create_info.ViewType = vk::ImageViewType::eCube;
+		create_info.CreateInfo = Convert(mCreateInfo);
+		create_info.CreateInfo.ArrayLayers = 6;
+		mImage.Initialize(create_info);
 	}
 
-	NativeHandle VulkanTextureCube::GetRenderView(uint32_t layer, uint32_t mip) const
+	NativeHandle VulkanTextureCube::GetRenderView(uint32_t face, uint32_t mip) const
 	{
-		VkImageView view = VulkanBackend::GetGPUResourceManager().GetImageView(mFaceViews[layer]);
+		auto image = mImage.GetNativeHandle().As<GPUImage>();
+		VkImageView view = image->GetComponent<FaceMipViewComponent>()->Get(0, face, mip);
 		return NativeHandle::FromRaw(reinterpret_cast<uint64_t>(view));
 	}
 

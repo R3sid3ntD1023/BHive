@@ -1,6 +1,7 @@
 #include "VulkanTexture3D.h"
 #include "Platform/Vulkan/VulkanConverters.h"
 #include "Platform/Vulkan/VulkanBackend.h"
+#include "Platform/Vulkan/GPUComponents.h"
 
 namespace BHive
 {
@@ -10,12 +11,20 @@ namespace BHive
 		  mSize(size),
 		  mCreateInfo(createInfo)
 	{
-		mImage.Create({} , size.x, size.y, size.z, vk::ImageType::e3D, vk::ImageViewType::e3D, Convert(mCreateInfo));
+		ImageCreateInfo create_info{};
+		create_info.Width = mSize.x;
+		create_info.Height = mSize.y;
+		create_info.Depth = mSize.z;
+		create_info.Type = vk::ImageType::e3D;
+		create_info.ViewType = vk::ImageViewType::e3D;
+		create_info.CreateInfo = Convert(mCreateInfo);
+		mImage.Initialize(create_info);
 	}
 
 	NativeHandle VulkanTexture3D::GetRenderView(uint32_t layer, uint32_t mip) const
 	{
-		VkImageView view = mImage.GetNativeHandle().As<AllocatedImage>()->GetView();
+		auto image = mImage.GetNativeHandle().As<GPUImage>();
+		VkImageView view = image->GetComponent<MipViewComponent>()->Get(layer, mip);
 		return NativeHandle::FromRaw(reinterpret_cast<uint64_t>(view));
 	}
 

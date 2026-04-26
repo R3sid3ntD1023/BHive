@@ -3,6 +3,7 @@
 #include "VulkanBackend.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
+#include "GPUComponents.h"
 
 namespace BHive
 {
@@ -26,11 +27,11 @@ namespace BHive
 		return out;
 	}
 
-	AllocatedImage GPUResourceManager::CreateImage(const ImageDesc &desc, const ImageViewDesc &viewDesc)
+	GPUImage GPUResourceManager::CreateImage(const ImageDesc &desc)
 	{
-		LOG_INFO("GPUResourceManager::CreateImage {} usage = 0x{:X}", desc.DebugName, (uint32_t)desc.Usage);
+		//LOG_INFO("GPUResourceManager::CreateImage {} usage = 0x{:X}", desc.DebugName, (uint32_t)desc.Usage);
 
-		AllocatedImage out{};
+		GPUImage out{};
 
 		auto handle = UUID();
 		auto &image = GetStorage<vk::raii::Image>().GetOrCreate(handle);
@@ -43,27 +44,26 @@ namespace BHive
 		image.bindMemory(allocation.Memory, allocation.Offset);
 
 		out.ImageHandle = handle;
-		out.ViewHandle = CreateImageView(image, viewDesc);
 		out.ArrayLayers = desc.ArrayLayers;
 		out.Allocation = std::move(allocation);
 		out.Aspect = desc.Aspect;
 		out.DebugName = desc.DebugName;
 		out.Usage = desc.Usage;
 
-		ImageState initialState = {vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eNone, vk::PipelineStageFlagBits2::eTopOfPipe};
-		out.MipStates.resize(desc.ArrayLayers);
-		for (uint32_t layer = 0; layer < desc.ArrayLayers; layer++)
-		{
-			out.MipStates[layer].resize(desc.MipLevels, initialState);
-		}
+		auto* state = out.AddComponent<StateTrackingComponent>();
+		state->Init(desc.ArrayLayers, desc.MipLevels, {vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eNone, vk::PipelineStageFlagBits2::eTopOfPipe});
+
 		return out;
 	}
 
-
-	void GPUResourceManager::CreateImageView(AllocatedImage &image, const ImageViewDesc &desc)
+	UUID GPUResourceManager::RegisterExternalImage(const vk::Image &image)
 	{
-		auto& vk_image = GetStorage<vk::raii::Image>().Get(image.ImageHandle);
-		image.ViewHandle = CreateImageView(vk_image, desc);
+		UUID id = UUID();
+		auto img = vk::raii::Image(VulkanBackend::GetLogicalDevice(), image);
+		GetStorage<vk::raii::Image>().AddExternal(id, std::move(img));
+		mExternalImages.insert(id);
+
+		return id;
 	}
 
 	UUID GPUResourceManager::CreateImageView(const vk::Image &image, const ImageViewDesc &desc)
@@ -98,13 +98,15 @@ namespace BHive
 		allocator.UnMap(buffer.Allocation);
 	}
 
-	void GPUResourceManager::CreateSampler(AllocatedImage &image, const vk::SamplerCreateInfo &create_info)
+	void GPUResourceManager::CreateSampler(GPUImage &image, const vk::SamplerCreateInfo &create_info)
 	{
 		auto handle = UUID();
 		auto &sampler = GetStorage<vk::raii::Sampler>().GetOrCreate(handle);
 
 		VulkanUtils::CreateImageSampler(sampler, create_info);
-		image.SamplerHandle = handle;
+
+		auto *smpComp = image.AddComponent<SamplerComponent>();
+		smpComp->Sampler = handle;
 	}
 
 	void GPUResourceManager::DestroyBuffer(const UUID& handle)
@@ -123,8 +125,14 @@ namespace BHive
 		api->QueueDeletion(
 			[this, handle](uint32_t)
 			{
-				auto &storage = GetStorage<vk::raii::Image>();
-				storage.Remove(handle);
+				if (mExternalImages.contains(handle))
+				{
+					mExternalImages.erase(handle);
+					GetStorage<vk::raii::Image>().Remove(handle);
+					return;
+				}
+
+				GetStorage<vk::raii::Image>().Remove(handle);
 			});
 	}
 
@@ -162,14 +170,42 @@ namespace BHive
 			});
 	}
 
-	void GPUResourceManager::DestroyImage(AllocatedImage image)
+	void GPUResourceManager::DestroyImage(GPUImage& image)
 	{
-		DestroySampler(image.SamplerHandle);
-		DestroyImageView(image.ViewHandle);
-		for (auto &mip : image.MipViews)
-			DestroyImageView(mip);
+		if (auto smp = image.GetComponent<SamplerComponent>())
+			DestroySampler(smp->Sampler);
+
+		if (auto def = image.GetComponent<DefaultViewComponent>())
+			DestroyImageView(def->View);
+
+		if (auto mips = image.GetComponent<MipViewComponent>())
+		{
+			for (auto& layer : mips->Views)
+				for (auto &mip : layer)
+					DestroyImageView(mip);
+		}
+
+		if (auto cube = image.GetComponent<CubeMipViewComponent>())
+		{
+			for (auto &perCube : cube->Views)
+				for (auto& mip : perCube)
+					DestroyImageView(mip);
+		}
+
+		if (auto face = image.GetComponent<FaceMipViewComponent>())
+		{
+			for (auto &faceMips : face->Views)
+			{
+				for (auto &perFace : faceMips)
+					for (auto &mip : perFace)
+						DestroyImageView(mip);
+			}
+		}
 
 		DestroyImage(image.ImageHandle);
+
+		if (image.Allocation.IsDedicated)
+			 return;
 
 		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		api->QueueDeletion([this, alloc = image.Allocation](uint32_t) {
@@ -178,10 +214,6 @@ namespace BHive
 		});
 	}
 
-	void GPUResourceManager::DestroyImage(Image image)
-	{
-		DestroyImageView(image.ViewHandle);
-	}
 
 	const vk::Image &GPUResourceManager::GetImage(const UUID &handle)
 	{
@@ -205,6 +237,102 @@ namespace BHive
 	{
 		auto &storage = GetStorage<vk::raii::Buffer>();
 		return *storage.Get(handle);
+	}
+
+	void GPUResourceManager::Create2DViews(GPUImage &image, const ImageViewDesc &desc)
+	{
+		auto &vk_image = image.GetImage();
+		auto *def = image.AddComponent<DefaultViewComponent>();
+		auto *mips = image.AddComponent<MipViewComponent>();
+
+		// default view
+		{
+			ImageViewDesc default_desc = desc;
+			default_desc.BaseMipLevel = 0;
+			default_desc.LevelCount = image.MipLevels;
+			default_desc.BaseArrayLayer = 0;
+			default_desc.LayerCount = image.ArrayLayers;
+			def->View = CreateImageView(vk_image, default_desc);
+		}
+
+		// per mip 2d views
+		mips->Views.resize(image.ArrayLayers);
+		for (uint32_t layer = 0; layer < image.ArrayLayers; layer++)
+		{
+			mips->Views[layer].resize(image.MipLevels);
+			for (uint32_t mip = 0; mip < image.MipLevels; mip++)
+			{
+				ImageViewDesc mip_desc = desc;
+				mip_desc.BaseMipLevel = mip;
+				mip_desc.LevelCount = 1;
+				mip_desc.BaseArrayLayer = 0;
+				mip_desc.LayerCount = image.ArrayLayers;
+				mips->Views[layer][mip] = CreateImageView(vk_image, mip_desc);
+			}
+		}
+	}
+
+	void GPUResourceManager::CreateCubeViews(GPUImage &image, const ImageViewDesc &desc)
+	{
+		auto &vk_image = image.GetImage();
+		auto *def = image.AddComponent<DefaultViewComponent>();
+		auto *cubeMips = image.AddComponent<CubeMipViewComponent>();
+		auto *faceMips = image.AddComponent<FaceMipViewComponent>();
+		const uint32_t cubeCount = image.ArrayLayers; // number of cubes
+		const uint32_t facesPerCube = 6;
+
+		// default view
+		{
+			ImageViewDesc default_desc = desc;
+			default_desc.Type = vk::ImageViewType::eCube;
+			default_desc.BaseMipLevel = 0;
+			default_desc.LevelCount = image.MipLevels;
+			default_desc.BaseArrayLayer = 0;
+			default_desc.LayerCount = image.ArrayLayers * 6;
+			def->View = CreateImageView(vk_image, default_desc);
+		}
+
+		
+
+		// per mip 2d views
+		cubeMips->Views.resize(cubeCount);
+		for (uint32_t layer = 0; layer < cubeCount; layer++)
+		{
+			cubeMips->Views[layer].resize(image.MipLevels);
+			for (uint32_t mip = 0; mip < image.MipLevels; mip++)
+			{
+				ImageViewDesc mip_desc = desc;
+				mip_desc.Type = vk::ImageViewType::eCube;
+				mip_desc.BaseMipLevel = mip;
+				mip_desc.LevelCount = 1;
+				mip_desc.BaseArrayLayer = 0;
+				mip_desc.LayerCount = image.ArrayLayers * 6;
+				cubeMips->Views[layer][mip] = CreateImageView(vk_image, mip_desc);
+			}
+		}
+		
+
+		//face+mip 2d views
+		faceMips->Views.resize(cubeCount);
+		for (uint32_t layer = 0; layer < cubeCount; layer++)
+		{
+			faceMips->Views[layer].resize(facesPerCube);
+			for (uint32_t face = 0; face < facesPerCube; face++)
+			{
+				faceMips->Views[layer][face].resize(image.MipLevels);
+				for (uint32_t mip = 0; mip < image.MipLevels; mip++)
+				{
+					ImageViewDesc mip_desc = desc;
+					mip_desc.Type = vk::ImageViewType::e2D;
+					mip_desc.BaseMipLevel = mip;
+					mip_desc.LevelCount = 1;
+					mip_desc.BaseArrayLayer = face;
+					mip_desc.LayerCount = 1;
+					faceMips->Views[layer][face][mip] = CreateImageView(vk_image, mip_desc);
+				}
+			}
+		}
+		
 	}
 
 } // namespace BHive

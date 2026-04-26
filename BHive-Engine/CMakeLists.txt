@@ -68,7 +68,6 @@ target_compile_definitions(${TARGET_NAME}
 	PUBLIC GLM_FORCE_PACKED
 	PUBLIC ENGINE_PATH="${CMAKE_CURRENT_SOURCE_DIR}"
 	PUBLIC ENGINE_SHADER_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../shaders"
-
 )
 
 target_link_libraries(${TARGET_NAME} PUBLIC glfw)

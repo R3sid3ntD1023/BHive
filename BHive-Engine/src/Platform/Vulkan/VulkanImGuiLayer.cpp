@@ -4,7 +4,6 @@
 #include "VulkanSwapChain.h"
 #include "VulkanUtils.h"
 #include "VulkanImGuiLayer.h"
-#include "gfx/Texture.h"
 
 #include <backends/imgui_impl_glfw.h>
 
@@ -13,6 +12,7 @@
 
 #include <backends/imgui_impl_vulkan.h>
 #include "gfx/Texture.h"
+#include "GPUComponents.h"
 
 namespace BHive
 {
@@ -151,14 +151,19 @@ namespace BHive
 
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)
 	{
-		auto handle = texture.GetNativeHandle().As<AllocatedImage>();
+		auto handle = texture.GetNativeHandle().As<GPUImage>();
 
-		auto key = TextureKey{(VkImageView)handle->GetView(), (VkSampler)handle->GetSampler()};
+		ASSERT(handle, "Invalid GPUImage handle")
+
+		auto smp = handle->GetComponent<SamplerComponent>();
+		ASSERT(smp, "Invalid SamplerComponent handle")
+
+		auto key = TextureKey{(VkImageView)handle->GetView(0, 0, 0), (VkSampler)smp->Get()};
 
 		if (s_ImGuiTextureMap.contains(key))
 			return s_ImGuiTextureMap[key];
 
-		auto set = ImGui_ImplVulkan_AddTexture(handle->GetSampler(), handle->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		auto set = ImGui_ImplVulkan_AddTexture(smp->Get(), handle->GetView(0, 0, 0), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return s_ImGuiTextureMap[key] = set;
 	}
 

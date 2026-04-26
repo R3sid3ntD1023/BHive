@@ -35,9 +35,9 @@ namespace BHive
 
 		vk::Format GetDepthStencilFormat() const { return mDepthFormat; };
 
-		Image &GetImage(uint32_t index)  { return mImages[index]; };
+		GPUImage &GetImage(uint32_t index)  { return mImages[index]; };
 
-		AllocatedImage &GetDepthImage() { return mDepthImage; }
+		GPUImage &GetDepthImage() { return mDepthImage; }
 
 		uint32_t GetMinImageCount() const { return mMinImageCount; }
 
@@ -52,7 +52,7 @@ namespace BHive
 
 		vk::raii::SwapchainKHR mSwapChain = nullptr;
 
-		std::vector<Image> mImages{};
+		std::vector<GPUImage> mImages{};
 
 		std::vector<vk::raii::Semaphore> mPresentSemaphores; //per frame
 
@@ -60,7 +60,7 @@ namespace BHive
 
 		std::vector<vk::raii::Fence> mInFlightFences; //per frame
 
-		AllocatedImage mDepthImage;
+		GPUImage mDepthImage;
 
 		vk::Format mDepthFormat = vk::Format::eUndefined;
 		

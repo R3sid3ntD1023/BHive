@@ -55,7 +55,7 @@ namespace BHive
 
 	vk::ImageUsageFlags ToVKImageUsage(ETextureUsage usage)
 	{
-		LOG_ERROR("ToVKImageUsage input = {}", (uint32_t)usage);
+		//LOG_ERROR("ToVKImageUsage input = {}", (uint32_t)usage);
 
 		vk::ImageUsageFlags flags{};
 
@@ -77,7 +77,7 @@ namespace BHive
 		if ((usage & ETextureUsage::TransferDst) != ETextureUsage::None)
 			flags |= vk::ImageUsageFlagBits::eTransferDst;
 
-		LOG_ERROR("ToVKImageUsage output = 0x{:X}", (uint32_t)flags);
+		//LOG_ERROR("ToVKImageUsage output = 0x{:X}", (uint32_t)flags);
 
 		return flags;
 	}
