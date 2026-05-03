@@ -75,8 +75,6 @@ namespace BHive
 		vk::DeviceSize Size;
 
 		const vk::Buffer& GetBuffer() const;
-
-		~AllocatedBuffer();
 	};
 
 	struct Handle

@@ -16,7 +16,11 @@ namespace BHive
 	void GPUImage::Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub)
 	{
 		auto *stateComponent = GetComponent<StateTrackingComponent>();
-		ASSERT(stateComponent, "StateTrackingComponent is required for image transitions");
+		if (!stateComponent)
+		{
+			LOG_ERROR("StateTrackingComponent is required for image transitions - {}", DebugName);
+			return;
+		}
 
 		for (uint32_t layer = sub.BaseArrayLayer; layer < sub.BaseArrayLayer + sub.LayerCount; layer++)
 		{
@@ -58,16 +62,6 @@ namespace BHive
 	const vk::Buffer &AllocatedBuffer::GetBuffer() const
 	{
 		return VulkanBackend::GetGPUResourceManager().GetBuffer(Buffer);
-	}
-
-	AllocatedBuffer::~AllocatedBuffer()
-	{
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		api->QueueDeletion(
-			[buffer = Buffer](uint32_t)
-			{
-				VulkanBackend::GetGPUResourceManager().DestroyBuffer(buffer);
-			});
 	}
 } 
 
