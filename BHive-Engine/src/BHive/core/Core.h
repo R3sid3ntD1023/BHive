@@ -38,24 +38,7 @@ Scope<T> CreateScope(TArgs &&...args)
 }
 
 #include "log/Log.h"
-
-#ifdef _DEBUG 
-	#define ASSERT_IMPL(expression, message, ...) \
-		if (!(expression))                        \
-		{                                         \
-			LOG_ERROR(message, __VA_ARGS__)       \
-			__debugbreak();                       \
-		}
-	#define ASSERT_IMPL_MESSAGE(expression, ...) ASSERT_IMPL(expression, "Assertion at {0}", __VA_ARGS__)
-	#define ASSERT_IMPL_NO_MESSAGE(expression) ASSERT_IMPL(expression, "Assertion '{0}' failed at {1}:{2}", STRINGIFY(expression), __FILE__, __LINE__)
-
-	#define ASSERT_GET_MACRO_NAME(arg0, arg1, macro, ...) macro
-	#define ASSERT_GET_MACRO(...) EXPAND(ASSERT_GET_MACRO_NAME(__VA_ARGS__, ASSERT_IMPL_MESSAGE, ASSERT_IMPL_NO_MESSAGE))
-	#define ASSERT(...) EXPAND(ASSERT_GET_MACRO(__VA_ARGS__)(__VA_ARGS__))
-#else
-	#define ASSERT(...)
-#endif
-
+#include "AssertHandler.h"
 #include "Casting.h"
 #include "math/Math.h"
 #include "reflection/Reflection.h"

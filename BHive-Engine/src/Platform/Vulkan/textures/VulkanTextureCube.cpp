@@ -1,7 +1,6 @@
 #include "VulkanTextureCube.h"
 #include "Platform/Vulkan/VulkanConverters.h"
 #include "Platform/Vulkan/VulkanBackend.h"
-#include "Platform/Vulkan/GPUComponents.h"
 
 namespace BHive
 {
@@ -24,13 +23,15 @@ namespace BHive
 		create_info.ViewType = vk::ImageViewType::eCube;
 		create_info.CreateInfo = Convert(mCreateInfo);
 		create_info.CreateInfo.ArrayLayers = 6;
+		create_info.CreateInfo.MipLevels = mCreateInfo.MipLevels;
+		create_info.ViewTopology = EViewTopology::Cube;
 		mImage.Initialize(create_info);
 	}
 
 	NativeHandle VulkanTextureCube::GetRenderView(uint32_t face, uint32_t mip) const
 	{
 		auto image = mImage.GetNativeHandle().As<GPUImage>();
-		VkImageView view = image->GetComponent<FaceMipViewComponent>()->Get(0, face, mip);
+		VkImageView view = image->GetCubeFaceView(face, mip);
 		return NativeHandle::FromRaw(reinterpret_cast<uint64_t>(view));
 	}
 

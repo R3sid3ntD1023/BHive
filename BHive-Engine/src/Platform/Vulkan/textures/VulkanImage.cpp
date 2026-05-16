@@ -2,6 +2,7 @@
 #include "Platform/Vulkan/GPUResourceManager.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanBackend.h"
+#include "Platform/Vulkan/ImageViewBuilder.h"
 
 namespace BHive
 {
@@ -32,7 +33,13 @@ namespace BHive
 
 		mImage = gpu_r_m.CreateImage(desc);
 
-		OnInitialize(mImage, createInfo);
+		ImageViewDesc view_desc{};
+		view_desc.Format = createInfo.CreateInfo.Format;
+		view_desc.Type = createInfo.ViewType;
+		view_desc.LayerCount = createInfo.CreateInfo.ArrayLayers;
+		view_desc.Aspect = createInfo.CreateInfo.Aspect;
+
+		ImageViewBuilder::Build(mImage, view_desc, createInfo.ViewTopology);
 
 		vk::SamplerCreateInfo sampler_info(
 			{}, createInfo.CreateInfo.MinFilter, createInfo.CreateInfo.MagFilter, vk::SamplerMipmapMode::eLinear, createInfo.CreateInfo.WrapMode, createInfo.CreateInfo.WrapMode,
@@ -75,30 +82,5 @@ namespace BHive
 		mImage.Transition(cmd, ImageState::ShaderRead(), sub);
 
 		gpu_r_m.DestroyBuffer(stagingBuffer);
-	}
-
-	void Image2D::OnInitialize(GPUImage &image, const ImageCreateInfo &createInfo)
-	{
-
-		ImageViewDesc view_desc{};
-		view_desc.Format = createInfo.CreateInfo.Format;
-		view_desc.Type = createInfo.ViewType;
-		view_desc.LayerCount = createInfo.CreateInfo.ArrayLayers;
-		view_desc.Aspect = createInfo.CreateInfo.Aspect;
-
-		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
-		gpu_r_m.Create2DViews(image, view_desc);
-	}
-
-	void ImageCube::OnInitialize(GPUImage &image, const ImageCreateInfo &createInfo)
-	{
-		ImageViewDesc view_desc{};
-		view_desc.Format = createInfo.CreateInfo.Format;
-		view_desc.Type = createInfo.ViewType;
-		view_desc.LayerCount = createInfo.CreateInfo.ArrayLayers;
-		view_desc.Aspect = createInfo.CreateInfo.Aspect;
-
-		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
-		gpu_r_m.CreateCubeViews(image, view_desc);
 	}
 } // namespace BHive

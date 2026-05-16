@@ -12,7 +12,6 @@
 
 #include <backends/imgui_impl_vulkan.h>
 #include "gfx/Texture.h"
-#include "GPUComponents.h"
 
 namespace BHive
 {
@@ -21,7 +20,7 @@ namespace BHive
 		void CheckVkResult(VkResult result)
 		{
 			auto result_str = vk::to_string((vk::Result)result);
-			ASSERT(result == VK_SUCCESS, result_str);
+			ASSERT(result == VK_SUCCESS, fmt::runtime(result_str));
 			return;
 		}
 	} // namespace callbacks
@@ -155,15 +154,15 @@ namespace BHive
 
 		ASSERT(handle, "Invalid GPUImage handle")
 
-		auto smp = handle->GetComponent<SamplerComponent>();
-		ASSERT(smp, "Invalid SamplerComponent handle")
+		auto smp = handle->GetSampler();
+		ASSERT(smp, "Null Sampler Provided")
 
-		auto key = TextureKey{(VkImageView)handle->GetView(0, 0, 0), (VkSampler)smp->Get()};
+		auto key = TextureKey{(VkImageView)handle->GetView(0, 0, 0), (VkSampler)smp};
 
 		if (s_ImGuiTextureMap.contains(key))
 			return s_ImGuiTextureMap[key];
 
-		auto set = ImGui_ImplVulkan_AddTexture(smp->Get(), handle->GetView(0, 0, 0), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		auto set = ImGui_ImplVulkan_AddTexture(smp, handle->GetView(0, 0, 0), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return s_ImGuiTextureMap[key] = set;
 	}
 

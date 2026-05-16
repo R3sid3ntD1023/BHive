@@ -3,6 +3,7 @@
 #include "Platform/Vulkan/VulkanMemory.h"
 #include "Platform/Vulkan/VulkanImageRegions.h"
 #include "Platform/Vulkan/VulkanConverters.h"
+#include "Platform/Vulkan/ImageViewBuilder.h"
 
 namespace BHive
 {
@@ -13,6 +14,7 @@ namespace BHive
 		vk::ImageType Type{};
 		vk::ImageViewType ViewType{};
 		FVulkanTextureCreateInfo CreateInfo{};
+		EViewTopology ViewTopology;
 	};
 
 	class VulkanImage
@@ -28,22 +30,8 @@ namespace BHive
 
 		NativeHandle GetNativeHandle() { return Handle::Image(&mImage); }
 
-	protected:
-		virtual void OnInitialize(GPUImage &image, const ImageCreateInfo &createInfo) = 0;
-
 	private:
 		GPUImage mImage{};
 	};
 
-	class Image2D : public VulkanImage
-	{
-	public:
-		virtual void OnInitialize(GPUImage& image, const ImageCreateInfo &createInfo) override;
-	};
-
-	class ImageCube : public VulkanImage
-	{
-	public:
-		virtual void OnInitialize(GPUImage &image, const ImageCreateInfo &createInfo) override;
-	};
 }

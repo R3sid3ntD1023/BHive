@@ -1,21 +1,48 @@
 #pragma once
 
 #include "gfx/NativeHandle.h"
-#include "core/UUID.h"
+#include "ResourceID.h"
 #include "ImageState.h"
 #include "MemoryAllocator.h"
-#include "ImageComponent.h"
 #include "VulkanImageRegions.h"
 
 namespace BHive
 {
 	struct ImageViewDesc;
-	class GPUResourceManager;
 
+	struct ImageViews
+	{
+		ResourceID Default; //full view : all layers, all ,mips
+
+		//[layer][mip]
+		std::vector<std::vector<ResourceID>> Mips;
+
+		//[layer][face][mip] for cube/cubearrays
+		std::vector < std::vector < std::vector<ResourceID>>> Faces;
+
+		//[layer][mip] cube view type (optional)
+		std::vector<std::vector<ResourceID>> CubeMips;
+	};
+
+
+	struct ImageStateTracker
+	{
+		std::vector<std::vector<ImageState>> MipStates;
+
+		void Initialize(uint32_t layers, uint32_t mips, const ImageState &initial);
+
+		ImageState &Get(uint32_t layer, uint32_t mip);
+	};
 
 	struct GPUImage
 	{
-		UUID ImageHandle = NullID;
+		ResourceID Image{0};
+
+		ImageViews Views;
+
+		std::optional<ResourceID> Sampler;
+
+		ImageStateTracker State;
 
 		MemoryAllocation Allocation;
 
@@ -29,8 +56,6 @@ namespace BHive
 
 		std::string DebugName;
 
-		std::unordered_map<size_t, Scope<IImageComponent>> Components;
-
 		GPUImage() = default;
 
 		GPUImage(const GPUImage &) = delete;
@@ -41,34 +66,26 @@ namespace BHive
 
 		GPUImage &operator=(GPUImage &&) = default;
 
-		const vk::Image &GetImage() const;
+		const vk::Image GetImage() const;
+
+		const vk::Sampler GetSampler() const;
 
 		void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, 1});
 
-		vk::ImageView GetView(uint32_t layer, uint32_t face, uint32_t mip);
+		vk::ImageView GetView(uint32_t layer, uint32_t face, uint32_t mip) const;
 
-		template <typename T, typename... TArgs>
-		T *AddComponent(TArgs &&...args)
-		{
-			auto component = CreateScope<T>(std::forward<TArgs>(args)...);
-			T *ptr = component.get();
-			Components[typeid(T).hash_code()] = std::move(component);
-			return ptr;
-		}
+		vk::ImageView GetDefaultView() const { return GetView(0, 0, 0); }
 
-		template <typename T>
-		T *GetComponent() const
-		{
-			size_t id = typeid(T).hash_code();
-			if (Components.contains(id))
-				return static_cast<T *>(Components.at(id).get());
-			return nullptr;
-		}
+		vk::ImageView GetMipView(uint32_t mip) const { return GetView(0, 0, mip); }
+
+		vk::ImageView GetLayerMipView(uint32_t layer, uint32_t mip) const { return GetView(layer, 0, mip); }
+
+		vk::ImageView GetCubeFaceView(uint32_t face, uint32_t mip) const { return GetView(0, face, mip); }
 	};	
 
 	struct AllocatedBuffer
 	{
-		UUID Buffer = NullID;
+		ResourceID Buffer{0};
 
 		MemoryAllocation Allocation;
 

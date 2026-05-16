@@ -1,7 +1,6 @@
 #include "VulkanTexture2DArray.h"
 #include "Platform/Vulkan/VulkanConverters.h"
 #include "Platform/Vulkan/VulkanBackend.h"
-#include "Platform/Vulkan/GPUComponents.h"
 
 namespace BHive
 {
@@ -17,6 +16,9 @@ namespace BHive
 		create_info.Type = vk::ImageType::e2D;
 		create_info.ViewType = vk::ImageViewType::e2DArray;
 		create_info.CreateInfo = Convert(mCreateInfo);
+		create_info.ViewTopology = EViewTopology::Mips2DArray;
+		create_info.CreateInfo.ArrayLayers = mCreateInfo.ArrayLayers;
+		create_info.CreateInfo.MipLevels = mCreateInfo.MipLevels;
 
 		mImage.Initialize(create_info);
 	}
@@ -34,7 +36,7 @@ namespace BHive
 	NativeHandle VulkanTexture2DArray::GetRenderView(uint32_t layer, uint32_t mip) const
 	{
 		auto image = mImage.GetNativeHandle().As<GPUImage>();
-		VkImageView view = image->GetComponent<MipViewComponent>()->Get(layer,  mip);
+		VkImageView view = image->GetLayerMipView(layer,  mip);
 		return NativeHandle::FromRaw(reinterpret_cast<uint64_t>(view));
 	}
 

@@ -1,9 +1,6 @@
 #include "VulkanSwapChain.h"
 #include "VulkanUtils.h"
 #include "VulkanBackend.h"
-#include "gfx/RenderCommand.h"
-#include "VulkanRendererAPI.h"
-#include "GPUComponents.h"
 
 namespace BHive
 {
@@ -49,17 +46,14 @@ namespace BHive
 		for (size_t i = 0; i < images.size(); i++)
 		{
 			auto raw = images[i];
-			UUID id = mng.RegisterExternalImage(raw);
+			auto id = mng.RegisterExternalImage(raw);
 			auto& img = mImages.emplace_back();
-			img.ImageHandle = id;
+			img.Image = id;
 			img.ArrayLayers = 1;
 			img.MipLevels = 1;
 			img.Aspect = vk::ImageAspectFlagBits::eColor;
 			img.Usage = vk::ImageUsageFlagBits::eColorAttachment;
 			img.DebugName = std::format("SwapChain Image{}", i);
-
-			auto def = img.AddComponent<DefaultViewComponent>();
-			auto state = img.AddComponent<StateTrackingComponent>();
 
 			ImageViewDesc view_desc{};
 			view_desc.Type = vk::ImageViewType::e2D;
@@ -70,8 +64,8 @@ namespace BHive
 			view_desc.LayerCount = 1;
 			view_desc.LevelCount = 1;
 
-			def->View = mng.CreateImageView(raw, view_desc);
-			state->Init(1, 1, ImageState::Present());
+			img.Views.Default = mng.CreateImageView(raw, view_desc);
+			img.State.Initialize(1, 1, ImageState::Present());
 		}
 
 		auto image_count = static_cast<uint32_t>(mImages.size());
@@ -103,6 +97,7 @@ namespace BHive
 		desc.Usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
 		desc.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
 		desc.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+		
 
 		ImageViewDesc view_desc{};
 		view_desc.Type = vk::ImageViewType::e2D;
@@ -110,7 +105,8 @@ namespace BHive
 		view_desc.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 
 		mDepthImage = mng.CreateImage(desc);
-		mDepthImage.AddComponent<DefaultViewComponent>()->View = mng.CreateImageView(mDepthImage.GetImage(), view_desc);
+		mDepthImage.State.Initialize(1, 1, ImageState::Present());
+		mDepthImage.Views.Default = mng.CreateImageView(mDepthImage.GetImage(), view_desc);
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)

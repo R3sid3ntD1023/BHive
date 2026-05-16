@@ -1,7 +1,6 @@
 #include "VulkanTextureCubeArray.h"
 #include "Platform/Vulkan/VulkanConverters.h"
 #include "Platform/Vulkan/VulkanBackend.h"
-#include "Platform/Vulkan/GPUComponents.h"
 
 namespace BHive
 {
@@ -10,7 +9,7 @@ namespace BHive
 		  mSize(size),
 		  mCreateInfo(createInfo)
 	{
-		mCreateInfo.ArrayLayers *= 6;
+		uint32_t cubeCount = mCreateInfo.ArrayLayers;
 
 		ImageCreateInfo create_info{};
 		create_info.CreateFlags = vk::ImageCreateFlagBits::eCubeCompatible;
@@ -20,6 +19,10 @@ namespace BHive
 		create_info.Type = vk::ImageType::e3D;
 		create_info.ViewType = vk::ImageViewType::eCubeArray;
 		create_info.CreateInfo = Convert(mCreateInfo);
+		create_info.CreateInfo.ArrayLayers = cubeCount * 6;
+		create_info.CreateInfo.MipLevels = mCreateInfo.MipLevels;
+		create_info.ViewTopology = EViewTopology::CubeArray;
+		
 		mImage.Initialize(create_info);
 	}
 
@@ -31,7 +34,7 @@ namespace BHive
 	NativeHandle VulkanTextureCubeArray::GetRenderView(uint32_t layer, uint32_t mip) const
 	{
 		auto image = mImage.GetNativeHandle().As<GPUImage>();
-		VkImageView view = image->GetComponent<FaceMipViewComponent>()->Get(layer, 0, mip);
+		VkImageView view = image->GetLayerMipView(layer, mip);
 		return NativeHandle::FromRaw(reinterpret_cast<uint64_t>(view));
 	}
 

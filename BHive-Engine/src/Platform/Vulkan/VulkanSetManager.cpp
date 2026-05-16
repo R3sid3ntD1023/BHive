@@ -5,7 +5,6 @@
 #include "VulkanConverters.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
-#include "GPUComponents.h"	
 
 namespace BHive
 {
@@ -245,8 +244,8 @@ namespace BHive
 
 		ASSERT(native);
 
-		auto smp = native->GetComponent<SamplerComponent>();
-		auto defView = native->GetComponent<DefaultViewComponent>();
+		auto smp = native->GetSampler();
+		auto defView = native->GetDefaultView();
 
 		ASSERT(defView, "Image does not have a default view component, cannot be used as a texture resource");
 
@@ -260,13 +259,13 @@ namespace BHive
 		case EResourceType::SeperatedImage:
 		{
 			ASSERT(smp)
-			info = vk::DescriptorImageInfo(smp->Get(), native->GetView(layer, face, mip), vk::ImageLayout::eShaderReadOnlyOptimal);
+			info = vk::DescriptorImageInfo(smp, native->GetView(layer, face, mip), vk::ImageLayout::eShaderReadOnlyOptimal);
 			break;
 		}
 		case EResourceType::SeperatedSampler:
 		{
 			ASSERT(smp)
-			info = vk::DescriptorImageInfo(smp->Get());
+			info = vk::DescriptorImageInfo(smp);
 			break;
 		}
 		case EResourceType::StorageImage:
@@ -283,7 +282,7 @@ namespace BHive
 		}
 		default:
 			ASSERT(smp)
-			info = vk::DescriptorImageInfo(smp->Get(), native->GetView(layer, face, mip), vk::ImageLayout::eShaderReadOnlyOptimal);
+			info = vk::DescriptorImageInfo(smp, native->GetView(layer, face, mip), vk::ImageLayout::eShaderReadOnlyOptimal);
 			break;
 		}
 
