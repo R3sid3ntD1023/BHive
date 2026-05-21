@@ -5,11 +5,11 @@ namespace BHive
 {
 	namespace utils
 	{
-		void ValidateViewRange(const GPUImage &img, const ImageViewDesc &d, const char *debugTag)
+		void ValidateViewRange(const GPUImage &img, const vk::ImageViewCreateInfo &d, const char *debugTag)
 		{
 			const uint32_t imageLayers = img.ArrayLayers;
-			const uint32_t base = d.BaseArrayLayer;
-			const uint32_t count = d.LayerCount;
+			const uint32_t base = d.subresourceRange.baseArrayLayer;
+			const uint32_t count = d.subresourceRange.layerCount;
 
 			//basic sanity
 			ASSERT(count > 0, "{}: layercount must be > 0", debugTag);
@@ -17,7 +17,7 @@ namespace BHive
 			ASSERT(base + count <= imageLayers, "{}: baseArrayLayer {} + layerCount {} > imageLayers {}", debugTag, base, count, imageLayers);
 
 			//cube-specfic rules
-			if (d.Type == vk::ImageViewType::eCube || d.Type == vk::ImageViewType::eCubeArray)
+			if (d.viewType == vk::ImageViewType::eCube || d.viewType == vk::ImageViewType::eCubeArray)
 			{
 				ASSERT(count == 6, "{}: cube view must have layercount == 6 (got {})", debugTag, count);
 				// For cube arrays, each cube is 6 layers
@@ -26,7 +26,7 @@ namespace BHive
 		}
 	}
 
-	void ImageViewBuilder::Build(GPUImage &img, const ImageViewDesc &base, EViewTopology topo)
+	void ImageViewBuilder::Build(GPUImage &img, const vk::ImageViewCreateInfo &base, EViewTopology topo)
 	{
 		switch (topo)
 		{
@@ -54,12 +54,12 @@ namespace BHive
 		}
 	}
 
-	void ImageViewBuilder::BuildDefault(GPUImage &img, const ImageViewDesc &base)
+	void ImageViewBuilder::BuildDefault(GPUImage &img, const vk::ImageViewCreateInfo &base)
 	{
 		img.Views.Default = CreateFullView(img, base);
 	}
 
-	void ImageViewBuilder::Build2DMips(GPUImage &img, const ImageViewDesc &base)
+	void ImageViewBuilder::Build2DMips(GPUImage &img, const vk::ImageViewCreateInfo &base)
 	{
 		BuildDefault(img, base);
 
@@ -72,7 +72,7 @@ namespace BHive
 		}
 	}
 
-	void ImageViewBuilder::Build2DArrayMips(GPUImage &img, const ImageViewDesc &base)
+	void ImageViewBuilder::Build2DArrayMips(GPUImage &img, const vk::ImageViewCreateInfo &base)
 	{
 		BuildDefault(img, base);
 
@@ -88,7 +88,7 @@ namespace BHive
 		}
 	}
 
-	void ImageViewBuilder::BuildCube(GPUImage &img, const ImageViewDesc &base)
+	void ImageViewBuilder::BuildCube(GPUImage &img, const vk::ImageViewCreateInfo &base)
 	{
 		img.Views.Default = CreateCubeFullView(img, base);
 
@@ -101,7 +101,7 @@ namespace BHive
 		}
 	}
 
-	void ImageViewBuilder::BuildCubeArray(GPUImage &img, const ImageViewDesc &base)
+	void ImageViewBuilder::BuildCubeArray(GPUImage &img, const vk::ImageViewCreateInfo &base)
 	{
 		img.Views.Default = CreateCubeFullView(img, base);
 
@@ -111,19 +111,18 @@ namespace BHive
 
 			for (uint32_t mip = 0; mip < img.MipLevels; mip++)
 			{
-				ImageViewDesc d = base;
-				d.Type = vk::ImageViewType::eCube;
-				d.LevelCount = 1;
+				vk::ImageViewCreateInfo d = base;
+				d.viewType = vk::ImageViewType::eCube;
+				d.subresourceRange.levelCount = 1;
+				d.subresourceRange.baseArrayLayer = cube * 6;
+				d.subresourceRange.layerCount = 6;
 
-				d.BaseArrayLayer = cube * 6;
-				d.LayerCount = 6;
-
-				img.Views.CubeMips[cube][mip] = VulkanBackend::GetGPUResourceManager().CreateImageView(img.GetImage(), d);
+				img.Views.CubeMips[cube][mip] = VulkanBackend::GetGPUResourceManager().CreateImageView(d);
 			}
 		}
 	}
 
-	void ImageViewBuilder::BuildFaceMips(GPUImage &img, const ImageViewDesc &base)
+	void ImageViewBuilder::BuildFaceMips(GPUImage &img, const vk::ImageViewCreateInfo &base)
 	{
 		const uint32_t faces = 6;
 
@@ -147,7 +146,7 @@ namespace BHive
 		}
 	}
 
-	void ImageViewBuilder::Build3DMips(GPUImage &img, const ImageViewDesc &base)
+	void ImageViewBuilder::Build3DMips(GPUImage &img, const vk::ImageViewCreateInfo &base)
 	{
 		BuildDefault(img, base);
 
@@ -160,63 +159,63 @@ namespace BHive
 		}
 	}
 
-	ResourceID ImageViewBuilder::CreateFullView(GPUImage &img, const ImageViewDesc &base)
+	ResourceID ImageViewBuilder::CreateFullView(GPUImage &img, const vk::ImageViewCreateInfo &base)
 	{
-		ImageViewDesc d = base;
-		d.BaseMipLevel = 0;
-		d.LevelCount = img.MipLevels;
-		d.BaseArrayLayer = 0;
-		d.LayerCount = img.ArrayLayers;
+		vk::ImageViewCreateInfo d = base;
+		d.subresourceRange.baseMipLevel = 0;
+		d.subresourceRange.levelCount = img.MipLevels;
+		d.subresourceRange.baseArrayLayer = 0;
+		d.subresourceRange.layerCount = img.ArrayLayers;
 
-		return VulkanBackend::GetGPUResourceManager().CreateImageView(img.GetImage(), d);
+		return VulkanBackend::GetGPUResourceManager().CreateImageView(d, std::format("ImageView_{}", img.DebugName));
 	}
 
-	ResourceID ImageViewBuilder::CreateMipView(GPUImage &img, const ImageViewDesc &base, uint32_t mip)
+	ResourceID ImageViewBuilder::CreateMipView(GPUImage &img, const vk::ImageViewCreateInfo &base, uint32_t mip)
 	{
-		ImageViewDesc d = base;
-		d.BaseMipLevel = mip;
-		d.LevelCount = 1;
-		d.BaseArrayLayer = 0;
-		d.LayerCount = img.ArrayLayers;
+		vk::ImageViewCreateInfo d = base;
+		d.subresourceRange.baseMipLevel = mip;
+		d.subresourceRange.levelCount = 1;
+		d.subresourceRange.baseArrayLayer = 0;
+		d.subresourceRange.layerCount = img.ArrayLayers;
 
-		return VulkanBackend::GetGPUResourceManager().CreateImageView(img.GetImage(), d);
+		return VulkanBackend::GetGPUResourceManager().CreateImageView(d, std::format("ImageView_{}[{}]", img.DebugName, mip));
 	}
 
-	ResourceID ImageViewBuilder::CreateCubeFullView(GPUImage &img, const ImageViewDesc &base)
+	ResourceID ImageViewBuilder::CreateCubeFullView(GPUImage &img, const vk::ImageViewCreateInfo &base)
 	{
-		ImageViewDesc d = base;
-		d.Type = vk::ImageViewType::eCube;
-		d.BaseMipLevel = 0;
-		d.LevelCount = img.MipLevels;
-		d.BaseArrayLayer = 0;
-		d.LayerCount = 6;
+		vk::ImageViewCreateInfo d = base;
+		d.viewType = vk::ImageViewType::eCube;
+		d.subresourceRange.baseMipLevel = 0;
+		d.subresourceRange.levelCount = img.MipLevels;
+		d.subresourceRange.baseArrayLayer = 0;
+		d.subresourceRange.layerCount = 6;
 
 		utils::ValidateViewRange(img, d, "CreateCubeFullView");
 
-		return VulkanBackend::GetGPUResourceManager().CreateImageView(img.GetImage(), d);
+		return VulkanBackend::GetGPUResourceManager().CreateImageView(d, std::format("ImageView_{}", img.DebugName));
 	}
 
-	ResourceID ImageViewBuilder::CreateCubeMipView(GPUImage &img, const ImageViewDesc &base, uint32_t mip)
+	ResourceID ImageViewBuilder::CreateCubeMipView(GPUImage &img, const vk::ImageViewCreateInfo &base, uint32_t mip)
 	{
-		ImageViewDesc d = base;
-		d.Type = vk::ImageViewType::eCube;
-		d.BaseMipLevel = mip;
-		d.LevelCount = 1;
-		d.BaseArrayLayer = 0;
-		d.LayerCount = 6;
+		vk::ImageViewCreateInfo d = base;
+		d.viewType = vk::ImageViewType::eCube;
+		d.subresourceRange.baseMipLevel = mip;
+		d.subresourceRange.levelCount = 1;
+		d.subresourceRange.baseArrayLayer = 0;
+		d.subresourceRange.layerCount = 6;
 
-		return VulkanBackend::GetGPUResourceManager().CreateImageView(img.GetImage(), d);
+		return VulkanBackend::GetGPUResourceManager().CreateImageView(d, std::format("ImageView_{}[{}]", img.DebugName, mip));
 	}
 
-	ResourceID ImageViewBuilder::CreateFaceMipView(GPUImage &img, const ImageViewDesc &base, uint32_t face, uint32_t mip)
+	ResourceID ImageViewBuilder::CreateFaceMipView(GPUImage &img, const vk::ImageViewCreateInfo &base, uint32_t face, uint32_t mip)
 	{
-		ImageViewDesc d = base;
-		d.Type = vk::ImageViewType::e2D;
-		d.BaseMipLevel = mip;
-		d.LevelCount = 1;
-		d.BaseArrayLayer = face;
-		d.LayerCount = 1;
+		vk::ImageViewCreateInfo d = base;
+		d.viewType = vk::ImageViewType::e2D;
+		d.subresourceRange.baseMipLevel = mip;
+		d.subresourceRange.levelCount = 1;
+		d.subresourceRange.baseArrayLayer = face;
+		d.subresourceRange.layerCount = 1;
 
-		return VulkanBackend::GetGPUResourceManager().CreateImageView(img.GetImage(), d);
+		return VulkanBackend::GetGPUResourceManager().CreateImageView(d, std::format("ImageView_{}[{}][{}]", img.DebugName, face, mip));
 	}
 } // namespace BHive

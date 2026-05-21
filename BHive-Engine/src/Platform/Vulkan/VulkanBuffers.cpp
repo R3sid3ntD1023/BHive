@@ -8,30 +8,26 @@ namespace BHive
 {
 	void PerFrameBuffer::Init(size_t size, vk::BufferUsageFlags usage)
 	{
-		BufferDesc desc{};
-		desc.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
-		desc.Size = size;
-		desc.Usage = usage | vk::BufferUsageFlagBits::eTransferDst;
-		Buffer = VulkanBackend::GetGPUResourceManager().CreateBuffer(desc);
+		auto info = vk::BufferCreateInfo({}, size, usage | vk::BufferUsageFlagBits::eTransferDst);
+		auto bufferID = VulkanBackend::GetGPUResourceManager().CreateBuffer(info, vk::MemoryPropertyFlagBits::eDeviceLocal, size);
 
+		auto stagingInfo = vk::BufferCreateInfo({}, size, vk::BufferUsageFlagBits::eTransferSrc);
+		auto stagingID = VulkanBackend::GetGPUResourceManager().CreateBuffer(stagingInfo, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, size);
 
-		desc.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-		desc.Size = size;
-		desc.Usage = vk::BufferUsageFlagBits::eTransferSrc;
-		StagingBuffer = VulkanBackend::GetGPUResourceManager().CreateBuffer(desc);
-
-		VulkanBackend::GetGPUResourceManager().MapMemory(StagingBuffer, 0, size);
+		Buffer = AllocatedBuffer{.Buffer = bufferID, .Size = size};
+		StagingBuffer = AllocatedBuffer{.Buffer = stagingID, .Size = size};
+		VulkanBackend::GetGPUResourceManager().MapMemory(stagingID, 0, size);
 
 	}
 
 	void PerFrameBuffer::SetData(vk::raii::CommandBuffer &cmd, const void *data, size_t size, uint32_t offset, vk::PipelineStageFlags2 flags, vk::AccessFlags2 access)
 	{	
-		auto mapped_memory = StagingBuffer.Allocation.MappedPtr;
+		auto mapped_memory = StagingBuffer.GetAllocation().MappedPtr;
 		if (mapped_memory)
 			std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, data, size);
 
-		auto &src_buffer = VulkanBackend::GetGPUResourceManager().GetBuffer(StagingBuffer.Buffer);
-		auto &dst_buffer = VulkanBackend::GetGPUResourceManager().GetBuffer(Buffer.Buffer);
+		auto& src_buffer = StagingBuffer.GetBuffer();
+		auto &dst_buffer = Buffer.GetBuffer();
 
 		vk::BufferCopy copy_region(0, offset, size);
 		cmd.copyBuffer(src_buffer, dst_buffer, copy_region);
@@ -161,13 +157,11 @@ namespace BHive
 	{
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			BufferDesc desc{};
-			desc.Usage = ToVkBufferType(type);
-			desc.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-			desc.Size = size;
-			mBuffer[i] = VulkanBackend::GetGPUResourceManager().CreateBuffer(desc);
+			auto info = vk::BufferCreateInfo({}, size, ToVkBufferType(type));
+			auto bufferID = VulkanBackend::GetGPUResourceManager().CreateBuffer(info, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, size);
 
-			VulkanBackend::GetGPUResourceManager().MapMemory(mBuffer[i], 0, size);
+			mBuffer[i] = AllocatedBuffer{.Buffer = bufferID, .Size = size}; 
+			VulkanBackend::GetGPUResourceManager().MapMemory(bufferID, 0, size);
 
 			SetData(data, size, 0);
 		}
@@ -179,13 +173,11 @@ namespace BHive
 	{
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			BufferDesc desc{};
-			desc.Usage = ToVkBufferType(type);
-			desc.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-			desc.Size = size;
-			mBuffer[i] = VulkanBackend::GetGPUResourceManager().CreateBuffer(desc);
+			auto info = vk::BufferCreateInfo({}, size, ToVkBufferType(type));
+			auto bufferID = VulkanBackend::GetGPUResourceManager().CreateBuffer(info, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, size);
 
-			VulkanBackend::GetGPUResourceManager().MapMemory(mBuffer[i], 0, size);
+			mBuffer[i] = AllocatedBuffer{.Buffer = bufferID, .Size = size};
+			VulkanBackend::GetGPUResourceManager().MapMemory(bufferID, 0, size);
 		}
 	}
 
@@ -210,7 +202,7 @@ namespace BHive
 		pass.CommandList.Push("Update Buffer", [=](IRendererContext& ctx) {
 				for (size_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
 				{
-					auto mapped_memory = mBuffer[frame].Allocation.MappedPtr;
+					auto mapped_memory = mBuffer[frame].GetAllocation().MappedPtr;
 					std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, data, size);
 				}
 			});	

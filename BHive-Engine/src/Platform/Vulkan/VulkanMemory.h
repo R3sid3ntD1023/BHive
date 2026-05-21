@@ -4,12 +4,9 @@
 #include "ResourceID.h"
 #include "ImageState.h"
 #include "MemoryAllocator.h"
-#include "VulkanImageRegions.h"
 
 namespace BHive
 {
-	struct ImageViewDesc;
-
 	struct ImageViews
 	{
 		ResourceID Default; //full view : all layers, all ,mips
@@ -42,12 +39,6 @@ namespace BHive
 
 		std::optional<ResourceID> Sampler;
 
-		ImageStateTracker State;
-
-		MemoryAllocation Allocation;
-
-		vk::ImageAspectFlags Aspect;
-
 		vk::ImageUsageFlags Usage;
 
 		uint32_t ArrayLayers = 1;
@@ -56,21 +47,9 @@ namespace BHive
 
 		std::string DebugName;
 
-		GPUImage() = default;
-
-		GPUImage(const GPUImage &) = delete;
-
-		GPUImage &operator=(const GPUImage &) = delete;
-
-		GPUImage(GPUImage &&) = default;
-
-		GPUImage &operator=(GPUImage &&) = default;
-
 		const vk::Image GetImage() const;
 
 		const vk::Sampler GetSampler() const;
-
-		void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, 1});
 
 		vk::ImageView GetView(uint32_t layer, uint32_t face, uint32_t mip) const;
 
@@ -87,9 +66,9 @@ namespace BHive
 	{
 		ResourceID Buffer{0};
 
-		MemoryAllocation Allocation;
-
 		vk::DeviceSize Size;
+
+		const MemoryAllocation &GetAllocation() const;
 
 		const vk::Buffer& GetBuffer() const;
 	};

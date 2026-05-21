@@ -16,9 +16,7 @@ namespace BHive
 
 		const FTextureCreateInfo &GetInfo() const { return mCreateInfo; }
 
-		NativeHandle GetNativeHandle() const override { return mImage.GetNativeHandle(); }
-
-		NativeHandle GetNativeHandle() override { return mImage.GetNativeHandle(); }
+		NativeHandle GetNativeHandle() const override { return NativeHandle::FromRaw(reinterpret_cast<uint64_t>(&mImage)); }
 
 		NativeHandle GetRenderView(uint32_t layer = 0, uint32_t mip = 0) const override;
 

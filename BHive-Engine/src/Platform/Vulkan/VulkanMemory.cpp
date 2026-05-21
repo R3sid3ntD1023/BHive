@@ -13,34 +13,9 @@ namespace BHive
 
 	const vk::Sampler GPUImage::GetSampler() const
 	{
-		if (!Sampler)
+		if (!Sampler.has_value())
 			return nullptr;
-		return VulkanBackend::GetGPUResourceManager().GetSampler(*Sampler);
-	}
-
-	void GPUImage::Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub)
-	{
-		ASSERT(State.MipStates.size(), "{}", DebugName);
-
-		for (uint32_t layer = sub.BaseArrayLayer; layer < sub.BaseArrayLayer + sub.LayerCount; layer++)
-		{
-			for (uint32_t mip = sub.MipLevel; mip < sub.MipLevel + sub.LevelCount; mip++)
-			{
-				ASSERT(State.MipStates[layer].size(), "{}", DebugName);
-
-				auto &oldState = State.MipStates[layer][mip];
-
-				ImageSubresource layerSub = sub;
-				layerSub.BaseArrayLayer = layer;
-				layerSub.LayerCount = 1;
-				layerSub.MipLevel = mip;
-				layerSub.LevelCount = 1;
-
-				VulkanUtils::TransitionImageLayout(cmd, GetImage(), oldState.Layout, newState.Layout, oldState.Access, newState.Access, oldState.Stage, newState.Stage, Aspect, layerSub);
-				oldState = newState;
-			}
-			
-		}
+		return VulkanBackend::GetGPUResourceManager().GetSampler(Sampler.value());
 	}
 
 	vk::ImageView GPUImage::GetView(uint32_t layer, uint32_t face, uint32_t mip) const
@@ -65,6 +40,11 @@ namespace BHive
 		return rm.GetImageView(Views.Default);
 	}
 
+	const MemoryAllocation &AllocatedBuffer::GetAllocation() const
+	{
+		return VulkanBackend::GetGPUResourceManager().GetStorage<MemoryAllocation>().Get(Buffer);
+	}
+
 	const vk::Buffer &AllocatedBuffer::GetBuffer() const
 	{
 		return VulkanBackend::GetGPUResourceManager().GetBuffer(Buffer);
@@ -72,6 +52,8 @@ namespace BHive
 
 	void ImageStateTracker::Initialize(uint32_t layers, uint32_t mips, const ImageState &initial)
 	{
+		ASSERT(layers > 0 && mips > 0, "layers and levels must be 1 or greater!")
+
 		MipStates.resize(layers);
 		for (uint32_t layer = 0; layer < layers; layer++)
 		{

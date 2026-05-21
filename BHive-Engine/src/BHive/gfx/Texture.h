@@ -39,8 +39,6 @@ namespace BHive
 
 		virtual NativeHandle GetNativeHandle() const = 0;
 
-		virtual NativeHandle GetNativeHandle() = 0;
-
 		virtual NativeHandle GetRenderView(uint32_t layer = 0, uint32_t mip = 0) const = 0;
 
 		REFLECTABLEV(Asset)

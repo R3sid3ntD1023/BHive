@@ -53,8 +53,14 @@ namespace BHive
 		template <typename THandleType>
 		static void SetObjectName(const THandleType& handle, const std::string &name)
 		{
+#ifdef _DEBUG
 			auto &device = VulkanBackend::GetLogicalDevice();
 			device.setDebugUtilsObjectNameEXT<THandleType>(handle, name);
+			
+			VkObjectType type = (VkObjectType)handle.objectType;
+			uint64_t h = reinterpret_cast<uint64_t>(&handle);
+			GetDebugNameRegistry().SetName(type, h, name);
+#endif
 		}
 
 		static VulkanBackend &Get()
@@ -78,6 +84,24 @@ namespace BHive
 
 		static GPUResourceManager &GetGPUResourceManager() { return *Get().mGPUResourceManager; }
 
+		struct DebugNameRegistry
+		{
+			std::unordered_map<uint64_t, std::string> Names;
+
+			void SetName(VkObjectType type, uint64_t handle, const std::string &name)
+			{
+				uint64_t key = (uint64_t(type) << 56) | handle;
+				Names[key] = name;
+			}
+
+			std::string GetName(VkObjectType type, uint64_t handle) const
+			{
+				uint64_t key = (uint64_t(type) << 56) | handle;
+				return Names.contains(key) ? Names.at(key) : "<unnamed>";
+			}
+		};
+
+		static DebugNameRegistry& GetDebugNameRegistry() { return Get().mDebugNames; }
 
 	private:
 		void CreateIntance();
@@ -94,6 +118,7 @@ namespace BHive
 
 		void CreateDeviceInternal(uint32_t graphicsIndex, uint32_t presentIndex);
 
+		
 	private:
 		vk::raii::Context mVulkanContext;
 
@@ -118,6 +143,8 @@ namespace BHive
 		Scope<MemoryAllocator> mMemoryAllocator;
 
 		Scope<GPUResourceManager> mGPUResourceManager;
+
+		DebugNameRegistry mDebugNames;
 	};
 
 	

@@ -6,81 +6,112 @@
 
 namespace BHive
 {
-	VulkanImage::~VulkanImage()
-	{
-		VulkanBackend::GetGPUResourceManager().DestroyImage(mImage);
-	}
 
-	void VulkanImage::Initialize(const ImageCreateInfo &createInfo)
+	void VulkanImage::Initialize(const ImageCreateInfo &info, ImageState initial)
 	{
+		mAspect = info.ViewCI.subresourceRange.aspectMask;
+
+		auto mutable_info = info;
+		const auto &levels = info.ImageCI.mipLevels;
+		const auto &layers = info.ImageCI.arrayLayers;
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
 
-		ImageDesc desc{};
-		desc.Flags = createInfo.CreateFlags;
-		desc.Width = createInfo.Width;
-		desc.Height = createInfo.Height;
-		desc.Depth = createInfo.Depth;
-		desc.ArrayLayers = createInfo.CreateInfo.ArrayLayers;
-		desc.Format = createInfo.CreateInfo.Format;
-		desc.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
-		desc.Tiling = vk::ImageTiling::eOptimal;
-		desc.Usage = createInfo.CreateInfo.Usage;
-		desc.Type = vk::ImageType::e2D;
-		desc.BytesPerPixel = createInfo.CreateInfo.BytesPerPixel;
-		desc.Aspect = createInfo.CreateInfo.Aspect;
-		desc.MipLevels = createInfo.CreateInfo.MipLevels;
-		desc.DebugName = createInfo.CreateInfo.DebugName;
+		auto reqSize = info.ImageCI.extent.width * info.ImageCI.extent.height * info.ImageCI.extent.depth * info.BytesPerPixel;
+		auto image_id = gpu_r_m.CreateImage(info.ImageCI, vk::MemoryPropertyFlagBits::eDeviceLocal, reqSize, info.DebugName);
+		auto sampler_id = gpu_r_m.CreateSampler(info.SamplerCI, std::format("Image_{}_Sampler", info.DebugName));
 
-		mImage = gpu_r_m.CreateImage(desc);
+		mImage.Image = image_id;
+		mImage.Sampler = sampler_id;
+		mImage.ArrayLayers = layers;
+		mImage.MipLevels = levels;
+		mImage.DebugName = info.DebugName;
+		mImage.Usage = info.ImageCI.usage;
 
-		ImageViewDesc view_desc{};
-		view_desc.Format = createInfo.CreateInfo.Format;
-		view_desc.Type = createInfo.ViewType;
-		view_desc.LayerCount = createInfo.CreateInfo.ArrayLayers;
-		view_desc.Aspect = createInfo.CreateInfo.Aspect;
+		mStateTracker.Initialize(layers, levels, initial);
+		
+		auto image = mImage.GetImage();
+		mutable_info.ViewCI.setImage(image);
+		ImageViewBuilder::Build(mImage, mutable_info.ViewCI, info.ViewTopology);
 
-		ImageViewBuilder::Build(mImage, view_desc, createInfo.ViewTopology);
+	}
 
-		vk::SamplerCreateInfo sampler_info(
-			{}, createInfo.CreateInfo.MinFilter, createInfo.CreateInfo.MagFilter, vk::SamplerMipmapMode::eLinear, createInfo.CreateInfo.WrapMode, createInfo.CreateInfo.WrapMode,
-			createInfo.CreateInfo.WrapMode, 0, 0, 1, createInfo.CreateInfo.CompareEnabled, createInfo.CreateInfo.CompareOp);
-		sampler_info.borderColor = vk::BorderColor::eIntOpaqueBlack;
-		sampler_info.unnormalizedCoordinates = VK_FALSE;
-		sampler_info.mipmapMode = vk::SamplerMipmapMode::eLinear;
-		sampler_info.mipLodBias = 0.f;
-		sampler_info.minLod = 0.f;
-		sampler_info.maxLod = 0.f;
+	void VulkanImage::Initialize(const vk::Image &img, const ImageCreateInfo &info, ImageState initial)
+	{
+		mAspect = info.ViewCI.subresourceRange.aspectMask;
 
-		gpu_r_m.CreateSampler(mImage, sampler_info);
+		auto mutable_info = info;
+		mutable_info.ViewCI.setImage(img);
 
-		VulkanBackend::SetObjectName(mImage.GetImage(), std::format("Image_{}", createInfo.CreateInfo.DebugName));
+		const auto& levels = info.ImageCI.mipLevels;
+		const auto& layers = info.ImageCI.arrayLayers;
+		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
+
+		mStateTracker.Initialize(layers, levels, initial);
+
+		ImageViewBuilder::Build(mImage, mutable_info.ViewCI, mutable_info.ViewTopology);
+
+		auto sampler_id = gpu_r_m.CreateSampler(mutable_info.SamplerCI, std::format("Image_{}_Sampler", mutable_info.DebugName));
+
+		mImage.Image = gpu_r_m.RegisterExternalImage(img);
+		mImage.Sampler = sampler_id;
+		mImage.ArrayLayers = layers;
+		mImage.MipLevels = levels;
+		mImage.DebugName = info.DebugName;
+		mImage.Usage = info.ImageCI.usage;
+
+		mRawImage = 1;
 	}
 
 	void VulkanImage::Upload(const void *data, size_t size, const ImageCopyRegion &region, const ImageSubresource &sub)
 	{
-		AllocatedBuffer stagingBuffer{};
-
-		BufferDesc staging_desc{};
-		staging_desc.Size = size;
-		staging_desc.Usage = vk::BufferUsageFlagBits::eTransferSrc;
-		staging_desc.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-
+		auto stagingInfo = vk::BufferCreateInfo({}, size, vk::BufferUsageFlagBits::eTransferSrc);
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
-		stagingBuffer = gpu_r_m.CreateBuffer(staging_desc);
+		auto stagingID = gpu_r_m.CreateBuffer(stagingInfo, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, size);
 
-		if (auto mapped = gpu_r_m.MapMemory(stagingBuffer, 0, size))
+		if (auto mapped = gpu_r_m.MapMemory(stagingID, 0, size))
 		{
 			std::memcpy(mapped, data, size);
-			gpu_r_m.UnmapMemory(stagingBuffer);
+			gpu_r_m.UnmapMemory(stagingID);
 		}
 
-		auto& staging_buffer = VulkanBackend::GetGPUResourceManager().GetBuffer(stagingBuffer.Buffer);
+		auto& staging_buffer = VulkanBackend::GetGPUResourceManager().GetBuffer(stagingID);
 
 		SingleTimeCommand cmd{};
-		mImage.Transition(cmd, ImageState::TansferDst(), sub);
+		Transition(cmd, ImageState::TansferDst(), sub);
 		VulkanUtils::CopyBufferToImage(cmd, staging_buffer, mImage.GetImage(), region);
-		mImage.Transition(cmd, ImageState::ShaderRead(), sub);
+		Transition(cmd, ImageState::ShaderRead(), sub);
 
-		gpu_r_m.DestroyBuffer(stagingBuffer);
+		gpu_r_m.DestroyBuffer(stagingID);
+	}
+
+	void VulkanImage::Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub)
+	{
+		ASSERT(mStateTracker.MipStates.size(), "Invalid layer size must be 1 or greater -> {}", mImage.DebugName);
+
+		auto image = mImage.GetImage();
+		for (uint32_t layer = sub.BaseArrayLayer; layer < sub.BaseArrayLayer + sub.LayerCount; layer++)
+		{
+			for (uint32_t mip = sub.MipLevel; mip < sub.MipLevel + sub.LevelCount; mip++)
+			{
+				ASSERT(mStateTracker.MipStates[layer].size(), "Invalid mip size must be 1 or greater -> {}", mImage.DebugName);
+
+				auto &oldState = mStateTracker.Get(layer, mip);
+
+				ImageSubresource layerSub = sub;
+				layerSub.BaseArrayLayer = layer;
+				layerSub.LayerCount = 1;
+				layerSub.MipLevel = mip;
+				layerSub.LevelCount = 1;
+
+				VulkanUtils::TransitionImageLayout(cmd, image, oldState.Layout, newState.Layout, oldState.Access, newState.Access, oldState.Stage, newState.Stage, mAspect, layerSub);
+				oldState = newState;
+			}
+		}
+	}
+
+	void VulkanImage::Destroy()
+	{
+		if (!mRawImage)
+			VulkanBackend::GetGPUResourceManager().DestroyImage(mImage);
 	}
 } // namespace BHive

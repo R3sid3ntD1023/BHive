@@ -21,6 +21,19 @@ namespace BHive
 	{
 		auto message_type = static_cast<vk::DebugUtilsMessageTypeFlagsEXT>(messageType);
 		auto message_type_string = vk::to_string(message_type);
+		auto registry = reinterpret_cast<VulkanBackend::DebugNameRegistry *>(pUserData);
+
+		if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+		{
+			for (uint32_t i = 0; i < pCallbackData->objectCount; i++)
+			{
+				const auto &obj = pCallbackData->pObjects[i];
+
+				auto name = registry->GetName(obj.objectType, obj.objectHandle);
+
+				printf("Vulkan Validation: %s (type=%d, handle=%llu)\n", name.c_str(), obj.objectType, (unsigned long long)obj.objectHandle);
+			}
+		}
 
 		switch (messageSeverity)
 		{
@@ -221,7 +234,7 @@ namespace BHive
 						 vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
 		auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
-		vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, debugCallback);
+		vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, debugCallback, &mDebugNames);
 		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions, &enabled);
 #else
 		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions);

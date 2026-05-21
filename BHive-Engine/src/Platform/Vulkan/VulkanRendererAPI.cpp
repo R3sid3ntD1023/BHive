@@ -6,13 +6,12 @@
 #include "VulkanConverters.h"
 #include "gfx/BufferBase.h"
 #include "VulkanFramebuffer.h"
-#include "core/Window.h"
 #include "VulkanWindowContext.h"
 #include "gfx/RenderCommand.h"
-#include "gfx/GlobalBuffers.h"
 #include "VulkanSetManager.h"
 #include "systems/GlobalSetRegistry.h"
 #include "systems/MaterialSetRegistry.h"
+#include "textures/VulkanImage.h"
 
 namespace BHive
 {
@@ -204,10 +203,10 @@ namespace BHive
 				vk::ClearValue clearDepth(vk::ClearDepthStencilValue(1.0f, 0));
 
 				vk::RenderingAttachmentInfo attachmentInfo(
-					image.GetView(0,0, 0), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearColor);
+					image.Native().GetView(0,0, 0), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearColor);
 
 				vk::RenderingAttachmentInfo depth_attachment_info(
-					depth.GetView(0, 0 , 0 ), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, clearDepth);
+					depth.Native().GetView(0, 0 , 0 ), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, clearDepth);
 
 				vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
 				frame.CommandBuffer.beginRendering(renderingInfo);
@@ -233,7 +232,7 @@ namespace BHive
 					sub.BaseArrayLayer = 0;
 					sub.LayerCount = image.LayerCount;
 
-					auto img = image.Texture->GetNativeHandle().As<GPUImage>();
+					auto img = image.Texture->GetNativeHandle().As<VulkanImage>();
 					img->Transition(cmd, ImageState::ComputeWrite(), sub);
 				}
 
@@ -247,7 +246,7 @@ namespace BHive
 					sub.BaseArrayLayer = 0;
 					sub.LayerCount = image.LayerCount;
 
-					auto img = image.Texture->GetNativeHandle().As<GPUImage>();
+					auto img = image.Texture->GetNativeHandle().As<VulkanImage>();
 					img->Transition(cmd, ImageState::ShaderRead(), sub);
 				}
 			}

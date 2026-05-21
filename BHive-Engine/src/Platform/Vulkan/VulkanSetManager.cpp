@@ -270,8 +270,8 @@ namespace BHive
 		}
 		case EResourceType::StorageImage:
 		{
-			auto usage = native->Usage;
-			ASSERT(usage & vk::ImageUsageFlagBits::eStorage, "Image is not created with storage usage, cannot be used as a storage image resource");
+			const auto& usage = native->Usage;
+			ASSERT(usage & vk::ImageUsageFlagBits::eStorage, "Image is not created with storage usage, cannot be used as a storage image resource -> {}", native->DebugName);
 			info = vk::DescriptorImageInfo(nullptr, native->GetView(layer, face, mip), vk::ImageLayout::eGeneral);
 			break;
 		}

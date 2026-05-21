@@ -15,10 +15,10 @@ namespace BHive
 	{
 		for (auto &img : mImages)
 		{
-			VulkanBackend::GetGPUResourceManager().DestroyImage(img);
+			img.Destroy();
 		}
 
-		VulkanBackend::GetGPUResourceManager().DestroyImage(mDepthImage);
+		mDepthImage.Destroy();
 	}
 
 	void VulkanSwapChain::Init(vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info)
@@ -46,26 +46,17 @@ namespace BHive
 		for (size_t i = 0; i < images.size(); i++)
 		{
 			auto raw = images[i];
-			auto id = mng.RegisterExternalImage(raw);
-			auto& img = mImages.emplace_back();
-			img.Image = id;
-			img.ArrayLayers = 1;
-			img.MipLevels = 1;
-			img.Aspect = vk::ImageAspectFlagBits::eColor;
-			img.Usage = vk::ImageUsageFlagBits::eColorAttachment;
-			img.DebugName = std::format("SwapChain Image{}", i);
+			auto &img = mImages[i];
 
-			ImageViewDesc view_desc{};
-			view_desc.Type = vk::ImageViewType::e2D;
-			view_desc.Format = mImageFormat.format;
-			view_desc.Aspect = vk::ImageAspectFlagBits::eColor;
-			view_desc.BaseArrayLayer = 0;
-			view_desc.BaseMipLevel = 0;
-			view_desc.LayerCount = 1;
-			view_desc.LevelCount = 1;
+			ImageCreateInfo info{};
+			info.ImageCI.arrayLayers = 1;
+			info.ImageCI.mipLevels = 1;
+			info.ImageCI.usage = vk::ImageUsageFlagBits::eColorAttachment;
+			info.DebugName = std::format("SwapChainImage_{}", i);
 
-			img.Views.Default = mng.CreateImageView(raw, view_desc);
-			img.State.Initialize(1, 1, ImageState::Present());
+			auto range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
+			info.ViewCI = vk::ImageViewCreateInfo({}, raw, vk::ImageViewType::e2D, mImageFormat.format, {}, range); 
+			img.Initialize(raw, info, ImageState::Present());
 		}
 
 		auto image_count = static_cast<uint32_t>(mImages.size());
@@ -88,25 +79,17 @@ namespace BHive
 
 		mDepthFormat = VulkanUtils::FindDepthFormat();
 
-		ImageDesc desc{};
-		desc.Width = mExtent.width;
-		desc.Height = mExtent.height;
-		desc.Format = mDepthFormat;
-		desc.Tiling = vk::ImageTiling::eOptimal;
-		desc.Type = vk::ImageType::e2D;
-		desc.Usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
-		desc.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
-		desc.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
-		
+		ImageCreateInfo depth_info{};
+		depth_info.ImageCI = vk::ImageCreateInfo(
+			{}, vk::ImageType::e2D, mDepthFormat, vk::Extent3D{mExtent, 1}, 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment,
+			vk::SharingMode::eExclusive, 0);
+		auto range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1);
+		auto depth_view_info = vk::ImageViewCreateInfo({}, VK_NULL_HANDLE, vk::ImageViewType::e2D, mDepthFormat, {}, range);
 
-		ImageViewDesc view_desc{};
-		view_desc.Type = vk::ImageViewType::e2D;
-		view_desc.Format = mDepthFormat;
-		view_desc.Aspect = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+		depth_info.ViewCI = depth_view_info;
+		depth_info.DebugName = std::format("SwapChainImage_DepthStencil");
 
-		mDepthImage = mng.CreateImage(desc);
-		mDepthImage.State.Initialize(1, 1, ImageState::Present());
-		mDepthImage.Views.Default = mng.CreateImageView(mDepthImage.GetImage(), view_desc);
+		mDepthImage.Initialize(depth_info, ImageState::Present());
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)
