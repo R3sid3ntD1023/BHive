@@ -1,29 +1,15 @@
 #pragma once
 
 #include "VulkanCore.h"
-#include "gfx/ISetManager.h"
-#include "gfx/shader/ShaderReflection.h"
+#include "gfx/SetManagerBase.h"
+
 
 namespace BHive
 {
-	class VulkanSetManager : public ISetManager
+	class VulkanSetManager : public SetManagerBase
 	{
 	public:
-		enum class EBindingUpdateRate
-		{
-			Static,
-			PerFrame
-		};
-
-		struct BindingInfo
-		{
-			FReflectedResource ReflResource;
-			EBindingUpdateRate UpdateRate = EBindingUpdateRate::Static;
-
-			Ref<BufferBase> Buffer;
-			Ref<Texture> Texture;
-			uint32_t MipLevel = 0;
-		};
+		
 	public:
 		VulkanSetManager(vk::raii::Device& device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex,
 			const FShaderReflectionLookUp& refl);
@@ -38,18 +24,13 @@ namespace BHive
 
 		virtual NativeHandle GetNativeSet(uint32_t frame) override;
 
-		virtual void WriteStaticBindings() override;
-
-
 	private:
-		void BuildBindings(const FShaderReflectionLookUp &refl);
 
-		void AllocatePerFrameSets();
+		void AllocateSets();
 
-	
-		vk::DescriptorBufferInfo BuildBufferInfo(const BindingInfo &b) const;
+		vk::DescriptorBufferInfo BuildBufferInfo(const FBindingInfo &b) const;
 
-		vk::DescriptorImageInfo BuildImageInfo(const BindingInfo &b) const;
+		vk::DescriptorImageInfo BuildImageInfo(const FBindingInfo &b) const;
 
 	private:
 		vk::raii::Device& mDevice;
@@ -58,10 +39,6 @@ namespace BHive
 
 		vk::DescriptorSetLayout mLayout;
 		
-		uint32_t mSetIndex = 0;
-
-		std::vector<BindingInfo> mBindings;
-
 		vk::raii::DescriptorSets mSets = VK_NULL_HANDLE;
 
 		

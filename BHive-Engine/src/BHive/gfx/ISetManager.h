@@ -20,7 +20,5 @@ namespace BHive
 		virtual void Update(uint32_t frame) = 0;
 
 		virtual NativeHandle GetNativeSet(uint32_t frame) = 0;
-
-		virtual void WriteStaticBindings() = 0;
 	};
 }

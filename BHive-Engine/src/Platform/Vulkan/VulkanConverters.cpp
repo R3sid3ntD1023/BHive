@@ -32,6 +32,12 @@ namespace BHive
 			return vk::DescriptorType::eUniformBuffer;
 		case EResourceType::StorageBuffer:
 			return vk::DescriptorType::eStorageBuffer;
+		case EResourceType::InputAttachment:
+			return vk::DescriptorType::eInputAttachment;
+		case EResourceType::SeperatedSampler:
+			return vk::DescriptorType::eSampler;
+		case EResourceType::SeperatedImage:
+			return vk::DescriptorType::eSampledImage;
 		default:
 			ASSERT(false, "Unknown ResourceType {}", ToString(type));
 			return vk::DescriptorType::eCombinedImageSampler;

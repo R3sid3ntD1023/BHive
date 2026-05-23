@@ -34,8 +34,6 @@ namespace BHive
 
 		BindGlobalResources(refl, entry.Manager.get(), setIndex);
 
-		entry.Manager->WriteStaticBindings();
-
 		return entry;
 	}
 
@@ -75,8 +73,6 @@ namespace BHive
 					mang->SetTexture(r.binding, globals.GetTextures().at(r.binding));
 			}
 		}
-
-		mang->WriteStaticBindings();
 	}
 }
 

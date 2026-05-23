@@ -43,8 +43,6 @@ namespace BHive
 
 		BindMaterialResources(mat, setRefl, entry.Manager.get());
 
-		entry.Manager->WriteStaticBindings();
-
 		return entry;
 	}
 

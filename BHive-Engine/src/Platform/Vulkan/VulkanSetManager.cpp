@@ -5,29 +5,28 @@
 #include "VulkanConverters.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
-#include "textures/VulkanImage.h"
 
 namespace BHive
 {
 
 	VulkanSetManager::VulkanSetManager(vk::raii::Device& device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex, const FShaderReflectionLookUp &refl)
-		: mDevice(device),
+		: SetManagerBase(setIndex),
+		  mDevice(device),
 		  mPool(pool),
-		  mLayout(layout),
-		  mSetIndex(setIndex)
+		  mLayout(layout)
 	{
 
 		BuildBindings(refl);
-		AllocatePerFrameSets();		
+		AllocateSets();		
 	}
 
 	void VulkanSetManager::SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer)
 	{
-		BindingInfo *bindingInfo = nullptr;
+		FBindingInfo *bindingInfo = nullptr;
 
 		for (auto &b : mBindings)
 		{
-			if (b.ReflResource.binding == binding && IsBuffer(b.ReflResource.kind))
+			if (b.Binding == binding && IsBuffer(b.Type))
 			{
 				b.Buffer = buffer;
 				bindingInfo = &b;
@@ -45,7 +44,7 @@ namespace BHive
 
 				auto &set = *mSets[vk_ctx.Frame];
 				auto info = BuildBufferInfo(*bindingInfo);
-				vk::WriteDescriptorSet write(set, bindingInfo->ReflResource.binding, 0, ToVkType(bindingInfo->ReflResource.kind), nullptr, info);
+				vk::WriteDescriptorSet write(set, bindingInfo->Binding, 0, ToVkType(bindingInfo->Type), nullptr, info);
 
 				mDevice.updateDescriptorSets(write, {});
 
@@ -56,14 +55,14 @@ namespace BHive
 
 	void VulkanSetManager::SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip)
 	{
-		BindingInfo *bindingInfo = nullptr;
+		FBindingInfo *bindingInfo = nullptr;
 
 		for (auto &b : mBindings)
 		{
-			if (b.ReflResource.binding != binding)
+			if (b.Binding != binding)
 				continue;
 
-			switch (b.ReflResource.kind)
+			switch (b.Type)
 			{
 			case EResourceType::CombinedImageSampler:
 			case EResourceType::SeperatedImage:
@@ -92,10 +91,9 @@ namespace BHive
 
 				auto &set = *mSets[vk_ctx.Frame];
 				auto info = BuildImageInfo(*bindingInfo);
-				vk::WriteDescriptorSet write(set, bindingInfo->ReflResource.binding, 0, ToVkType(bindingInfo->ReflResource.kind), info);
+				vk::WriteDescriptorSet write(set, bindingInfo->Binding, 0, ToVkType(bindingInfo->Type), info);
 
 				auto image = texture->GetNativeHandle().As<GPUImage>();
-				//LOG_ERROR("Binding texture '{}' to binding {} → actual Vulkan image = {}", bindingInfo->ReflResource.name, binding, image->GetDebugName());
 				mDevice.updateDescriptorSets(write, {});
 			});
 	}
@@ -111,21 +109,21 @@ namespace BHive
 			if (b.UpdateRate != EBindingUpdateRate::PerFrame)
 				continue;
 
-			if (IsBuffer(b.ReflResource.kind))
+			if (IsBuffer(b.Type))
 			{
 				if (!b.Buffer)
 					continue;
 
 				auto info = BuildBufferInfo(b);
-				writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), nullptr, info);
+				writes.emplace_back(set, b.Binding, 0, ToVkType(b.Type), nullptr, info);
 			}
-			else if (IsTexture(b.ReflResource.kind))
+			else if (IsTexture(b.Type))
 			{
 				if (!b.Texture)
 					continue;
 
 				auto info = BuildImageInfo(b);
-				writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), info);
+				writes.emplace_back(set, b.Binding, 0, ToVkType(b.Type), info);
 			}
 		}
 
@@ -139,36 +137,7 @@ namespace BHive
 		return NativeHandle::FromPtr(&*mSets[frame]);
 	}
 
-	void VulkanSetManager::BuildBindings(const FShaderReflectionLookUp &refl)
-	{
-		auto &setBindings = refl.GetSetBindings(mSetIndex);
-		mBindings.reserve(setBindings.size());
-
-		for (auto& r : setBindings)
-		{
-			BindingInfo info{};
-			info.ReflResource = r;
-
-			switch (r.kind)
-			{
-			case EResourceType::UniformBuffer:
-			case EResourceType::StorageBuffer:
-			case EResourceType::StorageImage:
-				info.UpdateRate = EBindingUpdateRate::PerFrame;
-				break;
-			case EResourceType::CombinedImageSampler:
-				info.UpdateRate = EBindingUpdateRate::Static;
-				break;
-			default:
-				info.UpdateRate = EBindingUpdateRate::Static;
-				break;
-			}
-
-			mBindings.push_back(info);
-		}
-	}
-
-	void VulkanSetManager::AllocatePerFrameSets()
+	void VulkanSetManager::AllocateSets()
 	{
 		std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, mLayout);
 
@@ -184,42 +153,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanSetManager::WriteStaticBindings()
-	{
-		RenderCommand::SubmitResourceUpdate(
-			[&](auto &ctx)
-			{
-				auto& vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-				std::vector<vk::WriteDescriptorSet> writes;
-
-				for (auto &b : mBindings)
-				{
-					if (b.UpdateRate != EBindingUpdateRate::Static || (!b.Texture && !b.Buffer))
-						continue;
-
-					for (uint32_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
-					{
-						auto &set = *mSets[frame];
-
-						if (IsBuffer(b.ReflResource.kind))
-						{
-							auto info = BuildBufferInfo(b);
-							writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), nullptr, info);
-						}
-						else if (IsTexture(b.ReflResource.kind))
-						{
-							auto info = BuildImageInfo(b);
-							writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), info);
-						}
-					}
-				}
-
-				if (!writes.empty())
-					mDevice.updateDescriptorSets(writes, {});
-			});
-	}
-
-	vk::DescriptorBufferInfo VulkanSetManager::BuildBufferInfo(const BindingInfo &b) const
+	vk::DescriptorBufferInfo VulkanSetManager::BuildBufferInfo(const FBindingInfo &b) const
 	{
 		ASSERT(b.Buffer)
 
@@ -227,7 +161,7 @@ namespace BHive
 		return vk::DescriptorBufferInfo(native->GetBuffer(), 0, native->Size);
 	}
 
-	vk::DescriptorImageInfo VulkanSetManager::BuildImageInfo(const BindingInfo &b) const
+	vk::DescriptorImageInfo VulkanSetManager::BuildImageInfo(const FBindingInfo &b) const
 	{
 		vk::DescriptorImageInfo info{};
 		auto native = b.Texture->GetNativeHandle().As<GPUImage>();
@@ -238,7 +172,7 @@ namespace BHive
 		const uint32_t face = 0;
 		const uint32_t mip = b.MipLevel;
 
-		switch (b.ReflResource.kind)
+		switch (b.Type)
 		{
 		case EResourceType::CombinedImageSampler:
 		case EResourceType::SeperatedImage:

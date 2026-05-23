@@ -72,6 +72,8 @@ namespace BHive
 		std::vector<FPushConstantsRange> PushConstants; //unused in opengl
 	};
 
+	
+
 	struct FReflectedResource
 	{	
 		EResourceType kind = EResourceType::Invalid;

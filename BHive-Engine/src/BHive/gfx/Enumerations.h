@@ -255,6 +255,38 @@ namespace BHive
 		StorageBuffer
 	};
 
+	enum class EResourceCategory : uint32_t
+	{
+		None = 0,
+		Buffer = BIT(0),
+		Texture = BIT(1),
+		Sampler = BIT(2)
+	};
+
+	ENABLE_BITMASK_OPERATORS(EResourceCategory)
+
+	inline EResourceCategory GetCategory(EResourceType t)
+	{
+		switch (t)
+		{
+		case BHive::EResourceType::UniformBuffer:
+		case BHive::EResourceType::StorageBuffer:
+			return EResourceCategory::Buffer;
+
+		case BHive::EResourceType::CombinedImageSampler:
+		case BHive::EResourceType::StorageImage:
+		case BHive::EResourceType::SeperatedImage:
+		case BHive::EResourceType::InputAttachment:
+			return EResourceCategory::Texture;
+
+		case BHive::EResourceType::SeperatedSampler:
+			return EResourceCategory::Sampler;
+
+		default:
+			return EResourceCategory::None;
+		}
+	};
+
 	inline const char* ToString(EResourceType type)
 	{
 		switch (type)
@@ -297,12 +329,12 @@ namespace BHive
 
 	inline bool IsTexture(EResourceType type)
 	{
-		return type == EResourceType::CombinedImageSampler || type == EResourceType::SeperatedImage || type == EResourceType::SeperatedSampler || type == EResourceType::StorageImage;
+		return (GetCategory(type) & EResourceCategory::Texture) != EResourceCategory::None;
 	}
 
 	inline bool IsBuffer(EResourceType type)
 	{
-		return type == EResourceType::UniformBuffer || type == EResourceType::StorageBuffer;
+		return (GetCategory(type) & EResourceCategory::Buffer) != EResourceCategory::None;
 	}
 
 }
