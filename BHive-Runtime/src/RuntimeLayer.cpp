@@ -30,7 +30,7 @@ namespace BHive
 	void RuntimeLayer::OnAttach(Application& app)
 	{
 		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Triangle.glsl");
-		mEmissiveShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Emissive.glsl");
+		//mEmissiveShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Emissive.glsl");
 		
 		mEnvironmentTex = TextureLoader::Import(ENGINE_PATH"/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
 		Renderer::SetEnvironmentTexture(mEnvironmentTex);
@@ -46,11 +46,11 @@ namespace BHive
 		mMaterial->SetTexture("u_Texture", mTexture);
 		mMaterial->Set("u_Color", glm::vec3(1, 1, 1));
 
-		mEmmissivePipeline = Pipeline::Create();
+		/*mEmmissivePipeline = Pipeline::Create();
 		state.ShaderProgram = mEmissiveShader;
 		mEmmissivePipeline->Init(state);
 		mEmissiveMaterial = CreateRef<EmissiveMaterial>(mEmmissivePipeline);
-		mEmissiveMaterial->EmissionColor = FColor::Green;
+		mEmissiveMaterial->EmissionColor = FColor::Green;*/
 
 		/*mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH"/Lambert.glsl");
 		mPipeline = Pipeline::Create();
@@ -174,8 +174,6 @@ namespace BHive
 
 	void RuntimeLayer::OnGuiRender()
 	{
-		return;
-
 		GUI::BeginDockSpace("Dockspace");
 
 		if (ImGui::Begin("Scene"))

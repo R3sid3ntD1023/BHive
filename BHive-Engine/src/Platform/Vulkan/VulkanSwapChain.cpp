@@ -56,7 +56,7 @@ namespace BHive
 
 			auto range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
 			info.ViewCI = vk::ImageViewCreateInfo({}, raw, vk::ImageViewType::e2D, mImageFormat.format, {}, range); 
-			img.Initialize(raw, info, ImageState::Present());
+			img.Initialize(raw, info);
 		}
 
 		auto image_count = static_cast<uint32_t>(mImages.size());
@@ -84,12 +84,10 @@ namespace BHive
 			{}, vk::ImageType::e2D, mDepthFormat, vk::Extent3D{mExtent, 1}, 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment,
 			vk::SharingMode::eExclusive, 0);
 		auto range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1);
-		auto depth_view_info = vk::ImageViewCreateInfo({}, VK_NULL_HANDLE, vk::ImageViewType::e2D, mDepthFormat, {}, range);
-
-		depth_info.ViewCI = depth_view_info;
+		depth_info.ViewCI = vk::ImageViewCreateInfo({}, VK_NULL_HANDLE, vk::ImageViewType::e2D, mDepthFormat, {}, range);
 		depth_info.DebugName = std::format("SwapChainImage_DepthStencil");
 
-		mDepthImage.Initialize(depth_info, ImageState::Present());
+		mDepthImage.Initialize(depth_info);
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)
@@ -110,7 +108,6 @@ namespace BHive
 
 	vk::Result VulkanSwapChain::Present(const vk::raii::CommandBuffer &buffers, uint32_t imageIndex, uint32_t frame)
 	{
-		
 		vk::Fence fence = mInFlightFences[frame];
 		vk::Semaphore wait_semaphore = mPresentSemaphores[frame];
 		vk::Semaphore signal_semaphore = mRenderFinishedSemaphores[imageIndex];

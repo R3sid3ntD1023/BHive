@@ -16,7 +16,7 @@ namespace BHive
 		auto levels = mCreateInfo.MipLevels;
 		auto layers = mCreateInfo.ArrayLayers;
 		auto extent = vk::Extent3D(mSize.x, mSize.y, mSize.z);
-		auto usage = ToVKImageUsage(mCreateInfo.Usage);
+		auto usage = InferImageUsage(mCreateInfo.Roles);
 
 		ImageCreateInfo create_info{};
 		create_info.ImageCI =

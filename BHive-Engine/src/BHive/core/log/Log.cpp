@@ -9,7 +9,7 @@ namespace BHive
 	{
 		std::vector<spdlog::sink_ptr> sinks(3);
 		sinks[0] = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-		sinks[1] = std::make_shared<spdlog::sinks::basic_file_sink_mt>("BHive_Log.log", true);
+		sinks[1] = std::make_shared<spdlog::sinks::basic_file_sink_mt>("BHive_Log.txt", true);
 		sinks[2] = std::make_shared<spdlog::sinks::callback_sink_mt>(
 			[&](const auto &msg)
 			{

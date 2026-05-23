@@ -7,29 +7,14 @@
 
 namespace BHive
 {
-	struct FVulkanTextureCreateInfo
-	{
-		vk::Format Format{};
-		vk::Filter MinFilter{};
-		vk::Filter MagFilter{};
-		vk::ImageUsageFlags Usage{};
-		vk::ImageAspectFlags Aspect{};
-		vk::SamplerAddressMode WrapMode{};
-		vk::Bool32 CompareEnabled{};
-		vk::CompareOp CompareOp{};
-		uint32_t BytesPerPixel{};
-		uint32_t MipLevels{};
-		uint32_t ArrayLayers{};
-		std::string DebugName{};
-	};
+
+	vk::ImageUsageFlags InferImageUsage(ETextureRole roles);
 
 	vk::BufferUsageFlags ToVkBufferType(EBufferType type);
 
 	vk::DescriptorType ToVkType(EResourceType type);
 
 	vk::ImageAspectFlags ToVkAspect(ETextureAspect aspect);
-
-	vk::ImageUsageFlags ToVKImageUsage(ETextureUsage usage);
 
 	vk::PrimitiveTopology ToVkTopology(ETopologyMode Mode);
 
@@ -56,6 +41,4 @@ namespace BHive
 	vk::ShaderStageFlags ToVkShaderStageBit(EShaderStage stage);
 
 	vk::ShaderStageFlagBits ToSingleVkStage(EShaderStage stage);
-
-	FVulkanTextureCreateInfo Convert(const FTextureCreateInfo &info);
 }

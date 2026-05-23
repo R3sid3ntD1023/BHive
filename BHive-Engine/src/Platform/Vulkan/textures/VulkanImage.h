@@ -22,15 +22,13 @@ namespace BHive
 
 	class VulkanImage
 	{
-		static inline const ImageState DefaultState = {vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eNone, vk::PipelineStageFlagBits2::eTopOfPipe};
-
 	public:
 		VulkanImage() = default;
 
-		void Initialize(const ImageCreateInfo &info, ImageState initial = DefaultState);
+		void Initialize(const ImageCreateInfo &info);
 
 		//ImageCI unused
-		void Initialize(const vk::Image& img, const ImageCreateInfo &info, ImageState initial = DefaultState);
+		void Initialize(const vk::Image &img, const ImageCreateInfo &info);
 
 		void Upload(const void *data, size_t size, const ImageCopyRegion &region = {}, const ImageSubresource &sub = {});
 

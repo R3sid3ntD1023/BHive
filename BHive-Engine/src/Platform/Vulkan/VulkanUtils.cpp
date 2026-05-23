@@ -133,7 +133,7 @@ namespace BHive
 			src_access_mask = vk::AccessFlagBits::eTransferWrite;
 			dst_access_mask = vk::AccessFlagBits::eShaderRead;
 			src_stage = vk::PipelineStageFlagBits::eTransfer;
-			dst_stage = vk::PipelineStageFlagBits::eFragmentShader;
+			dst_stage = vk::PipelineStageFlagBits::eFragmentShader/* | vk::PipelineStageFlagBits::eComputeShader*/;
 		}
 		else
 		{
@@ -152,11 +152,6 @@ namespace BHive
 		const vk::Image &image,  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, const ImageSubresource &sub)
 	{
-		bool valid = oldLayout == vk::ImageLayout::eUndefined &&
-			newLayout == vk::ImageLayout::eShaderReadOnlyOptimal;
-		if (valid)
-			__debugbreak();
-
 		vk::ImageSubresourceRange range{aspect_flags, sub.MipLevel, sub.LevelCount, sub.BaseArrayLayer, sub.LayerCount};
 		vk::ImageMemoryBarrier2 barrier(
 			srcStageMask,

@@ -38,7 +38,7 @@ namespace BHive
 
 			FTextureCreateInfo create_info{};
 			create_info.Format = EFormat::RGBA8;
-			create_info.Usage = ETextureUsage::Sampled | ETextureUsage::TransferDst;
+			create_info.Roles = ETextureRole::Sampled | ETextureRole::TransferDst;
 			create_info.Aspect = ETextureAspect::Color;
 			create_info.DebugName = "WhiteTexture";
 

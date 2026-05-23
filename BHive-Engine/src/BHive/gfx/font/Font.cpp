@@ -24,7 +24,7 @@ namespace BHive
 
 		FTextureCreateInfo create_info{};
 		create_info.Format = EFormat::RGBA8;
-		create_info.Usage = ETextureUsage::Sampled | ETextureUsage::TransferDst;
+		create_info.Roles = ETextureRole::Sampled | ETextureRole::TransferDst;
 
 		Ref<Texture2D> texture = Texture2D::Create({w, h}, create_info, Buffer(bitmap.pixels, w * h * N));
 		return texture;

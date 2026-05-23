@@ -196,8 +196,11 @@ namespace BHive
 		{
 			if (pass.Type == EPassType::SwapChain)
 			{
+				// Color: Undefined/ShaderRead/etc → ColorAttachment
 				image.Transition(cmd, ImageState::ColorAttachment());
-				depth.Transition(cmd, ImageState::DepthStencilAttachmentment());
+
+				 // Depth: Undefined/ShaderRead/etc → DepthStencilAttachment
+				depth.Transition(cmd, ImageState::DepthStencilAttachment());
 
 				vk::ClearValue clearColor(mClearColor);
 				vk::ClearValue clearDepth(vk::ClearDepthStencilValue(1.0f, 0));
@@ -235,6 +238,7 @@ namespace BHive
 					auto img = image.Texture->GetNativeHandle().As<VulkanImage>();
 					img->Transition(cmd, ImageState::ComputeWrite(), sub);
 				}
+
 
 				pass.CommandList.Execute(frame);
 

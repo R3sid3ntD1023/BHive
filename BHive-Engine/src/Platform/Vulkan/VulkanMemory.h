@@ -41,10 +41,6 @@ namespace BHive
 
 		vk::ImageUsageFlags Usage;
 
-		uint32_t ArrayLayers = 1;
-
-		uint32_t MipLevels = 1;
-
 		std::string DebugName;
 
 		const vk::Image GetImage() const;

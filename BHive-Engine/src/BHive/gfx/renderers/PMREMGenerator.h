@@ -13,12 +13,25 @@ namespace BHive
 	class Texture2D;
 	class Material;
 
+	struct PMREMSettings
+	{
+		uint32_t EnvironmentMapSize = 512;
+		uint32_t PrefilterMapSize = 128;
+		uint32_t PrefilterMipLevels = 5;
+		uint32_t IrradianceSize = 32;
+		uint32_t BrdfLutSize = 512;
+	};
+
 	class BHIVE_API PMREMGenerator
 	{
 	public:
-		PMREMGenerator() = default;
+		
+
+	public:
+		PMREMGenerator(const PMREMSettings &settings = {});
 
 		void Initialize();
+
 		void SetEnvironmentMap(const Ref<Texture> &texture);
 
 		const Ref<Texture> &GetIrradianceTexture() const;
@@ -43,5 +56,7 @@ namespace BHive
 		Ref<Material> mPreFilterEnironmentMat;
 
 		bool mInitialized = false;
+
+		PMREMSettings mSettings{};
 	};
 } // namespace BHive

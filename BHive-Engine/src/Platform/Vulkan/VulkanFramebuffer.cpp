@@ -36,19 +36,23 @@ namespace BHive
 	VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecification &specification)
 		: mSpecification(specification)
 	{
-		for (auto &spec : mSpecification.Attachments.GetAttachments())
+		const auto& specs = mSpecification.Attachments.GetAttachments();
+		for (size_t i = 0; i < specs.size(); i++)
 		{
+			auto &spec = specs[i];
 			if (IsDepthFormat(spec.CreateInfo.Format))
 			{
 				mDepthSpecification = spec;
 				mDepthSpecification.CreateInfo.Aspect = ETextureAspect::DepthStencil;
-				mDepthSpecification.CreateInfo.Usage = ETextureUsage::DepthAttachment | ETextureUsage::Sampled;
+				mDepthSpecification.CreateInfo.Roles = ETextureRole::DepthTarget | ETextureRole::Sampled;
+				mDepthSpecification.CreateInfo.DebugName = "Framebuffer_Depth";
 				continue;
 			}
 
 			auto color_attachment_info = spec;
 			color_attachment_info.CreateInfo.Aspect = ETextureAspect::Color;
-			color_attachment_info.CreateInfo.Usage = ETextureUsage::ColorAttachment | ETextureUsage::Sampled;
+			color_attachment_info.CreateInfo.Roles = ETextureRole::RenderTarget | ETextureRole::Sampled;
+			color_attachment_info.CreateInfo.DebugName = std::format("Framebuffer_Color{}", i);
 			mColorAttachmentSpecifications.emplace_back(color_attachment_info);
 		}
 
@@ -97,7 +101,7 @@ namespace BHive
 						.MipLevel = spec.MipLevel,
 						.BaseArrayLayer = spec.Layer, .LayerCount = spec.LayerCount
 					};
-					tex->Transition(vk_ctx.CommandBuffer, ImageState::DepthStencilAttachmentment());
+					tex->Transition(vk_ctx.CommandBuffer, ImageState::DepthStencilAttachment());
 				}
 
 				// render

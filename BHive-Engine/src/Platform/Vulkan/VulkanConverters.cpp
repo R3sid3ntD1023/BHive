@@ -33,7 +33,8 @@ namespace BHive
 		case EResourceType::StorageBuffer:
 			return vk::DescriptorType::eStorageBuffer;
 		default:
-			break;
+			ASSERT(false, "Unknown ResourceType {}", ToString(type));
+			return vk::DescriptorType::eCombinedImageSampler;
 		}
 	}
 
@@ -53,31 +54,27 @@ namespace BHive
 		return {};
 	}
 
-	vk::ImageUsageFlags ToVKImageUsage(ETextureUsage usage)
+	vk::ImageUsageFlags InferImageUsage(ETextureRole roles)
 	{
-		//LOG_ERROR("ToVKImageUsage input = {}", (uint32_t)usage);
-
 		vk::ImageUsageFlags flags{};
 
-		if((usage & ETextureUsage::Sampled) != ETextureUsage::None)
+		if ((roles & ETextureRole::Sampled) != ETextureRole::None)
 			flags |= vk::ImageUsageFlagBits::eSampled;
-			
-		if ((usage & ETextureUsage::ColorAttachment) != ETextureUsage::None)
+
+		if ((roles & ETextureRole::RenderTarget) != ETextureRole::None)
 			flags |= vk::ImageUsageFlagBits::eColorAttachment;
 
-		if ((usage & ETextureUsage::DepthAttachment) != ETextureUsage::None)
+		if ((roles & ETextureRole::DepthTarget) != ETextureRole::None)
 			flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
 
-		if ((usage & ETextureUsage::Storage) != ETextureUsage::None)
-			flags |= vk::ImageUsageFlagBits::eStorage;
-
-		if ((usage & ETextureUsage::TransferSrc) != ETextureUsage::None)
+		if ((roles & ETextureRole::TransferSrc) != ETextureRole::None)
 			flags |= vk::ImageUsageFlagBits::eTransferSrc;
 
-		if ((usage & ETextureUsage::TransferDst) != ETextureUsage::None)
+		if ((roles & ETextureRole::TransferDst) != ETextureRole::None)
 			flags |= vk::ImageUsageFlagBits::eTransferDst;
 
-		//LOG_ERROR("ToVKImageUsage output = 0x{:X}", (uint32_t)flags);
+		if ((roles & ETextureRole::ComputeWrite) != ETextureRole::None)
+			flags |= vk::ImageUsageFlagBits::eStorage; // compute writes require storage
 
 		return flags;
 	}
@@ -337,25 +334,4 @@ namespace BHive
 			throw std::runtime_error("Invalid or multi-stage passed to ToSingleVkStage");
 		}
 	}
-
-	FVulkanTextureCreateInfo Convert(const FTextureCreateInfo &info)
-	{
-		FVulkanTextureCreateInfo out{};
-		out.Format = ToVkFormat(info.Format);
-		out.MinFilter = ToVkFilter(info.MinFilter);
-		out.MagFilter = ToVkFilter(info.MagFilter);
-		out.WrapMode = ToVkWrap(info.WrapMode);
-		out.Usage = ToVKImageUsage(info.Usage);
-		out.Aspect = ToVkAspect(info.Aspect);
-		out.BytesPerPixel = GetBytesPerPixel(info.Format);
-
-		out.CompareEnabled = info.CompareMode.has_value();
-		out.CompareOp = info.CompareOp.has_value() ? ToVkCompare(*info.CompareOp) : vk::CompareOp::eAlways;
-
-		out.MipLevels = info.MipLevels;
-		out.ArrayLayers = info.ArrayLayers;
-		out.DebugName = info.DebugName;
-
-		return out;
-	} // namespace Vulkan
 }

@@ -17,7 +17,7 @@ namespace BHive
 		create_info.ArrayLayers = 6;
 		create_info.MipLevels = 1;
 		create_info.DebugName = "TargetTexture";
-		create_info.Usage |= ETextureUsage::ColorAttachment | ETextureUsage::Storage;
+		create_info.Roles |= ETextureRole::RenderTarget | ETextureRole::ComputeWrite;
 		mTargetTexture = TextureCube::Create(size, create_info);
 
 		FFramebufferTexture color{};

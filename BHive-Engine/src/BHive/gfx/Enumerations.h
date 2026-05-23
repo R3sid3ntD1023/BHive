@@ -104,19 +104,19 @@ namespace BHive
 		Color,
 		DepthStencil
 	};
-	
-	enum class ETextureUsage : uint32_t
+
+	enum class ETextureRole : uint32_t
 	{
-		None				= 0 ,
-		Sampled				= 1 << 0,
-		ColorAttachment		= 1 << 1,
-		DepthAttachment		= 1 << 2,
-		Storage				= 1 << 3,
-		TransferSrc			= 1 << 4,
-		TransferDst			= 1 << 5
+		None = 0,
+		Sampled = BIT(0),
+		ComputeWrite = BIT(1),
+		RenderTarget = BIT(2),
+		DepthTarget = BIT(3),
+		TransferSrc = BIT(4),
+		TransferDst = BIT(5)
 	};
 
-	ENUM_FLAGS(ETextureUsage)
+	ENABLE_BITMASK_OPERATORS(ETextureRole)
 	
 	enum class ETextureType
 	{

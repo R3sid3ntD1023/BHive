@@ -5,6 +5,7 @@
 #include "VulkanConverters.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
+#include "textures/VulkanImage.h"
 
 namespace BHive
 {
@@ -147,7 +148,7 @@ namespace BHive
 		{
 			BindingInfo info{};
 			info.ReflResource = r;
-			
+
 			switch (r.kind)
 			{
 			case EResourceType::UniformBuffer:
@@ -162,13 +163,6 @@ namespace BHive
 				info.UpdateRate = EBindingUpdateRate::Static;
 				break;
 			}
-
-			if (mSetIndex == GLOBAL_SET_INDEX)
-				info.UpdateRate = EBindingUpdateRate::Static;
-			else
-				info.UpdateRate = EBindingUpdateRate::PerFrame;
-
-			
 
 			mBindings.push_back(info);
 		}
@@ -200,7 +194,7 @@ namespace BHive
 
 				for (auto &b : mBindings)
 				{
-					if (b.UpdateRate != EBindingUpdateRate::Static)
+					if (b.UpdateRate != EBindingUpdateRate::Static || (!b.Texture && !b.Buffer))
 						continue;
 
 					for (uint32_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
@@ -209,13 +203,11 @@ namespace BHive
 
 						if (IsBuffer(b.ReflResource.kind))
 						{
-							ASSERT(b.Buffer)
 							auto info = BuildBufferInfo(b);
 							writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), nullptr, info);
 						}
 						else if (IsTexture(b.ReflResource.kind))
 						{
-							ASSERT(b.Texture)
 							auto info = BuildImageInfo(b);
 							writes.emplace_back(set, b.ReflResource.binding, 0, ToVkType(b.ReflResource.kind), info);
 						}
@@ -237,17 +229,10 @@ namespace BHive
 
 	vk::DescriptorImageInfo VulkanSetManager::BuildImageInfo(const BindingInfo &b) const
 	{
-		ASSERT(b.Texture)
-
 		vk::DescriptorImageInfo info{};
 		auto native = b.Texture->GetNativeHandle().As<GPUImage>();
-
-		ASSERT(native);
-
 		auto smp = native->GetSampler();
 		auto defView = native->GetDefaultView();
-
-		ASSERT(defView, "Image does not have a default view component, cannot be used as a texture resource");
 
 		const uint32_t layer = 0;
 		const uint32_t face = 0;

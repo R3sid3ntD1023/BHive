@@ -29,7 +29,7 @@ namespace BHive
 
 		static void CopyBuffer(const vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size);
 
-
+		[[deprecated("Use the pipelineBarrier2 version instead")]]
 		static void TransitionImageLayout(const vk::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
 
 		static void TransitionImageLayout(

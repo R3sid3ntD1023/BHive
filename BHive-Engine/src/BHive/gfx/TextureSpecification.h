@@ -9,7 +9,7 @@ namespace BHive
 
 	struct FTextureCreateInfo
 	{
-		ETextureUsage Usage = ETextureUsage::Sampled;
+		ETextureRole Roles = ETextureRole::Sampled | ETextureRole::TransferDst;
 
 		ETextureAspect Aspect = ETextureAspect::Color;
 
@@ -34,7 +34,7 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{		
-			ar(MAKE_NVP(Usage));
+			ar(MAKE_NVP(Roles));
 			ar(MAKE_NVP(Aspect));
 			ar(MAKE_NVP(Format));
 			ar(MAKE_NVP(WrapMode));

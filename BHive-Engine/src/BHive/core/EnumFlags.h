@@ -37,4 +37,35 @@
 	}
 
 	
-	
+	#define ENABLE_BITMASK_OPERATORS(x)                                                 \
+	inline x operator|(x a, x b)                                                    \
+	{                                                                               \
+		return static_cast<x>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b)); \
+	}                                                                               \
+	inline x operator&(x a, x b)                                                    \
+	{                                                                               \
+		return static_cast<x>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b)); \
+	}                                                                               \
+	inline x operator^(x a, x b)                                                    \
+	{                                                                               \
+		return static_cast<x>(static_cast<uint32_t>(a) ^ static_cast<uint32_t>(b)); \
+	}                                                                               \
+	inline x operator~(x a)                                                         \
+	{                                                                               \
+		return static_cast<x>(~static_cast<uint32_t>(a));                           \
+	}                                                                               \
+	inline x &operator|=(x &a, x b)                                                 \
+	{                                                                               \
+		a = a | b;                                                                  \
+		return a;                                                                   \
+	}                                                                               \
+	inline x &operator&=(x &a, x b)                                                 \
+	{                                                                               \
+		a = a & b;                                                                  \
+		return a;                                                                   \
+	}                                                                               \
+	inline x &operator^=(x &a, x b)                                                 \
+	{                                                                               \
+		a = a ^ b;                                                                  \
+		return a;                                                                   \
+	}

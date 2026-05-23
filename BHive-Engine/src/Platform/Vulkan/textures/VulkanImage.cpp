@@ -7,7 +7,7 @@
 namespace BHive
 {
 
-	void VulkanImage::Initialize(const ImageCreateInfo &info, ImageState initial)
+	void VulkanImage::Initialize(const ImageCreateInfo &info)
 	{
 		mAspect = info.ViewCI.subresourceRange.aspectMask;
 
@@ -22,20 +22,20 @@ namespace BHive
 
 		mImage.Image = image_id;
 		mImage.Sampler = sampler_id;
-		mImage.ArrayLayers = layers;
-		mImage.MipLevels = levels;
 		mImage.DebugName = info.DebugName;
 		mImage.Usage = info.ImageCI.usage;
 
-		mStateTracker.Initialize(layers, levels, initial);
+		mStateTracker.Initialize(layers, levels, ImageState::Undefined());
 		
 		auto image = mImage.GetImage();
 		mutable_info.ViewCI.setImage(image);
-		ImageViewBuilder::Build(mImage, mutable_info.ViewCI, info.ViewTopology);
+
+		ImageViewBuildInfo build_info{.Layers = layers, .Levels = levels, .ViewCI = mutable_info.ViewCI, .DebugName = info.DebugName};
+		ImageViewBuilder::Build(mImage, build_info, info.ViewTopology);
 
 	}
 
-	void VulkanImage::Initialize(const vk::Image &img, const ImageCreateInfo &info, ImageState initial)
+	void VulkanImage::Initialize(const vk::Image &img, const ImageCreateInfo &info)
 	{
 		mAspect = info.ViewCI.subresourceRange.aspectMask;
 
@@ -46,16 +46,15 @@ namespace BHive
 		const auto& layers = info.ImageCI.arrayLayers;
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
 
-		mStateTracker.Initialize(layers, levels, initial);
+		mStateTracker.Initialize(layers, levels, ImageState::Undefined());
 
-		ImageViewBuilder::Build(mImage, mutable_info.ViewCI, mutable_info.ViewTopology);
+		ImageViewBuildInfo build_info{.Layers = layers, .Levels = levels, .ViewCI = mutable_info.ViewCI, .DebugName = info.DebugName};
+		ImageViewBuilder::Build(mImage, build_info, mutable_info.ViewTopology);
 
 		auto sampler_id = gpu_r_m.CreateSampler(mutable_info.SamplerCI, std::format("Image_{}_Sampler", mutable_info.DebugName));
 
 		mImage.Image = gpu_r_m.RegisterExternalImage(img);
 		mImage.Sampler = sampler_id;
-		mImage.ArrayLayers = layers;
-		mImage.MipLevels = levels;
 		mImage.DebugName = info.DebugName;
 		mImage.Usage = info.ImageCI.usage;
 
@@ -89,6 +88,7 @@ namespace BHive
 		ASSERT(mStateTracker.MipStates.size(), "Invalid layer size must be 1 or greater -> {}", mImage.DebugName);
 
 		auto image = mImage.GetImage();
+
 		for (uint32_t layer = sub.BaseArrayLayer; layer < sub.BaseArrayLayer + sub.LayerCount; layer++)
 		{
 			for (uint32_t mip = sub.MipLevel; mip < sub.MipLevel + sub.LevelCount; mip++)
@@ -103,8 +103,14 @@ namespace BHive
 				layerSub.MipLevel = mip;
 				layerSub.LevelCount = 1;
 
-				VulkanUtils::TransitionImageLayout(cmd, image, oldState.Layout, newState.Layout, oldState.Access, newState.Access, oldState.Stage, newState.Stage, mAspect, layerSub);
+				auto oldLayout = oldState.IsUndefined ? vk::ImageLayout::eUndefined : oldState.Layout;
+				auto oldAccess = oldState.IsUndefined ? vk::AccessFlagBits2{} : oldState.Access;
+				auto oldStage = oldState.IsUndefined ? vk::PipelineStageFlagBits2::eTopOfPipe : oldState.Stage;
+
+				VulkanUtils::TransitionImageLayout(cmd, image, oldLayout, newState.Layout, oldAccess, newState.Access, oldStage, newState.Stage, mAspect, layerSub);
+
 				oldState = newState;
+				oldState.IsUndefined = false;
 			}
 		}
 	}
