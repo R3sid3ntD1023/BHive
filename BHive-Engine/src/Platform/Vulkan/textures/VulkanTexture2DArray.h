@@ -10,6 +10,8 @@ namespace BHive
 	public:
 		VulkanTexture2DArray(const glm::uvec2& size, const FTextureCreateInfo &specification);
 
+		void GenerateMips() override;
+
 		const glm::uvec2 &GetSize() const override { return {mSize.x, mSize.y}; }
 
 		void SetData(const FTextureUploadInfo &info) override;

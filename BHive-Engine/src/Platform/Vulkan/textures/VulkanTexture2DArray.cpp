@@ -40,6 +40,11 @@ namespace BHive
 		mImage.Initialize(create_info);
 	}
 
+	void VulkanTexture2DArray::GenerateMips()
+	{
+		mImage.GenerateMipMaps(mSize.x, mSize.y, mCreateInfo.ArrayLayers, mCreateInfo.MipLevels);
+	}
+
 	void VulkanTexture2DArray::SetData(const FTextureUploadInfo &info)
 	{
 		size_t size = mSize.x * mSize.y * GetBytesPerPixel(mCreateInfo.Format);

@@ -22,16 +22,17 @@ namespace BHive
 	{
 		auto &rm = VulkanBackend::GetGPUResourceManager();
 
-		if (!Views.Faces.empty())
+		if (IsCubeArray && !Views.Faces.empty())
 		{
 			return rm.GetImageView(Views.Faces[layer][face][mip]);
 		}
 
-		if (!Views.CubeMips.empty())
+		if (IsCube && !Views.CubeMips.empty())
 		{
-			return rm.GetImageView(Views.CubeMips[layer][mip]);
+			return rm.GetImageView(Views.CubeMips[0][mip]);
 		}
 
+		//2D array or 3D: Mips[layer][mip]
 		if (!Views.Mips.empty())
 		{
 			return rm.GetImageView(Views.Mips[layer][mip]);

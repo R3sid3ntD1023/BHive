@@ -3,6 +3,8 @@
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanBackend.h"
 #include "Platform/Vulkan/ImageViewBuilder.h"
+#include "Platform/Vulkan/VulkanRendererAPI.h"
+#include "gfx/RenderCommand.h"
 
 namespace BHive
 {
@@ -24,6 +26,8 @@ namespace BHive
 		mImage.Sampler = sampler_id;
 		mImage.DebugName = info.DebugName;
 		mImage.Usage = info.ImageCI.usage;
+		mImage.IsCube = info.ViewTopology == EViewTopology::Cube;
+		mImage.IsCubeArray = info.ViewTopology == EViewTopology::CubeArray;
 
 		mStateTracker.Initialize(layers, levels, ImageState::Undefined());
 		
@@ -76,7 +80,7 @@ namespace BHive
 		auto& staging_buffer = VulkanBackend::GetGPUResourceManager().GetBuffer(stagingID);
 
 		SingleTimeCommand cmd{};
-		Transition(cmd, ImageState::TansferDst(), sub);
+		Transition(cmd, ImageState::TansferWrite(), sub);
 		VulkanUtils::CopyBufferToImage(cmd, staging_buffer, mImage.GetImage(), region);
 		Transition(cmd, ImageState::ShaderRead(), sub);
 
@@ -113,6 +117,67 @@ namespace BHive
 				oldState.IsUndefined = false;
 			}
 		}
+	}
+
+	void VulkanImage::GenerateMipMaps(uint32_t width, uint32_t height, uint32_t layers, uint32_t levels)
+	{
+		RenderCommand::GetActivePass().CommandList.Push(
+			"Generate MipMaps",
+			[=](IRendererContext& ctx)
+			{
+				
+				auto w = width;
+				auto h = height;
+				auto& vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+
+				vk::Image image = mImage.GetImage();
+
+				for (uint32_t mip = 1; mip < levels; ++mip)
+				{
+					{
+						ImageSubresource sub{};
+						sub.MipLevel = mip - 1;
+						sub.LevelCount = 1;
+						sub.BaseArrayLayer = 0;
+						sub.LayerCount = layers;
+
+						Transition(vk_ctx.CommandBuffer, ImageState::TansferRead(), sub);
+					}
+
+					{
+						ImageSubresource sub{};
+						sub.MipLevel = mip;
+						sub.LevelCount = 1;
+						sub.BaseArrayLayer = 0;
+						sub.LayerCount = layers;
+
+						Transition(vk_ctx.CommandBuffer, ImageState::TansferWrite(), sub);
+					}
+
+					// Blit mip -1 -> mip
+					vk::ImageBlit blit{};
+					blit.srcSubresource = {vk::ImageAspectFlagBits::eColor, mip - 1, 0, layers};
+					blit.srcOffsets[0] = vk::Offset3D{0, 0, 0};
+					blit.srcOffsets[1] = vk::Offset3D{int32_t(w), int32_t(h), 1};
+
+					blit.dstSubresource = {vk::ImageAspectFlagBits::eColor, mip, 0, layers};
+					blit.dstOffsets[0] = vk::Offset3D{0, 0, 0};
+					blit.dstOffsets[1] = vk::Offset3D{int32_t(std::max(w >> 1, 1u)), int32_t(std::max(h >> 1, 1u)), 1};
+
+					vk_ctx.CommandBuffer.blitImage(image, vk::ImageLayout::eTransferSrcOptimal, image, vk::ImageLayout::eTransferDstOptimal, blit, vk::Filter::eLinear);
+
+					w = std::max(w >> 1, 1u);
+					h = std::max(h >> 1, 1u);
+				}
+				
+				ImageSubresource sub{};
+				sub.MipLevel = 0;
+				sub.LevelCount = levels;
+				sub.BaseArrayLayer = 0;
+				sub.LayerCount = layers;
+
+				Transition(vk_ctx.CommandBuffer, ImageState::ShaderRead(), sub);
+			});
 	}
 
 	void VulkanImage::Destroy()

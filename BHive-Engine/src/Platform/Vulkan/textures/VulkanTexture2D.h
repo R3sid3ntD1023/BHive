@@ -15,6 +15,8 @@ namespace BHive
 
 		~VulkanTexture2D();
 
+		void GenerateMips() override;
+
 		const glm::uvec2& GetSize() const override { return mSize; }
 
 		void SetData(const FTextureUploadInfo &info) override;

@@ -65,14 +65,19 @@ namespace BHive
 	{
 		OffScreen,
 		SwapChain,
-		Compute
+		Compute,
+		Transfer
 	};
 
-	struct FComputeImage
+	struct FPassImage
 	{
 		Ref<Texture> Texture;
-		uint32_t MipLevel = 0;
-		uint32_t LayerCount = 0;
+		uint32_t BaseMip = 0;
+		uint32_t MipCount = 1;
+		uint32_t BaseLayer = 0;
+		uint32_t LayerCount = 1;
+
+		EImageAccess Access = EImageAccess::WRITE;
 	};
 
 	struct FRenderGraphPass
@@ -80,7 +85,7 @@ namespace BHive
 		std::string Name;
 		EPassType Type;
 		FRenderCommandList CommandList;
-		std::vector<FComputeImage> Images;
+		std::vector<FPassImage> Images;
 	};
 
 

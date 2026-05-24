@@ -2,7 +2,6 @@
 #include "Platform/Vulkan/VulkanConverters.h"
 #include "Platform/Vulkan/VulkanBackend.h"
 
-
 namespace BHive
 {
 
@@ -41,6 +40,11 @@ namespace BHive
 		create_info.BytesPerPixel = GetBytesPerPixel(mCreateInfo.Format);
 		create_info.ViewTopology = EViewTopology::Mips3D;
 		mImage.Initialize(create_info);
+	}
+
+	void VulkanTexture3D::GenerateMips()
+	{
+		mImage.GenerateMipMaps(mSize.x, mSize.y, mCreateInfo.ArrayLayers, mCreateInfo.MipLevels);
 	}
 
 	NativeHandle VulkanTexture3D::GetRenderView(uint32_t layer, uint32_t mip) const

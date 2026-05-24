@@ -9,7 +9,7 @@ namespace BHive
 
 	struct FTextureCreateInfo
 	{
-		ETextureRole Roles = ETextureRole::Sampled | ETextureRole::TransferDst;
+		ETextureRole Roles = ETextureRole::Sampled | ETextureRole::TransferDst | ETextureRole::TransferSrc;
 
 		ETextureAspect Aspect = ETextureAspect::Color;
 

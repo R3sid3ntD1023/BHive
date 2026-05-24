@@ -54,6 +54,8 @@ namespace BHive
 		
 		static void AddComputePass(const std::string &name, const std::function<void(FRenderGraphPass&)> &builder);
 
+		static void AddTransferPass(const std::string &name, const std::function<void(FRenderGraphPass &)> &builder);
+
 		static void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
 		static Ref<ISetManager> CreateSetManager(const Pipeline *pipeline, uint32_t setIndex);

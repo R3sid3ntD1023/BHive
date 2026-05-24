@@ -13,6 +13,8 @@ namespace BHive
 
 		VulkanTextureCube(uint32_t size, const FTextureCreateInfo &createInfo);
 
+		void GenerateMips() override;
+
 		const glm::uvec2& GetSize() const  override{ return {mSize, mSize}; }
 
 		virtual void SetData(const FTextureUploadInfo &info) {}

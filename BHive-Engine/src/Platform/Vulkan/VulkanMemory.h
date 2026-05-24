@@ -43,6 +43,10 @@ namespace BHive
 
 		std::string DebugName;
 
+		bool IsCube{false};
+
+		bool IsCubeArray{false};
+
 		const vk::Image GetImage() const;
 
 		const vk::Sampler GetSampler() const;

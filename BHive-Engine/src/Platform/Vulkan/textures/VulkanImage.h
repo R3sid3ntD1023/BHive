@@ -34,6 +34,8 @@ namespace BHive
 
 		void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, 1});
 
+		void GenerateMipMaps(uint32_t width, uint32_t height, uint32_t layers, uint32_t levels);
+
 		void Destroy();
 
 		const GPUImage &Native() const { return mImage; }

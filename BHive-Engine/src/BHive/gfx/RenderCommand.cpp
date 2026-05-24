@@ -88,6 +88,22 @@ namespace BHive
 		sActivePass = previous;
 	}
 
+	void RenderCommand::AddTransferPass(const std::string &name, const std::function<void(FRenderGraphPass &)> &builder)
+	{
+		RenderGraph graph{};
+		auto &pass = graph.AddPass(name, EPassType::Transfer);
+
+		auto *previous = sActivePass;
+		sActivePass = &pass;
+
+		builder(pass);
+
+		FResourceUpdateList list{};
+		RenderCommand::SubmitGraph(graph, list);
+
+		sActivePass = previous;
+	}
+
 	
 	void RenderCommand::ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 	{

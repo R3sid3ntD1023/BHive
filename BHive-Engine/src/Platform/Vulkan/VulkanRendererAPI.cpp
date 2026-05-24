@@ -194,6 +194,10 @@ namespace BHive
 
 		for (auto& pass : graph.GetPasses())
 		{
+			vk::DebugUtilsLabelEXT debugInfo(pass.Name.c_str(), {1, 0, 0, 1});
+
+			frame.CommandBuffer.beginDebugUtilsLabelEXT(debugInfo);
+
 			if (pass.Type == EPassType::SwapChain)
 			{
 				// Color: Undefined/ShaderRead/etc → ColorAttachment
@@ -227,33 +231,69 @@ namespace BHive
 			}
 			else if (pass.Type == EPassType::Compute)
 			{
+				// Before compute: transition to ComputeWrite / ShaderRead depending on Access
 				for (auto &image : pass.Images)
 				{
 					ImageSubresource sub{};
-					sub.MipLevel = image.MipLevel;
-					sub.LevelCount = 1;
-					sub.BaseArrayLayer = 0;
+					sub.MipLevel = image.BaseMip;
+					sub.LevelCount = image.MipCount;
+					sub.BaseArrayLayer = image.BaseLayer;
 					sub.LayerCount = image.LayerCount;
 
 					auto img = image.Texture->GetNativeHandle().As<VulkanImage>();
-					img->Transition(cmd, ImageState::ComputeWrite(), sub);
+
+					if (image.Access == EImageAccess::WRITE || image.Access == EImageAccess::READ_WRITE)
+						img->Transition(cmd, ImageState::ComputeWrite(), sub);
+					else
+						img->Transition(cmd, ImageState::ShaderRead(), sub);
 				}
 
 
 				pass.CommandList.Execute(frame);
 
+				// After compute: everything goes to ShaderRead
 				for (auto &image : pass.Images)
 				{
 					ImageSubresource sub{};
-					sub.MipLevel = image.MipLevel;
-					sub.LevelCount = 1;
-					sub.BaseArrayLayer = 0;
+					sub.MipLevel = image.BaseMip;
+					sub.LevelCount = image.MipCount;
+					sub.BaseArrayLayer = image.BaseLayer;
 					sub.LayerCount = image.LayerCount;
 
 					auto img = image.Texture->GetNativeHandle().As<VulkanImage>();
 					img->Transition(cmd, ImageState::ShaderRead(), sub);
 				}
 			}
+			else if (pass.Type == EPassType::Transfer)
+			{
+				for (auto &image : pass.Images)
+				{
+					ImageSubresource sub{};
+					sub.MipLevel = image.BaseMip;
+					sub.LevelCount = image.MipCount;
+					sub.BaseArrayLayer = image.BaseLayer;
+					sub.LayerCount = image.LayerCount;
+
+					auto img = image.Texture->GetNativeHandle().As<VulkanImage>();
+					img->Transition(cmd, ImageState::TansferWrite(), sub);
+				}
+
+				pass.CommandList.Execute(frame);
+
+				for (auto &image : pass.Images)
+				{
+					ImageSubresource sub{};
+					sub.MipLevel = image.BaseMip;
+					sub.LevelCount = image.MipCount;
+					sub.BaseArrayLayer = image.BaseLayer;
+					sub.LayerCount = image.LayerCount;
+
+					auto img = image.Texture->GetNativeHandle().As<VulkanImage>();
+					img->Transition(cmd, ImageState::ShaderRead(), sub);
+				}
+			}
+
+			frame.CommandBuffer.endDebugUtilsLabelEXT();
 		}
 
 #ifdef _DEBUG
