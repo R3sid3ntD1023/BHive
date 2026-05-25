@@ -35,7 +35,8 @@ namespace BHive
 		void SetEnvironmentMap(const Ref<Texture> &texture);
 
 		const Ref<Texture> &GetIrradianceTexture() const;
-		const Ref<Texture> &GetPreFilteredEnvironmentTetxure() const;
+		const Ref<Texture> &GetPreFilteredEnvironmentTexture() const;
+		const Ref<Texture> &GetEnvironmentCubeTexture() const;
 		const Ref<Texture> &GetBDRFLUT() const;
 
 	private:
@@ -53,9 +54,8 @@ namespace BHive
 		Ref<Material> mEquirectangularMat;
 		Ref<Material> mIrradianceMat;
 		Ref<Material> mBRDFLUTMat;
-		Ref<Material> mPreFilterEnironmentMat;
-
-		bool mInitialized = false;
+		//Ref<Material> mPreFilterEnironmentMat;
+		std::vector <Ref<Material>> mPreFilterEnironmentMats;
 
 		PMREMSettings mSettings{};
 	};

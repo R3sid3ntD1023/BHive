@@ -73,7 +73,7 @@ namespace BHive
 	{
 		Ref<Texture> Texture;
 		uint32_t BaseMip = 0;
-		uint32_t MipCount = 1;
+		uint32_t LevelCount = 1;
 		uint32_t BaseLayer = 0;
 		uint32_t LayerCount = 1;
 
@@ -88,7 +88,20 @@ namespace BHive
 		std::vector<FPassImage> Images;
 	};
 
+	struct FComputeBindings
+	{
+		virtual void StorageImage(const char *name, const Ref<Texture>& tex, uint32_t mip = 0) = 0;
 
+		virtual void SampledImage(const char *name, const Ref<Texture> &tex, uint32_t mip = 0) = 0;
+
+		virtual void Set(const char *name, const void* data, size_t size) = 0;
+
+		template<typename T>
+		void Set(const char* name, const T& data)
+		{
+			Set(name, &data, sizeof(T));
+		}
+	};
 
 	class RenderGraph
 	{

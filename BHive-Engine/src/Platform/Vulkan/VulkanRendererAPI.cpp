@@ -236,7 +236,7 @@ namespace BHive
 				{
 					ImageSubresource sub{};
 					sub.MipLevel = image.BaseMip;
-					sub.LevelCount = image.MipCount;
+					sub.LevelCount = image.LevelCount;
 					sub.BaseArrayLayer = image.BaseLayer;
 					sub.LayerCount = image.LayerCount;
 
@@ -256,7 +256,7 @@ namespace BHive
 				{
 					ImageSubresource sub{};
 					sub.MipLevel = image.BaseMip;
-					sub.LevelCount = image.MipCount;
+					sub.LevelCount = image.LevelCount;
 					sub.BaseArrayLayer = image.BaseLayer;
 					sub.LayerCount = image.LayerCount;
 
@@ -270,7 +270,7 @@ namespace BHive
 				{
 					ImageSubresource sub{};
 					sub.MipLevel = image.BaseMip;
-					sub.LevelCount = image.MipCount;
+					sub.LevelCount = image.LevelCount;
 					sub.BaseArrayLayer = image.BaseLayer;
 					sub.LayerCount = image.LayerCount;
 
@@ -284,7 +284,7 @@ namespace BHive
 				{
 					ImageSubresource sub{};
 					sub.MipLevel = image.BaseMip;
-					sub.LevelCount = image.MipCount;
+					sub.LevelCount = image.LevelCount;
 					sub.BaseArrayLayer = image.BaseLayer;
 					sub.LayerCount = image.LayerCount;
 

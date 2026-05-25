@@ -117,7 +117,7 @@ namespace BHive
 
 		auto &irradiance = sData->EnvironmentMapGenerator.GetIrradianceTexture();
 		auto &bdrflut = sData->EnvironmentMapGenerator.GetBDRFLUT();
-		auto &prefilter = sData->EnvironmentMapGenerator.GetPreFilteredEnvironmentTetxure();
+		auto &prefilter = sData->EnvironmentMapGenerator.GetPreFilteredEnvironmentTexture();
 
 		auto &global_buffer = GetSubSystem<GlobalBuffers>();
 		global_buffer.Register(0, irradiance);
@@ -143,6 +143,26 @@ namespace BHive
 	FModelBuffer &Renderer::GetModelBuffer()
 	{
 		return sData->ModelBuffer;
+	}
+
+	Ref<Texture> Renderer::GetPreFilterEnvironmentTexture()
+	{
+		return sData->EnvironmentMapGenerator.GetPreFilteredEnvironmentTexture();
+	}
+
+	Ref<Texture> Renderer::GetEnviromentCubeTexture()
+	{
+		return sData->EnvironmentMapGenerator.GetEnvironmentCubeTexture();
+	}
+
+	Ref<Texture> Renderer::GetIrradianceTexture()
+	{
+		return sData->EnvironmentMapGenerator.GetIrradianceTexture();
+	}
+
+	Ref<Texture> Renderer::GetBRDFLUTTexture()
+	{
+		return sData->EnvironmentMapGenerator.GetBDRFLUT();
 	}
 
 	const Frustum &Renderer::GetFrustum()

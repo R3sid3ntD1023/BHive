@@ -34,6 +34,7 @@ namespace BHive
 		{
 		case EResourceType::StorageImage:
 			mImageSlots.at(name) =  slot;
+			mBackendMaterial->BindTexture(name, slot.Texture, slot.MipLevel, mPipeline);
 			break;
 		default:
 			mTextureSlots.at(name) = slot;
@@ -53,13 +54,13 @@ namespace BHive
 			mBackendMaterial->BindTexture(name, tex, slot.MipLevel, current_pipeline);
 		}
 
-		for (auto &[name, slot] : mImageSlots)
+		/*for (auto &[name, slot] : mImageSlots)
 		{
 			if (!slot.Texture)
 				continue;
 
 			mBackendMaterial->BindTexture(name, slot.Texture, slot.MipLevel, current_pipeline);
-		}
+		}*/
 
 		mBackendMaterial->Bind(mPipeline); //update descriptor sets
 	}

@@ -53,9 +53,19 @@ namespace BHive
 		static FCameraData & GetCameraData();
 
 		static void ResetStats();
+
 		static Statitics &GetStats() { return sStats; }
 
 		static FModelBuffer &GetModelBuffer();
+
+		//BRDF textures
+		static Ref<Texture> GetPreFilterEnvironmentTexture();
+
+		static Ref<Texture> GetEnviromentCubeTexture();
+
+		static Ref<Texture> GetIrradianceTexture();
+
+		static Ref<Texture> GetBRDFLUTTexture();
 
 	private:
 		struct RenderData;

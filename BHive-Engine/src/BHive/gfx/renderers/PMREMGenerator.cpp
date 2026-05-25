@@ -14,9 +14,6 @@ namespace BHive
 
 	void PMREMGenerator::Initialize()
 	{
-		if (mInitialized)
-			return;
-
 		{
 			FTextureCreateInfo create_info{};
 			create_info.Format = EFormat::RGBA32F;
@@ -87,7 +84,11 @@ namespace BHive
 			Pipeline::ComputePipelineState state{};
 			state.ShaderProgram = PreFilterEnvironmentShader;
 			preFilterPipeline->Init(state);
-			mPreFilterEnironmentMat = CreateRef<Material>(preFilterPipeline);
+			//mPreFilterEnironmentMat = CreateRef<Material>(preFilterPipeline);
+
+			mPreFilterEnironmentMats.reserve(mSettings.PrefilterMipLevels);
+			for (uint32_t i = 0; i < mSettings.PrefilterMipLevels; i++)
+				mPreFilterEnironmentMats.push_back(CreateRef<Material>(preFilterPipeline));
 		}
 
 		{
@@ -100,7 +101,6 @@ namespace BHive
 			mBRDFLUTMat = CreateRef<Material>(brdfLUTPipeline);
 		}
 
-		mInitialized = true;
 	}
 
 	void PMREMGenerator::SetEnvironmentMap(const Ref<Texture> &texture)
@@ -117,9 +117,14 @@ namespace BHive
 		return mIrradiance;
 	}
 
-	const Ref<Texture> &PMREMGenerator::GetPreFilteredEnvironmentTetxure() const
+	const Ref<Texture> &PMREMGenerator::GetPreFilteredEnvironmentTexture() const
 	{
 		return mPreFilteredEnvironment;
+	}
+
+	const Ref<Texture> &PMREMGenerator::GetEnvironmentCubeTexture() const
+	{
+		return mEnvironmentCube;
 	}
 
 	const Ref<Texture> &PMREMGenerator::GetBDRFLUT() const
@@ -129,15 +134,15 @@ namespace BHive
 
 	void PMREMGenerator::CreateEnvironmentCubeMap()
 	{	
-		mEquirectangularMat->SetTexture("imgOutput", mEnvironmentCube);
 		mEquirectangularMat->SetTexture("equirectangularMap", mEnvironment);
-		mEquirectangularMat->Set("u_width", mSettings.EnvironmentMapSize);
-		mEquirectangularMat->Set("u_height", mSettings.EnvironmentMapSize);
 
 		RenderCommand::AddComputePass(
 			"Create CubeMap Pass",
 			[=](auto &pass)
 			{
+				mEquirectangularMat->SetTexture("imgOutput", mEnvironmentCube);
+				mEquirectangularMat->Set("u_width", mSettings.EnvironmentMapSize);
+				mEquirectangularMat->Set("u_height", mSettings.EnvironmentMapSize);
 				mEquirectangularMat->Submit();
 				RenderCommand::Dispatch({(mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 6});
 				pass.Images.push_back({mEnvironmentCube, 0, 1, 0, 6, EImageAccess::WRITE});
@@ -154,15 +159,15 @@ namespace BHive
 
 	void PMREMGenerator::CreateIrradianceMap()
 	{
-		mIrradianceMat->SetTexture("irradianceMap", mIrradiance);
 		mIrradianceMat->SetTexture("environmentMap", mEnvironmentCube);
-		mIrradianceMat->Set("u_width", mSettings.IrradianceSize);
-		mIrradianceMat->Set("u_height", mSettings.IrradianceSize);
 
 		RenderCommand::AddComputePass(
 			"Create Irradiance Map",
 			[=](auto &pass)
 			{
+				mIrradianceMat->SetTexture("irradianceMap", mIrradiance);		
+				mIrradianceMat->Set("u_width", mSettings.IrradianceSize);
+				mIrradianceMat->Set("u_height", mSettings.IrradianceSize);
 				mIrradianceMat->Submit();
 				RenderCommand::Dispatch({(mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 1});
 				pass.Images.push_back({mIrradiance, 0, 1, 0, 6, EImageAccess::WRITE});
@@ -171,37 +176,53 @@ namespace BHive
 
 	void PMREMGenerator::CreatePreFilteredEnvironmentMap()
 	{
-		mPreFilterEnironmentMat->SetTexture("environmentMap", mEnvironmentCube);
-		mPreFilterEnironmentMat->Set("u_envResolution", mSettings.EnvironmentMapSize);
-		
+		//mPreFilterEnironmentMat->SetTexture("environmentMap", mEnvironmentCube);
+
 		for (uint32_t mip = 0; mip < mSettings.PrefilterMipLevels; mip++)
 		{
+			
+			
+
 			uint32_t s = mSettings.PrefilterMapSize >> mip;
 			if (s == 0)
 				s = 1;
+			LOG_INFO("PMREM pass: mip={} size={}x{}", mip, s, s);
 
-			float roughness = (float)mip / (float)(mSettings.PrefilterMipLevels - 1);
+			float roughness = (float)mip / (float)(mSettings.PrefilterMipLevels - 1);			
+			auto mat = mPreFilterEnironmentMats[mip];
 
 			RenderCommand::AddComputePass("PreFilterEnvironmentPass", [=](auto& pass) {
-					mPreFilterEnironmentMat->Set("u_roughness", roughness);
-					mPreFilterEnironmentMat->Set("u_mip_level", (int)mip);
-					mPreFilterEnironmentMat->Set("u_width", s);
-					mPreFilterEnironmentMat->Set("u_height", s);
-					mPreFilterEnironmentMat->SetTexture("imgOutput", mPreFilteredEnvironment, mip);
-					mPreFilterEnironmentMat->Submit();
-					RenderCommand::Dispatch({(s + 7) / 8, (s +7) / 8, 6});
+					
+				LOG_INFO("PreFilter pass lambda: binding imgOutput mip={}", mip);
 
-					pass.Images.push_back({mPreFilteredEnvironment, mip, 1, 0 , 6, EImageAccess::WRITE});
-				});
+				mat->SetTexture("environmentMap", mEnvironmentCube);
+				mat->SetTexture("imgOutput", mPreFilteredEnvironment, mip);
+				mat->Set("u_envResolution", mSettings.EnvironmentMapSize);
+				mat->Set("u_roughness", roughness);
+				mat->Set("u_mip_level", int32_t(mip));
+				mat->Set("u_width", s);
+				mat->Set("u_height", s);
+				mat->Submit();
+
+				RenderCommand::Dispatch({(s + 7) / 8, (s + 7) / 8, 6});
+
+				FPassImage image{};
+				image.Texture = mPreFilteredEnvironment;
+				image.Access = EImageAccess::WRITE;
+				image.BaseLayer = 0;
+				image.LayerCount = 6;
+				image.BaseMip = mip;
+				image.LevelCount = 1;
+				pass.Images.push_back(image);
+			});
 		}
 
 	}
 
 	void PMREMGenerator::CreateBRDFLUTMap()
 	{
-		mBRDFLUTMat->SetTexture("brdfLutTexture", mBRDFLUT);
-
 		RenderCommand::AddComputePass("BrdfLUTPass", [=](auto& pass) {
+				mBRDFLUTMat->SetTexture("brdfLutTexture", mBRDFLUT);
 				mBRDFLUTMat->Submit();
 				RenderCommand::Dispatch({mSettings.BrdfLutSize / 8, mSettings.BrdfLutSize / 8, 1});
 				pass.Images.push_back({mBRDFLUT, 0, 1});

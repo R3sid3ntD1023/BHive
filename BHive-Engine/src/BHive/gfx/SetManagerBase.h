@@ -8,7 +8,8 @@ namespace BHive
 	enum class EBindingUpdateRate
 	{
 		Static,
-		PerFrame
+		PerFrame,
+		PerPass
 	};
 
 	struct FBindingInfo
@@ -67,9 +68,10 @@ namespace BHive
 			{
 			case EResourceType::UniformBuffer:
 			case EResourceType::StorageBuffer:
-			case EResourceType::StorageImage:
 			case EResourceType::InputAttachment:
 				return EBindingUpdateRate::PerFrame;
+			case EResourceType::StorageImage:
+				return EBindingUpdateRate::PerPass;
 			case EResourceType::CombinedImageSampler:
 			case EResourceType::SeperatedImage:
 			case EResourceType::SeperatedSampler:

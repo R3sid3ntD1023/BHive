@@ -22,6 +22,7 @@
 #include "gfx/ISetManager.h"
 #include "gfx/GlobalBuffers.h"
 #include "gfx/material/LambertMaterial.h"
+#include "gfx/debug/ImageDebugger.h"
 
 namespace BHive
 {
@@ -105,6 +106,13 @@ namespace BHive
 		mMultiDrawIndirectBuffer = GPUBuffer::Create(sizeof(MultiDrawIndirectCommand) * commands.size(), EBufferType::IndirectBuffer);
 		mMultiDrawIndirectBuffer->SetData(commands.data(), sizeof(MultiDrawIndirectCommand) * commands.size());
 		
+		auto &dbg = ImageDebugger::Get();
+		dbg.Initialize({512, 512});
+
+		dbg.RegisterTexture("PreFilterEnv", Renderer::GetPreFilterEnvironmentTexture());
+		dbg.RegisterTexture("EnvironmentCube", Renderer::GetEnviromentCubeTexture());
+		dbg.RegisterTexture("Irradiance", Renderer::GetIrradianceTexture());
+		dbg.RegisterTexture("BRDFLUT", Renderer::GetBRDFLUTTexture());
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -169,12 +177,13 @@ namespace BHive
 		Renderer::End();
 
 		mFramebuffer->UnBind();
-
 	}
 
 	void RuntimeLayer::OnGuiRender()
 	{
 		GUI::BeginDockSpace("Dockspace");
+
+		ImageDebugger::Get().OnGuiRender();
 
 		if (ImGui::Begin("Scene"))
 		{

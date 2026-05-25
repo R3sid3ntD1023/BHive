@@ -30,7 +30,9 @@ namespace BHive
 
 		vk::DescriptorBufferInfo BuildBufferInfo(const FBindingInfo &b) const;
 
-		vk::DescriptorImageInfo BuildImageInfo(const FBindingInfo &b) const;
+		vk::DescriptorImageInfo BuildImageInfo(const FBindingInfo& bindInfo, uint32_t mip) const;
+
+		FBindingInfo *FindBinding(uint32_t binding);
 
 	private:
 		vk::raii::Device& mDevice;

@@ -19,7 +19,7 @@ layout(set = 1, binding = 1) uniform samplerCube environmentMap;
 layout(push_constant) uniform PushConstants
 {
 	float u_roughness;
-	int u_mip_level;
+	uint u_mip_level;
 	uint u_width;
 	uint u_height;
 	uint u_envResolution;
@@ -37,7 +37,8 @@ void main()
     if (x >= constants.u_width || y >= constants.u_height || face >= 6u)
         return;
 
-	vec3 N = CalculateDirection(int(face), int(x), int(y), float(constants.u_width), float(constants.u_height));
+	vec3 N = CalculateDirection(face, x, y, float(constants.u_width), float(constants.u_height));
+
 	vec3 R = N;
 	vec3 V = R;
 	float roughness = constants.u_roughness;
