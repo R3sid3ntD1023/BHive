@@ -62,43 +62,35 @@ namespace BHive
 
 		{
 			auto EquirectangularShader = ShaderManager::Get().Load("Equirectangular.glsl");
-			auto equirrectangularPipeline = Pipeline::Create();
-			auto state = Pipeline::ComputePipelineState{};
+			mEquirectangularPipeline = Pipeline::Create();
+			Pipeline::ComputePipelineState state{};
 			state.ShaderProgram = EquirectangularShader;
-			equirrectangularPipeline->Init(state);
-			mEquirectangularMat = CreateRef<Material>(equirrectangularPipeline);
+			mEquirectangularPipeline->Init(state);
 		}
 
 		{
 			auto IrradianceShader = ShaderManager::Get().Load("Irradiance.glsl");
-			auto irradiancePipeline = Pipeline::Create();
-			auto state = Pipeline::ComputePipelineState();
+			mIrradiancePipeline = Pipeline::Create();
+			Pipeline::ComputePipelineState state{};
 			state.ShaderProgram = IrradianceShader;
-			irradiancePipeline->Init(state);
-			mIrradianceMat = CreateRef<Material>(irradiancePipeline);
+			mIrradiancePipeline->Init(state);
 		}
 
 		{
 			auto PreFilterEnvironmentShader = ShaderManager::Get().Load("PrefilterEnvironment.glsl");
-			auto preFilterPipeline = Pipeline::Create();
+			mPreFilterEnironmentPipeline = Pipeline::Create();
 			Pipeline::ComputePipelineState state{};
 			state.ShaderProgram = PreFilterEnvironmentShader;
-			preFilterPipeline->Init(state);
-			//mPreFilterEnironmentMat = CreateRef<Material>(preFilterPipeline);
-
-			mPreFilterEnironmentMats.reserve(mSettings.PrefilterMipLevels);
-			for (uint32_t i = 0; i < mSettings.PrefilterMipLevels; i++)
-				mPreFilterEnironmentMats.push_back(CreateRef<Material>(preFilterPipeline));
+			mPreFilterEnironmentPipeline->Init(state);
 		}
 
 		{
 
 			auto BRDFLUTShader = ShaderManager::Get().Load("BRDFLut.glsl");
-			auto brdfLUTPipeline = Pipeline::Create();
+			mBRDFLUTPipeline = Pipeline::Create();
 			Pipeline::ComputePipelineState state{};
 			state.ShaderProgram = BRDFLUTShader;
-			brdfLUTPipeline->Init(state);
-			mBRDFLUTMat = CreateRef<Material>(brdfLUTPipeline);
+			mBRDFLUTPipeline->Init(state);
 		}
 
 	}
@@ -134,17 +126,16 @@ namespace BHive
 
 	void PMREMGenerator::CreateEnvironmentCubeMap()
 	{	
-		mEquirectangularMat->SetTexture("equirectangularMap", mEnvironment);
-
 		RenderCommand::AddComputePass(
 			"Create CubeMap Pass",
-			[=](auto &pass)
+			mEquirectangularPipeline, {(mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 6},
+			[=](FComputeBindings& b, FRenderGraphPass &pass)
 			{
-				mEquirectangularMat->SetTexture("imgOutput", mEnvironmentCube);
-				mEquirectangularMat->Set("u_width", mSettings.EnvironmentMapSize);
-				mEquirectangularMat->Set("u_height", mSettings.EnvironmentMapSize);
-				mEquirectangularMat->Submit();
-				RenderCommand::Dispatch({(mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 6});
+				b.SampledImage("equirectangularMap", mEnvironment);
+				b.StorageImage("imgOutput", mEnvironmentCube);
+				b.Set("u_width", mSettings.EnvironmentMapSize);
+				b.Set("u_height", mSettings.EnvironmentMapSize);
+
 				pass.Images.push_back({mEnvironmentCube, 0, 1, 0, 6, EImageAccess::WRITE});
 			});
 
@@ -159,52 +150,44 @@ namespace BHive
 
 	void PMREMGenerator::CreateIrradianceMap()
 	{
-		mIrradianceMat->SetTexture("environmentMap", mEnvironmentCube);
-
 		RenderCommand::AddComputePass(
-			"Create Irradiance Map",
-			[=](auto &pass)
+			"Create Irradiance Map", mIrradiancePipeline, {(mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 1},
+			[=](FComputeBindings &b, FRenderGraphPass &pass)
 			{
-				mIrradianceMat->SetTexture("irradianceMap", mIrradiance);		
-				mIrradianceMat->Set("u_width", mSettings.IrradianceSize);
-				mIrradianceMat->Set("u_height", mSettings.IrradianceSize);
-				mIrradianceMat->Submit();
-				RenderCommand::Dispatch({(mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 1});
+				b.SampledImage("environmentMap", mEnvironmentCube);
+				b.StorageImage("irradianceMap", mIrradiance);		
+				b.Set("u_width", mSettings.IrradianceSize);
+				b.Set("u_height", mSettings.IrradianceSize);
+
 				pass.Images.push_back({mIrradiance, 0, 1, 0, 6, EImageAccess::WRITE});
 			});
 	}
 
 	void PMREMGenerator::CreatePreFilteredEnvironmentMap()
 	{
-		//mPreFilterEnironmentMat->SetTexture("environmentMap", mEnvironmentCube);
-
 		for (uint32_t mip = 0; mip < mSettings.PrefilterMipLevels; mip++)
 		{
-			
-			
-
 			uint32_t s = mSettings.PrefilterMapSize >> mip;
 			if (s == 0)
 				s = 1;
-			LOG_INFO("PMREM pass: mip={} size={}x{}", mip, s, s);
 
 			float roughness = (float)mip / (float)(mSettings.PrefilterMipLevels - 1);			
-			auto mat = mPreFilterEnironmentMats[mip];
 
-			RenderCommand::AddComputePass("PreFilterEnvironmentPass", [=](auto& pass) {
+			RenderCommand::AddComputePass(
+				"PreFilterEnvironmentPass",
+				mPreFilterEnironmentPipeline, {(s + 7) / 8, (s + 7) / 8, 6},
+				[=](FComputeBindings &b, FRenderGraphPass &pass)
+				{
 					
 				LOG_INFO("PreFilter pass lambda: binding imgOutput mip={}", mip);
 
-				mat->SetTexture("environmentMap", mEnvironmentCube);
-				mat->SetTexture("imgOutput", mPreFilteredEnvironment, mip);
-				mat->Set("u_envResolution", mSettings.EnvironmentMapSize);
-				mat->Set("u_roughness", roughness);
-				mat->Set("u_mip_level", int32_t(mip));
-				mat->Set("u_width", s);
-				mat->Set("u_height", s);
-				mat->Submit();
-
-				RenderCommand::Dispatch({(s + 7) / 8, (s + 7) / 8, 6});
+				b.SampledImage("environmentMap", mEnvironmentCube);
+				b.StorageImage("imgOutput", mPreFilteredEnvironment, mip);
+				b.Set("u_envResolution", mSettings.EnvironmentMapSize);
+				b.Set("u_roughness", roughness);
+				b.Set("u_mip_level", int32_t(mip));
+				b.Set("u_width", s);
+				b.Set("u_height", s);
 
 				FPassImage image{};
 				image.Texture = mPreFilteredEnvironment;
@@ -221,10 +204,12 @@ namespace BHive
 
 	void PMREMGenerator::CreateBRDFLUTMap()
 	{
-		RenderCommand::AddComputePass("BrdfLUTPass", [=](auto& pass) {
-				mBRDFLUTMat->SetTexture("brdfLutTexture", mBRDFLUT);
-				mBRDFLUTMat->Submit();
-				RenderCommand::Dispatch({mSettings.BrdfLutSize / 8, mSettings.BrdfLutSize / 8, 1});
+		RenderCommand::AddComputePass(
+			"BrdfLUTPass", 
+			mBRDFLUTPipeline, {mSettings.BrdfLutSize / 8, mSettings.BrdfLutSize / 8, 1},
+			[=](FComputeBindings &b, FRenderGraphPass &pass)
+			{
+				b.StorageImage("brdfLutTexture", mBRDFLUT);
 				pass.Images.push_back({mBRDFLUT, 0, 1});
 			});
 	

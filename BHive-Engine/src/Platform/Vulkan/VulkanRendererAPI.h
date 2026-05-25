@@ -85,6 +85,8 @@ namespace BHive
 
 		void OnPipelineCreated(const VulkanPipeline *pipeline);
 
+		Ref<FComputeBindings> CreateComputeBindings(const Ref<Pipeline> &pipeline);
+
 	private:
 		void ProcessDeletionQueue(uint32_t frame);
 

@@ -12,6 +12,7 @@
 #include "systems/GlobalSetRegistry.h"
 #include "systems/MaterialSetRegistry.h"
 #include "textures/VulkanImage.h"
+#include "pass/ComputeBindings.h"
 
 namespace BHive
 {
@@ -277,7 +278,7 @@ namespace BHive
 					auto img = image.Texture->GetNativeHandle().As<VulkanImage>();
 					img->Transition(cmd, ImageState::TansferWrite(), sub);
 				}
-
+				
 				pass.CommandList.Execute(frame);
 
 				for (auto &image : pass.Images)
@@ -450,6 +451,12 @@ namespace BHive
 	void VulkanRendererAPI::DebugPass(const std::string &msg)
 	{
 		LOG_TRACE(msg);
+	}
+
+	Ref<FComputeBindings> VulkanRendererAPI::CreateComputeBindings(const Ref<Pipeline> &pipeline)
+	{
+		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
+		return CreateRef<FVulkanComputeBindings>(vkPipeline);
 	}
 
 } // namespace BHive

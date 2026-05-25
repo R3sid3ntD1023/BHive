@@ -1,4 +1,5 @@
 #include "RenderCommand.h"
+#include "Pipeline.h"
 
 namespace BHive
 {
@@ -72,7 +73,7 @@ namespace BHive
 		sRendererAPI->Dispatch(size);
 	}
 
-	void RenderCommand::AddComputePass(const std::string &name, const std::function<void(FRenderGraphPass&)> &builder)
+	void RenderCommand::AddComputePass(const std::string &name, const Ref<Pipeline> &pipeline, const glm::uvec3 &dispatchSize, const FComputePassFunc &builder)
 	{
 		RenderGraph graph{};
 		auto &pass = graph.AddPass(name, EPassType::Compute);
@@ -80,7 +81,16 @@ namespace BHive
 		auto *previous = sActivePass;
 		sActivePass = &pass;
 
-		builder(pass);
+		pipeline->Bind();
+
+		auto bindings = sRendererAPI->CreateComputeBindings(pipeline);
+		pass.ComputeBindings.push_back(bindings);
+
+		builder(*bindings, pass);
+
+		bindings->Bind();
+
+		RenderCommand::Dispatch(dispatchSize);
 
 		FResourceUpdateList list{};
 		RenderCommand::SubmitGraph(graph, list);

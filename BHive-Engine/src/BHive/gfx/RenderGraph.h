@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
+#include "Enumerations.h"
 
 namespace BHive
 {
@@ -80,14 +81,7 @@ namespace BHive
 		EImageAccess Access = EImageAccess::WRITE;
 	};
 
-	struct FRenderGraphPass
-	{
-		std::string Name;
-		EPassType Type;
-		FRenderCommandList CommandList;
-		std::vector<FPassImage> Images;
-	};
-
+	
 	struct FComputeBindings
 	{
 		virtual void StorageImage(const char *name, const Ref<Texture>& tex, uint32_t mip = 0) = 0;
@@ -96,11 +90,22 @@ namespace BHive
 
 		virtual void Set(const char *name, const void* data, size_t size) = 0;
 
+		virtual void Bind() const = 0;
+
 		template<typename T>
 		void Set(const char* name, const T& data)
 		{
 			Set(name, &data, sizeof(T));
 		}
+	};
+
+	struct FRenderGraphPass
+	{
+		std::string Name;
+		EPassType Type;
+		FRenderCommandList CommandList;
+		std::vector<FPassImage> Images;
+		std::vector<Ref<FComputeBindings>> ComputeBindings;
 	};
 
 	class RenderGraph

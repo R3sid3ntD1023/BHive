@@ -1,17 +1,13 @@
 #pragma once
 
 #include "core/Core.h"
-#include "gfx/cameras/CubeCamera.h"
-#include "gfx/textures/RenderTargetCube.h"
 
 namespace BHive
 {
 	class Texture;
-	class StaticMesh;
-	class Framebuffer;
 	class TextureCube;
 	class Texture2D;
-	class Material;
+	class Pipeline;
 
 	struct PMREMSettings
 	{
@@ -51,11 +47,10 @@ namespace BHive
 		Ref<TextureCube> mIrradiance;
 		Ref<Texture2D> mBRDFLUT;
 
-		Ref<Material> mEquirectangularMat;
-		Ref<Material> mIrradianceMat;
-		Ref<Material> mBRDFLUTMat;
-		//Ref<Material> mPreFilterEnironmentMat;
-		std::vector <Ref<Material>> mPreFilterEnironmentMats;
+		Ref<Pipeline> mEquirectangularPipeline;
+		Ref<Pipeline> mIrradiancePipeline;
+		Ref<Pipeline> mBRDFLUTPipeline;
+		Ref<Pipeline> mPreFilterEnironmentPipeline;
 
 		PMREMSettings mSettings{};
 	};

@@ -70,6 +70,8 @@ namespace BHive
 
 		virtual Ref<ISetManager> CreateSetManager(const Pipeline *pipeline, uint32_t setIndex) = 0;
 
+		virtual Ref<FComputeBindings> CreateComputeBindings(const Ref<Pipeline> &pipeline) = 0;
+
 		virtual EAPI GetAPI() const = 0;
 
 		static Scope<RendererAPI> Create();
