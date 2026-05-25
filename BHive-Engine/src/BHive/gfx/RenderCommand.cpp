@@ -68,34 +68,9 @@ namespace BHive
 		sRendererAPI->MultiDrawElementsIndirect(mode, indirect, vao,  drawCount, stride);
 	}
 
-	void RenderCommand::Dispatch(const glm::uvec3 &size)
+	void RenderCommand::ExecuteComputePass(const Ref<Pipeline> &pipeline, const glm::uvec3 &size, const FComputeFunc &builder)
 	{
-		sRendererAPI->Dispatch(size);
-	}
-
-	void RenderCommand::AddComputePass(const std::string &name, const Ref<Pipeline> &pipeline, const glm::uvec3 &dispatchSize, const FComputePassFunc &builder)
-	{
-		RenderGraph graph{};
-		auto &pass = graph.AddPass(name, EPassType::Compute);
-
-		auto *previous = sActivePass;
-		sActivePass = &pass;
-
-		pipeline->Bind();
-
-		auto bindings = sRendererAPI->CreateComputeBindings(pipeline);
-		pass.ComputeBindings.push_back(bindings);
-
-		builder(*bindings, pass);
-
-		bindings->Bind();
-
-		RenderCommand::Dispatch(dispatchSize);
-
-		FResourceUpdateList list{};
-		RenderCommand::SubmitGraph(graph, list);
-
-		sActivePass = previous;
+		sRendererAPI->ExecuteComputePass(pipeline, size, builder);
 	}
 
 	void RenderCommand::AddTransferPass(const std::string &name, const std::function<void(FRenderGraphPass &)> &builder)

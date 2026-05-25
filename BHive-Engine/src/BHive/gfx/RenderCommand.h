@@ -11,8 +11,7 @@ namespace BHive
 		bool DebugMarkers = false;
 	};
 
-	using FComputePassFunc = std::function<void(FComputeBindings& , FRenderGraphPass&)>;
-
+	
 	class BHIVE_API RenderCommand
 	{
 	public:
@@ -52,9 +51,7 @@ namespace BHive
 
 		static void MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const Ref<VertexArray> &vao, size_t drawCount, size_t stride = 0);
 
-		static void Dispatch( const glm::uvec3 &size);
-		
-		static void AddComputePass(const std::string &name, const Ref<Pipeline> &pipeline, const glm::uvec3& dispatchSize, const FComputePassFunc &builder);
+		static void ExecuteComputePass(const Ref<Pipeline> &pipeline, const glm::uvec3& size, const FComputeFunc &builder);
 
 		static void AddTransferPass(const std::string &name, const std::function<void(FRenderGraphPass &)> &builder);
 

@@ -6,11 +6,11 @@
 #include "gfx/BufferBase.h"
 #include "gfx/shader/ShaderProgram.h"
 #include "Platform/Vulkan/VulkanConverters.h"
-#include "Platform/Vulkan/VulkanShader.h"
+#include "Platform/Vulkan/VulkanBackend.h"
 #include "gfx/shader/ShaderReflection.h"
-#include "Platform/Vulkan/textures/VulkanImage.h"
 #include "gfx/Buffers.h"
 #include "../systems/MaterialSetRegistry.h"
+#include "Platform/Vulkan/VulkanSetManager.h"
 
 namespace BHive
 {
@@ -88,6 +88,43 @@ namespace BHive
 					vk_ctx.CommandBuffer.pushConstants2(push_info);
 				}
 			});
+	}
+
+	void VulkanBackendMaterial::BindImmediate(vk::raii::CommandBuffer &cmd, const Ref<Pipeline> &pipeline)
+	{
+		auto vk_Pipeline = Cast<VulkanPipeline>(pipeline);
+		auto &pipeline_layout = vk_Pipeline->GetLayout();
+		auto manager = GetSubSystem<MaterialSetRegistry>().Find(this, vk_Pipeline.get());
+
+		if (manager)
+		{
+			auto set = manager->GetNativeSet(0).As<vk::DescriptorSet>();
+			cmd.bindDescriptorSets(mBindPoint, pipeline_layout, MATERIAL_SET_INDEX, *set, {});
+		}
+
+		// Update push constants
+		for (auto &pc : mReflectionMergedPtr->PushConstants)
+		{
+			vk::PushConstantsInfo push_info(*pipeline_layout, ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size, mPushConstantData.data() + pc.Offset);
+			cmd.pushConstants2(push_info);
+		}
+	}
+
+	void VulkanBackendMaterial::BindTextureImmediate(const std::string &name, const Ref<Texture> &texture, uint32_t mip, const Ref<Pipeline> &pipeline)
+	{
+		if (!texture)
+			return;
+
+		if (!mTargetSet.Samplers.contains(name))
+		{
+			LOG_ERROR("VulkanBackendMaterial::BindTexture - No sampler reflection for name {}", name);
+			return;
+		}
+
+		auto &sampler = mTargetSet.Samplers.at(name);
+
+		auto &registry = GetSubSystem<MaterialSetRegistry>();
+		Cast<VulkanSetManager>(registry.Find(this, pipeline.get()))->SetTextureImmediate(sampler.Binding, texture, mip);
 	}
 
 	void VulkanBackendMaterial::BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip, const Ref<Pipeline>& pipeline)

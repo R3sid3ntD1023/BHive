@@ -20,6 +20,8 @@ namespace BHive
 
 		virtual void SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip = 0) override;
 
+		void SetTextureImmediate(uint32_t binding, const Ref<Texture> &texture, uint32_t mip = 0);
+
 		virtual void Update(uint32_t frame) override;
 
 		virtual NativeHandle GetNativeSet(uint32_t frame) override;

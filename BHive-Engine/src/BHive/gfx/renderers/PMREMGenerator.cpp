@@ -126,17 +126,14 @@ namespace BHive
 
 	void PMREMGenerator::CreateEnvironmentCubeMap()
 	{	
-		RenderCommand::AddComputePass(
-			"Create CubeMap Pass",
+		RenderCommand::ExecuteComputePass(
 			mEquirectangularPipeline, {(mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 6},
-			[=](FComputeBindings& b, FRenderGraphPass &pass)
+			[=](FComputeBindings& b)
 			{
-				b.SampledImage("equirectangularMap", mEnvironment);
-				b.StorageImage("imgOutput", mEnvironmentCube);
+				b.SampledImage("equirectangularMap", FImageInfo{mEnvironment});
+				b.StorageImage("imgOutput", FImageInfo{mEnvironmentCube, 0, 1, 0, 6, EImageAccess::WRITE});
 				b.Set("u_width", mSettings.EnvironmentMapSize);
 				b.Set("u_height", mSettings.EnvironmentMapSize);
-
-				pass.Images.push_back({mEnvironmentCube, 0, 1, 0, 6, EImageAccess::WRITE});
 			});
 
 		RenderCommand::AddTransferPass(
@@ -150,16 +147,14 @@ namespace BHive
 
 	void PMREMGenerator::CreateIrradianceMap()
 	{
-		RenderCommand::AddComputePass(
-			"Create Irradiance Map", mIrradiancePipeline, {(mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 1},
-			[=](FComputeBindings &b, FRenderGraphPass &pass)
+		RenderCommand::ExecuteComputePass(
+			mIrradiancePipeline, {(mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 1},
+			[=](FComputeBindings &b)
 			{
-				b.SampledImage("environmentMap", mEnvironmentCube);
-				b.StorageImage("irradianceMap", mIrradiance);		
+				b.SampledImage("environmentMap", {mEnvironmentCube});
+				b.StorageImage("irradianceMap", FImageInfo{mIrradiance, 0, 1, 0, 6, EImageAccess::WRITE});		
 				b.Set("u_width", mSettings.IrradianceSize);
 				b.Set("u_height", mSettings.IrradianceSize);
-
-				pass.Images.push_back({mIrradiance, 0, 1, 0, 6, EImageAccess::WRITE});
 			});
 	}
 
@@ -173,30 +168,18 @@ namespace BHive
 
 			float roughness = (float)mip / (float)(mSettings.PrefilterMipLevels - 1);			
 
-			RenderCommand::AddComputePass(
-				"PreFilterEnvironmentPass",
+			RenderCommand::ExecuteComputePass(
 				mPreFilterEnironmentPipeline, {(s + 7) / 8, (s + 7) / 8, 6},
-				[=](FComputeBindings &b, FRenderGraphPass &pass)
+				[=](FComputeBindings &b)
 				{
 					
-				LOG_INFO("PreFilter pass lambda: binding imgOutput mip={}", mip);
-
-				b.SampledImage("environmentMap", mEnvironmentCube);
-				b.StorageImage("imgOutput", mPreFilteredEnvironment, mip);
+				b.SampledImage("environmentMap", {mEnvironmentCube});
+				b.StorageImage("imgOutput", FImageInfo{mPreFilteredEnvironment, mip, 1, 0, 6, EImageAccess::WRITE});
 				b.Set("u_envResolution", mSettings.EnvironmentMapSize);
 				b.Set("u_roughness", roughness);
 				b.Set("u_mip_level", int32_t(mip));
 				b.Set("u_width", s);
 				b.Set("u_height", s);
-
-				FPassImage image{};
-				image.Texture = mPreFilteredEnvironment;
-				image.Access = EImageAccess::WRITE;
-				image.BaseLayer = 0;
-				image.LayerCount = 6;
-				image.BaseMip = mip;
-				image.LevelCount = 1;
-				pass.Images.push_back(image);
 			});
 		}
 
@@ -204,13 +187,11 @@ namespace BHive
 
 	void PMREMGenerator::CreateBRDFLUTMap()
 	{
-		RenderCommand::AddComputePass(
-			"BrdfLUTPass", 
+		RenderCommand::ExecuteComputePass(
 			mBRDFLUTPipeline, {mSettings.BrdfLutSize / 8, mSettings.BrdfLutSize / 8, 1},
-			[=](FComputeBindings &b, FRenderGraphPass &pass)
+			[=](FComputeBindings &b)
 			{
-				b.StorageImage("brdfLutTexture", mBRDFLUT);
-				pass.Images.push_back({mBRDFLUT, 0, 1});
+				b.StorageImage("brdfLutTexture", FImageInfo{mBRDFLUT});
 			});
 	
 	}

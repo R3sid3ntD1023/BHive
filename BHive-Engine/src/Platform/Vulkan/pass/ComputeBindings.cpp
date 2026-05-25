@@ -7,18 +7,20 @@ namespace BHive
 	FVulkanComputeBindings::FVulkanComputeBindings(const Ref<VulkanPipeline> &pipeline)
 		: mPipeline(pipeline)
 	{
-		mBackendMaterial = IMaterialBackendInterface::Create();
+		mBackendMaterial = Cast<VulkanBackendMaterial>(IMaterialBackendInterface::Create());
 		mBackendMaterial->Init(pipeline);
 	}
 
-	void FVulkanComputeBindings::StorageImage(const char *name, const Ref<Texture> &tex, uint32_t mip)
+	void FVulkanComputeBindings::StorageImage(const char *name, const FImageInfo &info)
 	{
-		mBackendMaterial->BindTexture(name, tex, mip, mPipeline);
+		mBackendMaterial->BindTextureImmediate(name, info.Texture, info.BaseMip, mPipeline);
+		mImages.emplace_back(info, true);
 	}
 
-	void FVulkanComputeBindings::SampledImage(const char *name, const Ref<Texture> &tex, uint32_t mip)
+	void FVulkanComputeBindings::SampledImage(const char *name, const FImageInfo &info)
 	{
-		mBackendMaterial->BindTexture(name, tex, mip, mPipeline);
+		mBackendMaterial->BindTextureImmediate(name, info.Texture, info.BaseMip, mPipeline);
+		mImages.emplace_back(info, false);
 	}
 
 	void FVulkanComputeBindings::Set(const char *name, const void *data, size_t size)
@@ -29,5 +31,10 @@ namespace BHive
 	void FVulkanComputeBindings::Bind() const
 	{
 		mBackendMaterial->Bind(mPipeline);
+	}
+
+	void FVulkanComputeBindings::BindImmediate(vk::raii::CommandBuffer& cmd) const
+	{
+		mBackendMaterial->BindImmediate(cmd, mPipeline);
 	}
 } // namespace BHive

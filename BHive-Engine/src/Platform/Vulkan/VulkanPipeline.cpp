@@ -262,6 +262,50 @@ namespace BHive
 			});
 	}
 
+	void VulkanPipeline::BindImmediate(vk::raii::CommandBuffer& cmd)
+	{
+		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		auto &shader = *mShader;
+		auto &set_hashes = shader.GetSetHashes();
+		auto &refl = mProgram->GetRefl();
+		auto &layout = mPipelineLayout;
+		auto maxSet = mShader->GetMaxSet();
+		uint64_t h0 = set_hashes.at(GLOBAL_SET_INDEX);
+
+		if (mObjectSetManager)
+			mObjectSetManager->Update(0);
+
+		if (mBatchSetManager)
+		{
+			mBatchSetManager->Update(0);
+		}
+
+		cmd.bindPipeline(mBindPoint, mPipeline);
+
+		auto &registry = GetSubSystem<GlobalSetRegistry>();
+
+		auto globalManager = registry.Find(h0);
+
+		if (globalManager)
+		{
+			auto set = globalManager->GetNativeSet(0).As<vk::DescriptorSet>();
+			cmd.bindDescriptorSets(mBindPoint, layout, GLOBAL_SET_INDEX, *set, {});
+		}
+
+		if (mObjectSetManager)
+		{
+			auto set = mObjectSetManager->GetNativeSet(0).As<vk::DescriptorSet>();
+			cmd.bindDescriptorSets(mBindPoint, layout, OBJECT_SET_INDEX, *set, {});
+		}
+
+		if (mBatchSetManager)
+		{
+
+			auto set = mBatchSetManager->GetNativeSet(0).As<vk::DescriptorSet>();
+			cmd.bindDescriptorSets(mBindPoint, layout, BATCH_SET_INDEX, *set, {});
+		}
+	}
+
 	Ref<ShaderProgram> VulkanPipeline::GetShaderProgram() const
 	{
 		return mProgram;

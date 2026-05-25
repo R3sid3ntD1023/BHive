@@ -22,6 +22,8 @@ namespace BHive
 
 		virtual void Bind() override;
 
+		virtual void BindImmediate(vk::raii::CommandBuffer &cmd);
+
 		virtual void UnBind() override {};
 
 		Ref<ShaderProgram> GetShaderProgram() const override;
@@ -37,6 +39,8 @@ namespace BHive
 		ISetManager *GetBatchSetManager() const override { return mBatchSetManager.get(); }
 
 		vk::PipelineBindPoint GetBindPoint() const { return mBindPoint; }
+
+		const vk::raii::Pipeline &GetVkPipeline() const { return mPipeline; }
 
 	private:
 		vk::raii::Device &mDevice;

@@ -1,27 +1,33 @@
 #pragma once
 
 #include "gfx/RenderGraph.h"
+#include "Platform/Vulkan/VulkanCore.h"
 
 namespace BHive
 {
 	class VulkanPipeline;
-	class IMaterialBackendInterface;
+	class VulkanBackendMaterial;
 
 	class FVulkanComputeBindings : public FComputeBindings
 	{
 	public:
 		FVulkanComputeBindings(const Ref<VulkanPipeline>& pipeline);
 
-		virtual void StorageImage(const char *name, const Ref<Texture> &tex, uint32_t mip = 0) override;
+		virtual void StorageImage(const char *name, const FImageInfo &info) override;
 
-		virtual void SampledImage(const char *name, const Ref<Texture> &tex, uint32_t mip = 0) override;
+		virtual void SampledImage(const char *name, const FImageInfo &info) override;
 
 		virtual void Set(const char *name, const void *data, size_t size) override;
 
 		virtual void Bind() const override;
 
+		void BindImmediate(vk::raii::CommandBuffer &cmd) const;
+
+		const auto &GetBoundImages() const { return mImages; }
+
 	private:
-		Ref<IMaterialBackendInterface> mBackendMaterial;
+		Ref<VulkanBackendMaterial> mBackendMaterial;
 		Ref<VulkanPipeline> mPipeline;
+		std::vector<std::pair<FImageInfo, bool>> mImages;
 	};
 }

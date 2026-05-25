@@ -161,109 +161,43 @@ namespace BHive
 		auto current_frame = ctx->GetCurrentFrame();
 		auto &cmd = ctx->GetCommandBuffer();
 
-		auto swap_chain = ctx->GetSwapChain();
-
+		auto& swap_chain = ctx->GetSwapChain();
 		swap_chain->WaitForFence(current_frame);
 
 		ProcessDeletionQueue(current_frame);
 
 		cmd.reset();
-		
 
 		auto [result, imageIndex] = swap_chain->AquireNextImage(current_frame);
-
-		auto &image = swap_chain->GetImage(imageIndex);
-		auto &depth = swap_chain->GetDepthImage();
-		auto extent = swap_chain->GetExtent();
 
 		if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
 			return result;
 
 		cmd.begin({});
 
-#ifdef _DEBUG
 		vk::DebugUtilsLabelEXT label_info("Main Pass", std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
 		cmd.beginDebugUtilsLabelEXT(label_info);
-#endif
 
-		FVulkanRendererContext frame(cmd, current_frame, imageIndex);
+		FVulkanRendererContext vk_ctx(cmd, current_frame, imageIndex);
 
 		GetSubSystem<GlobalSetRegistry>().UpdatePerFrame(current_frame);
 		GetSubSystem<MaterialSetRegistry>().UpdatePerFrame(current_frame);
 
-		updates.Execute(frame);
+		updates.Execute(vk_ctx);
 
 		for (auto& pass : graph.GetPasses())
 		{
 			vk::DebugUtilsLabelEXT debugInfo(pass.Name.c_str(), {1, 0, 0, 1});
 
-			frame.CommandBuffer.beginDebugUtilsLabelEXT(debugInfo);
+			cmd.beginDebugUtilsLabelEXT(debugInfo);
 
 			if (pass.Type == EPassType::SwapChain)
 			{
-				// Color: Undefined/ShaderRead/etc → ColorAttachment
-				image.Transition(cmd, ImageState::ColorAttachment());
-
-				 // Depth: Undefined/ShaderRead/etc → DepthStencilAttachment
-				depth.Transition(cmd, ImageState::DepthStencilAttachment());
-
-				vk::ClearValue clearColor(mClearColor);
-				vk::ClearValue clearDepth(vk::ClearDepthStencilValue(1.0f, 0));
-
-				vk::RenderingAttachmentInfo attachmentInfo(
-					image.Native().GetView(0,0, 0), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearColor);
-
-				vk::RenderingAttachmentInfo depth_attachment_info(
-					depth.Native().GetView(0, 0 , 0 ), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, clearDepth);
-
-				vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
-				frame.CommandBuffer.beginRendering(renderingInfo);
-
-				pass.CommandList.Execute(frame);
-
-				frame.CommandBuffer.endRendering();
-
-				image.Transition(cmd, ImageState::Present());
-
+				ExecuteSwapChainPass(pass, vk_ctx, swap_chain);
 			}
 			else if (pass.Type == EPassType::OffScreen)
 			{
-				pass.CommandList.Execute(frame);
-			}
-			else if (pass.Type == EPassType::Compute)
-			{
-				// Before compute: transition to ComputeWrite / ShaderRead depending on Access
-				for (auto &image : pass.Images)
-				{
-					ImageSubresource sub{};
-					sub.MipLevel = image.BaseMip;
-					sub.LevelCount = image.LevelCount;
-					sub.BaseArrayLayer = image.BaseLayer;
-					sub.LayerCount = image.LayerCount;
-
-					auto img = image.Texture->GetNativeHandle().As<VulkanImage>();
-
-					if (image.Access == EImageAccess::WRITE || image.Access == EImageAccess::READ_WRITE)
-						img->Transition(cmd, ImageState::ComputeWrite(), sub);
-					else
-						img->Transition(cmd, ImageState::ShaderRead(), sub);
-				}
-
-
-				pass.CommandList.Execute(frame);
-
-				// After compute: everything goes to ShaderRead
-				for (auto &image : pass.Images)
-				{
-					ImageSubresource sub{};
-					sub.MipLevel = image.BaseMip;
-					sub.LevelCount = image.LevelCount;
-					sub.BaseArrayLayer = image.BaseLayer;
-					sub.LayerCount = image.LayerCount;
-
-					auto img = image.Texture->GetNativeHandle().As<VulkanImage>();
-					img->Transition(cmd, ImageState::ShaderRead(), sub);
-				}
+				ExecuteOffScreenPass(pass, vk_ctx);
 			}
 			else if (pass.Type == EPassType::Transfer)
 			{
@@ -279,7 +213,7 @@ namespace BHive
 					img->Transition(cmd, ImageState::TansferWrite(), sub);
 				}
 				
-				pass.CommandList.Execute(frame);
+				pass.CommandList.Execute(vk_ctx);
 
 				for (auto &image : pass.Images)
 				{
@@ -294,12 +228,10 @@ namespace BHive
 				}
 			}
 
-			frame.CommandBuffer.endDebugUtilsLabelEXT();
+			cmd.endDebugUtilsLabelEXT();
 		}
 
-#ifdef _DEBUG
 		cmd.endDebugUtilsLabelEXT();
-#endif
 		cmd.end();
 
 		result = swap_chain->Present(cmd, imageIndex, current_frame);
@@ -310,6 +242,44 @@ namespace BHive
 			return result;
 
 		return vk::Result::eSuccess;
+	}
+
+	void VulkanRendererAPI::ExecuteSwapChainPass(const FRenderGraphPass &pass, FVulkanRendererContext &ctx, const Ref<VulkanSwapChain> &swapChain)
+	{
+		auto &image = swapChain->GetImage(ctx.ImageIndex);
+		auto &depth = swapChain->GetDepthImage();
+		auto extent = swapChain->GetExtent();
+		auto &cmd = ctx.CommandBuffer;
+
+		// Color: Undefined/ShaderRead/etc → ColorAttachment
+		image.Transition(cmd, ImageState::ColorAttachment());
+
+		// Depth: Undefined/ShaderRead/etc → DepthStencilAttachment
+		depth.Transition(cmd, ImageState::DepthStencilAttachment());
+
+		vk::ClearValue clearColor(mClearColor);
+		vk::ClearValue clearDepth(vk::ClearDepthStencilValue(1.0f, 0));
+
+		vk::RenderingAttachmentInfo attachmentInfo(
+			image.Native().GetView(0, 0, 0), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearColor);
+
+		vk::RenderingAttachmentInfo depth_attachment_info(
+			depth.Native().GetView(0, 0, 0), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare,
+			clearDepth);
+
+		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
+		cmd.beginRendering(renderingInfo);
+
+		pass.CommandList.Execute(ctx);
+
+		cmd.endRendering();
+
+		image.Transition(cmd, ImageState::Present());
+	}
+
+	void VulkanRendererAPI::ExecuteOffScreenPass(const FRenderGraphPass &pass, IRendererContext &ctx)
+	{
+		pass.CommandList.Execute(ctx);
 	}
 
 	void VulkanRendererAPI::SetCurrentContext(VulkanWindowContext *ctx)
@@ -433,17 +403,6 @@ namespace BHive
 		vao->UnBind();
 	}
 
-	void VulkanRendererAPI::Dispatch(const glm::uvec3& size)
-	{
-		auto &pass = RenderCommand::GetActivePass();
-		pass.CommandList.Push("Dispatch", [size](const IRendererContext &ctx)
-			{
-				auto& vk_ctx = static_cast<const FVulkanRendererContext &>(ctx);
-				vk_ctx.CommandBuffer.dispatch(size.x, size.y, size.z);
-		});
-
-	}
-
 	void VulkanRendererAPI::ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 	{	
 	}
@@ -457,6 +416,73 @@ namespace BHive
 	{
 		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
 		return CreateRef<FVulkanComputeBindings>(vkPipeline);
+	}
+
+	void VulkanRendererAPI::ExecuteComputePass(const Ref<Pipeline> &pipeline, const glm::uvec3 & size, const FComputeFunc &builder)
+	{
+		vk::CommandBufferAllocateInfo allocInfo(VulkanBackend::GetImmediateCommandPool(), vk::CommandBufferLevel::ePrimary, 1);
+
+		auto cmds = mDevice.allocateCommandBuffers(allocInfo);
+		auto& cmd = cmds[0];
+
+		vk::CommandBufferBeginInfo beginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+
+		cmd.begin(beginInfo);
+
+		vk::DebugUtilsLabelEXT labelInfo("Compute Pass", {1, .5, 0, 1 });
+		cmd.beginDebugUtilsLabelEXT(labelInfo);
+
+		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
+		vkPipeline->BindImmediate(cmd);
+
+		auto bindings = CreateRef<FVulkanComputeBindings>(vkPipeline);
+
+		builder(*bindings);
+
+		auto &images = bindings->GetBoundImages();
+		for (auto& [img, isStorage] : images)
+		{
+			auto vkImg = img.Texture->GetNativeHandle().As<VulkanImage>();
+			ImageSubresource sub{};
+			sub.MipLevel = img.BaseMip;
+			sub.LevelCount = img.LevelCount;
+			sub.BaseArrayLayer = img.BaseLayer;
+			sub.LayerCount = img.LayerCount;
+			
+
+			if (isStorage && (img.Access == EImageAccess::WRITE || img.Access == EImageAccess::READ_WRITE))
+				vkImg->Transition(cmd, ImageState::ComputeWrite(), sub);
+			else
+				vkImg->Transition(cmd, ImageState::ShaderRead(), sub);
+		}
+
+		bindings->BindImmediate(cmd);
+
+		cmd.dispatch(size.x, size.y, size.z);
+
+		for (auto & [img, isStorage] : images)
+		{
+			if (!isStorage)
+				continue;
+
+			auto vkImg = img.Texture->GetNativeHandle().As<VulkanImage>();
+			ImageSubresource sub{};
+			sub.MipLevel = img.BaseMip;
+			sub.LevelCount = img.LevelCount;
+			sub.BaseArrayLayer = img.BaseLayer;
+			sub.LayerCount = img.LayerCount;
+			
+			vkImg->Transition(cmd, ImageState::ShaderRead(), sub);
+		}
+
+		cmd.endDebugUtilsLabelEXT();
+		cmd.end();
+
+		vk::SubmitInfo submitInfo({}, {}, *cmd);
+		auto &queue = VulkanBackend::GetQueueFamilies().GraphicsQueue;
+		queue.submit(submitInfo);
+		queue.waitIdle();
+
 	}
 
 } // namespace BHive

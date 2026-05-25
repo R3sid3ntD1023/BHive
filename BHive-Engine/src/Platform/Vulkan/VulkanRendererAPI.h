@@ -63,8 +63,6 @@ namespace BHive
 
 		virtual void MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const Ref<VertexArray> &vao, size_t drawCount, size_t stride = 0) override;
 
-		virtual void Dispatch(const glm::uvec3 &size) override;
-
 		virtual void ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a) override;
 
 		virtual void DebugPass(const std::string &msg) override;
@@ -87,11 +85,16 @@ namespace BHive
 
 		Ref<FComputeBindings> CreateComputeBindings(const Ref<Pipeline> &pipeline);
 
+		void ExecuteComputePass(const Ref<Pipeline> &pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder) override;
+
 	private:
 		void ProcessDeletionQueue(uint32_t frame);
 
 		vk::Result ExecuteFinalGraph(VulkanWindowContext *ctx, FResourceUpdateList &updates, const RenderGraph &graph);
 
+		void ExecuteSwapChainPass(const FRenderGraphPass& pass, FVulkanRendererContext& ctx, const Ref<VulkanSwapChain>& swapChain);
+
+		void ExecuteOffScreenPass(const FRenderGraphPass &pass, IRendererContext& ctx);
 
 	public:
 		void SetCurrentContext(VulkanWindowContext *ctx);

@@ -70,6 +70,25 @@ namespace BHive
 			});
 	}
 
+	void VulkanSetManager::SetTextureImmediate(uint32_t binding, const Ref<Texture> &texture, uint32_t mip)
+	{
+		FBindingInfo *bindingInfo = FindBinding(binding);
+
+		if (!bindingInfo)
+			return;
+
+		FBindingInfo local = *bindingInfo;
+		local.Texture = texture;
+		local.MipLevel = mip;
+		local.Binding = binding;
+
+		
+		auto &set = *mSets[0];
+		auto imageInfo = BuildImageInfo(local, mip);
+		vk::WriteDescriptorSet write(set, local.Binding, 0, ToVkType(local.Type), imageInfo);
+		mDevice.updateDescriptorSets(write, {});
+	}
+
 	void VulkanSetManager::Update(uint32_t frame)
 	{
 		auto &set = *mSets[frame];
