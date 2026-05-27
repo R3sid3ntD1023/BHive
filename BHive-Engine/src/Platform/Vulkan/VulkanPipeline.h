@@ -22,7 +22,7 @@ namespace BHive
 
 		virtual void Bind() override;
 
-		virtual void BindImmediate(vk::raii::CommandBuffer &cmd);
+		virtual void BindImmediate(vk::CommandBuffer cmd);
 
 		virtual void UnBind() override {};
 

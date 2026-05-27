@@ -3,7 +3,6 @@
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
 #include "PMREMGenerator.h"
-#include "gfx/material/Material.h"
 #include "gfx/Pipeline.h"
 
 namespace BHive
@@ -93,6 +92,8 @@ namespace BHive
 			mBRDFLUTPipeline->Init(state);
 		}
 
+		//not dependent on environment texture
+		CreateBRDFLUTMap();
 	}
 
 	void PMREMGenerator::SetEnvironmentMap(const Ref<Texture> &texture)
@@ -101,7 +102,6 @@ namespace BHive
 		CreateEnvironmentCubeMap();
 		CreatePreFilteredEnvironmentMap();
 		CreateIrradianceMap();
-		CreateBRDFLUTMap();
 	}
 
 	const Ref<Texture> &PMREMGenerator::GetIrradianceTexture() const

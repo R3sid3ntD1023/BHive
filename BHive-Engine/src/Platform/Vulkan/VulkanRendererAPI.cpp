@@ -238,10 +238,7 @@ namespace BHive
 
 		mCompletedFrame = current_frame;
 
-		if (result != vk::Result::eSuccess)
-			return result;
-
-		return vk::Result::eSuccess;
+		return result;
 	}
 
 	void VulkanRendererAPI::ExecuteSwapChainPass(const FRenderGraphPass &pass, FVulkanRendererContext &ctx, const Ref<VulkanSwapChain> &swapChain)
@@ -418,11 +415,11 @@ namespace BHive
 		return CreateRef<FVulkanComputeBindings>(vkPipeline);
 	}
 
-	void VulkanRendererAPI::ExecuteComputePass(const Ref<Pipeline> &pipeline, const glm::uvec3 & size, const FComputeFunc &builder)
+	AsyncComputeHandle VulkanRendererAPI::ExecuteComputePass(const Ref<Pipeline> &pipeline, const glm::uvec3 & size, const FComputeFunc &builder)
 	{
 		vk::CommandBufferAllocateInfo allocInfo(VulkanBackend::GetImmediateCommandPool(), vk::CommandBufferLevel::ePrimary, 1);
 
-		auto cmds = mDevice.allocateCommandBuffers(allocInfo);
+		auto cmds = (*mDevice).allocateCommandBuffers(allocInfo);
 		auto& cmd = cmds[0];
 
 		vk::CommandBufferBeginInfo beginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
@@ -478,11 +475,30 @@ namespace BHive
 		cmd.endDebugUtilsLabelEXT();
 		cmd.end();
 
-		vk::SubmitInfo submitInfo({}, {}, *cmd);
+		vk::FenceCreateInfo fenceInfo{};
+		vk::Fence fence = (*mDevice).createFence(fenceInfo);
+
+		vk::SubmitInfo submitInfo({}, {}, cmd);
 		auto &queue = VulkanBackend::GetQueueFamilies().GraphicsQueue;
 		queue.submit(submitInfo);
-		queue.waitIdle();
+		
+		AsyncComputeHandle handle{};
+		handle.Fence = new vk::Fence(fence);
+		handle.CommandBuffer = new vk::CommandBuffer(cmd);
+		handle.Bindings = bindings;
 
+		QueueDeletion(
+			[&, handle](uint32_t)
+			{
+				auto device = (*mDevice);
+				auto &commandPool = VulkanBackend::GetImmediateCommandPool();
+				auto fencePtr = static_cast<vk::Fence *>(handle.Fence);
+				auto cmdPtr = static_cast<vk::CommandBuffer *>(handle.CommandBuffer);
+				device.destroyFence(*fencePtr);
+				device.freeCommandBuffers(commandPool, *cmdPtr);
+			});
+
+		return handle;
 	}
 
 } // namespace BHive

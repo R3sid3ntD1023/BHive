@@ -1,6 +1,7 @@
 #pragma once
 
 #define VK_USE_PLATFORM_WIN32_KHR
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_platform.h>
 #include <vulkan/vulkan.hpp>

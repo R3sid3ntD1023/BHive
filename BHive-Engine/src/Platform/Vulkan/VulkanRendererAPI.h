@@ -85,7 +85,7 @@ namespace BHive
 
 		Ref<FComputeBindings> CreateComputeBindings(const Ref<Pipeline> &pipeline);
 
-		void ExecuteComputePass(const Ref<Pipeline> &pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder) override;
+		AsyncComputeHandle ExecuteComputePass(const Ref<Pipeline> &pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder) override;
 
 	private:
 		void ProcessDeletionQueue(uint32_t frame);

@@ -99,7 +99,7 @@ namespace BHive
 				mFB->UnBind();
 
 				auto texID = ImGuiLayer::GetTextureID(*mFB->GetColorAttachment(0));
-				ImGui::Image(texID, ImVec2(float(mSize.x), float(mSize.y)),ImVec2(0,1), ImVec2(1,0));
+				ImGui::Image(texID, ImVec2(float(mSize.x), float(mSize.y)));
 			}
 		}
 

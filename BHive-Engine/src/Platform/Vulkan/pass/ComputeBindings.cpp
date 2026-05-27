@@ -33,7 +33,7 @@ namespace BHive
 		mBackendMaterial->Bind(mPipeline);
 	}
 
-	void FVulkanComputeBindings::BindImmediate(vk::raii::CommandBuffer& cmd) const
+	void FVulkanComputeBindings::BindImmediate(vk::CommandBuffer cmd) const
 	{
 		mBackendMaterial->BindImmediate(cmd, mPipeline);
 	}

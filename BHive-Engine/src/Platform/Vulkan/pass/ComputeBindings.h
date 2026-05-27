@@ -21,7 +21,7 @@ namespace BHive
 
 		virtual void Bind() const override;
 
-		void BindImmediate(vk::raii::CommandBuffer &cmd) const;
+		void BindImmediate(vk::CommandBuffer cmd) const;
 
 		const auto &GetBoundImages() const { return mImages; }
 

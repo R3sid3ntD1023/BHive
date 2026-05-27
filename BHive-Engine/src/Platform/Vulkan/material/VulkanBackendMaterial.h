@@ -22,7 +22,7 @@ namespace BHive
 
 		void Bind(const Ref<Pipeline> &shader) override;
 
-		void BindImmediate(vk::raii::CommandBuffer &buffer, const Ref<Pipeline> &pipeline);
+		void BindImmediate(vk::CommandBuffer cmd, const Ref<Pipeline> &pipeline);
 
 		void BindTextureImmediate(const std::string &name, const Ref<Texture> &texture, uint32_t mip, const Ref<Pipeline> &pipeline);
 

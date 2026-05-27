@@ -87,7 +87,7 @@ namespace BHive
 		gpu_r_m.DestroyBuffer(stagingID);
 	}
 
-	void VulkanImage::Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub)
+	void VulkanImage::Transition(vk::CommandBuffer cmd, const ImageState &newState, const ImageSubresource &sub)
 	{
 		ASSERT(mStateTracker.MipStates.size(), "Invalid layer size must be 1 or greater -> {}", mImage.DebugName);
 

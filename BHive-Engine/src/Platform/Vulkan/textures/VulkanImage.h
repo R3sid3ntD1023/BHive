@@ -32,7 +32,7 @@ namespace BHive
 
 		void Upload(const void *data, size_t size, const ImageCopyRegion &region = {}, const ImageSubresource &sub = {});
 
-		void Transition(vk::raii::CommandBuffer &cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, 1});
+		void Transition(vk::CommandBuffer cmd, const ImageState &newState, const ImageSubresource &sub = {0, 0, 1});
 
 		void GenerateMipMaps(uint32_t width, uint32_t height, uint32_t layers, uint32_t levels);
 

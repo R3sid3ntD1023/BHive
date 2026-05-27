@@ -1,7 +1,8 @@
 #include "VulkanBackend.h"
 #include "core/debug/CrashHandler.h"
-#include "VulkanUtils.h"
 #include <GLFW/glfw3.h>
+
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 #ifdef _DEBUG
 	#define VALIDATION_LAYERS_ENABLED
@@ -95,6 +96,7 @@ namespace BHive
 
 	void VulkanBackend::Init()
 	{
+		VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
 		CreateIntance();
 		CreateDebugMessenger();
@@ -186,8 +188,8 @@ namespace BHive
 
 		uint32_t glfwExtensionCount = 0;
 		const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-		auto extensionProperties = mVulkanContext.enumerateInstanceExtensionProperties();
-		auto layerProperties = mVulkanContext.enumerateInstanceLayerProperties();
+		auto extensionProperties = mContext.enumerateInstanceExtensionProperties();
+		auto layerProperties = mContext.enumerateInstanceLayerProperties();
 
 		std::vector required_extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 		std::vector<const char *> enabled_layers;
@@ -240,10 +242,11 @@ namespace BHive
 		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions);
 #endif
 		
-		mVulkanInstance = vk::raii::Instance(mVulkanContext, instanceCreateInfo);
+		mInstance = vk::raii::Instance(mContext, instanceCreateInfo);
+		VULKAN_HPP_DEFAULT_DISPATCHER.init((vk::Instance)mInstance);
 
 #ifdef ENABLE_VALIDATION_LAYERS
-		mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mVulkanInstance, debugCreateInfo);
+		mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mInstance, debugCreateInfo);
 		
 #endif
 	}
@@ -255,7 +258,7 @@ namespace BHive
 
 	void VulkanBackend::PickPhysicalDevice()
 	{
-		auto devices = mVulkanInstance.enumeratePhysicalDevices();
+		auto devices = mInstance.enumeratePhysicalDevices();
 		const auto devIter = std::ranges::find_if(
 			devices,
 			[&](const auto &device)
@@ -301,12 +304,12 @@ namespace BHive
 	void VulkanBackend::CreateImmediateCommandPool()
 	{
 		vk::CommandPoolCreateInfo pool_info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, mQueueFamilies.GraphicsQueueIndex);
-		mImmediateCommandPool = mLogicalDevice.createCommandPool(pool_info);
+		mImmediateCommandPool = mDevice.createCommandPool(pool_info);
 	}
 
 	void VulkanBackend::CreateMemoryAllocator()
 	{
-		mMemoryAllocator = CreateScope<MemoryAllocator>(mLogicalDevice, mPhysicalDevice);
+		mMemoryAllocator = CreateScope<MemoryAllocator>(mDevice, mPhysicalDevice);
 	}
 
 	void VulkanBackend::CreateGPUResourceManager()
@@ -333,9 +336,10 @@ namespace BHive
 
 		vk::DeviceCreateInfo device_createInfo({}, queueCreateInfos, {}, requiredDeviceExtensions, nullptr, &featureChain.get<vk::PhysicalDeviceFeatures2>());
 
-		mLogicalDevice = mPhysicalDevice.createDevice(device_createInfo);
+		mDevice = mPhysicalDevice.createDevice(device_createInfo);
+		VULKAN_HPP_DEFAULT_DISPATCHER.init((vk::Device)mDevice);
 
-		mQueueFamilies.GraphicsQueue = mLogicalDevice.getQueue(graphicsIndex, 0);
+		mQueueFamilies.GraphicsQueue = mDevice.getQueue(graphicsIndex, 0);
 		mQueueFamilies.GraphicsQueueIndex = graphicsIndex;
 
 		if (presentIndex == graphicsIndex)
@@ -346,7 +350,7 @@ namespace BHive
 		else
 		{
 			mQueueFamilies.PresentQueueIndex = presentIndex;
-			mQueueFamilies.PresentQueue = mLogicalDevice.getQueue(presentIndex, 0);
+			mQueueFamilies.PresentQueue = mDevice.getQueue(presentIndex, 0);
 		}
 
 		CreateImmediateCommandPool();
@@ -376,15 +380,15 @@ namespace BHive
 
 		if (present_index != mQueueFamilies.PresentQueueIndex)
 		{
-			mLogicalDevice.waitIdle();
-			mLogicalDevice = nullptr;
+			mDevice.waitIdle();
+			mDevice = nullptr;
 			CreateDeviceInternal(mQueueFamilies.GraphicsQueueIndex, present_index);
 		}
 	}
 
 	void VulkanBackend::CreateLogicalDevice(const vk::SurfaceKHR &surface)
 	{
-		if (mLogicalDevice != VK_NULL_HANDLE)
+		if (mDevice != VK_NULL_HANDLE)
 		{
 			return;
 		}

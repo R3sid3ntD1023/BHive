@@ -90,7 +90,7 @@ namespace BHive
 			});
 	}
 
-	void VulkanBackendMaterial::BindImmediate(vk::raii::CommandBuffer &cmd, const Ref<Pipeline> &pipeline)
+	void VulkanBackendMaterial::BindImmediate(vk::CommandBuffer cmd, const Ref<Pipeline> &pipeline)
 	{
 		auto vk_Pipeline = Cast<VulkanPipeline>(pipeline);
 		auto &pipeline_layout = vk_Pipeline->GetLayout();

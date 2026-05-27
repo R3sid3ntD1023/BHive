@@ -262,7 +262,7 @@ namespace BHive
 			});
 	}
 
-	void VulkanPipeline::BindImmediate(vk::raii::CommandBuffer& cmd)
+	void VulkanPipeline::BindImmediate(vk::CommandBuffer cmd)
 	{
 		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		auto &shader = *mShader;

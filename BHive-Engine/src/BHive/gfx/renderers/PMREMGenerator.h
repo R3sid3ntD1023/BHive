@@ -21,9 +21,6 @@ namespace BHive
 	class BHIVE_API PMREMGenerator
 	{
 	public:
-		
-
-	public:
 		PMREMGenerator(const PMREMSettings &settings = {});
 
 		void Initialize();

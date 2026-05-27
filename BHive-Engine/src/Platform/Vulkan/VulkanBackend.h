@@ -70,13 +70,13 @@ namespace BHive
 		}
 
 
-		static vk::raii::Device &GetLogicalDevice() { return Get().mLogicalDevice; }
+		static vk::raii::Device &GetLogicalDevice() { return Get().mDevice; }
 
 		static vk::raii::PhysicalDevice &GetPhysicalDevice() { return Get().mPhysicalDevice; }
 
 		static const VkQueueFamilies &GetQueueFamilies() { return Get().mQueueFamilies; }
 
-		static vk::raii::Instance &GetInstance() { return Get().mVulkanInstance; }
+		static vk::raii::Instance &GetInstance() { return Get().mInstance; }
 
 		static vk::raii::CommandPool &GetImmediateCommandPool() { return Get().mImmediateCommandPool; }
 
@@ -120,15 +120,15 @@ namespace BHive
 
 		
 	private:
-		vk::raii::Context mVulkanContext;
+		vk::raii::Context mContext;
 
-		vk::raii::Instance mVulkanInstance = nullptr;
+		vk::raii::Instance mInstance = nullptr;
 
 		vk::raii::DebugUtilsMessengerEXT mDebugMessenger = nullptr;
 
 		vk::raii::PhysicalDevice mPhysicalDevice = nullptr;
 
-		vk::raii::Device mLogicalDevice = nullptr;
+		vk::raii::Device mDevice = nullptr;
 
 		vk::raii::CommandPool mImmediateCommandPool = nullptr;
 

@@ -22,6 +22,13 @@ namespace BHive
 		uint32_t BaseInstance;
 	};
 
+	struct BHIVE_API AsyncComputeHandle
+	{
+		void* Fence = nullptr;
+		void *CommandBuffer = nullptr;
+		Ref<FComputeBindings> Bindings = nullptr;
+	};
+
 	class BHIVE_API RendererAPI
 	{
 	public:
@@ -72,7 +79,7 @@ namespace BHive
 
 		virtual Ref<FComputeBindings> CreateComputeBindings(const Ref<Pipeline> &pipeline) = 0;
 
-		virtual void ExecuteComputePass(const Ref<Pipeline> &pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder) = 0;
+		virtual AsyncComputeHandle ExecuteComputePass(const Ref<Pipeline> &pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder) = 0;
 
 		virtual EAPI GetAPI() const = 0;
 

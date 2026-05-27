@@ -231,6 +231,15 @@ namespace BHive
 				}
 			}
 
+			if (ImGui::Button("Load HDR"))
+			{
+				auto info = Platform::OpenFile("HDR (*.hdr;)\0*.hdr;\0");
+				if (info)
+				{
+					auto tex = TextureLoader::Import(info);
+					Renderer::SetEnvironmentTexture(tex);
+				}
+			}
 		}
 
 		ImGui::End();

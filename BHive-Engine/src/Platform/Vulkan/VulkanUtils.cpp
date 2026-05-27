@@ -112,43 +112,8 @@ namespace BHive
 		EndSingleTimeCommands(cmd);
 	}
 
-	void VulkanUtils::TransitionImageLayout(const vk::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
-	{
-		auto cmd = BeginSingleTimeCommands();
-
-		vk::PipelineStageFlags src_stage;
-		vk::PipelineStageFlags dst_stage;
-		vk::AccessFlags src_access_mask;
-		vk::AccessFlags dst_access_mask;
-
-		if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eTransferDstOptimal)
-		{
-			src_access_mask = vk::AccessFlagBits::eNone;
-			dst_access_mask = vk::AccessFlagBits::eTransferWrite;
-			src_stage = vk::PipelineStageFlagBits::eTopOfPipe;
-			dst_stage = vk::PipelineStageFlagBits::eTransfer;
-		}
-		else if (oldLayout == vk::ImageLayout::eTransferDstOptimal && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
-		{
-			src_access_mask = vk::AccessFlagBits::eTransferWrite;
-			dst_access_mask = vk::AccessFlagBits::eShaderRead;
-			src_stage = vk::PipelineStageFlagBits::eTransfer;
-			dst_stage = vk::PipelineStageFlagBits::eFragmentShader/* | vk::PipelineStageFlagBits::eComputeShader*/;
-		}
-		else
-		{
-			LOG_ERROR("Unsupported layout transition!");
-			ASSERT(false);
-		}
-
-		vk::ImageSubresourceRange range(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 );
-		vk::ImageMemoryBarrier barrier(src_access_mask, dst_access_mask, oldLayout, newLayout, {}, {}, image, range);
-		cmd.pipelineBarrier(src_stage, dst_stage, {}, {}, nullptr, barrier);
-		EndSingleTimeCommands(cmd);
-	}
-
 	void VulkanUtils::TransitionImageLayout(
-		vk::raii::CommandBuffer &cmd,
+		vk::CommandBuffer cmd,
 		const vk::Image &image,  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, const ImageSubresource &sub)
 	{
