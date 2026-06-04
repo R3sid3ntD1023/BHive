@@ -40,8 +40,9 @@ namespace BHive
 		if (mBuffer->GetIndexCount() == 0)
 			return;
 
-		auto &texture = mTextureBatch->GetTexture();
+		mBuffer->Upload();
 
+		auto &texture = mTextureBatch->GetTexture();
 		mMaterial->SetTexture("uTexture", texture, 0);
 		mMaterial->Submit(PipelineRegistry::Get(PIPELINE_NAME));
 

@@ -24,6 +24,7 @@ namespace BHive
 
 	void QuadRenderer::Begin()
 	{
+		TextureBatch.Reset();
 		CircleBatch.StartBatch();
 		QuadBatch.StartBatch();
 		TextBatch.StartBatch();
@@ -36,6 +37,7 @@ namespace BHive
 		CircleBatch.Flush(renderer);
 		QuadBatch.Flush(renderer);
 		TextBatch.Flush(renderer);
+		
 	}
 
 	void QuadRenderer::DrawCircle(const FCircleParams &params, const FTransform &transform, int32_t entity_id)
@@ -255,7 +257,6 @@ namespace BHive
 	{
 		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
 
-
 		if (TextBatch.NeedsFlush(4, 6))
 		{
 			TextBatch.NextBatch(Renderer::Get());
@@ -264,7 +265,7 @@ namespace BHive
 		uint32_t texture_index = TextureBatch.GetTextureIndex(texture);
 		if (texture_index == -1)
 		{
-			QuadBatch.NextBatch(Renderer::Get());
+			TextBatch.NextBatch(Renderer::Get());
 		}
 	
 		auto offset = TextBatch.GetBuffer().GetVertexCount();

@@ -325,7 +325,7 @@ namespace BHive
 
 		pass->CommandList.Push(
 			"Draw Elements",
-			[=](const IRendererContext &ctx)
+			[=](IRendererContext &ctx)
 			{
 				auto &vk_ctx = static_cast<const FVulkanRendererContext &>(ctx);
 				vk_ctx.CommandBuffer.setPrimitiveTopology(topology);
@@ -343,7 +343,7 @@ namespace BHive
 
 		pass->CommandList.Push(
 			"Draw Elements",
-			[=](const IRendererContext &ctx)
+			[=](IRendererContext &ctx)
 			{
 				auto &vk_ctx = static_cast<const FVulkanRendererContext &>(ctx);
 				vk_ctx.CommandBuffer.setPrimitiveTopology(topology);
@@ -368,7 +368,7 @@ namespace BHive
 		auto buffer = indirect->GetNativeHandle().As<AllocatedBuffer>()->GetBuffer();
 		auto topology = ToVkTopology(mode);
 
-		pass->CommandList.Push("Multi Draw Elements Indirect", [buffer, topology, drawCount, stride](const IRendererContext &ctx)
+		pass->CommandList.Push("Multi Draw Elements Indirect", [buffer, topology, drawCount, stride](IRendererContext &ctx)
 		{		
 			auto &vk_ctx = static_cast<const FVulkanRendererContext &>(ctx);
 			vk_ctx.CommandBuffer.setPrimitiveTopology(topology);

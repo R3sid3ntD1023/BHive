@@ -30,6 +30,8 @@ namespace BHive
 		if (mBuffer->GetIndexCount() == 0)
 			return;
 
+		mBuffer->Upload();
+
 		auto &texture = mTextureBatch->GetTexture();
 		mQuadMaterial->SetTexture("uTexture", texture, 0);
 		mQuadMaterial->Submit();

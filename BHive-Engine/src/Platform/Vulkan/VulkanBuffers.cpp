@@ -197,7 +197,7 @@ namespace BHive
 		{
 			auto mapped_memory = mBuffer[frame].GetAllocation().MappedPtr;
 			std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, data, size);
-		}
+		}	
 	}
 
 	NativeHandle VulkanGPUBuffer::GetNativeHandle(uint32_t frame) const

@@ -54,6 +54,10 @@ namespace BHive
 
 		void SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view);
 
+		void BeginBatches();
+
+		void EndBatches();
+
 		void EndFrame();
 
 		void SetEnvironmentTexture(const Ref<Texture2D> &texture);

@@ -137,14 +137,15 @@ namespace BHive
 
 		mFramebuffer->Bind();
 
-		/*renderer.ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		renderer.ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		renderer.Clear();
-		renderer.SetViewport(0, 0, size.x, size.y);
-		renderer.SubmitCamera(mCamera.GetProjection(), mCamera.GetView());*/
+		renderer.SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
 
-	/*	renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
+		renderer.BeginBatches();
+		renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
 		renderer.Line.DrawGrid({});
 		renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
+		
 
 		FQuadParams params{.Size = {1, 1}, .Color = FColor::Red};
 		renderer.Quad.DrawQuad(params, nullptr, FTransform({0, 0, 2}));
@@ -152,11 +153,14 @@ namespace BHive
 		params.Color = FColor::White;
 		renderer.Quad.DrawQuad(params, mTexture, FTransform({0, 0, -2}));
 
+		renderer.Quad.DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));
+
 		FTextParams tex_params{};
 		renderer.Quad.DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
-		renderer.Quad.DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));*/
+		
+		renderer.EndBatches();
 
-		/*if (mMesh && mMaterial)
+		if (mMesh && mMaterial)
 		{		
 			mMaterial->Set("u_Time", Time::Raw());
 			mMaterial->Submit();
@@ -167,7 +171,7 @@ namespace BHive
 			renderer.GetModelBuffer().Upload();
 
 			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2, sizeof(MultiDrawIndirectCommand));
-		}*/
+		}
 
 		mFramebuffer->UnBind();
 

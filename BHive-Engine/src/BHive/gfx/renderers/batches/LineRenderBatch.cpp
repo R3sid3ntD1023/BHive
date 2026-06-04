@@ -47,7 +47,7 @@ namespace BHive
 		mLineMaterial->Submit();
 
 		renderer.SetLineWidth(2.0f);
-		renderer.DrawElements(ETopologyMode::Lines, mBuffer->GetVAO(), mBuffer->GetVertexCount());
+		renderer.DrawArrays(ETopologyMode::Lines, mBuffer->GetVAO(), mBuffer->GetVertexCount());
 	}
 
 	bool LineRenderBatch::IsFull(uint32_t vNeeded, uint32_t iNeeded)

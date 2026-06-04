@@ -86,8 +86,6 @@ namespace BHive
 	{
 		ResetStats();
 
-		Line.Begin();
-		Quad.Begin();
 
 		mGraph = RenderGraph{};
 		mActivePass = nullptr;
@@ -108,11 +106,22 @@ namespace BHive
 
 	}
 
-	void Renderer::EndFrame()
+	void Renderer::BeginBatches()
+	{
+		Line.Begin();
+		Quad.Begin();
+
+	}
+
+	void Renderer::EndBatches()
 	{
 		Line.End(*this);
 		Quad.End(*this);
+	}
 
+	void Renderer::EndFrame()
+	{
+		
 		RenderCommand::Flush(mAPI.get());
 
 		mAPI->SubmitGraph(mGraph, mResourceUpdates);
