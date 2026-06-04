@@ -1,53 +1,45 @@
 #include "batches/LineRenderBatch.h"
 #include "core/profiler/CPUGPUProfiler.h"
-#include "gfx/RenderCommand.h"
-#include "gfx/Shader.h"
-#include "gfx/ShaderManager.h"
-#include "gfx/VertexArray.h"
 #include "LineRenderer.h"
 #include "Renderer.h"
 
 namespace BHive
 {
-	struct LineRenderer::RenderData
-	{
-		LineRenderBatch LineBatch;
-	};
 
-	void LineRenderer::Init()
+	void LineRenderer::Initialize()
 	{
-		sData = new RenderData();
-		sData->LineBatch.Init();
-	}
-
-	void LineRenderer::Shutdown()
-	{
-		delete sData;
+		LineBatch.Initialize();
 	}
 
 	void LineRenderer::Begin()
 	{
-		StartBatch();
+		LineBatch.StartBatch();
 	}
 
-	void LineRenderer::End()
+	void LineRenderer::End(Renderer& renderer)
 	{
-		sData->LineBatch.End();
+		GPU_PROFILER_FUNCTION();
+
+		LineBatch.Flush(renderer);
 	}
 
 	void LineRenderer::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const FColor &color, const FTransform &transform, int32_t entityID)
 	{
-		NextBatch();
+		if (LineBatch.NeedsFlush(2, 0))
+		{
+			LineBatch.NextBatch(Renderer::Get());
+		}
 
-		sData->LineBatch->Position = transform.ToMat4() * glm::vec4(p0, 1.0f);
-		sData->LineBatch->Color = color;
-		sData->LineBatch->EntityID = entityID;
-		sData->LineBatch++;
+		auto v0 = LineBatch.GetBuffer().PushVertex();
+		auto v1 = LineBatch.GetBuffer().PushVertex();
 
-		sData->LineBatch->Position = transform.ToMat4() * glm::vec4(p1, 1.0f);
-		sData->LineBatch->Color = color;
-		sData->LineBatch->EntityID = entityID;
-		sData->LineBatch++;
+		v0->Position = transform.ToMat4() * glm::vec4(p0, 1.0f);
+		v0->Color = color;
+		v0->EntityID = entityID;
+
+		v1->Position = transform.ToMat4() * glm::vec4(p1, 1.0f);
+		v1->Color = color;
+		v1->EntityID = entityID;
 	}
 
 	void LineRenderer::DrawLine(const Line &line, const FTransform &transform, int32_t entityID)
@@ -288,27 +280,10 @@ namespace BHive
 		DrawSphere(0.05f, 16, {}, color, joint, entityID);
 	}
 
-	void LineRenderer::StartBatch()
-	{
-		sData->LineBatch.StartBatch();
-	}
-
-	void LineRenderer::NextBatch()
-	{
-		sData->LineBatch.NextBatch();
-	}
 
 	void LineRenderer::SetLineWidth(float width)
 	{
-		RenderCommand::SetLineWidth(width);
+		Renderer::Get().SetLineWidth(width);
 	}
 
-	void LineRenderer::Flush()
-	{
-		GPU_PROFILER_FUNCTION();
-
-		sData->LineBatch.Flush();
-	}
-
-	LineRenderer::RenderData *LineRenderer::sData = nullptr;
 } // namespace BHive

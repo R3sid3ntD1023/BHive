@@ -25,16 +25,18 @@ namespace BHive
 	};
 
 
-	using TextureSlots = std::unordered_map<std::string, TextureSlot>;
+	using TextureSlotMap = std::unordered_map<std::string, TextureSlot>;
 
 	class BHIVE_API Material : public Asset
 	{
 	public:
-		Material(Ref<Pipeline> pipeline);
+		Material() = default;
 
 		virtual ~Material() = default;
 
-		virtual void Submit(Ref<Pipeline> pipeline = nullptr);
+		void SetPipeline(Pipeline *pipeline);
+
+		virtual void Submit(Pipeline* pipeline = nullptr);
 
 		virtual void SetTexture(const char *name, const Ref<Texture> &texture, uint32_t mip = 0);
 
@@ -52,18 +54,17 @@ namespace BHive
 		REFLECTABLEV(Asset)
 
 	private:
-		void UpdateTextureSlots();
-
-		void CreateBackendMaterial();
+		void BuildSlotsForPipeline(Pipeline* pipeline);
 
 	protected:
-		TextureSlots mTextureSlots;
 
-		TextureSlots mImageSlots;
+		std::unordered_map<std::string, TextureSlot> mUserTextureSlots;
 
-		Ref<Pipeline> mPipeline;
+		std::unordered_map<Pipeline*, TextureSlotMap> mSlotsPerPipeline;
 
-		Ref<IMaterialBackendInterface> mBackendMaterial;
+		Pipeline* mPipeline = nullptr;
+
+		Scope<IMaterialBackendInterface> mBackendMaterial;
 
 	private:
 	};

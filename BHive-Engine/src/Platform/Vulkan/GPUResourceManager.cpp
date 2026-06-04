@@ -118,8 +118,9 @@ namespace BHive
 
 	void GPUResourceManager::DestroyBuffer(const ResourceID& handle)
 	{
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		api->QueueDeletion([this, handle](uint32_t) {
+		RenderCommand::QueueDeletion(
+			[this, handle](uint32_t)
+			{
 				GetStorage<vk::raii::Buffer>().Remove(handle);
 				GetStorage<MemoryAllocation>().Remove(handle);
 			});
@@ -128,8 +129,7 @@ namespace BHive
 
 	void GPUResourceManager::DestroyImage(const ResourceID& handle)
 	{
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		api->QueueDeletion(
+		RenderCommand::QueueDeletion(
 			[this, handle](uint32_t)
 			{
 				if (mExternalImages.contains(handle))
@@ -149,8 +149,7 @@ namespace BHive
 
 	void GPUResourceManager::DestroyImageView(const ResourceID& handle)
 	{
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		api->QueueDeletion(
+		RenderCommand::QueueDeletion(
 			[this, handle](uint32_t)
 			{
 				auto &storage = GetStorage<vk::raii::ImageView>();
@@ -161,8 +160,7 @@ namespace BHive
 
 	void GPUResourceManager::DestroySampler(const ResourceID& handle)
 	{
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		api->QueueDeletion(
+		RenderCommand::QueueDeletion(
 			[this, handle](uint32_t)
 			{
 				auto &storage = GetStorage<vk::raii::Sampler>();
@@ -175,8 +173,7 @@ namespace BHive
 	{
 		DestroyBuffer(buffer.Buffer);
 
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		api->QueueDeletion(
+		RenderCommand::QueueDeletion(
 			[this, handle = buffer.Buffer](uint32_t)
 			{
 				auto &alloc = GetStorage<MemoryAllocation>().Get(handle);
@@ -214,9 +211,7 @@ namespace BHive
 		if (alloc.IsDedicated)
 			 return;
 
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-		api->QueueDeletion([this, alloc = alloc](uint32_t) {
-			
+		RenderCommand::QueueDeletion([this, alloc = alloc](uint32_t) {
 			VulkanBackend::GetMemoryAllocator().Free(alloc);
 		});
 	}

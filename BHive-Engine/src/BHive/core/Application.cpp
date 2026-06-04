@@ -25,6 +25,8 @@ namespace BHive
 		if (!mSpecification.WorkingDirectory.empty())
 			std::filesystem::current_path(mSpecification.WorkingDirectory);
 
+		RenderCommand::Init(RendererAPI::Vulkan);
+
 		FWindowProperties props{};
 		props.Title = specification.Title;
 		props.Size = specification.Size;
@@ -38,9 +40,9 @@ namespace BHive
 		mMainWindow->SetEventCallback(window_callback);
 
 		if (specification.Flags & EApplicationFlags::EnableRendering)
-		{
-			RenderCommand::Init();
-			Renderer::Init();
+		{			
+			auto api = RendererAPI::Create();
+			mRenderer = CreateScope<Renderer>(std::move(api));
 		}
 
 		if (specification.Flags & EApplicationFlags::EnableImGui)
@@ -66,11 +68,8 @@ namespace BHive
 	{
 		if (mSpecification.Flags & EApplicationFlags::EnableRendering)
 		{
-			RenderCommand::WaitIdle();
-			Renderer::Shutdown();	
-			ShaderManager::Get().Clear();
+			ShaderManager::Clear();
 			WindowManager::Get().Shutdown();
-			RenderCommand::Shutdown();
 
 			sInstance = nullptr;
 		}
@@ -144,6 +143,11 @@ namespace BHive
 			layer->OnUpdate(Time::DeltaTime());
 		}
 
+		mRenderer->BeginFrame();
+
+		for (auto &layer : mLayerStack)
+			layer->OnRender(*mRenderer);
+
 		if (mImGuiLayer)
 		{
 			mImGuiLayer->BeginFrame();
@@ -155,6 +159,8 @@ namespace BHive
 
 			mImGuiLayer->EndFrame();
 		}
+
+		mRenderer->EndFrame();
 
 		auto &window_manager = WindowManager::Get();
 		for (auto &window : window_manager.GetWindows())

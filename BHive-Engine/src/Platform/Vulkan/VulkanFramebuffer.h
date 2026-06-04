@@ -3,7 +3,6 @@
 #include "core/Core.h"
 #include "gfx/Texture.h"
 #include "gfx/Framebuffer.h"
-#include "VulkanBackend.h"
 
 namespace BHive
 {

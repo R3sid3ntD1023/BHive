@@ -1,5 +1,4 @@
 #include "gfx/RenderCommand.h"
-#include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "LineRenderBatch.h"
 #include "gfx/material/Material.h"
@@ -8,86 +7,51 @@
 
 namespace BHive
 {
-	LineRenderBatch::~LineRenderBatch()
+	#define LINE_PIPELINE_NAME "LinePipeline"
+
+	void LineRenderBatch::Initialize()
 	{
-		mVertexDataPtr = nullptr;
-		delete[] mVertexDataBuffer;
-	}
+		mBuffer = CreateScope<VertexBatchBuffer<FLineVertex>>(sMaxVertexCount, 0, false);
 
-	void LineRenderBatch::Init()
-	{
-		mVertexDataBuffer = new FLineVertex[sMaxVertexCount];
-
-		mVertexBuffer = VertexBuffer::Create(sMaxVertexCount * sizeof(FLineVertex), EBufferUsageType::Dynamic);
-		mVertexBuffer->SetLayout({{EShaderDataType::Float3}, {EShaderDataType::Float4}, {EShaderDataType::Int}});
-
-		mVertexArray = VertexArray::Create();
-		mVertexArray->AddVertexBuffer(mVertexBuffer);
-
-		mLineShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Line.glsl");
+		auto shader = ShaderManager::Get("Line.glsl");
 
 		auto state = Pipeline::GetDefaultGraphicsPipelineState();
-		state.ShaderProgram = mLineShader;
+		state.ShaderProgram = shader;
 		state.Raster.CullEnabled = false;
 		state.ColorAttachmentFormats = {EFormat::RGBA8};
 		state.DrawMode = ETopologyMode::Lines;
 
-		mPipeline = Pipeline::Create();
-		mPipeline->Init(state);
+		PipelineRegistry::Register(LINE_PIPELINE_NAME, state);
 
-		mLineMaterial = CreateRef<Material>(mPipeline);
+		mLineMaterial = CreateScope<Material>();
+		mLineMaterial->SetPipeline(PipelineRegistry::Get(LINE_PIPELINE_NAME));
 	}
 
-	void LineRenderBatch::End()
+	bool LineRenderBatch::NeedsFlush(uint32_t vNeeded, uint32_t iNeeded)
 	{
-		Flush();
-	}
-
-	void LineRenderBatch::NextBatch()
-	{
-		if (mVertexCount + 2 >= sMaxVertexCount)
-		{
-			End();
-			StartBatch();
-		}
+		return IsFull(vNeeded, iNeeded);
 	}
 
 	void LineRenderBatch::StartBatch()
 	{
-		mVertexDataPtr = mVertexDataBuffer;
-		mVertexCount = 0;
+		mBuffer->Reset();
 	}
 
-	void LineRenderBatch::Flush()
+	void LineRenderBatch::Flush(Renderer& renderer)
 	{
-		if (mVertexCount == 0)
+		if (mBuffer->GetVertexCount() == 0)
 			return;
 
-		mVertexBuffer->SetData(mVertexDataBuffer, mVertexCount * sizeof(FLineVertex));
+		mBuffer->Upload();
 
 		mLineMaterial->Submit();
 
-		RenderCommand::SetLineWidth(2.0f);
-
-		RenderCommand::DrawArrays(ETopologyMode::Lines, mVertexArray, mVertexCount);
-
-		Renderer::GetStats().DrawCalls++;
+		renderer.SetLineWidth(2.0f);
+		renderer.DrawElements(ETopologyMode::Lines, mBuffer->GetVAO(), mBuffer->GetVertexCount());
 	}
 
-
-
-	FLineVertex *LineRenderBatch::operator->()
+	bool LineRenderBatch::IsFull(uint32_t vNeeded, uint32_t iNeeded)
 	{
-		return mVertexDataPtr;
-	}
-
-	LineRenderBatch &LineRenderBatch::operator++(int)
-	{
-		ASSERT(mVertexCount < sMaxVertexCount);
-		ASSERT(mVertexDataPtr < mVertexDataBuffer + sMaxVertexCount);
-
-		mVertexDataPtr++;
-		mVertexCount++;
-		return *this;
+		return (mBuffer->GetVertexCount() + vNeeded) > sMaxVertexCount;
 	}
 } // namespace BHive

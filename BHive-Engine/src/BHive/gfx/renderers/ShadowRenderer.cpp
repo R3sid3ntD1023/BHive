@@ -1,10 +1,8 @@
 #include "core/math/Frustum.h"
 #include "gfx/Framebuffer.h"
-#include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Buffers.h"
-#include "gfx/material/Material.h"
 #include "Renderer.h"
 #include "ShadowRenderer.h"
 
@@ -75,9 +73,9 @@ namespace BHive
 		shadow_passes.FBOs[0] = Framebuffer::Create(dir_shadow_fbo_spec);
 		shadow_passes.FBOs[1] = Framebuffer::Create(point_shadow_fbo_spec);
 		shadow_passes.FBOs[2] = Framebuffer::Create(spot_shadow_fbo_spec);
-		shadow_passes.Shaders[0] = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowDirectionalLight.glsl");
-		shadow_passes.Shaders[1] = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowPointLight.glsl");
-		shadow_passes.Shaders[2] = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/shadow_passes/ShadowSpotLight.glsl");
+		shadow_passes.Shaders[0] = ShaderManager::Get("ShadowDirectionalLight.glsl");
+		shadow_passes.Shaders[1] = ShaderManager::Get("ShadowPointLight.glsl");
+		shadow_passes.Shaders[2] = ShaderManager::Get("ShadowSpotLight.glsl");
 
 		mShadowRenderData->ShadowBuffer = GPUBuffer::Create(sizeof(FShadowData), EBufferType::StorageBuffer);
 	}

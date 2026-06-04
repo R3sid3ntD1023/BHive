@@ -2,14 +2,8 @@
 #include "VulkanWindowContext.h"
 #include "VulkanRendererAPI.h"
 #include "VulkanSwapChain.h"
-#include "VulkanUtils.h"
 #include "VulkanImGuiLayer.h"
-
 #include <backends/imgui_impl_glfw.h>
-
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
 #include <backends/imgui_impl_vulkan.h>
 #include "gfx/Texture.h"
 
@@ -54,10 +48,9 @@ namespace BHive
 		auto &context = static_cast<VulkanWindowContext &>(WindowContext::Get());
 		auto &instance = VulkanBackend::GetInstance();
 		auto &physical_device = VulkanBackend::GetPhysicalDevice();
-		auto &swap_chain = context.GetSwapChain();
-		auto extent = swap_chain->GetExtent();
-		auto image_count = swap_chain->GetImageCount();
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		auto &swap_chain = VulkanBackend::GetSwapChain();
+		auto extent = swap_chain.GetExtent();
+		auto image_count = swap_chain.GetImageCount();
 		auto &queue_familes = VulkanBackend::GetQueueFamilies();
 		auto &device = VulkanBackend::GetLogicalDevice();
 
@@ -80,8 +73,8 @@ namespace BHive
 
 		ImGui_ImplGlfw_InitForVulkan(mWindowHandle, true);
 
-		auto format = swap_chain->GetFormat().format;
-		auto depth_format = swap_chain->GetDepthStencilFormat();
+		auto format = swap_chain.GetFormat().format;
+		auto depth_format = swap_chain.GetDepthStencilFormat();
 		vk::PipelineRenderingCreateInfo rendering_info{};
 		rendering_info.setViewMask(0).setColorAttachmentCount(1).setColorAttachmentFormats(format).setDepthAttachmentFormat(depth_format).setStencilAttachmentFormat(depth_format);
 
@@ -93,7 +86,7 @@ namespace BHive
 		init_info.Queue = *queue_familes.GraphicsQueue;
 		init_info.QueueFamily = queue_familes.GraphicsQueueIndex;
 		init_info.DescriptorPool = *mDescriptorPool;
-		init_info.MinImageCount = swap_chain->GetMinImageCount();
+		init_info.MinImageCount = swap_chain.GetMinImageCount();
 		init_info.ImageCount = image_count;
 		init_info.PipelineCache = VK_NULL_HANDLE;
 		init_info.Allocator = VK_NULL_HANDLE;
@@ -128,9 +121,7 @@ namespace BHive
 
 	void VulkanImGuiLayer::OnRender(ImDrawData *drawData, const glm::uvec2 &displaySize)
 	{
-		RenderGraph graph{};
-		auto& pass = graph.AddPass("ImGui", EPassType::SwapChain);
-		
+		auto& pass = RenderCommand::BeginPass("ImGui", EPassType::SwapChain);
 		pass.CommandList.Push("Draw Imgui", [drawData, displaySize](IRendererContext& ctx)
 		{
 			auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
@@ -143,9 +134,6 @@ namespace BHive
 			ImGui_ImplVulkan_RenderDrawData(drawData, *vk_ctx.CommandBuffer);
 
 		});
-
-		FResourceUpdateList list{};
-		RenderCommand::SubmitGraph(graph, list);
 	}
 
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)

@@ -11,16 +11,17 @@ namespace BHive
 {
 	void OutlineRenderPass::Init()
 	{
-		mOutlineMeshShader = ShaderManager::Get().Load("Outline.glsl");
-		mOutlineQuadShader = ShaderManager::Get().Load("OutlineQuad.glsl");
+		mOutlineMeshShader = ShaderManager::Get("Outline.glsl");
+		mOutlineQuadShader = ShaderManager::Get("OutlineQuad.glsl");
 	}
 
 	void OutlineRenderPass::Render(const FMeshRenderDatas &data)
 	{
 		mFrambuffer->Bind();
 
-		RenderCommand::ClearColor(0, 0, 0, 0);
-		RenderCommand::Clear();
+		Renderer::Get().ClearColor(0, 0, 0, 0);
+		Renderer::Get().Clear();
+
 
 		/*switch (mSelectedRenderData->GetRenderDataType())
 		{
@@ -58,8 +59,8 @@ namespace BHive
 
 	void OutlinePostProcessRenderPass::Init()
 	{
-		mOutlineColorGradingShader = ShaderManager::Get().Load("OutlineColorGrading.glsl");
-		mBoxBlurShader = ShaderManager::Get().Load("BoxBlur.glsl");
+		mOutlineColorGradingShader = ShaderManager::Get("OutlineColorGrading.glsl");
+		mBoxBlurShader = ShaderManager::Get("BoxBlur.glsl");
 
 		FTextureCreateInfo create_info_lut{};
 		create_info_lut.Format = EFormat::RGBA32F;

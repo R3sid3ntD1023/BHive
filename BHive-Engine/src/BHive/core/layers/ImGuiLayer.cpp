@@ -161,7 +161,7 @@ namespace BHive
 
 	Ref<ImGuiLayer> ImGuiLayer::Create(GLFWwindow *window)
 	{
-		switch (RenderCommand::GetGraphicsAPI())
+		switch (RenderCommand::GetAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
 			return CreateRef<VulkanImGuiLayer>(window);

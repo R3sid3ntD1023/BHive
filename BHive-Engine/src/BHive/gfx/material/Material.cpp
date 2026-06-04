@@ -6,16 +6,18 @@
 
 namespace BHive
 {
-
-	Material::Material(Ref<Pipeline> pipeline)
-		: mPipeline(pipeline)
+	void Material::SetPipeline(Pipeline *pipeline)
 	{
 		ASSERT(pipeline)
-	
-		CreateBackendMaterial();
 
-		UpdateTextureSlots();
+		if (!mBackendMaterial)
+			mBackendMaterial = IMaterialBackendInterface::Create();
 
+		mPipeline = pipeline;
+
+		mBackendMaterial->Init(pipeline);
+
+		BuildSlotsForPipeline(pipeline);
 	}
 
 	void Material::SetTexture(const char *name, const Ref<Texture> &texture, uint32_t mip)
@@ -30,68 +32,58 @@ namespace BHive
 
 		auto slot = TextureSlot{texture, mip};
 		auto &bindingInfo = samplers.at(name);
-		switch (bindingInfo.Type)
-		{
-		case EResourceType::StorageImage:
-			mImageSlots.at(name) =  slot;
-			mBackendMaterial->BindTexture(name, slot.Texture, slot.MipLevel, mPipeline);
-			break;
-		default:
-			mTextureSlots.at(name) = slot;
-		}
 
-		//LOG_INFO("SetTexture('{}') → binding {} kind {}", name, bindingInfo.Binding, (int)bindingInfo.Type);
+		for (auto& [pipeline, slots] : mSlotsPerPipeline)
+		{
+			if (slots.contains(name))
+			{
+				switch (bindingInfo.Type)
+				{
+				case EResourceType::StorageImage:
+					mBackendMaterial->BindTexture(name, slot.Texture, slot.MipLevel, mPipeline);
+					break;
+				default:
+					slots[name] = slot;
+				}
+			}
+		}
+		
 	}
 
-	void Material::Submit(Ref<Pipeline> pipeline)
+	
+	void Material::Submit(Pipeline *pipeline)
 	{
-		auto current_pipeline = pipeline ? pipeline : mPipeline;
-		current_pipeline->Bind(); // binds shaders pipeline 
+		auto p = pipeline ? pipeline : mPipeline;
+		p->Bind(); // binds shaders pipeline 
 
-		for (auto& [name, slot] : mTextureSlots)
+		auto &slots = mSlotsPerPipeline[p];
+		for (auto& [name, slot] : slots)
 		{
-			auto tex = slot.Texture ? slot.Texture  : Renderer::GetWhiteTexture();
-			mBackendMaterial->BindTexture(name, tex, slot.MipLevel, current_pipeline);
+			auto tex = slot.Texture ? slot.Texture  : Renderer::Get().GetWhiteTexture();
+			mBackendMaterial->BindTexture(name, tex, slot.MipLevel, p);
 		}
-
-		/*for (auto &[name, slot] : mImageSlots)
-		{
-			if (!slot.Texture)
-				continue;
-
-			mBackendMaterial->BindTexture(name, slot.Texture, slot.MipLevel, current_pipeline);
-		}*/
 
 		mBackendMaterial->Bind(mPipeline); //update descriptor sets
 	}
 
-	void Material::UpdateTextureSlots()
+	void Material::BuildSlotsForPipeline(Pipeline* pipeline)
 	{
+		TextureSlotMap slots;
+
 		const auto &set = mBackendMaterial->GetTargetSet();
 		for (auto &[name, info] : set.Samplers)
 		{
-			switch (info.Type)
-			{
-			case EResourceType::StorageImage:
-				mImageSlots.emplace(name, TextureSlot{nullptr});
-				break;
-			default:
-				mTextureSlots.emplace(name, TextureSlot{nullptr});
-			};
+			slots[name] = TextureSlot{nullptr};
 		}
-	}
 
-	void Material::CreateBackendMaterial()
-	{
-		mBackendMaterial = IMaterialBackendInterface::Create();
-		mBackendMaterial->Init(mPipeline);
+		mSlotsPerPipeline[pipeline] = std::move(slots);
 	}
 
 	void Material::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
 
-		ar(mTextureSlots, mImageSlots);
+		ar(mUserTextureSlots);
 	}
 
 	void Material::Load(cereal::BinaryInputArchive &ar)
@@ -99,7 +91,7 @@ namespace BHive
 
 		Asset::Load(ar);
 
-		ar(mTextureSlots, mImageSlots);
+		ar(mUserTextureSlots);
 	}
 
 	REFLECT(TextureSlot)
@@ -111,8 +103,7 @@ namespace BHive
 	REFLECT(Material)
 	{
 		BEGIN_REFLECT(Material)
-		REFLECT_PROPERTY("TextureSlots", mTextureSlots)
-		REFLECT_PROPERTY("ImageSlots", mImageSlots);
+		REFLECT_PROPERTY("TextureSlots", mUserTextureSlots);
 
 		rttr::type::register_wrapper_converter_for_base_classes<Ref<Material>>();
 	}

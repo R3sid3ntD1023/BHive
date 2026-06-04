@@ -6,8 +6,7 @@
 #include "VulkanConverters.h"
 #include "gfx/BufferBase.h"
 #include "VulkanFramebuffer.h"
-#include "VulkanWindowContext.h"
-#include "gfx/RenderCommand.h"
+#include "VulkanUtils.h"
 #include "VulkanSetManager.h"
 #include "systems/GlobalSetRegistry.h"
 #include "systems/MaterialSetRegistry.h"
@@ -16,31 +15,35 @@
 
 namespace BHive
 {
-	struct PendingDeletion
-	{
-		uint32_t Frame = 0;
-		std::function<void(uint32_t)> Fn;
-	};
-
 	
+	struct FVulkanAsycComputePass : public FAsyncPass
+	{
+		vk::Device Device;
+		vk::CommandBuffer Cmd;
+		vk::Fence Fence;
+		vk::Queue Queue;
+		Ref<FComputeBindings> Bindings;
 
-	static std::queue<PendingDeletion> sDeletionQueue;
+		bool IsDone() override { return Device.getFenceStatus(Fence) == vk::Result::eSuccess;}
+
+		void Wait() override { auto result =  Device.waitForFences(Fence, VK_TRUE, UINT64_MAX);}
+
+		void Destroy() override
+		{
+			Wait();
+			Device.destroyFence(Fence);
+			Device.freeCommandBuffers(VulkanBackend::GetImmediateCommandPool(), Cmd);
+			delete this;
+		}
+	};
 
 	VulkanRendererAPI::VulkanRendererAPI()
 		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
-
-	}
-
-	VulkanRendererAPI::~VulkanRendererAPI()
-	{
-		
 	}
 
 	void VulkanRendererAPI::Init()
 	{
-		
-
 		const uint32_t descriptor_count = 1000;
 
 		std::vector<vk::DescriptorPoolSize> pool_sizes;
@@ -76,7 +79,7 @@ namespace BHive
 		VulkanBackend::GetLogicalDevice().waitIdle();
 	}
 
-	vk::Result VulkanRendererAPI::RenderFrame(VulkanWindowContext *ctx)
+	vk::Result VulkanRendererAPI::RenderFrame(VulkanSwapChain *swapChain)
 	{
 		
 		FResourceUpdateList mergedUpdates;
@@ -95,7 +98,7 @@ namespace BHive
 			return vk::Result::eSuccess;
 		}
 
-		return ExecuteFinalGraph(ctx, mergedUpdates, finalGraph);
+		return ExecuteFinalGraph(swapChain, mergedUpdates, finalGraph);
 	}
 
 	void VulkanRendererAPI::SubmitGraph(const RenderGraph &graph, FResourceUpdateList &updateResources)
@@ -110,19 +113,10 @@ namespace BHive
 			mSubmittedUpdates.push_back(updateResources);
 	}
 
-	void VulkanRendererAPI::SubmitResourceUpdate(FResourceUpdateList::UpdateCommand cmd)
-	{
-		if (mDeviceRecreationInProgress.load())
-			return;
 
-		FResourceUpdateList list{};
-		list.Push(std::move(cmd));
-		mSubmittedUpdates.push_back(list);
-	}
-
-	void VulkanRendererAPI::QueueDeletion(std::function<void(uint32_t)> fn)
+	void VulkanRendererAPI::QueueDeletion(FQeueuDeflectionFunc&& fn)
 	{
-		sDeletionQueue.emplace(mCompletedFrame, fn);
+		mDeletionQueue.emplace(mCompletedFrame, std::move(fn));
 	}
 
 
@@ -144,48 +138,60 @@ namespace BHive
 		registry.EnsureGlobalSet(*pipeline, GLOBAL_SET_INDEX);
 	}
 
+	void VulkanRendererAPI::ResetFrameIndex()
+	{
+		mCurrentFrame = 0;
+		mCompletedFrame = 0;
+
+		mSubmittedGraphs.clear();
+		mSubmittedUpdates.clear();
+
+		while (!mDeletionQueue.empty())
+			mDeletionQueue.pop();
+	}
+
 	void VulkanRendererAPI::ProcessDeletionQueue(uint32_t frame)
 	{
-		while (!sDeletionQueue.empty())
+		while (!mDeletionQueue.empty())
 		{
-			auto & del = sDeletionQueue.front();
+			auto & del = mDeletionQueue.front();
 
 			if (frame > del.Frame)
 				del.Fn(frame);
-			sDeletionQueue.pop();
+			mDeletionQueue.pop();
 		}
 	}
 
-	vk::Result VulkanRendererAPI::ExecuteFinalGraph(VulkanWindowContext *ctx, FResourceUpdateList &updates, const RenderGraph &graph)
+	vk::Result VulkanRendererAPI::ExecuteFinalGraph(VulkanSwapChain *swapChain, FResourceUpdateList &updates, const RenderGraph &graph)
 	{
-		auto current_frame = ctx->GetCurrentFrame();
-		auto &cmd = ctx->GetCommandBuffer();
+		auto current_frame = mCurrentFrame;
+		auto& cmd = VulkanBackend::GetCommandBuffer(current_frame);
 
-		auto& swap_chain = ctx->GetSwapChain();
-		swap_chain->WaitForFence(current_frame);
+		swapChain->WaitForFence(current_frame);
 
 		ProcessDeletionQueue(current_frame);
 
 		cmd.reset();
 
-		auto [result, imageIndex] = swap_chain->AquireNextImage(current_frame);
+		auto [result, imageIndex] = swapChain->AquireNextImage(current_frame);
 
 		if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
 			return result;
 
-		cmd.begin({});
+		vk::CommandBufferBeginInfo beginInfo{};
+		cmd.begin(beginInfo);
 
 		vk::DebugUtilsLabelEXT label_info("Main Pass", std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
 		cmd.beginDebugUtilsLabelEXT(label_info);
 
-		FVulkanRendererContext vk_ctx(cmd, current_frame, imageIndex);
+		FVulkanRendererContext vk_ctx{cmd, current_frame, imageIndex};
 
 		GetSubSystem<GlobalSetRegistry>().UpdatePerFrame(current_frame);
 		GetSubSystem<MaterialSetRegistry>().UpdatePerFrame(current_frame);
 
 		updates.Execute(vk_ctx);
 
-		for (auto& pass : graph.GetPasses())
+		for (auto &pass : graph.GetPasses())
 		{
 			vk::DebugUtilsLabelEXT debugInfo(pass.Name.c_str(), {1, 0, 0, 1});
 
@@ -193,39 +199,11 @@ namespace BHive
 
 			if (pass.Type == EPassType::SwapChain)
 			{
-				ExecuteSwapChainPass(pass, vk_ctx, swap_chain);
+				ExecuteSwapChainPass(pass, vk_ctx, swapChain);
 			}
 			else if (pass.Type == EPassType::OffScreen)
 			{
 				ExecuteOffScreenPass(pass, vk_ctx);
-			}
-			else if (pass.Type == EPassType::Transfer)
-			{
-				for (auto &image : pass.Images)
-				{
-					ImageSubresource sub{};
-					sub.MipLevel = image.BaseMip;
-					sub.LevelCount = image.LevelCount;
-					sub.BaseArrayLayer = image.BaseLayer;
-					sub.LayerCount = image.LayerCount;
-
-					auto img = image.Texture->GetNativeHandle().As<VulkanImage>();
-					img->Transition(cmd, ImageState::TansferWrite(), sub);
-				}
-				
-				pass.CommandList.Execute(vk_ctx);
-
-				for (auto &image : pass.Images)
-				{
-					ImageSubresource sub{};
-					sub.MipLevel = image.BaseMip;
-					sub.LevelCount = image.LevelCount;
-					sub.BaseArrayLayer = image.BaseLayer;
-					sub.LayerCount = image.LayerCount;
-
-					auto img = image.Texture->GetNativeHandle().As<VulkanImage>();
-					img->Transition(cmd, ImageState::ShaderRead(), sub);
-				}
 			}
 
 			cmd.endDebugUtilsLabelEXT();
@@ -234,14 +212,19 @@ namespace BHive
 		cmd.endDebugUtilsLabelEXT();
 		cmd.end();
 
-		result = swap_chain->Present(cmd, imageIndex, current_frame);
+		result = swapChain->Present(cmd, imageIndex, current_frame);
 
 		mCompletedFrame = current_frame;
+
+		if (result == vk::Result::eSuccess)
+		{
+			mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+		}
 
 		return result;
 	}
 
-	void VulkanRendererAPI::ExecuteSwapChainPass(const FRenderGraphPass &pass, FVulkanRendererContext &ctx, const Ref<VulkanSwapChain> &swapChain)
+	void VulkanRendererAPI::ExecuteSwapChainPass(const FRenderGraphPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain* swapChain)
 	{
 		auto &image = swapChain->GetImage(ctx.ImageIndex);
 		auto &depth = swapChain->GetDepthImage();
@@ -279,25 +262,24 @@ namespace BHive
 		pass.CommandList.Execute(ctx);
 	}
 
-	void VulkanRendererAPI::SetCurrentContext(VulkanWindowContext *ctx)
+	void VulkanRendererAPI::SetCurrentContext(WindowContext *ctx)
 	{
 		mCurrentContext = ctx;
 	}
 
-	void VulkanRendererAPI::ClearColor(float r, float g, float b, float a)
+	void VulkanRendererAPI::ClearColor(FRenderGraphPass *pass, float r, float g, float b, float a)
 	{
-		mClearColor = {r, g, b, a};
+		pass->CommandList.Push("SetClearColor", [=](IRendererContext &) { mClearColor = {r, g, b, a}; });
 	}
 
-	void VulkanRendererAPI::Clear(ClearMask mask)
+	void VulkanRendererAPI::Clear(FRenderGraphPass *pass, ClearMask mask)
 	{
 		
 	}
 
-	void VulkanRendererAPI::SetLineWidth(float width)
+	void VulkanRendererAPI::SetLineWidth(FRenderGraphPass *pass, float width)
 	{
-		auto &pass = RenderCommand::GetActivePass();
-		pass.CommandList.Push(
+		pass->CommandList.Push(
 			"Set Line Width",
 			[=](IRendererContext &ctx)
 			{
@@ -306,10 +288,9 @@ namespace BHive
 			});
 	}
 
-	void VulkanRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+	void VulkanRendererAPI::SetViewport(FRenderGraphPass *pass, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 	{
-		auto &pass = RenderCommand::GetActivePass();
-		pass.CommandList.Push(
+		pass->CommandList.Push(
 			"Set Viewport",
 			[=](IRendererContext &ctx)
 			{
@@ -319,14 +300,13 @@ namespace BHive
 			});
 	}
 
-	void VulkanRendererAPI::DrawArrays(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t count)
+	void VulkanRendererAPI::DrawArrays(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count)
 	{
 		vao->Bind();
 
 		auto topology = ToVkTopology(mode);
 
-		auto &pass = RenderCommand::GetActivePass();
-		pass.CommandList.Push(
+		pass->CommandList.Push(
 			"Draw Arrays",
 			[=](IRendererContext &ctx)
 			{
@@ -336,15 +316,14 @@ namespace BHive
 			});
 	}
 
-	void VulkanRendererAPI::DrawElements(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t count)
+	void VulkanRendererAPI::DrawElements(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count)
 	{
 		vao->Bind();
 		auto index_buffer =vao->GetIndexBuffer();
 		auto index_count = count ? count : index_buffer->GetCount();
 		auto topology = ToVkTopology(mode);
 
-		auto &pass = RenderCommand::GetActivePass();
-		pass.CommandList.Push(
+		pass->CommandList.Push(
 			"Draw Elements",
 			[=](const IRendererContext &ctx)
 			{
@@ -354,15 +333,15 @@ namespace BHive
 			});
 	}
 
-	void VulkanRendererAPI::DrawElementsBaseVertex(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t start, uint32_t start_index, uint32_t count, uint32_t instance_count)
+	void
+	VulkanRendererAPI::DrawElementsBaseVertex(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t start_index, uint32_t count, uint32_t instance_count)
 	{
 		vao->Bind();
 		auto index_buffer = vao->GetIndexBuffer();
 		auto index_count = count ? count : index_buffer->GetCount();
 		auto topology = ToVkTopology(mode);
 
-		auto &pass = RenderCommand::GetActivePass();
-		pass.CommandList.Push(
+		pass->CommandList.Push(
 			"Draw Elements",
 			[=](const IRendererContext &ctx)
 			{
@@ -372,25 +351,24 @@ namespace BHive
 			});
 	}
 
-	void VulkanRendererAPI::DrawElementsRanged(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t start, uint32_t end, uint32_t count)
+	void VulkanRendererAPI::DrawElementsRanged(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count)
 	{
 		
 	}
 
-	void VulkanRendererAPI::DrawElementsInstanced(ETopologyMode mode, const Ref<VertexArray> &vao, uint32_t instances, uint32_t count)
+	void VulkanRendererAPI::DrawElementsInstanced(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count)
 	{
 	
 	}
 
-	void VulkanRendererAPI::MultiDrawElementsIndirect(ETopologyMode mode, const BufferBase &indirect, const Ref<VertexArray> &vao, size_t drawCount, size_t stride)
+	void VulkanRendererAPI::MultiDrawElementsIndirect(FRenderGraphPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, size_t drawCount, size_t stride)
 	{
 		vao->Bind();
 
-		auto buffer = indirect.GetNativeHandle().As<AllocatedBuffer>()->GetBuffer();
+		auto buffer = indirect->GetNativeHandle().As<AllocatedBuffer>()->GetBuffer();
 		auto topology = ToVkTopology(mode);
 
-		auto &pass = RenderCommand::GetActivePass();
-		pass.CommandList.Push("Multi Draw Elements Indirect", [buffer, topology, drawCount, stride](const IRendererContext &ctx)
+		pass->CommandList.Push("Multi Draw Elements Indirect", [buffer, topology, drawCount, stride](const IRendererContext &ctx)
 		{		
 			auto &vk_ctx = static_cast<const FVulkanRendererContext &>(ctx);
 			vk_ctx.CommandBuffer.setPrimitiveTopology(topology);
@@ -400,31 +378,21 @@ namespace BHive
 		vao->UnBind();
 	}
 
-	void VulkanRendererAPI::ColorMask(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+	void VulkanRendererAPI::ColorMask(FRenderGraphPass *pass, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 	{	
 	}
 
-	void VulkanRendererAPI::DebugPass(const std::string &msg)
-	{
-		LOG_TRACE(msg);
-	}
 
-	Ref<FComputeBindings> VulkanRendererAPI::CreateComputeBindings(const Ref<Pipeline> &pipeline)
+	Ref<FComputeBindings> VulkanRendererAPI::CreateComputeBindings(Pipeline* pipeline)
 	{
 		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
 		return CreateRef<FVulkanComputeBindings>(vkPipeline);
 	}
 
-	AsyncComputeHandle VulkanRendererAPI::ExecuteComputePass(const Ref<Pipeline> &pipeline, const glm::uvec3 & size, const FComputeFunc &builder)
+	FAsyncPass* VulkanRendererAPI::ExecuteComputePass(Pipeline* pipeline, const glm::uvec3 & size, const FComputeFunc &builder)
 	{
-		vk::CommandBufferAllocateInfo allocInfo(VulkanBackend::GetImmediateCommandPool(), vk::CommandBufferLevel::ePrimary, 1);
-
-		auto cmds = (*mDevice).allocateCommandBuffers(allocInfo);
-		auto& cmd = cmds[0];
-
-		vk::CommandBufferBeginInfo beginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-
-		cmd.begin(beginInfo);
+		SingleTimeCommand single_cmd{};
+		auto& cmd = single_cmd.Get();
 
 		vk::DebugUtilsLabelEXT labelInfo("Compute Pass", {1, .5, 0, 1 });
 		cmd.beginDebugUtilsLabelEXT(labelInfo);
@@ -440,13 +408,8 @@ namespace BHive
 		for (auto& [img, isStorage] : images)
 		{
 			auto vkImg = img.Texture->GetNativeHandle().As<VulkanImage>();
-			ImageSubresource sub{};
-			sub.MipLevel = img.BaseMip;
-			sub.LevelCount = img.LevelCount;
-			sub.BaseArrayLayer = img.BaseLayer;
-			sub.LayerCount = img.LayerCount;
+			ImageSubresource sub{img.BaseMip, img.LevelCount, img.BaseLayer, img.LayerCount};
 			
-
 			if (isStorage && (img.Access == EImageAccess::WRITE || img.Access == EImageAccess::READ_WRITE))
 				vkImg->Transition(cmd, ImageState::ComputeWrite(), sub);
 			else
@@ -463,42 +426,42 @@ namespace BHive
 				continue;
 
 			auto vkImg = img.Texture->GetNativeHandle().As<VulkanImage>();
-			ImageSubresource sub{};
-			sub.MipLevel = img.BaseMip;
-			sub.LevelCount = img.LevelCount;
-			sub.BaseArrayLayer = img.BaseLayer;
-			sub.LayerCount = img.LayerCount;
-			
+			ImageSubresource sub{img.BaseMip, img.LevelCount, img.BaseLayer, img.LayerCount};
 			vkImg->Transition(cmd, ImageState::ShaderRead(), sub);
 		}
 
 		cmd.endDebugUtilsLabelEXT();
-		cmd.end();
-
-		vk::FenceCreateInfo fenceInfo{};
-		vk::Fence fence = (*mDevice).createFence(fenceInfo);
-
-		vk::SubmitInfo submitInfo({}, {}, cmd);
-		auto &queue = VulkanBackend::GetQueueFamilies().GraphicsQueue;
-		queue.submit(submitInfo);
 		
-		AsyncComputeHandle handle{};
-		handle.Fence = new vk::Fence(fence);
-		handle.CommandBuffer = new vk::CommandBuffer(cmd);
-		handle.Bindings = bindings;
+		/*Scope<FVulkanAsycComputePass> pass = CreateScope<FVulkanAsycComputePass>();
+		
+		pass->Fence = fence;
+		pass->Cmd = cmd;
+		pass->Device = mDevice;
+		pass->Queue = queue;
+		pass->Bindings = bindings;
 
-		QueueDeletion(
-			[&, handle](uint32_t)
-			{
-				auto device = (*mDevice);
-				auto &commandPool = VulkanBackend::GetImmediateCommandPool();
-				auto fencePtr = static_cast<vk::Fence *>(handle.Fence);
-				auto cmdPtr = static_cast<vk::CommandBuffer *>(handle.CommandBuffer);
-				device.destroyFence(*fencePtr);
-				device.freeCommandBuffers(commandPool, *cmdPtr);
-			});
+		auto raw = pass.get();
+		mComputePasses.emplace_back(std::move(pass));
 
-		return handle;
+		QueueDeletion([raw](uint32_t) { raw->Destroy(); });
+
+		return raw;*/
+		return nullptr;
+	}
+
+	void VulkanRendererAPI::ExecuteTransferPass(FTransferFunc &&builder)
+	{
+		SingleTimeCommand single_cmd{};
+		auto& cmd = single_cmd.Get();
+
+		vk::DebugUtilsLabelEXT labelInfo("Transfer Pass", {1, 0, .5, 1});
+		cmd.beginDebugUtilsLabelEXT(labelInfo);
+
+		FVulkanTransferContext ctx{cmd};
+
+		builder(ctx);
+
+		cmd.endDebugUtilsLabelEXT();
 	}
 
 } // namespace BHive

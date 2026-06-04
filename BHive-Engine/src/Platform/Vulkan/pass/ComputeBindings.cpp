@@ -1,13 +1,13 @@
 #include "ComputeBindings.h"
 #include "Platform/Vulkan/VulkanPipeline.h"
-#include "Platform/Vulkan/material/VulkanBackendMaterial.h"
+
 
 namespace BHive
 {
-	FVulkanComputeBindings::FVulkanComputeBindings(const Ref<VulkanPipeline> &pipeline)
+	FVulkanComputeBindings::FVulkanComputeBindings(VulkanPipeline* pipeline)
 		: mPipeline(pipeline)
 	{
-		mBackendMaterial = Cast<VulkanBackendMaterial>(IMaterialBackendInterface::Create());
+		mBackendMaterial = CreateScope<VulkanBackendMaterial>();
 		mBackendMaterial->Init(pipeline);
 	}
 

@@ -1,5 +1,7 @@
 #include "VulkanBackend.h"
 #include "core/debug/CrashHandler.h"
+#include "gfx/RenderCommand.h"
+#include "VulkanRendererAPI.h"
 #include <GLFW/glfw3.h>
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
@@ -94,13 +96,17 @@ namespace BHive
 		}
 	} // namespace details
 
-	void VulkanBackend::Init()
+	void VulkanBackend::Init(GLFWwindow* window)
 	{
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
 		CreateIntance();
 		CreateDebugMessenger();
 		PickPhysicalDevice();
+		CreateWindowSurface(window);
+		CreateLogicalDevice(mSurface);
+		CreateSwapChain(window);
+		CreateCommandBuffers();
 
 		auto log_info = [=](std::ofstream &log)
 		{
@@ -140,6 +146,36 @@ namespace BHive
 	{
 		for (auto &callback : mOnDeviceDestroyedCallbacks)
 			callback();
+	}
+
+	vk::Result VulkanBackend::Present()
+	{
+		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
+		return api->RenderFrame(mSwapChain.get());
+	}
+
+	void VulkanBackend::RequestSwapChainRecreate(uint32_t w, uint32_t h)
+	{
+		LOG_TRACE("recreating swap chain...");
+
+		auto &physical_device = VulkanBackend::GetPhysicalDevice();
+		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(*mSurface);
+		auto formats = physical_device.getSurfaceFormatsKHR(*mSurface);
+		auto presentModes = physical_device.getSurfacePresentModesKHR(*mSurface);
+
+		VulkanSwapChainCreateInfo create_info{};
+		create_info.Width = w;
+		create_info.Height = h;
+		create_info.Capabilities = surfaceCapabilities;
+		create_info.Formats = formats;
+		create_info.PresentModes = presentModes;
+
+		mSwapChain = CreateScope<VulkanSwapChain>();
+		mSwapChain->Init(mSurface, create_info);
+
+		RecreateFrameResources();
+
+		LOG_TRACE("Swap chain created newsize:[{}x{}]", w, h);
 	}
 
 	std::vector<const char *> VulkanBackend::GetRequiredExtensions()
@@ -301,6 +337,60 @@ namespace BHive
 		}
 	}
 
+	void VulkanBackend::CreateWindowSurface(GLFWwindow *window)
+	{
+		VkSurfaceKHR _surface;
+		auto &instance = VulkanBackend::GetInstance();
+		if (glfwCreateWindowSurface(*instance, window, nullptr, &_surface) != VK_SUCCESS)
+		{
+			LOG_ERROR("Failed to create window surface!");
+			ASSERT(false);
+		}
+
+		mSurface = vk::raii::SurfaceKHR(instance, _surface);
+
+		VulkanBackend::Get().CreateLogicalDevice(mSurface);
+		VulkanBackend::Get().EnsurePresentSupportForSurface(*mSurface);
+	}
+
+	void VulkanBackend::CreateSwapChain(GLFWwindow *window)
+	{
+		int w = 0, h = 0;
+		glfwGetFramebufferSize(window, &w, &h);
+
+		while (w == 0 || h == 0)
+		{
+			glfwWaitEvents();
+			glfwGetFramebufferSize(window, &w, &h);
+		}
+
+		auto &physical_device = VulkanBackend::GetPhysicalDevice();
+		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(*mSurface);
+		auto formats = physical_device.getSurfaceFormatsKHR(*mSurface);
+		auto presentModes = physical_device.getSurfacePresentModesKHR(*mSurface);
+
+		VulkanSwapChainCreateInfo create_info{};
+		create_info.Width = w;
+		create_info.Height = h;
+		create_info.Capabilities = surfaceCapabilities;
+		create_info.Formats = formats;
+		create_info.PresentModes = presentModes;
+
+		mSwapChain = CreateScope<VulkanSwapChain>();
+		mSwapChain->Init(mSurface, create_info);
+	}
+
+	void VulkanBackend::CreateCommandBuffers()
+	{
+		auto graphics_queue_index = mQueueFamilies.GraphicsQueueIndex;
+
+		vk::CommandPoolCreateInfo pool_info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, graphics_queue_index);
+		mCommandPool = vk::raii::CommandPool(mDevice, pool_info);
+
+		vk::CommandBufferAllocateInfo alloc_info(mCommandPool, vk::CommandBufferLevel::ePrimary, MAX_FRAMES_IN_FLIGHT);
+		mCommandBuffers = vk::raii::CommandBuffers(mDevice, alloc_info);
+	}
+
 	void VulkanBackend::CreateImmediateCommandPool()
 	{
 		vk::CommandPoolCreateInfo pool_info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, mQueueFamilies.GraphicsQueueIndex);
@@ -356,6 +446,14 @@ namespace BHive
 		CreateImmediateCommandPool();
 		CreateMemoryAllocator();
 		CreateGPUResourceManager();
+	}
+
+	void VulkanBackend::RecreateFrameResources()
+	{
+		/*mCommandBuffers = nullptr;
+		mCommandPool = nullptr;
+
+		CreateCommandBuffers();*/
 	}
 
 	void VulkanBackend::EnsurePresentSupportForSurface(const vk::SurfaceKHR &surface)

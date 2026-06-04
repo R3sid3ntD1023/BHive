@@ -28,7 +28,7 @@ namespace BHive
 	{
 		static bool Sort(const Ref<FMeshRenderData> &lhs, const Ref<FMeshRenderData> &rhs)
 		{
-			glm::vec3 position = Renderer::GetCameraData().Position;
+			glm::vec3 position = Renderer::Get().GetCameraData().Position;
 			auto distanceA = glm::distance(lhs->Transform.GetTranslation(), position);
 			auto distanceB = glm::distance(rhs->Transform.GetTranslation(), position);
 			return distanceA < distanceB;
@@ -81,17 +81,7 @@ namespace BHive
 
 		// Create a quad for rendering the final output
 		mQuad = CreateRef<PQuad>();
-		mQuadShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/ScreenQuad.glsl");
-
-		// Initialize the PMREM generator
-		EnvironmentMapGenerator.Initialize();
-
-		// Load the environment map if it is not already set
-		if (!sEnvironmentMap)
-		{
-			sEnvironmentMap = TextureLoader::Import(ENGINE_PATH "/data/hdr/industrial_sunset_puresky_2k.hdr");
-			EnvironmentMapGenerator.SetEnvironmentMap(sEnvironmentMap);
-		}
+		mQuadShader = ShaderManager::Get(ENGINE_SHADER_PATH "/ScreenQuad.glsl");
 
 		// add default post-processing effects
 		PushPostProcessRenderPass(CreateRef<BloomRenderPass>());
@@ -100,8 +90,8 @@ namespace BHive
 
 	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
 	{
-		Renderer::Begin();
-		Renderer::SubmitCamera(camera->GetProjection(), view.Inverse());
+		Renderer::Get().BeginFrame();
+		Renderer::Get().SubmitCamera(camera->GetProjection(), view.Inverse());
 
 		mSceneRenderData->ShadowRenderer.Begin();
 		mSceneRenderData->Lights.Begin();
@@ -140,9 +130,9 @@ namespace BHive
 
 		mFramebuffer->Bind();
 
-		RenderCommand::ClearColor(0.1f, 0.1f, 0.1f, 0.0f);
+		Renderer::Get().ClearColor(0.1f, 0.1f, 0.1f, 0.0f);
 
-		RenderCommand::Clear();
+		Renderer::Get().Clear();
 
 		// render meshes
 		for (auto &[mat, objects] : mSceneRenderData->RenderData)
@@ -160,7 +150,7 @@ namespace BHive
 				Renderer::Draw(object);*/
 		}
 
-		Renderer::End();
+		Renderer::Get().EndFrame();
 
 		mFramebuffer->UnBind();
 
@@ -177,26 +167,20 @@ namespace BHive
 
 		mFinalFramebuffer->Bind();
 
-		RenderCommand::Clear();
+		Renderer::Get().Clear();
 
 		//mQuadShader->Bind();
 
 		//texture->Bind();
 
-		RenderCommand::DrawElements(ETopologyMode::Triangles, mQuad->GetVertexArray());
+		Renderer::Get().DrawElements(ETopologyMode::Triangles, mQuad->GetVertexArray().get());
 
 		mFinalFramebuffer->UnBind();
 	}
 
-	void SceneRenderer::SetEnvironmentMap(const Ref<Texture2D> &environment)
-	{
-		sEnvironmentMap = environment;
-		EnvironmentMapGenerator.SetEnvironmentMap(environment);
-	}
-
 	void SceneRenderer::SubmitLight(const FDirectionalLightCreateInfo &info)
 	{
-		auto &camera = Renderer::GetCameraData();
+		auto &camera = Renderer::Get().GetCameraData();
 		mSceneRenderData->Lights.Submit(info);
 
 		FShadowCascadedCreateInfo shadow_info{};
@@ -289,7 +273,7 @@ namespace BHive
 
 	float SceneRenderer::GetDistanceToCamera(const FTransform &transform)
 	{
-		const auto &C = Renderer::GetCameraData().Position;
+		const auto &C = Renderer::Get().GetCameraData().Position;
 		return glm::distance(glm::vec3(C), transform[2]);
 	}
 
@@ -311,7 +295,7 @@ namespace BHive
 			post_process->Resize(size);
 		}
 
-		RenderCommand::SetViewport(0, 0, size.x, size.y);
+		Renderer::Get().SetViewport(0, 0, size.x, size.y);
 	}
 
 	const Ref<Texture> &SceneRenderer::GetColorAttachment(uint32_t index) const
@@ -322,11 +306,6 @@ namespace BHive
 	const Ref<Texture> &SceneRenderer::GetDepthAttachment() const
 	{
 		return mFinalFramebuffer->GetDepthAttachment();
-	}
-
-	const Ref<Texture2D> &SceneRenderer::GetEnvironmentMap() const
-	{
-		return sEnvironmentMap;
 	}
 
 	void SceneRenderer::RenderToScreen()
@@ -340,7 +319,7 @@ namespace BHive
 			return true;
 
 		const auto &bounds = mesh->GetBoundingBox();
-		const auto &frustum = Renderer::GetFrustum();
+		const auto &frustum = Renderer::Get().GetFrustum();
 
 		auto volume = FSphereVolume(bounds.GetCenter(), bounds.GetRadius());
 		return !volume.InFrustum(frustum, FTransform(transform));

@@ -14,13 +14,13 @@ namespace BHive
 	public:
 		virtual ~IMaterialBackendInterface() = default;
 
-		virtual void Init(const Ref<Pipeline> &shader) = 0;
+		virtual void Init(Pipeline* pipeline) = 0;
 
-		virtual void Bind(const Ref<Pipeline> &shader) = 0;
+		virtual void Bind(Pipeline* pipeline) = 0;
 
 		virtual void Shutdown() = 0;
 
-		virtual void BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip , const Ref<Pipeline> &pipeline) = 0;
+		virtual void BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip , Pipeline* pipeline) = 0;
 
 		virtual void Set(const std::string &name, const void *data, size_t size) = 0;
 
@@ -32,6 +32,6 @@ namespace BHive
 
 		virtual const FSetReflection &GetTargetSet() const = 0;
 
-		static Ref<IMaterialBackendInterface> Create();
+		static Scope<IMaterialBackendInterface> Create();
 	};
 }

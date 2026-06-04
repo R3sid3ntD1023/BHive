@@ -20,7 +20,7 @@ namespace BHive
 
 	void AcesRenderPass::Init()
 	{
-		mComputeShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/compute/Aces.glsl");
+		mComputeShader = ShaderManager::Get("Aces.glsl");
 	}
 
 	void AcesRenderPass::CreateResizableObjects(const glm::uvec2 &size)

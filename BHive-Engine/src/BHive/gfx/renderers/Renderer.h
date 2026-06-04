@@ -6,14 +6,23 @@
 #include "gfx/Camera.h"
 #include "RenderData.h"
 #include "buffers/ModelBuffer.h"
+#include "gfx/RendererAPI.h"
+#include "gfx/GlobalBuffers.h"
+#include "PMREMGenerator.h"
 
 namespace BHive
 {
 
 	class Texture;
-	class Material;
 	class VertexArray;
-	class Shader;
+	class BufferBase;
+
+	struct PassConfig
+	{
+		std::string DefaultPassName = "Default Pass";
+		EPassType DefaultPassType = EPassType::SwapChain;
+		bool DebugMarkers = false;
+	};
 
 	struct FCameraData
 	{
@@ -24,54 +33,144 @@ namespace BHive
 	};
 
 
-	struct BHIVE_API Renderer
+	class BHIVE_API Renderer
 	{
+	public:
+		LineRenderer Line;
+		QuadRenderer Quad;
+
+	public:
+		Renderer(Scope<RendererAPI> api);
+
+		~Renderer();
+
 		struct BHIVE_API Statitics
 		{
 			uint32_t DrawCalls;
 			uint32_t InstanceCount;
 		};
 
-		static void Init();
+		void BeginFrame();
 
-		static void Shutdown();
+		void SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view);
 
-		static void Begin();
+		void EndFrame();
 
-		static void SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view);
+		void SetEnvironmentTexture(const Ref<Texture2D> &texture);
 
-		static void End();
+		Ref<Texture> GetWhiteTexture();
 
-		static void SetEnvironmentTexture(const Ref<Texture> &texture);
+		Ref<Texture> GetBlackTexture();
 
-		static Ref<Texture> GetWhiteTexture();
+		const Frustum &GetFrustum();
 
-		static Ref<Texture> GetBlackTexture();
+		void ResetStats();
 
-		static const Frustum &GetFrustum();
+		const Statitics &GetStats() const { return mStats; }
 
-		static FCameraData & GetCameraData();
-
-		static void ResetStats();
-
-		static Statitics &GetStats() { return sStats; }
-
-		static FModelBuffer &GetModelBuffer();
+		FModelBuffer &GetModelBuffer();
 
 		//BRDF textures
-		static Ref<Texture> GetPreFilterEnvironmentTexture();
+		Ref<Texture> GetPreFilterEnvironmentTexture();
 
-		static Ref<Texture> GetEnviromentCubeTexture();
+		Ref<Texture> GetEnviromentCubeTexture();
 
-		static Ref<Texture> GetIrradianceTexture();
+		Ref<Texture> GetIrradianceTexture();
 
-		static Ref<Texture> GetBRDFLUTTexture();
+		Ref<Texture> GetBRDFLUTTexture();
+
+		const FCameraData &GetCameraData() const;
+
+		static Renderer& Get() { return *sInstance;}
+
+#pragma region HELPERS
+
+		void ClearColor(float r, float g, float b, float a = 1.0f) ;
+
+		void Clear(ClearMask mask = ClearMask::All);
+
+		void SetLineWidth(float width);
+
+		void SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+
+		void DrawArrays(ETopologyMode mode, VertexArray* vao, uint32_t count = 0);
+
+		void DrawElements(ETopologyMode mode, VertexArray *vao, uint32_t count = 0);
+
+		void DrawElementsBaseVertex(ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0);
+
+		void DrawElementsRanged(ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count = 0);
+
+		void DrawElementsInstanced(ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count = 0);
+
+		void MultiDrawElementsIndirect(ETopologyMode mode, BufferBase* indirect, VertexArray* vao, size_t drawCount, size_t stride = 0);
+
+		FAsyncPass* ExecuteComputePass(Pipeline *pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder);
+
+		void ExecuteTransferPass(FTransferFunc &&builder);
+
+		template<typename Fn>
+		void SubmitTransferImmediate(Fn &&fn)
+		{
+			mAPI->ExecuteTransferPass(std::forward<Fn>(fn));
+		}
+
+#pragma endregion
+
+#pragma region RENDERGRAPH
+
+
+
+		RenderGraph &GetActiveGraph();
+
+		FRenderGraphPass &GetActivePass();
+
+		FRenderGraphPass &BeginPass(const std::string &name, EPassType type);
+
+		void EndPass();
+
+		void SubmitResourceUpdate(FResourceUpdateList::UpdateCommand cmd);
+
+		class PassScope
+		{
+			PassScope(const std::string &name, EPassType type) { Renderer::Get().BeginPass(name, type); }
+
+			~PassScope() { Renderer::Get().EndPass(); }
+		};
+
+		void SetPassConfig(const PassConfig &config);
+
+		const PassConfig &GetPassConfig() { return mPassConfig; };
+
+		void DebugPass(const std::string &msg);
+
+#pragma endregion
+
+		template <typename T>
+			requires(std::is_base_of_v<RendererAPI, T>)
+		inline T *GetGraphicsAPI() const
+		{
+			return Cast<T>(mAPI.get());
+		}
+
+		inline RendererAPI *GetGraphicsAPI() const { return mAPI.get(); }
 
 	private:
-		struct RenderData;
-		static RenderData *sData;
-		static inline Statitics sStats;
+		Statitics mStats{};
+		PMREMGenerator mPMREMGenerator{};
+		GlobalBuffers mGlobalBuffers{};
 
+		//rendergraph
+		RenderGraph mGraph;
+		FRenderGraphPass *mActivePass = nullptr;
+		bool mFrameActive = false;
+		PassConfig mPassConfig;
+		FResourceUpdateList mResourceUpdates{};
+
+		//api
+		Ref<struct RenderData> mData;
+		Scope<RendererAPI> mAPI;
+		static inline Renderer *sInstance = nullptr;
 	};
 
 } // namespace BHive

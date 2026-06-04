@@ -104,7 +104,7 @@ namespace BHive
 } // namespace BHive
 
 #if _DEBUG
-	#define ENABLE_PROFILE 1
+	#define ENABLE_PROFILE 0
 #endif
 
 #if ENABLE_PROFILE

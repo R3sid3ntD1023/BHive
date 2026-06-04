@@ -1,57 +1,53 @@
 #include "CircleRenderBatch.h"
 #include "gfx/ShaderManager.h"
-#include "gfx/RenderCommand.h"
 #include "gfx/renderers/Renderer.h"
-#include "gfx/material/BackendMaterial.h"
+#include "gfx/material/Material.h"
+#include "gfx/Pipeline.h"
 
 namespace BHive
 {
-	BufferLayout CircleVertex::GetLayout()
-	{
-		return {{EShaderDataType::Float4}, {EShaderDataType::Float3}, {EShaderDataType::Float4}, {EShaderDataType::Float}, {EShaderDataType::Float}, {EShaderDataType::Int}};
-	}
+	#define CIRCLE_PIPELINE_NAME "CirclePipeline"
 
-	
-	CircleRenderBatch::~CircleRenderBatch()
+	void CircleRenderBatch::Initialize()
 	{
-		mMaterial->Shutdown();
-	}
+		mBuffer = CreateScope<VertexBatchBuffer<CircleVertex>>(sMaxVertexCount, sMaxIndexCount, true);
 
-	void CircleRenderBatch::Init(size_t vcount, size_t icount)
-	{
-		TRenderBatch::Init(vcount, icount);
-
-		auto shaderProgram = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Circle.glsl");
-		mPipeline = Pipeline::Create();
+		auto shaderProgram = ShaderManager::Get("Circle.glsl");
 
 		auto state = Pipeline::GetDefaultGraphicsPipelineState();
 		state.ShaderProgram = shaderProgram;
 		state.Raster.CullEnabled = false;
 		state.Depth.DepthWrite = false;
-	
-		mPipeline->Init(state);
 
-		mMaterial = IMaterialBackendInterface::Create();
-		mMaterial->Init(mPipeline);
+		PipelineRegistry::Register(CIRCLE_PIPELINE_NAME, state);
+
+		mCircleMaterial = CreateScope<Material>();
+		mCircleMaterial->SetPipeline(PipelineRegistry::Get(CIRCLE_PIPELINE_NAME));
 	}
 
-	Ref<Pipeline> CircleRenderBatch::GetPipeline() const
+	void CircleRenderBatch::StartBatch()
 	{
-		return mPipeline;
+		mBuffer->Reset();
 	}
 
-	void CircleRenderBatch::Flush()
+	bool CircleRenderBatch::NeedsFlush(uint32_t vNeeded, uint32_t iNeeded)
 	{
-		if (mIndexCount)
-		{
-			TRenderBatch::Flush();
+		return IsFull(vNeeded, iNeeded);
+	}
 
-			mPipeline->Bind();
-			mMaterial->Bind(mPipeline);
+	void CircleRenderBatch::Flush(Renderer& renderer)
+	{
+		if (mBuffer->GetIndexCount() == 0)
+			return;
+		mBuffer->Upload();
 
-			RenderCommand::DrawElements(ETopologyMode::Triangles, mVertexArray, mIndexCount);
+		mCircleMaterial->Submit();
 
-			Renderer::GetStats().DrawCalls++;
-		}
+		renderer.DrawElements(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
+	}
+
+	bool CircleRenderBatch::IsFull(uint32_t vNeeded, uint32_t iNeeded)
+	{
+		return (mBuffer->GetVertexCount() + vNeeded > sMaxVertexCount) || (mBuffer->GetIndexCount() + iNeeded > sMaxIndexCount);
 	}
 } // namespace BHive

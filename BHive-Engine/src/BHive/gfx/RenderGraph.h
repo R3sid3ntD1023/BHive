@@ -29,6 +29,8 @@ namespace BHive
 			}
 		}
 
+		void Clear() { mUpdateCommands.clear(); }
+
 		bool Empty() const { return mUpdateCommands.empty(); }
 
 	private:
@@ -65,8 +67,7 @@ namespace BHive
 	enum class EPassType : uint8_t
 	{
 		OffScreen,
-		SwapChain,
-		Transfer
+		SwapChain
 	};
 
 	//Tex, Mip, Levels, Layer, Layers, Access
@@ -104,6 +105,19 @@ namespace BHive
 		EPassType Type{};
 		FRenderCommandList CommandList{};
 		std::vector<FImageInfo> Images{};
+	};
+
+	struct FAsyncPass
+	{
+	public:
+
+		virtual bool IsDone() = 0;
+
+		virtual void Wait() = 0;
+
+		virtual void Destroy() = 0;
+
+		virtual ~FAsyncPass() = default;
 	};
 
 	class RenderGraph

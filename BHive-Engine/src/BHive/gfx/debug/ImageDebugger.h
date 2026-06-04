@@ -9,6 +9,7 @@ namespace BHive
 	class Pipeline;
 	class Framebuffer;
 	class PQuad;
+	class Renderer;
 
 	struct FDebugTextureEntry
 	{
@@ -32,6 +33,8 @@ namespace BHive
 		void Initialize(const glm::uvec2 &size);
 
 		void RegisterTexture(const std::string &name, const Ref<Texture> &tex);
+
+		void OnRender(Renderer &renderer);
 
 		void OnGuiRender();
 

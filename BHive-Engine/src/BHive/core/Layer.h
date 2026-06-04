@@ -6,6 +6,7 @@ namespace BHive
 {
 	class Event;
 	class Application;
+	class Renderer;
 
 	class BHIVE_API Layer
 	{
@@ -15,6 +16,7 @@ namespace BHive
 		virtual void OnAttach(Application&) {};
 		virtual void OnDetach() {};
 		virtual void OnUpdate(float) {};
+		virtual void OnRender(Renderer&) {};
 		virtual void OnEvent(Event &) {};
 		virtual void OnGuiRender() {}
 	};

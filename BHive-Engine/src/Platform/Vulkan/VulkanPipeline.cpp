@@ -153,11 +153,11 @@ namespace BHive
 		//create sets
 		if (mShader->HasSet(BATCH_SET_INDEX))
 		{
-			mBatchSetManager = RenderCommand::GetRendererAPI<VulkanRendererAPI>()->CreateSetManager(this, BATCH_SET_INDEX);
-			mBatchSetManager->SetBuffer(1, Renderer::GetModelBuffer().GetObjectBuffer());
+			mBatchSetManager = RenderCommand::GetGraphicsAPI()->CreateSetManager(this, BATCH_SET_INDEX);
+			mBatchSetManager->SetBuffer(1, Renderer::Get().GetModelBuffer().GetObjectBuffer());
 		}
 
-		RenderCommand::GetRendererAPI<VulkanRendererAPI>()->OnPipelineCreated(this);
+		RenderCommand::GetGraphicsAPI<VulkanRendererAPI>()->OnPipelineCreated(this);
 
 		mBindPoint = vk::PipelineBindPoint::eGraphics;
 	}
@@ -209,7 +209,7 @@ namespace BHive
 
 	void VulkanPipeline::Bind()
 	{
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		auto api = Renderer::Get().GetGraphicsAPI<VulkanRendererAPI>();
 		auto& shader = *mShader;
 		auto& set_hashes = shader.GetSetHashes();
 		auto &refl = mProgram->GetRefl();
@@ -217,10 +217,7 @@ namespace BHive
 		auto maxSet = mShader->GetMaxSet();
 		uint64_t h0 = set_hashes.at(GLOBAL_SET_INDEX);
 
-
-
-		auto &pass = RenderCommand::GetActivePass();
-		pass.CommandList.Push("Bind Pipeline && Descriptor Sets",
+		RenderCommand::SubmitCommand("Bind Pipeline && Descriptor Sets",
 			[=, &layout](IRendererContext &ctx) 
 			{
 				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
@@ -264,7 +261,6 @@ namespace BHive
 
 	void VulkanPipeline::BindImmediate(vk::CommandBuffer cmd)
 	{
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
 		auto &shader = *mShader;
 		auto &set_hashes = shader.GetSetHashes();
 		auto &refl = mProgram->GetRefl();

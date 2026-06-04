@@ -7,13 +7,7 @@
 
 namespace BHive
 {
-	StandardMaterial::StandardMaterial()
-		: Material(nullptr)
-	{
-		
-	}
-
-	void StandardMaterial::Submit(Ref<Pipeline> pipeline)
+	void StandardMaterial::Submit(Pipeline* pipeline)
 	{
 
 		Material::Submit(pipeline);

@@ -3,6 +3,7 @@
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
 #include "textures/VulkanImage.h"
+#include "VulkanBackend.h"
 
 namespace BHive
 {
@@ -70,9 +71,7 @@ namespace BHive
 		auto spec = mSpecification;
 		auto current_face = mCurrentFace;
 
-		RenderCommand::BeginFrame();
 		auto &pass = RenderCommand::BeginPass("Framebuffer", EPassType::OffScreen);
-
 		pass.CommandList.Push(
 			"Bind Framebuffer",
 			[current_face, color_attachments, color_specifications, depth_attachment, depth_specification, spec](IRendererContext &ctx)
@@ -84,11 +83,7 @@ namespace BHive
 					auto &spec = color_specifications[i];
 					auto tex = color_attachments[i]->GetNativeHandle().As<VulkanImage>();
 
-					ImageSubresource sub{
-						.MipLevel = spec.MipLevel,
-						.BaseArrayLayer = spec.Layer,
-						.LayerCount = spec.LayerCount
-					};
+					ImageSubresource sub{spec.MipLevel, 1,  spec.Layer, spec.LayerCount};
 					tex->Transition(vk_ctx.CommandBuffer, ImageState::ColorAttachment(), sub);
 				}
 
@@ -97,10 +92,6 @@ namespace BHive
 					auto &spec = depth_specification;
 					auto tex = depth_attachment->GetNativeHandle().As<VulkanImage>();
 
-					ImageSubresource sub{
-						.MipLevel = spec.MipLevel,
-						.BaseArrayLayer = spec.Layer, .LayerCount = spec.LayerCount
-					};
 					tex->Transition(vk_ctx.CommandBuffer, ImageState::DepthStencilAttachment());
 				}
 
@@ -139,7 +130,7 @@ namespace BHive
 
 				vk_ctx.CommandBuffer.beginRendering(info);
 
-				vk::Viewport viewport(0.f, 0.f, (float)spec.Size.x, (float)spec.Size.y, 0.0f, 1.0f);
+				vk::Viewport viewport(0.f, (float)spec.Size.y, (float)spec.Size.x, -(float)spec.Size.y, 0.0f, 1.0f);
 				vk::Rect2D scissor({0, 0}, {spec.Size.x, spec.Size.y});
 
 				vk_ctx.CommandBuffer.setViewport(0, viewport);
@@ -156,9 +147,7 @@ namespace BHive
 	{
 		auto color_attachments = mColorAttachments;
 
-		auto &pass = RenderCommand::GetActivePass();
-
-		pass.CommandList.Push("UnBind Framebuffer",
+		RenderCommand::SubmitCommand("UnBind Framebuffer",
 		[color_attachments](IRendererContext & ctx)
 		{
 			auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
@@ -172,10 +161,6 @@ namespace BHive
 		});
 
 		RenderCommand::EndPass();
-		auto& graph = RenderCommand::EndFrame();
-		FResourceUpdateList list{};
-		RenderCommand::SubmitGraph(graph, list);
-
 	}
 
 	void VulkanFramebuffer::Resize(const glm::uvec2 &newSize)
@@ -253,20 +238,17 @@ namespace BHive
 			mDepthAttachment = CreateFramebufferTexture(mSpecification.Size,  mSpecification.Samples, mDepthSpecification);
 		}
 
-		auto &pass = RenderCommand::GetActivePass();
 		auto& colorAttachments = mColorAttachments;
 
-		RenderCommand::SubmitResourceUpdate([colorAttachments](const IRendererContext &ctx)
-		{
-			auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-
-			for (auto &tex : colorAttachments)
-			{
-				auto vkTex = tex->GetNativeHandle().As<VulkanImage>();
-				vkTex->Transition(vk_ctx.CommandBuffer, ImageState::ColorAttachment());
-				vkTex->Transition(vk_ctx.CommandBuffer, ImageState::ShaderRead());
-			}
-		});
+		RenderCommand::GetGraphicsAPI()->ExecuteTransferPass([=](ITransferContext& ctx) {
+				auto &transfer_ctx = CastRef<FVulkanTransferContext>(ctx);
+				for (auto &tex : colorAttachments)
+				{
+					auto vkTex = tex->GetNativeHandle().As<VulkanImage>();
+					vkTex->Transition(transfer_ctx.Cmd, ImageState::ColorAttachment());
+					vkTex->Transition(transfer_ctx.Cmd, ImageState::ShaderRead());
+				}
+			});
 	}
 
 } // namespace BHive

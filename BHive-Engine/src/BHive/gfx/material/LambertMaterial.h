@@ -9,9 +9,7 @@ namespace BHive
 	{
 
 	public:
-		LambertMaterial();
-
-		LambertMaterial(const Ref<Pipeline> &pipeline);
+		LambertMaterial() = default;
 
 		FColor DiffuseColor = FColor::White;
 
@@ -21,7 +19,7 @@ namespace BHive
 
 		void Load(cereal::BinaryInputArchive &ar) override;
 
-		void Submit(Ref<Pipeline> pipeline = nullptr) override;
+		void Submit(Pipeline* pipeline = nullptr) override;
 
 		//Ref<Material> Clone() const override;
 

@@ -2,16 +2,16 @@
 
 #include "gfx/RenderGraph.h"
 #include "Platform/Vulkan/VulkanCore.h"
+#include "Platform/Vulkan/material/VulkanBackendMaterial.h"
 
 namespace BHive
 {
 	class VulkanPipeline;
-	class VulkanBackendMaterial;
 
 	class FVulkanComputeBindings : public FComputeBindings
 	{
 	public:
-		FVulkanComputeBindings(const Ref<VulkanPipeline>& pipeline);
+		FVulkanComputeBindings(VulkanPipeline* pipeline);
 
 		virtual void StorageImage(const char *name, const FImageInfo &info) override;
 
@@ -26,8 +26,8 @@ namespace BHive
 		const auto &GetBoundImages() const { return mImages; }
 
 	private:
-		Ref<VulkanBackendMaterial> mBackendMaterial;
-		Ref<VulkanPipeline> mPipeline;
+		Scope<VulkanBackendMaterial> mBackendMaterial;
+		VulkanPipeline* mPipeline = nullptr;
 		std::vector<std::pair<FImageInfo, bool>> mImages;
 	};
 }

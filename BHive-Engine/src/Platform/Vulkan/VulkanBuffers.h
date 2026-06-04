@@ -12,7 +12,7 @@ namespace BHive
 
 		void Init(size_t size, vk::BufferUsageFlags usage);
 
-		void SetData(vk::raii::CommandBuffer &cmd, const void *data, size_t size, uint32_t offset, vk::PipelineStageFlags2 flags, vk::AccessFlags2 access);
+		void SetData(vk::raii::CommandBuffer& cmd, const void *data, size_t size, uint32_t offset, vk::PipelineStageFlags2 flags, vk::AccessFlags2 access);
 
 		NativeHandle GetNativeHandle() const;
 

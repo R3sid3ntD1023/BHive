@@ -1,14 +1,9 @@
-#include "batches/CircleRenderBatch.h"
-#include "batches/QuadRenderBatch.h"
-#include "batches/TextRenderBatch.h"
-#include "batches/TextureBatch.h"
+
 #include "core/profiler/CPUGPUProfiler.h"
 #include "gfx/font/Font.h"
 #include "gfx/font/FontManager.h"
 #include "gfx/font/MSDFData.h"
-#include "gfx/RenderCommand.h"
 #include "gfx/Texture.h"
-#include "gfx/VertexArray.h"
 #include "QuadRenderer.h"
 #include "Renderer.h"
 #include "gfx/sprite/Sprite.h"
@@ -16,46 +11,31 @@
 namespace BHive
 {
 
-	struct RenderData2D
+	void QuadRenderer::Initialize()
 	{
-		static const uint32_t sMaxQuads = 20'000;
-		static const uint32_t sMaxVertices = sMaxQuads * 4;
-		static const uint32_t sMaxIndices = sMaxQuads * 6;
+		QuadBatch.Initialize();
+		CircleBatch.Initialize();
+		TextBatch.Initialize();
+		TextureBatch.Initialize();
 
-		QuadRenderBatch QuadBatch;
-		TextRenderBatch TextBatch;
-		CircleRenderBatch CircleBatch;
-		TextureBatchData TextureBatch;
-	};
-
-	void QuadRenderer::Init()
-	{
-		sRenderData2D = new RenderData2D();
-		sRenderData2D->QuadBatch.Init(RenderData2D::sMaxVertices, RenderData2D::sMaxIndices);
-		sRenderData2D->CircleBatch.Init(RenderData2D::sMaxVertices, RenderData2D::sMaxIndices);
-		sRenderData2D->TextBatch.Init(RenderData2D::sMaxVertices, RenderData2D::sMaxIndices);
-		sRenderData2D->TextureBatch.Init();
-
-		sRenderData2D->QuadBatch.SetTextureBatch(&sRenderData2D->TextureBatch);
-		sRenderData2D->TextBatch.SetTextureBatch(&sRenderData2D->TextureBatch);
-	}
-
-	void QuadRenderer::Shutdown()
-	{
-		delete sRenderData2D;
+		QuadBatch.SetTextureBatch(&TextureBatch);
+		TextBatch.SetTextureBatch(&TextureBatch);
 	}
 
 	void QuadRenderer::Begin()
 	{
-		StartBatch();
+		CircleBatch.StartBatch();
+		QuadBatch.StartBatch();
+		TextBatch.StartBatch();
 	}
 
-	void QuadRenderer::End()
+	void QuadRenderer::End(Renderer &renderer)
 	{
-		sRenderData2D->QuadBatch.End();
-		sRenderData2D->CircleBatch.End();
-		sRenderData2D->TextBatch.End();
-		sRenderData2D->TextureBatch.End();
+		GPU_PROFILER_FUNCTION();
+
+		CircleBatch.Flush(renderer);
+		QuadBatch.Flush(renderer);
+		TextBatch.Flush(renderer);
 	}
 
 	void QuadRenderer::DrawCircle(const FCircleParams &params, const FTransform &transform, int32_t entity_id)
@@ -64,32 +44,29 @@ namespace BHive
 
 		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
 
-		if (sRenderData2D->CircleBatch.mIndexCount >= RenderData2D::sMaxIndices)
-			sRenderData2D->CircleBatch.NextBatch();
+		if (CircleBatch.NeedsFlush(4, 6))
+			CircleBatch.NextBatch(Renderer::Get());
+
+		auto offset = CircleBatch.GetBuffer().GetVertexCount();
 
 		for (int i = 0; i < 4; i++)
 		{
-			sRenderData2D->CircleBatch.mVertexCurrentPtr->WorldPosition = transform.ToMat4() * glm::vec4(positions[i] * params.Radius, 1.f);
-			sRenderData2D->CircleBatch.mVertexCurrentPtr->LocalPosition = positions[i] * 2.f;
-			sRenderData2D->CircleBatch.mVertexCurrentPtr->Color = params.LineColor;
-			sRenderData2D->CircleBatch.mVertexCurrentPtr->Thickness = params.Thickness;
-			sRenderData2D->CircleBatch.mVertexCurrentPtr->Fade = params.Fade;
-			sRenderData2D->CircleBatch.mVertexBufferPtr->EntityID = entity_id;
-			sRenderData2D->CircleBatch.mVertexCurrentPtr++;
+			auto v = CircleBatch.GetBuffer().PushVertex();
+			v->WorldPosition = transform.ToMat4() * glm::vec4(positions[i] * params.Radius, 1.f);
+			v->LocalPosition = positions[i] * 2.f;
+			v->Color = params.LineColor;
+			v->Thickness = params.Thickness;
+			v->Fade = params.Fade;
+			v->EntityID = entity_id;
 		}
 
-		auto offset = sRenderData2D->CircleBatch.mVertexCount;
 		for (int i = 0; i < 6; i++)
 		{
-			*sRenderData2D->CircleBatch.mIndexCurrentPtr = offset + indices[i];
-			sRenderData2D->CircleBatch.mIndexCurrentPtr++;
+			*CircleBatch.GetBuffer().PushIndex() = offset + indices[i];
 		}
-
-		sRenderData2D->CircleBatch.mVertexCount += 4;
-		sRenderData2D->CircleBatch.mIndexCount += 6;
 	}
 
-	void QuadRenderer::DrawQuad(const FQuadParams &params, const Ref<Texture> &texture, const FTransform &transform, int32_t entity_id)
+	void QuadRenderer::DrawQuad(const FQuadParams &params, const Ref<Texture2D> &texture, const FTransform &transform, int32_t entity_id)
 	{
 		static glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
 
@@ -126,9 +103,9 @@ namespace BHive
 		DrawQuad(create_info, entity_id);
 	}
 
-	void QuadRenderer::DrawBillboard(const FQuadParams &params, const Ref<Texture> &texture, const FTransform &transform, int32_t entity_id)
+	void QuadRenderer::DrawBillboard(const FQuadParams &params, const Ref<Texture2D> &texture, const FTransform &transform, int32_t entity_id)
 	{
-		const auto &view = Renderer::GetCameraData().View;
+		const auto &view = Renderer::Get().GetCameraData().View;
 		glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
 
 		const static glm::vec2 texcoords[4] = {{0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}, {0.f, 1.f}};
@@ -158,35 +135,36 @@ namespace BHive
 	{
 		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
 
-		if (sRenderData2D->QuadBatch.mVertexCount >= RenderData2D::sMaxVertices)
+		if (QuadBatch.NeedsFlush(4, 6))
 		{
-			sRenderData2D->QuadBatch.NextBatch();
+			QuadBatch.NextBatch(Renderer::Get());
 		}
 
-		uint32_t texture_index = sRenderData2D->TextureBatch.GetTextureIndex(sRenderData2D->QuadBatch, create_info.TextureRef);
+		uint32_t texture_index = TextureBatch.GetTextureIndex(create_info.TextureRef);
+		if (texture_index == -1)
+		{
+			QuadBatch.NextBatch(Renderer::Get());
+			texture_index = TextureBatch.GetTextureIndex(create_info.TextureRef);
+		}
 
 		for (uint32_t i = 0; i < 4; i++)
 		{
-			sRenderData2D->QuadBatch.mVertexCurrentPtr->Position = create_info.Transform * (glm::vec4(create_info.Positions[i], 1.0f) * glm::vec4(create_info.Size, 1.f, 1.f));
-			sRenderData2D->QuadBatch.mVertexCurrentPtr->Normal = glm::transpose(glm::inverse(create_info.Transform)) * glm::vec4(0, 0, 1, 0);
-			sRenderData2D->QuadBatch.mVertexCurrentPtr->TexCoord = create_info.TexCoords[i]  * create_info.Tiling;
-			sRenderData2D->QuadBatch.mVertexCurrentPtr->Color = create_info.Color;
-			sRenderData2D->QuadBatch.mVertexCurrentPtr->TextureIndex = texture_index;
-			sRenderData2D->QuadBatch.mVertexCurrentPtr->Flags = create_info.Flags;
-			sRenderData2D->QuadBatch.mVertexCurrentPtr->EntityID = entity_id;
-			sRenderData2D->QuadBatch.mVertexCurrentPtr++;
+			auto v = QuadBatch.GetBuffer().PushVertex();
+			v->Position = create_info.Transform * (glm::vec4(create_info.Positions[i], 1.0f) * glm::vec4(create_info.Size, 1.f, 1.f));
+			v->Normal = glm::transpose(glm::inverse(create_info.Transform)) * glm::vec4(0, 0, 1, 0);
+			v->TexCoord = create_info.TexCoords[i]  * create_info.Tiling;
+			v->Color = create_info.Color;
+			v->TextureIndex = texture_index;
+			v->Flags = create_info.Flags;
+			v->EntityID = entity_id;
 		}
 
-		auto offset = sRenderData2D->QuadBatch.mVertexCount;
+		auto offset = QuadBatch.GetBuffer().GetVertexCount();
 
 		for (uint32_t i = 0; i < 6; i++)
 		{
-			*sRenderData2D->QuadBatch.mIndexCurrentPtr = indices[i] + offset;
-			sRenderData2D->QuadBatch.mIndexCurrentPtr++;
+			*QuadBatch.GetBuffer().PushIndex() = indices[i] + offset;
 		}
-
-		sRenderData2D->QuadBatch.mVertexCount += 4;
-		sRenderData2D->QuadBatch.mIndexCount += 6;
 	}
 
 	void QuadRenderer::DrawText(float size_arg, const std::string &text, const FTextParams &params, const FTransform &transform, int32_t entity_id)
@@ -273,55 +251,40 @@ namespace BHive
 	}
 
 	void QuadRenderer::DrawTextQuad(
-		const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, const Ref<Texture> &texture, int32_t entity_id)
+		const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, const Ref<Texture2D> &texture, int32_t entity_id)
 	{
 		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
 
-		if (sRenderData2D->TextBatch.mVertexCount >= RenderData2D::sMaxVertices)
+
+		if (TextBatch.NeedsFlush(4, 6))
 		{
-			sRenderData2D->TextBatch.NextBatch();
+			TextBatch.NextBatch(Renderer::Get());
 		}
 
-		uint32_t texture_index = sRenderData2D->TextureBatch.GetTextureIndex(sRenderData2D->TextBatch, texture);
+		uint32_t texture_index = TextureBatch.GetTextureIndex(texture);
+		if (texture_index == -1)
+		{
+			QuadBatch.NextBatch(Renderer::Get());
+		}
 	
+		auto offset = TextBatch.GetBuffer().GetVertexCount();
+
 		for (uint32_t i = 0; i < 4; i++)
 		{
-			sRenderData2D->TextBatch.mVertexCurrentPtr->Position = transform * (glm::vec4(points[i], 1.0f) * glm::vec4(size, 1.f, 1.f));
-			sRenderData2D->TextBatch.mVertexCurrentPtr->TexCoord = texcoords[i];
-			sRenderData2D->TextBatch.mVertexCurrentPtr->Color = style.TextColor;
-			sRenderData2D->TextBatch.mVertexCurrentPtr->Thickness = {style.Thickness, style.Smoothness};
-			sRenderData2D->TextBatch.mVertexCurrentPtr->Outline = {style.OutlineThickness, style.OutlineSmoothness};
-			sRenderData2D->TextBatch.mVertexCurrentPtr->OutlineColor = style.OutlineColor;
-			sRenderData2D->TextBatch.mVertexCurrentPtr->Texture = texture_index;
-			sRenderData2D->TextBatch.mVertexCurrentPtr->EntityID = entity_id;
-			sRenderData2D->TextBatch.mVertexCurrentPtr++;
+			auto v = TextBatch.GetBuffer().PushVertex();
+			v->Position = transform * (glm::vec4(points[i], 1.0f) * glm::vec4(size, 1.f, 1.f));
+			v->TexCoord = texcoords[i];
+			v->Color = style.TextColor;
+			v->Thickness = {style.Thickness, style.Smoothness};
+			v->Outline = {style.OutlineThickness, style.OutlineSmoothness};
+			v->OutlineColor = style.OutlineColor;
+			v->Texture = texture_index;
+			v->EntityID = entity_id;
 		}
-
-		auto offset = sRenderData2D->TextBatch.mVertexCount;
 
 		for (uint32_t i = 0; i < 6; i++)
 		{
-			*sRenderData2D->TextBatch.mIndexCurrentPtr = indices[i] + offset;
-			sRenderData2D->TextBatch.mIndexCurrentPtr++;
+			*TextBatch.GetBuffer().PushIndex() = indices[i] + offset;
 		}
-
-		sRenderData2D->TextBatch.mVertexCount += 4;
-		sRenderData2D->TextBatch.mIndexCount += 6;
-	}
-
-	void QuadRenderer::StartBatch()
-	{
-		sRenderData2D->TextBatch.StartBatch();
-		sRenderData2D->QuadBatch.StartBatch();
-		sRenderData2D->CircleBatch.StartBatch();
-	}
-
-	void QuadRenderer::Flush()
-	{
-		GPU_PROFILER_FUNCTION();
-
-		sRenderData2D->TextBatch.Flush();
-		sRenderData2D->QuadBatch.Flush();
-		sRenderData2D->CircleBatch.Flush();
 	}
 } // namespace BHive

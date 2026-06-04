@@ -11,9 +11,9 @@ namespace BHive
 {
 	void PickerRenderPass::Init()
 	{
-		mShaders[0] = ShaderManager::Get().Load("PickMesh.glsl");
-		mShaders[1] = ShaderManager::Get().Load("PickQuad.glsl");
-		mShaders[2] = ShaderManager::Get().Load("PickLine.glsl");
+		mShaders[0] = ShaderManager::Get("PickMesh.glsl");
+		mShaders[1] = ShaderManager::Get("PickQuad.glsl");
+		mShaders[2] = ShaderManager::Get("PickLine.glsl");
 
 		ASSERT(mShaders);
 	}
@@ -22,7 +22,7 @@ namespace BHive
 	{
 		mFrambuffer->Bind();
 
-		RenderCommand::Clear();
+		Renderer::Get().Clear();
 
 		static int clear_id = -1;
 		mFrambuffer->ClearAttachment(0, &clear_id);

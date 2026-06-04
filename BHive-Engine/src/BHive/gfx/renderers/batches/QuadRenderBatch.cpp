@@ -1,69 +1,60 @@
 #include "QuadRenderBatch.h"
 #include "gfx/ShaderManager.h"
-#include "gfx/RenderCommand.h"
 #include "gfx/renderers/Renderer.h"
-#include "gfx/material/BackendMaterial.h"
+#include "gfx/material/Material.h"
+#include "gfx/Pipeline.h"
 
 namespace BHive
 {
+	#define QUAD_PIPELINE_NAME "QuadPipeline"
+
+	void QuadRenderBatch::Initialize()
+	{
+		mBuffer = CreateScope<VertexBatchBuffer<QuadVertex>>(sMaxVertexCount, sMaxIndexCount, true);
+
+		auto shader = ShaderManager::Get("Quad.glsl");
 	
-	BufferLayout QuadVertex::GetLayout()
-	{
-		return {{EShaderDataType::Float4}, {EShaderDataType::Float3}, {EShaderDataType::Float2}, {EShaderDataType::Float4}, {EShaderDataType::Int}, {EShaderDataType::Int}, {EShaderDataType::Int}};
-	}
-
-	QuadRenderBatch::~QuadRenderBatch()
-	{
-		mMaterial->Shutdown();
-	}
-
-	void QuadRenderBatch::Init(size_t vcount, size_t icount)
-	{
-		TRenderBatch::Init(vcount, icount);
-
-		auto shaderProgram = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Quad.glsl");
-
-		mPipeline = Pipeline::Create();
-
 		auto state = Pipeline::GetDefaultGraphicsPipelineState();
-		state.ShaderProgram = shaderProgram;
+		state.ShaderProgram = shader;
 		state.Raster.CullEnabled = false;
 		state.Depth.DepthWrite = false;
-	
-		mPipeline->Init(state);
 
-		mMaterial = IMaterialBackendInterface::Create();
-		mMaterial->Init(mPipeline);
+		PipelineRegistry::Register(QUAD_PIPELINE_NAME, state);
+
+		mQuadMaterial = CreateScope<Material>();
+		mQuadMaterial->SetPipeline(PipelineRegistry::Get(QUAD_PIPELINE_NAME));
 	}
 
-	Ref<Pipeline> QuadRenderBatch::GetPipeline() const
+	void QuadRenderBatch::Flush(Renderer& renderer)
 	{
-		return mPipeline;
+		if (mBuffer->GetIndexCount() == 0)
+			return;
 
+		auto &texture = mTextureBatch->GetTexture();
+		mQuadMaterial->SetTexture("uTexture", texture, 0);
+		mQuadMaterial->Submit();
+		
+		renderer.DrawElements(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
 	}
 
-
-	void QuadRenderBatch::Flush()
+	bool QuadRenderBatch::NeedsFlush(uint32_t vNeeded, uint32_t iNeeded)
 	{
-		if (mIndexCount)
-		{
-			TRenderBatch::Flush();
+		return IsFull(vNeeded, iNeeded);
+	}
 
-			auto& texture = mTextureBatch->GetTexture();
-
-			mPipeline->Bind();
-			mMaterial->Bind(mPipeline);
-			mMaterial->BindTexture("uTexture", texture, 0, mPipeline);
-
-			RenderCommand::DrawElements(ETopologyMode::Triangles, mVertexArray, mIndexCount);
-
-			Renderer::GetStats().DrawCalls++;
-		}
+	void QuadRenderBatch::StartBatch()
+	{
+		mBuffer->Reset();
 	}
 
 	void QuadRenderBatch::SetTextureBatch(TextureBatchData *texture_batch)
 	{
 		mTextureBatch = texture_batch;
+	}
+
+	bool QuadRenderBatch::IsFull(uint32_t vNeeded, uint32_t iNeeded)
+	{
+		return (mBuffer->GetIndexCount() + iNeeded) > sMaxIndexCount || (mBuffer->GetVertexCount() + vNeeded) > sMaxVertexCount;
 	}
 
 } // namespace BHive

@@ -7,7 +7,7 @@ namespace BHive
 
 	Ref<IndexBuffer> IndexBuffer::Create(const uint32_t count, EBufferUsageType usage)
 	{
-		switch (RenderCommand::GetGraphicsAPI())
+		switch (RenderCommand::GetAPI())
 		{
 		case BHive::RendererAPI::Opengl:
 			break;
@@ -24,7 +24,7 @@ namespace BHive
 
 	Ref<VertexBuffer> BHive::VertexBuffer::Create(const uint64_t size,  EBufferUsageType usage)
 	{
-		switch (RenderCommand::GetGraphicsAPI())
+		switch (RenderCommand::GetAPI())
 		{
 		case BHive::RendererAPI::Opengl:
 			break;
@@ -41,7 +41,7 @@ namespace BHive
 
 	Ref<GPUBuffer> GPUBuffer::Create(size_t size, EBufferType usage, const void *data)
 	{
-		switch (RenderCommand::GetGraphicsAPI())
+		switch (RenderCommand::GetAPI())
 		{
 		case RendererAPI::Vulkan:
 			return CreateRef<VulkanGPUBuffer>(size, usage, data);
@@ -55,7 +55,7 @@ namespace BHive
 
 	Ref<GPUBuffer> GPUBuffer::Create(size_t size, EBufferType usage)
 	{
-		switch (RenderCommand::GetGraphicsAPI())
+		switch (RenderCommand::GetAPI())
 		{
 		case RendererAPI::Vulkan:
 			return CreateRef<VulkanGPUBuffer>(size, usage);

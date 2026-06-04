@@ -20,7 +20,7 @@ namespace BHive
 
 	}
 
-	void PerFrameBuffer::SetData(vk::raii::CommandBuffer &cmd, const void *data, size_t size, uint32_t offset, vk::PipelineStageFlags2 flags, vk::AccessFlags2 access)
+	void PerFrameBuffer::SetData(vk::raii::CommandBuffer& cmd, const void *data, size_t size, uint32_t offset, vk::PipelineStageFlags2 flags, vk::AccessFlags2 access)
 	{	
 		auto mapped_memory = StagingBuffer.GetAllocation().MappedPtr;
 		if (mapped_memory)
@@ -68,11 +68,11 @@ namespace BHive
 		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
 		std::memcpy(buffer_copy->data(), data, size);
 
-		RenderCommand::SubmitResourceUpdate(
-			[this, buffer_copy, size, offset](IRendererContext &ctx)
+		RenderCommand::GetGraphicsAPI()->ExecuteTransferPass(
+			[this, buffer_copy, size, offset](ITransferContext& ctx)
 			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-				mBuffer.SetData(vk_ctx.CommandBuffer, buffer_copy->data(), size, offset, vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead);
+				auto &vk_ctx = CastRef<FVulkanTransferContext>(ctx);
+				mBuffer.SetData(vk_ctx.Cmd, buffer_copy->data(), size, offset, vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead);
 			});
 	}
 
@@ -90,11 +90,11 @@ namespace BHive
 		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
 		std::memcpy(buffer_copy->data(), data, size);
 
-		RenderCommand::SubmitResourceUpdate(
-			[this, buffer_copy, size, offset](IRendererContext &ctx)
+		RenderCommand::GetGraphicsAPI()->ExecuteTransferPass(
+			[this, buffer_copy, size, offset](ITransferContext &ctx)
 			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-				mBuffer.SetData(vk_ctx.CommandBuffer, buffer_copy->data(), size, offset, vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead);
+				auto &vk_ctx = CastRef<FVulkanTransferContext>(ctx);
+				mBuffer.SetData(vk_ctx.Cmd, buffer_copy->data(), size, offset, vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead);
 			});
 	}
 
@@ -115,10 +115,9 @@ namespace BHive
 			return;
 
 		RenderCommand::SubmitResourceUpdate(
-			[this, data, size, offset](IRendererContext &ctx)
+			[this, data, size, offset](IRendererContext& ctx)
 			{
 				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-
 				mPerFrameBuffer[vk_ctx.Frame].SetData(vk_ctx.CommandBuffer, data, size, offset, vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead);
 			});
 	}
@@ -183,13 +182,9 @@ namespace BHive
 
 	VulkanGPUBuffer::~VulkanGPUBuffer()
 	{
-		auto buffers = mBuffer;
-
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
-
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			api->QueueDeletion([buffers, i](uint32_t) { VulkanBackend::GetGPUResourceManager().DestroyBuffer(buffers[i]); });
+			VulkanBackend::GetGPUResourceManager().DestroyBuffer(mBuffer[i]);
 		}
 	}
 
@@ -198,14 +193,11 @@ namespace BHive
 		if (!data)
 			return;
 
-		auto& pass = RenderCommand::GetActivePass();
-		pass.CommandList.Push("Update Buffer", [=](IRendererContext& ctx) {
-				for (size_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
-				{
-					auto mapped_memory = mBuffer[frame].GetAllocation().MappedPtr;
-					std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, data, size);
-				}
-			});	
+		for (size_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
+		{
+			auto mapped_memory = mBuffer[frame].GetAllocation().MappedPtr;
+			std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, data, size);
+		}
 	}
 
 	NativeHandle VulkanGPUBuffer::GetNativeHandle(uint32_t frame) const

@@ -12,7 +12,7 @@ namespace BHive
 
 	Ref<Texture2D> Texture2D::Create()
 	{
-		switch (RenderCommand::GetGraphicsAPI())
+		switch (RenderCommand::GetAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
 			return CreateRef<VulkanTexture2D>();
@@ -26,7 +26,7 @@ namespace BHive
 
 	Ref<Texture2D> Texture2D::Create(const glm::uvec2& size, const FTextureCreateInfo &createInfo, const Buffer& data)
 	{
-		switch (RenderCommand::GetGraphicsAPI())
+		switch (RenderCommand::GetAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
 			return CreateRef<VulkanTexture2D>(size, createInfo, data);
@@ -56,6 +56,10 @@ namespace BHive
 			return -1;
 		}
 
+		if (uint32_t(mStoredTextures.size()) != tex_info.ArrayLayers)
+			mStoredTextures.resize(tex_info.ArrayLayers);
+
+		//upload resized texture
 		const auto& buffer = tex->GetBuffer();
 		const glm::ivec2 size = tex->GetSize();
 		const glm::ivec2 output_size = GetSize();
@@ -67,10 +71,12 @@ namespace BHive
 		FTextureUploadInfo info{
 			.Data = output.GetData(),
 			.Extent = {output_size.x, output_size.y, 1},
-			.ArrayLayer = mCurrentLayer,
-			.LayerCount = 1,
+			.BaseArrayLayer = mCurrentLayer,
+			.Layers= 1,
 		};
 		SetData(info);
+
+		mStoredTextures[mCurrentLayer] = tex;
 
 		tex->mLayerIndex = (int32_t)mCurrentLayer;
 
@@ -82,9 +88,14 @@ namespace BHive
 		mCurrentLayer = mStartLayer;
 	}
 
+	Ref<Texture2D> Texture2DArray::GetTexture(uint32_t index) const
+	{
+		return mStoredTextures[index];
+	}
+
 	Ref<Texture2DArray> Texture2DArray::Create(const glm::uvec2& size, const FTextureCreateInfo &createInfo)
 	{
-		switch (RenderCommand::GetGraphicsAPI())
+		switch (RenderCommand::GetAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
 			return CreateRef<VulkanTexture2DArray>(size, createInfo);
@@ -98,7 +109,7 @@ namespace BHive
 
 	Ref<Texture3D> Texture3D::Create(const glm::uvec3& size, const FTextureCreateInfo &createInfo, const Buffer& data)
 	{
-		switch (RenderCommand::GetGraphicsAPI())
+		switch (RenderCommand::GetAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
 			return CreateRef<VulkanTexture3D>(size, createInfo, data);
@@ -112,7 +123,7 @@ namespace BHive
 
 	Ref<TextureCube> TextureCube::Create(uint32_t size, const FTextureCreateInfo &createInfo)
 	{
-		switch (RenderCommand::GetGraphicsAPI())
+		switch (RenderCommand::GetAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
 			return CreateRef<VulkanTextureCube>(size, createInfo);
@@ -126,7 +137,7 @@ namespace BHive
 
 	Ref<TextureCubeArray> TextureCubeArray::Create(uint32_t size, const FTextureCreateInfo &createInfo)
 	{
-		switch (RenderCommand::GetGraphicsAPI())
+		switch (RenderCommand::GetAPI())
 		{
 		case RendererAPI::EAPI::Vulkan:
 			return CreateRef<VulkanTextureCubeArray>(size, createInfo);

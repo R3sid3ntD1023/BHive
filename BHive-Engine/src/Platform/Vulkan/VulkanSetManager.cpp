@@ -57,8 +57,8 @@ namespace BHive
 		local.MipLevel = mip;
 		local.Binding = binding;
 
-		auto &pass = RenderCommand::GetActivePass();
-		pass.CommandList.Push("Bind output mip",
+		RenderCommand::SubmitCommand(
+			"Bind output mip",
 			[=](auto &ctx)
 			{
 				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);

@@ -19,9 +19,10 @@ namespace BHive
 		const void *Data = nullptr;
 		glm::ivec3 Offset = {0, 0, 0};
 		glm::uvec3 Extent = {0, 0, 1}; // if 0, texture decides full size 
-		uint32_t MipLevel = 0; 
-		uint32_t ArrayLayer = 0; 
-		uint32_t LayerCount = 1;
+		uint32_t BaseMipLevel = 0; 
+		uint32_t Levels = 1;
+		uint32_t BaseArrayLayer = 0; 
+		uint32_t Layers = 1;
 	};
 
 	class Texture : public Asset
@@ -80,14 +81,16 @@ namespace BHive
 
 		int32_t AddTexture(const Ref<Texture2D> &tex);
 
+		Ref<Texture2D> GetTexture(uint32_t index) const;
+
 		void Clear();
 
 		static Ref<Texture2DArray> Create(const glm::uvec2& size, const FTextureCreateInfo &createInfo);
 
-
 	private:
 		uint32_t mCurrentLayer = 0;
 		uint32_t mStartLayer = 0;
+		std::vector<Ref<Texture2D>> mStoredTextures;
 	};
 
 	class BHIVE_API Texture3D : public Texture

@@ -30,7 +30,7 @@ namespace BHive
 		static void CopyBuffer(const vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size);
 
 		static void TransitionImageLayout(
-			vk::CommandBuffer cmd, const vk::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
+			vk::raii::CommandBuffer& cmd, const vk::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 			vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, const ImageSubresource& sub);
 
 		static void CopyBufferToImage(vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, const vk::Image &image, const ImageCopyRegion &region);
@@ -52,6 +52,8 @@ namespace BHive
 		operator vk::raii::CommandBuffer &() { return mCommandBuffer; }
 
 		operator vk::CommandBuffer () { return mCommandBuffer; }
+
+		vk::raii::CommandBuffer& Get() { return mCommandBuffer; }
 
 	private:
 		vk::raii::CommandBuffer mCommandBuffer = VK_NULL_HANDLE;

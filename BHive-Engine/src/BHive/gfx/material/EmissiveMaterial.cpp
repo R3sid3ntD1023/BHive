@@ -1,19 +1,7 @@
 #include "EmissiveMaterial.h"
-#include "gfx/Shader.h"
-#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
-	EmissiveMaterial::EmissiveMaterial()
-		: Material(nullptr)
-	{
-	}
-
-	EmissiveMaterial::EmissiveMaterial(const Ref<Pipeline> &pipeline)
-		: Material(pipeline)
-	{
-	}
-
 	void EmissiveMaterial::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Material::Save(ar);
@@ -26,7 +14,7 @@ namespace BHive
 		ar(MAKE_NVP("Emission", EmissionColor));
 	}
 
-	void EmissiveMaterial ::Submit(Ref<Pipeline> pipeline)
+	void EmissiveMaterial ::Submit(Pipeline* pipeline)
 	{
 		Material::Submit(pipeline);
 

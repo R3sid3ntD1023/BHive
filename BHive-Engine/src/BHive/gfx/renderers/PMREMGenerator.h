@@ -4,10 +4,8 @@
 
 namespace BHive
 {
-	class Texture;
 	class TextureCube;
 	class Texture2D;
-	class Pipeline;
 
 	struct PMREMSettings
 	{
@@ -23,32 +21,15 @@ namespace BHive
 	public:
 		PMREMGenerator(const PMREMSettings &settings = {});
 
-		void Initialize();
+		Ref<TextureCube> GenerateEnvironmentCubeMap(const Ref<Texture2D>& tex);
 
-		void SetEnvironmentMap(const Ref<Texture> &texture);
+		Ref<TextureCube> GenerateIrradianceMap(const Ref<TextureCube>& tex);
 
-		const Ref<Texture> &GetIrradianceTexture() const;
-		const Ref<Texture> &GetPreFilteredEnvironmentTexture() const;
-		const Ref<Texture> &GetEnvironmentCubeTexture() const;
-		const Ref<Texture> &GetBDRFLUT() const;
+		Ref<TextureCube> GeneratePreFilteredEnvironmentMap(const Ref<TextureCube> &tex);
+
+		Ref<Texture2D> GenerateBRDFLUTMap();
 
 	private:
-		void CreateEnvironmentCubeMap();
-		void CreateIrradianceMap();
-		void CreatePreFilteredEnvironmentMap();
-		void CreateBRDFLUTMap();
-
-		Ref<Texture> mEnvironment;
-		Ref<TextureCube> mEnvironmentCube;
-		Ref<TextureCube> mPreFilteredEnvironment;
-		Ref<TextureCube> mIrradiance;
-		Ref<Texture2D> mBRDFLUT;
-
-		Ref<Pipeline> mEquirectangularPipeline;
-		Ref<Pipeline> mIrradiancePipeline;
-		Ref<Pipeline> mBRDFLUTPipeline;
-		Ref<Pipeline> mPreFilterEnironmentPipeline;
-
 		PMREMSettings mSettings{};
 	};
 } // namespace BHive

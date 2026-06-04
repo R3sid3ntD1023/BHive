@@ -11,10 +11,10 @@ namespace BHive
 
 	void BloomRenderPass::Init()
 	{
-		mPreFilterShader = ShaderManager::Get().Load("PreFilter.glsl");
-		mDownSamplerShader = ShaderManager::Get().Load("DownSample.glsl");
-		mUpSamplerShader = ShaderManager::Get().Load("UpSample.glsl");
-		mCombineShader = ShaderManager::Get().Load("CombineTex.glsl");
+		mPreFilterShader = ShaderManager::Get("PreFilter.glsl");
+		mDownSamplerShader = ShaderManager::Get("DownSample.glsl");
+		mUpSamplerShader = ShaderManager::Get("UpSample.glsl");
+		mCombineShader = ShaderManager::Get("CombineTex.glsl");
 
 		mMipMaps.resize(BLOOM_ITERATIONS);
 	}

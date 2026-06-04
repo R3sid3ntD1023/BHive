@@ -18,15 +18,15 @@ namespace BHive
 
 		~VulkanBackendMaterial() = default;
 
-		void Init(const Ref<Pipeline> &shader) override;
+		void Init(Pipeline* pipeline) override;
 
-		void Bind(const Ref<Pipeline> &shader) override;
+		void Bind(Pipeline* pipeline) override;
 
-		void BindImmediate(vk::CommandBuffer cmd, const Ref<Pipeline> &pipeline);
+		void BindImmediate(vk::CommandBuffer cmd, Pipeline* pipeline);
 
-		void BindTextureImmediate(const std::string &name, const Ref<Texture> &texture, uint32_t mip, const Ref<Pipeline> &pipeline);
+		void BindTextureImmediate(const std::string &name, const Ref<Texture> &texture, uint32_t mip, Pipeline* pipeline);
 
-		void BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip , const Ref<Pipeline>& pipeline) override;
+		void BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip , Pipeline* pipeline) override;
 
 		void Set(const std::string &name, const void *data, size_t size) override;
 

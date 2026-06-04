@@ -2,6 +2,10 @@
 
 #include "gfx/Color.h"
 #include "core/math/Transform.h"
+#include "batches/CircleRenderBatch.h"
+#include "batches/QuadRenderBatch.h"
+#include "batches/TextRenderBatch.h"
+#include "batches/TextureBatch.h"
 
 namespace BHive
 {
@@ -57,7 +61,7 @@ namespace BHive
 		const glm::vec2 *TexCoords;
 
 		FColor Color = FColor::White;
-		Ref<Texture> TextureRef{nullptr};
+		Ref<Texture2D> TextureRef{nullptr};
 		glm::vec2 Size{1, 1};
 		glm::vec2 Tiling{1, 1};
 		glm::mat4 Transform{1.0f};
@@ -70,43 +74,43 @@ namespace BHive
 		glm::vec2 Tiling{1, 1};
 		FColor Color{0xffffffff};
 		QuadRendererFlags Flags{0};
-		Ref<Texture> TextureRef{nullptr};
+		Ref<Texture2D> TextureRef{nullptr};
 		FTransform Transform;
 		int32_t EntityID = -1;
 	};
 
+	class Renderer;
+
 	class BHIVE_API QuadRenderer
 	{
 	public:
-		static void Init();
-		static void Shutdown();
+		void Initialize();
 
-		static void Begin();
-		static void End();
+		void Begin();
+		void End(Renderer& renderer);
 
-		static void DrawCircle(const FCircleParams &params, const FTransform &transform, int32_t entity = -1);
+		void DrawCircle(const FCircleParams &params, const FTransform &transform, int32_t entity = -1);
 
-		static void DrawQuad(const FQuadParams &params, const Ref<Texture> &texture, const FTransform &transform, int32_t entity = -1);
+		void DrawQuad(const FQuadParams &params, const Ref<Texture2D> &texture, const FTransform &transform, int32_t entity = -1);
 
-		static void DrawSprite(const FQuadParams &params, const Ref<Sprite> &sprite, const FTransform &transform, int32_t entity = -1);
+		void DrawSprite(const FQuadParams &params, const Ref<Sprite> &sprite, const FTransform &transform, int32_t entity = -1);
 
-		static void DrawBillboard(const FQuadParams &params, const Ref<Texture> &texture, const FTransform &transform, int32_t entity = -1);
+		void DrawBillboard(const FQuadParams &params, const Ref<Texture2D> &texture, const FTransform &transform, int32_t entity = -1);
 
-		static void DrawQuad(const FQuadCreateInfo &create_info, int32_t entity = -1);
+		void DrawQuad(const FQuadCreateInfo &create_info, int32_t entity = -1);
 
-		static void DrawText(float size, const std::string &text, const FTextParams &params = {}, const FTransform &transform = {}, int32_t entity = -1);
+		void DrawText(float size, const std::string &text, const FTextParams &params = {}, const FTransform &transform = {}, int32_t entity = -1);
 
-		static void DrawText(const Ref<Font> &font, float size, const std::string &text, const FTextParams &params = {}, const FTransform &transform = {}, int32_t entity = -1);
-
-		static void Flush();
+		void DrawText(const Ref<Font> &font, float size, const std::string &text, const FTextParams &params = {}, const FTransform &transform = {}, int32_t entity = -1);
 
 	private:
-		static void
-		DrawTextQuad(const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, const Ref<Texture> &texture, int32_t entity = -1);
+		void
+		DrawTextQuad(const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, const Ref<Texture2D> &texture, int32_t entity = -1);
 
 	private:
-		static void StartBatch();
-
-		static inline struct RenderData2D *sRenderData2D = nullptr;
+		QuadRenderBatch QuadBatch;
+		TextRenderBatch TextBatch;
+		CircleRenderBatch CircleBatch;
+		TextureBatchData TextureBatch;
 	};
 } // namespace BHive

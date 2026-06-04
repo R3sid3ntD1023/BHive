@@ -34,9 +34,9 @@ namespace BHive
 		TEnumAsByte<EFlags> Flags = Shadows;
 
 	public:
-		StandardMaterial();
+		StandardMaterial() = default;
 
-		void Submit(Ref<Pipeline> pipeline) override;
+		void Submit(Pipeline* pipeline) override;
 
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 

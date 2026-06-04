@@ -49,8 +49,8 @@ namespace BHive
 		auto size = mBuffer.GetSize();
 
 		glm::uvec3 extents = glm::compMul(info.Extent) == 0 ? glm::uvec3{mSize, 1} : info.Extent;
-		ImageCopyRegion region{.BaseArrayLayer = info.ArrayLayer, .LayerCount = info.LayerCount, .Offset = info.Offset, .Extents = extents};
-		ImageSubresource sub{.MipLevel = info.MipLevel, .BaseArrayLayer = info.ArrayLayer, .LayerCount = info.LayerCount};
+		ImageCopyRegion region{.BaseArrayLayer = info.BaseArrayLayer, .LayerCount = info.Layers, .Offset = info.Offset, .Extents = extents};
+		ImageSubresource sub{info.BaseMipLevel, 1, info.BaseArrayLayer, info.Layers};
 		mImage.Upload(info.Data, size, region, sub);
 	}
 

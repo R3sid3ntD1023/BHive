@@ -66,13 +66,9 @@ namespace BHive
 
 		void Resize(const glm::uvec2 &size);
 
-		void SetEnvironmentMap(const Ref<Texture2D> &environment);
-
 		const Ref<Texture> &GetColorAttachment(uint32_t index = 0) const;
 
 		const Ref<Texture> &GetDepthAttachment() const;
-
-		const Ref<Texture2D> &GetEnvironmentMap() const;
 
 		const Ref<Framebuffer> &GetFramebuffer() const { return mFinalFramebuffer; }
 
@@ -126,9 +122,6 @@ namespace BHive
 		Commands mCommands;
 		RenderPasses mRenderPasses;
 		PostProcessPasses mPostProcessRenderPasses;
-
-		static inline PMREMGenerator EnvironmentMapGenerator;
-		static inline Ref<Texture2D> sEnvironmentMap = nullptr; // Static environment map
 
 		glm::uvec2 mSize{0, 0};
 	};

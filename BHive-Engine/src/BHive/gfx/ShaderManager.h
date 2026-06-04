@@ -14,19 +14,17 @@ namespace BHive
 
 		using Shaders = std::unordered_map<std::string, Ref<ShaderProgram>>;
 
-		void Add(const char *name, const Ref<ShaderProgram> &shader);
+		static void Register(const char *name, const Ref<ShaderProgram> &shader);
 
-		Ref<ShaderProgram> Load(const std::filesystem::path &file);
+		static Ref<ShaderProgram> Load(const std::filesystem::path &file);
 
-		Ref<ShaderProgram> Get(const char *name);
+		static Ref<ShaderProgram> Get(const char *name);
 
-		bool Contains(const std::string &name);
+		static bool Contains(const std::string &name);
 
-		void Clear();
-
-		static ShaderManager &Get();
+		static void Clear();
 
 	private:
-		Shaders mShaders;
+		static inline Shaders mShaders;
 	};
 } // namespace BHive

@@ -6,7 +6,7 @@ namespace BHive
 {
 	Ref<VertexArray> VertexArray::Create()
 	{
-		switch (RenderCommand::GetGraphicsAPI())
+		switch (RenderCommand::GetAPI())
 		{
 		case BHive::RendererAPI::Opengl:
 			break;
@@ -20,7 +20,7 @@ namespace BHive
 
 	Ref<VertexArray> VertexArray::Create(const std::vector<Ref<VertexBuffer>>& vertex_buffers, const Ref<IndexBuffer> &index_buffer)
 	{
-		switch (RenderCommand::GetGraphicsAPI())
+		switch (RenderCommand::GetAPI())
 		{
 		case BHive::RendererAPI::Opengl:
 			break;

@@ -151,7 +151,7 @@ namespace BHive
 			uint32_t color = line.color1;
 			glm::vec3 p0 = {line.pos0.x, line.pos0.y, line.pos0.z};
 			glm::vec3 p1 = {line.pos1.x, line.pos1.y, line.pos1.z};
-			LineRenderer::DrawLine(p0, p1, color, {});
+			//LineRenderer::DrawLine(p0, p1, color, {});
 		}
 
 		for (physx::PxU32 i = 0; i < rb.getNbTriangles(); i++)
@@ -160,7 +160,7 @@ namespace BHive
 			glm::vec3 p0 = {tri.pos0.x, tri.pos0.y, tri.pos0.z};
 			glm::vec3 p1 = {tri.pos1.x, tri.pos1.y, tri.pos1.z};
 			glm::vec3 p2 = {tri.pos2.x, tri.pos2.y, tri.pos2.z};
-			LineRenderer::DrawTriangle(p0, p1, p2, tri.color0, {});
+			//LineRenderer::DrawTriangle(p0, p1, p2, tri.color0, {});
 		}
 	}
 

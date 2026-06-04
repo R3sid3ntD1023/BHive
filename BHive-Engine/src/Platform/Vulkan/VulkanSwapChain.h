@@ -21,13 +21,15 @@ namespace BHive
 
 		~VulkanSwapChain();
 
-		void Init(vk::raii::SurfaceKHR &surface, const VulkanSwapChainCreateInfo &create_info);
+		void Init(vk::SurfaceKHR surface, const VulkanSwapChainCreateInfo &create_info);
+
+		void Recreate(vk::SurfaceKHR surface, uint32_t w, uint32_t h);
 
 		void WaitForFence(uint32_t frame);
 
 		vk::ResultValue<uint32_t> AquireNextImage(uint32_t frame);
 
-		vk::Result Present(const vk::raii::CommandBuffer& buffer, uint32_t imageIndex, uint32_t frame);
+		vk::Result Present(vk::CommandBuffer buffer, uint32_t imageIndex, uint32_t frame);
 
 		vk::Extent2D GetExtent() const { return mExtent; }
 

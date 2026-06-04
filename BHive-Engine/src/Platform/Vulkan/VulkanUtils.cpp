@@ -113,11 +113,11 @@ namespace BHive
 	}
 
 	void VulkanUtils::TransitionImageLayout(
-		vk::CommandBuffer cmd,
+		vk::raii::CommandBuffer& cmd,
 		const vk::Image &image,  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, const ImageSubresource &sub)
 	{
-		vk::ImageSubresourceRange range{aspect_flags, sub.MipLevel, sub.LevelCount, sub.BaseArrayLayer, sub.LayerCount};
+		vk::ImageSubresourceRange range{aspect_flags, sub.BaseMipLevel, sub.LevelCount, sub.BaseArrayLayer, sub.LayerCount};
 		vk::ImageMemoryBarrier2 barrier(
 			srcStageMask,
 			srcAccessMask, 

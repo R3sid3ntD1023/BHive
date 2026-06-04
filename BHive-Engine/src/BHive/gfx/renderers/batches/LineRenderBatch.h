@@ -1,8 +1,8 @@
 #pragma once
 
-#include "gfx/Buffers.h"
-#include "gfx/VertexArray.h"
 #include "RenderBatch.h"
+#include "VertexBatchBuffer.h"
+#include "gfx/material/Material.h"
 
 namespace BHive
 {
@@ -14,38 +14,29 @@ namespace BHive
 		glm::vec3 Position;
 		glm::vec4 Color;
 		int32_t EntityID = -1;
+
+		static BufferLayout GetLayout() { return {{EShaderDataType::Float3}, {EShaderDataType::Float4}, {EShaderDataType::Int}};}
 	};
 
 	struct LineRenderBatch : public IRenderBatch
 	{
 		const static uint32_t sMaxVertexCount = 20'000;
 
-		void Init();
+		void Initialize() override;
 
-		void End() override;
-
-		void NextBatch() override;
+		bool NeedsFlush(uint32_t vNeeded, uint32_t iNeeded) override;
 
 		void StartBatch() override;
 
-		void Flush() override;
+		void Flush(Renderer& renderer) override;
 
-		FLineVertex *operator->();
-
-		LineRenderBatch &operator++(int);
-
-		~LineRenderBatch();
+		VertexBatchBuffer<FLineVertex> &GetBuffer() { return *mBuffer; }
 
 	private:
-		Ref<ShaderProgram> mLineShader;
-		Ref<VertexBuffer> mVertexBuffer;
-		Ref<VertexArray> mVertexArray;
+		bool IsFull(uint32_t vNeeded, uint32_t iNeeded);
 
-		FLineVertex *mVertexDataBuffer = nullptr;
-		FLineVertex *mVertexDataPtr = nullptr;
-		uint32_t mVertexCount = 0;
-
-		Ref<Material> mLineMaterial;
-		Ref<Pipeline> mPipeline;
+	private:
+		Scope<VertexBatchBuffer<FLineVertex>> mBuffer;
+		Scope<Material> mLineMaterial;
 	};
 } // namespace BHive

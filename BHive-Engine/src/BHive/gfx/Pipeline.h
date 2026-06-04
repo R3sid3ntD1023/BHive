@@ -44,12 +44,12 @@ namespace BHive
 		struct GraphicsPipelineState : public PipelineState
 		{
 			//VertexLayout Layout;
-			ETopologyMode DrawMode;
-			RasterState Raster;
-			DepthState Depth;
-			BlendState Blend;
-			std::vector<EFormat> ColorAttachmentFormats;
-			EFormat DepthAttachmentFormat = EFormat::None;
+			ETopologyMode DrawMode{};
+			RasterState Raster{};
+			DepthState Depth{};
+			BlendState Blend{};
+			std::vector<EFormat> ColorAttachmentFormats{};
+			EFormat DepthAttachmentFormat{};
 		};
 
 		struct ComputePipelineState : public PipelineState
@@ -75,5 +75,32 @@ namespace BHive
 		static GraphicsPipelineState GetDefaultGraphicsPipelineState();
 
 		static Ref<Pipeline> Create();
+	};
+
+	class BHIVE_API PipelineRegistry
+	{
+	public:
+		PipelineRegistry() = default;
+		PipelineRegistry(const PipelineRegistry &) = delete;
+
+		static void Register(const std::string &name, const Pipeline::GraphicsPipelineState &info);
+
+		static void Register(const std::string &name, const Pipeline::ComputePipelineState &info);
+
+		static Pipeline *Get(const std::string &name);
+
+		static void Reload();
+
+		static void Shutdown();
+
+	private:
+		struct Entry
+		{
+			std::variant<Pipeline::GraphicsPipelineState, Pipeline::ComputePipelineState> Info;
+			Ref<Pipeline> mPipeline;
+		};
+
+	private:
+		static inline std::unordered_map<std::string, Entry> mRegistry;
 	};
 } // namespace BHive

@@ -4,6 +4,7 @@
 #include "VulkanCore.h"
 #include "MemoryAllocator.h"
 #include "GPUResourceManager.h"
+#include "VulkanSwapChain.h"
 
 struct GLFWwindow;
 
@@ -29,7 +30,7 @@ namespace BHive
 		using DeviceCallback = std::function<void()>;
 
 	public:
-		void Init();
+		void Init(GLFWwindow* window);
 
 		void Shutdown();
 
@@ -49,6 +50,10 @@ namespace BHive
 		void RegisterOnDeviceDestroy(const DeviceCallback &callback);
 
 		void CallOnDeviceDestroyed();
+
+		vk::Result Present();
+
+		void RequestSwapChainRecreate(uint32_t w, uint32_t h);
 
 		template <typename THandleType>
 		static void SetObjectName(const THandleType& handle, const std::string &name)
@@ -84,6 +89,12 @@ namespace BHive
 
 		static GPUResourceManager &GetGPUResourceManager() { return *Get().mGPUResourceManager; }
 
+		static vk::raii::CommandPool& GetCommandPool() { return Get().mCommandPool; }
+
+		static vk::raii::CommandBuffer& GetCommandBuffer(uint32_t frame) { return Get().mCommandBuffers.at(frame); }
+
+		static VulkanSwapChain &GetSwapChain() { return *Get().mSwapChain; }
+
 		struct DebugNameRegistry
 		{
 			std::unordered_map<uint64_t, std::string> Names;
@@ -110,6 +121,12 @@ namespace BHive
 
 		void PickPhysicalDevice();
 
+		void CreateWindowSurface(GLFWwindow *window);
+
+		void CreateSwapChain(GLFWwindow* window);
+
+		void CreateCommandBuffers();
+
 		void CreateImmediateCommandPool();
 
 		void CreateMemoryAllocator();
@@ -118,7 +135,8 @@ namespace BHive
 
 		void CreateDeviceInternal(uint32_t graphicsIndex, uint32_t presentIndex);
 
-		
+		void RecreateFrameResources();
+
 	private:
 		vk::raii::Context mContext;
 
@@ -131,6 +149,12 @@ namespace BHive
 		vk::raii::Device mDevice = nullptr;
 
 		vk::raii::CommandPool mImmediateCommandPool = nullptr;
+
+		vk::raii::SurfaceKHR mSurface = nullptr;
+
+		vk::raii::CommandPool mCommandPool = nullptr;
+
+		vk::raii::CommandBuffers mCommandBuffers = nullptr;
 
 		VkQueueFamilies mQueueFamilies;
 
@@ -145,6 +169,8 @@ namespace BHive
 		Scope<GPUResourceManager> mGPUResourceManager;
 
 		DebugNameRegistry mDebugNames;
+
+		Scope<VulkanSwapChain> mSwapChain;
 	};
 
 	

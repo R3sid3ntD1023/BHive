@@ -23,13 +23,13 @@ namespace BHive
 					const auto view = transform.GetWorldTransform().Inverse();
 
 					if (world->IsRunning())
-						Renderer::SubmitCamera(proj, view);
+						Renderer::Get().SubmitCamera(proj, view);
 
 					if (render_settings.DrawColliders)
 					{
 						FrustumViewer viewer(proj, view);
 
-						LineRenderer::DrawFrustum(viewer, FColor::Green, (int32_t)e);
+						//LineRenderer::DrawFrustum(viewer, FColor::Green, (int32_t)e);
 					}
 
 					break;
@@ -66,7 +66,7 @@ namespace BHive
 
 				renderer->SubmitLight(create_info);
 
-				renderer->SubmitCommand([=]() { LineRenderer::DrawSphere(c.Radius, 16, {}, 0xFFFFFFFF, world_transform); });
+				//renderer->SubmitCommand([=]() { LineRenderer::DrawSphere(c.Radius, 16, {}, 0xFFFFFFFF, world_transform); });
 			}
 		}
 
@@ -88,7 +88,7 @@ namespace BHive
 
 				renderer->SubmitLight(create_info);
 
-				LineRenderer::DrawCone(c.Radius, c.Radius, 16, 0xFFFFFFFF, world_transform, (int32_t)e);
+				//LineRenderer::DrawCone(c.Radius, c.Radius, 16, 0xFFFFFFFF, world_transform, (int32_t)e);
 			}
 		}
 
@@ -152,7 +152,7 @@ namespace BHive
 				info.Bones.Bones = pose->GetTransformsJointSpace();
 
 				renderer->SubmitMesh(info);
-				LineRenderer::DrawAABB(sc.GetSkeletalMesh()->GetBoundingBox(), FColor::Red, t, (int32_t)e);
+				//LineRenderer::DrawAABB(sc.GetSkeletalMesh()->GetBoundingBox(), FColor::Red, t, (int32_t)e);
 			}
 		}
 
@@ -170,7 +170,7 @@ namespace BHive
 				params.Tiling = c.Tiling;
 
 				auto sprite = c.Instance() ? c.Instance()->GetCurrentSprite() : c.FlipBookAsset->GetCurrentSprite();
-				QuadRenderer::DrawSprite(params, sprite, c.GetWorldTransform(), (int32_t)e);
+				//QuadRenderer::DrawSprite(params, sprite, c.GetWorldTransform(), (int32_t)e);
 			}
 		}
 
@@ -187,7 +187,7 @@ namespace BHive
 				params.Size = c.Size;
 				params.Tiling = c.Tiling;
 
-				QuadRenderer::DrawSprite(params, c.SpriteAsset, c.GetWorldTransform(), (int32_t)e);
+				//QuadRenderer::DrawSprite(params, c.SpriteAsset, c.GetWorldTransform(), (int32_t)e);
 			}
 		}
 
@@ -197,7 +197,7 @@ namespace BHive
 			{
 				auto &c = view.get<TextComponent>(e);
 
-				QuadRenderer::DrawText(c.Size, c.Text, c.Params, c.GetWorldTransform(), (int32_t)e);
+				//QuadRenderer::DrawText(c.Size, c.Text, c.Params, c.GetWorldTransform(), (int32_t)e);
 			}
 		}
 
@@ -209,17 +209,17 @@ namespace BHive
 
 			for (const auto &[e, collider] : box_colliders.each())
 			{
-				LineRenderer::DrawBox(collider.Extents, collider.Offset, collider.Color, collider.GetWorldTransform(), (int32_t)e);
+				//LineRenderer::DrawBox(collider.Extents, collider.Offset, collider.Color, collider.GetWorldTransform(), (int32_t)e);
 			}
 
 			for (const auto &[e, collider] : sphere_colliders.each())
 			{
-				LineRenderer::DrawSphere(collider.Radius, 32, collider.Offset, collider.Color, collider.GetWorldTransform(), (int32_t)e);
+				//LineRenderer::DrawSphere(collider.Radius, 32, collider.Offset, collider.Color, collider.GetWorldTransform(), (int32_t)e);
 			}
 
 			for (const auto &[e, collider] : capsule_colliders.each())
 			{
-				LineRenderer::DrawCapsule(collider.Radius, collider.HalfHeight, 16, collider.Offset, collider.Color, collider.GetWorldTransform(), (int32_t)e);
+				//LineRenderer::DrawCapsule(collider.Radius, collider.HalfHeight, 16, collider.Offset, collider.Color, collider.GetWorldTransform(), (int32_t)e);
 			}
 		}
 	}

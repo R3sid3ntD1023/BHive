@@ -30,20 +30,22 @@ namespace BHive
 
 	void RuntimeLayer::OnAttach(Application& app)
 	{
-		mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Triangle.glsl");
+		auto triangleShader = ShaderManager::Get("Triangle.glsl");
 		//mEmissiveShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Emissive.glsl");
 		
 		mEnvironmentTex = TextureLoader::Import(ENGINE_PATH"/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
-		Renderer::SetEnvironmentTexture(mEnvironmentTex);
+		Renderer::Get().SetEnvironmentTexture(mEnvironmentTex);
 
 		auto state = Pipeline::GetDefaultGraphicsPipelineState();
-		state.ShaderProgram = mShader;
+		state.ShaderProgram = triangleShader;
 		state.ColorAttachmentFormats = {EFormat::RGBA8};
 		
-		mPipeline = Pipeline::Create();
-		mPipeline->Init(state);
+		PipelineRegistry::Register("Triangle", state);
+		
 		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
-		mMaterial = CreateRef<Material>(mPipeline);
+		mMaterial = CreateRef<Material>();
+		mMaterial->SetPipeline(PipelineRegistry::Get("Triangle"));
+
 		mMaterial->SetTexture("u_Texture", mTexture);
 		mMaterial->Set("u_Color", glm::vec3(1, 1, 1));
 
@@ -109,10 +111,11 @@ namespace BHive
 		auto &dbg = ImageDebugger::Get();
 		dbg.Initialize({512, 512});
 
-		dbg.RegisterTexture("PreFilterEnv", Renderer::GetPreFilterEnvironmentTexture());
-		dbg.RegisterTexture("EnvironmentCube", Renderer::GetEnviromentCubeTexture());
-		dbg.RegisterTexture("Irradiance", Renderer::GetIrradianceTexture());
-		dbg.RegisterTexture("BRDFLUT", Renderer::GetBRDFLUTTexture());
+		dbg.RegisterTexture("PreFilterEnv", Renderer::Get().GetPreFilterEnvironmentTexture());
+		dbg.RegisterTexture("EnvironmentCube", Renderer::Get().GetEnviromentCubeTexture());
+		dbg.RegisterTexture("Irradiance", Renderer::Get().GetIrradianceTexture());
+		dbg.RegisterTexture("BRDFLUT", Renderer::Get().GetBRDFLUTTexture());
+		dbg.RegisterTexture("Test", mTexture);
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -124,59 +127,52 @@ namespace BHive
 		transform.AddRotation({0, time * 10.f, 0});
 
 		mCamera.ProcessInput();
+	}
 
+	void RuntimeLayer::OnRender(Renderer& renderer)
+	{
 		auto &app = Application::Get();
 		auto &window = app.GetWindow();
 		auto size = window.GetSize();
 
 		mFramebuffer->Bind();
 
-		RenderCommand::ClearColor(0.1f, 0.1f, 0.1f, 1.f);
-		RenderCommand::Clear();
-		RenderCommand::SetViewport(0, 0, size.x, size.y);
+		/*renderer.ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		renderer.Clear();
+		renderer.SetViewport(0, 0, size.x, size.y);
+		renderer.SubmitCamera(mCamera.GetProjection(), mCamera.GetView());*/
 
-		Renderer::Begin();
+	/*	renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
+		renderer.Line.DrawGrid({});
+		renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
 
-		Renderer::SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
-
-		LineRenderer::DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
-		LineRenderer::DrawGrid({});
-		LineRenderer::DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
-
-		FQuadParams params{
-			.Size = {1, 1},.Color = FColor::Red
-		};
-		QuadRenderer::DrawQuad(params, nullptr, FTransform({0,0,2}));
+		FQuadParams params{.Size = {1, 1}, .Color = FColor::Red};
+		renderer.Quad.DrawQuad(params, nullptr, FTransform({0, 0, 2}));
 
 		params.Color = FColor::White;
-		QuadRenderer::DrawQuad(params, mTexture, FTransform({0, 0, -2}));
-		
+		renderer.Quad.DrawQuad(params, mTexture, FTransform({0, 0, -2}));
+
 		FTextParams tex_params{};
-		QuadRenderer::DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
-		QuadRenderer::DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));
+		renderer.Quad.DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
+		renderer.Quad.DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));*/
 
-		if (mMesh && mMaterial)
-		{
-			/*mMaterial->Submit();
-			mMaterial->Set("u_Time", Time::Raw());*/
-
+		/*if (mMesh && mMaterial)
+		{		
+			mMaterial->Set("u_Time", Time::Raw());
 			mMaterial->Submit();
 
-			Renderer::GetModelBuffer().Reset();
-			Renderer::GetModelBuffer().Submit(transform);
-			Renderer::GetModelBuffer().Submit(FTransform({3, 4, 0}));
-			Renderer::GetModelBuffer().Upload();
-		
-			// RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
-			// RenderCommand::DrawElements(ETopologyMode::Triangles, mMesh->GetVertexArray());
-			RenderCommand::MultiDrawElementsIndirect(ETopologyMode::Triangles, *mMultiDrawIndirectBuffer, mMesh->GetVertexArray(), 2, sizeof(MultiDrawIndirectCommand));
+			renderer.GetModelBuffer().Reset();
+			renderer.GetModelBuffer().Submit(transform);
+			renderer.GetModelBuffer().Submit(FTransform({3, 4, 0}));
+			renderer.GetModelBuffer().Upload();
 
-			// RenderCommand::MultiDrawElementsIndirect(ETopologyMode::Triangles, *mMultiDrawIndirectBuffer, *mMesh->GetVertexArray(), 1, sizeof(MultiDrawIndirectCommand));
-		}
-
-		Renderer::End();
+			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2, sizeof(MultiDrawIndirectCommand));
+		}*/
 
 		mFramebuffer->UnBind();
+
+		ImageDebugger::Get().OnRender(renderer);
+
 	}
 
 	void RuntimeLayer::OnGuiRender()
@@ -237,7 +233,7 @@ namespace BHive
 				if (info)
 				{
 					auto tex = TextureLoader::Import(info);
-					Renderer::SetEnvironmentTexture(tex);
+					Renderer::Get().SetEnvironmentTexture(tex);
 				}
 			}
 		}

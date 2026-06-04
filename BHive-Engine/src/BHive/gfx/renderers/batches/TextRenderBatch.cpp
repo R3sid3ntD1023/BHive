@@ -1,65 +1,60 @@
 #include "TextRenderBatch.h"
 #include "gfx/ShaderManager.h"
-#include "gfx/RenderCommand.h"
 #include "gfx/renderers/Renderer.h"
-#include "gfx/material/BackendMaterial.h"
+#include "gfx/material/Material.h"
+#include "gfx/Pipeline.h"
 
 namespace BHive
 {
-	BufferLayout TextVertex::GetLayout()
+	#define PIPELINE_NAME "TextPipeline"
+
+	void TextRenderBatch::Initialize()
 	{
-		return {{EShaderDataType::Float4}, {EShaderDataType::Float2}, {EShaderDataType::Float4}, {EShaderDataType::Int},
-				{EShaderDataType::Float2}, {EShaderDataType::Float2}, {EShaderDataType::Float4}, {EShaderDataType::Int}};
-	}
+		mBuffer = CreateScope<VertexBatchBuffer<TextVertex>>(sMaxVertexCount, sMaxIndexCount, true);
 
-	TextRenderBatch::~TextRenderBatch()
-	{
-	}
-
-	void TextRenderBatch::Init(size_t vcount, size_t icount)
-	{
-		TRenderBatch::Init(vcount, icount);
-
-		auto shaderProgram = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Text.glsl");
-
-		mPipeline = Pipeline::Create();
+		auto shader = ShaderManager::Get("Text.glsl");
 
 		auto state = Pipeline::GetDefaultGraphicsPipelineState();
-		state.ShaderProgram = shaderProgram;
+		state.ShaderProgram = shader;
 		state.Raster.CullEnabled = false;
 		state.Depth.DepthWrite = false;
 
-		mPipeline->Init(state);
+		PipelineRegistry::Register(PIPELINE_NAME, state);
 
-		mMaterial = IMaterialBackendInterface::Create();
-		mMaterial->Init(mPipeline);
+		mMaterial = CreateScope<Material>();
+		mMaterial->SetPipeline(PipelineRegistry::Get(PIPELINE_NAME));
 	}
 
-	Ref<Pipeline> TextRenderBatch::GetPipeline() const
+	bool TextRenderBatch::NeedsFlush(uint32_t vNeeded, uint32_t iNeeded)
 	{
-		return mPipeline;
+		return IsFull(vNeeded, iNeeded);
 	}
 
-	void TextRenderBatch::Flush()
+	void TextRenderBatch::StartBatch()
 	{
-		if (mIndexCount)
-		{
-			TRenderBatch::Flush();
+		mBuffer->Reset();
+	}
 
-			auto& textures = mTextureBatch->GetTexture();
+	void TextRenderBatch::Flush(Renderer &renderer)
+	{
+		if (mBuffer->GetIndexCount() == 0)
+			return;
 
-			mPipeline->Bind();
-			mMaterial->Bind(mPipeline);
-			mMaterial->BindTexture("uTexture", textures, 0, mPipeline);
+		auto &texture = mTextureBatch->GetTexture();
 
-			RenderCommand::DrawElements(ETopologyMode::Triangles, mVertexArray, mIndexCount);
+		mMaterial->SetTexture("uTexture", texture, 0);
+		mMaterial->Submit(PipelineRegistry::Get(PIPELINE_NAME));
 
-			Renderer::GetStats().DrawCalls++;
-		}
+		renderer.DrawElements(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
 	}
 
 	void TextRenderBatch::SetTextureBatch(TextureBatchData *texture_batch)
 	{
 		mTextureBatch = texture_batch;
+	}
+
+	bool TextRenderBatch::IsFull(uint32_t vNeeded, uint32_t iNeeded)
+	{
+		return (mBuffer->GetIndexCount() + iNeeded) > sMaxIndexCount || (mBuffer->GetVertexCount() + vNeeded) > sMaxVertexCount;
 	}
 } // namespace BHive

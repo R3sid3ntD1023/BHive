@@ -65,8 +65,7 @@ namespace BHive
 		auto index_buffer = mIndexBuffer;
 		auto vertex_buffers = mVertexBuffers;
 
-		auto &pass = RenderCommand::GetActivePass();
-		pass.CommandList.Push(
+		RenderCommand::SubmitCommand(
 			"Bind vertexArray",
 			[=](IRendererContext &ctx)
 			{

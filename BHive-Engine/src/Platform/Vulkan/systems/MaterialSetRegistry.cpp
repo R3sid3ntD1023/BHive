@@ -7,7 +7,6 @@
 #include "gfx/RenderCommand.h"
 #include "gfx/shader/ShaderReflection.h"
 #include "gfx/Buffers.h"
-#include "gfx/Texture.h"
 
 namespace BHive
 {
@@ -38,7 +37,7 @@ namespace BHive
 		entry.SetHash = hash;
 		entry.SetIndex = SET;
 
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetGraphicsAPI();
 		entry.Manager = api->CreateSetManager(pipeline, SET);
 
 		BindMaterialResources(mat, setRefl, entry.Manager.get());
@@ -80,15 +79,6 @@ namespace BHive
 				mang->SetBuffer(sb.Binding, ssbo);
 			}
 		}
-
-		/*for (auto &[name, sampler] : refl.Samplers)
-		{
-			auto tex = mat->mTextures.at(name);
-			if (tex)
-			{
-				mang->SetTexture(sampler.Binding, tex);
-			}
-		}*/
 	}
 }
 

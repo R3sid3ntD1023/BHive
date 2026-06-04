@@ -1,7 +1,9 @@
 #pragma once
 
-#include "TRenderBatch.h"
 #include "TextureBatch.h"
+#include "RenderBatch.h"
+#include "VertexBatchBuffer.h"
+#include "gfx/material/Material.h"
 
 namespace BHive
 {
@@ -15,30 +17,38 @@ namespace BHive
 		int32_t Flags;
 		int32_t EntityID{-1};
 
-		static BufferLayout GetLayout();
+		static BufferLayout GetLayout()
+		{
+			return {{EShaderDataType::Float4}, {EShaderDataType::Float3}, {EShaderDataType::Float2}, {EShaderDataType::Float4}, {EShaderDataType::Int}, {EShaderDataType::Int}, {EShaderDataType::Int}};
+		}
 	};
 
-	class IMaterialBackendInterface;
 
-	struct QuadRenderBatch : public TRenderBatch<QuadVertex>
+	struct QuadRenderBatch : public IRenderBatch
 	{
+		static const uint32_t sMaxQuads = 20'000;
+		static const uint32_t sMaxVertexCount = sMaxQuads * 4;
+		static const uint32_t sMaxIndexCount = sMaxQuads * 6;
 
-		~QuadRenderBatch();
+		void Initialize() override;
 
-		void Init(size_t vcount, size_t icount) override;
+		bool NeedsFlush(uint32_t vNeeded, uint32_t iNeeded) override;
 
-		Ref<Pipeline> GetPipeline() const override;
+		void StartBatch() override;
 
-		void Flush() override;
+		void Flush(Renderer& renderer) override;
 
 		void SetTextureBatch(TextureBatchData *texture_batch);
 
+		VertexBatchBuffer<QuadVertex> &GetBuffer() { return *mBuffer; }
+
+	private:
+		bool IsFull(uint32_t vNeeded, uint32_t iNeeded);
+
 	private:
 		TextureBatchData *mTextureBatch;
-
-		Ref<Pipeline> mPipeline;
-
-		Ref<IMaterialBackendInterface> mMaterial;
+		Scope<VertexBatchBuffer<QuadVertex>> mBuffer;
+		Scope<Material> mQuadMaterial;
 
 	};
 } // namespace BHive

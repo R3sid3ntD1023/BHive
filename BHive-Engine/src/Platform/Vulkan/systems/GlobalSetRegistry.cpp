@@ -2,10 +2,8 @@
 #include "gfx/shader/ShaderReflection.h"
 #include "../VulkanPipeline.h"
 #include "../VulkanShader.h"
-#include "../VulkanRendererAPI.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/GlobalBuffers.h"
-
 
 namespace BHive
 {
@@ -29,7 +27,7 @@ namespace BHive
 		auto &entry = mEntries[hash];
 		entry.Key = {hash, setIndex};
 
-		auto api = RenderCommand::GetRendererAPI<VulkanRendererAPI>();
+		auto api = RenderCommand::GetGraphicsAPI();
 		entry.Manager = api->CreateSetManager(&pipeline, setIndex);
 
 		BindGlobalResources(refl, entry.Manager.get(), setIndex);

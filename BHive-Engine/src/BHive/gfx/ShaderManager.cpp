@@ -9,7 +9,7 @@ namespace BHive
 		
 	}
 
-	void ShaderManager::Add(const char *name, const Ref<ShaderProgram> &shader)
+	void ShaderManager::Register(const char *name, const Ref<ShaderProgram> &shader)
 	{
 		if (!Contains(name))
 		{
@@ -55,6 +55,16 @@ namespace BHive
 			return mShaders.at(name);
 		}
 
+		std::filesystem::recursive_directory_iterator directory(ENGINE_SHADER_PATH);
+		for (auto &entry : directory)
+		{
+			auto filename = entry.path().filename().string();
+			if (filename == name)
+			{
+				return Load(entry.path());
+			}
+		}
+
 		return {};
 	}
 
@@ -69,9 +79,5 @@ namespace BHive
 		mShaders.clear();
 	}
 
-	ShaderManager &ShaderManager::Get()
-	{
-		static ShaderManager manager;
-		return manager;
-	}
+
 } // namespace BHive

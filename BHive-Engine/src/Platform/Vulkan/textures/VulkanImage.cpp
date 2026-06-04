@@ -5,6 +5,7 @@
 #include "Platform/Vulkan/ImageViewBuilder.h"
 #include "Platform/Vulkan/VulkanRendererAPI.h"
 #include "gfx/RenderCommand.h"
+#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {
@@ -87,7 +88,7 @@ namespace BHive
 		gpu_r_m.DestroyBuffer(stagingID);
 	}
 
-	void VulkanImage::Transition(vk::CommandBuffer cmd, const ImageState &newState, const ImageSubresource &sub)
+	void VulkanImage::Transition(vk::raii::CommandBuffer& cmd, const ImageState &newState, const ImageSubresource &sub)
 	{
 		ASSERT(mStateTracker.MipStates.size(), "Invalid layer size must be 1 or greater -> {}", mImage.DebugName);
 
@@ -95,7 +96,7 @@ namespace BHive
 
 		for (uint32_t layer = sub.BaseArrayLayer; layer < sub.BaseArrayLayer + sub.LayerCount; layer++)
 		{
-			for (uint32_t mip = sub.MipLevel; mip < sub.MipLevel + sub.LevelCount; mip++)
+			for (uint32_t mip = sub.BaseMipLevel; mip < sub.BaseMipLevel + sub.LevelCount; mip++)
 			{
 				ASSERT(mStateTracker.MipStates[layer].size(), "Invalid mip size must be 1 or greater -> {}", mImage.DebugName);
 
@@ -104,7 +105,7 @@ namespace BHive
 				ImageSubresource layerSub = sub;
 				layerSub.BaseArrayLayer = layer;
 				layerSub.LayerCount = 1;
-				layerSub.MipLevel = mip;
+				layerSub.BaseMipLevel = mip;
 				layerSub.LevelCount = 1;
 
 				auto oldLayout = oldState.IsUndefined ? vk::ImageLayout::eUndefined : oldState.Layout;
@@ -121,63 +122,42 @@ namespace BHive
 
 	void VulkanImage::GenerateMipMaps(uint32_t width, uint32_t height, uint32_t layers, uint32_t levels)
 	{
-		RenderCommand::GetActivePass().CommandList.Push(
-			"Generate MipMaps",
-			[=](IRendererContext& ctx)
+		SingleTimeCommand cmd{};
+
+		auto w = width;
+		auto h = height;
+		vk::Image image = mImage.GetImage();
+
+		for (uint32_t mip = 1; mip < levels; ++mip)
+		{
 			{
-				
-				auto w = width;
-				auto h = height;
-				auto& vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+				ImageSubresource sub{mip -1, 1, 0, layers};
+				Transition(cmd, ImageState::TansferRead(), sub);
+			}
 
-				vk::Image image = mImage.GetImage();
+			{
+				ImageSubresource sub{mip, 1, 0, layers};
+				Transition(cmd, ImageState::TansferWrite(), sub);
+			}
 
-				for (uint32_t mip = 1; mip < levels; ++mip)
-				{
-					{
-						ImageSubresource sub{};
-						sub.MipLevel = mip - 1;
-						sub.LevelCount = 1;
-						sub.BaseArrayLayer = 0;
-						sub.LayerCount = layers;
+			// Blit mip -1 -> mip
+			vk::ImageBlit blit{};
+			blit.srcSubresource = {vk::ImageAspectFlagBits::eColor, mip - 1, 0, layers};
+			blit.srcOffsets[0] = vk::Offset3D{0, 0, 0};
+			blit.srcOffsets[1] = vk::Offset3D{int32_t(w), int32_t(h), 1};
 
-						Transition(vk_ctx.CommandBuffer, ImageState::TansferRead(), sub);
-					}
+			blit.dstSubresource = {vk::ImageAspectFlagBits::eColor, mip, 0, layers};
+			blit.dstOffsets[0] = vk::Offset3D{0, 0, 0};
+			blit.dstOffsets[1] = vk::Offset3D{int32_t(std::max(w >> 1, 1u)), int32_t(std::max(h >> 1, 1u)), 1};
 
-					{
-						ImageSubresource sub{};
-						sub.MipLevel = mip;
-						sub.LevelCount = 1;
-						sub.BaseArrayLayer = 0;
-						sub.LayerCount = layers;
+			cmd.Get().blitImage(image, vk::ImageLayout::eTransferSrcOptimal, image, vk::ImageLayout::eTransferDstOptimal, blit, vk::Filter::eLinear);
 
-						Transition(vk_ctx.CommandBuffer, ImageState::TansferWrite(), sub);
-					}
+			w = std::max(w >> 1, 1u);
+			h = std::max(h >> 1, 1u);
+		}
 
-					// Blit mip -1 -> mip
-					vk::ImageBlit blit{};
-					blit.srcSubresource = {vk::ImageAspectFlagBits::eColor, mip - 1, 0, layers};
-					blit.srcOffsets[0] = vk::Offset3D{0, 0, 0};
-					blit.srcOffsets[1] = vk::Offset3D{int32_t(w), int32_t(h), 1};
-
-					blit.dstSubresource = {vk::ImageAspectFlagBits::eColor, mip, 0, layers};
-					blit.dstOffsets[0] = vk::Offset3D{0, 0, 0};
-					blit.dstOffsets[1] = vk::Offset3D{int32_t(std::max(w >> 1, 1u)), int32_t(std::max(h >> 1, 1u)), 1};
-
-					vk_ctx.CommandBuffer.blitImage(image, vk::ImageLayout::eTransferSrcOptimal, image, vk::ImageLayout::eTransferDstOptimal, blit, vk::Filter::eLinear);
-
-					w = std::max(w >> 1, 1u);
-					h = std::max(h >> 1, 1u);
-				}
-				
-				ImageSubresource sub{};
-				sub.MipLevel = 0;
-				sub.LevelCount = levels;
-				sub.BaseArrayLayer = 0;
-				sub.LayerCount = layers;
-
-				Transition(vk_ctx.CommandBuffer, ImageState::ShaderRead(), sub);
-			});
+		ImageSubresource sub{0, levels, 0, layers};
+		Transition(cmd, ImageState::ShaderRead(), sub);
 	}
 
 	void VulkanImage::Destroy()

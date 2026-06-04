@@ -4,6 +4,7 @@
 #include "core/Layer.h"
 #include "core/Window.h"
 #include "events/ApplicationEvents.h"
+#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {
@@ -92,6 +93,8 @@ namespace BHive
 		LayerStack mLayerStack;
 
 		FApplicationSpecification mSpecification;
+
+		Scope<Renderer> mRenderer;
 
 		static inline Application *sInstance;
 	};

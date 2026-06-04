@@ -4,16 +4,6 @@
 
 namespace BHive
 {
-	LambertMaterial::LambertMaterial()
-		: Material(nullptr)
-	{
-	}
-
-	LambertMaterial::LambertMaterial(const Ref<Pipeline>& pipeline)
-		: Material(pipeline)
-	{
-		
-	}
 
 	void LambertMaterial::Save(cereal::BinaryOutputArchive &ar) const
 	{
@@ -27,7 +17,7 @@ namespace BHive
 		ar(MAKE_NVP("Color", DiffuseColor), MAKE_NVP("Emission", EmissionColor));
 	}
 
-	void LambertMaterial::Submit(Ref<Pipeline>  pipeline)
+	void LambertMaterial::Submit(Pipeline* pipeline)
 	{
 		Material::Submit(pipeline);
 
