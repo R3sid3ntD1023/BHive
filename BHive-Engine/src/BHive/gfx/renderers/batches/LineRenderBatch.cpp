@@ -35,6 +35,7 @@ namespace BHive
 	void LineRenderBatch::StartBatch()
 	{
 		mBuffer->Reset();
+		mIsActive = true;
 	}
 
 	void LineRenderBatch::Flush(Renderer& renderer)
@@ -48,6 +49,7 @@ namespace BHive
 
 		renderer.SetLineWidth(2.0f);
 		renderer.DrawArrays(ETopologyMode::Lines, mBuffer->GetVAO(), mBuffer->GetVertexCount());
+		mIsActive = false;
 	}
 
 	bool LineRenderBatch::IsFull(uint32_t vNeeded, uint32_t iNeeded)

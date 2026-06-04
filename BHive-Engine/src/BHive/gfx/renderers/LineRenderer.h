@@ -29,8 +29,9 @@ namespace BHive
 	{
 		void Initialize();
 
-		void Begin();
-		void End(Renderer& renderer);
+		void BeginRecording();
+
+		void Flush(Renderer& renderer);
 
 		void DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
 		void DrawLine(const Line &line, const FTransform &transform = {}, int32_t entityID = -1);

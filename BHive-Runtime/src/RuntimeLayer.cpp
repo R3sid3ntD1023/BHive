@@ -144,7 +144,6 @@ namespace BHive
 		renderer.Clear();
 		renderer.SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
 
-		renderer.BeginBatches();
 		renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
 		renderer.Line.DrawGrid({});
 		renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
@@ -161,7 +160,7 @@ namespace BHive
 		FTextParams tex_params{};
 		renderer.Quad.DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
 		
-		renderer.EndBatches();
+		renderer.Flush();
 
 		if (mMesh && mMaterial)
 		{		

@@ -41,6 +41,8 @@ namespace BHive
 
 		void SetTextureBatch(TextureBatchData *texture_batch);
 
+		bool IsActive() const override { return mIsActive; }
+
 		VertexBatchBuffer<TextVertex> &GetBuffer() { return *mBuffer; }
 
 	private:
@@ -50,5 +52,6 @@ namespace BHive
 		TextureBatchData *mTextureBatch;
 		Scope<VertexBatchBuffer<TextVertex>> mBuffer;
 		Scope<Material> mMaterial;
+		bool mIsActive = false;
 	};
 } // namespace BHive

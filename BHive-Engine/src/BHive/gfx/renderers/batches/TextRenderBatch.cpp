@@ -33,6 +33,7 @@ namespace BHive
 	void TextRenderBatch::StartBatch()
 	{
 		mBuffer->Reset();
+		mIsActive = true;
 	}
 
 	void TextRenderBatch::Flush(Renderer &renderer)
@@ -47,6 +48,7 @@ namespace BHive
 		mMaterial->Submit(PipelineRegistry::Get(PIPELINE_NAME));
 
 		renderer.DrawElements(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
+		mIsActive = false;
 	}
 
 	void TextRenderBatch::SetTextureBatch(TextureBatchData *texture_batch)

@@ -30,6 +30,8 @@ namespace BHive
 
 		void Flush(Renderer& renderer) override;
 
+		bool IsActive() const override { return mIsActive; }
+
 		VertexBatchBuffer<FLineVertex> &GetBuffer() { return *mBuffer; }
 
 	private:
@@ -38,5 +40,6 @@ namespace BHive
 	private:
 		Scope<VertexBatchBuffer<FLineVertex>> mBuffer;
 		Scope<Material> mLineMaterial;
+		bool mIsActive = false;
 	};
 } // namespace BHive

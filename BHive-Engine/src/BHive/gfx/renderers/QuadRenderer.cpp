@@ -22,15 +22,15 @@ namespace BHive
 		TextBatch.SetTextureBatch(&TextureBatch);
 	}
 
-	void QuadRenderer::Begin()
+	void QuadRenderer::BeginRecording()
 	{
-		TextureBatch.Reset();
-		CircleBatch.StartBatch();
 		QuadBatch.StartBatch();
+		CircleBatch.StartBatch();
 		TextBatch.StartBatch();
+		TextureBatch.Reset();
 	}
 
-	void QuadRenderer::End(Renderer &renderer)
+	void QuadRenderer::Flush(Renderer &renderer)
 	{
 		GPU_PROFILER_FUNCTION();
 
@@ -45,6 +45,9 @@ namespace BHive
 		static glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
 
 		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
+
+		if (!CircleBatch.IsActive())
+			CircleBatch.StartBatch();
 
 		if (CircleBatch.NeedsFlush(4, 6))
 			CircleBatch.NextBatch(Renderer::Get());
@@ -136,6 +139,9 @@ namespace BHive
 	void QuadRenderer::DrawQuad(const FQuadCreateInfo &create_info, int32_t entity_id)
 	{
 		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
+	
+		if (!QuadBatch.IsActive())
+			QuadBatch.StartBatch();
 
 		if (QuadBatch.NeedsFlush(4, 6))
 		{
@@ -256,6 +262,11 @@ namespace BHive
 		const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, const Ref<Texture2D> &texture, int32_t entity_id)
 	{
 		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
+
+		
+		if (!TextBatch.IsActive())
+			TextBatch.StartBatch();
+
 
 		if (TextBatch.NeedsFlush(4, 6))
 		{

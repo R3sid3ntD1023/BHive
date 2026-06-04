@@ -11,12 +11,12 @@ namespace BHive
 		LineBatch.Initialize();
 	}
 
-	void LineRenderer::Begin()
+	void LineRenderer::BeginRecording()
 	{
 		LineBatch.StartBatch();
 	}
 
-	void LineRenderer::End(Renderer& renderer)
+	void LineRenderer::Flush(Renderer& renderer)
 	{
 		GPU_PROFILER_FUNCTION();
 
@@ -25,6 +25,9 @@ namespace BHive
 
 	void LineRenderer::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const FColor &color, const FTransform &transform, int32_t entityID)
 	{
+		if (!LineBatch.IsActive())
+			LineBatch.StartBatch();
+
 		if (LineBatch.NeedsFlush(2, 0))
 		{
 			LineBatch.NextBatch(Renderer::Get());

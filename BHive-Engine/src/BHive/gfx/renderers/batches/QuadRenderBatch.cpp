@@ -37,6 +37,7 @@ namespace BHive
 		mQuadMaterial->Submit();
 		
 		renderer.DrawElements(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
+		mIsActive = false;
 	}
 
 	bool QuadRenderBatch::NeedsFlush(uint32_t vNeeded, uint32_t iNeeded)
@@ -47,6 +48,7 @@ namespace BHive
 	void QuadRenderBatch::StartBatch()
 	{
 		mBuffer->Reset();
+		mIsActive = true;
 	}
 
 	void QuadRenderBatch::SetTextureBatch(TextureBatchData *texture_batch)

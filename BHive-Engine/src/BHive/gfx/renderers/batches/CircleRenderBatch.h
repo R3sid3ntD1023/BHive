@@ -35,6 +35,8 @@ namespace BHive
 
 		void Flush(Renderer& renderer) override;
 
+		bool IsActive() const override { return mIsActive; }
+
 		VertexBatchBuffer<CircleVertex> &GetBuffer() { return *mBuffer; }
 
 	private:
@@ -44,6 +46,6 @@ namespace BHive
 	private:
 		Scope<VertexBatchBuffer<CircleVertex>> mBuffer;
 		Scope<Material> mCircleMaterial;
-
+		bool mIsActive = false;
 	};
 } // namespace BHive

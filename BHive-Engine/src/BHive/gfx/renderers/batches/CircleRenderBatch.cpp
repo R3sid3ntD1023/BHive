@@ -28,6 +28,8 @@ namespace BHive
 	void CircleRenderBatch::StartBatch()
 	{
 		mBuffer->Reset();
+
+		mIsActive = true;
 	}
 
 	bool CircleRenderBatch::NeedsFlush(uint32_t vNeeded, uint32_t iNeeded)
@@ -44,6 +46,8 @@ namespace BHive
 		mCircleMaterial->Submit();
 
 		renderer.DrawElements(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
+
+		mIsActive = false;
 	}
 
 	bool CircleRenderBatch::IsFull(uint32_t vNeeded, uint32_t iNeeded)

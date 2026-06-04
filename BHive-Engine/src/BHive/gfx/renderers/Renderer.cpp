@@ -86,8 +86,8 @@ namespace BHive
 	{
 		ResetStats();
 
-		Line.Begin();
-		Quad.Begin();
+		Line.BeginRecording();
+		Quad.BeginRecording();
 
 		mGraph = RenderGraph{};
 		mActivePass = nullptr;
@@ -108,17 +108,10 @@ namespace BHive
 
 	}
 
-	void Renderer::BeginBatches()
+	void Renderer::Flush()
 	{
-		Line.Begin();
-		Quad.Begin();
-
-	}
-
-	void Renderer::EndBatches()
-	{
-		Line.End(*this);
-		Quad.End(*this);
+		Line.Flush(*this);
+		Quad.Flush(*this);
 	}
 
 	void Renderer::EndFrame()

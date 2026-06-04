@@ -86,8 +86,9 @@ namespace BHive
 	public:
 		void Initialize();
 
-		void Begin();
-		void End(Renderer& renderer);
+		void BeginRecording();
+
+		void Flush(Renderer& renderer);
 
 		void DrawCircle(const FCircleParams &params, const FTransform &transform, int32_t entity = -1);
 
