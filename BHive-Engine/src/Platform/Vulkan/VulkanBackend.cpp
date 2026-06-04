@@ -158,21 +158,7 @@ namespace BHive
 	{
 		LOG_TRACE("recreating swap chain...");
 
-		auto &physical_device = VulkanBackend::GetPhysicalDevice();
-		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(*mSurface);
-		auto formats = physical_device.getSurfaceFormatsKHR(*mSurface);
-		auto presentModes = physical_device.getSurfacePresentModesKHR(*mSurface);
-
-		VulkanSwapChainCreateInfo create_info{};
-		create_info.Width = w;
-		create_info.Height = h;
-		create_info.Capabilities = surfaceCapabilities;
-		create_info.Formats = formats;
-		create_info.PresentModes = presentModes;
-
-		mSwapChain = CreateScope<VulkanSwapChain>();
-		mSwapChain->Init(mSurface, create_info);
-
+		mSwapChain->Recreate(mSurface, w, h);
 		RecreateFrameResources();
 
 		LOG_TRACE("Swap chain created newsize:[{}x{}]", w, h);

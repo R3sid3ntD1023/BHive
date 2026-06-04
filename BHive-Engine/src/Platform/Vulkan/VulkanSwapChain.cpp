@@ -94,12 +94,15 @@ namespace BHive
 	{
 		mDevice.waitIdle();
 
+	
 		for (auto &img : mImages)
 		{
 			img.Destroy();
 		}
 
 		mDepthImage.Destroy();
+
+		mSwapChain = nullptr;
 
 		auto &physical_device = VulkanBackend::GetPhysicalDevice();
 		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(surface);

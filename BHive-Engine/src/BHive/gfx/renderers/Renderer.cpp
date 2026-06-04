@@ -86,6 +86,8 @@ namespace BHive
 	{
 		ResetStats();
 
+		Line.Begin();
+		Quad.Begin();
 
 		mGraph = RenderGraph{};
 		mActivePass = nullptr;
