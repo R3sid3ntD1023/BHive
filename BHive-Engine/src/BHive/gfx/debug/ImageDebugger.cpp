@@ -53,6 +53,9 @@ namespace BHive
 	{
 		if (mSelected >= 0)
 		{
+
+			renderer.BeginPass("ImageDebugger", EPassType::OffScreen);
+
 			mFB->Bind();
 
 			renderer.ClearColor(0, 0, 0, 1);
@@ -70,8 +73,10 @@ namespace BHive
 			mMaterial->Submit();
 
 			renderer.DrawElements(ETopologyMode::Triangles, mQuad->GetVertexArray().get());
-
+			
 			mFB->UnBind();
+
+			renderer.EndPass();
 		}
 	}
 

@@ -72,8 +72,7 @@ namespace BHive
 		auto spec = mSpecification;
 		auto current_face = mCurrentFace;
 
-		auto &pass = RenderCommand::BeginPass("Framebuffer", EPassType::OffScreen);
-		pass.CommandList.Push(
+		RenderCommand::SubmitCommand(
 			"Bind Framebuffer",
 			[current_face, color_attachments, color_specifications, depth_attachment, depth_specification, spec](IRendererContext &ctx)
 			{

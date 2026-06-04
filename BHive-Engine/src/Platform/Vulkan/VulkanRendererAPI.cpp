@@ -197,15 +197,17 @@ namespace BHive
 
 			cmd.beginDebugUtilsLabelEXT(debugInfo);
 
-			if (pass.Type == EPassType::SwapChain)
+			switch (pass.Type)
 			{
+			case EPassType::SwapChain:
 				ExecuteSwapChainPass(pass, vk_ctx, swapChain);
-			}
-			else if (pass.Type == EPassType::OffScreen)
-			{
+				break;
+			case EPassType::OffScreen:
 				ExecuteOffScreenPass(pass, vk_ctx);
+				break;
+			default:
+				break;
 			}
-
 			cmd.endDebugUtilsLabelEXT();
 		}
 

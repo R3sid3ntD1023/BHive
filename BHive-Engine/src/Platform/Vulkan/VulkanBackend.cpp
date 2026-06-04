@@ -156,12 +156,10 @@ namespace BHive
 
 	void VulkanBackend::RequestSwapChainRecreate(uint32_t w, uint32_t h)
 	{
-		LOG_TRACE("recreating swap chain...");
+		LOG_TRACE("recreating swap chain... with size[{}x{}]", w, h);
 
 		mSwapChain->Recreate(mSurface, w, h);
 		RecreateFrameResources();
-
-		LOG_TRACE("Swap chain created newsize:[{}x{}]", w, h);
 	}
 
 	std::vector<const char *> VulkanBackend::GetRequiredExtensions()

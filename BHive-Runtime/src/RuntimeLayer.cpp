@@ -135,8 +135,11 @@ namespace BHive
 		auto &window = app.GetWindow();
 		auto size = window.GetSize();
 
+
+		renderer.BeginPass("Scene", EPassType::OffScreen);
 		mFramebuffer->Bind();
 
+	
 		renderer.ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		renderer.Clear();
 		renderer.SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
@@ -174,6 +177,8 @@ namespace BHive
 		}
 
 		mFramebuffer->UnBind();
+
+		renderer.EndPass();
 
 		ImageDebugger::Get().OnRender(renderer);
 
