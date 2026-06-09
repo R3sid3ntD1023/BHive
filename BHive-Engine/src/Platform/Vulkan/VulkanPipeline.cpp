@@ -240,6 +240,8 @@ namespace BHive
 				if (globalManager)
 				{
 					auto set = globalManager->GetNativeSet(vk_ctx.Frame).As<vk::DescriptorSet>();
+					//const auto dynamicOffset = vk_ctx.ViewIndex * sizeof(FView);
+
 					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, layout, GLOBAL_SET_INDEX, *set, {});
 				}
 					
@@ -285,6 +287,7 @@ namespace BHive
 		if (globalManager)
 		{
 			auto set = globalManager->GetNativeSet(0).As<vk::DescriptorSet>();
+
 			cmd.bindDescriptorSets(mBindPoint, layout, GLOBAL_SET_INDEX, *set, {});
 		}
 

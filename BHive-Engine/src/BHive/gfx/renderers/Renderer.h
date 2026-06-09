@@ -9,6 +9,7 @@
 #include "gfx/RendererAPI.h"
 #include "gfx/GlobalBuffers.h"
 #include "PMREMGenerator.h"
+#include "ViewSystem.h"
 
 namespace BHive
 {
@@ -23,15 +24,6 @@ namespace BHive
 		EPassType DefaultPassType = EPassType::SwapChain;
 		bool DebugMarkers = false;
 	};
-
-	struct FCameraData
-	{
-		glm::mat4 Projection{1.0f};
-		glm::mat4 View{1.0f};
-		glm::vec4 NearFar{0.0f, 0.0f, 0.0f, 0.0f};
-		glm::vec4 Position{0.0f, 0.0f, 0.0f, 1.0f};
-	};
-
 
 	class BHIVE_API Renderer
 	{
@@ -81,8 +73,6 @@ namespace BHive
 
 		Ref<Texture> GetBRDFLUTTexture();
 
-		const FCameraData &GetCameraData() const;
-
 		static Renderer& Get() { return *sInstance;}
 
 #pragma region HELPERS
@@ -121,7 +111,7 @@ namespace BHive
 
 #pragma region RENDERGRAPH
 
-
+		ViewSystem &GetViewSystem() { return mViews; }
 
 		RenderGraph &GetActiveGraph();
 
@@ -161,6 +151,8 @@ namespace BHive
 		Statitics mStats{};
 		PMREMGenerator mPMREMGenerator{};
 		GlobalBuffers mGlobalBuffers{};
+
+		ViewSystem mViews;
 
 		//rendergraph
 		RenderGraph mGraph;

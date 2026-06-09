@@ -110,7 +110,7 @@ namespace BHive
 
 	void QuadRenderer::DrawBillboard(const FQuadParams &params, const Ref<Texture2D> &texture, const FTransform &transform, int32_t entity_id)
 	{
-		const auto &view = Renderer::Get().GetCameraData().View;
+		const auto &view = Renderer::Get().GetViewSystem().GetMainView().View;
 		glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
 
 		const static glm::vec2 texcoords[4] = {{0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}, {0.f, 1.f}};

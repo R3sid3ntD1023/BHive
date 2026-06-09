@@ -14,7 +14,6 @@ namespace BHive
 
 	struct BHIVE_API RenderData
 	{
-		FCameraData CameraData;
 		Frustum CameraFrustum;
 		FModelBuffer ModelBuffer;
 		LightBuffer LightingBuffer;
@@ -22,8 +21,6 @@ namespace BHive
 		Ref<Texture> WhiteTexture;
 		Ref<Texture> BlackTexture;
 		Ref<Texture> BlueTexture;
-
-		Ref<GPUBuffer> CameraUniformBuffer;
 
 		RenderData()
 		{
@@ -46,10 +43,6 @@ namespace BHive
 
 			create_info.DebugName = "Blue Texture";
 			BlueTexture = Texture2D::Create({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
-
-			CameraUniformBuffer = GPUBuffer::Create(sizeof(FCameraData), EBufferType::UniformBuffer);
-
-			global.Register(0, CameraUniformBuffer);
 
 			ModelBuffer.Init();
 			LightingBuffer.Init();
@@ -98,12 +91,15 @@ namespace BHive
 
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
 	{
-		mData->CameraData.Projection = projection;
-		mData->CameraData.View = view;
-		mData->CameraData.NearFar.x = projection[3][2] / (projection[2][2] - 1.0f);
-		mData->CameraData.NearFar.y = projection[3][2] / (projection[2][2] + 1.0f);
-		mData->CameraData.Position = glm::inverse(view)[3];
-		mData->CameraUniformBuffer->SetData(&mData->CameraData, sizeof(FCameraData));
+		mViews.BeginFrame();
+		FView &v = mViews.CreateMainView();
+
+		v.Projection = projection;
+		v.View = view;
+		v.NearFar.x = projection[3][2] / (projection[2][2] - 1.0f);
+		v.NearFar.y = projection[3][2] / (projection[2][2] + 1.0f);
+		v.Position = glm::inverse(view)[3];
+
 		mData->CameraFrustum.Update(projection, view);
 
 	}
@@ -176,11 +172,6 @@ namespace BHive
 	Ref<Texture> Renderer::GetBRDFLUTTexture()
 	{
 		return mGlobalBuffers.GetTextures().at(0);
-	}
-
-	const FCameraData &Renderer::GetCameraData() const
-	{
-		return mData->CameraData;
 	}
 
 	void Renderer::ClearColor(float r, float g, float b, float a)

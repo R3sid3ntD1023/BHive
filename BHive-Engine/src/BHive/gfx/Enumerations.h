@@ -255,6 +255,15 @@ namespace BHive
 		StorageBuffer
 	};
 
+	enum class EBufferKind
+	{
+		None,
+		Uniform,
+		UniformDynamic,
+		Storage,
+		StorageDynamic
+	};
+
 	enum class EResourceCategory : uint32_t
 	{
 		None = 0,

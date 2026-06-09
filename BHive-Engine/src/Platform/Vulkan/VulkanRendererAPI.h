@@ -13,13 +13,15 @@ namespace BHive
 	class VulkanWindowContext;
 	class VulkanShader;
 	class VulkanPipeline;
+	class GPUBuffer;
 
 	struct FVulkanRendererContext : public IRendererContext
 	{
-		FVulkanRendererContext(vk::raii::CommandBuffer& cmd, uint32_t frame, uint32_t imageIndex)
+		FVulkanRendererContext(vk::raii::CommandBuffer &cmd, uint32_t frame, uint32_t imageIndex, uint32_t viewIndex)
 			: CommandBuffer(cmd),
 			  Frame(frame),
-			  ImageIndex(imageIndex)
+			  ImageIndex(imageIndex),
+			  ViewIndex(viewIndex)
 		{
 		}
 
@@ -28,6 +30,8 @@ namespace BHive
 		uint32_t Frame{};
 
 		uint32_t ImageIndex{};
+
+		uint32_t ViewIndex{0};
 	};
 
 	struct FVulkanTransferContext : public ITransferContext
@@ -111,7 +115,11 @@ namespace BHive
 
 		void ExecuteSwapChainPass(const FRenderGraphPass& pass, FVulkanRendererContext& ctx, VulkanSwapChain* swapChain);
 
-		void ExecuteOffScreenPass(const FRenderGraphPass &pass, IRendererContext& ctx);
+		void ExecuteOffScreenPass(const FRenderGraphPass &pass, FVulkanRendererContext& ctx);
+
+		void ExecutePass(const FRenderGraphPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
+
+		void UploadCameraFromViews(int32_t frame, uint32_t viewIndex);
 
 	private:
 		vk::raii::Device& mDevice;
@@ -135,6 +143,8 @@ namespace BHive
 		uint32_t mCompletedFrame = 0;
 
 		uint32_t mCurrentFrame = 0;
+
+		Ref<GPUBuffer> mCameraUBO;
 
 		friend class VulkanFramebuffer;
 

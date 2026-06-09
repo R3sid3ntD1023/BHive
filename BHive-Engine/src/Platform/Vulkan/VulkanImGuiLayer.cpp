@@ -119,14 +119,14 @@ namespace BHive
 		
 	}
 
-	void VulkanImGuiLayer::OnRender(ImDrawData *drawData, const glm::uvec2 &displaySize)
+	void VulkanImGuiLayer::OnRender(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size)
 	{
 		auto& pass = RenderCommand::BeginPass("ImGui", EPassType::SwapChain);
-		pass.CommandList.Push("Draw Imgui", [drawData, displaySize](IRendererContext& ctx)
+		pass.CommandList.Push("Draw Imgui", [drawData, pos, size](IRendererContext& ctx)
 		{
 			auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-			vk::Viewport viewport(0.0f, 0.0f, (float)displaySize.x, (float)displaySize.y, 0.0f, 1.0f);
-			vk::Rect2D scissor({0, 0}, {(uint32_t)displaySize.x, (uint32_t)displaySize.y});
+				vk::Viewport viewport((float)pos.x, (float)pos.y + (float)size.y, (float)size.x, -(float)size.y, 0.0f, 1.0f);
+			vk::Rect2D scissor({pos.x, pos.y}, {(uint32_t)size.x, (uint32_t)size.y});
 
 			vk_ctx.CommandBuffer.setViewport(0, viewport);
 			vk_ctx.CommandBuffer.setScissor(0, scissor);

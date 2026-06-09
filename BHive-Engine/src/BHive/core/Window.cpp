@@ -13,7 +13,7 @@ namespace BHive
 	}
 
 	Window::Window(const FWindowProperties &properties)
-		: mData({properties.Title, properties.Size, properties.VSync})
+		: mData({properties.Title, properties.Size, {} , properties.VSync})
 	{
 		if (sWindowCount == 0)
 		{
@@ -138,6 +138,12 @@ namespace BHive
 		input->Size = {width, height};
 	}
 
+	void Window::OnWindowMovedCallback(GLFWwindow *window, int x, int y)
+	{
+		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		input->Position = {x, y};
+	}
+
 	void Window::OnKeyEventCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 	{
 		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
@@ -215,6 +221,8 @@ namespace BHive
 		glfwSetWindowCloseCallback(mWindow, OnWindowCloseCallback);
 
 		glfwSetWindowSizeCallback(mWindow, OnWindowResizeCallback);
+
+		glfwSetWindowPosCallback(mWindow, OnWindowMovedCallback);
 
 		glfwSetKeyCallback(mWindow, OnKeyEventCallback);
 

@@ -51,6 +51,8 @@ namespace BHive
 
 		const std::string &GetTitle() const { return mData.Title; }
 
+		const glm::ivec2 &GetPosition() const { return mData.Position; }
+
 		const glm::ivec2 &GetSize() const { return mData.Size; }
 
 		float GetAspectRatio() const { return (float)mData.Size.x / (float)mData.Size.y; }
@@ -67,6 +69,8 @@ namespace BHive
 
 		static void OnWindowResizeCallback(GLFWwindow *window, int width, int height);
 
+		static void OnWindowMovedCallback(GLFWwindow *window, int x, int y);
+
 		static void OnKeyEventCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 		static void OnMouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
@@ -80,6 +84,7 @@ namespace BHive
 		static void OnFramebufferSizeCallback(GLFWwindow *window, int width, int height);
 
 		static void OnJoyStickCallback(int joystick, int status);
+	
 
 		static void OnWindowFocusCallback(GLFWwindow *window, int focused);
 
@@ -90,6 +95,8 @@ namespace BHive
 			std::string Title;
 
 			glm::ivec2 Size;
+
+			glm::ivec2 Position;
 
 			bool VSync;
 

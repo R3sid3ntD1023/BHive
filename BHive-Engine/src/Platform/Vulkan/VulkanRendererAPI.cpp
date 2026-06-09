@@ -12,6 +12,8 @@
 #include "systems/MaterialSetRegistry.h"
 #include "textures/VulkanImage.h"
 #include "pass/ComputeBindings.h"
+#include "gfx/renderers/Renderer.h"
+#include "gfx/Buffers.h"
 
 namespace BHive
 {
@@ -64,6 +66,9 @@ namespace BHive
 
 		AddSubSystem<GlobalSetRegistry>();
 		AddSubSystem<MaterialSetRegistry>();
+
+		mCameraUBO = GPUBuffer::Create(sizeof(FView) /** MAX_VIEWS_PER_FRAME*/, EBufferType::UniformBuffer);
+		GetSubSystem<GlobalBuffers>().Register(0, mCameraUBO);
 	}
 
 	void VulkanRendererAPI::Shutdown()
@@ -184,30 +189,50 @@ namespace BHive
 		vk::DebugUtilsLabelEXT label_info("Main Pass", std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
 		cmd.beginDebugUtilsLabelEXT(label_info);
 
-		FVulkanRendererContext vk_ctx{cmd, current_frame, imageIndex};
-
 		GetSubSystem<GlobalSetRegistry>().UpdatePerFrame(current_frame);
 		GetSubSystem<MaterialSetRegistry>().UpdatePerFrame(current_frame);
 
+		auto &renderer = Renderer::Get();
+		const auto &views = renderer.GetViewSystem().GetAllViews();
+
+		FVulkanRendererContext vk_ctx{cmd, current_frame, imageIndex, 0};
+
 		updates.Execute(vk_ctx);
+
+		uint32_t viewCount = views.size();
+		for (uint32_t viewIndex = 0; viewIndex < viewCount; viewIndex++)
+		{
+			vk_ctx.ViewIndex = viewIndex;
+
+			UploadCameraFromViews(current_frame, viewIndex);
+
+			for (auto &pass : graph.GetPasses())
+			{
+				if (pass.Type == EPassType::Viewport)
+					continue;
+
+				vk::DebugUtilsLabelEXT debugInfo(pass.Name.c_str(), {1, 0, 0, 1});
+
+				cmd.beginDebugUtilsLabelEXT(debugInfo);
+
+				ExecutePass(pass, vk_ctx, swapChain);
+
+				cmd.endDebugUtilsLabelEXT();
+			}
+
+		}
 
 		for (auto &pass : graph.GetPasses())
 		{
+			if (pass.Type != EPassType::Viewport)
+				continue;
+
 			vk::DebugUtilsLabelEXT debugInfo(pass.Name.c_str(), {1, 0, 0, 1});
 
 			cmd.beginDebugUtilsLabelEXT(debugInfo);
 
-			switch (pass.Type)
-			{
-			case EPassType::SwapChain:
-				ExecuteSwapChainPass(pass, vk_ctx, swapChain);
-				break;
-			case EPassType::OffScreen:
-				ExecuteOffScreenPass(pass, vk_ctx);
-				break;
-			default:
-				break;
-			}
+			ExecutePass(pass, vk_ctx, swapChain);
+
 			cmd.endDebugUtilsLabelEXT();
 		}
 
@@ -259,9 +284,47 @@ namespace BHive
 		image.Transition(cmd, ImageState::Present());
 	}
 
-	void VulkanRendererAPI::ExecuteOffScreenPass(const FRenderGraphPass &pass, IRendererContext &ctx)
+	void VulkanRendererAPI::ExecuteOffScreenPass(const FRenderGraphPass &pass, FVulkanRendererContext &ctx)
 	{
 		pass.CommandList.Execute(ctx);
+	}
+
+	void VulkanRendererAPI::ExecutePass(const FRenderGraphPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
+	{
+		switch (pass.Type)
+		{
+		case EPassType::SwapChain:
+		case EPassType::Viewport:
+			ExecuteSwapChainPass(pass, ctx, swapChain);
+			break;
+		case EPassType::OffScreen:
+			ExecuteOffScreenPass(pass, ctx);
+			break;
+		default:
+			break;
+		}
+	}
+
+	void VulkanRendererAPI::UploadCameraFromViews(int32_t frame, uint32_t viewIndex)
+	{
+		auto &renderer = Renderer::Get();
+		auto &views = renderer.GetViewSystem().GetAllViews();
+
+		if (views.empty())
+			return;
+
+		const uint32_t viewCount = std::min<uint32_t>(views.size(), MAX_VIEWS_PER_FRAME);
+		std::array<FView, MAX_VIEWS_PER_FRAME> cpuCams{};
+
+		for (uint32_t i = 0; i < viewCount; i++)
+		{
+			cpuCams[i] = views[i];
+		}
+
+		//single cam for now
+		const FView &v = views[viewIndex];
+
+		mCameraUBO->SetData(cpuCams.data(), viewCount * sizeof(FView));
 	}
 
 	void VulkanRendererAPI::SetCurrentContext(WindowContext *ctx)

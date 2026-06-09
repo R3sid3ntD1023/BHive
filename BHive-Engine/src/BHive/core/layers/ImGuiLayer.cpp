@@ -83,7 +83,8 @@ namespace BHive
 	void ImGuiLayer::EndFrame()
 	{
 		auto &window = Application::Get().GetWindow();
-		auto size = window.GetSize();
+		const auto& pos = window.GetPosition();
+		const auto& size = window.GetSize();
 
 		ImGuiIO &io = ImGui::GetIO();
 		io.DisplaySize = {(float)size.x, (float)size.y};
@@ -91,7 +92,7 @@ namespace BHive
 
 		ImGui::Render();
 
-		OnRender(ImGui::GetDrawData(), size);
+		OnRender(ImGui::GetDrawData(), pos, size);
 
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{

@@ -67,7 +67,8 @@ namespace BHive
 	enum class EPassType : uint8_t
 	{
 		OffScreen,
-		SwapChain
+		SwapChain,
+		Viewport
 	};
 
 	//Tex, Mip, Levels, Layer, Layers, Access

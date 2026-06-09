@@ -43,7 +43,7 @@ namespace BHive
 
 		virtual void Shutdown();
 
-		virtual void OnRender(ImDrawData *drawData, const glm::uvec2 &displaySize) {};
+		virtual void OnRender(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size) {};
 
 		virtual ImTextureRef GetTextureIDImpl(const Texture &texture) = 0;
 

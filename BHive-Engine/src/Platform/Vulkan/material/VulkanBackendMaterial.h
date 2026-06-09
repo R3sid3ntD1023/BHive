@@ -52,5 +52,6 @@ namespace BHive
 		FSetReflection mTargetSet;
 
 		friend class MaterialSetRegistry;
+		friend class DescriptorSetRegistry;
 	};
 }

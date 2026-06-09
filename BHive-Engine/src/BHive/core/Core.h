@@ -37,6 +37,7 @@ Scope<T> CreateScope(TArgs &&...args)
 	return std::make_unique<T>(std::forward<TArgs>(args)...);
 }
 
+#include "Config.h"
 #include "log/Log.h"
 #include "AssertHandler.h"
 #include "Casting.h"

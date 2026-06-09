@@ -27,7 +27,8 @@ namespace BHive
 
 					if (render_settings.DrawColliders)
 					{
-						FrustumViewer viewer(proj, view);
+						const auto &mainView = Renderer::Get().GetViewSystem().GetMainView();
+						FrustumViewer viewer(mainView.Projection, mainView.View);
 
 						//LineRenderer::DrawFrustum(viewer, FColor::Green, (int32_t)e);
 					}

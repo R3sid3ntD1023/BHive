@@ -34,7 +34,7 @@ namespace BHive
 
 		virtual void Shutdown() override;
 
-		virtual void OnRender(ImDrawData *drawData, const glm::uvec2 &displaySize) override;
+		virtual void OnRender(ImDrawData *drawData, const glm::ivec2& pos, const glm::uvec2 &size) override;
 
 		virtual ImTextureRef GetTextureIDImpl(const Texture &texture) override;
 

@@ -90,7 +90,9 @@ namespace BHive
 			for (auto &[name, ubo] : refl.UniformBuffers)
 			{
 				auto vk_stage = ToVkShaderStageBit(ubo.Stages);
-				bindings.emplace_back(ubo.Binding, vk::DescriptorType::eUniformBuffer, 1, vk_stage);
+				auto type = vk::DescriptorType::eUniformBuffer;
+
+				bindings.emplace_back(ubo.Binding, type, 1, vk_stage);
 			}
 
 			for (auto &[name, sbo] : refl.StorageBuffers)
