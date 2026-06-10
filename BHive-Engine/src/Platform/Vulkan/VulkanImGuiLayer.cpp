@@ -115,13 +115,11 @@ namespace BHive
 		ImGui_ImplVulkan_Shutdown();
 
 		ImGuiLayer::Shutdown();
-
-		
 	}
 
 	void VulkanImGuiLayer::OnRender(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size)
 	{
-		auto& pass = RenderCommand::BeginPass("ImGui", EPassType::SwapChain);
+		auto& pass = RenderCommand::BeginPass("ImGui", EPassType::Viewport);
 		pass.CommandList.Push("Draw Imgui", [drawData, pos, size](IRendererContext& ctx)
 		{
 			auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);

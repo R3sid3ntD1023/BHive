@@ -134,6 +134,18 @@ namespace BHive
 		mGlobalBuffers.Register(3, prefilter);
 	}
 
+	FView Renderer::CreateView(const glm::mat4 &projection, const glm::mat4 &view)
+	{
+		FView v{};
+
+		v.Projection = projection;
+		v.View = view;
+		v.NearFar.x = projection[3][2] / (projection[2][2] - 1.0f);
+		v.NearFar.y = projection[3][2] / (projection[2][2] + 1.0f);
+		v.Position = glm::inverse(view)[3];
+		return v;
+	}
+
 	Ref<Texture> Renderer::GetWhiteTexture()
 	{
 		return mData->WhiteTexture;

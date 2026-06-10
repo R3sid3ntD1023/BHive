@@ -10,8 +10,6 @@ namespace BHive
 
 	vk::ImageUsageFlags InferImageUsage(ETextureRole roles);
 
-	vk::BufferUsageFlags ToVkBufferType(EBufferType type);
-
 	vk::DescriptorType ToVkType(EResourceType type);
 
 	vk::ImageAspectFlags ToVkAspect(ETextureAspect aspect);

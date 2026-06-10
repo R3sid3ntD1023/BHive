@@ -317,18 +317,6 @@ namespace BHive
 		}
 	}
 
-	enum class EBufferType
-	{
-		UniformBuffer = 0,
-		StorageBuffer = 1 << 0,
-		IndirectBuffer = 2 << 0
-	};
-
-	enum class EBufferUsageType
-	{
-		Static,
-		Dynamic
-	};
 
 
 	inline bool IsDepthFormat(EFormat format)

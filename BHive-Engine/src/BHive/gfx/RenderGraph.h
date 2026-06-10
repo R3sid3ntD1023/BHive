@@ -2,6 +2,7 @@
 
 #include "core/Core.h"
 #include "Enumerations.h"
+#include "renderers/ViewSystem.h"
 
 namespace BHive
 {
@@ -10,6 +11,14 @@ namespace BHive
 	struct IRendererContext
 	{
 		virtual ~IRendererContext() = default;
+
+		template<typename TRendererContext>
+			requires(std::is_base_of_v<IRendererContext, TRendererContext>)
+		TRendererContext &As()
+		{
+			ASSERT(dynamic_cast<TRendererContext *>(this) != nullptr)
+			return static_cast<TRendererContext &>(*this);
+		}
 	};
 
 	class FResourceUpdateList
@@ -106,6 +115,10 @@ namespace BHive
 		EPassType Type{};
 		FRenderCommandList CommandList{};
 		std::vector<FImageInfo> Images{};
+		std::optional<FView> View;
+
+		const FView& GetView() const { return View.value(); }
+		bool HasView() const { return View.has_value(); }
 	};
 
 	struct FAsyncPass

@@ -25,6 +25,14 @@ namespace BHive
 	struct BHIVE_API ITransferContext
 	{
 		virtual ~ITransferContext() = default;
+
+		template<typename TContext>
+		requires(std::is_base_of_v<ITransferContext, TContext>)
+		TContext& As()
+		{
+			ASSERT(dynamic_cast<TContext *>(this) != nullptr);
+			return static_cast<TContext &>(*this);
+		}
 	};
 
 	using FComputeFunc = std::function<void(FComputeBindings &)>;

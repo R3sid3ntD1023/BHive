@@ -67,7 +67,11 @@ namespace BHive
 		AddSubSystem<GlobalSetRegistry>();
 		AddSubSystem<MaterialSetRegistry>();
 
-		mCameraUBO = GPUBuffer::Create(sizeof(FView) /** MAX_VIEWS_PER_FRAME*/, EBufferType::UniformBuffer);
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			mCameraUBO = GPUBuffer::Create(sizeof(FView) /** MAX_VIEWS_PER_FRAME*/, EBufferType::UniformBuffer);
+		}
+	
 		GetSubSystem<GlobalBuffers>().Register(0, mCameraUBO);
 	}
 
@@ -199,37 +203,15 @@ namespace BHive
 
 		updates.Execute(vk_ctx);
 
-		uint32_t viewCount = views.size();
-		for (uint32_t viewIndex = 0; viewIndex < viewCount; viewIndex++)
-		{
-			vk_ctx.ViewIndex = viewIndex;
-
-			UploadCameraFromViews(current_frame, viewIndex);
-
-			for (auto &pass : graph.GetPasses())
-			{
-				if (pass.Type == EPassType::Viewport)
-					continue;
-
-				vk::DebugUtilsLabelEXT debugInfo(pass.Name.c_str(), {1, 0, 0, 1});
-
-				cmd.beginDebugUtilsLabelEXT(debugInfo);
-
-				ExecutePass(pass, vk_ctx, swapChain);
-
-				cmd.endDebugUtilsLabelEXT();
-			}
-
-		}
-
+		
 		for (auto &pass : graph.GetPasses())
 		{
-			if (pass.Type != EPassType::Viewport)
-				continue;
-
 			vk::DebugUtilsLabelEXT debugInfo(pass.Name.c_str(), {1, 0, 0, 1});
 
 			cmd.beginDebugUtilsLabelEXT(debugInfo);
+
+			if (pass.HasView())
+				mCameraUBO->SetData(&pass.GetView(), sizeof(FView));
 
 			ExecutePass(pass, vk_ctx, swapChain);
 
@@ -303,28 +285,6 @@ namespace BHive
 		default:
 			break;
 		}
-	}
-
-	void VulkanRendererAPI::UploadCameraFromViews(int32_t frame, uint32_t viewIndex)
-	{
-		auto &renderer = Renderer::Get();
-		auto &views = renderer.GetViewSystem().GetAllViews();
-
-		if (views.empty())
-			return;
-
-		const uint32_t viewCount = std::min<uint32_t>(views.size(), MAX_VIEWS_PER_FRAME);
-		std::array<FView, MAX_VIEWS_PER_FRAME> cpuCams{};
-
-		for (uint32_t i = 0; i < viewCount; i++)
-		{
-			cpuCams[i] = views[i];
-		}
-
-		//single cam for now
-		const FView &v = views[viewIndex];
-
-		mCameraUBO->SetData(cpuCams.data(), viewCount * sizeof(FView));
 	}
 
 	void VulkanRendererAPI::SetCurrentContext(WindowContext *ctx)

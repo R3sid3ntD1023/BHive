@@ -3,23 +3,6 @@
 
 namespace BHive
 {
-	vk::BufferUsageFlags ToVkBufferType(EBufferType type)
-	{
-		switch (type)
-		{
-		case BHive::EBufferType::UniformBuffer:
-			return vk::BufferUsageFlagBits::eUniformBuffer;
-		case BHive::EBufferType::StorageBuffer:
-			return vk::BufferUsageFlagBits::eStorageBuffer;
-		case BHive::EBufferType::IndirectBuffer:
-			return vk::BufferUsageFlagBits::eIndirectBuffer;
-		default:
-			break;
-		}
-		ASSERT(false)
-		return (vk::BufferUsageFlagBits)0;
-	}
-
 	vk::DescriptorType ToVkType(EResourceType type)
 	{
 		switch (type)

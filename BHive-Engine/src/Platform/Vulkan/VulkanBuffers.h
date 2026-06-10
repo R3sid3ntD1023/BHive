@@ -5,18 +5,31 @@
 
 namespace BHive
 {
-	struct PerFrameBuffer
+	struct VulkanStaticBuffer
 	{
 		AllocatedBuffer Buffer;
 		AllocatedBuffer StagingBuffer;
 
 		void Init(size_t size, vk::BufferUsageFlags usage);
 
-		void SetData(vk::raii::CommandBuffer& cmd, const void *data, size_t size, uint32_t offset, vk::PipelineStageFlags2 flags, vk::AccessFlags2 access);
+		void Upload(vk::raii::CommandBuffer& cmd, const void *data, size_t size, uint32_t offset);
 
-		NativeHandle GetNativeHandle() const;
+		~VulkanStaticBuffer();
+	};
 
-		~PerFrameBuffer();
+	struct VulkanPerFrameHostBuffer
+	{
+		std::array<AllocatedBuffer, MAX_FRAMES_IN_FLIGHT> Buffers;
+
+		void Init(size_t size, vk::BufferUsageFlags usage);
+
+		void Init(const void* data, size_t size, vk::BufferUsageFlags usage);
+
+		void Upload(uint32_t frame, const void *data, size_t size, uint32_t offset);
+
+		vk::Buffer GetBuffer(uint32_t frame) const { return Buffers.at(frame).GetBuffer(); }
+
+		~VulkanPerFrameHostBuffer();
 	};
 
 	
@@ -25,36 +38,36 @@ namespace BHive
 	class BHIVE_API StaticVulkanIndexBuffer : public IndexBuffer
 	{
 	public:
-		StaticVulkanIndexBuffer(uint32_t count);
+		StaticVulkanIndexBuffer(const uint32_t* data, uint32_t count);
 
 		virtual uint32_t GetCount() const override { return mCount; }
 
-		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override;
-
-		virtual NativeHandle GetNativeHandle(uint32_t frame) const override { return mBuffer.GetNativeHandle(); };
+		virtual NativeHandle GetNativeHandle(uint32_t frame) const override;
 
 	private:
-		vk::raii::Device &mDevice;
-		PerFrameBuffer mBuffer;
+		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override {};
+
+	private:
+		VulkanStaticBuffer mBuffer;
 		uint32_t mCount;
 	};
 
 	class BHIVE_API StaticVulkanVertexBuffer : public VertexBuffer
 	{
 	public:
-		StaticVulkanVertexBuffer(size_t size);
-
-		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override;
+		StaticVulkanVertexBuffer(const void* data, size_t size);
 
 		virtual void SetLayout(const BufferLayout &layout) override { mLayout = layout; };
 
 		virtual const BufferLayout &GetLayout() const override { return mLayout; }
 
-		virtual NativeHandle GetNativeHandle(uint32_t frame) const override { return mBuffer.GetNativeHandle(); };
+		virtual NativeHandle GetNativeHandle(uint32_t frame) const override;
 
 	private:
-		vk::raii::Device &mDevice;
-		PerFrameBuffer mBuffer;
+		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override {};
+
+	private:
+		VulkanStaticBuffer mBuffer;
 		BufferLayout mLayout{};
 	};
 
@@ -63,28 +76,23 @@ namespace BHive
 	class BHIVE_API DynamicVulkanIndexBuffer : public IndexBuffer
 	{
 	public:
-		DynamicVulkanIndexBuffer(uint32_t count);
+		DynamicVulkanIndexBuffer(const uint32_t *data, uint32_t count);
 
 		virtual uint32_t GetCount() const override { return mCount; }
 
 		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 
-		virtual NativeHandle GetNativeHandle(uint32_t frame) const override
-		{
-			ASSERT(frame < MAX_FRAMES_IN_FLIGHT);
-			return mPerFrameBuffer[frame].GetNativeHandle();
-		};
+		virtual NativeHandle GetNativeHandle(uint32_t frame) const override;
 
 	private:
-		vk::raii::Device &mDevice;
-		std::array<PerFrameBuffer, MAX_FRAMES_IN_FLIGHT> mPerFrameBuffer;
+		VulkanPerFrameHostBuffer mPerFrameBuffer;
 		uint32_t mCount;
 	};
 
 	class BHIVE_API DynamicVulkanVertexBuffer : public VertexBuffer
 	{
 	public:
-		DynamicVulkanVertexBuffer(const size_t size);
+		DynamicVulkanVertexBuffer(const void *data, const size_t size);
 
 		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 
@@ -92,16 +100,10 @@ namespace BHive
 
 		virtual const BufferLayout &GetLayout() const override { return mLayout; }
 
-		virtual NativeHandle GetNativeHandle(uint32_t frame) const override
-		{
-			ASSERT(frame < MAX_FRAMES_IN_FLIGHT);
-			return mPerFrameBuffer[frame].GetNativeHandle();
-		};
-
+		virtual NativeHandle GetNativeHandle(uint32_t frame) const override;
 
 	private:
-		vk::raii::Device &mDevice;
-		std::array<PerFrameBuffer, MAX_FRAMES_IN_FLIGHT> mPerFrameBuffer;
+		VulkanPerFrameHostBuffer mPerFrameBuffer;
 		BufferLayout mLayout{};
 		
 	};
@@ -113,10 +115,6 @@ namespace BHive
 	public:
 		VulkanGPUBuffer(size_t size, EBufferType type, const void *data);
 
-		VulkanGPUBuffer(size_t size, EBufferType type);
-
-		~VulkanGPUBuffer();
-
 		//unused in vulkan
 		void BindAtBindingPoint(uint32_t binding) override {}
 
@@ -125,8 +123,7 @@ namespace BHive
 		NativeHandle GetNativeHandle(uint32_t frame) const override;
 
 	private:
-		vk::raii::Device &mDevice;
-		std::array<AllocatedBuffer, MAX_FRAMES_IN_FLIGHT> mBuffer;
+		VulkanPerFrameHostBuffer mPerFrameBuffer;
 		uint32_t mSize{0};
 	};
 } // namespace BHive

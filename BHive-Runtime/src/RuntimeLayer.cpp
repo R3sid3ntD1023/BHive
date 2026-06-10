@@ -23,6 +23,7 @@
 #include "gfx/GlobalBuffers.h"
 #include "gfx/material/LambertMaterial.h"
 #include "gfx/debug/ImageDebugger.h"
+#include "gfx/cameras/OrthographicCamera.h"
 
 namespace BHive
 {
@@ -179,13 +180,21 @@ namespace BHive
 
 		renderer.EndPass();
 
+	
+		auto& pass = renderer.BeginPass("DrawLine", EPassType::SwapChain);
+		pass.View = renderer.CreateView(mCamera.GetProjection(), mCamera.GetView());
+
+		renderer.Line.DrawGrid({});
+		renderer.Flush();
+		renderer.EndPass();
+
 		ImageDebugger::Get().OnRender(renderer);
 
 	}
 
 	void RuntimeLayer::OnGuiRender()
 	{
-		GUI::BeginDockSpace("Dockspace");
+		//GUI::BeginDockSpace("Dockspace");
 
 		ImageDebugger::Get().OnGuiRender();
 
@@ -248,7 +257,7 @@ namespace BHive
 
 		ImGui::End();
 
-		GUI::EndDockSpace();
+		//GUI::EndDockSpace();
 	}
 
 	void RuntimeLayer::OnEvent(Event &e)

@@ -52,6 +52,8 @@ namespace BHive
 
 		void SetEnvironmentTexture(const Ref<Texture2D> &texture);
 
+		FView CreateView(const glm::mat4 &projection, const glm::mat4 &view);
+
 		Ref<Texture> GetWhiteTexture();
 
 		Ref<Texture> GetBlackTexture();

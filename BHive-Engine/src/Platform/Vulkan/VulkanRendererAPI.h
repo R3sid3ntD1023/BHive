@@ -118,9 +118,6 @@ namespace BHive
 		void ExecuteOffScreenPass(const FRenderGraphPass &pass, FVulkanRendererContext& ctx);
 
 		void ExecutePass(const FRenderGraphPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
-
-		void UploadCameraFromViews(int32_t frame, uint32_t viewIndex);
-
 	private:
 		vk::raii::Device& mDevice;
 
