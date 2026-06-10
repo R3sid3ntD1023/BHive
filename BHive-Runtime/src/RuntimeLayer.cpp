@@ -137,13 +137,14 @@ namespace BHive
 		auto size = window.GetSize();
 
 
-		renderer.BeginPass("Scene", EPassType::OffScreen);
+		auto& scenepass = renderer.BeginPass("Scene", EPassType::OffScreen);
+		scenepass.View = renderer.CreateView(mCamera.GetProjection(), mCamera.GetView());
 		mFramebuffer->Bind();
 
 	
 		renderer.ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		renderer.Clear();
-		renderer.SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
+		//renderer.SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
 
 		renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
 		renderer.Line.DrawGrid({});
@@ -182,8 +183,7 @@ namespace BHive
 
 	
 		auto& pass = renderer.BeginPass("DrawLine", EPassType::SwapChain);
-		pass.View = renderer.CreateView(mCamera.GetProjection(), mCamera.GetView());
-
+		//pass.View = renderer.CreateView(mCamera.GetProjection(), mCamera.GetView());
 		renderer.Line.DrawGrid({});
 		renderer.Flush();
 		renderer.EndPass();
@@ -194,7 +194,7 @@ namespace BHive
 
 	void RuntimeLayer::OnGuiRender()
 	{
-		//GUI::BeginDockSpace("Dockspace");
+		GUI::BeginDockSpace("Dockspace");
 
 		ImageDebugger::Get().OnGuiRender();
 
@@ -257,7 +257,7 @@ namespace BHive
 
 		ImGui::End();
 
-		//GUI::EndDockSpace();
+		GUI::EndDockSpace();
 	}
 
 	void RuntimeLayer::OnEvent(Event &e)

@@ -79,6 +79,8 @@ namespace BHive
 	{
 		ResetStats();
 
+		mViews.BeginFrame();
+
 		Line.BeginRecording();
 		Quad.BeginRecording();
 
@@ -91,7 +93,7 @@ namespace BHive
 
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
 	{
-		mViews.BeginFrame();
+		
 		FView &v = mViews.CreateMainView();
 
 		v.Projection = projection;
