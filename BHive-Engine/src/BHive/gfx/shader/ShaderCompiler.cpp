@@ -102,6 +102,53 @@ namespace BHive
 			}
 		}
 
+		struct SemanticTag
+		{
+			std::string VarName;
+			std::string Semantic;
+		};
+
+		void ParseShaderSemantics(const std::string& code, std::unordered_map<std::string, std::string>& outVarToSemantic)
+		{
+			std::regex semanticRegex(R"(\/\/\s*@semantic\s+(\w+))");
+			std::smatch match;
+
+			std::string::const_iterator searchStart(code.begin());
+			while (std::regex_search(searchStart, code.end(), match, semanticRegex))
+			{
+				std::string semantic = match[1];
+
+				auto declStart = match.suffix().first;
+				std::regex declRegex(R"((layout\s*\([^)]*\)\s*)?(uniform|buffer)\s+(\w+)\s*(\w+)?|\buniform\s+(\w+)\s*;|\bsampler\w*\s+(\w+)\s*;)");
+
+				std::smatch declMatch;
+				if (std::regex_search(declStart, code.end(), declMatch, declRegex))
+				{
+					std::string varName;
+
+					// Cases:
+					// layout(...) uniform Type varName { ... }
+					// layout(...) buffer Type varName { ... }
+					// uniform varName;
+					// samplerCube varName;
+
+					if (declMatch[4].matched) // layout(...) uniform Type varName
+						varName = declMatch[4];
+					else if (declMatch[3].matched) // layout(...) buffer Type varName
+						varName = declMatch[3];
+					else if (declMatch[5].matched) // uniform varName;
+						varName = declMatch[5];
+					else if (declMatch[6].matched) // samplerCube varName;
+						varName = declMatch[6];
+
+					if (!varName.empty())
+						outVarToSemantic[varName] = semantic;
+				}
+
+				searchStart = match.suffix().first;
+			}
+		}
+
 	} // namespace utils
 
 	ShaderCompiler::ShaderCompiler(const std::filesystem::path& filepath)
@@ -160,8 +207,15 @@ namespace BHive
 
 		for (auto &[stage, data] : asset.Stages)
 		{
-			FShaderReflection refl;
+			//parse semantics from glsl source
+			std::unordered_map<std::string, std::string> varToSemantic;
+			utils::ParseShaderSemantics(data.Code, varToSemantic);
+
+			FShaderReflection refl{};
+
 			refl.Reflect(stage, data.Spirv);
+
+			refl.AttachSemantics(varToSemantic);
 
 			utils::ParseShaderArraySizes(data.Code, refl);
 

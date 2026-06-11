@@ -1,6 +1,6 @@
 {
     "value0": {
-        "value0": 5231284853875334980,
+        "value0": 3536682944682616378,
         "value1": [
             1,
             2
@@ -14,10 +14,11 @@
                             {
                                 "key": "CameraBuffer",
                                 "value": {
-                                    "value0": 0,
-                                    "value1": 156,
-                                    "value2": 1,
-                                    "value3": [
+                                    "value0": "Camera",
+                                    "value1": 0,
+                                    "value2": 156,
+                                    "value3": 1,
+                                    "value4": [
                                         {
                                             "key": "u_camera_position",
                                             "value": {
@@ -75,10 +76,11 @@
                             {
                                 "key": "uTexture",
                                 "value": {
-                                    "value0": 0,
-                                    "value1": 2,
-                                    "value2": 1,
-                                    "value3": 1
+                                    "value0": "",
+                                    "value1": 0,
+                                    "value2": 2,
+                                    "value3": 1,
+                                    "value4": 1
                                 }
                             }
                         ]
@@ -93,23 +95,25 @@
                 {
                     "key": "CameraBuffer",
                     "value": {
-                        "value0": 6,
-                        "value1": 0,
-                        "value2": "CameraBuffer",
-                        "value3": 0,
+                        "value0": "Camera",
+                        "value1": 6,
+                        "value2": 0,
+                        "value3": "CameraBuffer",
                         "value4": 0,
-                        "value5": 156
+                        "value5": 0,
+                        "value6": 156
                     }
                 },
                 {
                     "key": "uTexture",
                     "value": {
-                        "value0": 1,
-                        "value1": 0,
-                        "value2": "uTexture",
-                        "value3": 0,
+                        "value0": "",
+                        "value1": 1,
+                        "value2": 0,
+                        "value3": "uTexture",
                         "value4": 0,
-                        "value5": 0
+                        "value5": 0,
+                        "value6": 0
                     }
                 }
             ],
@@ -120,12 +124,13 @@
                         {
                             "key": 0,
                             "value": {
-                                "value0": 6,
-                                "value1": 0,
-                                "value2": "CameraBuffer",
-                                "value3": 0,
+                                "value0": "Camera",
+                                "value1": 6,
+                                "value2": 0,
+                                "value3": "CameraBuffer",
                                 "value4": 0,
-                                "value5": 156
+                                "value5": 0,
+                                "value6": 156
                             }
                         }
                     ]
@@ -136,12 +141,13 @@
                         {
                             "key": 0,
                             "value": {
-                                "value0": 1,
-                                "value1": 0,
-                                "value2": "uTexture",
-                                "value3": 0,
+                                "value0": "",
+                                "value1": 1,
+                                "value2": 0,
+                                "value3": "uTexture",
                                 "value4": 0,
-                                "value5": 0
+                                "value5": 0,
+                                "value6": 0
                             }
                         }
                     ]
@@ -152,12 +158,13 @@
                     "key": 0,
                     "value": [
                         {
-                            "value0": 6,
-                            "value1": 0,
-                            "value2": "CameraBuffer",
-                            "value3": 0,
+                            "value0": "Camera",
+                            "value1": 6,
+                            "value2": 0,
+                            "value3": "CameraBuffer",
                             "value4": 0,
-                            "value5": 156
+                            "value5": 0,
+                            "value6": 156
                         }
                     ]
                 },
@@ -165,12 +172,13 @@
                     "key": 1,
                     "value": [
                         {
-                            "value0": 1,
-                            "value1": 0,
-                            "value2": "uTexture",
-                            "value3": 0,
+                            "value0": "",
+                            "value1": 1,
+                            "value2": 0,
+                            "value3": "uTexture",
                             "value4": 0,
-                            "value5": 0
+                            "value5": 0,
+                            "value6": 0
                         }
                     ]
                 }

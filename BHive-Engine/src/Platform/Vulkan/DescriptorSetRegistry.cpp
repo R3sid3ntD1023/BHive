@@ -7,7 +7,7 @@
 #include "gfx/GlobalResources.h"
 #include "VulkanRendererAPI.h"
 #include "gfx/RenderCommand.h"
-#include "gfx/Buffers.h"
+#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {
@@ -27,6 +27,7 @@ namespace BHive
 	{
 		const auto &shader = pipeline.GetVulkanShader();
 		const auto &setHashes = shader.GetSetHashes();
+		const auto &globalResources = Renderer::Get().GetGlobalResources();
 
 		if (!setHashes.contains(GLOBAL_SET_INDEX))
 			return nullptr;
@@ -51,26 +52,26 @@ namespace BHive
 
 			for (auto& [name, ub] : setRefl.UniformBuffers)
 			{
-				auto& ubo = GlobalResources::Get().GetBuffer(ub.Binding);
-				if (!ubo)
+				auto res = globalResources.Find(ub.Semantic);
+				if (!res)
 					continue;
-				provider.Manager->Write({uint32_t(ub.Binding), ubo});
+				provider.Manager->Write({uint32_t(ub.Binding), res->BufferRef}, frame);
 			}
 
 			for (auto &[name, sb] : setRefl.StorageBuffers)
 			{
-				auto &ssbo = GlobalResources::Get().GetBuffer(sb.Binding);
-				if (!ssbo)
+				auto res = globalResources.Find(sb.Semantic);
+				if (!res)
 					continue;
-				provider.Manager->Write({uint32_t(sb.Binding), ssbo});
+				provider.Manager->Write({uint32_t(sb.Binding), res->BufferRef}, frame);
 			}
 
 			for (auto &[name, smp] : setRefl.Samplers)
 			{
-				auto &tex = GlobalResources::Get().GetTexture(smp.Binding);
-				if (!tex)
+				auto res = globalResources.Find(smp.Semantic);
+				if (!res)
 					continue;
-				provider.Manager->Write({uint32_t(smp.Binding), 0, tex});
+				provider.Manager->Write({uint32_t(smp.Binding), 0, res->TextureRef}, frame);
 			}
 
 			mGlobalSets.emplace(key, provider);
@@ -111,7 +112,7 @@ namespace BHive
 				auto& ubo = mat->mLocalBuffers.at(name);
 				if (!ubo)
 					continue;
-				provider.Manager->Write({uint32_t(ub.Binding), ubo});
+				provider.Manager->Write({uint32_t(ub.Binding), ubo}, frame);
 			}
 
 			for (auto &[name, ub] : setRefl.StorageBuffers)
@@ -119,7 +120,7 @@ namespace BHive
 				auto &ssbo = mat->mLocalBuffers.at(name);
 				if (!ssbo)
 					continue;
-				provider.Manager->Write({uint32_t(ub.Binding), ssbo});
+				provider.Manager->Write({uint32_t(ub.Binding), ssbo}, frame);
 			}
 
 			mMaterialSets.emplace(key, provider);

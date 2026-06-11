@@ -19,8 +19,6 @@
 #include "core/Time.h"
 #include "Inspectors/Inspect.h"
 #include "gfx/Framebuffer.h"
-#include "gfx/ISetManager.h"
-#include "gfx/GlobalBuffers.h"
 #include "gfx/material/LambertMaterial.h"
 #include "gfx/debug/ImageDebugger.h"
 #include "gfx/cameras/OrthographicCamera.h"
@@ -112,10 +110,12 @@ namespace BHive
 		auto &dbg = ImageDebugger::Get();
 		dbg.Initialize({512, 512});
 
-		dbg.RegisterTexture("PreFilterEnv", Renderer::Get().GetPreFilterEnvironmentTexture());
-		dbg.RegisterTexture("EnvironmentCube", Renderer::Get().GetEnviromentCubeTexture());
-		dbg.RegisterTexture("Irradiance", Renderer::Get().GetIrradianceTexture());
-		dbg.RegisterTexture("BRDFLUT", Renderer::Get().GetBRDFLUTTexture());
+		auto &globalsResources = Renderer::Get().GetGlobalResources();  
+		
+		dbg.RegisterTexture("PreFilterEnv", globalsResources.Find("EnvironmentPreFilter")->TextureRef);
+		dbg.RegisterTexture("EnvironmentCube", globalsResources.Find("EnvironmentCubeMap")->TextureRef);
+		dbg.RegisterTexture("Irradiance", globalsResources.Find("EnvironmentIrradiance")->TextureRef);
+		dbg.RegisterTexture("BRDFLUT", globalsResources.Find("EnvironmentBRDFLUT")->TextureRef);
 		dbg.RegisterTexture("Test", mTexture);
 	}
 
@@ -146,9 +146,9 @@ namespace BHive
 		renderer.Clear();
 		//renderer.SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
 
-		renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
 		renderer.Line.DrawGrid({});
 		renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
+		renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Magenta);
 		
 
 		FQuadParams params{.Size = {1, 1}, .Color = FColor::Red};
@@ -161,7 +161,7 @@ namespace BHive
 
 		FTextParams tex_params{};
 		renderer.Quad.DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
-		
+
 		renderer.Flush();
 
 		if (mMesh && mMaterial)

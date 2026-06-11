@@ -140,6 +140,29 @@ namespace BHive
 		}
 	}
 
+	void FShaderReflection::AttachSemantics(const std::unordered_map<std::string, std::string> &varToSemantic)
+	{
+		for (auto &[set, resource] : Sets)
+		{
+			for (auto &[name, sampler] : resource.Samplers)
+			{
+				if (auto it = varToSemantic.find(name); it != varToSemantic.end())
+					sampler.Semantic = it->second;
+			}
+			for (auto &[name, ub] : resource.UniformBuffers)
+			{
+				if (auto it = varToSemantic.find(name); it != varToSemantic.end())
+					ub.Semantic = it->second;
+			}
+
+			for (auto &[name, ssbo] : resource.StorageBuffers)
+			{
+				if (auto it = varToSemantic.find(name); it != varToSemantic.end())
+					ssbo.Semantic = it->second;
+			}
+		}
+	}
+
 	std::string FShaderReflection::to_string() const
 	{
 		std::string result;
@@ -199,7 +222,7 @@ namespace BHive
 					dst.ArraySize = s.ArraySize;
 					dst.Type = s.Type;
 					dst.Stages |= s.Stages;
-					
+					dst.Semantic = s.Semantic;
 				}
 
 				// Merge UBOs
@@ -209,6 +232,7 @@ namespace BHive
 					dst.Binding = ubo.Binding;
 					dst.Size = ubo.Size;
 					dst.Stages |= ubo.Stages;
+					dst.Semantic = ubo.Semantic;
 
 					// ubo.Stages;
 					for (auto &[memberName, member] : ubo.Members)
@@ -227,6 +251,7 @@ namespace BHive
 					dst.Binding = ssbo.Binding;
 					dst.Size = ssbo.Size;
 					dst.Stages |= ssbo.Stages;
+					dst.Semantic = ssbo.Semantic;
 				}
 			}
 			
@@ -302,6 +327,7 @@ void FShaderReflectionLookUp::Build(const FShaderReflection &merged)
 			r.kind = ubo.Type;
 			r.size = ubo.Size;
 			r.name = name;
+			r.Semantic = ubo.Semantic;
 			addResource(name, set, r);
 		}
 
@@ -312,6 +338,7 @@ void FShaderReflectionLookUp::Build(const FShaderReflection &merged)
 			r.kind = ssbo.Type;
 			r.size = ssbo.Size;
 			r.name = name;
+			r.Semantic = ssbo.Semantic;
 			addResource(name, set, r);
 		}
 
@@ -321,6 +348,7 @@ void FShaderReflectionLookUp::Build(const FShaderReflection &merged)
 			r.binding = smp.Binding;
 			r.kind = smp.Type;
 			r.name = name;
+			r.Semantic = smp.Semantic;
 			addResource(name, set, r);
 		}
 	}

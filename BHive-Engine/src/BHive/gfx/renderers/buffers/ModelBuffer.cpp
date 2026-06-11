@@ -1,7 +1,6 @@
 #include "ModelBuffer.h"
 #include "gfx/Buffers.h"
-#include "gfx/GlobalBuffers.h"
-#include "core/subsystem/SubSystem.h"
+#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {

@@ -59,7 +59,8 @@ namespace BHive
 		auto &slots = mSlotsPerPipeline[p];
 		for (auto& [name, slot] : slots)
 		{
-			auto tex = slot.Texture ? slot.Texture  : Renderer::Get().GetWhiteTexture();
+			auto res = Renderer::Get().GetGlobalResources().Find("White");
+			auto tex = slot.Texture ? slot.Texture  : res->TextureRef;
 			mBackendMaterial->BindTexture(name, tex, slot.MipLevel, p);
 		}
 

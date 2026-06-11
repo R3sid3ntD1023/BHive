@@ -66,13 +66,6 @@ namespace BHive
 
 		AddSubSystem<GlobalSetRegistry>();
 		AddSubSystem<MaterialSetRegistry>();
-
-		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			mCameraUBO = GPUBuffer::Create(sizeof(FView) /** MAX_VIEWS_PER_FRAME*/, EBufferType::UniformBuffer);
-		}
-	
-		GetSubSystem<GlobalBuffers>().Register(0, mCameraUBO);
 	}
 
 	void VulkanRendererAPI::Shutdown()
@@ -211,7 +204,11 @@ namespace BHive
 			cmd.beginDebugUtilsLabelEXT(debugInfo);
 
 			if (pass.HasView())
-				mCameraUBO->SetData(&pass.GetView(), sizeof(FView));
+			{
+				auto camera = Renderer::Get().GetGlobalResources().Find("Camera");
+				if (camera)
+					camera->BufferRef->SetData(&pass.GetView(), sizeof(FView));
+			}
 
 			ExecutePass(pass, vk_ctx, swapChain);
 

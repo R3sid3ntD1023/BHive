@@ -21,6 +21,7 @@ namespace BHive
 		EShaderStage Stages;
 		uint32_t ArraySize;
 		EResourceType Type;
+		std::string Semantic;
 	};
 
 	struct FUniformBuffer
@@ -29,6 +30,8 @@ namespace BHive
 		int32_t Size;
 		EShaderStage Stages;
 		std::unordered_map<std::string, FUniform> Members;
+		std::string Semantic;
+
 		static constexpr EResourceType Type = EResourceType::UniformBuffer;
 	};
 
@@ -47,6 +50,7 @@ namespace BHive
 		int32_t Binding;
 		int32_t Size;
 		EShaderStage Stages;
+		std::string Semantic;
 
 		static constexpr EResourceType Type = EResourceType::StorageBuffer;
 	};
@@ -63,6 +67,8 @@ namespace BHive
 	{
 		void Reflect(EShaderStage stage, const std::vector<uint32_t> &source);
 
+		void AttachSemantics(const std::unordered_map<std::string, std::string> &varToSemantic);
+
 		std::string to_string() const;
 
 		static FShaderReflection Merge(const std::unordered_map<EShaderStage, FShaderReflection>& refl);
@@ -77,7 +83,8 @@ namespace BHive
 	struct FReflectedResource
 	{	
 		EResourceType kind = EResourceType::Invalid;
-		std::string name;
+		std::string name; //shader varibale name
+		std::string Semantic; //engine semantic (Camera, EnvironmentCube, etc.)
 		uint32_t binding = 0;
 		uint32_t offset = 0;
 		uint32_t size = 0;

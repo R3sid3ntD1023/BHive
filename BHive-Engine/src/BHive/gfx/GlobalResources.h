@@ -1,43 +1,43 @@
 #pragma once
 
 #include "core/Core.h"
-#include "renderers/FrameGlobals.h"
-#include "gfx/Buffers.h"
 
 namespace BHive
 {
 	class BufferBase;
 	class Texture;
 
-	struct GlobalResources
+	struct BHIVE_API GlobalResources
 	{
-		void Register(uint32_t binding, const Ref<BufferBase> &buffer) { mBuffers.emplace(binding, buffer); }
-
-		void Register(uint32_t binding, const Ref<Texture> &texture) { mTextures.emplace(binding, texture); }
-
-		auto& GetBuffers() const { return mBuffers; }
-
-		auto& GetTextures() const { return mTextures; }
-
-		auto &GetBuffer(uint32_t binding) const { return mBuffers.at(binding); }
-
-		auto &GetTexture(uint32_t binding) const { return mTextures.at(binding); }
-
-		static GlobalResources &Get()
+		struct GlobalResource
 		{
-			static GlobalResources globals;
-			return globals;
-		}
+			enum class Kind
+			{
+				None,
+				Buffer,
+				Texture
+			};
+
+			Kind ResourceKind = Kind::None;
+			Ref<BufferBase> BufferRef;
+			Ref<Texture> TextureRef;
+
+			bool IsBuffer() const { return ResourceKind == Kind::Buffer; }
+			bool IsTexture() const { return ResourceKind == Kind::Texture; }
+		};
+
+		void Register(const std::string &semantic, const Ref<BufferBase> &buffer);
+
+		void Register(const std::string &semantic, const Ref<Texture> &texture);
+
+		const GlobalResource *Find(const std::string &semantic) const;
+
+		std::string DebugListSemantics() const;
+
+		std::string GuessSemanticFromName(const std::string &semantic) const;
 
 	private:
-		GlobalResources()
-		{ 
-			//register camera buffer
-			Register(0, GPUBuffer::Create(sizeof(FCameraData), EBufferType::UniformBuffer));
-		}
-
-		std::unordered_map<uint32_t, Ref<BufferBase>> mBuffers;
-		std::unordered_map<uint32_t, Ref<Texture>> mTextures;
+		std::unordered_map<std::string, GlobalResource> mResources;
 	};
 
 }

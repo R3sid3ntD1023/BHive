@@ -1,14 +1,13 @@
-#include "gfx/Buffers.h"
 #include "LightBuffer.h"
-#include "core/subsystem/SubSystem.h"
-#include "gfx/GlobalBuffers.h"
+#include "gfx/Buffers.h"
+#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {
 	void LightBuffer::Init()
 	{
 		LightBuffer = GPUBuffer::Create(sizeof(FLightInfo), EBufferType::StorageBuffer);
-		GetSubSystem<GlobalBuffers>().Register(4, LightBuffer);
+		//Renderer::Get().GetGlobalResources().Register("Lights", LightBuffer);
 	}
 
 	void LightBuffer::Begin()

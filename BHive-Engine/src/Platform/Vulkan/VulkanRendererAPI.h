@@ -141,8 +141,6 @@ namespace BHive
 
 		uint32_t mCurrentFrame = 0;
 
-		Ref<GPUBuffer> mCameraUBO;
-
 		friend class VulkanFramebuffer;
 
 	};

@@ -12,19 +12,19 @@ namespace BHive
 	template <typename A>
 	void SERIALIZE(A &ar, FSampler &s)
 	{
-		ar(s.Binding, s.Stages, s.ArraySize, s.Type);
+		ar(s.Semantic, s.Binding, s.Stages, s.ArraySize, s.Type);
 	}
 
 	template <typename A>
 	void SERIALIZE(A &ar, FUniformBuffer &b)
 	{
-		ar(b.Binding, b.Size, b.Stages, b.Members);
+		ar(b.Semantic, b.Binding, b.Size, b.Stages, b.Members);
 	}
 
 	template <typename A>
 	void SERIALIZE(A &ar, FStorageBuffer &b)
 	{
-		ar(b.Binding, b.Size, b.Stages);
+		ar(b.Semantic, b.Binding, b.Size, b.Stages);
 	}
 
 	
@@ -49,7 +49,7 @@ namespace BHive
 	template <typename A>
 	void SERIALIZE(A &ar, FReflectedResource &r)
 	{
-		ar(r.kind, r.binding, r.name, r.location, r.offset, r.size);
+		ar(r.Semantic, r.kind, r.binding, r.name, r.location, r.offset, r.size);
 	}
 
 	template <typename A>

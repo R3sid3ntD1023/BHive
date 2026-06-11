@@ -48,13 +48,9 @@ namespace BHive
 		DescriptorSetManager(vk::raii::Device &device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex,
 			const FShaderReflectionLookUp& refl);
 
-		void Write(const FBufferWriteInfo& writeInfo);
+		void Write(const FBufferWriteInfo& writeInfo, uint32_t frame);
 
-		void Write(const FImageWriteInfo& writeInfo);
-
-		void WriteImmediate(const FBufferWriteInfo &writeInfo, uint32_t frame);
-
-		void WriteImmediate(const FImageWriteInfo &writeInfo, uint32_t frame);
+		void Write(const FImageWriteInfo& writeInfo, uint32_t frame);
 
 		void Update(uint32_t frame) ;
 

@@ -3,11 +3,10 @@
 #include "core/Core.h"
 #include "LineRenderer.h"
 #include "QuadRenderer.h"
-#include "gfx/Camera.h"
 #include "RenderData.h"
 #include "buffers/ModelBuffer.h"
 #include "gfx/RendererAPI.h"
-#include "gfx/GlobalBuffers.h"
+#include "gfx/GlobalResources.h"
 #include "PMREMGenerator.h"
 #include "ViewSystem.h"
 
@@ -54,10 +53,6 @@ namespace BHive
 
 		FView CreateView(const glm::mat4 &projection, const glm::mat4 &view);
 
-		Ref<Texture> GetWhiteTexture();
-
-		Ref<Texture> GetBlackTexture();
-
 		const Frustum &GetFrustum();
 
 		void ResetStats();
@@ -66,14 +61,7 @@ namespace BHive
 
 		FModelBuffer &GetModelBuffer();
 
-		//BRDF textures
-		Ref<Texture> GetPreFilterEnvironmentTexture();
-
-		Ref<Texture> GetEnviromentCubeTexture();
-
-		Ref<Texture> GetIrradianceTexture();
-
-		Ref<Texture> GetBRDFLUTTexture();
+		GlobalResources &GetGlobalResources();
 
 		static Renderer& Get() { return *sInstance;}
 
@@ -113,7 +101,7 @@ namespace BHive
 
 #pragma region RENDERGRAPH
 
-		ViewSystem &GetViewSystem() { return mViews; }
+		ViewSystem &GetViewSystem();
 
 		RenderGraph &GetActiveGraph();
 
@@ -152,9 +140,7 @@ namespace BHive
 	private:
 		Statitics mStats{};
 		PMREMGenerator mPMREMGenerator{};
-		GlobalBuffers mGlobalBuffers{};
-
-		ViewSystem mViews;
+		GlobalResources mGlobalResources;
 
 		//rendergraph
 		RenderGraph mGraph;

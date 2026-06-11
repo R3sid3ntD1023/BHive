@@ -32,7 +32,7 @@ namespace BHive
 		void UpdatePerFrame(uint32_t frame);
 
 	private:
-		void BindGlobalResources(const FShaderReflectionLookUp &refl, ISetManager *mang, uint32_t setIndex);
+		void BindGlobalResources(const FShaderReflectionLookUp &refl, ISetManager *mang, uint32_t setIndex, const std::string &shaderName);
 
 		std::unordered_map<uint64_t, GlobalSetEntry> mEntries;
 	};

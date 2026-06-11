@@ -4,8 +4,6 @@
 #include "gfx/Texture.h"
 #include "VulkanConverters.h"
 #include "textures/VulkanImage.h"
-#include "gfx/RenderCommand.h"
-#include "VulkanRendererAPI.h"
 
 namespace BHive
 {
@@ -20,29 +18,7 @@ namespace BHive
 		AllocateSets();		
 	}
 
-	void DescriptorSetManager::Write(const FBufferWriteInfo &writeInfo)
-	{
-		RenderCommand::SubmitCommand(
-			"Write Buffer",
-			[=](auto &ctx)
-			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-				WriteImmediate(writeInfo, vk_ctx.Frame);
-			});
-	}
-
-	void DescriptorSetManager::Write(const FImageWriteInfo &writeInfo)
-	{
-		RenderCommand::SubmitCommand(
-			"Write Image",
-			[=](auto &ctx)
-			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-				WriteImmediate(writeInfo, vk_ctx.Frame);
-			});
-	}
-
-	void DescriptorSetManager::WriteImmediate(const FBufferWriteInfo &writeInfo, uint32_t frame)
+	void DescriptorSetManager::Write(const FBufferWriteInfo &writeInfo, uint32_t frame)
 	{
 		FBindingInfo *bindingInfo = FindBinding(writeInfo.Binding);
 
@@ -59,7 +35,7 @@ namespace BHive
 		mDevice.updateDescriptorSets(write, {});
 	}
 
-	void DescriptorSetManager::WriteImmediate(const FImageWriteInfo &writeInfo, uint32_t frame)
+	void DescriptorSetManager::Write(const FImageWriteInfo &writeInfo, uint32_t frame)
 	{
 		FBindingInfo *bindingInfo = FindBinding(writeInfo.Binding);
 

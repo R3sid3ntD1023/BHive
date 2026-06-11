@@ -14,7 +14,10 @@ namespace BHive
 
 	struct BHIVE_API RenderData
 	{
+		ViewSystem Views;
+
 		Frustum CameraFrustum;
+
 		FModelBuffer ModelBuffer;
 		LightBuffer LightingBuffer;
 
@@ -22,10 +25,10 @@ namespace BHive
 		Ref<Texture> BlackTexture;
 		Ref<Texture> BlueTexture;
 
+		Ref<GPUBuffer> CameraUBO;
+
 		RenderData()
 		{
-			auto& global = AddSubSystem<GlobalBuffers>();
-
 			static constexpr uint32_t white = 0xFFFFFFFF;
 			static constexpr uint32_t black = 0xFF000000;
 			static constexpr uint32_t blue = 0xFF0000FF;
@@ -46,9 +49,10 @@ namespace BHive
 
 			ModelBuffer.Init();
 			LightingBuffer.Init();
-		}
 
-		~RenderData() { RemoveSubSystem<GlobalBuffers>();
+			CameraUBO = GPUBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);
+
+		
 		}
 	};
 
@@ -59,15 +63,18 @@ namespace BHive
 
 		sInstance = this;
 
+		mAPI->Init();
 		mData = CreateRef<RenderData>();
 
-		mAPI->Init();
+		auto brdfLUT = mPMREMGenerator.GenerateBRDFLUTMap();
+		mGlobalResources.Register("EnvironmentBRDFLUT", brdfLUT);
+		mGlobalResources.Register("White", mData->WhiteTexture);
+		mGlobalResources.Register("Blue", mData->BlueTexture);
+		mGlobalResources.Register("Black", mData->BlackTexture);
+		mGlobalResources.Register("Camera", mData->CameraUBO);
 
 		Line.Initialize();
 		Quad.Initialize();
-
-		auto brdfLUT = mPMREMGenerator.GenerateBRDFLUTMap();
-		mGlobalBuffers.Register(0, brdfLUT);
 	}
 
 	Renderer::~Renderer()
@@ -79,7 +86,7 @@ namespace BHive
 	{
 		ResetStats();
 
-		mViews.BeginFrame();
+		mData->Views.BeginFrame();
 
 		Line.BeginRecording();
 		Quad.BeginRecording();
@@ -94,7 +101,7 @@ namespace BHive
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
 	{
 		
-		FView &v = mViews.CreateMainView();
+		FView &v = mData->Views.CreateMainView();
 
 		v.Projection = projection;
 		v.View = view;
@@ -131,9 +138,9 @@ namespace BHive
 		auto irradiance = mPMREMGenerator.GenerateIrradianceMap(cube_map);
 		auto prefilter = mPMREMGenerator.GeneratePreFilteredEnvironmentMap(irradiance);
 
-		mGlobalBuffers.Register(1, cube_map);
-		mGlobalBuffers.Register(2, irradiance);
-		mGlobalBuffers.Register(3, prefilter);
+		mGlobalResources.Register("EnvironmentCubeMap", cube_map);
+		mGlobalResources.Register("EnvironmentIrradiance", irradiance);
+		mGlobalResources.Register("EnvironmentPreFilter", prefilter);
 	}
 
 	FView Renderer::CreateView(const glm::mat4 &projection, const glm::mat4 &view)
@@ -148,16 +155,6 @@ namespace BHive
 		return v;
 	}
 
-	Ref<Texture> Renderer::GetWhiteTexture()
-	{
-		return mData->WhiteTexture;
-	}
-
-	Ref<Texture> Renderer::GetBlackTexture()
-	{
-		return mData->BlackTexture;
-	}
-
 	void Renderer::ResetStats()
 	{
 		memset(&mStats, 0, sizeof(Statitics));
@@ -168,24 +165,9 @@ namespace BHive
 		return mData->ModelBuffer;
 	}
 
-	Ref<Texture> Renderer::GetPreFilterEnvironmentTexture()
+	GlobalResources &Renderer::GetGlobalResources()
 	{
-		return mGlobalBuffers.GetTextures().at(3);
-	}
-
-	Ref<Texture> Renderer::GetEnviromentCubeTexture()
-	{
-		return mGlobalBuffers.GetTextures().at(1);
-	}
-
-	Ref<Texture> Renderer::GetIrradianceTexture()
-	{
-		return mGlobalBuffers.GetTextures().at(2);
-	}
-
-	Ref<Texture> Renderer::GetBRDFLUTTexture()
-	{
-		return mGlobalBuffers.GetTextures().at(0);
+		return mGlobalResources;
 	}
 
 	void Renderer::ClearColor(float r, float g, float b, float a)
@@ -262,6 +244,11 @@ namespace BHive
 	{
 		ASSERT(mData);
 		return mData->CameraFrustum;
+	}
+
+	ViewSystem &Renderer::GetViewSystem()
+	{
+		return mData->Views;
 	}
 
 	RenderGraph &Renderer::GetActiveGraph()

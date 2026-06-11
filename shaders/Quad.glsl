@@ -6,6 +6,7 @@ layout(location = 2) in vec2 vTexCoord;
 layout(location = 3) in vec4 vColor;
 layout(location = 4) in int vTextureID;
 
+// @semantic Camera
 layout(std140, set = 0, binding = 0) uniform CameraBuffer
 {
 	mat4 u_projection;

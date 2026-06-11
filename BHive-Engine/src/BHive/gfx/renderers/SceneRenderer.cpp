@@ -28,10 +28,10 @@ namespace BHive
 	{
 		static bool Sort(const Ref<FMeshRenderData> &lhs, const Ref<FMeshRenderData> &rhs)
 		{
-			glm::vec3 position = Renderer::Get().GetViewSystem().GetMainView().Position;
-			auto distanceA = glm::distance(lhs->Transform.GetTranslation(), position);
-			auto distanceB = glm::distance(rhs->Transform.GetTranslation(), position);
-			return distanceA < distanceB;
+			auto& view = Renderer::Get().GetViewSystem().GetMainView();
+			glm::vec3 viewPosA =  view.View * glm::vec4(lhs->Transform.GetTranslation(), 1.0f);
+			glm::vec3 viewPosB =  view.View * glm::vec4(rhs->Transform.GetTranslation(), 1.0f);
+			return viewPosA.z < viewPosB.z;
 		}
 	};
 
