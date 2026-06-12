@@ -92,10 +92,6 @@ namespace BHive
 
 		void QueueDeletion(FQeueuDeflectionFunc&& fn) override;
 
-		Ref<ISetManager> CreateSetManager(const Pipeline* pipeline, uint32_t setIndex) override;
-
-		void OnPipelineCreated(const VulkanPipeline *pipeline);
-
 		Ref<FComputeBindings> CreateComputeBindings(Pipeline* pipeline) override;
 
 		FAsyncPass* ExecuteComputePass(Pipeline* pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder) override;

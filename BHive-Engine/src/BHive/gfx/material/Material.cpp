@@ -54,7 +54,6 @@ namespace BHive
 	void Material::Submit(Pipeline *pipeline)
 	{
 		auto p = pipeline ? pipeline : mPipeline;
-		p->Bind(); // binds shaders pipeline 
 
 		auto &slots = mSlotsPerPipeline[p];
 		for (auto& [name, slot] : slots)

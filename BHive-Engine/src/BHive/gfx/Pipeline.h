@@ -68,10 +68,6 @@ namespace BHive
 
 		virtual Ref<ShaderProgram> GetShaderProgram() const = 0;
 
-		virtual void SetObjectSetManager(ISetManager *manager) = 0;
-
-		virtual ISetManager* GetBatchSetManager() const = 0;
-
 		static GraphicsPipelineState GetDefaultGraphicsPipelineState();
 
 		static Ref<Pipeline> Create();

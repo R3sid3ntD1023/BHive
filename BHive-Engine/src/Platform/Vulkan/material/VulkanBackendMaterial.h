@@ -9,7 +9,7 @@ namespace BHive
 	class ShaderProgram;
 	struct FShaderReflection;
 	class GPUBuffer;
-	class ISetManager;
+	class VulkanPipeline;
 
 	class VulkanBackendMaterial : public IMaterialBackendInterface
 	{
@@ -30,9 +30,11 @@ namespace BHive
 
 		void Set(const std::string &name, const void *data, size_t size) override;
 
-		void Shutdown() override;
+		const FSetReflection &GetTargetSet() const override { return mTargetSet; }
 
-		const FSetReflection &GetTargetSet() const { return mTargetSet; }
+	private:
+		//set resources in pipeline
+		void BindToPipeline(VulkanPipeline* pipeline);
 
 	private:
 		vk::raii::Device &mDevice;
@@ -50,8 +52,5 @@ namespace BHive
 		const FShaderReflectionLookUp *mReflectionLookupTablePtr = nullptr; 
 
 		FSetReflection mTargetSet;
-
-		friend class MaterialSetRegistry;
-		friend class DescriptorSetRegistry;
 	};
 }

@@ -107,6 +107,7 @@ namespace BHive
 		return std::format("[{}, {}, {}, {}]", r, g, b, a);
 	}
 
+	//0xAARRGGBB
 	const FColor FColor::Blue = 0xFF0000FF;
 	const FColor FColor::Red = 0xFFFF0000;
 	const FColor FColor::Green = 0xFF00FF00;

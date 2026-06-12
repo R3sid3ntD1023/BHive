@@ -2,19 +2,17 @@
 
 #include "VulkanCore.h"
 #include "gfx/Pipeline.h"
+#include "VulkanShader.h"
 
 namespace BHive
 {
-	class VulkanShader;
 	class ShaderProgram;
-	class ISetManager;
+	class VulkanSetManager;
 
 	class BHIVE_API VulkanPipeline : public Pipeline
 	{
 	public:
 		VulkanPipeline();
-
-		~VulkanPipeline();
 
 		virtual void Init(const GraphicsPipelineState& state) override;
 
@@ -26,6 +24,10 @@ namespace BHive
 
 		virtual void UnBind() override {};
 
+		void UpdateSets(uint32_t frame);
+
+		VulkanSetManager *GetOrCreateSet(uint32_t setIndex);
+
 		Ref<ShaderProgram> GetShaderProgram() const override;
 
 		const VulkanShader& GetVulkanShader() const { return *mShader.get(); }
@@ -34,13 +36,12 @@ namespace BHive
 
 		vk::DescriptorSetLayout GetSetLayout(uint32_t set) const;
 
-		void SetObjectSetManager(ISetManager *manager);
-
-		ISetManager *GetBatchSetManager() const override { return mBatchSetManager.get(); }
-
 		vk::PipelineBindPoint GetBindPoint() const { return mBindPoint; }
 
 		const vk::raii::Pipeline &GetVkPipeline() const { return mPipeline; }
+
+	private:
+		void BindGlobalResources();
 
 	private:
 		vk::raii::Device &mDevice;
@@ -57,8 +58,6 @@ namespace BHive
 
 		Scope<VulkanShader> mShader;
 
-		ISetManager *mObjectSetManager = nullptr;
-
-		Ref<ISetManager> mBatchSetManager;
+		std::unordered_map<uint32_t, Ref<VulkanSetManager>> mSetManagers;
 	};
 } // namespace BHive

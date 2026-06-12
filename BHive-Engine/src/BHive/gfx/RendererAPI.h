@@ -83,8 +83,6 @@ namespace BHive
 
 		virtual void SubmitGraph(const RenderGraph &graph, FResourceUpdateList &updateResources) = 0;
 
-		virtual Ref<ISetManager> CreateSetManager(const Pipeline *pipeline, uint32_t setIndex) = 0;
-
 		virtual Ref<FComputeBindings> CreateComputeBindings(Pipeline* pipeline) = 0;
 
 		virtual FAsyncPass* ExecuteComputePass(Pipeline* pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder) = 0;

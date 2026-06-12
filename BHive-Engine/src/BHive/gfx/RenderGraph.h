@@ -3,10 +3,14 @@
 #include "core/Core.h"
 #include "Enumerations.h"
 #include "renderers/ViewSystem.h"
+#include "core/math/Transform.h"
 
 namespace BHive
 {
 	class Texture;
+	class Pipeline;
+	class BaseMesh;
+	class Material;
 
 	struct IRendererContext
 	{
@@ -26,21 +30,15 @@ namespace BHive
 	public:
 		using UpdateCommand = std::function<void(IRendererContext&)>;
 
-		void Push(UpdateCommand cmd) { mUpdateCommands.push_back(std::move(cmd));}
+		void Push(UpdateCommand cmd);
 
-		void Append(FResourceUpdateList &updates) { mUpdateCommands.insert(mUpdateCommands.end(), updates.mUpdateCommands.begin(), updates.mUpdateCommands.end()); }
+		void Append(FResourceUpdateList &updates);
 
-		void Execute(IRendererContext & ctx) const
-		{
-			for (auto& cmd : mUpdateCommands)
-			{
-				cmd(ctx);
-			}
-		}
+		void Execute(IRendererContext &ctx) const;
 
-		void Clear() { mUpdateCommands.clear(); }
+		void Clear();
 
-		bool Empty() const { return mUpdateCommands.empty(); }
+		bool Empty() const;
 
 	private:
 		std::vector<UpdateCommand> mUpdateCommands;
@@ -50,18 +48,9 @@ namespace BHive
 	{
 		using RenderCommand = std::function<void(IRendererContext &)>;
 
-		void Push(const std::string &name, RenderCommand cmd) { mCommands.push_back({name, std::move(cmd)}); }
+		void Push(const std::string &name, RenderCommand cmd);
 
-		void Execute(IRendererContext &ctx) const
-		{
-			
-			for (auto& cmd : mCommands)
-			{
-				//LOG_INFO(cmd.Name);
-				cmd.Func(ctx);
-			}
-				
-		}
+		void Execute(IRendererContext &ctx) const;
 
 	private:
 		struct FEntry
@@ -118,7 +107,9 @@ namespace BHive
 		std::optional<FView> View;
 
 		const FView& GetView() const { return View.value(); }
+
 		bool HasView() const { return View.has_value(); }
+
 	};
 
 	struct FAsyncPass
@@ -138,23 +129,13 @@ namespace BHive
 	{
 	public:
 	
-		FRenderGraphPass &AddPass(const std::string &name, EPassType type)
-		{
-			auto &pass = mPasses.emplace_back();
-			pass.Name = name;
-			pass.Type = type;
-			return pass;
-		}
+		FRenderGraphPass &AddPass(const std::string &name, EPassType type);
 
-		void Append(const RenderGraph &graph)
-		{
-			auto& passes = graph.GetPasses();
-			mPasses.insert(mPasses.end(), passes.begin(), passes.end());
-		}
+		void Append(const RenderGraph &graph);
 
-		bool Empty() const { return mPasses.empty(); }
+		bool Empty() const;
 
-		const std::vector<FRenderGraphPass> &GetPasses() const { return mPasses; }
+		const std::vector<FRenderGraphPass> &GetPasses() const;
 
 	private:
 		std::vector<FRenderGraphPass> mPasses;

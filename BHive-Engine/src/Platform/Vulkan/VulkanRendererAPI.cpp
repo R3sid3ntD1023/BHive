@@ -7,9 +7,6 @@
 #include "gfx/BufferBase.h"
 #include "VulkanFramebuffer.h"
 #include "VulkanUtils.h"
-#include "VulkanSetManager.h"
-#include "systems/GlobalSetRegistry.h"
-#include "systems/MaterialSetRegistry.h"
 #include "textures/VulkanImage.h"
 #include "pass/ComputeBindings.h"
 #include "gfx/renderers/Renderer.h"
@@ -61,11 +58,8 @@ namespace BHive
 		pool_sizes.emplace_back(vk::DescriptorType::eStorageTexelBuffer, descriptor_count);
 		pool_sizes.emplace_back(vk::DescriptorType::eInputAttachment, descriptor_count);
 
-		vk::DescriptorPoolCreateInfo pool_create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind, 1000, pool_sizes);
+		vk::DescriptorPoolCreateInfo pool_create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 1000, pool_sizes);
 		mDescriptorPool = mDevice.createDescriptorPool(pool_create_info);
-
-		AddSubSystem<GlobalSetRegistry>();
-		AddSubSystem<MaterialSetRegistry>();
 	}
 
 	void VulkanRendererAPI::Shutdown()
@@ -121,25 +115,6 @@ namespace BHive
 		mDeletionQueue.emplace(mCompletedFrame, std::move(fn));
 	}
 
-
-	Ref<ISetManager> VulkanRendererAPI::CreateSetManager(const Pipeline* pipeline, uint32_t setIndex)
-	{
-		auto program = pipeline->GetShaderProgram();
-		auto& refl = program->GetRefl();
-		auto vKpipeline = Cast<VulkanPipeline>(pipeline);
-		auto layout = vKpipeline->GetSetLayout(setIndex);
-
-		auto manager = CreateRef<VulkanSetManager>(VulkanBackend::GetLogicalDevice(), mDescriptorPool, layout, setIndex,
-			refl);
-		return manager;
-	}
-
-	void VulkanRendererAPI::OnPipelineCreated(const VulkanPipeline *pipeline)
-	{
-		auto &registry = GetSubSystem<GlobalSetRegistry>();
-		registry.EnsureGlobalSet(*pipeline, GLOBAL_SET_INDEX);
-	}
-
 	void VulkanRendererAPI::ResetFrameIndex()
 	{
 		mCurrentFrame = 0;
@@ -186,9 +161,6 @@ namespace BHive
 		vk::DebugUtilsLabelEXT label_info("Main Pass", std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
 		cmd.beginDebugUtilsLabelEXT(label_info);
 
-		GetSubSystem<GlobalSetRegistry>().UpdatePerFrame(current_frame);
-		GetSubSystem<MaterialSetRegistry>().UpdatePerFrame(current_frame);
-
 		auto &renderer = Renderer::Get();
 		const auto &views = renderer.GetViewSystem().GetAllViews();
 
@@ -196,7 +168,6 @@ namespace BHive
 
 		updates.Execute(vk_ctx);
 
-		
 		for (auto &pass : graph.GetPasses())
 		{
 			vk::DebugUtilsLabelEXT debugInfo(pass.Name.c_str(), {1, 0, 0, 1});
@@ -305,7 +276,7 @@ namespace BHive
 			"Set Line Width",
 			[=](IRendererContext &ctx)
 			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
 				vk_ctx.CommandBuffer.setLineWidth(width);
 			});
 	}
@@ -316,7 +287,7 @@ namespace BHive
 			"Set Viewport",
 			[=](IRendererContext &ctx)
 			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
 				vk_ctx.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)(y + h), (float)w, -(float)h, 0.0f, 1.0f));
 				vk_ctx.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, vk::Extent2D(w, h)));
 			});
@@ -332,7 +303,7 @@ namespace BHive
 			"Draw Arrays",
 			[=](IRendererContext &ctx)
 			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
 				vk_ctx.CommandBuffer.setPrimitiveTopology(topology);
 				vk_ctx.CommandBuffer.draw(count, 1, 0, 0);
 			});
@@ -349,7 +320,7 @@ namespace BHive
 			"Draw Elements",
 			[=](IRendererContext &ctx)
 			{
-				auto &vk_ctx = static_cast<const FVulkanRendererContext &>(ctx);
+				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
 				vk_ctx.CommandBuffer.setPrimitiveTopology(topology);
 				vk_ctx.CommandBuffer.drawIndexed(index_count, 1, 0, 0, 0);
 			});
@@ -367,7 +338,7 @@ namespace BHive
 			"Draw Elements",
 			[=](IRendererContext &ctx)
 			{
-				auto &vk_ctx = static_cast<const FVulkanRendererContext &>(ctx);
+				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
 				vk_ctx.CommandBuffer.setPrimitiveTopology(topology);
 				vk_ctx.CommandBuffer.drawIndexed(index_count, instance_count, start_index, start, 0);
 			});
@@ -392,7 +363,7 @@ namespace BHive
 
 		pass->CommandList.Push("Multi Draw Elements Indirect", [buffer, topology, drawCount, stride](IRendererContext &ctx)
 		{		
-			auto &vk_ctx = static_cast<const FVulkanRendererContext &>(ctx);
+			auto &vk_ctx = ctx.As<FVulkanRendererContext>();
 			vk_ctx.CommandBuffer.setPrimitiveTopology(topology);
 			vk_ctx.CommandBuffer.drawIndexedIndirect(buffer, 0, drawCount, stride);
 		});

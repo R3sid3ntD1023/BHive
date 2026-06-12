@@ -9,7 +9,7 @@
 #include "Platform/Vulkan/VulkanBackend.h"
 #include "gfx/shader/ShaderReflection.h"
 #include "gfx/Buffers.h"
-#include "../systems/MaterialSetRegistry.h"
+#include "Platform/Vulkan/VulkanShader.h"
 #include "Platform/Vulkan/VulkanSetManager.h"
 
 namespace BHive
@@ -47,8 +47,6 @@ namespace BHive
 			{
 				mLocalBuffers.emplace(name, GPUBuffer::Create(ssbo.Size, EBufferType::StorageBuffer));
 			}
-
-			GetSubSystem<MaterialSetRegistry>().CreateForMaterial(this, vkPipeline);
 		}
 
 		//create push constant buffer
@@ -61,25 +59,29 @@ namespace BHive
 
 	void VulkanBackendMaterial::Bind(Pipeline* pipeline)
 	{
-		auto vk_Pipeline = Cast<VulkanPipeline>(pipeline);
-		auto &pipeline_layout = vk_Pipeline->GetLayout();
-		auto manager = GetSubSystem<MaterialSetRegistry>().Find(this, vk_Pipeline);
+		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
+		auto &pipeline_layout = vkPipeline->GetLayout();
 
 		//take snapshot of current push data - copy by value
 		auto pushData = mPushConstantData;
 
+		BindToPipeline(vkPipeline);
+
+		RenderCommand::SubmitResourceUpdate(
+			[=](IRendererContext &ctx)
+			{
+				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
+				vkPipeline->UpdateSets(vk_ctx.Frame);
+			});
+
+		pipeline->Bind();
+		
 		RenderCommand::SubmitCommand(
-			"Update MaterialSets",
+			"Update PushConstants",
 			[=,&pipeline_layout](IRendererContext &ctx)
 			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
 
-				if (manager)
-				{
-					auto set = manager->GetNativeSet(vk_ctx.Frame).As<vk::DescriptorSet>();
-					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, pipeline_layout, MATERIAL_SET_INDEX, *set, {});
-				}
-				
 				//Update push constants
 				for (auto &pc : mReflectionMergedPtr->PushConstants)
 				{
@@ -93,13 +95,12 @@ namespace BHive
 	{
 		auto vk_Pipeline = Cast<VulkanPipeline>(pipeline);
 		auto &pipeline_layout = vk_Pipeline->GetLayout();
-		auto manager = GetSubSystem<MaterialSetRegistry>().Find(this, vk_Pipeline);
 
-		if (manager)
-		{
-			auto set = manager->GetNativeSet(0).As<vk::DescriptorSet>();
-			cmd.bindDescriptorSets(mBindPoint, pipeline_layout, MATERIAL_SET_INDEX, *set, {});
-		}
+		BindToPipeline(vk_Pipeline);
+
+		vk_Pipeline->UpdateSets(0);
+
+		vk_Pipeline->BindImmediate(cmd);
 
 		// Update push constants
 		for (auto &pc : mReflectionMergedPtr->PushConstants)
@@ -121,10 +122,10 @@ namespace BHive
 			return;
 		}
 
-		auto &sampler = mTargetSet.Samplers.at(name);
+		auto &smp = mTargetSet.Samplers.at(name);
 
-		auto &registry = GetSubSystem<MaterialSetRegistry>();
-		Cast<VulkanSetManager>(registry.Find(this, pipeline))->SetTextureImmediate(sampler.Binding, texture, mip);
+		auto set = Cast<VulkanPipeline>(pipeline)->GetOrCreateSet(MATERIAL_SET_INDEX);	
+		set->SetTextureImmediate(smp.Binding, texture, mip);
 	}
 
 	void VulkanBackendMaterial::BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip, Pipeline* pipeline)
@@ -138,10 +139,9 @@ namespace BHive
 			return;
 		}
 
-		auto &sampler = mTargetSet.Samplers.at(name);
-
-		auto &registry = GetSubSystem<MaterialSetRegistry>();
-		registry.Find(this, pipeline)->SetTexture(sampler.Binding, texture, mip);
+		auto &smp = mTargetSet.Samplers.at(name);
+		auto set = Cast<VulkanPipeline>(pipeline)->GetOrCreateSet(MATERIAL_SET_INDEX);
+		set->SetTexture(smp.Binding, texture, mip);
 	}
 
 	
@@ -181,8 +181,25 @@ namespace BHive
 		LOG_ERROR("Uniform '{}' not found in shader '{}'", name, mProgram->GetName());
 	}
 
-	void VulkanBackendMaterial::Shutdown()
+	void VulkanBackendMaterial::BindToPipeline(VulkanPipeline *pipeline)
 	{
-		LOG_TRACE("Shutdown VulkanBackendMaterial Called")
+		auto& shader = pipeline->GetVulkanShader();
+		if (!shader.HasSet(MATERIAL_SET_INDEX))
+			return;
+
+		auto set = pipeline->GetOrCreateSet(MATERIAL_SET_INDEX);
+		auto& setBindings = mReflectionLookupTablePtr->GetSetBindings(MATERIAL_SET_INDEX);
+
+		for (auto& r : setBindings)
+		{
+			auto it = mLocalBuffers.find(r.name);
+			if (it != mLocalBuffers.end() && it->second)
+			{
+				set->SetBuffer(r.binding, it->second);
+				continue;
+			}
+		}
+		//TODO: textures maybe
 	}
+
 }

@@ -26,6 +26,8 @@ namespace BHive
 
 		virtual NativeHandle GetNativeSet(uint32_t frame) override;
 
+		void SetDebugName(const std::string &name);
+
 	private:
 
 		void AllocateSets();

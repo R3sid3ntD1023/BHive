@@ -148,7 +148,7 @@ namespace BHive
 
 		renderer.Line.DrawGrid({});
 		renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
-		renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Magenta);
+		renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
 		
 
 		FQuadParams params{.Size = {1, 1}, .Color = FColor::Red};
@@ -164,7 +164,7 @@ namespace BHive
 
 		renderer.Flush();
 
-		if (mMesh && mMaterial)
+	/*	if (mMesh && mMaterial)
 		{		
 			mMaterial->Set("u_Time", Time::Raw());
 			mMaterial->Submit();
@@ -175,7 +175,7 @@ namespace BHive
 			renderer.GetModelBuffer().Upload();
 
 			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2, sizeof(MultiDrawIndirectCommand));
-		}
+		}*/
 
 		mFramebuffer->UnBind();
 

@@ -11,7 +11,7 @@ layout(location = 5) in vec2 vOutline;
 layout(location = 6) in vec4 vOutlineColor;
 layout(location = 7) in int vEntityID;
 
-
+// @semantic Camera
 layout(std140 , set = 0, binding = 0) uniform CameraBuffer
 {
     mat4 uProjection;

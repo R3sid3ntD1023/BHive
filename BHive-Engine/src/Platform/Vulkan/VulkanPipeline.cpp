@@ -4,9 +4,7 @@
 #include "VulkanConverters.h"
 #include "VulkanShader.h"
 #include "gfx/shader/ShaderProgram.h"
-#include "gfx/ISetManager.h"
-#include "systems/GlobalSetRegistry.h"
-#include "systems/MaterialSetRegistry.h"
+#include "VulkanSetManager.h"
 #include "gfx/renderers/Renderer.h"
 
 namespace BHive
@@ -68,13 +66,6 @@ namespace BHive
 	VulkanPipeline::VulkanPipeline()
 		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
-	}
-
-	VulkanPipeline::~VulkanPipeline()
-	{
-		LOG_TRACE("VulkanPipeline Destructor Called")
-
-		//mPipeline.clear();
 	}
 
 	void VulkanPipeline::Init(const GraphicsPipelineState& state)
@@ -150,16 +141,9 @@ namespace BHive
 
 		mPipeline = vk::raii::Pipeline(mDevice, nullptr, pipeline_info);
 
-		//create sets
-		if (mShader->HasSet(BATCH_SET_INDEX))
-		{
-			mBatchSetManager = RenderCommand::GetGraphicsAPI()->CreateSetManager(this, BATCH_SET_INDEX);
-			mBatchSetManager->SetBuffer(1, Renderer::Get().GetModelBuffer().GetObjectBuffer());
-		}
-
-		RenderCommand::GetGraphicsAPI<VulkanRendererAPI>()->OnPipelineCreated(this);
-
 		mBindPoint = vk::PipelineBindPoint::eGraphics;
+
+		BindGlobalResources();
 	}
 
 	void VulkanPipeline::Init(const ComputePipelineState &state)
@@ -205,104 +189,62 @@ namespace BHive
 		mPipeline = vk::raii::Pipeline(mDevice, nullptr, createInfo);
 
 		mBindPoint = vk::PipelineBindPoint::eCompute;
+
+		BindGlobalResources();
 	}
 
 	void VulkanPipeline::Bind()
 	{
-		auto api = Renderer::Get().GetGraphicsAPI<VulkanRendererAPI>();
-		auto& shader = *mShader;
-		auto& set_hashes = shader.GetSetHashes();
-		auto &refl = mProgram->GetRefl();
-		auto& layout = mPipelineLayout;
-		auto maxSet = mShader->GetMaxSet();
-		uint64_t h0 = set_hashes.at(GLOBAL_SET_INDEX);
-
-		RenderCommand::SubmitCommand("Bind Pipeline && Descriptor Sets",
-			[=, &layout](IRendererContext &ctx) 
+		RenderCommand::SubmitCommand("Update sets -> Bind pipeline && sets",
+			[=](IRendererContext &ctx) 
 			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-
-				
-				if (mObjectSetManager)
-					mObjectSetManager->Update(vk_ctx.Frame);
-
-				if (mBatchSetManager)
-				{
-					mBatchSetManager->Update(vk_ctx.Frame);
-				}
-
+				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
+				const auto frame = vk_ctx.Frame;
 				vk_ctx.CommandBuffer.bindPipeline(mBindPoint, mPipeline); 
 
-				auto &registry = GetSubSystem<GlobalSetRegistry>();
-
-				auto globalManager = registry.Find(h0);
-
-				if (globalManager)
+				for (auto& [setIndex, manager] : mSetManagers)
 				{
-					auto set = globalManager->GetNativeSet(vk_ctx.Frame).As<vk::DescriptorSet>();
-					//const auto dynamicOffset = vk_ctx.ViewIndex * sizeof(FView);
-
-					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, layout, GLOBAL_SET_INDEX, *set, {});
-				}
-					
-
-				if (mObjectSetManager)
-				{
-					auto set = mObjectSetManager->GetNativeSet(vk_ctx.Frame).As<vk::DescriptorSet>();
-					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, layout, OBJECT_SET_INDEX, *set, {});
-				}
-
-				if (mBatchSetManager)
-				{
-					
-					auto set = mBatchSetManager->GetNativeSet(vk_ctx.Frame).As<vk::DescriptorSet>();
-					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, layout, BATCH_SET_INDEX, *set, {});
+					auto set = manager->GetNativeSet(frame).As<vk::DescriptorSet>();
+					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, mPipelineLayout, setIndex, *set, {});
 				}
 			});
 	}
 
 	void VulkanPipeline::BindImmediate(vk::CommandBuffer cmd)
 	{
-		auto &shader = *mShader;
-		auto &set_hashes = shader.GetSetHashes();
-		auto &refl = mProgram->GetRefl();
-		auto &layout = mPipelineLayout;
-		auto maxSet = mShader->GetMaxSet();
-		uint64_t h0 = set_hashes.at(GLOBAL_SET_INDEX);
-
-		if (mObjectSetManager)
-			mObjectSetManager->Update(0);
-
-		if (mBatchSetManager)
-		{
-			mBatchSetManager->Update(0);
-		}
-
 		cmd.bindPipeline(mBindPoint, mPipeline);
 
-		auto &registry = GetSubSystem<GlobalSetRegistry>();
-
-		auto globalManager = registry.Find(h0);
-
-		if (globalManager)
+		for (auto &[setIndex, manager] : mSetManagers)
 		{
-			auto set = globalManager->GetNativeSet(0).As<vk::DescriptorSet>();
+			auto set = manager->GetNativeSet(0).As<vk::DescriptorSet>();
+			cmd.bindDescriptorSets(mBindPoint, mPipelineLayout, setIndex, *set, {});
+		}
+	}
 
-			cmd.bindDescriptorSets(mBindPoint, layout, GLOBAL_SET_INDEX, *set, {});
+	void VulkanPipeline::UpdateSets(uint32_t frame)
+	{
+		for (auto &[setIndex, manager] : mSetManagers)
+			manager->Update(frame);
+	}
+
+	VulkanSetManager *VulkanPipeline::GetOrCreateSet(uint32_t setIndex)
+	{
+		if (!mSetManagers.contains(setIndex))
+		{
+			auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
+			vk::DescriptorPool pool = api->GetDescriptorPool();
+			auto refl = mProgram->GetRefl();
+			auto layout = mShader->GetDescriptorSetLayout(setIndex);
+
+			auto manager = CreateRef<VulkanSetManager>(VulkanBackend::GetLogicalDevice(), pool, layout, setIndex, refl);
+
+			const auto& shaderName = mProgram->GetName();
+			manager->SetDebugName(std::format("{}_Set{}", shaderName, setIndex));
+
+			mSetManagers.emplace(setIndex, manager);
 		}
 
-		if (mObjectSetManager)
-		{
-			auto set = mObjectSetManager->GetNativeSet(0).As<vk::DescriptorSet>();
-			cmd.bindDescriptorSets(mBindPoint, layout, OBJECT_SET_INDEX, *set, {});
-		}
-
-		if (mBatchSetManager)
-		{
-
-			auto set = mBatchSetManager->GetNativeSet(0).As<vk::DescriptorSet>();
-			cmd.bindDescriptorSets(mBindPoint, layout, BATCH_SET_INDEX, *set, {});
-		}
+		return mSetManagers.at(setIndex).get();
 	}
 
 	Ref<ShaderProgram> VulkanPipeline::GetShaderProgram() const
@@ -315,11 +257,75 @@ namespace BHive
 		return mShader->GetDescriptorSetLayout(set);
 	}
 
-
-	void VulkanPipeline::SetObjectSetManager(ISetManager *manager)
+	void VulkanPipeline::BindGlobalResources()
 	{
-		mObjectSetManager = manager;
-	}
+		const auto &setIndex = GLOBAL_SET_INDEX;
+		auto &globals = Renderer::Get().GetGlobalResources();
+		auto &bindings = mProgram->GetRefl().GetSetBindings(setIndex);
+		const auto& shaderName = mProgram->GetName();
+	
+		if (bindings.empty())
+		{
+			LOG_INFO("GlobalSetRegistry: Shader '{}' has no global resources in set {}, skipping global binding.", shaderName, setIndex);
+			return;
+		}
 
+		auto set = GetOrCreateSet(setIndex);
+
+		for (auto &r : bindings)
+		{
+			const std::string semantic = r.Semantic.empty() ? r.name : r.Semantic;
+
+			if (r.Semantic.empty())
+			{
+				LOG_ERROR(
+					"Shader '{}' has resource '{}' in set {} binding {} with NO semantic tag.\n"
+					"Add: // @semantic <Name> above the declaration.",
+					shaderName, r.name, setIndex, r.binding);
+			}
+
+			auto *res = globals.Find(semantic);
+
+			if (!res)
+			{
+				auto guess = globals.GuessSemanticFromName(semantic);
+				if (!guess.empty())
+				{
+					LOG_WARN(
+						"Shader '{}' variable '{}' requested semantic '{}', but it was not found.\n"
+						"   Did you mean semantic '{}'?",
+						shaderName, r.name, semantic, guess);
+				}
+
+				LOG_ERROR(
+					"GlobalSet Binding Error:\n"
+					"  Shader: {}\n"
+					"  Set: {}\n"
+					"  Binding: {}\n"
+					"  Shader Variable: '{}'\n"
+					"  Semantic Requested: '{}'\n"
+					"  BUT GlobalResources does not contain this semantic.\n"
+					"  Registered Global Semantics: {}",
+					shaderName, setIndex, r.binding, r.name, semantic, globals.DebugListSemantics());
+
+				ASSERT(false, "Missing global semantic")
+
+				continue;
+			}
+			else if (res->IsBuffer() && IsBuffer(r.kind))
+			{
+				set->SetBuffer(r.binding, res->BufferRef);
+				LOG_INFO("GlobalSet: bound BUFFER '{}' (semantic '{}') at set {}, binding {}", r.name, semantic, setIndex, r.binding);
+				continue;
+			}
+
+			if (IsTexture(r.kind))
+			{
+				set->SetTexture(r.binding, res->TextureRef);
+				LOG_INFO("GlobalSet: bound TEXTURE '{}' (semantic '{}') at set {}, binding {}", r.name, semantic, setIndex, r.binding);
+				continue;
+			}
+		}
+	}
 
 } // namespace BHive

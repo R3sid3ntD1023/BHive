@@ -59,6 +59,13 @@ namespace BHive
 			break;
 		}
 
+#ifdef VULKAN_ERRORS_WITH_ASSERT
+		if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+		{
+			ASSERT(false);
+		}
+#endif
+
 		return false;
 	}
 

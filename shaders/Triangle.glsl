@@ -5,6 +5,7 @@
 layout(location = 0) in vec3 vPosition;
 layout(location = 1) in vec2 vTexCoord;
 
+// @semantic Camera
 layout(std140, set = 0, binding = 0) uniform CameraBuffer
 {
 	mat4 uProjection;

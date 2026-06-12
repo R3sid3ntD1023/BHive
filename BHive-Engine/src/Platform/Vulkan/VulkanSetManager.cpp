@@ -35,7 +35,7 @@ namespace BHive
 		RenderCommand::SubmitResourceUpdate(
 			[=](auto &ctx)
 			{
-				auto vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+				auto& vk_ctx = ctx.As<FVulkanRendererContext>();
 
 				auto &set = *mSets[vk_ctx.Frame];
 				auto info = BuildBufferInfo(local);
@@ -59,9 +59,9 @@ namespace BHive
 
 		RenderCommand::SubmitCommand(
 			"Bind output mip",
-			[=](auto &ctx)
+			[=](IRendererContext &ctx)
 			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
 
 				auto &set = *mSets[vk_ctx.Frame];
 				auto imageInfo = BuildImageInfo(local, mip);
@@ -128,6 +128,15 @@ namespace BHive
 		return NativeHandle::FromPtr(&*mSets[frame]);
 	}
 
+	void VulkanSetManager::SetDebugName(const std::string &name)
+	{
+		for (uint32_t i = 0; i < mSets.size(); i++)
+		{
+			auto setName = std::format("{}[{}]", name, i);
+			VulkanBackend::SetObjectName((vk::DescriptorSet)mSets.at(i), setName);
+		}
+	}
+
 	void VulkanSetManager::AllocateSets()
 	{
 		std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, mLayout);
@@ -138,10 +147,6 @@ namespace BHive
 		mSets.reserve(MAX_FRAMES_IN_FLIGHT);
 
 		mSets = vk::raii::DescriptorSets(mDevice, alloc_info);
-		for (size_t i = 0; i < mSets.size(); i++)
-		{
-			VulkanBackend::SetObjectName(*mSets[i], std::format("FrameSet{}", i));
-		}
 	}
 
 	vk::DescriptorBufferInfo VulkanSetManager::BuildBufferInfo(const FBindingInfo &b) const
