@@ -3,7 +3,6 @@
 #include "core/Core.h"
 #include "gfx/Enumerations.h"
 #include "gfx/shader/ShaderProgram.h"
-#include "gfx/ISetManager.h"
 
 namespace BHive
 {

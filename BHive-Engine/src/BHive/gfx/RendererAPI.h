@@ -3,7 +3,6 @@
 #include "core/Core.h"
 #include "Enumerations.h"
 #include "RenderGraph.h"
-#include "ISetManager.h"
 
 namespace BHive
 {

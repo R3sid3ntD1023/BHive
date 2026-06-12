@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VulkanCore.h"
+#include "gfx/Enumerations.h"
 #include "gfx/shader/ShaderReflection.h"
 #include "gfx/NativeHandle.h"
 
@@ -9,56 +10,51 @@ namespace BHive
 	class BufferBase;
 	class Texture;
 
+	enum class EBindingUpdateRate
+	{
+		Static,
+		PerFrame,
+		PerPass
+	};
+
+	struct FBindingInfo
+	{
+		uint32_t Binding = 0;
+		EResourceType Type{};
+		EResourceCategory Category{};
+		EBindingUpdateRate UpdateRate{};
+
+		Ref<BufferBase> Buffer;
+		Ref<Texture> Texture;
+		uint32_t MipLevel = 0;
+	};
+
 	class DescriptorSetManager
 	{
 	public:
-		struct FImageWriteInfo
-		{
-			uint32_t Binding{};
-			uint32_t BaseMipLevel{0};
-			Ref<Texture> TetxureRef;
-		};
-
-		struct FBufferWriteInfo
-		{
-			uint32_t Binding{0};
-			Ref<BufferBase> BufferRef;
-		};
-
-		enum class EBindingUpdateRate
-		{
-			Static,
-			PerFrame,
-			PerPass
-		};
-
-		struct FBindingInfo
-		{
-			uint32_t Binding = 0;
-			EResourceType Type{};
-			EResourceCategory Category{};
-			EBindingUpdateRate UpdateRate{};
-
-			Ref<BufferBase> Buffer;
-			Ref<Texture> Texture;
-			uint32_t MipLevel = 0;
-		};
-
-	public:
-		DescriptorSetManager(vk::raii::Device &device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex,
+		DescriptorSetManager(vk::raii::Device& device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex,
 			const FShaderReflectionLookUp& refl);
 
-		void Write(const FBufferWriteInfo& writeInfo, uint32_t frame);
+		~DescriptorSetManager()  = default;
 
-		void Write(const FImageWriteInfo& writeInfo, uint32_t frame);
+		void SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer);
+
+		void SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip = 0);
+
+		void SetTextureImmediate(uint32_t binding, const Ref<Texture> &texture, uint32_t mip = 0);
 
 		void Update(uint32_t frame) ;
 
-		NativeHandle GetNativeSet(uint32_t frame);
+		NativeHandle GetNativeSet(uint32_t frame) ;
+
+		void SetDebugName(const std::string &name);
+
+		const std::vector<FBindingInfo> &GetBindings() const { return mBindings; }
+
+		uint32_t GetSetIndex() const { return mSetIndex; }
 
 	private:
-
-		void BuildBindings(const FShaderReflectionLookUp &refl, uint32_t setIndex);
+		void BuildBindings(const FShaderReflectionLookUp &refl);
 
 		static EBindingUpdateRate InferUpdateRate(EResourceType type, uint32_t setIndex);
 
@@ -66,7 +62,7 @@ namespace BHive
 
 		vk::DescriptorBufferInfo BuildBufferInfo(const FBindingInfo &b) const;
 
-		vk::DescriptorImageInfo BuildImageInfo(const FBindingInfo& bindInfo) const;
+		vk::DescriptorImageInfo BuildImageInfo(const FBindingInfo& bindInfo, uint32_t mip) const;
 
 		FBindingInfo *FindBinding(uint32_t binding);
 
@@ -78,6 +74,8 @@ namespace BHive
 		vk::DescriptorSetLayout mLayout;
 		
 		vk::raii::DescriptorSets mSets = VK_NULL_HANDLE;
+
+		uint32_t mSetIndex;
 
 		std::vector<FBindingInfo> mBindings;
 	};

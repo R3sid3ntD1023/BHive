@@ -4,7 +4,7 @@
 #include "VulkanConverters.h"
 #include "VulkanShader.h"
 #include "gfx/shader/ShaderProgram.h"
-#include "VulkanSetManager.h"
+#include "DescriptorSetManager.h"
 #include "gfx/renderers/Renderer.h"
 
 namespace BHive
@@ -227,7 +227,7 @@ namespace BHive
 			manager->Update(frame);
 	}
 
-	VulkanSetManager *VulkanPipeline::GetOrCreateSet(uint32_t setIndex)
+	DescriptorSetManager *VulkanPipeline::GetOrCreateSet(uint32_t setIndex)
 	{
 		if (!mSetManagers.contains(setIndex))
 		{
@@ -236,7 +236,7 @@ namespace BHive
 			auto refl = mProgram->GetRefl();
 			auto layout = mShader->GetDescriptorSetLayout(setIndex);
 
-			auto manager = CreateRef<VulkanSetManager>(VulkanBackend::GetLogicalDevice(), pool, layout, setIndex, refl);
+			auto manager = CreateRef<DescriptorSetManager>(VulkanBackend::GetLogicalDevice(), pool, layout, setIndex, refl);
 
 			const auto& shaderName = mProgram->GetName();
 			manager->SetDebugName(std::format("{}_Set{}", shaderName, setIndex));

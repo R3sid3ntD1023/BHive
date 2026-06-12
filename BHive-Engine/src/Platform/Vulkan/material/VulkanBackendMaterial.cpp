@@ -10,7 +10,7 @@
 #include "gfx/shader/ShaderReflection.h"
 #include "gfx/Buffers.h"
 #include "Platform/Vulkan/VulkanShader.h"
-#include "Platform/Vulkan/VulkanSetManager.h"
+#include "Platform/Vulkan/DescriptorSetManager.h"
 
 namespace BHive
 {

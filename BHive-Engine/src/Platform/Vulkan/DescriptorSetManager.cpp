@@ -3,6 +3,8 @@
 #include "gfx/BufferBase.h"
 #include "gfx/Texture.h"
 #include "VulkanConverters.h"
+#include "gfx/RenderCommand.h"
+#include "VulkanRendererAPI.h"
 #include "textures/VulkanImage.h"
 
 namespace BHive
@@ -11,46 +13,118 @@ namespace BHive
 	DescriptorSetManager::DescriptorSetManager(vk::raii::Device& device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex, const FShaderReflectionLookUp &refl)
 		: mDevice(device),
 		  mPool(pool),
-		  mLayout(layout)
+		  mLayout(layout),
+		  mSetIndex(setIndex)
 	{
 
-		BuildBindings(refl, setIndex);
+		BuildBindings(refl);
 		AllocateSets();		
 	}
 
-	void DescriptorSetManager::Write(const FBufferWriteInfo &writeInfo, uint32_t frame)
+	void DescriptorSetManager::SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer)
 	{
-		FBindingInfo *bindingInfo = FindBinding(writeInfo.Binding);
+		FBindingInfo *bindingInfo = FindBinding(binding);
 
 		if (!bindingInfo)
 			return;
 
-		bindingInfo->Buffer = writeInfo.BufferRef;
+		bindingInfo->Buffer = buffer;
 
 		FBindingInfo local = *bindingInfo;
 
-		auto &set = *mSets[frame];
-		auto info = BuildBufferInfo(local);
-		vk::WriteDescriptorSet write(set, local.Binding, 0, ToVkType(local.Type), nullptr, info);
+		RenderCommand::SubmitResourceUpdate(
+			[=](auto &ctx)
+			{
+				auto& vk_ctx = ctx.As<FVulkanRendererContext>();
+
+				auto &set = *mSets[vk_ctx.Frame];
+				auto info = BuildBufferInfo(local);
+				vk::WriteDescriptorSet write(set, local.Binding, 0, ToVkType(local.Type), nullptr, info);
+				mDevice.updateDescriptorSets(write, {});
+			});
+		
+	}
+
+	void DescriptorSetManager::SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip)
+	{
+		FBindingInfo* bindingInfo = FindBinding(binding);
+
+		if (!bindingInfo)
+			return;
+
+		FBindingInfo local = *bindingInfo;
+		local.Texture = texture;
+		local.MipLevel = mip;
+		local.Binding = binding;
+
+		RenderCommand::SubmitCommand(
+			"Bind output mip",
+			[=](IRendererContext &ctx)
+			{
+				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
+
+				auto &set = *mSets[vk_ctx.Frame];
+				auto imageInfo = BuildImageInfo(local, mip);
+				vk::WriteDescriptorSet write(set, local.Binding, 0, ToVkType(local.Type), imageInfo);
+				mDevice.updateDescriptorSets(write, {});
+			});
+	}
+
+	void DescriptorSetManager::SetTextureImmediate(uint32_t binding, const Ref<Texture> &texture, uint32_t mip)
+	{
+		FBindingInfo *bindingInfo = FindBinding(binding);
+
+		if (!bindingInfo)
+			return;
+
+		FBindingInfo local = *bindingInfo;
+		local.Texture = texture;
+		local.MipLevel = mip;
+		local.Binding = binding;
+
+		
+		auto &set = *mSets[0];
+		auto imageInfo = BuildImageInfo(local, mip);
+		vk::WriteDescriptorSet write(set, local.Binding, 0, ToVkType(local.Type), imageInfo);
 		mDevice.updateDescriptorSets(write, {});
 	}
 
-	void DescriptorSetManager::Write(const FImageWriteInfo &writeInfo, uint32_t frame)
+	void DescriptorSetManager::BuildBindings(const FShaderReflectionLookUp &refl)
 	{
-		FBindingInfo *bindingInfo = FindBinding(writeInfo.Binding);
+		auto &setBindings = refl.GetSetBindings(mSetIndex);
+		mBindings.reserve(setBindings.size());
 
-		if (!bindingInfo)
-			return;
+		for (auto &r : setBindings)
+		{
+			FBindingInfo info{};
+			info.Binding = r.binding;
+			info.Type = r.kind;
+			info.Category = GetCategory(r.kind);
+			info.UpdateRate = InferUpdateRate(r.kind, mSetIndex);
+			mBindings.push_back(info);
+		}
+	}
 
-		FBindingInfo local = *bindingInfo;
-		local.Texture = writeInfo.TetxureRef;
-		local.MipLevel = writeInfo.BaseMipLevel;
-		local.Binding = writeInfo.Binding;
+	EBindingUpdateRate DescriptorSetManager::InferUpdateRate(EResourceType type, uint32_t setIndex)
+	{
+		if (setIndex == 0)
+			return EBindingUpdateRate::PerFrame;
 
-		auto &set = *mSets[frame];
-		auto imageInfo = BuildImageInfo(local);
-		vk::WriteDescriptorSet write(set, local.Binding, 0, ToVkType(local.Type), imageInfo);
-		mDevice.updateDescriptorSets(write, {});
+		switch (type)
+		{
+		case EResourceType::UniformBuffer:
+		case EResourceType::StorageBuffer:
+		case EResourceType::InputAttachment:
+			return EBindingUpdateRate::PerFrame;
+		case EResourceType::StorageImage:
+			return EBindingUpdateRate::PerPass;
+		case EResourceType::CombinedImageSampler:
+		case EResourceType::SeperatedImage:
+		case EResourceType::SeperatedSampler:
+			return EBindingUpdateRate::Static;
+		default:
+			return EBindingUpdateRate::PerFrame;
+		}
 	}
 
 	void DescriptorSetManager::Update(uint32_t frame)
@@ -77,7 +151,7 @@ namespace BHive
 				if (!b.Texture)
 					continue;
 
-				auto info = BuildImageInfo(b);
+				auto info = BuildImageInfo(b, b.MipLevel);
 				writes.emplace_back(set, b.Binding, 0, ToVkType(b.Type), info);
 			}
 		}
@@ -92,41 +166,12 @@ namespace BHive
 		return NativeHandle::FromPtr(&*mSets[frame]);
 	}
 
-	void DescriptorSetManager::BuildBindings(const FShaderReflectionLookUp &refl, uint32_t setIndex)
+	void DescriptorSetManager::SetDebugName(const std::string &name)
 	{
-		auto &setBindings = refl.GetSetBindings(setIndex);
-		mBindings.reserve(setBindings.size());
-
-		for (auto &r : setBindings)
+		for (uint32_t i = 0; i < mSets.size(); i++)
 		{
-			FBindingInfo info{};
-			info.Binding = r.binding;
-			info.Type = r.kind;
-			info.Category = GetCategory(r.kind);
-			info.UpdateRate = InferUpdateRate(r.kind, setIndex);
-			mBindings.push_back(info);
-		}
-	}
-
-	DescriptorSetManager::EBindingUpdateRate DescriptorSetManager::InferUpdateRate(EResourceType type, uint32_t setIndex)
-	{
-		if (setIndex == 0)
-			return EBindingUpdateRate::PerFrame;
-
-		switch (type)
-		{
-		case EResourceType::UniformBuffer:
-		case EResourceType::StorageBuffer:
-		case EResourceType::InputAttachment:
-			return EBindingUpdateRate::PerFrame;
-		case EResourceType::StorageImage:
-			return EBindingUpdateRate::PerPass;
-		case EResourceType::CombinedImageSampler:
-		case EResourceType::SeperatedImage:
-		case EResourceType::SeperatedSampler:
-			return EBindingUpdateRate::Static;
-		default:
-			return EBindingUpdateRate::PerFrame;
+			auto setName = std::format("{}[{}]", name, i);
+			VulkanBackend::SetObjectName((vk::DescriptorSet)mSets.at(i), setName);
 		}
 	}
 
@@ -140,10 +185,6 @@ namespace BHive
 		mSets.reserve(MAX_FRAMES_IN_FLIGHT);
 
 		mSets = vk::raii::DescriptorSets(mDevice, alloc_info);
-		for (size_t i = 0; i < mSets.size(); i++)
-		{
-			VulkanBackend::SetObjectName(*mSets[i], std::format("FrameSet{}", i));
-		}
 	}
 
 	vk::DescriptorBufferInfo DescriptorSetManager::BuildBufferInfo(const FBindingInfo &b) const
@@ -154,7 +195,7 @@ namespace BHive
 		return vk::DescriptorBufferInfo(native->GetBuffer(), 0, native->Size);
 	}
 
-	vk::DescriptorImageInfo DescriptorSetManager::BuildImageInfo(const FBindingInfo &bindInfo) const
+	vk::DescriptorImageInfo DescriptorSetManager::BuildImageInfo(const FBindingInfo &bindInfo, uint32_t mip) const
 	{
 		ASSERT(bindInfo.Texture)
 		
@@ -167,7 +208,6 @@ namespace BHive
 
 		const uint32_t layer = 0;
 		const uint32_t face = 0;
-		const uint32_t mip = bindInfo.MipLevel;
 
 		//LOG_TRACE("BuildImageInfo: binding={}, type={}, tex='{}', mip={}", bindInfo.Binding, int(bindInfo.Type), native.DebugName, mip);
 
@@ -207,7 +247,7 @@ namespace BHive
 		return info;
 	}
 
-	DescriptorSetManager::FBindingInfo *DescriptorSetManager::FindBinding(uint32_t binding)
+	FBindingInfo *DescriptorSetManager::FindBinding(uint32_t binding)
 	{
 		auto it =  std::find_if(mBindings.begin(), mBindings.end(), [binding](const FBindingInfo &b) { return b.Binding == binding; });
 		return it != mBindings.end() ?  &(*it) : nullptr;
