@@ -112,8 +112,8 @@ namespace BHive
 
 				for (auto& [setIndex, manager] : mSetManagers)
 				{
-					auto set = manager->GetNativeSet(frame).As<vk::DescriptorSet>();
-					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, mPipelineLayout, setIndex, *set, {});
+					auto set = manager->GetFrameSet(frame);
+					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, mPipelineLayout, setIndex, set, {});
 				}
 			});
 	}
@@ -126,8 +126,8 @@ namespace BHive
 
 		for (auto &[setIndex, manager] : mSetManagers)
 		{
-			auto set = manager->GetNativeSet(0).As<vk::DescriptorSet>();
-			cmd.bindDescriptorSets(mBindPoint, mPipelineLayout, setIndex, *set, {});
+			auto set = manager->GetFrameSet(0);
+			cmd.bindDescriptorSets(mBindPoint, mPipelineLayout, setIndex, set, {});
 		}
 	}
 

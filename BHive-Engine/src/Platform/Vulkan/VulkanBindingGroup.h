@@ -33,10 +33,10 @@ namespace BHive
 	class VulkanBindingGroup : public IBindingGroup
 	{
 	public:
-		VulkanBindingGroup(vk::raii::Device& device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex,
+		VulkanBindingGroup(vk::Device device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex,
 			const FShaderReflectionLookUp& refl);
 
-		~VulkanBindingGroup()  = default;
+		~VulkanBindingGroup();
 
 		void SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer);
 
@@ -44,7 +44,7 @@ namespace BHive
 
 		void Update(uint32_t frame) ;
 
-		NativeHandle GetNativeSet(uint32_t frame) ;
+		vk::DescriptorSet GetFrameSet(uint32_t frame) ;
 
 		void SetDebugName(const std::string &name);
 
@@ -86,24 +86,24 @@ namespace BHive
 
 		MaterialKey BuildMaterialKey() const;
 
-		vk::raii::DescriptorSet AllocateMaterialSets();
+		vk::DescriptorSet AllocateMaterialSets();
 
 		void WriteDescriptorSet(vk::DescriptorSet set);
 
 	private:
-		vk::raii::Device& mDevice;
+		vk::Device mDevice;
 
 		vk::DescriptorPool mPool;
 
 		vk::DescriptorSetLayout mLayout;
 		
-		vk::raii::DescriptorSets mSets = VK_NULL_HANDLE;
+		std::vector<vk::DescriptorSet> mSets;
 
 		uint32_t mSetIndex;
 
 		std::vector<FBindingInfo> mBindings;
 
-		std::unordered_map<MaterialKey, vk::raii::DescriptorSet, MaterialKeyHash> mMaterialCache;
+		std::unordered_map<MaterialKey, vk::DescriptorSet, MaterialKeyHash> mMaterialCache;
 	};
 
 	

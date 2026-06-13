@@ -3,13 +3,11 @@
 #include "gfx/BufferBase.h"
 #include "gfx/Texture.h"
 #include "VulkanConverters.h"
-#include "gfx/RenderCommand.h"
-#include "VulkanRendererAPI.h"
 
 namespace BHive
 {
 
-	VulkanBindingGroup::VulkanBindingGroup(vk::raii::Device& device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex, const FShaderReflectionLookUp &refl)
+	VulkanBindingGroup::VulkanBindingGroup(vk::Device device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex, const FShaderReflectionLookUp &refl)
 		: mDevice(device),
 		  mPool(pool),
 		  mLayout(layout),
@@ -18,6 +16,13 @@ namespace BHive
 
 		BuildBindings(refl);
 		AllocateSets();		
+	}
+
+	VulkanBindingGroup::~VulkanBindingGroup()
+	{
+		mDevice.freeDescriptorSets(mPool, mSets);
+		for (auto &[_, set] : mMaterialCache)
+			mDevice.freeDescriptorSets(mPool, set);
 	}
 
 	void VulkanBindingGroup::SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer)
@@ -97,10 +102,10 @@ namespace BHive
 		WriteDescriptorSet(set);
 	}
 
-	NativeHandle VulkanBindingGroup::GetNativeSet(uint32_t frame)
+	vk::DescriptorSet VulkanBindingGroup::GetFrameSet(uint32_t frame)
 	{
 		ASSERT(frame < MAX_FRAMES_IN_FLIGHT)
-		return NativeHandle::FromPtr(&*mSets[frame]);
+		return mSets[frame];
 	}
 
 	void VulkanBindingGroup::SetDebugName(const std::string &name)
@@ -121,7 +126,7 @@ namespace BHive
 		mSets.clear();
 		mSets.reserve(MAX_FRAMES_IN_FLIGHT);
 
-		mSets = vk::raii::DescriptorSets(mDevice, alloc_info);
+		mSets = mDevice.allocateDescriptorSets(alloc_info);
 	}
 
 	vk::DescriptorBufferInfo VulkanBindingGroup::BuildBufferInfo(const FBindingInfo &b) const
@@ -218,11 +223,12 @@ namespace BHive
 		return key;
 	}
 
-	vk::raii::DescriptorSet VulkanBindingGroup::AllocateMaterialSets()
+	vk::DescriptorSet VulkanBindingGroup::AllocateMaterialSets()
 	{
+		auto &device = VulkanBackend::GetLogicalDevice();
 		vk::DescriptorSetAllocateInfo allocInfo{mPool, 1, &mLayout};
 		auto sets = mDevice.allocateDescriptorSets(allocInfo);
-		return std::move(sets.front());
+		return sets.front();
 	}
 
 	void VulkanBindingGroup::WriteDescriptorSet(vk::DescriptorSet set)
@@ -259,7 +265,11 @@ namespace BHive
 		}
 
 		if (!writes.empty())
-			mDevice.updateDescriptorSets(writes, {});
+		{
+			auto &device = VulkanBackend::GetLogicalDevice();
+			device.updateDescriptorSets(writes, {});
+		}
+			
 	}
 
 } // namespace BHive
