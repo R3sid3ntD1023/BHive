@@ -24,8 +24,6 @@ namespace BHive
 
 		void BindImmediate(vk::CommandBuffer cmd, Pipeline* pipeline);
 
-		void BindTextureImmediate(const std::string &name, const Ref<Texture> &texture, uint32_t mip, Pipeline* pipeline);
-
 		void BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip , Pipeline* pipeline) override;
 
 		void Set(const std::string &name, const void *data, size_t size) override;

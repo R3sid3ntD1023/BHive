@@ -391,13 +391,11 @@ namespace BHive
 		cmd.beginDebugUtilsLabelEXT(labelInfo);
 
 		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
-		vkPipeline->BindImmediate(cmd);
+		FVulkanComputeBindings bindings(vkPipeline);
 
-		auto bindings = CreateRef<FVulkanComputeBindings>(vkPipeline);
+		builder(bindings);
 
-		builder(*bindings);
-
-		auto &images = bindings->GetBoundImages();
+		auto &images = bindings.GetBoundImages();
 		for (auto& [img, isStorage] : images)
 		{
 			auto vkImg = img.Texture->GetNativeHandle().As<VulkanImage>();
@@ -409,11 +407,14 @@ namespace BHive
 				vkImg->Transition(cmd, ImageState::ShaderRead(), sub);
 		}
 
-		bindings->BindImmediate(cmd);
+		bindings.Bind(cmd);
 
 		cmd.dispatch(size.x, size.y, size.z);
 
-		for (auto & [img, isStorage] : images)
+		
+		cmd.endDebugUtilsLabelEXT();
+
+		for (auto &[img, isStorage] : images)
 		{
 			if (!isStorage)
 				continue;
@@ -423,7 +424,6 @@ namespace BHive
 			vkImg->Transition(cmd, ImageState::ShaderRead(), sub);
 		}
 
-		cmd.endDebugUtilsLabelEXT();
 		
 		/*Scope<FVulkanAsycComputePass> pass = CreateScope<FVulkanAsycComputePass>();
 		

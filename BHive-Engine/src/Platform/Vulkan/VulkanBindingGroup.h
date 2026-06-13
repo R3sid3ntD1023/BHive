@@ -4,6 +4,7 @@
 #include "gfx/Enumerations.h"
 #include "gfx/shader/ShaderReflection.h"
 #include "gfx/NativeHandle.h"
+#include "gfx/IBindingGroup.h"
 
 namespace BHive
 {
@@ -29,13 +30,13 @@ namespace BHive
 		uint32_t MipLevel = 0;
 	};
 
-	class DescriptorSetManager
+	class VulkanBindingGroup : public IBindingGroup
 	{
 	public:
-		DescriptorSetManager(vk::raii::Device& device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex,
+		VulkanBindingGroup(vk::raii::Device& device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex,
 			const FShaderReflectionLookUp& refl);
 
-		~DescriptorSetManager()  = default;
+		~VulkanBindingGroup()  = default;
 
 		void SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer);
 

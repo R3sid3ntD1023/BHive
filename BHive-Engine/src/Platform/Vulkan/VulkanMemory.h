@@ -41,6 +41,8 @@ namespace BHive
 
 		vk::ImageUsageFlags Usage;
 
+		vk::ImageViewType ViewType;
+
 		std::string DebugName;
 
 		bool IsCube{false};

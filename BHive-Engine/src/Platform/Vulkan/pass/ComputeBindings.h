@@ -19,9 +19,7 @@ namespace BHive
 
 		virtual void Set(const char *name, const void *data, size_t size) override;
 
-		virtual void Bind() const override;
-
-		void BindImmediate(vk::CommandBuffer cmd) const;
+		void Bind(vk::CommandBuffer cmd) const;
 
 		const auto &GetBoundImages() const { return mImages; }
 

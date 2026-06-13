@@ -13,13 +13,13 @@ namespace BHive
 
 	void FVulkanComputeBindings::StorageImage(const char *name, const FImageInfo &info)
 	{
-		mBackendMaterial->BindTextureImmediate(name, info.Texture, info.BaseMip, mPipeline);
+		mBackendMaterial->BindTexture(name, info.Texture, info.BaseMip, mPipeline);
 		mImages.emplace_back(info, true);
 	}
 
 	void FVulkanComputeBindings::SampledImage(const char *name, const FImageInfo &info)
 	{
-		mBackendMaterial->BindTextureImmediate(name, info.Texture, info.BaseMip, mPipeline);
+		mBackendMaterial->BindTexture(name, info.Texture, info.BaseMip, mPipeline);
 		mImages.emplace_back(info, false);
 	}
 
@@ -28,12 +28,7 @@ namespace BHive
 		mBackendMaterial->Set(name, data, size);
 	}
 
-	void FVulkanComputeBindings::Bind() const
-	{
-		mBackendMaterial->Bind(mPipeline);
-	}
-
-	void FVulkanComputeBindings::BindImmediate(vk::CommandBuffer cmd) const
+	void FVulkanComputeBindings::Bind(vk::CommandBuffer cmd) const
 	{
 		mBackendMaterial->BindImmediate(cmd, mPipeline);
 	}

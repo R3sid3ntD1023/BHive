@@ -10,7 +10,7 @@
 #include "gfx/shader/ShaderReflection.h"
 #include "gfx/Buffers.h"
 #include "Platform/Vulkan/VulkanShader.h"
-#include "Platform/Vulkan/DescriptorSetManager.h"
+#include "Platform/Vulkan/VulkanBindingGroup.h"
 
 namespace BHive
 {
@@ -67,13 +67,6 @@ namespace BHive
 
 		BindToPipeline(vkPipeline);
 
-		RenderCommand::SubmitResourceUpdate(
-			[=](IRendererContext &ctx)
-			{
-				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
-				vkPipeline->UpdateSets(vk_ctx.Frame);
-			});
-
 		pipeline->Bind();
 		
 		RenderCommand::SubmitCommand(
@@ -98,8 +91,6 @@ namespace BHive
 
 		BindToPipeline(vk_Pipeline);
 
-		vk_Pipeline->UpdateSets(0);
-
 		vk_Pipeline->BindImmediate(cmd);
 
 		// Update push constants
@@ -108,24 +99,6 @@ namespace BHive
 			vk::PushConstantsInfo push_info(*pipeline_layout, ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size, mPushConstantData.data() + pc.Offset);
 			cmd.pushConstants2(push_info);
 		}
-	}
-
-	void VulkanBackendMaterial::BindTextureImmediate(const std::string &name, const Ref<Texture> &texture, uint32_t mip, Pipeline* pipeline)
-	{
-		if (!texture)
-			return;
-
-		if (!mTargetSet.Samplers.contains(name))
-		{
-			const auto& programName = mProgram->GetName();
-			LOG_ERROR("VulkanBackendMaterial::BindTexture - No sampler reflection for name {} : program {}", name, programName);
-			return;
-		}
-
-		auto &smp = mTargetSet.Samplers.at(name);
-
-		auto set = Cast<VulkanPipeline>(pipeline)->GetOrCreateSet(MATERIAL_SET_INDEX);	
-		set->SetTextureImmediate(smp.Binding, texture, mip);
 	}
 
 	void VulkanBackendMaterial::BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip, Pipeline* pipeline)
@@ -139,8 +112,9 @@ namespace BHive
 			return;
 		}
 
+		
 		auto &smp = mTargetSet.Samplers.at(name);
-		auto set = Cast<VulkanPipeline>(pipeline)->GetOrCreateSet(MATERIAL_SET_INDEX);
+		auto set = Cast<VulkanPipeline>(pipeline)->GetOrCreateBindingGroup(MATERIAL_SET_INDEX);
 		set->SetTexture(smp.Binding, texture, mip);
 	}
 
@@ -187,7 +161,7 @@ namespace BHive
 		if (!shader.HasSet(MATERIAL_SET_INDEX))
 			return;
 
-		auto set = pipeline->GetOrCreateSet(MATERIAL_SET_INDEX);
+		auto set = pipeline->GetOrCreateBindingGroup(MATERIAL_SET_INDEX);
 		auto& setBindings = mReflectionLookupTablePtr->GetSetBindings(MATERIAL_SET_INDEX);
 
 		for (auto& r : setBindings)

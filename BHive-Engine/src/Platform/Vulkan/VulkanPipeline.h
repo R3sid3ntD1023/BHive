@@ -7,7 +7,7 @@
 namespace BHive
 {
 	class ShaderProgram;
-	class DescriptorSetManager;
+	class VulkanBindingGroup;
 
 	class BHIVE_API VulkanPipeline : public Pipeline
 	{
@@ -26,7 +26,7 @@ namespace BHive
 
 		void UpdateSets(uint32_t frame);
 
-		DescriptorSetManager *GetOrCreateSet(uint32_t setIndex);
+		IBindingGroup *GetOrCreateBindingGroup(uint32_t groupIndex) override;
 
 		Ref<ShaderProgram> GetShaderProgram() const override;
 
@@ -58,6 +58,6 @@ namespace BHive
 
 		Scope<VulkanShader> mShader;
 
-		std::unordered_map<uint32_t, Ref<DescriptorSetManager>> mSetManagers;
+		std::unordered_map<uint32_t, Ref<VulkanBindingGroup>> mSetManagers;
 	};
 } // namespace BHive

@@ -39,6 +39,9 @@ namespace BHive
 
 	void ImageViewBuilder::Build(GPUImage &img, const ImageViewBuildInfo &base, EViewTopology topo)
 	{
+		//for debugging
+		img.ViewType = base.ViewCI.viewType;
+
 		switch (topo)
 		{
 		case BHive::EViewTopology::Mips2D:

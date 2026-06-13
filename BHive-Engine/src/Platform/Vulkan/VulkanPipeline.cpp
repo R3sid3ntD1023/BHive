@@ -4,7 +4,7 @@
 #include "VulkanConverters.h"
 #include "VulkanShader.h"
 #include "gfx/shader/ShaderProgram.h"
-#include "DescriptorSetManager.h"
+#include "VulkanBindingGroup.h"
 #include "gfx/renderers/Renderer.h"
 
 namespace BHive
@@ -195,11 +195,19 @@ namespace BHive
 
 	void VulkanPipeline::Bind()
 	{
+		RenderCommand::SubmitResourceUpdate(
+			[=](IRendererContext &ctx)
+			{
+				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
+				UpdateSets(vk_ctx.Frame);
+			});
+
 		RenderCommand::SubmitCommand("Update sets -> Bind pipeline && sets",
 			[=](IRendererContext &ctx) 
 			{
 				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
 				const auto frame = vk_ctx.Frame;
+
 				vk_ctx.CommandBuffer.bindPipeline(mBindPoint, mPipeline); 
 
 				for (auto& [setIndex, manager] : mSetManagers)
@@ -212,6 +220,8 @@ namespace BHive
 
 	void VulkanPipeline::BindImmediate(vk::CommandBuffer cmd)
 	{
+		UpdateSets(0);
+
 		cmd.bindPipeline(mBindPoint, mPipeline);
 
 		for (auto &[setIndex, manager] : mSetManagers)
@@ -227,24 +237,24 @@ namespace BHive
 			manager->Update(frame);
 	}
 
-	DescriptorSetManager *VulkanPipeline::GetOrCreateSet(uint32_t setIndex)
+	IBindingGroup *VulkanPipeline::GetOrCreateBindingGroup(uint32_t groupIndex)
 	{
-		if (!mSetManagers.contains(setIndex))
+		if (!mSetManagers.contains(groupIndex))
 		{
 			auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
 			vk::DescriptorPool pool = api->GetDescriptorPool();
 			auto refl = mProgram->GetRefl();
-			auto layout = mShader->GetDescriptorSetLayout(setIndex);
+			auto layout = mShader->GetDescriptorSetLayout(groupIndex);
 
-			auto manager = CreateRef<DescriptorSetManager>(VulkanBackend::GetLogicalDevice(), pool, layout, setIndex, refl);
+			auto manager = CreateRef<VulkanBindingGroup>(VulkanBackend::GetLogicalDevice(), pool, layout, groupIndex, refl);
 
-			const auto& shaderName = mProgram->GetName();
-			manager->SetDebugName(std::format("{}_Set{}", shaderName, setIndex));
+			const auto &shaderName = mProgram->GetName();
+			manager->SetDebugName(std::format("{}_Set{}", shaderName, groupIndex));
 
-			mSetManagers.emplace(setIndex, manager);
+			mSetManagers.emplace(groupIndex, manager);
 		}
 
-		return mSetManagers.at(setIndex).get();
+		return mSetManagers.at(groupIndex).get();
 	}
 
 	Ref<ShaderProgram> VulkanPipeline::GetShaderProgram() const
@@ -270,7 +280,7 @@ namespace BHive
 			return;
 		}
 
-		auto set = GetOrCreateSet(setIndex);
+		auto set = GetOrCreateBindingGroup(setIndex);
 
 		for (auto &r : bindings)
 		{
