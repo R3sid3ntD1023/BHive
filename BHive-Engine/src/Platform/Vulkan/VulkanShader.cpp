@@ -48,6 +48,24 @@ namespace BHive
 		return mDescriptorSetLayouts.contains(setIndex);
 	}
 
+	FPipelineLayoutInfo VulkanShader::GetPipelineLayoutInfo() const
+	{
+		FPipelineLayoutInfo info;
+
+		info.PushConstants = mPushConstantRanges;
+
+		uint32_t maxSet = mMaxSet;
+		info.SetLayouts.resize(maxSet + 1);
+
+		for (auto& [setIndex, layout] : mDescriptorSetLayouts)
+		{
+			info.SetLayouts[setIndex] = layout;
+			info.UsedSets.push_back(setIndex);
+		}
+
+		return info;
+	}
+
 	void VulkanShader::CreateModules(const ShaderAsset &asset)
 	{
 		for (auto &[stage, data] : asset.Stages)

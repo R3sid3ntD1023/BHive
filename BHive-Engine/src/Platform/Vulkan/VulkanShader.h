@@ -14,6 +14,13 @@ namespace BHive
 	using PushConstantRanges = std::vector<vk::PushConstantRange>;
 	using SetHashes = std::map<uint64_t, uint64_t>;
 
+	struct FPipelineLayoutInfo
+	{
+		std::vector<vk::DescriptorSetLayout> SetLayouts;
+		std::vector<vk::PushConstantRange> PushConstants;
+		std::vector<uint32_t> UsedSets;
+	};
+
 	class BHIVE_API VulkanShader 
 	{
 	public:
@@ -26,21 +33,17 @@ namespace BHive
 
 		void Init(const Ref<ShaderAsset> &asset);
 
-		const std::map<uint32_t, vk::raii::DescriptorSetLayout> &GetLayouts() const { return mDescriptorSetLayouts; }
-
 		const uint32_t GetSetCount() const { return (uint32_t)mDescriptorSetLayouts.size(); }
 
 		vk::DescriptorSetLayout GetDescriptorSetLayout(uint32_t set) const;
 
 		const ShaderModules &GetModules() const { return mShaderModules; }
 
-		const PushConstantRanges &GetPushConstantRanges() const { return mPushConstantRanges; }
-
 		const SetHashes& GetSetHashes() const { return mSetHashes; }
 
 		bool HasSet(uint32_t setIndex) const;
 
-		uint32_t GetMaxSet() const { return mMaxSet; }
+		FPipelineLayoutInfo GetPipelineLayoutInfo() const;
 
 	private:
 		void CreateModules(const ShaderAsset& asset);

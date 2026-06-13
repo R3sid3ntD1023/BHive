@@ -47,38 +47,37 @@ namespace BHive
 	void PipelineRegistry::Register(const std::string &name, const Pipeline::GraphicsPipelineState &info)
 	{
 		Entry entry;
-		entry.Info = info;
+		entry.StateInfo = info;
 		mRegistry[name] = entry;
 	}
 
 	void PipelineRegistry::Register(const std::string &name, const Pipeline::ComputePipelineState &info)
 	{
 		Entry entry;
-		entry.Info = info;
+		entry.StateInfo = info;
 		mRegistry[name] = entry;
 	}
 
 	Pipeline *PipelineRegistry::Get(const std::string &name)
 	{
 		auto &entry = mRegistry[name];
-		if (!entry.mPipeline)
+		if (!entry.PipelineRef)
 		{
-			entry.mPipeline = Pipeline::Create();
-
-			std::visit([&](auto &&state) { entry.mPipeline->Init(state);
-				}, entry.Info);
+			entry.PipelineRef = Pipeline::Create();
+			std::visit([&](auto &&state) { entry.PipelineRef->Init(state);
+				}, entry.StateInfo);
 		}
 
-		return entry.mPipeline.get();
+		return entry.PipelineRef.get();
 	}
 
 	void PipelineRegistry::Reload()
 	{
 		for (auto& [name, entry] : mRegistry)
 		{
-			entry.mPipeline = Pipeline::Create();
-			std::visit([&](auto &&state) { entry.mPipeline->Init(state);
-				}, entry.Info);
+			entry.PipelineRef = Pipeline::Create();
+			std::visit([&](auto &&state) { entry.PipelineRef->Init(state);
+				}, entry.StateInfo);
 		}
 	}
 
@@ -86,7 +85,7 @@ namespace BHive
 	{
 		for (auto &[name, entry] : mRegistry)
 		{
-			entry.mPipeline.reset();
+			entry.PipelineRef.reset();
 		}
 	}
 } // namespace BHive

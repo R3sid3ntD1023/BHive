@@ -39,6 +39,14 @@ namespace BHive
 		struct PipelineState
 		{
 			Ref<ShaderProgram> ShaderProgram;
+
+			enum Type
+			{
+				Graphics,
+				Compute
+			};
+
+			virtual Type GetType() const = 0;
 		};
 
 		struct GraphicsPipelineState : public PipelineState
@@ -50,17 +58,19 @@ namespace BHive
 			BlendState Blend{};
 			std::vector<EFormat> ColorAttachmentFormats{};
 			EFormat DepthAttachmentFormat{};
+
+			Type GetType() const override { return Graphics; } 
 		};
 
 		struct ComputePipelineState : public PipelineState
 		{
+			Type GetType() const override { return Compute; } 
 		};
+
 
 		virtual ~Pipeline() = default;
 
-		virtual void Init(const GraphicsPipelineState& state) = 0;
-
-		virtual void Init(const ComputePipelineState &state) = 0;
+		virtual void Init(const PipelineState &state) = 0;
 
 		virtual void Bind() = 0;
 
@@ -94,8 +104,8 @@ namespace BHive
 	private:
 		struct Entry
 		{
-			std::variant<Pipeline::GraphicsPipelineState, Pipeline::ComputePipelineState> Info;
-			Ref<Pipeline> mPipeline;
+			std::variant<Pipeline::GraphicsPipelineState, Pipeline::ComputePipelineState> StateInfo;
+			Ref<Pipeline> PipelineRef;
 		};
 
 	private:

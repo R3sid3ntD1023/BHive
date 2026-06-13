@@ -68,127 +68,27 @@ namespace BHive
 	{
 	}
 
-	void VulkanPipeline::Init(const GraphicsPipelineState& state)
+	void VulkanPipeline::Init(const PipelineState& state)
 	{	
-		mProgram = state.ShaderProgram;
-
-		ASSERT(mProgram)
-
-		mShader = CreateScope<VulkanShader>();
-		mShader->Init(mProgram->GetAssetRef());
-
-		auto config = Convert(state);
-
-		std::vector<vk::PipelineShaderStageCreateInfo> shader_create_infos;
-		auto &modules = mShader->GetModules();
-		for (auto& [stage, module] : modules)
-		{
-			vk::PipelineShaderStageCreateInfo info({} , ToSingleVkStage(stage), *module, "main");
-			shader_create_infos.emplace_back(info);
-		}
-
-		auto& push_constant_ranges = mShader->GetPushConstantRanges();
-		auto &layouts_in = mShader->GetLayouts();
-		auto maxSet = mShader->GetMaxSet();
-
-		std::vector<vk::DescriptorSetLayout> layouts_out(maxSet + 1, VK_NULL_HANDLE);
-
-		for (uint32_t set = 0; set <= maxSet; set++)
-		{
-			if (layouts_in.contains(set))
-				layouts_out[set] = *layouts_in.at(set);
-			else
-			{
-				vk::DescriptorSetLayoutCreateInfo empty_info{};
-				layouts_out[set] = mDevice.createDescriptorSetLayout(empty_info);
-			}
-		}
-			
-		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, layouts_out, push_constant_ranges );
-		mPipelineLayout = mDevice.createPipelineLayout(pipeline_layout_create_info);
-
-		std::vector dynamicStates = {vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eLineWidth, vk::DynamicState::ePrimitiveTopologyEXT, vk::DynamicState::eVertexInputEXT};
-
-		vk::PipelineDynamicStateCreateInfo dynamicStateInfo({}, dynamicStates);
-
-		std::vector<vk::Format> color_attachment_formats;
-		vk::Format depth_attachment_format = ToVkFormat(state.DepthAttachmentFormat);
-
-		for (auto &format : state.ColorAttachmentFormats)
-			color_attachment_formats.emplace_back(ToVkFormat(format));
-
-		vk::PipelineRenderingCreateInfo rendering_info{};
-		rendering_info.setViewMask(0).setColorAttachmentCount(color_attachment_formats.size()).setColorAttachmentFormats(color_attachment_formats)
-			.setDepthAttachmentFormat(depth_attachment_format);
-		
-
-		vk::GraphicsPipelineCreateInfo pipeline_info{};
-		pipeline_info
-			.setStages(shader_create_infos)
-			.setPVertexInputState(&config->InputState)
-			.setPInputAssemblyState(&config->InputAssembly)
-			.setPViewportState(&config->ViewportState)
-			.setPRasterizationState(&config->Rasterazation)
-			.setPMultisampleState(&config->MultiSampling)
-			.setPColorBlendState(&config->ColorBlend)
-			.setPDepthStencilState(&config->DepthStencil)
-			.setPDynamicState(&dynamicStateInfo)
-			.setLayout(mPipelineLayout)
-			.setRenderPass(config->RenderPass)
-			.setSubpass(config->SubPass)
-			.setPNext(&rendering_info);
-
-
-		mPipeline = vk::raii::Pipeline(mDevice, nullptr, pipeline_info);
-
-		mBindPoint = vk::PipelineBindPoint::eGraphics;
-
-		BindGlobalResources();
-	}
-
-	void VulkanPipeline::Init(const ComputePipelineState &state)
-	{
-
+		auto type = state.GetType();
 		mProgram = state.ShaderProgram;
 
 		mShader = CreateScope<VulkanShader>();
 		mShader->Init(mProgram->GetAssetRef());
 
-		auto &modules = mShader->GetModules();
-		auto has_compute_stage = modules.contains(EShaderStage::Compute);
-		if (!has_compute_stage)
-			return;
+		auto info = mShader->GetPipelineLayoutInfo();
 
-		auto& module = modules.at(EShaderStage::Compute);
-		vk::PipelineShaderStageCreateInfo shader_create_info({}, vk::ShaderStageFlagBits::eCompute, *module, "main");
-
-		auto &push_constant_ranges = mShader->GetPushConstantRanges();
-		auto &layouts_in = mShader->GetLayouts();
-		auto maxSet = mShader->GetMaxSet();
-
-		std::vector<vk::DescriptorSetLayout> layouts_out(maxSet + 1, VK_NULL_HANDLE);
-
-		for (uint32_t set = 0; set <= maxSet; set++)
-		{
-			if (layouts_in.contains(set))
-				layouts_out[set] = *layouts_in.at(set);
-			else
-			{
-				vk::DescriptorSetLayoutCreateInfo empty_info{};
-				layouts_out[set] = mDevice.createDescriptorSetLayout(empty_info);
-			}
-		}
-
-		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, layouts_out, push_constant_ranges);
+		vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, info.SetLayouts, info.PushConstants);
 		mPipelineLayout = mDevice.createPipelineLayout(pipeline_layout_create_info);
 
-		vk::ComputePipelineCreateInfo createInfo{};
-		createInfo.setStage(shader_create_info);
-		createInfo.setLayout(mPipelineLayout);
-
-		mPipeline = vk::raii::Pipeline(mDevice, nullptr, createInfo);
-
-		mBindPoint = vk::PipelineBindPoint::eCompute;
+		if (type == PipelineState::Graphics)
+		{
+			CreateGraphicsPipeline(static_cast<const GraphicsPipelineState &>(state));
+		}
+		else
+		{
+			CreateComputePipeline(static_cast<const ComputePipelineState &>(state));
+		}
 
 		BindGlobalResources();
 	}
@@ -346,6 +246,64 @@ namespace BHive
 				continue;
 			}
 		}
+	}
+
+	void VulkanPipeline::CreateGraphicsPipeline(const GraphicsPipelineState &state)
+	{
+		std::vector<vk::PipelineShaderStageCreateInfo> shader_create_infos;
+		auto &modules = mShader->GetModules();
+		for (auto &[stage, module] : modules)
+		{
+			vk::PipelineShaderStageCreateInfo info({}, ToSingleVkStage(stage), *module, "main");
+			shader_create_infos.emplace_back(info);
+		}
+
+		auto config = Convert(state);
+
+		std::vector dynamicStates = {vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eLineWidth, vk::DynamicState::ePrimitiveTopologyEXT, vk::DynamicState::eVertexInputEXT};
+
+		vk::PipelineDynamicStateCreateInfo dynamicStateInfo({}, dynamicStates);
+
+		std::vector<vk::Format> color_attachment_formats;
+		vk::Format depth_attachment_format = ToVkFormat(state.DepthAttachmentFormat);
+
+		for (auto &format : state.ColorAttachmentFormats)
+			color_attachment_formats.emplace_back(ToVkFormat(format));
+
+		vk::PipelineRenderingCreateInfo rendering_info{};
+		rendering_info.setViewMask(0).setColorAttachmentCount(color_attachment_formats.size()).setColorAttachmentFormats(color_attachment_formats).setDepthAttachmentFormat(depth_attachment_format);
+
+		vk::GraphicsPipelineCreateInfo pipeline_info{};
+		pipeline_info.setStages(shader_create_infos)
+			.setPVertexInputState(&config->InputState)
+			.setPInputAssemblyState(&config->InputAssembly)
+			.setPViewportState(&config->ViewportState)
+			.setPRasterizationState(&config->Rasterazation)
+			.setPMultisampleState(&config->MultiSampling)
+			.setPColorBlendState(&config->ColorBlend)
+			.setPDepthStencilState(&config->DepthStencil)
+			.setPDynamicState(&dynamicStateInfo)
+			.setLayout(mPipelineLayout)
+			.setRenderPass(config->RenderPass)
+			.setSubpass(config->SubPass)
+			.setPNext(&rendering_info);
+
+		mPipeline = vk::raii::Pipeline(mDevice, nullptr, pipeline_info);
+		mBindPoint = vk::PipelineBindPoint::eGraphics;
+	}
+
+	void VulkanPipeline::CreateComputePipeline(const ComputePipelineState &state)
+	{
+		auto &module = mShader->GetModules().at(EShaderStage::Compute);
+		vk::PipelineShaderStageCreateInfo shader_create_info({}, vk::ShaderStageFlagBits::eCompute, *module, "main");
+
+		vk::ComputePipelineCreateInfo createInfo{};
+		createInfo.setStage(shader_create_info);
+		createInfo.setLayout(mPipelineLayout);
+
+		mPipeline = vk::raii::Pipeline(mDevice, nullptr, createInfo);
+
+		mBindPoint = vk::PipelineBindPoint::eCompute;
 	}
 
 } // namespace BHive

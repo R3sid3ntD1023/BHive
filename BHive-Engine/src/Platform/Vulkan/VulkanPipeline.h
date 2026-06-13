@@ -14,9 +14,7 @@ namespace BHive
 	public:
 		VulkanPipeline();
 
-		virtual void Init(const GraphicsPipelineState& state) override;
-
-		virtual void Init(const ComputePipelineState &state) override;
+		virtual void Init(const PipelineState& state) override;
 
 		virtual void Bind() override;
 
@@ -44,6 +42,10 @@ namespace BHive
 
 	private:
 		void BindGlobalResources();
+
+		void CreateGraphicsPipeline(const GraphicsPipelineState &state);
+
+		void CreateComputePipeline(const ComputePipelineState &state);
 
 	private:
 		vk::raii::Device &mDevice;
