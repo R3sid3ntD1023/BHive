@@ -1,6 +1,7 @@
 #type vertex
 
 #version 460 core
+#extension GL_ARB_shader_draw_parameters : require
 
 #include <Core.glsl>
 
@@ -13,6 +14,7 @@ layout(location = 5) in vec4 vColor;
 layout(location = 6) in ivec4 vBoneIds;
 layout(location = 7) in vec4 vWeights;
 
+// @semantic Camera
 layout(std140, set = 0, binding = 0) uniform CameraBuffer
 {
 	mat4 u_projection;

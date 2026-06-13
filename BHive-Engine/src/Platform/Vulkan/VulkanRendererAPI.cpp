@@ -342,18 +342,18 @@ namespace BHive
 	
 	}
 
-	void VulkanRendererAPI::MultiDrawElementsIndirect(FRenderGraphPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, size_t drawCount, size_t stride)
+	void VulkanRendererAPI::MultiDrawElementsIndirect(FRenderGraphPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, size_t drawCount, size_t stride, uint32_t offset)
 	{
 		vao->Bind();
 
 		auto buffer = indirect->GetNativeHandle().As<AllocatedBuffer>()->GetBuffer();
 		auto topology = ToVkTopology(mode);
 
-		pass->CommandList.Push("Multi Draw Elements Indirect", [buffer, topology, drawCount, stride](IRendererContext &ctx)
+		pass->CommandList.Push("Multi Draw Elements Indirect", [buffer, topology, offset, drawCount, stride](IRendererContext &ctx)
 		{		
 			auto &vk_ctx = ctx.As<FVulkanRendererContext>();
 			vk_ctx.CommandBuffer.setPrimitiveTopology(topology);
-			vk_ctx.CommandBuffer.drawIndexedIndirect(buffer, 0, drawCount, stride);
+			vk_ctx.CommandBuffer.drawIndexedIndirect(buffer, offset, drawCount, stride);
 		});
 
 		vao->UnBind();

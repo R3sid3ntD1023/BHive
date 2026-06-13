@@ -75,7 +75,8 @@ namespace BHive
 		{
 
 			vk::PhysicalDeviceFeatures features{};
-			features.setFillModeNonSolid(true).setWideLines(true).setMultiDrawIndirect(true);
+			features.setFillModeNonSolid(true).setWideLines(true).setMultiDrawIndirect(true)
+				.setDrawIndirectFirstInstance(true);
 
 			vk::StructureChain<
 				vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features,

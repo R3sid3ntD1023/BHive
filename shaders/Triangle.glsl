@@ -1,6 +1,7 @@
 #type vertex
 
 #version 460 core
+#extension GL_ARB_shader_draw_parameters : require
 
 layout(location = 0) in vec3 vPosition;
 layout(location = 1) in vec2 vTexCoord;
@@ -33,7 +34,8 @@ void main()
 {
 	vs_out.TexCoord = vTexCoord;
 
-	mat4 model = object[gl_DrawID].Model;
+	uint objectIndex = gl_BaseInstance + gl_InstanceIndex;
+	mat4 model = object[gl_BaseInstance].Model;
 	gl_Position = uProjection * uView * model * vec4(vPosition, 1);
 }
 

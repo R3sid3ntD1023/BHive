@@ -212,10 +212,10 @@ namespace BHive
 		mAPI->DrawElementsInstanced(pass, mode, vao, instances, count);
 	}
 
-	void Renderer::MultiDrawElementsIndirect(ETopologyMode mode, BufferBase* indirect, VertexArray* vao, size_t drawCount, size_t stride)
+	void Renderer::MultiDrawElementsIndirect(ETopologyMode mode, BufferBase* indirect, VertexArray* vao, size_t drawCount, size_t stride, uint32_t start)
 	{
 		auto pass = &GetActivePass();
-		mAPI->MultiDrawElementsIndirect(pass, mode, indirect, vao, drawCount, stride);
+		mAPI->MultiDrawElementsIndirect(pass, mode, indirect, vao, drawCount, stride, stride * start);
 	}
 
 	FAsyncPass *Renderer::ExecuteComputePass(Pipeline *pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder)

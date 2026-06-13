@@ -16,21 +16,10 @@ namespace BHive
 
 	void EmissiveMaterial ::Submit(Pipeline* pipeline)
 	{
-		Material::Submit(pipeline);
-
 		mBackendMaterial->Set("EmissiveColor", EmissionColor);
+
+		Material::Submit(pipeline);
 	}
-
-	/*Ref<Shader> EmissiveMaterial::GetShader() const
-	{
-		static Ref<Shader> shader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Emissive.glsl");
-		return shader;
-	}*/
-
-	//Ref<Material> EmissiveMaterial::Clone() const
-	//{
-	//	return CreateRef<EmissiveMaterial>(std::move(*this));
-	//}
 
 	REFLECT(EmissiveMaterial)
 	{

@@ -19,8 +19,6 @@ namespace BHive
 
 		void Submit(Pipeline* pipeline = nullptr) override;
 
-		///Ref<Material> Clone() const override;
-
 		REFLECTABLEV(Material)
 	};
 

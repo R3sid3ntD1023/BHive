@@ -39,6 +39,5 @@ namespace BHive
 		Ref<class GPUBuffer> mMultiDrawIndirectBuffer;
 		EditorCamera mCamera;
 		Ref<GPUBuffer> mModelBuffer = nullptr;
-		struct IBindingGroup *mObjectBindingGroup = nullptr;
 	};
 } // namespace BHive

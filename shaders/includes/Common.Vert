@@ -2,7 +2,9 @@
 
 bool instanced = false; //object_data.InstanceCount > 0; 
 //mat4 instance = mix(  mat4(1), instances[gl_InstanceIndex],  float(instanced));
-mat4 model =  object[gl_DrawID].Model;// instance * object_data.WorldMatrix *bone_matrix;
+
+uint objectIndex = gl_BaseInstance + gl_InstanceIndex;
+mat4 model =  object[gl_BaseInstance].Model;// instance * object_data.WorldMatrix *bone_matrix;
 vec4 worldPos = model * vec4(vPosition, 1);
 
 mat3 normal_matrix = transpose(inverse(mat3(model)));

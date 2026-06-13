@@ -32,32 +32,52 @@ namespace BHive
 		glm::mat4 WorldMatrix = {1.0f};
 	};
 
+	const uint32_t objectCount = 4;
+
 	void RuntimeLayer::OnAttach(Application& app)
 	{
-		auto triangleShader = ShaderManager::Get("Triangle.glsl");
-		//mEmissiveShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Emissive.glsl");
-		
 		mEnvironmentTex = TextureLoader::Import(ENGINE_PATH"/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
 		Renderer::Get().SetEnvironmentTexture(mEnvironmentTex);
 
-		auto state = Pipeline::GetDefaultGraphicsPipelineState();
-		state.ShaderProgram = triangleShader;
-		state.ColorAttachmentFormats = {EFormat::RGBA8};
-		
-		PipelineRegistry::Register("Triangle", state);
+		{
+			auto triangleShader = ShaderManager::Get("Triangle.glsl");
+			auto state = Pipeline::GetDefaultGraphicsPipelineState();
+			state.ShaderProgram = triangleShader;
+			state.ColorAttachmentFormats = {EFormat::RGBA8};
+			PipelineRegistry::Register("Triangle", state);
+		}
+
+		{
+			auto emissiveShader = ShaderManager::Get("Emissive.glsl");
+			auto state = Pipeline::GetDefaultGraphicsPipelineState();
+			state.ShaderProgram = emissiveShader;
+			state.ColorAttachmentFormats = {EFormat::RGBA8};
+			PipelineRegistry::Register("Emissive", state);
+		}
 		
 		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
-		mMaterial = CreateRef<Material>();
+		mModelBuffer = GPUBuffer::Create(sizeof(FPerObjectData) * objectCount, EBufferType::StorageBuffer);
 
-		auto pipeline = PipelineRegistry::Get("Triangle");
-		mMaterial->SetPipeline(pipeline);
-		mMaterial->SetTexture("u_Texture", mTexture);
-		mMaterial->Set("u_Color", glm::vec3(1, 1, 1));
+		{
+			auto pipeline = PipelineRegistry::Get("Triangle");
+			auto objectBindingGroup = pipeline->GetOrCreateBindingGroup(3);
+			objectBindingGroup->SetBuffer(0, mModelBuffer);
+			mMaterial = CreateRef<Material>();
+			mMaterial->SetPipeline(pipeline);
+			mMaterial->SetTexture("u_Texture", mTexture);
+			mMaterial->Set("u_Color", glm::vec3(1, 1, 1));
+		}
 
-		mModelBuffer = GPUBuffer::Create(sizeof(FPerObjectData) * 2, EBufferType::StorageBuffer);
-		mObjectBindingGroup = pipeline->GetOrCreateBindingGroup(3);
-		mObjectBindingGroup->SetBuffer(0, mModelBuffer);
+		{
+			auto pipeline = PipelineRegistry::Get("Emissive");
+			auto objectBindingGroup = pipeline->GetOrCreateBindingGroup(3);
+			objectBindingGroup->SetBuffer(0, mModelBuffer);
+			mEmissiveMaterial = CreateRef<EmissiveMaterial>();
+			mEmissiveMaterial->SetPipeline(pipeline);
+			mEmissiveMaterial->EmissionColor = FColor::Red;
+		}
 
+		
 		/*mEmmissivePipeline = Pipeline::Create();
 		state.ShaderProgram = mEmissiveShader;
 		mEmmissivePipeline->Init(state);
@@ -98,15 +118,16 @@ namespace BHive
 
 		mFramebuffer = Framebuffer::Create(fb_specs);
 		
+		
 		std::vector<MultiDrawIndirectCommand> commands;
 
-		for (size_t i = 0; i < 2; i++)
+		for (size_t i = 0; i < objectCount; i++)
 		{
 			for (auto &m : mMesh->GetSubMeshes())
 			{
 				MultiDrawIndirectCommand cmd{};
 				cmd.Count = m.IndexCount;
-				cmd.BaseInstance = 0;
+				cmd.BaseInstance = i;
 				cmd.BaseVertex = m.StartVertex;
 				cmd.FirstIndex = m.StartIndex;
 				cmd.InstanceCount = 1;
@@ -174,17 +195,27 @@ namespace BHive
 
 		renderer.Flush();
 
+		std::vector<FPerObjectData> transforms(4);
+		transforms[0].WorldMatrix = transform;
+		transforms[1].WorldMatrix = FTransform({3, 4, 0});
+		transforms[2].WorldMatrix = FTransform({4, 0, 0});
+		transforms[3].WorldMatrix = FTransform({-4, 0, 0});
+		mModelBuffer->SetData(transforms.data(), sizeof(FPerObjectData) * transforms.size());
+
+		const auto stride = sizeof(MultiDrawIndirectCommand);
 		if (mMesh && mMaterial)
 		{		
 			mMaterial->Set("u_Time", Time::Raw());
 			mMaterial->Submit();
 
-			std::vector<FPerObjectData> transforms(2);
-			transforms[0].WorldMatrix = transform;
-			transforms[1].WorldMatrix = FTransform({3, 4, 0});
-			mModelBuffer->SetData(transforms.data(), sizeof(FPerObjectData) * transforms.size());
+			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2, stride );
+		}
 
-			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2, sizeof(MultiDrawIndirectCommand));
+		if (mMesh && mEmissiveMaterial)
+		{
+			mEmissiveMaterial->Submit();
+
+			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2, stride, 2);
 		}
 
 		mFramebuffer->UnBind();
