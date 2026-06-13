@@ -204,7 +204,11 @@ namespace BHive
 		{
 			uint64_t id = 0;
 			if (IsTexture(b.Type) && b.Texture)
-				id = reinterpret_cast<uint64_t>(b.Texture.get());
+			{
+				auto ptr = reinterpret_cast<uint64_t>(b.Texture.get());
+				auto mip = static_cast<uint64_t>(b.MipLevel);
+				id = (ptr << 8) ^ mip;
+			}
 			else if (IsBuffer(b.Type) && b.Buffer)
 				id = reinterpret_cast<uint64_t>(b.Buffer.get());
 
