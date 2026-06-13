@@ -43,9 +43,7 @@ namespace BHive
 
 		void SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip = 0);
 
-		void Update(uint32_t frame) ;
-
-		vk::DescriptorSet GetFrameSet(uint32_t frame) ;
+		vk::DescriptorSet Update(uint32_t frame);
 
 		void SetDebugName(const std::string &name);
 
@@ -94,8 +92,6 @@ namespace BHive
 
 		vk::DescriptorSetLayout mLayout;
 		
-		std::array<vk::DescriptorSet, MAX_FRAMES_IN_FLIGHT> mPerFrameSets{VK_NULL_HANDLE};
-
 		uint32_t mSetIndex;
 
 		std::vector<FBindingInfo> mBindings;

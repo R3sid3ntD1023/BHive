@@ -23,7 +23,7 @@ namespace BHive
 
 		virtual void UnBind() override {};
 
-		void UpdateSets(uint32_t frame);
+		std::unordered_map<uint32_t, vk::DescriptorSet> UpdateSets(uint32_t frame);
 
 		IBindingGroup *GetOrCreateBindingGroup(uint32_t groupIndex) override;
 

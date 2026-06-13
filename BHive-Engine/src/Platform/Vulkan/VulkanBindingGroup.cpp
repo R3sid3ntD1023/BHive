@@ -23,14 +23,6 @@ namespace BHive
 		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
 		auto& pools = api->GetDescriptorPoolManager();
 
-		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			if (mPerFrameSets[i])
-			{
-				auto pool = pools.GetPool(mSetIndex, i);
-				mDevice.freeDescriptorSets(pool, mPerFrameSets);
-			}
-		}
 		for (auto &[_, set] : mMaterialCache)
 			mDevice.freeDescriptorSets(pools.GetPool(mSetIndex, 0), set);
 	}
@@ -106,7 +98,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanBindingGroup::Update(uint32_t frame)
+	vk::DescriptorSet VulkanBindingGroup::Update(uint32_t frame)
 	{
 		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
 		auto& pools = api->GetDescriptorPoolManager();
@@ -122,13 +114,7 @@ namespace BHive
 		}
 
 		WriteDescriptorSet(set);
-		mPerFrameSets[frame] = set;
-	}
-
-	vk::DescriptorSet VulkanBindingGroup::GetFrameSet(uint32_t frame)
-	{
-		ASSERT(frame < MAX_FRAMES_IN_FLIGHT)
-		return mPerFrameSets[frame];
+		return set;
 	}
 
 	void VulkanBindingGroup::SetDebugName(const std::string &name)

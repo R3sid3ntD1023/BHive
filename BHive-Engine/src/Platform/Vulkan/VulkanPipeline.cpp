@@ -96,27 +96,18 @@ namespace BHive
 
 	void VulkanPipeline::Bind()
 	{
-		RenderCommand::SubmitResourceUpdate(
-			[=](IRendererContext &ctx)
-			{
-				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
-				UpdateSets(vk_ctx.Frame);
-			});
-
 		RenderCommand::SubmitCommand("Update sets -> Bind pipeline && sets",
 			[=](IRendererContext &ctx) 
 			{
 				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
 				const auto frame = vk_ctx.Frame;
 
+				auto sets =  UpdateSets(vk_ctx.Frame);
+				
 				vk_ctx.CommandBuffer.bindPipeline(mBindPoint, mPipeline); 
 
-				for (auto& [setIndex, manager] : mSetManagers)
+				for (auto& [setIndex, set] : sets)
 				{
-					if (setIndex == MATERIAL_SET_INDEX)
-						continue;
-
-					auto set = manager->GetFrameSet(frame);
 					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, mPipelineLayout, setIndex, set, {});
 				}
 			});
@@ -124,29 +115,30 @@ namespace BHive
 
 	void VulkanPipeline::BindImmediate(vk::CommandBuffer cmd)
 	{
-		UpdateSets(0);
+		auto sets = UpdateSets(0);
 
 		cmd.bindPipeline(mBindPoint, mPipeline);
 
-		for (auto &[setIndex, manager] : mSetManagers)
+		for (auto &[setIndex, set] : sets)
 		{
-			if (setIndex == MATERIAL_SET_INDEX)
-				continue;
-
-			auto set = manager->GetFrameSet(0);
 			cmd.bindDescriptorSets(mBindPoint, mPipelineLayout, setIndex, set, {});
 		}
 	}
 
-	void VulkanPipeline::UpdateSets(uint32_t frame)
+	std::unordered_map<uint32_t, vk::DescriptorSet> 
+		VulkanPipeline::UpdateSets(uint32_t frame)
 	{
+		std::unordered_map<uint32_t, vk::DescriptorSet> out;
+
 		for (auto& [setIndex, manager] : mSetManagers)
 		{
 			if (setIndex == MATERIAL_SET_INDEX)
 				continue;
 
-			manager->Update(frame);
+			out[setIndex] = manager->Update(frame);
 		}
+
+		return out;
 	}
 
 	IBindingGroup *VulkanPipeline::GetOrCreateBindingGroup(uint32_t groupIndex)
