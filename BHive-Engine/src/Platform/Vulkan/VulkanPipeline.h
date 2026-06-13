@@ -3,6 +3,7 @@
 #include "VulkanCore.h"
 #include "gfx/Pipeline.h"
 #include "VulkanShader.h"
+#include "VulkanBindingGroup.h"
 
 namespace BHive
 {
@@ -62,6 +63,6 @@ namespace BHive
 
 		Scope<VulkanShader> mShader;
 
-		std::unordered_map<uint32_t, Ref<VulkanBindingGroup>> mSetManagers;
+		std::unordered_map<uint32_t, Scope<VulkanBindingGroup>> mSetManagers;
 	};
 } // namespace BHive

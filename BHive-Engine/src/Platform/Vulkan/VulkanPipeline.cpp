@@ -4,7 +4,6 @@
 #include "VulkanConverters.h"
 #include "VulkanShader.h"
 #include "gfx/shader/ShaderProgram.h"
-#include "VulkanBindingGroup.h"
 #include "gfx/renderers/Renderer.h"
 
 namespace BHive
@@ -151,12 +150,12 @@ namespace BHive
 			auto refl = mProgram->GetRefl();
 			auto layout = mShader->GetDescriptorSetLayout(groupIndex);
 
-			auto manager = CreateRef<VulkanBindingGroup>(VulkanBackend::GetLogicalDevice(), pool, layout, groupIndex, refl);
+			auto manager = CreateScope<VulkanBindingGroup>(VulkanBackend::GetLogicalDevice(), pool, layout, groupIndex, refl);
 
 			const auto &shaderName = mProgram->GetName();
 			manager->SetDebugName(std::format("{}_Set{}", shaderName, groupIndex));
 
-			mSetManagers.emplace(groupIndex, manager);
+			mSetManagers.emplace(groupIndex, std::move(manager));
 		}
 
 		return mSetManagers.at(groupIndex).get();
