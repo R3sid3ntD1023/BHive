@@ -42,8 +42,6 @@ namespace BHive
 
 		void SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip = 0);
 
-		void SetTextureImmediate(uint32_t binding, const Ref<Texture> &texture, uint32_t mip = 0);
-
 		void Update(uint32_t frame) ;
 
 		NativeHandle GetNativeSet(uint32_t frame) ;
@@ -53,6 +51,8 @@ namespace BHive
 		const std::vector<FBindingInfo> &GetBindings() const { return mBindings; }
 
 		uint32_t GetSetIndex() const { return mSetIndex; }
+
+		vk::DescriptorSet GetOrCreateMaterialSet();
 
 	private:
 		void BuildBindings(const FShaderReflectionLookUp &refl);
@@ -67,6 +67,29 @@ namespace BHive
 
 		FBindingInfo *FindBinding(uint32_t binding);
 
+		struct MaterialKey
+		{
+			std::vector<uint64_t> Resources;
+			bool operator==(const MaterialKey &) const = default;
+		};
+
+		struct MaterialKeyHash
+		{
+			size_t operator()(const MaterialKey& k) const noexcept
+			{
+				size_t h = 0;
+				for (auto id : k.Resources)
+					h ^= std::hash<uint64_t>()(id) + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2);
+				return h;
+			}
+		};
+
+		MaterialKey BuildMaterialKey() const;
+
+		vk::raii::DescriptorSet AllocateMaterialSets();
+
+		void WriteDescriptorSet(vk::DescriptorSet set);
+
 	private:
 		vk::raii::Device& mDevice;
 
@@ -79,6 +102,8 @@ namespace BHive
 		uint32_t mSetIndex;
 
 		std::vector<FBindingInfo> mBindings;
+
+		std::unordered_map<MaterialKey, vk::raii::DescriptorSet, MaterialKeyHash> mMaterialCache;
 	};
 
 	

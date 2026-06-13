@@ -40,6 +40,8 @@ namespace BHive
 
 		const vk::raii::Pipeline &GetVkPipeline() const { return mPipeline; }
 
+		bool HasSet(uint32_t setIndex) const;
+
 	private:
 		void BindGlobalResources();
 

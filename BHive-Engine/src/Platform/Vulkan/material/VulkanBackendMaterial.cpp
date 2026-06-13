@@ -68,6 +68,22 @@ namespace BHive
 		BindToPipeline(vkPipeline);
 
 		pipeline->Bind();
+
+		if (vkPipeline->HasSet(MATERIAL_SET_INDEX))
+		{
+			// bind cached material descriptor set
+			auto group = Cast<VulkanBindingGroup>(vkPipeline->GetOrCreateBindingGroup(MATERIAL_SET_INDEX));
+			auto matSet = group->GetOrCreateMaterialSet();
+
+			RenderCommand::SubmitCommand(
+				"Bind Material Set",
+				[=](IRendererContext &ctx)
+				{
+					auto &vk_ctx = ctx.As<FVulkanRendererContext>();
+					vk_ctx.CommandBuffer.bindDescriptorSets(vkPipeline->GetBindPoint(), vkPipeline->GetLayout(), MATERIAL_SET_INDEX, matSet, {});
+				});
+		
+		}
 		
 		RenderCommand::SubmitCommand(
 			"Update PushConstants",
@@ -86,12 +102,21 @@ namespace BHive
 
 	void VulkanBackendMaterial::BindImmediate(vk::CommandBuffer cmd, Pipeline* pipeline)
 	{
-		auto vk_Pipeline = Cast<VulkanPipeline>(pipeline);
-		auto &pipeline_layout = vk_Pipeline->GetLayout();
+		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
+		auto &pipeline_layout = vkPipeline->GetLayout();
 
-		BindToPipeline(vk_Pipeline);
+		BindToPipeline(vkPipeline);
 
-		vk_Pipeline->BindImmediate(cmd);
+		vkPipeline->BindImmediate(cmd);
+
+		if (vkPipeline->HasSet(MATERIAL_SET_INDEX))
+		{
+			// bind cached material descriptor set
+			auto group = Cast<VulkanBindingGroup>(vkPipeline->GetOrCreateBindingGroup(MATERIAL_SET_INDEX));
+			auto matSet = group->GetOrCreateMaterialSet();
+
+			cmd.bindDescriptorSets(vkPipeline->GetBindPoint(), vkPipeline->GetLayout(), MATERIAL_SET_INDEX, matSet, {});
+		}
 
 		// Update push constants
 		for (auto &pc : mReflectionMergedPtr->PushConstants)

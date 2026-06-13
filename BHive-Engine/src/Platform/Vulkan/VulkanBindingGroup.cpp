@@ -38,6 +38,20 @@ namespace BHive
 
 	}
 
+	vk::DescriptorSet VulkanBindingGroup::GetOrCreateMaterialSet()
+	{
+		MaterialKey key = BuildMaterialKey();
+
+		if (auto it = mMaterialCache.find(key); it != mMaterialCache.end())
+			return it->second;
+
+		auto set = AllocateMaterialSets();
+		WriteDescriptorSet(set);
+
+		auto it = mMaterialCache.emplace(std::move(key), std::move(set));
+		return it.first->second;
+	}
+
 	void VulkanBindingGroup::BuildBindings(const FShaderReflectionLookUp &refl)
 	{
 		auto &setBindings = refl.GetSetBindings(mSetIndex);
@@ -79,42 +93,8 @@ namespace BHive
 
 	void VulkanBindingGroup::Update(uint32_t frame)
 	{
-		auto &set = *mSets[frame];
-
-		std::vector<vk::WriteDescriptorSet> writes;
-		std::vector<vk::DescriptorImageInfo> imageInfos;
-		std::vector<vk::DescriptorBufferInfo> bufferInfos;
-
-		imageInfos.reserve(mBindings.size());
-		bufferInfos.reserve(mBindings.size());
-		writes.reserve(mBindings.size());
-
-		for (auto &b : mBindings)
-		{
-			if (b.UpdateRate == EBindingUpdateRate::Static)
-				continue;
-
-			if (IsBuffer(b.Type))
-			{
-				if (!b.Buffer)
-					continue;
-
-				bufferInfos.push_back(BuildBufferInfo(b));
-				writes.emplace_back(set, b.Binding, 0, ToVkType(b.Type), nullptr, bufferInfos.back());
-
-			}
-			else if (IsTexture(b.Type))
-			{
-				if (!b.Texture)
-					continue;
-
-				imageInfos.push_back(BuildImageInfo(b, b.MipLevel));
-				writes.emplace_back(set, b.Binding, 0, ToVkType(b.Type), imageInfos.back());
-			}
-		}
-
-		if (!writes.empty())
-			mDevice.updateDescriptorSets(writes, {});
+		auto &set = mSets[frame];
+		WriteDescriptorSet(set);
 	}
 
 	NativeHandle VulkanBindingGroup::GetNativeSet(uint32_t frame)
@@ -214,4 +194,68 @@ namespace BHive
 		auto it =  std::find_if(mBindings.begin(), mBindings.end(), [binding](const FBindingInfo &b) { return b.Binding == binding; });
 		return it != mBindings.end() ?  &(*it) : nullptr;
 	}
+
+	VulkanBindingGroup::MaterialKey VulkanBindingGroup::BuildMaterialKey() const
+	{
+		MaterialKey key;
+		key.Resources.reserve(mBindings.size());
+
+		for (auto& b : mBindings)
+		{
+			uint64_t id = 0;
+			if (IsTexture(b.Type) && b.Texture)
+				id = reinterpret_cast<uint64_t>(b.Texture.get());
+			else if (IsBuffer(b.Type) && b.Buffer)
+				id = reinterpret_cast<uint64_t>(b.Buffer.get());
+
+			key.Resources.push_back(id);
+		}
+
+		return key;
+	}
+
+	vk::raii::DescriptorSet VulkanBindingGroup::AllocateMaterialSets()
+	{
+		vk::DescriptorSetAllocateInfo allocInfo{mPool, 1, &mLayout};
+		auto sets = mDevice.allocateDescriptorSets(allocInfo);
+		return std::move(sets.front());
+	}
+
+	void VulkanBindingGroup::WriteDescriptorSet(vk::DescriptorSet set)
+	{
+		std::vector<vk::WriteDescriptorSet> writes;
+		std::vector<vk::DescriptorImageInfo> imageInfos;
+		std::vector<vk::DescriptorBufferInfo> bufferInfos;
+
+		imageInfos.reserve(mBindings.size());
+		bufferInfos.reserve(mBindings.size());
+		writes.reserve(mBindings.size());
+
+		for (auto &b : mBindings)
+		{
+			if (b.UpdateRate == EBindingUpdateRate::Static)
+				continue;
+
+			if (IsBuffer(b.Type))
+			{
+				if (!b.Buffer)
+					continue;
+
+				bufferInfos.push_back(BuildBufferInfo(b));
+				writes.emplace_back(set, b.Binding, 0, ToVkType(b.Type), nullptr, bufferInfos.back());
+			}
+			else if (IsTexture(b.Type))
+			{
+				if (!b.Texture)
+					continue;
+
+				imageInfos.push_back(BuildImageInfo(b, b.MipLevel));
+				writes.emplace_back(set, b.Binding, 0, ToVkType(b.Type), imageInfos.back());
+			}
+		}
+
+		if (!writes.empty())
+			mDevice.updateDescriptorSets(writes, {});
+	}
+
 } // namespace BHive

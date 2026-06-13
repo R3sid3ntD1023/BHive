@@ -233,8 +233,13 @@ namespace BHive
 
 	void VulkanPipeline::UpdateSets(uint32_t frame)
 	{
-		for (auto &[setIndex, manager] : mSetManagers)
+		for (auto& [setIndex, manager] : mSetManagers)
+		{
+			if (setIndex == MATERIAL_SET_INDEX)
+				continue;
+
 			manager->Update(frame);
+		}
 	}
 
 	IBindingGroup *VulkanPipeline::GetOrCreateBindingGroup(uint32_t groupIndex)
@@ -265,6 +270,11 @@ namespace BHive
 	vk::DescriptorSetLayout VulkanPipeline::GetSetLayout(uint32_t set) const
 	{
 		return mShader->GetDescriptorSetLayout(set);
+	}
+
+	bool VulkanPipeline::HasSet(uint32_t setIndex) const
+	{
+		return mShader->HasSet(setIndex);
 	}
 
 	void VulkanPipeline::BindGlobalResources()
