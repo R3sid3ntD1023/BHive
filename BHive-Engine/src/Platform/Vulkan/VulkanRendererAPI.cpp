@@ -43,28 +43,14 @@ namespace BHive
 
 	void VulkanRendererAPI::Init()
 	{
-		const uint32_t descriptor_count = 1000;
-
-		std::vector<vk::DescriptorPoolSize> pool_sizes;
-		pool_sizes.emplace_back(vk::DescriptorType::eSampler, descriptor_count);
-		pool_sizes.emplace_back(vk::DescriptorType::eSampledImage, descriptor_count);
-		pool_sizes.emplace_back(vk::DescriptorType::eCombinedImageSampler, descriptor_count);
-		pool_sizes.emplace_back(vk::DescriptorType::eStorageImage, descriptor_count);
-		pool_sizes.emplace_back(vk::DescriptorType::eUniformBuffer, descriptor_count);
-		pool_sizes.emplace_back(vk::DescriptorType::eUniformBufferDynamic, descriptor_count);
-		pool_sizes.emplace_back(vk::DescriptorType::eUniformTexelBuffer, descriptor_count);
-		pool_sizes.emplace_back(vk::DescriptorType::eStorageBuffer, descriptor_count);
-		pool_sizes.emplace_back(vk::DescriptorType::eStorageBufferDynamic, descriptor_count);
-		pool_sizes.emplace_back(vk::DescriptorType::eStorageTexelBuffer, descriptor_count);
-		pool_sizes.emplace_back(vk::DescriptorType::eInputAttachment, descriptor_count);
-
-		vk::DescriptorPoolCreateInfo pool_create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 1000, pool_sizes);
-		mDescriptorPool = mDevice.createDescriptorPool(pool_create_info);
+		mDescriptorPoolManager.Init(mDevice);
 	}
 
 	void VulkanRendererAPI::Shutdown()
 	{
 		LOG_TRACE("RendererAPI Shutdown Called")
+
+		mDescriptorPoolManager.Shutdown();
 
 		VulkanBackend::Get().Shutdown();
 	}
@@ -154,6 +140,8 @@ namespace BHive
 
 		if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
 			return result;
+
+		mDescriptorPoolManager.ResetFrame(current_frame);
 
 		vk::CommandBufferBeginInfo beginInfo{};
 		cmd.begin(beginInfo);

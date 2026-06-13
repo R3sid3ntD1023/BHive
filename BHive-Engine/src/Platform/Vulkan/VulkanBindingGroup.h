@@ -5,6 +5,7 @@
 #include "gfx/shader/ShaderReflection.h"
 #include "gfx/NativeHandle.h"
 #include "gfx/IBindingGroup.h"
+#include "DescriptorPoolManager.h"
 
 namespace BHive
 {
@@ -33,7 +34,7 @@ namespace BHive
 	class VulkanBindingGroup : public IBindingGroup
 	{
 	public:
-		VulkanBindingGroup(vk::Device device, vk::DescriptorPool pool, vk::DescriptorSetLayout layout, uint32_t setIndex,
+		VulkanBindingGroup(vk::Device device, vk::DescriptorSetLayout layout, uint32_t setIndex,
 			const FShaderReflectionLookUp& refl);
 
 		~VulkanBindingGroup();
@@ -58,8 +59,6 @@ namespace BHive
 		void BuildBindings(const FShaderReflectionLookUp &refl);
 
 		static EBindingUpdateRate InferUpdateRate(EResourceType type, uint32_t setIndex);
-
-		void AllocateSets();
 
 		vk::DescriptorBufferInfo BuildBufferInfo(const FBindingInfo &b) const;
 
@@ -93,17 +92,17 @@ namespace BHive
 	private:
 		vk::Device mDevice;
 
-		vk::DescriptorPool mPool;
-
 		vk::DescriptorSetLayout mLayout;
 		
-		std::vector<vk::DescriptorSet> mSets;
+		std::array<vk::DescriptorSet, MAX_FRAMES_IN_FLIGHT> mPerFrameSets{VK_NULL_HANDLE};
 
 		uint32_t mSetIndex;
 
 		std::vector<FBindingInfo> mBindings;
 
 		std::unordered_map<MaterialKey, vk::DescriptorSet, MaterialKeyHash> mMaterialCache;
+
+		std::string mDebugName;
 	};
 
 	

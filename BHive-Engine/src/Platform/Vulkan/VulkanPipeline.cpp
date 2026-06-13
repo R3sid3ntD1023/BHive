@@ -6,6 +6,7 @@
 #include "gfx/shader/ShaderProgram.h"
 #include "gfx/renderers/Renderer.h"
 
+
 namespace BHive
 {
 	struct FVulkanPipelineConfigInfo
@@ -89,6 +90,7 @@ namespace BHive
 			CreateComputePipeline(static_cast<const ComputePipelineState &>(state));
 		}
 
+		
 		BindGlobalResources();
 	}
 
@@ -111,6 +113,9 @@ namespace BHive
 
 				for (auto& [setIndex, manager] : mSetManagers)
 				{
+					if (setIndex == MATERIAL_SET_INDEX)
+						continue;
+
 					auto set = manager->GetFrameSet(frame);
 					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, mPipelineLayout, setIndex, set, {});
 				}
@@ -125,6 +130,9 @@ namespace BHive
 
 		for (auto &[setIndex, manager] : mSetManagers)
 		{
+			if (setIndex == MATERIAL_SET_INDEX)
+				continue;
+
 			auto set = manager->GetFrameSet(0);
 			cmd.bindDescriptorSets(mBindPoint, mPipelineLayout, setIndex, set, {});
 		}
@@ -146,11 +154,10 @@ namespace BHive
 		if (!mSetManagers.contains(groupIndex))
 		{
 			auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
-			vk::DescriptorPool pool = api->GetDescriptorPool();
 			auto refl = mProgram->GetRefl();
 			auto layout = mShader->GetDescriptorSetLayout(groupIndex);
 
-			auto manager = CreateScope<VulkanBindingGroup>(VulkanBackend::GetLogicalDevice(), pool, layout, groupIndex, refl);
+			auto manager = CreateScope<VulkanBindingGroup>(VulkanBackend::GetLogicalDevice(), layout, groupIndex, refl);
 
 			const auto &shaderName = mProgram->GetName();
 			manager->SetDebugName(std::format("{}_Set{}", shaderName, groupIndex));
@@ -185,7 +192,7 @@ namespace BHive
 	
 		if (bindings.empty())
 		{
-			LOG_INFO("GlobalSetRegistry: Shader '{}' has no global resources in set {}, skipping global binding.", shaderName, setIndex);
+			LOG_INFO("Pipeline: Shader '{}' has no global resources in set {}, skipping global binding.", shaderName, setIndex);
 			return;
 		}
 
@@ -234,14 +241,14 @@ namespace BHive
 			else if (res->IsBuffer() && IsBuffer(r.kind))
 			{
 				set->SetBuffer(r.binding, res->BufferRef);
-				LOG_INFO("GlobalSet: bound BUFFER '{}' (semantic '{}') at set {}, binding {}", r.name, semantic, setIndex, r.binding);
+				LOG_INFO("Pipeline: bound BUFFER '{}' (semantic '{}') at set {}, binding {}", r.name, semantic, setIndex, r.binding);
 				continue;
 			}
 
 			if (IsTexture(r.kind))
 			{
 				set->SetTexture(r.binding, res->TextureRef);
-				LOG_INFO("GlobalSet: bound TEXTURE '{}' (semantic '{}') at set {}, binding {}", r.name, semantic, setIndex, r.binding);
+				LOG_INFO("Pipeline: bound TEXTURE '{}' (semantic '{}') at set {}, binding {}", r.name, semantic, setIndex, r.binding);
 				continue;
 			}
 		}

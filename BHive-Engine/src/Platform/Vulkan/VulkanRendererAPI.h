@@ -3,6 +3,7 @@
 #include "VulkanCore.h"
 #include "gfx/RendererAPI.h"
 #include "gfx/WindowContext.h"
+#include "DescriptorPoolManager.h"
 
 namespace BHive
 {
@@ -88,7 +89,7 @@ namespace BHive
 
 		void SubmitGraph(const RenderGraph &graph, FResourceUpdateList &updateResources) override;
 
-		vk::raii::DescriptorPool &GetDescriptorPool() { return mDescriptorPool; }
+		DescriptorPoolManager& GetDescriptorPoolManager() { return mDescriptorPoolManager; }
 
 		void QueueDeletion(FQeueuDeflectionFunc&& fn) override;
 
@@ -104,6 +105,8 @@ namespace BHive
 
 		void ResetFrameIndex();
 
+		uint32_t GetCurrentFrame() const { return mCurrentFrame; }
+
 	private:
 		void ProcessDeletionQueue(uint32_t frame);
 
@@ -117,7 +120,7 @@ namespace BHive
 	private:
 		vk::raii::Device& mDevice;
 
-		vk::raii::DescriptorPool mDescriptorPool = nullptr;
+		DescriptorPoolManager mDescriptorPoolManager;
 
 		vk::ClearColorValue mClearColor{0, 0, 0, 1};
 
