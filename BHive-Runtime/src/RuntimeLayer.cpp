@@ -43,10 +43,14 @@ namespace BHive
 		
 		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
 		mMaterial = CreateRef<Material>();
-		mMaterial->SetPipeline(PipelineRegistry::Get("Triangle"));
 
+		auto pipeline = PipelineRegistry::Get("Triangle");
+		mMaterial->SetPipeline(pipeline);
 		mMaterial->SetTexture("u_Texture", mTexture);
 		mMaterial->Set("u_Color", glm::vec3(1, 1, 1));
+
+		mObjectBindingGroup = pipeline->GetOrCreateBindingGroup(3);
+		mObjectBindingGroup->SetBuffer(0, Renderer::Get().GetModelBuffer().GetObjectBuffer());
 
 		/*mEmmissivePipeline = Pipeline::Create();
 		state.ShaderProgram = mEmissiveShader;
@@ -164,7 +168,7 @@ namespace BHive
 
 		renderer.Flush();
 
-	/*	if (mMesh && mMaterial)
+		if (mMesh && mMaterial)
 		{		
 			mMaterial->Set("u_Time", Time::Raw());
 			mMaterial->Submit();
@@ -175,7 +179,7 @@ namespace BHive
 			renderer.GetModelBuffer().Upload();
 
 			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2, sizeof(MultiDrawIndirectCommand));
-		}*/
+		}
 
 		mFramebuffer->UnBind();
 

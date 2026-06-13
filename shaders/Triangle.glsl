@@ -19,7 +19,7 @@ struct PerObjectData
 	mat4 Model;
 };
 
-layout(std140, set = 3, binding = 1) restrict readonly buffer ObjectSSBO
+layout(std140, set = 3, binding = 0) restrict readonly buffer ObjectSSBO
 {
 	PerObjectData object[];
 };
