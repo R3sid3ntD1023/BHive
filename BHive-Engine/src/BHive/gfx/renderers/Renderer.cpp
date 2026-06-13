@@ -1,4 +1,3 @@
-#include "buffers/ModelBuffer.h"
 #include "buffers/LightBuffer.h"
 #include "gfx/Texture.h"
 #include "Renderer.h"
@@ -7,18 +6,13 @@
 
 namespace BHive
 {
-	struct BHIVE_API FObjectData
-	{
-		glm::mat4 WorldMatrix = {1.0f};
-	};
-
+	
 	struct BHIVE_API RenderData
 	{
 		ViewSystem Views;
 
 		Frustum CameraFrustum;
 
-		FModelBuffer ModelBuffer;
 		LightBuffer LightingBuffer;
 
 		Ref<Texture> WhiteTexture;
@@ -47,7 +41,6 @@ namespace BHive
 			create_info.DebugName = "Blue Texture";
 			BlueTexture = Texture2D::Create({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
 
-			ModelBuffer.Init();
 			LightingBuffer.Init();
 
 			CameraUBO = GPUBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);
@@ -158,11 +151,6 @@ namespace BHive
 	void Renderer::ResetStats()
 	{
 		memset(&mStats, 0, sizeof(Statitics));
-	}
-
-	FModelBuffer &Renderer::GetModelBuffer()
-	{
-		return mData->ModelBuffer;
 	}
 
 	GlobalResources &Renderer::GetGlobalResources()

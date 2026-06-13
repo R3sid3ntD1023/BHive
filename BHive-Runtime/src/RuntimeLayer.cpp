@@ -27,6 +27,11 @@ namespace BHive
 {
 	FTransform transform{};
 
+	struct FPerObjectData
+	{
+		glm::mat4 WorldMatrix = {1.0f};
+	};
+
 	void RuntimeLayer::OnAttach(Application& app)
 	{
 		auto triangleShader = ShaderManager::Get("Triangle.glsl");
@@ -49,8 +54,9 @@ namespace BHive
 		mMaterial->SetTexture("u_Texture", mTexture);
 		mMaterial->Set("u_Color", glm::vec3(1, 1, 1));
 
+		mModelBuffer = GPUBuffer::Create(sizeof(FPerObjectData) * 2, EBufferType::StorageBuffer);
 		mObjectBindingGroup = pipeline->GetOrCreateBindingGroup(3);
-		mObjectBindingGroup->SetBuffer(0, Renderer::Get().GetModelBuffer().GetObjectBuffer());
+		mObjectBindingGroup->SetBuffer(0, mModelBuffer);
 
 		/*mEmmissivePipeline = Pipeline::Create();
 		state.ShaderProgram = mEmissiveShader;
@@ -173,10 +179,10 @@ namespace BHive
 			mMaterial->Set("u_Time", Time::Raw());
 			mMaterial->Submit();
 
-			renderer.GetModelBuffer().Reset();
-			renderer.GetModelBuffer().Submit(transform);
-			renderer.GetModelBuffer().Submit(FTransform({3, 4, 0}));
-			renderer.GetModelBuffer().Upload();
+			std::vector<FPerObjectData> transforms(2);
+			transforms[0].WorldMatrix = transform;
+			transforms[1].WorldMatrix = FTransform({3, 4, 0});
+			mModelBuffer->SetData(transforms.data(), sizeof(FPerObjectData) * transforms.size());
 
 			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2, sizeof(MultiDrawIndirectCommand));
 		}

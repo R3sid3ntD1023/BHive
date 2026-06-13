@@ -3,8 +3,6 @@
 #include "core/Core.h"
 #include "LineRenderer.h"
 #include "QuadRenderer.h"
-#include "RenderData.h"
-#include "buffers/ModelBuffer.h"
 #include "gfx/RendererAPI.h"
 #include "gfx/GlobalResources.h"
 #include "PMREMGenerator.h"
@@ -58,8 +56,6 @@ namespace BHive
 		void ResetStats();
 
 		const Statitics &GetStats() const { return mStats; }
-
-		FModelBuffer &GetModelBuffer();
 
 		GlobalResources &GetGlobalResources();
 
