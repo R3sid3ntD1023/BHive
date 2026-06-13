@@ -56,6 +56,8 @@ namespace BHive
 
 		std::vector<vk::DescriptorPoolSize> pool_sizes;
 		pool_sizes.emplace_back(vk::DescriptorType::eCombinedImageSampler, 1000);
+		pool_sizes.emplace_back(vk::DescriptorType::eSampledImage, 1000);
+		pool_sizes.emplace_back(vk::DescriptorType::eSampler, 1000);
 		
 		vk::DescriptorPoolCreateInfo pool_create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 1000, pool_sizes);
 		mDescriptorPool = vk::raii::DescriptorPool(device, pool_create_info);
