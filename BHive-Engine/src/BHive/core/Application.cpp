@@ -35,9 +35,7 @@ namespace BHive
 		props.Maximize = specification.Maximize;
 		mMainWindow = WindowManager::Get().Create(props);
 
-		FOnWindowInputEvent window_callback;
-		window_callback.bind(this, &Application::OnEvent);
-		mMainWindow->SetEventCallback(window_callback);
+		mMainWindow->GetWindowInput().WindowEvent.Add(this, &Application::OnEvent);
 
 		if (specification.Flags & EApplicationFlags::EnableRendering)
 		{			
@@ -87,14 +85,16 @@ namespace BHive
 
 	void Application::Run()
 	{
-		while (mIsRunning)
+		while (mIsRunning )
 		{
-
-			FPSCounter::Get().Frame();
-
 			Window::PollEvents();
 
-			UpdateLayersAndWindow();
+			if (!mIsMinimized)
+			{
+				FPSCounter::Get().Frame();
+	
+				UpdateLayersAndWindow();
+			}
 		}
 	}
 
@@ -173,7 +173,13 @@ namespace BHive
 
 	bool Application::OnWindowResized(WindowResizeEvent &event)
 	{
-		UpdateLayersAndWindow();
+		if (event.x == 0 || event.y == 0)
+		{
+			mIsMinimized = true;
+			return false;
+		}
+
+		mIsMinimized = false;
 
 		return false;
 	}

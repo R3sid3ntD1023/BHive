@@ -2,7 +2,7 @@
 
 #include "core/Core.h"
 #include "asset/Asset.h"
-#include "core/EventDelegate.h"
+#include "core/delegates/EventDelegate.h"
 
 namespace BHive
 {

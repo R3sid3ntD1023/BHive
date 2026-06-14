@@ -4,14 +4,14 @@
 
 namespace BHive
 {
-	Scope<WindowContext> WindowContext::Create(void *windowHandle)
+	Scope<WindowContext> WindowContext::Create(Window* window)
 	{
 		Scope<WindowContext> instance;
 
 		switch (RenderCommand::GetAPI())
 		{
 		case RendererAPI::Vulkan:
-			instance = CreateScope<VulkanWindowContext>(windowHandle);
+			instance = CreateScope<VulkanWindowContext>(window);
 			break;
 		default:
 			break;

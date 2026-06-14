@@ -2,7 +2,7 @@
 
 #include "asset/Asset.h"
 #include "core/Core.h"
-#include "core/EventDelegate.h"
+#include "core/delegates/EventDelegate.h"
 #include "core/events/EventStatus.h"
 #include "input/InputAction.h"
 #include "input/InputValue.h"

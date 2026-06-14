@@ -4,6 +4,8 @@
 
 namespace BHive
 {
+	class Window;
+
 	class BHIVE_API WindowContext
 	{
 	public:
@@ -13,11 +15,9 @@ namespace BHive
 
 		virtual void SwapBuffers() = 0;
 
-		virtual void OnFramebufferResized(uint32_t w, uint32_t h) = 0;
-
 		static WindowContext &Get() { return *sInstance; }
 
-		static Scope<WindowContext> Create(void *windowHandle);
+		static Scope<WindowContext> Create(Window *window);
 
 	private:
 		static inline WindowContext *sInstance = nullptr;

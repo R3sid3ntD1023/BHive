@@ -2,7 +2,7 @@
 
 #include "core/Core.h"
 #include "components/PhysicsComponent.h"
-#include "core/EventDelegate.h"
+#include "core/delegates/EventDelegate.h"
 #include "core/UUID.h"
 #include "core/math/Transform.h"
 #include "core/math/boundingbox/AABB.h"

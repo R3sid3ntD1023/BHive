@@ -9,74 +9,62 @@ namespace BHive
 {
 	void WindowInput::OnWindowClose()
 	{
-		if (mEvent)
-		{
-			WindowCloseEvent event;
-			mEvent(event);
-		}
+		WindowCloseEvent event;
+		WindowEvent.Broadcast(event);
 	}
 
 	void WindowInput::OnWindowResize(int w, int h)
 	{
-		if (mEvent)
-		{
-			WindowResizeEvent event((unsigned)w, (unsigned)h);
-			mEvent(event);
-		}
+		if (w == 0 || h == 0)
+			return;
+
+		WindowResizeEvent event((unsigned)w, (unsigned)h);
+		WindowEvent.Broadcast(event);
 	}
 
 	void WindowInput::OnKeyEvent(int key, int scancode, int action, int mods)
 	{
-		if (mEvent)
-		{
-			KeyEvent event((KeyCode)key, scancode, action, mods);
-			mEvent(event);
+		KeyEvent event((KeyCode)key, scancode, action, mods);
+		WindowEvent.Broadcast(event);
 
-			auto &im = InputManager::GetInputManager();
-			im.add_input(key, action, mods);
-		}
+		auto &im = InputManager::GetInputManager();
+		im.add_input(key, action, mods);
 	}
 
 	void WindowInput::OnKeyTypedEvent(unsigned int codepoint)
 	{
-		if (mEvent)
-		{
-			KeyTypedEvent event((KeyCode)codepoint);
-			mEvent(event);
-		}
+		KeyTypedEvent event((KeyCode)codepoint);
+		WindowEvent.Broadcast(event);
 	}
 
 	void WindowInput::OnMouseButton(int button, int action, int mods)
 	{
-		if (mEvent)
-		{
-			MouseButtonEvent event((MouseCode)button, action, mods);
-			mEvent(event);
+		MouseButtonEvent event((MouseCode)button, action, mods);
+		WindowEvent.Broadcast(event);
 
-			auto &im = InputManager::GetInputManager();
-			im.add_input(button, action, mods);
-		}
+		auto &im = InputManager::GetInputManager();
+		im.add_input(button, action, mods);
 	}
 
 	void WindowInput::OnMouseScroll(double x, double y)
 	{
-		if (mEvent)
-		{
-			MouseScrolledEvent event((float)x, (float)y);
-			mEvent(event);
+		MouseScrolledEvent event((float)x, (float)y);
+		WindowEvent.Broadcast(event);
 
-			auto &im = InputManager::GetInputManager();
-			im.set_scroll(x, y);
-		}
+		auto &im = InputManager::GetInputManager();
+		im.set_scroll(x, y);
 	}
 
 	void WindowInput::OnMouseMoved(double x, double y)
 	{
-		if (mEvent)
-		{
-			MouseMovedEvent event((float)x, (float)y);
-			mEvent(event);
-		}
+		MouseMovedEvent event((float)x, (float)y);
+		WindowEvent.Broadcast(event);
+	}
+
+	void WindowInput::OnFramebufferResized(int w, int h)
+	{
+		WindowResizeEvent event(w, h);
+		WindowEvent.Broadcast(event);
 	}
 
 	void WindowInput::OnJoyStickConnected(int joystick, int status)

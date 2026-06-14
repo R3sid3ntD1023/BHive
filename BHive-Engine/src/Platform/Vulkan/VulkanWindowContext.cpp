@@ -2,14 +2,19 @@
 #include <GLFW/glfw3.h>
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
+#include "core/WindowInput.h"
+#include "core/Window.h"
+#include "VulkanBackend.h"
 
 namespace BHive
 {
-	VulkanWindowContext::VulkanWindowContext(void *windowHandle)
-		:mWindowHandle(static_cast<GLFWwindow *>(windowHandle))
-		 
+	VulkanWindowContext::VulkanWindowContext(Window *window)
 	{
+		ASSERT(window, "Window is null");
+		mWindowHandle = static_cast<GLFWwindow *>(window->GetNative());
 		ASSERT(mWindowHandle, "Window handle is null!");
+
+		window->GetWindowInput().WindowEvent.Add(this, &VulkanWindowContext::OnEvent);
 	}
 
 	VulkanWindowContext::~VulkanWindowContext()
@@ -19,49 +24,51 @@ namespace BHive
 			api->SetCurrentContext(nullptr);
 	}
 
-	void VulkanWindowContext::OnFramebufferResized(uint32_t w, uint32_t h)
-	{
-		mFramebufferResized = true;
-	}
-
-	void VulkanWindowContext::RequestSwapChainRecreate()
-	{
-		int w = 0, h = 0;
-		glfwGetFramebufferSize(mWindowHandle, &w, &h);
-
-		while (w == 0 || h == 0)
-		{
-			glfwWaitEvents();
-			glfwGetFramebufferSize(mWindowHandle, &w, &h);
-		}
-
-		VulkanBackend::Get().RequestSwapChainRecreate(w, h);
-	}
-
 	void VulkanWindowContext::Init()
 	{
 		VulkanBackend::Get().Init(mWindowHandle);
 	}
+
+
+	void VulkanWindowContext::RequestSwapChainRecreate(int w, int h)
+	{
+		VulkanBackend::Get().RequestSwapChainRecreate(w, h);
+	}
+
 
 	void VulkanWindowContext::SwapBuffers()
 	{
 		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
 		api->SetCurrentContext(this);
 
-		auto result = VulkanBackend::Get().Present();
-
-		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || mFramebufferResized)
-		{
-			api->ResetFrameIndex();
-			RequestSwapChainRecreate();
-			
-			mFramebufferResized = false;
+		if (mIsMinimized)
 			return;
-		}
-		else if (result != vk::Result::eSuccess)
+
+		VulkanBackend::Get().Present();
+	}
+
+	void VulkanWindowContext::OnEvent(Event &event)
+	{
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch(this, &VulkanWindowContext::OnWindowResized);
+	}
+
+	bool VulkanWindowContext::OnWindowResized(WindowResizeEvent &e)
+	{
+		if (e.x == 0 && e.y == 0)
 		{
-			ASSERT(false, "Failed to present swap chain image!")
+			mIsMinimized = true;
+			return false;
 		}
+		
+		mIsMinimized = false;
+
+		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
+		api->ResetFrameIndex();
+
+		RequestSwapChainRecreate(e.x, e.y);
+		
+		return false;
 	}
 
 } // namespace BHive

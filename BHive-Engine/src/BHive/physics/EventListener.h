@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/Core.h"
-#include "core/EventDelegate.h"
 #include <physx/PxPhysicsAPI.h>
 
 namespace BHive

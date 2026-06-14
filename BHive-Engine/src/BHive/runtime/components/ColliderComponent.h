@@ -2,7 +2,7 @@
 
 #include "runtime/Component.h"
 #include "core/EnumAsByte.h"
-#include "core/EventDelegate.h"
+#include "core/delegates/EventDelegate.h"
 #include "gfx/Color.h"
 #include "core/math/boundingbox/AABB.h"
 #include "physics/CollisionChannel.h"

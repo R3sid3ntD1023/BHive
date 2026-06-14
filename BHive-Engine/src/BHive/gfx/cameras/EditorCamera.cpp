@@ -114,6 +114,9 @@ namespace BHive
 
 	void EditorCamera::Resize(uint32_t w, uint32_t h)
 	{
+		if (w == 0 || h == 0)
+			return;
+
 		SceneCamera::Resize(w, h);
 		mViewportSize = {w, h};
 	}

@@ -44,7 +44,7 @@ namespace BHive
 		mWindow = glfwCreateWindow(properties.Size.x, properties.Size.y, properties.Title.c_str(), nullptr, shared_context);
 		sWindowCount++;
 
-		mContext = WindowContext::Create(mWindow);
+		mContext = WindowContext::Create(this);
 		mContext->Init();
 		mData.Instance = this;
 
@@ -116,10 +116,6 @@ namespace BHive
 		mData.Title = title;
 	}
 
-	void Window::SetEventCallback(FOnWindowInputEvent &event)
-	{
-		mData.Input.mEvent = event;
-	}
 	void Window::PollEvents()
 	{
 		glfwPollEvents();
@@ -177,7 +173,7 @@ namespace BHive
 	void Window::OnFramebufferSizeCallback(GLFWwindow *window, int width, int height)
 	{
 		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
-		input->Instance->GetContext()->OnFramebufferResized(width, height);
+		input->Input.OnFramebufferResized(width, height);
 	}
 
 	void Window::OnJoyStickCallback(int joystick, int status)

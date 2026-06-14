@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
-#include "core/EventDelegate.h"
+#include "delegates/EventDelegate.h"
 #include "events/Event.h"
 #include "WindowInput.h"
 
@@ -40,7 +40,7 @@ namespace BHive
 
 		void SetTitle(const std::string &title);
 
-		void SetEventCallback(FOnWindowInputEvent &event);
+		WindowInput &GetWindowInput() { return mData.Input; }
 
 		static void PollEvents();
 

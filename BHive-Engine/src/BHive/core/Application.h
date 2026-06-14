@@ -86,6 +86,8 @@ namespace BHive
 	private:
 		bool mIsRunning = true;
 
+		bool mIsMinimized = false;
+
 		Window* mMainWindow = nullptr;
 
 		Ref<ImGuiLayer> mImGuiLayer = nullptr;

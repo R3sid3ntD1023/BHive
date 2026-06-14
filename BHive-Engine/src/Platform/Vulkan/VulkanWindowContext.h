@@ -1,7 +1,8 @@
 #pragma once
 
 #include "gfx/WindowContext.h"
-#include "VulkanBackend.h"
+#include "core/events/Event.h"
+#include "core/events/ApplicationEvents.h"
 
 struct GLFWwindow;
 
@@ -14,7 +15,7 @@ namespace BHive
 	class BHIVE_API VulkanWindowContext : public WindowContext
 	{
 	public:
-		VulkanWindowContext(void *windowHandle);
+		VulkanWindowContext(Window* window);
 
 		~VulkanWindowContext() ;
 
@@ -22,15 +23,17 @@ namespace BHive
 
 		virtual void SwapBuffers();
 
-		void OnFramebufferResized(uint32_t w, uint32_t h) override;
-
 	private:
-		void RequestSwapChainRecreate();
+		void OnEvent(Event &event);
+
+		bool OnWindowResized(WindowResizeEvent& e);
+
+		void RequestSwapChainRecreate(int w, int h);
 
 	private:
 		GLFWwindow *mWindowHandle = nullptr;
 
-		bool mFramebufferResized = false;
+		bool mIsMinimized = false;
 		
 	};
 } // namespace BHive

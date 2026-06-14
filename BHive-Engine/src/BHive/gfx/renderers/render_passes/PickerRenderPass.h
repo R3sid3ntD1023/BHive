@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
-#include "core/EventDelegate.h"
+#include "core/delegates/EventDelegate.h"
 #include "RenderPass.h"
 
 namespace BHive
