@@ -29,8 +29,8 @@ namespace BHive
 	{
 		bool changed = false;
 		auto data = var.get_value<GameObject *>();
-		auto type = data->get_type();
-		auto properties = type.get_properties();
+		auto data_type = data->get_type();
+		auto properties = data_type.get_properties();
 
 		for (auto property : properties)
 		{

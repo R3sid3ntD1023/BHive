@@ -2,7 +2,9 @@
 
 #include "core/Core.h"
 #include "core/UUID.h"
+#pragma warning(push, 0)
 #include <ImNodeFlow.h>
+#pragma warning(pop)
 
 namespace BHive
 {

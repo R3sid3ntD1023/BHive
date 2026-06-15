@@ -20,7 +20,7 @@ namespace BHive
 			: Layout(layout),
 			  Access(access),
 			  Stage(stage),
-			  IsUndefined(Undefined)
+			  IsUndefined(unDefined)
 		{
 		}
 

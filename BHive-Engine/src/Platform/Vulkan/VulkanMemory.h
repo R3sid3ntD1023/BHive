@@ -72,7 +72,7 @@ namespace BHive
 
 		const MemoryAllocation &GetAllocation() const;
 
-		const vk::Buffer& GetBuffer() const;
+		vk::Buffer GetBuffer() const;
 	};
 
 	struct Handle

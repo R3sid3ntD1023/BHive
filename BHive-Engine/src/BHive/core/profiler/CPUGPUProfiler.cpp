@@ -44,7 +44,7 @@ namespace BHive
 		mQueryInstance->End();
 
 		// seconds
-		auto time = mQueryInstance->GetTime() / 1000.f;
+		auto time = (float)mQueryInstance->GetTime() / 1000.f;
 		CPUGPUProfiler::GetInstance().AddData(mName, time);
 	}
 

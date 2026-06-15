@@ -35,7 +35,7 @@ namespace BHive
 
 		FInputKey mKey;
 
-		REFLECTABLEV()
+		REFLECTABLE()
 
 		friend class InputContext;
 	};

@@ -44,7 +44,7 @@ namespace BHive
 	void AudioContext::PrintDeviceInfo()
 	{
 		std::string name;
-		int frequency = 0, sources_max = 0, num_mono_sources = 0, num_stereo_sources = 0;
+		int frequency = 0, num_mono_sources = 0, num_stereo_sources = 0;
 		auto device = (ALCdevice *)mAudioDevice;
 
 		alcGetIntegerv(device, ALC_FREQUENCY, 1, &frequency);

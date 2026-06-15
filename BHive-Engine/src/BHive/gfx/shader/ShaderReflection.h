@@ -7,50 +7,48 @@ namespace BHive
 {
 	struct FUniform
 	{
-		int32_t Type;
-		int32_t Size;
-		int32_t Offset;
-		int32_t Location;
-		EShaderStage Stages;
+		int32_t Type{-1};
+		size_t Size{0};
+		int32_t Offset{-1};
+		int32_t Location{-1};
+		EShaderStage Stages{};
 
 	};
 
 	struct FSampler
 	{
-		int32_t Binding;
-		EShaderStage Stages;
-		uint32_t ArraySize;
-		EResourceType Type;
-		std::string Semantic;
+		int32_t Binding{-1};
+		EShaderStage Stages{};
+		uint32_t ArraySize{1};
+		EResourceType Type{};
+		std::string Semantic{};
 	};
 
 	struct FUniformBuffer
 	{
-		int32_t Binding;
-		int32_t Size;
-		EShaderStage Stages;
+		int32_t Binding{-1};
+		size_t Size{0};
+		EShaderStage Stages{};
 		std::unordered_map<std::string, FUniform> Members;
-		std::string Semantic;
+		std::string Semantic{};
 
 		static constexpr EResourceType Type = EResourceType::UniformBuffer;
 	};
 
 	struct FPushConstantsRange
 	{
-		
-		int32_t Size;
-		int32_t Offset;
-		EShaderStage Stages;
+		size_t Size{0};
+		int32_t Offset{0};
+		EShaderStage Stages{};
 		std::unordered_map<std::string, FUniform> Members;
-
 	};
 
 	struct FStorageBuffer
 	{
-		int32_t Binding;
-		int32_t Size;
-		EShaderStage Stages;
-		std::string Semantic;
+		int32_t Binding{-1};
+		size_t Size{0};
+		EShaderStage Stages{};
+		std::string Semantic{};
 
 		static constexpr EResourceType Type = EResourceType::StorageBuffer;
 	};
@@ -87,7 +85,7 @@ namespace BHive
 		std::string Semantic; //engine semantic (Camera, EnvironmentCube, etc.)
 		uint32_t binding = 0;
 		uint32_t offset = 0;
-		uint32_t size = 0;
+		size_t size = 0;
 		uint32_t location = 0;
 	};
 

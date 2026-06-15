@@ -56,34 +56,34 @@ namespace BHive
 	public:
 		VulkanRendererAPI();
 
-		virtual void Init() override;
+		void Init() override;
 
-		virtual void Shutdown() override;
+		void Shutdown() override;
 
-		virtual void WaitIdle() override;
+		void WaitIdle() override;
 
-		virtual void ClearColor(FRenderGraphPass *pass, float r, float g, float b, float a = 1.0f) override;
+		void ClearColor(FRenderGraphPass *pass, float r, float g, float b, float a = 1.0f) override;
 
-		virtual void Clear(FRenderGraphPass *pass, ClearMask mask) override;
+		void Clear(FRenderGraphPass *pass, ClearMask mask) override;
 
-		virtual void SetLineWidth(FRenderGraphPass *pass, float width) override;
+		void SetLineWidth(FRenderGraphPass *pass, float width) override;
 
-		virtual void SetViewport(FRenderGraphPass *pass, uint32_t x, uint32_t y, uint32_t w, uint32_t h) override;
+		void SetViewport(FRenderGraphPass *pass, uint32_t x, uint32_t y, uint32_t w, uint32_t h) override;
 
-		virtual void DrawArrays(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count = 0) override;
+		void DrawArrays(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count = 0) override;
 
-		virtual void DrawElements(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count = 0) override;
+		void DrawElements(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count = 0) override;
 
-		virtual void
+		void
 		DrawElementsBaseVertex(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0) override;
 
-		virtual void DrawElementsRanged(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count = 0) override;
+		void DrawElementsRanged(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count = 0) override;
 
-		virtual void DrawElementsInstanced(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count = 0) override;
+		void DrawElementsInstanced(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count = 0) override;
 
-		virtual void MultiDrawElementsIndirect(FRenderGraphPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, size_t drawCount, size_t stride = 0, uint32_t offset = 0) override;
+		void MultiDrawElementsIndirect(FRenderGraphPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride = 0, uint32_t offset = 0) override;
 
-		virtual void ColorMask(FRenderGraphPass *pass, uint8_t r, uint8_t g, uint8_t b, uint8_t a) override;
+		void ColorMask(FRenderGraphPass *pass, uint8_t r, uint8_t g, uint8_t b, uint8_t a) override;
 
 		vk::Result RenderFrame(VulkanSwapChain* swapChain);
 
@@ -97,7 +97,7 @@ namespace BHive
 
 		FAsyncPass* ExecuteComputePass(Pipeline* pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder) override;
 
-		virtual void ExecuteTransferPass(FTransferFunc &&builder) override;
+		void ExecuteTransferPass(FTransferFunc &&builder) override;
 
 		void SetCurrentContext(WindowContext *ctx) override;
 

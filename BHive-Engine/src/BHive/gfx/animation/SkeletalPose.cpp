@@ -44,7 +44,6 @@ namespace BHive
 	{
 		auto name = node.mName;
 		auto transform = node.mTransformation;
-		auto bone = mSkeleton->FindBone(name);
 
 		if (auto bone = mSkeleton->FindBone(name))
 		{

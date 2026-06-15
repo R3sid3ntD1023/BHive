@@ -1,9 +1,7 @@
 #include "VorbisImporter.h"
 #include "audio/AudioSource.h"
-#pragma warning(push, 0)
-#include <stb_vorbis.c>
-#pragma warning(pop)
 #include <AL/al.h>
+#include <stb_vorbis.c>
 
 namespace BHive
 {

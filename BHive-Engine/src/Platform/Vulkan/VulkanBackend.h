@@ -17,10 +17,10 @@ namespace BHive
 		vk::raii::Queue ComputeQueue = VK_NULL_HANDLE;
 		vk::raii::Queue TransferQueue = VK_NULL_HANDLE;
 
-		int32_t PresentQueueIndex = -1;
-		int32_t GraphicsQueueIndex = -1;
-		int32_t ComputeQueueIndex = -1;
-		int32_t TransferQueueIndex = -1;
+		uint32_t PresentQueueIndex = 0;
+		uint32_t GraphicsQueueIndex = 0;
+		uint32_t ComputeQueueIndex = 0;
+		uint32_t TransferQueueIndex = 0;
 	};
 
 
@@ -113,7 +113,7 @@ namespace BHive
 				Names[key] = name;
 			}
 
-			std::string GetName(VkObjectType type, uint64_t handle) const
+			std::string GetName(vk::ObjectType type, uint64_t handle) const
 			{
 				uint64_t key = (uint64_t(type) << 56) | handle;
 				return Names.contains(key) ? Names.at(key) : "<unnamed>";

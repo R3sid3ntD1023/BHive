@@ -78,7 +78,7 @@ namespace BHive
 			gpu_r_m.UnmapMemory(stagingID);
 		}
 
-		auto& staging_buffer = VulkanBackend::GetGPUResourceManager().GetBuffer(stagingID);
+		auto staging_buffer = VulkanBackend::GetGPUResourceManager().GetBuffer(stagingID);
 
 		SingleTimeCommand cmd{};
 		Transition(cmd, ImageState::TansferWrite(), sub);

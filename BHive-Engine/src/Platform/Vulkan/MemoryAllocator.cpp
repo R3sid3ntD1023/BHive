@@ -111,6 +111,7 @@ namespace BHive
 		}
 
 		ASSERT(false, "Failed to find suitable memory type!")
+		return ~0u;
 	}
 
 	bool MemoryAllocator::ShouldUseDedicatedAllocation(size_t requestedBufferSize) const

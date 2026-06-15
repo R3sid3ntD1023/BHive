@@ -92,7 +92,7 @@ namespace BHive
 		return Texture2D::Create({w, h}, create_info, Buffer(data, size));
 	}
 
-	Ref<Texture2D> TextureLoader::Import(const std::filesystem::path &file, const const FTextureOverride &override)
+	Ref<Texture2D> TextureLoader::Import(const std::filesystem::path &file, const FTextureOverride &override)
 	{
 		int w = 0, h = 0, c_in = 0;
 		const int forced_channels = 4;

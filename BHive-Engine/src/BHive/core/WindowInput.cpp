@@ -28,7 +28,7 @@ namespace BHive
 		WindowEvent.Broadcast(event);
 
 		auto &im = InputManager::GetInputManager();
-		im.add_input(key, action, mods);
+		im.add_input(key, (EventStatusCode)action, (ModCode)mods);
 	}
 
 	void WindowInput::OnKeyTypedEvent(unsigned int codepoint)
@@ -43,7 +43,7 @@ namespace BHive
 		WindowEvent.Broadcast(event);
 
 		auto &im = InputManager::GetInputManager();
-		im.add_input(button, action, mods);
+		im.add_input(button, (EventStatusCode)action, (ModCode)mods);
 	}
 
 	void WindowInput::OnMouseScroll(double x, double y)
@@ -52,7 +52,7 @@ namespace BHive
 		WindowEvent.Broadcast(event);
 
 		auto &im = InputManager::GetInputManager();
-		im.set_scroll(x, y);
+		im.set_scroll((float)x, (float)y);
 	}
 
 	void WindowInput::OnMouseMoved(double x, double y)

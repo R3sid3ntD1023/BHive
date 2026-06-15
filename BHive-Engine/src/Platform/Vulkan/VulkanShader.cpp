@@ -138,7 +138,7 @@ namespace BHive
 
 		for (auto& pc : merged.PushConstants)
 		{
-			mPushConstantRanges.emplace_back(ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size);
+			mPushConstantRanges.emplace_back(ToVkShaderStageBit(pc.Stages), pc.Offset, (uint32_t)pc.Size);
 		}
 
 		//LOG_INFO("Push constants found: {} - {}", asset.Name, merged.PushConstants.size());

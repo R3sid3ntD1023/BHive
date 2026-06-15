@@ -24,7 +24,7 @@ namespace BHive
 			ub.Size = size;
 			ub.Stages |= stage;
 
-			for (size_t i = 0; i < buffer_type.member_types.size(); i++)
+			for (uint32_t i = 0; i < (uint32_t)buffer_type.member_types.size(); i++)
 			{
 				auto &member = buffer_type.member_types[i];
 				auto &member_type = compiler.get_type(member);
@@ -41,7 +41,6 @@ namespace BHive
 		//get samplers
 		for (const auto &sampler : resources.sampled_images)
 		{
-			auto &type = compiler.get_type(sampler.base_type_id);
 			auto set = compiler.get_decoration(sampler.id, spv::DecorationDescriptorSet);
 			auto binding = compiler.get_decoration(sampler.id, spv::DecorationBinding);
 
@@ -54,7 +53,6 @@ namespace BHive
 
 		for (const auto& storage_image : resources.storage_images)
 		{
-			auto &type = compiler.get_type(storage_image.base_type_id);
 			auto set = compiler.get_decoration(storage_image.id, spv::DecorationDescriptorSet);
 			auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
 
@@ -67,7 +65,6 @@ namespace BHive
 
 		for (const auto &sep_image : resources.separate_images)
 		{
-			auto &type = compiler.get_type(sep_image.base_type_id);
 			auto set = compiler.get_decoration(sep_image.id, spv::DecorationDescriptorSet);
 			auto binding = compiler.get_decoration(sep_image.id, spv::DecorationBinding);
 
@@ -80,7 +77,6 @@ namespace BHive
 
 		for (const auto &sep_smp : resources.separate_samplers)
 		{
-			auto &type = compiler.get_type(sep_smp.base_type_id);
 			auto set = compiler.get_decoration(sep_smp.id, spv::DecorationDescriptorSet);
 			auto binding = compiler.get_decoration(sep_smp.id, spv::DecorationBinding);
 
@@ -114,7 +110,7 @@ namespace BHive
 			pco.Offset = 0;
 			pco.Stages |= stage;
 
-			for (size_t i = 0; i < buffer_type.member_types.size(); i++)
+			for (uint32_t i = 0; i < (uint32_t)buffer_type.member_types.size(); i++)
 			{
 				auto &member_type = compiler.get_type(buffer_type.member_types[i]);
 

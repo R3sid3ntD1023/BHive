@@ -12,8 +12,9 @@ namespace BHive
 	class Texture;
 
 	/*gui class that uses imgui*/
-	struct BHIVE_API ImGuiLayer : public Layer
+	class BHIVE_API ImGuiLayer : public Layer
 	{
+	public:
 		virtual ~ImGuiLayer() = default;
 
 		void OnAttach(Application&) override;
@@ -43,7 +44,7 @@ namespace BHive
 
 		virtual void Shutdown();
 
-		virtual void OnRender(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size) {};
+		virtual void OnSubmitRenderData(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size) {};
 
 		virtual ImTextureRef GetTextureIDImpl(const Texture &texture) = 0;
 

@@ -73,6 +73,8 @@ namespace BHive
 		{
 			return (EBodyType)rb->getType();
 		}
+
+		return EBodyType::Static;
 	}
 
 	void PhysicsComponent::Save(cereal::BinaryOutputArchive &ar) const

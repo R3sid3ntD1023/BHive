@@ -10,9 +10,7 @@
 
 namespace BHive
 {
-	struct GameObject;
-
-	DECLARE_EVENT(OnCollison, struct ColliderComponent *, GameObject *);
+	DECLARE_EVENT(OnCollison, struct ColliderComponent *,GameObject *);
 	DECLARE_EVENT(OnTrigger, struct ColliderComponent *, GameObject *);
 	DECLARE_EVENT(OnHit, const glm::vec3 &, const glm::vec3 &, float);
 

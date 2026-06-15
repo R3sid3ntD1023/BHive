@@ -1,5 +1,7 @@
 #include "PhysicsContext.h"
+#pragma warning(push, 0)
 #include <physx/PxPhysicsAPI.h>
+#pragma warning(pop)
 
 namespace BHive
 {

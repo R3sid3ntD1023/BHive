@@ -60,22 +60,22 @@ namespace BHive
 
 	struct FDirectionalLightCreateInfo
 	{
-		alignas(16) glm::vec3 Color;
-		alignas(16) glm::vec3 Direction;
+		glm::vec4 Color;
+		glm::vec4 Direction;
 	};
 
 	struct FPointLightCreateInfo
 	{
-		alignas(16) glm::vec3 Color;
-		alignas(16) glm::vec3 Position;
+		glm::vec4 Color;
+		glm::vec4 Position;
 		float Radius;
 	};
 
 	struct FSpotLightCreateInfo
 	{
-		alignas(16) glm::vec3 Color;
-		alignas(16) glm::vec3 Position;
-		alignas(16) glm::vec3 Direction;
+		glm::vec4 Color;
+		glm::vec4 Position;
+		glm::vec4 Direction;
 		float Radius;
 		float InnerCutoff;
 		float OuterCutoff;

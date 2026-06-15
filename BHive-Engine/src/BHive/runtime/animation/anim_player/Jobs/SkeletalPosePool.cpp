@@ -15,7 +15,7 @@ namespace BHive
 
 	SkeletalPosePool::ptr SkeletalPosePool::Borrow()
 	{
-		ASSERT(mBorrows >= 0);
+		ASSERT(mBorrows > 0);
 		mBorrows++;
 
 		if (mPoses.empty())

@@ -33,7 +33,7 @@ namespace ImGui
 
 	bool DrawEditableText(const std::string &label, std::string &new_text)
 	{
-		static ImGuiID current_id = -1;
+		static ImGuiID current_id = 0;
 		static std::string current_text;
 
 		ImGuiID id = ImGui::GetID(label.c_str());
@@ -58,13 +58,13 @@ namespace ImGui
 			bool finish_editing = (IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && IsMouseClicked(ImGuiMouseButton_Left)) || IsKeyPressed(ImGuiKey_Escape);
 			if (finish_editing)
 			{
-				current_id = -1;
+				current_id = 0;
 			}
 
 			ImGui::SetKeyboardFocusHere();
 			if (InputText("##RenamingName", &current_text, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
 			{
-				current_id = -1;
+				current_id = 0;
 				new_text = current_text;
 				return true;
 			}
@@ -197,9 +197,9 @@ namespace ImGui
 		for (int i = 1; i < max; i++)
 		{
 			auto x = bb.Min.x + divider_step * i;
-			auto min = ImVec2(x, bb.Min.y);
-			auto max = ImVec2(x, bb.Max.y);
-			drawlist->AddLine(min, max, GetColorU32(divider_color));
+			auto _min = ImVec2(x, bb.Min.y);
+			auto _max = ImVec2(x, bb.Max.y);
+			drawlist->AddLine(_min, _max, GetColorU32(divider_color));
 		}
 
 		// slider
@@ -214,7 +214,7 @@ namespace ImGui
 		drawlist->AddRectFilled(slider_bg_bb.Min, slider_bg_bb.Max, 0xFF000000);
 
 		ItemSize(slider_bb);
-		if (!ItemAdd(slider_bb, slider_id, nullptr, ImGuiItemFlags_NoNav | ImGuiItemFlags_AllowOverlap))
+		if (!ItemAdd(slider_bb, slider_id, nullptr, ImGuiItemFlags_NoNav /*| ImGuiItemFlags_AllowOverlap*/))
 			return false;
 
 		bool hovered = false;

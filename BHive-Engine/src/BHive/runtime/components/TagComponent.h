@@ -16,8 +16,9 @@ namespace BHive
 
 		const UUID &GetID() const { return mID; }
 
-		virtual void Save(cereal::BinaryOutputArchive &ar) const;
-		virtual void Load(cereal::BinaryInputArchive &ar);
+		void Save(cereal::BinaryOutputArchive &ar) const override;
+
+		void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(Component)
 

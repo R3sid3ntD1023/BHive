@@ -19,6 +19,8 @@ namespace BHive
 
 		EditorCamera(float l, float r, float b, float t, float aspect, float _near, float _far);
 
+		virtual ~EditorCamera() = default;
+
 		void ProcessInput();
 
 		void OnEvent(Event &event);

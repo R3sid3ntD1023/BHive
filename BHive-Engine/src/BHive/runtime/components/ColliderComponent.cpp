@@ -60,12 +60,12 @@ namespace BHive
 			auto damping = PhysicsMaterial->Damping;
 
 			material->setFlags(physx::PxMaterialFlag::eCOMPLIANT_CONTACT);
-			// material->setStaticFriction(friction);
-			// material->setDynamicFriction(friction);
+			material->setStaticFriction(friction);
+			material->setDynamicFriction(friction);
 			material->setRestitution(resitution);
-			// material->setDamping(damping);
-			// material->setFrictionCombineMode(physx::PxCombineMode::eAVERAGE);
-			// material->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
+			material->setDamping(damping);
+			material->setFrictionCombineMode(physx::PxCombineMode::eAVERAGE);
+			material->setRestitutionCombineMode(physx::PxCombineMode::eAVERAGE);
 		}
 
 		physx::PxTransform relative_transform({Offset.x, Offset.y, Offset.z});

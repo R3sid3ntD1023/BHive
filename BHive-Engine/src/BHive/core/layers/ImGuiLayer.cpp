@@ -92,7 +92,7 @@ namespace BHive
 
 		ImGui::Render();
 
-		OnRender(ImGui::GetDrawData(), pos, size);
+		OnSubmitRenderData(ImGui::GetDrawData(), pos, size);
 
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
@@ -108,7 +108,7 @@ namespace BHive
 	{
 		auto &colors = ImGui::GetStyle().Colors;
 		colors[ImGuiCol_WindowBg] = ImVec4{0.1f, 0.105f, 0.11f, 1.0f};
-		colors[ImGuiCol_ChildBg] = ImVec4{0.15f, 0.155, .15f, 1.0f};
+		colors[ImGuiCol_ChildBg] = ImVec4{0.15f, 0.155f, .15f, 1.0f};
 
 		// Headers
 		colors[ImGuiCol_Header] = ImVec4{0.2f, 0.205f, 0.21f, 1.0f};

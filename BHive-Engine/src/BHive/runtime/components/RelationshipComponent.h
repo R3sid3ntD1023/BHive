@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	struct GameObject;
+	class GameObject;
 
 	using ChildrenList = std::unordered_set<UUID>;
 

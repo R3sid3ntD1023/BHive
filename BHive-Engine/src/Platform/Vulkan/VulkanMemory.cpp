@@ -46,7 +46,7 @@ namespace BHive
 		return VulkanBackend::GetGPUResourceManager().GetStorage<MemoryAllocation>().Get(Buffer);
 	}
 
-	const vk::Buffer &AllocatedBuffer::GetBuffer() const
+	vk::Buffer AllocatedBuffer::GetBuffer() const
 	{
 		return VulkanBackend::GetGPUResourceManager().GetBuffer(Buffer);
 	}

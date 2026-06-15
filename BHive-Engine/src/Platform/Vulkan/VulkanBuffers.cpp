@@ -242,7 +242,7 @@ namespace BHive
 		if (!data)
 			return;
 
-		for (size_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
+		for (uint32_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
 		{
 			mPerFrameBuffer.Upload(frame, data, size, offset);
 		}	

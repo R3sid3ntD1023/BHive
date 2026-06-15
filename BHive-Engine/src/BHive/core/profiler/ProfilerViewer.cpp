@@ -26,7 +26,7 @@ namespace BHive
 			{
 				auto &samples = data.GetSamples();
 
-				ImPlot::PlotLine(name.c_str(), samples.data(), samples.size());
+				ImPlot::PlotLine(name.c_str(), samples.data(), (int)samples.size());
 			}
 			ImPlot::EndPlot();
 		}

@@ -10,24 +10,28 @@ namespace BHive
 
 	struct BHIVE_API Component
 	{
+		virtual ~Component() = default;
 
 		virtual void Begin() {};
+
 		virtual void End() {};
+
+		virtual void Save(cereal::BinaryOutputArchive &ar) const;
+
+		virtual void Load(cereal::BinaryInputArchive &ar);
 
 		void SetOwner(GameObject *owner);
 
 		GameObject *GetOwner() const { return mOwningObject; }
-		FTransform GetWorldTransform() const;
 
-		virtual void Save(cereal::BinaryOutputArchive &ar) const;
-		virtual void Load(cereal::BinaryInputArchive &ar);
+		FTransform GetWorldTransform() const;
 
 		REFLECTABLEV()
 
 	private:
 		GameObject *mOwningObject = nullptr;
 
-		friend struct GameObject;
+		friend GameObject;
 	};
 
 	REFLECT_INLINE(Component)

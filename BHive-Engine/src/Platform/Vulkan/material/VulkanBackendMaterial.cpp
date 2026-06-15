@@ -94,7 +94,7 @@ namespace BHive
 				//Update push constants
 				for (auto &pc : mReflectionMergedPtr->PushConstants)
 				{
-					vk::PushConstantsInfo push_info(*pipeline_layout, ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size, pushData.data() + pc.Offset);
+					vk::PushConstantsInfo push_info(*pipeline_layout, ToVkShaderStageBit(pc.Stages), pc.Offset, (uint32_t)pc.Size, pushData.data() + pc.Offset);
 					vk_ctx.CommandBuffer.pushConstants2(push_info);
 				}
 			});
@@ -121,7 +121,7 @@ namespace BHive
 		// Update push constants
 		for (auto &pc : mReflectionMergedPtr->PushConstants)
 		{
-			vk::PushConstantsInfo push_info(*pipeline_layout, ToVkShaderStageBit(pc.Stages), pc.Offset, pc.Size, mPushConstantData.data() + pc.Offset);
+			vk::PushConstantsInfo push_info(*pipeline_layout, ToVkShaderStageBit(pc.Stages), pc.Offset, (uint32_t)pc.Size, mPushConstantData.data() + pc.Offset);
 			cmd.pushConstants2(push_info);
 		}
 	}
@@ -164,15 +164,15 @@ namespace BHive
 			if (ub.Members.contains(name))
 			{
 				auto &u = ub.Members.at(name);
-				auto ubo = mLocalBuffers.at(ubo_name);
+				auto& ubo = mLocalBuffers.at(ubo_name);
 				ubo->SetData(data, size, u.Offset);
 				return;
 			}
 		}
 
-		for (auto &[name, ssb] : mTargetSet.StorageBuffers)
+		if (mTargetSet.StorageBuffers.contains(name))
 		{
-			auto ssbo = mLocalBuffers.at(name);
+			auto &ssbo = mLocalBuffers.at(name);
 			ssbo->SetData(data, size);
 			return;
 		}

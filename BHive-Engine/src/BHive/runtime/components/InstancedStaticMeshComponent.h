@@ -9,13 +9,13 @@ namespace BHive
 
 		void SetInstances(const std::vector<FTransform> &transforms);
 
-		int32_t GetCount() { return mInstances.size(); }
+		int32_t GetCount() { return (uint32_t)mInstances.size(); }
 
 		const std::vector<glm::mat4> &GetInstances() const { return mInstances; }
 
-		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+		void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::BinaryInputArchive &ar) override;
+		void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(StaticMeshComponent)
 

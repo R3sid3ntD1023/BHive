@@ -191,7 +191,7 @@ namespace BHive
 		const auto &metrics = fontgeometry.getMetrics();
 
 		double scale = (1.0 / (metrics.ascenderY - metrics.descenderY)) * size_arg;
-		const float spaceGlyphAdvance = fontgeometry.getGlyph(' ')->getAdvance();
+		const double spaceGlyphAdvance = fontgeometry.getGlyph(' ')->getAdvance();
 
 		glm::vec2 texel_size = 1.0f / glm::vec2(texture->GetSize());
 
@@ -211,7 +211,7 @@ namespace BHive
 
 			if (c == '\t')
 			{
-				offset.x += 4.0f * (scale * spaceGlyphAdvance + params.Kerning);
+				offset.x += 4.0 * (scale * spaceGlyphAdvance + params.Kerning);
 				continue;
 			}
 

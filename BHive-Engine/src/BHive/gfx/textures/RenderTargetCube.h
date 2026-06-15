@@ -13,6 +13,8 @@ namespace BHive
 	public:
 		RenderTargetCube(uint32_t size, EFormat format);
 
+		virtual ~RenderTargetCube() = default;
+
 		virtual void Bind(uint32_t face);
 
 		virtual void UnBind();

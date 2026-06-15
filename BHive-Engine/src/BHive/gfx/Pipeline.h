@@ -38,6 +38,8 @@ namespace BHive
 
 		struct PipelineState
 		{
+			virtual ~PipelineState() = default;
+
 			Ref<ShaderProgram> ShaderProgram;
 
 			enum Type

@@ -150,7 +150,7 @@ namespace BHive
 
 		auto min = min_var ? min_var.to_int() : 0;
 		auto max = max_var ? max_var.to_int() : 0;
-		auto step = step_var ? step_var.to_int() : 1;
+		auto step = step_var ? step_var.to_float() : 1.f;
 		std::string format = format_var ? format_var.to_string() : "%d";
 		auto flags = flags_var ? flags_var.to_uint32() : 0;
 		auto default_value = default_var ? default_var.to_int() : 0;

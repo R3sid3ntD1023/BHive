@@ -20,7 +20,7 @@ namespace BHive
 	class SkeletalMesh;
 	class StaticMesh;
 	class SkeletalPose;
-	class MaterialTable;
+	struct MaterialTable;
 
 	class RenderPass;
 	class PostProcessRenderPass;
@@ -66,11 +66,11 @@ namespace BHive
 
 		void Resize(const glm::uvec2 &size);
 
-		const Ref<Texture> &GetColorAttachment(uint32_t index = 0) const;
+		Ref<Texture> GetColorAttachment(uint32_t index = 0) const;
 
-		const Ref<Texture> &GetDepthAttachment() const;
+		Ref<Texture> GetDepthAttachment() const;
 
-		const Ref<Framebuffer> &GetFramebuffer() const { return mFinalFramebuffer; }
+		Ref<Framebuffer> GetFramebuffer() const { return mFinalFramebuffer; }
 
 		FRenderSettings &GetRenderSettings() { return mRenderSettings; }
 

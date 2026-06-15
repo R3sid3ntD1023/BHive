@@ -49,7 +49,7 @@ namespace BHive
 		bool IsFull(uint32_t vNeeded, uint32_t iNeeded);
 
 	private:
-		TextureBatchData *mTextureBatch;
+		TextureBatchData *mTextureBatch = nullptr;
 		Scope<VertexBatchBuffer<TextVertex>> mBuffer;
 		Scope<Material> mMaterial;
 		bool mIsActive = false;

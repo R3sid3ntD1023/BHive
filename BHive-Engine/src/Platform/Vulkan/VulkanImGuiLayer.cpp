@@ -45,7 +45,6 @@ namespace BHive
 	{
 		ImGuiLayer::Init();
 
-		auto &context = static_cast<VulkanWindowContext &>(WindowContext::Get());
 		auto &instance = VulkanBackend::GetInstance();
 		auto &physical_device = VulkanBackend::GetPhysicalDevice();
 		auto &swap_chain = VulkanBackend::GetSwapChain();
@@ -109,7 +108,7 @@ namespace BHive
 		ImGuiLayer::Shutdown();
 	}
 
-	void VulkanImGuiLayer::OnRender(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size)
+	void VulkanImGuiLayer::OnSubmitRenderData(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size)
 	{
 		auto& pass = RenderCommand::BeginPass("ImGui", EPassType::Viewport);
 		pass.CommandList.Push("Draw Imgui", [drawData, pos, size](IRendererContext& ctx)

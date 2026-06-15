@@ -75,8 +75,8 @@ namespace BHive
 				{
 					auto relative = Project::GetResourceRelativePath(entries[0]);
 					auto handle = asset_manager->GetHandle(relative);
-					auto meta_data = asset_manager->GetMetaData(handle);
-					if (meta_data.Type == inspected_type || meta_data.Type.is_derived_from(inspected_type))
+					auto handle_meta_data = asset_manager->GetMetaData(handle);
+					if (handle_meta_data.Type == inspected_type || handle_meta_data.Type.is_derived_from(inspected_type))
 					{
 						data = AssetManager::GetAsset<T>(handle);
 						changed |= true;

@@ -10,6 +10,8 @@ namespace BHive
 	class BHIVE_API RenderPass
 	{
 	public:
+		virtual ~RenderPass() = default;
+
 		virtual void Init() {};
 
 		virtual void CreateResizableObjects(const glm::uvec2 &size);

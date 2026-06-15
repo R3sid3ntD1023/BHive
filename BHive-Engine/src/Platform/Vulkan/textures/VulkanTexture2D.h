@@ -17,7 +17,7 @@ namespace BHive
 
 		void GenerateMips() override;
 
-		const glm::uvec2& GetSize() const override { return mSize; }
+		glm::uvec2 GetSize() const override { return mSize; }
 
 		void SetData(const FTextureUploadInfo &info) override;
 

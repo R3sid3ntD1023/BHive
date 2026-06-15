@@ -121,12 +121,8 @@ namespace BHive
 		{
 			return type.get_method(GET_COMPONENT_FUNCTION_NAME).invoke({this}).get_value<Component *>();
 		}
-		else
-		{
-			return type.get_method(ADD_COMPONENT_FUNCTION_NAME).invoke({this}).get_value<Component *>();
-		}
 
-		return nullptr;
+		return type.get_method(ADD_COMPONENT_FUNCTION_NAME).invoke({this}).get_value<Component *>();
 	}
 
 	void GameObject::AddComponent(Component *component)
@@ -219,7 +215,7 @@ namespace BHive
 		return GetComponent<TransformComponent>()->Transform;
 	}
 
-	const AABB &GameObject::GetBounds() const
+	AABB GameObject::GetBounds() const
 	{
 		FSphere sphere{};
 		sphere.Radius = 10.f;

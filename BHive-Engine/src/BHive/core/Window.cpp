@@ -21,9 +21,6 @@ namespace BHive
 			glfwSetErrorCallback(GLFWErrorCallback);
 		}
 
-		GLFWmonitor *primary_monitor = glfwGetPrimaryMonitor();
-		const GLFWvidmode *video_mode = glfwGetVideoMode(primary_monitor);
-
 		GLFWwindow *shared_context = nullptr;
 		if (RenderCommand::GetAPI() == RendererAPI::Opengl)
 		{
@@ -182,8 +179,8 @@ namespace BHive
 
 		for (int i = 0; i < GLFW_JOYSTICK_LAST; i++)
 		{
-			auto status = glfwJoystickPresent(i);
-			if (status)
+			auto present = glfwJoystickPresent(i);
+			if (present)
 			{
 				WindowInput::OnJoyStickConnected(i, GLFW_CONNECTED);
 				break;

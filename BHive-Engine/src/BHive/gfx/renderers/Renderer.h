@@ -81,7 +81,7 @@ namespace BHive
 
 		void DrawElementsInstanced(ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count = 0);
 
-		void MultiDrawElementsIndirect(ETopologyMode mode, BufferBase* indirect, VertexArray* vao, size_t drawCount, size_t stride = 0, uint32_t start = 0);
+		void MultiDrawElementsIndirect(ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride = 0, uint32_t start = 0);
 
 		FAsyncPass* ExecuteComputePass(Pipeline *pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder);
 

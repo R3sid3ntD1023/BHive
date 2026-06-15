@@ -171,9 +171,9 @@ namespace BHive
 				const auto &textures = material_data.mTextureData;
 				const auto num_textures = textures.size();
 
-				for (size_t i = 0; i < num_textures; i++)
+				for (size_t texIdx = 0; texIdx < num_textures; texIdx++)
 				{
-					auto &texture_data = textures[i];
+					auto &texture_data = textures[texIdx];
 
 					auto &texture_asset = texture_resolver.Resolve(texture_data, mOptions.AssetPath.parent_path());
 
@@ -191,7 +191,7 @@ namespace BHive
 				mAdditionalAssets.push_back(material);
 			}
 
-			material_table.set_material(material, i);
+			material_table.set_material(material, (uint32_t)i);
 		}
 	}
 

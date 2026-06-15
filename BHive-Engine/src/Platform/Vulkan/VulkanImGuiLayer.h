@@ -25,18 +25,18 @@ namespace BHive
 	public:
 		VulkanImGuiLayer(GLFWwindow *windowHandle);
 
-		virtual void BeginFrame() override;
+		void BeginFrame() override;
 
 		static void ClearTextureMap();
 
 	protected:
-		virtual void Init() override;
+		void Init() override;
 
-		virtual void Shutdown() override;
+		void Shutdown() override;
 
-		virtual void OnRender(ImDrawData *drawData, const glm::ivec2& pos, const glm::uvec2 &size) override;
+		void OnSubmitRenderData(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size) override;
 
-		virtual ImTextureRef GetTextureIDImpl(const Texture &texture) override;
+		ImTextureRef GetTextureIDImpl(const Texture &texture) override;
 
 	private:
 		vk::raii::Device &mDevice;

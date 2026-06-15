@@ -34,7 +34,7 @@ namespace BHive
 
 		uint32_t GetMinImageCount() const { return mMinImageCount; }
 
-		uint32_t GetImageCount() const { return mImages.size(); }
+		uint32_t GetImageCount() const { return (uint32_t)mImages.size(); }
 
 	private:
 		vk::Device mDevice;

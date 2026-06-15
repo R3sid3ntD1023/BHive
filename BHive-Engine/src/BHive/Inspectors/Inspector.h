@@ -9,6 +9,7 @@ namespace BHive
 
 	struct Inspector
 	{
+		virtual ~Inspector() = default;
 
 		virtual bool inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData = {}, const bool is_read_only = false) = 0;
 

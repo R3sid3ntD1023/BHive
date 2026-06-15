@@ -27,7 +27,7 @@ namespace BHive
 	void AudioSource::Initialize()
 	{
 		alGenBuffers(1, &mAudioID);
-		alBufferData(mAudioID, mSpecification.mFormat, mBuffer.GetData(), mBuffer.GetSize(), mSpecification.mSampleRate);
+		alBufferData(mAudioID, mSpecification.mFormat, mBuffer.GetData(), (ALsizei)mBuffer.GetSize(), mSpecification.mSampleRate);
 
 		if (mSpecification.mStartLoop.has_value() && mSpecification.mEndLoop.has_value())
 		{

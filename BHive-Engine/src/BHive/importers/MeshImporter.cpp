@@ -108,8 +108,7 @@ namespace BHive
 			sub_mesh.StartIndex = (int32_t)data.mIndices.size();
 			sub_mesh.IndexCount = mesh->mNumFaces * 3;
 			sub_mesh.Transformation = node_matrix;
-			if (mesh->mMaterialIndex >= 0)
-				sub_mesh.MaterialIndex = mesh->mMaterialIndex;
+			sub_mesh.MaterialIndex = mesh->mMaterialIndex;
 
 			std::vector<FVertex> vertices(mesh->mNumVertices);
 			std::vector<uint32_t> indices(mesh->mNumFaces * 3);
@@ -282,8 +281,6 @@ namespace BHive
 			aiMatrix4x4 global_inverse_matrix = scene->mRootNode->mTransformation;
 			global_inverse_matrix = global_inverse_matrix.Inverse();
 
-			int32_t bone_count = (int32_t)bones.size();
-
 			for (unsigned int i = 0; i < scene->mNumAnimations; i++)
 			{
 				aiAnimation *animation = scene->mAnimations[i];
@@ -416,8 +413,6 @@ namespace BHive
 
 				for (unsigned j = 1; j < 9; j++)
 				{
-					auto texture_count = loaded_material->GetTextureCount(supported_textures[j]);
-
 					if (loaded_material->GetTexture(supported_textures[j], 0, &str) == aiReturn_SUCCESS)
 					{
 						if (!material.mLoadedTextureNames.contains(str.C_Str()))

@@ -25,7 +25,7 @@ namespace BHive
 
 	FPSCounter::operator float() const
 	{
-		return mFPS;
+		return (float)mFPS;
 	}
 
 	FPSCounter &FPSCounter::Get()

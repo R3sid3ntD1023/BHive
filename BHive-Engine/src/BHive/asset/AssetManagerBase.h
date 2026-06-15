@@ -12,6 +12,8 @@ namespace BHive
 	class BHIVE_API AssetManagerBase
 	{
 	public:
+		virtual ~AssetManagerBase() = default;
+
 		virtual Ref<Asset> GetAsset(UUID handle) = 0;
 
 		virtual bool IsAssetHandleValid(UUID handle) const = 0;

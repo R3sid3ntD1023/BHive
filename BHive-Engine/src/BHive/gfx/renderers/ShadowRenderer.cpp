@@ -231,7 +231,7 @@ namespace BHive
 	{
 		if (bindings)
 		{
-			auto &fbos = mShadowRenderData->ShadowPasses.FBOs;
+			//auto &fbos = mShadowRenderData->ShadowPasses.FBOs;
 			/*fbos[0]->GetDepthAttachment()->Bind(bindings[0]);
 			fbos[1]->GetDepthAttachment()->Bind(bindings[1]);
 			fbos[2]->GetDepthAttachment()->Bind(bindings[2]);*/

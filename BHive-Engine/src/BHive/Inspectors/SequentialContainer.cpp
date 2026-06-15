@@ -72,8 +72,6 @@ namespace BHive
 
 		if (ImGui::TreeNodeEx("##Elements", treeflags))
 		{
-			auto width = ImGui::GetContentRegionAvail().x;
-
 			for (size_t i = 0; i < data.get_size(); i++)
 			{
 

@@ -50,9 +50,7 @@ namespace BHive
 
 		auto token = "#type";
 		auto version_token = "#version";
-
 		auto token_length = strlen(token);
-		auto version_length = strlen(version_token);
 
 		auto token_pos = source.find(token, 0);
 		if (token_pos == std::string::npos)
@@ -78,7 +76,7 @@ namespace BHive
 			auto code = (pos == std::string::npos) ? source.substr(next_pos) : source.substr(next_pos, pos - next_pos);
 			{
 				auto v_start = code.find_first_of(version_token);
-				auto v_end = code.find_first_of('\r\n', v_start);
+				auto v_end = code.find_first_of("\r\n", v_start);
 				code.insert(code.begin() + v_end, preprocessors.begin(), preprocessors.end());
 			}
 

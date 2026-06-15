@@ -25,7 +25,7 @@ namespace BHive
 
 		bool IsDone() override { return Device.getFenceStatus(Fence) == vk::Result::eSuccess;}
 
-		void Wait() override { auto result =  Device.waitForFences(Fence, VK_TRUE, UINT64_MAX);}
+		bool Wait() override { return Device.waitForFences(Fence, VK_TRUE, UINT64_MAX) == vk::Result::eSuccess; }
 
 		void Destroy() override
 		{
@@ -148,9 +148,6 @@ namespace BHive
 
 		vk::DebugUtilsLabelEXT label_info("Main Pass", std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
 		cmd.beginDebugUtilsLabelEXT(label_info);
-
-		auto &renderer = Renderer::Get();
-		const auto &views = renderer.GetViewSystem().GetAllViews();
 
 		FVulkanRendererContext vk_ctx{cmd, current_frame, imageIndex, 0};
 
@@ -342,7 +339,7 @@ namespace BHive
 	
 	}
 
-	void VulkanRendererAPI::MultiDrawElementsIndirect(FRenderGraphPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, size_t drawCount, size_t stride, uint32_t offset)
+	void VulkanRendererAPI::MultiDrawElementsIndirect(FRenderGraphPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride, uint32_t offset)
 	{
 		vao->Bind();
 

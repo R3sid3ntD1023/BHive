@@ -49,7 +49,7 @@ namespace BHive
 
 	Ref<Material> MaterialTable::operator[](size_t index) const
 	{
-		ASSERT(index >= 0 && index < mMaterials.size());
+		ASSERT(index < mMaterials.size());
 
 		return mMaterials[index];
 	}

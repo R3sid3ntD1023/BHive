@@ -4,9 +4,7 @@ namespace BHive
 {
 	void SimulationCallback::onContact(const PxContactPairHeader &pairheader, const PxContactPair *pairs, PxU32 nbPairs)
 	{
-		for (PxU32 i = 0; i < nbPairs; i++)
-		{
-		}
+
 	}
 
 	void SimulationCallback::onTrigger(PxTriggerPair *pairs, PxU32 count)

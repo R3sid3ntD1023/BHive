@@ -8,15 +8,7 @@ namespace BHive
 {
 	struct BHIVE_API FColor
 	{
-		union
-		{
-			struct
-			{
-				float r, g, b, a;
-			};
-
-			float c[4];
-		};
+		float r, g, b, a;
 
 		FColor();
 
@@ -29,10 +21,6 @@ namespace BHive
 		FColor(float v);
 
 		FColor(float _r, float _g, float _b, float _a = 1.0f);
-
-		float &operator[](int index);
-
-		float operator[](int index) const;
 
 		FColor &operator=(const FColor &rhs);
 

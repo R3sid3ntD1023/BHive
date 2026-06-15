@@ -83,6 +83,8 @@ namespace BHive
 	
 	struct FComputeBindings
 	{
+		virtual ~FComputeBindings() = default;
+
 		virtual void StorageImage(const char *name, const FImageInfo& info) = 0;
 
 		virtual void SampledImage(const char *name, const FImageInfo &info) = 0;
@@ -116,7 +118,7 @@ namespace BHive
 
 		virtual bool IsDone() = 0;
 
-		virtual void Wait() = 0;
+		virtual bool Wait() = 0;
 
 		virtual void Destroy() = 0;
 

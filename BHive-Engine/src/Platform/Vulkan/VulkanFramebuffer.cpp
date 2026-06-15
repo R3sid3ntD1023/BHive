@@ -80,18 +80,16 @@ namespace BHive
 				// transition images
 				for (size_t i = 0; i < color_attachments.size(); i++)
 				{
-					auto &spec = color_specifications[i];
+					auto &color_spec = color_specifications[i];
 					auto tex = color_attachments[i]->GetNativeHandle().As<VulkanImage>();
 
-					ImageSubresource sub{spec.MipLevel, 1,  spec.Layer, spec.LayerCount};
+					ImageSubresource sub{color_spec.MipLevel, 1,  color_spec.Layer, color_spec.LayerCount};
 					tex->Transition(vk_ctx.CommandBuffer, ImageState::ColorAttachment(), sub);
 				}
 
 				if (depth_attachment)
 				{
-					auto &spec = depth_specification;
 					auto tex = depth_attachment->GetNativeHandle().As<VulkanImage>();
-
 					tex->Transition(vk_ctx.CommandBuffer, ImageState::DepthStencilAttachment());
 				}
 
@@ -104,8 +102,8 @@ namespace BHive
 
 				for (size_t i = 0; i < num_color_attachments; i++)
 				{
-					auto& spec = color_specifications[i];
-					auto vkTex = reinterpret_cast<VkImageView>(color_attachments[i]->GetRenderView(current_face, spec.MipLevel).AsRaw());
+					auto& color_spec = color_specifications[i];
+					auto vkTex = reinterpret_cast<VkImageView>(color_attachments[i]->GetRenderView(current_face, color_spec.MipLevel).AsRaw());
 
 					auto info = vk::RenderingAttachmentInfo(
 						vkTex, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
@@ -116,8 +114,8 @@ namespace BHive
 
 				if (depth_attachment)
 				{
-					auto &spec = depth_specification;
-					auto vkTex = reinterpret_cast<VkImageView>(depth_attachment->GetRenderView(current_face, spec.MipLevel).AsRaw());
+					auto &depth_spec = depth_specification;
+					auto vkTex = reinterpret_cast<VkImageView>(depth_attachment->GetRenderView(current_face, depth_spec.MipLevel).AsRaw());
 
 					depth_info = vk::RenderingAttachmentInfo(
 						vkTex, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,

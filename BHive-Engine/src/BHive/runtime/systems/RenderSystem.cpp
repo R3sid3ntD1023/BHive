@@ -19,7 +19,7 @@ namespace BHive
 			{
 				if (component.IsPrimary)
 				{
-					const auto proj = component.Camera.GetProjection();
+					const auto& proj = component.Camera.GetProjection();
 					const auto view = transform.GetWorldTransform().Inverse();
 
 					if (world->IsRunning())
@@ -46,7 +46,7 @@ namespace BHive
 
 				FDirectionalLightCreateInfo create_info{};
 				create_info.Color = c.Color;
-				create_info.Direction = c.GetWorldTransform().GetForward();
+				create_info.Direction = glm::vec4(c.GetWorldTransform().GetForward(), 0.0f);
 
 				renderer->SubmitLight(create_info);
 			}
@@ -62,7 +62,7 @@ namespace BHive
 
 				FPointLightCreateInfo create_info{};
 				create_info.Color = c.Color;
-				create_info.Position = world_transform.GetTranslation();
+				create_info.Position = glm::vec4(world_transform.GetTranslation(), 1.0f);
 				create_info.Radius = c.Radius * max_scale;
 
 				renderer->SubmitLight(create_info);
@@ -82,8 +82,8 @@ namespace BHive
 				FSpotLightCreateInfo create_info{};
 				create_info.Color = c.Color;
 				create_info.Radius = c.Radius * max_scale;
-				create_info.Direction = world_transform.GetForward();
-				create_info.Position = world_transform.GetTranslation();
+				create_info.Direction = glm::vec4(world_transform.GetForward(), 0.f);
+				create_info.Position = glm::vec4(world_transform.GetTranslation(), 1.f);
 				create_info.InnerCutoff = c.InnerCutoff;
 				create_info.OuterCutoff = c.OuterCutoff;
 
@@ -183,10 +183,10 @@ namespace BHive
 				if (!c.SpriteAsset)
 					continue;
 
-				FQuadParams params{};
+				/*FQuadParams params{};
 				params.Color = c.Color;
 				params.Size = c.Size;
-				params.Tiling = c.Tiling;
+				params.Tiling = c.Tiling;*/
 
 				//QuadRenderer::DrawSprite(params, c.SpriteAsset, c.GetWorldTransform(), (int32_t)e);
 			}
@@ -194,12 +194,12 @@ namespace BHive
 
 		{
 			auto view = registry.view<TextComponent>();
-			for (const auto &e : view)
-			{
-				auto &c = view.get<TextComponent>(e);
+			//for (const auto &e : view)
+			//{
+			//	//auto &c = view.get<TextComponent>(e);
 
-				//QuadRenderer::DrawText(c.Size, c.Text, c.Params, c.GetWorldTransform(), (int32_t)e);
-			}
+			//	//QuadRenderer::DrawText(c.Size, c.Text, c.Params, c.GetWorldTransform(), (int32_t)e);
+			//}
 		}
 
 		if (render_settings.DrawColliders)

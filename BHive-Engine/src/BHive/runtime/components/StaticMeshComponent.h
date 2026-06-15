@@ -7,13 +7,12 @@ namespace BHive
 {
 	struct BHIVE_API StaticMeshComponent : public Component
 	{
-
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent &other) = default;
 
-		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+		void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::BinaryInputArchive &ar) override;
+		void Load(cereal::BinaryInputArchive &ar) override;
 
 		const Ref<StaticMesh> &GetStaticMesh() const { return mStaticMeshAsset; }
 

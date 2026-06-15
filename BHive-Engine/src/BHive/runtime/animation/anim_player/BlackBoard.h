@@ -13,7 +13,7 @@ namespace BHive
 
 	public:
 		BlackBoard() = default;
-		~BlackBoard() = default;
+		virtual ~BlackBoard() = default;
 
 		bool AddKey(const std::string &name, const Ref<BlackBoardKey> &key);
 

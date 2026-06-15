@@ -119,7 +119,7 @@ namespace BHive
 		if (elements.size() == 0)
 			return;
 
-		uint32_t binding = mBindings.size();
+		uint32_t binding = (uint32_t)mBindings.size();
 
 		mBindings.emplace_back(vk::VertexInputBindingDescription2EXT(binding, stride, vk::VertexInputRate::eVertex));
 

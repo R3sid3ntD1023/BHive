@@ -28,6 +28,8 @@ namespace BHive
 
 		GameObject(const GameObject &) = default;
 
+		virtual ~GameObject() = default;
+
 		virtual void Begin();
 
 		virtual void Update(float dt);
@@ -111,7 +113,7 @@ namespace BHive
 
 		const FTransform &GetLocalTransform() const;
 
-		const AABB &GetBounds() const;
+		AABB GetBounds() const;
 
 		const uint64_t GetGroup() const;
 

@@ -25,7 +25,7 @@ namespace BHive
 
 		Ref<VertexArray> &GetVertexArray() { return mVertexArray; }
 
-		virtual const AABB &GetBoundingBox() const { return mData.mBoundingBox; }
+		virtual AABB GetBoundingBox() const { return mData.mBoundingBox; }
 
 		const FMeshData &GetData() const { return mData; }
 
@@ -33,14 +33,16 @@ namespace BHive
 
 		MaterialTable &GetMaterialTable() { return mMaterialTable; }
 
-		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
+		void Save(cereal::BinaryOutputArchive &ar) const override;
 
-		virtual void Load(cereal::BinaryInputArchive &ar) override;
+		void Load(cereal::BinaryInputArchive &ar) override;
 
 		iterator begin() { return mData.mSubMeshes.begin(); }
+
 		iterator end() { return mData.mSubMeshes.end(); }
 
 		const_iterator begin() const { return mData.mSubMeshes.begin(); }
+
 		const_iterator end() const { return mData.mSubMeshes.end(); }
 
 		REFLECTABLEV(Asset)
@@ -50,7 +52,9 @@ namespace BHive
 
 	private:
 		FMeshData mData;
+
 		Ref<VertexArray> mVertexArray;
+
 		MaterialTable mMaterialTable;
 	};
 

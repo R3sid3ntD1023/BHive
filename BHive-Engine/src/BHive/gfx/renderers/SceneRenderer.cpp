@@ -207,8 +207,8 @@ namespace BHive
 
 	void SceneRenderer::SubmitLight(const FSpotLightCreateInfo &info)
 	{
-		auto inner = glm::cos(glm::radians(info.InnerCutoff));
-		auto outer = glm::cos(glm::radians(info.OuterCutoff));
+		/*auto inner = glm::cos(glm::radians(info.InnerCutoff));
+		auto outer = glm::cos(glm::radians(info.OuterCutoff));*/
 		mSceneRenderData->Lights.Submit(info);
 
 		FShadowFrustumCreateInfo shadow_info;
@@ -232,7 +232,6 @@ namespace BHive
 			return;
 
 		auto &sub_meshes = mesh->GetSubMeshes();
-		float distance = GetDistanceToCamera(transform);
 
 		for (auto &sub_mesh : sub_meshes)
 		{
@@ -299,12 +298,12 @@ namespace BHive
 		Renderer::Get().SetViewport(0, 0, size.x, size.y);
 	}
 
-	const Ref<Texture> &SceneRenderer::GetColorAttachment(uint32_t index) const
+	Ref<Texture> SceneRenderer::GetColorAttachment(uint32_t index) const
 	{
 		return mFinalFramebuffer->GetColorAttachment(index);
 	}
 
-	const Ref<Texture> &SceneRenderer::GetDepthAttachment() const
+	Ref<Texture> SceneRenderer::GetDepthAttachment() const
 	{
 		return mFinalFramebuffer->GetDepthAttachment();
 	}

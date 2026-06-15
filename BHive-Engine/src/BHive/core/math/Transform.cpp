@@ -156,7 +156,7 @@ namespace BHive
 
 	bool FTransform::operator==(const FTransform &rhs) const
 	{
-		return mData == rhs.mData;
+		return mData[0] == rhs.mData[0] && mData[1] == rhs.mData[1] && mData[2] == rhs.mData[2];
 	}
 
 	glm::vec3 &FTransform::operator[](int index)

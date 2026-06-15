@@ -20,13 +20,12 @@ namespace BHive
 	};
 
 	static VKAPI_ATTR vk::Bool32 VKAPI_CALL
-	debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
+	debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity, vk::DebugUtilsMessageTypeFlagsEXT messageType, const vk::DebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
 	{
-		auto message_type = static_cast<vk::DebugUtilsMessageTypeFlagsEXT>(messageType);
-		auto message_type_string = vk::to_string(message_type);
+		auto message_type_string = vk::to_string(messageType);
 		auto registry = reinterpret_cast<VulkanBackend::DebugNameRegistry *>(pUserData);
 
-		if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+		if (messageSeverity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
 		{
 			for (uint32_t i = 0; i < pCallbackData->objectCount; i++)
 			{
@@ -40,20 +39,17 @@ namespace BHive
 
 		switch (messageSeverity)
 		{
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+		case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
 			LOG_TRACE("{} : {}", message_type_string, pCallbackData->pMessage);
 			break;
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+		case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
 			LOG_INFO("{} : {}", message_type_string, pCallbackData->pMessage);
 			break;
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+		case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
 			LOG_WARN("{} : {}", message_type_string, pCallbackData->pMessage);
 			break;
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+		case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
 			LOG_ERROR("{} : {}", message_type_string, pCallbackData->pMessage);
-			break;
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
-			LOG_CRITICAL("{} : {}", message_type_string, pCallbackData->pMessage);
 			break;
 		default:
 			break;
@@ -196,7 +192,7 @@ namespace BHive
 			}
 		}
 
-		return ~0;
+		return ~0u;
 	}
 
 	uint32_t VulkanBackend::SelectQueueIndex(vk::QueueFlags queue_type)
@@ -210,7 +206,7 @@ namespace BHive
 			}
 		}
 
-		return ~0;
+		return ~0u;
 	}
 
 	vk::Semaphore VulkanBackend::GetRenderFinishedSemaphore(uint32_t imageIndex)
@@ -243,7 +239,6 @@ namespace BHive
 #ifdef ENABLE_VALIDATION_LAYERS
 		enabled_layers.assign(s_validationLayers.begin(), s_validationLayers.end());
 		required_extensions.push_back(vk::EXTDebugUtilsExtensionName);
-		required_extensions.push_back(vk::EXTValidationFeaturesExtensionName);
 #endif
 
 		if (std::ranges::any_of(
@@ -256,7 +251,6 @@ namespace BHive
 
 		for (uint32_t i = 0; i < glfwExtensionCount; i++)
 		{
-			bool found = false;
 			if (std::ranges::none_of(extensionProperties, [glfwExtensions, i](const vk::ExtensionProperties &prop) { return strcmp(prop.extensionName, glfwExtensions[i]) == 0; }))
 			{
 				LOG_ERROR("Missing required Vulkan extension: {}", glfwExtensions[i]);
@@ -281,6 +275,7 @@ namespace BHive
 		auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError |
 						 vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
 		auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+
 
 		vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, debugCallback, &mDebugNames);
 		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions, &enabled);

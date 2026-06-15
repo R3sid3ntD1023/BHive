@@ -15,11 +15,11 @@ namespace BHive
 		EditorAssetManager(const std::filesystem::path &directory, const std::string &fileName);
 		~EditorAssetManager();
 
-		virtual Ref<Asset> GetAsset(UUID handle) override;
+		Ref<Asset> GetAsset(UUID handle) override;
 
-		virtual bool IsAssetHandleValid(UUID handle) const override;
-		virtual bool IsAssetLoaded(UUID handle) const override;
-		virtual rttr::type GetAssetType(UUID handle) const override;
+		bool IsAssetHandleValid(UUID handle) const override;
+		bool IsAssetLoaded(UUID handle) const override;
+		rttr::type GetAssetType(UUID handle) const override;
 
 		void ImportAsset(const std::filesystem::path &path, const rttr::type &type, const UUID &handle);
 		bool RemoveAsset(UUID handle);

@@ -217,25 +217,25 @@ namespace BHive
 	}
 
 
-	const vk::Image &GPUResourceManager::GetImage(const ResourceID &handle)
+	vk::Image GPUResourceManager::GetImage(const ResourceID &handle)
 	{
 		auto &storage = GetStorage<vk::raii::Image>();
 		return *storage.Get(handle);
 	}
 
-	const vk::ImageView &GPUResourceManager::GetImageView(const ResourceID &handle)
+	vk::ImageView GPUResourceManager::GetImageView(const ResourceID &handle)
 	{
 		auto &storage = GetStorage<vk::raii::ImageView>();
 		return *storage.Get(handle);
 	}
 
-	const vk::Sampler &GPUResourceManager::GetSampler(const ResourceID &handle)
+	vk::Sampler GPUResourceManager::GetSampler(const ResourceID &handle)
 	{
 		auto &storage = GetStorage<vk::raii::Sampler>();
 		return storage.Get(handle);
 	}
 
-	const vk::Buffer &GPUResourceManager::GetBuffer(const ResourceID &handle)
+	vk::Buffer GPUResourceManager::GetBuffer(const ResourceID &handle)
 	{
 		auto &storage = GetStorage<vk::raii::Buffer>();
 		return *storage.Get(handle);

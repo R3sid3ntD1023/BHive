@@ -16,6 +16,8 @@ namespace BHive
 
 		struct StorageBase
 		{
+			virtual ~StorageBase() = default;
+
 			virtual void Remove(const ResourceID& handle) = 0;
 		};
 
@@ -97,13 +99,13 @@ namespace BHive
 		void DestroyImage(GPUImage& image);
 		//-------------------getters------------------------------
 
-		const vk::Image& GetImage(const ResourceID &handle);
+		vk::Image GetImage(const ResourceID &handle);
 
-		const vk::ImageView& GetImageView(const ResourceID &handle);
+		vk::ImageView GetImageView(const ResourceID &handle);
 
-		const vk::Sampler& GetSampler(const ResourceID &handle);
+		vk::Sampler GetSampler(const ResourceID &handle);
 
-		const vk::Buffer& GetBuffer(const ResourceID &handle);
+		vk::Buffer GetBuffer(const ResourceID &handle);
 
 		template<typename T>
 		Storage<T>& GetStorage()

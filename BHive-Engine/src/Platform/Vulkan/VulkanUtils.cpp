@@ -45,6 +45,7 @@ namespace BHive
 		}
 
 		ASSERT(false, "failed to find supported format!");
+		return vk::Format::eUndefined;
 	}
 
 	vk::Extent2D VulkanUtils::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities, uint32_t w, uint32_t h)
@@ -101,7 +102,7 @@ namespace BHive
 		vk::DeviceSize requested = size;
 		vk::DeviceSize minAlloc = (requested + atom - 1) & ~(atom - 1);
 
-		vk::BufferCreateInfo bufferCreateInfo({}, size, usage, vk::SharingMode::eExclusive);
+		vk::BufferCreateInfo bufferCreateInfo({}, minAlloc, usage, vk::SharingMode::eExclusive);
 		buffer = vk::raii::Buffer(device, bufferCreateInfo);
 	}
 

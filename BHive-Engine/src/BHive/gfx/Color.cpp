@@ -60,18 +60,6 @@ namespace BHive
 		return *this;
 	}
 
-	float &FColor::operator[](int index)
-	{
-		ASSERT(index >= 0 && index < 4);
-		return c[index];
-	}
-
-	float FColor::operator[](int index) const
-	{
-		ASSERT(index >= 0 && index < 4);
-		return c[index];
-	}
-
 	bool FColor::operator==(const FColor &rhs) const
 	{
 		return r == rhs.r && g == rhs.g && b == rhs.b && a == rhs.a;

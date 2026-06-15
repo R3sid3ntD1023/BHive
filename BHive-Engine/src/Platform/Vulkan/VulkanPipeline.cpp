@@ -100,8 +100,7 @@ namespace BHive
 			[=](IRendererContext &ctx) 
 			{
 				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
-				const auto frame = vk_ctx.Frame;
-
+	
 				auto sets =  UpdateSets(vk_ctx.Frame);
 				
 				vk_ctx.CommandBuffer.bindPipeline(mBindPoint, mPipeline); 
@@ -145,7 +144,6 @@ namespace BHive
 	{
 		if (!mSetManagers.contains(groupIndex))
 		{
-			auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
 			auto refl = mProgram->GetRefl();
 			auto layout = mShader->GetDescriptorSetLayout(groupIndex);
 
@@ -269,7 +267,7 @@ namespace BHive
 			color_attachment_formats.emplace_back(ToVkFormat(format));
 
 		vk::PipelineRenderingCreateInfo rendering_info{};
-		rendering_info.setViewMask(0).setColorAttachmentCount(color_attachment_formats.size()).setColorAttachmentFormats(color_attachment_formats).setDepthAttachmentFormat(depth_attachment_format);
+		rendering_info.setViewMask(0).setColorAttachmentFormats(color_attachment_formats).setDepthAttachmentFormat(depth_attachment_format);
 
 		vk::GraphicsPipelineCreateInfo pipeline_info{};
 		pipeline_info.setStages(shader_create_infos)

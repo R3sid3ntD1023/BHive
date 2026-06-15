@@ -32,7 +32,7 @@ namespace BHive
 
 		bool mIsMouse{false};
 
-		friend class FInputAction;
+		friend struct FInputAction;
 	};
 
 	REFLECT_INLINE(FInputKey)

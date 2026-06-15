@@ -212,7 +212,7 @@ namespace BHive
 		mAPI->DrawElementsInstanced(pass, mode, vao, instances, count);
 	}
 
-	void Renderer::MultiDrawElementsIndirect(ETopologyMode mode, BufferBase* indirect, VertexArray* vao, size_t drawCount, size_t stride, uint32_t start)
+	void Renderer::MultiDrawElementsIndirect(ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride, uint32_t start)
 	{
 		auto pass = &GetActivePass();
 		mAPI->MultiDrawElementsIndirect(pass, mode, indirect, vao, drawCount, stride, stride * start);

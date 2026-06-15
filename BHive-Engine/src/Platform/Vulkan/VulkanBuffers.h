@@ -124,6 +124,6 @@ namespace BHive
 
 	private:
 		VulkanPerFrameHostBuffer mPerFrameBuffer;
-		uint32_t mSize{0};
+		size_t mSize{0};
 	};
 } // namespace BHive
