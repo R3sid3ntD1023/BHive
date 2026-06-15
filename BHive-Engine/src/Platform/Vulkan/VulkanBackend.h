@@ -44,6 +44,8 @@ namespace BHive
 
 		void EnsurePresentSupportForSurface(const vk::SurfaceKHR &surface);
 
+		void CreatePerImageSync(uint32_t imgCount);
+
 		// device lifecycle callbacks
 		void RegisterOnDeviceCreated(const DeviceCallback &callback);
 
@@ -95,6 +97,12 @@ namespace BHive
 
 		static VulkanSwapChain &GetSwapChain() { return *Get().mSwapChain; }
 
+		static vk::Semaphore GetRenderFinishedSemaphore(uint32_t imageIndex);
+
+		static vk::Semaphore GetImageAvailableSemaphore(uint32_t frame);
+
+		static vk::Fence GetInFlightFence(uint32_t frame);
+
 		struct DebugNameRegistry
 		{
 			std::unordered_map<uint64_t, std::string> Names;
@@ -125,6 +133,9 @@ namespace BHive
 
 		void CreateSwapChain(GLFWwindow* window);
 
+		void CreateSyncObjects();
+
+		
 		void CreateCommandBuffers();
 
 		void CreateImmediateCommandPool();
@@ -156,6 +167,10 @@ namespace BHive
 
 		vk::raii::CommandBuffers mCommandBuffers = nullptr;
 
+		std::vector<vk::raii::Semaphore> mPresentSemaphores; // per frame
+		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores; // per image
+		std::vector<vk::raii::Fence> mInFlightFences; // per frame
+
 		VkQueueFamilies mQueueFamilies;
 
 		bool mInitialized = false;
@@ -171,6 +186,9 @@ namespace BHive
 		DebugNameRegistry mDebugNames;
 
 		Scope<VulkanSwapChain> mSwapChain;
+
+		
+
 	};
 
 	

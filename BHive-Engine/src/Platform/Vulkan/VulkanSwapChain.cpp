@@ -61,7 +61,11 @@ namespace BHive
 
 		
 		auto images = mSwapChain.getImages();
-		mImages.resize(images.size());
+		auto imageCount = images.size();
+
+		mImages.resize(imageCount);
+
+		VulkanBackend::Get().CreatePerImageSync((uint32_t)imageCount);
 
 		for (size_t i = 0; i < images.size(); i++)
 		{
@@ -77,24 +81,6 @@ namespace BHive
 			auto range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
 			info.ViewCI = vk::ImageViewCreateInfo({}, raw, vk::ImageViewType::e2D, mImageFormat.format, {}, range); 
 			img.Initialize(raw, info);
-		}
-
-		auto image_count = static_cast<uint32_t>(mImages.size());
-
-		mRenderFinishedSemaphores.reserve(image_count);
-		mPresentSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
-		mInFlightFences.reserve(MAX_FRAMES_IN_FLIGHT);
-
-		for (uint32_t i = 0; i < image_count; i++)
-		{	
-			mRenderFinishedSemaphores.emplace_back(device, vk::SemaphoreCreateInfo());	
-
-			if (i < MAX_FRAMES_IN_FLIGHT)
-			{
-				mPresentSemaphores.emplace_back(device, vk::SemaphoreCreateInfo());
-
-				mInFlightFences.emplace_back(device, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
-			}
 		}
 
 		mDepthFormat = VulkanUtils::FindDepthFormat();
@@ -126,7 +112,8 @@ namespace BHive
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)
 	{
-		vk::Fence fence = mInFlightFences[frame];
+		vk::Fence fence = VulkanBackend::GetInFlightFence(frame);
+
 		if (fence)
 		{
 			while(vk::Result::eTimeout ==  mDevice.waitForFences(fence, VK_TRUE, UINT64_MAX));
@@ -136,15 +123,15 @@ namespace BHive
 
 	vk::ResultValue<uint32_t> VulkanSwapChain::AquireNextImage(uint32_t frame)
 	{
-		vk::Semaphore present = mPresentSemaphores[frame]; //per frame
+		vk::Semaphore present = VulkanBackend::GetImageAvailableSemaphore(frame);
 		return  mSwapChain.acquireNextImage(UINT64_MAX, present, VK_NULL_HANDLE);
 	}
 
 	vk::Result VulkanSwapChain::Present(vk::CommandBuffer cmd, uint32_t imageIndex, uint32_t frame)
 	{
-		vk::Fence fence = mInFlightFences[frame];
-		vk::Semaphore wait_semaphore = mPresentSemaphores[frame];
-		vk::Semaphore signal_semaphore = mRenderFinishedSemaphores[imageIndex];
+		vk::Fence fence = VulkanBackend::GetInFlightFence(frame);
+		vk::Semaphore wait_semaphore = VulkanBackend::GetImageAvailableSemaphore(frame);
+		vk::Semaphore signal_semaphore = VulkanBackend::GetRenderFinishedSemaphore(imageIndex);
 
 		vk::SemaphoreSubmitInfo wait_info(wait_semaphore, 0, vk::PipelineStageFlagBits2::eAllCommands);
 		vk::CommandBufferSubmitInfo cmd_submit_info(cmd);

@@ -115,6 +115,7 @@ namespace BHive
 		CreateLogicalDevice(mSurface);
 		CreateSwapChain(window);
 		CreateCommandBuffers();
+		CreateSyncObjects();
 
 		auto log_info = [=](std::ofstream &log)
 		{
@@ -210,6 +211,21 @@ namespace BHive
 		}
 
 		return ~0;
+	}
+
+	vk::Semaphore VulkanBackend::GetRenderFinishedSemaphore(uint32_t imageIndex)
+	{
+		return Get().mRenderFinishedSemaphores.at(imageIndex);
+	}
+
+	vk::Semaphore VulkanBackend::GetImageAvailableSemaphore(uint32_t frame)
+	{
+		return Get().mPresentSemaphores.at(frame);
+	}
+
+	vk::Fence VulkanBackend::GetInFlightFence(uint32_t frame)
+	{
+		return Get().mInFlightFences.at(frame);
 	}
 
 	void VulkanBackend::CreateIntance()
@@ -359,6 +375,25 @@ namespace BHive
 		}
 	
 		mSwapChain = CreateScope<VulkanSwapChain>(mDevice, mSurface, (uint32_t)w, (uint32_t)h);
+	}
+
+	void VulkanBackend::CreateSyncObjects()
+	{
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			mPresentSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
+			mInFlightFences.emplace_back(mDevice, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
+		}
+	}
+
+	void VulkanBackend::CreatePerImageSync(uint32_t imgCount)
+	{
+		mRenderFinishedSemaphores.clear();
+
+		for (uint32_t i = 0; i < imgCount; i++)
+		{
+			mRenderFinishedSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
+		}
 	}
 
 	void VulkanBackend::CreateCommandBuffers()
