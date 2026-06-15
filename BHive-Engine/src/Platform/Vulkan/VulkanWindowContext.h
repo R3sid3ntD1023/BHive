@@ -28,12 +28,13 @@ namespace BHive
 
 		bool OnWindowResized(WindowResizeEvent& e);
 
-		void RequestSwapChainRecreate(int w, int h);
-
 	private:
 		GLFWwindow *mWindowHandle = nullptr;
 
 		bool mIsMinimized = false;
-		
+		bool mHasPendingResize = false;
+		uint32_t mPendingWidth = 0;
+		uint32_t mPendingHeight = 0;
+		std::chrono::steady_clock::time_point mLastResizeTime;	
 	};
 } // namespace BHive

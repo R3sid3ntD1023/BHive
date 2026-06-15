@@ -4,11 +4,22 @@
 
 namespace BHive
 {
-
-	VulkanSwapChain::VulkanSwapChain()
-		: mDevice(VulkanBackend::GetLogicalDevice())
+	VulkanSwapChain::VulkanSwapChain(vk::raii::Device &device, vk::SurfaceKHR surface, uint32_t w, uint32_t h)
+		: mDevice(device),
+		  mSurface(surface)
 	{
-		
+
+		auto &physical_device = VulkanBackend::GetPhysicalDevice();
+		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(surface);
+		auto formats = physical_device.getSurfaceFormatsKHR(surface);
+		auto presentModes = physical_device.getSurfacePresentModesKHR(surface);
+
+		mExtent = VulkanUtils::ChooseSwapExtent(surfaceCapabilities, w, h);
+		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(formats);
+		mPresentMode= VulkanUtils::ChooseSwapPresentMode(presentModes);
+		mMinImageCount = VulkanUtils::ChooseMinImageCount(mCapabilities);
+
+		Init(device, mExtent.width, mExtent.height);
 	}
 
 	VulkanSwapChain::~VulkanSwapChain()
@@ -21,27 +32,36 @@ namespace BHive
 		mDepthImage.Destroy();
 	}
 
-	void VulkanSwapChain::Init(vk::SurfaceKHR surface, const VulkanSwapChainCreateInfo &create_info)
+	void VulkanSwapChain::Init(vk::raii::Device &device, uint32_t w, uint32_t h)
 	{
-		mImages.clear();
-		mPresentSemaphores.clear();
-		mRenderFinishedSemaphores.clear();
-		mInFlightFences.clear();
+		mDevice = device;
+		mExtent = vk::Extent2D(w, h);
+	
+		vk::SwapchainCreateInfoKHR swap_chain_create_info
+		(
+			{}, 
+			mSurface, 
+			mMinImageCount, 
+			mImageFormat.format, 
+			mImageFormat.colorSpace, 
+			mExtent, 
+			1, 
+			vk::ImageUsageFlagBits::eColorAttachment,
+			vk::SharingMode::eExclusive, 
+			{},
+			mCapabilities.currentTransform, 
+			vk::CompositeAlphaFlagBitsKHR::eOpaque, 
+			mPresentMode, 
+			true, 
+			nullptr,
+			nullptr
+		);
 
-		mExtent = VulkanUtils::ChooseSwapExtent(create_info.Capabilities, create_info.Width, create_info.Height);
-		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(create_info.Formats);
-		mMinImageCount = VulkanUtils::ChooseMinImageCount(create_info.Capabilities);
+		mSwapChain = device.createSwapchainKHR(swap_chain_create_info);
 
-		auto present_mode = VulkanUtils::ChooseSwapPresentMode(create_info.PresentModes);
-		vk::SwapchainCreateInfoKHR swap_chain_create_info(
-			{}, surface, mMinImageCount, mImageFormat.format, mImageFormat.colorSpace, mExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, {},
-			create_info.Capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, present_mode, true, nullptr, nullptr);
-
-		mSwapChain = mDevice.createSwapchainKHR(swap_chain_create_info);
+		
 		auto images = mSwapChain.getImages();
-
 		mImages.resize(images.size());
-		auto& mng = VulkanBackend::GetGPUResourceManager();
 
 		for (size_t i = 0; i < images.size(); i++)
 		{
@@ -67,13 +87,13 @@ namespace BHive
 
 		for (uint32_t i = 0; i < image_count; i++)
 		{	
-			mRenderFinishedSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());	
+			mRenderFinishedSemaphores.emplace_back(device, vk::SemaphoreCreateInfo());	
 
 			if (i < MAX_FRAMES_IN_FLIGHT)
 			{
-				mPresentSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
+				mPresentSemaphores.emplace_back(device, vk::SemaphoreCreateInfo());
 
-				mInFlightFences.emplace_back(mDevice, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
+				mInFlightFences.emplace_back(device, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
 			}
 		}
 
@@ -90,11 +110,8 @@ namespace BHive
 		mDepthImage.Initialize(depth_info);
 	}
 
-	void VulkanSwapChain::Recreate(vk::SurfaceKHR surface, uint32_t w, uint32_t h)
+	void VulkanSwapChain::Recreate(vk::raii::Device &device, uint32_t w, uint32_t h)
 	{
-		mDevice.waitIdle();
-
-	
 		for (auto &img : mImages)
 		{
 			img.Destroy();
@@ -104,19 +121,7 @@ namespace BHive
 
 		mSwapChain = nullptr;
 
-		auto &physical_device = VulkanBackend::GetPhysicalDevice();
-		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(surface);
-		auto formats = physical_device.getSurfaceFormatsKHR(surface);
-		auto presentModes = physical_device.getSurfacePresentModesKHR(surface);
-
-		VulkanSwapChainCreateInfo create_info{};
-		create_info.Width = w;
-		create_info.Height = h;
-		create_info.Capabilities = surfaceCapabilities;
-		create_info.Formats = formats;
-		create_info.PresentModes = presentModes;
-
-		Init(surface, create_info);
+		Init(device, w, h);
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)

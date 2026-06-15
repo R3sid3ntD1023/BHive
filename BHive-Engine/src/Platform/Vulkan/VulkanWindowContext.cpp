@@ -30,12 +30,6 @@ namespace BHive
 	}
 
 
-	void VulkanWindowContext::RequestSwapChainRecreate(int w, int h)
-	{
-		VulkanBackend::Get().RequestSwapChainRecreate(w, h);
-	}
-
-
 	void VulkanWindowContext::SwapBuffers()
 	{
 		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
@@ -44,7 +38,28 @@ namespace BHive
 		if (mIsMinimized)
 			return;
 
-		VulkanBackend::Get().Present();
+		if (mHasPendingResize)
+		{
+			auto now = std::chrono::steady_clock::now();
+			auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - mLastResizeTime).count();
+			constexpr int DebounceMs = 50;
+
+			if (ms > DebounceMs)
+			{
+				api->ResetFrameIndex();
+				VulkanBackend::Get().RequestSwapChainRecreate(mPendingWidth, mPendingHeight);
+				mHasPendingResize = false;
+			}
+		}
+
+		auto result = VulkanBackend::Get().Present();
+		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
+		{
+			api->ResetFrameIndex();
+			VulkanBackend::Get().RequestSwapChainRecreate(mPendingWidth, mPendingHeight);
+			mHasPendingResize = false;
+			return;
+		}
 	}
 
 	void VulkanWindowContext::OnEvent(Event &event)
@@ -55,18 +70,14 @@ namespace BHive
 
 	bool VulkanWindowContext::OnWindowResized(WindowResizeEvent &e)
 	{
-		if (e.x == 0 && e.y == 0)
-		{
-			mIsMinimized = true;
+		mIsMinimized = (e.x == 0 && e.y == 0);
+		if (mIsMinimized)
 			return false;
-		}
-		
-		mIsMinimized = false;
 
-		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
-		api->ResetFrameIndex();
-
-		RequestSwapChainRecreate(e.x, e.y);
+		mHasPendingResize = true;
+		mPendingWidth = e.x;
+		mPendingHeight = e.y;
+		mLastResizeTime = std::chrono::steady_clock::now();
 		
 		return false;
 	}

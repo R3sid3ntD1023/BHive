@@ -164,9 +164,11 @@ namespace BHive
 
 	void VulkanBackend::RequestSwapChainRecreate(uint32_t w, uint32_t h)
 	{
+		mDevice.waitIdle();
+
 		LOG_TRACE("recreating swap chain... with size[{}x{}]", w, h);
 
-		mSwapChain->Recreate(mSurface, w, h);
+		mSwapChain->Recreate(mDevice, w, h);
 		RecreateFrameResources();
 	}
 
@@ -355,21 +357,8 @@ namespace BHive
 			glfwWaitEvents();
 			glfwGetFramebufferSize(window, &w, &h);
 		}
-
-		auto &physical_device = VulkanBackend::GetPhysicalDevice();
-		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(*mSurface);
-		auto formats = physical_device.getSurfaceFormatsKHR(*mSurface);
-		auto presentModes = physical_device.getSurfacePresentModesKHR(*mSurface);
-
-		VulkanSwapChainCreateInfo create_info{};
-		create_info.Width = w;
-		create_info.Height = h;
-		create_info.Capabilities = surfaceCapabilities;
-		create_info.Formats = formats;
-		create_info.PresentModes = presentModes;
-
-		mSwapChain = CreateScope<VulkanSwapChain>();
-		mSwapChain->Init(mSurface, create_info);
+	
+		mSwapChain = CreateScope<VulkanSwapChain>(mDevice, mSurface, (uint32_t)w, (uint32_t)h);
 	}
 
 	void VulkanBackend::CreateCommandBuffers()

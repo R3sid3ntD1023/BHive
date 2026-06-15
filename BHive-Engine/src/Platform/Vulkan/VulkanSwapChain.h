@@ -5,25 +5,16 @@
 
 namespace BHive
 {
-	struct VulkanSwapChainCreateInfo
-	{
-		uint32_t Width{}, Height{};
-		vk::SurfaceCapabilitiesKHR Capabilities;
-		std::vector<vk::SurfaceFormatKHR> Formats;
-		std::vector<vk::PresentModeKHR> PresentModes;
-	};
-
-
 	class VulkanSwapChain
 	{
 	public:
-		VulkanSwapChain();
+		VulkanSwapChain(vk::raii::Device &device, vk::SurfaceKHR surface, uint32_t w, uint32_t h);
 
 		~VulkanSwapChain();
 
-		void Init(vk::SurfaceKHR surface, const VulkanSwapChainCreateInfo &create_info);
+		void Init(vk::raii::Device& device, uint32_t w, uint32_t h);
 
-		void Recreate(vk::SurfaceKHR surface, uint32_t w, uint32_t h);
+		void Recreate(vk::raii::Device &device, uint32_t w, uint32_t h);
 
 		void WaitForFence(uint32_t frame);
 
@@ -46,15 +37,11 @@ namespace BHive
 		uint32_t GetImageCount() const { return mImages.size(); }
 
 	private:
-		vk::raii::Device &mDevice;
+		vk::Device mDevice;
 
-		vk::Extent2D mExtent{};
-
-		vk::SurfaceFormatKHR mImageFormat{};
+		vk::SurfaceKHR mSurface = VK_NULL_HANDLE;
 
 		vk::raii::SwapchainKHR mSwapChain = nullptr;
-
-		std::vector<VulkanImage> mImages{};
 
 		std::vector<vk::raii::Semaphore> mPresentSemaphores; //per frame
 
@@ -62,11 +49,23 @@ namespace BHive
 
 		std::vector<vk::raii::Fence> mInFlightFences; //per frame
 
+		std::vector<VulkanImage> mImages{};
+
 		VulkanImage mDepthImage;
 
-		vk::Format mDepthFormat = vk::Format::eUndefined;
-		
+		//Cached Properties
+	
+		vk::SurfaceFormatKHR mImageFormat{};
+
+		vk::PresentModeKHR mPresentMode{};
+
+		vk::SurfaceCapabilitiesKHR mCapabilities{};
+	
+		vk::Extent2D mExtent{};
+	
 		uint32_t mMinImageCount = 0;
+
+		vk::Format mDepthFormat = vk::Format::eUndefined;
 
 	};
 } // namespace BHive

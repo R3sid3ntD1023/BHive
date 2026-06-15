@@ -173,13 +173,7 @@ namespace BHive
 
 	bool Application::OnWindowResized(WindowResizeEvent &event)
 	{
-		if (event.x == 0 || event.y == 0)
-		{
-			mIsMinimized = true;
-			return false;
-		}
-
-		mIsMinimized = false;
+		mIsMinimized = (event.x == 0 || event.y == 0);
 
 		return false;
 	}
