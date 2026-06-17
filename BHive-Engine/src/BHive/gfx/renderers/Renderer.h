@@ -7,6 +7,7 @@
 #include "gfx/GlobalResources.h"
 #include "PMREMGenerator.h"
 #include "ViewSystem.h"
+#include "Lights.h"
 
 namespace BHive
 {
@@ -27,6 +28,7 @@ namespace BHive
 	public:
 		LineRenderer Line;
 		QuadRenderer Quad;
+		Lights Light;
 
 	public:
 		Renderer(Scope<RendererAPI> api);
@@ -75,13 +77,13 @@ namespace BHive
 
 		void DrawElements(ETopologyMode mode, VertexArray *vao, uint32_t count = 0);
 
-		void DrawElementsBaseVertex(ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0);
+		void DrawElementsBaseVertex(ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0u);
 
-		void DrawElementsRanged(ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count = 0);
+		void DrawElementsRanged(ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count = 0u);
 
-		void DrawElementsInstanced(ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count = 0);
+		void DrawElementsInstanced(ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count = 0u);
 
-		void MultiDrawElementsIndirect(ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride = 0, uint32_t start = 0);
+		void MultiDrawElementsIndirect(ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride = 0u, uint32_t start = 0u);
 
 		FAsyncPass* ExecuteComputePass(Pipeline *pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder);
 

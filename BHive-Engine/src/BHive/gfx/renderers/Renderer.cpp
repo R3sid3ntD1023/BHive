@@ -1,4 +1,3 @@
-#include "buffers/LightBuffer.h"
 #include "gfx/Texture.h"
 #include "Renderer.h"
 #include "gfx/RenderCommand.h"
@@ -12,8 +11,6 @@ namespace BHive
 		ViewSystem Views;
 
 		Frustum CameraFrustum;
-
-		LightBuffer LightingBuffer;
 
 		Ref<Texture> WhiteTexture;
 		Ref<Texture> BlackTexture;
@@ -41,11 +38,7 @@ namespace BHive
 			create_info.DebugName = "Blue Texture";
 			BlueTexture = Texture2D::Create({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
 
-			LightingBuffer.Init();
-
-			CameraUBO = GPUBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);
-
-		
+			CameraUBO = GPUBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);		
 		}
 	};
 
@@ -68,6 +61,7 @@ namespace BHive
 
 		Line.Initialize();
 		Quad.Initialize();
+		Light.Initialize(*this);
 	}
 
 	Renderer::~Renderer()
@@ -83,6 +77,7 @@ namespace BHive
 
 		Line.BeginRecording();
 		Quad.BeginRecording();
+		Light.BeginRecording();
 
 		mGraph = RenderGraph{};
 		mActivePass = nullptr;
@@ -110,6 +105,7 @@ namespace BHive
 	{
 		Line.Flush(*this);
 		Quad.Flush(*this);
+		Light.Flush();
 	}
 
 	void Renderer::EndFrame()

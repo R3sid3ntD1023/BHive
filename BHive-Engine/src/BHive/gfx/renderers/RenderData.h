@@ -58,27 +58,37 @@ namespace BHive
 		Type GetRenderDataType() const override { return Type::Skeletal; }
 	};
 
-	struct FDirectionalLightCreateInfo
+	struct FDirectionalLight
 	{
-		glm::vec4 Color;
+		// rgb + intensity
+		glm::vec4 Color; 
+
+		// xyz + unused
 		glm::vec4 Direction;
 	};
 
-	struct FPointLightCreateInfo
+	struct FPointLight
 	{
-		glm::vec4 Color;
+		// rgb + intensity
+		glm::vec4 Color; 
+
+		// xyz + unused radius
 		glm::vec4 Position;
-		float Radius;
 	};
 
-	struct FSpotLightCreateInfo
+	struct FSpotLight
 	{
-		glm::vec4 Color;
+		// rgb + intensity
+		glm::vec4 Color; 
+
+		// xyz + radius
 		glm::vec4 Position;
-		glm::vec4 Direction;
-		float Radius;
-		float InnerCutoff;
-		float OuterCutoff;
+
+		// xyz + innerCutoff
+		glm::vec4 Direction; 
+
+		// outerCutoff + padding
+		glm::vec4 Params; 
 	};
 
 	struct FShadowCascadedCreateInfo

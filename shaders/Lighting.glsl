@@ -6,25 +6,22 @@
 
 struct DirectionalLight
 {
-	vec3 Color;
-	vec3 Direction;
+	vec4 Color;			// rgb + intensity
+	vec4 Direction;		// xyz + unused
 };
 
 struct PointLight
 {
-	vec3 Color;
-	vec3 Position;
-	float Radius;
+	vec4 Color;			// rgb + intensity
+	vec4 Position;		// xyz + radius
 };
 
 struct SpotLight
 {
-	vec3 Color;
-	vec3 Position;
-	vec3 Direction;
-	float Radius;
-	float InnerCutoff;
-	float OuterCutoff;
+	vec4 Color;			// rgb + intensity
+	vec4 Position;		// xyz + radius
+	vec4 Direction;		// xyz + innerCutoff
+	vec4 Params;		// outerCutoff + padding
 };
 
 struct IncidentLight
@@ -47,9 +44,10 @@ struct PointLightShadowInfo
 	vec2 ShadowNearFar;
 };
 
-layout(std140, set = 0, binding = 4) restrict readonly buffer LightSSBO
+// @semantic Lights
+layout(std140, set = 0, binding = 1) restrict readonly buffer LightSSBO
 {
-	uvec3 NumLights; //dir, point, spot
+	uvec4 NumLights; //dir, point, spot
 	DirectionalLight uDirectionalLights[MAX_LIGHTS];
 	PointLight uPointLights[MAX_LIGHTS];
 	SpotLight uSpotLights[MAX_LIGHTS];
@@ -58,16 +56,16 @@ layout(std140, set = 0, binding = 4) restrict readonly buffer LightSSBO
 
 void GetDirectionLightInfo(const in DirectionalLight light, inout IncidentLight directLight)
 {
-	directLight.Direction = normalize(-light.Direction);
-	directLight.Color = light.Color;
+	directLight.Direction = normalize(-light.Direction.xyz);
+	directLight.Color = max(vec3(0), light.Color.rgb * light.Color.a);
 }
 
 void GetPointLightInfo(const in PointLight light, const in vec3 geoPosition, inout IncidentLight directLight)
 {
-	float radius = light.Radius;
-	directLight.Direction = light.Position - geoPosition;
+	float radius = light.Position.w;
+	directLight.Direction = light.Position.xyz - geoPosition;
 
-	float dist = distance(light.Position, geoPosition);
+	float dist = distance(light.Position.xyz, geoPosition);
 	//https://lisyarus.github.io/blog/posts/point-light-attenuation.html
 	float s = dist / radius;
 
@@ -78,17 +76,17 @@ void GetPointLightInfo(const in PointLight light, const in vec3 geoPosition, ino
 	float attenuation = sqrt(1 -s2) / (1 + radius * s);
 	//float attenuation = 1.0 / (radius * radius);
 
-	directLight.Color = light.Color * attenuation;
+	directLight.Color = max(vec3(0), light.Color.rgb * light.Color.a) * attenuation;
 }
 
 void GetSpotLightInfo(const in SpotLight light, const in vec3 geoPosition, inout IncidentLight directLight)
 {
-	PointLight point_light = PointLight(light.Color, light.Position, light.Radius);
+	PointLight point_light = PointLight(light.Color, light.Position);
 	GetPointLightInfo(point_light, geoPosition, directLight);
 	
-	float theta = dot(normalize(light.Position - geoPosition), normalize(-light.Direction ));
-	float epsilon = light.InnerCutoff - light.OuterCutoff;
-	float intensity = smoothstep(0, 1 , (theta - light.OuterCutoff) / epsilon);
+	float theta = dot(normalize(light.Position.xyz - geoPosition), normalize(-light.Direction.xyz ));
+	float epsilon = light.Direction.w - light.Params.x;
+	float intensity = smoothstep(0, 1 , (theta - light.Params.x) / epsilon);
 	
 	directLight.Color *= intensity;
 }

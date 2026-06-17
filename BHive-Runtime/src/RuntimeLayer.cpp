@@ -22,17 +22,21 @@
 #include "gfx/material/LambertMaterial.h"
 #include "gfx/debug/ImageDebugger.h"
 #include "gfx/cameras/OrthographicCamera.h"
+#include "gfx/mesh/primitives/Sphere.h"
 
 namespace BHive
 {
-	FTransform transform{};
+	FTransform transform{{6.f, 0.f, 0.f}};
 
 	struct FPerObjectData
 	{
 		glm::mat4 WorldMatrix = {1.0f};
 	};
 
-	const uint32_t objectCount = 4;
+	const uint32_t objectCount = 3;
+
+	static FDirectionalLight mainLight{.Color = {1.f, 1.f, 1.f, 1.f}, .Direction = {-1.f, -.6f, 0.f, 0.f}};
+	static FPointLight plight0{.Color = {1.f, .5f, 0.f, 4.f}, .Position = {0.f, 2.f, 0.f, 10000.f}};
 
 	void RuntimeLayer::OnAttach(Application& app)
 	{
@@ -43,7 +47,7 @@ namespace BHive
 			auto triangleShader = ShaderManager::Get("Triangle.glsl");
 			auto state = Pipeline::GetDefaultGraphicsPipelineState();
 			state.ShaderProgram = triangleShader;
-			state.ColorAttachmentFormats = {EFormat::RGBA8};
+			state.ColorAttachmentFormats = {EFormat::RGBA32F};
 			PipelineRegistry::Register("Triangle", state);
 		}
 
@@ -51,12 +55,71 @@ namespace BHive
 			auto emissiveShader = ShaderManager::Get("Emissive.glsl");
 			auto state = Pipeline::GetDefaultGraphicsPipelineState();
 			state.ShaderProgram = emissiveShader;
-			state.ColorAttachmentFormats = {EFormat::RGBA8};
+			state.ColorAttachmentFormats = {EFormat::RGBA32F};
 			PipelineRegistry::Register("Emissive", state);
+		}
+
+		{
+			auto lambert = ShaderManager::Get("Lambert.glsl");
+			auto state = Pipeline::GetDefaultGraphicsPipelineState();
+			state.ShaderProgram = lambert;
+			state.ColorAttachmentFormats = {EFormat::RGBA32F};
+			PipelineRegistry::Register("Lambert", state);
 		}
 		
 		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
-		mModelBuffer = GPUBuffer::Create(sizeof(FPerObjectData) * objectCount, EBufferType::StorageBuffer);
+
+		// create mesh
+		FMeshImportData import_data{};
+		FMeshImportOptions import_options{.ImportMaterials = false};
+
+		if (MeshImporter::Import("C:/Users/dariu/Documents/Cube.glb", import_data))
+		{
+			std::vector<Ref<Asset>> additional_assets;
+			MeshImportResolver resolver(import_data, import_options, additional_assets);
+			mMesh = Cast<StaticMesh>(resolver.Resolve());
+		}
+
+		mSphere = CreateRef<PSphere>(1.0f);
+		
+		//create model buffers
+		{
+			std::vector<MultiDrawIndirectCommand> commands;
+
+			size_t i = 0;
+			for (i; i < objectCount; i++)
+			{
+				for (auto &m : mMesh->GetSubMeshes())
+				{
+					MultiDrawIndirectCommand cmd{};
+					cmd.Count = m.IndexCount;
+					cmd.BaseInstance = i;
+					cmd.BaseVertex = m.StartVertex;
+					cmd.FirstIndex = m.StartIndex;
+					cmd.InstanceCount = 1;
+					commands.emplace_back(cmd);
+				}
+			}
+
+			for (i; i < objectCount + 2; i++)
+			{
+				for (auto &m : mSphere->GetSubMeshes())
+				{
+					MultiDrawIndirectCommand cmd{};
+					cmd.Count = m.IndexCount;
+					cmd.BaseInstance = i;
+					cmd.BaseVertex = m.StartVertex;
+					cmd.FirstIndex = m.StartIndex;
+					cmd.InstanceCount = 1;
+					commands.emplace_back(cmd);
+				}
+			}
+
+			mMultiDrawIndirectBuffer = GPUBuffer::Create(sizeof(MultiDrawIndirectCommand) * commands.size(), EBufferType::IndirectBuffer);
+			mMultiDrawIndirectBuffer->SetData(commands.data(), sizeof(MultiDrawIndirectCommand) * commands.size());
+			mModelBuffer = GPUBuffer::Create(sizeof(FPerObjectData) * commands.size(), EBufferType::StorageBuffer);
+		
+		}
 
 		{
 			auto pipeline = PipelineRegistry::Get("Triangle");
@@ -77,6 +140,19 @@ namespace BHive
 			mEmissiveMaterial->EmissionColor = FColor::Red;
 		}
 
+		{
+			auto pipeline = PipelineRegistry::Get("Lambert");
+			auto objectBindingGroup = pipeline->GetOrCreateBindingGroup(3);
+			objectBindingGroup->SetBuffer(0, mModelBuffer);
+
+			mLambertMaterial = CreateRef<LambertMaterial>();
+			mLambertMaterial->SetPipeline(pipeline);
+			mLambertMaterial->DiffuseColor = FColor::LightGray;
+			mLambertMaterial->EmissionColor = {0.f, .0f, .0f};
+			mLambertMaterial->SetTexture("DiffuseMap", mTexture);
+		}
+
+		
 		
 		/*mEmmissivePipeline = Pipeline::Create();
 		state.ShaderProgram = mEmissiveShader;
@@ -93,16 +169,7 @@ namespace BHive
 		mLambertMaterial->EmissionColor = FColor::Yellow;
 		mLambertMaterial->SetTexture("DiffuseMap", mTexture);*/
 
-		// create mesh
-		FMeshImportData import_data{};
-		FMeshImportOptions import_options{.ImportMaterials = false};
-
-		if (MeshImporter::Import("C:/Users/dariu/Documents/Cube.glb", import_data))
-		{
-			std::vector<Ref<Asset>> additional_assets;
-			MeshImportResolver resolver(import_data, import_options, additional_assets);
-			mMesh = Cast<StaticMesh>(resolver.Resolve());
-		}
+		
 		auto &window = app.GetWindow();
 		auto aspect = window.GetAspectRatio();
 
@@ -113,31 +180,13 @@ namespace BHive
 		FramebufferSpecification fb_specs;
 		fb_specs.Size = window.GetSize();
 		fb_specs.Attachments.attach(FTextureCreateInfo{
-				.Format = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
+				.Format = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
 			.attach(FTextureCreateInfo{.Format = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 
 		mFramebuffer = Framebuffer::Create(fb_specs);
 		
 		
-		std::vector<MultiDrawIndirectCommand> commands;
-
-		for (size_t i = 0; i < objectCount; i++)
-		{
-			for (auto &m : mMesh->GetSubMeshes())
-			{
-				MultiDrawIndirectCommand cmd{};
-				cmd.Count = m.IndexCount;
-				cmd.BaseInstance = i;
-				cmd.BaseVertex = m.StartVertex;
-				cmd.FirstIndex = m.StartIndex;
-				cmd.InstanceCount = 1;
-				commands.emplace_back(cmd);
-			}
-		}
-
-		mMultiDrawIndirectBuffer = GPUBuffer::Create(sizeof(MultiDrawIndirectCommand) * commands.size(), EBufferType::IndirectBuffer);
-		mMultiDrawIndirectBuffer->SetData(commands.data(), sizeof(MultiDrawIndirectCommand) * commands.size());
-		
+	
 		auto &dbg = ImageDebugger::Get();
 		dbg.Initialize({512, 512});
 
@@ -177,6 +226,12 @@ namespace BHive
 		renderer.Clear();
 		//renderer.SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
 
+		//main light source
+		
+		renderer.Light.Submit(mainLight);
+
+		renderer.Light.Submit(plight0);
+
 		renderer.Line.DrawGrid({});
 		renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
 		renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
@@ -195,11 +250,12 @@ namespace BHive
 
 		renderer.Flush();
 
-		std::vector<FPerObjectData> transforms(4);
+		std::vector<FPerObjectData> transforms(5);
 		transforms[0].WorldMatrix = transform;
 		transforms[1].WorldMatrix = FTransform({3, 4, 0});
 		transforms[2].WorldMatrix = FTransform({4, 0, 0});
 		transforms[3].WorldMatrix = FTransform({-4, 0, 0});
+		transforms[4].WorldMatrix = FTransform({0, 0, 0});
 		mModelBuffer->SetData(transforms.data(), sizeof(FPerObjectData) * transforms.size());
 
 		const auto stride = sizeof(MultiDrawIndirectCommand);
@@ -215,18 +271,18 @@ namespace BHive
 		{
 			mEmissiveMaterial->Submit();
 
-			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2, stride, 2);
+			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 1, stride, 2u);
+		}
+
+		if (mSphere && mLambertMaterial)
+		{
+			mLambertMaterial->Submit();
+			
+			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 2, stride, 3u);
 		}
 
 		mFramebuffer->UnBind();
 
-		renderer.EndPass();
-
-	
-		auto& pass = renderer.BeginPass("DrawLine", EPassType::SwapChain);
-		//pass.View = renderer.CreateView(mCamera.GetProjection(), mCamera.GetView());
-		renderer.Line.DrawGrid({});
-		renderer.Flush();
 		renderer.EndPass();
 
 		ImageDebugger::Get().OnRender(renderer);
@@ -254,6 +310,20 @@ namespace BHive
 				auto texture_id = ImGuiLayer::GetTextureID(*mFramebuffer->GetColorAttachment(0));
 				ImGui::Image(texture_id, viewportSize);
 			}
+		}
+
+		ImGui::End();
+
+		if (ImGui::Begin("Lights"))
+		{
+			ImGui::SeparatorText("MainLight");
+
+			ImGui::DragFloat4("Color##Main", &mainLight.Color.x, .01f);
+			ImGui::DragFloat4("Position##Main", &mainLight.Direction.x, .01f);
+
+			ImGui::SeparatorText("PointLight0");
+			ImGui::DragFloat4("Color##P0", &plight0.Color.x, .01f);
+			ImGui::DragFloat4("Position##P0", &plight0.Position.x, .01f);
 		}
 
 		ImGui::End();

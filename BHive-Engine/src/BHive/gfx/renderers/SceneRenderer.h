@@ -1,9 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
-#include "PMREMGenerator.h"
 #include "RenderData.h"
-#include "Renderer.h"
 
 namespace BHive
 {
@@ -15,7 +13,6 @@ namespace BHive
 	class PQuad;
 
 	struct FTransform;
-	class PMREMGenerator;
 	class BaseMesh;
 	class SkeletalMesh;
 	class StaticMesh;
@@ -54,11 +51,11 @@ namespace BHive
 
 		virtual void End();
 
-		void SubmitLight(const FDirectionalLightCreateInfo &info);
+		void SubmitLight(const FDirectionalLight & light);
 
-		void SubmitLight(const FPointLightCreateInfo &info);
+		void SubmitLight(const FPointLight &light);
 
-		void SubmitLight(const FSpotLightCreateInfo &info);
+		void SubmitLight(const FSpotLight &light);
 
 		void SubmitMesh(const FMeshInfo &info);
 

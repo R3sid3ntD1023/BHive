@@ -27,7 +27,7 @@ namespace BHive
 		state.Depth.DepthCompare = ECompareOp::LessOrEqual;
 		state.DepthAttachmentFormat = EFormat::DEPTH24_STENCIL8;
 
-		state.ColorAttachmentFormats = {EFormat::RGBA8};
+		state.ColorAttachmentFormats = {EFormat::RGBA32F};
 
 		return state;
 	}

@@ -9,6 +9,7 @@ namespace BHive
 {
 	class Texture2D;
 	class Pipeline;
+	class PSphere;
 
 	class RuntimeLayer : public Layer
 	{
@@ -39,5 +40,6 @@ namespace BHive
 		Ref<class GPUBuffer> mMultiDrawIndirectBuffer;
 		EditorCamera mCamera;
 		Ref<GPUBuffer> mModelBuffer = nullptr;
+		Ref<PSphere> mSphere;
 	};
 } // namespace BHive

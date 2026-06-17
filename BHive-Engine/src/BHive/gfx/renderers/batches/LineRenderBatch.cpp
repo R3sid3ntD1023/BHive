@@ -18,7 +18,6 @@ namespace BHive
 		auto state = Pipeline::GetDefaultGraphicsPipelineState();
 		state.ShaderProgram = shader;
 		state.Raster.CullEnabled = false;
-		state.ColorAttachmentFormats = {EFormat::RGBA8};
 		state.DrawMode = ETopologyMode::Lines;
 
 		PipelineRegistry::Register(LINE_PIPELINE_NAME, state);

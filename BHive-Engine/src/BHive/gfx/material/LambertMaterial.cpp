@@ -19,10 +19,10 @@ namespace BHive
 
 	void LambertMaterial::Submit(Pipeline* pipeline)
 	{
-		Material::Submit(pipeline);
-
 		mBackendMaterial->Set("DiffuseColor", DiffuseColor);
 		mBackendMaterial->Set("EmissiveColor", EmissionColor);
+
+		Material::Submit(pipeline);
 	}
 
 	/*Ref<Shader> LambertMaterial::GetShader() const

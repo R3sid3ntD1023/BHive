@@ -4,6 +4,7 @@
 #include "runtime/World.h"
 #include "runtime/Components.h"
 #include <physx/PxPhysicsAPI.h>
+#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {
@@ -44,7 +45,7 @@ namespace BHive
 			{
 				auto &c = view.get<DirectionalLightComponent>(e);
 
-				FDirectionalLightCreateInfo create_info{};
+				FDirectionalLight create_info{};
 				create_info.Color = c.Color;
 				create_info.Direction = glm::vec4(c.GetWorldTransform().GetForward(), 0.0f);
 
@@ -60,10 +61,9 @@ namespace BHive
 				const auto world_transform = c.GetWorldTransform();
 				const auto max_scale = glm::compMax(world_transform.GetScale());
 
-				FPointLightCreateInfo create_info{};
+				FPointLight create_info{};
 				create_info.Color = c.Color;
-				create_info.Position = glm::vec4(world_transform.GetTranslation(), 1.0f);
-				create_info.Radius = c.Radius * max_scale;
+				create_info.Position = glm::vec4(world_transform.GetTranslation(), c.Radius * max_scale);
 
 				renderer->SubmitLight(create_info);
 
@@ -79,13 +79,11 @@ namespace BHive
 				const auto world_transform = c.GetWorldTransform();
 				const auto max_scale = glm::compMax(world_transform.GetScale());
 
-				FSpotLightCreateInfo create_info{};
+				FSpotLight create_info{};
 				create_info.Color = c.Color;
-				create_info.Radius = c.Radius * max_scale;
-				create_info.Direction = glm::vec4(world_transform.GetForward(), 0.f);
-				create_info.Position = glm::vec4(world_transform.GetTranslation(), 1.f);
-				create_info.InnerCutoff = c.InnerCutoff;
-				create_info.OuterCutoff = c.OuterCutoff;
+				create_info.Direction = glm::vec4(world_transform.GetForward(), c.InnerCutoff );
+				create_info.Position = glm::vec4(world_transform.GetTranslation(), c.Radius * max_scale);
+				create_info.Params.x = c.OuterCutoff;
 
 				renderer->SubmitLight(create_info);
 
