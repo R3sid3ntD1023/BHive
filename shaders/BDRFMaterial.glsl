@@ -12,7 +12,8 @@ layout(location = 5) in vec4 vColor;
 layout(location = 6) in ivec4 vBoneIds;
 layout(location = 7) in vec4 vWeights;
 
-layout(std430, binding = 0) uniform CameraBuffer
+// @semantic Camera
+layout(std140, set = 0, binding = 0) uniform CameraBuffer
 {
 	mat4 u_projection;
 	mat4 u_view;
@@ -35,7 +36,7 @@ layout(location = 0) out struct VS_OUT
 
 void main()
 {
-	#include <Common.vert>
+	#include <includes/Common.vert>
 
 	vs_out.Position = worldPos.xyz;
 	vs_out.TBN = mat3(T, B, N);
@@ -57,17 +58,23 @@ void main()
 #define USE_OPACITY_MAP
 #define USE_ENVIRONMENT_MAPS
 
+// @semantic EnvironmentPreFilter
+layout(set = 0, binding = 2) uniform samplerCube PreFilterMap;
 
-layout(binding = 0) uniform sampler2D DiffuseMap;
-layout(binding = 1) uniform sampler2D NormalMap;
-layout(binding = 2) uniform sampler2D RoughnessMap;
-layout(binding = 3) uniform sampler2D MetalnessMap;
-layout(binding = 4) uniform sampler2D EmissionMap;
-layout(binding = 5) uniform sampler2D OpacityMap;
-layout(binding = 6) uniform samplerCube PreFilterMap;
-layout(binding = 7) uniform samplerCube IrradianceMap;
-layout(binding = 8) uniform sampler2D BRDFLutMap;
-#include <shadow_passes/Shadow.frag>
+// @semantic EnvironmentIrradiance
+layout(set = 0, binding = 3) uniform samplerCube IrradianceMap;
+
+// @semantic EnvironmentBRDFLUT
+layout(set = 0, binding = 4) uniform sampler2D BRDFLutMap;
+
+layout(set = 1, binding = 0) uniform sampler2D DiffuseMap;
+layout(set = 1, binding = 1) uniform sampler2D NormalMap;
+layout(set = 1, binding = 2) uniform sampler2D RoughnessMap;
+layout(set = 1, binding = 3) uniform sampler2D MetalnessMap;
+layout(set = 1, binding = 4) uniform sampler2D EmissionMap;
+layout(set = 1, binding = 5) uniform sampler2D OpacityMap;
+
+//#include <shadow_passes/Shadow.frag>
 
 #include <Core.glsl>
 #include <Lighting.glsl>

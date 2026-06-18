@@ -42,7 +42,8 @@ namespace BHive
 
 		ImageDebugger() = default;
 
-		std::vector<FDebugTextureEntry> mTextures;
+		std::unordered_map<std::string, size_t> mTextures;
+		std::vector<FDebugTextureEntry> mTextureEntries;
 
 		int32_t mSelected = -1;
 		int32_t mSelectedMip = 0;

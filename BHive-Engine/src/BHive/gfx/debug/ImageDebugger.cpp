@@ -40,13 +40,23 @@ namespace BHive
 
 	void ImageDebugger::RegisterTexture(const std::string &name, const Ref<Texture> &tex)
 	{
+		
 		FDebugTextureEntry e{};
 		e.Name = name;
 		e.Tex = tex;
 		e.IsCube = Cast<TextureCube>(tex) != nullptr;
 		e.MipLevels = tex->GetInfo().MipLevels;
 		e.Layers = tex->GetInfo().ArrayLayers;
-		mTextures.push_back(e);
+
+		if (mTextures.contains(name))
+		{
+			auto &entry = mTextureEntries[mTextures[name]];
+			entry = e;
+			return;
+		}
+
+		mTextureEntries.push_back(e);
+		mTextures.emplace(name, mTextureEntries.size() - 1);
 	}
 
 	void ImageDebugger::OnRender(Renderer &renderer)
@@ -61,7 +71,7 @@ namespace BHive
 			renderer.ClearColor(0, 0, 0, 1);
 			renderer.Clear();
 
-			auto &entry = mTextures[mSelected];
+			auto &entry = mTextureEntries[mSelected];
 			int type = entry.IsCube ? 1 : 0;
 			int mip = mSelectedMip;
 			int face = entry.IsCube ? mSelectedFace : 0;
@@ -82,17 +92,17 @@ namespace BHive
 
 	void ImageDebugger::OnGuiRender()
 	{
-		if (!mFB || mTextures.empty())
+		if (!mFB || mTextureEntries.empty())
 			return;
 
 		if (ImGui::Begin("Image View Debugger"))
 		{
-			if (ImGui::BeginCombo("Texture", (mSelected >= 0 ? mTextures[mSelected].Name.c_str() : "<none>")))
+			if (ImGui::BeginCombo("Texture", (mSelected >= 0 ? mTextureEntries[mSelected].Name.c_str() : "<none>")))
 			{
-				for (int i = 0; i < (int)mTextures.size(); i++)
+				for (int i = 0; i < (int)mTextureEntries.size(); i++)
 				{
 					bool selected = (i == mSelected);
-					if (ImGui::Selectable(mTextures[i].Name.c_str(), selected))
+					if (ImGui::Selectable(mTextureEntries[i].Name.c_str(), selected))
 						mSelected = i;
 					if (selected)
 						ImGui::SetItemDefaultFocus();
@@ -103,7 +113,7 @@ namespace BHive
 
 			if (mSelected >= 0)
 			{
-				auto &entry = mTextures[mSelected];
+				auto &entry = mTextureEntries[mSelected];
 
 				mSelectedMip = std::clamp(mSelectedMip, 0, (int)entry.MipLevels - 1);
 				ImGui::SliderInt("Mip", &mSelectedMip, 0, (int)entry.MipLevels - 1);

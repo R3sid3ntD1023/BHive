@@ -43,5 +43,6 @@ namespace BHive
 		Ref<GPUBuffer> mModelBuffer = nullptr;
 		Ref<PSphere> mSphere;
 		Ref<PPlane> mPlane;
+		Ref<class StandardMaterial> mStandardMaterial = nullptr;
 	};
 } // namespace BHive

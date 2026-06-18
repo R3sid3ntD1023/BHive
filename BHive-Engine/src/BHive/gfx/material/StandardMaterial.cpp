@@ -9,17 +9,18 @@ namespace BHive
 {
 	void StandardMaterial::Submit(Pipeline* pipeline)
 	{
+		auto p = pipeline ? pipeline : mPipeline;
+
+		mBackendMaterial->Set("Albedo", Albedo);
+		mBackendMaterial->Set("Emission", Emission);
+		mBackendMaterial->Set("Roughness", Roughness);
+		mBackendMaterial->Set("Metalness", Metallic);
+		mBackendMaterial->Set("Opacity", Opacity);
+		mBackendMaterial->Set("Tiling", Tiling);
+		mBackendMaterial->Set("Flags", (uint32_t)Flags);
+		mBackendMaterial->Set("HasNormalMap", mSlotsPerPipeline.at(p).at("NormalMap").Texture != nullptr);
 
 		Material::Submit(pipeline);
-
-		/*shader->SetUniform<glm::vec3>("constants.Albedo", Albedo);
-		shader->SetUniform<glm::vec3>("constants.Emission", Emission);
-		shader->SetUniform("constants.Roughness", Roughness);
-		shader->SetUniform("constants.Metalness", Metallic);
-		shader->SetUniform("constants.Opacity", Opacity);
-		shader->SetUniform("constants.Tiling", Tiling);
-		shader->SetUniform("constants.Flags", (uint32_t)Flags);
-		shader->SetUniform("constants.HasNormalMap", mTextures.at("Normal").Texture != nullptr);*/
 	}
 
 	/*Ref<Shader> StandardMaterial::GetShader() const

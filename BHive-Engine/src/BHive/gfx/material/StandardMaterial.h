@@ -36,7 +36,7 @@ namespace BHive
 	public:
 		StandardMaterial() = default;
 
-		void Submit(Pipeline* pipeline) override;
+		void Submit(Pipeline* pipeline = nullptr) override;
 
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 

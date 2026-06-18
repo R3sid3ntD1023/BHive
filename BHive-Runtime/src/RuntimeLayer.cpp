@@ -24,6 +24,7 @@
 #include "gfx/cameras/OrthographicCamera.h"
 #include "gfx/mesh/primitives/Sphere.h"
 #include "gfx/mesh/primitives/Plane.h"
+#include "gfx/material/StandardMaterial.h"
 
 namespace BHive
 {
@@ -67,6 +68,14 @@ namespace BHive
 			state.ShaderProgram = lambert;
 			state.ColorAttachmentFormats = {EFormat::RGBA32F};
 			PipelineRegistry::Register("Lambert", state);
+		}
+
+		{
+			auto shader = ShaderManager::Get("BDRFMaterial.glsl");
+			auto state = Pipeline::GetDefaultGraphicsPipelineState();
+			state.ShaderProgram = shader;
+			state.ColorAttachmentFormats = {EFormat::RGBA32F};
+			PipelineRegistry::Register("Standard", state);
 		}
 		
 		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
@@ -167,6 +176,17 @@ namespace BHive
 			//mLambertMaterial->SetTexture("DiffuseMap", mTexture);
 		}
 
+		{
+			auto pipeline = PipelineRegistry::Get("Standard");
+			auto objectBindingGroup = pipeline->GetOrCreateBindingGroup(3);
+			objectBindingGroup->SetBuffer(0, mModelBuffer);
+
+			mStandardMaterial = CreateRef<StandardMaterial>();
+			mStandardMaterial->SetPipeline(pipeline);
+			mStandardMaterial->Albedo = FColor::LightGray;
+			mStandardMaterial->Emission = {0.f, .0f, .0f};
+			// mLambertMaterial->SetTexture("DiffuseMap", mTexture);
+		}
 		
 		
 		/*mEmmissivePipeline = Pipeline::Create();
@@ -292,14 +312,14 @@ namespace BHive
 			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2, stride );
 		}
 
-		if (mMesh && mEmissiveMaterial)
+		if (mMesh && mLambertMaterial)
 		{
-			mEmissiveMaterial->Submit();
+			mLambertMaterial->Submit();
 
 			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 1, stride, 2u);
 		}
 
-		mLambertMaterial->Submit();
+		mStandardMaterial->Submit();
 
 		renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 2, stride, 3u);
 
@@ -384,6 +404,12 @@ namespace BHive
 				{
 					auto tex = TextureLoader::Import(info);
 					Renderer::Get().SetEnvironmentTexture(tex);
+
+					auto &globalsResources = Renderer::Get().GetGlobalResources();
+					auto &dbg = ImageDebugger::Get();
+					dbg.RegisterTexture("PreFilterEnv", globalsResources.Find("EnvironmentPreFilter")->TextureRef);
+					dbg.RegisterTexture("EnvironmentCube", globalsResources.Find("EnvironmentCubeMap")->TextureRef);
+					dbg.RegisterTexture("Irradiance", globalsResources.Find("EnvironmentIrradiance")->TextureRef);
 				}
 			}
 		}
