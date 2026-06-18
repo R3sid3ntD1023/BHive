@@ -196,9 +196,13 @@ namespace BHive
 		if (opened)
 		{
 
-			PropertyLayout layout(property, true, width);
+			/*PropertyLayout layout(property, true, width);
+			layout.PushLayout();*/
+
 			auto meta_getter = [property](const rttr::variant &key) -> rttr::variant { return property.get_metadata(key); };
 			changed |= inspect(instance, prop_var, false, is_read_only, width, meta_getter);
+
+		/*	layout.PopLayout();*/
 
 			if (changed && !is_read_only)
 			{

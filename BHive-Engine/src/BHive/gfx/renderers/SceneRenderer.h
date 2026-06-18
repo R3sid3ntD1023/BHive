@@ -2,6 +2,7 @@
 
 #include "core/Core.h"
 #include "RenderData.h"
+#include "LightCasters.h"
 
 namespace BHive
 {
@@ -51,13 +52,13 @@ namespace BHive
 
 		virtual void End();
 
-		void SubmitLight(const FDirectionalLight & light);
+		void Submit(const DirectionalLight & light);
 
-		void SubmitLight(const FPointLight &light);
+		void Submit(const PointLight &light);
 
-		void SubmitLight(const FSpotLight &light);
+		void Submit(const SpotLight &light);
 
-		void SubmitMesh(const FMeshInfo &info);
+		void Submit(const FMeshInfo &info);
 
 		void SubmitCommand(const Command &cmd);
 

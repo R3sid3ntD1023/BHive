@@ -10,6 +10,7 @@ namespace BHive
 	class Texture2D;
 	class Pipeline;
 	class PSphere;
+	class PPlane;
 
 	class RuntimeLayer : public Layer
 	{
@@ -41,5 +42,6 @@ namespace BHive
 		EditorCamera mCamera;
 		Ref<GPUBuffer> mModelBuffer = nullptr;
 		Ref<PSphere> mSphere;
+		Ref<PPlane> mPlane;
 	};
 } // namespace BHive

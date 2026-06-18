@@ -17,6 +17,31 @@ namespace BHive
 		bool inspect(const rttr::variant &instance, rttr::variant &object, rttr::property &property, bool read_only = false, float width = 0.0f);
 
 		// inspect readonly data
+		template <typename T>
+		bool inspect(const std::string &label, const T &obj, bool skip_custom = false, bool read_only = false, float width = 0.0f, const MetaGetter &get_meta_data = meta_data_empty)
+		{
+			ScopedPropertyLayout layout(label, width);
+			rttr::variant var = obj;
+			return inspect({}, var, skip_custom, true, width, get_meta_data);
+		}
+
+		// inspect data read_only optional
+		template <typename T>
+		bool inspect(const std::string &label, T &obj, bool skip_custom = false, bool read_only = false, float width = 0.0f, const MetaGetter &get_meta_data = meta_data_empty)
+		{
+			ScopedPropertyLayout layout(label, width);
+			rttr::variant var = obj;
+			if (inspect({}, var, skip_custom, read_only, width, get_meta_data))
+			{
+
+				obj = var.get_value<T>();
+				return true;
+			}
+
+			return false;
+		}
+
+		// inspect readonly data
 		template <typename T, typename U>
 		bool inspect(const std::string &label, U owning_object, const T &obj, bool skip_custom = false, bool read_only = false, float width = 0.0f, const MetaGetter &get_meta_data = meta_data_empty)
 		{
@@ -40,6 +65,7 @@ namespace BHive
 
 			return false;
 		}
+
 
 		static Inspect &get()
 		{

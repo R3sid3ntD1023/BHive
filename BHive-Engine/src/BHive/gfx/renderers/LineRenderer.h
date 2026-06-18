@@ -34,20 +34,36 @@ namespace BHive
 		void Flush(Renderer& renderer);
 
 		void DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
+
 		void DrawLine(const Line &line, const FTransform &transform = {}, int32_t entityID = -1);
+
 		void DrawTriangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
+
 		void DrawTriangle(const Line &l0, const Line &l1, const Line &l2, const FTransform &transform = {}, int32_t entityID = -1);
+
 		void DrawRect(const glm::vec2 &size, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
+
 		void DrawRect(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
+
 		void DrawBox(const glm::vec3 &extents, const glm::vec3 &offset, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
+
 		void DrawArc(float radius, uint32_t sides, float start, float end, const glm::vec3 &offset, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
+
 		void DrawCircle(float radius, uint32_t sides, const glm::vec3 &offset, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
+
 		void DrawSphere(float radius, uint32_t sides, const glm::vec3 &offset, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
+
 		void DrawGrid(const FGrid &grid, const FTransform &transform = {}, int32_t entityID = -1);
+
 		void DrawCylinder(float radius, float height, uint32_t sides, const glm::vec3 &offset, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
+
 		void DrawAABB(const AABB &aabb, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
+
 		void DrawCone(float height, float radius, uint32_t sides, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
+
 		void DrawCapsule(float radius, float height, uint32_t sides, const glm::vec3 &offset, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
+
+		void DrawSpotlightCone(const glm::vec3 &pos, const glm::vec3 &dir, float radius, float outerCutOff, uint32_t sides, const FColor &color, int32_t entityID = -1);
 
 		void DrawArrow(float size, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
 

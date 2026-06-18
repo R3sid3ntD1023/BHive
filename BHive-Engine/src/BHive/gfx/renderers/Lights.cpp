@@ -20,22 +20,22 @@ namespace BHive
 		mLightBuffer->SetData(&mLightInfo, sizeof(FLightBufferData));
 	}
 
-	void Lights::Submit(const FDirectionalLight &light)
+	void Lights::Submit(const DirectionalLight &light)
 	{
 		auto num_lights = mLightInfo.NumLights[0]++ % sMaxLights;
-		mLightInfo.DirectionalLightInfo[num_lights] = light;
+		mLightInfo.DirectionalLightInfo[num_lights] = light.ToGPU();
 	}
 
-	void Lights::Submit(const FPointLight &light)
+	void Lights::Submit(const PointLight &light)
 	{
 		auto num_lights = mLightInfo.NumLights[1]++ % sMaxLights;
-		mLightInfo.PointLightInfo[num_lights] = light;
+		mLightInfo.PointLightInfo[num_lights] = light.ToGPU();
 	}
 
-	void Lights::Submit(const FSpotLight &light)
+	void Lights::Submit(const SpotLight &light)
 	{
 		auto num_lights = mLightInfo.NumLights[2]++ % sMaxLights;
-		mLightInfo.SpotLightInfo[num_lights] = light;
+		mLightInfo.SpotLightInfo[num_lights] = light.ToGPU();
 	}
 
 	const glm::uvec3 &BHive::Lights::NumLights() const

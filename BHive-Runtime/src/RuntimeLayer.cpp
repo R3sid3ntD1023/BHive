@@ -23,6 +23,7 @@
 #include "gfx/debug/ImageDebugger.h"
 #include "gfx/cameras/OrthographicCamera.h"
 #include "gfx/mesh/primitives/Sphere.h"
+#include "gfx/mesh/primitives/Plane.h"
 
 namespace BHive
 {
@@ -35,8 +36,9 @@ namespace BHive
 
 	const uint32_t objectCount = 3;
 
-	static FDirectionalLight mainLight{.Color = {1.f, 1.f, 1.f, 1.f}, .Direction = {-1.f, -.6f, 0.f, 0.f}};
-	static FPointLight plight0{.Color = {1.f, .5f, 0.f, 4.f}, .Position = {0.f, 2.f, 0.f, 10000.f}};
+	static DirectionalLight mainLight;
+	static PointLight plight0;
+	static SpotLight spLight0;
 
 	void RuntimeLayer::OnAttach(Application& app)
 	{
@@ -81,6 +83,8 @@ namespace BHive
 		}
 
 		mSphere = CreateRef<PSphere>(1.0f);
+
+		mPlane = CreateRef<PPlane>(10.f, 10.f);
 		
 		//create model buffers
 		{
@@ -113,6 +117,17 @@ namespace BHive
 					cmd.InstanceCount = 1;
 					commands.emplace_back(cmd);
 				}
+			}
+
+			for (auto &m : mPlane->GetSubMeshes())
+			{
+				MultiDrawIndirectCommand cmd{};
+				cmd.Count = m.IndexCount;
+				cmd.BaseInstance = i;
+				cmd.BaseVertex = m.StartVertex;
+				cmd.FirstIndex = m.StartIndex;
+				cmd.InstanceCount = 1;
+				commands.emplace_back(cmd);
 			}
 
 			mMultiDrawIndirectBuffer = GPUBuffer::Create(sizeof(MultiDrawIndirectCommand) * commands.size(), EBufferType::IndirectBuffer);
@@ -149,7 +164,7 @@ namespace BHive
 			mLambertMaterial->SetPipeline(pipeline);
 			mLambertMaterial->DiffuseColor = FColor::LightGray;
 			mLambertMaterial->EmissionColor = {0.f, .0f, .0f};
-			mLambertMaterial->SetTexture("DiffuseMap", mTexture);
+			//mLambertMaterial->SetTexture("DiffuseMap", mTexture);
 		}
 
 		
@@ -197,6 +212,10 @@ namespace BHive
 		dbg.RegisterTexture("Irradiance", globalsResources.Find("EnvironmentIrradiance")->TextureRef);
 		dbg.RegisterTexture("BRDFLUT", globalsResources.Find("EnvironmentBRDFLUT")->TextureRef);
 		dbg.RegisterTexture("Test", mTexture);
+
+		mainLight.SetColor(FColor::White).SetDirection({-1, 0, 0}).SetIntensity(1.f);
+		plight0.SetColor(FColor::Orange).SetIntensity(3.f).SetPosition({4, 1, 0}).SetRadius(5.f);
+		spLight0.SetColor(FColor::Red).SetIntensity(3.f).SetDirection({0, -1, 0}).SetPosition({}).SetRadius(5.f).SetInnerAngleDegrees(45.f).SetOuterAngleDegrees(75.f);
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -229,8 +248,13 @@ namespace BHive
 		//main light source
 		
 		renderer.Light.Submit(mainLight);
+		renderer.Line.DrawLine(glm::vec3{0.f, 0.f, 0.f}, mainLight.GetDirection(), mainLight.GetColor());
 
 		renderer.Light.Submit(plight0);
+		renderer.Line.DrawSphere(plight0.GetRadius(), 32, {}, plight0.GetColor(), FTransform{plight0.GetPosition()});
+
+		renderer.Light.Submit(spLight0);
+		renderer.Line.DrawSpotlightCone(spLight0.GetPosition(), spLight0.GetDirection(), spLight0.GetRadius(), spLight0.GetOuterAngleDegrees(), 32, spLight0.GetColor());
 
 		renderer.Line.DrawGrid({});
 		renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
@@ -250,12 +274,13 @@ namespace BHive
 
 		renderer.Flush();
 
-		std::vector<FPerObjectData> transforms(5);
+		std::vector<FPerObjectData> transforms(6);
 		transforms[0].WorldMatrix = transform;
 		transforms[1].WorldMatrix = FTransform({3, 4, 0});
-		transforms[2].WorldMatrix = FTransform({4, 0, 0});
-		transforms[3].WorldMatrix = FTransform({-4, 0, 0});
-		transforms[4].WorldMatrix = FTransform({0, 0, 0});
+		transforms[2].WorldMatrix = FTransform({4, 1, 0});
+		transforms[3].WorldMatrix = FTransform({-4, 1, 0});
+		transforms[4].WorldMatrix = FTransform({0, 1, 0});
+		transforms[5].WorldMatrix = FTransform({0, 0, 0});
 		mModelBuffer->SetData(transforms.data(), sizeof(FPerObjectData) * transforms.size());
 
 		const auto stride = sizeof(MultiDrawIndirectCommand);
@@ -274,12 +299,11 @@ namespace BHive
 			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 1, stride, 2u);
 		}
 
-		if (mSphere && mLambertMaterial)
-		{
-			mLambertMaterial->Submit();
-			
-			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 2, stride, 3u);
-		}
+		mLambertMaterial->Submit();
+
+		renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 2, stride, 3u);
+
+		renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mPlane->GetVertexArray().get(), 1, stride, 5u);
 
 		mFramebuffer->UnBind();
 
@@ -316,14 +340,15 @@ namespace BHive
 
 		if (ImGui::Begin("Lights"))
 		{
-			ImGui::SeparatorText("MainLight");
+			ImGui::BeginChild("LightsScrollRegion", ImVec2(500, 0), false, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
 
-			ImGui::DragFloat4("Color##Main", &mainLight.Color.x, .01f);
-			ImGui::DragFloat4("Position##Main", &mainLight.Direction.x, .01f);
+			Inspect::get().inspect("MainLight", mainLight, false, false, 500.f);
 
-			ImGui::SeparatorText("PointLight0");
-			ImGui::DragFloat4("Color##P0", &plight0.Color.x, .01f);
-			ImGui::DragFloat4("Position##P0", &plight0.Position.x, .01f);
+			Inspect::get().inspect("PointLight0", plight0, false, false, 500.f);
+
+			Inspect::get().inspect("SpotLight0", spLight0, false, false, 500.f);
+		
+			ImGui::EndChild();
 		}
 
 		ImGui::End();
@@ -333,10 +358,7 @@ namespace BHive
 			auto texture_id = ImGuiLayer::GetTextureID(*mTexture);
 			ImGui::Image(texture_id, {200, 200}, {0, 1}, {1, 0});
 
-			rttr::variant var = transform;
-
-			if (Inspect::get().inspect({}, var))
-				transform = var.get_value<FTransform>();
+			Inspect::get().inspect("Transform", transform);
 
 			if (ImGui::Button("Load Mesh"))
 			{

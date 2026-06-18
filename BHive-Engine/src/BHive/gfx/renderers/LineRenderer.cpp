@@ -269,6 +269,37 @@ namespace BHive
 		DrawArc(radius, sides, PI, PI * 2, offset - h, color, transform * rotationX, entityID);
 	}
 
+	void LineRenderer::DrawSpotlightCone(const glm::vec3 &pos, const glm::vec3 &dir, float radius, float outerCutOff, uint32_t sides, const FColor &color, int32_t entityID)
+	{
+		float angle = glm::radians(outerCutOff);
+		float height = radius;
+		float baseRadius = glm::tan(angle) * height;
+
+		glm::vec3 forward = glm::normalize(dir);
+
+		//build orthonormal basis
+		glm::vec3 up = glm::abs(forward.y) > 0.99f ? glm::vec3(1, 0, 0) : glm::vec3(0, 1, 0);
+		glm::vec3 right = glm::normalize(glm::cross(forward, up));
+		up = glm::cross(right, forward);
+
+		float step = glm::two_pi<float>() / sides;
+
+		for (uint32_t i = 0; i < sides; i++)
+		{
+			float t0 = i * step;
+			float t1 = (i + 1) * step;
+
+			glm::vec3 p0 = pos + forward * height + right * glm::cos(t0) * baseRadius + up * glm::sin(t0) * baseRadius;
+			glm::vec3 p1 = pos + forward * height + right * glm::cos(t1) * baseRadius + up * glm::sin(t1) * baseRadius;
+
+			//apex -> circle
+			DrawLine(pos, p0, color, {}, entityID);
+
+			//circle edge
+			DrawLine(p0, p1, color, {}, entityID);
+		}
+	}
+
 	void LineRenderer::DrawArrow(float size, const FColor &color, const FTransform &transform, int32_t entityID)
 	{
 		auto forward = glm::vec3{1, 0, 0};

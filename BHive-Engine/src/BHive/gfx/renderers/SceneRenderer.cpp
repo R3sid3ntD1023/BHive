@@ -174,14 +174,14 @@ namespace BHive
 		mFinalFramebuffer->UnBind();
 	}
 
-	void SceneRenderer::SubmitLight(const FDirectionalLight & light)
+	void SceneRenderer::Submit(const DirectionalLight & light)
 	{
 		auto &camera = Renderer::Get().GetViewSystem().GetMainView();
 
 		Renderer::Get().Light.Submit(light);
 
 		FShadowCascadedCreateInfo shadow_info{};
-		shadow_info.LightDirection = light.Direction;
+		shadow_info.LightDirection = light.GetDirection();
 		shadow_info.CameraProj = camera.Projection;
 		shadow_info.InverseCameraView = camera.View;
 		shadow_info.CameraNearFar = camera.NearFar;
@@ -190,32 +190,34 @@ namespace BHive
 		mSceneRenderData->ShadowRenderer.SubmitDirectionalLight(shadow_info);
 	}
 
-	void SceneRenderer::SubmitLight(const FPointLight & light)
+	void SceneRenderer::Submit(const PointLight & light)
 	{
 		Renderer::Get().Light.Submit(light);
 
 		FShadowCubeCreateInfo shadow_info{};
-		shadow_info.LightPosition = light.Position;
-		shadow_info.LightNearFar = {1.0f, light.Position.w};
+		shadow_info.LightPosition = light.GetPosition();
+		shadow_info.LightNearFar = {1.0f, light.GetRadius()};
 
 		mSceneRenderData->ShadowRenderer.SubmitPointLight(shadow_info);
 	}
 
-	void SceneRenderer::SubmitLight(const FSpotLight & light)
+	void SceneRenderer::Submit(const SpotLight & light)
 	{
 		/*auto inner = glm::cos(glm::radians(info.InnerCutoff));
 		auto outer = glm::cos(glm::radians(info.OuterCutoff));*/
 		Renderer::Get().Light.Submit(light);
 
 		FShadowFrustumCreateInfo shadow_info{};
-		shadow_info.LightDirection = light.Direction;
-		shadow_info.LightPosition = light.Position;
-		shadow_info.LightAngleNearFar = {light.Params.x, .1f, light.Position.w};
+		shadow_info.LightDirection = light.GetDirection();
+		shadow_info.LightPosition = light.GetPosition();
+
+		//TODO : maybe radius 
+		shadow_info.LightAngleNearFar = {glm::radians(light.GetOuterAngleDegrees()), .1f, light.GetRadius()};
 
 		mSceneRenderData->ShadowRenderer.SubmitSpotLight(shadow_info);
 	}
 
-	void SceneRenderer::SubmitMesh(const FMeshInfo &info)
+	void SceneRenderer::Submit(const FMeshInfo &info)
 	{
 		const auto &mesh = info.Mesh;
 		const auto &transform = info.Transform;

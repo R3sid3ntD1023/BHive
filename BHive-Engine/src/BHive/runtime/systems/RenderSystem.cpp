@@ -45,11 +45,10 @@ namespace BHive
 			{
 				auto &c = view.get<DirectionalLightComponent>(e);
 
-				FDirectionalLight create_info{};
-				create_info.Color = c.Color;
-				create_info.Direction = glm::vec4(c.GetWorldTransform().GetForward(), 0.0f);
-
-				renderer->SubmitLight(create_info);
+				DirectionalLight light{};
+				light.SetColor(c.Color).SetDirection(c.GetWorldTransform().GetForward()).SetIntensity(c.Color.a);
+	
+				renderer->Submit(light);
 			}
 		}
 
@@ -61,11 +60,10 @@ namespace BHive
 				const auto world_transform = c.GetWorldTransform();
 				const auto max_scale = glm::compMax(world_transform.GetScale());
 
-				FPointLight create_info{};
-				create_info.Color = c.Color;
-				create_info.Position = glm::vec4(world_transform.GetTranslation(), c.Radius * max_scale);
-
-				renderer->SubmitLight(create_info);
+				PointLight light{};
+				light.SetColor(c.Color).SetPosition(world_transform.GetTranslation()).SetRadius(c.Radius * max_scale).SetIntensity(c.Color.a);
+	
+				renderer->Submit(light);
 
 				//renderer->SubmitCommand([=]() { LineRenderer::DrawSphere(c.Radius, 16, {}, 0xFFFFFFFF, world_transform); });
 			}
@@ -79,13 +77,16 @@ namespace BHive
 				const auto world_transform = c.GetWorldTransform();
 				const auto max_scale = glm::compMax(world_transform.GetScale());
 
-				FSpotLight create_info{};
-				create_info.Color = c.Color;
-				create_info.Direction = glm::vec4(world_transform.GetForward(), c.InnerCutoff );
-				create_info.Position = glm::vec4(world_transform.GetTranslation(), c.Radius * max_scale);
-				create_info.Params.x = c.OuterCutoff;
+				SpotLight light{};
+				light.SetColor(c.Color)
+					.SetDirection(world_transform.GetForward())
+					.SetPosition(world_transform.GetTranslation())
+					.SetRadius(c.Radius * max_scale)
+					.SetIntensity(c.Color.a)
+					.SetInnerAngleDegrees(c.InnerCutoff)
+					.SetOuterAngleDegrees(c.OuterCutoff);
 
-				renderer->SubmitLight(create_info);
+				renderer->Submit(light);
 
 				//LineRenderer::DrawCone(c.Radius, c.Radius, 16, 0xFFFFFFFF, world_transform, (int32_t)e);
 			}
@@ -105,7 +106,7 @@ namespace BHive
 				info.Transform = component.GetWorldTransform();
 				info.EntityID = (int32_t)e;
 
-				renderer->SubmitMesh(info);
+				renderer->Submit(info);
 			}
 		}
 
@@ -127,7 +128,7 @@ namespace BHive
 				info.EntityID = (int32_t)e;
 				info.Instances = {instances};
 
-				renderer->SubmitMesh(info);
+				renderer->Submit(info);
 			}
 		}
 
@@ -150,7 +151,7 @@ namespace BHive
 				info.EntityID = (int32_t)e;
 				info.Bones.Bones = pose->GetTransformsJointSpace();
 
-				renderer->SubmitMesh(info);
+				renderer->Submit(info);
 				//LineRenderer::DrawAABB(sc.GetSkeletalMesh()->GetBoundingBox(), FColor::Red, t, (int32_t)e);
 			}
 		}

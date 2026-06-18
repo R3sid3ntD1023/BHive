@@ -30,9 +30,12 @@ namespace BHive
 
 	void PropertyLayout::PushLayout()
 	{
+		ImGui::PushID(mName.c_str());
+
 		if (mColumns)
 		{
-			ImGui::BeginTable((mName + "Property").c_str(), 2, 0, {mWidth, 0.f});
+			auto size = ImGui::GetContentRegionAvail();	
+			ImGui::BeginTable((mName + "##Property").c_str(), 2, ImGuiTableFlags_Borders /*| ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX,*/, {mWidth, 0});
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
 
@@ -40,19 +43,17 @@ namespace BHive
 			ImGui::TextUnformatted(mName.c_str());
 
 			ImGui::TableNextColumn();
-		}
-
-		ImGui::PushID(mName.c_str());
+		}	
 	}
 
 	void PropertyLayout::PopLayout()
 	{
-		ImGui::PopID();
-
 		if (mColumns)
 		{
 			ImGui::EndTable();
 		}
+
+		ImGui::PopID();
 	}
 
 	ScopedPropertyLayout::ScopedPropertyLayout(const std::string &name, bool columns, float width)

@@ -4,6 +4,7 @@
 #include "gfx/mesh/MeshData.h"
 #include "gfx/material/MaterialTable.h"
 #include "core/math/Transform.h"
+#include "gfx/Color.h"
 
 #define MAX_LIGHTS 32
 
@@ -58,39 +59,7 @@ namespace BHive
 		Type GetRenderDataType() const override { return Type::Skeletal; }
 	};
 
-	struct FDirectionalLight
-	{
-		// rgb + intensity
-		glm::vec4 Color; 
-
-		// xyz + unused
-		glm::vec4 Direction;
-	};
-
-	struct FPointLight
-	{
-		// rgb + intensity
-		glm::vec4 Color; 
-
-		// xyz + unused radius
-		glm::vec4 Position;
-	};
-
-	struct FSpotLight
-	{
-		// rgb + intensity
-		glm::vec4 Color; 
-
-		// xyz + radius
-		glm::vec4 Position;
-
-		// xyz + innerCutoff
-		glm::vec4 Direction; 
-
-		// outerCutoff + padding
-		glm::vec4 Params; 
-	};
-
+	
 	struct FShadowCascadedCreateInfo
 	{
 		glm::vec3 LightDirection;
