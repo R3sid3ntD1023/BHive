@@ -216,6 +216,8 @@ namespace BHive
 
 	FAsyncPass *Renderer::ExecuteComputePass(Pipeline *pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder)
 	{
+		ASSERT(glm::compMul(dispatchSize) > 0)
+
 		return mAPI->ExecuteComputePass(pipeline, dispatchSize, builder);
 	}
 

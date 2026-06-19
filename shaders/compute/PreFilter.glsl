@@ -9,8 +9,8 @@ layout(set = 1, binding = 1 , rgba32f) uniform image2D uOutput;
    
 layout(push_constant) uniform PushConstants
 {
-    vec4 uFilterThreshold;
-} constants;
+    vec4 uThreshold;
+} pc;
 
 vec4 QuadraticThreshold(vec4 color, float threshold, vec3 curve)
 {
@@ -30,11 +30,15 @@ vec4 QuadraticThreshold(vec4 color, float threshold, vec3 curve)
 void main()
 {
     ivec2 dstCoord = ivec2(gl_GlobalInvocationID.xy);
-	
-    vec2 uv = vec2(dstCoord) / vec2(gl_NumWorkGroups.xy);
+	ivec2 size = imageSize(uOutput);
 
-    vec4 value = texture(uSceneColor, uv);
-    vec4 color = QuadraticThreshold(value, constants.uFilterThreshold.a, constants.uFilterThreshold.rgb);
-	
-    imageStore(uOutput, dstCoord, color);
+    vec2 uv = vec2(dstCoord) / vec2(size);
+
+    
+
+    vec3 curve = pc.uThreshold.rgb;
+    float threshold = pc.uThreshold.a;
+    vec4 color = texture(uSceneColor, uv);
+    vec4 bloom = QuadraticThreshold(color, threshold, curve);
+    imageStore(uOutput, dstCoord, bloom);
 }

@@ -4,23 +4,20 @@
 #define LOCAL_SIZE 1
 layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = LOCAL_SIZE) in;
 
-layout(binding = 0) uniform sampler2D u_TextureA;
-layout(binding = 1) uniform sampler2D u_TextureB;
-
-layout(binding = 0, rgba32f) uniform image2D uOutput;
+layout(set = 1, binding = 0) uniform sampler2D uTextureA; //scene
+layout(set = 1, binding = 1) uniform sampler2D uTextureB; //bloom mip 0
+layout(set = 1, binding = 2, rgba32f) uniform image2D uOutput;
 
 void main()
 {
-    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 dstCoord = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 size = imageSize(uOutput);
 
-    vec2 uv;
-    uv.x = float(texelCoord.x) / float(gl_NumWorkGroups.x);
-    uv.y = float(texelCoord.y) / float(gl_NumWorkGroups.y);
+    vec2 uv = vec2(dstCoord) / vec2(size);
 
-    vec4 color_a = texture(u_TextureA, uv );
-    vec4 color_b = texture(u_TextureB, uv );
+    vec4 scene = texture(uTextureA, uv );
+    vec4 bloom = texture(uTextureB, uv );
 
-    vec4 out_color = color_a + color_b;
-
-    imageStore(uOutput, texelCoord, out_color);
+    vec4 color = scene + bloom;
+    imageStore(uOutput, dstCoord, color);
 }

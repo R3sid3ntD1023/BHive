@@ -4,6 +4,7 @@
 #include "core/Layer.h"
 #include "gfx/cameras/EditorCamera.h"
 #include "core/events/ApplicationEvents.h"
+#include "gfx/renderers/postprocess/PostProcessStack.h"
 
 namespace BHive
 {
@@ -44,5 +45,9 @@ namespace BHive
 		Ref<PSphere> mSphere;
 		Ref<PPlane> mPlane;
 		Ref<class StandardMaterial> mStandardMaterial = nullptr;
+
+		PostProcessStack mPostProcessStack;
+		Ref<class Texture> mFinalSceneColor;
+		Ref<class BloomMaterial> mBloomMaterial;
 	};
 } // namespace BHive

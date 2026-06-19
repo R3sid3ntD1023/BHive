@@ -34,16 +34,22 @@ namespace BHive
 
 		if (mColumns)
 		{
-			auto size = ImGui::GetContentRegionAvail();	
-			ImGui::BeginTable((mName + "##Property").c_str(), 2, ImGuiTableFlags_Borders /*| ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX,*/, {mWidth, 0});
+			auto width = mWidth != 0.f ? mWidth : ImGui::GetContentRegionAvail().x;	
+			ImGui::BeginTable((mName + "##Property").c_str(), 2, ImGuiTableFlags_Borders /*| ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX,*/, {width, 0.f});
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
-
-			ImGui::AlignTextToFramePadding();
-			ImGui::TextUnformatted(mName.c_str());
-
-			ImGui::TableNextColumn();
+			ImGui::AlignTextToFramePadding();		
 		}	
+
+		ImGui::TextUnformatted(mName.c_str());
+
+		if (mColumns)
+			ImGui::TableNextColumn();
+		else
+		{
+			ImGui::SameLine();
+			ImGui::BeginGroup();
+		}
 	}
 
 	void PropertyLayout::PopLayout()
@@ -51,6 +57,10 @@ namespace BHive
 		if (mColumns)
 		{
 			ImGui::EndTable();
+		}
+		else
+		{
+			ImGui::EndGroup();
 		}
 
 		ImGui::PopID();

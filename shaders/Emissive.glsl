@@ -39,14 +39,14 @@ void main()
 
 layout(push_constant) uniform PushConstants
 {
-	vec3 EmissiveColor;
-} constants;
+	vec4 EmissiveColor;
+} pc;
 
 layout(location = 0) out vec4 fs_out;
 
 void main()
 {
-	vec3 totalEmissiveRadiance = constants.EmissiveColor;
+	vec3 totalEmissiveRadiance = pc.EmissiveColor.rgb * pc.EmissiveColor.a;
 
 	fs_out = vec4(totalEmissiveRadiance, 1);
 }

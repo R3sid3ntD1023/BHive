@@ -5,37 +5,42 @@
 layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = LOCAL_SIZE) in;
 
 layout(set = 1, binding = 0) uniform sampler2D uSrcTexture;
-layout(set = 1, binding = 1, r11f_g11f_b10f) uniform image2D uOutput;
+layout(set = 1, binding = 1, rgba32f) uniform image2D uOutput;
 
 layout(push_constant) uniform BloomSettings
 {
     float uFilterRadius;
+    int uSrcMip;
 } pc;
 
 
 void main()
 {
     ivec2 dstCoord = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 dstSize = imageSize(uOutput);
 
-    vec2 uv = (vec2(dstCoord) + 0.5 )/ vec2(gl_NumWorkGroups.xy);
-    vec2 texel = vec2(pc.uFilterRadius);
+    vec2 uv = (vec2(dstCoord) + 0.5 )/ vec2(dstSize);
 
+    int mip = pc.uSrcMip;
+    ivec2 srcSize = textureSize(uSrcTexture, 0);
+    vec2 texel = 1.0 / vec2(srcSize);
+    vec2 offset = pc.uFilterRadius * texel;
+  
     vec3 upsample = vec3(0);
-    upsample += texture(uSrcTexture, uv + texel * vec2(-1,  1)).rgb;
-    upsample += texture(uSrcTexture, uv + texel * vec2(0,   1)).rgb;
-    upsample += texture(uSrcTexture, uv + texel * vec2(1,   1)).rgb;
+    upsample += textureLod(uSrcTexture, uv + vec2(-offset.x     ,offset.y), mip).rgb;
+    upsample += textureLod(uSrcTexture, uv + vec2(0.0           ,offset.y), mip).rgb;
+    upsample += textureLod(uSrcTexture, uv + vec2(offset.x      ,offset.y), mip).rgb;
                                   
-    upsample += texture(uSrcTexture, uv + texel * vec2(-1,  0)).rgb;
-    upsample += texture(uSrcTexture, uv + texel * vec2(0,   0)).rgb;
-    upsample += texture(uSrcTexture, uv + texel * vec2(1,   0)).rgb;
+    upsample += textureLod(uSrcTexture, uv + vec2(-offset.x     ,0.0), mip).rgb;
+    upsample += textureLod(uSrcTexture, uv + vec2(0.0           ,0.0), mip).rgb;
+    upsample += textureLod(uSrcTexture, uv + vec2(offset.x      ,0.0), mip).rgb;
                                     
-    upsample += texture(uSrcTexture, uv + texel * vec2(-1,  -1)).rgb;
-    upsample += texture(uSrcTexture, uv + texel * vec2(0,   -1)).rgb;
-    upsample += texture(uSrcTexture, uv + texel * vec2(1,   -1)).rgb;
+    upsample += textureLod(uSrcTexture, uv + vec2(-offset.x     ,-offset.y), mip).rgb;
+    upsample += textureLod(uSrcTexture, uv + vec2(0.0           ,-offset.y), mip).rgb;
+    upsample += textureLod(uSrcTexture, uv + vec2(offset.x      ,-offset.y), mip).rgb;
 
   
     upsample *= (1.0 / 16.0);
 
-    vec3 color = texture(uSrcTexture, uv ).rgb;
-    imageStore(uOutput, dstCoord, vec4(color + upsample, 1));
+    imageStore(uOutput, dstCoord, vec4(upsample, 1));
 }

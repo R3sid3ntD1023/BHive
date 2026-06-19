@@ -25,6 +25,8 @@
 #include "gfx/mesh/primitives/Sphere.h"
 #include "gfx/mesh/primitives/Plane.h"
 #include "gfx/material/StandardMaterial.h"
+#include "gfx/renderers/postprocess/AcesMaterial.h"
+#include "gfx/renderers/postprocess/BloomMaterial.h"
 
 namespace BHive
 {
@@ -162,6 +164,7 @@ namespace BHive
 			mEmissiveMaterial = CreateRef<EmissiveMaterial>();
 			mEmissiveMaterial->SetPipeline(pipeline);
 			mEmissiveMaterial->EmissionColor = FColor::Red;
+			mEmissiveMaterial->EmissionColor.a = 10.0f;
 		}
 
 		{
@@ -183,8 +186,10 @@ namespace BHive
 
 			mStandardMaterial = CreateRef<StandardMaterial>();
 			mStandardMaterial->SetPipeline(pipeline);
-			mStandardMaterial->Albedo = FColor::LightGray;
+			mStandardMaterial->Albedo = FColor::White;
 			mStandardMaterial->Emission = {0.f, .0f, .0f};
+			mStandardMaterial->Metallic = 1.0f;
+			mStandardMaterial->Roughness = 0.5f;
 			// mLambertMaterial->SetTexture("DiffuseMap", mTexture);
 		}
 		
@@ -236,6 +241,18 @@ namespace BHive
 		mainLight.SetColor(FColor::White).SetDirection({-1, 0, 0}).SetIntensity(1.f);
 		plight0.SetColor(FColor::Orange).SetIntensity(3.f).SetPosition({4, 1, 0}).SetRadius(5.f);
 		spLight0.SetColor(FColor::Red).SetIntensity(3.f).SetDirection({0, -1, 0}).SetPosition({}).SetRadius(5.f).SetInnerAngleDegrees(45.f).SetOuterAngleDegrees(75.f);
+
+		//post process
+
+		auto aces = CreateRef<AcesMaterial>();
+		aces->CreateResizableObjects(window.GetSize());
+
+		mBloomMaterial = CreateRef<BloomMaterial>();
+		mBloomMaterial->CreateResizableObjects(window.GetSize());
+
+		mPostProcessStack.Materials.push_back(mBloomMaterial);
+		//mPostProcessStack.Materials.push_back(aces);
+		
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -270,11 +287,11 @@ namespace BHive
 		renderer.Light.Submit(mainLight);
 		renderer.Line.DrawLine(glm::vec3{0.f, 0.f, 0.f}, mainLight.GetDirection(), mainLight.GetColor());
 
-		renderer.Light.Submit(plight0);
-		renderer.Line.DrawSphere(plight0.GetRadius(), 32, {}, plight0.GetColor(), FTransform{plight0.GetPosition()});
+		/*renderer.Light.Submit(plight0);
+		renderer.Line.DrawSphere(plight0.GetRadius(), 32, {}, plight0.GetColor(), FTransform{plight0.GetPosition()});*/
 
-		renderer.Light.Submit(spLight0);
-		renderer.Line.DrawSpotlightCone(spLight0.GetPosition(), spLight0.GetDirection(), spLight0.GetRadius(), spLight0.GetOuterAngleDegrees(), 32, spLight0.GetColor());
+	/*	renderer.Light.Submit(spLight0);
+		renderer.Line.DrawSpotlightCone(spLight0.GetPosition(), spLight0.GetDirection(), spLight0.GetRadius(), spLight0.GetOuterAngleDegrees(), 32, spLight0.GetColor());*/
 
 		renderer.Line.DrawGrid({});
 		renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
@@ -319,15 +336,21 @@ namespace BHive
 			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 1, stride, 2u);
 		}
 
+		mEmissiveMaterial->Submit();
+
+		renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1, stride, 3u);
+
 		mStandardMaterial->Submit();
 
-		renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 2, stride, 3u);
-
+		renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1, stride, 4u);
 		renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mPlane->GetVertexArray().get(), 1, stride, 5u);
 
 		mFramebuffer->UnBind();
 
 		renderer.EndPass();
+
+		auto input = mFramebuffer->GetColorAttachment();
+		mFinalSceneColor = mPostProcessStack.Build(renderer.GetActiveGraph(), input);
 
 		ImageDebugger::Get().OnRender(renderer);
 
@@ -350,25 +373,33 @@ namespace BHive
 				if (size != fbSize && size.x != 0 && size.y != 0)
 				{
 					mFramebuffer->Resize(size);
+					mPostProcessStack.Resize(size);
 				}
-				auto texture_id = ImGuiLayer::GetTextureID(*mFramebuffer->GetColorAttachment(0));
+				auto texture_id = ImGuiLayer::GetTextureID(*mFinalSceneColor);
 				ImGui::Image(texture_id, viewportSize);
 			}
 		}
 
 		ImGui::End();
 
-		if (ImGui::Begin("Lights"))
+		if (ImGui::Begin("Lights", 0, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
 		{
-			ImGui::BeginChild("LightsScrollRegion", ImVec2(500, 0), false, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
+			Inspect::get().inspect("MainLight", mainLight, false, false);
 
-			Inspect::get().inspect("MainLight", mainLight, false, false, 500.f);
+			//Inspect::get().inspect("PointLight0", plight0, false, false);
 
-			Inspect::get().inspect("PointLight0", plight0, false, false, 500.f);
+			//Inspect::get().inspect("SpotLight0", spLight0, false, false);
 
-			Inspect::get().inspect("SpotLight0", spLight0, false, false, 500.f);
+			static BloomMaterial::FBloomParams params{};
+			auto &inspector = Inspect::get();
+
+			bool changed = inspector.inspect("BloomPreFilterThreshold", params.Threshold, false, false);
+			changed |= inspector.inspect("BloomUpScaleFilterRadius", params.Radius, false, false);
+			if ( changed)
+			{
+				mBloomMaterial->Params = params;
+			}
 		
-			ImGui::EndChild();
 		}
 
 		ImGui::End();
@@ -407,9 +438,27 @@ namespace BHive
 
 					auto &globalsResources = Renderer::Get().GetGlobalResources();
 					auto &dbg = ImageDebugger::Get();
-					dbg.RegisterTexture("PreFilterEnv", globalsResources.Find("EnvironmentPreFilter")->TextureRef);
-					dbg.RegisterTexture("EnvironmentCube", globalsResources.Find("EnvironmentCubeMap")->TextureRef);
-					dbg.RegisterTexture("Irradiance", globalsResources.Find("EnvironmentIrradiance")->TextureRef);
+
+					auto env_prefilter = globalsResources.Find("EnvironmentPreFilter")->TextureRef;
+					auto env_cube = globalsResources.Find("EnvironmentCubeMap")->TextureRef;
+					auto env_irradiance = globalsResources.Find("EnvironmentIrradiance")->TextureRef;
+					auto pipeline = PipelineRegistry::Get("Standard");
+					auto globalBindings = pipeline->GetOrCreateBindingGroup(0);
+
+					if (env_prefilter)
+					{
+						dbg.RegisterTexture("PreFilterEnv", env_prefilter);
+						globalBindings->SetTexture(3, env_prefilter);
+					}
+					
+					if (env_irradiance)
+					{
+						dbg.RegisterTexture("Irradiance", env_irradiance);
+						globalBindings->SetTexture(4, env_irradiance);
+					}
+
+					if (env_cube)
+						dbg.RegisterTexture("EnvironmentCube", env_cube);
 				}
 			}
 		}
