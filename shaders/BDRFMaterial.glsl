@@ -58,14 +58,14 @@ void main()
 #define USE_OPACITY_MAP
 #define USE_ENVIRONMENT_MAPS
 
+// @semantic EnvironmentBRDFLUT
+layout(set = 0, binding = 2) uniform sampler2D BRDFLutMap;
+
 // @semantic EnvironmentPreFilter
-layout(set = 0, binding = 2) uniform samplerCube PreFilterMap;
+layout(set = 0, binding = 3) uniform samplerCube PreFilterMap;
 
 // @semantic EnvironmentIrradiance
-layout(set = 0, binding = 3) uniform samplerCube IrradianceMap;
-
-// @semantic EnvironmentBRDFLUT
-layout(set = 0, binding = 4) uniform sampler2D BRDFLutMap;
+layout(set = 0, binding = 4) uniform samplerCube IrradianceMap;
 
 layout(set = 1, binding = 0) uniform sampler2D DiffuseMap;
 layout(set = 1, binding = 1) uniform sampler2D NormalMap;

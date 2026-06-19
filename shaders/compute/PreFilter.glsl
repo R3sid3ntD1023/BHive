@@ -4,12 +4,12 @@
 
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-layout(binding = 0) uniform sampler2D u_Texture;   
-layout(binding = 0 , rgba32f) uniform image2D uOutput;
+layout(set = 1, binding = 0) uniform sampler2D uSceneColor;   
+layout(set = 1, binding = 1 , rgba32f) uniform image2D uOutput;
    
 layout(push_constant) uniform PushConstants
 {
-    vec4 u_FilterThreshold;
+    vec4 uFilterThreshold;
 } constants;
 
 vec4 QuadraticThreshold(vec4 color, float threshold, vec3 curve)
@@ -29,13 +29,12 @@ vec4 QuadraticThreshold(vec4 color, float threshold, vec3 curve)
 
 void main()
 {
-    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 dstCoord = ivec2(gl_GlobalInvocationID.xy);
 	
-    float x = float(texelCoord.x)/(gl_NumWorkGroups.x);
-    float y = float(texelCoord.y)/(gl_NumWorkGroups.y);
+    vec2 uv = vec2(dstCoord) / vec2(gl_NumWorkGroups.xy);
 
-    vec4 value = texture(u_Texture, vec2(x, y));
-    vec4 color = QuadraticThreshold(value, constants.u_FilterThreshold.a, constants.u_FilterThreshold.rgb);
+    vec4 value = texture(uSceneColor, uv);
+    vec4 color = QuadraticThreshold(value, constants.uFilterThreshold.a, constants.uFilterThreshold.rgb);
 	
-    imageStore(uOutput, texelCoord, color);
+    imageStore(uOutput, dstCoord, color);
 }

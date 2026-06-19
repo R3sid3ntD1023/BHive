@@ -4,8 +4,8 @@
 #define LOCAL_SIZE 1
 layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = LOCAL_SIZE) in;
 
-layout(binding = 0) uniform sampler2D u_Texture;
-layout(binding = 0, rgba8) uniform image2D uOutput;
+layout(set = 1, binding = 0) uniform sampler2D uSceneColor;
+layout(set = 1, binding = 1, rgba8) uniform image2D uOutput;
 
 
 //https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl
@@ -81,7 +81,7 @@ void main()
     float x = float(texelCoord.x)/(gl_NumWorkGroups.x);
     float y = float(texelCoord.y)/(gl_NumWorkGroups.y);
 
-    vec4 color = texture(u_Texture, vec2(x,y));
+    vec4 color = texture(uSceneColor, vec2(x,y));
     color.rgb = ACES(color.rgb);
 
     imageStore(uOutput, texelCoord, color);
