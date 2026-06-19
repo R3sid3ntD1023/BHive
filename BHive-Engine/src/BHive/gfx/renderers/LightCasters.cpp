@@ -119,7 +119,7 @@ namespace BHive
 	REFLECT(DirectionalLight)
 	{
 		BEGIN_REFLECT(DirectionalLight)
-		REFLECT_PROPERTY("Color", GetColor, SetColor)
+		REFLECT_PROPERTY("Color", GetColor, SetColor)(META_DATA(EPropertyMetaData_HDR, true))
 		REFLECT_PROPERTY("Direction", GetDirection, SetDirection)
 		REFLECT_PROPERTY("Intensity", GetIntensity, SetIntensity);
 	}
@@ -127,7 +127,7 @@ namespace BHive
 	REFLECT(PointLight)
 	{
 		BEGIN_REFLECT(PointLight)
-		REFLECT_PROPERTY("Color", GetColor, SetColor)
+		REFLECT_PROPERTY("Color", GetColor, SetColor)(META_DATA(EPropertyMetaData_HDR, true))
 		REFLECT_PROPERTY("Position", GetPosition, SetPosition)
 		REFLECT_PROPERTY("Intensity", GetIntensity, SetIntensity)
 		REFLECT_PROPERTY("Radius", GetRadius, SetRadius);
@@ -136,7 +136,7 @@ namespace BHive
 	REFLECT(SpotLight)
 	{
 		BEGIN_REFLECT(SpotLight)
-		REFLECT_PROPERTY("Color", GetColor, SetColor)
+		REFLECT_PROPERTY("Color", GetColor, SetColor)(META_DATA(EPropertyMetaData_HDR, true))
 		REFLECT_PROPERTY("Direction", GetDirection, SetDirection)
 		REFLECT_PROPERTY("Position", GetPosition, SetPosition)
 		REFLECT_PROPERTY("Intensity", GetIntensity, SetIntensity)
