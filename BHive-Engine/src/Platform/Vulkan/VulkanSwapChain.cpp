@@ -107,7 +107,10 @@ namespace BHive
 
 		mSwapChain = nullptr;
 
-		Init(device, w, h);
+		auto &physical_device = VulkanBackend::GetPhysicalDevice();
+		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(mSurface);
+		auto extent = VulkanUtils::ChooseSwapExtent(surfaceCapabilities, w, h);
+		Init(device, extent.width, extent.height);
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)

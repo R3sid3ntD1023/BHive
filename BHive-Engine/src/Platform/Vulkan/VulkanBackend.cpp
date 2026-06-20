@@ -2,6 +2,7 @@
 #include "core/debug/CrashHandler.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
+#include "VulkanUtils.h"
 #include <GLFW/glfw3.h>
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
@@ -165,7 +166,7 @@ namespace BHive
 
 		LOG_TRACE("recreating swap chain... with size[{}x{}]", w, h);
 
-		mSwapChain->Recreate(mDevice, w, h);
+		mSwapChain->Recreate(mDevice,w, h);
 		RecreateFrameResources();
 	}
 
@@ -368,8 +369,8 @@ namespace BHive
 			glfwWaitEvents();
 			glfwGetFramebufferSize(window, &w, &h);
 		}
-	
-		mSwapChain = CreateScope<VulkanSwapChain>(mDevice, mSurface, (uint32_t)w, (uint32_t)h);
+
+		mSwapChain = CreateScope<VulkanSwapChain>(mDevice, mSurface, uint32_t(w), uint32_t(h));
 	}
 
 	void VulkanBackend::CreateSyncObjects()

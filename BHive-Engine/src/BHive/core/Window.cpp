@@ -38,6 +38,7 @@ namespace BHive
 			shared_context = nullptr;
 		}
 
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 		mWindow = glfwCreateWindow(properties.Size.x, properties.Size.y, properties.Title.c_str(), nullptr, shared_context);
 		sWindowCount++;
 
