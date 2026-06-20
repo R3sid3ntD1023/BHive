@@ -138,22 +138,6 @@ namespace BHive
 		
 	}
 
-	void VulkanBackend::RegisterOnDeviceCreated(const DeviceCallback &callback)
-	{
-		mOnDeviceCreatedCallbacks.push_back(callback);
-	}
-
-	void VulkanBackend::RegisterOnDeviceDestroy(const DeviceCallback &callback)
-	{
-		mOnDeviceDestroyedCallbacks.push_back(callback);
-	}
-
-	void VulkanBackend::CallOnDeviceDestroyed()
-	{
-		for (auto &callback : mOnDeviceDestroyedCallbacks)
-			callback();
-	}
-
 	vk::Result VulkanBackend::Present()
 	{
 		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();

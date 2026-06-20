@@ -15,33 +15,9 @@ namespace BHive
 	Ref<Texture> AcesMaterial::AddToGraph(RenderGraph &graph, const Ref<Texture> &input)
 	{
 		auto &pass = graph.AddPass("Aces", EPassType::OffScreen);
+		pass.CommandList.Push("Aces", this, &AcesMaterial::OnExecutePass, input);
 
-		const auto size = input->GetSize();
-		glm::vec3 dispatch = {size.x ,size.y, 1};
-		auto output = mOutput;
-
-		pass.CommandList.Push(
-			"Aces",
-			[input, output, dispatch](IRendererContext &ctx)
-			{
-				Renderer::Get().ExecuteComputePass(
-					PipelineRegistry::Get("ACES"), dispatch,
-					[input, output](FComputeBindings &b)
-					{
-						FImageInfo inputInfo{};
-						inputInfo.Texture = input;
-						inputInfo.Access = EImageAccess::READ;
-
-						FImageInfo outputInfo{};
-						outputInfo.Texture = output;
-						outputInfo.Access = EImageAccess::WRITE;
-
-						b.SampledImage("uSceneColor", inputInfo);
-						b.StorageImage("uOutput", outputInfo);
-					});
-		});
-
-		return output;
+		return mOutput;
 	}
 
 	void AcesMaterial::CreateResizableObjects(const glm::uvec2 &size)
@@ -52,6 +28,28 @@ namespace BHive
 		info.Roles |= ETextureRole::ComputeWrite;
 		info.DebugName = "AcesOutput";
 		mOutput = Texture2D::Create(size, info);
+	}
+
+	void AcesMaterial::ExecutePass(FComputeBindings &b, const Ref<Texture> &in, const Ref<Texture> &out)
+	{
+		FImageInfo inputInfo{};
+		inputInfo.Texture = in;
+		inputInfo.Access = EImageAccess::READ;
+
+		FImageInfo outputInfo{};
+		outputInfo.Texture = out;
+		outputInfo.Access = EImageAccess::WRITE;
+
+		b.SampledImage("uSceneColor", inputInfo);
+		b.StorageImage("uOutput", outputInfo);
+	}
+
+	void AcesMaterial::OnExecutePass(IRendererContext &ctx, const Ref<Texture> &input)
+	{
+		const auto size = input->GetSize();
+		glm::vec3 dispatch = {size.x, size.y, 1};
+
+		Renderer::Get().ExecuteComputePass(PipelineRegistry::Get("ACES"), dispatch, this, &AcesMaterial::ExecutePass, input, mOutput);
 	}
 
 } // namespace BHive

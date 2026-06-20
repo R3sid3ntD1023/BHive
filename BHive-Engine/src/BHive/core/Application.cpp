@@ -64,14 +64,6 @@ namespace BHive
 
 	Application::~Application()
 	{
-		if (mSpecification.Flags & EApplicationFlags::EnableRendering)
-		{
-			ShaderManager::Clear();
-			WindowManager::Get().Shutdown();
-
-			sInstance = nullptr;
-		}
-
 		if (mSpecification.Flags & EApplicationFlags::EnableAudio)
 		{
 			GetSubSystem<AudioContext>().Shutdown();
@@ -80,6 +72,14 @@ namespace BHive
 		if (mSpecification.Flags & EApplicationFlags::EnablePhysics)
 		{
 			GetSubSystem<PhysicsContext>().Shutdown();
+		}
+
+		if (mSpecification.Flags & EApplicationFlags::EnableRendering)
+		{
+			ShaderManager::Clear();
+			WindowManager::Get().Shutdown();
+
+			sInstance = nullptr;
 		}
 	}
 

@@ -89,6 +89,18 @@ namespace BHive
 
 		void ExecuteTransferPass(FTransferFunc &&builder);
 
+		template <typename T, typename Method, typename... Args>
+		FAsyncPass *ExecuteComputePass(Pipeline *pipeline, const glm::uvec3 &dispatchSize, T *obj, Method method, Args &&...args)
+		{
+			return ExecuteComputePass(pipeline, dispatchSize, [obj, method, ... captured = std::forward<Args>(args)](FComputeBindings &b) mutable { (obj->*method)(b, captured...); });
+		}
+
+		template <typename T, typename Method, typename... Args>
+		void ExecuteTransferPass(T *obj, Method method, Args &&...args)
+		{
+			ExecuteTransferPass([obj, method, ... captured = std::forward<Args>(args)](ITransferContext &b) mutable { (obj->*method)(b, captured...); });
+		}
+
 		template<typename Fn>
 		void SubmitTransferImmediate(Fn &&fn)
 		{

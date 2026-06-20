@@ -122,23 +122,21 @@ namespace BHive
 
 		DescriptorPoolManager mDescriptorPoolManager;
 
-		vk::ClearColorValue mClearColor{0, 0, 0, 1};
-
-		std::atomic<bool> mDeviceRecreationInProgress{false};
-
-		WindowContext *mCurrentContext = nullptr;
-
 		std::vector<RenderGraph> mSubmittedGraphs;
 
 		std::vector<FResourceUpdateList> mSubmittedUpdates;
 
-		std::vector<Scope<FAsyncPass>> mComputePasses;
+		std::vector<Ref<FAsyncPass>> mComputePasses;
 
-		std::queue<PendingDeletion> mDeletionQueue;
+		std::vector<PendingDeletion> mDeletionQueue;
+
+		vk::ClearColorValue mClearColor{0, 0, 0, 1};
 
 		uint32_t mCompletedFrame = 0;
 
 		uint32_t mCurrentFrame = 0;
+
+		WindowContext *mCurrentContext = nullptr;
 
 		friend class VulkanFramebuffer;
 

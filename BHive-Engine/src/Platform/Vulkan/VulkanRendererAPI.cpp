@@ -50,6 +50,8 @@ namespace BHive
 	{
 		LOG_TRACE("RendererAPI Shutdown Called")
 
+		mDeletionQueue.clear();
+
 		mDescriptorPoolManager.Shutdown();
 
 		VulkanBackend::Get().Shutdown();
@@ -85,9 +87,6 @@ namespace BHive
 
 	void VulkanRendererAPI::SubmitGraph(const RenderGraph &graph, FResourceUpdateList &updateResources)
 	{
-		if (mDeviceRecreationInProgress.load())
-			return;
-
 		if (!graph.Empty())
 			mSubmittedGraphs.emplace_back(graph);
 
@@ -98,7 +97,7 @@ namespace BHive
 
 	void VulkanRendererAPI::QueueDeletion(FQeueuDeflectionFunc&& fn)
 	{
-		mDeletionQueue.emplace(mCompletedFrame, std::move(fn));
+		mDeletionQueue.emplace_back(mCompletedFrame, std::move(fn));
 	}
 
 	void VulkanRendererAPI::ResetFrameIndex()
@@ -108,9 +107,7 @@ namespace BHive
 
 		mSubmittedGraphs.clear();
 		mSubmittedUpdates.clear();
-
-		while (!mDeletionQueue.empty())
-			mDeletionQueue.pop();
+		mDeletionQueue.clear();	
 	}
 
 	void VulkanRendererAPI::ProcessDeletionQueue(uint32_t frame)
@@ -121,7 +118,8 @@ namespace BHive
 
 			if (frame > del.Frame)
 				del.Fn(frame);
-			mDeletionQueue.pop();
+
+			mDeletionQueue.erase(mDeletionQueue.begin());
 		}
 	}
 

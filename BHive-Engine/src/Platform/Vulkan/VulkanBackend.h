@@ -27,9 +27,6 @@ namespace BHive
 	class BHIVE_API VulkanBackend
 	{
 	public:
-		using DeviceCallback = std::function<void()>;
-
-	public:
 		void Init(GLFWwindow* window);
 
 		void Shutdown();
@@ -45,13 +42,6 @@ namespace BHive
 		void EnsurePresentSupportForSurface(const vk::SurfaceKHR &surface);
 
 		void CreatePerImageSync(uint32_t imgCount);
-
-		// device lifecycle callbacks
-		void RegisterOnDeviceCreated(const DeviceCallback &callback);
-
-		void RegisterOnDeviceDestroy(const DeviceCallback &callback);
-
-		void CallOnDeviceDestroyed();
 
 		vk::Result Present();
 
@@ -175,10 +165,6 @@ namespace BHive
 
 		bool mInitialized = false;
 
-		std::vector<DeviceCallback> mOnDeviceDestroyedCallbacks;
-
-		std::vector<DeviceCallback> mOnDeviceCreatedCallbacks;
-
 		Scope<MemoryAllocator> mMemoryAllocator;
 
 		Scope<GPUResourceManager> mGPUResourceManager;
@@ -186,10 +172,5 @@ namespace BHive
 		DebugNameRegistry mDebugNames;
 
 		Scope<VulkanSwapChain> mSwapChain;
-
-		
-
 	};
-
-	
 } // namespace BHive

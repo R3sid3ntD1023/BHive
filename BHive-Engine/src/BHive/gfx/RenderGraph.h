@@ -32,6 +32,20 @@ namespace BHive
 
 		void Push(UpdateCommand cmd);
 
+		template <typename T, typename Method, typename... Args>
+		void Push(Method method, Args &&... args)
+		{
+			UpdateCommand cmd = [method, ... captured = std::forward<Args>(args)](IRendererContext &ctx) { (*method)(ctx, captured...); };
+			Push(std::move(cmd));
+		}
+
+		template<typename T, typename Method, typename... Args>
+		void Push(T* obj, Method method, Args&&... args)
+		{
+			UpdateCommand cmd = [obj, method, ... captured = std::forward<Args>(args)](IRendererContext &ctx) { (obj->*method)(ctx, captured...); };
+			Push(std::move(cmd));
+		}
+
 		void Append(FResourceUpdateList &updates);
 
 		void Execute(IRendererContext &ctx) const;
@@ -49,6 +63,20 @@ namespace BHive
 		using RenderCommand = std::function<void(IRendererContext &)>;
 
 		void Push(const std::string &name, RenderCommand cmd);
+
+		template <typename T, typename Method, typename... Args>
+		void Push(const std::string &name, Method method, Args &&... args)
+		{
+			RenderCommand cmd = [method, ... captured = std::forward<Args>(args)](IRendererContext &ctx) { (*method)(ctx, captured...); };
+			Push(name, std::move(cmd));
+		}
+
+		template <typename T, typename Method, typename... Args>
+		void Push(const std::string &name, T *obj, Method method, Args &&... args)
+		{
+			RenderCommand cmd = [obj, method, ... captured = std::forward<Args>(args)](IRendererContext &ctx) { (obj->*method)(ctx, captured...); };
+			Push(name, std::move(cmd));
+		}
 
 		void Execute(IRendererContext &ctx) const;
 
