@@ -368,12 +368,13 @@ namespace BHive
 			{
 				auto fbSize = mFramebuffer->GetSize();
 				auto viewportSize = ImGui::GetContentRegionAvail();
-				glm::uvec2 size = {viewportSize.x, viewportSize.y};
+				glm::uvec2 size = {uint32_t(glm::round(viewportSize.x)), uint32_t(glm::round(viewportSize.y))};
 
-				if (size != fbSize && size.x != 0 && size.y != 0)
+				if (size != fbSize && size.x > 0 && size.y > 0)
 				{
 					mFramebuffer->Resize(size);
 					mPostProcessStack.Resize(size);
+					mCamera.Resize(size.x, size.y);
 				}
 				auto texture_id = ImGuiLayer::GetTextureID(*mFinalSceneColor);
 				ImGui::Image(texture_id, viewportSize);

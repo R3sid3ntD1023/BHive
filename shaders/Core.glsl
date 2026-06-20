@@ -107,6 +107,42 @@ vec4 CompositeWeightedTransparency(in sampler2D reveal, in sampler2D accum, ivec
 	return vec4(average_color, 1.0 - revealage);
 }
 
+vec3 SoftKeeThreshold(vec3 color, float threshold)
+{
+	threshold = max(threshold, 0.0);
+    float knee = threshold * 0.5;
+
+    // Pixel brightness
+    float br = Max3(color.r, color.g, color.b);
+
+    //soft knee start
+    float kneeStart = threshold - knee;
+
+    //amount abouve knee start
+    float soft = clamp(br -kneeStart, 0.0 , 2.0 * knee);
+
+    //apply quadratic soft knee
+    soft = soft * soft / (4.0 * knee + 1e-4);
+
+    float bloomFactor = max(br - threshold, soft);
+
+    return color * (bloomFactor / max(br, 1e-4));
+}
+
+vec4 QuadraticThreshold(vec4 color, float threshold, vec3 curve)
+{
+    // Pixel brightness
+    float br = Max3(color.r, color.g, color.b);
+
+    // Under-threshold part: quadratic curve
+    float rq = clamp(br - curve.x, 0.0, curve.y);
+    rq = curve.z * rq * rq;
+
+    // Combine and apply the brightness response curve.
+    color *= max(rq, br - threshold) / max(br, EPSILON);
+
+    return color;
+}
 
 float LinerizeDepth(float depth, float near, float far)
 {

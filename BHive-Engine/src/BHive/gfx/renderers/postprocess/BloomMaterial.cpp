@@ -98,7 +98,6 @@ namespace BHive
 
 							b.SampledImage("uSrcTexture", in);
 							b.StorageImage("uOutput", out);
-							b.Set("uSrcMip", (int32_t)srcMip);
 						});
 
 					mipSize = dstSize;	

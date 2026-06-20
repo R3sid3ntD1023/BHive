@@ -18,7 +18,7 @@ namespace BHive
 
 		struct FBloomParams
 		{
-			glm::vec4 Threshold{0.2126, 0.7152, 0.0722, 1.0};
+			float Threshold{1.0};
 			float Radius{0.0001f};
 		} Params;
 

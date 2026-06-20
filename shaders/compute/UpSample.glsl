@@ -1,6 +1,8 @@
 #type compute
 #version 460 core
 
+#include <Sampling.glsl>
+
 #define LOCAL_SIZE 1
 layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = LOCAL_SIZE) in;
 
@@ -24,23 +26,9 @@ void main()
     int mip = pc.uSrcMip;
     ivec2 srcSize = textureSize(uSrcTexture, 0);
     vec2 texel = 1.0 / vec2(srcSize);
-    vec2 offset = pc.uFilterRadius * texel;
-  
-    vec3 upsample = vec3(0);
-    upsample += textureLod(uSrcTexture, uv + vec2(-offset.x     ,offset.y), mip).rgb;
-    upsample += textureLod(uSrcTexture, uv + vec2(0.0           ,offset.y), mip).rgb;
-    upsample += textureLod(uSrcTexture, uv + vec2(offset.x      ,offset.y), mip).rgb;
-                                  
-    upsample += textureLod(uSrcTexture, uv + vec2(-offset.x     ,0.0), mip).rgb;
-    upsample += textureLod(uSrcTexture, uv + vec2(0.0           ,0.0), mip).rgb;
-    upsample += textureLod(uSrcTexture, uv + vec2(offset.x      ,0.0), mip).rgb;
-                                    
-    upsample += textureLod(uSrcTexture, uv + vec2(-offset.x     ,-offset.y), mip).rgb;
-    upsample += textureLod(uSrcTexture, uv + vec2(0.0           ,-offset.y), mip).rgb;
-    upsample += textureLod(uSrcTexture, uv + vec2(offset.x      ,-offset.y), mip).rgb;
+    float radius = max(pc.uFilterRadius, 0.001);
 
-  
-    upsample *= (1.0 / 16.0);
+    vec3 upsample = BicubicSample(uSrcTexture, uv, texel * radius);
 
-    imageStore(uOutput, dstCoord, vec4(upsample, 1));
+    imageStore(uOutput, dstCoord, vec4(upsample, 1.0));
 }
