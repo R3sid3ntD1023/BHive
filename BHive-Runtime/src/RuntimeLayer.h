@@ -49,5 +49,6 @@ namespace BHive
 		PostProcessStack mPostProcessStack;
 		Ref<class Texture> mFinalSceneColor;
 		Ref<class BloomMaterial> mBloomMaterial;
+		Ref<class ColorGradingMaterial> mColorGrading;
 	};
 } // namespace BHive

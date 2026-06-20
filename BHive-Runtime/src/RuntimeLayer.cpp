@@ -27,6 +27,7 @@
 #include "gfx/material/StandardMaterial.h"
 #include "gfx/renderers/postprocess/AcesMaterial.h"
 #include "gfx/renderers/postprocess/BloomMaterial.h"
+#include "gfx/renderers/postprocess/ColorGradingMaterial.h"
 
 namespace BHive
 {
@@ -250,8 +251,12 @@ namespace BHive
 		mBloomMaterial = CreateRef<BloomMaterial>();
 		mBloomMaterial->CreateResizableObjects(window.GetSize());
 
+		mColorGrading = CreateRef<ColorGradingMaterial>();
+		mColorGrading->CreateResizableObjects(window.GetSize());
+
 		mPostProcessStack.Materials.push_back(mBloomMaterial);
-		//mPostProcessStack.Materials.push_back(aces);
+		mPostProcessStack.Materials.push_back(aces);
+		mPostProcessStack.Materials.push_back(mColorGrading);
 		
 	}
 
@@ -385,26 +390,41 @@ namespace BHive
 
 		if (ImGui::Begin("Lights", 0, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
 		{
-			Inspect::get().inspect("MainLight", mainLight, false, false);
+			Inspect::get().inspect("MainLight", mainLight);
 
-			Inspect::get().inspect("PointLight0", plight0, false, false);
+			Inspect::get().inspect("PointLight0", plight0);
 
-			Inspect::get().inspect("SpotLight0", spLight0, false, false);
+			Inspect::get().inspect("SpotLight0", spLight0);
 
-			static BloomMaterial::FBloomParams params{};
-			auto &inspector = Inspect::get();
+			
+			auto &inspector = Inspect::get();		
 
-			ImGui::SeparatorText("BloomSettings");
-
-			bool changed = inspector.inspect("Threshold", params.Threshold, false, false);
-			changed |= inspector.inspect("FilterRadius", params.Radius, false, false);
-			changed |= inspector.inspect("Strength", params.Strength, false, false);
-			changed |= inspector.inspect("Exposure", params.Exposure, false, false);
-			if ( changed)
 			{
-				mBloomMaterial->Params = params;
+				static BloomMaterial::FBloomParams params{};
+				ImGui::SeparatorText("BloomSettings");
+				bool changed = inspector.inspect("Threshold", params.Threshold);
+				changed |= inspector.inspect("FilterRadius", params.Radius);
+				changed |= inspector.inspect("Strength", params.Strength);
+				changed |= inspector.inspect("Exposure", params.Exposure);
+				if (changed)
+				{
+					mBloomMaterial->Params = params;
+				}
 			}
 		
+			
+			{
+				static ColorGradingMaterial::FColorGrading params{};
+				ImGui::SeparatorText("Color Grading");
+				bool changed = inspector.inspect("Lift", params.Lift);
+				changed |= inspector.inspect("Gamma", params.Gamma);
+				changed |= inspector.inspect("Gain", params.Gain);
+				changed |= inspector.inspect("Saturation", params.Saturation);
+				if (changed)
+				{
+					mColorGrading->Params = params;
+				}
+			}
 		}
 
 		ImGui::End();
