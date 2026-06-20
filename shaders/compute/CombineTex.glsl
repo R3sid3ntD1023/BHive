@@ -8,6 +8,21 @@ layout(set = 1, binding = 0) uniform sampler2D uTextureA; //scene
 layout(set = 1, binding = 1) uniform sampler2D uTextureB; //bloom mip 0
 layout(set = 1, binding = 2, rgba32f) uniform image2D uOutput;
 
+layout(push_constant) uniform BloomSettings
+{
+    float uExposure;
+    float uBloomStrength;
+} pc;
+
+vec3 FilamentBloomCombine(vec3 scene, vec3 bloom, float strength, float exposure)
+{
+    float bloomScale = strength * exposure;
+
+    bloom = clamp(bloom * bloomScale, 0.0, 10.0);
+
+    return scene + bloom;
+}
+
 void main()
 {
     ivec2 dstCoord = ivec2(gl_GlobalInvocationID.xy);
@@ -15,9 +30,13 @@ void main()
 
     vec2 uv = vec2(dstCoord) / vec2(size);
 
-    vec4 scene = texture(uTextureA, uv );
-    vec4 bloom = texture(uTextureB, uv );
+    vec3 scene = texture(uTextureA, uv ).rgb;
+    vec3 bloom = texture(uTextureB, uv ).rgb;
 
-    vec4 color = scene + bloom;
-    imageStore(uOutput, dstCoord, color);
+    float exposure = max(pc.uExposure, 0.0);
+    float strength = max(pc.uBloomStrength, 0.0);
+
+    vec3 combined = FilamentBloomCombine(scene, bloom, strength, exposure);
+
+    imageStore(uOutput, dstCoord, vec4(combined, 1.0));
 }

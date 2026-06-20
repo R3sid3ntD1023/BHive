@@ -287,11 +287,11 @@ namespace BHive
 		renderer.Light.Submit(mainLight);
 		renderer.Line.DrawLine(glm::vec3{0.f, 0.f, 0.f}, mainLight.GetDirection(), mainLight.GetColor());
 
-		/*renderer.Light.Submit(plight0);
-		renderer.Line.DrawSphere(plight0.GetRadius(), 32, {}, plight0.GetColor(), FTransform{plight0.GetPosition()});*/
+		renderer.Light.Submit(plight0);
+		renderer.Line.DrawSphere(plight0.GetRadius(), 32, {}, plight0.GetColor(), FTransform{plight0.GetPosition()});
 
-	/*	renderer.Light.Submit(spLight0);
-		renderer.Line.DrawSpotlightCone(spLight0.GetPosition(), spLight0.GetDirection(), spLight0.GetRadius(), spLight0.GetOuterAngleDegrees(), 32, spLight0.GetColor());*/
+		renderer.Light.Submit(spLight0);
+		renderer.Line.DrawSpotlightCone(spLight0.GetPosition(), spLight0.GetDirection(), spLight0.GetRadius(), spLight0.GetOuterAngleDegrees(), 32, spLight0.GetColor());
 
 		renderer.Line.DrawGrid({});
 		renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
@@ -387,15 +387,19 @@ namespace BHive
 		{
 			Inspect::get().inspect("MainLight", mainLight, false, false);
 
-			//Inspect::get().inspect("PointLight0", plight0, false, false);
+			Inspect::get().inspect("PointLight0", plight0, false, false);
 
-			//Inspect::get().inspect("SpotLight0", spLight0, false, false);
+			Inspect::get().inspect("SpotLight0", spLight0, false, false);
 
 			static BloomMaterial::FBloomParams params{};
 			auto &inspector = Inspect::get();
 
-			bool changed = inspector.inspect("BloomPreFilterThreshold", params.Threshold, false, false);
-			changed |= inspector.inspect("BloomUpScaleFilterRadius", params.Radius, false, false);
+			ImGui::SeparatorText("BloomSettings");
+
+			bool changed = inspector.inspect("Threshold", params.Threshold, false, false);
+			changed |= inspector.inspect("FilterRadius", params.Radius, false, false);
+			changed |= inspector.inspect("Strength", params.Strength, false, false);
+			changed |= inspector.inspect("Exposure", params.Exposure, false, false);
 			if ( changed)
 			{
 				mBloomMaterial->Params = params;

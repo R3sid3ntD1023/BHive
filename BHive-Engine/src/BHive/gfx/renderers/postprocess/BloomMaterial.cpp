@@ -144,14 +144,14 @@ namespace BHive
 
 		pass.CommandList.Push(
 			"Combine Bloom and Scene",
-			[scene = input, bloom = mBloomTex, output = mOutputTex, mipCount = mMipCount](IRendererContext &ctx)
+			[scene = input, bloom = mBloomTex, output = mOutputTex, mipCount = mMipCount, params](IRendererContext &ctx)
 			{
 				glm::uvec2 dstSize = output->GetSize();
 				glm::uvec3 dispatch = {dstSize, 1};
 
 				Renderer::Get().ExecuteComputePass(
 					PipelineRegistry::Get("BLOOM_COMBINE"), dispatch,
-					[scene, bloom, output, mipCount](FComputeBindings &b)
+					[scene, bloom, output, mipCount, params](FComputeBindings &b)
 					{
 						FImageInfo inA{};
 						inA.Texture = scene;
@@ -168,6 +168,8 @@ namespace BHive
 						b.SampledImage("uTextureA", inA);
 						b.SampledImage("uTextureB", inB);
 						b.StorageImage("uOutput", out);
+						b.Set("uExposure", params.Exposure);
+						b.Set("uBloomStrength", params.Strength);
 					});
 			});
 

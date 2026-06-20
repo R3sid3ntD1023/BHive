@@ -20,6 +20,8 @@ namespace BHive
 		{
 			float Threshold{1.0};
 			float Radius{0.0001f};
+			float Strength{1.0f};
+			float Exposure{1.0f};
 		} Params;
 
 	private:
