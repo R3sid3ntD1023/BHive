@@ -46,9 +46,11 @@ namespace BHive
 		Ref<PPlane> mPlane;
 		Ref<class StandardMaterial> mStandardMaterial = nullptr;
 
+		PostProcessAllocator mPostProcessAllocator;
 		PostProcessStack mPostProcessStack;
 		Ref<class Texture> mFinalSceneColor;
 		Ref<class BloomMaterial> mBloomMaterial;
 		Ref<class ColorGradingMaterial> mColorGrading;
+
 	};
 } // namespace BHive

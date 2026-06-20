@@ -8,11 +8,9 @@ namespace BHive
 	class BHIVE_API ColorGradingMaterial : public PostProcessMaterial
 	{
 	public:
-		ColorGradingMaterial();
+		ColorGradingMaterial() = default;
 
-		Ref<Texture> AddToGraph(RenderGraph &graph, const Ref<Texture> &input) override;
-
-		void CreateResizableObjects(const glm::uvec2 &size) override;
+		Ref<Texture> AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input) override;
 
 		const char *GetName() const override { return "Color Grading"; }
 
@@ -23,8 +21,5 @@ namespace BHive
 			glm::vec3 Gain = {1.05f, 1.03f, 1.00f};//highlights
 			float Saturation = 1.10f;
 		} Params;
-
-	private:
-		Ref<Texture2D> mOutputTex;
 	};
 } // namespace BHive

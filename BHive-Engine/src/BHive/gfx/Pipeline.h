@@ -93,6 +93,8 @@ namespace BHive
 		PipelineRegistry() = default;
 		PipelineRegistry(const PipelineRegistry &) = delete;
 
+		static void Initialize();
+
 		static void Register(const std::string &name, const Pipeline::GraphicsPipelineState &info);
 
 		static void Register(const std::string &name, const Pipeline::ComputePipelineState &info);

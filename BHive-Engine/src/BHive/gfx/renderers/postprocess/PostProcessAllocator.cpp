@@ -1,0 +1,91 @@
+#include "PostProcessAllocator.h"
+
+namespace BHive
+{
+	void PostProcessAllocator::Resize(const glm::uvec2 &size)
+	{
+		if (size == mSize)
+			return;
+
+		mSize = size;
+		CreateAcesOutput();
+		CreateBloomColorOutput();
+		CreateBloomOutput();
+		CreateColorGradeOutput();
+		CreateTempTextures();
+	}
+
+	void PostProcessAllocator::CreateAcesOutput()
+	{
+		FTextureCreateInfo info{};
+		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		info.Format = EFormat::RGBA8;
+		info.Roles |= ETextureRole::ComputeWrite;
+		info.DebugName = "AcesOutput";
+		mAcesOutput = Texture2D::Create(mSize, info);
+	}
+
+	void PostProcessAllocator::CreateBloomColorOutput()
+	{
+		{
+			FTextureCreateInfo info{};
+			info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+			info.Format = EFormat::RGBA32F;
+			info.Roles |= ETextureRole::ComputeWrite;
+			info.DebugName = "SceneBloomCombined";
+			mBloomColorOutput = Texture2D::Create(mSize, info);
+		}
+	}
+
+	void PostProcessAllocator::CreateColorGradeOutput()
+	{
+		FTextureCreateInfo info{};
+		info.Format = EFormat::RGBA8;
+		info.Roles |= ETextureRole::ComputeWrite;
+		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		info.DebugName = "ColorGradingTex";
+
+		mColorGradeOutput = Texture2D::Create(mSize, info);
+	}
+
+	void PostProcessAllocator::CreateBloomOutput()
+	{
+		FTextureCreateInfo info{};
+		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		info.Format = EFormat::RGBA32F;
+		info.Roles |= ETextureRole::ComputeWrite;
+		info.MipLevels = std::min(ComputeMipCount(mSize), mBloomMipCount);
+		info.DebugName = "BloomMipChain";
+
+		mBloomOutput = Texture2D::Create(mSize, info);
+	}
+
+	void PostProcessAllocator::CreateTempTextures()
+	{
+		mTempTextures.clear();
+		mTempTextures.reserve(mTempTextureCount);
+
+		for (uint32_t i = 0; i < mTempTextureCount; i++)
+		{
+			FTextureCreateInfo info{};
+			info.Format = EFormat::RGBA16F;
+			info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+			info.Roles |= ETextureRole::ComputeWrite;
+			info.DebugName = "TempTexture_" + std::to_string(i);
+
+			mTempTextures.push_back(Texture2D::Create(mSize, info));
+		}
+	}
+
+	uint32_t PostProcessAllocator::ComputeMipCount(glm::uvec2 size)
+	{
+		uint32_t levels = 1;
+		while (size.x > 1 || size.y > 1)
+		{
+			size = glm::max(size / 2u, glm::uvec2(1u));
+			levels++;
+		}
+
+		return levels;
+	}
+} // namespace BHive

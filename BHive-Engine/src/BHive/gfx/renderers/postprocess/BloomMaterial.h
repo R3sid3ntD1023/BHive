@@ -8,11 +8,9 @@ namespace BHive
 	class BHIVE_API BloomMaterial : public PostProcessMaterial
 	{
 	public:
-		BloomMaterial();
+		BloomMaterial() = default;
 
-		Ref<Texture> AddToGraph(RenderGraph &graph, const Ref<Texture> &input) override;
-
-		void CreateResizableObjects(const glm::uvec2 &size) override;
+		Ref<Texture> AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input) override;
 
 		const char *GetName() const override { return "Bloom"; }
 
@@ -23,13 +21,5 @@ namespace BHive
 			float Strength{1.0f};
 			float Exposure{1.0f};
 		} Params;
-
-	private:
-		static uint32_t ComputeMipCount(glm::uvec2 size);
-
-	private:
-		Ref<Texture2D> mBloomTex;
-		Ref<Texture2D> mOutputTex;
-		uint32_t mMipCount{5};
 	};
 }

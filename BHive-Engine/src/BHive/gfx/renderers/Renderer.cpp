@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Buffers.h"
+#include "gfx/Pipeline.h"
 
 namespace BHive
 {
@@ -50,6 +51,9 @@ namespace BHive
 		sInstance = this;
 
 		mAPI->Init();
+
+		PipelineRegistry::Initialize();
+
 		mData = CreateRef<RenderData>();
 
 		auto brdfLUT = mPMREMGenerator.GenerateBRDFLUTMap();
@@ -62,6 +66,8 @@ namespace BHive
 		Line.Initialize();
 		Quad.Initialize();
 		Light.Initialize(*this);
+
+		
 	}
 
 	Renderer::~Renderer()

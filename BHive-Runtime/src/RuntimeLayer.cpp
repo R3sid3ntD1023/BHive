@@ -246,14 +246,12 @@ namespace BHive
 		//post process
 
 		auto aces = CreateRef<AcesMaterial>();
-		aces->CreateResizableObjects(window.GetSize());
 
 		mBloomMaterial = CreateRef<BloomMaterial>();
-		mBloomMaterial->CreateResizableObjects(window.GetSize());
 
 		mColorGrading = CreateRef<ColorGradingMaterial>();
-		mColorGrading->CreateResizableObjects(window.GetSize());
 
+		mPostProcessAllocator.Resize(window.GetSize());
 		mPostProcessStack.Materials.push_back(mBloomMaterial);
 		mPostProcessStack.Materials.push_back(aces);
 		mPostProcessStack.Materials.push_back(mColorGrading);
@@ -355,7 +353,7 @@ namespace BHive
 		renderer.EndPass();
 
 		auto input = mFramebuffer->GetColorAttachment();
-		mFinalSceneColor = mPostProcessStack.Build(renderer.GetActiveGraph(), input);
+		mFinalSceneColor = mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, input);
 
 		ImageDebugger::Get().OnRender(renderer);
 
@@ -378,7 +376,7 @@ namespace BHive
 				if (size != fbSize && size.x > 0 && size.y > 0)
 				{
 					mFramebuffer->Resize(size);
-					mPostProcessStack.Resize(size);
+					mPostProcessAllocator.Resize(size);
 					mCamera.Resize(size.x, size.y);
 				}
 				auto texture_id = ImGuiLayer::GetTextureID(*mFinalSceneColor);
@@ -503,6 +501,7 @@ namespace BHive
 
 	bool RuntimeLayer::OnWindowResize(WindowResizeEvent &e)
 	{
+		
 		mCamera.Resize(e.x , e.y);
 
 		return false;

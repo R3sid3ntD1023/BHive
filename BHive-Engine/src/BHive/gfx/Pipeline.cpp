@@ -1,6 +1,7 @@
 #include "Pipeline.h"
 #include "Platform/Vulkan/VulkanPipeline.h"
 #include "RenderCommand.h"
+#include "ShaderManager.h"
 
 namespace BHive
 {
@@ -42,6 +43,29 @@ namespace BHive
 
 		ASSERT(false)
 		return nullptr;
+	}
+
+	void PipelineRegistry::Initialize()
+	{
+		Pipeline::ComputePipelineState state{};
+
+		state.ShaderProgram = ShaderManager::Get("ColorGrading.glsl");
+		Register("COLOR_GRADING", state);
+
+		state.ShaderProgram = ShaderManager::Get("Aces.glsl");
+		PipelineRegistry::Register("ACES", state);
+
+		state.ShaderProgram = ShaderManager::Get("CombineTex.glsl");
+		PipelineRegistry::Register("BLOOM_COMBINE", state);
+
+		state.ShaderProgram = ShaderManager::Get("PreFilter.glsl");
+		PipelineRegistry::Register("BLOOM_PREFILTER", state);
+		
+		state.ShaderProgram = ShaderManager::Get("DownSample.glsl");
+		PipelineRegistry::Register("BLOOM_DOWNSAMPLE", state);
+			
+		state.ShaderProgram = ShaderManager::Get("UpSample.glsl");
+		PipelineRegistry::Register("BLOOM_UPSAMPLE", state);
 	}
 
 	void PipelineRegistry::Register(const std::string &name, const Pipeline::GraphicsPipelineState &info)

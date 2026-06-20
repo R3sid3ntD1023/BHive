@@ -1,28 +1,21 @@
 #include "ColorGradingMaterial.h"
 #include "gfx/renderers/Renderer.h"
 #include "gfx/Pipeline.h"
-#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
-	ColorGradingMaterial::ColorGradingMaterial()
-	{
-		Pipeline::ComputePipelineState state{};
-		state.ShaderProgram = ShaderManager::Get("ColorGrading.glsl");
-		PipelineRegistry::Register("COLOR_GRADING", state);
-	}
-
-	Ref<Texture> ColorGradingMaterial::AddToGraph(RenderGraph &graph, const Ref<Texture> &input)
+	Ref<Texture> ColorGradingMaterial::AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input)
 	{
 		auto pipeline = PipelineRegistry::Get("COLOR_GRADING");
 
 		auto &pass = graph.AddPass("Bloom", EPassType::OffScreen);
 
 		auto params = Params;
+		auto output = allocator.GetColorGradeOuput();
 
 		pass.CommandList.Push(
 			"Prefilter Scene Color",
-			[input, output = mOutputTex, pipeline, params](IRendererContext &ctx)
+			[input, output = output, pipeline, params](IRendererContext &ctx)
 			{
 				auto dstSize = output->GetSize();
 				glm::uvec3 dispatch = {dstSize, 1};
@@ -49,17 +42,6 @@ namespace BHive
 					});
 			});
 
-		return mOutputTex;
-	}
-
-	void ColorGradingMaterial::CreateResizableObjects(const glm::uvec2 &size)
-	{
-		FTextureCreateInfo info{};
-		info.Format = EFormat::RGBA8;
-		info.Roles |= ETextureRole::ComputeWrite;
-		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-		info.DebugName = "ColorGradingTex";
-
-		mOutputTex = Texture2D::Create(size, info);
+		return output;
 	}
 } // namespace BHive

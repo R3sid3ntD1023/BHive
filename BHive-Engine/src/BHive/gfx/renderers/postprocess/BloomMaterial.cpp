@@ -5,42 +5,18 @@
 
 namespace BHive
 {
-	BloomMaterial::BloomMaterial()
-	{
-		{
-			Pipeline::ComputePipelineState state{};
-			state.ShaderProgram = ShaderManager::Get("CombineTex.glsl");
-			PipelineRegistry::Register("BLOOM_COMBINE", state);
-		}
-
-		{
-			Pipeline::ComputePipelineState state{};
-			state.ShaderProgram = ShaderManager::Get("PreFilter.glsl");
-			PipelineRegistry::Register("BLOOM_PREFILTER", state);
-		}
-
-		{
-			Pipeline::ComputePipelineState state{};
-			state.ShaderProgram = ShaderManager::Get("DownSample.glsl");
-			PipelineRegistry::Register("BLOOM_DOWNSAMPLE", state);
-		}
-
-		{
-			Pipeline::ComputePipelineState state{};
-			state.ShaderProgram = ShaderManager::Get("UpSample.glsl");
-			PipelineRegistry::Register("BLOOM_UPSAMPLE", state);
-		}
-	}
-
-	Ref<Texture> BloomMaterial::AddToGraph(RenderGraph &graph, const Ref<Texture> &input)
+	Ref<Texture> BloomMaterial::AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input)
 	{
 		auto &pass = graph.AddPass("Bloom", EPassType::OffScreen);
 	
 		auto params = Params;
-		
+		auto mipCount = allocator.GetBloomMipCount();
+		auto bloom = allocator.GetBloomOuput();
+		auto output = allocator.GetBloomColorOuput();
+
 		pass.CommandList.Push(
 			"Prefilter Scene Color",
-			[input, bloom = mBloomTex, params](IRendererContext &ctx)
+			[input, bloom, params](IRendererContext &ctx)
 			{
 				auto dstSize = bloom->GetSize();
 				glm::uvec3 dispatch = {dstSize, 1};
@@ -68,7 +44,7 @@ namespace BHive
 
 		pass.CommandList.Push(
 			"DownSample Prefiter",
-			[bloom = mBloomTex, mipCount = mMipCount](IRendererContext &ctx)
+			[bloom, mipCount](IRendererContext &ctx)
 			{
 				glm::uvec2 mipSize = bloom->GetSize();
 				
@@ -106,7 +82,7 @@ namespace BHive
 
 		pass.CommandList.Push(
 			"UpSample Output",
-			[bloom = mBloomTex, mipCount = mMipCount, params](IRendererContext &ctx)
+			[bloom, mipCount, params](IRendererContext &ctx)
 			{
 				glm::uvec2 baseSize = bloom->GetSize();
 
@@ -144,7 +120,7 @@ namespace BHive
 
 		pass.CommandList.Push(
 			"Combine Bloom and Scene",
-			[scene = input, bloom = mBloomTex, output = mOutputTex, mipCount = mMipCount, params](IRendererContext &ctx)
+			[scene = input, bloom, output, mipCount , params](IRendererContext &ctx)
 			{
 				glm::uvec2 dstSize = output->GetSize();
 				glm::uvec3 dispatch = {dstSize, 1};
@@ -173,43 +149,7 @@ namespace BHive
 					});
 			});
 
-		return mOutputTex;
+		return output;
 	}
 
-	void BloomMaterial::CreateResizableObjects(const glm::uvec2 &size)
-	{
-		mMipCount = std::min(ComputeMipCount(size), 5u);
-
-		{
-			FTextureCreateInfo info{};
-			info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-			info.Format = EFormat::RGBA32F;
-			info.Roles |= ETextureRole::ComputeWrite;
-			info.DebugName = "SceneBloomCombined";
-			mOutputTex = Texture2D::Create(size, info);
-		}
-
-		{
-			FTextureCreateInfo info{};
-			info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-			info.Format = EFormat::RGBA32F;
-			info.Roles |= ETextureRole::ComputeWrite;
-			info.MipLevels = mMipCount;
-			info.DebugName = "BloomMipChain";
-
-			mBloomTex = Texture2D::Create(size, info);
-		}
-	}
-
-	uint32_t BloomMaterial::ComputeMipCount(glm::uvec2 size)
-	{
-		uint32_t levels = 1;
-		while (size.x > 1 || size.y > 1)
-		{
-			size = glm::max(size / 2u, glm::uvec2(1u));
-			levels++;
-		}
-
-		return levels;
-	}
 } // namespace BHive
