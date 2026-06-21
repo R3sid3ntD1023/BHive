@@ -1,26 +1,16 @@
 #include "core/math/Transform.h"
 #include "gfx/Camera.h"
 #include "gfx/Framebuffer.h"
-#include "gfx/RenderCommand.h"
-#include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
-#include "importers/TextureImporter.h"
 #include "gfx/mesh/primitives/Quad.h"
-#include "render_passes/Aces.h"
-#include "render_passes/Bloom.h"
-#include "gfx/renderers/PMREMGenerator.h"
 #include "gfx/renderers/Renderer.h"
 #include "SceneRenderer.h"
 #include "ShadowRenderer.h"
-
 #include "Lights.h"
 #include "core/math/boundingbox/AABB.h"
 #include "core/math/volumes/SphereVolume.h"
 #include "gfx/mesh/SkeletalMesh.h"
-#include "gfx/mesh/StaticMesh.h"
-
-#include "gfx/renderers/render_passes/RenderPass.h"
 
 namespace BHive
 {
@@ -80,10 +70,8 @@ namespace BHive
 		// Create a quad for rendering the final output
 		mQuad = CreateRef<PQuad>();
 		mQuadShader = ShaderManager::Get(ENGINE_SHADER_PATH "/ScreenQuad.glsl");
-
-		// add default post-processing effects
-		PushPostProcessRenderPass(CreateRef<BloomRenderPass>());
-		PushPostProcessRenderPass(CreateRef<AcesRenderPass>());
+		
+		mPostProcessAllocator.Resize(size);
 	}
 
 	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
@@ -114,7 +102,7 @@ namespace BHive
 		mSceneRenderData->ShadowRenderer.End();
 		mSceneRenderData->ShadowRenderer.Render(mSceneRenderData->ShadowPassRenderData);
 
-		for (auto &render_pass : mRenderPasses)
+		/*for (auto &render_pass : mRenderPasses)
 		{
 			if (!render_pass->IsEnabled())
 			{
@@ -122,7 +110,7 @@ namespace BHive
 			}
 
 			render_pass->Render(mSceneRenderData->RenderPassRenderData);
-		}
+		}*/
 
 		mFramebuffer->Bind();
 
@@ -146,20 +134,14 @@ namespace BHive
 				Renderer::Draw(object);*/
 		}
 
-		Renderer::Get().EndFrame();
+		auto &renderer = Renderer::Get();
+		renderer.EndFrame();
 
 		mFramebuffer->UnBind();
 
-		auto texture = mFramebuffer->GetColorAttachment(0);
-
-		for (auto &effect : mPostProcessRenderPasses)
-		{
-			if (!effect->IsEnabled())
-				continue;
-
-			effect->Process(texture);
-			texture = effect->GetOutputTexture();
-		}
+		//post process
+		auto sceneColor = mFramebuffer->GetColorAttachment(0);
+		mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, sceneColor);
 
 		mFinalFramebuffer->Bind();
 
@@ -283,15 +265,12 @@ namespace BHive
 
 		mFinalFramebuffer->Resize(size);
 
-		for (auto &render_pass : mRenderPasses)
+	/*	for (auto &render_pass : mRenderPasses)
 		{
 			render_pass->Resize(size);
-		}
+		}*/
 
-		for (auto &post_process : mPostProcessRenderPasses)
-		{
-			post_process->Resize(size);
-		}
+		mPostProcessAllocator.Resize(size);
 
 		Renderer::Get().SetViewport(0, 0, size.x, size.y);
 	}
@@ -311,6 +290,22 @@ namespace BHive
 		mFinalFramebuffer->BlitToWindow(0, 0, mSize.x, mSize.y);
 	}
 
+	void SceneRenderer::AddPostProcessMaterial(const Ref<PostProcessMaterial> &mat)
+	{
+		mPostProcessStack.Materials.push_back(mat);
+	}
+
+	void SceneRenderer::RemovePostProcessMaterial(const std::string &name)
+	{
+		std::erase_if(mPostProcessStack.Materials, [name](auto &e) { return e->GetName() == name;
+			});
+	}
+
+	void SceneRenderer::ClearPostProcessEffects()
+	{
+		mPostProcessStack.Materials.clear();
+	}
+
 	bool SceneRenderer::IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform)
 	{
 		if (!mesh)
@@ -321,24 +316,5 @@ namespace BHive
 
 		auto volume = FSphereVolume(bounds.GetCenter(), bounds.GetRadius());
 		return !volume.InFrustum(frustum, FTransform(transform));
-	}
-
-	void SceneRenderer::PushPostProcessRenderPass(const Ref<PostProcessRenderPass> &pass)
-	{
-		mPostProcessRenderPasses.push_back(pass);
-		pass->Init();
-		pass->CreateResizableObjects(mSize);
-	}
-
-	void SceneRenderer::PushRenderPass(const Ref<RenderPass> &render_pass)
-	{
-		mRenderPasses.push_back(render_pass);
-		render_pass->Init();
-		render_pass->CreateResizableObjects(mSize);
-	}
-
-	SceneRenderer::PostProcessPasses &SceneRenderer::GetPostProcessPasses()
-	{
-		return mPostProcessRenderPasses;
 	}
 } // namespace BHive

@@ -13,7 +13,7 @@ namespace BHive
 
 		static vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR> &availableFormats);
 
-		static vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR> &availablePresentModes);
+		static vk::PresentModeKHR ChooseSwapPresentMode(vk::PresentModeKHR requested, const std::vector<vk::PresentModeKHR> &availablePresentModes);
 
 		static vk::Format FindSupportedFormat(vk::PhysicalDevice device, const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlagBits features);
 

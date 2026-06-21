@@ -22,10 +22,31 @@ namespace BHive
 		return formatItr != availableFormats.end() ? *formatItr : availableFormats[0];
 	}
 
-	vk::PresentModeKHR VulkanUtils::ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR> &availablePresentModes)
+	vk::PresentModeKHR VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR requested, const std::vector<vk::PresentModeKHR> &availablePresentModes)
 	{
+		vk::PresentModeKHR presentMode = vk::PresentModeKHR::eFifo;
+
+		// vsync on
 		ASSERT(std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eFifo; }));
-		return std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eMailbox; }) ? vk::PresentModeKHR::eMailbox : vk::PresentModeKHR::eFifo;
+
+		switch (requested)
+		{
+		case vk::PresentModeKHR::eMailbox: //fast vsync
+		{
+			presentMode = std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eMailbox; }) ? vk::PresentModeKHR::eMailbox : vk::PresentModeKHR::eFifo;
+			break;
+		}
+		case vk::PresentModeKHR::eImmediate://vsync off
+		{
+			presentMode = std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eImmediate; }) ? vk::PresentModeKHR::eImmediate : vk::PresentModeKHR::eFifo;
+			break;
+		}
+		default:
+			break;
+		}
+
+		LOG_TRACE("SwapChain PresentMode '{}' selected!", vk::to_string(presentMode));
+		return presentMode;
 	}
 
 	vk::Format VulkanUtils::FindSupportedFormat(vk::PhysicalDevice device, const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlagBits features)

@@ -3,6 +3,8 @@
 #include "core/Core.h"
 #include "RenderData.h"
 #include "LightCasters.h"
+#include "postprocess/PostProcessStack.h"
+
 
 namespace BHive
 {
@@ -20,9 +22,6 @@ namespace BHive
 	class SkeletalPose;
 	struct MaterialTable;
 
-	class RenderPass;
-	class PostProcessRenderPass;
-
 	/**
 	 * @brief The SceneRenderer class is responsible for rendering the scene.
 	 * It manages the rendering process, including setting up the camera and framebuffer.
@@ -37,8 +36,6 @@ namespace BHive
 	{
 
 	public:
-		using PostProcessPasses = std::vector<Ref<PostProcessRenderPass>>;
-		using RenderPasses = std::vector<Ref<RenderPass>>;
 		using Command = std::function<void()>;
 		using Commands = std::stack<Command>;
 
@@ -76,29 +73,11 @@ namespace BHive
 
 		void RenderToScreen();
 
-		void PushPostProcessRenderPass(const Ref<PostProcessRenderPass> &pass);
+		void AddPostProcessMaterial(const Ref<PostProcessMaterial> & mat);
 
-		void PushRenderPass(const Ref<RenderPass> &render_pass);
+		void RemovePostProcessMaterial(const std::string& name);
 
-		template <typename T = RenderPass>
-		Ref<T> PushPostProcessRenderPass()
-			requires(std::is_base_of_v<PostProcessRenderPass, T>)
-		{
-			auto post_process = CreateRef<T>();
-			PushPostProcessRenderPass(post_process);
-			return post_process;
-		}
-
-		template <typename T = RenderPass>
-		Ref<T> PushRenderPass()
-			requires(std::is_base_of_v<RenderPass, T>)
-		{
-			auto pass = CreateRef<T>();
-			PushRenderPass(pass);
-			return pass;
-		}
-
-		PostProcessPasses &GetPostProcessPasses();
+		void ClearPostProcessEffects();
 
 		const glm::uvec2 &GetSize() const { return mSize; }
 
@@ -118,9 +97,10 @@ namespace BHive
 		Ref<struct FSceneRenderData> mSceneRenderData;
 
 		Commands mCommands;
-		RenderPasses mRenderPasses;
-		PostProcessPasses mPostProcessRenderPasses;
 
 		glm::uvec2 mSize{0, 0};
+
+		PostProcessAllocator mPostProcessAllocator;
+		PostProcessStack mPostProcessStack;
 	};
 } // namespace BHive

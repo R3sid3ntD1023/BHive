@@ -16,7 +16,7 @@ namespace BHive
 
 		mExtent = VulkanUtils::ChooseSwapExtent(surfaceCapabilities, w, h);
 		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(formats);
-		mPresentMode= VulkanUtils::ChooseSwapPresentMode(presentModes);
+		mPresentMode= VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR::eImmediate, presentModes);
 		mMinImageCount = VulkanUtils::ChooseMinImageCount(mCapabilities);
 
 		Init(device, mExtent.width, mExtent.height);
