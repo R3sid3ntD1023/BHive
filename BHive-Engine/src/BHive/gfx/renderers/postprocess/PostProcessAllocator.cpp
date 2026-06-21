@@ -27,14 +27,13 @@ namespace BHive
 
 	void PostProcessAllocator::CreateBloomColorOutput()
 	{
-		{
-			FTextureCreateInfo info{};
-			info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-			info.Format = EFormat::RGBA32F;
-			info.Roles |= ETextureRole::ComputeWrite;
-			info.DebugName = "SceneBloomCombined";
-			mBloomColorOutput = Texture2D::Create(mSize, info);
-		}
+		FTextureCreateInfo info{};
+		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		info.Format = EFormat::RGBA32F;
+		info.Roles |= ETextureRole::ComputeWrite;
+		info.DebugName = "SceneBloomCombined";
+		mBloomColorOutput = Texture2D::Create(mSize, info);
+		
 	}
 
 	void PostProcessAllocator::CreateColorGradeOutput()
@@ -50,14 +49,16 @@ namespace BHive
 
 	void PostProcessAllocator::CreateBloomOutput()
 	{
+		glm::uvec2 halfSize = glm::max(mSize / 2u, glm::uvec2(1u));
+
 		FTextureCreateInfo info{};
 		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		info.Format = EFormat::RGBA32F;
 		info.Roles |= ETextureRole::ComputeWrite;
-		info.MipLevels = std::min(ComputeMipCount(mSize), mBloomMipCount);
+		info.MipLevels = std::min(ComputeMipCount(halfSize), mBloomMipCount);
 		info.DebugName = "BloomMipChain";
 
-		mBloomOutput = Texture2D::Create(mSize, info);
+		mBloomOutput = Texture2D::Create(halfSize, info);
 	}
 
 	void PostProcessAllocator::CreateTempTextures()

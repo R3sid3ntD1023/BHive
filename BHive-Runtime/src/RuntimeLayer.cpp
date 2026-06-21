@@ -253,8 +253,8 @@ namespace BHive
 
 		mPostProcessAllocator.Resize(window.GetSize());
 		mPostProcessStack.Materials.push_back(mBloomMaterial);
-		//mPostProcessStack.Materials.push_back(aces);
-		//mPostProcessStack.Materials.push_back(mColorGrading);
+		mPostProcessStack.Materials.push_back(aces);
+		mPostProcessStack.Materials.push_back(mColorGrading);
 		
 	}
 
