@@ -3,9 +3,7 @@
 
 #include <PMREMFuncs.glsl>
 
-#define LOCAL_SIZE 8
-
-layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = 1) in;
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 // One view per mip is bound from the CPU side:
 //   SetTexture("imgOutput", mPreFilteredEnvironment, mip);

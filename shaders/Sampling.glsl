@@ -27,6 +27,34 @@ vec3 Downsample13Tap(sampler2D tex, vec2 uv, vec2 texel)
 	return c;
 }
 
+vec3 Downsample13TapShared(in vec3 tile[20][20], ivec2 id)
+{
+	vec3 c = vec3(0.0);
+    
+    //center
+    c += tile[id.y + 2][id.x + 2] * 0.125;
+
+    //4 direct neighbors
+    c += tile[id.y + 2][id.x + 3] * 0.125;
+    c += tile[id.y + 2][id.x + 1] * 0.125;
+    c += tile[id.y + 3][id.x + 2] * 0.125;
+    c += tile[id.y + 1][id.x + 2] * 0.125;
+       
+    //4 diagonals
+    c += tile[id.y + 3][id.x + 3] * 0.0625;
+    c += tile[id.y + 3][id.x + 1] * 0.0625;
+    c += tile[id.y + 1][id.x + 3] * 0.0625;
+    c += tile[id.y + 1][id.x + 1] * 0.0625;
+                 
+    //4 far taps (UE5 trick)
+    c += tile[id.y + 2][id.x + 4] * 0.03125;
+    c += tile[id.y + 2][id.x + 0] * 0.03125;
+    c += tile[id.y + 4][id.x + 2] * 0.03125;
+    c += tile[id.y + 0][id.x + 2] * 0.03125;
+
+	return c;
+}
+
 float Cubic(float x)
 {
     x = abs(x);
