@@ -14,10 +14,14 @@ layout(push_constant) uniform PushConstants
 
 void main()
 {
-    ivec2 dstCoord = ivec2(gl_GlobalInvocationID.xy);
-	ivec2 size = imageSize(uOutput);
+    ivec2 dstCoord = ivec2(gl_WorkGroupID.xy * 16 + gl_LocalInvocationID.xy);
 
-    vec2 uv = vec2(dstCoord) / vec2(size);
+	ivec2 dstSize = imageSize(uOutput);
+
+    if(dstCoord.x >= dstSize.x || dstCoord.y >= dstSize.y)
+        return;
+
+    vec2 uv = vec2(dstCoord) / vec2(dstSize);
 
     float threshold = pc.uThreshold;
     vec3 color = texture(uSceneColor, uv).rgb;

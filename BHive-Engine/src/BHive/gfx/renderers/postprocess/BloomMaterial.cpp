@@ -19,7 +19,7 @@ namespace BHive
 			[input, bloom, params](IRendererContext &ctx)
 			{
 				auto dstSize = bloom->GetSize();
-				glm::uvec3 dispatch = {dstSize, 1};
+				glm::uvec3 dispatch = {(dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1};
 
 				// prefilter
 				Renderer::Get().ExecuteComputePass(
@@ -54,7 +54,7 @@ namespace BHive
 					uint32_t dstMip = mip + 1;
 
 					glm::uvec2 dstSize = glm::max(mipSize / 2u, glm::uvec2(1u));
-					glm::uvec3 dispatch = {dstSize, 1};
+					glm::uvec3 dispatch = {(dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1};
 
 					Renderer::Get().ExecuteComputePass(
 						PipelineRegistry::Get("BLOOM_DOWNSAMPLE"), dispatch,
@@ -92,7 +92,7 @@ namespace BHive
 					uint32_t dstMip = mip - 1;
 
 					glm::uvec2 dstSize = glm::max(baseSize >> dstMip, glm::uvec2(1u));
-					glm::uvec3 dispatch = {dstSize, 1};
+					glm::uvec3 dispatch = {(dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1};
 
 					Renderer::Get().ExecuteComputePass(
 						PipelineRegistry::Get("BLOOM_UPSAMPLE"), dispatch,
@@ -123,7 +123,7 @@ namespace BHive
 			[scene = input, bloom, output, mipCount , params](IRendererContext &ctx)
 			{
 				glm::uvec2 dstSize = output->GetSize();
-				glm::uvec3 dispatch = {dstSize, 1};
+				glm::uvec3 dispatch = {(dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1};
 
 				Renderer::Get().ExecuteComputePass(
 					PipelineRegistry::Get("BLOOM_COMBINE"), dispatch,

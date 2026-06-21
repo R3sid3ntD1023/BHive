@@ -75,13 +75,17 @@ vec3 filmic(vec3 x) {
 
 void main()
 {
-    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
-	
-    float x = float(texelCoord.x)/(gl_NumWorkGroups.x);
-    float y = float(texelCoord.y)/(gl_NumWorkGroups.y);
+    ivec2 dstCoord = ivec2(gl_WorkGroupID.xy * 16 + gl_LocalInvocationID.xy);
 
-    vec4 color = texture(uSceneColor, vec2(x,y));
+	ivec2 dstSize = imageSize(uOutput);
+
+    if(dstCoord.x >= dstSize.x || dstCoord.y >= dstSize.y)
+        return;
+
+    vec2 uv  = (vec2(dstCoord) + 0.5) / vec2(dstSize);
+
+    vec4 color = texture(uSceneColor, uv);
     color.rgb = ACES(color.rgb);
 
-    imageStore(uOutput, texelCoord, color);
+    imageStore(uOutput, dstCoord, color);
 }

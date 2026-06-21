@@ -8,8 +8,14 @@ layout(set = 1, binding = 1, r11f_g11f_b10f) uniform image2D uOutput;
 
 void main()
 {
-	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
-	vec2 uv = (vec2(coord) + 0.5) / vec2(imageSize(uOutput));
+	ivec2 dstCoord = ivec2(gl_WorkGroupID.xy * 16 + gl_LocalInvocationID.xy);
+
+	ivec2 dstSize = imageSize(uOutput);
+
+    if(dstCoord.x >= dstSize.x || dstCoord.y >= dstSize.y)
+        return;
+
+	vec2 uv = (vec2(dstCoord) + 0.5) / vec2(dstSize);
 
 	vec3 c = texture(uSrcTexture, uv).rgb;
 	imageStore(uOutput, coord, vec4(c, 1.0));

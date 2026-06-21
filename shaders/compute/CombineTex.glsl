@@ -24,11 +24,14 @@ vec3 FilamentBloomCombine(vec3 scene, vec3 bloom, float strength, float exposure
 
 void main()
 {
-    ivec2 dstCoord = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 dstCoord = ivec2(gl_WorkGroupID.xy * 16 + gl_LocalInvocationID.xy);
 
-    ivec2 sceneSize = imageSize(uOutput);
+    ivec2 dstSize = imageSize(uOutput);
 
-    vec2 uv = (vec2(dstCoord) + 0.5) / vec2(sceneSize);
+    if(dstCoord.x >= dstSize.x || dstCoord.y >= dstSize.y)
+        return;
+
+    vec2 uv = (vec2(dstCoord) + 0.5) / vec2(dstSize);
 
     vec3 scene = texture(uTextureA, uv ).rgb;
     vec3 bloom = texture(uTextureB, uv ).rgb;

@@ -18,7 +18,7 @@ namespace BHive
 			[input, output = output, pipeline, params](IRendererContext &ctx)
 			{
 				auto dstSize = output->GetSize();
-				glm::uvec3 dispatch = {dstSize, 1};
+				glm::uvec3 dispatch = {(dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1};
 
 				// prefilter
 				Renderer::Get().ExecuteComputePass(

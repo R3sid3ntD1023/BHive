@@ -366,6 +366,8 @@ namespace BHive
 
 	FAsyncPass* VulkanRendererAPI::ExecuteComputePass(Pipeline* pipeline, const glm::uvec3 & size, const FComputeFunc &builder)
 	{
+		ASSERT(glm::compMul(size) > 0, "dispatch size is {}", size);
+
 		SingleTimeCommand single_cmd{};
 		auto& cmd = single_cmd.Get();
 

@@ -17,8 +17,12 @@ layout(push_constant) uniform BloomSettings
 
 void main()
 {
-    ivec2 dstCoord = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 dstCoord = ivec2(gl_WorkGroupID.xy * 16 + gl_LocalInvocationID.xy);
+
     ivec2 dstSize = imageSize(uOutput);
+
+    if(dstCoord.x >= dstSize.x || dstCoord.y >= dstSize.y)
+        return;
 
     vec2 uv = (vec2(dstCoord) + 0.5 )/ vec2(dstSize);
 

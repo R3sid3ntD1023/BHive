@@ -29,8 +29,8 @@ namespace BHive
 
 	void AcesMaterial::OnExecutePass(IRendererContext &ctx, const Ref<Texture> &in, const Ref<Texture>& out)
 	{
-		const auto size = in->GetSize();
-		glm::vec3 dispatch = {size.x, size.y, 1};
+		const auto dstSize = in->GetSize();
+		glm::uvec3 dispatch = {(dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1};
 
 		Renderer::Get().ExecuteComputePass(PipelineRegistry::Get("ACES"), dispatch, this, &AcesMaterial::ExecutePass, in, out);
 	}
