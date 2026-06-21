@@ -32,6 +32,8 @@ namespace BHive
 
 		void SetVysnc(bool enabled);
 
+		void ToggleFullScreen();
+
 		void Maximize();
 
 		void Minimize();
@@ -40,7 +42,7 @@ namespace BHive
 
 		void SetTitle(const std::string &title);
 
-		WindowInput &GetWindowInput() { return mData.Input; }
+		WindowInput &GetWindowInput() { return mState.Input; }
 
 		static void PollEvents();
 
@@ -49,15 +51,15 @@ namespace BHive
 
 		WindowContext* GetContext() const { return mContext.get(); }
 
-		const std::string &GetTitle() const { return mData.Title; }
+		const std::string &GetTitle() const { return mState.Title; }
 
-		const glm::ivec2 &GetPosition() const { return mData.Position; }
+		const glm::ivec2 &GetPosition() const { return mState.Position; }
 
-		const glm::ivec2 &GetSize() const { return mData.Size; }
+		const glm::ivec2 &GetSize() const { return mState.Size; }
 
-		float GetAspectRatio() const { return (float)mData.Size.x / (float)mData.Size.y; }
+		float GetAspectRatio() const { return (float)mState.Size.x / (float)mState.Size.y; }
 
-		bool IsVSyncEnabled() const { return mData.VSync; }
+		bool IsVSyncEnabled() const { return mState.VSync; }
 
 		static GLFWwindow *GetFocusedWindow();
 
@@ -90,7 +92,7 @@ namespace BHive
 
 #pragma endregion
 
-		struct FWindowData
+		struct FWindowState
 		{
 			std::string Title;
 
@@ -103,13 +105,15 @@ namespace BHive
 			WindowInput Input;
 
 			Window *Instance;
+
 		};
 
 
 	private:
+		bool mIsFullScreen = false;
 		bool mIsMaximized = false;
 		GLFWwindow *mWindow = nullptr;
-		FWindowData mData;
+		FWindowState mState;
 		Scope<WindowContext> mContext;
 		static GLFWwindow *sFocusedWindow;
 

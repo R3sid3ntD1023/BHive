@@ -13,7 +13,7 @@ namespace BHive
 	}
 
 	Window::Window(const FWindowProperties &properties)
-		: mData({properties.Title, properties.Size, {} , properties.VSync})
+		: mState({properties.Title, properties.Size, {} , properties.VSync})
 	{
 		if (sWindowCount == 0)
 		{
@@ -22,6 +22,7 @@ namespace BHive
 		}
 
 		GLFWwindow *shared_context = nullptr;
+
 		if (RenderCommand::GetAPI() == RendererAPI::Opengl)
 		{
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -39,18 +40,17 @@ namespace BHive
 		}
 
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
 		mWindow = glfwCreateWindow(properties.Size.x, properties.Size.y, properties.Title.c_str(), nullptr, shared_context);
 		sWindowCount++;
 
 		mContext = WindowContext::Create(this);
 		mContext->Init();
-		mData.Instance = this;
+		mState.Instance = this;
 
-		glfwSetWindowUserPointer(mWindow, &mData);
+		glfwSetWindowUserPointer(mWindow, &mState);
 
 		RegisterCallbacks();
-
-		SetVysnc(properties.VSync);
 
 		if (properties.Maximize)
 			glfwMaximizeWindow(mWindow);
@@ -83,6 +83,32 @@ namespace BHive
 		// glfwSwapInterval(enabled ? 1 : 0);
 	}
 
+	void Window::ToggleFullScreen()
+	{
+		static glm::ivec2 sSize{};
+		static glm::ivec2 sPosition{};
+
+		if (!mIsFullScreen)
+		{
+			glfwGetWindowPos(mWindow, &sPosition.x, &sPosition.y);
+			glfwGetWindowSize(mWindow, &sSize.x, &sSize.y);
+
+			GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+			const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+
+			glfwSetWindowMonitor(mWindow, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+		}
+		else
+		{
+			glfwSetWindowMonitor(mWindow, nullptr,sPosition.x, sPosition.y, sSize.x, sSize.y, 0);
+			glfwSetWindowAttrib(mWindow, GLFW_DECORATED, GLFW_TRUE);
+			glfwRestoreWindow(mWindow);
+
+		}
+
+		mIsFullScreen = !mIsFullScreen;
+	}
+
 	void Window::Maximize()
 	{
 		if (mIsMaximized)
@@ -111,7 +137,7 @@ namespace BHive
 	void Window::SetTitle(const std::string &title)
 	{
 		glfwSetWindowTitle(mWindow, title.c_str());
-		mData.Title = title;
+		mState.Title = title;
 	}
 
 	void Window::PollEvents()
@@ -121,56 +147,62 @@ namespace BHive
 
 	void Window::OnWindowCloseCallback(GLFWwindow *window)
 	{
-		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		auto input = (FWindowState *)glfwGetWindowUserPointer(window);
 		input->Input.OnWindowClose();
 	}
 
 	void Window::OnWindowResizeCallback(GLFWwindow *window, int width, int height)
 	{
-		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		auto input = (FWindowState *)glfwGetWindowUserPointer(window);
 		input->Input.OnWindowResize(width, height);
 		input->Size = {width, height};
 	}
 
 	void Window::OnWindowMovedCallback(GLFWwindow *window, int x, int y)
 	{
-		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		auto input = (FWindowState *)glfwGetWindowUserPointer(window);
 		input->Position = {x, y};
 	}
 
 	void Window::OnKeyEventCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 	{
-		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
-		input->Input.OnKeyEvent(key, scancode, action, mods);
+		auto state = (FWindowState *)glfwGetWindowUserPointer(window);
+		if (key == GLFW_KEY_F11 && action == GLFW_PRESS)
+		{
+			state->Instance->ToggleFullScreen();
+			return;
+		}
+
+		state->Input.OnKeyEvent(key, scancode, action, mods);
 	}
 
 	void Window::OnMouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
 	{
-		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		auto input = (FWindowState *)glfwGetWindowUserPointer(window);
 		input->Input.OnMouseButton(button, action, mods);
 	}
 
 	void Window::OnMouseScrollCallback(GLFWwindow *window, double x, double y)
 	{
-		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		auto input = (FWindowState *)glfwGetWindowUserPointer(window);
 		input->Input.OnMouseScroll(x, y);
 	}
 
 	void Window::OnMouseMovedCallback(GLFWwindow *window, double x, double y)
 	{
-		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		auto input = (FWindowState *)glfwGetWindowUserPointer(window);
 		input->Input.OnMouseMoved(x, y);
 	}
 
 	void Window::OnCharCallback(GLFWwindow *window, unsigned codepoint)
 	{
-		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		auto input = (FWindowState *)glfwGetWindowUserPointer(window);
 		input->Input.OnKeyTypedEvent(codepoint);
 	}
 
 	void Window::OnFramebufferSizeCallback(GLFWwindow *window, int width, int height)
 	{
-		auto input = (FWindowData *)glfwGetWindowUserPointer(window);
+		auto input = (FWindowState *)glfwGetWindowUserPointer(window);
 		input->Input.OnFramebufferResized(width, height);
 	}
 
