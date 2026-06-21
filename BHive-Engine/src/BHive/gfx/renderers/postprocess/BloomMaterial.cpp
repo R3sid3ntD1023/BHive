@@ -113,7 +113,6 @@ namespace BHive
 							b.SampledImage("uSrcTexture", in);
 							b.StorageImage("uOutput", out);
 							b.Set("uFilterRadius", params.Radius);
-							b.Set("uSrcMip", (int32_t)srcMip);
 						});
 				}
 			});

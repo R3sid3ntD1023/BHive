@@ -11,7 +11,6 @@ layout(set = 1, binding = 1, rgba32f) uniform image2D uOutput;
 layout(push_constant) uniform BloomSettings
 {
     float uFilterRadius;
-    int uSrcMip;
 } pc;
 
 
@@ -26,7 +25,6 @@ void main()
 
     vec2 uv = (vec2(dstCoord) + 0.5 )/ vec2(dstSize);
 
-    int mip = pc.uSrcMip;
     ivec2 srcSize = textureSize(uSrcTexture, 0);
     vec2 texel = 1.0 / vec2(srcSize);
     float radius = max(pc.uFilterRadius, 0.001);
