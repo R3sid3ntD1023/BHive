@@ -2,7 +2,7 @@
 #version 460 core
 #include <Core.glsl>
 
-layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
 layout(set = 1, binding = 0) uniform sampler2D uSceneColor;   
 layout(set = 1, binding = 1 , rgba32f) uniform image2D uOutput;

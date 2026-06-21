@@ -3,8 +3,7 @@
 
 #include <Sampling.glsl>
 
-#define LOCAL_SIZE 1
-layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = LOCAL_SIZE) in;
+layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
 layout(set = 1, binding = 0 ) uniform sampler2D uSrcTexture;
 layout(set = 1, binding = 1, rgba32f) uniform image2D uOutput;

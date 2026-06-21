@@ -1,8 +1,7 @@
 #type compute
 #version 460 core
 
-#define LOCAL_SIZE 1
-layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = LOCAL_SIZE) in;
+layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
 layout(set = 1, binding = 0) uniform sampler2D uTextureA; //scene
 layout(set = 1, binding = 1) uniform sampler2D uTextureB; //bloom mip 0
