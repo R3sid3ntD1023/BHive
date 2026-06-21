@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Core.h"
-#include "textures/VulkanImage.h"
+#include "VulkanImage.h"
 
 namespace BHive
 {

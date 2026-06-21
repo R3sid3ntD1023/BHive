@@ -1,9 +1,11 @@
-#include "VulkanConverters.h"
+#pragma once
 
+#include "VulkanCore.h"
+#include "gfx/Enumerations.h"
 
 namespace BHive
 {
-	vk::DescriptorType ToVkType(EResourceType type)
+	inline vk::DescriptorType ToVkType(EResourceType type)
 	{
 		switch (type)
 		{
@@ -27,7 +29,7 @@ namespace BHive
 		}
 	}
 
-	vk::ImageAspectFlags ToVkAspect(ETextureAspect aspect)
+	inline vk::ImageAspectFlags ToVkAspect(ETextureAspect aspect)
 	{
 		switch (aspect)
 		{
@@ -43,7 +45,7 @@ namespace BHive
 		return {};
 	}
 
-	vk::ImageUsageFlags InferImageUsage(ETextureRole roles)
+	inline vk::ImageUsageFlags InferImageUsage(ETextureRole roles)
 	{
 		vk::ImageUsageFlags flags{};
 
@@ -68,7 +70,7 @@ namespace BHive
 		return flags;
 	}
 
-	vk::PrimitiveTopology ToVkTopology(ETopologyMode m)
+	inline vk::PrimitiveTopology ToVkTopology(ETopologyMode m)
 	{
 		switch (m)
 		{
@@ -89,7 +91,7 @@ namespace BHive
 		return vk::PrimitiveTopology::eTriangleList;
 	}
 
-	vk::PolygonMode ToVkPolygon(EPolygonMode m)
+	inline vk::PolygonMode ToVkPolygon(EPolygonMode m)
 	{
 		switch (m)
 		{
@@ -104,7 +106,7 @@ namespace BHive
 		return vk::PolygonMode::eFill;
 	}
 
-	vk::CullModeFlagBits ToVkCull(ECullMode m)
+	inline vk::CullModeFlagBits ToVkCull(ECullMode m)
 	{
 		switch (m)
 		{
@@ -120,12 +122,12 @@ namespace BHive
 		return vk::CullModeFlagBits::eNone;
 	}
 
-	vk::FrontFace ToVkFrontFace(EFrontFace f)
+	inline vk::FrontFace ToVkFrontFace(EFrontFace f)
 	{
 		return (f == EFrontFace::CW) ? vk::FrontFace::eClockwise : vk::FrontFace::eCounterClockwise;
 	}
 
-	vk::CompareOp ToVkCompare(ECompareOp op)
+	inline vk::CompareOp ToVkCompare(ECompareOp op)
 	{
 		switch (op)
 		{
@@ -149,7 +151,7 @@ namespace BHive
 		return vk::CompareOp::eAlways;
 	}
 
-	vk::BlendFactor ToVkBlendFactor(EBlendFactor f)
+	inline vk::BlendFactor ToVkBlendFactor(EBlendFactor f)
 	{
 		switch (f)
 		{
@@ -177,7 +179,7 @@ namespace BHive
 		return vk::BlendFactor::eOne;
 	}
 
-	vk::BlendOp ToVkBlendOp(EBlendOp op)
+	inline vk::BlendOp ToVkBlendOp(EBlendOp op)
 	{
 		switch (op)
 		{
@@ -195,7 +197,7 @@ namespace BHive
 		return vk::BlendOp::eAdd;
 	}
 
-	vk::Format ToVkFormat(EFormat f)
+	inline vk::Format ToVkFormat(EFormat f)
 	{
 		switch (f)
 		{
@@ -247,7 +249,7 @@ namespace BHive
 		}
 	}
 
-	vk::Filter ToVkFilter(EMinFilter f)
+	inline vk::Filter ToVkFilter(EMinFilter f)
 	{
 		switch (f)
 		{
@@ -260,7 +262,7 @@ namespace BHive
 		}
 	}
 
-	vk::Filter ToVkFilter(EMagFilter f)
+	inline vk::Filter ToVkFilter(EMagFilter f)
 	{
 		switch (f)
 		{
@@ -272,7 +274,7 @@ namespace BHive
 		return vk::Filter::eLinear;
 	}
 
-	vk::SamplerAddressMode ToVkWrap(EWrapMode w)
+	inline vk::SamplerAddressMode ToVkWrap(EWrapMode w)
 	{
 		switch (w)
 		{
@@ -288,7 +290,7 @@ namespace BHive
 		return vk::SamplerAddressMode::eRepeat;
 	}
 
-	vk::ShaderStageFlags ToVkShaderStageBit(EShaderStage s)
+	inline vk::ShaderStageFlags ToVkShaderStageBit(EShaderStage s)
 	{
 		vk::ShaderStageFlags flags{};
 
@@ -307,7 +309,7 @@ namespace BHive
 		return flags;
 	}
 
-	vk::ShaderStageFlagBits ToSingleVkStage(EShaderStage s)
+	inline vk::ShaderStageFlagBits ToSingleVkStage(EShaderStage s)
 	{
 		switch (s)
 		{

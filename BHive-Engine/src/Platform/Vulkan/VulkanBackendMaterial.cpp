@@ -1,16 +1,16 @@
 #include "VulkanBackendMaterial.h"
-#include "Platform/Vulkan/VulkanPipeline.h"
+#include "VulkanPipeline.h"
 #include "gfx/RenderCommand.h"
-#include "Platform/Vulkan/VulkanRendererAPI.h"
+#include "VulkanRendererAPI.h"
 #include "gfx/Texture.h"
 #include "gfx/BufferBase.h"
 #include "gfx/shader/ShaderProgram.h"
-#include "Platform/Vulkan/VulkanConverters.h"
-#include "Platform/Vulkan/VulkanBackend.h"
+#include "VulkanConversions.h"
+#include "VulkanBackend.h"
 #include "gfx/shader/ShaderReflection.h"
 #include "gfx/Buffers.h"
-#include "Platform/Vulkan/VulkanShader.h"
-#include "Platform/Vulkan/VulkanBindingGroup.h"
+#include "VulkanShader.h"
+#include "VulkanBindingGroup.h"
 
 namespace BHive
 {

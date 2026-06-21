@@ -1,7 +1,5 @@
 #include "VulkanShader.h"
-#include "VulkanConverters.h"
-
-
+#include "VulkanConversions.h"
 
 namespace BHive
 {

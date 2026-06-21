@@ -117,6 +117,7 @@ namespace BHive
 		void ExecuteOffScreenPass(const FRenderGraphPass &pass, FVulkanRendererContext& ctx);
 
 		void ExecutePass(const FRenderGraphPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
+
 	private:
 		vk::raii::Device& mDevice;
 

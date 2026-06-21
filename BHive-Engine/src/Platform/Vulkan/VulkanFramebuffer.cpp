@@ -1,10 +1,9 @@
 #include "VulkanFramebuffer.h"
+#include "VulkanRendererAPI.h"
+#include "VulkanImage.h"
+#include "VulkanBackend.h"
 #include "gfx/Texture.h"
 #include "gfx/RenderCommand.h"
-#include "VulkanRendererAPI.h"
-#include "textures/VulkanImage.h"
-#include "VulkanBackend.h"
-#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {

@@ -1,5 +1,5 @@
 #include "BackendMaterial.h"
-#include "Platform/Vulkan/material/VulkanBackendMaterial.h"
+#include "Platform/Vulkan/VulkanBackendMaterial.h"
 #include "gfx/RenderCommand.h"
 
 namespace BHive

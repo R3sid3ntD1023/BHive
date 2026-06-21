@@ -1,8 +1,8 @@
 #pragma once
 
 #include "gfx/RenderGraph.h"
-#include "Platform/Vulkan/VulkanCore.h"
-#include "Platform/Vulkan/material/VulkanBackendMaterial.h"
+#include "VulkanCore.h"
+#include "VulkanBackendMaterial.h"
 
 namespace BHive
 {
@@ -21,11 +21,20 @@ namespace BHive
 
 		void Bind(vk::CommandBuffer cmd) const;
 
-		const auto &GetBoundImages() const { return mImages; }
+		const auto &GetSamplerImages() const { return mSamplers; }
+
+		const auto &GetStorageImages() const { return mImages; }
+
+		void TransitionStorageImagesAndClear(vk::raii::CommandBuffer &cmd, vk::ClearColorValue color);
+
+		void TransitionStorageImagesToShader(vk::raii::CommandBuffer &cmd);
+
+		void TransitionSamplerImagesToShader(vk::raii::CommandBuffer &cmd);
 
 	private:
 		Scope<VulkanBackendMaterial> mBackendMaterial;
 		VulkanPipeline* mPipeline = nullptr;
-		std::vector<std::pair<FImageInfo, bool>> mImages;
+		std::vector<FImageInfo> mSamplers;
+		std::vector<FImageInfo> mImages;
 	};
 }

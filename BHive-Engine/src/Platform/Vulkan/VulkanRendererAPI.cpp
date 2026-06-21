@@ -3,12 +3,11 @@
 #include "VulkanVertexArray.h"
 #include "VulkanRendererAPI.h"
 #include "VulkanSwapChain.h"
-#include "VulkanConverters.h"
+#include "VulkanConversions.h"
 #include "gfx/BufferBase.h"
-#include "VulkanFramebuffer.h"
 #include "VulkanUtils.h"
-#include "textures/VulkanImage.h"
-#include "pass/ComputeBindings.h"
+#include "VulkanImage.h"
+#include "ComputeBindings.h"
 #include "gfx/renderers/Renderer.h"
 #include "gfx/Buffers.h"
 
@@ -378,34 +377,16 @@ namespace BHive
 
 		builder(bindings);
 
-		auto &images = bindings.GetBoundImages();
-		for (auto& [img, isStorage] : images)
-		{
-			auto vkImg = img.Texture->GetNativeHandle().As<VulkanImage>();
-			ImageSubresource sub{img.BaseMip, img.LevelCount, img.BaseLayer, img.LayerCount};
-			
-			if (isStorage && (img.Access == EImageAccess::WRITE || img.Access == EImageAccess::READ_WRITE))
-				vkImg->Transition(cmd, ImageState::ComputeWrite(), sub);
-			else
-				vkImg->Transition(cmd, ImageState::ShaderRead(), sub);
-		}
+		bindings.TransitionStorageImagesAndClear(cmd, mClearColor);
+		bindings.TransitionSamplerImagesToShader(cmd);
 
 		bindings.Bind(cmd);
 
 		cmd.dispatch(size.x, size.y, size.z);
 
-		
 		cmd.endDebugUtilsLabelEXT();
 
-		for (auto &[img, isStorage] : images)
-		{
-			if (!isStorage)
-				continue;
-
-			auto vkImg = img.Texture->GetNativeHandle().As<VulkanImage>();
-			ImageSubresource sub{img.BaseMip, img.LevelCount, img.BaseLayer, img.LayerCount};
-			vkImg->Transition(cmd, ImageState::ShaderRead(), sub);
-		}
+		bindings.TransitionStorageImagesToShader(cmd);
 
 		
 		/*Scope<FVulkanAsycComputePass> pass = CreateScope<FVulkanAsycComputePass>();
