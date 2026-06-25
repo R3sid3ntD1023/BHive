@@ -18,7 +18,7 @@ namespace BHive
 		{
 			virtual ~StorageBase() = default;
 
-			virtual void Remove(const ResourceID& handle) = 0;
+			virtual void Remove(ResourceID handle) = 0;
 		};
 
 		template<typename T>
@@ -26,7 +26,7 @@ namespace BHive
 		{
 			using TContainer = std::unordered_map<ResourceID, Resource<T>>;
 
-			void AddExternal(const ResourceID &handle, T && resource) 
+			void AddExternal(ResourceID handle, T && resource) 
 			{
 				if (mResources.contains(handle))
 				{
@@ -37,7 +37,7 @@ namespace BHive
 				mResources.emplace(handle, Resource<T>{.Handle = std::move(resource)}); 
 			}
 
-			void Remove(const ResourceID &handle) override
+			void Remove( ResourceID handle) override
 			{ 
 				if (!mResources.contains(handle))
 				{
@@ -51,15 +51,15 @@ namespace BHive
 				}
 			}
 
-			T& GetOrCreate(const ResourceID& handle) { return mResources.try_emplace(handle).first->second.Handle;}
+			T& GetOrCreate(ResourceID handle) { return mResources.try_emplace(handle).first->second.Handle;}
 
-			T &Get(const ResourceID &handle)
+			T &Get(ResourceID handle)
 			{
 				ASSERT(mResources.contains(handle), "Invalid resource id -> {}", handle)
 				return mResources.at(handle).Handle;
 			}
 
-			const T& Get(const ResourceID& handle) const
+			const T& Get(ResourceID handle) const
 			{
 				ASSERT(mResources.contains(handle), "Invalid resource id -> {}", handle)
 				return mResources.at(handle).Handle;
@@ -82,30 +82,30 @@ namespace BHive
 
 		ResourceID CreateSampler(const vk::SamplerCreateInfo &info, const std::string &name = "");
 
-		void* MapMemory(ResourceID &buffer, vk::DeviceSize offset, vk::DeviceSize size);
+		void* MapMemory(ResourceID buffer, vk::DeviceSize offset, vk::DeviceSize size);
 
-		void UnmapMemory(ResourceID &buffer);
+		void UnmapMemory(ResourceID buffer);
 
-		void DestroyBuffer(const ResourceID& handle);
+		void DestroyBuffer(ResourceID handle);
 
-		void DestroyImage(const ResourceID &handle);
+		void DestroyImage(ResourceID handle);
 
-		void DestroyImageView(const ResourceID &handle);
+		void DestroyImageView(ResourceID handle);
 
-		void DestroySampler(const ResourceID &handle);
+		void DestroySampler(ResourceID handle);
 
 		void DestroyBuffer(AllocatedBuffer buffer);
 
 		void DestroyImage(GPUImage& image);
 		//-------------------getters------------------------------
 
-		vk::Image GetImage(const ResourceID &handle);
+		vk::Image GetImage(ResourceID handle);
 
-		vk::ImageView GetImageView(const ResourceID &handle);
+		vk::ImageView GetImageView(ResourceID handle);
 
-		vk::Sampler GetSampler(const ResourceID &handle);
+		vk::Sampler GetSampler(ResourceID handle);
 
-		vk::Buffer GetBuffer(const ResourceID &handle);
+		vk::Buffer GetBuffer(ResourceID handle);
 
 		template<typename T>
 		Storage<T>& GetStorage()
@@ -118,34 +118,9 @@ namespace BHive
 			return static_cast<Storage<T> &>(*mStorages.at(id).get());
 		}
 
-		class IDPool
-		{
-		public:
-			uint32_t Aquire()
-			{
-				if (!mFreeList.empty())
-				{
-					uint32_t id = mFreeList.back();
-					mFreeList.pop_back();
-					return id;
-				}
-
-				return mCounter.fetch_add(1, std::memory_order_relaxed);
-			}
-
-			void Release(const uint32_t &id)
-			{
-				mFreeList.push_back(id);
-			}
-
-		private:
-			std::atomic<uint32_t> mCounter{1};
-			std::vector<uint32_t> mFreeList;
-		};
 
 	private:
 		std::unordered_map<size_t, Scope<StorageBase>> mStorages;
 		std::unordered_set<ResourceID> mExternalImages;
-		IDPool mIDPool;
 	};
 } // namespace BHive

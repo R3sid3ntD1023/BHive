@@ -16,7 +16,7 @@ namespace BHive
 		vk::DeviceSize requested = reqSize;
 		vk::DeviceSize minAlloc = (requested + atom - 1) & ~(atom - 1);
 
-		ResourceID id = mIDPool.Aquire();
+		ResourceID id{};
 		auto &buffer = GetStorage<vk::raii::Buffer>().GetOrCreate(id);
 		buffer = device.createBuffer(info);
 
@@ -33,7 +33,7 @@ namespace BHive
 
 	ResourceID GPUResourceManager::CreateImage(const vk::ImageCreateInfo &info, vk::MemoryPropertyFlags flags, size_t reqSize, const std::string &name)
 	{
-		ResourceID id = mIDPool.Aquire();
+		ResourceID id{};
 		auto &image = GetStorage<vk::raii::Image>().GetOrCreate(id);
 
 		auto &device = VulkanBackend::GetLogicalDevice();
@@ -52,7 +52,7 @@ namespace BHive
 
 	ResourceID GPUResourceManager::RegisterExternalImage(const vk::Image &image, const std::string &name)
 	{
-		ResourceID id = mIDPool.Aquire();
+		ResourceID id{};
 		auto img = vk::raii::Image(VulkanBackend::GetLogicalDevice(), image);
 		GetStorage<vk::raii::Image>().AddExternal(id, std::move(img));
 		mExternalImages.insert(id);
@@ -64,7 +64,7 @@ namespace BHive
 
 	ResourceID GPUResourceManager::CreateImageView(const vk::ImageViewCreateInfo &info, const std::string &name)
 	{
-		ResourceID id = mIDPool.Aquire();
+		ResourceID id{};
 		auto &view = GetStorage<vk::raii::ImageView>().GetOrCreate(id);
 
 		auto &device = VulkanBackend::GetLogicalDevice();
@@ -77,7 +77,7 @@ namespace BHive
 
 	ResourceID GPUResourceManager::CreateSampler(const vk::SamplerCreateInfo &info, const std::string &name)
 	{
-		ResourceID id = mIDPool.Aquire();
+		ResourceID id{};
 		auto &sampler = GetStorage<vk::raii::Sampler>().GetOrCreate(id);
 		auto &device = VulkanBackend::GetLogicalDevice();
 		sampler = device.createSampler(info);
@@ -85,7 +85,7 @@ namespace BHive
 		return id;
 	}
 
-	void* GPUResourceManager::MapMemory(ResourceID &buffer, vk::DeviceSize offset, vk::DeviceSize size)
+	void* GPUResourceManager::MapMemory( ResourceID buffer, vk::DeviceSize offset, vk::DeviceSize size)
 	{
 		if (!buffer)
 			return nullptr;
@@ -100,7 +100,7 @@ namespace BHive
 		return allocator.Map(allocation);
 	}
 
-	void GPUResourceManager::UnmapMemory(ResourceID &buffer)
+	void GPUResourceManager::UnmapMemory( ResourceID buffer)
 	{
 		
 		if (!buffer)
@@ -116,7 +116,7 @@ namespace BHive
 
 
 
-	void GPUResourceManager::DestroyBuffer(const ResourceID& handle)
+	void GPUResourceManager::DestroyBuffer( ResourceID handle)
 	{
 		RenderCommand::QueueDeletion(
 			[this, handle](uint32_t)
@@ -127,7 +127,7 @@ namespace BHive
 		
 	}
 
-	void GPUResourceManager::DestroyImage(const ResourceID& handle)
+	void GPUResourceManager::DestroyImage( ResourceID  handle)
 	{
 		RenderCommand::QueueDeletion(
 			[this, handle](uint32_t)
@@ -136,36 +136,32 @@ namespace BHive
 				{
 					mExternalImages.erase(handle);
 					GetStorage<vk::raii::Image>().Remove(handle);
-					mIDPool.Release(handle);
 					return;
 				}
 
 				GetStorage<vk::raii::Image>().Remove(handle);
 				GetStorage<MemoryAllocation>().Remove(handle);
-				mIDPool.Release(handle);
 
 			});
 	}
 
-	void GPUResourceManager::DestroyImageView(const ResourceID& handle)
+	void GPUResourceManager::DestroyImageView( ResourceID  handle)
 	{
 		RenderCommand::QueueDeletion(
 			[this, handle](uint32_t)
 			{
 				auto &storage = GetStorage<vk::raii::ImageView>();
 				storage.Remove(handle);
-				mIDPool.Release(handle);
 			});
 	}
 
-	void GPUResourceManager::DestroySampler(const ResourceID& handle)
+	void GPUResourceManager::DestroySampler( ResourceID  handle)
 	{
 		RenderCommand::QueueDeletion(
 			[this, handle](uint32_t)
 			{
 				auto &storage = GetStorage<vk::raii::Sampler>();
 				storage.Remove(handle);
-				mIDPool.Release(handle);
 			});
 	}
 
@@ -178,7 +174,6 @@ namespace BHive
 			{
 				auto &alloc = GetStorage<MemoryAllocation>().Get(handle);
 				VulkanBackend::GetMemoryAllocator().Free(alloc);
-				mIDPool.Release(handle);
 			});
 	}
 
@@ -217,25 +212,25 @@ namespace BHive
 	}
 
 
-	vk::Image GPUResourceManager::GetImage(const ResourceID &handle)
+	vk::Image GPUResourceManager::GetImage( ResourceID handle)
 	{
 		auto &storage = GetStorage<vk::raii::Image>();
 		return *storage.Get(handle);
 	}
 
-	vk::ImageView GPUResourceManager::GetImageView(const ResourceID &handle)
+	vk::ImageView GPUResourceManager::GetImageView( ResourceID handle)
 	{
 		auto &storage = GetStorage<vk::raii::ImageView>();
 		return *storage.Get(handle);
 	}
 
-	vk::Sampler GPUResourceManager::GetSampler(const ResourceID &handle)
+	vk::Sampler GPUResourceManager::GetSampler( ResourceID handle)
 	{
 		auto &storage = GetStorage<vk::raii::Sampler>();
 		return storage.Get(handle);
 	}
 
-	vk::Buffer GPUResourceManager::GetBuffer(const ResourceID &handle)
+	vk::Buffer GPUResourceManager::GetBuffer( ResourceID handle)
 	{
 		auto &storage = GetStorage<vk::raii::Buffer>();
 		return *storage.Get(handle);
