@@ -20,7 +20,13 @@ namespace BHive
 
 		static void Flush(RendererAPI *api);
 
-		static void SubmitCommand(const std::string& name, FRenderCommandList::RenderCommand&& fn);
+		template<typename Callable>
+		static void SubmitCommand(const std::string& name, Callable&& fn)
+		{
+			auto &pass = GetActivePass();
+
+			pass.Push(name, std::move(fn));
+		}
 
 		static void SubmitResourceUpdate(FResourceUpdateList::UpdateCommand cmd);
 
@@ -28,7 +34,7 @@ namespace BHive
 
 		static void BeginFrame();
 
-		static FRenderGraphPass &BeginPass(const std::string &name, EPassType type);
+		static FPass &BeginPass(const std::string &name, EPassType type);
 
 		static void EndPass();
 
@@ -43,6 +49,9 @@ namespace BHive
 		{
 			return Cast<T>(GetGraphicsAPI());
 		}
+
+	private:
+		static FPass &GetActivePass();
 
 	private:
 		static inline std::vector<CommandFn> sQueue;

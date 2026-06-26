@@ -8,8 +8,9 @@ namespace BHive
 			return;
 
 		mSize = size;
+
 		CreateAcesOutput();
-		CreateBloomColorOutput();
+		CreateBloomCompositeOutput();
 		CreateBloomOutput();
 		CreateColorGradeOutput();
 		CreateTempTextures();
@@ -25,15 +26,14 @@ namespace BHive
 		mAcesOutput = Texture2D::Create(mSize, info);
 	}
 
-	void PostProcessAllocator::CreateBloomColorOutput()
+	void PostProcessAllocator::CreateBloomCompositeOutput()
 	{
 		FTextureCreateInfo info{};
 		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		info.Format = EFormat::RGBA32F;
 		info.Roles |= ETextureRole::ComputeWrite;
-		info.DebugName = "SceneBloomCombined";
-		mBloomColorOutput = Texture2D::Create(mSize, info);
-		
+		info.DebugName = "SceneBloomComposite";
+		mBloomCompositeOutput = Texture2D::Create(mSize, info);
 	}
 
 	void PostProcessAllocator::CreateColorGradeOutput()
@@ -49,7 +49,18 @@ namespace BHive
 
 	void PostProcessAllocator::CreateBloomOutput()
 	{
+		mBloomMipSizes.clear();
+		mBloomMipSizes.reserve(mBloomMipCount);
+
 		glm::uvec2 halfSize = glm::max(mSize / 2u, glm::uvec2(1u));
+
+		glm::uvec2 mipSize = halfSize;
+
+		for (uint32_t i = 0; i < mBloomMipCount; i++)
+		{
+			mBloomMipSizes.push_back(mipSize);
+			mipSize = glm::max(mipSize / 2u, glm::uvec2(1u));
+		}
 
 		FTextureCreateInfo info{};
 		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;

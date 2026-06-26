@@ -13,7 +13,6 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <fmt/format.h>
 
 template <glm::length_t L, typename T, glm::qualifier Q>
 struct fmt::formatter<glm::vec<L, T, Q>> : fmt::formatter<std::string>

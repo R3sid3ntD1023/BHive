@@ -16,8 +16,11 @@ namespace BHive
 		const char *GetName() const override { return "Aces"; }
 
 	private:
-		void ExecutePass(FComputeBindings& b, const Ref<Texture>& in, const Ref<Texture>& out);
+		void ExecutePass(FComputeBindings& b);
 
-		void OnExecutePass(IRendererContext &ctx, const Ref<Texture>& in, const Ref<Texture>& out);
+		void OnExecutePass(IRendererContext &ctx);
+
+		Ref<Texture> mInput;
+		Ref<Texture> mOutput;
 	};
 }

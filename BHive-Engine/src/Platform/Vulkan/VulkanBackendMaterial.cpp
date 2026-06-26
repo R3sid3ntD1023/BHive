@@ -75,6 +75,7 @@ namespace BHive
 			auto group = Cast<VulkanBindingGroup>(vkPipeline->GetOrCreateBindingGroup(MATERIAL_SET_INDEX));
 			auto matSet = group->GetOrCreateMaterialSet();
 
+
 			RenderCommand::SubmitCommand(
 				"Bind Material Set",
 				[=](IRendererContext &ctx)

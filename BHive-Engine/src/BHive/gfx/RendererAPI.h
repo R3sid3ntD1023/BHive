@@ -57,28 +57,28 @@ namespace BHive
 
 		virtual void WaitIdle() = 0;
 
-		virtual void ClearColor(FRenderGraphPass *pass, float r, float g, float b, float a = 1.0f) = 0;
+		virtual void ClearColor(FPass *pass, float r, float g, float b, float a = 1.0f) = 0;
 
-		virtual void Clear(FRenderGraphPass *pass, ClearMask mask = ClearMask::All) = 0;
+		virtual void Clear(FPass *pass, ClearMask mask = ClearMask::All) = 0;
 
-		virtual void SetLineWidth(FRenderGraphPass *pass, float width) = 0;
+		virtual void SetLineWidth(FPass *pass, float width) = 0;
 
-		virtual void SetViewport(FRenderGraphPass* pass, uint32_t x, uint32_t y, uint32_t w, uint32_t h) = 0;
+		virtual void SetViewport(FPass* pass, uint32_t x, uint32_t y, uint32_t w, uint32_t h) = 0;
 
-		virtual void DrawArrays(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count) = 0;
+		virtual void DrawArrays(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count) = 0;
 
-		virtual void DrawElements(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count) = 0;
+		virtual void DrawElements(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count) = 0;
 
 		virtual void
-		DrawElementsBaseVertex(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t start_index, uint32_t count , uint32_t instance_count) = 0;
+		DrawElementsBaseVertex(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t start_index, uint32_t count , uint32_t instance_count) = 0;
 
-		virtual void DrawElementsRanged(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count ) = 0;
+		virtual void DrawElementsRanged(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count ) = 0;
 
-		virtual void DrawElementsInstanced(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count) = 0;
+		virtual void DrawElementsInstanced(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count) = 0;
 
-		virtual void MultiDrawElementsIndirect(FRenderGraphPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride, uint32_t offset ) = 0;
+		virtual void MultiDrawElementsIndirect(FPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride, uint32_t offset ) = 0;
 
-		virtual void ColorMask(FRenderGraphPass *pass, uint8_t r, uint8_t g, uint8_t b, uint8_t a) = 0;
+		virtual void ColorMask(FPass *pass, uint8_t r, uint8_t g, uint8_t b, uint8_t a) = 0;
 
 		virtual void SubmitGraph(const RenderGraph &graph, FResourceUpdateList &updateResources) = 0;
 

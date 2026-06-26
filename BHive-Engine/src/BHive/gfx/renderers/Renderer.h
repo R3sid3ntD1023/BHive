@@ -23,6 +23,13 @@ namespace BHive
 		bool DebugMarkers = false;
 	};
 
+	struct FPendingPass
+	{
+		std::string Name;
+		EPassType Type;
+		std::function<void(FPass &)> BuildFunc;
+	};
+
 	class BHIVE_API Renderer
 	{
 	public:
@@ -49,7 +56,7 @@ namespace BHive
 
 		void EndFrame();
 
-		void SetEnvironmentTexture(const Ref<Texture2D> &texture);
+		void SetEnvironmentTexture(const Ref<Texture2D> &hdr);
 
 		FView CreateView(const glm::mat4 &projection, const glm::mat4 &view);
 
@@ -115,9 +122,9 @@ namespace BHive
 
 		RenderGraph &GetActiveGraph();
 
-		FRenderGraphPass &GetActivePass();
+		FPass &GetActivePass();
 
-		FRenderGraphPass &BeginPass(const std::string &name, EPassType type);
+		FPass &BeginPass(const std::string &name, EPassType type);
 
 		void EndPass();
 
@@ -148,20 +155,35 @@ namespace BHive
 		inline RendererAPI *GetGraphicsAPI() const { return mAPI.get(); }
 
 	private:
-		Statitics mStats{};
-		PMREMGenerator mPMREMGenerator{};
+		void BeginBatching();
+
+		void EndBatching();
+
+		void CreateEnvironmentIfDirty();
+
+	private:
+		Scope<RendererAPI> mAPI;
+
+		Ref<struct RenderData> mData;
+
 		GlobalResources mGlobalResources;
 
+		PMREMGenerator mPMREMGenerator{};
+		
 		//rendergraph
 		RenderGraph mGraph;
-		FRenderGraphPass *mActivePass = nullptr;
-		bool mFrameActive = false;
+		FPass *mActivePass = nullptr;	
 		PassConfig mPassConfig;
 		FResourceUpdateList mResourceUpdates{};
+		std::vector<FPendingPass> mDeferredPasses;
 
-		//api
-		Ref<struct RenderData> mData;
-		Scope<RendererAPI> mAPI;
+		bool mFrameActive = false;
+		bool mPMREMDirty = false;
+
+		Statitics mStats{};
+
+		Ref<Texture2D> mPendingEnvironmentHDR;
+		
 		static inline Renderer *sInstance = nullptr;
 	};
 

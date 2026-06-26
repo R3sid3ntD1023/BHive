@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VulkanCore.h"
+#include "gfx/Enumerations.h"
 
 namespace BHive
 {
@@ -16,47 +17,32 @@ namespace BHive
 
 		ImageState() = default;
 
-		ImageState(vk::ImageLayout layout, vk::AccessFlags2 access, vk::PipelineStageFlags2 stage, bool unDefined = false)
-			: Layout(layout),
-			  Access(access),
-			  Stage(stage),
-			  IsUndefined(unDefined)
-		{
-		}
+		ImageState(vk::ImageLayout layout, vk::AccessFlags2 access, vk::PipelineStageFlags2 stage, bool unDefined = false);
 
-		//only for first transition after creation
-		static ImageState Undefined() { return {vk::ImageLayout::eUndefined, {}, vk::PipelineStageFlagBits2::eTopOfPipe}; }
+		bool operator==(const ImageState &other) const { return Layout == other.Layout; }
 
-		//swapchain presentable images only
-		static ImageState Present() { return {vk::ImageLayout::ePresentSrcKHR, {}, vk::PipelineStageFlagBits2::eBottomOfPipe}; }
+		bool operator!=(const ImageState &other) const { return Layout != other.Layout; }
 
+		static ImageState Undefined();
 
-		static ImageState ColorAttachment()
-		{
-			return {
-				vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentRead | vk::AccessFlagBits2::eColorAttachmentWrite, vk::PipelineStageFlagBits2::eColorAttachmentOutput};
-		}
+		static ImageState Present();
 
-		static ImageState DepthStencilAttachment()
-		{
-			return {
-				vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentRead | vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
-				vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests};
-		}
+		static ImageState ColorAttachment();
 
-		static ImageState ShaderRead()
-		{
-			return {
-				vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead,
-				vk::PipelineStageFlagBits2::eVertexShader | vk::PipelineStageFlagBits2::eFragmentShader | vk::PipelineStageFlagBits2::eComputeShader};
-		}
+		static ImageState DepthStencilAttachment();
 
-		static ImageState ComputeWrite() { return {vk::ImageLayout::eGeneral, vk::AccessFlagBits2::eShaderRead | vk::AccessFlagBits2::eShaderWrite, vk::PipelineStageFlagBits2::eComputeShader}; }
+		static ImageState ShaderRead();
 
-		static ImageState TansferRead() { return {vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits2::eTransferRead, vk::PipelineStageFlagBits2::eTransfer}; }
+		static ImageState ComputeRead();
 
-		static ImageState TansferWrite() { return {vk::ImageLayout::eTransferDstOptimal, vk::AccessFlagBits2::eTransferWrite, vk::PipelineStageFlagBits2::eTransfer}; }
+		static ImageState ComputeWrite();
 
-		static ImageState TansferClear() { return {vk::ImageLayout::eGeneral, vk::AccessFlagBits2::eTransferWrite, vk::PipelineStageFlagBits2::eTransfer}; }
+		static ImageState TransferRead();
+
+		static ImageState TansferWrite();
+
+		static ImageState TransferClear();
+
+		static ImageState ToImageState(EImageAccess access);
 	};
 }

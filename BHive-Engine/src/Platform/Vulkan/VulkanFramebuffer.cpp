@@ -76,30 +76,12 @@ namespace BHive
 			[current_face, color_attachments, color_specifications, depth_attachment, depth_specification, spec](IRendererContext &ctx)
 			{
 				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-				// transition images
-				for (size_t i = 0; i < color_attachments.size(); i++)
-				{
-					auto &color_spec = color_specifications[i];
-					auto tex = color_attachments[i]->GetNativeHandle().As<VulkanImage>();
-
-					ImageSubresource sub{color_spec.MipLevel, 1,  color_spec.Layer, color_spec.LayerCount};
-					tex->Transition(vk_ctx.CommandBuffer, ImageState::ColorAttachment(), sub);
-				}
-
-				if (depth_attachment)
-				{
-					auto tex = depth_attachment->GetNativeHandle().As<VulkanImage>();
-					tex->Transition(vk_ctx.CommandBuffer, ImageState::DepthStencilAttachment());
-				}
 
 				// render
 				std::vector<vk::RenderingAttachmentInfo> color_infos;
-				vk::RenderingAttachmentInfo depth_info{};
+				color_infos.reserve(color_attachments.size());
 
-				const auto num_color_attachments = color_attachments.size();
-				color_infos.reserve(num_color_attachments);
-
-				for (size_t i = 0; i < num_color_attachments; i++)
+				for (size_t i = 0; i < color_attachments.size(); i++)
 				{
 					auto& color_spec = color_specifications[i];
 					auto vkTex = reinterpret_cast<VkImageView>(color_attachments[i]->GetRenderView(current_face, color_spec.MipLevel).AsRaw());
@@ -111,19 +93,22 @@ namespace BHive
 					color_infos.emplace_back(info);
 				}
 
+				vk::RenderingAttachmentInfo *depthPtr = nullptr;
+
 				if (depth_attachment)
 				{
 					auto &depth_spec = depth_specification;
 					auto vkTex = reinterpret_cast<VkImageView>(depth_attachment->GetRenderView(current_face, depth_spec.MipLevel).AsRaw());
 
-					depth_info = vk::RenderingAttachmentInfo(
+					auto depthInfo = vk::RenderingAttachmentInfo(
 						vkTex, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
 						vk::ClearDepthStencilValue(1.0f, 0));
+					
+					depthPtr = &depthInfo;
 				}
 
 				auto rect = vk::Rect2D({0, 0}, {spec.Size.x, spec.Size.y});
-				auto depth = depth_attachment ? &depth_info : nullptr;
-				auto info = vk::RenderingInfo({}, rect, 1, 0, color_infos, depth);
+				auto info = vk::RenderingInfo({}, rect, 1, 0, color_infos, depthPtr);
 
 				vk_ctx.CommandBuffer.beginRendering(info);
 
@@ -143,21 +128,14 @@ namespace BHive
 	void VulkanFramebuffer::UnBind() const
 	{
 		auto color_attachments = mColorAttachments;
+		auto color_specifications = mColorAttachmentSpecifications;
 
 		RenderCommand::SubmitCommand("UnBind Framebuffer",
-		[color_attachments](IRendererContext & ctx)
+		[color_attachments, color_specifications](IRendererContext & ctx)
 		{
 			auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
 			vk_ctx.CommandBuffer.endRendering();
-
-			for (size_t i = 0; i < color_attachments.size(); i++)
-			{
-				auto tex = color_attachments[i]->GetNativeHandle().As<VulkanImage>();
-				tex->Transition(vk_ctx.CommandBuffer, ImageState::ShaderRead());
-			}
 		});
-
-		RenderCommand::EndPass();
 	}
 
 	void VulkanFramebuffer::Resize(const glm::uvec2 &newSize)
@@ -179,6 +157,29 @@ namespace BHive
 	{
 		ASSERT(attachmentIndex < mColorAttachments.size());
 
+		auto cAttachment = mColorAttachments[attachmentIndex];
+		auto cSpec = mColorAttachmentSpecifications[attachmentIndex];
+		auto fbSpec = mSpecification;
+		auto color = vk::ClearColorValue(data[0], data[1], data[2], data[3]);
+
+		RenderCommand::SubmitCommand(
+			"Clear Attachment",
+			[cAttachment, cSpec, fbSpec, color](IRendererContext &ctx)
+			{
+				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+				auto &cmd = vk_ctx.CommandBuffer;
+				auto vimage = cAttachment->GetNativeHandle().As<VulkanImage>();
+				auto layout = vimage->GetState(cSpec.MipLevel, cSpec.Layer).Layout;
+				auto image = vimage->Native().GetImage();
+			
+				vk::ImageSubresourceRange range;
+				range.aspectMask = vk::ImageAspectFlagBits::eColor;
+				range.baseMipLevel = cSpec.MipLevel;
+				range.baseArrayLayer = cSpec.Layer;
+				range.layerCount = cSpec.LayerCount;
+				range.levelCount = 1;
+				cmd.clearColorImage(image, layout, color , range);
+			});
 		
 	}
 
@@ -235,7 +236,7 @@ namespace BHive
 			mDepthAttachment = CreateFramebufferTexture(mSpecification.Size,  mSpecification.Samples, mDepthSpecification);
 		}
 
-		auto& colorAttachments = mColorAttachments;
+		/*auto& colorAttachments = mColorAttachments;
 
 		RenderCommand::GetGraphicsAPI()->ExecuteTransferPass([=](ITransferContext& ctx) {
 				auto &transfer_ctx = CastRef<FVulkanTransferContext>(ctx);
@@ -245,7 +246,7 @@ namespace BHive
 					vkTex->Transition(transfer_ctx.Cmd, ImageState::ColorAttachment());
 					vkTex->Transition(transfer_ctx.Cmd, ImageState::ShaderRead());
 				}
-			});
+			});*/
 	}
 
 } // namespace BHive

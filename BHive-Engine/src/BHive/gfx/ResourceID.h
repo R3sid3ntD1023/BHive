@@ -30,11 +30,22 @@ namespace BHive
 	class TResourceID
 	{
 	public:
-		TResourceID() = default;
+		TResourceID()
+			: mID(GetPool().Aquire())
+		{}
 
 		explicit TResourceID(uint32_t id)
 			: mID(id)
 		{
+		}
+
+		void Release()
+		{
+			if (mID == 0)
+				return;
+
+			GetPool().Release(mID);
+			mID = 0;
 		}
 
 		operator uint32_t() const { return mID; }

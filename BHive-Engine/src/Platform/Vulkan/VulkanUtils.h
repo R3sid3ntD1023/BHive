@@ -2,7 +2,8 @@
 
 #include "Core/Core.h"
 #include "VulkanCore.h"
-#include "VulkanImageRegions.h"
+#include "gfx/resources/ImageCopyRegion.h"
+#include "gfx/resources/ImageSubResourceRange.h"
 
 namespace BHive
 {
@@ -30,10 +31,10 @@ namespace BHive
 		static void CopyBuffer(const vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size);
 
 		static void TransitionImageLayout(
-			vk::raii::CommandBuffer& cmd, const vk::Image &image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
-			vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, const ImageSubresource& sub);
+			vk::raii::CommandBuffer& cmd, vk::Image image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
+			vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, ImageSubresourceRange range);
 
-		static void CopyBufferToImage(vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, const vk::Image &image, const ImageCopyRegion &region);
+		static void CopyBufferToImage(vk::raii::CommandBuffer &cmd, vk::Buffer buffer, vk::Image image, ImageCopyRegion region);
 
 		static void SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size);
 

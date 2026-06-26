@@ -136,10 +136,10 @@ namespace BHive
 
 	void VulkanUtils::TransitionImageLayout(
 		vk::raii::CommandBuffer& cmd,
-		const vk::Image &image,  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
-		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, const ImageSubresource &sub)
+		vk::Image image,  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
+		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, ImageSubresourceRange inRange)
 	{
-		vk::ImageSubresourceRange range{aspect_flags, sub.BaseMipLevel, sub.LevelCount, sub.BaseArrayLayer, sub.LayerCount};
+		vk::ImageSubresourceRange range{aspect_flags, inRange.BaseMipLevel, inRange.LevelCount, inRange.BaseArrayLayer, inRange.LayerCount};
 		vk::ImageMemoryBarrier2 barrier(
 			srcStageMask,
 			srcAccessMask, 
@@ -157,7 +157,7 @@ namespace BHive
 		cmd.pipelineBarrier2(depInfo);
 	}
 
-	void VulkanUtils::CopyBufferToImage(vk::raii::CommandBuffer &cmd, const vk::Buffer &buffer, const vk::Image &image, const ImageCopyRegion &region)
+	void VulkanUtils::CopyBufferToImage(vk::raii::CommandBuffer &cmd, vk::Buffer buffer, vk::Image image, ImageCopyRegion region)
 	{
 		vk::Offset3D offset(region.Offset.x, region.Offset.y, region.Offset.z);
 		vk::Extent3D extent(region.Extents.x, region.Extents.y, region.Extents.z);

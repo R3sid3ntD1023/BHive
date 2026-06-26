@@ -50,8 +50,8 @@ namespace BHive
 
 		glm::uvec3 extents = glm::compMul(info.Extent) == 0 ? glm::uvec3{mSize, 1} : info.Extent;
 		ImageCopyRegion region{.BaseArrayLayer = info.BaseArrayLayer, .LayerCount = info.Layers, .Offset = info.Offset, .Extents = extents};
-		ImageSubresource sub{info.BaseMipLevel, 1, info.BaseArrayLayer, info.Layers};
-		mImage.Upload(info.Data, size, region, sub);
+		ImageSubresourceRange range{info.BaseMipLevel, 1, info.BaseArrayLayer, info.Layers};
+		mImage.Upload(info.Data, size, region, range);
 	}
 
 	Ref<Texture2D> VulkanTexture2D::CreateSubTexture(const FSubTexture &texture)
@@ -106,6 +106,11 @@ namespace BHive
 	{
 		VkImageView view = mImage.Native().GetMipView(mip);
 		return NativeHandle::FromRaw(reinterpret_cast<uint64_t>(view));
+	}
+
+	void VulkanTexture2D::DebugPrintState()
+	{
+		mImage.DebugPrintState();
 	}
 
 	void VulkanTexture2D::Save(cereal::BinaryOutputArchive &ar) const

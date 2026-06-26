@@ -21,12 +21,6 @@ namespace BHive
 		sQueue.clear();
 	}
 
-	void RenderCommand::SubmitCommand(const std::string &name, FRenderCommandList::RenderCommand&& fn)
-	{
-		auto& pass = Renderer::Get().GetActivePass();
-		pass.CommandList.Push(name, std::move(fn));
-	}
-
 	void RenderCommand::SubmitResourceUpdate(FResourceUpdateList::UpdateCommand cmd)
 	{
 		Renderer::Get().SubmitResourceUpdate(std::move(cmd));
@@ -42,7 +36,7 @@ namespace BHive
 		Renderer::Get().BeginFrame();
 	}
 
-	FRenderGraphPass &RenderCommand::BeginPass(const std::string &name, EPassType type)
+	FPass &RenderCommand::BeginPass(const std::string &name, EPassType type)
 	{
 		return Renderer::Get().BeginPass(name, type);
 	}
@@ -60,6 +54,11 @@ namespace BHive
 	RendererAPI *RenderCommand::GetGraphicsAPI()
 	{
 		return Renderer::Get().GetGraphicsAPI();
+	}
+
+	FPass &RenderCommand::GetActivePass()
+	{
+		return Renderer::Get().GetActivePass();
 	}
 
 } // namespace BHive

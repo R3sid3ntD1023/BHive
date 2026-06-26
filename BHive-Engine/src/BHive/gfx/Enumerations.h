@@ -1,4 +1,4 @@
-#pragma once
+	#pragma once
 
 #include "core/Core.h"
 #include "core/EnumFlags.h"
@@ -137,11 +137,26 @@ namespace BHive
 
 	};
 
-	enum class EImageAccess : uint32_t
+	enum class EImageAccess : uint8_t
 	{
-		READ,
-		WRITE,
-		READ_WRITE
+		None,
+
+		//Graphics
+		ColorRead,
+		ColorWrite,
+
+		DepthRead,
+		DepthWrite,
+
+		//Compute
+		ComputeSampled,
+		ComputeStorageRead,
+		ComputeStorageWrite,
+
+		//Transfer
+		TransferSrc,
+		TransferDst
+
 	};
 
 	enum class EMagFilter
@@ -317,7 +332,32 @@ namespace BHive
 		}
 	}
 
-
+	inline std::string to_string(EImageAccess access)
+	{
+		switch (access)
+		{
+		case BHive::EImageAccess::ColorRead:
+			return "ColorRead";
+		case BHive::EImageAccess::ColorWrite:
+			return "ColorWrite";
+		case BHive::EImageAccess::DepthRead:
+			return "DepthRead";
+		case BHive::EImageAccess::DepthWrite:
+			return "DepthWrite";
+		case BHive::EImageAccess::ComputeSampled:
+			return "ComputeSampled";
+		case BHive::EImageAccess::ComputeStorageRead:
+			return "ComputeStorageRead";
+		case BHive::EImageAccess::ComputeStorageWrite:
+			return "ComputeStorageWrite";
+		case BHive::EImageAccess::TransferSrc:
+			return "TransferSrc";
+		case BHive::EImageAccess::TransferDst:
+			return "TransferDst";
+		default:
+			return "Undefined";
+		}
+	}
 
 	inline bool IsDepthFormat(EFormat format)
 	{

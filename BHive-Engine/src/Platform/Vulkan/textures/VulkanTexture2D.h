@@ -35,6 +35,8 @@ namespace BHive
 
 		NativeHandle GetRenderView(uint32_t layer = 0, uint32_t mip = 0) const override;
 
+		void DebugPrintState() override;
+
 		/*Begin Asset*/
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 

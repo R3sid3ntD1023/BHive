@@ -58,4 +58,9 @@ namespace BHive
 		return NativeHandle::FromRaw(reinterpret_cast<uint64_t>(view));
 	}
 
+	void VulkanTextureCubeArray::DebugPrintState()
+	{
+		mImage.DebugPrintState();
+	}
+
 } // namespace BHive

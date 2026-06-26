@@ -62,7 +62,12 @@ namespace BHive
 		}
 	}
 
-	ImageState &ImageStateTracker::Get(uint32_t layer, uint32_t mip)
+	ImageState& ImageStateTracker::Get(uint32_t layer, uint32_t mip)
+	{
+		return MipStates[layer][mip];
+	}
+
+	const ImageState &ImageStateTracker::Get(uint32_t layer, uint32_t mip) const
 	{
 		return MipStates[layer][mip];
 	}

@@ -18,8 +18,66 @@ namespace BHive
 	#define PMREM_PREFILTER_PIPELINE "PMREM_PreFilter"
 	#define PMREM_BRDFLUT_PIPELINE "BRDF_LUT"
 
-	PMREMGenerator::PMREMGenerator(const PMREMSettings &settings)
-		: mSettings(settings)
+	void PMREMGenerator::Initialize(const PMREMSettings &settings)
+	{
+		mSettings = settings;
+		InitializePipelines();
+		InitializeTextures();
+	}
+
+	PMREMResult PMREMGenerator::GenerateEnvironmentMaps(const Ref<Texture2D> & hdr)
+	{
+		mInput = hdr;
+
+		auto &pass = RenderCommand::BeginPass("Generate PMREM Maps", EPassType::OffScreen);
+
+		//Phase 0 : equirectangular -> cubemap
+		pass.BeginPhase("Convert 2D -> cube");
+		pass.Push(mInput, EImageAccess::ComputeSampled);
+		pass.Push(mEnvironmentTextures.Environment, EImageAccess::ComputeStorageWrite, {0, 1, 0, 6});
+		pass.Push("Compute CubeMap", this, &PMREMGenerator::DoEquirectangularConversion);
+		pass.EndPhase();
+
+		// Phase 1 : generate mipmaps for environment
+		pass.BeginPhase("Gen Mips for Environment Cube");
+		pass.Push("Generate MipMaps", this, &PMREMGenerator::DoGenerateCubeMips);
+		pass.EndPhase();
+
+		//Phase 2 : Irradiance convolution
+		pass.BeginPhase("Convolution");
+		pass.Push(mEnvironmentTextures.Environment, EImageAccess::ComputeSampled, {0, 1, 0 , 6});
+		pass.Push(mEnvironmentTextures.Irradiance, EImageAccess::ComputeStorageWrite, {0, 1, 0, 6});
+		pass.Push("Compute Irradiance", this, &PMREMGenerator::DoConvolution);
+		pass.EndPhase();
+
+		//Phase 3 - N: Prefilter Specular Mip Chain
+
+		for (uint32_t mip = 0; mip < mSettings.PrefilterMipLevels; mip++)
+		{
+			pass.BeginPhase(std::format("Prefiltering Mip {}", mip ));
+			pass.Push(mEnvironmentTextures.Environment, EImageAccess::ComputeSampled);
+			pass.Push(mEnvironmentTextures.PreFilter, EImageAccess::ComputeStorageWrite, {mip, 1, 0, 6});
+			pass.Push("Compute PreFilter", this, &PMREMGenerator::DoPreFilter, mip);
+			pass.EndPhase();
+		}
+
+		RenderCommand::EndPass();
+
+		return mEnvironmentTextures;
+	}
+
+
+	Ref<Texture2D> PMREMGenerator::GenerateBRDFLUTMap()
+	{
+		Renderer::Get().ExecuteComputePass(
+			PipelineRegistry::Get(PMREM_BRDFLUT_PIPELINE), {mSettings.BrdfLutSize / 8, mSettings.BrdfLutSize / 8, 1}, [&](FComputeBindings &b) { b.Bind("brdfLutTexture", mBRDFLUT); });
+
+		
+
+		return mBRDFLUT;
+	}
+
+	void PMREMGenerator::InitializePipelines()
 	{
 		{
 			auto EquirectangularShader = ShaderManager::Get(PMREM_EQUIRECTANGULAR);
@@ -50,108 +108,99 @@ namespace BHive
 		}
 	}
 
-	Ref<TextureCube> PMREMGenerator::GenerateEnvironmentCubeMap(const Ref<Texture2D> &tex)
+	void PMREMGenerator::InitializeTextures()
 	{
-		FTextureCreateInfo create_info{};
-		create_info.Format = EFormat::RGBA32F;
-		create_info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-		create_info.MinFilter = EMinFilter::LINEAR;
-		create_info.ArrayLayers = 6;
-		create_info.MipLevels = mSettings.PrefilterMipLevels;
-		create_info.DebugName = "EnvironmentCube";
-		create_info.Roles |= ETextureRole::ComputeWrite;
-		auto cube =  TextureCube::Create(mSettings.EnvironmentMapSize, create_info);
+		FTextureCreateInfo brdfLUTInfo{};
+		brdfLUTInfo.Format = EFormat::RG16F;
+		brdfLUTInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		brdfLUTInfo.MagFilter = EMagFilter::NEAREST;
+		brdfLUTInfo.MinFilter = EMinFilter::NEAREST;
+		brdfLUTInfo.Roles |= ETextureRole::ComputeWrite;
+		brdfLUTInfo.DebugName = "BRDFLUT Texture";
 
-		Renderer::Get().ExecuteComputePass(
-					PipelineRegistry::Get(PMREM_EQUIRECTANGULAR_PIPELINE), {(mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 6},
-					[=](FComputeBindings &b)
-					{
-						b.SampledImage("equirectangularMap", FImageInfo{tex});
-						b.StorageImage("imgOutput", FImageInfo{cube, 0, 1, 0, 6, EImageAccess::WRITE});
-						b.Set("u_width", mSettings.EnvironmentMapSize);
-						b.Set("u_height", mSettings.EnvironmentMapSize);
-					});
+		mBRDFLUT = Texture2D::Create({mSettings.BrdfLutSize, mSettings.BrdfLutSize}, brdfLUTInfo);
 
-		Renderer::Get().ExecuteTransferPass([=](ITransferContext&) { cube->GenerateMips();});
-		
-		return cube;
+		FTextureCreateInfo cubeInfo{};
+		cubeInfo.Format = EFormat::RGBA32F;
+		cubeInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		cubeInfo.MinFilter = EMinFilter::LINEAR;
+		cubeInfo.ArrayLayers = 6;
+		cubeInfo.MipLevels = mSettings.PrefilterMipLevels;
+		cubeInfo.DebugName = "EnvironmentCube";
+		cubeInfo.Roles |= ETextureRole::ComputeWrite;
+		mEnvironmentTextures.Environment = TextureCube::Create(mSettings.EnvironmentMapSize, cubeInfo);
+
+		FTextureCreateInfo convolutionInfo{};
+		convolutionInfo.Format = EFormat::RGBA32F;
+		convolutionInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		convolutionInfo.MinFilter = EMinFilter::LINEAR;
+		convolutionInfo.Roles |= ETextureRole::ComputeWrite;
+		convolutionInfo.DebugName = "Irradiance";
+		mEnvironmentTextures.Irradiance = TextureCube::Create(mSettings.IrradianceSize, convolutionInfo);
+
+		FTextureCreateInfo preFilteredInfo{};
+		preFilteredInfo.Format = EFormat::RGBA16F;
+		preFilteredInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		preFilteredInfo.MinFilter = EMinFilter::MIPMAP_LINEAR;
+		preFilteredInfo.MagFilter = EMagFilter::LINEAR;
+		preFilteredInfo.MipLevels = mSettings.PrefilterMipLevels;
+		preFilteredInfo.Roles |= ETextureRole::ComputeWrite;
+		preFilteredInfo.DebugName = "PreFilterEnvironment";
+		mEnvironmentTextures.PreFilter = TextureCube::Create(mSettings.PrefilterMapSize, preFilteredInfo);
+
 	}
 
-	Ref<TextureCube> PMREMGenerator::GenerateIrradianceMap(const Ref<TextureCube> &tex)
+	void PMREMGenerator::DoEquirectangularConversion(IRendererContext &ctx)
 	{
-		FTextureCreateInfo create_info{};
-		create_info.Format = EFormat::RGBA32F;
-		create_info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-		create_info.MinFilter = EMinFilter::LINEAR;
-		create_info.Roles |= ETextureRole::ComputeWrite;
-		create_info.DebugName = "Irradiance";
-		auto irradiance = TextureCube::Create(mSettings.IrradianceSize, create_info);
+		Renderer::Get().ExecuteComputePass(
+			PipelineRegistry::Get(PMREM_EQUIRECTANGULAR_PIPELINE), {(mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 6},
+			[=](FComputeBindings &b)
+			{
+				b.Bind("equirectangularMap", mInput);
+				b.Bind("imgOutput", mEnvironmentTextures.Environment, {0, 1, 0, 6});
+				b.Set("u_width", mSettings.EnvironmentMapSize);
+				b.Set("u_height", mSettings.EnvironmentMapSize);
+			});
+	}
 
+	void PMREMGenerator::DoGenerateCubeMips(IRendererContext &ctx)
+	{
+		Renderer::Get().ExecuteTransferPass([=](ITransferContext &) { mEnvironmentTextures.Environment->GenerateMips(); });
+	}
+
+	void PMREMGenerator::DoConvolution(IRendererContext &ctx)
+	{
 		Renderer::Get().ExecuteComputePass(
 			PipelineRegistry::Get(PMREM_CONVOLUTION_PIPELINE), {(mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 1},
 			[=](FComputeBindings &b)
 			{
-				b.SampledImage("environmentMap", {tex});
-				b.StorageImage("irradianceMap", FImageInfo{irradiance, 0, 1, 0, 6, EImageAccess::WRITE});
+				b.Bind("environmentMap", mEnvironmentTextures.Environment);
+				b.Bind("irradianceMap", mEnvironmentTextures.Irradiance, {0, 1, 0, 6});
 				b.Set("u_width", mSettings.IrradianceSize);
 				b.Set("u_height", mSettings.IrradianceSize);
 			});
-
-		return irradiance;
 	}
 
-	Ref<TextureCube> PMREMGenerator::GeneratePreFilteredEnvironmentMap(const Ref<TextureCube> &tex)
+	void PMREMGenerator::DoPreFilter(IRendererContext &ctx, uint32_t mip)
 	{
-		FTextureCreateInfo create_info{};
-		create_info.Format = EFormat::RGBA16F;
-		create_info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-		create_info.MinFilter = EMinFilter::MIPMAP_LINEAR;
-		create_info.MagFilter = EMagFilter::LINEAR;
-		create_info.MipLevels = mSettings.PrefilterMipLevels;
-		create_info.Roles |= ETextureRole::ComputeWrite;
-		create_info.DebugName = "PreFilterEnvironment";
-		auto prefilter = TextureCube::Create(mSettings.PrefilterMapSize, create_info);
+		uint32_t s = mSettings.PrefilterMapSize >> mip;
+		if (s == 0)
+			s = 1;
 
-		for (uint32_t mip = 0; mip < mSettings.PrefilterMipLevels; mip++)
-		{
-			uint32_t s = mSettings.PrefilterMapSize >> mip;
-			if (s == 0)
-				s = 1;
+		float roughness = (float)mip / (float)(mSettings.PrefilterMipLevels - 1);
 
-			float roughness = (float)mip / (float)(mSettings.PrefilterMipLevels - 1);
-
-			Renderer::Get().ExecuteComputePass(
-				PipelineRegistry::Get(PMREM_PREFILTER_PIPELINE), {(s + 7) / 8, (s + 7) / 8, 6},
-				[=](FComputeBindings &b)
-				{
-					b.SampledImage("environmentMap", {tex});
-					b.StorageImage("imgOutput", FImageInfo{prefilter, mip, 1, 0, 6, EImageAccess::WRITE});
-					b.Set("u_envResolution", mSettings.EnvironmentMapSize);
-					b.Set("u_roughness", roughness);
-					b.Set("u_mip_level", int32_t(mip));
-					b.Set("u_width", s);
-					b.Set("u_height", s);
-				});
-		}
-
-		return prefilter;
-	}
-
-	Ref<Texture2D> PMREMGenerator::GenerateBRDFLUTMap()
-	{
-
-		FTextureCreateInfo brdfLUTCreateInfo{};
-		brdfLUTCreateInfo.Format = EFormat::RG16F;
-		brdfLUTCreateInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-		brdfLUTCreateInfo.MagFilter = EMagFilter::NEAREST;
-		brdfLUTCreateInfo.MinFilter = EMinFilter::NEAREST;
-		brdfLUTCreateInfo.Roles |= ETextureRole::ComputeWrite;
-		brdfLUTCreateInfo.DebugName = "BRDFLUT Texture";
-
-		auto brdfLUT = Texture2D::Create({mSettings.BrdfLutSize, mSettings.BrdfLutSize}, brdfLUTCreateInfo);
 		Renderer::Get().ExecuteComputePass(
-			PipelineRegistry::Get(PMREM_BRDFLUT_PIPELINE), {mSettings.BrdfLutSize / 8, mSettings.BrdfLutSize / 8, 1}, [=](FComputeBindings &b) { b.StorageImage("brdfLutTexture", FImageInfo{brdfLUT}); });
-
-		return brdfLUT;
+			PipelineRegistry::Get(PMREM_PREFILTER_PIPELINE), {(s + 7) / 8, (s + 7) / 8, 6},
+			[=](FComputeBindings &b)
+			{
+				b.Bind("environmentMap", mEnvironmentTextures.Environment);
+				b.Bind("imgOutput", mEnvironmentTextures.PreFilter, {mip, 1, 0, 6});
+				b.Set("u_envResolution", mSettings.EnvironmentMapSize);
+				b.Set("u_roughness", roughness);
+				b.Set("u_mip_level", int32_t(mip));
+				b.Set("u_width", s);
+				b.Set("u_height", s);
+			});
 	}
+
 } // namespace BHive

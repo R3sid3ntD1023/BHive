@@ -119,7 +119,7 @@ namespace BHive
 
 		if (fence)
 		{
-			while(vk::Result::eTimeout ==  mDevice.waitForFences(fence, VK_TRUE, UINT64_MAX));
+			mDevice.waitForFences(fence, VK_TRUE, UINT64_MAX);
 			mDevice.resetFences(fence);
 		}	
 	}

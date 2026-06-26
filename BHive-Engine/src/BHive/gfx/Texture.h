@@ -5,6 +5,7 @@
 #include "core/Core.h"
 #include "TextureSpecification.h"
 #include "NativeHandle.h"
+#include "ResourceID.h"
 
 namespace BHive
 {
@@ -28,7 +29,7 @@ namespace BHive
 	class Texture : public Asset
 	{
 	public:
-		virtual ~Texture() = default;
+		virtual ~Texture() { mResourceID.Release();}
 
 		virtual void GenerateMips() = 0;
 
@@ -36,7 +37,7 @@ namespace BHive
 
 		float GetAspectRatio() const { return (float)GetSize().x / (float)GetSize().y; }
 
-		virtual void SetData(const FTextureUploadInfo& info) = 0;
+		virtual void SetData(const FTextureUploadInfo &info) = 0;
 
 		virtual const FTextureCreateInfo &GetInfo() const = 0;
 
@@ -44,7 +45,14 @@ namespace BHive
 
 		virtual NativeHandle GetRenderView(uint32_t layer = 0, uint32_t mip = 0) const = 0;
 
+		EngineResourceID GetResourceID() const { return mResourceID; }
+
+		virtual void DebugPrintState() {};
+
 		REFLECTABLEV(Asset)
+
+	private:
+		EngineResourceID mResourceID{};
 	};
 
 	class BHIVE_API Texture2D : public Texture

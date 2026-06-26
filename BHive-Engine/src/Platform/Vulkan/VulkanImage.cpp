@@ -66,7 +66,7 @@ namespace BHive
 		mRawImage = 1;
 	}
 
-	void VulkanImage::Upload(const void *data, size_t size, const ImageCopyRegion &region, const ImageSubresource &sub)
+	void VulkanImage::Upload(const void *data, size_t size, ImageCopyRegion region, ImageSubresourceRange range)
 	{
 		auto stagingInfo = vk::BufferCreateInfo({}, size, vk::BufferUsageFlagBits::eTransferSrc);
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
@@ -81,36 +81,41 @@ namespace BHive
 		auto staging_buffer = VulkanBackend::GetGPUResourceManager().GetBuffer(stagingID);
 
 		SingleTimeCommand cmd{};
-		Transition(cmd, ImageState::TansferWrite(), sub);
+		Transition(cmd, ImageState::TansferWrite(), range);
 		VulkanUtils::CopyBufferToImage(cmd, staging_buffer, mImage.GetImage(), region);
-		Transition(cmd, ImageState::ShaderRead(), sub);
+		Transition(cmd, ImageState::ShaderRead(), range);
 
 		gpu_r_m.DestroyBuffer(stagingID);
 	}
 
-	void VulkanImage::Transition(vk::raii::CommandBuffer& cmd, const ImageState &newState, const ImageSubresource &sub)
+	void VulkanImage::Transition(vk::raii::CommandBuffer &cmd, ImageState newState, ImageSubresourceRange range)
 	{
 		ASSERT(mStateTracker.MipStates.size(), "Invalid layer size must be 1 or greater -> {}", mImage.DebugName);
 
 		auto image = mImage.GetImage();
 
-		for (uint32_t layer = sub.BaseArrayLayer; layer < sub.BaseArrayLayer + sub.LayerCount; layer++)
+		for (uint32_t layer = range.BaseArrayLayer; layer < range.BaseArrayLayer + range.LayerCount; layer++)
 		{
-			for (uint32_t mip = sub.BaseMipLevel; mip < sub.BaseMipLevel + sub.LevelCount; mip++)
+			for (uint32_t mip = range.BaseMipLevel; mip < range.BaseMipLevel + range.LevelCount; mip++)
 			{
 				ASSERT(mStateTracker.MipStates[layer].size(), "Invalid mip size must be 1 or greater -> {}", mImage.DebugName);
 
 				auto &oldState = mStateTracker.Get(layer, mip);
+				auto oldLayout = oldState.IsUndefined ? vk::ImageLayout::eUndefined : oldState.Layout;
+				auto oldAccess = oldState.IsUndefined ? vk::AccessFlagBits2{} : oldState.Access;
+				auto oldStage = oldState.IsUndefined ? vk::PipelineStageFlagBits2::eTopOfPipe : oldState.Stage;
 
-				ImageSubresource layerSub = sub;
+				if (oldLayout == newState.Layout && oldAccess == newState.Access && oldStage == newState.Stage)
+				{
+					oldState.IsUndefined = false;
+					continue;
+				}
+
+				ImageSubresourceRange layerSub = range;
 				layerSub.BaseArrayLayer = layer;
 				layerSub.LayerCount = 1;
 				layerSub.BaseMipLevel = mip;
 				layerSub.LevelCount = 1;
-
-				auto oldLayout = oldState.IsUndefined ? vk::ImageLayout::eUndefined : oldState.Layout;
-				auto oldAccess = oldState.IsUndefined ? vk::AccessFlagBits2{} : oldState.Access;
-				auto oldStage = oldState.IsUndefined ? vk::PipelineStageFlagBits2::eTopOfPipe : oldState.Stage;
 
 				VulkanUtils::TransitionImageLayout(cmd, image, oldLayout, newState.Layout, oldAccess, newState.Access, oldStage, newState.Stage, mAspect, layerSub);
 
@@ -131,13 +136,13 @@ namespace BHive
 		for (uint32_t mip = 1; mip < levels; ++mip)
 		{
 			{
-				ImageSubresource sub{mip -1, 1, 0, layers};
-				Transition(cmd, ImageState::TansferRead(), sub);
+				ImageSubresourceRange range{mip -1, 1, 0, layers};
+				Transition(cmd, ImageState::TransferRead(), range);
 			}
 
 			{
-				ImageSubresource sub{mip, 1, 0, layers};
-				Transition(cmd, ImageState::TansferWrite(), sub);
+				ImageSubresourceRange range{mip, 1, 0, layers};
+				Transition(cmd, ImageState::TansferWrite(), range);
 			}
 
 			// Blit mip -1 -> mip
@@ -156,13 +161,29 @@ namespace BHive
 			h = std::max(h >> 1, 1u);
 		}
 
-		ImageSubresource sub{0, levels, 0, layers};
-		Transition(cmd, ImageState::ShaderRead(), sub);
+		ImageSubresourceRange range{0, levels, 0, layers};
+		Transition(cmd, ImageState::ShaderRead(), range);
 	}
 
 	void VulkanImage::Destroy()
 	{
 		if (!mRawImage)
 			VulkanBackend::GetGPUResourceManager().DestroyImage(mImage);
+	}
+
+	ImageState VulkanImage::GetState(uint32_t mip, uint32_t layer) const
+	{
+		return mStateTracker.Get(layer, mip);
+	}
+
+	void VulkanImage::DebugPrintState()
+	{
+		for (uint32_t layer = 0; layer < mStateTracker.MipStates.size(); layer++)
+		{
+			for (uint32_t mip = 0; mip < mStateTracker.MipStates[layer].size(); mip++)
+			{
+				LOG_TRACE("\t\t{} [layer={} mip={}] = {}", mImage.DebugName, layer, mip, vk::to_string(mStateTracker.Get(layer, mip).Layout));
+			}
+		}
 	}
 } // namespace BHive

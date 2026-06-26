@@ -6,42 +6,39 @@ namespace BHive
 {
 	Ref<Texture> ColorGradingMaterial::AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input)
 	{
-		auto pipeline = PipelineRegistry::Get("COLOR_GRADING");
+		mInput = input;
+		mOutput = allocator.GetColorGradeOuput();
 
-		auto &pass = graph.AddPass("Bloom", EPassType::OffScreen);
+		auto &pass = graph.AddPass("Color Grading Pass", EPassType::OffScreen);
+		pass.BeginPhase();
 
-		auto params = Params;
-		auto output = allocator.GetColorGradeOuput();
+		pass.Push(mInput, EImageAccess::ComputeSampled);
+		pass.Push(mOutput, EImageAccess::ComputeStorageWrite);
+		pass.Push("Compute Color Grade", this, &ColorGradingMaterial::DoColorGrading);
 
-		pass.CommandList.Push(
-			"Prefilter Scene Color",
-			[input, output = output, pipeline, params](IRendererContext &ctx)
+		pass.EndPhase();
+
+		return mOutput;
+	}
+	void ColorGradingMaterial::DoColorGrading(IRendererContext &ctx)
+	{
+
+		auto dstSize = mOutput->GetSize();
+
+		glm::uvec3 dispatch = {(dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1};
+
+		// prefilter
+		Renderer::Get().ExecuteComputePass(
+			PipelineRegistry::Get("COLOR_GRADING"), dispatch,
+			[this](FComputeBindings &b)
 			{
-				auto dstSize = output->GetSize();
-				glm::uvec3 dispatch = {(dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1};
 
-				// prefilter
-				Renderer::Get().ExecuteComputePass(
-					pipeline, dispatch,
-					[input, output, params](FComputeBindings &b)
-					{
-						FImageInfo in{};
-						in.Texture = input;
-						in.Access = EImageAccess::READ;
-
-						FImageInfo out{};
-						out.Texture = output;
-						out.Access = EImageAccess::WRITE;
-
-						b.SampledImage("uTonemapped", in);
-						b.StorageImage("uOutput", out);
-						b.Set("uLift", params.Lift);
-						b.Set("uGamma", params.Gamma);
-						b.Set("uGain", params.Gain);
-						b.Set("uSaturation", params.Saturation);
-					});
+				b.Bind("uTonemapped", mInput);
+				b.Bind("uOutput", mOutput);
+				b.Set("uLift", Params.Lift);
+				b.Set("uGamma", Params.Gamma);
+				b.Set("uGain", Params.Gain);
+				b.Set("uSaturation", Params.Saturation);
 			});
-
-		return output;
 	}
 } // namespace BHive

@@ -111,18 +111,21 @@ namespace BHive
 	void VulkanImGuiLayer::OnSubmitRenderData(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size)
 	{
 		auto& pass = RenderCommand::BeginPass("ImGui", EPassType::Viewport);
-		pass.CommandList.Push("Draw Imgui", [drawData, pos, size](IRendererContext& ctx)
-		{
-			auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
+		pass.BeginPhase();
+		pass.Push(
+			"Draw Imgui",
+			[drawData, pos, size](IRendererContext &ctx)
+			{
+				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
 				vk::Viewport viewport((float)pos.x, (float)pos.y + (float)size.y, (float)size.x, -(float)size.y, 0.0f, 1.0f);
-			vk::Rect2D scissor({pos.x, pos.y}, {(uint32_t)size.x, (uint32_t)size.y});
+				vk::Rect2D scissor({pos.x, pos.y}, {(uint32_t)size.x, (uint32_t)size.y});
 
-			vk_ctx.CommandBuffer.setViewport(0, viewport);
-			vk_ctx.CommandBuffer.setScissor(0, scissor);
+				vk_ctx.CommandBuffer.setViewport(0, viewport);
+				vk_ctx.CommandBuffer.setScissor(0, scissor);
 
-			ImGui_ImplVulkan_RenderDrawData(drawData, *vk_ctx.CommandBuffer);
-
-		});
+				ImGui_ImplVulkan_RenderDrawData(drawData, *vk_ctx.CommandBuffer);
+			});
+		pass.EndPhase();
 	}
 
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)

@@ -63,28 +63,42 @@ namespace BHive
 	{
 		if (mSelected >= 0)
 		{
+			auto &entry = mTextureEntries[mSelected];
+			int type = entry.IsCube ? 1 : 0;
+			int mip = mSelectedMip;
+			int mipLevels = entry.MipLevels;
+			int face = entry.IsCube ? mSelectedFace : 0;
+			int layers = entry.IsCube ? 1 : entry.Layers;
+			const char *uniform = entry.IsCube ? "u_TexCube" : "u_Tex2D";
+			auto tex = entry.Tex;
 
-			renderer.BeginPass("ImageDebugger", EPassType::OffScreen);
+			ImageSubresourceRange range{mip, mipLevels, face, layers};
+
+			auto& pass = renderer.BeginPass("ImageDebugger", EPassType::OffScreen);
+			pass.BeginPhase("ImageDebugger : Render To Qaud");
+			pass.Push(mFB->GetColorAttachment(), EImageAccess::ColorWrite);
+			pass.Push(tex, EImageAccess::ColorRead, range);
 
 			mFB->Bind();
 
 			renderer.ClearColor(0, 0, 0, 1);
 			renderer.Clear();
 
-			auto &entry = mTextureEntries[mSelected];
-			int type = entry.IsCube ? 1 : 0;
-			int mip = mSelectedMip;
-			int face = entry.IsCube ? mSelectedFace : 0;
-
 			mMaterial->Set("u_Type", type);
 			mMaterial->Set("u_Mip", mip);
 			mMaterial->Set("u_Face", face);
-			mMaterial->SetTexture(entry.IsCube ? "u_TexCube" : "u_Tex2D", entry.Tex);
+			mMaterial->SetTexture(uniform, tex);
 			mMaterial->Submit();
 
 			renderer.DrawElements(ETopologyMode::Triangles, mQuad->GetVertexArray().get());
 			
 			mFB->UnBind();
+
+			pass.EndPhase();
+
+			pass.BeginPhase("ImageDebugger : Transition to ComputeSampled");
+			pass.Push(mFB->GetColorAttachment(), EImageAccess::ComputeSampled);
+			pass.EndPhase();
 
 			renderer.EndPass();
 		}

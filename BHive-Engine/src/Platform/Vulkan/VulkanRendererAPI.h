@@ -4,6 +4,7 @@
 #include "gfx/RendererAPI.h"
 #include "gfx/WindowContext.h"
 #include "DescriptorPoolManager.h"
+#include "ImageState.h"
 
 namespace BHive
 {
@@ -15,6 +16,7 @@ namespace BHive
 	class VulkanShader;
 	class VulkanPipeline;
 	class GPUBuffer;
+	class Texture;
 
 	struct FVulkanRendererContext : public IRendererContext
 	{
@@ -62,28 +64,28 @@ namespace BHive
 
 		void WaitIdle() override;
 
-		void ClearColor(FRenderGraphPass *pass, float r, float g, float b, float a = 1.0f) override;
+		void ClearColor(FPass *pass, float r, float g, float b, float a = 1.0f) override;
 
-		void Clear(FRenderGraphPass *pass, ClearMask mask) override;
+		void Clear(FPass *pass, ClearMask mask) override;
 
-		void SetLineWidth(FRenderGraphPass *pass, float width) override;
+		void SetLineWidth(FPass *pass, float width) override;
 
-		void SetViewport(FRenderGraphPass *pass, uint32_t x, uint32_t y, uint32_t w, uint32_t h) override;
+		void SetViewport(FPass *pass, uint32_t x, uint32_t y, uint32_t w, uint32_t h) override;
 
-		void DrawArrays(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count = 0) override;
+		void DrawArrays(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count = 0) override;
 
-		void DrawElements(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count = 0) override;
+		void DrawElements(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count = 0) override;
 
 		void
-		DrawElementsBaseVertex(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0) override;
+		DrawElementsBaseVertex(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0) override;
 
-		void DrawElementsRanged(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count = 0) override;
+		void DrawElementsRanged(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count = 0) override;
 
-		void DrawElementsInstanced(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count = 0) override;
+		void DrawElementsInstanced(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count = 0) override;
 
-		void MultiDrawElementsIndirect(FRenderGraphPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride = 0, uint32_t offset = 0) override;
+		void MultiDrawElementsIndirect(FPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride = 0, uint32_t offset = 0) override;
 
-		void ColorMask(FRenderGraphPass *pass, uint8_t r, uint8_t g, uint8_t b, uint8_t a) override;
+		void ColorMask(FPass *pass, uint8_t r, uint8_t g, uint8_t b, uint8_t a) override;
 
 		vk::Result RenderFrame(VulkanSwapChain* swapChain);
 
@@ -112,11 +114,11 @@ namespace BHive
 
 		vk::Result ExecuteFinalGraph(VulkanSwapChain* swapChain, FResourceUpdateList &updates, const RenderGraph &graph);
 
-		void ExecuteSwapChainPass(const FRenderGraphPass& pass, FVulkanRendererContext& ctx, VulkanSwapChain* swapChain);
+		void ExecuteSwapChainPass(const FPhase &phase, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
 
-		void ExecuteOffScreenPass(const FRenderGraphPass &pass, FVulkanRendererContext& ctx);
+		void ExecuteOffScreenPass(const FPhase &phase, FVulkanRendererContext &ctx);
 
-		void ExecutePass(const FRenderGraphPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
+		void ExecutePass(const FPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
 
 	private:
 		vk::raii::Device& mDevice;

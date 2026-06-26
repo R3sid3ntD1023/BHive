@@ -252,9 +252,9 @@ namespace BHive
 		mColorGrading = CreateRef<ColorGradingMaterial>();
 
 		mPostProcessAllocator.Resize(window.GetSize());
-		mPostProcessStack.Materials.push_back(mBloomMaterial);
+		/*mPostProcessStack.Materials.push_back(mBloomMaterial);
 		mPostProcessStack.Materials.push_back(aces);
-		mPostProcessStack.Materials.push_back(mColorGrading);
+		mPostProcessStack.Materials.push_back(mColorGrading);*/
 		
 	}
 
@@ -274,9 +274,17 @@ namespace BHive
 		auto &app = Application::Get();
 		auto &window = app.GetWindow();
 		auto size = window.GetSize();
-
+		auto &globalsResources = Renderer::Get().GetGlobalResources();  
 
 		auto& scenepass = renderer.BeginPass("Scene", EPassType::OffScreen);
+		scenepass.BeginPhase();
+		scenepass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorWrite);
+		scenepass.Push(mFramebuffer->GetDepthAttachment(), EImageAccess::DepthWrite);
+		scenepass.Push(globalsResources.Find("EnvironmentPreFilter")->TextureRef, EImageAccess::ColorRead);
+		scenepass.Push(globalsResources.Find("EnvironmentCubeMap")->TextureRef, EImageAccess::ColorRead);
+		scenepass.Push(globalsResources.Find("EnvironmentIrradiance")->TextureRef, EImageAccess::ColorRead);
+		scenepass.Push(globalsResources.Find("EnvironmentBRDFLUT")->TextureRef, EImageAccess::ColorRead);
+
 		scenepass.View = renderer.CreateView(mCamera.GetProjection(), mCamera.GetView());
 		mFramebuffer->Bind();
 
@@ -350,6 +358,13 @@ namespace BHive
 
 		mFramebuffer->UnBind();
 
+		scenepass.EndPhase();
+
+		scenepass.BeginPhase();
+		scenepass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorRead);
+		scenepass.Push(mFramebuffer->GetDepthAttachment(), EImageAccess::DepthWrite);
+		scenepass.EndPhase();
+
 		renderer.EndPass();
 
 		auto input = mFramebuffer->GetColorAttachment();
@@ -367,9 +382,9 @@ namespace BHive
 
 		if (ImGui::Begin("Scene"))
 		{
-			if (mFramebuffer)
+			if (mFinalSceneColor)
 			{
-				auto fbSize = mFramebuffer->GetSize();
+				auto fbSize = mFinalSceneColor->GetSize();
 				auto viewportSize = ImGui::GetContentRegionAvail();
 				glm::uvec2 size = {uint32_t(glm::round(viewportSize.x)), uint32_t(glm::round(viewportSize.y))};
 

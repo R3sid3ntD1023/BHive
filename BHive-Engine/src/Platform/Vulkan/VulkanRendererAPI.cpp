@@ -81,6 +81,9 @@ namespace BHive
 			return vk::Result::eSuccess;
 		}
 
+		//Print all passes -> phases -> cmds to console
+		//finalGraph.DebugPrint();
+
 		return ExecuteFinalGraph(swapChain, mergedUpdates, finalGraph);
 	}
 
@@ -129,7 +132,7 @@ namespace BHive
 
 		swapChain->WaitForFence(current_frame);
 
-		ProcessDeletionQueue(current_frame);
+		ProcessDeletionQueue(mCompletedFrame);
 
 		cmd.reset();
 
@@ -143,19 +146,14 @@ namespace BHive
 		vk::CommandBufferBeginInfo beginInfo{};
 		cmd.begin(beginInfo);
 
-		vk::DebugUtilsLabelEXT label_info("Main Pass", std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
-		cmd.beginDebugUtilsLabelEXT(label_info);
-
+	
 		FVulkanRendererContext vk_ctx{cmd, current_frame, imageIndex, 0};
 
 		updates.Execute(vk_ctx);
 
 		for (auto &pass : graph.GetPasses())
 		{
-			vk::DebugUtilsLabelEXT debugInfo(pass.Name.c_str(), {1, 0, 0, 1});
-
-			cmd.beginDebugUtilsLabelEXT(debugInfo);
-
+			
 			if (pass.HasView())
 			{
 				auto camera = Renderer::Get().GetGlobalResources().Find("Camera");
@@ -165,10 +163,10 @@ namespace BHive
 
 			ExecutePass(pass, vk_ctx, swapChain);
 
-			cmd.endDebugUtilsLabelEXT();
+			
 		}
 
-		cmd.endDebugUtilsLabelEXT();
+		
 		cmd.end();
 
 		result = swapChain->Present(cmd, imageIndex, current_frame);
@@ -183,7 +181,7 @@ namespace BHive
 		return result;
 	}
 
-	void VulkanRendererAPI::ExecuteSwapChainPass(const FRenderGraphPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain* swapChain)
+	void VulkanRendererAPI::ExecuteSwapChainPass(const FPhase& phase, FVulkanRendererContext &ctx, VulkanSwapChain* swapChain)
 	{
 		auto &image = swapChain->GetImage(ctx.ImageIndex);
 		auto &depth = swapChain->GetDepthImage();
@@ -209,32 +207,52 @@ namespace BHive
 		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
 		cmd.beginRendering(renderingInfo);
 
-		pass.CommandList.Execute(ctx);
+		phase.CommandList.Execute(ctx);
 
 		cmd.endRendering();
 
 		image.Transition(cmd, ImageState::Present());
 	}
 
-	void VulkanRendererAPI::ExecuteOffScreenPass(const FRenderGraphPass &pass, FVulkanRendererContext &ctx)
+	void VulkanRendererAPI::ExecuteOffScreenPass(const FPhase &phase, FVulkanRendererContext &ctx)
 	{
-		pass.CommandList.Execute(ctx);
+		phase.CommandList.Execute(ctx);
 	}
 
-	void VulkanRendererAPI::ExecutePass(const FRenderGraphPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
+	void VulkanRendererAPI::ExecutePass(const FPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
 	{
-		switch (pass.Type)
+		auto &cmd = ctx.CommandBuffer;
+
+		for (auto& phase : pass.Phases)
 		{
-		case EPassType::SwapChain:
-		case EPassType::Viewport:
-			ExecuteSwapChainPass(pass, ctx, swapChain);
-			break;
-		case EPassType::OffScreen:
-			ExecuteOffScreenPass(pass, ctx);
-			break;
-		default:
-			break;
+			for (auto &imgInfo : phase.ImageUsages)
+			{
+				auto tex = imgInfo.Texture;
+				auto vkImg = tex->GetNativeHandle().As<VulkanImage>();
+
+				ImageState oldstate = vkImg->GetState(imgInfo.Range.BaseMipLevel, imgInfo.Range.BaseArrayLayer);
+				ImageState newState = ImageState::ToImageState(imgInfo.Access);
+
+				if (oldstate != newState)
+				{
+					vkImg->Transition(cmd, newState, imgInfo.Range);
+				}
+			}
+
+			switch (pass.Type)
+			{
+			case EPassType::SwapChain:
+			case EPassType::Viewport:
+				ExecuteSwapChainPass(phase, ctx, swapChain);
+				break;
+			case EPassType::OffScreen:
+				ExecuteOffScreenPass(phase, ctx);
+				break;
+			default:
+				break;
+			}
 		}
+		
 	}
 
 	void VulkanRendererAPI::SetCurrentContext(WindowContext *ctx)
@@ -242,19 +260,19 @@ namespace BHive
 		mCurrentContext = ctx;
 	}
 
-	void VulkanRendererAPI::ClearColor(FRenderGraphPass *pass, float r, float g, float b, float a)
+	void VulkanRendererAPI::ClearColor(FPass *pass, float r, float g, float b, float a)
 	{
-		pass->CommandList.Push("SetClearColor", [=](IRendererContext &) { mClearColor = {r, g, b, a}; });
+		pass->Push("SetClearColor", [=](IRendererContext &) { mClearColor = {r, g, b, a}; });
 	}
 
-	void VulkanRendererAPI::Clear(FRenderGraphPass *pass, ClearMask mask)
+	void VulkanRendererAPI::Clear(FPass *pass, ClearMask mask)
 	{
 		
 	}
 
-	void VulkanRendererAPI::SetLineWidth(FRenderGraphPass *pass, float width)
+	void VulkanRendererAPI::SetLineWidth(FPass *pass, float width)
 	{
-		pass->CommandList.Push(
+		pass->Push(
 			"Set Line Width",
 			[=](IRendererContext &ctx)
 			{
@@ -263,25 +281,24 @@ namespace BHive
 			});
 	}
 
-	void VulkanRendererAPI::SetViewport(FRenderGraphPass *pass, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+	void VulkanRendererAPI::SetViewport(FPass *pass, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 	{
-		pass->CommandList.Push(
+		pass->Push(
 			"Set Viewport",
 			[=](IRendererContext &ctx)
 			{
 				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
 				vk_ctx.CommandBuffer.setViewport(0, vk::Viewport((float)x, (float)(y + h), (float)w, -(float)h, 0.0f, 1.0f));
 				vk_ctx.CommandBuffer.setScissor(0, vk::Rect2D({(int32_t)x, (int32_t)y}, vk::Extent2D(w, h)));
-			});
+			});	
 	}
 
-	void VulkanRendererAPI::DrawArrays(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count)
+	void VulkanRendererAPI::DrawArrays(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count)
 	{
 		vao->Bind();
 
 		auto topology = ToVkTopology(mode);
-
-		pass->CommandList.Push(
+		pass->Push(
 			"Draw Arrays",
 			[=](IRendererContext &ctx)
 			{
@@ -289,16 +306,17 @@ namespace BHive
 				vk_ctx.CommandBuffer.setPrimitiveTopology(topology);
 				vk_ctx.CommandBuffer.draw(count, 1, 0, 0);
 			});
+
 	}
 
-	void VulkanRendererAPI::DrawElements(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count)
+	void VulkanRendererAPI::DrawElements(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count)
 	{
 		vao->Bind();
 		auto index_buffer =vao->GetIndexBuffer();
 		auto index_count = count ? count : index_buffer->GetCount();
 		auto topology = ToVkTopology(mode);
 
-		pass->CommandList.Push(
+		pass->Push(
 			"Draw Elements",
 			[=](IRendererContext &ctx)
 			{
@@ -309,14 +327,14 @@ namespace BHive
 	}
 
 	void
-	VulkanRendererAPI::DrawElementsBaseVertex(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t start_index, uint32_t count, uint32_t instance_count)
+	VulkanRendererAPI::DrawElementsBaseVertex(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t start_index, uint32_t count, uint32_t instance_count)
 	{
 		vao->Bind();
 		auto index_buffer = vao->GetIndexBuffer();
 		auto index_count = count ? count : index_buffer->GetCount();
 		auto topology = ToVkTopology(mode);
 
-		pass->CommandList.Push(
+		pass->Push(
 			"Draw Elements",
 			[=](IRendererContext &ctx)
 			{
@@ -324,36 +342,39 @@ namespace BHive
 				vk_ctx.CommandBuffer.setPrimitiveTopology(topology);
 				vk_ctx.CommandBuffer.drawIndexed(index_count, instance_count, start_index, start, 0);
 			});
+
 	}
 
-	void VulkanRendererAPI::DrawElementsRanged(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count)
+	void VulkanRendererAPI::DrawElementsRanged(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count)
 	{
 		
 	}
 
-	void VulkanRendererAPI::DrawElementsInstanced(FRenderGraphPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count)
+	void VulkanRendererAPI::DrawElementsInstanced(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count)
 	{
 	
 	}
 
-	void VulkanRendererAPI::MultiDrawElementsIndirect(FRenderGraphPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride, uint32_t offset)
+	void VulkanRendererAPI::MultiDrawElementsIndirect(FPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride, uint32_t offset)
 	{
 		vao->Bind();
 
 		auto buffer = indirect->GetNativeHandle().As<AllocatedBuffer>()->GetBuffer();
 		auto topology = ToVkTopology(mode);
 
-		pass->CommandList.Push("Multi Draw Elements Indirect", [buffer, topology, offset, drawCount, stride](IRendererContext &ctx)
-		{		
-			auto &vk_ctx = ctx.As<FVulkanRendererContext>();
-			vk_ctx.CommandBuffer.setPrimitiveTopology(topology);
-			vk_ctx.CommandBuffer.drawIndexedIndirect(buffer, offset, drawCount, stride);
-		});
+		pass->Push(
+			"Multi Draw Elements Indirect",
+			[buffer, topology, offset, drawCount, stride](IRendererContext &ctx)
+			{
+				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
+				vk_ctx.CommandBuffer.setPrimitiveTopology(topology);
+				vk_ctx.CommandBuffer.drawIndexedIndirect(buffer, offset, drawCount, stride);
+			});
 
 		vao->UnBind();
 	}
 
-	void VulkanRendererAPI::ColorMask(FRenderGraphPass *pass, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+	void VulkanRendererAPI::ColorMask(FPass *pass, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 	{	
 	}
 
@@ -379,32 +400,12 @@ namespace BHive
 
 		builder(bindings);
 
-		bindings.TransitionStorageImagesAndClear(cmd, mClearColor);
-		bindings.TransitionSamplerImagesToShader(cmd);
-
 		bindings.Bind(cmd);
 
 		cmd.dispatch(size.x, size.y, size.z);
 
 		cmd.endDebugUtilsLabelEXT();
 
-		bindings.TransitionStorageImagesToShader(cmd);
-
-		
-		/*Scope<FVulkanAsycComputePass> pass = CreateScope<FVulkanAsycComputePass>();
-		
-		pass->Fence = fence;
-		pass->Cmd = cmd;
-		pass->Device = mDevice;
-		pass->Queue = queue;
-		pass->Bindings = bindings;
-
-		auto raw = pass.get();
-		mComputePasses.emplace_back(std::move(pass));
-
-		QueueDeletion([raw](uint32_t) { raw->Destroy(); });
-
-		return raw;*/
 		return nullptr;
 	}
 

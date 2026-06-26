@@ -2,6 +2,7 @@
 
 #include "gfx/Texture.h"
 
+
 namespace BHive
 {
 	class BHIVE_API PostProcessAllocator
@@ -15,19 +16,26 @@ namespace BHive
 
 		Ref<Texture> GetBloomOuput() const { return mBloomOutput; }
 
-		Ref<Texture> GetBloomColorOuput() const { return mBloomColorOutput; }
+		Ref<Texture> GetBloomCompositeOuput() const { return mBloomCompositeOutput; }
 
 		Ref<Texture> GetColorGradeOuput() const { return mColorGradeOutput; }
 
 		uint32_t GetBloomMipCount() const { return mBloomMipCount; }
 
-		Ref<Texture> GetTemp(uint32_t index) const { return (index >= mTempTextures.size()) ? mTempTextures[index] : nullptr; }
+		glm::uvec2 GetBloomMipSize(uint32_t mip) const
+		{
+			ASSERT(mip < mBloomMipSizes.size());
+			return mBloomMipSizes[mip];
+		}
 
-		Ref<Texture> GetTemp(uint32_t index, EFormat format) const
+		inline Ref<Texture> GetTemp(uint32_t index) const { return (index >= mTempTextures.size()) ? mTempTextures[index] : Ref<Texture>(0); }
+
+		inline Ref<Texture> GetTemp(uint32_t index, EFormat format) const
 		{
 			if (index >= mTempTextures.size())
 				return nullptr;
-			if (mTempTextures[index]->GetInfo().Format == format)
+
+			if (mTempTextures.at(index)->GetInfo().Format == format)
 				return mTempTextures[index];
 
 			return nullptr;
@@ -35,7 +43,7 @@ namespace BHive
 
 	private:
 		void CreateAcesOutput();
-		void CreateBloomColorOutput();
+		void CreateBloomCompositeOutput();
 		void CreateColorGradeOutput();
 		void CreateBloomOutput();
 		void CreateTempTextures();
@@ -47,12 +55,15 @@ namespace BHive
 
 		Ref<Texture> mAcesOutput;
 		Ref<Texture> mBloomOutput;
-		Ref<Texture> mBloomColorOutput;
+		Ref<Texture> mBloomCompositeOutput;
 		Ref<Texture> mColorGradeOutput;
 
 		std::vector<Ref<Texture>> mTempTextures;
 
+		std::vector<glm::uvec2> mBloomMipSizes;
+
 		uint32_t mBloomMipCount = 5;
+
 		uint32_t mTempTextureCount = 4;
 	};
 }

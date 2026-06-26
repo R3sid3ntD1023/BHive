@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gfx/NativeHandle.h"
-#include "ResourceID.h"
+#include "gfx/ResourceID.h"
 #include "ImageState.h"
 #include "MemoryAllocator.h"
 
@@ -28,7 +28,9 @@ namespace BHive
 
 		void Initialize(uint32_t layers, uint32_t mips, const ImageState &initial);
 
-		ImageState &Get(uint32_t layer, uint32_t mip);
+		ImageState& Get(uint32_t layer, uint32_t mip);
+
+		const ImageState &Get(uint32_t layer, uint32_t mip) const;
 	};
 
 	struct GPUImage

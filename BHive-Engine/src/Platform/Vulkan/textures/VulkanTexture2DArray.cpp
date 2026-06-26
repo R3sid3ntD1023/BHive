@@ -51,14 +51,19 @@ namespace BHive
 
 		glm::uvec3 extents = glm::compMul(info.Extent) == 0 ? glm::uvec3{mSize, 1} : info.Extent;
 		ImageCopyRegion region{.BaseArrayLayer = info.BaseArrayLayer, .LayerCount = info.Layers, .Offset = info.Offset, .Extents = extents};
-		ImageSubresource sub{info.BaseMipLevel, info.Levels, info.BaseArrayLayer, info.Layers};
-		mImage.Upload(info.Data, size, region, sub);
+		ImageSubresourceRange range{info.BaseMipLevel, info.Levels, info.BaseArrayLayer, info.Layers};
+		mImage.Upload(info.Data, size, region, range);
 	}
 
 	NativeHandle VulkanTexture2DArray::GetRenderView(uint32_t layer, uint32_t mip) const
 	{
 		VkImageView view = mImage.Native().GetLayerMipView(layer, mip);
 		return NativeHandle::FromRaw(reinterpret_cast<uint64_t>(view));
+	}
+
+	void VulkanTexture2DArray::DebugPrintState()
+	{
+		mImage.DebugPrintState();
 	}
 
 } // namespace BHive

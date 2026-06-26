@@ -6,33 +6,34 @@ namespace BHive
 {
 	Ref<Texture> AcesMaterial::AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input)
 	{
-		auto output = allocator.GetAcesOuput();
+		mInput = input;
+		mOutput = allocator.GetAcesOuput();
+
 		auto &pass = graph.AddPass("Aces", EPassType::OffScreen);
-		pass.CommandList.Push("Aces", this, &AcesMaterial::OnExecutePass, input, output);
 
-		return output;
+		pass.BeginPhase();
+
+		pass.Push(mInput, EImageAccess::ComputeSampled);
+		pass.Push(mOutput, EImageAccess::ComputeStorageWrite);
+		pass.Push("Aces", this, &AcesMaterial::OnExecutePass);
+
+		pass.EndPhase();
+
+		return mOutput;
 	}
 
-	void AcesMaterial::ExecutePass(FComputeBindings &b, const Ref<Texture> &in, const Ref<Texture> &out)
+	void AcesMaterial::ExecutePass(FComputeBindings &b)
 	{
-		FImageInfo inputInfo{};
-		inputInfo.Texture = in;
-		inputInfo.Access = EImageAccess::READ;
-
-		FImageInfo outputInfo{};
-		outputInfo.Texture = out;
-		outputInfo.Access = EImageAccess::WRITE;
-
-		b.SampledImage("uSceneColor", inputInfo);
-		b.StorageImage("uOutput", outputInfo);
+		b.Bind("uSceneColor", mInput);
+		b.Bind("uOutput", mOutput);
 	}
 
-	void AcesMaterial::OnExecutePass(IRendererContext &ctx, const Ref<Texture> &in, const Ref<Texture>& out)
+	void AcesMaterial::OnExecutePass(IRendererContext &ctx)
 	{
-		const auto dstSize = in->GetSize();
+		const auto dstSize = mOutput->GetSize();
 		glm::uvec3 dispatch = {(dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1};
 
-		Renderer::Get().ExecuteComputePass(PipelineRegistry::Get("ACES"), dispatch, this, &AcesMaterial::ExecutePass, in, out);
+		Renderer::Get().ExecuteComputePass(PipelineRegistry::Get("ACES"), dispatch, this, &AcesMaterial::ExecutePass);
 	}
 
 } // namespace BHive

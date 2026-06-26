@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Platform/Vulkan/VulkanMemory.h"
-#include "Platform/Vulkan/VulkanImageRegions.h"
 #include "Platform/Vulkan/ImageViewBuilder.h"
+#include "gfx/resources/ImageCopyRegion.h"
+#include "gfx/resources/ImageSubresourceRange.h"
 
 namespace BHive
 {
@@ -30,16 +31,19 @@ namespace BHive
 		//ImageCI unused
 		void Initialize(const vk::Image &img, const ImageCreateInfo &info);
 
-		void Upload(const void *data, size_t size, const ImageCopyRegion &region = {}, const ImageSubresource &sub = {});
+		void Upload(const void *data, size_t size, ImageCopyRegion region, ImageSubresourceRange range = {});
 
-		void Transition(vk::raii::CommandBuffer& cmd, const ImageState &newState, const ImageSubresource &sub = {});
+		void Transition(vk::raii::CommandBuffer &cmd, ImageState newState, ImageSubresourceRange range = {});
 
 		void GenerateMipMaps(uint32_t width, uint32_t height, uint32_t layers, uint32_t levels);
-
 
 		void Destroy();
 
 		const GPUImage &Native() const { return mImage; }
+
+		ImageState GetState(uint32_t mip, uint32_t layer) const; 
+
+		void DebugPrintState();
 
 	private:
 		GPUImage mImage{};

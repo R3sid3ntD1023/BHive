@@ -56,8 +56,14 @@ namespace BHive
 
 		mData = CreateRef<RenderData>();
 
+		mPMREMGenerator.Initialize();
+
 		auto brdfLUT = mPMREMGenerator.GenerateBRDFLUTMap();
 		mGlobalResources.Register("EnvironmentBRDFLUT", brdfLUT);
+		mGlobalResources.Register("EnvironmentCubeMap", mPMREMGenerator.GetEnvironmentCube());
+		mGlobalResources.Register("EnvironmentIrradiance", mPMREMGenerator.GetIrradiance());
+		mGlobalResources.Register("EnvironmentPreFilter", mPMREMGenerator.GetPreFilter());
+
 		mGlobalResources.Register("White", mData->WhiteTexture);
 		mGlobalResources.Register("Blue", mData->BlueTexture);
 		mGlobalResources.Register("Black", mData->BlackTexture);
@@ -66,8 +72,6 @@ namespace BHive
 		Line.Initialize();
 		Quad.Initialize();
 		Light.Initialize(*this);
-
-		
 	}
 
 	Renderer::~Renderer()
@@ -77,19 +81,19 @@ namespace BHive
 
 	void Renderer::BeginFrame()
 	{
-		ResetStats();
-
-		mData->Views.BeginFrame();
-
-		Line.BeginRecording();
-		Quad.BeginRecording();
-		Light.BeginRecording();
-
 		mGraph = RenderGraph{};
 		mActivePass = nullptr;
 		mFrameActive = true;
 
+		ResetStats();
+
+		mData->Views.BeginFrame();
+
+		BeginBatching();
+	
 		mResourceUpdates.Clear();
+
+		CreateEnvironmentIfDirty();
 	}
 
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
@@ -109,9 +113,7 @@ namespace BHive
 
 	void Renderer::Flush()
 	{
-		Line.Flush(*this);
-		Quad.Flush(*this);
-		Light.Flush();
+		EndBatching();
 	}
 
 	void Renderer::EndFrame()
@@ -127,15 +129,10 @@ namespace BHive
 	}
 
 
-	void Renderer::SetEnvironmentTexture(const Ref<Texture2D> &texture)
+	void Renderer::SetEnvironmentTexture(const Ref<Texture2D> &hdr)
 	{
-		auto cube_map = mPMREMGenerator.GenerateEnvironmentCubeMap(texture);
-		auto irradiance = mPMREMGenerator.GenerateIrradianceMap(cube_map);
-		auto prefilter = mPMREMGenerator.GeneratePreFilteredEnvironmentMap(irradiance);
-
-		mGlobalResources.Register("EnvironmentCubeMap", cube_map);
-		mGlobalResources.Register("EnvironmentIrradiance", irradiance);
-		mGlobalResources.Register("EnvironmentPreFilter", prefilter);
+		mPendingEnvironmentHDR = hdr;
+		mPMREMDirty = true;
 	}
 
 	FView Renderer::CreateView(const glm::mat4 &projection, const glm::mat4 &view)
@@ -249,7 +246,7 @@ namespace BHive
 		return mGraph;
 	}
 
-	FRenderGraphPass &Renderer::GetActivePass()
+	FPass &Renderer::GetActivePass()
 	{
 		if (!mActivePass)
 		{
@@ -263,8 +260,23 @@ namespace BHive
 		return *mActivePass;
 	}
 
-	FRenderGraphPass &Renderer::BeginPass(const std::string &name, EPassType type)
+	FPass &Renderer::BeginPass(const std::string &name, EPassType type)
 	{
+		if (!mFrameActive)
+		{
+			LOG_WARN("BeginPass called outside a frame. Pass has been deferred.");
+
+			mDeferredPasses.push_back(
+				{name, type, [=](FPass &pass)
+				 {
+					 pass.Name = name;
+					 pass.Type = type;
+			}});
+
+			static FPass dummy;
+			return dummy;
+		}
+
 		auto &graph = GetActiveGraph();
 		mActivePass = &graph.AddPass(name, type);
 
@@ -295,6 +307,34 @@ namespace BHive
 	void Renderer::DebugPass(const std::string &msg)
 	{
 		LOG_TRACE(msg);
+	}
+
+	void Renderer::BeginBatching()
+	{
+		Line.BeginRecording();
+		Quad.BeginRecording();
+		Light.BeginRecording();
+	}
+
+	void Renderer::EndBatching()
+	{
+		Line.Flush(*this);
+		Quad.Flush(*this);
+		Light.Flush();
+	}
+
+	void Renderer::CreateEnvironmentIfDirty()
+	{
+		if (mPMREMDirty && mPendingEnvironmentHDR)
+		{
+			auto maps = mPMREMGenerator.GenerateEnvironmentMaps(mPendingEnvironmentHDR);
+			if (!maps.IsValid())
+				return;
+
+			mPendingEnvironmentHDR.reset();
+
+			mPMREMDirty = false;
+		}
 	}
 
 } // namespace BHive
