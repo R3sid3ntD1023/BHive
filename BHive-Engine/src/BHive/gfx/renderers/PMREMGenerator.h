@@ -14,7 +14,6 @@ namespace BHive
 		uint32_t PrefilterMapSize = 128;
 		uint32_t PrefilterMipLevels = 5;
 		uint32_t IrradianceSize = 32;
-		uint32_t BrdfLutSize = 512;
 	};
 
 	struct PMREMResult
@@ -35,8 +34,7 @@ namespace BHive
 
 		PMREMResult GenerateEnvironmentMaps(const Ref<Texture2D>& hdr);
 
-		Ref<Texture2D> GenerateBRDFLUTMap();
-
+	
 		auto &GetEnvironmentCube() const { return mEnvironmentTextures.Environment; }
 		auto &GetIrradiance() const { return mEnvironmentTextures.Irradiance; }
 		auto &GetPreFilter() const { return mEnvironmentTextures.PreFilter; }
@@ -53,7 +51,12 @@ namespace BHive
 	private:
 		PMREMSettings mSettings{};
 		PMREMResult mEnvironmentTextures;
-		Ref<Texture2D> mBRDFLUT;
 		Ref<Texture2D> mInput;
+	};
+
+	class BHIVE_API BRDFLUTGenerator
+	{
+	public:
+		static Ref<Texture2D> GenerateBRDFLUTMap(uint32_t size = 512);
 	};
 } // namespace BHive

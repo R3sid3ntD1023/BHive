@@ -39,7 +39,7 @@ namespace BHive
 
 		static ImageState TransferRead();
 
-		static ImageState TansferWrite();
+		static ImageState TransferWrite();
 
 		static ImageState TransferClear();
 

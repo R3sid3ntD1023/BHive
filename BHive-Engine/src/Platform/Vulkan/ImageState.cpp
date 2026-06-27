@@ -54,7 +54,7 @@ namespace BHive
 		return {vk::ImageLayout::eTransferSrcOptimal, vk::AccessFlagBits2::eTransferRead, vk::PipelineStageFlagBits2::eTransfer};
 	}
 
-	ImageState ImageState::TansferWrite()
+	ImageState ImageState::TransferWrite()
 	{
 		return {vk::ImageLayout::eTransferDstOptimal, vk::AccessFlagBits2::eTransferWrite, vk::PipelineStageFlagBits2::eTransfer};
 	}
@@ -85,7 +85,7 @@ namespace BHive
 		case BHive::EImageAccess::TransferSrc:
 			return ImageState::TransferRead();
 		case BHive::EImageAccess::TransferDst:
-			return ImageState::TansferWrite();
+			return ImageState::TransferWrite();
 		default:
 			return Undefined();
 		}

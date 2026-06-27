@@ -6,6 +6,8 @@
 #include "gfx/RendererAPI.h"
 #include "gfx/GlobalResources.h"
 #include "PMREMGenerator.h"
+#include "EnvironmentSystem.h"
+#include "RenderGraphScheduler.h"
 #include "ViewSystem.h"
 #include "Lights.h"
 
@@ -16,12 +18,7 @@ namespace BHive
 	class VertexArray;
 	class BufferBase;
 
-	struct PassConfig
-	{
-		std::string DefaultPassName = "Default Pass";
-		EPassType DefaultPassType = EPassType::SwapChain;
-		bool DebugMarkers = false;
-	};
+	
 
 	struct FPendingPass
 	{
@@ -130,18 +127,9 @@ namespace BHive
 
 		void SubmitResourceUpdate(FResourceUpdateList::UpdateCommand cmd);
 
-		class PassScope
-		{
-			PassScope(const std::string &name, EPassType type) { Renderer::Get().BeginPass(name, type); }
-
-			~PassScope() { Renderer::Get().EndPass(); }
-		};
-
 		void SetPassConfig(const PassConfig &config);
 
 		const PassConfig &GetPassConfig() { return mPassConfig; };
-
-		void DebugPass(const std::string &msg);
 
 #pragma endregion
 
@@ -159,7 +147,7 @@ namespace BHive
 
 		void EndBatching();
 
-		void CreateEnvironmentIfDirty();
+		void InitAndRegisterResources();
 
 	private:
 		Scope<RendererAPI> mAPI;
@@ -168,22 +156,19 @@ namespace BHive
 
 		GlobalResources mGlobalResources;
 
-		PMREMGenerator mPMREMGenerator{};
+		EnvironmentSystem mEnvironment;
+
+		RenderGraphScheduler mScheduler;
 		
 		//rendergraph
 		RenderGraph mGraph;
-		FPass *mActivePass = nullptr;	
 		PassConfig mPassConfig;
 		FResourceUpdateList mResourceUpdates{};
-		std::vector<FPendingPass> mDeferredPasses;
 
 		bool mFrameActive = false;
-		bool mPMREMDirty = false;
 
 		Statitics mStats{};
 
-		Ref<Texture2D> mPendingEnvironmentHDR;
-		
 		static inline Renderer *sInstance = nullptr;
 	};
 

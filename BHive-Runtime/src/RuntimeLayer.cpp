@@ -223,21 +223,18 @@ namespace BHive
 		fb_specs.Attachments.attach(FTextureCreateInfo{
 				.Format = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
 			.attach(FTextureCreateInfo{.Format = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
-
+		fb_specs.DebugName = "Runtime";
 		mFramebuffer = Framebuffer::Create(fb_specs);
 		
 		
-	
+		auto &globalsResources = Renderer::Get().GetGlobalResources(); 
+
 		auto &dbg = ImageDebugger::Get();
 		dbg.Initialize({512, 512});
-
-		auto &globalsResources = Renderer::Get().GetGlobalResources();  
-		
 		dbg.RegisterTexture("PreFilterEnv", globalsResources.Find("EnvironmentPreFilter")->TextureRef);
 		dbg.RegisterTexture("EnvironmentCube", globalsResources.Find("EnvironmentCubeMap")->TextureRef);
 		dbg.RegisterTexture("Irradiance", globalsResources.Find("EnvironmentIrradiance")->TextureRef);
 		dbg.RegisterTexture("BRDFLUT", globalsResources.Find("EnvironmentBRDFLUT")->TextureRef);
-		dbg.RegisterTexture("Test", mTexture);
 
 		mainLight.SetColor(FColor::White).SetDirection({-1, 0, 0}).SetIntensity(1.f);
 		plight0.SetColor(FColor::Orange).SetIntensity(3.f).SetPosition({4, 1, 0}).SetRadius(5.f);

@@ -17,6 +17,7 @@ namespace BHive
 
 		//Engine metadata
 		EViewTopology ViewTopology{};
+		ETextureRole Role;
 		std::string DebugName{};
 		uint32_t BytesPerPixel = 0;
 	};
@@ -44,6 +45,9 @@ namespace BHive
 		ImageState GetState(uint32_t mip, uint32_t layer) const; 
 
 		void DebugPrintState();
+
+	private:
+		ImageState InitialStateFromUsage(vk::ImageUsageFlags usage, vk::Format format);
 
 	private:
 		GPUImage mImage{};

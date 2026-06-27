@@ -16,7 +16,7 @@ namespace BHive
 		Ref<Texture> WhiteTexture;
 		Ref<Texture> BlackTexture;
 		Ref<Texture> BlueTexture;
-
+		Ref<Texture2D> BRDFLut;
 		Ref<GPUBuffer> CameraUBO;
 
 		RenderData()
@@ -39,12 +39,15 @@ namespace BHive
 			create_info.DebugName = "Blue Texture";
 			BlueTexture = Texture2D::Create({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
 
-			CameraUBO = GPUBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);		
+			CameraUBO = GPUBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);	
+
+			BRDFLut = BRDFLUTGenerator::GenerateBRDFLUTMap();
 		}
 	};
 
 	Renderer::Renderer(Scope<RendererAPI> api)
-		: mAPI(std::move(api))
+		: mAPI(std::move(api)),
+		  mEnvironment(mGlobalResources)
 	{
 		ASSERT(mAPI);
 
@@ -56,18 +59,7 @@ namespace BHive
 
 		mData = CreateRef<RenderData>();
 
-		mPMREMGenerator.Initialize();
-
-		auto brdfLUT = mPMREMGenerator.GenerateBRDFLUTMap();
-		mGlobalResources.Register("EnvironmentBRDFLUT", brdfLUT);
-		mGlobalResources.Register("EnvironmentCubeMap", mPMREMGenerator.GetEnvironmentCube());
-		mGlobalResources.Register("EnvironmentIrradiance", mPMREMGenerator.GetIrradiance());
-		mGlobalResources.Register("EnvironmentPreFilter", mPMREMGenerator.GetPreFilter());
-
-		mGlobalResources.Register("White", mData->WhiteTexture);
-		mGlobalResources.Register("Blue", mData->BlueTexture);
-		mGlobalResources.Register("Black", mData->BlackTexture);
-		mGlobalResources.Register("Camera", mData->CameraUBO);
+		InitAndRegisterResources();
 
 		Line.Initialize();
 		Quad.Initialize();
@@ -82,19 +74,30 @@ namespace BHive
 	void Renderer::BeginFrame()
 	{
 		mGraph = RenderGraph{};
-		mActivePass = nullptr;
+		mScheduler.BeginFrame(mGraph, mPassConfig);
+
 		mFrameActive = true;
-
 		ResetStats();
-
 		mData->Views.BeginFrame();
-
 		BeginBatching();
-	
 		mResourceUpdates.Clear();
 
-		CreateEnvironmentIfDirty();
+		mEnvironment.Update(mScheduler);
 	}
+
+	void Renderer::EndFrame()
+	{
+
+		mScheduler.Finalize(mGraph);
+
+		RenderCommand::Flush(mAPI.get());
+
+		mAPI->SubmitGraph(mGraph, mResourceUpdates);
+
+		mResourceUpdates.Clear();
+		mFrameActive = false;
+	}
+
 
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
 	{
@@ -116,23 +119,11 @@ namespace BHive
 		EndBatching();
 	}
 
-	void Renderer::EndFrame()
-	{
-		
-		RenderCommand::Flush(mAPI.get());
-
-		mAPI->SubmitGraph(mGraph, mResourceUpdates);
-
-		mResourceUpdates.Clear();
-
-		mFrameActive = false;
-	}
-
+	
 
 	void Renderer::SetEnvironmentTexture(const Ref<Texture2D> &hdr)
 	{
-		mPendingEnvironmentHDR = hdr;
-		mPMREMDirty = true;
+		mEnvironment.SetHDR(hdr);
 	}
 
 	FView Renderer::CreateView(const glm::mat4 &projection, const glm::mat4 &view)
@@ -248,16 +239,7 @@ namespace BHive
 
 	FPass &Renderer::GetActivePass()
 	{
-		if (!mActivePass)
-		{
-			auto &graph = GetActiveGraph();
-			mActivePass = &graph.AddPass(mPassConfig.DefaultPassName, mPassConfig.DefaultPassType);
-
-			if (mPassConfig.DebugMarkers)
-				DebugPass("AutoDefaultPass: " + mPassConfig.DefaultPassName);
-		}
-
-		return *mActivePass;
+		return mScheduler.GetActivePass();
 	}
 
 	FPass &Renderer::BeginPass(const std::string &name, EPassType type)
@@ -266,32 +248,18 @@ namespace BHive
 		{
 			LOG_WARN("BeginPass called outside a frame. Pass has been deferred.");
 
-			mDeferredPasses.push_back(
-				{name, type, [=](FPass &pass)
-				 {
-					 pass.Name = name;
-					 pass.Type = type;
-			}});
+			mScheduler.DeferPass(name, type, [=](FPass &pass) {});
 
 			static FPass dummy;
 			return dummy;
 		}
 
-		auto &graph = GetActiveGraph();
-		mActivePass = &graph.AddPass(name, type);
-
-		if (mPassConfig.DebugMarkers)
-			DebugPass("Begin Pass: " + name);
-
-		return *mActivePass;
+		return mScheduler.BeginPass(name, type);
 	}
 
 	void Renderer::EndPass()
 	{
-		if (mActivePass && mPassConfig.DebugMarkers)
-			DebugPass("EndPass: " + mActivePass->Name);
-
-		mActivePass = nullptr;
+		mScheduler.EndPass();
 	}
 
 	void Renderer::SubmitResourceUpdate(FResourceUpdateList::UpdateCommand cmd)
@@ -302,11 +270,6 @@ namespace BHive
 	void Renderer::SetPassConfig(const PassConfig &config)
 	{
 		mPassConfig = config;
-	}
-
-	void Renderer::DebugPass(const std::string &msg)
-	{
-		LOG_TRACE(msg);
 	}
 
 	void Renderer::BeginBatching()
@@ -323,18 +286,13 @@ namespace BHive
 		Light.Flush();
 	}
 
-	void Renderer::CreateEnvironmentIfDirty()
+	void Renderer::InitAndRegisterResources()
 	{
-		if (mPMREMDirty && mPendingEnvironmentHDR)
-		{
-			auto maps = mPMREMGenerator.GenerateEnvironmentMaps(mPendingEnvironmentHDR);
-			if (!maps.IsValid())
-				return;
-
-			mPendingEnvironmentHDR.reset();
-
-			mPMREMDirty = false;
-		}
+		mGlobalResources.Register("EnvironmentBRDFLUT", mData->BRDFLut);
+		mGlobalResources.Register("White", mData->WhiteTexture);
+		mGlobalResources.Register("Blue", mData->BlueTexture);
+		mGlobalResources.Register("Black", mData->BlackTexture);
+		mGlobalResources.Register("Camera", mData->CameraUBO);
 	}
 
 } // namespace BHive

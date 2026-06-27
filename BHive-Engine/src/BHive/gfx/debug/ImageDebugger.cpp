@@ -24,6 +24,7 @@ namespace BHive
 		FramebufferSpecification spec{};
 		spec.Size = size;
 		spec.Attachments.attach(color_attachment);
+		spec.DebugName = "ImageDebugger";
 		mFB = Framebuffer::Create(spec);
 
 		auto shader = ShaderManager::Get("DebugTextureViewer.glsl");
@@ -77,7 +78,7 @@ namespace BHive
 			auto& pass = renderer.BeginPass("ImageDebugger", EPassType::OffScreen);
 			pass.BeginPhase("ImageDebugger : Render To Qaud");
 			pass.Push(mFB->GetColorAttachment(), EImageAccess::ColorWrite);
-			pass.Push(tex, EImageAccess::ColorRead, range);
+			pass.Push(tex, EImageAccess::ColorRead);
 
 			mFB->Bind();
 
@@ -97,7 +98,7 @@ namespace BHive
 			pass.EndPhase();
 
 			pass.BeginPhase("ImageDebugger : Transition to ComputeSampled");
-			pass.Push(mFB->GetColorAttachment(), EImageAccess::ComputeSampled);
+			pass.Push(mFB->GetColorAttachment(), EImageAccess::ColorRead);
 			pass.EndPhase();
 
 			renderer.EndPass();

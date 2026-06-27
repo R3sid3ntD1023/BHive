@@ -45,7 +45,7 @@ namespace BHive
 
 		//Phase 2 : Irradiance convolution
 		pass.BeginPhase("Convolution");
-		pass.Push(mEnvironmentTextures.Environment, EImageAccess::ComputeSampled, {0, 1, 0 , 6});
+		pass.Push(mEnvironmentTextures.Environment, EImageAccess::ComputeSampled);
 		pass.Push(mEnvironmentTextures.Irradiance, EImageAccess::ComputeStorageWrite, {0, 1, 0, 6});
 		pass.Push("Compute Irradiance", this, &PMREMGenerator::DoConvolution);
 		pass.EndPhase();
@@ -64,17 +64,6 @@ namespace BHive
 		RenderCommand::EndPass();
 
 		return mEnvironmentTextures;
-	}
-
-
-	Ref<Texture2D> PMREMGenerator::GenerateBRDFLUTMap()
-	{
-		Renderer::Get().ExecuteComputePass(
-			PipelineRegistry::Get(PMREM_BRDFLUT_PIPELINE), {mSettings.BrdfLutSize / 8, mSettings.BrdfLutSize / 8, 1}, [&](FComputeBindings &b) { b.Bind("brdfLutTexture", mBRDFLUT); });
-
-		
-
-		return mBRDFLUT;
 	}
 
 	void PMREMGenerator::InitializePipelines()
@@ -99,26 +88,11 @@ namespace BHive
 			state.ShaderProgram = PreFilterEnvironmentShader;
 			PipelineRegistry::Register(PMREM_PREFILTER_PIPELINE, state);
 		}
-
-		{
-			auto BRDFLUTShader = ShaderManager::Get(PMREM_BRDFLUT);
-			Pipeline::ComputePipelineState state{};
-			state.ShaderProgram = BRDFLUTShader;
-			PipelineRegistry::Register(PMREM_BRDFLUT_PIPELINE, state);
-		}
 	}
 
 	void PMREMGenerator::InitializeTextures()
 	{
-		FTextureCreateInfo brdfLUTInfo{};
-		brdfLUTInfo.Format = EFormat::RG16F;
-		brdfLUTInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-		brdfLUTInfo.MagFilter = EMagFilter::NEAREST;
-		brdfLUTInfo.MinFilter = EMinFilter::NEAREST;
-		brdfLUTInfo.Roles |= ETextureRole::ComputeWrite;
-		brdfLUTInfo.DebugName = "BRDFLUT Texture";
-
-		mBRDFLUT = Texture2D::Create({mSettings.BrdfLutSize, mSettings.BrdfLutSize}, brdfLUTInfo);
+		
 
 		FTextureCreateInfo cubeInfo{};
 		cubeInfo.Format = EFormat::RGBA32F;
@@ -201,6 +175,30 @@ namespace BHive
 				b.Set("u_width", s);
 				b.Set("u_height", s);
 			});
+	}
+
+	Ref<Texture2D> BRDFLUTGenerator::GenerateBRDFLUTMap(uint32_t size)
+	{
+		auto BRDFLUTShader = ShaderManager::Get(PMREM_BRDFLUT);
+		Pipeline::ComputePipelineState state{};
+		state.ShaderProgram = BRDFLUTShader;
+		PipelineRegistry::Register(PMREM_BRDFLUT_PIPELINE, state);
+
+		FTextureCreateInfo brdfLUTInfo{};
+		brdfLUTInfo.Format = EFormat::RG16F;
+		brdfLUTInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		brdfLUTInfo.MagFilter = EMagFilter::NEAREST;
+		brdfLUTInfo.MinFilter = EMinFilter::NEAREST;
+		brdfLUTInfo.Roles |= ETextureRole::ComputeWrite;
+		brdfLUTInfo.DebugName = "BRDFLUT Texture";
+
+		auto brdfLUT = Texture2D::Create({size, size}, brdfLUTInfo);
+
+		Renderer::Get().ExecuteComputePass(
+			PipelineRegistry::Get(PMREM_BRDFLUT_PIPELINE), {size / 8, size / 8, 1}, [&](FComputeBindings &b) { b.Bind("brdfLutTexture", brdfLUT); });
+
+		return brdfLUT;		
+
 	}
 
 } // namespace BHive

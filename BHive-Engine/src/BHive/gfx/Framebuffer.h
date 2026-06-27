@@ -75,6 +75,7 @@ namespace BHive
 		glm::uvec2 Size{800, 600};
 		uint32_t Depth = 1;
 		uint32_t Samples = 1;
+		std::string DebugName = "";
 	};
 
 	class BHIVE_API Framebuffer

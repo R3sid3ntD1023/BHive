@@ -3,9 +3,6 @@
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanBackend.h"
 #include "Platform/Vulkan/ImageViewBuilder.h"
-#include "Platform/Vulkan/VulkanRendererAPI.h"
-#include "gfx/RenderCommand.h"
-#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {
@@ -38,6 +35,14 @@ namespace BHive
 		ImageViewBuildInfo build_info{.Layers = layers, .Levels = levels, .ViewCI = mutable_info.ViewCI, .DebugName = info.DebugName};
 		ImageViewBuilder::Build(mImage, build_info, info.ViewTopology);
 
+		{
+			SingleTimeCommand cmd{};
+			ImageSubresourceRange fullRange{0, levels, 0, layers};
+
+			auto initialState = InitialStateFromUsage(info.ImageCI.usage, info.ImageCI.format);
+			if (!initialState.IsUndefined)
+				Transition(cmd, initialState, fullRange);
+		}
 	}
 
 	void VulkanImage::Initialize(const vk::Image &img, const ImageCreateInfo &info)
@@ -81,7 +86,7 @@ namespace BHive
 		auto staging_buffer = VulkanBackend::GetGPUResourceManager().GetBuffer(stagingID);
 
 		SingleTimeCommand cmd{};
-		Transition(cmd, ImageState::TansferWrite(), range);
+		Transition(cmd, ImageState::TransferWrite(), range);
 		VulkanUtils::CopyBufferToImage(cmd, staging_buffer, mImage.GetImage(), region);
 		Transition(cmd, ImageState::ShaderRead(), range);
 
@@ -142,7 +147,7 @@ namespace BHive
 
 			{
 				ImageSubresourceRange range{mip, 1, 0, layers};
-				Transition(cmd, ImageState::TansferWrite(), range);
+				Transition(cmd, ImageState::TransferWrite(), range);
 			}
 
 			// Blit mip -1 -> mip
@@ -185,5 +190,47 @@ namespace BHive
 				LOG_TRACE("\t\t{} [layer={} mip={}] = {}", mImage.DebugName, layer, mip, vk::to_string(mStateTracker.Get(layer, mip).Layout));
 			}
 		}
+	}
+
+	ImageState VulkanImage::InitialStateFromUsage(vk::ImageUsageFlags usage, vk::Format format)
+	{
+		const bool isDepth = format == vk::Format::eD32Sfloat || format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint || format == vk::Format::eD16Unorm;
+
+		//Depth/stencil images
+		if (isDepth)
+		{
+			if (usage & vk::ImageUsageFlagBits::eDepthStencilAttachment)
+				return ImageState::DepthStencilAttachment();
+
+			return ImageState::ShaderRead();
+		}
+
+		if (usage & vk::ImageUsageFlagBits::eStorage)
+		{
+			return ImageState::ComputeWrite();
+		}
+		
+		if (usage & vk::ImageUsageFlagBits::eSampled)
+		{
+			return ImageState::ShaderRead();
+		}
+		
+		if (usage & vk::ImageUsageFlagBits::eColorAttachment)
+		{
+			return ImageState::ColorAttachment();
+		}
+		
+		if (usage & vk::ImageUsageFlagBits::eTransferDst)
+		{
+			return  ImageState::TransferWrite();
+		}
+
+		if (usage & vk::ImageUsageFlagBits::eTransferSrc)
+		{
+			return ImageState::TransferRead();
+		}
+
+		//fallback: undefined (rare)
+		return ImageState::Undefined();
 	}
 } // namespace BHive

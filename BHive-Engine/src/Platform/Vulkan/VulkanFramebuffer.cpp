@@ -46,14 +46,14 @@ namespace BHive
 				mDepthSpecification = spec;
 				mDepthSpecification.CreateInfo.Aspect = ETextureAspect::DepthStencil;
 				mDepthSpecification.CreateInfo.Roles = ETextureRole::DepthTarget | ETextureRole::Sampled;
-				mDepthSpecification.CreateInfo.DebugName = "Framebuffer_Depth";
+				mDepthSpecification.CreateInfo.DebugName = specification.DebugName + "_FB_Depth";
 				continue;
 			}
 
 			auto color_attachment_info = spec;
 			color_attachment_info.CreateInfo.Aspect = ETextureAspect::Color;
 			color_attachment_info.CreateInfo.Roles = ETextureRole::RenderTarget | ETextureRole::Sampled;
-			color_attachment_info.CreateInfo.DebugName = std::format("Framebuffer_Color{}", i);
+			color_attachment_info.CreateInfo.DebugName = std::format("{}_FB_Color{}", specification.DebugName, i);
 			mColorAttachmentSpecifications.emplace_back(color_attachment_info);
 		}
 
