@@ -9,11 +9,11 @@ namespace BHive
 	{
 	}
 
-	MemoryAllocation MemoryAllocator::Allocate(const vk::raii::Buffer &buffer, vk::MemoryPropertyFlags props, size_t requestedBufferSize)
+	MemoryAllocation MemoryAllocator::Allocate(const vk::raii::Buffer &buffer, vk::MemoryPropertyFlags props)
 	{
 		vk::MemoryRequirements req = buffer.getMemoryRequirements();
 		auto memoryTypeIndex = FindMemoryType(req.memoryTypeBits, props);
-		if (ShouldUseDedicatedAllocation(requestedBufferSize))
+		if (ShouldUseDedicatedAllocation(req))
 		{
 			return AllocateDedicated(req, memoryTypeIndex);
 		}
@@ -21,11 +21,11 @@ namespace BHive
 		return AllocateFromBlock(req, memoryTypeIndex);
 	}
 
-	MemoryAllocation MemoryAllocator::Allocate(const vk::raii::Image &image, vk::MemoryPropertyFlags props, size_t requestedBufferSize)
+	MemoryAllocation MemoryAllocator::Allocate(const vk::raii::Image &image, vk::MemoryPropertyFlags props)
 	{
 		vk::MemoryRequirements req = image.getMemoryRequirements();
 		auto memoryTypeIndex = FindMemoryType(req.memoryTypeBits, props);
-		if (ShouldUseDedicatedAllocation(requestedBufferSize))
+		if (ShouldUseDedicatedAllocation(req))
 		{
 			return AllocateDedicated(req, memoryTypeIndex);
 		}
@@ -114,10 +114,9 @@ namespace BHive
 		return ~0u;
 	}
 
-	bool MemoryAllocator::ShouldUseDedicatedAllocation(size_t requestedBufferSize) const
+	bool MemoryAllocator::ShouldUseDedicatedAllocation(const vk::MemoryRequirements &req) const
 	{
-		constexpr vk::DeviceSize DEDICATED_ALLOCATION_THRESHOLD = 1ull << 20; // 1 MB
-		return (vk::DeviceSize)requestedBufferSize >= DEDICATED_ALLOCATION_THRESHOLD;
+		return req.size >= (512 * 1024);//512 KB
 	}
 
 	MemoryAllocation MemoryAllocator::AllocateDedicated(const vk::MemoryRequirements &req, uint32_t memoryTypeIndex)
@@ -147,7 +146,7 @@ namespace BHive
 		}
 
 		// create new block
-		vk::DeviceSize blockSize = std::max<vk::DeviceSize>(req.size * 4, 32ull << 20);
+		vk::DeviceSize blockSize = ChooseBlockSize(req.size); 
 		Block &newBlock = CreateBlock(memoryTypeIndex, blockSize);
 		return AllocateFromBlock(newBlock, req, memoryTypeIndex);
 	}
@@ -235,5 +234,27 @@ namespace BHive
 		}
 
 		freeList = std::move(merged);
+	}
+
+	vk::DeviceSize MemoryAllocator::ChooseBlockSize(vk::DeviceSize req)
+	{
+		//tiny -> 256 Kb block
+		if (req <= 64 * 1024)
+			return 256 * 1024;
+
+		// small -> 512 Kb block
+		if (req <= 256 * 1024)
+			return 512 * 1024;
+
+		// medium -> 1 MB block
+		if (req <= 512 * 1024)
+			return 1 * 1024 * 1024;
+
+		// large -> 2 MB block
+		if (req <= 2 * 1024 * 1024)
+			return 2 * 1024 * 1024;
+
+		//huge -> 4 MB block
+		return 4 * 1024 * 1024;
 	}
 } // namespace BHive

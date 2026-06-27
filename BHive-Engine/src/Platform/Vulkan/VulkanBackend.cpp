@@ -249,10 +249,10 @@ namespace BHive
 
 		vk::ValidationFeatureEnableEXT enabled_features[] =
 			{
-				vk::ValidationFeatureEnableEXT::eBestPractices, 
+				//vk::ValidationFeatureEnableEXT::eBestPractices, 
 				vk::ValidationFeatureEnableEXT::eSynchronizationValidation, 
-				vk::ValidationFeatureEnableEXT::eDebugPrintf,
-				vk::ValidationFeatureEnableEXT::eGpuAssisted
+				//vk::ValidationFeatureEnableEXT::eDebugPrintf,
+				//vk::ValidationFeatureEnableEXT::eGpuAssisted
 			};
 
 		vk::ValidationFeaturesEXT enabled(enabled_features);

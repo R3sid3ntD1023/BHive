@@ -72,9 +72,9 @@ namespace BHive
 			TContainer mResources;
 		};
 
-		ResourceID CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags, size_t reqSize, const std::string &name = "");
+		ResourceID CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name = "");
 
-		ResourceID CreateImage(const vk::ImageCreateInfo &info, vk::MemoryPropertyFlags flags, size_t reqSize, const std::string &name = "");
+		ResourceID CreateImage(const vk::ImageCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name = "");
 
 		ResourceID RegisterExternalImage(const vk::Image &image, const std::string &name = "");
 

@@ -16,8 +16,7 @@ namespace BHive
 		const auto &layers = info.ImageCI.arrayLayers;
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
 
-		auto reqSize = info.ImageCI.extent.width * info.ImageCI.extent.height * info.ImageCI.extent.depth * info.BytesPerPixel;
-		auto image_id = gpu_r_m.CreateImage(info.ImageCI, vk::MemoryPropertyFlagBits::eDeviceLocal, reqSize, info.DebugName);
+		auto image_id = gpu_r_m.CreateImage(info.ImageCI, vk::MemoryPropertyFlagBits::eDeviceLocal,  info.DebugName);
 		auto sampler_id = gpu_r_m.CreateSampler(info.SamplerCI, std::format("Image_{}_Sampler", info.DebugName));
 
 		mImage.Image = image_id;
@@ -75,7 +74,7 @@ namespace BHive
 	{
 		auto stagingInfo = vk::BufferCreateInfo({}, size, vk::BufferUsageFlagBits::eTransferSrc);
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
-		auto stagingID = gpu_r_m.CreateBuffer(stagingInfo, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, size);
+		auto stagingID = gpu_r_m.CreateBuffer(stagingInfo, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
 		if (auto mapped = gpu_r_m.MapMemory(stagingID, 0, size))
 		{
@@ -212,7 +211,7 @@ namespace BHive
 		
 		if (usage & vk::ImageUsageFlagBits::eSampled)
 		{
-			return ImageState::ShaderRead();
+			return ImageState::Undefined();
 		}
 		
 		if (usage & vk::ImageUsageFlagBits::eColorAttachment)

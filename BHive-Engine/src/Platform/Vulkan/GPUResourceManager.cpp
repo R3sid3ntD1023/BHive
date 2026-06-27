@@ -6,15 +6,11 @@
 
 namespace BHive
 {
-	ResourceID GPUResourceManager::CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags, size_t reqSize, const std::string &name)
+	ResourceID GPUResourceManager::CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags,  const std::string &name)
 	{
 		
 		auto &device = VulkanBackend::GetLogicalDevice();
 		auto &physical_device = VulkanBackend::GetPhysicalDevice();
-
-		vk::DeviceSize atom = physical_device.getProperties().limits.nonCoherentAtomSize;
-		vk::DeviceSize requested = reqSize;
-		vk::DeviceSize minAlloc = (requested + atom - 1) & ~(atom - 1);
 
 		ResourceID id{};
 		auto &buffer = GetStorage<vk::raii::Buffer>().GetOrCreate(id);
@@ -22,7 +18,7 @@ namespace BHive
 
 		auto& allocator = VulkanBackend::GetMemoryAllocator();
 		auto &allocation = GetStorage<MemoryAllocation>().GetOrCreate(id);
-		allocation = allocator.Allocate(buffer, flags, minAlloc);
+		allocation = allocator.Allocate(buffer, flags);
 
 		buffer.bindMemory(allocation.Memory, allocation.Offset);
 
@@ -31,7 +27,7 @@ namespace BHive
 		return id;
 	}
 
-	ResourceID GPUResourceManager::CreateImage(const vk::ImageCreateInfo &info, vk::MemoryPropertyFlags flags, size_t reqSize, const std::string &name)
+	ResourceID GPUResourceManager::CreateImage(const vk::ImageCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name)
 	{
 		ResourceID id{};
 		auto &image = GetStorage<vk::raii::Image>().GetOrCreate(id);
@@ -42,7 +38,7 @@ namespace BHive
 		//bind image to memory
 		auto &allocator = VulkanBackend::GetMemoryAllocator();
 		auto &allocation = GetStorage<MemoryAllocation>().GetOrCreate(id);
-		allocation = allocator.Allocate(image, flags, reqSize);
+		allocation = allocator.Allocate(image, flags);
 		image.bindMemory(allocation.Memory, allocation.Offset);
 
 		VulkanBackend::SetObjectName(*image, name);

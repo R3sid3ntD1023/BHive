@@ -21,9 +21,9 @@ namespace BHive
 	public:
 		MemoryAllocator(vk::Device device, vk::PhysicalDevice physicalDevice);
 
-		MemoryAllocation Allocate(const vk::raii::Buffer &buffer, vk::MemoryPropertyFlags props, size_t requestedBufferSize);
+		MemoryAllocation Allocate(const vk::raii::Buffer &buffer, vk::MemoryPropertyFlags props);
 
-		MemoryAllocation Allocate(const vk::raii::Image &image, vk::MemoryPropertyFlags props, size_t requestedBufferSize);
+		MemoryAllocation Allocate(const vk::raii::Image &image, vk::MemoryPropertyFlags props);
 
 		void* Map(MemoryAllocation &allocation);
 
@@ -49,7 +49,7 @@ namespace BHive
 
 		uint32_t FindMemoryType(uint32_t memoryTypeIndex, vk::MemoryPropertyFlags properties);
 
-		bool ShouldUseDedicatedAllocation(size_t requestedBufferSize) const;
+		bool ShouldUseDedicatedAllocation(const vk::MemoryRequirements& req) const;
 
 		MemoryAllocation AllocateDedicated(const vk::MemoryRequirements &req, uint32_t memoryTypeIndex);
 
@@ -60,5 +60,7 @@ namespace BHive
 		Block &CreateBlock(uint32_t memoryTypeIndex, vk::DeviceSize size);
 
 		void MergeFreeList(Block *block);
+
+		vk::DeviceSize ChooseBlockSize(vk::DeviceSize req);
 	};
 } // namespace BHive
