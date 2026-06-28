@@ -85,6 +85,8 @@ namespace BHive
 
 		void MultiDrawElementsIndirect(FPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride = 0, uint32_t offset = 0) override;
 
+		void DrawFullscreen(FPass *pass) override;
+
 		void ColorMask(FPass *pass, uint8_t r, uint8_t g, uint8_t b, uint8_t a) override;
 
 		vk::Result RenderFrame(VulkanSwapChain* swapChain);

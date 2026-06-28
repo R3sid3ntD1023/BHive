@@ -208,6 +208,12 @@ namespace BHive
 		mAPI->MultiDrawElementsIndirect(pass, mode, indirect, vao, drawCount, stride, stride * start);
 	}
 
+	void Renderer::DrawFullscreen()
+	{
+		auto pass = &GetActivePass();
+		mAPI->DrawFullscreen(pass);
+	}
+
 	FAsyncPass *Renderer::ExecuteComputePass(Pipeline *pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder)
 	{
 		return mAPI->ExecuteComputePass(pipeline, dispatchSize, builder);

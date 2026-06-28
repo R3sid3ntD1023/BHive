@@ -89,6 +89,8 @@ namespace BHive
 
 		void MultiDrawElementsIndirect(ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride = 0u, uint32_t start = 0u);
 
+		void DrawFullscreen();
+
 		FAsyncPass* ExecuteComputePass(Pipeline *pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder);
 
 		void ExecuteTransferPass(FTransferFunc &&builder);

@@ -35,8 +35,6 @@ namespace BHive
 
 		mMaterial = CreateRef<Material>();
 		mMaterial->SetPipeline(PipelineRegistry::Get(DEBUG_TEXTURE_PIPELINE));
-
-		mQuad = CreateRef<PQuad>();
 	}
 
 	void ImageDebugger::RegisterTexture(const std::string &name, const Ref<Texture> &tex)
@@ -91,7 +89,7 @@ namespace BHive
 			mMaterial->SetTexture(uniform, tex);
 			mMaterial->Submit();
 
-			renderer.DrawElements(ETopologyMode::Triangles, mQuad->GetVertexArray().get());
+			renderer.DrawFullscreen();
 			
 			mFB->UnBind();
 

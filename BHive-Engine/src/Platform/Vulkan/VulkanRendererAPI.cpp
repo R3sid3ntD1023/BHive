@@ -374,6 +374,19 @@ namespace BHive
 		vao->UnBind();
 	}
 
+	void VulkanRendererAPI::DrawFullscreen(FPass *pass)
+	{
+		pass->Push(
+			"Draw Fullscreen Triangle",
+			[](IRendererContext &ctx)
+			{
+				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
+				vk::CommandBuffer cmd = vk_ctx.CommandBuffer;
+				cmd.setPrimitiveTopology(vk::PrimitiveTopology::eTriangleList);
+				cmd.draw(3, 1, 0, 0);
+			});
+	}
+
 	void VulkanRendererAPI::ColorMask(FPass *pass, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 	{	
 	}

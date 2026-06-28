@@ -52,7 +52,6 @@ namespace BHive
 		Ref<Framebuffer> mFB;
 		Ref<Pipeline> mPipeline;
 		Ref<Material> mMaterial;
-		Ref<PQuad> mQuad;
 		glm::uvec2 mSize{};
 	};
 }
