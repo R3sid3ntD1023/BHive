@@ -7,7 +7,7 @@ namespace BHive
 	Ref<Texture> ColorGradingMaterial::AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input)
 	{
 		mInput = input;
-		mOutput = allocator.GetColorGradeOuput();
+		mOutput = allocator.GetColorGradeOutput();
 
 		auto &pass = graph.AddPass("Color Grading Pass", EPassType::OffScreen);
 		pass.BeginPhase();
@@ -16,6 +16,10 @@ namespace BHive
 		pass.Push(mOutput, EImageAccess::ComputeStorageWrite);
 		pass.Push("Compute Color Grade", this, &ColorGradingMaterial::DoColorGrading);
 
+		pass.EndPhase();
+
+		pass.BeginPhase();
+		pass.Push(mOutput, EImageAccess::ColorRead);
 		pass.EndPhase();
 
 		return mOutput;

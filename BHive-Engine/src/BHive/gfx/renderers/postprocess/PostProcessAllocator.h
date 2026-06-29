@@ -12,13 +12,13 @@ namespace BHive
 
 		void Resize(const glm::uvec2 &size);
 
-		Ref<Texture> GetAcesOuput() const { return mAcesOutput; }
+		Ref<Texture> GetAcesOutput() const { return mAcesOutput; }
 
-		Ref<Texture> GetBloomOuput() const { return mBloomOutput; }
+		Ref<Texture> GetBloomOutput() const { return mBloomOutput; }
 
-		Ref<Texture> GetBloomCompositeOuput() const { return mBloomCompositeOutput; }
+		Ref<Texture> GetBloomCompositeOutput() const { return mBloomCompositeOutput; }
 
-		Ref<Texture> GetColorGradeOuput() const { return mColorGradeOutput; }
+		Ref<Texture> GetColorGradeOutput() const { return mColorGradeOutput; }
 
 		uint32_t GetBloomMipCount() const { return mBloomMipCount; }
 

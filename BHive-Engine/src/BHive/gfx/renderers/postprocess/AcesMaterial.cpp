@@ -7,7 +7,7 @@ namespace BHive
 	Ref<Texture> AcesMaterial::AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input)
 	{
 		mInput = input;
-		mOutput = allocator.GetAcesOuput();
+		mOutput = allocator.GetAcesOutput();
 
 		auto &pass = graph.AddPass("Aces", EPassType::OffScreen);
 
@@ -17,6 +17,10 @@ namespace BHive
 		pass.Push(mOutput, EImageAccess::ComputeStorageWrite);
 		pass.Push("Aces", this, &AcesMaterial::OnExecutePass);
 
+		pass.EndPhase();
+
+		pass.BeginPhase();
+		pass.Push(mOutput, EImageAccess::ColorRead);
 		pass.EndPhase();
 
 		return mOutput;

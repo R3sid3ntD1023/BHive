@@ -9,8 +9,8 @@ namespace BHive
 	{
 		mAllocator = &allocator;
 		mInput = input;
-		mBloomOutput = allocator.GetBloomOuput();
-		mCompositeOutput = allocator.GetBloomCompositeOuput();
+		mBloomOutput = allocator.GetBloomOutput();
+		mCompositeOutput = allocator.GetBloomCompositeOutput();
 
 		auto params = Params;
 		auto mipCount = allocator.GetBloomMipCount();
@@ -65,6 +65,10 @@ namespace BHive
 		pass.Push(mCompositeOutput, EImageAccess::ComputeStorageWrite);
 
 		pass.Push("Combine Bloom and Scene", this, &BloomMaterial::DoComposite, mipCount);
+
+		pass.BeginPhase();
+		pass.Push(mCompositeOutput, EImageAccess::ColorRead);
+		pass.EndPhase();
 		
 		return mCompositeOutput;
 	}
@@ -101,7 +105,7 @@ namespace BHive
 
 	void BloomMaterial::DoUpSample(IRendererContext &ctx, uint32_t mipCount, uint32_t srcMip, uint32_t dstMip)
 	{
-		glm::uvec2 baseSize = mAllocator->GetBloomOuput()->GetSize();
+		glm::uvec2 baseSize = mAllocator->GetBloomOutput()->GetSize();
 		glm::uvec2 dstSize = glm::max(baseSize >> dstMip, glm::uvec2(1u));
 		glm::uvec3 dispatch = {(dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1};
 
