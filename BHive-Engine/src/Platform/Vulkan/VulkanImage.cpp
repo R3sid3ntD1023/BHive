@@ -9,7 +9,7 @@ namespace BHive
 
 	void VulkanImage::Initialize(const ImageCreateInfo &info)
 	{
-		mAspect = info.ViewCI.subresourceRange.aspectMask;
+		mInfo = info;
 
 		auto mutable_info = info;
 		const auto &levels = info.ImageCI.mipLevels;
@@ -46,7 +46,7 @@ namespace BHive
 
 	void VulkanImage::Initialize(const vk::Image &img, const ImageCreateInfo &info)
 	{
-		mAspect = info.ViewCI.subresourceRange.aspectMask;
+		mInfo = info;
 
 		auto mutable_info = info;
 		mutable_info.ViewCI.setImage(img);
@@ -97,6 +97,7 @@ namespace BHive
 		ASSERT(mStateTracker.MipStates.size(), "Invalid layer size must be 1 or greater -> {}", mImage.DebugName);
 
 		auto image = mImage.GetImage();
+		auto aspect = mInfo.ViewCI.subresourceRange.aspectMask;
 
 		for (uint32_t layer = range.BaseArrayLayer; layer < range.BaseArrayLayer + range.LayerCount; layer++)
 		{
@@ -121,7 +122,7 @@ namespace BHive
 				layerSub.BaseMipLevel = mip;
 				layerSub.LevelCount = 1;
 
-				VulkanUtils::TransitionImageLayout(cmd, image, oldLayout, newState.Layout, oldAccess, newState.Access, oldStage, newState.Stage, mAspect, layerSub);
+				VulkanUtils::TransitionImageLayout(cmd, image, oldLayout, newState.Layout, oldAccess, newState.Access, oldStage, newState.Stage, aspect, layerSub);
 
 				oldState = newState;
 				oldState.IsUndefined = false;
@@ -129,12 +130,13 @@ namespace BHive
 		}
 	}
 
-	void VulkanImage::GenerateMipMaps(uint32_t width, uint32_t height, uint32_t layers, uint32_t levels)
+	void VulkanImage::GenerateMipMaps(vk::raii::CommandBuffer& cmd)
 	{
-		SingleTimeCommand cmd{};
+		auto w = mInfo.ImageCI.extent.width;
+		auto h = mInfo.ImageCI.extent.height;
+		auto layers = mInfo.ImageCI.arrayLayers;
+		auto levels = mInfo.ImageCI.mipLevels;
 
-		auto w = width;
-		auto h = height;
 		vk::Image image = mImage.GetImage();
 
 		for (uint32_t mip = 1; mip < levels; ++mip)
@@ -159,7 +161,7 @@ namespace BHive
 			blit.dstOffsets[0] = vk::Offset3D{0, 0, 0};
 			blit.dstOffsets[1] = vk::Offset3D{int32_t(std::max(w >> 1, 1u)), int32_t(std::max(h >> 1, 1u)), 1};
 
-			cmd.Get().blitImage(image, vk::ImageLayout::eTransferSrcOptimal, image, vk::ImageLayout::eTransferDstOptimal, blit, vk::Filter::eLinear);
+			cmd.blitImage(image, vk::ImageLayout::eTransferSrcOptimal, image, vk::ImageLayout::eTransferDstOptimal, blit, vk::Filter::eLinear);
 
 			w = std::max(w >> 1, 1u);
 			h = std::max(h >> 1, 1u);

@@ -1,4 +1,4 @@
-#pragma once
+	#pragma once
 
 #include "VulkanCore.h"
 #include "gfx/Enumerations.h"
@@ -323,6 +323,56 @@ namespace BHive
 			return vk::ShaderStageFlagBits::eGeometry;
 		default:
 			throw std::runtime_error("Invalid or multi-stage passed to ToSingleVkStage");
+		}
+	}
+
+	inline vk::PipelineStageFlags2 ToStage(EBufferAccess a)
+	{
+		switch (a)
+		{
+;
+		case BHive::EBufferAccess::TransferWrite:
+		case BHive::EBufferAccess::TransferRead:
+			return vk::PipelineStageFlagBits2::eTransfer;
+		case BHive::EBufferAccess::VertexRead:
+			return vk::PipelineStageFlagBits2::eVertexInput;
+		case BHive::EBufferAccess::IndexRead:
+			return vk::PipelineStageFlagBits2::eIndexInput;
+		case BHive::EBufferAccess::UniformRead:
+			return vk::PipelineStageFlagBits2::eVertexShader | vk::PipelineStageFlagBits2::eFragmentShader | vk::PipelineStageFlagBits2::eComputeShader;
+		case BHive::EBufferAccess::StorageRead:
+		case BHive::EBufferAccess::StorageWrite:
+			return vk::PipelineStageFlagBits2::eVertexShader | vk::PipelineStageFlagBits2::eFragmentShader | vk::PipelineStageFlagBits2::eComputeShader;
+		case BHive::EBufferAccess::IndirectRead:
+			return vk::PipelineStageFlagBits2::eDrawIndirect;
+		default:
+			return vk::PipelineStageFlagBits2::eAllCommands;
+		}
+	}
+
+	inline vk::AccessFlags2 ToAccess(EBufferAccess a)
+	{
+		switch (a)
+		{
+			;
+		case BHive::EBufferAccess::TransferWrite:
+			return vk::AccessFlagBits2::eTransferWrite;
+		case BHive::EBufferAccess::TransferRead:
+			return vk::AccessFlagBits2::eTransferRead;		
+		case BHive::EBufferAccess::VertexRead:
+			return vk::AccessFlagBits2::eVertexAttributeRead;
+		case BHive::EBufferAccess::IndexRead:
+			return vk::AccessFlagBits2::eIndexRead;
+		case BHive::EBufferAccess::UniformRead:
+			return vk::AccessFlagBits2::eUniformRead;
+		case BHive::EBufferAccess::StorageRead:
+			return vk::AccessFlagBits2::eShaderRead;
+		case BHive::EBufferAccess::StorageWrite:
+			return vk::AccessFlagBits2::eShaderWrite;
+		case BHive::EBufferAccess::IndirectRead:
+			return vk::AccessFlagBits2::eIndirectCommandRead;
+		default:
+			return vk::AccessFlagBits2::eNone;
 		}
 	}
 }

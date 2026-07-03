@@ -20,7 +20,7 @@ namespace BHive
 		BuildSlotsForPipeline(pipeline);
 	}
 
-	void Material::SetTexture(const char *name, const Ref<Texture> &texture, uint32_t mip)
+	void Material::SetTexture(const std::string& name, const Ref<Texture> &texture, uint32_t mip)
 	{
 		const auto &set = mBackendMaterial->GetTargetSet();
 		const auto &samplers = set.Samplers;
@@ -62,8 +62,6 @@ namespace BHive
 			auto tex = slot.Texture ? slot.Texture  : res->TextureRef;
 			mBackendMaterial->BindTexture(name, tex, slot.MipLevel, p);
 		}
-
-		mBackendMaterial->Bind(mPipeline); //update descriptor sets
 	}
 
 	void Material::BuildSlotsForPipeline(Pipeline* pipeline)

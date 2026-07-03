@@ -21,16 +21,5 @@ namespace BHive
 			float Strength{1.0f};
 			float Exposure{1.0f};
 		} Params;
-
-	private:
-		void DoPrefilterSceneColor(IRendererContext &ctx);
-		void DoDownSample(IRendererContext &ctx, uint32_t srcMip, uint32_t dstMip);
-		void DoUpSample(IRendererContext &ctx, uint32_t mipCount, uint32_t srcMip, uint32_t dstMip);
-		void DoComposite(IRendererContext &ctx, uint32_t mipCount);
-
-		Ref<Texture> mInput;
-		Ref<Texture> mBloomOutput;
-		Ref<Texture> mCompositeOutput;
-		PostProcessAllocator *mAllocator = nullptr;
 	};
 }

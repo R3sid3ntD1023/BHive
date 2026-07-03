@@ -1,53 +1,50 @@
 #pragma once
 
-#include "RenderContext.h"
+#include "core/Core.h"
+#include "gfx/Enumerations.h"
+#include "Command.h"
 
 namespace BHive
 {
-	struct FCommand
+	class BufferBase;
+
+	struct FBufferUse
 	{
-		std::function<void(IRendererContext&)> Fn;
+		BufferBase* Buffer;
+		EBufferAccess Access;
 	};
 
-	template<typename T>
-	constexpr size_t LambdaSize(const T &)
+	struct FBufferBarrierRequest
 	{
-		return sizeof(T);
-	}
+		BufferBase* Buffer;
+		EBufferAccess Src;
+		EBufferAccess Dst;
+	};
 
 	struct FRenderCommandList
 	{
-		void PushInternal(const std::string &name, FCommand &&cmd);
+		std::vector<Ref<FCommand>> Commands;
+		std::vector<FBufferBarrierRequest> BufferBarriers;
 
-		template <typename Callable>
-		void Push(const std::string &name, Callable&& fn)
+		template<typename T, typename... TArgs>
+		T* Emplace(TArgs&& ... args)
 		{
-			FCommand c{std::forward<Callable>(fn)};
-			PushInternal(name, std::move(c));
+			static_assert(std::is_base_of_v<FCommand, T>, "Type T doesn't derive from FCommand!");
+			static_assert(std::is_constructible_v<T, TArgs...>, "Emplace<T>: Provided arguments doesn't match T's constrcutor");
+
+			auto cmd = CreateRef<T>(std::forward<TArgs>(args)...);
+			T *ptr = cmd.get();
+			Commands.push_back(cmd);
+			return ptr;
 		}
 
-		template <typename T, typename Method, typename... Args>
-		void Push(const std::string &name, T *obj, Method method, Args &&...args)
-		{
-			auto lambda = [obj, method, ... captured = std::forward<Args>(args)](IRendererContext &ctx) { (obj->*method)(ctx, captured...); };
+		//FRenderCommandList() = default;
+		//~FRenderCommandList() = default;
 
-			static_assert(LambdaSize(lambda) <= 32, "Lambda too big for SBO!");
+		//FRenderCommandList(const FRenderCommandList &) = delete;
+		//FRenderCommandList &operator=(const FRenderCommandList &) = delete;
 
-			FCommand c{lambda};
-			PushInternal(name, std::move(c));
-		}
-
-		void Execute(IRendererContext &ctx) const;
-
-		const auto &GetCommands() const { return mCommands; }
-
-	private:
-		struct FEntry
-		{
-			std::string Name;
-			FCommand Cmd;
-		};
-
-		std::vector<FEntry> mCommands;
+		//FRenderCommandList(FRenderCommandList &&) noexcept = default;
+		//FRenderCommandList &operator=(FRenderCommandList &&) noexcept = default;
 	};
 }

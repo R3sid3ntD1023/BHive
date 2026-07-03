@@ -31,8 +31,6 @@ namespace BHive
 	public:
 		virtual ~Texture() { mResourceID.Release();}
 
-		virtual void GenerateMips() = 0;
-
 		virtual glm::uvec2 GetSize() const = 0;
 
 		float GetAspectRatio() const { return (float)GetSize().x / (float)GetSize().y; }

@@ -54,18 +54,18 @@ namespace BHive
 		mSceneRenderData->Init();
 
 		// Initialize the framebuffer or any other resources needed for rendering
-		FramebufferSpecification specs;
+		/*FramebufferSpecification specs;
 		specs.Size = size;
 		specs.Attachments.attach({.Format = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
 			.attach({.Format = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
 
-		mFramebuffer = Framebuffer::Create(specs);
+		mFramebuffer = Framebuffer::Create(specs);*/
 
 		// Create a final framebuffer for post-processing effects
-		specs.Attachments.reset();
-		specs.Attachments.attach({.Format = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
-		specs.Attachments.attach({EFormat::DEPTH24_STENCIL8});
-		mFinalFramebuffer = Framebuffer::Create(specs);
+		//specs.Attachments.reset();
+		//specs.Attachments.attach({.Format = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+		//specs.Attachments.attach({EFormat::DEPTH24_STENCIL8});
+		//mFinalFramebuffer = Framebuffer::Create(specs);
 
 		// Create a quad for rendering the final output
 		mQuad = CreateRef<PQuad>();
@@ -112,11 +112,11 @@ namespace BHive
 			render_pass->Render(mSceneRenderData->RenderPassRenderData);
 		}*/
 
-		mFramebuffer->Bind();
+		//mFramebuffer->Bind();
 
-		Renderer::Get().ClearColor(0.1f, 0.1f, 0.1f, 0.0f);
+		//Renderer::Get().ClearColor(0.1f, 0.1f, 0.1f, 0.0f);
 
-		Renderer::Get().Clear();
+		//Renderer::Get().Clear();
 
 		// render meshes
 		for (auto &[mat, objects] : mSceneRenderData->RenderData)
@@ -137,23 +137,23 @@ namespace BHive
 		auto &renderer = Renderer::Get();
 		renderer.EndFrame();
 
-		mFramebuffer->UnBind();
+		//mFramebuffer->UnBind();
 
 		//post process
 		auto sceneColor = mFramebuffer->GetColorAttachment(0);
 		mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, sceneColor);
 
-		mFinalFramebuffer->Bind();
+		//mFinalFramebuffer->Bind();
 
-		Renderer::Get().Clear();
+		//Renderer::Get().Clear();
 
 		//mQuadShader->Bind();
 
 		//texture->Bind();
 
-		Renderer::Get().DrawElements(ETopologyMode::Triangles, mQuad->GetVertexArray().get());
+		//Renderer::Get().DrawElements(ETopologyMode::Triangles, mQuad->GetVertexArray().get());
 
-		mFinalFramebuffer->UnBind();
+		//mFinalFramebuffer->UnBind();
 	}
 
 	void SceneRenderer::Submit(const DirectionalLight & light)
@@ -272,7 +272,7 @@ namespace BHive
 
 		mPostProcessAllocator.Resize(size);
 
-		Renderer::Get().SetViewport(0, 0, size.x, size.y);
+		//Renderer::Get().SetViewport(0, 0, size.x, size.y);
 	}
 
 	Ref<Texture> SceneRenderer::GetColorAttachment(uint32_t index) const

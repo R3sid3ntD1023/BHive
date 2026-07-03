@@ -1,13 +1,13 @@
 #include "VulkanBuffers.h"
 #include "gfx/RenderCommand.h"
-#include "VulkanRendererAPI.h"
+#include "gfx/renderers/Renderer.h"
 #include "VulkanBackend.h"
 
 namespace BHive
 {
 	namespace utils
 	{
-		vk::BufferMemoryBarrier2 MakeBufferBarrier(vk::Buffer buffer, vk::PipelineStageFlagBits2 dstStage, vk::AccessFlags2 dstAccess)
+		vk::BufferMemoryBarrier2 MakeBufferBarrier(vk::Buffer buffer, vk::PipelineStageFlags2 dstStage, vk::AccessFlags2 dstAccess)
 		{
 			return vk::BufferMemoryBarrier2(
 			vk::PipelineStageFlagBits2::eCopy,
@@ -53,13 +53,13 @@ namespace BHive
 		VulkanBackend::GetGPUResourceManager().MapMemory(stageID, 0, size);
 	}
 
-	void VulkanStaticBuffer::Upload(vk::raii::CommandBuffer& cmd, const void *data, size_t size, uint32_t offset)
+	void VulkanStaticBuffer::Upload(vk::raii::CommandBuffer &cmd, const FBufferUploadInfo &up)
 	{	
 		auto mapped_memory = StagingBuffer.GetAllocation().MappedPtr;
 		if (mapped_memory)
 		{
-			std::memcpy(static_cast<std::byte *>(mapped_memory) + offset, data, size);
-			vk::BufferCopy region(0, offset, size);
+			std::memcpy(static_cast<std::byte *>(mapped_memory) + up.offset, up.data, up.size);
+			vk::BufferCopy region(0, up.offset, up.size);
 			cmd.copyBuffer(StagingBuffer.GetBuffer(), Buffer.GetBuffer(), region);
 		}
 	}
@@ -84,17 +84,12 @@ namespace BHive
 	void VulkanPerFrameHostBuffer::Init(const void *data, size_t size, vk::BufferUsageFlags usage)
 	{
 		Init(size, usage);
-
-		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			Upload(i, data, size, 0);
-		}
 	}
 
-	void VulkanPerFrameHostBuffer::Upload(uint32_t frame, const void *data, size_t size, uint32_t offset)
+	void VulkanPerFrameHostBuffer::Upload(uint32_t frame, const FBufferUploadInfo &up)
 	{
 		auto mapped = Buffers[frame].GetAllocation().MappedPtr;
-		std::memcpy(static_cast<std::byte *>(mapped) + offset, data, size);
+		std::memcpy(static_cast<std::byte *>(mapped) + up.offset, up.data, up.size);
 	}
 
 	VulkanPerFrameHostBuffer::~VulkanPerFrameHostBuffer()
@@ -112,21 +107,15 @@ namespace BHive
 
 		ASSERT(data, "Data must be initilaized!");
 
-		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
-		std::memcpy(buffer_copy->data(), data, size);
+		RenderGraph init;
 
-		RenderCommand::GetGraphicsAPI()->ExecuteTransferPass(
-			[this, buffer_copy](ITransferContext &ctx)
-			{
-				auto &vk_ctx = ctx.As<FVulkanTransferContext>();
-				auto &cmd = vk_ctx.Cmd;
+		auto &pass = init.AddPass("StaticIndexBufferUpload", EPassType::OffScreen);
+		pass.BeginPhase(EPhaseType::Transfer);
+		pass.Push(this, EBufferAccess::IndexRead);
+		pass.Emplace<CmdUploadBuffer>()(this, data, size, 0);
+		pass.EndPhase();
 
-				mBuffer.Upload(cmd, buffer_copy->data(), buffer_copy->size(), 0);
-
-				auto barrier = utils::MakeBufferBarrier(mBuffer.Buffer.GetBuffer(), vk::PipelineStageFlagBits2::eIndexInput, vk::AccessFlagBits2::eIndexRead);
-				vk::DependencyInfo depInfo({}, {}, barrier);
-				cmd.pipelineBarrier2(depInfo);
-			});
+		Renderer::Get().ExecuteGraph(init);
 	}
 
 	NativeHandle StaticVulkanIndexBuffer::GetNativeHandle(uint32_t frame) const
@@ -139,21 +128,15 @@ namespace BHive
 		ASSERT(data, "Data must be initilaized!");
 		mBuffer.Init(size, vk::BufferUsageFlagBits::eVertexBuffer);
 
-		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
-		std::memcpy(buffer_copy->data(), data, size);
+		RenderGraph init;
 
-		RenderCommand::GetGraphicsAPI()->ExecuteTransferPass(
-			[this, buffer_copy](ITransferContext &ctx)
-			{
-				auto &vk_ctx = ctx.As<FVulkanTransferContext>();
-				auto &cmd = vk_ctx.Cmd;
+		auto &pass = init.AddPass("StaticVertexBufferUpload", EPassType::OffScreen);
+		pass.BeginPhase(EPhaseType::Transfer);
+		pass.Push(this, EBufferAccess::VertexRead);
+		pass.Emplace<CmdUploadBuffer>()(this, data, size, 0);
+		pass.EndPhase();
 
-				mBuffer.Upload(cmd, buffer_copy->data(), buffer_copy->size(), 0);
-
-				auto barrier = utils::MakeBufferBarrier(mBuffer.Buffer.GetBuffer(), vk::PipelineStageFlagBits2::eVertexAttributeInput, vk::AccessFlagBits2::eVertexAttributeRead);
-				vk::DependencyInfo depInfo({}, {}, barrier);
-				cmd.pipelineBarrier2(depInfo);
-			});
+		Renderer::Get().ExecuteGraph(init);
 	}
 
 	NativeHandle StaticVulkanVertexBuffer::GetNativeHandle(uint32_t frame) const
@@ -171,23 +154,6 @@ namespace BHive
 			SetData(data, size, 0);
 	}
 
-	void DynamicVulkanIndexBuffer::SetData(const void *data, size_t size, uint32_t offset)
-	{
-		if (!data || size == 0)
-			return;
-
-		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
-		std::memcpy(buffer_copy->data(), data, size);
-
-		RenderCommand::SubmitResourceUpdate(
-			[this, buffer_copy, offset](IRendererContext& ctx)
-			{
-				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
-				const auto frame = vk_ctx.Frame;
-				mPerFrameBuffer.Upload(frame, buffer_copy->data(), buffer_copy->size(), offset);
-			});
-	}
-
 	NativeHandle DynamicVulkanIndexBuffer::GetNativeHandle(uint32_t frame) const
 	{
 		ASSERT(frame < MAX_FRAMES_IN_FLIGHT)
@@ -199,23 +165,6 @@ namespace BHive
 		mPerFrameBuffer.Init(size, vk::BufferUsageFlagBits::eVertexBuffer);	
 		if (data)
 			SetData(data, size);
-	}
-
-	void DynamicVulkanVertexBuffer::SetData(const void *data, size_t size, uint32_t offset)
-	{
-		if (!data || size == 0)
-			return;
-
-		auto buffer_copy = CreateRef<std::vector<std::byte>>(size);
-		std::memcpy(buffer_copy->data(), data, size);
-
-		RenderCommand::SubmitResourceUpdate(
-			[this, buffer_copy, offset](IRendererContext &ctx)
-			{
-				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
-				const auto frame = vk_ctx.Frame;
-				mPerFrameBuffer.Upload(frame, buffer_copy->data(), buffer_copy->size(), offset);
-			});
 	}
 
 	void DynamicVulkanVertexBuffer::SetLayout(const BufferLayout &layout)
@@ -235,17 +184,6 @@ namespace BHive
 		mPerFrameBuffer.Init(size, utils::ToVkBufferType(type));
 		if (data)
 			SetData(data, size, 0);
-	}
-
-	void VulkanGPUBuffer::SetData(const void *data, size_t size, uint32_t offset)
-	{
-		if (!data)
-			return;
-
-		for (uint32_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++)
-		{
-			mPerFrameBuffer.Upload(frame, data, size, offset);
-		}	
 	}
 
 	NativeHandle VulkanGPUBuffer::GetNativeHandle(uint32_t frame) const

@@ -65,9 +65,9 @@ namespace BHive
 			.CompareMode = ECompareMode::COMPARE_REF_TO_TEXTURE,
 			.CompareOp = ECompareOp::LessOrEqual};
 
-		dir_shadow_fbo_spec.Attachments.attach(shadow_texture_specs, ETextureType::TEXTURE_2D_ARRAY);
-		point_shadow_fbo_spec.Attachments.attach(shadow_texture_specs, ETextureType::TEXTURE_CUBE_MAP_ARRAY);
-		spot_shadow_fbo_spec.Attachments.attach(shadow_texture_specs, ETextureType::TEXTURE_2D_ARRAY);
+		/*dir_shadow_fbo_spec.Attachments.SetDepthAttachment(shadow_texture_specs, ETextureType::TEXTURE_2D_ARRAY);
+		point_shadow_fbo_spec.Attachments.SetDepthAttachment(shadow_texture_specs, ETextureType::TEXTURE_CUBE_MAP_ARRAY);
+		spot_shadow_fbo_spec.Attachments.SetDepthAttachment(shadow_texture_specs, ETextureType::TEXTURE_2D_ARRAY);
 
 		auto &shadow_passes = mShadowRenderData->ShadowPasses;
 		shadow_passes.FBOs[0] = Framebuffer::Create(dir_shadow_fbo_spec);
@@ -77,7 +77,7 @@ namespace BHive
 		shadow_passes.Shaders[1] = ShaderManager::Get("ShadowPointLight.glsl");
 		shadow_passes.Shaders[2] = ShaderManager::Get("ShadowSpotLight.glsl");
 
-		mShadowRenderData->ShadowBuffer = GPUBuffer::Create(sizeof(FShadowData), EBufferType::StorageBuffer);
+		mShadowRenderData->ShadowBuffer = GPUBuffer::Create(sizeof(FShadowData), EBufferType::StorageBuffer);*/
 	}
 
 	void ShadowRenderer::Begin()
@@ -114,18 +114,18 @@ namespace BHive
 
 		if (mShadowRenderData->ShadowData.NumShadowMaps.x > 0)
 		{
-			mShadowRenderData->ShadowPasses.FBOs[0]->Bind();
+			//mShadowRenderData->ShadowPasses.FBOs[0]->Bind();
 
 			//RenderCommand::Clear(Buffer_Depth);
 
 			draw_meshes(mShadowRenderData->ShadowPasses.Shaders[0]);
 
-			mShadowRenderData->ShadowPasses.FBOs[0]->UnBind();
+			//mShadowRenderData->ShadowPasses.FBOs[0]->UnBind();
 		}
 
 		if (mShadowRenderData->ShadowData.NumShadowMaps.y > 0)
 		{
-			mShadowRenderData->ShadowPasses.FBOs[1]->Bind();
+			//mShadowRenderData->ShadowPasses.FBOs[1]->Bind();
 
 			//RenderCommand::Clear(Buffer_Depth);
 
@@ -136,7 +136,7 @@ namespace BHive
 
 		if (mShadowRenderData->ShadowData.NumShadowMaps.z > 0)
 		{
-			mShadowRenderData->ShadowPasses.FBOs[2]->Bind();
+			//mShadowRenderData->ShadowPasses.FBOs[2]->Bind();
 
 			//RenderCommand::Clear(Buffer_Depth);
 

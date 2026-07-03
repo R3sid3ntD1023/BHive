@@ -30,6 +30,8 @@ namespace BHive
 	public:
 		virtual ~IndexBuffer() = default;
 
+		void SetData(const void *data, size_t size, uint32_t offset = 0) override;
+
 		virtual uint32_t GetCount() const = 0;
 
 		static Ref<IndexBuffer> Create(const uint32_t count, EBufferUsageType usage = EBufferUsageType::Static, const uint32_t *data = nullptr);
@@ -39,6 +41,8 @@ namespace BHive
 	{
 	public:
 		virtual ~VertexBuffer() = default;
+
+		void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 
 		virtual void SetLayout(const BufferLayout &layout) = 0;
 
@@ -54,6 +58,8 @@ namespace BHive
 		virtual ~GPUBuffer() = default;
 
 		virtual void BindAtBindingPoint(uint32_t binding) = 0;
+
+		void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 
 		static Ref<GPUBuffer> Create(size_t size, EBufferType type, const void *data = nullptr);
 	};

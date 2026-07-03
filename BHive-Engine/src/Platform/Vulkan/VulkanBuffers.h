@@ -5,6 +5,13 @@
 
 namespace BHive
 {
+	struct FBufferUploadInfo
+	{
+		const void *data;
+		size_t size;
+		uint32_t offset;
+	};
+
 	struct VulkanStaticBuffer
 	{
 		AllocatedBuffer Buffer;
@@ -12,7 +19,7 @@ namespace BHive
 
 		void Init(size_t size, vk::BufferUsageFlags usage);
 
-		void Upload(vk::raii::CommandBuffer& cmd, const void *data, size_t size, uint32_t offset);
+		void Upload(vk::raii::CommandBuffer &cmd, const FBufferUploadInfo& up);
 
 		~VulkanStaticBuffer();
 	};
@@ -25,7 +32,7 @@ namespace BHive
 
 		void Init(const void* data, size_t size, vk::BufferUsageFlags usage);
 
-		void Upload(uint32_t frame, const void *data, size_t size, uint32_t offset);
+		void Upload(uint32_t frame, const FBufferUploadInfo& up);
 
 		vk::Buffer GetBuffer(uint32_t frame) const { return Buffers.at(frame).GetBuffer(); }
 
@@ -45,9 +52,6 @@ namespace BHive
 		virtual NativeHandle GetNativeHandle(uint32_t frame) const override;
 
 	private:
-		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override {};
-
-	private:
 		VulkanStaticBuffer mBuffer;
 		uint32_t mCount;
 	};
@@ -64,9 +68,6 @@ namespace BHive
 		virtual NativeHandle GetNativeHandle(uint32_t frame) const override;
 
 	private:
-		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override {};
-
-	private:
 		VulkanStaticBuffer mBuffer;
 		BufferLayout mLayout{};
 	};
@@ -80,8 +81,6 @@ namespace BHive
 
 		virtual uint32_t GetCount() const override { return mCount; }
 
-		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override;
-
 		virtual NativeHandle GetNativeHandle(uint32_t frame) const override;
 
 	private:
@@ -93,8 +92,6 @@ namespace BHive
 	{
 	public:
 		DynamicVulkanVertexBuffer(const void *data, const size_t size);
-
-		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 
 		virtual void SetLayout(const BufferLayout &layout) override;
 
@@ -117,8 +114,6 @@ namespace BHive
 
 		//unused in vulkan
 		void BindAtBindingPoint(uint32_t binding) override {}
-
-		void SetData(const void *data, size_t, uint32_t offset = 0) override;
 
 		NativeHandle GetNativeHandle(uint32_t frame) const override;
 

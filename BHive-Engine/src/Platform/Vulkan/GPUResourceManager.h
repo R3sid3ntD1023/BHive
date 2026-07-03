@@ -1,76 +1,73 @@
 #pragma once
 
+#include "core/Core.h"
 #include "VulkanMemory.h"
 
 namespace BHive
 {
-	
+	template <typename T>
+	struct Resource
+	{
+		T Handle = VK_NULL_HANDLE;
+	};
+
+	struct StorageBase
+	{
+		virtual ~StorageBase() = default;
+
+		virtual void Remove(ResourceID handle) = 0;
+	};
+
+	template <typename T>
+	struct Storage : public StorageBase
+	{
+		using TContainer = std::unordered_map<ResourceID, Resource<T>>;
+
+		void AddExternal(ResourceID handle, T &&resource)
+		{
+			if (!mResources.contains(handle))
+			{
+				mResources[handle] = Resource<T>{.Handle = std::move(resource)};
+				return;
+			}
+
+			LOG_WARN("Handle already exists! -> {}", handle);
+		}
+
+		void Remove(ResourceID handle) override
+		{
+			if (mResources.contains(handle))
+			{
+				mResources.erase(handle);
+				return;
+			}
+
+			LOG_WARN("Handle does not exists! -> {}", handle);
+		}
+
+		T &GetOrCreate(ResourceID handle) { return mResources.try_emplace(handle).first->second.Handle; }
+
+		T &Get(ResourceID handle)
+		{
+			ASSERT(mResources.contains(handle), "Invalid resource id -> {}", handle)
+			return mResources.at(handle).Handle;
+		}
+
+		const T &Get(ResourceID handle) const
+		{
+			ASSERT(mResources.contains(handle), "Invalid resource id -> {}", handle)
+			return mResources.at(handle).Handle;
+		}
+
+		TContainer &GetContainer() { return mResources; }
+
+	private:
+		TContainer mResources;
+	};
+
 	class GPUResourceManager
 	{
 	public:
-		template<typename T>
-		struct Resource
-		{
-			T Handle = VK_NULL_HANDLE;
-		};
-
-		struct StorageBase
-		{
-			virtual ~StorageBase() = default;
-
-			virtual void Remove(ResourceID handle) = 0;
-		};
-
-		template<typename T>
-		struct Storage : public StorageBase
-		{
-			using TContainer = std::unordered_map<ResourceID, Resource<T>>;
-
-			void AddExternal(ResourceID handle, T && resource) 
-			{
-				if (mResources.contains(handle))
-				{
-					LOG_WARN("Handle already exists! -> {}", handle);
-					return;
-				}
-
-				mResources.emplace(handle, Resource<T>{.Handle = std::move(resource)}); 
-			}
-
-			void Remove( ResourceID handle) override
-			{ 
-				if (!mResources.contains(handle))
-				{
-					LOG_WARN("Handle does not exists! -> {}", handle);
-					return;
-				}
-
-				if(mResources.contains(handle))
-				{
-					mResources.erase(handle);
-				}
-			}
-
-			T& GetOrCreate(ResourceID handle) { return mResources.try_emplace(handle).first->second.Handle;}
-
-			T &Get(ResourceID handle)
-			{
-				ASSERT(mResources.contains(handle), "Invalid resource id -> {}", handle)
-				return mResources.at(handle).Handle;
-			}
-
-			const T& Get(ResourceID handle) const
-			{
-				ASSERT(mResources.contains(handle), "Invalid resource id -> {}", handle)
-				return mResources.at(handle).Handle;
-			}
-
-
-			TContainer &GetContainer() { return mResources; }
-
-		private:
-			TContainer mResources;
-		};
 
 		ResourceID CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name = "");
 

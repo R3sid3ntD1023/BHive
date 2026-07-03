@@ -23,7 +23,7 @@ namespace BHive
 
 		FramebufferSpecification spec{};
 		spec.Size = size;
-		spec.Attachments.attach(color_attachment);
+		spec.Attachments.AddColorAttachment(FFramebufferTexture{color_attachment});
 		spec.DebugName = "ImageDebugger";
 		mFB = Framebuffer::Create(spec);
 
@@ -71,31 +71,26 @@ namespace BHive
 			const char *uniform = entry.IsCube ? "u_TexCube" : "u_Tex2D";
 			auto tex = entry.Tex;
 
-			ImageSubresourceRange range{mip, mipLevels, face, layers};
-
-			auto& pass = renderer.BeginPass("ImageDebugger", EPassType::OffScreen);
-			pass.BeginPhase("ImageDebugger : Render To Qaud");
-			pass.Push(mFB->GetColorAttachment(), EImageAccess::ColorWrite);
-			pass.Push(tex, EImageAccess::ColorRead);
-
-			mFB->Bind();
-
-			renderer.ClearColor(0, 0, 0, 1);
-			renderer.Clear();
-
 			mMaterial->Set("u_Type", type);
 			mMaterial->Set("u_Mip", mip);
 			mMaterial->Set("u_Face", face);
 			mMaterial->SetTexture(uniform, tex);
 			mMaterial->Submit();
 
-			renderer.DrawFullscreen();
-			
-			mFB->UnBind();
+			ImageSubresourceRange range{mip, mipLevels, face, layers};
 
+			auto& pass = renderer.BeginPass("ImageDebugger", EPassType::OffScreen);
+			
+			pass.BeginPhase("ImageDebugger : Render To Qaud", EPhaseType::Graphics);
+			pass.Push(mFB);
+			pass.Push(mFB->GetColorAttachment(), EImageAccess::ColorWrite);
+			pass.Push(tex, EImageAccess::ColorRead, range);
+			pass.Emplace<CmdSetClearColor>()(0.f, 0.0f, .0f, 1.0f);
+			pass.Emplace<CmdBindMaterial>()(mMaterial.get());
+			pass.Emplace<CmdDrawFullScreen>()();
 			pass.EndPhase();
 
-			pass.BeginPhase("ImageDebugger : Transition to ComputeSampled");
+			pass.BeginPhase("ImageDebugger : Transition to Read", EPhaseType::Transfer);
 			pass.Push(mFB->GetColorAttachment(), EImageAccess::ColorRead);
 			pass.EndPhase();
 
@@ -137,7 +132,7 @@ namespace BHive
 					ImGui::SliderInt("Face", &mSelectedFace, 0, 5);
 				}
 
-				auto texID = ImGuiLayer::GetTextureID(*mFB->GetColorAttachment(0));
+				auto texID = ImGuiLayer::GetTextureID(*mFB->GetColorAttachment());
 				ImGui::Image(texID, ImVec2(float(mSize.x), float(mSize.y)));
 			}
 		}

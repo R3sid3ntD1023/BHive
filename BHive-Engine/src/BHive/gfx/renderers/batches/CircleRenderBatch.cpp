@@ -23,6 +23,7 @@ namespace BHive
 
 		mCircleMaterial = CreateScope<Material>();
 		mCircleMaterial->SetPipeline(PipelineRegistry::Get(CIRCLE_PIPELINE_NAME));
+		mCircleMaterial->Submit();
 	}
 
 	void CircleRenderBatch::StartBatch()
@@ -41,11 +42,12 @@ namespace BHive
 	{
 		if (mBuffer->GetIndexCount() == 0)
 			return;
+
 		mBuffer->Upload();
 
-		mCircleMaterial->Submit();
-
-		renderer.DrawElements(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
+		auto &pass = renderer.GetActivePass();
+		pass.Emplace<CmdBindMaterial>()(mCircleMaterial.get());
+		pass.Emplace<CmdDraw>()(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
 
 		mIsActive = false;
 	}

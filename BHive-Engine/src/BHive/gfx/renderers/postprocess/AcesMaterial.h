@@ -14,13 +14,5 @@ namespace BHive
 		Ref<Texture> AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input) override;
 
 		const char *GetName() const override { return "Aces"; }
-
-	private:
-		void ExecutePass(FComputeBindings& b);
-
-		void OnExecutePass(IRendererContext &ctx);
-
-		Ref<Texture> mInput;
-		Ref<Texture> mOutput;
 	};
 }

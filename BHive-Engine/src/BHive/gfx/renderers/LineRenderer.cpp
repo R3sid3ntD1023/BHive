@@ -317,7 +317,10 @@ namespace BHive
 
 	void LineRenderer::SetLineWidth(float width)
 	{
-		Renderer::Get().SetLineWidth(width);
+		auto& renderer = Renderer::Get();
+		
+		auto& pass = renderer.GetActivePass();
+		pass.Emplace<CmdSetLineWidth>()(width);
 	}
 
 } // namespace BHive

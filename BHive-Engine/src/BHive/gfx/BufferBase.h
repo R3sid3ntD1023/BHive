@@ -7,7 +7,7 @@ namespace BHive
 {
 	
 
-	class BHIVE_API BufferBase
+	class BHIVE_API BufferBase 
 	{
 	public:
 		virtual ~BufferBase() = default;

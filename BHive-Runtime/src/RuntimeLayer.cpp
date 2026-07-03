@@ -29,6 +29,8 @@
 #include "gfx/renderers/postprocess/BloomMaterial.h"
 #include "gfx/renderers/postprocess/ColorGradingMaterial.h"
 
+#define ENABLE_RENDERING 0
+
 namespace BHive
 {
 	FTransform transform{{6.f, 0.f, 0.f}};
@@ -156,6 +158,7 @@ namespace BHive
 			mMaterial->SetPipeline(pipeline);
 			mMaterial->SetTexture("u_Texture", mTexture);
 			mMaterial->Set("u_Color", glm::vec3(1, 1, 1));
+			mMaterial->Submit();
 		}
 
 		{
@@ -166,6 +169,7 @@ namespace BHive
 			mEmissiveMaterial->SetPipeline(pipeline);
 			mEmissiveMaterial->EmissionColor = FColor::Red;
 			mEmissiveMaterial->EmissionColor.a = 10.0f;
+			mEmissiveMaterial->Submit();
 		}
 
 		{
@@ -177,7 +181,7 @@ namespace BHive
 			mLambertMaterial->SetPipeline(pipeline);
 			mLambertMaterial->DiffuseColor = FColor::LightGray;
 			mLambertMaterial->EmissionColor = {0.f, .0f, .0f};
-			//mLambertMaterial->SetTexture("DiffuseMap", mTexture);
+			mLambertMaterial->Submit();
 		}
 
 		{
@@ -191,26 +195,10 @@ namespace BHive
 			mStandardMaterial->Emission = {0.f, .0f, .0f};
 			mStandardMaterial->Metallic = 1.0f;
 			mStandardMaterial->Roughness = 0.5f;
-			// mLambertMaterial->SetTexture("DiffuseMap", mTexture);
+			mStandardMaterial->Submit();
 		}
 		
-		
-		/*mEmmissivePipeline = Pipeline::Create();
-		state.ShaderProgram = mEmissiveShader;
-		mEmmissivePipeline->Init(state);
-		mEmissiveMaterial = CreateRef<EmissiveMaterial>(mEmmissivePipeline);
-		mEmissiveMaterial->EmissionColor = FColor::Green;*/
 
-		/*mShader = ShaderManager::Get().Load(ENGINE_SHADER_PATH"/Lambert.glsl");
-		mPipeline = Pipeline::Create();
-		state.ShaderProgram = mShader;
-		mPipeline->Init(state);
-		mLambertMaterial = CreateRef<LambertMaterial>(mPipeline);
-		mLambertMaterial->DiffuseColor = FColor::Purple;
-		mLambertMaterial->EmissionColor = FColor::Yellow;
-		mLambertMaterial->SetTexture("DiffuseMap", mTexture);*/
-
-		
 		auto &window = app.GetWindow();
 		auto aspect = window.GetAspectRatio();
 
@@ -220,9 +208,9 @@ namespace BHive
 
 		FramebufferSpecification fb_specs;
 		fb_specs.Size = window.GetSize();
-		fb_specs.Attachments.attach(FTextureCreateInfo{
-				.Format = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
-			.attach(FTextureCreateInfo{.Format = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+		fb_specs.Attachments.AddColorAttachment({FTextureCreateInfo{.Format = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE}})
+			.SetDepthAttachment({FTextureCreateInfo{.Format = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE}});
+
 		fb_specs.DebugName = "Runtime";
 		mFramebuffer = Framebuffer::Create(fb_specs);
 		
@@ -249,7 +237,7 @@ namespace BHive
 		mColorGrading = CreateRef<ColorGradingMaterial>();
 
 		mPostProcessAllocator.Resize(window.GetSize());
-		mPostProcessStack.Materials.push_back(mBloomMaterial);
+		//mPostProcessStack.Materials.push_back(mBloomMaterial);
 		//mPostProcessStack.Materials.push_back(aces);
 		//mPostProcessStack.Materials.push_back(mColorGrading);
 		
@@ -268,6 +256,7 @@ namespace BHive
 
 	void RuntimeLayer::OnRender(Renderer& renderer)
 	{
+#if ENABLE_RENDERING
 		auto &app = Application::Get();
 		auto &window = app.GetWindow();
 		auto size = window.GetSize();
@@ -275,21 +264,17 @@ namespace BHive
 
 		auto& scenepass = renderer.BeginPass("Scene", EPassType::OffScreen);
 		scenepass.BeginPhase();
-		scenepass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorWrite);
-		scenepass.Push(mFramebuffer->GetDepthAttachment(), EImageAccess::DepthWrite);
 		scenepass.Push(globalsResources.Find("EnvironmentPreFilter")->TextureRef, EImageAccess::ColorRead);
 		scenepass.Push(globalsResources.Find("EnvironmentCubeMap")->TextureRef, EImageAccess::ColorRead);
 		scenepass.Push(globalsResources.Find("EnvironmentIrradiance")->TextureRef, EImageAccess::ColorRead);
 		scenepass.Push(globalsResources.Find("EnvironmentBRDFLUT")->TextureRef, EImageAccess::ColorRead);
+		scenepass.Push(globalsResources.Find("Camera")->BufferRef, EBufferAccess::UniformRead);
 
 		scenepass.View = renderer.CreateView(mCamera.GetProjection(), mCamera.GetView());
-		mFramebuffer->Bind();
-
-	
-		renderer.ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		renderer.Clear();
-		//renderer.SubmitCamera(mCamera.GetProjection(), mCamera.GetView());
-
+		scenepass.Push(mFramebuffer);
+		scenepass.Push(EImageAccess::ColorWrite, EImageAccess::DepthWrite);
+		scenepass.Emplace<CmdSetClearColor>()(0.1f, 0.1f, 0.1f, 1.0f);
+		scenepass.Emplace<CmdClear>()();
 		//main light source
 		
 		renderer.Light.Submit(mainLight);
@@ -331,42 +316,47 @@ namespace BHive
 		const auto stride = sizeof(MultiDrawIndirectCommand);
 		if (mMesh && mMaterial)
 		{		
-			mMaterial->Set("u_Time", Time::Raw());
-			mMaterial->Submit();
+			mMesh->GetVertexArray()->DeclareAccess(scenepass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
 
-			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2, stride );
+			if (mMaterial)
+			{
+				mMaterial->Set("u_Time", Time::Raw());
+				mMaterial->Submit();
+
+				scenepass.Emplace<CmdBindMaterial>()(mMaterial.get());
+				scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2u, stride);
+			}
+
+			if (mLambertMaterial)
+			{
+				scenepass.Emplace<CmdBindMaterial>()(mLambertMaterial.get());
+				scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 1u, stride, 2u);
+			}
 		}
 
-		if (mMesh && mLambertMaterial)
-		{
-			mLambertMaterial->Submit();
+		
 
-			renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 1, stride, 2u);
-		}
+		mSphere->GetVertexArray()->DeclareAccess(scenepass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
+		mPlane->GetVertexArray()->DeclareAccess(scenepass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
 
-		mEmissiveMaterial->Submit();
+		scenepass.Emplace<CmdBindMaterial>()(mEmissiveMaterial.get());
+		scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1u, stride, 3u);
 
-		renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1, stride, 3u);
-
-		mStandardMaterial->Submit();
-
-		renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1, stride, 4u);
-		renderer.MultiDrawElementsIndirect(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mPlane->GetVertexArray().get(), 1, stride, 5u);
-
-		mFramebuffer->UnBind();
+		scenepass.Emplace<CmdBindMaterial>()(mStandardMaterial.get());
+		scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1u, stride, 4u);
+		scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mPlane->GetVertexArray().get(), 1u, stride, 5u);
 
 		scenepass.EndPhase();
 
 		scenepass.BeginPhase();
-		scenepass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorRead);
-		scenepass.Push(mFramebuffer->GetDepthAttachment(), EImageAccess::DepthWrite);
+		scenepass.Push(EImageAccess::ColorRead, EImageAccess::DepthWrite);
 		scenepass.EndPhase();
 
 		renderer.EndPass();
 
 		auto input = mFramebuffer->GetColorAttachment();
 		mFinalSceneColor = mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, input);
-
+#endif
 		ImageDebugger::Get().OnRender(renderer);
 
 	}

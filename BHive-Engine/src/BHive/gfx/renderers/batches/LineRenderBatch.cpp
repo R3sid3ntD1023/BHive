@@ -24,6 +24,7 @@ namespace BHive
 
 		mLineMaterial = CreateScope<Material>();
 		mLineMaterial->SetPipeline(PipelineRegistry::Get(LINE_PIPELINE_NAME));
+		mLineMaterial->Submit();
 	}
 
 	bool LineRenderBatch::NeedsFlush(uint32_t vNeeded, uint32_t iNeeded)
@@ -44,10 +45,11 @@ namespace BHive
 
 		mBuffer->Upload();
 
-		mLineMaterial->Submit();
+		auto& pass = renderer.GetActivePass();
+		pass.Emplace<CmdSetLineWidth>()(2.0f);
+		pass.Emplace<CmdBindMaterial>()(mLineMaterial.get());
+		pass.Emplace<CmdDraw>()(ETopologyMode::Lines, mBuffer->GetVAO(), mBuffer->GetVertexCount());
 
-		renderer.SetLineWidth(2.0f);
-		renderer.DrawArrays(ETopologyMode::Lines, mBuffer->GetVAO(), mBuffer->GetVertexCount());
 		mIsActive = false;
 	}
 

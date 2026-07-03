@@ -1,9 +1,19 @@
 #include "Platform/Vulkan/VulkanVertexArray.h"
 #include "RenderCommand.h"
 #include "VertexArray.h"
+#include "rendergraph/Pass.h"
 
 namespace BHive
 {
+	void VertexArray::DeclareAccess(FPass &pass, EBufferAccess vbAccess, EBufferAccess ibAccess)
+	{
+		for (auto& vb : GetVertexBuffers())
+			pass.Push(vb.get(), vbAccess);
+
+		if(auto& ib = GetIndexBuffer())
+			pass.Push(ib.get(), ibAccess);
+	}
+
 	Ref<VertexArray> VertexArray::Create()
 	{
 		switch (RenderCommand::GetAPI())

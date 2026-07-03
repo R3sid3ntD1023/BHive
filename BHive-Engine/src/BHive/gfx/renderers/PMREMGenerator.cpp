@@ -29,39 +29,71 @@ namespace BHive
 	{
 		mInput = hdr;
 
-		auto &pass = RenderCommand::BeginPass("Generate PMREM Maps", EPassType::OffScreen);
+		auto conversionBindings = FComputeBindings(PipelineRegistry::Get(PMREM_EQUIRECTANGULAR_PIPELINE))
+									  .Set({"equirectangularMap", mInput})
+									  .Set({"imgOutput", mEnvironmentTextures.Environment, {0, 1, 0, 6}})
+									  .Set<uint32_t>({"u_width", mSettings.EnvironmentMapSize})
+									  .Set<uint32_t>({"u_height", mSettings.EnvironmentMapSize});
+
+		auto convolutionBindings = FComputeBindings(PipelineRegistry::Get(PMREM_CONVOLUTION_PIPELINE))
+									   .Set({"environmentMap", mEnvironmentTextures.Environment})
+									   .Set({"irradianceMap", mEnvironmentTextures.Irradiance, {0, 1, 0, 6}})
+									   .Set<uint32_t>({"u_width", mSettings.IrradianceSize})
+									   .Set<uint32_t>({"u_height", mSettings.IrradianceSize});
+		
+		auto prefilterBindings = FComputeBindings(PipelineRegistry::Get(PMREM_PREFILTER_PIPELINE))
+			.Set({"environmentMap", mEnvironmentTextures.Environment})
+			.Set<uint32_t>({"u_envResolution", mSettings.EnvironmentMapSize});
+		
+		RenderGraph graph;
+		auto &pass = graph.AddPass("Generate PMREM Maps", EPassType::OffScreen);
 
 		//Phase 0 : equirectangular -> cubemap
-		pass.BeginPhase("Convert 2D -> cube");
+		pass.BeginPhase("Convert 2D -> cube", EPhaseType::Compute);
 		pass.Push(mInput, EImageAccess::ComputeSampled);
 		pass.Push(mEnvironmentTextures.Environment, EImageAccess::ComputeStorageWrite, {0, 1, 0, 6});
-		pass.Push("Compute CubeMap", this, &PMREMGenerator::DoEquirectangularConversion);
+		pass.Emplace<CmdBindMaterial>()(&conversionBindings);
+		pass.Emplace<CmdDisptach>()((mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 6);
 		pass.EndPhase();
 
 		// Phase 1 : generate mipmaps for environment
-		pass.BeginPhase("Gen Mips for Environment Cube");
-		pass.Push("Generate MipMaps", this, &PMREMGenerator::DoGenerateCubeMips);
+		pass.BeginPhase("Gen Mips for Environment Cube", EPhaseType::Transfer);
+		pass.Emplace<CmdGenerateMipMaps>()(mEnvironmentTextures.Environment);
 		pass.EndPhase();
 
 		//Phase 2 : Irradiance convolution
-		pass.BeginPhase("Convolution");
+		pass.BeginPhase("Convolution", EPhaseType::Compute);
 		pass.Push(mEnvironmentTextures.Environment, EImageAccess::ComputeSampled);
 		pass.Push(mEnvironmentTextures.Irradiance, EImageAccess::ComputeStorageWrite, {0, 1, 0, 6});
-		pass.Push("Compute Irradiance", this, &PMREMGenerator::DoConvolution);
+		pass.Emplace<CmdBindMaterial>()(&convolutionBindings);
+		pass.Emplace<CmdDisptach>()((mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 1);
 		pass.EndPhase();
 
 		//Phase 3 - N: Prefilter Specular Mip Chain
 
 		for (uint32_t mip = 0; mip < mSettings.PrefilterMipLevels; mip++)
 		{
-			pass.BeginPhase(std::format("Prefiltering Mip {}", mip ));
+			uint32_t s = mSettings.PrefilterMapSize >> mip;
+			if (s == 0)
+				s = 1;
+
+			float roughness = (float)mip / (float)(mSettings.PrefilterMipLevels - 1);
+
+			prefilterBindings.Set({"imgOutput", mEnvironmentTextures.PreFilter, {mip, 1, 0, 6}})
+				.Set<float>({"u_roughness", roughness})
+				.Set<int32_t>({"u_mip_level", int32_t(mip)})
+				.Set<uint32_t>({"u_width", s})
+				.Set<uint32_t>({"u_height", s});
+
+			pass.BeginPhase(std::format("Prefiltering Mip {}", mip ), EPhaseType::Compute);
 			pass.Push(mEnvironmentTextures.Environment, EImageAccess::ComputeSampled);
 			pass.Push(mEnvironmentTextures.PreFilter, EImageAccess::ComputeStorageWrite, {mip, 1, 0, 6});
-			pass.Push("Compute PreFilter", this, &PMREMGenerator::DoPreFilter, mip);
+			pass.Emplace<CmdBindMaterial>()(&prefilterBindings);
+			pass.Emplace<CmdDisptach>()((s + 7) / 8, (s + 7) / 8, 6);
 			pass.EndPhase();
 		}
 
-		RenderCommand::EndPass();
+		Renderer::Get().ExecuteGraph(graph);
 
 		return mEnvironmentTextures;
 	}
@@ -124,59 +156,6 @@ namespace BHive
 
 	}
 
-	void PMREMGenerator::DoEquirectangularConversion(IRendererContext &ctx)
-	{
-		Renderer::Get().ExecuteComputePass(
-			PipelineRegistry::Get(PMREM_EQUIRECTANGULAR_PIPELINE), {(mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 6},
-			[=](FComputeBindings &b)
-			{
-				b.Bind("equirectangularMap", mInput);
-				b.Bind("imgOutput", mEnvironmentTextures.Environment, {0, 1, 0, 6});
-				b.Set("u_width", mSettings.EnvironmentMapSize);
-				b.Set("u_height", mSettings.EnvironmentMapSize);
-			});
-	}
-
-	void PMREMGenerator::DoGenerateCubeMips(IRendererContext &ctx)
-	{
-		Renderer::Get().ExecuteTransferPass([=](ITransferContext &) { mEnvironmentTextures.Environment->GenerateMips(); });
-	}
-
-	void PMREMGenerator::DoConvolution(IRendererContext &ctx)
-	{
-		Renderer::Get().ExecuteComputePass(
-			PipelineRegistry::Get(PMREM_CONVOLUTION_PIPELINE), {(mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 1},
-			[=](FComputeBindings &b)
-			{
-				b.Bind("environmentMap", mEnvironmentTextures.Environment);
-				b.Bind("irradianceMap", mEnvironmentTextures.Irradiance, {0, 1, 0, 6});
-				b.Set("u_width", mSettings.IrradianceSize);
-				b.Set("u_height", mSettings.IrradianceSize);
-			});
-	}
-
-	void PMREMGenerator::DoPreFilter(IRendererContext &ctx, uint32_t mip)
-	{
-		uint32_t s = mSettings.PrefilterMapSize >> mip;
-		if (s == 0)
-			s = 1;
-
-		float roughness = (float)mip / (float)(mSettings.PrefilterMipLevels - 1);
-
-		Renderer::Get().ExecuteComputePass(
-			PipelineRegistry::Get(PMREM_PREFILTER_PIPELINE), {(s + 7) / 8, (s + 7) / 8, 6},
-			[=](FComputeBindings &b)
-			{
-				b.Bind("environmentMap", mEnvironmentTextures.Environment);
-				b.Bind("imgOutput", mEnvironmentTextures.PreFilter, {mip, 1, 0, 6});
-				b.Set("u_envResolution", mSettings.EnvironmentMapSize);
-				b.Set("u_roughness", roughness);
-				b.Set("u_mip_level", int32_t(mip));
-				b.Set("u_width", s);
-				b.Set("u_height", s);
-			});
-	}
-
 	Ref<Texture2D> BRDFLUTGenerator::GenerateBRDFLUTMap(uint32_t size)
 	{
 		auto BRDFLUTShader = ShaderManager::Get(PMREM_BRDFLUT);
@@ -194,8 +173,16 @@ namespace BHive
 
 		auto brdfLUT = Texture2D::Create({size, size}, brdfLUTInfo);
 
-		Renderer::Get().ExecuteComputePass(
-			PipelineRegistry::Get(PMREM_BRDFLUT_PIPELINE), {size / 8, size / 8, 1}, [&](FComputeBindings &b) { b.Bind("brdfLutTexture", brdfLUT); });
+		auto bindings = FComputeBindings(PipelineRegistry::Get(PMREM_BRDFLUT_PIPELINE));
+		bindings.Set({"brdfLutTexture", brdfLUT});
+
+		RenderGraph graph;
+		auto& pass = graph.AddPass("Generate BRDFLut", EPassType::OffScreen);
+		pass.BeginPhase(EPhaseType::Compute);
+		pass.Emplace<CmdBindMaterial>()(&bindings);
+		pass.Emplace<CmdDisptach>()(size / 8, size / 8, 1);
+		pass.EndPhase();
+		Renderer::Get().ExecuteGraph(graph);
 
 		return brdfLUT;		
 

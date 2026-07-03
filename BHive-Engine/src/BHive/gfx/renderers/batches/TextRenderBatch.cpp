@@ -45,9 +45,12 @@ namespace BHive
 
 		auto &texture = mTextureBatch->GetTexture();
 		mMaterial->SetTexture("uTexture", texture, 0);
-		mMaterial->Submit(PipelineRegistry::Get(PIPELINE_NAME));
+		mMaterial->Submit();
 
-		renderer.DrawElements(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
+		auto &pass = renderer.GetActivePass();
+		pass.Emplace<CmdBindMaterial>()(mMaterial.get());
+		pass.Emplace<CmdDrawIndexed>()(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
+
 		mIsActive = false;
 	}
 

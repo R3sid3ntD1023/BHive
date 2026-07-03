@@ -27,7 +27,7 @@ namespace BHive
 
 	using TextureSlotMap = std::unordered_map<std::string, TextureSlot>;
 
-	class BHIVE_API Material : public Asset
+	class BHIVE_API Material : public Asset , public IMaterial
 	{
 	public:
 		Material() = default;
@@ -37,8 +37,6 @@ namespace BHive
 		void SetPipeline(Pipeline *pipeline);
 
 		virtual void Submit(Pipeline* pipeline = nullptr);
-
-		virtual void SetTexture(const char *name, const Ref<Texture> &texture, uint32_t mip = 0);
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
@@ -50,6 +48,14 @@ namespace BHive
 
 		template<typename T>
 		void Set(const std::string &name, const T &val);
+
+		void SetTexture(const std::string& name, const Ref<Texture> &texture, uint32_t mip = 0);
+
+		Ref<IMaterialBackendInterface> GetNative() const override { return mBackendMaterial; }
+
+		MaterialSnapshot CreateSnapshot() const override { return mBackendMaterial->CreateSnapshot(); }
+
+		Pipeline *GetPipeline() const override { return mPipeline; }
 
 		REFLECTABLEV(Asset)
 
@@ -64,7 +70,7 @@ namespace BHive
 
 		Pipeline* mPipeline = nullptr;
 
-		Scope<IMaterialBackendInterface> mBackendMaterial;
+		Ref<IMaterialBackendInterface> mBackendMaterial;
 
 	private:
 	};

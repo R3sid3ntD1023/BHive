@@ -6,17 +6,13 @@
 
 namespace BHive
 {
-	class FramebufferTexture2D;
-	class TextureCubeMap;
-
 	struct FFramebufferTexture
 	{
 		FTextureCreateInfo CreateInfo{};
-		ETextureType TextureType = ETextureType::TEXTURE_2D;
 		uint32_t Layer = 0;
-		uint32_t LayerCount = 1;
 		uint32_t MipLevel = 0;
-		Ref<Texture> ExistingTexture;
+		ETextureType Type = ETextureType::TEXTURE_2D;
+		Ref<Texture> ExternalTexture = nullptr;
 	};
 
 	struct FRenderbufferTexture
@@ -26,44 +22,43 @@ namespace BHive
 
 	struct BHIVE_API FramebufferAttachments
 	{
-
 		FramebufferAttachments() = default;
-		FramebufferAttachments(std::initializer_list<FFramebufferTexture> attachments)
-			: Attachments(attachments)
-		{
-		}
 
-		FramebufferAttachments &reset()
+		FramebufferAttachments &Reset()
 		{
-			Attachments.clear();
+			mColorAttachments.clear();
+			mDepthAttachment = {};
 			mRenderBufferSpecification = {};
 			return *this;
 		}
 
-		FramebufferAttachments &attach(const FFramebufferTexture& texture)
+		FramebufferAttachments &AddColorAttachment(const FFramebufferTexture& spec)
 		{
-			Attachments.push_back(texture);
+			mColorAttachments.emplace_back(spec);
 			return *this;
 		}
 
-		FramebufferAttachments &attach(const FTextureCreateInfo &create_info, ETextureType type = ETextureType::TEXTURE_2D)
+		FramebufferAttachments &SetDepthAttachment(const FFramebufferTexture& spec)
 		{
-			Attachments.emplace_back(FFramebufferTexture{create_info, type});
+			mDepthAttachment = spec;
 			return *this;
 		}
 
-		FramebufferAttachments &attach(const FRenderbufferTexture &format)
+		FramebufferAttachments &SetRenderBuffer(const FRenderbufferTexture &format)
 		{
 			mRenderBufferSpecification = format;
 			return *this;
 		}
 
-		const std::vector<FFramebufferTexture> &GetAttachments() const { return Attachments; }
+		const std::vector<FFramebufferTexture> &GetColorAttachments() const { return mColorAttachments; }
+
+		const FFramebufferTexture &GetDepthAttachment() const { return mDepthAttachment; }
 
 		const FRenderbufferTexture &GetRenderBuffer() const { return mRenderBufferSpecification; }
 
 	private:
-		std::vector<FFramebufferTexture> Attachments;
+		std::vector<FFramebufferTexture> mColorAttachments;
+		FFramebufferTexture mDepthAttachment;
 		FRenderbufferTexture mRenderBufferSpecification;
 
 		friend class Framebuffer;
@@ -84,11 +79,7 @@ namespace BHive
 
 		virtual ~Framebuffer() = default;
 
-		virtual void Bind() const = 0;
-
 		virtual void BindFace(uint32_t face) = 0;
-
-		virtual void UnBind() const = 0;
 
 		virtual void Resize(const glm::uvec2 &newSize) = 0;
 
@@ -111,6 +102,10 @@ namespace BHive
 		virtual const FramebufferSpecification &GetSpecification() const = 0;
 
 		virtual const glm::uvec2& GetSize() const = 0;
+
+		virtual const FFramebufferTexture& GetColorAttachmentSpecs(uint32_t i) const = 0;
+
+		virtual const FFramebufferTexture& GetDepthAttachmentSpecs() const = 0;
 
 		static Ref<Framebuffer> Create(const FramebufferSpecification &specification);
 	};

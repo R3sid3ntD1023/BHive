@@ -20,19 +20,15 @@ namespace BHive
 
 		void Init(Pipeline* pipeline) override;
 
-		void Bind(Pipeline* pipeline) override;
-
-		void BindImmediate(vk::CommandBuffer cmd, Pipeline* pipeline);
-
 		void BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip , Pipeline* pipeline) override;
 
 		void Set(const std::string &name, const void *data, size_t size) override;
 
 		const FSetReflection &GetTargetSet() const override { return mTargetSet; }
 
-	private:
-		//set resources in pipeline
-		void BindToPipeline(VulkanPipeline* pipeline);
+		const FShaderReflection *GetRefl() const { return mReflectionMergedPtr; }
+
+		MaterialSnapshot CreateSnapshot() const;
 
 	private:
 		vk::raii::Device &mDevice;
@@ -41,14 +37,17 @@ namespace BHive
 
 		Ref<ShaderProgram> mProgram;
 		
-		std::vector<uint8_t> mPushConstantData;
+		const FShaderReflection *mReflectionMergedPtr = nullptr;
+
+		const FShaderReflectionLookUp *mReflectionLookupTablePtr = nullptr;
+
+		FSetReflection mTargetSet;
+
+		std::vector<std::byte> mPushConstantData;
 
 		std::unordered_map<std::string, Ref<GPUBuffer>> mLocalBuffers;
 
-		const FShaderReflection* mReflectionMergedPtr = nullptr;
+		std::unordered_map<std::string, MaterialSnapshot::TextureBinding> mTextureBindings;
 
-		const FShaderReflectionLookUp *mReflectionLookupTablePtr = nullptr; 
-
-		FSetReflection mTargetSet;
 	};
 }

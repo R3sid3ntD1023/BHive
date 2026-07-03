@@ -12,11 +12,6 @@ namespace BHive
 		Initilaize();
 	}
 
-	void VulkanTextureCube::GenerateMips()
-	{
-		mImage.GenerateMipMaps(mSize, mSize, mCreateInfo.ArrayLayers, mCreateInfo.MipLevels);
-	}
-
 	void VulkanTextureCube::Initilaize()
 	{
 		auto format = ToVkFormat(mCreateInfo.Format);

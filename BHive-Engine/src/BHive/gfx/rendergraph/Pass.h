@@ -1,20 +1,36 @@
 #pragma once
 
 
-#include "gfx/Enumerations.h"
 #include "gfx/resources/ImageSubResourceRange.h"
 #include "gfx/renderers/ViewSystem.h"
 #include "Phase.h"
 
+
 namespace BHive
 {
-	struct IRenderContext;
-
 	enum class EPassType : uint8_t
 	{
 		OffScreen,
-		SwapChain,
-		Viewport
+		Overlay,
+		Present
+	};
+
+	template <typename T>
+	struct CommandBuilder
+	{
+		FRenderCommandList &List;
+
+		CommandBuilder(FRenderCommandList &list)
+			: List(list)
+		{
+		}
+
+		template<typename... TArgs>
+		T *operator()(TArgs&&... args)
+		{
+			return List.Emplace<T>(std::forward<TArgs>(args)...);
+		}
+
 	};
 
 	struct BHIVE_API FPass
@@ -24,31 +40,30 @@ namespace BHive
 		std::vector<FPhase> Phases;
 		std::optional<FView> View;
 
-		void BeginPhase();
+		void BeginPhase(EPhaseType type = EPhaseType::Graphics);
 
-		void BeginPhase(const std::string &name);
+		void BeginPhase(const std::string &name, EPhaseType type = EPhaseType::Graphics);
 
-		template <typename Callable>
-		void Push(const std::string &name, Callable &&fn)
+		template<typename T>
+		CommandBuilder<T> Emplace()
 		{
-			Phases[mCurrentPhase].CommandList.Push(name, std::move(fn));
+			ASSERT(mCurrentPhase > -1);
+			return CommandBuilder<T>(Phases[mCurrentPhase].CommandList);
 		}
 
-		template <typename T, typename Method, typename... Args>
-			requires(std::is_member_function_pointer_v<Method> && std::is_invocable_r_v<void, Method, T *, IRendererContext &, Args...>)
-		void Push(const std::string &name, T *obj, Method method, Args &&...args)
-		{
-			Phases[mCurrentPhase].CommandList.Push(name, obj, method, std::forward<Args>(args)...);
-		}
+		void Push(Ref<Framebuffer> fbo);
 
 		void Push(Ref<Texture> tex, EImageAccess access, ImageSubresourceRange range = {});
+
+		void Push(BufferBase* buffer, EBufferAccess access);
 
 		void EndPhase();
 
 		const FView &GetView() const { return View.value(); }
+
 		bool HasView() const { return View.has_value(); }
 
 	private:
-		int32_t mCurrentPhase;
+		int32_t mCurrentPhase = -1;
 	};
 }

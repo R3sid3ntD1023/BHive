@@ -42,11 +42,6 @@ namespace BHive
 		mImage.Initialize(create_info);
 	}
 
-	void VulkanTexture3D::GenerateMips()
-	{
-		mImage.GenerateMipMaps(mSize.x, mSize.y, mCreateInfo.ArrayLayers, mCreateInfo.MipLevels);
-	}
-
 	NativeHandle VulkanTexture3D::GetRenderView(uint32_t layer, uint32_t mip) const
 	{
 		VkImageView view = mImage.Native().GetMipView(mip);

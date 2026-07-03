@@ -37,11 +37,8 @@ namespace BHive
 
 		mMainWindow->GetWindowInput().WindowEvent.Add(this, &Application::OnEvent);
 
-		if (specification.Flags & EApplicationFlags::EnableRendering)
-		{			
-			auto api = RendererAPI::Create();
-			mRenderer = CreateScope<Renderer>(std::move(api));
-		}
+		auto api = RendererAPI::Create();
+		mRenderer = CreateScope<Renderer>(std::move(api));
 
 		if (specification.Flags & EApplicationFlags::EnableImGui)
 		{
@@ -74,13 +71,9 @@ namespace BHive
 			GetSubSystem<PhysicsContext>().Shutdown();
 		}
 
-		if (mSpecification.Flags & EApplicationFlags::EnableRendering)
-		{
-			ShaderManager::Clear();
-			WindowManager::Get().Shutdown();
-
-			sInstance = nullptr;
-		}
+		ShaderManager::Clear();
+		WindowManager::Get().Shutdown();
+		sInstance = nullptr;
 	}
 
 	void Application::Run()

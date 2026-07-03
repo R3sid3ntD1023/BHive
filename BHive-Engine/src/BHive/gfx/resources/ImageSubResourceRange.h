@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <sstream>
+
 namespace BHive
 {
 	struct ImageSubresourceRange

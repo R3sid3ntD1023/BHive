@@ -36,7 +36,7 @@ namespace BHive
 
 		void Transition(vk::raii::CommandBuffer &cmd, ImageState newState, ImageSubresourceRange range = {});
 
-		void GenerateMipMaps(uint32_t width, uint32_t height, uint32_t layers, uint32_t levels);
+		void GenerateMipMaps(vk::raii::CommandBuffer& cmd);
 
 		void Destroy();
 
@@ -54,7 +54,7 @@ namespace BHive
 
 		ImageStateTracker mStateTracker;
 
-		vk::ImageAspectFlags mAspect{};
+		ImageCreateInfo mInfo;
 
 		bool mRawImage{0};
 	};

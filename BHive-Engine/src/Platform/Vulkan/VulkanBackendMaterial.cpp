@@ -57,76 +57,6 @@ namespace BHive
 		mPushConstantData.resize(total_size);
 	}
 
-	void VulkanBackendMaterial::Bind(Pipeline* pipeline)
-	{
-		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
-		auto &pipeline_layout = vkPipeline->GetLayout();
-
-		//take snapshot of current push data - copy by value
-		auto pushData = mPushConstantData;
-
-		BindToPipeline(vkPipeline);
-
-		pipeline->Bind();
-
-		if (vkPipeline->HasSet(MATERIAL_SET_INDEX))
-		{
-			// bind cached material descriptor set
-			auto group = Cast<VulkanBindingGroup>(vkPipeline->GetOrCreateBindingGroup(MATERIAL_SET_INDEX));
-			auto matSet = group->GetOrCreateMaterialSet();
-
-
-			RenderCommand::SubmitCommand(
-				"Bind Material Set",
-				[=](IRendererContext &ctx)
-				{
-					auto &vk_ctx = ctx.As<FVulkanRendererContext>();
-					vk_ctx.CommandBuffer.bindDescriptorSets(vkPipeline->GetBindPoint(), vkPipeline->GetLayout(), MATERIAL_SET_INDEX, matSet, {});
-				});
-		
-		}
-		
-		RenderCommand::SubmitCommand(
-			"Update PushConstants",
-			[=,&pipeline_layout](IRendererContext &ctx)
-			{
-				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
-
-				//Update push constants
-				for (auto &pc : mReflectionMergedPtr->PushConstants)
-				{
-					vk::PushConstantsInfo push_info(*pipeline_layout, ToVkShaderStageBit(pc.Stages), pc.Offset, (uint32_t)pc.Size, pushData.data() + pc.Offset);
-					vk_ctx.CommandBuffer.pushConstants2(push_info);
-				}
-			});
-	}
-
-	void VulkanBackendMaterial::BindImmediate(vk::CommandBuffer cmd, Pipeline* pipeline)
-	{
-		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
-		auto &pipeline_layout = vkPipeline->GetLayout();
-
-		BindToPipeline(vkPipeline);
-
-		vkPipeline->BindImmediate(cmd);
-
-		if (vkPipeline->HasSet(MATERIAL_SET_INDEX))
-		{
-			// bind cached material descriptor set
-			auto group = Cast<VulkanBindingGroup>(vkPipeline->GetOrCreateBindingGroup(MATERIAL_SET_INDEX));
-			auto matSet = group->GetOrCreateMaterialSet();
-
-			cmd.bindDescriptorSets(vkPipeline->GetBindPoint(), vkPipeline->GetLayout(), MATERIAL_SET_INDEX, matSet, {});
-		}
-
-		// Update push constants
-		for (auto &pc : mReflectionMergedPtr->PushConstants)
-		{
-			vk::PushConstantsInfo push_info(*pipeline_layout, ToVkShaderStageBit(pc.Stages), pc.Offset, (uint32_t)pc.Size, mPushConstantData.data() + pc.Offset);
-			cmd.pushConstants2(push_info);
-		}
-	}
-
 	void VulkanBackendMaterial::BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip, Pipeline* pipeline)
 	{
 		if (!texture)
@@ -140,8 +70,10 @@ namespace BHive
 
 		
 		auto &smp = mTargetSet.Samplers.at(name);
-		auto set = Cast<VulkanPipeline>(pipeline)->GetOrCreateBindingGroup(MATERIAL_SET_INDEX);
-		set->SetTexture(smp.Binding, texture, mip);
+		auto group = Cast<VulkanPipeline>(pipeline)->GetOrCreateBindingGroup(MATERIAL_SET_INDEX);
+		group->SetTexture(smp.Binding, texture, mip);
+
+		mTextureBindings[name] = {smp.Binding, texture, mip};
 	}
 
 	
@@ -181,25 +113,14 @@ namespace BHive
 		LOG_ERROR("Uniform '{}' not found in shader '{}'", name, mProgram->GetName());
 	}
 
-	void VulkanBackendMaterial::BindToPipeline(VulkanPipeline *pipeline)
+	MaterialSnapshot VulkanBackendMaterial::CreateSnapshot() const
 	{
-		auto& shader = pipeline->GetVulkanShader();
-		if (!shader.HasSet(MATERIAL_SET_INDEX))
-			return;
+		MaterialSnapshot snapshot;
 
-		auto set = pipeline->GetOrCreateBindingGroup(MATERIAL_SET_INDEX);
-		auto& setBindings = mReflectionLookupTablePtr->GetSetBindings(MATERIAL_SET_INDEX);
+		snapshot.LocalBuffers = mLocalBuffers;
+		snapshot.PushConstantData = mPushConstantData;
+		snapshot.Textures = mTextureBindings;
 
-		for (auto& r : setBindings)
-		{
-			auto it = mLocalBuffers.find(r.name);
-			if (it != mLocalBuffers.end() && it->second)
-			{
-				set->SetBuffer(r.binding, it->second);
-				continue;
-			}
-		}
-		//TODO: textures maybe
+		return snapshot;
 	}
-
 }

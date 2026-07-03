@@ -80,21 +80,16 @@ namespace BHive
 		ResetStats();
 		mData->Views.BeginFrame();
 		BeginBatching();
-		mResourceUpdates.Clear();
 
 		mEnvironment.Update(mScheduler);
 	}
 
 	void Renderer::EndFrame()
 	{
-
 		mScheduler.Finalize(mGraph);
 
-		RenderCommand::Flush(mAPI.get());
+		ExecuteGraph(mGraph);
 
-		mAPI->SubmitGraph(mGraph, mResourceUpdates);
-
-		mResourceUpdates.Clear();
 		mFrameActive = false;
 	}
 
@@ -126,6 +121,12 @@ namespace BHive
 		mEnvironment.SetHDR(hdr);
 	}
 
+	void Renderer::ExecuteGraph(RenderGraph &graph)
+	{
+		SolveResourceBarriers(graph);
+		mAPI->SubmitGraph(graph);
+	}
+
 	FView Renderer::CreateView(const glm::mat4 &projection, const glm::mat4 &view)
 	{
 		FView v{};
@@ -146,82 +147,6 @@ namespace BHive
 	GlobalResources &Renderer::GetGlobalResources()
 	{
 		return mGlobalResources;
-	}
-
-	void Renderer::ClearColor(float r, float g, float b, float a)
-	{
-		auto pass = &GetActivePass();
-		mAPI->ClearColor(pass, r, g, b, a);
-	}
-
-	void Renderer::Clear(ClearMask mask)
-	{
-		auto pass = &GetActivePass();
-		mAPI->Clear(pass, mask);
-	}
-
-	void Renderer::SetLineWidth(float width)
-	{
-		auto pass = &GetActivePass();
-		mAPI->SetLineWidth(pass, width);
-	}
-
-	void Renderer::SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
-	{
-		auto pass = &GetActivePass();
-		mAPI->SetViewport(pass, x, y, w, h);
-	}
-
-	void Renderer::DrawArrays(ETopologyMode mode, VertexArray* vao, uint32_t count)
-	{
-		auto pass = &GetActivePass();
-		mAPI->DrawArrays(pass, mode, vao, count);
-	}
-
-	void Renderer::DrawElements(ETopologyMode mode, VertexArray* vao, uint32_t count)
-	{
-		auto pass = &GetActivePass();
-		mAPI->DrawElements(pass, mode, vao, count);
-	}
-
-	void Renderer::DrawElementsBaseVertex(ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t start_index, uint32_t count, uint32_t instance_count)
-	{
-		auto pass = &GetActivePass();
-		mAPI->DrawElementsBaseVertex(pass, mode, vao, start, start_index, count, instance_count);
-	}
-
-	void Renderer::DrawElementsRanged(ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count)
-	{
-		auto pass = &GetActivePass();
-		mAPI->DrawElementsRanged(pass, mode, vao, start, end, count);
-	}
-
-	void Renderer::DrawElementsInstanced(ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count)
-	{
-		auto pass = &GetActivePass();
-		mAPI->DrawElementsInstanced(pass, mode, vao, instances, count);
-	}
-
-	void Renderer::MultiDrawElementsIndirect(ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride, uint32_t start)
-	{
-		auto pass = &GetActivePass();
-		mAPI->MultiDrawElementsIndirect(pass, mode, indirect, vao, drawCount, stride, stride * start);
-	}
-
-	void Renderer::DrawFullscreen()
-	{
-		auto pass = &GetActivePass();
-		mAPI->DrawFullscreen(pass);
-	}
-
-	FAsyncPass *Renderer::ExecuteComputePass(Pipeline *pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder)
-	{
-		return mAPI->ExecuteComputePass(pipeline, dispatchSize, builder);
-	}
-
-	void Renderer::ExecuteTransferPass(FTransferFunc &&builder)
-	{
-		mAPI->ExecuteTransferPass(std::move(builder));
 	}
 
 	const Frustum &Renderer::GetFrustum()
@@ -268,11 +193,6 @@ namespace BHive
 		mScheduler.EndPass();
 	}
 
-	void Renderer::SubmitResourceUpdate(FResourceUpdateList::UpdateCommand cmd)
-	{
-		mResourceUpdates.Push(std::move(cmd));
-	}
-
 	void Renderer::SetPassConfig(const PassConfig &config)
 	{
 		mPassConfig = config;
@@ -299,6 +219,30 @@ namespace BHive
 		mGlobalResources.Register("Blue", mData->BlueTexture);
 		mGlobalResources.Register("Black", mData->BlackTexture);
 		mGlobalResources.Register("Camera", mData->CameraUBO);
+	}
+
+	void Renderer::SolveResourceBarriers(RenderGraph &graph)
+	{
+		std::unordered_map<BufferBase *, EBufferAccess> lastBufferAccess;
+
+		for (auto& pass : graph.GetPasses())
+		{
+			for (auto& phase : pass.Phases)
+			{
+				//buffers
+				for (auto& use : phase.Buffers)
+				{
+					auto *raw = use.Buffer;
+					auto prev = lastBufferAccess[raw];
+					auto next = use.Access;
+
+					if (prev != next)
+						phase.CommandList.BufferBarriers.emplace_back(FBufferBarrierRequest{raw, prev, next});
+
+					lastBufferAccess[raw] = next;
+				}
+			}
+		}
 	}
 
 } // namespace BHive

@@ -159,6 +159,19 @@ namespace BHive
 
 	};
 
+	enum class EBufferAccess
+	{
+		None,
+		TransferWrite,
+		TransferRead,
+		VertexRead,
+		IndexRead,
+		UniformRead,
+		StorageRead,
+		StorageWrite,
+		IndirectRead
+	};
+
 	enum class EMagFilter
 	{
 		LINEAR,

@@ -33,11 +33,6 @@ namespace BHive
 		mBuffer.Release();
 	}
 
-	void VulkanTexture2D::GenerateMips()
-	{
-		mImage.GenerateMipMaps(mSize.x, mSize.y, mCreateInfo.ArrayLayers, mCreateInfo.MipLevels);
-	}
-
 	void VulkanTexture2D::SetInfo(const FTextureCreateInfo &info)
 	{
 		mCreateInfo = info;

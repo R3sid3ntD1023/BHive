@@ -74,10 +74,6 @@ namespace BHive
 
 		virtual void Init(const PipelineState &state) = 0;
 
-		virtual void Bind() = 0;
-
-		virtual void UnBind() = 0;
-
 		virtual IBindingGroup *GetOrCreateBindingGroup(uint32_t groupIndex) = 0;
 
 		virtual Ref<ShaderProgram> GetShaderProgram() const = 0;

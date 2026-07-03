@@ -18,7 +18,7 @@ namespace BHive
 	class GPUBuffer;
 	class Texture;
 
-	struct FVulkanRendererContext : public IRendererContext
+	struct FVulkanRendererContext
 	{
 		FVulkanRendererContext(vk::raii::CommandBuffer &cmd, uint32_t frame, uint32_t imageIndex, uint32_t viewIndex)
 			: CommandBuffer(cmd),
@@ -37,14 +37,6 @@ namespace BHive
 		uint32_t ViewIndex{0};
 	};
 
-	struct FVulkanTransferContext : public ITransferContext
-	{
-		FVulkanTransferContext(vk::raii::CommandBuffer& cmd)
-			: Cmd(cmd)
-		{}
-
-		vk::raii::CommandBuffer& Cmd;
-	};
 	
 	struct PendingDeletion
 	{
@@ -64,44 +56,13 @@ namespace BHive
 
 		void WaitIdle() override;
 
-		void ClearColor(FPass *pass, float r, float g, float b, float a = 1.0f) override;
-
-		void Clear(FPass *pass, ClearMask mask) override;
-
-		void SetLineWidth(FPass *pass, float width) override;
-
-		void SetViewport(FPass *pass, uint32_t x, uint32_t y, uint32_t w, uint32_t h) override;
-
-		void DrawArrays(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count = 0) override;
-
-		void DrawElements(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count = 0) override;
-
-		void
-		DrawElementsBaseVertex(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t start_index, uint32_t count = 0, uint32_t instance_count = 0) override;
-
-		void DrawElementsRanged(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count = 0) override;
-
-		void DrawElementsInstanced(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count = 0) override;
-
-		void MultiDrawElementsIndirect(FPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride = 0, uint32_t offset = 0) override;
-
-		void DrawFullscreen(FPass *pass) override;
-
-		void ColorMask(FPass *pass, uint8_t r, uint8_t g, uint8_t b, uint8_t a) override;
-
 		vk::Result RenderFrame(VulkanSwapChain* swapChain);
 
-		void SubmitGraph(const RenderGraph &graph, FResourceUpdateList &updateResources) override;
+		void SubmitGraph(const RenderGraph &graph) override;
 
 		DescriptorPoolManager& GetDescriptorPoolManager() { return mDescriptorPoolManager; }
 
 		void QueueDeletion(FQeueuDeflectionFunc&& fn) override;
-
-		Ref<FComputeBindings> CreateComputeBindings(Pipeline* pipeline) override;
-
-		FAsyncPass* ExecuteComputePass(Pipeline* pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder) override;
-
-		void ExecuteTransferPass(FTransferFunc &&builder) override;
 
 		void SetCurrentContext(WindowContext *ctx) override;
 
@@ -114,13 +75,23 @@ namespace BHive
 	private:
 		void ProcessDeletionQueue(uint32_t frame);
 
-		vk::Result ExecuteFinalGraph(VulkanSwapChain* swapChain, FResourceUpdateList &updates, const RenderGraph &graph);
-
-		void ExecuteSwapChainPass(const FPhase &phase, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
-
-		void ExecuteOffScreenPass(const FPhase &phase, FVulkanRendererContext &ctx);
+		vk::Result ExecuteFinalGraph(VulkanSwapChain* swapChain, RenderGraph &graph);
 
 		void ExecutePass(const FPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
+
+		void TransitionImages(const FPhase &phase, vk::raii::CommandBuffer &cmd);
+
+		void ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx);
+
+		void BeginSwapChainRendering(const FPhase &phase, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
+
+		void BeginOffScreenRendering(const FPass& pass, const FPhase &phase, FVulkanRendererContext &ctx);
+
+		void TransitionSwapChainToPresent(FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
+		
+		void EndRendering(const FPhase &phase, FVulkanRendererContext &ctx);
+
+		void CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext &ctx);
 
 	private:
 		vk::raii::Device& mDevice;
@@ -129,13 +100,7 @@ namespace BHive
 
 		std::vector<RenderGraph> mSubmittedGraphs;
 
-		std::vector<FResourceUpdateList> mSubmittedUpdates;
-
-		std::vector<Ref<FAsyncPass>> mComputePasses;
-
 		std::vector<PendingDeletion> mDeletionQueue;
-
-		vk::ClearColorValue mClearColor{0, 0, 0, 1};
 
 		uint32_t mCompletedFrame = 0;
 

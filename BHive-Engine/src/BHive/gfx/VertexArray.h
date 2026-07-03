@@ -4,14 +4,12 @@
 
 namespace BHive
 {
+	struct FPass;
+
 	class BHIVE_API VertexArray
 	{
 	public:
 		virtual ~VertexArray() = default;
-
-		virtual void Bind() const = 0;
-
-		virtual void UnBind() const = 0;
 
 		virtual void SetIndexBuffer(const Ref<IndexBuffer> &indexbuffer) = 0;
 
@@ -20,6 +18,8 @@ namespace BHive
 		virtual const Ref<IndexBuffer> &GetIndexBuffer() const = 0;
 
 		virtual const std::vector<Ref<VertexBuffer>> &GetVertexBuffers() const = 0;
+
+		void DeclareAccess(FPass &pass, EBufferAccess vbAccess, EBufferAccess ibAccess);
 
 		static Ref<VertexArray> Create();
 

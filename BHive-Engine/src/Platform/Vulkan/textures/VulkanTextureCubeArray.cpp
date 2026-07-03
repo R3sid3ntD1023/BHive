@@ -42,11 +42,6 @@ namespace BHive
 		mImage.Initialize(create_info);
 	}
 
-	void VulkanTextureCubeArray::GenerateMips()
-	{
-		mImage.GenerateMipMaps( mSize, mSize, mCreateInfo.ArrayLayers, mCreateInfo.MipLevels);
-	}
-
 	void VulkanTextureCubeArray::SetData(const FTextureUploadInfo &info)
 	{
 		

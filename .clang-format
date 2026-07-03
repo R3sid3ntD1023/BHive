@@ -14,6 +14,7 @@ AlignEscapedNewlines: Left
 AlwaysBreakTemplateDeclarations: Yes
 PackConstructorInitializers: Never
 BreakConstructorInitializersBeforeComma: false
+BreakBeforeBinaryOperators: All
 #EmptyLineAfterAccessModifier: true
 AllowShortFunctionsOnASingleLine: InlineOnly
 IndentPPDirectives: BeforeHash

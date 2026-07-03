@@ -4,12 +4,12 @@
 
 namespace BHive
 {
-	Scope<IMaterialBackendInterface> IMaterialBackendInterface::Create()
+	Ref<IMaterialBackendInterface> IMaterialBackendInterface::Create()
 	{
 		switch (RenderCommand::GetAPI())
 		{
 		case RendererAPI::Vulkan:
-			return CreateScope<VulkanBackendMaterial>();
+			return CreateRef<VulkanBackendMaterial>();
 		}
 
 		ASSERT(false);

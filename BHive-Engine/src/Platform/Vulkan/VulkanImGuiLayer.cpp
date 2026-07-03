@@ -25,6 +25,11 @@ namespace BHive
 	{
 	}
 
+	VulkanImGuiLayer::~VulkanImGuiLayer()
+	{
+		ClearTextureMap();
+	}
+
 	void VulkanImGuiLayer::BeginFrame()
 	{
 		ImGui_ImplVulkan_NewFrame();
@@ -34,11 +39,11 @@ namespace BHive
 
 	void VulkanImGuiLayer::ClearTextureMap()
 	{
-		for (auto [_, set] : s_ImGuiTextureMap)
+		for (auto [_, set] : mImGuiTextureMap)
 		{
 			ImGui_ImplVulkan_RemoveTexture(set);
 		}
-		s_ImGuiTextureMap.clear();
+		mImGuiTextureMap.clear();
 	}
 
 	void VulkanImGuiLayer::Init()
@@ -110,40 +115,39 @@ namespace BHive
 
 	void VulkanImGuiLayer::OnSubmitRenderData(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size)
 	{
-		auto& pass = RenderCommand::BeginPass("ImGui", EPassType::Viewport);
+		auto &renderer = Renderer::Get();
+		auto& pass = renderer.BeginPass("ImGui", EPassType::Present);
 		pass.BeginPhase();
-		pass.Push(
-			"Draw Imgui",
-			[drawData, pos, size](IRendererContext &ctx)
-			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-				vk::Viewport viewport((float)pos.x, (float)pos.y + (float)size.y, (float)size.x, -(float)size.y, 0.0f, 1.0f);
-				vk::Rect2D scissor({pos.x, pos.y}, {(uint32_t)size.x, (uint32_t)size.y});
-
-				vk_ctx.CommandBuffer.setViewport(0, viewport);
-				vk_ctx.CommandBuffer.setScissor(0, scissor);
-
-				ImGui_ImplVulkan_RenderDrawData(drawData, *vk_ctx.CommandBuffer);
-			});
+		pass.Emplace<CmdSetViewport>()(pos.x, pos.y, size.x, size.y);
+		pass.Emplace<CmdImGuiRender>()(drawData);
 		pass.EndPhase();
+		renderer.EndPass();
 	}
 
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)
 	{
 		auto handle = texture.GetNativeHandle().As<GPUImage>();
 
-		ASSERT(handle, "Invalid GPUImage handle")
+		if (!handle)
+		{
+			LOG_ERROR("Invalid GPUImage handle");
+			return ImTextureRef();
+		}
 
 		auto smp = handle->GetSampler();
-		ASSERT(smp, "Null Sampler Provided")
+		if (!smp)
+		{
+			LOG_ERROR("Null Sampler Provided");
+			return ImTextureRef();
+		}
 
-		auto key = TextureKey{(VkImageView)handle->GetView(0, 0, 0), (VkSampler)smp};
+		auto key = texture.GetResourceID();
 
-		if (s_ImGuiTextureMap.contains(key))
-			return s_ImGuiTextureMap[key];
+		if (mImGuiTextureMap.contains(key))
+			return mImGuiTextureMap[key];
 
 		auto set = ImGui_ImplVulkan_AddTexture(smp, handle->GetView(0, 0, 0), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		return s_ImGuiTextureMap[key] = set;
+		return mImGuiTextureMap[key] = set;
 	}
 
 } // namespace BHive

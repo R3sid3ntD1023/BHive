@@ -17,11 +17,7 @@ namespace BHive
 
 		virtual void Init(const PipelineState& state) override;
 
-		virtual void Bind() override;
-
-		virtual void BindImmediate(vk::CommandBuffer cmd);
-
-		virtual void UnBind() override {};
+		virtual void Bind(vk::CommandBuffer cmd, uint32_t frame);
 
 		std::unordered_map<uint32_t, vk::DescriptorSet> UpdateSets(uint32_t frame);
 

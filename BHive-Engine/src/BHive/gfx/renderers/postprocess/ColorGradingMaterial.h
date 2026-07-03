@@ -21,12 +21,5 @@ namespace BHive
 			glm::vec3 Gain = {1.05f, 1.03f, 1.00f};//highlights
 			float Saturation = 1.10f;
 		} Params;
-
-	private:
-		void DoColorGrading(IRendererContext& ctx);
-
-	private:
-		Ref<Texture> mInput;
-		Ref<Texture> mOutput;
 	};
 } // namespace BHive

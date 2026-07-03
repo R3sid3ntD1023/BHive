@@ -58,45 +58,27 @@ namespace BHive
 		}
 	}
 
-	void VulkanVertexArray::Bind() const
+	void VulkanVertexArray::Bind(vk::CommandBuffer cmd, uint32_t frame)
 	{
-		auto bindings = mBindings;
-		auto attributes = mAttributes;
-		auto index_buffer = mIndexBuffer;
-		auto vertex_buffers = mVertexBuffers;
+		auto vb_count = mVertexBuffers.size();
+		std::vector<vk::Buffer> vertex_handles(vb_count, VK_NULL_HANDLE);
+		for (size_t i = 0; i < vb_count; i++)
+		{
+			vertex_handles[i] = mVertexBuffers[i]->GetNativeHandle(frame).As<AllocatedBuffer>()->GetBuffer();
+		}
 
-		RenderCommand::SubmitCommand(
-			"Bind vertexArray",
-			[=](IRendererContext &ctx)
-			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-				const auto current_frame = vk_ctx.Frame;
+		std::vector<vk::DeviceSize> offsets(vb_count, 0);
 
-				
-				auto vb_count = vertex_buffers.size();
-				std::vector<vk::Buffer> vertex_handles(vb_count, VK_NULL_HANDLE);
-				for (size_t i = 0; i < vb_count; i++)
-				{
-					vertex_handles[i] = vertex_buffers[i]->GetNativeHandle(current_frame).As<AllocatedBuffer>()->GetBuffer();
-				}
+		ASSERT(mBindings.size() && mAttributes.size());
 
-				std::vector<vk::DeviceSize> offsets(vb_count, 0);
+		cmd.setVertexInputEXT(mBindings, mAttributes);
+		cmd.bindVertexBuffers(0, vertex_handles, offsets);
 
-				ASSERT(bindings.size() && attributes.size());
-
-				vk_ctx.CommandBuffer.setVertexInputEXT(bindings, attributes);
-				vk_ctx.CommandBuffer.bindVertexBuffers(0, vertex_handles, offsets);
-
-				if (index_buffer)
-				{
-					auto index_handle = index_buffer->GetNativeHandle(current_frame).As<AllocatedBuffer>()->GetBuffer();
-					vk_ctx.CommandBuffer.bindIndexBuffer(index_handle, 0, vk::IndexType::eUint32);
-				}
-			});
-	}
-
-	void VulkanVertexArray::UnBind() const
-	{
+		if (mIndexBuffer)
+		{
+			auto index_handle = mIndexBuffer->GetNativeHandle(frame).As<AllocatedBuffer>()->GetBuffer();
+			cmd.bindIndexBuffer(index_handle, 0, vk::IndexType::eUint32);
+		}
 	}
 
 	void VulkanVertexArray::SetIndexBuffer(const Ref<IndexBuffer> &indexbuffer)

@@ -1,140 +1,110 @@
 #include "BloomMaterial.h"
-#include "gfx/renderers/Renderer.h"
 #include "gfx/Pipeline.h"
-#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
 	Ref<Texture> BloomMaterial::AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input)
 	{
-		mAllocator = &allocator;
-		mInput = input;
-		mBloomOutput = allocator.GetBloomOutput();
-		mCompositeOutput = allocator.GetBloomCompositeOutput();
+		auto bloomOutput = allocator.GetBloomOutput();
+		auto baseSize = bloomOutput->GetSize();
+		auto compositeOutput = allocator.GetBloomCompositeOutput();
 
 		auto params = Params;
 		auto mipCount = allocator.GetBloomMipCount();
-	
+		
+
 		auto &pass = graph.AddPass("Bloom", EPassType::OffScreen);
 
-		//Phase 0 : Prefilter Scene color
-		pass.BeginPhase();
-		pass.Push(input, EImageAccess::ComputeSampled);
-		pass.Push(mBloomOutput, EImageAccess::ComputeStorageWrite);
-		pass.Push("Prefilter Scene Color", this, &BloomMaterial::DoPrefilterSceneColor);
-		pass.EndPhase();
-
-		//Phase 1: Downsample
-		glm::uvec2 mipSize = mBloomOutput->GetSize();
-
-		for (uint32_t mip = 0; mip < mipCount - 1; mip++)
+		// Phase 0 : Prefilter Scene color
 		{
-			uint32_t srcMip = mip;
-			uint32_t dstMip = mip + 1;
+			auto prefilterBindings = FComputeBindings(PipelineRegistry::Get("BLOOM_PREFILTER"))
+				.Set({"uSceneColor", input})
+				.Set({"uOutput", bloomOutput})
+				.Set<float>({"uThreshold", Params.Threshold});
 
-			glm::uvec2 dstSize = glm::max(mipSize / 2u, glm::uvec2(1u));
+			auto dstSize = bloomOutput->GetSize();
 
 			pass.BeginPhase();
-			pass.Push(mBloomOutput, EImageAccess::ComputeStorageRead, {srcMip, 1, 0, 1});
-			pass.Push(mBloomOutput, EImageAccess::ComputeStorageWrite, {dstMip, 1, 0, 1});
-			pass.Push("Compute Downsample", this, &BloomMaterial::DoDownSample, srcMip, dstMip);
+			pass.Push(input, EImageAccess::ComputeSampled);
+			pass.Push(bloomOutput, EImageAccess::ComputeStorageWrite);
+			pass.Emplace<CmdBindMaterial>()(&prefilterBindings);
+			pass.Emplace<CmdDisptach>()((dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1);
 			pass.EndPhase();
+		}
 
-			mipSize = dstSize;
+		// Phase 1: Downsample
+		{
+			
+			glm::uvec2 mipSize = bloomOutput->GetSize();
+
+			auto downsampleBindings = FComputeBindings(PipelineRegistry::Get("BLOOM_DOWNSAMPLE"));
+			
+
+			for (uint32_t mip = 0; mip < mipCount - 1; mip++)
+			{
+				uint32_t srcMip = mip;
+				uint32_t dstMip = mip + 1;
+
+				glm::uvec2 dstSize = glm::max(mipSize / 2u, glm::uvec2(1u));
+
+				downsampleBindings.Set({"uSrcTexture", bloomOutput, {srcMip, 1, 0, 1}});
+				downsampleBindings.Set({"uOutput", bloomOutput, {dstMip, 1, 0, 1}});
+
+				pass.BeginPhase();
+				pass.Push(bloomOutput, EImageAccess::ComputeStorageRead, {srcMip, 1, 0, 1});
+				pass.Push(bloomOutput, EImageAccess::ComputeStorageWrite, {dstMip, 1, 0, 1});
+				pass.Emplace<CmdBindMaterial>()(&downsampleBindings);
+				pass.Emplace<CmdDisptach>()((dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1);
+				pass.EndPhase();
+
+				mipSize = dstSize;
+			}
 		}
 		
 		//Phase 2: UpSample
+		auto upsampleBindings = FComputeBindings(PipelineRegistry::Get("BLOOM_UPSAMPLE")).Set<float>({"uFilterRadius", Params.Radius});
 
 		for (uint32_t mip = mipCount - 1; mip > 0; mip--)
 		{
 			uint32_t srcMip = mip;
 			uint32_t dstMip = mip - 1;
 
+			glm::uvec2 dstSize = glm::max(baseSize >> dstMip, glm::uvec2(1u));
+
+			upsampleBindings.Set({"uSrcTexture", bloomOutput, {srcMip, 1, 0, 1}})
+				.Set({"uOutput", bloomOutput, {dstMip, 1, 0, 1}});
+
 			pass.BeginPhase();
-			pass.Push(mBloomOutput, EImageAccess::ComputeStorageRead, {srcMip, 1, 0, 1});
-			pass.Push(mBloomOutput, EImageAccess::ComputeStorageWrite, {dstMip, 1, 0, 1});
-			pass.Push("Compute Downsample", this, &BloomMaterial::DoUpSample, mipCount, srcMip, dstMip);
+			pass.Push(bloomOutput, EImageAccess::ComputeStorageRead, {srcMip, 1, 0, 1});
+			pass.Push(bloomOutput, EImageAccess::ComputeStorageWrite, {dstMip, 1, 0, 1});
+			pass.Emplace<CmdBindMaterial>()(&upsampleBindings);
+			pass.Emplace<CmdDisptach>()((dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1);
 			pass.EndPhase();
 		}
+
+		glm::uvec2 dstSize = compositeOutput->GetSize();
+
+		auto compositeBindings = FComputeBindings(PipelineRegistry::Get("BLOOM_COMBINE"))
+									 .Set({"uTextureA", input})
+									 .Set({"uTextureB", bloomOutput})
+									 .Set({"uOutput", compositeOutput})
+									 .Set<float>({"uExposure", Params.Exposure})
+									 .Set<float>({"uBloomStrength", Params.Strength});
+		
 
 		//Phase 3 : compostie scene and bloom
 		pass.BeginPhase();
 
-		pass.Push(mInput, EImageAccess::ComputeSampled);
-		pass.Push(mBloomOutput, EImageAccess::ComputeSampled);
-		pass.Push(mCompositeOutput, EImageAccess::ComputeStorageWrite);
-
-		pass.Push("Combine Bloom and Scene", this, &BloomMaterial::DoComposite, mipCount);
+		pass.Push(input, EImageAccess::ComputeSampled);
+		pass.Push(bloomOutput, EImageAccess::ComputeSampled);
+		pass.Push(compositeOutput, EImageAccess::ComputeStorageWrite);
+		pass.Emplace<CmdBindMaterial>()(&compositeBindings);
+		pass.Emplace<CmdDisptach>()((dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1);
 
 		pass.BeginPhase();
-		pass.Push(mCompositeOutput, EImageAccess::ColorRead);
+		pass.Push(compositeOutput, EImageAccess::ColorRead);
 		pass.EndPhase();
 		
-		return mCompositeOutput;
+		return compositeOutput;
 	}
-
-	void BloomMaterial::DoPrefilterSceneColor(IRendererContext &ctx)
-	{
-		auto dstSize = mBloomOutput->GetSize();
-		glm::uvec3 dispatch = {(dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1};
-
-		// prefilter
-		Renderer::Get().ExecuteComputePass(
-			PipelineRegistry::Get("BLOOM_PREFILTER"), dispatch,
-			[this](FComputeBindings &b)
-			{
-				b.Bind("uSceneColor", mInput);
-				b.Bind("uOutput", mBloomOutput);
-				b.Set("uThreshold", Params.Threshold);
-			});
-	}
-
-	void BloomMaterial::DoDownSample(IRendererContext &ctx, uint32_t srcMip, uint32_t dstMip)
-	{
-		auto dstSize = mAllocator->GetBloomMipSize(dstMip);
-		glm::uvec3 dispatch = {(dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1};
-
-		Renderer::Get().ExecuteComputePass(
-			PipelineRegistry::Get("BLOOM_DOWNSAMPLE"), dispatch,
-			[this, srcMip, dstMip](FComputeBindings &b)
-			{
-				b.Bind("uSrcTexture", mBloomOutput, {srcMip, 1, 0, 1});
-				b.Bind("uOutput", mBloomOutput, {dstMip, 1, 0, 1});
-			});
-	}
-
-	void BloomMaterial::DoUpSample(IRendererContext &ctx, uint32_t mipCount, uint32_t srcMip, uint32_t dstMip)
-	{
-		glm::uvec2 baseSize = mAllocator->GetBloomOutput()->GetSize();
-		glm::uvec2 dstSize = glm::max(baseSize >> dstMip, glm::uvec2(1u));
-		glm::uvec3 dispatch = {(dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1};
-
-		Renderer::Get().ExecuteComputePass(
-			PipelineRegistry::Get("BLOOM_UPSAMPLE"), dispatch,
-			[this, mipCount, srcMip, dstMip](FComputeBindings &b)
-			{
-				b.Bind("uSrcTexture", mBloomOutput, {srcMip, 1, 0, 1});
-				b.Bind("uOutput", mBloomOutput, {dstMip, 1, 0, 1});
-				b.Set("uFilterRadius", Params.Radius);
-			});
-	}
-
-	void BloomMaterial::DoComposite(IRendererContext &ctx, uint32_t mipCount)
-	{
-		glm::uvec2 dstSize = mCompositeOutput->GetSize();
-		glm::uvec3 dispatch = {(dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1};
-
-		Renderer::Get().ExecuteComputePass(
-			PipelineRegistry::Get("BLOOM_COMBINE"), dispatch,
-			[this, mipCount](FComputeBindings &b)
-			{
-
-				b.Bind("uTextureA", mInput);
-				b.Bind("uTextureB", mBloomOutput);
-				b.Bind("uOutput", mCompositeOutput);
-				b.Set("uExposure", Params.Exposure);
-				b.Set("uBloomStrength", Params.Strength);
-			});
-	}
-
 } // namespace BHive

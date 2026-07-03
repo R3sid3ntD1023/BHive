@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/Core.h"
-#include "gfx/Texture.h"
+#include "VulkanCore.h"
 #include "gfx/Framebuffer.h"
+
 
 namespace BHive
 {
@@ -12,35 +12,41 @@ namespace BHive
 	public:
 		VulkanFramebuffer(const FramebufferSpecification &specification);
 
-		virtual ~VulkanFramebuffer() = default;
+		~VulkanFramebuffer() = default;
 
-		virtual void Bind() const;
+		void BindFace(uint32_t face);
 
-		virtual void BindFace(uint32_t face);
+		void Resize(const glm::uvec2 &newSize);
 
-		virtual void UnBind() const;
+		void ClearAttachment(uint32_t attachmentIndex, const int *data);
 
-		virtual void Resize(const glm::uvec2 &newSize);
+		void ClearAttachment(uint32_t attachmentIndex, const float *data);
 
-		virtual void ClearAttachment(uint32_t attachmentIndex, const int *data);
+		void Blit(const Ref<Framebuffer> &target);
 
-		virtual void ClearAttachment(uint32_t attachmentIndex, const float *data);
+		void BlitToWindow(unsigned x, unsigned y, unsigned w, unsigned h);
 
-		virtual void Blit(const Ref<Framebuffer> &target);
+		void ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, void *data) const;
 
-		virtual void BlitToWindow(unsigned x, unsigned y, unsigned w, unsigned h);
+		uint32_t GetNumColorAttachments() const override { return (uint32_t)mColorAttachments.size(); }
 
-		virtual void ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, void *data) const;
+		Ref<Texture> GetColorAttachment(uint32_t index = 0) const;
 
-		virtual uint32_t GetNumColorAttachments() const override { return (uint32_t)mColorAttachments.size(); }
+		Ref<Texture> GetDepthAttachment() const;
 
-		virtual Ref<Texture> GetColorAttachment(uint32_t index = 0) const;
+		const FramebufferSpecification &GetSpecification() const { return mSpecification; }
 
-		virtual Ref<Texture> GetDepthAttachment() const;
+		const glm::uvec2& GetSize() const { return mSpecification.Size; }
 
-		virtual const FramebufferSpecification &GetSpecification() const { return mSpecification; }
+		const FFramebufferTexture& GetColorAttachmentSpecs(uint32_t index) const override
+		{
+			ASSERT(index < mColorAttachmentSpecifications.size());
+			return mColorAttachmentSpecifications[index];
+		}
 
-		virtual const glm::uvec2& GetSize() const { return mSpecification.Size; }
+		const FFramebufferTexture& GetDepthAttachmentSpecs() const override { return mDepthSpecification; }
+
+		uint32_t GetCurrentFace() const { return mCurrentFace; }
 
 	private:
 		void Initialize();

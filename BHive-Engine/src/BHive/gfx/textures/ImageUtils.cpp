@@ -20,7 +20,7 @@ namespace BHive
 
 	void ImageUtils::SaveImage(const std::filesystem::path &path, const Ref<Framebuffer> &target, unsigned attachment)
 	{
-		const auto num_attachments = target->GetSpecification().Attachments.GetAttachments().size();
+		const auto num_attachments = target->GetNumColorAttachments();
 		ASSERT(attachment < num_attachments);
 
 		Thread::Dispatch(

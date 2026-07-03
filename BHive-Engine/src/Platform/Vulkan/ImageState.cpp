@@ -35,7 +35,7 @@ namespace BHive
 	ImageState ImageState::ShaderRead()
 	{
 		return {
-			vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead,
+			vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead | vk::AccessFlagBits2::eColorAttachmentRead | vk::AccessFlagBits2::eDepthStencilAttachmentRead,
 			vk::PipelineStageFlagBits2::eVertexShader | vk::PipelineStageFlagBits2::eFragmentShader | vk::PipelineStageFlagBits2::eComputeShader};
 	}
 

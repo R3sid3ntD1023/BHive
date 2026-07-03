@@ -8,7 +8,7 @@ namespace BHive
 	struct PassConfig
 	{
 		std::string DefaultPassName = "Default Pass";
-		EPassType DefaultPassType = EPassType::SwapChain;
+		EPassType DefaultPassType = EPassType::Present;
 		bool DebugMarkers = false;
 	};
 

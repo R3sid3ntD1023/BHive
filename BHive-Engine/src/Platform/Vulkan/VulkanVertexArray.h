@@ -17,9 +17,7 @@ namespace BHive
 
 		VulkanVertexArray(const std::vector<Ref<VertexBuffer>> &vertex_buffers, const Ref<IndexBuffer> &index_buffer = nullptr);
 
-		virtual void Bind() const override;
-
-		virtual void UnBind() const override;
+		void Bind(vk::CommandBuffer cmd, uint32_t frame);
 
 		virtual void SetIndexBuffer(const Ref<IndexBuffer> &indexbuffer) override;
 

@@ -3,35 +3,6 @@
 
 namespace BHive
 {
-	void FResourceUpdateList::Push(UpdateCommand cmd)
-	{
-		mUpdateCommands.push_back(std::move(cmd));
-	}
-
-	void FResourceUpdateList::Append(FResourceUpdateList &updates)
-	{
-		mUpdateCommands.insert(mUpdateCommands.end(), updates.mUpdateCommands.begin(), updates.mUpdateCommands.end());
-	}
-
-	void FResourceUpdateList::Execute(IRendererContext &ctx) const
-	{
-		for (auto &cmd : mUpdateCommands)
-		{
-			cmd(ctx);
-		}
-	}
-
-	void FResourceUpdateList::Clear()
-	{
-		mUpdateCommands.clear();
-	}
-
-	bool FResourceUpdateList::Empty() const
-	{
-		return mUpdateCommands.empty();
-	}
-
-
 	void RenderGraph::Append(const RenderGraph &graph)
 	{
 		auto &passes = graph.GetPasses();
@@ -56,6 +27,11 @@ namespace BHive
 		return mPasses;
 	}
 
+	std::vector<FPass> &RenderGraph::GetPasses()
+	{
+		return mPasses;
+	}
+
 	void RenderGraph::DebugPrint()
 	{
 		for (auto& pass : mPasses)
@@ -66,16 +42,16 @@ namespace BHive
 			{
 				LOG_TRACE("\t Phase: {}", phase.Name);
 
-				for (auto& tex : phase.ImageUsages)
+				for (auto& tex : phase.Images)
 				{
 					tex.Texture->DebugPrintState();
 
 					LOG_TRACE("\t\tTransition -> [{}:{}]", to_string(tex.Access), to_string(tex.Range));
 				}
 
-				for (auto &cmd : phase.CommandList.GetCommands())
+				for (auto &cmd : phase.CommandList.Commands)
 				{
-					LOG_TRACE("\t\t{}", cmd.Name)
+					LOG_TRACE("\t\t{}", (int)cmd->GetType())
 				}
 			}
 		}

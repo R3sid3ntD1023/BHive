@@ -2,6 +2,7 @@
 
 #include "core/Core.h"
 #include "gfx/RenderGraph.h"
+#include "renderers/Renderer.h"
 #include "gfx/RendererAPI.h"
 
 namespace BHive
@@ -11,34 +12,10 @@ namespace BHive
 	class BHIVE_API RenderCommand
 	{
 	public:
-		
-		using CommandFn = std::function<void(RendererAPI*)>;
 
 		static void Init(RendererAPI::EAPI apiType);
 
-		static void Submit(CommandFn &&fn);
-
-		static void Flush(RendererAPI *api);
-
-		template<typename Callable>
-		static void SubmitCommand(const std::string& name, Callable&& fn)
-		{
-			auto &pass = GetActivePass();
-
-			pass.Push(name, std::move(fn));
-		}
-
-		static void SubmitResourceUpdate(FResourceUpdateList::UpdateCommand cmd);
-
 		static void QueueDeletion(FQeueuDeflectionFunc &&fn);
-
-		static void BeginFrame();
-
-		static FPass &BeginPass(const std::string &name, EPassType type);
-
-		static void EndPass();
-
-		static void EndFrame();
 
 		static RendererAPI::EAPI GetAPI() { return sAPI; }
 
@@ -51,11 +28,6 @@ namespace BHive
 		}
 
 	private:
-		static FPass &GetActivePass();
-
-	private:
-		static inline std::vector<CommandFn> sQueue;
-
 		static inline RendererAPI::EAPI sAPI;
 	};
 } // namespace BHive

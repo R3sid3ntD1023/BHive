@@ -94,27 +94,9 @@ namespace BHive
 		BindGlobalResources();
 	}
 
-	void VulkanPipeline::Bind()
+	void VulkanPipeline::Bind(vk::CommandBuffer cmd, uint32_t frame)
 	{
-		RenderCommand::SubmitCommand("Update sets -> Bind pipeline && sets",
-			[=](IRendererContext &ctx) 
-			{
-				auto &vk_ctx = ctx.As<FVulkanRendererContext>();
-	
-				auto sets =  UpdateSets(vk_ctx.Frame);
-				
-				vk_ctx.CommandBuffer.bindPipeline(mBindPoint, mPipeline); 
-
-				for (auto& [setIndex, set] : sets)
-				{
-					vk_ctx.CommandBuffer.bindDescriptorSets(mBindPoint, mPipelineLayout, setIndex, set, {});
-				}
-			});
-	}
-
-	void VulkanPipeline::BindImmediate(vk::CommandBuffer cmd)
-	{
-		auto sets = UpdateSets(0);
+		auto sets = UpdateSets(frame);
 
 		cmd.bindPipeline(mBindPoint, mPipeline);
 

@@ -6,9 +6,6 @@
 
 namespace BHive
 {
-	class VertexArray;
-	class BufferBase;
-	class Pipeline;
 	class WindowContext;
 
 
@@ -21,23 +18,8 @@ namespace BHive
 		uint32_t BaseInstance;
 	};
 
-	struct BHIVE_API ITransferContext
-	{
-		virtual ~ITransferContext() = default;
-
-		template<typename TContext>
-		requires(std::is_base_of_v<ITransferContext, TContext>)
-		TContext& As()
-		{
-			ASSERT(dynamic_cast<TContext *>(this) != nullptr);
-			return static_cast<TContext &>(*this);
-		}
-	};
-
 	using FComputeFunc = std::function<void(FComputeBindings &)>;
 	using FQeueuDeflectionFunc = std::function<void(uint32_t)>;
-	using FTransferFunc = std::function<void(ITransferContext &)>;
-
 
 	class BHIVE_API RendererAPI
 	{
@@ -57,56 +39,13 @@ namespace BHive
 
 		virtual void WaitIdle() = 0;
 
-		virtual void ClearColor(FPass *pass, float r, float g, float b, float a = 1.0f) = 0;
-
-		virtual void Clear(FPass *pass, ClearMask mask = ClearMask::All) = 0;
-
-		virtual void SetLineWidth(FPass *pass, float width) = 0;
-
-		virtual void SetViewport(FPass* pass, uint32_t x, uint32_t y, uint32_t w, uint32_t h) = 0;
-
-		virtual void DrawArrays(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count) = 0;
-
-		virtual void DrawElements(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t count) = 0;
-
-		virtual void
-		DrawElementsBaseVertex(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t start_index, uint32_t count , uint32_t instance_count) = 0;
-
-		virtual void DrawElementsRanged(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t start, uint32_t end, uint32_t count ) = 0;
-
-		virtual void DrawElementsInstanced(FPass *pass, ETopologyMode mode, VertexArray* vao, uint32_t instances, uint32_t count) = 0;
-
-		virtual void MultiDrawElementsIndirect(FPass *pass, ETopologyMode mode, BufferBase* indirect, VertexArray* vao, uint32_t drawCount, uint32_t stride, uint32_t offset ) = 0;
-
-		virtual void DrawFullscreen(FPass *pass) = 0;
-
-		virtual void ColorMask(FPass *pass, uint8_t r, uint8_t g, uint8_t b, uint8_t a) = 0;
-
-		virtual void SubmitGraph(const RenderGraph &graph, FResourceUpdateList &updateResources) = 0;
-
-		virtual Ref<FComputeBindings> CreateComputeBindings(Pipeline* pipeline) = 0;
-
-		virtual FAsyncPass* ExecuteComputePass(Pipeline* pipeline, const glm::uvec3 &dispatchSize, const FComputeFunc &builder) = 0;
-
-		virtual void ExecuteTransferPass(FTransferFunc && builder) = 0;
+		virtual void SubmitGraph(const RenderGraph &graph) = 0;
 
 		virtual void QueueDeletion(FQeueuDeflectionFunc &&fn) = 0;
 
 		virtual void SetCurrentContext(WindowContext *ctx) = 0;
 
 		virtual WindowContext *GetCurrentContext() const = 0;
-
-		template <typename T, typename Method, typename... Args>
-		FAsyncPass* ExecuteComputePass(Pipeline* pipeline, const glm::uvec3& dispatchSize, T* obj, Method method, Args&&... args)
-		{
-			return ExecuteComputePass(pipeline, dispatchSize, [obj, method, ... captured = std::forward<Args>(args)](FComputeBindings& b) mutable{ (obj->*method)(b, captured...); });
-		}
-
-		template <typename T, typename Method, typename... Args>
-		void ExecuteTransferPass(T* obj, Method method, Args&&...args)
-		{
-			ExecuteTransferPass([obj, method, ... captured = std::forward<Args>(args)](ITransferContext &b) mutable { (obj->*method)(b, captured...); });
-		}
 
 		static Scope<RendererAPI> Create();
 	};
