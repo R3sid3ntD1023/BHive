@@ -173,7 +173,7 @@ namespace BHive
 		return mScheduler.GetActivePass();
 	}
 
-	FPass &Renderer::BeginPass(const std::string &name, EPassType type)
+	FPass &Renderer::BeginPass(const std::string &name, EPassType type, const FPassState &state)
 	{
 		if (!mFrameActive)
 		{
@@ -185,7 +185,7 @@ namespace BHive
 			return dummy;
 		}
 
-		return mScheduler.BeginPass(name, type);
+		return mScheduler.BeginPass(name, type, state);
 	}
 
 	void Renderer::EndPass()

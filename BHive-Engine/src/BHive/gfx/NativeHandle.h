@@ -2,39 +2,61 @@
 
 namespace BHive
 {
+	struct INativeObject
+	{
+		virtual ~INativeObject() = default;
+	};
+
 	struct NativeHandle
 	{
-		uintptr_t Handle = 0;
+		enum class EKind
+		{
+			Handle,
+			Ptr
+		};
+
+		EKind kind;
+		uint64_t handle = 0;
+		INativeObject *ptr = nullptr;
 
 		static NativeHandle FromRaw(uint64_t handle)
 		{ 
-			return {handle};
+			return {EKind::Handle, handle, nullptr};
 		}
 
-		template<typename T>
-		static NativeHandle FromPtr(const T* ptr)
+		static NativeHandle FromPtr(const INativeObject* ptr)
 		{
 			return
 			{
-				reinterpret_cast<uintptr_t>(ptr)
+				EKind::Ptr, 0u, const_cast<INativeObject*>(ptr)
 			};
 		}
 
-		template <typename T>
-		T *As()
+		template<typename T>
+		bool Is() const
 		{
-			return reinterpret_cast<T *>(Handle);
+			if constexpr (std::is_base_of_v<INativeObject, T>)
+			{
+				return (kind == EKind::Ptr) && (dynamic_cast<T *>(ptr) != nullptr);
+			}
+
+			return (kind == EKind::Handle);
 		}
 
 		template<typename T>
-		const T* As() const
+		T* As() const
 		{
-			return reinterpret_cast<const T *>(Handle);
+			if constexpr( std::is_base_of_v<INativeObject, T> )
+			{
+				return (kind == EKind::Ptr) ? dynamic_cast<T *>(ptr) : nullptr;
+			}
+
+			return  reinterpret_cast<T *>(handle);
 		}
 
-		uint64_t AsRaw() const { return Handle;}
+		uint64_t AsRaw() const { return handle;}
 
-		bool IsValid() const { return Handle != 0; }
+		bool IsValid() const { return (kind == EKind::Ptr) ? ptr != nullptr : handle != 0; }
 	};
 
 }

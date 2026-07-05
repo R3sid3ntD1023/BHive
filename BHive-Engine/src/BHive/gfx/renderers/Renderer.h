@@ -78,7 +78,7 @@ namespace BHive
 
 		FPass &GetActivePass();
 
-		FPass &BeginPass(const std::string &name, EPassType type);
+		FPass &BeginPass(const std::string &name, EPassType type, const FPassState& state = {});
 
 		void EndPass();
 

@@ -50,10 +50,9 @@ namespace BHive
 		mImage.Upload(info.Data, size, region, range);
 	}
 
-	NativeHandle VulkanTexture2DArray::GetRenderView(uint32_t layer, uint32_t mip) const
+	VkImageView VulkanTexture2DArray::ResolveRenderView(uint32_t layer, uint32_t mip) const
 	{
-		VkImageView view = mImage.Native().GetLayerMipView(layer, mip);
-		return NativeHandle::FromRaw(reinterpret_cast<uint64_t>(view));
+		return mImage.Native().GetLayerMipView(layer, mip);
 	}
 
 	void VulkanTexture2DArray::DebugPrintState()

@@ -11,8 +11,35 @@ namespace BHive
 	enum class EPassType : uint8_t
 	{
 		OffScreen,
-		Overlay,
 		Present
+	};
+
+	enum class EAttachmentLoadState
+	{
+		None,
+		DontCare,
+		Clear,
+		Load
+	};
+
+	enum class EAttachmentStoreState
+	{
+		None,
+		DontCare,
+		Store
+	};
+
+	struct FAttachmentState
+	{
+		EAttachmentLoadState LoadOP = EAttachmentLoadState::Clear;
+		EAttachmentStoreState StoreOP = EAttachmentStoreState::Store;
+		glm::vec4 ClearColor{0, 0, 0, 1};
+	};
+
+	struct FPassState
+	{
+		FAttachmentState Color;
+		FAttachmentState Depth;
 	};
 
 	template <typename T>
@@ -39,6 +66,7 @@ namespace BHive
 		EPassType Type{};
 		std::vector<FPhase> Phases;
 		std::optional<FView> View;
+		FPassState State;
 
 		void BeginPhase(EPhaseType type = EPhaseType::Graphics);
 
@@ -50,6 +78,8 @@ namespace BHive
 			ASSERT(mCurrentPhase > -1);
 			return CommandBuilder<T>(Phases[mCurrentPhase].CommandList);
 		}
+
+		void Push(const FView &view);
 
 		void Push(Ref<Framebuffer> fbo);
 

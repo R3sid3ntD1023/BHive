@@ -2,6 +2,7 @@
 
 #include "gfx/Buffers.h"
 #include "VulkanMemory.h"
+#include "VKInterfaces.h"
 
 namespace BHive
 {
@@ -12,19 +13,30 @@ namespace BHive
 		uint32_t offset;
 	};
 
-	struct VulkanStaticBuffer
+	struct VulkanBuffer : public INativeObject
+	{
+		virtual ~VulkanBuffer() = default;
+
+		virtual const AllocatedBuffer &GetNative(uint32_t frame = 0) const = 0;
+
+		virtual void Upload(vk::CommandBuffer cmd, uint32_t frame, const FBufferUploadInfo &up) = 0;
+	};
+
+	struct VulkanStaticBuffer : public VulkanBuffer
 	{
 		AllocatedBuffer Buffer;
 		AllocatedBuffer StagingBuffer;
 
 		void Init(size_t size, vk::BufferUsageFlags usage);
 
-		void Upload(vk::raii::CommandBuffer &cmd, const FBufferUploadInfo& up);
+		void Upload(vk::CommandBuffer cmd, uint32_t frame, const FBufferUploadInfo &up) override;
+
+		const AllocatedBuffer& GetNative(uint32_t frame) const override { return Buffer; }
 
 		~VulkanStaticBuffer();
 	};
 
-	struct VulkanPerFrameHostBuffer
+	struct VulkanPerFrameHostBuffer : public VulkanBuffer
 	{
 		std::array<AllocatedBuffer, MAX_FRAMES_IN_FLIGHT> Buffers;
 
@@ -32,14 +44,14 @@ namespace BHive
 
 		void Init(const void* data, size_t size, vk::BufferUsageFlags usage);
 
-		void Upload(uint32_t frame, const FBufferUploadInfo& up);
+		void Upload(vk::CommandBuffer cmd, uint32_t frame, const FBufferUploadInfo &up) override;
 
-		vk::Buffer GetBuffer(uint32_t frame) const { return Buffers.at(frame).GetBuffer(); }
+		const AllocatedBuffer& GetNative(uint32_t frame) const override { return Buffers.at(frame); }
 
 		~VulkanPerFrameHostBuffer();
 	};
 
-	
+
 	//-------------------------Static Buffers----------------------------------//
 
 	class BHIVE_API StaticVulkanIndexBuffer : public IndexBuffer
@@ -47,9 +59,11 @@ namespace BHive
 	public:
 		StaticVulkanIndexBuffer(const uint32_t* data, uint32_t count);
 
-		virtual uint32_t GetCount() const override { return mCount; }
+		uint32_t GetCount() const override { return mCount; }
 
-		virtual NativeHandle GetNativeHandle(uint32_t frame) const override;
+		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mBuffer); }
+
+		bool NeedsBarrier() const override { return true; }
 
 	private:
 		VulkanStaticBuffer mBuffer;
@@ -61,11 +75,13 @@ namespace BHive
 	public:
 		StaticVulkanVertexBuffer(const void* data, size_t size);
 
-		virtual void SetLayout(const BufferLayout &layout) override { mLayout = layout; };
+		void SetLayout(const BufferLayout &layout) override { mLayout = layout; };
 
-		virtual const BufferLayout &GetLayout() const override { return mLayout; }
+		const BufferLayout &GetLayout() const override { return mLayout; }
 
-		virtual NativeHandle GetNativeHandle(uint32_t frame) const override;
+		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mBuffer); }
+
+		bool NeedsBarrier() const override { return true; }
 
 	private:
 		VulkanStaticBuffer mBuffer;
@@ -79,9 +95,9 @@ namespace BHive
 	public:
 		DynamicVulkanIndexBuffer(const uint32_t *data, uint32_t count);
 
-		virtual uint32_t GetCount() const override { return mCount; }
+		uint32_t GetCount() const override { return mCount; }
 
-		virtual NativeHandle GetNativeHandle(uint32_t frame) const override;
+		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mPerFrameBuffer); }
 
 	private:
 		VulkanPerFrameHostBuffer mPerFrameBuffer;
@@ -93,11 +109,11 @@ namespace BHive
 	public:
 		DynamicVulkanVertexBuffer(const void *data, const size_t size);
 
-		virtual void SetLayout(const BufferLayout &layout) override;
+		void SetLayout(const BufferLayout &layout) override;
 
-		virtual const BufferLayout &GetLayout() const override { return mLayout; }
+		const BufferLayout &GetLayout() const override { return mLayout; }
 
-		virtual NativeHandle GetNativeHandle(uint32_t frame) const override;
+		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mPerFrameBuffer); }
 
 	private:
 		VulkanPerFrameHostBuffer mPerFrameBuffer;
@@ -115,7 +131,7 @@ namespace BHive
 		//unused in vulkan
 		void BindAtBindingPoint(uint32_t binding) override {}
 
-		NativeHandle GetNativeHandle(uint32_t frame) const override;
+		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mPerFrameBuffer); }
 
 	private:
 		VulkanPerFrameHostBuffer mPerFrameBuffer;

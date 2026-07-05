@@ -4,19 +4,6 @@
 
 namespace BHive
 {
-	void IndexBuffer::SetData(const void *data, size_t size, uint32_t offset)
-	{
-		RenderGraph graph{};
-		auto &pass = graph.AddPass("BufferUpload", EPassType::OffScreen);
-
-		pass.BeginPhase(EPhaseType::Transfer);
-		pass.Push(this, EBufferAccess::IndexRead);
-		pass.Emplace<CmdUploadBuffer>()(this, data, size, offset);
-		pass.EndPhase();
-
-		Renderer::Get().ExecuteGraph(graph);
-	}
-
 	Ref<IndexBuffer> IndexBuffer::Create(const uint32_t count, EBufferUsageType usage, const uint32_t *data)
 	{
 		switch (RenderCommand::GetAPI())
@@ -38,19 +25,6 @@ namespace BHive
 		return nullptr;
 	}
 
-	void VertexBuffer::SetData(const void *data, size_t size, uint32_t offset)
-	{
-		RenderGraph graph{};
-		auto &pass = graph.AddPass("BufferUpload", EPassType::OffScreen);
-
-		pass.BeginPhase(EPhaseType::Transfer);
-		pass.Push(this, EBufferAccess::VertexRead);
-		pass.Emplace<CmdUploadBuffer>()(this, data, size, offset);
-		pass.EndPhase();
-
-		Renderer::Get().ExecuteGraph(graph);
-	}
-
 	Ref<VertexBuffer> BHive::VertexBuffer::Create(const uint64_t size, EBufferUsageType usage, const void *data)
 	{
 		switch (RenderCommand::GetAPI())
@@ -69,17 +43,6 @@ namespace BHive
 
 		ASSERT(false);
 		return nullptr;
-	}
-
-	void GPUBuffer::SetData(const void *data, size_t size, uint32_t offset)
-	{
-		auto &graph = Renderer::Get().GetActiveGraph();
-		auto &pass = graph.AddPass("BufferUpload", EPassType::OffScreen);
-
-		pass.BeginPhase(EPhaseType::Transfer);
-		pass.Push(this, EBufferAccess::TransferWrite);
-		pass.Emplace<CmdUploadBuffer>()(this, data, size, offset);
-		pass.EndPhase();
 	}
 
 	Ref<GPUBuffer> GPUBuffer::Create(size_t size, EBufferType usage, const void *data)

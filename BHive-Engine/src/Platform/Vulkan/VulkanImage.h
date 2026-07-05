@@ -4,6 +4,7 @@
 #include "Platform/Vulkan/ImageViewBuilder.h"
 #include "gfx/resources/ImageCopyRegion.h"
 #include "gfx/resources/ImageSubresourceRange.h"
+#include "VKInterfaces.h"
 
 namespace BHive
 {
@@ -22,7 +23,9 @@ namespace BHive
 		uint32_t BytesPerPixel = 0;
 	};
 
-	class VulkanImage
+	
+
+	class VulkanImage : public INativeObject
 	{
 	public:
 		VulkanImage() = default;
@@ -59,4 +62,5 @@ namespace BHive
 		bool mRawImage{0};
 	};
 
+	
 }

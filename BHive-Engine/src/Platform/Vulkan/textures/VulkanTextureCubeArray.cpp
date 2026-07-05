@@ -47,10 +47,9 @@ namespace BHive
 		
 	}
 
-	NativeHandle VulkanTextureCubeArray::GetRenderView(uint32_t layer, uint32_t mip) const
+	VkImageView VulkanTextureCubeArray::ResolveRenderView(uint32_t layer, uint32_t mip) const
 	{
-		VkImageView view = mImage.Native().GetLayerMipView(layer, mip);
-		return NativeHandle::FromRaw(reinterpret_cast<uint64_t>(view));
+		return mImage.Native().GetLayerMipView(layer, mip);
 	}
 
 	void VulkanTextureCubeArray::DebugPrintState()

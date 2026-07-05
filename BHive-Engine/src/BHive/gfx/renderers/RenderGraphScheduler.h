@@ -21,7 +21,7 @@ namespace BHive
 		void Finalize(RenderGraph &graph);
 
 		FPass &GetActivePass();
-		FPass &BeginPass(const std::string &name, EPassType type);
+		FPass &BeginPass(const std::string &name, EPassType type, const FPassState &state = {});
 		void EndPass();
 
 		void DeferPass(const std::string &name, EPassType type, std::function<void(FPass &)> fn);

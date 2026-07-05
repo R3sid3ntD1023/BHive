@@ -159,18 +159,20 @@ namespace BHive
 
 	};
 
-	enum class EBufferAccess
+	enum class EBufferAccess : uint8_t
 	{
-		None,
-		TransferWrite,
-		TransferRead,
-		VertexRead,
-		IndexRead,
-		UniformRead,
-		StorageRead,
-		StorageWrite,
-		IndirectRead
+		None			,//= 0,
+		TransferWrite	,//= BIT(0),
+		TransferRead	,//= BIT(1),
+		VertexRead		,//= BIT(2),
+		IndexRead		,//= BIT(3),
+		UniformRead		,//= BIT(4),
+		StorageRead		,//= BIT(5),
+		StorageWrite	,//= BIT(6),
+		IndirectRead	,//= BIT(7),
 	};
+
+	//ENABLE_BITMASK_OPERATORS(EBufferAccess)
 
 	enum class EMagFilter
 	{

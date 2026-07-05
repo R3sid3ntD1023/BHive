@@ -5,10 +5,41 @@
 #include "VulkanFramebuffer.h"
 #include "VulkanBackend.h"
 #include "gfx/renderers/Renderer.h"
+#include "VulkanImage.h"
 
 namespace BHive
 {
-	
+	namespace utils
+	{
+		vk::AttachmentLoadOp ToLoad(EAttachmentLoadState state)
+		{
+			switch (state)
+			{
+			case BHive::EAttachmentLoadState::DontCare:
+				return vk::AttachmentLoadOp::eDontCare;
+			case BHive::EAttachmentLoadState::Clear:
+				return vk::AttachmentLoadOp::eClear;
+			case BHive::EAttachmentLoadState::Load:
+				return vk::AttachmentLoadOp::eLoad;
+			default:
+				return vk::AttachmentLoadOp::eNone;
+			}
+		}
+
+		vk::AttachmentStoreOp ToStore(EAttachmentStoreState state)
+		{
+			switch (state)
+			{
+			case BHive::EAttachmentStoreState::DontCare:
+				vk::AttachmentStoreOp::eDontCare;
+			case BHive::EAttachmentStoreState::Store:
+				vk::AttachmentStoreOp::eStore;
+			default:
+				return vk::AttachmentStoreOp::eNone;
+			}
+		}
+	}
+
 	VulkanRendererAPI::VulkanRendererAPI()
 		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
@@ -229,39 +260,46 @@ namespace BHive
 	void VulkanRendererAPI::BeginOffScreenRendering(const FPass& pass, const FPhase &phase, FVulkanRendererContext &ctx)
 	{
 		auto fbo = Cast<VulkanFramebuffer>(phase.FBO);
-		if(phase.Type == EPhaseType::Graphics && fbo)
+		if(fbo)
 		{
+			auto state = pass.State;
 			auto depth = fbo->GetDepthAttachment();
 			auto numColorAttachments = fbo->GetNumColorAttachments();
-			auto clearColor = VKCommandTranslator::GetClearColor();
-			auto depthStencilValue = VKCommandTranslator::GetDepthStencilValue();
 			auto face = fbo->GetCurrentFace();
 			auto &cmd = ctx.CommandBuffer;
-			vk::AttachmentLoadOp loadOp = pass.Type == EPassType::Overlay ? vk::AttachmentLoadOp::eLoad : vk::AttachmentLoadOp::eClear;
-
+			
 			std::vector<vk::RenderingAttachmentInfo> color_infos;
 			color_infos.reserve(numColorAttachments);
 
-			for (size_t i = 0; i < numColorAttachments; i++)
 			{
-				auto attachment = fbo->GetColorAttachment(i);
-				auto &spec = fbo->GetColorAttachmentSpecs(i);
-				auto vkTex = reinterpret_cast<VkImageView>(attachment->GetRenderView(face, spec.MipLevel).AsRaw());
+				vk::AttachmentLoadOp loadOp = utils::ToLoad(state.Color.LoadOP);
+				vk::AttachmentStoreOp storeOP = utils::ToStore(state.Color.StoreOP);
+				auto clearColor = vk::ClearColorValue(state.Color.ClearColor.r, state.Color.ClearColor.g, state.Color.ClearColor.b, state.Color.ClearColor.a);
 
-				auto info = vk::RenderingAttachmentInfo(vkTex, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, loadOp, vk::AttachmentStoreOp::eStore, clearColor);
+				for (size_t i = 0; i < numColorAttachments; i++)
+				{
+					auto attachment = fbo->GetColorAttachment(i);
+					auto &spec = fbo->GetColorAttachmentSpecs(i);
+					auto view = Cast<IVulkanTextureInterface>(attachment)->ResolveRenderView(face, spec.MipLevel);
 
-				color_infos.emplace_back(info);
+					auto info = vk::RenderingAttachmentInfo(view, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, loadOp, storeOP, clearColor);
+
+					color_infos.emplace_back(info);
+				}
 			}
 
 			vk::RenderingAttachmentInfo *depthPtr = nullptr;
 
 			if (depth)
 			{
+				vk::AttachmentLoadOp loadOp = utils::ToLoad(state.Depth.LoadOP);
+				vk::AttachmentStoreOp storeOP = utils::ToStore(state.Depth.StoreOP);
+
 				auto &spec = fbo->GetDepthAttachmentSpecs();
-				auto vkTex = reinterpret_cast<VkImageView>(depth->GetRenderView(face, spec.MipLevel).AsRaw());
+				auto view = Cast<IVulkanTextureInterface>(depth)->ResolveRenderView(face, spec.MipLevel);
 
 				auto depthInfo = vk::RenderingAttachmentInfo(
-					vkTex, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, loadOp, vk::AttachmentStoreOp::eStore, depthStencilValue);
+					view, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, loadOp, storeOP, vk::ClearDepthStencilValue(1.0f, 0));
 
 				depthPtr = &depthInfo;
 			}
@@ -288,10 +326,7 @@ namespace BHive
 
 	void VulkanRendererAPI::EndRendering(const FPhase &phase, FVulkanRendererContext &ctx)
 	{
-		if(phase.Type == EPhaseType::Graphics)
-		{
-			ctx.CommandBuffer.endRendering();
-		}
+		ctx.CommandBuffer.endRendering();
 	}
 
 	void VulkanRendererAPI::CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext &ctx)

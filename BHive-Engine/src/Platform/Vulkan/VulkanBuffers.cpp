@@ -53,7 +53,7 @@ namespace BHive
 		VulkanBackend::GetGPUResourceManager().MapMemory(stageID, 0, size);
 	}
 
-	void VulkanStaticBuffer::Upload(vk::raii::CommandBuffer &cmd, const FBufferUploadInfo &up)
+	void VulkanStaticBuffer::Upload(vk::CommandBuffer cmd, uint32_t frame, const FBufferUploadInfo &up)
 	{	
 		auto mapped_memory = StagingBuffer.GetAllocation().MappedPtr;
 		if (mapped_memory)
@@ -86,7 +86,7 @@ namespace BHive
 		Init(size, usage);
 	}
 
-	void VulkanPerFrameHostBuffer::Upload(uint32_t frame, const FBufferUploadInfo &up)
+	void VulkanPerFrameHostBuffer::Upload(vk::CommandBuffer cmd, uint32_t frame, const FBufferUploadInfo &up)
 	{
 		auto mapped = Buffers[frame].GetAllocation().MappedPtr;
 		std::memcpy(static_cast<std::byte *>(mapped) + up.offset, up.data, up.size);
@@ -118,11 +118,6 @@ namespace BHive
 		Renderer::Get().ExecuteGraph(init);
 	}
 
-	NativeHandle StaticVulkanIndexBuffer::GetNativeHandle(uint32_t frame) const
-	{
-		return NativeHandle::FromPtr(&mBuffer);
-	}
-
 	StaticVulkanVertexBuffer::StaticVulkanVertexBuffer(const void* data, size_t size)
 	{
 		ASSERT(data, "Data must be initilaized!");
@@ -139,10 +134,6 @@ namespace BHive
 		Renderer::Get().ExecuteGraph(init);
 	}
 
-	NativeHandle StaticVulkanVertexBuffer::GetNativeHandle(uint32_t frame) const
-	{
-		return NativeHandle::FromPtr(&mBuffer);
-	}
 
 	//------------------------Dynamic Buffers---------------------------------//
 	DynamicVulkanIndexBuffer::DynamicVulkanIndexBuffer(const uint32_t *data, uint32_t count)
@@ -152,12 +143,6 @@ namespace BHive
 		mPerFrameBuffer.Init(size, vk::BufferUsageFlagBits::eIndexBuffer);
 		if (data)
 			SetData(data, size, 0);
-	}
-
-	NativeHandle DynamicVulkanIndexBuffer::GetNativeHandle(uint32_t frame) const
-	{
-		ASSERT(frame < MAX_FRAMES_IN_FLIGHT)
-		return NativeHandle::FromPtr(&mPerFrameBuffer.Buffers[frame]);
 	}
 
 	DynamicVulkanVertexBuffer::DynamicVulkanVertexBuffer(const void* data, const size_t size)
@@ -172,12 +157,6 @@ namespace BHive
 		mLayout = layout;
 	}
 
-	NativeHandle DynamicVulkanVertexBuffer::GetNativeHandle(uint32_t frame) const
-	{
-		ASSERT(frame < MAX_FRAMES_IN_FLIGHT)
-		return NativeHandle::FromPtr(&mPerFrameBuffer.Buffers[frame]);
-	}
-
 	VulkanGPUBuffer::VulkanGPUBuffer(size_t size, EBufferType type, const void *data)
 		: mSize(size)
 	{
@@ -186,8 +165,4 @@ namespace BHive
 			SetData(data, size, 0);
 	}
 
-	NativeHandle VulkanGPUBuffer::GetNativeHandle(uint32_t frame) const
-	{
-		return Handle::Buffer(&mPerFrameBuffer.Buffers[frame]);
-	}
 } // namespace BHive

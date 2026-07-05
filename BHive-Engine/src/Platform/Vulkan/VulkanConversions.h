@@ -354,7 +354,6 @@ namespace BHive
 	{
 		switch (a)
 		{
-			;
 		case BHive::EBufferAccess::TransferWrite:
 			return vk::AccessFlagBits2::eTransferWrite;
 		case BHive::EBufferAccess::TransferRead:

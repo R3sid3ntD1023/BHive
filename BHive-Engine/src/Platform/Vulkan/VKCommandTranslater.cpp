@@ -86,19 +86,9 @@ namespace BHive
 					.offset = offset
 				};
 
-				if (auto b = native.As<VulkanStaticBuffer>())
-				{
-					b->Upload(cmdbuffer, upload);
-				}
-				else if (auto b = native.As<VulkanPerFrameHostBuffer>())
-				{
-					//for(uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-					b->Upload(frame, upload);
-				}
-				else
-				{
-					ASSERT(false, "Unknown buffer type in CmdUploadBuffer");
-				}
+				auto b = native.As<VulkanBuffer>();
+				if(b);
+					b->Upload(cmdbuffer, frame, upload);
 			}
 			break;
 			case ECommandType::DrawFullScreen:
@@ -136,12 +126,14 @@ namespace BHive
 			{
 				auto &c = CmdCast<CmdMultiDrawIndexedIndirect>(*cmd);
 				auto topology = ToVkTopology(c.Mode);
-				auto buffer = c.Buffer->GetNativeHandle().As<AllocatedBuffer>()->GetBuffer();
+				auto handle = c.Buffer->GetNativeHandle().As<VulkanBuffer>();
+				auto& buf = handle->GetNative(frame);
 				auto vao = Cast<VulkanVertexArray>(c.VAO);
+				auto stride = (uint32_t)c.Stride;
 
 				vao->Bind(cmdbuffer, frame);
 				cmdbuffer.setPrimitiveTopology(topology);
-				cmdbuffer.drawIndexedIndirect(buffer, c.Offset, c.DrawCount, (uint32_t)c.Stride);
+				cmdbuffer.drawIndexedIndirect(buf.GetBuffer(), c.Offset * stride, c.DrawCount, stride);
 			}
 			break;
 			case ECommandType::SetGlobalTopology:
@@ -175,17 +167,9 @@ namespace BHive
 
 		for (auto& b : list.BufferBarriers)
 		{
-			auto handle = b.Buffer->GetNativeHandle(frame);
+			auto handle = b.Buffer->GetNativeHandle().As<VulkanBuffer>();
+			vk::Buffer buf = handle->GetNative(frame).GetBuffer();
 
-			vk::Buffer bufferVk;
-			if (handle.As<VulkanStaticBuffer>())
-				bufferVk = handle.As<VulkanStaticBuffer>()->Buffer.GetBuffer();
-			else if (handle.As<VulkanPerFrameHostBuffer>())
-				bufferVk = handle.As<VulkanPerFrameHostBuffer>()->GetBuffer(frame);
-			else
-			{
-				ASSERT(false && "Unknown buffer type");
-			}
 			bufBarriers.emplace_back(
 				ToStage(b.Src), 
 				ToAccess(b.Src), 
@@ -193,7 +177,7 @@ namespace BHive
 				ToAccess(b.Dst), 
 				VK_QUEUE_FAMILY_IGNORED, 
 				VK_QUEUE_FAMILY_IGNORED, 
-				bufferVk, 
+				buf, 
 				0, 
 				VK_WHOLE_SIZE
 			);

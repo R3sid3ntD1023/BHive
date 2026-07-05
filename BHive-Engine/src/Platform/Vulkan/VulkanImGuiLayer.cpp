@@ -126,18 +126,19 @@ namespace BHive
 
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)
 	{
-		auto handle = texture.GetNativeHandle().As<GPUImage>();
+		auto handle = texture.GetNativeHandle().As<VulkanImage>();
+		auto& native = handle->Native();
 
 		if (!handle)
 		{
-			LOG_ERROR("Invalid GPUImage handle");
+			LOG_ERROR("VKImGuiLayer: Invalid GPUImage handle");
 			return ImTextureRef();
 		}
 
-		auto smp = handle->GetSampler();
+		auto smp = native.GetSampler();
 		if (!smp)
 		{
-			LOG_ERROR("Null Sampler Provided");
+			LOG_ERROR("VKImGuiLayer: Null Sampler Provided");
 			return ImTextureRef();
 		}
 
@@ -146,7 +147,7 @@ namespace BHive
 		if (mImGuiTextureMap.contains(key))
 			return mImGuiTextureMap[key];
 
-		auto set = ImGui_ImplVulkan_AddTexture(smp, handle->GetView(0, 0, 0), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		auto set = ImGui_ImplVulkan_AddTexture(smp, native.GetView(0, 0, 0), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return mImGuiTextureMap[key] = set;
 	}
 

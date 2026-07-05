@@ -14,11 +14,12 @@ namespace BHive
 		return mPasses.empty();
 	}
 
-	FPass &RenderGraph::AddPass(const std::string &name, EPassType type)
+	FPass &RenderGraph::AddPass(const std::string &name, EPassType type, FPassState state)
 	{
 		auto &pass = mPasses.emplace_back();
 		pass.Name = name;
 		pass.Type = type;
+		pass.State = state;
 		return pass;
 	}
 

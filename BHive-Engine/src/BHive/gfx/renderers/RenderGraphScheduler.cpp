@@ -30,10 +30,10 @@ namespace BHive
 		return *mActivePass;
 	}
 
-	FPass &RenderGraphScheduler::BeginPass(const std::string &name, EPassType type)
+	FPass &RenderGraphScheduler::BeginPass(const std::string &name, EPassType type, const FPassState &state)
 	{
 		DebugPass("BeginPass: " + name);
-		mActivePass = &mGraph->AddPass(name, type);
+		mActivePass = &mGraph->AddPass(name, type, state);
 		return *mActivePass;
 	}
 

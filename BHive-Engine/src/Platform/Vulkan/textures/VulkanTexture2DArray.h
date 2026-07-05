@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	class BHIVE_API VulkanTexture2DArray : public Texture2DArray
+	class BHIVE_API VulkanTexture2DArray : public Texture2DArray, public IVulkanTextureInterface
 	{
 	public:
 		VulkanTexture2DArray(const glm::uvec2& size, const FTextureCreateInfo &specification);
@@ -16,9 +16,9 @@ namespace BHive
 
 		const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
 
-		NativeHandle GetNativeHandle() const override { return NativeHandle::FromRaw(reinterpret_cast<uint64_t>(&mImage)); }
+		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mImage); }
 
-		NativeHandle GetRenderView(uint32_t layer = 0, uint32_t mip = 0) const override;
+		VkImageView ResolveRenderView(uint32_t layer = 0, uint32_t mip = 0) const override;
 
 		void DebugPrintState() override;
 

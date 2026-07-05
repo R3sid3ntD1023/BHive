@@ -11,24 +11,11 @@ namespace BHive
 	class BaseMesh;
 	class Material;
 
-	struct FAsyncPass
-	{
-	public:
-
-		virtual bool IsDone() = 0;
-
-		virtual bool Wait() = 0;
-
-		virtual void Destroy() = 0;
-
-		virtual ~FAsyncPass() = default;
-	};
-
 	class RenderGraph
 	{
 	public:
 	
-		FPass &AddPass(const std::string &name, EPassType type);
+		FPass &AddPass(const std::string &name, EPassType type, FPassState state = {});
 
 		void Append(const RenderGraph &graph);
 

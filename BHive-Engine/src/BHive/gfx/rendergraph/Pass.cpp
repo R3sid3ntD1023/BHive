@@ -16,6 +16,11 @@ namespace BHive
 		mCurrentPhase = (int32_t)Phases.size() - 1;
 	}
 
+	void FPass::Push(const FView &view)
+	{
+		View = view;
+	}
+
 	void FPass::Push(Ref<Framebuffer> fbo)
 	{
 		ASSERT(mCurrentPhase > -1)

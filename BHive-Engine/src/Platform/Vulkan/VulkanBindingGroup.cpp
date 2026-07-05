@@ -5,6 +5,7 @@
 #include "VulkanConversions.h"
 #include "VulkanRendererAPI.h"
 #include "gfx/RenderCommand.h"
+#include "VulkanBuffers.h"
 
 namespace BHive
 {
@@ -126,8 +127,9 @@ namespace BHive
 	{
 		ASSERT(b.Buffer)
 
-		auto native = b.Buffer->GetNativeHandle().As<AllocatedBuffer>();
-		return vk::DescriptorBufferInfo(native->GetBuffer(), 0, native->Size);
+		auto handle = b.Buffer->GetNativeHandle().As<VulkanBuffer>();
+		auto& buf = handle->GetNative();
+		return vk::DescriptorBufferInfo(buf.GetBuffer(), 0, buf.Size);
 	}
 
 	vk::DescriptorImageInfo VulkanBindingGroup::BuildImageInfo(const FBindingInfo &bindInfo, uint32_t mip) const
@@ -138,24 +140,12 @@ namespace BHive
 		const uint32_t face = 0;
 
 		const auto img = bindInfo.Texture->GetNativeHandle().As<VulkanImage>();
+		ASSERT(img);
+
 		const auto &native = img->Native();
 		auto smp = native.GetSampler();
 		auto defView = native.GetDefaultView();
 		auto view = native.GetView(layer, face, mip);
-
-
-		/*LOG_INFO(
-			"[DescriptorWrite] set={} binding={} type={}image={} view={} usage={} viewType={} layout={}",
-			mSetIndex,
-			bindInfo.Binding,
-			int(bindInfo.Type),
-			(uint64_t)(VkImage)native.GetImage(),
-			(uint64_t)(VkImageView)view,
-			vk::to_string(native.Usage),
-			vk::to_string(native.ViewType),
-			vk::to_string(bindInfo.Type == EResourceType::StorageImage
-					? vk::ImageLayout::eGeneral
-					: vk::ImageLayout::eShaderReadOnlyOptimal))*/
 		
 		switch (bindInfo.Type)
 		{

@@ -76,10 +76,4 @@ namespace BHive
 
 		vk::Buffer GetBuffer() const;
 	};
-
-	struct Handle
-	{
-		static NativeHandle Image(const GPUImage *image) { return NativeHandle::FromPtr(image); }
-		static NativeHandle Buffer(const AllocatedBuffer *buffer) { return NativeHandle::FromPtr(buffer); }
-	};
 } // namespace BHive
