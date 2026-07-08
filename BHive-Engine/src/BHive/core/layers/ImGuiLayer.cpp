@@ -138,20 +138,6 @@ namespace BHive
 		colors[ImGuiCol_TitleBgCollapsed] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
 	}
 
-	ImTextureRef ImGuiLayer::GetTextureID(const Texture &texture)
-	{
-		auto &app = Application::Get();
-		auto layer = app.GetImGuiLayer();
-		return layer->GetTextureIDImpl(texture);
-	}
-
-	void ImGuiLayer::InvalidateTextureID(const Texture &texture)
-	{
-		auto &app = Application::Get();
-		auto layer = app.GetImGuiLayer();
-		layer->OnInvalidateTexture(texture);
-	}
-
 	void ImGuiLayer::BlockEvents(bool block)
 	{
 		mBlockEvents = block;

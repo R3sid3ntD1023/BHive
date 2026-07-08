@@ -35,10 +35,6 @@ namespace BHive
 
 		void GetAllocatorCallbacks(void *alloc_func, void *free_func, void **user_data) const;
 
-		static ImTextureRef GetTextureID(const Texture &texture);
-
-		static void InvalidateTextureID(const Texture &texture);
-
 		static Ref<ImGuiLayer> Create(GLFWwindow *window);
 
 	protected:
@@ -47,10 +43,6 @@ namespace BHive
 		virtual void Shutdown();
 
 		virtual void OnSubmitRenderData(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size) {};
-
-		virtual ImTextureRef GetTextureIDImpl(const Texture &texture) = 0;
-
-		virtual void OnInvalidateTexture(const Texture &texture) = 0;
 
 	private:
 		bool mBlockEvents{false};

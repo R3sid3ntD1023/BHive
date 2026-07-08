@@ -4,8 +4,7 @@
 #include "gfx/ShaderManager.h"
 #include "gfx/material/Material.h"
 #include "gfx/Pipeline.h"
-#include "core/layers/ImGuiLayer.h"
-#include "gfx/mesh/primitives/Quad.h"
+#include "gfx/imgui/IImGuiProvider.h"
 #include "imgui.h"
 #include "gfx/renderers/Renderer.h"
 
@@ -137,8 +136,8 @@ namespace BHive
 					ImGui::SliderInt("Face", &mSelectedFace, 0, 5);
 				}
 
-				auto texID = ImGuiLayer::GetTextureID(*mFB->GetColorAttachment());
-				ImGui::Image(texID, ImVec2(float(mSize.x), float(mSize.y)));
+				auto id = IImGuiTextureProvider::GetID(*mFB->GetColorAttachment());
+				ImGui::Image(id, ImVec2(float(mSize.x), float(mSize.y)));
 			}
 		}
 

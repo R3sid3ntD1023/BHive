@@ -11,6 +11,7 @@
 #include "undoredo/UndoRedo.h"
 #include "WindowInput.h"
 #include "gfx/ShaderManager.h"
+#include "gfx/imgui/IImGuiProvider.h"
 
 namespace BHive
 {
@@ -44,6 +45,7 @@ namespace BHive
 		{
 			mImGuiLayer = ImGuiLayer::Create(mMainWindow->GetNative());
 			PushLayer(mImGuiLayer);
+			IImGuiTextureProvider::Init();
 		}
 
 		if (specification.Flags & EApplicationFlags::EnableAudio)

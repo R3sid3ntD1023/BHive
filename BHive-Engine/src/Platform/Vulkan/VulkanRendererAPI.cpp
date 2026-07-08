@@ -1,7 +1,7 @@
 #include "VulkanRendererAPI.h"
 #include "VulkanSwapChain.h"
 #include "VulkanImage.h"
-#include "VKCommandTranslater.h"
+#include "VulkanCommandTranslater.h"
 #include "VulkanFramebuffer.h"
 #include "VulkanBackend.h"
 #include "gfx/renderers/Renderer.h"
@@ -235,7 +235,7 @@ namespace BHive
 
 	void VulkanRendererAPI::ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx)
 	{
-		VKCommandTranslator::ExecuteCommandList(list, ctx);
+		VulkanCommandTranslator::ExecuteCommandList(list, ctx);
 	}
 
 	void VulkanRendererAPI::BeginSwapChainRendering(const FPhase &phase, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
@@ -251,8 +251,8 @@ namespace BHive
 		// Depth: Undefined/ShaderRead/etc → DepthStencilAttachment
 		depth.Transition(cmd, ImageState::DepthStencilAttachment());
 
-		vk::ClearValue clearColor(VKCommandTranslator::GetClearColor());
-		vk::ClearValue clearDepth(VKCommandTranslator::GetDepthStencilValue());
+		vk::ClearValue clearColor(VulkanCommandTranslator::GetClearColor());
+		vk::ClearValue clearDepth(VulkanCommandTranslator::GetDepthStencilValue());
 
 		vk::RenderingAttachmentInfo attachmentInfo(
 			image.Native().GetView(0, 0, 0), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearColor);
@@ -340,7 +340,7 @@ namespace BHive
 
 	void VulkanRendererAPI::CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext &ctx)
 	{
-		VKCommandTranslator::CreateBarriers(list, ctx);
+		VulkanCommandTranslator::CreateBarriers(list, ctx);
 	}
 
 	void VulkanRendererAPI::SetCurrentContext(WindowContext *ctx)

@@ -25,25 +25,11 @@ namespace BHive
 	{
 	}
 
-	VulkanImGuiLayer::~VulkanImGuiLayer()
-	{
-		ClearTextureMap();
-	}
-
 	void VulkanImGuiLayer::BeginFrame()
 	{
 		ImGui_ImplVulkan_NewFrame();
 
 		ImGuiLayer::BeginFrame();
-	}
-
-	void VulkanImGuiLayer::ClearTextureMap()
-	{
-		for (auto [_, set] : mImGuiTextureMap)
-		{
-			ImGui_ImplVulkan_RemoveTexture(set);
-		}
-		mImGuiTextureMap.clear();
 	}
 
 	void VulkanImGuiLayer::Init()
@@ -104,8 +90,6 @@ namespace BHive
 
 		mDevice.waitIdle();
 
-		ClearTextureMap();
-
 		mDescriptorPool.reset();
 
 		ImGui_ImplVulkan_Shutdown();
@@ -126,42 +110,5 @@ namespace BHive
 		renderer.EndPass();
 	}
 
-	void VulkanImGuiLayer::OnInvalidateTexture(const Texture &tex)
-	{
-		auto key = tex.GetResourceID();
-		if(mImGuiTextureMap.contains(key))
-		{
-			auto set = mImGuiTextureMap.at(key);
-			ImGui_ImplVulkan_RemoveTexture(set);
-			mImGuiTextureMap.erase(key);
-		}
-	}
-
-	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)
-	{
-		auto handle = texture.GetNativeHandle().As<VulkanImage>();
-		auto& native = handle->Native();
-
-		if (!handle)
-		{
-			LOG_ERROR("VKImGuiLayer: Invalid GPUImage handle");
-			return ImTextureRef();
-		}
-
-		auto smp = native.GetSampler();
-		if (!smp)
-		{
-			LOG_ERROR("VKImGuiLayer: Null Sampler Provided");
-			return ImTextureRef();
-		}
-
-		auto key = texture.GetResourceID();
-
-		if (mImGuiTextureMap.contains(key))
-			return mImGuiTextureMap[key];
-
-		auto set = ImGui_ImplVulkan_AddTexture(smp, native.GetView(0, 0, 0), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		return mImGuiTextureMap[key] = set;
-	}
 
 } // namespace BHive

@@ -16,18 +16,17 @@
 #include "gfx/mesh/StaticMesh.h"
 #include "gfx/renderers/Renderer.h"
 #include "gfx/Pipeline.h"
-#include "core/Time.h"
 #include "Inspectors/Inspect.h"
 #include "gfx/Framebuffer.h"
 #include "gfx/material/LambertMaterial.h"
 #include "gfx/debug/ImageDebugger.h"
-#include "gfx/cameras/OrthographicCamera.h"
 #include "gfx/mesh/primitives/Sphere.h"
 #include "gfx/mesh/primitives/Plane.h"
 #include "gfx/material/StandardMaterial.h"
 #include "gfx/renderers/postprocess/AcesMaterial.h"
 #include "gfx/renderers/postprocess/BloomMaterial.h"
 #include "gfx/renderers/postprocess/ColorGradingMaterial.h"
+#include "gfx/imgui/IImGuiProvider.h"
 
 #define ENABLE_RENDERING 1
 
@@ -270,7 +269,7 @@ namespace BHive
 				mPostProcessAllocator.Resize(mViewportSize);
 				mCamera.Resize(mViewportSize.x, mViewportSize.y);
 
-				ImGuiLayer::InvalidateTextureID(*mFramebuffer->GetColorAttachment());
+				IImGuiTextureProvider::Invalidate(*mFramebuffer->GetColorAttachment());
 			}
 		}
 
@@ -414,8 +413,8 @@ namespace BHive
 			if (mFramebuffer)
 			{
 				
-				auto texture_id = ImGuiLayer::GetTextureID(*mFramebuffer->GetColorAttachment());
-				ImGui::Image(texture_id, viewportSize);
+				auto id = IImGuiTextureProvider::GetID(*mFramebuffer->GetColorAttachment());
+				ImGui::Image(id, viewportSize);
 			}
 		}
 
@@ -464,8 +463,8 @@ namespace BHive
 
 		if (ImGui::Begin("Window"))
 		{
-			auto texture_id = ImGuiLayer::GetTextureID(*mTexture);
-			ImGui::Image(texture_id, {200, 200}, {0, 1}, {1, 0});
+			auto id = IImGuiTextureProvider::GetID(*mTexture);
+			ImGui::Image(id, {200, 200}, {0, 1}, {1, 0});
 
 			Inspect::get().inspect("Transform", transform);
 

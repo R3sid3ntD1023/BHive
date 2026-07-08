@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	struct VKCommandTranslator
+	struct VulkanCommandTranslator
 	{
 		static void ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx);
 

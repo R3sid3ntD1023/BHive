@@ -1,4 +1,4 @@
-#include "VKCommandTranslater.h"
+#include "VulkanCommandTranslater.h"
 #include "gfx/rendergraph/Commands.h"
 #include <backends/imgui_impl_vulkan.h>
 #include "VulkanConversions.h"
@@ -16,7 +16,7 @@ namespace BHive
 		return static_cast<const T &>(cmd);
 	}
 
-	void VKCommandTranslator::ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx)
+	void VulkanCommandTranslator::ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx)
 	{
 		auto &cmdbuffer = ctx.CommandBuffer;
 		const auto frame = ctx.Frame;
@@ -154,7 +154,7 @@ namespace BHive
 		}
 	}
 
-	void VKCommandTranslator::CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext& ctx)
+	void VulkanCommandTranslator::CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext& ctx)
 	{
 		if (list.BufferBarriers.empty())
 			return;
@@ -187,7 +187,7 @@ namespace BHive
 		}
 	}
 
-	void VKCommandTranslator::BindMaterialSnapshot(const MaterialSnapshot &snap, VulkanPipeline *pipeline, FVulkanRendererContext &ctx)
+	void VulkanCommandTranslator::BindMaterialSnapshot(const MaterialSnapshot &snap, VulkanPipeline *pipeline, FVulkanRendererContext &ctx)
 	{
 		auto &cmd = ctx.CommandBuffer;
 		const auto frame = ctx.Frame;
