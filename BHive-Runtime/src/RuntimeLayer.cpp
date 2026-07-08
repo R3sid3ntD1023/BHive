@@ -202,6 +202,8 @@ namespace BHive
 		auto &window = app.GetWindow();
 		auto aspect = window.GetAspectRatio();
 
+		mViewportSize = window.GetSize();
+
 		mCamera = EditorCamera(75.f, aspect, 0.1f, 1000.f);
 		mCamera.SetView(FTransform({5, 5, 5}));
 		mCamera.Focus(FTransform({0, 0, 0}));
@@ -257,94 +259,108 @@ namespace BHive
 	void RuntimeLayer::OnRender(Renderer& renderer)
 	{
 #if ENABLE_RENDERING
-		auto &app = Application::Get();
-		auto &window = app.GetWindow();
-		auto size = window.GetSize();
 		auto &globalsResources = Renderer::Get().GetGlobalResources();  
 
-		//Submit lights
+		if(mFramebuffer)
 		{
-			renderer.Light.Submit(mainLight);
-			renderer.Light.Submit(plight0);
-			renderer.Light.Submit(spLight0);
-		}
-
-		//Update model matrices
-		{
-			std::vector<FPerObjectData> transforms(6);
-			transforms[0].WorldMatrix = transform;
-			transforms[1].WorldMatrix = FTransform({3, 4, 0});
-			transforms[2].WorldMatrix = FTransform({4, 1, 0});
-			transforms[3].WorldMatrix = FTransform({-4, 1, 0});
-			transforms[4].WorldMatrix = FTransform({0, 1, 0});
-			transforms[5].WorldMatrix = FTransform({0, 0, 0});
-			mModelBuffer->SetData(transforms.data(), sizeof(FPerObjectData) * transforms.size());
-		}
-
-		
-		{
-			auto &scenepass = renderer.BeginPass("Scene", EPassType::OffScreen);
-
-			scenepass.BeginPhase();
-			scenepass.Push(globalsResources.Find("EnvironmentPreFilter")->TextureRef, EImageAccess::ColorRead);
-			scenepass.Push(globalsResources.Find("EnvironmentCubeMap")->TextureRef, EImageAccess::ColorRead);
-			scenepass.Push(globalsResources.Find("EnvironmentIrradiance")->TextureRef, EImageAccess::ColorRead);
-			scenepass.Push(globalsResources.Find("EnvironmentBRDFLUT")->TextureRef, EImageAccess::ColorRead);
-			scenepass.Push(globalsResources.Find("Camera")->BufferRef.get(), EBufferAccess::UniformRead);
-
-			
-
-			scenepass.Push(renderer.CreateView(mCamera.GetProjection(), mCamera.GetView()));
-			scenepass.Push(mFramebuffer);
-			scenepass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorWrite);
-			scenepass.Push(mFramebuffer->GetDepthAttachment(), EImageAccess::DepthWrite);
-
-			scenepass.Emplace<CmdSetClearColor>()(1.0f, 0.5f, 0.1f, 1.0f);
-			scenepass.Emplace<CmdClear>()();
-
-			const auto stride = sizeof(MultiDrawIndirectCommand);
-			if (mMesh && mMaterial)
+			auto fbSize = mFramebuffer->GetSize();
+			if (mViewportSize != fbSize && mViewportSize.x > 0 && mViewportSize.y > 0)
 			{
-				mMesh->GetVertexArray()->DeclareAccess(scenepass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
+				mFramebuffer->Resize(mViewportSize);
+				mPostProcessAllocator.Resize(mViewportSize);
+				mCamera.Resize(mViewportSize.x, mViewportSize.y);
 
-				if (mMaterial)
-				{
-					mMaterial->Set("u_Time", Time::Raw());
-					mMaterial->Submit();
-
-					scenepass.Emplace<CmdBindMaterial>()(mMaterial.get());
-					scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2u, stride);
-				}
-
-				if (mLambertMaterial)
-				{
-					scenepass.Emplace<CmdBindMaterial>()(mLambertMaterial.get());
-					scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 1u, stride, 2u);
-				}
+				ImGuiLayer::InvalidateTextureID(*mFramebuffer->GetColorAttachment());
 			}
-
-			mSphere->GetVertexArray()->DeclareAccess(scenepass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
-			mPlane->GetVertexArray()->DeclareAccess(scenepass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
-
-			scenepass.Emplace<CmdBindMaterial>()(mEmissiveMaterial.get());
-			scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1u, stride, 3u);
-
-			scenepass.Emplace<CmdBindMaterial>()(mStandardMaterial.get());
-			scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1u, stride, 4u);
-			scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mPlane->GetVertexArray().get(), 1u, stride, 5u);
-
-			scenepass.EndPhase();
-
-			
-			renderer.EndPass();
 		}
 
-		FPassState debugState{};
-		debugState.Color = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store};
-		debugState.Depth = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store};
+		//Submit lights
+		//{
+		//	renderer.Light.Submit(mainLight);
+		//	renderer.Light.Submit(plight0);
+		//	renderer.Light.Submit(spLight0);
+		//}
+
+		////Update model matrices
+		//{
+		//	std::vector<FPerObjectData> transforms(6);
+		//	transforms[0].WorldMatrix = transform;
+		//	transforms[1].WorldMatrix = FTransform({3, 4, 0});
+		//	transforms[2].WorldMatrix = FTransform({4, 1, 0});
+		//	transforms[3].WorldMatrix = FTransform({-4, 1, 0});
+		//	transforms[4].WorldMatrix = FTransform({0, 1, 0});
+		//	transforms[5].WorldMatrix = FTransform({0, 0, 0});
+		//	mModelBuffer->SetData(transforms.data(), sizeof(FPerObjectData) * transforms.size());
+		//}
+
+		//
+		//{
+		//	auto &scenepass = renderer.BeginPass("Scene", EPassType::OffScreen);
+
+		//	scenepass.BeginPhase();
+		//	scenepass.Push(globalsResources.Find("EnvironmentPreFilter")->TextureRef, EImageAccess::ColorRead);
+		//	scenepass.Push(globalsResources.Find("EnvironmentCubeMap")->TextureRef, EImageAccess::ColorRead);
+		//	scenepass.Push(globalsResources.Find("EnvironmentIrradiance")->TextureRef, EImageAccess::ColorRead);
+		//	scenepass.Push(globalsResources.Find("EnvironmentBRDFLUT")->TextureRef, EImageAccess::ColorRead);
+		//	scenepass.Push(globalsResources.Find("Camera")->BufferRef.get(), EBufferAccess::UniformRead);
+
+		//	
+
+		//	scenepass.Push(renderer.CreateView(mCamera.GetProjection(), mCamera.GetView()));
+		//	scenepass.Push(mFramebuffer);
+		//	scenepass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorWrite);
+		//	scenepass.Push(mFramebuffer->GetDepthAttachment(), EImageAccess::DepthWrite);
+
+		//	scenepass.Emplace<CmdSetClearColor>()(1.0f, 0.5f, 0.1f, 1.0f);
+		//	scenepass.Emplace<CmdClear>()();
+
+		//	const auto stride = sizeof(MultiDrawIndirectCommand);
+		//	if (mMesh && mMaterial)
+		//	{
+		//		mMesh->GetVertexArray()->DeclareAccess(scenepass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
+
+		//		if (mMaterial)
+		//		{
+		//			mMaterial->Set("u_Time", Time::Raw());
+		//			mMaterial->Submit();
+
+		//			scenepass.Emplace<CmdBindMaterial>()(mMaterial.get());
+		//			scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2u, stride);
+		//		}
+
+		//		if (mLambertMaterial)
+		//		{
+		//			scenepass.Emplace<CmdBindMaterial>()(mLambertMaterial.get());
+		//			scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 1u, stride, 2u);
+		//		}
+		//	}
+
+		//	mSphere->GetVertexArray()->DeclareAccess(scenepass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
+		//	mPlane->GetVertexArray()->DeclareAccess(scenepass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
+
+		//	scenepass.Emplace<CmdBindMaterial>()(mEmissiveMaterial.get());
+		//	scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1u, stride, 3u);
+
+		//	scenepass.Emplace<CmdBindMaterial>()(mStandardMaterial.get());
+		//	scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1u, stride, 4u);
+		//	scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mPlane->GetVertexArray().get(), 1u, stride, 5u);
+
+		//	scenepass.EndPhase();
+
+		//	
+		//	renderer.EndPass();
+		//}
+
 		
+		FPassState debugState{};
+		debugState.Color = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store, {0.1f, 0.1f, 0.1f, 1.0f}};
+		debugState.Depth = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store};
+
 		auto &debugPass = renderer.BeginPass("DebugPass", EPassType::OffScreen, debugState);
-		debugPass.BeginPhase();
+		
+		debugPass.BeginPhase("Draw Debug Objects", EPhaseType::Graphics);
+		debugPass.Push(globalsResources.Find("Camera")->BufferRef.get(), EBufferAccess::UniformRead);
+		debugPass.Push(renderer.CreateView(mCamera.GetProjection(), mCamera.GetView()));
 		debugPass.Push(mFramebuffer);
 
 		{
@@ -369,17 +385,14 @@ namespace BHive
 
 		renderer.Flush();
 		debugPass.EndPhase();
+
+		debugPass.BeginPhase("Transition to Read", EPhaseType::Transfer);
+		debugPass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorRead);
+		debugPass.EndPhase();
+
 		renderer.EndPass();
 
-		{
-			auto &pass = renderer.BeginPass("DebugPass", EPassType::OffScreen);
-			pass.BeginPhase("Transition to Read", EPhaseType::Transfer);
-			pass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorRead);
-			pass.EndPhase();
-			renderer.EndPass();
-		}
-
-
+		//mFinalSceneColor = mFramebuffer->GetColorAttachment();
 		//auto input = mFramebuffer->GetColorAttachment();
 		//mFinalSceneColor = mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, input);
 #endif
@@ -395,19 +408,13 @@ namespace BHive
 
 		if (ImGui::Begin("Scene"))
 		{
-			if (mFinalSceneColor)
-			{
-				auto fbSize = mFinalSceneColor->GetSize();
-				auto viewportSize = ImGui::GetContentRegionAvail();
-				glm::uvec2 size = {uint32_t(glm::round(viewportSize.x)), uint32_t(glm::round(viewportSize.y))};
+			auto viewportSize = ImGui::GetContentRegionAvail();
+			mViewportSize = {uint32_t(glm::round(viewportSize.x)), uint32_t(glm::round(viewportSize.y))};
 
-				if (size != fbSize && size.x > 0 && size.y > 0)
-				{
-					mFramebuffer->Resize(size);
-					mPostProcessAllocator.Resize(size);
-					mCamera.Resize(size.x, size.y);
-				}
-				auto texture_id = ImGuiLayer::GetTextureID(*mFinalSceneColor);
+			if (mFramebuffer)
+			{
+				
+				auto texture_id = ImGuiLayer::GetTextureID(*mFramebuffer->GetColorAttachment());
 				ImGui::Image(texture_id, viewportSize);
 			}
 		}

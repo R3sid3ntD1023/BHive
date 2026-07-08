@@ -86,7 +86,7 @@ namespace BHive
 
 	void Renderer::EndFrame()
 	{
-		mScheduler.Finalize(mGraph);
+		mScheduler.Finalize();
 
 		ExecuteGraph(mGraph);
 
@@ -186,6 +186,11 @@ namespace BHive
 		}
 
 		return mScheduler.BeginPass(name, type, state);
+	}
+
+	void Renderer::DeferPass(const std::string &name, EPassType type, const FPassState &state, std::function<void(FPass &)> fn)
+	{
+		mScheduler.DeferPass(name, type, fn);
 	}
 
 	void Renderer::EndPass()

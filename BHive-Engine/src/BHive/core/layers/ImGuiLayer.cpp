@@ -145,6 +145,13 @@ namespace BHive
 		return layer->GetTextureIDImpl(texture);
 	}
 
+	void ImGuiLayer::InvalidateTextureID(const Texture &texture)
+	{
+		auto &app = Application::Get();
+		auto layer = app.GetImGuiLayer();
+		layer->OnInvalidateTexture(texture);
+	}
+
 	void ImGuiLayer::BlockEvents(bool block)
 	{
 		mBlockEvents = block;

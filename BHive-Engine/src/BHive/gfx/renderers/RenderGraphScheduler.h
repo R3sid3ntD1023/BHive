@@ -18,7 +18,7 @@ namespace BHive
 	{
 	public:
 		void BeginFrame(RenderGraph &graph, const PassConfig& config);
-		void Finalize(RenderGraph &graph);
+		void Finalize();
 
 		FPass &GetActivePass();
 		FPass &BeginPass(const std::string &name, EPassType type, const FPassState &state = {});

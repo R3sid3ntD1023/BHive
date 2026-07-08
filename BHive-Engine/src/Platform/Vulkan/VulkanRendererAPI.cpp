@@ -81,8 +81,6 @@ namespace BHive
 			return vk::Result::eSuccess;
 		}
 
-		
-
 		//Print all passes -> phases -> cmds to console
 		//finalGraph.DebugPrint();
 
@@ -181,8 +179,12 @@ namespace BHive
 
 	void VulkanRendererAPI::ExecutePass(const FPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
 	{
+		//LOG_TRACE("Pass: {}", pass.Name);
+
 		for (auto& phase : pass.Phases)
 		{
+			//LOG_TRACE("\tPhase {}", phase.Name);
+
 			TransitionImages(phase, ctx.CommandBuffer);
 
 			if (phase.Type == EPhaseType::Graphics)
@@ -212,15 +214,22 @@ namespace BHive
 		for (auto &imgInfo : phase.Images)
 		{
 			auto tex = imgInfo.Texture;
+			auto name = tex->GetInfo().DebugName;
 			auto vkImg = tex->GetNativeHandle().As<VulkanImage>();
 
-			ImageState oldstate = vkImg->GetState(imgInfo.Range.BaseMipLevel, imgInfo.Range.BaseArrayLayer);
+			ImageState oldState = vkImg->GetState(imgInfo.Range.BaseMipLevel, imgInfo.Range.BaseArrayLayer);
 			ImageState newState = ImageState::ToImageState(imgInfo.Access);
 
-			if (oldstate != newState)
+			if (oldState.IsUndefined || oldState != newState)
 			{
+				//LOG_TRACE("\t\tTransition {} :  {} -> {}", name, vk::to_string(oldState.Layout), vk::to_string(newState.Layout));
 				vkImg->Transition(cmd, newState, imgInfo.Range);
 			}
+			else
+			{
+				//LOG_TRACE("\t\tTransition {} : None", name);
+			}
+			
 		}
 	}
 
@@ -282,7 +291,7 @@ namespace BHive
 					auto &spec = fbo->GetColorAttachmentSpecs(i);
 					auto view = Cast<IVulkanTextureInterface>(attachment)->ResolveRenderView(face, spec.MipLevel);
 
-					auto info = vk::RenderingAttachmentInfo(view, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, loadOp, storeOP, clearColor);
+					auto info = vk::RenderingAttachmentInfo(view, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eColorAttachmentOptimal, loadOp, storeOP, clearColor);
 
 					color_infos.emplace_back(info);
 				}
@@ -299,7 +308,7 @@ namespace BHive
 				auto view = Cast<IVulkanTextureInterface>(depth)->ResolveRenderView(face, spec.MipLevel);
 
 				auto depthInfo = vk::RenderingAttachmentInfo(
-					view, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, loadOp, storeOP, vk::ClearDepthStencilValue(1.0f, 0));
+					view, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eDepthStencilAttachmentOptimal, loadOp, storeOP, vk::ClearDepthStencilValue(1.0f, 0));
 
 				depthPtr = &depthInfo;
 			}

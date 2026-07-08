@@ -116,12 +116,25 @@ namespace BHive
 	void VulkanImGuiLayer::OnSubmitRenderData(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size)
 	{
 		auto &renderer = Renderer::Get();
-		auto& pass = renderer.BeginPass("ImGui", EPassType::Present);
+
+		auto &pass = renderer.BeginPass("ImGui", EPassType::Present);
 		pass.BeginPhase();
 		pass.Emplace<CmdSetViewport>()(pos.x, pos.y, size.x, size.y);
 		pass.Emplace<CmdImGuiRender>()(drawData);
 		pass.EndPhase();
+
 		renderer.EndPass();
+	}
+
+	void VulkanImGuiLayer::OnInvalidateTexture(const Texture &tex)
+	{
+		auto key = tex.GetResourceID();
+		if(mImGuiTextureMap.contains(key))
+		{
+			auto set = mImGuiTextureMap.at(key);
+			ImGui_ImplVulkan_RemoveTexture(set);
+			mImGuiTextureMap.erase(key);
+		}
 	}
 
 	ImTextureRef VulkanImGuiLayer::GetTextureIDImpl(const Texture &texture)

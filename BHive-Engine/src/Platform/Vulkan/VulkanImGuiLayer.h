@@ -25,6 +25,8 @@ namespace BHive
 
 		void OnSubmitRenderData(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size) override;
 
+		void OnInvalidateTexture(const Texture &tex) override;
+
 		ImTextureRef GetTextureIDImpl(const Texture &texture) override;
 
 	private:

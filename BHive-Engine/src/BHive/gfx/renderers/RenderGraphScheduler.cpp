@@ -1,4 +1,5 @@
 #include "RenderGraphScheduler.h"
+#include "gfx/RenderGraph.h"
 
 namespace BHive
 {
@@ -9,11 +10,11 @@ namespace BHive
 		mActivePass = nullptr;
 	}
 
-	void RenderGraphScheduler::Finalize(RenderGraph &graph)
+	void RenderGraphScheduler::Finalize()
 	{
 		for (auto& d : mDeferred)
 		{
-			auto &pass = graph.AddPass(d.Name, d.Type);
+			auto &pass = mGraph->AddPass(d.Name, d.Type);
 			d.Fn(pass);
 		}
 

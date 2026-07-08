@@ -141,6 +141,8 @@ namespace BHive
 		for (auto &layer : mLayerStack)
 			layer->OnRender(*mRenderer);
 
+		
+		
 		if (mImGuiLayer)
 		{
 			mImGuiLayer->BeginFrame();

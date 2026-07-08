@@ -52,5 +52,6 @@ namespace BHive
 		Ref<class BloomMaterial> mBloomMaterial;
 		Ref<class ColorGradingMaterial> mColorGrading;
 
+		glm::uvec2 mViewportSize{0, 0};
 	};
 } // namespace BHive

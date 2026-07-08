@@ -80,6 +80,8 @@ namespace BHive
 
 		FPass &BeginPass(const std::string &name, EPassType type, const FPassState& state = {});
 
+		void DeferPass(const std::string &name, EPassType type, const FPassState &state = {}, std::function<void(FPass &)> fn = {});
+
 		void EndPass();
 
 		void SetPassConfig(const PassConfig &config);

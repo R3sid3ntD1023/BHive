@@ -17,7 +17,7 @@ namespace BHive
 
 		ImageState() = default;
 
-		ImageState(vk::ImageLayout layout, vk::AccessFlags2 access, vk::PipelineStageFlags2 stage, bool unDefined = false);
+		ImageState(vk::ImageLayout layout, vk::AccessFlags2 access, vk::PipelineStageFlags2 stage, bool unDefined);
 
 		bool operator==(const ImageState &other) const { return Layout == other.Layout; }
 

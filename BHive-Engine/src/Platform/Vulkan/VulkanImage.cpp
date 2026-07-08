@@ -198,27 +198,23 @@ namespace BHive
 		const bool isDepth = format == vk::Format::eD32Sfloat || format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint || format == vk::Format::eD16Unorm;
 
 		//Depth/stencil images
-		if (isDepth)
-		{
-			if (usage & vk::ImageUsageFlagBits::eDepthStencilAttachment)
-				return ImageState::DepthStencilAttachment();
 
-			return ImageState::ShaderRead();
+		if (usage & vk::ImageUsageFlagBits::eDepthStencilAttachment)
+			return isDepth ? ImageState::DepthStencilAttachment() : ImageState::ColorAttachment();
+
+		if ((usage & vk::ImageUsageFlagBits::eColorAttachment) && !(usage & vk::ImageUsageFlagBits::eSampled))
+		{
+			return ImageState::ColorAttachment();
+		}
+
+		if ((usage & vk::ImageUsageFlagBits::eColorAttachment) && (usage & vk::ImageUsageFlagBits::eSampled))
+		{
+			return ImageState::Undefined();
 		}
 
 		if (usage & vk::ImageUsageFlagBits::eStorage)
 		{
 			return ImageState::ComputeWrite();
-		}
-		
-		if (usage & vk::ImageUsageFlagBits::eSampled)
-		{
-			return ImageState::Undefined();
-		}
-		
-		if (usage & vk::ImageUsageFlagBits::eColorAttachment)
-		{
-			return ImageState::ColorAttachment();
 		}
 		
 		if (usage & vk::ImageUsageFlagBits::eTransferDst)

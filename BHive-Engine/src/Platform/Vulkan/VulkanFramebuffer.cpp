@@ -79,6 +79,8 @@ namespace BHive
 
 		mSpecification.Size = newSize;
 
+		LOG_TRACE("recreating fbo... with size[{}x{}]", newSize.x, newSize.y);
+
 		Initialize();
 	}
 

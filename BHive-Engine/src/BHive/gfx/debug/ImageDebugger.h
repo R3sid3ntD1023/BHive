@@ -53,5 +53,7 @@ namespace BHive
 		Ref<Pipeline> mPipeline;
 		Ref<Material> mMaterial;
 		glm::uvec2 mSize{};
+
+		bool mHasRendered = false;
 	};
 }

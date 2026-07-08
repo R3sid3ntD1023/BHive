@@ -69,7 +69,7 @@ namespace BHive
 			int face = entry.IsCube ? mSelectedFace : 0;
 			int layers = entry.IsCube ? 1 : entry.Layers;
 			const char *uniform = entry.IsCube ? "u_TexCube" : "u_Tex2D";
-			auto tex = entry.Tex;
+			const auto& tex = entry.Tex;
 
 			mMaterial->Set("u_Type", type);
 			mMaterial->Set("u_Mip", mip);
@@ -80,10 +80,9 @@ namespace BHive
 			ImageSubresourceRange range{mip, mipLevels, face, layers};
 
 			auto& pass = renderer.BeginPass("ImageDebugger", EPassType::OffScreen);
-			
+
 			pass.BeginPhase("ImageDebugger : Render To Qaud", EPhaseType::Graphics);
 			pass.Push(mFB);
-			pass.Push(mFB->GetColorAttachment(), EImageAccess::ColorWrite);
 			pass.Push(tex, EImageAccess::ColorRead, range);
 			pass.Emplace<CmdSetClearColor>()(0.f, 0.0f, .0f, 1.0f);
 			pass.Emplace<CmdBindMaterial>()(mMaterial.get());
@@ -95,11 +94,14 @@ namespace BHive
 			pass.EndPhase();
 
 			renderer.EndPass();
+
+			mHasRendered = true;
 		}
 	}
 
 	void ImageDebugger::OnGuiRender()
 	{
+
 		if (!mFB || mTextureEntries.empty())
 			return;
 
@@ -110,8 +112,11 @@ namespace BHive
 				for (int i = 0; i < (int)mTextureEntries.size(); i++)
 				{
 					bool selected = (i == mSelected);
-					if (ImGui::Selectable(mTextureEntries[i].Name.c_str(), selected))
+					if(ImGui::Selectable(mTextureEntries[i].Name.c_str(), selected))
+					{
 						mSelected = i;
+						mHasRendered = false;
+					}
 					if (selected)
 						ImGui::SetItemDefaultFocus();
 				}
@@ -119,7 +124,7 @@ namespace BHive
 				ImGui::EndCombo();
 			}
 
-			if (mSelected >= 0)
+			if (mSelected >= 0 && mHasRendered)
 			{
 				auto &entry = mTextureEntries[mSelected];
 
