@@ -8,7 +8,7 @@ namespace BHive
 {
 	class ShaderProgram;
 	struct FShaderReflection;
-	class GPUBuffer;
+	class GeneralBuffer;
 	class VulkanPipeline;
 
 	class VulkanBackendMaterial : public IMaterialBackendInterface
@@ -18,9 +18,9 @@ namespace BHive
 
 		~VulkanBackendMaterial() = default;
 
-		void Init(Pipeline* pipeline) override;
+		void Init(Pipeline *pipeline) override;
 
-		void BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip , Pipeline* pipeline) override;
+		void BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip, Pipeline *pipeline) override;
 
 		void Set(const std::string &name, const void *data, size_t size) override;
 
@@ -36,7 +36,7 @@ namespace BHive
 		vk::PipelineBindPoint mBindPoint = vk::PipelineBindPoint::eGraphics;
 
 		Ref<ShaderProgram> mProgram;
-		
+
 		const FShaderReflection *mReflectionMergedPtr = nullptr;
 
 		const FShaderReflectionLookUp *mReflectionLookupTablePtr = nullptr;
@@ -45,9 +45,8 @@ namespace BHive
 
 		std::vector<std::byte> mPushConstantData;
 
-		std::unordered_map<std::string, Ref<GPUBuffer>> mLocalBuffers;
+		std::unordered_map<std::string, Ref<GeneralBuffer>> mLocalBuffers;
 
 		std::unordered_map<std::string, MaterialSnapshot::TextureBinding> mTextureBindings;
-
 	};
-}
+} // namespace BHive

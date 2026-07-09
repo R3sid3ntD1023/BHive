@@ -17,7 +17,7 @@ namespace BHive
 		Ref<Texture> BlackTexture;
 		Ref<Texture> BlueTexture;
 		Ref<Texture2D> BRDFLut;
-		Ref<GPUBuffer> CameraUBO;
+		Ref<GeneralBuffer> CameraUBO;
 
 		RenderData()
 		{
@@ -39,7 +39,7 @@ namespace BHive
 			create_info.DebugName = "Blue Texture";
 			BlueTexture = Texture2D::Create({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
 
-			CameraUBO = GPUBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);	
+			CameraUBO = GeneralBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);	
 
 			BRDFLut = BRDFLUTGenerator::GenerateBRDFLUTMap();
 		}

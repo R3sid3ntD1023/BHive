@@ -39,9 +39,9 @@ namespace BHive
 		Ref<class LambertMaterial> mLambertMaterial = nullptr;
 		Ref<class StaticMesh> mMesh = nullptr;
 		Ref<class Framebuffer> mFramebuffer;
-		Ref<class GPUBuffer> mMultiDrawIndirectBuffer;
+		Ref<class GeneralBuffer> mMultiDrawIndirectBuffer;
 		EditorCamera mCamera;
-		Ref<GPUBuffer> mModelBuffer = nullptr;
+		Ref<GeneralBuffer> mModelBuffer = nullptr;
 		Ref<PSphere> mSphere;
 		Ref<PPlane> mPlane;
 		Ref<class StandardMaterial> mStandardMaterial = nullptr;

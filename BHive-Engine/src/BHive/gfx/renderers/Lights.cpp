@@ -4,9 +4,9 @@
 
 namespace BHive
 {
-	void Lights::Initialize(Renderer& renderer)
+	void Lights::Initialize(Renderer &renderer)
 	{
-		mLightBuffer = GPUBuffer::Create(sizeof(FLightBufferData), EBufferType::StorageBuffer);
+		mLightBuffer = GeneralBuffer::Create(sizeof(FLightBufferData), EBufferType::StorageBuffer);
 		renderer.GetGlobalResources().Register("Lights", mLightBuffer);
 	}
 

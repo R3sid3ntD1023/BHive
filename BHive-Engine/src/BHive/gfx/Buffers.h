@@ -12,7 +12,7 @@ namespace BHive
 		IndirectBuffer = 2 << 0
 	};
 
-	enum class EBufferUsageType
+	enum class EBufferLifetime
 	{
 		Static,
 		Dynamic
@@ -20,9 +20,11 @@ namespace BHive
 
 	struct FBufferCreateInfo
 	{
-		size_t Size;
-		EBufferUsageType Usage;
+		size_t ByteSize;
 		EBufferType Type;
+		EBufferLifetime LifeTime = EBufferLifetime::Static;
+		void *Data = nullptr;
+		uint32_t ElementCount = 0; // only used for index buffers
 	};
 
 	class BHIVE_API IndexBuffer : public BufferBase
@@ -32,7 +34,7 @@ namespace BHive
 
 		virtual uint32_t GetCount() const = 0;
 
-		static Ref<IndexBuffer> Create(const uint32_t count, EBufferUsageType usage = EBufferUsageType::Static, const uint32_t *data = nullptr);
+		static Ref<IndexBuffer> Create(const uint32_t count, EBufferLifetime lifetime = EBufferLifetime::Dynamic, const uint32_t *data = nullptr);
 	};
 
 	class BHIVE_API VertexBuffer : public BufferBase
@@ -44,19 +46,17 @@ namespace BHive
 
 		virtual const BufferLayout &GetLayout() const = 0;
 
-		static Ref<VertexBuffer> Create(const uint64_t size, EBufferUsageType usage = EBufferUsageType::Static , const void *data = nullptr);
+		static Ref<VertexBuffer> Create(const uint64_t size, EBufferLifetime lifetime = EBufferLifetime::Dynamic, const void *data = nullptr);
 	};
 
-	
-	class BHIVE_API GPUBuffer : public BufferBase
+	class BHIVE_API GeneralBuffer : public BufferBase
 	{
 	public:
-		virtual ~GPUBuffer() = default;
+		virtual ~GeneralBuffer() = default;
 
 		virtual void BindAtBindingPoint(uint32_t binding) = 0;
 
-		static Ref<GPUBuffer> Create(size_t size, EBufferType type, const void *data = nullptr);
+		static Ref<GeneralBuffer> Create(size_t size, EBufferType type, EBufferLifetime lifetime = EBufferLifetime::Dynamic, const void *data = nullptr);
 	};
-
 
 } // namespace BHive

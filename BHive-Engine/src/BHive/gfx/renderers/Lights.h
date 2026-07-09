@@ -5,14 +5,14 @@
 
 namespace BHive
 {
-	class GPUBuffer;
+	class GeneralBuffer;
 	class Renderer;
 
 	struct BHIVE_API Lights
 	{
 		static constexpr uint32_t sMaxLights = 32;
 
-		void Initialize(Renderer& renderer);
+		void Initialize(Renderer &renderer);
 
 		void BeginRecording();
 
@@ -38,7 +38,7 @@ namespace BHive
 	private:
 		FLightBufferData mLightInfo{};
 
-		Ref<GPUBuffer> mLightBuffer;
+		Ref<GeneralBuffer> mLightBuffer;
 	};
 
 } // namespace BHive

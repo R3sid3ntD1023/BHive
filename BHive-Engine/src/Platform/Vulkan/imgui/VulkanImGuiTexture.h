@@ -8,6 +8,8 @@ namespace BHive
 	class VulkanImGuiTexture : public IImGuiTexture
 	{
 	public:
+		~VulkanImGuiTexture();
+
 		uint64_t GetTextureID(const Texture &tex) override;
 
 		void InvalidateTexture(const Texture &tex) override;

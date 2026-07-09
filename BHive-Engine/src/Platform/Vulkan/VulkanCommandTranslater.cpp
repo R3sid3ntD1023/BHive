@@ -10,8 +10,8 @@
 
 namespace BHive
 {
-	template<typename T>
-	const T& CmdCast(FCommand& cmd)
+	template <typename T>
+	const T &CmdCast(FCommand &cmd)
 	{
 		return static_cast<const T &>(cmd);
 	}
@@ -21,7 +21,7 @@ namespace BHive
 		auto &cmdbuffer = ctx.CommandBuffer;
 		const auto frame = ctx.Frame;
 
-		for (auto& cmd : list.Commands)
+		for (auto &cmd : list.Commands)
 		{
 			switch (cmd->GetType())
 			{
@@ -34,7 +34,7 @@ namespace BHive
 			case ECommandType::SetViewport:
 			{
 				auto &c = CmdCast<CmdSetViewport>(*cmd);
-				cmdbuffer.setViewport(0, vk::Viewport(float(c.X), float(c.Y + c.Height), float(c.Width), - float(c.Height), 0.0f, 1.0f));
+				cmdbuffer.setViewport(0, vk::Viewport(float(c.X), float(c.Y + c.Height), float(c.Width), -float(c.Height), 0.0f, 1.0f));
 				cmdbuffer.setScissor(0, vk::Rect2D({c.X, c.Y}, {c.Width, c.Height}));
 			}
 			break;
@@ -79,16 +79,11 @@ namespace BHive
 				auto size = c.Data->size();
 				auto offset = c.Offset;
 
-				FBufferUploadInfo upload
-				{	
-					.data = data, 
-					.size = size, 
-					.offset = offset
-				};
+				FBufferUploadInfo upload{.size = size, .offset = offset, .data = data};
 
 				auto b = native.As<VulkanBuffer>();
-				if(b);
-					b->Upload(cmdbuffer, frame, upload);
+				if (b)
+					b->Upload(upload);
 			}
 			break;
 			case ECommandType::DrawFullScreen:
@@ -102,7 +97,7 @@ namespace BHive
 			{
 				auto &c = CmdCast<CmdDraw>(*cmd);
 				auto vao = Cast<VulkanVertexArray>(c.VAO);
-				
+
 				vao->Bind(cmdbuffer, frame);
 
 				cmdbuffer.setPrimitiveTopology(ToVkTopology(c.Mode));
@@ -127,7 +122,7 @@ namespace BHive
 				auto &c = CmdCast<CmdMultiDrawIndexedIndirect>(*cmd);
 				auto topology = ToVkTopology(c.Mode);
 				auto handle = c.Buffer->GetNativeHandle().As<VulkanBuffer>();
-				auto& buf = handle->GetNative(frame);
+				auto &buf = handle->GetNative(frame);
 				auto vao = Cast<VulkanVertexArray>(c.VAO);
 				auto stride = (uint32_t)c.Stride;
 
@@ -148,39 +143,29 @@ namespace BHive
 				cmdbuffer.setLineWidth(c.Width);
 			}
 			break;
-			default:	
+			default:
 				break;
 			}
 		}
 	}
 
-	void VulkanCommandTranslator::CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext& ctx)
+	void VulkanCommandTranslator::CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext &ctx)
 	{
 		if (list.BufferBarriers.empty())
 			return;
 
-		auto& cmd = ctx.CommandBuffer;
+		auto &cmd = ctx.CommandBuffer;
 		auto frame = ctx.Frame;
 
 		std::vector<vk::BufferMemoryBarrier2> bufBarriers;
 		bufBarriers.reserve(list.BufferBarriers.size());
 
-		for (auto& b : list.BufferBarriers)
+		for (auto &b : list.BufferBarriers)
 		{
 			auto handle = b.Buffer->GetNativeHandle().As<VulkanBuffer>();
 			vk::Buffer buf = handle->GetNative(frame).GetBuffer();
 
-			bufBarriers.emplace_back(
-				ToStage(b.Src), 
-				ToAccess(b.Src), 
-				ToStage(b.Dst), 
-				ToAccess(b.Dst), 
-				VK_QUEUE_FAMILY_IGNORED, 
-				VK_QUEUE_FAMILY_IGNORED, 
-				buf, 
-				0, 
-				VK_WHOLE_SIZE
-			);
+			bufBarriers.emplace_back(ToStage(b.Src), ToAccess(b.Src), ToStage(b.Dst), ToAccess(b.Dst), VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, buf, 0, VK_WHOLE_SIZE);
 
 			vk::DependencyInfo depInfo({}, {}, bufBarriers);
 			cmd.pipelineBarrier2(depInfo);
@@ -203,7 +188,7 @@ namespace BHive
 
 		auto &setBindings = refl.GetSetBindings(MATERIAL_SET_INDEX);
 
-		for (auto &[name ,tb] : snap.Textures)
+		for (auto &[name, tb] : snap.Textures)
 		{
 			group->SetTexture(tb.Binding, tb.Texture, tb.Mip);
 		}
@@ -213,8 +198,6 @@ namespace BHive
 			group->SetBuffer(refl.FindByName(name)->binding, buf);
 		}
 
-		
-
 		auto matSet = group->GetOrCreateMaterialSet();
 		cmd.bindDescriptorSets(pipeline->GetBindPoint(), pipeline->GetLayout(), MATERIAL_SET_INDEX, matSet, {});
 
@@ -223,6 +206,5 @@ namespace BHive
 			vk::PushConstantsInfo info(pipeline->GetLayout(), ToVkShaderStageBit(pc.Stages), pc.Offset, (uint32_t)pc.Size, snap.PushConstantData.data() + pc.Offset);
 			cmd.pushConstants2(info);
 		}
-		
 	}
 } // namespace BHive

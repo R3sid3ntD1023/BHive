@@ -4,12 +4,12 @@
 
 namespace BHive
 {
-	class GPUBuffer;
+	class GeneralBuffer;
 	class Texture;
 
 	struct MaterialSnapshot
 	{
-		std::unordered_map<std::string, Ref<GPUBuffer>> LocalBuffers;
+		std::unordered_map<std::string, Ref<GeneralBuffer>> LocalBuffers;
 
 		std::vector<std::byte> PushConstantData;
 
@@ -22,4 +22,4 @@ namespace BHive
 
 		std::unordered_map<std::string, TextureBinding> Textures;
 	};
-}
+} // namespace BHive

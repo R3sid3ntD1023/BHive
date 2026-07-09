@@ -19,7 +19,7 @@ namespace BHive
 	};
 
 	using FComputeFunc = std::function<void(FComputeBindings &)>;
-	using FQeueuDeflectionFunc = std::function<void(uint32_t)>;
+	using FQeueuDeletionFunc = std::function<void(uint32_t)>;
 
 	class BHIVE_API RendererAPI
 	{
@@ -37,11 +37,9 @@ namespace BHive
 
 		virtual void Shutdown() = 0;
 
-		virtual void WaitIdle() = 0;
-
 		virtual void SubmitGraph(const RenderGraph &graph) = 0;
 
-		virtual void QueueDeletion(FQeueuDeflectionFunc &&fn) = 0;
+		virtual void QueueDeletion(FQeueuDeletionFunc &&fn) = 0;
 
 		virtual void SetCurrentContext(WindowContext *ctx) = 0;
 

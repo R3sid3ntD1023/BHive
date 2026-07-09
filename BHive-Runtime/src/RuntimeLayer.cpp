@@ -1,10 +1,8 @@
 #include "RuntimeLayer.h"
 
 #include "core/Application.h"
-
-#include "core/layers/ImGuiLayer.h"
 #include "core/platform/Platform.h"
-#include "gfx/RenderCommand.h"
+#include "core/Time.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
 #include "gui/Gui.h"
@@ -45,9 +43,9 @@ namespace BHive
 	static PointLight plight0;
 	static SpotLight spLight0;
 
-	void RuntimeLayer::OnAttach(Application& app)
+	void RuntimeLayer::OnAttach(Application &app)
 	{
-		mEnvironmentTex = TextureLoader::Import(ENGINE_PATH"/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
+		mEnvironmentTex = TextureLoader::Import(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
 		Renderer::Get().SetEnvironmentTexture(mEnvironmentTex);
 
 		{
@@ -81,7 +79,7 @@ namespace BHive
 			state.ColorAttachmentFormats = {EFormat::RGBA32F};
 			PipelineRegistry::Register("Standard", state);
 		}
-		
+
 		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
 
 		// create mesh
@@ -98,8 +96,8 @@ namespace BHive
 		mSphere = CreateRef<PSphere>(1.0f);
 
 		mPlane = CreateRef<PPlane>(10.f, 10.f);
-		
-		//create model buffers
+
+		// create model buffers
 		{
 			std::vector<MultiDrawIndirectCommand> commands;
 
@@ -143,10 +141,9 @@ namespace BHive
 				commands.emplace_back(cmd);
 			}
 
-			mMultiDrawIndirectBuffer = GPUBuffer::Create(sizeof(MultiDrawIndirectCommand) * commands.size(), EBufferType::IndirectBuffer);
+			mMultiDrawIndirectBuffer = GeneralBuffer::Create(sizeof(MultiDrawIndirectCommand) * commands.size(), EBufferType::IndirectBuffer);
 			mMultiDrawIndirectBuffer->SetData(commands.data(), sizeof(MultiDrawIndirectCommand) * commands.size());
-			mModelBuffer = GPUBuffer::Create(sizeof(FPerObjectData) * commands.size(), EBufferType::StorageBuffer);
-		
+			mModelBuffer = GeneralBuffer::Create(sizeof(FPerObjectData) * commands.size(), EBufferType::StorageBuffer);
 		}
 
 		{
@@ -196,7 +193,6 @@ namespace BHive
 			mStandardMaterial->Roughness = 0.5f;
 			mStandardMaterial->Submit();
 		}
-		
 
 		auto &window = app.GetWindow();
 		auto aspect = window.GetAspectRatio();
@@ -214,9 +210,8 @@ namespace BHive
 
 		fb_specs.DebugName = "Runtime";
 		mFramebuffer = Framebuffer::Create(fb_specs);
-		
-		
-		auto &globalsResources = Renderer::Get().GetGlobalResources(); 
+
+		auto &globalsResources = Renderer::Get().GetGlobalResources();
 
 		auto &dbg = ImageDebugger::Get();
 		dbg.Initialize({512, 512});
@@ -229,7 +224,7 @@ namespace BHive
 		plight0.SetColor(FColor::Orange).SetIntensity(3.f).SetPosition({4, 1, 0}).SetRadius(5.f);
 		spLight0.SetColor(FColor::Red).SetIntensity(3.f).SetDirection({0, -1, 0}).SetPosition({}).SetRadius(5.f).SetInnerAngleDegrees(45.f).SetOuterAngleDegrees(75.f);
 
-		//post process
+		// post process
 
 		auto aces = CreateRef<AcesMaterial>();
 
@@ -238,10 +233,9 @@ namespace BHive
 		mColorGrading = CreateRef<ColorGradingMaterial>();
 
 		mPostProcessAllocator.Resize(window.GetSize());
-		//mPostProcessStack.Materials.push_back(mBloomMaterial);
-		//mPostProcessStack.Materials.push_back(aces);
-		//mPostProcessStack.Materials.push_back(mColorGrading);
-		
+		// mPostProcessStack.Materials.push_back(mBloomMaterial);
+		// mPostProcessStack.Materials.push_back(aces);
+		// mPostProcessStack.Materials.push_back(mColorGrading);
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -249,18 +243,17 @@ namespace BHive
 	}
 
 	void RuntimeLayer::OnUpdate(float time)
-	{	
+	{
 		transform.AddRotation({0, time * 10.f, 0});
 
 		mCamera.ProcessInput();
 	}
 
-	void RuntimeLayer::OnRender(Renderer& renderer)
+	void RuntimeLayer::OnRender(Renderer &renderer)
 	{
 #if ENABLE_RENDERING
-		auto &globalsResources = Renderer::Get().GetGlobalResources();  
 
-		if(mFramebuffer)
+		if (mFramebuffer)
 		{
 			auto fbSize = mFramebuffer->GetSize();
 			if (mViewportSize != fbSize && mViewportSize.x > 0 && mViewportSize.y > 0)
@@ -273,130 +266,146 @@ namespace BHive
 			}
 		}
 
-		//Submit lights
-		//{
-		//	renderer.Light.Submit(mainLight);
-		//	renderer.Light.Submit(plight0);
-		//	renderer.Light.Submit(spLight0);
-		//}
-
-		////Update model matrices
-		//{
-		//	std::vector<FPerObjectData> transforms(6);
-		//	transforms[0].WorldMatrix = transform;
-		//	transforms[1].WorldMatrix = FTransform({3, 4, 0});
-		//	transforms[2].WorldMatrix = FTransform({4, 1, 0});
-		//	transforms[3].WorldMatrix = FTransform({-4, 1, 0});
-		//	transforms[4].WorldMatrix = FTransform({0, 1, 0});
-		//	transforms[5].WorldMatrix = FTransform({0, 0, 0});
-		//	mModelBuffer->SetData(transforms.data(), sizeof(FPerObjectData) * transforms.size());
-		//}
-
-		//
-		//{
-		//	auto &scenepass = renderer.BeginPass("Scene", EPassType::OffScreen);
-
-		//	scenepass.BeginPhase();
-		//	scenepass.Push(globalsResources.Find("EnvironmentPreFilter")->TextureRef, EImageAccess::ColorRead);
-		//	scenepass.Push(globalsResources.Find("EnvironmentCubeMap")->TextureRef, EImageAccess::ColorRead);
-		//	scenepass.Push(globalsResources.Find("EnvironmentIrradiance")->TextureRef, EImageAccess::ColorRead);
-		//	scenepass.Push(globalsResources.Find("EnvironmentBRDFLUT")->TextureRef, EImageAccess::ColorRead);
-		//	scenepass.Push(globalsResources.Find("Camera")->BufferRef.get(), EBufferAccess::UniformRead);
-
-		//	
-
-		//	scenepass.Push(renderer.CreateView(mCamera.GetProjection(), mCamera.GetView()));
-		//	scenepass.Push(mFramebuffer);
-		//	scenepass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorWrite);
-		//	scenepass.Push(mFramebuffer->GetDepthAttachment(), EImageAccess::DepthWrite);
-
-		//	scenepass.Emplace<CmdSetClearColor>()(1.0f, 0.5f, 0.1f, 1.0f);
-		//	scenepass.Emplace<CmdClear>()();
-
-		//	const auto stride = sizeof(MultiDrawIndirectCommand);
-		//	if (mMesh && mMaterial)
-		//	{
-		//		mMesh->GetVertexArray()->DeclareAccess(scenepass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
-
-		//		if (mMaterial)
-		//		{
-		//			mMaterial->Set("u_Time", Time::Raw());
-		//			mMaterial->Submit();
-
-		//			scenepass.Emplace<CmdBindMaterial>()(mMaterial.get());
-		//			scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2u, stride);
-		//		}
-
-		//		if (mLambertMaterial)
-		//		{
-		//			scenepass.Emplace<CmdBindMaterial>()(mLambertMaterial.get());
-		//			scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 1u, stride, 2u);
-		//		}
-		//	}
-
-		//	mSphere->GetVertexArray()->DeclareAccess(scenepass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
-		//	mPlane->GetVertexArray()->DeclareAccess(scenepass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
-
-		//	scenepass.Emplace<CmdBindMaterial>()(mEmissiveMaterial.get());
-		//	scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1u, stride, 3u);
-
-		//	scenepass.Emplace<CmdBindMaterial>()(mStandardMaterial.get());
-		//	scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1u, stride, 4u);
-		//	scenepass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mPlane->GetVertexArray().get(), 1u, stride, 5u);
-
-		//	scenepass.EndPhase();
-
-		//	
-		//	renderer.EndPass();
-		//}
-
-		
-		FPassState debugState{};
-		debugState.Color = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store, {0.1f, 0.1f, 0.1f, 1.0f}};
-		debugState.Depth = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store};
-
-		auto &debugPass = renderer.BeginPass("DebugPass", EPassType::OffScreen, debugState);
-		
-		debugPass.BeginPhase("Draw Debug Objects", EPhaseType::Graphics);
-		debugPass.Push(globalsResources.Find("Camera")->BufferRef.get(), EBufferAccess::UniformRead);
-		debugPass.Push(renderer.CreateView(mCamera.GetProjection(), mCamera.GetView()));
-		debugPass.Push(mFramebuffer);
-
+		// Submit lights
 		{
-			FQuadParams params{.Size = {1, 1}, .Color = FColor::Red};
-			FTextParams tex_params{};
-
-			renderer.Line.DrawLine(glm::vec3{0.f, 0.f, 0.f}, mainLight.GetDirection(), mainLight.GetColor());
-			renderer.Line.DrawSphere(plight0.GetRadius(), 32, {}, plight0.GetColor(), FTransform{plight0.GetPosition()});
-			renderer.Line.DrawSpotlightCone(spLight0.GetPosition(), spLight0.GetDirection(), spLight0.GetRadius(), spLight0.GetOuterAngleDegrees(), 32, spLight0.GetColor());
-			renderer.Line.DrawGrid({});
-			renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
-			renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
-
-			renderer.Quad.DrawQuad(params, nullptr, FTransform({0, 0, 2}));
-
-			params.Color = FColor::White;
-			renderer.Quad.DrawQuad(params, mTexture, FTransform({0, 0, -2}));
-
-			renderer.Quad.DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));
-			renderer.Quad.DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
+			renderer.Light.Submit(mainLight);
+			renderer.Light.Submit(plight0);
+			renderer.Light.Submit(spLight0);
 		}
 
-		renderer.Flush();
-		debugPass.EndPhase();
+		// Update model matrices
+		{
+			std::vector<FPerObjectData> transforms(6);
+			transforms[0].WorldMatrix = transform;
+			transforms[1].WorldMatrix = FTransform({3, 4, 0});
+			transforms[2].WorldMatrix = FTransform({4, 1, 0});
+			transforms[3].WorldMatrix = FTransform({-4, 1, 0});
+			transforms[4].WorldMatrix = FTransform({0, 1, 0});
+			transforms[5].WorldMatrix = FTransform({0, 0, 0});
+			mModelBuffer->SetData(transforms.data(), sizeof(FPerObjectData) * transforms.size());
+		}
 
-		debugPass.BeginPhase("Transition to Read", EPhaseType::Transfer);
-		debugPass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorRead);
-		debugPass.EndPhase();
+		auto &globalsResources = Renderer::Get().GetGlobalResources();
+		FView view = renderer.CreateView(mCamera.GetProjection(), mCamera.GetView());
 
-		renderer.EndPass();
+		{
+			FPassState state{};
+			state.Color = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store, {0.1f, 0.1f, 0.1f, 1.0f}};
+			state.Depth = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store};
+			auto &scenePass = renderer.BeginPass("Scene", EPassType::OffScreen, state);
 
-		//mFinalSceneColor = mFramebuffer->GetColorAttachment();
-		//auto input = mFramebuffer->GetColorAttachment();
-		//mFinalSceneColor = mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, input);
+			scenePass.BeginPhase();
+			scenePass.Push(globalsResources.Find("EnvironmentPreFilter")->TextureRef, EImageAccess::ColorRead);
+			scenePass.Push(globalsResources.Find("EnvironmentCubeMap")->TextureRef, EImageAccess::ColorRead);
+			scenePass.Push(globalsResources.Find("EnvironmentIrradiance")->TextureRef, EImageAccess::ColorRead);
+			scenePass.Push(globalsResources.Find("EnvironmentBRDFLUT")->TextureRef, EImageAccess::ColorRead);
+			scenePass.Push(globalsResources.Find("Camera")->BufferRef.get(), EBufferAccess::UniformRead);
+
+			scenePass.Push(view);
+			scenePass.Push(mFramebuffer);
+
+			const auto stride = sizeof(MultiDrawIndirectCommand);
+			if (mMesh && mMaterial)
+			{
+				mMesh->GetVertexArray()->DeclareAccess(scenePass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
+
+				if (mMaterial)
+				{
+					mMaterial->Set("u_Time", Time::Raw());
+					mMaterial->Submit();
+
+					scenePass.Emplace<CmdBindMaterial>()(mMaterial.get());
+					scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2u, stride);
+				}
+
+				if (mLambertMaterial)
+				{
+					scenePass.Emplace<CmdBindMaterial>()(mLambertMaterial.get());
+					scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 1u, stride, 2u);
+				}
+			}
+
+			mSphere->GetVertexArray()->DeclareAccess(scenePass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
+			mPlane->GetVertexArray()->DeclareAccess(scenePass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
+
+			scenePass.Emplace<CmdBindMaterial>()(mEmissiveMaterial.get());
+			scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1u, stride, 3u);
+
+			scenePass.Emplace<CmdBindMaterial>()(mStandardMaterial.get());
+			scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1u, stride, 4u);
+			scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mPlane->GetVertexArray().get(), 1u, stride, 5u);
+
+			{
+				FQuadParams params{.Size = {1, 1}, .Color = FColor::Red};
+				FTextParams tex_params{};
+
+				renderer.Line.DrawLine(glm::vec3{0.f, 0.f, 0.f}, mainLight.GetDirection(), mainLight.GetColor());
+				renderer.Line.DrawSphere(plight0.GetRadius(), 32, {}, plight0.GetColor(), FTransform{plight0.GetPosition()});
+				renderer.Line.DrawSpotlightCone(spLight0.GetPosition(), spLight0.GetDirection(), spLight0.GetRadius(), spLight0.GetOuterAngleDegrees(), 32, spLight0.GetColor());
+				renderer.Line.DrawGrid({});
+				renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
+				renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
+
+				renderer.Quad.DrawQuad(params, nullptr, FTransform({0, 0, 2}));
+
+				params.Color = FColor::White;
+				renderer.Quad.DrawQuad(params, mTexture, FTransform({0, 0, -2}));
+
+				renderer.Quad.DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));
+				renderer.Quad.DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
+				renderer.Flush();
+			}
+
+			scenePass.EndPhase();
+
+			renderer.EndPass();
+		}
+
+		{
+			FPassState debugState{};
+			debugState.Color = {EAttachmentLoadState::Load, EAttachmentStoreState::Store, {0.1f, 0.1f, 0.1f, 1.0f}};
+			debugState.Depth = {EAttachmentLoadState::Load, EAttachmentStoreState::Store};
+
+			auto &debugPass = renderer.BeginPass("DebugPass", EPassType::OffScreen, debugState);
+
+			debugPass.BeginPhase("Draw Debug Objects", EPhaseType::Graphics);
+			debugPass.Push(globalsResources.Find("Camera")->BufferRef.get(), EBufferAccess::UniformRead);
+			debugPass.Push(view);
+			debugPass.Push(mFramebuffer);
+
+			{
+				FQuadParams params{.Size = {1, 1}, .Color = FColor::Red};
+				FTextParams tex_params{};
+
+				renderer.Line.DrawLine(glm::vec3{0.f, 0.f, 0.f}, mainLight.GetDirection(), mainLight.GetColor());
+				renderer.Line.DrawSphere(plight0.GetRadius(), 32, {}, plight0.GetColor(), FTransform{plight0.GetPosition()});
+				renderer.Line.DrawSpotlightCone(spLight0.GetPosition(), spLight0.GetDirection(), spLight0.GetRadius(), spLight0.GetOuterAngleDegrees(), 32, spLight0.GetColor());
+				renderer.Line.DrawGrid({});
+				renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
+				renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
+
+				renderer.Quad.DrawQuad(params, nullptr, FTransform({0, 0, 2}));
+
+				params.Color = FColor::White;
+				renderer.Quad.DrawQuad(params, mTexture, FTransform({0, 0, -2}));
+
+				renderer.Quad.DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));
+				renderer.Quad.DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
+			}
+
+			renderer.Flush();
+			debugPass.EndPhase();
+
+			debugPass.BeginPhase("Transition to Read", EPhaseType::Transfer);
+			debugPass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorRead);
+			debugPass.EndPhase();
+		}
+
+		// mFinalSceneColor = mFramebuffer->GetColorAttachment();
+		// auto input = mFramebuffer->GetColorAttachment();
+		// mFinalSceneColor = mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, input);
 #endif
 		ImageDebugger::Get().OnRender(renderer);
-
 	}
 
 	void RuntimeLayer::OnGuiRender()
@@ -412,7 +421,7 @@ namespace BHive
 
 			if (mFramebuffer)
 			{
-				
+
 				auto id = IImGuiTextureProvider::GetID(*mFramebuffer->GetColorAttachment());
 				ImGui::Image(id, viewportSize);
 			}
@@ -428,8 +437,7 @@ namespace BHive
 
 			Inspect::get().inspect("SpotLight0", spLight0);
 
-			
-			auto &inspector = Inspect::get();		
+			auto &inspector = Inspect::get();
 
 			{
 				static BloomMaterial::FBloomParams params{};
@@ -443,8 +451,7 @@ namespace BHive
 					mBloomMaterial->Params = params;
 				}
 			}
-		
-			
+
 			{
 				static ColorGradingMaterial::FColorGrading params{};
 				ImGui::SeparatorText("Color Grading");
@@ -507,7 +514,7 @@ namespace BHive
 						dbg.RegisterTexture("PreFilterEnv", env_prefilter);
 						globalBindings->SetTexture(3, env_prefilter);
 					}
-					
+
 					if (env_irradiance)
 					{
 						dbg.RegisterTexture("Irradiance", env_irradiance);
@@ -535,11 +542,10 @@ namespace BHive
 
 	bool RuntimeLayer::OnWindowResize(WindowResizeEvent &e)
 	{
-		
-		mCamera.Resize(e.x , e.y);
+
+		mCamera.Resize(e.x, e.y);
 
 		return false;
 	}
-
 
 } // namespace BHive

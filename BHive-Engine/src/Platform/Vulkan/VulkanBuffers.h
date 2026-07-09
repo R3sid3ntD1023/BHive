@@ -8,72 +8,56 @@ namespace BHive
 {
 	struct FBufferUploadInfo
 	{
-		const void *data;
-		size_t size;
-		uint32_t offset;
+		size_t size = 0;
+		uint32_t offset = 0;
+		const void *data = nullptr;
 	};
 
 	struct VulkanBuffer : public INativeObject
 	{
-		virtual ~VulkanBuffer() = default;
+		~VulkanBuffer();
 
-		virtual const AllocatedBuffer &GetNative(uint32_t frame = 0) const = 0;
+		void Init(size_t size, const void* data, vk::BufferUsageFlags usage, EBufferLifetime lifeTime);
 
-		virtual void Upload(vk::CommandBuffer cmd, uint32_t frame, const FBufferUploadInfo &up) = 0;
-	};
+		const AllocatedBuffer &GetNative(uint32_t frame = 0) const;
 
-	struct VulkanStaticBuffer : public VulkanBuffer
-	{
-		AllocatedBuffer Buffer;
-		AllocatedBuffer StagingBuffer;
+		void Upload(const FBufferUploadInfo &up);
 
-		void Init(size_t size, vk::BufferUsageFlags usage);
+		bool NeedsBarrier() const { return mLifeTime == EBufferLifetime::Static; }
 
-		void Upload(vk::CommandBuffer cmd, uint32_t frame, const FBufferUploadInfo &up) override;
+	private:
+		void InitStatic(size_t size, const void* data, vk::BufferUsageFlags usage);
+		void InitDynamic(size_t size, const void* data, vk::BufferUsageFlags usage);
 
-		const AllocatedBuffer& GetNative(uint32_t frame) const override { return Buffer; }
-
-		~VulkanStaticBuffer();
-	};
-
-	struct VulkanPerFrameHostBuffer : public VulkanBuffer
-	{
-		std::array<AllocatedBuffer, MAX_FRAMES_IN_FLIGHT> Buffers;
-
-		void Init(size_t size, vk::BufferUsageFlags usage);
-
-		void Init(const void* data, size_t size, vk::BufferUsageFlags usage);
-
-		void Upload(vk::CommandBuffer cmd, uint32_t frame, const FBufferUploadInfo &up) override;
-
-		const AllocatedBuffer& GetNative(uint32_t frame) const override { return Buffers.at(frame); }
-
-		~VulkanPerFrameHostBuffer();
+	private:
+		
+		std::array<AllocatedBuffer, MAX_FRAMES_IN_FLIGHT> mBuffers;
+		EBufferLifetime mLifeTime{};
 	};
 
 
 	//-------------------------Static Buffers----------------------------------//
 
-	class BHIVE_API StaticVulkanIndexBuffer : public IndexBuffer
+	class BHIVE_API VulkanIndexBuffer : public IndexBuffer
 	{
 	public:
-		StaticVulkanIndexBuffer(const uint32_t* data, uint32_t count);
+		VulkanIndexBuffer(uint32_t count, EBufferLifetime lifeTime, const uint32_t *data);
 
 		uint32_t GetCount() const override { return mCount; }
 
 		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mBuffer); }
 
-		bool NeedsBarrier() const override { return true; }
+		bool NeedsBarrier() const override { return mBuffer.NeedsBarrier(); }
 
 	private:
-		VulkanStaticBuffer mBuffer;
+		VulkanBuffer mBuffer;
 		uint32_t mCount;
 	};
 
-	class BHIVE_API StaticVulkanVertexBuffer : public VertexBuffer
+	class BHIVE_API VulkanVertexBuffer : public VertexBuffer
 	{
 	public:
-		StaticVulkanVertexBuffer(const void* data, size_t size);
+		VulkanVertexBuffer(size_t size, EBufferLifetime lifeTime, const void *data);
 
 		void SetLayout(const BufferLayout &layout) override { mLayout = layout; };
 
@@ -81,60 +65,27 @@ namespace BHive
 
 		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mBuffer); }
 
-		bool NeedsBarrier() const override { return true; }
+		bool NeedsBarrier() const override { return mBuffer.NeedsBarrier(); }
 
 	private:
-		VulkanStaticBuffer mBuffer;
+		VulkanBuffer mBuffer;
 		BufferLayout mLayout{};
 	};
 
-	//-------------------------Dynamic Buffers----------------------------------//
-
-	class BHIVE_API DynamicVulkanIndexBuffer : public IndexBuffer
+	class BHIVE_API VulkanGeneralBuffer : public GeneralBuffer
 	{
 	public:
-		DynamicVulkanIndexBuffer(const uint32_t *data, uint32_t count);
-
-		uint32_t GetCount() const override { return mCount; }
-
-		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mPerFrameBuffer); }
-
-	private:
-		VulkanPerFrameHostBuffer mPerFrameBuffer;
-		uint32_t mCount;
-	};
-
-	class BHIVE_API DynamicVulkanVertexBuffer : public VertexBuffer
-	{
-	public:
-		DynamicVulkanVertexBuffer(const void *data, const size_t size);
-
-		void SetLayout(const BufferLayout &layout) override;
-
-		const BufferLayout &GetLayout() const override { return mLayout; }
-
-		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mPerFrameBuffer); }
-
-	private:
-		VulkanPerFrameHostBuffer mPerFrameBuffer;
-		BufferLayout mLayout{};
-		
-	};
-
-	
-
-	class BHIVE_API VulkanGPUBuffer : public GPUBuffer
-	{
-	public:
-		VulkanGPUBuffer(size_t size, EBufferType type, const void *data);
+		VulkanGeneralBuffer(size_t size, EBufferType type, EBufferLifetime lifeTime, const void *data);
 
 		//unused in vulkan
 		void BindAtBindingPoint(uint32_t binding) override {}
 
-		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mPerFrameBuffer); }
+		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mBuffer); }
+
+		bool NeedsBarrier() const override { return mBuffer.NeedsBarrier(); }
 
 	private:
-		VulkanPerFrameHostBuffer mPerFrameBuffer;
+		VulkanBuffer mBuffer;
 		size_t mSize{0};
 	};
 } // namespace BHive

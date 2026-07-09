@@ -5,6 +5,12 @@
 
 namespace BHive
 {
+	VulkanImGuiTexture::~VulkanImGuiTexture()
+	{
+		for (auto &[_, set] : mTextureSets)
+			ImGui_ImplVulkan_RemoveTexture(set);
+	}
+
 	uint64_t VulkanImGuiTexture::GetTextureID(const Texture &tex)
 	{
 		auto handle = tex.GetNativeHandle().As<VulkanImage>();

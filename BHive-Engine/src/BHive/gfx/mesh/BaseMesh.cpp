@@ -36,8 +36,8 @@ namespace BHive
 		const auto &indices = mData.mIndices;
 		const auto &vertices = mData.mVertices;
 
-		auto indexbuffer = IndexBuffer::Create((uint32_t)indices.size(), EBufferUsageType::Static, indices.data());
-		auto vertexbuffer = VertexBuffer::Create(vertices.size() * sizeof(FVertex), EBufferUsageType::Static, vertices.data());
+		auto indexbuffer = IndexBuffer::Create((uint32_t)indices.size(), EBufferLifetime::Static, indices.data());
+		auto vertexbuffer = VertexBuffer::Create(vertices.size() * sizeof(FVertex), EBufferLifetime::Static, vertices.data());
 		vertexbuffer->SetLayout(FVertex::Layout());
 
 		mVertexArray = VertexArray::Create({vertexbuffer}, indexbuffer);

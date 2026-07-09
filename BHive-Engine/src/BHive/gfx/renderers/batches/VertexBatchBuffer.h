@@ -6,7 +6,7 @@
 namespace BHive
 {
 	template <typename T>
-	struct VertexBatchBuffer 
+	struct VertexBatchBuffer
 	{
 		VertexBatchBuffer(size_t maxVerts, size_t maxIndices, bool useIndexBuffer)
 			: mUseIndexBuffer(useIndexBuffer)
@@ -16,17 +16,17 @@ namespace BHive
 				mIndexCPU.resize(maxIndices);
 
 			if (useIndexBuffer)
-				mIndexBuffer = IndexBuffer::Create((uint32_t)maxIndices, EBufferUsageType::Dynamic);
+				mIndexBuffer = IndexBuffer::Create((uint32_t)maxIndices, EBufferLifetime::Dynamic);
 
-			mVertexBuffer = VertexBuffer::Create(maxVerts * sizeof(T), EBufferUsageType::Dynamic);
+			mVertexBuffer = VertexBuffer::Create(maxVerts * sizeof(T), EBufferLifetime::Dynamic);
 			mVertexBuffer->SetLayout(T::GetLayout());
 
 			mVertexArray = VertexArray::Create({mVertexBuffer}, mIndexBuffer);
 		}
 
-		T* PushVertex() { return &mVertexCPU[mVertexCount++];}
+		T *PushVertex() { return &mVertexCPU[mVertexCount++]; }
 
-		uint32_t* PushIndex() { return &mIndexCPU[mIndexCount++];}
+		uint32_t *PushIndex() { return &mIndexCPU[mIndexCount++]; }
 
 		// sets the index and vertex buffer data
 		void Upload()

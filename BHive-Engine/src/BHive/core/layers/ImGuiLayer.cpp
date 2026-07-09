@@ -2,6 +2,7 @@
 #include "core/Window.h"
 #include "ImGuiLayer.h"
 #include "core/Time.h"
+#include "gfx/imgui/IImGuiProvider.h"
 
 #include "Platform/Vulkan/VulkanImGuiLayer.h"
 #include <backends/imgui_impl_glfw.h>
@@ -63,6 +64,8 @@ namespace BHive
 		io.FontDefault = io.Fonts->AddFontFromFileTTF(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", font_size);
 
 		SetColorsDark();
+
+		IImGuiTextureProvider::Init();
 	}
 
 	void ImGuiLayer::Shutdown()

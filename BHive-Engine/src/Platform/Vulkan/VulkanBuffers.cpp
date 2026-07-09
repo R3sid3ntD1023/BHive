@@ -2,6 +2,7 @@
 #include "gfx/RenderCommand.h"
 #include "gfx/renderers/Renderer.h"
 #include "VulkanBackend.h"
+#include "VulkanUtils.h"
 
 namespace BHive
 {
@@ -10,15 +11,7 @@ namespace BHive
 		vk::BufferMemoryBarrier2 MakeBufferBarrier(vk::Buffer buffer, vk::PipelineStageFlags2 dstStage, vk::AccessFlags2 dstAccess)
 		{
 			return vk::BufferMemoryBarrier2(
-			vk::PipelineStageFlagBits2::eCopy,
-				vk::AccessFlagBits2::eTransferWrite,
-				dstStage,
-				dstAccess,
-				VK_QUEUE_FAMILY_IGNORED,
-				VK_QUEUE_FAMILY_IGNORED,
-				buffer,
-				0,
-				VK_WHOLE_SIZE);
+				vk::PipelineStageFlagBits2::eCopy, vk::AccessFlagBits2::eTransferWrite, dstStage, dstAccess, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, buffer, 0, VK_WHOLE_SIZE);
 		}
 
 		vk::BufferUsageFlags ToVkBufferType(EBufferType type)
@@ -38,9 +31,44 @@ namespace BHive
 			return (vk::BufferUsageFlagBits)0;
 		}
 
+	} // namespace utils
+
+	VulkanBuffer::~VulkanBuffer()
+	{
+		auto &mng = VulkanBackend::GetGPUResourceManager();
+		if (mLifeTime == EBufferLifetime::Static)
+			mng.DestroyBuffer(mBuffers[0]);
+		else
+		{
+			for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+				mng.DestroyBuffer(mBuffers[i]);
+		}
 	}
 
-	void VulkanStaticBuffer::Init(size_t size, vk::BufferUsageFlags usage)
+	void VulkanBuffer::Init(size_t size, const void *data, vk::BufferUsageFlags usage, EBufferLifetime lifeTime)
+	{
+		mLifeTime = lifeTime;
+		(mLifeTime == EBufferLifetime::Static) ? InitStatic(size, data, usage) : InitDynamic(size, data, usage);
+	}
+
+	const AllocatedBuffer &VulkanBuffer::GetNative(uint32_t frame) const
+	{
+		return (mLifeTime == EBufferLifetime::Static) ? mBuffers[0] : mBuffers[frame];
+	}
+
+	void VulkanBuffer::Upload(const FBufferUploadInfo &up)
+	{
+		if (mLifeTime != EBufferLifetime::Dynamic)
+			return;
+
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			auto mapped = mBuffers[i].GetAllocation().MappedPtr;
+			std::memcpy(static_cast<std::byte *>(mapped) + up.offset, up.data, up.size);
+		}
+	}
+
+	void VulkanBuffer::InitStatic(size_t size, const void *data, vk::BufferUsageFlags usage)
 	{
 		auto info = vk::BufferCreateInfo({}, size, usage | vk::BufferUsageFlagBits::eTransferDst);
 		auto bufferID = VulkanBackend::GetGPUResourceManager().CreateBuffer(info, vk::MemoryPropertyFlagBits::eDeviceLocal);
@@ -48,121 +76,50 @@ namespace BHive
 		auto stageInfo = vk::BufferCreateInfo({}, size, vk::BufferUsageFlagBits::eTransferSrc);
 		auto stageID = VulkanBackend::GetGPUResourceManager().CreateBuffer(stageInfo, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
-		Buffer = AllocatedBuffer{bufferID, size};
-		StagingBuffer = AllocatedBuffer{stageID, size};
+		mBuffers[0] = AllocatedBuffer{bufferID, size};
+		mBuffers[1] = AllocatedBuffer{stageID, size};
 		VulkanBackend::GetGPUResourceManager().MapMemory(stageID, 0, size);
-	}
 
-	void VulkanStaticBuffer::Upload(vk::CommandBuffer cmd, uint32_t frame, const FBufferUploadInfo &up)
-	{	
-		auto mapped_memory = StagingBuffer.GetAllocation().MappedPtr;
+		SingleTimeCommand cmd{};
+		auto mapped_memory = mBuffers[1].GetAllocation().MappedPtr;
 		if (mapped_memory)
 		{
-			std::memcpy(static_cast<std::byte *>(mapped_memory) + up.offset, up.data, up.size);
-			vk::BufferCopy region(0, up.offset, up.size);
-			cmd.copyBuffer(StagingBuffer.GetBuffer(), Buffer.GetBuffer(), region);
+			std::memcpy(static_cast<std::byte *>(mapped_memory), data, size);
+			vk::BufferCopy region(0, 0, size);
+			cmd.Get().copyBuffer(mBuffers[1].GetBuffer(), mBuffers[0].GetBuffer(), region);
 		}
 	}
 
-	VulkanStaticBuffer::~VulkanStaticBuffer()
-	{
-		VulkanBackend::GetGPUResourceManager().DestroyBuffer(Buffer);
-		VulkanBackend::GetGPUResourceManager().DestroyBuffer(StagingBuffer);
-	}
-
-	void VulkanPerFrameHostBuffer::Init(size_t size, vk::BufferUsageFlags usage)
+	void VulkanBuffer::InitDynamic(size_t size, const void *data, vk::BufferUsageFlags usage)
 	{
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			auto info = vk::BufferCreateInfo({}, size, usage);
 			auto bufferID = VulkanBackend::GetGPUResourceManager().CreateBuffer(info, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-			Buffers[i] = AllocatedBuffer{bufferID, size};
+			mBuffers[i] = AllocatedBuffer{bufferID, size};
 			VulkanBackend::GetGPUResourceManager().MapMemory(bufferID, 0, size);
+		}
+
+		if (data)
+		{
+			FBufferUploadInfo info{.size = size, .offset = 0, .data = data};
+			Upload(info);
 		}
 	}
 
-	void VulkanPerFrameHostBuffer::Init(const void *data, size_t size, vk::BufferUsageFlags usage)
-	{
-		Init(size, usage);
-	}
-
-	void VulkanPerFrameHostBuffer::Upload(vk::CommandBuffer cmd, uint32_t frame, const FBufferUploadInfo &up)
-	{
-		auto mapped = Buffers[frame].GetAllocation().MappedPtr;
-		std::memcpy(static_cast<std::byte *>(mapped) + up.offset, up.data, up.size);
-	}
-
-	VulkanPerFrameHostBuffer::~VulkanPerFrameHostBuffer()
-	{
-		for (auto &b : Buffers)
-			VulkanBackend::GetGPUResourceManager().DestroyBuffer(b);
-	}
-
-	//-------------------Static Buffers---------------------------------------------//
-	StaticVulkanIndexBuffer::StaticVulkanIndexBuffer(const uint32_t* data, uint32_t count)
+	VulkanIndexBuffer::VulkanIndexBuffer(uint32_t count, EBufferLifetime lifeTime, const uint32_t *data)
 		: mCount(count)
 	{
-		auto size = count * sizeof(uint32_t);
-		mBuffer.Init(size, vk::BufferUsageFlagBits::eIndexBuffer);
-
-		ASSERT(data, "Data must be initilaized!");
-
-		RenderGraph init;
-
-		auto &pass = init.AddPass("StaticIndexBufferUpload", EPassType::OffScreen);
-		pass.BeginPhase(EPhaseType::Transfer);
-		pass.Push(this, EBufferAccess::IndexRead);
-		pass.Emplace<CmdUploadBuffer>()(this, data, size, 0);
-		pass.EndPhase();
-
-		Renderer::Get().ExecuteGraph(init);
+		mBuffer.Init(count * sizeof(uint32_t), data, vk::BufferUsageFlagBits::eIndexBuffer, lifeTime);
 	}
 
-	StaticVulkanVertexBuffer::StaticVulkanVertexBuffer(const void* data, size_t size)
+	VulkanVertexBuffer::VulkanVertexBuffer(size_t size, EBufferLifetime lifeTime, const void *data)
 	{
-		ASSERT(data, "Data must be initilaized!");
-		mBuffer.Init(size, vk::BufferUsageFlagBits::eVertexBuffer);
-
-		RenderGraph init;
-
-		auto &pass = init.AddPass("StaticVertexBufferUpload", EPassType::OffScreen);
-		pass.BeginPhase(EPhaseType::Transfer);
-		pass.Push(this, EBufferAccess::VertexRead);
-		pass.Emplace<CmdUploadBuffer>()(this, data, size, 0);
-		pass.EndPhase();
-
-		Renderer::Get().ExecuteGraph(init);
+		mBuffer.Init(size, data, vk::BufferUsageFlagBits::eVertexBuffer, lifeTime);
 	}
 
-
-	//------------------------Dynamic Buffers---------------------------------//
-	DynamicVulkanIndexBuffer::DynamicVulkanIndexBuffer(const uint32_t *data, uint32_t count)
-		: mCount(count)
+	VulkanGeneralBuffer::VulkanGeneralBuffer(size_t size, EBufferType type, EBufferLifetime lifeTime, const void *data)
 	{
-		auto size = count * sizeof(uint32_t);
-		mPerFrameBuffer.Init(size, vk::BufferUsageFlagBits::eIndexBuffer);
-		if (data)
-			SetData(data, size, 0);
+		mBuffer.Init(size, data, utils::ToVkBufferType(type), lifeTime);
 	}
-
-	DynamicVulkanVertexBuffer::DynamicVulkanVertexBuffer(const void* data, const size_t size)
-	{
-		mPerFrameBuffer.Init(size, vk::BufferUsageFlagBits::eVertexBuffer);	
-		if (data)
-			SetData(data, size);
-	}
-
-	void DynamicVulkanVertexBuffer::SetLayout(const BufferLayout &layout)
-	{
-		mLayout = layout;
-	}
-
-	VulkanGPUBuffer::VulkanGPUBuffer(size_t size, EBufferType type, const void *data)
-		: mSize(size)
-	{
-		mPerFrameBuffer.Init(size, utils::ToVkBufferType(type));
-		if (data)
-			SetData(data, size, 0);
-	}
-
 } // namespace BHive

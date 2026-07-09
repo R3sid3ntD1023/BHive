@@ -15,7 +15,7 @@ namespace BHive
 
 		static void Init(RendererAPI::EAPI apiType);
 
-		static void QueueDeletion(FQeueuDeflectionFunc &&fn);
+		static void QueueDeletion(FQeueuDeletionFunc &&fn);
 
 		static RendererAPI::EAPI GetAPI() { return sAPI; }
 

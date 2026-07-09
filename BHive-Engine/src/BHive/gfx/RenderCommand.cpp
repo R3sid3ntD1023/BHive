@@ -8,9 +8,11 @@ namespace BHive
 		sAPI = apiType;
 	}
 
-	void RenderCommand::QueueDeletion(FQeueuDeflectionFunc &&fn)
+	void RenderCommand::QueueDeletion(FQeueuDeletionFunc &&fn)
 	{
-		Renderer::Get().GetGraphicsAPI()->QueueDeletion(std::move(fn));
+		auto api = Renderer::Get().GetGraphicsAPI();
+		if (api)
+			api->QueueDeletion(std::move(fn));
 	}
 
 	RendererAPI *RenderCommand::GetGraphicsAPI()

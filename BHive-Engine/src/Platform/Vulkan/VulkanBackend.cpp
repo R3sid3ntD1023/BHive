@@ -135,7 +135,8 @@ namespace BHive
 
 	void VulkanBackend::Shutdown()
 	{
-		
+		if (*mDevice)
+			mDevice.waitIdle();
 	}
 
 	vk::Result VulkanBackend::Present()

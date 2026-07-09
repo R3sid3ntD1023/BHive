@@ -47,7 +47,7 @@ namespace BHive
 	struct FShadowRenderData
 	{
 		FShadowPasses ShadowPasses;
-		Ref<GPUBuffer> ShadowBuffer;
+		Ref<GeneralBuffer> ShadowBuffer;
 		FShadowData ShadowData;
 	};
 
@@ -56,14 +56,11 @@ namespace BHive
 		mShadowRenderData = CreateRef<FShadowRenderData>();
 
 		FramebufferSpecification dir_shadow_fbo_spec{.Size = {DIRECTIONAL_SHADOWMAP_SIZE, DIRECTIONAL_SHADOWMAP_SIZE}, .Depth = max_lights};
-		FramebufferSpecification spot_shadow_fbo_spec{.Size = {SPOT_SHADOWMAP_SIZE, SPOT_SHADOWMAP_SIZE} ,.Depth = max_lights};
+		FramebufferSpecification spot_shadow_fbo_spec{.Size = {SPOT_SHADOWMAP_SIZE, SPOT_SHADOWMAP_SIZE}, .Depth = max_lights};
 		FramebufferSpecification point_shadow_fbo_spec{.Size = {POINT_SHADOWMAP_SIZE, POINT_SHADOWMAP_SIZE}, .Depth = max_lights * 6};
 
 		FTextureCreateInfo shadow_texture_specs{
-			.Format = EFormat::DEPTH_COMPONENT_32F,
-			.WrapMode = EWrapMode::CLAMP_TO_EDGE,
-			.CompareMode = ECompareMode::COMPARE_REF_TO_TEXTURE,
-			.CompareOp = ECompareOp::LessOrEqual};
+			.Format = EFormat::DEPTH_COMPONENT_32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE, .CompareMode = ECompareMode::COMPARE_REF_TO_TEXTURE, .CompareOp = ECompareOp::LessOrEqual};
 
 		/*dir_shadow_fbo_spec.Attachments.SetDepthAttachment(shadow_texture_specs, ETextureType::TEXTURE_2D_ARRAY);
 		point_shadow_fbo_spec.Attachments.SetDepthAttachment(shadow_texture_specs, ETextureType::TEXTURE_CUBE_MAP_ARRAY);
@@ -98,7 +95,7 @@ namespace BHive
 		if (num_shadow_maps == 0)
 			return;
 
-		//RenderCommand::CullFront();
+		// RenderCommand::CullFront();
 
 		auto draw_meshes = [=](const Ref<Shader> &shader)
 		{
@@ -114,38 +111,38 @@ namespace BHive
 
 		if (mShadowRenderData->ShadowData.NumShadowMaps.x > 0)
 		{
-			//mShadowRenderData->ShadowPasses.FBOs[0]->Bind();
+			// mShadowRenderData->ShadowPasses.FBOs[0]->Bind();
 
-			//RenderCommand::Clear(Buffer_Depth);
+			// RenderCommand::Clear(Buffer_Depth);
 
 			draw_meshes(mShadowRenderData->ShadowPasses.Shaders[0]);
 
-			//mShadowRenderData->ShadowPasses.FBOs[0]->UnBind();
+			// mShadowRenderData->ShadowPasses.FBOs[0]->UnBind();
 		}
 
 		if (mShadowRenderData->ShadowData.NumShadowMaps.y > 0)
 		{
-			//mShadowRenderData->ShadowPasses.FBOs[1]->Bind();
+			// mShadowRenderData->ShadowPasses.FBOs[1]->Bind();
 
-			//RenderCommand::Clear(Buffer_Depth);
+			// RenderCommand::Clear(Buffer_Depth);
 
 			draw_meshes(mShadowRenderData->ShadowPasses.Shaders[1]);
 
-			//mShadowRenderData->ShadowPasses.Shaders[1]->UnBind();
+			// mShadowRenderData->ShadowPasses.Shaders[1]->UnBind();
 		}
 
 		if (mShadowRenderData->ShadowData.NumShadowMaps.z > 0)
 		{
-			//mShadowRenderData->ShadowPasses.FBOs[2]->Bind();
+			// mShadowRenderData->ShadowPasses.FBOs[2]->Bind();
 
-			//RenderCommand::Clear(Buffer_Depth);
+			// RenderCommand::Clear(Buffer_Depth);
 
 			draw_meshes(mShadowRenderData->ShadowPasses.Shaders[2]);
 
-			//mShadowRenderData->ShadowPasses.Shaders[2]->UnBind();
+			// mShadowRenderData->ShadowPasses.Shaders[2]->UnBind();
 		}
 
-		//RenderCommand::CullBack();
+		// RenderCommand::CullBack();
 	}
 
 	void ShadowRenderer::SubmitDirectionalLight(const FShadowCascadedCreateInfo &info)
@@ -231,7 +228,7 @@ namespace BHive
 	{
 		if (bindings)
 		{
-			//auto &fbos = mShadowRenderData->ShadowPasses.FBOs;
+			// auto &fbos = mShadowRenderData->ShadowPasses.FBOs;
 			/*fbos[0]->GetDepthAttachment()->Bind(bindings[0]);
 			fbos[1]->GetDepthAttachment()->Bind(bindings[1]);
 			fbos[2]->GetDepthAttachment()->Bind(bindings[2]);*/

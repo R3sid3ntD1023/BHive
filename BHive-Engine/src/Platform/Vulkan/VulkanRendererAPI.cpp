@@ -31,9 +31,9 @@ namespace BHive
 			switch (state)
 			{
 			case BHive::EAttachmentStoreState::DontCare:
-				vk::AttachmentStoreOp::eDontCare;
+				return vk::AttachmentStoreOp::eDontCare;
 			case BHive::EAttachmentStoreState::Store:
-				vk::AttachmentStoreOp::eStore;
+				return vk::AttachmentStoreOp::eStore;
 			default:
 				return vk::AttachmentStoreOp::eNone;
 			}
@@ -54,17 +54,11 @@ namespace BHive
 	{
 		LOG_TRACE("RendererAPI Shutdown Called")
 
-		mDeletionQueue.clear();
-
-		mDescriptorPoolManager.Shutdown();
+		FlushDeletionQueue();
 
 		VulkanBackend::Get().Shutdown();
-	}
 
-	void VulkanRendererAPI::WaitIdle()
-	{
-		LOG_TRACE("RendererAPI Wait Idle")
-		VulkanBackend::GetLogicalDevice().waitIdle();
+		mDescriptorPoolManager.Shutdown();
 	}
 
 	vk::Result VulkanRendererAPI::RenderFrame(VulkanSwapChain *swapChain)
@@ -94,7 +88,7 @@ namespace BHive
 	}
 
 
-	void VulkanRendererAPI::QueueDeletion(FQeueuDeflectionFunc&& fn)
+	void VulkanRendererAPI::QueueDeletion(FQeueuDeletionFunc&& fn)
 	{
 		mDeletionQueue.emplace_back(mCompletedFrame, std::move(fn));
 	}
@@ -341,6 +335,16 @@ namespace BHive
 	void VulkanRendererAPI::CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext &ctx)
 	{
 		VulkanCommandTranslator::CreateBarriers(list, ctx);
+	}
+
+	void VulkanRendererAPI::FlushDeletionQueue()
+	{
+		while (!mDeletionQueue.empty())
+		{
+			auto &del = mDeletionQueue.front();
+			del.Fn(0);
+			mDeletionQueue.erase(mDeletionQueue.begin());
+		}
 	}
 
 	void VulkanRendererAPI::SetCurrentContext(WindowContext *ctx)

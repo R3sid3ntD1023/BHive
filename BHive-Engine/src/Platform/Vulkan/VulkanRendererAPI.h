@@ -54,15 +54,13 @@ namespace BHive
 
 		void Shutdown() override;
 
-		void WaitIdle() override;
-
 		vk::Result RenderFrame(VulkanSwapChain* swapChain);
 
 		void SubmitGraph(const RenderGraph &graph) override;
 
 		DescriptorPoolManager& GetDescriptorPoolManager() { return mDescriptorPoolManager; }
 
-		void QueueDeletion(FQeueuDeflectionFunc&& fn) override;
+		void QueueDeletion(FQeueuDeletionFunc&& fn) override;
 
 		void SetCurrentContext(WindowContext *ctx) override;
 
@@ -92,6 +90,8 @@ namespace BHive
 		void EndRendering(const FPhase &phase, FVulkanRendererContext &ctx);
 
 		void CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext &ctx);
+
+		void FlushDeletionQueue();
 
 	private:
 		vk::raii::Device& mDevice;
