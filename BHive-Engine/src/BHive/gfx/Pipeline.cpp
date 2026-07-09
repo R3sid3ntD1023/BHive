@@ -47,23 +47,32 @@ namespace BHive
 
 	void PipelineRegistry::Initialize()
 	{
+
+		{
+			auto state = Pipeline::GetDefaultGraphicsPipelineState();
+			state.ColorAttachmentFormats = {EFormat::RGBA8};
+			state.ShaderProgram = ShaderManager::Get("ColorGrading.glsl");
+			Register("COLOR_GRADING", state);
+		}
+
+		{
+			auto state = Pipeline::GetDefaultGraphicsPipelineState();
+			state.ColorAttachmentFormats = {EFormat::RGBA8};
+			state.ShaderProgram = ShaderManager::Get("Aces.glsl");
+			PipelineRegistry::Register("ACES", state);
+		}
+
 		Pipeline::ComputePipelineState state{};
-
-		state.ShaderProgram = ShaderManager::Get("ColorGrading.glsl");
-		Register("COLOR_GRADING", state);
-
-		state.ShaderProgram = ShaderManager::Get("Aces.glsl");
-		PipelineRegistry::Register("ACES", state);
 
 		state.ShaderProgram = ShaderManager::Get("CombineTex.glsl");
 		PipelineRegistry::Register("BLOOM_COMBINE", state);
 
 		state.ShaderProgram = ShaderManager::Get("PreFilter.glsl");
 		PipelineRegistry::Register("BLOOM_PREFILTER", state);
-		
+
 		state.ShaderProgram = ShaderManager::Get("DownSample.glsl");
 		PipelineRegistry::Register("BLOOM_DOWNSAMPLE", state);
-			
+
 		state.ShaderProgram = ShaderManager::Get("UpSample.glsl");
 		PipelineRegistry::Register("BLOOM_UPSAMPLE", state);
 	}
@@ -88,8 +97,7 @@ namespace BHive
 		if (!entry.PipelineRef)
 		{
 			entry.PipelineRef = Pipeline::Create();
-			std::visit([&](auto &&state) { entry.PipelineRef->Init(state);
-				}, entry.StateInfo);
+			std::visit([&](auto &&state) { entry.PipelineRef->Init(state); }, entry.StateInfo);
 		}
 
 		return entry.PipelineRef.get();
@@ -97,11 +105,10 @@ namespace BHive
 
 	void PipelineRegistry::Reload()
 	{
-		for (auto& [name, entry] : mRegistry)
+		for (auto &[name, entry] : mRegistry)
 		{
 			entry.PipelineRef = Pipeline::Create();
-			std::visit([&](auto &&state) { entry.PipelineRef->Init(state);
-				}, entry.StateInfo);
+			std::visit([&](auto &&state) { entry.PipelineRef->Init(state); }, entry.StateInfo);
 		}
 	}
 

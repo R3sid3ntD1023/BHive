@@ -21,7 +21,7 @@ namespace BHive
 		FTextureCreateInfo info{};
 		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		info.Format = EFormat::RGBA8;
-		info.Roles |= ETextureRole::ComputeWrite;
+		info.Roles |= ETextureRole::RenderTarget;
 		info.DebugName = "AcesOutput";
 		mAcesOutput = Texture2D::Create(mSize, info);
 	}
@@ -40,7 +40,7 @@ namespace BHive
 	{
 		FTextureCreateInfo info{};
 		info.Format = EFormat::RGBA8;
-		info.Roles |= ETextureRole::ComputeWrite;
+		info.Roles |= ETextureRole::RenderTarget;
 		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		info.DebugName = "ColorGradingTex";
 

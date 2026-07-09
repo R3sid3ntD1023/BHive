@@ -234,8 +234,8 @@ namespace BHive
 
 		mPostProcessAllocator.Resize(window.GetSize());
 		// mPostProcessStack.Materials.push_back(mBloomMaterial);
-		// mPostProcessStack.Materials.push_back(aces);
-		// mPostProcessStack.Materials.push_back(mColorGrading);
+		mPostProcessStack.Materials.push_back(aces);
+		mPostProcessStack.Materials.push_back(mColorGrading);
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -399,11 +399,12 @@ namespace BHive
 			debugPass.BeginPhase("Transition to Read", EPhaseType::Transfer);
 			debugPass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorRead);
 			debugPass.EndPhase();
+
+			renderer.EndPass();
 		}
 
-		// mFinalSceneColor = mFramebuffer->GetColorAttachment();
-		// auto input = mFramebuffer->GetColorAttachment();
-		// mFinalSceneColor = mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, input);
+		auto input = mFramebuffer->GetColorAttachment();
+		mFinalSceneColor = mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, input);
 #endif
 		ImageDebugger::Get().OnRender(renderer);
 	}
@@ -419,10 +420,9 @@ namespace BHive
 			auto viewportSize = ImGui::GetContentRegionAvail();
 			mViewportSize = {uint32_t(glm::round(viewportSize.x)), uint32_t(glm::round(viewportSize.y))};
 
-			if (mFramebuffer)
+			if (mFinalSceneColor)
 			{
-
-				auto id = IImGuiTextureProvider::GetID(*mFramebuffer->GetColorAttachment());
+				auto id = IImGuiTextureProvider::GetID(*mFinalSceneColor);
 				ImGui::Image(id, viewportSize);
 			}
 		}

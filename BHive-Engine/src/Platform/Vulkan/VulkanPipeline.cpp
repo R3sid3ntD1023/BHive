@@ -6,7 +6,6 @@
 #include "gfx/shader/ShaderProgram.h"
 #include "gfx/renderers/Renderer.h"
 
-
 namespace BHive
 {
 	struct FVulkanPipelineConfigInfo
@@ -23,7 +22,7 @@ namespace BHive
 		uint32_t SubPass = 0;
 	};
 
-	Ref<FVulkanPipelineConfigInfo> Convert(const Pipeline::GraphicsPipelineState& state)
+	Ref<FVulkanPipelineConfigInfo> Convert(const Pipeline::GraphicsPipelineState &state)
 	{
 		auto config = CreateRef<FVulkanPipelineConfigInfo>();
 
@@ -59,7 +58,7 @@ namespace BHive
 			.setDepthWriteEnable(state.Depth.DepthWrite)
 			.setDepthCompareOp(ToVkCompare(state.Depth.DepthCompare))
 			.setStencilTestEnable(VK_TRUE);
-	
+
 		return config;
 	}
 
@@ -68,8 +67,8 @@ namespace BHive
 	{
 	}
 
-	void VulkanPipeline::Init(const PipelineState& state)
-	{	
+	void VulkanPipeline::Init(const PipelineState &state)
+	{
 		auto type = state.GetType();
 		mProgram = state.ShaderProgram;
 
@@ -90,7 +89,6 @@ namespace BHive
 			CreateComputePipeline(static_cast<const ComputePipelineState &>(state));
 		}
 
-		
 		BindGlobalResources();
 	}
 
@@ -106,12 +104,11 @@ namespace BHive
 		}
 	}
 
-	std::unordered_map<uint32_t, vk::DescriptorSet> 
-		VulkanPipeline::UpdateSets(uint32_t frame)
+	std::unordered_map<uint32_t, vk::DescriptorSet> VulkanPipeline::UpdateSets(uint32_t frame)
 	{
 		std::unordered_map<uint32_t, vk::DescriptorSet> out;
 
-		for (auto& [setIndex, manager] : mSetManagers)
+		for (auto &[setIndex, manager] : mSetManagers)
 		{
 			if (setIndex == MATERIAL_SET_INDEX)
 				continue;
@@ -160,8 +157,8 @@ namespace BHive
 		const auto &setIndex = GLOBAL_SET_INDEX;
 		auto &globals = Renderer::Get().GetGlobalResources();
 		auto &bindings = mProgram->GetRefl().GetSetBindings(setIndex);
-		const auto& shaderName = mProgram->GetName();
-	
+		const auto &shaderName = mProgram->GetName();
+
 		if (bindings.empty())
 		{
 			LOG_INFO("Pipeline: Shader '{}' has no global resources in set {}, skipping global binding.", shaderName, setIndex);
