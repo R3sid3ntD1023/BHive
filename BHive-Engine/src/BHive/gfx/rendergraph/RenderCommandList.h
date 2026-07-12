@@ -10,13 +10,13 @@ namespace BHive
 
 	struct FBufferUse
 	{
-		BufferBase* Buffer;
+		BufferBase *Buffer;
 		EBufferAccess Access;
 	};
 
 	struct FBufferBarrierRequest
 	{
-		BufferBase* Buffer;
+		BufferBase *Buffer;
 		EBufferAccess Src;
 		EBufferAccess Dst;
 	};
@@ -26,8 +26,8 @@ namespace BHive
 		std::vector<Ref<FCommand>> Commands;
 		std::vector<FBufferBarrierRequest> BufferBarriers;
 
-		template<typename T, typename... TArgs>
-		T* Emplace(TArgs&& ... args)
+		template <typename T, typename... TArgs>
+		T *Emplace(TArgs &&...args)
 		{
 			static_assert(std::is_base_of_v<FCommand, T>, "Type T doesn't derive from FCommand!");
 			static_assert(std::is_constructible_v<T, TArgs...>, "Emplace<T>: Provided arguments doesn't match T's constrcutor");
@@ -37,14 +37,5 @@ namespace BHive
 			Commands.push_back(cmd);
 			return ptr;
 		}
-
-		//FRenderCommandList() = default;
-		//~FRenderCommandList() = default;
-
-		//FRenderCommandList(const FRenderCommandList &) = delete;
-		//FRenderCommandList &operator=(const FRenderCommandList &) = delete;
-
-		//FRenderCommandList(FRenderCommandList &&) noexcept = default;
-		//FRenderCommandList &operator=(FRenderCommandList &&) noexcept = default;
 	};
-}
+} // namespace BHive

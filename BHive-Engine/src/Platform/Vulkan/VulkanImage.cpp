@@ -16,7 +16,7 @@ namespace BHive
 		const auto &layers = info.ImageCI.arrayLayers;
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
 
-		auto image_id = gpu_r_m.CreateImage(info.ImageCI, vk::MemoryPropertyFlagBits::eDeviceLocal,  info.DebugName);
+		auto image_id = gpu_r_m.CreateImage(info.ImageCI, vk::MemoryPropertyFlagBits::eDeviceLocal, info.DebugName);
 		auto sampler_id = gpu_r_m.CreateSampler(info.SamplerCI, std::format("Image_{}_Sampler", info.DebugName));
 
 		mImage.Image = image_id;
@@ -27,7 +27,7 @@ namespace BHive
 		mImage.IsCubeArray = info.ViewTopology == EViewTopology::CubeArray;
 
 		mStateTracker.Initialize(layers, levels, ImageState::Undefined());
-		
+
 		auto image = mImage.GetImage();
 		mutable_info.ViewCI.setImage(image);
 
@@ -35,12 +35,14 @@ namespace BHive
 		ImageViewBuilder::Build(mImage, build_info, info.ViewTopology);
 
 		{
-			SingleTimeCommand cmd{};
-			ImageSubresourceRange fullRange{0, levels, 0, layers};
 
 			auto initialState = InitialStateFromUsage(info.ImageCI.usage, info.ImageCI.format);
 			if (!initialState.IsUndefined)
+			{
+				SingleTimeCommand cmd{};
+				ImageSubresourceRange fullRange{0, levels, 0, layers};
 				Transition(cmd, initialState, fullRange);
+			}
 		}
 	}
 
@@ -51,8 +53,8 @@ namespace BHive
 		auto mutable_info = info;
 		mutable_info.ViewCI.setImage(img);
 
-		const auto& levels = info.ImageCI.mipLevels;
-		const auto& layers = info.ImageCI.arrayLayers;
+		const auto &levels = info.ImageCI.mipLevels;
+		const auto &layers = info.ImageCI.arrayLayers;
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
 
 		mStateTracker.Initialize(layers, levels, ImageState::Undefined());
@@ -130,7 +132,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanImage::GenerateMipMaps(vk::raii::CommandBuffer& cmd)
+	void VulkanImage::GenerateMipMaps(vk::raii::CommandBuffer &cmd)
 	{
 		auto w = mInfo.ImageCI.extent.width;
 		auto h = mInfo.ImageCI.extent.height;
@@ -142,7 +144,7 @@ namespace BHive
 		for (uint32_t mip = 1; mip < levels; ++mip)
 		{
 			{
-				ImageSubresourceRange range{mip -1, 1, 0, layers};
+				ImageSubresourceRange range{mip - 1, 1, 0, layers};
 				Transition(cmd, ImageState::TransferRead(), range);
 			}
 
@@ -197,7 +199,7 @@ namespace BHive
 	{
 		const bool isDepth = format == vk::Format::eD32Sfloat || format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint || format == vk::Format::eD16Unorm;
 
-		//Depth/stencil images
+		// Depth/stencil images
 
 		if (usage & vk::ImageUsageFlagBits::eDepthStencilAttachment)
 			return isDepth ? ImageState::DepthStencilAttachment() : ImageState::ColorAttachment();
@@ -216,10 +218,10 @@ namespace BHive
 		{
 			return ImageState::ComputeWrite();
 		}
-		
+
 		if (usage & vk::ImageUsageFlagBits::eTransferDst)
 		{
-			return  ImageState::TransferWrite();
+			return ImageState::TransferWrite();
 		}
 
 		if (usage & vk::ImageUsageFlagBits::eTransferSrc)
@@ -227,7 +229,7 @@ namespace BHive
 			return ImageState::TransferRead();
 		}
 
-		//fallback: undefined (rare)
+		// fallback: undefined (rare)
 		return ImageState::Undefined();
 	}
 } // namespace BHive

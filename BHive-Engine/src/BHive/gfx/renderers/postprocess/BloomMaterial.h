@@ -5,6 +5,8 @@
 
 namespace BHive
 {
+	class Framebuffer;
+
 	class BHIVE_API BloomMaterial : public PostProcessMaterial
 	{
 	public:
@@ -21,5 +23,8 @@ namespace BHive
 			float Strength{1.0f};
 			float Exposure{1.0f};
 		} Params;
+
+	private:
+		std::array<Ref<Framebuffer>, 2> mFramebuffers;
 	};
-}
+} // namespace BHive

@@ -29,14 +29,7 @@ namespace BHive
 
 		Ref<Framebuffer> FBO;
 
-		/*FPhase() = default;
-		~FPhase() = default;
-
-		FPhase(const FPhase &) = delete;
-		FPhase& operator=(const FPhase &) = delete;
-
-		FPhase(FPhase &&) noexcept = default;
-		FPhase &operator=(FPhase &&) noexcept = default;*/
+		ImageSubresourceRange ColorRange{};
 	};
 
-}
+} // namespace BHive

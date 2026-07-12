@@ -9,8 +9,6 @@ namespace BHive
 	struct FFramebufferTexture
 	{
 		FTextureCreateInfo CreateInfo{};
-		uint32_t Layer = 0;
-		uint32_t MipLevel = 0;
 		ETextureType Type = ETextureType::TEXTURE_2D;
 		Ref<Texture> ExternalTexture = nullptr;
 	};
@@ -32,13 +30,13 @@ namespace BHive
 			return *this;
 		}
 
-		FramebufferAttachments &AddColorAttachment(const FFramebufferTexture& spec)
+		FramebufferAttachments &AddColorAttachment(const FFramebufferTexture &spec)
 		{
 			mColorAttachments.emplace_back(spec);
 			return *this;
 		}
 
-		FramebufferAttachments &SetDepthAttachment(const FFramebufferTexture& spec)
+		FramebufferAttachments &SetDepthAttachment(const FFramebufferTexture &spec)
 		{
 			mDepthAttachment = spec;
 			return *this;
@@ -76,10 +74,7 @@ namespace BHive
 	class BHIVE_API Framebuffer
 	{
 	public:
-
 		virtual ~Framebuffer() = default;
-
-		virtual void BindFace(uint32_t face) = 0;
 
 		virtual void Resize(const glm::uvec2 &newSize) = 0;
 
@@ -101,11 +96,11 @@ namespace BHive
 
 		virtual const FramebufferSpecification &GetSpecification() const = 0;
 
-		virtual const glm::uvec2& GetSize() const = 0;
+		virtual const glm::uvec2 &GetSize() const = 0;
 
-		virtual const FFramebufferTexture& GetColorAttachmentSpecs(uint32_t i) const = 0;
+		virtual const FFramebufferTexture &GetColorAttachmentSpecs(uint32_t i) const = 0;
 
-		virtual const FFramebufferTexture& GetDepthAttachmentSpecs() const = 0;
+		virtual const FFramebufferTexture &GetDepthAttachmentSpecs() const = 0;
 
 		static Ref<Framebuffer> Create(const FramebufferSpecification &specification);
 	};

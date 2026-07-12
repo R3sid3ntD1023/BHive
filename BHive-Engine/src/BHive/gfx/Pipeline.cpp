@@ -62,16 +62,28 @@ namespace BHive
 			PipelineRegistry::Register("ACES", state);
 		}
 
+		{
+			auto state = Pipeline::GetDefaultGraphicsPipelineState();
+			state.ColorAttachmentFormats = {EFormat::RGBA32F};
+			state.ShaderProgram = ShaderManager::Get("PreFilter.glsl");
+			PipelineRegistry::Register("BLOOM_PREFILTER", state);
+		}
+
+		{
+			auto state = Pipeline::GetDefaultGraphicsPipelineState();
+			state.ColorAttachmentFormats = {EFormat::RGBA32F};
+			state.ShaderProgram = ShaderManager::Get("Composite.glsl");
+			PipelineRegistry::Register("BLOOM_COMBINE", state);
+		}
+
+		{
+			auto state = Pipeline::GetDefaultGraphicsPipelineState();
+			state.ColorAttachmentFormats = {EFormat::RGBA32F};
+			state.ShaderProgram = ShaderManager::Get("DownSample.glsl");
+			PipelineRegistry::Register("BLOOM_DOWNSAMPLE", state);
+		}
+
 		Pipeline::ComputePipelineState state{};
-
-		state.ShaderProgram = ShaderManager::Get("CombineTex.glsl");
-		PipelineRegistry::Register("BLOOM_COMBINE", state);
-
-		state.ShaderProgram = ShaderManager::Get("PreFilter.glsl");
-		PipelineRegistry::Register("BLOOM_PREFILTER", state);
-
-		state.ShaderProgram = ShaderManager::Get("DownSample.glsl");
-		PipelineRegistry::Register("BLOOM_DOWNSAMPLE", state);
 
 		state.ShaderProgram = ShaderManager::Get("UpSample.glsl");
 		PipelineRegistry::Register("BLOOM_UPSAMPLE", state);

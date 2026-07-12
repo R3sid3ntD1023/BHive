@@ -1,10 +1,8 @@
 #pragma once
 
-
 #include "gfx/resources/ImageSubResourceRange.h"
 #include "gfx/renderers/ViewSystem.h"
 #include "Phase.h"
-
 
 namespace BHive
 {
@@ -52,12 +50,11 @@ namespace BHive
 		{
 		}
 
-		template<typename... TArgs>
-		T *operator()(TArgs&&... args)
+		template <typename... TArgs>
+		T *operator()(TArgs &&...args)
 		{
 			return List.Emplace<T>(std::forward<TArgs>(args)...);
 		}
-
 	};
 
 	struct BHIVE_API FPass
@@ -72,7 +69,7 @@ namespace BHive
 
 		void BeginPhase(const std::string &name, EPhaseType type = EPhaseType::Graphics);
 
-		template<typename T>
+		template <typename T>
 		CommandBuilder<T> Emplace()
 		{
 			ASSERT(mCurrentPhase > -1);
@@ -81,11 +78,11 @@ namespace BHive
 
 		void Push(const FView &view);
 
-		void Push(Ref<Framebuffer> fbo);
+		void Push(Ref<Framebuffer> fbo, ImageSubresourceRange colorRange = {});
 
 		void Push(Ref<Texture> tex, EImageAccess access, ImageSubresourceRange range = {});
 
-		void Push(BufferBase* buffer, EBufferAccess access);
+		void Push(BufferBase *buffer, EBufferAccess access);
 
 		void EndPhase();
 
@@ -96,4 +93,4 @@ namespace BHive
 	private:
 		int32_t mCurrentPhase = -1;
 	};
-}
+} // namespace BHive

@@ -31,7 +31,7 @@ namespace BHive
 		FTextureCreateInfo info{};
 		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		info.Format = EFormat::RGBA32F;
-		info.Roles |= ETextureRole::ComputeWrite;
+		info.Roles |= ETextureRole::RenderTarget;
 		info.DebugName = "SceneBloomComposite";
 		mBloomCompositeOutput = Texture2D::Create(mSize, info);
 	}
@@ -65,7 +65,7 @@ namespace BHive
 		FTextureCreateInfo info{};
 		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		info.Format = EFormat::RGBA32F;
-		info.Roles |= ETextureRole::ComputeWrite;
+		info.Roles |= ETextureRole::RenderTarget;
 		info.MipLevels = std::min(ComputeMipCount(halfSize), mBloomMipCount);
 		info.DebugName = "BloomMipChain";
 

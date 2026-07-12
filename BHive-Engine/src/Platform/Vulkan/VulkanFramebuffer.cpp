@@ -9,7 +9,7 @@ namespace BHive
 {
 	static const uint32_t sMaxFramebufferSize = 8192;
 
-	Ref<Texture> CreateFramebufferTexture(const glm::uvec2& size, uint32_t samples, const FFramebufferTexture& specification)
+	Ref<Texture> CreateFramebufferTexture(const glm::uvec2 &size, uint32_t samples, const FFramebufferTexture &specification)
 	{
 		if (specification.ExternalTexture)
 			return specification.ExternalTexture;
@@ -37,7 +37,7 @@ namespace BHive
 	VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecification &specification)
 		: mSpecification(specification)
 	{
-		const auto& specs = mSpecification.Attachments.GetColorAttachments();
+		const auto &specs = mSpecification.Attachments.GetColorAttachments();
 		for (size_t i = 0; i < specs.size(); i++)
 		{
 			auto color_attachment_info = specs[i];
@@ -61,15 +61,9 @@ namespace BHive
 		Initialize();
 	}
 
-	
-	void VulkanFramebuffer::BindFace(uint32_t face)
-	{
-		mCurrentFace = face;
-	}
-
 	void VulkanFramebuffer::Resize(const glm::uvec2 &newSize)
 	{
-		if (newSize.x == 0 || newSize.y == 0 ||  newSize.x > sMaxFramebufferSize || newSize.y > sMaxFramebufferSize)
+		if (newSize.x == 0 || newSize.y == 0 || newSize.x > sMaxFramebufferSize || newSize.y > sMaxFramebufferSize)
 		{
 			LOG_WARN("Attempted to resize framebuffer to {}", newSize);
 			return;
@@ -102,7 +96,7 @@ namespace BHive
 				auto vimage = cAttachment->GetNativeHandle().As<VulkanImage>();
 				auto layout = vimage->GetState(cSpec.MipLevel, cSpec.Layer).Layout;
 				auto image = vimage->Native().GetImage();
-			
+
 				vk::ImageSubresourceRange range;
 				range.aspectMask = vk::ImageAspectFlagBits::eColor;
 				range.baseMipLevel = cSpec.MipLevel;
@@ -116,7 +110,6 @@ namespace BHive
 
 	void VulkanFramebuffer::ClearAttachment(uint32_t attachmentIndex, const float *data)
 	{
-		
 	}
 
 	void VulkanFramebuffer::Blit(const Ref<Framebuffer> &target)
@@ -125,13 +118,11 @@ namespace BHive
 
 	void VulkanFramebuffer::BlitToWindow(unsigned x, unsigned y, unsigned w, unsigned h)
 	{
-		
 	}
 
 	void VulkanFramebuffer::ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, void *data) const
 	{
 		ASSERT(attachmentIndex < mColorAttachmentSpecifications.size());
-
 	}
 
 	Ref<Texture> VulkanFramebuffer::GetColorAttachment(uint32_t index) const
@@ -144,7 +135,6 @@ namespace BHive
 	{
 		return mDepthAttachment;
 	}
-
 
 	void VulkanFramebuffer::Initialize()
 	{
@@ -164,7 +154,7 @@ namespace BHive
 
 		if (mDepthSpecification.CreateInfo.Format != EFormat::None)
 		{
-			mDepthAttachment = CreateFramebufferTexture(mSpecification.Size,  mSpecification.Samples, mDepthSpecification);
+			mDepthAttachment = CreateFramebufferTexture(mSpecification.Size, mSpecification.Samples, mDepthSpecification);
 		}
 	}
 

@@ -16,7 +16,7 @@ namespace BHive
 			color.ExternalTexture = output;
 
 			FramebufferSpecification spec{};
-			spec.DebugName = "Aces";
+			spec.DebugName = "ColorGrading";
 			spec.Size = dstSize;
 			spec.Attachments.AddColorAttachment(color);
 			mFramebuffer = Framebuffer::Create(spec);

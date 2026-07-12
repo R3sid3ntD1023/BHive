@@ -1,6 +1,9 @@
 
-vec3 Downsample13Tap(sampler2D tex, vec2 uv, vec2 texel)
+vec3 Downsample13Tap(sampler2D tex, vec2 uv)
 {
+    ivec2 srcSize = textureSize(tex, 0);
+    vec2 texel = 1.0 / vec2(srcSize);
+
 	vec3 c = vec3(0.0);
     
     //center

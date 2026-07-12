@@ -38,7 +38,7 @@ namespace BHive
 				return vk::AttachmentStoreOp::eNone;
 			}
 		}
-	}
+	} // namespace utils
 
 	VulkanRendererAPI::VulkanRendererAPI()
 		: mDevice(VulkanBackend::GetLogicalDevice())
@@ -75,8 +75,8 @@ namespace BHive
 			return vk::Result::eSuccess;
 		}
 
-		//Print all passes -> phases -> cmds to console
-		//finalGraph.DebugPrint();
+		// Print all passes -> phases -> cmds to console
+		// finalGraph.DebugPrint();
 
 		return ExecuteFinalGraph(swapChain, finalGraph);
 	}
@@ -87,8 +87,7 @@ namespace BHive
 			mSubmittedGraphs.emplace_back(graph);
 	}
 
-
-	void VulkanRendererAPI::QueueDeletion(FQeueuDeletionFunc&& fn)
+	void VulkanRendererAPI::QueueDeletion(FQeueuDeletionFunc &&fn)
 	{
 		mDeletionQueue.emplace_back(mCompletedFrame, std::move(fn));
 	}
@@ -99,14 +98,14 @@ namespace BHive
 		mCompletedFrame = 0;
 
 		mSubmittedGraphs.clear();
-		mDeletionQueue.clear();	
+		mDeletionQueue.clear();
 	}
 
 	void VulkanRendererAPI::ProcessDeletionQueue(uint32_t frame)
 	{
 		while (!mDeletionQueue.empty())
 		{
-			auto & del = mDeletionQueue.front();
+			auto &del = mDeletionQueue.front();
 
 			if (frame > del.Frame)
 				del.Fn(frame);
@@ -118,7 +117,7 @@ namespace BHive
 	vk::Result VulkanRendererAPI::ExecuteFinalGraph(VulkanSwapChain *swapChain, RenderGraph &graph)
 	{
 		auto current_frame = mCurrentFrame;
-		auto& cmd = VulkanBackend::GetCommandBuffer(current_frame);
+		auto &cmd = VulkanBackend::GetCommandBuffer(current_frame);
 
 		swapChain->WaitForFence(current_frame);
 
@@ -134,8 +133,6 @@ namespace BHive
 		mDescriptorPoolManager.ResetFrame(current_frame);
 
 		FVulkanRendererContext vk_ctx{cmd, current_frame, imageIndex, 0};
-
-		
 
 		vk::CommandBufferBeginInfo beginInfo{};
 		cmd.begin(beginInfo);
@@ -173,11 +170,11 @@ namespace BHive
 
 	void VulkanRendererAPI::ExecutePass(const FPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
 	{
-		//LOG_TRACE("Pass: {}", pass.Name);
+		// LOG_TRACE("Pass: {}", pass.Name);
 
-		for (auto& phase : pass.Phases)
+		for (auto &phase : pass.Phases)
 		{
-			//LOG_TRACE("\tPhase {}", phase.Name);
+			// LOG_TRACE("\tPhase {}", phase.Name);
 
 			TransitionImages(phase, ctx.CommandBuffer);
 
@@ -190,7 +187,7 @@ namespace BHive
 			}
 
 			ExecuteCommandList(phase.CommandList, ctx);
-			
+
 			if (phase.Type == EPhaseType::Graphics)
 			{
 				EndRendering(phase, ctx);
@@ -198,9 +195,7 @@ namespace BHive
 				if (pass.Type == EPassType::Present)
 					TransitionSwapChainToPresent(ctx, swapChain);
 			}
-			
 		}
-		
 	}
 
 	void VulkanRendererAPI::TransitionImages(const FPhase &phase, vk::raii::CommandBuffer &cmd)
@@ -216,14 +211,13 @@ namespace BHive
 
 			if (oldState.IsUndefined || oldState != newState)
 			{
-				//LOG_TRACE("\t\tTransition {} :  {} -> {}", name, vk::to_string(oldState.Layout), vk::to_string(newState.Layout));
+				// LOG_TRACE("\t\tTransition {} :  {} -> {}", name, vk::to_string(oldState.Layout), vk::to_string(newState.Layout));
 				vkImg->Transition(cmd, newState, imgInfo.Range);
 			}
 			else
 			{
-				//LOG_TRACE("\t\tTransition {} : None", name);
+				// LOG_TRACE("\t\tTransition {} : None", name);
 			}
-			
 		}
 	}
 
@@ -257,20 +251,21 @@ namespace BHive
 
 		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
 		cmd.beginRendering(renderingInfo);
-
 	}
 
-	void VulkanRendererAPI::BeginOffScreenRendering(const FPass& pass, const FPhase &phase, FVulkanRendererContext &ctx)
+	void VulkanRendererAPI::BeginOffScreenRendering(const FPass &pass, const FPhase &phase, FVulkanRendererContext &ctx)
 	{
 		auto fbo = Cast<VulkanFramebuffer>(phase.FBO);
-		if(fbo)
+		if (fbo)
 		{
-			auto state = pass.State;
+			const auto state = pass.State;
+			const auto range = phase.ColorRange;
+			const auto numColorAttachments = fbo->GetNumColorAttachments();
+
 			auto depth = fbo->GetDepthAttachment();
-			auto numColorAttachments = fbo->GetNumColorAttachments();
-			auto face = fbo->GetCurrentFace();
+
 			auto &cmd = ctx.CommandBuffer;
-			
+
 			std::vector<vk::RenderingAttachmentInfo> color_infos;
 			color_infos.reserve(numColorAttachments);
 
@@ -283,7 +278,7 @@ namespace BHive
 				{
 					auto attachment = fbo->GetColorAttachment(i);
 					auto &spec = fbo->GetColorAttachmentSpecs(i);
-					auto view = Cast<IVulkanTextureInterface>(attachment)->ResolveRenderView(face, spec.MipLevel);
+					auto view = Cast<IVulkanTextureInterface>(attachment)->ResolveRenderView(range.BaseArrayLayer, range.BaseMipLevel);
 
 					auto info = vk::RenderingAttachmentInfo(view, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eColorAttachmentOptimal, loadOp, storeOP, clearColor);
 
@@ -291,6 +286,7 @@ namespace BHive
 				}
 			}
 
+			vk::RenderingAttachmentInfo depthInfo{};
 			vk::RenderingAttachmentInfo *depthPtr = nullptr;
 
 			if (depth)
@@ -299,22 +295,25 @@ namespace BHive
 				vk::AttachmentStoreOp storeOP = utils::ToStore(state.Depth.StoreOP);
 
 				auto &spec = fbo->GetDepthAttachmentSpecs();
-				auto view = Cast<IVulkanTextureInterface>(depth)->ResolveRenderView(face, spec.MipLevel);
+				auto view = Cast<IVulkanTextureInterface>(depth)->ResolveRenderView(0, 0);
 
-				auto depthInfo = vk::RenderingAttachmentInfo(
+				depthInfo = vk::RenderingAttachmentInfo(
 					view, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eDepthStencilAttachmentOptimal, loadOp, storeOP, vk::ClearDepthStencilValue(1.0f, 0));
 
 				depthPtr = &depthInfo;
 			}
 
 			auto &spec = fbo->GetSpecification();
-			auto rect = vk::Rect2D({0, 0}, {spec.Size.x, spec.Size.y});
+			glm::uvec2 baseSize = spec.Size;
+			glm::uvec2 mipSize = {std::max(baseSize.x >> range.BaseMipLevel, 1u), std::max(baseSize.y >> range.BaseMipLevel, 1u)};
+
+			auto rect = vk::Rect2D({0, 0}, {mipSize.x, mipSize.y});
 			auto info = vk::RenderingInfo({}, rect, 1, 0, color_infos, depthPtr);
 
 			cmd.beginRendering(info);
 
-			vk::Viewport viewport(0.f, (float)spec.Size.y, (float)spec.Size.x, -(float)spec.Size.y, 0.0f, 1.0f);
-			vk::Rect2D scissor({0, 0}, {spec.Size.x, spec.Size.y});
+			vk::Viewport viewport(0.f, (float)mipSize.y, (float)mipSize.x, -(float)mipSize.y, 0.0f, 1.0f);
+			vk::Rect2D scissor({0, 0}, {mipSize.x, mipSize.y});
 
 			cmd.setViewport(0, viewport);
 			cmd.setScissor(0, scissor);
