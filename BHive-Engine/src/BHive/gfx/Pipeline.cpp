@@ -83,10 +83,12 @@ namespace BHive
 			PipelineRegistry::Register("BLOOM_DOWNSAMPLE", state);
 		}
 
-		Pipeline::ComputePipelineState state{};
-
-		state.ShaderProgram = ShaderManager::Get("UpSample.glsl");
-		PipelineRegistry::Register("BLOOM_UPSAMPLE", state);
+		{
+			auto state = Pipeline::GetDefaultGraphicsPipelineState();
+			state.ColorAttachmentFormats = {EFormat::RGBA32F};
+			state.ShaderProgram = ShaderManager::Get("UpSample.glsl");
+			PipelineRegistry::Register("BLOOM_UPSAMPLE", state);
+		}
 	}
 
 	void PipelineRegistry::Register(const std::string &name, const Pipeline::GraphicsPipelineState &info)

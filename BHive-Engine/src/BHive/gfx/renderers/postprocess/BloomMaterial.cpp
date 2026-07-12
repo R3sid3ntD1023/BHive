@@ -70,25 +70,28 @@ namespace BHive
 			}
 		}
 
-		//// Phase 2: UpSample
-		// auto upsampleBindings = FComputeBindings(PipelineRegistry::Get("BLOOM_UPSAMPLE")).Set<float>({"uFilterRadius", Params.Radius});
+		// Phase 2: UpSample
+		{
+			auto upsampleBindings = FComputeBindings(PipelineRegistry::Get("BLOOM_UPSAMPLE")).Set<float>({"uFilterRadius", Params.Radius});
 
-		// for (uint32_t mip = mipCount - 1; mip > 0; mip--)
-		//{
-		//	uint32_t srcMip = mip;
-		//	uint32_t dstMip = mip - 1;
+			for (uint32_t mip = mipCount - 1; mip > 0; mip--)
+			{
+				uint32_t srcMip = mip;
+				uint32_t dstMip = mip - 1;
 
-		//	glm::uvec2 dstSize = glm::max(baseSize >> dstMip, glm::uvec2(1u));
+				ImageSubresourceRange srcRange{srcMip, 1, 0, 1};
+				ImageSubresourceRange dstRange{dstMip, 1, 0, 1};
 
-		//	upsampleBindings.Set({"uSrcTexture", bloomOutput, {srcMip, 1, 0, 1}}).Set({"uOutput", bloomOutput, {dstMip, 1, 0, 1}});
+				upsampleBindings.Set({"uSrcTexture", bloomOutput, srcRange});
 
-		//	pass.BeginPhase(EPhaseType::Compute);
-		//	pass.Push(bloomOutput, EImageAccess::ComputeStorageRead, {srcMip, 1, 0, 1});
-		//	pass.Push(bloomOutput, EImageAccess::ComputeStorageWrite, {dstMip, 1, 0, 1});
-		//	pass.Emplace<CmdBindMaterial>()(&upsampleBindings);
-		//	pass.Emplace<CmdDisptach>()((dstSize.x + 15u) / 16u, (dstSize.y + 15u) / 16u, 1);
-		//	pass.EndPhase();
-		//}
+				pass.BeginPhase(EPhaseType::Graphics);
+				pass.Push(mFramebuffers[0], dstRange);
+				pass.Push(bloomOutput, EImageAccess::ColorRead, srcRange);
+				pass.Emplace<CmdBindMaterial>()(&upsampleBindings);
+				pass.Emplace<CmdDrawFullScreen>()();
+				pass.EndPhase();
+			}
+		}
 
 		// Composite to scene
 		{

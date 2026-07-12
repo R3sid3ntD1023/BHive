@@ -80,32 +80,6 @@ namespace BHive
 
 	void VulkanFramebuffer::ClearAttachment(uint32_t attachmentIndex, const int *data)
 	{
-		/*ASSERT(attachmentIndex < mColorAttachments.size());
-
-		auto cAttachment = mColorAttachments[attachmentIndex];
-		auto cSpec = mColorAttachmentSpecifications[attachmentIndex];
-		auto fbSpec = mSpecification;
-		auto color = vk::ClearColorValue(data[0], data[1], data[2], data[3]);
-
-		RenderCommand::SubmitCommand(
-			"Clear Attachment",
-			[cAttachment, cSpec, fbSpec, color](IRendererContext &ctx)
-			{
-				auto &vk_ctx = CastRef<FVulkanRendererContext>(ctx);
-				auto &cmd = vk_ctx.CommandBuffer;
-				auto vimage = cAttachment->GetNativeHandle().As<VulkanImage>();
-				auto layout = vimage->GetState(cSpec.MipLevel, cSpec.Layer).Layout;
-				auto image = vimage->Native().GetImage();
-
-				vk::ImageSubresourceRange range;
-				range.aspectMask = vk::ImageAspectFlagBits::eColor;
-				range.baseMipLevel = cSpec.MipLevel;
-				range.baseArrayLayer = cSpec.Layer;
-				range.layerCount = cSpec.CreateInfo.ArrayLayers;
-				range.levelCount = 1;
-				cmd.clearColorImage(image, layout, color , range);
-			});
-		*/
 	}
 
 	void VulkanFramebuffer::ClearAttachment(uint32_t attachmentIndex, const float *data)

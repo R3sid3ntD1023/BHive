@@ -1,4 +1,5 @@
 #type vertex
+#version 460 core
 
 #include <Fullscreen.vert>
 

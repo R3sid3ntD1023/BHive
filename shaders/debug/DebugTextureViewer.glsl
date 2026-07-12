@@ -1,12 +1,13 @@
 #type vertex
+#version 460 core
 
 #include <Fullscreen.vert>
 
 #type fragment
 #version 460 core
 
-layout(location = 0) in vec2 v_UV;
-layout(location = 0) out vec4 o_Color;
+layout(location = 0) in vec2 vUV;
+layout(location = 0) out vec4 oColor;
 
 layout(set = 1, binding = 0) uniform sampler2D u_Tex2D;
 layout(set = 1, binding = 1) uniform samplerCube u_TexCube;
@@ -35,12 +36,12 @@ void main()
 	float lod = float(PC.u_Mip);
 	if(PC.u_Type == 0)
 	{
-		o_Color = textureLod(u_Tex2D, v_UV, lod);
+		oColor = textureLod(u_Tex2D, vUV, lod);
 	}
 	else
 	{
-		vec3 dir = FaceDir(PC.u_Face, v_UV);
+		vec3 dir = FaceDir(PC.u_Face, vUV);
 		vec3 c = textureLod(u_TexCube, dir, lod).rgb;
-		o_Color = vec4(c, 1.0);
+		oColor = vec4(c, 1.0);
 	}
 }
