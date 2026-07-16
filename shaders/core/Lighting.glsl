@@ -54,7 +54,7 @@ layout(std140, set = 0, binding = 1) restrict readonly buffer LightSSBO
 };
 
 
-void GetDirectionLightInfo(const in DirectionalLight light, inout IncidentLight directLight)
+void GetDirectionalLightInfo(const in DirectionalLight light, inout IncidentLight directLight)
 {
 	directLight.Direction = normalize(-light.Direction.xyz);
 	directLight.Color = max(vec3(0), light.Color.rgb * light.Color.a);

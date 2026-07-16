@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-	#define PIPELINE_NAME "TextPipeline"
+#define PIPELINE_NAME "TextPipeline"
 
 	void TextRenderBatch::Initialize()
 	{
@@ -18,6 +18,15 @@ namespace BHive
 		state.ShaderProgram = shader;
 		state.Raster.CullEnabled = false;
 		state.Depth.DepthWrite = false;
+
+		state.Blend.Enabled = true;
+		state.Blend.SrcColor = EBlendFactor::SrcAlpha;
+		state.Blend.DstColor = EBlendFactor::OneMinusSrcAlpha;
+		state.Blend.ColorOp = EBlendOp::Add;
+
+		state.Blend.SrcAlpha = EBlendFactor::One;
+		state.Blend.DstAlpha = EBlendFactor::OneMinusSrcAlpha;
+		state.Blend.AlphaOp = EBlendOp::Add;
 
 		PipelineRegistry::Register(PIPELINE_NAME, state);
 

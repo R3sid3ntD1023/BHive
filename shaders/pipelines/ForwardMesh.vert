@@ -1,9 +1,5 @@
-#type vertex
-
-#version 460 core
-#extension GL_ARB_shader_draw_parameters : require
-
 #include <Core.glsl>
+#include <ObjectBuffers.glsl>
 
 layout(location = 0) in vec3 vPosition;
 layout(location = 1) in vec2 vTexCoord;
@@ -23,30 +19,28 @@ layout(std140, set = 0, binding = 0) uniform CameraBuffer
 	vec3 u_camera_position;
 };
 
-#include <ObjectBuffers.glsl>
-
+layout(location = 0) out struct VS_OUT
+{
+	vec3 Position;
+	vec2 Texcoord;
+	vec3 Normal;
+	vec4 Color;
+	mat3 TBN;
+	vec3 CameraPosition;
+	float InstanceID;
+	float DrawID;
+} vs_out;
 
 void main()
 {
-	#include <includes/Common.vert>
-}
-
-#type fragment
-
-#version 460 core
-
-#include <Core.glsl>
-
-layout(push_constant) uniform PushConstants
-{
-	vec4 EmissiveColor;
-} pc;
-
-layout(location = 0) out vec4 fs_out;
-
-void main()
-{
-	vec3 totalEmissiveRadiance = pc.EmissiveColor.rgb * pc.EmissiveColor.a;
-
-	fs_out = vec4(totalEmissiveRadiance, 1);
+	#include <Common.Vert>
+	
+	vs_out.Position = worldPos.xyz;
+	vs_out.TBN = mat3(T, B, N);
+	vs_out.Texcoord = vTexCoord;
+	vs_out.Normal = N;
+	vs_out.CameraPosition = u_camera_position;
+	vs_out.Color = vColor;
+	vs_out.InstanceID = float(gl_InstanceIndex);
+	vs_out.DrawID = float(gl_DrawID);
 }

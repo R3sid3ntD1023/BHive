@@ -48,38 +48,6 @@ namespace BHive
 		mEnvironmentTex = TextureLoader::Import(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
 		Renderer::Get().SetEnvironmentTexture(mEnvironmentTex);
 
-		{
-			auto triangleShader = ShaderManager::Get("Triangle.glsl");
-			auto state = Pipeline::GetDefaultGraphicsPipelineState();
-			state.ShaderProgram = triangleShader;
-			state.ColorAttachmentFormats = {EFormat::RGBA32F};
-			PipelineRegistry::Register("Triangle", state);
-		}
-
-		{
-			auto emissiveShader = ShaderManager::Get("Emissive.glsl");
-			auto state = Pipeline::GetDefaultGraphicsPipelineState();
-			state.ShaderProgram = emissiveShader;
-			state.ColorAttachmentFormats = {EFormat::RGBA32F};
-			PipelineRegistry::Register("Emissive", state);
-		}
-
-		{
-			auto lambert = ShaderManager::Get("Lambert.glsl");
-			auto state = Pipeline::GetDefaultGraphicsPipelineState();
-			state.ShaderProgram = lambert;
-			state.ColorAttachmentFormats = {EFormat::RGBA32F};
-			PipelineRegistry::Register("Lambert", state);
-		}
-
-		{
-			auto shader = ShaderManager::Get("BDRFMaterial.glsl");
-			auto state = Pipeline::GetDefaultGraphicsPipelineState();
-			state.ShaderProgram = shader;
-			state.ColorAttachmentFormats = {EFormat::RGBA32F};
-			PipelineRegistry::Register("Standard", state);
-		}
-
 		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
 
 		// create mesh
@@ -146,15 +114,17 @@ namespace BHive
 			mModelBuffer = GeneralBuffer::Create(sizeof(FPerObjectData) * commands.size(), EBufferType::StorageBuffer);
 		}
 
+		// create pipelines
 		{
-			auto pipeline = PipelineRegistry::Get("Triangle");
-			auto objectBindingGroup = pipeline->GetOrCreateBindingGroup(3);
-			objectBindingGroup->SetBuffer(0, mModelBuffer);
-			mMaterial = CreateRef<Material>();
-			mMaterial->SetPipeline(pipeline);
-			mMaterial->SetTexture("u_Texture", mTexture);
-			mMaterial->Set("u_Color", glm::vec3(1, 1, 1));
-			mMaterial->Submit();
+			auto state = Pipeline::GetDefaultGraphicsPipelineState();
+			state.ShaderProgram = ShaderManager::Get("LambertMaterial.glsl");
+			PipelineRegistry::Register("Lambert", state);
+
+			state.ShaderProgram = ShaderManager::Get("StandardMaterial.glsl");
+			PipelineRegistry::Register("Standard", state);
+
+			state.ShaderProgram = ShaderManager::Get("EmissiveMaterial.glsl");
+			PipelineRegistry::Register("Emissive", state);
 		}
 
 		{
@@ -305,24 +275,13 @@ namespace BHive
 			scenePass.Push(mFramebuffer);
 
 			const auto stride = sizeof(MultiDrawIndirectCommand);
-			if (mMesh && mMaterial)
+			if (mMesh)
 			{
 				mMesh->GetVertexArray()->DeclareAccess(scenePass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
 
-				if (mMaterial)
-				{
-					mMaterial->Set("u_Time", Time::Raw());
-					mMaterial->Submit();
-
-					scenePass.Emplace<CmdBindMaterial>()(mMaterial.get());
-					scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2u, stride);
-				}
-
-				if (mLambertMaterial)
-				{
-					scenePass.Emplace<CmdBindMaterial>()(mLambertMaterial.get());
-					scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 1u, stride, 2u);
-				}
+				scenePass.Emplace<CmdBindMaterial>()(mLambertMaterial.get());
+				scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2u, stride);
+				scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 1u, stride, 2u);
 			}
 
 			mSphere->GetVertexArray()->DeclareAccess(scenePass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);

@@ -16,11 +16,11 @@ namespace BHive
 
 		state.DrawMode = ETopologyMode::Triangles;
 		state.Blend.Enabled = true;
-		state.Blend.SrcColor = EBlendFactor::One;
+		state.Blend.SrcColor = EBlendFactor::SrcAlpha;
 		state.Blend.DstColor = EBlendFactor::OneMinusSrcAlpha;
 		state.Blend.ColorOp = EBlendOp::Add;
 		state.Blend.SrcAlpha = EBlendFactor::One;
-		state.Blend.DstAlpha = EBlendFactor::Zero;
+		state.Blend.DstAlpha = EBlendFactor::OneMinusSrcAlpha;
 		state.Blend.AlphaOp = EBlendOp::Add;
 
 		state.Depth.DepthTest = true;
@@ -47,6 +47,48 @@ namespace BHive
 
 	void PipelineRegistry::Initialize()
 	{
+		{
+			auto meshShader = ShaderManager::Get("ForwardMesh.glsl");
+
+			{
+				auto state = Pipeline::GetDefaultGraphicsPipelineState();
+				state.ShaderProgram = meshShader;
+				state.Blend.Enabled = false;
+				state.Depth.DepthTest = true;
+				state.Depth.DepthWrite = true;
+				state.ColorAttachmentFormats = {EFormat::RGBA32F};
+				Register("MESH_OPAQUE", state);
+			}
+
+			{
+				auto state = Pipeline::GetDefaultGraphicsPipelineState();
+				state.ShaderProgram = meshShader;
+				state.Blend.Enabled = false;
+				state.Depth.DepthTest = true;
+				state.Depth.DepthWrite = true;
+				state.ColorAttachmentFormats = {EFormat::RGBA32F};
+				Register("MESH_MASKED", state);
+			}
+
+			{
+				auto state = Pipeline::GetDefaultGraphicsPipelineState();
+				state.ShaderProgram = meshShader;
+				state.Blend.Enabled = true;
+				state.Depth.DepthTest = true;
+				state.Depth.DepthWrite = false;
+				state.ColorAttachmentFormats = {EFormat::RGBA32F};
+				Register("MESH_TRANSPARENT", state);
+			}
+
+			{
+				auto state = Pipeline::GetDefaultGraphicsPipelineState();
+				state.ShaderProgram = ShaderManager::Get("ShadowDepth.glsl");
+				state.Depth.DepthTest = true;
+				state.Depth.DepthWrite = true;
+				state.ColorAttachmentFormats = {EFormat::RGBA32F};
+				Register("MESH_SHADOW", state);
+			}
+		}
 
 		{
 			auto state = Pipeline::GetDefaultGraphicsPipelineState();

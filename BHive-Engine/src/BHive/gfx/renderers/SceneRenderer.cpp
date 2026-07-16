@@ -11,6 +11,7 @@
 #include "core/math/boundingbox/AABB.h"
 #include "core/math/volumes/SphereVolume.h"
 #include "gfx/mesh/SkeletalMesh.h"
+#include "gfx/Pipeline.h"
 
 namespace BHive
 {
@@ -18,9 +19,9 @@ namespace BHive
 	{
 		static bool Sort(const Ref<FMeshRenderData> &lhs, const Ref<FMeshRenderData> &rhs)
 		{
-			auto& view = Renderer::Get().GetViewSystem().GetMainView();
-			glm::vec3 viewPosA =  view.View * glm::vec4(lhs->Transform.GetTranslation(), 1.0f);
-			glm::vec3 viewPosB =  view.View * glm::vec4(rhs->Transform.GetTranslation(), 1.0f);
+			auto &view = Renderer::Get().GetViewSystem().GetMainView();
+			glm::vec3 viewPosA = view.View * glm::vec4(lhs->Transform.GetTranslation(), 1.0f);
+			glm::vec3 viewPosB = view.View * glm::vec4(rhs->Transform.GetTranslation(), 1.0f);
 			return viewPosA.z < viewPosB.z;
 		}
 	};
@@ -33,10 +34,7 @@ namespace BHive
 
 		ShadowRenderer ShadowRenderer;
 
-		void Init()
-		{
-			ShadowRenderer.Init(MAX_LIGHTS);
-		}
+		void Init() { ShadowRenderer.Init(MAX_LIGHTS); }
 
 		void Reset()
 		{
@@ -62,15 +60,15 @@ namespace BHive
 		mFramebuffer = Framebuffer::Create(specs);*/
 
 		// Create a final framebuffer for post-processing effects
-		//specs.Attachments.reset();
-		//specs.Attachments.attach({.Format = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
-		//specs.Attachments.attach({EFormat::DEPTH24_STENCIL8});
-		//mFinalFramebuffer = Framebuffer::Create(specs);
+		// specs.Attachments.reset();
+		// specs.Attachments.attach({.Format = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+		// specs.Attachments.attach({EFormat::DEPTH24_STENCIL8});
+		// mFinalFramebuffer = Framebuffer::Create(specs);
 
 		// Create a quad for rendering the final output
 		mQuad = CreateRef<PQuad>();
 		mQuadShader = ShaderManager::Get(ENGINE_SHADER_PATH "/ScreenQuad.glsl");
-		
+
 		mPostProcessAllocator.Resize(size);
 	}
 
@@ -112,11 +110,13 @@ namespace BHive
 			render_pass->Render(mSceneRenderData->RenderPassRenderData);
 		}*/
 
-		//mFramebuffer->Bind();
+		// mFramebuffer->Bind();
 
-		//Renderer::Get().ClearColor(0.1f, 0.1f, 0.1f, 0.0f);
+		// Renderer::Get().ClearColor(0.1f, 0.1f, 0.1f, 0.0f);
 
-		//Renderer::Get().Clear();
+		// Renderer::Get().Clear();
+
+		auto &renderer = Renderer::Get();
 
 		// render meshes
 		for (auto &[mat, objects] : mSceneRenderData->RenderData)
@@ -125,38 +125,41 @@ namespace BHive
 			EnvironmentMapGenerator.GetIrradianceTexture()->Bind(7);
 			EnvironmentMapGenerator.GetBDRFLUT()->Bind(8);*/
 
-			static uint32_t shadow_map_bindings[] = {9, 10, 11};
-			mSceneRenderData->ShadowRenderer.BindShadowMaps(shadow_map_bindings);
+			/*static uint32_t shadow_map_bindings[] = {9, 10, 11};
+			mSceneRenderData->ShadowRenderer.BindShadowMaps(shadow_map_bindings);*/
 
+			if (mat->GetPipeline()->GetShaderProgram() == ShaderManager::Get("ForwardMesh.glsl"))
+			{
+				renderer.GetActivePass();
+			}
 			mat->Submit();
 
 			/*for (const auto &object : objects)
 				Renderer::Draw(object);*/
 		}
 
-		auto &renderer = Renderer::Get();
 		renderer.EndFrame();
 
-		//mFramebuffer->UnBind();
+		// mFramebuffer->UnBind();
 
-		//post process
+		// post process
 		auto sceneColor = mFramebuffer->GetColorAttachment(0);
 		mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, sceneColor);
 
-		//mFinalFramebuffer->Bind();
+		// mFinalFramebuffer->Bind();
 
-		//Renderer::Get().Clear();
+		// Renderer::Get().Clear();
 
-		//mQuadShader->Bind();
+		// mQuadShader->Bind();
 
-		//texture->Bind();
+		// texture->Bind();
 
-		//Renderer::Get().DrawElements(ETopologyMode::Triangles, mQuad->GetVertexArray().get());
+		// Renderer::Get().DrawElements(ETopologyMode::Triangles, mQuad->GetVertexArray().get());
 
-		//mFinalFramebuffer->UnBind();
+		// mFinalFramebuffer->UnBind();
 	}
 
-	void SceneRenderer::Submit(const DirectionalLight & light)
+	void SceneRenderer::Submit(const DirectionalLight &light)
 	{
 		auto &camera = Renderer::Get().GetViewSystem().GetMainView();
 
@@ -172,7 +175,7 @@ namespace BHive
 		mSceneRenderData->ShadowRenderer.SubmitDirectionalLight(shadow_info);
 	}
 
-	void SceneRenderer::Submit(const PointLight & light)
+	void SceneRenderer::Submit(const PointLight &light)
 	{
 		Renderer::Get().Light.Submit(light);
 
@@ -183,7 +186,7 @@ namespace BHive
 		mSceneRenderData->ShadowRenderer.SubmitPointLight(shadow_info);
 	}
 
-	void SceneRenderer::Submit(const SpotLight & light)
+	void SceneRenderer::Submit(const SpotLight &light)
 	{
 		/*auto inner = glm::cos(glm::radians(info.InnerCutoff));
 		auto outer = glm::cos(glm::radians(info.OuterCutoff));*/
@@ -193,7 +196,7 @@ namespace BHive
 		shadow_info.LightDirection = light.GetDirection();
 		shadow_info.LightPosition = light.GetPosition();
 
-		//TODO : maybe radius 
+		// TODO : maybe radius
 		shadow_info.LightAngleNearFar = {glm::radians(light.GetOuterAngleDegrees()), .1f, light.GetRadius()};
 
 		mSceneRenderData->ShadowRenderer.SubmitSpotLight(shadow_info);
@@ -265,14 +268,14 @@ namespace BHive
 
 		mFinalFramebuffer->Resize(size);
 
-	/*	for (auto &render_pass : mRenderPasses)
-		{
-			render_pass->Resize(size);
-		}*/
+		/*	for (auto &render_pass : mRenderPasses)
+			{
+				render_pass->Resize(size);
+			}*/
 
 		mPostProcessAllocator.Resize(size);
 
-		//Renderer::Get().SetViewport(0, 0, size.x, size.y);
+		// Renderer::Get().SetViewport(0, 0, size.x, size.y);
 	}
 
 	Ref<Texture> SceneRenderer::GetColorAttachment(uint32_t index) const
@@ -297,8 +300,7 @@ namespace BHive
 
 	void SceneRenderer::RemovePostProcessMaterial(const std::string &name)
 	{
-		std::erase_if(mPostProcessStack.Materials, [name](auto &e) { return e->GetName() == name;
-			});
+		std::erase_if(mPostProcessStack.Materials, [name](auto &e) { return e->GetName() == name; });
 	}
 
 	void SceneRenderer::ClearPostProcessEffects()

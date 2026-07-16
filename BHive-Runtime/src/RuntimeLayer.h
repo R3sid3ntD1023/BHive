@@ -16,34 +16,36 @@ namespace BHive
 	class RuntimeLayer : public Layer
 	{
 	public:
-		void OnAttach(Application& app) override;
+		void OnAttach(Application &app) override;
 
 		void OnDetach() override;
 
 		void OnUpdate(float) override;
 
-		void OnRender(Renderer& renderer) override;
+		void OnRender(Renderer &renderer) override;
 
 		void OnGuiRender() override;
 
 		void OnEvent(Event &e) override;
 
 	private:
-		bool OnWindowResize(WindowResizeEvent& e);
+		bool OnWindowResize(WindowResizeEvent &e);
 
 	private:
 		Ref<Texture2D> mTexture = nullptr;
 		Ref<Texture2D> mEnvironmentTex;
-		Ref<class Material> mMaterial = nullptr;
-		Ref<class EmissiveMaterial> mEmissiveMaterial = nullptr;
-		Ref<class LambertMaterial> mLambertMaterial = nullptr;
-		Ref<class StaticMesh> mMesh = nullptr;
+
 		Ref<class Framebuffer> mFramebuffer;
 		Ref<class GeneralBuffer> mMultiDrawIndirectBuffer;
 		EditorCamera mCamera;
 		Ref<GeneralBuffer> mModelBuffer = nullptr;
+
 		Ref<PSphere> mSphere;
 		Ref<PPlane> mPlane;
+		Ref<class StaticMesh> mMesh = nullptr;
+
+		Ref<class EmissiveMaterial> mEmissiveMaterial = nullptr;
+		Ref<class LambertMaterial> mLambertMaterial = nullptr;
 		Ref<class StandardMaterial> mStandardMaterial = nullptr;
 
 		PostProcessAllocator mPostProcessAllocator;

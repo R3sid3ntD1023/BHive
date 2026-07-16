@@ -7,7 +7,7 @@
 
 namespace BHive
 {
-	void StandardMaterial::Submit(Pipeline* pipeline)
+	void StandardMaterial::Submit(Pipeline *pipeline)
 	{
 		auto p = pipeline ? pipeline : mPipeline;
 

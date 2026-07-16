@@ -41,7 +41,7 @@ namespace BHive
 
 	std::filesystem::path ShaderUtils::GetCacheDirectory()
 	{
-		return ENGINE_SHADER_PATH"/cache/";
+		return ENGINE_SHADER_PATH "/cache/";
 	}
 
 	ShaderUtils::PreProcessData ShaderUtils::PreProcess(const std::string &source, const std::string &preprocessors)
@@ -92,6 +92,10 @@ namespace BHive
 		std::stringstream output;
 
 		std::string line;
+		int lineNumber = 0;
+
+		output << "#line 0 \"" << requestingPath + "\"\n";
+
 		while (std::getline(input, line))
 		{
 			if (line.starts_with("#include"))
@@ -106,11 +110,14 @@ namespace BHive
 				FileSystem::ReadFile(includePath.string(), includeSource);
 
 				output << ExpandIncludes(includeSource, includePath.string());
+				output << "#line " + std::to_string(lineNumber + 1) + " \"" + requestingPath + "\"\n";
 			}
 			else
 			{
 				output << line << "\n";
 			}
+
+			lineNumber++;
 		}
 
 		return output.str();

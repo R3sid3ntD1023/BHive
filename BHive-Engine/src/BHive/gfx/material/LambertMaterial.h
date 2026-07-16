@@ -19,9 +19,9 @@ namespace BHive
 
 		void Load(cereal::BinaryInputArchive &ar) override;
 
-		void Submit(Pipeline* pipeline = nullptr) override;
+		void Submit(Pipeline *pipeline = nullptr) override;
 
-		//Ref<Material> Clone() const override;
+		// Ref<Material> Clone() const override;
 
 		REFLECTABLEV(Material)
 	};

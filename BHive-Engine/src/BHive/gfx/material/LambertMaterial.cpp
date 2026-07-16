@@ -1,10 +1,10 @@
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "LambertMaterial.h"
+#include "gfx/Pipeline.h"
 
 namespace BHive
 {
-
 	void LambertMaterial::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Material::Save(ar);
@@ -17,10 +17,10 @@ namespace BHive
 		ar(MAKE_NVP("Color", DiffuseColor), MAKE_NVP("Emission", EmissionColor));
 	}
 
-	void LambertMaterial::Submit(Pipeline* pipeline)
+	void LambertMaterial::Submit(Pipeline *pipeline)
 	{
 		mBackendMaterial->Set("DiffuseColor", DiffuseColor);
-		mBackendMaterial->Set("EmissiveColor", EmissionColor);
+		mBackendMaterial->Set("Emission", EmissionColor);
 
 		Material::Submit(pipeline);
 	}

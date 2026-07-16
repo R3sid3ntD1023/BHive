@@ -53,7 +53,7 @@ namespace BHive
 
 		struct GraphicsPipelineState : public PipelineState
 		{
-			//VertexLayout Layout;
+			// VertexLayout Layout;
 			ETopologyMode DrawMode{};
 			RasterState Raster{};
 			DepthState Depth{};
@@ -61,14 +61,13 @@ namespace BHive
 			std::vector<EFormat> ColorAttachmentFormats{};
 			EFormat DepthAttachmentFormat{};
 
-			Type GetType() const override { return Graphics; } 
+			Type GetType() const override { return Graphics; }
 		};
 
 		struct ComputePipelineState : public PipelineState
 		{
-			Type GetType() const override { return Compute; } 
+			Type GetType() const override { return Compute; }
 		};
-
 
 		virtual ~Pipeline() = default;
 

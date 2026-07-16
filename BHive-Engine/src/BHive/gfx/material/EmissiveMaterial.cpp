@@ -14,9 +14,9 @@ namespace BHive
 		ar(MAKE_NVP("Emission", EmissionColor));
 	}
 
-	void EmissiveMaterial ::Submit(Pipeline* pipeline)
+	void EmissiveMaterial ::Submit(Pipeline *pipeline)
 	{
-		mBackendMaterial->Set("EmissiveColor", EmissionColor);
+		mBackendMaterial->Set("Emission", EmissionColor);
 
 		Material::Submit(pipeline);
 	}

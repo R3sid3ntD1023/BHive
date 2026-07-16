@@ -24,11 +24,31 @@ namespace BHive
 		};
 	};
 
-
 	using TextureSlotMap = std::unordered_map<std::string, TextureSlot>;
 
-	class BHIVE_API Material : public Asset , public IMaterial
+	class BHIVE_API Material : public Asset, public IMaterial
 	{
+	public:
+		enum class EShadingModel : uint8_t
+		{
+			Lambert,
+			Emissive,
+			Standard
+		};
+
+		enum class ESurfaceType : uint8_t
+		{
+			Opaque,
+			Transparent,
+			Additive
+		};
+
+		enum EFlags : uint32_t
+		{
+			HAS_NORMAL_MAP = BIT(1),
+			DOUBLE_SIDED = BIT(2)
+		};
+
 	public:
 		Material() = default;
 
@@ -36,7 +56,7 @@ namespace BHive
 
 		void SetPipeline(Pipeline *pipeline);
 
-		virtual void Submit(Pipeline* pipeline = nullptr);
+		virtual void Submit(Pipeline *pipeline = nullptr);
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
@@ -46,10 +66,10 @@ namespace BHive
 
 		virtual bool ShouldCastShadows() const { return true; }
 
-		template<typename T>
+		template <typename T>
 		void Set(const std::string &name, const T &val);
 
-		void SetTexture(const std::string& name, const Ref<Texture> &texture, uint32_t mip = 0);
+		void SetTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip = 0);
 
 		Ref<IMaterialBackendInterface> GetNative() const override { return mBackendMaterial; }
 
@@ -60,15 +80,20 @@ namespace BHive
 		REFLECTABLEV(Asset)
 
 	private:
-		void BuildSlotsForPipeline(Pipeline* pipeline);
+		void BuildSlotsForPipeline(Pipeline *pipeline);
+
+		void UpdatePipeline();
 
 	protected:
+		EShadingModel mShadingModel;
+
+		ESurfaceType mSurfaceType;
 
 		std::unordered_map<std::string, TextureSlot> mUserTextureSlots;
 
-		std::unordered_map<Pipeline*, TextureSlotMap> mSlotsPerPipeline;
+		std::unordered_map<Pipeline *, TextureSlotMap> mSlotsPerPipeline;
 
-		Pipeline* mPipeline = nullptr;
+		Pipeline *mPipeline = nullptr;
 
 		Ref<IMaterialBackendInterface> mBackendMaterial;
 

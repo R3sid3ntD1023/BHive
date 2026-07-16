@@ -20,7 +20,7 @@ namespace BHive
 		BuildSlotsForPipeline(pipeline);
 	}
 
-	void Material::SetTexture(const std::string& name, const Ref<Texture> &texture, uint32_t mip)
+	void Material::SetTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip)
 	{
 		const auto &set = mBackendMaterial->GetTargetSet();
 		const auto &samplers = set.Samplers;
@@ -33,7 +33,7 @@ namespace BHive
 		auto slot = TextureSlot{texture, mip};
 		auto &bindingInfo = samplers.at(name);
 
-		for (auto& [pipeline, slots] : mSlotsPerPipeline)
+		for (auto &[pipeline, slots] : mSlotsPerPipeline)
 		{
 			if (slots.contains(name))
 			{
@@ -47,24 +47,22 @@ namespace BHive
 				}
 			}
 		}
-		
 	}
 
-	
 	void Material::Submit(Pipeline *pipeline)
 	{
 		auto p = pipeline ? pipeline : mPipeline;
 
 		auto &slots = mSlotsPerPipeline[p];
-		for (auto& [name, slot] : slots)
+		for (auto &[name, slot] : slots)
 		{
 			auto res = Renderer::Get().GetGlobalResources().Find("White");
-			auto tex = slot.Texture ? slot.Texture  : res->TextureRef;
+			auto tex = slot.Texture ? slot.Texture : res->TextureRef;
 			mBackendMaterial->BindTexture(name, tex, slot.MipLevel, p);
 		}
 	}
 
-	void Material::BuildSlotsForPipeline(Pipeline* pipeline)
+	void Material::BuildSlotsForPipeline(Pipeline *pipeline)
 	{
 		TextureSlotMap slots;
 
@@ -75,6 +73,26 @@ namespace BHive
 		}
 
 		mSlotsPerPipeline[pipeline] = std::move(slots);
+	}
+
+	void Material::UpdatePipeline()
+	{
+		std::string pipelineName;
+
+		switch (mShadingModel)
+		{
+		case EShadingModel::Lambert:
+			pipelineName = (mSurfaceType == ESurfaceType::Transparent) ? "LAMBERT_TRANSPARENT" : "LAMBERT_OPAQUE";
+			break;
+		case EShadingModel::Standard:
+			pipelineName = (mSurfaceType == ESurfaceType::Transparent) ? "STANDARD_TRANSPARENT" : "STANDARD_OPAQUE";
+			break;
+		case EShadingModel::Emissive:
+			pipelineName = "EMISSIVE_ADDITIVE";
+			break;
+		}
+
+		SetPipeline(PipelineRegistry::Get(pipelineName));
 	}
 
 	void Material::Save(cereal::BinaryOutputArchive &ar) const
