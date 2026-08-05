@@ -23,6 +23,14 @@ namespace BHive
 			memcpy(Data.data(), &value, Size);
 		}
 
+		/*template <>
+		explicit MaterialParam(const glm::vec3 &value)
+		{
+			Size = 12ull;
+			Data.resize(16);
+			memcpy(Data.data(), &value, Size);
+		}*/
+
 		template <typename Ar>
 		void Serialize(Ar &ar)
 		{

@@ -45,7 +45,7 @@ namespace BHive
 
 	void VulkanShader::BindPushConstants(vk::CommandBuffer cmd, vk::ShaderStageFlags stage, const void *data, uint32_t size, uint32_t offset)
 	{
-		vk::PushConstantsInfo info(mPipelineLayout, stage, offset, size, reinterpret_cast<const std::byte *>(data) + offset);
+		vk::PushConstantsInfo info(mPipelineLayout, stage, offset, size, data);
 		cmd.pushConstants2(info);
 	}
 

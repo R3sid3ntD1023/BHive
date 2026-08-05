@@ -200,7 +200,7 @@ namespace BHive
 
 		for (auto &pc : snap.mReflection->PushConstants)
 		{
-			shader->BindPushConstants(cmd, ToVkShaderStageBit(pc.Stages), snap.PushConstantData.data(), (uint32_t)pc.Size, pc.Offset);
+			shader->BindPushConstants(cmd, ToVkShaderStageBit(pc.Stages), snap.PushConstantData.data() + pc.Offset, (uint32_t)pc.Size, pc.Offset);
 		}
 	}
 

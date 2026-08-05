@@ -97,7 +97,13 @@ namespace BHive
 
 	Pipeline *PipelineRegistry::Get(const std::string &name)
 	{
-		auto &entry = mRegistry[name];
+		if (!mRegistry.contains(name))
+		{
+			ASSERT(false)
+			return nullptr;
+		}
+
+		auto &entry = mRegistry.at(name);
 		if (!entry.PipelineRef)
 		{
 			entry.PipelineRef = Pipeline::Create();

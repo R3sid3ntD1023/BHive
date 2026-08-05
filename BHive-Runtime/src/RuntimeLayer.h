@@ -50,8 +50,6 @@ namespace BHive
 		PostProcessAllocator mPostProcessAllocator;
 		PostProcessStack mPostProcessStack;
 		Ref<class Texture> mFinalSceneColor;
-		Ref<class BloomMaterial> mBloomMaterial;
-		Ref<class ColorGradingMaterial> mColorGrading;
 
 		glm::uvec2 mViewportSize{0, 0};
 	};

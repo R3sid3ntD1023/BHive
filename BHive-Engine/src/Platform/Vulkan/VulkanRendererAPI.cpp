@@ -172,11 +172,16 @@ namespace BHive
 	{
 		// LOG_TRACE("Pass: {}", pass.Name);
 
+		auto &cmd = ctx.CommandBuffer;
+
+		vk::DebugUtilsLabelEXT label(pass.Name.c_str(), {1.0f, .5f, 0.0f, 1.0f});
+		cmd.beginDebugUtilsLabelEXT(label);
+
 		for (auto &phase : pass.Phases)
 		{
 			// LOG_TRACE("\tPhase {}", phase.Name);
 
-			TransitionImages(phase, ctx.CommandBuffer);
+			TransitionImages(phase, cmd);
 
 			if (phase.Type == EPhaseType::Graphics)
 			{
@@ -197,6 +202,8 @@ namespace BHive
 					TransitionSwapChainToPresent(ctx, swapChain);
 			}
 		}
+
+		cmd.endDebugUtilsLabelEXT();
 	}
 
 	void VulkanRendererAPI::TransitionImages(const FPhase &phase, vk::raii::CommandBuffer &cmd)

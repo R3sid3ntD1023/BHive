@@ -148,16 +148,9 @@ namespace BHive
 		spLight0.SetColor(FColor::Red).SetIntensity(3.f).SetDirection({0, -1, 0}).SetPosition({}).SetRadius(5.f).SetInnerAngleDegrees(45.f).SetOuterAngleDegrees(75.f);
 
 		// post process
-
-		auto aces = CreateRef<AcesMaterial>();
-
-		mBloomMaterial = CreateRef<BloomMaterial>();
-
-		mColorGrading = CreateRef<ColorGradingMaterial>();
-
-		mPostProcessStack.Materials.push_back(mBloomMaterial);
-		mPostProcessStack.Materials.push_back(aces);
-		// mPostProcessStack.Materials.push_back(mColorGrading);
+		mPostProcessStack.Add<BloomMaterial>("Bloom");
+		mPostProcessStack.Add<AcesMaterial>("Aces");
+		mPostProcessStack.Add<ColorGradingMaterial>("ColorGrading");
 		mPostProcessStack.Resize(window.GetSize(), mPostProcessAllocator);
 	}
 
@@ -185,7 +178,7 @@ namespace BHive
 				mPostProcessStack.Resize(mViewportSize, mPostProcessAllocator);
 				mCamera.Resize(mViewportSize.x, mViewportSize.y);
 
-				IImGuiTextureProvider::Invalidate(*mFramebuffer->GetColorAttachment());
+				IImGuiTextureProvider::Invalidate(*mFinalSceneColor);
 			}
 		}
 
@@ -318,8 +311,8 @@ namespace BHive
 			renderer.EndPass();
 		}
 
-		auto input = mFramebuffer->GetColorAttachment();
-		mFinalSceneColor = mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, input);
+		mFinalSceneColor = mFramebuffer->GetColorAttachment();
+		mFinalSceneColor = mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, mFinalSceneColor);
 #endif
 		ImageDebugger::Get().OnRender(renderer);
 	}
@@ -363,7 +356,7 @@ namespace BHive
 				changed |= inspector.inspect("Exposure", params.Exposure);
 				if (changed)
 				{
-					mBloomMaterial->Params = params;
+					mPostProcessStack.Get<BloomMaterial>("Bloom")->Params = params;
 				}
 			}
 
@@ -376,7 +369,7 @@ namespace BHive
 				changed |= inspector.inspect("Saturation", params.Saturation);
 				if (changed)
 				{
-					mColorGrading->Params = params;
+					mPostProcessStack.Get<ColorGradingMaterial>("ColorGrading")->Params = params;
 				}
 			}
 		}

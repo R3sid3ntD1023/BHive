@@ -295,17 +295,17 @@ namespace BHive
 
 	void SceneRenderer::AddPostProcessMaterial(const Ref<PostProcessMaterial> &mat)
 	{
-		mPostProcessStack.Materials.push_back(mat);
+		// mPostProcessStack.Materials.push_back(mat);
 	}
 
 	void SceneRenderer::RemovePostProcessMaterial(const std::string &name)
 	{
-		std::erase_if(mPostProcessStack.Materials, [name](auto &e) { return e->GetName() == name; });
+		// std::erase_if(mPostProcessStack.Materials, [name](auto &e) { return e->GetName() == name; });
 	}
 
 	void SceneRenderer::ClearPostProcessEffects()
 	{
-		mPostProcessStack.Materials.clear();
+		// mPostProcessStack.Materials.clear();
 	}
 
 	bool SceneRenderer::IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform)
