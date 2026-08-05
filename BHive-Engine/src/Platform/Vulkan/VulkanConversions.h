@@ -1,4 +1,4 @@
-	#pragma once
+#pragma once
 
 #include "VulkanCore.h"
 #include "gfx/Enumerations.h"
@@ -330,7 +330,6 @@ namespace BHive
 	{
 		switch (a)
 		{
-;
 		case BHive::EBufferAccess::TransferWrite:
 		case BHive::EBufferAccess::TransferRead:
 			return vk::PipelineStageFlagBits2::eTransfer;
@@ -357,7 +356,7 @@ namespace BHive
 		case BHive::EBufferAccess::TransferWrite:
 			return vk::AccessFlagBits2::eTransferWrite;
 		case BHive::EBufferAccess::TransferRead:
-			return vk::AccessFlagBits2::eTransferRead;		
+			return vk::AccessFlagBits2::eTransferRead;
 		case BHive::EBufferAccess::VertexRead:
 			return vk::AccessFlagBits2::eVertexAttributeRead;
 		case BHive::EBufferAccess::IndexRead:
@@ -374,4 +373,4 @@ namespace BHive
 			return vk::AccessFlagBits2::eNone;
 		}
 	}
-}
+} // namespace BHive

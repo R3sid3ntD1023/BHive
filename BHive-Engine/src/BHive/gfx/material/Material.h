@@ -5,37 +5,16 @@
 #include "gfx/Color.h"
 #include "gfx/Texture.h"
 #include "BackendMaterial.h"
+#include "gfx/shader/ShaderProgram.h"
+#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
-	class Pipeline;
 	class Texture;
-
-	struct TextureSlot
-	{
-		Ref<Texture> Texture;
-
-		uint32_t MipLevel = 0;
-
-		template <typename A>
-		void Serialize(A &ar)
-		{
-			ar(TAssetHandle(Texture));
-		};
-	};
-
-	using TextureSlotMap = std::unordered_map<std::string, TextureSlot>;
 
 	class BHIVE_API Material : public Asset, public IMaterial
 	{
 	public:
-		enum class EShadingModel : uint8_t
-		{
-			Lambert,
-			Emissive,
-			Standard
-		};
-
 		enum class ESurfaceType : uint8_t
 		{
 			Opaque,
@@ -50,13 +29,9 @@ namespace BHive
 		};
 
 	public:
-		Material() = default;
+		Material(const Ref<ShaderProgram> &program);
 
 		virtual ~Material() = default;
-
-		void SetPipeline(Pipeline *pipeline);
-
-		virtual void Submit(Pipeline *pipeline = nullptr);
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
@@ -66,45 +41,34 @@ namespace BHive
 
 		virtual bool ShouldCastShadows() const { return true; }
 
-		template <typename T>
-		void Set(const std::string &name, const T &val);
+		IMaterial &SetParam(const std::string &name, const MaterialParam &param) & override;
 
-		void SetTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip = 0);
+		IMaterial &SetTexture(const std::string &name, const FTextureBinding &texture) & override;
 
 		Ref<IMaterialBackendInterface> GetNative() const override { return mBackendMaterial; }
 
-		MaterialSnapshot CreateSnapshot() const override { return mBackendMaterial->CreateSnapshot(); }
+		MaterialSnapshot CreateSnapshot() const override;
 
-		Pipeline *GetPipeline() const override { return mPipeline; }
+		Ref<ShaderProgram> GetProgram() const override { return mProgram; }
 
 		REFLECTABLEV(Asset)
 
 	private:
-		void BuildSlotsForPipeline(Pipeline *pipeline);
-
-		void UpdatePipeline();
+		void InitFromReflection();
 
 	protected:
-		EShadingModel mShadingModel;
+		Ref<ShaderProgram> mProgram;
 
-		ESurfaceType mSurfaceType;
+		ESurfaceType mSurfaceType = ESurfaceType::Opaque;
 
-		std::unordered_map<std::string, TextureSlot> mUserTextureSlots;
+		std::unordered_map<std::string, FTextureBinding> mTextures;
 
-		std::unordered_map<Pipeline *, TextureSlotMap> mSlotsPerPipeline;
+		std::unordered_map<std::string, MaterialParam> mParams;
 
-		Pipeline *mPipeline = nullptr;
-
-		Ref<IMaterialBackendInterface> mBackendMaterial;
+		mutable Ref<IMaterialBackendInterface> mBackendMaterial;
 
 	private:
 	};
-
-	template <typename T>
-	inline void Material::Set(const std::string &name, const T &val)
-	{
-		mBackendMaterial->Set(name, &val, sizeof(T));
-	}
 
 	REFLECT_EXTERN(Material);
 

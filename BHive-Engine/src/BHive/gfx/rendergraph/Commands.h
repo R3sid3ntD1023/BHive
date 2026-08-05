@@ -16,11 +16,11 @@ namespace BHive
 	class VertexArray;
 
 	/*
-	* @param r
-	* @param g
-	* @param b
-	* @param a
-	*/
+	 * @param r
+	 * @param g
+	 * @param b
+	 * @param a
+	 */
 	struct CmdSetClearColor : FCommand
 	{
 		float R, G, B, A;
@@ -45,11 +45,11 @@ namespace BHive
 	};
 
 	/*
-	* @param X
-	* @param Y
-	* @param Width
-	* @param height
-	*/
+	 * @param X
+	 * @param Y
+	 * @param Width
+	 * @param height
+	 */
 	struct CmdSetViewport : FCommand
 	{
 		int32_t X, Y;
@@ -70,9 +70,10 @@ namespace BHive
 	{
 		Ref<Texture> Tex;
 
-		CmdGenerateMipMaps(const Ref<Texture>& texture)
+		CmdGenerateMipMaps(const Ref<Texture> &texture)
 			: Tex(texture)
-		{}
+		{
+		}
 
 		ECommandType GetType() const override { return ECommandType::GenerateMipMaps; }
 	};
@@ -85,7 +86,8 @@ namespace BHive
 			: X(x),
 			  Y(y),
 			  Z(z)
-		{}
+		{
+		}
 
 		ECommandType GetType() const override { return ECommandType::Dispatch; }
 	};
@@ -102,40 +104,38 @@ namespace BHive
 		ECommandType GetType() const override { return ECommandType::ImGuiRender; }
 	};
 
-
-	struct CmdDrawFullScreen :FCommand
+	struct CmdDrawFullScreen : FCommand
 	{
 		CmdDrawFullScreen() {}
 
 		ECommandType GetType() const override { return ECommandType::DrawFullScreen; }
 	};
 
-
 	struct CmdBindPipeline : FCommand
 	{
-		Ref<Pipeline> PipelineRef;
+		Pipeline *PipelineRef;
 
-		CmdBindPipeline(Ref<Pipeline> pipeline)
+		CmdBindPipeline(Pipeline *pipeline)
 			: PipelineRef(pipeline)
 		{
 		}
-		
+
 		ECommandType GetType() const override { return ECommandType::BindPipeline; }
 	};
 
 	/*
-	* @param const IMaterial*, const Ref<IMaterial>&
-	* @param Pipeline*
-	*/
+	 * @param const IMaterial*, const Ref<IMaterial>&
+	 * @param Pipeline*
+	 */
 	struct CmdBindMaterial : FCommand
 	{
 		MaterialSnapshot Snapshot;
 
-		Pipeline* PipelineRef;
+		bool BreakPoint = false;
 
-		CmdBindMaterial(const IMaterial* mat)
-			: Snapshot(mat->GetNative()->CreateSnapshot()),
-			  PipelineRef(mat->GetPipeline())
+		CmdBindMaterial(const IMaterial *mat, bool breakPoint = false)
+			: Snapshot(mat->CreateSnapshot()),
+			  BreakPoint(breakPoint)
 		{
 		}
 
@@ -154,16 +154,15 @@ namespace BHive
 		ECommandType GetType() const override { return ECommandType::SetGlobalTopology; }
 	};
 
-
 	struct CmdUploadBuffer : FCommand
 	{
-		BufferBase* Buffer;
+		BufferBase *Buffer;
 
 		Ref<std::vector<std::byte>> Data;
 
 		uint32_t Offset;
 
-		CmdUploadBuffer(BufferBase* buffer, const void* data, size_t size, uint32_t offset = 0)
+		CmdUploadBuffer(BufferBase *buffer, const void *data, size_t size, uint32_t offset = 0)
 			: Buffer(buffer),
 			  Offset(offset)
 
@@ -179,12 +178,14 @@ namespace BHive
 	{
 		ETopologyMode Mode;
 
-		VertexArray* VAO;
+		VertexArray *VAO;
 
 		uint32_t Count;
 
-		CmdDraw(ETopologyMode mode, VertexArray* vao, uint32_t count)
-			:Mode(mode), VAO(vao), Count(count)
+		CmdDraw(ETopologyMode mode, VertexArray *vao, uint32_t count)
+			: Mode(mode),
+			  VAO(vao),
+			  Count(count)
 		{
 		}
 
@@ -199,10 +200,10 @@ namespace BHive
 
 		uint32_t Count;
 
-		CmdDrawIndexed(ETopologyMode mode, VertexArray *vao, uint32_t count) 
-		:	Mode(mode),
-			VAO(vao),
-			Count(count)
+		CmdDrawIndexed(ETopologyMode mode, VertexArray *vao, uint32_t count)
+			: Mode(mode),
+			  VAO(vao),
+			  Count(count)
 		{
 		}
 
@@ -213,12 +214,12 @@ namespace BHive
 	{
 		ETopologyMode Mode;
 		BufferBase *Buffer;
-		VertexArray *VAO; 
+		VertexArray *VAO;
 		uint32_t DrawCount = 1;
 		uint64_t Stride = 0;
 		uint32_t Offset = 0;
 
-		CmdMultiDrawIndexedIndirect(ETopologyMode mode, BufferBase *buffer, VertexArray *vao, uint32_t drawCount, uint64_t stride = 0, uint32_t offset = 0) 
+		CmdMultiDrawIndexedIndirect(ETopologyMode mode, BufferBase *buffer, VertexArray *vao, uint32_t drawCount, uint64_t stride = 0, uint32_t offset = 0)
 			: Mode(mode),
 			  Buffer(buffer),
 			  VAO(vao),
@@ -237,9 +238,9 @@ namespace BHive
 
 		CmdSetLineWidth(float width)
 			: Width(width)
-		{	
+		{
 		}
 
 		ECommandType GetType() const override { return ECommandType::SetLineWidth; }
 	};
-}
+} // namespace BHive

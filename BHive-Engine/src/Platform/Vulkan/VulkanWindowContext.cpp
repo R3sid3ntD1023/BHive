@@ -29,7 +29,6 @@ namespace BHive
 		VulkanBackend::Get().Init(mWindowHandle);
 	}
 
-
 	void VulkanWindowContext::SwapBuffers()
 	{
 		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
@@ -78,7 +77,7 @@ namespace BHive
 		mPendingWidth = e.x;
 		mPendingHeight = e.y;
 		mLastResizeTime = std::chrono::steady_clock::now();
-		
+
 		return false;
 	}
 

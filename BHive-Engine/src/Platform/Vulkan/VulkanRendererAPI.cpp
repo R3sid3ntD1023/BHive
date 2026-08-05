@@ -121,6 +121,8 @@ namespace BHive
 
 		swapChain->WaitForFence(current_frame);
 
+		mDescriptorPoolManager.ResetFrame(mCompletedFrame);
+
 		ProcessDeletionQueue(mCompletedFrame);
 
 		cmd.reset();
@@ -130,9 +132,7 @@ namespace BHive
 		if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
 			return result;
 
-		mDescriptorPoolManager.ResetFrame(current_frame);
-
-		FVulkanRendererContext vk_ctx{cmd, current_frame, imageIndex, 0};
+		auto vk_ctx = BuildContext(cmd, current_frame, imageIndex, 0);
 
 		vk::CommandBufferBeginInfo beginInfo{};
 		cmd.begin(beginInfo);
@@ -186,7 +186,8 @@ namespace BHive
 					BeginOffScreenRendering(pass, phase, ctx);
 			}
 
-			ExecuteCommandList(phase.CommandList, ctx);
+			auto numAtatchments = phase.FBO ? phase.FBO->GetNumColorAttachments() : 0;
+			ExecuteCommandList(phase.CommandList, ctx, numAtatchments);
 
 			if (phase.Type == EPhaseType::Graphics)
 			{
@@ -221,9 +222,9 @@ namespace BHive
 		}
 	}
 
-	void VulkanRendererAPI::ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx)
+	void VulkanRendererAPI::ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx, uint32_t numAttachments)
 	{
-		VulkanCommandTranslator::ExecuteCommandList(list, ctx);
+		VulkanCommandTranslator::ExecuteCommandList(list, ctx, numAttachments);
 	}
 
 	void VulkanRendererAPI::BeginSwapChainRendering(const FPhase &phase, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
@@ -315,8 +316,11 @@ namespace BHive
 			vk::Viewport viewport(0.f, (float)mipSize.y, (float)mipSize.x, -(float)mipSize.y, 0.0f, 1.0f);
 			vk::Rect2D scissor({0, 0}, {mipSize.x, mipSize.y});
 
-			cmd.setViewport(0, viewport);
-			cmd.setScissor(0, scissor);
+			// cmd.setViewport(0, viewport);
+			// cmd.setScissor(0, scissor);
+
+			cmd.setViewportWithCount(viewport);
+			cmd.setScissorWithCount(scissor);
 		}
 	}
 
@@ -344,6 +348,14 @@ namespace BHive
 			del.Fn(0);
 			mDeletionQueue.erase(mDeletionQueue.begin());
 		}
+	}
+
+	FVulkanRendererContext VulkanRendererAPI::BuildContext(vk::raii::CommandBuffer &cmd, uint32_t frame, uint32_t imageIndex, uint32_t viewIndex)
+	{
+		FVulkanRendererContext ctx(cmd, frame, imageIndex, viewIndex);
+		ctx.ModelBuffer = Renderer::Get().GetModelBuffer();
+
+		return ctx;
 	}
 
 	void VulkanRendererAPI::SetCurrentContext(WindowContext *ctx)

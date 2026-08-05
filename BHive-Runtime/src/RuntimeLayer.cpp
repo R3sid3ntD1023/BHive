@@ -32,11 +32,6 @@ namespace BHive
 {
 	FTransform transform{{6.f, 0.f, 0.f}};
 
-	struct FPerObjectData
-	{
-		glm::mat4 WorldMatrix = {1.0f};
-	};
-
 	const uint32_t objectCount = 3;
 
 	static DirectionalLight mainLight;
@@ -111,58 +106,16 @@ namespace BHive
 
 			mMultiDrawIndirectBuffer = GeneralBuffer::Create(sizeof(MultiDrawIndirectCommand) * commands.size(), EBufferType::IndirectBuffer);
 			mMultiDrawIndirectBuffer->SetData(commands.data(), sizeof(MultiDrawIndirectCommand) * commands.size());
-			mModelBuffer = GeneralBuffer::Create(sizeof(FPerObjectData) * commands.size(), EBufferType::StorageBuffer);
 		}
 
-		// create pipelines
-		{
-			auto state = Pipeline::GetDefaultGraphicsPipelineState();
-			state.ShaderProgram = ShaderManager::Get("LambertMaterial.glsl");
-			PipelineRegistry::Register("Lambert", state);
+		mEmissiveMaterial = CreateRef<EmissiveMaterial>();
+		mEmissiveMaterial->SetEmissionColor(FColor(1.0f, 0.0f, 0.0f, 10.0f));
 
-			state.ShaderProgram = ShaderManager::Get("StandardMaterial.glsl");
-			PipelineRegistry::Register("Standard", state);
+		mLambertMaterial = CreateRef<LambertMaterial>();
+		mLambertMaterial->SetDiffuseColor(FColor::LightGray).SetEmissionColor(FColor::Black);
 
-			state.ShaderProgram = ShaderManager::Get("EmissiveMaterial.glsl");
-			PipelineRegistry::Register("Emissive", state);
-		}
-
-		{
-			auto pipeline = PipelineRegistry::Get("Emissive");
-			auto objectBindingGroup = pipeline->GetOrCreateBindingGroup(3);
-			objectBindingGroup->SetBuffer(0, mModelBuffer);
-			mEmissiveMaterial = CreateRef<EmissiveMaterial>();
-			mEmissiveMaterial->SetPipeline(pipeline);
-			mEmissiveMaterial->EmissionColor = FColor::Red;
-			mEmissiveMaterial->EmissionColor.a = 10.0f;
-			mEmissiveMaterial->Submit();
-		}
-
-		{
-			auto pipeline = PipelineRegistry::Get("Lambert");
-			auto objectBindingGroup = pipeline->GetOrCreateBindingGroup(3);
-			objectBindingGroup->SetBuffer(0, mModelBuffer);
-
-			mLambertMaterial = CreateRef<LambertMaterial>();
-			mLambertMaterial->SetPipeline(pipeline);
-			mLambertMaterial->DiffuseColor = FColor::LightGray;
-			mLambertMaterial->EmissionColor = {0.f, .0f, .0f};
-			mLambertMaterial->Submit();
-		}
-
-		{
-			auto pipeline = PipelineRegistry::Get("Standard");
-			auto objectBindingGroup = pipeline->GetOrCreateBindingGroup(3);
-			objectBindingGroup->SetBuffer(0, mModelBuffer);
-
-			mStandardMaterial = CreateRef<StandardMaterial>();
-			mStandardMaterial->SetPipeline(pipeline);
-			mStandardMaterial->Albedo = FColor::White;
-			mStandardMaterial->Emission = {0.f, .0f, .0f};
-			mStandardMaterial->Metallic = 1.0f;
-			mStandardMaterial->Roughness = 0.5f;
-			mStandardMaterial->Submit();
-		}
+		mStandardMaterial = CreateRef<StandardMaterial>();
+		mStandardMaterial->SetAlbedo(FColor::White).SetEmission(FColor::Black).SetMetalness(1.0f).SetRoughness(0.5f);
 
 		auto &window = app.GetWindow();
 		auto aspect = window.GetAspectRatio();
@@ -202,10 +155,10 @@ namespace BHive
 
 		mColorGrading = CreateRef<ColorGradingMaterial>();
 
-		mPostProcessAllocator.Resize(window.GetSize());
 		mPostProcessStack.Materials.push_back(mBloomMaterial);
 		mPostProcessStack.Materials.push_back(aces);
-		mPostProcessStack.Materials.push_back(mColorGrading);
+		// mPostProcessStack.Materials.push_back(mColorGrading);
+		mPostProcessStack.Resize(window.GetSize(), mPostProcessAllocator);
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -229,7 +182,7 @@ namespace BHive
 			if (mViewportSize != fbSize && mViewportSize.x > 0 && mViewportSize.y > 0)
 			{
 				mFramebuffer->Resize(mViewportSize);
-				mPostProcessAllocator.Resize(mViewportSize);
+				mPostProcessStack.Resize(mViewportSize, mPostProcessAllocator);
 				mCamera.Resize(mViewportSize.x, mViewportSize.y);
 
 				IImGuiTextureProvider::Invalidate(*mFramebuffer->GetColorAttachment());
@@ -252,7 +205,7 @@ namespace BHive
 			transforms[3].WorldMatrix = FTransform({-4, 1, 0});
 			transforms[4].WorldMatrix = FTransform({0, 1, 0});
 			transforms[5].WorldMatrix = FTransform({0, 0, 0});
-			mModelBuffer->SetData(transforms.data(), sizeof(FPerObjectData) * transforms.size());
+			renderer.SetPerObjectData(transforms.data(), transforms.size());
 		}
 
 		auto &globalsResources = Renderer::Get().GetGlobalResources();
@@ -273,6 +226,9 @@ namespace BHive
 
 			scenePass.Push(view);
 			scenePass.Push(mFramebuffer);
+
+			scenePass.Emplace<CmdSetClearColor>()(.1f, .1f, .1f, 1.f);
+			scenePass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("MESH_OPAQUE"));
 
 			const auto stride = sizeof(MultiDrawIndirectCommand);
 			if (mMesh)
@@ -465,19 +421,15 @@ namespace BHive
 					auto env_prefilter = globalsResources.Find("EnvironmentPreFilter")->TextureRef;
 					auto env_cube = globalsResources.Find("EnvironmentCubeMap")->TextureRef;
 					auto env_irradiance = globalsResources.Find("EnvironmentIrradiance")->TextureRef;
-					auto pipeline = PipelineRegistry::Get("Standard");
-					auto globalBindings = pipeline->GetOrCreateBindingGroup(0);
 
 					if (env_prefilter)
 					{
 						dbg.RegisterTexture("PreFilterEnv", env_prefilter);
-						globalBindings->SetTexture(3, env_prefilter);
 					}
 
 					if (env_irradiance)
 					{
 						dbg.RegisterTexture("Irradiance", env_irradiance);
-						globalBindings->SetTexture(4, env_irradiance);
 					}
 
 					if (env_cube)

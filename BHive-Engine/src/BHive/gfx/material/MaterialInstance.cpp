@@ -8,48 +8,51 @@ namespace BHive
 	{
 	}
 
-	void MaterialInstance::Set(const std::string &name, const Ref<Texture> &tex, uint32_t mip)
+	IMaterial &MaterialInstance::SetParam(const std::string &name, const MaterialParam &val) &
 	{
-		mTextureOverrides[name] = {tex, mip};
+		mUniformOverrides[name] = val;
+		return *this;
+	}
+
+	IMaterial &MaterialInstance::SetTexture(const std::string &name, const FTextureBinding &texture) &
+	{
+		mTextureOverrides[name] = texture;
+		return *this;
 	}
 
 	MaterialSnapshot MaterialInstance::CreateSnapshot() const
 	{
-		mParent->Submit();
 		auto base = mParent->CreateSnapshot();
+		auto refl = base.mReflection;
 
-		for (auto& [name, slot] : mTextureOverrides)
+		for (auto &[name, slot] : mTextureOverrides)
 		{
 			if (base.Textures.contains(name))
-				base.Textures.at(name).Texture = slot.Texture;
+			{
+				if (auto sampler = refl->FindSampler(name, 1))
+					base.Textures[name] = {slot.TextureRef, sampler->Binding, slot.BaseMipLevel, slot.BaseArrayLayer};
+			}
 		}
 
 		if (!mUniformOverrides.empty())
 		{
-			auto refl = mParent->GetNative()->GetRefl();
-			auto& pc = refl->PushConstants;
 
-			for (auto& [name, data] : mUniformOverrides)
+			auto &pc = refl->PushConstants;
+
+			for (auto &[name, data] : mUniformOverrides)
 			{
-				for (auto& p : pc)
+				for (auto &p : pc)
 				{
 					if (p.Members.contains(name))
 					{
 						auto &u = p.Members.at(name);
-						memcpy(base.PushConstantData.data() + u.Offset, data.data(), data.size());
+						memcpy(base.PushConstantData.data() + u.Offset, data.Data.data(), data.Size);
 					}
 				}
-
 			}
 		}
 
 		return base;
 	}
 
-	void MaterialInstance::Set(const std::string &name, const void *data, size_t size)
-	{
-		std::vector<std::byte> buf(size);
-		memcpy(buf.data(), data, size);
-		mUniformOverrides[name] = std::move(buf);
-	}
 } // namespace BHive

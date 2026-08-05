@@ -2,10 +2,11 @@
 
 #include "gfx/Shader.h"
 #include "ShaderAsset.h"
+#include "gfx/NativeHandle.h"
 
 namespace BHive
 {
-	class BHIVE_API ShaderProgram : public Shader
+	class BHIVE_API ShaderProgram : public Shader, public INativeObject
 	{
 	public:
 		ShaderProgram(const Ref<ShaderAsset> &asset);
@@ -22,7 +23,13 @@ namespace BHive
 
 		Ref<ShaderAsset> GetAssetRef() const { return mAsset; }
 
+		const ResourceID &GetResourceID() const override { return mResourceID; }
+
+		static Ref<ShaderProgram> Create(const Ref<ShaderAsset> &asset);
+
 	private:
 		Ref<ShaderAsset> mAsset;
+
+		ResourceID mResourceID;
 	};
-}
+} // namespace BHive

@@ -9,9 +9,22 @@ namespace BHive
 	public:
 		std::vector<Ref<PostProcessMaterial>> Materials;
 
-		Ref<Texture> Build(RenderGraph &graph, PostProcessAllocator& allocator, Ref<Texture> input)
+		void Resize(const glm::uvec2 &size, PostProcessAllocator &allocator)
 		{
-			for (auto& mat : Materials)
+			allocator.Resize(size);
+
+			for (auto &mat : Materials)
+			{
+				if (!mat)
+					continue;
+
+				mat->OnResize(size, allocator);
+			}
+		}
+
+		Ref<Texture> Build(RenderGraph &graph, PostProcessAllocator &allocator, Ref<Texture> input)
+		{
+			for (auto &mat : Materials)
 			{
 				if (!mat)
 					continue;
@@ -22,4 +35,4 @@ namespace BHive
 			return input;
 		}
 	};
-}
+} // namespace BHive

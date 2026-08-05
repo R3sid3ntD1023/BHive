@@ -14,6 +14,8 @@ namespace BHive
 
 		Ref<Texture> AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input) override;
 
+		void OnResize(const glm::uvec2 &size, PostProcessAllocator &allocator) override;
+
 		const char *GetName() const override { return "Bloom"; }
 
 		struct FBloomParams

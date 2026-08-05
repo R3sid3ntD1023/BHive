@@ -38,7 +38,6 @@ namespace BHive
 		Ref<class Framebuffer> mFramebuffer;
 		Ref<class GeneralBuffer> mMultiDrawIndirectBuffer;
 		EditorCamera mCamera;
-		Ref<GeneralBuffer> mModelBuffer = nullptr;
 
 		Ref<PSphere> mSphere;
 		Ref<PPlane> mPlane;

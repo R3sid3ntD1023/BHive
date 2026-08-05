@@ -6,26 +6,17 @@
 #include "VulkanRendererAPI.h"
 #include "gfx/RenderCommand.h"
 #include "VulkanBuffers.h"
+#include "VulkanShader.h"
 
 namespace BHive
 {
 
-	VulkanBindingGroup::VulkanBindingGroup(vk::Device device, vk::DescriptorSetLayout layout, uint32_t setIndex, const FShaderReflectionLookUp &refl)
-		: mDevice(device),
-		  mLayout(layout),
+	VulkanBindingGroup::VulkanBindingGroup(vk::Device device, VulkanShader *shader, uint32_t setIndex, const FShaderReflectionLookUp &refl)
+		: mShader(shader),
 		  mSetIndex(setIndex)
 	{
 
 		BuildBindings(refl);
-	}
-
-	VulkanBindingGroup::~VulkanBindingGroup()
-	{
-		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
-		auto& pools = api->GetDescriptorPoolManager();
-
-		for (auto &[_, set] : mMaterialCache)
-			mDevice.freeDescriptorSets(pools.GetPool(mSetIndex, 0), set);
 	}
 
 	void VulkanBindingGroup::SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer)
@@ -43,21 +34,6 @@ namespace BHive
 			info->Texture = texture;
 			info->MipLevel = mip;
 		}
-
-	}
-
-	vk::DescriptorSet VulkanBindingGroup::GetOrCreateMaterialSet()
-	{
-		MaterialKey key = BuildMaterialKey();
-
-		if (auto it = mMaterialCache.find(key); it != mMaterialCache.end())
-			return it->second;
-
-		auto set = AllocateMaterialSets();
-		WriteDescriptorSet(set);
-
-		auto it = mMaterialCache.emplace(std::move(key), std::move(set));
-		return it.first->second;
 	}
 
 	void VulkanBindingGroup::BuildBindings(const FShaderReflectionLookUp &refl)
@@ -73,7 +49,6 @@ namespace BHive
 			info.Category = GetCategory(r.kind);
 			info.UpdateRate = InferUpdateRate(r.kind, mSetIndex);
 			mBindings.push_back(info);
-
 		}
 	}
 
@@ -99,36 +74,28 @@ namespace BHive
 		}
 	}
 
-	vk::DescriptorSet VulkanBindingGroup::Update(uint32_t frame)
+	vk::raii::DescriptorSet VulkanBindingGroup::Update(uint32_t frame)
 	{
 		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
-		auto& pools = api->GetDescriptorPoolManager();
-
+		auto &pools = api->GetDescriptorPoolManager();
 		auto pool = pools.GetPool(mSetIndex, frame);
-		vk::DescriptorSetAllocateInfo allocInfo(pool, mLayout);
-		auto set = mDevice.allocateDescriptorSets(allocInfo).front();
+		auto &device = VulkanBackend::GetLogicalDevice();
 
-		if (!mDebugName.empty())
-		{
-			auto setName = std::format("{}[{}]", mDebugName, frame);
-			VulkanBackend::SetObjectName(set, setName);
-		}
+		auto layout = mShader->GetDescriptorSetLayout(mSetIndex);
+		vk::DescriptorSetAllocateInfo allocInfo(pool, 1, &layout);
+
+		auto set = std::move(device.allocateDescriptorSets(allocInfo).front());
 
 		WriteDescriptorSet(set);
 		return set;
 	}
 
-	void VulkanBindingGroup::SetDebugName(const std::string &name)
+	vk::DescriptorBufferInfo VulkanBindingGroup::BuildBufferInfo(const FBindingInfo &bindInfo) const
 	{
-		mDebugName = name;
-	}
+		ASSERT(bindInfo.Buffer)
 
-	vk::DescriptorBufferInfo VulkanBindingGroup::BuildBufferInfo(const FBindingInfo &b) const
-	{
-		ASSERT(b.Buffer)
-
-		auto handle = b.Buffer->GetNativeHandle().As<VulkanBuffer>();
-		auto& buf = handle->GetNative();
+		auto handle = bindInfo.Buffer->GetNativeHandle().As<VulkanBuffer>();
+		auto &buf = handle->GetNative();
 		return vk::DescriptorBufferInfo(buf.GetBuffer(), 0, buf.Size);
 	}
 
@@ -146,7 +113,7 @@ namespace BHive
 		auto smp = native.GetSampler();
 		auto defView = native.GetDefaultView();
 		auto view = native.GetView(layer, face, mip);
-		
+
 		switch (bindInfo.Type)
 		{
 		case EResourceType::CombinedImageSampler:
@@ -162,7 +129,7 @@ namespace BHive
 		}
 		case EResourceType::StorageImage:
 		{
-			const auto& usage = native.Usage;
+			const auto &usage = native.Usage;
 			ASSERT(usage & vk::ImageUsageFlagBits::eStorage, "Image is not created with storage usage, cannot be used as a storage image resource -> {}", native.DebugName);
 			return vk::DescriptorImageInfo(nullptr, view, vk::ImageLayout::eGeneral);
 		}
@@ -178,45 +145,14 @@ namespace BHive
 
 	FBindingInfo *VulkanBindingGroup::FindBinding(uint32_t binding)
 	{
-		auto it =  std::find_if(mBindings.begin(), mBindings.end(), [binding](const FBindingInfo &b) { return b.Binding == binding; });
-		return it != mBindings.end() ?  &(*it) : nullptr;
-	}
-
-	VulkanBindingGroup::MaterialKey VulkanBindingGroup::BuildMaterialKey() const
-	{
-		MaterialKey key;
-		key.Resources.reserve(mBindings.size());
-
-		for (auto& b : mBindings)
-		{
-			uint64_t id = 0;
-			if (IsTexture(b.Type) && b.Texture)
-			{
-				auto ptr = reinterpret_cast<uint64_t>(b.Texture.get());
-				auto mip = static_cast<uint64_t>(b.MipLevel);
-				id = (ptr << 8) ^ mip;
-			}
-			else if (IsBuffer(b.Type) && b.Buffer)
-				id = reinterpret_cast<uint64_t>(b.Buffer.get());
-
-			key.Resources.push_back(id);
-		}
-
-		return key;
-	}
-
-	vk::DescriptorSet VulkanBindingGroup::AllocateMaterialSets()
-	{
-		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
-		auto &pools = api->GetDescriptorPoolManager();
-
-		vk::DescriptorSetAllocateInfo allocInfo{pools.GetPool(mSetIndex, 0), 1, &mLayout};
-		auto sets = mDevice.allocateDescriptorSets(allocInfo);
-		return sets.front();
+		auto it = std::find_if(mBindings.begin(), mBindings.end(), [binding](const FBindingInfo &b) { return b.Binding == binding; });
+		return it != mBindings.end() ? &(*it) : nullptr;
 	}
 
 	void VulkanBindingGroup::WriteDescriptorSet(vk::DescriptorSet set)
 	{
+		auto &device = VulkanBackend::GetLogicalDevice();
+
 		std::vector<vk::WriteDescriptorSet> writes;
 		std::vector<vk::DescriptorImageInfo> imageInfos;
 		std::vector<vk::DescriptorBufferInfo> bufferInfos;
@@ -250,8 +186,7 @@ namespace BHive
 
 		if (!writes.empty())
 		{
-			mDevice.updateDescriptorSets(writes, {});
+			device.updateDescriptorSets(writes, {});
 		}
-			
 	}
 } // namespace BHive

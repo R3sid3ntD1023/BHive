@@ -15,96 +15,49 @@
 namespace BHive
 {
 
-	VulkanBackendMaterial::VulkanBackendMaterial()
-		: mDevice(VulkanBackend::GetLogicalDevice())
+	VulkanBackendMaterial::VulkanBackendMaterial(const Ref<ShaderProgram> &program)
+		: mProgram(program)
 	{
-	}
-
-	void VulkanBackendMaterial::Init(Pipeline *pipeline)
-	{
-		auto vkPipeline = Cast<VulkanPipeline>(pipeline);
-		mBindPoint = vkPipeline->GetBindPoint();
-
-		mProgram = Cast<ShaderProgram>(vkPipeline->GetShaderProgram());
-
-		mReflectionMergedPtr = &mProgram->GetMergedRefl();
-		mReflectionLookupTablePtr = &mProgram->GetRefl();
+		auto &mergedRefl = program->GetMergedRefl();
 
 		// init set manager
 
-		if (mReflectionMergedPtr->Sets.contains(MATERIAL_SET_INDEX))
+		if (mergedRefl.Sets.contains(MATERIAL_SET_INDEX))
 		{
-			mTargetSet = mReflectionMergedPtr->Sets.at(MATERIAL_SET_INDEX);
-
-			// create local buffers
-			for (auto &[name, ubo] : mTargetSet.UniformBuffers)
-			{
-
-				mLocalBuffers.emplace(name, GeneralBuffer::Create(ubo.Size, EBufferType::UniformBuffer));
-			}
-
-			for (auto &[name, ssbo] : mTargetSet.StorageBuffers)
-			{
-				mLocalBuffers.emplace(name, GeneralBuffer::Create(ssbo.Size, EBufferType::StorageBuffer));
-			}
+			auto set = mergedRefl.Sets.at(MATERIAL_SET_INDEX);
+			CreateLocalBuffers(set);
 		}
 
-		// create push constant buffer
-		size_t total_size = 0;
-		for (auto &pc : mReflectionMergedPtr->PushConstants)
-			total_size = std::max(total_size, (size_t)pc.Offset + pc.Size);
-
-		mPushConstantData.resize(total_size);
+		CreatePushConstanstData(mergedRefl.PushConstants);
 	}
 
-	void VulkanBackendMaterial::BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip, Pipeline *pipeline)
+	void VulkanBackendMaterial::SetTexture(const std::string &name, const FTextureBinding &texture)
 	{
-		if (!texture)
-			return;
-
-		if (!mTargetSet.Samplers.contains(name))
+		auto &mergedRefl = mProgram->GetMergedRefl();
+		if (auto sampler = mergedRefl.FindSampler(name, MATERIAL_SET_INDEX))
 		{
-			LOG_ERROR("VulkanBackendMaterial::BindTexture - No sampler reflection for name {}", name);
+			MaterialSnapshot::TextureBinding binding{};
+			binding.TextureRef = texture.TextureRef;
+			binding.BaseMipLevel = texture.BaseMipLevel;
+			binding.BaseArrayLayer = texture.BaseArrayLayer;
+			binding.Binding = sampler->Binding;
+			mTextureBindings[name] = binding;
+		}
+	}
+
+	void VulkanBackendMaterial::SetParam(const std::string &name, const MaterialParam &param)
+	{
+		auto &mergedRefl = mProgram->GetMergedRefl();
+
+		if (auto u = mergedRefl.FindPushConstant(name))
+		{
+			memcpy(mPushConstantData.data() + u->Offset, param.Data.data(), param.Size);
 			return;
 		}
 
-		auto &smp = mTargetSet.Samplers.at(name);
-		auto group = Cast<VulkanPipeline>(pipeline)->GetOrCreateBindingGroup(MATERIAL_SET_INDEX);
-		group->SetTexture(smp.Binding, texture, mip);
-
-		mTextureBindings[name] = {smp.Binding, texture, mip};
-	}
-
-	void VulkanBackendMaterial::Set(const std::string &name, const void *data, size_t size)
-	{
-		ASSERT(mReflectionMergedPtr)
-
-		for (auto &pc : mReflectionMergedPtr->PushConstants)
+		if (mLocalBuffers.contains(name))
 		{
-			if (pc.Members.contains(name))
-			{
-				const auto &u = pc.Members.at(name);
-
-				memcpy(mPushConstantData.data() + u.Offset, data, size);
-				return;
-			}
-		}
-
-		for (auto &[ubo_name, ub] : mTargetSet.UniformBuffers)
-		{
-			if (ub.Members.contains(name))
-			{
-				auto &u = ub.Members.at(name);
-				auto &ubo = mLocalBuffers.at(ubo_name);
-				ubo->SetData(data, size, u.Offset);
-				return;
-			}
-		}
-
-		if (mTargetSet.StorageBuffers.contains(name))
-		{
-			auto &ssbo = mLocalBuffers.at(name);
-			ssbo->SetData(data, size);
+			mLocalBuffers[name].BufferRef->SetData(param.Data.data(), param.Size);
 			return;
 		}
 
@@ -113,12 +66,45 @@ namespace BHive
 
 	MaterialSnapshot VulkanBackendMaterial::CreateSnapshot() const
 	{
-		MaterialSnapshot snapshot;
+		MaterialSnapshot snapshot{};
 
 		snapshot.LocalBuffers = mLocalBuffers;
 		snapshot.PushConstantData = mPushConstantData;
 		snapshot.Textures = mTextureBindings;
+		snapshot.Shader = mProgram;
+		snapshot.mReflection = &mProgram->GetMergedRefl();
+		snapshot.ReflectionLookUp = &mProgram->GetRefl();
 
 		return snapshot;
+	}
+
+	void VulkanBackendMaterial::CreateLocalBuffers(const FSetReflection &set)
+	{
+		// create local buffers
+		for (auto &[name, ubo] : set.UniformBuffers)
+		{
+			MaterialSnapshot::BufferBinding binding{};
+			binding.BufferRef = GeneralBuffer::Create(ubo.Size, EBufferType::UniformBuffer);
+			binding.Binding = ubo.Binding;
+			mLocalBuffers.emplace(name, binding);
+		}
+
+		for (auto &[name, ssbo] : set.StorageBuffers)
+		{
+			MaterialSnapshot::BufferBinding binding{};
+			binding.BufferRef = GeneralBuffer::Create(ssbo.Size, EBufferType::StorageBuffer);
+			binding.Binding = ssbo.Binding;
+			mLocalBuffers.emplace(name, binding);
+		}
+	}
+
+	void VulkanBackendMaterial::CreatePushConstanstData(const std::vector<FPushConstantsRange> &ranges)
+	{
+		// create push constant buffer
+		size_t total_size = 0;
+		for (auto &pc : ranges)
+			total_size = std::max(total_size, (size_t)pc.Offset + pc.Size);
+
+		mPushConstantData.resize(total_size);
 	}
 } // namespace BHive

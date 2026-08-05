@@ -1,6 +1,6 @@
 #pragma once
 
-//#define VULKAN_ERRORS_WITH_ASSERT //engine defined macro for debugging
+// #define VULKAN_ERRORS_WITH_ASSERT //engine defined macro for debugging
 #define VK_USE_PLATFORM_WIN32_KHR
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.h>
@@ -21,3 +21,5 @@ namespace BHive
 	static constexpr uint32_t OBJECT_SET_INDEX = 2;
 	static constexpr uint32_t BATCH_SET_INDEX = 3;
 } // namespace BHive
+
+#define VULKAN_ERRORS_WITH_ASSERT 0

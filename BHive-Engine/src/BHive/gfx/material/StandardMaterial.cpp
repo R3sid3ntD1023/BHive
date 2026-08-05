@@ -7,49 +7,88 @@
 
 namespace BHive
 {
-	void StandardMaterial::Submit(Pipeline *pipeline)
+	StandardMaterial &StandardMaterial::SetAlbedo(FColor color)
 	{
-		auto p = pipeline ? pipeline : mPipeline;
-
-		mBackendMaterial->Set("Albedo", Albedo);
-		mBackendMaterial->Set("Emission", Emission);
-		mBackendMaterial->Set("Roughness", Roughness);
-		mBackendMaterial->Set("Metalness", Metallic);
-		mBackendMaterial->Set("Opacity", Opacity);
-		mBackendMaterial->Set("Tiling", Tiling);
-		mBackendMaterial->Set("Flags", (uint32_t)Flags);
-		mBackendMaterial->Set("HasNormalMap", mSlotsPerPipeline.at(p).at("NormalMap").Texture != nullptr);
-
-		Material::Submit(pipeline);
+		mAlbedo = color;
+		SetParam("Albedo", MaterialParam(color));
+		return *this;
 	}
 
-	/*Ref<Shader> StandardMaterial::GetShader() const
+	StandardMaterial &StandardMaterial::SetEmission(FColor color)
 	{
-		static Ref<Shader> shader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/BDRFMaterial.glsl");
-		return shader;
-	}*/
+		mEmission = color;
+		SetParam("Emission", MaterialParam(color));
+		return *this;
+	}
+
+	StandardMaterial &StandardMaterial::SetMetalness(float metalness)
+	{
+		mMetalness = metalness;
+		SetParam("Metalness", MaterialParam(metalness));
+		return *this;
+	}
+
+	StandardMaterial &StandardMaterial::SetRoughness(float roughness)
+	{
+		mRoughness = roughness;
+		SetParam("Roughness", MaterialParam(roughness));
+		return *this;
+	}
+
+	StandardMaterial &StandardMaterial::SetOpacity(float opacity)
+	{
+		mOpacity = opacity;
+		SetParam("Opacity", MaterialParam(opacity));
+		return *this;
+	}
+
+	StandardMaterial &StandardMaterial::SetDepthScale(float depthScale)
+	{
+		mDepthScale = depthScale;
+		// SetParam("DepthScale", MaterialParam(depthScale));
+		return *this;
+	}
+
+	StandardMaterial &StandardMaterial::SetTiling(glm::vec2 tiling)
+	{
+		mTiling = tiling;
+		SetParam("Tiling", MaterialParam(tiling));
+		return *this;
+	}
+
+	StandardMaterial &StandardMaterial::SetFlags(EFlags flags)
+	{
+		mFlags = flags;
+		SetParam("Flags", MaterialParam((uint32_t)flags));
+		return *this;
+	}
+
+	IMaterial &StandardMaterial::SetTexture(const std::string &name, const FTextureBinding &texture) &
+	{
+		Material::SetTexture(name, texture);
+		if (name == "NormalMap")
+		{
+			SetParam("HasNormalMap", MaterialParam(texture.TextureRef != nullptr));
+		}
+		return *this;
+	}
 
 	void StandardMaterial::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Material::Save(ar);
-		ar(Albedo, Emission, Metallic, Roughness, Opacity, DepthScale, Tiling, Flags);
+		ar(mAlbedo, mEmission, mMetalness, mRoughness, mOpacity, mDepthScale, mTiling, mFlags);
 	}
 
 	void StandardMaterial::Load(cereal::BinaryInputArchive &ar)
 	{
 		Material::Load(ar);
-		ar(Albedo, Emission, Metallic, Roughness, Opacity, DepthScale, Tiling, Flags);
+		ar(mAlbedo, mEmission, mMetalness, mRoughness, mOpacity, mDepthScale, mTiling, mFlags);
 	}
 
 	bool StandardMaterial::ShouldCastShadows() const
 	{
-		return (Flags & CastShadows) != 0;
+		return (mFlags & CastShadows) != 0;
 	}
-
-	/*Ref<Material> StandardMaterial::Clone() const
-	{
-		return CreateRef<StandardMaterial>(*this);
-	}*/
 
 	REFLECT(StandardMaterial::EFlags)
 	{
@@ -60,12 +99,13 @@ namespace BHive
 	{
 		BEGIN_REFLECT(StandardMaterial)
 		REFLECT_CONSTRUCTOR()
-		REFLECT_PROPERTY("Albedo", Albedo)
-		REFLECT_PROPERTY("Metallic", Metallic)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Roughness", Roughness)(
-			META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Emission", Emission)(META_DATA(EPropertyMetaData_HDR, true))
-			REFLECT_PROPERTY("Opacity", Opacity)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Tiling", Tiling)
-				REFLECT_PROPERTY("DepthScale", DepthScale) REFLECT_PROPERTY("Flags", Flags)(META_DATA(EPropertyFlags_BitFlags, true));
+		REFLECT_PROPERTY("Albedo", mAlbedo)
+		REFLECT_PROPERTY("Metallic", mMetalness)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Roughness", mRoughness)(
+			META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Emission", mEmission)(META_DATA(EPropertyMetaData_HDR, true))
+			REFLECT_PROPERTY("Opacity", mOpacity)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Tiling", mTiling)
+				REFLECT_PROPERTY("DepthScale", mDepthScale) REFLECT_PROPERTY("Flags", mFlags)(META_DATA(EPropertyFlags_BitFlags, true));
 
 		rttr::type::register_wrapper_converter_for_base_classes<Ref<StandardMaterial>>();
 	}
+
 } // namespace BHive

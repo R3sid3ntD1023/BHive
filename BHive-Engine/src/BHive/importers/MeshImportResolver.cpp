@@ -180,7 +180,7 @@ namespace BHive
 					if (texture_asset)
 					{
 						mAdditionalAssets.push_back(texture_asset);
-						material->SetTexture(texture_data.Type.c_str(), texture_asset);
+						material->SetTexture(texture_data.Type.c_str(), FTextureBinding(texture_asset));
 					}
 				}
 

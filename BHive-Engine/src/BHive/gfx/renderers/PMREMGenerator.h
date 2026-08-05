@@ -17,7 +17,7 @@ namespace BHive
 	};
 
 	struct PMREMResult
-	{	
+	{
 		Ref<TextureCube> Environment;
 		Ref<TextureCube> Irradiance;
 		Ref<TextureCube> PreFilter;
@@ -32,21 +32,19 @@ namespace BHive
 
 		void Initialize(const PMREMSettings &settings = {});
 
-		PMREMResult GenerateEnvironmentMaps(const Ref<Texture2D>& hdr);
+		PMREMResult GenerateEnvironmentMaps(const Ref<Texture2D> &hdr);
 
-	
 		auto &GetEnvironmentCube() const { return mEnvironmentTextures.Environment; }
 		auto &GetIrradiance() const { return mEnvironmentTextures.Irradiance; }
 		auto &GetPreFilter() const { return mEnvironmentTextures.PreFilter; }
 
 	private:
-		void InitializePipelines();
 		void InitializeTextures();
 
-		void DoEquirectangularConversion(IRendererContext & ctx);
-		void DoGenerateCubeMips(IRendererContext & ctx);
-		void DoConvolution(IRendererContext & ctx);
-		void DoPreFilter(IRendererContext& ctx, uint32_t mip);
+		void DoEquirectangularConversion(IRendererContext &ctx);
+		void DoGenerateCubeMips(IRendererContext &ctx);
+		void DoConvolution(IRendererContext &ctx);
+		void DoPreFilter(IRendererContext &ctx, uint32_t mip);
 
 	private:
 		PMREMSettings mSettings{};

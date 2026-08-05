@@ -9,14 +9,9 @@
 namespace BHive
 {
 	class VulkanSwapChain;
-	class VulkanFramebuffer;
-	class VulkanRendererAPI;
-	class Window;
-	class VulkanWindowContext;
 	class VulkanShader;
 	class VulkanPipeline;
-	class GPUBuffer;
-	class Texture;
+	class GeneralBuffer;
 
 	struct FVulkanRendererContext
 	{
@@ -28,22 +23,22 @@ namespace BHive
 		{
 		}
 
-		vk::raii::CommandBuffer& CommandBuffer ;
+		vk::raii::CommandBuffer &CommandBuffer;
 
 		uint32_t Frame{};
 
 		uint32_t ImageIndex{};
 
 		uint32_t ViewIndex{0};
+
+		Ref<GeneralBuffer> ModelBuffer;
 	};
 
-	
 	struct PendingDeletion
 	{
 		uint32_t Frame = 0;
 		std::function<void(uint32_t)> Fn;
 	};
-
 
 	class BHIVE_API VulkanRendererAPI : public RendererAPI
 	{
@@ -54,13 +49,13 @@ namespace BHive
 
 		void Shutdown() override;
 
-		vk::Result RenderFrame(VulkanSwapChain* swapChain);
+		vk::Result RenderFrame(VulkanSwapChain *swapChain);
 
 		void SubmitGraph(const RenderGraph &graph) override;
 
-		DescriptorPoolManager& GetDescriptorPoolManager() { return mDescriptorPoolManager; }
+		DescriptorPoolManager &GetDescriptorPoolManager() { return mDescriptorPoolManager; }
 
-		void QueueDeletion(FQeueuDeletionFunc&& fn) override;
+		void QueueDeletion(FQeueuDeletionFunc &&fn) override;
 
 		void SetCurrentContext(WindowContext *ctx) override;
 
@@ -73,28 +68,30 @@ namespace BHive
 	private:
 		void ProcessDeletionQueue(uint32_t frame);
 
-		vk::Result ExecuteFinalGraph(VulkanSwapChain* swapChain, RenderGraph &graph);
+		vk::Result ExecuteFinalGraph(VulkanSwapChain *swapChain, RenderGraph &graph);
 
 		void ExecutePass(const FPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
 
 		void TransitionImages(const FPhase &phase, vk::raii::CommandBuffer &cmd);
 
-		void ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx);
+		void ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx, uint32_t numAttachments);
 
 		void BeginSwapChainRendering(const FPhase &phase, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
 
-		void BeginOffScreenRendering(const FPass& pass, const FPhase &phase, FVulkanRendererContext &ctx);
+		void BeginOffScreenRendering(const FPass &pass, const FPhase &phase, FVulkanRendererContext &ctx);
 
 		void TransitionSwapChainToPresent(FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
-		
+
 		void EndRendering(const FPhase &phase, FVulkanRendererContext &ctx);
 
 		void CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext &ctx);
 
 		void FlushDeletionQueue();
 
+		FVulkanRendererContext BuildContext(vk::raii::CommandBuffer &cmd, uint32_t frame, uint32_t imageIndex, uint32_t viewIndex);
+
 	private:
-		vk::raii::Device& mDevice;
+		vk::raii::Device &mDevice;
 
 		DescriptorPoolManager mDescriptorPoolManager;
 
@@ -109,6 +106,5 @@ namespace BHive
 		WindowContext *mCurrentContext = nullptr;
 
 		friend class VulkanFramebuffer;
-
 	};
 } // namespace BHive

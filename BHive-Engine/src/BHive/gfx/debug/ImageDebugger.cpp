@@ -10,7 +10,7 @@
 
 namespace BHive
 {
-	#define DEBUG_TEXTURE_PIPELINE "DebugTextureViewerPipeline"
+#define DEBUG_TEXTURE_PIPELINE "DebugTextureViewerPipeline"
 
 	void ImageDebugger::Initialize(const glm::uvec2 &size)
 	{
@@ -26,19 +26,12 @@ namespace BHive
 		spec.DebugName = "ImageDebugger";
 		mFB = Framebuffer::Create(spec);
 
-		auto shader = ShaderManager::Get("DebugTextureViewer.glsl");
-		auto state = Pipeline::GetDefaultGraphicsPipelineState();
-		state.ShaderProgram = shader;
-		state.ColorAttachmentFormats = {EFormat::RGBA8};
-		PipelineRegistry::Register(DEBUG_TEXTURE_PIPELINE, state);
-
-		mMaterial = CreateRef<Material>();
-		mMaterial->SetPipeline(PipelineRegistry::Get(DEBUG_TEXTURE_PIPELINE));
+		mMaterial = CreateRef<Material>(ShaderManager::Get("DebugTextureViewer.glsl"));
 	}
 
 	void ImageDebugger::RegisterTexture(const std::string &name, const Ref<Texture> &tex)
 	{
-		
+
 		FDebugTextureEntry e{};
 		e.Name = name;
 		e.Tex = tex;
@@ -68,17 +61,13 @@ namespace BHive
 			int face = entry.IsCube ? mSelectedFace : 0;
 			int layers = entry.IsCube ? 1 : entry.Layers;
 			const char *uniform = entry.IsCube ? "u_TexCube" : "u_Tex2D";
-			const auto& tex = entry.Tex;
+			const auto &tex = entry.Tex;
 
-			mMaterial->Set("u_Type", type);
-			mMaterial->Set("u_Mip", mip);
-			mMaterial->Set("u_Face", face);
-			mMaterial->SetTexture(uniform, tex);
-			mMaterial->Submit();
+			mMaterial->SetParam("u_Type", MaterialParam(type)).SetParam("u_Mip", MaterialParam(mip)).SetParam("u_Face", MaterialParam(face)).SetTexture(uniform, FTextureBinding(tex));
 
 			ImageSubresourceRange range{mip, mipLevels, face, layers};
 
-			auto& pass = renderer.BeginPass("ImageDebugger", EPassType::OffScreen);
+			auto &pass = renderer.BeginPass("ImageDebugger", EPassType::OffScreen);
 
 			pass.BeginPhase("ImageDebugger : Render To Qaud", EPhaseType::Graphics);
 			pass.Push(mFB);
@@ -111,7 +100,7 @@ namespace BHive
 				for (int i = 0; i < (int)mTextureEntries.size(); i++)
 				{
 					bool selected = (i == mSelected);
-					if(ImGui::Selectable(mTextureEntries[i].Name.c_str(), selected))
+					if (ImGui::Selectable(mTextureEntries[i].Name.c_str(), selected))
 					{
 						mSelected = i;
 						mHasRendered = false;

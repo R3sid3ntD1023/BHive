@@ -3,26 +3,21 @@
 
 namespace BHive
 {
-	FComputeBindings::FComputeBindings(Pipeline *pipeline)
-		: mPipeline(pipeline)
+	FComputeBindings::FComputeBindings(const Ref<ShaderProgram> &program)
+		: mProgram(program)
 	{
-		mBackendMaterial = IMaterialBackendInterface::Create();
-		mBackendMaterial->Init(pipeline);
+		mBackendMaterial = IMaterialBackendInterface::Create(program);
 	}
 
-	FComputeBindings &FComputeBindings::Set(const FTextureBinding &b)
+	IMaterial &FComputeBindings::SetTexture(const std::string &name, const FTextureBinding &texture) &
 	{
-		BindTextureInternal(b.name, b.texture, b.range);
+		mBackendMaterial->SetTexture(name, texture);
 		return *this;
 	}
 
-	void FComputeBindings::SetInternal(const std::string & name, const void *data, size_t size)
+	IMaterial &FComputeBindings::SetParam(const std::string &name, const MaterialParam &value) &
 	{
-		mBackendMaterial->Set(name, data, size);
-	}
-
-	void FComputeBindings::BindTextureInternal(const std::string &name, Ref<Texture> tex, ImageSubresourceRange range)
-	{
-		mBackendMaterial->BindTexture(name, tex, range.BaseMipLevel, mPipeline);
+		mBackendMaterial->SetParam(name, value);
+		return *this;
 	}
 } // namespace BHive

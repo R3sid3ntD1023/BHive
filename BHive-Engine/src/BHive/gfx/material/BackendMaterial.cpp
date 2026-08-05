@@ -4,16 +4,16 @@
 
 namespace BHive
 {
-	Ref<IMaterialBackendInterface> IMaterialBackendInterface::Create()
+	Ref<IMaterialBackendInterface> IMaterialBackendInterface::Create(const Ref<ShaderProgram> &program)
 	{
 		switch (RenderCommand::GetAPI())
 		{
 		case RendererAPI::Vulkan:
-			return CreateRef<VulkanBackendMaterial>();
+			return CreateRef<VulkanBackendMaterial>(program);
 		}
 
 		ASSERT(false);
 		return nullptr;
 	}
 
-}
+} // namespace BHive

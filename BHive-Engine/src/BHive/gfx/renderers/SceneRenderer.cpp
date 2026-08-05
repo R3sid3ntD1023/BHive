@@ -128,11 +128,11 @@ namespace BHive
 			/*static uint32_t shadow_map_bindings[] = {9, 10, 11};
 			mSceneRenderData->ShadowRenderer.BindShadowMaps(shadow_map_bindings);*/
 
-			if (mat->GetPipeline()->GetShaderProgram() == ShaderManager::Get("ForwardMesh.glsl"))
+			/*if (mat->GetPipeline()->GetShaderProgram() == ShaderManager::Get("ForwardMesh.glsl"))
 			{
 				renderer.GetActivePass();
 			}
-			mat->Submit();
+			mat->Submit();*/
 
 			/*for (const auto &object : objects)
 				Renderer::Draw(object);*/

@@ -40,8 +40,6 @@ namespace BHive
 		{
 			virtual ~PipelineState() = default;
 
-			Ref<ShaderProgram> ShaderProgram;
-
 			enum Type
 			{
 				Graphics,
@@ -49,6 +47,8 @@ namespace BHive
 			};
 
 			virtual Type GetType() const = 0;
+
+			virtual Scope<PipelineState> Clone() const = 0;
 		};
 
 		struct GraphicsPipelineState : public PipelineState
@@ -58,24 +58,22 @@ namespace BHive
 			RasterState Raster{};
 			DepthState Depth{};
 			BlendState Blend{};
-			std::vector<EFormat> ColorAttachmentFormats{};
-			EFormat DepthAttachmentFormat{};
 
 			Type GetType() const override { return Graphics; }
+
+			Scope<PipelineState> Clone() const override { return CreateScope<GraphicsPipelineState>(*this); }
 		};
 
 		struct ComputePipelineState : public PipelineState
 		{
 			Type GetType() const override { return Compute; }
+
+			Scope<PipelineState> Clone() const override { return CreateScope<ComputePipelineState>(*this); }
 		};
 
 		virtual ~Pipeline() = default;
 
 		virtual void Init(const PipelineState &state) = 0;
-
-		virtual IBindingGroup *GetOrCreateBindingGroup(uint32_t groupIndex) = 0;
-
-		virtual Ref<ShaderProgram> GetShaderProgram() const = 0;
 
 		static GraphicsPipelineState GetDefaultGraphicsPipelineState();
 

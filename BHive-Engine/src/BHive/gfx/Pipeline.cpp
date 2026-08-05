@@ -26,9 +26,6 @@ namespace BHive
 		state.Depth.DepthTest = true;
 		state.Depth.DepthWrite = true;
 		state.Depth.DepthCompare = ECompareOp::LessOrEqual;
-		state.DepthAttachmentFormat = EFormat::DEPTH24_STENCIL8;
-
-		state.ColorAttachmentFormats = {EFormat::RGBA32F};
 
 		return state;
 	}
@@ -48,88 +45,39 @@ namespace BHive
 	void PipelineRegistry::Initialize()
 	{
 		{
-			auto meshShader = ShaderManager::Get("ForwardMesh.glsl");
-
-			{
-				auto state = Pipeline::GetDefaultGraphicsPipelineState();
-				state.ShaderProgram = meshShader;
-				state.Blend.Enabled = false;
-				state.Depth.DepthTest = true;
-				state.Depth.DepthWrite = true;
-				state.ColorAttachmentFormats = {EFormat::RGBA32F};
-				Register("MESH_OPAQUE", state);
-			}
-
-			{
-				auto state = Pipeline::GetDefaultGraphicsPipelineState();
-				state.ShaderProgram = meshShader;
-				state.Blend.Enabled = false;
-				state.Depth.DepthTest = true;
-				state.Depth.DepthWrite = true;
-				state.ColorAttachmentFormats = {EFormat::RGBA32F};
-				Register("MESH_MASKED", state);
-			}
-
-			{
-				auto state = Pipeline::GetDefaultGraphicsPipelineState();
-				state.ShaderProgram = meshShader;
-				state.Blend.Enabled = true;
-				state.Depth.DepthTest = true;
-				state.Depth.DepthWrite = false;
-				state.ColorAttachmentFormats = {EFormat::RGBA32F};
-				Register("MESH_TRANSPARENT", state);
-			}
-
-			{
-				auto state = Pipeline::GetDefaultGraphicsPipelineState();
-				state.ShaderProgram = ShaderManager::Get("ShadowDepth.glsl");
-				state.Depth.DepthTest = true;
-				state.Depth.DepthWrite = true;
-				state.ColorAttachmentFormats = {EFormat::RGBA32F};
-				Register("MESH_SHADOW", state);
-			}
+			auto defaultState = Pipeline::GetDefaultGraphicsPipelineState();
+			Register("DEFAULT", defaultState);
 		}
 
 		{
 			auto state = Pipeline::GetDefaultGraphicsPipelineState();
-			state.ColorAttachmentFormats = {EFormat::RGBA8};
-			state.ShaderProgram = ShaderManager::Get("ColorGrading.glsl");
-			Register("COLOR_GRADING", state);
+			state.Blend.Enabled = false;
+			state.Depth.DepthTest = true;
+			state.Depth.DepthWrite = true;
+			Register("MESH_OPAQUE", state);
 		}
 
 		{
 			auto state = Pipeline::GetDefaultGraphicsPipelineState();
-			state.ColorAttachmentFormats = {EFormat::RGBA8};
-			state.ShaderProgram = ShaderManager::Get("Aces.glsl");
-			PipelineRegistry::Register("ACES", state);
+			state.Blend.Enabled = false;
+			state.Depth.DepthTest = true;
+			state.Depth.DepthWrite = true;
+			Register("MESH_MASKED", state);
 		}
 
 		{
 			auto state = Pipeline::GetDefaultGraphicsPipelineState();
-			state.ColorAttachmentFormats = {EFormat::RGBA32F};
-			state.ShaderProgram = ShaderManager::Get("PreFilter.glsl");
-			PipelineRegistry::Register("BLOOM_PREFILTER", state);
+			state.Blend.Enabled = true;
+			state.Depth.DepthTest = true;
+			state.Depth.DepthWrite = false;
+			Register("MESH_TRANSPARENT", state);
 		}
 
 		{
 			auto state = Pipeline::GetDefaultGraphicsPipelineState();
-			state.ColorAttachmentFormats = {EFormat::RGBA32F};
-			state.ShaderProgram = ShaderManager::Get("Composite.glsl");
-			PipelineRegistry::Register("BLOOM_COMBINE", state);
-		}
-
-		{
-			auto state = Pipeline::GetDefaultGraphicsPipelineState();
-			state.ColorAttachmentFormats = {EFormat::RGBA32F};
-			state.ShaderProgram = ShaderManager::Get("DownSample.glsl");
-			PipelineRegistry::Register("BLOOM_DOWNSAMPLE", state);
-		}
-
-		{
-			auto state = Pipeline::GetDefaultGraphicsPipelineState();
-			state.ColorAttachmentFormats = {EFormat::RGBA32F};
-			state.ShaderProgram = ShaderManager::Get("UpSample.glsl");
-			PipelineRegistry::Register("BLOOM_UPSAMPLE", state);
+			state.Depth.DepthTest = true;
+			state.Depth.DepthWrite = true;
+			Register("MESH_SHADOW", state);
 		}
 	}
 

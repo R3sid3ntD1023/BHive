@@ -2,28 +2,27 @@
 
 namespace BHive
 {
+	IMaterial &EmissiveMaterial::SetEmissionColor(FColor color)
+	{
+		mEmissionColor = color;
+		return SetParam("Emission", MaterialParam(mEmissionColor));
+	}
+
 	void EmissiveMaterial::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Material::Save(ar);
-		ar(MAKE_NVP("Emission", EmissionColor));
+		ar(MAKE_NVP("Emission", mEmissionColor));
 	}
 
 	void EmissiveMaterial ::Load(cereal::BinaryInputArchive &ar)
 	{
 		Material::Load(ar);
-		ar(MAKE_NVP("Emission", EmissionColor));
-	}
-
-	void EmissiveMaterial ::Submit(Pipeline *pipeline)
-	{
-		mBackendMaterial->Set("Emission", EmissionColor);
-
-		Material::Submit(pipeline);
+		ar(MAKE_NVP("Emission", mEmissionColor));
 	}
 
 	REFLECT(EmissiveMaterial)
 	{
 		BEGIN_REFLECT(EmissiveMaterial)
-		REFLECT_PROPERTY(EmissionColor)(META_DATA(EPropertyMetaData_HDR, true)) REFLECT_CONSTRUCTOR();
+		REFLECT_PROPERTY(mEmissionColor)(META_DATA(EPropertyMetaData_HDR, true)) REFLECT_CONSTRUCTOR();
 	}
 } // namespace BHive

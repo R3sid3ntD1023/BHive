@@ -18,13 +18,16 @@ namespace BHive
 	class VertexArray;
 	class BufferBase;
 
-	
-
 	struct FPendingPass
 	{
 		std::string Name;
 		EPassType Type;
 		std::function<void(FPass &)> BuildFunc;
+	};
+
+	struct FPerObjectData
+	{
+		glm::mat4 WorldMatrix = glm::identity<glm::mat4>();
 	};
 
 	class BHIVE_API Renderer
@@ -67,8 +70,11 @@ namespace BHive
 
 		GlobalResources &GetGlobalResources();
 
-		static Renderer& Get() { return *sInstance;}
+		Ref<GeneralBuffer> GetModelBuffer() const;
 
+		void SetPerObjectData(const FPerObjectData *data, size_t count);
+
+		static Renderer &Get() { return *sInstance; }
 
 #pragma region RENDERGRAPH
 
@@ -78,7 +84,7 @@ namespace BHive
 
 		FPass &GetActivePass();
 
-		FPass &BeginPass(const std::string &name, EPassType type, const FPassState& state = {});
+		FPass &BeginPass(const std::string &name, EPassType type, const FPassState &state = {});
 
 		void DeferPass(const std::string &name, EPassType type, const FPassState &state = {}, std::function<void(FPass &)> fn = {});
 
@@ -118,8 +124,8 @@ namespace BHive
 		EnvironmentSystem mEnvironment;
 
 		RenderGraphScheduler mScheduler;
-		
-		//rendergraph
+
+		// rendergraph
 		RenderGraph mGraph;
 
 		PassConfig mPassConfig;

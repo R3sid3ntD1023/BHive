@@ -2,12 +2,13 @@
 
 #include "core/Core.h"
 #include "shader/ShaderReflection.h"
+#include "ResourceID.h"
 
 namespace BHive
 {
 	class Texture;
 	class ShaderProgram;
-	
+
 	class BHIVE_API Shader
 	{
 	public:
@@ -19,11 +20,11 @@ namespace BHive
 
 		virtual const FShaderReflectionLookUp &GetRefl() const = 0;
 
+		virtual const ResourceID &GetResourceID() const = 0;
+
 		static Ref<ShaderProgram> Create(const std::filesystem::path &path);
 
 		static Ref<ShaderProgram> Create(const std::string &name, const std::string &vert, const std::string &frag);
-
 	};
 
 } // namespace BHive
-

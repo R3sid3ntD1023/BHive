@@ -14,23 +14,24 @@ namespace BHive
 	{
 		Device = device;
 
-		// --- Material pool (set = 1, cached per material) ---
-		std::vector<vk::DescriptorPoolSize> materialSizes = {
-			{vk::DescriptorType::eCombinedImageSampler, 4096},
-			{vk::DescriptorType::eSampledImage, 4096},
-			{vk::DescriptorType::eStorageImage, 2048},
-			{vk::DescriptorType::eUniformBuffer, 1024},
-			{vk::DescriptorType::eStorageBuffer, 1024}
-		};
+		static vk::DescriptorPoolCreateFlags poolFlags = /*vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind |*/ vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
 
-		vk::DescriptorPoolCreateInfo matInfo{{}, 4096, materialSizes};
+		// --- Material pool (set = 1, cached per material) ---
+		std::vector<vk::DescriptorPoolSize> materialSizes
+			= {{vk::DescriptorType::eCombinedImageSampler, 4096},
+			   {vk::DescriptorType::eSampledImage, 4096},
+			   {vk::DescriptorType::eStorageImage, 2048},
+			   {vk::DescriptorType::eUniformBuffer, 1024},
+			   {vk::DescriptorType::eStorageBuffer, 1024}};
+
+		vk::DescriptorPoolCreateInfo matInfo{poolFlags, 4096, materialSizes};
 
 		MaterialPool = Device.createDescriptorPool(matInfo);
 
 		//---Engine Pool (BRDF, skybox, etc.) ---
 		std::vector<vk::DescriptorPoolSize> engineSizes = {{vk::DescriptorType::eCombinedImageSampler, 64}, {vk::DescriptorType::eStorageImage, 64}};
 
-		vk::DescriptorPoolCreateInfo engineInfo{{}, 128, engineSizes};
+		vk::DescriptorPoolCreateInfo engineInfo{poolFlags, 128, engineSizes};
 
 		EnginePool = Device.createDescriptorPool(engineInfo);
 
@@ -41,7 +42,7 @@ namespace BHive
 		};
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			vk::DescriptorPoolCreateInfo frameInfo{{}, 512, frameSizes};
+			vk::DescriptorPoolCreateInfo frameInfo{poolFlags, 512, frameSizes};
 
 			FramePools[i] = Device.createDescriptorPool(frameInfo);
 		}

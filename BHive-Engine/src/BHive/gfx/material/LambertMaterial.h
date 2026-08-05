@@ -9,21 +9,27 @@ namespace BHive
 	{
 
 	public:
-		LambertMaterial() = default;
+		LambertMaterial()
+			: Material(ShaderManager::Get("LambertMaterial.glsl"))
+		{
+			SetParam("DiffuseColor", MaterialParam(mDiffuseColor));
+			SetParam("Emission", MaterialParam(mEmissionColor));
+		}
 
-		FColor DiffuseColor = FColor::White;
+		LambertMaterial &SetDiffuseColor(FColor color);
 
-		FColor EmissionColor = FColor::Black;
+		LambertMaterial &SetEmissionColor(FColor color);
 
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		void Load(cereal::BinaryInputArchive &ar) override;
 
-		void Submit(Pipeline *pipeline = nullptr) override;
-
-		// Ref<Material> Clone() const override;
-
 		REFLECTABLEV(Material)
+
+	private:
+		FColor mDiffuseColor = FColor::White;
+
+		FColor mEmissionColor = FColor::Black;
 	};
 
 	REFLECT_EXTERN(LambertMaterial)

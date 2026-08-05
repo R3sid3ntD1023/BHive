@@ -12,10 +12,7 @@ namespace BHive
 	{
 		mBuffer = CreateScope<VertexBatchBuffer<TextVertex>>(sMaxVertexCount, sMaxIndexCount, true);
 
-		auto shader = ShaderManager::Get("Text.glsl");
-
 		auto state = Pipeline::GetDefaultGraphicsPipelineState();
-		state.ShaderProgram = shader;
 		state.Raster.CullEnabled = false;
 		state.Depth.DepthWrite = false;
 
@@ -30,8 +27,8 @@ namespace BHive
 
 		PipelineRegistry::Register(PIPELINE_NAME, state);
 
-		mMaterial = CreateScope<Material>();
-		mMaterial->SetPipeline(PipelineRegistry::Get(PIPELINE_NAME));
+		auto shader = ShaderManager::Get("Text.glsl");
+		mMaterial = CreateScope<Material>(shader);
 	}
 
 	bool TextRenderBatch::NeedsFlush(uint32_t vNeeded, uint32_t iNeeded)
@@ -53,10 +50,10 @@ namespace BHive
 		mBuffer->Upload();
 
 		auto &texture = mTextureBatch->GetTexture();
-		mMaterial->SetTexture("uTexture", texture, 0);
-		mMaterial->Submit();
+		mMaterial->SetTexture("uTexture", {texture});
 
 		auto &pass = renderer.GetActivePass();
+		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(PIPELINE_NAME));
 		pass.Emplace<CmdBindMaterial>()(mMaterial.get());
 		pass.Emplace<CmdDrawIndexed>()(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
 

@@ -9,17 +9,22 @@ namespace BHive
 	{
 
 	public:
-		EmissiveMaterial() = default;
+		EmissiveMaterial()
+			: Material(ShaderManager::Get("EmissiveMaterial.glsl"))
+		{
+			SetParam("Emission", MaterialParam(mEmissionColor));
+		}
 
-		FColor EmissionColor = FColor::Black;
+		IMaterial &SetEmissionColor(FColor color);
 
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		void Load(cereal::BinaryInputArchive &ar) override;
 
-		void Submit(Pipeline* pipeline = nullptr) override;
-
 		REFLECTABLEV(Material)
+
+	private:
+		FColor mEmissionColor = FColor::Black;
 	};
 
 	REFLECT_EXTERN(EmissiveMaterial)

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.8...3.10)
 FETCHCONTENT_DECLARE(
 	imgui 
 	GIT_REPOSITORY https://github.com/ocornut/imgui.git
-	GIT_TAG docking
+	GIT_TAG v1.92.9b-docking
     OVERRIDE_FIND_PACKAGE
 )
 

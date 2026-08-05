@@ -6,20 +6,34 @@ namespace BHive
 {
 	class GeneralBuffer;
 	class Texture;
+	class ShaderProgram;
 
 	struct MaterialSnapshot
 	{
-		std::unordered_map<std::string, Ref<GeneralBuffer>> LocalBuffers;
+		struct TextureBinding
+		{
+			Ref<Texture> TextureRef;
+			int32_t Binding = 0;
+			uint32_t BaseMipLevel = 0;
+			uint32_t BaseArrayLayer = 0;
+		};
+
+		struct BufferBinding
+		{
+			Ref<GeneralBuffer> BufferRef;
+			int32_t Binding = 0;
+		};
+
+		Ref<ShaderProgram> Shader;
+
+		std::unordered_map<std::string, TextureBinding> Textures;
+
+		std::unordered_map<std::string, BufferBinding> LocalBuffers;
 
 		std::vector<std::byte> PushConstantData;
 
-		struct TextureBinding
-		{
-			int32_t Binding;
-			Ref<Texture> Texture;
-			uint32_t Mip;
-		};
+		const struct FShaderReflectionLookUp *ReflectionLookUp = nullptr;
 
-		std::unordered_map<std::string, TextureBinding> Textures;
+		const struct FShaderReflection *mReflection = nullptr;
 	};
 } // namespace BHive

@@ -12,7 +12,6 @@ namespace BHive
 		int32_t Offset{-1};
 		int32_t Location{-1};
 		EShaderStage Stages{};
-
 	};
 
 	struct FSampler
@@ -60,35 +59,35 @@ namespace BHive
 		std::unordered_map<std::string, FSampler> Samplers;
 	};
 
-	
 	struct FShaderReflection
 	{
 		void Reflect(EShaderStage stage, const std::vector<uint32_t> &source);
 
 		void AttachSemantics(const std::unordered_map<std::string, std::string> &varToSemantic);
 
+		const FSampler *FindSampler(const std::string &name, uint32_t set) const;
+
+		const FUniform *FindPushConstant(const std::string &name) const;
+
 		std::string to_string() const;
 
-		static FShaderReflection Merge(const std::unordered_map<EShaderStage, FShaderReflection>& refl);
+		static FShaderReflection Merge(const std::unordered_map<EShaderStage, FShaderReflection> &refl);
 
 		std::unordered_map<uint32_t, FSetReflection> Sets;
-		std::unordered_map<std::string, FUniform> Uniforms; //unused in vulkan
-		std::vector<FPushConstantsRange> PushConstants; //unused in opengl
+		std::unordered_map<std::string, FUniform> Uniforms; // unused in vulkan
+		std::vector<FPushConstantsRange> PushConstants;		// unused in opengl
 	};
 
-	
-
 	struct FReflectedResource
-	{	
+	{
 		EResourceType kind = EResourceType::Invalid;
-		std::string name; //shader varibale name
-		std::string Semantic; //engine semantic (Camera, EnvironmentCube, etc.)
+		std::string name;	  // shader varibale name
+		std::string Semantic; // engine semantic (Camera, EnvironmentCube, etc.)
 		uint32_t binding = 0;
 		uint32_t offset = 0;
 		size_t size = 0;
 		uint32_t location = 0;
 	};
-
 
 	class FShaderReflectionLookUp
 	{
@@ -109,14 +108,13 @@ namespace BHive
 
 	private:
 		std::unordered_map<std::string, FReflectedResource> mByName;
-		std::unordered_map < uint32_t, std::unordered_map<uint32_t, FReflectedResource>> mBySetBinding;
+		std::unordered_map<uint32_t, std::unordered_map<uint32_t, FReflectedResource>> mBySetBinding;
 		std::unordered_map<uint32_t, std::vector<FReflectedResource>> mSets;
 		uint32_t mMaxSet = 0;
 
 		template <typename A>
 		friend void SERIALIZE(A &, FShaderReflectionLookUp &);
 	};
-
 
 } // namespace BHive
 

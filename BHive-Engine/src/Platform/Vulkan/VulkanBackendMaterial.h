@@ -7,6 +7,7 @@
 namespace BHive
 {
 	class ShaderProgram;
+	class VulkanShader;
 	struct FShaderReflection;
 	class GeneralBuffer;
 	class VulkanPipeline;
@@ -14,38 +15,25 @@ namespace BHive
 	class VulkanBackendMaterial : public IMaterialBackendInterface
 	{
 	public:
-		VulkanBackendMaterial();
+		explicit VulkanBackendMaterial(const Ref<ShaderProgram> &program);
 
-		~VulkanBackendMaterial() = default;
+		void SetTexture(const std::string &name, const FTextureBinding &texture) override;
 
-		void Init(Pipeline *pipeline) override;
-
-		void BindTexture(const std::string &name, const Ref<Texture> &texture, uint32_t mip, Pipeline *pipeline) override;
-
-		void Set(const std::string &name, const void *data, size_t size) override;
-
-		const FSetReflection &GetTargetSet() const override { return mTargetSet; }
-
-		const FShaderReflection *GetRefl() const { return mReflectionMergedPtr; }
+		void SetParam(const std::string &name, const MaterialParam &param) override;
 
 		MaterialSnapshot CreateSnapshot() const;
 
 	private:
-		vk::raii::Device &mDevice;
+		void CreateLocalBuffers(const FSetReflection &set);
 
-		vk::PipelineBindPoint mBindPoint = vk::PipelineBindPoint::eGraphics;
+		void CreatePushConstanstData(const std::vector<FPushConstantsRange> &ranges);
 
+	private:
 		Ref<ShaderProgram> mProgram;
-
-		const FShaderReflection *mReflectionMergedPtr = nullptr;
-
-		const FShaderReflectionLookUp *mReflectionLookupTablePtr = nullptr;
-
-		FSetReflection mTargetSet;
 
 		std::vector<std::byte> mPushConstantData;
 
-		std::unordered_map<std::string, Ref<GeneralBuffer>> mLocalBuffers;
+		std::unordered_map<std::string, MaterialSnapshot::BufferBinding> mLocalBuffers;
 
 		std::unordered_map<std::string, MaterialSnapshot::TextureBinding> mTextureBindings;
 	};

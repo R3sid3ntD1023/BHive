@@ -28,8 +28,6 @@ namespace BHive
 			return shaderc_glsl_infer_from_source;
 		}
 
-		
-
 		struct IncludeHandler : public shaderc::CompileOptions::IncluderInterface
 		{
 			using UserDataType = std::pair<std::string, std::string>;
@@ -57,7 +55,6 @@ namespace BHive
 			}
 
 		private:
-			
 			shaderc_include_result *MakeIncludeResult(const std::filesystem::path &resolved_path, const std::string &content)
 			{
 				auto *result = new shaderc_include_result();
@@ -81,7 +78,7 @@ namespace BHive
 				std::filesystem::create_directories(cache_dir);
 		}
 
-		void ParseShaderArraySizes(const std::string& code, FShaderReflection& refl)
+		void ParseShaderArraySizes(const std::string &code, FShaderReflection &refl)
 		{
 			std::regex r(R"(layout\s*\(\s*set\s*=\s*(\d+)[^)]*\)\s*uniform\s+\w+\s+(\w+)\s* \[\s*(\d+)\s*\])");
 
@@ -94,7 +91,7 @@ namespace BHive
 				std::string name = match[2];
 				uint32_t size = std::stoi(match[3]);
 
-				auto& target_set = refl.Sets[set];
+				auto &target_set = refl.Sets[set];
 				if (target_set.Samplers.contains(name))
 					target_set.Samplers[name].ArraySize = size;
 
@@ -108,7 +105,7 @@ namespace BHive
 			std::string Semantic;
 		};
 
-		void ParseShaderSemantics(const std::string& code, std::unordered_map<std::string, std::string>& outVarToSemantic)
+		void ParseShaderSemantics(const std::string &code, std::unordered_map<std::string, std::string> &outVarToSemantic)
 		{
 			std::regex semanticRegex(R"(\/\/\s*@semantic\s+(\w+))");
 			std::smatch match;
@@ -151,7 +148,7 @@ namespace BHive
 
 	} // namespace utils
 
-	ShaderCompiler::ShaderCompiler(const std::filesystem::path& filepath)
+	ShaderCompiler::ShaderCompiler(const std::filesystem::path &filepath)
 		: mFilePath(filepath)
 	{
 	}
@@ -168,7 +165,7 @@ namespace BHive
 		mOpenglCompileOptions.SetIncluder(std::make_unique<utils::IncludeHandler>());
 	}
 
-	void ShaderCompiler::Compile(ShaderAsset& asset)
+	void ShaderCompiler::Compile(ShaderAsset &asset)
 	{
 		CompileToVulkan(asset);
 
@@ -184,9 +181,9 @@ namespace BHive
 		}
 	}
 
-	void ShaderCompiler::CompileToVulkan(ShaderAsset& asset)
+	void ShaderCompiler::CompileToVulkan(ShaderAsset &asset)
 	{
-		for (auto& [stage, data] : asset.Stages)
+		for (auto &[stage, data] : asset.Stages)
 		{
 			auto spirv_binary = mVulkanCompiler.CompileGlslToSpv(data.Code, utils::GetShadercType(stage), mFilePath.string().c_str(), mVulkanCompileOptions);
 			if (spirv_binary.GetCompilationStatus() != shaderc_compilation_status_success)
@@ -199,15 +196,13 @@ namespace BHive
 
 			// reflect
 			LOG_TRACE("Reflecting Shader... {}", asset.Name)
-
-			
 		}
 
 		std::unordered_map<EShaderStage, FShaderReflection> refl_map;
 
 		for (auto &[stage, data] : asset.Stages)
 		{
-			//parse semantics from glsl source
+			// parse semantics from glsl source
 			std::unordered_map<std::string, std::string> varToSemantic;
 			utils::ParseShaderSemantics(data.Code, varToSemantic);
 
@@ -230,9 +225,9 @@ namespace BHive
 		LOG_TRACE(asset.MergedReflection.to_string())
 	}
 
-	void ShaderCompiler::CompileToOpengl(ShaderAsset& asset)
+	void ShaderCompiler::CompileToOpengl(ShaderAsset &asset)
 	{
-		for (auto& [stage, data] : asset.Stages)
+		for (auto &[stage, data] : asset.Stages)
 		{
 			spirv_cross::CompilerGLSL glsl_compiler(data.Spirv);
 			std::string glsl_source = glsl_compiler.compile();
@@ -243,7 +238,6 @@ namespace BHive
 			{
 				LOG_ERROR("GLSL: Failed to compile shader = {}, stage = {}: \n{}", mFilePath, ShaderUtils::ToString(stage), spirv_binary.GetErrorMessage());
 				ASSERT(false);
-
 			}
 
 			data.Spirv.assign(spirv_binary.cbegin(), spirv_binary.cend());

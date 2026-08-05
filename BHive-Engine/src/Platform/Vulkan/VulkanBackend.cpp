@@ -16,9 +16,7 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 namespace BHive
 {
-	static const std::vector<const char *> s_validationLayers = {
-		"VK_LAYER_KHRONOS_validation"
-	};
+	static const std::vector<const char *> s_validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
 	static VKAPI_ATTR vk::Bool32 VKAPI_CALL
 	debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity, vk::DebugUtilsMessageTypeFlagsEXT messageType, const vk::DebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
@@ -56,7 +54,7 @@ namespace BHive
 			break;
 		}
 
-#ifdef VULKAN_ERRORS_WITH_ASSERT
+#if VULKAN_ERRORS_WITH_ASSERT
 		if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
 		{
 			ASSERT(false);
@@ -72,16 +70,15 @@ namespace BHive
 		{
 
 			vk::PhysicalDeviceFeatures features{};
-			features.setFillModeNonSolid(true).setWideLines(true).setMultiDrawIndirect(true)
-				.setDrawIndirectFirstInstance(true);
+			features.setFillModeNonSolid(true).setWideLines(true).setMultiDrawIndirect(true).setDrawIndirectFirstInstance(true);
 
 			vk::StructureChain<
 				vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features,
 				vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexAttributeDivisorFeaturesEXT,
-				vk::PhysicalDeviceRobustness2FeaturesKHR>
+				vk::PhysicalDeviceRobustness2FeaturesKHR, vk::PhysicalDeviceShaderObjectFeaturesEXT>
 				featureChain;
 			featureChain.assign<vk::PhysicalDeviceFeatures2>({}); // default initialize all features to false
-			
+
 			featureChain.get<vk::PhysicalDeviceFeatures2>().setFeatures(features);
 			featureChain.get<vk::PhysicalDeviceVulkan11Features>().setShaderDrawParameters(true);
 			featureChain.get<vk::PhysicalDeviceVulkan12Features>()
@@ -91,17 +88,19 @@ namespace BHive
 				.setDescriptorBindingStorageBufferUpdateAfterBind(true)
 				.setDescriptorBindingUniformBufferUpdateAfterBind(true)
 				.setDescriptorBindingStorageImageUpdateAfterBind(true);
-			featureChain.get<vk::PhysicalDeviceVulkan13Features>().setDynamicRendering(true).setSynchronization2(true).setDescriptorBindingInlineUniformBlockUpdateAfterBind(true).setMaintenance4(true);
+			featureChain.get<vk::PhysicalDeviceVulkan13Features>().setDynamicRendering(true).setSynchronization2(true).setDescriptorBindingInlineUniformBlockUpdateAfterBind(true).setMaintenance4(
+				true);
 			featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().setExtendedDynamicState(true);
 			featureChain.get<vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>().setVertexInputDynamicState(true);
 			featureChain.get<vk::PhysicalDeviceVertexAttributeDivisorFeaturesEXT>().setVertexAttributeInstanceRateZeroDivisor(true);
 			featureChain.get<vk::PhysicalDeviceRobustness2FeaturesKHR>().setNullDescriptor(true).setRobustImageAccess2(true);
+			featureChain.get<vk::PhysicalDeviceShaderObjectFeaturesEXT>().setShaderObject(true);
 
 			return featureChain;
 		}
 	} // namespace details
 
-	void VulkanBackend::Init(GLFWwindow* window)
+	void VulkanBackend::Init(GLFWwindow *window)
 	{
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
@@ -125,10 +124,9 @@ namespace BHive
 			}
 			else
 			{
-				log << "No Vulkan physical device information available\n"; 
+				log << "No Vulkan physical device information available\n";
 			}
 		};
-			
 
 		CrashHandler::Get().SetLogInfo(log_info);
 	}
@@ -151,7 +149,7 @@ namespace BHive
 
 		LOG_TRACE("recreating swap chain... with size[{}x{}]", w, h);
 
-		mSwapChain->Recreate(mDevice,w, h);
+		mSwapChain->Recreate(mDevice, w, h);
 		RecreateFrameResources();
 	}
 
@@ -164,7 +162,8 @@ namespace BHive
 			vk::KHRCreateRenderpass2ExtensionName,
 			vk::EXTVertexInputDynamicStateExtensionName,
 			vk::EXTExtendedDynamicStateExtensionName,
-			vk::EXTVertexAttributeDivisorExtensionName};
+			vk::EXTVertexAttributeDivisorExtensionName,
+			vk::EXTShaderObjectExtensionName};
 	}
 
 	uint32_t VulkanBackend::SelectQueueIndex(vk::QueueFlags queue_type, const vk::SurfaceKHR &surface)
@@ -244,43 +243,38 @@ namespace BHive
 			}
 		}
 
-		
-
 #ifdef ENABLE_VALIDATION_LAYERS
 
-		vk::ValidationFeatureEnableEXT enabled_features[] =
-			{
-				//vk::ValidationFeatureEnableEXT::eBestPractices, 
-				vk::ValidationFeatureEnableEXT::eSynchronizationValidation, 
-				//vk::ValidationFeatureEnableEXT::eDebugPrintf,
-				//vk::ValidationFeatureEnableEXT::eGpuAssisted
-			};
+		vk::ValidationFeatureEnableEXT enabled_features[] = {
+			vk::ValidationFeatureEnableEXT::eSynchronizationValidation,
+			// vk::ValidationFeatureEnableEXT::eBestPractices,
+			//  vk::ValidationFeatureEnableEXT::eDebugPrintf,
+			// vk::ValidationFeatureEnableEXT::eGpuAssisted
+		};
 
 		vk::ValidationFeaturesEXT enabled(enabled_features);
-	
-		auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError |
-						 vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
-		auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
+		auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
+						 | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
+		auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
 		vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, debugCallback, &mDebugNames);
 		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions, &enabled);
 #else
 		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions);
 #endif
-		
+
 		mInstance = vk::raii::Instance(mContext, instanceCreateInfo);
 		VULKAN_HPP_DEFAULT_DISPATCHER.init((vk::Instance)mInstance);
 
 #ifdef ENABLE_VALIDATION_LAYERS
 		mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mInstance, debugCreateInfo);
-		
+
 #endif
 	}
 
 	void VulkanBackend::CreateDebugMessenger()
 	{
-
 	}
 
 	void VulkanBackend::PickPhysicalDevice()
@@ -314,7 +308,7 @@ namespace BHive
 				if (isSuitable)
 				{
 					mPhysicalDevice = device;
-					
+
 					LOG_INFO("Selected GPU: {}", name);
 				}
 
@@ -467,7 +461,7 @@ namespace BHive
 			return;
 		}
 
-		auto present_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics , surface);
+		auto present_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics, surface);
 		if (present_index == ~0)
 		{
 			ASSERT(false, "No present queue found");
@@ -488,14 +482,14 @@ namespace BHive
 			return;
 		}
 
-		auto graphics_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics );
+		auto graphics_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics);
 		auto present_index = graphics_index;
 
 		if (surface)
 		{
 			if (!mPhysicalDevice.getSurfaceSupportKHR(graphics_index, surface))
 			{
-				present_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics , surface);
+				present_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics, surface);
 			}
 		}
 

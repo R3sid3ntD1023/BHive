@@ -1,18 +1,12 @@
 #pragma once
 
 #include "core/Core.h"
-#include "gfx/shader/ShaderAsset.h"
 #include "VulkanBackend.h"
+#include "gfx/shader/ShaderProgram.h"
+#include "VulkanBindingGroup.h"
 
 namespace BHive
 {
-	class Pipeline;
-	class FDescriptorSetLayout;
-	class FDescriptorPool;
-
-	using ShaderModules = std::unordered_map<EShaderStage, vk::raii::ShaderModule> ;
-	using PushConstantRanges = std::vector<vk::PushConstantRange>;
-	using SetHashes = std::map<uint64_t, uint64_t>;
 
 	struct FPipelineLayoutInfo
 	{
@@ -21,43 +15,58 @@ namespace BHive
 		std::vector<uint32_t> UsedSets;
 	};
 
-	class BHIVE_API VulkanShader 
+	class BHIVE_API VulkanShader : public ShaderProgram
 	{
 	public:
-		VulkanShader();
+		using PushConstantRanges = std::vector<vk::PushConstantRange>;
+		using SetHashes = std::map<uint64_t, uint64_t>;
 
-		VulkanShader(const VulkanShader &) = delete;
-		VulkanShader &operator=(const VulkanShader &) = delete; 
-		VulkanShader(VulkanShader&&) noexcept = default; 
-		VulkanShader& operator=(VulkanShader&&) noexcept = default;
-
-		void Init(const Ref<ShaderAsset> &asset);
+	public:
+		VulkanShader(const Ref<ShaderAsset> &asset);
 
 		const uint32_t GetSetCount() const { return (uint32_t)mDescriptorSetLayouts.size(); }
 
 		vk::DescriptorSetLayout GetDescriptorSetLayout(uint32_t set) const;
 
-		const ShaderModules &GetModules() const { return mShaderModules; }
-
-		const SetHashes& GetSetHashes() const { return mSetHashes; }
+		const SetHashes &GetSetHashes() const { return mSetHashes; }
 
 		bool HasSet(uint32_t setIndex) const;
 
 		FPipelineLayoutInfo GetPipelineLayoutInfo() const;
 
+		VulkanBindingGroup *GetBindingGroup(uint32_t set) const;
+
+		void Bind(vk::CommandBuffer cmd, uint32_t frame);
+
+		void BindPushConstants(vk::CommandBuffer cmd, vk::ShaderStageFlags stage, const void *data, uint32_t size, uint32_t offset);
+
 	private:
-		void CreateModules(const ShaderAsset& asset);
+		void CreateModules(const ShaderAsset &asset);
 
-		void CreateDescriptorResources(const ShaderAsset& asset);
+		void CreateDescriptorResources(const ShaderAsset &asset);
 
-		uint64_t HashSetLayout(const FShaderReflection& merged, uint32_t set);
+		void CreateSetHashes(const ShaderAsset &asset);
+
+		void CreatePipelineLayout();
+
+		uint64_t HashSetLayout(const FShaderReflection &merged, uint32_t set);
+
+		void BindGlobalResources();
 
 	private:
 		vk::raii::Device &mDevice;
 
-		ShaderModules mShaderModules;
+		vk::raii::PipelineLayout mPipelineLayout = VK_NULL_HANDLE;
+
+		vk::PipelineBindPoint mBindPoint = vk::PipelineBindPoint::eGraphics;
+
+		std::unordered_map<vk::ShaderStageFlagBits, vk::raii::ShaderEXT> mShaderEXTs;
 
 		std::map<uint32_t, vk::raii::DescriptorSetLayout> mDescriptorSetLayouts;
+
+		std::map<uint32_t, Scope<VulkanBindingGroup>> mBindGroups;
+
+		vk::raii::DescriptorSetLayout mEmptyDescriptorSet = VK_NULL_HANDLE;
 
 		SetHashes mSetHashes;
 

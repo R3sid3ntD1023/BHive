@@ -6,26 +6,23 @@
 
 namespace BHive
 {
-	#define QUAD_PIPELINE_NAME "QuadPipeline"
+#define QUAD_PIPELINE_NAME "QuadPipeline"
 
 	void QuadRenderBatch::Initialize()
 	{
 		mBuffer = CreateScope<VertexBatchBuffer<QuadVertex>>(sMaxVertexCount, sMaxIndexCount, true);
 
-		auto shader = ShaderManager::Get("Quad.glsl");
-	
 		auto state = Pipeline::GetDefaultGraphicsPipelineState();
-		state.ShaderProgram = shader;
 		state.Raster.CullEnabled = false;
 		state.Depth.DepthWrite = false;
 
 		PipelineRegistry::Register(QUAD_PIPELINE_NAME, state);
 
-		mQuadMaterial = CreateScope<Material>();
-		mQuadMaterial->SetPipeline(PipelineRegistry::Get(QUAD_PIPELINE_NAME));
+		auto shader = ShaderManager::Get("Quad.glsl");
+		mQuadMaterial = CreateScope<Material>(shader);
 	}
 
-	void QuadRenderBatch::Flush(Renderer& renderer)
+	void QuadRenderBatch::Flush(Renderer &renderer)
 	{
 		if (mBuffer->GetIndexCount() == 0)
 			return;
@@ -33,13 +30,13 @@ namespace BHive
 		mBuffer->Upload();
 
 		auto &texture = mTextureBatch->GetTexture();
-		mQuadMaterial->SetTexture("uTexture", texture, 0);
-		mQuadMaterial->Submit();
+		mQuadMaterial->SetTexture("uTexture", {texture});
 
 		auto &pass = renderer.GetActivePass();
+		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(QUAD_PIPELINE_NAME));
 		pass.Emplace<CmdBindMaterial>()(mQuadMaterial.get());
 		pass.Emplace<CmdDrawIndexed>()(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
-		
+
 		mIsActive = false;
 	}
 

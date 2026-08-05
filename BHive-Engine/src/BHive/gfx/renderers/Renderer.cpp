@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-	
+
 	struct BHIVE_API RenderData
 	{
 		ViewSystem Views;
@@ -18,6 +18,7 @@ namespace BHive
 		Ref<Texture> BlueTexture;
 		Ref<Texture2D> BRDFLut;
 		Ref<GeneralBuffer> CameraUBO;
+		Ref<GeneralBuffer> ModelSSBO;
 
 		RenderData()
 		{
@@ -31,7 +32,7 @@ namespace BHive
 			create_info.Aspect = ETextureAspect::Color;
 			create_info.DebugName = "WhiteTexture";
 
-			WhiteTexture = Texture2D::Create({1, 1}, create_info, Buffer(& white, sizeof(uint32_t)));
+			WhiteTexture = Texture2D::Create({1, 1}, create_info, Buffer(&white, sizeof(uint32_t)));
 
 			create_info.DebugName = "Black Texture";
 			BlackTexture = Texture2D::Create({1, 1}, create_info, Buffer(&black, sizeof(uint32_t)));
@@ -39,7 +40,9 @@ namespace BHive
 			create_info.DebugName = "Blue Texture";
 			BlueTexture = Texture2D::Create({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
 
-			CameraUBO = GeneralBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);	
+			CameraUBO = GeneralBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);
+
+			ModelSSBO = GeneralBuffer::Create(sizeof(FPerObjectData) * 1000, EBufferType::StorageBuffer);
 
 			BRDFLut = BRDFLUTGenerator::GenerateBRDFLUTMap();
 		}
@@ -93,10 +96,9 @@ namespace BHive
 		mFrameActive = false;
 	}
 
-
 	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
 	{
-		
+
 		FView &v = mData->Views.CreateMainView();
 
 		v.Projection = projection;
@@ -106,15 +108,12 @@ namespace BHive
 		v.Position = glm::inverse(view)[3];
 
 		mData->CameraFrustum.Update(projection, view);
-
 	}
 
 	void Renderer::Flush()
 	{
 		EndBatching();
 	}
-
-	
 
 	void Renderer::SetEnvironmentTexture(const Ref<Texture2D> &hdr)
 	{
@@ -147,6 +146,18 @@ namespace BHive
 	GlobalResources &Renderer::GetGlobalResources()
 	{
 		return mGlobalResources;
+	}
+
+	Ref<GeneralBuffer> Renderer::GetModelBuffer() const
+	{
+		ASSERT(mData);
+		return mData->ModelSSBO;
+	}
+
+	void Renderer::SetPerObjectData(const FPerObjectData *data, size_t count)
+	{
+		ASSERT(mData)
+		mData->ModelSSBO->SetData(data, sizeof(FPerObjectData) * count);
 	}
 
 	const Frustum &Renderer::GetFrustum()
@@ -230,12 +241,12 @@ namespace BHive
 	{
 		std::unordered_map<BufferBase *, EBufferAccess> lastBufferAccess;
 
-		for (auto& pass : graph.GetPasses())
+		for (auto &pass : graph.GetPasses())
 		{
-			for (auto& phase : pass.Phases)
+			for (auto &phase : pass.Phases)
 			{
-				//buffers
-				for (auto& use : phase.Buffers)
+				// buffers
+				for (auto &use : phase.Buffers)
 				{
 					auto *raw = use.Buffer;
 					auto prev = lastBufferAccess[raw];

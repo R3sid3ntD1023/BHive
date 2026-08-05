@@ -5,42 +5,37 @@
 
 namespace BHive
 {
+	LambertMaterial &LambertMaterial::SetDiffuseColor(FColor color)
+	{
+		mDiffuseColor = color;
+		SetParam("DiffuseColor", MaterialParam(color));
+		return *this;
+	}
+
+	LambertMaterial &LambertMaterial::SetEmissionColor(FColor color)
+	{
+		mEmissionColor = color;
+		SetParam("Emission", MaterialParam(color));
+		return *this;
+	}
+
 	void LambertMaterial::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Material::Save(ar);
-		ar(MAKE_NVP("Color", DiffuseColor), MAKE_NVP("Emission", EmissionColor));
+		ar(MAKE_NVP("DiffuseColor", mDiffuseColor), MAKE_NVP("EmissionColor", mEmissionColor));
 	}
 
 	void LambertMaterial::Load(cereal::BinaryInputArchive &ar)
 	{
 		Material::Load(ar);
-		ar(MAKE_NVP("Color", DiffuseColor), MAKE_NVP("Emission", EmissionColor));
+		ar(MAKE_NVP("Color", mDiffuseColor), MAKE_NVP("Emission", mEmissionColor));
 	}
-
-	void LambertMaterial::Submit(Pipeline *pipeline)
-	{
-		mBackendMaterial->Set("DiffuseColor", DiffuseColor);
-		mBackendMaterial->Set("Emission", EmissionColor);
-
-		Material::Submit(pipeline);
-	}
-
-	/*Ref<Shader> LambertMaterial::GetShader() const
-	{
-		static Ref<Shader> shader = ShaderManager::Get().Load(ENGINE_SHADER_PATH "/Lambert.glsl");
-		return shader;
-	}*/
-
-	/*Ref<Material> LambertMaterial::Clone() const
-	{
-		return CreateRef<LambertMaterial>(*this);
-	}*/
 
 	REFLECT(LambertMaterial)
 	{
 		BEGIN_REFLECT(LambertMaterial)
-		REFLECT_PROPERTY(DiffuseColor)
-		REFLECT_PROPERTY(EmissionColor)
+		REFLECT_PROPERTY(mDiffuseColor)
+		REFLECT_PROPERTY(mEmissionColor)
 		REFLECT_CONSTRUCTOR();
 	}
 } // namespace BHive

@@ -3,10 +3,12 @@
 #include <backends/imgui_impl_vulkan.h>
 #include "VulkanConversions.h"
 #include "VulkanPipeline.h"
+#include "VulkanShader.h"
 #include "VulkanVertexArray.h"
 #include "VulkanBackendMaterial.h"
 #include "VulkanBuffers.h"
 #include "gfx/material/Material.h"
+#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {
@@ -16,7 +18,7 @@ namespace BHive
 		return static_cast<const T &>(cmd);
 	}
 
-	void VulkanCommandTranslator::ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx)
+	void VulkanCommandTranslator::ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx, uint32_t numAttachments)
 	{
 		auto &cmdbuffer = ctx.CommandBuffer;
 		const auto frame = ctx.Frame;
@@ -61,14 +63,16 @@ namespace BHive
 			{
 				auto &c = CmdCast<CmdBindPipeline>(*cmd);
 				auto pipeline = Cast<VulkanPipeline>(c.PipelineRef);
-				pipeline->Bind(cmdbuffer, frame);
+				pipeline->Bind(cmdbuffer, frame, numAttachments);
 			}
 			break;
 			case ECommandType::BindMaterial:
 			{
 				auto &c = CmdCast<CmdBindMaterial>(*cmd);
-				auto vkPipeline = Cast<VulkanPipeline>(c.PipelineRef);
-				BindMaterialSnapshot(c.Snapshot, vkPipeline, ctx);
+				if (c.BreakPoint)
+					__debugbreak();
+
+				BindMaterialSnapshot(c.Snapshot, ctx);
 			}
 			break;
 			case ECommandType::UploadBuffer:
@@ -172,39 +176,50 @@ namespace BHive
 		}
 	}
 
-	void VulkanCommandTranslator::BindMaterialSnapshot(const MaterialSnapshot &snap, VulkanPipeline *pipeline, FVulkanRendererContext &ctx)
+	void VulkanCommandTranslator::BindMaterialSnapshot(const MaterialSnapshot &snap, FVulkanRendererContext &ctx)
 	{
 		auto &cmd = ctx.CommandBuffer;
 		const auto frame = ctx.Frame;
-		auto refl = pipeline->GetShaderProgram()->GetRefl();
-		auto mergedRefl = pipeline->GetShaderProgram()->GetMergedRefl();
 
-		pipeline->Bind(cmd, frame);
-
-		if (!pipeline->HasSet(MATERIAL_SET_INDEX))
+		// use shader for this!!
+		auto shader = Cast<VulkanShader>(snap.Shader);
+		if (!shader)
 			return;
 
-		auto group = Cast<VulkanBindingGroup>(pipeline->GetOrCreateBindingGroup(MATERIAL_SET_INDEX));
+		if (auto materialGroup = shader->GetBindingGroup(MATERIAL_SET_INDEX))
+		{
+			BindMaterialResources(snap, *materialGroup);
+		}
 
-		auto &setBindings = refl.GetSetBindings(MATERIAL_SET_INDEX);
+		if (auto batchGroup = shader->GetBindingGroup(BATCH_SET_INDEX))
+		{
+			BindObjectResources(ctx.ModelBuffer, *batchGroup);
+		}
 
+		shader->Bind(cmd, frame);
+
+		for (auto &pc : snap.mReflection->PushConstants)
+		{
+			shader->BindPushConstants(cmd, ToVkShaderStageBit(pc.Stages), snap.PushConstantData.data(), (uint32_t)pc.Size, pc.Offset);
+		}
+	}
+
+	void VulkanCommandTranslator::BindMaterialResources(const MaterialSnapshot &snap, VulkanBindingGroup &group)
+	{
 		for (auto &[name, tb] : snap.Textures)
 		{
-			group->SetTexture(tb.Binding, tb.Texture, tb.Mip);
+			group.SetTexture(tb.Binding, tb.TextureRef, tb.BaseMipLevel);
 		}
 
 		for (auto &[name, buf] : snap.LocalBuffers)
 		{
-			group->SetBuffer(refl.FindByName(name)->binding, buf);
-		}
-
-		auto matSet = group->GetOrCreateMaterialSet();
-		cmd.bindDescriptorSets(pipeline->GetBindPoint(), pipeline->GetLayout(), MATERIAL_SET_INDEX, matSet, {});
-
-		for (auto &pc : mergedRefl.PushConstants)
-		{
-			vk::PushConstantsInfo info(pipeline->GetLayout(), ToVkShaderStageBit(pc.Stages), pc.Offset, (uint32_t)pc.Size, snap.PushConstantData.data() + pc.Offset);
-			cmd.pushConstants2(info);
+			group.SetBuffer(buf.Binding, buf.BufferRef);
 		}
 	}
+
+	void VulkanCommandTranslator::BindObjectResources(const Ref<GeneralBuffer> &buffer, VulkanBindingGroup &group)
+	{
+		group.SetBuffer(0, buffer);
+	}
+
 } // namespace BHive

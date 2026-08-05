@@ -11,7 +11,7 @@ namespace BHive
 		spirv_cross::Compiler compiler(source);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
-		//Get uniform buffers
+		// Get uniform buffers
 		for (const auto &ubo : resources.uniform_buffers)
 		{
 			auto &buffer_type = compiler.get_type(ubo.base_type_id);
@@ -19,7 +19,7 @@ namespace BHive
 			auto binding = compiler.get_decoration(ubo.id, spv::DecorationBinding);
 			auto size = compiler.get_declared_struct_size(buffer_type);
 
-			auto& ub = Sets[set].UniformBuffers[ubo.name];
+			auto &ub = Sets[set].UniformBuffers[ubo.name];
 			ub.Binding = binding;
 			ub.Size = size;
 			ub.Stages |= stage;
@@ -38,7 +38,7 @@ namespace BHive
 			}
 		}
 
-		//get samplers
+		// get samplers
 		for (const auto &sampler : resources.sampled_images)
 		{
 			auto set = compiler.get_decoration(sampler.id, spv::DecorationDescriptorSet);
@@ -51,7 +51,7 @@ namespace BHive
 			s.Stages |= stage;
 		}
 
-		for (const auto& storage_image : resources.storage_images)
+		for (const auto &storage_image : resources.storage_images)
 		{
 			auto set = compiler.get_decoration(storage_image.id, spv::DecorationDescriptorSet);
 			auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
@@ -87,14 +87,14 @@ namespace BHive
 			s.Stages |= stage;
 		}
 
-		//get storage buffers
+		// get storage buffers
 		for (const auto &storage : resources.storage_buffers)
 		{
 			auto &type = compiler.get_type(storage.base_type_id);
 			auto set = compiler.get_decoration(storage.id, spv::DecorationDescriptorSet);
 			auto binding = compiler.get_decoration(storage.id, spv::DecorationBinding);
 			auto size = compiler.get_declared_struct_size(type);
-			
+
 			auto &ssbo = Sets[set].StorageBuffers[storage.name];
 			ssbo.Binding = binding;
 			ssbo.Size = size;
@@ -159,11 +159,36 @@ namespace BHive
 		}
 	}
 
+	const FSampler *FShaderReflection::FindSampler(const std::string &name, uint32_t set) const
+	{
+		if (Sets.contains(set))
+		{
+			auto &targetSet = Sets.at(set);
+			if (targetSet.Samplers.contains(name))
+				return &targetSet.Samplers.at(name);
+		}
+
+		return nullptr;
+	}
+
+	const FUniform *FShaderReflection::FindPushConstant(const std::string &name) const
+	{
+		for (auto &pc : PushConstants)
+		{
+			if (pc.Members.contains(name))
+			{
+				return &pc.Members.at(name);
+			}
+		}
+
+		return nullptr;
+	}
+
 	std::string FShaderReflection::to_string() const
 	{
 		std::string result;
 
-		for (auto& [set, resource] : Sets)
+		for (auto &[set, resource] : Sets)
 		{
 			result += fmt::format("Set {}\n", set);
 
@@ -179,7 +204,7 @@ namespace BHive
 					result += fmt::format("\t\tMember: {} - Type: {} - Size: {} - Offset: {} - Location: {}\n", uniform_name, uniform.Type, uniform.Size, uniform.Offset, uniform.Location);
 				}
 			}
-			
+
 			for (const auto &[name, buffer] : resource.StorageBuffers)
 			{
 				result += fmt::format("\t\tStorage Buffer: {} -> Binding: {}, Size: {}\n", name, buffer.Binding, buffer.Size);
@@ -250,10 +275,9 @@ namespace BHive
 					dst.Semantic = ssbo.Semantic;
 				}
 			}
-			
 
-			//Merge Push Constants
-			for (auto & pc : refl.PushConstants)
+			// Merge Push Constants
+			for (auto &pc : refl.PushConstants)
 			{
 				auto &dst = merged.PushConstants.emplace_back();
 				dst.Size = pc.Size;
@@ -274,85 +298,85 @@ namespace BHive
 		return merged;
 	}
 
-FShaderReflectionLookUp::FShaderReflectionLookUp(const FShaderReflection &merged)
-{
-	Build(merged);
-}
-
-const FReflectedResource *FShaderReflectionLookUp::FindByName(const std::string &name) const
-{
-	return mByName.contains(name) ? &mByName.at(name) : nullptr;
-}
-
-const FReflectedResource *FShaderReflectionLookUp::FindBySetBinding(uint32_t set, uint32_t binding) const
-{
-	if (mBySetBinding.contains(set))
+	FShaderReflectionLookUp::FShaderReflectionLookUp(const FShaderReflection &merged)
 	{
-		auto s = mBySetBinding.at(set);
-		if (s.contains(binding))
-		{
-			return &s.at(binding);
-		}
+		Build(merged);
 	}
 
-	return nullptr;
-}
-
-const std::vector<FReflectedResource> &FShaderReflectionLookUp::GetSetBindings(uint32_t set) const
-{
-	static const std::vector<FReflectedResource> empty;
-	return mSets.contains(set) ? mSets.at(set) : empty;
-}
-
-void FShaderReflectionLookUp::Build(const FShaderReflection &merged)
-{
-	auto addResource = [&](const std::string &name, uint32_t set, const FReflectedResource &r)
+	const FReflectedResource *FShaderReflectionLookUp::FindByName(const std::string &name) const
 	{
-		mByName[name] = r;
-		mBySetBinding[set][r.binding] = r;
-		mSets[set].emplace_back(r);
-		mMaxSet = std::max(mMaxSet, set);
-	};
-
-	for (auto &[set, resource] : merged.Sets)
-	{
-		for (auto &[name, ubo] : resource.UniformBuffers)
-		{
-			FReflectedResource r;
-			r.binding = ubo.Binding;
-			r.kind = ubo.Type;
-			r.size = ubo.Size;
-			r.name = name;
-			r.Semantic = ubo.Semantic;
-			addResource(name, set, r);
-		}
-
-		for (auto &[name, ssbo] : resource.StorageBuffers)
-		{
-			FReflectedResource r;
-			r.binding = ssbo.Binding;
-			r.kind = ssbo.Type;
-			r.size = ssbo.Size;
-			r.name = name;
-			r.Semantic = ssbo.Semantic;
-			addResource(name, set, r);
-		}
-
-		for (auto &[name, smp] : resource.Samplers)
-		{
-			FReflectedResource r;
-			r.binding = smp.Binding;
-			r.kind = smp.Type;
-			r.name = name;
-			r.Semantic = smp.Semantic;
-			addResource(name, set, r);
-		}
+		return mByName.contains(name) ? &mByName.at(name) : nullptr;
 	}
 
-	// sort each set by binding index
-	for (auto &[set, vec] : mSets)
+	const FReflectedResource *FShaderReflectionLookUp::FindBySetBinding(uint32_t set, uint32_t binding) const
 	{
-		std::sort(vec.begin(), vec.end(), [](auto &a, auto &b) { return a.binding < b.binding; });
+		if (mBySetBinding.contains(set))
+		{
+			auto s = mBySetBinding.at(set);
+			if (s.contains(binding))
+			{
+				return &s.at(binding);
+			}
+		}
+
+		return nullptr;
 	}
-}
+
+	const std::vector<FReflectedResource> &FShaderReflectionLookUp::GetSetBindings(uint32_t set) const
+	{
+		static const std::vector<FReflectedResource> empty;
+		return mSets.contains(set) ? mSets.at(set) : empty;
+	}
+
+	void FShaderReflectionLookUp::Build(const FShaderReflection &merged)
+	{
+		auto addResource = [&](const std::string &name, uint32_t set, const FReflectedResource &r)
+		{
+			mByName[name] = r;
+			mBySetBinding[set][r.binding] = r;
+			mSets[set].emplace_back(r);
+			mMaxSet = std::max(mMaxSet, set);
+		};
+
+		for (auto &[set, resource] : merged.Sets)
+		{
+			for (auto &[name, ubo] : resource.UniformBuffers)
+			{
+				FReflectedResource r;
+				r.binding = ubo.Binding;
+				r.kind = ubo.Type;
+				r.size = ubo.Size;
+				r.name = name;
+				r.Semantic = ubo.Semantic;
+				addResource(name, set, r);
+			}
+
+			for (auto &[name, ssbo] : resource.StorageBuffers)
+			{
+				FReflectedResource r;
+				r.binding = ssbo.Binding;
+				r.kind = ssbo.Type;
+				r.size = ssbo.Size;
+				r.name = name;
+				r.Semantic = ssbo.Semantic;
+				addResource(name, set, r);
+			}
+
+			for (auto &[name, smp] : resource.Samplers)
+			{
+				FReflectedResource r;
+				r.binding = smp.Binding;
+				r.kind = smp.Type;
+				r.name = name;
+				r.Semantic = smp.Semantic;
+				addResource(name, set, r);
+			}
+		}
+
+		// sort each set by binding index
+		for (auto &[set, vec] : mSets)
+		{
+			std::sort(vec.begin(), vec.end(), [](auto &a, auto &b) { return a.binding < b.binding; });
+		}
+	}
 } // namespace BHive

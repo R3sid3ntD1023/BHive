@@ -17,26 +17,37 @@ namespace BHive
 		};
 
 	public:
-		FColor Albedo{1.0f, 1.0f, 1.0f, 1.0f};
-
-		FColor Emission{0.0f, 0.0f, 0.0f};
-
-		float Metallic{0.0f};
-
-		float Roughness{1.0f};
-
-		float Opacity{1.0f};
-
-		float DepthScale{1.0f};
-
-		glm::vec2 Tiling{1.0f, 1.0f};
-
-		TEnumAsByte<EFlags> Flags = Shadows;
-
 	public:
-		StandardMaterial() = default;
+		StandardMaterial()
+			: Material(ShaderManager::Get("StandardMaterial.glsl"))
+		{
+			SetAlbedo(FColor::White);
+			SetEmission(FColor::Black);
+			SetMetalness(0.0f);
+			SetRoughness(0.1f);
+			SetOpacity(1.0f);
+			SetDepthScale(1.0f);
+			SetTiling({1.0f, 1.0f});
+			SetFlags(EFlags::Shadows);
+		}
 
-		void Submit(Pipeline* pipeline = nullptr) override;
+		StandardMaterial &SetAlbedo(FColor color);
+
+		StandardMaterial &SetEmission(FColor color);
+
+		StandardMaterial &SetMetalness(float metalness);
+
+		StandardMaterial &SetRoughness(float roughness);
+
+		StandardMaterial &SetOpacity(float opacity);
+
+		StandardMaterial &SetDepthScale(float depthScale);
+
+		StandardMaterial &SetTiling(glm::vec2 tiling);
+
+		StandardMaterial &SetFlags(EFlags flags);
+
+		IMaterial &SetTexture(const std::string &name, const FTextureBinding &texture) & override;
 
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 
@@ -44,9 +55,24 @@ namespace BHive
 
 		virtual bool ShouldCastShadows() const override;
 
-		//Ref<Material> Clone() const override;
-
 		REFLECTABLEV(Material)
+
+	private:
+		FColor mAlbedo{1.0f, 1.0f, 1.0f, 1.0f};
+
+		FColor mEmission{0.0f, 0.0f, 0.0f};
+
+		float mMetalness{0.0f};
+
+		float mRoughness{1.0f};
+
+		float mOpacity{1.0f};
+
+		float mDepthScale{1.0f};
+
+		glm::vec2 mTiling{1.0f, 1.0f};
+
+		TEnumAsByte<EFlags> mFlags = Shadows;
 	};
 
 	REFLECT_EXTERN(StandardMaterial)

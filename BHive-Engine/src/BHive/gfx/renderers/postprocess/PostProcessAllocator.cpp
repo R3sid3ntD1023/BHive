@@ -39,7 +39,7 @@ namespace BHive
 	void PostProcessAllocator::CreateColorGradeOutput()
 	{
 		FTextureCreateInfo info{};
-		info.Format = EFormat::RGBA8;
+		info.Format = EFormat::RGBA32F;
 		info.Roles |= ETextureRole::RenderTarget;
 		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		info.DebugName = "ColorGradingTex";

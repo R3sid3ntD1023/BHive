@@ -1,6 +1,6 @@
 #include "Shader.h"
-#include "shader/ShaderAsset.h" 
-#include "shader/ShaderCompiler.h" 
+#include "shader/ShaderAsset.h"
+#include "shader/ShaderCompiler.h"
 #include "shader/ShaderUtils.h"
 #include "core/FileSystem.h"
 #include "shader/ShaderProgram.h"
@@ -14,7 +14,7 @@ namespace BHive
 		asset->Name = path.stem().string();
 		asset->SourcePath = path;
 
-		//load source
+		// load source
 		std::string source;
 		if (!FileSystem::ReadFile(path, source))
 		{
@@ -25,22 +25,22 @@ namespace BHive
 		auto expanded_source = ShaderUtils::ExpandIncludes(source, asset->SourcePath.string());
 		const uint64_t newHash = ShaderCache::ComputeHash(expanded_source);
 		const uint64_t oldHash = ShaderCache::GetStoredHash(asset->Name);
-	
+
 		auto source_stages = ShaderUtils::PreProcess(expanded_source);
 
-		//detect stages from preprocess
-		for (auto& [stage, code] : source_stages)
+		// detect stages from preprocess
+		for (auto &[stage, code] : source_stages)
 		{
 			asset->Stages[stage].Code = code;
 		}
 
 		bool changed = (newHash != oldHash);
 
-		//Cache Check
+		// Cache Check
 		if (!changed && ShaderCache::HasValidCache(*asset, expanded_source))
 		{
 			ShaderCache::LoadCache(*asset);
-			return CreateRef<ShaderProgram>(asset);
+			return ShaderProgram::Create(asset);
 		}
 
 		ShaderCompiler compiler(path);
@@ -50,7 +50,7 @@ namespace BHive
 		if (changed)
 			ShaderCache::StoreCache(*asset, expanded_source);
 
-		return CreateRef<ShaderProgram>(asset);
+		return ShaderProgram::Create(asset);
 	}
 
 	Ref<ShaderProgram> Shader::Create(const std::string &name, const std::string &vert, const std::string &frag)
@@ -65,6 +65,6 @@ namespace BHive
 		compiler.Init();
 		compiler.Compile(*asset);
 
-		return CreateRef<ShaderProgram>(asset);
+		return ShaderProgram::Create(asset);
 	}
 } // namespace BHive
