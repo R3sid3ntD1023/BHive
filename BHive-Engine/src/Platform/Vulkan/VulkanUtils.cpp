@@ -8,8 +8,8 @@ namespace BHive
 	uint32_t VulkanUtils::FindQueueFamilies(vk::PhysicalDevice device)
 	{
 		std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
-		auto graphicsQueueFamilyProperty =
-			std::find_if(queueFamilies.begin(), queueFamilies.end(), [](const vk::QueueFamilyProperties &qfp) { return (qfp.queueFlags & vk::QueueFlagBits::eGraphics); });
+		auto graphicsQueueFamilyProperty
+			= std::find_if(queueFamilies.begin(), queueFamilies.end(), [](const vk::QueueFamilyProperties &qfp) { return (qfp.queueFlags & vk::QueueFlagBits::eGraphics); });
 
 		return static_cast<uint32_t>(std::distance(queueFamilies.begin(), graphicsQueueFamilyProperty));
 	}
@@ -31,12 +31,12 @@ namespace BHive
 
 		switch (requested)
 		{
-		case vk::PresentModeKHR::eMailbox: //fast vsync
+		case vk::PresentModeKHR::eMailbox: // fast vsync
 		{
 			presentMode = std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eMailbox; }) ? vk::PresentModeKHR::eMailbox : vk::PresentModeKHR::eFifo;
 			break;
 		}
-		case vk::PresentModeKHR::eImmediate://vsync off
+		case vk::PresentModeKHR::eImmediate: // vsync off
 		{
 			presentMode = std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eImmediate; }) ? vk::PresentModeKHR::eImmediate : vk::PresentModeKHR::eFifo;
 			break;
@@ -45,7 +45,7 @@ namespace BHive
 			break;
 		}
 
-		LOG_TRACE("SwapChain PresentMode '{}' selected!", vk::to_string(presentMode));
+		LOG_TRACE("VulkanUtils: PresentMode '{}' selected!", vk::to_string(presentMode));
 		return presentMode;
 	}
 
@@ -135,22 +135,11 @@ namespace BHive
 	}
 
 	void VulkanUtils::TransitionImageLayout(
-		vk::raii::CommandBuffer& cmd,
-		vk::Image image,  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
+		vk::raii::CommandBuffer &cmd, vk::Image image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, ImageSubresourceRange inRange)
 	{
 		vk::ImageSubresourceRange range{aspect_flags, inRange.BaseMipLevel, inRange.LevelCount, inRange.BaseArrayLayer, inRange.LayerCount};
-		vk::ImageMemoryBarrier2 barrier(
-			srcStageMask,
-			srcAccessMask, 
-			dstStageMask, 
-			dstAccessMask, 
-			oldLayout, 
-			newLayout, 
-			VK_QUEUE_FAMILY_IGNORED,
-			VK_QUEUE_FAMILY_IGNORED, 
-			image, 
-			range);
+		vk::ImageMemoryBarrier2 barrier(srcStageMask, srcAccessMask, dstStageMask, dstAccessMask, oldLayout, newLayout, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, image, range);
 
 		vk::DependencyInfo depInfo({}, {}, {}, barrier);
 

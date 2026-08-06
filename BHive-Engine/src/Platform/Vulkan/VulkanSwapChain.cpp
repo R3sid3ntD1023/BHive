@@ -16,8 +16,8 @@ namespace BHive
 
 		mExtent = VulkanUtils::ChooseSwapExtent(surfaceCapabilities, w, h);
 		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(formats);
-		mPresentMode= VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR::eImmediate, presentModes);
-		mMinImageCount = VulkanUtils::ChooseMinImageCount(mCapabilities);
+		mPresentMode = VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR::eImmediate, presentModes);
+		mMinImageCount = VulkanUtils::ChooseMinImageCount(surfaceCapabilities);
 
 		Init(device, mExtent.width, mExtent.height);
 	}
@@ -36,30 +36,13 @@ namespace BHive
 	{
 		mDevice = device;
 		mExtent = vk::Extent2D(w, h);
-	
-		vk::SwapchainCreateInfoKHR swap_chain_create_info
-		(
-			{}, 
-			mSurface, 
-			mMinImageCount, 
-			mImageFormat.format, 
-			mImageFormat.colorSpace, 
-			mExtent, 
-			1, 
-			vk::ImageUsageFlagBits::eColorAttachment,
-			vk::SharingMode::eExclusive, 
-			{},
-			mCapabilities.currentTransform, 
-			vk::CompositeAlphaFlagBitsKHR::eOpaque, 
-			mPresentMode, 
-			true, 
-			nullptr,
-			nullptr
-		);
+
+		vk::SwapchainCreateInfoKHR swap_chain_create_info(
+			{}, mSurface, mMinImageCount, mImageFormat.format, mImageFormat.colorSpace, mExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, {},
+			mCapabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, mPresentMode, true, nullptr, nullptr);
 
 		mSwapChain = device.createSwapchainKHR(swap_chain_create_info);
 
-		
 		auto images = mSwapChain.getImages();
 		auto imageCount = images.size();
 
@@ -79,7 +62,7 @@ namespace BHive
 			info.DebugName = std::format("SwapChainImage_{}", i);
 
 			auto range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
-			info.ViewCI = vk::ImageViewCreateInfo({}, raw, vk::ImageViewType::e2D, mImageFormat.format, {}, range); 
+			info.ViewCI = vk::ImageViewCreateInfo({}, raw, vk::ImageViewType::e2D, mImageFormat.format, {}, range);
 			img.Initialize(raw, info);
 		}
 
@@ -110,6 +93,14 @@ namespace BHive
 		auto &physical_device = VulkanBackend::GetPhysicalDevice();
 		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(mSurface);
 		auto extent = VulkanUtils::ChooseSwapExtent(surfaceCapabilities, w, h);
+		auto formats = physical_device.getSurfaceFormatsKHR(mSurface);
+		auto presentModes = physical_device.getSurfacePresentModesKHR(mSurface);
+
+		mExtent = VulkanUtils::ChooseSwapExtent(surfaceCapabilities, w, h);
+		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(formats);
+		mPresentMode = VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR::eImmediate, presentModes);
+		mMinImageCount = VulkanUtils::ChooseMinImageCount(surfaceCapabilities);
+
 		Init(device, extent.width, extent.height);
 	}
 
@@ -121,13 +112,13 @@ namespace BHive
 		{
 			mDevice.waitForFences(fence, VK_TRUE, UINT64_MAX);
 			mDevice.resetFences(fence);
-		}	
+		}
 	}
 
 	vk::ResultValue<uint32_t> VulkanSwapChain::AquireNextImage(uint32_t frame)
 	{
 		vk::Semaphore present = VulkanBackend::GetImageAvailableSemaphore(frame);
-		return  mSwapChain.acquireNextImage(UINT64_MAX, present, VK_NULL_HANDLE);
+		return mSwapChain.acquireNextImage(UINT64_MAX, present, VK_NULL_HANDLE);
 	}
 
 	vk::Result VulkanSwapChain::Present(vk::CommandBuffer cmd, uint32_t imageIndex, uint32_t frame)
