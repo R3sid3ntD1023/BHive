@@ -28,8 +28,6 @@ namespace BHive
 
 		vk::DescriptorSetLayout GetDescriptorSetLayout(uint32_t set) const;
 
-		const SetHashes &GetSetHashes() const { return mSetHashes; }
-
 		bool HasSet(uint32_t setIndex) const;
 
 		FPipelineLayoutInfo GetPipelineLayoutInfo() const;
@@ -49,8 +47,6 @@ namespace BHive
 
 		void CreatePipelineLayout();
 
-		uint64_t HashSetLayout(const FShaderReflection &merged, uint32_t set);
-
 		void BindGlobalResources();
 
 	private:
@@ -64,11 +60,9 @@ namespace BHive
 
 		std::map<uint32_t, vk::raii::DescriptorSetLayout> mDescriptorSetLayouts;
 
-		std::map<uint32_t, Scope<VulkanBindingGroup>> mBindGroups;
+		std::unordered_map<uint32_t, Ref<VulkanBindingGroup>> mBindGroups;
 
 		vk::raii::DescriptorSetLayout mEmptyDescriptorSet = VK_NULL_HANDLE;
-
-		SetHashes mSetHashes;
 
 		PushConstantRanges mPushConstantRanges;
 

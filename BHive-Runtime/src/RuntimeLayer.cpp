@@ -111,8 +111,12 @@ namespace BHive
 		mEmissiveMaterial = CreateRef<EmissiveMaterial>();
 		mEmissiveMaterial->SetEmissionColor(FColor(1.0f, 0.0f, 0.0f, 10.0f));
 
-		mLambertMaterial = CreateRef<LambertMaterial>();
-		mLambertMaterial->SetDiffuseColor(FColor::LightGray).SetEmissionColor(FColor::Black);
+		mLambertMaterials[0] = CreateRef<LambertMaterial>();
+		mLambertMaterials[0]->SetDiffuseColor(FColor::LightGray).SetEmissionColor(FColor::Black);
+		mLambertMaterials[0]->SetTexture("DiffuseMap", {mTexture});
+
+		mLambertMaterials[1] = CreateRef<LambertMaterial>();
+		mLambertMaterials[1]->SetDiffuseColor(FColor::Orange).SetEmissionColor(FColor::Black);
 
 		mStandardMaterial = CreateRef<StandardMaterial>();
 		mStandardMaterial->SetAlbedo(FColor::White).SetEmission(FColor::Black).SetMetalness(1.0f).SetRoughness(0.5f);
@@ -160,6 +164,8 @@ namespace BHive
 
 	void RuntimeLayer::OnUpdate(float time)
 	{
+		// LOG_INFO("Frame time: {} ms", Time::DeltaTime() * 1000.0);
+
 		transform.AddRotation({0, time * 10.f, 0});
 
 		mCamera.ProcessInput();
@@ -228,8 +234,10 @@ namespace BHive
 			{
 				mMesh->GetVertexArray()->DeclareAccess(scenePass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
 
-				scenePass.Emplace<CmdBindMaterial>()(mLambertMaterial.get());
+				scenePass.Emplace<CmdBindMaterial>()(mLambertMaterials[0].get());
 				scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 2u, stride);
+
+				scenePass.Emplace<CmdBindMaterial>()(mLambertMaterials[1].get());
 				scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mMesh->GetVertexArray().get(), 1u, stride, 2u);
 			}
 

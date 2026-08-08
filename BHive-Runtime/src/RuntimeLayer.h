@@ -44,7 +44,7 @@ namespace BHive
 		Ref<class StaticMesh> mMesh = nullptr;
 
 		Ref<class EmissiveMaterial> mEmissiveMaterial = nullptr;
-		Ref<class LambertMaterial> mLambertMaterial = nullptr;
+		std::array<Ref<class LambertMaterial>, 2> mLambertMaterials;
 		Ref<class StandardMaterial> mStandardMaterial = nullptr;
 
 		PostProcessAllocator mPostProcessAllocator;

@@ -13,19 +13,11 @@ namespace BHive
 	class Texture;
 	class VulkanShader;
 
-	enum class EBindingUpdateRate
-	{
-		Static,
-		PerFrame,
-		PerPass
-	};
-
 	struct FBindingInfo
 	{
 		uint32_t Binding = 0;
 		EResourceType Type{};
 		EResourceCategory Category{};
-		EBindingUpdateRate UpdateRate{};
 
 		Ref<BufferBase> Buffer;
 		Ref<Texture> Texture;
@@ -35,24 +27,20 @@ namespace BHive
 	class VulkanBindingGroup : public IBindingGroup
 	{
 	public:
-		VulkanBindingGroup(vk::Device device, VulkanShader *shader, uint32_t setIndex, const FShaderReflectionLookUp &refl);
+		VulkanBindingGroup(VulkanShader *shader, uint32_t setIndex);
 
 		void SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer);
 
 		void SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip = 0);
 
-		vk::raii::DescriptorSet Update(uint32_t frame);
+		vk::DescriptorSet Update(uint32_t frame);
 
 		const std::vector<FBindingInfo> &GetBindings() const { return mBindings; }
 
 		uint32_t GetSetIndex() const { return mSetIndex; }
 
 	private:
-		void WriteDescriptorSet(vk::DescriptorSet set);
-
 		void BuildBindings(const FShaderReflectionLookUp &refl);
-
-		static EBindingUpdateRate InferUpdateRate(EResourceType type, uint32_t setIndex);
 
 		vk::DescriptorBufferInfo BuildBufferInfo(const FBindingInfo &bindInfo) const;
 
@@ -60,12 +48,24 @@ namespace BHive
 
 		FBindingInfo *FindBinding(uint32_t binding);
 
+		void MakeDirty();
+
+		void BuildWriteCopies();
+
+		void CreateDescriptorSet(vk::DescriptorSetLayout layout);
+
 	private:
-		VulkanShader *mShader = nullptr;
+		vk::DescriptorSet mSet = VK_NULL_HANDLE;
 
 		uint32_t mSetIndex;
 
 		std::vector<FBindingInfo> mBindings;
+
+		bool mNeedsUpdate = true;
+
+		std::vector<vk::WriteDescriptorSet> mCachedWrites;
+		std::vector<vk::DescriptorImageInfo> mCachedImageInfos;
+		std::vector<vk::DescriptorBufferInfo> mCachedBufferInfos;
 	};
 
 } // namespace BHive

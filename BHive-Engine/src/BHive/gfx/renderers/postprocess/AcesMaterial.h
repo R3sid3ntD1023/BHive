@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PostProcessMaterial.h"
+#include "gfx/material/Material.h"
 
 namespace BHive
 {
@@ -10,7 +11,7 @@ namespace BHive
 	class BHIVE_API AcesMaterial : public PostProcessMaterial
 	{
 	public:
-		AcesMaterial() = default;
+		AcesMaterial();
 
 		Ref<Texture> AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input) override;
 
@@ -20,5 +21,7 @@ namespace BHive
 
 	private:
 		Ref<Framebuffer> mFramebuffer;
+
+		Scope<Material> mMaterial;
 	};
 } // namespace BHive

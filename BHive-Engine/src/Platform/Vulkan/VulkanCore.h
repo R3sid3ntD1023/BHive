@@ -20,6 +20,5 @@ namespace BHive
 	static constexpr uint32_t MATERIAL_SET_INDEX = 1;
 	static constexpr uint32_t OBJECT_SET_INDEX = 2;
 	static constexpr uint32_t BATCH_SET_INDEX = 3;
+	static constexpr uint32_t PASS_SET_INDEX = 4;
 } // namespace BHive
-
-#define VULKAN_ERRORS_WITH_ASSERT 0

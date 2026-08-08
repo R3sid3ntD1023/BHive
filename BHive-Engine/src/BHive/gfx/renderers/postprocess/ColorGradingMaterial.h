@@ -2,6 +2,7 @@
 
 #include "PostProcessMaterial.h"
 #include "core/math/Math.h"
+#include "gfx/material/Material.h"
 
 namespace BHive
 {
@@ -10,7 +11,7 @@ namespace BHive
 	class BHIVE_API ColorGradingMaterial : public PostProcessMaterial
 	{
 	public:
-		ColorGradingMaterial() = default;
+		ColorGradingMaterial();
 
 		Ref<Texture> AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input) override;
 
@@ -28,5 +29,6 @@ namespace BHive
 
 	private:
 		Ref<Framebuffer> mFramebuffer;
+		Scope<Material> mMaterial;
 	};
 } // namespace BHive

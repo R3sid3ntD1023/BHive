@@ -5,13 +5,17 @@
 
 namespace BHive
 {
+	AcesMaterial::AcesMaterial()
+	{
+		mMaterial = CreateScope<Material>(ShaderManager::Get("Aces.glsl"));
+	}
+
 	Ref<Texture> AcesMaterial::AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input)
 	{
 		auto output = allocator.GetAcesOutput();
 		auto dstSize = output->GetSize();
 
-		auto bindings = FComputeBindings(ShaderManager::Get("Aces.glsl"));
-		bindings.SetTexture("uSceneColor", FTextureBinding(input));
+		mMaterial->SetTexture("uSceneColor", FTextureBinding(input));
 
 		auto &pass = graph.AddPass("Aces", EPassType::OffScreen);
 
@@ -19,7 +23,7 @@ namespace BHive
 		pass.Push(mFramebuffer);
 		pass.Push(input, EImageAccess::ColorRead);
 		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
-		pass.Emplace<CmdBindMaterial>()(&bindings);
+		pass.Emplace<CmdBindMaterial>()(mMaterial.get());
 		pass.Emplace<CmdDrawFullScreen>()();
 		pass.EndPhase();
 

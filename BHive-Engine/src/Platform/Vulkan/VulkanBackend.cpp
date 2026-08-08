@@ -14,6 +14,8 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 	#endif
 #endif
 
+#define VULKAN_ERRORS_WITH_ASSERT 1
+
 namespace BHive
 {
 	static const std::vector<const char *> s_validationLayers = {"VK_LAYER_KHRONOS_validation"};
@@ -55,7 +57,7 @@ namespace BHive
 		}
 
 #if VULKAN_ERRORS_WITH_ASSERT
-		if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+		if (messageSeverity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eError)
 		{
 			ASSERT(false);
 		}

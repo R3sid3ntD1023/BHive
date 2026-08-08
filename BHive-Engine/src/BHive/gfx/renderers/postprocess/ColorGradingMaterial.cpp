@@ -5,16 +5,20 @@
 
 namespace BHive
 {
+	ColorGradingMaterial::ColorGradingMaterial()
+	{
+		mMaterial = CreateScope<Material>(ShaderManager::Get("ColorGrading.glsl"));
+	}
+
 	Ref<Texture> ColorGradingMaterial::AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input)
 	{
 		auto output = allocator.GetColorGradeOutput();
 
-		auto bindings = FComputeBindings(ShaderManager::Get("ColorGrading.glsl"));
-		bindings.SetTexture("uTonemapped", FTextureBinding(input))
-			.SetParam("uLift", MaterialParam(Params.Lift))
-			.SetParam("uGamma", MaterialParam(Params.Gamma))
-			.SetParam("uGain", MaterialParam(Params.Gain))
-			.SetParam("uSaturation", MaterialParam(Params.Saturation));
+		mMaterial->SetTexture("uTonemapped", FTextureBinding(input));
+		mMaterial->SetParam("uLift", MaterialParam(Params.Lift));
+		mMaterial->SetParam("uGamma", MaterialParam(Params.Gamma));
+		mMaterial->SetParam("uGain", MaterialParam(Params.Gain));
+		mMaterial->SetParam("uSaturation", MaterialParam(Params.Saturation));
 
 		auto &pass = graph.AddPass("Color Grading Pass", EPassType::OffScreen);
 
@@ -22,7 +26,7 @@ namespace BHive
 		pass.Push(mFramebuffer);
 		pass.Push(input, EImageAccess::ColorRead);
 		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
-		pass.Emplace<CmdBindMaterial>()(&bindings);
+		pass.Emplace<CmdBindMaterial>()(mMaterial.get());
 		pass.Emplace<CmdDrawFullScreen>()();
 		pass.EndPhase();
 

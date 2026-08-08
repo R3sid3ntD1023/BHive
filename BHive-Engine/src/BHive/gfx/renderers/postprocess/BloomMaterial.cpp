@@ -4,6 +4,14 @@
 
 namespace BHive
 {
+	BloomMaterial::BloomMaterial()
+	{
+		mMaterials[0] = CreateScope<Material>(ShaderManager::Get("PreFilter.glsl"));
+		mMaterials[1] = CreateScope<Material>(ShaderManager::Get("DownSample.glsl"));
+		mMaterials[2] = CreateScope<Material>(ShaderManager::Get("UpSample.glsl"));
+		mMaterials[3] = CreateScope<Material>(ShaderManager::Get("Composite.glsl"));
+	}
+
 	Ref<Texture> BloomMaterial::AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input)
 	{
 		auto bloomOutput = allocator.GetBloomOutput();
@@ -16,24 +24,19 @@ namespace BHive
 
 		// Phase 0 : Prefilter Scene color
 		{
-			auto prefilterBindings = FComputeBindings(ShaderManager::Get("PreFilter.glsl"));
-
-			prefilterBindings.SetTexture("uSceneColor", FTextureBinding(input)).SetParam("uThreshold", MaterialParam(Params.Threshold));
+			mMaterials[0]->SetTexture("uSceneColor", FTextureBinding(input)).SetParam("uThreshold", MaterialParam(Params.Threshold));
 
 			pass.BeginPhase(EPhaseType::Graphics);
 			pass.Push(mFramebuffers[0]);
 			pass.Push(input, EImageAccess::ColorRead);
 			pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
-			pass.Emplace<CmdBindMaterial>()(&prefilterBindings);
+			pass.Emplace<CmdBindMaterial>()(mMaterials[0].get());
 			pass.Emplace<CmdDrawFullScreen>()();
 			pass.EndPhase();
 		}
 
 		// Phase 1: Downsample
 		{
-
-			auto downsampleBindings = FComputeBindings(ShaderManager::Get("DownSample.glsl"));
-
 			for (uint32_t mip = 0; mip < mipCount - 1; mip++)
 			{
 				uint32_t srcMip = mip;
@@ -42,13 +45,13 @@ namespace BHive
 				ImageSubresourceRange srcRange = {srcMip, 1, 0, 1};
 				ImageSubresourceRange dstRange = {dstMip, 1, 0, 1};
 
-				downsampleBindings.SetTexture("uSrcTexture", FTextureBinding(bloomOutput, srcMip));
+				mMaterials[1]->SetTexture("uSrcTexture", FTextureBinding(bloomOutput, srcMip));
 
 				pass.BeginPhase(EPhaseType::Graphics);
 				pass.Push(mFramebuffers[0], dstRange);
 				pass.Push(bloomOutput, EImageAccess::ColorRead, srcRange);
 				pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
-				pass.Emplace<CmdBindMaterial>()(&downsampleBindings);
+				pass.Emplace<CmdBindMaterial>()(mMaterials[1].get());
 				pass.Emplace<CmdDrawFullScreen>()();
 				pass.EndPhase();
 			}
@@ -56,9 +59,7 @@ namespace BHive
 
 		// Phase 2: UpSample
 		{
-			auto upsampleBindings = FComputeBindings(ShaderManager::Get("UpSample.glsl"));
-
-			upsampleBindings.SetParam("uFilterRadius", MaterialParam(Params.Radius));
+			mMaterials[2]->SetParam("uFilterRadius", MaterialParam(Params.Radius));
 
 			for (uint32_t mip = mipCount - 1; mip > 0; mip--)
 			{
@@ -68,13 +69,13 @@ namespace BHive
 				ImageSubresourceRange srcRange{srcMip, 1, 0, 1};
 				ImageSubresourceRange dstRange{dstMip, 1, 0, 1};
 
-				upsampleBindings.SetTexture("uSrcTexture", FTextureBinding(bloomOutput, srcMip));
+				mMaterials[2]->SetTexture("uSrcTexture", FTextureBinding(bloomOutput, srcMip));
 
 				pass.BeginPhase(EPhaseType::Graphics);
 				pass.Push(mFramebuffers[0], dstRange);
 				pass.Push(bloomOutput, EImageAccess::ColorRead, srcRange);
 				pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
-				pass.Emplace<CmdBindMaterial>()(&upsampleBindings);
+				pass.Emplace<CmdBindMaterial>()(mMaterials[2].get());
 				pass.Emplace<CmdDrawFullScreen>()();
 				pass.EndPhase();
 			}
@@ -82,11 +83,10 @@ namespace BHive
 
 		// Composite to scene
 		{
-			auto compositeBindings = FComputeBindings(ShaderManager::Get("Composite.glsl"));
-			compositeBindings.SetTexture("uTextureA", FTextureBinding(input))
-				.SetTexture("uTextureB", FTextureBinding(bloomOutput))
-				.SetParam("uExposure", MaterialParam(Params.Exposure))
-				.SetParam("uBloomStrength", MaterialParam(Params.Strength));
+			mMaterials[3]->SetTexture("uTextureA", FTextureBinding(input));
+			mMaterials[3]->SetTexture("uTextureB", FTextureBinding(bloomOutput));
+			mMaterials[3]->SetParam("uExposure", MaterialParam(Params.Exposure));
+			mMaterials[3]->SetParam("uBloomStrength", MaterialParam(Params.Strength));
 
 			// Phase 3 : composite scene and bloom
 			pass.BeginPhase(EPhaseType::Graphics);
@@ -94,7 +94,7 @@ namespace BHive
 			pass.Push(input, EImageAccess::ColorRead);
 			pass.Push(bloomOutput, EImageAccess::ColorRead);
 			pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
-			pass.Emplace<CmdBindMaterial>()(&compositeBindings);
+			pass.Emplace<CmdBindMaterial>()(mMaterials[3].get());
 			pass.Emplace<CmdDrawFullScreen>()();
 
 			pass.BeginPhase(EPhaseType::Transfer);

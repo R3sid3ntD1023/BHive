@@ -17,7 +17,6 @@ namespace BHive
 		  mDevice(VulkanBackend::GetLogicalDevice())
 	{
 		CreateDescriptorResources(*asset);
-		CreateSetHashes(*asset);
 		CreateModules(*asset);
 		CreatePipelineLayout();
 		BindGlobalResources();
@@ -33,6 +32,7 @@ namespace BHive
 
 	void VulkanShader::Bind(vk::CommandBuffer cmd, uint32_t frame)
 	{
+
 		for (auto &[stage, shader] : mShaderEXTs)
 			cmd.bindShadersEXT(stage, {shader});
 
@@ -178,16 +178,14 @@ namespace BHive
 				{
 					flags = vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eUpdateUnusedWhilePending;
 				}
-
-				/*flags |= vk::DescriptorBindingFlagBits::eUpdateAfterBind;*/
 			}
 
 			vk::DescriptorSetLayoutBindingFlagsCreateInfo flags(binding_flags);
 			vk::DescriptorSetLayoutCreateInfo layout_info({}, bindings, bindings.empty() ? nullptr : &flags);
 			mDescriptorSetLayouts.emplace(set, mDevice.createDescriptorSetLayout(layout_info));
 
-			auto group = CreateScope<VulkanBindingGroup>(mDevice, this, set, GetRefl());
-			mBindGroups.emplace(set, std::move(group));
+			auto group = CreateRef<VulkanBindingGroup>(this, set);
+			mBindGroups.emplace(set, group);
 		}
 
 		vk::DescriptorSetLayoutCreateInfo empty{};
@@ -199,57 +197,6 @@ namespace BHive
 		}
 
 		// LOG_INFO("Push constants found: {} - {}", asset.Name, merged.PushConstants.size());
-	}
-
-	void VulkanShader::CreateSetHashes(const ShaderAsset &asset)
-	{
-
-		for (const auto &[setIndex, layout] : mDescriptorSetLayouts)
-		{
-			uint64_t hash = HashSetLayout(asset.MergedReflection, setIndex);
-			mSetHashes[setIndex] = hash;
-		}
-	}
-
-	uint64_t VulkanShader::HashSetLayout(const FShaderReflection &merged, uint32_t set)
-	{
-		uint64_t h = 146527; // random seed
-
-		auto hash_combine = [&](uint64_t v) { h ^= v += 0x9e3779b9 + (h << 6) + (h >> 2); };
-
-		if (!merged.Sets.contains(set))
-			return h;
-
-		const auto &target_set = merged.Sets.at(set);
-
-		for (auto &[name, ub] : target_set.UniformBuffers)
-		{
-			hash_combine(std::hash<std::string>{}(name));
-			hash_combine(ub.Binding);
-			hash_combine((uint64_t)vk::DescriptorType::eUniformBuffer);
-			hash_combine(ub.Size);
-			hash_combine(static_cast<uint64_t>(ub.Stages));
-		}
-
-		for (auto &[name, sb] : target_set.StorageBuffers)
-		{
-			hash_combine(std::hash<std::string>{}(name));
-			hash_combine(sb.Binding);
-			hash_combine((uint64_t)vk::DescriptorType::eStorageBuffer);
-			hash_combine(sb.Size);
-			hash_combine(static_cast<uint64_t>(sb.Stages));
-		}
-
-		for (auto &[name, sampler] : target_set.Samplers)
-		{
-			hash_combine(std::hash<std::string>{}(name));
-			hash_combine(sampler.Binding);
-			hash_combine((uint64_t)vk::DescriptorType::eCombinedImageSampler);
-			hash_combine(sampler.ArraySize);
-			hash_combine(static_cast<uint64_t>(sampler.Stages));
-		}
-
-		return h;
 	}
 
 	void VulkanShader::BindGlobalResources()

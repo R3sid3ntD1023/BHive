@@ -121,8 +121,6 @@ namespace BHive
 
 		swapChain->WaitForFence(current_frame);
 
-		mDescriptorPoolManager.ResetFrame(mCompletedFrame);
-
 		ProcessDeletionQueue(mCompletedFrame);
 
 		cmd.reset();

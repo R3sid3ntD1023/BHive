@@ -11,28 +11,30 @@
 namespace BHive
 {
 
-	VulkanBindingGroup::VulkanBindingGroup(vk::Device device, VulkanShader *shader, uint32_t setIndex, const FShaderReflectionLookUp &refl)
-		: mShader(shader),
-		  mSetIndex(setIndex)
+	VulkanBindingGroup::VulkanBindingGroup(VulkanShader *shader, uint32_t setIndex)
+		: mSetIndex(setIndex)
 	{
 
-		BuildBindings(refl);
+		BuildBindings(shader->GetRefl());
+		CreateDescriptorSet(shader->GetDescriptorSetLayout(setIndex));
 	}
 
 	void VulkanBindingGroup::SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer)
 	{
-		if (auto info = FindBinding(binding))
+		if (auto info = FindBinding(binding); info->Buffer != buffer)
 		{
 			info->Buffer = buffer;
+			MakeDirty();
 		}
 	}
 
 	void VulkanBindingGroup::SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip)
 	{
-		if (auto info = FindBinding(binding))
+		if (auto info = FindBinding(binding); info->Texture != texture || info->MipLevel != mip)
 		{
 			info->Texture = texture;
 			info->MipLevel = mip;
+			MakeDirty();
 		}
 	}
 
@@ -47,47 +49,24 @@ namespace BHive
 			info.Binding = r.binding;
 			info.Type = r.kind;
 			info.Category = GetCategory(r.kind);
-			info.UpdateRate = InferUpdateRate(r.kind, mSetIndex);
 			mBindings.push_back(info);
 		}
 	}
 
-	EBindingUpdateRate VulkanBindingGroup::InferUpdateRate(EResourceType type, uint32_t setIndex)
+	vk::DescriptorSet VulkanBindingGroup::Update(uint32_t frame)
 	{
-		if (setIndex == 0)
-			return EBindingUpdateRate::PerFrame;
-
-		switch (type)
+		if (mNeedsUpdate)
 		{
-		case EResourceType::UniformBuffer:
-		case EResourceType::StorageBuffer:
-		case EResourceType::InputAttachment:
-			return EBindingUpdateRate::PerFrame;
-		case EResourceType::StorageImage:
-			return EBindingUpdateRate::PerPass;
-		case EResourceType::CombinedImageSampler:
-		case EResourceType::SeperatedImage:
-		case EResourceType::SeperatedSampler:
-			return (setIndex == 0) ? EBindingUpdateRate::PerFrame : EBindingUpdateRate::PerPass;
-		default:
-			return EBindingUpdateRate::PerFrame;
+			BuildWriteCopies();
+
+			vk::Device device = VulkanBackend::GetLogicalDevice();
+			if (!mCachedWrites.empty())
+				device.updateDescriptorSets(mCachedWrites, {});
+
+			mNeedsUpdate = false;
 		}
-	}
 
-	vk::raii::DescriptorSet VulkanBindingGroup::Update(uint32_t frame)
-	{
-		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
-		auto &pools = api->GetDescriptorPoolManager();
-		auto pool = pools.GetPool(mSetIndex, frame);
-		auto &device = VulkanBackend::GetLogicalDevice();
-
-		auto layout = mShader->GetDescriptorSetLayout(mSetIndex);
-		vk::DescriptorSetAllocateInfo allocInfo(pool, 1, &layout);
-
-		auto set = std::move(device.allocateDescriptorSets(allocInfo).front());
-
-		WriteDescriptorSet(set);
-		return set;
+		return mSet;
 	}
 
 	vk::DescriptorBufferInfo VulkanBindingGroup::BuildBufferInfo(const FBindingInfo &bindInfo) const
@@ -149,44 +128,58 @@ namespace BHive
 		return it != mBindings.end() ? &(*it) : nullptr;
 	}
 
-	void VulkanBindingGroup::WriteDescriptorSet(vk::DescriptorSet set)
+	void VulkanBindingGroup::MakeDirty()
 	{
-		auto &device = VulkanBackend::GetLogicalDevice();
+		mNeedsUpdate = true;
+	}
 
-		std::vector<vk::WriteDescriptorSet> writes;
-		std::vector<vk::DescriptorImageInfo> imageInfos;
-		std::vector<vk::DescriptorBufferInfo> bufferInfos;
+	void VulkanBindingGroup::BuildWriteCopies()
+	{
+		mCachedWrites.clear();
+		mCachedImageInfos.clear();
+		mCachedBufferInfos.clear();
 
-		imageInfos.reserve(mBindings.size());
-		bufferInfos.reserve(mBindings.size());
-		writes.reserve(mBindings.size());
+		auto size = mBindings.size();
+
+		mCachedWrites.reserve(size);
+		mCachedImageInfos.reserve(size);
+		mCachedBufferInfos.reserve(size);
 
 		for (auto &b : mBindings)
 		{
-			if (b.UpdateRate == EBindingUpdateRate::Static)
-				continue;
-
 			if (IsBuffer(b.Type))
 			{
 				if (!b.Buffer)
 					continue;
 
-				bufferInfos.push_back(BuildBufferInfo(b));
-				writes.emplace_back(set, b.Binding, 0, ToVkType(b.Type), nullptr, bufferInfos.back());
+				mCachedBufferInfos.push_back(BuildBufferInfo(b));
+				auto &bufInfo = mCachedBufferInfos.back();
+
+				mCachedWrites.emplace_back(mSet, b.Binding, 0, ToVkType(b.Type), nullptr, bufInfo);
 			}
 			else if (IsTexture(b.Type))
 			{
 				if (!b.Texture)
 					continue;
 
-				imageInfos.push_back(BuildImageInfo(b, b.MipLevel));
-				writes.emplace_back(set, b.Binding, 0, ToVkType(b.Type), imageInfos.back());
+				mCachedImageInfos.push_back(BuildImageInfo(b, b.MipLevel));
+				auto &imgInfo = mCachedImageInfos.back();
+
+				mCachedWrites.emplace_back(mSet, b.Binding, 0, ToVkType(b.Type), imgInfo);
 			}
 		}
-
-		if (!writes.empty())
-		{
-			device.updateDescriptorSets(writes, {});
-		}
 	}
+
+	void VulkanBindingGroup::CreateDescriptorSet(vk::DescriptorSetLayout layout)
+	{
+		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
+		auto &pools = api->GetDescriptorPoolManager();
+		auto pool = pools.GetPool();
+		vk::Device device = VulkanBackend::GetLogicalDevice();
+
+		vk::DescriptorSetAllocateInfo allocInfo(pool, {layout});
+
+		mSet = device.allocateDescriptorSets(allocInfo).front();
+	}
+
 } // namespace BHive

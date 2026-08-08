@@ -196,6 +196,11 @@ namespace BHive
 			BindObjectResources(ctx.ModelBuffer, *batchGroup);
 		}
 
+		if (auto passGroup = shader->GetBindingGroup(PASS_SET_INDEX))
+		{
+			BindMaterialResources(snap, *passGroup);
+		}
+
 		shader->Bind(cmd, frame);
 
 		for (auto &pc : snap.mReflection->PushConstants)
