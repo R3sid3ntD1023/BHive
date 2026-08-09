@@ -15,65 +15,11 @@ namespace BHive
 	class BufferBase;
 	class VertexArray;
 
-	/*
-	 * @param r
-	 * @param g
-	 * @param b
-	 * @param a
-	 */
-	struct CmdSetClearColor : FCommand
-	{
-		float R, G, B, A;
-
-		CmdSetClearColor(float r, float g, float b, float a)
-			: R(r),
-			  G(g),
-			  B(b),
-			  A(a)
-		{
-		}
-
-		ECommandType GetType() const override { return ECommandType::SetClearColor; }
-	};
-
-	/**/
-	struct CmdClear : FCommand
-	{
-		CmdClear() {};
-
-		ECommandType GetType() const override { return ECommandType::Clear; }
-	};
-
-	/*
-	 * @param X
-	 * @param Y
-	 * @param Width
-	 * @param height
-	 */
-	struct CmdSetViewport : FCommand
-	{
-		int32_t X, Y;
-		uint32_t Width, Height;
-
-		CmdSetViewport(int32_t x, int32_t y, uint32_t w, uint32_t h)
-			: X(x),
-			  Y(y),
-			  Width(w),
-			  Height(h)
-		{
-		}
-
-		ECommandType GetType() const override { return ECommandType::SetViewport; }
-	};
-
 	struct CmdGenerateMipMaps : FCommand
 	{
-		Ref<Texture> Tex;
+		Ref<Texture> TextureRef;
 
-		CmdGenerateMipMaps(const Ref<Texture> &texture)
-			: Tex(texture)
-		{
-		}
+		void operator()(const Ref<Texture> &texture) { TextureRef = texture; }
 
 		ECommandType GetType() const override { return ECommandType::GenerateMipMaps; }
 	};
@@ -82,11 +28,11 @@ namespace BHive
 	{
 		uint32_t X, Y, Z;
 
-		CmdDisptach(uint32_t x, uint32_t y, uint32_t z)
-			: X(x),
-			  Y(y),
-			  Z(z)
+		void operator()(uint32_t x, uint32_t y, uint32_t z)
 		{
+			X = x;
+			Y = y;
+			Z = z;
 		}
 
 		ECommandType GetType() const override { return ECommandType::Dispatch; }
@@ -94,19 +40,16 @@ namespace BHive
 
 	struct CmdImGuiRender : FCommand
 	{
-		ImDrawData *DrawData;
+		ImDrawData *DrawData = nullptr;
 
-		CmdImGuiRender(ImDrawData *data)
-			: DrawData(data)
-		{
-		}
+		void operator()(ImDrawData *data) { DrawData = data; }
 
 		ECommandType GetType() const override { return ECommandType::ImGuiRender; }
 	};
 
 	struct CmdDrawFullScreen : FCommand
 	{
-		CmdDrawFullScreen() {}
+		void operator()() {}
 
 		ECommandType GetType() const override { return ECommandType::DrawFullScreen; }
 	};
@@ -115,10 +58,7 @@ namespace BHive
 	{
 		Pipeline *PipelineRef;
 
-		CmdBindPipeline(Pipeline *pipeline)
-			: PipelineRef(pipeline)
-		{
-		}
+		void operator()(Pipeline *pipeline) { PipelineRef = pipeline; }
 
 		ECommandType GetType() const override { return ECommandType::BindPipeline; }
 	};
@@ -131,27 +71,9 @@ namespace BHive
 	{
 		MaterialSnapshot Snapshot;
 
-		bool BreakPoint = false;
-
-		CmdBindMaterial(const IMaterial *mat, bool breakPoint = false)
-			: Snapshot(mat->CreateSnapshot()),
-			  BreakPoint(breakPoint)
-		{
-		}
+		void operator()(const IMaterial *mat) { Snapshot = mat->CreateSnapshot(); }
 
 		ECommandType GetType() const override { return ECommandType::BindMaterial; }
-	};
-
-	struct CmdSetGlobalTopology : FCommand
-	{
-		ETopologyMode Mode;
-
-		CmdSetGlobalTopology(ETopologyMode mode)
-			: Mode(mode)
-		{
-		}
-
-		ECommandType GetType() const override { return ECommandType::SetGlobalTopology; }
 	};
 
 	struct CmdUploadBuffer : FCommand
@@ -162,11 +84,10 @@ namespace BHive
 
 		uint32_t Offset;
 
-		CmdUploadBuffer(BufferBase *buffer, const void *data, size_t size, uint32_t offset = 0)
-			: Buffer(buffer),
-			  Offset(offset)
-
+		void operator()(BufferBase *buffer, const void *data, size_t size, uint32_t offset = 0)
 		{
+			Buffer = buffer;
+			Offset = offset;
 			Data = CreateRef<std::vector<std::byte>>(size);
 			memcpy(Data->data(), data, size);
 		}
@@ -178,15 +99,15 @@ namespace BHive
 	{
 		ETopologyMode Mode;
 
-		VertexArray *VAO;
+		Ref<VertexArray> VAO;
 
 		uint32_t Count;
 
-		CmdDraw(ETopologyMode mode, VertexArray *vao, uint32_t count)
-			: Mode(mode),
-			  VAO(vao),
-			  Count(count)
+		void operator()(ETopologyMode mode, Ref<VertexArray> vao, uint32_t count)
 		{
+			Mode = mode;
+			VAO = vao;
+			Count = count;
 		}
 
 		ECommandType GetType() const override { return ECommandType::Draw; }
@@ -196,15 +117,15 @@ namespace BHive
 	{
 		ETopologyMode Mode;
 
-		VertexArray *VAO;
+		Ref<VertexArray> VAO;
 
 		uint32_t Count;
 
-		CmdDrawIndexed(ETopologyMode mode, VertexArray *vao, uint32_t count)
-			: Mode(mode),
-			  VAO(vao),
-			  Count(count)
+		void operator()(ETopologyMode mode, Ref<VertexArray> vao, uint32_t count = 0)
 		{
+			Mode = mode;
+			VAO = vao;
+			Count = count;
 		}
 
 		ECommandType GetType() const override { return ECommandType::DrawIndexed; }
@@ -219,14 +140,14 @@ namespace BHive
 		uint64_t Stride = 0;
 		uint32_t Offset = 0;
 
-		CmdMultiDrawIndexedIndirect(ETopologyMode mode, BufferBase *buffer, VertexArray *vao, uint32_t drawCount, uint64_t stride = 0, uint32_t offset = 0)
-			: Mode(mode),
-			  Buffer(buffer),
-			  VAO(vao),
-			  DrawCount(drawCount),
-			  Stride(stride),
-			  Offset(offset)
+		void operator()(ETopologyMode mode, BufferBase *buffer, VertexArray *vao, uint32_t drawCount, uint64_t stride = 0, uint32_t offset = 0)
 		{
+			Mode = mode;
+			Buffer = buffer;
+			VAO = vao;
+			DrawCount = drawCount;
+			Stride = stride;
+			Offset = offset;
 		}
 
 		ECommandType GetType() const override { return ECommandType::MultiDrawIndexedIndirect; }
@@ -236,10 +157,7 @@ namespace BHive
 	{
 		float Width = 1.f;
 
-		CmdSetLineWidth(float width)
-			: Width(width)
-		{
-		}
+		void operator()(float width) { Width = width; }
 
 		ECommandType GetType() const override { return ECommandType::SetLineWidth; }
 	};

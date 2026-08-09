@@ -41,21 +41,6 @@ namespace BHive
 	};
 
 	template <typename T>
-	struct CommandBuilder
-	{
-		FRenderCommandList &List;
-
-		CommandBuilder(FRenderCommandList &list)
-			: List(list)
-		{
-		}
-
-		template <typename... TArgs>
-		T *operator()(TArgs &&...args)
-		{
-			return List.Emplace<T>(std::forward<TArgs>(args)...);
-		}
-	};
 
 	struct BHIVE_API FPass
 	{
@@ -70,10 +55,13 @@ namespace BHive
 		void BeginPhase(const std::string &name, EPhaseType type = EPhaseType::Graphics);
 
 		template <typename T>
-		CommandBuilder<T> Emplace()
+		T &Emplace()
 		{
 			ASSERT(mCurrentPhase > -1);
-			return CommandBuilder<T>(Phases[mCurrentPhase].CommandList);
+
+			auto cmd = CreateRef<T>();
+			Phases[mCurrentPhase].CommandList.Commands.emplace_back(cmd);
+			return *cmd;
 		}
 
 		void Push(const FView &view);
