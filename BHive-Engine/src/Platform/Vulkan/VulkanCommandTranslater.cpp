@@ -27,23 +27,10 @@ namespace BHive
 		{
 			switch (cmd->GetType())
 			{
-			case ECommandType::SetClearColor:
-			{
-				auto &c = CmdCast<CmdSetClearColor>(*cmd);
-				mClearColor = vk::ClearColorValue(c.R, c.G, c.B, c.A);
-			}
-			break;
-			case ECommandType::SetViewport:
-			{
-				auto &c = CmdCast<CmdSetViewport>(*cmd);
-				cmdbuffer.setViewport(0, vk::Viewport(float(c.X), float(c.Y + c.Height), float(c.Width), -float(c.Height), 0.0f, 1.0f));
-				cmdbuffer.setScissor(0, vk::Rect2D({c.X, c.Y}, {c.Width, c.Height}));
-			}
-			break;
 			case ECommandType::GenerateMipMaps:
 			{
 				auto &c = CmdCast<CmdGenerateMipMaps>(*cmd);
-				auto vkImage = c.Tex->GetNativeHandle().As<VulkanImage>();
+				auto vkImage = c.TextureRef->GetNativeHandle().As<VulkanImage>();
 				vkImage->GenerateMipMaps(cmdbuffer);
 			}
 			break;
@@ -69,9 +56,6 @@ namespace BHive
 			case ECommandType::BindMaterial:
 			{
 				auto &c = CmdCast<CmdBindMaterial>(*cmd);
-				if (c.BreakPoint)
-					__debugbreak();
-
 				BindMaterialSnapshot(c.Snapshot, ctx);
 			}
 			break;
@@ -133,12 +117,6 @@ namespace BHive
 				vao->Bind(cmdbuffer, frame);
 				cmdbuffer.setPrimitiveTopology(topology);
 				cmdbuffer.drawIndexedIndirect(buf.GetBuffer(), c.Offset * stride, c.DrawCount, stride);
-			}
-			break;
-			case ECommandType::SetGlobalTopology:
-			{
-				auto &c = CmdCast<CmdSetGlobalTopology>(*cmd);
-				mGlobalTopology = ToVkTopology(c.Mode);
 			}
 			break;
 			case ECommandType::SetLineWidth:

@@ -1,5 +1,6 @@
 #include "core/EntryPoint.h"
 #include "RuntimeLayer.h"
+#include "SceneLayer.h"
 
 namespace BHive
 {
@@ -9,7 +10,8 @@ namespace BHive
 		RuntimeApp(const FApplicationSpecification &specs)
 			: Application(specs)
 		{
-			PushLayer<RuntimeLayer>();
+			// PushLayer<RuntimeLayer>();
+			PushLayer<SceneLayer>();
 		}
 	};
 

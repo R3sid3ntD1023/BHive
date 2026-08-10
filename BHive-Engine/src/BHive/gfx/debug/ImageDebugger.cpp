@@ -72,7 +72,6 @@ namespace BHive
 			pass.BeginPhase("ImageDebugger : Render To Qaud", EPhaseType::Graphics);
 			pass.Push(mFB);
 			pass.Push(tex, EImageAccess::ColorRead, range);
-			pass.Emplace<CmdSetClearColor>()(0.f, 0.0f, .0f, 1.0f);
 			pass.Emplace<CmdBindMaterial>()(mMaterial.get());
 			pass.Emplace<CmdDrawFullScreen>()();
 			pass.EndPhase();

@@ -6,14 +6,13 @@
 
 namespace BHive
 {
-	
 
-	class BHIVE_API BufferBase 
+	class BHIVE_API BufferBase
 	{
 	public:
 		virtual ~BufferBase() = default;
 
-		void SetData(const void *data, size_t size, uint32_t offset = 0);
+		virtual void SetData(const void *data, size_t size, uint32_t offset = 0);
 
 		virtual NativeHandle GetNativeHandle() const = 0;
 

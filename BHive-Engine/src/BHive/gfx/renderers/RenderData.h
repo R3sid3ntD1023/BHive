@@ -34,6 +34,12 @@ namespace BHive
 
 		FTransform Transform;
 
+		Ref<VertexArray> VAO;
+
+		FSubMesh SubMesh;
+
+		FInstanceInfo Instances;
+
 		int32_t EntityID = -1;
 
 		virtual ~FMeshRenderData() = default;
@@ -43,11 +49,6 @@ namespace BHive
 
 	struct FStaticMeshRenderData : public FMeshRenderData
 	{
-		Ref<VertexArray> VertexArray;
-
-		FSubMesh SubMesh;
-
-		FInstanceInfo Instances;
 
 		Type GetRenderDataType() const override { return Type::Static; }
 	};
@@ -59,7 +60,6 @@ namespace BHive
 		Type GetRenderDataType() const override { return Type::Skeletal; }
 	};
 
-	
 	struct FShadowCascadedCreateInfo
 	{
 		glm::vec3 LightDirection;
@@ -89,8 +89,6 @@ namespace BHive
 		glm::vec3 LightAngleNearFar;
 	};
 
-	using FMeshRenderDatas = std::vector<Ref<FMeshRenderData>>;
-
 	class BaseMesh;
 
 	struct FMeshInfo
@@ -107,5 +105,7 @@ namespace BHive
 
 		FBoneInfo Bones;
 	};
+
+	using FMeshRenderDatas = std::vector<Ref<FMeshRenderData>>;
 
 } // namespace BHive

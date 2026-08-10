@@ -76,9 +76,9 @@ namespace BHive
 
 		void ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx, uint32_t numAttachments);
 
-		void BeginSwapChainRendering(const FPhase &phase, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
+		void BeginSwapChainRendering(const FPassState &state, const FPhase &phase, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
 
-		void BeginOffScreenRendering(const FPass &pass, const FPhase &phase, FVulkanRendererContext &ctx);
+		void BeginOffScreenRendering(const FPassState &state, const FPhase &phase, FVulkanRendererContext &ctx);
 
 		void TransitionSwapChainToPresent(FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
 

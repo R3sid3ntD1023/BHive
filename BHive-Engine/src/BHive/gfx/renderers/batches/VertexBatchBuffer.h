@@ -43,7 +43,7 @@ namespace BHive
 			mVertexCount = 0;
 		}
 
-		VertexArray *GetVAO() const { return mVertexArray.get(); }
+		Ref<VertexArray> GetVAO() const { return mVertexArray; }
 		uint32_t GetIndexCount() const { return mIndexCount; }
 		uint32_t GetVertexCount() const { return mVertexCount; }
 

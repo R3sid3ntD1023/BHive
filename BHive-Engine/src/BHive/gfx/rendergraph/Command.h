@@ -4,9 +4,6 @@ namespace BHive
 {
 	enum class ECommandType
 	{
-		SetClearColor,
-		Clear,
-		SetViewport,
 		GenerateMipMaps,
 		BindPipeline,
 		BindMaterial,
@@ -18,7 +15,6 @@ namespace BHive
 		Dispatch,
 		ImGuiRender,
 		DrawFullScreen,
-		SetGlobalTopology
 	};
 
 	struct FCommand
@@ -27,4 +23,4 @@ namespace BHive
 
 		virtual ECommandType GetType() const = 0;
 	};
-}
+} // namespace BHive

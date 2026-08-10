@@ -52,30 +52,25 @@ namespace BHive
 		mSceneRenderData->Init();
 
 		// Initialize the framebuffer or any other resources needed for rendering
-		/*FramebufferSpecification specs;
+		FramebufferSpecification specs;
 		specs.Size = size;
-		specs.Attachments.attach({.Format = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE})
-			.attach({.Format = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
+		specs.Attachments.AddColorAttachment({FTextureCreateInfo{.Format = EFormat::RGBA32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE}});
+		specs.Attachments.SetDepthAttachment({FTextureCreateInfo{.Format = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE}});
+		specs.DebugName = "SceneRenderer";
 
-		mFramebuffer = Framebuffer::Create(specs);*/
+		mFramebuffer = Framebuffer::Create(specs);
 
-		// Create a final framebuffer for post-processing effects
-		// specs.Attachments.reset();
-		// specs.Attachments.attach({.Format = EFormat::RGBA8, .WrapMode = EWrapMode::CLAMP_TO_EDGE});
-		// specs.Attachments.attach({EFormat::DEPTH24_STENCIL8});
-		// mFinalFramebuffer = Framebuffer::Create(specs);
+		mIndirectDrawBuffer = GeneralBuffer::Create(sizeof(MultiDrawIndirectCommand) * 10'000, EBufferType::IndirectBuffer);
 
-		// Create a quad for rendering the final output
-		mQuad = CreateRef<PQuad>();
-		mQuadShader = ShaderManager::Get(ENGINE_SHADER_PATH "/ScreenQuad.glsl");
-
-		mPostProcessAllocator.Resize(size);
+		// mPostProcessAllocator.Resize(size);
 	}
 
 	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
 	{
-		Renderer::Get().BeginFrame();
-		Renderer::Get().SubmitCamera(camera->GetProjection(), view.Inverse());
+		auto &renderer = Renderer::Get();
+		auto &globalsResources = renderer.GetGlobalResources();
+
+		mView = renderer.CreateView(camera->GetProjection(), view);
 
 		mSceneRenderData->ShadowRenderer.Begin();
 		mSceneRenderData->Reset();
@@ -83,93 +78,127 @@ namespace BHive
 
 	void SceneRenderer::End()
 	{
+		static auto sort = [=](const Ref<FMeshRenderData> &lhs, const Ref<FMeshRenderData> &rhs)
+		{
+			glm::vec3 viewPosA = mView.View * glm::vec4(lhs->Transform.GetTranslation(), 1.0f);
+			glm::vec3 viewPosB = mView.View * glm::vec4(rhs->Transform.GetTranslation(), 1.0f);
+			return viewPosA.z < viewPosB.z;
+		};
+
 		for (auto &[mat, data] : mSceneRenderData->RenderData)
 		{
-			std::sort(data.begin(), data.end(), Distance::Sort);
+			std::sort(data.begin(), data.end(), sort);
 		}
 
-		std::sort(mSceneRenderData->ShadowPassRenderData.begin(), mSceneRenderData->ShadowPassRenderData.end(), Distance::Sort);
-		std::sort(mSceneRenderData->RenderPassRenderData.begin(), mSceneRenderData->RenderPassRenderData.end(), Distance::Sort);
+		std::sort(mSceneRenderData->ShadowPassRenderData.begin(), mSceneRenderData->ShadowPassRenderData.end(), sort);
+		std::sort(mSceneRenderData->RenderPassRenderData.begin(), mSceneRenderData->RenderPassRenderData.end(), sort);
 
-		while (mCommands.size())
-		{
-			mCommands.top()();
-			mCommands.pop();
-		}
+		std::vector<MultiDrawIndirectCommand> drawCommands;
 
-		mSceneRenderData->ShadowRenderer.End();
-		mSceneRenderData->ShadowRenderer.Render(mSceneRenderData->ShadowPassRenderData);
+		std::unordered_map<Ref<Material>, std::unordered_map<Ref<VertexArray>, FDrawRange>> drawRanges;
 
-		/*for (auto &render_pass : mRenderPasses)
-		{
-			if (!render_pass->IsEnabled())
-			{
-				continue;
-			}
+		std::vector<FPerObjectData> objectData;
 
-			render_pass->Render(mSceneRenderData->RenderPassRenderData);
-		}*/
-
-		// mFramebuffer->Bind();
-
-		// Renderer::Get().ClearColor(0.1f, 0.1f, 0.1f, 0.0f);
-
-		// Renderer::Get().Clear();
-
-		auto &renderer = Renderer::Get();
-
-		// render meshes
 		for (auto &[mat, objects] : mSceneRenderData->RenderData)
 		{
-			/*EnvironmentMapGenerator.GetPreFilteredEnvironmentTetxure()->Bind(6);
-			EnvironmentMapGenerator.GetIrradianceTexture()->Bind(7);
-			EnvironmentMapGenerator.GetBDRFLUT()->Bind(8);*/
-
-			/*static uint32_t shadow_map_bindings[] = {9, 10, 11};
-			mSceneRenderData->ShadowRenderer.BindShadowMaps(shadow_map_bindings);*/
-
-			/*if (mat->GetPipeline()->GetShaderProgram() == ShaderManager::Get("ForwardMesh.glsl"))
+			for (auto &obj : objects)
 			{
-				renderer.GetActivePass();
-			}
-			mat->Submit();*/
 
-			/*for (const auto &object : objects)
-				Renderer::Draw(object);*/
+				auto &s = obj->SubMesh;
+				auto &vao = obj->VAO;
+				auto &transform = obj->Transform;
+
+				MultiDrawIndirectCommand drawCmd{};
+				drawCmd.BaseInstance = objectData.size();
+				drawCmd.BaseVertex = s.StartVertex;
+				drawCmd.FirstIndex = s.StartIndex;
+				drawCmd.Count = s.IndexCount;
+				drawCmd.InstanceCount = 1;
+
+				drawCommands.emplace_back(drawCmd);
+
+				objectData.emplace_back(FPerObjectData{transform});
+
+				auto &matRanges = drawRanges[mat];
+				auto &range = matRanges[vao];
+
+				if (range.Count == 0)
+				{
+					range.First = drawCommands.size() - 1;
+				}
+
+				range.Count++;
+			}
 		}
 
-		renderer.EndFrame();
+		auto &renderer = Renderer::Get();
+		auto &globalsResources = renderer.GetGlobalResources();
+		auto cameraUBO = globalsResources.Find("Camera");
 
-		// mFramebuffer->UnBind();
+		mIndirectDrawBuffer->SetData(drawCommands.data(), drawCommands.size() * sizeof(MultiDrawIndirectCommand));
+		renderer.SetPerObjectData(objectData.data(), objectData.size());
+		cameraUBO->BufferRef->SetData(&mView, sizeof(FView));
+
+		FPassState state{};
+		state.Color = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store, {0.1f, 0.1f, 0.1f, 1.0f}};
+		state.Depth = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store};
+		auto &scenePass = renderer.BeginPass("Scene Renderer", EPassType::OffScreen, state);
+
+		// opaque pass
+		scenePass.BeginPhase(EPhaseType::Graphics);
+		scenePass.Push(mView);
+		scenePass.Push(mFramebuffer);
+		scenePass.Push(globalsResources.Find("EnvironmentPreFilter")->TextureRef, EImageAccess::ColorRead);
+		scenePass.Push(globalsResources.Find("EnvironmentCubeMap")->TextureRef, EImageAccess::ColorRead);
+		scenePass.Push(globalsResources.Find("EnvironmentIrradiance")->TextureRef, EImageAccess::ColorRead);
+		scenePass.Push(globalsResources.Find("EnvironmentBRDFLUT")->TextureRef, EImageAccess::ColorRead);
+		scenePass.Push(cameraUBO->BufferRef.get(), EBufferAccess::UniformRead);
+
+		scenePass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("MESH_OPAQUE"));
+
+		const static uint64_t stride = sizeof(MultiDrawIndirectCommand);
+
+		// render meshes
+		for (auto &[mat, vaoMap] : drawRanges)
+		{
+			scenePass.Emplace<CmdBindMaterial>()(mat.get());
+
+			for (auto &[vao, range] : vaoMap)
+			{
+				uint32_t offset = range.First;
+				uint32_t count = range.Count;
+
+				vao->DeclareAccess(scenePass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
+
+				scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mIndirectDrawBuffer.get(), vao.get(), count, stride, offset);
+			}
+		}
+
+		renderer.Light.Flush();
+
+		// scenePass.Emplace<CmdDrawFullScreen>();
+		scenePass.EndPhase();
+
+		scenePass.BeginPhase("Transition to read", EPhaseType::Transfer);
+		scenePass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorRead);
+		scenePass.EndPhase();
+
+		renderer.EndPass();
 
 		// post process
-		auto sceneColor = mFramebuffer->GetColorAttachment(0);
-		mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, sceneColor);
-
-		// mFinalFramebuffer->Bind();
-
-		// Renderer::Get().Clear();
-
-		// mQuadShader->Bind();
-
-		// texture->Bind();
-
-		// Renderer::Get().DrawElements(ETopologyMode::Triangles, mQuad->GetVertexArray().get());
-
-		// mFinalFramebuffer->UnBind();
+		mOutputTexture = mFramebuffer->GetColorAttachment();
+		// mOutputTexture = mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, mOutputTexture);
 	}
 
 	void SceneRenderer::Submit(const DirectionalLight &light)
 	{
-		auto &camera = Renderer::Get().GetViewSystem().GetMainView();
-
 		Renderer::Get().Light.Submit(light);
 
 		FShadowCascadedCreateInfo shadow_info{};
 		shadow_info.LightDirection = light.GetDirection();
-		shadow_info.CameraProj = camera.Projection;
-		shadow_info.InverseCameraView = camera.View;
-		shadow_info.CameraNearFar = camera.NearFar;
+		shadow_info.CameraProj = mView.Projection;
+		shadow_info.InverseCameraView = mView.View;
+		shadow_info.CameraNearFar = mView.NearFar;
 		shadow_info.LightCascadeFrustumNear = 1.0f;
 
 		mSceneRenderData->ShadowRenderer.SubmitDirectionalLight(shadow_info);
@@ -208,50 +237,43 @@ namespace BHive
 		const auto &transform = info.Transform;
 		const auto &materials = info.Materials;
 
-		Ref<FStaticMeshRenderData> data;
-
 		// Cull the mesh if it is not visible
 		if (!mesh || IsMeshCulled(mesh, transform))
 			return;
 
-		auto &sub_meshes = mesh->GetSubMeshes();
+		auto &subMeshes = mesh->GetSubMeshes();
+		Ref<FStaticMeshRenderData> data;
 
-		for (auto &sub_mesh : sub_meshes)
+		for (auto &s : subMeshes)
 		{
-			auto material = materials.get_material(sub_mesh.MaterialIndex);
+			auto material = materials.get_material(s.MaterialIndex);
 			if (!material)
 				return;
 
 			if (mesh->get_type() == rttr::type::get<SkeletalMesh>())
 			{
 				auto skeletal_data = CreateRef<FSkeletalMeshRenderData>();
-				skeletal_data->SubMesh = sub_mesh;
+				skeletal_data->SubMesh = s;
 				skeletal_data->Bones = info.Bones;
 				data = skeletal_data;
 			}
 			else
 			{
 				auto static_data = CreateRef<FStaticMeshRenderData>();
-				static_data->SubMesh = sub_mesh;
+				static_data->SubMesh = s;
 				data = static_data;
 			}
 
-			data->VertexArray = mesh->GetVertexArray();
+			data->VAO = mesh->GetVertexArray();
 			data->Transform = info.Transform;
 			data->EntityID = info.EntityID;
 			data->Instances = info.Instances;
 
-			mSceneRenderData->RenderPassRenderData.emplace_back(data);
 			mSceneRenderData->RenderData[material].emplace_back(data);
 
 			if (material->ShouldCastShadows())
 				mSceneRenderData->ShadowPassRenderData.emplace_back(data);
 		}
-	}
-
-	void SceneRenderer::SubmitCommand(const Command &cmd)
-	{
-		mCommands.push(cmd);
 	}
 
 	float SceneRenderer::GetDistanceToCamera(const FTransform &transform)
@@ -266,31 +288,12 @@ namespace BHive
 
 		mFramebuffer->Resize(size);
 
-		mFinalFramebuffer->Resize(size);
-
-		/*	for (auto &render_pass : mRenderPasses)
-			{
-				render_pass->Resize(size);
-			}*/
-
-		mPostProcessAllocator.Resize(size);
-
-		// Renderer::Get().SetViewport(0, 0, size.x, size.y);
-	}
-
-	Ref<Texture> SceneRenderer::GetColorAttachment(uint32_t index) const
-	{
-		return mFinalFramebuffer->GetColorAttachment(index);
-	}
-
-	Ref<Texture> SceneRenderer::GetDepthAttachment() const
-	{
-		return mFinalFramebuffer->GetDepthAttachment();
+		// mPostProcessAllocator.Resize(size);
 	}
 
 	void SceneRenderer::RenderToScreen()
 	{
-		mFinalFramebuffer->BlitToWindow(0, 0, mSize.x, mSize.y);
+		mFramebuffer->BlitToWindow(0, 0, mSize.x, mSize.y);
 	}
 
 	void SceneRenderer::AddPostProcessMaterial(const Ref<PostProcessMaterial> &mat)

@@ -168,7 +168,10 @@ namespace BHive
 
 		transform.AddRotation({0, time * 10.f, 0});
 
-		mCamera.ProcessInput();
+		if (mViewportActive)
+		{
+			mCamera.ProcessInput();
+		}
 	}
 
 	void RuntimeLayer::OnRender(Renderer &renderer)
@@ -217,16 +220,14 @@ namespace BHive
 			auto &scenePass = renderer.BeginPass("Scene", EPassType::OffScreen, state);
 
 			scenePass.BeginPhase();
+			scenePass.Push(view);
+			scenePass.Push(mFramebuffer);
 			scenePass.Push(globalsResources.Find("EnvironmentPreFilter")->TextureRef, EImageAccess::ColorRead);
 			scenePass.Push(globalsResources.Find("EnvironmentCubeMap")->TextureRef, EImageAccess::ColorRead);
 			scenePass.Push(globalsResources.Find("EnvironmentIrradiance")->TextureRef, EImageAccess::ColorRead);
 			scenePass.Push(globalsResources.Find("EnvironmentBRDFLUT")->TextureRef, EImageAccess::ColorRead);
 			scenePass.Push(globalsResources.Find("Camera")->BufferRef.get(), EBufferAccess::UniformRead);
 
-			scenePass.Push(view);
-			scenePass.Push(mFramebuffer);
-
-			scenePass.Emplace<CmdSetClearColor>()(.1f, .1f, .1f, 1.f);
 			scenePass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("MESH_OPAQUE"));
 
 			const auto stride = sizeof(MultiDrawIndirectCommand);
@@ -327,7 +328,6 @@ namespace BHive
 
 	void RuntimeLayer::OnGuiRender()
 	{
-		GUI::BeginDockSpace("Dockspace");
 
 		ImageDebugger::Get().OnGuiRender();
 
@@ -342,6 +342,8 @@ namespace BHive
 				ImGui::Image(id, viewportSize);
 			}
 		}
+
+		mViewportActive = ImGui::IsWindowHovered() && ImGui::IsWindowFocused();
 
 		ImGui::End();
 
@@ -440,22 +442,23 @@ namespace BHive
 		}
 
 		ImGui::End();
-
-		GUI::EndDockSpace();
 	}
 
 	void RuntimeLayer::OnEvent(Event &e)
 	{
-		mCamera.OnEvent(e);
+		if (mViewportActive)
+		{
+			mCamera.OnEvent(e);
+		}
 
-		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch(this, &RuntimeLayer::OnWindowResize);
+		/*EventDispatcher dispatcher(e);
+		dispatcher.Dispatch(this, &RuntimeLayer::OnWindowResize);*/
 	}
 
 	bool RuntimeLayer::OnWindowResize(WindowResizeEvent &e)
 	{
 
-		mCamera.Resize(e.x, e.y);
+		// mCamera.Resize(e.x, e.y);
 
 		return false;
 	}

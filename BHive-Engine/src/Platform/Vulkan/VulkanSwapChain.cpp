@@ -24,12 +24,12 @@ namespace BHive
 
 	VulkanSwapChain::~VulkanSwapChain()
 	{
-		for (auto &img : mImages)
+		/*for (auto &img : mImages)
 		{
 			img.Destroy();
 		}
 
-		mDepthImage.Destroy();
+		mDepthImage.Destroy();*/
 	}
 
 	void VulkanSwapChain::Init(vk::raii::Device &device, uint32_t w, uint32_t h)

@@ -35,7 +35,7 @@ namespace BHive
 	private:
 		UUID mID;
 
-		AnimGraph *mParentGraph;
+		AnimGraph *mParentGraph = nullptr;
 
 		friend class AnimGraph;
 	};

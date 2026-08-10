@@ -40,8 +40,6 @@ namespace BHive
 		FAttachmentState Depth;
 	};
 
-	template <typename T>
-
 	struct BHIVE_API FPass
 	{
 		std::string Name;

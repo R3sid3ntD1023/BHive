@@ -137,12 +137,14 @@ namespace BHive
 
 		for (auto &pass : graph.GetPasses())
 		{
-			if (pass.HasView())
+			/*if (pass.HasView())
 			{
 				auto camera = Renderer::Get().GetGlobalResources().Find("Camera");
 				if (camera)
+				{
 					camera->BufferRef->SetData(&pass.GetView(), sizeof(FView));
-			}
+				}
+			}*/
 
 			for (auto phase : pass.Phases)
 			{
@@ -171,6 +173,7 @@ namespace BHive
 		// LOG_TRACE("Pass: {}", pass.Name);
 
 		auto &cmd = ctx.CommandBuffer;
+		auto state = pass.State;
 
 		vk::DebugUtilsLabelEXT label(pass.Name.c_str(), {1.0f, .5f, 0.0f, 1.0f});
 		cmd.beginDebugUtilsLabelEXT(label);
@@ -184,9 +187,9 @@ namespace BHive
 			if (phase.Type == EPhaseType::Graphics)
 			{
 				if (pass.Type == EPassType::Present)
-					BeginSwapChainRendering(phase, ctx, swapChain);
+					BeginSwapChainRendering(state, phase, ctx, swapChain);
 				else
-					BeginOffScreenRendering(pass, phase, ctx);
+					BeginOffScreenRendering(state, phase, ctx);
 			}
 
 			auto numAtatchments = phase.FBO ? phase.FBO->GetNumColorAttachments() : 0;
@@ -232,7 +235,7 @@ namespace BHive
 		VulkanCommandTranslator::ExecuteCommandList(list, ctx, numAttachments);
 	}
 
-	void VulkanRendererAPI::BeginSwapChainRendering(const FPhase &phase, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
+	void VulkanRendererAPI::BeginSwapChainRendering(const FPassState &state, const FPhase &phase, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
 	{
 		auto &image = swapChain->GetImage(ctx.ImageIndex);
 		auto &depth = swapChain->GetDepthImage();
@@ -245,26 +248,30 @@ namespace BHive
 		// Depth: Undefined/ShaderRead/etc → DepthStencilAttachment
 		depth.Transition(cmd, ImageState::DepthStencilAttachment());
 
-		vk::ClearValue clearColor(VulkanCommandTranslator::GetClearColor());
-		vk::ClearValue clearDepth(VulkanCommandTranslator::GetDepthStencilValue());
+		auto clearColor = vk::ClearColorValue(state.Color.ClearColor.r, state.Color.ClearColor.g, state.Color.ClearColor.b, state.Color.ClearColor.a);
 
 		vk::RenderingAttachmentInfo attachmentInfo(
 			image.Native().GetView(0, 0, 0), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearColor);
 
 		vk::RenderingAttachmentInfo depth_attachment_info(
 			depth.Native().GetView(0, 0, 0), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare,
-			clearDepth);
+			vk::ClearDepthStencilValue(1.0f, 0));
 
 		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
 		cmd.beginRendering(renderingInfo);
+
+		vk::Viewport viewport(0.f, (float)extent.height, (float)extent.width, -(float)extent.height, 0.0f, 1.0f);
+		vk::Rect2D scissor({0, 0}, extent);
+
+		cmd.setViewportWithCount(viewport);
+		cmd.setScissorWithCount(scissor);
 	}
 
-	void VulkanRendererAPI::BeginOffScreenRendering(const FPass &pass, const FPhase &phase, FVulkanRendererContext &ctx)
+	void VulkanRendererAPI::BeginOffScreenRendering(const FPassState &state, const FPhase &phase, FVulkanRendererContext &ctx)
 	{
 		auto fbo = Cast<VulkanFramebuffer>(phase.FBO);
 		if (fbo)
 		{
-			const auto state = pass.State;
 			const auto range = phase.ColorRange;
 			const auto numColorAttachments = fbo->GetNumColorAttachments();
 
@@ -320,9 +327,6 @@ namespace BHive
 
 			vk::Viewport viewport(0.f, (float)mipSize.y, (float)mipSize.x, -(float)mipSize.y, 0.0f, 1.0f);
 			vk::Rect2D scissor({0, 0}, {mipSize.x, mipSize.y});
-
-			// cmd.setViewport(0, viewport);
-			// cmd.setScissor(0, scissor);
 
 			cmd.setViewportWithCount(viewport);
 			cmd.setScissorWithCount(scissor);

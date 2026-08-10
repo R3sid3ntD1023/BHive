@@ -11,7 +11,7 @@
 #include "undoredo/UndoRedo.h"
 #include "WindowInput.h"
 #include "gfx/ShaderManager.h"
-
+#include "gui/GUI.h"
 
 namespace BHive
 {
@@ -45,7 +45,6 @@ namespace BHive
 		{
 			mImGuiLayer = ImGuiLayer::Create(mMainWindow->GetNative());
 			PushLayer(mImGuiLayer);
-			
 		}
 
 		if (specification.Flags & EApplicationFlags::EnableAudio)
@@ -80,14 +79,14 @@ namespace BHive
 
 	void Application::Run()
 	{
-		while (mIsRunning )
+		while (mIsRunning)
 		{
 			Window::PollEvents();
 
 			if (!mIsMinimized)
 			{
 				FPSCounter::Get().Frame();
-	
+
 				UpdateLayersAndWindow();
 			}
 		}
@@ -143,16 +142,18 @@ namespace BHive
 		for (auto &layer : mLayerStack)
 			layer->OnRender(*mRenderer);
 
-		
-		
 		if (mImGuiLayer)
 		{
 			mImGuiLayer->BeginFrame();
+
+			GUI::BeginDockSpace("Dockspace");
 
 			for (auto &layer : mLayerStack)
 			{
 				layer->OnGuiRender();
 			}
+
+			GUI::EndDockSpace();
 
 			mImGuiLayer->EndFrame();
 		}

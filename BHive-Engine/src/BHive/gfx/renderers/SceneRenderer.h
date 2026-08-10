@@ -5,7 +5,6 @@
 #include "LightCasters.h"
 #include "postprocess/PostProcessStack.h"
 
-
 namespace BHive
 {
 	class Camera;
@@ -13,7 +12,6 @@ namespace BHive
 	class Shader;
 	class Texture;
 	class Texture2D;
-	class PQuad;
 
 	struct FTransform;
 	class BaseMesh;
@@ -21,6 +19,8 @@ namespace BHive
 	class StaticMesh;
 	class SkeletalPose;
 	struct MaterialTable;
+	class Renderer;
+	class GeneralBuffer;
 
 	/**
 	 * @brief The SceneRenderer class is responsible for rendering the scene.
@@ -34,11 +34,13 @@ namespace BHive
 
 	class BHIVE_API SceneRenderer
 	{
+		struct FDrawRange
+		{
+			uint32_t First = 0;
+			uint32_t Count = 0;
+		};
 
 	public:
-		using Command = std::function<void()>;
-		using Commands = std::stack<Command>;
-
 		SceneRenderer() = default;
 
 		virtual ~SceneRenderer() = default;
@@ -49,7 +51,7 @@ namespace BHive
 
 		virtual void End();
 
-		void Submit(const DirectionalLight & light);
+		void Submit(const DirectionalLight &light);
 
 		void Submit(const PointLight &light);
 
@@ -57,15 +59,9 @@ namespace BHive
 
 		void Submit(const FMeshInfo &info);
 
-		void SubmitCommand(const Command &cmd);
-
 		void Resize(const glm::uvec2 &size);
 
-		Ref<Texture> GetColorAttachment(uint32_t index = 0) const;
-
-		Ref<Texture> GetDepthAttachment() const;
-
-		Ref<Framebuffer> GetFramebuffer() const { return mFinalFramebuffer; }
+		Ref<Texture> GetOutput() const { return mOutputTexture; }
 
 		FRenderSettings &GetRenderSettings() { return mRenderSettings; }
 
@@ -73,9 +69,9 @@ namespace BHive
 
 		void RenderToScreen();
 
-		void AddPostProcessMaterial(const Ref<PostProcessMaterial> & mat);
+		void AddPostProcessMaterial(const Ref<PostProcessMaterial> &mat);
 
-		void RemovePostProcessMaterial(const std::string& name);
+		void RemovePostProcessMaterial(const std::string &name);
 
 		void ClearPostProcessEffects();
 
@@ -90,17 +86,18 @@ namespace BHive
 		FRenderSettings mRenderSettings; // Render settings for the scene renderer
 
 		Ref<Framebuffer> mFramebuffer;
-		Ref<Framebuffer> mFinalFramebuffer; // Final framebuffer for post-processing effects
-		Ref<PQuad> mQuad;
-		Ref<Shader> mQuadShader; // Shader used for rendering the quad
+
+		Ref<Texture> mOutputTexture;
+
+		FView mView;
 
 		Ref<struct FSceneRenderData> mSceneRenderData;
 
-		Commands mCommands;
+		Ref<GeneralBuffer> mIndirectDrawBuffer;
 
 		glm::uvec2 mSize{0, 0};
 
-		PostProcessAllocator mPostProcessAllocator;
-		PostProcessStack mPostProcessStack;
+		// PostProcessAllocator mPostProcessAllocator;
+		// PostProcessStack mPostProcessStack;
 	};
 } // namespace BHive

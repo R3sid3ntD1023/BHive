@@ -48,10 +48,9 @@ namespace BHive
 		pool_sizes.emplace_back(vk::DescriptorType::eCombinedImageSampler, 1000);
 		pool_sizes.emplace_back(vk::DescriptorType::eSampledImage, 1000);
 		pool_sizes.emplace_back(vk::DescriptorType::eSampler, 1000);
-		
+
 		vk::DescriptorPoolCreateInfo pool_create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 1000, pool_sizes);
 		mDescriptorPool = vk::raii::DescriptorPool(device, pool_create_info);
-								
 
 		ImGui_ImplGlfw_InitForVulkan(mWindowHandle, true);
 
@@ -101,14 +100,13 @@ namespace BHive
 	{
 		auto &renderer = Renderer::Get();
 
-		auto &pass = renderer.BeginPass("ImGui", EPassType::Present);
+		FPassState state{};
+		auto &pass = renderer.BeginPass("ImGui", EPassType::Present, state);
 		pass.BeginPhase();
-		pass.Emplace<CmdSetViewport>()(pos.x, pos.y, size.x, size.y);
 		pass.Emplace<CmdImGuiRender>()(drawData);
 		pass.EndPhase();
 
 		renderer.EndPass();
 	}
-
 
 } // namespace BHive

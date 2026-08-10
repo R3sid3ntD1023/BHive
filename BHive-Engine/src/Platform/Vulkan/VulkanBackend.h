@@ -23,11 +23,10 @@ namespace BHive
 		uint32_t TransferQueueIndex = 0;
 	};
 
-
 	class BHIVE_API VulkanBackend
 	{
 	public:
-		void Init(GLFWwindow* window);
+		void Init(GLFWwindow *window);
 
 		void Shutdown();
 
@@ -48,12 +47,12 @@ namespace BHive
 		void RequestSwapChainRecreate(uint32_t w, uint32_t h);
 
 		template <typename THandleType>
-		static void SetObjectName(const THandleType& handle, const std::string &name)
+		static void SetObjectName(const THandleType &handle, const std::string &name)
 		{
 #ifdef _DEBUG
 			auto &device = VulkanBackend::GetLogicalDevice();
 			device.setDebugUtilsObjectNameEXT<THandleType>(handle, name);
-			
+
 			VkObjectType type = (VkObjectType)handle.objectType;
 			uint64_t h = reinterpret_cast<uint64_t>(&handle);
 			GetDebugNameRegistry().SetName(type, h, name);
@@ -65,7 +64,6 @@ namespace BHive
 			static VulkanBackend sBackend;
 			return sBackend;
 		}
-
 
 		static vk::raii::Device &GetLogicalDevice() { return Get().mDevice; }
 
@@ -81,9 +79,9 @@ namespace BHive
 
 		static GPUResourceManager &GetGPUResourceManager() { return *Get().mGPUResourceManager; }
 
-		static vk::raii::CommandPool& GetCommandPool() { return Get().mCommandPool; }
+		static vk::raii::CommandPool &GetCommandPool() { return Get().mCommandPool; }
 
-		static vk::raii::CommandBuffer& GetCommandBuffer(uint32_t frame) { return Get().mCommandBuffers.at(frame); }
+		static vk::raii::CommandBuffer &GetCommandBuffer(uint32_t frame) { return Get().mCommandBuffers.at(frame); }
 
 		static VulkanSwapChain &GetSwapChain() { return *Get().mSwapChain; }
 
@@ -110,7 +108,7 @@ namespace BHive
 			}
 		};
 
-		static DebugNameRegistry& GetDebugNameRegistry() { return Get().mDebugNames; }
+		static DebugNameRegistry &GetDebugNameRegistry() { return Get().mDebugNames; }
 
 	private:
 		void CreateIntance();
@@ -121,11 +119,10 @@ namespace BHive
 
 		void CreateWindowSurface(GLFWwindow *window);
 
-		void CreateSwapChain(GLFWwindow* window);
+		void CreateSwapChain(GLFWwindow *window);
 
 		void CreateSyncObjects();
 
-		
 		void CreateCommandBuffers();
 
 		void CreateImmediateCommandPool();
@@ -149,17 +146,17 @@ namespace BHive
 
 		vk::raii::Device mDevice = nullptr;
 
-		vk::raii::CommandPool mImmediateCommandPool = nullptr;
-
 		vk::raii::SurfaceKHR mSurface = nullptr;
+
+		vk::raii::CommandPool mImmediateCommandPool = nullptr;
 
 		vk::raii::CommandPool mCommandPool = nullptr;
 
 		vk::raii::CommandBuffers mCommandBuffers = nullptr;
 
-		std::vector<vk::raii::Semaphore> mPresentSemaphores; // per frame
+		std::vector<vk::raii::Semaphore> mPresentSemaphores;		// per frame
 		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores; // per image
-		std::vector<vk::raii::Fence> mInFlightFences; // per frame
+		std::vector<vk::raii::Fence> mInFlightFences;				// per frame
 
 		VkQueueFamilies mQueueFamilies;
 

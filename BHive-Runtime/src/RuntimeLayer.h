@@ -9,7 +9,6 @@
 namespace BHive
 {
 	class Texture2D;
-	class Pipeline;
 	class PSphere;
 	class PPlane;
 
@@ -52,5 +51,6 @@ namespace BHive
 		Ref<class Texture> mFinalSceneColor;
 
 		glm::uvec2 mViewportSize{0, 0};
+		bool mViewportActive = false;
 	};
 } // namespace BHive

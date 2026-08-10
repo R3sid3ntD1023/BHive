@@ -71,7 +71,7 @@ namespace BHive
 	{
 		MaterialSnapshot Snapshot;
 
-		void operator()(const IMaterial *mat) { Snapshot = mat->CreateSnapshot(); }
+		void operator()(IMaterial *mat) { Snapshot = mat->CreateSnapshot(); }
 
 		ECommandType GetType() const override { return ECommandType::BindMaterial; }
 	};
