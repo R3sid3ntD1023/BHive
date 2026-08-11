@@ -13,11 +13,9 @@ namespace BHive
 	public:
 		AcesMaterial();
 
-		Ref<Texture> AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input) override;
+		Ref<Texture> AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set) override;
 
-		void OnResize(const glm::uvec2 &size, PostProcessAllocator &allocator) override;
-
-		const char *GetName() const override { return "Aces"; }
+		void Init(const glm::uvec2 &size) override;
 
 	private:
 		Ref<Framebuffer> mFramebuffer;

@@ -46,7 +46,6 @@ namespace BHive
 		std::array<Ref<class LambertMaterial>, 2> mLambertMaterials;
 		Ref<class StandardMaterial> mStandardMaterial = nullptr;
 
-		PostProcessAllocator mPostProcessAllocator;
 		PostProcessStack mPostProcessStack;
 		Ref<class Texture> mFinalSceneColor;
 

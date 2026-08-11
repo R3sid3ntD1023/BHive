@@ -12,13 +12,14 @@ namespace BHive
 		mMaterials[3] = CreateScope<Material>(ShaderManager::Get("Composite.glsl"));
 	}
 
-	Ref<Texture> BloomMaterial::AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input)
+	Ref<Texture> BloomMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
 	{
-		auto bloomOutput = allocator.GetBloomOutput();
+		auto bloomOutput = mFramebuffers[0]->GetColorAttachment();
+		auto compositeOutput = mFramebuffers[1]->GetColorAttachment();
 		auto baseSize = bloomOutput->GetSize();
-		auto compositeOutput = allocator.GetBloomCompositeOutput();
 		auto params = Params;
-		auto mipCount = allocator.GetBloomMipCount();
+		auto input = set.SceneColor;
+		uint32_t mipCount = mMipSizes.size();
 
 		auto &pass = graph.AddPass("Bloom", EPassType::OffScreen);
 
@@ -105,28 +106,69 @@ namespace BHive
 		return compositeOutput;
 	}
 
-	void BloomMaterial::OnResize(const glm::uvec2 &size, PostProcessAllocator &allocator)
+	void BloomMaterial::Init(const glm::uvec2 &size)
 	{
-		auto bloomOutput = allocator.GetBloomOutput();
-		auto compositeOutput = allocator.GetBloomCompositeOutput();
-		auto textures = std::vector{bloomOutput, compositeOutput};
+		std::array<FTextureCreateInfo, 2> infos{FTextureCreateInfo{}, FTextureCreateInfo{}};
+
+		glm::uvec2 halfSize = glm::max(size / 2u, glm::uvec2(1u));
+
+		// calculate mip sizes
+		{
+			mMipSizes.clear();
+
+			glm::uvec2 mipSize = halfSize;
+
+			for (uint32_t i = 0; i < MipCount; i++)
+			{
+				mMipSizes.emplace_back(mipSize);
+				mipSize = glm::max(mipSize / 2u, glm::uvec2(1u));
+			}
+		}
+
+		infos[0].WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		infos[0].Format = EFormat::RGBA32F;
+		infos[0].Roles |= ETextureRole::RenderTarget;
+		infos[0].MipLevels = std::min(ComputeMipCount(halfSize), MipCount);
+		infos[0].DebugName = "BloomMipChain";
+
+		infos[1].WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		infos[1].Format = EFormat::RGBA32F;
+		infos[1].Roles |= ETextureRole::RenderTarget;
+		infos[1].DebugName = "SceneBloomComposite";
+
+		std::array<glm::uvec2, 2> sizes{halfSize, size};
 
 		for (uint32_t i = 0; i < 2; i++)
 		{
 			auto &fbo = mFramebuffers[i];
-			auto &target = textures[i];
-			auto targetSize = target->GetSize();
-			if (!fbo || (fbo && (fbo->GetSize() != targetSize)))
-			{
-				FFramebufferTexture color{};
-				color.ExternalTexture = target;
+			FFramebufferTexture color{infos[i], ETextureType::TEXTURE_2D};
 
-				FramebufferSpecification spec{};
-				spec.DebugName = target->GetInfo().DebugName;
-				spec.Size = targetSize;
-				spec.Attachments.AddColorAttachment(color);
-				fbo = Framebuffer::Create(spec);
-			}
+			FramebufferSpecification spec{};
+			spec.DebugName = "Bloom_";
+			spec.Size = sizes[i];
+			spec.Attachments.AddColorAttachment(color);
+			fbo = Framebuffer::Create(spec);
 		}
+	}
+
+	uint32_t BloomMaterial::ComputeMipCount(glm::uvec2 size)
+	{
+		uint32_t levels = 1;
+		while (size.x > 1 || size.y > 1)
+		{
+			size = glm::max(size / 2u, glm::uvec2(1u));
+			levels++;
+		}
+
+		return levels;
+	}
+
+	REFLECT(BloomMaterial::FParams)
+	{
+		BEGIN_REFLECT(BloomMaterial::FParams)
+		REFLECT_PROPERTY(Threshold)
+		REFLECT_PROPERTY(Radius)
+		REFLECT_PROPERTY(Strength)
+		REFLECT_PROPERTY(Exposure);
 	}
 } // namespace BHive

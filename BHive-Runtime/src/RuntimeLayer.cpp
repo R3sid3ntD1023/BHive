@@ -152,10 +152,10 @@ namespace BHive
 		spLight0.SetColor(FColor::Red).SetIntensity(3.f).SetDirection({0, -1, 0}).SetPosition({}).SetRadius(5.f).SetInnerAngleDegrees(45.f).SetOuterAngleDegrees(75.f);
 
 		// post process
-		mPostProcessStack.Add<BloomMaterial>("Bloom");
-		mPostProcessStack.Add<AcesMaterial>("Aces");
-		mPostProcessStack.Add<ColorGradingMaterial>("ColorGrading");
-		mPostProcessStack.Resize(window.GetSize(), mPostProcessAllocator);
+		mPostProcessStack.Emplace<BloomMaterial>();
+		mPostProcessStack.Emplace<AcesMaterial>();
+		mPostProcessStack.Emplace<ColorGradingMaterial>();
+		mPostProcessStack.Init(window.GetSize());
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -184,7 +184,7 @@ namespace BHive
 			if (mViewportSize != fbSize && mViewportSize.x > 0 && mViewportSize.y > 0)
 			{
 				mFramebuffer->Resize(mViewportSize);
-				mPostProcessStack.Resize(mViewportSize, mPostProcessAllocator);
+				mPostProcessStack.Init(mViewportSize);
 				mCamera.Resize(mViewportSize.x, mViewportSize.y);
 
 				IImGuiTextureProvider::Invalidate(*mFinalSceneColor);
@@ -320,8 +320,8 @@ namespace BHive
 			renderer.EndPass();
 		}
 
-		mFinalSceneColor = mFramebuffer->GetColorAttachment();
-		mFinalSceneColor = mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, mFinalSceneColor);
+		FPostProcessTextureSet set{mFramebuffer->GetColorAttachment(), mFramebuffer->GetDepthAttachment()};
+		mFinalSceneColor = mPostProcessStack.Build(renderer.GetActiveGraph(), set);
 #endif
 		ImageDebugger::Get().OnRender(renderer);
 	}
@@ -358,7 +358,7 @@ namespace BHive
 			auto &inspector = Inspect::get();
 
 			{
-				static BloomMaterial::FBloomParams params{};
+				static BloomMaterial::FParams params{};
 				ImGui::SeparatorText("BloomSettings");
 				bool changed = inspector.inspect("Threshold", params.Threshold);
 				changed |= inspector.inspect("FilterRadius", params.Radius);
@@ -366,12 +366,12 @@ namespace BHive
 				changed |= inspector.inspect("Exposure", params.Exposure);
 				if (changed)
 				{
-					mPostProcessStack.Get<BloomMaterial>("Bloom")->Params = params;
+					mPostProcessStack.Get<BloomMaterial>()->Params = params;
 				}
 			}
 
 			{
-				static ColorGradingMaterial::FColorGrading params{};
+				static ColorGradingMaterial::FParams params{};
 				ImGui::SeparatorText("Color Grading");
 				bool changed = inspector.inspect("Lift", params.Lift);
 				changed |= inspector.inspect("Gamma", params.Gamma);
@@ -379,7 +379,7 @@ namespace BHive
 				changed |= inspector.inspect("Saturation", params.Saturation);
 				if (changed)
 				{
-					mPostProcessStack.Get<ColorGradingMaterial>("ColorGrading")->Params = params;
+					mPostProcessStack.Get<ColorGradingMaterial>()->Params = params;
 				}
 			}
 		}

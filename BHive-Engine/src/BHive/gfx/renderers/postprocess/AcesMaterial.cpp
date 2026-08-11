@@ -10,10 +10,10 @@ namespace BHive
 		mMaterial = CreateScope<Material>(ShaderManager::Get("Aces.glsl"));
 	}
 
-	Ref<Texture> AcesMaterial::AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input)
+	Ref<Texture> AcesMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
 	{
-		auto output = allocator.GetAcesOutput();
-		auto dstSize = output->GetSize();
+		auto output = mFramebuffer->GetColorAttachment();
+		auto input = set.PrevOutput;
 
 		mMaterial->SetTexture("uSceneColor", FTextureBinding(input));
 
@@ -34,22 +34,21 @@ namespace BHive
 		return output;
 	}
 
-	void AcesMaterial::OnResize(const glm::uvec2 &size, PostProcessAllocator &allocator)
+	void AcesMaterial::Init(const glm::uvec2 &size)
 	{
-		auto output = allocator.GetAcesOutput();
-		auto dstSize = output->GetSize();
+		FTextureCreateInfo info{};
+		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		info.Format = EFormat::RGBA8;
+		info.Roles |= ETextureRole::RenderTarget;
+		info.DebugName = "AcesOutput";
 
-		if (!mFramebuffer || mFramebuffer->GetSize() != dstSize)
-		{
-			FFramebufferTexture color{};
-			color.ExternalTexture = output;
+		FFramebufferTexture color{info, ETextureType::TEXTURE_2D};
 
-			FramebufferSpecification spec{};
-			spec.DebugName = "Aces";
-			spec.Size = dstSize;
-			spec.Attachments.AddColorAttachment(color);
-			mFramebuffer = Framebuffer::Create(spec);
-		}
+		FramebufferSpecification spec{};
+		spec.DebugName = "Aces";
+		spec.Size = size;
+		spec.Attachments.AddColorAttachment(color);
+		mFramebuffer = Framebuffer::Create(spec);
 	}
 
 } // namespace BHive

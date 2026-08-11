@@ -10,25 +10,38 @@ namespace BHive
 
 	class BHIVE_API BloomMaterial : public PostProcessMaterial
 	{
+		static inline constexpr uint32_t MipCount = 5;
+
 	public:
 		BloomMaterial();
 
-		Ref<Texture> AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input) override;
+		Ref<Texture> AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set) override;
 
-		void OnResize(const glm::uvec2 &size, PostProcessAllocator &allocator) override;
+		void Init(const glm::uvec2 &size) override;
 
-		const char *GetName() const override { return "Bloom"; }
-
-		struct FBloomParams
+		struct FParams
 		{
 			float Threshold{1.0};
 			float Radius{0.0001f};
 			float Strength{1.0f};
 			float Exposure{1.0f};
+
 		} Params;
+
+	private:
+		uint32_t ComputeMipCount(glm::uvec2 size);
+
+		glm::uvec2 GetBloomMipSize(uint32_t mip) const
+		{
+			ASSERT(mip < mMipSizes.size());
+			return mMipSizes[mip];
+		}
 
 	private:
 		std::array<Ref<Framebuffer>, 2> mFramebuffers;
 		std::array<Scope<Material>, 4> mMaterials;
+		std::vector<glm::uvec2> mMipSizes;
 	};
+
+	REFLECT_EXTERN(BloomMaterial::FParams);
 } // namespace BHive

@@ -10,9 +10,10 @@ namespace BHive
 		mMaterial = CreateScope<Material>(ShaderManager::Get("ColorGrading.glsl"));
 	}
 
-	Ref<Texture> ColorGradingMaterial::AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input)
+	Ref<Texture> ColorGradingMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
 	{
-		auto output = allocator.GetColorGradeOutput();
+		auto input = set.PrevOutput;
+		auto output = mFramebuffer->GetColorAttachment();
 
 		mMaterial->SetTexture("uTonemapped", FTextureBinding(input));
 		mMaterial->SetParam("uLift", MaterialParam(Params.Lift));
@@ -37,21 +38,28 @@ namespace BHive
 		return output;
 	}
 
-	void ColorGradingMaterial::OnResize(const glm::uvec2 &size, PostProcessAllocator &allocator)
+	void ColorGradingMaterial::Init(const glm::uvec2 &size)
 	{
-		auto output = allocator.GetColorGradeOutput();
-		auto dstSize = output->GetSize();
+		FTextureCreateInfo info{};
+		info.Format = EFormat::RGBA32F;
+		info.Roles |= ETextureRole::RenderTarget;
+		info.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		info.DebugName = "ColorGradingTex";
 
-		if (!mFramebuffer || mFramebuffer->GetSize() != dstSize)
-		{
-			FFramebufferTexture color{};
-			color.ExternalTexture = output;
+		FFramebufferTexture color{info, ETextureType::TEXTURE_2D};
 
-			FramebufferSpecification spec{};
-			spec.DebugName = "ColorGrading";
-			spec.Size = dstSize;
-			spec.Attachments.AddColorAttachment(color);
-			mFramebuffer = Framebuffer::Create(spec);
-		}
+		FramebufferSpecification spec{};
+		spec.DebugName = "ColorGrading";
+		spec.Size = size;
+		spec.Attachments.AddColorAttachment(color);
+		mFramebuffer = Framebuffer::Create(spec);
+	}
+
+	REFLECT(ColorGradingMaterial::FParams)
+	{
+		BEGIN_REFLECT(ColorGradingMaterial::FParams)
+		REFLECT_PROPERTY(Lift)(META_DATA(EPropertyMetaData_Default, glm::vec3{-0.02f COMMA - 0.02f COMMA - 0.01f}))
+			REFLECT_PROPERTY(Gamma)(META_DATA(EPropertyMetaData_Default, glm::vec3{0.95f COMMA 0.97f COMMA 1.00f}))
+				REFLECT_PROPERTY(Gain)(META_DATA(EPropertyMetaData_Default, glm::vec3{1.05f COMMA 1.03f COMMA 1.00f})) REFLECT_PROPERTY(Saturation)(META_DATA(EPropertyMetaData_Default, 1.1f));
 	}
 } // namespace BHive

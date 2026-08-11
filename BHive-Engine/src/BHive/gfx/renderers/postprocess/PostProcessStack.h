@@ -7,50 +7,70 @@ namespace BHive
 	class PostProcessStack
 	{
 	public:
+		void Add(Ref<PostProcessMaterial> mat)
+		{
+			if (!mat)
+			{
+				LOG_WARN("PostProcessStack: material is null. returning");
+				return;
+			}
+
+			const auto &key = typeid(*mat);
+			if (mUniqueMaterialIDs.contains(key))
+			{
+				LOG_WARN("PostProcessStack: already contains material of type {}", key.name());
+				return;
+			}
+
+			mOrderedMaterials.emplace_back(mat);
+			mUniqueMaterialIDs.insert(key);
+			mat->Init(mSize);
+		}
+
 		template <typename T>
 			requires(std::is_base_of_v<PostProcessMaterial, T>)
-		T *Add(const std::string &name)
+		T *Emplace()
 		{
 			auto mat = CreateRef<T>();
-			auto raw = mat.get();
-			Materials.emplace(name, mat);
-			return raw;
+			Add(mat);
+			return mat.get();
 		}
 
 		template <typename T>
 			requires(std::is_base_of_v<PostProcessMaterial, T>)
-		T *Get(const std::string &name) const
+		T *Get() const
 		{
-			return Materials.contains(name) ? dynamic_cast<T *>(Materials.at(name).get()) : nullptr;
+			auto key = typeid(T).hash_code();
+			auto it = std::find_if(mOrderedMaterials.begin(), mOrderedMaterials.end(), [key](const auto &mat) { return key == typeid(*mat).hash_code(); });
+
+			return it != mOrderedMaterials.end() ? std::dynamic_pointer_cast<T>(*it).get() : nullptr;
 		}
 
-		void Resize(const glm::uvec2 &size, PostProcessAllocator &allocator)
+		void Init(const glm::uvec2 &size)
 		{
-			allocator.Resize(size);
+			mSize = size;
 
-			for (auto &[_, mat] : Materials)
+			for (auto &mat : mOrderedMaterials)
 			{
-				if (!mat)
-					continue;
-
-				mat->OnResize(size, allocator);
+				mat->Init(size);
 			}
 		}
 
-		Ref<Texture> Build(RenderGraph &graph, PostProcessAllocator &allocator, Ref<Texture> input)
+		Ref<Texture> Build(RenderGraph &graph, FPostProcessTextureSet &set)
 		{
-			for (auto &[_, mat] : Materials)
-			{
-				if (!mat)
-					continue;
+			set.PrevOutput = set.SceneColor;
 
-				input = mat->AddToGraph(graph, allocator, input);
+			for (auto &mat : mOrderedMaterials)
+			{
+				set.PrevOutput = mat->AddToGraph(graph, set);
 			}
 
-			return input;
+			return set.PrevOutput;
 		}
 
 	private:
-		std::unordered_map<std::string, Ref<PostProcessMaterial>> Materials;
+		std::vector<Ref<PostProcessMaterial>> mOrderedMaterials;
+		std::set<std::type_index> mUniqueMaterialIDs;
+		glm::uvec2 mSize{800, 600};
 	};
 } // namespace BHive

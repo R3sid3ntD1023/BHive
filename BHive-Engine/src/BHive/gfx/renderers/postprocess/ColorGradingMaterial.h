@@ -13,13 +13,11 @@ namespace BHive
 	public:
 		ColorGradingMaterial();
 
-		Ref<Texture> AddToGraph(RenderGraph &graph, PostProcessAllocator &allocator, const Ref<Texture> &input) override;
+		void Init(const glm::uvec2 &size) override;
 
-		void OnResize(const glm::uvec2 &size, PostProcessAllocator &allocator) override;
+		Ref<Texture> AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set) override;
 
-		const char *GetName() const override { return "Color Grading"; }
-
-		struct FColorGrading
+		struct FParams
 		{
 			glm::vec3 Lift = {-0.02f, -0.02f, -0.01f}; // shadows
 			glm::vec3 Gamma = {0.95f, 0.97f, 1.00f};   // midtones
@@ -31,4 +29,7 @@ namespace BHive
 		Ref<Framebuffer> mFramebuffer;
 		Scope<Material> mMaterial;
 	};
+
+	REFLECT_EXTERN(ColorGradingMaterial::FParams);
+
 } // namespace BHive

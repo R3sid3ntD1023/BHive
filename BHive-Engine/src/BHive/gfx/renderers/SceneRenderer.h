@@ -69,6 +69,12 @@ namespace BHive
 
 		void RenderToScreen();
 
+		template <typename T>
+		T *AddPostProcessMaterial()
+		{
+			return mPostProcessStack.Emplace<T>();
+		}
+
 		void AddPostProcessMaterial(const Ref<PostProcessMaterial> &mat);
 
 		void RemovePostProcessMaterial(const std::string &name);
@@ -76,6 +82,8 @@ namespace BHive
 		void ClearPostProcessEffects();
 
 		const glm::uvec2 &GetSize() const { return mSize; }
+
+		PostProcessStack &GetPostProcessStack() { return mPostProcessStack; }
 
 	private:
 		bool IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform);
@@ -97,7 +105,6 @@ namespace BHive
 
 		glm::uvec2 mSize{0, 0};
 
-		// PostProcessAllocator mPostProcessAllocator;
-		// PostProcessStack mPostProcessStack;
+		PostProcessStack mPostProcessStack;
 	};
 } // namespace BHive

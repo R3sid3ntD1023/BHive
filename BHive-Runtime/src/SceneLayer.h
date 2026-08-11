@@ -40,4 +40,5 @@ namespace BHive
 
 		MaterialTable mMaterialTables[2];
 	};
+
 } // namespace BHive

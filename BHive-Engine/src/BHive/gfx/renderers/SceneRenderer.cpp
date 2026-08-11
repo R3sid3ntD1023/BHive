@@ -62,7 +62,7 @@ namespace BHive
 
 		mIndirectDrawBuffer = GeneralBuffer::Create(sizeof(MultiDrawIndirectCommand) * 10'000, EBufferType::IndirectBuffer);
 
-		// mPostProcessAllocator.Resize(size);
+		mPostProcessStack.Init(size);
 	}
 
 	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
@@ -186,8 +186,8 @@ namespace BHive
 		renderer.EndPass();
 
 		// post process
-		mOutputTexture = mFramebuffer->GetColorAttachment();
-		// mOutputTexture = mPostProcessStack.Build(renderer.GetActiveGraph(), mPostProcessAllocator, mOutputTexture);
+		FPostProcessTextureSet set{mFramebuffer->GetColorAttachment(), mFramebuffer->GetDepthAttachment()};
+		mOutputTexture = mPostProcessStack.Build(renderer.GetActiveGraph(), set);
 	}
 
 	void SceneRenderer::Submit(const DirectionalLight &light)
@@ -288,7 +288,7 @@ namespace BHive
 
 		mFramebuffer->Resize(size);
 
-		// mPostProcessAllocator.Resize(size);
+		mPostProcessStack.Init(size);
 	}
 
 	void SceneRenderer::RenderToScreen()
@@ -298,7 +298,7 @@ namespace BHive
 
 	void SceneRenderer::AddPostProcessMaterial(const Ref<PostProcessMaterial> &mat)
 	{
-		// mPostProcessStack.Materials.push_back(mat);
+		mPostProcessStack.Add(mat);
 	}
 
 	void SceneRenderer::RemovePostProcessMaterial(const std::string &name)

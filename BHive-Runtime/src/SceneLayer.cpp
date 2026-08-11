@@ -12,6 +12,10 @@
 #include "importers/TextureImporter.h"
 #include "importers/MeshImporter.h"
 #include "importers/MeshImportResolver.h"
+#include "gfx/renderers/postprocess/BloomMaterial.h"
+#include "gfx/renderers/postprocess/AcesMaterial.h"
+#include "gfx/renderers/postprocess/ColorGradingMaterial.h"
+#include "Inspectors/Inspect.h"
 
 namespace BHive
 {
@@ -32,6 +36,9 @@ namespace BHive
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Init(mViewportSize);
+		mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
+		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
+		mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
 
 		/*FMeshImportData import_data{};
 		FMeshImportOptions import_options{.ImportMaterials = false};
@@ -124,6 +131,20 @@ namespace BHive
 		}
 
 		mViewportActive = ImGui::IsWindowHovered() && ImGui::IsWindowFocused();
+
+		ImGui::End();
+
+		if (ImGui::Begin("Post Process"))
+		{
+			auto &inspector = Inspect::get();
+			auto &stack = mSceneRenderer->GetPostProcessStack();
+
+			auto bloom = stack.Get<BloomMaterial>();
+			auto colorGrading = stack.Get<ColorGradingMaterial>();
+
+			inspector.inspect("Bloom", bloom, bloom->Params);
+			inspector.inspect("Color Grading", colorGrading, colorGrading->Params);
+		}
 
 		ImGui::End();
 	}
