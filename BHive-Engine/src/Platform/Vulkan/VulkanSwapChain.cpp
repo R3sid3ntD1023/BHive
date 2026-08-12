@@ -10,16 +10,14 @@ namespace BHive
 	{
 
 		auto &physical_device = VulkanBackend::GetPhysicalDevice();
-		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(surface);
 		auto formats = physical_device.getSurfaceFormatsKHR(surface);
 		auto presentModes = physical_device.getSurfacePresentModesKHR(surface);
 
-		mExtent = VulkanUtils::ChooseSwapExtent(surfaceCapabilities, w, h);
+		mCapabilities = physical_device.getSurfaceCapabilitiesKHR(surface);
 		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(formats);
 		mPresentMode = VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR::eImmediate, presentModes);
-		mMinImageCount = VulkanUtils::ChooseMinImageCount(surfaceCapabilities);
 
-		Init(device, mExtent.width, mExtent.height);
+		Init(device, w, h);
 	}
 
 	VulkanSwapChain::~VulkanSwapChain()
@@ -35,7 +33,8 @@ namespace BHive
 	void VulkanSwapChain::Init(vk::raii::Device &device, uint32_t w, uint32_t h)
 	{
 		mDevice = device;
-		mExtent = vk::Extent2D(w, h);
+		mExtent = VulkanUtils::ChooseSwapExtent(mCapabilities, w, h);
+		mMinImageCount = VulkanUtils::ChooseMinImageCount(mCapabilities);
 
 		vk::SwapchainCreateInfoKHR swap_chain_create_info(
 			{}, mSurface, mMinImageCount, mImageFormat.format, mImageFormat.colorSpace, mExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, {},
@@ -48,7 +47,7 @@ namespace BHive
 
 		mImages.resize(imageCount);
 
-		VulkanBackend::Get().CreatePerImageSync((uint32_t)imageCount);
+		CreateSyncObjects(device, (uint32_t)imageCount);
 
 		for (size_t i = 0; i < images.size(); i++)
 		{
@@ -91,22 +90,52 @@ namespace BHive
 		mSwapChain = nullptr;
 
 		auto &physical_device = VulkanBackend::GetPhysicalDevice();
-		auto surfaceCapabilities = physical_device.getSurfaceCapabilitiesKHR(mSurface);
-		auto extent = VulkanUtils::ChooseSwapExtent(surfaceCapabilities, w, h);
 		auto formats = physical_device.getSurfaceFormatsKHR(mSurface);
 		auto presentModes = physical_device.getSurfacePresentModesKHR(mSurface);
 
-		mExtent = VulkanUtils::ChooseSwapExtent(surfaceCapabilities, w, h);
+		mCapabilities = physical_device.getSurfaceCapabilitiesKHR(mSurface);
 		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(formats);
 		mPresentMode = VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR::eImmediate, presentModes);
-		mMinImageCount = VulkanUtils::ChooseMinImageCount(surfaceCapabilities);
 
-		Init(device, extent.width, extent.height);
+		Init(device, w, h);
+	}
+
+	void VulkanSwapChain::CreateSyncObjects(vk::raii::Device &device, uint32_t imageCount)
+	{
+		mPresentSemaphores.clear();
+		mRenderFinishedSemaphores.clear();
+		mInFlightFences.clear();
+
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			mPresentSemaphores.emplace_back(device, vk::SemaphoreCreateInfo());
+			mInFlightFences.emplace_back(device, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
+		}
+
+		for (uint32_t i = 0; i < imageCount; i++)
+		{
+			mRenderFinishedSemaphores.emplace_back(device, vk::SemaphoreCreateInfo());
+		}
+	}
+
+	vk::Semaphore VulkanSwapChain::GetRenderFinishedSemaphore(uint32_t imageIndex)
+	{
+		return mRenderFinishedSemaphores.at(imageIndex);
+	}
+
+	vk::Semaphore VulkanSwapChain::GetImageAvailableSemaphore(uint32_t frame)
+	{
+		return mPresentSemaphores.at(frame);
+	}
+
+	vk::Fence VulkanSwapChain::GetInFlightFence(uint32_t frame)
+	{
+		return mInFlightFences.at(frame);
 	}
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)
 	{
-		vk::Fence fence = VulkanBackend::GetInFlightFence(frame);
+		vk::Fence fence = GetInFlightFence(frame);
 
 		if (fence)
 		{
@@ -117,26 +146,26 @@ namespace BHive
 
 	vk::ResultValue<uint32_t> VulkanSwapChain::AquireNextImage(uint32_t frame)
 	{
-		vk::Semaphore present = VulkanBackend::GetImageAvailableSemaphore(frame);
-		return mSwapChain.acquireNextImage(UINT64_MAX, present, VK_NULL_HANDLE);
+		vk::Semaphore imageAvialable = GetImageAvailableSemaphore(frame);
+		return mSwapChain.acquireNextImage(UINT64_MAX, imageAvialable, VK_NULL_HANDLE);
 	}
 
 	vk::Result VulkanSwapChain::Present(vk::CommandBuffer cmd, uint32_t imageIndex, uint32_t frame)
 	{
-		vk::Fence fence = VulkanBackend::GetInFlightFence(frame);
-		vk::Semaphore wait_semaphore = VulkanBackend::GetImageAvailableSemaphore(frame);
-		vk::Semaphore signal_semaphore = VulkanBackend::GetRenderFinishedSemaphore(imageIndex);
+		vk::Fence fence = GetInFlightFence(frame);
+		vk::Semaphore waitSemaphore = GetImageAvailableSemaphore(frame);
+		vk::Semaphore signalSemaphore = GetRenderFinishedSemaphore(imageIndex);
 
-		vk::SemaphoreSubmitInfo wait_info(wait_semaphore, 0, vk::PipelineStageFlagBits2::eAllCommands);
+		vk::SemaphoreSubmitInfo wait_info(waitSemaphore, 0, vk::PipelineStageFlagBits2::eAllCommands);
 		vk::CommandBufferSubmitInfo cmd_submit_info(cmd);
-		vk::SemaphoreSubmitInfo signal_info(signal_semaphore, 0, vk::PipelineStageFlagBits2::eAllCommands);
+		vk::SemaphoreSubmitInfo signal_info(signalSemaphore, 0, vk::PipelineStageFlagBits2::eAllCommands);
 
 		const vk::SubmitInfo2 submitInfo2({}, wait_info, cmd_submit_info, signal_info);
 
 		auto &graphics_queue = VulkanBackend::GetQueueFamilies().GraphicsQueue;
 		graphics_queue.submit2(submitInfo2, fence);
 
-		const vk::PresentInfoKHR presentInfoKHR(signal_semaphore, *mSwapChain, imageIndex);
+		const vk::PresentInfoKHR presentInfoKHR(signalSemaphore, *mSwapChain, imageIndex);
 		return (vk::Result)vkQueuePresentKHR(*graphics_queue, &*presentInfoKHR);
 	}
 
