@@ -94,7 +94,7 @@ namespace BHive
 		gpu_r_m.DestroyBuffer(stagingID);
 	}
 
-	void VulkanImage::Transition(vk::raii::CommandBuffer &cmd, ImageState newState, ImageSubresourceRange range)
+	void VulkanImage::Transition(vk::CommandBuffer cmd, ImageState newState, ImageSubresourceRange range)
 	{
 		ASSERT(mStateTracker.MipStates.size(), "Invalid layer size must be 1 or greater -> {}", mImage.DebugName);
 
@@ -132,7 +132,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanImage::GenerateMipMaps(vk::raii::CommandBuffer &cmd)
+	void VulkanImage::GenerateMipMaps(vk::CommandBuffer cmd)
 	{
 		auto w = mInfo.ImageCI.extent.width;
 		auto h = mInfo.ImageCI.extent.height;
@@ -211,7 +211,7 @@ namespace BHive
 
 		if ((usage & vk::ImageUsageFlagBits::eColorAttachment) && (usage & vk::ImageUsageFlagBits::eSampled))
 		{
-			return ImageState::Undefined();
+			return ImageState::ShaderRead();
 		}
 
 		if (usage & vk::ImageUsageFlagBits::eStorage)

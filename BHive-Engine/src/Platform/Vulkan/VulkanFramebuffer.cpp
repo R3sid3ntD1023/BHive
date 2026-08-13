@@ -63,7 +63,7 @@ namespace BHive
 
 	void VulkanFramebuffer::Resize(const glm::uvec2 &newSize)
 	{
-		if (newSize.x == 0 || newSize.y == 0 || newSize.x > sMaxFramebufferSize || newSize.y > sMaxFramebufferSize)
+		if (newSize.x <= 0 || newSize.y <= 0 || newSize.x > sMaxFramebufferSize || newSize.y > sMaxFramebufferSize)
 		{
 			LOG_WARN("Attempted to resize framebuffer to {}", newSize);
 			return;

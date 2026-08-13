@@ -5,6 +5,7 @@
 
 namespace BHive
 {
+
 	class BHIVE_API VulkanImGuiLayer : public ImGuiLayer
 	{
 	public:
@@ -17,7 +18,7 @@ namespace BHive
 
 		void Shutdown() override;
 
-		void OnSubmitRenderData(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size) override;
+		void OnSubmitRenderData(ImDrawData *drawData) override;
 
 	private:
 		vk::raii::Device &mDevice;

@@ -16,14 +16,12 @@ namespace BHive
 
 		vk::SamplerCreateInfo SamplerCI{};
 
-		//Engine metadata
+		// Engine metadata
 		EViewTopology ViewTopology{};
 		ETextureRole Role;
 		std::string DebugName{};
 		uint32_t BytesPerPixel = 0;
 	};
-
-	
 
 	class VulkanImage : public INativeObject
 	{
@@ -32,20 +30,20 @@ namespace BHive
 
 		void Initialize(const ImageCreateInfo &info);
 
-		//ImageCI unused
+		// ImageCI unused
 		void Initialize(const vk::Image &img, const ImageCreateInfo &info);
 
 		void Upload(const void *data, size_t size, ImageCopyRegion region, ImageSubresourceRange range = {});
 
-		void Transition(vk::raii::CommandBuffer &cmd, ImageState newState, ImageSubresourceRange range = {});
+		void Transition(vk::CommandBuffer cmd, ImageState newState, ImageSubresourceRange range = {});
 
-		void GenerateMipMaps(vk::raii::CommandBuffer& cmd);
+		void GenerateMipMaps(vk::CommandBuffer cmd);
 
 		void Destroy();
 
 		const GPUImage &Native() const { return mImage; }
 
-		ImageState GetState(uint32_t mip, uint32_t layer) const; 
+		ImageState GetState(uint32_t mip, uint32_t layer) const;
 
 		void DebugPrintState();
 
@@ -62,5 +60,4 @@ namespace BHive
 		bool mRawImage{0};
 	};
 
-	
-}
+} // namespace BHive

@@ -8,13 +8,13 @@ namespace BHive
 	class VulkanSwapChain
 	{
 	public:
-		VulkanSwapChain(vk::raii::Device &device, vk::SurfaceKHR surface, uint32_t w, uint32_t h);
+		VulkanSwapChain(VkSurfaceKHR surface);
 
 		~VulkanSwapChain();
 
-		void Init(vk::raii::Device &device, uint32_t w, uint32_t h);
+		void Init(uint32_t w, uint32_t h);
 
-		void Recreate(vk::raii::Device &device, uint32_t w, uint32_t h);
+		bool Recreate(uint32_t w, uint32_t h);
 
 		void WaitForFence(uint32_t frame);
 
@@ -46,9 +46,7 @@ namespace BHive
 		vk::Fence GetInFlightFence(uint32_t frame);
 
 	private:
-		vk::Device mDevice;
-
-		vk::SurfaceKHR mSurface = VK_NULL_HANDLE;
+		vk::raii::SurfaceKHR mSurface = VK_NULL_HANDLE;
 
 		vk::raii::SwapchainKHR mSwapChain = nullptr;
 

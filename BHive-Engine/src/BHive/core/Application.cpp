@@ -36,7 +36,7 @@ namespace BHive
 		props.Maximize = specification.Maximize;
 		mMainWindow = WindowManager::Get().Create(props);
 
-		mMainWindow->GetWindowInput().WindowEvent.Add(this, &Application::OnEvent);
+		WindowInput::WindowEvent.Add(this, &Application::OnEvent);
 
 		auto api = RendererAPI::Create();
 		mRenderer = CreateScope<Renderer>(std::move(api));
@@ -83,7 +83,7 @@ namespace BHive
 		{
 			Window::PollEvents();
 
-			if (!mIsMinimized)
+			if (!mMainWindow->IsMinimized())
 			{
 				FPSCounter::Get().Frame();
 
@@ -114,7 +114,6 @@ namespace BHive
 
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch(this, &Application::OnWindowClosed);
-		dispatcher.Dispatch(this, &Application::OnWindowResized);
 
 		for (auto it = mLayerStack.rbegin(); it != mLayerStack.rend(); it++)
 		{
@@ -167,13 +166,6 @@ namespace BHive
 		}
 
 		Thread::Update();
-	}
-
-	bool Application::OnWindowResized(WindowResizeEvent &event)
-	{
-		mIsMinimized = (event.x == 0 || event.y == 0);
-
-		return false;
 	}
 
 	bool Application::OnWindowClosed(WindowCloseEvent &event)

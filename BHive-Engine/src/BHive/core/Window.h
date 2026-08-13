@@ -3,7 +3,8 @@
 #include "core/Core.h"
 #include "delegates/EventDelegate.h"
 #include "events/Event.h"
-#include "WindowInput.h"
+#include "events/KeyEvents.h"
+#include "events/ApplicationEvents.h"
 
 struct GLFWwindow;
 
@@ -23,7 +24,6 @@ namespace BHive
 	class BHIVE_API Window
 	{
 	public:
-
 		Window(const FWindowProperties &properties = {});
 
 		~Window();
@@ -42,14 +42,12 @@ namespace BHive
 
 		void SetTitle(const std::string &title);
 
-		WindowInput &GetWindowInput() { return mState.Input; }
-
 		static void PollEvents();
 
 	public:
 		GLFWwindow *GetNative() const { return mWindow; }
 
-		WindowContext* GetContext() const { return mContext.get(); }
+		WindowContext *GetContext() const { return mContext.get(); }
 
 		const std::string &GetTitle() const { return mState.Title; }
 
@@ -61,36 +59,13 @@ namespace BHive
 
 		bool IsVSyncEnabled() const { return mState.VSync; }
 
-		static GLFWwindow *GetFocusedWindow();
+		bool IsMinimized() const { return mState.mIsMinimized; };
 
-	private:
-		void RegisterCallbacks();
+		void OnEvent(Event &e);
 
-#pragma region  Callbacks
-		static void OnWindowCloseCallback(GLFWwindow *window);
+		bool OnKeyEvent(KeyEvent &e);
 
-		static void OnWindowResizeCallback(GLFWwindow *window, int width, int height);
-
-		static void OnWindowMovedCallback(GLFWwindow *window, int x, int y);
-
-		static void OnKeyEventCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
-
-		static void OnMouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
-
-		static void OnMouseScrollCallback(GLFWwindow *window, double x, double y);
-
-		static void OnMouseMovedCallback(GLFWwindow *window, double x, double y);
-
-		static void OnCharCallback(GLFWwindow *window, unsigned codepoint);
-
-		static void OnFramebufferSizeCallback(GLFWwindow *window, int width, int height);
-
-		static void OnJoyStickCallback(int joystick, int status);
-	
-
-		static void OnWindowFocusCallback(GLFWwindow *window, int focused);
-
-#pragma endregion
+		bool OnWindowResizeEvent(WindowResizeEvent &e);
 
 		struct FWindowState
 		{
@@ -102,20 +77,17 @@ namespace BHive
 
 			bool VSync;
 
-			WindowInput Input;
+			bool mIsFullScreen = false;
 
-			Window *Instance;
+			bool mIsMaximized = false;
 
+			bool mIsMinimized = false;
 		};
 
-
 	private:
-		bool mIsFullScreen = false;
-		bool mIsMaximized = false;
 		GLFWwindow *mWindow = nullptr;
 		FWindowState mState;
 		Scope<WindowContext> mContext;
-		static GLFWwindow *sFocusedWindow;
 
 		friend void OnWindowFocusCallback(GLFWwindow *window, int focused);
 	};
@@ -123,7 +95,6 @@ namespace BHive
 	class WindowManager
 	{
 	public:
-	
 		BHIVE_API Window *Create(const FWindowProperties &properties = {});
 
 		BHIVE_API const std::vector<Scope<Window>> &GetWindows() const { return mWindows; }
@@ -133,7 +104,6 @@ namespace BHive
 		BHIVE_API static WindowManager &Get();
 
 	private:
-
-		 std::vector<Scope<Window>> mWindows;
+		std::vector<Scope<Window>> mWindows;
 	};
 } // namespace BHive

@@ -72,23 +72,19 @@ namespace BHive
 
 		Window &GetWindow() { return *mMainWindow; }
 
-		ImGuiLayer* GetImGuiLayer() { return mImGuiLayer.get(); }
+		ImGuiLayer *GetImGuiLayer() { return mImGuiLayer.get(); }
 
 		static Application &Get() { return *sInstance; }
 
 	private:
 		void UpdateLayersAndWindow();
 
-		bool OnWindowResized(WindowResizeEvent &event);
-
 		bool OnWindowClosed(WindowCloseEvent &event);
 
 	private:
 		bool mIsRunning = true;
 
-		bool mIsMinimized = false;
-
-		Window* mMainWindow = nullptr;
+		Window *mMainWindow = nullptr;
 
 		Ref<ImGuiLayer> mImGuiLayer = nullptr;
 

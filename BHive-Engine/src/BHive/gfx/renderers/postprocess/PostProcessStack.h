@@ -48,6 +48,9 @@ namespace BHive
 
 		void Init(const glm::uvec2 &size)
 		{
+			if (size.x <= 0 || size.y <= 0)
+				return;
+
 			mSize = size;
 
 			for (auto &mat : mOrderedMaterials)

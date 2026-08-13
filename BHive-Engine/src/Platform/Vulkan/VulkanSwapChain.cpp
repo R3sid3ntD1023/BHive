@@ -4,35 +4,27 @@
 
 namespace BHive
 {
-	VulkanSwapChain::VulkanSwapChain(vk::raii::Device &device, vk::SurfaceKHR surface, uint32_t w, uint32_t h)
-		: mDevice(device),
-		  mSurface(surface)
+	VulkanSwapChain::VulkanSwapChain(VkSurfaceKHR surface)
 	{
-
-		auto &physical_device = VulkanBackend::GetPhysicalDevice();
-		auto formats = physical_device.getSurfaceFormatsKHR(surface);
-		auto presentModes = physical_device.getSurfacePresentModesKHR(surface);
-
-		mCapabilities = physical_device.getSurfaceCapabilitiesKHR(surface);
-		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(formats);
-		mPresentMode = VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR::eImmediate, presentModes);
-
-		Init(device, w, h);
+		auto &instance = VulkanBackend::GetInstance();
+		mSurface = vk::raii::SurfaceKHR(instance, surface);
 	}
 
 	VulkanSwapChain::~VulkanSwapChain()
 	{
-		/*for (auto &img : mImages)
-		{
-			img.Destroy();
-		}
-
-		mDepthImage.Destroy();*/
 	}
 
-	void VulkanSwapChain::Init(vk::raii::Device &device, uint32_t w, uint32_t h)
+	void VulkanSwapChain::Init(uint32_t w, uint32_t h)
 	{
-		mDevice = device;
+		auto &device = VulkanBackend::GetLogicalDevice();
+		auto &physical_device = VulkanBackend::GetPhysicalDevice();
+		auto formats = physical_device.getSurfaceFormatsKHR(mSurface);
+		auto presentModes = physical_device.getSurfacePresentModesKHR(mSurface);
+
+		mCapabilities = physical_device.getSurfaceCapabilitiesKHR(mSurface);
+		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(formats);
+		mPresentMode = VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR::eImmediate, presentModes);
+
 		mExtent = VulkanUtils::ChooseSwapExtent(mCapabilities, w, h);
 		mMinImageCount = VulkanUtils::ChooseMinImageCount(mCapabilities);
 
@@ -78,26 +70,28 @@ namespace BHive
 		mDepthImage.Initialize(depth_info);
 	}
 
-	void VulkanSwapChain::Recreate(vk::raii::Device &device, uint32_t w, uint32_t h)
+	bool VulkanSwapChain::Recreate(uint32_t w, uint32_t h)
 	{
+		if (w <= 0 || h <= 0)
+			return false;
+
 		for (auto &img : mImages)
 		{
 			img.Destroy();
 		}
 
+		auto &device = VulkanBackend::GetLogicalDevice();
+		device.waitIdle();
+
+		LOG_TRACE("recreating swap chain... with size[{}x{}]", w, h);
+
 		mDepthImage.Destroy();
 
 		mSwapChain = nullptr;
 
-		auto &physical_device = VulkanBackend::GetPhysicalDevice();
-		auto formats = physical_device.getSurfaceFormatsKHR(mSurface);
-		auto presentModes = physical_device.getSurfacePresentModesKHR(mSurface);
+		Init(w, h);
 
-		mCapabilities = physical_device.getSurfaceCapabilitiesKHR(mSurface);
-		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(formats);
-		mPresentMode = VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR::eImmediate, presentModes);
-
-		Init(device, w, h);
+		return true;
 	}
 
 	void VulkanSwapChain::CreateSyncObjects(vk::raii::Device &device, uint32_t imageCount)
@@ -135,12 +129,14 @@ namespace BHive
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)
 	{
+
 		vk::Fence fence = GetInFlightFence(frame);
 
 		if (fence)
 		{
-			mDevice.waitForFences(fence, VK_TRUE, UINT64_MAX);
-			mDevice.resetFences(fence);
+			auto &device = VulkanBackend::GetLogicalDevice();
+			device.waitForFences(fence, VK_TRUE, UINT64_MAX);
+			device.resetFences(fence);
 		}
 	}
 

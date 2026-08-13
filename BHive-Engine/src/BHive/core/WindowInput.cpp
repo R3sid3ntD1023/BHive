@@ -3,17 +3,19 @@
 #include "events/MouseEvents.h"
 #include "events/KeyEvents.h"
 #include "input/InputManager.h"
+#include "Window.h"
+#include "gfx/RenderCommand.h"
 #include <glfw/glfw3.h>
 
 namespace BHive
 {
-	void WindowInput::OnWindowClose()
+	void WindowInput::OnWindowClose(GLFWwindow *)
 	{
 		WindowCloseEvent event;
 		WindowEvent.Broadcast(event);
 	}
 
-	void WindowInput::OnWindowResize(int w, int h)
+	void WindowInput::OnWindowResize(GLFWwindow *window, int w, int h)
 	{
 		if (w == 0 || h == 0)
 			return;
@@ -22,7 +24,19 @@ namespace BHive
 		WindowEvent.Broadcast(event);
 	}
 
-	void WindowInput::OnKeyEvent(int key, int scancode, int action, int mods)
+	void WindowInput::OnWindowFocused(GLFWwindow *window, int focused)
+	{
+		if (focused)
+		{
+			sFocusedWindow = window;
+		}
+		else
+		{
+			sFocusedWindow = nullptr;
+		}
+	}
+
+	void WindowInput::OnKeyEvent(GLFWwindow *, int key, int scancode, int action, int mods)
 	{
 		KeyEvent event((KeyCode)key, scancode, action, mods);
 		WindowEvent.Broadcast(event);
@@ -31,13 +45,13 @@ namespace BHive
 		im.add_input(key, (EventStatusCode)action, (ModCode)mods);
 	}
 
-	void WindowInput::OnKeyTypedEvent(unsigned int codepoint)
+	void WindowInput::OnKeyTypedEvent(GLFWwindow *, unsigned int codepoint)
 	{
 		KeyTypedEvent event((KeyCode)codepoint);
 		WindowEvent.Broadcast(event);
 	}
 
-	void WindowInput::OnMouseButton(int button, int action, int mods)
+	void WindowInput::OnMouseButton(GLFWwindow *, int button, int action, int mods)
 	{
 		MouseButtonEvent event((MouseCode)button, action, mods);
 		WindowEvent.Broadcast(event);
@@ -46,7 +60,7 @@ namespace BHive
 		im.add_input(button, (EventStatusCode)action, (ModCode)mods);
 	}
 
-	void WindowInput::OnMouseScroll(double x, double y)
+	void WindowInput::OnMouseScroll(GLFWwindow *, double x, double y)
 	{
 		MouseScrolledEvent event((float)x, (float)y);
 		WindowEvent.Broadcast(event);
@@ -55,16 +69,31 @@ namespace BHive
 		im.set_scroll((float)x, (float)y);
 	}
 
-	void WindowInput::OnMouseMoved(double x, double y)
+	void WindowInput::OnMouseMoved(GLFWwindow *, double x, double y)
 	{
 		MouseMovedEvent event((float)x, (float)y);
 		WindowEvent.Broadcast(event);
 	}
 
-	void WindowInput::OnFramebufferResized(int w, int h)
+	void WindowInput::OnFramebufferResized(GLFWwindow *, int w, int h)
 	{
 		WindowResizeEvent event(w, h);
 		WindowEvent.Broadcast(event);
+	}
+
+	void WindowInput::OnJoyStick(int joyStick, int status)
+	{
+		OnJoyStickConnected(joyStick, status);
+
+		for (int i = 0; i < GLFW_JOYSTICK_LAST; i++)
+		{
+			auto present = glfwJoystickPresent(i);
+			if (present)
+			{
+				OnJoyStickConnected(i, GLFW_CONNECTED);
+				break;
+			}
+		}
 	}
 
 	void WindowInput::OnJoyStickConnected(int joystick, int status)
@@ -143,4 +172,38 @@ namespace BHive
 		return buttons[(int)button];
 	}
 
+	void WindowInput::RegisterCallbacks(GLFWwindow *window, void *userPointer)
+	{
+		glfwSetWindowUserPointer(window, userPointer);
+
+		glfwSetWindowCloseCallback(window, OnWindowClose);
+
+		glfwSetWindowSizeCallback(window, OnWindowResize);
+
+		glfwSetWindowPosCallback(window, OnWindowResize);
+
+		glfwSetKeyCallback(window, OnKeyEvent);
+
+		glfwSetMouseButtonCallback(window, OnMouseButton);
+
+		glfwSetScrollCallback(window, OnMouseScroll);
+
+		glfwSetCursorPosCallback(window, OnMouseMoved);
+
+		glfwSetCharCallback(window, OnKeyTypedEvent);
+
+		glfwSetFramebufferSizeCallback(window, OnFramebufferResized);
+
+		glfwSetWindowFocusCallback(window, OnWindowFocused);
+
+		glfwSetJoystickCallback(OnJoyStick);
+	}
+
+	GLFWwindow *WindowInput::GetFocusedWindow()
+	{
+		if (RenderCommand::GetAPI() == RendererAPI::Opengl)
+			return glfwGetCurrentContext();
+
+		return sFocusedWindow;
+	}
 } // namespace BHive

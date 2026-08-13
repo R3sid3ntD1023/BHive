@@ -1,14 +1,32 @@
 #include "gfx/RenderCommand.h"
+#include "core/Application.h"
 #include "VulkanWindowContext.h"
 #include "VulkanRendererAPI.h"
 #include "VulkanSwapChain.h"
 #include "VulkanImGuiLayer.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
+#include <GLFW/glfw3.h>
 #include "gfx/Texture.h"
 
 namespace BHive
 {
+	struct VulkanViewportData
+	{
+		GLFWwindow *Window = nullptr;
+		VulkanSwapChain *SwapChain = nullptr;
+
+		vk::raii::CommandPool CmdPool = VK_NULL_HANDLE;
+		std::vector<vk::raii::CommandBuffer> Cmds;
+		uint32_t CurrentFrame = 0;
+		uint32_t ImageIndex = 0;
+
+		uint32_t Width = 0;
+		uint32_t Height = 0;
+		bool PendingResize = false;
+		bool Minimized = false;
+	};
+
 	namespace callbacks
 	{
 		void CheckVkResult(VkResult result)
@@ -17,6 +35,12 @@ namespace BHive
 			ASSERT(result == VK_SUCCESS, fmt::runtime(result_str));
 			return;
 		}
+
+		void ImCreateWindow(ImGuiViewport *vp)
+		{
+			GLFWwindow *window = (GLFWwindow *)vp->PlatformHandle;
+		}
+
 	} // namespace callbacks
 
 	VulkanImGuiLayer::VulkanImGuiLayer(GLFWwindow *windowHandle)
@@ -38,11 +62,14 @@ namespace BHive
 
 		auto &instance = VulkanBackend::GetInstance();
 		auto &physical_device = VulkanBackend::GetPhysicalDevice();
-		auto &swap_chain = VulkanBackend::GetSwapChain();
-		auto extent = swap_chain.GetExtent();
-		auto image_count = swap_chain.GetImageCount();
 		auto &queue_familes = VulkanBackend::GetQueueFamilies();
 		auto &device = VulkanBackend::GetLogicalDevice();
+		auto &app = Application::Get();
+		auto &window = app.GetWindow();
+
+		auto &swap_chain = Cast<VulkanWindowContext>(window.GetContext())->GetSwapchain();
+		auto extent = swap_chain.GetExtent();
+		auto image_count = swap_chain.GetImageCount();
 
 		std::vector<vk::DescriptorPoolSize> pool_sizes;
 		pool_sizes.emplace_back(vk::DescriptorType::eCombinedImageSampler, 1000);
@@ -81,6 +108,9 @@ namespace BHive
 		init_info.UseDynamicRendering = true;
 
 		ImGui_ImplVulkan_Init(&init_info);
+
+		ImGuiPlatformIO &platform_io = ImGui::GetPlatformIO();
+		// platform_io.Platform_CreateWindow = callbacks::ImCreateWindow;
 	}
 
 	void VulkanImGuiLayer::Shutdown()
@@ -96,7 +126,7 @@ namespace BHive
 		ImGuiLayer::Shutdown();
 	}
 
-	void VulkanImGuiLayer::OnSubmitRenderData(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size)
+	void VulkanImGuiLayer::OnSubmitRenderData(ImDrawData *drawData)
 	{
 		auto &renderer = Renderer::Get();
 

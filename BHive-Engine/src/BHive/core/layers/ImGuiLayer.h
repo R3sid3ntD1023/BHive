@@ -17,7 +17,7 @@ namespace BHive
 	public:
 		virtual ~ImGuiLayer() = default;
 
-		void OnAttach(Application&) override;
+		void OnAttach(Application &) override;
 
 		void OnDetach() override;
 
@@ -42,7 +42,7 @@ namespace BHive
 
 		virtual void Shutdown();
 
-		virtual void OnSubmitRenderData(ImDrawData *drawData, const glm::ivec2 &pos, const glm::uvec2 &size) {};
+		virtual void OnSubmitRenderData(ImDrawData *drawData) {};
 
 	private:
 		bool mBlockEvents{false};

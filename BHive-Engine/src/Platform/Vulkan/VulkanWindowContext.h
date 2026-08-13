@@ -15,18 +15,22 @@ namespace BHive
 	class BHIVE_API VulkanWindowContext : public WindowContext
 	{
 	public:
-		VulkanWindowContext(Window* window);
+		VulkanWindowContext(Window *window);
 
-		~VulkanWindowContext() ;
+		~VulkanWindowContext();
 
 		virtual void Init();
 
 		virtual void SwapBuffers();
 
+		VulkanSwapChain &GetSwapchain() { return *mSwapChain; }
+
 	private:
 		void OnEvent(Event &event);
 
-		bool OnWindowResized(WindowResizeEvent& e);
+		bool OnWindowResized(WindowResizeEvent &e);
+
+		void CreateSwapChain(GLFWwindow *window);
 
 	private:
 		GLFWwindow *mWindowHandle = nullptr;
@@ -35,6 +39,8 @@ namespace BHive
 		bool mHasPendingResize = false;
 		uint32_t mPendingWidth = 0;
 		uint32_t mPendingHeight = 0;
-		std::chrono::steady_clock::time_point mLastResizeTime;	
+		std::chrono::steady_clock::time_point mLastResizeTime;
+
+		Scope<VulkanSwapChain> mSwapChain;
 	};
 } // namespace BHive

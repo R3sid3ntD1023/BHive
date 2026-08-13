@@ -109,11 +109,8 @@ namespace BHive
 		CreateIntance();
 		CreateDebugMessenger();
 		PickPhysicalDevice();
-		CreateWindowSurface(window);
-		CreateLogicalDevice(mSurface);
-		CreateSwapChain(window);
+		CreateLogicalDevice(nullptr);
 		CreateCommandBuffers();
-		CreateSyncObjects();
 
 		auto log_info = [=](std::ofstream &log)
 		{
@@ -137,22 +134,6 @@ namespace BHive
 	{
 		if (*mDevice)
 			mDevice.waitIdle();
-	}
-
-	vk::Result VulkanBackend::Present()
-	{
-		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
-		return api->RenderFrame(mSwapChain.get());
-	}
-
-	void VulkanBackend::RequestSwapChainRecreate(uint32_t w, uint32_t h)
-	{
-		mDevice.waitIdle();
-
-		LOG_TRACE("recreating swap chain... with size[{}x{}]", w, h);
-
-		mSwapChain->Recreate(mDevice, w, h);
-		RecreateFrameResources();
 	}
 
 	std::vector<const char *> VulkanBackend::GetRequiredExtensions()
@@ -194,21 +175,6 @@ namespace BHive
 		}
 
 		return ~0u;
-	}
-
-	vk::Semaphore VulkanBackend::GetRenderFinishedSemaphore(uint32_t imageIndex)
-	{
-		return Get().mRenderFinishedSemaphores.at(imageIndex);
-	}
-
-	vk::Semaphore VulkanBackend::GetImageAvailableSemaphore(uint32_t frame)
-	{
-		return Get().mPresentSemaphores.at(frame);
-	}
-
-	vk::Fence VulkanBackend::GetInFlightFence(uint32_t frame)
-	{
-		return Get().mInFlightFences.at(frame);
 	}
 
 	void VulkanBackend::CreateIntance()
@@ -321,55 +287,6 @@ namespace BHive
 		{
 			LOG_ERROR("Failed to find a suitable GPU!");
 			ASSERT(false);
-		}
-	}
-
-	void VulkanBackend::CreateWindowSurface(GLFWwindow *window)
-	{
-		VkSurfaceKHR _surface;
-		auto &instance = VulkanBackend::GetInstance();
-		if (glfwCreateWindowSurface(*instance, window, nullptr, &_surface) != VK_SUCCESS)
-		{
-			LOG_ERROR("Failed to create window surface!");
-			ASSERT(false);
-		}
-
-		mSurface = vk::raii::SurfaceKHR(instance, _surface);
-
-		VulkanBackend::Get().CreateLogicalDevice(mSurface);
-		VulkanBackend::Get().EnsurePresentSupportForSurface(*mSurface);
-	}
-
-	void VulkanBackend::CreateSwapChain(GLFWwindow *window)
-	{
-		int w = 0, h = 0;
-		glfwGetFramebufferSize(window, &w, &h);
-
-		while (w == 0 || h == 0)
-		{
-			glfwWaitEvents();
-			glfwGetFramebufferSize(window, &w, &h);
-		}
-
-		mSwapChain = CreateScope<VulkanSwapChain>(mDevice, mSurface, uint32_t(w), uint32_t(h));
-	}
-
-	void VulkanBackend::CreateSyncObjects()
-	{
-		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			mPresentSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
-			mInFlightFences.emplace_back(mDevice, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
-		}
-	}
-
-	void VulkanBackend::CreatePerImageSync(uint32_t imgCount)
-	{
-		mRenderFinishedSemaphores.clear();
-
-		for (uint32_t i = 0; i < imgCount; i++)
-		{
-			mRenderFinishedSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
 		}
 	}
 

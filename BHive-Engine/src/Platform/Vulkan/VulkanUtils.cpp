@@ -127,7 +127,7 @@ namespace BHive
 		buffer = vk::raii::Buffer(device, bufferCreateInfo);
 	}
 
-	void VulkanUtils::CopyBuffer(const vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size)
+	void VulkanUtils::CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size)
 	{
 		auto cmd = BeginSingleTimeCommands();
 		cmd.copyBuffer(srcBuffer, dstBuffer, vk::BufferCopy(0, 0, size));
@@ -135,7 +135,7 @@ namespace BHive
 	}
 
 	void VulkanUtils::TransitionImageLayout(
-		vk::raii::CommandBuffer &cmd, vk::Image image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
+		vk::CommandBuffer cmd, vk::Image image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, ImageSubresourceRange inRange)
 	{
 		vk::ImageSubresourceRange range{aspect_flags, inRange.BaseMipLevel, inRange.LevelCount, inRange.BaseArrayLayer, inRange.LayerCount};
@@ -146,7 +146,7 @@ namespace BHive
 		cmd.pipelineBarrier2(depInfo);
 	}
 
-	void VulkanUtils::CopyBufferToImage(vk::raii::CommandBuffer &cmd, vk::Buffer buffer, vk::Image image, ImageCopyRegion region)
+	void VulkanUtils::CopyBufferToImage(vk::CommandBuffer cmd, vk::Buffer buffer, vk::Image image, ImageCopyRegion region)
 	{
 		vk::Offset3D offset(region.Offset.x, region.Offset.y, region.Offset.z);
 		vk::Extent3D extent(region.Extents.x, region.Extents.y, region.Extents.z);

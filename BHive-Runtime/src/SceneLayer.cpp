@@ -109,6 +109,10 @@ namespace BHive
 
 		mSceneRenderer->Submit(info);
 
+		DirectionalLight main{};
+		main.SetColor(FColor::White).SetIntensity(10.0f).SetDirection({0.f, -1.0f, 0.5f});
+		mSceneRenderer->Submit(main);
+
 		PointLight light{};
 		light.SetColor(FColor::White).SetIntensity(10.0f).SetRadius(100.f).SetPosition({0, 2, 0});
 		mSceneRenderer->Submit(light);

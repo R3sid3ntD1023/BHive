@@ -44,7 +44,7 @@ namespace BHive
 
 		vk::Result Present();
 
-		void RequestSwapChainRecreate(uint32_t w, uint32_t h);
+		bool RequestSwapChainRecreate(uint32_t w, uint32_t h);
 
 		template <typename THandleType>
 		static void SetObjectName(const THandleType &handle, const std::string &name)
@@ -83,14 +83,6 @@ namespace BHive
 
 		static vk::raii::CommandBuffer &GetCommandBuffer(uint32_t frame) { return Get().mCommandBuffers.at(frame); }
 
-		static VulkanSwapChain &GetSwapChain() { return *Get().mSwapChain; }
-
-		static vk::Semaphore GetRenderFinishedSemaphore(uint32_t imageIndex);
-
-		static vk::Semaphore GetImageAvailableSemaphore(uint32_t frame);
-
-		static vk::Fence GetInFlightFence(uint32_t frame);
-
 		struct DebugNameRegistry
 		{
 			std::unordered_map<uint64_t, std::string> Names;
@@ -117,12 +109,6 @@ namespace BHive
 
 		void PickPhysicalDevice();
 
-		void CreateWindowSurface(GLFWwindow *window);
-
-		void CreateSwapChain(GLFWwindow *window);
-
-		void CreateSyncObjects();
-
 		void CreateCommandBuffers();
 
 		void CreateImmediateCommandPool();
@@ -146,17 +132,11 @@ namespace BHive
 
 		vk::raii::Device mDevice = nullptr;
 
-		vk::raii::SurfaceKHR mSurface = nullptr;
-
 		vk::raii::CommandPool mImmediateCommandPool = nullptr;
 
 		vk::raii::CommandPool mCommandPool = nullptr;
 
 		vk::raii::CommandBuffers mCommandBuffers = nullptr;
-
-		std::vector<vk::raii::Semaphore> mPresentSemaphores;		// per frame
-		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores; // per image
-		std::vector<vk::raii::Fence> mInFlightFences;				// per frame
 
 		VkQueueFamilies mQueueFamilies;
 
@@ -167,7 +147,5 @@ namespace BHive
 		Scope<GPUResourceManager> mGPUResourceManager;
 
 		DebugNameRegistry mDebugNames;
-
-		Scope<VulkanSwapChain> mSwapChain;
 	};
 } // namespace BHive

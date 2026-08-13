@@ -16,7 +16,7 @@
 
 namespace BHive
 {
-	void ImGuiLayer::OnAttach(Application& app)
+	void ImGuiLayer::OnAttach(Application &app)
 	{
 		Init();
 	}
@@ -48,9 +48,9 @@ namespace BHive
 
 		ImGuiIO &io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-		// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // IF using Docking Branch
-		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;	  // IF using Docking Branch
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 		ImGuiStyle &style = ImGui::GetStyle();
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -86,8 +86,7 @@ namespace BHive
 	void ImGuiLayer::EndFrame()
 	{
 		auto &window = Application::Get().GetWindow();
-		const auto& pos = window.GetPosition();
-		const auto& size = window.GetSize();
+		const auto &size = window.GetSize();
 
 		ImGuiIO &io = ImGui::GetIO();
 		io.DisplaySize = {(float)size.x, (float)size.y};
@@ -95,7 +94,7 @@ namespace BHive
 
 		ImGui::Render();
 
-		OnSubmitRenderData(ImGui::GetDrawData(), pos, size);
+		OnSubmitRenderData(ImGui::GetDrawData());
 
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{

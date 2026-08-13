@@ -220,12 +220,7 @@ namespace BHive
 
 			if (oldState.IsUndefined || oldState != newState)
 			{
-				// LOG_TRACE("\t\tTransition {} :  {} -> {}", name, vk::to_string(oldState.Layout), vk::to_string(newState.Layout));
 				vkImg->Transition(cmd, newState, imgInfo.Range);
-			}
-			else
-			{
-				// LOG_TRACE("\t\tTransition {} : None", name);
 			}
 		}
 	}

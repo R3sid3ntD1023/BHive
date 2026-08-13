@@ -28,13 +28,13 @@ namespace BHive
 
 		static void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer &buffer);
 
-		static void CopyBuffer(const vk::raii::Buffer &srcBuffer, vk::raii::Buffer &dstBuffer, vk::DeviceSize size);
+		static void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer stBuffer, vk::DeviceSize size);
 
 		static void TransitionImageLayout(
-			vk::raii::CommandBuffer& cmd, vk::Image image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
+			vk::CommandBuffer cmd, vk::Image image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
 			vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, ImageSubresourceRange range);
 
-		static void CopyBufferToImage(vk::raii::CommandBuffer &cmd, vk::Buffer buffer, vk::Image image, ImageCopyRegion region);
+		static void CopyBufferToImage(vk::CommandBuffer cmd, vk::Buffer buffer, vk::Image image, ImageCopyRegion region);
 
 		static void SetBufferData(const vk::raii::DeviceMemory &memory, const void *data, vk::DeviceSize size);
 
@@ -52,9 +52,9 @@ namespace BHive
 
 		operator vk::raii::CommandBuffer &() { return mCommandBuffer; }
 
-		operator vk::CommandBuffer () { return mCommandBuffer; }
+		operator vk::CommandBuffer() { return mCommandBuffer; }
 
-		vk::raii::CommandBuffer& Get() { return mCommandBuffer; }
+		vk::CommandBuffer Get() { return mCommandBuffer; }
 
 	private:
 		vk::raii::CommandBuffer mCommandBuffer = VK_NULL_HANDLE;
