@@ -16,6 +16,9 @@
 #include "gfx/renderers/postprocess/AcesMaterial.h"
 #include "gfx/renderers/postprocess/ColorGradingMaterial.h"
 #include "Inspectors/Inspect.h"
+#include "core/WindowInput.h"
+#include "core/Application.h"
+#include "core/layers/ImGuiLayer.h"
 
 namespace BHive
 {
@@ -64,6 +67,8 @@ namespace BHive
 			material->SetAlbedo(FColor::Orange).SetEmission(FColor::Black).SetMetalness(1.0f).SetRoughness(0.4f);
 			mMaterialTables[1].add_material(material);
 		}
+
+		WindowInput::WindowEvent.Add(&mCamera, &EditorCamera::OnEvent);
 	}
 
 	void SceneLayer::OnDetach()
@@ -72,10 +77,7 @@ namespace BHive
 
 	void SceneLayer::OnUpdate(float time)
 	{
-		if (mViewportActive)
-		{
-			mCamera.ProcessInput();
-		}
+		mCamera.ProcessInput();
 	}
 
 	void SceneLayer::OnRender(Renderer &renderer)
@@ -125,6 +127,9 @@ namespace BHive
 		{
 			auto viewportSize = ImGui::GetContentRegionAvail();
 			mViewportSize = {uint32_t(glm::round(viewportSize.x)), uint32_t(glm::round(viewportSize.y))};
+			mViewportActive = ImGui::IsWindowHovered() && ImGui::IsWindowFocused();
+			Application::Get().GetImGuiLayer()->BlockEvents(!mViewportActive);
+			LOG_TRACE("SceneLayer::IsViewportActive {}", mViewportActive);
 
 			auto output = mSceneRenderer->GetOutput();
 			if (output)
@@ -133,8 +138,6 @@ namespace BHive
 				ImGui::Image(id, viewportSize);
 			}
 		}
-
-		mViewportActive = ImGui::IsWindowHovered() && ImGui::IsWindowFocused();
 
 		ImGui::End();
 
@@ -155,10 +158,7 @@ namespace BHive
 
 	void SceneLayer::OnEvent(Event &e)
 	{
-		if (mViewportActive)
-		{
-			mCamera.OnEvent(e);
-		}
+		mCamera.OnEvent(e);
 
 		/*EventDispatcher dispatcher(e);
 		dispatcher.Dispatch(this, &SceneLayer::OnWindowResize);*/

@@ -6,26 +6,14 @@
 #include "VulkanImGuiLayer.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
+#include <backends/imgui_impl_vulkan.cpp>
 #include <GLFW/glfw3.h>
 #include "gfx/Texture.h"
+#include "core/WindowInput.h"
 
 namespace BHive
 {
-	struct VulkanViewportData
-	{
-		GLFWwindow *Window = nullptr;
-		VulkanSwapChain *SwapChain = nullptr;
-
-		vk::raii::CommandPool CmdPool = VK_NULL_HANDLE;
-		std::vector<vk::raii::CommandBuffer> Cmds;
-		uint32_t CurrentFrame = 0;
-		uint32_t ImageIndex = 0;
-
-		uint32_t Width = 0;
-		uint32_t Height = 0;
-		bool PendingResize = false;
-		bool Minimized = false;
-	};
+	static inline void (*Platform_CreateWindow)(ImGuiViewport *);
 
 	namespace callbacks
 	{
@@ -34,11 +22,6 @@ namespace BHive
 			auto result_str = vk::to_string((vk::Result)result);
 			ASSERT(result == VK_SUCCESS, fmt::runtime(result_str));
 			return;
-		}
-
-		void ImCreateWindow(ImGuiViewport *vp)
-		{
-			GLFWwindow *window = (GLFWwindow *)vp->PlatformHandle;
 		}
 
 	} // namespace callbacks
@@ -80,6 +63,7 @@ namespace BHive
 		mDescriptorPool = vk::raii::DescriptorPool(device, pool_create_info);
 
 		ImGui_ImplGlfw_InitForVulkan(mWindowHandle, true);
+		ImGui_ImplGlfw_SetCallbacksChainForAllWindows(true);
 
 		auto format = swap_chain.GetFormat().format;
 		auto depth_format = swap_chain.GetDepthStencilFormat();
@@ -108,10 +92,7 @@ namespace BHive
 		init_info.UseDynamicRendering = true;
 
 		ImGui_ImplVulkan_Init(&init_info);
-
-		ImGuiPlatformIO &platform_io = ImGui::GetPlatformIO();
-		// platform_io.Platform_CreateWindow = callbacks::ImCreateWindow;
-	}
+		}
 
 	void VulkanImGuiLayer::Shutdown()
 	{
