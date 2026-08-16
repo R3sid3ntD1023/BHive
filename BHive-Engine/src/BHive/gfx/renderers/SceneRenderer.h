@@ -4,6 +4,7 @@
 #include "RenderData.h"
 #include "LightCasters.h"
 #include "postprocess/PostProcessStack.h"
+#include "gfx/renderers/Lights.h"
 
 namespace BHive
 {
@@ -98,13 +99,18 @@ namespace BHive
 		Ref<Texture> mOutputTexture;
 
 		FView mView;
+		Frustum mFrustum;
 
 		Ref<struct FSceneRenderData> mSceneRenderData;
-
-		Ref<GeneralBuffer> mIndirectDrawBuffer;
 
 		glm::uvec2 mSize{0, 0};
 
 		PostProcessStack mPostProcessStack;
+
+		Ref<GeneralBuffer> mCameraUBO;
+		Ref<GeneralBuffer> mModelSSBO;
+		Ref<GeneralBuffer> mIndirectDrawBuffer;
+
+		Lights mLights;
 	};
 } // namespace BHive

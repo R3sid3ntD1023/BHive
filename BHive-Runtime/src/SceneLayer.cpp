@@ -17,7 +17,6 @@
 #include "gfx/renderers/postprocess/ColorGradingMaterial.h"
 #include "Inspectors/Inspect.h"
 #include "core/WindowInput.h"
-#include "core/Application.h"
 #include "core/layers/ImGuiLayer.h"
 
 namespace BHive
@@ -57,15 +56,28 @@ namespace BHive
 		mPlane = CreateRef<PPlane>(10.f, 10.0f);
 
 		{
-			auto material = CreateRef<LambertMaterial>();
-			material->SetDiffuseColor(FColor::DarkGray).SetEmissionColor(FColor::Black);
-			mMaterialTables[0].add_material(material);
+
+			{
+				auto texture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
+				auto material = CreateRef<LambertMaterial>();
+				material->SetDiffuseColor(FColor::DarkGray).SetEmissionColor(FColor::Black);
+				material->SetTexture("DiffuseMap", {texture});
+				mMaterialTables[0].add_material(material);
+			}
+
+			{
+				auto texture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/textures/Mario.png", {});
+				auto material = CreateRef<LambertMaterial>();
+				material->SetDiffuseColor(FColor::DarkGray);
+				material->SetTexture("DiffuseMap", {texture});
+				mMaterialTables[1].add_material(material);
+			}
 		}
 
 		{
 			auto material = CreateRef<StandardMaterial>();
-			material->SetAlbedo(FColor::Orange).SetEmission(FColor::Black).SetMetalness(1.0f).SetRoughness(0.4f);
-			mMaterialTables[1].add_material(material);
+			material->SetAlbedo(FColor::Gray).SetEmission(FColor::Black).SetMetalness(1.0f).SetRoughness(0.1f);
+			mMaterialTables[2].add_material(material);
 		}
 
 		WindowInput::WindowEvent.Add(&mCamera, &EditorCamera::OnEvent);
@@ -77,7 +89,8 @@ namespace BHive
 
 	void SceneLayer::OnUpdate(float time)
 	{
-		mCamera.ProcessInput();
+		if (mViewportActive)
+			mCamera.ProcessInput();
 	}
 
 	void SceneLayer::OnRender(Renderer &renderer)
@@ -100,12 +113,12 @@ namespace BHive
 
 		mSceneRenderer->Submit(info);
 
-		info.Materials = mMaterialTables[1];
+		info.Materials = mMaterialTables[2];
 		info.Transform = FTransform{{0, 1.f, -2}};
 
 		mSceneRenderer->Submit(info);
 
-		info.Materials = mMaterialTables[0];
+		info.Materials = mMaterialTables[1];
 		info.Transform = FTransform{{0, 0, 0}};
 		info.Mesh = mPlane;
 
@@ -116,7 +129,10 @@ namespace BHive
 		mSceneRenderer->Submit(main);
 
 		PointLight light{};
-		light.SetColor(FColor::White).SetIntensity(10.0f).SetRadius(100.f).SetPosition({0, 2, 0});
+		light.SetColor(FColor::White).SetIntensity(10.0f).SetRadius(10.f).SetPosition({0, 2, 0});
+		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), light.GetPosition());
+		renderer.Line.DrawGrid({});
+
 		mSceneRenderer->Submit(light);
 		mSceneRenderer->End();
 	}
@@ -127,9 +143,6 @@ namespace BHive
 		{
 			auto viewportSize = ImGui::GetContentRegionAvail();
 			mViewportSize = {uint32_t(glm::round(viewportSize.x)), uint32_t(glm::round(viewportSize.y))};
-			mViewportActive = ImGui::IsWindowHovered() && ImGui::IsWindowFocused();
-			Application::Get().GetImGuiLayer()->BlockEvents(!mViewportActive);
-			LOG_TRACE("SceneLayer::IsViewportActive {}", mViewportActive);
 
 			auto output = mSceneRenderer->GetOutput();
 			if (output)
@@ -138,6 +151,9 @@ namespace BHive
 				ImGui::Image(id, viewportSize);
 			}
 		}
+
+		mViewportActive = ImGui::IsWindowHovered() && ImGui::IsWindowFocused();
+		Application::Get().GetImGuiLayer()->BlockEvents(!mViewportActive);
 
 		ImGui::End();
 
@@ -158,17 +174,7 @@ namespace BHive
 
 	void SceneLayer::OnEvent(Event &e)
 	{
-		mCamera.OnEvent(e);
-
-		/*EventDispatcher dispatcher(e);
-		dispatcher.Dispatch(this, &SceneLayer::OnWindowResize);*/
+		if (mViewportActive)
+			mCamera.OnEvent(e);
 	}
-
-	bool SceneLayer::OnWindowResize(WindowResizeEvent &e)
-	{
-		// mCamera.Resize(e.x, e.y);
-
-		return false;
-	}
-
 } // namespace BHive

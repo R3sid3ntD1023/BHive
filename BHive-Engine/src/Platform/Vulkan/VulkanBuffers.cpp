@@ -113,13 +113,28 @@ namespace BHive
 		mBuffer.Init(count * sizeof(uint32_t), data, vk::BufferUsageFlagBits::eIndexBuffer, lifeTime);
 	}
 
+	void VulkanIndexBuffer::SetData(const void *data, size_t size, uint32_t offset)
+	{
+		mBuffer.Upload({size, offset, data});
+	}
+
 	VulkanVertexBuffer::VulkanVertexBuffer(size_t size, EBufferLifetime lifeTime, const void *data)
 	{
 		mBuffer.Init(size, data, vk::BufferUsageFlagBits::eVertexBuffer, lifeTime);
 	}
 
+	void VulkanVertexBuffer::SetData(const void *data, size_t size, uint32_t offset)
+	{
+		mBuffer.Upload({size, offset, data});
+	}
+
 	VulkanGeneralBuffer::VulkanGeneralBuffer(size_t size, EBufferType type, EBufferLifetime lifeTime, const void *data)
 	{
 		mBuffer.Init(size, data, utils::ToVkBufferType(type), lifeTime);
+	}
+
+	void VulkanGeneralBuffer::SetData(const void *data, size_t size, uint32_t offset)
+	{
+		mBuffer.Upload({size, offset, data});
 	}
 } // namespace BHive

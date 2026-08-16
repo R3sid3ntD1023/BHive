@@ -17,7 +17,7 @@ namespace BHive
 	{
 		~VulkanBuffer();
 
-		void Init(size_t size, const void* data, vk::BufferUsageFlags usage, EBufferLifetime lifeTime);
+		void Init(size_t size, const void *data, vk::BufferUsageFlags usage, EBufferLifetime lifeTime);
 
 		const AllocatedBuffer &GetNative(uint32_t frame = 0) const;
 
@@ -26,15 +26,13 @@ namespace BHive
 		bool NeedsBarrier() const { return mLifeTime == EBufferLifetime::Static; }
 
 	private:
-		void InitStatic(size_t size, const void* data, vk::BufferUsageFlags usage);
-		void InitDynamic(size_t size, const void* data, vk::BufferUsageFlags usage);
+		void InitStatic(size_t size, const void *data, vk::BufferUsageFlags usage);
+		void InitDynamic(size_t size, const void *data, vk::BufferUsageFlags usage);
 
 	private:
-		
 		std::array<AllocatedBuffer, MAX_FRAMES_IN_FLIGHT> mBuffers;
 		EBufferLifetime mLifeTime{};
 	};
-
 
 	//-------------------------Static Buffers----------------------------------//
 
@@ -42,6 +40,8 @@ namespace BHive
 	{
 	public:
 		VulkanIndexBuffer(uint32_t count, EBufferLifetime lifeTime, const uint32_t *data);
+
+		void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 
 		uint32_t GetCount() const override { return mCount; }
 
@@ -61,6 +61,8 @@ namespace BHive
 
 		void SetLayout(const BufferLayout &layout) override { mLayout = layout; };
 
+		void SetData(const void *data, size_t size, uint32_t offset = 0) override;
+
 		const BufferLayout &GetLayout() const override { return mLayout; }
 
 		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mBuffer); }
@@ -77,7 +79,9 @@ namespace BHive
 	public:
 		VulkanGeneralBuffer(size_t size, EBufferType type, EBufferLifetime lifeTime, const void *data);
 
-		//unused in vulkan
+		void SetData(const void *data, size_t size, uint32_t offset = 0) override;
+
+		// unused in vulkan
 		void BindAtBindingPoint(uint32_t binding) override {}
 
 		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mBuffer); }

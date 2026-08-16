@@ -9,6 +9,7 @@
 #include "VulkanBuffers.h"
 #include "gfx/material/Material.h"
 #include "gfx/renderers/Renderer.h"
+#include "gfx/Framebuffer.h"
 
 namespace BHive
 {
@@ -18,10 +19,12 @@ namespace BHive
 		return static_cast<const T &>(cmd);
 	}
 
-	void VulkanCommandTranslator::ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx, uint32_t numAttachments)
+	void VulkanCommandTranslator::ExecuteCommandList(const FPass &pass, const FPhase &phase, FVulkanRendererContext &ctx)
 	{
 		auto &cmdbuffer = ctx.CommandBuffer;
-		const auto frame = ctx.Frame;
+		const auto &frame = ctx.Frame;
+		const auto &list = phase.CommandList;
+		const auto numAttachments = phase.FBO ? phase.FBO->GetNumColorAttachments() : 0;
 
 		for (auto &cmd : list.Commands)
 		{
@@ -56,22 +59,17 @@ namespace BHive
 			case ECommandType::BindMaterial:
 			{
 				auto &c = CmdCast<CmdBindMaterial>(*cmd);
-				BindMaterialSnapshot(c.Snapshot, ctx);
+				BindMaterialSnapshot(c.Snapshot, ctx, pass);
 			}
 			break;
 			case ECommandType::UploadBuffer:
 			{
 				auto &c = CmdCast<CmdUploadBuffer>(*cmd);
-				auto native = c.Buffer->GetNativeHandle();
 				auto data = c.Data->data();
 				auto size = c.Data->size();
 				auto offset = c.Offset;
 
-				FBufferUploadInfo upload{.size = size, .offset = offset, .data = data};
-
-				auto b = native.As<VulkanBuffer>();
-				if (b)
-					b->Upload(upload);
+				c.Buffer->SetData(data, size, offset);
 			}
 			break;
 			case ECommandType::DrawFullScreen:
@@ -154,15 +152,25 @@ namespace BHive
 		}
 	}
 
-	void VulkanCommandTranslator::BindMaterialSnapshot(const MaterialSnapshot &snap, FVulkanRendererContext &ctx)
+	void VulkanCommandTranslator::BindGlobals(VulkanShader *shader, const FPass &pass)
+	{
+		for (auto &[binding, buffer] : pass.GlobalBuffers)
+			shader->BindGlobal(binding.Set, binding.Binding, buffer);
+
+		for (auto &[binding, texture] : pass.GlobalTextures)
+			shader->BindGlobal(binding.Set, binding.Binding, texture);
+	}
+
+	void VulkanCommandTranslator::BindMaterialSnapshot(const MaterialSnapshot &snap, FVulkanRendererContext &ctx, const FPass &pass)
 	{
 		auto &cmd = ctx.CommandBuffer;
 		const auto frame = ctx.Frame;
 
-		// use shader for this!!
 		auto shader = Cast<VulkanShader>(snap.Shader);
 		if (!shader)
 			return;
+
+		BindGlobals(shader.get(), pass);
 
 		if (auto materialGroup = shader->GetBindingGroup(MATERIAL_SET_INDEX))
 		{
@@ -202,7 +210,7 @@ namespace BHive
 
 	void VulkanCommandTranslator::BindObjectResources(const Ref<GeneralBuffer> &buffer, VulkanBindingGroup &group)
 	{
-		group.SetBuffer(0, buffer);
+		// group.SetBuffer(0, buffer);
 	}
 
 } // namespace BHive

@@ -4,10 +4,9 @@
 
 namespace BHive
 {
-	void Lights::Initialize(Renderer &renderer)
+	void Lights::Init()
 	{
 		mLightBuffer = GeneralBuffer::Create(sizeof(FLightBufferData), EBufferType::StorageBuffer);
-		renderer.GetGlobalResources().Register("Lights", mLightBuffer);
 	}
 
 	void Lights::BeginRecording()

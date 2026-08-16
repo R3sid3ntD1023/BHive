@@ -15,17 +15,6 @@
 
 namespace BHive
 {
-	struct Distance
-	{
-		static bool Sort(const Ref<FMeshRenderData> &lhs, const Ref<FMeshRenderData> &rhs)
-		{
-			auto &view = Renderer::Get().GetViewSystem().GetMainView();
-			glm::vec3 viewPosA = view.View * glm::vec4(lhs->Transform.GetTranslation(), 1.0f);
-			glm::vec3 viewPosB = view.View * glm::vec4(rhs->Transform.GetTranslation(), 1.0f);
-			return viewPosA.z < viewPosB.z;
-		}
-	};
-
 	struct FSceneRenderData
 	{
 		std::unordered_map<Ref<Material>, FMeshRenderDatas> RenderData;
@@ -60,24 +49,31 @@ namespace BHive
 
 		mFramebuffer = Framebuffer::Create(specs);
 
+		mCameraUBO = GeneralBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);
+		mModelSSBO = GeneralBuffer::Create(sizeof(FPerObjectData) * 10'000, EBufferType::StorageBuffer);
 		mIndirectDrawBuffer = GeneralBuffer::Create(sizeof(MultiDrawIndirectCommand) * 10'000, EBufferType::IndirectBuffer);
 
 		mPostProcessStack.Init(size);
+		mLights.Init();
 	}
 
 	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
 	{
 		auto &renderer = Renderer::Get();
-		auto &globalsResources = renderer.GetGlobalResources();
 
-		mView = renderer.CreateView(camera->GetProjection(), view);
+		mView = FView::Create(camera->GetProjection(), view);
+		mFrustum.Update(camera->GetProjection(), view);
 
 		mSceneRenderData->ShadowRenderer.Begin();
 		mSceneRenderData->Reset();
+		renderer.BeginBatching();
+		mLights.BeginRecording();
 	}
 
 	void SceneRenderer::End()
 	{
+		mLights.Flush();
+
 		static auto sort = [=](const Ref<FMeshRenderData> &lhs, const Ref<FMeshRenderData> &rhs)
 		{
 			glm::vec3 viewPosA = mView.View * glm::vec4(lhs->Transform.GetTranslation(), 1.0f);
@@ -133,26 +129,38 @@ namespace BHive
 
 		auto &renderer = Renderer::Get();
 		auto &globalsResources = renderer.GetGlobalResources();
-		auto cameraUBO = globalsResources.Find("Camera");
 
+		mCameraUBO->SetData(&mView, sizeof(FView));
+		mModelSSBO->SetData(objectData.data(), objectData.size() * sizeof(FPerObjectData));
 		mIndirectDrawBuffer->SetData(drawCommands.data(), drawCommands.size() * sizeof(MultiDrawIndirectCommand));
-		renderer.SetPerObjectData(objectData.data(), objectData.size());
-		cameraUBO->BufferRef->SetData(&mView, sizeof(FView));
 
 		FPassState state{};
 		state.Color = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store, {0.1f, 0.1f, 0.1f, 1.0f}};
 		state.Depth = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store};
 		auto &scenePass = renderer.BeginPass("Scene Renderer", EPassType::OffScreen, state);
 
+		auto prefilter = globalsResources.Find("EnvironmentPreFilter")->TextureRef;
+		auto irradiance = globalsResources.Find("EnvironmentIrradiance")->TextureRef;
+		auto brdfLUT = globalsResources.Find("EnvironmentBRDFLUT")->TextureRef;
+
+		// global buffers
+		scenePass.PushGlobal(0, 0, mCameraUBO);
+		scenePass.PushGlobal(0, 1, mLights.GetBuffer());
+		scenePass.PushGlobal(3, 0, mModelSSBO);
+		scenePass.PushGlobal(0, 2, brdfLUT);
+		scenePass.PushGlobal(0, 3, prefilter);
+		scenePass.PushGlobal(0, 4, irradiance);
+
 		// opaque pass
 		scenePass.BeginPhase(EPhaseType::Graphics);
-		scenePass.Push(mView);
+
 		scenePass.Push(mFramebuffer);
-		scenePass.Push(globalsResources.Find("EnvironmentPreFilter")->TextureRef, EImageAccess::ColorRead);
-		scenePass.Push(globalsResources.Find("EnvironmentCubeMap")->TextureRef, EImageAccess::ColorRead);
-		scenePass.Push(globalsResources.Find("EnvironmentIrradiance")->TextureRef, EImageAccess::ColorRead);
-		scenePass.Push(globalsResources.Find("EnvironmentBRDFLUT")->TextureRef, EImageAccess::ColorRead);
-		scenePass.Push(cameraUBO->BufferRef.get(), EBufferAccess::UniformRead);
+		scenePass.Push(prefilter, EImageAccess::ColorRead);
+		scenePass.Push(irradiance, EImageAccess::ColorRead);
+		scenePass.Push(brdfLUT, EImageAccess::ColorRead);
+		scenePass.Push(mCameraUBO, EBufferAccess::UniformRead);
+		scenePass.Push(mModelSSBO, EBufferAccess::StorageRead);
+		scenePass.Push(mLights.GetBuffer(), EBufferAccess::StorageRead);
 
 		scenePass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("MESH_OPAQUE"));
 
@@ -174,9 +182,8 @@ namespace BHive
 			}
 		}
 
-		renderer.Light.Flush();
+		renderer.EndBatching();
 
-		// scenePass.Emplace<CmdDrawFullScreen>();
 		scenePass.EndPhase();
 
 		scenePass.BeginPhase("Transition to read", EPhaseType::Transfer);
@@ -192,7 +199,7 @@ namespace BHive
 
 	void SceneRenderer::Submit(const DirectionalLight &light)
 	{
-		Renderer::Get().Light.Submit(light);
+		mLights.Submit(light);
 
 		FShadowCascadedCreateInfo shadow_info{};
 		shadow_info.LightDirection = light.GetDirection();
@@ -206,7 +213,7 @@ namespace BHive
 
 	void SceneRenderer::Submit(const PointLight &light)
 	{
-		Renderer::Get().Light.Submit(light);
+		mLights.Submit(light);
 
 		FShadowCubeCreateInfo shadow_info{};
 		shadow_info.LightPosition = light.GetPosition();
@@ -219,7 +226,7 @@ namespace BHive
 	{
 		/*auto inner = glm::cos(glm::radians(info.InnerCutoff));
 		auto outer = glm::cos(glm::radians(info.OuterCutoff));*/
-		Renderer::Get().Light.Submit(light);
+		mLights.Submit(light);
 
 		FShadowFrustumCreateInfo shadow_info{};
 		shadow_info.LightDirection = light.GetDirection();
@@ -278,7 +285,7 @@ namespace BHive
 
 	float SceneRenderer::GetDistanceToCamera(const FTransform &transform)
 	{
-		const auto &C = Renderer::Get().GetViewSystem().GetMainView().Position;
+		const auto &C = mView.Position;
 		return glm::distance(glm::vec3(C), transform[2]);
 	}
 
@@ -317,9 +324,7 @@ namespace BHive
 			return true;
 
 		const auto &bounds = mesh->GetBoundingBox();
-		const auto &frustum = Renderer::Get().GetFrustum();
-
 		auto volume = FSphereVolume(bounds.GetCenter(), bounds.GetRadius());
-		return !volume.InFrustum(frustum, FTransform(transform));
+		return !volume.InFrustum(mFrustum, FTransform(transform));
 	}
 } // namespace BHive

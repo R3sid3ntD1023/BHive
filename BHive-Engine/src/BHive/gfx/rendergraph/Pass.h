@@ -2,6 +2,7 @@
 
 #include "gfx/resources/ImageSubResourceRange.h"
 #include "gfx/renderers/ViewSystem.h"
+#include "GlobalBinding.h"
 #include "Phase.h"
 
 namespace BHive
@@ -45,8 +46,9 @@ namespace BHive
 		std::string Name;
 		EPassType Type{};
 		std::vector<FPhase> Phases;
-		std::optional<FView> View;
 		FPassState State;
+		std::unordered_map<GlobalBinding, Ref<BufferBase>> GlobalBuffers;
+		std::unordered_map<GlobalBinding, Ref<Texture>> GlobalTextures;
 
 		void BeginPhase(EPhaseType type = EPhaseType::Graphics);
 
@@ -55,28 +57,31 @@ namespace BHive
 		template <typename T>
 		T &Emplace()
 		{
-			ASSERT(mCurrentPhase > -1);
+			ASSERT(mCurrentPhase);
+
+			static_assert(std::is_base_of_v<FCommand, T>, "Type T doesn't derive from FCommand!");
+			static_assert(std::is_constructible_v<T>, "Emplace<T>: Provided arguments doesn't match T's constrcutor");
 
 			auto cmd = CreateRef<T>();
-			Phases[mCurrentPhase].CommandList.Commands.emplace_back(cmd);
-			return *cmd;
+			mCurrentPhase->CommandList.Commands.emplace_back(cmd);
+			return *cmd.get();
 		}
-
-		void Push(const FView &view);
 
 		void Push(Ref<Framebuffer> fbo, ImageSubresourceRange colorRange = {});
 
 		void Push(Ref<Texture> tex, EImageAccess access, ImageSubresourceRange range = {});
 
-		void Push(BufferBase *buffer, EBufferAccess access);
+		void Push(Ref<BufferBase> buffer, EBufferAccess access);
+
+		void PushGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer);
+
+		void PushGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture);
 
 		void EndPhase();
 
-		const FView &GetView() const { return View.value(); }
-
-		bool HasView() const { return View.has_value(); }
-
 	private:
-		int32_t mCurrentPhase = -1;
+		// global resources
+
+		FPhase *mCurrentPhase = nullptr;
 	};
 } // namespace BHive

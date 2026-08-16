@@ -25,6 +25,7 @@
 #include "gfx/renderers/postprocess/BloomMaterial.h"
 #include "gfx/renderers/postprocess/ColorGradingMaterial.h"
 #include "gfx/imgui/IImGuiProvider.h"
+#include "core/layers/ImGuiLayer.h"
 
 #define ENABLE_RENDERING 1
 
@@ -38,8 +39,14 @@ namespace BHive
 	static PointLight plight0;
 	static SpotLight spLight0;
 
+	std::vector<MultiDrawIndirectCommand> commands;
+
 	void RuntimeLayer::OnAttach(Application &app)
 	{
+		mCameraUBO = GeneralBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);
+		mModelSSBO = GeneralBuffer::Create(sizeof(FPerObjectData) * 10, EBufferType::StorageBuffer);
+		mLights.Init();
+
 		mEnvironmentTex = TextureLoader::Import(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
 		Renderer::Get().SetEnvironmentTexture(mEnvironmentTex);
 
@@ -62,7 +69,6 @@ namespace BHive
 
 		// create model buffers
 		{
-			std::vector<MultiDrawIndirectCommand> commands;
 
 			size_t i = 0;
 			for (i; i < objectCount; i++)
@@ -152,10 +158,11 @@ namespace BHive
 		spLight0.SetColor(FColor::Red).SetIntensity(3.f).SetDirection({0, -1, 0}).SetPosition({}).SetRadius(5.f).SetInnerAngleDegrees(45.f).SetOuterAngleDegrees(75.f);
 
 		// post process
+
+		mPostProcessStack.Init(mViewportSize);
 		mPostProcessStack.Emplace<BloomMaterial>();
 		mPostProcessStack.Emplace<AcesMaterial>();
 		mPostProcessStack.Emplace<ColorGradingMaterial>();
-		mPostProcessStack.Init(window.GetSize());
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -166,10 +173,9 @@ namespace BHive
 	{
 		// LOG_INFO("Frame time: {} ms", Time::DeltaTime() * 1000.0);
 
-		transform.AddRotation({0, time * 10.f, 0});
-
 		if (mViewportActive)
 		{
+			transform.AddRotation({0, time * 10.f, 0});
 			mCamera.ProcessInput();
 		}
 	}
@@ -191,42 +197,54 @@ namespace BHive
 			}
 		}
 
+		renderer.BeginBatching();
+		mLights.BeginRecording();
+
 		// Submit lights
 		{
-			renderer.Light.Submit(mainLight);
-			renderer.Light.Submit(plight0);
-			renderer.Light.Submit(spLight0);
+			mLights.Submit(mainLight);
+			mLights.Submit(plight0);
+			mLights.Submit(spLight0);
 		}
+
+		mLights.Flush();
 
 		// Update model matrices
 		{
-			std::vector<FPerObjectData> transforms(6);
-			transforms[0].WorldMatrix = transform;
-			transforms[1].WorldMatrix = FTransform({3, 4, 0});
-			transforms[2].WorldMatrix = FTransform({4, 1, 0});
-			transforms[3].WorldMatrix = FTransform({-4, 1, 0});
-			transforms[4].WorldMatrix = FTransform({0, 1, 0});
-			transforms[5].WorldMatrix = FTransform({0, 0, 0});
-			renderer.SetPerObjectData(transforms.data(), transforms.size());
+			std::vector<FPerObjectData> tranforms(6);
+			tranforms[0].WorldMatrix = transform;
+			tranforms[1].WorldMatrix = FTransform({3, 4, 0});
+			tranforms[2].WorldMatrix = FTransform({4, 1, 0});
+			tranforms[3].WorldMatrix = FTransform({-4, 1, 0});
+			tranforms[4].WorldMatrix = FTransform({0, 1, 0});
+			tranforms[5].WorldMatrix = FTransform({0, 0, 0});
+
+			mModelSSBO->SetData(tranforms.data(), tranforms.size() * sizeof(FPerObjectData));
 		}
 
-		auto &globalsResources = Renderer::Get().GetGlobalResources();
-		FView view = renderer.CreateView(mCamera.GetProjection(), mCamera.GetView());
+		auto &globalsResources = renderer.GetGlobalResources();
+		auto view = FView::Create(mCamera.GetProjection(), mCamera.GetView());
 
 		{
+			mCameraUBO->SetData(&view, sizeof(FView));
+
 			FPassState state{};
 			state.Color = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store, {0.1f, 0.1f, 0.1f, 1.0f}};
 			state.Depth = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store};
 			auto &scenePass = renderer.BeginPass("Scene", EPassType::OffScreen, state);
+			scenePass.PushGlobal(0, 0, mCameraUBO);
+			scenePass.PushGlobal(0, 1, mLights.GetBuffer());
+			scenePass.PushGlobal(3, 0, mModelSSBO);
 
 			scenePass.BeginPhase();
-			scenePass.Push(view);
 			scenePass.Push(mFramebuffer);
 			scenePass.Push(globalsResources.Find("EnvironmentPreFilter")->TextureRef, EImageAccess::ColorRead);
 			scenePass.Push(globalsResources.Find("EnvironmentCubeMap")->TextureRef, EImageAccess::ColorRead);
 			scenePass.Push(globalsResources.Find("EnvironmentIrradiance")->TextureRef, EImageAccess::ColorRead);
 			scenePass.Push(globalsResources.Find("EnvironmentBRDFLUT")->TextureRef, EImageAccess::ColorRead);
-			scenePass.Push(globalsResources.Find("Camera")->BufferRef.get(), EBufferAccess::UniformRead);
+			scenePass.Push(mCameraUBO, EBufferAccess::UniformRead);
+			scenePass.Push(mModelSSBO, EBufferAccess::StorageRead);
+			scenePass.Push(mLights.GetBuffer(), EBufferAccess::StorageRead);
 
 			scenePass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("MESH_OPAQUE"));
 
@@ -252,26 +270,26 @@ namespace BHive
 			scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mSphere->GetVertexArray().get(), 1u, stride, 4u);
 			scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mMultiDrawIndirectBuffer.get(), mPlane->GetVertexArray().get(), 1u, stride, 5u);
 
-			{
-				FQuadParams params{.Size = {1, 1}, .Color = FColor::Red};
-				FTextParams tex_params{};
+			// {
+			// 	FQuadParams params{.Size = {1, 1}, .Color = FColor::Red};
+			// 	FTextParams tex_params{};
 
-				renderer.Line.DrawLine(glm::vec3{0.f, 0.f, 0.f}, mainLight.GetDirection(), mainLight.GetColor());
-				renderer.Line.DrawSphere(plight0.GetRadius(), 32, {}, plight0.GetColor(), FTransform{plight0.GetPosition()});
-				renderer.Line.DrawSpotlightCone(spLight0.GetPosition(), spLight0.GetDirection(), spLight0.GetRadius(), spLight0.GetOuterAngleDegrees(), 32, spLight0.GetColor());
-				renderer.Line.DrawGrid({});
-				renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
-				renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
+			// 	renderer.Line.DrawLine(glm::vec3{0.f, 0.f, 0.f}, mainLight.GetDirection(), mainLight.GetColor());
+			// 	renderer.Line.DrawSphere(plight0.GetRadius(), 32, {}, plight0.GetColor(), FTransform{plight0.GetPosition()});
+			// 	renderer.Line.DrawSpotlightCone(spLight0.GetPosition(), spLight0.GetDirection(), spLight0.GetRadius(), spLight0.GetOuterAngleDegrees(), 32, spLight0.GetColor());
+			// 	renderer.Line.DrawGrid({});
+			// 	renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, transform);
+			// 	renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
 
-				renderer.Quad.DrawQuad(params, nullptr, FTransform({0, 0, 2}));
+			// 	renderer.Quad.DrawQuad(params, nullptr, FTransform({0, 0, 2}));
 
-				params.Color = FColor::White;
-				renderer.Quad.DrawQuad(params, mTexture, FTransform({0, 0, -2}));
+			// 	params.Color = FColor::White;
+			// 	renderer.Quad.DrawQuad(params, mTexture, FTransform({0, 0, -2}));
 
-				renderer.Quad.DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));
-				renderer.Quad.DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
-				renderer.Flush();
-			}
+			// 	renderer.Quad.DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));
+			// 	renderer.Quad.DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
+			// 	renderer.Flush();
+			// }
 
 			scenePass.EndPhase();
 
@@ -284,12 +302,11 @@ namespace BHive
 			debugState.Depth = {EAttachmentLoadState::Load, EAttachmentStoreState::Store};
 
 			auto &debugPass = renderer.BeginPass("DebugPass", EPassType::OffScreen, debugState);
+			debugPass.PushGlobal(0, 0, mCameraUBO);
 
 			debugPass.BeginPhase("Draw Debug Objects", EPhaseType::Graphics);
-			debugPass.Push(globalsResources.Find("Camera")->BufferRef.get(), EBufferAccess::UniformRead);
-			debugPass.Push(view);
+			debugPass.Push(mCameraUBO, EBufferAccess::UniformRead);
 			debugPass.Push(mFramebuffer);
-
 			{
 				FQuadParams params{.Size = {1, 1}, .Color = FColor::Red};
 				FTextParams tex_params{};
@@ -310,7 +327,9 @@ namespace BHive
 				renderer.Quad.DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
 			}
 
-			renderer.Flush();
+			renderer.EndBatching();
+
+			// renderer.Flush();
 			debugPass.EndPhase();
 
 			debugPass.BeginPhase("Transition to Read", EPhaseType::Transfer);
@@ -344,6 +363,7 @@ namespace BHive
 		}
 
 		mViewportActive = ImGui::IsWindowHovered() && ImGui::IsWindowFocused();
+		Application::Get().GetImGuiLayer()->BlockEvents(!mViewportActive);
 
 		ImGui::End();
 

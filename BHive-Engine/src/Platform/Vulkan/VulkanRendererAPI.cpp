@@ -137,15 +137,6 @@ namespace BHive
 
 		for (auto &pass : graph.GetPasses())
 		{
-			/*if (pass.HasView())
-			{
-				auto camera = Renderer::Get().GetGlobalResources().Find("Camera");
-				if (camera)
-				{
-					camera->BufferRef->SetData(&pass.GetView(), sizeof(FView));
-				}
-			}*/
-
 			for (auto phase : pass.Phases)
 			{
 				CreateBarriers(phase.CommandList, vk_ctx);
@@ -192,8 +183,7 @@ namespace BHive
 					BeginOffScreenRendering(state, phase, ctx);
 			}
 
-			auto numAtatchments = phase.FBO ? phase.FBO->GetNumColorAttachments() : 0;
-			ExecuteCommandList(phase.CommandList, ctx, numAtatchments);
+			VulkanCommandTranslator::ExecuteCommandList(pass, phase, ctx);
 
 			if (phase.Type == EPhaseType::Graphics)
 			{
@@ -223,11 +213,6 @@ namespace BHive
 				vkImg->Transition(cmd, newState, imgInfo.Range);
 			}
 		}
-	}
-
-	void VulkanRendererAPI::ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx, uint32_t numAttachments)
-	{
-		VulkanCommandTranslator::ExecuteCommandList(list, ctx, numAttachments);
 	}
 
 	void VulkanRendererAPI::BeginSwapChainRendering(const FPassState &state, const FPhase &phase, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
@@ -357,8 +342,6 @@ namespace BHive
 	FVulkanRendererContext VulkanRendererAPI::BuildContext(vk::raii::CommandBuffer &cmd, uint32_t frame, uint32_t imageIndex, uint32_t viewIndex)
 	{
 		FVulkanRendererContext ctx(cmd, frame, imageIndex, viewIndex);
-		ctx.ModelBuffer = Renderer::Get().GetModelBuffer();
-
 		return ctx;
 	}
 

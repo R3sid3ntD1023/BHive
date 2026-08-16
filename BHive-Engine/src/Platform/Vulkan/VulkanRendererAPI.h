@@ -74,8 +74,6 @@ namespace BHive
 
 		void TransitionImages(const FPhase &phase, vk::raii::CommandBuffer &cmd);
 
-		void ExecuteCommandList(const FRenderCommandList &list, FVulkanRendererContext &ctx, uint32_t numAttachments);
-
 		void BeginSwapChainRendering(const FPassState &state, const FPhase &phase, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
 
 		void BeginOffScreenRendering(const FPassState &state, const FPhase &phase, FVulkanRendererContext &ctx);

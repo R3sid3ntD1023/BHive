@@ -50,15 +50,15 @@ namespace BHive
 
 		vk::raii::SwapchainKHR mSwapChain = nullptr;
 
+		std::vector<VulkanImage> mImages{};
+
+		VulkanImage mDepthImage;
+
 		std::vector<vk::raii::Semaphore> mPresentSemaphores; // per frame
 
 		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores; // per image
 
 		std::vector<vk::raii::Fence> mInFlightFences; // per frame
-
-		std::vector<VulkanImage> mImages{};
-
-		VulkanImage mDepthImage;
 
 		// Cached Properties
 

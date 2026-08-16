@@ -21,7 +21,7 @@ namespace BHive
 
 	void VulkanBindingGroup::SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer)
 	{
-		if (auto info = FindBinding(binding); info->Buffer != buffer)
+		if (auto info = FindBinding(binding); info && info->Buffer != buffer)
 		{
 			info->Buffer = buffer;
 			MakeDirty();
@@ -30,7 +30,7 @@ namespace BHive
 
 	void VulkanBindingGroup::SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip)
 	{
-		if (auto info = FindBinding(binding); info->Texture != texture || info->MipLevel != mip)
+		if (auto info = FindBinding(binding); info && (info->Texture != texture || info->MipLevel != mip))
 		{
 			info->Texture = texture;
 			info->MipLevel = mip;

@@ -19,15 +19,22 @@ namespace BHive
 		CreateDescriptorResources(*asset);
 		CreateModules(*asset);
 		CreatePipelineLayout();
-		BindGlobalResources();
 	}
 
-	VulkanBindingGroup *VulkanShader::GetBindingGroup(uint32_t set) const
+	void VulkanShader::BindGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer)
 	{
-		if (mBindGroups.contains(set))
-			return mBindGroups.at(set).get();
+		if (auto group = GetBindingGroup(set))
+		{
+			group->SetBuffer(binding, buffer);
+		}
+	}
 
-		return nullptr;
+	void VulkanShader::BindGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture)
+	{
+		if (auto group = GetBindingGroup(set))
+		{
+			group->SetTexture(binding, texture);
+		}
 	}
 
 	void VulkanShader::Bind(vk::CommandBuffer cmd, uint32_t frame)
@@ -199,74 +206,12 @@ namespace BHive
 		// LOG_INFO("Push constants found: {} - {}", asset.Name, merged.PushConstants.size());
 	}
 
-	void VulkanShader::BindGlobalResources()
+	VulkanBindingGroup *VulkanShader::GetBindingGroup(uint32_t set) const
 	{
-		auto &globals = Renderer::Get().GetGlobalResources();
-		auto &bindings = GetRefl().GetSetBindings(GLOBAL_SET_INDEX);
-		auto &shaderName = GetName();
-		auto setIndex = GLOBAL_SET_INDEX;
+		if (mBindGroups.contains(set))
+			return mBindGroups.at(set).get();
 
-		if (bindings.empty())
-		{
-			LOG_INFO("Pipeline: Shader '{}' has no global resources in set {}, skipping global binding.", shaderName, setIndex);
-			return;
-		}
-
-		auto group = GetBindingGroup(setIndex);
-
-		for (auto &r : bindings)
-		{
-			const std::string semantic = r.Semantic.empty() ? r.name : r.Semantic;
-
-			if (r.Semantic.empty())
-			{
-				LOG_ERROR(
-					"Shader '{}' has resource '{}' in set {} binding {} with NO semantic tag.\n"
-					"Add: // @semantic <Name> above the declaration.",
-					shaderName, r.name, setIndex, r.binding);
-			}
-
-			auto *res = globals.Find(semantic);
-
-			if (!res)
-			{
-				auto guess = globals.GuessSemanticFromName(semantic);
-				if (!guess.empty())
-				{
-					LOG_WARN(
-						"Shader '{}' variable '{}' requested semantic '{}', but it was not found.\n"
-						"   Did you mean semantic '{}'?",
-						shaderName, r.name, semantic, guess);
-				}
-
-				LOG_ERROR(
-					"GlobalSet Binding Error:\n"
-					"  Shader: {}\n"
-					"  Set: {}\n"
-					"  Binding: {}\n"
-					"  Shader Variable: '{}'\n"
-					"  Semantic Requested: '{}'\n"
-					"  BUT GlobalResources does not contain this semantic.\n"
-					"  Registered Global Semantics: {}",
-					shaderName, setIndex, r.binding, r.name, semantic, globals.DebugListSemantics());
-
-				ASSERT(false, "Missing global semantic")
-
-				continue;
-			}
-			else if (res->IsBuffer() && IsBuffer(r.kind))
-			{
-				group->SetBuffer(r.binding, res->BufferRef);
-				LOG_INFO("Shader: bound BUFFER '{}' (semantic '{}') at set {}, binding {}", r.name, semantic, setIndex, r.binding);
-				continue;
-			}
-
-			if (IsTexture(r.kind))
-			{
-				group->SetTexture(r.binding, res->TextureRef);
-				LOG_INFO("Shader: bound TEXTURE '{}' (semantic '{}') at set {}, binding {}", r.name, semantic, setIndex, r.binding);
-				continue;
-			}
-		}
+		return nullptr;
 	}
+
 } // namespace BHive

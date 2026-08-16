@@ -15,8 +15,8 @@ layout(std140, set = 0, binding = 0) uniform CameraBuffer
 {
 	mat4 u_projection;
 	mat4 u_view;
-	vec2 u_near_far;
-	vec3 u_camera_position;
+	vec4 u_near_far;
+	vec4 u_camera_position;
 };
 
 layout(location = 0) out struct VS_OUT
@@ -39,7 +39,7 @@ void main()
 	vs_out.TBN = mat3(T, B, N);
 	vs_out.Texcoord = vTexCoord;
 	vs_out.Normal = N;
-	vs_out.CameraPosition = u_camera_position;
+	vs_out.CameraPosition = u_camera_position.xyz;
 	vs_out.Color = vColor;
 	vs_out.InstanceID = float(gl_InstanceIndex);
 	vs_out.DrawID = float(gl_DrawID);

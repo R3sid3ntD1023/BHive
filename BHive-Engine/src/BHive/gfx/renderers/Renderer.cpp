@@ -9,16 +9,10 @@ namespace BHive
 
 	struct BHIVE_API RenderData
 	{
-		ViewSystem Views;
-
-		Frustum CameraFrustum;
-
 		Ref<Texture> WhiteTexture;
 		Ref<Texture> BlackTexture;
 		Ref<Texture> BlueTexture;
 		Ref<Texture2D> BRDFLut;
-		Ref<GeneralBuffer> CameraUBO;
-		Ref<GeneralBuffer> ModelSSBO;
 
 		RenderData()
 		{
@@ -39,10 +33,6 @@ namespace BHive
 
 			create_info.DebugName = "Blue Texture";
 			BlueTexture = Texture2D::Create({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
-
-			CameraUBO = GeneralBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);
-
-			ModelSSBO = GeneralBuffer::Create(sizeof(FPerObjectData) * 1000, EBufferType::StorageBuffer);
 
 			BRDFLut = BRDFLUTGenerator::GenerateBRDFLUTMap();
 		}
@@ -66,7 +56,6 @@ namespace BHive
 
 		Line.Initialize();
 		Quad.Initialize();
-		Light.Initialize(*this);
 	}
 
 	Renderer::~Renderer()
@@ -81,9 +70,6 @@ namespace BHive
 
 		mFrameActive = true;
 		ResetStats();
-		mData->Views.BeginFrame();
-		BeginBatching();
-
 		mEnvironment.Update(mScheduler);
 	}
 
@@ -94,20 +80,6 @@ namespace BHive
 		ExecuteGraph(mGraph);
 
 		mFrameActive = false;
-	}
-
-	void Renderer::SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view)
-	{
-
-		FView &v = mData->Views.CreateMainView();
-
-		v.Projection = projection;
-		v.View = view;
-		v.NearFar.x = projection[3][2] / (projection[2][2] - 1.0f);
-		v.NearFar.y = projection[3][2] / (projection[2][2] + 1.0f);
-		v.Position = glm::inverse(view)[3];
-
-		mData->CameraFrustum.Update(projection, view);
 	}
 
 	void Renderer::Flush()
@@ -126,18 +98,6 @@ namespace BHive
 		mAPI->SubmitGraph(graph);
 	}
 
-	FView Renderer::CreateView(const glm::mat4 &projection, const glm::mat4 &view)
-	{
-		FView v{};
-
-		v.Projection = projection;
-		v.View = view;
-		v.NearFar.x = projection[3][2] / (projection[2][2] - 1.0f);
-		v.NearFar.y = projection[3][2] / (projection[2][2] + 1.0f);
-		v.Position = glm::inverse(view)[3];
-		return v;
-	}
-
 	void Renderer::ResetStats()
 	{
 		memset(&mStats, 0, sizeof(Statitics));
@@ -146,29 +106,6 @@ namespace BHive
 	GlobalResources &Renderer::GetGlobalResources()
 	{
 		return mGlobalResources;
-	}
-
-	Ref<GeneralBuffer> Renderer::GetModelBuffer() const
-	{
-		ASSERT(mData);
-		return mData->ModelSSBO;
-	}
-
-	void Renderer::SetPerObjectData(const FPerObjectData *data, size_t count)
-	{
-		ASSERT(mData)
-		mData->ModelSSBO->SetData(data, sizeof(FPerObjectData) * count);
-	}
-
-	const Frustum &Renderer::GetFrustum()
-	{
-		ASSERT(mData);
-		return mData->CameraFrustum;
-	}
-
-	ViewSystem &Renderer::GetViewSystem()
-	{
-		return mData->Views;
 	}
 
 	RenderGraph &Renderer::GetActiveGraph()
@@ -218,14 +155,12 @@ namespace BHive
 	{
 		Line.BeginRecording();
 		Quad.BeginRecording();
-		Light.BeginRecording();
 	}
 
 	void Renderer::EndBatching()
 	{
 		Line.Flush(*this);
 		Quad.Flush(*this);
-		Light.Flush();
 	}
 
 	void Renderer::InitAndRegisterResources()
@@ -234,12 +169,11 @@ namespace BHive
 		mGlobalResources.Register("White", mData->WhiteTexture);
 		mGlobalResources.Register("Blue", mData->BlueTexture);
 		mGlobalResources.Register("Black", mData->BlackTexture);
-		mGlobalResources.Register("Camera", mData->CameraUBO);
 	}
 
 	void Renderer::SolveResourceBarriers(RenderGraph &graph)
 	{
-		std::unordered_map<BufferBase *, EBufferAccess> lastBufferAccess;
+		std::unordered_map<Ref<BufferBase>, EBufferAccess> lastBufferAccess;
 
 		for (auto &pass : graph.GetPasses())
 		{
@@ -248,14 +182,14 @@ namespace BHive
 				// buffers
 				for (auto &use : phase.Buffers)
 				{
-					auto *raw = use.Buffer;
-					auto prev = lastBufferAccess[raw];
+					auto buffer = use.Buffer;
+					auto prev = lastBufferAccess[buffer];
 					auto next = use.Access;
 
 					if (prev != next)
-						phase.CommandList.BufferBarriers.emplace_back(FBufferBarrierRequest{raw, prev, next});
+						phase.CommandList.BufferBarriers.emplace_back(FBufferBarrierRequest{buffer, prev, next});
 
-					lastBufferAccess[raw] = next;
+					lastBufferAccess[buffer] = next;
 				}
 			}
 		}

@@ -12,7 +12,7 @@ namespace BHive
 	{
 		static constexpr uint32_t sMaxLights = 32;
 
-		void Initialize(Renderer &renderer);
+		void Init();
 
 		void BeginRecording();
 
@@ -25,6 +25,8 @@ namespace BHive
 		void Submit(const SpotLight &light);
 
 		const glm::uvec3 &NumLights() const;
+
+		Ref<GeneralBuffer> GetBuffer() const { return mLightBuffer; }
 
 	private:
 		struct FLightBufferData

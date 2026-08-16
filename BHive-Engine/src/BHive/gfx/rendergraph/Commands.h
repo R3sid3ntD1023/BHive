@@ -78,13 +78,13 @@ namespace BHive
 
 	struct CmdUploadBuffer : FCommand
 	{
-		BufferBase *Buffer;
+		Ref<BufferBase> Buffer;
 
 		Ref<std::vector<std::byte>> Data;
 
 		uint32_t Offset;
 
-		void operator()(BufferBase *buffer, const void *data, size_t size, uint32_t offset = 0)
+		void operator()(const Ref<BufferBase> &buffer, const void *data, size_t size, uint32_t offset = 0)
 		{
 			Buffer = buffer;
 			Offset = offset;

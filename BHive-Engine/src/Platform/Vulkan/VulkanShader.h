@@ -7,7 +7,6 @@
 
 namespace BHive
 {
-
 	struct FPipelineLayoutInfo
 	{
 		std::vector<vk::DescriptorSetLayout> SetLayouts;
@@ -24,6 +23,14 @@ namespace BHive
 	public:
 		VulkanShader(const Ref<ShaderAsset> &asset);
 
+		void Bind(vk::CommandBuffer cmd, uint32_t frame);
+
+		void BindPushConstants(vk::CommandBuffer cmd, vk::ShaderStageFlags stage, const void *data, uint32_t size, uint32_t offset);
+
+		void BindGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer);
+
+		void BindGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture);
+
 		const uint32_t GetSetCount() const { return (uint32_t)mDescriptorSetLayouts.size(); }
 
 		vk::DescriptorSetLayout GetDescriptorSetLayout(uint32_t set) const;
@@ -34,10 +41,6 @@ namespace BHive
 
 		VulkanBindingGroup *GetBindingGroup(uint32_t set) const;
 
-		void Bind(vk::CommandBuffer cmd, uint32_t frame);
-
-		void BindPushConstants(vk::CommandBuffer cmd, vk::ShaderStageFlags stage, const void *data, uint32_t size, uint32_t offset);
-
 	private:
 		void CreateModules(const ShaderAsset &asset);
 
@@ -46,8 +49,6 @@ namespace BHive
 		void CreateSetHashes(const ShaderAsset &asset);
 
 		void CreatePipelineLayout();
-
-		void BindGlobalResources();
 
 	private:
 		vk::raii::Device &mDevice;

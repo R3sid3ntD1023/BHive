@@ -10,8 +10,8 @@ namespace BHive
 		RuntimeApp(const FApplicationSpecification &specs)
 			: Application(specs)
 		{
-			// PushLayer<RuntimeLayer>();
 			PushLayer<SceneLayer>();
+			// PushLayer<RuntimeLayer>();
 		}
 	};
 

@@ -132,8 +132,7 @@ namespace BHive
 
 	void VulkanBackend::Shutdown()
 	{
-		if (*mDevice)
-			mDevice.waitIdle();
+		mDevice.waitIdle();
 	}
 
 	std::vector<const char *> VulkanBackend::GetRequiredExtensions()

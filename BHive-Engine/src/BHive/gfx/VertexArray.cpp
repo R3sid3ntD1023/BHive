@@ -7,11 +7,11 @@ namespace BHive
 {
 	void VertexArray::DeclareAccess(FPass &pass, EBufferAccess vbAccess, EBufferAccess ibAccess)
 	{
-		for (auto& vb : GetVertexBuffers())
-			pass.Push(vb.get(), vbAccess);
+		for (auto &vb : GetVertexBuffers())
+			pass.Push(vb, vbAccess);
 
-		if(auto& ib = GetIndexBuffer())
-			pass.Push(ib.get(), ibAccess);
+		if (auto &ib = GetIndexBuffer())
+			pass.Push(ib, ibAccess);
 	}
 
 	Ref<VertexArray> VertexArray::Create()
@@ -28,7 +28,7 @@ namespace BHive
 		return nullptr;
 	}
 
-	Ref<VertexArray> VertexArray::Create(const std::vector<Ref<VertexBuffer>>& vertex_buffers, const Ref<IndexBuffer> &index_buffer)
+	Ref<VertexArray> VertexArray::Create(const std::vector<Ref<VertexBuffer>> &vertex_buffers, const Ref<IndexBuffer> &index_buffer)
 	{
 		switch (RenderCommand::GetAPI())
 		{

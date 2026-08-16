@@ -5,12 +5,14 @@
 #include "gfx/cameras/EditorCamera.h"
 #include "core/events/ApplicationEvents.h"
 #include "gfx/renderers/postprocess/PostProcessStack.h"
+#include "gfx/renderers/Lights.h"
 
 namespace BHive
 {
 	class Texture2D;
 	class PSphere;
 	class PPlane;
+	class GeneralBuffer;
 
 	class RuntimeLayer : public Layer
 	{
@@ -35,7 +37,10 @@ namespace BHive
 		Ref<Texture2D> mEnvironmentTex;
 
 		Ref<class Framebuffer> mFramebuffer;
-		Ref<class GeneralBuffer> mMultiDrawIndirectBuffer;
+		Ref<GeneralBuffer> mCameraUBO;
+		Ref<GeneralBuffer> mModelSSBO;
+		Ref<GeneralBuffer> mMultiDrawIndirectBuffer;
+
 		EditorCamera mCamera;
 
 		Ref<PSphere> mSphere;
@@ -51,5 +56,7 @@ namespace BHive
 
 		glm::uvec2 mViewportSize{0, 0};
 		bool mViewportActive = false;
+
+		Lights mLights;
 	};
 } // namespace BHive

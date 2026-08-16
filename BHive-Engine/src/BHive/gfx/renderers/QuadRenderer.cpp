@@ -37,7 +37,6 @@ namespace BHive
 		CircleBatch.Flush(renderer);
 		QuadBatch.Flush(renderer);
 		TextBatch.Flush(renderer);
-		
 	}
 
 	void QuadRenderer::DrawCircle(const FCircleParams &params, const FTransform &transform, int32_t entity_id)
@@ -108,15 +107,16 @@ namespace BHive
 		DrawQuad(create_info, entity_id);
 	}
 
-	void QuadRenderer::DrawBillboard(const FQuadParams &params, const Ref<Texture2D> &texture, const FTransform &transform, int32_t entity_id)
+	void QuadRenderer::DrawBillboard(const FView &view, const FQuadParams &params, const Ref<Texture2D> &texture, const FTransform &transform, int32_t entity_id)
 	{
-		const auto &view = Renderer::Get().GetViewSystem().GetMainView().View;
+		const auto &v = view.View;
+
 		glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
 
 		const static glm::vec2 texcoords[4] = {{0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}, {0.f, 1.f}};
 
-		const glm::vec3 camera_right = glm::vec3{view[0][0], view[1][0], view[2][0]};
-		const glm::vec3 camera_up = glm::vec3{view[0][1], view[1][1], view[2][1]};
+		const glm::vec3 camera_right = glm::vec3{v[0][0], v[1][0], v[2][0]};
+		const glm::vec3 camera_up = glm::vec3{v[0][1], v[1][1], v[2][1]};
 		for (uint32_t i = 0; i < 4; i++)
 		{
 			auto newposition = glm::vec4(positions[i] * glm::vec3(params.Size, 1), 1.0f);
@@ -139,7 +139,7 @@ namespace BHive
 	void QuadRenderer::DrawQuad(const FQuadCreateInfo &create_info, int32_t entity_id)
 	{
 		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
-	
+
 		if (!QuadBatch.IsActive())
 			QuadBatch.StartBatch();
 
@@ -160,7 +160,7 @@ namespace BHive
 			auto v = QuadBatch.GetBuffer().PushVertex();
 			v->Position = create_info.Transform * (glm::vec4(create_info.Positions[i], 1.0f) * glm::vec4(create_info.Size, 1.f, 1.f));
 			v->Normal = glm::transpose(glm::inverse(create_info.Transform)) * glm::vec4(0, 0, 1, 0);
-			v->TexCoord = create_info.TexCoords[i]  * create_info.Tiling;
+			v->TexCoord = create_info.TexCoords[i] * create_info.Tiling;
 			v->Color = create_info.Color;
 			v->TextureIndex = texture_index;
 			v->Flags = create_info.Flags;
@@ -263,10 +263,8 @@ namespace BHive
 	{
 		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
 
-		
 		if (!TextBatch.IsActive())
 			TextBatch.StartBatch();
-
 
 		if (TextBatch.NeedsFlush(4, 6))
 		{
@@ -278,7 +276,7 @@ namespace BHive
 		{
 			TextBatch.NextBatch(Renderer::Get());
 		}
-	
+
 		auto offset = TextBatch.GetBuffer().GetVertexCount();
 
 		for (uint32_t i = 0; i < 4; i++)

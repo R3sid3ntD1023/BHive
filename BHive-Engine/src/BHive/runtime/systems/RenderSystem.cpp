@@ -23,13 +23,13 @@ namespace BHive
 					const auto &proj = component.Camera.GetProjection();
 					const auto view = transform.GetWorldTransform().Inverse();
 
-					if (world->IsRunning())
-						Renderer::Get().SubmitCamera(proj, view);
+					// if (world->IsRunning())
+					// 	Renderer::Get().SubmitCamera(proj, view);
 
 					if (render_settings.DrawColliders)
 					{
-						const auto &mainView = Renderer::Get().GetViewSystem().GetMainView();
-						FrustumViewer viewer(mainView.Projection, mainView.View);
+						// const auto &mainView = Renderer::Get().GetViewSystem().GetMainView();
+						// FrustumViewer viewer(mainView.Projection, mainView.View);
 
 						// LineRenderer::DrawFrustum(viewer, FColor::Green, (int32_t)e);
 					}

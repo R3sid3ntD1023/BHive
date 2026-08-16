@@ -28,9 +28,6 @@ namespace BHive
 		void OnEvent(Event &e) override;
 
 	private:
-		bool OnWindowResize(WindowResizeEvent &e);
-
-	private:
 		Ref<SceneRenderer> mSceneRenderer;
 		Ref<BaseMesh> mMesh;
 		Ref<BaseMesh> mPlane;
@@ -38,7 +35,7 @@ namespace BHive
 		glm::uvec2 mViewportSize{0, 0};
 		bool mViewportActive = false;
 
-		MaterialTable mMaterialTables[2];
+		MaterialTable mMaterialTables[3];
 	};
 
 } // namespace BHive

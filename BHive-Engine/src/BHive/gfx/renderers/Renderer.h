@@ -9,7 +9,6 @@
 #include "EnvironmentSystem.h"
 #include "RenderGraphScheduler.h"
 #include "ViewSystem.h"
-#include "Lights.h"
 
 namespace BHive
 {
@@ -35,7 +34,6 @@ namespace BHive
 	public:
 		LineRenderer Line;
 		QuadRenderer Quad;
-		Lights Light;
 
 	public:
 		Renderer(Scope<RendererAPI> api);
@@ -50,8 +48,6 @@ namespace BHive
 
 		void BeginFrame();
 
-		void SubmitCamera(const glm::mat4 &projection, const glm::mat4 &view);
-
 		void Flush();
 
 		void EndFrame();
@@ -60,25 +56,19 @@ namespace BHive
 
 		void ExecuteGraph(RenderGraph &graph);
 
-		FView CreateView(const glm::mat4 &projection, const glm::mat4 &view);
-
-		const Frustum &GetFrustum();
-
 		void ResetStats();
 
 		const Statitics &GetStats() const { return mStats; }
 
 		GlobalResources &GetGlobalResources();
 
-		Ref<GeneralBuffer> GetModelBuffer() const;
+		void BeginBatching();
 
-		void SetPerObjectData(const FPerObjectData *data, size_t count);
+		void EndBatching();
 
 		static Renderer &Get() { return *sInstance; }
 
 #pragma region RENDERGRAPH
-
-		ViewSystem &GetViewSystem();
 
 		RenderGraph &GetActiveGraph();
 
@@ -106,10 +96,6 @@ namespace BHive
 		inline RendererAPI *GetGraphicsAPI() const { return mAPI.get(); }
 
 	private:
-		void BeginBatching();
-
-		void EndBatching();
-
 		void InitAndRegisterResources();
 
 		void SolveResourceBarriers(RenderGraph &graph);
