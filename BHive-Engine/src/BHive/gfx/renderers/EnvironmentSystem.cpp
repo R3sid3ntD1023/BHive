@@ -4,42 +4,26 @@
 
 namespace BHive
 {
-	EnvironmentSystem::EnvironmentSystem(GlobalResources& globals)
-		: mGlobals(globals)
+	EnvironmentSystem::EnvironmentSystem()
 	{
 		mPMREM.Initialize();
-
-		mGlobals.Register("EnvironmentCubeMap", mPMREM.GetEnvironmentCube());
-		mGlobals.Register("EnvironmentIrradiance", mPMREM.GetIrradiance());
-		mGlobals.Register("EnvironmentPreFilter", mPMREM.GetPreFilter());
+		mBRDFLut = BRDFLUTGenerator::GenerateBRDFLUTMap();
 	}
 
-	void EnvironmentSystem::BeginFrame()
-	{
-
-	}
-
-	void EnvironmentSystem::SetHDR(const Ref<Texture2D>& hdr)
+	void EnvironmentSystem::SetHDR(const Ref<Texture2D> &hdr)
 	{
 		mPendingHDR = hdr;
 		mDirty = true;
 	}
 
-	void EnvironmentSystem::Update(RenderGraphScheduler& scheduler)
+	void EnvironmentSystem::Update()
 	{
 		if (!mDirty || !mPendingHDR)
 			return;
 
 		mMaps = mPMREM.GenerateEnvironmentMaps(mPendingHDR);
 
-		if (mMaps.IsValid())
-		{
-			mGlobals.Register("EnvironmentCubeMap", mMaps.Environment);
-			mGlobals.Register("EnvironmentIrradiance", mMaps.Irradiance);
-			mGlobals.Register("EnvironmentPreFilter", mMaps.PreFilter);
-		}
-
 		mPendingHDR.reset();
 		mDirty = false;
 	}
-}
+} // namespace BHive

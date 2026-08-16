@@ -57,6 +57,12 @@ namespace BHive
 		mLights.Init();
 	}
 
+	void SceneRenderer::SetEnvironmentTexture(const Ref<Texture2D> &hdr)
+	{
+		mEnvironment.SetHDR(hdr);
+		mEnvironment.Update();
+	}
+
 	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
 	{
 		auto &renderer = Renderer::Get();
@@ -68,6 +74,7 @@ namespace BHive
 		mSceneRenderData->Reset();
 		renderer.BeginBatching();
 		mLights.BeginRecording();
+		// mEnvironment.Update();
 	}
 
 	void SceneRenderer::End()
@@ -139,9 +146,10 @@ namespace BHive
 		state.Depth = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store};
 		auto &scenePass = renderer.BeginPass("Scene Renderer", EPassType::OffScreen, state);
 
-		auto prefilter = globalsResources.Find("EnvironmentPreFilter")->TextureRef;
-		auto irradiance = globalsResources.Find("EnvironmentIrradiance")->TextureRef;
-		auto brdfLUT = globalsResources.Find("EnvironmentBRDFLUT")->TextureRef;
+		auto environmentMaps = mEnvironment.GetCurrentMaps();
+		auto prefilter = environmentMaps.PreFilter;
+		auto irradiance = environmentMaps.Irradiance;
+		auto brdfLUT = mEnvironment.GetBRDFLUT();
 
 		// global buffers
 		scenePass.PushGlobal(0, 0, mCameraUBO);

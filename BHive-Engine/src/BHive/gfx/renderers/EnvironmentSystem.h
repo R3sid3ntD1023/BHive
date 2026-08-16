@@ -1,30 +1,27 @@
 #pragma once
 
 #include "PMREMGenerator.h"
-#include "gfx/GlobalResources.h"
 
 namespace BHive
 {
-	class RenderGraphScheduler;
-
 	class EnvironmentSystem
 	{
 	public:
-		EnvironmentSystem(GlobalResources &globals);
+		EnvironmentSystem();
 
-		void BeginFrame();
 		void SetHDR(const Ref<Texture2D> &hdr);
-		void Update(RenderGraphScheduler &scheduler);
+
+		void Update();
 
 		const PMREMResult &GetCurrentMaps() const { return mMaps; }
 
+		Ref<Texture2D> GetBRDFLUT() const { return mBRDFLut; }
+
 	private:
-		GlobalResources &mGlobals;
 		PMREMGenerator mPMREM;
-
 		Ref<Texture2D> mPendingHDR;
-		bool mDirty = false;
-
 		PMREMResult mMaps;
+		Ref<Texture2D> mBRDFLut;
+		bool mDirty = false;
 	};
-}
+} // namespace BHive

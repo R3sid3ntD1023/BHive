@@ -4,15 +4,13 @@
 #include "core/Layer.h"
 #include "gfx/cameras/EditorCamera.h"
 #include "core/events/ApplicationEvents.h"
-#include "gfx/renderers/postprocess/PostProcessStack.h"
-#include "gfx/renderers/Lights.h"
+#include "gfx/renderers/SceneRenderer.h"
+#include "gfx/material/MaterialTable.h"
 
 namespace BHive
 {
+	class BaseMesh;
 	class Texture2D;
-	class PSphere;
-	class PPlane;
-	class GeneralBuffer;
 
 	class RuntimeLayer : public Layer
 	{
@@ -33,30 +31,20 @@ namespace BHive
 		bool OnWindowResize(WindowResizeEvent &e);
 
 	private:
-		Ref<Texture2D> mTexture = nullptr;
-		Ref<Texture2D> mEnvironmentTex;
-
-		Ref<class Framebuffer> mFramebuffer;
-		Ref<GeneralBuffer> mCameraUBO;
-		Ref<GeneralBuffer> mModelSSBO;
-		Ref<GeneralBuffer> mMultiDrawIndirectBuffer;
-
 		EditorCamera mCamera;
 
-		Ref<PSphere> mSphere;
-		Ref<PPlane> mPlane;
-		Ref<class StaticMesh> mMesh = nullptr;
-
-		Ref<class EmissiveMaterial> mEmissiveMaterial = nullptr;
-		std::array<Ref<class LambertMaterial>, 2> mLambertMaterials;
-		Ref<class StandardMaterial> mStandardMaterial = nullptr;
-
-		PostProcessStack mPostProcessStack;
-		Ref<class Texture> mFinalSceneColor;
+		Ref<BaseMesh> mSphere;
+		Ref<BaseMesh> mPlane;
+		Ref<BaseMesh> mMesh = nullptr;
+		Ref<Texture2D> mTexture;
 
 		glm::uvec2 mViewportSize{0, 0};
 		bool mViewportActive = false;
 
-		Lights mLights;
+		Ref<SceneRenderer> mSceneRenderer;
+
+		FTransform mObjectTransforms[5];
+
+		MaterialTable mMaterials[4];
 	};
 } // namespace BHive

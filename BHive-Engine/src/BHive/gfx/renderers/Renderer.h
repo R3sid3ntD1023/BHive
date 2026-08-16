@@ -5,8 +5,6 @@
 #include "QuadRenderer.h"
 #include "gfx/RendererAPI.h"
 #include "gfx/GlobalResources.h"
-#include "PMREMGenerator.h"
-#include "EnvironmentSystem.h"
 #include "RenderGraphScheduler.h"
 #include "ViewSystem.h"
 
@@ -51,8 +49,6 @@ namespace BHive
 		void Flush();
 
 		void EndFrame();
-
-		void SetEnvironmentTexture(const Ref<Texture2D> &hdr);
 
 		void ExecuteGraph(RenderGraph &graph);
 
@@ -106,8 +102,6 @@ namespace BHive
 		Ref<struct RenderData> mData;
 
 		GlobalResources mGlobalResources;
-
-		EnvironmentSystem mEnvironment;
 
 		RenderGraphScheduler mScheduler;
 

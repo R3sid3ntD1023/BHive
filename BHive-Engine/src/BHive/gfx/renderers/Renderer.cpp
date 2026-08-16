@@ -12,7 +12,6 @@ namespace BHive
 		Ref<Texture> WhiteTexture;
 		Ref<Texture> BlackTexture;
 		Ref<Texture> BlueTexture;
-		Ref<Texture2D> BRDFLut;
 
 		RenderData()
 		{
@@ -33,14 +32,11 @@ namespace BHive
 
 			create_info.DebugName = "Blue Texture";
 			BlueTexture = Texture2D::Create({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
-
-			BRDFLut = BRDFLUTGenerator::GenerateBRDFLUTMap();
 		}
 	};
 
 	Renderer::Renderer(Scope<RendererAPI> api)
-		: mAPI(std::move(api)),
-		  mEnvironment(mGlobalResources)
+		: mAPI(std::move(api))
 	{
 		ASSERT(mAPI);
 
@@ -70,7 +66,6 @@ namespace BHive
 
 		mFrameActive = true;
 		ResetStats();
-		mEnvironment.Update(mScheduler);
 	}
 
 	void Renderer::EndFrame()
@@ -85,11 +80,6 @@ namespace BHive
 	void Renderer::Flush()
 	{
 		EndBatching();
-	}
-
-	void Renderer::SetEnvironmentTexture(const Ref<Texture2D> &hdr)
-	{
-		mEnvironment.SetHDR(hdr);
 	}
 
 	void Renderer::ExecuteGraph(RenderGraph &graph)
@@ -165,7 +155,6 @@ namespace BHive
 
 	void Renderer::InitAndRegisterResources()
 	{
-		mGlobalResources.Register("EnvironmentBRDFLUT", mData->BRDFLut);
 		mGlobalResources.Register("White", mData->WhiteTexture);
 		mGlobalResources.Register("Blue", mData->BlueTexture);
 		mGlobalResources.Register("Black", mData->BlackTexture);

@@ -5,6 +5,8 @@
 #include "LightCasters.h"
 #include "postprocess/PostProcessStack.h"
 #include "gfx/renderers/Lights.h"
+#include "PMREMGenerator.h"
+#include "EnvironmentSystem.h"
 
 namespace BHive
 {
@@ -52,6 +54,8 @@ namespace BHive
 
 		virtual void End();
 
+		void SetEnvironmentTexture(const Ref<Texture2D> &hdr);
+
 		void Submit(const DirectionalLight &light);
 
 		void Submit(const PointLight &light);
@@ -86,6 +90,8 @@ namespace BHive
 
 		PostProcessStack &GetPostProcessStack() { return mPostProcessStack; }
 
+		const EnvironmentSystem &GetEnvironmentSystem() const { return mEnvironment; }
+
 	private:
 		bool IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform);
 
@@ -112,5 +118,7 @@ namespace BHive
 		Ref<GeneralBuffer> mIndirectDrawBuffer;
 
 		Lights mLights;
+
+		EnvironmentSystem mEnvironment;
 	};
 } // namespace BHive

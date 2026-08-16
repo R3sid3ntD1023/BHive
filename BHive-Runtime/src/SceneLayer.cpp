@@ -33,11 +33,10 @@ namespace BHive
 		mCamera.SetView(FTransform({5, 5, 5}));
 		mCamera.Focus(FTransform({0, 0, 0}));
 
-		auto environmentTex = TextureLoader::Import(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
-		Renderer::Get().SetEnvironmentTexture(environmentTex);
-
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Init(mViewportSize);
+		mSceneRenderer->SetEnvironmentTexture(TextureLoader::Import(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr"));
+
 		mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
 		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
 		mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
@@ -152,7 +151,7 @@ namespace BHive
 			}
 		}
 
-		mViewportActive = ImGui::IsWindowHovered() && ImGui::IsWindowFocused();
+		mViewportActive = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 		Application::Get().GetImGuiLayer()->BlockEvents(!mViewportActive);
 
 		ImGui::End();
