@@ -6,6 +6,7 @@
 #include "core/events/ApplicationEvents.h"
 #include "gfx/renderers/SceneRenderer.h"
 #include "gfx/material/MaterialTable.h"
+#include "gfx/cameras/EditorCameraController.h"
 
 namespace BHive
 {
@@ -46,5 +47,7 @@ namespace BHive
 		FTransform mObjectTransforms[5];
 
 		MaterialTable mMaterials[4];
+
+		EditorCameraController mCameraController;
 	};
 } // namespace BHive

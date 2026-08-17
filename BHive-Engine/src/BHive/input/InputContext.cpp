@@ -28,15 +28,14 @@ namespace BHive
 
 	bool InputContext::has_key(const std::string name) const
 	{
-		auto it = std::find_if(
-			mKeys.begin(), mKeys.end(), [name](const FInputAction &action) { return action.GetName() == name; });
+		auto it = std::find_if(mKeys.begin(), mKeys.end(), [name](const FInputAction &action) { return action.GetName() == name; });
 
 		return it != mKeys.end();
 	}
 
 	void InputContext::process()
 	{
-		auto &input = InputManager::GetInputManager();
+		auto &input = InputManager::Get();
 
 		for (auto &action : mKeys)
 		{
@@ -45,19 +44,21 @@ namespace BHive
 
 			if (mBindedAxisKeys.contains(action.GetName()))
 			{
+				auto &mouseDelta = input.GetMouseDelta();
+
 				switch (key)
 				{
 				case Mouse_X:
-					value.x = input.get_mouse_delta().x;
+					value.x = mouseDelta.x;
 					break;
 				case Mouse_Y:
-					value.y = input.get_mouse_delta().y;
+					value.y = mouseDelta.y;
 					break;
 				case Mouse_XY:
-					value = input.get_mouse_delta();
+					value = mouseDelta;
 					break;
 				default:
-					if (input.get_input_state(key) != EventStatus::RELEASE)
+					if (input.IsPressed(key) != EventStatus::RELEASE)
 					{
 						value.x = 1.0f;
 					}
@@ -69,7 +70,7 @@ namespace BHive
 			}
 			else if (mBindedKeys.contains(action.mName))
 			{
-				auto state = input.get_input_state(key);
+				auto state = input.GetState(key);
 
 				if (mBindedKeys.contains(action.mName))
 				{

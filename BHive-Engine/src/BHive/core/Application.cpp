@@ -11,6 +11,7 @@
 #include "undoredo/UndoRedo.h"
 #include "WindowInput.h"
 #include "gfx/ShaderManager.h"
+#include "input/InputManager.h"
 #include "gui/GUI.h"
 
 namespace BHive
@@ -81,6 +82,10 @@ namespace BHive
 	{
 		while (mIsRunning)
 		{
+			auto &input = InputManager::Get();
+
+			input.BeginFrame();
+
 			Window::PollEvents();
 
 			if (!mMainWindow->IsMinimized())
@@ -89,6 +94,8 @@ namespace BHive
 
 				UpdateLayersAndWindow();
 			}
+
+			input.EndFrame();
 		}
 	}
 

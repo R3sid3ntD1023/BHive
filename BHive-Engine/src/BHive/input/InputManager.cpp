@@ -4,56 +4,75 @@
 
 namespace BHive
 {
-	void InputManager::add_input(uint32_t code, EventStatusCode action, ModCode mods)
+	void InputManager::BeginFrame()
 	{
-		mInputs[code] = action;
+		mScrollDelta = glm::vec2(0, 0);
+		mMouseDelta = glm::vec2(0, 0);
 	}
 
-	void InputManager::set_scroll(float x, float y)
+	void InputManager::EndFrame()
 	{
-		mScroll = {x, y};
+		mPrevMousePos = mMousePos;
+		mPreviousKeys = mCurrentKeys;
+		mPreviousMouse = mCurrentMouse;
 	}
 
-	bool InputManager::is_pressed(uint32_t code) const
+	void InputManager::OnKeyEvent(uint32_t code, EventStatusCode action, ModCode mods)
 	{
-		if (mInputs.contains(code))
-			return mInputs.at(code) != EventStatus::RELEASE;
-
-		return false;
+		mCurrentKeys[code] = action;
 	}
 
-	EventStatusCode InputManager::get_input_state(uint32_t code) const
+	void InputManager::OnMouseEvent(uint32_t code, EventStatusCode action, ModCode mods)
 	{
-		if (mInputs.contains(code))
-			return mInputs.at(code);
-
-		return EventStatus::RELEASE;
+		mCurrentMouse[code] = action;
 	}
 
-	const glm::vec2 InputManager::get_mouse_pos() const
+	void InputManager::OnScrollEvent(float x, float y)
 	{
-		auto &app = Application::Get();
-		auto window = app.GetWindow().GetNative();
-		ASSERT(window);
-
-		double x = 0.0, y = 0.0;
-		glfwGetCursorPos(window, &x, &y);
-
-		return {(float)x, (float)y};
+		mScrollDelta = {x, y};
 	}
 
-	const glm::vec2 InputManager::get_mouse_delta() const
+	void InputManager::OnMouseMove(float x, float y)
 	{
-		static glm::vec2 previous_mouse_pos{0, 0};
-
-		auto mouse_pos = get_mouse_pos();
-		auto delta = mouse_pos - previous_mouse_pos;
-		previous_mouse_pos = mouse_pos;
-
-		return delta;
+		mMousePos = {x, y};
+		mMouseDelta = mMousePos - mPrevMousePos;
 	}
 
-	InputManager &InputManager::GetInputManager()
+	bool InputManager::IsPressed(uint32_t code) const
+	{
+		if (code < Mouse::MouseButtonLast)
+			return mCurrentMouse.contains(code) && (mCurrentMouse.at(code) != EventStatus::RELEASE);
+
+		return mCurrentKeys.contains(code) && (mCurrentKeys.at(code) != EventStatus::RELEASE);
+	}
+
+	bool InputManager::IsReleased(uint32_t code) const
+	{
+		return !IsPressed(code);
+	}
+
+	bool InputManager::IsPressedOnce(uint32_t code) const
+	{
+		bool now = IsPressed(code);
+		bool before = (code < Mouse::MouseButtonLast) ? (mPreviousMouse.contains(code) && mPreviousMouse.at(code) != EventStatus::RELEASE)
+													  : (mPreviousKeys.contains(code) && mPreviousKeys.at(code) != EventStatus::RELEASE);
+		return now && !before;
+	}
+
+	bool InputManager::IsReleasedOnce(uint32_t code) const
+	{
+		bool now = IsPressed(code);
+		bool before = (code < Mouse::MouseButtonLast) ? (mPreviousMouse.contains(code) && mPreviousMouse.at(code) != EventStatus::RELEASE)
+													  : (mPreviousKeys.contains(code) && mPreviousKeys.at(code) != EventStatus::RELEASE);
+		return !now && before;
+	}
+
+	EventStatusCode InputManager::GetState(uint32_t code) const
+	{
+		return mPreviousKeys.contains(code) ? mPreviousKeys.at(code) : EventStatus::RELEASE;
+	}
+
+	InputManager &InputManager::Get()
 	{
 		static InputManager manager;
 		return manager;

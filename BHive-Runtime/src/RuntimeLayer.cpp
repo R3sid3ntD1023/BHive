@@ -77,8 +77,8 @@ namespace BHive
 		mViewportSize = window.GetSize();
 
 		mCamera = EditorCamera(75.f, aspect, 0.1f, 1000.f);
-		mCamera.SetView(FTransform({5, 5, 5}));
-		mCamera.Focus(FTransform({0, 0, 0}));
+		mCamera.SetPosition({5, 5, 5});
+		mCamera.Focus({0, 0, 0});
 
 		auto &globalsResources = Renderer::Get().GetGlobalResources();
 
@@ -110,6 +110,8 @@ namespace BHive
 		mainLight.SetColor(FColor::White).SetDirection({-1, 0, 0}).SetIntensity(1.f);
 		pLight0.SetColor(FColor::Orange).SetIntensity(3.f).SetPosition({4, 1, 0}).SetRadius(5.f);
 		spLight0.SetColor(FColor::Red).SetIntensity(3.f).SetDirection({0, -1, 0}).SetPosition({}).SetRadius(5.f).SetInnerAngleDegrees(45.f).SetOuterAngleDegrees(75.f);
+
+		mCameraController.SetCamera(&mCamera);
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -122,7 +124,7 @@ namespace BHive
 
 		if (mViewportActive)
 		{
-			mCamera.ProcessInput();
+			mCameraController.Update(time);
 		}
 	}
 
@@ -316,10 +318,6 @@ namespace BHive
 
 	void RuntimeLayer::OnEvent(Event &e)
 	{
-		if (mViewportActive)
-		{
-			mCamera.OnEvent(e);
-		}
 	}
 
 	bool RuntimeLayer::OnWindowResize(WindowResizeEvent &e)
