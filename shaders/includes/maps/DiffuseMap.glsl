@@ -1,6 +1,8 @@
 #if defined (USE_DIFFUSE_MAP)
 
-diffuseColor.rgb *= texture(DiffuseMap, texCoord).rgb;
-diffuseColor.rgb = pow(diffuseColor.rgb, vec3(2.2));
+vec4 color = texture(DiffuseMap, texCoord);
+color.rgb = pow(color.rgb, vec3(2.2));
 
+diffuseColor.rgb = color.rgb; 
+diffuseColor.a = color.a;
 #endif

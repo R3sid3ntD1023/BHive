@@ -28,6 +28,7 @@ struct LambertMaterial
 {
 	vec4 Diffuse;
 	vec3 Emission;
+	float Opacity;
 };
 
 layout(push_constant) uniform MaterialInfo
@@ -51,6 +52,7 @@ LambertMaterial GetMaterial(VS_OUT vs)
 	LambertMaterial mat;
 	mat.Diffuse = diffuseColor;
 	mat.Emission = totalEmissiveRadiance;
+	mat.Opacity = diffuseColor.a;
 
 	return mat;
 }
@@ -65,5 +67,6 @@ void Direct_Lambert(const in vec3 geoPosition, const in vec3 geoNormal, const in
 #define Direct Direct_Lambert
 #define Material LambertMaterial
 #define HAS_EMISSION
+#define HAS_OPACITY
 
 #include <ForwardMesh.frag>

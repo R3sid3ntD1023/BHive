@@ -17,7 +17,8 @@ namespace BHive
 {
 	struct FSceneRenderData
 	{
-		std::unordered_map<Ref<Material>, FMeshRenderDatas> RenderData;
+		std::unordered_map<Ref<Material>, FMeshRenderDatas> OpaqueData;
+		std::unordered_map<Ref<Material>, FMeshRenderDatas> TransparentData;
 		FMeshRenderDatas ShadowPassRenderData;
 		FMeshRenderDatas RenderPassRenderData;
 
@@ -27,9 +28,85 @@ namespace BHive
 
 		void Reset()
 		{
-			RenderData.clear();
+			OpaqueData.clear();
+			TransparentData.clear();
 			ShadowPassRenderData.clear();
 			RenderPassRenderData.clear();
+		}
+	};
+
+	struct FDrawRange
+	{
+		uint32_t First = 0;
+		uint32_t Count = 0;
+	};
+
+	struct RenderBatch
+	{
+		std::vector<MultiDrawIndirectCommand> DrawCommands;
+
+		std::unordered_map<Ref<Material>, std::unordered_map<Ref<VertexArray>, FDrawRange>> DrawRanges;
+
+		std::vector<FPerObjectData> ObjectData;
+
+		void Build(const std::unordered_map<Ref<Material>, FMeshRenderDatas> &bucket, uint32_t startBaseInstance = 0)
+		{
+			DrawCommands.clear();
+			DrawRanges.clear();
+			ObjectData.clear();
+
+			for (auto &[mat, objects] : bucket)
+			{
+				for (auto &obj : objects)
+				{
+
+					auto &s = obj->SubMesh;
+					auto &vao = obj->VAO;
+					auto &transform = obj->Transform;
+
+					MultiDrawIndirectCommand drawCmd{};
+					drawCmd.BaseInstance = ObjectData.size() + startBaseInstance;
+					drawCmd.BaseVertex = s.StartVertex;
+					drawCmd.FirstIndex = s.StartIndex;
+					drawCmd.Count = s.IndexCount;
+					drawCmd.InstanceCount = 1;
+
+					DrawCommands.emplace_back(drawCmd);
+
+					ObjectData.emplace_back(FPerObjectData{transform});
+
+					auto &matRanges = DrawRanges[mat];
+					auto &range = matRanges[vao];
+
+					if (range.Count == 0)
+					{
+						range.First = DrawCommands.size() - 1;
+					}
+
+					range.Count++;
+				}
+			}
+		}
+
+		void Draw(FPass &pass, Ref<GeneralBuffer> indirect, uint32_t baseOffset)
+		{
+			const static uint64_t stride = sizeof(MultiDrawIndirectCommand);
+
+			// render meshes
+			for (auto &[mat, vaoMap] : DrawRanges)
+			{
+				pass.Emplace<CmdBindMaterial>()(mat.get());
+
+				for (auto &[vao, range] : vaoMap)
+				{
+					uint32_t offset = baseOffset + range.First;
+					uint32_t count = range.Count;
+
+					vao->DeclareAccess(pass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
+
+					pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect.get(), vao.get(), count, stride, offset);
+				}
+			}
 		}
 	};
 
@@ -81,65 +158,87 @@ namespace BHive
 	{
 		mLights.Flush();
 
-		static auto sort = [=](const Ref<FMeshRenderData> &lhs, const Ref<FMeshRenderData> &rhs)
+		static auto sortOpaque = [=](const Ref<FMeshRenderData> &lhs, const Ref<FMeshRenderData> &rhs)
 		{
-			glm::vec3 viewPosA = mView.View * glm::vec4(lhs->Transform.GetTranslation(), 1.0f);
-			glm::vec3 viewPosB = mView.View * glm::vec4(rhs->Transform.GetTranslation(), 1.0f);
-			return viewPosA.z < viewPosB.z;
+			float za = (mView.View * glm::vec4(lhs->Transform.GetTranslation(), 1.0f)).z;
+			float zb = (mView.View * glm::vec4(rhs->Transform.GetTranslation(), 1.0f)).z;
+			return za < zb;
 		};
 
-		for (auto &[mat, data] : mSceneRenderData->RenderData)
+		static auto sortTransparent = [=](const Ref<FMeshRenderData> &lhs, const Ref<FMeshRenderData> &rhs)
 		{
-			std::sort(data.begin(), data.end(), sort);
+			float za = (mView.View * glm::vec4(lhs->Transform.GetTranslation(), 1.0f)).z;
+			float zb = (mView.View * glm::vec4(rhs->Transform.GetTranslation(), 1.0f)).z;
+			return za > zb; // back-to-front
+		};
+
+		for (auto &[mat, data] : mSceneRenderData->OpaqueData)
+		{
+			std::sort(data.begin(), data.end(), sortOpaque);
 		}
 
-		std::sort(mSceneRenderData->ShadowPassRenderData.begin(), mSceneRenderData->ShadowPassRenderData.end(), sort);
-		std::sort(mSceneRenderData->RenderPassRenderData.begin(), mSceneRenderData->RenderPassRenderData.end(), sort);
+		for (auto &[mat, data] : mSceneRenderData->TransparentData)
+		{
+			std::sort(data.begin(), data.end(), sortTransparent);
+		}
+
+		std::sort(mSceneRenderData->ShadowPassRenderData.begin(), mSceneRenderData->ShadowPassRenderData.end(), sortOpaque);
+		std::sort(mSceneRenderData->RenderPassRenderData.begin(), mSceneRenderData->RenderPassRenderData.end(), sortOpaque);
+
+		RenderBatch transparentBatch{};
+		transparentBatch.Build(mSceneRenderData->TransparentData);
+
+		RenderBatch opaqueBatch{};
+		opaqueBatch.Build(mSceneRenderData->OpaqueData, transparentBatch.ObjectData.size());
 
 		std::vector<MultiDrawIndirectCommand> drawCommands;
-
-		std::unordered_map<Ref<Material>, std::unordered_map<Ref<VertexArray>, FDrawRange>> drawRanges;
+		drawCommands.insert(drawCommands.end(), transparentBatch.DrawCommands.begin(), transparentBatch.DrawCommands.end());
+		drawCommands.insert(drawCommands.end(), opaqueBatch.DrawCommands.begin(), opaqueBatch.DrawCommands.end());
 
 		std::vector<FPerObjectData> objectData;
+		objectData.insert(objectData.end(), transparentBatch.ObjectData.begin(), transparentBatch.ObjectData.end());
+		objectData.insert(objectData.end(), opaqueBatch.ObjectData.begin(), opaqueBatch.ObjectData.end());
 
-		for (auto &[mat, objects] : mSceneRenderData->RenderData)
-		{
-			for (auto &obj : objects)
-			{
+		// std::vector<MultiDrawIndirectCommand> drawCommands;
 
-				auto &s = obj->SubMesh;
-				auto &vao = obj->VAO;
-				auto &transform = obj->Transform;
+		// std::unordered_map<Ref<Material>, std::unordered_map<Ref<VertexArray>, FDrawRange>> drawRanges;
 
-				MultiDrawIndirectCommand drawCmd{};
-				drawCmd.BaseInstance = objectData.size();
-				drawCmd.BaseVertex = s.StartVertex;
-				drawCmd.FirstIndex = s.StartIndex;
-				drawCmd.Count = s.IndexCount;
-				drawCmd.InstanceCount = 1;
+		// std::vector<FPerObjectData> objectData;
 
-				drawCommands.emplace_back(drawCmd);
+		// for (auto &[mat, objects] : mSceneRenderData->OpaqueData)
+		// {
+		// 	for (auto &obj : objects)
+		// 	{
 
-				objectData.emplace_back(FPerObjectData{transform});
+		// 		auto &s = obj->SubMesh;
+		// 		auto &vao = obj->VAO;
+		// 		auto &transform = obj->Transform;
 
-				auto &matRanges = drawRanges[mat];
-				auto &range = matRanges[vao];
+		// 		MultiDrawIndirectCommand drawCmd{};
+		// 		drawCmd.BaseInstance = objectData.size();
+		// 		drawCmd.BaseVertex = s.StartVertex;
+		// 		drawCmd.FirstIndex = s.StartIndex;
+		// 		drawCmd.Count = s.IndexCount;
+		// 		drawCmd.InstanceCount = 1;
 
-				if (range.Count == 0)
-				{
-					range.First = drawCommands.size() - 1;
-				}
+		// 		drawCommands.emplace_back(drawCmd);
 
-				range.Count++;
-			}
-		}
+		// 		objectData.emplace_back(FPerObjectData{transform});
+
+		// 		auto &matRanges = drawRanges[mat];
+		// 		auto &range = matRanges[vao];
+
+		// 		if (range.Count == 0)
+		// 		{
+		// 			range.First = drawCommands.size() - 1;
+		// 		}
+
+		// 		range.Count++;
+		// 	}
+		// }
 
 		auto &renderer = Renderer::Get();
 		auto &globalsResources = renderer.GetGlobalResources();
-
-		mCameraUBO->SetData(&mView, sizeof(FView));
-		mModelSSBO->SetData(objectData.data(), objectData.size() * sizeof(FPerObjectData));
-		mIndirectDrawBuffer->SetData(drawCommands.data(), drawCommands.size() * sizeof(MultiDrawIndirectCommand));
 
 		FPassState state{};
 		state.Color = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store, {0.1f, 0.1f, 0.1f, 1.0f}};
@@ -162,6 +261,10 @@ namespace BHive
 		// opaque pass
 		scenePass.BeginPhase(EPhaseType::Graphics);
 
+		mCameraUBO->SetData(&mView, sizeof(FView));
+		mModelSSBO->SetData(objectData.data(), objectData.size() * sizeof(FPerObjectData));
+		mIndirectDrawBuffer->SetData(drawCommands.data(), drawCommands.size() * sizeof(MultiDrawIndirectCommand));
+
 		scenePass.Push(mFramebuffer);
 		scenePass.Push(prefilter, EImageAccess::ColorRead);
 		scenePass.Push(irradiance, EImageAccess::ColorRead);
@@ -170,25 +273,32 @@ namespace BHive
 		scenePass.Push(mModelSSBO, EBufferAccess::StorageRead);
 		scenePass.Push(mLights.GetBuffer(), EBufferAccess::StorageRead);
 
+		uint32_t transparentBase = 0;
+		uint32_t opaqueBase = transparentBatch.DrawCommands.size();
+
 		scenePass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("MESH_OPAQUE"));
+		opaqueBatch.Draw(scenePass, mIndirectDrawBuffer, opaqueBase);
 
-		const static uint64_t stride = sizeof(MultiDrawIndirectCommand);
+		scenePass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("MESH_TRANSPARENT"));
+		transparentBatch.Draw(scenePass, mIndirectDrawBuffer, transparentBase);
 
-		// render meshes
-		for (auto &[mat, vaoMap] : drawRanges)
-		{
-			scenePass.Emplace<CmdBindMaterial>()(mat.get());
+		// const static uint64_t stride = sizeof(MultiDrawIndirectCommand);
 
-			for (auto &[vao, range] : vaoMap)
-			{
-				uint32_t offset = range.First;
-				uint32_t count = range.Count;
+		// // render meshes
+		// for (auto &[mat, vaoMap] : drawRanges)
+		// {
+		// 	scenePass.Emplace<CmdBindMaterial>()(mat.get());
 
-				vao->DeclareAccess(scenePass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
+		// 	for (auto &[vao, range] : vaoMap)
+		// 	{
+		// 		uint32_t offset = range.First;
+		// 		uint32_t count = range.Count;
 
-				scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mIndirectDrawBuffer.get(), vao.get(), count, stride, offset);
-			}
-		}
+		// 		vao->DeclareAccess(scenePass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
+
+		// 		scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mIndirectDrawBuffer.get(), vao.get(), count, stride, offset);
+		// 	}
+		// }
 
 		renderer.EndBatching();
 
@@ -284,7 +394,10 @@ namespace BHive
 			data->EntityID = info.EntityID;
 			data->Instances = info.Instances;
 
-			mSceneRenderData->RenderData[material].emplace_back(data);
+			if (material->IsTransparent())
+				mSceneRenderData->TransparentData[material].emplace_back(data);
+			else
+				mSceneRenderData->OpaqueData[material].emplace_back(data);
 
 			if (material->ShouldCastShadows())
 				mSceneRenderData->ShadowPassRenderData.emplace_back(data);

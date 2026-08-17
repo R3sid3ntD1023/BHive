@@ -37,11 +37,6 @@ namespace BHive
 
 	class BHIVE_API SceneRenderer
 	{
-		struct FDrawRange
-		{
-			uint32_t First = 0;
-			uint32_t Count = 0;
-		};
 
 	public:
 		SceneRenderer() = default;
@@ -108,6 +103,7 @@ namespace BHive
 		Frustum mFrustum;
 
 		Ref<struct FSceneRenderData> mSceneRenderData;
+		Ref<struct FSceneRenderData> mTransparentRenderData;
 
 		glm::uvec2 mSize{0, 0};
 

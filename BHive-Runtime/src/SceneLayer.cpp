@@ -21,6 +21,7 @@
 
 namespace BHive
 {
+	FTransform sphereTransform{{5, -1.f, 2}};
 
 	void SceneLayer::OnAttach(Application &app)
 	{
@@ -67,8 +68,9 @@ namespace BHive
 			{
 				auto texture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/textures/Mario.png", {});
 				auto material = CreateRef<LambertMaterial>();
-				material->SetDiffuseColor(FColor::DarkGray);
+				material->SetDiffuseColor({.2f, .2f, .2f, 1.0f});
 				material->SetTexture("DiffuseMap", {texture});
+				material->SetSurfaceType(Material::ESurfaceType::Transparent);
 				mMaterialTables[1].add_material(material);
 			}
 		}
@@ -88,6 +90,8 @@ namespace BHive
 
 	void SceneLayer::OnUpdate(float time)
 	{
+		sphereTransform.AddRotation({0, .1f, 0});
+
 		if (mViewportActive)
 			mCamera.ProcessInput();
 	}
@@ -108,8 +112,7 @@ namespace BHive
 		FMeshInfo info{};
 		info.Mesh = mMesh;
 		info.Materials = mMaterialTables[0];
-		info.Transform = FTransform{{0, 1.f, 2}};
-
+		info.Transform = sphereTransform;
 		mSceneRenderer->Submit(info);
 
 		info.Materials = mMaterialTables[2];
@@ -124,11 +127,11 @@ namespace BHive
 		mSceneRenderer->Submit(info);
 
 		DirectionalLight main{};
-		main.SetColor(FColor::White).SetIntensity(10.0f).SetDirection({0.f, -1.0f, 0.5f});
+		main.SetColor(FColor::White).SetIntensity(1.0f).SetDirection({0.f, -1.0f, 0.5f});
 		mSceneRenderer->Submit(main);
 
 		PointLight light{};
-		light.SetColor(FColor::White).SetIntensity(10.0f).SetRadius(10.f).SetPosition({0, 2, 0});
+		light.SetColor(FColor::White).SetIntensity(1.0f).SetRadius(10.f).SetPosition({0, 2, 0});
 		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), light.GetPosition());
 		renderer.Line.DrawGrid({});
 
@@ -164,8 +167,10 @@ namespace BHive
 			auto bloom = stack.Get<BloomMaterial>();
 			auto colorGrading = stack.Get<ColorGradingMaterial>();
 
-			inspector.inspect("Bloom", bloom, bloom->Params);
-			inspector.inspect("Color Grading", colorGrading, colorGrading->Params);
+			if (bloom)
+				inspector.inspect("Bloom", bloom, bloom->Params);
+			if (colorGrading)
+				inspector.inspect("Color Grading", colorGrading, colorGrading->Params);
 		}
 
 		ImGui::End();

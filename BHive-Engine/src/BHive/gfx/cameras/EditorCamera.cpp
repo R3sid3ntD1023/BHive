@@ -23,7 +23,7 @@ namespace BHive
 
 		auto forward = mTransform.GetForward();
 		auto right = mTransform.GetRight();
-		auto delta = input.get_mouse_delta();
+		auto delta = input.get_mouse_delta() * .003f;
 
 		if (input.is_pressed(Key::Left_Alt) || input.is_pressed(Key::Right_Alt))
 		{
@@ -134,12 +134,12 @@ namespace BHive
 
 	float EditorCamera::RotationSpeed() const
 	{
-		return 0.01f;
+		return 50.f;
 	}
 
 	float EditorCamera::MovementSpeed() const
 	{
-		return .01f;
+		return .1f;
 	}
 
 	float EditorCamera::Distance() const
@@ -186,7 +186,7 @@ namespace BHive
 	{
 		float distance = Distance();
 		float speed = distance * distance;
-		speed = std::min(speed, 10.0f);
+		speed = std::min(speed, 100.0f);
 		return speed;
 	}
 

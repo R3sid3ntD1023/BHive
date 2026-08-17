@@ -33,6 +33,12 @@ namespace BHive
 
 		virtual ~Material() = default;
 
+		IMaterial &SetParam(const std::string &name, const MaterialParam &param) & override;
+
+		IMaterial &SetTexture(const std::string &name, const FTextureBinding &texture) & override;
+
+		IMaterial &SetSurfaceType(ESurfaceType surfaceType);
+
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
@@ -41,15 +47,15 @@ namespace BHive
 
 		virtual bool ShouldCastShadows() const { return true; }
 
-		IMaterial &SetParam(const std::string &name, const MaterialParam &param) & override;
-
-		IMaterial &SetTexture(const std::string &name, const FTextureBinding &texture) & override;
-
 		Ref<IMaterialBackendInterface> GetNative() const override { return mBackendMaterial; }
 
 		MaterialSnapshot CreateSnapshot() const override;
 
 		Ref<ShaderProgram> GetProgram() const override { return mProgram; }
+
+		ESurfaceType GetSurfaceType() const { return mSurfaceType; }
+
+		virtual bool IsTransparent() const { return GetSurfaceType() == ESurfaceType::Transparent; }
 
 		REFLECTABLEV(Asset)
 

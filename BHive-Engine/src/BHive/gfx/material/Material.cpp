@@ -30,6 +30,12 @@ namespace BHive
 		return *this;
 	}
 
+	IMaterial &Material::SetSurfaceType(ESurfaceType surfaceType)
+	{
+		mSurfaceType = surfaceType;
+		return *this;
+	}
+
 	MaterialSnapshot Material::CreateSnapshot() const
 	{
 		if (!mBackendMaterial)
