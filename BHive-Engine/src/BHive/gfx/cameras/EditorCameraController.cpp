@@ -48,8 +48,6 @@ namespace BHive
 				mCamera->FreeFlyMove(moveDir);
 		}
 
-		bool fpressed = input.IsPressedOnce(Key::F);
-		LOG_TRACE("F {}", fpressed);
 		// SHORTCUTS
 		if (input.IsPressedOnce(Key::F))
 			mCamera->Focus(mSelectedTransform, mSelectedBounds);
