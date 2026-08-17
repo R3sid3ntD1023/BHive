@@ -41,8 +41,8 @@ namespace BHive
 		KeyEvent event((KeyCode)key, scancode, action, mods);
 		WindowEvent.Broadcast(event);
 
-		auto &im = InputManager::GetInputManager();
-		im.add_input(key, (EventStatusCode)action, (ModCode)mods);
+		auto &im = InputManager::Get();
+		im.OnKeyEvent(key, (EventStatusCode)action, (ModCode)mods);
 	}
 
 	void WindowInput::OnKeyTypedEvent(GLFWwindow *, unsigned int codepoint)
@@ -56,8 +56,8 @@ namespace BHive
 		MouseButtonEvent event((MouseCode)button, action, mods);
 		WindowEvent.Broadcast(event);
 
-		auto &im = InputManager::GetInputManager();
-		im.add_input(button, (EventStatusCode)action, (ModCode)mods);
+		auto &im = InputManager::Get();
+		im.OnMouseEvent(button, (EventStatusCode)action, (ModCode)mods);
 	}
 
 	void WindowInput::OnMouseScroll(GLFWwindow *, double x, double y)
@@ -65,14 +65,17 @@ namespace BHive
 		MouseScrolledEvent event((float)x, (float)y);
 		WindowEvent.Broadcast(event);
 
-		auto &im = InputManager::GetInputManager();
-		im.set_scroll((float)x, (float)y);
+		auto &im = InputManager::Get();
+		im.OnScrollEvent((float)x, (float)y);
 	}
 
 	void WindowInput::OnMouseMoved(GLFWwindow *, double x, double y)
 	{
 		MouseMovedEvent event((float)x, (float)y);
 		WindowEvent.Broadcast(event);
+
+		auto &im = InputManager::Get();
+		im.OnMouseMove(float(x), float(y));
 	}
 
 	void WindowInput::OnFramebufferResized(GLFWwindow *, int w, int h)

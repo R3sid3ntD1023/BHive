@@ -31,8 +31,9 @@ namespace BHive
 		mViewportSize = window.GetSize();
 
 		mCamera = EditorCamera(75.f, aspect, 0.1f, 1000.f);
-		mCamera.SetView(FTransform({5, 5, 5}));
-		mCamera.Focus(FTransform({0, 0, 0}));
+		mCamera.SetPosition({5, 5, 5});
+		mCamera.Focus({0, 0, 0});
+		mCamera.SetPitch(-45.f);
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Init(mViewportSize);
@@ -81,7 +82,7 @@ namespace BHive
 			mMaterialTables[2].add_material(material);
 		}
 
-		WindowInput::WindowEvent.Add(&mCamera, &EditorCamera::OnEvent);
+		mCameraController.SetCamera(&mCamera);
 	}
 
 	void SceneLayer::OnDetach()
@@ -93,7 +94,7 @@ namespace BHive
 		sphereTransform.AddRotation({0, .1f, 0});
 
 		if (mViewportActive)
-			mCamera.ProcessInput();
+			mCameraController.Update(time);
 	}
 
 	void SceneLayer::OnRender(Renderer &renderer)
@@ -176,9 +177,4 @@ namespace BHive
 		ImGui::End();
 	}
 
-	void SceneLayer::OnEvent(Event &e)
-	{
-		if (mViewportActive)
-			mCamera.OnEvent(e);
-	}
 } // namespace BHive

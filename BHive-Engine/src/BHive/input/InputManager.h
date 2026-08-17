@@ -12,22 +12,47 @@ namespace BHive
 {
 	struct BHIVE_API InputManager
 	{
-		using INPUT_MAP = std::unordered_map<uint32_t, EventStatusCode>;
+		void BeginFrame();
 
-		void add_input(uint32_t code, EventStatusCode action, ModCode mods);
-		void set_scroll(float x, float y);
+		void EndFrame();
 
-		EventStatusCode get_input_state(uint32_t code) const;
-		bool is_pressed(uint32_t code) const;
+		void OnKeyEvent(uint32_t code, EventStatusCode action, ModCode mods);
 
-		const glm::vec2 get_scroll() const { return mScroll; }
-		const glm::vec2 get_mouse_pos() const;
-		const glm::vec2 get_mouse_delta() const;
+		void OnMouseEvent(uint32_t code, EventStatusCode action, ModCode mods);
 
-		static InputManager &GetInputManager();
+		void OnScrollEvent(float x, float y);
+
+		void OnMouseMove(float x, float y);
+
+		bool IsPressed(uint32_t code) const;
+
+		bool IsReleased(uint32_t code) const;
+
+		bool IsPressedOnce(uint32_t code) const;
+
+		bool IsReleasedOnce(uint32_t code) const;
+
+		EventStatusCode GetState(uint32_t code) const;
+
+		const glm::vec2 &GetScrollDelta() const { return mScrollDelta; }
+
+		const glm::vec2 &GetMouseDelta() const { return mMouseDelta; }
+
+		const glm::vec2 &GetMousePosition() const { return mMousePos; }
+
+		static InputManager &Get();
 
 	private:
-		INPUT_MAP mInputs;
-		glm::vec2 mScroll{};
+		std::unordered_map<uint32_t, EventStatusCode> mCurrentKeys;
+		std::unordered_map<uint32_t, EventStatusCode> mPreviousKeys;
+
+		std::unordered_map<uint32_t, EventStatusCode> mCurrentMouse;
+		std::unordered_map<uint32_t, EventStatusCode> mPreviousMouse;
+
+		glm::vec2 mMousePos{0, 0};
+		glm::vec2 mPrevMousePos{0, 0};
+		glm::vec2 mMouseDelta{0, 0};
+
+		glm::vec2 mScrollDelta{0, 0};
 	};
 } // namespace BHive

@@ -5,6 +5,7 @@
 #include "gfx/cameras/EditorCamera.h"
 #include "core/events/ApplicationEvents.h"
 #include "gfx/material/MaterialTable.h"
+#include "gfx/cameras/EditorCameraController.h"
 
 namespace BHive
 {
@@ -25,8 +26,6 @@ namespace BHive
 
 		void OnGuiRender() override;
 
-		void OnEvent(Event &e) override;
-
 	private:
 		Ref<SceneRenderer> mSceneRenderer;
 		Ref<BaseMesh> mMesh;
@@ -36,6 +35,7 @@ namespace BHive
 		bool mViewportActive = false;
 
 		MaterialTable mMaterialTables[3];
+		EditorCameraController mCameraController;
 	};
 
 } // namespace BHive

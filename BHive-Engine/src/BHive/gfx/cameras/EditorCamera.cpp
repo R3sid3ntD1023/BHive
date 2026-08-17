@@ -14,102 +14,45 @@ namespace BHive
 		SetOrthographic(l, r, b, t, aspect, _near, _far);
 	}
 
-	void EditorCamera::ProcessInput()
+	void EditorCamera::ResetOrientation()
 	{
-		if (mAltPressed)
-			return;
+		mYaw = -90.f;
+		mPitch = 0.f;
 
-		auto &input = InputManager::GetInputManager();
-
-		auto forward = mTransform.GetForward();
-		auto right = mTransform.GetRight();
-		auto delta = input.get_mouse_delta() * .003f;
-
-		if (input.is_pressed(Key::Left_Alt) || input.is_pressed(Key::Right_Alt))
-		{
-			if (input.is_pressed(Mouse::MouseButtonMiddle))
-			{
-				Pan(delta);
-			}
-
-			else if (input.is_pressed(Mouse::MouseButtonLeft))
-			{
-				Rotate(delta);
-			}
-
-			else if (input.is_pressed(Mouse::MouseButtonRight))
-			{
-				Zoom(delta.y);
-			}
-
-			if (input.is_pressed(Key::Up) || input.is_pressed(Key::W))
-			{
-				mTransform.AddTranslation(-forward * MovementSpeed());
-			}
-
-			if (input.is_pressed(Key::Down) || input.is_pressed(Key::S))
-			{
-				mTransform.AddTranslation(forward * MovementSpeed());
-			}
-
-			if (input.is_pressed(Key::Left) || input.is_pressed(Key::A))
-			{
-				mTransform.AddTranslation(right * MovementSpeed());
-			}
-
-			if (input.is_pressed(Key::Right) || input.is_pressed(Key::D))
-			{
-				mTransform.AddTranslation(-right * MovementSpeed());
-			}
-		}
+		glm::vec3 forward = GetForward();
+		mPosition = mTarget - forward * mDistanceToTarget;
 	}
 
-	void EditorCamera::OnEvent(Event &event)
+	void EditorCamera::ResetView()
 	{
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch(this, &EditorCamera::OnMouseScrolled);
-		dispatcher.Dispatch(this, &EditorCamera::OnKeyEvent);
+		mPosition = {0.f, 10.f, 10.f};
+		mTarget = {0.f, 0.f, 0.f};
+
+		mYaw = -90.f;
+		mPitch = 0.f;
+
+		mDistanceToTarget = glm::length(mPosition - mTarget);
 	}
 
-	bool EditorCamera::OnMouseScrolled(MouseScrolledEvent &event)
+	void EditorCamera::FreeFlyMove(const glm::vec3 &direction)
 	{
-		Zoom(event.y * 0.1f);
-
-		return false;
+		mPosition += direction * MovementSpeed();
+		mTarget += direction * MovementSpeed();
 	}
 
-	bool EditorCamera::OnKeyEvent(KeyEvent &e)
+	void EditorCamera::Focus(const glm::vec3 &target, const glm::vec3 &bounds)
 	{
-		switch (e.Key)
-		{
-		case Key::Home:
-		{
-			mTransform = mInitialTransform;
-			return true;
-		}
-		default:
-			break;
-		}
-		return false;
-	}
+		mTarget = target;
 
-	void EditorCamera::Focus(const FTransform &target, const glm::vec3 &bounds)
-	{
-		auto target_location = target.GetTranslation();
-		auto eye = mTransform.GetTranslation() + (bounds * 1.1f);
-		glm::mat4 view = glm::lookAt(eye, target_location, {0, 1, 0});
-		glm::mat4 world = glm::inverse(view);
-		mTransform = FTransform(world);
+		float radius = glm::length(bounds);
+		mDistanceToTarget = std::max(radius * 2.0f, 1.0f);
+
+		ResetOrientation();
 	}
 
 	const glm::mat4 EditorCamera::GetView() const
 	{
-		return glm::inverse(mTransform.ToMat4());
-	}
-
-	void EditorCamera::SetView(const FTransform &view)
-	{
-		mTransform = view;
+		return glm::lookAt(mPosition, mTarget, glm::vec3(0, 1, 0));
 	}
 
 	void EditorCamera::Resize(uint32_t w, uint32_t h)
@@ -121,73 +64,59 @@ namespace BHive
 		mViewportSize = {w, h};
 	}
 
-	glm::vec2 EditorCamera::PanSpeed() const
+	glm::vec3 EditorCamera::GetForward() const
 	{
-		float x = std::min(mViewportSize.x / 1000.0f, 2.4f);
-		float xFentity = 0.0366f * (x * x) - 0.1778f * x + 0.3021f;
-
-		float y = std::min(mViewportSize.y / 1000.0f, 2.4f);
-		float yFentity = 0.0366f * (y * y) - 0.1778f * y + 0.3021f;
-
-		return {xFentity, yFentity};
+		glm::vec3 dir;
+		dir.x = cos(glm::radians(mYaw)) * cos(glm::radians(mPitch));
+		dir.y = sin(glm::radians(mPitch));
+		dir.z = sin(glm::radians(mYaw)) * cos(glm::radians(mPitch));
+		dir = glm::normalize(dir);
+		return dir;
 	}
 
-	float EditorCamera::RotationSpeed() const
+	glm::vec3 EditorCamera::GetRight() const
 	{
-		return 50.f;
+		return glm::normalize(glm::cross(GetForward(), glm::vec3(0, 1, 0)));
 	}
 
-	float EditorCamera::MovementSpeed() const
+	glm::vec3 EditorCamera::GetUp() const
 	{
-		return .1f;
-	}
-
-	float EditorCamera::Distance() const
-	{
-		return glm::length(mTransform.GetTranslation());
+		return glm::normalize(glm::cross(GetRight(), GetForward()));
 	}
 
 	void EditorCamera::Zoom(float delta)
 	{
-		auto offset = delta * ZoomSpeed();
-		auto new_position = mTransform.GetForward() * offset + mTransform.GetTranslation();
+		float zoomFactor = powf(0.95f, delta);
+		mDistanceToTarget *= zoomFactor;
+		mDistanceToTarget = std::max(mDistanceToTarget, 0.1f);
 
-		if (Distance() < 1.0f)
-		{
-			mTarget -= mTransform.GetForward();
-		}
-
-		mTransform.SetTranslation(new_position);
+		glm::vec3 forward = GetForward();
+		mPosition = mTarget - forward * mDistanceToTarget;
 	}
 
 	void EditorCamera::Pan(const glm::vec2 &delta)
 	{
-		float distance = Distance();
+		float panSpeed = mDistanceToTarget * 0.002f;
 
-		auto speed = PanSpeed();
-		auto translation = mTransform.GetTranslation();
-		auto deltax = mTransform.GetRight() * delta.x * speed.x * distance;
-		auto deltay = mTransform.GetUp() * delta.y * speed.y * distance;
+		glm::vec3 right = GetRight();
+		glm::vec3 up = GetUp();
 
-		mTransform.SetTranslation(translation + deltax + deltay);
+		mPosition -= right * delta.x * panSpeed;
+		mPosition += up * delta.y * panSpeed;
+
+		mTarget -= right * delta.x * panSpeed;
+		mTarget += up * delta.y * panSpeed;
 	}
 
 	void EditorCamera::Rotate(const glm::vec2 &delta)
 	{
-		float yaw_sign = mTransform.GetUp().y < 0 ? -1.0f : 1.0f;
-		auto yaw = yaw_sign * delta.x * RotationSpeed();
-		auto pitch = delta.y * RotationSpeed();
+		mYaw += delta.x * RotationSpeed();
+		mPitch += delta.y * RotationSpeed();
 
-		auto rotation = mTransform.GetRotation();
-		mTransform.SetRotation(rotation + glm::vec3{pitch, yaw, 0.0f});
-	}
+		mPitch = glm::clamp(mPitch, -89.0f, 89.0f);
 
-	float EditorCamera::ZoomSpeed() const
-	{
-		float distance = Distance();
-		float speed = distance * distance;
-		speed = std::min(speed, 100.0f);
-		return speed;
+		auto dir = GetForward();
+		mPosition = mTarget - dir * mDistanceToTarget;
 	}
 
 } // namespace BHive
