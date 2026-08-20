@@ -12,7 +12,7 @@ namespace BHive
 	class BHIVE_API FComputeBindings : public IMaterial
 	{
 	public:
-		FComputeBindings(const Ref<ShaderProgram> &program);
+		FComputeBindings(const std::string &shaderProgramName);
 
 		virtual ~FComputeBindings() = default;
 
@@ -24,11 +24,7 @@ namespace BHive
 
 		MaterialSnapshot CreateSnapshot() const override { return mBackendMaterial->CreateSnapshot(); }
 
-		Ref<ShaderProgram> GetProgram() const override { return mProgram; }
-
 	private:
 		Ref<IMaterialBackendInterface> mBackendMaterial;
-
-		Ref<ShaderProgram> mProgram;
 	};
 } // namespace BHive

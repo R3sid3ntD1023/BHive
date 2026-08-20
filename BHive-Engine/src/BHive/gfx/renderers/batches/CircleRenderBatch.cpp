@@ -18,8 +18,7 @@ namespace BHive
 
 		PipelineRegistry::Register(CIRCLE_PIPELINE_NAME, state);
 
-		auto shader = ShaderManager::Get("Circle.glsl");
-		mCircleMaterial = CreateScope<Material>(shader);
+		mCircleMaterial = CreateScope<Material>("Circle.glsl");
 	}
 
 	void CircleRenderBatch::StartBatch()

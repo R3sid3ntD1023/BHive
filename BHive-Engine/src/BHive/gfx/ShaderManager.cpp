@@ -4,12 +4,7 @@
 
 namespace BHive
 {
-	ShaderManager::ShaderManager()
-	{
-		
-	}
-
-	void ShaderManager::Register(const char *name, const Ref<ShaderProgram> &shader)
+	void ShaderManager::Register(const std::string &name, const Ref<ShaderProgram> &shader)
 	{
 		if (!Contains(name))
 		{
@@ -41,14 +36,14 @@ namespace BHive
 			return mShaders.at(name);
 		}
 
-		//creates shader program (compiles + reflects internally)
+		// creates shader program (compiles + reflects internally)
 		auto program = Shader::Create(resolved_path);
 		mShaders[name] = program;
 
 		return program;
 	}
 
-	Ref<ShaderProgram> ShaderManager::Get(const char *name)
+	Ref<ShaderProgram> ShaderManager::Get(const std::string &name)
 	{
 		if (Contains(name))
 		{
@@ -68,7 +63,6 @@ namespace BHive
 		return {};
 	}
 
-
 	bool ShaderManager::Contains(const std::string &name)
 	{
 		return mShaders.contains(name);
@@ -78,6 +72,5 @@ namespace BHive
 	{
 		mShaders.clear();
 	}
-
 
 } // namespace BHive

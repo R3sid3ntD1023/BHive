@@ -26,7 +26,7 @@ namespace BHive
 		spec.DebugName = "ImageDebugger";
 		mFB = Framebuffer::Create(spec);
 
-		mMaterial = CreateRef<Material>(ShaderManager::Get("DebugTextureViewer.glsl"));
+		mMaterial = CreateRef<Material>("DebugTextureViewer.glsl");
 	}
 
 	void ImageDebugger::Shutdown()

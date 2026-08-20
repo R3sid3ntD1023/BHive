@@ -5,6 +5,13 @@
 
 namespace BHive
 {
+	LambertMaterial::LambertMaterial()
+		: Material("LambertMaterial.glsl")
+	{
+		SetParam("DiffuseColor", MaterialParam(mDiffuseColor));
+		SetParam("Emission", MaterialParam(mEmissionColor));
+	}
+
 	LambertMaterial &LambertMaterial::SetDiffuseColor(FColor color)
 	{
 		mDiffuseColor = color;

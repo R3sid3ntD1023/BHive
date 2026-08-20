@@ -18,8 +18,7 @@ namespace BHive
 
 		PipelineRegistry::Register(QUAD_PIPELINE_NAME, state);
 
-		auto shader = ShaderManager::Get("Quad.glsl");
-		mQuadMaterial = CreateScope<Material>(shader);
+		mQuadMaterial = CreateScope<Material>("Quad.glsl");
 	}
 
 	void QuadRenderBatch::Flush(Renderer &renderer)

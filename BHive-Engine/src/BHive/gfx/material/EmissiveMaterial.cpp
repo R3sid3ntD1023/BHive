@@ -1,7 +1,15 @@
 #include "EmissiveMaterial.h"
+#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {
+	EmissiveMaterial::EmissiveMaterial()
+		: Material("EmissiveMaterial.glsl")
+	{
+
+		SetParam("Emission", MaterialParam(mEmissionColor));
+	}
+
 	IMaterial &EmissiveMaterial::SetEmissionColor(FColor color)
 	{
 		mEmissionColor = color;

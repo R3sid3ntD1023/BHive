@@ -9,12 +9,7 @@ namespace BHive
 	{
 
 	public:
-		LambertMaterial()
-			: Material(ShaderManager::Get("LambertMaterial.glsl"))
-		{
-			SetParam("DiffuseColor", MaterialParam(mDiffuseColor));
-			SetParam("Emission", MaterialParam(mEmissionColor));
-		}
+		LambertMaterial();
 
 		LambertMaterial &SetDiffuseColor(FColor color);
 

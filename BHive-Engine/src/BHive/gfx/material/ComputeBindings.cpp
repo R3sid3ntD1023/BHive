@@ -3,10 +3,9 @@
 
 namespace BHive
 {
-	FComputeBindings::FComputeBindings(const Ref<ShaderProgram> &program)
-		: mProgram(program)
+	FComputeBindings::FComputeBindings(const std::string &shaderProgramName)
 	{
-		mBackendMaterial = IMaterialBackendInterface::Create(program);
+		mBackendMaterial = IMaterialBackendInterface::Create(shaderProgramName);
 	}
 
 	IMaterial &FComputeBindings::SetTexture(const std::string &name, const FTextureBinding &texture) &

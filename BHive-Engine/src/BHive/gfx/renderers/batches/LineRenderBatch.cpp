@@ -19,8 +19,7 @@ namespace BHive
 
 		PipelineRegistry::Register(LINE_PIPELINE_NAME, state);
 
-		auto shader = ShaderManager::Get("Line.glsl");
-		mLineMaterial = CreateScope<Material>(shader);
+		mLineMaterial = CreateScope<Material>("Line.glsl");
 	}
 
 	bool LineRenderBatch::NeedsFlush(uint32_t vNeeded, uint32_t iNeeded)

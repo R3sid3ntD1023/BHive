@@ -6,6 +6,7 @@
 #include "gfx/RendererAPI.h"
 #include "RenderGraphScheduler.h"
 #include "ViewSystem.h"
+#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
@@ -28,9 +29,6 @@ namespace BHive
 
 	class BHIVE_API Renderer
 	{
-	public:
-		LineRenderer Line;
-		QuadRenderer Quad;
 
 	public:
 		Renderer(Scope<RendererAPI> api);
@@ -60,6 +58,8 @@ namespace BHive
 		void BeginBatching();
 
 		void EndBatching();
+
+		ShaderManager &GetShaderManager() { return mShaderManager; }
 
 		static Renderer &Get() { return *sInstance; }
 
@@ -96,6 +96,8 @@ namespace BHive
 	private:
 		Scope<RendererAPI> mAPI;
 
+		ShaderManager mShaderManager;
+
 		Ref<struct RenderData> mData;
 
 		RenderGraphScheduler mScheduler;
@@ -110,6 +112,11 @@ namespace BHive
 		Statitics mStats{};
 
 		static inline Renderer *sInstance = nullptr;
+
+	public:
+		LineRenderer Line;
+
+		QuadRenderer Quad;
 	};
 
 } // namespace BHive

@@ -18,18 +18,7 @@ namespace BHive
 
 	public:
 	public:
-		StandardMaterial()
-			: Material(ShaderManager::Get("StandardMaterial.glsl"))
-		{
-			SetAlbedo(FColor::White);
-			SetEmission(FColor::Black);
-			SetMetalness(0.0f);
-			SetRoughness(0.1f);
-			SetOpacity(1.0f);
-			SetDepthScale(1.0f);
-			SetTiling({1.0f, 1.0f});
-			SetFlags(EFlags::Shadows);
-		}
+		StandardMaterial();
 
 		StandardMaterial &SetAlbedo(FColor color);
 

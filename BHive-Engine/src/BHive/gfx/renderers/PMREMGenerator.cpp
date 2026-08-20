@@ -23,19 +23,19 @@ namespace BHive
 	{
 		mInput = hdr;
 
-		auto conversionBindings = FComputeBindings(ShaderManager::Get(PMREM_EQUIRECTANGULAR));
+		auto conversionBindings = FComputeBindings(PMREM_EQUIRECTANGULAR);
 		conversionBindings.SetTexture("equirectangularMap", FTextureBinding(mInput))
 			.SetTexture("imgOutput", FTextureBinding(mEnvironmentTextures.Environment, 0, 0))
 			.SetParam("u_width", MaterialParam(mSettings.EnvironmentMapSize))
 			.SetParam("u_height", MaterialParam(mSettings.EnvironmentMapSize));
 
-		auto convolutionBindings = FComputeBindings(ShaderManager::Get(PMREM_CONVOLUTION));
+		auto convolutionBindings = FComputeBindings(PMREM_CONVOLUTION);
 		convolutionBindings.SetTexture("environmentMap", FTextureBinding(mEnvironmentTextures.Environment))
 			.SetTexture("irradianceMap", FTextureBinding(mEnvironmentTextures.Irradiance, 0, 0))
 			.SetParam("u_width", MaterialParam(mSettings.IrradianceSize))
 			.SetParam("u_height", MaterialParam(mSettings.IrradianceSize));
 
-		auto prefilterBindings = FComputeBindings(ShaderManager::Get(PMREM_PREFILTER));
+		auto prefilterBindings = FComputeBindings(PMREM_PREFILTER);
 		prefilterBindings.SetTexture("environmentMap", FTextureBinding(mEnvironmentTextures.Environment)).SetParam("u_envResolution", MaterialParam(mSettings.EnvironmentMapSize));
 
 		RenderGraph graph;
@@ -135,7 +135,7 @@ namespace BHive
 
 		auto brdfLUT = Texture2D::Create({size, size}, brdfLUTInfo);
 
-		auto bindings = FComputeBindings(ShaderManager::Get(PMREM_BRDFLUT));
+		auto bindings = FComputeBindings(PMREM_BRDFLUT);
 		bindings.SetTexture("brdfLutTexture", FTextureBinding(brdfLUT));
 
 		RenderGraph graph;

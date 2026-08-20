@@ -3,28 +3,24 @@
 #include "core/Core.h"
 #include "gfx/shader/ShaderProgram.h"
 
-
 namespace BHive
 {
 	class BHIVE_API ShaderManager
 	{
 	public:
-		ShaderManager();
-		ShaderManager(const ShaderManager &) = delete;
-
 		using Shaders = std::unordered_map<std::string, Ref<ShaderProgram>>;
 
-		static void Register(const char *name, const Ref<ShaderProgram> &shader);
+		void Register(const std::string &name, const Ref<ShaderProgram> &shader);
 
-		static Ref<ShaderProgram> Load(const std::filesystem::path &file);
+		Ref<ShaderProgram> Load(const std::filesystem::path &file);
 
-		static Ref<ShaderProgram> Get(const char *name);
+		Ref<ShaderProgram> Get(const std::string &name);
 
-		static bool Contains(const std::string &name);
+		bool Contains(const std::string &name);
 
-		static void Clear();
+		void Clear();
 
 	private:
-		static inline Shaders mShaders;
+		Shaders mShaders;
 	};
 } // namespace BHive

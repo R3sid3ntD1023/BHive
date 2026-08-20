@@ -15,7 +15,7 @@ namespace BHive
 	class VulkanBackendMaterial : public IMaterialBackendInterface
 	{
 	public:
-		explicit VulkanBackendMaterial(const Ref<ShaderProgram> &program);
+		explicit VulkanBackendMaterial(const std::string &shaderProgramName);
 
 		void SetTexture(const std::string &name, const FTextureBinding &texture) override;
 

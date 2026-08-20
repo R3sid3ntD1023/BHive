@@ -9,11 +9,7 @@ namespace BHive
 	{
 
 	public:
-		EmissiveMaterial()
-			: Material(ShaderManager::Get("EmissiveMaterial.glsl"))
-		{
-			SetParam("Emission", MaterialParam(mEmissionColor));
-		}
+		EmissiveMaterial();
 
 		IMaterial &SetEmissionColor(FColor color);
 

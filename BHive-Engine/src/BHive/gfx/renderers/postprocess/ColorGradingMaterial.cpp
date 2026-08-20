@@ -7,7 +7,7 @@ namespace BHive
 {
 	ColorGradingMaterial::ColorGradingMaterial()
 	{
-		mMaterial = CreateScope<Material>(ShaderManager::Get("ColorGrading.glsl"));
+		mMaterial = CreateScope<Material>("ColorGrading.glsl");
 	}
 
 	Ref<Texture> ColorGradingMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)

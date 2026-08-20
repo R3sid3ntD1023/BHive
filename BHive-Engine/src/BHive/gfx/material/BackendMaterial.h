@@ -39,7 +39,7 @@ namespace BHive
 
 		virtual MaterialSnapshot CreateSnapshot() const = 0;
 
-		static Ref<IMaterialBackendInterface> Create(const Ref<ShaderProgram> &program);
+		static Ref<IMaterialBackendInterface> Create(const std::string &shaderProgramName);
 	};
 
 	class BHIVE_API IMaterial
@@ -54,8 +54,6 @@ namespace BHive
 		virtual IMaterial &SetParam(const std::string &name, const MaterialParam &value) && = delete;
 
 		virtual MaterialSnapshot CreateSnapshot() const = 0;
-
-		virtual Ref<ShaderProgram> GetProgram() const = 0;
 
 		virtual Ref<IMaterialBackendInterface> GetNative() const = 0;
 	};

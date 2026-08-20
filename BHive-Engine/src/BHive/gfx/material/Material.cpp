@@ -6,8 +6,8 @@
 
 namespace BHive
 {
-	Material::Material(const Ref<ShaderProgram> &program)
-		: mProgram(program)
+	Material::Material(const std::string &shaderProgramName)
+		: mShaderProgramName(shaderProgramName)
 	{
 		InitFromReflection();
 	}
@@ -39,7 +39,7 @@ namespace BHive
 	MaterialSnapshot Material::CreateSnapshot() const
 	{
 		if (!mBackendMaterial)
-			mBackendMaterial = IMaterialBackendInterface::Create(mProgram);
+			mBackendMaterial = IMaterialBackendInterface::Create(mShaderProgramName);
 
 		for (auto &[name, value] : mParams)
 			mBackendMaterial->SetParam(name, value);
@@ -59,7 +59,8 @@ namespace BHive
 
 	void Material::InitFromReflection()
 	{
-		const auto &merged = mProgram->GetMergedRefl();
+		auto program = Renderer::Get().GetShaderManager().Get(mShaderProgramName);
+		const auto &merged = program->GetMergedRefl();
 
 		if (!merged.Sets.contains(1))
 			return;

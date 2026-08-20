@@ -5,8 +5,6 @@
 #include "gfx/Color.h"
 #include "gfx/Texture.h"
 #include "BackendMaterial.h"
-#include "gfx/shader/ShaderProgram.h"
-#include "gfx/ShaderManager.h"
 
 namespace BHive
 {
@@ -29,7 +27,7 @@ namespace BHive
 		};
 
 	public:
-		Material(const Ref<ShaderProgram> &program);
+		Material(const std::string &shaderProgramName);
 
 		virtual ~Material() = default;
 
@@ -51,8 +49,6 @@ namespace BHive
 
 		MaterialSnapshot CreateSnapshot() const override;
 
-		Ref<ShaderProgram> GetProgram() const override { return mProgram; }
-
 		ESurfaceType GetSurfaceType() const { return mSurfaceType; }
 
 		virtual bool IsTransparent() const { return GetSurfaceType() == ESurfaceType::Transparent; }
@@ -63,7 +59,7 @@ namespace BHive
 		void InitFromReflection();
 
 	protected:
-		Ref<ShaderProgram> mProgram;
+		std::string mShaderProgramName;
 
 		ESurfaceType mSurfaceType = ESurfaceType::Opaque;
 

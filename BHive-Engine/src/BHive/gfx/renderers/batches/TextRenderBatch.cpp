@@ -27,8 +27,7 @@ namespace BHive
 
 		PipelineRegistry::Register(PIPELINE_NAME, state);
 
-		auto shader = ShaderManager::Get("Text.glsl");
-		mMaterial = CreateScope<Material>(shader);
+		mMaterial = CreateScope<Material>("Text.glsl");
 	}
 
 	bool TextRenderBatch::NeedsFlush(uint32_t vNeeded, uint32_t iNeeded)

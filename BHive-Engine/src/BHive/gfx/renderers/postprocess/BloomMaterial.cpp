@@ -6,10 +6,10 @@ namespace BHive
 {
 	BloomMaterial::BloomMaterial()
 	{
-		mMaterials[0] = CreateScope<Material>(ShaderManager::Get("PreFilter.glsl"));
-		mMaterials[1] = CreateScope<Material>(ShaderManager::Get("DownSample.glsl"));
-		mMaterials[2] = CreateScope<Material>(ShaderManager::Get("UpSample.glsl"));
-		mMaterials[3] = CreateScope<Material>(ShaderManager::Get("Composite.glsl"));
+		mMaterials[0] = CreateScope<Material>("PreFilter.glsl");
+		mMaterials[1] = CreateScope<Material>("DownSample.glsl");
+		mMaterials[2] = CreateScope<Material>("UpSample.glsl");
+		mMaterials[3] = CreateScope<Material>("Composite.glsl");
 	}
 
 	Ref<Texture> BloomMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)

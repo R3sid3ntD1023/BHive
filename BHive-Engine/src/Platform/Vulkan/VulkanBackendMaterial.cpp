@@ -15,10 +15,10 @@
 namespace BHive
 {
 
-	VulkanBackendMaterial::VulkanBackendMaterial(const Ref<ShaderProgram> &program)
-		: mProgram(program)
+	VulkanBackendMaterial::VulkanBackendMaterial(const std::string &shaderProgramName)
 	{
-		auto &mergedRefl = program->GetMergedRefl();
+		mProgram = Renderer::Get().GetShaderManager().Get(shaderProgramName);
+		auto &mergedRefl = mProgram->GetMergedRefl();
 
 		// init set manager
 

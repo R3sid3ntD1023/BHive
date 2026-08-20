@@ -78,8 +78,6 @@ namespace BHive
 			GetSubSystem<PhysicsContext>().Shutdown();
 		}
 
-		ShaderManager::Clear();
-
 		sInstance = nullptr;
 	}
 

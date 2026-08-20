@@ -7,7 +7,7 @@ namespace BHive
 {
 	AcesMaterial::AcesMaterial()
 	{
-		mMaterial = CreateScope<Material>(ShaderManager::Get("Aces.glsl"));
+		mMaterial = CreateScope<Material>("Aces.glsl");
 	}
 
 	Ref<Texture> AcesMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
