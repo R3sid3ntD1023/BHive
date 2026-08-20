@@ -48,14 +48,14 @@ namespace BHive
 
 		mData = CreateRef<RenderData>();
 
-		InitAndRegisterResources();
-
 		Line.Initialize();
 		Quad.Initialize();
 	}
 
 	Renderer::~Renderer()
 	{
+		mData.reset();
+		PipelineRegistry::Shutdown();
 		mAPI->Shutdown();
 	}
 
@@ -93,9 +93,9 @@ namespace BHive
 		memset(&mStats, 0, sizeof(Statitics));
 	}
 
-	GlobalResources &Renderer::GetGlobalResources()
+	Ref<Texture> Renderer::GetWhiteTexture() const
 	{
-		return mGlobalResources;
+		return mData->WhiteTexture;
 	}
 
 	RenderGraph &Renderer::GetActiveGraph()
@@ -151,13 +151,6 @@ namespace BHive
 	{
 		Line.Flush(*this);
 		Quad.Flush(*this);
-	}
-
-	void Renderer::InitAndRegisterResources()
-	{
-		mGlobalResources.Register("White", mData->WhiteTexture);
-		mGlobalResources.Register("Blue", mData->BlueTexture);
-		mGlobalResources.Register("Black", mData->BlackTexture);
 	}
 
 	void Renderer::SolveResourceBarriers(RenderGraph &graph)

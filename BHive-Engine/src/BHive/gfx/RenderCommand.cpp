@@ -8,11 +8,22 @@ namespace BHive
 		sAPI = apiType;
 	}
 
+	void RenderCommand::Shutdown()
+	{
+		sIsShuttingDown = true;
+	}
+
 	void RenderCommand::QueueDeletion(FQeueuDeletionFunc &&fn)
 	{
 		auto api = Renderer::Get().GetGraphicsAPI();
-		if (api)
-			api->QueueDeletion(std::move(fn));
+		if (!api || sIsShuttingDown)
+		{
+			fn(UINT32_MAX);
+			// LOG_WARN("QueueDeletion called after shutdown; ignoring.");
+			return;
+		}
+
+		api->QueueDeletion(std::move(fn));
 	}
 
 	RendererAPI *RenderCommand::GetGraphicsAPI()

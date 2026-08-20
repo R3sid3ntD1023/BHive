@@ -12,6 +12,16 @@ namespace BHive
 
 	VulkanSwapChain::~VulkanSwapChain()
 	{
+		auto &device = VulkanBackend::GetLogicalDevice();
+		device.waitIdle();
+
+		// mInFlightFences.clear();
+		// mRenderFinishedSemaphores.clear();
+		// mPresentSemaphores.clear();
+		// mImages.clear();
+		// mDepthImage = {};
+		// mSwapChain.clear();
+		// mSurface.clear();
 	}
 
 	void VulkanSwapChain::Init(uint32_t w, uint32_t h)
@@ -27,47 +37,12 @@ namespace BHive
 
 		mExtent = VulkanUtils::ChooseSwapExtent(mCapabilities, w, h);
 		mMinImageCount = VulkanUtils::ChooseMinImageCount(mCapabilities);
-
-		vk::SwapchainCreateInfoKHR swap_chain_create_info(
-			{}, mSurface, mMinImageCount, mImageFormat.format, mImageFormat.colorSpace, mExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, {},
-			mCapabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, mPresentMode, true, nullptr, nullptr);
-
-		mSwapChain = device.createSwapchainKHR(swap_chain_create_info);
-
-		auto images = mSwapChain.getImages();
-		auto imageCount = images.size();
-
-		mImages.resize(imageCount);
-
-		CreateSyncObjects(device, (uint32_t)imageCount);
-
-		for (size_t i = 0; i < images.size(); i++)
-		{
-			auto raw = images[i];
-			auto &img = mImages[i];
-
-			ImageCreateInfo info{};
-			info.ImageCI.arrayLayers = 1;
-			info.ImageCI.mipLevels = 1;
-			info.ImageCI.usage = vk::ImageUsageFlagBits::eColorAttachment;
-			info.DebugName = std::format("SwapChainImage_{}", i);
-
-			auto range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
-			info.ViewCI = vk::ImageViewCreateInfo({}, raw, vk::ImageViewType::e2D, mImageFormat.format, {}, range);
-			img.Initialize(raw, info);
-		}
-
 		mDepthFormat = VulkanUtils::FindDepthFormat();
 
-		ImageCreateInfo depth_info{};
-		depth_info.ImageCI = vk::ImageCreateInfo(
-			{}, vk::ImageType::e2D, mDepthFormat, vk::Extent3D{mExtent, 1}, 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment,
-			vk::SharingMode::eExclusive, 0);
-		auto range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1);
-		depth_info.ViewCI = vk::ImageViewCreateInfo({}, VK_NULL_HANDLE, vk::ImageViewType::e2D, mDepthFormat, {}, range);
-		depth_info.DebugName = std::format("SwapChainImage_DepthStencil");
-
-		mDepthImage.Initialize(depth_info);
+		CreateSwapChain(device);
+		CreateSyncObjects(device);
+		CreateImages(device);
+		CreateDepthImage(device);
 	}
 
 	bool VulkanSwapChain::Recreate(uint32_t w, uint32_t h)
@@ -75,27 +50,66 @@ namespace BHive
 		if (w <= 0 || h <= 0)
 			return false;
 
-		for (auto &img : mImages)
-		{
-			img.Destroy();
-		}
-
 		auto &device = VulkanBackend::GetLogicalDevice();
 		device.waitIdle();
 
 		LOG_TRACE("recreating swap chain... with size[{}x{}]", w, h);
 
-		mDepthImage.Destroy();
-
-		mSwapChain = nullptr;
+		mImages.clear();
+		mDepthImage = {};
 
 		Init(w, h);
 
 		return true;
 	}
 
-	void VulkanSwapChain::CreateSyncObjects(vk::raii::Device &device, uint32_t imageCount)
+	void VulkanSwapChain::BeginRendering(vk::CommandBuffer cmd, uint32_t imageIndex, vk::ClearColorValue colorValue, vk::ClearDepthStencilValue depthValue)
 	{
+		auto &image = mImages.at(imageIndex);
+		auto &depth = mDepthImage;
+
+		// Color: Undefined/ShaderRead/etc → ColorAttachment
+		image.Transition(cmd, ImageState::ColorAttachment());
+
+		// Depth: Undefined/ShaderRead/etc → DepthStencilAttachment
+		depth.Transition(cmd, ImageState::DepthStencilAttachment());
+
+		vk::RenderingAttachmentInfo attachmentInfo(
+			image.Native().GetView(0, 0, 0), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, colorValue);
+
+		vk::RenderingAttachmentInfo depth_attachment_info(
+			depth.Native().GetView(0, 0, 0), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare,
+			depthValue);
+
+		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, mExtent), 1, 0, attachmentInfo, &depth_attachment_info);
+		cmd.beginRendering(renderingInfo);
+
+		vk::Viewport viewport(0.f, (float)mExtent.height, (float)mExtent.width, -(float)mExtent.height, 0.0f, 1.0f);
+		vk::Rect2D scissor({0, 0}, mExtent);
+
+		cmd.setViewportWithCount(viewport);
+		cmd.setScissorWithCount(scissor);
+	}
+
+	void VulkanSwapChain::EndRendering(vk::CommandBuffer cmd, uint32_t imageIndex)
+	{
+		auto &image = mImages.at(imageIndex);
+		image.Transition(cmd, ImageState::Present());
+	}
+
+	void VulkanSwapChain::CreateSwapChain(vk::raii::Device &device)
+	{
+		vk::SwapchainCreateInfoKHR swap_chain_create_info(
+			{}, mSurface, mMinImageCount, mImageFormat.format, mImageFormat.colorSpace, mExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, {},
+			mCapabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, mPresentMode, true, nullptr, nullptr);
+
+		mSwapChain = device.createSwapchainKHR(swap_chain_create_info);
+	}
+
+	void VulkanSwapChain::CreateSyncObjects(vk::raii::Device &device)
+	{
+		uint32_t imageCount = mSwapChain.getImages().size();
+
 		mPresentSemaphores.clear();
 		mRenderFinishedSemaphores.clear();
 		mInFlightFences.clear();
@@ -110,6 +124,44 @@ namespace BHive
 		{
 			mRenderFinishedSemaphores.emplace_back(device, vk::SemaphoreCreateInfo());
 		}
+	}
+
+	void VulkanSwapChain::CreateImages(vk::raii::Device &device)
+	{
+		auto swapChainImages = mSwapChain.getImages();
+		mImages.resize(swapChainImages.size());
+
+		for (size_t i = 0; i < swapChainImages.size(); i++)
+		{
+			auto swapChainImage = swapChainImages[i];
+			auto &img = mImages[i];
+
+			ImageCreateInfo info{};
+			info.ImageCI.arrayLayers = 1;
+			info.ImageCI.mipLevels = 1;
+			info.ImageCI.usage = vk::ImageUsageFlagBits::eColorAttachment;
+			info.DebugName = std::format("SwapChainImage_{}", i);
+
+			auto range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
+			info.ViewCI = vk::ImageViewCreateInfo({}, swapChainImage, vk::ImageViewType::e2D, mImageFormat.format, {}, range);
+			img.Initialize(swapChainImage, info);
+		}
+	}
+
+	void VulkanSwapChain::CreateDepthImage(vk::raii::Device &device)
+	{
+		if (mDepthImage)
+			mDepthImage = {};
+
+		ImageCreateInfo depth_info{};
+		depth_info.ImageCI = vk::ImageCreateInfo(
+			{}, vk::ImageType::e2D, mDepthFormat, vk::Extent3D{mExtent, 1}, 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment,
+			vk::SharingMode::eExclusive, 0);
+		auto range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1);
+		depth_info.ViewCI = vk::ImageViewCreateInfo({}, VK_NULL_HANDLE, vk::ImageViewType::e2D, mDepthFormat, {}, range);
+		depth_info.DebugName = std::format("SwapChainImage_DepthStencil");
+
+		mDepthImage.Initialize(depth_info);
 	}
 
 	vk::Semaphore VulkanSwapChain::GetRenderFinishedSemaphore(uint32_t imageIndex)

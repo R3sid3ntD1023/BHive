@@ -49,7 +49,7 @@ namespace BHive
 		{
 			binding = tex;
 			if (!binding.TextureRef)
-				binding.TextureRef = Renderer::Get().GetGlobalResources().Find("White")->TextureRef;
+				binding.TextureRef = Renderer::Get().GetWhiteTexture();
 
 			mBackendMaterial->SetTexture(name, binding);
 		}

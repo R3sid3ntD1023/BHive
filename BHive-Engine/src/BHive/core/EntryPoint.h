@@ -20,12 +20,16 @@ namespace BHive
 
 	void SetImGuiContext(Application *app)
 	{
+
 #ifdef BUILD_SHARED
+		auto layer = app->GetImGuiLayer();
+		if (!layer)
+			return;
+
 		ImGuiMemAllocFunc alloc_func = nullptr;
 		ImGuiMemFreeFunc free_func = nullptr;
 		void *user_data = nullptr;
 
-		auto layer = app->GetImGuiLayer();
 		auto ctx = layer->GetContext();
 
 		layer->GetAllocatorCallbacks(&alloc_func, &free_func, &user_data);
@@ -50,22 +54,6 @@ namespace BHive
 		app->Run();
 		BH_PROFILE_END_SESSION();
 
-		/*auto &crash_handler = CrashHandler::Get();
-		crash_handler.Init(app->GetSpecification().Title, "Crash_Report.log");
-
-		try
-		{
-			BH_PROFILE_BEGIN_SESSION("Runtime", "Profile-Runtime.json");
-			app->Run();
-			BH_PROFILE_END_SESSION();
-		}
-		catch (const std::exception &e)
-		{
-			crash_handler.HandleException(e);
-
-			return 1;
-		}*/
-		
 		BH_PROFILE_BEGIN_SESSION("Shutdown", "Profile-Shutdown.json");
 		delete app;
 		BH_PROFILE_END_SESSION();

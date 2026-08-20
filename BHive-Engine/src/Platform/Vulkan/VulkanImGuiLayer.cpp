@@ -92,15 +92,13 @@ namespace BHive
 		init_info.UseDynamicRendering = true;
 
 		ImGui_ImplVulkan_Init(&init_info);
-		}
+	}
 
 	void VulkanImGuiLayer::Shutdown()
 	{
 		LOG_TRACE("ImguiLayer Shutdown Called")
 
 		mDevice.waitIdle();
-
-		mDescriptorPool.reset();
 
 		ImGui_ImplVulkan_Shutdown();
 

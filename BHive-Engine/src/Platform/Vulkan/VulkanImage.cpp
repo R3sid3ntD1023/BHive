@@ -6,7 +6,6 @@
 
 namespace BHive
 {
-
 	void VulkanImage::Initialize(const ImageCreateInfo &info)
 	{
 		mInfo = info;
@@ -17,10 +16,8 @@ namespace BHive
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
 
 		auto image_id = gpu_r_m.CreateImage(info.ImageCI, vk::MemoryPropertyFlagBits::eDeviceLocal, info.DebugName);
-		auto sampler_id = gpu_r_m.CreateSampler(info.SamplerCI, std::format("Image_{}_Sampler", info.DebugName));
 
 		mImage.Image = image_id;
-		mImage.Sampler = sampler_id;
 		mImage.DebugName = info.DebugName;
 		mImage.Usage = info.ImageCI.usage;
 		mImage.IsCube = info.ViewTopology == EViewTopology::Cube;
@@ -28,21 +25,24 @@ namespace BHive
 
 		mStateTracker.Initialize(layers, levels, ImageState::Undefined());
 
+		if (info.ImageCI.usage & vk::ImageUsageFlagBits::eSampled)
+		{
+			auto sampler_id = gpu_r_m.CreateSampler(mutable_info.SamplerCI, std::format("Image_{}_Sampler", mutable_info.DebugName));
+			mImage.Sampler = sampler_id;
+		}
+
 		auto image = mImage.GetImage();
 		mutable_info.ViewCI.setImage(image);
 
 		ImageViewBuildInfo build_info{.Layers = layers, .Levels = levels, .ViewCI = mutable_info.ViewCI, .DebugName = info.DebugName};
 		ImageViewBuilder::Build(mImage, build_info, info.ViewTopology);
 
+		auto initialState = InitialStateFromUsage(info.ImageCI.usage, info.ImageCI.format);
+		if (!initialState.IsUndefined)
 		{
-
-			auto initialState = InitialStateFromUsage(info.ImageCI.usage, info.ImageCI.format);
-			if (!initialState.IsUndefined)
-			{
-				SingleTimeCommand cmd{};
-				ImageSubresourceRange fullRange{0, levels, 0, layers};
-				Transition(cmd, initialState, fullRange);
-			}
+			SingleTimeCommand cmd{};
+			ImageSubresourceRange fullRange{0, levels, 0, layers};
+			Transition(cmd, initialState, fullRange);
 		}
 	}
 
@@ -62,14 +62,15 @@ namespace BHive
 		ImageViewBuildInfo build_info{.Layers = layers, .Levels = levels, .ViewCI = mutable_info.ViewCI, .DebugName = info.DebugName};
 		ImageViewBuilder::Build(mImage, build_info, mutable_info.ViewTopology);
 
-		auto sampler_id = gpu_r_m.CreateSampler(mutable_info.SamplerCI, std::format("Image_{}_Sampler", mutable_info.DebugName));
+		if (info.ImageCI.usage & vk::ImageUsageFlagBits::eSampled)
+		{
+			auto sampler_id = gpu_r_m.CreateSampler(mutable_info.SamplerCI, std::format("Image_{}_Sampler", mutable_info.DebugName));
+			mImage.Sampler = sampler_id;
+		}
 
 		mImage.Image = gpu_r_m.RegisterExternalImage(img);
-		mImage.Sampler = sampler_id;
 		mImage.DebugName = info.DebugName;
 		mImage.Usage = info.ImageCI.usage;
-
-		mRawImage = 1;
 	}
 
 	void VulkanImage::Upload(const void *data, size_t size, ImageCopyRegion region, ImageSubresourceRange range)
@@ -171,12 +172,6 @@ namespace BHive
 
 		ImageSubresourceRange range{0, levels, 0, layers};
 		Transition(cmd, ImageState::ShaderRead(), range);
-	}
-
-	void VulkanImage::Destroy()
-	{
-		if (!mRawImage)
-			VulkanBackend::GetGPUResourceManager().DestroyImage(mImage);
 	}
 
 	ImageState VulkanImage::GetState(uint32_t mip, uint32_t layer) const

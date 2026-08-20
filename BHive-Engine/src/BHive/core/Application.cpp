@@ -35,7 +35,7 @@ namespace BHive
 		props.VSync = specification.VSync;
 		props.mCenterWindow = specification.CenterWindow;
 		props.Maximize = specification.Maximize;
-		mMainWindow = WindowManager::Get().Create(props);
+		mMainWindow = mWindowManager.Create(props);
 
 		WindowInput::WindowEvent.Add(this, &Application::OnEvent);
 
@@ -44,8 +44,9 @@ namespace BHive
 
 		if (specification.Flags & EApplicationFlags::EnableImGui)
 		{
-			mImGuiLayer = ImGuiLayer::Create(mMainWindow->GetNative());
-			PushLayer(mImGuiLayer);
+			auto layer = ImGuiLayer::Create(mMainWindow->GetNative());
+			PushLayer(layer);
+			mImGuiLayer = layer.get();
 		}
 
 		if (specification.Flags & EApplicationFlags::EnableAudio)
@@ -63,6 +64,10 @@ namespace BHive
 
 	Application::~Application()
 	{
+		LOG_TRACE("App Destructor Called");
+
+		RenderCommand::Shutdown();
+
 		if (mSpecification.Flags & EApplicationFlags::EnableAudio)
 		{
 			GetSubSystem<AudioContext>().Shutdown();
@@ -74,7 +79,7 @@ namespace BHive
 		}
 
 		ShaderManager::Clear();
-		WindowManager::Get().Shutdown();
+
 		sInstance = nullptr;
 	}
 
@@ -102,6 +107,12 @@ namespace BHive
 	void Application::Close()
 	{
 		mIsRunning = false;
+	}
+
+	void Application::BlockImGuiEvents(bool block)
+	{
+		if (mImGuiLayer)
+			mImGuiLayer->BlockEvents(block);
 	}
 
 	void Application::PushLayer(const Ref<Layer> &layer)
@@ -135,12 +146,12 @@ namespace BHive
 
 	void Application::UpdateLayersAndWindow()
 	{
-
 		Time::Update();
+		auto dt = Time::DeltaTime();
 
 		for (auto &layer : mLayerStack)
 		{
-			layer->OnUpdate(Time::DeltaTime());
+			layer->OnUpdate(dt);
 		}
 
 		mRenderer->BeginFrame();
@@ -166,11 +177,7 @@ namespace BHive
 
 		mRenderer->EndFrame();
 
-		auto &window_manager = WindowManager::Get();
-		for (auto &window : window_manager.GetWindows())
-		{
-			window->Update();
-		}
+		mWindowManager.Update(dt);
 
 		Thread::Update();
 	}

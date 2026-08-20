@@ -126,11 +126,11 @@ namespace BHive
 
 		vk::raii::Instance mInstance = nullptr;
 
-		vk::raii::DebugUtilsMessengerEXT mDebugMessenger = nullptr;
-
 		vk::raii::PhysicalDevice mPhysicalDevice = nullptr;
 
 		vk::raii::Device mDevice = nullptr;
+
+		vk::raii::DebugUtilsMessengerEXT mDebugMessenger = nullptr;
 
 		vk::raii::CommandPool mImmediateCommandPool = nullptr;
 
@@ -140,12 +140,12 @@ namespace BHive
 
 		VkQueueFamilies mQueueFamilies;
 
-		bool mInitialized = false;
-
 		Scope<MemoryAllocator> mMemoryAllocator;
 
 		Scope<GPUResourceManager> mGPUResourceManager;
 
 		DebugNameRegistry mDebugNames;
+
+		bool mInitialized = false;
 	};
 } // namespace BHive

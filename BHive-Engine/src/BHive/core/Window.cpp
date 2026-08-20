@@ -10,7 +10,8 @@ namespace BHive
 
 	void GLFWErrorCallback(int error_code, const char *message)
 	{
-		LOG_ERROR(message);
+		LOG_ERROR("Window::GLFWErrorCallback {}", message);
+		ASSERT(false)
 	}
 
 	Window::Window(const FWindowProperties &properties)
@@ -59,8 +60,6 @@ namespace BHive
 
 	Window::~Window()
 	{
-		mContext.reset();
-
 		sWindowCount--;
 		glfwDestroyWindow(mWindow);
 
@@ -169,22 +168,17 @@ namespace BHive
 		return false;
 	}
 
-	WindowManager &WindowManager::Get()
-	{
-		static WindowManager instance;
-		return instance;
-	}
-
 	Window *WindowManager::Create(const FWindowProperties &properties)
 	{
-		auto window = CreateScope<Window>(properties);
+		auto window = CreateRef<Window>(properties);
 		auto raw = window.get();
 		mWindows.push_back(std::move(window));
 		return raw;
 	}
 
-	void WindowManager::Shutdown()
+	void WindowManager::Update(float dt)
 	{
-		mWindows.clear();
+		for (auto &window : mWindows)
+			window->Update();
 	}
 } // namespace BHive

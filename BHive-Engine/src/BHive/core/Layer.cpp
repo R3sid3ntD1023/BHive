@@ -24,4 +24,14 @@ namespace BHive
 			mLayers.erase(it);
 		}
 	}
-}
+
+	void LayerStack::Clear()
+	{
+		for (auto layer : mLayers)
+		{
+			layer->OnDetach();
+		}
+
+		mLayers.clear();
+	}
+} // namespace BHive

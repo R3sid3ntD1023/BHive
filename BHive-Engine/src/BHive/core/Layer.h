@@ -13,10 +13,10 @@ namespace BHive
 	public:
 		virtual ~Layer() = default;
 
-		virtual void OnAttach(Application&) {};
+		virtual void OnAttach(Application &) {};
 		virtual void OnDetach() {};
 		virtual void OnUpdate(float) {};
-		virtual void OnRender(Renderer&) {};
+		virtual void OnRender(Renderer &) {};
 		virtual void OnEvent(Event &) {};
 		virtual void OnGuiRender() {}
 	};
@@ -31,9 +31,11 @@ namespace BHive
 
 		~LayerStack();
 
-		void Push(const Ref<Layer>& layer);
+		void Push(const Ref<Layer> &layer);
 
 		void Pop(const Ref<Layer> &layer);
+
+		void Clear();
 
 		Layers::iterator begin() { return mLayers.begin(); }
 		Layers::iterator end() { return mLayers.end(); }

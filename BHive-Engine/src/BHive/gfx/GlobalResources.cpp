@@ -45,4 +45,9 @@ namespace BHive
 				return name;
 		return {};
 	}
+
+	void GlobalResources::Clear()
+	{
+		mResources.clear();
+	}
 } // namespace BHive

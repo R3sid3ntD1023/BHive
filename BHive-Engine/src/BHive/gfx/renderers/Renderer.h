@@ -4,7 +4,6 @@
 #include "LineRenderer.h"
 #include "QuadRenderer.h"
 #include "gfx/RendererAPI.h"
-#include "gfx/GlobalResources.h"
 #include "RenderGraphScheduler.h"
 #include "ViewSystem.h"
 
@@ -56,7 +55,7 @@ namespace BHive
 
 		const Statitics &GetStats() const { return mStats; }
 
-		GlobalResources &GetGlobalResources();
+		Ref<Texture> GetWhiteTexture() const;
 
 		void BeginBatching();
 
@@ -92,16 +91,12 @@ namespace BHive
 		inline RendererAPI *GetGraphicsAPI() const { return mAPI.get(); }
 
 	private:
-		void InitAndRegisterResources();
-
 		void SolveResourceBarriers(RenderGraph &graph);
 
 	private:
 		Scope<RendererAPI> mAPI;
 
 		Ref<struct RenderData> mData;
-
-		GlobalResources mGlobalResources;
 
 		RenderGraphScheduler mScheduler;
 

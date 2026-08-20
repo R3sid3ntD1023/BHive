@@ -132,4 +132,55 @@ namespace BHive
 		}
 	}
 
+	void VulkanFramebuffer::BeginRendering(vk::CommandBuffer cmd, const VulkanFramebuffer::RenderInfo &info)
+	{
+		auto range = info.ColorRange;
+
+		std::vector<vk::RenderingAttachmentInfo> color_infos;
+		for (size_t i = 0; i < mColorAttachments.size(); i++)
+		{
+			auto attachment = mColorAttachments[i];
+			auto &spec = mColorAttachmentSpecifications[i];
+			auto view = Cast<IVulkanTextureInterface>(attachment)->ResolveRenderView(range.baseArrayLayer, range.baseMipLevel);
+
+			auto colorInfo
+				= vk::RenderingAttachmentInfo(view, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eColorAttachmentOptimal, info.ColorLoadOp, info.ColorStoreOp, info.ClearColor);
+
+			color_infos.emplace_back(colorInfo);
+		}
+
+		vk::RenderingAttachmentInfo depthInfo{};
+		vk::RenderingAttachmentInfo *depthPtr = nullptr;
+
+		if (mDepthAttachment)
+		{
+			auto &spec = mDepthSpecification;
+			auto view = Cast<IVulkanTextureInterface>(mDepthAttachment)->ResolveRenderView(0, 0);
+
+			depthInfo = vk::RenderingAttachmentInfo(
+				view, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eDepthStencilAttachmentOptimal, info.DepthLoadOp, info.DepthStoreOp, info.ClearDepthValue);
+
+			depthPtr = &depthInfo;
+		}
+
+		glm::uvec2 baseSize = mSpecification.Size;
+		glm::uvec2 mipSize = {std::max(baseSize.x >> range.baseMipLevel, 1u), std::max(baseSize.y >> range.baseMipLevel, 1u)};
+
+		auto rect = vk::Rect2D({0, 0}, {mipSize.x, mipSize.y});
+		auto renderInfo = vk::RenderingInfo({}, rect, 1, 0, color_infos, depthPtr);
+
+		cmd.beginRendering(renderInfo);
+
+		vk::Viewport viewport(0.f, (float)mipSize.y, (float)mipSize.x, -(float)mipSize.y, 0.0f, 1.0f);
+		vk::Rect2D scissor({0, 0}, {mipSize.x, mipSize.y});
+
+		cmd.setViewportWithCount(viewport);
+		cmd.setScissorWithCount(scissor);
+	}
+
+	void VulkanFramebuffer::EndRendering(vk::CommandBuffer cmd)
+	{
+		cmd.endRendering();
+	}
+
 } // namespace BHive

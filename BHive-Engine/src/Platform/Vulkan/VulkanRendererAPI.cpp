@@ -56,9 +56,9 @@ namespace BHive
 
 		FlushDeletionQueue();
 
-		VulkanBackend::Get().Shutdown();
-
 		mDescriptorPoolManager.Shutdown();
+
+		VulkanBackend::Get().Shutdown();
 	}
 
 	vk::Result VulkanRendererAPI::RenderFrame(VulkanSwapChain *swapChain)
@@ -74,9 +74,6 @@ namespace BHive
 		{
 			return vk::Result::eSuccess;
 		}
-
-		// Print all passes -> phases -> cmds to console
-		// finalGraph.DebugPrint();
 
 		return ExecuteFinalGraph(swapChain, finalGraph);
 	}
@@ -107,8 +104,10 @@ namespace BHive
 		{
 			auto &del = mDeletionQueue.front();
 
-			if (frame > del.Frame)
+			if (frame >= del.Frame)
 				del.Fn(frame);
+			else
+				break;
 
 			mDeletionQueue.erase(mDeletionQueue.begin());
 		}
@@ -187,7 +186,7 @@ namespace BHive
 
 			if (phase.Type == EPhaseType::Graphics)
 			{
-				EndRendering(phase, ctx);
+				EndRendering(ctx);
 
 				if (pass.Type == EPassType::Present)
 					TransitionSwapChainToPresent(ctx, swapChain);
@@ -217,34 +216,10 @@ namespace BHive
 
 	void VulkanRendererAPI::BeginSwapChainRendering(const FPassState &state, const FPhase &phase, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
 	{
-		auto &image = swapChain->GetImage(ctx.ImageIndex);
-		auto &depth = swapChain->GetDepthImage();
-		auto extent = swapChain->GetExtent();
-		auto &cmd = ctx.CommandBuffer;
+		vk::ClearColorValue clearColor(state.Color.ClearColor.r, state.Color.ClearColor.g, state.Color.ClearColor.b, state.Color.ClearColor.a);
+		vk::ClearDepthStencilValue depthValue = {1.0f, 0};
 
-		// Color: Undefined/ShaderRead/etc → ColorAttachment
-		image.Transition(cmd, ImageState::ColorAttachment());
-
-		// Depth: Undefined/ShaderRead/etc → DepthStencilAttachment
-		depth.Transition(cmd, ImageState::DepthStencilAttachment());
-
-		auto clearColor = vk::ClearColorValue(state.Color.ClearColor.r, state.Color.ClearColor.g, state.Color.ClearColor.b, state.Color.ClearColor.a);
-
-		vk::RenderingAttachmentInfo attachmentInfo(
-			image.Native().GetView(0, 0, 0), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, clearColor);
-
-		vk::RenderingAttachmentInfo depth_attachment_info(
-			depth.Native().GetView(0, 0, 0), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare,
-			vk::ClearDepthStencilValue(1.0f, 0));
-
-		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, extent), 1, 0, attachmentInfo, &depth_attachment_info);
-		cmd.beginRendering(renderingInfo);
-
-		vk::Viewport viewport(0.f, (float)extent.height, (float)extent.width, -(float)extent.height, 0.0f, 1.0f);
-		vk::Rect2D scissor({0, 0}, extent);
-
-		cmd.setViewportWithCount(viewport);
-		cmd.setScissorWithCount(scissor);
+		swapChain->BeginRendering(ctx.CommandBuffer, ctx.ImageIndex, clearColor, depthValue);
 	}
 
 	void VulkanRendererAPI::BeginOffScreenRendering(const FPassState &state, const FPhase &phase, FVulkanRendererContext &ctx)
@@ -253,73 +228,27 @@ namespace BHive
 		if (fbo)
 		{
 			const auto range = phase.ColorRange;
-			const auto numColorAttachments = fbo->GetNumColorAttachments();
-
-			auto depth = fbo->GetDepthAttachment();
-
 			auto &cmd = ctx.CommandBuffer;
 
-			std::vector<vk::RenderingAttachmentInfo> color_infos;
-			color_infos.reserve(numColorAttachments);
+			VulkanFramebuffer::RenderInfo renderInfo;
+			renderInfo.ClearColor = vk::ClearColorValue(state.Color.ClearColor.r, state.Color.ClearColor.g, state.Color.ClearColor.b, state.Color.ClearColor.a);
+			renderInfo.ClearDepthValue = vk::ClearDepthStencilValue(1.0f, 0);
+			renderInfo.ColorLoadOp = utils::ToLoad(state.Color.LoadOP);
+			renderInfo.ColorStoreOp = utils::ToStore(state.Color.StoreOP);
+			renderInfo.DepthLoadOp = utils::ToLoad(state.Depth.LoadOP);
+			renderInfo.DepthStoreOp = utils::ToStore(state.Depth.StoreOP);
+			renderInfo.ColorRange = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, range.BaseMipLevel, range.LevelCount, range.BaseArrayLayer, range.LayerCount);
 
-			{
-				vk::AttachmentLoadOp loadOp = utils::ToLoad(state.Color.LoadOP);
-				vk::AttachmentStoreOp storeOP = utils::ToStore(state.Color.StoreOP);
-				auto clearColor = vk::ClearColorValue(state.Color.ClearColor.r, state.Color.ClearColor.g, state.Color.ClearColor.b, state.Color.ClearColor.a);
-
-				for (size_t i = 0; i < numColorAttachments; i++)
-				{
-					auto attachment = fbo->GetColorAttachment(i);
-					auto &spec = fbo->GetColorAttachmentSpecs(i);
-					auto view = Cast<IVulkanTextureInterface>(attachment)->ResolveRenderView(range.BaseArrayLayer, range.BaseMipLevel);
-
-					auto info = vk::RenderingAttachmentInfo(view, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eColorAttachmentOptimal, loadOp, storeOP, clearColor);
-
-					color_infos.emplace_back(info);
-				}
-			}
-
-			vk::RenderingAttachmentInfo depthInfo{};
-			vk::RenderingAttachmentInfo *depthPtr = nullptr;
-
-			if (depth)
-			{
-				vk::AttachmentLoadOp loadOp = utils::ToLoad(state.Depth.LoadOP);
-				vk::AttachmentStoreOp storeOP = utils::ToStore(state.Depth.StoreOP);
-
-				auto &spec = fbo->GetDepthAttachmentSpecs();
-				auto view = Cast<IVulkanTextureInterface>(depth)->ResolveRenderView(0, 0);
-
-				depthInfo = vk::RenderingAttachmentInfo(
-					view, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eDepthStencilAttachmentOptimal, loadOp, storeOP, vk::ClearDepthStencilValue(1.0f, 0));
-
-				depthPtr = &depthInfo;
-			}
-
-			auto &spec = fbo->GetSpecification();
-			glm::uvec2 baseSize = spec.Size;
-			glm::uvec2 mipSize = {std::max(baseSize.x >> range.BaseMipLevel, 1u), std::max(baseSize.y >> range.BaseMipLevel, 1u)};
-
-			auto rect = vk::Rect2D({0, 0}, {mipSize.x, mipSize.y});
-			auto info = vk::RenderingInfo({}, rect, 1, 0, color_infos, depthPtr);
-
-			cmd.beginRendering(info);
-
-			vk::Viewport viewport(0.f, (float)mipSize.y, (float)mipSize.x, -(float)mipSize.y, 0.0f, 1.0f);
-			vk::Rect2D scissor({0, 0}, {mipSize.x, mipSize.y});
-
-			cmd.setViewportWithCount(viewport);
-			cmd.setScissorWithCount(scissor);
+			fbo->BeginRendering(ctx.CommandBuffer, renderInfo);
 		}
 	}
 
 	void VulkanRendererAPI::TransitionSwapChainToPresent(FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
 	{
-		auto &image = swapChain->GetImage(ctx.ImageIndex);
-		image.Transition(ctx.CommandBuffer, ImageState::Present());
+		swapChain->EndRendering(ctx.CommandBuffer, ctx.ImageIndex);
 	}
 
-	void VulkanRendererAPI::EndRendering(const FPhase &phase, FVulkanRendererContext &ctx)
+	void VulkanRendererAPI::EndRendering(FVulkanRendererContext &ctx)
 	{
 		ctx.CommandBuffer.endRendering();
 	}

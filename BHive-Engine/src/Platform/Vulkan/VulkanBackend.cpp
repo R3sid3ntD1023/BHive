@@ -133,6 +133,21 @@ namespace BHive
 	void VulkanBackend::Shutdown()
 	{
 		mDevice.waitIdle();
+
+		mCommandBuffers.clear();
+
+		mCommandPool.clear();
+		mImmediateCommandPool.clear();
+
+		mDebugMessenger.clear();
+
+		// mDevice.clear();
+
+		// mInstance.clear();
+
+		// mGPUResourceManager.reset();
+
+		// mMemoryAllocator.reset();
 	}
 
 	std::vector<const char *> VulkanBackend::GetRequiredExtensions()

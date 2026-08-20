@@ -23,7 +23,7 @@ namespace BHive
 	VulkanWindowContext::~VulkanWindowContext()
 	{
 		auto api = RenderCommand::GetGraphicsAPI();
-		if (api->GetCurrentContext() == this)
+		if (!RenderCommand::IsShuttingDown() && api->GetCurrentContext() == this)
 			api->SetCurrentContext(nullptr);
 	}
 

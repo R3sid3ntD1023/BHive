@@ -43,6 +43,21 @@ namespace BHive
 
 		const FFramebufferTexture &GetDepthAttachmentSpecs() const override { return mDepthSpecification; }
 
+		struct RenderInfo
+		{
+			vk::ClearColorValue ClearColor;
+			vk::ClearDepthStencilValue ClearDepthValue;
+			vk::AttachmentLoadOp ColorLoadOp;
+			vk::AttachmentStoreOp ColorStoreOp;
+			vk::AttachmentLoadOp DepthLoadOp;
+			vk::AttachmentStoreOp DepthStoreOp;
+			vk::ImageSubresourceRange ColorRange;
+		};
+
+		void BeginRendering(vk::CommandBuffer cmd, const RenderInfo &info);
+
+		void EndRendering(vk::CommandBuffer cmd);
+
 	private:
 		void Initialize();
 

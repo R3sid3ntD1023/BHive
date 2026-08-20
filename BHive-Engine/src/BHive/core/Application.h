@@ -58,6 +58,8 @@ namespace BHive
 
 		void Close();
 
+		void BlockImGuiEvents(bool block);
+
 		template <typename TLayer>
 		void PushLayer();
 
@@ -65,14 +67,14 @@ namespace BHive
 
 		void PopLayer(const Ref<Layer> &layer);
 
+		ImGuiLayer *GetImGuiLayer() const { return mImGuiLayer; }
+
 		virtual void OnEvent(Event &event);
 
 	public:
 		const FApplicationSpecification &GetSpecification() const { return mSpecification; }
 
 		Window &GetWindow() { return *mMainWindow; }
-
-		ImGuiLayer *GetImGuiLayer() { return mImGuiLayer.get(); }
 
 		static Application &Get() { return *sInstance; }
 
@@ -84,17 +86,19 @@ namespace BHive
 	private:
 		bool mIsRunning = true;
 
-		Window *mMainWindow = nullptr;
+		Scope<Renderer> mRenderer;
 
-		Ref<ImGuiLayer> mImGuiLayer = nullptr;
+		WindowManager mWindowManager;
 
 		LayerStack mLayerStack;
 
+		Window *mMainWindow = nullptr;
+
+		ImGuiLayer *mImGuiLayer = nullptr;
+
 		FApplicationSpecification mSpecification;
 
-		Scope<Renderer> mRenderer;
-
-		static inline Application *sInstance;
+		static inline Application *sInstance = nullptr;
 	};
 
 	BHIVE_API Application *CreateApplication(const FCommandLine &commandline);

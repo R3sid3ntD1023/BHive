@@ -25,12 +25,12 @@ namespace BHive
 
 		MemoryAllocation Allocate(const vk::raii::Image &image, vk::MemoryPropertyFlags props);
 
-		void* Map(MemoryAllocation &allocation);
+		void *Map(MemoryAllocation &allocation);
 
 		void UnMap(const MemoryAllocation &allocation);
 
 		void Free(const MemoryAllocation &allocation);
-		
+
 	private:
 		vk::Device mDevice = nullptr;
 		vk::PhysicalDevice mPhysicalDevice = nullptr;
@@ -45,11 +45,11 @@ namespace BHive
 			void *MappedPtr = nullptr;
 		};
 
-		std::vector<Block> mBlocksPerType[VK_MAX_MEMORY_TYPES];
+		std::deque<Block> mBlocksPerType[VK_MAX_MEMORY_TYPES];
 
 		uint32_t FindMemoryType(uint32_t memoryTypeIndex, vk::MemoryPropertyFlags properties);
 
-		bool ShouldUseDedicatedAllocation(const vk::MemoryRequirements& req) const;
+		bool ShouldUseDedicatedAllocation(const vk::MemoryRequirements &req) const;
 
 		MemoryAllocation AllocateDedicated(const vk::MemoryRequirements &req, uint32_t memoryTypeIndex);
 

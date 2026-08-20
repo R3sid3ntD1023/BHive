@@ -26,20 +26,23 @@ namespace BHive
 		std::vector<uint32_t> mFreeList;
 	};
 
-	template<typename PoolTag>
+	template <typename PoolTag>
 	class TResourceID
 	{
 	public:
 		TResourceID()
 			: mID(GetPool().Aquire())
-		{}
+		{
+		}
+
+		TResourceID(const TResourceID<PoolTag> &other) { mID = other.mID; }
 
 		explicit TResourceID(uint32_t id)
 			: mID(id)
 		{
 		}
 
-		void Release()
+		void Release() const
 		{
 			if (mID == 0)
 				return;
@@ -55,14 +58,13 @@ namespace BHive
 		bool operator!=(const TResourceID &rhs) const { return mID != rhs.mID; }
 
 	private:
-		uint32_t mID = 0;
+		mutable uint32_t mID = 0;
 
 		static IDPool &GetPool();
 
 		friend struct std::hash<TResourceID<PoolTag>>;
 	};
 
-	
 	struct EnginePoolTag
 	{
 	};
@@ -88,17 +90,16 @@ namespace BHive
 	using EngineResourceID = TResourceID<EnginePoolTag>;
 	using ResourceID = TResourceID<GPUPoolTag>;
 
-	
 } // namespace BHive
 
 namespace std
 {
-	template<typename Tag>
+	template <typename Tag>
 	struct hash<BHive::TResourceID<Tag>>
 	{
 		size_t operator()(const BHive::TResourceID<Tag> &id) const { return std::hash<uint32_t>()((uint32_t)id); }
 	};
-}
+} // namespace std
 
 namespace fmt
 {
@@ -114,4 +115,4 @@ namespace fmt
 		}
 	};
 
-}
+} // namespace fmt

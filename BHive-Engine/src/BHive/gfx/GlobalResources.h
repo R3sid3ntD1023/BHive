@@ -36,6 +36,8 @@ namespace BHive
 
 		std::string GuessSemanticFromName(const std::string &semantic) const;
 
+		void Clear();
+
 	private:
 		std::unordered_map<std::string, GlobalResource> mResources;
 	};

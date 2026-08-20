@@ -36,8 +36,18 @@ namespace BHive
 
 		uint32_t GetImageCount() const { return (uint32_t)mImages.size(); }
 
+		void BeginRendering(vk::CommandBuffer cmd, uint32_t imageindex, vk::ClearColorValue colorValue, vk::ClearDepthStencilValue depthValue);
+
+		void EndRendering(vk::CommandBuffer cmd, uint32_t imageIndex);
+
 	private:
-		void CreateSyncObjects(vk::raii::Device &device, uint32_t imageCount);
+		void CreateSwapChain(vk::raii::Device &device);
+
+		void CreateSyncObjects(vk::raii::Device &device);
+
+		void CreateImages(vk::raii::Device &device);
+
+		void CreateDepthImage(vk::raii::Device &device);
 
 		vk::Semaphore GetRenderFinishedSemaphore(uint32_t imageIndex);
 

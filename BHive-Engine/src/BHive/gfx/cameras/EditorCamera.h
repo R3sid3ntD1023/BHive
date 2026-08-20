@@ -26,11 +26,7 @@ namespace BHive
 
 		void Focus(const glm::vec3 &target, const glm::vec3 &bounds = {});
 
-		void SetPosition(const glm::vec3 &position) { mPosition = position; }
-
-		void SetYaw(float yaw) { mYaw = yaw; }
-
-		void SetPitch(float pitch) { mPitch = pitch; }
+		void SetStartState(const glm::vec3 &position, float yaw, float pitch);
 
 		const glm::mat4 GetView() const;
 
@@ -42,6 +38,10 @@ namespace BHive
 
 		void Resize(uint32_t w, uint32_t h) override;
 
+		void SetRotationSensitivity(float sensitivity) { mRotationSensitivity = sensitivity; }
+
+		void SetMovementSensitivity(float sensitivity) { mMovementSensitivity = sensitivity; }
+
 		glm::vec3 GetForward() const;
 
 		glm::vec3 GetRight() const;
@@ -49,9 +49,9 @@ namespace BHive
 		glm::vec3 GetUp() const;
 
 	public:
-		float RotationSpeed() const { return 0.1f; };
+		float RotationSpeed() const { return mRotationSensitivity; };
 
-		float MovementSpeed() const { return 1.0f; };
+		float MovementSpeed() const { return mMovementSensitivity; };
 
 	private:
 		float mYaw = -90.f;
@@ -65,5 +65,9 @@ namespace BHive
 		glm::vec3 mTarget = glm::vec3(0.0f);
 
 		glm::vec2 mViewportSize{0, 0};
+
+		float mMovementSensitivity = .1f;
+
+		float mRotationSensitivity = .1f;
 	};
 } // namespace BHive

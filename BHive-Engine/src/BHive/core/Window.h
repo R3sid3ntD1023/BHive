@@ -92,18 +92,14 @@ namespace BHive
 		friend void OnWindowFocusCallback(GLFWwindow *window, int focused);
 	};
 
-	class WindowManager
+	class BHIVE_API WindowManager
 	{
 	public:
-		BHIVE_API Window *Create(const FWindowProperties &properties = {});
+		Window *Create(const FWindowProperties &properties = {});
 
-		BHIVE_API const std::vector<Scope<Window>> &GetWindows() const { return mWindows; }
-
-		BHIVE_API void Shutdown();
-
-		BHIVE_API static WindowManager &Get();
+		void Update(float dt);
 
 	private:
-		std::vector<Scope<Window>> mWindows;
+		std::vector<Ref<Window>> mWindows;
 	};
 } // namespace BHive

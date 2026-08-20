@@ -23,8 +23,7 @@ namespace BHive
 	class BHIVE_API ImageDebugger
 	{
 	public:
-
-		static ImageDebugger& Get()
+		static ImageDebugger &Get()
 		{
 			static ImageDebugger sInstance;
 			return sInstance;
@@ -38,8 +37,9 @@ namespace BHive
 
 		void OnGuiRender();
 
-	private:
+		void Shutdown();
 
+	private:
 		ImageDebugger() = default;
 
 		std::unordered_map<std::string, size_t> mTextures;
@@ -56,4 +56,4 @@ namespace BHive
 
 		bool mHasRendered = false;
 	};
-}
+} // namespace BHive

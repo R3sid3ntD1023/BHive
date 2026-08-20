@@ -77,10 +77,7 @@ namespace BHive
 		mViewportSize = window.GetSize();
 
 		mCamera = EditorCamera(75.f, aspect, 0.1f, 1000.f);
-		mCamera.SetPosition({5, 5, 5});
-		mCamera.Focus({0, 0, 0});
-
-		auto &globalsResources = Renderer::Get().GetGlobalResources();
+		mCamera.SetStartState({5, 5, 5}, 0, -45.f);
 
 		auto &dbg = ImageDebugger::Get();
 		dbg.Initialize({512, 512});
@@ -116,6 +113,7 @@ namespace BHive
 
 	void RuntimeLayer::OnDetach()
 	{
+		ImageDebugger::Get().Shutdown();
 	}
 
 	void RuntimeLayer::OnUpdate(float time)
@@ -214,7 +212,7 @@ namespace BHive
 		}
 
 		mViewportActive = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
-		Application::Get().GetImGuiLayer()->BlockEvents(!mViewportActive);
+		Application::Get().BlockImGuiEvents(!mViewportActive);
 
 		ImGui::End();
 

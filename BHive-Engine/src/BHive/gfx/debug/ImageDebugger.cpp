@@ -29,6 +29,13 @@ namespace BHive
 		mMaterial = CreateRef<Material>(ShaderManager::Get("DebugTextureViewer.glsl"));
 	}
 
+	void ImageDebugger::Shutdown()
+	{
+		mFB.reset();
+		mMaterial.reset();
+		mTextureEntries.clear();
+	}
+
 	void ImageDebugger::RegisterTexture(const std::string &name, const Ref<Texture> &tex)
 	{
 

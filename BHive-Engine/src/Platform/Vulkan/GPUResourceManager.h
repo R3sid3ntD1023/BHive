@@ -5,29 +5,32 @@
 
 namespace BHive
 {
-	template <typename T>
-	struct Resource
-	{
-		T Handle = VK_NULL_HANDLE;
-	};
-
 	struct StorageBase
 	{
 		virtual ~StorageBase() = default;
 
 		virtual void Remove(ResourceID handle) = 0;
+
+		virtual bool Contains(ResourceID handle) const = 0;
+
+		virtual void Clear() = 0;
+
+		virtual size_t Size() const = 0;
 	};
 
 	template <typename T>
 	struct Storage : public StorageBase
 	{
-		using TContainer = std::unordered_map<ResourceID, Resource<T>>;
+		using TContainer = std::unordered_map<ResourceID, T>;
+
+		~Storage() { Clear(); }
 
 		void AddExternal(ResourceID handle, T &&resource)
 		{
-			if (!mResources.contains(handle))
+			if (!Contains(handle))
 			{
-				mResources[handle] = Resource<T>{.Handle = std::move(resource)};
+				mResources[handle] = std::move(resource);
+				LOG_WARN("Added External resource {}", handle);
 				return;
 			}
 
@@ -36,38 +39,54 @@ namespace BHive
 
 		void Remove(ResourceID handle) override
 		{
-			if (mResources.contains(handle))
+			if (Contains(handle))
 			{
 				mResources.erase(handle);
+				LOG_WARN("Removed resource {}", handle);
 				return;
 			}
 
 			LOG_WARN("Handle does not exists! -> {}", handle);
 		}
 
-		T &GetOrCreate(ResourceID handle) { return mResources.try_emplace(handle).first->second.Handle; }
+		bool Contains(ResourceID handle) const override { return mResources.contains(handle); }
+
+		T &Create(ResourceID handle)
+		{
+			ASSERT(!Contains(handle), "handle already exists {}", handle)
+			mResources.emplace(handle, VK_NULL_HANDLE);
+			LOG_WARN("Added resource {}", handle);
+			return mResources.at(handle);
+		}
 
 		T &Get(ResourceID handle)
 		{
-			ASSERT(mResources.contains(handle), "Invalid resource id -> {}", handle)
-			return mResources.at(handle).Handle;
+			ASSERT(Contains(handle), "Invalid resource id -> {}", handle)
+			return mResources.at(handle);
 		}
 
 		const T &Get(ResourceID handle) const
 		{
-			ASSERT(mResources.contains(handle), "Invalid resource id -> {}", handle)
-			return mResources.at(handle).Handle;
+			ASSERT(Contains(handle), "Invalid resource id -> {}", handle)
+			return mResources.at(handle);
 		}
 
 		TContainer &GetContainer() { return mResources; }
 
+		size_t Size() const override { return mResources.size(); }
+
+		void Clear() override { mResources.clear(); }
+
 	private:
-		TContainer mResources;
+		TContainer mResources{};
 	};
 
 	class GPUResourceManager
 	{
 	public:
+		~GPUResourceManager();
+
+		void Shutdown();
 
 		ResourceID CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name = "");
 
@@ -79,7 +98,7 @@ namespace BHive
 
 		ResourceID CreateSampler(const vk::SamplerCreateInfo &info, const std::string &name = "");
 
-		void* MapMemory(ResourceID buffer, vk::DeviceSize offset, vk::DeviceSize size);
+		void *MapMemory(ResourceID buffer, vk::DeviceSize offset, vk::DeviceSize size);
 
 		void UnmapMemory(ResourceID buffer);
 
@@ -93,7 +112,7 @@ namespace BHive
 
 		void DestroyBuffer(AllocatedBuffer buffer);
 
-		void DestroyImage(GPUImage& image);
+		void DestroyImage(GPUImage &image);
 		//-------------------getters------------------------------
 
 		vk::Image GetImage(ResourceID handle);
@@ -104,20 +123,18 @@ namespace BHive
 
 		vk::Buffer GetBuffer(ResourceID handle);
 
-		template<typename T>
-		Storage<T>& GetStorage()
+		template <typename T>
+		Storage<T> &GetStorage()
 		{
-			size_t id = typeid(T).hash_code();
-			if (mStorages.contains(id))
-				return static_cast<Storage<T> &>(*mStorages.at(id).get());
+			auto id = typeid(T).name();
+			if (!mStorages.contains(id))
+				mStorages.emplace(id, CreateRef<Storage<T>>());
 
-			mStorages.emplace(id, std::move(CreateScope<Storage<T>>()));
-			return static_cast<Storage<T> &>(*mStorages.at(id).get());
+			return *std::dynamic_pointer_cast<Storage<T>>(mStorages.at(id));
 		}
 
-
 	private:
-		std::unordered_map<size_t, Scope<StorageBase>> mStorages;
+		std::unordered_map<const char *, Ref<StorageBase>> mStorages;
 		std::unordered_set<ResourceID> mExternalImages;
 	};
 } // namespace BHive

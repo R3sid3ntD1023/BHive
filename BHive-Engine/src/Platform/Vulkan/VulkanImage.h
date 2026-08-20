@@ -18,7 +18,6 @@ namespace BHive
 
 		// Engine metadata
 		EViewTopology ViewTopology{};
-		ETextureRole Role;
 		std::string DebugName{};
 		uint32_t BytesPerPixel = 0;
 	};
@@ -26,8 +25,6 @@ namespace BHive
 	class VulkanImage : public INativeObject
 	{
 	public:
-		VulkanImage() = default;
-
 		void Initialize(const ImageCreateInfo &info);
 
 		// ImageCI unused
@@ -39,13 +36,13 @@ namespace BHive
 
 		void GenerateMipMaps(vk::CommandBuffer cmd);
 
-		void Destroy();
-
 		const GPUImage &Native() const { return mImage; }
 
 		ImageState GetState(uint32_t mip, uint32_t layer) const;
 
 		void DebugPrintState();
+
+		operator bool() const { return mImage; }
 
 	private:
 		ImageState InitialStateFromUsage(vk::ImageUsageFlags usage, vk::Format format);

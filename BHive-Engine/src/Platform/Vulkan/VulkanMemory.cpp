@@ -4,7 +4,12 @@
 
 namespace BHive
 {
-	
+	GPUImage::~GPUImage()
+	{
+		if (IsValid())
+			VulkanBackend::GetGPUResourceManager().DestroyImage(*this);
+	}
+
 	const vk::Image GPUImage::GetImage() const
 	{
 
@@ -13,9 +18,9 @@ namespace BHive
 
 	const vk::Sampler GPUImage::GetSampler() const
 	{
-		if (!Sampler.has_value())
+		if (!Sampler)
 			return nullptr;
-		return VulkanBackend::GetGPUResourceManager().GetSampler(Sampler.value());
+		return VulkanBackend::GetGPUResourceManager().GetSampler(Sampler);
 	}
 
 	vk::ImageView GPUImage::GetView(uint32_t layer, uint32_t face, uint32_t mip) const
@@ -32,7 +37,7 @@ namespace BHive
 			return rm.GetImageView(Views.CubeMips[0][mip]);
 		}
 
-		//2D array or 3D: Mips[layer][mip]
+		// 2D array or 3D: Mips[layer][mip]
 		if (!Views.Mips.empty())
 		{
 			return rm.GetImageView(Views.Mips[layer][mip]);
@@ -62,7 +67,7 @@ namespace BHive
 		}
 	}
 
-	ImageState& ImageStateTracker::Get(uint32_t layer, uint32_t mip)
+	ImageState &ImageStateTracker::Get(uint32_t layer, uint32_t mip)
 	{
 		return MipStates[layer][mip];
 	}
@@ -71,5 +76,4 @@ namespace BHive
 	{
 		return MipStates[layer][mip];
 	}
-} 
-
+} // namespace BHive

@@ -9,18 +9,17 @@ namespace BHive
 {
 	struct ImageViews
 	{
-		ResourceID Default; //full view : all layers, all ,mips
+		ResourceID Default; // full view : all layers, all ,mips
 
 		//[layer][mip]
 		std::vector<std::vector<ResourceID>> Mips;
 
 		//[layer][face][mip] for cube/cubearrays
-		std::vector < std::vector < std::vector<ResourceID>>> Faces;
+		std::vector<std::vector<std::vector<ResourceID>>> Faces;
 
 		//[layer][mip] cube view type (optional)
 		std::vector<std::vector<ResourceID>> CubeMips;
 	};
-
 
 	struct ImageStateTracker
 	{
@@ -28,18 +27,20 @@ namespace BHive
 
 		void Initialize(uint32_t layers, uint32_t mips, const ImageState &initial);
 
-		ImageState& Get(uint32_t layer, uint32_t mip);
+		ImageState &Get(uint32_t layer, uint32_t mip);
 
 		const ImageState &Get(uint32_t layer, uint32_t mip) const;
 	};
 
 	struct GPUImage
 	{
+		~GPUImage();
+
 		ResourceID Image{0};
 
 		ImageViews Views;
 
-		std::optional<ResourceID> Sampler;
+		ResourceID Sampler{0};
 
 		vk::ImageUsageFlags Usage;
 
@@ -64,7 +65,11 @@ namespace BHive
 		vk::ImageView GetLayerMipView(uint32_t layer, uint32_t mip) const { return GetView(layer, 0, mip); }
 
 		vk::ImageView GetCubeFaceView(uint32_t face, uint32_t mip) const { return GetView(0, face, mip); }
-	};	
+
+		bool IsValid() const { return Image; }
+
+		operator bool() const { return IsValid(); }
+	};
 
 	struct AllocatedBuffer
 	{

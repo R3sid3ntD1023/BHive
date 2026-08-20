@@ -33,7 +33,7 @@ namespace BHive
 		return AllocateFromBlock(req, memoryTypeIndex);
 	}
 
-	void* MemoryAllocator::Map(MemoryAllocation &allocation)
+	void *MemoryAllocator::Map(MemoryAllocation &allocation)
 	{
 		if (allocation.IsDedicated)
 		{
@@ -43,10 +43,10 @@ namespace BHive
 				allocation.IsMapped = true;
 				allocation.MappedPtr = ptr;
 			}
-			
+
 			return allocation.MappedPtr;
 		}
-		
+
 		Block *block = static_cast<Block *>(allocation.BlockUserData);
 		if (!block)
 			return nullptr;
@@ -65,7 +65,6 @@ namespace BHive
 		if (allocation.IsDedicated && allocation.IsMapped)
 		{
 			mDevice.unmapMemory(allocation.Memory);
-		
 		}
 	}
 
@@ -80,7 +79,7 @@ namespace BHive
 		}
 		else
 		{
-			Block *block = static_cast<Block *>(allocation.BlockUserData);
+			Block *block = (Block *)(allocation.BlockUserData);
 			if (!block)
 				return;
 
@@ -116,7 +115,7 @@ namespace BHive
 
 	bool MemoryAllocator::ShouldUseDedicatedAllocation(const vk::MemoryRequirements &req) const
 	{
-		return req.size >= (512 * 1024);//512 KB
+		return req.size >= (512 * 1024); // 512 KB
 	}
 
 	MemoryAllocation MemoryAllocator::AllocateDedicated(const vk::MemoryRequirements &req, uint32_t memoryTypeIndex)
@@ -138,7 +137,7 @@ namespace BHive
 		auto &blocks = mBlocksPerType[memoryTypeIndex];
 
 		// try existing blocks
-		for (auto& block : blocks)
+		for (auto &block : blocks)
 		{
 			auto alloc = AllocateFromBlock(block, req, memoryTypeIndex);
 			if (alloc.Size != 0)
@@ -146,7 +145,7 @@ namespace BHive
 		}
 
 		// create new block
-		vk::DeviceSize blockSize = ChooseBlockSize(req.size); 
+		vk::DeviceSize blockSize = ChooseBlockSize(req.size);
 		Block &newBlock = CreateBlock(memoryTypeIndex, blockSize);
 		return AllocateFromBlock(newBlock, req, memoryTypeIndex);
 	}
@@ -206,8 +205,7 @@ namespace BHive
 			return;
 
 		auto freeList = block->FreeList;
-		std::sort(block->FreeList.begin(), block->FreeList.end(), [](auto& a, auto&b){ return a.first < b.first;
-			});
+		std::sort(block->FreeList.begin(), block->FreeList.end(), [](auto &a, auto &b) { return a.first < b.first; });
 
 		FFreeList merged;
 		merged.reserve(block->FreeList.size());
@@ -218,10 +216,8 @@ namespace BHive
 			{
 				merged.emplace_back(offset, size);
 				continue;
-
 			}
 
-			
 			auto &[lastOffset, lastSize] = merged.back();
 			if (lastOffset + lastSize == offset)
 			{
@@ -238,7 +234,7 @@ namespace BHive
 
 	vk::DeviceSize MemoryAllocator::ChooseBlockSize(vk::DeviceSize req)
 	{
-		//tiny -> 256 Kb block
+		// tiny -> 256 Kb block
 		if (req <= 64 * 1024)
 			return 256 * 1024;
 
@@ -254,7 +250,7 @@ namespace BHive
 		if (req <= 2 * 1024 * 1024)
 			return 2 * 1024 * 1024;
 
-		//huge -> 4 MB block
+		// huge -> 4 MB block
 		return 4 * 1024 * 1024;
 	}
 } // namespace BHive

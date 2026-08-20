@@ -25,7 +25,7 @@ namespace BHive
 
 	void EditorCamera::ResetView()
 	{
-		mPosition = {0.f, 10.f, 10.f};
+		mPosition = {0, 10.f, 10.f};
 		mTarget = {0.f, 0.f, 0.f};
 
 		mYaw = -90.f;
@@ -48,6 +48,16 @@ namespace BHive
 		mDistanceToTarget = std::max(radius * 2.0f, 1.0f);
 
 		ResetOrientation();
+	}
+
+	void EditorCamera::SetStartState(const glm::vec3 &position, float yaw, float pitch)
+	{
+		mPosition = position;
+		mYaw = yaw;
+		mPitch = glm::clamp(pitch, -89.f, 89.f);
+
+		auto forward = GetForward();
+		mTarget = position + forward * mDistanceToTarget;
 	}
 
 	const glm::mat4 EditorCamera::GetView() const

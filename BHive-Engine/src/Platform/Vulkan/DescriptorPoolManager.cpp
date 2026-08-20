@@ -26,5 +26,6 @@ namespace BHive
 
 	void DescriptorPoolManager::Shutdown()
 	{
+		mPool.clear();
 	}
 } // namespace BHive

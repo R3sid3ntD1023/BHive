@@ -31,17 +31,15 @@ namespace BHive
 		mViewportSize = window.GetSize();
 
 		mCamera = EditorCamera(75.f, aspect, 0.1f, 1000.f);
-		mCamera.SetPosition({5, 5, 5});
-		mCamera.Focus({0, 0, 0});
-		mCamera.SetPitch(-45.f);
+		mCamera.SetStartState({0.f, 5.f, 5.f}, -90.0f, -45.0f);
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Init(mViewportSize);
 		mSceneRenderer->SetEnvironmentTexture(TextureLoader::Import(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr"));
 
-		mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
-		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
-		mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
+		// mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
+		// mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
+		// mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
 
 		/*FMeshImportData import_data{};
 		FMeshImportOptions import_options{.ImportMaterials = false};
@@ -156,7 +154,7 @@ namespace BHive
 		}
 
 		mViewportActive = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
-		Application::Get().GetImGuiLayer()->BlockEvents(!mViewportActive);
+		Application::Get().BlockImGuiEvents(!mViewportActive);
 
 		ImGui::End();
 

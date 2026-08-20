@@ -80,7 +80,7 @@ namespace BHive
 
 		void TransitionSwapChainToPresent(FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
 
-		void EndRendering(const FPhase &phase, FVulkanRendererContext &ctx);
+		void EndRendering(FVulkanRendererContext &ctx);
 
 		void CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext &ctx);
 

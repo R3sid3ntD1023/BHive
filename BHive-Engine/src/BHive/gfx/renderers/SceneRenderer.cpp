@@ -238,8 +238,6 @@ namespace BHive
 		// }
 
 		auto &renderer = Renderer::Get();
-		auto &globalsResources = renderer.GetGlobalResources();
-
 		FPassState state{};
 		state.Color = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store, {0.1f, 0.1f, 0.1f, 1.0f}};
 		state.Depth = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store};

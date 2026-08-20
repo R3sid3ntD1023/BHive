@@ -6,14 +6,15 @@
 #include "gfx/RendererAPI.h"
 
 namespace BHive
-{	
+{
 	class RendererAPI;
 
 	class BHIVE_API RenderCommand
 	{
 	public:
-
 		static void Init(RendererAPI::EAPI apiType);
+
+		static void Shutdown();
 
 		static void QueueDeletion(FQeueuDeletionFunc &&fn);
 
@@ -21,7 +22,9 @@ namespace BHive
 
 		static RendererAPI *GetGraphicsAPI();
 
-		template<typename T>
+		static bool IsShuttingDown() { return sIsShuttingDown; }
+
+		template <typename T>
 		static T *GetGraphicsAPI()
 		{
 			return Cast<T>(GetGraphicsAPI());
@@ -29,5 +32,7 @@ namespace BHive
 
 	private:
 		static inline RendererAPI::EAPI sAPI;
+
+		static inline bool sIsShuttingDown = false;
 	};
 } // namespace BHive
