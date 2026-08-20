@@ -37,9 +37,9 @@ namespace BHive
 		mSceneRenderer->Init(mViewportSize);
 		mSceneRenderer->SetEnvironmentTexture(TextureLoader::Import(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr"));
 
-		// mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
-		// mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
-		// mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
+		mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
+		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
+		mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
 
 		/*FMeshImportData import_data{};
 		FMeshImportOptions import_options{.ImportMaterials = false};

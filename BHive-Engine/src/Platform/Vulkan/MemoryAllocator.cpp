@@ -92,8 +92,11 @@ namespace BHive
 				if (block->MappedPtr)
 				{
 					mDevice.unmapMemory(block->Memory);
+
 					block->MappedPtr = nullptr;
 				}
+
+				mDevice.freeMemory(block->Memory);
 			}
 		}
 	}
@@ -204,11 +207,11 @@ namespace BHive
 		if (!block)
 			return;
 
-		auto freeList = block->FreeList;
-		std::sort(block->FreeList.begin(), block->FreeList.end(), [](auto &a, auto &b) { return a.first < b.first; });
+		auto &freeList = block->FreeList;
+		std::sort(freeList.begin(), freeList.end(), [](auto &a, auto &b) { return a.first < b.first; });
 
 		FFreeList merged;
-		merged.reserve(block->FreeList.size());
+		merged.reserve(freeList.size());
 
 		for (auto &[offset, size] : freeList)
 		{

@@ -8,8 +8,6 @@ namespace BHive
 {
 	GPUResourceManager::~GPUResourceManager()
 	{
-		LOG_TRACE("GPU Resource Mangager Destrcutor");
-
 		for (auto &[t, s] : mStorages)
 		{
 			auto size = s->Size();
@@ -247,6 +245,7 @@ namespace BHive
 				{
 					auto &imgStorage = GetStorage<vk::raii::Image>();
 					auto &alloc = allocStorage.Get(handle);
+
 					VulkanBackend::GetMemoryAllocator().Free(alloc);
 
 					allocStorage.Remove(handle);

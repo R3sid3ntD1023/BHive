@@ -48,6 +48,9 @@ namespace BHive
 		if (RenderCommand::IsShuttingDown())
 			return;
 
+		if (!mTextureSets.contains(id))
+			return;
+
 		auto set = mTextureSets.at(id);
 		ImGui_ImplVulkan_RemoveTexture(set);
 		LOG_TRACE("VulkanImGuiTexture: Removed descriptor set for id {}", id);
