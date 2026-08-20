@@ -3,21 +3,17 @@
 #include "gfx/WindowContext.h"
 #include "core/events/Event.h"
 #include "core/events/ApplicationEvents.h"
+#include "VulkanSwapChain.h"
 
 struct GLFWwindow;
 
 namespace BHive
 {
-	class VulkanSwapChain;
-	class VulkanDevice;
-	class VulkanPipeline;
 
 	class BHIVE_API VulkanWindowContext : public WindowContext
 	{
 	public:
 		VulkanWindowContext(Window *window);
-
-		~VulkanWindowContext();
 
 		virtual void Init();
 
@@ -30,7 +26,7 @@ namespace BHive
 
 		bool OnWindowResized(WindowResizeEvent &e);
 
-		void CreateSwapChain(GLFWwindow *window);
+		void TryCreateSwapChain(GLFWwindow *window);
 
 	private:
 		GLFWwindow *mWindowHandle = nullptr;

@@ -26,19 +26,19 @@ namespace BHive
 	class BHIVE_API VulkanBackend
 	{
 	public:
-		void Init(GLFWwindow *window);
+		void Init();
 
 		void Shutdown();
 
 		std::vector<const char *> GetRequiredExtensions();
 
-		uint32_t SelectQueueIndex(vk::QueueFlags queue_type, const vk::SurfaceKHR &surface);
+		uint32_t SelectQueueIndex(vk::QueueFlags queue_type, vk::SurfaceKHR surface);
 
 		uint32_t SelectQueueIndex(vk::QueueFlags queue_type);
 
-		void CreateLogicalDevice(const vk::SurfaceKHR &surface);
+		void CreateLogicalDevice();
 
-		void EnsurePresentSupportForSurface(const vk::SurfaceKHR &surface);
+		bool EnsurePresentSupportForSurface(vk::SurfaceKHR surface);
 
 		void CreatePerImageSync(uint32_t imgCount);
 
@@ -64,6 +64,8 @@ namespace BHive
 			static VulkanBackend sBackend;
 			return sBackend;
 		}
+
+		static vk::DescriptorPool GetDescriptorPool() { return Get().mDescriptorPool; }
 
 		static vk::raii::Device &GetLogicalDevice() { return Get().mDevice; }
 
@@ -103,7 +105,7 @@ namespace BHive
 		static DebugNameRegistry &GetDebugNameRegistry() { return Get().mDebugNames; }
 
 	private:
-		void CreateIntance();
+		void CreateInstance();
 
 		void CreateDebugMessenger();
 
@@ -113,13 +115,13 @@ namespace BHive
 
 		void CreateImmediateCommandPool();
 
+		void CreateDescriptorPool();
+
 		void CreateMemoryAllocator();
 
 		void CreateGPUResourceManager();
 
 		void CreateDeviceInternal(uint32_t graphicsIndex, uint32_t presentIndex);
-
-		void RecreateFrameResources();
 
 	private:
 		vk::raii::Context mContext;
@@ -137,6 +139,8 @@ namespace BHive
 		vk::raii::CommandPool mCommandPool = nullptr;
 
 		vk::raii::CommandBuffers mCommandBuffers = nullptr;
+
+		vk::raii::DescriptorPool mDescriptorPool = VK_NULL_HANDLE;
 
 		VkQueueFamilies mQueueFamilies;
 

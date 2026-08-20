@@ -5,7 +5,6 @@
 #include "gfx/shader/ShaderReflection.h"
 #include "gfx/NativeHandle.h"
 #include "gfx/IBindingGroup.h"
-#include "DescriptorPoolManager.h"
 
 namespace BHive
 {

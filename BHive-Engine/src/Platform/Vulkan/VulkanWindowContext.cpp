@@ -20,25 +20,16 @@ namespace BHive
 		WindowInput::WindowEvent.Add(this, &VulkanWindowContext::OnEvent);
 	}
 
-	VulkanWindowContext::~VulkanWindowContext()
-	{
-		auto api = RenderCommand::GetGraphicsAPI();
-		if (!RenderCommand::IsShuttingDown() && api->GetCurrentContext() == this)
-			api->SetCurrentContext(nullptr);
-	}
-
 	void VulkanWindowContext::Init()
 	{
-		VulkanBackend::Get().Init(mWindowHandle);
-		CreateSwapChain(mWindowHandle);
+		TryCreateSwapChain(mWindowHandle);
 	}
 
 	void VulkanWindowContext::SwapBuffers()
 	{
 		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
-		api->SetCurrentContext(this);
 
-		if (mIsMinimized)
+		if (mIsMinimized || !mSwapChain)
 			return;
 
 		if (mHasPendingResize)
@@ -74,7 +65,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanWindowContext::CreateSwapChain(GLFWwindow *window)
+	void VulkanWindowContext::TryCreateSwapChain(GLFWwindow *window)
 	{
 		int w = 0, h = 0;
 		glfwGetFramebufferSize(window, &w, &h);

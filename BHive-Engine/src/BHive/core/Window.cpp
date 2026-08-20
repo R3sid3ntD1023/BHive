@@ -17,11 +17,6 @@ namespace BHive
 	Window::Window(const FWindowProperties &properties)
 		: mState({properties.Title, properties.Size, {}, properties.VSync})
 	{
-		if (sWindowCount == 0)
-		{
-			glfwInit();
-			glfwSetErrorCallback(GLFWErrorCallback);
-		}
 
 		GLFWwindow *shared_context = nullptr;
 
@@ -142,6 +137,15 @@ namespace BHive
 	void Window::PollEvents()
 	{
 		glfwPollEvents();
+	}
+
+	void Window::Init()
+	{
+		if (sWindowCount == 0)
+		{
+			glfwInit();
+			glfwSetErrorCallback(GLFWErrorCallback);
+		}
 	}
 
 	void Window::OnEvent(Event &e)

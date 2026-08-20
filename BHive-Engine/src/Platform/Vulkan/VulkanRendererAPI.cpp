@@ -40,14 +40,9 @@ namespace BHive
 		}
 	} // namespace utils
 
-	VulkanRendererAPI::VulkanRendererAPI()
-		: mDevice(VulkanBackend::GetLogicalDevice())
-	{
-	}
-
 	void VulkanRendererAPI::Init()
 	{
-		mDescriptorPoolManager.Init(mDevice);
+		VulkanBackend::Get().Init();
 	}
 
 	void VulkanRendererAPI::Shutdown()
@@ -55,8 +50,6 @@ namespace BHive
 		LOG_TRACE("RendererAPI Shutdown Called")
 
 		FlushDeletionQueue();
-
-		mDescriptorPoolManager.Shutdown();
 
 		VulkanBackend::Get().Shutdown();
 	}
@@ -272,11 +265,6 @@ namespace BHive
 	{
 		FVulkanRendererContext ctx(cmd, frame, imageIndex, viewIndex);
 		return ctx;
-	}
-
-	void VulkanRendererAPI::SetCurrentContext(WindowContext *ctx)
-	{
-		mCurrentContext = ctx;
 	}
 
 } // namespace BHive

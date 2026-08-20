@@ -3,7 +3,6 @@
 #include "VulkanCore.h"
 #include "gfx/RendererAPI.h"
 #include "gfx/WindowContext.h"
-#include "DescriptorPoolManager.h"
 #include "ImageState.h"
 
 namespace BHive
@@ -43,7 +42,7 @@ namespace BHive
 	class BHIVE_API VulkanRendererAPI : public RendererAPI
 	{
 	public:
-		VulkanRendererAPI();
+		VulkanRendererAPI() = default;
 
 		void Init() override;
 
@@ -53,13 +52,7 @@ namespace BHive
 
 		void SubmitGraph(const RenderGraph &graph) override;
 
-		DescriptorPoolManager &GetDescriptorPoolManager() { return mDescriptorPoolManager; }
-
 		void QueueDeletion(FQeueuDeletionFunc &&fn) override;
-
-		void SetCurrentContext(WindowContext *ctx) override;
-
-		WindowContext *GetCurrentContext() const override { return mCurrentContext; }
 
 		void ResetFrameIndex();
 
@@ -89,10 +82,6 @@ namespace BHive
 		FVulkanRendererContext BuildContext(vk::raii::CommandBuffer &cmd, uint32_t frame, uint32_t imageIndex, uint32_t viewIndex);
 
 	private:
-		vk::raii::Device &mDevice;
-
-		DescriptorPoolManager mDescriptorPoolManager;
-
 		std::vector<RenderGraph> mSubmittedGraphs;
 
 		std::vector<PendingDeletion> mDeletionQueue;
@@ -100,8 +89,6 @@ namespace BHive
 		uint32_t mCompletedFrame = 0;
 
 		uint32_t mCurrentFrame = 0;
-
-		WindowContext *mCurrentContext = nullptr;
 
 		friend class VulkanFramebuffer;
 	};

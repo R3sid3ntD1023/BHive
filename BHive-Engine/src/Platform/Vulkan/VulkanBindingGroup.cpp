@@ -172,9 +172,7 @@ namespace BHive
 
 	void VulkanBindingGroup::CreateDescriptorSet(vk::DescriptorSetLayout layout)
 	{
-		auto api = RenderCommand::GetGraphicsAPI<VulkanRendererAPI>();
-		auto &pools = api->GetDescriptorPoolManager();
-		auto pool = pools.GetPool();
+		auto pool = VulkanBackend::GetDescriptorPool();
 		vk::Device device = VulkanBackend::GetLogicalDevice();
 
 		vk::DescriptorSetAllocateInfo allocInfo(pool, {layout});

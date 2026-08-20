@@ -31,16 +31,15 @@ namespace BHive
 		}
 
 		auto name = resolved_path.stem().string();
-		if (Contains(name))
+		if (!Contains(name))
 		{
-			return mShaders.at(name);
+			// creates shader program (compiles + reflects internally)
+			auto program = Shader::Create(resolved_path);
+			if (program)
+				mShaders[name] = program;
 		}
 
-		// creates shader program (compiles + reflects internally)
-		auto program = Shader::Create(resolved_path);
-		mShaders[name] = program;
-
-		return program;
+		return mShaders.at(name);
 	}
 
 	Ref<ShaderProgram> ShaderManager::Get(const std::string &name)
@@ -60,7 +59,7 @@ namespace BHive
 			}
 		}
 
-		return {};
+		return nullptr;
 	}
 
 	bool ShaderManager::Contains(const std::string &name)

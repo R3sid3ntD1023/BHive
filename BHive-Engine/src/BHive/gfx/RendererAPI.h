@@ -8,7 +8,6 @@ namespace BHive
 {
 	class WindowContext;
 
-
 	struct MultiDrawIndirectCommand
 	{
 		uint32_t Count;
@@ -40,10 +39,6 @@ namespace BHive
 		virtual void SubmitGraph(const RenderGraph &graph) = 0;
 
 		virtual void QueueDeletion(FQeueuDeletionFunc &&fn) = 0;
-
-		virtual void SetCurrentContext(WindowContext *ctx) = 0;
-
-		virtual WindowContext *GetCurrentContext() const = 0;
 
 		static Scope<RendererAPI> Create();
 	};

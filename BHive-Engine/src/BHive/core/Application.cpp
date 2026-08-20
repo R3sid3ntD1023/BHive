@@ -29,6 +29,11 @@ namespace BHive
 
 		RenderCommand::Init(RendererAPI::Vulkan);
 
+		Window::Init();
+
+		auto api = RendererAPI::Create();
+		mRenderer = CreateScope<Renderer>(std::move(api));
+
 		FWindowProperties props{};
 		props.Title = specification.Title;
 		props.Size = specification.Size;
@@ -38,9 +43,6 @@ namespace BHive
 		mMainWindow = mWindowManager.Create(props);
 
 		WindowInput::WindowEvent.Add(this, &Application::OnEvent);
-
-		auto api = RendererAPI::Create();
-		mRenderer = CreateScope<Renderer>(std::move(api));
 
 		if (specification.Flags & EApplicationFlags::EnableImGui)
 		{

@@ -102,15 +102,19 @@ namespace BHive
 		}
 	} // namespace details
 
-	void VulkanBackend::Init(GLFWwindow *window)
+	void VulkanBackend::Init()
 	{
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
-		CreateIntance();
+		CreateInstance();
 		CreateDebugMessenger();
 		PickPhysicalDevice();
-		CreateLogicalDevice(nullptr);
+		CreateLogicalDevice();
 		CreateCommandBuffers();
+		CreateDescriptorPool();
+		CreateImmediateCommandPool();
+		CreateMemoryAllocator();
+		CreateGPUResourceManager();
 
 		auto log_info = [=](std::ofstream &log)
 		{
@@ -133,6 +137,8 @@ namespace BHive
 	void VulkanBackend::Shutdown()
 	{
 		mDevice.waitIdle();
+
+		mDescriptorPool.clear();
 
 		mCommandBuffers.clear();
 
@@ -163,7 +169,7 @@ namespace BHive
 			vk::EXTShaderObjectExtensionName};
 	}
 
-	uint32_t VulkanBackend::SelectQueueIndex(vk::QueueFlags queue_type, const vk::SurfaceKHR &surface)
+	uint32_t VulkanBackend::SelectQueueIndex(vk::QueueFlags queue_type, vk::SurfaceKHR surface)
 	{
 		std::vector<vk::QueueFamilyProperties> queueFamilyProperties = mPhysicalDevice.getQueueFamilyProperties();
 		for (uint32_t qfpIndex = 0; qfpIndex < static_cast<uint32_t>(queueFamilyProperties.size()); qfpIndex++)
@@ -191,7 +197,7 @@ namespace BHive
 		return ~0u;
 	}
 
-	void VulkanBackend::CreateIntance()
+	void VulkanBackend::CreateInstance()
 	{
 		constexpr auto appInfo = vk::ApplicationInfo{"BHive", 1, "BHiveEngine", 1, MINIMUM_VULKAN_API_VERSION};
 
@@ -321,6 +327,23 @@ namespace BHive
 		mImmediateCommandPool = mDevice.createCommandPool(pool_info);
 	}
 
+	void VulkanBackend::CreateDescriptorPool()
+	{
+		static vk::DescriptorPoolCreateFlags poolFlags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
+
+		// --- Material pool (set = 1, cached per material) ---
+		std::vector<vk::DescriptorPoolSize> materialSizes
+			= {{vk::DescriptorType::eCombinedImageSampler, 4096},
+			   {vk::DescriptorType::eSampledImage, 4096},
+			   {vk::DescriptorType::eStorageImage, 2048},
+			   {vk::DescriptorType::eUniformBuffer, 1024},
+			   {vk::DescriptorType::eStorageBuffer, 1024}};
+
+		vk::DescriptorPoolCreateInfo matInfo{poolFlags, 4096, materialSizes};
+
+		mDescriptorPool = mDevice.createDescriptorPool(matInfo);
+	}
+
 	void VulkanBackend::CreateMemoryAllocator()
 	{
 		mMemoryAllocator = CreateScope<MemoryAllocator>(mDevice, mPhysicalDevice);
@@ -366,49 +389,27 @@ namespace BHive
 			mQueueFamilies.PresentQueueIndex = presentIndex;
 			mQueueFamilies.PresentQueue = mDevice.getQueue(presentIndex, 0);
 		}
-
-		CreateImmediateCommandPool();
-		CreateMemoryAllocator();
-		CreateGPUResourceManager();
 	}
 
-	void VulkanBackend::RecreateFrameResources()
-	{
-		/*mCommandBuffers = nullptr;
-		mCommandPool = nullptr;
-
-		CreateCommandBuffers();*/
-	}
-
-	void VulkanBackend::EnsurePresentSupportForSurface(const vk::SurfaceKHR &surface)
+	bool VulkanBackend::EnsurePresentSupportForSurface(vk::SurfaceKHR surface)
 	{
 		if (!surface)
 		{
-			return;
+			return false;
 		}
 
 		if (mPhysicalDevice.getSurfaceSupportKHR(mQueueFamilies.GraphicsQueueIndex, surface))
 		{
 			mQueueFamilies.PresentQueueIndex = mQueueFamilies.GraphicsQueueIndex;
 			mQueueFamilies.PresentQueue = mQueueFamilies.GraphicsQueue;
-			return;
+			return true;
 		}
 
-		auto present_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics, surface);
-		if (present_index == ~0)
-		{
-			ASSERT(false, "No present queue found");
-		}
-
-		if (present_index != mQueueFamilies.PresentQueueIndex)
-		{
-			mDevice.waitIdle();
-			mDevice = nullptr;
-			CreateDeviceInternal(mQueueFamilies.GraphicsQueueIndex, present_index);
-		}
+		LOG_ERROR("No present queue supports this surface!")
+		return false;
 	}
 
-	void VulkanBackend::CreateLogicalDevice(const vk::SurfaceKHR &surface)
+	void VulkanBackend::CreateLogicalDevice()
 	{
 		if (mDevice != VK_NULL_HANDLE)
 		{
@@ -417,14 +418,6 @@ namespace BHive
 
 		auto graphics_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics);
 		auto present_index = graphics_index;
-
-		if (surface)
-		{
-			if (!mPhysicalDevice.getSurfaceSupportKHR(graphics_index, surface))
-			{
-				present_index = VulkanBackend::SelectQueueIndex(vk::QueueFlagBits::eGraphics, surface);
-			}
-		}
 
 		CreateDeviceInternal(graphics_index, present_index);
 	}

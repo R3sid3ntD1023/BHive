@@ -44,6 +44,8 @@ namespace BHive
 
 		static void PollEvents();
 
+		static void Init();
+
 	public:
 		GLFWwindow *GetNative() const { return mWindow; }
 
@@ -102,4 +104,5 @@ namespace BHive
 	private:
 		std::vector<Ref<Window>> mWindows;
 	};
+
 } // namespace BHive
