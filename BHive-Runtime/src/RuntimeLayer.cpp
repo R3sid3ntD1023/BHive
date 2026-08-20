@@ -135,8 +135,6 @@ namespace BHive
 		{
 			mSceneRenderer->Resize(mViewportSize);
 			mCamera.Resize(mViewportSize.x, mViewportSize.y);
-
-			IImGuiTextureProvider::Invalidate(*mSceneRenderer->GetOutput());
 		}
 
 		mSceneRenderer->Begin(&mCamera, mCamera.GetView());

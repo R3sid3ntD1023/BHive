@@ -21,8 +21,6 @@ namespace BHive
 		void OnSubmitRenderData(ImDrawData *drawData) override;
 
 	private:
-		vk::raii::Device &mDevice;
-
 		GLFWwindow *mWindowHandle = nullptr;
 
 		vk::raii::DescriptorPool mDescriptorPool = VK_NULL_HANDLE;

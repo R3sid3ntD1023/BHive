@@ -2,15 +2,10 @@
 #include "gfx/Texture.h"
 #include "../VulkanImage.h"
 #include <backends/imgui_impl_vulkan.h>
+#include "gfx/RenderCommand.h"
 
 namespace BHive
 {
-	VulkanImGuiTexture::~VulkanImGuiTexture()
-	{
-		for (auto &[_, set] : mTextureSets)
-			ImGui_ImplVulkan_RemoveTexture(set);
-	}
-
 	uint64_t VulkanImGuiTexture::GetTextureID(const Texture &tex)
 	{
 		auto handle = tex.GetNativeHandle().As<VulkanImage>();
@@ -24,13 +19,16 @@ namespace BHive
 		if (!smp || !view)
 			return 0;
 
-		auto key = tex.GetResourceID();
+		auto key = handle->GetResourceID();
 
 		if (mTextureSets.contains(key))
 			return (ImTextureID)mTextureSets.at(key);
 
 		auto set = ImGui_ImplVulkan_AddTexture(smp, view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		mTextureSets[key] = set;
+
+		handle->OnDestroyed.bind(this, &VulkanImGuiTexture::OnTextureDestroyed);
+
 		return (ImTextureID)set;
 	}
 
@@ -43,5 +41,16 @@ namespace BHive
 			ImGui_ImplVulkan_RemoveTexture(set);
 			mTextureSets.erase(key);
 		}
+	}
+
+	void VulkanImGuiTexture::OnTextureDestroyed(ResourceID id)
+	{
+		if (RenderCommand::IsShuttingDown())
+			return;
+
+		auto set = mTextureSets.at(id);
+		ImGui_ImplVulkan_RemoveTexture(set);
+		LOG_TRACE("VulkanImGuiTexture: Removed descriptor set for id {}", id);
+		mTextureSets.erase(id);
 	}
 } // namespace BHive

@@ -27,8 +27,7 @@ namespace BHive
 	} // namespace callbacks
 
 	VulkanImGuiLayer::VulkanImGuiLayer(GLFWwindow *windowHandle)
-		: mDevice(VulkanBackend::GetLogicalDevice()),
-		  mWindowHandle(windowHandle)
+		: mWindowHandle(windowHandle)
 	{
 	}
 
@@ -74,7 +73,7 @@ namespace BHive
 		init_info.ApiVersion = MINIMUM_VULKAN_API_VERSION;
 		init_info.Instance = *instance;
 		init_info.PhysicalDevice = *physical_device;
-		init_info.Device = *mDevice;
+		init_info.Device = *device;
 		init_info.Queue = *queue_familes.GraphicsQueue;
 		init_info.QueueFamily = queue_familes.GraphicsQueueIndex;
 		init_info.DescriptorPool = *mDescriptorPool;
@@ -98,7 +97,8 @@ namespace BHive
 	{
 		LOG_TRACE("ImguiLayer Shutdown Called")
 
-		mDevice.waitIdle();
+		auto &device = VulkanBackend::GetLogicalDevice();
+		device.waitIdle();
 
 		ImGui_ImplVulkan_Shutdown();
 

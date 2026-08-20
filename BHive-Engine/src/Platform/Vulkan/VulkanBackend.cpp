@@ -102,6 +102,11 @@ namespace BHive
 		}
 	} // namespace details
 
+	VulkanBackend::~VulkanBackend()
+	{
+		sInstance = nullptr;
+	}
+
 	void VulkanBackend::Init()
 	{
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
@@ -132,28 +137,13 @@ namespace BHive
 		};
 
 		CrashHandler::Get().SetLogInfo(log_info);
+
+		sInstance = this;
 	}
 
 	void VulkanBackend::Shutdown()
 	{
 		mDevice.waitIdle();
-
-		mDescriptorPool.clear();
-
-		mCommandBuffers.clear();
-
-		mCommandPool.clear();
-		mImmediateCommandPool.clear();
-
-		mDebugMessenger.clear();
-
-		// mDevice.clear();
-
-		// mInstance.clear();
-
-		// mGPUResourceManager.reset();
-
-		// mMemoryAllocator.reset();
 	}
 
 	std::vector<const char *> VulkanBackend::GetRequiredExtensions()

@@ -70,6 +70,7 @@ namespace BHive
 
 	void ImGuiLayer::Shutdown()
 	{
+		IImGuiTextureProvider::Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImPlot::DestroyContext();
 		ImGui::DestroyContext();

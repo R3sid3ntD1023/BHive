@@ -11,6 +11,7 @@ namespace BHive
 	class VulkanShader;
 	class VulkanPipeline;
 	class GeneralBuffer;
+	class VulkanBackend;
 
 	struct FVulkanRendererContext
 	{
@@ -29,8 +30,6 @@ namespace BHive
 		uint32_t ImageIndex{};
 
 		uint32_t ViewIndex{0};
-
-		Ref<GeneralBuffer> ModelBuffer;
 	};
 
 	struct PendingDeletion
@@ -82,6 +81,8 @@ namespace BHive
 		FVulkanRendererContext BuildContext(vk::raii::CommandBuffer &cmd, uint32_t frame, uint32_t imageIndex, uint32_t viewIndex);
 
 	private:
+		Ref<VulkanBackend> mBackend;
+
 		std::vector<RenderGraph> mSubmittedGraphs;
 
 		std::vector<PendingDeletion> mDeletionQueue;

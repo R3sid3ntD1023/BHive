@@ -21,6 +21,8 @@ namespace BHive
 	public:
 		static void Init();
 
+		static void Shutdown();
+
 		static uint64_t GetID(const Texture &tex);
 
 		static void Invalidate(const Texture &tex);

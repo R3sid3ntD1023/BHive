@@ -6,6 +6,12 @@
 
 namespace BHive
 {
+	VulkanImage::~VulkanImage()
+	{
+		if (OnDestroyed)
+			OnDestroyed(mImage.Image);
+	}
+
 	void VulkanImage::Initialize(const ImageCreateInfo &info)
 	{
 		mInfo = info;

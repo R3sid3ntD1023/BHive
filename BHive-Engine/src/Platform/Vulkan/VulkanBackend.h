@@ -26,6 +26,8 @@ namespace BHive
 	class BHIVE_API VulkanBackend
 	{
 	public:
+		~VulkanBackend();
+
 		void Init();
 
 		void Shutdown();
@@ -59,11 +61,7 @@ namespace BHive
 #endif
 		}
 
-		static VulkanBackend &Get()
-		{
-			static VulkanBackend sBackend;
-			return sBackend;
-		}
+		static VulkanBackend &Get() { return *sInstance; }
 
 		static vk::DescriptorPool GetDescriptorPool() { return Get().mDescriptorPool; }
 
@@ -151,5 +149,7 @@ namespace BHive
 		DebugNameRegistry mDebugNames;
 
 		bool mInitialized = false;
+
+		static inline VulkanBackend *sInstance = nullptr;
 	};
 } // namespace BHive

@@ -19,7 +19,5 @@ namespace BHive
 		static void BindMaterialSnapshot(const MaterialSnapshot &snap, FVulkanRendererContext &ctx, const FPass &phase);
 
 		static void BindMaterialResources(const MaterialSnapshot &snap, VulkanBindingGroup &group);
-
-		static void BindObjectResources(const Ref<GeneralBuffer> &buffer, VulkanBindingGroup &group);
 	};
 } // namespace BHive

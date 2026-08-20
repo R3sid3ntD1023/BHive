@@ -5,6 +5,7 @@
 #include "gfx/resources/ImageCopyRegion.h"
 #include "gfx/resources/ImageSubresourceRange.h"
 #include "VKInterfaces.h"
+#include "core/delegates/EventDelegate.h"
 
 namespace BHive
 {
@@ -22,9 +23,13 @@ namespace BHive
 		uint32_t BytesPerPixel = 0;
 	};
 
+	DECLARE_EVENT(OnDestroyed, ResourceID)
+
 	class VulkanImage : public INativeObject
 	{
 	public:
+		~VulkanImage();
+
 		void Initialize(const ImageCreateInfo &info);
 
 		// ImageCI unused
@@ -36,6 +41,8 @@ namespace BHive
 
 		void GenerateMipMaps(vk::CommandBuffer cmd);
 
+		ResourceID GetResourceID() const { return mImage.Image; }
+
 		const GPUImage &Native() const { return mImage; }
 
 		ImageState GetState(uint32_t mip, uint32_t layer) const;
@@ -43,6 +50,8 @@ namespace BHive
 		void DebugPrintState();
 
 		operator bool() const { return mImage; }
+
+		OnDestroyedEvent OnDestroyed;
 
 	private:
 		ImageState InitialStateFromUsage(vk::ImageUsageFlags usage, vk::Format format);

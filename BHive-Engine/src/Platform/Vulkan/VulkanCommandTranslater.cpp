@@ -177,16 +177,6 @@ namespace BHive
 			BindMaterialResources(snap, *materialGroup);
 		}
 
-		if (auto batchGroup = shader->GetBindingGroup(BATCH_SET_INDEX))
-		{
-			BindObjectResources(ctx.ModelBuffer, *batchGroup);
-		}
-
-		if (auto passGroup = shader->GetBindingGroup(PASS_SET_INDEX))
-		{
-			BindMaterialResources(snap, *passGroup);
-		}
-
 		shader->Bind(cmd, frame);
 
 		for (auto &pc : snap.mReflection->PushConstants)
@@ -206,11 +196,6 @@ namespace BHive
 		{
 			group.SetBuffer(buf.Binding, buf.BufferRef);
 		}
-	}
-
-	void VulkanCommandTranslator::BindObjectResources(const Ref<GeneralBuffer> &buffer, VulkanBindingGroup &group)
-	{
-		// group.SetBuffer(0, buffer);
 	}
 
 } // namespace BHive

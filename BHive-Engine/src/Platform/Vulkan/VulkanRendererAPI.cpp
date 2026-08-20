@@ -42,7 +42,8 @@ namespace BHive
 
 	void VulkanRendererAPI::Init()
 	{
-		VulkanBackend::Get().Init();
+		mBackend = CreateScope<VulkanBackend>();
+		mBackend->Init();
 	}
 
 	void VulkanRendererAPI::Shutdown()
@@ -51,7 +52,7 @@ namespace BHive
 
 		FlushDeletionQueue();
 
-		VulkanBackend::Get().Shutdown();
+		mBackend->Shutdown();
 	}
 
 	vk::Result VulkanRendererAPI::RenderFrame(VulkanSwapChain *swapChain)

@@ -19,6 +19,11 @@ namespace BHive
 		}
 	}
 
+	void IImGuiTextureProvider::Shutdown()
+	{
+		sBackend.reset();
+	}
+
 	uint64_t IImGuiTextureProvider::GetID(const Texture &tex)
 	{
 		return sBackend->GetTextureID(tex);
