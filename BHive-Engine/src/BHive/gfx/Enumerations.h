@@ -1,74 +1,73 @@
-	#pragma once
+#pragma once
 
 #include "core/Core.h"
 #include "core/EnumFlags.h"
-
 
 namespace BHive
 {
 	enum class ETopologyMode
 	{
-		Points, 
-		Lines, 
+		Points,
+		Lines,
 		LineStrip,
-		Triangles, 
-		TriangleStrip, 
+		Triangles,
+		TriangleStrip,
 		TriangleFan
 	};
 
 	enum class EPolygonMode
 	{
-		Fill, 
-		Line, 
+		Fill,
+		Line,
 		Point
 	};
 
 	enum class ECullMode
 	{
-		None, 
-		Front, 
-		Back, 
+		None,
+		Front,
+		Back,
 		FrontAndBack
 	};
 
 	enum class EFrontFace
 	{
-		CW, 
+		CW,
 		CWW
 	};
 
 	enum class ECompareOp
 	{
-		Never, 
-		Less, 
-		Equal, 
-		LessOrEqual, 
-		Greater, 
-		NotEqual, 
-		GreaterOrEqual, 
+		Never,
+		Less,
+		Equal,
+		LessOrEqual,
+		Greater,
+		NotEqual,
+		GreaterOrEqual,
 		Always
 	};
 
 	enum class EBlendFactor
 	{
-		Zero, 
-		One, 
-		SrcColor, 
+		Zero,
+		One,
+		SrcColor,
 		OneMinusSrcColor,
-		DstColor, 
-		OneMinusDstColor, 
-		SrcAlpha, 
-		OneMinusSrcAlpha, 
-		DstAlpha, 
+		DstColor,
+		OneMinusDstColor,
+		SrcAlpha,
+		OneMinusSrcAlpha,
+		DstAlpha,
 		OneMinusDstAlpha
 	};
 
 	enum class EBlendOp
 	{
-		Add, 
-		Subtract, 
-		ReverseSubtract, 
-		Min, 
+		Add,
+		Subtract,
+		ReverseSubtract,
+		Min,
 		Max
 	};
 
@@ -99,7 +98,7 @@ namespace BHive
 		Depth = DEPTH24_STENCIL8
 	};
 
-	enum class ETextureAspect 
+	enum class ETextureAspect
 	{
 		Color,
 		DepthStencil
@@ -117,7 +116,7 @@ namespace BHive
 	};
 
 	ENABLE_BITMASK_OPERATORS(ETextureRole)
-	
+
 	enum class ETextureType
 	{
 		TEXTURE_1D,
@@ -141,19 +140,19 @@ namespace BHive
 	{
 		None,
 
-		//Graphics
+		// Graphics
 		ColorRead,
 		ColorWrite,
 
 		DepthRead,
 		DepthWrite,
 
-		//Compute
+		// Compute
 		ComputeSampled,
 		ComputeStorageRead,
 		ComputeStorageWrite,
 
-		//Transfer
+		// Transfer
 		TransferSrc,
 		TransferDst
 
@@ -161,18 +160,18 @@ namespace BHive
 
 	enum class EBufferAccess : uint8_t
 	{
-		None			,//= 0,
-		TransferWrite	,//= BIT(0),
-		TransferRead	,//= BIT(1),
-		VertexRead		,//= BIT(2),
-		IndexRead		,//= BIT(3),
-		UniformRead		,//= BIT(4),
-		StorageRead		,//= BIT(5),
-		StorageWrite	,//= BIT(6),
-		IndirectRead	,//= BIT(7),
+		None,		   //= 0,
+		TransferWrite, //= BIT(0),
+		TransferRead,  //= BIT(1),
+		VertexRead,	   //= BIT(2),
+		IndexRead,	   //= BIT(3),
+		UniformRead,   //= BIT(4),
+		StorageRead,   //= BIT(5),
+		StorageWrite,  //= BIT(6),
+		IndirectRead,  //= BIT(7),
 	};
 
-	//ENABLE_BITMASK_OPERATORS(EBufferAccess)
+	// ENABLE_BITMASK_OPERATORS(EBufferAccess)
 
 	enum class EMagFilter
 	{
@@ -200,24 +199,24 @@ namespace BHive
 
 	enum class ClearMask : uint32_t
 	{
-		None			= 0,
-		DepthStencil	= 1 << 0,
-		Color			= 1 << 1,
-		All				= Color | DepthStencil
+		None = 0,
+		DepthStencil = 1 << 0,
+		Color = 1 << 1,
+		All = Color | DepthStencil
 	};
 
-	ENUM_FLAGS(ClearMask)
+	ENABLE_BITMASK_OPERATORS(ClearMask)
 
 	enum class EShaderStage : uint32_t
 	{
-		None		= 0,
-		Vertex		= 1 << 0,
-		Fragment	= 1 << 1,
-		Compute		= 1 << 2,
-		Geometry	= 1 << 3,
+		None = 0,
+		Vertex = 1 << 0,
+		Fragment = 1 << 1,
+		Compute = 1 << 2,
+		Geometry = 1 << 3,
 	};
 
-	ENUM_FLAGS(EShaderStage)
+	ENABLE_BITMASK_OPERATORS(EShaderStage)
 
 	enum class EShaderDataType
 	{
@@ -326,7 +325,7 @@ namespace BHive
 		}
 	};
 
-	inline const char* ToString(EResourceType type)
+	inline const char *ToString(EResourceType type)
 	{
 		switch (type)
 		{
@@ -389,4 +388,4 @@ namespace BHive
 		return (GetCategory(type) & EResourceCategory::Buffer) != EResourceCategory::None;
 	}
 
-}
+} // namespace BHive
