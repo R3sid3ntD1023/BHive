@@ -55,6 +55,7 @@ namespace BHive
 
 	Window::~Window()
 	{
+		mContext.reset();
 		sWindowCount--;
 		glfwDestroyWindow(mWindow);
 

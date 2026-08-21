@@ -24,6 +24,7 @@ namespace BHive
 	struct MaterialTable;
 	class Renderer;
 	class GeneralBuffer;
+	class Query;
 
 	/**
 	 * @brief The SceneRenderer class is responsible for rendering the scene.
@@ -45,7 +46,7 @@ namespace BHive
 
 		virtual void Init(const glm::uvec2 &size);
 
-		void Begin(const Camera *camera, const FTransform &view);
+		void Begin(const Camera *camera, const glm::mat4 &view);
 
 		virtual void End();
 

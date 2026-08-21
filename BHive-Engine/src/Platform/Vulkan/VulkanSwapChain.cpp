@@ -57,6 +57,7 @@ namespace BHive
 
 		mImages.clear();
 		mDepthImage = {};
+		mSwapChain.clear();
 
 		Init(w, h);
 

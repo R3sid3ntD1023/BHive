@@ -14,7 +14,6 @@ namespace BHive
 	class RenderGraph
 	{
 	public:
-	
 		FPass &AddPass(const std::string &name, EPassType type, FPassState state = {});
 
 		void Append(const RenderGraph &graph);
@@ -31,4 +30,4 @@ namespace BHive
 		std::vector<FPass> mPasses;
 	};
 
-}
+} // namespace BHive

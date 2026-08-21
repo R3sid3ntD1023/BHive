@@ -6,6 +6,7 @@
 #include "VulkanBackend.h"
 #include "gfx/renderers/Renderer.h"
 #include "VulkanImage.h"
+#include "VulkanQuery.h"
 
 namespace BHive
 {
@@ -130,11 +131,6 @@ namespace BHive
 
 		for (auto &pass : graph.GetPasses())
 		{
-			for (auto phase : pass.Phases)
-			{
-				CreateBarriers(phase.CommandList, vk_ctx);
-			}
-
 			ExecutePass(pass, vk_ctx, swapChain);
 		}
 
@@ -154,8 +150,6 @@ namespace BHive
 
 	void VulkanRendererAPI::ExecutePass(const FPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
 	{
-		// LOG_TRACE("Pass: {}", pass.Name);
-
 		auto &cmd = ctx.CommandBuffer;
 		auto state = pass.State;
 
@@ -164,7 +158,7 @@ namespace BHive
 
 		for (auto &phase : pass.Phases)
 		{
-			// LOG_TRACE("\tPhase {}", phase.Name);
+			CreateBarriers(phase.CommandList, ctx);
 
 			TransitionImages(phase, cmd);
 

@@ -7,6 +7,7 @@
 
 namespace BHive
 {
+
 	enum class EPassType : uint8_t
 	{
 		OffScreen,

@@ -16,7 +16,6 @@ namespace BHive
 		static FPSCounter &Get();
 
 	private:
-		uint32_t mFrameCount = 0;
 		std::chrono::steady_clock::time_point mLastTime;
 		double mFPS = 0;
 	};

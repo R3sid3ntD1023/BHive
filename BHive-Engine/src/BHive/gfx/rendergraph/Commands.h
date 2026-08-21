@@ -7,6 +7,7 @@
 
 #include "gfx/material/Material.h"
 #include "gfx/material/ComputeBindings.h"
+#include "gfx/Query.h"
 
 namespace BHive
 {

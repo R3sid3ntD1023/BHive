@@ -17,10 +17,11 @@ namespace BHive
 
 	Ref<Query> CPUGPUProfiler::GetQuery(const std::string &name)
 	{
-		if (!mQueries.contains(name))
-			mQueries.emplace(name, CreateRef<Query>());
+		// if (!mQueries.contains(name))
+		// 	mQueries.emplace(name, CreateRef<Query>());
 
-		return mQueries.at(name);
+		// return mQueries.at(name);
+		return nullptr;
 	}
 
 	void ProfilerData::AddSample(float sample)
@@ -35,17 +36,17 @@ namespace BHive
 	ScopedGPUProfiler::ScopedGPUProfiler(const char *name)
 		: ScopedProfiler(name)
 	{
-		mQueryInstance = CPUGPUProfiler::GetInstance().GetQuery(name);
-		mQueryInstance->Begin();
+		// mQueryInstance = CPUGPUProfiler::GetInstance().GetQuery(name);
+		// mQueryInstance->Begin();
 	}
 
 	ScopedGPUProfiler::~ScopedGPUProfiler()
 	{
-		mQueryInstance->End();
+		// mQueryInstance->End();
 
-		// seconds
-		auto time = (float)mQueryInstance->GetTime() / 1000.f;
-		CPUGPUProfiler::GetInstance().AddData(mName, time);
+		// // seconds
+		// auto time = (float)mQueryInstance->GetTime() / 1000.f;
+		// CPUGPUProfiler::GetInstance().AddData(mName, time);
 	}
 
 	ScopedCPUProfiler::ScopedCPUProfiler(const char *name)

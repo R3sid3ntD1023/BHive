@@ -10,17 +10,12 @@ namespace BHive
 	void FPSCounter::Frame()
 	{
 
-		auto current = std::chrono::high_resolution_clock::now();
-		mFrameCount++;
-		auto elapsed = (current - mLastTime);
-		auto seconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / 1000.f;
+		auto now = std::chrono::high_resolution_clock::now();
+		auto dt = std::chrono::duration<double>(now - mLastTime).count();
+		mLastTime = now;
 
-		if (seconds >= 1.0)
-		{
-			mFPS = (float)mFrameCount;
-			mFrameCount = 0;
-			mLastTime = current;
-		}
+		double fps = 1.0 / dt;
+		mFPS = mFPS * 0.9 + fps * 0.1;
 	}
 
 	FPSCounter::operator float() const

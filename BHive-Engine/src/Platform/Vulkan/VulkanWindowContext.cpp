@@ -67,6 +67,9 @@ namespace BHive
 
 	void VulkanWindowContext::TryCreateSwapChain(GLFWwindow *window)
 	{
+		if (mSwapChain)
+			return;
+
 		int w = 0, h = 0;
 		glfwGetFramebufferSize(window, &w, &h);
 
@@ -76,9 +79,15 @@ namespace BHive
 			glfwGetFramebufferSize(window, &w, &h);
 		}
 
-		VkSurfaceKHR surface;
+		VkSurfaceKHR surface = VK_NULL_HANDLE;
 		auto &instance = VulkanBackend::GetInstance();
-		glfwCreateWindowSurface(*instance, mWindowHandle, nullptr, &surface);
+		VkResult result = glfwCreateWindowSurface(*instance, mWindowHandle, nullptr, &surface);
+		if (result != VK_SUCCESS)
+		{
+			LOG_ERROR("Failed to create Vulkan window surface: {}", static_cast<int>(result));
+			return;
+		}
+
 		mSwapChain = CreateScope<VulkanSwapChain>(surface);
 		mSwapChain->Init(uint32_t(w), uint32_t(h));
 	}

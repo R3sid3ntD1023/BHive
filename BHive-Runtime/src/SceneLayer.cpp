@@ -143,12 +143,18 @@ namespace BHive
 			auto viewportSize = ImGui::GetContentRegionAvail();
 			mViewportSize = {uint32_t(glm::round(viewportSize.x)), uint32_t(glm::round(viewportSize.y))};
 
+			auto cursorPos = ImGui::GetCursorPos();
 			auto output = mSceneRenderer->GetOutput();
 			if (output)
 			{
 				auto id = IImGuiTextureProvider::GetID(*output);
 				ImGui::Image(id, viewportSize);
 			}
+
+			ImGui::SetCursorPos(cursorPos);
+			ImGui::BeginGroup();
+			ImGui::Text("Viewport Size: %d x %d", mViewportSize.x, mViewportSize.y);
+			ImGui::EndGroup();
 		}
 
 		mViewportActive = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();

@@ -12,6 +12,7 @@
 #include "core/math/volumes/SphereVolume.h"
 #include "gfx/mesh/SkeletalMesh.h"
 #include "gfx/Pipeline.h"
+#include "gfx/Query.h"
 
 namespace BHive
 {
@@ -140,7 +141,7 @@ namespace BHive
 		mEnvironment.Update();
 	}
 
-	void SceneRenderer::Begin(const Camera *camera, const FTransform &view)
+	void SceneRenderer::Begin(const Camera *camera, const glm::mat4 &view)
 	{
 		auto &renderer = Renderer::Get();
 
@@ -151,7 +152,6 @@ namespace BHive
 		mSceneRenderData->Reset();
 		renderer.BeginBatching();
 		mLights.BeginRecording();
-		// mEnvironment.Update();
 	}
 
 	void SceneRenderer::End()
@@ -199,44 +199,6 @@ namespace BHive
 		objectData.insert(objectData.end(), transparentBatch.ObjectData.begin(), transparentBatch.ObjectData.end());
 		objectData.insert(objectData.end(), opaqueBatch.ObjectData.begin(), opaqueBatch.ObjectData.end());
 
-		// std::vector<MultiDrawIndirectCommand> drawCommands;
-
-		// std::unordered_map<Ref<Material>, std::unordered_map<Ref<VertexArray>, FDrawRange>> drawRanges;
-
-		// std::vector<FPerObjectData> objectData;
-
-		// for (auto &[mat, objects] : mSceneRenderData->OpaqueData)
-		// {
-		// 	for (auto &obj : objects)
-		// 	{
-
-		// 		auto &s = obj->SubMesh;
-		// 		auto &vao = obj->VAO;
-		// 		auto &transform = obj->Transform;
-
-		// 		MultiDrawIndirectCommand drawCmd{};
-		// 		drawCmd.BaseInstance = objectData.size();
-		// 		drawCmd.BaseVertex = s.StartVertex;
-		// 		drawCmd.FirstIndex = s.StartIndex;
-		// 		drawCmd.Count = s.IndexCount;
-		// 		drawCmd.InstanceCount = 1;
-
-		// 		drawCommands.emplace_back(drawCmd);
-
-		// 		objectData.emplace_back(FPerObjectData{transform});
-
-		// 		auto &matRanges = drawRanges[mat];
-		// 		auto &range = matRanges[vao];
-
-		// 		if (range.Count == 0)
-		// 		{
-		// 			range.First = drawCommands.size() - 1;
-		// 		}
-
-		// 		range.Count++;
-		// 	}
-		// }
-
 		auto &renderer = Renderer::Get();
 		FPassState state{};
 		state.Color = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store, {0.1f, 0.1f, 0.1f, 1.0f}};
@@ -258,7 +220,6 @@ namespace BHive
 
 		// opaque pass
 		scenePass.BeginPhase(EPhaseType::Graphics);
-
 		mCameraUBO->SetData(&mView, sizeof(FView));
 		mModelSSBO->SetData(objectData.data(), objectData.size() * sizeof(FPerObjectData));
 		mIndirectDrawBuffer->SetData(drawCommands.data(), drawCommands.size() * sizeof(MultiDrawIndirectCommand));
@@ -279,24 +240,6 @@ namespace BHive
 
 		scenePass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("MESH_TRANSPARENT"));
 		transparentBatch.Draw(scenePass, mIndirectDrawBuffer, transparentBase);
-
-		// const static uint64_t stride = sizeof(MultiDrawIndirectCommand);
-
-		// // render meshes
-		// for (auto &[mat, vaoMap] : drawRanges)
-		// {
-		// 	scenePass.Emplace<CmdBindMaterial>()(mat.get());
-
-		// 	for (auto &[vao, range] : vaoMap)
-		// 	{
-		// 		uint32_t offset = range.First;
-		// 		uint32_t count = range.Count;
-
-		// 		vao->DeclareAccess(scenePass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
-
-		// 		scenePass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, mIndirectDrawBuffer.get(), vao.get(), count, stride, offset);
-		// 	}
-		// }
 
 		renderer.EndBatching();
 

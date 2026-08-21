@@ -14,7 +14,7 @@ namespace BHive
 		SetLineWidth,
 		Dispatch,
 		ImGuiRender,
-		DrawFullScreen,
+		DrawFullScreen
 	};
 
 	struct FCommand
