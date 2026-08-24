@@ -16,7 +16,7 @@ namespace BHive
 
 		void BeginRecording();
 
-		void Flush();
+		void EndRecording();
 
 		void Submit(const DirectionalLight &light);
 

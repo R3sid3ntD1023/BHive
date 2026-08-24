@@ -32,9 +32,9 @@ namespace BHive
 	struct FShadowData
 	{
 		glm::uvec4 NumShadowMaps = {0, 0, 0, 0}; // {Dir, Point, Spot}
-		std::array<glm::mat4, MAX_LIGHTS> DirProjections = {};
-		std::array<FShadowCubeSSBO, MAX_LIGHTS> PointShadowInfos = {};
-		std::array<glm::mat4, MAX_LIGHTS> SpotProjections = {};
+		std::array<glm::mat4, ShadowRenderer::sMaxLights> DirProjections = {};
+		std::array<FShadowCubeSSBO, ShadowRenderer::sMaxLights> PointShadowInfos = {};
+		std::array<glm::mat4, ShadowRenderer::sMaxLights> SpotProjections = {};
 	};
 
 	// 0 = dir, 1 = point, 2 = spot
@@ -51,13 +51,13 @@ namespace BHive
 		FShadowData ShadowData;
 	};
 
-	void ShadowRenderer::Init(uint32_t max_lights, uint32_t cascaded_levels)
+	void ShadowRenderer::Init(uint32_t cascaded_levels)
 	{
 		mShadowRenderData = CreateRef<FShadowRenderData>();
 
-		FramebufferSpecification dir_shadow_fbo_spec{.Size = {DIRECTIONAL_SHADOWMAP_SIZE, DIRECTIONAL_SHADOWMAP_SIZE}, .Depth = max_lights};
-		FramebufferSpecification spot_shadow_fbo_spec{.Size = {SPOT_SHADOWMAP_SIZE, SPOT_SHADOWMAP_SIZE}, .Depth = max_lights};
-		FramebufferSpecification point_shadow_fbo_spec{.Size = {POINT_SHADOWMAP_SIZE, POINT_SHADOWMAP_SIZE}, .Depth = max_lights * 6};
+		FramebufferSpecification dir_shadow_fbo_spec{.Size = {DIRECTIONAL_SHADOWMAP_SIZE, DIRECTIONAL_SHADOWMAP_SIZE}, .Depth = sMaxLights};
+		FramebufferSpecification spot_shadow_fbo_spec{.Size = {SPOT_SHADOWMAP_SIZE, SPOT_SHADOWMAP_SIZE}, .Depth = sMaxLights};
+		FramebufferSpecification point_shadow_fbo_spec{.Size = {POINT_SHADOWMAP_SIZE, POINT_SHADOWMAP_SIZE}, .Depth = sMaxLights * 6};
 
 		FTextureCreateInfo shadow_texture_specs{
 			.Format = EFormat::DEPTH_COMPONENT_32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE, .CompareMode = ECompareMode::COMPARE_REF_TO_TEXTURE, .CompareOp = ECompareOp::LessOrEqual};
@@ -77,19 +77,19 @@ namespace BHive
 		mShadowRenderData->ShadowBuffer = GPUBuffer::Create(sizeof(FShadowData), EBufferType::StorageBuffer);*/
 	}
 
-	void ShadowRenderer::Begin()
+	void ShadowRenderer::BeginRecording()
 	{
 		mShadowRenderData->ShadowData.NumShadowMaps = {0, 0, 0, 0};
 	}
 
-	void ShadowRenderer::End()
+	void ShadowRenderer::EndRecording()
 	{
 
 		// mShadowRenderData->ShadowBuffer->BindBufferBase(SHADOW_SSBO_BINDING);
 		mShadowRenderData->ShadowBuffer->SetData(&mShadowRenderData->ShadowData, sizeof(FShadowData));
 	}
 
-	void ShadowRenderer::Render(const FMeshRenderDatas &datas)
+	void ShadowRenderer::Render(const SubMeshSubmissions &datas)
 	{
 		const auto &num_shadow_maps = glm::compAdd(mShadowRenderData->ShadowData.NumShadowMaps);
 		if (num_shadow_maps == 0)
@@ -190,7 +190,7 @@ namespace BHive
 		}
 
 		auto &shadow_data = mShadowRenderData->ShadowData;
-		auto k = shadow_data.NumShadowMaps.x % MAX_LIGHTS;
+		auto k = shadow_data.NumShadowMaps.x % sMaxLights;
 		auto projection = glm::ortho<float>(min_x, max_x, min_y, max_y, min_z, max_z);
 		shadow_data.DirProjections[k] = projection * light_view;
 		shadow_data.NumShadowMaps.x++;
@@ -202,7 +202,7 @@ namespace BHive
 		auto proj = glm::perspective<float>(glm::radians(info.LightAngleNearFar.x), 1.f, info.LightAngleNearFar.y, info.LightAngleNearFar.z);
 
 		auto &shadow_data = mShadowRenderData->ShadowData;
-		auto k = shadow_data.NumShadowMaps.z % MAX_LIGHTS;
+		auto k = shadow_data.NumShadowMaps.z % sMaxLights;
 		shadow_data.SpotProjections[k] = proj * view;
 		shadow_data.NumShadowMaps.z++;
 	}
@@ -212,7 +212,7 @@ namespace BHive
 		auto &shadow_data = mShadowRenderData->ShadowData;
 
 		auto proj = glm::perspective(glm::radians(90.0f), 1.f, info.LightNearFar.x, info.LightNearFar.y);
-		auto i = (shadow_data.NumShadowMaps.y % MAX_LIGHTS);
+		auto i = (shadow_data.NumShadowMaps.y % sMaxLights);
 
 		for (int j = 0; j < 6; j++)
 		{

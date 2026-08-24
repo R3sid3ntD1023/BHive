@@ -6,117 +6,267 @@
 #include "gfx/mesh/primitives/Quad.h"
 #include "gfx/renderers/Renderer.h"
 #include "SceneRenderer.h"
-#include "ShadowRenderer.h"
-#include "Lights.h"
 #include "core/math/boundingbox/AABB.h"
 #include "core/math/volumes/SphereVolume.h"
 #include "gfx/mesh/SkeletalMesh.h"
 #include "gfx/Pipeline.h"
 #include "gfx/Query.h"
+#include "core/delegates/MultiEventDelegate.h"
 
 namespace BHive
 {
-	struct FSceneRenderData
+#define MAX_OBJECTS 10
+#define VISIBILITY_BUFFER_SIZE 16 + 16 * MAX_OBJECTS
+#define OBJECT_STRIDE sizeof(ObjectData)
+#define OBJECT_BUFFER_SIZE 16 + OBJECT_STRIDE *MAX_OBJECTS
+#define DRAWCOMMAND_BUFFER_SIZE MULTI_DRAW_INDIRECT_STRIDE *MAX_OBJECTS
+#define MAX_LIGHTS Lights::sMaxLights
+
+	struct alignas(16) ObjectData
 	{
-		std::unordered_map<Ref<Material>, FMeshRenderDatas> OpaqueData;
-		std::unordered_map<Ref<Material>, FMeshRenderDatas> TransparentData;
-		FMeshRenderDatas ShadowPassRenderData;
-		FMeshRenderDatas RenderPassRenderData;
-
-		ShadowRenderer ShadowRenderer;
-
-		void Init() { ShadowRenderer.Init(MAX_LIGHTS); }
-
-		void Reset()
-		{
-			OpaqueData.clear();
-			TransparentData.clear();
-			ShadowPassRenderData.clear();
-			RenderPassRenderData.clear();
-		}
+		glm::mat4 model{1.0f};						   // model matrix
+		glm::vec4 center_radius{0.f, 0.0f, 0.0f, 0.f}; // bounding sphere center.xyz + radius
+		uint32_t meshIndex = 0;						   // which mesh this instance belongs to
 	};
 
-	struct FDrawRange
+	DECLARE_MULTI_EVENT(FRenderQueueChanged)
+
+	struct FRenderQueue
 	{
-		uint32_t First = 0;
-		uint32_t Count = 0;
+		std::vector<FMeshSubmissionContext> Contexts;
+		std::vector<Ref<Material>> Materials;
+		SubMeshSubmissions OpaqueSubmissions;
+		SubMeshSubmissions TransparentSubmissions;
+		SubMeshSubmissions ShadowPassRenderData;
+		SubMeshSubmissions RenderPassRenderData;
+
+		void Init() { Contexts.reserve(MAX_OBJECTS); }
+
+		uint32_t AddSubmissionContext()
+		{
+			Contexts.emplace_back();
+			return Contexts.size() - 1;
+		}
+
+		uint32_t AddMaterial(Ref<Material> mat)
+		{
+			auto it = std::find(Materials.begin(), Materials.end(), mat);
+			if (it != Materials.end())
+				return std::distance(Materials.begin(), it);
+
+			Materials.emplace_back(mat);
+			return Materials.size() - 1;
+		}
+
+		void AddRequest(const FMeshSubmissionRequest &request) { mPendingRequests.emplace_back(request); }
+
+		void AddSubmission(FSubMeshSubmission &submission)
+		{
+			auto flags = submission.BitFlags;
+			auto &submissions = flags[0] ? TransparentSubmissions : OpaqueSubmissions;
+			submissions.emplace_back(submission);
+
+			if (flags[1])
+				ShadowPassRenderData.emplace_back(submission);
+		}
+
+		void Rebuild()
+		{
+			for (auto &r : mPendingRequests)
+			{
+				const auto &materials = r.Materials;
+				const auto &subMeshes = r.Mesh->GetSubMeshes();
+				const auto subMeshCount = subMeshes.size();
+
+				if (subMeshCount == 0)
+				{
+					return;
+				}
+
+				auto ctxIndex = AddSubmissionContext();
+				auto &ctx = Contexts.at(ctxIndex);
+				ctx.Transform = r.Transform;
+				ctx.EntityID = r.EntityID;
+				ctx.InstanceTransforms = r.InstanceTransforms;
+				ctx.BoneTransforms = r.BoneTransforms;
+				ctx.VAO = r.Mesh->GetVertexArray();
+
+				for (auto &s : subMeshes)
+				{
+					auto material = materials.get_material(s.MaterialIndex);
+					if (!material)
+						return;
+
+					FSubMeshSubmission submission{};
+					submission.ContextIndex = ctxIndex;
+					submission.SubMesh = s;
+					submission.BoundingBox = r.Mesh->GetBoundingBox();
+					submission.BitFlags[0] = material->IsTransparent();
+					submission.BitFlags[1] = material->ShouldCastShadows();
+					submission.MaterialIndex = AddMaterial(material);
+					AddSubmission(submission);
+				}
+			}
+		}
+
+		void BuildQueue(const glm::mat4 &view)
+		{ // back-to-front
+			static auto sorting = [=](FSubMeshSubmission &a, FSubMeshSubmission &b)
+			{
+				auto aCtx = Contexts.at(a.ContextIndex);
+				auto bCtx = Contexts.at(b.ContextIndex);
+
+				float za = (view * glm::vec4(aCtx.Transform.GetTranslation(), 1.0f)).z;
+				float zb = (view * glm::vec4(bCtx.Transform.GetTranslation(), 1.0f)).z;
+				return za > zb;
+			};
+
+			auto requestCount = mPendingRequests.size();
+			if (requestCount)
+			{
+				LOG_TRACE("Building Pending Mesh Submissions {}", requestCount)
+				Contexts.clear();
+				OpaqueSubmissions.clear();
+				TransparentSubmissions.clear();
+				ShadowPassRenderData.clear();
+				RenderPassRenderData.clear();
+
+				Rebuild();
+
+				std::sort(TransparentSubmissions.begin(), TransparentSubmissions.end(), sorting);
+
+				mPendingRequests.clear();
+
+				OnQueueChanged.Broadcast();
+			}
+		}
+
+		Ref<Material> GetMaterial(uint32_t index) { return Materials.at(index); }
+
+		FRenderQueueChangedEvent OnQueueChanged;
+
+	private:
+		std::vector<FMeshSubmissionRequest> mPendingRequests;
 	};
 
 	struct RenderBatch
 	{
+		std::unordered_map<uint32_t, std::unordered_map<Ref<VertexArray>, std::vector<FSubMeshSubmission>>> MaterialBatches;
+
+		std::vector<ObjectData> ObjectDatas;
+
 		std::vector<MultiDrawIndirectCommand> DrawCommands;
 
-		std::unordered_map<Ref<Material>, std::unordered_map<Ref<VertexArray>, FDrawRange>> DrawRanges;
-
-		std::vector<FPerObjectData> ObjectData;
-
-		void Build(const std::unordered_map<Ref<Material>, FMeshRenderDatas> &bucket, uint32_t startBaseInstance = 0)
+		RenderBatch(Ref<FRenderQueue> queue)
+			: mQueue(queue)
 		{
-			DrawCommands.clear();
-			DrawRanges.clear();
-			ObjectData.clear();
-
-			for (auto &[mat, objects] : bucket)
-			{
-				for (auto &obj : objects)
-				{
-
-					auto &s = obj->SubMesh;
-					auto &vao = obj->VAO;
-					auto &transform = obj->Transform;
-
-					MultiDrawIndirectCommand drawCmd{};
-					drawCmd.BaseInstance = ObjectData.size() + startBaseInstance;
-					drawCmd.BaseVertex = s.StartVertex;
-					drawCmd.FirstIndex = s.StartIndex;
-					drawCmd.Count = s.IndexCount;
-					drawCmd.InstanceCount = 1;
-
-					DrawCommands.emplace_back(drawCmd);
-
-					ObjectData.emplace_back(FPerObjectData{transform});
-
-					auto &matRanges = DrawRanges[mat];
-					auto &range = matRanges[vao];
-
-					if (range.Count == 0)
-					{
-						range.First = DrawCommands.size() - 1;
-					}
-
-					range.Count++;
-				}
-			}
+			ObjectDatas.reserve(MAX_OBJECTS);
+			DrawCommands.reserve(MAX_OBJECTS);
+			mHandle = mQueue->OnQueueChanged.Add(this, &RenderBatch::OnRenderQueueChanged);
 		}
 
-		void Draw(FPass &pass, Ref<GeneralBuffer> indirect, uint32_t baseOffset)
+		~RenderBatch() { mQueue->OnQueueChanged.Remove(mHandle); }
+
+		void Build(const SubMeshSubmissions &bucket)
 		{
-			const static uint64_t stride = sizeof(MultiDrawIndirectCommand);
+			LOG_TRACE("Batch NeedsUpdate {}", mNeedsUpdate);
 
-			// render meshes
-			for (auto &[mat, vaoMap] : DrawRanges)
+			if (!mNeedsUpdate)
+				return;
+
+			MaterialBatches.clear();
+			ObjectDatas.clear();
+			DrawCommands.clear();
+
+			uint32_t meshIndex = 0;
+
+			for (auto &o : bucket)
 			{
-				pass.Emplace<CmdBindMaterial>()(mat.get());
+				// object data
+				auto &ctx = mQueue->Contexts.at(o.ContextIndex);
+				auto pos = ctx.Transform.GetTranslation();
+				auto model = ctx.Transform.ToMat4();
+				auto radius = o.BoundingBox.GetRadius();
+				auto vao = ctx.VAO;
+				auto &s = o.SubMesh;
 
-				for (auto &[vao, range] : vaoMap)
+				// submesh data
+
+				auto &group = MaterialBatches[o.MaterialIndex];
+				auto &submissions = group[vao];
+
+				auto &submission = submissions.emplace_back(o);
+				submission.MeshIndex = meshIndex;
+
+				auto &inst = ObjectDatas.emplace_back();
+				inst.center_radius = glm::vec4(pos, radius);
+				inst.model = model;
+				inst.meshIndex = meshIndex;
+
+				auto &cmd = DrawCommands.emplace_back();
+				cmd.indexCount = s.IndexCount;
+				cmd.instanceCount = 0; // GPU increments this
+				cmd.firstIndex = s.StartIndex;
+				cmd.vertexOffset = s.StartVertex;
+				cmd.firstInstance = meshIndex; // GPU will use visibleIndices[]
+
+				meshIndex++;
+			}
+
+			mNeedsUpdate = false;
+			LOG_TRACE("Batch Updated!");
+		}
+
+		void Draw(FPass &pass, Ref<GeneralBuffer> indirect)
+		{
+
+			LOG_TRACE("DrawCommand Count {} for pass {}", DrawCommands.size(), pass.Name);
+
+			uint32_t globalOffset = 0;
+			// render meshes
+			for (auto &[mat, vaoMap] : MaterialBatches)
+			{
+				auto material = mQueue->GetMaterial(mat);
+
+				pass.Emplace<CmdBindMaterial>()(material.get());
+
+				for (auto &[vao, submissions] : vaoMap)
 				{
-					uint32_t offset = baseOffset + range.First;
-					uint32_t count = range.Count;
+					uint32_t count = (uint32_t)submissions.size();
 
 					vao->DeclareAccess(pass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
-
-					pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect.get(), vao.get(), count, stride, offset);
+					pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect.get(), vao.get(), count, MULTI_DRAW_INDIRECT_STRIDE, globalOffset);
+					globalOffset += count * MULTI_DRAW_INDIRECT_STRIDE;
 				}
 			}
 		}
+
+		void OnRenderQueueChanged()
+		{
+			mNeedsUpdate = true;
+			LOG_TRACE("Rendere Queue Changed {}", mNeedsUpdate);
+		}
+
+		uint32_t InstanceCount() const { return static_cast<uint32_t>(ObjectDatas.size()); }
+
+	private:
+		Ref<FRenderQueue> mQueue;
+
+		bool mNeedsUpdate = false;
+
+		MultiEventHandle mHandle = 0;
 	};
 
 	void SceneRenderer::Init(const glm::uvec2 &size)
 	{
 		mSize = size;
 
-		mSceneRenderData = CreateRef<FSceneRenderData>();
-		mSceneRenderData->Init();
+		mRenderQueue = CreateRef<FRenderQueue>();
+		mRenderQueue->Init();
+
+		mRenderBatches.resize(2);
+		mRenderBatches[0] = CreateRef<RenderBatch>(mRenderQueue);
+		mRenderBatches[1] = CreateRef<RenderBatch>(mRenderQueue);
 
 		// Initialize the framebuffer or any other resources needed for rendering
 		FramebufferSpecification specs;
@@ -128,11 +278,19 @@ namespace BHive
 		mFramebuffer = Framebuffer::Create(specs);
 
 		mCameraUBO = GeneralBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);
-		mModelSSBO = GeneralBuffer::Create(sizeof(FPerObjectData) * 10'000, EBufferType::StorageBuffer);
-		mIndirectDrawBuffer = GeneralBuffer::Create(sizeof(MultiDrawIndirectCommand) * 10'000, EBufferType::IndirectBuffer);
+
+		for (uint32_t i = 0; i < 2; i++)
+		{
+			mInstanceDataBuffer[i] = GeneralBuffer::Create(OBJECT_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
+			mIndirectDrawBuffer[i] = GeneralBuffer::Create(DRAWCOMMAND_BUFFER_SIZE, EBufferType::StorageBuffer | EBufferType::IndirectBuffer, EBufferLifetime::Dynamic);
+			mVisibleBuffer[i] = GeneralBuffer::Create(VISIBILITY_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
+		}
 
 		mPostProcessStack.Init(size);
 		mLights.Init();
+		// mShadows.Init();
+
+		mFrustrumOcclusionMaterial = CreateRef<Material>("FrustumOcclusion.glsl");
 	}
 
 	void SceneRenderer::SetEnvironmentTexture(const Ref<Texture2D> &hdr)
@@ -148,107 +306,127 @@ namespace BHive
 		mView = FView::Create(camera->GetProjection(), view);
 		mFrustum.Update(camera->GetProjection(), view);
 
-		mSceneRenderData->ShadowRenderer.Begin();
-		mSceneRenderData->Reset();
 		renderer.BeginBatching();
 		mLights.BeginRecording();
+		// mShadows.BeginRecording();
+
+		mRenderQueue->BuildQueue(view);
 	}
 
 	void SceneRenderer::End()
 	{
-		mLights.Flush();
+		mLights.EndRecording();
+		// mShadows.EndRecording();
 
-		static auto sortOpaque = [=](const Ref<FMeshRenderData> &lhs, const Ref<FMeshRenderData> &rhs)
-		{
-			float za = (mView.View * glm::vec4(lhs->Transform.GetTranslation(), 1.0f)).z;
-			float zb = (mView.View * glm::vec4(rhs->Transform.GetTranslation(), 1.0f)).z;
-			return za < zb;
-		};
-
-		static auto sortTransparent = [=](const Ref<FMeshRenderData> &lhs, const Ref<FMeshRenderData> &rhs)
-		{
-			float za = (mView.View * glm::vec4(lhs->Transform.GetTranslation(), 1.0f)).z;
-			float zb = (mView.View * glm::vec4(rhs->Transform.GetTranslation(), 1.0f)).z;
-			return za > zb; // back-to-front
-		};
-
-		for (auto &[mat, data] : mSceneRenderData->OpaqueData)
-		{
-			std::sort(data.begin(), data.end(), sortOpaque);
-		}
-
-		for (auto &[mat, data] : mSceneRenderData->TransparentData)
-		{
-			std::sort(data.begin(), data.end(), sortTransparent);
-		}
-
-		std::sort(mSceneRenderData->ShadowPassRenderData.begin(), mSceneRenderData->ShadowPassRenderData.end(), sortOpaque);
-		std::sort(mSceneRenderData->RenderPassRenderData.begin(), mSceneRenderData->RenderPassRenderData.end(), sortOpaque);
-
-		RenderBatch transparentBatch{};
-		transparentBatch.Build(mSceneRenderData->TransparentData);
-
-		RenderBatch opaqueBatch{};
-		opaqueBatch.Build(mSceneRenderData->OpaqueData, transparentBatch.ObjectData.size());
-
-		std::vector<MultiDrawIndirectCommand> drawCommands;
-		drawCommands.insert(drawCommands.end(), transparentBatch.DrawCommands.begin(), transparentBatch.DrawCommands.end());
-		drawCommands.insert(drawCommands.end(), opaqueBatch.DrawCommands.begin(), opaqueBatch.DrawCommands.end());
-
-		std::vector<FPerObjectData> objectData;
-		objectData.insert(objectData.end(), transparentBatch.ObjectData.begin(), transparentBatch.ObjectData.end());
-		objectData.insert(objectData.end(), opaqueBatch.ObjectData.begin(), opaqueBatch.ObjectData.end());
+		mRenderBatches[0]->Build(mRenderQueue->OpaqueSubmissions);
+		mRenderBatches[1]->Build(mRenderQueue->TransparentSubmissions);
 
 		auto &renderer = Renderer::Get();
-		FPassState state{};
-		state.Color = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store, {0.1f, 0.1f, 0.1f, 1.0f}};
-		state.Depth = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store};
-		auto &scenePass = renderer.BeginPass("Scene Renderer", EPassType::OffScreen, state);
+
+		FPassState states[2];
+		states[0].Color = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store, {0.15f, 0.15f, 0.15f, 1.0f}};
+		states[0].Depth = {EAttachmentLoadState::Clear, EAttachmentStoreState::Store};
+
+		states[1].Color = {EAttachmentLoadState::Load, EAttachmentStoreState::Store, {0.1f, 0.1f, 0.1f, 1.0f}};
+		states[1].Depth = {EAttachmentLoadState::Load, EAttachmentStoreState::Store};
 
 		auto environmentMaps = mEnvironment.GetCurrentMaps();
 		auto prefilter = environmentMaps.PreFilter;
 		auto irradiance = environmentMaps.Irradiance;
 		auto brdfLUT = mEnvironment.GetBRDFLUT();
 
-		// global buffers
-		scenePass.PushGlobal(0, 0, mCameraUBO);
-		scenePass.PushGlobal(0, 1, mLights.GetBuffer());
-		scenePass.PushGlobal(3, 0, mModelSSBO);
-		scenePass.PushGlobal(0, 2, brdfLUT);
-		scenePass.PushGlobal(0, 3, prefilter);
-		scenePass.PushGlobal(0, 4, irradiance);
+		static std::string passNames[2] = {"OpaquePass", "TransparentPass"};
+		static std::string pipelineNames[2] = {"MESH_OPAQUE", "MESH_TRANSPARENT"};
 
-		// opaque pass
-		scenePass.BeginPhase(EPhaseType::Graphics);
-		mCameraUBO->SetData(&mView, sizeof(FView));
-		mModelSSBO->SetData(objectData.data(), objectData.size() * sizeof(FPerObjectData));
-		mIndirectDrawBuffer->SetData(drawCommands.data(), drawCommands.size() * sizeof(MultiDrawIndirectCommand));
+		auto &cameraPass = renderer.BeginPass("CameraData", EPassType::OffScreen);
+		cameraPass.BeginPhase(EPhaseType::Transfer);
+		cameraPass.Emplace<CmdSetBufferData>()(mCameraUBO, &mView, sizeof(FView));
+		cameraPass.EndPhase();
+		renderer.EndPass();
 
-		scenePass.Push(mFramebuffer);
-		scenePass.Push(prefilter, EImageAccess::ColorRead);
-		scenePass.Push(irradiance, EImageAccess::ColorRead);
-		scenePass.Push(brdfLUT, EImageAccess::ColorRead);
-		scenePass.Push(mCameraUBO, EBufferAccess::UniformRead);
-		scenePass.Push(mModelSSBO, EBufferAccess::StorageRead);
-		scenePass.Push(mLights.GetBuffer(), EBufferAccess::StorageRead);
+		for (uint32_t i = 0; i < 1; i++)
+		{
+			mFrustrumOcclusionMaterial->SetParam("frustum", MaterialParam(mFrustum.GetPlanes()));
 
-		uint32_t transparentBase = 0;
-		uint32_t opaqueBase = transparentBatch.DrawCommands.size();
+			auto &batch = *mRenderBatches[i];
+			auto instanceCount = batch.InstanceCount();
+			auto instanceBuffer = mInstanceDataBuffer[i];
+			auto visibilityBuffer = mVisibleBuffer[i];
+			auto indirectBuffer = mIndirectDrawBuffer[i];
 
-		scenePass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("MESH_OPAQUE"));
-		opaqueBatch.Draw(scenePass, mIndirectDrawBuffer, opaqueBase);
+			auto &batchData = renderer.BeginPass("Set Batch Data", EPassType::OffScreen);
+			batchData.BeginPhase(EPhaseType::Transfer);
+			batchData.Emplace<CmdClearBuffer>()(visibilityBuffer);
+			batchData.Emplace<CmdClearBuffer>()(instanceBuffer);
+			batchData.Emplace<CmdClearBuffer>()(indirectBuffer);
+			batchData.Emplace<CmdSetBufferData>()(instanceBuffer, &instanceCount, sizeof(uint32_t));
+			batchData.Emplace<CmdSetBufferData>()(instanceBuffer, batch.ObjectDatas.data(), sizeof(ObjectData) * instanceCount, 16U);
+			batchData.Emplace<CmdSetBufferData>()(indirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
+			batchData.EndPhase();
+			renderer.EndPass();
 
-		scenePass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("MESH_TRANSPARENT"));
-		transparentBatch.Draw(scenePass, mIndirectDrawBuffer, transparentBase);
+			// frustum pass
 
+			uint32_t groups = (instanceCount + 256) / 256;
+			auto &occlusionPass = renderer.BeginPass("Occlusion " + passNames[i], EPassType::OffScreen);
+			occlusionPass.BeginPhase(EPhaseType::Compute);
+			occlusionPass.Push(indirectBuffer, EBufferAccess::StorageWrite);
+			occlusionPass.Push(visibilityBuffer, EBufferAccess::StorageWrite);
+			occlusionPass.Push(instanceBuffer, EBufferAccess::StorageRead);
+			occlusionPass.Push(mCameraUBO, EBufferAccess::UniformRead);
+			occlusionPass.PushGlobal(0, 0, mCameraUBO);
+			occlusionPass.PushGlobal(3, 0, instanceBuffer);
+			occlusionPass.PushGlobal(3, 1, indirectBuffer);
+			occlusionPass.PushGlobal(3, 2, visibilityBuffer);
+
+			occlusionPass.Emplace<CmdBindMaterial>()(mFrustrumOcclusionMaterial.get());
+			occlusionPass.Emplace<CmdDispatch>()(groups, 1, 1);
+			occlusionPass.EndPhase();
+			renderer.EndPass();
+
+			// render scene passes
+			auto &pass = renderer.BeginPass("Scene " + passNames[i], EPassType::OffScreen, states[i]);
+			// global buffers
+			pass.PushGlobal(0, 0, mCameraUBO);
+			pass.PushGlobal(0, 1, mLights.GetBuffer());
+			pass.PushGlobal(0, 2, brdfLUT);
+			pass.PushGlobal(0, 3, prefilter);
+			pass.PushGlobal(0, 4, irradiance);
+			pass.PushGlobal(3, 0, instanceBuffer);
+			pass.PushGlobal(3, 2, visibilityBuffer);
+
+			pass.BeginPhase("Phase " + passNames[i], EPhaseType::Graphics);
+			pass.Push(mFramebuffer);
+			pass.Push(prefilter, EImageAccess::ColorRead);
+			pass.Push(irradiance, EImageAccess::ColorRead);
+			pass.Push(brdfLUT, EImageAccess::ColorRead);
+			pass.Push(mCameraUBO, EBufferAccess::UniformRead);
+			pass.Push(mLights.GetBuffer(), EBufferAccess::StorageRead);
+			pass.Push(instanceBuffer, EBufferAccess::StorageRead);
+			// pass.Push(mIndirectDrawBuffers[i], EBufferAccess::IndirectRead);
+			pass.Push(visibilityBuffer, EBufferAccess::StorageRead);
+
+			pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(pipelineNames[i]));
+			batch.Draw(pass, indirectBuffer);
+			pass.EndPhase();
+
+			renderer.EndPass();
+		}
+
+		auto &linePass = renderer.BeginPass("Line Renderer", EPassType::OffScreen, states[1]);
+
+		linePass.BeginPhase("Line Rendering", EPhaseType::Graphics);
+		linePass.PushGlobal(0, 0, mCameraUBO);
+		linePass.Push(mCameraUBO, EBufferAccess::UniformRead);
+		linePass.Push(mFramebuffer);
 		renderer.EndBatching();
+		linePass.EndPhase();
+		renderer.EndPass();
 
-		scenePass.EndPhase();
-
-		scenePass.BeginPhase("Transition to read", EPhaseType::Transfer);
-		scenePass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorRead);
-		scenePass.EndPhase();
-
+		auto &transitionPass = renderer.BeginPass("Transition to read", EPassType::OffScreen, {});
+		transitionPass.BeginPhase("Transition to read", EPhaseType::Transfer);
+		transitionPass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorRead);
+		transitionPass.EndPhase();
 		renderer.EndPass();
 
 		// post process
@@ -260,25 +438,25 @@ namespace BHive
 	{
 		mLights.Submit(light);
 
-		FShadowCascadedCreateInfo shadow_info{};
-		shadow_info.LightDirection = light.GetDirection();
-		shadow_info.CameraProj = mView.Projection;
-		shadow_info.InverseCameraView = mView.View;
-		shadow_info.CameraNearFar = mView.NearFar;
-		shadow_info.LightCascadeFrustumNear = 1.0f;
+		// FShadowCascadedCreateInfo shadow_info{};
+		// shadow_info.LightDirection = light.GetDirection();
+		// shadow_info.CameraProj = mView.Projection;
+		// shadow_info.InverseCameraView = mView.View;
+		// shadow_info.CameraNearFar = mView.NearFar;
+		// shadow_info.LightCascadeFrustumNear = 1.0f;
 
-		mSceneRenderData->ShadowRenderer.SubmitDirectionalLight(shadow_info);
+		// mShadows.SubmitDirectionalLight(shadow_info);
 	}
 
 	void SceneRenderer::Submit(const PointLight &light)
 	{
 		mLights.Submit(light);
 
-		FShadowCubeCreateInfo shadow_info{};
-		shadow_info.LightPosition = light.GetPosition();
-		shadow_info.LightNearFar = {1.0f, light.GetRadius()};
+		// FShadowCubeCreateInfo shadow_info{};
+		// shadow_info.LightPosition = light.GetPosition();
+		// shadow_info.LightNearFar = {1.0f, light.GetRadius()};
 
-		mSceneRenderData->ShadowRenderer.SubmitPointLight(shadow_info);
+		// mShadows.SubmitPointLight(shadow_info);
 	}
 
 	void SceneRenderer::Submit(const SpotLight &light)
@@ -287,62 +465,19 @@ namespace BHive
 		auto outer = glm::cos(glm::radians(info.OuterCutoff));*/
 		mLights.Submit(light);
 
-		FShadowFrustumCreateInfo shadow_info{};
-		shadow_info.LightDirection = light.GetDirection();
-		shadow_info.LightPosition = light.GetPosition();
+		// FShadowFrustumCreateInfo shadow_info{};
+		// shadow_info.LightDirection = light.GetDirection();
+		// shadow_info.LightPosition = light.GetPosition();
 
-		// TODO : maybe radius
-		shadow_info.LightAngleNearFar = {glm::radians(light.GetOuterAngleDegrees()), .1f, light.GetRadius()};
+		// // TODO : maybe radius
+		// shadow_info.LightAngleNearFar = {glm::radians(light.GetOuterAngleDegrees()), .1f, light.GetRadius()};
 
-		mSceneRenderData->ShadowRenderer.SubmitSpotLight(shadow_info);
+		// mShadows.SubmitSpotLight(shadow_info);
 	}
 
-	void SceneRenderer::Submit(const FMeshInfo &info)
+	void SceneRenderer::SubmitMesh(const FMeshSubmissionRequest &info)
 	{
-		const auto &mesh = info.Mesh;
-		const auto &transform = info.Transform;
-		const auto &materials = info.Materials;
-
-		// Cull the mesh if it is not visible
-		if (!mesh || IsMeshCulled(mesh, transform))
-			return;
-
-		auto &subMeshes = mesh->GetSubMeshes();
-		Ref<FStaticMeshRenderData> data;
-
-		for (auto &s : subMeshes)
-		{
-			auto material = materials.get_material(s.MaterialIndex);
-			if (!material)
-				return;
-
-			if (mesh->get_type() == rttr::type::get<SkeletalMesh>())
-			{
-				auto skeletal_data = CreateRef<FSkeletalMeshRenderData>();
-				skeletal_data->SubMesh = s;
-				skeletal_data->Bones = info.Bones;
-				data = skeletal_data;
-			}
-			else
-			{
-				auto static_data = CreateRef<FStaticMeshRenderData>();
-				static_data->SubMesh = s;
-				data = static_data;
-			}
-
-			data->VAO = mesh->GetVertexArray();
-			data->Transform = info.Transform;
-			data->EntityID = info.EntityID;
-			data->Instances = info.Instances;
-
-			if (material->IsTransparent())
-				mSceneRenderData->TransparentData[material].emplace_back(data);
-			else
-				mSceneRenderData->OpaqueData[material].emplace_back(data);
-
-			if (material->ShouldCastShadows())
-				mSceneRenderData->ShadowPassRenderData.emplace_back(data);
-		}
+		mRenderQueue->AddRequest(info);
 	}
 
 	float SceneRenderer::GetDistanceToCamera(const FTransform &transform)
@@ -378,15 +513,5 @@ namespace BHive
 	void SceneRenderer::ClearPostProcessEffects()
 	{
 		// mPostProcessStack.Materials.clear();
-	}
-
-	bool SceneRenderer::IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform)
-	{
-		if (!mesh)
-			return true;
-
-		const auto &bounds = mesh->GetBoundingBox();
-		auto volume = FSphereVolume(bounds.GetCenter(), bounds.GetRadius());
-		return !volume.InFrustum(mFrustum, FTransform(transform));
 	}
 } // namespace BHive

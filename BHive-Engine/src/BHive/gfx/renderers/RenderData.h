@@ -6,59 +6,57 @@
 #include "core/math/Transform.h"
 #include "gfx/Color.h"
 
-#define MAX_LIGHTS 32
-
 namespace BHive
 {
 	class VertexArray;
 	class SkeletalPose;
+	class BaseMesh;
 
-	struct FInstanceInfo
+	struct FMeshSubmissionRequest
 	{
-		std::vector<glm::mat4> Transforms;
-	};
+		Ref<BaseMesh> Mesh;
 
-	struct FBoneInfo
-	{
-		std::vector<glm::mat4> Bones;
-	};
-
-	struct FMeshRenderData
-	{
-		enum Type
-		{
-			Static,
-			Skeletal,
-			Billboard
-		};
+		MaterialTable Materials;
 
 		FTransform Transform;
 
+		int32_t EntityID = -1;
+
+		std::vector<glm::mat4> InstanceTransforms;
+
+		std::vector<glm::mat4> BoneTransforms;
+	};
+
+	struct FMeshSubmissionContext
+	{
 		Ref<VertexArray> VAO;
 
-		FSubMesh SubMesh;
-
-		FInstanceInfo Instances;
+		FTransform Transform;
 
 		int32_t EntityID = -1;
 
-		virtual ~FMeshRenderData() = default;
+		std::vector<glm::mat4> InstanceTransforms;
 
-		virtual Type GetRenderDataType() const = 0;
+		std::vector<glm::mat4> BoneTransforms;
 	};
 
-	struct FStaticMeshRenderData : public FMeshRenderData
+	struct FSubMeshSubmission
 	{
+		AABB BoundingBox{};
 
-		Type GetRenderDataType() const override { return Type::Static; }
+		FSubMesh SubMesh;
+
+		uint32_t MeshIndex = 0;
+
+		uint32_t ContextIndex = 0;
+
+		uint32_t MaterialIndex = 0;
+
+		// opaque/transparent, cast_shadows
+		std::bitset<2> BitFlags;
 	};
 
-	struct FSkeletalMeshRenderData : public FStaticMeshRenderData
-	{
-		FBoneInfo Bones;
-
-		Type GetRenderDataType() const override { return Type::Skeletal; }
-	};
+	using SubMeshSubmissions = std::vector<FSubMeshSubmission>;
 
 	struct FShadowCascadedCreateInfo
 	{
@@ -90,22 +88,5 @@ namespace BHive
 	};
 
 	class BaseMesh;
-
-	struct FMeshInfo
-	{
-		Ref<BaseMesh> Mesh;
-
-		MaterialTable Materials;
-
-		FTransform Transform;
-
-		int32_t EntityID = -1;
-
-		FInstanceInfo Instances;
-
-		FBoneInfo Bones;
-	};
-
-	using FMeshRenderDatas = std::vector<Ref<FMeshRenderData>>;
 
 } // namespace BHive

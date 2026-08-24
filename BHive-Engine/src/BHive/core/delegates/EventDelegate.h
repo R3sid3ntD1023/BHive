@@ -108,7 +108,7 @@ namespace BHive
 		void unbind(const EventDelegateHandle &handle)
 		{
 			if (handle == mHandle)
-				mHandle.reset();
+				mHandle = 0;
 		}
 
 		bool is_bound() const { return (bool)mHandle; }

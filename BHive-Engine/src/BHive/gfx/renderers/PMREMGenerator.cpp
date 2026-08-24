@@ -46,7 +46,7 @@ namespace BHive
 		pass.Push(mInput, EImageAccess::ComputeSampled);
 		pass.Push(mEnvironmentTextures.Environment, EImageAccess::ComputeStorageWrite, {0, 1, 0, 6});
 		pass.Emplace<CmdBindMaterial>()(&conversionBindings);
-		pass.Emplace<CmdDisptach>()((mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 6);
+		pass.Emplace<CmdDispatch>()((mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 6);
 		pass.EndPhase();
 
 		// Phase 1 : generate mipmaps for environment
@@ -59,7 +59,7 @@ namespace BHive
 		pass.Push(mEnvironmentTextures.Environment, EImageAccess::ComputeSampled);
 		pass.Push(mEnvironmentTextures.Irradiance, EImageAccess::ComputeStorageWrite, {0, 1, 0, 6});
 		pass.Emplace<CmdBindMaterial>()(&convolutionBindings);
-		pass.Emplace<CmdDisptach>()((mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 1);
+		pass.Emplace<CmdDispatch>()((mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 1);
 		pass.EndPhase();
 
 		// Phase 3 - N: Prefilter Specular Mip Chain
@@ -82,7 +82,7 @@ namespace BHive
 			pass.Push(mEnvironmentTextures.Environment, EImageAccess::ComputeSampled);
 			pass.Push(mEnvironmentTextures.PreFilter, EImageAccess::ComputeStorageWrite, {mip, 1, 0, 6});
 			pass.Emplace<CmdBindMaterial>()(&prefilterBindings);
-			pass.Emplace<CmdDisptach>()((s + 7) / 8, (s + 7) / 8, 6);
+			pass.Emplace<CmdDispatch>()((s + 7) / 8, (s + 7) / 8, 6);
 			pass.EndPhase();
 		}
 
@@ -142,7 +142,7 @@ namespace BHive
 		auto &pass = graph.AddPass("Generate BRDFLut", EPassType::OffScreen);
 		pass.BeginPhase(EPhaseType::Compute);
 		pass.Emplace<CmdBindMaterial>()(&bindings);
-		pass.Emplace<CmdDisptach>()(size / 8, size / 8, 1);
+		pass.Emplace<CmdDispatch>()(size / 8, size / 8, 1);
 		pass.EndPhase();
 		Renderer::Get().ExecuteGraph(graph);
 

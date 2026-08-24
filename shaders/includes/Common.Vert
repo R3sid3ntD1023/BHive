@@ -1,7 +1,7 @@
 //mat4 bone_matrix = GetBoneMatrix(vWeights, vBoneIds, bones);
 
-uint objectIndex = gl_BaseInstance;
-mat4 model =  object[gl_BaseInstance].Model;// * bone_matrix;
+uint instanceID = visibleIndices[gl_InstanceIndex];
+mat4 model =  objects[instanceID].model;// * bone_matrix;
 vec4 worldPos = model * vec4(vPosition, 1);
 
 mat3 normal_matrix = transpose(inverse(mat3(model)));

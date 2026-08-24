@@ -11,17 +11,20 @@ namespace BHive
 		LOW
 	};
 
-	template<typename...TArgs>
+	template <typename... TArgs>
 	struct DelegateEntry
 	{
 		EEventPriority Priority;
-		std::function<void(void*, TArgs...)> Invoke;
+		std::function<void(void *, TArgs...)> Invoke;
 		void *Instance = nullptr;
 		std::weak_ptr<void> WeakPtr;
 		bool IsWeak = false;
+		uint64_t Handle = 0;
 	};
 
-	template<typename... TArgs>
+	using MultiEventHandle = uint64_t;
+
+	template <typename... TArgs>
 	class MultiEventDelegate
 	{
 	public:
@@ -30,7 +33,7 @@ namespace BHive
 		MultiEventDelegate() = default;
 
 		template <typename T>
-		void Add(T *instance, void (T::*func)(TArgs...), EEventPriority prio = EEventPriority::NORMAL)
+		MultiEventHandle Add(T *instance, void (T::*func)(TArgs...), EEventPriority prio = EEventPriority::NORMAL)
 		{
 			Entry e;
 			e.Priority = prio;
@@ -38,13 +41,15 @@ namespace BHive
 			e.IsWeak = false;
 
 			e.Invoke = [func](void *obj, TArgs... args) -> void { (static_cast<T *>(obj)->*func)(args...); };
-
-			mEntries.push_back(e);
+			e.Handle = GenerateNextHanldle();
+			mEntries.emplace_back(e);
 			Sort();
+
+			return e.Handle;
 		}
 
 		template <typename T>
-		void AddWeak(std::shared_ptr<T> instance, void (T::*func)(TArgs...), EEventPriority prio = EEventPriority::NORMAL)
+		MultiEventHandle AddWeak(std::shared_ptr<T> instance, void (T::*func)(TArgs...), EEventPriority prio = EEventPriority::NORMAL)
 		{
 			Entry e;
 			e.Priority = prio;
@@ -54,8 +59,14 @@ namespace BHive
 
 			e.Invoke = [func](void *obj, TArgs... args) -> void { (static_cast<T *>(obj)->*func)(args...); };
 
-			mEntries.push_back(e);
+			mEntries.emplace_back(e);
 			Sort();
+			return e.Handle;
+		}
+
+		void Remove(MultiEventHandle handle)
+		{
+			mEntries.erase(std::remove_if(mEntries.begin(), mEntries.end(), [handle](const auto &e) { return e.Handle == handle; }), mEntries.end());
 		}
 
 		void Broadcast(TArgs... args)
@@ -63,9 +74,9 @@ namespace BHive
 			std::vector<Entry> snapshot;
 			{
 				CleanupExpired();
-				snapshot = mEntries;//copy for lock free iteration
+				snapshot = mEntries; // copy for lock free iteration
 			}
-		
+
 			for (auto &e : snapshot)
 			{
 				e.Invoke(e.Instance, args...);
@@ -74,6 +85,8 @@ namespace BHive
 
 	private:
 		std::vector<Entry> mEntries;
+		static inline std::atomic<uint64_t> sNextHandle = 1;
+		uint64_t GenerateNextHanldle() { return sNextHandle++; }
 
 		void Sort()
 		{
@@ -85,10 +98,10 @@ namespace BHive
 			mEntries.erase(std::remove_if(mEntries.begin(), mEntries.end(), [](const Entry &e) { return e.IsWeak && e.WeakPtr.expired(); }), mEntries.end());
 		}
 	};
-}
+} // namespace BHive
 
-#define DECLARE_MULTI_EVENT(name, ...)                                    \
+#define DECLARE_MULTI_EVENT(name, ...)                                   \
 	struct name##Event : public ::BHive::MultiEventDelegate<__VA_ARGS__> \
-	{                                                               \
-		name##Event() = default;                                    \
+	{                                                                    \
+		name##Event() = default;                                         \
 	};

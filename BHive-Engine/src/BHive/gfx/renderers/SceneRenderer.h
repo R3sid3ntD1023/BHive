@@ -4,7 +4,8 @@
 #include "RenderData.h"
 #include "LightCasters.h"
 #include "postprocess/PostProcessStack.h"
-#include "gfx/renderers/Lights.h"
+#include "Lights.h"
+#include "ShadowRenderer.h"
 #include "PMREMGenerator.h"
 #include "EnvironmentSystem.h"
 
@@ -58,7 +59,7 @@ namespace BHive
 
 		void Submit(const SpotLight &light);
 
-		void Submit(const FMeshInfo &info);
+		void SubmitMesh(const FMeshSubmissionRequest &info);
 
 		void Resize(const glm::uvec2 &size);
 
@@ -89,8 +90,6 @@ namespace BHive
 		const EnvironmentSystem &GetEnvironmentSystem() const { return mEnvironment; }
 
 	private:
-		bool IsMeshCulled(const Ref<BaseMesh> &mesh, const glm::mat4 &transform);
-
 		float GetDistanceToCamera(const FTransform &transform);
 
 	private:
@@ -100,21 +99,31 @@ namespace BHive
 
 		Ref<Texture> mOutputTexture;
 
+		Ref<Material> mFrustrumOcclusionMaterial;
+
+		Ref<GeneralBuffer> mCameraUBO;
+
+		std::array<Ref<GeneralBuffer>, 2> mVisibleBuffer;
+
+		std::array<Ref<GeneralBuffer>, 2> mIndirectDrawBuffer;
+
+		std::array<Ref<GeneralBuffer>, 2> mInstanceDataBuffer;
+
 		FView mView;
+
 		Frustum mFrustum;
 
-		Ref<struct FSceneRenderData> mSceneRenderData;
-		Ref<struct FSceneRenderData> mTransparentRenderData;
+		Ref<struct FRenderQueue> mRenderQueue;
+
+		std::vector<Ref<struct RenderBatch>> mRenderBatches;
 
 		glm::uvec2 mSize{0, 0};
 
 		PostProcessStack mPostProcessStack;
 
-		Ref<GeneralBuffer> mCameraUBO;
-		Ref<GeneralBuffer> mModelSSBO;
-		Ref<GeneralBuffer> mIndirectDrawBuffer;
-
 		Lights mLights;
+
+		ShadowRenderer mShadows;
 
 		EnvironmentSystem mEnvironment;
 	};

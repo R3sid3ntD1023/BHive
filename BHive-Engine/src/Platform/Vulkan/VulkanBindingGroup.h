@@ -41,7 +41,7 @@ namespace BHive
 	private:
 		void BuildBindings(const FShaderReflectionLookUp &refl);
 
-		vk::DescriptorBufferInfo BuildBufferInfo(const FBindingInfo &bindInfo) const;
+		vk::DescriptorBufferInfo BuildBufferInfo(const FBindingInfo &bindInfo, uint32_t frame) const;
 
 		vk::DescriptorImageInfo BuildImageInfo(const FBindingInfo &bindInfo, uint32_t mip) const;
 
@@ -49,22 +49,20 @@ namespace BHive
 
 		void MakeDirty();
 
-		void BuildWriteCopies();
+		void BuildWriteCopies(uint32_t frame);
 
 		void CreateDescriptorSet(vk::DescriptorSetLayout layout);
 
 	private:
-		vk::DescriptorSet mSet = VK_NULL_HANDLE;
-
 		uint32_t mSetIndex;
 
 		std::vector<FBindingInfo> mBindings;
 
-		bool mNeedsUpdate = true;
-
+		std::bitset<2> mNeedsUpdate;
 		std::vector<vk::WriteDescriptorSet> mCachedWrites;
 		std::vector<vk::DescriptorImageInfo> mCachedImageInfos;
 		std::vector<vk::DescriptorBufferInfo> mCachedBufferInfos;
+		std::vector<vk::DescriptorSet> mSets;
 	};
 
 } // namespace BHive

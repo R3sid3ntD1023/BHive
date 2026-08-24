@@ -14,7 +14,7 @@ namespace BHive
 		mLightInfo.NumLights = {0, 0, 0, 0};
 	}
 
-	void Lights::Flush()
+	void Lights::EndRecording()
 	{
 		mLightBuffer->SetData(&mLightInfo, sizeof(FLightBufferData));
 	}

@@ -149,7 +149,7 @@ namespace BHive
 
 		// submit meshes
 		{
-			std::vector<FMeshInfo> infos{};
+			std::vector<FMeshSubmissionRequest> infos{};
 
 			// if (mMesh)
 			// {
@@ -162,7 +162,7 @@ namespace BHive
 			infos.emplace_back(mPlane, mMaterials[3], mObjectTransforms[4]);
 
 			for (auto &info : infos)
-				mSceneRenderer->Submit(info);
+				mSceneRenderer->SubmitMesh(info);
 		}
 
 		// lines

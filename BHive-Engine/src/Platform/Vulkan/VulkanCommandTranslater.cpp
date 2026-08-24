@@ -30,6 +30,20 @@ namespace BHive
 		{
 			switch (cmd->GetType())
 			{
+			case ECommandType::SetBufferData:
+			{
+				auto &c = CmdCast<CmdSetBufferData>(*cmd);
+				auto buffer = c.BufferRef->GetNativeHandle().As<VulkanBuffer>();
+				buffer->Upload(c.Data.data(), c.Size, c.Offset);
+			}
+			break;
+			case ECommandType::ClearBuffer:
+			{
+				auto &c = CmdCast<CmdClearBuffer>(*cmd);
+				auto buffer = c.BufferRef->GetNativeHandle().As<VulkanBuffer>();
+				buffer->ClearData();
+			}
+			break;
 			case ECommandType::GenerateMipMaps:
 			{
 				auto &c = CmdCast<CmdGenerateMipMaps>(*cmd);
@@ -39,7 +53,7 @@ namespace BHive
 			break;
 			case ECommandType::Dispatch:
 			{
-				auto &c = CmdCast<CmdDisptach>(*cmd);
+				auto &c = CmdCast<CmdDispatch>(*cmd);
 				cmdbuffer.dispatch(c.X, c.Y, c.Z);
 			}
 			break;
@@ -114,7 +128,7 @@ namespace BHive
 
 				vao->Bind(cmdbuffer, frame);
 				cmdbuffer.setPrimitiveTopology(topology);
-				cmdbuffer.drawIndexedIndirect(buf.GetBuffer(), c.Offset * stride, c.DrawCount, stride);
+				cmdbuffer.drawIndexedIndirect(buf.GetBuffer(), c.Offset, c.DrawCount, stride);
 			}
 			break;
 			case ECommandType::SetLineWidth:
@@ -145,7 +159,12 @@ namespace BHive
 			auto handle = b.Buffer->GetNativeHandle().As<VulkanBuffer>();
 			vk::Buffer buf = handle->GetNative(frame).GetBuffer();
 
-			bufBarriers.emplace_back(ToStage(b.Src), ToAccess(b.Src), ToStage(b.Dst), ToAccess(b.Dst), VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, buf, 0, VK_WHOLE_SIZE);
+			auto srcStage = ToStage(b.Src);
+			auto dstStage = ToStage(b.Dst);
+			auto srcAccess = ToAccess(b.Src);
+			auto dstAccess = ToAccess(b.Dst);
+
+			bufBarriers.emplace_back(srcStage, srcAccess, dstStage, dstAccess, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, buf, 0, VK_WHOLE_SIZE);
 
 			vk::DependencyInfo depInfo({}, {}, bufBarriers);
 			cmd.pipelineBarrier2(depInfo);

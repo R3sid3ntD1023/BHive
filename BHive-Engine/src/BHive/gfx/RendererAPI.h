@@ -6,18 +6,19 @@
 
 namespace BHive
 {
+#define MULTI_DRAW_INDIRECT_STRIDE sizeof(MultiDrawIndirectCommand)
+
 	class WindowContext;
 
 	struct MultiDrawIndirectCommand
 	{
-		uint32_t Count;
-		uint32_t InstanceCount;
-		uint32_t FirstIndex;
-		int32_t BaseVertex;
-		uint32_t BaseInstance;
+		uint32_t indexCount = 0;
+		uint32_t instanceCount = 0;
+		uint32_t firstIndex = 0;
+		int32_t vertexOffset = 0;
+		uint32_t firstInstance = 0;
 	};
 
-	using FComputeFunc = std::function<void(FComputeBindings &)>;
 	using FQeueuDeletionFunc = std::function<void(uint32_t)>;
 
 	class BHIVE_API RendererAPI

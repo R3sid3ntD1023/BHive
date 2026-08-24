@@ -6,13 +6,6 @@
 
 namespace BHive
 {
-	struct FBufferUploadInfo
-	{
-		size_t size = 0;
-		uint32_t offset = 0;
-		const void *data = nullptr;
-	};
-
 	struct VulkanBuffer : public INativeObject
 	{
 		~VulkanBuffer();
@@ -21,7 +14,9 @@ namespace BHive
 
 		const AllocatedBuffer &GetNative(uint32_t frame = 0) const;
 
-		void Upload(const FBufferUploadInfo &up);
+		void Upload(const void *data, size_t size, uint32_t offset);
+
+		void ClearData();
 
 		bool NeedsBarrier() const { return mLifeTime == EBufferLifetime::Static; }
 
@@ -43,6 +38,8 @@ namespace BHive
 
 		void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 
+		void Clear() override;
+
 		uint32_t GetCount() const override { return mCount; }
 
 		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mBuffer); }
@@ -63,6 +60,8 @@ namespace BHive
 
 		void SetData(const void *data, size_t size, uint32_t offset = 0) override;
 
+		void Clear() override;
+
 		const BufferLayout &GetLayout() const override { return mLayout; }
 
 		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mBuffer); }
@@ -80,6 +79,8 @@ namespace BHive
 		VulkanGeneralBuffer(size_t size, EBufferType type, EBufferLifetime lifeTime, const void *data);
 
 		void SetData(const void *data, size_t size, uint32_t offset = 0) override;
+
+		void Clear() override;
 
 		// unused in vulkan
 		void BindAtBindingPoint(uint32_t binding) override {}

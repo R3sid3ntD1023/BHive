@@ -1,5 +1,4 @@
 #include <Core.glsl>
-#include <ObjectBuffers.glsl>
 
 layout(location = 0) in vec3 vPosition;
 layout(location = 1) in vec2 vTexCoord;
@@ -17,6 +16,18 @@ layout(std140, set = 0, binding = 0) uniform CameraBuffer
 	mat4 u_view;
 	vec4 u_near_far;
 	vec4 u_camera_position;
+};
+
+layout(std430, set = 3, binding = 0) readonly buffer Objects
+{
+    uint objectCount;
+    ObjectData objects[];
+};
+
+layout(std430, set = 3, binding = 2) readonly buffer Visible
+{
+    uint visibleCount;
+    uint visibleIndices[];
 };
 
 layout(location = 0) out struct VS_OUT
@@ -42,5 +53,5 @@ void main()
 	vs_out.CameraPosition = u_camera_position.xyz;
 	vs_out.Color = vColor;
 	vs_out.InstanceID = float(gl_InstanceIndex);
-	vs_out.DrawID = float(gl_DrawID);
+	vs_out.DrawID = float(gl_BaseInstance);
 }

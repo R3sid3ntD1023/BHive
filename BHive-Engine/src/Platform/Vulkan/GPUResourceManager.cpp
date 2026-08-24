@@ -37,8 +37,6 @@ namespace BHive
 
 		VulkanBackend::SetObjectName(*buffer, name);
 
-		LOG_TRACE("Created Buffer name {}, id {}", name, id);
-
 		return id;
 	}
 
@@ -94,8 +92,6 @@ namespace BHive
 		sampler = device.createSampler(info);
 		VulkanBackend::SetObjectName(*sampler, name);
 
-		LOG_TRACE("Create sampler with name {} id {}", name, id);
-
 		return id;
 	}
 
@@ -141,8 +137,6 @@ namespace BHive
 
 				allocStorage.Remove(handle);
 				bufStorage.Remove(handle);
-
-				LOG_TRACE("Destroyed Buffer with id {}", handle);
 			});
 	}
 
@@ -193,11 +187,6 @@ namespace BHive
 		if (auto smp = image.Sampler)
 		{
 			DestroySampler(smp);
-			LOG_TRACE("Destroyed Sampler with id {}, name {}", smp, image.DebugName);
-		}
-		else
-		{
-			LOG_TRACE("No Sampler for {}", image.DebugName);
 		}
 
 		if (auto def = image.Views.Default)
@@ -230,8 +219,6 @@ namespace BHive
 		RenderCommand::QueueDeletion(
 			[this, handle, name](uint32_t)
 			{
-				LOG_TRACE("Destroyed image with name {} id {}", name, handle);
-
 				if (mExternalImages.contains(handle))
 				{
 					auto &imgStorage = GetStorage<vk::Image>();

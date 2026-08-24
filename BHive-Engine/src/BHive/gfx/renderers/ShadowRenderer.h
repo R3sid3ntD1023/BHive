@@ -13,12 +13,15 @@ namespace BHive
 	class ShadowRenderer
 	{
 	public:
-		void Init(uint32_t max_lights, uint32_t cascaded_levels = 5);
+		static constexpr uint32_t sMaxLights = 32;
 
-		void Begin();
-		void End();
+	public:
+		void Init(uint32_t cascaded_levels = 5);
 
-		void Render(const FMeshRenderDatas &data);
+		void BeginRecording();
+		void EndRecording();
+
+		void Render(const SubMeshSubmissions &data);
 
 		void SubmitDirectionalLight(const FShadowCascadedCreateInfo &info);
 		void SubmitSpotLight(const FShadowFrustumCreateInfo &info);

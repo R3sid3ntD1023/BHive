@@ -1,13 +1,8 @@
-struct PerObjectData
-{
-	mat4 Model;
-	//uint InstanceCount;
-};
 
-layout(std140, set = 3, binding = 0) restrict readonly buffer ObjectSSBO
-{
-	PerObjectData object[];
-};
+
+
+
+
 
 
 //layout(std140, set = 3, binding = 1) restrict readonly buffer InstanceSSBO

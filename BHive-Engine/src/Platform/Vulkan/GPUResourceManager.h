@@ -30,11 +30,8 @@ namespace BHive
 			if (!Contains(handle))
 			{
 				mResources[handle] = std::move(resource);
-				LOG_WARN("Added External resource {}", handle);
 				return;
 			}
-
-			LOG_WARN("Handle already exists! -> {}", handle);
 		}
 
 		void Remove(ResourceID handle) override
@@ -42,11 +39,8 @@ namespace BHive
 			if (Contains(handle))
 			{
 				mResources.erase(handle);
-				LOG_WARN("Removed resource {}", handle);
 				return;
 			}
-
-			LOG_WARN("Handle does not exists! -> {}", handle);
 		}
 
 		bool Contains(ResourceID handle) const override { return mResources.contains(handle); }
@@ -55,7 +49,6 @@ namespace BHive
 		{
 			ASSERT(!Contains(handle), "handle already exists {}", handle)
 			mResources.emplace(handle, VK_NULL_HANDLE);
-			LOG_WARN("Added resource {}", handle);
 			return mResources.at(handle);
 		}
 

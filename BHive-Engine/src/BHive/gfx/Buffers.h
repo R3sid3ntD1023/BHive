@@ -2,15 +2,19 @@
 
 #include "BufferBase.h"
 #include "BufferLayout.h"
+#include "core/EnumFlags.h"
 
 namespace BHive
 {
-	enum class EBufferType
+	enum class EBufferType : uint8_t
 	{
-		UniformBuffer = 0,
-		StorageBuffer = 1 << 0,
-		IndirectBuffer = 2 << 0
+		Undefined = 0,
+		UniformBuffer = BIT(0),
+		StorageBuffer = BIT(1),
+		IndirectBuffer = BIT(2)
 	};
+
+	ENABLE_BITMASK_OPERATORS(EBufferType)
 
 	enum class EBufferLifetime
 	{

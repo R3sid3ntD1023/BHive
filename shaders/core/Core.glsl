@@ -3,10 +3,26 @@
 #define UNLIT BIT(0)
 #define PI 3.14159265359
 
-//bones
-#define MAX_BONES 200
-#define MAX_BONE_INFLUENCE 4
+struct ObjectData
+{	
+	mat4 model; //model matrix
+	vec4 center_radius;//bounding sphere center
+    uint meshIndex; // which mesh this instance belongs to	
+};
 
+struct IndirectDrawCommand
+{
+    uint indexCount;
+    uint instanceCount;
+    uint indexOffset;
+    int vertexOffset;
+    uint firstInstance;
+};
+
+struct Frustum
+{
+    vec4 planes[6];
+};
 
 vec4 EncodeEntityID(in int id)
 {
@@ -186,6 +202,10 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir, float scale, in sampler2D dep
 
 	return prevTexCoords * weight + current_coords * (1.0 - weight);
 }
+
+//bones
+#define MAX_BONES 200
+#define MAX_BONE_INFLUENCE 4
 
 bool HasBones(ivec4 indices)
 {

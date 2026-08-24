@@ -25,7 +25,38 @@ namespace BHive
 		ECommandType GetType() const override { return ECommandType::GenerateMipMaps; }
 	};
 
-	struct CmdDisptach : FCommand
+	struct CmdClearBuffer : FCommand
+	{
+		Ref<BufferBase> BufferRef;
+
+		void operator()(const Ref<BufferBase> &b) { BufferRef = b; }
+
+		ECommandType GetType() const override { return ECommandType::ClearBuffer; }
+	};
+
+	struct CmdSetBufferData : FCommand
+	{
+		Ref<BufferBase> BufferRef;
+
+		std::vector<std::byte> Data;
+
+		uint32_t Size;
+
+		uint32_t Offset;
+
+		void operator()(const Ref<BufferBase> &b, const void *data, size_t size, uint32_t offset = 0)
+		{
+			BufferRef = b;
+			Size = size;
+			Offset = offset;
+			Data.resize(size);
+			std::memcpy(Data.data(), data, size);
+		}
+
+		ECommandType GetType() const override { return ECommandType::SetBufferData; }
+	};
+
+	struct CmdDispatch : FCommand
 	{
 		uint32_t X, Y, Z;
 

@@ -100,13 +100,13 @@ namespace BHive
 				if (!mesh)
 					continue;
 
-				FMeshInfo info{};
+				FMeshSubmissionRequest info{};
 				info.Mesh = mesh;
 				info.Materials = component.GetMaterials();
 				info.Transform = component.GetWorldTransform();
 				info.EntityID = (int32_t)e;
 
-				renderer->Submit(info);
+				renderer->SubmitMesh(info);
 			}
 		}
 
@@ -121,14 +121,14 @@ namespace BHive
 
 				const auto &instances = component.GetInstances();
 
-				FMeshInfo info{};
+				FMeshSubmissionRequest info{};
 				info.Mesh = mesh;
 				info.Materials = component.GetMaterials();
 				info.Transform = component.GetWorldTransform();
 				info.EntityID = (int32_t)e;
-				info.Instances = {instances};
+				info.InstanceTransforms = {instances};
 
-				renderer->Submit(info);
+				renderer->SubmitMesh(info);
 			}
 		}
 
@@ -144,14 +144,14 @@ namespace BHive
 				auto t = sc.GetWorldTransform();
 				auto pose = sc.GetSkeletalMesh()->GetDefaultPose();
 
-				FMeshInfo info{};
+				FMeshSubmissionRequest info{};
 				info.Mesh = sc.GetSkeletalMesh();
 				info.Materials = sc.GetMaterials();
 				info.Transform = t;
 				info.EntityID = (int32_t)e;
-				info.Bones.Bones = pose->GetTransformsJointSpace();
+				info.BoneTransforms = pose->GetTransformsJointSpace();
 
-				renderer->Submit(info);
+				renderer->SubmitMesh(info);
 				// LineRenderer::DrawAABB(sc.GetSkeletalMesh()->GetBoundingBox(), FColor::Red, t, (int32_t)e);
 			}
 		}

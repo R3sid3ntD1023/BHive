@@ -16,19 +16,19 @@ namespace BHive
 
 		vk::BufferUsageFlags ToVkBufferType(EBufferType type)
 		{
-			switch (type)
-			{
-			case BHive::EBufferType::UniformBuffer:
-				return vk::BufferUsageFlagBits::eUniformBuffer;
-			case BHive::EBufferType::StorageBuffer:
-				return vk::BufferUsageFlagBits::eStorageBuffer;
-			case BHive::EBufferType::IndirectBuffer:
-				return vk::BufferUsageFlagBits::eIndirectBuffer;
-			default:
-				break;
-			}
-			ASSERT(false)
-			return (vk::BufferUsageFlagBits)0;
+			vk::BufferUsageFlags usage{};
+
+			if (HasFlag(type, EBufferType::StorageBuffer))
+				usage |= vk::BufferUsageFlagBits::eStorageBuffer;
+
+			if (HasFlag(type, EBufferType::UniformBuffer))
+				usage |= vk::BufferUsageFlagBits::eUniformBuffer;
+
+			if (HasFlag(type, EBufferType::IndirectBuffer))
+				usage |= vk::BufferUsageFlagBits::eIndirectBuffer;
+
+			ASSERT(usage != (vk::BufferUsageFlags)0);
+			return usage;
 		}
 
 	} // namespace utils
@@ -59,7 +59,7 @@ namespace BHive
 		return (mLifeTime == EBufferLifetime::Static) ? mBuffers[0] : mBuffers[frame];
 	}
 
-	void VulkanBuffer::Upload(const FBufferUploadInfo &up)
+	void VulkanBuffer::Upload(const void *data, size_t size, uint32_t offset)
 	{
 		if (mLifeTime != EBufferLifetime::Dynamic)
 			return;
@@ -67,7 +67,20 @@ namespace BHive
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			auto mapped = mBuffers[i].GetAllocation().MappedPtr;
-			std::memcpy(static_cast<std::byte *>(mapped) + up.offset, up.data, up.size);
+			ASSERT(offset + size <= mBuffers[i].Size);
+			std::memcpy(static_cast<std::byte *>(mapped) + offset, data, size);
+		}
+	}
+
+	void VulkanBuffer::ClearData()
+	{
+		if (mLifeTime != EBufferLifetime::Dynamic)
+			return;
+
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			auto mapped = mBuffers[i].GetAllocation().MappedPtr;
+			std::memset(mapped, 0, mBuffers[i].Size);
 		}
 	}
 
@@ -76,12 +89,15 @@ namespace BHive
 		auto info = vk::BufferCreateInfo({}, size, usage | vk::BufferUsageFlagBits::eTransferDst);
 		auto bufferID = VulkanBackend::GetGPUResourceManager().CreateBuffer(info, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
-		auto stageInfo = vk::BufferCreateInfo({}, size, vk::BufferUsageFlagBits::eTransferSrc);
+		auto stageInfo = vk::BufferCreateInfo({}, size, vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eTransferDst);
 		auto stageID = VulkanBackend::GetGPUResourceManager().CreateBuffer(stageInfo, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
 		mBuffers[0] = AllocatedBuffer{bufferID, size};
 		mBuffers[1] = AllocatedBuffer{stageID, size};
 		VulkanBackend::GetGPUResourceManager().MapMemory(stageID, 0, size);
+
+		if (!data)
+			return;
 
 		SingleTimeCommand cmd{};
 		auto mapped_memory = mBuffers[1].GetAllocation().MappedPtr;
@@ -105,8 +121,7 @@ namespace BHive
 
 		if (data)
 		{
-			FBufferUploadInfo info{.size = size, .offset = 0, .data = data};
-			Upload(info);
+			Upload(data, size, 0);
 		}
 	}
 
@@ -118,7 +133,12 @@ namespace BHive
 
 	void VulkanIndexBuffer::SetData(const void *data, size_t size, uint32_t offset)
 	{
-		mBuffer.Upload({size, offset, data});
+		mBuffer.Upload(data, size, offset);
+	}
+
+	void VulkanIndexBuffer::Clear()
+	{
+		mBuffer.ClearData();
 	}
 
 	VulkanVertexBuffer::VulkanVertexBuffer(size_t size, EBufferLifetime lifeTime, const void *data)
@@ -128,7 +148,12 @@ namespace BHive
 
 	void VulkanVertexBuffer::SetData(const void *data, size_t size, uint32_t offset)
 	{
-		mBuffer.Upload({size, offset, data});
+		mBuffer.Upload(data, size, offset);
+	}
+
+	void VulkanVertexBuffer::Clear()
+	{
+		mBuffer.ClearData();
 	}
 
 	VulkanGeneralBuffer::VulkanGeneralBuffer(size_t size, EBufferType type, EBufferLifetime lifeTime, const void *data)
@@ -138,6 +163,11 @@ namespace BHive
 
 	void VulkanGeneralBuffer::SetData(const void *data, size_t size, uint32_t offset)
 	{
-		mBuffer.Upload({size, offset, data});
+		mBuffer.Upload(data, size, offset);
+	}
+
+	void VulkanGeneralBuffer::Clear()
+	{
+		mBuffer.ClearData();
 	}
 } // namespace BHive

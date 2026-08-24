@@ -14,6 +14,8 @@ namespace BHive
 
 		virtual void SetData(const void *data, size_t size, uint32_t offset = 0) = 0;
 
+		virtual void Clear() = 0;
+
 		virtual NativeHandle GetNativeHandle() const = 0;
 
 		virtual bool NeedsBarrier() const { return false; }

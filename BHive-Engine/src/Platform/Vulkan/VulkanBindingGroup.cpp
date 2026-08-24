@@ -55,26 +55,26 @@ namespace BHive
 
 	vk::DescriptorSet VulkanBindingGroup::Update(uint32_t frame)
 	{
-		if (mNeedsUpdate)
+		if (mNeedsUpdate[frame])
 		{
-			BuildWriteCopies();
+			BuildWriteCopies(frame);
 
 			vk::Device device = VulkanBackend::GetLogicalDevice();
 			if (!mCachedWrites.empty())
 				device.updateDescriptorSets(mCachedWrites, {});
 
-			mNeedsUpdate = false;
+			mNeedsUpdate[frame] = false;
 		}
 
-		return mSet;
+		return mSets[frame];
 	}
 
-	vk::DescriptorBufferInfo VulkanBindingGroup::BuildBufferInfo(const FBindingInfo &bindInfo) const
+	vk::DescriptorBufferInfo VulkanBindingGroup::BuildBufferInfo(const FBindingInfo &bindInfo, uint32_t frame) const
 	{
 		ASSERT(bindInfo.Buffer)
 
 		auto handle = bindInfo.Buffer->GetNativeHandle().As<VulkanBuffer>();
-		auto &buf = handle->GetNative();
+		auto &buf = handle->GetNative(frame);
 		return vk::DescriptorBufferInfo(buf.GetBuffer(), 0, buf.Size);
 	}
 
@@ -130,16 +130,17 @@ namespace BHive
 
 	void VulkanBindingGroup::MakeDirty()
 	{
-		mNeedsUpdate = true;
+		mNeedsUpdate.set();
 	}
 
-	void VulkanBindingGroup::BuildWriteCopies()
+	void VulkanBindingGroup::BuildWriteCopies(uint32_t frame)
 	{
 		mCachedWrites.clear();
 		mCachedImageInfos.clear();
 		mCachedBufferInfos.clear();
 
 		auto size = mBindings.size();
+		auto set = mSets[frame];
 
 		mCachedWrites.reserve(size);
 		mCachedImageInfos.reserve(size);
@@ -152,10 +153,10 @@ namespace BHive
 				if (!b.Buffer)
 					continue;
 
-				mCachedBufferInfos.push_back(BuildBufferInfo(b));
+				mCachedBufferInfos.push_back(BuildBufferInfo(b, frame));
 				auto &bufInfo = mCachedBufferInfos.back();
 
-				mCachedWrites.emplace_back(mSet, b.Binding, 0, ToVkType(b.Type), nullptr, bufInfo);
+				mCachedWrites.emplace_back(set, b.Binding, 0, ToVkType(b.Type), nullptr, bufInfo);
 			}
 			else if (IsTexture(b.Type))
 			{
@@ -165,7 +166,7 @@ namespace BHive
 				mCachedImageInfos.push_back(BuildImageInfo(b, b.MipLevel));
 				auto &imgInfo = mCachedImageInfos.back();
 
-				mCachedWrites.emplace_back(mSet, b.Binding, 0, ToVkType(b.Type), imgInfo);
+				mCachedWrites.emplace_back(set, b.Binding, 0, ToVkType(b.Type), imgInfo);
 			}
 		}
 	}
@@ -175,9 +176,10 @@ namespace BHive
 		auto pool = VulkanBackend::GetDescriptorPool();
 		vk::Device device = VulkanBackend::GetLogicalDevice();
 
-		vk::DescriptorSetAllocateInfo allocInfo(pool, {layout});
+		std::vector<vk::DescriptorSetLayout> layouts{2, layout};
+		vk::DescriptorSetAllocateInfo allocInfo(pool, layouts);
 
-		mSet = device.allocateDescriptorSets(allocInfo).front();
+		mSets = device.allocateDescriptorSets(allocInfo);
 	}
 
 } // namespace BHive

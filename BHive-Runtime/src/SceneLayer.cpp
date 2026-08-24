@@ -37,9 +37,9 @@ namespace BHive
 		mSceneRenderer->Init(mViewportSize);
 		mSceneRenderer->SetEnvironmentTexture(TextureLoader::Import(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr"));
 
-		mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
-		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
-		mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
+		// mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
+		// mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
+		// mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
 
 		/*FMeshImportData import_data{};
 		FMeshImportOptions import_options{.ImportMaterials = false};
@@ -81,6 +81,25 @@ namespace BHive
 		}
 
 		mCameraController.SetCamera(&mCamera);
+
+		{
+			FMeshSubmissionRequest request{};
+			request.Mesh = mMesh;
+			request.Materials = mMaterialTables[0];
+			request.Transform = sphereTransform;
+			mSceneRenderer->SubmitMesh(request);
+
+			request.Materials = mMaterialTables[2];
+			request.Transform = FTransform{{0, 1.f, -2}};
+
+			mSceneRenderer->SubmitMesh(request);
+
+			request.Materials = mMaterialTables[1];
+			request.Transform = FTransform{{0, 0, 0}};
+			request.Mesh = mPlane;
+
+			mSceneRenderer->SubmitMesh(request);
+		}
 	}
 
 	void SceneLayer::OnDetach()
@@ -105,23 +124,6 @@ namespace BHive
 		}
 
 		mSceneRenderer->Begin(&mCamera, mCamera.GetView());
-
-		FMeshInfo info{};
-		info.Mesh = mMesh;
-		info.Materials = mMaterialTables[0];
-		info.Transform = sphereTransform;
-		mSceneRenderer->Submit(info);
-
-		info.Materials = mMaterialTables[2];
-		info.Transform = FTransform{{0, 1.f, -2}};
-
-		mSceneRenderer->Submit(info);
-
-		info.Materials = mMaterialTables[1];
-		info.Transform = FTransform{{0, 0, 0}};
-		info.Mesh = mPlane;
-
-		mSceneRenderer->Submit(info);
 
 		DirectionalLight main{};
 		main.SetColor(FColor::White).SetIntensity(1.0f).SetDirection({0.f, -1.0f, 0.5f});
