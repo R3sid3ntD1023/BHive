@@ -136,7 +136,7 @@ namespace BHive
 
 	};
 
-	enum class EImageAccess : uint8_t
+	enum class EImageUsage : uint8_t
 	{
 		None,
 
@@ -158,7 +158,7 @@ namespace BHive
 
 	};
 
-	enum class EBufferAccess : uint8_t
+	enum class EBufferUsage : uint8_t
 	{
 		None,		   //= 0,
 		TransferWrite, //= BIT(0),
@@ -346,27 +346,27 @@ namespace BHive
 		}
 	}
 
-	inline std::string to_string(EImageAccess access)
+	inline std::string to_string(EImageUsage access)
 	{
 		switch (access)
 		{
-		case BHive::EImageAccess::ColorRead:
+		case BHive::EImageUsage::ColorRead:
 			return "ColorRead";
-		case BHive::EImageAccess::ColorWrite:
+		case BHive::EImageUsage::ColorWrite:
 			return "ColorWrite";
-		case BHive::EImageAccess::DepthRead:
+		case BHive::EImageUsage::DepthRead:
 			return "DepthRead";
-		case BHive::EImageAccess::DepthWrite:
+		case BHive::EImageUsage::DepthWrite:
 			return "DepthWrite";
-		case BHive::EImageAccess::ComputeSampled:
+		case BHive::EImageUsage::ComputeSampled:
 			return "ComputeSampled";
-		case BHive::EImageAccess::ComputeStorageRead:
+		case BHive::EImageUsage::ComputeStorageRead:
 			return "ComputeStorageRead";
-		case BHive::EImageAccess::ComputeStorageWrite:
+		case BHive::EImageUsage::ComputeStorageWrite:
 			return "ComputeStorageWrite";
-		case BHive::EImageAccess::TransferSrc:
+		case BHive::EImageUsage::TransferSrc:
 			return "TransferSrc";
-		case BHive::EImageAccess::TransferDst:
+		case BHive::EImageUsage::TransferDst:
 			return "TransferDst";
 		default:
 			return "Undefined";

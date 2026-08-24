@@ -11,14 +11,14 @@ namespace BHive
 	struct FBufferUse
 	{
 		Ref<BufferBase> Buffer;
-		EBufferAccess Access;
+		EBufferUsage Access;
 	};
 
 	struct FBufferBarrierRequest
 	{
 		Ref<BufferBase> Buffer;
-		EBufferAccess Src;
-		EBufferAccess Dst;
+		EBufferUsage Src;
+		EBufferUsage Dst;
 	};
 
 	struct FRenderCommandList

@@ -155,7 +155,7 @@ namespace BHive
 
 	void Renderer::SolveResourceBarriers(RenderGraph &graph)
 	{
-		std::unordered_map<Ref<BufferBase>, EBufferAccess> lastBufferAccess;
+		std::unordered_map<Ref<BufferBase>, EBufferUsage> lastBufferAccess;
 
 		for (auto &pass : graph.GetPasses())
 		{

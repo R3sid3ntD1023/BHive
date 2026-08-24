@@ -64,30 +64,30 @@ namespace BHive
 		return {vk::ImageLayout::eGeneral, vk::AccessFlagBits2::eTransferWrite, vk::PipelineStageFlagBits2::eTransfer, false};
 	}
 
-	ImageState ImageState::ToImageState(EImageAccess access)
+	ImageState ImageState::ToImageState(EImageUsage access)
 	{
 		switch (access)
 		{
-		case BHive::EImageAccess::ColorRead:
+		case BHive::EImageUsage::ColorRead:
 			return ImageState::ShaderRead();
-		case BHive::EImageAccess::ColorWrite:
+		case BHive::EImageUsage::ColorWrite:
 			return ImageState::ColorAttachment();
-		case BHive::EImageAccess::DepthRead:
+		case BHive::EImageUsage::DepthRead:
 			return ImageState::ShaderRead();
-		case BHive::EImageAccess::DepthWrite:
+		case BHive::EImageUsage::DepthWrite:
 			return ImageState::DepthStencilAttachment();
-		case BHive::EImageAccess::ComputeSampled:
+		case BHive::EImageUsage::ComputeSampled:
 			return ImageState::ShaderRead();
-		case BHive::EImageAccess::ComputeStorageRead:
+		case BHive::EImageUsage::ComputeStorageRead:
 			return ImageState::ComputeRead();
-		case BHive::EImageAccess::ComputeStorageWrite:
+		case BHive::EImageUsage::ComputeStorageWrite:
 			return ImageState::ComputeWrite();
-		case BHive::EImageAccess::TransferSrc:
+		case BHive::EImageUsage::TransferSrc:
 			return ImageState::TransferRead();
-		case BHive::EImageAccess::TransferDst:
+		case BHive::EImageUsage::TransferDst:
 			return ImageState::TransferWrite();
 		default:
 			return Undefined();
 		}
 	}
-}
+} // namespace BHive

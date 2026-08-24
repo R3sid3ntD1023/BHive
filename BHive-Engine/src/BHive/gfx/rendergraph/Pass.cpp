@@ -25,23 +25,23 @@ namespace BHive
 
 		for (uint32_t i = 0; i < fbo->GetNumColorAttachments(); i++)
 		{
-			Push(fbo->GetColorAttachment(i), EImageAccess::ColorWrite, colorRange);
+			Push(fbo->GetColorAttachment(i), EImageUsage::ColorWrite, colorRange);
 		}
 
 		if (auto depth = fbo->GetDepthAttachment())
 		{
-			Push(depth, EImageAccess::DepthWrite);
+			Push(depth, EImageUsage::DepthWrite);
 		}
 	}
 
-	void FPass::Push(Ref<Texture> tex, EImageAccess access, ImageSubresourceRange range)
+	void FPass::Push(Ref<Texture> tex, EImageUsage access, ImageSubresourceRange range)
 	{
 		ASSERT(mCurrentPhase)
 
 		mCurrentPhase->Images.emplace_back(tex, access, range);
 	}
 
-	void FPass::Push(Ref<BufferBase> buffer, EBufferAccess access)
+	void FPass::Push(Ref<BufferBase> buffer, EBufferUsage access)
 	{
 		ASSERT(mCurrentPhase)
 		mCurrentPhase->Buffers.push_back({buffer, access});

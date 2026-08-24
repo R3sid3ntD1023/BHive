@@ -19,10 +19,10 @@ namespace BHive
 
 		virtual const std::vector<Ref<VertexBuffer>> &GetVertexBuffers() const = 0;
 
-		void DeclareAccess(FPass &pass, EBufferAccess vbAccess, EBufferAccess ibAccess);
+		void DeclareAccess(FPass &pass, EBufferUsage vbAccess, EBufferUsage ibAccess);
 
 		static Ref<VertexArray> Create();
 
-		static Ref<VertexArray> Create(const std::vector<Ref<VertexBuffer>>& vertex_buffers, const Ref<IndexBuffer> &index_buffer = nullptr);
+		static Ref<VertexArray> Create(const std::vector<Ref<VertexBuffer>> &vertex_buffers, const Ref<IndexBuffer> &index_buffer = nullptr);
 	};
 } // namespace BHive

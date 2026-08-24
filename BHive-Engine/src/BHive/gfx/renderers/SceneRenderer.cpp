@@ -234,7 +234,7 @@ namespace BHive
 				{
 					uint32_t count = (uint32_t)submissions.size();
 
-					vao->DeclareAccess(pass, EBufferAccess::IndirectRead, EBufferAccess::IndirectRead);
+					vao->DeclareAccess(pass, EBufferUsage::IndirectRead, EBufferUsage::IndirectRead);
 					pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect.get(), vao.get(), count, MULTI_DRAW_INDIRECT_STRIDE, globalOffset);
 					globalOffset += count * MULTI_DRAW_INDIRECT_STRIDE;
 				}
@@ -370,10 +370,10 @@ namespace BHive
 			uint32_t groups = (instanceCount + 256) / 256;
 			auto &occlusionPass = renderer.BeginPass("Occlusion " + passNames[i], EPassType::OffScreen);
 			occlusionPass.BeginPhase(EPhaseType::Compute);
-			occlusionPass.Push(indirectBuffer, EBufferAccess::StorageWrite);
-			occlusionPass.Push(visibilityBuffer, EBufferAccess::StorageWrite);
-			occlusionPass.Push(instanceBuffer, EBufferAccess::StorageRead);
-			occlusionPass.Push(mCameraUBO, EBufferAccess::UniformRead);
+			occlusionPass.Push(indirectBuffer, EBufferUsage::StorageWrite);
+			occlusionPass.Push(visibilityBuffer, EBufferUsage::StorageWrite);
+			occlusionPass.Push(instanceBuffer, EBufferUsage::StorageRead);
+			occlusionPass.Push(mCameraUBO, EBufferUsage::UniformRead);
 			occlusionPass.PushGlobal(0, 0, mCameraUBO);
 			occlusionPass.PushGlobal(3, 0, instanceBuffer);
 			occlusionPass.PushGlobal(3, 1, indirectBuffer);
@@ -397,14 +397,14 @@ namespace BHive
 
 			pass.BeginPhase("Phase " + passNames[i], EPhaseType::Graphics);
 			pass.Push(mFramebuffer);
-			pass.Push(prefilter, EImageAccess::ColorRead);
-			pass.Push(irradiance, EImageAccess::ColorRead);
-			pass.Push(brdfLUT, EImageAccess::ColorRead);
-			pass.Push(mCameraUBO, EBufferAccess::UniformRead);
-			pass.Push(mLights.GetBuffer(), EBufferAccess::StorageRead);
-			pass.Push(instanceBuffer, EBufferAccess::StorageRead);
+			pass.Push(prefilter, EImageUsage::ColorRead);
+			pass.Push(irradiance, EImageUsage::ColorRead);
+			pass.Push(brdfLUT, EImageUsage::ColorRead);
+			pass.Push(mCameraUBO, EBufferUsage::UniformRead);
+			pass.Push(mLights.GetBuffer(), EBufferUsage::StorageRead);
+			pass.Push(instanceBuffer, EBufferUsage::StorageRead);
 			// pass.Push(mIndirectDrawBuffers[i], EBufferAccess::IndirectRead);
-			pass.Push(visibilityBuffer, EBufferAccess::StorageRead);
+			pass.Push(visibilityBuffer, EBufferUsage::StorageRead);
 
 			pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(pipelineNames[i]));
 			batch.Draw(pass, indirectBuffer);
@@ -417,7 +417,7 @@ namespace BHive
 
 		linePass.BeginPhase("Line Rendering", EPhaseType::Graphics);
 		linePass.PushGlobal(0, 0, mCameraUBO);
-		linePass.Push(mCameraUBO, EBufferAccess::UniformRead);
+		linePass.Push(mCameraUBO, EBufferUsage::UniformRead);
 		linePass.Push(mFramebuffer);
 		renderer.EndBatching();
 		linePass.EndPhase();
@@ -425,7 +425,7 @@ namespace BHive
 
 		auto &transitionPass = renderer.BeginPass("Transition to read", EPassType::OffScreen, {});
 		transitionPass.BeginPhase("Transition to read", EPhaseType::Transfer);
-		transitionPass.Push(mFramebuffer->GetColorAttachment(), EImageAccess::ColorRead);
+		transitionPass.Push(mFramebuffer->GetColorAttachment(), EImageUsage::ColorRead);
 		transitionPass.EndPhase();
 		renderer.EndPass();
 

@@ -29,7 +29,7 @@ namespace BHive
 
 			pass.BeginPhase(EPhaseType::Graphics);
 			pass.Push(mFramebuffers[0]);
-			pass.Push(input, EImageAccess::ColorRead);
+			pass.Push(input, EImageUsage::ColorRead);
 			pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
 			pass.Emplace<CmdBindMaterial>()(mMaterials[0].get());
 			pass.Emplace<CmdDrawFullScreen>()();
@@ -50,7 +50,7 @@ namespace BHive
 
 				pass.BeginPhase(EPhaseType::Graphics);
 				pass.Push(mFramebuffers[0], dstRange);
-				pass.Push(bloomOutput, EImageAccess::ColorRead, srcRange);
+				pass.Push(bloomOutput, EImageUsage::ColorRead, srcRange);
 				pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
 				pass.Emplace<CmdBindMaterial>()(mMaterials[1].get());
 				pass.Emplace<CmdDrawFullScreen>()();
@@ -74,7 +74,7 @@ namespace BHive
 
 				pass.BeginPhase(EPhaseType::Graphics);
 				pass.Push(mFramebuffers[0], dstRange);
-				pass.Push(bloomOutput, EImageAccess::ColorRead, srcRange);
+				pass.Push(bloomOutput, EImageUsage::ColorRead, srcRange);
 				pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
 				pass.Emplace<CmdBindMaterial>()(mMaterials[2].get());
 				pass.Emplace<CmdDrawFullScreen>()();
@@ -92,14 +92,14 @@ namespace BHive
 			// Phase 3 : composite scene and bloom
 			pass.BeginPhase(EPhaseType::Graphics);
 			pass.Push(mFramebuffers[1]);
-			pass.Push(input, EImageAccess::ColorRead);
-			pass.Push(bloomOutput, EImageAccess::ColorRead);
+			pass.Push(input, EImageUsage::ColorRead);
+			pass.Push(bloomOutput, EImageUsage::ColorRead);
 			pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
 			pass.Emplace<CmdBindMaterial>()(mMaterials[3].get());
 			pass.Emplace<CmdDrawFullScreen>()();
 
 			pass.BeginPhase(EPhaseType::Transfer);
-			pass.Push(compositeOutput, EImageAccess::ColorRead);
+			pass.Push(compositeOutput, EImageUsage::ColorRead);
 			pass.EndPhase();
 		}
 

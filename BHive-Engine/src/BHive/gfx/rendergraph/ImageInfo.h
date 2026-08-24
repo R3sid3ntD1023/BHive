@@ -12,7 +12,7 @@ namespace BHive
 	struct FImageInfo
 	{
 		Ref<Texture> Texture;
-		EImageAccess Access = EImageAccess::None;
+		EImageUsage Access = EImageUsage::None;
 		ImageSubresourceRange Range{};
 	};
 }

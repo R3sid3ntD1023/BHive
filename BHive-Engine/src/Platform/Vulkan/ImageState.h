@@ -43,6 +43,6 @@ namespace BHive
 
 		static ImageState TransferClear();
 
-		static ImageState ToImageState(EImageAccess access);
+		static ImageState ToImageState(EImageUsage access);
 	};
 }

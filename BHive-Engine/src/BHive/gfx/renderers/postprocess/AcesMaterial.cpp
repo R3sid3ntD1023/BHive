@@ -21,14 +21,14 @@ namespace BHive
 
 		pass.BeginPhase(EPhaseType::Graphics);
 		pass.Push(mFramebuffer);
-		pass.Push(input, EImageAccess::ColorRead);
+		pass.Push(input, EImageUsage::ColorRead);
 		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
 		pass.Emplace<CmdBindMaterial>()(mMaterial.get());
 		pass.Emplace<CmdDrawFullScreen>()();
 		pass.EndPhase();
 
 		pass.BeginPhase(EPhaseType::Transfer);
-		pass.Push(output, EImageAccess::ColorRead);
+		pass.Push(output, EImageUsage::ColorRead);
 		pass.EndPhase();
 
 		return output;

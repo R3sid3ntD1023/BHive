@@ -326,48 +326,48 @@ namespace BHive
 		}
 	}
 
-	inline vk::PipelineStageFlags2 ToStage(EBufferAccess a)
+	inline vk::PipelineStageFlags2 ToStage(EBufferUsage a)
 	{
 		switch (a)
 		{
-		case BHive::EBufferAccess::TransferWrite:
-		case BHive::EBufferAccess::TransferRead:
+		case BHive::EBufferUsage::TransferWrite:
+		case BHive::EBufferUsage::TransferRead:
 			return vk::PipelineStageFlagBits2::eTransfer;
-		case BHive::EBufferAccess::VertexRead:
+		case BHive::EBufferUsage::VertexRead:
 			return vk::PipelineStageFlagBits2::eVertexInput;
-		case BHive::EBufferAccess::IndexRead:
+		case BHive::EBufferUsage::IndexRead:
 			return vk::PipelineStageFlagBits2::eIndexInput;
-		case BHive::EBufferAccess::UniformRead:
+		case BHive::EBufferUsage::UniformRead:
 			return vk::PipelineStageFlagBits2::eVertexShader | vk::PipelineStageFlagBits2::eFragmentShader | vk::PipelineStageFlagBits2::eComputeShader;
-		case BHive::EBufferAccess::StorageRead:
-		case BHive::EBufferAccess::StorageWrite:
+		case BHive::EBufferUsage::StorageRead:
+		case BHive::EBufferUsage::StorageWrite:
 			return vk::PipelineStageFlagBits2::eVertexShader | vk::PipelineStageFlagBits2::eFragmentShader | vk::PipelineStageFlagBits2::eComputeShader;
-		case BHive::EBufferAccess::IndirectRead:
+		case BHive::EBufferUsage::IndirectRead:
 			return vk::PipelineStageFlagBits2::eDrawIndirect;
 		default:
 			return vk::PipelineStageFlagBits2::eAllCommands;
 		}
 	}
 
-	inline vk::AccessFlags2 ToAccess(EBufferAccess a)
+	inline vk::AccessFlags2 ToAccess(EBufferUsage a)
 	{
 		switch (a)
 		{
-		case BHive::EBufferAccess::TransferWrite:
+		case BHive::EBufferUsage::TransferWrite:
 			return vk::AccessFlagBits2::eTransferWrite;
-		case BHive::EBufferAccess::TransferRead:
+		case BHive::EBufferUsage::TransferRead:
 			return vk::AccessFlagBits2::eTransferRead;
-		case BHive::EBufferAccess::VertexRead:
+		case BHive::EBufferUsage::VertexRead:
 			return vk::AccessFlagBits2::eVertexAttributeRead;
-		case BHive::EBufferAccess::IndexRead:
+		case BHive::EBufferUsage::IndexRead:
 			return vk::AccessFlagBits2::eIndexRead;
-		case BHive::EBufferAccess::UniformRead:
+		case BHive::EBufferUsage::UniformRead:
 			return vk::AccessFlagBits2::eUniformRead;
-		case BHive::EBufferAccess::StorageRead:
+		case BHive::EBufferUsage::StorageRead:
 			return vk::AccessFlagBits2::eShaderRead;
-		case BHive::EBufferAccess::StorageWrite:
+		case BHive::EBufferUsage::StorageWrite:
 			return vk::AccessFlagBits2::eShaderWrite;
-		case BHive::EBufferAccess::IndirectRead:
+		case BHive::EBufferUsage::IndirectRead:
 			return vk::AccessFlagBits2::eIndirectCommandRead;
 		default:
 			return vk::AccessFlagBits2::eNone;
