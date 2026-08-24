@@ -43,8 +43,8 @@ namespace BHive
 
 		// Phase 0 : equirectangular -> cubemap
 		pass.BeginPhase("Convert 2D -> cube", EPhaseType::Compute);
-		pass.Push(mInput, EImageUsage::ComputeSampled);
-		pass.Push(mEnvironmentTextures.Environment, EImageUsage::ComputeStorageWrite, {0, 1, 0, 6});
+		pass.UseTexture(mInput, EImageUsage::ComputeSampled);
+		pass.UseTexture(mEnvironmentTextures.Environment, EImageUsage::ComputeStorageWrite, {0, 1, 0, 6});
 		pass.Emplace<CmdBindMaterial>()(&conversionBindings);
 		pass.Emplace<CmdDispatch>()((mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 6);
 		pass.EndPhase();
@@ -56,8 +56,8 @@ namespace BHive
 
 		// Phase 2 : Irradiance convolution
 		pass.BeginPhase("Convolution", EPhaseType::Compute);
-		pass.Push(mEnvironmentTextures.Environment, EImageUsage::ComputeSampled);
-		pass.Push(mEnvironmentTextures.Irradiance, EImageUsage::ComputeStorageWrite, {0, 1, 0, 6});
+		pass.UseTexture(mEnvironmentTextures.Environment, EImageUsage::ComputeSampled);
+		pass.UseTexture(mEnvironmentTextures.Irradiance, EImageUsage::ComputeStorageWrite, {0, 1, 0, 6});
 		pass.Emplace<CmdBindMaterial>()(&convolutionBindings);
 		pass.Emplace<CmdDispatch>()((mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 1);
 		pass.EndPhase();
@@ -79,8 +79,8 @@ namespace BHive
 				.SetParam("u_height", MaterialParam(s));
 
 			pass.BeginPhase(std::format("Prefiltering Mip {}", mip), EPhaseType::Compute);
-			pass.Push(mEnvironmentTextures.Environment, EImageUsage::ComputeSampled);
-			pass.Push(mEnvironmentTextures.PreFilter, EImageUsage::ComputeStorageWrite, {mip, 1, 0, 6});
+			pass.UseTexture(mEnvironmentTextures.Environment, EImageUsage::ComputeSampled);
+			pass.UseTexture(mEnvironmentTextures.PreFilter, EImageUsage::ComputeStorageWrite, {mip, 1, 0, 6});
 			pass.Emplace<CmdBindMaterial>()(&prefilterBindings);
 			pass.Emplace<CmdDispatch>()((s + 7) / 8, (s + 7) / 8, 6);
 			pass.EndPhase();

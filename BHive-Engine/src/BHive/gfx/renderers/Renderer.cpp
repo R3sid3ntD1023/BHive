@@ -169,7 +169,7 @@ namespace BHive
 					auto next = use.Access;
 
 					if (prev != next)
-						phase.CommandList.BufferBarriers.emplace_back(FBufferBarrierRequest{buffer, prev, next});
+						phase.CommandList.BufferBarriers.emplace_back(FBufferTransition{buffer, prev, next});
 
 					lastBufferAccess[buffer] = next;
 				}

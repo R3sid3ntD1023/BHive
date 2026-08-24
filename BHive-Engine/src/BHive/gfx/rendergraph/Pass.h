@@ -68,15 +68,15 @@ namespace BHive
 			return *cmd.get();
 		}
 
-		void Push(Ref<Framebuffer> fbo, ImageSubresourceRange colorRange = {});
+		void UseFramebuffer(Ref<Framebuffer> fbo, ImageSubresourceRange colorRange = {});
 
-		void Push(Ref<Texture> tex, EImageUsage access, ImageSubresourceRange range = {});
+		void UseTexture(Ref<Texture> tex, EImageUsage access, ImageSubresourceRange range = {});
 
-		void Push(Ref<BufferBase> buffer, EBufferUsage access);
+		void UseBuffer(Ref<BufferBase> buffer, EBufferUsage access);
 
-		void PushGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer);
+		void BindGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer);
 
-		void PushGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture);
+		void BindGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture);
 
 		void EndPhase();
 

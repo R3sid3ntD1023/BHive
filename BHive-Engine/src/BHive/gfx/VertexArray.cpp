@@ -8,10 +8,10 @@ namespace BHive
 	void VertexArray::DeclareAccess(FPass &pass, EBufferUsage vbAccess, EBufferUsage ibAccess)
 	{
 		for (auto &vb : GetVertexBuffers())
-			pass.Push(vb, vbAccess);
+			pass.UseBuffer(vb, vbAccess);
 
 		if (auto &ib = GetIndexBuffer())
-			pass.Push(ib, ibAccess);
+			pass.UseBuffer(ib, ibAccess);
 	}
 
 	Ref<VertexArray> VertexArray::Create()

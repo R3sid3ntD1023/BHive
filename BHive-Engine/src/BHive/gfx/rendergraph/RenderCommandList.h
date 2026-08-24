@@ -8,13 +8,13 @@ namespace BHive
 {
 	class BufferBase;
 
-	struct FBufferUse
+	struct FBufferUsageInfo
 	{
 		Ref<BufferBase> Buffer;
 		EBufferUsage Access;
 	};
 
-	struct FBufferBarrierRequest
+	struct FBufferTransition
 	{
 		Ref<BufferBase> Buffer;
 		EBufferUsage Src;
@@ -24,6 +24,6 @@ namespace BHive
 	struct FRenderCommandList
 	{
 		std::vector<Ref<FCommand>> Commands;
-		std::vector<FBufferBarrierRequest> BufferBarriers;
+		std::vector<FBufferTransition> BufferBarriers;
 	};
 } // namespace BHive

@@ -24,15 +24,15 @@ namespace BHive
 		auto &pass = graph.AddPass("Color Grading Pass", EPassType::OffScreen);
 
 		pass.BeginPhase(EPhaseType::Graphics);
-		pass.Push(mFramebuffer);
-		pass.Push(input, EImageUsage::ColorRead);
+		pass.UseFramebuffer(mFramebuffer);
+		pass.UseTexture(input, EImageUsage::ColorRead);
 		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
 		pass.Emplace<CmdBindMaterial>()(mMaterial.get());
 		pass.Emplace<CmdDrawFullScreen>()();
 		pass.EndPhase();
 
 		pass.BeginPhase(EPhaseType::Transfer);
-		pass.Push(output, EImageUsage::ColorRead);
+		pass.UseTexture(output, EImageUsage::ColorRead);
 		pass.EndPhase();
 
 		return output;

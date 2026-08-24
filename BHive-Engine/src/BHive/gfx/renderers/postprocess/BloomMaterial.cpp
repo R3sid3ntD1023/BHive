@@ -28,8 +28,8 @@ namespace BHive
 			mMaterials[0]->SetTexture("uSceneColor", FTextureBinding(input)).SetParam("uThreshold", MaterialParam(Params.Threshold));
 
 			pass.BeginPhase(EPhaseType::Graphics);
-			pass.Push(mFramebuffers[0]);
-			pass.Push(input, EImageUsage::ColorRead);
+			pass.UseFramebuffer(mFramebuffers[0]);
+			pass.UseTexture(input, EImageUsage::ColorRead);
 			pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
 			pass.Emplace<CmdBindMaterial>()(mMaterials[0].get());
 			pass.Emplace<CmdDrawFullScreen>()();
@@ -49,8 +49,8 @@ namespace BHive
 				mMaterials[1]->SetTexture("uSrcTexture", FTextureBinding(bloomOutput, srcMip));
 
 				pass.BeginPhase(EPhaseType::Graphics);
-				pass.Push(mFramebuffers[0], dstRange);
-				pass.Push(bloomOutput, EImageUsage::ColorRead, srcRange);
+				pass.UseFramebuffer(mFramebuffers[0], dstRange);
+				pass.UseTexture(bloomOutput, EImageUsage::ColorRead, srcRange);
 				pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
 				pass.Emplace<CmdBindMaterial>()(mMaterials[1].get());
 				pass.Emplace<CmdDrawFullScreen>()();
@@ -73,8 +73,8 @@ namespace BHive
 				mMaterials[2]->SetTexture("uSrcTexture", FTextureBinding(bloomOutput, srcMip));
 
 				pass.BeginPhase(EPhaseType::Graphics);
-				pass.Push(mFramebuffers[0], dstRange);
-				pass.Push(bloomOutput, EImageUsage::ColorRead, srcRange);
+				pass.UseFramebuffer(mFramebuffers[0], dstRange);
+				pass.UseTexture(bloomOutput, EImageUsage::ColorRead, srcRange);
 				pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
 				pass.Emplace<CmdBindMaterial>()(mMaterials[2].get());
 				pass.Emplace<CmdDrawFullScreen>()();
@@ -91,15 +91,15 @@ namespace BHive
 
 			// Phase 3 : composite scene and bloom
 			pass.BeginPhase(EPhaseType::Graphics);
-			pass.Push(mFramebuffers[1]);
-			pass.Push(input, EImageUsage::ColorRead);
-			pass.Push(bloomOutput, EImageUsage::ColorRead);
+			pass.UseFramebuffer(mFramebuffers[1]);
+			pass.UseTexture(input, EImageUsage::ColorRead);
+			pass.UseTexture(bloomOutput, EImageUsage::ColorRead);
 			pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
 			pass.Emplace<CmdBindMaterial>()(mMaterials[3].get());
 			pass.Emplace<CmdDrawFullScreen>()();
 
 			pass.BeginPhase(EPhaseType::Transfer);
-			pass.Push(compositeOutput, EImageUsage::ColorRead);
+			pass.UseTexture(compositeOutput, EImageUsage::ColorRead);
 			pass.EndPhase();
 		}
 

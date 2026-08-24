@@ -16,7 +16,7 @@ namespace BHive
 		mCurrentPhase = &Phases.back();
 	}
 
-	void FPass::Push(Ref<Framebuffer> fbo, ImageSubresourceRange colorRange)
+	void FPass::UseFramebuffer(Ref<Framebuffer> fbo, ImageSubresourceRange colorRange)
 	{
 		ASSERT(mCurrentPhase)
 
@@ -25,35 +25,35 @@ namespace BHive
 
 		for (uint32_t i = 0; i < fbo->GetNumColorAttachments(); i++)
 		{
-			Push(fbo->GetColorAttachment(i), EImageUsage::ColorWrite, colorRange);
+			UseTexture(fbo->GetColorAttachment(i), EImageUsage::ColorWrite, colorRange);
 		}
 
 		if (auto depth = fbo->GetDepthAttachment())
 		{
-			Push(depth, EImageUsage::DepthWrite);
+			UseTexture(depth, EImageUsage::DepthWrite);
 		}
 	}
 
-	void FPass::Push(Ref<Texture> tex, EImageUsage access, ImageSubresourceRange range)
+	void FPass::UseTexture(Ref<Texture> tex, EImageUsage access, ImageSubresourceRange range)
 	{
 		ASSERT(mCurrentPhase)
 
 		mCurrentPhase->Images.emplace_back(tex, access, range);
 	}
 
-	void FPass::Push(Ref<BufferBase> buffer, EBufferUsage access)
+	void FPass::UseBuffer(Ref<BufferBase> buffer, EBufferUsage access)
 	{
 		ASSERT(mCurrentPhase)
 		mCurrentPhase->Buffers.push_back({buffer, access});
 	}
 
-	void FPass::PushGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer)
+	void FPass::BindGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer)
 	{
 		ASSERT(buffer)
 		GlobalBuffers[GlobalBinding{set, binding}] = buffer;
 	}
 
-	void FPass::PushGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture)
+	void FPass::BindGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture)
 	{
 		ASSERT(texture)
 		GlobalTextures[GlobalBinding{set, binding}] = texture;

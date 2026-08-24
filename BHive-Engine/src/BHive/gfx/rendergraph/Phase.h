@@ -25,7 +25,7 @@ namespace BHive
 
 		std::vector<FImageInfo> Images;
 
-		std::vector<FBufferUse> Buffers;
+		std::vector<FBufferUsageInfo> Buffers;
 
 		Ref<Framebuffer> FBO;
 

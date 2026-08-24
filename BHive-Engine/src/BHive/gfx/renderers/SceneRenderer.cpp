@@ -369,16 +369,16 @@ namespace BHive
 
 			uint32_t groups = (instanceCount + 256) / 256;
 			auto &occlusionPass = renderer.BeginPass("Occlusion " + passNames[i], EPassType::OffScreen);
-			occlusionPass.BeginPhase(EPhaseType::Compute);
-			occlusionPass.Push(indirectBuffer, EBufferUsage::StorageWrite);
-			occlusionPass.Push(visibilityBuffer, EBufferUsage::StorageWrite);
-			occlusionPass.Push(instanceBuffer, EBufferUsage::StorageRead);
-			occlusionPass.Push(mCameraUBO, EBufferUsage::UniformRead);
-			occlusionPass.PushGlobal(0, 0, mCameraUBO);
-			occlusionPass.PushGlobal(3, 0, instanceBuffer);
-			occlusionPass.PushGlobal(3, 1, indirectBuffer);
-			occlusionPass.PushGlobal(3, 2, visibilityBuffer);
+			occlusionPass.BindGlobal(0, 0, mCameraUBO);
+			occlusionPass.BindGlobal(3, 0, instanceBuffer);
+			occlusionPass.BindGlobal(3, 1, indirectBuffer);
+			occlusionPass.BindGlobal(3, 2, visibilityBuffer);
 
+			occlusionPass.BeginPhase(EPhaseType::Compute);
+			occlusionPass.UseBuffer(indirectBuffer, EBufferUsage::StorageWrite);
+			occlusionPass.UseBuffer(visibilityBuffer, EBufferUsage::StorageWrite);
+			occlusionPass.UseBuffer(instanceBuffer, EBufferUsage::StorageRead);
+			occlusionPass.UseBuffer(mCameraUBO, EBufferUsage::UniformRead);
 			occlusionPass.Emplace<CmdBindMaterial>()(mFrustrumOcclusionMaterial.get());
 			occlusionPass.Emplace<CmdDispatch>()(groups, 1, 1);
 			occlusionPass.EndPhase();
@@ -387,24 +387,23 @@ namespace BHive
 			// render scene passes
 			auto &pass = renderer.BeginPass("Scene " + passNames[i], EPassType::OffScreen, states[i]);
 			// global buffers
-			pass.PushGlobal(0, 0, mCameraUBO);
-			pass.PushGlobal(0, 1, mLights.GetBuffer());
-			pass.PushGlobal(0, 2, brdfLUT);
-			pass.PushGlobal(0, 3, prefilter);
-			pass.PushGlobal(0, 4, irradiance);
-			pass.PushGlobal(3, 0, instanceBuffer);
-			pass.PushGlobal(3, 2, visibilityBuffer);
+			pass.BindGlobal(0, 0, mCameraUBO);
+			pass.BindGlobal(0, 1, mLights.GetBuffer());
+			pass.BindGlobal(0, 2, brdfLUT);
+			pass.BindGlobal(0, 3, prefilter);
+			pass.BindGlobal(0, 4, irradiance);
+			pass.BindGlobal(3, 0, instanceBuffer);
+			pass.BindGlobal(3, 2, visibilityBuffer);
 
 			pass.BeginPhase("Phase " + passNames[i], EPhaseType::Graphics);
-			pass.Push(mFramebuffer);
-			pass.Push(prefilter, EImageUsage::ColorRead);
-			pass.Push(irradiance, EImageUsage::ColorRead);
-			pass.Push(brdfLUT, EImageUsage::ColorRead);
-			pass.Push(mCameraUBO, EBufferUsage::UniformRead);
-			pass.Push(mLights.GetBuffer(), EBufferUsage::StorageRead);
-			pass.Push(instanceBuffer, EBufferUsage::StorageRead);
-			// pass.Push(mIndirectDrawBuffers[i], EBufferAccess::IndirectRead);
-			pass.Push(visibilityBuffer, EBufferUsage::StorageRead);
+			pass.UseFramebuffer(mFramebuffer);
+			pass.UseTexture(prefilter, EImageUsage::ColorRead);
+			pass.UseTexture(irradiance, EImageUsage::ColorRead);
+			pass.UseTexture(brdfLUT, EImageUsage::ColorRead);
+			pass.UseBuffer(mCameraUBO, EBufferUsage::UniformRead);
+			pass.UseBuffer(mLights.GetBuffer(), EBufferUsage::StorageRead);
+			pass.UseBuffer(instanceBuffer, EBufferUsage::StorageRead);
+			pass.UseBuffer(visibilityBuffer, EBufferUsage::StorageRead);
 
 			pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(pipelineNames[i]));
 			batch.Draw(pass, indirectBuffer);
@@ -416,16 +415,16 @@ namespace BHive
 		auto &linePass = renderer.BeginPass("Line Renderer", EPassType::OffScreen, states[1]);
 
 		linePass.BeginPhase("Line Rendering", EPhaseType::Graphics);
-		linePass.PushGlobal(0, 0, mCameraUBO);
-		linePass.Push(mCameraUBO, EBufferUsage::UniformRead);
-		linePass.Push(mFramebuffer);
+		linePass.BindGlobal(0, 0, mCameraUBO);
+		linePass.UseFramebuffer(mFramebuffer);
+		linePass.UseBuffer(mCameraUBO, EBufferUsage::UniformRead);
 		renderer.EndBatching();
 		linePass.EndPhase();
 		renderer.EndPass();
 
 		auto &transitionPass = renderer.BeginPass("Transition to read", EPassType::OffScreen, {});
 		transitionPass.BeginPhase("Transition to read", EPhaseType::Transfer);
-		transitionPass.Push(mFramebuffer->GetColorAttachment(), EImageUsage::ColorRead);
+		transitionPass.UseTexture(mFramebuffer->GetColorAttachment(), EImageUsage::ColorRead);
 		transitionPass.EndPhase();
 		renderer.EndPass();
 

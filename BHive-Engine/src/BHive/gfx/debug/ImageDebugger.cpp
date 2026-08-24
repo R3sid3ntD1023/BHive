@@ -77,14 +77,14 @@ namespace BHive
 			auto &pass = renderer.BeginPass("ImageDebugger", EPassType::OffScreen);
 
 			pass.BeginPhase("ImageDebugger : Render To Qaud", EPhaseType::Graphics);
-			pass.Push(mFB);
-			pass.Push(tex, EImageUsage::ColorRead, range);
+			pass.UseFramebuffer(mFB);
+			pass.UseTexture(tex, EImageUsage::ColorRead, range);
 			pass.Emplace<CmdBindMaterial>()(mMaterial.get());
 			pass.Emplace<CmdDrawFullScreen>()();
 			pass.EndPhase();
 
 			pass.BeginPhase("ImageDebugger : Transition to Read", EPhaseType::Transfer);
-			pass.Push(mFB->GetColorAttachment(), EImageUsage::ColorRead);
+			pass.UseTexture(mFB->GetColorAttachment(), EImageUsage::ColorRead);
 			pass.EndPhase();
 
 			renderer.EndPass();
