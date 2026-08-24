@@ -369,12 +369,12 @@ namespace BHive
 
 			uint32_t groups = (instanceCount + 256) / 256;
 			auto &occlusionPass = renderer.BeginPass("Occlusion " + passNames[i], EPassType::OffScreen);
+			occlusionPass.BeginPhase(EPhaseType::Compute);
 			occlusionPass.BindGlobal(0, 0, mCameraUBO);
 			occlusionPass.BindGlobal(3, 0, instanceBuffer);
 			occlusionPass.BindGlobal(3, 1, indirectBuffer);
 			occlusionPass.BindGlobal(3, 2, visibilityBuffer);
 
-			occlusionPass.BeginPhase(EPhaseType::Compute);
 			occlusionPass.UseBuffer(indirectBuffer, EBufferUsage::StorageWrite);
 			occlusionPass.UseBuffer(visibilityBuffer, EBufferUsage::StorageWrite);
 			occlusionPass.UseBuffer(instanceBuffer, EBufferUsage::StorageRead);
@@ -386,7 +386,7 @@ namespace BHive
 
 			// render scene passes
 			auto &pass = renderer.BeginPass("Scene " + passNames[i], EPassType::OffScreen, states[i]);
-			// global buffers
+			pass.BeginPhase("Phase " + passNames[i], EPhaseType::Graphics);
 			pass.BindGlobal(0, 0, mCameraUBO);
 			pass.BindGlobal(0, 1, mLights.GetBuffer());
 			pass.BindGlobal(0, 2, brdfLUT);
@@ -394,8 +394,6 @@ namespace BHive
 			pass.BindGlobal(0, 4, irradiance);
 			pass.BindGlobal(3, 0, instanceBuffer);
 			pass.BindGlobal(3, 2, visibilityBuffer);
-
-			pass.BeginPhase("Phase " + passNames[i], EPhaseType::Graphics);
 			pass.UseFramebuffer(mFramebuffer);
 			pass.UseTexture(prefilter, EImageUsage::ColorRead);
 			pass.UseTexture(irradiance, EImageUsage::ColorRead);

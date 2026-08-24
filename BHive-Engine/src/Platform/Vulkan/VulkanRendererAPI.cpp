@@ -131,6 +131,8 @@ namespace BHive
 
 		for (auto &pass : graph.GetPasses())
 		{
+			pass.ResolveBufferTransitons();
+
 			ExecutePass(pass, vk_ctx, swapChain);
 		}
 
@@ -158,7 +160,10 @@ namespace BHive
 
 		for (auto &phase : pass.Phases)
 		{
-			CreateBarriers(phase.CommandList, ctx);
+			vk::DebugUtilsLabelEXT label(phase.Name.c_str(), {0.0f, 1.0f, 0.0f, 1.0f});
+			cmd.beginDebugUtilsLabelEXT(label);
+
+			VulkanCommandTranslator::CreateBarriers(phase.BufferTransitions, ctx);
 
 			TransitionImages(phase, cmd);
 
@@ -170,7 +175,7 @@ namespace BHive
 					BeginOffScreenRendering(state, phase, ctx);
 			}
 
-			VulkanCommandTranslator::ExecuteCommandList(pass, phase, ctx);
+			VulkanCommandTranslator::ExecuteCommandList(phase, ctx);
 
 			if (phase.Type == EPhaseType::Graphics)
 			{
@@ -179,6 +184,8 @@ namespace BHive
 				if (pass.Type == EPassType::Present)
 					TransitionSwapChainToPresent(ctx, swapChain);
 			}
+
+			cmd.endDebugUtilsLabelEXT();
 		}
 
 		cmd.endDebugUtilsLabelEXT();
@@ -239,11 +246,6 @@ namespace BHive
 	void VulkanRendererAPI::EndRendering(FVulkanRendererContext &ctx)
 	{
 		ctx.CommandBuffer.endRendering();
-	}
-
-	void VulkanRendererAPI::CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext &ctx)
-	{
-		VulkanCommandTranslator::CreateBarriers(list, ctx);
 	}
 
 	void VulkanRendererAPI::FlushDeletionQueue()

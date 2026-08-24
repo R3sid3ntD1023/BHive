@@ -9,14 +9,14 @@ namespace BHive
 
 	struct VulkanCommandTranslator
 	{
-		static void ExecuteCommandList(const FPass &pass, const FPhase &phase, FVulkanRendererContext &ctx);
+		static void ExecuteCommandList(const FPhase &phase, FVulkanRendererContext &ctx);
 
-		static void CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext &ctx);
+		static void CreateBarriers(const std::vector<FBufferTransition> &transitions, FVulkanRendererContext &ctx);
 
 	private:
-		static void BindGlobals(VulkanShader *shader, const FPass &pass);
+		static void BindGlobals(VulkanShader *shader, const FPhase &phase);
 
-		static void BindMaterialSnapshot(const MaterialSnapshot &snap, FVulkanRendererContext &ctx, const FPass &phase);
+		static void BindMaterialSnapshot(const MaterialSnapshot &snap, FVulkanRendererContext &ctx, const FPhase &phase);
 
 		static void BindMaterialResources(const MaterialSnapshot &snap, VulkanBindingGroup &group);
 	};

@@ -91,9 +91,6 @@ namespace BHive
 		inline RendererAPI *GetGraphicsAPI() const { return mAPI.get(); }
 
 	private:
-		void SolveResourceBarriers(RenderGraph &graph);
-
-	private:
 		Scope<RendererAPI> mAPI;
 
 		ShaderManager mShaderManager;

@@ -2,7 +2,6 @@
 
 #include "gfx/resources/ImageSubResourceRange.h"
 #include "gfx/renderers/ViewSystem.h"
-#include "GlobalBinding.h"
 #include "Phase.h"
 
 namespace BHive
@@ -48,8 +47,6 @@ namespace BHive
 		EPassType Type{};
 		std::vector<FPhase> Phases;
 		FPassState State;
-		std::unordered_map<GlobalBinding, Ref<BufferBase>> GlobalBuffers;
-		std::unordered_map<GlobalBinding, Ref<Texture>> GlobalTextures;
 
 		void BeginPhase(EPhaseType type = EPhaseType::Graphics);
 
@@ -61,12 +58,34 @@ namespace BHive
 			ASSERT(mCurrentPhase);
 
 			static_assert(std::is_base_of_v<FCommand, T>, "Type T doesn't derive from FCommand!");
-			static_assert(std::is_constructible_v<T>, "Emplace<T>: Provided arguments doesn't match T's constrcutor");
 
+			CmdHeader header{T::Type, sizeof(T)};
 			auto cmd = CreateRef<T>();
-			mCurrentPhase->CommandList.Commands.emplace_back(cmd);
+			mCurrentPhase->Commands.emplace_back(header, cmd);
 			return *cmd.get();
 		}
+
+		// template <typename T>
+		// T &Emplace()
+		// {
+		// 	ASSERT(mCurrentPhase);
+
+		// 	T cmd{};
+
+		// 	CmdHeader header{T::Type, sizeof(T)};
+
+		// 	auto &commands = mCurrentPhase->CommandPtr;
+		// 	size_t start = commands.size();
+		// 	commands.resize(start + sizeof(CmdHeader) + sizeof(T));
+		// 	auto data = commands.data();
+
+		// 	std::memcpy(data + start, &header, sizeof(CmdHeader));
+		// 	std::memcpy(data + start + sizeof(CmdHeader), &cmd, sizeof(T));
+
+		// 	T *ptr = reinterpret_cast<T *>(data + start + sizeof(CmdHeader));
+		// 	ASSERT(ptr);
+		// 	return *ptr;
+		// }
 
 		void UseFramebuffer(Ref<Framebuffer> fbo, ImageSubresourceRange colorRange = {});
 
@@ -79,6 +98,8 @@ namespace BHive
 		void BindGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture);
 
 		void EndPhase();
+
+		void ResolveBufferTransitons();
 
 	private:
 		// global resources

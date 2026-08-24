@@ -18,24 +18,26 @@ namespace BHive
 
 	struct CmdGenerateMipMaps : FCommand
 	{
+		static constexpr ECommandType Type = ECommandType::GenerateMipMaps;
+
 		Ref<Texture> TextureRef;
 
 		void operator()(const Ref<Texture> &texture) { TextureRef = texture; }
-
-		ECommandType GetType() const override { return ECommandType::GenerateMipMaps; }
 	};
 
 	struct CmdClearBuffer : FCommand
 	{
+		static constexpr ECommandType Type = ECommandType::ClearBuffer;
+
 		Ref<BufferBase> BufferRef;
 
 		void operator()(const Ref<BufferBase> &b) { BufferRef = b; }
-
-		ECommandType GetType() const override { return ECommandType::ClearBuffer; }
 	};
 
 	struct CmdSetBufferData : FCommand
 	{
+		static constexpr ECommandType Type = ECommandType::SetBufferData;
+
 		Ref<BufferBase> BufferRef;
 
 		std::vector<std::byte> Data;
@@ -52,12 +54,12 @@ namespace BHive
 			Data.resize(size);
 			std::memcpy(Data.data(), data, size);
 		}
-
-		ECommandType GetType() const override { return ECommandType::SetBufferData; }
 	};
 
 	struct CmdDispatch : FCommand
 	{
+		static constexpr ECommandType Type = ECommandType::Dispatch;
+
 		uint32_t X, Y, Z;
 
 		void operator()(uint32_t x, uint32_t y, uint32_t z)
@@ -66,33 +68,31 @@ namespace BHive
 			Y = y;
 			Z = z;
 		}
-
-		ECommandType GetType() const override { return ECommandType::Dispatch; }
 	};
 
 	struct CmdImGuiRender : FCommand
 	{
+		static constexpr ECommandType Type = ECommandType::ImGuiRender;
+
 		ImDrawData *DrawData = nullptr;
 
 		void operator()(ImDrawData *data) { DrawData = data; }
-
-		ECommandType GetType() const override { return ECommandType::ImGuiRender; }
 	};
 
 	struct CmdDrawFullScreen : FCommand
 	{
-		void operator()() {}
+		static constexpr ECommandType Type = ECommandType::DrawFullScreen;
 
-		ECommandType GetType() const override { return ECommandType::DrawFullScreen; }
+		void operator()() {}
 	};
 
 	struct CmdBindPipeline : FCommand
 	{
+		static constexpr ECommandType Type = ECommandType::BindPipeline;
+
 		Pipeline *PipelineRef;
 
 		void operator()(Pipeline *pipeline) { PipelineRef = pipeline; }
-
-		ECommandType GetType() const override { return ECommandType::BindPipeline; }
 	};
 
 	/*
@@ -101,15 +101,17 @@ namespace BHive
 	 */
 	struct CmdBindMaterial : FCommand
 	{
+		static constexpr ECommandType Type = ECommandType::BindMaterial;
+
 		MaterialSnapshot Snapshot;
 
 		void operator()(IMaterial *mat) { Snapshot = mat->CreateSnapshot(); }
-
-		ECommandType GetType() const override { return ECommandType::BindMaterial; }
 	};
 
 	struct CmdUploadBuffer : FCommand
 	{
+		static constexpr ECommandType Type = ECommandType::UploadBuffer;
+
 		Ref<BufferBase> Buffer;
 
 		Ref<std::vector<std::byte>> Data;
@@ -123,12 +125,12 @@ namespace BHive
 			Data = CreateRef<std::vector<std::byte>>(size);
 			memcpy(Data->data(), data, size);
 		}
-
-		ECommandType GetType() const override { return ECommandType::UploadBuffer; }
 	};
 
 	struct CmdDraw : FCommand
 	{
+		static constexpr ECommandType Type = ECommandType::Draw;
+
 		ETopologyMode Mode;
 
 		Ref<VertexArray> VAO;
@@ -141,12 +143,12 @@ namespace BHive
 			VAO = vao;
 			Count = count;
 		}
-
-		ECommandType GetType() const override { return ECommandType::Draw; }
 	};
 
 	struct CmdDrawIndexed : FCommand
 	{
+		static constexpr ECommandType Type = ECommandType::DrawIndexed;
+
 		ETopologyMode Mode;
 
 		Ref<VertexArray> VAO;
@@ -159,12 +161,12 @@ namespace BHive
 			VAO = vao;
 			Count = count;
 		}
-
-		ECommandType GetType() const override { return ECommandType::DrawIndexed; }
 	};
 
 	struct CmdMultiDrawIndexedIndirect : FCommand
 	{
+		static constexpr ECommandType Type = ECommandType::MultiDrawIndexedIndirect;
+
 		ETopologyMode Mode;
 		BufferBase *Buffer;
 		VertexArray *VAO;
@@ -181,16 +183,14 @@ namespace BHive
 			Stride = stride;
 			Offset = offset;
 		}
-
-		ECommandType GetType() const override { return ECommandType::MultiDrawIndexedIndirect; }
 	};
 
 	struct CmdSetLineWidth : FCommand
 	{
+		static constexpr ECommandType Type = ECommandType::SetLineWidth;
+
 		float Width = 1.f;
 
 		void operator()(float width) { Width = width; }
-
-		ECommandType GetType() const override { return ECommandType::SetLineWidth; }
 	};
 } // namespace BHive

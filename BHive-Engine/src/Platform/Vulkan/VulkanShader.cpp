@@ -181,16 +181,16 @@ namespace BHive
 				auto &b = bindings[i];
 				auto &flags = binding_flags[i];
 
-				if (utils::IsImage(b.descriptorType))
-				{
-					flags = vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eUpdateUnusedWhilePending;
-				}
+				// if (utils::IsImage(b.descriptorType))
+				// {
+				// 	flags = vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eUpdateUnusedWhilePending;
+				// }
 
-				// flags = vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eUpdateUnusedWhilePending | vk::DescriptorBindingFlagBits::eUpdateAfterBind;
+				flags = vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eUpdateUnusedWhilePending | vk::DescriptorBindingFlagBits::eUpdateAfterBind;
 			}
 
 			vk::DescriptorSetLayoutBindingFlagsCreateInfo flags(binding_flags);
-			vk::DescriptorSetLayoutCreateInfo layout_info({}, bindings, bindings.empty() ? nullptr : &flags);
+			vk::DescriptorSetLayoutCreateInfo layout_info(vk::DescriptorSetLayoutCreateFlagBits::eUpdateAfterBindPool, bindings, bindings.empty() ? nullptr : &flags);
 			mDescriptorSetLayouts.emplace(set, mDevice.createDescriptorSetLayout(layout_info));
 
 			auto group = CreateRef<VulkanBindingGroup>(this, set);

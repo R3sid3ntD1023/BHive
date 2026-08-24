@@ -84,7 +84,6 @@ namespace BHive
 
 	void Renderer::ExecuteGraph(RenderGraph &graph)
 	{
-		SolveResourceBarriers(graph);
 		mAPI->SubmitGraph(graph);
 	}
 
@@ -151,30 +150,6 @@ namespace BHive
 	{
 		Line.Flush(*this);
 		Quad.Flush(*this);
-	}
-
-	void Renderer::SolveResourceBarriers(RenderGraph &graph)
-	{
-		std::unordered_map<Ref<BufferBase>, EBufferUsage> lastBufferAccess;
-
-		for (auto &pass : graph.GetPasses())
-		{
-			for (auto &phase : pass.Phases)
-			{
-				// buffers
-				for (auto &use : phase.Buffers)
-				{
-					auto buffer = use.Buffer;
-					auto prev = lastBufferAccess[buffer];
-					auto next = use.Access;
-
-					if (prev != next)
-						phase.CommandList.BufferBarriers.emplace_back(FBufferTransition{buffer, prev, next});
-
-					lastBufferAccess[buffer] = next;
-				}
-			}
-		}
 	}
 
 } // namespace BHive

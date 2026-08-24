@@ -35,28 +35,32 @@ namespace BHive
 
 	void RenderGraph::DebugPrint()
 	{
-		for (auto& pass : mPasses)
+		for (auto &pass : mPasses)
 		{
 			LOG_TRACE("Pass : {}", pass.Name);
 
-			for (auto& phase : pass.Phases)
+			for (auto &phase : pass.Phases)
 			{
 				LOG_TRACE("\t Phase: {}", phase.Name);
 
-				for (auto& tex : phase.Images)
+				for (auto &tex : phase.Images)
 				{
 					tex.Texture->DebugPrintState();
 
 					LOG_TRACE("\t\tTransition -> [{}:{}]", to_string(tex.Access), to_string(tex.Range));
 				}
 
-				for (auto &cmd : phase.CommandList.Commands)
+				auto it = phase.Commands.begin();
+				auto end = phase.Commands.end();
+
+				while (it != end)
 				{
-					LOG_TRACE("\t\t{}", (int)cmd->GetType())
+					auto &header = (*it).first;
+					LOG_TRACE("\t\t{}", (int)header.Type);
+					++it;
 				}
 			}
 		}
 	}
-
 
 } // namespace BHive

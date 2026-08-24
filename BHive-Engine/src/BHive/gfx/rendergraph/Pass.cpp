@@ -49,19 +49,40 @@ namespace BHive
 
 	void FPass::BindGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer)
 	{
-		ASSERT(buffer)
-		GlobalBuffers[GlobalBinding{set, binding}] = buffer;
+		ASSERT(mCurrentPhase && buffer)
+		mCurrentPhase->BoundBuffers[GlobalBinding{set, binding}] = buffer;
 	}
 
 	void FPass::BindGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture)
 	{
-		ASSERT(texture)
-		GlobalTextures[GlobalBinding{set, binding}] = texture;
+		ASSERT(mCurrentPhase && texture)
+		mCurrentPhase->BoundTextures[GlobalBinding{set, binding}] = texture;
 	}
 
 	void FPass::EndPhase()
 	{
 		ASSERT(mCurrentPhase)
 		mCurrentPhase = nullptr;
+	}
+
+	void FPass::ResolveBufferTransitons()
+	{
+		std::unordered_map<Ref<BufferBase>, EBufferUsage> lastBufferAccess;
+
+		for (auto &phase : Phases)
+		{
+			// buffers
+			for (auto &use : phase.Buffers)
+			{
+				auto buffer = use.Buffer;
+				auto prev = lastBufferAccess[buffer];
+				auto next = use.Access;
+
+				if (prev != next)
+					phase.BufferTransitions.emplace_back(FBufferTransition{buffer, prev, next});
+
+				lastBufferAccess[buffer] = next;
+			}
+		}
 	}
 } // namespace BHive

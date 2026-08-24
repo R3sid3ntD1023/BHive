@@ -74,8 +74,6 @@ namespace BHive
 
 		void EndRendering(FVulkanRendererContext &ctx);
 
-		void CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext &ctx);
-
 		void FlushDeletionQueue();
 
 		FVulkanRendererContext BuildContext(vk::raii::CommandBuffer &cmd, uint32_t frame, uint32_t imageIndex, uint32_t viewIndex);

@@ -2,7 +2,7 @@
 
 namespace BHive
 {
-	enum class ECommandType
+	enum class ECommandType : uint8_t
 	{
 		GenerateMipMaps,
 		BindPipeline,
@@ -23,7 +23,5 @@ namespace BHive
 	struct FCommand
 	{
 		virtual ~FCommand() = default;
-
-		virtual ECommandType GetType() const = 0;
 	};
 } // namespace BHive

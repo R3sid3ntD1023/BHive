@@ -13,72 +13,73 @@
 
 namespace BHive
 {
-	template <typename T>
-	const T &CmdCast(FCommand &cmd)
-	{
-		return static_cast<const T &>(cmd);
-	}
-
-	void VulkanCommandTranslator::ExecuteCommandList(const FPass &pass, const FPhase &phase, FVulkanRendererContext &ctx)
+	void VulkanCommandTranslator::ExecuteCommandList(const FPhase &phase, FVulkanRendererContext &ctx)
 	{
 		auto &cmdbuffer = ctx.CommandBuffer;
 		const auto &frame = ctx.Frame;
-		const auto &list = phase.CommandList;
 		const auto numAttachments = phase.FBO ? phase.FBO->GetNumColorAttachments() : 0;
 
-		for (auto &cmd : list.Commands)
+		auto it = phase.Commands.begin();
+		auto end = phase.Commands.end();
+
+		while (it != end)
 		{
-			switch (cmd->GetType())
+			const CmdHeader *header = reinterpret_cast<const CmdHeader *>(&(*it).first);
+
+			const auto *payloadPtr = (*it).second.get();
+
+			switch (header->Type)
 			{
 			case ECommandType::SetBufferData:
 			{
-				auto &c = CmdCast<CmdSetBufferData>(*cmd);
+				auto &c = *reinterpret_cast<const CmdSetBufferData *>(payloadPtr);
 				auto buffer = c.BufferRef->GetNativeHandle().As<VulkanBuffer>();
 				buffer->Upload(c.Data.data(), c.Size, c.Offset);
 			}
 			break;
 			case ECommandType::ClearBuffer:
 			{
-				auto &c = CmdCast<CmdClearBuffer>(*cmd);
+				auto &c = *reinterpret_cast<const CmdClearBuffer *>(payloadPtr);
 				auto buffer = c.BufferRef->GetNativeHandle().As<VulkanBuffer>();
 				buffer->ClearData();
 			}
 			break;
 			case ECommandType::GenerateMipMaps:
 			{
-				auto &c = CmdCast<CmdGenerateMipMaps>(*cmd);
+				auto &c = *reinterpret_cast<const CmdGenerateMipMaps *>(payloadPtr);
 				auto vkImage = c.TextureRef->GetNativeHandle().As<VulkanImage>();
 				vkImage->GenerateMipMaps(cmdbuffer);
 			}
 			break;
 			case ECommandType::Dispatch:
 			{
-				auto &c = CmdCast<CmdDispatch>(*cmd);
+				auto &c = *reinterpret_cast<const CmdDispatch *>(payloadPtr);
+				;
 				cmdbuffer.dispatch(c.X, c.Y, c.Z);
 			}
 			break;
 			case ECommandType::ImGuiRender:
 			{
-				auto &c = CmdCast<CmdImGuiRender>(*cmd);
+				auto &c = *reinterpret_cast<const CmdImGuiRender *>(payloadPtr);
 				ImGui_ImplVulkan_RenderDrawData(c.DrawData, *cmdbuffer);
 			}
 			break;
 			case ECommandType::BindPipeline:
 			{
-				auto &c = CmdCast<CmdBindPipeline>(*cmd);
+				auto &c = *reinterpret_cast<const CmdBindPipeline *>(payloadPtr);
 				auto pipeline = Cast<VulkanPipeline>(c.PipelineRef);
 				pipeline->Bind(cmdbuffer, frame, numAttachments);
 			}
 			break;
 			case ECommandType::BindMaterial:
 			{
-				auto &c = CmdCast<CmdBindMaterial>(*cmd);
-				BindMaterialSnapshot(c.Snapshot, ctx, pass);
+				auto &c = *reinterpret_cast<const CmdBindMaterial *>(payloadPtr);
+				BindMaterialSnapshot(c.Snapshot, ctx, phase);
 			}
 			break;
 			case ECommandType::UploadBuffer:
 			{
-				auto &c = CmdCast<CmdUploadBuffer>(*cmd);
+				auto &c = *reinterpret_cast<const CmdUploadBuffer *>(payloadPtr);
 				auto data = c.Data->data();
 				auto size = c.Data->size();
 				auto offset = c.Offset;
@@ -95,7 +96,8 @@ namespace BHive
 			break;
 			case ECommandType::Draw:
 			{
-				auto &c = CmdCast<CmdDraw>(*cmd);
+				auto &c = *reinterpret_cast<const CmdDraw *>(payloadPtr);
+				;
 				auto vao = Cast<VulkanVertexArray>(c.VAO);
 
 				vao->Bind(cmdbuffer, frame);
@@ -106,7 +108,7 @@ namespace BHive
 			break;
 			case ECommandType::DrawIndexed:
 			{
-				auto &c = CmdCast<CmdDrawIndexed>(*cmd);
+				auto &c = *reinterpret_cast<const CmdDrawIndexed *>(payloadPtr);
 				auto vao = Cast<VulkanVertexArray>(c.VAO);
 				auto indexBuffer = c.VAO->GetIndexBuffer();
 				auto count = c.Count ? c.Count : indexBuffer->GetCount();
@@ -119,7 +121,7 @@ namespace BHive
 			break;
 			case ECommandType::MultiDrawIndexedIndirect:
 			{
-				auto &c = CmdCast<CmdMultiDrawIndexedIndirect>(*cmd);
+				auto &c = *reinterpret_cast<const CmdMultiDrawIndexedIndirect *>(payloadPtr);
 				auto topology = ToVkTopology(c.Mode);
 				auto handle = c.Buffer->GetNativeHandle().As<VulkanBuffer>();
 				auto &buf = handle->GetNative(frame);
@@ -133,36 +135,38 @@ namespace BHive
 			break;
 			case ECommandType::SetLineWidth:
 			{
-				auto &c = CmdCast<CmdSetLineWidth>(*cmd);
+				auto &c = *reinterpret_cast<const CmdSetLineWidth *>(payloadPtr);
 				cmdbuffer.setLineWidth(c.Width);
 			}
 			break;
 			default:
 				break;
 			}
+
+			++it;
 		}
 	}
 
-	void VulkanCommandTranslator::CreateBarriers(const FRenderCommandList &list, FVulkanRendererContext &ctx)
+	void VulkanCommandTranslator::CreateBarriers(const std::vector<FBufferTransition> &transitions, FVulkanRendererContext &ctx)
 	{
-		if (list.BufferBarriers.empty())
+		if (transitions.empty())
 			return;
 
 		auto &cmd = ctx.CommandBuffer;
 		auto frame = ctx.Frame;
 
 		std::vector<vk::BufferMemoryBarrier2> bufBarriers;
-		bufBarriers.reserve(list.BufferBarriers.size());
+		bufBarriers.reserve(transitions.size());
 
-		for (auto &b : list.BufferBarriers)
+		for (auto &t : transitions)
 		{
-			auto handle = b.Buffer->GetNativeHandle().As<VulkanBuffer>();
+			auto handle = t.Buffer->GetNativeHandle().As<VulkanBuffer>();
 			vk::Buffer buf = handle->GetNative(frame).GetBuffer();
 
-			auto srcStage = ToStage(b.Src);
-			auto dstStage = ToStage(b.Dst);
-			auto srcAccess = ToAccess(b.Src);
-			auto dstAccess = ToAccess(b.Dst);
+			auto srcStage = ToStage(t.Src);
+			auto dstStage = ToStage(t.Dst);
+			auto srcAccess = ToAccess(t.Src);
+			auto dstAccess = ToAccess(t.Dst);
 
 			bufBarriers.emplace_back(srcStage, srcAccess, dstStage, dstAccess, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, buf, 0, VK_WHOLE_SIZE);
 
@@ -171,16 +175,16 @@ namespace BHive
 		}
 	}
 
-	void VulkanCommandTranslator::BindGlobals(VulkanShader *shader, const FPass &pass)
+	void VulkanCommandTranslator::BindGlobals(VulkanShader *shader, const FPhase &phase)
 	{
-		for (auto &[binding, buffer] : pass.GlobalBuffers)
+		for (auto &[binding, buffer] : phase.BoundBuffers)
 			shader->BindGlobal(binding.Set, binding.Binding, buffer);
 
-		for (auto &[binding, texture] : pass.GlobalTextures)
+		for (auto &[binding, texture] : phase.BoundTextures)
 			shader->BindGlobal(binding.Set, binding.Binding, texture);
 	}
 
-	void VulkanCommandTranslator::BindMaterialSnapshot(const MaterialSnapshot &snap, FVulkanRendererContext &ctx, const FPass &pass)
+	void VulkanCommandTranslator::BindMaterialSnapshot(const MaterialSnapshot &snap, FVulkanRendererContext &ctx, const FPhase &phase)
 	{
 		auto &cmd = ctx.CommandBuffer;
 		const auto frame = ctx.Frame;
@@ -189,7 +193,7 @@ namespace BHive
 		if (!shader)
 			return;
 
-		BindGlobals(shader.get(), pass);
+		BindGlobals(shader.get(), phase);
 
 		if (auto materialGroup = shader->GetBindingGroup(MATERIAL_SET_INDEX))
 		{

@@ -81,25 +81,6 @@ namespace BHive
 		}
 
 		mCameraController.SetCamera(&mCamera);
-
-		{
-			FMeshSubmissionRequest request{};
-			request.Mesh = mMesh;
-			request.Materials = mMaterialTables[0];
-			request.Transform = sphereTransform;
-			mSceneRenderer->SubmitMesh(request);
-
-			request.Materials = mMaterialTables[2];
-			request.Transform = FTransform{{0, 1.f, -2}};
-
-			mSceneRenderer->SubmitMesh(request);
-
-			request.Materials = mMaterialTables[1];
-			request.Transform = FTransform{{0, 0, 0}};
-			request.Mesh = mPlane;
-
-			mSceneRenderer->SubmitMesh(request);
-		}
 	}
 
 	void SceneLayer::OnDetach()
@@ -121,6 +102,25 @@ namespace BHive
 		{
 			mSceneRenderer->Resize(mViewportSize);
 			mCamera.Resize(mViewportSize.x, mViewportSize.y);
+		}
+
+		{
+			FMeshSubmissionRequest request{};
+			request.Mesh = mMesh;
+			request.Materials = mMaterialTables[0];
+			request.Transform = sphereTransform;
+			mSceneRenderer->SubmitMesh(request);
+
+			request.Materials = mMaterialTables[2];
+			request.Transform = FTransform{{0, 1.f, -2}};
+
+			mSceneRenderer->SubmitMesh(request);
+
+			request.Materials = mMaterialTables[1];
+			request.Transform = FTransform{{0, 0, 0}};
+			request.Mesh = mPlane;
+
+			mSceneRenderer->SubmitMesh(request);
 		}
 
 		mSceneRenderer->Begin(&mCamera, mCamera.GetView());
