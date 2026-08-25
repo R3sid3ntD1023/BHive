@@ -25,7 +25,7 @@ namespace BHive
 		const auto &planes = frustum.GetPlanes();
 		for (auto &plane : planes)
 		{
-			if (!sphere.IsOnOrForwardPlane(plane))
+			if (!sphere.IsOnOrForwardPlane(plane.Normal, plane.Distance))
 			{
 				return false;
 			}
@@ -34,9 +34,9 @@ namespace BHive
 		return true;
 	}
 
-	bool FSphereVolume::IsOnOrForwardPlane(const FPlane &plane) const
+	bool FSphereVolume::IsOnOrForwardPlane(const glm::vec3 &normal, float distance) const
 	{
-		return MathFunctionLibrary::GetSignedDistanceToPlane(plane, Center) > -Radius;
+		return MathFunctionLibrary::GetSignedDistanceToPlane(normal, distance, Center) > -Radius;
 	}
 
 	FSphereVolume GenerateSphereFromAABB(const AABB &aabb)

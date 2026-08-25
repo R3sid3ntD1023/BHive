@@ -31,7 +31,7 @@ namespace BHive
 		// construct a plane
 		static FPlane CreatePlane(const glm::vec3 &p1, const glm::vec3 &normal);
 
-		static float GetSignedDistanceToPlane(const FPlane &plane, const glm::vec3 &point);
+		static float GetSignedDistanceToPlane(const glm::vec3 &normal, float distance, const glm::vec3 &point);
 	};
 } // namespace BHive
 

@@ -45,7 +45,7 @@ float GetSignedDistanceToPlane(vec4 plane, vec3 point)
 bool IsOnOrForwardPlane(vec4 plane, vec3 point, float radius)
 {
     float distance = GetSignedDistanceToPlane(plane, point);
-    return distance > -radius;
+    return distance >= -radius;
 }
 
 bool FrustumCullSphere(Frustum frustum, vec3 center, float radius)

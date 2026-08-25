@@ -18,10 +18,12 @@
 #include "Inspectors/Inspect.h"
 #include "core/WindowInput.h"
 #include "core/layers/ImGuiLayer.h"
+#include "core/platform/Platform.h"
 
 namespace BHive
 {
 	FTransform sphereTransform{{5, -1.f, 2}};
+	ContextHandle sSphereHandle;
 
 	void SceneLayer::OnAttach(Application &app)
 	{
@@ -81,6 +83,25 @@ namespace BHive
 		}
 
 		mCameraController.SetCamera(&mCamera);
+
+		{
+			FMeshSubmissionRequest request{};
+			request.Mesh = mMesh;
+			request.Materials = mMaterialTables[0];
+			request.Transform = sphereTransform;
+			mSceneRenderer->SubmitMesh(request, sSphereHandle);
+
+			request.Materials = mMaterialTables[2];
+			request.Transform = FTransform{{0, 1.f, -2}};
+
+			mSceneRenderer->SubmitMesh(request);
+
+			request.Materials = mMaterialTables[1];
+			request.Transform = FTransform{{0, 0, 0}};
+			request.Mesh = mPlane;
+
+			mSceneRenderer->SubmitMesh(request);
+		}
 	}
 
 	void SceneLayer::OnDetach()
@@ -104,26 +125,8 @@ namespace BHive
 			mCamera.Resize(mViewportSize.x, mViewportSize.y);
 		}
 
-		{
-			FMeshSubmissionRequest request{};
-			request.Mesh = mMesh;
-			request.Materials = mMaterialTables[0];
-			request.Transform = sphereTransform;
-			mSceneRenderer->SubmitMesh(request);
-
-			request.Materials = mMaterialTables[2];
-			request.Transform = FTransform{{0, 1.f, -2}};
-
-			mSceneRenderer->SubmitMesh(request);
-
-			request.Materials = mMaterialTables[1];
-			request.Transform = FTransform{{0, 0, 0}};
-			request.Mesh = mPlane;
-
-			mSceneRenderer->SubmitMesh(request);
-		}
-
 		mSceneRenderer->Begin(&mCamera, mCamera.GetView());
+		mSceneRenderer->UpdateTransform(sSphereHandle, sphereTransform);
 
 		DirectionalLight main{};
 		main.SetColor(FColor::White).SetIntensity(1.0f).SetDirection({0.f, -1.0f, 0.5f});
@@ -161,6 +164,33 @@ namespace BHive
 
 		mViewportActive = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 		Application::Get().BlockImGuiEvents(!mViewportActive);
+
+		ImGui::End();
+
+		if (ImGui::Begin("Actions"))
+		{
+			if (ImGui::Button("Remove Sphere"))
+				mSceneRenderer->UpdateMesh(sSphereHandle, nullptr);
+
+			if (ImGui::Button("Load Mesh"))
+			{
+				auto info = Platform::OpenFile("Mesh (*.glb;*.gltf)\0*.glb;*.gltf\0");
+				if (info)
+				{
+					FMeshImportData import_data{};
+					FMeshImportOptions import_options{};
+
+					if (MeshImporter::Import(info, import_data))
+					{
+						std::vector<Ref<Asset>> additional_assets;
+						MeshImportResolver resolver(import_data, import_options, additional_assets);
+						mMesh = Cast<StaticMesh>(resolver.Resolve());
+
+						mSceneRenderer->UpdateMesh(sSphereHandle, mMesh);
+					}
+				}
+			}
+		}
 
 		ImGui::End();
 

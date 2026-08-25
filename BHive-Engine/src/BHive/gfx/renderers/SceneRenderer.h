@@ -8,6 +8,7 @@
 #include "ShadowRenderer.h"
 #include "PMREMGenerator.h"
 #include "EnvironmentSystem.h"
+#include "RenderQueue.h"
 
 namespace BHive
 {
@@ -59,7 +60,13 @@ namespace BHive
 
 		void Submit(const SpotLight &light);
 
+		void SubmitMesh(const FMeshSubmissionRequest &info, ContextHandle &outHandle);
+
 		void SubmitMesh(const FMeshSubmissionRequest &info);
+
+		void UpdateTransform(ContextHandle requestHandle, const FTransform &t);
+
+		void UpdateMesh(ContextHandle requestHandle, Ref<BaseMesh> mesh);
 
 		void Resize(const glm::uvec2 &size);
 

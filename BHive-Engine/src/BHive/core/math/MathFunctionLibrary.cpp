@@ -42,9 +42,9 @@ namespace BHive
 		return p;
 	}
 
-	float MathFunctionLibrary::GetSignedDistanceToPlane(const FPlane &plane, const glm::vec3 &point)
+	float MathFunctionLibrary::GetSignedDistanceToPlane(const glm::vec3 &normal, float distance, const glm::vec3 &point)
 	{
-		return glm::dot(plane.Normal, point) - plane.Distance;
+		return glm::dot(normal, point) - distance;
 	}
 
 	template <>

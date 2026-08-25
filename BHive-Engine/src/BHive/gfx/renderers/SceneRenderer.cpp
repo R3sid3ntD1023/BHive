@@ -11,7 +11,6 @@
 #include "gfx/mesh/SkeletalMesh.h"
 #include "gfx/Pipeline.h"
 #include "gfx/Query.h"
-#include "core/delegates/MultiEventDelegate.h"
 
 namespace BHive
 {
@@ -29,129 +28,9 @@ namespace BHive
 		uint32_t meshIndex = 0;						   // which mesh this instance belongs to
 	};
 
-	DECLARE_MULTI_EVENT(FRenderQueueChanged)
-
-	struct FRenderQueue
-	{
-		std::vector<FMeshSubmissionContext> Contexts;
-		std::vector<Ref<Material>> Materials;
-		SubMeshSubmissions OpaqueSubmissions;
-		SubMeshSubmissions TransparentSubmissions;
-		SubMeshSubmissions ShadowPassRenderData;
-		SubMeshSubmissions RenderPassRenderData;
-
-		void Init() { Contexts.reserve(MAX_OBJECTS); }
-
-		uint32_t AddSubmissionContext()
-		{
-			Contexts.emplace_back();
-			return Contexts.size() - 1;
-		}
-
-		uint32_t AddMaterial(Ref<Material> mat)
-		{
-			auto it = std::find(Materials.begin(), Materials.end(), mat);
-			if (it != Materials.end())
-				return std::distance(Materials.begin(), it);
-
-			Materials.emplace_back(mat);
-			return Materials.size() - 1;
-		}
-
-		void AddRequest(const FMeshSubmissionRequest &request) { mPendingRequests.emplace_back(request); }
-
-		void AddSubmission(FSubMeshSubmission &submission)
-		{
-			auto flags = submission.BitFlags;
-			auto &submissions = flags[0] ? TransparentSubmissions : OpaqueSubmissions;
-			submissions.emplace_back(submission);
-
-			if (flags[1])
-				ShadowPassRenderData.emplace_back(submission);
-		}
-
-		void Rebuild()
-		{
-			for (auto &r : mPendingRequests)
-			{
-				const auto &materials = r.Materials;
-				const auto &subMeshes = r.Mesh->GetSubMeshes();
-				const auto subMeshCount = subMeshes.size();
-
-				if (subMeshCount == 0)
-				{
-					return;
-				}
-
-				auto ctxIndex = AddSubmissionContext();
-				auto &ctx = Contexts.at(ctxIndex);
-				ctx.Transform = r.Transform;
-				ctx.EntityID = r.EntityID;
-				ctx.InstanceTransforms = r.InstanceTransforms;
-				ctx.BoneTransforms = r.BoneTransforms;
-				ctx.VAO = r.Mesh->GetVertexArray();
-
-				for (auto &s : subMeshes)
-				{
-					auto material = materials.get_material(s.MaterialIndex);
-					if (!material)
-						return;
-
-					FSubMeshSubmission submission{};
-					submission.ContextIndex = ctxIndex;
-					submission.SubMesh = s;
-					submission.BoundingBox = r.Mesh->GetBoundingBox();
-					submission.BitFlags[0] = material->IsTransparent();
-					submission.BitFlags[1] = material->ShouldCastShadows();
-					submission.MaterialIndex = AddMaterial(material);
-					AddSubmission(submission);
-				}
-			}
-		}
-
-		void BuildQueue(const glm::mat4 &view)
-		{ // back-to-front
-			static auto sorting = [=](FSubMeshSubmission &a, FSubMeshSubmission &b)
-			{
-				auto aCtx = Contexts.at(a.ContextIndex);
-				auto bCtx = Contexts.at(b.ContextIndex);
-
-				float za = (view * glm::vec4(aCtx.Transform.GetTranslation(), 1.0f)).z;
-				float zb = (view * glm::vec4(bCtx.Transform.GetTranslation(), 1.0f)).z;
-				return za > zb;
-			};
-
-			auto requestCount = mPendingRequests.size();
-			if (requestCount)
-			{
-				LOG_TRACE("Building Pending Mesh Submissions {}", requestCount)
-				Contexts.clear();
-				OpaqueSubmissions.clear();
-				TransparentSubmissions.clear();
-				ShadowPassRenderData.clear();
-				RenderPassRenderData.clear();
-
-				Rebuild();
-
-				std::sort(TransparentSubmissions.begin(), TransparentSubmissions.end(), sorting);
-
-				mPendingRequests.clear();
-
-				OnQueueChanged.Broadcast();
-			}
-		}
-
-		Ref<Material> GetMaterial(uint32_t index) { return Materials.at(index); }
-
-		FRenderQueueChangedEvent OnQueueChanged;
-
-	private:
-		std::vector<FMeshSubmissionRequest> mPendingRequests;
-	};
-
 	struct RenderBatch
 	{
-		std::unordered_map<uint32_t, std::unordered_map<Ref<VertexArray>, std::vector<FSubMeshSubmission>>> MaterialBatches;
+		std::unordered_map<Ref<VertexArray>, std::unordered_map<Ref<Material>, std::vector<FSubMeshSubmission>>> MaterialBatches;
 
 		std::vector<ObjectData> ObjectDatas;
 
@@ -169,8 +48,6 @@ namespace BHive
 
 		void Build(const SubMeshSubmissions &bucket)
 		{
-			LOG_TRACE("Batch NeedsUpdate {}", mNeedsUpdate);
-
 			if (!mNeedsUpdate)
 				return;
 
@@ -183,7 +60,7 @@ namespace BHive
 			for (auto &o : bucket)
 			{
 				// object data
-				auto &ctx = mQueue->Contexts.at(o.ContextIndex);
+				auto &ctx = mQueue->ResolveContext(o.Context);
 				auto pos = ctx.Transform.GetTranslation();
 				auto model = ctx.Transform.ToMat4();
 				auto radius = o.BoundingBox.GetRadius();
@@ -191,9 +68,9 @@ namespace BHive
 				auto &s = o.SubMesh;
 
 				// submesh data
-
-				auto &group = MaterialBatches[o.MaterialIndex];
-				auto &submissions = group[vao];
+				auto material = ctx.Materials.get_material(s.MaterialIndex);
+				auto &group = MaterialBatches[vao];
+				auto &submissions = group[material];
 
 				auto &submission = submissions.emplace_back(o);
 				submission.MeshIndex = meshIndex;
@@ -214,38 +91,28 @@ namespace BHive
 			}
 
 			mNeedsUpdate = false;
-			LOG_TRACE("Batch Updated!");
 		}
 
 		void Draw(FPass &pass, Ref<GeneralBuffer> indirect)
 		{
-
-			LOG_TRACE("DrawCommand Count {} for pass {}", DrawCommands.size(), pass.Name);
-
 			uint32_t globalOffset = 0;
 			// render meshes
-			for (auto &[mat, vaoMap] : MaterialBatches)
+			for (auto &[vao, matMap] : MaterialBatches)
 			{
-				auto material = mQueue->GetMaterial(mat);
+				vao->DeclareAccess(pass, EBufferUsage::IndirectRead, EBufferUsage::IndirectRead);
 
-				pass.Emplace<CmdBindMaterial>()(material.get());
-
-				for (auto &[vao, submissions] : vaoMap)
+				for (auto &[material, submissions] : matMap)
 				{
-					uint32_t count = (uint32_t)submissions.size();
+					pass.Emplace<CmdBindMaterial>()(material.get());
 
-					vao->DeclareAccess(pass, EBufferUsage::IndirectRead, EBufferUsage::IndirectRead);
+					uint32_t count = (uint32_t)submissions.size();
 					pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect.get(), vao.get(), count, MULTI_DRAW_INDIRECT_STRIDE, globalOffset);
 					globalOffset += count * MULTI_DRAW_INDIRECT_STRIDE;
 				}
 			}
 		}
 
-		void OnRenderQueueChanged()
-		{
-			mNeedsUpdate = true;
-			LOG_TRACE("Rendere Queue Changed {}", mNeedsUpdate);
-		}
+		void OnRenderQueueChanged() { mNeedsUpdate = true; }
 
 		uint32_t InstanceCount() const { return static_cast<uint32_t>(ObjectDatas.size()); }
 
@@ -262,7 +129,7 @@ namespace BHive
 		mSize = size;
 
 		mRenderQueue = CreateRef<FRenderQueue>();
-		mRenderQueue->Init();
+		mRenderQueue->Init(MAX_OBJECTS);
 
 		mRenderBatches.resize(2);
 		mRenderBatches[0] = CreateRef<RenderBatch>(mRenderQueue);
@@ -317,8 +184,8 @@ namespace BHive
 		mLights.EndRecording();
 		// mShadows.EndRecording();
 
-		mRenderBatches[0]->Build(mRenderQueue->OpaqueSubmissions);
-		mRenderBatches[1]->Build(mRenderQueue->TransparentSubmissions);
+		mRenderBatches[0]->Build(mRenderQueue->Opaque);
+		mRenderBatches[1]->Build(mRenderQueue->Transparent);
 
 		auto &renderer = Renderer::Get();
 
@@ -471,9 +338,37 @@ namespace BHive
 		// mShadows.SubmitSpotLight(shadow_info);
 	}
 
+	void SceneRenderer::SubmitMesh(const FMeshSubmissionRequest &info, ContextHandle &outHandle)
+	{
+		outHandle = mRenderQueue->AddMesh(info);
+	}
+
 	void SceneRenderer::SubmitMesh(const FMeshSubmissionRequest &info)
 	{
-		mRenderQueue->AddRequest(info);
+		mRenderQueue->AddMesh(info);
+	}
+
+	void SceneRenderer::UpdateTransform(ContextHandle requestHandle, const FTransform &t)
+	{
+		if (!mRenderQueue->IsHandleValid(requestHandle))
+			return;
+
+		auto &ctx = mRenderQueue->ResolveContext(requestHandle);
+		ctx.Transform = t;
+
+		mRenderQueue->OnQueueChanged.Broadcast();
+	}
+
+	void SceneRenderer::UpdateMesh(ContextHandle requestHandle, Ref<BaseMesh> mesh)
+	{
+		mRenderQueue->RemoveSubmissionsForContext(requestHandle);
+
+		if (!mesh)
+			return;
+
+		mRenderQueue->AddSubmissionsForMesh(requestHandle, mesh);
+
+		mRenderQueue->OnQueueChanged.Broadcast();
 	}
 
 	float SceneRenderer::GetDistanceToCamera(const FTransform &transform)

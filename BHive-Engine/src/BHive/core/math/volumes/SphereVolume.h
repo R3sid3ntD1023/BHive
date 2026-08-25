@@ -18,7 +18,7 @@ namespace BHive
 		virtual bool InFrustum(const Frustum &frustum, const FTransform &transform) const override;
 
 	private:
-		bool IsOnOrForwardPlane(const FPlane &plane) const;
+		bool IsOnOrForwardPlane(const glm::vec3 &normal, float distance) const;
 	};
 
 	FSphereVolume GenerateSphereFromAABB(const AABB &aabb);

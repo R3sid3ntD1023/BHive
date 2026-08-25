@@ -12,6 +12,12 @@ namespace BHive
 	class SkeletalPose;
 	class BaseMesh;
 
+	struct ContextHandle
+	{
+		uint32_t ContextIndex = -1;
+		uint32_t Generation = -1;
+	};
+
 	struct FMeshSubmissionRequest
 	{
 		Ref<BaseMesh> Mesh;
@@ -33,11 +39,17 @@ namespace BHive
 
 		FTransform Transform;
 
+		MaterialTable Materials;
+
 		int32_t EntityID = -1;
 
 		std::vector<glm::mat4> InstanceTransforms;
 
 		std::vector<glm::mat4> BoneTransforms;
+
+		bool Active = true;
+
+		uint32_t Generation = 0;
 	};
 
 	struct FSubMeshSubmission
@@ -48,12 +60,10 @@ namespace BHive
 
 		uint32_t MeshIndex = 0;
 
-		uint32_t ContextIndex = 0;
-
-		uint32_t MaterialIndex = 0;
-
 		// opaque/transparent, cast_shadows
 		std::bitset<2> BitFlags;
+
+		ContextHandle Context;
 	};
 
 	using SubMeshSubmissions = std::vector<FSubMeshSubmission>;
@@ -86,7 +96,5 @@ namespace BHive
 
 		glm::vec3 LightAngleNearFar;
 	};
-
-	class BaseMesh;
 
 } // namespace BHive

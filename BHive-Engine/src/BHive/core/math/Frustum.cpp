@@ -18,7 +18,7 @@ namespace BHive
 
 	Frustum::Frustum(const glm::mat4 &view, float aspect, float fov, float near, float far)
 	{
-		Update(view, aspect, fov, near, far);
+		Update(glm::perspective(fov, aspect, near, far), view);
 	}
 
 	void Frustum::Update(const glm::mat4 &projection, const glm::mat4 &view)
@@ -37,25 +37,6 @@ namespace BHive
 		const auto half_h = half_v * aspect;
 		const glm::vec3 frontMultFar = far * forward;
 		const glm::vec3 pos = view_inv[3].xyz;
-
-		mPlanes[0] = MathFunctionLibrary::CreatePlane(pos + near * forward, forward);					   // near
-		mPlanes[1] = MathFunctionLibrary::CreatePlane(pos + frontMultFar, -forward);					   // far
-		mPlanes[2] = MathFunctionLibrary::CreatePlane(pos, glm::cross(frontMultFar - right * half_h, up)); // right
-		mPlanes[3] = MathFunctionLibrary::CreatePlane(pos, glm::cross(up, frontMultFar + right * half_h)); // left
-		mPlanes[4] = MathFunctionLibrary::CreatePlane(pos, glm::cross(right, frontMultFar - up * half_v)); // top
-		mPlanes[5] = MathFunctionLibrary::CreatePlane(pos, glm::cross(frontMultFar + up * half_v, right)); // bottom
-	}
-
-	void Frustum::Update(const glm::mat4 &view, float aspect, float fov, float near, float far)
-	{
-		const auto view_inv = glm::inverse(view);
-		const auto forward = -glm::normalize(glm::vec3(view[2]));
-		const auto right = glm::normalize(glm::cross(forward, {0, 1, 0}));
-		const auto up = glm::normalize(glm::cross(right, forward));
-		const auto half_v = far * tanf(fov * .5f);
-		const auto half_h = half_v * aspect;
-		const glm::vec3 frontMultFar = far * forward;
-		const glm::vec3 pos = view[3].xyz;
 
 		mPlanes[0] = MathFunctionLibrary::CreatePlane(pos + near * forward, forward);					   // near
 		mPlanes[1] = MathFunctionLibrary::CreatePlane(pos + frontMultFar, -forward);					   // far
