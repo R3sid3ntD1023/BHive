@@ -36,5 +36,7 @@ namespace BHive
 		std::unordered_map<std::string, MaterialSnapshot::BufferBinding> mLocalBuffers;
 
 		std::unordered_map<std::string, MaterialSnapshot::TextureBinding> mTextureBindings;
+
+		std::vector<Ref<IBindingGroup>> mBindGroups;
 	};
 } // namespace BHive

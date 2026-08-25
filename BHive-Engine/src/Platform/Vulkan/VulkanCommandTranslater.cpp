@@ -175,15 +175,6 @@ namespace BHive
 		}
 	}
 
-	void VulkanCommandTranslator::BindGlobals(VulkanShader *shader, const FPhase &phase)
-	{
-		for (auto &[binding, buffer] : phase.BoundBuffers)
-			shader->BindGlobal(binding.Set, binding.Binding, buffer);
-
-		for (auto &[binding, texture] : phase.BoundTextures)
-			shader->BindGlobal(binding.Set, binding.Binding, texture);
-	}
-
 	void VulkanCommandTranslator::BindMaterialSnapshot(const MaterialSnapshot &snap, FVulkanRendererContext &ctx, const FPhase &phase)
 	{
 		auto &cmd = ctx.CommandBuffer;
@@ -193,31 +184,54 @@ namespace BHive
 		if (!shader)
 			return;
 
-		BindGlobals(shader.get(), phase);
-
-		if (auto materialGroup = shader->GetBindingGroup(MATERIAL_SET_INDEX))
+		// bind globals
+		for (auto &group : snap.BindingGroups)
 		{
-			BindMaterialResources(snap, *materialGroup);
+			auto set = group->GetSetIndex();
+			for (auto &[binding, buffer] : phase.BoundBuffers)
+			{
+				if (binding.Set == set)
+				{
+					group->SetBuffer(binding.Binding, buffer);
+				}
+			}
+
+			for (auto &[binding, texture] : phase.BoundTextures)
+			{
+				if (binding.Set == set)
+				{
+					group->SetTexture(binding.Binding, texture);
+				}
+			}
 		}
 
-		shader->Bind(cmd, frame);
+		for (auto &group : snap.BindingGroups)
+		{
+			auto set = group->GetSetIndex();
+			if (set != MATERIAL_SET_INDEX)
+				continue;
+
+			for (auto &[name, tb] : snap.Textures)
+			{
+				group->SetTexture(tb.Binding, tb.TextureRef, tb.BaseMipLevel);
+			}
+
+			for (auto &[name, buf] : snap.LocalBuffers)
+			{
+				group->SetBuffer(buf.Binding, buf.BufferRef);
+			}
+		}
+
+		shader->Bind(cmd);
+
+		for (auto &group : snap.BindingGroups)
+		{
+			shader->BindGroup(cmd, frame, group.get());
+		}
 
 		for (auto &pc : snap.mReflection->PushConstants)
 		{
 			shader->BindPushConstants(cmd, ToVkShaderStageBit(pc.Stages), snap.PushConstantData.data() + pc.Offset, (uint32_t)pc.Size, pc.Offset);
-		}
-	}
-
-	void VulkanCommandTranslator::BindMaterialResources(const MaterialSnapshot &snap, VulkanBindingGroup &group)
-	{
-		for (auto &[name, tb] : snap.Textures)
-		{
-			group.SetTexture(tb.Binding, tb.TextureRef, tb.BaseMipLevel);
-		}
-
-		for (auto &[name, buf] : snap.LocalBuffers)
-		{
-			group.SetBuffer(buf.Binding, buf.BufferRef);
 		}
 	}
 

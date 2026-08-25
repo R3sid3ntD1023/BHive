@@ -23,13 +23,15 @@ namespace BHive
 	public:
 		VulkanShader(const Ref<ShaderAsset> &asset);
 
-		void Bind(vk::CommandBuffer cmd, uint32_t frame);
+		void Bind(vk::CommandBuffer cmd);
+
+		void BindGroup(vk::CommandBuffer cmd, uint32_t frame, IBindingGroup *group);
 
 		void BindPushConstants(vk::CommandBuffer cmd, vk::ShaderStageFlags stage, const void *data, uint32_t size, uint32_t offset);
 
-		void BindGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer);
+		// void BindGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer);
 
-		void BindGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture);
+		// void BindGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture);
 
 		const uint32_t GetSetCount() const { return (uint32_t)mDescriptorSetLayouts.size(); }
 
@@ -39,7 +41,7 @@ namespace BHive
 
 		FPipelineLayoutInfo GetPipelineLayoutInfo() const;
 
-		VulkanBindingGroup *GetBindingGroup(uint32_t set) const;
+		// VulkanBindingGroup *GetBindingGroup(uint32_t set) const;
 
 	private:
 		void CreateModules(const ShaderAsset &asset);
@@ -61,7 +63,7 @@ namespace BHive
 
 		std::map<uint32_t, vk::raii::DescriptorSetLayout> mDescriptorSetLayouts;
 
-		std::unordered_map<uint32_t, Ref<VulkanBindingGroup>> mBindGroups;
+		// std::unordered_map<uint32_t, Ref<VulkanBindingGroup>> mBindGroups;
 
 		vk::raii::DescriptorSetLayout mEmptyDescriptorSet = VK_NULL_HANDLE;
 

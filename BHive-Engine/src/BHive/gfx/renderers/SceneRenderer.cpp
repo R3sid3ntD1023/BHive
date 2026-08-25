@@ -284,13 +284,12 @@ namespace BHive
 			mInstanceDataBuffer[i] = GeneralBuffer::Create(OBJECT_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
 			mIndirectDrawBuffer[i] = GeneralBuffer::Create(DRAWCOMMAND_BUFFER_SIZE, EBufferType::StorageBuffer | EBufferType::IndirectBuffer, EBufferLifetime::Dynamic);
 			mVisibleBuffer[i] = GeneralBuffer::Create(VISIBILITY_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
+			mFrustrumOcclusionMaterial[i] = CreateRef<Material>("FrustumOcclusion.glsl");
 		}
 
 		mPostProcessStack.Init(size);
 		mLights.Init();
 		// mShadows.Init();
-
-		mFrustrumOcclusionMaterial = CreateRef<Material>("FrustumOcclusion.glsl");
 	}
 
 	void SceneRenderer::SetEnvironmentTexture(const Ref<Texture2D> &hdr)
@@ -344,9 +343,9 @@ namespace BHive
 		cameraPass.EndPhase();
 		renderer.EndPass();
 
-		for (uint32_t i = 0; i < 1; i++)
+		for (uint32_t i = 0; i < 2; i++)
 		{
-			mFrustrumOcclusionMaterial->SetParam("frustum", MaterialParam(mFrustum.GetPlanes()));
+			mFrustrumOcclusionMaterial[i]->SetParam("frustum", MaterialParam(mFrustum.GetPlanes()));
 
 			auto &batch = *mRenderBatches[i];
 			auto instanceCount = batch.InstanceCount();
@@ -379,7 +378,7 @@ namespace BHive
 			occlusionPass.UseBuffer(visibilityBuffer, EBufferUsage::StorageWrite);
 			occlusionPass.UseBuffer(instanceBuffer, EBufferUsage::StorageRead);
 			occlusionPass.UseBuffer(mCameraUBO, EBufferUsage::UniformRead);
-			occlusionPass.Emplace<CmdBindMaterial>()(mFrustrumOcclusionMaterial.get());
+			occlusionPass.Emplace<CmdBindMaterial>()(mFrustrumOcclusionMaterial[i].get());
 			occlusionPass.Emplace<CmdDispatch>()(groups, 1, 1);
 			occlusionPass.EndPhase();
 			renderer.EndPass();

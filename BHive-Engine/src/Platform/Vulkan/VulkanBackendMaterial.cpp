@@ -29,6 +29,12 @@ namespace BHive
 		}
 
 		CreatePushConstanstData(mergedRefl.PushConstants);
+
+		auto vkShader = Cast<VulkanShader>(mProgram);
+		for (auto &set : mergedRefl.Sets)
+		{
+			mBindGroups.emplace_back(CreateRef<VulkanBindingGroup>(vkShader.get(), set.first));
+		}
 	}
 
 	void VulkanBackendMaterial::SetTexture(const std::string &name, const FTextureBinding &texture)
@@ -74,6 +80,7 @@ namespace BHive
 		snapshot.Shader = mProgram;
 		snapshot.mReflection = &mProgram->GetMergedRefl();
 		snapshot.ReflectionLookUp = &mProgram->GetRefl();
+		snapshot.BindingGroups = mBindGroups;
 
 		return snapshot;
 	}

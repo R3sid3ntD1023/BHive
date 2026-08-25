@@ -319,7 +319,7 @@ namespace BHive
 
 	void VulkanBackend::CreateDescriptorPool()
 	{
-		static vk::DescriptorPoolCreateFlags poolFlags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind;
+		static vk::DescriptorPoolCreateFlags poolFlags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
 
 		// --- Material pool (set = 1, cached per material) ---
 		std::vector<vk::DescriptorPoolSize> materialSizes

@@ -9,8 +9,9 @@ namespace BHive
 
 	struct IBindingGroup
 	{
-		virtual void SetBuffer(uint32_t binding, const Ref<BufferBase>& buffer) = 0;
-		virtual void SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip = 0) = 0;
 		virtual ~IBindingGroup() = default;
+		virtual void SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer) = 0;
+		virtual void SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip = 0) = 0;
+		virtual uint32_t GetSetIndex() const = 0;
 	};
-}
+} // namespace BHive

@@ -21,33 +21,38 @@ namespace BHive
 		CreatePipelineLayout();
 	}
 
-	void VulkanShader::BindGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer)
+	void VulkanShader::Bind(vk::CommandBuffer cmd)
 	{
-		if (auto group = GetBindingGroup(set))
-		{
-			group->SetBuffer(binding, buffer);
-		}
-	}
-
-	void VulkanShader::BindGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture)
-	{
-		if (auto group = GetBindingGroup(set))
-		{
-			group->SetTexture(binding, texture);
-		}
-	}
-
-	void VulkanShader::Bind(vk::CommandBuffer cmd, uint32_t frame)
-	{
-
 		for (auto &[stage, shader] : mShaderEXTs)
 			cmd.bindShadersEXT(stage, {shader});
+	}
 
-		for (auto &[setIndex, group] : mBindGroups)
-		{
-			auto set = group->Update(frame);
-			cmd.bindDescriptorSets(mBindPoint, mPipelineLayout, setIndex, {set}, {});
-		}
+	// void VulkanShader::BindGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer)
+	// {
+	// 	if (auto group = GetBindingGroup(set))
+	// 	{
+	// 		group->SetBuffer(binding, buffer);
+	// 	}
+	// }
+
+	// void VulkanShader::BindGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture)
+	// {
+	// 	if (auto group = GetBindingGroup(set))
+	// 	{
+	// 		group->SetTexture(binding, texture);
+	// 	}
+	// }
+
+	// void VulkanShader::Bind(vk::CommandBuffer cmd, uint32_t frame)
+	// {
+
+	// }
+
+	void VulkanShader::BindGroup(vk::CommandBuffer cmd, uint32_t frame, IBindingGroup *group)
+	{
+		auto vkgroup = Cast<VulkanBindingGroup>(group);
+		auto set = vkgroup->Update(frame);
+		cmd.bindDescriptorSets(mBindPoint, mPipelineLayout, vkgroup->GetSetIndex(), {set}, {});
 	}
 
 	void VulkanShader::BindPushConstants(vk::CommandBuffer cmd, vk::ShaderStageFlags stage, const void *data, uint32_t size, uint32_t offset)
@@ -181,20 +186,20 @@ namespace BHive
 				auto &b = bindings[i];
 				auto &flags = binding_flags[i];
 
-				// if (utils::IsImage(b.descriptorType))
-				// {
-				// 	flags = vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eUpdateUnusedWhilePending;
-				// }
+				if (utils::IsImage(b.descriptorType))
+				{
+					flags = vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eUpdateUnusedWhilePending;
+				}
 
-				flags = vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eUpdateUnusedWhilePending | vk::DescriptorBindingFlagBits::eUpdateAfterBind;
+				// flags = vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eUpdateUnusedWhilePending | vk::DescriptorBindingFlagBits::eUpdateAfterBind;
 			}
 
 			vk::DescriptorSetLayoutBindingFlagsCreateInfo flags(binding_flags);
-			vk::DescriptorSetLayoutCreateInfo layout_info(vk::DescriptorSetLayoutCreateFlagBits::eUpdateAfterBindPool, bindings, bindings.empty() ? nullptr : &flags);
+			vk::DescriptorSetLayoutCreateInfo layout_info({}, bindings, bindings.empty() ? nullptr : &flags);
 			mDescriptorSetLayouts.emplace(set, mDevice.createDescriptorSetLayout(layout_info));
 
-			auto group = CreateRef<VulkanBindingGroup>(this, set);
-			mBindGroups.emplace(set, group);
+			// auto group = CreateRef<VulkanBindingGroup>(this, set);
+			// mBindGroups.emplace(set, group);
 		}
 
 		vk::DescriptorSetLayoutCreateInfo empty{};
@@ -208,12 +213,12 @@ namespace BHive
 		// LOG_INFO("Push constants found: {} - {}", asset.Name, merged.PushConstants.size());
 	}
 
-	VulkanBindingGroup *VulkanShader::GetBindingGroup(uint32_t set) const
-	{
-		if (mBindGroups.contains(set))
-			return mBindGroups.at(set).get();
+	// VulkanBindingGroup *VulkanShader::GetBindingGroup(uint32_t set) const
+	// {
+	// 	if (mBindGroups.contains(set))
+	// 		return mBindGroups.at(set).get();
 
-		return nullptr;
-	}
+	// 	return nullptr;
+	// }
 
 } // namespace BHive

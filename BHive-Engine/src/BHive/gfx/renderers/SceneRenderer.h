@@ -99,7 +99,7 @@ namespace BHive
 
 		Ref<Texture> mOutputTexture;
 
-		Ref<Material> mFrustrumOcclusionMaterial;
+		std::array<Ref<Material>, 2> mFrustrumOcclusionMaterial;
 
 		Ref<GeneralBuffer> mCameraUBO;
 

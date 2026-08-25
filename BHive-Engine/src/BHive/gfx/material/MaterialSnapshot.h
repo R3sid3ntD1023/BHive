@@ -7,6 +7,7 @@ namespace BHive
 	class GeneralBuffer;
 	class Texture;
 	class ShaderProgram;
+	class IBindingGroup;
 
 	struct MaterialSnapshot
 	{
@@ -29,6 +30,8 @@ namespace BHive
 		std::unordered_map<std::string, TextureBinding> Textures;
 
 		std::unordered_map<std::string, BufferBinding> LocalBuffers;
+
+		std::vector<Ref<IBindingGroup>> BindingGroups;
 
 		std::vector<std::byte> PushConstantData;
 
