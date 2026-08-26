@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ResourceHandle.h"
+#include "core/type/TypeID.h"
+#include "core/type/TypeName.h"
 
 namespace BHive
 {

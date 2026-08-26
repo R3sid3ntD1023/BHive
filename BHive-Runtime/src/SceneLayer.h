@@ -26,15 +26,20 @@ namespace BHive
 
 		void OnGuiRender() override;
 
+		void OnEvent(Event &e);
+
+		bool OnKeyEvent(KeyEvent &e);
+
 	private:
 		Ref<SceneRenderer> mSceneRenderer;
 		Ref<BaseMesh> mMesh;
 		Ref<BaseMesh> mPlane;
 		MaterialTable mMaterialTables[3];
-		EditorCamera mCamera;
+		EditorCamera mCameras[2];
 		glm::uvec2 mViewportSize{0, 0};
 		bool mViewportActive = false;
 		EditorCameraController mCameraController;
+		uint32_t mCurrentCameraIndex = 0;
 	};
 
 } // namespace BHive

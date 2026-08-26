@@ -28,8 +28,14 @@ namespace BHive
 		uint32_t meshIndex = 0;						   // which mesh this instance belongs to
 	};
 
+	struct GPUFrustum
+	{
+		glm::vec4 planes[6];
+	};
+
 	struct RenderBatch
 	{
+		// vao -> material[submissions]
 		std::unordered_map<Ref<VertexArray>, std::unordered_map<ResourceHandle, std::vector<FSubMeshSubmission>>> MaterialBatches;
 
 		std::vector<ObjectData> ObjectDatas;
@@ -62,6 +68,7 @@ namespace BHive
 				// object data
 				auto &ctx = mQueue->ResolveContext(o.Context);
 				auto pos = ctx.Transform.GetTranslation();
+				auto model = ctx.Transform.ToMat4();
 				auto model = ctx.Transform.ToMat4();
 				auto radius = o.BoundingBox.GetRadius();
 				auto vao = ctx.VAO;
@@ -212,9 +219,16 @@ namespace BHive
 		cameraPass.EndPhase();
 		renderer.EndPass();
 
+		GPUFrustum gpuFrustum;
+		auto &p = mFrustum.GetPlanes();
+		for (uint32_t i = 0; i < 6; i++)
+		{
+			gpuFrustum.planes[i] = glm::vec4(p[i].Normal, p[i].Distance);
+		}
+
 		for (uint32_t i = 0; i < 2; i++)
 		{
-			mFrustrumOcclusionMaterial[i]->SetParam("frustum", MaterialParam(mFrustum.GetPlanes()));
+			mFrustrumOcclusionMaterial[i]->SetParam("frustum", MaterialParam(gpuFrustum));
 
 			auto &batch = *mRenderBatches[i];
 			auto instanceCount = batch.InstanceCount();

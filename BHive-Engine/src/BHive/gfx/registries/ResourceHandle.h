@@ -8,7 +8,7 @@ namespace BHive
 	{
 		uint32_t Index = UINT32_MAX;
 		uint32_t Generation = 0;
-		uint64_t Type = 0;
+		uint32_t Type = 0;
 		void *Ptr = nullptr;
 
 		template <typename T>
@@ -17,7 +17,7 @@ namespace BHive
 			return reinterpret_cast<T *>(Ptr);
 		}
 
-		bool IsValid() const { return Index != UINT32_MAX && Generation != 0 && Type != 0; }
+		bool IsValid() const { return Index != UINT32_MAX && Generation != 0 && Ptr != nullptr; }
 
 		bool operator==(const ResourceHandle &h) const { return Index == h.Index && Generation == h.Generation && Type == h.Type; }
 
@@ -49,7 +49,7 @@ namespace std
 	{
 		size_t operator()(const BHive::ResourceHandle &h) const
 		{
-			uint64_t combined = (uint64_t(h.Index) << 32) ^ (uint64_t(h.Generation) << 16) ^ h.Type;
+			uint64_t combined = (uint64_t(h.Index) << 32) ^ (uint64_t(h.Generation) << 16) ^ uint64_t(h.Type);
 			return mix64(combined);
 		}
 	};

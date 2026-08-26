@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "ResourceHandle.h"
 #include "IResourceRegistry.h"
+#include "ResourceTypes.h"
 
 namespace BHive
 {
@@ -39,7 +40,7 @@ namespace BHive
 			e.Resource = CreateRef<U>(std::forward<TArgs>(args)...);
 			e.Generation++;
 
-			return Handle{index, e.Generation, typeid(T).hash_code(), e.Resource.get()};
+			return Handle{index, e.Generation, TypeID<T>::value, e.Resource.get()};
 		}
 
 		void Destroy(Handle h)
@@ -67,13 +68,13 @@ namespace BHive
 		{
 			if (!h.IsValid())
 			{
-				LOG_WARN("Invalid handle {}", typeid(T).name());
+				LOG_WARN("Invalid handle {}", TypeName<T>::value);
 				return false;
 			}
 
-			if (h.Type != typeid(T).hash_code())
+			if (h.Type != TypeID<T>::value)
 			{
-				LOG_WARN("Invalid Type for registry {}", typeid(T).name());
+				LOG_WARN("Invalid Type for registry {}", TypeName<T>::value);
 				return false;
 			}
 

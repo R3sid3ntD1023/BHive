@@ -20,7 +20,7 @@ namespace BHive
 		std::array<FPlane, 6> mPlanes = {};
 	};
 
-	struct FrustumViewer
+	struct BHIVE_API FrustumViewer
 	{
 		FrustumViewer(const glm::mat4 &projection, const glm::mat4 &view);
 

@@ -33,16 +33,19 @@ namespace BHive
 
 		mViewportSize = window.GetSize();
 
-		mCamera = EditorCamera(75.f, aspect, 0.1f, 1000.f);
-		mCamera.SetStartState({0.f, 5.f, 5.f}, -90.0f, -45.0f);
+		mCameras[0] = EditorCamera(75.f, aspect, 0.1f, 1000.f);
+		mCameras[0].SetStartState({0.f, 5.f, 5.f}, -90.0f, -45.0f);
+
+		mCameras[1] = EditorCamera(75.f, aspect, 0.1f, 1000.f);
+		mCameras[1].SetStartState({5.f, 5.f, 5.f}, -90.0f, -45.0f);
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Init(mViewportSize);
 		mSceneRenderer->SetEnvironmentTexture(TextureLoader::Import(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr"));
 
 		// mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
-		// mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
-		// mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
+		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
+		mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
 
 		/*FMeshImportData import_data{};
 		FMeshImportOptions import_options{.ImportMaterials = false};
@@ -86,7 +89,7 @@ namespace BHive
 			}
 		}
 
-		mCameraController.SetCamera(&mCamera);
+		mCameraController.SetCamera(&mCameras[0]);
 
 		{
 			FMeshSubmissionRequest request{};
@@ -126,10 +129,10 @@ namespace BHive
 		if (mViewportSize != size && mViewportSize.x > 0 && mViewportSize.y > 0)
 		{
 			mSceneRenderer->Resize(mViewportSize);
-			mCamera.Resize(mViewportSize.x, mViewportSize.y);
+			mCameras[mCurrentCameraIndex].Resize(mViewportSize.x, mViewportSize.y);
 		}
 
-		mSceneRenderer->Begin(&mCamera, mCamera.GetView());
+		mSceneRenderer->Begin(&mCameras[mCurrentCameraIndex], mCameras[mCurrentCameraIndex].GetView());
 		mSceneRenderer->UpdateTransform(sSphereHandle, sphereTransform);
 
 		DirectionalLight main{};
@@ -140,6 +143,11 @@ namespace BHive
 		light.SetColor(FColor::White).SetIntensity(1.0f).SetRadius(10.f).SetPosition({0, 2, 0});
 		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), light.GetPosition());
 		renderer.Line.DrawGrid({});
+
+		auto &proj = mCameras[0].GetProjection();
+		auto &view = mCameras[0].GetView();
+		FrustumViewer viewer(proj, view);
+		renderer.Line.DrawFrustum(viewer, FColor::Yellow);
 
 		mSceneRenderer->Submit(light);
 		mSceneRenderer->End();
@@ -190,6 +198,7 @@ namespace BHive
 						MeshImportResolver resolver(import_data, import_options, additional_assets);
 						mMesh = Cast<StaticMesh>(resolver.Resolve());
 
+						mMesh->GetMaterialTable() = mMaterialTables[0];
 						mSceneRenderer->UpdateMesh(sSphereHandle, mMesh);
 					}
 				}
@@ -213,6 +222,28 @@ namespace BHive
 		}
 
 		ImGui::End();
+	}
+
+	void SceneLayer::OnEvent(Event &e)
+	{
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch(this, &SceneLayer::OnKeyEvent);
+	}
+
+	bool SceneLayer::OnKeyEvent(KeyEvent &e)
+	{
+		if (e.Action == EventStatus::PRESS)
+		{
+			if (e.Key == EKey::Left)
+				mCurrentCameraIndex = (mCurrentCameraIndex - 1) % 2;
+
+			if (e.Key == EKey::Right)
+				mCurrentCameraIndex = (mCurrentCameraIndex + 1) % 2;
+
+			mCameraController.SetCamera(&mCameras[mCurrentCameraIndex]);
+		}
+
+		return false;
 	}
 
 } // namespace BHive
