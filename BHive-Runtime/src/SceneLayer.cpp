@@ -19,6 +19,7 @@
 #include "core/WindowInput.h"
 #include "core/layers/ImGuiLayer.h"
 #include "core/platform/Platform.h"
+#include "gfx/factories/MaterialFactory.h"
 
 namespace BHive
 {
@@ -58,28 +59,31 @@ namespace BHive
 
 		{
 
+			mMaterialTables[0].Add(MaterialFactory::CreateLambert());
+			mMaterialTables[1].Add(MaterialFactory::CreateLambert());
+			mMaterialTables[2].Add(MaterialFactory::CreateStandard());
+
 			{
 				auto texture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
-				auto material = CreateRef<LambertMaterial>();
+
+				auto material = mMaterialTables[0][0].As<LambertMaterial>();
 				material->SetDiffuseColor(FColor::DarkGray).SetEmissionColor(FColor::Black);
 				material->SetTexture("DiffuseMap", {texture});
-				mMaterialTables[0].add_material(material);
 			}
 
 			{
 				auto texture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/textures/Mario.png", {});
-				auto material = CreateRef<LambertMaterial>();
+
+				auto material = mMaterialTables[1][0].As<LambertMaterial>();
 				material->SetDiffuseColor({.2f, .2f, .2f, 1.0f});
 				material->SetTexture("DiffuseMap", {texture});
 				material->SetSurfaceType(Material::ESurfaceType::Transparent);
-				mMaterialTables[1].add_material(material);
 			}
-		}
 
-		{
-			auto material = CreateRef<StandardMaterial>();
-			material->SetAlbedo(FColor::Gray).SetEmission(FColor::Black).SetMetalness(1.0f).SetRoughness(0.1f);
-			mMaterialTables[2].add_material(material);
+			{
+				auto material = mMaterialTables[2][0].As<StandardMaterial>();
+				material->SetAlbedo(FColor::Gray).SetEmission(FColor::Black).SetMetalness(1.0f).SetRoughness(0.1f);
+			}
 		}
 
 		mCameraController.SetCamera(&mCamera);
@@ -178,7 +182,7 @@ namespace BHive
 				if (info)
 				{
 					FMeshImportData import_data{};
-					FMeshImportOptions import_options{};
+					FMeshImportOptions import_options{.OverideMaterials = mMaterialTables[0]};
 
 					if (MeshImporter::Import(info, import_data))
 					{

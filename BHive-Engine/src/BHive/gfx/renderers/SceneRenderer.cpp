@@ -1,11 +1,11 @@
+#include "SceneRenderer.h"
 #include "core/math/Transform.h"
 #include "gfx/Camera.h"
 #include "gfx/Framebuffer.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
 #include "gfx/mesh/primitives/Quad.h"
-#include "gfx/renderers/Renderer.h"
-#include "SceneRenderer.h"
+#include "Renderer.h"
 #include "core/math/boundingbox/AABB.h"
 #include "core/math/volumes/SphereVolume.h"
 #include "gfx/mesh/SkeletalMesh.h"
@@ -30,7 +30,7 @@ namespace BHive
 
 	struct RenderBatch
 	{
-		std::unordered_map<Ref<VertexArray>, std::unordered_map<Ref<Material>, std::vector<FSubMeshSubmission>>> MaterialBatches;
+		std::unordered_map<Ref<VertexArray>, std::unordered_map<ResourceHandle, std::vector<FSubMeshSubmission>>> MaterialBatches;
 
 		std::vector<ObjectData> ObjectDatas;
 
@@ -68,9 +68,8 @@ namespace BHive
 				auto &s = o.SubMesh;
 
 				// submesh data
-				auto material = ctx.Materials.get_material(s.MaterialIndex);
 				auto &group = MaterialBatches[vao];
-				auto &submissions = group[material];
+				auto &submissions = group[o.MaterialHandle];
 
 				auto &submission = submissions.emplace_back(o);
 				submission.MeshIndex = meshIndex;
@@ -103,7 +102,10 @@ namespace BHive
 
 				for (auto &[material, submissions] : matMap)
 				{
-					pass.Emplace<CmdBindMaterial>()(material.get());
+					if (!material)
+						continue;
+
+					pass.Emplace<CmdBindMaterial>()(material.As<Material>());
 
 					uint32_t count = (uint32_t)submissions.size();
 					pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect.get(), vao.get(), count, MULTI_DRAW_INDIRECT_STRIDE, globalOffset);

@@ -3,51 +3,50 @@
 
 namespace BHive
 {
-	void MaterialTable::clear()
+	void MaterialTable::Reset()
 	{
 		mMaterials.clear();
 	}
 
-	void MaterialTable::resize(uint64_t size)
+	void MaterialTable::Resize(uint64_t size)
 	{
 		mMaterials.resize(size);
 	}
 
-	size_t MaterialTable::size() const
+	size_t MaterialTable::Count() const
 	{
 		return mMaterials.size();
 	}
 
-	Ref<Material> MaterialTable::get_material(uint32_t index) const
+	ResourceHandle MaterialTable::Get(uint32_t index) const
 	{
 		if (mMaterials.size() > index)
 		{
 			return mMaterials.at(index);
 		}
 
-		return nullptr;
+		return {};
 	}
 
-	void MaterialTable::add_material(const Ref<Material> &material)
+	void MaterialTable::Add(ResourceHandle h)
 	{
-		mMaterials.push_back(material);
+		mMaterials.push_back(h);
 	}
 
-	void MaterialTable::set_material(const Ref<Material> &material, uint32_t index)
+	void MaterialTable::Set(ResourceHandle h, uint32_t index)
 	{
 		if (mMaterials.size() > index)
 		{
-			mMaterials[index] = material;
+			mMaterials[index] = h;
 		}
 	}
 
-	void MaterialTable::set_materials(const std::vector<Ref<Material>> &materials)
+	void MaterialTable::SetAll(const std::vector<ResourceHandle> &materials)
 	{
-		for (auto &m : materials)
-			mMaterials.emplace_back(m);
+		mMaterials = materials;
 	}
 
-	Ref<Material> MaterialTable::operator[](size_t index) const
+	ResourceHandle MaterialTable::operator[](size_t index) const
 	{
 		ASSERT(index < mMaterials.size());
 

@@ -7,6 +7,7 @@
 #include "RenderGraphScheduler.h"
 #include "ViewSystem.h"
 #include "gfx/ShaderManager.h"
+#include "gfx/registries/IResourceRegistry.h"
 
 namespace BHive
 {
@@ -20,11 +21,6 @@ namespace BHive
 		std::string Name;
 		EPassType Type;
 		std::function<void(FPass &)> BuildFunc;
-	};
-
-	struct FPerObjectData
-	{
-		glm::mat4 WorldMatrix = glm::identity<glm::mat4>();
 	};
 
 	class BHIVE_API Renderer
@@ -59,7 +55,23 @@ namespace BHive
 
 		void EndBatching();
 
+		template <template <typename> class TRegistry, typename TResourceType>
+		void RegisterResourceRegistry()
+		{
+			auto hash = typeid(TResourceType).hash_code();
+			ASSERT(!mResourceRegistries.contains(hash));
+			mResourceRegistries.emplace(hash, CreateScope<TRegistry<TResourceType>>());
+		}
+
 		ShaderManager &GetShaderManager() { return mShaderManager; }
+
+		template <typename TResourceType>
+		IResourceRegistry *GetResourceRegistry()
+		{
+			auto hash = typeid(TResourceType).hash_code();
+			ASSERT(mResourceRegistries.contains(hash));
+			return mResourceRegistries.at(hash).get();
+		}
 
 		static Renderer &Get() { return *sInstance; }
 
@@ -111,6 +123,8 @@ namespace BHive
 		static inline Renderer *sInstance = nullptr;
 
 	public:
+		std::unordered_map<uint64_t, Scope<IResourceRegistry>> mResourceRegistries;
+
 		LineRenderer Line;
 
 		QuadRenderer Quad;

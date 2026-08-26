@@ -29,7 +29,7 @@ namespace BHive
 		Ref<Skeleton> Skeleton;
 
 		// Materials to override if ImportMaterials is false
-		std::vector<Ref<Material>> OverideMaterials;
+		MaterialTable OverideMaterials;
 	};
 
 	using LoadTextureSigniture = std::function<Ref<Texture>(const std::filesystem::path &)>;
@@ -42,14 +42,11 @@ namespace BHive
 		using AdditionalAssets = std::vector<Ref<Asset>>;
 
 	public:
-		MeshImportResolver(
-			const FMeshImportData &data, const FMeshImportOptions &options, AdditionalAssets &additional_assets);
+		MeshImportResolver(const FMeshImportData &data, const FMeshImportOptions &options, AdditionalAssets &additional_assets);
 
 		Ref<Asset> Resolve();
 
-		void SetLoaders(
-			typename LoadTextureSigniture load_texture_func, typename LoadTextureMemorySigniture load_texture_memory_func,
-			typename CreateMaterialSigniture create_material_func);
+		void SetLoaders(typename LoadTextureSigniture load_texture_func, typename LoadTextureMemorySigniture load_texture_memory_func, typename CreateMaterialSigniture create_material_func);
 
 	private:
 		Ref<Asset> ResolveAnimations();

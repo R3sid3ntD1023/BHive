@@ -51,7 +51,7 @@ namespace BHive
 		mPlane = CreateRef<PPlane>(10.f, 10.f);
 
 		// create materials
-		{
+		/*{
 			auto emissiveMaterial = CreateRef<EmissiveMaterial>();
 			emissiveMaterial->SetEmissionColor(FColor(1.0f, 0.0f, 0.0f, 10.0f));
 
@@ -65,11 +65,11 @@ namespace BHive
 			auto standardMaterial = CreateRef<StandardMaterial>();
 			standardMaterial->SetAlbedo(FColor::White).SetEmission(FColor::Black).SetMetalness(1.0f).SetRoughness(0.5f);
 
-			mMaterials[0].add_material(lambertMaterial0);
-			mMaterials[1].add_material(lambertMaterial1);
-			mMaterials[2].add_material(emissiveMaterial);
-			mMaterials[3].add_material(standardMaterial);
-		}
+			mMaterials[0].Add(lambertMaterial0);
+			mMaterials[1].Add(lambertMaterial1);
+			mMaterials[2].Add(emissiveMaterial);
+			mMaterials[3].Add(standardMaterial);
+		}*/
 
 		auto &window = app.GetWindow();
 		auto aspect = window.GetAspectRatio();

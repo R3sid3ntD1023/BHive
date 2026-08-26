@@ -39,8 +39,6 @@ namespace BHive
 
 		FTransform Transform;
 
-		MaterialTable Materials;
-
 		int32_t EntityID = -1;
 
 		std::vector<glm::mat4> InstanceTransforms;
@@ -59,6 +57,8 @@ namespace BHive
 		FSubMesh SubMesh;
 
 		uint32_t MeshIndex = 0;
+
+		ResourceHandle MaterialHandle;
 
 		// opaque/transparent, cast_shadows
 		std::bitset<2> BitFlags;

@@ -3,6 +3,7 @@
 #include "gfx/RenderCommand.h"
 #include "gfx/Buffers.h"
 #include "gfx/Pipeline.h"
+#include "gfx/registries/ResourceRegistry.h"
 
 namespace BHive
 {
@@ -44,6 +45,7 @@ namespace BHive
 
 		mAPI->Init();
 
+		RegisterResourceRegistry<ResourceRegistry, Material>();
 		PipelineRegistry::Initialize();
 
 		mData = CreateRef<RenderData>();

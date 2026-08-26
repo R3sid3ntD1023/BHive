@@ -1,5 +1,6 @@
 #include "RenderQueue.h"
 #include "gfx/mesh/BaseMesh.h"
+#include "Renderer.h"
 
 namespace BHive
 {
@@ -58,16 +59,17 @@ namespace BHive
 
 		for (auto &s : subMeshes)
 		{
-			auto material = materials.get_material(s.MaterialIndex);
+			auto material = materials.Get(s.MaterialIndex);
 			if (!material)
 				continue;
 
 			FSubMeshSubmission sub{};
 			sub.Context = {ctxIndex, ctx.Generation};
 			sub.SubMesh = s;
+			sub.MaterialHandle = material;
 			sub.BoundingBox = mesh->GetBoundingBox();
-			sub.BitFlags[0] = material->IsTransparent();
-			sub.BitFlags[1] = material->ShouldCastShadows();
+			sub.BitFlags[0] = material.As<Material>()->IsTransparent();
+			sub.BitFlags[1] = material.As<Material>()->ShouldCastShadows();
 			AddSubmission(sub);
 		}
 	}
@@ -84,12 +86,11 @@ namespace BHive
 		ctx.BoneTransforms = request.BoneTransforms;
 		ctx.VAO = request.Mesh->GetVertexArray();
 		ctx.Generation = ++mGenerationVersion;
-		ctx.Materials = request.Materials;
 
 		const auto &subMeshes = request.Mesh->GetSubMeshes();
 		for (auto &s : subMeshes)
 		{
-			auto material = request.Materials.get_material(s.MaterialIndex);
+			auto material = request.Materials.Get(s.MaterialIndex);
 			if (!material)
 				continue;
 
@@ -97,8 +98,9 @@ namespace BHive
 			sub.Context = {ctxIndex, mGenerationVersion};
 			sub.SubMesh = s;
 			sub.BoundingBox = request.Mesh->GetBoundingBox();
-			sub.BitFlags[0] = material->IsTransparent();
-			sub.BitFlags[1] = material->ShouldCastShadows();
+			sub.BitFlags[0] = material.As<Material>()->IsTransparent();
+			sub.BitFlags[1] = material.As<Material>()->ShouldCastShadows();
+			sub.MaterialHandle = material;
 			AddSubmission(sub);
 		}
 

@@ -3,6 +3,7 @@
 #include "gfx/animation/Skeleton.h"
 #include "gfx/mesh/StaticMesh.h"
 #include "MeshImportResolver.h"
+#include "gfx/factories/MaterialFactory.h"
 
 namespace BHive
 {
@@ -156,16 +157,17 @@ namespace BHive
 
 		size_t num_materials = mData.mMaterialData.size();
 
-		material_table.resize(num_materials);
+		material_table.Resize(num_materials);
 
 		for (size_t i = 0; i < num_materials; i++)
 		{
-			auto overide_material = i < mOptions.OverideMaterials.size() ? mOptions.OverideMaterials[i] : nullptr;
-			auto material = overide_material ? overide_material : material_table[i];
+			ResourceHandle overrideHandle = mOptions.OverideMaterials.Get(i);
+			auto materialHandle = overrideHandle ? overrideHandle : material_table[i];
 
-			if (!material)
+			if (!materialHandle)
 			{
-				material = Cast<Material>(CreateMaterialFunc());
+				materialHandle = MaterialFactory::CreateLambert();
+				auto material = materialHandle.As<Material>();
 
 				const auto &material_data = mData.mMaterialData[i];
 				const auto &textures = material_data.mTextureData;
@@ -188,10 +190,10 @@ namespace BHive
 
 				material->SetName(material_name);
 
-				mAdditionalAssets.push_back(material);
+				// mAdditionalAssets.emplace_back(materialHandle);
 			}
 
-			material_table.set_material(material, (uint32_t)i);
+			material_table.Set(materialHandle, (uint32_t)i);
 		}
 	}
 
