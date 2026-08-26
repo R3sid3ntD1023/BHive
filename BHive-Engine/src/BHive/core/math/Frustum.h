@@ -5,33 +5,21 @@
 
 namespace BHive
 {
-
 	struct BHIVE_API Frustum
 	{
 		Frustum() = default;
 		Frustum(const glm::mat4 &projection, const glm::mat4 &view);
 		Frustum(const glm::mat4 &view, float aspect, float fov, float near, float far);
 
-		const std::array<FPlane, 6> &GetPlanes() const { return mPlanes; }
-
 		void Update(const glm::mat4 &projection, const glm::mat4 &view);
 
-	private:
-		std::array<FPlane, 6> mPlanes = {};
-	};
+		const std::array<glm::vec4, 6> &GetPlanes() const { return mPlanes; }
 
-	struct BHIVE_API FrustumViewer
-	{
-		FrustumViewer(const glm::mat4 &projection, const glm::mat4 &view);
-
-		const std::array<glm::vec4, 8> &GetPoints() const { return mPoints; }
-		const glm::vec3 &GetPosition() const { return mPosition; }
+		const std::array<glm::vec3, 8> &GetPoints() const { return mPoints; }
 
 	private:
-		void CalculatePoints(const glm::mat4 &projection, const glm::mat4 &view);
-
-		std::array<glm::vec4, 8> mPoints = {};
-		glm::vec3 mPosition{};
+		std::array<glm::vec4, 6> mPlanes;
+		std::array<glm::vec3, 8> mPoints;
 	};
 
 } // namespace BHive

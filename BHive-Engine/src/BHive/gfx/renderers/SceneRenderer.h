@@ -52,6 +52,8 @@ namespace BHive
 
 		virtual void End();
 
+		void OverrideFrustum(const Frustum &frustum);
+
 		void SetEnvironmentTexture(const Ref<Texture2D> &hdr);
 
 		void Submit(const DirectionalLight &light);
@@ -95,6 +97,8 @@ namespace BHive
 		PostProcessStack &GetPostProcessStack() { return mPostProcessStack; }
 
 		const EnvironmentSystem &GetEnvironmentSystem() const { return mEnvironment; }
+
+		const Frustum &GetFrustrum() const { return mFrustum; }
 
 	private:
 		float GetDistanceToCamera(const FTransform &transform);

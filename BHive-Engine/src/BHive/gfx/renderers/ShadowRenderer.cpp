@@ -148,8 +148,7 @@ namespace BHive
 	void ShadowRenderer::SubmitDirectionalLight(const FShadowCascadedCreateInfo &info)
 	{
 
-		auto frustum = FrustumViewer(info.CameraProj, info.InverseCameraView);
-		auto center = frustum.GetPosition();
+		auto frustum = Frustum(info.CameraProj, info.InverseCameraView);
 
 		const auto light_view = glm::lookAt({}, info.LightDirection, {0, 1, 0});
 
@@ -162,7 +161,7 @@ namespace BHive
 
 		for (const auto &v : frustum.GetPoints())
 		{
-			const auto trf = light_view * v;
+			const auto trf = light_view * glm::vec4(v, 1.0);
 			min_x = std::min(min_x, trf.x);
 			max_x = std::max(max_x, trf.x);
 			min_y = std::min(min_y, trf.y);

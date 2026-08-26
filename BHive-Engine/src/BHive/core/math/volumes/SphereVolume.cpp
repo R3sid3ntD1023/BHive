@@ -22,10 +22,11 @@ namespace BHive
 
 		FSphereVolume sphere(globalCenter, Radius * (maxScale * 0.5f));
 
-		const auto &planes = frustum.GetPlanes();
-		for (auto &plane : planes)
+		const auto planes = frustum.GetPlanes();
+		for (uint32_t i = 0; i < 6; i++)
 		{
-			if (!sphere.IsOnOrForwardPlane(plane.Normal, plane.Distance))
+			auto plane = planes[i];
+			if (!sphere.IsOnOrForwardPlane(plane.xyz, plane.w))
 			{
 				return false;
 			}

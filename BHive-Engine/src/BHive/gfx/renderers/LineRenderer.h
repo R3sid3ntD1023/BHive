@@ -31,7 +31,7 @@ namespace BHive
 
 		void BeginRecording();
 
-		void Flush(Renderer& renderer);
+		void Flush(Renderer &renderer);
 
 		void DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
 
@@ -67,7 +67,7 @@ namespace BHive
 
 		void DrawArrow(float size, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
 
-		void DrawFrustum(const FrustumViewer &frustum, const FColor &color, int32_t entityID = -1);
+		void DrawFrustum(const Frustum &frustum, const FColor &color, int32_t entityID = -1);
 
 		void DrawJoint(const glm::mat4 &joint, float size = 1.f, const FColor &color = FColor::Cyan, int32_t entityID = -1);
 

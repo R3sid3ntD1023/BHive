@@ -68,7 +68,7 @@ void main()
 
     ObjectData object = objects[id];
 
-    vec3 globalCenter = (u_view * object.model * vec4(object.center_radius.xyz, 1.0)).xyz;
+    vec3 globalCenter = object.center_radius.xyz;
     float maxScale = max(max(object.model[0][0], object.model[1][1]), object.model[2][2]);
     float scaledRadius = object.center_radius.w * maxScale;
 

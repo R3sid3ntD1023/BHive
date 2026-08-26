@@ -28,11 +28,6 @@ namespace BHive
 		uint32_t meshIndex = 0;						   // which mesh this instance belongs to
 	};
 
-	struct GPUFrustum
-	{
-		glm::vec4 planes[6];
-	};
-
 	struct RenderBatch
 	{
 		// vao -> material[submissions]
@@ -69,8 +64,12 @@ namespace BHive
 				auto &ctx = mQueue->ResolveContext(o.Context);
 				auto pos = ctx.Transform.GetTranslation();
 				auto model = ctx.Transform.ToMat4();
-				auto model = ctx.Transform.ToMat4();
-				auto radius = o.BoundingBox.GetRadius();
+				auto &min = o.BoundingBox.Min;
+				auto &max = o.BoundingBox.Max;
+
+				auto worldMin = glm::vec3(model * glm::vec4(min, 1.0f));
+				auto worldMax = glm::vec3(model * glm::vec4(max, 1.0f));
+				auto radius = glm::length((worldMax - worldMin) * 0.5f);
 				auto vao = ctx.VAO;
 				auto &s = o.SubMesh;
 
@@ -219,16 +218,9 @@ namespace BHive
 		cameraPass.EndPhase();
 		renderer.EndPass();
 
-		GPUFrustum gpuFrustum;
-		auto &p = mFrustum.GetPlanes();
-		for (uint32_t i = 0; i < 6; i++)
-		{
-			gpuFrustum.planes[i] = glm::vec4(p[i].Normal, p[i].Distance);
-		}
-
 		for (uint32_t i = 0; i < 2; i++)
 		{
-			mFrustrumOcclusionMaterial[i]->SetParam("frustum", MaterialParam(gpuFrustum));
+			mFrustrumOcclusionMaterial[i]->SetParam("frustum", MaterialParam(mFrustum.GetPlanes()));
 
 			auto &batch = *mRenderBatches[i];
 			auto instanceCount = batch.InstanceCount();
@@ -311,6 +303,11 @@ namespace BHive
 		// post process
 		FPostProcessTextureSet set{mFramebuffer->GetColorAttachment(), mFramebuffer->GetDepthAttachment()};
 		mOutputTexture = mPostProcessStack.Build(renderer.GetActiveGraph(), set);
+	}
+
+	void SceneRenderer::OverrideFrustum(const Frustum &frustum)
+	{
+		mFrustum = frustum;
 	}
 
 	void SceneRenderer::Submit(const DirectionalLight &light)

@@ -16,7 +16,7 @@ namespace BHive
 		LineBatch.StartBatch();
 	}
 
-	void LineRenderer::Flush(Renderer& renderer)
+	void LineRenderer::Flush(Renderer &renderer)
 	{
 		GPU_PROFILER_FUNCTION();
 
@@ -212,9 +212,9 @@ namespace BHive
 		}
 	}
 
-	void LineRenderer::DrawFrustum(const FrustumViewer &frustum, const FColor &color, int32_t entityID)
+	void LineRenderer::DrawFrustum(const Frustum &frustum, const FColor &color, int32_t entityID)
 	{
-		auto &points = frustum.GetPoints();
+		auto points = frustum.GetPoints();
 		LineRenderer::DrawRect(points[0], points[1], points[2], points[3], color, {}, entityID);
 		LineRenderer::DrawRect(points[4], points[5], points[6], points[7], color, {}, entityID);
 
@@ -277,7 +277,7 @@ namespace BHive
 
 		glm::vec3 forward = glm::normalize(dir);
 
-		//build orthonormal basis
+		// build orthonormal basis
 		glm::vec3 up = glm::abs(forward.y) > 0.99f ? glm::vec3(1, 0, 0) : glm::vec3(0, 1, 0);
 		glm::vec3 right = glm::normalize(glm::cross(forward, up));
 		up = glm::cross(right, forward);
@@ -292,10 +292,10 @@ namespace BHive
 			glm::vec3 p0 = pos + forward * height + right * glm::cos(t0) * baseRadius + up * glm::sin(t0) * baseRadius;
 			glm::vec3 p1 = pos + forward * height + right * glm::cos(t1) * baseRadius + up * glm::sin(t1) * baseRadius;
 
-			//apex -> circle
+			// apex -> circle
 			DrawLine(pos, p0, color, {}, entityID);
 
-			//circle edge
+			// circle edge
 			DrawLine(p0, p1, color, {}, entityID);
 		}
 	}
@@ -314,12 +314,11 @@ namespace BHive
 		DrawSphere(0.05f, 16, {}, color, joint, entityID);
 	}
 
-
 	void LineRenderer::SetLineWidth(float width)
 	{
-		auto& renderer = Renderer::Get();
-		
-		auto& pass = renderer.GetActivePass();
+		auto &renderer = Renderer::Get();
+
+		auto &pass = renderer.GetActivePass();
 		pass.Emplace<CmdSetLineWidth>()(width);
 	}
 

@@ -33,7 +33,7 @@ namespace BHive
 
 		mViewportSize = window.GetSize();
 
-		mCameras[0] = EditorCamera(75.f, aspect, 0.1f, 1000.f);
+		mCameras[0] = EditorCamera(75.f, aspect, 0.1f, 100.f);
 		mCameras[0].SetStartState({0.f, 5.f, 5.f}, -90.0f, -45.0f);
 
 		mCameras[1] = EditorCamera(75.f, aspect, 0.1f, 1000.f);
@@ -146,8 +146,25 @@ namespace BHive
 
 		auto &proj = mCameras[0].GetProjection();
 		auto &view = mCameras[0].GetView();
-		FrustumViewer viewer(proj, view);
-		renderer.Line.DrawFrustum(viewer, FColor::Yellow);
+		Frustum frustum(proj, view);
+		renderer.Line.DrawFrustum(frustum, FColor::Yellow);
+		mSceneRenderer->OverrideFrustum(frustum);
+
+		if (mMesh)
+		{
+			auto aabb = mMesh->GetBoundingBox();
+
+			renderer.Line.DrawAABB(aabb, FColor::Orange, sphereTransform);
+			renderer.Line.DrawAABB(aabb, FColor::Orange, FTransform{{0, 1.f, -2}});
+
+			renderer.Line.DrawSphere(aabb.GetRadius(), 32, {}, FColor::Purple, sphereTransform);
+			renderer.Line.DrawSphere(aabb.GetRadius(), 32, {}, FColor::Purple, FTransform{{0, 1.f, -2}});
+		}
+
+		if (mPlane)
+		{
+			renderer.Line.DrawAABB(mMesh->GetBoundingBox(), FColor::Orange, FTransform{});
+		}
 
 		mSceneRenderer->Submit(light);
 		mSceneRenderer->End();

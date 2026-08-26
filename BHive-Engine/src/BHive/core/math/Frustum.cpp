@@ -23,63 +23,34 @@ namespace BHive
 
 	void Frustum::Update(const glm::mat4 &projection, const glm::mat4 &view)
 	{
-		const auto view_inv = glm::inverse(view);
-		const auto forward = -glm::normalize(glm::vec3(view_inv[2]));
-		const auto right = glm::normalize(glm::vec3(view_inv[0]));
-		const auto up = glm::normalize(glm::vec3(view_inv[1]));
+		const auto view_inv = glm::inverse(projection * view);
 
-		auto fov = 2.0f * atan(1.0f / projection[1][1]);
-		const auto near = projection[3][2] / (projection[2][2] - 1.0f);
-		const auto far = projection[3][2] / (projection[2][2] + 1.0f);
-		const auto aspect = projection[1][1] / projection[0][0];
-
-		const auto half_v = far * tanf(fov * .5f);
-		const auto half_h = half_v * aspect;
-		const glm::vec3 frontMultFar = far * forward;
-		const glm::vec3 pos = view_inv[3].xyz;
-
-		mPlanes[0] = MathFunctionLibrary::CreatePlane(pos + near * forward, forward);					   // near
-		mPlanes[1] = MathFunctionLibrary::CreatePlane(pos + frontMultFar, -forward);					   // far
-		mPlanes[2] = MathFunctionLibrary::CreatePlane(pos, glm::cross(frontMultFar - right * half_h, up)); // right
-		mPlanes[3] = MathFunctionLibrary::CreatePlane(pos, glm::cross(up, frontMultFar + right * half_h)); // left
-		mPlanes[4] = MathFunctionLibrary::CreatePlane(pos, glm::cross(right, frontMultFar - up * half_v)); // top
-		mPlanes[5] = MathFunctionLibrary::CreatePlane(pos, glm::cross(frontMultFar + up * half_v, right)); // bottom
-	}
-
-	FrustumViewer::FrustumViewer(const glm::mat4 &projection, const glm::mat4 &view)
-	{
-		CalculatePoints(projection, view);
-	}
-
-	void FrustumViewer::CalculatePoints(const glm::mat4 &projection, const glm::mat4 &view)
-	{
 		constexpr glm::vec4 cube[8] = {
 			{-1, -1, -1, 1}, {1, -1, -1, 1}, {1, 1, -1, 1}, {-1, 1, -1, 1},
 
 			{-1, -1, 1, 1},	 {1, -1, 1, 1},	 {1, 1, 1, 1},	{-1, 1, 1, 1},
 		};
 
-		const auto inv = glm::inverse(projection * view);
+		for (uint32_t i = 0; i < 8; i++)
+		{
+			glm::vec4 pos = view_inv * cube[i];
+			pos /= pos.w;
+			mPoints[i] = glm::vec3(pos);
+		}
 
-		mPoints[0] = inv * cube[0];
-		mPoints[1] = inv * cube[1];
-		mPoints[2] = inv * cube[2];
-		mPoints[3] = inv * cube[3];
-		mPoints[4] = inv * cube[4];
-		mPoints[5] = inv * cube[5];
-		mPoints[6] = inv * cube[6];
-		mPoints[7] = inv * cube[7];
+		auto MakePlane = [](glm::vec3 a, glm::vec3 b, glm::vec3 c)
+		{
+			glm::vec3 n = glm::normalize(glm::cross(b - a, c - a));
+			float d = -glm::dot(n, a);
+			return glm::vec4{n, d};
+		};
 
-		mPoints[0] /= mPoints[0].w;
-		mPoints[1] /= mPoints[1].w;
-		mPoints[2] /= mPoints[2].w;
-		mPoints[3] /= mPoints[3].w;
-		mPoints[4] /= mPoints[4].w;
-		mPoints[5] /= mPoints[5].w;
-		mPoints[6] /= mPoints[6].w;
-		mPoints[7] /= mPoints[7].w;
-
-		mPosition = (mPoints[0] + mPoints[1] + mPoints[2] + mPoints[3] + mPoints[4] + mPoints[5] + mPoints[6] + mPoints[7]) / 8.f;
+		mPlanes[0] = MakePlane(mPoints[0], mPoints[1], mPoints[2]); // near
+		mPlanes[1] = MakePlane(mPoints[5], mPoints[4], mPoints[7]); // far
+		mPlanes[2] = MakePlane(mPoints[4], mPoints[0], mPoints[3]); // left
+		mPlanes[3] = MakePlane(mPoints[1], mPoints[5], mPoints[6]); // right
+		mPlanes[4] = MakePlane(mPoints[3], mPoints[2], mPoints[6]); // top
+		mPlanes[5] = MakePlane(mPoints[4], mPoints[5], mPoints[1]); // bottom
 	}
 
 } // namespace BHive
