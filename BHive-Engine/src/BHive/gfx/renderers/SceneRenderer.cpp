@@ -160,10 +160,12 @@ namespace BHive
 			mInstanceDataBuffer[i] = GeneralBuffer::Create(OBJECT_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
 			mIndirectDrawBuffer[i] = GeneralBuffer::Create(DRAWCOMMAND_BUFFER_SIZE, EBufferType::StorageBuffer | EBufferType::IndirectBuffer, EBufferLifetime::Dynamic);
 			mVisibleBuffer[i] = GeneralBuffer::Create(VISIBILITY_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
-			mFrustrumOcclusionMaterial[i] = CreateRef<Material>("FrustumOcclusion.glsl");
+			mFrustrumOcclusionMaterial[i] = MaterialFactory::Create("FrustumOcclusion.glsl");
 		}
 
-		mFrustumMaterialHandle = MaterialFactory::Create("Frustum.glsl");
+		mFrustumUBO = GeneralBuffer::Create(sizeof(Frustum), EBufferType::UniformBuffer, EBufferLifetime::Dynamic);
+
+		mFrustumMaterial = MaterialFactory::Create("Frustum.glsl");
 
 		mPostProcessStack.Init(size);
 		mLights.Init();
@@ -218,13 +220,12 @@ namespace BHive
 		auto &cameraPass = renderer.BeginPass("CameraData", EPassType::OffScreen);
 		cameraPass.BeginPhase(EPhaseType::Transfer);
 		cameraPass.Emplace<CmdSetBufferData>()(mCameraUBO, &mView, sizeof(FView));
+		cameraPass.Emplace<CmdSetBufferData>()(mFrustumUBO, &mFrustum, sizeof(Frustum));
 		cameraPass.EndPhase();
 		renderer.EndPass();
 
 		for (uint32_t i = 0; i < 2; i++)
 		{
-			mFrustrumOcclusionMaterial[i]->SetParam("frustum", MaterialParam(mFrustum.GetPlanes()));
-
 			auto &batch = *mRenderBatches[i];
 			auto instanceCount = batch.InstanceCount();
 			auto instanceBuffer = mInstanceDataBuffer[i];
@@ -248,6 +249,7 @@ namespace BHive
 			auto &occlusionPass = renderer.BeginPass("Occlusion " + passNames[i], EPassType::OffScreen);
 			occlusionPass.BeginPhase(EPhaseType::Compute);
 			occlusionPass.BindGlobal(0, 0, mCameraUBO);
+			occlusionPass.BindGlobal(0, 1, mFrustumUBO);
 			occlusionPass.BindGlobal(3, 0, instanceBuffer);
 			occlusionPass.BindGlobal(3, 1, indirectBuffer);
 			occlusionPass.BindGlobal(3, 2, visibilityBuffer);
@@ -256,7 +258,7 @@ namespace BHive
 			occlusionPass.UseBuffer(visibilityBuffer, EBufferUsage::StorageWrite);
 			occlusionPass.UseBuffer(instanceBuffer, EBufferUsage::StorageRead);
 			occlusionPass.UseBuffer(mCameraUBO, EBufferUsage::UniformRead);
-			occlusionPass.Emplace<CmdBindMaterial>()(mFrustrumOcclusionMaterial[i].get());
+			occlusionPass.Emplace<CmdBindMaterial>()(mFrustrumOcclusionMaterial[i].As<Material>());
 			occlusionPass.Emplace<CmdDispatch>()(groups, 1, 1);
 			occlusionPass.EndPhase();
 			renderer.EndPass();
@@ -288,14 +290,12 @@ namespace BHive
 		}
 
 		auto &pass = renderer.BeginPass("Frustum", EPassType::OffScreen, states[1]);
-		auto material = mFrustumMaterialHandle.As<Material>();
-		material->SetParam("FrustumPoints", MaterialParam(mFrustum.GetPoints()));
-
 		pass.BeginPhase(EPhaseType::Graphics);
 		pass.BindGlobal(0, 0, mCameraUBO);
+		pass.BindGlobal(0, 1, mFrustumUBO);
 		pass.UseFramebuffer(mFramebuffer);
 		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(pipelineNames[0]));
-		pass.Emplace<CmdBindMaterial>()(material);
+		pass.Emplace<CmdBindMaterial>()(mFrustumMaterial.As<Material>());
 		pass.Emplace<CmdSetLineWidth>()(1.0f);
 		pass.Emplace<CmdDraw>()(ETopologyMode::Lines, nullptr, 24);
 		pass.EndPhase();

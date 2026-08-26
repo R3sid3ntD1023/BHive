@@ -110,9 +110,11 @@ namespace BHive
 
 		Ref<Texture> mOutputTexture;
 
-		std::array<Ref<Material>, 2> mFrustrumOcclusionMaterial;
+		std::array<ResourceHandle, 2> mFrustrumOcclusionMaterial;
 
-		ResourceHandle mFrustumMaterialHandle;
+		ResourceHandle mFrustumMaterial;
+
+		Ref<GeneralBuffer> mFrustumUBO;
 
 		Ref<GeneralBuffer> mCameraUBO;
 

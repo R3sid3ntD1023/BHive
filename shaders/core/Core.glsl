@@ -22,6 +22,7 @@ struct IndirectDrawCommand
 struct Frustum
 {
     vec4 planes[6];
+	vec4 points[8];
 };
 
 vec4 EncodeEntityID(in int id)

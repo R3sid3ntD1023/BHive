@@ -1,6 +1,12 @@
 #type vertex
 #version 460 core
 
+struct Frustum
+{
+    vec4 planes[6];
+	vec4 points[8];
+};
+
 uint indices[24] = uint[](
 
     //near rect
@@ -28,9 +34,9 @@ layout(std140, set = 0, binding = 0) uniform Camera
     mat4 u_View;
 } u_Cam;
 
-layout(std140, set = 1, binding = 0) uniform FrustumPoints
+layout(std140, set = 0, binding = 1) uniform FrustumPoints
 {
-    vec4 points[8]; //world space
+    Frustum frustum;
 } u_Frustum;
 
 
@@ -39,7 +45,7 @@ layout(location = 0) out vec3 v_Color;
 void main()
 {
     uint index = indices[gl_VertexIndex];
-    vec3 worldPos = u_Frustum.points[index].xyz;
+    vec3 worldPos = u_Frustum.frustum.points[index].xyz;
     gl_Position = u_Cam.u_Proj * u_Cam.u_View * vec4(worldPos, 1.0);
 
     if(index <= 3)

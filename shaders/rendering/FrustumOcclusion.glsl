@@ -14,6 +14,12 @@ layout(std140, set = 0, binding = 0) uniform CameraBuffer
 	vec4 u_camera_position;
 };
 
+layout(std140, set = 0, binding = 1) uniform CullingFrustum
+{
+  Frustum frustum;
+} pc;
+
+
 layout(std430, set = 3, binding = 0) buffer Objects
 {
     uint objectCount;
@@ -30,12 +36,6 @@ layout(std430, set = 3, binding = 2) buffer Visible
     uint visibleCount;
     uint visibleIndices[];
 };
-
-
-layout(push_constant) uniform CullingPC
-{
-  Frustum frustum;
-} pc;
 
 float GetSignedDistanceToPlane(vec4 plane, vec3 point)
 {
