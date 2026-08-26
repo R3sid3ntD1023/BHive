@@ -11,6 +11,7 @@
 #include "gfx/mesh/SkeletalMesh.h"
 #include "gfx/Pipeline.h"
 #include "gfx/Query.h"
+#include "gfx/factories/MaterialFactory.h"
 
 namespace BHive
 {
@@ -162,6 +163,8 @@ namespace BHive
 			mFrustrumOcclusionMaterial[i] = CreateRef<Material>("FrustumOcclusion.glsl");
 		}
 
+		mFrustumMaterialHandle = MaterialFactory::Create("Frustum.glsl");
+
 		mPostProcessStack.Init(size);
 		mLights.Init();
 		// mShadows.Init();
@@ -283,6 +286,20 @@ namespace BHive
 
 			renderer.EndPass();
 		}
+
+		auto &pass = renderer.BeginPass("Frustum", EPassType::OffScreen, states[1]);
+		auto material = mFrustumMaterialHandle.As<Material>();
+		material->SetParam("FrustumPoints", MaterialParam(mFrustum.GetPoints()));
+
+		pass.BeginPhase(EPhaseType::Graphics);
+		pass.BindGlobal(0, 0, mCameraUBO);
+		pass.UseFramebuffer(mFramebuffer);
+		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(pipelineNames[0]));
+		pass.Emplace<CmdBindMaterial>()(material);
+		pass.Emplace<CmdSetLineWidth>()(1.0f);
+		pass.Emplace<CmdDraw>()(ETopologyMode::Lines, nullptr, 24);
+		pass.EndPhase();
+		renderer.EndPass();
 
 		auto &linePass = renderer.BeginPass("Line Renderer", EPassType::OffScreen, states[1]);
 

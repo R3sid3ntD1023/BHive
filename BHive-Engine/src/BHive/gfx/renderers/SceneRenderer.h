@@ -112,6 +112,8 @@ namespace BHive
 
 		std::array<Ref<Material>, 2> mFrustrumOcclusionMaterial;
 
+		ResourceHandle mFrustumMaterialHandle;
+
 		Ref<GeneralBuffer> mCameraUBO;
 
 		std::array<Ref<GeneralBuffer>, 2> mVisibleBuffer;

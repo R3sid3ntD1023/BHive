@@ -35,7 +35,7 @@ namespace BHive
 		{
 			glm::vec4 pos = view_inv * cube[i];
 			pos /= pos.w;
-			mPoints[i] = glm::vec3(pos);
+			mPoints[i] = pos;
 		}
 
 		auto MakePlane = [](glm::vec3 a, glm::vec3 b, glm::vec3 c)

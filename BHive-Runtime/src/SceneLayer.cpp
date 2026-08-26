@@ -147,7 +147,6 @@ namespace BHive
 		auto &proj = mCameras[0].GetProjection();
 		auto &view = mCameras[0].GetView();
 		Frustum frustum(proj, view);
-		renderer.Line.DrawFrustum(frustum, FColor::Yellow);
 		mSceneRenderer->OverrideFrustum(frustum);
 
 		if (mMesh)

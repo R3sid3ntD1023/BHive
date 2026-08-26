@@ -97,10 +97,16 @@ namespace BHive
 			case ECommandType::Draw:
 			{
 				auto &c = *reinterpret_cast<const CmdDraw *>(payloadPtr);
-				;
-				auto vao = Cast<VulkanVertexArray>(c.VAO);
 
-				vao->Bind(cmdbuffer, frame);
+				if (c.VAO)
+				{
+					auto vao = Cast<VulkanVertexArray>(c.VAO);
+					vao->Bind(cmdbuffer, frame);
+				}
+				else
+				{
+					cmdbuffer.setVertexInputEXT({}, {});
+				}
 
 				cmdbuffer.setPrimitiveTopology(ToVkTopology(c.Mode));
 				cmdbuffer.draw(c.Count, 1, 0, 0);
@@ -109,12 +115,16 @@ namespace BHive
 			case ECommandType::DrawIndexed:
 			{
 				auto &c = *reinterpret_cast<const CmdDrawIndexed *>(payloadPtr);
-				auto vao = Cast<VulkanVertexArray>(c.VAO);
-				auto indexBuffer = c.VAO->GetIndexBuffer();
-				auto count = c.Count ? c.Count : indexBuffer->GetCount();
-				auto topology = ToVkTopology(c.Mode);
+				if (!c.VAO)
+					break;
 
+				auto vao = Cast<VulkanVertexArray>(c.VAO);
 				vao->Bind(cmdbuffer, frame);
+
+				auto indexBuffer = vao->GetIndexBuffer();
+				auto count = c.Count ? c.Count : indexBuffer->GetCount();
+
+				auto topology = ToVkTopology(c.Mode);
 				cmdbuffer.setPrimitiveTopology(topology);
 				cmdbuffer.drawIndexed(count, 1, 0, 0, 0);
 			}

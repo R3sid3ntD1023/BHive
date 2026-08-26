@@ -15,11 +15,11 @@ namespace BHive
 
 		const std::array<glm::vec4, 6> &GetPlanes() const { return mPlanes; }
 
-		const std::array<glm::vec3, 8> &GetPoints() const { return mPoints; }
+		const std::array<glm::vec4, 8> &GetPoints() const { return mPoints; }
 
 	private:
 		std::array<glm::vec4, 6> mPlanes;
-		std::array<glm::vec3, 8> mPoints;
+		std::array<glm::vec4, 8> mPoints;
 	};
 
 } // namespace BHive

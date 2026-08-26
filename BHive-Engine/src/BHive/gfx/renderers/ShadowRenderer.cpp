@@ -161,7 +161,7 @@ namespace BHive
 
 		for (const auto &v : frustum.GetPoints())
 		{
-			const auto trf = light_view * glm::vec4(v, 1.0);
+			const auto trf = light_view * v;
 			min_x = std::min(min_x, trf.x);
 			max_x = std::max(max_x, trf.x);
 			min_y = std::min(min_y, trf.y);
