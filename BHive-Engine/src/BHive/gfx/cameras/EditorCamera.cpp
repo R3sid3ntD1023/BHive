@@ -121,7 +121,7 @@ namespace BHive
 	void EditorCamera::Rotate(const glm::vec2 &delta)
 	{
 		mYaw += delta.x * RotationSpeed();
-		mPitch += delta.y * RotationSpeed();
+		mPitch -= delta.y * RotationSpeed();
 
 		mPitch = glm::clamp(mPitch, -89.0f, 89.0f);
 
