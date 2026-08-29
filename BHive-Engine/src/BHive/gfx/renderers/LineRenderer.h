@@ -45,7 +45,7 @@ namespace BHive
 
 		void DrawRect(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
 
-		void DrawBox(const glm::vec3 &extents, const glm::vec3 &offset, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
+		void DrawBox(const glm::vec3 &halfExtents, const glm::vec3 &offset, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
 
 		void DrawArc(float radius, uint32_t sides, float start, float end, const glm::vec3 &offset, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
 

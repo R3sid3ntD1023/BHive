@@ -79,11 +79,11 @@ namespace BHive
 		DrawLine(p3, p0, color, transform, entityID);
 	}
 
-	void LineRenderer::DrawBox(const glm::vec3 &extents, const glm::vec3 &offset, const FColor &color, const FTransform &transform, int32_t entityID)
+	void LineRenderer::DrawBox(const glm::vec3 &halfExtents, const glm::vec3 &offset, const FColor &color, const FTransform &transform, int32_t entityID)
 	{
-		float x = extents.x;
-		float y = extents.y;
-		float z = extents.z;
+		float x = halfExtents.x;
+		float y = halfExtents.y;
+		float z = halfExtents.z;
 
 		glm::vec3 top[4] = {{x, y, z}, {x, y, -z}, {-x, y, -z}, {-x, y, z}};
 		glm::vec3 bottom[4] = {{x, -y, z}, {x, -y, -z}, {-x, -y, -z}, {-x, -y, z}};
@@ -316,10 +316,7 @@ namespace BHive
 
 	void LineRenderer::SetLineWidth(float width)
 	{
-		auto &renderer = Renderer::Get();
-
-		auto &pass = renderer.GetActivePass();
-		pass.Emplace<CmdSetLineWidth>()(width);
+		LineBatch.SetLineWidth(width);
 	}
 
 } // namespace BHive
