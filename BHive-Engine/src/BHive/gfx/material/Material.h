@@ -22,8 +22,8 @@ namespace BHive
 
 		enum EFlags : uint32_t
 		{
-			HAS_NORMAL_MAP = BIT(1),
-			DOUBLE_SIDED = BIT(2)
+			None,
+			DoubleSided = BIT(2)
 		};
 
 	public:
@@ -52,6 +52,8 @@ namespace BHive
 		ESurfaceType GetSurfaceType() const { return mSurfaceType; }
 
 		virtual bool IsTransparent() const { return GetSurfaceType() == ESurfaceType::Transparent; }
+
+		virtual EFlags GetFlags() const { return EFlags::None; }
 
 		REFLECTABLEV(Asset)
 

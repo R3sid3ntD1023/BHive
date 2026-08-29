@@ -30,7 +30,7 @@ namespace BHive
 
 	void MaterialTable::Add(ResourceHandle h)
 	{
-		mMaterials.push_back(h);
+		mMaterials.emplace_back(h);
 	}
 
 	void MaterialTable::Set(ResourceHandle h, uint32_t index)

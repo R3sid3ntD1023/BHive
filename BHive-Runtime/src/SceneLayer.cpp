@@ -24,6 +24,7 @@
 namespace BHive
 {
 	FTransform sphereTransform{{5, -1.f, 2}};
+	std::vector<FTransform> transforms;
 	ContextHandle sSphereHandle;
 
 	void SceneLayer::OnAttach(Application &app)
@@ -34,10 +35,10 @@ namespace BHive
 		mViewportSize = window.GetSize();
 
 		mCameras[0] = EditorCamera(75.f, aspect, 0.1f, 100.f);
-		mCameras[0].SetStartState({0.f, 5.f, 5.f}, -90.0f, -45.0f);
+		mCameras[0].SetStartState({0.f, 0.f, 0.f}, -90.0f, 0.0f);
 
-		mCameras[1] = EditorCamera(75.f, aspect, 0.1f, 1000.f);
-		mCameras[1].SetStartState({5.f, 5.f, 5.f}, -90.0f, -45.0f);
+		mCameras[1] = EditorCamera(75.f, aspect, 0.1f, 500.f);
+		mCameras[1].SetStartState({0.f, 10.f, 10.f}, -90.0f, -45.0f);
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Init(mViewportSize);
@@ -85,30 +86,40 @@ namespace BHive
 
 			{
 				auto material = mMaterialTables[2][0].As<StandardMaterial>();
-				material->SetAlbedo(FColor::Gray).SetEmission(FColor::Black).SetMetalness(1.0f).SetRoughness(0.1f);
+				material->SetAlbedo({1.f, 0.5f, 0.f, 1.0f}).SetEmission(FColor::Black).SetMetalness(0.0f).SetRoughness(0.5f);
 			}
 		}
 
 		mCameraController.SetCamera(&mCameras[0]);
 
+		for (int32_t i = -1; i <= 1; i++)
 		{
-			FMeshSubmissionRequest request{};
-			request.Mesh = mMesh;
-			request.Materials = mMaterialTables[0];
-			request.Transform = sphereTransform;
-			mSceneRenderer->SubmitMesh(request, sSphereHandle);
-
-			request.Materials = mMaterialTables[2];
-			request.Transform = FTransform{{0, 1.f, -2}};
-
-			mSceneRenderer->SubmitMesh(request);
-
-			request.Materials = mMaterialTables[1];
-			request.Transform = FTransform{{0, 0, 0}};
-			request.Mesh = mPlane;
-
-			mSceneRenderer->SubmitMesh(request);
+			for (int32_t j = -1; j <= 1; j++)
+			{
+				FMeshSubmissionRequest request{};
+				request.Mesh = mMesh;
+				request.Materials = mMaterialTables[2];
+				request.Transform = transforms.emplace_back(FTransform{{i * 3.0f, 0.0f, j * 3.0f}});
+				mSceneRenderer->SubmitMesh(request, sSphereHandle);
+			}
 		}
+
+		// FMeshSubmissionRequest request{};
+		// request.Mesh = mMesh;
+		// request.Materials = mMaterialTables[2];
+		// request.Transform = FTransform{{0.f, 0.0f, 0.f}};
+		// mSceneRenderer->SubmitMesh(request, sSphereHandle);
+
+		// request.Materials = mMaterialTables[2];
+		// request.Transform = FTransform{{0, 1.f, -2}};
+
+		// mSceneRenderer->SubmitMesh(request);
+
+		// request.Materials = mMaterialTables[1];
+		// request.Transform = FTransform{{0, 0, 0}};
+		// request.Mesh = mPlane;
+
+		// mSceneRenderer->SubmitMesh(request);
 	}
 
 	void SceneLayer::OnDetach()
@@ -129,11 +140,14 @@ namespace BHive
 		if (mViewportSize != size && mViewportSize.x > 0 && mViewportSize.y > 0)
 		{
 			mSceneRenderer->Resize(mViewportSize);
-			mCameras[mCurrentCameraIndex].Resize(mViewportSize.x, mViewportSize.y);
+			mCameras[0].Resize(mViewportSize.x, mViewportSize.y);
+			mCameras[1].Resize(mViewportSize.x, mViewportSize.y);
 		}
 
-		mSceneRenderer->Begin(&mCameras[mCurrentCameraIndex], mCameras[mCurrentCameraIndex].GetView());
-		mSceneRenderer->UpdateTransform(sSphereHandle, sphereTransform);
+		mSceneRenderer->Begin(&mCameras[0], mCameras[0].GetView());
+
+		FView viewOverride = FView::Create(mCameras[1].GetProjection(), mCameras[1].GetView());
+		mSceneRenderer->SetViewOverride(viewOverride);
 
 		DirectionalLight main{};
 		main.SetColor(FColor::White).SetIntensity(1.0f).SetDirection({0.f, -1.0f, 0.5f});
@@ -144,26 +158,54 @@ namespace BHive
 		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), light.GetPosition());
 		renderer.Line.DrawGrid({});
 
-		auto &proj = mCameras[0].GetProjection();
-		auto &view = mCameras[0].GetView();
-		Frustum frustum(proj, view);
-		mSceneRenderer->OverrideFrustum(frustum);
+		// mSceneRenderer->UpdateTransform(sSphereHandle, sphereTransform);
 
-		if (mMesh)
-		{
-			auto aabb = mMesh->GetBoundingBox();
+		// for (uint32_t i = 0; i < transforms.size(); ++i)
+		// {
+		// 	auto &t = transforms[i];
+		// 	auto aabb = mMesh->GetBoundingBox();
+		// 	auto &model = t.ToMat4();
+		// 	auto pos = t.GetTranslation();
+		// 	auto localCenter = aabb.GetCenter();
+		// 	auto worldCenter = glm::vec3(model * glm::vec4(localCenter, 1.0f));
+		// 	auto scale = glm::vec3(glm::length(glm::vec3(model[0].xyz)), glm::length(glm::vec3(model[1].xyz)), glm::length(glm::vec3(model[2].xyz)));
+		// 	float scaledRadius = aabb.GetRadius() * glm::compMax(scale);
 
-			renderer.Line.DrawAABB(aabb, FColor::Orange, sphereTransform);
-			renderer.Line.DrawAABB(aabb, FColor::Orange, FTransform{{0, 1.f, -2}});
+		// 	renderer.Line.SetLineWidth(.5f);
+		// 	renderer.Line.DrawSphere(scaledRadius, 32, {}, FColor::Purple, {worldCenter});
 
-			renderer.Line.DrawSphere(aabb.GetRadius(), 32, {}, FColor::Purple, sphereTransform);
-			renderer.Line.DrawSphere(aabb.GetRadius(), 32, {}, FColor::Purple, FTransform{{0, 1.f, -2}});
-		}
+		// 	renderer.Line.DrawBox(aabb.GetExtent(), {}, FColor::Red, {worldCenter});
 
-		if (mPlane)
-		{
-			renderer.Line.DrawAABB(mMesh->GetBoundingBox(), FColor::Orange, FTransform{});
-		}
+		// 	LOG_TRACE("ID {} : Center {} , Radius{} ", i, worldCenter, scaledRadius);
+		// }
+
+		// for (uint32_t i = 0; i < 6; ++i)
+		// {
+		// 	auto pos = mCameras[0].GetView()[3];
+		// 	auto &f = mSceneRenderer->GetFrustrum();
+		// 	auto plane = f.GetPlanes()[i];
+		// 	glm::vec3 n = plane.xyz;
+		// 	glm::vec3 p = f.GetPoints()[i];
+		// 	renderer.Line.DrawLine(p, p + n * 3.0f, FColor::Yellow);
+		// 	LOG_TRACE("Plane {} normal: {}", i, glm::vec3(plane.xyz));
+		// }
+
+		// LOG_TRACE("Camera0 - Forward: {} Up: {}", mCameras[0].GetForward(), mCameras[0].GetUp());
+		// if (mMesh)
+		// {
+		// 	auto aabb = mMesh->GetBoundingBox();
+
+		// 	renderer.Line.DrawAABB(aabb, FColor::Orange, sphereTransform);
+		// 	renderer.Line.DrawAABB(aabb, FColor::Orange, FTransform{{0, 1.f, -2}});
+
+		// 	renderer.Line.DrawSphere(aabb.GetRadius(), 32, {}, FColor::Purple, sphereTransform);
+		// 	renderer.Line.DrawSphere(aabb.GetRadius(), 32, {}, FColor::Purple, FTransform{{0, 1.f, -2}});
+		// }
+
+		// if (mPlane)
+		// {
+		// 	renderer.Line.DrawAABB(mMesh->GetBoundingBox(), FColor::Orange, FTransform{});
+		// }
 
 		mSceneRenderer->Submit(light);
 		mSceneRenderer->End();

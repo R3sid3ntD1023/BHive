@@ -44,13 +44,13 @@ namespace BHive
 		for (auto &[name, value] : mParams)
 			mBackendMaterial->SetParam(name, value);
 
-		FTextureBinding binding{};
 		for (auto &[name, tex] : mTextures)
 		{
-			binding = tex;
+			FTextureBinding binding = tex;
 			if (!binding.TextureRef)
+			{
 				binding.TextureRef = Renderer::Get().GetWhiteTexture();
-
+			}
 			mBackendMaterial->SetTexture(name, binding);
 		}
 

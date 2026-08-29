@@ -24,9 +24,11 @@ namespace BHive
 
 	struct alignas(16) ObjectData
 	{
-		glm::mat4 model{1.0f};						   // model matrix
-		glm::vec4 center_radius{0.f, 0.0f, 0.0f, 0.f}; // bounding sphere center.xyz + radius
-		uint32_t meshIndex = 0;						   // which mesh this instance belongs to
+		glm::mat4 ModelMatrix{1.0f};				  // model matrix
+		glm::vec4 CenterRadius{0.f, 0.0f, 0.0f, 0.f}; // bounding sphere center.xyz + radius
+		uint32_t ID = 0;							  // which mesh this instance belongs to
+		uint32_t pad[3];
+		glm::vec4 debugColor;
 	};
 
 	struct RenderBatch
@@ -43,21 +45,13 @@ namespace BHive
 		{
 			ObjectDatas.reserve(MAX_OBJECTS);
 			DrawCommands.reserve(MAX_OBJECTS);
-			mHandle = mQueue->OnQueueChanged.Add(this, &RenderBatch::OnRenderQueueChanged);
 		}
-
-		~RenderBatch() { mQueue->OnQueueChanged.Remove(mHandle); }
 
 		void Build(const SubMeshSubmissions &bucket)
 		{
-			if (!mNeedsUpdate)
-				return;
-
 			MaterialBatches.clear();
 			ObjectDatas.clear();
 			DrawCommands.clear();
-
-			uint32_t meshIndex = 0;
 
 			for (auto &o : bucket)
 			{
@@ -65,38 +59,31 @@ namespace BHive
 				auto &ctx = mQueue->ResolveContext(o.Context);
 				auto pos = ctx.Transform.GetTranslation();
 				auto model = ctx.Transform.ToMat4();
-				auto &min = o.BoundingBox.Min;
-				auto &max = o.BoundingBox.Max;
-
-				auto worldMin = glm::vec3(model * glm::vec4(min, 1.0f));
-				auto worldMax = glm::vec3(model * glm::vec4(max, 1.0f));
-				auto radius = glm::length((worldMax - worldMin) * 0.5f);
+				auto radius = o.BoundingBox.GetRadius();
 				auto vao = ctx.VAO;
 				auto &s = o.SubMesh;
+
+				auto objectID = ObjectDatas.size();
+
+				auto &inst = ObjectDatas.emplace_back();
+				inst.CenterRadius = glm::vec4(pos, radius); //<= change to local submesb pos
+				inst.ModelMatrix = model;
+				inst.ID = objectID;
 
 				// submesh data
 				auto &group = MaterialBatches[vao];
 				auto &submissions = group[o.MaterialHandle];
 
 				auto &submission = submissions.emplace_back(o);
-				submission.MeshIndex = meshIndex;
-
-				auto &inst = ObjectDatas.emplace_back();
-				inst.center_radius = glm::vec4(pos, radius);
-				inst.model = model;
-				inst.meshIndex = meshIndex;
+				submission.MeshIndex = objectID;
 
 				auto &cmd = DrawCommands.emplace_back();
 				cmd.indexCount = s.IndexCount;
 				cmd.instanceCount = 0; // GPU increments this
 				cmd.firstIndex = s.StartIndex;
 				cmd.vertexOffset = s.StartVertex;
-				cmd.firstInstance = meshIndex; // GPU will use visibleIndices[]
-
-				meshIndex++;
+				cmd.firstInstance = UINT32_MAX; // GPU will use visibleIndices[]
 			}
-
-			mNeedsUpdate = false;
 		}
 
 		void Draw(FPass &pass, Ref<GeneralBuffer> indirect)
@@ -121,16 +108,10 @@ namespace BHive
 			}
 		}
 
-		void OnRenderQueueChanged() { mNeedsUpdate = true; }
-
 		uint32_t InstanceCount() const { return static_cast<uint32_t>(ObjectDatas.size()); }
 
 	private:
 		Ref<FRenderQueue> mQueue;
-
-		bool mNeedsUpdate = false;
-
-		MultiEventHandle mHandle = 0;
 	};
 
 	void SceneRenderer::Init(const glm::uvec2 &size)
@@ -224,7 +205,7 @@ namespace BHive
 		cameraPass.EndPhase();
 		renderer.EndPass();
 
-		for (uint32_t i = 0; i < 2; i++)
+		for (uint32_t i = 0; i < 1; i++)
 		{
 			auto &batch = *mRenderBatches[i];
 			auto instanceCount = batch.InstanceCount();
@@ -322,9 +303,9 @@ namespace BHive
 		mOutputTexture = mPostProcessStack.Build(renderer.GetActiveGraph(), set);
 	}
 
-	void SceneRenderer::OverrideFrustum(const Frustum &frustum)
+	void SceneRenderer::SetViewOverride(const FView &view)
 	{
-		mFrustum = frustum;
+		mView = view;
 	}
 
 	void SceneRenderer::Submit(const DirectionalLight &light)

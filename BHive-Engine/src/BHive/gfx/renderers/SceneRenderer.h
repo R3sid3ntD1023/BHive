@@ -52,7 +52,7 @@ namespace BHive
 
 		virtual void End();
 
-		void OverrideFrustum(const Frustum &frustum);
+		void SetViewOverride(const FView &view);
 
 		void SetEnvironmentTexture(const Ref<Texture2D> &hdr);
 

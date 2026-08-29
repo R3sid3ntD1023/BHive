@@ -28,7 +28,7 @@ layout(std430, set = 3, binding = 0) buffer Objects
 
 layout(std430, set = 3, binding = 1) buffer Draws
 {
-    IndirectDrawCommand drawCommands[];
+    IndirectDrawIndexedCommand drawCommands[];
 };
 
 layout(std430, set = 3, binding = 2) buffer Visible
@@ -37,26 +37,17 @@ layout(std430, set = 3, binding = 2) buffer Visible
     uint visibleIndices[];
 };
 
-float GetSignedDistanceToPlane(vec4 plane, vec3 point)
-{
-    return dot(plane.xyz, point) - plane.w;
-}
-
-bool IsOnOrForwardPlane(vec4 plane, vec3 point, float radius)
-{
-    float distance = GetSignedDistanceToPlane(plane, point);
-    return distance >= -radius;
-}
-
-bool FrustumCullSphere(Frustum frustum, vec3 center, float radius)
+bool SphereIntersection(Frustum frustum, vec3 c, float r)
 {
     for(int i = 0; i < 6; i++)
     {
-        if(!IsOnOrForwardPlane(frustum.planes[i], center, radius))
-        {
+        vec4 plane = frustum.planes[i];
+        vec3 n = plane.xyz;
+        float d = plane.w;
+        if((dot(c, n) + d + r) >= 0.0)
             return false;
-        }
     }
+
     return true;
 }
 
@@ -68,21 +59,23 @@ void main()
 
     ObjectData object = objects[id];
 
-    vec3 globalCenter = object.center_radius.xyz;
-    float maxScale = max(max(object.model[0][0], object.model[1][1]), object.model[2][2]);
-    float scaledRadius = object.center_radius.w * maxScale;
-
-    if(!FrustumCullSphere(pc.frustum, globalCenter, scaledRadius))
-    {
-        return;
-    }
+    vec3 center = object.center_radius.xyz;
+    float radius = object.center_radius.w;
+    
+    bool visible = SphereIntersection(pc.frustum, center, radius);
+    
+    objects[id].debugcolor = vec3(float(id)/ 10.f, 0.0, 1.0 - float(id) / 10.0);
+    objects[id].debugcolor = visible ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
 
     //reserve slot atomically
     uint slot  = atomicAdd(visibleCount, 1);
 
+    if(!visible)
+        return;
+ 
     //write visible index
     visibleIndices[slot] = id;
 
-    uint meshIndex = object.meshIndex;
-    atomicAdd(drawCommands[meshIndex].instanceCount, 1);  
+    uint count = atomicAdd(drawCommands[id].instanceCount, 1);
+    drawCommands[id].firstInstance = id;
 }

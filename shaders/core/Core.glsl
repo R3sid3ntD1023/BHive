@@ -7,10 +7,11 @@ struct ObjectData
 {	
 	mat4 model; //model matrix
 	vec4 center_radius;//bounding sphere center
-    uint meshIndex; // which mesh this instance belongs to	
+    uint id; // which mesh this instance belongs to	
+	vec3 debugcolor;
 };
 
-struct IndirectDrawCommand
+struct IndirectDrawIndexedCommand
 {
     uint indexCount;
     uint instanceCount;

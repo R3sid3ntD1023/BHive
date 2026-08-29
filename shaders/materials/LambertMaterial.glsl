@@ -22,6 +22,7 @@ layout(location = 0) in struct VS_OUT
 	vec3 CameraPosition;
 	float InstanceID;
 	float DrawID;
+	vec3 DebugColor;
 } vs_in;
 
 struct LambertMaterial
