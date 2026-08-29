@@ -15,7 +15,7 @@ namespace BHive
 		glm::vec4 Color;
 		int32_t EntityID = -1;
 
-		static BufferLayout GetLayout() { return {{EShaderDataType::Float3}, {EShaderDataType::Float4}, {EShaderDataType::Int}};}
+		static BufferLayout GetLayout() { return {{EShaderDataType::Float3}, {EShaderDataType::Float4}, {EShaderDataType::Int}}; }
 	};
 
 	struct LineRenderBatch : public IRenderBatch
@@ -28,7 +28,9 @@ namespace BHive
 
 		void StartBatch() override;
 
-		void Flush(Renderer& renderer) override;
+		void Flush(Renderer &renderer) override;
+
+		void SetLineWidth(float width);
 
 		bool IsActive() const override { return mIsActive; }
 
@@ -41,5 +43,6 @@ namespace BHive
 		Scope<VertexBatchBuffer<FLineVertex>> mBuffer;
 		Scope<Material> mLineMaterial;
 		bool mIsActive = false;
+		float mLineWidth = 1.f;
 	};
 } // namespace BHive

@@ -42,11 +42,16 @@ namespace BHive
 
 		auto &pass = renderer.GetActivePass();
 		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(LINE_PIPELINE_NAME));
-		pass.Emplace<CmdSetLineWidth>()(2.0f);
+		pass.Emplace<CmdSetLineWidth>()(glm::max(0.01f, mLineWidth));
 		pass.Emplace<CmdBindMaterial>()(mLineMaterial.get());
 		pass.Emplace<CmdDraw>()(ETopologyMode::Lines, mBuffer->GetVAO(), mBuffer->GetVertexCount());
 
 		mIsActive = false;
+	}
+
+	void LineRenderBatch::SetLineWidth(float width)
+	{
+		mLineWidth = width;
 	}
 
 	bool LineRenderBatch::IsFull(uint32_t vNeeded, uint32_t iNeeded)
