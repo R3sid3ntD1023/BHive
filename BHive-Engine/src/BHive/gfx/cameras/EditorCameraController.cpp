@@ -36,9 +36,9 @@ namespace BHive
 			glm::vec3 moveDir{0};
 
 			if (input.IsPressed(Key::W))
-				moveDir += mCamera->GetForward();
-			if (input.IsPressed(Key::S))
 				moveDir -= mCamera->GetForward();
+			if (input.IsPressed(Key::S))
+				moveDir += mCamera->GetForward();
 			if (input.IsPressed(Key::A))
 				moveDir -= mCamera->GetRight();
 			if (input.IsPressed(Key::D))
