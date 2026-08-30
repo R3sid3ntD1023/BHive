@@ -4,16 +4,15 @@
 #include "gfx/Enumerations.h"
 #include "gfx/Texture.h"
 #include "gfx/registries/Handles.h"
+#include "importers/TextureImporter.h"
 
 namespace BHive
 {
 	struct BHIVE_API TextureFactory : public IResourceFactory<Texture>
 	{
-		static TexturePtr Import(const std::filesystem::path &path);
-
-		static TexturePtr CreateFromMemory(const uint8_t *data, size_t size);
-
 		static TexturePtr Create2D();
+
+		static TexturePtr Create2D(const DecodedTexture &decodedTexture);
 
 		static TexturePtr Create2D(const glm::uvec2 &size, const FTextureCreateInfo &info = {}, const Buffer &data = {});
 

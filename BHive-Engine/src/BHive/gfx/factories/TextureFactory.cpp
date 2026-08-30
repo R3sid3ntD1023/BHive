@@ -9,17 +9,9 @@
 
 namespace BHive
 {
-	TexturePtr TextureFactory::Import(const std::filesystem::path &path)
+	TexturePtr TextureFactory::Create2D(const DecodedTexture &decodedTexture)
 	{
-		// DecodedTexture decoded = TextureLoader::Import(path);
-		// return Create2D({decoded.Width, decoded.Height}, decoded.Info, decoded.PixelData);
-		return {};
-	}
-
-	TexturePtr TextureFactory::CreateFromMemory(const uint8_t *data, size_t size)
-	{
-		// DecodedTexture decoded = TextureLoader::LoadFromMemory(data, size);
-		return {};
+		return Create2D(decodedTexture.Size, decodedTexture.CreateInfo, decodedTexture.Data);
 	}
 
 	TexturePtr TextureFactory::Create2D()
