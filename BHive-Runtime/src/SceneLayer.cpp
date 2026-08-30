@@ -5,8 +5,6 @@
 #include "gfx/imgui/IImGuiProvider.h"
 #include "gfx/renderers/SceneRenderer.h"
 #include "gfx/Framebuffer.h"
-#include "gfx/mesh/primitives/Sphere.h"
-#include "gfx/mesh/primitives/Plane.h"
 #include "gfx/material/StandardMaterial.h"
 #include "gfx/material/LambertMaterial.h"
 #include "importers/TextureImporter.h"

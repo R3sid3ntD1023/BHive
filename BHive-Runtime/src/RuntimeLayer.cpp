@@ -15,8 +15,6 @@
 #include "Inspectors/Inspect.h"
 #include "gfx/material/LambertMaterial.h"
 #include "gfx/debug/ImageDebugger.h"
-#include "gfx/mesh/primitives/Sphere.h"
-#include "gfx/mesh/primitives/Plane.h"
 #include "gfx/material/StandardMaterial.h"
 #include "gfx/renderers/postprocess/AcesMaterial.h"
 #include "gfx/renderers/postprocess/BloomMaterial.h"

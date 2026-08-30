@@ -4,7 +4,6 @@
 #include "gfx/Framebuffer.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
-#include "gfx/mesh/primitives/Quad.h"
 #include "Renderer.h"
 #include "core/math/boundingbox/AABB.h"
 #include "core/math/volumes/SphereVolume.h"
