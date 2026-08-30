@@ -18,7 +18,7 @@ namespace BHive
 		return mMaterials.size();
 	}
 
-	ResourceHandle MaterialTable::Get(uint32_t index) const
+	MaterialPtr MaterialTable::Get(uint32_t index) const
 	{
 		if (mMaterials.size() > index)
 		{
@@ -28,12 +28,12 @@ namespace BHive
 		return {};
 	}
 
-	void MaterialTable::Add(ResourceHandle h)
+	void MaterialTable::Add(MaterialPtr h)
 	{
 		mMaterials.emplace_back(h);
 	}
 
-	void MaterialTable::Set(ResourceHandle h, uint32_t index)
+	void MaterialTable::Set(MaterialPtr h, uint32_t index)
 	{
 		if (mMaterials.size() > index)
 		{
@@ -41,12 +41,12 @@ namespace BHive
 		}
 	}
 
-	void MaterialTable::SetAll(const std::vector<ResourceHandle> &materials)
+	void MaterialTable::SetAll(const std::vector<MaterialPtr> &materials)
 	{
 		mMaterials = materials;
 	}
 
-	ResourceHandle MaterialTable::operator[](size_t index) const
+	MaterialPtr MaterialTable::operator[](size_t index) const
 	{
 		ASSERT(index < mMaterials.size());
 

@@ -3,14 +3,11 @@
 
 namespace BHive
 {
-	SkeletalAnimation::SkeletalAnimation(
-		float duration, float ticksPerSecond, const Frames &frames, Ref<Skeleton> skeleton,
-		const glm::mat4 &globalInverseMatrix)
+	SkeletalAnimation::SkeletalAnimation(float duration, float ticksPerSecond, const Frames &frames, const glm::mat4 &globalInverseMatrix)
 		: mDuration(duration),
 		  mTicksPerSecond(ticksPerSecond),
 		  mGlobalInverseTransformation(globalInverseMatrix),
-		  mFrameData(frames),
-		  mSkeleton(skeleton)
+		  mFrameData(frames)
 	{
 	}
 	int32_t SkeletalAnimation::GetPositionIndex(const std::string &name, float animationTime)
@@ -102,21 +99,6 @@ namespace BHive
 		float factor = GetScaleFactor(keys[p0].mTimeStamp, keys[p1].mTimeStamp, animationTime);
 		auto scale = glm::mix(keys[p0].mValue, keys[p1].mValue, factor);
 		return scale;
-	}
-
-	void SkeletalAnimation::Save(cereal::BinaryOutputArchive &ar) const
-	{
-		Asset::Save(ar);
-		TAssetHandle<Skeleton> handle = mSkeleton;
-		ar(mDuration, mTicksPerSecond, mGlobalInverseTransformation, mFrameData, handle);
-	}
-
-	void SkeletalAnimation::Load(cereal::BinaryInputArchive &ar)
-	{
-		Asset::Load(ar);
-
-		TAssetHandle<Skeleton> handle(mSkeleton);
-		ar(mDuration, mTicksPerSecond, mGlobalInverseTransformation, mFrameData, handle);
 	}
 
 	bool SkeletalAnimation::Contains(const std::string &name) const

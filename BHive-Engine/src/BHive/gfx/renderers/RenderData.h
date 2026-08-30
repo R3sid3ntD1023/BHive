@@ -5,6 +5,7 @@
 #include "gfx/material/MaterialTable.h"
 #include "core/math/Transform.h"
 #include "gfx/Color.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
@@ -20,7 +21,7 @@ namespace BHive
 
 	struct FMeshSubmissionRequest
 	{
-		Ref<BaseMesh> Mesh;
+		MeshPtr Mesh;
 
 		MaterialTable Materials;
 
@@ -58,7 +59,7 @@ namespace BHive
 
 		uint32_t MeshIndex = 0;
 
-		ResourceHandle MaterialHandle;
+		MaterialPtr Material;
 
 		// opaque/transparent, cast_shadows
 		std::bitset<2> BitFlags;

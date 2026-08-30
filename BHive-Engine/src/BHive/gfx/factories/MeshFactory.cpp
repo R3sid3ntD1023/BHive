@@ -1,0 +1,174 @@
+#include "MeshFactory.h"
+#include "gfx/mesh/StaticMesh.h"
+#include "gfx/mesh/SkeletalMesh.h"
+#include "gfx/animation/Skeleton.h"
+
+namespace BHive
+{
+	MeshPtr MeshFactory::CreateStatic(const FMeshData &meshData)
+	{
+		return CreateResource<StaticMesh>(meshData);
+	}
+
+	MeshPtr MeshFactory::CreateSkeletal(const FMeshData &meshData, SkeletonPtr skeleton)
+	{
+		return CreateResource<SkeletalMesh>(meshData, skeleton.As<Skeleton>());
+	}
+
+	MeshPtr MeshFactory::CreateCube(float size)
+	{
+		const float s = size * .5f;
+		std::vector<FVertex> vertices = {
+			// front
+			{.Position = {-s, -s, s}, .TexCoord = {0, 0}, .Normal = {0, 0, 1}, .Color = {1, 0, 0, 1}},
+			{.Position = {s, -s, s}, .TexCoord = {1, 0}, .Normal = {0, 0, 1}, .Color = {1, 0, 0, 1}},
+			{.Position = {s, s, s}, .TexCoord = {1, 1}, .Normal = {0, 0, 1}, .Color = {1, 0, 0, 1}},
+			{.Position = {-s, s, s}, .TexCoord = {0, 1}, .Normal = {0, 0, 1}, .Color = {1, 0, 0, 1}},
+
+			// back
+			{.Position = {-s, s, -s}, .TexCoord = {0, 0}, .Normal = {0, 0, -1}, .Color = {1, 1, 0, 1}},
+			{.Position = {s, s, -s}, .TexCoord = {1, 0}, .Normal = {0, 0, -1}, .Color = {1, 1, 0, 1}},
+			{.Position = {s, -s, -s}, .TexCoord = {1, 1}, .Normal = {0, 0, -1}, .Color = {1, 1, 0, 1}},
+			{.Position = {-s, -s, -s}, .TexCoord = {0, 1}, .Normal = {0, 0, -1}, .Color = {1, 1, 0, 1}},
+
+			// left
+			{.Position = {-s, -s, -s}, .TexCoord = {0, 0}, .Normal = {-1, 0, 0}, .Color = {0, 1, 0, 1}},
+			{.Position = {-s, -s, s}, .TexCoord = {1, 0}, .Normal = {-1, 0, 0}, .Color = {0, 1, 0, 1}},
+			{.Position = {-s, s, s}, .TexCoord = {1, 1}, .Normal = {-1, 0, 0}, .Color = {0, 1, 0, 1}},
+			{.Position = {-s, s, -s}, .TexCoord = {0, 1}, .Normal = {-1, 0, 0}, .Color = {0, 1, 0, 1}},
+
+			// right
+			{.Position = {s, -s, -s}, .TexCoord = {0, 0}, .Normal = {1, 0, 1}, .Color = {0, 1, 1, 1}},
+			{.Position = {s, s, -s}, .TexCoord = {1, 0}, .Normal = {1, 0, 1}, .Color = {0, 1, 1, 1}},
+			{.Position = {s, s, s}, .TexCoord = {1, 1}, .Normal = {1, 0, 1}, .Color = {0, 1, 1, 1}},
+			{.Position = {s, -s, s}, .TexCoord = {0, 1}, .Normal = {1, 0, 1}, .Color = {0, 1, 1, 1}},
+
+			// top
+			{.Position = {-s, s, -s}, .TexCoord = {0, 0}, .Normal = {0, 1, 0}, .Color = {0, 0, 1, 1}},
+			{.Position = {-s, s, s}, .TexCoord = {1, 0}, .Normal = {0, 1, 0}, .Color = {0, 0, 1, 1}},
+			{.Position = {s, s, s}, .TexCoord = {1, 1}, .Normal = {0, 1, 0}, .Color = {0, 0, 1, 1}},
+			{.Position = {s, s, -s}, .TexCoord = {0, 1}, .Normal = {0, 1, 0}, .Color = {0, 0, 1, 1}},
+
+			// bottom
+			{.Position = {s, -s, -s}, .TexCoord = {0, 0}, .Normal = {0, -1, 0}, .Color = {1, 0, 1, 1}},
+			{.Position = {s, -s, s}, .TexCoord = {1, 0}, .Normal = {0, -1, 0}, .Color = {1, 0, 1, 1}},
+			{.Position = {-s, -s, s}, .TexCoord = {1, 1}, .Normal = {0, -1, 0}, .Color = {1, 0, 1, 1}},
+			{.Position = {-s, -s, -s}, .TexCoord = {0, 1}, .Normal = {0, -1, 0}, .Color = {1, 0, 1, 1}},
+		};
+
+		StaticMesh::CalculateTangentsAndBitTangents(vertices.data(), vertices.size());
+
+		std::vector<uint32_t> indces = {
+			0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 8, 9, 10, 10, 11, 8, 12, 13, 14, 14, 15, 12, 16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20,
+		};
+
+		FMeshData data{};
+		data.mVertices = vertices;
+		data.mIndices = indces;
+		data.mBoundingBox = AABB(vertices[7].Position, vertices[2].Position);
+
+		auto &submesh = data.mSubMeshes.emplace_back();
+		submesh.StartIndex = 0;
+		submesh.StartVertex = 0;
+		submesh.IndexCount = (uint32_t)data.mIndices.size();
+		submesh.MaterialIndex = 0;
+
+		return CreateStatic(data);
+	}
+
+	MeshPtr MeshFactory::CreateSphere(float radius, uint32_t sectors, uint32_t stacks)
+	{
+		std::vector<FVertex> vertices;
+		std::vector<uint32_t> indices;
+
+		float lengthInv = 1.f / radius;
+
+		for (unsigned i = 0; i <= stacks; i++)
+		{
+			float V = i / (float)stacks;
+			float phi = V * PI;
+
+			for (unsigned j = 0; j <= sectors; j++)
+			{
+				float U = j / (float)sectors;
+				float theta = U * (PI * 2);
+
+				float x = cosf(theta) * sinf(phi);
+				float y = cosf(phi);
+				float z = sinf(theta) * sinf(phi);
+
+				float s = 1.0f - ((float)j / sectors);
+				float t = 1.0f - ((float)i / stacks);
+
+				float nx = x * lengthInv;
+				float ny = y * lengthInv;
+				float nz = z * lengthInv;
+
+				FVertex vertex;
+				vertex.Position = glm::vec3{x, y, z} * radius;
+				vertex.Normal = {nx, ny, nz};
+				vertex.TexCoord = {s, t};
+
+				vertices.push_back(vertex);
+			}
+		}
+
+		for (unsigned i = 0; i < stacks * sectors + stacks; i++)
+		{
+			indices.push_back(i);
+			indices.push_back(i + stacks + 1);
+			indices.push_back(i + stacks);
+
+			indices.push_back(i + stacks + 1);
+			indices.push_back(i);
+			indices.push_back(i + 1);
+		}
+
+		StaticMesh::CalculateTangentsAndBitTangents(vertices.data(), vertices.size());
+
+		FMeshData data{};
+		data.mVertices = vertices;
+		data.mIndices = indices;
+		data.mBoundingBox = AABB(glm::vec3{-radius}, glm::vec3{radius});
+
+		auto &submesh = data.mSubMeshes.emplace_back();
+		submesh.StartIndex = 0;
+		submesh.StartVertex = 0;
+		submesh.IndexCount = (uint32_t)data.mIndices.size();
+		submesh.MaterialIndex = 0;
+
+		return CreateStatic(data);
+	}
+
+	MeshPtr MeshFactory::CreatePlane(float x, float y)
+	{
+		float w = x * .5f;
+		float h = y * .5f;
+		const auto normal = glm::vec3(0, 1, 0);
+
+		std::vector<FVertex> vertices
+			= {FVertex{.Position = {-w, 0, h}, .TexCoord = {0, 1}, .Normal = normal}, FVertex{.Position = {w, 0, h}, .TexCoord = {1, 1}, .Normal = normal},
+			   FVertex{.Position = {w, 0, -h}, .TexCoord = {1, 0}, .Normal = normal}, FVertex{.Position = {-w, 0, -h}, .TexCoord = {0, 0}, .Normal = normal}};
+
+		// CalculateTangentsAndBitTangents(vertices.data(), 4);
+
+		FMeshData data;
+		data.mIndices = {0, 1, 2, 2, 3, 0};
+		data.mVertices = vertices;
+		data.mSubMeshes.push_back(FSubMesh{.StartVertex = 0, .StartIndex = 0, .IndexCount = 6, .MaterialIndex = 0});
+		data.mBoundingBox = {{-1, -1, 0}, {1, 1, 0}};
+
+		return CreateStatic(data);
+	}
+
+	SkeletonPtr SkeletonFactory::Create(const Bones &bones, const SkeletalNode &root)
+	{
+		return CreateResource<Skeleton>(bones, root);
+	}
+
+	SkeletalAnimationPtr SkeletalAnimationFactory::Create(float duration, float ticksPerSecond, const Frames &frames, const glm::mat4 &globalInverseMatrix)
+	{
+		return CreateResource<SkeletalAnimation>(duration, ticksPerSecond, frames, globalInverseMatrix);
+	}
+
+} // namespace BHive

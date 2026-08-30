@@ -6,81 +6,74 @@
 
 namespace BHive
 {
-    class AnimationClip;
+	class AnimationClip;
 
-    class JobClip : public JobBase
-    {
-    public:
-        JobClip() = default;
+	class JobClip : public JobBase
+	{
+	public:
+		JobClip() = default;
 
-        void SetClip(AnimationClip& clip)
-        {
-            mClip = &clip;
-        }
+		void SetClip(AnimationClip &clip) { mClip = &clip; }
 
-        void SetTime(float time)
-        {
-            ASSERT(mClip);
-            ASSERT(time >= 0.0f && time <= mClip->GetDuration());
+		void SetSkeleton(Skeleton *skeleton) { mSkeleton = skeleton; }
 
-            mTime = time;
-        }
+		void SetTime(float time)
+		{
+			ASSERT(mClip);
+			ASSERT(time >= 0.0f && time <= mClip->GetDuration());
 
-    protected:
-        virtual  SkeletalPosePool::ptr OnExecute(JobQueue& queue)
-        {
-           auto pose_ptr{queue.GetPosePool().Borrow()};
-           mClip->Play(mTime, *pose_ptr);
+			mTime = time;
+		}
 
-           return pose_ptr;
-        }
+	protected:
+		virtual SkeletalPosePool::ptr OnExecute(JobQueue &queue)
+		{
+			auto pose_ptr{queue.GetPosePool().Borrow()};
 
-    private:
-        AnimationClip* mClip{nullptr};
-        float mTime {0.0f};
-    };
+			if (mSkeleton && mClip)
+			{
+				mClip->Play(mTime, *pose_ptr, mSkeleton);
+			}
 
-    class JobBlend : public JobBase
-    {
-    public:
-        JobBlend() = default;
+			return pose_ptr;
+		}
 
-        float GetWeight() const { return mCurrentWeight;}
+	private:
+		AnimationClip *mClip{nullptr};
+		Skeleton *mSkeleton = nullptr;
+		float mTime{0.0f};
+	};
 
-        void SetWeight(float weight)
-        {
-            mCurrentWeight = weight;
-        }
+	class JobBlend : public JobBase
+	{
+	public:
+		JobBlend() = default;
 
-        void SetFirstJob(uint64_t index)
-        {
-            mFirstJob = index;
-        }
+		float GetWeight() const { return mCurrentWeight; }
 
-        void SetSecondJob(uint64_t index)
-        {
-            mSecondJob = index;
-        }
+		void SetWeight(float weight) { mCurrentWeight = weight; }
 
-    protected:
-        SkeletalPosePool::ptr OnExecute(JobQueue& queue)
-         {
-            auto& first_job = queue.GetJob(mFirstJob);
-            const auto& second_job = queue.GetJob(mSecondJob);
+		void SetFirstJob(uint64_t index) { mFirstJob = index; }
 
-            auto p0 {first_job.TransferResult()};
-            const auto& p1{second_job.GetResult()};
+		void SetSecondJob(uint64_t index) { mSecondJob = index; }
 
-            SkeletalPoseBlend(*p0, *p1, mCurrentWeight, *p0);
+	protected:
+		SkeletalPosePool::ptr OnExecute(JobQueue &queue)
+		{
+			auto &first_job = queue.GetJob(mFirstJob);
+			const auto &second_job = queue.GetJob(mSecondJob);
 
-            return p0;
-         }
+			auto p0{first_job.TransferResult()};
+			const auto &p1{second_job.GetResult()};
 
+			SkeletalPoseBlend(*p0, *p1, mCurrentWeight, *p0);
 
-    private:
-        float mCurrentWeight = 0.0f;
-        uint64_t mFirstJob;
-        uint64_t mSecondJob;
-        
-    };
-}
+			return p0;
+		}
+
+	private:
+		float mCurrentWeight = 0.0f;
+		uint64_t mFirstJob;
+		uint64_t mSecondJob;
+	};
+} // namespace BHive

@@ -2,6 +2,7 @@
 
 #include "runtime/Component.h"
 #include "gfx/mesh/SkeletalMesh.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
@@ -16,16 +17,16 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		void SetSkeletalMesh(const Ref<SkeletalMesh> &mesh);
+		void SetSkeletalMesh(MeshPtr h);
 
-		const Ref<SkeletalMesh> &GetSkeletalMesh() const { return SkeletalMeshAsset; }
+		MeshPtr GetSkeletalMesh() const { return SkeletalMeshAsset; }
 
 		const MaterialTable &GetMaterials() const { return mOverrideMaterials; }
 
 		REFLECTABLEV(Component)
 
 	private:
-		Ref<SkeletalMesh> SkeletalMeshAsset;
+		MeshPtr SkeletalMeshAsset;
 
 		MaterialTable mOverrideMaterials;
 	};

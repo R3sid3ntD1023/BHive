@@ -142,7 +142,7 @@ namespace BHive
 					continue;
 
 				auto t = sc.GetWorldTransform();
-				auto pose = sc.GetSkeletalMesh()->GetDefaultPose();
+				auto pose = sc.GetSkeletalMesh().As<SkeletalMesh>()->GetDefaultPose();
 
 				FMeshSubmissionRequest info{};
 				info.Mesh = sc.GetSkeletalMesh();

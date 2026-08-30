@@ -1,7 +1,8 @@
 #pragma once
 
 #include "runtime/Component.h"
-#include "gfx/mesh/StaticMesh.h"
+#include "gfx/registries/Handles.h"
+#include "gfx/material/MaterialTable.h"
 
 namespace BHive
 {
@@ -14,16 +15,16 @@ namespace BHive
 
 		void Load(cereal::BinaryInputArchive &ar) override;
 
-		const Ref<StaticMesh> &GetStaticMesh() const { return mStaticMeshAsset; }
+		MeshPtr GetStaticMesh() const { return mStaticMeshAsset; }
 
-		void SetStaticMesh(const Ref<StaticMesh> &mesh);
+		void SetStaticMesh(MeshPtr mesh);
 
 		const MaterialTable &GetMaterials() const { return mOverrideMaterials; }
 
 		REFLECTABLEV(Component)
 
 	private:
-		Ref<StaticMesh> mStaticMeshAsset;
+		MeshPtr mStaticMeshAsset;
 		MaterialTable mOverrideMaterials;
 	};
 

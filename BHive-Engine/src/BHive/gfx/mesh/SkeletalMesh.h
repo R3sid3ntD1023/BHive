@@ -12,22 +12,18 @@ namespace BHive
 	{
 	public:
 		SkeletalMesh() = default;
-		SkeletalMesh(const FMeshData &data, const Ref<Skeleton> &skeleton);
+		SkeletalMesh(const FMeshData &data, Skeleton *skeleton);
 
-		Ref<Skeleton> GetSkeleton() { return mSkeleton; }
+		Skeleton *GetSkeleton() { return mSkeleton; }
 
 		Ref<class SkeletalPose> GetDefaultPose() const { return mDefaultPose; }
 
 		AABB GetBoundingBox() const override;
 
-		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
-
-		virtual void Load(cereal::BinaryInputArchive &ar) override;
-
 		REFLECTABLEV(BaseMesh)
 
 	private:
-		Ref<Skeleton> mSkeleton;
+		Skeleton *mSkeleton;
 		Ref<class SkeletalPose> mDefaultPose;
 	};
 

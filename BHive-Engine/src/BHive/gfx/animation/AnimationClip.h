@@ -4,6 +4,7 @@
 
 namespace BHive
 {
+	class Skeleton;
 	class SkeletalAnimation;
 	struct SkeletalNode;
 	class SkeletalPose;
@@ -13,7 +14,7 @@ namespace BHive
 	public:
 		AnimationClip(const Ref<SkeletalAnimation> &animation);
 
-		void Play(float dt, SkeletalPose &pose);
+		void Play(float dt, SkeletalPose &pose, Skeleton *skeleton);
 
 		void PlayFromStart();
 
@@ -23,14 +24,11 @@ namespace BHive
 
 		void SetSkeletalAnimation(const Ref<SkeletalAnimation> &animation);
 
-		const std::vector<glm::mat4> &GetBoneTransformations() const { return mBoneTransformations; }
-
 	private:
-		void ReadNodeHeirarchy(const SkeletalNode &node, SkeletalPose &pose, const glm::mat4 &parent, float time);
+		void ReadNodeHeirarchy(Skeleton *skeleton, const SkeletalNode &node, SkeletalPose &pose, const glm::mat4 &parent, float time);
 
 	private:
 		Ref<SkeletalAnimation> mAnimation;
-		std::vector<glm::mat4> mBoneTransformations;
 		float mCurrentTime = 0.0f;
 	};
 } // namespace BHive

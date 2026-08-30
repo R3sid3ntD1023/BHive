@@ -68,7 +68,7 @@ namespace BHive
 
 		void UpdateTransform(ContextHandle requestHandle, const FTransform &t);
 
-		void UpdateMesh(ContextHandle requestHandle, Ref<BaseMesh> mesh);
+		void UpdateMesh(ContextHandle requestHandle, MeshPtr mesh);
 
 		void Resize(const glm::uvec2 &size);
 
@@ -110,9 +110,9 @@ namespace BHive
 
 		Ref<Texture> mOutputTexture;
 
-		std::array<ResourceHandle, 2> mFrustrumOcclusionMaterial;
+		std::array<MaterialPtr, 2> mFrustrumOcclusionMaterial;
 
-		ResourceHandle mFrustumMaterial;
+		MaterialPtr mFrustumMaterial;
 
 		Ref<GeneralBuffer> mFrustumUBO;
 

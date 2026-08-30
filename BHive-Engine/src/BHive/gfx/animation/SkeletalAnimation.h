@@ -14,11 +14,9 @@ namespace BHive
 	{
 	public:
 		SkeletalAnimation() = default;
-		SkeletalAnimation(float duration, float ticksPerSecond, const Frames &frames, Ref<Skeleton> skeleton, const glm::mat4 &globalInverseMatrix);
+		SkeletalAnimation(float duration, float ticksPerSecond, const Frames &frames, const glm::mat4 &globalInverseMatrix);
 
 		bool Contains(const std::string &name) const;
-
-		Ref<Skeleton> GetSkeleton() { return mSkeleton; }
 
 		float GetTicksPerSecond() const { return mTicksPerSecond; }
 		float GetDuration() const { return mDuration; }
@@ -30,10 +28,6 @@ namespace BHive
 		glm::vec3 InterpolatePosition(const std::string &name, float animationTime);
 		glm::quat InterpolateRotation(const std::string &name, float animationTime);
 		glm::vec3 InterpolateScaling(const std::string &name, float animationTime);
-
-		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
-
-		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
 		REFLECTABLEV(Asset)
 
@@ -48,7 +42,6 @@ namespace BHive
 		float mTicksPerSecond{};
 		glm::mat4 mGlobalInverseTransformation{1.f};
 		Frames mFrameData;
-		Ref<Skeleton> mSkeleton;
 	};
 
 	REFLECT_EXTERN(SkeletalAnimation)

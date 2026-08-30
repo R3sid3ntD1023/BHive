@@ -14,8 +14,31 @@ namespace BHive
 		template <typename T>
 		T *As() const
 		{
-			return reinterpret_cast<T *>(Ptr);
+			if (!IsValid())
+				return nullptr;
+
+			return static_cast<T *>(Ptr);
 		}
+
+		template <typename T>
+		T &AsChecked() const
+		{
+			auto ptr = As<T>(Ptr);
+			ASSERT(ptr, "Invalid type cast");
+			return *ptr;
+		}
+
+		template <typename T>
+		bool Is() const
+		{
+			return static_cast<T *>(Ptr) != nullptr;
+		}
+
+		// template <typename U>
+		// bool Is() const
+		// {
+		// 	return reinterpret_cast<U *>(Ptr) != nullptr;
+		// }
 
 		bool IsValid() const { return Index != UINT32_MAX && Generation != 0 && Ptr != nullptr; }
 

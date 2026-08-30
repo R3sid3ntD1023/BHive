@@ -28,7 +28,7 @@ namespace BHive
 
 		void RemoveSubmissionsForContext(ContextHandle h);
 
-		void AddSubmissionsForMesh(ContextHandle h, Ref<BaseMesh> mesh);
+		void AddSubmissionsForMesh(ContextHandle h, MeshPtr mesh);
 
 		ContextHandle AddMesh(const FMeshSubmissionRequest &request);
 

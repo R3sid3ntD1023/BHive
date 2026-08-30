@@ -3,6 +3,7 @@
 #include "core/core.h"
 #include "MeshImportData.h"
 #include "gfx/material/MaterialTable.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
@@ -26,7 +27,7 @@ namespace BHive
 		bool ImportAnimations = false;
 
 		// skeleton to use if skeletal mesh
-		Ref<Skeleton> Skeleton;
+		SkeletonPtr Skeleton;
 
 		// Materials to override if ImportMaterials is false
 		MaterialTable OverideMaterials;
@@ -44,12 +45,12 @@ namespace BHive
 	public:
 		MeshImportResolver(const FMeshImportData &data, const FMeshImportOptions &options, AdditionalAssets &additional_assets);
 
-		Ref<Asset> Resolve();
+		MeshPtr Resolve();
 
 		void SetLoaders(typename LoadTextureSigniture load_texture_func, typename LoadTextureMemorySigniture load_texture_memory_func, typename CreateMaterialSigniture create_material_func);
 
 	private:
-		Ref<Asset> ResolveAnimations();
+		SkeletalAnimationPtr ResolveAnimations();
 
 		void ResolveMaterials(MaterialTable &material_table);
 
@@ -59,7 +60,7 @@ namespace BHive
 
 		AdditionalAssets &mAdditionalAssets;
 		std::string mAssetName;
-		Ref<Skeleton> mSkeleton; // Used for skeletal meshes
+		SkeletonPtr mSkeleton; // Used for skeletal meshes
 
 		LoadTextureSigniture LoadTextureFunc;
 		LoadTextureMemorySigniture LoadTextureMemoryFunc;

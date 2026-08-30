@@ -32,8 +32,8 @@ namespace BHive
 
 	private:
 		Ref<SceneRenderer> mSceneRenderer;
-		Ref<BaseMesh> mMesh;
-		Ref<BaseMesh> mPlane;
+		MeshPtr mMesh;
+		MeshPtr mPlane;
 		MaterialTable mMaterialTables[3];
 		EditorCamera mCameras[2];
 		glm::uvec2 mViewportSize{0, 0};

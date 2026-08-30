@@ -4,6 +4,7 @@
 #include "gfx/mesh/StaticMesh.h"
 #include "MeshImportResolver.h"
 #include "gfx/factories/MaterialFactory.h"
+#include "gfx/factories/MeshFactory.h"
 
 namespace BHive
 {
@@ -57,16 +58,16 @@ namespace BHive
 		CreateMaterialFunc = std::move(create_material);
 	}
 
-	Ref<Asset> MeshImportResolver::Resolve()
+	MeshPtr MeshImportResolver::Resolve()
 	{
-		Ref<Asset> asset;
+		MeshPtr asset{};
 
 		mAssetName = mOptions.AssetPath.stem().string();
 		switch (mOptions.MeshType)
 		{
 		case EMeshType::StaticMesh:
 		{
-			asset = CreateRef<StaticMesh>(mData.mMeshData);
+			asset = MeshFactory::CreateStatic(mData.mMeshData);
 
 			break;
 		}
@@ -75,17 +76,17 @@ namespace BHive
 			mSkeleton = mOptions.Skeleton;
 			if (!mSkeleton)
 			{
-				mSkeleton = CreateRef<Skeleton>(mData.mBoneData, mData.mSkeletonHeirarchyData);
+				mSkeleton = SkeletonFactory::Create(mData.mBoneData, mData.mSkeletonHeirarchyData);
 
-				mSkeleton->SetName(mAssetName + "_Skeleton");
-				mAdditionalAssets.push_back(mSkeleton);
+				mSkeleton.As<Skeleton>()->SetName(mAssetName + "_Skeleton");
+				// mAdditionalAssets.push_back(mSkeleton);
 			}
 
-			asset = CreateRef<SkeletalMesh>(mData.mMeshData, mSkeleton);
+			asset = MeshFactory::CreateSkeletal(mData.mMeshData, mSkeleton);
 
 			if (mOptions.ImportAnimations)
 			{
-				mAdditionalAssets.push_back(ResolveAnimations());
+				// mAdditionalAssets.push_back(ResolveAnimations());
 			}
 
 			break;
@@ -94,34 +95,34 @@ namespace BHive
 		{
 			if (mData.mAnimationData.empty())
 			{
-				return nullptr; // No animations to import
+				return {}; // No animations to import
 			}
 			mSkeleton = mOptions.Skeleton;
 			if (!mSkeleton)
 			{
-				mSkeleton = CreateRef<Skeleton>(mData.mBoneData, mData.mSkeletonHeirarchyData);
-				mSkeleton->SetName(mAssetName + "_Skeleton");
-				mAdditionalAssets.push_back(mSkeleton);
+				mSkeleton = SkeletonFactory::Create(mData.mBoneData, mData.mSkeletonHeirarchyData);
+				mSkeleton.As<Skeleton>()->SetName(mAssetName + "_Skeleton");
+				// mAdditionalAssets.push_back(mSkeleton);
 			}
 			asset = ResolveAnimations();
 			break;
 		}
 		}
 
-		if (auto mesh = Cast<BaseMesh>(asset); mesh && mOptions.ImportMaterials)
+		if (auto mesh = asset.As<BaseMesh>(); mesh && mOptions.ImportMaterials)
 		{
 			ResolveMaterials(mesh->GetMaterialTable());
 		}
 
-		asset->SetName(mAssetName);
+		asset.As<Asset>()->SetName(mAssetName);
 
 		return asset;
 	}
 
-	Ref<Asset> MeshImportResolver::ResolveAnimations()
+	SkeletalAnimationPtr MeshImportResolver::ResolveAnimations()
 	{
 		size_t num_animations = mData.mAnimationData.size();
-		std::vector<Ref<SkeletalAnimation>> animations(num_animations);
+		std::vector<SkeletalAnimationPtr> animations(num_animations);
 
 		for (size_t i = 0; i < num_animations; i++)
 		{
@@ -129,15 +130,15 @@ namespace BHive
 
 			std::string anim_name = std::format("{}_Animation({})", mAssetName, i);
 
-			animations[i] = CreateRef<SkeletalAnimation>(data.mDuration, data.TicksPerSecond, data.mFrames, mSkeleton, data.mGlobalInverseMatrix);
-			animations[i]->SetName(anim_name);
+			animations[i] = SkeletalAnimationFactory::Create(data.mDuration, data.TicksPerSecond, data.mFrames, data.mGlobalInverseMatrix);
+			animations[i].As<SkeletalAnimation>()->SetName(anim_name);
 		}
 
 		if (num_animations > 1)
 		{
 			for (size_t i = 1; i < animations.size(); i++)
 			{
-				mAdditionalAssets.push_back(animations[i]);
+				// mAdditionalAssets.push_back(animations[i]);
 			}
 		}
 
@@ -161,7 +162,7 @@ namespace BHive
 
 		for (size_t i = 0; i < num_materials; i++)
 		{
-			ResourceHandle overrideHandle = mOptions.OverideMaterials.Get(i);
+			MaterialPtr overrideHandle = mOptions.OverideMaterials.Get(i);
 			auto materialHandle = overrideHandle ? overrideHandle : material_table[i];
 
 			if (!materialHandle)

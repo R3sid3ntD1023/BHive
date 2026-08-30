@@ -34,9 +34,9 @@ namespace BHive
 	private:
 		EditorCamera mCamera;
 
-		Ref<BaseMesh> mSphere;
-		Ref<BaseMesh> mPlane;
-		Ref<BaseMesh> mMesh = nullptr;
+		MeshPtr mSphere;
+		MeshPtr mPlane;
+		MeshPtr mMesh;
 		Ref<Texture2D> mTexture;
 
 		glm::uvec2 mViewportSize{0, 0};

@@ -47,15 +47,15 @@ namespace BHive
 		ctx.Active = false;
 	}
 
-	void FRenderQueue::AddSubmissionsForMesh(ContextHandle h, Ref<BaseMesh> mesh)
+	void FRenderQueue::AddSubmissionsForMesh(ContextHandle h, MeshPtr mesh)
 	{
 		const uint32_t ctxIndex = h.ContextIndex;
 
 		auto &ctx = Contexts.at(ctxIndex);
 		ctx.Active = true;
-		ctx.VAO = mesh->GetVertexArray();
-		const auto &materials = mesh->GetMaterialTable();
-		const auto &subMeshes = mesh->GetSubMeshes();
+		ctx.VAO = mesh.As<BaseMesh>()->GetVertexArray();
+		const auto &materials = mesh.As<BaseMesh>()->GetMaterialTable();
+		const auto &subMeshes = mesh.As<BaseMesh>()->GetSubMeshes();
 
 		for (auto &s : subMeshes)
 		{
@@ -66,8 +66,8 @@ namespace BHive
 			FSubMeshSubmission sub{};
 			sub.Context = {ctxIndex, ctx.Generation};
 			sub.SubMesh = s;
-			sub.MaterialHandle = material;
-			sub.BoundingBox = mesh->GetBoundingBox();
+			sub.Material = material;
+			sub.BoundingBox = mesh.As<BaseMesh>()->GetBoundingBox();
 			sub.BitFlags[0] = material.As<Material>()->IsTransparent();
 			sub.BitFlags[1] = material.As<Material>()->ShouldCastShadows();
 			AddSubmission(sub);
@@ -76,6 +76,7 @@ namespace BHive
 
 	ContextHandle FRenderQueue::AddMesh(const FMeshSubmissionRequest &request)
 	{
+		auto mesh = request.Mesh.As<BaseMesh>();
 
 		auto ctxIndex = AddSubmissionContext();
 		auto &ctx = Contexts.at(ctxIndex);
@@ -84,10 +85,10 @@ namespace BHive
 		ctx.EntityID = request.EntityID;
 		ctx.InstanceTransforms = request.InstanceTransforms;
 		ctx.BoneTransforms = request.BoneTransforms;
-		ctx.VAO = request.Mesh->GetVertexArray();
+		ctx.VAO = mesh->GetVertexArray();
 		ctx.Generation = ++mGenerationVersion;
 
-		const auto &subMeshes = request.Mesh->GetSubMeshes();
+		const auto &subMeshes = mesh->GetSubMeshes();
 		for (auto &s : subMeshes)
 		{
 			auto material = request.Materials.Get(s.MaterialIndex);
@@ -97,10 +98,10 @@ namespace BHive
 			FSubMeshSubmission sub{};
 			sub.Context = {ctxIndex, mGenerationVersion};
 			sub.SubMesh = s;
-			sub.BoundingBox = request.Mesh->GetBoundingBox();
+			sub.BoundingBox = mesh->GetBoundingBox();
 			sub.BitFlags[0] = material.As<Material>()->IsTransparent();
 			sub.BitFlags[1] = material.As<Material>()->ShouldCastShadows();
-			sub.MaterialHandle = material;
+			sub.Material = material;
 			AddSubmission(sub);
 		}
 

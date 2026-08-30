@@ -5,12 +5,12 @@ namespace BHive
 {
 	struct BHIVE_API MaterialFactory : IResourceFactory<Material>
 	{
-		static ResourceHandle Create(const std::string &shaderName);
+		static MaterialPtr Create(const std::string &shaderName);
 
-		static ResourceHandle CreateLambert();
+		static MaterialPtr CreateLambert();
 
-		static ResourceHandle CreateStandard();
+		static MaterialPtr CreateStandard();
 
-		static ResourceHandle CreateEmissive();
+		static MaterialPtr CreateEmissive();
 	};
 } // namespace BHive

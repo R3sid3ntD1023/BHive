@@ -6,6 +6,7 @@
 #include "core/subsystem/SubSystem.h"
 #include "windows/ImWindowSystem.h"
 #include "windows/MeshOptionsWindow.h"
+#include "MeshFactory.h"
 
 namespace BHive
 {

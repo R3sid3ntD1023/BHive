@@ -9,20 +9,20 @@
 
 namespace BHive
 {
-	ResourceHandle TextureFactory::Import(const std::filesystem::path &path)
+	TexturePtr TextureFactory::Import(const std::filesystem::path &path)
 	{
 		// DecodedTexture decoded = TextureLoader::Import(path);
 		// return Create2D({decoded.Width, decoded.Height}, decoded.Info, decoded.PixelData);
 		return {};
 	}
 
-	ResourceHandle TextureFactory::CreateFromMemory(const uint8_t *data, size_t size)
+	TexturePtr TextureFactory::CreateFromMemory(const uint8_t *data, size_t size)
 	{
 		// DecodedTexture decoded = TextureLoader::LoadFromMemory(data, size);
 		return {};
 	}
 
-	ResourceHandle TextureFactory::Create2D()
+	TexturePtr TextureFactory::Create2D()
 	{
 		switch (RenderCommand::GetAPI())
 		{
@@ -36,7 +36,7 @@ namespace BHive
 		return {};
 	}
 
-	ResourceHandle TextureFactory::Create2D(const glm::uvec2 &size, const FTextureCreateInfo &info, const Buffer &data)
+	TexturePtr TextureFactory::Create2D(const glm::uvec2 &size, const FTextureCreateInfo &info, const Buffer &data)
 	{
 		switch (RenderCommand::GetAPI())
 		{
@@ -50,7 +50,7 @@ namespace BHive
 		return {};
 	}
 
-	ResourceHandle TextureFactory::Create2DArray(const glm::uvec2 &size, const FTextureCreateInfo &info)
+	TexturePtr TextureFactory::Create2DArray(const glm::uvec2 &size, const FTextureCreateInfo &info)
 	{
 		switch (RenderCommand::GetAPI())
 		{
@@ -64,7 +64,7 @@ namespace BHive
 		return {};
 	}
 
-	ResourceHandle TextureFactory::Create3D(const glm::uvec3 &size, const FTextureCreateInfo &info, const Buffer &data)
+	TexturePtr TextureFactory::Create3D(const glm::uvec3 &size, const FTextureCreateInfo &info, const Buffer &data)
 	{
 		switch (RenderCommand::GetAPI())
 		{
@@ -78,7 +78,7 @@ namespace BHive
 		return {};
 	}
 
-	ResourceHandle TextureFactory::CreateCube(uint32_t size, const FTextureCreateInfo &info)
+	TexturePtr TextureFactory::CreateCube(uint32_t size, const FTextureCreateInfo &info)
 	{
 		switch (RenderCommand::GetAPI())
 		{
@@ -92,7 +92,7 @@ namespace BHive
 		return {};
 	}
 
-	ResourceHandle TextureFactory::CreateCubeArray(uint32_t size, const FTextureCreateInfo &info)
+	TexturePtr TextureFactory::CreateCubeArray(uint32_t size, const FTextureCreateInfo &info)
 	{
 		switch (RenderCommand::GetAPI())
 		{
@@ -106,7 +106,7 @@ namespace BHive
 		return {};
 	}
 
-	ResourceHandle TextureFactory::Create(ETextureType type, const glm::uvec2 &size, const FTextureCreateInfo &info)
+	TexturePtr TextureFactory::Create(ETextureType type, const glm::uvec2 &size, const FTextureCreateInfo &info)
 	{
 		switch (type)
 		{

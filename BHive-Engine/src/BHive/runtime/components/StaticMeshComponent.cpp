@@ -1,24 +1,25 @@
 #include "StaticMeshComponent.h"
 #include "runtime/GameObject.h"
+#include "gfx/mesh/StaticMesh.h"
 
 namespace BHive
 {
 
 	void StaticMeshComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(mOverrideMaterials, TAssetHandle(mStaticMeshAsset));
+		ar(mOverrideMaterials, mStaticMeshAsset);
 	}
 
 	void StaticMeshComponent::Load(cereal::BinaryInputArchive &ar)
 	{
-		ar(mOverrideMaterials, TAssetHandle(mStaticMeshAsset));
+		ar(mOverrideMaterials, mStaticMeshAsset);
 	}
 
-	void StaticMeshComponent::SetStaticMesh(const Ref<StaticMesh> &mesh)
+	void StaticMeshComponent::SetStaticMesh(MeshPtr mesh)
 	{
 		mStaticMeshAsset = mesh;
-		if (mesh)
-			mOverrideMaterials = mesh->GetMaterialTable();
+		if (mesh && mesh.Is<StaticMesh>())
+			mOverrideMaterials = mesh.As<StaticMesh>()->GetMaterialTable();
 	}
 
 	REFLECT(StaticMeshComponent)

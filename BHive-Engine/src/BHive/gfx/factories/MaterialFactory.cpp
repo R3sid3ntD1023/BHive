@@ -5,22 +5,22 @@
 
 namespace BHive
 {
-	ResourceHandle MaterialFactory::Create(const std::string &shaderName)
+	MaterialPtr MaterialFactory::Create(const std::string &shaderName)
 	{
 		return CreateResource<Material>(shaderName);
 	}
 
-	ResourceHandle MaterialFactory::CreateLambert()
+	MaterialPtr MaterialFactory::CreateLambert()
 	{
 		return CreateResource<LambertMaterial>();
 	}
 
-	ResourceHandle MaterialFactory::CreateStandard()
+	MaterialPtr MaterialFactory::CreateStandard()
 	{
 		return CreateResource<StandardMaterial>();
 	}
 
-	ResourceHandle MaterialFactory::CreateEmissive()
+	MaterialPtr MaterialFactory::CreateEmissive()
 	{
 		return CreateResource<EmissiveMaterial>();
 	}

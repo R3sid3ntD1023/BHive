@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "gfx/renderers/Renderer.h"
 #include "gfx/registries/ResourceRegistry.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {

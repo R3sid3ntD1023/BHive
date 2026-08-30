@@ -23,6 +23,7 @@
 #include "gfx/renderers/postprocess/ColorGradingMaterial.h"
 #include "gfx/imgui/IImGuiProvider.h"
 #include "core/layers/ImGuiLayer.h"
+#include "gfx/factories/MeshFactory.h"
 
 #define ENABLE_RENDERING 1
 
@@ -44,11 +45,11 @@ namespace BHive
 		{
 			std::vector<Ref<Asset>> additional_assets;
 			MeshImportResolver resolver(import_data, import_options, additional_assets);
-			mMesh = Cast<StaticMesh>(resolver.Resolve());
+			mMesh = resolver.Resolve();
 		}
 
-		mSphere = CreateRef<PSphere>(1.0f);
-		mPlane = CreateRef<PPlane>(10.f, 10.f);
+		mSphere = MeshFactory::CreateSphere(1.0f);
+		mPlane = MeshFactory::CreatePlane(10.f, 10.f);
 
 		// create materials
 		/*{
@@ -272,7 +273,7 @@ namespace BHive
 					{
 						std::vector<Ref<Asset>> additional_assets;
 						MeshImportResolver resolver(import_data, import_options, additional_assets);
-						mMesh = Cast<StaticMesh>(resolver.Resolve());
+						mMesh = resolver.Resolve();
 					}
 				}
 			}

@@ -20,12 +20,14 @@
 #include "core/layers/ImGuiLayer.h"
 #include "core/platform/Platform.h"
 #include "gfx/factories/MaterialFactory.h"
+#include "gfx/factories/MeshFactory.h"
 
 namespace BHive
 {
 	FTransform sphereTransform{{5, -1.f, 2}};
 	std::vector<FTransform> transforms;
 	ContextHandle sSphereHandle;
+	ContextHandle sPlaneHandle;
 
 	void SceneLayer::OnAttach(Application &app)
 	{
@@ -58,8 +60,8 @@ namespace BHive
 			mMesh = Cast<StaticMesh>(resolver.Resolve());
 		}*/
 
-		mMesh = CreateRef<PSphere>(1.0f);
-		mPlane = CreateRef<PPlane>(10.f, 10.0f);
+		auto mesh = MeshFactory::CreateSphere(1.0f, 32u, 32u);
+		auto plane = MeshFactory::CreatePlane(10.f, 10.f);
 
 		{
 
@@ -97,7 +99,7 @@ namespace BHive
 			for (int32_t j = -1; j <= 1; j++)
 			{
 				FMeshSubmissionRequest request{};
-				request.Mesh = mMesh;
+				request.Mesh = mesh;
 				request.Materials = mMaterialTables[2];
 				request.Transform = transforms.emplace_back(FTransform{{i * 3.0f, 0.0f, j * 3.0f}});
 				mSceneRenderer->SubmitMesh(request, sSphereHandle);
@@ -115,11 +117,12 @@ namespace BHive
 
 		// mSceneRenderer->SubmitMesh(request);
 
-		// request.Materials = mMaterialTables[1];
-		// request.Transform = FTransform{{0, 0, 0}};
-		// request.Mesh = mPlane;
+		FMeshSubmissionRequest request{};
+		request.Materials = mMaterialTables[1];
+		request.Transform = FTransform{{0, 0, 0}};
+		request.Mesh = plane;
 
-		// mSceneRenderer->SubmitMesh(request);
+		mSceneRenderer->SubmitMesh(request, sPlaneHandle);
 	}
 
 	void SceneLayer::OnDetach()
@@ -240,7 +243,7 @@ namespace BHive
 		if (ImGui::Begin("Actions"))
 		{
 			if (ImGui::Button("Remove Sphere"))
-				mSceneRenderer->UpdateMesh(sSphereHandle, nullptr);
+				mSceneRenderer->UpdateMesh(sSphereHandle, {});
 
 			if (ImGui::Button("Load Mesh"))
 			{
@@ -254,9 +257,9 @@ namespace BHive
 					{
 						std::vector<Ref<Asset>> additional_assets;
 						MeshImportResolver resolver(import_data, import_options, additional_assets);
-						mMesh = Cast<StaticMesh>(resolver.Resolve());
+						mMesh = resolver.Resolve();
 
-						mMesh->GetMaterialTable() = mMaterialTables[0];
+						mMesh.As<BaseMesh>()->GetMaterialTable() = mMaterialTables[0];
 						mSceneRenderer->UpdateMesh(sSphereHandle, mMesh);
 					}
 				}

@@ -8,17 +8,14 @@ namespace BHive
 	AnimationClip::AnimationClip(const Ref<SkeletalAnimation> &animation)
 		: mAnimation(animation)
 	{
-		auto count = animation->GetSkeleton()->GetBoneCount();
-		mBoneTransformations.resize(count, glm::identity<glm::mat4>());
 	}
 
-	void AnimationClip::Play(float dt, SkeletalPose &pose)
+	void AnimationClip::Play(float dt, SkeletalPose &pose, Skeleton *skeleton)
 	{
 		mCurrentTime += mAnimation->GetTicksPerSecond() * dt;
 		mCurrentTime = mAnimation->CalculateAnimationTimeTicks(mCurrentTime);
 
-		auto &root = mAnimation->GetSkeleton()->GetRoot();
-		ReadNodeHeirarchy(root, pose, glm::mat4(1.f), mCurrentTime);
+		ReadNodeHeirarchy(skeleton, skeleton->GetRoot(), pose, glm::mat4(1.f), mCurrentTime);
 	}
 
 	void AnimationClip::PlayFromStart()
@@ -39,13 +36,10 @@ namespace BHive
 	void AnimationClip::SetSkeletalAnimation(const Ref<SkeletalAnimation> &animation)
 	{
 		mAnimation = animation;
-		auto count = animation->GetSkeleton()->GetBoneCount();
-		mBoneTransformations.resize(count, glm::mat4(1.f));
 	}
 
-	void AnimationClip::ReadNodeHeirarchy(const SkeletalNode &node, SkeletalPose &pose, const glm::mat4 &parent, float time)
+	void AnimationClip::ReadNodeHeirarchy(Skeleton *skeleton, const SkeletalNode &node, SkeletalPose &pose, const glm::mat4 &parent, float time)
 	{
-		auto skeleton = mAnimation->GetSkeleton();
 		auto node_transformation = node.mTransformation;
 		auto bone = skeleton->FindBone(node.mName);
 
@@ -71,7 +65,7 @@ namespace BHive
 
 		for (auto &child : node.mChildren)
 		{
-			ReadNodeHeirarchy(child, pose, global_transformation, mCurrentTime);
+			ReadNodeHeirarchy(skeleton, child, pose, global_transformation, mCurrentTime);
 		}
 	}
 

@@ -45,7 +45,10 @@ namespace BHive
 
 		mAPI->Init();
 
+		// register resource registries
 		RegisterResourceRegistry<ResourceRegistry, Material>();
+		RegisterResourceRegistry<ResourceRegistry, BaseMesh>();
+
 		PipelineRegistry::Initialize();
 
 		mData = CreateRef<RenderData>();

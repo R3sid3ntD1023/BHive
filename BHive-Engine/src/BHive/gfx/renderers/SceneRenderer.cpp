@@ -34,7 +34,7 @@ namespace BHive
 	struct RenderBatch
 	{
 		// vao -> material[submissions]
-		std::unordered_map<Ref<VertexArray>, std::unordered_map<ResourceHandle, std::vector<FSubMeshSubmission>>> MaterialBatches;
+		std::unordered_map<Ref<VertexArray>, std::unordered_map<MaterialPtr, std::vector<FSubMeshSubmission>>> MaterialBatches;
 
 		std::vector<ObjectData> ObjectDatas;
 
@@ -72,7 +72,7 @@ namespace BHive
 
 				// submesh data
 				auto &group = MaterialBatches[vao];
-				auto &submissions = group[o.MaterialHandle];
+				auto &submissions = group[o.Material];
 
 				auto &submission = submissions.emplace_back(o);
 				submission.MeshIndex = objectID;
@@ -370,7 +370,7 @@ namespace BHive
 		mRenderQueue->OnQueueChanged.Broadcast();
 	}
 
-	void SceneRenderer::UpdateMesh(ContextHandle requestHandle, Ref<BaseMesh> mesh)
+	void SceneRenderer::UpdateMesh(ContextHandle requestHandle, MeshPtr mesh)
 	{
 		mRenderQueue->RemoveSubmissionsForContext(requestHandle);
 

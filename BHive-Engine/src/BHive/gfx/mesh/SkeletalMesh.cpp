@@ -3,11 +3,11 @@
 namespace BHive
 {
 
-	SkeletalMesh::SkeletalMesh(const FMeshData &mesh_data, const Ref<Skeleton> &skeleton)
+	SkeletalMesh::SkeletalMesh(const FMeshData &mesh_data, Skeleton *skeleton)
 		: BaseMesh(mesh_data),
 		  mSkeleton(skeleton)
 	{
-		mDefaultPose = CreateRef<SkeletalPose>(mSkeleton.get());
+		mDefaultPose = CreateRef<SkeletalPose>(mSkeleton);
 	}
 
 	AABB SkeletalMesh::GetBoundingBox() const
@@ -20,23 +20,6 @@ namespace BHive
 		auto max = root_transform * glm::vec4(bounds.Max, 1);
 
 		return {min, max};
-	}
-
-	void SkeletalMesh::Save(cereal::BinaryOutputArchive &ar) const
-	{
-		BaseMesh::Save(ar);
-
-		ar(TAssetHandle(mSkeleton));
-	}
-
-	void SkeletalMesh::Load(cereal::BinaryInputArchive &ar)
-	{
-		BaseMesh::Load(ar);
-
-		ar(TAssetHandle(mSkeleton));
-
-		if (mSkeleton)
-			mDefaultPose = CreateRef<SkeletalPose>(mSkeleton.get());
 	}
 
 	REFLECT(SkeletalMesh)
