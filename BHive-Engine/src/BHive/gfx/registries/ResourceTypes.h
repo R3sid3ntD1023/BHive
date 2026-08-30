@@ -5,4 +5,5 @@
 namespace BHive
 {
 	REGISTER_TYPE(Material)
+	REGISTER_TYPE(Texture)
 }
