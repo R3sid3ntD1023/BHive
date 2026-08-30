@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/core.h"
-#include "MeshImportData.h"
+#include "MeshImporter.h"
 #include "gfx/material/MaterialTable.h"
 #include "gfx/registries/Handles.h"
 
@@ -33,38 +33,26 @@ namespace BHive
 		MaterialTable OverideMaterials;
 	};
 
-	using LoadTextureSigniture = std::function<Ref<Texture>(const std::filesystem::path &)>;
-	using LoadTextureMemorySigniture = std::function<Ref<Texture>(const uint8_t *data, size_t size)>;
-
 	class BHIVE_API MeshImportResolver
 	{
 	public:
-		using CreateMaterialSigniture = std::function<Ref<Material>()>;
-		using AdditionalAssets = std::vector<Ref<Asset>>;
+		using AdditionalAssets = std::vector<ResourceHandle>;
 
 	public:
-		MeshImportResolver(const FMeshImportData &data, const FMeshImportOptions &options, AdditionalAssets &additional_assets);
+		MeshImportResolver(const FMeshImportOptions &options);
 
-		MeshPtr Resolve();
+		MeshPtr Resolve(const DecodedMesh &decodedMesh);
 
-		void SetLoaders(typename LoadTextureSigniture load_texture_func, typename LoadTextureMemorySigniture load_texture_memory_func, typename CreateMaterialSigniture create_material_func);
-
-	private:
-		SkeletalAnimationPtr ResolveAnimations();
-
-		void ResolveMaterials(MaterialTable &material_table);
+		const AdditionalAssets &GetAdditonalAssets() const { return mAdditionalAssets; }
 
 	private:
-		const FMeshImportData &mData;
-		const FMeshImportOptions &mOptions;
+		void ResolveAnimations(const std::vector<DecodedAnimation> &animations);
 
-		AdditionalAssets &mAdditionalAssets;
-		std::string mAssetName;
-		SkeletonPtr mSkeleton; // Used for skeletal meshes
+		void ResolveMaterials(const std::vector<DecodedMaterial> &materials, MaterialTable &material_table);
 
-		LoadTextureSigniture LoadTextureFunc;
-		LoadTextureMemorySigniture LoadTextureMemoryFunc;
-		CreateMaterialSigniture CreateMaterialFunc;
+	private:
+		FMeshImportOptions mOptions;
+		AdditionalAssets mAdditionalAssets;
 	};
 
 } // namespace BHive

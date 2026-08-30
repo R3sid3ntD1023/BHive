@@ -5,158 +5,109 @@
 #include "MeshImportResolver.h"
 #include "gfx/factories/MaterialFactory.h"
 #include "gfx/factories/MeshFactory.h"
+#include "gfx/factories/TextureFactory.h"
+#include "TextureImporter.h"
 
 namespace BHive
 {
 	struct TextureResolver
 	{
-		TextureResolver(LoadTextureSigniture loadTextureFunc, LoadTextureMemorySigniture loadTextureMemoryFunc)
-			: mLoadTextureFunc(loadTextureFunc),
-			  mLoadTextureMemoryFunc(loadTextureMemoryFunc)
+		DecodedTexture Resolve(const EmbeddedTexture &texture, const std::filesystem::path &parent_path)
 		{
-		}
+			auto name = texture.Path.filename().string();
+			auto hash = std::hash<std::string>()(name);
 
-		Ref<Texture> &Resolve(const FTextureData &data, const std::filesystem::path &parent_path)
-		{
-
-			auto &texture_asset = mLoadedTextures[data.get_name()];
-			if (!texture_asset)
+			if (!mLoadedTextures.contains(hash))
 			{
-				if (!data.is_embedded())
+				if (!texture.Source == EmbeddedTexture::External)
 				{
-					texture_asset = mLoadTextureFunc(parent_path / data.Path);
+					return TextureLoader::FromFile(parent_path / texture.Path);
 				}
 				else
 				{
-					texture_asset = mLoadTextureMemoryFunc(data.EmbeddedData, data.EmbeddedData.GetSize());
+					return TextureLoader::LoadFromMemory(texture.EmbeddedData, texture.EmbeddedData.GetSize());
 				}
-
-				texture_asset->SetName(data.get_name());
 			}
-
-			return texture_asset;
 		}
 
 	private:
-		LoadTextureSigniture mLoadTextureFunc;
-		LoadTextureMemorySigniture mLoadTextureMemoryFunc;
-
-		std::unordered_map<std::string, Ref<Texture>> mLoadedTextures;
+		std::set<uint64_t> mLoadedTextures;
 	};
 
-	MeshImportResolver::MeshImportResolver(const FMeshImportData &data, const FMeshImportOptions &options, AdditionalAssets &additional)
-		: mData(data),
-		  mOptions(options),
-		  mAdditionalAssets(additional)
+	MeshImportResolver::MeshImportResolver(const FMeshImportOptions &options)
+		: mOptions(options)
 	{
 	}
 
-	void MeshImportResolver::SetLoaders(LoadTextureSigniture load_texture, LoadTextureMemorySigniture load_texture_memory, CreateMaterialSigniture create_material)
-	{
-		LoadTextureFunc = std::move(load_texture);
-		LoadTextureMemoryFunc = std::move(load_texture_memory);
-		CreateMaterialFunc = std::move(create_material);
-	}
-
-	MeshPtr MeshImportResolver::Resolve()
+	MeshPtr MeshImportResolver::Resolve(const DecodedMesh &decodedMesh)
 	{
 		MeshPtr asset{};
 
-		mAssetName = mOptions.AssetPath.stem().string();
+		auto name = mOptions.AssetPath.stem().string();
+		auto skeleton = mOptions.Skeleton;
+
 		switch (mOptions.MeshType)
 		{
 		case EMeshType::StaticMesh:
 		{
-			asset = MeshFactory::CreateStatic(mData.mMeshData);
-
+			asset = MeshFactory::CreateStatic(decodedMesh.MeshData);
 			break;
 		}
 		case EMeshType::SkeletalMesh:
 		{
-			mSkeleton = mOptions.Skeleton;
-			if (!mSkeleton)
+			if (!skeleton)
 			{
-				mSkeleton = SkeletonFactory::Create(mData.mBoneData, mData.mSkeletonHeirarchyData);
-
-				mSkeleton.As<Skeleton>()->SetName(mAssetName + "_Skeleton");
-				// mAdditionalAssets.push_back(mSkeleton);
+				skeleton = SkeletonFactory::Create(decodedMesh.Bones, decodedMesh.BoneHeirarchy);
+				mAdditionalAssets.push_back(skeleton);
 			}
-
-			asset = MeshFactory::CreateSkeletal(mData.mMeshData, mSkeleton);
 
 			if (mOptions.ImportAnimations)
 			{
-				// mAdditionalAssets.push_back(ResolveAnimations());
+				ResolveAnimations(decodedMesh.Animations);
 			}
 
+			asset = MeshFactory::CreateSkeletal(decodedMesh.MeshData, skeleton);
 			break;
 		}
 		case EMeshType::SkeletalAnimation:
 		{
-			if (mData.mAnimationData.empty())
+			if (!decodedMesh.Animations.empty())
 			{
-				return {}; // No animations to import
+				if (!skeleton)
+				{
+					skeleton = SkeletonFactory::Create(decodedMesh.Bones, decodedMesh.BoneHeirarchy);
+					mAdditionalAssets.push_back(skeleton);
+				}
+
+				ResolveAnimations(decodedMesh.Animations);
 			}
-			mSkeleton = mOptions.Skeleton;
-			if (!mSkeleton)
-			{
-				mSkeleton = SkeletonFactory::Create(mData.mBoneData, mData.mSkeletonHeirarchyData);
-				mSkeleton.As<Skeleton>()->SetName(mAssetName + "_Skeleton");
-				// mAdditionalAssets.push_back(mSkeleton);
-			}
-			asset = ResolveAnimations();
+
 			break;
 		}
 		}
 
 		if (auto mesh = asset.As<BaseMesh>(); mesh && mOptions.ImportMaterials)
 		{
-			ResolveMaterials(mesh->GetMaterialTable());
+			ResolveMaterials(decodedMesh.Materials, mesh->GetMaterialTable());
 		}
-
-		asset.As<Asset>()->SetName(mAssetName);
 
 		return asset;
 	}
 
-	SkeletalAnimationPtr MeshImportResolver::ResolveAnimations()
+	void MeshImportResolver::ResolveAnimations(const std::vector<DecodedAnimation> &animations)
 	{
-		size_t num_animations = mData.mAnimationData.size();
-		std::vector<SkeletalAnimationPtr> animations(num_animations);
-
-		for (size_t i = 0; i < num_animations; i++)
+		for (auto &decoded : animations)
 		{
-			auto &data = mData.mAnimationData[i];
-
-			std::string anim_name = std::format("{}_Animation({})", mAssetName, i);
-
-			animations[i] = SkeletalAnimationFactory::Create(data.mDuration, data.TicksPerSecond, data.mFrames, data.mGlobalInverseMatrix);
-			animations[i].As<SkeletalAnimation>()->SetName(anim_name);
+			auto anim = SkeletalAnimationFactory::Create(decoded.Duration, decoded.TicksPerSecond, decoded.Frames, decoded.GlobalInverseMatrix);
+			mAdditionalAssets.emplace_back(anim);
 		}
-
-		if (num_animations > 1)
-		{
-			for (size_t i = 1; i < animations.size(); i++)
-			{
-				// mAdditionalAssets.push_back(animations[i]);
-			}
-		}
-
-		return animations[0];
 	}
 
-	void MeshImportResolver::ResolveMaterials(MaterialTable &material_table)
+	void MeshImportResolver::ResolveMaterials(const std::vector<DecodedMaterial> &materials, MaterialTable &material_table)
 	{
-		/*ASSERT(LoadTextureFunc);
-		ASSERT(LoadTextureMemoryFunc);
-		ASSERT(CreateMaterialFunc);*/
+		TextureResolver resolver{};
 
-		if (!LoadTextureFunc || !LoadTextureMemoryFunc || !CreateMaterialFunc)
-			return;
-
-		TextureResolver texture_resolver(LoadTextureFunc, LoadTextureMemoryFunc);
-
-		size_t num_materials = mData.mMaterialData.size();
+		size_t num_materials = materials.size();
 
 		material_table.Resize(num_materials);
 
@@ -170,28 +121,22 @@ namespace BHive
 				materialHandle = MaterialFactory::CreateLambert();
 				auto material = materialHandle.As<Material>();
 
-				const auto &material_data = mData.mMaterialData[i];
-				const auto &textures = material_data.mTextureData;
+				const auto &material_data = materials[i];
+				const auto &textures = material_data.Textures;
 				const auto num_textures = textures.size();
 
 				for (size_t texIdx = 0; texIdx < num_textures; texIdx++)
 				{
-					auto &texture_data = textures[texIdx];
+					auto &texture = textures[texIdx];
 
-					auto &texture_asset = texture_resolver.Resolve(texture_data, mOptions.AssetPath.parent_path());
+					auto decoded = resolver.Resolve(texture, mOptions.AssetPath.parent_path());
+					auto handle = TextureFactory::Create2D(decoded);
 
-					if (texture_asset)
+					if (handle)
 					{
-						mAdditionalAssets.push_back(texture_asset);
-						material->SetTexture(texture_data.Type.c_str(), FTextureBinding(texture_asset));
+						mAdditionalAssets.push_back(handle);
 					}
 				}
-
-				auto material_name = material_data.mName.empty() ? std::format("{}({})", mAssetName, i) : material_data.mName;
-
-				material->SetName(material_name);
-
-				// mAdditionalAssets.emplace_back(materialHandle);
 			}
 
 			material_table.Set(materialHandle, (uint32_t)i);

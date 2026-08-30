@@ -254,18 +254,14 @@ namespace BHive
 				auto info = Platform::OpenFile("Mesh (*.glb;*.gltf)\0*.glb;*.gltf\0");
 				if (info)
 				{
-					FMeshImportData import_data{};
 					FMeshImportOptions import_options{.OverideMaterials = mMaterialTables[0]};
 
-					if (MeshImporter::Import(info, import_data))
-					{
-						std::vector<Ref<Asset>> additional_assets;
-						MeshImportResolver resolver(import_data, import_options, additional_assets);
-						mMesh = resolver.Resolve();
+					auto decoded = MeshImporter::Import(info);
+					MeshImportResolver resolver(import_options);
+					mMesh = resolver.Resolve(decoded);
 
-						mMesh.As<BaseMesh>()->GetMaterialTable() = mMaterialTables[0];
-						mSceneRenderer->UpdateMesh(sSphereHandle, mMesh);
-					}
+					mMesh.As<BaseMesh>()->GetMaterialTable() = mMaterialTables[0];
+					mSceneRenderer->UpdateMesh(sSphereHandle, mMesh);
 				}
 			}
 		}

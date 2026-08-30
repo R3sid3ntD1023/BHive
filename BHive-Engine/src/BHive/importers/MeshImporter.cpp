@@ -18,7 +18,6 @@ namespace BHive
 			bool finished = percentage == 1.f;
 			auto str = std::format("\rLoading... {:.2f}%", percentage * 100.0f);
 			std::cout << str << (!finished ? "" : "\n");
-
 			return finished;
 		}
 	};
@@ -97,9 +96,9 @@ namespace BHive
 			}
 		}
 
-		FSubMesh ParseMesh(const aiScene *scene, const aiMatrix4x4 &matrix, const aiMesh *mesh, FMeshImportData &import_data)
+		FSubMesh ParseMesh(const aiScene *scene, const aiMatrix4x4 &matrix, const aiMesh *mesh, DecodedMesh &out)
 		{
-			FMeshData &data = import_data.mMeshData;
+			FMeshData &data = out.MeshData;
 
 			auto node_matrix = utils::make_mat4(matrix);
 
@@ -174,8 +173,7 @@ namespace BHive
 			// proccess bones
 			if (mesh->HasBones())
 			{
-				// LOG_TRACE("Mesh has Bones {}", mesh->mName.C_Str());
-				ExtractBoneWeightsForVertices(import_data.mBoneData, vertices, mesh);
+				ExtractBoneWeightsForVertices(out.Bones, vertices, mesh);
 			}
 
 			data.mVertices.insert(data.mVertices.end(), vertices.begin(), vertices.end());
@@ -184,32 +182,32 @@ namespace BHive
 			return sub_mesh;
 		}
 
-		void ProcessNode(const aiScene *scene, const aiNode *node, const aiMatrix4x4 &parent, FMeshImportData &data)
+		void ProcessNode(const aiScene *scene, const aiNode *node, const aiMatrix4x4 &parent, DecodedMesh &out)
 		{
 
 			for (unsigned i = 0; i < node->mNumMeshes; i++)
 			{
 				aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-				auto submesh = ParseMesh(scene, parent * node->mTransformation, mesh, data);
-				data.mMeshData.mSubMeshes.emplace_back(submesh);
+				auto submesh = ParseMesh(scene, parent * node->mTransformation, mesh, out);
+				out.MeshData.mSubMeshes.emplace_back(submesh);
 			}
 
 			for (unsigned i = 0; i < node->mNumChildren; i++)
 			{
-				ProcessNode(scene, node->mChildren[i], parent * node->mTransformation, data);
+				ProcessNode(scene, node->mChildren[i], parent * node->mTransformation, out);
 			}
 		}
 
-		void GetNodeHeiracrchy(aiNode *node, SkeletalNode &data)
+		void GetNodeHeiracrchy(aiNode *node, SkeletalNode &out)
 		{
-			data.mName = node->mName.C_Str();
-			data.mTransformation = make_mat4(node->mTransformation);
+			out.mName = node->mName.C_Str();
+			out.mTransformation = make_mat4(node->mTransformation);
 
 			for (unsigned int i = 0; i < node->mNumChildren; i++)
 			{
 				SkeletalNode child_data;
 				GetNodeHeiracrchy(node->mChildren[i], child_data);
-				data.mChildren.push_back(child_data);
+				out.mChildren.push_back(child_data);
 			}
 		}
 
@@ -276,7 +274,7 @@ namespace BHive
 			}
 		}
 
-		void GetAnimationData(const aiScene *scene, std::vector<FImportedAnimationData> &data, Bones &bones)
+		void GetAnimationData(const aiScene *scene, std::vector<DecodedAnimation> &animations, Bones &bones)
 		{
 			aiMatrix4x4 global_inverse_matrix = scene->mRootNode->mTransformation;
 			global_inverse_matrix = global_inverse_matrix.Inverse();
@@ -302,29 +300,30 @@ namespace BHive
 					LOG_TRACE("Added frames for bone{} ", bone_name);
 				}
 
-				FImportedAnimationData animation_data;
-				animation_data.mName = animation->mName.C_Str();
-				animation_data.mDuration = (float)animation->mDuration;
-				animation_data.TicksPerSecond = (float)animation->mTicksPerSecond;
-				animation_data.mFrames = frames;
-				animation_data.mGlobalInverseMatrix = make_mat4(global_inverse_matrix);
+				DecodedAnimation anim{};
+				anim.Name = animation->mName.C_Str();
+				anim.Duration = (float)animation->mDuration;
+				anim.TicksPerSecond = (float)animation->mTicksPerSecond;
+				anim.Frames = frames;
+				anim.GlobalInverseMatrix = make_mat4(global_inverse_matrix);
 
-				data.emplace_back(animation_data);
+				animations.emplace_back(anim);
 			}
 		}
 
-		void GetTextureData(const aiScene *scene, aiString &str, FTextureData &data)
+		EmbeddedTexture GetTextureData(const aiScene *scene, aiString &str)
 		{
-			data.Path = str.C_Str();
+			EmbeddedTexture out{};
+			out.Path = str.C_Str();
 
-			if (auto embedded_texture = scene->GetEmbeddedTexture(str.C_Str()))
+			if (auto embedded = scene->GetEmbeddedTexture(str.C_Str()))
 			{
-				auto size = embedded_texture->mWidth + embedded_texture->mHeight;
-
-				data.EmbeddedData.Allocate(embedded_texture->pcData, size);
+				auto size = embedded->mWidth + embedded->mHeight;
+				out.EmbeddedData.Allocate(embedded->pcData, size);
+				out.Type = EmbeddedTexture::Embedded;
 			}
 
-			LOG_TRACE("Found texture", data.get_name());
+			return out;
 		}
 
 		std::string GetTextureType(aiTextureType aiType)
@@ -390,7 +389,7 @@ namespace BHive
 			return "";
 		}
 
-		void GetMaterialData(const aiScene *scene, std::vector<FMaterialData> &materials)
+		void GetMaterialData(const aiScene *scene, std::vector<DecodedMaterial> &materials)
 		{
 			static aiTextureType supported_textures[] = {
 
@@ -407,22 +406,23 @@ namespace BHive
 			{
 
 				auto loaded_material = scene->mMaterials[i];
-				auto &material = materials[i];
+				auto name = loaded_material->GetName().C_Str();
 
-				material.mName = loaded_material->GetName().C_Str();
+				auto &material = materials[i];
+				material.Name = name;
+				auto &textures = material.Textures;
 
 				for (unsigned j = 1; j < 9; j++)
 				{
 					if (loaded_material->GetTexture(supported_textures[j], 0, &str) == aiReturn_SUCCESS)
 					{
-						if (!material.mLoadedTextureNames.contains(str.C_Str()))
+						auto texName = str.C_Str();
+						auto it = std::find_if(textures.begin(), textures.end(), [texName](const auto &t) { return t.GetName() == texName; });
+						if (it == textures.end())
 						{
-							FTextureData texture_data;
-							texture_data.Type = GetTextureType(supported_textures[j]);
-							GetTextureData(scene, str, texture_data);
-
-							material.mTextureData.push_back(texture_data);
-							material.mLoadedTextureNames.insert(str.C_Str());
+							EmbeddedTexture texture = GetTextureData(scene, str);
+							texture.Type = GetTextureType(supported_textures[j]);
+							material.Textures.emplace_back(texture);
 						}
 					}
 				}
@@ -432,40 +432,44 @@ namespace BHive
 				float roughness = 1.0f;
 
 				if (aiGetMaterialColor(loaded_material, AI_MATKEY_BASE_COLOR, &albedo) == aiReturn_SUCCESS)
-					material.mAlbedo = {albedo.r, albedo.g, albedo.b, albedo.a};
+					material.Albedo = {albedo.r, albedo.g, albedo.b, albedo.a};
 				if (aiGetMaterialFloat(loaded_material, AI_MATKEY_METALLIC_FACTOR, &metallic) == aiReturn_SUCCESS)
-					material.mMetallic = metallic;
+					material.Metallic = metallic;
 				if (aiGetMaterialFloat(loaded_material, AI_MATKEY_METALLIC_FACTOR, &roughness) == aiReturn_SUCCESS)
-					material.mRoughness = roughness;
+					material.Roughness = roughness;
 			}
 		}
 
-		void ProcessScene(const aiScene *scene, FMeshImportData &data)
+		void ProcessScene(const aiScene *scene, DecodedMesh &out)
 		{
 			aiMatrix4x4 root;
-			utils::ProcessNode(scene, scene->mRootNode, root, data);
-			utils::GetNodeHeiracrchy(scene->mRootNode, data.mSkeletonHeirarchyData);
-			utils::GetMaterialData(scene, data.mMaterialData);
-			utils::GetAnimationData(scene, data.mAnimationData, data.mBoneData);
+			utils::ProcessNode(scene, scene->mRootNode, root, out);
+			utils::GetNodeHeiracrchy(scene->mRootNode, out.BoneHeirarchy);
+			utils::GetMaterialData(scene, out.Materials);
+			utils::GetAnimationData(scene, out.Animations, out.Bones);
 		}
 
 	} // namespace utils
 
-	bool MeshImporter::Import(const std::filesystem::path &path, FMeshImportData &data)
+	DecodedMesh MeshImporter::Import(const std::filesystem::path &path)
 	{
 		Assimp::Importer importer;
 		importer.SetProgressHandler(new ModelProgress());
 		int flags = aiProcessPreset_TargetRealtime_Fast;
 		const aiScene *scene = importer.ReadFile(path.string().c_str(), (unsigned)flags);
 
+		DecodedMesh decoded{};
+
 		if (!scene || !scene->mRootNode)
 		{
 			LOG_ERROR("MeshImporter::Error - {}", importer.GetErrorString());
-			return false;
+		}
+		else
+		{
+			utils::ProcessScene(scene, decoded);
+			decoded.Path = path;
 		}
 
-		utils::ProcessScene(scene, data);
-
-		return true;
+		return decoded;
 	}
 } // namespace BHive

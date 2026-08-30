@@ -41,15 +41,12 @@ namespace BHive
 		mTexture = Texture2D::Create(decodedSprite.Size, decodedSprite.CreateInfo, decodedSprite.Data);
 
 		// create mesh
-		FMeshImportData import_data{};
 		FMeshImportOptions import_options{.ImportMaterials = false};
 
-		if (MeshImporter::Import("C:/Users/dariu/Documents/Cube.glb", import_data))
-		{
-			std::vector<Ref<Asset>> additional_assets;
-			MeshImportResolver resolver(import_data, import_options, additional_assets);
-			mMesh = resolver.Resolve();
-		}
+		auto decoded = MeshImporter::Import("C:/Users/dariu/Documents/Cube.glb");
+		std::vector<Ref<Asset>> additional_assets;
+		MeshImportResolver resolver(import_options);
+		mMesh = resolver.Resolve(decoded);
 
 		mSphere = MeshFactory::CreateSphere(1.0f);
 		mPlane = MeshFactory::CreatePlane(10.f, 10.f);
@@ -269,15 +266,10 @@ namespace BHive
 				auto info = Platform::OpenFile("Mesh (*.glb;*.gltf)\0*.glb;*.gltf\0");
 				if (info)
 				{
-					FMeshImportData import_data{};
 					FMeshImportOptions import_options{};
-
-					if (MeshImporter::Import(info, import_data))
-					{
-						std::vector<Ref<Asset>> additional_assets;
-						MeshImportResolver resolver(import_data, import_options, additional_assets);
-						mMesh = resolver.Resolve();
-					}
+					auto decoded = MeshImporter::Import(info);
+					MeshImportResolver resolver(import_options);
+					mMesh = resolver.Resolve(decoded);
 				}
 			}
 
