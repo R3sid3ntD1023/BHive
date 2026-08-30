@@ -7,23 +7,24 @@ namespace BHive
 {
 	class Texture2D;
 
-	struct BHIVE_API FTextureOverride
+	struct BHIVE_API DecodedTexture
 	{
-		int32_t Width = 0, Height = 0;
-
-		bool Resize() const { return Width != 0 && Height != 0; }
+		glm::uvec3 Size{0, 0, 0}; // w, h, c
+		Buffer Data;			  // data
+		FTextureCreateInfo CreateInfo{};
 	};
 
 	struct BHIVE_API TextureLoader
 	{
-		static bool LoadImageData(const std::filesystem::path &file, int32_t &w, int32_t &h, int32_t &c, uint8_t *&data, int32_t flip = 1);
+		static bool LoadImageData(const std::filesystem::path &file, int32_t &w, int32_t &h, int32_t &c, Buffer &buf, int32_t flip = 1);
 
-		static Ref<Texture2D> Import(const std::filesystem::path &file, const FTextureOverride &override = {});
+		static DecodedTexture FromFile(const std::filesystem::path &file);
 
-		static Ref<Texture2D> LoadFromMemory(const uint8_t *data, int length);
+		static DecodedTexture LoadFromMemory(const uint8_t *data, int length);
+
+		static void Resize(DecodedTexture &decodedTexture, const glm::uvec2 &requestedSize);
 
 	private:
-		static Ref<Texture2D> CreateOrResizeTexture(const std::string &name, int32_t w, int32_t h, int32_t c, uint8_t *data, size_t size, bool hdr, const FTextureOverride &override);
-
+		static DecodedTexture CreateDecodedTexture(const std::string &name, const glm::uvec3 &size, const Buffer &buf, bool hdr);
 	};
 } // namespace BHive

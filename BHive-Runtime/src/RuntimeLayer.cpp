@@ -35,7 +35,10 @@ namespace BHive
 
 	void RuntimeLayer::OnAttach(Application &app)
 	{
-		mTexture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
+		auto decodedSprite = TextureLoader::FromFile("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg");
+		auto decodedEnviroment = TextureLoader::FromFile(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
+
+		mTexture = Texture2D::Create(decodedSprite.Size, decodedSprite.CreateInfo, decodedSprite.Data);
 
 		// create mesh
 		FMeshImportData import_data{};
@@ -85,7 +88,7 @@ namespace BHive
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Init(mViewportSize);
-		mSceneRenderer->SetEnvironmentTexture(TextureLoader::Import(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr"));
+		mSceneRenderer->SetEnvironmentTexture(Texture2D::Create(decodedEnviroment.Size, decodedEnviroment.CreateInfo, decodedEnviroment.Data));
 
 		mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
 		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
@@ -283,7 +286,9 @@ namespace BHive
 				auto info = Platform::OpenFile("HDR (*.hdr;)\0*.hdr;\0");
 				if (info)
 				{
-					auto tex = TextureLoader::Import(info);
+					auto decodedEnironment = TextureLoader::FromFile(info.Path);
+					auto tex = Texture2D::Create(decodedEnironment.Size, decodedEnironment.CreateInfo, decodedEnironment.Data);
+
 					mSceneRenderer->SetEnvironmentTexture(tex);
 
 					auto &environment = mSceneRenderer->GetEnvironmentSystem();

@@ -58,5 +58,10 @@ namespace BHive
 		MaterialTable mMaterialTable;
 	};
 
+	struct BHIVE_API MeshUtils
+	{
+		static void CalculateTangentsAndBitTangents(FVertex *vertices, size_t size);
+	};
+
 	REFLECT_EXTERN(BaseMesh)
 } // namespace BHive

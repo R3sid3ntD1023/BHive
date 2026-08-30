@@ -56,11 +56,11 @@ namespace BHive
 			{.Position = {-s, -s, -s}, .TexCoord = {0, 1}, .Normal = {0, -1, 0}, .Color = {1, 0, 1, 1}},
 		};
 
-		StaticMesh::CalculateTangentsAndBitTangents(vertices.data(), vertices.size());
-
-		std::vector<uint32_t> indces = {
+		static std::vector<uint32_t> indces = {
 			0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 8, 9, 10, 10, 11, 8, 12, 13, 14, 14, 15, 12, 16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20,
 		};
+
+		MeshUtils::CalculateTangentsAndBitTangents(vertices.data(), vertices.size());
 
 		FMeshData data{};
 		data.mVertices = vertices;
@@ -124,7 +124,7 @@ namespace BHive
 			indices.push_back(i + 1);
 		}
 
-		StaticMesh::CalculateTangentsAndBitTangents(vertices.data(), vertices.size());
+		MeshUtils::CalculateTangentsAndBitTangents(vertices.data(), vertices.size());
 
 		FMeshData data{};
 		data.mVertices = vertices;
@@ -149,8 +149,6 @@ namespace BHive
 		std::vector<FVertex> vertices
 			= {FVertex{.Position = {-w, 0, h}, .TexCoord = {0, 1}, .Normal = normal}, FVertex{.Position = {w, 0, h}, .TexCoord = {1, 1}, .Normal = normal},
 			   FVertex{.Position = {w, 0, -h}, .TexCoord = {1, 0}, .Normal = normal}, FVertex{.Position = {-w, 0, -h}, .TexCoord = {0, 0}, .Normal = normal}};
-
-		// CalculateTangentsAndBitTangents(vertices.data(), 4);
 
 		FMeshData data;
 		data.mIndices = {0, 1, 2, 2, 3, 0};

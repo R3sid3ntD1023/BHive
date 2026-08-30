@@ -7,7 +7,7 @@
 
 namespace BHive
 {
-	namespace utils
+	namespace TextureUtils
 	{
 		EFormat GetFormatFromChannels(int32_t channels)
 		{
@@ -43,17 +43,26 @@ namespace BHive
 			ASSERT(false);
 			return EFormat::None;
 		}
-	} // namespace utils
 
-	bool TextureLoader::LoadImageData(const std::filesystem::path &file, int32_t &w, int32_t &h, int32_t &c, uint8_t *&data, int32_t flip)
+		bool IsHDR(EFormat format)
+		{
+			return format == EFormat::RGB32F || format == EFormat::RGBA32F;
+		}
+	} // namespace TextureUtils
+
+	bool TextureLoader::LoadImageData(const std::filesystem::path &file, int32_t &w, int32_t &h, int32_t &c, Buffer &buf, int32_t flip)
 	{
 		auto path_str = file.string();
 		bool is_hdr = stbi_is_hdr(path_str.c_str());
 		stbi_set_flip_vertically_on_load(flip);
 
+		stbi_uc *data = nullptr;
+		size_t stride = sizeof(stbi_uc);
+
 		if (is_hdr)
 		{
 			data = (stbi_uc *)stbi_loadf(path_str.c_str(), &w, &h, &c, 4);
+			stride = sizeof(float);
 		}
 		else
 		{
@@ -66,33 +75,33 @@ namespace BHive
 			return false;
 		}
 
+		buf.Allocate(data, w * h * c * stride);
+
 		return true;
 	}
 
-	Ref<Texture2D> TextureLoader::CreateOrResizeTexture(const std::string& name, int32_t w, int32_t h, int32_t c, uint8_t *data, size_t size, bool hdr, const FTextureOverride &override)
+	DecodedTexture TextureLoader::CreateDecodedTexture(const std::string &name, const glm::uvec3 &size, const Buffer &buf, bool hdr)
 	{
-		FTextureCreateInfo create_info{};
-		create_info.Format = hdr ? utils::GetFormatFromChannelsHDR(c) : utils::GetFormatFromChannels(c);
-		create_info.MinFilter = EMinFilter::LINEAR;
-		create_info.MagFilter = EMagFilter::LINEAR;
-		create_info.WrapMode = EWrapMode::REPEAT;
-		create_info.Roles = ETextureRole::Sampled | ETextureRole::TransferDst;
-		create_info.Aspect = ETextureAspect::Color;
-		create_info.DebugName = name;
+		uint32_t c = size.z;
 
-		if (override.Resize())
-		{
-			auto new_size = override.Width * override.Height * c * (hdr ? sizeof(float) : sizeof(char)) ;
-			Buffer buffer(new_size);
-			stbir_resize_uint8_linear(data, w, h, 0, buffer.As<uint8_t>(), override.Width, override.Height, 0, (stbir_pixel_layout)c);
+		FTextureCreateInfo info{};
+		info.Format = hdr ? TextureUtils::GetFormatFromChannelsHDR(c) : TextureUtils::GetFormatFromChannels(c);
+		info.MinFilter = EMinFilter::LINEAR;
+		info.MagFilter = EMagFilter::LINEAR;
+		info.WrapMode = EWrapMode::REPEAT;
+		info.Roles = ETextureRole::Sampled | ETextureRole::TransferDst;
+		info.Aspect = ETextureAspect::Color;
+		info.DebugName = name;
 
-			return Texture2D::Create({override.Width, override.Height}, create_info, buffer);
-		}
+		DecodedTexture decoded;
+		decoded.Size = size;
+		decoded.CreateInfo = info;
+		decoded.Data = buf;
 
-		return Texture2D::Create({w, h}, create_info, Buffer(data, size));
+		return decoded;
 	}
 
-	Ref<Texture2D> TextureLoader::Import(const std::filesystem::path &file, const FTextureOverride &override)
+	DecodedTexture TextureLoader::FromFile(const std::filesystem::path &file)
 	{
 		int w = 0, h = 0, c_in = 0;
 		const int forced_channels = 4;
@@ -106,8 +115,8 @@ namespace BHive
 		size_t data_size = 0;
 		if (is_hdr)
 		{
-			image_data = (stbi_uc *)stbi_loadf(path_str.c_str(), &w, &h, &c_in, forced_channels);		
-			data_size = size_t(w ) * h * c_out * sizeof(float);
+			image_data = (stbi_uc *)stbi_loadf(path_str.c_str(), &w, &h, &c_in, forced_channels);
+			data_size = size_t(w) * h * c_out * sizeof(float);
 		}
 		else
 		{
@@ -119,21 +128,20 @@ namespace BHive
 		if (!image_data)
 		{
 			LOG_ERROR("TextureImporter::Stbi : {} - {}", file, stbi_failure_reason());
-			return nullptr;
+			return {};
 		}
 
-
-		Ref<Texture2D> texture = CreateOrResizeTexture(file.stem().string(),w, h, c_out, image_data, data_size, is_hdr, override);
+		Buffer data(image_data, data_size);
 
 		stbi_image_free(image_data);
 
-		return texture;
+		return CreateDecodedTexture(file.stem().string(), {w, h, c_out}, data, is_hdr);
 	}
 
-	Ref<Texture2D> TextureLoader::LoadFromMemory(const uint8_t *data, int length)
+	DecodedTexture TextureLoader::LoadFromMemory(const uint8_t *data, int length)
 	{
 		int w = 0, h = 0, c_in = 0;
-		int c_out  = 4, forced_channels = 4;
+		int c_out = 4, forced_channels = 4;
 		stbi_uc *image_data = nullptr;
 
 		stbi_set_flip_vertically_on_load(1);
@@ -154,13 +162,32 @@ namespace BHive
 		if (!image_data)
 		{
 			LOG_ERROR("TextureImporter::Memeory - {}", stbi_failure_reason());
-			return nullptr;
+			return {};
 		}
 
-		auto texture = CreateOrResizeTexture("Memory Created", w, h, c_out, image_data, data_size, is_hdr, {});
-
+		Buffer outData(image_data, data_size);
 		stbi_image_free(image_data);
 
-		return texture;
+		return CreateDecodedTexture("Memory Created", {w, h, c_out}, outData, is_hdr);
+	}
+
+	void TextureLoader::Resize(DecodedTexture &decodedTexture, const glm::uvec2 &requestedSize)
+	{
+		auto w = requestedSize.x;
+		auto h = requestedSize.y;
+		auto c = decodedTexture.Size.z;
+		auto hdr = TextureUtils::IsHDR(decodedTexture.CreateInfo.Format);
+		auto data = decodedTexture.Data;
+		auto old_w = decodedTexture.Size.x;
+		auto old_h = decodedTexture.Size.y;
+
+		auto new_size = w * h * c * (hdr ? sizeof(float) : sizeof(char));
+		Buffer newData(new_size);
+
+		stbir_resize_uint8_linear(data.GetData(), old_w, old_h, 0, newData.GetData(), w, h, 0, (stbir_pixel_layout)c);
+
+		decodedTexture.Data.Release();
+		decodedTexture.Size = glm::uvec3(requestedSize, c);
+		decodedTexture.Data = newData;
 	}
 } // namespace BHive

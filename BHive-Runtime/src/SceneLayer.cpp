@@ -21,6 +21,7 @@
 #include "core/platform/Platform.h"
 #include "gfx/factories/MaterialFactory.h"
 #include "gfx/factories/MeshFactory.h"
+#include "gfx/factories/TextureFactory.h"
 
 namespace BHive
 {
@@ -31,6 +32,10 @@ namespace BHive
 
 	void SceneLayer::OnAttach(Application &app)
 	{
+		auto decodeEnvironment = TextureLoader::FromFile(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
+		auto decodedSprite = TextureLoader::FromFile("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg");
+		auto decodedMario = TextureLoader::FromFile("C:/Users/dariu/Documents/BHive/projects/Mario/resources/textures/Mario.png");
+
 		auto &window = app.GetWindow();
 		auto aspect = window.GetAspectRatio();
 
@@ -44,7 +49,7 @@ namespace BHive
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Init(mViewportSize);
-		mSceneRenderer->SetEnvironmentTexture(TextureLoader::Import(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr"));
+		mSceneRenderer->SetEnvironmentTexture(Texture2D::Create(decodeEnvironment.Size, decodeEnvironment.CreateInfo, decodeEnvironment.Data));
 
 		// mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
 		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
@@ -70,16 +75,15 @@ namespace BHive
 			mMaterialTables[2].Add(MaterialFactory::CreateStandard());
 
 			{
-				auto texture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg", {});
 
+				auto texture = Texture2D::Create(decodedSprite.Size, decodedSprite.CreateInfo, decodedSprite.Data);
 				auto material = mMaterialTables[0][0].As<LambertMaterial>();
 				material->SetDiffuseColor(FColor::DarkGray).SetEmissionColor(FColor::Black);
 				material->SetTexture("DiffuseMap", {texture});
 			}
 
 			{
-				auto texture = TextureLoader::Import("C:/Users/dariu/Documents/BHive/projects/Mario/resources/textures/Mario.png", {});
-
+				auto texture = Texture2D::Create(decodedMario.Size, decodedMario.CreateInfo, decodedMario.Data);
 				auto material = mMaterialTables[1][0].As<LambertMaterial>();
 				material->SetDiffuseColor({.2f, .2f, .2f, 1.0f});
 				material->SetTexture("DiffuseMap", {texture});

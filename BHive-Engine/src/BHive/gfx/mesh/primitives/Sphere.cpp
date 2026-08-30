@@ -57,7 +57,7 @@ namespace BHive
 			indices.push_back(i + 1);
 		}
 
-		StaticMesh::CalculateTangentsAndBitTangents(vertices.data(), vertices.size());
+		MeshUtils::CalculateTangentsAndBitTangents(vertices.data(), vertices.size());
 
 		FMeshData data{};
 		data.mVertices = vertices;

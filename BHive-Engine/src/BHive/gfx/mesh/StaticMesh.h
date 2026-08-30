@@ -15,8 +15,6 @@ namespace BHive
 		StaticMesh() = default;
 		StaticMesh(const FMeshData &data);
 
-		static void CalculateTangentsAndBitTangents(FVertex *vertices, size_t size);
-
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
