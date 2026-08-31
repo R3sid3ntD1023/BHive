@@ -2,24 +2,26 @@
 #include "gfx/renderers/Renderer.h"
 #include "gfx/Pipeline.h"
 #include "gfx/Framebuffer.h"
+#include "gfx/factories/GFXFactories.h"
 
 namespace BHive
 {
 	ColorGradingMaterial::ColorGradingMaterial()
 	{
-		mMaterial = CreateScope<Material>("ColorGrading.glsl");
+		mMaterial = MaterialFactory::Create("ColorGrading.glsl");
 	}
 
 	TexturePtr ColorGradingMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
 	{
 		auto input = set.PrevOutput;
-		auto output = mFramebuffer->GetColorAttachment();
+		auto output = mFramebuffer.As<Framebuffer>()->GetColorAttachment();
 
-		mMaterial->SetTexture("uTonemapped", FTextureBinding(input));
-		mMaterial->SetParam("uLift", MaterialParam(Params.Lift));
-		mMaterial->SetParam("uGamma", MaterialParam(Params.Gamma));
-		mMaterial->SetParam("uGain", MaterialParam(Params.Gain));
-		mMaterial->SetParam("uSaturation", MaterialParam(Params.Saturation));
+		auto material = mMaterial.As<Material>();
+		material->SetTexture("uTonemapped", FTextureBinding(input));
+		material->SetParam("uLift", MaterialParam(Params.Lift));
+		material->SetParam("uGamma", MaterialParam(Params.Gamma));
+		material->SetParam("uGain", MaterialParam(Params.Gain));
+		material->SetParam("uSaturation", MaterialParam(Params.Saturation));
 
 		auto &pass = graph.AddPass("Color Grading Pass", EPassType::OffScreen);
 
@@ -27,7 +29,7 @@ namespace BHive
 		pass.UseFramebuffer(mFramebuffer);
 		pass.UseTexture(input, EImageUsage::ColorRead);
 		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
-		pass.Emplace<CmdBindMaterial>()(mMaterial.get());
+		pass.Emplace<CmdBindMaterial>()(material);
 		pass.Emplace<CmdDrawFullScreen>()();
 		pass.EndPhase();
 
@@ -52,7 +54,7 @@ namespace BHive
 		spec.DebugName = "ColorGrading";
 		spec.Size = size;
 		spec.Attachments.AddColorAttachment(color);
-		mFramebuffer = Framebuffer::Create(spec);
+		mFramebuffer = FramebufferFactory::Create(spec);
 	}
 
 	REFLECT(ColorGradingMaterial::FParams)

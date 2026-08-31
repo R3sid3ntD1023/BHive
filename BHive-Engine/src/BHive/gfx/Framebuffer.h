@@ -102,8 +102,6 @@ namespace BHive
 		virtual const FFramebufferTexture &GetColorAttachmentSpecs(uint32_t i) const = 0;
 
 		virtual const FFramebufferTexture &GetDepthAttachmentSpecs() const = 0;
-
-		static Ref<Framebuffer> Create(const FramebufferSpecification &specification);
 	};
 
 } // namespace BHive

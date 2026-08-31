@@ -14,6 +14,10 @@ namespace BHive
 	class FlipBook;
 	class Font;
 	class Texture;
+	class Framebuffer;
+	class VertexArray;
+	class BufferBase;
+	class Shader;
 
 	REGISTER_TYPE(Material)
 	REGISTER_TYPE(Texture)
@@ -24,4 +28,9 @@ namespace BHive
 	REGISTER_TYPE(FlipBook)
 	REGISTER_TYPE(SpriteSheet)
 	REGISTER_TYPE(Font)
+	REGISTER_TYPE(Framebuffer)
+	REGISTER_TYPE(VertexArray)
+	REGISTER_TYPE(BufferBase)
+	REGISTER_TYPE(Shader)
+
 } // namespace BHive

@@ -7,6 +7,7 @@
 #include "gfx/imgui/IImGuiProvider.h"
 #include "imgui.h"
 #include "gfx/renderers/Renderer.h"
+#include "gfx/factories/GFXFactories.h"
 
 namespace BHive
 {
@@ -24,15 +25,13 @@ namespace BHive
 		spec.Size = size;
 		spec.Attachments.AddColorAttachment(FFramebufferTexture{color_attachment});
 		spec.DebugName = "ImageDebugger";
-		mFB = Framebuffer::Create(spec);
+		mFB = FramebufferFactory::Create(spec);
 
-		mMaterial = CreateRef<Material>("DebugTextureViewer.glsl");
+		mMaterial = MaterialFactory::Create("DebugTextureViewer.glsl");
 	}
 
 	void ImageDebugger::Shutdown()
 	{
-		mFB.reset();
-		mMaterial.reset();
 		mTextureEntries.clear();
 	}
 
@@ -71,7 +70,8 @@ namespace BHive
 			const char *uniform = entry.IsCube ? "u_TexCube" : "u_Tex2D";
 			const auto &tex = entry.Tex;
 
-			mMaterial->SetParam("u_Type", MaterialParam(type)).SetParam("u_Mip", MaterialParam(mip)).SetParam("u_Face", MaterialParam(face)).SetTexture(uniform, FTextureBinding(tex));
+			auto material = mMaterial.As<Material>();
+			material->SetParam("u_Type", MaterialParam(type)).SetParam("u_Mip", MaterialParam(mip)).SetParam("u_Face", MaterialParam(face)).SetTexture(uniform, FTextureBinding(tex));
 
 			ImageSubresourceRange range{mip, mipLevels, face, layers};
 
@@ -80,12 +80,12 @@ namespace BHive
 			pass.BeginPhase("ImageDebugger : Render To Qaud", EPhaseType::Graphics);
 			pass.UseFramebuffer(mFB);
 			pass.UseTexture(tex, EImageUsage::ColorRead, range);
-			pass.Emplace<CmdBindMaterial>()(mMaterial.get());
+			pass.Emplace<CmdBindMaterial>()(mMaterial.As<Material>());
 			pass.Emplace<CmdDrawFullScreen>()();
 			pass.EndPhase();
 
 			pass.BeginPhase("ImageDebugger : Transition to Read", EPhaseType::Transfer);
-			pass.UseTexture(mFB->GetColorAttachment(), EImageUsage::ColorRead);
+			pass.UseTexture(mFB.As<Framebuffer>()->GetColorAttachment(), EImageUsage::ColorRead);
 			pass.EndPhase();
 
 			renderer.EndPass();
@@ -132,7 +132,7 @@ namespace BHive
 					ImGui::SliderInt("Face", &mSelectedFace, 0, 5);
 				}
 
-				auto id = IImGuiTextureProvider::GetID(*mFB->GetColorAttachment().As<Texture>());
+				auto id = IImGuiTextureProvider::GetID(*mFB.As<Framebuffer>()->GetColorAttachment().As<Texture>());
 				ImGui::Image(id, ImVec2(float(mSize.x), float(mSize.y)));
 			}
 		}

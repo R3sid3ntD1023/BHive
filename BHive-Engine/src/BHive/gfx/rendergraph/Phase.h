@@ -51,7 +51,7 @@ namespace BHive
 
 		EPhaseType Type = EPhaseType::Graphics;
 
-		Ref<Framebuffer> FBO;
+		FramebufferPtr FBO;
 
 		std::vector<FImageInfo> Images;
 

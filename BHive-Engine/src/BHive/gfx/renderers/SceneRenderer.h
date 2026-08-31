@@ -106,7 +106,7 @@ namespace BHive
 	private:
 		FRenderSettings mRenderSettings; // Render settings for the scene renderer
 
-		Ref<Framebuffer> mFramebuffer;
+		FramebufferPtr mFramebuffer;
 
 		TexturePtr mOutputTexture;
 

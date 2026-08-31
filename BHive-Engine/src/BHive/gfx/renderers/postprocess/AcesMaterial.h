@@ -5,9 +5,6 @@
 
 namespace BHive
 {
-	class Texture2D;
-	class Framebuffer;
-
 	class BHIVE_API AcesMaterial : public PostProcessMaterial
 	{
 	public:
@@ -18,8 +15,8 @@ namespace BHive
 		void Init(const glm::uvec2 &size) override;
 
 	private:
-		Ref<Framebuffer> mFramebuffer;
+		FramebufferPtr mFramebuffer;
 
-		Scope<Material> mMaterial;
+		MaterialPtr mMaterial;
 	};
 } // namespace BHive

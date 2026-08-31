@@ -50,9 +50,9 @@ namespace BHive
 		int32_t mSelectedMip = 0;
 		int32_t mSelectedFace = 0;
 
-		Ref<Framebuffer> mFB;
+		FramebufferPtr mFB;
 		Ref<Pipeline> mPipeline;
-		Ref<Material> mMaterial;
+		MaterialPtr mMaterial;
 		glm::uvec2 mSize{};
 
 		bool mHasRendered = false;

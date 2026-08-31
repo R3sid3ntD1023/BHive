@@ -2,11 +2,9 @@
 
 #include "PostProcessMaterial.h"
 #include "core/math/Math.h"
-#include "gfx/material/Material.h"
 
 namespace BHive
 {
-	class Framebuffer;
 
 	class BHIVE_API BloomMaterial : public PostProcessMaterial
 	{
@@ -38,8 +36,8 @@ namespace BHive
 		}
 
 	private:
-		std::array<Ref<Framebuffer>, 2> mFramebuffers;
-		std::array<Scope<Material>, 4> mMaterials;
+		std::array<FramebufferPtr, 2> mFramebuffers;
+		std::array<MaterialPtr, 4> mMaterials;
 		std::vector<glm::uvec2> mMipSizes;
 	};
 

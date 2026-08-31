@@ -6,8 +6,6 @@
 
 namespace BHive
 {
-	class Framebuffer;
-
 	class BHIVE_API ColorGradingMaterial : public PostProcessMaterial
 	{
 	public:
@@ -26,8 +24,8 @@ namespace BHive
 		} Params;
 
 	private:
-		Ref<Framebuffer> mFramebuffer;
-		Scope<Material> mMaterial;
+		FramebufferPtr mFramebuffer;
+		MaterialPtr mMaterial;
 	};
 
 	REFLECT_EXTERN(ColorGradingMaterial::FParams);

@@ -42,4 +42,20 @@ namespace BHive
 	using SpriteSheetPtr = ResourceHandle;
 
 	using FontPtr = ResourceHandle;
+
+	using FramebufferPtr = ResourceHandle;
+
+	using PipelinePtr = ResourceHandle;
+
+	using ShaderPtr = ResourceHandle;
+
+	using BufferPtr = ResourceHandle;
+
+	using VertexArrayPtr = ResourceHandle;
+
+	using IndexBufferPtr = ResourceHandle;
+
+	using VertexBufferPtr = ResourceHandle;
+
+	using GeneralBufferPtr = ResourceHandle;
 } // namespace BHive

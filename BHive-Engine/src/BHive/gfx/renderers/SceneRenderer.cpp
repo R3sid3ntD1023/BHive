@@ -10,7 +10,7 @@
 #include "gfx/mesh/SkeletalMesh.h"
 #include "gfx/Pipeline.h"
 #include "gfx/Query.h"
-#include "gfx/factories/MaterialFactory.h"
+#include "gfx/factories/GFXFactories.h"
 
 namespace BHive
 {
@@ -131,7 +131,7 @@ namespace BHive
 		specs.Attachments.SetDepthAttachment({FTextureCreateInfo{.Format = EFormat::DEPTH24_STENCIL8, .WrapMode = EWrapMode::CLAMP_TO_EDGE}});
 		specs.DebugName = "SceneRenderer";
 
-		mFramebuffer = Framebuffer::Create(specs);
+		mFramebuffer = FramebufferFactory::Create(specs);
 
 		mCameraUBO = GeneralBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);
 
@@ -291,14 +291,17 @@ namespace BHive
 		linePass.EndPhase();
 		renderer.EndPass();
 
+		auto framebuffer = mFramebuffer.As<Framebuffer>();
+
 		auto &transitionPass = renderer.BeginPass("Transition to read", EPassType::OffScreen, {});
 		transitionPass.BeginPhase("Transition to read", EPhaseType::Transfer);
-		transitionPass.UseTexture(mFramebuffer->GetColorAttachment(), EImageUsage::ColorRead);
+		transitionPass.UseTexture(framebuffer->GetColorAttachment(), EImageUsage::ColorRead);
 		transitionPass.EndPhase();
 		renderer.EndPass();
 
 		// post process
-		FPostProcessTextureSet set{mFramebuffer->GetColorAttachment(), mFramebuffer->GetDepthAttachment()};
+
+		FPostProcessTextureSet set{framebuffer->GetColorAttachment(), framebuffer->GetDepthAttachment()};
 		mOutputTexture = mPostProcessStack.Build(renderer.GetActiveGraph(), set);
 	}
 
@@ -391,14 +394,14 @@ namespace BHive
 	{
 		mSize = size;
 
-		mFramebuffer->Resize(size);
+		mFramebuffer.As<Framebuffer>()->Resize(size);
 
 		mPostProcessStack.Init(size);
 	}
 
 	void SceneRenderer::RenderToScreen()
 	{
-		mFramebuffer->BlitToWindow(0, 0, mSize.x, mSize.y);
+		mFramebuffer.As<Framebuffer>()->BlitToWindow(0, 0, mSize.x, mSize.y);
 	}
 
 	void SceneRenderer::AddPostProcessMaterial(const Ref<PostProcessMaterial> &mat)

@@ -219,7 +219,7 @@ namespace BHive
 
 	void VulkanRendererAPI::BeginOffScreenRendering(const FPassState &state, const FPhase &phase, FVulkanRendererContext &ctx)
 	{
-		auto fbo = Cast<VulkanFramebuffer>(phase.FBO);
+		auto fbo = phase.FBO.As<VulkanFramebuffer>();
 		if (fbo)
 		{
 			const auto range = phase.ColorRange;

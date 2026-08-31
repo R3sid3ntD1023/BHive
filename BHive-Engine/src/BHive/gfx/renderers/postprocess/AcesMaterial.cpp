@@ -2,20 +2,22 @@
 #include "gfx/renderers/Renderer.h"
 #include "gfx/Pipeline.h"
 #include "gfx/Framebuffer.h"
+#include "gfx/factories/GFXFactories.h"
 
 namespace BHive
 {
 	AcesMaterial::AcesMaterial()
 	{
-		mMaterial = CreateScope<Material>("Aces.glsl");
+		mMaterial = MaterialFactory::Create("Aces.glsl");
 	}
 
 	TexturePtr AcesMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
 	{
-		auto output = mFramebuffer->GetColorAttachment();
+		auto output = mFramebuffer.As<Framebuffer>()->GetColorAttachment();
 		auto input = set.PrevOutput;
 
-		mMaterial->SetTexture("uSceneColor", FTextureBinding(input));
+		auto material = mMaterial.As<Material>();
+		material->SetTexture("uSceneColor", FTextureBinding(input));
 
 		auto &pass = graph.AddPass("Aces", EPassType::OffScreen);
 
@@ -23,7 +25,7 @@ namespace BHive
 		pass.UseFramebuffer(mFramebuffer);
 		pass.UseTexture(input, EImageUsage::ColorRead);
 		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
-		pass.Emplace<CmdBindMaterial>()(mMaterial.get());
+		pass.Emplace<CmdBindMaterial>()(material);
 		pass.Emplace<CmdDrawFullScreen>()();
 		pass.EndPhase();
 
@@ -48,7 +50,7 @@ namespace BHive
 		spec.DebugName = "Aces";
 		spec.Size = size;
 		spec.Attachments.AddColorAttachment(color);
-		mFramebuffer = Framebuffer::Create(spec);
+		mFramebuffer = FramebufferFactory::Create(spec);
 	}
 
 } // namespace BHive
