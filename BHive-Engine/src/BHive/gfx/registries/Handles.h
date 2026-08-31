@@ -40,4 +40,6 @@ namespace BHive
 	using FlipBookPtr = ResourceHandle;
 
 	using SpriteSheetPtr = ResourceHandle;
+
+	using FontPtr = ResourceHandle;
 } // namespace BHive

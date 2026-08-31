@@ -31,11 +31,11 @@ namespace BHive
 		return texture;
 	};
 
-	Font::Font(const char *filename, int fontSize)
+	Font::Font(const std::filesystem::path &path, int fontSize)
 		: mData(new MSDFData()),
 		  mFontSize(fontSize)
 	{
-		Initialize(filename);
+		Initialize(path);
 	}
 
 	Font::~Font()
@@ -43,13 +43,13 @@ namespace BHive
 		delete mData;
 	}
 
-	void Font::Initialize(const char *filename)
+	void Font::Initialize(const std::filesystem::path &path)
 	{
 		msdfgen::FreetypeHandle *ft = msdfgen::initializeFreetype();
 		if (!ft)
 			return;
 
-		msdfgen::FontHandle *font = msdfgen::loadFont(ft, filename);
+		msdfgen::FontHandle *font = msdfgen::loadFont(ft, path.string().c_str());
 		if (!font)
 			return;
 

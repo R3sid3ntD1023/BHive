@@ -12,6 +12,8 @@ namespace BHive
 	class Sprite;
 	class SpriteSheet;
 	class FlipBook;
+	class Font;
+	class Texture;
 
 	REGISTER_TYPE(Material)
 	REGISTER_TYPE(Texture)
@@ -21,4 +23,5 @@ namespace BHive
 	REGISTER_TYPE(Sprite)
 	REGISTER_TYPE(FlipBook)
 	REGISTER_TYPE(SpriteSheet)
+	REGISTER_TYPE(Font)
 } // namespace BHive

@@ -118,4 +118,9 @@ namespace BHive
 		return {};
 	}
 
+	FontPtr FontFactory::Create(const std::filesystem::path &path, uint32_t fontSize)
+	{
+		return CreateResource<Font>(path, fontSize);
+	}
+
 } // namespace BHive

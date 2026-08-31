@@ -19,7 +19,7 @@ namespace BHive
 	private:
 		/* data */
 	public:
-		Font(const char *filename, int fontSize);
+		Font(const std::filesystem::path &path, int fontSize);
 		~Font();
 
 		const MSDFData *GetMSDFData() const { return mData; }
@@ -27,7 +27,7 @@ namespace BHive
 		TexturePtr GetAtlas() const { return mTextureAtlas; }
 
 	private:
-		void Initialize(const char *filename);
+		void Initialize(const std::filesystem::path &path);
 
 	private:
 		int mFontSize = 0;

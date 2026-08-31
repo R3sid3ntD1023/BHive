@@ -1,7 +1,6 @@
 
 #include "core/profiler/CPUGPUProfiler.h"
 #include "gfx/font/Font.h"
-#include "gfx/font/FontManager.h"
 #include "gfx/font/MSDFData.h"
 #include "gfx/Texture.h"
 #include "QuadRenderer.h"
@@ -176,19 +175,13 @@ namespace BHive
 		}
 	}
 
-	void QuadRenderer::DrawText(float size_arg, const std::string &text, const FTextParams &params, const FTransform &transform, int32_t entity_id)
-	{
-		auto font = FontManager::Get().GetDefaultFont();
-		DrawText(font, size_arg, text, params, transform, entity_id);
-	}
-
-	void QuadRenderer::DrawText(const Ref<Font> &font, float size_arg, const std::string &text, const FTextParams &params, const FTransform &transform, int32_t entity_id)
+	void QuadRenderer::DrawText(FontPtr font, float size_arg, const std::string &text, const FTextParams &params, const FTransform &transform, int32_t entity_id)
 	{
 		if (!font)
 			return;
 
-		auto texture = font->GetAtlas();
-		const auto &fontgeometry = font->GetMSDFData()->FontGeometry;
+		auto texture = font.As<Font>()->GetAtlas();
+		const auto &fontgeometry = font.As<Font>()->GetMSDFData()->FontGeometry;
 		const auto &metrics = fontgeometry.getMetrics();
 
 		double scale = (1.0 / (metrics.ascenderY - metrics.descenderY)) * size_arg;

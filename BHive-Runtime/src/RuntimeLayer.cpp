@@ -49,6 +49,7 @@ namespace BHive
 
 		mSphere = MeshFactory::CreateSphere(1.0f);
 		mPlane = MeshFactory::CreatePlane(10.f, 10.f);
+		mFont = FontFactory::Create(ENGINE_PATH "/data/fonts/Roboto/Roboto-Thin.ttf", 10.f);
 
 		// create materials
 		/*{
@@ -182,7 +183,7 @@ namespace BHive
 			renderer.Quad.DrawQuad(params, mTexture, FTransform({0, 0, -2}));
 
 			renderer.Quad.DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));
-			renderer.Quad.DrawText(1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
+			renderer.Quad.DrawText(mFont, 1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
 		}
 
 		mSceneRenderer->End();

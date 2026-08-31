@@ -3,6 +3,7 @@
 #include "IResourceFactory.h"
 #include "gfx/Enumerations.h"
 #include "gfx/Texture.h"
+#include "gfx/font/Font.h"
 #include "gfx/registries/Handles.h"
 #include "importers/TextureImporter.h"
 
@@ -25,5 +26,10 @@ namespace BHive
 		static TexturePtr CreateCubeArray(uint32_t size, const FTextureCreateInfo &info);
 
 		static TexturePtr Create(ETextureType type, const glm::uvec2 &size, const FTextureCreateInfo &info);
+	};
+
+	struct BHIVE_API FontFactory : public IResourceFactory<Font>
+	{
+		static FontPtr Create(const std::filesystem::path &path, uint32_t fontSize);
 	};
 } // namespace BHive

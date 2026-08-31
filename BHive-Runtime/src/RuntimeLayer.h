@@ -38,6 +38,7 @@ namespace BHive
 		MeshPtr mPlane;
 		MeshPtr mMesh;
 		Texture2DPtr mTexture;
+		FontPtr mFont;
 
 		glm::uvec2 mViewportSize{0, 0};
 		bool mViewportActive = false;
