@@ -10,7 +10,7 @@ namespace BHive
 		mMaterial = CreateScope<Material>("ColorGrading.glsl");
 	}
 
-	Ref<Texture> ColorGradingMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
+	TexturePtr ColorGradingMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
 	{
 		auto input = set.PrevOutput;
 		auto output = mFramebuffer->GetColorAttachment();

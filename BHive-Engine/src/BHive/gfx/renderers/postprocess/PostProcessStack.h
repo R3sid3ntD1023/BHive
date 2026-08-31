@@ -59,7 +59,7 @@ namespace BHive
 			}
 		}
 
-		Ref<Texture> Build(RenderGraph &graph, FPostProcessTextureSet &set)
+		TexturePtr Build(RenderGraph &graph, FPostProcessTextureSet &set)
 		{
 			set.PrevOutput = set.SceneColor;
 

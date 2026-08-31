@@ -1,5 +1,6 @@
 #include "sprite/Sprite.h"
 #include "SpriteFactory.h"
+#include "SpriteFactory.h"
 
 namespace BHive
 {

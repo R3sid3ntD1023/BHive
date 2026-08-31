@@ -30,7 +30,7 @@ namespace BHive
 			if (base.Textures.contains(name))
 			{
 				if (auto sampler = refl->FindSampler(name, 1))
-					base.Textures[name] = {slot.TextureRef, sampler->Binding, slot.BaseMipLevel, slot.BaseArrayLayer};
+					base.Textures[name] = {slot.Texture, sampler->Binding, slot.BaseMipLevel, slot.BaseArrayLayer};
 			}
 		}
 

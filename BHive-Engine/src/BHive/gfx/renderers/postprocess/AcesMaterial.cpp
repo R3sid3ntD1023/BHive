@@ -10,7 +10,7 @@ namespace BHive
 		mMaterial = CreateScope<Material>("Aces.glsl");
 	}
 
-	Ref<Texture> AcesMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
+	TexturePtr AcesMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
 	{
 		auto output = mFramebuffer->GetColorAttachment();
 		auto input = set.PrevOutput;

@@ -1,11 +1,12 @@
 #include "FlipBookComponent.h"
 #include "runtime/GameObject.h"
+#include "gfx/sprite/FlipBook.h"
 
 namespace BHive
 {
 	void FlipBookComponent::Begin()
 	{
-		mInstance = new FlipBook(*FlipBookAsset);
+		mInstance = new FlipBook(*FlipBookHandle.As<FlipBook>());
 
 		if (AutoPlay)
 			mInstance->Play();
@@ -26,18 +27,18 @@ namespace BHive
 
 	void FlipBookComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(AutoPlay, Color, Size, Tiling, TAssetHandle(FlipBookAsset));
+		ar(AutoPlay, Color, Size, Tiling, FlipBookHandle);
 	}
 
 	void FlipBookComponent::Load(cereal::BinaryInputArchive &ar)
 	{
-		ar(AutoPlay, Color, Size, Tiling, TAssetHandle(FlipBookAsset));
+		ar(AutoPlay, Color, Size, Tiling, FlipBookHandle);
 	}
 
 	REFLECT(FlipBookComponent)
 	{
 		BEGIN_REFLECT(FlipBookComponent)
 		(META_DATA(ClassMetaData_ComponentSpawnable, true)) REFLECT_CONSTRUCTOR() REFLECT_PROPERTY(AutoPlay) REFLECT_PROPERTY(Color) REFLECT_PROPERTY(Size) REFLECT_PROPERTY(Tiling)
-			REFLECT_PROPERTY(FlipBookAsset) COMPONENT_IMPL();
+			REFLECT_PROPERTY(FlipBookHandle) COMPONENT_IMPL();
 	}
 } // namespace BHive

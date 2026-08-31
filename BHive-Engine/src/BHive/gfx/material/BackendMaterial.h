@@ -9,13 +9,13 @@
 namespace BHive
 {
 	class ShaderProgram;
-	class Texture;
+
 	struct FSetReflection;
 	struct FShaderReflection;
 
 	struct FTextureBinding
 	{
-		Ref<Texture> TextureRef;
+		TexturePtr Texture;
 
 		uint32_t BaseMipLevel = 0;
 
@@ -24,7 +24,7 @@ namespace BHive
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(TAssetHandle(TextureRef), BaseMipLevel, BaseArrayLayer);
+			ar(this->Texture, this->BaseMipLevel, this->BaseArrayLayer);
 		};
 	};
 

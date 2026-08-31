@@ -70,7 +70,7 @@ namespace BHive
 		}
 	}
 
-	void QuadRenderer::DrawQuad(const FQuadParams &params, const Ref<Texture2D> &texture, const FTransform &transform, int32_t entity_id)
+	void QuadRenderer::DrawQuad(const FQuadParams &params, TexturePtr texture, const FTransform &transform, int32_t entity_id)
 	{
 		static glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
 
@@ -84,30 +84,31 @@ namespace BHive
 		create_info.Transform = transform;
 		create_info.Tiling = params.Tiling;
 		create_info.Flags = params.Flags;
-		create_info.TextureRef = texture;
+		create_info.Texture = texture;
 		DrawQuad(create_info, entity_id);
 	}
 
-	void QuadRenderer::DrawSprite(const FQuadParams &params, const Ref<Sprite> &sprite, const FTransform &transform, int32_t entity_id)
+	void QuadRenderer::DrawSprite(const FQuadParams &params, SpritePtr sprite, const FTransform &transform, int32_t entity_id)
 	{
 		if (!sprite)
 			return;
 
 		static glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
+		auto spritePtr = sprite.As<Sprite>();
 
 		FQuadCreateInfo create_info{};
 		create_info.Positions = positions;
-		create_info.TexCoords = sprite->GetCoords();
+		create_info.TexCoords = spritePtr->GetCoords();
 		create_info.Size = params.Size;
 		create_info.Color = params.Color;
 		create_info.Transform = transform;
 		create_info.Tiling = params.Tiling;
 		create_info.Flags = params.Flags;
-		create_info.TextureRef = sprite->GetSourceTexture();
+		create_info.Texture = spritePtr->GetSourceTexture();
 		DrawQuad(create_info, entity_id);
 	}
 
-	void QuadRenderer::DrawBillboard(const FView &view, const FQuadParams &params, const Ref<Texture2D> &texture, const FTransform &transform, int32_t entity_id)
+	void QuadRenderer::DrawBillboard(const FView &view, const FQuadParams &params, TexturePtr texture, const FTransform &transform, int32_t entity_id)
 	{
 		const auto &v = view.View;
 
@@ -132,7 +133,7 @@ namespace BHive
 		create_info.Transform = glm::identity<glm::mat4>();
 		create_info.Tiling = params.Tiling;
 		create_info.Flags = params.Flags;
-		create_info.TextureRef = texture;
+		create_info.Texture = texture;
 		DrawQuad(create_info, entity_id);
 	}
 
@@ -148,11 +149,11 @@ namespace BHive
 			QuadBatch.NextBatch(Renderer::Get());
 		}
 
-		uint32_t texture_index = TextureBatch.GetTextureIndex(create_info.TextureRef);
+		uint32_t texture_index = TextureBatch.GetTextureIndex(create_info.Texture);
 		if (texture_index == -1)
 		{
 			QuadBatch.NextBatch(Renderer::Get());
-			texture_index = TextureBatch.GetTextureIndex(create_info.TextureRef);
+			texture_index = TextureBatch.GetTextureIndex(create_info.Texture);
 		}
 
 		for (uint32_t i = 0; i < 4; i++)
@@ -193,7 +194,7 @@ namespace BHive
 		double scale = (1.0 / (metrics.ascenderY - metrics.descenderY)) * size_arg;
 		const double spaceGlyphAdvance = fontgeometry.getGlyph(' ')->getAdvance();
 
-		glm::vec2 texel_size = 1.0f / glm::vec2(texture->GetSize());
+		glm::vec2 texel_size = 1.0f / glm::vec2(texture.As<Texture2D>()->GetSize());
 
 		glm::vec2 coords[4];
 
@@ -258,8 +259,8 @@ namespace BHive
 		}
 	}
 
-	void QuadRenderer::DrawTextQuad(
-		const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, const Ref<Texture2D> &texture, int32_t entity_id)
+	void
+	QuadRenderer::DrawTextQuad(const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, TexturePtr texture, int32_t entity_id)
 	{
 		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
 

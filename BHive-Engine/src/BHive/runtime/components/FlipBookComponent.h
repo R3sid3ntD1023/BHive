@@ -1,6 +1,8 @@
 #pragma once
 
 #include "runtime/Component.h"
+#include "gfx/registries/Handles.h"
+#include "gfx/Color.h"
 #include "gfx/sprite/FlipBook.h"
 
 namespace BHive
@@ -20,7 +22,7 @@ namespace BHive
 
 		glm::vec2 Tiling{1, 1};
 
-		Ref<FlipBook> FlipBookAsset;
+		FlipBookPtr FlipBookHandle;
 
 		virtual void Begin() override;
 		virtual void End() override;

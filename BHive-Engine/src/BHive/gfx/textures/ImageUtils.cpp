@@ -3,6 +3,7 @@
 #include "gfx/Texture.h"
 #include "ImageUtils.h"
 #include <stb_image_write.h>
+#include <stb_image_resize2.h>
 
 namespace BHive
 {
@@ -18,7 +19,7 @@ namespace BHive
 		stbi_write_png(path.string().c_str(), w, h, c, data, stride);
 	}
 
-	void ImageUtils::SaveImage(const std::filesystem::path &path, const Ref<Framebuffer> &target, unsigned attachment)
+	void ImageUtils::SaveImage(const std::filesystem::path &path, Framebuffer *target, unsigned attachment)
 	{
 		const auto num_attachments = target->GetNumColorAttachments();
 		ASSERT(attachment < num_attachments);
@@ -38,7 +39,7 @@ namespace BHive
 			});
 	}
 
-	void ImageUtils::SaveImage(const std::filesystem::path &path, const Ref<Texture2D> &texture)
+	void ImageUtils::SaveImage(const std::filesystem::path &path, Texture2D *texture)
 	{
 		auto &specs = texture->GetInfo();
 		const auto c = GetBytesPerPixel(specs.Format);

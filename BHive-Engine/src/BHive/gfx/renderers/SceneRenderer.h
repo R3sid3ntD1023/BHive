@@ -54,7 +54,7 @@ namespace BHive
 
 		void SetViewOverride(const FView &view);
 
-		void SetEnvironmentTexture(const Ref<Texture2D> &hdr);
+		void SetEnvironmentTexture(Texture2DPtr hdr);
 
 		void Submit(const DirectionalLight &light);
 
@@ -72,7 +72,7 @@ namespace BHive
 
 		void Resize(const glm::uvec2 &size);
 
-		Ref<Texture> GetOutput() const { return mOutputTexture; }
+		TexturePtr GetOutput() const { return mOutputTexture; }
 
 		FRenderSettings &GetRenderSettings() { return mRenderSettings; }
 
@@ -108,7 +108,7 @@ namespace BHive
 
 		Ref<Framebuffer> mFramebuffer;
 
-		Ref<Texture> mOutputTexture;
+		TexturePtr mOutputTexture;
 
 		std::array<MaterialPtr, 2> mFrustrumOcclusionMaterial;
 

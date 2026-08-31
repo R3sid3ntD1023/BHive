@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
@@ -14,7 +15,7 @@ namespace BHive
 	struct FDebugTextureEntry
 	{
 		std::string Name;
-		Ref<Texture> Tex;
+		TexturePtr Tex;
 		bool IsCube = false;
 		uint32_t MipLevels = 1;
 		uint32_t Layers = 1;
@@ -31,7 +32,7 @@ namespace BHive
 
 		void Initialize(const glm::uvec2 &size);
 
-		void RegisterTexture(const std::string &name, const Ref<Texture> &tex);
+		void RegisterTexture(const std::string &name, TexturePtr tex);
 
 		void OnRender(Renderer &renderer);
 

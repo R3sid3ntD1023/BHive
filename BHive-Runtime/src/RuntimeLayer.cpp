@@ -22,6 +22,7 @@
 #include "gfx/imgui/IImGuiProvider.h"
 #include "core/layers/ImGuiLayer.h"
 #include "gfx/factories/MeshFactory.h"
+#include "gfx/factories/TextureFactory.h"
 
 #define ENABLE_RENDERING 1
 
@@ -36,7 +37,7 @@ namespace BHive
 		auto decodedSprite = TextureLoader::FromFile("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg");
 		auto decodedEnviroment = TextureLoader::FromFile(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
 
-		mTexture = Texture2D::Create(decodedSprite.Size, decodedSprite.CreateInfo, decodedSprite.Data);
+		mTexture = TextureFactory::Create2D(decodedSprite);
 
 		// create mesh
 		FMeshImportOptions import_options{.ImportMaterials = false};
@@ -83,7 +84,7 @@ namespace BHive
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Init(mViewportSize);
-		mSceneRenderer->SetEnvironmentTexture(Texture2D::Create(decodedEnviroment.Size, decodedEnviroment.CreateInfo, decodedEnviroment.Data));
+		mSceneRenderer->SetEnvironmentTexture(TextureFactory::Create2D(decodedEnviroment));
 
 		mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
 		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
@@ -175,7 +176,7 @@ namespace BHive
 			renderer.Line.DrawBox(glm::vec3{1.f}, glm::vec3{0.0f}, FColor::Blue, mObjectTransforms[0]);
 			renderer.Line.DrawLine({-1, 2, 0}, {1, 2, 0}, FColor::Green);
 
-			renderer.Quad.DrawQuad(params, nullptr, FTransform({0, 0, 2}));
+			renderer.Quad.DrawQuad(params, {}, FTransform({0, 0, 2}));
 
 			params.Color = FColor::White;
 			renderer.Quad.DrawQuad(params, mTexture, FTransform({0, 0, -2}));
@@ -203,7 +204,7 @@ namespace BHive
 			auto output = mSceneRenderer->GetOutput();
 			if (output)
 			{
-				auto id = IImGuiTextureProvider::GetID(*output);
+				auto id = IImGuiTextureProvider::GetID(*output.As<Texture>());
 				ImGui::Image(id, viewportSize);
 			}
 		}
@@ -254,7 +255,7 @@ namespace BHive
 
 		if (ImGui::Begin("Window"))
 		{
-			auto id = IImGuiTextureProvider::GetID(*mTexture);
+			auto id = IImGuiTextureProvider::GetID(*mTexture.As<Texture>());
 			ImGui::Image(id, {200, 200}, {0, 1}, {1, 0});
 
 			Inspect::get().inspect("Transform", mObjectTransforms[0]);
@@ -277,7 +278,7 @@ namespace BHive
 				if (info)
 				{
 					auto decodedEnironment = TextureLoader::FromFile(info.Path);
-					auto tex = Texture2D::Create(decodedEnironment.Size, decodedEnironment.CreateInfo, decodedEnironment.Data);
+					auto tex = TextureFactory::Create2D(decodedEnironment);
 
 					mSceneRenderer->SetEnvironmentTexture(tex);
 

@@ -47,9 +47,9 @@ namespace BHive
 		for (auto &[name, tex] : mTextures)
 		{
 			FTextureBinding binding = tex;
-			if (!binding.TextureRef)
+			if (!binding.Texture)
 			{
-				binding.TextureRef = Renderer::Get().GetWhiteTexture();
+				binding.Texture = Renderer::Get().GetWhiteTexture();
 			}
 			mBackendMaterial->SetTexture(name, binding);
 		}
@@ -78,7 +78,7 @@ namespace BHive
 				mParams[mem.first] = MaterialParam(mem.second.Size);
 
 		for (auto &[name, saampler] : matSet.Samplers)
-			mTextures[name] = {nullptr, 0};
+			mTextures[name] = {{}, 0};
 	}
 
 	void Material::Save(cereal::BinaryOutputArchive &ar) const
@@ -99,7 +99,7 @@ namespace BHive
 	REFLECT(FTextureBinding)
 	{
 		BEGIN_REFLECT(FTextureBinding)
-		REFLECT_PROPERTY("Texture", TextureRef)
+		REFLECT_PROPERTY("Texture", Texture)
 		REFLECT_PROPERTY("MipLevel", BaseMipLevel)
 		REFLECT_PROPERTY("ArrayLayer", BaseArrayLayer);
 	}

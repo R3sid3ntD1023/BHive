@@ -2,8 +2,8 @@
 
 namespace BHive
 {
-	FlipBook::FlipBook(std::initializer_list<Frame> frames)
-		: mFrames()
+	FlipBook::FlipBook(const std::vector<FlipBook::Frame> &frames)
+		: mFrames(frames)
 	{
 	}
 
@@ -43,37 +43,32 @@ namespace BHive
 		mFramesPerSecond = fps;
 	}
 
-	void FlipBook::AddFrame(const Ref<Sprite> &sprite, uint32_t duration)
+	void FlipBook::AddFrame(SpritePtr sprite, uint32_t duration)
 	{
 		mFrames.emplace_back(Frame{.Sprite = sprite, .Duration = duration});
 	}
 
-	void FlipBook::InsertFrame(const Ref<Sprite> &sprite, uint32_t duration, uint32_t index)
+	void FlipBook::InsertFrame(SpritePtr sprite, uint32_t duration, uint32_t index)
 	{
 		mFrames.insert(mFrames.begin() + index, Frame{.Sprite = sprite, .Duration = duration});
 	}
 
-	Ref<Sprite> FlipBook::RemoveSprite(uint32_t index)
+	SpritePtr FlipBook::RemoveSprite(uint32_t index)
 	{
 		if (mFrames.size() > index)
 		{
 			return mFrames[index].Sprite;
 		}
 
-		return nullptr;
+		return {};
 	}
 
-	const FlipBook::Frames &FlipBook::GetFrames() const
-	{
-		return mFrames;
-	}
-
-	void FlipBook::SetFrames(const Frames &frames)
+	void FlipBook::SetFrames(const std::vector<FlipBook::Frame> &frames)
 	{
 		mFrames = frames;
 	}
 
-	Ref<Sprite> FlipBook::GetCurrentSprite() const
+	SpritePtr FlipBook::GetCurrentSprite() const
 	{
 		return GetSpriteAtTime(mCurrentTime);
 	}
@@ -113,18 +108,18 @@ namespace BHive
 		}
 	}
 
-	Ref<Sprite> FlipBook::GetSpriteAtFrame(int32_t frame) const
+	SpritePtr FlipBook::GetSpriteAtFrame(int32_t frame) const
 	{
 		if (frame < 0 || frame >= mFrames.size())
-			return nullptr;
+			return {};
 
 		return mFrames.at(frame).Sprite;
 	}
 
-	Ref<Sprite> FlipBook::GetSpriteAtTime(float time) const
+	SpritePtr FlipBook::GetSpriteAtTime(float time) const
 	{
 		const auto index = GetFrameIndexAtTime(time);
-		return (index != -1) ? mFrames[index].Sprite : nullptr;
+		return (index != -1) ? mFrames[index].Sprite : SpritePtr{};
 	}
 
 	float FlipBook::GetTotalTime() const
@@ -140,34 +135,19 @@ namespace BHive
 	void FlipBook::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(mIsLooping, mFramesPerSecond);
-
-		ar(cereal::make_size_tag(mFrames.size()));
-		for (auto &frame : mFrames)
-		{
-			ar(TAssetHandle<Sprite>(frame.Sprite), frame.Duration);
-		}
+		ar(mIsLooping, mFramesPerSecond, mFrames);
 	}
 
 	void FlipBook::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(mIsLooping, mFramesPerSecond);
-
-		size_t size = 0;
-		ar(cereal::make_size_tag(size));
-
-		mFrames.resize(size);
-		for (auto &frame : mFrames)
-		{
-			ar(TAssetHandle<Sprite>(frame.Sprite), frame.Duration);
-		}
+		ar(mIsLooping, mFramesPerSecond, mFrames);
 	}
 
 	REFLECT(FlipBook)
 	{
 		{
-			BEGIN_REFLECT(Frame) REFLECT_PROPERTY(Sprite) REFLECT_PROPERTY(Duration);
+			BEGIN_REFLECT(FlipBook::Frame) REFLECT_PROPERTY(Sprite) REFLECT_PROPERTY(Duration);
 		}
 
 		{

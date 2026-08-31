@@ -1,11 +1,11 @@
 #pragma once
 
 #include "core/Core.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
 	class GeneralBuffer;
-	class Texture;
 	class ShaderProgram;
 	class IBindingGroup;
 
@@ -13,7 +13,7 @@ namespace BHive
 	{
 		struct TextureBinding
 		{
-			Ref<Texture> TextureRef;
+			TexturePtr Texture;
 			int32_t Binding = 0;
 			uint32_t BaseMipLevel = 0;
 			uint32_t BaseArrayLayer = 0;

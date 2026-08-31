@@ -4,15 +4,16 @@
 #include "gfx/Buffers.h"
 #include "gfx/Pipeline.h"
 #include "gfx/registries/ResourceRegistry.h"
+#include "gfx/factories/TextureFactory.h"
 
 namespace BHive
 {
 
 	struct BHIVE_API RenderData
 	{
-		Ref<Texture> WhiteTexture;
-		Ref<Texture> BlackTexture;
-		Ref<Texture> BlueTexture;
+		TexturePtr WhiteTexture;
+		TexturePtr BlackTexture;
+		TexturePtr BlueTexture;
 
 		RenderData()
 		{
@@ -26,13 +27,13 @@ namespace BHive
 			create_info.Aspect = ETextureAspect::Color;
 			create_info.DebugName = "WhiteTexture";
 
-			WhiteTexture = Texture2D::Create({1, 1}, create_info, Buffer(&white, sizeof(uint32_t)));
+			WhiteTexture = TextureFactory::Create2D({1, 1}, create_info, Buffer(&white, sizeof(uint32_t)));
 
 			create_info.DebugName = "Black Texture";
-			BlackTexture = Texture2D::Create({1, 1}, create_info, Buffer(&black, sizeof(uint32_t)));
+			BlackTexture = TextureFactory::Create2D({1, 1}, create_info, Buffer(&black, sizeof(uint32_t)));
 
 			create_info.DebugName = "Blue Texture";
-			BlueTexture = Texture2D::Create({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
+			BlueTexture = TextureFactory::Create2D({1, 1}, create_info, Buffer(&blue, sizeof(uint32_t)));
 		}
 	};
 
@@ -48,6 +49,7 @@ namespace BHive
 		// register resource registries
 		RegisterResourceRegistry<ResourceRegistry, Material>();
 		RegisterResourceRegistry<ResourceRegistry, BaseMesh>();
+		RegisterResourceRegistry<ResourceRegistry, Texture>();
 
 		PipelineRegistry::Initialize();
 
@@ -97,7 +99,7 @@ namespace BHive
 		memset(&mStats, 0, sizeof(Statitics));
 	}
 
-	Ref<Texture> Renderer::GetWhiteTexture() const
+	Texture2DPtr Renderer::GetWhiteTexture() const
 	{
 		return mData->WhiteTexture;
 	}

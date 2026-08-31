@@ -1,8 +1,10 @@
 #pragma once
 
-#include "ImageInfo.h"
 #include "Command.h"
 #include "GlobalBinding.h"
+#include "gfx/resources/ImageSubResourceRange.h"
+#include "gfx/Enumerations.h";
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
@@ -14,6 +16,14 @@ namespace BHive
 		Graphics,
 		Compute,
 		Transfer
+	};
+
+	// Tex, Mip, Levels, Layer, Layers, Access
+	struct FImageInfo
+	{
+		TexturePtr Texture;
+		EImageUsage Access = EImageUsage::None;
+		ImageSubresourceRange Range{};
 	};
 
 	struct FBufferUsageInfo
@@ -53,7 +63,7 @@ namespace BHive
 
 		std::unordered_map<GlobalBinding, Ref<BufferBase>> BoundBuffers;
 
-		std::unordered_map<GlobalBinding, Ref<Texture>> BoundTextures;
+		std::unordered_map<GlobalBinding, TexturePtr> BoundTextures;
 
 		std::vector<std::pair<CmdHeader, Ref<FCommand>>> Commands;
 

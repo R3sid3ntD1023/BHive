@@ -1,14 +1,12 @@
 #pragma once
 
 #include "asset/Asset.h"
-#include "gfx/sprite/Sprite.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
 	class Sprite;
 	class Texture2D;
-
-	typedef std::vector<Sprite> Sprites;
 
 	struct FSpriteSheetGrid
 	{
@@ -31,17 +29,17 @@ namespace BHive
 	public:
 		SpriteSheet() = default;
 
-		SpriteSheet(const Ref<Texture2D> &source, const FSpriteSheetGrid &grid);
+		SpriteSheet(TexturePtr source, const FSpriteSheetGrid &grid);
 
 		void CreateSprites();
 
-		void SetSource(const Ref<Texture2D> &source);
+		void SetSource(TexturePtr source);
 
 		void SetGrid(const FSpriteSheetGrid &grid);
 
-		const Ref<Texture2D> &GetSource() const { return mSource; }
+		TexturePtr GetSource() const { return mSource; }
 
-		const Sprites &GetSprites() const { return mSprites; }
+		const auto &GetSprites() const { return mSprites; }
 
 		const FSpriteSheetGrid &GetGrid() const { return mGrid; }
 
@@ -52,9 +50,9 @@ namespace BHive
 		REFLECTABLEV(Asset)
 
 	private:
-		Sprites mSprites;
+		std::vector<SpritePtr> mSprites;
 
-		Ref<Texture2D> mSource;
+		TexturePtr mSource;
 
 		FSpriteSheetGrid mGrid;
 	};

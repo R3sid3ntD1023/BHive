@@ -48,7 +48,7 @@ namespace BHive
 
 		mBuffer->Upload();
 
-		auto &texture = mTextureBatch->GetTexture();
+		auto texture = mTextureBatch->GetTexture();
 		mMaterial->SetTexture("uTexture", {texture});
 
 		auto &pass = renderer.GetActivePass();

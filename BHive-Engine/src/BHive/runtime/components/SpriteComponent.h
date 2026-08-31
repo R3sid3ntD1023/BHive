@@ -1,7 +1,8 @@
 #pragma once
 
 #include "runtime/Component.h"
-#include "gfx/sprite/Sprite.h"
+#include "gfx/registries/Handles.h"
+#include "gfx/Color.h"
 
 namespace BHive
 {
@@ -15,9 +16,9 @@ namespace BHive
 
 		glm::vec2 Size{1, 1};
 
-		FColor Color{0xffffffff};
+		FColor Color = FColor::White;
 
-		Ref<Sprite> SpriteAsset;
+		SpritePtr Sprite;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;

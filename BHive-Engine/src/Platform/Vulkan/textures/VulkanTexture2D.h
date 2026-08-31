@@ -23,10 +23,6 @@ namespace BHive
 
 		void SetInfo(const FTextureCreateInfo &specs);
 
-		Ref<Texture2D> CreateSubTexture(const FSubTexture &texture);
-
-		void GetSubImage(const FSubTexture &texture, size_t size, uint8_t *data) const;
-
 		const Buffer &GetBuffer() const { return mBuffer; }
 
 		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mImage); }

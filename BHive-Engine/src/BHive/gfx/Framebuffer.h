@@ -2,7 +2,8 @@
 
 #include "core/Core.h"
 #include "core/math/Math.h"
-#include "Texture.h"
+#include "gfx/registries/Handles.h"
+#include "TextureSpecification.h"
 
 namespace BHive
 {
@@ -10,7 +11,7 @@ namespace BHive
 	{
 		FTextureCreateInfo CreateInfo{};
 		ETextureType Type = ETextureType::TEXTURE_2D;
-		Ref<Texture> ExternalTexture = nullptr;
+		TexturePtr ExternalTexture = {};
 	};
 
 	struct FRenderbufferTexture
@@ -90,9 +91,9 @@ namespace BHive
 
 		virtual uint32_t GetNumColorAttachments() const = 0;
 
-		virtual Ref<Texture> GetColorAttachment(uint32_t index = 0) const = 0;
+		virtual TexturePtr GetColorAttachment(uint32_t index = 0) const = 0;
 
-		virtual Ref<Texture> GetDepthAttachment() const = 0;
+		virtual TexturePtr GetDepthAttachment() const = 0;
 
 		virtual const FramebufferSpecification &GetSpecification() const = 0;
 

@@ -6,9 +6,9 @@ namespace BHive
 {
 	struct BHIVE_API FPostProcessTextureSet
 	{
-		Ref<Texture> SceneColor;
-		Ref<Texture> SceneDepth;
-		Ref<Texture> PrevOutput;
+		TexturePtr SceneColor;
+		TexturePtr SceneDepth;
+		TexturePtr PrevOutput;
 	};
 
 	class BHIVE_API PostProcessMaterial
@@ -18,7 +18,7 @@ namespace BHive
 
 		virtual void Init(const glm::uvec2 &size) = 0;
 
-		virtual Ref<Texture> AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set) = 0;
+		virtual TexturePtr AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set) = 0;
 	};
 
 } // namespace BHive

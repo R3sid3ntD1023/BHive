@@ -19,7 +19,7 @@ namespace BHive
 		EResourceCategory Category{};
 
 		Ref<BufferBase> Buffer;
-		Ref<Texture> Texture;
+		TexturePtr Texture;
 		uint32_t MipLevel = 0;
 	};
 
@@ -30,7 +30,7 @@ namespace BHive
 
 		void SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer);
 
-		void SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip = 0);
+		void SetTexture(uint32_t binding, TexturePtr texture, uint32_t mip = 0);
 
 		vk::DescriptorSet Update(uint32_t frame);
 

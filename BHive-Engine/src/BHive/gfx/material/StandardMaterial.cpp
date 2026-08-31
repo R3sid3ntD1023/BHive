@@ -81,7 +81,7 @@ namespace BHive
 		Material::SetTexture(name, texture);
 		if (name == "NormalMap")
 		{
-			SetParam("HasNormalMap", MaterialParam(texture.TextureRef != nullptr));
+			SetParam("HasNormalMap", MaterialParam(texture.Texture.IsValid()));
 		}
 		return *this;
 	}

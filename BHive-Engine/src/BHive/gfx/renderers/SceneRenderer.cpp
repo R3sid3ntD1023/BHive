@@ -152,7 +152,7 @@ namespace BHive
 		// mShadows.Init();
 	}
 
-	void SceneRenderer::SetEnvironmentTexture(const Ref<Texture2D> &hdr)
+	void SceneRenderer::SetEnvironmentTexture(Texture2DPtr hdr)
 	{
 		mEnvironment.SetHDR(hdr);
 		mEnvironment.Update();

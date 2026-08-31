@@ -47,7 +47,7 @@ namespace BHive
 			case ECommandType::GenerateMipMaps:
 			{
 				auto &c = *reinterpret_cast<const CmdGenerateMipMaps *>(payloadPtr);
-				auto vkImage = c.TextureRef->GetNativeHandle().As<VulkanImage>();
+				auto vkImage = c.TextureRef.As<Texture>()->GetNativeHandle().As<VulkanImage>();
 				vkImage->GenerateMipMaps(cmdbuffer);
 			}
 			break;
@@ -223,7 +223,7 @@ namespace BHive
 
 			for (auto &[name, tb] : snap.Textures)
 			{
-				group->SetTexture(tb.Binding, tb.TextureRef, tb.BaseMipLevel);
+				group->SetTexture(tb.Binding, tb.Texture, tb.BaseMipLevel);
 			}
 
 			for (auto &[name, buf] : snap.LocalBuffers)

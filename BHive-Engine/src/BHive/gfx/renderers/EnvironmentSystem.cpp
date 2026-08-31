@@ -10,7 +10,7 @@ namespace BHive
 		mBRDFLut = BRDFLUTGenerator::GenerateBRDFLUTMap();
 	}
 
-	void EnvironmentSystem::SetHDR(const Ref<Texture2D> &hdr)
+	void EnvironmentSystem::SetHDR(Texture2DPtr hdr)
 	{
 		mPendingHDR = hdr;
 		mDirty = true;
@@ -23,7 +23,7 @@ namespace BHive
 
 		mMaps = mPMREM.GenerateEnvironmentMaps(mPendingHDR);
 
-		mPendingHDR.reset();
+		mPendingHDR = {};
 		mDirty = false;
 	}
 } // namespace BHive

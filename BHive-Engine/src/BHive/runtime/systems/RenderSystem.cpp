@@ -161,7 +161,7 @@ namespace BHive
 			for (const auto &e : view)
 			{
 				auto &c = view.get<FlipBookComponent>(e);
-				if (!c.FlipBookAsset)
+				if (!c.FlipBookHandle)
 					continue;
 
 				FQuadParams params{};
@@ -169,7 +169,7 @@ namespace BHive
 				params.Size = c.Size;
 				params.Tiling = c.Tiling;
 
-				auto sprite = c.Instance() ? c.Instance()->GetCurrentSprite() : c.FlipBookAsset->GetCurrentSprite();
+				auto sprite = c.Instance() ? c.Instance()->GetCurrentSprite() : c.FlipBookHandle.As<FlipBook>()->GetCurrentSprite();
 				// QuadRenderer::DrawSprite(params, sprite, c.GetWorldTransform(), (int32_t)e);
 			}
 		}
@@ -179,7 +179,7 @@ namespace BHive
 			for (const auto &e : view)
 			{
 				auto &c = view.get<SpriteComponent>(e);
-				if (!c.SpriteAsset)
+				if (!c.Sprite)
 					continue;
 
 				/*FQuadParams params{};

@@ -9,19 +9,19 @@ namespace BHive
 	public:
 		EnvironmentSystem();
 
-		void SetHDR(const Ref<Texture2D> &hdr);
+		void SetHDR(Texture2DPtr hdr);
 
 		void Update();
 
 		const PMREMResult &GetCurrentMaps() const { return mMaps; }
 
-		Ref<Texture2D> GetBRDFLUT() const { return mBRDFLut; }
+		Texture2DPtr GetBRDFLUT() const { return mBRDFLut; }
 
 	private:
 		PMREMGenerator mPMREM;
-		Ref<Texture2D> mPendingHDR;
+		Texture2DPtr mPendingHDR;
 		PMREMResult mMaps;
-		Ref<Texture2D> mBRDFLut;
+		Texture2DPtr mBRDFLut;
 		bool mDirty = false;
 	};
 } // namespace BHive

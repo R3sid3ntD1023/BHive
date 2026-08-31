@@ -47,7 +47,7 @@ namespace BHive
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Init(mViewportSize);
-		mSceneRenderer->SetEnvironmentTexture(Texture2D::Create(decodeEnvironment.Size, decodeEnvironment.CreateInfo, decodeEnvironment.Data));
+		mSceneRenderer->SetEnvironmentTexture(TextureFactory::Create2D(decodeEnvironment));
 
 		// mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
 		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
@@ -74,14 +74,14 @@ namespace BHive
 
 			{
 
-				auto texture = Texture2D::Create(decodedSprite.Size, decodedSprite.CreateInfo, decodedSprite.Data);
+				auto texture = TextureFactory::Create2D(decodedSprite);
 				auto material = mMaterialTables[0][0].As<LambertMaterial>();
 				material->SetDiffuseColor(FColor::DarkGray).SetEmissionColor(FColor::Black);
 				material->SetTexture("DiffuseMap", {texture});
 			}
 
 			{
-				auto texture = Texture2D::Create(decodedMario.Size, decodedMario.CreateInfo, decodedMario.Data);
+				auto texture = TextureFactory::Create2D(decodedMario);
 				auto material = mMaterialTables[1][0].As<LambertMaterial>();
 				material->SetDiffuseColor({.2f, .2f, .2f, 1.0f});
 				material->SetTexture("DiffuseMap", {texture});
@@ -227,7 +227,7 @@ namespace BHive
 			auto output = mSceneRenderer->GetOutput();
 			if (output)
 			{
-				auto id = IImGuiTextureProvider::GetID(*output);
+				auto id = IImGuiTextureProvider::GetID(*output.As<Texture>());
 				ImGui::Image(id, viewportSize);
 			}
 

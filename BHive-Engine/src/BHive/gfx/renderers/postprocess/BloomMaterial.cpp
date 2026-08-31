@@ -12,11 +12,11 @@ namespace BHive
 		mMaterials[3] = CreateScope<Material>("Composite.glsl");
 	}
 
-	Ref<Texture> BloomMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
+	TexturePtr BloomMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
 	{
 		auto bloomOutput = mFramebuffers[0]->GetColorAttachment();
 		auto compositeOutput = mFramebuffers[1]->GetColorAttachment();
-		auto baseSize = bloomOutput->GetSize();
+		auto baseSize = bloomOutput.As<Texture>()->GetSize();
 		auto params = Params;
 		auto input = set.SceneColor;
 		uint32_t mipCount = mMipSizes.size();

@@ -20,9 +20,9 @@ namespace BHive
 	{
 		static constexpr ECommandType Type = ECommandType::GenerateMipMaps;
 
-		Ref<Texture> TextureRef;
+		TexturePtr TextureRef;
 
-		void operator()(const Ref<Texture> &texture) { TextureRef = texture; }
+		void operator()(TexturePtr texture) { TextureRef = texture; }
 	};
 
 	struct CmdClearBuffer : FCommand

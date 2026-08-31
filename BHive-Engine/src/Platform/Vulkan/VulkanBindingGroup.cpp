@@ -28,7 +28,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanBindingGroup::SetTexture(uint32_t binding, const Ref<Texture> &texture, uint32_t mip)
+	void VulkanBindingGroup::SetTexture(uint32_t binding, TexturePtr texture, uint32_t mip)
 	{
 		if (auto info = FindBinding(binding); info && (info->Texture != texture || info->MipLevel != mip))
 		{
@@ -85,7 +85,7 @@ namespace BHive
 		const uint32_t layer = 0;
 		const uint32_t face = 0;
 
-		const auto img = bindInfo.Texture->GetNativeHandle().As<VulkanImage>();
+		const auto img = bindInfo.Texture.As<Texture>()->GetNativeHandle().As<VulkanImage>();
 		ASSERT(img);
 
 		const auto &native = img->Native();

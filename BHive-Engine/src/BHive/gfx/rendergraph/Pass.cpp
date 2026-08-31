@@ -34,7 +34,7 @@ namespace BHive
 		}
 	}
 
-	void FPass::UseTexture(Ref<Texture> tex, EImageUsage access, ImageSubresourceRange range)
+	void FPass::UseTexture(TexturePtr tex, EImageUsage access, ImageSubresourceRange range)
 	{
 		ASSERT(mCurrentPhase)
 
@@ -53,7 +53,7 @@ namespace BHive
 		mCurrentPhase->BoundBuffers[GlobalBinding{set, binding}] = buffer;
 	}
 
-	void FPass::BindGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture)
+	void FPass::BindGlobal(uint32_t set, uint32_t binding, TexturePtr texture)
 	{
 		ASSERT(mCurrentPhase && texture)
 		mCurrentPhase->BoundTextures[GlobalBinding{set, binding}] = texture;

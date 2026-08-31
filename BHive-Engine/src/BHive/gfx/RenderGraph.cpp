@@ -45,7 +45,7 @@ namespace BHive
 
 				for (auto &tex : phase.Images)
 				{
-					tex.Texture->DebugPrintState();
+					tex.Texture.As<Texture>()->DebugPrintState();
 
 					LOG_TRACE("\t\tTransition -> [{}:{}]", to_string(tex.Access), to_string(tex.Range));
 				}

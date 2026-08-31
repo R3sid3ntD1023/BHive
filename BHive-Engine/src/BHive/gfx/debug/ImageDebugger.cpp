@@ -36,12 +36,13 @@ namespace BHive
 		mTextureEntries.clear();
 	}
 
-	void ImageDebugger::RegisterTexture(const std::string &name, const Ref<Texture> &tex)
+	void ImageDebugger::RegisterTexture(const std::string &name, TexturePtr handle)
 	{
+		auto tex = handle.As<Texture>();
 
 		FDebugTextureEntry e{};
 		e.Name = name;
-		e.Tex = tex;
+		e.Tex = handle;
 		e.IsCube = Cast<TextureCube>(tex) != nullptr;
 		e.MipLevels = tex->GetInfo().MipLevels;
 		e.Layers = tex->GetInfo().ArrayLayers;
@@ -131,7 +132,7 @@ namespace BHive
 					ImGui::SliderInt("Face", &mSelectedFace, 0, 5);
 				}
 
-				auto id = IImGuiTextureProvider::GetID(*mFB->GetColorAttachment());
+				auto id = IImGuiTextureProvider::GetID(*mFB->GetColorAttachment().As<Texture>());
 				ImGui::Image(id, ImVec2(float(mSize.x), float(mSize.y)));
 			}
 		}

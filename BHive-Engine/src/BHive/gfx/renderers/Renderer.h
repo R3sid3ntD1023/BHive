@@ -49,7 +49,7 @@ namespace BHive
 
 		const Statitics &GetStats() const { return mStats; }
 
-		Ref<Texture> GetWhiteTexture() const;
+		Texture2DPtr GetWhiteTexture() const;
 
 		void BeginBatching();
 

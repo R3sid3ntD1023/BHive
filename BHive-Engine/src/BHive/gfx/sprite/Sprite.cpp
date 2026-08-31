@@ -11,7 +11,7 @@ namespace BHive
 	{
 	}
 
-	Sprite::Sprite(const Ref<Texture2D> &texture, const FSpriteGenerator &generator)
+	Sprite::Sprite(TexturePtr texture, const FSpriteGenerator &generator)
 		: mSource(texture),
 		  mGenerator(generator)
 
@@ -20,7 +20,7 @@ namespace BHive
 		Initialize();
 	}
 
-	Sprite::Sprite(const Ref<Texture2D> &texture, const glm::vec2 &min, const glm::vec2 &max)
+	Sprite::Sprite(TexturePtr texture, const glm::vec2 &min, const glm::vec2 &max)
 		: mSource(texture),
 		  mMin(min),
 		  mMax(max)
@@ -39,15 +39,13 @@ namespace BHive
 	void Sprite::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		TAssetHandle<Texture2D> handle(mSource);
-		ar(handle, mMin, mMax, mGenerator);
+		ar(mSource, mMin, mMax, mGenerator);
 	}
 
 	void Sprite::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		TAssetHandle<Texture2D> handle(mSource);
-		ar(handle, mMin, mMax, mGenerator);
+		ar(mSource, mMin, mMax, mGenerator);
 
 		Initialize();
 	}
@@ -68,7 +66,7 @@ namespace BHive
 		ASSERT(mSource, "Source texture is null!");
 
 		auto texture = mSource;
-		glm::vec2 texture_size = texture->GetSize();
+		glm::vec2 texture_size = texture.As<Texture>()->GetSize();
 		mMin = (generator.Coordinates * generator.CellSize) / texture_size;
 		mMax = ((generator.Coordinates + generator.Size) * generator.CellSize) / texture_size;
 	}
@@ -79,16 +77,6 @@ namespace BHive
 		mCoords[1] = {mMax.x, mMin.y};
 		mCoords[2] = mMax;
 		mCoords[3] = {mMin.x, mMax.y};
-	}
-
-	Ref<Sprite> Sprite::Create(const Ref<Texture2D> &texture, const FSpriteGenerator &generator)
-	{
-		return CreateRef<Sprite>(texture, generator);
-	}
-
-	Ref<Sprite> Sprite::Create(const Ref<Texture2D> &texture, const glm::vec2 &min, const glm::vec2 &max)
-	{
-		return CreateRef<Sprite>(texture, min, max);
 	}
 
 	REFLECT(Sprite)

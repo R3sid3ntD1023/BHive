@@ -2,11 +2,10 @@
 
 #include "core/Core.h"
 #include <glm/glm.hpp>
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
-	class Texture2D;
-
 	struct MSDFData;
 
 	struct GlyphBounds
@@ -25,7 +24,7 @@ namespace BHive
 
 		const MSDFData *GetMSDFData() const { return mData; }
 
-		const Ref<Texture2D> &GetAtlas() const { return mTextureAtlas; }
+		TexturePtr GetAtlas() const { return mTextureAtlas; }
 
 	private:
 		void Initialize(const char *filename);
@@ -37,7 +36,7 @@ namespace BHive
 		int mLineHeight = 0;
 		float mDeviceScale;
 
-		Ref<Texture2D> mTextureAtlas;
+		TexturePtr mTextureAtlas;
 		MSDFData *mData = nullptr;
 	};
 

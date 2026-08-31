@@ -7,11 +7,10 @@
 #include "batches/TextRenderBatch.h"
 #include "batches/TextureBatch.h"
 #include "ViewSystem.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
-	class Texture;
-	class Sprite;
 	class Font;
 
 	struct FTextStyle
@@ -62,7 +61,7 @@ namespace BHive
 		const glm::vec2 *TexCoords;
 
 		FColor Color = FColor::White;
-		Ref<Texture2D> TextureRef{nullptr};
+		TexturePtr Texture;
 		glm::vec2 Size{1, 1};
 		glm::vec2 Tiling{1, 1};
 		glm::mat4 Transform{1.0f};
@@ -75,7 +74,7 @@ namespace BHive
 		glm::vec2 Tiling{1, 1};
 		FColor Color{0xffffffff};
 		QuadRendererFlags Flags{0};
-		Ref<Texture2D> TextureRef{nullptr};
+		TexturePtr Texture;
 		FTransform Transform;
 		int32_t EntityID = -1;
 	};
@@ -93,11 +92,11 @@ namespace BHive
 
 		void DrawCircle(const FCircleParams &params, const FTransform &transform, int32_t entity = -1);
 
-		void DrawQuad(const FQuadParams &params, const Ref<Texture2D> &texture, const FTransform &transform, int32_t entity = -1);
+		void DrawQuad(const FQuadParams &params, TexturePtr texture, const FTransform &transform, int32_t entity = -1);
 
-		void DrawSprite(const FQuadParams &params, const Ref<Sprite> &sprite, const FTransform &transform, int32_t entity = -1);
+		void DrawSprite(const FQuadParams &params, SpritePtr sprite, const FTransform &transform, int32_t entity = -1);
 
-		void DrawBillboard(const FView &view, const FQuadParams &params, const Ref<Texture2D> &texture, const FTransform &transform, int32_t entity = -1);
+		void DrawBillboard(const FView &view, const FQuadParams &params, TexturePtr texture, const FTransform &transform, int32_t entity = -1);
 
 		void DrawQuad(const FQuadCreateInfo &create_info, int32_t entity = -1);
 
@@ -106,8 +105,7 @@ namespace BHive
 		void DrawText(const Ref<Font> &font, float size, const std::string &text, const FTextParams &params = {}, const FTransform &transform = {}, int32_t entity = -1);
 
 	private:
-		void DrawTextQuad(
-			const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, const Ref<Texture2D> &texture, int32_t entity = -1);
+		void DrawTextQuad(const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, TexturePtr texture, int32_t entity = -1);
 
 	private:
 		QuadRenderBatch QuadBatch;

@@ -1,50 +1,53 @@
 #pragma once
 
-#include "Sprite.h"
+#include "asset/Asset.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
-	struct Frame
-	{
-		Ref<Sprite> Sprite;
-
-		uint32_t Duration{1};
-
-		template <typename A>
-		void Serialize(A &ar)
-		{
-			ar(Sprite, Duration);
-		}
-	};
 
 	class BHIVE_API FlipBook : public Asset
 	{
 	public:
-		typedef std::vector<Frame> Frames;
+		struct Frame
+		{
+			SpritePtr Sprite;
+
+			uint32_t Duration{1};
+
+			template <typename A>
+			void Serialize(A &ar)
+			{
+				ar(Sprite, Duration);
+			}
+		};
 
 	public:
 		FlipBook() = default;
 
-		FlipBook(std::initializer_list<Frame> frames);
+		FlipBook(const std::vector<Frame> &frames);
 
 		void Play();
+
 		void Stop();
+
 		void Update(float deltatime);
 
 		void SetLoop(bool loop);
 
 		void SetFramesPerSecond(float fps);
 
-		void AddFrame(const Ref<Sprite> &sprite, uint32_t duration = 1);
-		void InsertFrame(const Ref<Sprite> &sprite, uint32_t duration = 1, uint32_t index = 0);
+		void AddFrame(SpritePtr sprite, uint32_t duration = 1);
 
-		Ref<Sprite> RemoveSprite(uint32_t index);
+		void InsertFrame(SpritePtr sprite, uint32_t duration = 1, uint32_t index = 0);
 
-		void SetFrames(const Frames &frames);
+		SpritePtr RemoveSprite(uint32_t index);
 
-		Ref<Sprite> GetCurrentSprite() const;
+		void SetFrames(const std::vector<FlipBook::Frame> &frames);
 
-		const Frames &GetFrames() const;
+		SpritePtr GetCurrentSprite() const;
+
+		const auto &GetFrames() const { return mFrames; }
 
 		bool IsLooping() const { return mIsLooping; }
 
@@ -52,8 +55,9 @@ namespace BHive
 
 		float GetFramesPerSecond() const { return mFramesPerSecond; }
 
-		Ref<Sprite> GetSpriteAtFrame(int32_t frame) const;
-		Ref<Sprite> GetSpriteAtTime(float time) const;
+		SpritePtr GetSpriteAtFrame(int32_t frame) const;
+
+		SpritePtr GetSpriteAtTime(float time) const;
 
 		float GetTotalTime() const;
 
@@ -68,7 +72,7 @@ namespace BHive
 		int32_t GetFrameIndexAtTime(float time) const;
 
 	private:
-		Frames mFrames;
+		std::vector<Frame> mFrames;
 
 		float mFramesPerSecond = 15.0f;
 

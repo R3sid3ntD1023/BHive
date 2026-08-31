@@ -43,7 +43,7 @@ namespace BHive
 		if (auto sampler = mergedRefl.FindSampler(name, MATERIAL_SET_INDEX))
 		{
 			MaterialSnapshot::TextureBinding binding{};
-			binding.TextureRef = texture.TextureRef;
+			binding.Texture = texture.Texture;
 			binding.BaseMipLevel = texture.BaseMipLevel;
 			binding.BaseArrayLayer = texture.BaseArrayLayer;
 			binding.Binding = sampler->Binding;

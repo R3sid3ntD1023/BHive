@@ -89,13 +89,13 @@ namespace BHive
 
 		void UseFramebuffer(Ref<Framebuffer> fbo, ImageSubresourceRange colorRange = {});
 
-		void UseTexture(Ref<Texture> tex, EImageUsage access, ImageSubresourceRange range = {});
+		void UseTexture(TexturePtr tex, EImageUsage access, ImageSubresourceRange range = {});
 
 		void UseBuffer(Ref<BufferBase> buffer, EBufferUsage access);
 
 		void BindGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer);
 
-		void BindGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture);
+		void BindGlobal(uint32_t set, uint32_t binding, TexturePtr texture);
 
 		void EndPhase();
 

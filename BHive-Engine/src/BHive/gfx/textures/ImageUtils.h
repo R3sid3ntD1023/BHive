@@ -10,7 +10,9 @@ namespace BHive
 	struct BHIVE_API ImageUtils
 	{
 		static void SaveImage(const std::filesystem::path &path, unsigned w, unsigned h, unsigned c, void *data);
-		static void SaveImage(const std::filesystem::path &path, const Ref<Framebuffer> &target, unsigned attachment = 0);
-		static void SaveImage(const std::filesystem::path &path, const Ref<Texture2D> &texture);
+
+		static void SaveImage(const std::filesystem::path &path, Framebuffer *target, unsigned attachment = 0);
+
+		static void SaveImage(const std::filesystem::path &path, Texture2D *texture);
 	};
 } // namespace BHive

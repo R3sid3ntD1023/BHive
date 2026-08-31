@@ -48,20 +48,6 @@ namespace BHive
 		mImage.Upload(info.Data, size, region, range);
 	}
 
-	Ref<Texture2D> VulkanTexture2D::CreateSubTexture(const FSubTexture &texture)
-	{
-		auto size = mBuffer.GetSize();
-
-		Buffer pixels(size);
-		GetSubImage(texture, size, &pixels[0]);
-
-		return Texture2D::Create(texture.Size, mCreateInfo, pixels);
-	}
-
-	void VulkanTexture2D::GetSubImage(const FSubTexture &texture, size_t size, uint8_t *data) const
-	{
-	}
-
 	void VulkanTexture2D::Initialize()
 	{
 		auto format = ToVkFormat(mCreateInfo.Format);

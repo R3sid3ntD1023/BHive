@@ -3,7 +3,7 @@
 #include "asset/Asset.h"
 #include "core/Core.h"
 #include "core/math/Math.h"
-#include "gfx/Texture.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
@@ -30,9 +30,9 @@ namespace BHive
 		Sprite() = default;
 		Sprite(const Sprite &other);
 
-		Sprite(const Ref<Texture2D> &texture, const FSpriteGenerator &generator);
+		Sprite(TexturePtr texture, const FSpriteGenerator &generator);
 
-		Sprite(const Ref<Texture2D> &texture, const glm::vec2 &min, const glm::vec2 &max);
+		Sprite(TexturePtr texture, const glm::vec2 &min, const glm::vec2 &max);
 
 		void SetCoords(const glm::vec2 &min, const glm::vec2 &max);
 
@@ -41,16 +41,13 @@ namespace BHive
 		void Save(cereal::BinaryOutputArchive &ar) const;
 		void Load(cereal::BinaryInputArchive &ar);
 
-		const Ref<Texture2D> &GetSourceTexture() const { return mSource; }
+		TexturePtr GetSourceTexture() const { return mSource; }
+
 		const glm::vec2 *GetCoords() const { return mCoords.data(); }
 		const glm::vec2 &GetMinCoords() const { return mMin; }
 		const glm::vec2 &GetMaxCoords() const { return mMax; }
 
 		const FSpriteGenerator &GetGenerator() const { return mGenerator; }
-
-		static Ref<Sprite> Create(const Ref<Texture2D> &texture, const FSpriteGenerator &generator);
-
-		static Ref<Sprite> Create(const Ref<Texture2D> &texture, const glm::vec2 &min, const glm::vec2 &max);
 
 		REFLECTABLEV(Asset)
 
@@ -60,7 +57,7 @@ namespace BHive
 		void CalculateMinMax(const FSpriteGenerator &generator);
 
 	private:
-		Ref<Texture2D> mSource;
+		TexturePtr mSource;
 
 		glm::vec2 mMin{0, 0};
 

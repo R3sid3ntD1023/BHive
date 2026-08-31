@@ -4,34 +4,19 @@
 #include "VulkanBackend.h"
 #include "gfx/Texture.h"
 #include "gfx/RenderCommand.h"
+#include "gfx/factories/TextureFactory.h"
 
 namespace BHive
 {
 	static const uint32_t sMaxFramebufferSize = 8192;
 
-	Ref<Texture> CreateFramebufferTexture(const glm::uvec2 &size, uint32_t samples, const FFramebufferTexture &specification)
+	TexturePtr CreateFramebufferTexture(const glm::uvec2 &size, uint32_t samples, const FFramebufferTexture &specification)
 	{
 		if (specification.ExternalTexture)
 			return specification.ExternalTexture;
 
 		auto &type = specification.Type;
-
-		switch (type)
-		{
-		case ETextureType::TEXTURE_2D:
-			return Texture2D::Create({size.x, size.y}, specification.CreateInfo);
-		case ETextureType::TEXTURE_CUBE_MAP:
-			return TextureCube::Create(size.x, specification.CreateInfo);
-		case ETextureType::TEXTURE_2D_ARRAY:
-			return Texture2DArray::Create({size.x, size.y}, specification.CreateInfo);
-		case ETextureType::TEXTURE_CUBE_MAP_ARRAY:
-			return TextureCubeArray::Create(size.x, specification.CreateInfo);
-		default:
-			break;
-		}
-
-		ASSERT(false);
-		return nullptr;
+		return TextureFactory::Create(type, size, specification.CreateInfo);
 	}
 
 	VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecification &specification)
@@ -99,13 +84,13 @@ namespace BHive
 		ASSERT(attachmentIndex < mColorAttachmentSpecifications.size());
 	}
 
-	Ref<Texture> VulkanFramebuffer::GetColorAttachment(uint32_t index) const
+	TexturePtr VulkanFramebuffer::GetColorAttachment(uint32_t index) const
 	{
 		ASSERT(index < mColorAttachments.size());
 		return mColorAttachments[index];
 	}
 
-	Ref<Texture> VulkanFramebuffer::GetDepthAttachment() const
+	TexturePtr VulkanFramebuffer::GetDepthAttachment() const
 	{
 		return mDepthAttachment;
 	}
@@ -113,7 +98,7 @@ namespace BHive
 	void VulkanFramebuffer::Initialize()
 	{
 		mColorAttachments.clear();
-		mDepthAttachment.reset();
+		mDepthAttachment = {};
 
 		auto numColorAttachments = mColorAttachmentSpecifications.size();
 		if (numColorAttachments)
@@ -139,7 +124,7 @@ namespace BHive
 		std::vector<vk::RenderingAttachmentInfo> color_infos;
 		for (size_t i = 0; i < mColorAttachments.size(); i++)
 		{
-			auto attachment = mColorAttachments[i];
+			auto attachment = mColorAttachments[i].As<Texture>();
 			auto &spec = mColorAttachmentSpecifications[i];
 			auto view = Cast<IVulkanTextureInterface>(attachment)->ResolveRenderView(range.baseArrayLayer, range.baseMipLevel);
 
@@ -155,7 +140,7 @@ namespace BHive
 		if (mDepthAttachment)
 		{
 			auto &spec = mDepthSpecification;
-			auto view = Cast<IVulkanTextureInterface>(mDepthAttachment)->ResolveRenderView(0, 0);
+			auto view = Cast<IVulkanTextureInterface>(mDepthAttachment.As<Texture>())->ResolveRenderView(0, 0);
 
 			depthInfo = vk::RenderingAttachmentInfo(
 				view, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eDepthStencilAttachmentOptimal, info.DepthLoadOp, info.DepthStoreOp, info.ClearDepthValue);

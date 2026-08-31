@@ -15,7 +15,7 @@ namespace BHive
 	public:
 		BloomMaterial();
 
-		Ref<Texture> AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set) override;
+		TexturePtr AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set) override;
 
 		void Init(const glm::uvec2 &size) override;
 

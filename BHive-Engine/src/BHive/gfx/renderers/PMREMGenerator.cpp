@@ -5,6 +5,7 @@
 #include "PMREMGenerator.h"
 #include "gfx/Pipeline.h"
 #include "Renderer.h"
+#include "gfx/factories/TextureFactory.h"
 
 namespace BHive
 {
@@ -19,7 +20,7 @@ namespace BHive
 		InitializeTextures();
 	}
 
-	PMREMResult PMREMGenerator::GenerateEnvironmentMaps(const Ref<Texture2D> &hdr)
+	PMREMResult PMREMGenerator::GenerateEnvironmentMaps(Texture2DPtr hdr)
 	{
 		mInput = hdr;
 
@@ -102,7 +103,7 @@ namespace BHive
 		cubeInfo.MipLevels = mSettings.PrefilterMipLevels;
 		cubeInfo.DebugName = "EnvironmentCube";
 		cubeInfo.Roles |= ETextureRole::ComputeWrite;
-		mEnvironmentTextures.Environment = TextureCube::Create(mSettings.EnvironmentMapSize, cubeInfo);
+		mEnvironmentTextures.Environment = TextureFactory::CreateCube(mSettings.EnvironmentMapSize, cubeInfo);
 
 		FTextureCreateInfo convolutionInfo{};
 		convolutionInfo.Format = EFormat::RGBA32F;
@@ -110,7 +111,7 @@ namespace BHive
 		convolutionInfo.MinFilter = EMinFilter::LINEAR;
 		convolutionInfo.Roles |= ETextureRole::ComputeWrite;
 		convolutionInfo.DebugName = "Irradiance";
-		mEnvironmentTextures.Irradiance = TextureCube::Create(mSettings.IrradianceSize, convolutionInfo);
+		mEnvironmentTextures.Irradiance = TextureFactory::CreateCube(mSettings.IrradianceSize, convolutionInfo);
 
 		FTextureCreateInfo preFilteredInfo{};
 		preFilteredInfo.Format = EFormat::RGBA16F;
@@ -120,10 +121,10 @@ namespace BHive
 		preFilteredInfo.MipLevels = mSettings.PrefilterMipLevels;
 		preFilteredInfo.Roles |= ETextureRole::ComputeWrite;
 		preFilteredInfo.DebugName = "PreFilterEnvironment";
-		mEnvironmentTextures.PreFilter = TextureCube::Create(mSettings.PrefilterMapSize, preFilteredInfo);
+		mEnvironmentTextures.PreFilter = TextureFactory::CreateCube(mSettings.PrefilterMapSize, preFilteredInfo);
 	}
 
-	Ref<Texture2D> BRDFLUTGenerator::GenerateBRDFLUTMap(uint32_t size)
+	Texture2DPtr BRDFLUTGenerator::GenerateBRDFLUTMap(uint32_t size)
 	{
 		FTextureCreateInfo brdfLUTInfo{};
 		brdfLUTInfo.Format = EFormat::RG16F;
@@ -133,7 +134,7 @@ namespace BHive
 		brdfLUTInfo.Roles |= ETextureRole::ComputeWrite;
 		brdfLUTInfo.DebugName = "BRDFLUT Texture";
 
-		auto brdfLUT = Texture2D::Create({size, size}, brdfLUTInfo);
+		auto brdfLUT = TextureFactory::Create2D({size, size}, brdfLUTInfo);
 
 		auto bindings = FComputeBindings(PMREM_BRDFLUT);
 		bindings.SetTexture("brdfLutTexture", FTextureBinding(brdfLUT));
