@@ -55,23 +55,7 @@ namespace BHive
 
 		void EndBatching();
 
-		template <template <typename> class TRegistry, typename TResourceType>
-		void RegisterResourceRegistry()
-		{
-			auto hash = TypeID<TResourceType>::value;
-			ASSERT(!mResourceRegistries.contains(hash));
-			mResourceRegistries.emplace(hash, CreateScope<TRegistry<TResourceType>>());
-		}
-
 		ShaderManager &GetShaderManager() { return mShaderManager; }
-
-		template <typename TResourceType>
-		IResourceRegistry *GetResourceRegistry()
-		{
-			auto hash = TypeID<TResourceType>::value;
-			ASSERT(mResourceRegistries.contains(hash));
-			return mResourceRegistries.at(hash).get();
-		}
 
 		static Renderer &Get() { return *sInstance; }
 
@@ -123,8 +107,6 @@ namespace BHive
 		static inline Renderer *sInstance = nullptr;
 
 	public:
-		std::unordered_map<uint32_t, Scope<IResourceRegistry>> mResourceRegistries;
-
 		LineRenderer Line;
 
 		QuadRenderer Quad;

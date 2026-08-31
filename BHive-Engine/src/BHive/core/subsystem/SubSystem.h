@@ -63,7 +63,7 @@ namespace BHive
 		std::unordered_map<size_t, Ref<void>> mSubSystems;
 	};
 
-	template<typename S>
+	template <typename S>
 	void RemoveSubSystem()
 	{
 		return SubSystemContext::Get().RemoveSubSystem<S>();

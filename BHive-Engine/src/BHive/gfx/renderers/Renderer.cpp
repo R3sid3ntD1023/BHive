@@ -3,7 +3,7 @@
 #include "gfx/RenderCommand.h"
 #include "gfx/Buffers.h"
 #include "gfx/Pipeline.h"
-#include "gfx/registries/ResourceRegistry.h"
+#include "gfx/registries/RegistryManager.h"
 #include "gfx/factories/TextureFactory.h"
 
 namespace BHive
@@ -46,10 +46,7 @@ namespace BHive
 
 		mAPI->Init();
 
-		// register resource registries
-		RegisterResourceRegistry<ResourceRegistry, Material>();
-		RegisterResourceRegistry<ResourceRegistry, BaseMesh>();
-		RegisterResourceRegistry<ResourceRegistry, Texture>();
+		ResourceRegistriesManager::Init();
 
 		PipelineRegistry::Initialize();
 
@@ -61,6 +58,8 @@ namespace BHive
 
 	Renderer::~Renderer()
 	{
+		ResourceRegistriesManager::Shutdown();
+
 		mData.reset();
 		PipelineRegistry::Shutdown();
 		mAPI->Shutdown();
