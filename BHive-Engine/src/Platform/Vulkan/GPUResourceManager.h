@@ -43,7 +43,8 @@ namespace BHive
 
 		vk::raii::Image Image = VK_NULL_HANDLE;
 		vk::raii::Sampler Sampler = VK_NULL_HANDLE;
-		std::map<ViewKey, vk::raii::ImageView> Views;
+		vk::ImageView View = VK_NULL_HANDLE;
+		std::map<ViewKey, vk::raii::ImageView> LayerMipViews;
 		MemoryAllocation Allocation;
 	};
 

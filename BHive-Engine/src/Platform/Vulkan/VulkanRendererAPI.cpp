@@ -1,12 +1,11 @@
 #include "VulkanRendererAPI.h"
-#include "VulkanSwapChain.h"
-#include "VulkanImage.h"
+#include "VulkanBackend.h"
 #include "VulkanCommandTranslater.h"
 #include "VulkanFramebuffer.h"
-#include "VulkanBackend.h"
-#include "gfx/renderers/Renderer.h"
 #include "VulkanImage.h"
 #include "VulkanQuery.h"
+#include "VulkanSwapChain.h"
+#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {
@@ -163,7 +162,7 @@ namespace BHive
 			vk::DebugUtilsLabelEXT label(phase.Name.c_str(), {0.0f, 1.0f, 0.0f, 1.0f});
 			cmd.beginDebugUtilsLabelEXT(label);
 
-			VulkanCommandTranslator::CreateBarriers(phase.BufferTransitions, ctx);
+			VulkanInterpreter::CreateBarriers(phase.BufferTransitions, ctx);
 
 			TransitionImages(phase, cmd);
 
@@ -175,7 +174,7 @@ namespace BHive
 					BeginOffScreenRendering(state, phase, ctx);
 			}
 
-			VulkanCommandTranslator::ExecuteCommandList(phase, ctx);
+			VulkanInterpreter::ExecuteCommandList(phase, ctx);
 
 			if (phase.Type == EPhaseType::Graphics)
 			{

@@ -13,7 +13,7 @@
 
 namespace BHive
 {
-	void VulkanCommandTranslator::ExecuteCommandList(const FPhase &phase, FVulkanRendererContext &ctx)
+	void VulkanInterpreter::ExecuteCommandList(const FPhase &phase, FVulkanRendererContext &ctx)
 	{
 		auto &cmdbuffer = ctx.CommandBuffer;
 		const auto &frame = ctx.Frame;
@@ -157,7 +157,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanCommandTranslator::CreateBarriers(const std::vector<FBufferTransition> &transitions, FVulkanRendererContext &ctx)
+	void VulkanInterpreter::CreateBarriers(const std::vector<FBufferTransition> &transitions, FVulkanRendererContext &ctx)
 	{
 		if (transitions.empty())
 			return;
@@ -185,7 +185,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanCommandTranslator::BindMaterialSnapshot(const MaterialSnapshot &snap, FVulkanRendererContext &ctx, const FPhase &phase)
+	void VulkanInterpreter::BindMaterialSnapshot(const MaterialSnapshot &snap, FVulkanRendererContext &ctx, const FPhase &phase)
 	{
 		auto &cmd = ctx.CommandBuffer;
 		const auto frame = ctx.Frame;

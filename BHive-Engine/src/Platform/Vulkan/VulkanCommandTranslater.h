@@ -1,11 +1,11 @@
 #pragma once
 
-#include "gfx/rendergraph/Pass.h"
 #include "VulkanRendererAPI.h"
+#include "gfx/rendergraph/Pass.h"
 
 namespace BHive
 {
-	struct VulkanCommandTranslator
+	struct VulkanInterpreter
 	{
 		static void ExecuteCommandList(const FPhase &phase, FVulkanRendererContext &ctx);
 
