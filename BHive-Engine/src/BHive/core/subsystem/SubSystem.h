@@ -83,4 +83,10 @@ namespace BHive
 
 		return SubSystemContext::Get().GetSubSystem<S>();
 	}
+
+	template <typename S>
+	bool HasSubSystems()
+	{
+		return SubSystemContext::Get().HasSubSystems<S>();
+	}
 } // namespace BHive
