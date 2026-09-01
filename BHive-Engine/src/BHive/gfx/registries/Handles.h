@@ -10,6 +10,24 @@ namespace BHive
 	class Sprite;
 	class FlipBook;
 	class SpriteSheet;
+	class Texture3D;
+	class Texture2D;
+	class Texture2DArray;
+	class TextureCube;
+	class TextureCubeArray;
+	class Framebuffer;
+	class Pipeline;
+	class Shader;
+	class IndexBuffer;
+	class VertexBuffer;
+	class GeneralBuffer;
+	class StaticMesh;
+	class SkeletalMesh;
+	class SkeletalAnimation;
+	class Skeleton;
+	class Font;
+	class VertexArray;
+	class BufferBase;
 
 	using MeshPtr = ResourceHandle;
 
@@ -27,7 +45,7 @@ namespace BHive
 
 	using Texture2DArrayPtr = ResourceHandle;
 
-	using Tetxure3DPtr = ResourceHandle;
+	using Texture3DPtr = ResourceHandle;
 
 	using TextureCubePtr = ResourceHandle;
 

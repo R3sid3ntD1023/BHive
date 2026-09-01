@@ -17,7 +17,10 @@ namespace BHive
 	class Framebuffer;
 	class VertexArray;
 	class BufferBase;
+	class IndexBuffer;
+	class VertexBuffer;
 	class Shader;
+	class Pipeline;
 
 	REGISTER_TYPE(Material)
 	REGISTER_TYPE(Texture)
@@ -30,7 +33,9 @@ namespace BHive
 	REGISTER_TYPE(Font)
 	REGISTER_TYPE(Framebuffer)
 	REGISTER_TYPE(VertexArray)
+	REGISTER_TYPE(VertexBuffer)
+	REGISTER_TYPE(IndexBuffer)
 	REGISTER_TYPE(BufferBase)
 	REGISTER_TYPE(Shader)
-
+	REGISTER_TYPE(Pipeline)
 } // namespace BHive
