@@ -1,8 +1,8 @@
 #include "VulkanBuffers.h"
-#include "gfx/RenderCommand.h"
-#include "gfx/renderers/Renderer.h"
 #include "VulkanBackend.h"
 #include "VulkanUtils.h"
+#include "gfx/RenderCommand.h"
+#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {
@@ -35,6 +35,9 @@ namespace BHive
 
 	VulkanBuffer::~VulkanBuffer()
 	{
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+			mMappedPtrs[i] = nullptr;
+
 		auto &mng = VulkanBackend::GetGPUResourceManager();
 		if (mLifeTime == EBufferLifetime::Static)
 		{
@@ -66,9 +69,8 @@ namespace BHive
 
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			auto mapped = mBuffers[i].GetAllocation().MappedPtr;
 			ASSERT(offset + size <= mBuffers[i].Size);
-			std::memcpy(static_cast<std::byte *>(mapped) + offset, data, size);
+			std::memcpy(static_cast<std::byte *>(mMappedPtrs[i]) + offset, data, size);
 		}
 	}
 
@@ -79,8 +81,7 @@ namespace BHive
 
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			auto mapped = mBuffers[i].GetAllocation().MappedPtr;
-			std::memset(mapped, 0, mBuffers[i].Size);
+			std::memset(mMappedPtrs[i], 0, mBuffers[i].Size);
 		}
 	}
 
@@ -94,16 +95,15 @@ namespace BHive
 
 		mBuffers[0] = AllocatedBuffer{bufferID, size};
 		mBuffers[1] = AllocatedBuffer{stageID, size};
-		VulkanBackend::GetGPUResourceManager().MapMemory(stageID, 0, size);
+		mMappedPtrs[1] = mBuffers[1].Map(0, size);
 
 		if (!data)
 			return;
 
 		SingleTimeCommand cmd{};
-		auto mapped_memory = mBuffers[1].GetAllocation().MappedPtr;
-		if (mapped_memory)
+		if (mMappedPtrs[1])
 		{
-			std::memcpy(static_cast<std::byte *>(mapped_memory), data, size);
+			std::memcpy(static_cast<std::byte *>(mMappedPtrs[1]), data, size);
 			vk::BufferCopy region(0, 0, size);
 			cmd.Get().copyBuffer(mBuffers[1].GetBuffer(), mBuffers[0].GetBuffer(), region);
 		}
@@ -116,7 +116,7 @@ namespace BHive
 			auto info = vk::BufferCreateInfo({}, size, usage);
 			auto bufferID = VulkanBackend::GetGPUResourceManager().CreateBuffer(info, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 			mBuffers[i] = AllocatedBuffer{bufferID, size};
-			VulkanBackend::GetGPUResourceManager().MapMemory(bufferID, 0, size);
+			mMappedPtrs[i] = mBuffers[i].Map(0, size);
 		}
 
 		if (data)

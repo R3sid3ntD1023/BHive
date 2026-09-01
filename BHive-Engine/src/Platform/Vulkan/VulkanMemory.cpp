@@ -1,6 +1,6 @@
 #include "VulkanMemory.h"
-#include "VulkanUtils.h"
 #include "VulkanBackend.h"
+#include "VulkanUtils.h"
 
 namespace BHive
 {
@@ -46,14 +46,19 @@ namespace BHive
 		return rm.GetImageView(Views.Default);
 	}
 
-	const MemoryAllocation &AllocatedBuffer::GetAllocation() const
+	void *AllocatedBuffer::Map(vk::DeviceSize offset, vk::DeviceSize size)
 	{
-		return VulkanBackend::GetGPUResourceManager().GetStorage<MemoryAllocation>().Get(Buffer);
+		return VulkanBackend::GetGPUResourceManager().GetBuffer(Buffer).map(offset, size);
+	}
+
+	void AllocatedBuffer::Unmap()
+	{
+		VulkanBackend::GetGPUResourceManager().GetBuffer(Buffer).unmap();
 	}
 
 	vk::Buffer AllocatedBuffer::GetBuffer() const
 	{
-		return VulkanBackend::GetGPUResourceManager().GetBuffer(Buffer);
+		return VulkanBackend::GetGPUResourceManager().GetBuffer(Buffer).Buffer;
 	}
 
 	void ImageStateTracker::Initialize(uint32_t layers, uint32_t mips, const ImageState &initial)

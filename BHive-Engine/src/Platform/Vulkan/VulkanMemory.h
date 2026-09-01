@@ -1,9 +1,9 @@
 #pragma once
 
-#include "gfx/NativeHandle.h"
-#include "gfx/ResourceID.h"
 #include "ImageState.h"
 #include "MemoryAllocator.h"
+#include "gfx/NativeHandle.h"
+#include "gfx/ResourceID.h"
 
 namespace BHive
 {
@@ -77,7 +77,9 @@ namespace BHive
 
 		vk::DeviceSize Size;
 
-		const MemoryAllocation &GetAllocation() const;
+		void *Map(vk::DeviceSize offset = 0, vk::DeviceSize size = VK_WHOLE_SIZE);
+
+		void Unmap();
 
 		vk::Buffer GetBuffer() const;
 	};

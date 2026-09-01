@@ -56,6 +56,7 @@ namespace BHive
 
 		bool operator==(const TResourceID &rhs) const { return mID == rhs.mID; }
 		bool operator!=(const TResourceID &rhs) const { return mID != rhs.mID; }
+		bool operator<(const TResourceID &rhs) const { return mID < rhs.mID; }
 
 	private:
 		mutable uint32_t mID = 0;

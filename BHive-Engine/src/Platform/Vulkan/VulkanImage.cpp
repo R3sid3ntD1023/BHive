@@ -91,11 +91,11 @@ namespace BHive
 			gpu_r_m.UnmapMemory(stagingID);
 		}
 
-		auto staging_buffer = VulkanBackend::GetGPUResourceManager().GetBuffer(stagingID);
+		auto staging_buffer = AllocatedBuffer{.Buffer = stagingID, .Size = size};
 
 		SingleTimeCommand cmd{};
 		Transition(cmd, ImageState::TransferWrite(), range);
-		VulkanUtils::CopyBufferToImage(cmd, staging_buffer, mImage.GetImage(), region);
+		VulkanUtils::CopyBufferToImage(cmd, staging_buffer.GetBuffer(), mImage.GetImage(), region);
 		Transition(cmd, ImageState::ShaderRead(), range);
 
 		gpu_r_m.DestroyBuffer(stagingID);

@@ -1,11 +1,50 @@
 #include "GPUResourceManager.h"
-#include "VulkanUtils.h"
 #include "VulkanBackend.h"
-#include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
+#include "VulkanUtils.h"
+#include "gfx/RenderCommand.h"
 
 namespace BHive
 {
+
+	GPUBufferResource::GPUBufferResource(const std::string &name, vk::BufferCreateInfo info, vk::MemoryPropertyFlags flags)
+	{
+		auto &device = VulkanBackend::GetLogicalDevice();
+		Buffer = device.createBuffer(info);
+		Allocation = VulkanBackend::GetMemoryAllocator().Allocate(Buffer, flags);
+		Buffer.bindMemory(Allocation.Memory, Allocation.Offset);
+
+#if BHIVE_ENABLE_OBJECT_NAMES
+		VulkanBackend::SetObjectName(*Buffer, name);
+#endif
+	}
+
+	GPUBufferResource::~GPUBufferResource()
+	{
+		VulkanBackend::GetMemoryAllocator().Free(Allocation);
+	}
+
+	void *GPUBufferResource::map(vk::DeviceSize offset, vk::DeviceSize size)
+	{
+		if (!Allocation.IsMapped)
+		{
+			MemoryAllocator &allocator = VulkanBackend::GetMemoryAllocator();
+			Allocation.MappedPtr = allocator.Map(Allocation);
+			Allocation.IsMapped = true;
+		}
+		return static_cast<char *>(Allocation.MappedPtr) + offset;
+	}
+
+	void GPUBufferResource::unmap()
+	{
+		if (Allocation.IsMapped && !Allocation.IsDedicated)
+		{
+			MemoryAllocator &allocator = VulkanBackend::GetMemoryAllocator();
+			allocator.UnMap(Allocation);
+			Allocation.IsMapped = false;
+		}
+	}
+
 	GPUResourceManager::~GPUResourceManager()
 	{
 		for (auto &[t, s] : mStorages)
@@ -21,22 +60,8 @@ namespace BHive
 
 	ResourceID GPUResourceManager::CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name)
 	{
-
-		auto &device = VulkanBackend::GetLogicalDevice();
-		auto &physical_device = VulkanBackend::GetPhysicalDevice();
-
 		ResourceID id{};
-		auto &buffer = GetStorage<vk::raii::Buffer>().Create(id);
-		buffer = device.createBuffer(info);
-
-		auto &allocator = VulkanBackend::GetMemoryAllocator();
-		auto &allocation = GetStorage<MemoryAllocation>().Create(id);
-		allocation = allocator.Allocate(buffer, flags);
-
-		buffer.bindMemory(allocation.Memory, allocation.Offset);
-
-		VulkanBackend::SetObjectName(*buffer, name);
-
+		mBuffers.try_emplace(id, name, info, flags);
 		return id;
 	}
 
@@ -100,28 +125,17 @@ namespace BHive
 		if (!buffer)
 			return nullptr;
 
-		auto &allocation = GetStorage<MemoryAllocation>().Get(buffer);
-		if (allocation.IsMapped)
-		{
-			return static_cast<char *>(allocation.MappedPtr) + offset;
-		}
-
-		MemoryAllocator &allocator = VulkanBackend::GetMemoryAllocator();
-		return allocator.Map(allocation);
+		auto &b = mBuffers.at(buffer);
+		return b.map(offset, size);
 	}
 
 	void GPUResourceManager::UnmapMemory(ResourceID buffer)
 	{
-
 		if (!buffer)
 			return;
 
-		auto &allocation = GetStorage<MemoryAllocation>().Get(buffer);
-		if (!allocation.IsMapped || allocation.IsDedicated)
-			return;
-
-		MemoryAllocator &allocator = VulkanBackend::GetMemoryAllocator();
-		allocator.UnMap(allocation);
+		auto &b = mBuffers.at(buffer);
+		b.unmap();
 	}
 
 	void GPUResourceManager::DestroyBuffer(ResourceID handle)
@@ -129,14 +143,8 @@ namespace BHive
 		RenderCommand::QueueDeletion(
 			[this, handle](uint32_t)
 			{
-				auto &allocStorage = GetStorage<MemoryAllocation>();
-				auto &bufStorage = GetStorage<vk::raii::Buffer>();
-
-				auto &alloc = allocStorage.Get(handle);
-				VulkanBackend::GetMemoryAllocator().Free(alloc);
-
-				allocStorage.Remove(handle);
-				bufStorage.Remove(handle);
+				auto &storage = GetStorage<GPUBufferResource>();
+				storage.Remove(handle);
 			});
 	}
 
@@ -266,10 +274,9 @@ namespace BHive
 		return storage.Get(handle);
 	}
 
-	vk::Buffer GPUResourceManager::GetBuffer(ResourceID handle)
+	GPUBufferResource &GPUResourceManager::GetBuffer(ResourceID handle)
 	{
-		auto &storage = GetStorage<vk::raii::Buffer>();
-		return *storage.Get(handle);
+		return mBuffers.at(handle);
 	}
 
 } // namespace BHive

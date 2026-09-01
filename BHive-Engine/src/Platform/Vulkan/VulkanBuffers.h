@@ -1,8 +1,8 @@
 #pragma once
 
-#include "gfx/Buffers.h"
-#include "VulkanMemory.h"
 #include "VKInterfaces.h"
+#include "VulkanMemory.h"
+#include "gfx/Buffers.h"
 
 namespace BHive
 {
@@ -26,6 +26,7 @@ namespace BHive
 
 	private:
 		std::array<AllocatedBuffer, MAX_FRAMES_IN_FLIGHT> mBuffers;
+		std::array<void *, MAX_FRAMES_IN_FLIGHT> mMappedPtrs{};
 		EBufferLifetime mLifeTime{};
 	};
 
