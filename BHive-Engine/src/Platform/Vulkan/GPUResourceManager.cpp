@@ -24,6 +24,8 @@ namespace BHive
 
 	GPUBufferResource::~GPUBufferResource()
 	{
+
+		unmap();
 		mAllocator->Free(Allocation);
 	}
 
@@ -31,8 +33,7 @@ namespace BHive
 	{
 		if (!Allocation.IsMapped)
 		{
-			MemoryAllocator &allocator = VulkanBackend::GetMemoryAllocator();
-			Allocation.MappedPtr = allocator.Map(Allocation);
+			Allocation.MappedPtr = mAllocator->Map(Allocation);
 			Allocation.IsMapped = true;
 		}
 		return static_cast<char *>(Allocation.MappedPtr) + offset;
@@ -42,15 +43,13 @@ namespace BHive
 	{
 		if (Allocation.IsMapped && !Allocation.IsDedicated)
 		{
-			MemoryAllocator &allocator = VulkanBackend::GetMemoryAllocator();
-			allocator.UnMap(Allocation);
+			mAllocator->UnMap(Allocation);
 			Allocation.IsMapped = false;
 		}
 	}
 
 	GPUResourceManager::~GPUResourceManager()
 	{
-		mBuffers.clear();
 		for (auto &[t, s] : mStorages)
 		{
 			auto size = s->Size();
