@@ -1,8 +1,8 @@
 #pragma once
 
-#include "gfx/resources/ImageSubResourceRange.h"
-#include "gfx/renderers/ViewSystem.h"
 #include "Phase.h"
+#include "gfx/renderers/ViewSystem.h"
+#include "gfx/resources/ImageSubResourceRange.h"
 
 namespace BHive
 {
@@ -91,11 +91,11 @@ namespace BHive
 
 		void UseTexture(TexturePtr tex, EImageUsage access, ImageSubresourceRange range = {});
 
-		void UseBuffer(Ref<BufferBase> buffer, EBufferUsage access);
+		void UseBuffer(BufferPtr buffer, EBufferUsage access);
 
-		void BindGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer);
+		void BindBuffer(uint32_t set, uint32_t binding, BufferPtr buffer);
 
-		void BindGlobal(uint32_t set, uint32_t binding, TexturePtr texture);
+		void BindTexture(uint32_t set, uint32_t binding, TexturePtr texture);
 
 		void EndPhase();
 

@@ -11,6 +11,7 @@
 #include "gfx/Buffers.h"
 #include "VulkanShader.h"
 #include "VulkanBindingGroup.h"
+#include "gfx/factories/BufferFactory.h"
 
 namespace BHive
 {
@@ -63,7 +64,7 @@ namespace BHive
 
 		if (mLocalBuffers.contains(name))
 		{
-			mLocalBuffers[name].BufferRef->SetData(param.Data.data(), param.Size);
+			mLocalBuffers[name].Buffer.As<BufferBase>()->SetData(param.Data.data(), param.Size);
 			return;
 		}
 
@@ -91,7 +92,7 @@ namespace BHive
 		for (auto &[name, ubo] : set.UniformBuffers)
 		{
 			MaterialSnapshot::BufferBinding binding{};
-			binding.BufferRef = GeneralBuffer::Create(ubo.Size, EBufferType::UniformBuffer);
+			binding.Buffer = BufferFactory::Create(ubo.Size, EBufferType::UniformBuffer);
 			binding.Binding = ubo.Binding;
 			mLocalBuffers.emplace(name, binding);
 		}
@@ -99,7 +100,7 @@ namespace BHive
 		for (auto &[name, ssbo] : set.StorageBuffers)
 		{
 			MaterialSnapshot::BufferBinding binding{};
-			binding.BufferRef = GeneralBuffer::Create(ssbo.Size, EBufferType::StorageBuffer);
+			binding.Buffer = BufferFactory::Create(ssbo.Size, EBufferType::StorageBuffer);
 			binding.Binding = ssbo.Binding;
 			mLocalBuffers.emplace(name, binding);
 		}

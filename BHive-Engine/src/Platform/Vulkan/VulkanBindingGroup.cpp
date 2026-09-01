@@ -1,12 +1,12 @@
 #include "VulkanBindingGroup.h"
 #include "VulkanBackend.h"
-#include "gfx/BufferBase.h"
-#include "gfx/Texture.h"
+#include "VulkanBuffers.h"
 #include "VulkanConversions.h"
 #include "VulkanRendererAPI.h"
-#include "gfx/RenderCommand.h"
-#include "VulkanBuffers.h"
 #include "VulkanShader.h"
+#include "gfx/BufferBase.h"
+#include "gfx/RenderCommand.h"
+#include "gfx/Texture.h"
 
 namespace BHive
 {
@@ -19,7 +19,7 @@ namespace BHive
 		CreateDescriptorSet(shader->GetDescriptorSetLayout(setIndex));
 	}
 
-	void VulkanBindingGroup::SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer)
+	void VulkanBindingGroup::SetBuffer(uint32_t binding, BufferPtr buffer)
 	{
 		if (auto info = FindBinding(binding); info && info->Buffer != buffer)
 		{
@@ -30,7 +30,8 @@ namespace BHive
 
 	void VulkanBindingGroup::SetTexture(uint32_t binding, TexturePtr texture, uint32_t mip)
 	{
-		if (auto info = FindBinding(binding); info && (info->Texture != texture || info->MipLevel != mip))
+		auto info = FindBinding(binding);
+		if (info && (info->Texture != texture || info->MipLevel != mip))
 		{
 			info->Texture = texture;
 			info->MipLevel = mip;
@@ -73,7 +74,7 @@ namespace BHive
 	{
 		ASSERT(bindInfo.Buffer)
 
-		auto handle = bindInfo.Buffer->GetNativeHandle().As<VulkanBuffer>();
+		auto handle = bindInfo.Buffer.As<BufferBase>()->GetNativeHandle().As<VulkanBuffer>();
 		auto &buf = handle->GetNative(frame);
 		return vk::DescriptorBufferInfo(buf.GetBuffer(), 0, buf.Size);
 	}
@@ -148,24 +149,19 @@ namespace BHive
 
 		for (auto &b : mBindings)
 		{
+			if (!b.Buffer && !b.Texture)
+				continue;
+
 			if (IsBuffer(b.Type))
 			{
-				if (!b.Buffer)
-					continue;
-
 				mCachedBufferInfos.push_back(BuildBufferInfo(b, frame));
 				auto &bufInfo = mCachedBufferInfos.back();
-
 				mCachedWrites.emplace_back(set, b.Binding, 0, ToVkType(b.Type), nullptr, bufInfo);
 			}
 			else if (IsTexture(b.Type))
 			{
-				if (!b.Texture)
-					continue;
-
 				mCachedImageInfos.push_back(BuildImageInfo(b, b.MipLevel));
 				auto &imgInfo = mCachedImageInfos.back();
-
 				mCachedWrites.emplace_back(set, b.Binding, 0, ToVkType(b.Type), imgInfo);
 			}
 		}

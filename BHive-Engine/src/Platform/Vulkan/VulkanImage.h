@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Platform/Vulkan/VulkanMemory.h"
 #include "Platform/Vulkan/ImageViewBuilder.h"
-#include "gfx/resources/ImageCopyRegion.h"
-#include "gfx/resources/ImageSubresourceRange.h"
+#include "Platform/Vulkan/VulkanMemory.h"
 #include "VKInterfaces.h"
 #include "core/delegates/EventDelegate.h"
+#include "gfx/resources/ImageCopyRegion.h"
+#include "gfx/resources/ImageSubresourceRange.h"
 
 namespace BHive
 {

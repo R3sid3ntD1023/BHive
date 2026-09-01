@@ -46,6 +46,19 @@ namespace BHive
 			return it != mOrderedMaterials.end() ? std::dynamic_pointer_cast<T>(*it).get() : nullptr;
 		}
 
+		void Resize(const glm::uvec2 &size)
+		{
+			if (size.x <= 0 || size.y <= 0)
+				return;
+
+			mSize = size;
+
+			for (auto &mat : mOrderedMaterials)
+			{
+				mat->Resize(size);
+			}
+		}
+
 		void Init(const glm::uvec2 &size)
 		{
 			if (size.x <= 0 || size.y <= 0)
@@ -61,14 +74,14 @@ namespace BHive
 
 		TexturePtr Build(RenderGraph &graph, FPostProcessTextureSet &set)
 		{
-			set.PrevOutput = set.SceneColor;
+			auto output = set.SceneColor;
 
 			for (auto &mat : mOrderedMaterials)
 			{
-				set.PrevOutput = mat->AddToGraph(graph, set);
+				output = mat->AddToGraph(graph, set);
 			}
 
-			return set.PrevOutput;
+			return output;
 		}
 
 	private:

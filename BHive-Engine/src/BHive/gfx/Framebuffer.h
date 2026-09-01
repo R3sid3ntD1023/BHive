@@ -1,9 +1,9 @@
 #pragma once
 
+#include "TextureSpecification.h"
 #include "core/Core.h"
 #include "core/math/Math.h"
 #include "gfx/registries/Handles.h"
-#include "TextureSpecification.h"
 
 namespace BHive
 {
@@ -54,6 +54,8 @@ namespace BHive
 		const FFramebufferTexture &GetDepthAttachment() const { return mDepthAttachment; }
 
 		const FRenderbufferTexture &GetRenderBuffer() const { return mRenderBufferSpecification; }
+
+		uint32_t GetColorAttachmentCount() const { return mColorAttachments.size(); }
 
 	private:
 		std::vector<FFramebufferTexture> mColorAttachments;

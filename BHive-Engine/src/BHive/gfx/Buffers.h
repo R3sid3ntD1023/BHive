@@ -37,8 +37,6 @@ namespace BHive
 		virtual ~IndexBuffer() = default;
 
 		virtual uint32_t GetCount() const = 0;
-
-		static Ref<IndexBuffer> Create(const uint32_t count, EBufferLifetime lifetime = EBufferLifetime::Dynamic, const uint32_t *data = nullptr);
 	};
 
 	class BHIVE_API VertexBuffer : public BufferBase
@@ -49,8 +47,6 @@ namespace BHive
 		virtual void SetLayout(const BufferLayout &layout) = 0;
 
 		virtual const BufferLayout &GetLayout() const = 0;
-
-		static Ref<VertexBuffer> Create(const uint64_t size, EBufferLifetime lifetime = EBufferLifetime::Dynamic, const void *data = nullptr);
 	};
 
 	class BHIVE_API GeneralBuffer : public BufferBase
@@ -59,8 +55,6 @@ namespace BHive
 		virtual ~GeneralBuffer() = default;
 
 		virtual void BindAtBindingPoint(uint32_t binding) = 0;
-
-		static Ref<GeneralBuffer> Create(size_t size, EBufferType type, EBufferLifetime lifetime = EBufferLifetime::Dynamic, const void *data = nullptr);
 	};
 
 } // namespace BHive

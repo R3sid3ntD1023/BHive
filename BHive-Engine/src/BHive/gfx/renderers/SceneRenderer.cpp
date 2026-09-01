@@ -1,16 +1,16 @@
 #include "SceneRenderer.h"
-#include "core/math/Transform.h"
-#include "gfx/Camera.h"
-#include "gfx/Framebuffer.h"
-#include "gfx/ShaderManager.h"
-#include "gfx/Texture.h"
 #include "Renderer.h"
+#include "core/math/Transform.h"
 #include "core/math/boundingbox/AABB.h"
 #include "core/math/volumes/SphereVolume.h"
-#include "gfx/mesh/SkeletalMesh.h"
+#include "gfx/Camera.h"
+#include "gfx/Framebuffer.h"
 #include "gfx/Pipeline.h"
 #include "gfx/Query.h"
+#include "gfx/ShaderManager.h"
+#include "gfx/Texture.h"
 #include "gfx/factories/GFXFactories.h"
+#include "gfx/mesh/SkeletalMesh.h"
 
 namespace BHive
 {
@@ -33,7 +33,7 @@ namespace BHive
 	struct RenderBatch
 	{
 		// vao -> material[submissions]
-		std::unordered_map<Ref<VertexArray>, std::unordered_map<MaterialPtr, std::vector<FSubMeshSubmission>>> MaterialBatches;
+		std::unordered_map<VertexArrayPtr, std::unordered_map<MaterialPtr, std::vector<FSubMeshSubmission>>> MaterialBatches;
 
 		std::vector<ObjectData> ObjectDatas;
 
@@ -85,13 +85,14 @@ namespace BHive
 			}
 		}
 
-		void Draw(FPass &pass, Ref<GeneralBuffer> indirect)
+		void Draw(FPass &pass, BufferPtr indirect)
 		{
 			uint32_t globalOffset = 0;
 			// render meshes
 			for (auto &[vao, matMap] : MaterialBatches)
 			{
-				vao->DeclareAccess(pass, EBufferUsage::IndirectRead, EBufferUsage::IndirectRead);
+				auto v = vao.As<VertexArray>();
+				v->DeclareAccess(pass, EBufferUsage::IndirectRead, EBufferUsage::IndirectRead);
 
 				for (auto &[material, submissions] : matMap)
 				{
@@ -101,7 +102,7 @@ namespace BHive
 					pass.Emplace<CmdBindMaterial>()(material.As<Material>());
 
 					uint32_t count = (uint32_t)submissions.size();
-					pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect.get(), vao.get(), count, MULTI_DRAW_INDIRECT_STRIDE, globalOffset);
+					pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect, vao, count, MULTI_DRAW_INDIRECT_STRIDE, globalOffset);
 					globalOffset += count * MULTI_DRAW_INDIRECT_STRIDE;
 				}
 			}
@@ -133,17 +134,17 @@ namespace BHive
 
 		mFramebuffer = FramebufferFactory::Create(specs);
 
-		mCameraUBO = GeneralBuffer::Create(sizeof(FView), EBufferType::UniformBuffer);
+		mCameraUBO = BufferFactory::Create(sizeof(FView), EBufferType::UniformBuffer);
 
 		for (uint32_t i = 0; i < 2; i++)
 		{
-			mInstanceDataBuffer[i] = GeneralBuffer::Create(OBJECT_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
-			mIndirectDrawBuffer[i] = GeneralBuffer::Create(DRAWCOMMAND_BUFFER_SIZE, EBufferType::StorageBuffer | EBufferType::IndirectBuffer, EBufferLifetime::Dynamic);
-			mVisibleBuffer[i] = GeneralBuffer::Create(VISIBILITY_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
+			mInstanceDataBuffer[i] = BufferFactory::Create(OBJECT_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
+			mIndirectDrawBuffer[i] = BufferFactory::Create(DRAWCOMMAND_BUFFER_SIZE, EBufferType::StorageBuffer | EBufferType::IndirectBuffer, EBufferLifetime::Dynamic);
+			mVisibleBuffer[i] = BufferFactory::Create(VISIBILITY_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
 			mFrustrumOcclusionMaterial[i] = MaterialFactory::Create("FrustumOcclusion.glsl");
 		}
 
-		mFrustumUBO = GeneralBuffer::Create(sizeof(Frustum), EBufferType::UniformBuffer, EBufferLifetime::Dynamic);
+		mFrustumUBO = BufferFactory::Create(sizeof(Frustum), EBufferType::UniformBuffer, EBufferLifetime::Dynamic);
 
 		mFrustumMaterial = MaterialFactory::Create("Frustum.glsl");
 
@@ -228,11 +229,11 @@ namespace BHive
 			uint32_t groups = (instanceCount + 256) / 256;
 			auto &occlusionPass = renderer.BeginPass("Occlusion " + passNames[i], EPassType::OffScreen);
 			occlusionPass.BeginPhase(EPhaseType::Compute);
-			occlusionPass.BindGlobal(0, 0, mCameraUBO);
-			occlusionPass.BindGlobal(0, 1, mFrustumUBO);
-			occlusionPass.BindGlobal(3, 0, instanceBuffer);
-			occlusionPass.BindGlobal(3, 1, indirectBuffer);
-			occlusionPass.BindGlobal(3, 2, visibilityBuffer);
+			occlusionPass.BindBuffer(0, 0, mCameraUBO);
+			occlusionPass.BindBuffer(0, 1, mFrustumUBO);
+			occlusionPass.BindBuffer(3, 0, instanceBuffer);
+			occlusionPass.BindBuffer(3, 1, indirectBuffer);
+			occlusionPass.BindBuffer(3, 2, visibilityBuffer);
 
 			occlusionPass.UseBuffer(indirectBuffer, EBufferUsage::StorageWrite);
 			occlusionPass.UseBuffer(visibilityBuffer, EBufferUsage::StorageWrite);
@@ -246,13 +247,13 @@ namespace BHive
 			// render scene passes
 			auto &pass = renderer.BeginPass("Scene " + passNames[i], EPassType::OffScreen, states[i]);
 			pass.BeginPhase("Phase " + passNames[i], EPhaseType::Graphics);
-			pass.BindGlobal(0, 0, mCameraUBO);
-			pass.BindGlobal(0, 1, mLights.GetBuffer());
-			pass.BindGlobal(0, 2, brdfLUT);
-			pass.BindGlobal(0, 3, prefilter);
-			pass.BindGlobal(0, 4, irradiance);
-			pass.BindGlobal(3, 0, instanceBuffer);
-			pass.BindGlobal(3, 2, visibilityBuffer);
+			pass.BindBuffer(0, 0, mCameraUBO);
+			pass.BindBuffer(0, 1, mLights.GetBuffer());
+			pass.BindTexture(0, 2, brdfLUT);
+			pass.BindTexture(0, 3, prefilter);
+			pass.BindTexture(0, 4, irradiance);
+			pass.BindBuffer(3, 0, instanceBuffer);
+			pass.BindBuffer(3, 2, visibilityBuffer);
 			pass.UseFramebuffer(mFramebuffer);
 			pass.UseTexture(prefilter, EImageUsage::ColorRead);
 			pass.UseTexture(irradiance, EImageUsage::ColorRead);
@@ -271,20 +272,20 @@ namespace BHive
 
 		auto &pass = renderer.BeginPass("Frustum", EPassType::OffScreen, states[1]);
 		pass.BeginPhase(EPhaseType::Graphics);
-		pass.BindGlobal(0, 0, mCameraUBO);
-		pass.BindGlobal(0, 1, mFrustumUBO);
+		pass.BindBuffer(0, 0, mCameraUBO);
+		pass.BindBuffer(0, 1, mFrustumUBO);
 		pass.UseFramebuffer(mFramebuffer);
 		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(pipelineNames[0]));
 		pass.Emplace<CmdBindMaterial>()(mFrustumMaterial.As<Material>());
 		pass.Emplace<CmdSetLineWidth>()(1.0f);
-		pass.Emplace<CmdDraw>()(ETopologyMode::Lines, nullptr, 24);
+		pass.Emplace<CmdDraw>()(ETopologyMode::Lines, {}, 24);
 		pass.EndPhase();
 		renderer.EndPass();
 
 		auto &linePass = renderer.BeginPass("Line Renderer", EPassType::OffScreen, states[1]);
 
 		linePass.BeginPhase("Line Rendering", EPhaseType::Graphics);
-		linePass.BindGlobal(0, 0, mCameraUBO);
+		linePass.BindBuffer(0, 0, mCameraUBO);
 		linePass.UseFramebuffer(mFramebuffer);
 		linePass.UseBuffer(mCameraUBO, EBufferUsage::UniformRead);
 		renderer.EndBatching();
@@ -301,7 +302,10 @@ namespace BHive
 
 		// post process
 
-		FPostProcessTextureSet set{framebuffer->GetColorAttachment(), framebuffer->GetDepthAttachment()};
+		FPostProcessTextureSet set;
+		set.SceneColor = framebuffer->GetColorAttachment();
+		set.SceneDepth = framebuffer->GetDepthAttachment();
+		set.PrevOutput = framebuffer->GetColorAttachment();
 		mOutputTexture = mPostProcessStack.Build(renderer.GetActiveGraph(), set);
 	}
 

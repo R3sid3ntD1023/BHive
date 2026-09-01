@@ -1,8 +1,8 @@
 #pragma once
 
 #include "IResourceFactory.h"
-#include "gfx/sprite/Sprite.h"
 #include "gfx/sprite/FlipBook.h"
+#include "gfx/sprite/Sprite.h"
 #include "gfx/sprite/SpriteSheet.h"
 
 namespace BHive

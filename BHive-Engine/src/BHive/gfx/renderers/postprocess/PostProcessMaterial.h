@@ -18,6 +18,8 @@ namespace BHive
 
 		virtual void Init(const glm::uvec2 &size) = 0;
 
+		virtual void Resize(const glm::uvec2 &size) = 0;
+
 		virtual TexturePtr AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set) = 0;
 	};
 

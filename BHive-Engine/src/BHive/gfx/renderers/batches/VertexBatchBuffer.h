@@ -1,7 +1,8 @@
 #pragma once
 
 #include "gfx/Buffers.h"
-#include "gfx/VertexArray.h"
+#include "gfx/factories/GFXFactories.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
@@ -16,12 +17,13 @@ namespace BHive
 				mIndexCPU.resize(maxIndices);
 
 			if (useIndexBuffer)
-				mIndexBuffer = IndexBuffer::Create((uint32_t)maxIndices, EBufferLifetime::Dynamic);
+				mIndexBuffer = BufferFactory::CreateIndexBuffer((uint32_t)maxIndices, EBufferLifetime::Dynamic);
 
-			mVertexBuffer = VertexBuffer::Create(maxVerts * sizeof(T), EBufferLifetime::Dynamic);
-			mVertexBuffer->SetLayout(T::GetLayout());
+			mVertexBuffer = BufferFactory::CreateVertexBuffer(maxVerts * sizeof(T), EBufferLifetime::Dynamic);
 
-			mVertexArray = VertexArray::Create({mVertexBuffer}, mIndexBuffer);
+			mVertexBuffer.As<VertexBuffer>()->SetLayout(T::GetLayout());
+
+			mVertexArray = VertexArrayFactory::Create({mVertexBuffer}, mIndexBuffer);
 		}
 
 		T *PushVertex() { return &mVertexCPU[mVertexCount++]; }
@@ -31,10 +33,10 @@ namespace BHive
 		// sets the index and vertex buffer data
 		void Upload()
 		{
-			mVertexBuffer->SetData(mVertexCPU.data(), mVertexCount * sizeof(T));
+			mVertexBuffer.As<VertexBuffer>()->SetData(mVertexCPU.data(), mVertexCount * sizeof(T));
 
 			if (mUseIndexBuffer)
-				mIndexBuffer->SetData(mIndexCPU.data(), mIndexCount * sizeof(uint32_t));
+				mIndexBuffer.As<IndexBuffer>()->SetData(mIndexCPU.data(), mIndexCount * sizeof(uint32_t));
 		}
 
 		void Reset()
@@ -43,7 +45,7 @@ namespace BHive
 			mVertexCount = 0;
 		}
 
-		Ref<VertexArray> GetVAO() const { return mVertexArray; }
+		VertexArrayPtr GetVAO() const { return mVertexArray; }
 		uint32_t GetIndexCount() const { return mIndexCount; }
 		uint32_t GetVertexCount() const { return mVertexCount; }
 
@@ -56,8 +58,8 @@ namespace BHive
 		uint32_t mIndexCount = 0;
 		uint32_t mVertexCount = 0;
 
-		Ref<IndexBuffer> mIndexBuffer;
-		Ref<VertexBuffer> mVertexBuffer;
-		Ref<VertexArray> mVertexArray;
+		IndexBufferPtr mIndexBuffer;
+		VertexBufferPtr mVertexBuffer;
+		VertexArrayPtr mVertexArray;
 	};
 } // namespace BHive

@@ -42,19 +42,19 @@ namespace BHive
 		mCurrentPhase->Images.emplace_back(tex, access, range);
 	}
 
-	void FPass::UseBuffer(Ref<BufferBase> buffer, EBufferUsage access)
+	void FPass::UseBuffer(BufferPtr buffer, EBufferUsage access)
 	{
 		ASSERT(mCurrentPhase)
 		mCurrentPhase->Buffers.push_back({buffer, access});
 	}
 
-	void FPass::BindGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer)
+	void FPass::BindBuffer(uint32_t set, uint32_t binding, BufferPtr buffer)
 	{
 		ASSERT(mCurrentPhase && buffer)
 		mCurrentPhase->BoundBuffers[GlobalBinding{set, binding}] = buffer;
 	}
 
-	void FPass::BindGlobal(uint32_t set, uint32_t binding, TexturePtr texture)
+	void FPass::BindTexture(uint32_t set, uint32_t binding, TexturePtr texture)
 	{
 		ASSERT(mCurrentPhase && texture)
 		mCurrentPhase->BoundTextures[GlobalBinding{set, binding}] = texture;
@@ -68,7 +68,7 @@ namespace BHive
 
 	void FPass::ResolveBufferTransitons()
 	{
-		std::unordered_map<Ref<BufferBase>, EBufferUsage> lastBufferAccess;
+		std::unordered_map<BufferPtr, EBufferUsage> lastBufferAccess;
 
 		for (auto &phase : Phases)
 		{

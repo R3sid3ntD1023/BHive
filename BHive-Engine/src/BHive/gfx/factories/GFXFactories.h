@@ -1,7 +1,8 @@
 #pragma once
 
-#include "TextureFactory.h"
-#include "MeshFactory.h"
-#include "MaterialFactory.h"
-#include "SpriteFactory.h"
+#include "BufferFactory.h"
 #include "FramebufferFactory.h"
+#include "MaterialFactory.h"
+#include "MeshFactory.h"
+#include "SpriteFactory.h"
+#include "TextureFactory.h"

@@ -15,26 +15,25 @@ namespace BHive
 	public:
 		VulkanVertexArray();
 
-		VulkanVertexArray(const std::vector<Ref<VertexBuffer>> &vertex_buffers, const Ref<IndexBuffer> &index_buffer = nullptr);
+		VulkanVertexArray(const std::vector<VertexBufferPtr> &vertex_buffers, IndexBufferPtr index_buffer = {});
 
 		void Bind(vk::CommandBuffer cmd, uint32_t frame);
 
-		virtual void SetIndexBuffer(const Ref<IndexBuffer> &indexbuffer) override;
+		virtual void SetIndexBuffer(IndexBufferPtr indexbuffer) override;
 
-		virtual void AddVertexBuffer(const Ref<VertexBuffer> &vertexbuffer) override;
+		virtual void AddVertexBuffer(VertexBufferPtr vertexbuffer) override;
 
-		virtual const Ref<IndexBuffer> &GetIndexBuffer() const override { return mIndexBuffer; }
+		virtual IndexBufferPtr GetIndexBuffer() const override { return mIndexBuffer; }
 
-		virtual const std::vector<Ref<VertexBuffer>> &GetVertexBuffers() const override { return mVertexBuffers; }
+		virtual const std::vector<VertexBufferPtr> &GetVertexBuffers() const override { return mVertexBuffers; }
 
 	private:
-		void CreateBindingsAndAttributes(const Ref<VertexBuffer> &vertexbuffer);
+		void CreateBindingsAndAttributes(VertexBufferPtr vertexbuffer);
 
-		
-	private:
-		Ref<IndexBuffer> mIndexBuffer;
+		private:
+		IndexBufferPtr mIndexBuffer;
 
-		std::vector<Ref<VertexBuffer>> mVertexBuffers;
+		std::vector<VertexBufferPtr> mVertexBuffers;
 
 		Bindings mBindings;
 

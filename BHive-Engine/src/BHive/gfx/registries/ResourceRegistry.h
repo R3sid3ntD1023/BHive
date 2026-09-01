@@ -1,19 +1,15 @@
 #pragma once
 
-#include "core/Core.h"
-#include "ResourceHandle.h"
 #include "IResourceRegistry.h"
 #include "ResourceTypes.h"
+#include "core/Core.h"
 
 namespace BHive
 {
-
 	template <typename T>
 	class ResourceRegistry : public IResourceRegistry
 	{
 	public:
-		using Handle = ResourceHandle;
-
 		struct Entry
 		{
 			Ref<T> Resource;
@@ -22,7 +18,7 @@ namespace BHive
 
 		template <typename U, typename... TArgs>
 			requires(std::is_base_of_v<T, U>)
-		Handle CreateResource(TArgs &&...args)
+		ResourceHandle CreateResource(TArgs &&...args)
 		{
 			uint32_t index;
 			if (!mFreeList.empty())
@@ -40,10 +36,10 @@ namespace BHive
 			e.Resource = CreateRef<U>(std::forward<TArgs>(args)...);
 			e.Generation++;
 
-			return Handle{index, e.Generation, TypeID<T>::value, e.Resource.get()};
+			return ResourceHandle{index, e.Generation, TypeID<T>::value};
 		}
 
-		void Destroy(Handle h)
+		void Destroy(ResourceHandle h)
 		{
 			if (!IsValid(h))
 				return;
@@ -51,11 +47,10 @@ namespace BHive
 			auto &slot = mEntries[h.Index];
 			slot.Generation++;
 			slot.Resource.reset();
-			h.Ptr = nullptr;
 			mFreeList.push_back(h.Index);
 		}
 
-		void *GetRaw(Handle h) const
+		void *GetRaw(ResourceHandle h) const
 		{
 			if (!IsValid(h))
 				return nullptr;
@@ -64,21 +59,13 @@ namespace BHive
 			return slot.Resource.get();
 		}
 
-		bool IsValid(Handle h) const
+		bool IsValid(ResourceHandle h) const
 		{
-			if (!h.IsValid())
-			{
-				LOG_WARN("Invalid handle {}", TypeName<T>::value);
-				return false;
-			}
-
-			if (h.Type != TypeID<T>::value)
-			{
-				LOG_WARN("Invalid Type for registry {}", TypeName<T>::value);
-				return false;
-			}
-
 			if (h.Index >= mEntries.size())
+				return false;
+
+			auto &slot = mEntries[h.Index];
+			if (slot.Generation != h.Generation)
 				return false;
 
 			return true;

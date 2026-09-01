@@ -1,12 +1,13 @@
 #include "Lights.h"
 #include "gfx/Buffers.h"
 #include "Renderer.h"
+#include "gfx/factories/BufferFactory.h"
 
 namespace BHive
 {
 	void Lights::Init()
 	{
-		mLightBuffer = GeneralBuffer::Create(sizeof(FLightBufferData), EBufferType::StorageBuffer);
+		mLightBuffer = BufferFactory::Create(sizeof(FLightBufferData), EBufferType::StorageBuffer);
 	}
 
 	void Lights::BeginRecording()
@@ -16,7 +17,7 @@ namespace BHive
 
 	void Lights::EndRecording()
 	{
-		mLightBuffer->SetData(&mLightInfo, sizeof(FLightBufferData));
+		mLightBuffer.As<GeneralBuffer>()->SetData(&mLightInfo, sizeof(FLightBufferData));
 	}
 
 	void Lights::Submit(const DirectionalLight &light)

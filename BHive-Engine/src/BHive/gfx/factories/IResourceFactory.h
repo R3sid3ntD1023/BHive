@@ -1,10 +1,9 @@
 #pragma once
 
 #include "core/Core.h"
-#include "gfx/renderers/Renderer.h"
-#include "gfx/registries/ResourceRegistry.h"
-#include "gfx/registries/Handles.h"
 #include "core/subsystem/SubSystem.h"
+#include "gfx/registries/Handles.h"
+#include "gfx/registries/ResourceRegistry.h"
 
 namespace BHive
 {

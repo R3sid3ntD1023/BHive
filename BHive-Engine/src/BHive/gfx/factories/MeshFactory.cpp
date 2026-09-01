@@ -1,7 +1,7 @@
 #include "MeshFactory.h"
-#include "gfx/mesh/StaticMesh.h"
-#include "gfx/mesh/SkeletalMesh.h"
 #include "gfx/animation/Skeleton.h"
+#include "gfx/mesh/SkeletalMesh.h"
+#include "gfx/mesh/StaticMesh.h"
 
 namespace BHive
 {

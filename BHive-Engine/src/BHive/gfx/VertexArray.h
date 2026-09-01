@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Buffers.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
@@ -11,18 +12,14 @@ namespace BHive
 	public:
 		virtual ~VertexArray() = default;
 
-		virtual void SetIndexBuffer(const Ref<IndexBuffer> &indexbuffer) = 0;
+		virtual void SetIndexBuffer(IndexBufferPtr indexbuffer) = 0;
 
-		virtual void AddVertexBuffer(const Ref<VertexBuffer> &vertexbuffer) = 0;
+		virtual void AddVertexBuffer(VertexBufferPtr vertexbuffer) = 0;
 
-		virtual const Ref<IndexBuffer> &GetIndexBuffer() const = 0;
+		virtual IndexBufferPtr GetIndexBuffer() const = 0;
 
-		virtual const std::vector<Ref<VertexBuffer>> &GetVertexBuffers() const = 0;
+		virtual const std::vector<VertexBufferPtr> &GetVertexBuffers() const = 0;
 
 		void DeclareAccess(FPass &pass, EBufferUsage vbAccess, EBufferUsage ibAccess);
-
-		static Ref<VertexArray> Create();
-
-		static Ref<VertexArray> Create(const std::vector<Ref<VertexBuffer>> &vertex_buffers, const Ref<IndexBuffer> &index_buffer = nullptr);
 	};
 } // namespace BHive

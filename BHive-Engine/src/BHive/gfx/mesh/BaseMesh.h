@@ -3,6 +3,7 @@
 #include "asset/Asset.h"
 #include "gfx/material/MaterialTable.h"
 #include "MeshData.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
@@ -21,9 +22,7 @@ namespace BHive
 
 		void Initialize();
 
-		const Ref<VertexArray> &GetVertexArray() const { return mVertexArray; }
-
-		Ref<VertexArray> &GetVertexArray() { return mVertexArray; }
+		VertexArrayPtr GetVertexArray() const { return mVertexArray; }
 
 		virtual AABB GetBoundingBox() const { return mData.mBoundingBox; }
 
@@ -53,7 +52,7 @@ namespace BHive
 	private:
 		FMeshData mData;
 
-		Ref<VertexArray> mVertexArray;
+		VertexArrayPtr mVertexArray;
 
 		MaterialTable mMaterialTable;
 	};

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "IResourceFactory.h"
+#include "gfx/animation/SkeletalAnimation.h"
 #include "gfx/mesh/BaseMesh.h"
 #include "gfx/mesh/SkeletalMesh.h"
-#include "gfx/animation/SkeletalAnimation.h"
 
 namespace BHive
 {

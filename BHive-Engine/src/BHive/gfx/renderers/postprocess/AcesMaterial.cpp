@@ -1,8 +1,8 @@
 #include "AcesMaterial.h"
-#include "gfx/renderers/Renderer.h"
-#include "gfx/Pipeline.h"
 #include "gfx/Framebuffer.h"
+#include "gfx/Pipeline.h"
 #include "gfx/factories/GFXFactories.h"
+#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {
@@ -34,6 +34,14 @@ namespace BHive
 		pass.EndPhase();
 
 		return output;
+	}
+
+	void AcesMaterial::Resize(const glm::uvec2 &size)
+	{
+		if (size.x <= 0 || size.y <= 0)
+			return;
+
+		mFramebuffer.As<Framebuffer>()->Resize(size);
 	}
 
 	void AcesMaterial::Init(const glm::uvec2 &size)

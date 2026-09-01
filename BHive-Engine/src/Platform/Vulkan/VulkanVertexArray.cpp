@@ -47,7 +47,7 @@ namespace BHive
 	{
 	}
 
-	VulkanVertexArray::VulkanVertexArray(const std::vector<Ref<VertexBuffer>> &vertex_buffers, const Ref<IndexBuffer> &index_buffer)
+	VulkanVertexArray::VulkanVertexArray(const std::vector<VertexBufferPtr> &vertex_buffers, IndexBufferPtr index_buffer)
 		: mVertexAttributeIndex(0),
 		  mIndexBuffer(index_buffer),
 		  mVertexBuffers(vertex_buffers)
@@ -64,7 +64,7 @@ namespace BHive
 		std::vector<vk::Buffer> vertex_handles(vb_count, VK_NULL_HANDLE);
 		for (size_t i = 0; i < vb_count; i++)
 		{
-			auto handle = mVertexBuffers[i]->GetNativeHandle().As<VulkanBuffer>();
+			auto handle = mVertexBuffers[i].As<VertexBuffer>()->GetNativeHandle().As<VulkanBuffer>();
 			vertex_handles[i] = handle->GetNative(frame).GetBuffer();
 		}
 
@@ -77,25 +77,25 @@ namespace BHive
 
 		if (mIndexBuffer)
 		{
-			auto index_handle = mIndexBuffer->GetNativeHandle().As<VulkanBuffer>()->GetNative(frame).GetBuffer();
+			auto index_handle = mIndexBuffer.As<IndexBuffer>()->GetNativeHandle().As<VulkanBuffer>()->GetNative(frame).GetBuffer();
 			cmd.bindIndexBuffer(index_handle, 0, vk::IndexType::eUint32);
 		}
 	}
 
-	void VulkanVertexArray::SetIndexBuffer(const Ref<IndexBuffer> &indexbuffer)
+	void VulkanVertexArray::SetIndexBuffer(IndexBufferPtr indexbuffer)
 	{
 		mIndexBuffer = indexbuffer;
 	}
 
-	void VulkanVertexArray::AddVertexBuffer(const Ref<VertexBuffer> &vertexbuffer)
+	void VulkanVertexArray::AddVertexBuffer(VertexBufferPtr vertexbuffer)
 	{
 		mVertexBuffers.emplace_back(vertexbuffer);
 		CreateBindingsAndAttributes(vertexbuffer);
 	}
 
-	void VulkanVertexArray::CreateBindingsAndAttributes(const Ref<VertexBuffer> &vertexbuffer)
+	void VulkanVertexArray::CreateBindingsAndAttributes(VertexBufferPtr vertexbuffer)
 	{
-		auto &layout = vertexbuffer->GetLayout();
+		auto &layout = vertexbuffer.As<VertexBuffer>()->GetLayout();
 		auto &elements = layout.GetElements();
 		auto stride = layout.GetStride();
 

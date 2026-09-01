@@ -1,10 +1,10 @@
 #include "VulkanFramebuffer.h"
-#include "VulkanRendererAPI.h"
-#include "VulkanImage.h"
 #include "VulkanBackend.h"
+#include "VulkanImage.h"
+#include "VulkanRendererAPI.h"
 #include "gfx/Texture.h"
-#include "gfx/RenderCommand.h"
 #include "gfx/factories/TextureFactory.h"
+#include "gfx/registries/RegistryManager.h"
 
 namespace BHive
 {
@@ -22,7 +22,11 @@ namespace BHive
 	VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecification &specification)
 		: mSpecification(specification)
 	{
+		auto count = specification.Attachments.GetColorAttachmentCount();
 		const auto &specs = mSpecification.Attachments.GetColorAttachments();
+
+		mColorAttachments.reserve(count);
+
 		for (size_t i = 0; i < specs.size(); i++)
 		{
 			auto color_attachment_info = specs[i];

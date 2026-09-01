@@ -15,12 +15,12 @@ namespace BHive
 	struct FBindingInfo
 	{
 		uint32_t Binding = 0;
+		uint32_t MipLevel = 0;
 		EResourceType Type{};
 		EResourceCategory Category{};
 
-		Ref<BufferBase> Buffer;
+		BufferPtr Buffer;
 		TexturePtr Texture;
-		uint32_t MipLevel = 0;
 	};
 
 	class VulkanBindingGroup : public IBindingGroup
@@ -28,7 +28,7 @@ namespace BHive
 	public:
 		VulkanBindingGroup(VulkanShader *shader, uint32_t setIndex);
 
-		void SetBuffer(uint32_t binding, const Ref<BufferBase> &buffer);
+		void SetBuffer(uint32_t binding, BufferPtr buffer);
 
 		void SetTexture(uint32_t binding, TexturePtr texture, uint32_t mip = 0);
 

@@ -1,8 +1,8 @@
 #include "VulkanImage.h"
 #include "Platform/Vulkan/GPUResourceManager.h"
-#include "Platform/Vulkan/VulkanUtils.h"
-#include "Platform/Vulkan/VulkanBackend.h"
 #include "Platform/Vulkan/ImageViewBuilder.h"
+#include "Platform/Vulkan/VulkanBackend.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 
 namespace BHive
 {

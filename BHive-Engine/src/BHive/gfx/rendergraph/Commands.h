@@ -20,25 +20,25 @@ namespace BHive
 	{
 		static constexpr ECommandType Type = ECommandType::GenerateMipMaps;
 
-		TexturePtr TextureRef;
+		TexturePtr Texture;
 
-		void operator()(TexturePtr texture) { TextureRef = texture; }
+		void operator()(TexturePtr texture) { Texture = texture; }
 	};
 
 	struct CmdClearBuffer : FCommand
 	{
 		static constexpr ECommandType Type = ECommandType::ClearBuffer;
 
-		Ref<BufferBase> BufferRef;
+		BufferPtr Buffer;
 
-		void operator()(const Ref<BufferBase> &b) { BufferRef = b; }
+		void operator()(BufferPtr b) { Buffer = b; }
 	};
 
 	struct CmdSetBufferData : FCommand
 	{
 		static constexpr ECommandType Type = ECommandType::SetBufferData;
 
-		Ref<BufferBase> BufferRef;
+		BufferPtr Buffer;
 
 		std::vector<std::byte> Data;
 
@@ -46,9 +46,9 @@ namespace BHive
 
 		uint32_t Offset;
 
-		void operator()(const Ref<BufferBase> &b, const void *data, size_t size, uint32_t offset = 0)
+		void operator()(BufferPtr b, const void *data, size_t size, uint32_t offset = 0)
 		{
-			BufferRef = b;
+			Buffer = b;
 			Size = size;
 			Offset = offset;
 			Data.resize(size);
@@ -112,13 +112,13 @@ namespace BHive
 	{
 		static constexpr ECommandType Type = ECommandType::UploadBuffer;
 
-		Ref<BufferBase> Buffer;
+		BufferPtr Buffer;
 
 		Ref<std::vector<std::byte>> Data;
 
 		uint32_t Offset;
 
-		void operator()(const Ref<BufferBase> &buffer, const void *data, size_t size, uint32_t offset = 0)
+		void operator()(BufferPtr buffer, const void *data, size_t size, uint32_t offset = 0)
 		{
 			Buffer = buffer;
 			Offset = offset;
@@ -133,11 +133,11 @@ namespace BHive
 
 		ETopologyMode Mode;
 
-		Ref<VertexArray> VAO;
+		VertexArrayPtr VAO;
 
 		uint32_t Count;
 
-		void operator()(ETopologyMode mode, Ref<VertexArray> vao, uint32_t count)
+		void operator()(ETopologyMode mode, VertexArrayPtr vao, uint32_t count)
 		{
 			Mode = mode;
 			VAO = vao;
@@ -151,11 +151,11 @@ namespace BHive
 
 		ETopologyMode Mode;
 
-		Ref<VertexArray> VAO;
+		VertexArrayPtr VAO;
 
 		uint32_t Count;
 
-		void operator()(ETopologyMode mode, Ref<VertexArray> vao, uint32_t count = 0)
+		void operator()(ETopologyMode mode, VertexArrayPtr vao, uint32_t count = 0)
 		{
 			Mode = mode;
 			VAO = vao;
@@ -168,13 +168,13 @@ namespace BHive
 		static constexpr ECommandType Type = ECommandType::MultiDrawIndexedIndirect;
 
 		ETopologyMode Mode;
-		BufferBase *Buffer;
-		VertexArray *VAO;
+		BufferPtr Buffer;
+		VertexArrayPtr VAO;
 		uint32_t DrawCount = 1;
 		uint64_t Stride = 0;
 		uint32_t Offset = 0;
 
-		void operator()(ETopologyMode mode, BufferBase *buffer, VertexArray *vao, uint32_t drawCount, uint64_t stride = 0, uint32_t offset = 0)
+		void operator()(ETopologyMode mode, BufferPtr buffer, VertexArrayPtr vao, uint32_t drawCount, uint64_t stride = 0, uint32_t offset = 0)
 		{
 			Mode = mode;
 			Buffer = buffer;

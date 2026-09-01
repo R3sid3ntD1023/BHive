@@ -2,10 +2,10 @@
 
 #include "core/Core.h"
 #include "LightCasters.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
-	class GeneralBuffer;
 	class Renderer;
 
 	struct BHIVE_API Lights
@@ -26,7 +26,7 @@ namespace BHive
 
 		const glm::uvec3 &NumLights() const;
 
-		Ref<GeneralBuffer> GetBuffer() const { return mLightBuffer; }
+		BufferPtr GetBuffer() const { return mLightBuffer; }
 
 	private:
 		struct FLightBufferData
@@ -40,7 +40,7 @@ namespace BHive
 	private:
 		FLightBufferData mLightInfo{};
 
-		Ref<GeneralBuffer> mLightBuffer;
+		BufferPtr mLightBuffer;
 	};
 
 } // namespace BHive

@@ -36,7 +36,7 @@ namespace BHive
 
 	struct FMeshSubmissionContext
 	{
-		Ref<VertexArray> VAO;
+		VertexArrayPtr VAO;
 
 		FTransform Transform;
 

@@ -114,15 +114,15 @@ namespace BHive
 
 		MaterialPtr mFrustumMaterial;
 
-		Ref<GeneralBuffer> mFrustumUBO;
+		BufferPtr mFrustumUBO;
 
-		Ref<GeneralBuffer> mCameraUBO;
+		BufferPtr mCameraUBO;
 
-		std::array<Ref<GeneralBuffer>, 2> mVisibleBuffer;
+		std::array<BufferPtr, 2> mVisibleBuffer;
 
-		std::array<Ref<GeneralBuffer>, 2> mIndirectDrawBuffer;
+		std::array<BufferPtr, 2> mIndirectDrawBuffer;
 
-		std::array<Ref<GeneralBuffer>, 2> mInstanceDataBuffer;
+		std::array<BufferPtr, 2> mInstanceDataBuffer;
 
 		FView mView;
 

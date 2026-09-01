@@ -17,6 +17,8 @@ namespace BHive
 
 		void Init(const glm::uvec2 &size) override;
 
+		void Resize(const glm::uvec2 &size) override;
+
 		struct FParams
 		{
 			float Threshold{1.0};
@@ -34,6 +36,8 @@ namespace BHive
 			ASSERT(mip < mMipSizes.size());
 			return mMipSizes[mip];
 		}
+
+		void CalculateMipSizes(const glm::uvec2 &size);
 
 	private:
 		std::array<FramebufferPtr, 2> mFramebuffers;

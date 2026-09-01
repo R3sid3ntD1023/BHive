@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gfx/Framebuffer.h"
 #include "IResourceFactory.h"
+#include "gfx/Framebuffer.h"
 
 namespace BHive
 {

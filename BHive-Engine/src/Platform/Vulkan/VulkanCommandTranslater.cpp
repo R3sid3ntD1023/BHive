@@ -33,21 +33,21 @@ namespace BHive
 			case ECommandType::SetBufferData:
 			{
 				auto &c = *reinterpret_cast<const CmdSetBufferData *>(payloadPtr);
-				auto buffer = c.BufferRef->GetNativeHandle().As<VulkanBuffer>();
+				auto buffer = c.Buffer.As<BufferBase>()->GetNativeHandle().As<VulkanBuffer>();
 				buffer->Upload(c.Data.data(), c.Size, c.Offset);
 			}
 			break;
 			case ECommandType::ClearBuffer:
 			{
 				auto &c = *reinterpret_cast<const CmdClearBuffer *>(payloadPtr);
-				auto buffer = c.BufferRef->GetNativeHandle().As<VulkanBuffer>();
+				auto buffer = c.Buffer.As<BufferBase>()->GetNativeHandle().As<VulkanBuffer>();
 				buffer->ClearData();
 			}
 			break;
 			case ECommandType::GenerateMipMaps:
 			{
 				auto &c = *reinterpret_cast<const CmdGenerateMipMaps *>(payloadPtr);
-				auto vkImage = c.TextureRef.As<Texture>()->GetNativeHandle().As<VulkanImage>();
+				auto vkImage = c.Texture.As<Texture>()->GetNativeHandle().As<VulkanImage>();
 				vkImage->GenerateMipMaps(cmdbuffer);
 			}
 			break;
@@ -84,7 +84,7 @@ namespace BHive
 				auto size = c.Data->size();
 				auto offset = c.Offset;
 
-				c.Buffer->SetData(data, size, offset);
+				c.Buffer.As<BufferBase>()->SetData(data, size, offset);
 			}
 			break;
 			case ECommandType::DrawFullScreen:
@@ -100,8 +100,7 @@ namespace BHive
 
 				if (c.VAO)
 				{
-					auto vao = Cast<VulkanVertexArray>(c.VAO);
-					vao->Bind(cmdbuffer, frame);
+					c.VAO.As<VulkanVertexArray>()->Bind(cmdbuffer, frame);
 				}
 				else
 				{
@@ -118,10 +117,10 @@ namespace BHive
 				if (!c.VAO)
 					break;
 
-				auto vao = Cast<VulkanVertexArray>(c.VAO);
+				auto vao = c.VAO.As<VulkanVertexArray>();
 				vao->Bind(cmdbuffer, frame);
 
-				auto indexBuffer = vao->GetIndexBuffer();
+				auto indexBuffer = vao->GetIndexBuffer().As<IndexBuffer>();
 				auto count = c.Count ? c.Count : indexBuffer->GetCount();
 
 				auto topology = ToVkTopology(c.Mode);
@@ -133,9 +132,10 @@ namespace BHive
 			{
 				auto &c = *reinterpret_cast<const CmdMultiDrawIndexedIndirect *>(payloadPtr);
 				auto topology = ToVkTopology(c.Mode);
-				auto handle = c.Buffer->GetNativeHandle().As<VulkanBuffer>();
+				auto handle = c.Buffer.As<BufferBase>()->GetNativeHandle().As<VulkanBuffer>();
 				auto &buf = handle->GetNative(frame);
-				auto vao = Cast<VulkanVertexArray>(c.VAO);
+
+				auto vao = c.VAO.As<VulkanVertexArray>();
 				auto stride = (uint32_t)c.Stride;
 
 				vao->Bind(cmdbuffer, frame);
@@ -170,7 +170,7 @@ namespace BHive
 
 		for (auto &t : transitions)
 		{
-			auto handle = t.Buffer->GetNativeHandle().As<VulkanBuffer>();
+			auto handle = t.Buffer.As<BufferBase>()->GetNativeHandle().As<VulkanBuffer>();
 			vk::Buffer buf = handle->GetNative(frame).GetBuffer();
 
 			auto srcStage = ToStage(t.Src);
@@ -228,7 +228,7 @@ namespace BHive
 
 			for (auto &[name, buf] : snap.LocalBuffers)
 			{
-				group->SetBuffer(buf.Binding, buf.BufferRef);
+				group->SetBuffer(buf.Binding, buf.Buffer);
 			}
 		}
 

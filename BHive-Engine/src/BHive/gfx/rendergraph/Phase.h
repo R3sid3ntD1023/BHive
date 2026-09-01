@@ -28,13 +28,13 @@ namespace BHive
 
 	struct FBufferUsageInfo
 	{
-		Ref<BufferBase> Buffer;
+		BufferPtr Buffer;
 		EBufferUsage Access;
 	};
 
 	struct FBufferTransition
 	{
-		Ref<BufferBase> Buffer;
+		BufferPtr Buffer;
 		EBufferUsage Src;
 		EBufferUsage Dst;
 	};
@@ -61,7 +61,7 @@ namespace BHive
 
 		ImageSubresourceRange ColorRange{};
 
-		std::unordered_map<GlobalBinding, Ref<BufferBase>> BoundBuffers;
+		std::unordered_map<GlobalBinding, BufferPtr> BoundBuffers;
 
 		std::unordered_map<GlobalBinding, TexturePtr> BoundTextures;
 

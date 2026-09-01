@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	class GeneralBuffer;
+
 	class ShaderProgram;
 	class IBindingGroup;
 
@@ -21,7 +21,7 @@ namespace BHive
 
 		struct BufferBinding
 		{
-			Ref<GeneralBuffer> BufferRef;
+			BufferPtr Buffer;
 			int32_t Binding = 0;
 		};
 

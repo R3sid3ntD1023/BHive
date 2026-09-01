@@ -1,25 +1,25 @@
 #include "SceneLayer.h"
 
-#include "core/Application.h"
-#include "gui/Gui.h"
-#include "gfx/imgui/IImGuiProvider.h"
-#include "gfx/renderers/SceneRenderer.h"
-#include "gfx/Framebuffer.h"
-#include "gfx/material/StandardMaterial.h"
-#include "gfx/material/LambertMaterial.h"
-#include "importers/TextureImporter.h"
-#include "importers/MeshImporter.h"
-#include "importers/MeshImportResolver.h"
-#include "gfx/renderers/postprocess/BloomMaterial.h"
-#include "gfx/renderers/postprocess/AcesMaterial.h"
-#include "gfx/renderers/postprocess/ColorGradingMaterial.h"
 #include "Inspectors/Inspect.h"
+#include "core/Application.h"
 #include "core/WindowInput.h"
 #include "core/layers/ImGuiLayer.h"
 #include "core/platform/Platform.h"
+#include "gfx/Framebuffer.h"
 #include "gfx/factories/MaterialFactory.h"
 #include "gfx/factories/MeshFactory.h"
 #include "gfx/factories/TextureFactory.h"
+#include "gfx/imgui/IImGuiProvider.h"
+#include "gfx/material/LambertMaterial.h"
+#include "gfx/material/StandardMaterial.h"
+#include "gfx/renderers/SceneRenderer.h"
+#include "gfx/renderers/postprocess/AcesMaterial.h"
+#include "gfx/renderers/postprocess/BloomMaterial.h"
+#include "gfx/renderers/postprocess/ColorGradingMaterial.h"
+#include "gui/Gui.h"
+#include "importers/MeshImportResolver.h"
+#include "importers/MeshImporter.h"
+#include "importers/TextureImporter.h"
 
 namespace BHive
 {
@@ -51,7 +51,7 @@ namespace BHive
 
 		// mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
 		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
-		mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
+		// mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
 
 		/*FMeshImportData import_data{};
 		FMeshImportOptions import_options{.ImportMaterials = false};

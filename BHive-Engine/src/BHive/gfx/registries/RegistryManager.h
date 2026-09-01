@@ -1,10 +1,16 @@
 #pragma once
 
+#include "core/Core.h"
 #include "core/subsystem/SubSystem.h"
-#include "ResourceRegistry.h"
+#include "core/type/TypeID.h"
 
 namespace BHive
 {
+	class IResourceRegistry;
+
+	template <typename T>
+	class ResourceRegistry;
+
 	struct ResourceRegistriesManager
 	{
 		static void Init();
@@ -16,7 +22,8 @@ namespace BHive
 		{
 			using U = ResourceRegistry<T>;
 
-			AddSubSystem<U>();
+			auto type = TypeID<T>::value;
+			Registries[type] = &AddSubSystem<U>();
 		}
 
 		template <typename T>
@@ -24,7 +31,14 @@ namespace BHive
 		{
 			using U = ResourceRegistry<T>;
 
+			auto type = TypeID<T>::value;
+			Registries.erase(type);
 			RemoveSubSystem<U>();
 		}
+
+		static IResourceRegistry *GetRegistry(uint32_t type);
+
+	private:
+		static inline std::unordered_map<uint32_t, IResourceRegistry *> Registries;
 	};
 } // namespace BHive

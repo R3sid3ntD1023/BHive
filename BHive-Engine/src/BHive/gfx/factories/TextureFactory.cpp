@@ -1,11 +1,11 @@
 #include "TextureFactory.h"
-#include "importers/TextureImporter.h"
-#include "gfx/RenderCommand.h"
 #include "Platform/Vulkan/textures/VulkanTexture2D.h"
 #include "Platform/Vulkan/textures/VulkanTexture2DArray.h"
 #include "Platform/Vulkan/textures/VulkanTexture3D.h"
 #include "Platform/Vulkan/textures/VulkanTextureCube.h"
 #include "Platform/Vulkan/textures/VulkanTextureCubeArray.h"
+#include "gfx/RenderCommand.h"
+#include "importers/TextureImporter.h"
 
 namespace BHive
 {

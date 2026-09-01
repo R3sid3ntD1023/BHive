@@ -1,6 +1,6 @@
 #include "MaterialFactory.h"
-#include "gfx/material/LambertMaterial.h"
 #include "gfx/material/EmissiveMaterial.h"
+#include "gfx/material/LambertMaterial.h"
 #include "gfx/material/StandardMaterial.h"
 
 namespace BHive

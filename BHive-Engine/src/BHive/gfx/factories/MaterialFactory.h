@@ -1,9 +1,11 @@
+#pragma once
+
 #include "IResourceFactory.h"
 #include "gfx/material/Material.h"
 
 namespace BHive
 {
-	struct BHIVE_API MaterialFactory : IResourceFactory<Material>
+	struct BHIVE_API MaterialFactory : public IResourceFactory<Material>
 	{
 		static MaterialPtr Create(const std::string &shaderName);
 

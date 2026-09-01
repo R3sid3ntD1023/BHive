@@ -4,11 +4,11 @@
 #include "gfx/Enumerations.h"
 #include "gfx/Texture.h"
 #include "gfx/font/Font.h"
-#include "gfx/registries/Handles.h"
-#include "importers/TextureImporter.h"
 
 namespace BHive
 {
+	struct DecodedTexture;
+
 	struct BHIVE_API TextureFactory : public IResourceFactory<Texture>
 	{
 		static TexturePtr Create2D();

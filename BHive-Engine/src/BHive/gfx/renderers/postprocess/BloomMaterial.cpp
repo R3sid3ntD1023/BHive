@@ -1,8 +1,8 @@
 #include "BloomMaterial.h"
-#include "gfx/Pipeline.h"
 #include "gfx/Framebuffer.h"
-#include "gfx/material/Material.h"
+#include "gfx/Pipeline.h"
 #include "gfx/factories/GFXFactories.h"
+#include "gfx/material/Material.h"
 
 namespace BHive
 {
@@ -113,24 +113,37 @@ namespace BHive
 		return compositeOutput;
 	}
 
+	void BloomMaterial::Resize(const glm::uvec2 &size)
+	{
+		if (size.x <= 0 || size.y <= 0)
+			return;
+
+		CalculateMipSizes(size);
+
+		mFramebuffers[0].As<Framebuffer>()->Resize(glm::max(size / 2u, glm::uvec2(1u)));
+		mFramebuffers[1].As<Framebuffer>()->Resize(size);
+	}
+
+	void BloomMaterial::CalculateMipSizes(const glm::uvec2 &size)
+	{
+		mMipSizes.clear();
+
+		glm::uvec2 mipSize = glm::max(size / 2u, glm::uvec2(1u));
+
+		for (uint32_t i = 0; i < MipCount; i++)
+		{
+			mMipSizes.emplace_back(mipSize);
+			mipSize = glm::max(mipSize / 2u, glm::uvec2(1u));
+		}
+	}
+
 	void BloomMaterial::Init(const glm::uvec2 &size)
 	{
 		std::array<FTextureCreateInfo, 2> infos{FTextureCreateInfo{}, FTextureCreateInfo{}};
 
 		glm::uvec2 halfSize = glm::max(size / 2u, glm::uvec2(1u));
 
-		// calculate mip sizes
-		{
-			mMipSizes.clear();
-
-			glm::uvec2 mipSize = halfSize;
-
-			for (uint32_t i = 0; i < MipCount; i++)
-			{
-				mMipSizes.emplace_back(mipSize);
-				mipSize = glm::max(mipSize / 2u, glm::uvec2(1u));
-			}
-		}
+		CalculateMipSizes(size);
 
 		infos[0].WrapMode = EWrapMode::CLAMP_TO_EDGE;
 		infos[0].Format = EFormat::RGBA32F;
