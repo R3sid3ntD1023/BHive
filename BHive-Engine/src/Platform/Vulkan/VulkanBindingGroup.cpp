@@ -75,8 +75,8 @@ namespace BHive
 		ASSERT(bindInfo.Buffer)
 
 		auto handle = bindInfo.Buffer.As<BufferBase>()->GetNativeHandle().As<VulkanBuffer>();
-		auto &buf = handle->GetNative(frame);
-		return vk::DescriptorBufferInfo(buf.GetBuffer(), 0, buf.Size);
+		auto buf = handle->GetNative(frame);
+		return vk::DescriptorBufferInfo(buf->Buffer, 0, buf->Size);
 	}
 
 	vk::DescriptorImageInfo VulkanBindingGroup::BuildImageInfo(const FBindingInfo &bindInfo, uint32_t mip) const

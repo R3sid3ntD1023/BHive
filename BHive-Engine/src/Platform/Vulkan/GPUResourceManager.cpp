@@ -7,11 +7,14 @@
 namespace BHive
 {
 
-	GPUBufferResource::GPUBufferResource(const std::string &name, vk::BufferCreateInfo info, vk::MemoryPropertyFlags flags)
+	GPUBufferResource::GPUBufferResource(const std::string &name, vk::BufferCreateInfo info, vk::MemoryPropertyFlags flags, size_t size, MemoryAllocator *allocator)
+		: Size(size),
+		  mAllocator(allocator)
 	{
 		auto &device = VulkanBackend::GetLogicalDevice();
 		Buffer = device.createBuffer(info);
-		Allocation = VulkanBackend::GetMemoryAllocator().Allocate(Buffer, flags);
+		Allocation = allocator->Allocate(Buffer, flags);
+
 		Buffer.bindMemory(Allocation.Memory, Allocation.Offset);
 
 #if BHIVE_ENABLE_OBJECT_NAMES
@@ -21,7 +24,7 @@ namespace BHive
 
 	GPUBufferResource::~GPUBufferResource()
 	{
-		VulkanBackend::GetMemoryAllocator().Free(Allocation);
+		mAllocator->Free(Allocation);
 	}
 
 	void *GPUBufferResource::map(vk::DeviceSize offset, vk::DeviceSize size)
@@ -47,6 +50,7 @@ namespace BHive
 
 	GPUResourceManager::~GPUResourceManager()
 	{
+		mBuffers.clear();
 		for (auto &[t, s] : mStorages)
 		{
 			auto size = s->Size();
@@ -58,10 +62,10 @@ namespace BHive
 	{
 	}
 
-	ResourceID GPUResourceManager::CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name)
+	GPUBufferResourceHandle GPUResourceManager::CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name)
 	{
-		ResourceID id{};
-		mBuffers.try_emplace(id, name, info, flags);
+		GPUBufferResourceHandle id{};
+		mBuffers.try_emplace(id, name, info, flags, info.size, &VulkanBackend::GetMemoryAllocator());
 		return id;
 	}
 
@@ -120,25 +124,7 @@ namespace BHive
 		return id;
 	}
 
-	void *GPUResourceManager::MapMemory(ResourceID buffer, vk::DeviceSize offset, vk::DeviceSize size)
-	{
-		if (!buffer)
-			return nullptr;
-
-		auto &b = mBuffers.at(buffer);
-		return b.map(offset, size);
-	}
-
-	void GPUResourceManager::UnmapMemory(ResourceID buffer)
-	{
-		if (!buffer)
-			return;
-
-		auto &b = mBuffers.at(buffer);
-		b.unmap();
-	}
-
-	void GPUResourceManager::DestroyBuffer(ResourceID handle)
+	void GPUResourceManager::Destroy(GPUBufferResourceHandle handle)
 	{
 		RenderCommand::QueueDeletion(
 			[this, handle](uint32_t)
@@ -183,11 +169,6 @@ namespace BHive
 				auto &storage = GetStorage<vk::raii::Sampler>();
 				storage.Remove(handle);
 			});
-	}
-
-	void GPUResourceManager::DestroyBuffer(AllocatedBuffer buffer)
-	{
-		DestroyBuffer(buffer.Buffer);
 	}
 
 	void GPUResourceManager::DestroyImage(GPUImage &image)
@@ -251,6 +232,16 @@ namespace BHive
 			});
 	}
 
+	GPUBufferResource *GPUResourceManager::ResolveBuffer(GPUBufferResourceHandle handle)
+	{
+		return &mBuffers.at(handle);
+	}
+
+	GPUImageResource *GPUResourceManager::ResolveImage(GPUImageResourceHandle handle)
+	{
+		return &mImages.at(handle);
+	}
+
 	vk::Image GPUResourceManager::GetImage(ResourceID handle)
 	{
 		if (mExternalImages.contains(handle))
@@ -272,11 +263,6 @@ namespace BHive
 	{
 		auto &storage = GetStorage<vk::raii::Sampler>();
 		return storage.Get(handle);
-	}
-
-	GPUBufferResource &GPUResourceManager::GetBuffer(ResourceID handle)
-	{
-		return mBuffers.at(handle);
 	}
 
 } // namespace BHive

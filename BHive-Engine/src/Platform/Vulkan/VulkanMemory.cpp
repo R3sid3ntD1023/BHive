@@ -46,21 +46,6 @@ namespace BHive
 		return rm.GetImageView(Views.Default);
 	}
 
-	void *AllocatedBuffer::Map(vk::DeviceSize offset, vk::DeviceSize size)
-	{
-		return VulkanBackend::GetGPUResourceManager().GetBuffer(Buffer).map(offset, size);
-	}
-
-	void AllocatedBuffer::Unmap()
-	{
-		VulkanBackend::GetGPUResourceManager().GetBuffer(Buffer).unmap();
-	}
-
-	vk::Buffer AllocatedBuffer::GetBuffer() const
-	{
-		return VulkanBackend::GetGPUResourceManager().GetBuffer(Buffer).Buffer;
-	}
-
 	void ImageStateTracker::Initialize(uint32_t layers, uint32_t mips, const ImageState &initial)
 	{
 		ASSERT(layers > 0 && mips > 0, "layers and levels must be 1 or greater!")

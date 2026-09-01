@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GPUResourceHandle.h"
 #include "VulkanMemory.h"
 #include "core/Core.h"
 
@@ -11,7 +12,7 @@ namespace BHive
 		GPUBufferResource(const GPUBufferResource &) = delete;
 		GPUBufferResource &operator=(const GPUBufferResource &) = delete;
 
-		GPUBufferResource(const std::string &name, vk::BufferCreateInfo info, vk::MemoryPropertyFlags flags);
+		GPUBufferResource(const std::string &name, vk::BufferCreateInfo info, vk::MemoryPropertyFlags flags, size_t Size, MemoryAllocator *allocator);
 
 		~GPUBufferResource();
 
@@ -20,7 +21,12 @@ namespace BHive
 		void unmap();
 
 		vk::raii::Buffer Buffer = VK_NULL_HANDLE;
+
 		MemoryAllocation Allocation;
+
+		vk::DeviceSize Size = 0;
+
+		MemoryAllocator *mAllocator = nullptr;
 	};
 
 	struct GPUImageResource
@@ -131,7 +137,7 @@ namespace BHive
 
 		void Shutdown();
 
-		ResourceID CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name = "");
+		GPUBufferResourceHandle CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name = "");
 
 		ResourceID CreateImage(const vk::ImageCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name = "");
 
@@ -141,11 +147,7 @@ namespace BHive
 
 		ResourceID CreateSampler(const vk::SamplerCreateInfo &info, const std::string &name = "");
 
-		void *MapMemory(ResourceID buffer, vk::DeviceSize offset, vk::DeviceSize size);
-
-		void UnmapMemory(ResourceID buffer);
-
-		void DestroyBuffer(ResourceID handle);
+		void Destroy(GPUBufferResourceHandle handle);
 
 		void DestroyImage(ResourceID handle);
 
@@ -153,9 +155,12 @@ namespace BHive
 
 		void DestroySampler(ResourceID handle);
 
-		void DestroyBuffer(AllocatedBuffer buffer);
-
 		void DestroyImage(GPUImage &image);
+
+		GPUBufferResource *ResolveBuffer(GPUBufferResourceHandle handle);
+
+		GPUImageResource *ResolveImage(GPUImageResourceHandle handle);
+
 		//-------------------getters------------------------------
 
 		vk::Image GetImage(ResourceID handle);
@@ -163,8 +168,6 @@ namespace BHive
 		vk::ImageView GetImageView(ResourceID handle);
 
 		vk::Sampler GetSampler(ResourceID handle);
-
-		GPUBufferResource &GetBuffer(ResourceID handle);
 
 		template <typename T>
 		Storage<T> &GetStorage()
@@ -177,8 +180,10 @@ namespace BHive
 		}
 
 	private:
+		// MemoryAllocator mMemoryAllocator;
 		std::unordered_map<const char *, Ref<StorageBase>> mStorages;
 		std::unordered_set<ResourceID> mExternalImages;
-		std::map<ResourceID, GPUBufferResource> mBuffers;
+		std::map<GPUBufferResourceHandle, GPUBufferResource> mBuffers;
+		std::map<GPUImageResourceHandle, GPUImageResource> mImages;
 	};
 } // namespace BHive

@@ -1,4 +1,4 @@
-#include "VulkanCommandTranslater.h"
+#include "VulkanInterpreter.h"
 #include "VulkanBackendMaterial.h"
 #include "VulkanBuffers.h"
 #include "VulkanConversions.h"
@@ -133,14 +133,14 @@ namespace BHive
 				auto &c = *reinterpret_cast<const CmdMultiDrawIndexedIndirect *>(payloadPtr);
 				auto topology = ToVkTopology(c.Mode);
 				auto handle = c.Buffer.As<BufferBase>()->GetNativeHandle().As<VulkanBuffer>();
-				auto &buf = handle->GetNative(frame);
+				vk::Buffer buf = handle->GetNative(frame)->Buffer;
 
 				auto vao = c.VAO.As<VulkanVertexArray>();
 				auto stride = (uint32_t)c.Stride;
 
 				vao->Bind(cmdbuffer, frame);
 				cmdbuffer.setPrimitiveTopology(topology);
-				cmdbuffer.drawIndexedIndirect(buf.GetBuffer(), c.Offset, c.DrawCount, stride);
+				cmdbuffer.drawIndexedIndirect(buf, c.Offset, c.DrawCount, stride);
 			}
 			break;
 			case ECommandType::SetLineWidth:
@@ -171,7 +171,7 @@ namespace BHive
 		for (auto &t : transitions)
 		{
 			auto handle = t.Buffer.As<BufferBase>()->GetNativeHandle().As<VulkanBuffer>();
-			vk::Buffer buf = handle->GetNative(frame).GetBuffer();
+			vk::Buffer buf = handle->GetNative(frame)->Buffer;
 
 			auto srcStage = ToStage(t.Src);
 			auto dstStage = ToStage(t.Dst);

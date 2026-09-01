@@ -1,7 +1,7 @@
-#include "gfx/RenderCommand.h"
+#include "VulkanVertexArray.h"
 #include "VulkanBuffers.h"
 #include "VulkanRendererAPI.h"
-#include "VulkanVertexArray.h"
+#include "gfx/RenderCommand.h"
 
 namespace BHive
 {
@@ -65,7 +65,7 @@ namespace BHive
 		for (size_t i = 0; i < vb_count; i++)
 		{
 			auto handle = mVertexBuffers[i].As<VertexBuffer>()->GetNativeHandle().As<VulkanBuffer>();
-			vertex_handles[i] = handle->GetNative(frame).GetBuffer();
+			vertex_handles[i] = handle->GetNative(frame)->Buffer;
 		}
 
 		std::vector<vk::DeviceSize> offsets(vb_count, 0);
@@ -77,7 +77,7 @@ namespace BHive
 
 		if (mIndexBuffer)
 		{
-			auto index_handle = mIndexBuffer.As<IndexBuffer>()->GetNativeHandle().As<VulkanBuffer>()->GetNative(frame).GetBuffer();
+			vk::Buffer index_handle = mIndexBuffer.As<IndexBuffer>()->GetNativeHandle().As<VulkanBuffer>()->GetNative(frame)->Buffer;
 			cmd.bindIndexBuffer(index_handle, 0, vk::IndexType::eUint32);
 		}
 	}

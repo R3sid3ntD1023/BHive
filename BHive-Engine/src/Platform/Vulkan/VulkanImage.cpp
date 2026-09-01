@@ -83,22 +83,20 @@ namespace BHive
 	{
 		auto stagingInfo = vk::BufferCreateInfo({}, size, vk::BufferUsageFlagBits::eTransferSrc);
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
-		auto stagingID = gpu_r_m.CreateBuffer(stagingInfo, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+		auto staging = gpu_r_m.CreateBuffer(stagingInfo, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
-		if (auto mapped = gpu_r_m.MapMemory(stagingID, 0, size))
+		if (auto mapped = staging->map(0, size))
 		{
 			std::memcpy(mapped, data, size);
-			gpu_r_m.UnmapMemory(stagingID);
+			staging->unmap();
 		}
-
-		auto staging_buffer = AllocatedBuffer{.Buffer = stagingID, .Size = size};
 
 		SingleTimeCommand cmd{};
 		Transition(cmd, ImageState::TransferWrite(), range);
-		VulkanUtils::CopyBufferToImage(cmd, staging_buffer.GetBuffer(), mImage.GetImage(), region);
+		VulkanUtils::CopyBufferToImage(cmd, staging->Buffer, mImage.GetImage(), region);
 		Transition(cmd, ImageState::ShaderRead(), range);
 
-		gpu_r_m.DestroyBuffer(stagingID);
+		staging.Destroy();
 	}
 
 	void VulkanImage::Transition(vk::CommandBuffer cmd, ImageState newState, ImageSubresourceRange range)

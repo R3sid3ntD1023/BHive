@@ -71,16 +71,4 @@ namespace BHive
 		operator bool() const { return IsValid(); }
 	};
 
-	struct AllocatedBuffer
-	{
-		ResourceID Buffer{0};
-
-		vk::DeviceSize Size;
-
-		void *Map(vk::DeviceSize offset = 0, vk::DeviceSize size = VK_WHOLE_SIZE);
-
-		void Unmap();
-
-		vk::Buffer GetBuffer() const;
-	};
 } // namespace BHive

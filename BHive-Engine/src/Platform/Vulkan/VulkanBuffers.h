@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GPUResourceHandle.h"
 #include "VKInterfaces.h"
 #include "VulkanMemory.h"
 #include "gfx/Buffers.h"
@@ -12,7 +13,7 @@ namespace BHive
 
 		void Init(size_t size, const void *data, vk::BufferUsageFlags usage, EBufferLifetime lifeTime);
 
-		const AllocatedBuffer &GetNative(uint32_t frame = 0) const;
+		GPUBufferResourceHandle GetNative(uint32_t frame = 0) const;
 
 		void Upload(const void *data, size_t size, uint32_t offset);
 
@@ -25,7 +26,7 @@ namespace BHive
 		void InitDynamic(size_t size, const void *data, vk::BufferUsageFlags usage);
 
 	private:
-		std::array<AllocatedBuffer, MAX_FRAMES_IN_FLIGHT> mBuffers;
+		std::array<GPUBufferResourceHandle, MAX_FRAMES_IN_FLIGHT> mBuffers;
 		std::array<void *, MAX_FRAMES_IN_FLIGHT> mMappedPtrs{};
 		EBufferLifetime mLifeTime{};
 	};
