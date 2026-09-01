@@ -1,8 +1,8 @@
 #pragma once
 
 #include "RenderBatch.h"
-#include "VertexBatchBuffer.h"
 #include "TextureBatch.h"
+#include "VertexBatchBuffer.h"
 #include "gfx/material/Material.h"
 
 namespace BHive
@@ -37,7 +37,7 @@ namespace BHive
 
 		void StartBatch() override;
 
-		void Flush(Renderer& renderer) override;
+		void Flush(Renderer &renderer) override;
 
 		void SetTextureBatch(TextureBatchData *texture_batch);
 
@@ -51,7 +51,8 @@ namespace BHive
 	private:
 		TextureBatchData *mTextureBatch = nullptr;
 		Scope<VertexBatchBuffer<TextVertex>> mBuffer;
-		Scope<Material> mMaterial;
+		MaterialPtr mMaterial;
+		PipelinePtr mPipeline;
 		bool mIsActive = false;
 	};
 } // namespace BHive

@@ -1,8 +1,6 @@
 #include "CircleRenderBatch.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/renderers/Renderer.h"
-#include "gfx/material/Material.h"
-#include "gfx/Pipeline.h"
 
 namespace BHive
 {
@@ -16,9 +14,8 @@ namespace BHive
 		state.Raster.CullEnabled = false;
 		state.Depth.DepthWrite = false;
 
-		PipelineRegistry::Register(CIRCLE_PIPELINE_NAME, state);
-
-		mCircleMaterial = CreateScope<Material>("Circle.glsl");
+		mCircleMaterial = MaterialFactory::Create("Circle.glsl");
+		mPipeline = PipelineFactory::Create(state);
 	}
 
 	void CircleRenderBatch::StartBatch()
@@ -41,8 +38,8 @@ namespace BHive
 		mBuffer->Upload();
 
 		auto &pass = renderer.GetActivePass();
-		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(CIRCLE_PIPELINE_NAME));
-		pass.Emplace<CmdBindMaterial>()(mCircleMaterial.get());
+		pass.Emplace<CmdBindPipeline>()(mPipeline);
+		pass.Emplace<CmdBindMaterial>()(mCircleMaterial.As<Material>());
 		pass.Emplace<CmdDraw>()(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
 
 		mIsActive = false;

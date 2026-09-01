@@ -6,11 +6,6 @@
 
 namespace BHive
 {
-	ColorGradingMaterial::ColorGradingMaterial()
-	{
-		mMaterial = MaterialFactory::Create("ColorGrading.glsl");
-	}
-
 	TexturePtr ColorGradingMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
 	{
 		auto input = set.PrevOutput;
@@ -28,7 +23,7 @@ namespace BHive
 		pass.BeginPhase(EPhaseType::Graphics);
 		pass.UseFramebuffer(mFramebuffer);
 		pass.UseTexture(input, EImageUsage::ColorRead);
-		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
+		pass.Emplace<CmdBindPipeline>()(mPipeline);
 		pass.Emplace<CmdBindMaterial>()(material);
 		pass.Emplace<CmdDrawFullScreen>()();
 		pass.EndPhase();
@@ -50,6 +45,9 @@ namespace BHive
 
 	void ColorGradingMaterial::Init(const glm::uvec2 &size)
 	{
+		mMaterial = MaterialFactory::Create("ColorGrading.glsl");
+		mPipeline = PipelineFactory::Create(Pipeline::GetDefaultGraphicsPipelineState());
+
 		FTextureCreateInfo info{};
 		info.Format = EFormat::RGBA32F;
 		info.Roles |= ETextureRole::RenderTarget;

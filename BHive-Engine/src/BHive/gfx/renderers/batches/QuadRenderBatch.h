@@ -1,7 +1,7 @@
 #pragma once
 
-#include "TextureBatch.h"
 #include "RenderBatch.h"
+#include "TextureBatch.h"
 #include "VertexBatchBuffer.h"
 #include "gfx/material/Material.h"
 
@@ -23,7 +23,6 @@ namespace BHive
 		}
 	};
 
-
 	struct QuadRenderBatch : public IRenderBatch
 	{
 		static const uint32_t sMaxQuads = 20'000;
@@ -36,7 +35,7 @@ namespace BHive
 
 		void StartBatch() override;
 
-		void Flush(Renderer& renderer) override;
+		void Flush(Renderer &renderer) override;
 
 		void SetTextureBatch(TextureBatchData *texture_batch);
 
@@ -50,7 +49,8 @@ namespace BHive
 	private:
 		TextureBatchData *mTextureBatch = nullptr;
 		Scope<VertexBatchBuffer<QuadVertex>> mBuffer;
-		Scope<Material> mQuadMaterial;
+		MaterialPtr mQuadMaterial;
+		PipelinePtr mPipeline;
 		bool mIsActive = false;
 	};
 } // namespace BHive

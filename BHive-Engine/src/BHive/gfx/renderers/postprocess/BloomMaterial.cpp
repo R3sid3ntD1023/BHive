@@ -6,14 +6,6 @@
 
 namespace BHive
 {
-	BloomMaterial::BloomMaterial()
-	{
-		mMaterials[0] = MaterialFactory::Create("PreFilter.glsl");
-		mMaterials[1] = MaterialFactory::Create("DownSample.glsl");
-		mMaterials[2] = MaterialFactory::Create("UpSample.glsl");
-		mMaterials[3] = MaterialFactory::Create("Composite.glsl");
-	}
-
 	TexturePtr BloomMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
 	{
 		auto bloomOutput = mFramebuffers[0].As<Framebuffer>()->GetColorAttachment();
@@ -33,7 +25,7 @@ namespace BHive
 			pass.BeginPhase(EPhaseType::Graphics);
 			pass.UseFramebuffer(mFramebuffers[0]);
 			pass.UseTexture(input, EImageUsage::ColorRead);
-			pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
+			pass.Emplace<CmdBindPipeline>()(mPipeline);
 			pass.Emplace<CmdBindMaterial>()(mat);
 			pass.Emplace<CmdDrawFullScreen>()();
 			pass.EndPhase();
@@ -56,7 +48,7 @@ namespace BHive
 				pass.BeginPhase(EPhaseType::Graphics);
 				pass.UseFramebuffer(mFramebuffers[0], dstRange);
 				pass.UseTexture(bloomOutput, EImageUsage::ColorRead, srcRange);
-				pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
+				pass.Emplace<CmdBindPipeline>()(mPipeline);
 				pass.Emplace<CmdBindMaterial>()(mat);
 				pass.Emplace<CmdDrawFullScreen>()();
 				pass.EndPhase();
@@ -81,7 +73,7 @@ namespace BHive
 				pass.BeginPhase(EPhaseType::Graphics);
 				pass.UseFramebuffer(mFramebuffers[0], dstRange);
 				pass.UseTexture(bloomOutput, EImageUsage::ColorRead, srcRange);
-				pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
+				pass.Emplace<CmdBindPipeline>()(mPipeline);
 				pass.Emplace<CmdBindMaterial>()(mat);
 				pass.Emplace<CmdDrawFullScreen>()();
 				pass.EndPhase();
@@ -101,7 +93,7 @@ namespace BHive
 			pass.UseFramebuffer(mFramebuffers[1]);
 			pass.UseTexture(input, EImageUsage::ColorRead);
 			pass.UseTexture(bloomOutput, EImageUsage::ColorRead);
-			pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get("DEFAULT"));
+			pass.Emplace<CmdBindPipeline>()(mPipeline);
 			pass.Emplace<CmdBindMaterial>()(mat);
 			pass.Emplace<CmdDrawFullScreen>()();
 
@@ -139,6 +131,13 @@ namespace BHive
 
 	void BloomMaterial::Init(const glm::uvec2 &size)
 	{
+		mMaterials[0] = MaterialFactory::Create("PreFilter.glsl");
+		mMaterials[1] = MaterialFactory::Create("DownSample.glsl");
+		mMaterials[2] = MaterialFactory::Create("UpSample.glsl");
+		mMaterials[3] = MaterialFactory::Create("Composite.glsl");
+
+		mPipeline = PipelineFactory::Create(Pipeline::GetDefaultGraphicsPipelineState());
+
 		std::array<FTextureCreateInfo, 2> infos{FTextureCreateInfo{}, FTextureCreateInfo{}};
 
 		glm::uvec2 halfSize = glm::max(size / 2u, glm::uvec2(1u));

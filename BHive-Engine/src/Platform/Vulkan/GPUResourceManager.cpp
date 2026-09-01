@@ -143,8 +143,8 @@ namespace BHive
 		RenderCommand::QueueDeletion(
 			[this, handle](uint32_t)
 			{
-				auto &storage = GetStorage<GPUBufferResource>();
-				storage.Remove(handle);
+				auto &storage = mBuffers;
+				storage.erase(handle);
 			});
 	}
 

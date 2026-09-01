@@ -4,13 +4,26 @@
 #include "core/math/boundingbox/AABB.h"
 #include "core/math/volumes/SphereVolume.h"
 #include "gfx/Camera.h"
-#include "gfx/Framebuffer.h"
-#include "gfx/Pipeline.h"
 #include "gfx/Query.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
 #include "gfx/factories/GFXFactories.h"
 #include "gfx/mesh/SkeletalMesh.h"
+
+// {
+// 	auto state = Pipeline::GetDefaultGraphicsPipelineState();
+// 	state.Blend.Enabled = false;
+// 	state.Depth.DepthTest = true;
+// 	state.Depth.DepthWrite = true;
+// 	Register("MESH_MASKED", state);
+// }
+
+// {
+// 	auto state = Pipeline::GetDefaultGraphicsPipelineState();
+// 	state.Depth.DepthTest = true;
+// 	state.Depth.DepthWrite = true;
+// 	Register("MESH_SHADOW", state);
+// }
 
 namespace BHive
 {
@@ -150,7 +163,8 @@ namespace BHive
 
 		mPostProcessStack.Init(size);
 		mLights.Init();
-		// mShadows.Init();
+
+		InitPipelines();
 	}
 
 	void SceneRenderer::SetEnvironmentTexture(Texture2DPtr hdr)
@@ -196,14 +210,14 @@ namespace BHive
 		auto brdfLUT = mEnvironment.GetBRDFLUT();
 
 		static std::string passNames[2] = {"OpaquePass", "TransparentPass"};
-		static std::string pipelineNames[2] = {"MESH_OPAQUE", "MESH_TRANSPARENT"};
-
 		auto &cameraPass = renderer.BeginPass("CameraData", EPassType::OffScreen);
 		cameraPass.BeginPhase(EPhaseType::Transfer);
 		cameraPass.Emplace<CmdSetBufferData>()(mCameraUBO, &mView, sizeof(FView));
 		cameraPass.Emplace<CmdSetBufferData>()(mFrustumUBO, &mFrustum, sizeof(Frustum));
 		cameraPass.EndPhase();
 		renderer.EndPass();
+
+		PipelinePtr pipelines[2] = {mOpaquePipeline, mTransparentPipeline};
 
 		for (uint32_t i = 0; i < 1; i++)
 		{
@@ -263,7 +277,7 @@ namespace BHive
 			pass.UseBuffer(instanceBuffer, EBufferUsage::StorageRead);
 			pass.UseBuffer(visibilityBuffer, EBufferUsage::StorageRead);
 
-			pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(pipelineNames[i]));
+			pass.Emplace<CmdBindPipeline>()(pipelines[i]);
 			batch.Draw(pass, indirectBuffer);
 			pass.EndPhase();
 
@@ -275,7 +289,7 @@ namespace BHive
 		pass.BindBuffer(0, 0, mCameraUBO);
 		pass.BindBuffer(0, 1, mFrustumUBO);
 		pass.UseFramebuffer(mFramebuffer);
-		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(pipelineNames[0]));
+		pass.Emplace<CmdBindPipeline>()(pipelines[0]);
 		pass.Emplace<CmdBindMaterial>()(mFrustumMaterial.As<Material>());
 		pass.Emplace<CmdSetLineWidth>()(1.0f);
 		pass.Emplace<CmdDraw>()(ETopologyMode::Lines, {}, 24);
@@ -388,10 +402,21 @@ namespace BHive
 		mRenderQueue->OnQueueChanged.Broadcast();
 	}
 
-	float SceneRenderer::GetDistanceToCamera(const FTransform &transform)
+	void SceneRenderer::InitPipelines()
 	{
-		const auto &C = mView.Position;
-		return glm::distance(glm::vec3(C), transform[2]);
+		auto opaqueState = Pipeline::GetDefaultGraphicsPipelineState();
+		opaqueState.Blend.Enabled = false;
+		opaqueState.Depth.DepthTest = true;
+		opaqueState.Depth.DepthWrite = true;
+
+		mOpaquePipeline = PipelineFactory::Create(opaqueState);
+
+		auto transparentState = Pipeline::GetDefaultGraphicsPipelineState();
+		transparentState.Blend.Enabled = true;
+		transparentState.Depth.DepthTest = true;
+		transparentState.Depth.DepthWrite = false;
+
+		mTransparentPipeline = PipelineFactory::Create(transparentState);
 	}
 
 	void SceneRenderer::Resize(const glm::uvec2 &size)

@@ -1,8 +1,6 @@
 #include "TextRenderBatch.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/renderers/Renderer.h"
-#include "gfx/material/Material.h"
-#include "gfx/Pipeline.h"
 
 namespace BHive
 {
@@ -25,9 +23,8 @@ namespace BHive
 		state.Blend.DstAlpha = EBlendFactor::OneMinusSrcAlpha;
 		state.Blend.AlphaOp = EBlendOp::Add;
 
-		PipelineRegistry::Register(PIPELINE_NAME, state);
-
-		mMaterial = CreateScope<Material>("Text.glsl");
+		mMaterial = MaterialFactory::Create("Text.glsl");
+		mPipeline = PipelineFactory::Create(state);
 	}
 
 	bool TextRenderBatch::NeedsFlush(uint32_t vNeeded, uint32_t iNeeded)
@@ -49,11 +46,11 @@ namespace BHive
 		mBuffer->Upload();
 
 		auto texture = mTextureBatch->GetTexture();
-		mMaterial->SetTexture("uTexture", {texture});
+		mMaterial.As<Material>()->SetTexture("uTexture", {texture});
 
 		auto &pass = renderer.GetActivePass();
-		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(PIPELINE_NAME));
-		pass.Emplace<CmdBindMaterial>()(mMaterial.get());
+		pass.Emplace<CmdBindPipeline>()(mPipeline);
+		pass.Emplace<CmdBindMaterial>()(mMaterial.As<Material>());
 		pass.Emplace<CmdDrawIndexed>()(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
 
 		mIsActive = false;

@@ -1,13 +1,13 @@
 #pragma once
 
+#include "Command.h"
 #include "core/Core.h"
 #include "gfx/Enumerations.h"
-#include "Command.h"
 #include <imgui.h>
 
-#include "gfx/material/Material.h"
-#include "gfx/material/ComputeBindings.h"
 #include "gfx/Query.h"
+#include "gfx/material/ComputeBindings.h"
+#include "gfx/material/Material.h"
 
 namespace BHive
 {
@@ -90,9 +90,9 @@ namespace BHive
 	{
 		static constexpr ECommandType Type = ECommandType::BindPipeline;
 
-		Pipeline *PipelineRef;
+		PipelinePtr Pipeline;
 
-		void operator()(Pipeline *pipeline) { PipelineRef = pipeline; }
+		void operator()(PipelinePtr pipeline) { Pipeline = pipeline; }
 	};
 
 	/*

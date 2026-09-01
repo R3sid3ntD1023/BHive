@@ -11,8 +11,6 @@ namespace BHive
 		static inline constexpr uint32_t MipCount = 5;
 
 	public:
-		BloomMaterial();
-
 		TexturePtr AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set) override;
 
 		void Init(const glm::uvec2 &size) override;
@@ -43,6 +41,7 @@ namespace BHive
 		std::array<FramebufferPtr, 2> mFramebuffers;
 		std::array<MaterialPtr, 4> mMaterials;
 		std::vector<glm::uvec2> mMipSizes;
+		PipelinePtr mPipeline;
 	};
 
 	REFLECT_EXTERN(BloomMaterial::FParams);

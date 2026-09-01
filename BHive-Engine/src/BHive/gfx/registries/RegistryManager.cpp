@@ -1,6 +1,7 @@
 #include "RegistryManager.h"
 #include "ResourceRegistry.h"
 #include "gfx/Framebuffer.h"
+#include "gfx/Pipeline.h"
 #include "gfx/Texture.h"
 #include "gfx/font/Font.h"
 #include "gfx/material/Material.h"
@@ -19,6 +20,7 @@ namespace BHive
 		RegisterRegistry<Framebuffer>();
 		RegisterRegistry<BufferBase>();
 		RegisterRegistry<VertexArray>();
+		RegisterRegistry<Pipeline>();
 	}
 
 	void ResourceRegistriesManager::Shutdown()
@@ -33,6 +35,7 @@ namespace BHive
 		UnRegisterRegistry<Framebuffer>();
 		UnRegisterRegistry<BufferBase>();
 		UnRegisterRegistry<VertexArray>();
+		UnRegisterRegistry<Pipeline>();
 	}
 
 	IResourceRegistry *ResourceRegistriesManager::GetRegistry(uint32_t type)

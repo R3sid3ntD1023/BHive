@@ -1,14 +1,14 @@
 #pragma once
 
-#include "core/Core.h"
-#include "RenderData.h"
-#include "LightCasters.h"
-#include "postprocess/PostProcessStack.h"
-#include "Lights.h"
-#include "ShadowRenderer.h"
-#include "PMREMGenerator.h"
 #include "EnvironmentSystem.h"
+#include "LightCasters.h"
+#include "Lights.h"
+#include "PMREMGenerator.h"
+#include "RenderData.h"
 #include "RenderQueue.h"
+#include "ShadowRenderer.h"
+#include "core/Core.h"
+#include "postprocess/PostProcessStack.h"
 
 namespace BHive
 {
@@ -101,7 +101,7 @@ namespace BHive
 		const Frustum &GetFrustrum() const { return mFrustum; }
 
 	private:
-		float GetDistanceToCamera(const FTransform &transform);
+		void InitPipelines();
 
 	private:
 		FRenderSettings mRenderSettings; // Render settings for the scene renderer
@@ -141,5 +141,8 @@ namespace BHive
 		ShadowRenderer mShadows;
 
 		EnvironmentSystem mEnvironment;
+
+		PipelinePtr mOpaquePipeline;
+		PipelinePtr mTransparentPipeline;
 	};
 } // namespace BHive

@@ -33,19 +33,19 @@ namespace BHive
 
 		bool NeedsFlush(uint32_t vNeeded, uint32_t iNeeded) override;
 
-		void Flush(Renderer& renderer) override;
+		void Flush(Renderer &renderer) override;
 
 		bool IsActive() const override { return mIsActive; }
 
 		VertexBatchBuffer<CircleVertex> &GetBuffer() { return *mBuffer; }
 
 	private:
-
 		bool IsFull(uint32_t vNeeded, uint32_t iNeeded);
 
 	private:
 		Scope<VertexBatchBuffer<CircleVertex>> mBuffer;
-		Scope<Material> mCircleMaterial;
+		MaterialPtr mCircleMaterial;
+		PipelinePtr mPipeline;
 		bool mIsActive = false;
 	};
 } // namespace BHive

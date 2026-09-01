@@ -1,6 +1,6 @@
-#include "gfx/RenderCommand.h"
 #include "VulkanPipeline.h"
 #include "VulkanConversions.h"
+#include "gfx/RenderCommand.h"
 
 namespace BHive
 {
@@ -58,9 +58,9 @@ namespace BHive
 		return config;
 	}
 
-	void VulkanPipeline::Init(const PipelineState &state)
+	void VulkanPipeline::Init(const PipelineState *state)
 	{
-		mState = state.Clone();
+		mState = state->Clone();
 	}
 
 	void VulkanPipeline::Bind(vk::CommandBuffer cmd, uint32_t frame, uint32_t numAttachments)

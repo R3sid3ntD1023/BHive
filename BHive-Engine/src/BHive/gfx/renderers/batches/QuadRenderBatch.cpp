@@ -1,8 +1,6 @@
 #include "QuadRenderBatch.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/renderers/Renderer.h"
-#include "gfx/material/Material.h"
-#include "gfx/Pipeline.h"
 
 namespace BHive
 {
@@ -16,9 +14,8 @@ namespace BHive
 		state.Raster.CullEnabled = false;
 		state.Depth.DepthWrite = false;
 
-		PipelineRegistry::Register(QUAD_PIPELINE_NAME, state);
-
-		mQuadMaterial = CreateScope<Material>("Quad.glsl");
+		mQuadMaterial = MaterialFactory::Create("Quad.glsl");
+		mPipeline = PipelineFactory::Create(state);
 	}
 
 	void QuadRenderBatch::Flush(Renderer &renderer)
@@ -29,11 +26,11 @@ namespace BHive
 		mBuffer->Upload();
 
 		auto texture = mTextureBatch->GetTexture();
-		mQuadMaterial->SetTexture("uTexture", {texture});
+		mQuadMaterial.As<Material>()->SetTexture("uTexture", {texture});
 
 		auto &pass = renderer.GetActivePass();
-		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(QUAD_PIPELINE_NAME));
-		pass.Emplace<CmdBindMaterial>()(mQuadMaterial.get());
+		pass.Emplace<CmdBindPipeline>()(mPipeline);
+		pass.Emplace<CmdBindMaterial>()(mQuadMaterial.As<Material>());
 		pass.Emplace<CmdDrawIndexed>()(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
 
 		mIsActive = false;

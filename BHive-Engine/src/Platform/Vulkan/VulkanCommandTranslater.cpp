@@ -1,15 +1,15 @@
 #include "VulkanCommandTranslater.h"
-#include "gfx/rendergraph/Commands.h"
-#include <backends/imgui_impl_vulkan.h>
+#include "VulkanBackendMaterial.h"
+#include "VulkanBuffers.h"
 #include "VulkanConversions.h"
 #include "VulkanPipeline.h"
 #include "VulkanShader.h"
 #include "VulkanVertexArray.h"
-#include "VulkanBackendMaterial.h"
-#include "VulkanBuffers.h"
+#include "gfx/Framebuffer.h"
 #include "gfx/material/Material.h"
 #include "gfx/renderers/Renderer.h"
-#include "gfx/Framebuffer.h"
+#include "gfx/rendergraph/Commands.h"
+#include <backends/imgui_impl_vulkan.h>
 
 namespace BHive
 {
@@ -67,7 +67,7 @@ namespace BHive
 			case ECommandType::BindPipeline:
 			{
 				auto &c = *reinterpret_cast<const CmdBindPipeline *>(payloadPtr);
-				auto pipeline = Cast<VulkanPipeline>(c.PipelineRef);
+				auto pipeline = c.Pipeline.As<VulkanPipeline>();
 				pipeline->Bind(cmdbuffer, frame, numAttachments);
 			}
 			break;

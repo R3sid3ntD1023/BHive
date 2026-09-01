@@ -9,8 +9,6 @@ namespace BHive
 	class BHIVE_API ColorGradingMaterial : public PostProcessMaterial
 	{
 	public:
-		ColorGradingMaterial();
-
 		void Init(const glm::uvec2 &size) override;
 
 		void Resize(const glm::uvec2 &size) override;
@@ -28,6 +26,7 @@ namespace BHive
 	private:
 		FramebufferPtr mFramebuffer;
 		MaterialPtr mMaterial;
+		PipelinePtr mPipeline;
 	};
 
 	REFLECT_EXTERN(ColorGradingMaterial::FParams);

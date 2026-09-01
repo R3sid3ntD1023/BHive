@@ -1,9 +1,7 @@
+#include "LineRenderBatch.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/ShaderManager.h"
-#include "LineRenderBatch.h"
-#include "gfx/material/Material.h"
 #include "gfx/renderers/Renderer.h"
-#include "gfx/Pipeline.h"
 
 namespace BHive
 {
@@ -17,9 +15,8 @@ namespace BHive
 		state.Raster.CullEnabled = false;
 		state.DrawMode = ETopologyMode::Lines;
 
-		PipelineRegistry::Register(LINE_PIPELINE_NAME, state);
-
-		mLineMaterial = CreateScope<Material>("Line.glsl");
+		mLineMaterial = MaterialFactory::Create("Line.glsl");
+		mPipeline = PipelineFactory::Create(state);
 	}
 
 	bool LineRenderBatch::NeedsFlush(uint32_t vNeeded, uint32_t iNeeded)
@@ -41,9 +38,9 @@ namespace BHive
 		mBuffer->Upload();
 
 		auto &pass = renderer.GetActivePass();
-		pass.Emplace<CmdBindPipeline>()(PipelineRegistry::Get(LINE_PIPELINE_NAME));
+		pass.Emplace<CmdBindPipeline>()(mPipeline);
 		pass.Emplace<CmdSetLineWidth>()(glm::max(0.01f, mLineWidth));
-		pass.Emplace<CmdBindMaterial>()(mLineMaterial.get());
+		pass.Emplace<CmdBindMaterial>()(mLineMaterial.As<Material>());
 		pass.Emplace<CmdDraw>()(ETopologyMode::Lines, mBuffer->GetVAO(), mBuffer->GetVertexCount());
 
 		mIsActive = false;

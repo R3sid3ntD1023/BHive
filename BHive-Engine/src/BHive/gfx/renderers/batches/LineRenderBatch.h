@@ -41,7 +41,8 @@ namespace BHive
 
 	private:
 		Scope<VertexBatchBuffer<FLineVertex>> mBuffer;
-		Scope<Material> mLineMaterial;
+		MaterialPtr mLineMaterial;
+		PipelinePtr mPipeline;
 		bool mIsActive = false;
 		float mLineWidth = 1.f;
 	};

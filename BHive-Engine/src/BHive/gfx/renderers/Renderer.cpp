@@ -1,10 +1,8 @@
-#include "gfx/Texture.h"
 #include "Renderer.h"
 #include "gfx/RenderCommand.h"
-#include "gfx/Buffers.h"
-#include "gfx/Pipeline.h"
-#include "gfx/registries/RegistryManager.h"
+#include "gfx/Texture.h"
 #include "gfx/factories/TextureFactory.h"
+#include "gfx/registries/RegistryManager.h"
 
 namespace BHive
 {
@@ -48,8 +46,6 @@ namespace BHive
 
 		ResourceRegistriesManager::Init();
 
-		PipelineRegistry::Initialize();
-
 		mData = CreateRef<RenderData>();
 
 		Line.Initialize();
@@ -61,7 +57,6 @@ namespace BHive
 		ResourceRegistriesManager::Shutdown();
 
 		mData.reset();
-		PipelineRegistry::Shutdown();
 		mAPI->Shutdown();
 	}
 
