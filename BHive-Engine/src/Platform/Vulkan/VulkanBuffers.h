@@ -1,7 +1,6 @@
 #pragma once
 
 #include "GPUResourceHandle.h"
-#include "VKInterfaces.h"
 #include "VulkanMemory.h"
 #include "gfx/Buffers.h"
 

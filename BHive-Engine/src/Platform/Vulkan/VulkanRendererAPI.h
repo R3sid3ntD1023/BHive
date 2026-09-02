@@ -3,7 +3,6 @@
 #include "VulkanCore.h"
 #include "gfx/RendererAPI.h"
 #include "gfx/WindowContext.h"
-#include "ImageState.h"
 
 namespace BHive
 {

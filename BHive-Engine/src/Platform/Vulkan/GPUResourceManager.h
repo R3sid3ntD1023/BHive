@@ -3,56 +3,11 @@
 #include "GPUResourceHandle.h"
 #include "VulkanMemory.h"
 #include "core/Core.h"
+#include "resources/GPUBufferResource.h"
+#include "resources/GPUImageResource.h"
 
 namespace BHive
 {
-
-	struct GPUBufferResource
-	{
-		GPUBufferResource(const GPUBufferResource &) = delete;
-		GPUBufferResource &operator=(const GPUBufferResource &) = delete;
-
-		GPUBufferResource(const std::string &name, vk::BufferCreateInfo info, vk::MemoryPropertyFlags flags, size_t Size, MemoryAllocator *allocator);
-
-		~GPUBufferResource();
-
-		void *map(vk::DeviceSize offset = 0, vk::DeviceSize size = VK_WHOLE_SIZE);
-
-		void unmap();
-
-		vk::raii::Buffer Buffer = VK_NULL_HANDLE;
-
-		MemoryAllocation Allocation;
-
-		vk::DeviceSize Size = 0;
-
-		MemoryAllocator *mAllocator = nullptr;
-	};
-
-	struct GPUImageResource
-	{
-		struct ViewKey
-		{
-			uint32_t Layer;
-			uint32_t Face;
-			uint32_t Mip;
-
-			bool operator<(const ViewKey &other) const
-			{
-				if (Layer != other.Layer)
-					return Layer < other.Layer;
-				if (Face != other.Face)
-					return Face < other.Face;
-				return Mip < other.Mip;
-			}
-		};
-
-		vk::raii::Image Image = VK_NULL_HANDLE;
-		vk::raii::Sampler Sampler = VK_NULL_HANDLE;
-		vk::ImageView View = VK_NULL_HANDLE;
-		std::map<ViewKey, vk::raii::ImageView> LayerMipViews;
-		MemoryAllocation Allocation;
-	};
 
 	struct StorageBase
 	{

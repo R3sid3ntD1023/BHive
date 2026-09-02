@@ -1,8 +1,8 @@
 #pragma once
 
+#include "IVulkanTextureInterface.h"
 #include "Platform/Vulkan/ImageViewBuilder.h"
 #include "Platform/Vulkan/VulkanMemory.h"
-#include "VKInterfaces.h"
 #include "core/delegates/EventDelegate.h"
 #include "gfx/resources/ImageCopyRegion.h"
 #include "gfx/resources/ImageSubresourceRange.h"
