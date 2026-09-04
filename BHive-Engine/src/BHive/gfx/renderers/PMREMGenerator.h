@@ -27,28 +27,15 @@ namespace BHive
 	class BHIVE_API PMREMGenerator
 	{
 	public:
-		PMREMGenerator() = default;
+		static void Initialize(const PMREMSettings &settings = {});
 
-		void Initialize(const PMREMSettings &settings = {});
-
-		PMREMResult GenerateEnvironmentMaps(Texture2DPtr hdr);
-
-		auto &GetEnvironmentCube() const { return mEnvironmentTextures.Environment; }
-		auto &GetIrradiance() const { return mEnvironmentTextures.Irradiance; }
-		auto &GetPreFilter() const { return mEnvironmentTextures.PreFilter; }
+		static PMREMResult GenerateEnvironmentMaps(Texture2DPtr hdr);
 
 	private:
-		void InitializeTextures();
-
-		void DoEquirectangularConversion(IRendererContext &ctx);
-		void DoGenerateCubeMips(IRendererContext &ctx);
-		void DoConvolution(IRendererContext &ctx);
-		void DoPreFilter(IRendererContext &ctx, uint32_t mip);
+		static PMREMResult InitializeTextures();
 
 	private:
-		PMREMSettings mSettings{};
-		PMREMResult mEnvironmentTextures;
-		Texture2DPtr mInput;
+		static inline PMREMSettings mSettings{};
 	};
 
 	class BHIVE_API BRDFLUTGenerator

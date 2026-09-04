@@ -6,7 +6,7 @@ namespace BHive
 {
 	EnvironmentSystem::EnvironmentSystem()
 	{
-		mPMREM.Initialize();
+		PMREMGenerator::Initialize();
 		mBRDFLut = BRDFLUTGenerator::GenerateBRDFLUTMap();
 	}
 
@@ -21,7 +21,7 @@ namespace BHive
 		if (!mDirty || !mPendingHDR)
 			return;
 
-		mMaps = mPMREM.GenerateEnvironmentMaps(mPendingHDR);
+		mMaps = PMREMGenerator::GenerateEnvironmentMaps(mPendingHDR);
 
 		mPendingHDR = {};
 		mDirty = false;

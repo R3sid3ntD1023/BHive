@@ -18,7 +18,6 @@ namespace BHive
 		Texture2DPtr GetBRDFLUT() const { return mBRDFLut; }
 
 	private:
-		PMREMGenerator mPMREM;
 		Texture2DPtr mPendingHDR;
 		PMREMResult mMaps;
 		Texture2DPtr mBRDFLut;

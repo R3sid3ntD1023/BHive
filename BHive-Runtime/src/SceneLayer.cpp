@@ -262,6 +262,16 @@ namespace BHive
 					mSceneRenderer->UpdateMesh(sSphereHandle, mMesh);
 				}
 			}
+
+			if (ImGui::Button("Load HDR Environment"))
+			{
+				auto info = Platform::OpenFile("HDR Environment (*.hdr)\0*.hdr\0");
+				if (info)
+				{
+					auto decoded = TextureLoader::FromFile(info);
+					mSceneRenderer->SetEnvironmentTexture(TextureFactory::Create2D(decoded));
+				}
+			}
 		}
 
 		ImGui::End();
