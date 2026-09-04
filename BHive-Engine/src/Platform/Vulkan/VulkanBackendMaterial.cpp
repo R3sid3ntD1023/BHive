@@ -1,6 +1,7 @@
 #include "VulkanBackendMaterial.h"
 #include "VulkanBindingGroup.h"
 #include "VulkanShader.h"
+#include "core/utils/Hash.h"
 #include "gfx/BufferBase.h"
 #include "gfx/Buffers.h"
 #include "gfx/ShaderManager.h"
@@ -34,6 +35,8 @@ namespace BHive
 
 	void VulkanBackendMaterial::SetTexture(const std::string &name, const FTextureBinding &texture)
 	{
+		auto hash = utils::ComputeHash(name);
+
 		auto &mergedRefl = mShaderProgram.As<VulkanShader>()->GetMergedRefl();
 		if (auto sampler = mergedRefl.FindSampler(name, MATERIAL_SET_INDEX))
 		{
@@ -42,7 +45,7 @@ namespace BHive
 			binding.BaseMipLevel = texture.BaseMipLevel;
 			binding.BaseArrayLayer = texture.BaseArrayLayer;
 			binding.Binding = sampler->Binding;
-			mTextureBindings[name] = binding;
+			mTextureBindings[hash] = binding;
 		}
 	}
 
@@ -50,6 +53,7 @@ namespace BHive
 	{
 		auto shader = mShaderProgram.As<VulkanShader>();
 		auto &mergedRefl = shader->GetMergedRefl();
+		auto hash = utils::ComputeHash(name);
 
 		if (auto u = mergedRefl.FindPushConstant(name))
 		{
@@ -57,9 +61,9 @@ namespace BHive
 			return;
 		}
 
-		if (mLocalBuffers.contains(name))
+		if (mLocalBuffers.contains(hash))
 		{
-			mLocalBuffers[name].Buffer.As<BufferBase>()->SetData(param.Data.data(), param.Size);
+			mLocalBuffers[hash].Buffer.As<BufferBase>()->SetData(param.Data.data(), param.Size);
 			return;
 		}
 
@@ -91,7 +95,9 @@ namespace BHive
 			MaterialSnapshot::BufferBinding binding{};
 			binding.Buffer = BufferFactory::Create(ubo.Size, EBufferType::UniformBuffer);
 			binding.Binding = ubo.Binding;
-			mLocalBuffers.emplace(name, binding);
+
+			auto hash = utils::ComputeHash<std::string_view>(name);
+			mLocalBuffers.emplace(hash, binding);
 		}
 
 		for (auto &[name, ssbo] : set.StorageBuffers)
@@ -99,7 +105,8 @@ namespace BHive
 			MaterialSnapshot::BufferBinding binding{};
 			binding.Buffer = BufferFactory::Create(ssbo.Size, EBufferType::StorageBuffer);
 			binding.Binding = ssbo.Binding;
-			mLocalBuffers.emplace(name, binding);
+			auto hash = utils::ComputeHash<std::string_view>(name);
+			mLocalBuffers.emplace(hash, binding);
 		}
 	}
 

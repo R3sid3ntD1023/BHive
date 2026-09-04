@@ -32,9 +32,9 @@ namespace BHive
 
 		std::vector<std::byte> mPushConstantData;
 
-		std::unordered_map<std::string, MaterialSnapshot::BufferBinding> mLocalBuffers;
+		std::unordered_map<uint64_t, MaterialSnapshot::BufferBinding> mLocalBuffers;
 
-		std::unordered_map<std::string, MaterialSnapshot::TextureBinding> mTextureBindings;
+		std::unordered_map<uint64_t, MaterialSnapshot::TextureBinding> mTextureBindings;
 
 		std::vector<Ref<IBindingGroup>> mBindGroups;
 	};

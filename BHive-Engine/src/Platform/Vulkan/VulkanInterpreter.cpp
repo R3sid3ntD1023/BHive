@@ -221,12 +221,12 @@ namespace BHive
 			if (set != MATERIAL_SET_INDEX)
 				continue;
 
-			for (auto &[name, tb] : snap.Textures)
+			for (auto &[_, tb] : snap.Textures)
 			{
 				group->SetTexture(tb.Binding, tb.Texture, tb.BaseMipLevel);
 			}
 
-			for (auto &[name, buf] : snap.LocalBuffers)
+			for (auto &[_, buf] : snap.LocalBuffers)
 			{
 				group->SetBuffer(buf.Binding, buf.Buffer);
 			}

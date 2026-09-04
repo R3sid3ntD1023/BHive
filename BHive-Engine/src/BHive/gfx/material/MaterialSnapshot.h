@@ -25,9 +25,9 @@ namespace BHive
 
 		ShaderPtr Shader;
 
-		std::unordered_map<std::string, TextureBinding> Textures;
+		std::unordered_map<uint64_t, TextureBinding> Textures;
 
-		std::unordered_map<std::string, BufferBinding> LocalBuffers;
+		std::unordered_map<uint64_t, BufferBinding> LocalBuffers;
 
 		std::vector<Ref<IBindingGroup>> BindingGroups;
 

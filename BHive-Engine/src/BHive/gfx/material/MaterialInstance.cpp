@@ -1,4 +1,5 @@
 #include "MaterialInstance.h"
+#include "core/utils/Hash.h"
 #include "gfx/shader/ShaderReflection.h"
 
 namespace BHive
@@ -27,10 +28,13 @@ namespace BHive
 
 		for (auto &[name, slot] : mTextureOverrides)
 		{
-			if (base.Textures.contains(name))
+			auto hash = utils::ComputeHash(name);
+			if (!base.Textures.contains(hash))
+				continue;
+
+			if (auto sampler = refl->FindSampler(name, 1))
 			{
-				if (auto sampler = refl->FindSampler(name, 1))
-					base.Textures[name] = {slot.Texture, sampler->Binding, slot.BaseMipLevel, slot.BaseArrayLayer};
+				base.Textures[hash] = {slot.Texture, sampler->Binding, slot.BaseMipLevel, slot.BaseArrayLayer};
 			}
 		}
 
@@ -39,15 +43,11 @@ namespace BHive
 
 			auto &pc = refl->PushConstants;
 
-			for (auto &[name, data] : mUniformOverrides)
+			for (auto &[hash, data] : mUniformOverrides)
 			{
-				for (auto &p : pc)
+				if (auto member = refl->FindPushConstant(hash))
 				{
-					if (p.Members.contains(name))
-					{
-						auto &u = p.Members.at(name);
-						memcpy(base.PushConstantData.data() + u.Offset, data.Data.data(), data.Size);
-					}
+					memcpy(base.PushConstantData.data() + member->Offset, data.Data.data(), data.Size);
 				}
 			}
 		}
