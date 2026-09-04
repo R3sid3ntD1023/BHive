@@ -190,7 +190,7 @@ namespace BHive
 		auto &cmd = ctx.CommandBuffer;
 		const auto frame = ctx.Frame;
 
-		auto shader = Cast<VulkanShader>(snap.Shader);
+		auto shader = snap.Shader.As<VulkanShader>();
 		if (!shader)
 			return;
 

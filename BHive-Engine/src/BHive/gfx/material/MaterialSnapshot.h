@@ -5,8 +5,6 @@
 
 namespace BHive
 {
-
-	class ShaderProgram;
 	class IBindingGroup;
 
 	struct MaterialSnapshot
@@ -25,7 +23,7 @@ namespace BHive
 			int32_t Binding = 0;
 		};
 
-		Ref<ShaderProgram> Shader;
+		ShaderPtr Shader;
 
 		std::unordered_map<std::string, TextureBinding> Textures;
 

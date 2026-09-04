@@ -1,25 +1,19 @@
 #include "VulkanBackendMaterial.h"
-#include "VulkanPipeline.h"
-#include "gfx/RenderCommand.h"
-#include "VulkanRendererAPI.h"
-#include "gfx/Texture.h"
-#include "gfx/BufferBase.h"
-#include "gfx/shader/ShaderProgram.h"
-#include "VulkanConversions.h"
-#include "VulkanBackend.h"
-#include "gfx/shader/ShaderReflection.h"
-#include "gfx/Buffers.h"
-#include "VulkanShader.h"
 #include "VulkanBindingGroup.h"
-#include "gfx/factories/BufferFactory.h"
+#include "VulkanShader.h"
+#include "gfx/BufferBase.h"
+#include "gfx/Buffers.h"
+#include "gfx/ShaderManager.h"
+#include "gfx/Texture.h"
+#include "gfx/factories/GFXFactories.h"
 
 namespace BHive
 {
 
 	VulkanBackendMaterial::VulkanBackendMaterial(const std::string &shaderProgramName)
 	{
-		mProgram = Renderer::Get().GetShaderManager().Get(shaderProgramName);
-		auto &mergedRefl = mProgram->GetMergedRefl();
+		mShaderProgram = ShaderManager::Get(shaderProgramName);
+		auto &mergedRefl = mShaderProgram.As<VulkanShader>()->GetMergedRefl();
 
 		// init set manager
 
@@ -31,16 +25,16 @@ namespace BHive
 
 		CreatePushConstanstData(mergedRefl.PushConstants);
 
-		auto vkShader = Cast<VulkanShader>(mProgram);
+		auto vkShader = mShaderProgram.As<VulkanShader>();
 		for (auto &set : mergedRefl.Sets)
 		{
-			mBindGroups.emplace_back(CreateRef<VulkanBindingGroup>(vkShader.get(), set.first));
+			mBindGroups.emplace_back(CreateRef<VulkanBindingGroup>(vkShader, set.first));
 		}
 	}
 
 	void VulkanBackendMaterial::SetTexture(const std::string &name, const FTextureBinding &texture)
 	{
-		auto &mergedRefl = mProgram->GetMergedRefl();
+		auto &mergedRefl = mShaderProgram.As<VulkanShader>()->GetMergedRefl();
 		if (auto sampler = mergedRefl.FindSampler(name, MATERIAL_SET_INDEX))
 		{
 			MaterialSnapshot::TextureBinding binding{};
@@ -54,7 +48,8 @@ namespace BHive
 
 	void VulkanBackendMaterial::SetParam(const std::string &name, const MaterialParam &param)
 	{
-		auto &mergedRefl = mProgram->GetMergedRefl();
+		auto shader = mShaderProgram.As<VulkanShader>();
+		auto &mergedRefl = shader->GetMergedRefl();
 
 		if (auto u = mergedRefl.FindPushConstant(name))
 		{
@@ -68,19 +63,21 @@ namespace BHive
 			return;
 		}
 
-		LOG_ERROR("Uniform '{}' not found in shader '{}'", name, mProgram->GetName());
+		LOG_ERROR("Uniform '{}' not found in shader '{}'", name, shader->GetName());
 	}
 
 	MaterialSnapshot VulkanBackendMaterial::CreateSnapshot() const
 	{
+		auto shader = mShaderProgram.As<VulkanShader>();
+
 		MaterialSnapshot snapshot{};
 
 		snapshot.LocalBuffers = mLocalBuffers;
 		snapshot.PushConstantData = mPushConstantData;
 		snapshot.Textures = mTextureBindings;
-		snapshot.Shader = mProgram;
-		snapshot.mReflection = &mProgram->GetMergedRefl();
-		snapshot.ReflectionLookUp = &mProgram->GetRefl();
+		snapshot.Shader = mShaderProgram;
+		snapshot.mReflection = &shader->GetMergedRefl();
+		snapshot.ReflectionLookUp = &shader->GetRefl();
 		snapshot.BindingGroups = mBindGroups;
 
 		return snapshot;

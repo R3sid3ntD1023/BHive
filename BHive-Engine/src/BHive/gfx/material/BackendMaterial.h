@@ -8,7 +8,7 @@
 
 namespace BHive
 {
-	class ShaderProgram;
+	class Shader;
 
 	struct FSetReflection;
 	struct FShaderReflection;

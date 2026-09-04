@@ -1,9 +1,9 @@
 #pragma once
 
-#include "core/Core.h"
 #include "VulkanBackend.h"
-#include "gfx/shader/ShaderProgram.h"
 #include "VulkanBindingGroup.h"
+#include "core/Core.h"
+#include "gfx/shader/Shader.h"
 
 namespace BHive
 {
@@ -14,24 +14,20 @@ namespace BHive
 		std::vector<uint32_t> UsedSets;
 	};
 
-	class BHIVE_API VulkanShader : public ShaderProgram
+	class BHIVE_API VulkanShader : public Shader
 	{
 	public:
 		using PushConstantRanges = std::vector<vk::PushConstantRange>;
 		using SetHashes = std::map<uint64_t, uint64_t>;
 
 	public:
-		VulkanShader(const Ref<ShaderAsset> &asset);
+		VulkanShader(const ShaderAsset &asset);
 
 		void Bind(vk::CommandBuffer cmd);
 
 		void BindGroup(vk::CommandBuffer cmd, uint32_t frame, IBindingGroup *group);
 
 		void BindPushConstants(vk::CommandBuffer cmd, vk::ShaderStageFlags stage, const void *data, uint32_t size, uint32_t offset);
-
-		// void BindGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer);
-
-		// void BindGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture);
 
 		const uint32_t GetSetCount() const { return (uint32_t)mDescriptorSetLayouts.size(); }
 
@@ -40,8 +36,6 @@ namespace BHive
 		bool HasSet(uint32_t setIndex) const;
 
 		FPipelineLayoutInfo GetPipelineLayoutInfo() const;
-
-		// VulkanBindingGroup *GetBindingGroup(uint32_t set) const;
 
 	private:
 		void CreateModules(const ShaderAsset &asset);

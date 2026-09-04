@@ -1,9 +1,6 @@
-#include "gfx/RenderCommand.h"
-#include "gfx/Shader.h"
-#include "gfx/ShaderManager.h"
-#include "gfx/Texture.h"
-#include "gfx/renderers/Renderer.h"
 #include "StandardMaterial.h"
+#include "gfx/RenderCommand.h"
+#include "gfx/Texture.h"
 
 namespace BHive
 {

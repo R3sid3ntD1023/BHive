@@ -1,9 +1,7 @@
 #pragma once
 
-#include "IBindingGroup.h"
 #include "core/Core.h"
 #include "gfx/Enumerations.h"
-#include "gfx/shader/ShaderProgram.h"
 
 namespace BHive
 {

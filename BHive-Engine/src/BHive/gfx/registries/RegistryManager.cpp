@@ -6,6 +6,7 @@
 #include "gfx/font/Font.h"
 #include "gfx/material/Material.h"
 #include "gfx/mesh/BaseMesh.h"
+#include "gfx/shader/Shader.h"
 #include "gfx/sprite/Sprite.h"
 
 namespace BHive
@@ -21,6 +22,7 @@ namespace BHive
 		RegisterRegistry<BufferBase>();
 		RegisterRegistry<VertexArray>();
 		RegisterRegistry<Pipeline>();
+		RegisterRegistry<Shader>();
 	}
 
 	void ResourceRegistriesManager::Shutdown()
@@ -36,6 +38,7 @@ namespace BHive
 		UnRegisterRegistry<BufferBase>();
 		UnRegisterRegistry<VertexArray>();
 		UnRegisterRegistry<Pipeline>();
+		UnRegisterRegistry<Shader>();
 	}
 
 	IResourceRegistry *ResourceRegistriesManager::GetRegistry(uint32_t type)

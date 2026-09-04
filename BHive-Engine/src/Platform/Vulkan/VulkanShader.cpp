@@ -12,12 +12,12 @@ namespace BHive
 		}
 	} // namespace utils
 
-	VulkanShader::VulkanShader(const Ref<ShaderAsset> &asset)
-		: ShaderProgram(asset),
+	VulkanShader::VulkanShader(const ShaderAsset &asset)
+		: Shader(asset),
 		  mDevice(VulkanBackend::GetLogicalDevice())
 	{
-		CreateDescriptorResources(*asset);
-		CreateModules(*asset);
+		CreateDescriptorResources(asset);
+		CreateModules(asset);
 		CreatePipelineLayout();
 	}
 
@@ -26,27 +26,6 @@ namespace BHive
 		for (auto &[stage, shader] : mShaderEXTs)
 			cmd.bindShadersEXT(stage, {shader});
 	}
-
-	// void VulkanShader::BindGlobal(uint32_t set, uint32_t binding, const Ref<BufferBase> &buffer)
-	// {
-	// 	if (auto group = GetBindingGroup(set))
-	// 	{
-	// 		group->SetBuffer(binding, buffer);
-	// 	}
-	// }
-
-	// void VulkanShader::BindGlobal(uint32_t set, uint32_t binding, const Ref<Texture> &texture)
-	// {
-	// 	if (auto group = GetBindingGroup(set))
-	// 	{
-	// 		group->SetTexture(binding, texture);
-	// 	}
-	// }
-
-	// void VulkanShader::Bind(vk::CommandBuffer cmd, uint32_t frame)
-	// {
-
-	// }
 
 	void VulkanShader::BindGroup(vk::CommandBuffer cmd, uint32_t frame, IBindingGroup *group)
 	{
@@ -190,16 +169,11 @@ namespace BHive
 				{
 					flags = vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eUpdateUnusedWhilePending;
 				}
-
-				// flags = vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eUpdateUnusedWhilePending | vk::DescriptorBindingFlagBits::eUpdateAfterBind;
 			}
 
 			vk::DescriptorSetLayoutBindingFlagsCreateInfo flags(binding_flags);
 			vk::DescriptorSetLayoutCreateInfo layout_info({}, bindings, bindings.empty() ? nullptr : &flags);
 			mDescriptorSetLayouts.emplace(set, mDevice.createDescriptorSetLayout(layout_info));
-
-			// auto group = CreateRef<VulkanBindingGroup>(this, set);
-			// mBindGroups.emplace(set, group);
 		}
 
 		vk::DescriptorSetLayoutCreateInfo empty{};
@@ -209,16 +183,6 @@ namespace BHive
 		{
 			mPushConstantRanges.emplace_back(ToVkShaderStageBit(pc.Stages), pc.Offset, (uint32_t)pc.Size);
 		}
-
-		// LOG_INFO("Push constants found: {} - {}", asset.Name, merged.PushConstants.size());
 	}
-
-	// VulkanBindingGroup *VulkanShader::GetBindingGroup(uint32_t set) const
-	// {
-	// 	if (mBindGroups.contains(set))
-	// 		return mBindGroups.at(set).get();
-
-	// 	return nullptr;
-	// }
 
 } // namespace BHive

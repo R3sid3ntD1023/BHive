@@ -1,5 +1,4 @@
 #include "EmissiveMaterial.h"
-#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {

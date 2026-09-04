@@ -1,12 +1,11 @@
 #pragma once
 
-#include "core/Core.h"
 #include "LineRenderer.h"
 #include "QuadRenderer.h"
-#include "gfx/RendererAPI.h"
 #include "RenderGraphScheduler.h"
 #include "ViewSystem.h"
-#include "gfx/ShaderManager.h"
+#include "core/Core.h"
+#include "gfx/RendererAPI.h"
 #include "gfx/registries/IResourceRegistry.h"
 
 namespace BHive
@@ -55,8 +54,6 @@ namespace BHive
 
 		void EndBatching();
 
-		ShaderManager &GetShaderManager() { return mShaderManager; }
-
 		static Renderer &Get() { return *sInstance; }
 
 #pragma region RENDERGRAPH
@@ -88,8 +85,6 @@ namespace BHive
 
 	private:
 		Scope<RendererAPI> mAPI;
-
-		ShaderManager mShaderManager;
 
 		Ref<struct RenderData> mData;
 

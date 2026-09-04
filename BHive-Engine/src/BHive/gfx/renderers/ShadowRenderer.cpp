@@ -1,10 +1,9 @@
-#include "core/math/Frustum.h"
-#include "gfx/Framebuffer.h"
-#include "gfx/Shader.h"
-#include "gfx/ShaderManager.h"
-#include "gfx/Buffers.h"
-#include "Renderer.h"
 #include "ShadowRenderer.h"
+#include "Renderer.h"
+#include "core/math/Frustum.h"
+#include "gfx/ShaderManager.h"
+#include "gfx/factories/GFXFactories.h"
+#include "gfx/shader/Shader.h"
 
 #define SHADOW_SSBO_BINDING 5
 #define DIRECTIONAL_SHADOWMAP_SIZE 1024
@@ -40,14 +39,14 @@ namespace BHive
 	// 0 = dir, 1 = point, 2 = spot
 	struct FShadowPasses
 	{
-		std::array<Ref<Shader>, 3> Shaders;
-		std::array<Ref<Framebuffer>, 3> FBOs;
+		std::array<ShaderPtr, 3> Shaders;
+		std::array<FramebufferPtr, 3> FBOs;
 	};
 
 	struct FShadowRenderData
 	{
 		FShadowPasses ShadowPasses;
-		Ref<GeneralBuffer> ShadowBuffer;
+		BufferPtr ShadowBuffer;
 		FShadowData ShadowData;
 	};
 
@@ -86,7 +85,7 @@ namespace BHive
 	{
 
 		// mShadowRenderData->ShadowBuffer->BindBufferBase(SHADOW_SSBO_BINDING);
-		mShadowRenderData->ShadowBuffer->SetData(&mShadowRenderData->ShadowData, sizeof(FShadowData));
+		mShadowRenderData->ShadowBuffer.As<GeneralBuffer>()->SetData(&mShadowRenderData->ShadowData, sizeof(FShadowData));
 	}
 
 	void ShadowRenderer::Render(const SubMeshSubmissions &datas)
@@ -97,7 +96,7 @@ namespace BHive
 
 		// RenderCommand::CullFront();
 
-		auto draw_meshes = [=](const Ref<Shader> &shader)
+		auto draw_meshes = [=](MaterialPtr material)
 		{
 			/*shader->Bind();
 
@@ -115,7 +114,7 @@ namespace BHive
 
 			// RenderCommand::Clear(Buffer_Depth);
 
-			draw_meshes(mShadowRenderData->ShadowPasses.Shaders[0]);
+			// draw_meshes(mShadowRenderData->ShadowPasses.Shaders[0]);
 
 			// mShadowRenderData->ShadowPasses.FBOs[0]->UnBind();
 		}
@@ -126,7 +125,7 @@ namespace BHive
 
 			// RenderCommand::Clear(Buffer_Depth);
 
-			draw_meshes(mShadowRenderData->ShadowPasses.Shaders[1]);
+			// draw_meshes(mShadowRenderData->ShadowPasses.Shaders[1]);
 
 			// mShadowRenderData->ShadowPasses.Shaders[1]->UnBind();
 		}
@@ -137,7 +136,7 @@ namespace BHive
 
 			// RenderCommand::Clear(Buffer_Depth);
 
-			draw_meshes(mShadowRenderData->ShadowPasses.Shaders[2]);
+			// draw_meshes(mShadowRenderData->ShadowPasses.Shaders[2]);
 
 			// mShadowRenderData->ShadowPasses.Shaders[2]->UnBind();
 		}

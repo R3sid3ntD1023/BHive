@@ -71,4 +71,24 @@ namespace BHive
 		return true;
 	}
 
+	std::filesystem::path FileSystem::ResolvePath(const std::filesystem::path &path, const std::filesystem::path &basePath)
+	{
+		std::filesystem::path resolved_path = path;
+		if (!path.is_absolute())
+		{
+			std::filesystem::recursive_directory_iterator directory(basePath);
+			for (auto &entry : directory)
+			{
+				auto filename = entry.path().string();
+
+				if (filename.find(path.string()) != std::string::npos)
+				{
+					resolved_path = entry;
+					break;
+				}
+			}
+		}
+		return resolved_path;
+	}
+
 } // namespace BHive

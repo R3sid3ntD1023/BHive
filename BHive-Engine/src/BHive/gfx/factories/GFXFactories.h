@@ -5,5 +5,6 @@
 #include "MaterialFactory.h"
 #include "MeshFactory.h"
 #include "PipelineFactory.h"
+#include "ShaderFactory.h"
 #include "SpriteFactory.h"
 #include "TextureFactory.h"

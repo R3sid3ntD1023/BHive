@@ -1,75 +1,44 @@
-#include "core/subsystem/SubSystem.h"
-#include "Shader.h"
 #include "ShaderManager.h"
+#include "Shader.h"
+#include "core/FileSystem.h"
+#include "core/utils/Hash.h"
+#include "gfx/factories/ShaderFactory.h"
 
 namespace BHive
 {
-	void ShaderManager::Register(const std::string &name, const Ref<ShaderProgram> &shader)
+	ShaderPtr ShaderManager::Load(const std::filesystem::path &path)
 	{
-		if (!Contains(name))
-		{
-			mShaders.emplace(name, shader);
-		}
-	}
+		auto name = path.stem().string();
+		auto hash = utils::ComputeHash(name);
 
-	Ref<ShaderProgram> ShaderManager::Load(const std::filesystem::path &file)
-	{
-		std::filesystem::path resolved_path = file;
-		if (!file.is_absolute())
-		{
-			std::filesystem::recursive_directory_iterator directory(ENGINE_SHADER_PATH);
-			for (auto &entry : directory)
-			{
-				auto filename = entry.path().string();
-
-				if (filename.find(file.string()) != std::string::npos)
-				{
-					resolved_path = entry;
-					break;
-				}
-			}
-		}
-
-		auto name = resolved_path.stem().string();
-		if (!Contains(name))
+		if (!Contains(hash))
 		{
 			// creates shader program (compiles + reflects internally)
-			auto program = Shader::Create(resolved_path);
+			auto program = ShaderFactory::Create(path);
 			if (program)
-				mShaders[name] = program;
-		}
-
-		return mShaders.at(name);
-	}
-
-	Ref<ShaderProgram> ShaderManager::Get(const std::string &name)
-	{
-		if (Contains(name))
-		{
-			return mShaders.at(name);
-		}
-
-		std::filesystem::recursive_directory_iterator directory(ENGINE_SHADER_PATH);
-		for (auto &entry : directory)
-		{
-			auto filename = entry.path().filename().string();
-			if (filename == name)
 			{
-				return Load(entry.path());
+				mShaders[hash] = program;
 			}
 		}
 
-		return nullptr;
+		return mShaders.at(hash);
 	}
 
-	bool ShaderManager::Contains(const std::string &name)
+	ShaderPtr ShaderManager::Get(const std::string &name)
 	{
-		return mShaders.contains(name);
-	}
+		auto hash = utils::ComputeHash(name);
+		if (Contains(hash))
+		{
 
-	void ShaderManager::Clear()
-	{
-		mShaders.clear();
-	}
+			return mShaders.at(hash);
+		}
 
+		auto resolvedPath = FileSystem::ResolvePath(name, ENGINE_SHADER_PATH);
+		if (std::filesystem::exists(resolvedPath))
+		{
+			return Load(resolvedPath);
+		}
+
+		return {};
+	}
 } // namespace BHive

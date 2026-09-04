@@ -1,7 +1,4 @@
-#include "gfx/Shader.h"
-#include "gfx/ShaderManager.h"
 #include "LambertMaterial.h"
-#include "gfx/Pipeline.h"
 
 namespace BHive
 {

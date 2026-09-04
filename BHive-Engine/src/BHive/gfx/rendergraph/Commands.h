@@ -6,7 +6,6 @@
 #include <imgui.h>
 
 #include "gfx/Query.h"
-#include "gfx/material/ComputeBindings.h"
 #include "gfx/material/Material.h"
 
 namespace BHive

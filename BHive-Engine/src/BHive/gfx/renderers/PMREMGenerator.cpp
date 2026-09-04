@@ -136,6 +136,9 @@ namespace BHive
 
 	Texture2DPtr BRDFLUTGenerator::GenerateBRDFLUTMap(uint32_t size)
 	{
+		static MaterialPtr BRDFLUTMaterial = MaterialFactory::Create(PMREM_BRDFLUT);
+
+		auto material = BRDFLUTMaterial.As<Material>();
 		FTextureCreateInfo brdfLUTInfo{};
 		brdfLUTInfo.Format = EFormat::RG16F;
 		brdfLUTInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
@@ -146,13 +149,12 @@ namespace BHive
 
 		auto brdfLUT = TextureFactory::Create2D({size, size}, brdfLUTInfo);
 
-		auto bindings = FComputeBindings(PMREM_BRDFLUT);
-		bindings.SetTexture("brdfLutTexture", FTextureBinding(brdfLUT));
+		material->SetTexture("brdfLutTexture", FTextureBinding(brdfLUT));
 
 		RenderGraph graph;
 		auto &pass = graph.AddPass("Generate BRDFLut", EPassType::OffScreen);
 		pass.BeginPhase(EPhaseType::Compute);
-		pass.Emplace<CmdBindMaterial>()(&bindings);
+		pass.Emplace<CmdBindMaterial>()(material);
 		pass.Emplace<CmdDispatch>()(size / 8, size / 8, 1);
 		pass.EndPhase();
 		Renderer::Get().ExecuteGraph(graph);

@@ -6,7 +6,6 @@
 
 namespace BHive
 {
-	class ShaderProgram;
 	class VulkanShader;
 	struct FShaderReflection;
 	class GeneralBuffer;
@@ -29,7 +28,7 @@ namespace BHive
 		void CreatePushConstanstData(const std::vector<FPushConstantsRange> &ranges);
 
 	private:
-		Ref<ShaderProgram> mProgram;
+		ShaderPtr mShaderProgram;
 
 		std::vector<std::byte> mPushConstantData;
 

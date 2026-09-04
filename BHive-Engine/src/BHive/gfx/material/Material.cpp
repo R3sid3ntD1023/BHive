@@ -1,8 +1,8 @@
-#include "gfx/Shader.h"
-#include "gfx/Texture.h"
 #include "Material.h"
+#include "gfx/ShaderManager.h"
+#include "gfx/Texture.h"
 #include "gfx/renderers/Renderer.h"
-#include "gfx/Pipeline.h"
+#include "gfx/shader/Shader.h"
 
 namespace BHive
 {
@@ -59,7 +59,7 @@ namespace BHive
 
 	void Material::InitFromReflection()
 	{
-		auto program = Renderer::Get().GetShaderManager().Get(mShaderProgramName);
+		auto program = ShaderManager::Get(mShaderProgramName).As<Shader>();
 		const auto &merged = program->GetMergedRefl();
 
 		if (!merged.Sets.contains(1))

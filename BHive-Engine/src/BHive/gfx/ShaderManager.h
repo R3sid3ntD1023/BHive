@@ -1,26 +1,21 @@
 #pragma once
 
 #include "core/Core.h"
-#include "gfx/shader/ShaderProgram.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
 	class BHIVE_API ShaderManager
 	{
 	public:
-		using Shaders = std::unordered_map<std::string, Ref<ShaderProgram>>;
+		static ShaderPtr Load(const std::filesystem::path &file);
 
-		void Register(const std::string &name, const Ref<ShaderProgram> &shader);
-
-		Ref<ShaderProgram> Load(const std::filesystem::path &file);
-
-		Ref<ShaderProgram> Get(const std::string &name);
-
-		bool Contains(const std::string &name);
-
-		void Clear();
+		static ShaderPtr Get(const std::string &name);
 
 	private:
-		Shaders mShaders;
+		static bool Contains(uint64_t hash) { return mShaders.contains(hash); }
+
+	private:
+		static inline std::unordered_map<uint64_t, ShaderPtr> mShaders;
 	};
 } // namespace BHive
