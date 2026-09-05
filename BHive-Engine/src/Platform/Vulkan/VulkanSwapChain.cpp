@@ -1,6 +1,6 @@
 #include "VulkanSwapChain.h"
-#include "VulkanUtils.h"
 #include "VulkanBackend.h"
+#include "VulkanUtils.h"
 
 namespace BHive
 {

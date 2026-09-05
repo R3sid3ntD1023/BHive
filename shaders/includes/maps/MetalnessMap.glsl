@@ -1,5 +1,3 @@
-float metalnessFactor = metalness;
-
 #ifdef USE_METALNESS_MAP
 
 	vec4 texelMetalness = texture(MetalnessMap, texCoord);

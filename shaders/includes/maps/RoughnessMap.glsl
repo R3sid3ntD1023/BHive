@@ -1,5 +1,3 @@
-float roughnessFactor = roughness;
-
 #ifdef USE_ROUGHNESS_MAP
 
 	vec4 texelRoughness = texture(RoughnessMap, texCoord);

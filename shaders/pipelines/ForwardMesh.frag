@@ -8,7 +8,7 @@ void main()
 
 	ReflectedLight reflected = ReflectedLight(vec3(0), vec3(0), vec3(0), vec3(0));
 
-	ApplyLighting(vs_in.Position, normalize(vs_in.Normal), normalize(vs_in.CameraPosition - vs_in.Position), mat, reflected);
+	ApplyLighting(vs_in.Position, mat.Normal, normalize(vs_in.CameraPosition - vs_in.Position), mat, reflected);
 
 	vec3 outColor = reflected.DirectDiffuse + reflected.IndirectDiffuse + reflected.DirectSpecular + reflected.IndirectSpecular;
 

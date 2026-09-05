@@ -23,60 +23,52 @@ namespace BHive
 		SetTexture("OpacityMap", {});
 	}
 
-	StandardMaterial &StandardMaterial::SetAlbedo(FColor color)
+	void StandardMaterial::SetAlbedo(FColor color)
 	{
 		mAlbedo = color;
 		SetParam("Albedo", MaterialParam(color));
-		return *this;
 	}
 
-	StandardMaterial &StandardMaterial::SetEmission(FColor color)
+	void StandardMaterial::SetEmission(FColor color)
 	{
 		mEmission = color;
 		SetParam("Emission", MaterialParam(color));
-		return *this;
 	}
 
-	StandardMaterial &StandardMaterial::SetMetalness(float metalness)
+	void StandardMaterial::SetMetalness(float metalness)
 	{
 		mMetalness = metalness;
 		SetParam("Metalness", MaterialParam(metalness));
-		return *this;
 	}
 
-	StandardMaterial &StandardMaterial::SetRoughness(float roughness)
+	void StandardMaterial::SetRoughness(float roughness)
 	{
 		mRoughness = roughness;
 		SetParam("Roughness", MaterialParam(roughness));
-		return *this;
 	}
 
-	StandardMaterial &StandardMaterial::SetOpacity(float opacity)
+	void StandardMaterial::SetOpacity(float opacity)
 	{
 		mOpacity = opacity;
 		SetParam("Opacity", MaterialParam(opacity));
-		return *this;
 	}
 
-	StandardMaterial &StandardMaterial::SetDepthScale(float depthScale)
+	void StandardMaterial::SetDepthScale(float depthScale)
 	{
 		mDepthScale = depthScale;
 		// SetParam("DepthScale", MaterialParam(depthScale));
-		return *this;
 	}
 
-	StandardMaterial &StandardMaterial::SetTiling(glm::vec2 tiling)
+	void StandardMaterial::SetTiling(glm::vec2 tiling)
 	{
 		mTiling = tiling;
 		SetParam("Tiling", MaterialParam(tiling));
-		return *this;
 	}
 
-	StandardMaterial &StandardMaterial::SetFlags(EFlags flags)
+	void StandardMaterial::SetFlags(EFlags flags)
 	{
 		mFlags = flags;
 		SetParam("Flags", MaterialParam((uint32_t)flags));
-		return *this;
 	}
 
 	IMaterial &StandardMaterial::SetTexture(const std::string &name, const TextureBinding &texture) &
@@ -86,6 +78,7 @@ namespace BHive
 		{
 			SetParam("HasNormalMap", MaterialParam(texture.Texture.IsValid()));
 		}
+
 		return *this;
 	}
 
@@ -115,10 +108,11 @@ namespace BHive
 	{
 		BEGIN_REFLECT(StandardMaterial)
 		REFLECT_CONSTRUCTOR()
-		REFLECT_PROPERTY("Albedo", mAlbedo)
-		REFLECT_PROPERTY("Metallic", mMetalness)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Roughness", mRoughness)(
-			META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Emission", mEmission)(META_DATA(EPropertyMetaData_HDR, true))
-			REFLECT_PROPERTY("Opacity", mOpacity)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Tiling", mTiling)
+		REFLECT_PROPERTY("Albedo", GetAlbedo, SetAlbedo)
+		REFLECT_PROPERTY("Metalness", GetMetalness, SetMetalness)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY(
+			"Roughness", GetRoughness,
+			SetRoughness)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Emission", GetEmission, SetEmission)(META_DATA(EPropertyMetaData_HDR, true))
+			REFLECT_PROPERTY("Opacity", GetOpacity, SetOpacity)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Tiling", mTiling)
 				REFLECT_PROPERTY("DepthScale", mDepthScale) REFLECT_PROPERTY("Flags", mFlags)(META_DATA(EPropertyFlags_BitFlags, true));
 
 		rttr::type::register_wrapper_converter_for_base_classes<Ref<StandardMaterial>>();

@@ -92,7 +92,10 @@ namespace BHive
 
 			{
 				auto material = mMaterialTables[2][0].As<StandardMaterial>();
-				material->SetAlbedo({1.f, 0.5f, 0.f, 1.0f}).SetEmission(FColor::Black).SetMetalness(0.0f).SetRoughness(0.5f);
+				material->SetAlbedo({1.f, 0.5f, 0.f, 1.0f});
+				material->SetEmission(FColor::Black);
+				material->SetMetalness(0.0f);
+				material->SetRoughness(0.5f);
 			}
 		}
 
@@ -161,7 +164,8 @@ namespace BHive
 		mSceneRenderer->Submit(main);
 
 		PointLight light{};
-		light.SetColor(FColor::White).SetIntensity(1.0f).SetRadius(10.f).SetPosition({0, 2, 0});
+		light.SetColor(FColor::Orange).SetIntensity(1.0f).SetRadius(10.f).SetPosition({0, 1, 0});
+		mSceneRenderer->Submit(light);
 		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), light.GetPosition());
 		renderer.Line.DrawGrid({});
 
@@ -279,12 +283,19 @@ namespace BHive
 				}
 			};
 
+			auto inspect = [&](const std::string label)
+			{
+				auto mat = mStandardMaterial.As<StandardMaterial>();
+				Inspect::get().inspect(label, *mat);
+			};
+
 			loadTexture("Diffuse");
 			loadTexture("Metalness");
 			loadTexture("Roughness");
 			loadTexture("Normal");
 			loadTexture("Emission");
 			loadTexture("Opacity");
+			inspect("Material");
 
 			if (ImGui::Button("Load HDR Environment"))
 			{

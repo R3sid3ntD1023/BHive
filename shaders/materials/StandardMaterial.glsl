@@ -45,6 +45,7 @@ layout(push_constant) uniform MaterialInfo
 struct StandardMaterial
 {
 	vec3 Albedo;
+	vec3 Normal;
 	vec3 Emission;
 	float Roughness;
 	float Metalness;
@@ -80,8 +81,8 @@ StandardMaterial GetMaterial(VS_OUT vs)
 	vec4 diffuseColor = vec4(pc.Albedo, pc.Opacity);
 	vec3 totalEmissiveRadiance = pc.Emission.rgb * pc.Emission.a;
 	vec2 texCoord = vs_in.Texcoord * pc.Tiling;
-	float roughness = pc.Roughness;
-	float metalness = pc.Metalness;
+	float roughnessFactor = pc.Roughness;
+	float metalnessFactor = pc.Metalness;
 	vec3 normal = normalize(vs_in.Normal);
 	
 	#include <DiffuseMap.glsl>
@@ -96,11 +97,12 @@ StandardMaterial GetMaterial(VS_OUT vs)
 
 	StandardMaterial mat;
 	mat.Albedo = diffuseColor.rgb;
-	mat.Roughness = roughness;
-	mat.Metalness = metalness;
+	mat.Roughness = roughnessFactor;
+	mat.Metalness = metalnessFactor;
 	mat.Emission  = totalEmissiveRadiance;
 	mat.Opacity = diffuseColor.a;
 	mat.IrradianceF0 = F0;
+	mat.Normal = normal;
 
 	return mat;
 }

@@ -29,6 +29,7 @@ struct LambertMaterial
 {
 	vec4 Diffuse;
 	vec3 Emission;
+	vec3 Normal;
 	float Opacity;
 };
 
@@ -46,6 +47,7 @@ LambertMaterial GetMaterial(VS_OUT vs)
 	vec4 diffuseColor = pc.DiffuseColor;
 	vec3 totalEmissiveRadiance = pc.Emission.rgb * pc.Emission.a;
 	vec2 texCoord = vs_in.Texcoord;
+	vec3 normal = normalize(vs_in.Normal);
 
 	#include <DiffuseMap.glsl>
 	#include <EmissionMap.glsl>
@@ -54,6 +56,7 @@ LambertMaterial GetMaterial(VS_OUT vs)
 	mat.Diffuse = diffuseColor;
 	mat.Emission = totalEmissiveRadiance;
 	mat.Opacity = diffuseColor.a;
+	mat.Normal = normal;
 
 	return mat;
 }

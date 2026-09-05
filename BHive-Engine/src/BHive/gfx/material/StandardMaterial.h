@@ -20,21 +20,31 @@ namespace BHive
 	public:
 		StandardMaterial();
 
-		StandardMaterial &SetAlbedo(FColor color);
+		void SetAlbedo(FColor color);
 
-		StandardMaterial &SetEmission(FColor color);
+		void SetEmission(FColor color);
 
-		StandardMaterial &SetMetalness(float metalness);
+		void SetMetalness(float metalness);
 
-		StandardMaterial &SetRoughness(float roughness);
+		void SetRoughness(float roughness);
 
-		StandardMaterial &SetOpacity(float opacity);
+		void SetOpacity(float opacity);
 
-		StandardMaterial &SetDepthScale(float depthScale);
+		void SetDepthScale(float depthScale);
 
-		StandardMaterial &SetTiling(glm::vec2 tiling);
+		void SetTiling(glm::vec2 tiling);
 
-		StandardMaterial &SetFlags(EFlags flags);
+		void SetFlags(EFlags flags);
+
+		FColor GetAlbedo() const { return mAlbedo; }
+
+		FColor GetEmission() const { return mEmission; }
+
+		float GetMetalness() const { return mMetalness; }
+
+		float GetRoughness() const { return mRoughness; }
+
+		float GetOpacity() const { return mOpacity; }
 
 		IMaterial &SetTexture(const std::string &name, const TextureBinding &texture) & override;
 
