@@ -4,7 +4,7 @@ namespace BHive
 {
 
 	template <typename A>
-	void SERIALIZE(A &ar, FUniform& u)
+	void SERIALIZE(A &ar, FUniform &u)
 	{
 		ar(u.Type, u.Size, u.Offset, u.Location, u.Stages);
 	}
@@ -27,7 +27,6 @@ namespace BHive
 		ar(b.Semantic, b.Binding, b.Size, b.Stages);
 	}
 
-	
 	template <typename A>
 	void SERIALIZE(A &ar, FPushConstantsRange &r)
 	{
@@ -50,12 +49,6 @@ namespace BHive
 	void SERIALIZE(A &ar, FReflectedResource &r)
 	{
 		ar(r.Semantic, r.kind, r.binding, r.name, r.location, r.offset, r.size);
-	}
-
-	template <typename A>
-	void SERIALIZE(A &ar, FShaderReflectionLookUp &obj)
-	{
-		ar(obj.mByName, obj.mBySetBinding, obj.mSets, obj.mMaxSet);
 	}
 
 } // namespace BHive

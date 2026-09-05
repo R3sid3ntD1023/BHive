@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/Core.h"
 #include "ShaderAsset.h"
+#include "core/Core.h"
 
 namespace BHive
 {
@@ -12,7 +12,7 @@ namespace BHive
 
 		static void LoadCache(ShaderAsset &asset);
 
-		static void StoreCache(const ShaderAsset &asset, const std::string& source);
+		static void StoreCache(const ShaderAsset &asset, const std::string &source);
 
 		static uint64_t GetStoredHash(const std::string &name);
 
@@ -25,7 +25,6 @@ namespace BHive
 			std::vector<EShaderStage> Stages;
 			bool Valid = false;
 			FShaderReflection MergedReflection;
-			FShaderReflectionLookUp LookupTable;
 		};
 
 	private:

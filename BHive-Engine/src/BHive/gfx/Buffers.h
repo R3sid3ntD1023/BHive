@@ -6,15 +6,6 @@
 
 namespace BHive
 {
-	enum class EBufferType : uint8_t
-	{
-		Undefined = 0,
-		UniformBuffer = BIT(0),
-		StorageBuffer = BIT(1),
-		IndirectBuffer = BIT(2)
-	};
-
-	ENABLE_BITMASK_OPERATORS(EBufferType)
 
 	enum class EBufferLifetime
 	{

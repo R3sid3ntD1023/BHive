@@ -88,34 +88,6 @@ namespace BHive
 		size_t size = 0;
 		uint32_t location = 0;
 	};
-
-	class FShaderReflectionLookUp
-	{
-	public:
-		FShaderReflectionLookUp() = default;
-		FShaderReflectionLookUp(const FShaderReflection &merged);
-
-		const FReflectedResource *FindByName(const std::string &name) const;
-
-		const FReflectedResource *FindBySetBinding(uint32_t set, uint32_t binding) const;
-
-		const std::vector<FReflectedResource> &GetSetBindings(uint32_t set) const;
-
-		uint32_t GetMaxSet() const { return mMaxSet; }
-
-	private:
-		void Build(const FShaderReflection &merged);
-
-	private:
-		std::unordered_map<std::string, FReflectedResource> mByName;
-		std::unordered_map<uint32_t, std::unordered_map<uint32_t, FReflectedResource>> mBySetBinding;
-		std::unordered_map<uint32_t, std::vector<FReflectedResource>> mSets;
-		uint32_t mMaxSet = 0;
-
-		template <typename A>
-		friend void SERIALIZE(A &, FShaderReflectionLookUp &);
-	};
-
 } // namespace BHive
 
 #include "ShaderReflectionSerialization.inl"

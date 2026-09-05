@@ -7,67 +7,79 @@
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
 #include "gfx/factories/GFXFactories.h"
+#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {
 
 	VulkanBackendMaterial::VulkanBackendMaterial(const std::string &shaderProgramName)
 	{
+		Initialize(shaderProgramName);
+	}
+
+	void VulkanBackendMaterial::Initialize(const std::string &shaderProgramName)
+	{
 		mShaderProgram = ShaderManager::Get(shaderProgramName);
-		auto &mergedRefl = mShaderProgram.As<VulkanShader>()->GetMergedRefl();
+		mShaderTemplate = &mShaderProgram.As<Shader>()->GetTemplate();
 
 		// init set manager
 
-		if (mergedRefl.Sets.contains(MATERIAL_SET_INDEX))
+		if (auto set = mShaderTemplate->FindSet(MATERIAL_SET_INDEX))
 		{
-			auto set = mergedRefl.Sets.at(MATERIAL_SET_INDEX);
-			CreateLocalBuffers(set);
+			for (auto &binding : set->Bindings)
+			{
+				if (IsBuffer(binding.Type))
+				{
+					BufferBinding bufferBinding{};
+					bufferBinding.Buffer = BufferFactory::Create(binding.Size, BufferTypeFromResource(binding.Type));
+					mBufferBindings[binding.Binding] = bufferBinding;
+				}
+
+				else if (IsTexture(binding.Type))
+				{
+					TextureBinding textureBinding{};
+					mTextureBindings[binding.Binding] = textureBinding;
+				}
+			}
 		}
 
-		CreatePushConstanstData(mergedRefl.PushConstants);
+		mPushConstantData.resize(mShaderTemplate->TotalPushConstantSize, std::byte(0));
 
 		auto vkShader = mShaderProgram.As<VulkanShader>();
-		for (auto &set : mergedRefl.Sets)
+		for (auto &set : mShaderTemplate->Sets)
 		{
-			mBindGroups.emplace_back(CreateRef<VulkanBindingGroup>(vkShader, set.first));
+			mBindGroups.emplace_back(CreateRef<VulkanBindingGroup>(vkShader->GetDescriptorSetLayout(set.SetIndex), set));
 		}
 	}
 
-	void VulkanBackendMaterial::SetTexture(const std::string &name, const FTextureBinding &texture)
+	void VulkanBackendMaterial::SetTexture(const std::string &name, const TextureBinding &texture)
 	{
 		auto hash = utils::ComputeHash(name);
 
-		auto &mergedRefl = mShaderProgram.As<VulkanShader>()->GetMergedRefl();
-		if (auto sampler = mergedRefl.FindSampler(name, MATERIAL_SET_INDEX))
+		if (auto binding = mShaderTemplate->FindBinding(hash))
 		{
-			MaterialSnapshot::TextureBinding binding{};
-			binding.Texture = texture.Texture;
-			binding.BaseMipLevel = texture.BaseMipLevel;
-			binding.BaseArrayLayer = texture.BaseArrayLayer;
-			binding.Binding = sampler->Binding;
-			mTextureBindings[hash] = binding;
+			mTextureBindings[binding->Binding] = texture;
+			return;
 		}
 	}
 
 	void VulkanBackendMaterial::SetParam(const std::string &name, const MaterialParam &param)
 	{
-		auto shader = mShaderProgram.As<VulkanShader>();
-		auto &mergedRefl = shader->GetMergedRefl();
 		auto hash = utils::ComputeHash(name);
 
-		if (auto u = mergedRefl.FindPushConstant(name))
+		if (auto u = mShaderTemplate->FindPushConstant(hash))
 		{
 			memcpy(mPushConstantData.data() + u->Offset, param.Data.data(), param.Size);
 			return;
 		}
 
-		if (mLocalBuffers.contains(hash))
+		if (auto binding = mShaderTemplate->FindBinding(hash))
 		{
-			mLocalBuffers[hash].Buffer.As<BufferBase>()->SetData(param.Data.data(), param.Size);
+			mBufferBindings[binding->Binding].Buffer.As<BufferBase>()->SetData(param.Data.data(), param.Size);
 			return;
 		}
 
-		LOG_ERROR("Uniform '{}' not found in shader '{}'", name, shader->GetName());
+		LOG_ERROR("Uniform '{}' not found in shader", name);
 	}
 
 	MaterialSnapshot VulkanBackendMaterial::CreateSnapshot() const
@@ -76,47 +88,13 @@ namespace BHive
 
 		MaterialSnapshot snapshot{};
 
-		snapshot.LocalBuffers = mLocalBuffers;
+		snapshot.Buffers = mBufferBindings;
 		snapshot.PushConstantData = mPushConstantData;
 		snapshot.Textures = mTextureBindings;
 		snapshot.Shader = mShaderProgram;
-		snapshot.mReflection = &shader->GetMergedRefl();
-		snapshot.ReflectionLookUp = &shader->GetRefl();
 		snapshot.BindingGroups = mBindGroups;
 
 		return snapshot;
 	}
 
-	void VulkanBackendMaterial::CreateLocalBuffers(const FSetReflection &set)
-	{
-		// create local buffers
-		for (auto &[name, ubo] : set.UniformBuffers)
-		{
-			MaterialSnapshot::BufferBinding binding{};
-			binding.Buffer = BufferFactory::Create(ubo.Size, EBufferType::UniformBuffer);
-			binding.Binding = ubo.Binding;
-
-			auto hash = utils::ComputeHash<std::string_view>(name);
-			mLocalBuffers.emplace(hash, binding);
-		}
-
-		for (auto &[name, ssbo] : set.StorageBuffers)
-		{
-			MaterialSnapshot::BufferBinding binding{};
-			binding.Buffer = BufferFactory::Create(ssbo.Size, EBufferType::StorageBuffer);
-			binding.Binding = ssbo.Binding;
-			auto hash = utils::ComputeHash<std::string_view>(name);
-			mLocalBuffers.emplace(hash, binding);
-		}
-	}
-
-	void VulkanBackendMaterial::CreatePushConstanstData(const std::vector<FPushConstantsRange> &ranges)
-	{
-		// create push constant buffer
-		size_t total_size = 0;
-		for (auto &pc : ranges)
-			total_size = std::max(total_size, (size_t)pc.Offset + pc.Size);
-
-		mPushConstantData.resize(total_size);
-	}
 } // namespace BHive

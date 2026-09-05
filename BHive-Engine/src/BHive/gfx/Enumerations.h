@@ -284,14 +284,15 @@ namespace BHive
 		StorageBuffer
 	};
 
-	enum class EBufferKind
+	enum class EBufferType : uint8_t
 	{
-		None,
-		Uniform,
-		UniformDynamic,
-		Storage,
-		StorageDynamic
+		Undefined = 0,
+		UniformBuffer = BIT(0),
+		StorageBuffer = BIT(1),
+		IndirectBuffer = BIT(2)
 	};
+
+	ENABLE_BITMASK_OPERATORS(EBufferType)
 
 	enum class EResourceCategory : uint32_t
 	{
@@ -324,6 +325,19 @@ namespace BHive
 			return EResourceCategory::None;
 		}
 	};
+
+	inline EBufferType BufferTypeFromResource(EResourceType t)
+	{
+		switch (t)
+		{
+		case BHive::EResourceType::UniformBuffer:
+			return EBufferType::UniformBuffer;
+		case BHive::EResourceType::StorageBuffer:
+			return EBufferType::StorageBuffer;
+		default:
+			return EBufferType::Undefined;
+		}
+	}
 
 	inline const char *ToString(EResourceType type)
 	{

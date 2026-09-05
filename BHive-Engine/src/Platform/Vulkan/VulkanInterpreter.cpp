@@ -190,10 +190,6 @@ namespace BHive
 		auto &cmd = ctx.CommandBuffer;
 		const auto frame = ctx.Frame;
 
-		auto shader = snap.Shader.As<VulkanShader>();
-		if (!shader)
-			return;
-
 		// bind globals
 		for (auto &group : snap.BindingGroups)
 		{
@@ -221,25 +217,34 @@ namespace BHive
 			if (set != MATERIAL_SET_INDEX)
 				continue;
 
-			for (auto &[_, tb] : snap.Textures)
+			for (auto &[binding, tb] : snap.Textures)
 			{
-				group->SetTexture(tb.Binding, tb.Texture, tb.BaseMipLevel);
+				group->SetTexture(binding, tb.Texture, tb.BaseMipLevel);
 			}
 
-			for (auto &[_, buf] : snap.LocalBuffers)
+			for (auto &[binding, buf] : snap.Buffers)
 			{
-				group->SetBuffer(buf.Binding, buf.Buffer);
+				group->SetBuffer(binding, buf.Buffer);
 			}
 		}
 
+		auto shader = snap.Shader.As<VulkanShader>();
+		// if (CurrentBoundShader.As<VulkanShader>() != shader)
+		// {
+		// 	CurrentBoundShader = snap.Shader;
+		// 	shader = CurrentBoundShader.As<VulkanShader>();
+		// }
+
 		shader->Bind(cmd);
+
+		auto &shaderTemplate = shader->GetTemplate();
 
 		for (auto &group : snap.BindingGroups)
 		{
 			shader->BindGroup(cmd, frame, group.get());
 		}
 
-		for (auto &pc : snap.mReflection->PushConstants)
+		for (auto &pc : shaderTemplate.PushConstants)
 		{
 			shader->BindPushConstants(cmd, ToVkShaderStageBit(pc.Stages), snap.PushConstantData.data() + pc.Offset, (uint32_t)pc.Size, pc.Offset);
 		}

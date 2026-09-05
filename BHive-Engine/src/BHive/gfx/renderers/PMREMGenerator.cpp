@@ -32,17 +32,17 @@ namespace BHive
 		auto convolutionMaterial = ConvolutionMaterial.As<Material>();
 		auto prefilterMaterial = PreFilterMaterial.As<Material>();
 
-		equirectangularMaterial->SetTexture("equirectangularMap", FTextureBinding(hdr));
-		equirectangularMaterial->SetTexture("imgOutput", FTextureBinding(environmentTextures.Environment, 0, 0));
+		equirectangularMaterial->SetTexture("equirectangularMap", TextureBinding(hdr));
+		equirectangularMaterial->SetTexture("imgOutput", TextureBinding(environmentTextures.Environment, 0, 0));
 		equirectangularMaterial->SetParam("u_width", MaterialParam(mSettings.EnvironmentMapSize));
 		equirectangularMaterial->SetParam("u_height", MaterialParam(mSettings.EnvironmentMapSize));
 
-		convolutionMaterial->SetTexture("environmentMap", FTextureBinding(environmentTextures.Environment));
-		convolutionMaterial->SetTexture("irradianceMap", FTextureBinding(environmentTextures.Irradiance, 0, 0));
+		convolutionMaterial->SetTexture("environmentMap", TextureBinding(environmentTextures.Environment));
+		convolutionMaterial->SetTexture("irradianceMap", TextureBinding(environmentTextures.Irradiance, 0, 0));
 		convolutionMaterial->SetParam("u_width", MaterialParam(mSettings.IrradianceSize));
 		convolutionMaterial->SetParam("u_height", MaterialParam(mSettings.IrradianceSize));
 
-		prefilterMaterial->SetTexture("environmentMap", FTextureBinding(environmentTextures.Environment));
+		prefilterMaterial->SetTexture("environmentMap", TextureBinding(environmentTextures.Environment));
 		prefilterMaterial->SetParam("u_envResolution", MaterialParam(mSettings.EnvironmentMapSize));
 
 		RenderGraph graph;
@@ -79,7 +79,7 @@ namespace BHive
 
 			float roughness = (float)mip / (float)(mSettings.PrefilterMipLevels - 1);
 
-			prefilterMaterial->SetTexture("imgOutput", FTextureBinding(environmentTextures.PreFilter, mip))
+			prefilterMaterial->SetTexture("imgOutput", TextureBinding(environmentTextures.PreFilter, mip))
 				.SetParam("u_roughness", MaterialParam(roughness))
 				.SetParam("u_mip_level", MaterialParam(int32_t(mip)))
 				.SetParam("u_width", MaterialParam(s))
@@ -149,7 +149,7 @@ namespace BHive
 
 		auto brdfLUT = TextureFactory::Create2D({size, size}, brdfLUTInfo);
 
-		material->SetTexture("brdfLutTexture", FTextureBinding(brdfLUT));
+		material->SetTexture("brdfLutTexture", TextureBinding(brdfLUT));
 
 		RenderGraph graph;
 		auto &pass = graph.AddPass("Generate BRDFLut", EPassType::OffScreen);

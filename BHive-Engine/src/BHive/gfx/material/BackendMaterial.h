@@ -1,31 +1,37 @@
 #pragma once
 
-#include "core/Core.h"
 #include "MaterialSnapshot.h"
-#include "gfx/resources/ImageSubResourceRange.h"
-#include "MaterialParam.h"
 #include "asset/Asset.h"
+#include "core/Core.h"
 
 namespace BHive
 {
-	class Shader;
-
-	struct FSetReflection;
-	struct FShaderReflection;
-
-	struct FTextureBinding
+	struct MaterialParam
 	{
-		TexturePtr Texture;
+		std::vector<std::byte> Data;
+		size_t Size = 0;
 
-		uint32_t BaseMipLevel = 0;
+		MaterialParam() = default;
 
-		uint32_t BaseArrayLayer = 0;
-
-		template <typename A>
-		void Serialize(A &ar)
+		explicit MaterialParam(size_t size)
+			: Data(size),
+			  Size(size)
 		{
-			ar(this->Texture, this->BaseMipLevel, this->BaseArrayLayer);
-		};
+		}
+
+		template <typename T>
+		explicit MaterialParam(const T &value)
+		{
+			Size = sizeof(T);
+			Data.resize(Size);
+			memcpy(Data.data(), &value, Size);
+		}
+
+		template <typename Ar>
+		void Serialize(Ar &ar)
+		{
+			ar(Data, Size);
+		}
 	};
 
 	class IMaterialBackendInterface
@@ -33,7 +39,7 @@ namespace BHive
 	public:
 		virtual ~IMaterialBackendInterface() = default;
 
-		virtual void SetTexture(const std::string &name, const FTextureBinding &texture) = 0;
+		virtual void SetTexture(const std::string &name, const TextureBinding &texture) = 0;
 
 		virtual void SetParam(const std::string &name, const MaterialParam &value) = 0;
 
@@ -47,14 +53,12 @@ namespace BHive
 	public:
 		virtual ~IMaterial() = default;
 
-		virtual IMaterial &SetTexture(const std::string &name, const FTextureBinding &texture) & = 0;
-		virtual IMaterial &SetTexture(const std::string &name, const FTextureBinding &texture) && = delete;
+		virtual IMaterial &SetTexture(const std::string &name, const TextureBinding &texture) & = 0;
+		virtual IMaterial &SetTexture(const std::string &name, const TextureBinding &texture) && = delete;
 
 		virtual IMaterial &SetParam(const std::string &name, const MaterialParam &value) & = 0;
 		virtual IMaterial &SetParam(const std::string &name, const MaterialParam &value) && = delete;
 
 		virtual MaterialSnapshot CreateSnapshot() const = 0;
-
-		virtual Ref<IMaterialBackendInterface> GetNative() const = 0;
 	};
 } // namespace BHive

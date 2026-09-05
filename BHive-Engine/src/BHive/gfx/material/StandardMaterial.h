@@ -36,7 +36,7 @@ namespace BHive
 
 		StandardMaterial &SetFlags(EFlags flags);
 
-		IMaterial &SetTexture(const std::string &name, const FTextureBinding &texture) & override;
+		IMaterial &SetTexture(const std::string &name, const TextureBinding &texture) & override;
 
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 

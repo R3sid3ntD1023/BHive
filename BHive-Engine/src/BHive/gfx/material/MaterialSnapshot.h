@@ -7,34 +7,31 @@ namespace BHive
 {
 	class IBindingGroup;
 
+	struct TextureBinding
+	{
+		TexturePtr Texture;
+		uint32_t BaseMipLevel = 0;
+		uint32_t BaseArrayLayer = 0;
+	};
+
+	struct BufferBinding
+	{
+		BufferPtr Buffer;
+	};
+
 	struct MaterialSnapshot
 	{
-		struct TextureBinding
-		{
-			TexturePtr Texture;
-			int32_t Binding = 0;
-			uint32_t BaseMipLevel = 0;
-			uint32_t BaseArrayLayer = 0;
-		};
-
-		struct BufferBinding
-		{
-			BufferPtr Buffer;
-			int32_t Binding = 0;
-		};
 
 		ShaderPtr Shader;
 
-		std::unordered_map<uint64_t, TextureBinding> Textures;
+		// binding -> buffer/texture
+		std::unordered_map<uint32_t, TextureBinding> Textures;
 
-		std::unordered_map<uint64_t, BufferBinding> LocalBuffers;
+		// binding -> buffer/texture
+		std::unordered_map<uint32_t, BufferBinding> Buffers;
 
 		std::vector<Ref<IBindingGroup>> BindingGroups;
 
 		std::vector<std::byte> PushConstantData;
-
-		const struct FShaderReflectionLookUp *ReflectionLookUp = nullptr;
-
-		const struct FShaderReflection *mReflection = nullptr;
 	};
 } // namespace BHive

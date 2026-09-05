@@ -13,5 +13,7 @@ namespace BHive
 
 	private:
 		static void BindMaterialSnapshot(const MaterialSnapshot &snap, FVulkanRendererContext &ctx, const FPhase &phase);
+
+		static inline ShaderPtr CurrentBoundShader;
 	};
 } // namespace BHive

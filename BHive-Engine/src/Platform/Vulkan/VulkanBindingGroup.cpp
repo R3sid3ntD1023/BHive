@@ -11,12 +11,11 @@
 namespace BHive
 {
 
-	VulkanBindingGroup::VulkanBindingGroup(VulkanShader *shader, uint32_t setIndex)
-		: mSetIndex(setIndex)
+	VulkanBindingGroup::VulkanBindingGroup(vk::DescriptorSetLayout layout, const BindingSetTemplate &setTemplate)
+		: mSetIndex(setTemplate.SetIndex)
 	{
-
-		BuildBindings(shader->GetRefl());
-		CreateDescriptorSet(shader->GetDescriptorSetLayout(setIndex));
+		BuildBindings(setTemplate);
+		CreateDescriptorSet(layout);
 	}
 
 	void VulkanBindingGroup::SetBuffer(uint32_t binding, BufferPtr buffer)
@@ -39,18 +38,20 @@ namespace BHive
 		}
 	}
 
-	void VulkanBindingGroup::BuildBindings(const FShaderReflectionLookUp &refl)
+	void VulkanBindingGroup::BuildBindings(const BindingSetTemplate &setTemplate)
 	{
-		auto &setBindings = refl.GetSetBindings(mSetIndex);
+		auto &setBindings = setTemplate.Bindings;
 		mBindings.reserve(setBindings.size());
 
 		for (auto &r : setBindings)
 		{
 			FBindingInfo info{};
-			info.Binding = r.binding;
-			info.Type = r.kind;
-			info.Category = GetCategory(r.kind);
+			info.Binding = r.Binding;
+			info.Type = r.Type;
+			info.Category = GetCategory(r.Type);
 			mBindings.push_back(info);
+
+			mBindingLookup[r.Binding] = (uint32_t)mBindings.size() - 1;
 		}
 	}
 
@@ -125,8 +126,11 @@ namespace BHive
 
 	FBindingInfo *VulkanBindingGroup::FindBinding(uint32_t binding)
 	{
-		auto it = std::find_if(mBindings.begin(), mBindings.end(), [binding](const FBindingInfo &b) { return b.Binding == binding; });
-		return it != mBindings.end() ? &(*it) : nullptr;
+		if (auto it = mBindingLookup.find(binding); it != mBindingLookup.end())
+		{
+			return &mBindings[it->second];
+		}
+		return nullptr;
 	}
 
 	void VulkanBindingGroup::MakeDirty()

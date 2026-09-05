@@ -1,13 +1,13 @@
 #include "ImageDebugger.h"
-#include "gfx/Texture.h"
 #include "gfx/Framebuffer.h"
-#include "gfx/ShaderManager.h"
-#include "gfx/material/Material.h"
 #include "gfx/Pipeline.h"
-#include "gfx/imgui/IImGuiProvider.h"
-#include "imgui.h"
-#include "gfx/renderers/Renderer.h"
+#include "gfx/ShaderManager.h"
+#include "gfx/Texture.h"
 #include "gfx/factories/GFXFactories.h"
+#include "gfx/imgui/IImGuiProvider.h"
+#include "gfx/material/Material.h"
+#include "gfx/renderers/Renderer.h"
+#include "imgui.h"
 
 namespace BHive
 {
@@ -71,7 +71,7 @@ namespace BHive
 			const auto &tex = entry.Tex;
 
 			auto material = mMaterial.As<Material>();
-			material->SetParam("u_Type", MaterialParam(type)).SetParam("u_Mip", MaterialParam(mip)).SetParam("u_Face", MaterialParam(face)).SetTexture(uniform, FTextureBinding(tex));
+			material->SetParam("u_Type", MaterialParam(type)).SetParam("u_Mip", MaterialParam(mip)).SetParam("u_Face", MaterialParam(face)).SetTexture(uniform, TextureBinding(tex));
 
 			ImageSubresourceRange range{mip, mipLevels, face, layers};
 

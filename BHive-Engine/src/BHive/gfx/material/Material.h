@@ -1,10 +1,10 @@
 #pragma once
 
+#include "BackendMaterial.h"
 #include "asset/Asset.h"
 #include "core/EnumAsByte.h"
 #include "gfx/Color.h"
 #include "gfx/Texture.h"
-#include "BackendMaterial.h"
 
 namespace BHive
 {
@@ -33,7 +33,7 @@ namespace BHive
 
 		IMaterial &SetParam(const std::string &name, const MaterialParam &param) & override;
 
-		IMaterial &SetTexture(const std::string &name, const FTextureBinding &texture) & override;
+		IMaterial &SetTexture(const std::string &name, const TextureBinding &texture) & override;
 
 		IMaterial &SetSurfaceType(ESurfaceType surfaceType);
 
@@ -45,8 +45,6 @@ namespace BHive
 
 		virtual bool ShouldCastShadows() const { return true; }
 
-		Ref<IMaterialBackendInterface> GetNative() const override { return mBackendMaterial; }
-
 		MaterialSnapshot CreateSnapshot() const override;
 
 		ESurfaceType GetSurfaceType() const { return mSurfaceType; }
@@ -57,19 +55,12 @@ namespace BHive
 
 		REFLECTABLEV(Asset)
 
-	private:
-		void InitFromReflection();
-
 	protected:
 		std::string mShaderProgramName;
 
 		ESurfaceType mSurfaceType = ESurfaceType::Opaque;
 
-		std::unordered_map<std::string, FTextureBinding> mTextures;
-
-		std::unordered_map<std::string, MaterialParam> mParams;
-
-		mutable Ref<IMaterialBackendInterface> mBackendMaterial;
+		Ref<IMaterialBackendInterface> mBackendMaterial;
 
 	private:
 	};

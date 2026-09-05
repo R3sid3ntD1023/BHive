@@ -2,39 +2,36 @@
 
 #include "VulkanCore.h"
 #include "gfx/material/BackendMaterial.h"
-#include "gfx/shader/ShaderReflection.h"
 
 namespace BHive
 {
-	class VulkanShader;
-	struct FShaderReflection;
-	class GeneralBuffer;
-	class VulkanPipeline;
+	struct ShaderTemplate;
 
 	class VulkanBackendMaterial : public IMaterialBackendInterface
 	{
 	public:
 		explicit VulkanBackendMaterial(const std::string &shaderProgramName);
 
-		void SetTexture(const std::string &name, const FTextureBinding &texture) override;
+		void SetTexture(const std::string &name, const TextureBinding &texture) override;
 
 		void SetParam(const std::string &name, const MaterialParam &param) override;
 
 		MaterialSnapshot CreateSnapshot() const;
 
 	private:
-		void CreateLocalBuffers(const FSetReflection &set);
-
-		void CreatePushConstanstData(const std::vector<FPushConstantsRange> &ranges);
+		void Initialize(const std::string &shaderProgramName);
 
 	private:
 		ShaderPtr mShaderProgram;
 
+		const ShaderTemplate *mShaderTemplate = nullptr;
+
 		std::vector<std::byte> mPushConstantData;
 
-		std::unordered_map<uint64_t, MaterialSnapshot::BufferBinding> mLocalBuffers;
+		// binding -> buffer/texture
+		std::unordered_map<uint32_t, BufferBinding> mBufferBindings;
 
-		std::unordered_map<uint64_t, MaterialSnapshot::TextureBinding> mTextureBindings;
+		std::unordered_map<uint32_t, TextureBinding> mTextureBindings;
 
 		std::vector<Ref<IBindingGroup>> mBindGroups;
 	};

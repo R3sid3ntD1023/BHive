@@ -1,10 +1,10 @@
-#include "core/FileSystem.h"
 #include "ShaderCompiler.h"
-#include "ShaderUtils.h"
-#include <spirv_cross/spirv_glsl.hpp>
 #include "ShaderReflection.h"
+#include "ShaderUtils.h"
+#include "core/FileSystem.h"
 #include "gfx/RenderCommand.h"
 #include <regex>
+#include <spirv_cross/spirv_glsl.hpp>
 
 namespace BHive
 {
@@ -220,7 +220,6 @@ namespace BHive
 		LOG_TRACE("Merging Reflection");
 
 		asset.MergedReflection = FShaderReflection::Merge(refl_map);
-		asset.LookupTable = FShaderReflectionLookUp(asset.MergedReflection);
 
 		LOG_TRACE(asset.MergedReflection.to_string())
 	}

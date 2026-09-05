@@ -7,6 +7,7 @@ namespace BHive
 	{
 
 		SetParam("Emission", MaterialParam(mEmissionColor));
+		SetTexture("EmissionMap", {});
 	}
 
 	IMaterial &EmissiveMaterial::SetEmissionColor(FColor color)

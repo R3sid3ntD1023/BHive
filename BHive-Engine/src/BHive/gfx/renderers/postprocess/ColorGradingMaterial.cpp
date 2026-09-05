@@ -12,7 +12,7 @@ namespace BHive
 		auto output = mFramebuffer.As<Framebuffer>()->GetColorAttachment();
 
 		auto material = mMaterial.As<Material>();
-		material->SetTexture("uTonemapped", FTextureBinding(input));
+		material->SetTexture("uTonemapped", TextureBinding(input));
 		material->SetParam("uLift", MaterialParam(Params.Lift));
 		material->SetParam("uGamma", MaterialParam(Params.Gamma));
 		material->SetParam("uGain", MaterialParam(Params.Gain));

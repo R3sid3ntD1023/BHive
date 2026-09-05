@@ -1,7 +1,7 @@
 #include "ShaderCache.h"
-#include "gfx/RenderCommand.h"
 #include "ShaderUtils.h"
 #include "core/FileSystem.h"
+#include "gfx/RenderCommand.h"
 
 namespace BHive
 {
@@ -45,11 +45,11 @@ namespace BHive
 	}
 
 	template <typename A>
-	void Serialize(A& ar, ShaderCache::MetaData& meta)
+	void Serialize(A &ar, ShaderCache::MetaData &meta)
 	{
-		ar(meta.Hash, meta.Stages, meta.MergedReflection, meta.LookupTable);
+		ar(meta.Hash, meta.Stages, meta.MergedReflection);
 	}
-	
+
 	std::filesystem::path ShaderCache::GetShaderCacheDir(const std::string &name)
 	{
 		return ShaderUtils::GetCacheDirectory() / name;
@@ -58,7 +58,7 @@ namespace BHive
 	std::filesystem::path ShaderCache::GetStageCachePath(const std::string &name, EShaderStage stage)
 	{
 		if (RenderCommand::GetAPI() == RendererAPI::Vulkan)
-			return GetShaderCacheDir( name) / (name + GetCacheVulkanFileExtension(stage));
+			return GetShaderCacheDir(name) / (name + GetCacheVulkanFileExtension(stage));
 
 		if (RenderCommand::GetAPI() == RendererAPI::Opengl)
 			return GetShaderCacheDir(name) / (name + GetCacheOpenglFileExtension(stage));
@@ -101,7 +101,6 @@ namespace BHive
 		ar(meta);
 	}
 
-
 	bool ShaderCache::HasValidCache(const ShaderAsset &asset, const std::string &source)
 	{
 		auto meta = LoadMeta(asset.Name);
@@ -112,15 +111,15 @@ namespace BHive
 			return false;
 
 		if (meta.Stages.size() != asset.Stages.size())
-			return false; 
-		
-		for (auto& [stage, _] : asset.Stages) 
+			return false;
+
+		for (auto &[stage, _] : asset.Stages)
 		{
-			if (std::find(meta.Stages.begin(), meta.Stages.end(), stage) == meta.Stages.end()) 
-				return false; 
+			if (std::find(meta.Stages.begin(), meta.Stages.end(), stage) == meta.Stages.end())
+				return false;
 		}
 
-		for (auto& [stage, _] : asset.Stages)
+		for (auto &[stage, _] : asset.Stages)
 		{
 			auto path = GetStageCachePath(asset.Name, stage);
 			if (!std::filesystem::exists(path))
@@ -134,38 +133,36 @@ namespace BHive
 	{
 		auto meta = LoadMeta(asset.Name);
 
-		for (auto& [stage, data] : asset.Stages)
+		for (auto &[stage, data] : asset.Stages)
 		{
 			auto path = GetStageCachePath(asset.Name, stage);
 			FileSystem::ReadFile(path, data.Spirv);
 		}
 
 		asset.MergedReflection = meta.MergedReflection;
-		asset.LookupTable = meta.LookupTable;
 	}
 
-	void ShaderCache::StoreCache(const ShaderAsset &asset, const std::string& source)
+	void ShaderCache::StoreCache(const ShaderAsset &asset, const std::string &source)
 	{
 		auto dir = GetShaderCacheDir(asset.Name);
 		if (!std::filesystem::exists(dir))
 			std::filesystem::create_directories(dir);
 
-		//Write SPIR-V
-		for (auto& [stage, data] : asset.Stages)
+		// Write SPIR-V
+		for (auto &[stage, data] : asset.Stages)
 		{
 			auto path = GetStageCachePath(asset.Name, stage);
 			FileSystem::WriteFile(path, data.Spirv);
 		}
 
-		//write metadata
+		// write metadata
 		MetaData meta;
 		meta.Hash = ComputeHash(source);
-		
+
 		for (auto &[stage, _] : asset.Stages)
 			meta.Stages.push_back(stage);
 
 		meta.MergedReflection = asset.MergedReflection;
-		meta.LookupTable = asset.LookupTable;
 
 		StoreMeta(asset.Name, meta);
 	}

@@ -2,9 +2,10 @@
 
 #include "VulkanCore.h"
 #include "gfx/Enumerations.h"
-#include "gfx/shader/ShaderReflection.h"
-#include "gfx/NativeHandle.h"
 #include "gfx/IBindingGroup.h"
+#include "gfx/NativeHandle.h"
+#include "gfx/shader/ShaderReflection.h"
+#include "gfx/shader/ShaderTemplate.h"
 
 namespace BHive
 {
@@ -26,7 +27,7 @@ namespace BHive
 	class VulkanBindingGroup : public IBindingGroup
 	{
 	public:
-		VulkanBindingGroup(VulkanShader *shader, uint32_t setIndex);
+		VulkanBindingGroup(vk::DescriptorSetLayout layout, const BindingSetTemplate &setTemplate);
 
 		void SetBuffer(uint32_t binding, BufferPtr buffer);
 
@@ -39,7 +40,7 @@ namespace BHive
 		uint32_t GetSetIndex() const { return mSetIndex; }
 
 	private:
-		void BuildBindings(const FShaderReflectionLookUp &refl);
+		void BuildBindings(const BindingSetTemplate &setTemplate);
 
 		vk::DescriptorBufferInfo BuildBufferInfo(const FBindingInfo &bindInfo, uint32_t frame) const;
 
@@ -55,8 +56,8 @@ namespace BHive
 
 	private:
 		uint32_t mSetIndex;
-
 		std::vector<FBindingInfo> mBindings;
+		std::unordered_map<uint32_t, uint32_t> mBindingLookup;
 
 		std::bitset<2> mNeedsUpdate;
 		std::vector<vk::WriteDescriptorSet> mCachedWrites;

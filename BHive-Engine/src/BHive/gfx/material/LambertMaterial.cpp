@@ -7,6 +7,8 @@ namespace BHive
 	{
 		SetParam("DiffuseColor", MaterialParam(mDiffuseColor));
 		SetParam("Emission", MaterialParam(mEmissionColor));
+		SetTexture("DiffuseMap", {});
+		SetTexture("EmissionMap", {});
 	}
 
 	LambertMaterial &LambertMaterial::SetDiffuseColor(FColor color)

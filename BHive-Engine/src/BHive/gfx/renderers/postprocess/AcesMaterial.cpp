@@ -13,7 +13,7 @@ namespace BHive
 		auto input = set.PrevOutput;
 
 		auto material = mMaterial.As<Material>();
-		material->SetTexture("uSceneColor", FTextureBinding(input));
+		material->SetTexture("uSceneColor", TextureBinding(input));
 
 		auto &pass = graph.AddPass("Aces", EPassType::OffScreen);
 

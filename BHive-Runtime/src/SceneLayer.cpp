@@ -68,9 +68,20 @@ namespace BHive
 
 		{
 
+			auto standard = MaterialFactory::CreateStandard();
+			auto albedo = TextureLoader::FromFile("C:/Users/dariu/Documents/DigitalAssets/3D/Poliigon/MetalCastRusted001/MetalCastRusted001_COL_4K.png");
+			auto metalness = TextureLoader::FromFile("C:/Users/dariu/Documents/DigitalAssets/3D/Poliigon/MetalCastRusted001/MetalCastRusted001_REFL_4K.png");
+			auto roughness = TextureLoader::FromFile("C:/Users/dariu/Documents/DigitalAssets/3D/Poliigon/MetalCastRusted001/MetalCastRusted001_GLOSS_4K.png");
+			auto normal = TextureLoader::FromFile("C:/Users/dariu/Documents/DigitalAssets/3D/Poliigon/MetalCastRusted001/MetalCastRusted001_NRM_4K.png");
+
+			standard.As<StandardMaterial>()->SetTexture("DiffuseMap", {TextureFactory::Create2D(albedo)});
+			standard.As<StandardMaterial>()->SetTexture("MetalnessMap", {TextureFactory::Create2D(metalness)});
+			standard.As<StandardMaterial>()->SetTexture("RoughnessMap", {TextureFactory::Create2D(roughness)});
+			standard.As<StandardMaterial>()->SetTexture("NormalMap", {TextureFactory::Create2D(normal)});
+
 			mMaterialTables[0].Add(MaterialFactory::CreateLambert());
 			mMaterialTables[1].Add(MaterialFactory::CreateLambert());
-			mMaterialTables[2].Add(MaterialFactory::CreateStandard());
+			mMaterialTables[2].Add(standard);
 
 			{
 

@@ -13,13 +13,13 @@ namespace BHive
 
 		IMaterial &SetParam(const std::string &name, const MaterialParam &val) & override;
 
-		IMaterial &SetTexture(const std::string &name, const FTextureBinding &texture) & override;
+		IMaterial &SetTexture(const std::string &name, const TextureBinding &texture) & override;
 
 		MaterialSnapshot CreateSnapshot() const override;
 
 	private:
 		Ref<Material> mParent;
-		std::unordered_map<std::string, FTextureBinding> mTextureOverrides;
-		std::unordered_map<std::string, MaterialParam> mUniformOverrides;
+		std::unordered_map<uint64_t, TextureBinding> mTextureOverrides;
+		std::unordered_map<uint64_t, MaterialParam> mUniformOverrides;
 	};
 } // namespace BHive

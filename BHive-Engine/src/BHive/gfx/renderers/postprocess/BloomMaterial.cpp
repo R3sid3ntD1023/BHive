@@ -20,7 +20,7 @@ namespace BHive
 		// Phase 0 : Prefilter Scene color
 		{
 			auto mat = mMaterials[0].As<Material>();
-			mat->SetTexture("uSceneColor", FTextureBinding(input)).SetParam("uThreshold", MaterialParam(Params.Threshold));
+			mat->SetTexture("uSceneColor", TextureBinding(input)).SetParam("uThreshold", MaterialParam(Params.Threshold));
 
 			pass.BeginPhase(EPhaseType::Graphics);
 			pass.UseFramebuffer(mFramebuffers[0]);
@@ -43,7 +43,7 @@ namespace BHive
 				ImageSubresourceRange srcRange = {srcMip, 1, 0, 1};
 				ImageSubresourceRange dstRange = {dstMip, 1, 0, 1};
 
-				mat->SetTexture("uSrcTexture", FTextureBinding(bloomOutput, srcMip));
+				mat->SetTexture("uSrcTexture", TextureBinding(bloomOutput, srcMip));
 
 				pass.BeginPhase(EPhaseType::Graphics);
 				pass.UseFramebuffer(mFramebuffers[0], dstRange);
@@ -68,7 +68,7 @@ namespace BHive
 				ImageSubresourceRange srcRange{srcMip, 1, 0, 1};
 				ImageSubresourceRange dstRange{dstMip, 1, 0, 1};
 
-				mat->SetTexture("uSrcTexture", FTextureBinding(bloomOutput, srcMip));
+				mat->SetTexture("uSrcTexture", TextureBinding(bloomOutput, srcMip));
 
 				pass.BeginPhase(EPhaseType::Graphics);
 				pass.UseFramebuffer(mFramebuffers[0], dstRange);
@@ -83,8 +83,8 @@ namespace BHive
 		// Composite to scene
 		{
 			auto mat = mMaterials[3].As<Material>();
-			mat->SetTexture("uTextureA", FTextureBinding(input));
-			mat->SetTexture("uTextureB", FTextureBinding(bloomOutput));
+			mat->SetTexture("uTextureA", TextureBinding(input));
+			mat->SetTexture("uTextureB", TextureBinding(bloomOutput));
 			mat->SetParam("uExposure", MaterialParam(Params.Exposure));
 			mat->SetParam("uBloomStrength", MaterialParam(Params.Strength));
 

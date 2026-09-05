@@ -15,6 +15,12 @@ namespace BHive
 		SetDepthScale(1.0f);
 		SetTiling({1.0f, 1.0f});
 		SetFlags(EFlags::Shadows);
+		SetTexture("DiffuseMap", {});
+		SetTexture("MetalnessMap", {});
+		SetTexture("RoughnessMap", {});
+		SetTexture("EmissionMap", {});
+		SetTexture("NormalMap", {});
+		SetTexture("OpacityMap", {});
 	}
 
 	StandardMaterial &StandardMaterial::SetAlbedo(FColor color)
@@ -73,7 +79,7 @@ namespace BHive
 		return *this;
 	}
 
-	IMaterial &StandardMaterial::SetTexture(const std::string &name, const FTextureBinding &texture) &
+	IMaterial &StandardMaterial::SetTexture(const std::string &name, const TextureBinding &texture) &
 	{
 		Material::SetTexture(name, texture);
 		if (name == "NormalMap")
