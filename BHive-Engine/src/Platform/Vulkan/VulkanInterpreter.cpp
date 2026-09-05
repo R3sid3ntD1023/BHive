@@ -228,14 +228,13 @@ namespace BHive
 			}
 		}
 
-		auto shader = snap.Shader.As<VulkanShader>();
-		// if (CurrentBoundShader.As<VulkanShader>() != shader)
-		// {
-		// 	CurrentBoundShader = snap.Shader;
-		// 	shader = CurrentBoundShader.As<VulkanShader>();
-		// }
+		if (CurrentBoundShader != snap.Shader)
+		{
+			CurrentBoundShader = snap.Shader;
+			CurrentBoundShader.As<VulkanShader>()->Bind(cmd);
+		}
 
-		shader->Bind(cmd);
+		auto shader = CurrentBoundShader.As<VulkanShader>();
 
 		auto &shaderTemplate = shader->GetTemplate();
 

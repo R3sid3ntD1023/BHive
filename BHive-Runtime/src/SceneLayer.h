@@ -2,10 +2,10 @@
 
 #include "core/Core.h"
 #include "core/Layer.h"
-#include "gfx/cameras/EditorCamera.h"
 #include "core/events/ApplicationEvents.h"
-#include "gfx/material/MaterialTable.h"
+#include "gfx/cameras/EditorCamera.h"
 #include "gfx/cameras/EditorCameraController.h"
+#include "gfx/material/MaterialTable.h"
 
 namespace BHive
 {
@@ -40,6 +40,7 @@ namespace BHive
 		bool mViewportActive = false;
 		EditorCameraController mCameraController;
 		uint32_t mCurrentCameraIndex = 0;
+		MaterialPtr mStandardMaterial;
 	};
 
 } // namespace BHive

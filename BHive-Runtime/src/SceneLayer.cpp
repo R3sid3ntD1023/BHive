@@ -68,20 +68,11 @@ namespace BHive
 
 		{
 
-			auto standard = MaterialFactory::CreateStandard();
-			auto albedo = TextureLoader::FromFile("C:/Users/dariu/Documents/DigitalAssets/3D/Poliigon/MetalCastRusted001/MetalCastRusted001_COL_4K.png");
-			auto metalness = TextureLoader::FromFile("C:/Users/dariu/Documents/DigitalAssets/3D/Poliigon/MetalCastRusted001/MetalCastRusted001_REFL_4K.png");
-			auto roughness = TextureLoader::FromFile("C:/Users/dariu/Documents/DigitalAssets/3D/Poliigon/MetalCastRusted001/MetalCastRusted001_GLOSS_4K.png");
-			auto normal = TextureLoader::FromFile("C:/Users/dariu/Documents/DigitalAssets/3D/Poliigon/MetalCastRusted001/MetalCastRusted001_NRM_4K.png");
-
-			standard.As<StandardMaterial>()->SetTexture("DiffuseMap", {TextureFactory::Create2D(albedo)});
-			standard.As<StandardMaterial>()->SetTexture("MetalnessMap", {TextureFactory::Create2D(metalness)});
-			standard.As<StandardMaterial>()->SetTexture("RoughnessMap", {TextureFactory::Create2D(roughness)});
-			standard.As<StandardMaterial>()->SetTexture("NormalMap", {TextureFactory::Create2D(normal)});
+			mStandardMaterial = MaterialFactory::CreateStandard();
 
 			mMaterialTables[0].Add(MaterialFactory::CreateLambert());
 			mMaterialTables[1].Add(MaterialFactory::CreateLambert());
-			mMaterialTables[2].Add(standard);
+			mMaterialTables[2].Add(mStandardMaterial);
 
 			{
 
@@ -273,6 +264,27 @@ namespace BHive
 					mSceneRenderer->UpdateMesh(sSphereHandle, mMesh);
 				}
 			}
+
+			auto loadTexture = [&](const std::string &name)
+			{
+				if (ImGui::Button(name.c_str()))
+				{
+					auto info = Platform::OpenFile("Texture (*.png;*.jpeg)\0*.png;*.jpeg\0");
+					if (info)
+					{
+						auto decoded = TextureLoader::FromFile(info);
+						auto texture = TextureFactory::Create2D(decoded);
+						mStandardMaterial.As<Material>()->SetTexture(std::format("{}Map", name), {texture});
+					}
+				}
+			};
+
+			loadTexture("Diffuse");
+			loadTexture("Metalness");
+			loadTexture("Roughness");
+			loadTexture("Normal");
+			loadTexture("Emission");
+			loadTexture("Opacity");
 
 			if (ImGui::Button("Load HDR Environment"))
 			{

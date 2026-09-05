@@ -14,8 +14,8 @@ namespace BHive
 	VulkanBindingGroup::VulkanBindingGroup(vk::DescriptorSetLayout layout, const BindingSetTemplate &setTemplate)
 		: mSetIndex(setTemplate.SetIndex)
 	{
-		BuildBindings(setTemplate);
 		CreateDescriptorSet(layout);
+		Build(setTemplate);
 	}
 
 	void VulkanBindingGroup::SetBuffer(uint32_t binding, BufferPtr buffer)
@@ -23,7 +23,7 @@ namespace BHive
 		if (auto info = FindBinding(binding); info && info->Buffer != buffer)
 		{
 			info->Buffer = buffer;
-			MakeDirty();
+			MakeDirty(binding);
 		}
 	}
 
@@ -34,38 +34,32 @@ namespace BHive
 		{
 			info->Texture = texture;
 			info->MipLevel = mip;
-			MakeDirty();
-		}
-	}
 
-	void VulkanBindingGroup::BuildBindings(const BindingSetTemplate &setTemplate)
-	{
-		auto &setBindings = setTemplate.Bindings;
-		mBindings.reserve(setBindings.size());
+			auto &cachedBinding = mCachedBindings.at(binding);
+			cachedBinding.ImageInfo = BuildImageInfo(*info, mip);
 
-		for (auto &r : setBindings)
-		{
-			FBindingInfo info{};
-			info.Binding = r.Binding;
-			info.Type = r.Type;
-			info.Category = GetCategory(r.Type);
-			mBindings.push_back(info);
-
-			mBindingLookup[r.Binding] = (uint32_t)mBindings.size() - 1;
+			MakeDirty(binding);
 		}
 	}
 
 	vk::DescriptorSet VulkanBindingGroup::Update(uint32_t frame)
 	{
-		if (mNeedsUpdate[frame])
+		std::vector<vk::WriteDescriptorSet> writes;
+		for (auto &binding : mDirtyBindings)
 		{
-			BuildWriteCopies(frame);
+			auto &info = mBindings.at(binding);
+			CachedWrite &write = mCachedBindings.at(binding).Writes[frame];
 
-			vk::Device device = VulkanBackend::GetLogicalDevice();
-			if (!mCachedWrites.empty())
-				device.updateDescriptorSets(mCachedWrites, {});
+			if (IsBuffer(info.Type))
+				write.BufferInfo = BuildBufferInfo(info, frame);
 
-			mNeedsUpdate[frame] = false;
+			writes.emplace_back(write.Write);
+		}
+
+		if (!writes.empty())
+		{
+			auto &device = VulkanBackend::GetLogicalDevice();
+			device.updateDescriptorSets(writes, {});
 		}
 
 		return mSets[frame];
@@ -126,47 +120,45 @@ namespace BHive
 
 	FBindingInfo *VulkanBindingGroup::FindBinding(uint32_t binding)
 	{
-		if (auto it = mBindingLookup.find(binding); it != mBindingLookup.end())
-		{
-			return &mBindings[it->second];
-		}
-		return nullptr;
+		if (!mBindings.contains(binding))
+			return nullptr;
+		return &mBindings.at(binding);
 	}
 
-	void VulkanBindingGroup::MakeDirty()
+	void VulkanBindingGroup::MakeDirty(uint32_t binding)
 	{
-		mNeedsUpdate.set();
+		mDirtyBindings.insert(binding);
 	}
 
-	void VulkanBindingGroup::BuildWriteCopies(uint32_t frame)
+	void VulkanBindingGroup::Build(const BindingSetTemplate &setTemplate)
 	{
-		mCachedWrites.clear();
-		mCachedImageInfos.clear();
-		mCachedBufferInfos.clear();
+		auto &setBindings = setTemplate.Bindings;
+		mBindings.reserve(setBindings.size());
 
-		auto size = mBindings.size();
-		auto set = mSets[frame];
-
-		mCachedWrites.reserve(size);
-		mCachedImageInfos.reserve(size);
-		mCachedBufferInfos.reserve(size);
-
-		for (auto &b : mBindings)
+		for (auto &b : setBindings)
 		{
-			if (!b.Buffer && !b.Texture)
-				continue;
+			// store binding info
+			mBindings[b.Binding] = {b.Type, GetCategory(b.Type)};
 
-			if (IsBuffer(b.Type))
+			auto &cachedBinding = mCachedBindings[b.Binding];
+
+			for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 			{
-				mCachedBufferInfos.push_back(BuildBufferInfo(b, frame));
-				auto &bufInfo = mCachedBufferInfos.back();
-				mCachedWrites.emplace_back(set, b.Binding, 0, ToVkType(b.Type), nullptr, bufInfo);
-			}
-			else if (IsTexture(b.Type))
-			{
-				mCachedImageInfos.push_back(BuildImageInfo(b, b.MipLevel));
-				auto &imgInfo = mCachedImageInfos.back();
-				mCachedWrites.emplace_back(set, b.Binding, 0, ToVkType(b.Type), imgInfo);
+				auto &write = cachedBinding.Writes[i];
+				write.Write.dstSet = mSets[i];
+				write.Write.dstArrayElement = 0;
+				write.Write.dstBinding = b.Binding;
+				write.Write.descriptorType = ToVkType(b.Type);
+				write.Write.descriptorCount = 1;
+
+				if (IsBuffer(b.Type))
+				{
+					write.Write.pBufferInfo = &write.BufferInfo;
+				}
+				else
+				{
+					write.Write.pImageInfo = &cachedBinding.ImageInfo;
+				}
 			}
 		}
 	}
