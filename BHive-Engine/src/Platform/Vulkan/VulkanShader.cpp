@@ -16,7 +16,8 @@ namespace BHive
 		: Shader(asset),
 		  mDevice(VulkanBackend::GetLogicalDevice())
 	{
-		CreateDescriptorResources(asset);
+		mPipelineLayoutInfo = GetPipelineLayoutInfo();
+
 		CreateModules(asset);
 		CreatePipelineLayout();
 	}
@@ -27,11 +28,10 @@ namespace BHive
 			cmd.bindShadersEXT(stage, {shader});
 	}
 
-	void VulkanShader::BindGroup(vk::CommandBuffer cmd, uint32_t frame, IBindingGroup *group)
+	void VulkanShader::BindGroup(vk::CommandBuffer cmd, uint32_t frame, VulkanBindingGroup *group)
 	{
-		auto vkgroup = Cast<VulkanBindingGroup>(group);
-		auto set = vkgroup->Update(frame);
-		cmd.bindDescriptorSets(mBindPoint, mPipelineLayout, vkgroup->GetSetIndex(), {set}, {});
+		auto set = group->Update(frame);
+		cmd.bindDescriptorSets(mBindPoint, mPipelineLayout, group->GetSetIndex(), {set}, {});
 	}
 
 	void VulkanShader::BindPushConstants(vk::CommandBuffer cmd, vk::ShaderStageFlags stage, const void *data, uint32_t size, uint32_t offset)
@@ -40,36 +40,23 @@ namespace BHive
 		cmd.pushConstants2(info);
 	}
 
-	vk::DescriptorSetLayout VulkanShader::GetDescriptorSetLayout(uint32_t set) const
-	{
-		if (mDescriptorSetLayouts.contains(set))
-		{
-			return mDescriptorSetLayouts.at(set);
-		}
-
-		return mEmptyDescriptorSet;
-	}
-
-	bool VulkanShader::HasSet(uint32_t setIndex) const
-	{
-		return mDescriptorSetLayouts.contains(setIndex);
-	}
-
 	FPipelineLayoutInfo VulkanShader::GetPipelineLayoutInfo() const
 	{
-		FPipelineLayoutInfo info;
-		info.PushConstants = mPushConstantRanges;
+		const auto &shaderTemplate = GetTemplate();
+		auto &layoutCache = VulkanBackend::GetLayoutCache();
 
-		uint32_t maxSet = 0;
-		for (auto &[set, _] : mDescriptorSetLayouts)
-			maxSet = std::max(maxSet, set);
+		FPipelineLayoutInfo info{};
+		uint32_t maxSet = shaderTemplate.MaxSet;
+		info.SetLayouts.resize(maxSet + 1, layoutCache.GetEmptyLayout());
 
-		info.SetLayouts.resize(maxSet + 1, mEmptyDescriptorSet);
-
-		for (auto &[setIndex, layout] : mDescriptorSetLayouts)
+		for (auto &setTemplate : shaderTemplate.Sets)
 		{
-			info.SetLayouts[setIndex] = layout;
-			info.UsedSets.push_back(setIndex);
+			info.SetLayouts[setTemplate.SetIndex] = layoutCache.GetOrCreate(setTemplate);
+		}
+
+		for (auto &pc : shaderTemplate.PushConstants)
+		{
+			info.PushConstants.emplace_back(ToVkShaderStageBit(pc.Stages), pc.Offset, (uint32_t)pc.Size);
 		}
 
 		return info;
@@ -80,9 +67,8 @@ namespace BHive
 		std::vector<vk::ShaderCreateInfoEXT> infos;
 		infos.reserve(asset.Stages.size());
 
-		auto layoutInfo = GetPipelineLayoutInfo();
-		const auto &layouts = layoutInfo.SetLayouts;
-		const auto &pushConstants = layoutInfo.PushConstants;
+		const auto &layouts = mPipelineLayoutInfo.SetLayouts;
+		const auto &pushConstants = mPipelineLayoutInfo.PushConstants;
 
 		std::vector<EShaderStage> stages;
 		for (auto &[stage, _] : asset.Stages)
@@ -112,77 +98,14 @@ namespace BHive
 
 	void VulkanShader::CreatePipelineLayout()
 	{
-		auto layoutInfo = GetPipelineLayoutInfo();
-		const auto &layouts = layoutInfo.SetLayouts;
-		const auto &pushConstants = layoutInfo.PushConstants;
+		const auto &layouts = mPipelineLayoutInfo.SetLayouts;
+		const auto &pushConstants = mPipelineLayoutInfo.PushConstants;
 
 		vk::PipelineLayoutCreateInfo info{};
 		info.setSetLayouts(layouts);
 		info.setPushConstantRanges(pushConstants);
 
 		mPipelineLayout = mDevice.createPipelineLayout(info);
-	}
-
-	void VulkanShader::CreateDescriptorResources(const ShaderAsset &asset)
-	{
-		const auto &merged = asset.MergedReflection;
-
-		mMaxSet = 0;
-		mDescriptorSetLayouts.clear();
-
-		for (auto &[set, refl] : merged.Sets)
-		{
-			mMaxSet = std::max(mMaxSet, set);
-
-			auto &refl = merged.Sets.at(set);
-
-			std::vector<vk::DescriptorSetLayoutBinding> bindings;
-
-			for (auto &[name, sampler] : refl.Samplers)
-			{
-				auto vk_stage = ToVkShaderStageBit(sampler.Stages);
-				bindings.emplace_back(sampler.Binding, ToVkType(sampler.Type), sampler.ArraySize, vk_stage);
-			}
-
-			for (auto &[name, ubo] : refl.UniformBuffers)
-			{
-				auto vk_stage = ToVkShaderStageBit(ubo.Stages);
-				auto type = vk::DescriptorType::eUniformBuffer;
-
-				bindings.emplace_back(ubo.Binding, type, 1, vk_stage);
-			}
-
-			for (auto &[name, sbo] : refl.StorageBuffers)
-			{
-				auto vk_stage = ToVkShaderStageBit(sbo.Stages);
-				bindings.emplace_back(sbo.Binding, vk::DescriptorType::eStorageBuffer, 1, vk_stage);
-			}
-
-			std::vector<vk::DescriptorBindingFlags> binding_flags(bindings.size(), {});
-
-			for (size_t i = 0; i < bindings.size(); i++)
-			{
-				auto &b = bindings[i];
-				auto &flags = binding_flags[i];
-
-				if (utils::IsImage(b.descriptorType))
-				{
-					flags = vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eUpdateUnusedWhilePending;
-				}
-			}
-
-			vk::DescriptorSetLayoutBindingFlagsCreateInfo flags(binding_flags);
-			vk::DescriptorSetLayoutCreateInfo layout_info({}, bindings, bindings.empty() ? nullptr : &flags);
-			mDescriptorSetLayouts.emplace(set, mDevice.createDescriptorSetLayout(layout_info));
-		}
-
-		vk::DescriptorSetLayoutCreateInfo empty{};
-		mEmptyDescriptorSet = mDevice.createDescriptorSetLayout(empty);
-
-		for (auto &pc : merged.PushConstants)
-		{
-			mPushConstantRanges.emplace_back(ToVkShaderStageBit(pc.Stages), pc.Offset, (uint32_t)pc.Size);
-		}
 	}
 
 } // namespace BHive

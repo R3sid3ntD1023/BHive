@@ -240,7 +240,7 @@ namespace BHive
 
 		for (auto &group : snap.BindingGroups)
 		{
-			shader->BindGroup(cmd, frame, group.get());
+			shader->BindGroup(cmd, frame, Cast<VulkanBindingGroup>(group).get());
 		}
 
 		for (auto &pc : shaderTemplate.PushConstants)

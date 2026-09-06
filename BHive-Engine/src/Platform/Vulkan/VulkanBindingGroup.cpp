@@ -11,10 +11,10 @@
 namespace BHive
 {
 
-	VulkanBindingGroup::VulkanBindingGroup(vk::DescriptorSetLayout layout, const BindingSetTemplate &setTemplate)
+	VulkanBindingGroup::VulkanBindingGroup(const BindingSetTemplate &setTemplate)
 		: mSetIndex(setTemplate.SetIndex)
 	{
-		CreateDescriptorSet(layout);
+		CreateDescriptorSet(VulkanBackend::GetLayoutCache().GetOrCreate(setTemplate));
 		Build(setTemplate);
 	}
 

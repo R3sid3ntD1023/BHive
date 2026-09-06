@@ -1,10 +1,11 @@
 #pragma once
 
-#include "core/Core.h"
-#include "VulkanCore.h"
-#include "MemoryAllocator.h"
 #include "GPUResourceManager.h"
+#include "MemoryAllocator.h"
+#include "VulkanCore.h"
+#include "VulkanLayoutCache.h"
 #include "VulkanSwapChain.h"
+#include "core/Core.h"
 
 struct GLFWwindow;
 
@@ -83,6 +84,8 @@ namespace BHive
 
 		static vk::raii::CommandBuffer &GetCommandBuffer(uint32_t frame) { return Get().mCommandBuffers.at(frame); }
 
+		static VulkanLayoutCache &GetLayoutCache() { return Get().mDescriptorSetLayoutCache; }
+
 		struct DebugNameRegistry
 		{
 			std::unordered_map<uint64_t, std::string> Names;
@@ -139,6 +142,8 @@ namespace BHive
 		vk::raii::CommandBuffers mCommandBuffers = nullptr;
 
 		vk::raii::DescriptorPool mDescriptorPool = VK_NULL_HANDLE;
+
+		VulkanLayoutCache mDescriptorSetLayoutCache;
 
 		VkQueueFamilies mQueueFamilies;
 

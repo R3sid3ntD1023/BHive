@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	class IBindingGroup;
+	class ResourceSet;
 
 	struct TextureBinding
 	{
@@ -30,7 +30,7 @@ namespace BHive
 		// binding -> buffer/texture
 		std::unordered_map<uint32_t, BufferBinding> Buffers;
 
-		std::vector<Ref<IBindingGroup>> BindingGroups;
+		std::vector<Ref<ResourceSet>> BindingGroups;
 
 		std::vector<std::byte> PushConstantData;
 	};

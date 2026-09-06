@@ -2,8 +2,9 @@
 
 #include "VulkanCore.h"
 #include "gfx/Enumerations.h"
-#include "gfx/IBindingGroup.h"
 #include "gfx/NativeHandle.h"
+#include "gfx/ResourceSet.h"
+#include "gfx/registries/Handles.h"
 #include "gfx/shader/ShaderTemplate.h"
 
 namespace BHive
@@ -18,7 +19,7 @@ namespace BHive
 		TexturePtr Texture;
 	};
 
-	class VulkanBindingGroup : public IBindingGroup
+	class VulkanBindingGroup : public ResourceSet
 	{
 		struct CachedWrite
 		{
@@ -33,7 +34,9 @@ namespace BHive
 		};
 
 	public:
-		VulkanBindingGroup(vk::DescriptorSetLayout layout, const BindingSetTemplate &setTemplate);
+		VulkanBindingGroup() = default;
+
+		VulkanBindingGroup(const BindingSetTemplate &setTemplate);
 
 		void SetBuffer(uint32_t binding, BufferPtr buffer);
 

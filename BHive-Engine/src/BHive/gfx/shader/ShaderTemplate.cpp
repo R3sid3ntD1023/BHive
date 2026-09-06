@@ -52,6 +52,7 @@ namespace BHive
 		auto &constants = temp.PushConstants;
 		auto &constantsTable = temp.PushConstantLookup;
 		auto &constantsSize = temp.TotalPushConstantSize;
+		auto &maxSet = temp.MaxSet;
 
 		for (const auto &[setIndex, set] : reflection.Sets)
 		{
@@ -85,6 +86,8 @@ namespace BHive
 
 			setTable[setIndex] = (uint32_t)sets.size() - 1;
 			setTemplate.BuildLayoutHash();
+
+			maxSet = std::max(setIndex, maxSet);
 		}
 
 		for (const auto &constant : reflection.PushConstants)

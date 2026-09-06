@@ -53,6 +53,7 @@ namespace BHive
 		std::vector<BindingSetTemplate> Sets;
 		std::vector<PushConstantBlock> PushConstants;
 		size_t TotalPushConstantSize = 0;
+		uint32_t MaxSet = 0;
 
 		std::unordered_map<uint64_t, BindingRef> BindingLookup;
 		std::unordered_map<uint64_t, PushConstantRef> PushConstantLookup;

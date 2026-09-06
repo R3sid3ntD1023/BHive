@@ -48,7 +48,7 @@ namespace BHive
 		auto vkShader = mShaderProgram.As<VulkanShader>();
 		for (auto &set : mShaderTemplate->Sets)
 		{
-			mBindGroups.emplace_back(CreateRef<VulkanBindingGroup>(vkShader->GetDescriptorSetLayout(set.SetIndex), set));
+			mBindGroups.emplace_back(CreateRef<VulkanBindingGroup>(set));
 		}
 	}
 
