@@ -11,11 +11,9 @@ namespace BHive
 		auto layoutHash = setTemplate.LayoutHash;
 		if (mCache.contains(layoutHash))
 		{
-			LOG_INFO("Obtained existing layout");
 			return mCache.at(layoutHash);
 		}
 
-		LOG_INFO("Create New Layout");
 		BuildDescriptorSetLayout(setTemplate);
 		return mCache.at(layoutHash);
 	}
