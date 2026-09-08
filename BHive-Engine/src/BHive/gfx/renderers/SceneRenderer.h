@@ -1,14 +1,14 @@
 #pragma once
 
-#include "core/Core.h"
 #include "EnvironmentSystem.h"
 #include "LightCasters.h"
 #include "Lights.h"
 #include "PMREMGenerator.h"
-#include "postprocess/PostProcessStack.h"
 #include "RenderData.h"
 #include "RenderQueue.h"
 #include "ShadowRenderer.h"
+#include "core/Core.h"
+#include "postprocess/PostProcessStack.h"
 
 namespace BHive
 {
@@ -45,6 +45,12 @@ namespace BHive
 			ResourceSetPtr GlobalSet;			 // 0
 			ResourceSetPtr OpaqueObjectSet;		 // 3
 			ResourceSetPtr TransparentObjectSet; // 3
+		};
+
+		struct SceneView
+		{
+			FView View;
+			Frustum Frustum;
 		};
 
 	public:
@@ -104,7 +110,7 @@ namespace BHive
 
 		const EnvironmentSystem &GetEnvironmentSystem() const { return mEnvironment; }
 
-		const Frustum &GetFrustrum() const { return mFrustum; }
+		const SceneView &GetSceneView() const { return mSceneView; }
 
 	private:
 		void InitPipelines();
@@ -124,8 +130,6 @@ namespace BHive
 
 		MaterialPtr mFrustumMaterial;
 
-		BufferPtr mFrustumUBO;
-
 		BufferPtr mCameraUBO;
 
 		std::array<BufferPtr, 2> mVisibleBuffer;
@@ -134,9 +138,7 @@ namespace BHive
 
 		std::array<BufferPtr, 2> mInstanceDataBuffer;
 
-		FView mView;
-
-		Frustum mFrustum;
+		SceneView mSceneView;
 
 		Ref<struct FRenderQueue> mRenderQueue;
 

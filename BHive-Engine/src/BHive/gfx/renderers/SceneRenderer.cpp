@@ -149,7 +149,7 @@ namespace BHive
 
 		mFramebuffer = FramebufferFactory::Create(specs);
 
-		mCameraUBO = BufferFactory::Create(sizeof(FView), EBufferType::UniformBuffer);
+		mCameraUBO = BufferFactory::Create(sizeof(SceneView), EBufferType::UniformBuffer);
 
 		for (uint32_t i = 0; i < 2; i++)
 		{
@@ -158,9 +158,6 @@ namespace BHive
 			mVisibleBuffer[i] = BufferFactory::Create(VISIBILITY_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
 			mFrustrumOcclusionMaterial[i] = MaterialFactory::Create("FrustumOcclusion.glsl");
 		}
-
-		mFrustumUBO = BufferFactory::Create(sizeof(Frustum), EBufferType::UniformBuffer, EBufferLifetime::Dynamic);
-
 		mFrustumMaterial = MaterialFactory::Create("Frustum.glsl");
 
 		mPostProcessStack.Init(size);
@@ -189,8 +186,8 @@ namespace BHive
 	{
 		auto &renderer = Renderer::Get();
 
-		mView = FView::Create(camera->GetProjection(), view);
-		mFrustum.Update(camera->GetProjection(), view);
+		mSceneView.View = FView::Create(camera->GetProjection(), view);
+		mSceneView.Frustum = Frustum(camera->GetProjection(), view);
 
 		renderer.BeginBatching();
 		mLights.BeginRecording();
@@ -224,8 +221,7 @@ namespace BHive
 		static std::string passNames[2] = {"OpaquePass", "TransparentPass"};
 		auto &cameraPass = renderer.BeginPass("CameraData", EPassType::OffScreen);
 		cameraPass.BeginPhase(EPhaseType::Transfer);
-		cameraPass.Emplace<CmdSetBufferData>()(mCameraUBO, &mView, sizeof(FView));
-		cameraPass.Emplace<CmdSetBufferData>()(mFrustumUBO, &mFrustum, sizeof(Frustum));
+		cameraPass.Emplace<CmdSetBufferData>()(mCameraUBO, &mSceneView, sizeof(SceneView));
 		cameraPass.EndPhase();
 		renderer.EndPass();
 
@@ -263,7 +259,6 @@ namespace BHive
 			occlusionPass.UseBuffer(visibilityBuffer, EBufferUsage::StorageWrite);
 			occlusionPass.UseBuffer(instanceBuffer, EBufferUsage::StorageRead);
 			occlusionPass.UseBuffer(mCameraUBO, EBufferUsage::UniformRead);
-			occlusionPass.UseBuffer(mFrustumUBO, EBufferUsage::UniformRead);
 			occlusionPass.Emplace<CmdBindMaterial>()(mFrustrumOcclusionMaterial[i].As<Material>());
 			occlusionPass.Emplace<CmdDispatch>()(groups, 1, 1);
 			occlusionPass.EndPhase();
@@ -333,7 +328,7 @@ namespace BHive
 
 	void SceneRenderer::SetViewOverride(const FView &view)
 	{
-		mView = view;
+		mSceneView.View = view;
 	}
 
 	void SceneRenderer::Submit(const DirectionalLight &light)
@@ -439,7 +434,6 @@ namespace BHive
 		auto global = mSceneSets.GlobalSet.As<ResourceSet>();
 		global->SetBuffer(0, mCameraUBO);
 		global->SetBuffer(1, mLights.GetBuffer());
-		global->SetBuffer(5, mFrustumUBO);
 
 		auto opaqueSet = mSceneSets.OpaqueObjectSet.As<ResourceSet>();
 		opaqueSet->SetBuffer(0, mInstanceDataBuffer[0]);

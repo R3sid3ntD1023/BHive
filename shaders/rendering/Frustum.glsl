@@ -30,15 +30,12 @@ uint indices[24] = uint[](
 
 layout(std140, set = 0, binding = 0) uniform Camera
 {
-    mat4 u_Proj;
-    mat4 u_View;
-} u_Cam;
-
-
-layout(std140, set = 0, binding = 5) uniform FrustumPoints
-{
+    mat4 projection;
+    mat4 view;
+    vec4 nearFar;
+	vec4 cameraPosition;
     Frustum frustum;
-} u_Frustum;
+} u_cam;
 
 
 layout(location = 0) out vec3 v_Color;
@@ -46,8 +43,8 @@ layout(location = 0) out vec3 v_Color;
 void main()
 {
     uint index = indices[gl_VertexIndex];
-    vec3 worldPos = u_Frustum.frustum.points[index].xyz;
-    gl_Position = u_Cam.u_Proj * u_Cam.u_View * vec4(worldPos, 1.0);
+    vec3 worldPos = u_cam.frustum.points[index].xyz;
+    gl_Position = u_cam.projection * u_cam.view * vec4(worldPos, 1.0);
 
     if(index <= 3)
         v_Color = vec3(0.0, 1.0, 0.0f); //near

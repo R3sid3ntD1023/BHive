@@ -46,7 +46,6 @@ namespace BHive
 			t.Bindings.emplace_back(2, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::CombinedImageSampler); // brdfLUT
 			t.Bindings.emplace_back(3, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::CombinedImageSampler); // prefilter
 			t.Bindings.emplace_back(4, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::CombinedImageSampler); // irradiance
-			t.Bindings.emplace_back(5, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::UniformBuffer);		   // frustum
 			t.BuildLayoutHash();
 			return t;
 		}();
