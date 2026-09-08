@@ -20,8 +20,6 @@ namespace BHive
 	{
 		alDeleteSources(1, &mSourceID);
 		alDeleteBuffers(1, &mAudioID);
-
-		mBuffer.Release();
 	}
 
 	void AudioSource::Initialize()

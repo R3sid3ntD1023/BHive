@@ -13,8 +13,6 @@ namespace BHive
 
 		VulkanTexture2D(const glm::uvec2 &size, const FTextureCreateInfo &createInfo, const Buffer &data);
 
-		~VulkanTexture2D();
-
 		glm::uvec2 GetSize() const override { return mSize; }
 
 		void SetData(const FTextureUploadInfo &info) override;

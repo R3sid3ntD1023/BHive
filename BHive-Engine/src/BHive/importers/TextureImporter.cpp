@@ -1,6 +1,6 @@
-#include "gfx/Texture.h"
-#include "gfx/Enumerations.h"
 #include "TextureImporter.h"
+#include "gfx/Enumerations.h"
+#include "gfx/Texture.h"
 
 #include <stb_image.h>
 #include <stb_image_resize2.h>
@@ -186,7 +186,6 @@ namespace BHive
 
 		stbir_resize_uint8_linear(data.GetData(), old_w, old_h, 0, newData.GetData(), w, h, 0, (stbir_pixel_layout)c);
 
-		decodedTexture.Data.Release();
 		decodedTexture.Size = glm::uvec3(requestedSize, c);
 		decodedTexture.Data = newData;
 	}

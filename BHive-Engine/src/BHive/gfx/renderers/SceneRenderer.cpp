@@ -259,12 +259,6 @@ namespace BHive
 			occlusionPass.BeginPhase(EPhaseType::Compute);
 			occlusionPass.BindResourceSet(mSceneSets.GlobalSet);
 			occlusionPass.BindResourceSet(objectSet);
-			/*	occlusionPass.BindBuffer(0, 0, mCameraUBO);
-				occlusionPass.BindBuffer(0, 1, mFrustumUBO);
-				occlusionPass.BindBuffer(3, 0, instanceBuffer);
-				occlusionPass.BindBuffer(3, 1, indirectBuffer);
-				occlusionPass.BindBuffer(3, 2, visibilityBuffer);*/
-
 			occlusionPass.UseBuffer(indirectBuffer, EBufferUsage::StorageWrite);
 			occlusionPass.UseBuffer(visibilityBuffer, EBufferUsage::StorageWrite);
 			occlusionPass.UseBuffer(instanceBuffer, EBufferUsage::StorageRead);
@@ -280,13 +274,6 @@ namespace BHive
 			pass.BeginPhase("Phase " + passNames[i], EPhaseType::Graphics);
 			pass.BindResourceSet(mSceneSets.GlobalSet);
 			pass.BindResourceSet(objectSet);
-			/*	pass.BindBuffer(0, 0, mCameraUBO);
-				pass.BindBuffer(0, 1, mLights.GetBuffer());
-				pass.BindTexture(0, 2, brdfLUT);
-				pass.BindTexture(0, 3, prefilter);
-				pass.BindTexture(0, 4, irradiance);
-				pass.BindBuffer(3, 0, instanceBuffer);
-				pass.BindBuffer(3, 2, visibilityBuffer);*/
 			pass.UseFramebuffer(mFramebuffer);
 			pass.UseTexture(prefilter, EImageUsage::ColorRead);
 			pass.UseTexture(irradiance, EImageUsage::ColorRead);

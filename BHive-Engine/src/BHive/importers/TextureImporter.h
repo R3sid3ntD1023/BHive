@@ -2,6 +2,7 @@
 
 #include "asset/AssetMetaData.h"
 #include "core/Buffer.h"
+#include "gfx/TextureSpecification.h"
 
 namespace BHive
 {

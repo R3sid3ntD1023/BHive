@@ -1,7 +1,7 @@
 #include "VulkanTexture2D.h"
-#include "Platform/Vulkan/VulkanUtils.h"
-#include "Platform/Vulkan/VulkanConversions.h"
 #include "Platform/Vulkan/VulkanBackend.h"
+#include "Platform/Vulkan/VulkanConversions.h"
+#include "Platform/Vulkan/VulkanUtils.h"
 
 namespace BHive
 {
@@ -26,11 +26,6 @@ namespace BHive
 			};
 			SetData(info);
 		}
-	}
-
-	VulkanTexture2D::~VulkanTexture2D()
-	{
-		mBuffer.Release();
 	}
 
 	void VulkanTexture2D::SetInfo(const FTextureCreateInfo &info)

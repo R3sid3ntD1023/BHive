@@ -15,7 +15,22 @@ namespace BHive
 
 	public:
 		TBuffer() = default;
-		TBuffer(const TBuffer &) = default;
+
+		~TBuffer() { Release(); }
+
+		TBuffer(const TBuffer &other)
+		{
+			Allocate(other.mSize);
+			memcpy_s(mData, other.mSize, other.mData, mSize);
+		}
+
+		TBuffer(TBuffer &&other) noexcept
+			: mData(other.mData),
+			  mSize(other.mSize)
+		{
+			other.mData = nullptr;
+			other.mSize = 0;
+		}
 
 		explicit TBuffer(uint64_t size) { Allocate(size); }
 
@@ -29,18 +44,11 @@ namespace BHive
 
 		void Allocate(uint64_t size)
 		{
+			Release();
+
 			mSize = size;
 			mData = new T[size + 1];
 			mData[size] = 0;
-		}
-
-		void Release()
-		{
-			if (mData)
-				delete[] mData;
-
-			mSize = 0;
-			mData = nullptr;
 		}
 
 		size_t GetSize() const { return mSize; }
@@ -55,23 +63,48 @@ namespace BHive
 
 		operator void *() const { return mData; }
 
-		static TBuffer Copy(TBuffer other)
+		TBuffer &operator=(const TBuffer &rhs)
 		{
-			TBuffer result(other.mSize);
-			memcpy_s(result.mData, result.mSize, other.mData, other.mSize);
-			return result;
+			if (this == &rhs)
+				return *this;
+
+			Allocate(rhs.mSize);
+			memcpy_s(mData, mSize, rhs.mData, rhs.mSize);
+			return *this;
+		}
+
+		TBuffer &operator=(TBuffer &&rhs) noexcept
+		{
+			if (this == &rhs)
+				return *this;
+
+			Release();
+
+			mData = rhs.mData;
+			mSize = rhs.mSize;
+
+			rhs.mData = nullptr;
+			rhs.mSize = 0;
+
+			return *this;
 		}
 
 		operator bool() const { return mData != nullptr && mSize != 0; }
+
+	private:
+		void Release()
+		{
+			if (mData)
+				delete[] mData;
+
+			mSize = 0;
+			mData = nullptr;
+		}
 	};
 
 	struct Buffer : public TBuffer<uint8_t>
 	{
 		Buffer() = default;
-		Buffer(const Buffer &b)
-			: TBuffer<uint8_t>(b)
-		{
-		}
 
 		explicit Buffer(uint64_t size)
 			: TBuffer(size)
@@ -90,23 +123,30 @@ namespace BHive
 		}
 	};
 
-	struct ScopedBuffer
+	struct BufferArena
 	{
-		ScopedBuffer(Buffer buffer)
-			: mBuffer(buffer)
+		BufferArena(size_t size = 1024 * 1024) { mBuffer.Allocate(size); }
+
+		size_t Push(const void *data, size_t size)
 		{
+			ASSERT(mHead + size <= mBuffer.GetSize());
+
+			size_t offset = mHead;
+			memcpy_s(mBuffer.GetData() + offset, mBuffer.GetSize() - offset, data, size);
+			mHead += size;
+			return offset;
 		}
 
-		ScopedBuffer(uint64_t size)
-			: mBuffer(size)
-		{
-		}
+		void Reset() { mHead = 0; }
 
-		~ScopedBuffer() { mBuffer.Release(); }
+		uint8_t *Data(size_t head) const { return mBuffer.GetData() + head; }
 
-		operator bool() const { return mBuffer; }
+		size_t GetUsedSize() const { return mHead; }
+
+		size_t GetCapacity() const { return mBuffer.GetSize(); }
 
 	private:
 		Buffer mBuffer;
+		size_t mHead = 0;
 	};
 } // namespace BHive
