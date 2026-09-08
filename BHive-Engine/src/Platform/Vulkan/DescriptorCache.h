@@ -1,18 +1,11 @@
 #pragma once
 
-#include "VulkanBindingGroup.h"
 #include "VulkanCore.h"
+#include "VulkanResourceSet.h"
 #include "core/Core.h"
 
 namespace BHive
 {
-
-	struct DescriptorKey
-	{
-		uint64_t Hash;
-
-		bool operator==(const DescriptorKey &other) const { return Hash == other.Hash; }
-	};
 
 	struct MaterialSnapshot;
 	struct FPhase;
@@ -23,10 +16,6 @@ namespace BHive
 		const BindingSetTemplate *Set;
 
 		const MaterialSnapshot *Snapshot = nullptr;
-
-		vk::DescriptorSetLayout Layout = nullptr;
-
-		const FPhase *Phase = nullptr;
 	};
 
 	class DescriptorCache
@@ -34,29 +23,33 @@ namespace BHive
 	public:
 		struct CachedDescriptorSet
 		{
-			VulkanBindingGroup BindingGroup;
+			Scope<VulkanResourceSet> ResourceSet;
+		};
 
-			uint32_t LastFrameUsed = 0;
+		struct DescriptorKey
+		{
+			uint64_t LayoutHash;
+			uint64_t ResourceHash;
+
+			bool operator==(const DescriptorKey &other) const { return LayoutHash == other.LayoutHash && ResourceHash == other.ResourceHash; }
+
+			size_t operator()(const DescriptorKey &key) const { return key.LayoutHash + key.ResourceHash; }
 		};
 
 	public:
 		DescriptorCache() = default;
 
-		void UpdateCurrentFrame(uint32_t frame) { mCurrentFrame = frame; }
-
 		CachedDescriptorSet &GetOrCreateDescriptorSet(const DescriptorBuildInfo &buildInfo);
 
 	private:
-		CachedDescriptorSet &CreateDescriptorSet(const DescriptorKey &key, const DescriptorBuildInfo &buildInfo);
+		void UpdateResourceSet(VulkanResourceSet *set, const MaterialSnapshot *snapShot);
 
-		DescriptorKey CreateDescriptorKey(const DescriptorBuildInfo &buildInfo) const;
+		DescriptorKey GetDescriptorKey(const DescriptorBuildInfo &buildInfo);
 
-		uint64_t ResolveResourceHash(uint32_t set, const DescriptorBuildInfo &buildInfo) const;
+		uint64_t ResolveResourceHash(const MaterialSnapshot *snapShot) const;
 
 	private:
-		std::unordered_map<uint64_t, CachedDescriptorSet> mCache;
-
-		uint32_t mCurrentFrame = 0;
+		std::unordered_map<DescriptorKey, CachedDescriptorSet, DescriptorKey> mCache;
 	};
 
 } // namespace BHive

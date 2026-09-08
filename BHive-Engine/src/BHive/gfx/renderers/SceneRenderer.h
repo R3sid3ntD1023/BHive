@@ -1,14 +1,14 @@
 #pragma once
 
+#include "core/Core.h"
 #include "EnvironmentSystem.h"
 #include "LightCasters.h"
 #include "Lights.h"
 #include "PMREMGenerator.h"
+#include "postprocess/PostProcessStack.h"
 #include "RenderData.h"
 #include "RenderQueue.h"
 #include "ShadowRenderer.h"
-#include "core/Core.h"
-#include "postprocess/PostProcessStack.h"
 
 namespace BHive
 {
@@ -40,6 +40,12 @@ namespace BHive
 
 	class BHIVE_API SceneRenderer
 	{
+		struct ResourceSets
+		{
+			ResourceSetPtr GlobalSet;			 // 0
+			ResourceSetPtr OpaqueObjectSet;		 // 3
+			ResourceSetPtr TransparentObjectSet; // 3
+		};
 
 	public:
 		SceneRenderer() = default;
@@ -103,6 +109,10 @@ namespace BHive
 	private:
 		void InitPipelines();
 
+		void InitResourceSets();
+
+		void BindResourceSets();
+
 	private:
 		FRenderSettings mRenderSettings; // Render settings for the scene renderer
 
@@ -143,6 +153,9 @@ namespace BHive
 		EnvironmentSystem mEnvironment;
 
 		PipelinePtr mOpaquePipeline;
+
 		PipelinePtr mTransparentPipeline;
+
+		ResourceSets mSceneSets;
 	};
 } // namespace BHive

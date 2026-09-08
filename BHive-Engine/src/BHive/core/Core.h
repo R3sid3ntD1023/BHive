@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreAPI.h"
+#include "EngineConfig.h"
 
 #define CAT_IMPL_(a, b) a##b
 #define CAT_(a, b) CAT_IMPL_(a, b)
@@ -37,11 +38,11 @@ Scope<T> CreateScope(TArgs &&...args)
 	return std::make_unique<T>(std::forward<TArgs>(args)...);
 }
 
-#include "Config.h"
-#include "log/Log.h"
 #include "AssertHandler.h"
 #include "Casting.h"
+#include "Config.h"
+#include "core/subsystem/SubSystem.h"
+#include "log/Log.h"
 #include "math/Math.h"
 #include "reflection/Reflection.h"
 #include "serialization/Serialization.h"
-#include "core/subsystem/SubSystem.h"

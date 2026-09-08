@@ -14,7 +14,7 @@ layout(std140, set = 0, binding = 0) uniform CameraBuffer
 	vec4 u_camera_position;
 };
 
-layout(std140, set = 0, binding = 1) uniform CullingFrustum
+layout(std140, set = 0, binding = 5) uniform CullingFrustum
 {
   Frustum frustum;
 } pc;

@@ -76,4 +76,6 @@ namespace BHive
 	using VertexBufferPtr = ResourceHandle;
 
 	using GeneralBufferPtr = ResourceHandle;
+
+	using ResourceSetPtr = ResourceHandle;
 } // namespace BHive

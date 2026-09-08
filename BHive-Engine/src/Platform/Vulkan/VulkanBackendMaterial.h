@@ -32,7 +32,5 @@ namespace BHive
 		std::unordered_map<uint32_t, BufferBinding> mBufferBindings;
 
 		std::unordered_map<uint32_t, TextureBinding> mTextureBindings;
-
-		std::vector<Ref<ResourceSet>> mBindGroups;
 	};
 } // namespace BHive

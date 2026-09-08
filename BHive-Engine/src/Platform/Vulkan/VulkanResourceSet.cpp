@@ -1,4 +1,4 @@
-#include "VulkanBindingGroup.h"
+#include "VulkanResourceSet.h"
 #include "VulkanBackend.h"
 #include "VulkanBuffers.h"
 #include "VulkanConversions.h"
@@ -11,14 +11,14 @@
 namespace BHive
 {
 
-	VulkanBindingGroup::VulkanBindingGroup(const BindingSetTemplate &setTemplate)
+	VulkanResourceSet::VulkanResourceSet(const BindingSetTemplate &setTemplate)
 		: mSetIndex(setTemplate.SetIndex)
 	{
 		CreateDescriptorSet(VulkanBackend::GetLayoutCache().GetOrCreate(setTemplate));
 		Build(setTemplate);
 	}
 
-	void VulkanBindingGroup::SetBuffer(uint32_t binding, BufferPtr buffer)
+	void VulkanResourceSet::SetBuffer(uint32_t binding, BufferPtr buffer)
 	{
 		if (auto info = FindBinding(binding); info && info->Buffer != buffer)
 		{
@@ -27,7 +27,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanBindingGroup::SetTexture(uint32_t binding, TexturePtr texture, uint32_t mip)
+	void VulkanResourceSet::SetTexture(uint32_t binding, TexturePtr texture, uint32_t mip)
 	{
 		auto info = FindBinding(binding);
 		if (info && (info->Texture != texture || info->MipLevel != mip))
@@ -42,10 +42,12 @@ namespace BHive
 		}
 	}
 
-	vk::DescriptorSet VulkanBindingGroup::Update(uint32_t frame)
+	void VulkanResourceSet::Update(uint32_t frame)
 	{
 		std::vector<vk::WriteDescriptorSet> writes;
-		for (auto &binding : mDirtyBindings)
+		auto &bindings = mDirtyBindings[frame].Bindings;
+
+		for (auto &binding : bindings)
 		{
 			auto &info = mBindings.at(binding);
 			CachedWrite &write = mCachedBindings.at(binding).Writes[frame];
@@ -54,6 +56,8 @@ namespace BHive
 				write.BufferInfo = BuildBufferInfo(info, frame);
 
 			writes.emplace_back(write.Write);
+
+			LOG_TRACE("Set {} Binding {} updated into writes!", mSetIndex, binding);
 		}
 
 		if (!writes.empty())
@@ -62,10 +66,18 @@ namespace BHive
 			device.updateDescriptorSets(writes, {});
 		}
 
-		return mSets[frame];
+		bindings.clear();
 	}
 
-	vk::DescriptorBufferInfo VulkanBindingGroup::BuildBufferInfo(const FBindingInfo &bindInfo, uint32_t frame) const
+	vk::DescriptorSet VulkanResourceSet::GetSet(uint32_t frame)
+	{
+		if (IsDirty(frame))
+			Update(frame);
+
+		return mSets.at(frame);
+	}
+
+	vk::DescriptorBufferInfo VulkanResourceSet::BuildBufferInfo(const FBindingInfo &bindInfo, uint32_t frame) const
 	{
 		ASSERT(bindInfo.Buffer)
 
@@ -74,7 +86,7 @@ namespace BHive
 		return vk::DescriptorBufferInfo(buf->Buffer, 0, buf->Size);
 	}
 
-	vk::DescriptorImageInfo VulkanBindingGroup::BuildImageInfo(const FBindingInfo &bindInfo, uint32_t mip) const
+	vk::DescriptorImageInfo VulkanResourceSet::BuildImageInfo(const FBindingInfo &bindInfo, uint32_t mip) const
 	{
 		ASSERT(bindInfo.Texture)
 
@@ -118,19 +130,22 @@ namespace BHive
 		}
 	}
 
-	FBindingInfo *VulkanBindingGroup::FindBinding(uint32_t binding)
+	FBindingInfo *VulkanResourceSet::FindBinding(uint32_t binding)
 	{
 		if (!mBindings.contains(binding))
 			return nullptr;
 		return &mBindings.at(binding);
 	}
 
-	void VulkanBindingGroup::MakeDirty(uint32_t binding)
+	void VulkanResourceSet::MakeDirty(uint32_t binding)
 	{
-		mDirtyBindings.insert(binding);
+		for (auto &dirtyBinding : mDirtyBindings)
+			dirtyBinding.Bindings.insert(binding);
+
+		LOG_TRACE("Set {} Binding {} marked Dirty!", mSetIndex, binding);
 	}
 
-	void VulkanBindingGroup::Build(const BindingSetTemplate &setTemplate)
+	void VulkanResourceSet::Build(const BindingSetTemplate &setTemplate)
 	{
 		auto &setBindings = setTemplate.Bindings;
 		mBindings.reserve(setBindings.size());
@@ -163,7 +178,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanBindingGroup::CreateDescriptorSet(vk::DescriptorSetLayout layout)
+	void VulkanResourceSet::CreateDescriptorSet(vk::DescriptorSetLayout layout)
 	{
 		auto pool = VulkanBackend::GetDescriptorPool();
 		vk::Device device = VulkanBackend::GetLogicalDevice();
@@ -172,6 +187,7 @@ namespace BHive
 		vk::DescriptorSetAllocateInfo allocInfo(pool, layouts);
 
 		mSets = device.allocateDescriptorSets(allocInfo);
+		mDirtyBindings.resize(mSets.size());
 	}
 
 } // namespace BHive

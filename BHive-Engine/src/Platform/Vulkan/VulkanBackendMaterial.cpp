@@ -1,5 +1,5 @@
 #include "VulkanBackendMaterial.h"
-#include "VulkanBindingGroup.h"
+#include "VulkanResourceSet.h"
 #include "VulkanShader.h"
 #include "core/utils/Hash.h"
 #include "gfx/BufferBase.h"
@@ -24,8 +24,9 @@ namespace BHive
 
 		// init set manager
 
-		if (auto set = mShaderTemplate->FindSet(MATERIAL_SET_INDEX))
+		if (auto set = mShaderTemplate->FindSet(EngineConfig::MATERIAL_SET_INDEX))
 		{
+
 			for (auto &binding : set->Bindings)
 			{
 				if (IsBuffer(binding.Type))
@@ -44,12 +45,6 @@ namespace BHive
 		}
 
 		mPushConstantData.resize(mShaderTemplate->TotalPushConstantSize, std::byte(0));
-
-		auto vkShader = mShaderProgram.As<VulkanShader>();
-		for (auto &set : mShaderTemplate->Sets)
-		{
-			mBindGroups.emplace_back(CreateRef<VulkanBindingGroup>(set));
-		}
 	}
 
 	void VulkanBackendMaterial::SetTexture(const std::string &name, const TextureBinding &texture)
@@ -76,6 +71,7 @@ namespace BHive
 		if (auto binding = mShaderTemplate->FindBinding(hash))
 		{
 			mBufferBindings[binding->Binding].Buffer.As<BufferBase>()->SetData(param.Data.data(), param.Size);
+
 			return;
 		}
 
@@ -92,8 +88,6 @@ namespace BHive
 		snapshot.PushConstantData = mPushConstantData;
 		snapshot.Textures = mTextureBindings;
 		snapshot.Shader = mShaderProgram;
-		snapshot.BindingGroups = mBindGroups;
-
 		return snapshot;
 	}
 

@@ -1,8 +1,8 @@
 #include "ShaderManager.h"
-#include "Shader.h"
 #include "core/FileSystem.h"
 #include "core/utils/Hash.h"
 #include "gfx/factories/ShaderFactory.h"
+#include "shader/Shader.h"
 
 namespace BHive
 {

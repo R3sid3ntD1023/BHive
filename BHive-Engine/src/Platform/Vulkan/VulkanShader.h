@@ -1,12 +1,13 @@
 #pragma once
 
 #include "VulkanBackend.h"
-#include "VulkanBindingGroup.h"
 #include "core/Core.h"
 #include "gfx/shader/Shader.h"
 
 namespace BHive
 {
+
+	class VulkanResourceSet;
 
 	struct FPipelineLayoutInfo
 	{
@@ -22,7 +23,7 @@ namespace BHive
 
 		void Bind(vk::CommandBuffer cmd);
 
-		void BindGroup(vk::CommandBuffer cmd, uint32_t frame, VulkanBindingGroup *group);
+		void BindSet(vk::CommandBuffer cmd, uint32_t frame, VulkanResourceSet *resourceSet);
 
 		void BindPushConstants(vk::CommandBuffer cmd, vk::ShaderStageFlags stage, const void *data, uint32_t size, uint32_t offset);
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "DescriptorCache.h"
 #include "GPUResourceManager.h"
 #include "MemoryAllocator.h"
 #include "VulkanCore.h"
@@ -86,6 +87,8 @@ namespace BHive
 
 		static VulkanLayoutCache &GetLayoutCache() { return Get().mDescriptorSetLayoutCache; }
 
+		static DescriptorCache &GetDescriptorCache() { return Get().mDescriptorSetCache; }
+
 		struct DebugNameRegistry
 		{
 			std::unordered_map<uint64_t, std::string> Names;
@@ -144,6 +147,8 @@ namespace BHive
 		vk::raii::DescriptorPool mDescriptorPool = VK_NULL_HANDLE;
 
 		VulkanLayoutCache mDescriptorSetLayoutCache;
+
+		DescriptorCache mDescriptorSetCache;
 
 		VkQueueFamilies mQueueFamilies;
 

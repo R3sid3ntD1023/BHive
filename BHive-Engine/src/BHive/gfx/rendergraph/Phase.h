@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Command.h"
-#include "GlobalBinding.h"
-#include "gfx/resources/ImageSubResourceRange.h"
 #include "gfx/Enumerations.h";
 #include "gfx/registries/Handles.h"
+#include "gfx/resources/ImageSubResourceRange.h"
+#include "GlobalBinding.h"
 
 namespace BHive
 {
@@ -61,9 +61,11 @@ namespace BHive
 
 		ImageSubresourceRange ColorRange{};
 
-		std::unordered_map<GlobalBinding, BufferPtr> BoundBuffers;
+		/*	std::unordered_map<GlobalBinding, BufferPtr> BoundBuffers;
 
-		std::unordered_map<GlobalBinding, TexturePtr> BoundTextures;
+			std::unordered_map<GlobalBinding, TexturePtr> BoundTextures;*/
+
+		std::vector<ResourceSetPtr> ResourceSets;
 
 		std::vector<std::pair<CmdHeader, Ref<FCommand>>> Commands;
 

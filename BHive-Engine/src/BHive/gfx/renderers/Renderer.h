@@ -22,6 +22,13 @@ namespace BHive
 		std::function<void(FPass &)> BuildFunc;
 	};
 
+	struct RendererTemplates
+	{
+	public:
+		static const BindingSetTemplate &Global();
+		static const BindingSetTemplate &Object();
+	};
+
 	class BHIVE_API Renderer
 	{
 
@@ -45,10 +52,6 @@ namespace BHive
 		void ExecuteGraph(RenderGraph &graph);
 
 		void ResetStats();
-
-		const Statitics &GetStats() const { return mStats; }
-
-		Texture2DPtr GetWhiteTexture() const;
 
 		void BeginBatching();
 
@@ -82,6 +85,10 @@ namespace BHive
 		}
 
 		inline RendererAPI *GetGraphicsAPI() const { return mAPI.get(); }
+
+		const Statitics &GetStats() const { return mStats; }
+
+		Texture2DPtr GetWhiteTexture() const;
 
 	private:
 		Scope<RendererAPI> mAPI;

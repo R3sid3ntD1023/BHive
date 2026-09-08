@@ -9,10 +9,10 @@ namespace BHive
 		struct Binding
 		{
 			uint32_t Binding;
-			EResourceType Type;
 			size_t Size;
 			uint32_t ArraySize;
 			EShaderStage Stages;
+			EResourceType Type;
 		};
 
 		uint32_t SetIndex;

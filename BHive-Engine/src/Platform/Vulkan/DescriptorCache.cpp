@@ -10,64 +10,54 @@ namespace BHive
 {
 	DescriptorCache::CachedDescriptorSet &DescriptorCache::GetOrCreateDescriptorSet(const DescriptorBuildInfo &buildInfo)
 	{
-		auto key = CreateDescriptorKey(buildInfo);
-		auto it = mCache.find(key.Hash);
+		auto key = GetDescriptorKey(buildInfo);
+		auto it = mCache.find(key);
 		if (it != mCache.end())
 		{
-			it->second.LastFrameUsed = mCurrentFrame;
 			return it->second;
 		}
 
-		// CachedDescriptorSet newSet;
-		// newSet.BindingGroup = VulkanBindingGroup(*buildInfo.Set, buildInfo.Layout);
-		// newSet.LastFrameUsed = mCurrentFrame;
-		// mCache[key.Hash] = newSet;
-		return mCache.at(key.Hash);
+		auto &cache = mCache[key];
+		cache.ResourceSet = CreateScope<VulkanResourceSet>(*buildInfo.Set);
+		UpdateResourceSet(cache.ResourceSet.get(), buildInfo.Snapshot);
+		return cache;
 	}
 
-	DescriptorKey DescriptorCache::CreateDescriptorKey(const DescriptorBuildInfo &buildInfo) const
+	void DescriptorCache::UpdateResourceSet(VulkanResourceSet *set, const MaterialSnapshot *snapShot)
 	{
-		DescriptorKey key{};
-		auto resource = ResolveResourceHash(buildInfo.Set->SetIndex, buildInfo);
-		utils::HashCombine(key.Hash, buildInfo.Set->LayoutHash, resource);
+		for (auto &[binding, texture] : snapShot->Textures)
+		{
+			set->SetTexture(binding, texture.Texture, texture.BaseMipLevel);
+		}
+
+		for (auto &[binding, buffer] : snapShot->Buffers)
+		{
+			set->SetBuffer(binding, buffer.Buffer);
+		}
+	}
+
+	DescriptorCache::DescriptorKey DescriptorCache::GetDescriptorKey(const DescriptorBuildInfo &buildInfo)
+	{
+		DescriptorKey key;
+		key.LayoutHash = buildInfo.Set->LayoutHash;
+		key.ResourceHash = ResolveResourceHash(buildInfo.Snapshot);
 		return key;
 	}
 
-	uint64_t DescriptorCache::ResolveResourceHash(uint32_t set, const DescriptorBuildInfo &buildInfo) const
+	uint64_t DescriptorCache::ResolveResourceHash(const MaterialSnapshot *snapShot) const
 	{
-		const auto *setTemplate = buildInfo.Set;
-		auto *snapShot = buildInfo.Snapshot;
-		auto *phase = buildInfo.Phase;
-
 		uint64_t hash = 0;
 
-		// if (setTemplate->SetIndex == MATERIAL_SET_INDEX)
-		// {
-		// 	for (auto &[nameHash, texture] : snapShot->Textures)
-		// 	{
-		// 		utils::HashCombine(hash, texture.Texture, texture.Binding);
-		// 	}
+		for (auto &[binding, texture] : snapShot->Textures)
+		{
+			utils::HashCombine(hash, binding, texture.Texture, texture.BaseMipLevel, texture.BaseArrayLayer);
+		}
 
-		// 	for (auto &[nameHash, buffer] : snapShot->LocalBuffers)
-		// 	{
-		// 		utils::HashCombine(hash, buffer.Buffer, buffer.Binding);
-		// 	}
-		// }
+		for (auto &[binding, buffer] : snapShot->Buffers)
+		{
+			utils::HashCombine(hash, binding, buffer.Buffer);
+		}
 
-		// for (auto &[binding, texture] : phase->BoundTextures)
-		// {
-		// 	if (binding.Set != setTemplate->SetIndex)
-		// 		continue;
-
-		// 	utils::HashCombine(hash, binding.Binding, binding.Set, texture);
-		// }
-
-		// for (auto &[binding, buffer] : phase->BoundBuffers)
-		// {
-		// 	if (binding.Set != setTemplate->SetIndex)
-		// 		continue;
-		// 	utils::HashCombine(hash, binding.Binding, binding.Set, buffer);
-		// }
 		return hash;
 	}
 } // namespace BHive

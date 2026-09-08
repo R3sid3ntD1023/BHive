@@ -35,6 +35,41 @@ namespace BHive
 		}
 	};
 
+	const BindingSetTemplate &RendererTemplates::Global()
+	{
+		static auto globalSetTemplate = []() -> BindingSetTemplate
+		{
+			BindingSetTemplate t{};
+			t.SetIndex = EngineConfig::GLOBAL_SET_INDEX;
+			t.Bindings.emplace_back(0, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::UniformBuffer);		   // camera
+			t.Bindings.emplace_back(1, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::StorageBuffer);		   // light
+			t.Bindings.emplace_back(2, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::CombinedImageSampler); // brdfLUT
+			t.Bindings.emplace_back(3, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::CombinedImageSampler); // prefilter
+			t.Bindings.emplace_back(4, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::CombinedImageSampler); // irradiance
+			t.Bindings.emplace_back(5, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::UniformBuffer);		   // frustum
+			t.BuildLayoutHash();
+			return t;
+		}();
+
+		return globalSetTemplate;
+	}
+
+	const BindingSetTemplate &RendererTemplates::Object()
+	{
+		static auto objectSetTemplate = []() -> BindingSetTemplate
+		{
+			BindingSetTemplate t{};
+			t.SetIndex = EngineConfig::OBJECT_SET_INDEX;
+			t.Bindings.emplace_back(0, 0u, 1, EShaderStage::Compute | EShaderStage::Vertex, EResourceType::StorageBuffer); // objectdata
+			t.Bindings.emplace_back(1, 0u, 1, EShaderStage::Compute | EShaderStage::Vertex, EResourceType::StorageBuffer); // indirect
+			t.Bindings.emplace_back(2, 0u, 1, EShaderStage::Compute | EShaderStage::Vertex, EResourceType::StorageBuffer); // visibility
+			t.BuildLayoutHash();
+			return t;
+		}();
+
+		return objectSetTemplate;
+	}
+
 	Renderer::Renderer(Scope<RendererAPI> api)
 		: mAPI(std::move(api))
 	{

@@ -1,5 +1,6 @@
 #include "VulkanShader.h"
 #include "VulkanConversions.h"
+#include "VulkanResourceSet.h"
 #include "gfx/renderers/Renderer.h"
 
 namespace BHive
@@ -28,10 +29,10 @@ namespace BHive
 			cmd.bindShadersEXT(stage, {shader});
 	}
 
-	void VulkanShader::BindGroup(vk::CommandBuffer cmd, uint32_t frame, VulkanBindingGroup *group)
+	void VulkanShader::BindSet(vk::CommandBuffer cmd, uint32_t frame, VulkanResourceSet *resourceSet)
 	{
-		auto set = group->Update(frame);
-		cmd.bindDescriptorSets(mBindPoint, mPipelineLayout, group->GetSetIndex(), {set}, {});
+		auto set = resourceSet->GetSet(frame);
+		cmd.bindDescriptorSets(mBindPoint, mPipelineLayout, resourceSet->GetSetIndex(), {set}, {});
 	}
 
 	void VulkanShader::BindPushConstants(vk::CommandBuffer cmd, vk::ShaderStageFlags stage, const void *data, uint32_t size, uint32_t offset)
@@ -51,7 +52,13 @@ namespace BHive
 
 		for (auto &setTemplate : shaderTemplate.Sets)
 		{
-			info.SetLayouts[setTemplate.SetIndex] = layoutCache.GetOrCreate(setTemplate);
+			const BindingSetTemplate *_template = &setTemplate;
+			if (setTemplate.SetIndex == EngineConfig::GLOBAL_SET_INDEX)
+				_template = &RendererTemplates::Global();
+			else if (setTemplate.SetIndex == EngineConfig::OBJECT_SET_INDEX)
+				_template = &RendererTemplates::Object();
+
+			info.SetLayouts[setTemplate.SetIndex] = layoutCache.GetOrCreate(*_template);
 		}
 
 		for (auto &pc : shaderTemplate.PushConstants)

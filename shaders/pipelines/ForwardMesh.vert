@@ -18,6 +18,7 @@ layout(std140, set = 0, binding = 0) uniform CameraBuffer
 	vec4 u_camera_position;
 };
 
+
 layout(std430, set = 3, binding = 0) readonly buffer Objects
 {
     uint objectCount;
@@ -29,6 +30,7 @@ layout(std430, set = 3, binding = 2) readonly buffer Visible
     uint visibleCount;
     uint visibleIndices[];
 };
+
 
 layout(location = 0) out struct VS_OUT
 {

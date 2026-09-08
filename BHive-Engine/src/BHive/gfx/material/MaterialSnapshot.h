@@ -21,7 +21,6 @@ namespace BHive
 
 	struct MaterialSnapshot
 	{
-
 		ShaderPtr Shader;
 
 		// binding -> buffer/texture
@@ -29,8 +28,6 @@ namespace BHive
 
 		// binding -> buffer/texture
 		std::unordered_map<uint32_t, BufferBinding> Buffers;
-
-		std::vector<Ref<ResourceSet>> BindingGroups;
 
 		std::vector<std::byte> PushConstantData;
 	};

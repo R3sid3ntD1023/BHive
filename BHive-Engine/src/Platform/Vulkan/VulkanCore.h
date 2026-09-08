@@ -15,12 +15,6 @@ namespace BHive
 	// Vulkan API version your engine requires
 	static constexpr uint32_t MINIMUM_VULKAN_API_VERSION = vk::ApiVersion14;
 
-	// Descriptor set indices (global engine convention)
-	static constexpr uint32_t GLOBAL_SET_INDEX = 0;
-	static constexpr uint32_t MATERIAL_SET_INDEX = 1;
-	static constexpr uint32_t OBJECT_SET_INDEX = 2;
-	static constexpr uint32_t BATCH_SET_INDEX = 3;
-	static constexpr uint32_t PASS_SET_INDEX = 4;
 } // namespace BHive
 
 #define BHIVE_ENABLE_OBJECT_NAMES 1

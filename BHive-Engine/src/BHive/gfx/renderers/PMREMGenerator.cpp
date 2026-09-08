@@ -100,36 +100,38 @@ namespace BHive
 
 	PMREMResult PMREMGenerator::InitializeTextures()
 	{
+		PMREMResult environmentTextures = []() -> PMREMResult
+		{
+			FTextureCreateInfo cubeInfo{};
+			cubeInfo.Format = EFormat::RGBA32F;
+			cubeInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+			cubeInfo.MinFilter = EMinFilter::LINEAR;
+			cubeInfo.ArrayLayers = 6;
+			cubeInfo.MipLevels = mSettings.PrefilterMipLevels;
+			cubeInfo.DebugName = "EnvironmentCube";
+			cubeInfo.Roles |= ETextureRole::ComputeWrite;
+			auto Environment = TextureFactory::CreateCube(mSettings.EnvironmentMapSize, cubeInfo);
 
-		PMREMResult environmentTextures{};
+			FTextureCreateInfo convolutionInfo{};
+			convolutionInfo.Format = EFormat::RGBA32F;
+			convolutionInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+			convolutionInfo.MinFilter = EMinFilter::LINEAR;
+			convolutionInfo.Roles |= ETextureRole::ComputeWrite;
+			convolutionInfo.DebugName = "Irradiance";
+			auto Irradiance = TextureFactory::CreateCube(mSettings.IrradianceSize, convolutionInfo);
 
-		FTextureCreateInfo cubeInfo{};
-		cubeInfo.Format = EFormat::RGBA32F;
-		cubeInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-		cubeInfo.MinFilter = EMinFilter::LINEAR;
-		cubeInfo.ArrayLayers = 6;
-		cubeInfo.MipLevels = mSettings.PrefilterMipLevels;
-		cubeInfo.DebugName = "EnvironmentCube";
-		cubeInfo.Roles |= ETextureRole::ComputeWrite;
-		environmentTextures.Environment = TextureFactory::CreateCube(mSettings.EnvironmentMapSize, cubeInfo);
+			FTextureCreateInfo preFilteredInfo{};
+			preFilteredInfo.Format = EFormat::RGBA16F;
+			preFilteredInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+			preFilteredInfo.MinFilter = EMinFilter::MIPMAP_LINEAR;
+			preFilteredInfo.MagFilter = EMagFilter::LINEAR;
+			preFilteredInfo.MipLevels = mSettings.PrefilterMipLevels;
+			preFilteredInfo.Roles |= ETextureRole::ComputeWrite;
+			preFilteredInfo.DebugName = "PreFilterEnvironment";
+			auto PreFilter = TextureFactory::CreateCube(mSettings.PrefilterMapSize, preFilteredInfo);
 
-		FTextureCreateInfo convolutionInfo{};
-		convolutionInfo.Format = EFormat::RGBA32F;
-		convolutionInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-		convolutionInfo.MinFilter = EMinFilter::LINEAR;
-		convolutionInfo.Roles |= ETextureRole::ComputeWrite;
-		convolutionInfo.DebugName = "Irradiance";
-		environmentTextures.Irradiance = TextureFactory::CreateCube(mSettings.IrradianceSize, convolutionInfo);
-
-		FTextureCreateInfo preFilteredInfo{};
-		preFilteredInfo.Format = EFormat::RGBA16F;
-		preFilteredInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
-		preFilteredInfo.MinFilter = EMinFilter::MIPMAP_LINEAR;
-		preFilteredInfo.MagFilter = EMagFilter::LINEAR;
-		preFilteredInfo.MipLevels = mSettings.PrefilterMipLevels;
-		preFilteredInfo.Roles |= ETextureRole::ComputeWrite;
-		preFilteredInfo.DebugName = "PreFilterEnvironment";
-		environmentTextures.PreFilter = TextureFactory::CreateCube(mSettings.PrefilterMapSize, preFilteredInfo);
+			return {.Environment = Environment, .Irradiance = Irradiance, .PreFilter = PreFilter};
+		}();
 
 		return environmentTextures;
 	}

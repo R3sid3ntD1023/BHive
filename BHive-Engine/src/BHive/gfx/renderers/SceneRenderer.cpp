@@ -131,6 +131,8 @@ namespace BHive
 	{
 		mSize = size;
 
+		InitResourceSets();
+
 		mRenderQueue = CreateRef<FRenderQueue>();
 		mRenderQueue->Init(MAX_OBJECTS);
 
@@ -165,12 +167,22 @@ namespace BHive
 		mLights.Init();
 
 		InitPipelines();
+
+		BindResourceSets();
 	}
 
 	void SceneRenderer::SetEnvironmentTexture(Texture2DPtr hdr)
 	{
 		mEnvironment.SetHDR(hdr);
 		mEnvironment.Update();
+
+		auto envMaps = mEnvironment.GetCurrentMaps();
+		auto brdfLut = mEnvironment.GetBRDFLUT();
+
+		auto globalSet = mSceneSets.GlobalSet.As<ResourceSet>();
+		globalSet->SetTexture(2, brdfLut);
+		globalSet->SetTexture(3, envMaps.PreFilter);
+		globalSet->SetTexture(4, envMaps.Irradiance);
 	}
 
 	void SceneRenderer::Begin(const Camera *camera, const glm::mat4 &view)
@@ -218,6 +230,7 @@ namespace BHive
 		renderer.EndPass();
 
 		PipelinePtr pipelines[2] = {mOpaquePipeline, mTransparentPipeline};
+		ResourceSetPtr objectSets[2] = {mSceneSets.OpaqueObjectSet, mSceneSets.TransparentObjectSet};
 
 		for (uint32_t i = 0; i < 1; i++)
 		{
@@ -238,21 +251,25 @@ namespace BHive
 			batchData.EndPhase();
 			renderer.EndPass();
 
+			auto objectSet = objectSets[i];
 			// frustum pass
 
 			uint32_t groups = (instanceCount + 256) / 256;
 			auto &occlusionPass = renderer.BeginPass("Occlusion " + passNames[i], EPassType::OffScreen);
 			occlusionPass.BeginPhase(EPhaseType::Compute);
-			occlusionPass.BindBuffer(0, 0, mCameraUBO);
-			occlusionPass.BindBuffer(0, 1, mFrustumUBO);
-			occlusionPass.BindBuffer(3, 0, instanceBuffer);
-			occlusionPass.BindBuffer(3, 1, indirectBuffer);
-			occlusionPass.BindBuffer(3, 2, visibilityBuffer);
+			occlusionPass.BindResourceSet(mSceneSets.GlobalSet);
+			occlusionPass.BindResourceSet(objectSet);
+			/*	occlusionPass.BindBuffer(0, 0, mCameraUBO);
+				occlusionPass.BindBuffer(0, 1, mFrustumUBO);
+				occlusionPass.BindBuffer(3, 0, instanceBuffer);
+				occlusionPass.BindBuffer(3, 1, indirectBuffer);
+				occlusionPass.BindBuffer(3, 2, visibilityBuffer);*/
 
 			occlusionPass.UseBuffer(indirectBuffer, EBufferUsage::StorageWrite);
 			occlusionPass.UseBuffer(visibilityBuffer, EBufferUsage::StorageWrite);
 			occlusionPass.UseBuffer(instanceBuffer, EBufferUsage::StorageRead);
 			occlusionPass.UseBuffer(mCameraUBO, EBufferUsage::UniformRead);
+			occlusionPass.UseBuffer(mFrustumUBO, EBufferUsage::UniformRead);
 			occlusionPass.Emplace<CmdBindMaterial>()(mFrustrumOcclusionMaterial[i].As<Material>());
 			occlusionPass.Emplace<CmdDispatch>()(groups, 1, 1);
 			occlusionPass.EndPhase();
@@ -261,13 +278,15 @@ namespace BHive
 			// render scene passes
 			auto &pass = renderer.BeginPass("Scene " + passNames[i], EPassType::OffScreen, states[i]);
 			pass.BeginPhase("Phase " + passNames[i], EPhaseType::Graphics);
-			pass.BindBuffer(0, 0, mCameraUBO);
-			pass.BindBuffer(0, 1, mLights.GetBuffer());
-			pass.BindTexture(0, 2, brdfLUT);
-			pass.BindTexture(0, 3, prefilter);
-			pass.BindTexture(0, 4, irradiance);
-			pass.BindBuffer(3, 0, instanceBuffer);
-			pass.BindBuffer(3, 2, visibilityBuffer);
+			pass.BindResourceSet(mSceneSets.GlobalSet);
+			pass.BindResourceSet(objectSet);
+			/*	pass.BindBuffer(0, 0, mCameraUBO);
+				pass.BindBuffer(0, 1, mLights.GetBuffer());
+				pass.BindTexture(0, 2, brdfLUT);
+				pass.BindTexture(0, 3, prefilter);
+				pass.BindTexture(0, 4, irradiance);
+				pass.BindBuffer(3, 0, instanceBuffer);
+				pass.BindBuffer(3, 2, visibilityBuffer);*/
 			pass.UseFramebuffer(mFramebuffer);
 			pass.UseTexture(prefilter, EImageUsage::ColorRead);
 			pass.UseTexture(irradiance, EImageUsage::ColorRead);
@@ -286,8 +305,9 @@ namespace BHive
 
 		auto &pass = renderer.BeginPass("Frustum", EPassType::OffScreen, states[1]);
 		pass.BeginPhase(EPhaseType::Graphics);
-		pass.BindBuffer(0, 0, mCameraUBO);
-		pass.BindBuffer(0, 1, mFrustumUBO);
+		pass.BindResourceSet(mSceneSets.GlobalSet);
+		/*	pass.BindBuffer(0, 0, mCameraUBO);
+			pass.BindBuffer(0, 1, mFrustumUBO);*/
 		pass.UseFramebuffer(mFramebuffer);
 		pass.Emplace<CmdBindPipeline>()(pipelines[0]);
 		pass.Emplace<CmdBindMaterial>()(mFrustumMaterial.As<Material>());
@@ -299,7 +319,8 @@ namespace BHive
 		auto &linePass = renderer.BeginPass("Line Renderer", EPassType::OffScreen, states[1]);
 
 		linePass.BeginPhase("Line Rendering", EPhaseType::Graphics);
-		linePass.BindBuffer(0, 0, mCameraUBO);
+		linePass.BindResourceSet(mSceneSets.GlobalSet);
+		// linePass.BindBuffer(0, 0, mCameraUBO);
 		linePass.UseFramebuffer(mFramebuffer);
 		linePass.UseBuffer(mCameraUBO, EBufferUsage::UniformRead);
 		renderer.EndBatching();
@@ -417,6 +438,31 @@ namespace BHive
 		transparentState.Depth.DepthWrite = false;
 
 		mTransparentPipeline = PipelineFactory::Create(transparentState);
+	}
+
+	void SceneRenderer::InitResourceSets()
+	{
+		mSceneSets.GlobalSet = ResourceSetFactory::Create(RendererTemplates::Global());
+		mSceneSets.OpaqueObjectSet = ResourceSetFactory::Create(RendererTemplates::Object());
+		mSceneSets.TransparentObjectSet = ResourceSetFactory::Create(RendererTemplates::Object());
+	}
+
+	void SceneRenderer::BindResourceSets()
+	{
+		auto global = mSceneSets.GlobalSet.As<ResourceSet>();
+		global->SetBuffer(0, mCameraUBO);
+		global->SetBuffer(1, mLights.GetBuffer());
+		global->SetBuffer(5, mFrustumUBO);
+
+		auto opaqueSet = mSceneSets.OpaqueObjectSet.As<ResourceSet>();
+		opaqueSet->SetBuffer(0, mInstanceDataBuffer[0]);
+		opaqueSet->SetBuffer(1, mIndirectDrawBuffer[0]);
+		opaqueSet->SetBuffer(2, mVisibleBuffer[0]);
+
+		auto transparentSet = mSceneSets.TransparentObjectSet.As<ResourceSet>();
+		transparentSet->SetBuffer(0, mInstanceDataBuffer[1]);
+		transparentSet->SetBuffer(1, mIndirectDrawBuffer[1]);
+		transparentSet->SetBuffer(2, mVisibleBuffer[1]);
 	}
 
 	void SceneRenderer::Resize(const glm::uvec2 &size)

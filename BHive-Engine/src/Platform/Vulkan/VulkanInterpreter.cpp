@@ -1,4 +1,5 @@
 #include "VulkanInterpreter.h"
+#include "DescriptorCache.h"
 #include "VulkanBackendMaterial.h"
 #include "VulkanBuffers.h"
 #include "VulkanConversions.h"
@@ -54,7 +55,6 @@ namespace BHive
 			case ECommandType::Dispatch:
 			{
 				auto &c = *reinterpret_cast<const CmdDispatch *>(payloadPtr);
-				;
 				cmdbuffer.dispatch(c.X, c.Y, c.Z);
 			}
 			break;
@@ -190,44 +190,6 @@ namespace BHive
 		auto &cmd = ctx.CommandBuffer;
 		const auto frame = ctx.Frame;
 
-		// bind globals
-		for (auto &group : snap.BindingGroups)
-		{
-			auto set = group->GetSetIndex();
-			for (auto &[binding, buffer] : phase.BoundBuffers)
-			{
-				if (binding.Set == set)
-				{
-					group->SetBuffer(binding.Binding, buffer);
-				}
-			}
-
-			for (auto &[binding, texture] : phase.BoundTextures)
-			{
-				if (binding.Set == set)
-				{
-					group->SetTexture(binding.Binding, texture);
-				}
-			}
-		}
-
-		for (auto &group : snap.BindingGroups)
-		{
-			auto set = group->GetSetIndex();
-			if (set != MATERIAL_SET_INDEX)
-				continue;
-
-			for (auto &[binding, tb] : snap.Textures)
-			{
-				group->SetTexture(binding, tb.Texture, tb.BaseMipLevel);
-			}
-
-			for (auto &[binding, buf] : snap.Buffers)
-			{
-				group->SetBuffer(binding, buf.Buffer);
-			}
-		}
-
 		if (CurrentBoundShader != snap.Shader)
 		{
 			CurrentBoundShader = snap.Shader;
@@ -238,9 +200,17 @@ namespace BHive
 
 		auto &shaderTemplate = shader->GetTemplate();
 
-		for (auto &group : snap.BindingGroups)
+		for (auto &resourceSet : phase.ResourceSets)
 		{
-			shader->BindGroup(cmd, frame, Cast<VulkanBindingGroup>(group).get());
+			shader->BindSet(cmd, frame, resourceSet.As<VulkanResourceSet>());
+		}
+
+		auto &descriptorCache = VulkanBackend::GetDescriptorCache();
+
+		if (auto setTemplate = shader->GetTemplate().FindSet(1))
+		{
+			auto &cachedSet = descriptorCache.GetOrCreateDescriptorSet({setTemplate, &snap});
+			shader->BindSet(cmd, frame, cachedSet.ResourceSet.get());
 		}
 
 		for (auto &pc : shaderTemplate.PushConstants)

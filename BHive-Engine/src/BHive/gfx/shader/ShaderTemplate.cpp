@@ -66,21 +66,21 @@ namespace BHive
 			for (const auto &[name, binding] : samplers)
 			{
 				auto nameHash = utils::ComputeHash<std::string_view>(name);
-				auto &setBinding = setTemplate.Bindings.emplace_back((uint32_t)binding.Binding, binding.Type, 0u, (uint32_t)binding.ArraySize, binding.Stages);
+				auto &setBinding = setTemplate.Bindings.emplace_back((uint32_t)binding.Binding, 0u, (uint32_t)binding.ArraySize, binding.Stages, binding.Type);
 				bindingTable[nameHash] = BindingRef{(uint32_t)sets.size() - 1, (uint32_t)setTemplate.Bindings.size() - 1};
 			}
 
 			for (auto &[name, binding] : uniformBuffers)
 			{
 				auto nameHash = utils::ComputeHash<std::string_view>(name);
-				auto &setBinding = setTemplate.Bindings.emplace_back((uint32_t)binding.Binding, binding.Type, (uint32_t)binding.Size, 0u, binding.Stages);
+				auto &setBinding = setTemplate.Bindings.emplace_back((uint32_t)binding.Binding, binding.Size, 0u, binding.Stages, binding.Type);
 				bindingTable[nameHash] = BindingRef{(uint32_t)sets.size() - 1, (uint32_t)setTemplate.Bindings.size() - 1};
 			}
 
 			for (auto &[name, binding] : storageBuffers)
 			{
 				auto nameHash = utils::ComputeHash<std::string_view>(name);
-				auto &setBinding = setTemplate.Bindings.emplace_back((uint32_t)binding.Binding, binding.Type, (uint32_t)binding.Size, 0u, binding.Stages);
+				auto &setBinding = setTemplate.Bindings.emplace_back((uint32_t)binding.Binding, binding.Size, 0u, binding.Stages, binding.Type);
 				bindingTable[nameHash] = BindingRef{(uint32_t)sets.size() - 1, (uint32_t)setTemplate.Bindings.size() - 1};
 			}
 

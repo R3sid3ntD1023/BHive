@@ -21,6 +21,7 @@ namespace BHive
 	class VertexBuffer;
 	class Shader;
 	class Pipeline;
+	class ResourceSet;
 
 	REGISTER_TYPE(Material)
 	REGISTER_TYPE(Texture)
@@ -38,4 +39,5 @@ namespace BHive
 	REGISTER_TYPE(BufferBase)
 	REGISTER_TYPE(Shader)
 	REGISTER_TYPE(Pipeline)
+	REGISTER_TYPE(ResourceSet)
 } // namespace BHive
