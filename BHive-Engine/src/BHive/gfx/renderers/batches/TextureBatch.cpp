@@ -16,7 +16,7 @@ namespace BHive
 		mTextureArray = TextureFactory::Create2DArray({512, 512}, create_info);
 
 		std::vector<uint32_t> white(512 * 512, 0xFFFFFFFF);
-		Buffer data(white.data(), white.size() * sizeof(uint32_t));
+		ByteBuffer data(white.data(), white.size() * sizeof(uint32_t));
 		FTextureCreateInfo info{};
 		info.Format = EFormat::RGBA8;
 		info.Aspect = ETextureAspect::Color;

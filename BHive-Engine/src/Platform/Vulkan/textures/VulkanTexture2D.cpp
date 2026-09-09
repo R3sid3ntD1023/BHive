@@ -10,7 +10,7 @@ namespace BHive
 	{
 	}
 
-	VulkanTexture2D::VulkanTexture2D(const glm::uvec2 &size, const FTextureCreateInfo &createInfo, const Buffer &data)
+	VulkanTexture2D::VulkanTexture2D(const glm::uvec2 &size, const FTextureCreateInfo &createInfo, const ByteBuffer &data)
 		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mSize(size),
 		  mBuffer(data),
@@ -21,9 +21,7 @@ namespace BHive
 
 		if (data)
 		{
-			FTextureUploadInfo info{
-				.Data = data.As<uint8_t>(),
-			};
+			FTextureUploadInfo info{.Data = data.GetData()};
 			SetData(info);
 		}
 	}
@@ -104,7 +102,7 @@ namespace BHive
 		if (mBuffer)
 		{
 			FTextureUploadInfo info{
-				.Data = mBuffer.As<uint8_t>(),
+				.Data = mBuffer.GetData(),
 			};
 			SetData(info);
 		}

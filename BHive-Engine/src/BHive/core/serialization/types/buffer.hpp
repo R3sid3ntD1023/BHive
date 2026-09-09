@@ -6,7 +6,7 @@
 namespace BHive
 {
 	template <typename A, typename T>
-	inline void CEREAL_SAVE_FUNCTION_NAME(A &ar, const TBuffer<T> &buffer)
+	inline void CEREAL_SAVE_FUNCTION_NAME(A &ar, const MemoryBlock<T> &buffer)
 	{
 		auto size = buffer.GetSize();
 		ar(size);
@@ -17,7 +17,7 @@ namespace BHive
 	}
 
 	template <typename A, typename T>
-	inline void CEREAL_LOAD_FUNCTION_NAME(A &ar, TBuffer<T> &buffer)
+	inline void CEREAL_LOAD_FUNCTION_NAME(A &ar, MemoryBlock<T> &buffer)
 	{
 		size_t size = 0;
 		ar(size);

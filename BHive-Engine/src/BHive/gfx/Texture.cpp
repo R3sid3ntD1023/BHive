@@ -1,8 +1,8 @@
-#include "gfx/RenderCommand.h"
 #include "Texture.h"
-#include <stb_image_resize2.h>
-#include "importers/TextureImporter.h"
+#include "gfx/RenderCommand.h"
 #include "gfx/factories/TextureFactory.h"
+#include "importers/TextureImporter.h"
+#include <stb_image_resize2.h>
 
 namespace BHive
 {
@@ -35,8 +35,8 @@ namespace BHive
 		const glm::ivec2 output_size = GetSize();
 		const auto bytes_per_pixel = GetBytesPerPixel(tex_info.Format);
 		const auto buffer_size = output_size.x * output_size.y * bytes_per_pixel;
-		Buffer output(buffer_size);
-		stbir_resize_uint8_linear(buffer.As<uint8_t>(), size.x, size.y, 0, output, output_size.x, output_size.y, 0, (stbir_pixel_layout)bytes_per_pixel);
+		ByteBuffer output(buffer_size);
+		stbir_resize_uint8_linear(buffer.GetData(), size.x, size.y, 0, output, output_size.x, output_size.y, 0, (stbir_pixel_layout)bytes_per_pixel);
 
 		FTextureUploadInfo info{
 			.Data = output.GetData(),

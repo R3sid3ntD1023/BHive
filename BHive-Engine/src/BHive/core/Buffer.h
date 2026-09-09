@@ -5,7 +5,7 @@
 namespace BHive
 {
 	template <typename T>
-	struct TBuffer
+	struct MemoryBlock
 	{
 		static constexpr size_t ValueSize = sizeof(T);
 
@@ -14,17 +14,17 @@ namespace BHive
 		uint64_t mSize = 0;
 
 	public:
-		TBuffer() = default;
+		MemoryBlock() = default;
 
-		~TBuffer() { Release(); }
+		~MemoryBlock() { Release(); }
 
-		TBuffer(const TBuffer &other)
+		MemoryBlock(const MemoryBlock &other)
 		{
 			Allocate(other.mSize);
 			memcpy_s(mData, other.mSize, other.mData, mSize);
 		}
 
-		TBuffer(TBuffer &&other) noexcept
+		MemoryBlock(MemoryBlock &&other) noexcept
 			: mData(other.mData),
 			  mSize(other.mSize)
 		{
@@ -32,9 +32,9 @@ namespace BHive
 			other.mSize = 0;
 		}
 
-		explicit TBuffer(uint64_t size) { Allocate(size); }
+		explicit MemoryBlock(uint64_t size) { Allocate(size); }
 
-		explicit TBuffer(const void *data, uint64_t size) { Allocate(data, size); }
+		explicit MemoryBlock(const void *data, uint64_t size) { Allocate(data, size); }
 
 		void Allocate(const void *data, uint64_t size)
 		{
@@ -63,7 +63,7 @@ namespace BHive
 
 		operator void *() const { return mData; }
 
-		TBuffer &operator=(const TBuffer &rhs)
+		MemoryBlock &operator=(const MemoryBlock &rhs)
 		{
 			if (this == &rhs)
 				return *this;
@@ -73,7 +73,7 @@ namespace BHive
 			return *this;
 		}
 
-		TBuffer &operator=(TBuffer &&rhs) noexcept
+		MemoryBlock &operator=(MemoryBlock &&rhs) noexcept
 		{
 			if (this == &rhs)
 				return *this;
@@ -102,26 +102,7 @@ namespace BHive
 		}
 	};
 
-	struct Buffer : public TBuffer<uint8_t>
-	{
-		Buffer() = default;
-
-		explicit Buffer(uint64_t size)
-			: TBuffer(size)
-		{
-		}
-
-		explicit Buffer(const void *data, uint64_t size)
-			: TBuffer(data, size)
-		{
-		}
-
-		template <typename T>
-		T *As() const
-		{
-			return (T *)GetData();
-		}
-	};
+	using ByteBuffer = MemoryBlock<uint8_t>;
 
 	struct BufferArena
 	{
@@ -146,7 +127,7 @@ namespace BHive
 		size_t GetCapacity() const { return mBuffer.GetSize(); }
 
 	private:
-		Buffer mBuffer;
+		ByteBuffer mBuffer;
 		size_t mHead = 0;
 	};
 } // namespace BHive

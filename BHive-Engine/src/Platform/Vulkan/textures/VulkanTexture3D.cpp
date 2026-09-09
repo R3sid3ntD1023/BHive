@@ -1,11 +1,11 @@
 #include "VulkanTexture3D.h"
-#include "Platform/Vulkan/VulkanConversions.h"
 #include "Platform/Vulkan/VulkanBackend.h"
+#include "Platform/Vulkan/VulkanConversions.h"
 
 namespace BHive
 {
 
-	VulkanTexture3D::VulkanTexture3D(const glm::uvec3 &size, const FTextureCreateInfo &createInfo, const Buffer &data)
+	VulkanTexture3D::VulkanTexture3D(const glm::uvec3 &size, const FTextureCreateInfo &createInfo, const ByteBuffer &data)
 		: mDevice(VulkanBackend::GetLogicalDevice()),
 		  mSize(size),
 		  mCreateInfo(createInfo)
@@ -18,8 +18,8 @@ namespace BHive
 		auto usage = InferImageUsage(mCreateInfo.Roles);
 
 		ImageCreateInfo create_info{};
-		create_info.ImageCI =
-			vk::ImageCreateInfo({}, vk::ImageType::e3D, format, extent, levels, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage, vk::SharingMode::eExclusive, 0);
+		create_info.ImageCI
+			= vk::ImageCreateInfo({}, vk::ImageType::e3D, format, extent, levels, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage, vk::SharingMode::eExclusive, 0);
 
 		// create default view info image is set in VulkanImage
 		auto aspect = ToVkAspect(mCreateInfo.Aspect);

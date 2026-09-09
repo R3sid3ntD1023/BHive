@@ -61,7 +61,7 @@ namespace BHive
 
 		virtual void SetInfo(const FTextureCreateInfo &specs) = 0;
 
-		virtual const Buffer &GetBuffer() const = 0;
+		virtual const ByteBuffer &GetBuffer() const = 0;
 
 		REFLECTABLEV(Texture)
 
@@ -95,7 +95,7 @@ namespace BHive
 	public:
 		virtual ~Texture3D() = default;
 
-		static Ref<Texture3D> Create(const glm::uvec3 &size, const FTextureCreateInfo &createInfo, const Buffer &data = {});
+		static Ref<Texture3D> Create(const glm::uvec3 &size, const FTextureCreateInfo &createInfo, const ByteBuffer &data = {});
 	};
 
 	class BHIVE_API TextureCube : public Texture

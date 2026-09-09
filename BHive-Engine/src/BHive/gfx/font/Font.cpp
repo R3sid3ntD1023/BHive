@@ -1,6 +1,6 @@
 #include "Font.h"
-#include "gfx/Texture.h"
 #include "MSDFData.h"
+#include "gfx/Texture.h"
 #include "gfx/factories/TextureFactory.h"
 
 using namespace msdf_atlas;
@@ -27,7 +27,7 @@ namespace BHive
 		create_info.Format = EFormat::RGBA8;
 		create_info.Roles = ETextureRole::Sampled | ETextureRole::TransferDst;
 
-		auto texture = TextureFactory::Create2D({w, h}, create_info, Buffer(bitmap.pixels, w * h * N));
+		auto texture = TextureFactory::Create2D({w, h}, create_info, ByteBuffer(bitmap.pixels, w * h * N));
 		return texture;
 	};
 

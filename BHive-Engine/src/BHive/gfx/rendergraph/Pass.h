@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Phase.h"
+#include "core/Buffer.h"
 #include "gfx/renderers/ViewSystem.h"
 #include "gfx/resources/ImageSubResourceRange.h"
 
@@ -103,5 +104,7 @@ namespace BHive
 		// global resources
 
 		FPhase *mCurrentPhase = nullptr;
+
+		BufferArena *mBufferArena = nullptr;
 	};
 } // namespace BHive

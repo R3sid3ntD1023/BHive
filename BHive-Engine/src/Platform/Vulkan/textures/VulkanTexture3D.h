@@ -8,7 +8,7 @@ namespace BHive
 	class BHIVE_API VulkanTexture3D : public Texture3D, public IVulkanTextureInterface
 	{
 	public:
-		VulkanTexture3D(const glm::uvec3& size, const FTextureCreateInfo &createInfo, const Buffer& data);
+		VulkanTexture3D(const glm::uvec3& size, const FTextureCreateInfo &createInfo, const ByteBuffer& data);
 
 		glm::uvec2 GetSize() const override { return {mSize.x, mSize.y}; }
 

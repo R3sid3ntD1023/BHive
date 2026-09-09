@@ -1,5 +1,5 @@
-#include "gfx/Framebuffer.h"
 #include "Pass.h"
+#include "gfx/Framebuffer.h"
 
 namespace BHive
 {
@@ -47,18 +47,6 @@ namespace BHive
 		ASSERT(mCurrentPhase)
 		mCurrentPhase->Buffers.push_back({buffer, access});
 	}
-
-	/*void FPass::BindBuffer(uint32_t set, uint32_t binding, BufferPtr buffer)
-	{
-		ASSERT(mCurrentPhase && buffer)
-		mCurrentPhase->BoundBuffers[GlobalBinding{set, binding}] = buffer;
-	}
-
-	void FPass::BindTexture(uint32_t set, uint32_t binding, TexturePtr texture)
-	{
-		ASSERT(mCurrentPhase && texture)
-		mCurrentPhase->BoundTextures[GlobalBinding{set, binding}] = texture;
-	}*/
 
 	void FPass::BindResourceSet(ResourceSetPtr resourceSet)
 	{

@@ -28,7 +28,7 @@ namespace BHive
 		return {};
 	}
 
-	TexturePtr TextureFactory::Create2D(const glm::uvec2 &size, const FTextureCreateInfo &info, const Buffer &data)
+	TexturePtr TextureFactory::Create2D(const glm::uvec2 &size, const FTextureCreateInfo &info, const ByteBuffer &data)
 	{
 		switch (RenderCommand::GetAPI())
 		{
@@ -56,7 +56,7 @@ namespace BHive
 		return {};
 	}
 
-	TexturePtr TextureFactory::Create3D(const glm::uvec3 &size, const FTextureCreateInfo &info, const Buffer &data)
+	TexturePtr TextureFactory::Create3D(const glm::uvec3 &size, const FTextureCreateInfo &info, const ByteBuffer &data)
 	{
 		switch (RenderCommand::GetAPI())
 		{

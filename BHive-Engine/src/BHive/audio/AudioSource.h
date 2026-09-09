@@ -54,7 +54,7 @@ namespace BHive
 		float mLength{0.0f};
 		FAudioSpecification mSpecification;
 
-		TBuffer<int16_t> mBuffer;
+		MemoryBlock<int16_t> mBuffer;
 	};
 
 	REFLECT_EXTERN(AudioSource)

@@ -26,7 +26,7 @@ namespace BHive
 
 		std::string Type{};
 		std::filesystem::path Path{};
-		Buffer EmbeddedData;
+		ByteBuffer EmbeddedData;
 		ESource Source;
 
 		std::string GetName() const { return Path.filename().string(); }

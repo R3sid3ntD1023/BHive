@@ -11,7 +11,7 @@ namespace BHive
 	public:
 		VulkanTexture2D();
 
-		VulkanTexture2D(const glm::uvec2 &size, const FTextureCreateInfo &createInfo, const Buffer &data);
+		VulkanTexture2D(const glm::uvec2 &size, const FTextureCreateInfo &createInfo, const ByteBuffer &data);
 
 		glm::uvec2 GetSize() const override { return mSize; }
 
@@ -21,7 +21,7 @@ namespace BHive
 
 		void SetInfo(const FTextureCreateInfo &specs);
 
-		const Buffer &GetBuffer() const { return mBuffer; }
+		const ByteBuffer &GetBuffer() const { return mBuffer; }
 
 		NativeHandle GetNativeHandle() const override { return NativeHandle::FromPtr(&mImage); }
 
@@ -46,7 +46,7 @@ namespace BHive
 
 		glm::uvec2 mSize{0, 0};
 
-		Buffer mBuffer;
+		ByteBuffer mBuffer;
 
 		FTextureCreateInfo mCreateInfo;
 

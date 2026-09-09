@@ -50,7 +50,7 @@ namespace BHive
 		}
 	} // namespace TextureUtils
 
-	bool TextureLoader::LoadImageData(const std::filesystem::path &file, int32_t &w, int32_t &h, int32_t &c, Buffer &buf, int32_t flip)
+	bool TextureLoader::LoadImageData(const std::filesystem::path &file, int32_t &w, int32_t &h, int32_t &c, ByteBuffer &buf, int32_t flip)
 	{
 		auto path_str = file.string();
 		bool is_hdr = stbi_is_hdr(path_str.c_str());
@@ -80,7 +80,7 @@ namespace BHive
 		return true;
 	}
 
-	DecodedTexture TextureLoader::CreateDecodedTexture(const std::string &name, const glm::uvec3 &size, const Buffer &buf, bool hdr)
+	DecodedTexture TextureLoader::CreateDecodedTexture(const std::string &name, const glm::uvec3 &size, const ByteBuffer &buf, bool hdr)
 	{
 		uint32_t c = size.z;
 
@@ -131,7 +131,7 @@ namespace BHive
 			return {};
 		}
 
-		Buffer data(image_data, data_size);
+		ByteBuffer data(image_data, data_size);
 
 		stbi_image_free(image_data);
 
@@ -165,7 +165,7 @@ namespace BHive
 			return {};
 		}
 
-		Buffer outData(image_data, data_size);
+		ByteBuffer outData(image_data, data_size);
 		stbi_image_free(image_data);
 
 		return CreateDecodedTexture("Memory Created", {w, h, c_out}, outData, is_hdr);
@@ -182,7 +182,7 @@ namespace BHive
 		auto old_h = decodedTexture.Size.y;
 
 		auto new_size = w * h * c * (hdr ? sizeof(float) : sizeof(char));
-		Buffer newData(new_size);
+		ByteBuffer newData(new_size);
 
 		stbir_resize_uint8_linear(data.GetData(), old_w, old_h, 0, newData.GetData(), w, h, 0, (stbir_pixel_layout)c);
 
