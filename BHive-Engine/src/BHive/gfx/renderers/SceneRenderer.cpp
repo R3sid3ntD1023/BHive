@@ -57,8 +57,14 @@ namespace BHive
 
 	struct RenderBatch
 	{
+		struct DrawBatch
+		{
+			uint32_t FirstCommand = 0;
+			uint32_t CommandCount = 0;
+		};
+
 		// vao -> material[submissions]
-		std::unordered_map<VertexArrayPtr, std::unordered_map<MaterialPtr, std::vector<FSubMeshSubmission>>> MaterialBatches;
+		std::unordered_map<VertexArrayPtr, std::unordered_map<MaterialPtr, DrawBatch>> MaterialBatches;
 
 		std::vector<ObjectData> ObjectDatas;
 
@@ -82,7 +88,6 @@ namespace BHive
 			BoneDatas.clear();
 
 			uint32_t boneOffset = 0;
-
 			for (auto &o : bucket)
 			{
 				// object data
@@ -98,15 +103,17 @@ namespace BHive
 
 				auto &inst = ObjectDatas.emplace_back();
 				inst.CenterRadius = glm::vec4(pos, radius); //<= change to local submesb pos
-				inst.ModelMatrix = model;
+				inst.ModelMatrix = model * s.Transformation;
 				inst.ID = objectID;
 
 				// submesh data
 				auto &group = MaterialBatches[vao];
-				auto &submissions = group[o.Material];
+				auto &batch = group[o.Material];
 
-				auto &submission = submissions.emplace_back(o);
-				submission.MeshIndex = objectID;
+				if (batch.CommandCount == 0)
+					batch.FirstCommand = (uint32_t)DrawCommands.size();
+
+				batch.CommandCount++;
 
 				// bones
 				auto &bones = ctx.BoneTransforms;
@@ -128,23 +135,22 @@ namespace BHive
 
 		void Draw(FPass &pass, BufferPtr indirect)
 		{
-			uint32_t globalOffset = 0;
 			// render meshes
 			for (auto &[vao, matMap] : MaterialBatches)
 			{
 				auto v = vao.As<VertexArray>();
 				v->DeclareAccess(pass, EBufferUsage::IndirectRead, EBufferUsage::IndirectRead);
 
-				for (auto &[material, submissions] : matMap)
+				for (auto &[material, batch] : matMap)
 				{
 					if (!material)
 						continue;
 
 					pass.Emplace<CmdBindMaterial>()(material.As<Material>());
 
-					uint32_t count = (uint32_t)submissions.size();
-					pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect, vao, count, MULTI_DRAW_INDIRECT_STRIDE, globalOffset);
-					globalOffset += count * MULTI_DRAW_INDIRECT_STRIDE;
+					uint32_t offset = batch.FirstCommand * sizeof(MultiDrawIndirectCommand);
+
+					pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect, vao, batch.CommandCount, MULTI_DRAW_INDIRECT_STRIDE, offset);
 				}
 			}
 		}

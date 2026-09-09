@@ -23,7 +23,7 @@
 
 namespace BHive
 {
-	FTransform sphereTransform{};
+	FTransform sphereTransform{{0, 2, 0}};
 	std::vector<FTransform> transforms;
 	std::array<ContextHandle, 9> sSphereHandle;
 	ContextHandle sPlaneHandle;
@@ -89,11 +89,18 @@ namespace BHive
 				material->SetRoughness(0.5f);
 			}
 
+#if 1
+	#define TEST_MESH_NAME "C://Users//dariu//Documents//MultiSubMesh.glb"
+	#define SCALE 1.0f
+#elif
+	#define TEST_MESH_NAME "C://Users//dariu//Documents//Erika.gltf"
+	#define SCALE .01f
+#endif
 			{
 				FMeshImportOptions import_options{};
 				import_options.MeshType = EMeshType::StaticMesh;
 				import_options.OverrideMaterials = mCharacterMaterials;
-				auto decodedMesh = MeshImporter::Import("C://Users//dariu//Documents//Erika.gltf");
+				auto decodedMesh = MeshImporter::Import(TEST_MESH_NAME, SCALE);
 				MeshImportResolver resolver(import_options);
 				auto result = resolver.Resolve(decodedMesh);
 				mCharacter = result.Mesh;
@@ -134,16 +141,16 @@ namespace BHive
 		request.Mesh = plane;
 		mSceneRenderer->SubmitMesh(request, sPlaneHandle);
 
-		// if (mCharacter)
-		// {
+		if (mCharacter)
+		{
 
-		// 	FMeshSubmissionRequest request{};
-		// 	request.Mesh = mCharacter;
-		// 	request.Materials = mCharacterMaterials;
-		// 	request.Transform = sphereTransform;
-		// 	// request.BoneTransforms = mesh->GetSkeleton()->GetRestPoseTransforms();
-		// 	mSceneRenderer->SubmitMesh(request, sCharacterHandle);
-		// }
+			FMeshSubmissionRequest request{};
+			request.Mesh = mCharacter;
+			request.Materials = mCharacterMaterials;
+			request.Transform = sphereTransform;
+			// request.BoneTransforms = mesh->GetSkeleton()->GetRestPoseTransforms();
+			mSceneRenderer->SubmitMesh(request, sCharacterHandle);
+		}
 	}
 
 	void SceneLayer::OnDetach()

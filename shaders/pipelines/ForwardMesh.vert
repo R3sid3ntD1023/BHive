@@ -25,6 +25,12 @@ layout(std430, set = 3, binding = 0) readonly buffer Objects
     ObjectData objects[];
 };
 
+layout(std430, set = 3, binding = 1) readonly buffer Draws
+{
+    IndirectDrawIndexedCommand drawCommands[];
+};
+
+
 layout(std430, set = 3, binding = 2) readonly buffer Visible
 {
     uint visibleCount;
@@ -45,8 +51,6 @@ layout(location = 0) out struct VS_OUT
 	vec4 Color;
 	mat3 TBN;
 	vec3 CameraPosition;
-	float InstanceID;
-	float DrawID;
 	vec3 DebugColor;
 } vs_out;
 
@@ -54,7 +58,8 @@ mat4 GetBoneMatrix(const in ivec4 ids, const in vec4 weights, uint boneOffset);
 
 void main()
 {
-	uint instanceID = visibleIndices[gl_InstanceIndex];
+	uint visibleIndex =  gl_BaseInstance;
+	uint instanceID = visibleIndices[visibleIndex];
 	ObjectData object = objects[instanceID];
 
 	//mat4 boneMatrix = GetBoneMatrix(vBoneIds, vWeights, object.boneOffset);
@@ -74,9 +79,12 @@ void main()
 	vs_out.Normal = N;
 	vs_out.CameraPosition = u_camera_position.xyz;
 	vs_out.Color = vColor;
-	vs_out.InstanceID = float(gl_InstanceIndex);
-	vs_out.DrawID = float(gl_BaseInstance);
-	vs_out.DebugColor = objects[instanceID].debugcolor.xyz;
+
+	#if defined(SHOW_INSTANCE)
+	vs_out.DebugColor = vec3(float(gl_InstanceIndex)/ 10.0, 0, 0);
+	#else
+	vs_out.DebugColor = vec3(float(gl_BaseInstance)/ 10.0, 0, 0);
+	#endif
 }
 
 #define MAX_BONE_INFLUENCE 4

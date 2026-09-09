@@ -60,17 +60,16 @@ void main()
     bool visible = SphereIntersection(u_cam.frustum, center, radius);
     
     objects[id].debugcolor.xyz = vec3(float(id)/ 10.f, 0.0, 1.0 - float(id) / 10.0);
-    objects[id].debugcolor.xyz = visible ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+    objects[id].debugcolor.xyz = visible ? vec3(float(id)/10.0, 0.0, 1.0 - float(id)/10.0) : vec3(1.0, 0.0, 0.0);
 
-    //reserve slot atomically
-    uint slot  = atomicAdd(visibleCount, 1);
 
-    if(!visible)
-        return;
- 
-    //write visible index
-    visibleIndices[slot] = id;
+    if(visible)   
+    {
+        uint slot  = atomicAdd(visibleCount, 1);
 
-    uint count = atomicAdd(drawCommands[id].instanceCount, 1);
-    drawCommands[id].firstInstance = id;
+        visibleIndices[slot] = id;
+
+        drawCommands[id].instanceCount = 1;
+        drawCommands[id].firstInstance = slot;
+    }
 }

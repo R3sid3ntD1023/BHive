@@ -96,15 +96,20 @@ namespace BHive
 			}
 		}
 
-		FSubMesh ParseMesh(const aiScene *scene, const aiMatrix4x4 &matrix, const aiMesh *mesh, DecodedMesh &out)
+		FSubMesh ParseMesh(const aiScene *scene, const aiMatrix4x4 &matrix, const aiMesh *mesh, DecodedMesh &out, float importScale)
 		{
 			FMeshData &data = out.MeshData;
 
-			auto node_matrix = utils::make_mat4(matrix);
+#if 1
+	#define IMPORT_SCALE glm ::scale(glm::mat4(1.0f), glm::vec3(importScale)) *
+#else
+	#define IMPORT_SCALE
+#endif
+			auto node_matrix = IMPORT_SCALE utils::make_mat4(matrix);
 
 			FSubMesh sub_mesh{};
 			sub_mesh.StartVertex = (uint32_t)data.Vertices.size();
-			sub_mesh.StartIndex = (int32_t)data.Indices.size();
+			sub_mesh.StartIndex = (uint32_t)data.Indices.size();
 			sub_mesh.IndexCount = mesh->mNumFaces * 3;
 			sub_mesh.Transformation = node_matrix;
 			sub_mesh.MaterialIndex = mesh->mMaterialIndex;
@@ -115,7 +120,7 @@ namespace BHive
 			for (unsigned v = 0; v < mesh->mNumVertices; v++)
 			{
 
-				glm::vec3 position = glm::vec3(node_matrix * glm::vec4(make_vec3(mesh->mVertices[v]), 1.0f));
+				glm::vec3 position = make_vec3(mesh->mVertices[v]);
 				glm::vec2 texcoord = {0.0f, 0.0f};
 				glm::vec3 normal = {0.0f, 0.0f, 0.0f};
 				glm::vec3 tangent = {0.0f, 0.0f, 0.0f};
@@ -185,19 +190,19 @@ namespace BHive
 			return sub_mesh;
 		}
 
-		void ProcessNode(const aiScene *scene, const aiNode *node, const aiMatrix4x4 &parent, DecodedMesh &out)
+		void ProcessNode(const aiScene *scene, const aiNode *node, const aiMatrix4x4 &parent, DecodedMesh &out, float importScale)
 		{
 
 			for (unsigned i = 0; i < node->mNumMeshes; i++)
 			{
 				aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-				auto submesh = ParseMesh(scene, parent * node->mTransformation, mesh, out);
+				auto submesh = ParseMesh(scene, parent * node->mTransformation, mesh, out, importScale);
 				out.MeshData.SubMeshes.emplace_back(submesh);
 			}
 
 			for (unsigned i = 0; i < node->mNumChildren; i++)
 			{
-				ProcessNode(scene, node->mChildren[i], parent * node->mTransformation, out);
+				ProcessNode(scene, node->mChildren[i], parent * node->mTransformation, out, importScale);
 			}
 		}
 
@@ -438,15 +443,15 @@ namespace BHive
 					material.Albedo = {albedo.r, albedo.g, albedo.b, albedo.a};
 				if (aiGetMaterialFloat(loaded_material, AI_MATKEY_METALLIC_FACTOR, &metallic) == aiReturn_SUCCESS)
 					material.Metallic = metallic;
-				if (aiGetMaterialFloat(loaded_material, AI_MATKEY_METALLIC_FACTOR, &roughness) == aiReturn_SUCCESS)
+				if (aiGetMaterialFloat(loaded_material, AI_MATKEY_ROUGHNESS_FACTOR, &roughness) == aiReturn_SUCCESS)
 					material.Roughness = roughness;
 			}
 		}
 
-		void ProcessScene(const aiScene *scene, DecodedMesh &out)
+		void ProcessScene(const aiScene *scene, DecodedMesh &out, float importScale)
 		{
 			aiMatrix4x4 root;
-			utils::ProcessNode(scene, scene->mRootNode, root, out);
+			utils::ProcessNode(scene, scene->mRootNode, root, out, importScale);
 			utils::GetNodeHeiracrchy(scene->mRootNode, out.BoneHeirarchy);
 			utils::GetMaterialData(scene, out.Materials);
 			utils::GetAnimationData(scene, out.Animations, out.Bones);
@@ -454,7 +459,7 @@ namespace BHive
 
 	} // namespace utils
 
-	DecodedMesh MeshImporter::Import(const std::filesystem::path &path)
+	DecodedMesh MeshImporter::Import(const std::filesystem::path &path, float importScale)
 	{
 		Assimp::Importer importer;
 		importer.SetProgressHandler(new ModelProgress());
@@ -469,7 +474,7 @@ namespace BHive
 		}
 		else
 		{
-			utils::ProcessScene(scene, decoded);
+			utils::ProcessScene(scene, decoded, importScale);
 			decoded.Path = path;
 			decoded.MeshData.MaterialCount = (uint32_t)decoded.Materials.size();
 		}

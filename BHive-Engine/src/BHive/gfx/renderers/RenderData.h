@@ -59,6 +59,8 @@ namespace BHive
 
 		uint32_t MeshIndex = 0;
 
+		uint32_t DrawCommandIndex = 0;
+
 		MaterialPtr Material;
 
 		// opaque/transparent, cast_shadows

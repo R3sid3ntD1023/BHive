@@ -14,21 +14,24 @@ namespace BHive
 	{
 		DecodedTexture Resolve(const EmbeddedTexture &texture, const std::filesystem::path &parent_path)
 		{
+
 			auto name = texture.Path.filename().string();
 			auto hash = std::hash<std::string>()(name);
 
 			if (!mLoadedTextures.contains(hash))
 			{
+				DecodedTexture decodedTex{};
 				if (texture.Source == EmbeddedTexture::External)
 				{
-					return TextureLoader::FromFile(parent_path / texture.Path);
+					decodedTex = TextureLoader::FromFile(parent_path / texture.Path);
 				}
 				else
 				{
-					return TextureLoader::LoadFromMemory(texture.EmbeddedData, texture.EmbeddedData.GetSize());
+					decodedTex = TextureLoader::LoadFromMemory(texture.EmbeddedData, texture.EmbeddedData.GetSize());
 				}
 
 				mLoadedTextures.insert(hash);
+				return decodedTex;
 			}
 		}
 

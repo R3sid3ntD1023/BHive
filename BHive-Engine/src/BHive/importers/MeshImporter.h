@@ -1,9 +1,9 @@
 #pragma once
 
 #include "core/Core.h"
-#include "gfx/mesh/MeshData.h"
-#include "gfx/animation/Skeleton.h"
 #include "gfx/animation/AnimationFrames.h"
+#include "gfx/animation/Skeleton.h"
+#include "gfx/mesh/MeshData.h"
 
 namespace BHive
 {
@@ -53,6 +53,6 @@ namespace BHive
 
 	struct BHIVE_API MeshImporter
 	{
-		static DecodedMesh Import(const std::filesystem::path &path);
+		static DecodedMesh Import(const std::filesystem::path &path, float importScale = 1.0f);
 	};
 } // namespace BHive
