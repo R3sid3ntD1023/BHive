@@ -28,12 +28,14 @@
 namespace BHive
 {
 #define MULTI_DRAW_INDIRECT_STRIDE sizeof(MultiDrawIndirectCommand)
-#define MAX_OBJECTS 10
+#define MAX_OBJECTS 100
 #define VISIBILITY_BUFFER_SIZE 16 + 16 * MAX_OBJECTS
 #define OBJECT_STRIDE sizeof(ObjectData)
 #define OBJECT_BUFFER_SIZE 16 + OBJECT_STRIDE *MAX_OBJECTS
 #define DRAWCOMMAND_BUFFER_SIZE MULTI_DRAW_INDIRECT_STRIDE *MAX_OBJECTS
 #define MAX_LIGHTS Lights::sMaxLights
+#define MAX_BONES 200
+#define BONE_BUFFER_SIZE sizeof(glm::mat4) * MAX_BONES *MAX_OBJECTS
 
 	struct MultiDrawIndirectCommand
 	{
@@ -49,7 +51,7 @@ namespace BHive
 		glm::mat4 ModelMatrix{1.0f};				  // model matrix
 		glm::vec4 CenterRadius{0.f, 0.0f, 0.0f, 0.f}; // bounding sphere center.xyz + radius
 		uint32_t ID = 0;							  // which mesh this instance belongs to
-		uint32_t pad[3];
+		uint32_t boneOffset = 0;					  // bone offset
 		glm::vec4 debugColor;
 	};
 
@@ -60,6 +62,8 @@ namespace BHive
 
 		std::vector<ObjectData> ObjectDatas;
 
+		std::vector<glm::mat4> BoneDatas;
+
 		std::vector<MultiDrawIndirectCommand> DrawCommands;
 
 		RenderBatch(Ref<FRenderQueue> queue)
@@ -67,6 +71,7 @@ namespace BHive
 		{
 			ObjectDatas.reserve(MAX_OBJECTS);
 			DrawCommands.reserve(MAX_OBJECTS);
+			BoneDatas.reserve(200 * MAX_OBJECTS);
 		}
 
 		void Build(const SubMeshSubmissions &bucket)
@@ -74,6 +79,9 @@ namespace BHive
 			MaterialBatches.clear();
 			ObjectDatas.clear();
 			DrawCommands.clear();
+			BoneDatas.clear();
+
+			uint32_t boneOffset = 0;
 
 			for (auto &o : bucket)
 			{
@@ -81,9 +89,10 @@ namespace BHive
 				auto &ctx = mQueue->ResolveContext(o.Context);
 				auto pos = ctx.Transform.GetTranslation();
 				auto model = ctx.Transform.ToMat4();
-				auto radius = o.BoundingBox.GetRadius();
+
 				auto vao = ctx.VAO;
 				auto &s = o.SubMesh;
+				auto radius = s.Bounds.GetRadius();
 
 				auto objectID = ObjectDatas.size();
 
@@ -98,6 +107,15 @@ namespace BHive
 
 				auto &submission = submissions.emplace_back(o);
 				submission.MeshIndex = objectID;
+
+				// bones
+				auto &bones = ctx.BoneTransforms;
+				if (auto count = bones.size())
+				{
+					BoneDatas.insert(BoneDatas.end(), bones.begin(), bones.end());
+					inst.boneOffset = boneOffset;
+					boneOffset += count;
+				}
 
 				auto &cmd = DrawCommands.emplace_back();
 				cmd.indexCount = s.IndexCount;
@@ -167,6 +185,7 @@ namespace BHive
 			mIndirectDrawBuffer[i] = BufferFactory::Create(DRAWCOMMAND_BUFFER_SIZE, EBufferType::StorageBuffer | EBufferType::IndirectBuffer, EBufferLifetime::Dynamic);
 			mVisibleBuffer[i] = BufferFactory::Create(VISIBILITY_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
 			mFrustrumOcclusionMaterial[i] = MaterialFactory::Create("FrustumOcclusion.glsl");
+			mBoneBuffer[i] = BufferFactory::Create(BONE_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
 		}
 		mFrustumMaterial = MaterialFactory::Create("Frustum.glsl");
 
@@ -245,6 +264,7 @@ namespace BHive
 			auto instanceBuffer = mInstanceDataBuffer[i];
 			auto visibilityBuffer = mVisibleBuffer[i];
 			auto indirectBuffer = mIndirectDrawBuffer[i];
+			auto boneBuffer = mBoneBuffer[i];
 
 			auto &batchData = renderer.BeginPass("Set Batch Data", EPassType::OffScreen);
 			batchData.BeginPhase(EPhaseType::Transfer);
@@ -254,6 +274,7 @@ namespace BHive
 			batchData.Emplace<CmdSetBufferData>()(instanceBuffer, &instanceCount, sizeof(uint32_t));
 			batchData.Emplace<CmdSetBufferData>()(instanceBuffer, batch.ObjectDatas.data(), sizeof(ObjectData) * instanceCount, 16U);
 			batchData.Emplace<CmdSetBufferData>()(indirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
+			batchData.Emplace<CmdSetBufferData>()(boneBuffer, batch.BoneDatas.data(), sizeof(glm::mat4) * batch.BoneDatas.size());
 			batchData.EndPhase();
 			renderer.EndPass();
 
@@ -449,11 +470,13 @@ namespace BHive
 		opaqueSet->SetBuffer(0, mInstanceDataBuffer[0]);
 		opaqueSet->SetBuffer(1, mIndirectDrawBuffer[0]);
 		opaqueSet->SetBuffer(2, mVisibleBuffer[0]);
+		opaqueSet->SetBuffer(3, mBoneBuffer[0]);
 
 		auto transparentSet = mSceneSets.TransparentObjectSet.As<ResourceSet>();
 		transparentSet->SetBuffer(0, mInstanceDataBuffer[1]);
 		transparentSet->SetBuffer(1, mIndirectDrawBuffer[1]);
 		transparentSet->SetBuffer(2, mVisibleBuffer[1]);
+		transparentSet->SetBuffer(3, mBoneBuffer[1]);
 	}
 
 	void SceneRenderer::Resize(const glm::uvec2 &size)

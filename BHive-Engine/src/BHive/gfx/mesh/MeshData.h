@@ -34,14 +34,16 @@ namespace BHive
 		uint32_t IndexCount = 0;
 		int32_t MaterialIndex = 0;
 		glm::mat4 Transformation{1.f};
+		AABB Bounds;
 	};
 
 	struct FMeshData
 	{
-		std::vector<FSubMesh> mSubMeshes;
-		std::vector<FVertex> mVertices;
-		std::vector<uint32_t> mIndices;
-		AABB mBoundingBox;
+		std::vector<FSubMesh> SubMeshes;
+		std::vector<FVertex> Vertices;
+		std::vector<uint32_t> Indices;
+		uint32_t MaterialCount;
+		AABB Bounds;
 	};
 
 	template <typename A>
@@ -54,15 +56,15 @@ namespace BHive
 	template <typename A>
 	inline void Serialize(A &ar, FSubMesh &obj)
 	{
-		ar(obj.StartIndex, obj.StartVertex, obj.IndexCount, obj.Transformation, obj.MaterialIndex);
+		ar(obj.StartIndex, obj.StartVertex, obj.IndexCount, obj.Transformation, obj.MaterialIndex, obj.Bounds);
 	}
 
 	template <typename A>
 	inline void Save(A &ar, const FMeshData &obj)
 	{
-		ar(obj.mVertices.size());
-		ar(obj.mIndices.size());
-		ar(obj.mSubMeshes, obj.mBoundingBox, MAKE_BINARY(obj.mVertices.data(), obj.mVertices.size() * sizeof(FVertex)), MAKE_BINARY(obj.mIndices.data(), obj.mIndices.size() * sizeof(uint32_t)));
+		ar(obj.Vertices.size());
+		ar(obj.Indices.size());
+		ar(obj.SubMeshes, MAKE_BINARY(obj.Vertices.data(), obj.Vertices.size() * sizeof(FVertex)), MAKE_BINARY(obj.Indices.data(), obj.Indices.size() * sizeof(uint32_t)));
 	}
 
 	template <typename A>
@@ -73,10 +75,10 @@ namespace BHive
 		ar(num_verts);
 		ar(num_idx);
 
-		obj.mVertices.resize(num_verts);
-		obj.mIndices.resize(num_idx);
+		obj.Vertices.resize(num_verts);
+		obj.Indices.resize(num_idx);
 
-		ar(obj.mSubMeshes, obj.mBoundingBox, MAKE_BINARY(const_cast<FVertex *>(obj.mVertices.data()), obj.mVertices.size() * sizeof(FVertex)),
-		   MAKE_BINARY(const_cast<uint32_t *>(obj.mIndices.data()), obj.mIndices.size() * sizeof(uint32_t)));
+		ar(obj.SubMeshes, MAKE_BINARY(const_cast<FVertex *>(obj.Vertices.data()), obj.Vertices.size() * sizeof(FVertex)),
+		   MAKE_BINARY(const_cast<uint32_t *>(obj.Indices.data()), obj.Indices.size() * sizeof(uint32_t)));
 	}
 } // namespace BHive

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/Core.h"
 #include "Material.h"
+#include "core/Core.h"
 #include "gfx/registries/Handles.h"
 
 namespace BHive
@@ -17,6 +17,8 @@ namespace BHive
 		const auto &GetAll() const { return mMaterials; }
 
 		void SetAll(const std::vector<MaterialPtr> &materials);
+
+		void SetAll(MaterialPtr material);
 
 		void Reset();
 

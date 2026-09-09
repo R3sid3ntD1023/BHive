@@ -14,7 +14,7 @@ namespace BHive
 	{
 		const auto &root_transform = mSkeleton->GetRoot().mTransformation;
 		// const auto &root_transform = mSkeleton->FindBone(root_node)->LocalBindPoseMatrix;
-		const auto &bounds = GetData().mBoundingBox;
+		const auto &bounds = GetData().Bounds;
 
 		auto min = root_transform * glm::vec4(bounds.Min, 1);
 		auto max = root_transform * glm::vec4(bounds.Max, 1);

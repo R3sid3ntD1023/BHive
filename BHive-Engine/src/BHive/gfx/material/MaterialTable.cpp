@@ -46,6 +46,14 @@ namespace BHive
 		mMaterials = materials;
 	}
 
+	void MaterialTable::SetAll(MaterialPtr material)
+	{
+		for (size_t i = 0; i < mMaterials.size(); i++)
+		{
+			mMaterials[i] = material;
+		}
+	}
+
 	MaterialPtr MaterialTable::operator[](size_t index) const
 	{
 		ASSERT(index < mMaterials.size());

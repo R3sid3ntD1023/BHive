@@ -1,12 +1,12 @@
-#include "gfx/animation/SkeletalAnimation.h"
-#include "gfx/mesh/SkeletalMesh.h"
-#include "gfx/animation/Skeleton.h"
-#include "gfx/mesh/StaticMesh.h"
 #include "MeshImportResolver.h"
+#include "TextureImporter.h"
+#include "gfx/animation/SkeletalAnimation.h"
+#include "gfx/animation/Skeleton.h"
 #include "gfx/factories/MaterialFactory.h"
 #include "gfx/factories/MeshFactory.h"
 #include "gfx/factories/TextureFactory.h"
-#include "TextureImporter.h"
+#include "gfx/mesh/SkeletalMesh.h"
+#include "gfx/mesh/StaticMesh.h"
 
 namespace BHive
 {
@@ -19,7 +19,7 @@ namespace BHive
 
 			if (!mLoadedTextures.contains(hash))
 			{
-				if (!texture.Source == EmbeddedTexture::External)
+				if (texture.Source == EmbeddedTexture::External)
 				{
 					return TextureLoader::FromFile(parent_path / texture.Path);
 				}
@@ -27,6 +27,8 @@ namespace BHive
 				{
 					return TextureLoader::LoadFromMemory(texture.EmbeddedData, texture.EmbeddedData.GetSize());
 				}
+
+				mLoadedTextures.insert(hash);
 			}
 		}
 
@@ -39,12 +41,14 @@ namespace BHive
 	{
 	}
 
-	MeshPtr MeshImportResolver::Resolve(const DecodedMesh &decodedMesh)
+	MeshImportResolver::Result MeshImportResolver::Resolve(const DecodedMesh &decodedMesh)
 	{
 		MeshPtr asset{};
 
 		auto name = mOptions.AssetPath.stem().string();
 		auto skeleton = mOptions.Skeleton;
+
+		LOG_TRACE("SubMesh count {}", decodedMesh.MeshData.SubMeshes.size());
 
 		switch (mOptions.MeshType)
 		{
@@ -86,12 +90,16 @@ namespace BHive
 		}
 		}
 
-		if (auto mesh = asset.As<BaseMesh>(); mesh && mOptions.ImportMaterials)
+		MaterialTable materials;
+		materials.Resize(decodedMesh.MeshData.MaterialCount);
+
+		if (mOptions.ImportMaterials)
 		{
-			ResolveMaterials(decodedMesh.Materials, mesh->GetMaterialTable());
+
+			ResolveMaterials(decodedMesh.Materials, materials, decodedMesh.Path);
 		}
 
-		return asset;
+		return {asset, materials};
 	}
 
 	void MeshImportResolver::ResolveAnimations(const std::vector<DecodedAnimation> &animations)
@@ -103,39 +111,38 @@ namespace BHive
 		}
 	}
 
-	void MeshImportResolver::ResolveMaterials(const std::vector<DecodedMaterial> &materials, MaterialTable &material_table)
+	void MeshImportResolver::ResolveMaterials(const std::vector<DecodedMaterial> &materials, MaterialTable &material_table, const std::filesystem::path &assetPath)
 	{
 		TextureResolver resolver{};
 
 		size_t num_materials = materials.size();
 
-		material_table.Resize(num_materials);
-
 		for (size_t i = 0; i < num_materials; i++)
 		{
-			MaterialPtr overrideHandle = mOptions.OverideMaterials.Get(i);
-			auto materialHandle = overrideHandle ? overrideHandle : material_table[i];
-
-			if (!materialHandle)
+			MaterialPtr overrideHandle = mOptions.OverrideMaterials.Get(i);
+			if (overrideHandle)
 			{
-				materialHandle = MaterialFactory::CreateLambert();
-				auto material = materialHandle.As<Material>();
+				material_table.Set(overrideHandle, i);
+				continue;
+			}
 
-				const auto &material_data = materials[i];
-				const auto &textures = material_data.Textures;
-				const auto num_textures = textures.size();
+			auto materialHandle = MaterialFactory::CreateLambert();
+			auto material = materialHandle.As<Material>();
 
-				for (size_t texIdx = 0; texIdx < num_textures; texIdx++)
+			const auto &material_data = materials[i];
+			const auto &textures = material_data.Textures;
+			const auto num_textures = textures.size();
+
+			for (size_t texIdx = 0; texIdx < num_textures; texIdx++)
+			{
+				auto &texture = textures[texIdx];
+
+				auto decoded = resolver.Resolve(texture, assetPath.parent_path());
+				auto handle = TextureFactory::Create2D(decoded);
+
+				if (handle)
 				{
-					auto &texture = textures[texIdx];
-
-					auto decoded = resolver.Resolve(texture, mOptions.AssetPath.parent_path());
-					auto handle = TextureFactory::Create2D(decoded);
-
-					if (handle)
-					{
-						mAdditionalAssets.push_back(handle);
-					}
+					mAdditionalAssets.push_back(handle);
 				}
 			}
 

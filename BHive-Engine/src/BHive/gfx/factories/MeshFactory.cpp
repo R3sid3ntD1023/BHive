@@ -63,15 +63,16 @@ namespace BHive
 		MeshUtils::CalculateTangentsAndBitTangents(vertices.data(), vertices.size());
 
 		FMeshData data{};
-		data.mVertices = vertices;
-		data.mIndices = indces;
-		data.mBoundingBox = AABB(vertices[7].Position, vertices[2].Position);
+		data.Vertices = vertices;
+		data.Indices = indces;
+		data.MaterialCount = 1;
 
-		auto &submesh = data.mSubMeshes.emplace_back();
+		auto &submesh = data.SubMeshes.emplace_back();
 		submesh.StartIndex = 0;
 		submesh.StartVertex = 0;
-		submesh.IndexCount = (uint32_t)data.mIndices.size();
+		submesh.IndexCount = (uint32_t)data.Indices.size();
 		submesh.MaterialIndex = 0;
+		submesh.Bounds = AABB(vertices[7].Position, vertices[2].Position);
 
 		return CreateStatic(data);
 	}
@@ -127,15 +128,16 @@ namespace BHive
 		MeshUtils::CalculateTangentsAndBitTangents(vertices.data(), vertices.size());
 
 		FMeshData data{};
-		data.mVertices = vertices;
-		data.mIndices = indices;
-		data.mBoundingBox = AABB(glm::vec3{-radius}, glm::vec3{radius});
+		data.Vertices = vertices;
+		data.Indices = indices;
+		data.MaterialCount = 1;
 
-		auto &submesh = data.mSubMeshes.emplace_back();
+		auto &submesh = data.SubMeshes.emplace_back();
 		submesh.StartIndex = 0;
 		submesh.StartVertex = 0;
-		submesh.IndexCount = (uint32_t)data.mIndices.size();
+		submesh.IndexCount = (uint32_t)data.Indices.size();
 		submesh.MaterialIndex = 0;
+		submesh.Bounds = AABB(glm::vec3{-radius}, glm::vec3{radius});
 
 		return CreateStatic(data);
 	}
@@ -151,10 +153,10 @@ namespace BHive
 			   FVertex{.Position = {w, 0, -h}, .TexCoord = {1, 0}, .Normal = normal}, FVertex{.Position = {-w, 0, -h}, .TexCoord = {0, 0}, .Normal = normal}};
 
 		FMeshData data;
-		data.mIndices = {0, 1, 2, 2, 3, 0};
-		data.mVertices = vertices;
-		data.mSubMeshes.push_back(FSubMesh{.StartVertex = 0, .StartIndex = 0, .IndexCount = 6, .MaterialIndex = 0});
-		data.mBoundingBox = {{-1, -1, 0}, {1, 1, 0}};
+		data.Indices = {0, 1, 2, 2, 3, 0};
+		data.Vertices = vertices;
+		data.SubMeshes.push_back(FSubMesh{.StartVertex = 0, .StartIndex = 0, .IndexCount = 6, .MaterialIndex = 0, .Bounds = {{-1, -1, 0}, {1, 1, 0}}});
+		data.MaterialCount = 1;
 
 		return CreateStatic(data);
 	}

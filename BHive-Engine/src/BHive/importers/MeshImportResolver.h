@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/core.h"
 #include "MeshImporter.h"
+#include "core/core.h"
 #include "gfx/material/MaterialTable.h"
 #include "gfx/registries/Handles.h"
 
@@ -30,7 +30,7 @@ namespace BHive
 		SkeletonPtr Skeleton;
 
 		// Materials to override if ImportMaterials is false
-		MaterialTable OverideMaterials;
+		MaterialTable OverrideMaterials;
 	};
 
 	class BHIVE_API MeshImportResolver
@@ -38,17 +38,23 @@ namespace BHive
 	public:
 		using AdditionalAssets = std::vector<ResourceHandle>;
 
+		struct Result
+		{
+			MeshPtr Mesh;
+			MaterialTable Materials;
+		};
+
 	public:
 		MeshImportResolver(const FMeshImportOptions &options);
 
-		MeshPtr Resolve(const DecodedMesh &decodedMesh);
+		Result Resolve(const DecodedMesh &decodedMesh);
 
 		const AdditionalAssets &GetAdditonalAssets() const { return mAdditionalAssets; }
 
 	private:
 		void ResolveAnimations(const std::vector<DecodedAnimation> &animations);
 
-		void ResolveMaterials(const std::vector<DecodedMaterial> &materials, MaterialTable &material_table);
+		void ResolveMaterials(const std::vector<DecodedMaterial> &materials, MaterialTable &material_table, const std::filesystem::path &assetPath);
 
 	private:
 		FMeshImportOptions mOptions;

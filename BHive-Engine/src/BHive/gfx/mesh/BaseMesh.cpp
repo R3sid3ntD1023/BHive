@@ -21,21 +21,21 @@ namespace BHive
 	void BaseMesh::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(mData, mMaterialTable);
+		ar(mData);
 	}
 
 	void BaseMesh::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(mData, mMaterialTable);
+		ar(mData);
 
 		Initialize();
 	}
 
 	void BaseMesh::CreateVertexArrayBuffer()
 	{
-		const auto &indices = mData.mIndices;
-		const auto &vertices = mData.mVertices;
+		const auto &indices = mData.Indices;
+		const auto &vertices = mData.Vertices;
 
 		auto indexbuffer = BufferFactory::CreateIndexBuffer((uint32_t)indices.size(), EBufferLifetime::Static, indices.data());
 		auto vertexbuffer = BufferFactory::CreateVertexBuffer(vertices.size() * sizeof(FVertex), EBufferLifetime::Static, vertices.data());
@@ -46,8 +46,7 @@ namespace BHive
 
 	REFLECT(BaseMesh)
 	{
-		BEGIN_REFLECT(BaseMesh)
-		REFLECT_PROPERTY("Materials", mMaterialTable);
+		BEGIN_REFLECT(BaseMesh);
 	}
 
 	void MeshUtils::CalculateTangentsAndBitTangents(FVertex *vertices, size_t size)

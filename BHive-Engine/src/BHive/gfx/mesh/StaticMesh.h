@@ -1,14 +1,10 @@
 #pragma once
 
-#include "core/Core.h"
 #include "BaseMesh.h"
-#include "gfx/material/MaterialTable.h"
-#include "MeshData.h"
+#include "core/Core.h"
 
 namespace BHive
 {
-	class VertexArray;
-
 	class BHIVE_API StaticMesh : public BaseMesh
 	{
 	public:

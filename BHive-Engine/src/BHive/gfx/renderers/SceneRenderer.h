@@ -139,6 +139,8 @@ namespace BHive
 
 		std::array<BufferPtr, 2> mInstanceDataBuffer;
 
+		std::array<BufferPtr, 2> mBoneBuffer;
+
 		SceneView mSceneView;
 
 		Ref<struct FRenderQueue> mRenderQueue;

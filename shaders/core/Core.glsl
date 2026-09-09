@@ -8,7 +8,8 @@ struct ObjectData
 	mat4 model; //model matrix
 	vec4 center_radius;//bounding sphere center
     uint id; // which mesh this instance belongs to	
-	vec3 debugcolor;
+	uint boneOffset; // bone offset
+	vec4 debugcolor;
 };
 
 struct IndirectDrawIndexedCommand
@@ -203,39 +204,4 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir, float scale, in sampler2D dep
 
 
 	return prevTexCoords * weight + current_coords * (1.0 - weight);
-}
-
-//bones
-#define MAX_BONES 200
-#define MAX_BONE_INFLUENCE 4
-
-bool HasBones(ivec4 indices)
-{
-	return indices.x != -1 || indices.y != -1 || indices.z != -1 || indices.w != -1;
-}
-
-mat4 GetBoneMatrix(const in vec4 weights, const in ivec4 indices, const in mat4[MAX_BONES] _bones)
-{
-	if(!HasBones(indices)) return mat4(1.0f);
-
-	mat4 bone_transform = mat4(0.0f);
-
-	for(int i = 0; i < MAX_BONE_INFLUENCE; i++)
-	{
-		if(indices[i] == -1)
-		{
-			continue;
-		}
-
-		if(indices[i] >= MAX_BONES)
-		{
-			break;
-		}
-
-		
-		bone_transform += _bones[indices[i]] * weights[i];
-
-	}
-
-	return bone_transform;
 }

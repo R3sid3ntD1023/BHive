@@ -1,13 +1,13 @@
 #include "MeshImporter.h"
 #include <assimp/Importer.hpp>
+#include <assimp/ProgressHandler.hpp>
 #include <assimp/material.h>
 #include <assimp/postprocess.h>
-#include <assimp/ProgressHandler.hpp>
 #include <assimp/scene.h>
 
+#include "TextureImporter.h"
 #include "gfx/Texture.h"
 #include "gfx/mesh/MeshData.h"
-#include "TextureImporter.h"
 
 namespace BHive
 {
@@ -103,8 +103,8 @@ namespace BHive
 			auto node_matrix = utils::make_mat4(matrix);
 
 			FSubMesh sub_mesh{};
-			sub_mesh.StartVertex = (uint32_t)data.mVertices.size();
-			sub_mesh.StartIndex = (int32_t)data.mIndices.size();
+			sub_mesh.StartVertex = (uint32_t)data.Vertices.size();
+			sub_mesh.StartIndex = (int32_t)data.Indices.size();
 			sub_mesh.IndexCount = mesh->mNumFaces * 3;
 			sub_mesh.Transformation = node_matrix;
 			sub_mesh.MaterialIndex = mesh->mMaterialIndex;
@@ -115,7 +115,7 @@ namespace BHive
 			for (unsigned v = 0; v < mesh->mNumVertices; v++)
 			{
 
-				glm::vec3 position = make_vec3(mesh->mVertices[v]);
+				glm::vec3 position = glm::vec3(node_matrix * glm::vec4(make_vec3(mesh->mVertices[v]), 1.0f));
 				glm::vec2 texcoord = {0.0f, 0.0f};
 				glm::vec3 normal = {0.0f, 0.0f, 0.0f};
 				glm::vec3 tangent = {0.0f, 0.0f, 0.0f};
@@ -156,8 +156,11 @@ namespace BHive
 				vertex.TexCoord = texcoord;
 				vertices[v] = vertex;
 
-				data.mBoundingBox.Min = glm::min(position, data.mBoundingBox.Min);
-				data.mBoundingBox.Max = glm::max(position, data.mBoundingBox.Max);
+				sub_mesh.Bounds.Min = glm::min(position, sub_mesh.Bounds.Min);
+				sub_mesh.Bounds.Max = glm::max(position, sub_mesh.Bounds.Max);
+
+				data.Bounds.Min = glm::min(position, data.Bounds.Min);
+				data.Bounds.Max = glm::max(position, data.Bounds.Max);
 			}
 
 			// process indices
@@ -176,8 +179,8 @@ namespace BHive
 				ExtractBoneWeightsForVertices(out.Bones, vertices, mesh);
 			}
 
-			data.mVertices.insert(data.mVertices.end(), vertices.begin(), vertices.end());
-			data.mIndices.insert(data.mIndices.end(), indices.begin(), indices.end());
+			data.Vertices.insert(data.Vertices.end(), vertices.begin(), vertices.end());
+			data.Indices.insert(data.Indices.end(), indices.begin(), indices.end());
 
 			return sub_mesh;
 		}
@@ -189,7 +192,7 @@ namespace BHive
 			{
 				aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
 				auto submesh = ParseMesh(scene, parent * node->mTransformation, mesh, out);
-				out.MeshData.mSubMeshes.emplace_back(submesh);
+				out.MeshData.SubMeshes.emplace_back(submesh);
 			}
 
 			for (unsigned i = 0; i < node->mNumChildren; i++)
@@ -269,7 +272,7 @@ namespace BHive
 					bones[bone_name].ID = bone_count;
 					bones[bone_name].Name = bone_name;
 					bone_count++;
-					LOG_TRACE("Added Missing Bone {}", bone_name);
+					// LOG_TRACE("Added Missing Bone {}", bone_name);
 				}
 			}
 		}
@@ -297,7 +300,7 @@ namespace BHive
 					ParseAnimationData(animation, channel, frame_data);
 					frames.emplace(bone_name, frame_data);
 
-					LOG_TRACE("Added frames for bone{} ", bone_name);
+					// LOG_TRACE("Added frames for bone{} ", bone_name);
 				}
 
 				DecodedAnimation anim{};
@@ -412,7 +415,7 @@ namespace BHive
 				material.Name = name;
 				auto &textures = material.Textures;
 
-				for (unsigned j = 1; j < 9; j++)
+				for (unsigned j = 1; j < 8; j++)
 				{
 					if (loaded_material->GetTexture(supported_textures[j], 0, &str) == aiReturn_SUCCESS)
 					{
@@ -468,6 +471,7 @@ namespace BHive
 		{
 			utils::ProcessScene(scene, decoded);
 			decoded.Path = path;
+			decoded.MeshData.MaterialCount = (uint32_t)decoded.Materials.size();
 		}
 
 		return decoded;

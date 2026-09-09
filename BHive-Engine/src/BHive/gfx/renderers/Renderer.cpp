@@ -62,6 +62,7 @@ namespace BHive
 			t.Bindings.emplace_back(0, 0u, 1, EShaderStage::Compute | EShaderStage::Vertex, EResourceType::StorageBuffer); // objectdata
 			t.Bindings.emplace_back(1, 0u, 1, EShaderStage::Compute | EShaderStage::Vertex, EResourceType::StorageBuffer); // indirect
 			t.Bindings.emplace_back(2, 0u, 1, EShaderStage::Compute | EShaderStage::Vertex, EResourceType::StorageBuffer); // visibility
+			t.Bindings.emplace_back(3, 0u, 1, EShaderStage::Vertex, EResourceType::StorageBuffer);						   // bones
 			t.BuildLayoutHash();
 			return t;
 		}();

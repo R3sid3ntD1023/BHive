@@ -1,8 +1,9 @@
 #pragma once
 
-#include "runtime/Component.h"
+#include "gfx/material/MaterialTable.h"
 #include "gfx/mesh/SkeletalMesh.h"
 #include "gfx/registries/Handles.h"
+#include "runtime/Component.h"
 
 namespace BHive
 {

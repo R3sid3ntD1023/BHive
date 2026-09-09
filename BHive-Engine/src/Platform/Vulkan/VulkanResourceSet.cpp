@@ -57,7 +57,7 @@ namespace BHive
 
 			writes.emplace_back(write.Write);
 
-			LOG_TRACE("Set {} Binding {} updated into writes!", mSetIndex, binding);
+			// LOG_TRACE("Set {} Binding {} updated into writes!", mSetIndex, binding);
 		}
 
 		if (!writes.empty())
@@ -142,7 +142,7 @@ namespace BHive
 		for (auto &dirtyBinding : mDirtyBindings)
 			dirtyBinding.Bindings.insert(binding);
 
-		LOG_TRACE("Set {} Binding {} marked Dirty!", mSetIndex, binding);
+		// LOG_TRACE("Set {} Binding {} marked Dirty!", mSetIndex, binding);
 	}
 
 	void VulkanResourceSet::Build(const BindingSetTemplate &setTemplate)

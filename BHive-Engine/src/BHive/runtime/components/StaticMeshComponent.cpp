@@ -1,6 +1,6 @@
 #include "StaticMeshComponent.h"
-#include "runtime/GameObject.h"
 #include "gfx/mesh/StaticMesh.h"
+#include "runtime/GameObject.h"
 
 namespace BHive
 {
@@ -18,8 +18,7 @@ namespace BHive
 	void StaticMeshComponent::SetStaticMesh(MeshPtr mesh)
 	{
 		mStaticMeshAsset = mesh;
-		if (mesh && mesh.Is<StaticMesh>())
-			mOverrideMaterials = mesh.As<StaticMesh>()->GetMaterialTable();
+		mOverrideMaterials.Resize(mesh.As<StaticMesh>()->GetMaterialCount());
 	}
 
 	REFLECT(StaticMeshComponent)

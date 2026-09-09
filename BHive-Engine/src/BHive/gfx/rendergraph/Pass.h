@@ -46,8 +46,8 @@ namespace BHive
 	{
 		std::string Name;
 		EPassType Type{};
-		std::vector<FPhase> Phases;
 		FPassState State;
+		std::list<FPhase> Phases;
 
 		void BeginPhase(EPhaseType type = EPhaseType::Graphics);
 
@@ -104,7 +104,5 @@ namespace BHive
 		// global resources
 
 		FPhase *mCurrentPhase = nullptr;
-
-		BufferArena *mBufferArena = nullptr;
 	};
 } // namespace BHive

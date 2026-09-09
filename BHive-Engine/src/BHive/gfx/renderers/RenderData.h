@@ -1,10 +1,10 @@
 #pragma once
 
 #include "core/Core.h"
-#include "gfx/mesh/MeshData.h"
-#include "gfx/material/MaterialTable.h"
 #include "core/math/Transform.h"
 #include "gfx/Color.h"
+#include "gfx/material/MaterialTable.h"
+#include "gfx/mesh/MeshData.h"
 #include "gfx/registries/Handles.h"
 
 namespace BHive
@@ -40,6 +40,8 @@ namespace BHive
 
 		FTransform Transform;
 
+		MaterialTable Materials;
+
 		int32_t EntityID = -1;
 
 		std::vector<glm::mat4> InstanceTransforms;
@@ -53,8 +55,6 @@ namespace BHive
 
 	struct FSubMeshSubmission
 	{
-		AABB BoundingBox{};
-
 		FSubMesh SubMesh;
 
 		uint32_t MeshIndex = 0;

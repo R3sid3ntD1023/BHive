@@ -1,6 +1,6 @@
 #include "RenderQueue.h"
-#include "gfx/mesh/BaseMesh.h"
 #include "Renderer.h"
+#include "gfx/mesh/BaseMesh.h"
 
 namespace BHive
 {
@@ -54,7 +54,7 @@ namespace BHive
 		auto &ctx = Contexts.at(ctxIndex);
 		ctx.Active = true;
 		ctx.VAO = mesh.As<BaseMesh>()->GetVertexArray();
-		const auto &materials = mesh.As<BaseMesh>()->GetMaterialTable();
+		const auto &materials = ctx.Materials;
 		const auto &subMeshes = mesh.As<BaseMesh>()->GetSubMeshes();
 
 		for (auto &s : subMeshes)
@@ -67,7 +67,6 @@ namespace BHive
 			sub.Context = {ctxIndex, ctx.Generation};
 			sub.SubMesh = s;
 			sub.Material = material;
-			sub.BoundingBox = mesh.As<BaseMesh>()->GetBoundingBox();
 			sub.BitFlags[0] = material.As<Material>()->IsTransparent();
 			sub.BitFlags[1] = material.As<Material>()->ShouldCastShadows();
 			AddSubmission(sub);
@@ -87,18 +86,21 @@ namespace BHive
 		ctx.BoneTransforms = request.BoneTransforms;
 		ctx.VAO = mesh->GetVertexArray();
 		ctx.Generation = ++mGenerationVersion;
+		ctx.Materials = request.Materials;
 
 		const auto &subMeshes = mesh->GetSubMeshes();
 		for (auto &s : subMeshes)
 		{
 			auto material = request.Materials.Get(s.MaterialIndex);
 			if (!material)
+			{
+				LOG_INFO("No material found at index {}", s.MaterialIndex);
 				continue;
+			}
 
 			FSubMeshSubmission sub{};
 			sub.Context = {ctxIndex, mGenerationVersion};
 			sub.SubMesh = s;
-			sub.BoundingBox = mesh->GetBoundingBox();
 			sub.BitFlags[0] = material.As<Material>()->IsTransparent();
 			sub.BitFlags[1] = material.As<Material>()->ShouldCastShadows();
 			sub.Material = material;

@@ -41,6 +41,8 @@ namespace BHive
 		EditorCameraController mCameraController;
 		uint32_t mCurrentCameraIndex = 0;
 		MaterialPtr mStandardMaterial;
+		MeshPtr mCharacter;
+		MaterialTable mCharacterMaterials;
 	};
 
 } // namespace BHive

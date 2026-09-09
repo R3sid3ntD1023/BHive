@@ -16,8 +16,8 @@ layout(std140, set = 0, binding = 0) uniform CameraBuffer
 	mat4 u_view;
 	vec4 u_near_far;
 	vec4 u_camera_position;
+	Frustum frustum;
 };
-
 
 layout(std430, set = 3, binding = 0) readonly buffer Objects
 {
@@ -29,6 +29,11 @@ layout(std430, set = 3, binding = 2) readonly buffer Visible
 {
     uint visibleCount;
     uint visibleIndices[];
+};
+
+layout(std430, set = 3, binding = 3) readonly buffer Bones
+{
+	mat4 bones[];
 };
 
 
@@ -45,10 +50,15 @@ layout(location = 0) out struct VS_OUT
 	vec3 DebugColor;
 } vs_out;
 
+mat4 GetBoneMatrix(const in ivec4 ids, const in vec4 weights, uint boneOffset);
+
 void main()
 {
 	uint instanceID = visibleIndices[gl_InstanceIndex];
-	mat4 model =  objects[instanceID].model;// * bone_matrix;
+	ObjectData object = objects[instanceID];
+
+	//mat4 boneMatrix = GetBoneMatrix(vBoneIds, vWeights, object.boneOffset);
+	mat4 model =  object.model ;//* boneMatrix;
 	vec4 worldPos = model * vec4(vPosition, 1);
 
 	mat3 normal_matrix = transpose(inverse(mat3(model)));
@@ -66,5 +76,32 @@ void main()
 	vs_out.Color = vColor;
 	vs_out.InstanceID = float(gl_InstanceIndex);
 	vs_out.DrawID = float(gl_BaseInstance);
-	vs_out.DebugColor = objects[instanceID].debugcolor;
+	vs_out.DebugColor = objects[instanceID].debugcolor.xyz;
+}
+
+#define MAX_BONE_INFLUENCE 4
+
+bool HasBones(ivec4 indices)
+{
+	return indices.x != -1 || indices.y != -1 || indices.z != -1 || indices.w != -1;
+}
+
+mat4 GetBoneMatrix(const in ivec4 ids, const in vec4 weights, uint offset)
+{
+	if(!HasBones(ids)) return mat4(1.0f);
+
+	mat4 bone = mat4(0.0f);
+
+	for(int i = 0; i < MAX_BONE_INFLUENCE; i++)
+	{
+		if(ids[i] == -1)
+		{
+			continue;
+		}
+
+		bone += bones[offset + ids[i]] * weights[i];
+
+	}
+
+	return bone;
 }

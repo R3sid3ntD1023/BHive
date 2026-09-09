@@ -29,7 +29,6 @@ namespace BHive
 
 	void ResourceRegistriesManager::Shutdown()
 	{
-		Registries.clear();
 
 		UnRegisterRegistry<Texture>();
 		UnRegisterRegistry<Material>();
@@ -42,6 +41,8 @@ namespace BHive
 		UnRegisterRegistry<Pipeline>();
 		UnRegisterRegistry<Shader>();
 		UnRegisterRegistry<ResourceSet>();
+
+		Registries.clear();
 	}
 
 	IResourceRegistry *ResourceRegistriesManager::GetRegistry(uint32_t type)

@@ -1,8 +1,7 @@
 #pragma once
 
-#include "asset/Asset.h"
-#include "gfx/material/MaterialTable.h"
 #include "MeshData.h"
+#include "asset/Asset.h"
 #include "gfx/registries/Handles.h"
 
 namespace BHive
@@ -24,25 +23,25 @@ namespace BHive
 
 		VertexArrayPtr GetVertexArray() const { return mVertexArray; }
 
-		virtual AABB GetBoundingBox() const { return mData.mBoundingBox; }
-
 		const FMeshData &GetData() const { return mData; }
 
-		const std::vector<FSubMesh> &GetSubMeshes() const { return mData.mSubMeshes; }
+		const auto &GetSubMeshes() const { return mData.SubMeshes; }
 
-		MaterialTable &GetMaterialTable() { return mMaterialTable; }
+		size_t GetMaterialCount() const { return mData.MaterialCount; }
 
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		void Load(cereal::BinaryInputArchive &ar) override;
 
-		iterator begin() { return mData.mSubMeshes.begin(); }
+		iterator begin() { return mData.SubMeshes.begin(); }
 
-		iterator end() { return mData.mSubMeshes.end(); }
+		iterator end() { return mData.SubMeshes.end(); }
 
-		const_iterator begin() const { return mData.mSubMeshes.begin(); }
+		const_iterator begin() const { return mData.SubMeshes.begin(); }
 
-		const_iterator end() const { return mData.mSubMeshes.end(); }
+		const_iterator end() const { return mData.SubMeshes.end(); }
+
+		virtual AABB GetBoundingBox() const { return mData.Bounds; }
 
 		REFLECTABLEV(Asset)
 
@@ -53,8 +52,6 @@ namespace BHive
 		FMeshData mData;
 
 		VertexArrayPtr mVertexArray;
-
-		MaterialTable mMaterialTable;
 	};
 
 	struct BHIVE_API MeshUtils

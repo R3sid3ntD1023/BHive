@@ -18,8 +18,7 @@ namespace BHive
 	void SkeletalMeshComponent::SetSkeletalMesh(MeshPtr mesh)
 	{
 		SkeletalMeshAsset = mesh;
-		if (mesh && mesh.Is<SkeletalMesh>())
-			mOverrideMaterials = mesh.As<SkeletalMesh>()->GetMaterialTable();
+		mOverrideMaterials.Resize(mesh.As<SkeletalMesh>()->GetMaterialCount());
 	}
 
 	REFLECT(SkeletalMeshComponent)

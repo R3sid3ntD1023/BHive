@@ -1,28 +1,28 @@
 #include "RuntimeLayer.h"
 
+#include "Inspectors/Inspect.h"
 #include "core/Application.h"
-#include "core/platform/Platform.h"
 #include "core/Time.h"
+#include "core/layers/ImGuiLayer.h"
+#include "core/platform/Platform.h"
 #include "gfx/Texture.h"
-#include "gui/Gui.h"
-#include "importers/TextureImporter.h"
-#include "gfx/material/Material.h"
+#include "gfx/debug/ImageDebugger.h"
+#include "gfx/factories/MeshFactory.h"
+#include "gfx/factories/TextureFactory.h"
+#include "gfx/imgui/IImGuiProvider.h"
 #include "gfx/material/EmissiveMaterial.h"
-#include "importers/MeshImporter.h"
-#include "importers/MeshImportResolver.h"
+#include "gfx/material/LambertMaterial.h"
+#include "gfx/material/Material.h"
+#include "gfx/material/StandardMaterial.h"
 #include "gfx/mesh/StaticMesh.h"
 #include "gfx/renderers/Renderer.h"
-#include "Inspectors/Inspect.h"
-#include "gfx/material/LambertMaterial.h"
-#include "gfx/debug/ImageDebugger.h"
-#include "gfx/material/StandardMaterial.h"
 #include "gfx/renderers/postprocess/AcesMaterial.h"
 #include "gfx/renderers/postprocess/BloomMaterial.h"
 #include "gfx/renderers/postprocess/ColorGradingMaterial.h"
-#include "gfx/imgui/IImGuiProvider.h"
-#include "core/layers/ImGuiLayer.h"
-#include "gfx/factories/MeshFactory.h"
-#include "gfx/factories/TextureFactory.h"
+#include "gui/Gui.h"
+#include "importers/MeshImportResolver.h"
+#include "importers/MeshImporter.h"
+#include "importers/TextureImporter.h"
 
 #define ENABLE_RENDERING 1
 
@@ -45,7 +45,8 @@ namespace BHive
 		auto decoded = MeshImporter::Import("C:/Users/dariu/Documents/Cube.glb");
 		std::vector<Ref<Asset>> additional_assets;
 		MeshImportResolver resolver(import_options);
-		mMesh = resolver.Resolve(decoded);
+		auto result = resolver.Resolve(decoded);
+		mMesh = result.Mesh;
 
 		mSphere = MeshFactory::CreateSphere(1.0f);
 		mPlane = MeshFactory::CreatePlane(10.f, 10.f);
@@ -269,7 +270,8 @@ namespace BHive
 					FMeshImportOptions import_options{};
 					auto decoded = MeshImporter::Import(info);
 					MeshImportResolver resolver(import_options);
-					mMesh = resolver.Resolve(decoded);
+					auto result = resolver.Resolve(decoded);
+					mMesh = result.Mesh;
 				}
 			}
 

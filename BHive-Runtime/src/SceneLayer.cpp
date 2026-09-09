@@ -23,10 +23,11 @@
 
 namespace BHive
 {
-	FTransform sphereTransform{{5, -1.f, 2}};
+	FTransform sphereTransform{};
 	std::vector<FTransform> transforms;
-	ContextHandle sSphereHandle;
+	std::array<ContextHandle, 9> sSphereHandle;
 	ContextHandle sPlaneHandle;
+	ContextHandle sCharacterHandle;
 
 	void SceneLayer::OnAttach(Application &app)
 	{
@@ -39,10 +40,10 @@ namespace BHive
 
 		mViewportSize = window.GetSize();
 
-		mCameras[0] = EditorCamera(75.f, aspect, 0.1f, 100.f);
+		mCameras[0] = EditorCamera(75.f, aspect, 0.1f, 1000.f);
 		mCameras[0].SetStartState({0.f, 0.f, 0.f}, -90.0f, 0.0f);
 
-		mCameras[1] = EditorCamera(75.f, aspect, 0.1f, 500.f);
+		mCameras[1] = EditorCamera(75.f, aspect, 0.1f, 1000.f);
 		mCameras[1].SetStartState({0.f, 10.f, 10.f}, -90.0f, -45.0f);
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
@@ -52,16 +53,6 @@ namespace BHive
 		// mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
 		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
 		// mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
-
-		/*FMeshImportData import_data{};
-		FMeshImportOptions import_options{.ImportMaterials = false};
-
-		if (MeshImporter::Import("C:/Users/dariu/Documents/Cube.glb", import_data))
-		{
-			std::vector<Ref<Asset>> additional_assets;
-			MeshImportResolver resolver(import_data, import_options, additional_assets);
-			mMesh = Cast<StaticMesh>(resolver.Resolve());
-		}*/
 
 		auto mesh = MeshFactory::CreateSphere(1.0f, 32u, 32u);
 		auto plane = MeshFactory::CreatePlane(10.f, 10.f);
@@ -97,19 +88,32 @@ namespace BHive
 				material->SetMetalness(0.0f);
 				material->SetRoughness(0.5f);
 			}
+
+			{
+				FMeshImportOptions import_options{};
+				import_options.MeshType = EMeshType::StaticMesh;
+				import_options.OverrideMaterials = mCharacterMaterials;
+				auto decodedMesh = MeshImporter::Import("C://Users//dariu//Documents//Erika.gltf");
+				MeshImportResolver resolver(import_options);
+				auto result = resolver.Resolve(decodedMesh);
+				mCharacter = result.Mesh;
+				mCharacterMaterials = result.Materials;
+				mCharacterMaterials.SetAll(mStandardMaterial);
+			}
 		}
 
 		mCameraController.SetCamera(&mCameras[0]);
 
+		uint32_t count = 0;
 		for (int32_t i = -1; i <= 1; i++)
 		{
-			for (int32_t j = -1; j <= 1; j++)
+			for (int32_t j = -1; j <= 1; j++, count++)
 			{
 				FMeshSubmissionRequest request{};
 				request.Mesh = mesh;
 				request.Materials = mMaterialTables[2];
 				request.Transform = transforms.emplace_back(FTransform{{i * 3.0f, 0.0f, j * 3.0f}});
-				mSceneRenderer->SubmitMesh(request, sSphereHandle);
+				mSceneRenderer->SubmitMesh(request, sSphereHandle[count]);
 			}
 		}
 
@@ -125,11 +129,21 @@ namespace BHive
 		// mSceneRenderer->SubmitMesh(request);
 
 		FMeshSubmissionRequest request{};
-		request.Materials = mMaterialTables[1];
+		request.Materials = mMaterialTables[2];
 		request.Transform = FTransform{{0, 0, 0}};
 		request.Mesh = plane;
-
 		mSceneRenderer->SubmitMesh(request, sPlaneHandle);
+
+		// if (mCharacter)
+		// {
+
+		// 	FMeshSubmissionRequest request{};
+		// 	request.Mesh = mCharacter;
+		// 	request.Materials = mCharacterMaterials;
+		// 	request.Transform = sphereTransform;
+		// 	// request.BoneTransforms = mesh->GetSkeleton()->GetRestPoseTransforms();
+		// 	mSceneRenderer->SubmitMesh(request, sCharacterHandle);
+		// }
 	}
 
 	void SceneLayer::OnDetach()
@@ -138,7 +152,7 @@ namespace BHive
 
 	void SceneLayer::OnUpdate(float time)
 	{
-		sphereTransform.AddRotation({0, .1f, 0});
+		// sphereTransform.AddRotation({0, .1f, 0});
 
 		if (mViewportActive)
 			mCameraController.Update(time);
@@ -251,21 +265,22 @@ namespace BHive
 		if (ImGui::Begin("Actions"))
 		{
 			if (ImGui::Button("Remove Sphere"))
-				mSceneRenderer->UpdateMesh(sSphereHandle, {});
+				mSceneRenderer->UpdateMesh(sSphereHandle[0], {});
 
 			if (ImGui::Button("Load Mesh"))
 			{
-				auto info = Platform::OpenFile("Mesh (*.glb;*.gltf)\0*.glb;*.gltf\0");
+				auto info = Platform::OpenFile("Mesh (*.glb;*.gltf)//0*.glb;*.gltf//0");
 				if (info)
 				{
-					FMeshImportOptions import_options{.OverideMaterials = mMaterialTables[0]};
+					FMeshImportOptions import_options{};
+					import_options.OverrideMaterials = mCharacterMaterials;
+					import_options.MeshType = EMeshType::StaticMesh;
 
 					auto decoded = MeshImporter::Import(info);
 					MeshImportResolver resolver(import_options);
-					mMesh = resolver.Resolve(decoded);
-
-					mMesh.As<BaseMesh>()->GetMaterialTable() = mMaterialTables[0];
-					mSceneRenderer->UpdateMesh(sSphereHandle, mMesh);
+					auto result = resolver.Resolve(decoded);
+					mMesh = result.Mesh;
+					mSceneRenderer->UpdateMesh(sSphereHandle[0], mMesh);
 				}
 			}
 
@@ -273,7 +288,7 @@ namespace BHive
 			{
 				if (ImGui::Button(name.c_str()))
 				{
-					auto info = Platform::OpenFile("Texture (*.png;*.jpeg)\0*.png;*.jpeg\0");
+					auto info = Platform::OpenFile("Texture (*.png;*.jpeg)//0*.png;*.jpeg//0");
 					if (info)
 					{
 						auto decoded = TextureLoader::FromFile(info);
@@ -299,13 +314,16 @@ namespace BHive
 
 			if (ImGui::Button("Load HDR Environment"))
 			{
-				auto info = Platform::OpenFile("HDR Environment (*.hdr)\0*.hdr\0");
+				auto info = Platform::OpenFile("HDR Environment (*.hdr)//0*.hdr//0");
 				if (info)
 				{
 					auto decoded = TextureLoader::FromFile(info);
 					mSceneRenderer->SetEnvironmentTexture(TextureFactory::Create2D(decoded));
 				}
 			}
+
+			if (Inspect::get().inspect("Transform", sphereTransform))
+				mSceneRenderer->UpdateTransform(sCharacterHandle, sphereTransform);
 		}
 
 		ImGui::End();
