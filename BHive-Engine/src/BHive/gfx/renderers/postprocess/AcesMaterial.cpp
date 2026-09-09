@@ -7,7 +7,7 @@
 namespace BHive
 {
 
-	TexturePtr AcesMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
+	TexturePtr AcesMaterial::AddToGraph(Graph &graph, const FPostProcessTextureSet &set)
 	{
 		auto output = mFramebuffer.As<Framebuffer>()->GetColorAttachment();
 		auto input = set.PrevOutput;

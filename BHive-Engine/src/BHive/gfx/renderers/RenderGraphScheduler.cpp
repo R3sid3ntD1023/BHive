@@ -1,9 +1,9 @@
 #include "RenderGraphScheduler.h"
-#include "gfx/RenderGraph.h"
+#include "gfx/rendergraph/Graph.h"
 
 namespace BHive
 {
-	void RenderGraphScheduler::BeginFrame(RenderGraph &graph, const PassConfig &config)
+	void RenderGraphScheduler::BeginFrame(Graph &graph, const PassConfig &config)
 	{
 		mGraph = &graph;
 		mConfig = &config;
@@ -12,7 +12,7 @@ namespace BHive
 
 	void RenderGraphScheduler::Finalize()
 	{
-		for (auto& d : mDeferred)
+		for (auto &d : mDeferred)
 		{
 			auto &pass = mGraph->AddPass(d.Name, d.Type);
 			d.Fn(pass);

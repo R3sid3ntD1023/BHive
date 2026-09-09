@@ -11,7 +11,7 @@ namespace BHive
 		static inline constexpr uint32_t MipCount = 5;
 
 	public:
-		TexturePtr AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set) override;
+		TexturePtr AddToGraph(Graph &graph, const FPostProcessTextureSet &set) override;
 
 		void Init(const glm::uvec2 &size) override;
 

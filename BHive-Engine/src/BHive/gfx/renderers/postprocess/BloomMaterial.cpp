@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-	TexturePtr BloomMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
+	TexturePtr BloomMaterial::AddToGraph(Graph &graph, const FPostProcessTextureSet &set)
 	{
 		auto bloomOutput = mFramebuffers[0].As<Framebuffer>()->GetColorAttachment();
 		auto compositeOutput = mFramebuffers[1].As<Framebuffer>()->GetColorAttachment();

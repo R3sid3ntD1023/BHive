@@ -96,7 +96,7 @@ namespace BHive
 
 	void Renderer::BeginFrame()
 	{
-		mGraph = RenderGraph{};
+		mGraph = Graph{};
 		mScheduler.BeginFrame(mGraph, mPassConfig);
 
 		mFrameActive = true;
@@ -117,7 +117,7 @@ namespace BHive
 		EndBatching();
 	}
 
-	void Renderer::ExecuteGraph(RenderGraph &graph)
+	void Renderer::ExecuteGraph(Graph &graph)
 	{
 		mAPI->SubmitGraph(graph);
 	}
@@ -132,7 +132,7 @@ namespace BHive
 		return mData->WhiteTexture;
 	}
 
-	RenderGraph &Renderer::GetActiveGraph()
+	Graph &Renderer::GetActiveGraph()
 	{
 		if (!mFrameActive)
 			BeginFrame();

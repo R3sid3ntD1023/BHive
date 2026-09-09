@@ -49,7 +49,7 @@ namespace BHive
 
 		void EndFrame();
 
-		void ExecuteGraph(RenderGraph &graph);
+		void ExecuteGraph(Graph &graph);
 
 		void ResetStats();
 
@@ -61,7 +61,7 @@ namespace BHive
 
 #pragma region RENDERGRAPH
 
-		RenderGraph &GetActiveGraph();
+		Graph &GetActiveGraph();
 
 		FPass &GetActivePass();
 
@@ -98,7 +98,7 @@ namespace BHive
 		RenderGraphScheduler mScheduler;
 
 		// rendergraph
-		RenderGraph mGraph;
+		Graph mGraph;
 
 		PassConfig mPassConfig;
 

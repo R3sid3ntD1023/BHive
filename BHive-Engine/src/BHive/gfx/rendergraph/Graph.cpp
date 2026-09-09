@@ -1,20 +1,15 @@
-#include "RenderGraph.h"
-#include "gfx/Texture.h"
+#include "Graph.h"
 
 namespace BHive
 {
-	void RenderGraph::Append(const RenderGraph &graph)
+	void Graph::Append(Graph &graph)
 	{
 		auto &passes = graph.GetPasses();
-		mPasses.insert(mPasses.end(), std::make_move_iterator(passes.begin()), std::make_move_iterator(passes.end()));
+		mPasses.insert(mPasses.end(), passes.begin(), passes.end());
+		graph.mPasses.clear();
 	}
 
-	bool RenderGraph::Empty() const
-	{
-		return mPasses.empty();
-	}
-
-	FPass &RenderGraph::AddPass(const std::string &name, EPassType type, FPassState state)
+	FPass &Graph::AddPass(const std::string &name, EPassType type, FPassState state)
 	{
 		auto &pass = mPasses.emplace_back();
 		pass.Name = name;
@@ -23,17 +18,7 @@ namespace BHive
 		return pass;
 	}
 
-	const std::vector<FPass> &RenderGraph::GetPasses() const
-	{
-		return mPasses;
-	}
-
-	std::vector<FPass> &RenderGraph::GetPasses()
-	{
-		return mPasses;
-	}
-
-	void RenderGraph::DebugPrint()
+	void Graph::DebugPrint()
 	{
 		for (auto &pass : mPasses)
 		{

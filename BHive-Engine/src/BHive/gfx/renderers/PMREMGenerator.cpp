@@ -45,7 +45,7 @@ namespace BHive
 		prefilterMaterial->SetTexture("environmentMap", TextureBinding(environmentTextures.Environment));
 		prefilterMaterial->SetParam("u_envResolution", MaterialParam(mSettings.EnvironmentMapSize));
 
-		RenderGraph graph;
+		Graph graph;
 		auto &pass = graph.AddPass("Generate PMREM Maps", EPassType::OffScreen);
 
 		// Phase 0 : equirectangular -> cubemap
@@ -153,7 +153,7 @@ namespace BHive
 
 		material->SetTexture("brdfLutTexture", TextureBinding(brdfLUT));
 
-		RenderGraph graph;
+		Graph graph;
 		auto &pass = graph.AddPass("Generate BRDFLut", EPassType::OffScreen);
 		pass.BeginPhase(EPhaseType::Compute);
 		pass.Emplace<CmdBindMaterial>()(material);

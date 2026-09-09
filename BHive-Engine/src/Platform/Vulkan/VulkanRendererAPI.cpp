@@ -58,13 +58,13 @@ namespace BHive
 	vk::Result VulkanRendererAPI::RenderFrame(VulkanSwapChain *swapChain)
 	{
 
-		RenderGraph finalGraph;
+		Graph finalGraph;
 		for (auto &g : mSubmittedGraphs)
 			finalGraph.Append(g);
 
 		mSubmittedGraphs.clear();
 
-		if (finalGraph.Empty())
+		if (finalGraph.IsEmpty())
 		{
 			return vk::Result::eSuccess;
 		}
@@ -72,9 +72,9 @@ namespace BHive
 		return ExecuteFinalGraph(swapChain, finalGraph);
 	}
 
-	void VulkanRendererAPI::SubmitGraph(const RenderGraph &graph)
+	void VulkanRendererAPI::SubmitGraph(const Graph &graph)
 	{
-		if (!graph.Empty())
+		if (!graph.IsEmpty())
 			mSubmittedGraphs.emplace_back(graph);
 	}
 
@@ -107,7 +107,7 @@ namespace BHive
 		}
 	}
 
-	vk::Result VulkanRendererAPI::ExecuteFinalGraph(VulkanSwapChain *swapChain, RenderGraph &graph)
+	vk::Result VulkanRendererAPI::ExecuteFinalGraph(VulkanSwapChain *swapChain, Graph &graph)
 	{
 		auto current_frame = mCurrentFrame;
 		auto &cmd = VulkanBackend::GetCommandBuffer(current_frame);

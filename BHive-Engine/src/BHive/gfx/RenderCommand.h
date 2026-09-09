@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/Core.h"
-#include "gfx/RenderGraph.h"
 #include "renderers/Renderer.h"
 #include "gfx/RendererAPI.h"
 

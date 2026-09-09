@@ -6,7 +6,7 @@
 
 namespace BHive
 {
-	TexturePtr ColorGradingMaterial::AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set)
+	TexturePtr ColorGradingMaterial::AddToGraph(Graph &graph, const FPostProcessTextureSet &set)
 	{
 		auto input = set.PrevOutput;
 		auto output = mFramebuffer.As<Framebuffer>()->GetColorAttachment();

@@ -4,7 +4,6 @@
 #include "gfx/Enumerations.h";
 #include "gfx/registries/Handles.h"
 #include "gfx/resources/ImageSubResourceRange.h"
-#include "GlobalBinding.h"
 
 namespace BHive
 {
@@ -60,10 +59,6 @@ namespace BHive
 		std::vector<FBufferTransition> BufferTransitions;
 
 		ImageSubresourceRange ColorRange{};
-
-		/*	std::unordered_map<GlobalBinding, BufferPtr> BoundBuffers;
-
-			std::unordered_map<GlobalBinding, TexturePtr> BoundTextures;*/
 
 		std::vector<ResourceSetPtr> ResourceSets;
 

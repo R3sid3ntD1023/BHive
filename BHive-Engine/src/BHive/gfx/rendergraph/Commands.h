@@ -10,10 +10,6 @@
 
 namespace BHive
 {
-	class Pipeline;
-	class Material;
-	class BufferBase;
-	class VertexArray;
 
 	struct CmdGenerateMipMaps : FCommand
 	{

@@ -48,7 +48,7 @@ namespace BHive
 
 		vk::Result RenderFrame(VulkanSwapChain *swapChain);
 
-		void SubmitGraph(const RenderGraph &graph) override;
+		void SubmitGraph(const Graph &graph) override;
 
 		void QueueDeletion(FQeueuDeletionFunc &&fn) override;
 
@@ -59,7 +59,7 @@ namespace BHive
 	private:
 		void ProcessDeletionQueue(uint32_t frame);
 
-		vk::Result ExecuteFinalGraph(VulkanSwapChain *swapChain, RenderGraph &graph);
+		vk::Result ExecuteFinalGraph(VulkanSwapChain *swapChain, Graph &graph);
 
 		void ExecutePass(const FPass &pass, FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
 
@@ -80,7 +80,7 @@ namespace BHive
 	private:
 		Ref<VulkanBackend> mBackend;
 
-		std::vector<RenderGraph> mSubmittedGraphs;
+		std::vector<Graph> mSubmittedGraphs;
 
 		std::vector<PendingDeletion> mDeletionQueue;
 

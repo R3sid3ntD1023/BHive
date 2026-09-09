@@ -13,7 +13,7 @@ namespace BHive
 
 		void Resize(const glm::uvec2 &size) override;
 
-		TexturePtr AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set) override;
+		TexturePtr AddToGraph(Graph &graph, const FPostProcessTextureSet &set) override;
 
 		struct FParams
 		{

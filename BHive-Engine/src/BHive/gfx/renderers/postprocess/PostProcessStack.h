@@ -72,7 +72,7 @@ namespace BHive
 			}
 		}
 
-		TexturePtr Build(RenderGraph &graph, FPostProcessTextureSet &set)
+		TexturePtr Build(Graph &graph, FPostProcessTextureSet &set)
 		{
 			auto output = set.SceneColor;
 

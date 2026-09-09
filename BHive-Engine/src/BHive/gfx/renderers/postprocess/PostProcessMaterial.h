@@ -1,10 +1,12 @@
 #pragma once
 
-#include "gfx/RenderGraph.h"
+#include "gfx/rendergraph/Graph.h"
 
 namespace BHive
 {
-	struct BHIVE_API FPostProcessTextureSet
+	class Graph;
+
+	struct FPostProcessTextureSet
 	{
 		TexturePtr SceneColor;
 		TexturePtr SceneDepth;
@@ -20,7 +22,7 @@ namespace BHive
 
 		virtual void Resize(const glm::uvec2 &size) = 0;
 
-		virtual TexturePtr AddToGraph(RenderGraph &graph, const FPostProcessTextureSet &set) = 0;
+		virtual TexturePtr AddToGraph(Graph &graph, const FPostProcessTextureSet &set) = 0;
 	};
 
 } // namespace BHive

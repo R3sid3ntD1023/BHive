@@ -8,6 +8,7 @@
 #include "RenderQueue.h"
 #include "ShadowRenderer.h"
 #include "core/Core.h"
+#include "core/math/Frustum.h"
 #include "postprocess/PostProcessStack.h"
 
 namespace BHive

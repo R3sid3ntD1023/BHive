@@ -1,29 +1,29 @@
 #pragma once
 
-#include <memory>
-#include <vector>
 #include <any>
-#include <variant>
 #include <array>
-#include <queue>
 #include <cstdint>
 #include <filesystem>
+#include <fstream>
 #include <functional>
+#include <future>
+#include <iostream>
+#include <list>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <set>
+#include <sstream>
+#include <string>
+#include <thread>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
-#include <set>
-#include <iostream>
-#include <string>
-#include <sstream>
+#include <variant>
+#include <vector>
 #include <xhash>
-#include <future>
-#include <thread>
-#include <fstream>
-#include <type_traits>
-#include <mutex>
-
 
 #include <algorithm>
 #include <chrono>
-#include <iomanip>
 #include <fmt/format.h>
+#include <iomanip>

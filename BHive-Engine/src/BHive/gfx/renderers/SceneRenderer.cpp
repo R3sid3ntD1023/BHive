@@ -27,12 +27,22 @@
 
 namespace BHive
 {
+#define MULTI_DRAW_INDIRECT_STRIDE sizeof(MultiDrawIndirectCommand)
 #define MAX_OBJECTS 10
 #define VISIBILITY_BUFFER_SIZE 16 + 16 * MAX_OBJECTS
 #define OBJECT_STRIDE sizeof(ObjectData)
 #define OBJECT_BUFFER_SIZE 16 + OBJECT_STRIDE *MAX_OBJECTS
 #define DRAWCOMMAND_BUFFER_SIZE MULTI_DRAW_INDIRECT_STRIDE *MAX_OBJECTS
 #define MAX_LIGHTS Lights::sMaxLights
+
+	struct MultiDrawIndirectCommand
+	{
+		uint32_t indexCount = 0;
+		uint32_t instanceCount = 0;
+		uint32_t firstIndex = 0;
+		int32_t vertexOffset = 0;
+		uint32_t firstInstance = 0;
+	};
 
 	struct alignas(16) ObjectData
 	{

@@ -1,10 +1,11 @@
 #pragma once
 
-#include "gfx/RenderGraph.h"
-
+#include "gfx/rendergraph/Graph.h"
 
 namespace BHive
 {
+	class Graph;
+
 	struct PassConfig
 	{
 		std::string DefaultPassName = "Default Pass";
@@ -12,12 +13,10 @@ namespace BHive
 		bool DebugMarkers = false;
 	};
 
-	
-
 	class RenderGraphScheduler
 	{
 	public:
-		void BeginFrame(RenderGraph &graph, const PassConfig& config);
+		void BeginFrame(Graph &graph, const PassConfig &config);
 		void Finalize();
 
 		FPass &GetActivePass();
@@ -29,10 +28,10 @@ namespace BHive
 	private:
 		void DebugPass(const std::string &msg);
 
-		RenderGraph *mGraph = nullptr;
+		Graph *mGraph = nullptr;
 		const PassConfig *mConfig = nullptr;
 		FPass *mActivePass = nullptr;
-		
+
 		struct FDeferred
 		{
 			std::string Name;
@@ -42,4 +41,4 @@ namespace BHive
 
 		std::vector<FDeferred> mDeferred;
 	};
-}
+} // namespace BHive
