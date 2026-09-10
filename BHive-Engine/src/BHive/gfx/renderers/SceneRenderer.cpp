@@ -51,7 +51,7 @@ namespace BHive
 		glm::mat4 ModelMatrix{1.0f};				  // model matrix
 		glm::vec4 CenterRadius{0.f, 0.0f, 0.0f, 0.f}; // bounding sphere center.xyz + radius
 		uint32_t ID = 0;							  // which mesh this instance belongs to
-		uint32_t boneOffset = 0;					  // bone offset
+		uint32_t BoneOffset = 0;					  // bone offset
 		glm::vec4 debugColor;
 	};
 
@@ -68,8 +68,6 @@ namespace BHive
 
 		std::vector<ObjectData> ObjectDatas;
 
-		std::vector<glm::mat4> BoneDatas;
-
 		std::vector<MultiDrawIndirectCommand> DrawCommands;
 
 		RenderBatch(Ref<FRenderQueue> queue)
@@ -77,7 +75,6 @@ namespace BHive
 		{
 			ObjectDatas.reserve(MAX_OBJECTS);
 			DrawCommands.reserve(MAX_OBJECTS);
-			BoneDatas.reserve(200 * MAX_OBJECTS);
 		}
 
 		void Build(const SubMeshSubmissions &bucket)
@@ -85,9 +82,7 @@ namespace BHive
 			MaterialBatches.clear();
 			ObjectDatas.clear();
 			DrawCommands.clear();
-			BoneDatas.clear();
 
-			uint32_t boneOffset = 0;
 			for (auto &o : bucket)
 			{
 				// object data
@@ -110,6 +105,7 @@ namespace BHive
 				inst.CenterRadius = glm::vec4(worldCenter, radius);
 				inst.ModelMatrix = model * s.Transformation;
 				inst.ID = objectID;
+				inst.BoneOffset = ctx.BoneOffset;
 
 				// submesh data
 				auto &group = MaterialBatches[vao];
@@ -119,15 +115,6 @@ namespace BHive
 					batch.FirstCommand = (uint32_t)DrawCommands.size();
 
 				batch.CommandCount++;
-
-				// bones
-				auto &bones = ctx.BoneTransforms;
-				if (auto count = bones.size())
-				{
-					BoneDatas.insert(BoneDatas.end(), bones.begin(), bones.end());
-					inst.boneOffset = boneOffset;
-					boneOffset += count;
-				}
 
 				auto &cmd = DrawCommands.emplace_back();
 				cmd.indexCount = s.IndexCount;
@@ -189,6 +176,8 @@ namespace BHive
 		mFramebuffer = FramebufferFactory::Create(specs);
 
 		mCameraUBO = BufferFactory::Create(sizeof(SceneView), EBufferType::UniformBuffer);
+		mBoneBuffer = BufferFactory::Create(BONE_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
+		mBoneData.reserve(200 * MAX_OBJECTS);
 
 		for (uint32_t i = 0; i < 2; i++)
 		{
@@ -196,7 +185,6 @@ namespace BHive
 			mIndirectDrawBuffer[i] = BufferFactory::Create(DRAWCOMMAND_BUFFER_SIZE, EBufferType::StorageBuffer | EBufferType::IndirectBuffer, EBufferLifetime::Dynamic);
 			mVisibleBuffer[i] = BufferFactory::Create(VISIBILITY_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
 			mFrustrumOcclusionMaterial[i] = MaterialFactory::Create("FrustumOcclusion.glsl");
-			mBoneBuffer[i] = BufferFactory::Create(BONE_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
 		}
 		mFrustumMaterial = MaterialFactory::Create("Frustum.glsl");
 
@@ -258,15 +246,16 @@ namespace BHive
 		auto irradiance = environmentMaps.Irradiance;
 		auto brdfLUT = mEnvironment.GetBRDFLUT();
 
-		static std::string passNames[2] = {"OpaquePass", "TransparentPass"};
-		auto &cameraPass = renderer.BeginPass("CameraData", EPassType::OffScreen);
-		cameraPass.BeginPhase(EPhaseType::Transfer);
-		cameraPass.Emplace<CmdSetBufferData>()(mCameraUBO, &mSceneView, sizeof(SceneView));
-		cameraPass.EndPhase();
+		auto &globalPass = renderer.BeginPass("SceneGlobalData", EPassType::OffScreen);
+		globalPass.BeginPhase(EPhaseType::Transfer);
+		globalPass.Emplace<CmdSetBufferData>()(mCameraUBO, &mSceneView, sizeof(SceneView));
+		globalPass.Emplace<CmdSetBufferData>()(mBoneBuffer, mBoneData.data(), sizeof(glm::mat4) * mBoneData.size());
+		globalPass.EndPhase();
 		renderer.EndPass();
 
 		PipelinePtr pipelines[2] = {mOpaquePipeline, mTransparentPipeline};
 		ResourceSetPtr objectSets[2] = {mSceneSets.OpaqueObjectSet, mSceneSets.TransparentObjectSet};
+		static std::string passNames[2] = {"OpaquePass", "TransparentPass"};
 
 		for (uint32_t i = 0; i < 1; i++)
 		{
@@ -275,18 +264,16 @@ namespace BHive
 			auto instanceBuffer = mInstanceDataBuffer[i];
 			auto visibilityBuffer = mVisibleBuffer[i];
 			auto indirectBuffer = mIndirectDrawBuffer[i];
-			auto boneBuffer = mBoneBuffer[i];
 
 			auto &batchData = renderer.BeginPass("Set Batch Data", EPassType::OffScreen);
 			batchData.BeginPhase(EPhaseType::Transfer);
 			batchData.Emplace<CmdClearBuffer>()(visibilityBuffer);
 			batchData.Emplace<CmdClearBuffer>()(instanceBuffer);
 			batchData.Emplace<CmdClearBuffer>()(indirectBuffer);
-			batchData.Emplace<CmdClearBuffer>()(boneBuffer);
 			batchData.Emplace<CmdSetBufferData>()(instanceBuffer, &instanceCount, sizeof(uint32_t));
 			batchData.Emplace<CmdSetBufferData>()(instanceBuffer, batch.ObjectDatas.data(), sizeof(ObjectData) * instanceCount, 16U);
 			batchData.Emplace<CmdSetBufferData>()(indirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
-			batchData.Emplace<CmdSetBufferData>()(boneBuffer, batch.BoneDatas.data(), sizeof(glm::mat4) * batch.BoneDatas.size());
+
 			batchData.EndPhase();
 			renderer.EndPass();
 
@@ -418,6 +405,21 @@ namespace BHive
 	void SceneRenderer::SubmitMesh(const FMeshSubmissionRequest &info, ContextHandle &outHandle)
 	{
 		outHandle = mRenderQueue->AddMesh(info);
+
+		auto &ctx = mRenderQueue->ResolveContext(outHandle);
+
+		auto boneCount = info.BoneTransforms.size();
+		auto boneOffset = (uint32_t)mBoneData.size();
+
+		if (boneCount)
+		{
+			ctx.BoneOffset = boneOffset;
+			ctx.BoneCount = boneCount;
+			mBoneData.resize(mBoneData.size() + boneCount);
+
+			auto &bones = info.BoneTransforms;
+			memcpy(&mBoneData[boneOffset], bones.data(), bones.size() * sizeof(glm::mat4));
+		}
 	}
 
 	void SceneRenderer::SubmitMesh(const FMeshSubmissionRequest &info)
@@ -432,8 +434,6 @@ namespace BHive
 
 		auto &ctx = mRenderQueue->ResolveContext(requestHandle);
 		ctx.Transform = t;
-
-		mRenderQueue->OnQueueChanged.Broadcast();
 	}
 
 	void SceneRenderer::UpdateBones(ContextHandle handle, const std::vector<glm::mat4> &bones)
@@ -442,9 +442,10 @@ namespace BHive
 			return;
 
 		auto &ctx = mRenderQueue->ResolveContext(handle);
-		ctx.BoneTransforms = bones;
 
-		mRenderQueue->OnQueueChanged.Broadcast();
+		ASSERT(bones.size() == ctx.BoneCount);
+
+		memcpy(&mBoneData[ctx.BoneOffset], bones.data(), ctx.BoneCount * sizeof(glm::mat4));
 	}
 
 	void SceneRenderer::UpdateMesh(ContextHandle requestHandle, MeshPtr mesh)
@@ -493,13 +494,13 @@ namespace BHive
 		opaqueSet->SetBuffer(0, mInstanceDataBuffer[0]);
 		opaqueSet->SetBuffer(1, mIndirectDrawBuffer[0]);
 		opaqueSet->SetBuffer(2, mVisibleBuffer[0]);
-		opaqueSet->SetBuffer(3, mBoneBuffer[0]);
+		opaqueSet->SetBuffer(3, mBoneBuffer);
 
 		auto transparentSet = mSceneSets.TransparentObjectSet.As<ResourceSet>();
 		transparentSet->SetBuffer(0, mInstanceDataBuffer[1]);
 		transparentSet->SetBuffer(1, mIndirectDrawBuffer[1]);
 		transparentSet->SetBuffer(2, mVisibleBuffer[1]);
-		transparentSet->SetBuffer(3, mBoneBuffer[1]);
+		transparentSet->SetBuffer(3, mBoneBuffer);
 	}
 
 	void SceneRenderer::Resize(const glm::uvec2 &size)

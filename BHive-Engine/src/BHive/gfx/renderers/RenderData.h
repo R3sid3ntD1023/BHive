@@ -46,7 +46,9 @@ namespace BHive
 
 		std::vector<glm::mat4> InstanceTransforms;
 
-		std::vector<glm::mat4> BoneTransforms;
+		uint32_t BoneOffset = 0;
+
+		uint32_t BoneCount = 0;
 
 		bool Active = true;
 

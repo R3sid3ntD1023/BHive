@@ -83,7 +83,6 @@ namespace BHive
 		ctx.Transform = request.Transform;
 		ctx.EntityID = request.EntityID;
 		ctx.InstanceTransforms = request.InstanceTransforms;
-		ctx.BoneTransforms = request.BoneTransforms;
 		ctx.VAO = mesh->GetVertexArray();
 		ctx.Generation = ++mGenerationVersion;
 		ctx.Materials = request.Materials;

@@ -141,7 +141,7 @@ namespace BHive
 
 		std::array<BufferPtr, 2> mInstanceDataBuffer;
 
-		std::array<BufferPtr, 2> mBoneBuffer;
+		BufferPtr mBoneBuffer;
 
 		SceneView mSceneView;
 
@@ -164,5 +164,7 @@ namespace BHive
 		PipelinePtr mTransparentPipeline;
 
 		ResourceSets mSceneSets;
+
+		std::vector<glm::mat4> mBoneData;
 	};
 } // namespace BHive
