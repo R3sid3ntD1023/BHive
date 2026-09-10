@@ -4,6 +4,7 @@
 #include "gfx/animation/SkeletalAnimation.h"
 #include "gfx/mesh/BaseMesh.h"
 #include "gfx/mesh/SkeletalMesh.h"
+#include "importers/MeshImporter.h"
 
 namespace BHive
 {
@@ -22,12 +23,14 @@ namespace BHive
 
 	struct BHIVE_API SkeletonFactory : public IResourceFactory<Skeleton>
 	{
-		static SkeletonPtr Create(const Bones &bones, const SkeletalNode &root);
+		static SkeletonPtr Create(const BoneInfo &boneInfo, const SkeletalNode &root);
 	};
 
 	struct BHIVE_API SkeletalAnimationFactory : public IResourceFactory<SkeletalAnimation>
 	{
-		static SkeletalAnimationPtr Create(float duration, float ticksPerSecond, const Frames &frames, const glm::mat4 &globalInverseMatrix);
+		static SkeletalAnimationPtr Create(const DecodedAnimation &decoded);
+
+		static SkeletalAnimationPtr Create(float duration, float ticksPerSecond, const SkeletalAnimation::Frames &frames);
 	};
 
 	// class VertexBuffer;

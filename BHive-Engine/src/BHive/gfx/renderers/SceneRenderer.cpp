@@ -97,12 +97,17 @@ namespace BHive
 
 				auto vao = ctx.VAO;
 				auto &s = o.SubMesh;
-				auto radius = s.Bounds.GetRadius();
 
 				auto objectID = ObjectDatas.size();
 
+				glm::mat4 m = model * s.Transformation;
+				glm::vec3 localCenter = s.Bounds.GetCenter();
+				glm::vec3 worldCenter = glm::vec3(m * glm::vec4(localCenter, 1.0f));
+				glm::vec3 scale(glm::length(glm::vec3(m[0])), glm::length(glm::vec3(m[1])), glm::length(glm::vec3(m[2])));
+				float radius = s.Bounds.GetRadius() * glm::compMax(scale);
+
 				auto &inst = ObjectDatas.emplace_back();
-				inst.CenterRadius = glm::vec4(pos, radius); //<= change to local submesb pos
+				inst.CenterRadius = glm::vec4(worldCenter, radius);
 				inst.ModelMatrix = model * s.Transformation;
 				inst.ID = objectID;
 
@@ -277,6 +282,7 @@ namespace BHive
 			batchData.Emplace<CmdClearBuffer>()(visibilityBuffer);
 			batchData.Emplace<CmdClearBuffer>()(instanceBuffer);
 			batchData.Emplace<CmdClearBuffer>()(indirectBuffer);
+			batchData.Emplace<CmdClearBuffer>()(boneBuffer);
 			batchData.Emplace<CmdSetBufferData>()(instanceBuffer, &instanceCount, sizeof(uint32_t));
 			batchData.Emplace<CmdSetBufferData>()(instanceBuffer, batch.ObjectDatas.data(), sizeof(ObjectData) * instanceCount, 16U);
 			batchData.Emplace<CmdSetBufferData>()(indirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
@@ -426,6 +432,17 @@ namespace BHive
 
 		auto &ctx = mRenderQueue->ResolveContext(requestHandle);
 		ctx.Transform = t;
+
+		mRenderQueue->OnQueueChanged.Broadcast();
+	}
+
+	void SceneRenderer::UpdateBones(ContextHandle handle, const std::vector<glm::mat4> &bones)
+	{
+		if (!mRenderQueue->IsHandleValid(handle))
+			return;
+
+		auto &ctx = mRenderQueue->ResolveContext(handle);
+		ctx.BoneTransforms = bones;
 
 		mRenderQueue->OnQueueChanged.Broadcast();
 	}

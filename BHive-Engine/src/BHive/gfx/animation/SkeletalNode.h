@@ -7,16 +7,16 @@ namespace BHive
 {
 	struct BHIVE_API SkeletalNode
 	{
-		std::string mName;
-		glm::mat4 ParentTransformation{1.f};
-		glm::mat4 RelativeTransform{1.f};
-		glm::mat4 mTransformation{1.f};
-		std::vector<SkeletalNode> mChildren;
+		uint64_t NameHash;
+		// glm::mat4 ParentTransformation{1.f};
+		// glm::mat4 RelativeTransform{1.f};
+		glm::mat4 Transformation{1.f};
+		std::vector<SkeletalNode> Children;
 
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(mName, mTransformation, mChildren);
+			ar(NameHash, Transformation, Children);
 		}
 	};
 

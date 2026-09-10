@@ -4,6 +4,8 @@
 #include "gfx/Pipeline.h"
 #include "gfx/ResourceSet.h"
 #include "gfx/Texture.h"
+#include "gfx/animation/SkeletalAnimation.h"
+#include "gfx/animation/Skeleton.h"
 #include "gfx/font/Font.h"
 #include "gfx/material/Material.h"
 #include "gfx/mesh/BaseMesh.h"
@@ -25,6 +27,8 @@ namespace BHive
 		RegisterRegistry<Pipeline>();
 		RegisterRegistry<Shader>();
 		RegisterRegistry<ResourceSet>();
+		RegisterRegistry<Skeleton>();
+		RegisterRegistry<SkeletalAnimation>();
 	}
 
 	void ResourceRegistriesManager::Shutdown()
@@ -41,6 +45,8 @@ namespace BHive
 		UnRegisterRegistry<Pipeline>();
 		UnRegisterRegistry<Shader>();
 		UnRegisterRegistry<ResourceSet>();
+		UnRegisterRegistry<Skeleton>();
+		UnRegisterRegistry<SkeletalAnimation>();
 
 		Registries.clear();
 	}

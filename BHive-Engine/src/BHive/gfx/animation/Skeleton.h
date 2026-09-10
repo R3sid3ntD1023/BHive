@@ -1,36 +1,51 @@
 #pragma once
 
-#include "core/Core.h"
 #include "Bone.h"
 #include "SkeletalNode.h"
 #include "asset/Asset.h"
+#include "core/Core.h"
 
 namespace BHive
 {
 	typedef std::map<std::string, Bone> Bones;
 	typedef std::vector<SkeletalNode> SkeletalNodes;
 
+	struct BoneInfo
+	{
+		std::unordered_map<uint64_t, Bone> Bones;
+		std::unordered_map<std::string, uint64_t> BoneNames;
+
+		void emplace(const std::string &name, Bone bone)
+		{
+			uint64_t hash = std::hash<std::string>()(name);
+			Bones.emplace(hash, bone);
+			BoneNames.emplace(name, hash);
+		}
+
+		template <typename Ar>
+		void Serialize(Ar &ar)
+		{
+			ar(Bones, BoneNames);
+		}
+	};
+
 	class BHIVE_API Skeleton : public Asset
 	{
 	public:
 		Skeleton() = default;
-		Skeleton(const Bones &bones, const SkeletalNode &root);
+		Skeleton(const BoneInfo &boneInfo, const SkeletalNode &root);
 
 		const SkeletalNode &GetRoot() const { return mRoot; }
 
-		size_t GetBoneCount() const { return mBones.size(); }
+		size_t GetBoneCount() const { return mBoneInfo.Bones.size(); }
 
-		const Bone *FindBone(const std::string &name) const;
+		const Bone *FindBone(uint64_t hash) const;
 
 		const std::vector<glm::mat4> &GetRestPoseTransforms() const { return mRestPoseTransforms; };
 
-		Bones &GetBones() { return mBones; }
+		auto &GetBones() { return mBoneInfo.Bones; }
 
-		const Bones &GetBones() const { return mBones; }
-
-		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
-
-		virtual void Load(cereal::BinaryInputArchive &ar) override;
+		const auto &GetBones() const { return mBoneInfo.Bones; }
 
 		REFLECTABLEV(Asset)
 
@@ -39,7 +54,7 @@ namespace BHive
 
 	private:
 		SkeletalNode mRoot;
-		Bones mBones;
+		BoneInfo mBoneInfo;
 		std::vector<glm::mat4> mRestPoseTransforms;
 	};
 

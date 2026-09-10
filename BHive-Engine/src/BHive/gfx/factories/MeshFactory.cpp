@@ -161,14 +161,19 @@ namespace BHive
 		return CreateStatic(data);
 	}
 
-	SkeletonPtr SkeletonFactory::Create(const Bones &bones, const SkeletalNode &root)
+	SkeletonPtr SkeletonFactory::Create(const BoneInfo &boneInfo, const SkeletalNode &root)
 	{
-		return CreateResource<Skeleton>(bones, root);
+		return CreateResource<Skeleton>(boneInfo, root);
 	}
 
-	SkeletalAnimationPtr SkeletalAnimationFactory::Create(float duration, float ticksPerSecond, const Frames &frames, const glm::mat4 &globalInverseMatrix)
+	SkeletalAnimationPtr SkeletalAnimationFactory::Create(const DecodedAnimation &decoded)
 	{
-		return CreateResource<SkeletalAnimation>(duration, ticksPerSecond, frames, globalInverseMatrix);
+		return CreateResource<SkeletalAnimation>(decoded.Duration, decoded.TicksPerSecond, decoded.Frames);
+	}
+
+	SkeletalAnimationPtr SkeletalAnimationFactory::Create(float duration, float ticksPerSecond, const SkeletalAnimation::Frames &frames)
+	{
+		return CreateResource<SkeletalAnimation>(duration, ticksPerSecond, frames);
 	}
 
 } // namespace BHive

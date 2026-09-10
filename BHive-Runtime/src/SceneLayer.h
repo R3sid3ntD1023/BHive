@@ -43,6 +43,11 @@ namespace BHive
 		MaterialPtr mStandardMaterial;
 		MeshPtr mCharacter;
 		MaterialTable mCharacterMaterials;
+
+		SkeletalAnimationPtr mCharacterAnimaton;
+		SkeletonPtr mCharacterSkeleton;
+		Ref<class SkeletalPose> mCharacterPose;
+		Ref<class AnimationClip> mAnimationClip;
 	};
 
 } // namespace BHive

@@ -1,47 +1,45 @@
 #pragma once
 
-#include "core/Core.h"
 #include "AnimationFrames.h"
 #include "asset/Asset.h"
+#include "core/Core.h"
 
 namespace BHive
 {
 	class Skeleton;
 
-	typedef std::map<std::string, FrameData> Frames;
-
 	class BHIVE_API SkeletalAnimation : public Asset
 	{
 	public:
-		SkeletalAnimation() = default;
-		SkeletalAnimation(float duration, float ticksPerSecond, const Frames &frames, const glm::mat4 &globalInverseMatrix);
+		using Frames = std::unordered_map<uint64_t, FrameData>;
 
-		bool Contains(const std::string &name) const;
+		SkeletalAnimation() = default;
+		SkeletalAnimation(float duration, float ticksPerSecond, const Frames &frames);
+
+		bool Contains(uint64_t hash) const;
 
 		float GetTicksPerSecond() const { return mTicksPerSecond; }
 		float GetDuration() const { return mDuration; }
 		float GetLengthInSeconds() const { return mDuration / mTicksPerSecond; }
 
-		const glm::mat4 &GetGlobalInverseTransformation() { return mGlobalInverseTransformation; }
 		float CalculateAnimationTimeTicks(float time);
 
-		glm::vec3 InterpolatePosition(const std::string &name, float animationTime);
-		glm::quat InterpolateRotation(const std::string &name, float animationTime);
-		glm::vec3 InterpolateScaling(const std::string &name, float animationTime);
+		glm::vec3 InterpolatePosition(uint64_t hash, float animationTime);
+		glm::quat InterpolateRotation(uint64_t hash, float animationTime);
+		glm::vec3 InterpolateScaling(uint64_t hash, float animationTime);
 
 		REFLECTABLEV(Asset)
 
 	private:
-		int32_t GetPositionIndex(const std::string &name, float aniamtionTime);
-		int32_t GetRotationIndex(const std::string &name, float aniamtionTime);
-		int32_t GetScaleIndex(const std::string &name, float aniamtionTime);
+		int32_t GetPositionIndex(uint64_t hash, float aniamtionTime);
+		int32_t GetRotationIndex(uint64_t hash, float aniamtionTime);
+		int32_t GetScaleIndex(uint64_t hash, float aniamtionTime);
 		float GetScaleFactor(float lastTimeStamp, float nextTimeStamp, float animationTime);
 
 	private:
 		float mDuration{};
 		float mTicksPerSecond{};
-		glm::mat4 mGlobalInverseTransformation{1.f};
-		Frames mFrameData;
+		Frames mFrames;
 	};
 
 	REFLECT_EXTERN(SkeletalAnimation)

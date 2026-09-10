@@ -3,16 +3,15 @@
 
 namespace BHive
 {
-	SkeletalAnimation::SkeletalAnimation(float duration, float ticksPerSecond, const Frames &frames, const glm::mat4 &globalInverseMatrix)
+	SkeletalAnimation::SkeletalAnimation(float duration, float ticksPerSecond, const Frames &frames)
 		: mDuration(duration),
 		  mTicksPerSecond(ticksPerSecond),
-		  mGlobalInverseTransformation(globalInverseMatrix),
-		  mFrameData(frames)
+		  mFrames(frames)
 	{
 	}
-	int32_t SkeletalAnimation::GetPositionIndex(const std::string &name, float animationTime)
+	int32_t SkeletalAnimation::GetPositionIndex(uint64_t hash, float animationTime)
 	{
-		auto &keys = mFrameData[name].mPositions;
+		auto &keys = mFrames[hash].mPositions;
 		for (size_t i = 0; i < keys.size() - 1; i++)
 		{
 			if (animationTime < keys[i + 1].mTimeStamp)
@@ -23,9 +22,9 @@ namespace BHive
 		return -1;
 	}
 
-	int32_t SkeletalAnimation::GetRotationIndex(const std::string &name, float animationTime)
+	int32_t SkeletalAnimation::GetRotationIndex(uint64_t hash, float animationTime)
 	{
-		auto &keys = mFrameData[name].mRotations;
+		auto &keys = mFrames[hash].mRotations;
 		for (size_t i = 0; i < keys.size() - 1; i++)
 		{
 			if (animationTime < keys[i + 1].mTimeStamp)
@@ -36,9 +35,9 @@ namespace BHive
 		return -1;
 	}
 
-	int32_t SkeletalAnimation::GetScaleIndex(const std::string &name, float animationTime)
+	int32_t SkeletalAnimation::GetScaleIndex(uint64_t hash, float animationTime)
 	{
-		auto &keys = mFrameData[name].mScales;
+		auto &keys = mFrames[hash].mScales;
 		for (size_t i = 0; i < keys.size() - 1; i++)
 		{
 			if (animationTime < keys[i + 1].mTimeStamp)
@@ -58,14 +57,14 @@ namespace BHive
 		return factor;
 	}
 
-	glm::vec3 SkeletalAnimation::InterpolatePosition(const std::string &name, float animationTime)
+	glm::vec3 SkeletalAnimation::InterpolatePosition(uint64_t hash, float animationTime)
 	{
 
-		auto &keys = mFrameData[name].mPositions;
+		auto &keys = mFrames[hash].mPositions;
 		if (keys.size() == 1)
 			return keys[0].mValue;
 
-		int p0 = GetPositionIndex(name, animationTime);
+		int p0 = GetPositionIndex(hash, animationTime);
 		int p1 = p0 + 1;
 
 		float factor = GetScaleFactor(keys[p0].mTimeStamp, keys[p1].mTimeStamp, animationTime);
@@ -73,13 +72,13 @@ namespace BHive
 		return position;
 	}
 
-	glm::quat SkeletalAnimation::InterpolateRotation(const std::string &name, float animationTime)
+	glm::quat SkeletalAnimation::InterpolateRotation(uint64_t hash, float animationTime)
 	{
-		auto &keys = mFrameData[name].mRotations;
+		auto &keys = mFrames[hash].mRotations;
 		if (keys.size() == 1)
 			return glm::normalize(keys[0].mValue);
 
-		int p0 = GetRotationIndex(name, animationTime);
+		int p0 = GetRotationIndex(hash, animationTime);
 		int p1 = p0 + 1;
 
 		float factor = GetScaleFactor(keys[p0].mTimeStamp, keys[p1].mTimeStamp, animationTime);
@@ -87,13 +86,13 @@ namespace BHive
 		return glm::normalize(rotation);
 	}
 
-	glm::vec3 SkeletalAnimation::InterpolateScaling(const std::string &name, float animationTime)
+	glm::vec3 SkeletalAnimation::InterpolateScaling(uint64_t hash, float animationTime)
 	{
-		auto &keys = mFrameData[name].mScales;
+		auto &keys = mFrames[hash].mScales;
 		if (keys.size() == 1)
 			return keys[0].mValue;
 
-		int p0 = GetScaleIndex(name, animationTime);
+		int p0 = GetScaleIndex(hash, animationTime);
 		int p1 = p0 + 1;
 
 		float factor = GetScaleFactor(keys[p0].mTimeStamp, keys[p1].mTimeStamp, animationTime);
@@ -101,9 +100,9 @@ namespace BHive
 		return scale;
 	}
 
-	bool SkeletalAnimation::Contains(const std::string &name) const
+	bool SkeletalAnimation::Contains(uint64_t hash) const
 	{
-		return mFrameData.contains(name);
+		return mFrames.contains(hash);
 	}
 
 	float SkeletalAnimation::CalculateAnimationTimeTicks(float time)
@@ -115,7 +114,7 @@ namespace BHive
 	{
 		BEGIN_REFLECT(SkeletalAnimation)
 		REFLECT_CONSTRUCTOR()
-		REFLECT_PROPERTY_READ_ONLY("Frames", mFrameData)
+		REFLECT_PROPERTY_READ_ONLY("Frames", mFrames)
 		REFLECT_PROPERTY_READ_ONLY("TicksPerSecond", mTicksPerSecond)
 		REFLECT_PROPERTY_READ_ONLY("Duration", mDuration);
 	}

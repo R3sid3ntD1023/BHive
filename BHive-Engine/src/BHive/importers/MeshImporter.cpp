@@ -11,20 +11,8 @@
 
 namespace BHive
 {
-	struct ModelProgress : public Assimp::ProgressHandler
-	{
-		virtual bool Update(float percentage = -1.f)
-		{
-			bool finished = percentage == 1.f;
-			auto str = std::format("\rLoading... {:.2f}%", percentage * 100.0f);
-			std::cout << str << (!finished ? "" : "\n");
-			return finished;
-		}
-	};
-
 	namespace utils
 	{
-
 		glm::mat4 make_mat4(const aiMatrix4x4 &mat)
 		{
 			return glm::transpose(glm::make_mat4(&mat.a1));
@@ -49,291 +37,6 @@ namespace BHive
 		{
 			return glm::quat(quat.w, quat.x, quat.y, quat.z);
 		}
-
-		void SetVertexBoneData(FVertex &vertex, int id, float weight)
-		{
-			for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
-			{
-				if (vertex.BoneIDs[i] < 0)
-				{
-					vertex.BoneIDs[i] = id;
-					vertex.Weights[i] = weight;
-					break;
-				}
-			}
-		}
-
-		void ExtractBoneWeightsForVertices(Bones &bones, std::vector<FVertex> &vertices, const aiMesh *mesh)
-		{
-			int bone_counter = 0;
-			for (unsigned bone_index = 0; bone_index < mesh->mNumBones; bone_index++)
-			{
-				int bone_id = -1;
-				std::string bone_name = mesh->mBones[bone_index]->mName.C_Str();
-				if (!bones.contains(bone_name))
-				{
-					Bone bone{.Name = bone_name, .ID = bone_counter, .LocalBindPoseMatrix = make_mat4(mesh->mBones[bone_index]->mOffsetMatrix)};
-					bones[bone_name] = bone;
-					bone_id = bone_counter;
-					bone_counter++;
-				}
-				else
-				{
-					bone_id = bones.at(bone_name).ID;
-				}
-
-				ASSERT(bone_id != -1);
-				auto weights = mesh->mBones[bone_index]->mWeights;
-				auto numWeights = mesh->mBones[bone_index]->mNumWeights;
-
-				for (unsigned weightIndex = 0; weightIndex < numWeights; weightIndex++)
-				{
-					int vertex_id = weights[weightIndex].mVertexId;
-					float weight = weights[weightIndex].mWeight;
-					ASSERT(vertex_id <= vertices.size());
-					SetVertexBoneData(vertices[vertex_id], bone_id, weight);
-				}
-			}
-		}
-
-		FSubMesh ParseMesh(const aiScene *scene, const aiMatrix4x4 &matrix, const aiMesh *mesh, DecodedMesh &out, float importScale)
-		{
-			FMeshData &data = out.MeshData;
-
-#if 1
-	#define IMPORT_SCALE glm ::scale(glm::mat4(1.0f), glm::vec3(importScale)) *
-#else
-	#define IMPORT_SCALE
-#endif
-			auto node_matrix = IMPORT_SCALE utils::make_mat4(matrix);
-
-			FSubMesh sub_mesh{};
-			sub_mesh.StartVertex = (uint32_t)data.Vertices.size();
-			sub_mesh.StartIndex = (uint32_t)data.Indices.size();
-			sub_mesh.IndexCount = mesh->mNumFaces * 3;
-			sub_mesh.Transformation = node_matrix;
-			sub_mesh.MaterialIndex = mesh->mMaterialIndex;
-
-			std::vector<FVertex> vertices(mesh->mNumVertices);
-			std::vector<uint32_t> indices(mesh->mNumFaces * 3);
-
-			for (unsigned v = 0; v < mesh->mNumVertices; v++)
-			{
-
-				glm::vec3 position = make_vec3(mesh->mVertices[v]);
-				glm::vec2 texcoord = {0.0f, 0.0f};
-				glm::vec3 normal = {0.0f, 0.0f, 0.0f};
-				glm::vec3 tangent = {0.0f, 0.0f, 0.0f};
-				glm::vec3 bitangent = {0.0f, 0.0f, 0.0f};
-				glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f};
-
-				if (mesh->HasTextureCoords(0))
-				{
-					texcoord = make_vec2(mesh->mTextureCoords[0][v]);
-				}
-
-				if (mesh->HasNormals())
-				{
-					normal = make_vec3(mesh->mNormals[v]);
-				}
-
-				if (mesh->mTangents)
-				{
-					tangent = make_vec3(mesh->mTangents[v]);
-				}
-
-				if (mesh->mBitangents)
-				{
-					bitangent = make_vec3(mesh->mBitangents[v]);
-				}
-
-				if (mesh->HasVertexColors(0))
-				{
-					color = make_vec4(mesh->mColors[0][v]);
-				}
-
-				FVertex vertex{};
-				vertex.Position = position;
-				vertex.TexCoord = texcoord;
-				vertex.Normal = normal;
-				vertex.BiNormal = bitangent;
-				vertex.Tangent = tangent;
-				vertex.TexCoord = texcoord;
-				vertices[v] = vertex;
-
-				sub_mesh.Bounds.Min = glm::min(position, sub_mesh.Bounds.Min);
-				sub_mesh.Bounds.Max = glm::max(position, sub_mesh.Bounds.Max);
-
-				data.Bounds.Min = glm::min(position, data.Bounds.Min);
-				data.Bounds.Max = glm::max(position, data.Bounds.Max);
-			}
-
-			// process indices
-			for (unsigned i = 0; i < mesh->mNumFaces; i++)
-			{
-				aiFace &face = mesh->mFaces[i];
-				for (unsigned j = 0; j < 3; j++)
-				{
-					indices[(i * 3) + j] = face.mIndices[j];
-				}
-			}
-
-			// proccess bones
-			if (mesh->HasBones())
-			{
-				ExtractBoneWeightsForVertices(out.Bones, vertices, mesh);
-			}
-
-			data.Vertices.insert(data.Vertices.end(), vertices.begin(), vertices.end());
-			data.Indices.insert(data.Indices.end(), indices.begin(), indices.end());
-
-			return sub_mesh;
-		}
-
-		void ProcessNode(const aiScene *scene, const aiNode *node, const aiMatrix4x4 &parent, DecodedMesh &out, float importScale)
-		{
-
-			for (unsigned i = 0; i < node->mNumMeshes; i++)
-			{
-				aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-				auto submesh = ParseMesh(scene, parent * node->mTransformation, mesh, out, importScale);
-				out.MeshData.SubMeshes.emplace_back(submesh);
-			}
-
-			for (unsigned i = 0; i < node->mNumChildren; i++)
-			{
-				ProcessNode(scene, node->mChildren[i], parent * node->mTransformation, out, importScale);
-			}
-		}
-
-		void GetNodeHeiracrchy(aiNode *node, SkeletalNode &out)
-		{
-			out.mName = node->mName.C_Str();
-			out.mTransformation = make_mat4(node->mTransformation);
-
-			for (unsigned int i = 0; i < node->mNumChildren; i++)
-			{
-				SkeletalNode child_data;
-				GetNodeHeiracrchy(node->mChildren[i], child_data);
-				out.mChildren.push_back(child_data);
-			}
-		}
-
-		void ParseAnimationData(aiAnimation *animation, aiNodeAnim *channel, FrameData &data)
-		{
-			unsigned num_positions = channel->mNumPositionKeys;
-			unsigned num_rotations = channel->mNumRotationKeys;
-			unsigned num_scales = channel->mNumScalingKeys;
-
-			data.mPositions.resize(num_positions);
-			data.mRotations.resize(num_rotations);
-			data.mScales.resize(num_scales);
-
-			for (unsigned p = 0; p < num_positions; p++)
-			{
-				TKeyFrame<glm::vec3> position;
-
-				position.mValue = make_vec3(channel->mPositionKeys[p].mValue);
-				position.mTimeStamp = (float)channel->mPositionKeys[p].mTime;
-
-				data.mPositions[p] = (position);
-			}
-
-			for (unsigned p = 0; p < num_rotations; p++)
-			{
-				TKeyFrame<glm::quat> rotation;
-
-				rotation.mValue = make_quat(channel->mRotationKeys[p].mValue);
-				rotation.mTimeStamp = (float)channel->mRotationKeys[p].mTime;
-
-				data.mRotations[p] = (rotation);
-			}
-
-			for (unsigned p = 0; p < num_scales; p++)
-			{
-				TKeyFrame<glm::vec3> scale;
-
-				scale.mValue = make_vec3(channel->mScalingKeys[p].mValue);
-				scale.mTimeStamp = (float)channel->mScalingKeys[p].mTime;
-
-				data.mScales[p] = (scale);
-			}
-		}
-
-		void ReadMissingBones(aiAnimation *animation, Bones &bones)
-		{
-			int32_t bone_count = (int32_t)bones.size();
-
-			for (unsigned j = 0; j < animation->mNumChannels; j++)
-			{
-
-				auto channel = animation->mChannels[j];
-				std::string bone_name = channel->mNodeName.data;
-				// remove_extension(bone_name);
-
-				// find missing bones
-				if (!bones.contains(bone_name))
-				{
-					bones[bone_name].ID = bone_count;
-					bones[bone_name].Name = bone_name;
-					bone_count++;
-					// LOG_TRACE("Added Missing Bone {}", bone_name);
-				}
-			}
-		}
-
-		void GetAnimationData(const aiScene *scene, std::vector<DecodedAnimation> &animations, Bones &bones)
-		{
-			aiMatrix4x4 global_inverse_matrix = scene->mRootNode->mTransformation;
-			global_inverse_matrix = global_inverse_matrix.Inverse();
-
-			for (unsigned int i = 0; i < scene->mNumAnimations; i++)
-			{
-				aiAnimation *animation = scene->mAnimations[i];
-				ReadMissingBones(animation, bones);
-
-				std::map<std::string, FrameData> frames;
-				for (unsigned j = 0; j < animation->mNumChannels; j++)
-				{
-
-					auto channel = animation->mChannels[j];
-					std::string bone_name = channel->mNodeName.data;
-					// remove_extension(bone_name);
-
-					// get animation keys
-					FrameData frame_data;
-					ParseAnimationData(animation, channel, frame_data);
-					frames.emplace(bone_name, frame_data);
-
-					// LOG_TRACE("Added frames for bone{} ", bone_name);
-				}
-
-				DecodedAnimation anim{};
-				anim.Name = animation->mName.C_Str();
-				anim.Duration = (float)animation->mDuration;
-				anim.TicksPerSecond = (float)animation->mTicksPerSecond;
-				anim.Frames = frames;
-				anim.GlobalInverseMatrix = make_mat4(global_inverse_matrix);
-
-				animations.emplace_back(anim);
-			}
-		}
-
-		EmbeddedTexture GetTextureData(const aiScene *scene, aiString &str)
-		{
-			EmbeddedTexture out{};
-			out.Path = str.C_Str();
-
-			if (auto embedded = scene->GetEmbeddedTexture(str.C_Str()))
-			{
-				auto size = embedded->mWidth + embedded->mHeight;
-				out.EmbeddedData.Allocate(embedded->pcData, size);
-				out.Type = EmbeddedTexture::Embedded;
-			}
-
-			return out;
-		}
-
 		std::string GetTextureType(aiTextureType aiType)
 		{
 			switch (aiType)
@@ -396,8 +99,308 @@ namespace BHive
 
 			return "";
 		}
+	} // namespace utils
 
-		void GetMaterialData(const aiScene *scene, std::vector<DecodedMaterial> &materials)
+	class AssimpParser
+	{
+
+		struct ModelProgress : public Assimp::ProgressHandler
+		{
+			virtual bool Update(float percentage = -1.f)
+			{
+				bool finished = percentage == 1.f;
+				auto str = std::format("\rLoading... {:.2f}%", percentage * 100.0f);
+				std::cout << str << (!finished ? "" : "\n");
+				return finished;
+			}
+		};
+
+		void SetVertexBoneData(FVertex &vertex, int id, float weight)
+		{
+			for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+			{
+				if (vertex.BoneIDs[i] < 0)
+				{
+					vertex.BoneIDs[i] = id;
+					vertex.Weights[i] = weight;
+					break;
+				}
+			}
+		}
+
+		void ExtractBoneWeightsForVertices(std::vector<FVertex> &vertices, const aiMesh *mesh)
+		{
+			auto &bones = mDecodedMesh.Bones.Bones;
+			auto &boneNames = mDecodedMesh.Bones.BoneNames;
+
+			for (unsigned bone_index = 0; bone_index < mesh->mNumBones; bone_index++)
+			{
+				int bone_id = -1;
+				auto bone = mesh->mBones[bone_index];
+
+				std::string bone_name = bone->mName.C_Str();
+				uint64_t name_hash = std::hash<std::string>()(bone_name);
+
+				if (!bones.contains(name_hash))
+				{
+					bones[name_hash] = {name_hash, mBoneCounter, utils::make_mat4(bone->mOffsetMatrix)};
+					boneNames[bone_name] = name_hash;
+					bone_id = mBoneCounter;
+					mBoneCounter++;
+				}
+				else
+				{
+					bone_id = bones.at(name_hash).ID;
+				}
+
+				ASSERT(bone_id != -1);
+				auto weights = mesh->mBones[bone_index]->mWeights;
+				auto numWeights = mesh->mBones[bone_index]->mNumWeights;
+
+				for (unsigned weightIndex = 0; weightIndex < numWeights; weightIndex++)
+				{
+					int vertex_id = weights[weightIndex].mVertexId;
+					float weight = weights[weightIndex].mWeight;
+					ASSERT(vertex_id <= vertices.size());
+					SetVertexBoneData(vertices[vertex_id], bone_id, weight);
+				}
+			}
+		}
+
+		FSubMesh ParseMesh(const aiMatrix4x4 &matrix, const aiMesh *mesh)
+		{
+			FMeshData &data = mDecodedMesh.MeshData;
+
+#if 1
+	#define IMPORT_SCALE glm::scale(glm::mat4(1.0f), glm::vec3(mImportScale)) *
+#else
+	#define IMPORT_SCALE
+#endif
+			auto node_matrix = IMPORT_SCALE utils::make_mat4(matrix);
+
+			FSubMesh sub_mesh{};
+			sub_mesh.StartVertex = (uint32_t)data.Vertices.size();
+			sub_mesh.StartIndex = (uint32_t)data.Indices.size();
+			sub_mesh.IndexCount = mesh->mNumFaces * 3;
+			sub_mesh.Transformation = node_matrix;
+			sub_mesh.MaterialIndex = mesh->mMaterialIndex;
+
+			std::vector<FVertex> vertices(mesh->mNumVertices);
+			std::vector<uint32_t> indices(mesh->mNumFaces * 3);
+
+			for (unsigned v = 0; v < mesh->mNumVertices; v++)
+			{
+
+				glm::vec3 position = utils::make_vec3(mesh->mVertices[v]);
+				glm::vec2 texcoord = {0.0f, 0.0f};
+				glm::vec3 normal = {0.0f, 0.0f, 0.0f};
+				glm::vec3 tangent = {0.0f, 0.0f, 0.0f};
+				glm::vec3 bitangent = {0.0f, 0.0f, 0.0f};
+				glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f};
+
+				if (mesh->HasTextureCoords(0))
+				{
+					texcoord = utils::make_vec2(mesh->mTextureCoords[0][v]);
+				}
+
+				if (mesh->HasNormals())
+				{
+					normal = utils::make_vec3(mesh->mNormals[v]);
+				}
+
+				if (mesh->mTangents)
+				{
+					tangent = utils::make_vec3(mesh->mTangents[v]);
+				}
+
+				if (mesh->mBitangents)
+				{
+					bitangent = utils::make_vec3(mesh->mBitangents[v]);
+				}
+
+				if (mesh->HasVertexColors(0))
+				{
+					color = utils::make_vec4(mesh->mColors[0][v]);
+				}
+
+				FVertex vertex{};
+				vertex.Position = position;
+				vertex.TexCoord = texcoord;
+				vertex.Normal = normal;
+				vertex.BiNormal = bitangent;
+				vertex.Tangent = tangent;
+				vertex.TexCoord = texcoord;
+				vertices[v] = vertex;
+
+				sub_mesh.Bounds.Min = glm::min(position, sub_mesh.Bounds.Min);
+				sub_mesh.Bounds.Max = glm::max(position, sub_mesh.Bounds.Max);
+
+				data.Bounds.Min = glm::min(position, data.Bounds.Min);
+				data.Bounds.Max = glm::max(position, data.Bounds.Max);
+			}
+
+			// process indices
+			for (unsigned i = 0; i < mesh->mNumFaces; i++)
+			{
+				aiFace &face = mesh->mFaces[i];
+				for (unsigned j = 0; j < 3; j++)
+				{
+					indices[(i * 3) + j] = face.mIndices[j];
+				}
+			}
+
+			// proccess bones
+			if (mesh->HasBones())
+			{
+				ExtractBoneWeightsForVertices(vertices, mesh);
+			}
+
+			data.Vertices.insert(data.Vertices.end(), vertices.begin(), vertices.end());
+			data.Indices.insert(data.Indices.end(), indices.begin(), indices.end());
+
+			return sub_mesh;
+		}
+
+		void ProcessNode(const aiNode *node, const aiMatrix4x4 &parent)
+		{
+
+			for (unsigned i = 0; i < node->mNumMeshes; i++)
+			{
+				aiMesh *mesh = mScene->mMeshes[node->mMeshes[i]];
+				auto submesh = ParseMesh(parent * node->mTransformation, mesh);
+				mDecodedMesh.MeshData.SubMeshes.emplace_back(submesh);
+			}
+
+			for (unsigned i = 0; i < node->mNumChildren; i++)
+			{
+				ProcessNode(node->mChildren[i], parent * node->mTransformation);
+			}
+		}
+
+		void GetNodeHeiracrchy(aiNode *node, SkeletalNode &out)
+		{
+			out.NameHash = std::hash<std::string>()(node->mName.C_Str());
+			out.Transformation = utils::make_mat4(node->mTransformation);
+
+			for (unsigned int i = 0; i < node->mNumChildren; i++)
+			{
+				SkeletalNode child_data;
+				GetNodeHeiracrchy(node->mChildren[i], child_data);
+				out.Children.push_back(child_data);
+			}
+		}
+
+		void ParseAnimationData(aiAnimation *animation, aiNodeAnim *channel, FrameData &data)
+		{
+			unsigned num_positions = channel->mNumPositionKeys;
+			unsigned num_rotations = channel->mNumRotationKeys;
+			unsigned num_scales = channel->mNumScalingKeys;
+
+			data.mPositions.resize(num_positions);
+			data.mRotations.resize(num_rotations);
+			data.mScales.resize(num_scales);
+
+			for (unsigned p = 0; p < num_positions; p++)
+			{
+				TKeyFrame<glm::vec3> position;
+
+				position.mValue = utils::make_vec3(channel->mPositionKeys[p].mValue);
+				position.mTimeStamp = (float)channel->mPositionKeys[p].mTime;
+
+				data.mPositions[p] = (position);
+			}
+
+			for (unsigned p = 0; p < num_rotations; p++)
+			{
+				TKeyFrame<glm::quat> rotation;
+
+				rotation.mValue = utils::make_quat(channel->mRotationKeys[p].mValue);
+				rotation.mTimeStamp = (float)channel->mRotationKeys[p].mTime;
+
+				data.mRotations[p] = (rotation);
+			}
+
+			for (unsigned p = 0; p < num_scales; p++)
+			{
+				TKeyFrame<glm::vec3> scale;
+
+				scale.mValue = utils::make_vec3(channel->mScalingKeys[p].mValue);
+				scale.mTimeStamp = (float)channel->mScalingKeys[p].mTime;
+
+				data.mScales[p] = (scale);
+			}
+		}
+
+		void ReadMissingBones(aiAnimation *animation)
+		{
+			auto &bones = mDecodedMesh.Bones.Bones;
+			auto &boneNames = mDecodedMesh.Bones.BoneNames;
+
+			int32_t bone_count = (int32_t)bones.size();
+
+			for (unsigned j = 0; j < animation->mNumChannels; j++)
+			{
+
+				auto channel = animation->mChannels[j];
+				std::string bone_name = channel->mNodeName.data;
+				uint64_t name_hash = std::hash<std::string>()(bone_name);
+
+				// find missing bones
+				if (!bones.contains(name_hash))
+				{
+					bones[name_hash] = {name_hash, bone_count};
+					boneNames[bone_name] = name_hash;
+					bone_count++;
+				}
+			}
+		}
+
+		void GetAnimationData()
+		{
+			aiMatrix4x4 global_inverse_matrix = mScene->mRootNode->mTransformation;
+			global_inverse_matrix = global_inverse_matrix.Inverse();
+
+			for (unsigned int i = 0; i < mScene->mNumAnimations; i++)
+			{
+				aiAnimation *animation = mScene->mAnimations[i];
+				ReadMissingBones(animation);
+
+				DecodedAnimation anim{};
+				anim.Name = animation->mName.C_Str();
+				anim.Duration = (float)animation->mDuration;
+				anim.TicksPerSecond = (float)animation->mTicksPerSecond;
+
+				for (unsigned j = 0; j < animation->mNumChannels; j++)
+				{
+					auto channel = animation->mChannels[j];
+					uint64_t bone_name = std::hash<std::string>()(channel->mNodeName.data);
+
+					// get animation keys
+					FrameData frame_data;
+					ParseAnimationData(animation, channel, frame_data);
+					anim.Frames.emplace(bone_name, frame_data);
+				}
+
+				mDecodedMesh.Animations.emplace_back(anim);
+			}
+		}
+
+		EmbeddedTexture GetTextureData(const aiScene *scene, aiString &str)
+		{
+			EmbeddedTexture out{};
+			out.Path = str.C_Str();
+
+			if (auto embedded = scene->GetEmbeddedTexture(str.C_Str()))
+			{
+				auto size = embedded->mWidth + embedded->mHeight;
+				out.EmbeddedData.Allocate(embedded->pcData, size);
+				out.Type = EmbeddedTexture::Embedded;
+			}
+
+			return out;
+		}
+
+		void GetMaterialData()
 		{
 			static aiTextureType supported_textures[] = {
 
@@ -405,15 +408,17 @@ namespace BHive
 				aiTextureType_BASE_COLOR, aiTextureType_METALNESS, aiTextureType_SPECULAR, aiTextureType_DIFFUSE_ROUGHNESS,
 			};
 
-			auto count = scene->mNumMaterials;
+			auto &materials = mDecodedMesh.Materials;
+			auto count = mScene->mNumMaterials;
 			aiString str;
 
 			materials.resize(count);
+			mDecodedMesh.MeshData.MaterialCount = count;
 
 			for (unsigned i = 0; i < count; i++)
 			{
 
-				auto loaded_material = scene->mMaterials[i];
+				auto loaded_material = mScene->mMaterials[i];
 				auto name = loaded_material->GetName().C_Str();
 
 				auto &material = materials[i];
@@ -428,8 +433,8 @@ namespace BHive
 						auto it = std::find_if(textures.begin(), textures.end(), [texName](const auto &t) { return t.GetName() == texName; });
 						if (it == textures.end())
 						{
-							EmbeddedTexture texture = GetTextureData(scene, str);
-							texture.Type = GetTextureType(supported_textures[j]);
+							EmbeddedTexture texture = GetTextureData(mScene, str);
+							texture.Type = utils::GetTextureType(supported_textures[j]);
 							material.Textures.emplace_back(texture);
 						}
 					}
@@ -448,37 +453,48 @@ namespace BHive
 			}
 		}
 
-		void ProcessScene(const aiScene *scene, DecodedMesh &out, float importScale)
+		void ProcessScene()
 		{
-			aiMatrix4x4 root;
-			utils::ProcessNode(scene, scene->mRootNode, root, out, importScale);
-			utils::GetNodeHeiracrchy(scene->mRootNode, out.BoneHeirarchy);
-			utils::GetMaterialData(scene, out.Materials);
-			utils::GetAnimationData(scene, out.Animations, out.Bones);
+			aiMatrix4x4 root = aiMatrix4x4({1.f, 1.f, 1.f}, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f});
+			ProcessNode(mScene->mRootNode, root);
+			GetNodeHeiracrchy(mScene->mRootNode, mDecodedMesh.BoneHeirarchy);
+			GetMaterialData();
+			GetAnimationData();
 		}
 
-	} // namespace utils
+	public:
+		AssimpParser(const std::filesystem::path &path, float importScale)
+			: mImportScale(importScale)
+		{
+			Assimp::Importer importer;
+			importer.SetProgressHandler(new ModelProgress());
+			int flags = aiProcessPreset_TargetRealtime_Fast;
+			mScene = importer.ReadFile(path.string().c_str(), (unsigned)flags);
+
+			if (!mScene || !mScene->mRootNode)
+			{
+				LOG_ERROR("AssimpParser::Error - {}", importer.GetErrorString());
+			}
+			else
+			{
+				ProcessScene();
+			}
+
+			mDecodedMesh.Path = path;
+		}
+
+		DecodedMesh GetResult() const { return mDecodedMesh; }
+
+	private:
+		const aiScene *mScene = nullptr;
+		DecodedMesh mDecodedMesh;
+		float mImportScale = 1.0f;
+		int32_t mBoneCounter = 0;
+	};
 
 	DecodedMesh MeshImporter::Import(const std::filesystem::path &path, float importScale)
 	{
-		Assimp::Importer importer;
-		importer.SetProgressHandler(new ModelProgress());
-		int flags = aiProcessPreset_TargetRealtime_Fast;
-		const aiScene *scene = importer.ReadFile(path.string().c_str(), (unsigned)flags);
-
-		DecodedMesh decoded{};
-
-		if (!scene || !scene->mRootNode)
-		{
-			LOG_ERROR("MeshImporter::Error - {}", importer.GetErrorString());
-		}
-		else
-		{
-			utils::ProcessScene(scene, decoded, importScale);
-			decoded.Path = path;
-			decoded.MeshData.MaterialCount = (uint32_t)decoded.Materials.size();
-		}
-
-		return decoded;
+		AssimpParser parser(path, importScale);
+		return parser.GetResult();
 	}
 } // namespace BHive

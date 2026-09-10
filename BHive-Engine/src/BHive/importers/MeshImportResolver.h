@@ -42,6 +42,8 @@ namespace BHive
 		{
 			MeshPtr Mesh;
 			MaterialTable Materials;
+			SkeletonPtr Skeleton;
+			std::vector<SkeletalAnimationPtr> Animations;
 		};
 
 	public:
@@ -49,10 +51,12 @@ namespace BHive
 
 		Result Resolve(const DecodedMesh &decodedMesh);
 
+		void SetOptions(const FMeshImportOptions &options) { mOptions = options; };
+
 		const AdditionalAssets &GetAdditonalAssets() const { return mAdditionalAssets; }
 
 	private:
-		void ResolveAnimations(const std::vector<DecodedAnimation> &animations);
+		std::vector<SkeletalAnimationPtr> ResolveAnimations(const std::vector<DecodedAnimation> &animations);
 
 		void ResolveMaterials(const std::vector<DecodedMaterial> &materials, MaterialTable &material_table, const std::filesystem::path &assetPath);
 

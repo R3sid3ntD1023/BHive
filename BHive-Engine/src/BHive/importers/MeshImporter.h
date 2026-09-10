@@ -12,8 +12,7 @@ namespace BHive
 		std::string Name{""};
 		float Duration{0.f};
 		float TicksPerSecond{0.f};
-		glm::mat4 GlobalInverseMatrix{1.0f};
-		std::map<std::string, FrameData> Frames;
+		std::unordered_map<uint64_t, FrameData> Frames;
 	};
 
 	struct EmbeddedTexture
@@ -44,7 +43,7 @@ namespace BHive
 	struct DecodedMesh
 	{
 		FMeshData MeshData;
-		Bones Bones;
+		BoneInfo Bones;
 		SkeletalNode BoneHeirarchy;
 		std::vector<DecodedAnimation> Animations;
 		std::vector<DecodedMaterial> Materials;

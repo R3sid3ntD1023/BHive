@@ -42,18 +42,18 @@ namespace BHive
 
 	void SkeletalPose::ReadHeirarchy(const SkeletalNode &node, const glm::mat4 &parent)
 	{
-		auto name = node.mName;
-		auto transform = node.mTransformation;
+		auto name = node.NameHash;
+		auto transform = node.Transformation;
 
 		if (auto bone = mSkeleton->FindBone(name))
 		{
 			auto index = bone->ID;
 			transform = GetTransformJointSpace(index);
-			SetTransformJointSpace(index, parent * transform * bone->LocalBindPoseMatrix);
+			SetTransformJointSpace(index, parent * transform * bone->Offset);
 		}
 
 		glm::mat4 global_transform = parent * transform;
-		for (auto &child : node.mChildren)
+		for (auto &child : node.Children)
 		{
 			ReadHeirarchy(child, global_transform);
 		}

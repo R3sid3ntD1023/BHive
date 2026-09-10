@@ -62,8 +62,8 @@ void main()
 	uint instanceID = visibleIndices[visibleIndex];
 	ObjectData object = objects[instanceID];
 
-	//mat4 boneMatrix = GetBoneMatrix(vBoneIds, vWeights, object.boneOffset);
-	mat4 model =  object.model ;//* boneMatrix;
+	mat4 boneMatrix = GetBoneMatrix(vBoneIds, vWeights, object.boneOffset);
+	mat4 model =  object.model * boneMatrix;
 	vec4 worldPos = model * vec4(vPosition, 1);
 
 	mat3 normal_matrix = transpose(inverse(mat3(model)));

@@ -79,9 +79,11 @@ namespace BHive
 
 		void SubmitMesh(const FMeshSubmissionRequest &info);
 
+		void UpdateMesh(ContextHandle requestHandle, MeshPtr mesh);
+
 		void UpdateTransform(ContextHandle requestHandle, const FTransform &t);
 
-		void UpdateMesh(ContextHandle requestHandle, MeshPtr mesh);
+		void UpdateBones(ContextHandle handle, const std::vector<glm::mat4> &bones);
 
 		void Resize(const glm::uvec2 &size);
 

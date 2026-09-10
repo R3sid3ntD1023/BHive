@@ -37,9 +37,9 @@ bool SphereIntersection(Frustum frustum, vec3 c, float r)
     for(int i = 0; i < 6; i++)
     {
         vec4 plane = frustum.planes[i];
-        vec3 n = plane.xyz;
-        float d = plane.w;
-        if((dot(c, n) + d + r) >= 0.0)
+        float dist = dot(c, plane.xyz) + plane.w; 
+
+        if(dist > r)
             return false;
     }
 

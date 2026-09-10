@@ -46,7 +46,7 @@ namespace BHive
 
 	MeshImportResolver::Result MeshImportResolver::Resolve(const DecodedMesh &decodedMesh)
 	{
-		MeshPtr asset{};
+		MeshImportResolver::Result result{};
 
 		auto name = mOptions.AssetPath.stem().string();
 		auto skeleton = mOptions.Skeleton;
@@ -57,7 +57,7 @@ namespace BHive
 		{
 		case EMeshType::StaticMesh:
 		{
-			asset = MeshFactory::CreateStatic(decodedMesh.MeshData);
+			result.Mesh = MeshFactory::CreateStatic(decodedMesh.MeshData);
 			break;
 		}
 		case EMeshType::SkeletalMesh:
@@ -65,53 +65,55 @@ namespace BHive
 			if (!skeleton)
 			{
 				skeleton = SkeletonFactory::Create(decodedMesh.Bones, decodedMesh.BoneHeirarchy);
-				mAdditionalAssets.push_back(skeleton);
+				result.Skeleton = skeleton;
 			}
 
 			if (mOptions.ImportAnimations)
 			{
-				ResolveAnimations(decodedMesh.Animations);
+				result.Animations = ResolveAnimations(decodedMesh.Animations);
 			}
 
-			asset = MeshFactory::CreateSkeletal(decodedMesh.MeshData, skeleton);
+			result.Mesh = MeshFactory::CreateSkeletal(decodedMesh.MeshData, skeleton);
 			break;
 		}
 		case EMeshType::SkeletalAnimation:
 		{
-			if (!decodedMesh.Animations.empty())
-			{
-				if (!skeleton)
-				{
-					skeleton = SkeletonFactory::Create(decodedMesh.Bones, decodedMesh.BoneHeirarchy);
-					mAdditionalAssets.push_back(skeleton);
-				}
+			if (decodedMesh.Animations.empty())
+				break;
 
-				ResolveAnimations(decodedMesh.Animations);
+			if (!skeleton)
+			{
+				skeleton = SkeletonFactory::Create(decodedMesh.Bones, decodedMesh.BoneHeirarchy);
+				result.Skeleton = skeleton;
 			}
+
+			result.Animations = ResolveAnimations(decodedMesh.Animations);
 
 			break;
 		}
 		}
 
-		MaterialTable materials;
-		materials.Resize(decodedMesh.MeshData.MaterialCount);
+		result.Materials.Resize(decodedMesh.MeshData.MaterialCount);
 
 		if (mOptions.ImportMaterials)
 		{
 
-			ResolveMaterials(decodedMesh.Materials, materials, decodedMesh.Path);
+			ResolveMaterials(decodedMesh.Materials, result.Materials, decodedMesh.Path);
 		}
 
-		return {asset, materials};
+		return result;
 	}
 
-	void MeshImportResolver::ResolveAnimations(const std::vector<DecodedAnimation> &animations)
+	std::vector<SkeletalAnimationPtr> MeshImportResolver::ResolveAnimations(const std::vector<DecodedAnimation> &animations)
 	{
+		std::vector<SkeletalAnimationPtr> resolvedAnimations;
 		for (auto &decoded : animations)
 		{
-			auto anim = SkeletalAnimationFactory::Create(decoded.Duration, decoded.TicksPerSecond, decoded.Frames, decoded.GlobalInverseMatrix);
-			mAdditionalAssets.emplace_back(anim);
+			auto anim = SkeletalAnimationFactory::Create(decoded.Duration, decoded.TicksPerSecond, decoded.Frames);
+			resolvedAnimations.emplace_back(anim);
 		}
+
+		return resolvedAnimations;
 	}
 
 	void MeshImportResolver::ResolveMaterials(const std::vector<DecodedMaterial> &materials, MaterialTable &material_table, const std::filesystem::path &assetPath)

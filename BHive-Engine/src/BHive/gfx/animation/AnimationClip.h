@@ -1,18 +1,19 @@
 #pragma once
 
 #include "core/Core.h"
+#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
 	class Skeleton;
-	class SkeletalAnimation;
 	struct SkeletalNode;
 	class SkeletalPose;
+	class SkeletalAnimation;
 
 	class BHIVE_API AnimationClip
 	{
 	public:
-		AnimationClip(const Ref<SkeletalAnimation> &animation);
+		AnimationClip(SkeletalAnimationPtr animation);
 
 		void Play(float dt, SkeletalPose &pose, Skeleton *skeleton);
 
@@ -22,13 +23,13 @@ namespace BHive
 
 		float GetLengthInSeconds() const;
 
-		void SetSkeletalAnimation(const Ref<SkeletalAnimation> &animation);
+		void SetSkeletalAnimation(SkeletalAnimationPtr animation);
 
 	private:
 		void ReadNodeHeirarchy(Skeleton *skeleton, const SkeletalNode &node, SkeletalPose &pose, const glm::mat4 &parent, float time);
 
 	private:
-		Ref<SkeletalAnimation> mAnimation;
+		SkeletalAnimation *mAnimation;
 		float mCurrentTime = 0.0f;
 	};
 } // namespace BHive

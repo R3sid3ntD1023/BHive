@@ -6,6 +6,7 @@
 #include "core/layers/ImGuiLayer.h"
 #include "core/platform/Platform.h"
 #include "gfx/Framebuffer.h"
+#include "gfx/animation/AnimationClip.h"
 #include "gfx/factories/MaterialFactory.h"
 #include "gfx/factories/MeshFactory.h"
 #include "gfx/factories/TextureFactory.h"
@@ -83,22 +84,23 @@ namespace BHive
 
 			{
 				auto material = mMaterialTables[2][0].As<StandardMaterial>();
-				material->SetAlbedo({1.f, 0.5f, 0.f, 1.0f});
+				material->SetAlbedo({0.5f, 0.5f, 0.5f, 1.0f});
 				material->SetEmission(FColor::Black);
 				material->SetMetalness(0.0f);
 				material->SetRoughness(0.5f);
 			}
 
-#if 1
+#if 0
 	#define TEST_MESH_NAME "C://Users//dariu//Documents//MultiSubMesh.glb"
 	#define SCALE 1.0f
-#elif
-	#define TEST_MESH_NAME "C://Users//dariu//Documents//Erika.gltf"
-	#define SCALE .01f
+#else
+	#define TEST_MESH_NAME "C://Users//dariu//Documents//BHive//projects//Shadows//resources//Kachujin//Kachujin.gltf"
+	#define TEST_ANIMATION "C://Users//dariu//Documents//BHive//projects//Shadows//resources//Kachujin//animations//Unarmed Idle 01.glb"
+	#define SCALE .05f
 #endif
 			{
 				FMeshImportOptions import_options{};
-				import_options.MeshType = EMeshType::StaticMesh;
+				import_options.MeshType = EMeshType::SkeletalMesh;
 				import_options.OverrideMaterials = mCharacterMaterials;
 				auto decodedMesh = MeshImporter::Import(TEST_MESH_NAME, SCALE);
 				MeshImportResolver resolver(import_options);
@@ -106,6 +108,20 @@ namespace BHive
 				mCharacter = result.Mesh;
 				mCharacterMaterials = result.Materials;
 				mCharacterMaterials.SetAll(mStandardMaterial);
+
+#ifdef TEST_ANIMATION
+				mCharacterSkeleton = result.Skeleton;
+				import_options.MeshType = EMeshType::SkeletalAnimation;
+				import_options.ImportMaterials = false;
+				import_options.Skeleton = mCharacterSkeleton;
+				auto decodedAnimation = MeshImporter::Import(TEST_ANIMATION, SCALE);
+				resolver.SetOptions(import_options);
+				result = resolver.Resolve(decodedAnimation);
+				mCharacterAnimaton = result.Animations[0];
+				mCharacterPose = mCharacter.As<SkeletalMesh>()->GetDefaultPose();
+				mAnimationClip = CreateRef<AnimationClip>(mCharacterAnimaton);
+				LOG_INFO("Animation {} Duration {}, Length {}", mCharacterAnimaton.Index, mAnimationClip->GetDuration(), mAnimationClip->GetLengthInSeconds());
+#endif
 			}
 		}
 
@@ -124,17 +140,6 @@ namespace BHive
 			}
 		}
 
-		// FMeshSubmissionRequest request{};
-		// request.Mesh = mMesh;
-		// request.Materials = mMaterialTables[2];
-		// request.Transform = FTransform{{0.f, 0.0f, 0.f}};
-		// mSceneRenderer->SubmitMesh(request, sSphereHandle);
-
-		// request.Materials = mMaterialTables[2];
-		// request.Transform = FTransform{{0, 1.f, -2}};
-
-		// mSceneRenderer->SubmitMesh(request);
-
 		FMeshSubmissionRequest request{};
 		request.Materials = mMaterialTables[2];
 		request.Transform = FTransform{{0, 0, 0}};
@@ -148,7 +153,7 @@ namespace BHive
 			request.Mesh = mCharacter;
 			request.Materials = mCharacterMaterials;
 			request.Transform = sphereTransform;
-			// request.BoneTransforms = mesh->GetSkeleton()->GetRestPoseTransforms();
+			request.BoneTransforms = mCharacter.As<SkeletalMesh>()->GetSkeleton()->GetRestPoseTransforms();
 			mSceneRenderer->SubmitMesh(request, sCharacterHandle);
 		}
 	}
@@ -159,7 +164,17 @@ namespace BHive
 
 	void SceneLayer::OnUpdate(float time)
 	{
-		// sphereTransform.AddRotation({0, .1f, 0});
+		sphereTransform.AddRotation({0, 10.f * time, 0});
+
+		if (mAnimationClip)
+		{
+			auto &pose = *mCharacterPose;
+			mAnimationClip->Play(time, pose, mCharacterSkeleton.As<Skeleton>());
+			mSceneRenderer->UpdateBones(sCharacterHandle, pose.GetTransformsJointSpace());
+			mSceneRenderer->UpdateTransform(sCharacterHandle, sphereTransform);
+
+			// LOG_INFO("{}", glm::vec3(pose.GetTransformsJointSpace()[0][3]));
+		}
 
 		if (mViewportActive)
 			mCameraController.Update(time);
@@ -189,55 +204,6 @@ namespace BHive
 		mSceneRenderer->Submit(light);
 		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), light.GetPosition());
 		renderer.Line.DrawGrid({});
-
-		// mSceneRenderer->UpdateTransform(sSphereHandle, sphereTransform);
-
-		// for (uint32_t i = 0; i < transforms.size(); ++i)
-		// {
-		// 	auto &t = transforms[i];
-		// 	auto aabb = mMesh->GetBoundingBox();
-		// 	auto &model = t.ToMat4();
-		// 	auto pos = t.GetTranslation();
-		// 	auto localCenter = aabb.GetCenter();
-		// 	auto worldCenter = glm::vec3(model * glm::vec4(localCenter, 1.0f));
-		// 	auto scale = glm::vec3(glm::length(glm::vec3(model[0].xyz)), glm::length(glm::vec3(model[1].xyz)), glm::length(glm::vec3(model[2].xyz)));
-		// 	float scaledRadius = aabb.GetRadius() * glm::compMax(scale);
-
-		// 	renderer.Line.SetLineWidth(.5f);
-		// 	renderer.Line.DrawSphere(scaledRadius, 32, {}, FColor::Purple, {worldCenter});
-
-		// 	renderer.Line.DrawBox(aabb.GetExtent(), {}, FColor::Red, {worldCenter});
-
-		// 	LOG_TRACE("ID {} : Center {} , Radius{} ", i, worldCenter, scaledRadius);
-		// }
-
-		// for (uint32_t i = 0; i < 6; ++i)
-		// {
-		// 	auto pos = mCameras[0].GetView()[3];
-		// 	auto &f = mSceneRenderer->GetFrustrum();
-		// 	auto plane = f.GetPlanes()[i];
-		// 	glm::vec3 n = plane.xyz;
-		// 	glm::vec3 p = f.GetPoints()[i];
-		// 	renderer.Line.DrawLine(p, p + n * 3.0f, FColor::Yellow);
-		// 	LOG_TRACE("Plane {} normal: {}", i, glm::vec3(plane.xyz));
-		// }
-
-		// LOG_TRACE("Camera0 - Forward: {} Up: {}", mCameras[0].GetForward(), mCameras[0].GetUp());
-		// if (mMesh)
-		// {
-		// 	auto aabb = mMesh->GetBoundingBox();
-
-		// 	renderer.Line.DrawAABB(aabb, FColor::Orange, sphereTransform);
-		// 	renderer.Line.DrawAABB(aabb, FColor::Orange, FTransform{{0, 1.f, -2}});
-
-		// 	renderer.Line.DrawSphere(aabb.GetRadius(), 32, {}, FColor::Purple, sphereTransform);
-		// 	renderer.Line.DrawSphere(aabb.GetRadius(), 32, {}, FColor::Purple, FTransform{{0, 1.f, -2}});
-		// }
-
-		// if (mPlane)
-		// {
-		// 	renderer.Line.DrawAABB(mMesh->GetBoundingBox(), FColor::Orange, FTransform{});
-		// }
 
 		mSceneRenderer->Submit(light);
 		mSceneRenderer->End();

@@ -12,7 +12,7 @@ namespace BHive
 
 	AABB SkeletalMesh::GetBoundingBox() const
 	{
-		const auto &root_transform = mSkeleton->GetRoot().mTransformation;
+		const auto &root_transform = mSkeleton->GetRoot().Transformation;
 		// const auto &root_transform = mSkeleton->FindBone(root_node)->LocalBindPoseMatrix;
 		const auto &bounds = GetData().Bounds;
 

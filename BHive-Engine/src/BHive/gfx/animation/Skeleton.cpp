@@ -2,44 +2,31 @@
 
 namespace BHive
 {
-	Skeleton::Skeleton(const Bones &bones, const SkeletalNode &root)
-		: mBones(bones),
+	Skeleton::Skeleton(const BoneInfo &boneInfo, const SkeletalNode &root)
+		: mBoneInfo(boneInfo),
 		  mRoot(root)
 	{
 		CalculateRestPoseTransforms(mRoot, glm::mat4(1));
 	}
 
-	const Bone *Skeleton::FindBone(const std::string &name) const
+	const Bone *Skeleton::FindBone(uint64_t hash) const
 	{
-		if (mBones.contains(name))
-			return &mBones.at(name);
+		if (mBoneInfo.Bones.contains(hash))
+			return &mBoneInfo.Bones.at(hash);
 
 		return nullptr;
 	}
 
-	void Skeleton::Save(cereal::BinaryOutputArchive &ar) const
-	{
-		Asset::Save(ar);
-		ar(mBones, mRoot, mRestPoseTransforms);
-	}
-
-	void Skeleton::Load(cereal::BinaryInputArchive &ar)
-	{
-		Asset::Load(ar);
-		ar(mBones, mRoot, mRestPoseTransforms);
-	}
-
 	void Skeleton::CalculateRestPoseTransforms(const SkeletalNode &node, const glm::mat4 &parent)
 	{
-		auto name = node.mName;
-		auto children = node.mChildren;
-		auto transform = node.mTransformation;
-		auto parent_transform = node.ParentTransformation;
+		auto name = node.NameHash;
+		auto children = node.Children;
+		auto transform = node.Transformation;
 
-		if (mBones.contains(name))
+		if (mBoneInfo.Bones.contains(name))
 		{
-			auto &bone = mBones.at(name);
-			mRestPoseTransforms.push_back(parent * transform * bone.LocalBindPoseMatrix);
+			auto &bone = mBoneInfo.Bones.at(name);
+			mRestPoseTransforms.push_back(parent * transform * bone.Offset);
 		}
 
 		glm::mat4 global = parent * transform;
@@ -53,15 +40,15 @@ namespace BHive
 	{
 		BEGIN_REFLECT(Skeleton)
 		REFLECT_CONSTRUCTOR()
-		REFLECT_PROPERTY_READ_ONLY("Bones", mBones)
+		REFLECT_PROPERTY_READ_ONLY("BoneInfo", mBoneInfo)
 		REFLECT_PROPERTY_READ_ONLY("Heirarchy", mRoot);
 	}
 
 	REFLECT(SkeletalNode)
 	{
 		BEGIN_REFLECT(SkeletalNode)
-		REFLECT_PROPERTY_READ_ONLY("Name", mName)
-		REFLECT_PROPERTY_READ_ONLY("Transformation", mTransformation)
-		REFLECT_PROPERTY_READ_ONLY("Children", mChildren);
+		REFLECT_PROPERTY_READ_ONLY("Name", NameHash)
+		REFLECT_PROPERTY_READ_ONLY("Transformation", Transformation)
+		REFLECT_PROPERTY_READ_ONLY("Children", Children);
 	}
 } // namespace BHive

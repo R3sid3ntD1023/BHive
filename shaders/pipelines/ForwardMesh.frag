@@ -22,7 +22,8 @@ void main()
 	#define OPACITY 1.0f
 #endif
 
+#ifdef DEBUG
 	outColor = vs_in.DebugColor;
-
+#endif
 	fs_out = vec4(outColor, OPACITY);
 }
