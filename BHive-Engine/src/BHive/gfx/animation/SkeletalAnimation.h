@@ -8,7 +8,7 @@ namespace BHive
 {
 	class Skeleton;
 
-	class BHIVE_API SkeletalAnimation : public Asset
+		class BHIVE_API SkeletalAnimation : public Asset
 	{
 	public:
 		using Frames = std::unordered_map<uint64_t, FrameData>;
@@ -27,6 +27,8 @@ namespace BHive
 		glm::vec3 InterpolatePosition(uint64_t hash, float animationTime);
 		glm::quat InterpolateRotation(uint64_t hash, float animationTime);
 		glm::vec3 InterpolateScaling(uint64_t hash, float animationTime);
+
+		const FrameData *FindFrames(uint64_t hash) const;
 
 		REFLECTABLEV(Asset)
 

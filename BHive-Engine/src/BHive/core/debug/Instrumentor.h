@@ -20,7 +20,7 @@ namespace BHive
 		std::string Name;
 	};
 
-	class Instrumentor
+	class BHIVE_API Instrumentor
 	{
 	public:
 		Instrumentor(const Instrumentor &) = delete;
@@ -64,7 +64,6 @@ namespace BHive
 
 		void WriteProfile(const ProfileResult &result)
 		{
-			mMutex.unlock();
 
 			std::stringstream json;
 
@@ -75,23 +74,20 @@ namespace BHive
 			json << "\"name\":\"" << result.Name << "\",";
 			json << "\"ph\":\"X\",";
 			json << "\"pid\":0,";
-			json << "\"tid\":" << result.ThreadID << ",";
+			json << "\"tid\":" << std::hash<std::thread::id>{}(result.ThreadID) << ",";
 			json << "\"ts\":" << result.Start.count();
 			json << "}";
 
 			std::lock_guard lock(mMutex);
 			if (mCurrentSession)
 			{
+
 				mOutputStream << json.str();
 				mOutputStream.flush();
 			}
 		}
 
-		static Instrumentor &Get()
-		{
-			static Instrumentor instance;
-			return instance;
-		}
+		static Instrumentor &Get();
 
 	private:
 		Instrumentor()
@@ -119,6 +115,7 @@ namespace BHive
 			{
 				WriteFooter();
 				mOutputStream.close();
+				mOutputStream.clear();
 				delete mCurrentSession;
 				mCurrentSession = nullptr;
 			}
@@ -150,8 +147,8 @@ namespace BHive
 		{
 			auto end_point = std::chrono::steady_clock::now();
 			auto high_res_start = FloatingPointMicroSeconds{mStartTimePoint.time_since_epoch()};
-			auto elaped_time =
-				std::chrono::time_point_cast<std::chrono::microseconds>(end_point).time_since_epoch() - std::chrono::time_point_cast<std::chrono::microseconds>(mStartTimePoint).time_since_epoch();
+			auto elaped_time
+				= std::chrono::time_point_cast<std::chrono::microseconds>(end_point).time_since_epoch() - std::chrono::time_point_cast<std::chrono::microseconds>(mStartTimePoint).time_since_epoch();
 
 			Instrumentor::Get().WriteProfile({mName, high_res_start, elaped_time, std::this_thread::get_id()});
 

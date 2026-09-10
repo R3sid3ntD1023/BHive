@@ -100,6 +100,14 @@ namespace BHive
 		return scale;
 	}
 
+	const FrameData *SkeletalAnimation::FindFrames(uint64_t hash) const
+	{
+		if (mFrames.contains(hash))
+			return &mFrames.at(hash);
+
+		return nullptr;
+	}
+
 	bool SkeletalAnimation::Contains(uint64_t hash) const
 	{
 		return mFrames.contains(hash);

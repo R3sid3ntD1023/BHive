@@ -119,7 +119,7 @@ namespace BHive
 				result = resolver.Resolve(decodedAnimation);
 				mCharacterAnimaton = result.Animations[0];
 				mCharacterPose = mCharacter.As<SkeletalMesh>()->GetDefaultPose();
-				mAnimationClip = CreateRef<AnimationClip>(mCharacterAnimaton);
+				mAnimationClip = CreateRef<AnimationClip>(mCharacterAnimaton, mCharacterSkeleton);
 				LOG_INFO("Animation {} Duration {}, Length {}", mCharacterAnimaton.Index, mAnimationClip->GetDuration(), mAnimationClip->GetLengthInSeconds());
 #endif
 			}
@@ -169,7 +169,7 @@ namespace BHive
 		if (mAnimationClip)
 		{
 			auto &pose = *mCharacterPose;
-			mAnimationClip->Play(time, pose, mCharacterSkeleton.As<Skeleton>());
+			mAnimationClip->Play(time, pose);
 			mSceneRenderer->UpdateBones(sCharacterHandle, pose.GetTransformsJointSpace());
 			mSceneRenderer->UpdateTransform(sCharacterHandle, sphereTransform);
 

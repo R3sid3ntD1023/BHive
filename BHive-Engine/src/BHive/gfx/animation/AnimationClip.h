@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AnimationFrames.h"
+#include "Bone.h"
 #include "core/Core.h"
 #include "gfx/registries/Handles.h"
 
@@ -10,12 +12,35 @@ namespace BHive
 	class SkeletalPose;
 	class SkeletalAnimation;
 
+	struct LocalPose
+	{
+		glm::vec3 Position;
+		glm::quat Rotation;
+		glm::vec3 Scale;
+	};
+
+	struct RuntimeBone
+	{
+		uint16_t Parent;
+		const Bone *Bone;
+		const FrameData *Frames;
+
+		LocalPose BindPose;
+
+		uint16_t PositonKey = 0;
+		uint16_t RotationKey = 0;
+		uint16_t ScaleKey = 0;
+	};
+
 	class BHIVE_API AnimationClip
 	{
-	public:
-		AnimationClip(SkeletalAnimationPtr animation);
 
-		void Play(float dt, SkeletalPose &pose, Skeleton *skeleton);
+	public:
+		static constexpr uint16_t INVALID_PARENT = UINT16_MAX;
+
+		AnimationClip(SkeletalAnimationPtr animation, SkeletonPtr skeleton);
+
+		void Play(float dt, SkeletalPose &pose);
 
 		void PlayFromStart();
 
@@ -23,13 +48,28 @@ namespace BHive
 
 		float GetLengthInSeconds() const;
 
-		void SetSkeletalAnimation(SkeletalAnimationPtr animation);
+	private:
+		void BuildRuntime(Skeleton *skeleton);
+
+		void BuildNode(Skeleton *skeleton, const SkeletalNode &node, uint16_t parent);
+
+		glm::vec3 InterpolatePosition(RuntimeBone &bone, float time);
+
+		glm::quat InterpolateRotation(RuntimeBone &bone, float time);
+
+		glm::vec3 InterpolateScaling(RuntimeBone &bone, float time);
+
+		float GetScaleFactor(float lastTimeStamp, float nextTimeStamp, float animationTime);
+
+		LocalPose Evaluate(RuntimeBone &bone, float time);
 
 	private:
-		void ReadNodeHeirarchy(Skeleton *skeleton, const SkeletalNode &node, SkeletalPose &pose, const glm::mat4 &parent, float time);
+		SkeletalAnimation *mAnimation = nullptr;
+		Skeleton *mSkeleton = nullptr;
 
-	private:
-		SkeletalAnimation *mAnimation;
 		float mCurrentTime = 0.0f;
+		std::vector<RuntimeBone> mRuntimeBones;
+		std::vector<LocalPose> mLocalTransforms;
+		std::vector<glm::mat4> mGlobalTransforms;
 	};
 } // namespace BHive

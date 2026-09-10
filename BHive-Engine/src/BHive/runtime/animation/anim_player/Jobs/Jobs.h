@@ -32,7 +32,7 @@ namespace BHive
 
 			if (mSkeleton && mClip)
 			{
-				mClip->Play(mTime, *pose_ptr, mSkeleton);
+				mClip->Play(mTime, *pose_ptr);
 			}
 
 			return pose_ptr;
