@@ -2,9 +2,9 @@
 
 namespace BHive
 {
-    static Instrumentor & Instrumentor::Get()
-		{
-			static Instrumentor instance;
-			return instance;
-		}
-}
+	Instrumentor &Instrumentor::Get()
+	{
+		static Instrumentor instance;
+		return instance;
+	}
+} // namespace BHive

@@ -56,13 +56,18 @@ namespace BHive
 				auto &bone = mRuntimeBones[i];
 
 				auto &local = mLocalTransforms[i];
-				glm::mat4 t = glm::translate(local.Position) * glm::toMat4(local.Rotation) * glm::scale(local.Scale);
+				glm::mat4 t;
+				{
+					BH_PROFILE_SCOPE("BuildTRS");
+					t = glm::translate(local.Position) * glm::toMat4(local.Rotation) * glm::scale(local.Scale);
+				}
 				if (bone.Parent == INVALID_PARENT)
 				{
 					mGlobalTransforms[i] = t;
 				}
 				else
 				{
+					BH_PROFILE_SCOPE("ParentConcat");
 					mGlobalTransforms[i] = mGlobalTransforms[bone.Parent] * t;
 				}
 			}
