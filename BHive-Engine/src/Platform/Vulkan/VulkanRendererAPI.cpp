@@ -154,14 +154,13 @@ namespace BHive
 		auto &cmd = ctx.CommandBuffer;
 		auto state = pass.State;
 
+#ifdef _DEBUG
 		vk::DebugUtilsLabelEXT label(pass.Name.c_str(), {1.0f, .5f, 0.0f, 1.0f});
 		cmd.beginDebugUtilsLabelEXT(label);
+#endif
 
 		for (auto &phase : pass.Phases)
 		{
-			vk::DebugUtilsLabelEXT label(phase.Name.c_str(), {0.0f, 1.0f, 0.0f, 1.0f});
-			cmd.beginDebugUtilsLabelEXT(label);
-
 			VulkanInterpreter::CreateBarriers(phase.BufferTransitions, ctx);
 
 			TransitionImages(phase, cmd);
@@ -183,11 +182,11 @@ namespace BHive
 				if (pass.Type == EPassType::Present)
 					TransitionSwapChainToPresent(ctx, swapChain);
 			}
-
-			cmd.endDebugUtilsLabelEXT();
 		}
 
+#ifdef _DEBUG
 		cmd.endDebugUtilsLabelEXT();
+#endif
 	}
 
 	void VulkanRendererAPI::TransitionImages(const FPhase &phase, vk::raii::CommandBuffer &cmd)

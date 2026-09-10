@@ -357,9 +357,6 @@ namespace BHive
 
 		void GetAnimationData()
 		{
-			aiMatrix4x4 global_inverse_matrix = mScene->mRootNode->mTransformation;
-			global_inverse_matrix = global_inverse_matrix.Inverse();
-
 			for (unsigned int i = 0; i < mScene->mNumAnimations; i++)
 			{
 				aiAnimation *animation = mScene->mAnimations[i];
@@ -455,8 +452,8 @@ namespace BHive
 
 		void ProcessScene()
 		{
-			aiMatrix4x4 root = aiMatrix4x4({1.f, 1.f, 1.f}, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f});
-			ProcessNode(mScene->mRootNode, root);
+			mScene->mRootNode->mTransformation = aiMatrix4x4({1.f, 1.f, 1.f}, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f});
+			ProcessNode(mScene->mRootNode, mScene->mRootNode->mTransformation);
 			GetNodeHeiracrchy(mScene->mRootNode, mDecodedMesh.BoneHeirarchy);
 			GetMaterialData();
 			GetAnimationData();

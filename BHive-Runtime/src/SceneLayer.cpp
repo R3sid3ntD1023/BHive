@@ -24,7 +24,7 @@
 
 namespace BHive
 {
-	FTransform sphereTransform{{0, 2, 0}};
+	FTransform sphereTransform{{0, 0, 0}};
 	std::vector<FTransform> transforms;
 	std::array<ContextHandle, 9> sSphereHandle;
 	ContextHandle sPlaneHandle;
@@ -95,7 +95,7 @@ namespace BHive
 	#define SCALE 1.0f
 #else
 	#define TEST_MESH_NAME "C://Users//dariu//Documents//BHive//projects//Shadows//resources//Kachujin//Kachujin.gltf"
-	#define TEST_ANIMATION "C://Users//dariu//Documents//BHive//projects//Shadows//resources//Kachujin//animations//Unarmed Idle 01.glb"
+	#define TEST_ANIMATION "C://Users//dariu//Documents//BHive//projects//Shadows//resources//Kachujin//animations//Unarmed Idle 02.glb"
 	#define SCALE .05f
 #endif
 			{
@@ -204,6 +204,9 @@ namespace BHive
 		mSceneRenderer->Submit(light);
 		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), light.GetPosition());
 		renderer.Line.DrawGrid({});
+		renderer.Line.DrawLine({0, 0, 0}, {10, 0, 0}, FColor::Red);
+		renderer.Line.DrawLine({0, 0, 0}, {0, 10, 0}, FColor::Green);
+		renderer.Line.DrawLine({0, 0, 0}, {0, 0, 10}, FColor::Blue);
 
 		mSceneRenderer->Submit(light);
 		mSceneRenderer->End();

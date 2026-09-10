@@ -15,13 +15,6 @@ namespace BHive
 		std::unordered_map<uint64_t, Bone> Bones;
 		std::unordered_map<std::string, uint64_t> BoneNames;
 
-		void emplace(const std::string &name, Bone bone)
-		{
-			uint64_t hash = std::hash<std::string>()(name);
-			Bones.emplace(hash, bone);
-			BoneNames.emplace(name, hash);
-		}
-
 		template <typename Ar>
 		void Serialize(Ar &ar)
 		{

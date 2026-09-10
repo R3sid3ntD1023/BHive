@@ -109,7 +109,7 @@ namespace BHive
 		std::vector<SkeletalAnimationPtr> resolvedAnimations;
 		for (auto &decoded : animations)
 		{
-			auto anim = SkeletalAnimationFactory::Create(decoded.Duration, decoded.TicksPerSecond, decoded.Frames);
+			auto anim = SkeletalAnimationFactory::Create(decoded);
 			resolvedAnimations.emplace_back(anim);
 		}
 
