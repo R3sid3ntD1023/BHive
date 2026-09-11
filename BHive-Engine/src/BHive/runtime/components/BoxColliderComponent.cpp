@@ -19,7 +19,7 @@ namespace BHive
 
 	void *BoxColliderComponent::GetGeometry()
 	{
-		auto scale = GetOwner()->GetWorldTransform().GetScale();
+		auto scale = GetOwner()->GetWorldTransform().Scale;
 		return new physx::PxBoxGeometry(Extents.x * scale.x, Extents.y * scale.y, Extents.z * scale.z);
 	}
 

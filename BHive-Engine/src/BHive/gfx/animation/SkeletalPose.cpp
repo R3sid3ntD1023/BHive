@@ -21,26 +21,26 @@ namespace BHive
 		else
 		{
 			mTransformsJointSpace.resize(count);
-			std::fill(mTransformsJointSpace.begin(), mTransformsJointSpace.end(), glm::identity<glm::mat4>());
+			std::fill(mTransformsJointSpace.begin(), mTransformsJointSpace.end(), AnimTransform{});
 		}
 	}
 
-	void SkeletalPose::SetTransformJointSpace(uint64_t index, const glm::mat4 &transform)
+	void SkeletalPose::SetTransformJointSpace(uint64_t index, const AnimTransform &transform)
 	{
 		mTransformsJointSpace[index] = transform;
 	}
 
-	inline const glm::mat4 &SkeletalPose::GetTransformJointSpace(uint64_t index) const
+	const auto &SkeletalPose::GetTransformJointSpace(uint64_t index) const
 	{
 		return mTransformsJointSpace[index];
 	}
 
 	void SkeletalPose::RecalulateObjectSpaceTransforms()
 	{
-		ReadHeirarchy(mSkeleton->GetRoot(), glm::mat4(1.0f));
+		ReadHeirarchy(mSkeleton->GetRoot(), {});
 	}
 
-	void SkeletalPose::ReadHeirarchy(const SkeletalNode &node, const glm::mat4 &parent)
+	void SkeletalPose::ReadHeirarchy(const SkeletalNode &node, const AnimTransform &parent)
 	{
 		auto name = node.NameHash;
 		auto transform = node.Transformation;
@@ -52,7 +52,7 @@ namespace BHive
 			SetTransformJointSpace(index, parent * transform * bone->Offset);
 		}
 
-		glm::mat4 global_transform = parent * transform;
+		const auto global_transform = parent * transform;
 		for (auto &child : node.Children)
 		{
 			ReadHeirarchy(child, global_transform);
@@ -67,10 +67,10 @@ namespace BHive
 
 		for (uint64_t i = 0; i < bone_count; i++)
 		{
-			const FTransform &t0 = p0.GetTransformJointSpace(i);
-			const FTransform &t1 = p1.GetTransformJointSpace(i);
+			const auto &t0 = p0.GetTransformJointSpace(i);
+			const auto &t1 = p1.GetTransformJointSpace(i);
 
-			result.SetTransformJointSpace(i, MathFunctionLibrary::Mix(t0, t1, weight));
+			result.SetTransformJointSpace(i, MathFunctionLibrary::Lerp(t0, t1, weight));
 		}
 	}
 
@@ -82,8 +82,8 @@ namespace BHive
 
 		for (uint64_t i = 0; i < bone_count; i++)
 		{
-			const glm::mat4 &t0 = p0.GetTransformJointSpace(i);
-			const glm::mat4 &t1 = p1.GetTransformJointSpace(i);
+			const auto &t0 = p0.GetTransformJointSpace(i);
+			const auto &t1 = p1.GetTransformJointSpace(i);
 
 			result.SetTransformJointSpace(i, t0 * t1);
 		}

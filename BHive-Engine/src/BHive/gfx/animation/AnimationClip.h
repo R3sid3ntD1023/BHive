@@ -12,20 +12,13 @@ namespace BHive
 	class SkeletalPose;
 	class SkeletalAnimation;
 
-	struct LocalPose
-	{
-		glm::vec3 Position;
-		glm::quat Rotation;
-		glm::vec3 Scale;
-	};
-
-	struct RuntimeBone
+		struct RuntimeBone
 	{
 		uint16_t Parent;
 		const Bone *Bone;
 		const FrameData *Frames;
 
-		LocalPose BindPose;
+		AnimTransform BindPose;
 
 		uint16_t PositonKey = 0;
 		uint16_t RotationKey = 0;
@@ -61,7 +54,7 @@ namespace BHive
 
 		float GetScaleFactor(float lastTimeStamp, float nextTimeStamp, float animationTime);
 
-		LocalPose Evaluate(RuntimeBone &bone, float time);
+		AnimTransform Evaluate(RuntimeBone &bone, float time);
 
 	private:
 		SkeletalAnimation *mAnimation = nullptr;
@@ -69,7 +62,7 @@ namespace BHive
 
 		float mCurrentTime = 0.0f;
 		std::vector<RuntimeBone> mRuntimeBones;
-		std::vector<LocalPose> mLocalTransforms;
-		std::vector<glm::mat4> mGlobalTransforms;
+		std::vector<AnimTransform> mLocalTransforms;
+		std::vector<AnimTransform> mGlobalTransforms;
 	};
 } // namespace BHive

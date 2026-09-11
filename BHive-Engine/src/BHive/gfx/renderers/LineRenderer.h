@@ -1,10 +1,10 @@
 #pragma once
 
-#include "gfx/Color.h"
-#include "core/math/boundingbox/AABB.h"
+#include "batches/LineRenderBatch.h"
 #include "core/math/Frustum.h"
 #include "core/math/Transform.h"
-#include "batches/LineRenderBatch.h"
+#include "core/math/boundingbox/AABB.h"
+#include "gfx/Color.h"
 
 namespace BHive
 {
@@ -68,8 +68,6 @@ namespace BHive
 		void DrawArrow(float size, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
 
 		void DrawFrustum(const Frustum &frustum, const FColor &color, int32_t entityID = -1);
-
-		void DrawJoint(const glm::mat4 &joint, float size = 1.f, const FColor &color = FColor::Cyan, int32_t entityID = -1);
 
 		void SetLineWidth(float width);
 

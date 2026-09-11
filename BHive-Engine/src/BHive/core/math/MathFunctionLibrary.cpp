@@ -47,14 +47,4 @@ namespace BHive
 		return glm::dot(normal, point) - distance;
 	}
 
-	template <>
-	FTransform MathFunctionLibrary::Lerp(const FTransform &v0, const FTransform &v1, float t)
-	{
-		auto translation = Lerp(v0.GetTranslation(), v1.GetTranslation(), t);
-		auto rotation = Lerp(v0.GetRotation(), v1.GetRotation(), t);
-		auto scale = Lerp(v0.GetScale(), v1.GetScale(), t);
-
-		return FTransform{translation, rotation, scale};
-	}
-
 } // namespace BHive

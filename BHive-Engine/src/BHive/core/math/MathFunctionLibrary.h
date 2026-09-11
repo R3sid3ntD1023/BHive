@@ -1,16 +1,13 @@
 #pragma once
 
-#include "core/Core.h"
 #include "Math.h"
 #include "Plane.h"
+#include "core/Core.h"
 
 namespace BHive
 {
 	struct BHIVE_API MathFunctionLibrary
 	{
-		template <typename T>
-		static T Mix(const T &t0, const T &t1, float w);
-
 		template <typename T>
 		static T Lerp(const T &v0, const T &v1, float t);
 

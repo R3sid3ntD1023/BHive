@@ -34,7 +34,7 @@ namespace BHive
 
 		const Bone *FindBone(uint64_t hash) const;
 
-		const std::vector<glm::mat4> &GetRestPoseTransforms() const { return mRestPoseTransforms; };
+		const auto &GetRestPoseTransforms() const { return mRestPoseTransforms; };
 
 		auto &GetBones() { return mBoneInfo.Bones; }
 
@@ -43,12 +43,12 @@ namespace BHive
 		REFLECTABLEV(Asset)
 
 	private:
-		void CalculateRestPoseTransforms(const SkeletalNode &node, const glm::mat4 &parent);
+		void CalculateRestPoseTransforms(const SkeletalNode &node, const AnimTransform &parent);
 
 	private:
 		SkeletalNode mRoot;
 		BoneInfo mBoneInfo;
-		std::vector<glm::mat4> mRestPoseTransforms;
+		std::vector<AnimTransform> mRestPoseTransforms;
 	};
 
 	REFLECT_EXTERN(Skeleton)

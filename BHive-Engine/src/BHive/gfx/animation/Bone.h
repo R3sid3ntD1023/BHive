@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AnimTransform.h"
 #include "core/Core.h"
 
 #define INVALID_BONE_INDEX 255
@@ -12,7 +13,7 @@ namespace BHive
 
 		int32_t ID = -1;
 
-		glm::mat4 Offset = {1.0f};
+		AnimTransform Offset;
 
 		template <typename A>
 		inline void Serialize(A &ar)

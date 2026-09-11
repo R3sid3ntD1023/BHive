@@ -1,10 +1,10 @@
 #include "RenderSystem.h"
+#include "gfx/renderers/Renderer.h"
 #include "gfx/renderers/SceneRenderer.h"
+#include "runtime/Components.h"
 #include "runtime/GameObject.h"
 #include "runtime/World.h"
-#include "runtime/Components.h"
 #include <physx/PxPhysicsAPI.h>
-#include "gfx/renderers/Renderer.h"
 
 namespace BHive
 {
@@ -58,10 +58,9 @@ namespace BHive
 			{
 				auto &c = view.get<PointLightComponent>(e);
 				const auto world_transform = c.GetWorldTransform();
-				const auto max_scale = glm::compMax(world_transform.GetScale());
 
 				PointLight light{};
-				light.SetColor(c.Color).SetPosition(world_transform.GetTranslation()).SetRadius(c.Radius * max_scale).SetIntensity(c.Color.a);
+				light.SetColor(c.Color).SetPosition(world_transform.Translation).SetRadius(c.Radius * glm::compMax(world_transform.Scale)).SetIntensity(c.Color.a);
 
 				renderer->Submit(light);
 
@@ -75,13 +74,12 @@ namespace BHive
 			{
 				auto &c = view.get<SpotLightComponent>(e);
 				const auto world_transform = c.GetWorldTransform();
-				const auto max_scale = glm::compMax(world_transform.GetScale());
 
 				SpotLight light{};
 				light.SetColor(c.Color)
 					.SetDirection(world_transform.GetForward())
-					.SetPosition(world_transform.GetTranslation())
-					.SetRadius(c.Radius * max_scale)
+					.SetPosition(world_transform.Translation)
+					.SetRadius(c.Radius * glm::compMax(world_transform.Scale))
 					.SetIntensity(c.Color.a)
 					.SetInnerAngleDegrees(c.InnerCutoff)
 					.SetOuterAngleDegrees(c.OuterCutoff);
@@ -126,7 +124,7 @@ namespace BHive
 				info.Materials = component.GetMaterials();
 				info.Transform = component.GetWorldTransform();
 				info.EntityID = (int32_t)e;
-				info.InstanceTransforms = {instances};
+				info.InstanceTransforms = instances;
 
 				renderer->SubmitMesh(info);
 			}

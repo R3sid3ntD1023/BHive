@@ -83,7 +83,7 @@ namespace BHive
 
 		void UpdateTransform(ContextHandle requestHandle, const FTransform &t);
 
-		void UpdateBones(ContextHandle handle, const std::vector<glm::mat4> &bones);
+		void UpdateBones(ContextHandle handle, const std::vector<AnimTransform> &bones);
 
 		void Resize(const glm::uvec2 &size);
 
@@ -166,5 +166,7 @@ namespace BHive
 		ResourceSets mSceneSets;
 
 		std::vector<glm::mat4> mBoneData;
+
+		std::vector<glm::mat4> mTempBones;
 	};
 } // namespace BHive

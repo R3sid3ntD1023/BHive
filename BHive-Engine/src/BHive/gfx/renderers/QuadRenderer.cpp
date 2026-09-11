@@ -1,10 +1,10 @@
 
-#include "core/profiler/CPUGPUProfiler.h"
-#include "gfx/font/Font.h"
-#include "gfx/font/MSDFData.h"
-#include "gfx/Texture.h"
 #include "QuadRenderer.h"
 #include "Renderer.h"
+#include "core/profiler/CPUGPUProfiler.h"
+#include "gfx/Texture.h"
+#include "gfx/font/Font.h"
+#include "gfx/font/MSDFData.h"
 #include "gfx/sprite/Sprite.h"
 
 namespace BHive
@@ -120,7 +120,7 @@ namespace BHive
 		for (uint32_t i = 0; i < 4; i++)
 		{
 			auto newposition = glm::vec4(positions[i] * glm::vec3(params.Size, 1), 1.0f);
-			glm::vec3 world_space_center = transform.GetTranslation();
+			glm::vec3 world_space_center = transform.Translation;
 			positions[i] = world_space_center + camera_right * newposition.x + camera_up * newposition.y;
 		}
 
@@ -129,7 +129,7 @@ namespace BHive
 		create_info.TexCoords = texcoords;
 		create_info.Size = {1, 1};
 		create_info.Color = params.Color;
-		create_info.Transform = glm::identity<glm::mat4>();
+		create_info.Transform = FTransform{};
 		create_info.Tiling = params.Tiling;
 		create_info.Flags = params.Flags;
 		create_info.Texture = texture;
@@ -157,9 +157,10 @@ namespace BHive
 
 		for (uint32_t i = 0; i < 4; i++)
 		{
+			auto mat = create_info.Transform.ToMat4();
 			auto v = QuadBatch.GetBuffer().PushVertex();
-			v->Position = create_info.Transform * (glm::vec4(create_info.Positions[i], 1.0f) * glm::vec4(create_info.Size, 1.f, 1.f));
-			v->Normal = glm::transpose(glm::inverse(create_info.Transform)) * glm::vec4(0, 0, 1, 0);
+			v->Position = mat * (glm::vec4(create_info.Positions[i], 1.0f) * glm::vec4(create_info.Size, 1.f, 1.f));
+			v->Normal = glm::transpose(glm::inverse(mat)) * glm::vec4(0, 0, 1, 0);
 			v->TexCoord = create_info.TexCoords[i] * create_info.Tiling;
 			v->Color = create_info.Color;
 			v->TextureIndex = texture_index;
@@ -238,7 +239,7 @@ namespace BHive
 			coords[2] = uvs.Max;
 			coords[3] = {uvs.Min.x, uvs.Max.y};
 
-			DrawTextQuad(quad, coords, {1, 1}, params.Style, transform, texture, entity_id);
+			DrawTextQuad(quad, coords, {1, 1}, params.Style, transform.ToMat4(), texture, entity_id);
 
 			// bitshift advance to get value in pixels (2^6 = 64)
 			if (i < text.size() - 1)

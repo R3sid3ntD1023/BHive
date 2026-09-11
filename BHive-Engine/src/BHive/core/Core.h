@@ -42,6 +42,7 @@ Scope<T> CreateScope(TArgs &&...args)
 #include "Casting.h"
 #include "Config.h"
 #include "core/subsystem/SubSystem.h"
+#include "debug/Instrumentor.h"
 #include "log/Log.h"
 #include "math/Math.h"
 #include "reflection/Reflection.h"

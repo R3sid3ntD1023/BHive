@@ -164,7 +164,7 @@ namespace BHive
 
 	void SceneLayer::OnUpdate(float time)
 	{
-		sphereTransform.AddRotation({0, 10.f * time, 0});
+		sphereTransform.Rotation.y += 10.0f * time;
 
 		if (mAnimationClip)
 		{
@@ -172,8 +172,6 @@ namespace BHive
 			mAnimationClip->Play(time, pose);
 			mSceneRenderer->UpdateBones(sCharacterHandle, pose.GetTransformsJointSpace());
 			mSceneRenderer->UpdateTransform(sCharacterHandle, sphereTransform);
-
-			// LOG_INFO("{}", glm::vec3(pose.GetTransformsJointSpace()[0][3]));
 		}
 
 		if (mViewportActive)
@@ -202,7 +200,7 @@ namespace BHive
 		PointLight light{};
 		light.SetColor(FColor::Orange).SetIntensity(1.0f).SetRadius(10.f).SetPosition({0, 1, 0});
 		mSceneRenderer->Submit(light);
-		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), light.GetPosition());
+		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), {light.GetPosition()});
 		renderer.Line.DrawGrid({});
 		renderer.Line.DrawLine({0, 0, 0}, {10, 0, 0}, FColor::Red);
 		renderer.Line.DrawLine({0, 0, 0}, {0, 10, 0}, FColor::Green);

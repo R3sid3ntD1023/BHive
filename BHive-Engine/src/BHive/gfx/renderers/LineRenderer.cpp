@@ -1,7 +1,7 @@
-#include "batches/LineRenderBatch.h"
-#include "core/profiler/CPUGPUProfiler.h"
 #include "LineRenderer.h"
 #include "Renderer.h"
+#include "batches/LineRenderBatch.h"
+#include "core/profiler/CPUGPUProfiler.h"
 
 namespace BHive
 {
@@ -36,11 +36,11 @@ namespace BHive
 		auto v0 = LineBatch.GetBuffer().PushVertex();
 		auto v1 = LineBatch.GetBuffer().PushVertex();
 
-		v0->Position = transform.ToMat4() * glm::vec4(p0, 1.0f);
+		v0->Position = transform.TransformPoint(p0);
 		v0->Color = color;
 		v0->EntityID = entityID;
 
-		v1->Position = transform.ToMat4() * glm::vec4(p1, 1.0f);
+		v1->Position = transform.TransformPoint(p1);
 		v1->Color = color;
 		v1->EntityID = entityID;
 	}
@@ -132,12 +132,9 @@ namespace BHive
 	void LineRenderer::DrawSphere(float radius, uint32_t sides, const glm::vec3 &offset, const FColor &color, const FTransform &transform, int32_t entityID)
 	{
 
-		auto rotationZ = glm::toMat4(glm::quat({0, 0, PI / 2}));
-		auto rotationX = glm::toMat4(glm::quat({PI / 2, 0, 0}));
-
 		DrawCircle(radius, sides, offset, color, transform, entityID);
-		DrawCircle(radius, sides, offset, color, transform * rotationZ, entityID);
-		DrawCircle(radius, sides, offset, color, transform * rotationX, entityID);
+		DrawCircle(radius, sides, offset, color, transform.Rotate({90, 0, 0}), entityID);
+		DrawCircle(radius, sides, offset, color, transform.Rotate({0, 90, 0}), entityID);
 	}
 
 	void LineRenderer::DrawGrid(const FGrid &grid, const FTransform &transform, int32_t entityID)
@@ -256,17 +253,15 @@ namespace BHive
 
 	void LineRenderer::DrawCapsule(float radius, float half_height, uint32_t sides, const glm::vec3 &offset, const FColor &color, const FTransform &transform, int32_t entityID)
 	{
-		auto rotationY = glm::toMat4(glm::quat({0, PI / 2, 0}));
-		auto rotationX = glm::toMat4(glm::quat({PI / 2, 0, 0}));
 		glm::vec3 h = {0, 0, half_height};
 
-		DrawArc(radius, sides, 0.f, PI, offset + h, color, transform * rotationX, entityID);
-		DrawArc(radius, sides, 0.f, PI, offset + h, color, transform * rotationY * rotationX, entityID);
+		DrawArc(radius, sides, 0.f, PI, offset + h, color, transform.Rotate({90, 0, 0}), entityID);
+		DrawArc(radius, sides, 0.f, PI, offset + h, color, transform.Rotate({90, 90, 0}), entityID);
 
 		DrawCylinder(radius, half_height, sides, offset, color, transform, entityID);
 
-		DrawArc(radius, sides, PI, PI * 2.f, offset - h, color, transform * rotationY * rotationX, entityID);
-		DrawArc(radius, sides, PI, PI * 2, offset - h, color, transform * rotationX, entityID);
+		DrawArc(radius, sides, PI, PI * 2.f, offset - h, color, transform.Rotate({90, 90, 0}), entityID);
+		DrawArc(radius, sides, PI, PI * 2, offset - h, color, transform.Rotate({90, 0, 0}), entityID);
 	}
 
 	void LineRenderer::DrawSpotlightCone(const glm::vec3 &pos, const glm::vec3 &dir, float radius, float outerCutOff, uint32_t sides, const FColor &color, int32_t entityID)
@@ -307,11 +302,6 @@ namespace BHive
 		DrawLine({}, forward * size, color, transform, entityID);
 		DrawLine(forward * size, (glm::vec3{.75f, 0, .25f}) * size, color, transform, entityID);
 		DrawLine(forward * size, (glm::vec3{.75f, 0, -.25f}) * size, color, transform, entityID);
-	}
-
-	void LineRenderer::DrawJoint(const glm::mat4 &joint, float size, const FColor &color, int32_t entityID)
-	{
-		DrawSphere(0.05f, 16, {}, color, joint, entityID);
 	}
 
 	void LineRenderer::SetLineWidth(float width)

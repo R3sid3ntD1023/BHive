@@ -1,28 +1,9 @@
 #include "MathFunctionLibrary.h"
 #include "Transform.h"
+#include "gfx/animation/AnimTransform.h"
 
 namespace BHive
 {
-	template <typename T>
-	inline T MathFunctionLibrary::Mix(const T &t0, const T &t1, float w)
-	{
-		return glm::mix(t0, t1, w);
-	}
-
-	template <>
-	inline FTransform MathFunctionLibrary::Mix(const FTransform &t0, const FTransform &t1, float w)
-	{
-		auto translation = glm::mix(t0.GetTranslation(), t1.GetTranslation(), w);
-		auto rotation = glm::slerp(t0.GetQuaternion(), t1.GetQuaternion(), w);
-		auto scale = glm::mix(t0.GetScale(), t1.GetScale(), w);
-
-		FTransform t;
-		t.SetTranslation(translation);
-		t.SetQuaternion(rotation);
-		t.SetScale(scale);
-
-		return t;
-	}
 
 	template <typename T>
 	inline T MathFunctionLibrary::Lerp(const T &v0, const T &v1, float t)
@@ -45,6 +26,36 @@ namespace BHive
 	inline T MathFunctionLibrary::Normalize(const T &v, const T &min, const T &max)
 	{
 		return (v - min) / ((max - min));
+	}
+
+	template <>
+	inline FTransform MathFunctionLibrary::Lerp(const FTransform &a, const FTransform &b, float t)
+	{
+		FTransform result;
+
+		result.Translation = glm::mix(a.Translation, b.Translation, t);
+		result.Scale = glm::mix(a.Scale, b.Scale, t);
+
+		auto q0 = a.Quaternion();
+		auto q1 = b.Quaternion();
+
+		auto q = glm::normalize(glm::slerp(q0, q1, t));
+
+		result.Rotation = glm::degrees(glm::eulerAngles(q));
+
+		return result;
+	}
+
+	template <>
+	inline AnimTransform MathFunctionLibrary::Lerp(const AnimTransform &a, const AnimTransform &b, float t)
+	{
+		AnimTransform result{};
+
+		result.Position = glm::mix(a.Position, b.Position, t);
+		result.Scale = glm::mix(a.Scale, b.Scale, t);
+		result.Rotation = glm::normalize(glm::slerp(a.Rotation, b.Rotation, t));
+
+		return result;
 	}
 
 } // namespace BHive

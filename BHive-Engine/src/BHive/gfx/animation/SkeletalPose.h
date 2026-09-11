@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core/math/Transform.h"
 #include "SkeletalNode.h"
 
 namespace BHive
@@ -23,22 +22,22 @@ namespace BHive
 
 		void Reset(type pose_type = type::absolute);
 
-		void SetTransformJointSpace(uint64_t index, const glm::mat4 &transform);
+		void SetTransformJointSpace(uint64_t index, const AnimTransform &transform);
 
-		const glm::mat4 &GetTransformJointSpace(uint64_t index) const;
+		const auto &GetTransformJointSpace(uint64_t index) const;
 
-		const std::vector<glm::mat4> &GetTransformsJointSpace() const { return mTransformsJointSpace; }
+		const auto &GetTransformsJointSpace() const { return mTransformsJointSpace; }
 
 		uint64_t GetBoneCount() const { return mTransformsJointSpace.size(); }
 
 		void RecalulateObjectSpaceTransforms();
 
 	private:
-		void ReadHeirarchy(const SkeletalNode &node, const glm::mat4 &parent);
+		void ReadHeirarchy(const SkeletalNode &node, const AnimTransform &parent);
 
 		const Skeleton *mSkeleton;
 
-		std::vector<glm::mat4> mTransformsJointSpace;
+		std::vector<AnimTransform> mTransformsJointSpace;
 	};
 
 	void SkeletalPoseBlend(const SkeletalPose &p0, const SkeletalPose &p1, float weight, SkeletalPose &result);

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "gfx/Color.h"
-#include "core/math/Transform.h"
+#include "ViewSystem.h"
 #include "batches/CircleRenderBatch.h"
 #include "batches/QuadRenderBatch.h"
 #include "batches/TextRenderBatch.h"
 #include "batches/TextureBatch.h"
-#include "ViewSystem.h"
+#include "core/math/Transform.h"
+#include "gfx/Color.h"
 #include "gfx/registries/Handles.h"
 
 namespace BHive
@@ -64,7 +64,7 @@ namespace BHive
 		TexturePtr Texture;
 		glm::vec2 Size{1, 1};
 		glm::vec2 Tiling{1, 1};
-		glm::mat4 Transform{1.0f};
+		FTransform Transform{};
 		QuadRendererFlags Flags = 0;
 	};
 

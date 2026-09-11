@@ -82,7 +82,7 @@ namespace BHive
 		ctx.Active = true;
 		ctx.Transform = request.Transform;
 		ctx.EntityID = request.EntityID;
-		ctx.InstanceTransforms = request.InstanceTransforms;
+		// ctx.InstanceTransforms = request.InstanceTransforms;
 		ctx.VAO = mesh->GetVertexArray();
 		ctx.Generation = ++mGenerationVersion;
 		ctx.Materials = request.Materials;
@@ -127,8 +127,8 @@ namespace BHive
 			auto &aCtx = ResolveContext(a.Context);
 			auto &bCtx = ResolveContext(b.Context);
 
-			float za = (view * glm::vec4(aCtx.Transform.GetTranslation(), 1.0f)).z;
-			float zb = (view * glm::vec4(bCtx.Transform.GetTranslation(), 1.0f)).z;
+			float za = (view * glm::vec4(aCtx.Transform.Translation, 1.0f)).z;
+			float zb = (view * glm::vec4(bCtx.Transform.Translation, 1.0f)).z;
 			return za > zb;
 		};
 

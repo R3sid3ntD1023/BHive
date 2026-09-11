@@ -5,10 +5,7 @@ namespace BHive
 {
 	void InstancedStaticMeshComponent::SetInstances(const std::vector<FTransform> &transforms)
 	{
-		mInstances.resize(transforms.size());
-
-		for (size_t i = 0; i < transforms.size(); i++)
-			mInstances.emplace_back(transforms[i]);
+		mInstances = transforms;
 	}
 
 	void InstancedStaticMeshComponent::Save(cereal::BinaryOutputArchive &ar) const

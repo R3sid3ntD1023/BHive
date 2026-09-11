@@ -143,7 +143,7 @@ namespace BHive
 
 				if (!bones.contains(name_hash))
 				{
-					bones[name_hash] = {name_hash, mBoneCounter, utils::make_mat4(bone->mOffsetMatrix)};
+					bones[name_hash] = {name_hash, mBoneCounter, AnimTransform().FromMat(utils::make_mat4(bone->mOffsetMatrix))};
 					boneNames[bone_name] = name_hash;
 					bone_id = mBoneCounter;
 					mBoneCounter++;
@@ -182,7 +182,7 @@ namespace BHive
 			sub_mesh.StartVertex = (uint32_t)data.Vertices.size();
 			sub_mesh.StartIndex = (uint32_t)data.Indices.size();
 			sub_mesh.IndexCount = mesh->mNumFaces * 3;
-			sub_mesh.Transformation = node_matrix;
+			sub_mesh.Transformation = FTransform().FromMat(node_matrix);
 			sub_mesh.MaterialIndex = mesh->mMaterialIndex;
 
 			std::vector<FVertex> vertices(mesh->mNumVertices);
@@ -280,7 +280,7 @@ namespace BHive
 		void GetNodeHeiracrchy(aiNode *node, SkeletalNode &out)
 		{
 			out.NameHash = std::hash<std::string>()(node->mName.C_Str());
-			out.Transformation = utils::make_mat4(node->mTransformation);
+			out.Transformation.FromMat(utils::make_mat4(node->mTransformation));
 
 			for (unsigned int i = 0; i < node->mNumChildren; i++)
 			{

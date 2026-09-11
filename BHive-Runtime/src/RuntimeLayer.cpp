@@ -120,7 +120,7 @@ namespace BHive
 
 	void RuntimeLayer::OnUpdate(float time)
 	{
-		mObjectTransforms[0].AddRotation({0, time * 10.f, 0});
+		mObjectTransforms[0].Rotation.x += time * 10.f;
 
 		if (mViewportActive)
 		{

@@ -16,9 +16,8 @@ namespace BHive
 		// const auto &root_transform = mSkeleton->FindBone(root_node)->LocalBindPoseMatrix;
 		const auto &bounds = GetData().Bounds;
 
-		auto min = root_transform * glm::vec4(bounds.Min, 1);
-		auto max = root_transform * glm::vec4(bounds.Max, 1);
-
+		auto min = root_transform.TransformPoint(bounds.Min);
+		auto max = root_transform.TransformPoint(bounds.Max);
 		return {min, max};
 	}
 

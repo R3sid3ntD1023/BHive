@@ -1,8 +1,8 @@
 #include "SphereVolume.h"
-#include "core/math/boundingbox/AABB.h"
 #include "core/math/Frustum.h"
-#include "core/math/Transform.h"
 #include "core/math/MathFunctionLibrary.h"
+#include "core/math/Transform.h"
+#include "core/math/boundingbox/AABB.h"
 
 namespace BHive
 {
@@ -14,11 +14,9 @@ namespace BHive
 
 	bool FSphereVolume::InFrustum(const Frustum &frustum, const FTransform &transform) const
 	{
-		const glm::vec3 globalScale = transform.GetScale();
+		const glm::vec3 globalCenter = transform.TransformPoint(Center);
 
-		const glm::vec3 globalCenter = transform.ToMat4() * glm::vec4(Center, 1.0f);
-
-		const float maxScale = glm::compMax(globalScale);
+		const float maxScale = glm::compMax(transform.Scale);
 
 		FSphereVolume sphere(globalCenter, Radius * (maxScale * 0.5f));
 

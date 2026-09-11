@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "core/math/Transform.h"
 #include "gfx/Color.h"
+#include "gfx/animation/AnimTransform.h"
 #include "gfx/material/MaterialTable.h"
 #include "gfx/mesh/MeshData.h"
 #include "gfx/registries/Handles.h"
@@ -29,9 +30,9 @@ namespace BHive
 
 		int32_t EntityID = -1;
 
-		std::vector<glm::mat4> InstanceTransforms;
+		std::vector<FTransform> InstanceTransforms;
 
-		std::vector<glm::mat4> BoneTransforms;
+		std::vector<AnimTransform> BoneTransforms;
 	};
 
 	struct FMeshSubmissionContext

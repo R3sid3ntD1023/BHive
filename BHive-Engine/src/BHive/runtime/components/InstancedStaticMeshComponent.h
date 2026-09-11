@@ -11,7 +11,7 @@ namespace BHive
 
 		int32_t GetCount() { return (uint32_t)mInstances.size(); }
 
-		const std::vector<glm::mat4> &GetInstances() const { return mInstances; }
+		const std::vector<FTransform> &GetInstances() const { return mInstances; }
 
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 
@@ -20,7 +20,7 @@ namespace BHive
 		REFLECTABLEV(StaticMeshComponent)
 
 	protected:
-		std::vector<glm::mat4> mInstances;
+		std::vector<FTransform> mInstances;
 	};
 
 	REFLECT_EXTERN(InstancedStaticMeshComponent)

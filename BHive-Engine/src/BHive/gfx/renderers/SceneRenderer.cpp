@@ -87,23 +87,21 @@ namespace BHive
 			{
 				// object data
 				auto &ctx = mQueue->ResolveContext(o.Context);
-				auto pos = ctx.Transform.GetTranslation();
-				auto model = ctx.Transform.ToMat4();
+				auto model = ctx.Transform;
 
 				auto vao = ctx.VAO;
 				auto &s = o.SubMesh;
 
 				auto objectID = ObjectDatas.size();
 
-				glm::mat4 m = model * s.Transformation;
+				auto m = model * s.Transformation;
 				glm::vec3 localCenter = s.Bounds.GetCenter();
-				glm::vec3 worldCenter = glm::vec3(m * glm::vec4(localCenter, 1.0f));
-				glm::vec3 scale(glm::length(glm::vec3(m[0])), glm::length(glm::vec3(m[1])), glm::length(glm::vec3(m[2])));
-				float radius = s.Bounds.GetRadius() * glm::compMax(scale);
+				glm::vec3 worldCenter = m.TransformPoint(localCenter);
+				float radius = s.Bounds.GetRadius() * glm::compMax(model.Scale);
 
 				auto &inst = ObjectDatas.emplace_back();
 				inst.CenterRadius = glm::vec4(worldCenter, radius);
-				inst.ModelMatrix = model * s.Transformation;
+				inst.ModelMatrix = m.ToMat4();
 				inst.ID = objectID;
 				inst.BoneOffset = ctx.BoneOffset;
 
@@ -418,7 +416,10 @@ namespace BHive
 			mBoneData.resize(mBoneData.size() + boneCount);
 
 			auto &bones = info.BoneTransforms;
-			memcpy(&mBoneData[boneOffset], bones.data(), bones.size() * sizeof(glm::mat4));
+			mTempBones.resize(bones.size());
+			std::transform(bones.begin(), bones.end(), mTempBones.begin(), [](const auto &t) { return t.ToMat4(); });
+
+			memcpy(&mBoneData[boneOffset], mTempBones.data(), mTempBones.size() * sizeof(glm::mat4));
 		}
 	}
 
@@ -436,7 +437,7 @@ namespace BHive
 		ctx.Transform = t;
 	}
 
-	void SceneRenderer::UpdateBones(ContextHandle handle, const std::vector<glm::mat4> &bones)
+	void SceneRenderer::UpdateBones(ContextHandle handle, const std::vector<AnimTransform> &bones)
 	{
 		if (!mRenderQueue->IsHandleValid(handle))
 			return;
@@ -445,7 +446,10 @@ namespace BHive
 
 		ASSERT(bones.size() == ctx.BoneCount);
 
-		memcpy(&mBoneData[ctx.BoneOffset], bones.data(), ctx.BoneCount * sizeof(glm::mat4));
+		mTempBones.resize(bones.size());
+		std::transform(bones.begin(), bones.end(), mTempBones.begin(), [](const auto &t) { return t.ToMat4(); });
+
+		memcpy(&mBoneData[ctx.BoneOffset], mTempBones.data(), ctx.BoneCount * sizeof(glm::mat4));
 	}
 
 	void SceneRenderer::UpdateMesh(ContextHandle requestHandle, MeshPtr mesh)

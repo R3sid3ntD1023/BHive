@@ -1,6 +1,6 @@
 #include "CapsuleColliderComponent.h"
-#include <physx/PxPhysicsAPI.h>
 #include "runtime/GameObject.h"
+#include <physx/PxPhysicsAPI.h>
 
 namespace BHive
 {
@@ -16,7 +16,7 @@ namespace BHive
 	}
 	void *CapsuleColliderComponent::GetGeometry()
 	{
-		auto scale = GetOwner()->GetWorldTransform().GetScale();
+		auto scale = GetOwner()->GetWorldTransform().Scale;
 		return new physx::PxCapsuleGeometry(Radius * glm::max(scale.x, scale.z), HalfHeight * scale.y);
 	}
 

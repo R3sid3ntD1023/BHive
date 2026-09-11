@@ -5,11 +5,11 @@ namespace BHive
 {
 	physx::PxTransform PhysicsUtils::Convert(const FTransform &transform)
 	{
-		const auto &t = transform.GetTranslation();
-		const auto &o = transform.GetQuaternion();
+		const auto &t = transform.Translation;
+		const auto q = transform.Quaternion();
 
 		physx::PxVec3 pos(t.x, t.y, t.z);
-		physx::PxQuat orientation(o.x, o.y, o.z, o.w);
+		physx::PxQuat orientation(q.x, q.y, q.z, q.w);
 		return physx::PxTransform(pos, orientation);
 	}
 
@@ -20,7 +20,7 @@ namespace BHive
 
 		glm::vec3 pos(t.x, t.y, t.z);
 		glm::quat orientation(o.w, o.x, o.y, o.z);
-		return {pos, orientation};
+		return {pos, glm::degrees(glm::eulerAngles(orientation))};
 	}
 
 	physx::PxRigidDynamicLockFlags PhysicsUtils::GetLockFlags(ELockAxis linear, ELockAxis angular)

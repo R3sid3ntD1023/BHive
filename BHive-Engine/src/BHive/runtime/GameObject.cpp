@@ -1,7 +1,7 @@
+#include "GameObject.h"
 #include "components/RelationshipComponent.h"
 #include "components/TagComponent.h"
 #include "components/TransformComponent.h"
-#include "GameObject.h"
 
 namespace BHive
 {
@@ -69,7 +69,7 @@ namespace BHive
 		if (auto parent = GetParent())
 		{
 			auto parent_transform = parent->GetWorldTransform();
-			SetLocalTransform(parent_transform.Inverse().ToMat4() * transform.ToMat4());
+			SetLocalTransform(parent_transform.Inverse() * transform);
 			return;
 		}
 
@@ -205,7 +205,7 @@ namespace BHive
 
 		if (auto parent = GetParent())
 		{
-			return parent->GetWorldTransform().ToMat4() * transform.ToMat4();
+			return parent->GetWorldTransform() * transform;
 		}
 
 		return transform;

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "core/Core.h"
+#include "core/CoreAPI.h"
+#include "core/log/Log.h"
 
 namespace BHive
 {

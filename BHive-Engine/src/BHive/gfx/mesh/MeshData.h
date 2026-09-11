@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
+#include "core/math/Transform.h"
 #include "core/math/boundingbox/AABB.h"
 #include "core/serialization/Serialization.h"
 #include "gfx/BufferLayout.h"
@@ -33,7 +34,7 @@ namespace BHive
 		uint32_t StartIndex = 0;
 		uint32_t IndexCount = 0;
 		int32_t MaterialIndex = 0;
-		glm::mat4 Transformation{1.f};
+		FTransform Transformation;
 		AABB Bounds;
 	};
 

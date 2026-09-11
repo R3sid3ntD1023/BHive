@@ -56,19 +56,15 @@ namespace BHive
 				auto &bone = mRuntimeBones[i];
 
 				auto &local = mLocalTransforms[i];
-				glm::mat4 t;
-				{
-					BH_PROFILE_SCOPE("BuildTRS");
-					t = glm::translate(local.Position) * glm::toMat4(local.Rotation) * glm::scale(local.Scale);
-				}
+
 				if (bone.Parent == INVALID_PARENT)
 				{
-					mGlobalTransforms[i] = t;
+					mGlobalTransforms[i] = local;
 				}
 				else
 				{
 					BH_PROFILE_SCOPE("ParentConcat");
-					mGlobalTransforms[i] = mGlobalTransforms[bone.Parent] * t;
+					mGlobalTransforms[i] = mGlobalTransforms[bone.Parent] * local;
 				}
 			}
 		}
@@ -122,17 +118,14 @@ namespace BHive
 		runtime.Parent = parent;
 		runtime.Bone = skeleton->FindBone(node.NameHash);
 		runtime.Frames = mAnimation->FindFrames(node.NameHash);
-
-		glm::vec3 skew;
-		glm::vec4 perspective;
-		glm::decompose(node.Transformation, runtime.BindPose.Scale, runtime.BindPose.Rotation, runtime.BindPose.Position, skew, perspective);
+		runtime.BindPose = node.Transformation;
 
 		uint16_t parentIndex = (uint16_t)mRuntimeBones.size();
 
 		mRuntimeBones.push_back(runtime);
 
 		mLocalTransforms.emplace_back();
-		mGlobalTransforms.emplace_back(1.0f);
+		mGlobalTransforms.emplace_back();
 
 		for (const auto &child : node.Children)
 			BuildNode(skeleton, child, parentIndex);
@@ -147,7 +140,7 @@ namespace BHive
 		return factor;
 	}
 
-	LocalPose AnimationClip::Evaluate(RuntimeBone &bone, float time)
+	AnimTransform AnimationClip::Evaluate(RuntimeBone &bone, float time)
 	{
 		if (!bone.Frames)
 			return bone.BindPose;

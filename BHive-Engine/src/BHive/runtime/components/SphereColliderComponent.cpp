@@ -18,7 +18,7 @@ namespace BHive
 
 	void *SphereColliderComponent::GetGeometry()
 	{
-		auto scale = GetOwner()->GetWorldTransform().GetScale();
+		auto scale = GetOwner()->GetWorldTransform().Scale;
 		return new physx::PxSphereGeometry(Radius * glm::compMax(scale));
 	}
 
