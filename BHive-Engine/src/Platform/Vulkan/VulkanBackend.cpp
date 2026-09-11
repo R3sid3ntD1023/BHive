@@ -1,17 +1,14 @@
 #include "VulkanBackend.h"
-#include "core/debug/CrashHandler.h"
-#include "gfx/RenderCommand.h"
 #include "VulkanRendererAPI.h"
 #include "VulkanUtils.h"
+#include "core/debug/CrashHandler.h"
+#include "gfx/RenderCommand.h"
 #include <GLFW/glfw3.h>
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 #ifdef _DEBUG
 	#define VALIDATION_LAYERS_ENABLED
-	#ifdef VALIDATION_LAYERS_ENABLED
-		#define ENABLE_VALIDATION_LAYERS
-	#endif
 #endif
 
 #define VULKAN_ERRORS_WITH_ASSERT 1
@@ -199,7 +196,7 @@ namespace BHive
 		std::vector required_extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 		std::vector<const char *> enabled_layers;
 
-#ifdef ENABLE_VALIDATION_LAYERS
+#ifdef VALIDATION_LAYERS_ENABLED
 		enabled_layers.assign(s_validationLayers.begin(), s_validationLayers.end());
 		required_extensions.push_back(vk::EXTDebugUtilsExtensionName);
 #endif
@@ -221,7 +218,7 @@ namespace BHive
 			}
 		}
 
-#ifdef ENABLE_VALIDATION_LAYERS
+#ifdef VALIDATION_LAYERS_ENABLED
 
 		vk::ValidationFeatureEnableEXT enabled_features[] = {
 			vk::ValidationFeatureEnableEXT::eSynchronizationValidation,
@@ -245,7 +242,7 @@ namespace BHive
 		mInstance = vk::raii::Instance(mContext, instanceCreateInfo);
 		VULKAN_HPP_DEFAULT_DISPATCHER.init((vk::Instance)mInstance);
 
-#ifdef ENABLE_VALIDATION_LAYERS
+#ifdef VALIDATION_LAYERS_ENABLED
 		mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mInstance, debugCreateInfo);
 
 #endif

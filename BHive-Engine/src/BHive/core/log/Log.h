@@ -3,12 +3,12 @@
 #include "core/CoreAPI.h"
 
 #pragma warning(push, 0)
-#include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
+#include <spdlog/spdlog.h>
 #pragma warning(pop)
 
-#include <functional>
 #include "Formatters.h"
+#include <functional>
 
 namespace BHive
 {
@@ -26,11 +26,11 @@ namespace BHive
 	};
 } // namespace BHive
 
-#if _DEBUG
+#if defined(_DEBUG)
 	#define LOG_INFO(...) ::BHive::Log::GetLogger()->info(__VA_ARGS__);
 	#define LOG_TRACE(...) ::BHive::Log::GetLogger()->trace(__VA_ARGS__);
 	#define LOG_WARN(...) ::BHive::Log::GetLogger()->warn(__VA_ARGS__);
-	#define LOG_ERROR(...)  ::BHive::Log::GetLogger()->error(__VA_ARGS__); 
+	#define LOG_ERROR(...) ::BHive::Log::GetLogger()->error(__VA_ARGS__);
 	#define LOG_CRITICAL(...) ::BHive::Log::GetLogger()->critical(__VA_ARGS__);
 #else
 	#define LOG_INFO(...)

@@ -1,8 +1,8 @@
 #include "AudioContext.h"
+#include <AL/efx.h>
 #include <al/al.h>
 #include <al/alc.h>
 #include <al/alext.h>
-#include <AL/efx.h>
 
 namespace BHive
 {
@@ -27,9 +27,7 @@ namespace BHive
 
 		LOG_TRACE("Initialized Audio Context");
 
-#ifdef _DEBUG
 		PrintDeviceInfo();
-#endif
 	}
 
 	void AudioContext::Shutdown()
@@ -52,12 +50,10 @@ namespace BHive
 		alcGetIntegerv(device, ALC_STEREO_SOURCES, 1, &num_stereo_sources);
 		name = alcGetString(device, ALC_DEFAULT_DEVICE_SPECIFIER);
 
-#if _DEBUG
 		LOG_INFO("Audio Device Info:");
 		LOG_INFO("\tName: {}", name);
 		LOG_INFO("\tSample Rate: {}", frequency);
 		LOG_INFO("\t\tMono: {}", num_mono_sources);
 		LOG_INFO("\t\tStereo: {}", num_stereo_sources);
-#endif
 	}
 } // namespace BHive

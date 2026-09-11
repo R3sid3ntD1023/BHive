@@ -36,26 +36,26 @@ else()
 	endif()
 endif()
 
-file(GLOB_RECURSE HEADER_FILES CMAKE_CONFIGURE_DEPENDS src/**.h src/**.inl)
-file(GLOB_RECURSE SOURCE_FILES CMAKE_CONFIGURE_DEPENDS src/**.cpp src/**.hpp)
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES} ${SOURCE_FILES} )
+file(GLOB_RECURSE ENGINE_HEADERS CMAKE_CONFIGURE_DEPENDS src/**.h src/**.inl)
+file(GLOB_RECURSE ENGINE_SOURCES CMAKE_CONFIGURE_DEPENDS src/**.cpp src/**.hpp)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ENGINE_HEADERS} ${ENGINE_SOURCES} )
 
 set(TARGET_NAME BHive-Engine)
 
 set(BUILD_SHARED_LIB TRUE CACHE BOOL "Build Engine as a shared library" FORCE)
 
 if(BUILD_SHARED_LIB)
-	add_library(${TARGET_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES} )
+	add_library(${TARGET_NAME} SHARED ${ENGINE_HEADERS} ${ENGINE_SOURCES} )
 	target_compile_definitions(${TARGET_NAME} 	PUBLIC BUILD_SHARED PRIVATE BUILD_DLL)
 	message(STATUS "Building Engine as Shared Library")
 else()
-	add_library(${TARGET_NAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
+	add_library(${TARGET_NAME} STATIC ${ENGINE_HEADERS} ${ENGINE_SOURCES})
 	message(STATUS "Building Engine as Static Library")
 endif()
 
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
-
-target_compile_options(${TARGET_NAME} PUBLIC /ZI /INCREMETAL /MP /bigobj /W0 )
+target_compile_options(${TARGET_NAME} PRIVATE $<$<CONFIG:Debug>:/ZI>)
+target_compile_options(${TARGET_NAME} PUBLIC /INCREMENTAL /MP /bigobj /W0 )
 target_compile_definitions(${TARGET_NAME}
 	PUBLIC _CRT_SECURE_NO_WARNINGS 
 	PUBLIC GLFW_INCLUDE_NONE 
