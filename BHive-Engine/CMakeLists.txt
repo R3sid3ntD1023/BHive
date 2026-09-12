@@ -54,6 +54,7 @@ else()
 endif()
 
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+target_compile_options(BHive-Engine PRIVATE $<$<CONFIG:RelWithDebInfo>:/O2>)
 target_compile_options(${TARGET_NAME} PRIVATE $<$<CONFIG:Debug>:/ZI>)
 target_compile_options(${TARGET_NAME} PUBLIC /INCREMENTAL /MP /bigobj /W0 )
 target_compile_definitions(${TARGET_NAME}
@@ -66,6 +67,7 @@ target_compile_definitions(${TARGET_NAME}
 	PUBLIC GLM_FORCE_PACKED
 	PUBLIC ENGINE_PATH="${CMAKE_CURRENT_SOURCE_DIR}"
 	PUBLIC ENGINE_SHADER_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../shaders"
+	PUBLIC $<$<CONFIG:Debug>:BHIVE_ENABLE_LOGGING> $<$<CONFIG:RelWithDebInfo>:BHIVE_ENABLE_LOGGING>
 )
 
 target_link_libraries(${TARGET_NAME} PUBLIC glfw)
@@ -86,12 +88,7 @@ target_link_libraries(${TARGET_NAME} PUBLIC msdf-atlas-gen::msdf-atlas-gen)
 target_link_libraries(${TARGET_NAME} PUBLIC EnTT::EnTT)
 target_link_libraries(${TARGET_NAME} PUBLIC mINI)
 target_link_libraries(${TARGET_NAME} PUBLIC unofficial::omniverse-physx-sdk::sdk)
-target_include_directories(${TARGET_NAME} PUBLIC 
-	${CMAKE_CURRENT_SOURCE_DIR}/src 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/BHive 
-	${VENDOR_DIR}
-	${Stb_INCLUDE_DIR}
-)
+target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/BHive ${VENDOR_DIR}${Stb_INCLUDE_DIR})
 
 if(TARGET vulkan)
 	target_link_libraries(${TARGET_NAME} PUBLIC vulkan::vulkan)
@@ -110,4 +107,5 @@ target_precompile_headers(${TARGET_NAME} PUBLIC src/BHivePCH.h)
 set(INSTALL_BIN "bin/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}")
 
 install(TARGETS ${TARGET_NAME} DESTINATION ${INSTALL_BIN})
+
  

@@ -24,6 +24,7 @@
     { "name": "rttr" },
     { "name": "stb" },
     { "name": "spdlog" },
-    { "name": "cereal" }
+    { "name": "cereal" },
+    { "name": "assimp" }
   ]
 }

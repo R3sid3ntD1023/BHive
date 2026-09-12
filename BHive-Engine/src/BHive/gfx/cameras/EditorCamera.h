@@ -38,9 +38,7 @@ namespace BHive
 
 		void Resize(uint32_t w, uint32_t h) override;
 
-		void SetRotationSensitivity(float sensitivity) { mRotationSensitivity = sensitivity; }
-
-		void SetMovementSensitivity(float sensitivity) { mMovementSensitivity = sensitivity; }
+		void SetMouseSensitivity(float sensitivity) { mMouseSensitivity = sensitivity; }
 
 		glm::vec3 GetForward() const;
 
@@ -49,9 +47,7 @@ namespace BHive
 		glm::vec3 GetUp() const;
 
 	public:
-		float RotationSpeed() const { return mRotationSensitivity; };
-
-		float MovementSpeed() const { return mMovementSensitivity; };
+		float MouseSensitivity() const { return mMouseSensitivity; };
 
 	private:
 		float mYaw = -90.f;
@@ -66,8 +62,6 @@ namespace BHive
 
 		glm::vec2 mViewportSize{0, 0};
 
-		float mMovementSensitivity = .1f;
-
-		float mRotationSensitivity = .1f;
+		float mMouseSensitivity = 1.0f;
 	};
 } // namespace BHive

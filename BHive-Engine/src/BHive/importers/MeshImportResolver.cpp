@@ -12,7 +12,7 @@ namespace BHive
 {
 	struct TextureResolver
 	{
-		DecodedTexture Resolve(const EmbeddedTexture &texture, const std::filesystem::path &parent_path)
+		TexturePtr Resolve(const EmbeddedTexture &texture, const std::filesystem::path &parent_path)
 		{
 
 			auto name = texture.Path.filename().string();
@@ -30,13 +30,14 @@ namespace BHive
 					decodedTex = TextureLoader::LoadFromMemory(texture.EmbeddedData, texture.EmbeddedData.GetSize());
 				}
 
-				mLoadedTextures.insert(hash);
-				return decodedTex;
+				mLoadedTextures[hash] = TextureFactory::Create2D(decodedTex);
 			}
+
+			return mLoadedTextures.at(hash);
 		}
 
 	private:
-		std::set<uint64_t> mLoadedTextures;
+		std::unordered_map<uint64_t, TexturePtr> mLoadedTextures;
 	};
 
 	MeshImportResolver::MeshImportResolver(const FMeshImportOptions &options)
@@ -142,8 +143,7 @@ namespace BHive
 			{
 				auto &texture = textures[texIdx];
 
-				auto decoded = resolver.Resolve(texture, assetPath.parent_path());
-				auto handle = TextureFactory::Create2D(decoded);
+				auto handle = resolver.Resolve(texture, assetPath.parent_path());
 
 				if (handle)
 				{

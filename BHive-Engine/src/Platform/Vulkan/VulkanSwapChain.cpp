@@ -33,7 +33,7 @@ namespace BHive
 
 		mCapabilities = physical_device.getSurfaceCapabilitiesKHR(mSurface);
 		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(formats);
-		mPresentMode = VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR::eImmediate, presentModes);
+		mPresentMode = VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR::eMailbox, presentModes);
 
 		mExtent = VulkanUtils::ChooseSwapExtent(mCapabilities, w, h);
 		mMinImageCount = VulkanUtils::ChooseMinImageCount(mCapabilities);

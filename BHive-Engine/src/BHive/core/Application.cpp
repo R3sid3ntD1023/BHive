@@ -1,18 +1,18 @@
 #include "Application.h"
-#include "audio/AudioContext.h"
 #include "FPSCounter.h"
+#include "Time.h"
+#include "WindowInput.h"
+#include "audio/AudioContext.h"
 #include "gfx/RenderCommand.h"
+#include "gfx/ShaderManager.h"
+#include "gfx/renderers/Renderer.h"
+#include "gui/GUI.h"
+#include "input/InputManager.h"
 #include "layers/ImGuiLayer.h"
 #include "physics/PhysicsContext.h"
-#include "gfx/renderers/Renderer.h"
 #include "subsystem/SubSystem.h"
 #include "threading/Threading.h"
-#include "Time.h"
 #include "undoredo/UndoRedo.h"
-#include "WindowInput.h"
-#include "gfx/ShaderManager.h"
-#include "input/InputManager.h"
-#include "gui/GUI.h"
 
 namespace BHive
 {
@@ -146,6 +146,10 @@ namespace BHive
 
 	void Application::UpdateLayersAndWindow()
 	{
+		const double targetFPS = 1000.0;
+		const double targetFrameTime = 1.0 / targetFPS;
+		auto frameStart = std::chrono::high_resolution_clock::now();
+
 		Time::Update();
 		auto dt = Time::DeltaTime();
 
@@ -180,6 +184,13 @@ namespace BHive
 		mWindowManager.Update(dt);
 
 		Thread::Update();
+
+		auto frameEnd = std::chrono::high_resolution_clock::now();
+		double elapsed = std::chrono::duration<double>(frameEnd - frameStart).count();
+		if (elapsed < targetFrameTime)
+		{
+			std::this_thread::sleep_for(std::chrono::duration<double>(targetFrameTime - elapsed));
+		}
 	}
 
 	bool Application::OnWindowClosed(WindowCloseEvent &event)

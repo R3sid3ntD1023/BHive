@@ -102,6 +102,7 @@ namespace BHive
 				FMeshImportOptions import_options{};
 				import_options.MeshType = EMeshType::SkeletalMesh;
 				import_options.OverrideMaterials = mCharacterMaterials;
+				// import_options.ImportMaterials = false;
 				auto decodedMesh = MeshImporter::Import(TEST_MESH_NAME, SCALE);
 				MeshImportResolver resolver(import_options);
 				auto result = resolver.Resolve(decodedMesh);

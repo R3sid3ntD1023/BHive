@@ -111,7 +111,7 @@ namespace BHive
 				bool finished = percentage == 1.f;
 				auto str = std::format("\rLoading... {:.2f}%", percentage * 100.0f);
 				std::cout << str << (!finished ? "" : "\n");
-				return finished;
+				return true;
 			}
 		};
 
@@ -161,7 +161,11 @@ namespace BHive
 				{
 					int vertex_id = weights[weightIndex].mVertexId;
 					float weight = weights[weightIndex].mWeight;
-					ASSERT(vertex_id <= vertices.size());
+					ASSERT(vertex_id < vertices.size());
+
+					if (vertex_id >= vertices.size())
+						continue;
+
 					SetVertexBoneData(vertices[vertex_id], bone_id, weight);
 				}
 			}
@@ -389,9 +393,22 @@ namespace BHive
 
 			if (auto embedded = scene->GetEmbeddedTexture(str.C_Str()))
 			{
-				auto size = embedded->mWidth + embedded->mHeight;
-				out.EmbeddedData.Allocate(embedded->pcData, size);
 				out.Type = EmbeddedTexture::Embedded;
+
+				size_t size = 0;
+
+				if (embedded->mHeight == 0)
+				{
+					// compressed PNG/JPG/ect.
+					size = embedded->mWidth;
+				}
+				else
+				{
+					// raw RGBA aiTexel data
+					size = embedded->mWidth * embedded->mHeight * sizeof(aiTexel);
+				}
+
+				out.EmbeddedData.Allocate(embedded->pcData, size);
 			}
 
 			return out;

@@ -45,7 +45,7 @@ namespace BHive
 				moveDir += mCamera->GetRight();
 
 			if (moveDir != glm::vec3(0))
-				mCamera->FreeFlyMove(moveDir);
+				mCamera->FreeFlyMove(moveDir * dt);
 		}
 
 		// SHORTCUTS

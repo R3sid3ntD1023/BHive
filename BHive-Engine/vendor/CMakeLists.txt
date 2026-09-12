@@ -9,7 +9,7 @@ include(cmake/imnodeflow.cmake)
 include(cmake/implot.cmake)
 include(cmake/msdf-atlas-gen.cmake)
 include(cmake/waveparser.cmake)
-include(cmake/assimp.cmake)
+#include(cmake/assimp.cmake)
 include(cmake/mINI.cmake)
 
 

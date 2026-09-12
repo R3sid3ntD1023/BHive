@@ -21,7 +21,7 @@ namespace BHive
 		MemoryBlock(const MemoryBlock &other)
 		{
 			Allocate(other.mSize);
-			memcpy_s(mData, other.mSize, other.mData, mSize);
+			memcpy_s(mData, mSize, other.mData, other.mSize);
 		}
 
 		MemoryBlock(MemoryBlock &&other) noexcept
@@ -48,7 +48,7 @@ namespace BHive
 
 			mSize = size;
 			mData = new T[size + 1];
-			mData[size] = 0;
+			memset(mData, 0, size);
 		}
 
 		size_t GetSize() const { return mSize; }

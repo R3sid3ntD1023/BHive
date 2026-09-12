@@ -1,5 +1,5 @@
-#include "core/events/Event.h"
 #include "EditorCamera.h"
+#include "core/events/Event.h"
 #include "input/InputManager.h"
 
 namespace BHive
@@ -36,8 +36,8 @@ namespace BHive
 
 	void EditorCamera::FreeFlyMove(const glm::vec3 &direction)
 	{
-		mPosition += direction * MovementSpeed();
-		mTarget += direction * MovementSpeed();
+		mPosition += direction * MouseSensitivity();
+		mTarget += direction * MouseSensitivity();
 	}
 
 	void EditorCamera::Focus(const glm::vec3 &target, const glm::vec3 &bounds)
@@ -106,7 +106,7 @@ namespace BHive
 
 	void EditorCamera::Pan(const glm::vec2 &delta)
 	{
-		float panSpeed = mDistanceToTarget * 0.002f;
+		float panSpeed = mDistanceToTarget * 0.02f * MouseSensitivity();
 
 		glm::vec3 right = GetRight();
 		glm::vec3 up = GetUp();
@@ -120,8 +120,8 @@ namespace BHive
 
 	void EditorCamera::Rotate(const glm::vec2 &delta)
 	{
-		mYaw += delta.x * RotationSpeed();
-		mPitch -= delta.y * RotationSpeed();
+		mYaw += delta.x * MouseSensitivity();
+		mPitch -= delta.y * MouseSensitivity();
 
 		mPitch = glm::clamp(mPitch, -89.0f, 89.0f);
 
