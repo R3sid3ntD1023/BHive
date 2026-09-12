@@ -14,6 +14,7 @@ namespace BHive
 
 		// Engine
 		static inline bool EnableLogging = false;
+		static inline double TargetFPS = 1000.0;
 
 		// Features
 		static inline bool EnablePhysics = 0u;

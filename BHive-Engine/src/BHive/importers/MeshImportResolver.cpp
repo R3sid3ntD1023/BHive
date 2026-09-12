@@ -132,26 +132,36 @@ namespace BHive
 				continue;
 			}
 
-			auto materialHandle = MaterialFactory::CreateLambert();
-			auto material = materialHandle.As<Material>();
-
-			const auto &material_data = materials[i];
-			const auto &textures = material_data.Textures;
+			const auto &materialData = materials[i];
+			const auto &textures = materialData.Textures;
 			const auto num_textures = textures.size();
+
+			auto materialHandle = GetMaterialFromShadingMode(materialData.ShadingMode);
 
 			for (size_t texIdx = 0; texIdx < num_textures; texIdx++)
 			{
-				auto &texture = textures[texIdx];
+				auto &textureData = textures[texIdx];
 
-				auto handle = resolver.Resolve(texture, assetPath.parent_path());
+				auto textureHandle = resolver.Resolve(textureData, assetPath.parent_path());
 
-				if (handle)
+				if (textureHandle)
 				{
-					mAdditionalAssets.push_back(handle);
+					materialHandle.As<Material>()->SetTextureFromType(textureData.Type, textureHandle);
 				}
 			}
 
 			material_table.Set(materialHandle, (uint32_t)i);
+		}
+	}
+
+	MaterialPtr MeshImportResolver::GetMaterialFromShadingMode(EMaterialShadingMode mode)
+	{
+		switch (mode)
+		{
+		case EMaterialShadingMode::Standard:
+			return MaterialFactory::CreateStandard();
+		default:
+			return MaterialFactory::CreateLambert();
 		}
 	}
 

@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "gfx/animation/AnimationFrames.h"
 #include "gfx/animation/Skeleton.h"
+#include "gfx/material/MaterialEnumerations.h"
 #include "gfx/mesh/MeshData.h"
 
 namespace BHive
@@ -23,10 +24,10 @@ namespace BHive
 			Embedded
 		};
 
-		std::string Type{};
-		std::filesystem::path Path{};
+		EMaterialTextureType Type{};
 		ByteBuffer EmbeddedData;
 		ESource Source;
+		std::filesystem::path Path{};
 
 		std::string GetName() const { return Path.filename().string(); }
 	};
@@ -37,6 +38,7 @@ namespace BHive
 		glm::vec4 Albedo = {.5f, .5f, .5f, 1.f};
 		float Metallic = 0.f;
 		float Roughness = 1.0f;
+		EMaterialShadingMode ShadingMode;
 		std::vector<EmbeddedTexture> Textures;
 	};
 

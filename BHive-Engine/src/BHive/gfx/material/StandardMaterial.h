@@ -48,6 +48,8 @@ namespace BHive
 
 		IMaterial &SetTexture(const std::string &name, const TextureBinding &texture) & override;
 
+		void SetTextureFromType(EMaterialTextureType type, TexturePtr texture) override;
+
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		void Load(cereal::BinaryInputArchive &ar) override;

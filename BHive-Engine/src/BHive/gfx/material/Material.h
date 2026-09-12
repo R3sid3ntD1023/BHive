@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BackendMaterial.h"
+#include "MaterialEnumerations.h"
 #include "asset/Asset.h"
 #include "core/EnumAsByte.h"
 #include "gfx/Color.h"
@@ -34,6 +35,8 @@ namespace BHive
 		IMaterial &SetParam(const std::string &name, const MaterialParam &param) & override;
 
 		IMaterial &SetTexture(const std::string &name, const TextureBinding &texture) & override;
+
+		virtual void SetTextureFromType(EMaterialTextureType type, TexturePtr texture) {};
 
 		IMaterial &SetSurfaceType(ESurfaceType surfaceType);
 

@@ -25,6 +25,21 @@ namespace BHive
 		return *this;
 	}
 
+	void LambertMaterial::SetTextureFromType(EMaterialTextureType type, TexturePtr texture)
+	{
+		switch (type)
+		{
+		case EMaterialTextureType::Diffuse:
+		case EMaterialTextureType::Albedo:
+			SetTexture("DiffuseMap", {texture});
+			break;
+		case EMaterialTextureType::Emission:
+			SetTexture("EmissionMap", {texture});
+		default:
+			break;
+		}
+	}
+
 	void LambertMaterial::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Material::Save(ar);

@@ -16,13 +16,25 @@ namespace BHive
 		return SetParam("Emission", MaterialParam(mEmissionColor));
 	}
 
+	void EmissiveMaterial::SetTextureFromType(EMaterialTextureType type, TexturePtr texture)
+	{
+		switch (type)
+		{
+		case EMaterialTextureType::Emission:
+			SetTexture("EmissionMap", {texture});
+			break;
+		default:
+			break;
+		}
+	}
+
 	void EmissiveMaterial::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Material::Save(ar);
 		ar(MAKE_NVP("Emission", mEmissionColor));
 	}
 
-	void EmissiveMaterial ::Load(cereal::BinaryInputArchive &ar)
+	void EmissiveMaterial::Load(cereal::BinaryInputArchive &ar)
 	{
 		Material::Load(ar);
 		ar(MAKE_NVP("Emission", mEmissionColor));

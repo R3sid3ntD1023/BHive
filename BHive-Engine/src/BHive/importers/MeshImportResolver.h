@@ -60,6 +60,8 @@ namespace BHive
 
 		void ResolveMaterials(const std::vector<DecodedMaterial> &materials, MaterialTable &material_table, const std::filesystem::path &assetPath);
 
+		MaterialPtr GetMaterialFromShadingMode(EMaterialShadingMode mode);
+
 	private:
 		FMeshImportOptions mOptions;
 		AdditionalAssets mAdditionalAssets;

@@ -82,6 +82,34 @@ namespace BHive
 		return *this;
 	}
 
+	void StandardMaterial::SetTextureFromType(EMaterialTextureType type, TexturePtr texture)
+	{
+
+		switch (type)
+		{
+		case EMaterialTextureType::Albedo:
+			SetTexture("DiffuseMap", {texture});
+			break;
+		case EMaterialTextureType::Normal:
+			SetTexture("NormalMap", {texture});
+			break;
+		case EMaterialTextureType::Metalness:
+			SetTexture("MetalnessMap", {texture});
+			break;
+		case EMaterialTextureType::Roughness:
+			SetTexture("RoughnessMap", {texture});
+			break;
+		case EMaterialTextureType::Emission:
+			SetTexture("EmissionMap", {texture});
+			break;
+		case EMaterialTextureType::Opacity:
+			SetTexture("OpacityMap", {texture});
+			break;
+		default:
+			break;
+		}
+	}
+
 	void StandardMaterial::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Material::Save(ar);

@@ -143,7 +143,7 @@ namespace BHive
 
 	void Application::UpdateLayersAndWindow()
 	{
-		const double targetFPS = 1000.0;
+		const double targetFPS = EngineConfig::TargetFPS;
 		const double targetFrameTime = 1.0 / targetFPS;
 		auto frameStart = std::chrono::high_resolution_clock::now();
 

@@ -37,67 +37,49 @@ namespace BHive
 		{
 			return glm::quat(quat.w, quat.x, quat.y, quat.z);
 		}
-		std::string GetTextureType(aiTextureType aiType)
+
+		EMaterialTextureType GetTextureType(aiTextureType aiType)
 		{
 			switch (aiType)
 			{
 			case aiTextureType_DIFFUSE:
-				return "Albedo";
+				return EMaterialTextureType::Diffuse;
 			case aiTextureType_SPECULAR:
-				return "Roughness";
-			case aiTextureType_AMBIENT:
-				return "Ambient";
+				return EMaterialTextureType::Specular;
 			case aiTextureType_EMISSIVE:
-				return "Emission";
+				return EMaterialTextureType::Emission;
 			case aiTextureType_HEIGHT:
-				return "Height";
+				return EMaterialTextureType::Height;
 			case aiTextureType_NORMALS:
-				return "Normal";
+				return EMaterialTextureType::Normal;
 			case aiTextureType_SHININESS:
-				return "Shininess";
+				return EMaterialTextureType::Shininess;
 			case aiTextureType_OPACITY:
-				return "Opacity";
+				return EMaterialTextureType::Opacity;
 			case aiTextureType_DISPLACEMENT:
-				return "Displacement";
-			case aiTextureType_LIGHTMAP:
-				return "Lightmap";
-			case aiTextureType_REFLECTION:
-				return "Reflection";
+				return EMaterialTextureType::Height;
 			case aiTextureType_BASE_COLOR:
-				return "Albedo";
-			case aiTextureType_NORMAL_CAMERA:
-				return "NormalCamera";
+				return EMaterialTextureType::Albedo;
 			case aiTextureType_EMISSION_COLOR:
-				return "EmissionColor";
+				return EMaterialTextureType::Emission;
 			case aiTextureType_METALNESS:
-				return "Metallic";
+				return EMaterialTextureType::Metalness;
 			case aiTextureType_DIFFUSE_ROUGHNESS:
-				return "DiffuseRoughness";
-			case aiTextureType_AMBIENT_OCCLUSION:
-				return "AmbientOcclusion";
-			case aiTextureType_UNKNOWN:
-				break;
-			case aiTextureType_SHEEN:
-				break;
-			case aiTextureType_CLEARCOAT:
-				break;
-			case aiTextureType_TRANSMISSION:
-				break;
-			case aiTextureType_MAYA_BASE:
-				break;
-			case aiTextureType_MAYA_SPECULAR:
-				break;
-			case aiTextureType_MAYA_SPECULAR_COLOR:
-				break;
-			case aiTextureType_MAYA_SPECULAR_ROUGHNESS:
-				break;
-			case _aiTextureType_Force32Bit:
-				break;
+				return EMaterialTextureType::Roughness;
 			default:
-				break;
+				return EMaterialTextureType::Unknown;
 			}
+		}
 
-			return "";
+		EMaterialShadingMode GetShadingModel(aiShadingMode model)
+		{
+			switch (model)
+			{
+			case aiShadingMode::aiShadingMode_PBR_BRDF:
+				return EMaterialShadingMode::Standard;
+			default:
+				return EMaterialShadingMode::Lambert;
+			}
 		}
 	} // namespace utils
 
@@ -393,7 +375,7 @@ namespace BHive
 
 			if (auto embedded = scene->GetEmbeddedTexture(str.C_Str()))
 			{
-				out.Type = EmbeddedTexture::Embedded;
+				out.Source = EmbeddedTexture::Embedded;
 
 				size_t size = 0;
 
@@ -431,12 +413,15 @@ namespace BHive
 
 			for (unsigned i = 0; i < count; i++)
 			{
-
+				auto &material = materials[i];
 				auto loaded_material = mScene->mMaterials[i];
 				auto name = loaded_material->GetName().C_Str();
+				aiShadingMode shadingModel = aiShadingMode_NoShading;
 
-				auto &material = materials[i];
+				loaded_material->Get(AI_MATKEY_SHADING_MODEL, shadingModel);
+
 				material.Name = name;
+				material.ShadingMode = utils::GetShadingModel(shadingModel);
 				auto &textures = material.Textures;
 
 				for (unsigned j = 1; j < 8; j++)

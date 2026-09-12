@@ -15,6 +15,8 @@ namespace BHive
 
 		LambertMaterial &SetEmissionColor(FColor color);
 
+		void SetTextureFromType(EMaterialTextureType type, TexturePtr texture) override;
+
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		void Load(cereal::BinaryInputArchive &ar) override;
