@@ -1,8 +1,8 @@
 #include "Window.h"
+#include "WindowInput.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/WindowContext.h"
 #include <glfw/glfw3.h>
-#include "WindowInput.h"
 
 namespace BHive
 {
@@ -38,17 +38,24 @@ namespace BHive
 
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-		mWindow = glfwCreateWindow(properties.Size.x, properties.Size.y, properties.Title.c_str(), nullptr, shared_context);
+		const auto monitor = glfwGetPrimaryMonitor();
+		const auto videoMode = glfwGetVideoMode(monitor);
+
+		glm::ivec2 size = {properties.Size.x, properties.Size.y};
+		size.x = glm::min(size.x, videoMode->width);
+		size.y = glm::min(size.y, videoMode->height);
+
+		mWindow = glfwCreateWindow(size.x, size.y, properties.Title.c_str(), nullptr, shared_context);
 		sWindowCount++;
+
+		if (properties.Maximize)
+			glfwMaximizeWindow(mWindow);
 
 		mContext = WindowContext::Create(this);
 		mContext->Init();
 
 		WindowInput::RegisterCallbacks(mWindow, &mState);
 		WindowInput::WindowEvent.Add(this, &Window::OnEvent);
-
-		if (properties.Maximize)
-			glfwMaximizeWindow(mWindow);
 
 		glfwShowWindow(mWindow);
 	}

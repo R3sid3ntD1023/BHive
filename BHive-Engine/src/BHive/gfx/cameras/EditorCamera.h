@@ -1,12 +1,13 @@
 #pragma once
 
 #include "SceneCamera.h"
-#include "core/events/KeyEvents.h"
-#include "core/events/MouseEvents.h"
 
 namespace BHive
 {
-	class Event;
+	struct CameraSensitivity
+	{
+		float MoveSpeed = 10.0, ZoomSpeed = 2.0, PanSpeed = 1.0, OrbitSpeed = 1.0;
+	};
 
 	class BHIVE_API EditorCamera : public SceneCamera
 	{
@@ -38,7 +39,7 @@ namespace BHive
 
 		void Resize(uint32_t w, uint32_t h) override;
 
-		void SetMouseSensitivity(float sensitivity) { mMouseSensitivity = sensitivity; }
+		void SetSensitivity(CameraSensitivity sensitivity) { mSensitivity = sensitivity; }
 
 		glm::vec3 GetForward() const;
 
@@ -47,7 +48,7 @@ namespace BHive
 		glm::vec3 GetUp() const;
 
 	public:
-		float MouseSensitivity() const { return mMouseSensitivity; };
+		const CameraSensitivity &GetSensitivy() const { return mSensitivity; };
 
 	private:
 		float mYaw = -90.f;
@@ -62,6 +63,6 @@ namespace BHive
 
 		glm::vec2 mViewportSize{0, 0};
 
-		float mMouseSensitivity = 1.0f;
+		CameraSensitivity mSensitivity{};
 	};
 } // namespace BHive

@@ -1,7 +1,7 @@
-#include "core/EntryPoint.h"
+#include "PerformanceLayer.h"
 #include "RuntimeLayer.h"
 #include "SceneLayer.h"
-#include "PerformanceLayer.h"
+#include "core/EntryPoint.h"
 
 namespace BHive
 {
@@ -19,12 +19,14 @@ namespace BHive
 
 	Application *CreateApplication(const FCommandLine &cmd)
 	{
+		EngineConfig::Load(ENGINE_PATH "/../Config/Engine.ini");
+
 		FApplicationSpecification specs{};
 		specs.CommandLine = cmd;
 		specs.CenterWindow = true;
+		specs.Maximize = EngineConfig::Maximized;
 		specs.Title = "BHive Runtime";
-		specs.Size = {800, 600};
-		specs.Flags = EApplicationFlags::EnableImGui;
+		specs.Size = {EngineConfig::WindowWidth, EngineConfig::WindowHeight};
 		return new RuntimeApp(specs);
 	}
 } // namespace BHive

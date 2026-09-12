@@ -41,19 +41,27 @@ namespace BHive
 
 		mViewportSize = window.GetSize();
 
+		CameraSensitivity sensitivity{};
+		sensitivity.ZoomSpeed = EngineConfig::ZoomSpeed;
+		sensitivity.PanSpeed = EngineConfig::PanSpeed;
+		sensitivity.MoveSpeed = EngineConfig::MoveSpeed;
+		sensitivity.OrbitSpeed = EngineConfig::OrbitSpeed;
+
 		mCameras[0] = EditorCamera(75.f, aspect, 0.1f, 1000.f);
 		mCameras[0].SetStartState({0.f, 0.f, 0.f}, -90.0f, 0.0f);
+		mCameras[0].SetSensitivity(sensitivity);
 
 		mCameras[1] = EditorCamera(75.f, aspect, 0.1f, 1000.f);
 		mCameras[1].SetStartState({0.f, 10.f, 10.f}, -90.0f, -45.0f);
+		mCameras[1].SetSensitivity(sensitivity);
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Init(mViewportSize);
 		mSceneRenderer->SetEnvironmentTexture(TextureFactory::Create2D(decodeEnvironment));
 
-		// mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
+		mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
 		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
-		// mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
+		mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
 
 		auto mesh = MeshFactory::CreateSphere(1.0f, 32u, 32u);
 		auto plane = MeshFactory::CreatePlane(10.f, 10.f);

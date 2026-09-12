@@ -36,8 +36,8 @@ namespace BHive
 
 	void EditorCamera::FreeFlyMove(const glm::vec3 &direction)
 	{
-		mPosition += direction * MouseSensitivity();
-		mTarget += direction * MouseSensitivity();
+		mPosition += direction * mSensitivity.MoveSpeed;
+		mTarget += direction * mSensitivity.MoveSpeed;
 	}
 
 	void EditorCamera::Focus(const glm::vec3 &target, const glm::vec3 &bounds)
@@ -100,13 +100,13 @@ namespace BHive
 		mDistanceToTarget *= zoomFactor;
 		mDistanceToTarget = std::max(mDistanceToTarget, 0.1f);
 
-		glm::vec3 forward = GetForward();
+		glm::vec3 forward = GetForward() * mSensitivity.ZoomSpeed;
 		mPosition = mTarget - forward * mDistanceToTarget;
 	}
 
 	void EditorCamera::Pan(const glm::vec2 &delta)
 	{
-		float panSpeed = mDistanceToTarget * 0.02f * MouseSensitivity();
+		float panSpeed = mDistanceToTarget * 0.02f * mSensitivity.PanSpeed;
 
 		glm::vec3 right = GetRight();
 		glm::vec3 up = GetUp();
@@ -120,8 +120,8 @@ namespace BHive
 
 	void EditorCamera::Rotate(const glm::vec2 &delta)
 	{
-		mYaw += delta.x * MouseSensitivity();
-		mPitch -= delta.y * MouseSensitivity();
+		mYaw += delta.x * mSensitivity.OrbitSpeed;
+		mPitch -= delta.y * mSensitivity.OrbitSpeed;
 
 		mPitch = glm::clamp(mPitch, -89.0f, 89.0f);
 

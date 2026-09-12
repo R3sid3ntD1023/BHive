@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "core/Layer.h"
 #include "core/events/ApplicationEvents.h"
+#include "core/events/KeyEvents.h"
 #include "gfx/cameras/EditorCamera.h"
 #include "gfx/cameras/EditorCameraController.h"
 #include "gfx/material/MaterialTable.h"

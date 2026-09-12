@@ -73,21 +73,39 @@ namespace BHive
 
 	std::filesystem::path FileSystem::ResolvePath(const std::filesystem::path &path, const std::filesystem::path &basePath)
 	{
-		std::filesystem::path resolved_path = path;
+		auto target = path.filename().string();
+		std::filesystem::path partial_match;
+		std::filesystem::path resolved_path;
+
 		if (!path.is_absolute())
 		{
 			std::filesystem::recursive_directory_iterator directory(basePath);
 			for (auto &entry : directory)
 			{
-				auto filename = entry.path().string();
+				auto current = entry.path().filename().string();
 
-				if (filename.find(path.string()) != std::string::npos)
+				if (current == target)
 				{
-					resolved_path = entry;
+					resolved_path = entry.path();
 					break;
+				}
+
+				if (partial_match.empty() && current.find(target) != std::string::npos)
+				{
+					partial_match = entry.path();
 				}
 			}
 		}
+		else
+		{
+			resolved_path = path;
+		}
+
+		if (resolved_path.empty())
+		{
+			resolved_path = partial_match;
+		}
+
 		return resolved_path;
 	}
 

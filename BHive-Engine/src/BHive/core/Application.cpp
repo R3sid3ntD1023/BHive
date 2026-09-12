@@ -44,19 +44,16 @@ namespace BHive
 
 		WindowInput::WindowEvent.Add(this, &Application::OnEvent);
 
-		if (specification.Flags & EApplicationFlags::EnableImGui)
-		{
-			auto layer = ImGuiLayer::Create(mMainWindow->GetNative());
-			PushLayer(layer);
-			mImGuiLayer = layer.get();
-		}
+		auto layer = ImGuiLayer::Create(mMainWindow->GetNative());
+		PushLayer(layer);
+		mImGuiLayer = layer.get();
 
-		if (specification.Flags & EApplicationFlags::EnableAudio)
+		if (EngineConfig::EnableAudio)
 		{
 			GetSubSystem<AudioContext>().Init();
 		}
 
-		if (mSpecification.Flags & EApplicationFlags::EnablePhysics)
+		if (EngineConfig::EnablePhysics)
 		{
 			AddSubSystem<PhysicsContext>().Init();
 		}
@@ -70,12 +67,12 @@ namespace BHive
 
 		RenderCommand::Shutdown();
 
-		if (mSpecification.Flags & EApplicationFlags::EnableAudio)
+		if (EngineConfig::EnableAudio)
 		{
 			GetSubSystem<AudioContext>().Shutdown();
 		}
 
-		if (mSpecification.Flags & EApplicationFlags::EnablePhysics)
+		if (EngineConfig::EnablePhysics)
 		{
 			GetSubSystem<PhysicsContext>().Shutdown();
 		}
