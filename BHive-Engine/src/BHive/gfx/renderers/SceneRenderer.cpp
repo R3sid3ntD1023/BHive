@@ -200,10 +200,8 @@ namespace BHive
 		mEnvironment.Update();
 
 		auto envMaps = mEnvironment.GetCurrentMaps();
-		auto brdfLut = mEnvironment.GetBRDFLUT();
 
 		auto globalSet = mSceneSets.GlobalSet.As<ResourceSet>();
-		globalSet->SetTexture(2, brdfLut);
 		globalSet->SetTexture(3, envMaps.PreFilter);
 		globalSet->SetTexture(4, envMaps.Irradiance);
 	}
@@ -493,6 +491,7 @@ namespace BHive
 		auto global = mSceneSets.GlobalSet.As<ResourceSet>();
 		global->SetBuffer(0, mCameraUBO);
 		global->SetBuffer(1, mLights.GetBuffer());
+		global->SetTexture(2, mEnvironment.GetBRDFLUT());
 
 		auto opaqueSet = mSceneSets.OpaqueObjectSet.As<ResourceSet>();
 		opaqueSet->SetBuffer(0, mInstanceDataBuffer[0]);

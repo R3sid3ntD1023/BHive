@@ -29,6 +29,8 @@ namespace BHive
 	std::array<ContextHandle, 9> sSphereHandle;
 	ContextHandle sPlaneHandle;
 	ContextHandle sCharacterHandle;
+	DirectionalLight main{};
+	PointLight light{};
 
 	void SceneLayer::OnAttach(Application &app)
 	{
@@ -164,6 +166,10 @@ namespace BHive
 			request.BoneTransforms = mCharacter.As<SkeletalMesh>()->GetSkeleton()->GetRestPoseTransforms();
 			mSceneRenderer->SubmitMesh(request, sCharacterHandle);
 		}
+
+		// lights
+		main.SetColor(FColor::White).SetIntensity(1.0f).SetDirection({0.f, -1.0f, -0.5f});
+		light.SetColor(FColor::Orange).SetIntensity(1.0f).SetRadius(10.f).SetPosition({0, 1, 0});
 	}
 
 	void SceneLayer::OnDetach()
@@ -201,20 +207,15 @@ namespace BHive
 		FView viewOverride = FView::Create(mCameras[1].GetProjection(), mCameras[1].GetView());
 		mSceneRenderer->SetViewOverride(viewOverride);
 
-		DirectionalLight main{};
-		main.SetColor(FColor::White).SetIntensity(1.0f).SetDirection({0.f, -1.0f, 0.5f});
 		mSceneRenderer->Submit(main);
-
-		PointLight light{};
-		light.SetColor(FColor::Orange).SetIntensity(1.0f).SetRadius(10.f).SetPosition({0, 1, 0});
 		mSceneRenderer->Submit(light);
+
 		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), {light.GetPosition()});
 		renderer.Line.DrawGrid({});
 		renderer.Line.DrawLine({0, 0, 0}, {10, 0, 0}, FColor::Red);
 		renderer.Line.DrawLine({0, 0, 0}, {0, 10, 0}, FColor::Green);
 		renderer.Line.DrawLine({0, 0, 0}, {0, 0, 10}, FColor::Blue);
 
-		mSceneRenderer->Submit(light);
 		mSceneRenderer->End();
 	}
 
@@ -279,6 +280,9 @@ namespace BHive
 					}
 				}
 			};
+
+			Inspect::get().inspect("MainLight", main);
+			Inspect::get().inspect("PointLight", light);
 
 			auto inspect = [&](const std::string label)
 			{

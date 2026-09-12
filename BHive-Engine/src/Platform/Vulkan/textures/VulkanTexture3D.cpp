@@ -34,8 +34,8 @@ namespace BHive
 		auto compare_op = compare_enabled ? ToVkCompare(mCreateInfo.CompareOp.value()) : vk::CompareOp::eAlways;
 
 		create_info.SamplerCI = vk::SamplerCreateInfo(
-			{}, magFilter, minFilter, vk::SamplerMipmapMode::eLinear, addressMode, addressMode, addressMode, 0.0f, 0u, 1.0f, compare_enabled, compare_op, 0.0f, 0.0f, vk::BorderColor::eIntOpaqueBlack,
-			VK_FALSE);
+			{}, magFilter, minFilter, vk::SamplerMipmapMode::eLinear, addressMode, addressMode, addressMode, 0.0f, 0u, 1.0f, compare_enabled, compare_op, 0.0f, float(levels - 1),
+			vk::BorderColor::eIntOpaqueBlack, VK_FALSE);
 		create_info.DebugName = mCreateInfo.DebugName;
 		create_info.BytesPerPixel = GetBytesPerPixel(mCreateInfo.Format);
 		create_info.ViewTopology = EViewTopology::Mips3D;

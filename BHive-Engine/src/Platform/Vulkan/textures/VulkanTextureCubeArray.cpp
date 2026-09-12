@@ -1,6 +1,6 @@
 #include "VulkanTextureCubeArray.h"
-#include "Platform/Vulkan/VulkanConversions.h"
 #include "Platform/Vulkan/VulkanBackend.h"
+#include "Platform/Vulkan/VulkanConversions.h"
 
 namespace BHive
 {
@@ -10,7 +10,7 @@ namespace BHive
 		  mCreateInfo(createInfo)
 	{
 		uint32_t cubeCount = mCreateInfo.ArrayLayers;
-		
+
 		auto format = ToVkFormat(mCreateInfo.Format);
 		auto levels = mCreateInfo.MipLevels;
 		auto layers = cubeCount * 6;
@@ -18,8 +18,9 @@ namespace BHive
 		auto usage = InferImageUsage(mCreateInfo.Roles);
 
 		ImageCreateInfo create_info{};
-		create_info.ImageCI =
-			vk::ImageCreateInfo(vk::ImageCreateFlagBits::eCubeCompatible, vk::ImageType::e3D, format, extent, levels, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage, vk::SharingMode::eExclusive, 0);
+		create_info.ImageCI = vk::ImageCreateInfo(
+			vk::ImageCreateFlagBits::eCubeCompatible, vk::ImageType::e3D, format, extent, levels, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage, vk::SharingMode::eExclusive,
+			0);
 
 		// create default view info image is set in VulkanImage
 		auto aspect = ToVkAspect(mCreateInfo.Aspect);
@@ -34,8 +35,8 @@ namespace BHive
 		auto compare_op = compare_enabled ? ToVkCompare(mCreateInfo.CompareOp.value()) : vk::CompareOp::eAlways;
 
 		create_info.SamplerCI = vk::SamplerCreateInfo(
-			{}, magFilter, minFilter, vk::SamplerMipmapMode::eLinear, addressMode, addressMode, addressMode, 0.0f, 0u, 1.0f, compare_enabled, compare_op, 0.0f, 0.0f, vk::BorderColor::eIntOpaqueBlack,
-			VK_FALSE);
+			{}, magFilter, minFilter, vk::SamplerMipmapMode::eLinear, addressMode, addressMode, addressMode, 0.0f, 0u, 1.0f, compare_enabled, compare_op, 0.0f, float(levels - 1),
+			vk::BorderColor::eIntOpaqueBlack, VK_FALSE);
 		create_info.DebugName = mCreateInfo.DebugName;
 		create_info.BytesPerPixel = GetBytesPerPixel(mCreateInfo.Format);
 		create_info.ViewTopology = EViewTopology::CubeArray;
@@ -44,7 +45,6 @@ namespace BHive
 
 	void VulkanTextureCubeArray::SetData(const FTextureUploadInfo &info)
 	{
-		
 	}
 
 	VkImageView VulkanTextureCubeArray::ResolveRenderView(uint32_t layer, uint32_t mip) const

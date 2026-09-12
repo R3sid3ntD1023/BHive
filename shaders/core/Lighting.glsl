@@ -45,7 +45,7 @@ struct PointLightShadowInfo
 };
 
 // @semantic Lights
-layout(std140, set = 0, binding = 1) restrict readonly buffer LightSSBO
+layout(std430, set = 0, binding = 1) restrict readonly buffer LightSSBO
 {
 	uvec4 NumLights; //dir, point, spot
 	DirectionalLight uDirectionalLights[MAX_LIGHTS];
@@ -62,21 +62,19 @@ void GetDirectionalLightInfo(const in DirectionalLight light, inout IncidentLigh
 
 void GetPointLightInfo(const in PointLight light, const in vec3 geoPosition, inout IncidentLight directLight)
 {
-	float radius = light.Position.w;
-	directLight.Direction = light.Position.xyz - geoPosition;
+	float radius = max(light.Position.w, 0.001);
 
-	float dist = distance(light.Position.xyz, geoPosition);
+	vec3 L = light.Position.xyz - geoPosition;
+	float dist = length(L);
+	directLight.Direction = normalize(L);
+
 	//https://lisyarus.github.io/blog/posts/point-light-attenuation.html
 	float s = dist / radius;
 
-	if(s >= 1.0)
-		return;
+	float fade = 1.0 - smoothstep(0.5, 1.0, s);
 
-	float s2 = sqrt(s);
-	float attenuation = sqrt(1 -s2) / (1 + radius * s);
-	//float attenuation = 1.0 / (radius * radius);
-
-	directLight.Color = max(vec3(0), light.Color.rgb * light.Color.a) * attenuation;
+	float attenuation = sqrt(max(0.0, 1.0 - sqrt(min(s, 1.0)))) / (1.0 + radius * s);
+	directLight.Color =  light.Color.rgb * light.Color.a * attenuation * fade;
 }
 
 void GetSpotLightInfo(const in SpotLight light, const in vec3 geoPosition, inout IncidentLight directLight)

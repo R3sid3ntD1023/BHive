@@ -91,6 +91,7 @@ namespace BHive
 		{
 			EnableLogging = ini::utils::Get(ini["Engine"], "EnableLogging", EnableLogging);
 			TargetFPS = ini::utils::Get(ini["Engine"], "TargetFPS", TargetFPS);
+			TargetFPS = std::min(TargetFPS, 1000.0);
 		}
 
 		if (ini.has("Physics"))

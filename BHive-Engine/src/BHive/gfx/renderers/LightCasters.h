@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	
+
 	struct FGPUDirectionalLight
 	{
 		// rgb + intensity
@@ -47,9 +47,9 @@ namespace BHive
 
 		DirectionalLight &SetDirection(const glm::vec3 &direction);
 
-		const FColor& GetColor() { return mColor; }
+		const FColor &GetColor() { return mColor; }
 
-		const glm::vec3& GetDirection() const { return mDirection; }
+		const glm::vec3 &GetDirection() const { return mDirection; }
 
 		float GetIntensity() const { return mIntensity; }
 
@@ -74,21 +74,21 @@ namespace BHive
 
 		PointLight &SetRadius(float radius);
 
-		const FColor& GetColor() { return mColor; }
+		const FColor &GetColor() { return mColor; }
 
-		const glm::vec3& GetPosition() const { return mPosition; }
+		const glm::vec3 &GetPosition() const { return mPosition; }
 
 		float GetIntensity() const { return mIntensity; }
 
 		float GetRadius() const { return mRadius; }
-	
+
 		FGPUPointLight ToGPU() const;
 
 		REFLECTABLE()
 
 	private:
 		FColor mColor = FColor::White;
-		glm::vec3 mPosition {0, 0, 0};
+		glm::vec3 mPosition{0, 0, 0};
 		float mIntensity = 1.f;
 		float mRadius = 5.f;
 	};
@@ -110,11 +110,11 @@ namespace BHive
 
 		SpotLight &SetOuterAngleDegrees(float degrees);
 
-		const FColor& GetColor() { return mColor; }
+		const FColor &GetColor() { return mColor; }
 
-		const glm::vec3& GetDirection() const { return mDirection; }
+		const glm::vec3 &GetDirection() const { return mDirection; }
 
-		const glm::vec3& GetPosition() const { return mPosition; }
+		const glm::vec3 &GetPosition() const { return mPosition; }
 
 		float GetIntensity() const { return mIntensity; }
 
@@ -144,4 +144,4 @@ namespace BHive
 	REFLECT_EXTERN(PointLight);
 	REFLECT_EXTERN(SpotLight);
 
-}
+} // namespace BHive

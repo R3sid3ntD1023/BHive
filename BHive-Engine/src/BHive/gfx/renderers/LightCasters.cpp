@@ -1,22 +1,21 @@
 #include "LightCasters.h"
-#include "LightCasters.h"
 
 namespace BHive
 {
 
-	DirectionalLight & DirectionalLight::SetColor(const FColor &color)
+	DirectionalLight &DirectionalLight::SetColor(const FColor &color)
 	{
 		mColor = color;
 		return *this;
 	}
 
-	DirectionalLight & DirectionalLight::SetIntensity(float intensity)
+	DirectionalLight &DirectionalLight::SetIntensity(float intensity)
 	{
 		mIntensity = intensity;
 		return *this;
 	}
 
-	DirectionalLight & DirectionalLight::SetDirection(const glm::vec3 &direction)
+	DirectionalLight &DirectionalLight::SetDirection(const glm::vec3 &direction)
 	{
 		mDirection = direction;
 		return *this;
@@ -145,4 +144,3 @@ namespace BHive
 		REFLECT_PROPERTY("Outer Angle", GetOuterAngleDegrees, SetOuterAngleDegrees);
 	}
 } // namespace BHive
-

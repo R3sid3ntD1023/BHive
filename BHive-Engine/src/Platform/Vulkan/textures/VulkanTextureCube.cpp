@@ -1,6 +1,6 @@
 #include "VulkanTextureCube.h"
-#include "Platform/Vulkan/VulkanConversions.h"
 #include "Platform/Vulkan/VulkanBackend.h"
+#include "Platform/Vulkan/VulkanConversions.h"
 
 namespace BHive
 {
@@ -21,8 +21,9 @@ namespace BHive
 		auto usage = InferImageUsage(mCreateInfo.Roles);
 
 		ImageCreateInfo create_info{};
-		create_info.ImageCI =
-			vk::ImageCreateInfo(vk::ImageCreateFlagBits::eCubeCompatible, vk::ImageType::e2D, format, extent, levels, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage, vk::SharingMode::eExclusive, 0);
+		create_info.ImageCI = vk::ImageCreateInfo(
+			vk::ImageCreateFlagBits::eCubeCompatible, vk::ImageType::e2D, format, extent, levels, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage, vk::SharingMode::eExclusive,
+			0);
 
 		// create default view info image is set in VulkanImage
 		auto aspect = ToVkAspect(mCreateInfo.Aspect);
@@ -37,8 +38,8 @@ namespace BHive
 		auto compare_op = compare_enabled ? ToVkCompare(mCreateInfo.CompareOp.value()) : vk::CompareOp::eAlways;
 
 		create_info.SamplerCI = vk::SamplerCreateInfo(
-			{}, magFilter, minFilter, vk::SamplerMipmapMode::eLinear, addressMode, addressMode, addressMode, 0.0f, 0u, 1.0f, compare_enabled, compare_op, 0.0f, 0.0f, vk::BorderColor::eIntOpaqueBlack,
-			VK_FALSE);
+			{}, magFilter, minFilter, vk::SamplerMipmapMode::eLinear, addressMode, addressMode, addressMode, 0.0f, 0u, 1.0f, compare_enabled, compare_op, 0.0f, float(levels - 1),
+			vk::BorderColor::eIntOpaqueBlack, VK_FALSE);
 		create_info.DebugName = mCreateInfo.DebugName;
 		create_info.BytesPerPixel = GetBytesPerPixel(mCreateInfo.Format);
 		create_info.ViewTopology = EViewTopology::Cube;

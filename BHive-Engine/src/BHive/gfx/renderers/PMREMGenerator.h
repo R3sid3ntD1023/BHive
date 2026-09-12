@@ -11,7 +11,7 @@ namespace BHive
 	{
 		uint32_t EnvironmentMapSize = 512;
 		uint32_t PrefilterMapSize = 128;
-		uint32_t PrefilterMipLevels = 5;
+		uint32_t PrefilterMipLevels = 9;
 		uint32_t IrradianceSize = 32;
 	};
 

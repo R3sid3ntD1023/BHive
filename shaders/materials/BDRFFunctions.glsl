@@ -69,10 +69,12 @@ vec3 GetIrradiance(const in vec3 normal, const in samplerCube map)
 
 vec3 GetRadiance(const in vec3 viewDir, const in vec3 normal, const in float roughness, const in vec3 F0, const in samplerCube prefilter, const in sampler2D brdflut)
 {
+	const float MAX_REFLECTION_LOD =8.0;
+	float lod = roughness * MAX_REFLECTION_LOD;
 	vec3 F = fresnelSchlickRoughness(max(dot(normal, viewDir), 0.0), F0, roughness);
-	vec3 R = reflect(-viewDir, normal);
-	const float MAX_REFLECTION_LOD = 4.0;
-	vec3 prefilerColor = textureLod(prefilter, R, roughness * MAX_REFLECTION_LOD).rgb;
+	vec3 R = normalize(reflect(-viewDir, normal));
+	
+	vec3 prefilerColor = textureLod(prefilter, R, lod).rgb;
 	vec2 envBRDF = texture(brdflut, vec2(max(dot(normal, viewDir), 0.0), roughness)).rg;
-	return prefilerColor * (F * envBRDF.x + envBRDF.y);
+	return prefilerColor *(F * envBRDF.x + envBRDF.y);
 }

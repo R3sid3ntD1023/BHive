@@ -10,7 +10,7 @@ namespace BHive
 		SetAlbedo(FColor::White);
 		SetEmission(FColor::Black);
 		SetMetalness(0.0f);
-		SetRoughness(0.1f);
+		SetRoughness(1.f);
 		SetOpacity(1.0f);
 		SetDepthScale(1.0f);
 		SetTiling({1.0f, 1.0f});

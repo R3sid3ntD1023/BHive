@@ -68,19 +68,17 @@ layout(set = 1, binding = 4) uniform sampler2D EmissionMap;
 layout(set = 1, binding = 5) uniform sampler2D OpacityMap;
 
 #define RECEIVE_SHADOWS 1 << 1
-#define IS_DIAELECTRIC 1 << 2
 
 StandardMaterial GetMaterial(VS_OUT vs)
 {
 	bool ReceiveShadows = (pc.Flags & RECEIVE_SHADOWS) != 0;
-	bool IsDielectric = (pc.Flags & IS_DIAELECTRIC) != 0;
 	bool HasNormalMap = pc.HasNormalMap != 0;
 
 	vec4 diffuseColor = vec4(pc.Albedo, pc.Opacity);
 	vec3 totalEmissiveRadiance = pc.Emission.rgb * pc.Emission.a;
 	vec2 texCoord = vs_in.Texcoord * pc.Tiling;
-	float roughnessFactor = pc.Roughness;
-	float metalnessFactor = pc.Metalness;
+	float roughnessFactor = clamp(pc.Roughness, 0.04, 1.0);
+	float metalnessFactor = clamp(pc.Metalness, 0.0, 1.0);
 	vec3 normal = normalize(vs_in.Normal);
 	
 	#include <DiffuseMap.glsl>
@@ -90,8 +88,7 @@ StandardMaterial GetMaterial(VS_OUT vs)
 	#include <EmissionMap.glsl>
 	#include <OpacityMap.glsl>
 
-	vec3 F0 = IsDielectric ? vec3(0.04) : diffuseColor.rgb;
-	F0 =  mix(F0, diffuseColor.rgb, metalnessFactor);
+	vec3 F0 =  mix(vec3(0.04), diffuseColor.rgb, metalnessFactor);
 
 	StandardMaterial mat;
 	mat.Albedo = diffuseColor.rgb;

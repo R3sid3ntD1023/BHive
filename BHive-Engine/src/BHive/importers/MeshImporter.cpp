@@ -157,12 +157,7 @@ namespace BHive
 		{
 			FMeshData &data = mDecodedMesh.MeshData;
 
-#if 1
-	#define IMPORT_SCALE glm::scale(glm::mat4(1.0f), glm::vec3(mImportScale)) *
-#else
-	#define IMPORT_SCALE
-#endif
-			auto node_matrix = IMPORT_SCALE utils::make_mat4(matrix);
+			auto node_matrix = glm::scale(glm::mat4(1.0f), glm::vec3(mImportScale)) * utils::make_mat4(matrix);
 
 			FSubMesh sub_mesh{};
 			sub_mesh.StartVertex = (uint32_t)data.Vertices.size();
