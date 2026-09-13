@@ -21,7 +21,7 @@ namespace BHive
 		}
 	};
 
-	struct CircleRenderBatch final : public IRenderBatch
+	struct BHIVE_API CircleRenderBatch final : public IRenderBatch
 	{
 		static const uint32_t sMaxQuads = 20'000;
 		static const uint32_t sMaxVertexCount = sMaxQuads * 4;

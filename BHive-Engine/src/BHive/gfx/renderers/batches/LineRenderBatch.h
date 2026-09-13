@@ -18,7 +18,7 @@ namespace BHive
 		static BufferLayout GetLayout() { return {{EShaderDataType::Float3}, {EShaderDataType::Float4}, {EShaderDataType::Int}}; }
 	};
 
-	struct LineRenderBatch : public IRenderBatch
+	struct BHIVE_API LineRenderBatch : public IRenderBatch
 	{
 		const static uint32_t sMaxVertexCount = 20'000;
 

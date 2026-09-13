@@ -1,14 +1,14 @@
 #pragma once
 
-#include "core/Core.h"
+#include "Core.h"
 #include "core/reflection/Reflection.h"
-#include "world/GameObject.h"
+#include "runtime/GameObject.h"
 
 namespace BHive
 {
 	struct GameObject;
 
-	struct RuntimeEventDelegate
+	struct MARIO_API RuntimeEventDelegate
 	{
 		RuntimeEventDelegate() = default;
 		RuntimeEventDelegate(const RuntimeEventDelegate &);

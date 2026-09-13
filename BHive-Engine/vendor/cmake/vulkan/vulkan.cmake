@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.8...3.24)
-
 execute_process(COMMAND ${CMAKE_COMMAND} -E echo "Configuring Vulkan SDK")
 
 if(DEFINED ENV{VULKAN_SDK})

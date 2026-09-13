@@ -1,14 +1,5 @@
 {
-  "builtin-baseline": "74e6536215718009aae747d86d84b78376bf9e09",
-  "vcpkg-configuration": {
-    "registries": [
-      {
-        "kind": "artifact",
-        "location": "https://github.com/microsoft/vcpkg-ce-catalog/archive/refs/heads/main.zip",
-        "name": "microsoft"
-      }
-    ]
-  },
+  "builtin-baseline": "a1cae005c39be7b18ba319fced856b68d7276271",
   "dependencies": [
     { "name": "freetype" },
     { "name": "msdfgen" },

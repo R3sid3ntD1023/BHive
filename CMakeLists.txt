@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.5...4.0)
 
 message(STATUS "Cmake version: ${CMAKE_VERSION}")
 message(STATUS "Policy minimum version: ${CMAKE_POLICY_VERSION_MINIMUM}")
@@ -24,8 +24,7 @@ include(cmake/StrictWarnings.cmake)
 add_subdirectory(BHive-Engine)
 add_subdirectory(BHive-Editor)
 add_subdirectory(BHive-Runtime)
-
-
+add_subdirectory(projects)
 
 #ENABLE_STRICT_WARNINGS(BHive-Engine)
 

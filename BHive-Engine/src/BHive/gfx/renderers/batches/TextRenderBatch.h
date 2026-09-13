@@ -25,7 +25,7 @@ namespace BHive
 		}
 	};
 
-	struct TextRenderBatch : public IRenderBatch
+	struct BHIVE_API TextRenderBatch : public IRenderBatch
 	{
 		static const uint32_t sMaxQuads = 20'000;
 		static const uint32_t sMaxVertexCount = sMaxQuads * 4;

@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.10...3.24)
-
 if(NOT DEFINED VULKAN_SDK_PATH)
 	message(WARNING "VULKAN_SDK_PATH not defined before including spirv-cross_glsl.cmake")
     return()

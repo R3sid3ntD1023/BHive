@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.10)
-
 set(TARGET_NAME BHive-Editor)
 
 file(GLOB_RECURSE  SOURCE_FILES CMAKE_CONFIGURE_DEPENDS src/**.cpp)

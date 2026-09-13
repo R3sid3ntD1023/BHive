@@ -1,25 +1,8 @@
-#include "input/InputManager.h"
 #include "InputContext.h"
+#include "input/InputManager.h"
 
 namespace BHive
 {
-	template <>
-	const float InputValue::Get() const
-	{
-		return mValue.x;
-	}
-
-	template <>
-	const bool InputValue::Get() const
-	{
-		return (bool)mValue.x;
-	}
-
-	template <>
-	const glm::vec2 InputValue::Get() const
-	{
-		return {mValue.x, mValue.y};
-	}
 
 	void InputContext::add_action(const std::string &name, FInputKey key)
 	{

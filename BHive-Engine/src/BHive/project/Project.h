@@ -14,13 +14,12 @@ namespace BHive
 		std::string Name = "Untitled";
 		std::filesystem::path ProjectDirectory;
 		std::filesystem::path ResourcesDirectory;
-		std::filesystem::path ModulePath;
 		UUID StartScene = NullID;
 
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(MAKE_NVP(Name), MAKE_NVP(ProjectDirectory), MAKE_NVP(ResourcesDirectory), MAKE_NVP(ModulePath), MAKE_NVP(StartScene));
+			ar(MAKE_NVP(Name), MAKE_NVP(ProjectDirectory), MAKE_NVP(ResourcesDirectory), MAKE_NVP(StartScene));
 		}
 
 		REFLECTABLE()
@@ -48,33 +47,17 @@ namespace BHive
 
 		static const char *GetExtension() { return ".bhproj"; }
 
-		static std::string GetProjectName()
-		{
-			ASSERT(sActiveProject);
-			return sActiveProject->mConfig.Name;
-		}
+		static std::string GetProjectName();
 
-		static std::filesystem::path GetProjectDirectory()
-		{
-			ASSERT(sActiveProject);
-			return sActiveProject->mConfig.ProjectDirectory;
-		}
+		static std::filesystem::path GetProjectDirectory();
 
-		static std::filesystem::path GetResourceDirectory()
-		{
-			ASSERT(sActiveProject);
-			return GetProjectDirectory() / sActiveProject->mConfig.ResourcesDirectory;
-		}
+		static std::filesystem::path GetResourceDirectory();
 
-		static std::filesystem::path GetModulePath() { return GetProjectDirectory() / GetConfiguration().ModulePath; }
+		static std::filesystem::path GetModulePath();
 
 		static std::filesystem::path GetResourceRelativePath(const std::filesystem::path &path);
 
-		static FProjectConfiguration &GetConfiguration()
-		{
-			ASSERT(sActiveProject);
-			return sActiveProject->mConfig;
-		}
+		static FProjectConfiguration &GetConfiguration();
 
 	private:
 		FProjectConfiguration mConfig;

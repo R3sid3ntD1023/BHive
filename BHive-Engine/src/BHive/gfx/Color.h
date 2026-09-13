@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/Core.h"
-#include "gui/GUICore.h"
 #include "core/math/Math.h"
+#include "gui/GUICore.h"
 
 namespace BHive
 {

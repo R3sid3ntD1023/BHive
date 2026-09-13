@@ -1,27 +1,28 @@
 #pragma once
 
+#include "Core.h"
 #include "core/SubClassOf.h"
-#include "GameObject.h"
+#include "runtime/GameObject.h"
 
 namespace BHive
 {
 	class Sprite;
 
-	struct BlockBase : public GameObject
+	struct MARIO_API BlockBase : public GameObject
 	{
 		BlockBase(const entt::entity &handle, World *world);
 
 		REFLECTABLEV(GameObject)
 	};
 
-	struct Block : public BlockBase
+	struct MARIO_API Block : public BlockBase
 	{
 		Block(const entt::entity &handle, World *world);
 
 		REFLECTABLEV(BlockBase)
 	};
 
-	struct QuestionBlock : public BlockBase
+	struct MARIO_API QuestionBlock : public BlockBase
 	{
 		QuestionBlock(const entt::entity &handle, World *world);
 

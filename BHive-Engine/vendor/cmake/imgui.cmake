@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.8...3.10)
-
 FETCHCONTENT_DECLARE(
 	imgui 
 	GIT_REPOSITORY https://github.com/ocornut/imgui.git

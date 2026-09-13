@@ -48,7 +48,7 @@ namespace BHive
 		uint32_t MemberIndex;
 	};
 
-	struct ShaderTemplate
+	struct BHIVE_API ShaderTemplate
 	{
 		std::vector<BindingSetTemplate> Sets;
 		std::vector<PushConstantBlock> PushConstants;

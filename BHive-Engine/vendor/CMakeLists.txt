@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8...3.24)
+cmake_minimum_required(VERSION 3.5...4.0)
 
 include(FetchContent)
 
@@ -9,7 +9,6 @@ include(cmake/imnodeflow.cmake)
 include(cmake/implot.cmake)
 include(cmake/msdf-atlas-gen.cmake)
 include(cmake/waveparser.cmake)
-#include(cmake/assimp.cmake)
 include(cmake/mINI.cmake)
 
 

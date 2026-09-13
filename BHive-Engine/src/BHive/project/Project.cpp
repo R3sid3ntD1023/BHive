@@ -86,6 +86,36 @@ namespace BHive
 		return std::filesystem::relative(path, GetResourceDirectory());
 	}
 
+	std::string Project::GetProjectName()
+	{
+		ASSERT(sActiveProject);
+		return sActiveProject->mConfig.Name;
+	}
+
+	std::filesystem::path Project::GetProjectDirectory()
+	{
+		ASSERT(sActiveProject);
+		return sActiveProject->mConfig.ProjectDirectory;
+	}
+
+	std::filesystem::path Project::GetResourceDirectory()
+	{
+		ASSERT(sActiveProject);
+		return GetProjectDirectory() / sActiveProject->mConfig.ResourcesDirectory;
+	}
+
+	std::filesystem::path Project::GetModulePath()
+	{
+		ASSERT(sActiveProject);
+		return GetProjectDirectory() / "bin" / BUILD_CONFIG / (GetProjectName() + ".dll");
+	}
+
+	FProjectConfiguration &Project::GetConfiguration()
+	{
+		ASSERT(sActiveProject);
+		return sActiveProject->mConfig;
+	}
+
 	REFLECT(FProjectConfiguration)
 	{
 		BEGIN_REFLECT(FProjectConfiguration)

@@ -23,7 +23,7 @@ namespace BHive
 		}
 	};
 
-	struct QuadRenderBatch : public IRenderBatch
+	struct BHIVE_API QuadRenderBatch : public IRenderBatch
 	{
 		static const uint32_t sMaxQuads = 20'000;
 		static const uint32_t sMaxVertexCount = sMaxQuads * 4;

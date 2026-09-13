@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	struct TextureBatchData
+	struct BHIVE_API TextureBatchData
 	{
 		static inline const size_t sMaxTextureCount = 32;
 

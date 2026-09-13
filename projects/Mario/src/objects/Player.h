@@ -1,6 +1,7 @@
 #pragma once
 
-#include "GameObject.h"
+#include "Core.h"
+#include "runtime/GameObject.h"
 
 #define BREAKABLE_BLOCKS 0x01
 
@@ -8,7 +9,7 @@ namespace BHive
 {
 	struct InputValue;
 
-	struct Player : public GameObject
+	struct MARIO_API Player : public GameObject
 	{
 		Player(const entt::entity &handle, World *world);
 

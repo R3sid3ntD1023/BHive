@@ -1,10 +1,10 @@
 #include "Block.h"
-#include "components/BoxColliderComponent.h"
-#include "components/FlipBookComponent.h"
-#include "components/PhysicsComponent.h"
-#include "components/SpriteComponent.h"
 #include "GroupMacros.h"
 #include "importers/TextureImporter.h"
+#include "runtime/components/BoxColliderComponent.h"
+#include "runtime/components/FlipBookComponent.h"
+#include "runtime/components/PhysicsComponent.h"
+#include "runtime/components/SpriteComponent.h"
 
 namespace BHive
 {
@@ -45,14 +45,17 @@ namespace BHive
 	RTTR_REGISTRATION
 	{
 		{
+			BEGIN_REFLECT(BlockBase);
+		}
+		{
 			BEGIN_REFLECT(Block)
 			REFLECT_CONSTRUCTOR(const entt::entity &, World *);
 		}
 
 		{
 			BEGIN_REFLECT(QuestionBlock)
-			REFLECT_CONSTRUCTOR(const entt::entity &, World *)
-			REFLECT_PROPERTY("BlockToSpawn", SpawnedBlock);
+			REFLECT_CONSTRUCTOR(const entt::entity &, World *);
+			// REFLECT_PROPERTY("BlockToSpawn", SpawnedBlock);
 		}
 	}
 

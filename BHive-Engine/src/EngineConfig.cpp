@@ -72,16 +72,8 @@ namespace BHive
 #if defined(BHIVE_EDITOR)
 			Title == " -Editor";
 #endif
+			Title += (std::string(" ") + BUILD_CONFIG);
 
-#if defined(BUILD_TYPE)
-	#if BUILD_TYPE == 0
-			Title += " Debug";
-	#elif BUILD_TYPE == 1
-			Title += " RelWithDebInfo";
-	#else
-			Title += " Release";
-	#endif
-#endif
 			WindowWidth = ini::utils::Get(ini["Window"], "Width", WindowWidth);
 			WindowHeight = ini::utils::Get(ini["Window"], "Height", WindowHeight);
 			Maximized = ini::utils::Get(ini["Window"], "Maximized", Maximized);
