@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Block.h"
+#include "Core.h"
 
 namespace BHive
 {
-	struct Item : public Block
+	struct MARIO_API Item : public Block
 	{
 		Item(const entt::entity &handle, World *world);
 

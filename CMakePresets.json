@@ -1,41 +1,58 @@
 {
-    "version": 8,
-    "configurePresets": [
-        {
-            "name": "x64-Debug",
-            "displayName": "x64-Debug",
-            "description": "Sets VS generator, build and install directory",
-            "generator": "Visual Studio 17 2022",
-            "binaryDir": "${sourceDir}/build/${presetName}",
-          "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Debug",
-            "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
-            "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-          }
-        },
-        {
-            "name": "x64-RelWithDebInfo",
-            "displayName": "x64-RelWithDebInfo",
-            "description": "Sets VS generator, build and install directory",
-            "generator": "Visual Studio 17 2022",
-            "binaryDir": "${sourceDir}/build/${presetName}",
-          "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-            "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
-            "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-          }
-        },
-        {
-            "name": "x64-Release",
-            "displayName": "x64-Release",
-            "description": "Sets VS generator, build and install directory",
-            "generator": "Visual Studio 17 2022",
-            "binaryDir": "${sourceDir}/build/${presetName}",
-          "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Release",
-            "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
-            "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-          }
-        }
-    ]
+  "version": 8,
+  "configurePresets": [
+    {
+      "name": "x64-Debug",
+      "generator": "Visual Studio 18 2026",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "architecture": "x64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/external/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows"
+      }
+    },
+    {
+      "name": "x64-RelWithDebInfo",
+      "generator": "Visual Studio 18 2026",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "architecture": "x64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/external/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows"
+      }
+    },
+    {
+      "name": "x64-Release",
+      "generator": "Visual Studio 18 2026",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "architecture": "x64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/external/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "x64-Debug",
+      "configuration": "Debug",
+      "configurePreset": "x64-Debug"
+    },
+    {
+      "name": "x64-RelWithDebInfo",
+      "configuration": "RelWithDebInfo",
+      "configurePreset": "x64-RelWithDebInfo"
+    },
+    {
+      "name": "x64-Release",
+      "configuration": "Release",
+      "configurePreset": "x64-Release"
+    }
+  ]
 }

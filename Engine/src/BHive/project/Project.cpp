@@ -22,13 +22,16 @@ namespace BHive
 		{
 			std::ifstream in(path, std::ios::in);
 			cereal::JSONInputArchive ar(in);
-			ar(sActiveProject->mConfig);
-			sActiveProject->mConfig.ProjectDirectory = path.parent_path();
+
+			FProjectConfiguration config{};
+			ar(config);
+
+			config.ProjectDirectory = path.parent_path();
+			sActiveProject->mConfig = config;
 		}
 		catch (const std::exception &e)
 		{
 			LOG_ERROR("Project Load ERROR : {}", e.what());
-			return nullptr;
 		}
 
 		return sActiveProject;

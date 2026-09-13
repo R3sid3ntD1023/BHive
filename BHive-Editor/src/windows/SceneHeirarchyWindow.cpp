@@ -1,11 +1,11 @@
 #include "SceneHeirarchyWindow.h"
 #include "core/subsystem/SubSystem.h"
+#include "core/threading/Threading.h"
 #include "gui/GUICore.h"
+#include "inspectors/Inspect.h"
+#include "subsystems/Selection.h"
 #include "world/GameObject.h"
 #include "world/World.h"
-#include "subsystems/Selection.h"
-#include "inspectors/Inspect.h"
-#include "core/threading/Threading.h"
 
 namespace BHive
 {
@@ -36,7 +36,7 @@ namespace BHive
 			}
 		}
 
-		if (ImGui::BeginPopupContextWindow("ImSceneHierarchy", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonDefault_))
+		if (ImGui::BeginPopupContextWindow("ImSceneHierarchy", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonRight))
 		{
 
 			if (ImGui::MenuItem("Add New GameObject"))
@@ -155,7 +155,7 @@ namespace BHive
 		bool focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
 		if (selected && focused)
 		{
-			if ((ImGui::IsKeyDown(ImGuiKey_ModAlt) && ImGui::IsKeyPressed(ImGuiKey_P)))
+			if ((ImGui::IsKeyDown(ImGuiMod_Alt) && ImGui::IsKeyPressed(ImGuiKey_P)))
 			{
 				obj->RemoveFromParent();
 			}

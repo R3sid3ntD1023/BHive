@@ -1,11 +1,11 @@
-#include "components/BoxColliderComponent.h"
-#include "components/CameraComponent.h"
-#include "components/InputComponent.h"
-#include "components/PhysicsComponent.h"
-#include "components/SpriteComponent.h"
+#include "Player.h"
 #include "core/Application.h"
 #include "core/Window.h"
-#include "Player.h"
+#include "world/components/BoxColliderComponent.h"
+#include "world/components/CameraComponent.h"
+#include "world/components/InputComponent.h"
+#include "world/components/PhysicsComponent.h"
+#include "world/components/SpriteComponent.h"
 
 namespace BHive
 {

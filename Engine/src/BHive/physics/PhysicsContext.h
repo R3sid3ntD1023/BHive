@@ -15,7 +15,5 @@ namespace BHive
 		void *mFoundation = nullptr;
 		void *mPhysics = nullptr;
 		void *mPvd = nullptr;
-		void *mAllocator = nullptr;
-		void *mErrorCallabck = nullptr;
 	};
 } // namespace BHive

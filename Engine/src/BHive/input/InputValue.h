@@ -31,4 +31,23 @@ namespace BHive
 	private:
 		glm::vec3 mValue;
 	};
+
+	template <>
+	inline const float InputValue::Get() const
+	{
+		return mValue.x;
+	}
+
+	template <>
+	inline const bool InputValue::Get() const
+	{
+		return (bool)mValue.x;
+	}
+
+	template <>
+	inline const glm::vec2 InputValue::Get() const
+	{
+		return {mValue.x, mValue.y};
+	}
+
 } // namespace BHive

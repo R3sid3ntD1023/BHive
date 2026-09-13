@@ -11,7 +11,7 @@ namespace BHive
 
 			if (ImGui::BeginChild("##children", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeY))
 			{
-				if (ImGui::BeginChild("Source", {}, ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
+				if (ImGui::BeginChild("Source", {}, ImGuiChildFlags_ResizeX | ImGuiChildFlags_Borders))
 				{
 
 					auto source = mAsset->GetSource();

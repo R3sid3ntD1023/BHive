@@ -1,8 +1,8 @@
 #include "ContentBrowserWindow.h"
 #include "core/platform/Platform.h"
+#include "core/threading/Threading.h"
 #include "gfx/textures/Texture2D.h"
 #include "gui/PayloadHelpers.h"
-#include "core/threading/Threading.h"
 
 #define CREATE_ASSET_MENU_NAME "CREATE_ASSET_MENU"
 #define CONTENT_BROWSER_SETTINGS_NAME "CONTENT_BROWSER_SETTINGS"
@@ -87,7 +87,7 @@ namespace BHive
 			ImGui::EndMenuBar();
 		}
 
-		ImGui::BeginChild("##TreeView", {200, 0}, ImGuiChildFlags_ResizeX, ImGuiWindowFlags_AlwaysUseWindowPadding);
+		ImGui::BeginChild("##TreeView", {200, 0}, ImGuiChildFlags_ResizeX, ImGuiChildFlags_AlwaysUseWindowPadding);
 
 		ShowFileSystemTree(mBaseDirectory);
 
@@ -95,7 +95,7 @@ namespace BHive
 
 		ImGui::SameLine();
 
-		ImGui::BeginChild("##AssetView", {0, 0}, 0, ImGuiWindowFlags_AlwaysUseWindowPadding);
+		ImGui::BeginChild("##AssetView", {0, 0}, 0, ImGuiChildFlags_AlwaysUseWindowPadding);
 
 		bool focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
 		bool hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
@@ -146,7 +146,7 @@ namespace BHive
 
 		ImGui::PushID(directory.path().string().c_str());
 
-		bool opened = ImGui::TreeNodeEx("##TreeNode", ImGuiTreeNodeFlags_SpanTextWidth);
+		bool opened = ImGui::TreeNodeEx("##TreeNode", ImGuiTreeNodeFlags_SpanLabelWidth);
 
 		ImGui::SameLine();
 

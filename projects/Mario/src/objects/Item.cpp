@@ -1,5 +1,5 @@
-#include "components/BoxColliderComponent.h"
 #include "Item.h"
+#include "world/components/BoxColliderComponent.h"
 
 namespace BHive
 {

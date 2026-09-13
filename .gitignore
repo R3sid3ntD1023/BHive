@@ -16,3 +16,4 @@ downloads/
 !CMakeSettings.json
 !CMakePresets.json
 !.vscode/*.json
+!vcpkg.json

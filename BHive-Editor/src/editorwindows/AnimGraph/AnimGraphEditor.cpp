@@ -1,8 +1,8 @@
-#include "Animator/anim_graph/nodes/AnimGraphNodeBase.h"
 #include "AnimGraphEditor.h"
 #include "AnimGraphEditorNodes.h"
-#include "gui/ImGuiExtended.h"
 #include "AnimationGraph.h"
+#include "Animator/anim_graph/nodes/AnimGraphNodeBase.h"
+#include "gui/ImGuiExtended.h"
 
 namespace BHive
 {
@@ -32,7 +32,7 @@ namespace BHive
 	void AnimGraphEditor::DrawEditorWindow()
 	{
 		auto size = ImGui::GetContentRegionAvail();
-		if (ImGui::BeginChild("Graph", size, ImGuiChildFlags_Border))
+		if (ImGui::BeginChild("Graph", size, ImGuiChildFlags_Borders))
 		{
 			mAnimationGraph->update();
 		}

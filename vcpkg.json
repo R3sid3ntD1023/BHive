@@ -1,10 +1,14 @@
 {
+
   "dependencies": [
     {
       "name": "freetype"
     },
     {
       "name": "msdfgen"
+    },
+    {
+      "name": "assimp"
     },
     {
       "name": "entt"
@@ -37,5 +41,6 @@
     {
       "name": "cereal"
     }
-  ]
+  ],
+  "builtin-baseline": "a1cae005c39be7b18ba319fced856b68d7276271"
 }

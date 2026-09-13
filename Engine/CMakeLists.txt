@@ -1,15 +1,9 @@
-cmake_minimum_required( VERSION 3.10 )
+cmake_minimum_required(VERSION 3.5...4.0)
 
-option(BUILD_SHARED_LIB "Build Engine dll" ON)
-
-include(cmake/vulkan.cmake)
 include(FindVulkan)
 include(GNUInstallDirs)
 
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
-set(RENDERDOC_Dir "C:/Program Files/RenderDoc")
-
-
 
 add_subdirectory(vendor)
 
@@ -26,12 +20,21 @@ find_package(OpenAL CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(unofficial-omniverse-physx-sdk CONFIG REQUIRED)
-find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
 find_package(mINI CONFIG REQUIRED)
 
-message(STATUS "Vulkan VERSION: ${Vulkan_VERSION}")
-message(STATUS "Vulkan Includes: ${Vulkan_INCLUDE_DIR} - Libs ${Vulkan_LIBRARIES}")
-set(Vulkan_LIB_DIR $ENV{VULKAN_SDK}/Lib)
+if(TARGET vulkan )
+	message(STATUS "Vulkan found and target available")
+else()
+	include(FindVulkan)
+	find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
+	if(TARGET Vulkan::Vulkan OR TARGET Vulkan)
+		message(STATUS "Vulkan target provided by find_package")
+	elseif(Vulkan_FOUND)
+		message(STATUS "Vulkan found via find_package")
+	else()
+		message(FATAL_ERROR "Vulkan found but Vulkan::Vulkan target not available")
+	endif()
+endif()
 
 
 file(GLOB_RECURSE HEADER_FILES CMAKE_CONFIGURE_DEPENDS src/**.h src/**.inl)
@@ -39,17 +42,21 @@ file(GLOB_RECURSE SOURCE_FILES CMAKE_CONFIGURE_DEPENDS src/**.cpp src/**.hpp)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES} ${SOURCE_FILES} )
 
 set(TARGET_NAME BHive-Engine)
+set(BUILD_SHARED_LIB TRUE CACHE BOOL "Build Engine as a shared library" FORCE)
 
 if(BUILD_SHARED_LIB)
 	add_library(${TARGET_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 	target_compile_definitions(${TARGET_NAME} 	PUBLIC BUILD_SHARED PRIVATE BUILD_DLL)
+	message(STATUS "Building Engine as Shared Library")
 else()
 	add_library(${TARGET_NAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
+	message(STATUS "Building Engine as Static Library")
 endif()
 
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 
-target_compile_options(${TARGET_NAME} PUBLIC /ZI /INCREMETAL /MP /bigobj /W0 )
+target_compile_options(${TARGET_NAME} PRIVATE $<$<CONFIG:DEBUG>:/ZI>)
+target_compile_options(${TARGET_NAME} PUBLIC /INCREMETAL /MP /bigobj /W0 )
 target_compile_definitions(${TARGET_NAME}
 	PUBLIC _CRT_SECURE_NO_WARNINGS 
 	PUBLIC GLFW_INCLUDE_NONE 
@@ -58,8 +65,8 @@ target_compile_definitions(${TARGET_NAME}
 	PUBLIC SPDLOG_COMPILED_LIB
 	PUBLIC ENGINE_PATH="${CMAKE_CURRENT_SOURCE_DIR}"
 	PUBLIC ENGINE_SHADER_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../shaders"
-
 )
+target_compile_definitions(${TARGET_NAME} PUBLIC $<$<CONFIG:RELWITHDEBINFO>:BHIVE_ENABLE_LOGGING>)
 
 target_link_directories(${TARGET_NAME} PUBLIC ${Vulkan_LIB_DIR})
 target_link_libraries(${TARGET_NAME} PUBLIC glfw)
@@ -80,20 +87,33 @@ target_link_libraries(${TARGET_NAME} PUBLIC msdf-atlas-gen::msdf-atlas-gen)
 target_link_libraries(${TARGET_NAME} PUBLIC EnTT::EnTT)
 target_link_libraries(${TARGET_NAME} PUBLIC mINI)
 target_link_libraries(${TARGET_NAME} PUBLIC unofficial::omniverse-physx-sdk::sdk)
-target_link_libraries(${TARGET_NAME} PUBLIC ${Vulkan_LIBRARIES})
-target_link_libraries(${TARGET_NAME} PUBLIC shaderc_combined$<$<CONFIG:DEBUG>:d>)
-target_link_libraries(${TARGET_NAME} PUBLIC spirv-cross-core$<$<CONFIG:DEBUG>:d>)
-target_link_libraries(${TARGET_NAME} PUBLIC spirv-cross-glsl$<$<CONFIG:DEBUG>:d>)
-
-
 target_include_directories(${TARGET_NAME} PUBLIC 
 	${CMAKE_CURRENT_SOURCE_DIR}/src 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/BHive 
 	${VENDOR_DIR}
-	${Vulkan_INCLUDE_DIRS}
 	${Stb_INCLUDE_DIR}
-	${RENDERDOC_Dir}
+	${Vulkan_INCLUDE_DIRS}
 )
+
+add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${VCPKG_INSTALLED_DIR}/x64-windows/bin/PhysXCommon_64.dll"
+        "$<TARGET_FILE_DIR:${TARGET_NAME}>"
+)
+
+
+if(TARGET vulkan)
+	target_link_libraries(${TARGET_NAME} PUBLIC vulkan::vulkan)
+else()
+	target_link_libraries(${TARGET_NAME} PUBLIC ${Vulkan_LIBRARIES})
+	message(STATUS "Linking Vulkan libraries directly ${Vulkan_LIBRARIES}")
+
+	if(Vulkan_INCLUDE_DIRS)
+		target_include_directories(${TARGET_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
+		message(STATUS "Adding Vulkan include directories: ${Vulkan_INCLUDE_DIRS}")
+	endif()
+endif()
+
 
 target_precompile_headers(${TARGET_NAME} PUBLIC src/BHivePCH.h)
 

@@ -1,7 +1,8 @@
+#include "ProjectLauncherLayer.h"
 #include "core/Application.h"
 #include "core/EntryPoint.h"
-#include "ProjectLauncherLayer.h"
 #include "project/Project.h"
+#include <EditorLayer.h>
 #include <mini/ini.h>
 
 #define EDITOR_CONFIG_FILE "EditorConfig.ini"
