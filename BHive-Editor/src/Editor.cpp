@@ -35,7 +35,7 @@ namespace BHive
 		spec.Title = "BHive Editor";
 		spec.CommandLine = cmd;
 		spec.Size = {1280, 720};
-		spec.Maximize = true;
+		spec.Maximize = false;
 		spec.VSync = false;
 
 		return new BHiveEditor(spec);

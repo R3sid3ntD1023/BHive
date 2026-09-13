@@ -1,7 +1,9 @@
 {
-  "Name": "Mario",
-  "ProjectDirectory": "C:\\Users\\dariu\\Documents\\BHive\\projects\\Mario",
-  "ResourcesDirectory": "resources",
-  "ModulePath" : "C:\\Users\\dariu\\Documents\\BHive\\bin\\Windows\\RelWithDebInfo",
-  "StartScene": "00000000-0000-0000-0000-000000000000"
+  "value0":{
+    "Name": "Mario",
+    "ProjectDirectory": "C:\\Users\\dariu\\Documents\\BHive\\projects\\Mario",
+    "ResourcesDirectory": "resources",
+    "ModulePath" : "bin\\Mario.dll",
+    "StartScene": "00000000-0000-0000-0000-000000000000"
+  }
 }

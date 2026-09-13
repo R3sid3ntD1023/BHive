@@ -539,7 +539,7 @@ namespace BHive
 		auto &window_system = GetSubSystem<ImWindowSystem>();
 		auto project_name = Project::GetProjectName();
 		const auto resource_directory = Project::GetResourceDirectory();
-		const auto module_path = Project::GetModulePath();
+		const auto module_path = Project::GetProjectDirectory() / "bin" / BUILD_CONFIG / (project_name + ".dll");
 
 		mContentBrowser = window_system.ConstructWindow<EditorContentBrowser<EditorAssetManager>>(resource_directory);
 		mSceneHeirarchyPanel = window_system.ConstructWindow<ImSceneHierarchy>();
