@@ -11,7 +11,6 @@
 #include "layers/ImGuiLayer.h"
 #include "physics/PhysicsContext.h"
 #include "subsystem/SubSystem.h"
-#include "threading/Threading.h"
 #include "undoredo/UndoRedo.h"
 
 namespace BHive
@@ -63,7 +62,6 @@ namespace BHive
 
 	Application::~Application()
 	{
-		LOG_TRACE("App Destructor Called");
 
 		RenderCommand::Shutdown();
 
@@ -179,8 +177,6 @@ namespace BHive
 		mRenderer->EndFrame();
 
 		mWindowManager.Update(dt);
-
-		Thread::Update();
 
 		auto frameEnd = std::chrono::high_resolution_clock::now();
 		double elapsed = std::chrono::duration<double>(frameEnd - frameStart).count();

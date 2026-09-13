@@ -48,8 +48,6 @@ namespace BHive
 
 	void VulkanRendererAPI::Shutdown()
 	{
-		LOG_TRACE("RendererAPI Shutdown Called")
-
 		FlushDeletionQueue();
 
 		mBackend->Shutdown();

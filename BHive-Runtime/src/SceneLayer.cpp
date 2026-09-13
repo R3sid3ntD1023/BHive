@@ -5,6 +5,7 @@
 #include "core/WindowInput.h"
 #include "core/layers/ImGuiLayer.h"
 #include "core/platform/Platform.h"
+#include "core/threading/Threading.h"
 #include "gfx/Framebuffer.h"
 #include "gfx/animation/AnimationClip.h"
 #include "gfx/factories/MaterialFactory.h"
@@ -99,6 +100,7 @@ namespace BHive
 				material->SetMetalness(0.0f);
 				material->SetRoughness(0.5f);
 			}
+		}
 
 #if 0
 	#define TEST_MESH_NAME "C://Users//dariu//Documents//MultiSubMesh.glb"
@@ -108,34 +110,37 @@ namespace BHive
 	#define TEST_ANIMATION "C://Users//dariu//Documents//BHive//projects//Shadows//resources//Kachujin//animations//Unarmed Idle 02.glb"
 	#define SCALE .05f
 #endif
-			{
-				FMeshImportOptions import_options{};
-				import_options.MeshType = EMeshType::SkeletalMesh;
-				// import_options.OverrideMaterials = mCharacterMaterials;
-				//  import_options.ImportMaterials = false;
-				auto decodedMesh = MeshImporter::Import(TEST_MESH_NAME, SCALE);
-				MeshImportResolver resolver(import_options);
-				auto result = resolver.Resolve(decodedMesh);
-				mCharacter = result.Mesh;
-				mCharacterMaterials = result.Materials;
+		// 			{
+		// 				FMeshImportOptions import_options{};
+		// 				import_options.MeshType = EMeshType::SkeletalMesh;
+		// 				// import_options.OverrideMaterials = mCharacterMaterials;
+		// 				//  import_options.ImportMaterials = false;
+		// 				auto decodedMesh = MeshImporter::Import(TEST_MESH_NAME, SCALE);
+		// 				MeshImportResolver resolver(import_options);
+		// 				auto result = resolver.Resolve(decodedMesh);
+		// 				mCharacter = result.Mesh;
+		// 				mCharacterMaterials = result.Materials;
 
-#ifdef TEST_ANIMATION
-				mCharacterSkeleton = result.Skeleton;
-				import_options.MeshType = EMeshType::SkeletalAnimation;
-				import_options.ImportMaterials = false;
-				import_options.Skeleton = mCharacterSkeleton;
-				auto decodedAnimation = MeshImporter::Import(TEST_ANIMATION, SCALE);
-				resolver.SetOptions(import_options);
-				result = resolver.Resolve(decodedAnimation);
-				mCharacterAnimaton = result.Animations[0];
-				mCharacterPose = mCharacter.As<SkeletalMesh>()->GetDefaultPose();
-				mAnimationClip = CreateRef<AnimationClip>(mCharacterAnimaton, mCharacterSkeleton);
-				LOG_INFO("Animation {} Duration {}, Length {}", mCharacterAnimaton.Index, mAnimationClip->GetDuration(), mAnimationClip->GetLengthInSeconds());
-#endif
-			}
-		}
+		// #ifdef TEST_ANIMATION
+		// 				mCharacterSkeleton = result.Skeleton;
+		// 				import_options.MeshType = EMeshType::SkeletalAnimation;
+		// 				import_options.ImportMaterials = false;
+		// 				import_options.Skeleton = mCharacterSkeleton;
+		// 				auto decodedAnimation = MeshImporter::Import(TEST_ANIMATION, SCALE);
+		// 				resolver.SetOptions(import_options);
+		// 				result = resolver.Resolve(decodedAnimation);
+		// 				mCharacterAnimaton = result.Animations[0];
+		// 				mCharacterPose = mCharacter.As<SkeletalMesh>()->GetDefaultPose();
+		// 				mAnimationClip = CreateRef<AnimationClip>(mCharacterAnimaton, mCharacterSkeleton);
+		// 				LOG_INFO("Animation {} Duration {}, Length {}", mCharacterAnimaton.Index, mAnimationClip->GetDuration(), mAnimationClip->GetLengthInSeconds());
+		// #endif
+		// 			}
 
 		mCameraController.SetCamera(&mCameras[0]);
+
+		// lights
+		main.SetColor(FColor::White).SetIntensity(1.0f).SetDirection({0.f, -1.0f, -0.5f});
+		light.SetColor(FColor::Orange).SetIntensity(1.0f).SetRadius(10.f).SetPosition({0, 1, 0});
 
 		uint32_t count = 0;
 		for (int32_t i = -1; i <= 1; i++)
@@ -156,20 +161,40 @@ namespace BHive
 		request.Mesh = plane;
 		mSceneRenderer->SubmitMesh(request, sPlaneHandle);
 
-		if (mCharacter)
 		{
+			FMeshImportOptions import_options{};
+			import_options.MeshType = EMeshType::SkeletalMesh;
+			auto decodedMesh = MeshImporter::Import(TEST_MESH_NAME, SCALE);
+			MeshImportResolver resolver(import_options);
+			auto result = resolver.Resolve(decodedMesh);
+			mCharacter = result.Mesh;
+			mCharacterMaterials = result.Materials;
 
-			FMeshSubmissionRequest request{};
-			request.Mesh = mCharacter;
-			request.Materials = mCharacterMaterials;
-			request.Transform = sphereTransform;
-			request.BoneTransforms = mCharacter.As<SkeletalMesh>()->GetSkeleton()->GetRestPoseTransforms();
-			mSceneRenderer->SubmitMesh(request, sCharacterHandle);
+#ifdef TEST_ANIMATION
+			mCharacterSkeleton = result.Skeleton;
+			import_options.MeshType = EMeshType::SkeletalAnimation;
+			import_options.ImportMaterials = false;
+			import_options.Skeleton = mCharacterSkeleton;
+			auto decodedAnimation = MeshImporter::Import(TEST_ANIMATION, SCALE);
+			resolver.SetOptions(import_options);
+			result = resolver.Resolve(decodedAnimation);
+			mCharacterAnimaton = result.Animations[0];
+			mCharacterPose = mCharacter.As<SkeletalMesh>()->GetDefaultPose();
+			mAnimationClip = CreateRef<AnimationClip>(mCharacterAnimaton, mCharacterSkeleton);
+			LOG_INFO("Animation {} Duration {}, Length {}", mCharacterAnimaton.Index, mAnimationClip->GetDuration(), mAnimationClip->GetLengthInSeconds());
+#endif
+
+			if (mCharacter)
+			{
+
+				FMeshSubmissionRequest request{};
+				request.Mesh = mCharacter;
+				request.Materials = mCharacterMaterials;
+				request.Transform = sphereTransform;
+				request.BoneTransforms = mCharacter.As<SkeletalMesh>()->GetSkeleton()->GetRestPoseTransforms();
+				mSceneRenderer->SubmitMesh(request, sCharacterHandle);
+			}
 		}
-
-		// lights
-		main.SetColor(FColor::White).SetIntensity(1.0f).SetDirection({0.f, -1.0f, -0.5f});
-		light.SetColor(FColor::Orange).SetIntensity(1.0f).SetRadius(10.f).SetPosition({0, 1, 0});
 	}
 
 	void SceneLayer::OnDetach()
@@ -180,7 +205,7 @@ namespace BHive
 	{
 		sphereTransform.Rotation.y += 10.0f * time;
 
-		if (mAnimationClip)
+		if (mAnimationClip && mCharacter)
 		{
 			auto &pose = *mCharacterPose;
 			mAnimationClip->Play(time, pose);

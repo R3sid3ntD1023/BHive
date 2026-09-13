@@ -70,8 +70,6 @@ namespace BHive
 		{
 			glfwTerminate();
 		}
-
-		LOG_TRACE("Window Descructor Called")
 	}
 
 	void Window::Update()

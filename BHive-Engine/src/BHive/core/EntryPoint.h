@@ -3,11 +3,12 @@
 #include "Application.h"
 #include "audio/AudioContext.h"
 #include "core/layers/ImGuiLayer.h"
+#include "debug/CrashHandler.h"
 #include "debug/Instrumentor.h"
 #include "gui/GUICore.h"
 #include "physics/PhysicsContext.h"
 #include "subsystem/SubSystem.h"
-#include "debug/CrashHandler.h"
+#include "threading\Threading.h"
 
 namespace BHive
 {
@@ -41,7 +42,10 @@ namespace BHive
 
 	int main(int argc, char **argv)
 	{
+
 		BHive::Log::Init();
+
+		Thread::Init();
 
 		BH_PROFILE_BEGIN_SESSION("StartUp", "Profile-StartUp.json");
 		auto app = BHive::CreateApplication({argc, argv});
@@ -57,6 +61,8 @@ namespace BHive
 		BH_PROFILE_BEGIN_SESSION("Shutdown", "Profile-Shutdown.json");
 		delete app;
 		BH_PROFILE_END_SESSION();
+
+		Thread::Shutdown();
 
 		return 0;
 	}

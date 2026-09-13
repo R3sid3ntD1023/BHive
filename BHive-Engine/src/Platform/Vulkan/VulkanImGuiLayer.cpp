@@ -1,15 +1,15 @@
-#include "gfx/RenderCommand.h"
-#include "core/Application.h"
-#include "VulkanWindowContext.h"
+#include "VulkanImGuiLayer.h"
 #include "VulkanRendererAPI.h"
 #include "VulkanSwapChain.h"
-#include "VulkanImGuiLayer.h"
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_vulkan.h>
-#include <backends/imgui_impl_vulkan.cpp>
-#include <GLFW/glfw3.h>
-#include "gfx/Texture.h"
+#include "VulkanWindowContext.h"
+#include "core/Application.h"
 #include "core/WindowInput.h"
+#include "gfx/RenderCommand.h"
+#include "gfx/Texture.h"
+#include <GLFW/glfw3.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_vulkan.cpp>
+#include <backends/imgui_impl_vulkan.h>
 
 namespace BHive
 {
@@ -95,8 +95,6 @@ namespace BHive
 
 	void VulkanImGuiLayer::Shutdown()
 	{
-		LOG_TRACE("ImguiLayer Shutdown Called")
-
 		auto &device = VulkanBackend::GetLogicalDevice();
 		device.waitIdle();
 

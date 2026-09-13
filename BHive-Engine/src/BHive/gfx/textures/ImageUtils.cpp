@@ -1,9 +1,9 @@
+#include "ImageUtils.h"
 #include "core/threading/Threading.h"
 #include "gfx/Framebuffer.h"
 #include "gfx/Texture.h"
-#include "ImageUtils.h"
-#include <stb_image_write.h>
 #include <stb_image_resize2.h>
+#include <stb_image_write.h>
 
 namespace BHive
 {
@@ -24,7 +24,7 @@ namespace BHive
 		const auto num_attachments = target->GetNumColorAttachments();
 		ASSERT(attachment < num_attachments);
 
-		Thread::Dispatch(
+		Thread::Schedule(
 			[target, attachment, path]()
 			{
 				auto size = target->GetSpecification().Size;

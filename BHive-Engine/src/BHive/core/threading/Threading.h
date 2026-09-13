@@ -1,43 +1,105 @@
 #pragma once
 
-#include <thread>
-#include <functional>
-#include <queue>
-#include <mutex>
-#include "core/CoreAPI.h"
+#include "core/Core.h"
 
 namespace BHive
 {
-	using ThreadFunction = std::function<void()>;
+	constexpr uint32_t MAX_WORKERS = 8;
+	constexpr uint32_t MAX_JOBS = 4096;
+	constexpr uint32_t QUEUE_SIZE = 8192;
 
-	class BHIVE_API IJob
+	using JobFunction = std::function<void()>;
+	using ParallelJobFunction = std::function<void(uint32_t)>;
+
+	struct JobHandle
+	{
+		uint16_t Index = 0;
+		uint16_t Generation = 0;
+	};
+
+	struct Job
+	{
+		JobFunction Work;
+		JobHandle Handle;
+	};
+
+	struct JobState
+	{
+		std::atomic<uint32_t> UnFinishedJobs = 0;
+		uint16_t Generation;
+	};
+
+	template <typename T, size_t Capacity>
+	class RingBuffer
 	{
 	public:
-		virtual ~IJob() = default;
-		virtual bool IsDone() = 0;
-		virtual ThreadFunction GetDispatchedFunction() = 0;
+		bool Push(T &&v)
+		{
+			uint32_t nextTail = (mTail + 1) % Capacity;
+			if (nextTail == mHead)
+				return false;
+
+			mData[mTail] = std::move(v);
+			mTail = nextTail;
+
+			return true;
+		}
+
+		bool Pop(T &out)
+		{
+			if (mHead == mTail)
+				return false;
+
+			out = std::move(mData[mHead]);
+
+			mHead = (mHead + 1) % Capacity;
+
+			return true;
+		}
+
+		bool Empty() const { return mHead == mTail; }
+
+	private:
+		std::array<T, Capacity> mData;
+		uint32_t mHead = 0;
+		uint32_t mTail = 0;
 	};
 
 	class BHIVE_API Thread
 	{
 	public:
-		Thread() = default;
+		static void Init();
 
-		static void PushJob(IJob *job);
-		static void Dispatch(ThreadFunction func);
-		static void Update();
+		static void Shutdown();
+
+		static JobHandle Schedule(JobFunction func);
+
+		static void Wait(JobHandle handle);
+
+		static void ParallelFor(uint32_t count, uint32_t batchSize, ParallelJobFunction &&func);
 
 	private:
-		static inline std::vector<IJob *> sJobs;
-		static inline std::vector<ThreadFunction> sDispatched;
+		static void Worker();
 
-		using auto_lock = std::lock_guard<std::mutex>;
-		static inline std::mutex sMutex;
+		static JobHandle AllocateHandle();
 
-		static void DispatchInternal(ThreadFunction func);
+		static bool IsDone(JobHandle handle);
+
+	private:
+		inline static RingBuffer<Job, QUEUE_SIZE> sQueue;
+
+		inline static std::mutex sMutex;
+
+		inline static std::condition_variable sCV;
+
+		inline static bool sRunning = false;
+
+		inline static std::array<std::thread, MAX_WORKERS> sWorkers;
+
+		inline static std::array<JobState, MAX_JOBS> sStates;
 	};
 
-#define BEGIN_THREAD_DISPATCH(...) Thread::Dispatch([__VA_ARGS__](){
+#define BEGIN_THREAD_DISPATCH(...) Thread::Schedule([__VA_ARGS__](){
 #define END_THREAD_DISPATCH() \
 	});
 } // namespace BHive
