@@ -7,18 +7,25 @@
 
 namespace BHive
 {
+	struct ViewKey
+	{
+		uint32_t Layer = 0, Face = 0, Mip = 0;
+
+		bool operator<(const ViewKey &rhs) const
+		{
+			if (Layer != rhs.Layer)
+				return Layer < rhs.Layer;
+
+			if (Face != rhs.Face)
+				return Face < rhs.Face;
+
+			return Mip < rhs.Mip;
+		}
+	};
+
 	struct ImageViews
 	{
-		ResourceID Default; // full view : all layers, all ,mips
-
-		//[layer][mip]
-		std::vector<std::vector<ResourceID>> Mips;
-
-		//[layer][face][mip] for cube/cubearrays
-		std::vector<std::vector<std::vector<ResourceID>>> Faces;
-
-		//[layer][mip] cube view type (optional)
-		std::vector<std::vector<ResourceID>> CubeMips;
+		std::map<ViewKey, ResourceID> Views;
 	};
 
 	struct ImageStateTracker
@@ -48,23 +55,11 @@ namespace BHive
 
 		std::string DebugName;
 
-		bool IsCube{false};
-
-		bool IsCubeArray{false};
-
 		const vk::Image GetImage() const;
 
 		const vk::Sampler GetSampler() const;
 
 		vk::ImageView GetView(uint32_t layer, uint32_t face, uint32_t mip) const;
-
-		vk::ImageView GetDefaultView() const { return GetView(0, 0, 0); }
-
-		vk::ImageView GetMipView(uint32_t mip) const { return GetView(0, 0, mip); }
-
-		vk::ImageView GetLayerMipView(uint32_t layer, uint32_t mip) const { return GetView(layer, 0, mip); }
-
-		vk::ImageView GetCubeFaceView(uint32_t face, uint32_t mip) const { return GetView(0, face, mip); }
 
 		bool IsValid() const { return Image; }
 

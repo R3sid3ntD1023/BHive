@@ -98,7 +98,6 @@ namespace BHive
 
 		const auto &native = img->Native();
 		auto smp = native.GetSampler();
-		auto defView = native.GetDefaultView();
 		auto view = native.GetView(layer, face, mip);
 
 		switch (bindInfo.Type)

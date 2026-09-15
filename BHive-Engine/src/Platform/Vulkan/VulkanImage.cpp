@@ -26,9 +26,6 @@ namespace BHive
 		mImage.Image = image_id;
 		mImage.DebugName = info.DebugName;
 		mImage.Usage = info.ImageCI.usage;
-		mImage.IsCube = info.ViewTopology == EViewTopology::Cube;
-		mImage.IsCubeArray = info.ViewTopology == EViewTopology::CubeArray;
-
 		mStateTracker.Initialize(layers, levels, ImageState::Undefined());
 
 		if (info.ImageCI.usage & vk::ImageUsageFlagBits::eSampled)

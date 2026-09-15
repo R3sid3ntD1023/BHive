@@ -35,11 +35,11 @@ namespace BHive
 				ASSERT((baseLayer % 6) == 0, "{}: cube view baseArrayLayer {} must be multiple of 6", debugTag, baseLayer);
 			}
 		}
-	}
+	} // namespace utils
 
 	void ImageViewBuilder::Build(GPUImage &img, const ImageViewBuildInfo &base, EViewTopology topo)
 	{
-		//for debugging
+		// for debugging
 		img.ViewType = base.ViewCI.viewType;
 
 		switch (topo)
@@ -70,59 +70,48 @@ namespace BHive
 
 	void ImageViewBuilder::BuildDefault(GPUImage &img, const ImageViewBuildInfo &base)
 	{
-		img.Views.Default = CreateFullView(img, base);
+		img.Views.Views[{0, 0, 0}] = CreateFullView(img, base);
 	}
 
 	void ImageViewBuilder::Build2DMips(GPUImage &img, const ImageViewBuildInfo &base)
 	{
-		BuildDefault(img, base);
-
-		img.Views.Mips.resize(1);
-		img.Views.Mips[0].resize(base.Levels);
+		img.Views.Views[{0, 0, 0}] = CreateFullView(img, base);
 
 		for (uint32_t mip = 0; mip < base.Levels; ++mip)
 		{
-			img.Views.Mips[0][mip] = CreateMipView(img, base, mip);
+			img.Views.Views[{0, 0, mip}] = CreateMipView(img, base, mip);
 		}
 	}
 
 	void ImageViewBuilder::Build2DArrayMips(GPUImage &img, const ImageViewBuildInfo &base)
 	{
-		BuildDefault(img, base);
-
-		img.Views.Mips.resize(base.Layers);
+		img.Views.Views[{0, 0, 0}] = CreateFullView(img, base);
 
 		for (uint32_t layer = 0; layer < base.Layers; ++layer)
 		{
-			img.Views.Mips[layer].resize(base.Levels);
 			for (uint32_t mip = 0; mip < base.Levels; ++mip)
 			{
-				img.Views.Mips[layer][mip] = CreateMipView(img, base, mip);
+				img.Views.Views[{layer, 0, mip}] = CreateMipView(img, base, mip);
 			}
 		}
 	}
 
 	void ImageViewBuilder::BuildCube(GPUImage &img, const ImageViewBuildInfo &base)
 	{
-		img.Views.Default = CreateCubeFullView(img, base);
+		img.Views.Views[{0, 0, 0}] = CreateCubeFullView(img, base);
 
-		img.Views.CubeMips.resize(1);
-
-		img.Views.CubeMips[0].resize(base.Levels);
 		for (uint32_t mip = 0; mip < base.Levels; mip++)
 		{
-			img.Views.CubeMips[0][mip] = CreateCubeMipView(img, base, mip);
+			img.Views.Views[{0, 0, mip}] = CreateCubeMipView(img, base, mip);
 		}
 	}
 
 	void ImageViewBuilder::BuildCubeArray(GPUImage &img, const ImageViewBuildInfo &base)
 	{
-		img.Views.Default = CreateCubeFullView(img, base);
+		img.Views.Views[{0, 0, 0}] = CreateCubeFullView(img, base);
 
 		for (uint32_t cube = 0; cube < base.Layers; cube++)
 		{
-			img.Views.CubeMips[cube].resize(base.Levels);
-
 			for (uint32_t mip = 0; mip < base.Levels; mip++)
 			{
 				vk::ImageViewCreateInfo d = base.ViewCI;
@@ -131,7 +120,7 @@ namespace BHive
 				d.subresourceRange.baseArrayLayer = cube * 6;
 				d.subresourceRange.layerCount = 6;
 
-				img.Views.CubeMips[cube][mip] = VulkanBackend::GetGPUResourceManager().CreateImageView(d);
+				img.Views.Views[{cube, 0, mip}] = VulkanBackend::GetGPUResourceManager().CreateImageView(d);
 			}
 		}
 	}
@@ -140,21 +129,15 @@ namespace BHive
 	{
 		const uint32_t faces = 6;
 
-		img.Views.Default = CreateCubeFullView(img, base);
-
-		img.Views.Faces.resize(base.Layers);
+		img.Views.Views[{0, 0, 0}] = CreateCubeFullView(img, base);
 
 		for (uint32_t layer = 0; layer < base.Layers; ++layer)
 		{
-			img.Views.Faces[layer].resize(faces);
-
 			for (uint32_t f = 0; f < faces; ++f)
 			{
-				img.Views.Faces[layer][f].resize(base.Levels);
-
 				for (uint32_t mip = 0; mip < base.Levels; ++mip)
 				{
-					img.Views.Faces[layer][f][mip] = CreateFaceMipView(img, base, f, mip);
+					img.Views.Views[{layer, f, mip}] = CreateFaceMipView(img, base, f, mip);
 				}
 			}
 		}
@@ -164,12 +147,9 @@ namespace BHive
 	{
 		BuildDefault(img, base);
 
-		img.Views.Mips.resize(1);
-		img.Views.Mips[0].resize(base.Levels);
-
 		for (uint32_t mip = 0; mip < base.Levels; ++mip)
 		{
-			img.Views.Mips[0][mip] = CreateMipView(img, base, mip);
+			img.Views.Views[{0, 0, mip}] = CreateMipView(img, base, mip);
 		}
 	}
 

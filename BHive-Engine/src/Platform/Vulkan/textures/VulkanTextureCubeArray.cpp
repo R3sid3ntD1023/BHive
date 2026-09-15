@@ -49,7 +49,7 @@ namespace BHive
 
 	VkImageView VulkanTextureCubeArray::ResolveRenderView(uint32_t layer, uint32_t mip) const
 	{
-		return mImage.Native().GetLayerMipView(layer, mip);
+		return mImage.Native().GetView(layer, 0, mip);
 	}
 
 	void VulkanTextureCubeArray::DebugPrintState()

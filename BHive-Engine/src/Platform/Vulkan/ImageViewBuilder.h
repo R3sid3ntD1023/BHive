@@ -29,7 +29,6 @@ namespace BHive
 	class ImageViewBuilder
 	{
 	public:
-
 		static void Build(GPUImage &img, const ImageViewBuildInfo &base, EViewTopology topo);
 
 	private:
@@ -58,4 +57,4 @@ namespace BHive
 
 		static ResourceID CreateFaceMipView(GPUImage &img, const ImageViewBuildInfo &base, uint32_t face, uint32_t mip);
 	};
-}
+} // namespace BHive

@@ -136,29 +136,11 @@ namespace BHive
 			DestroySampler(smp);
 		}
 
-		if (auto def = image.Views.Default)
-			DestroyImageView(def);
-
-		for (auto &layer : image.Views.Mips)
-			for (auto &mip : layer)
-				DestroyImageView(mip);
-
-		for (auto &perCube : image.Views.CubeMips)
-			for (auto &mip : perCube)
-				DestroyImageView(mip);
-
-		for (auto &faceMips : image.Views.Faces)
-		{
-			for (auto &perFace : faceMips)
-				for (auto &mip : perFace)
-					DestroyImageView(mip);
-		}
+		for (auto &[viewKey, id] : image.Views.Views)
+			DestroyImageView(id);
 
 		image.Sampler.Release();
-		image.Views.Default.Release();
-		image.Views.Mips.clear();
-		image.Views.CubeMips.clear();
-		image.Views.Faces.clear();
+		image.Views.Views.clear();
 
 		auto handle = image.Image;
 		auto name = image.DebugName;
