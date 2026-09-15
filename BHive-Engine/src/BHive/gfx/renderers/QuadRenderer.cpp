@@ -9,6 +9,11 @@
 
 namespace BHive
 {
+	static constexpr glm::vec3 sPositions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
+
+	static constexpr glm::vec2 sTexCoords[4] = {{0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}, {0.f, 1.f}};
+
+	static constexpr uint32_t sIndices[] = {0, 1, 2, 2, 3, 0};
 
 	void QuadRenderer::Initialize()
 	{
@@ -40,10 +45,6 @@ namespace BHive
 
 	void QuadRenderer::DrawCircle(const FCircleParams &params, const FTransform &transform, int32_t entity_id)
 	{
-		static glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
-
-		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
-
 		if (!CircleBatch.IsActive())
 			CircleBatch.StartBatch();
 
@@ -55,8 +56,8 @@ namespace BHive
 		for (int i = 0; i < 4; i++)
 		{
 			auto v = CircleBatch.GetBuffer().PushVertex();
-			v->WorldPosition = transform.ToMat4() * glm::vec4(positions[i] * params.Radius, 1.f);
-			v->LocalPosition = positions[i] * 2.f;
+			v->WorldPosition = transform.ToMat4() * glm::vec4(sPositions[i] * params.Radius, 1.f);
+			v->LocalPosition = sPositions[i] * 2.f;
 			v->Color = params.LineColor;
 			v->Thickness = params.Thickness;
 			v->Fade = params.Fade;
@@ -65,26 +66,21 @@ namespace BHive
 
 		for (int i = 0; i < 6; i++)
 		{
-			*CircleBatch.GetBuffer().PushIndex() = offset + indices[i];
+			*CircleBatch.GetBuffer().PushIndex() = offset + sIndices[i];
 		}
 	}
 
 	void QuadRenderer::DrawQuad(const FQuadParams &params, TexturePtr texture, const FTransform &transform, int32_t entity_id)
 	{
-		static glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
-
-		static glm::vec2 texcoords[4] = {{0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}, {0.f, 1.f}};
 
 		FQuadCreateInfo create_info{};
-		create_info.Positions = positions;
-		create_info.TexCoords = texcoords;
 		create_info.Size = params.Size;
 		create_info.Color = params.Color;
 		create_info.Transform = transform;
 		create_info.Tiling = params.Tiling;
 		create_info.Flags = params.Flags;
 		create_info.Texture = texture;
-		DrawQuad(create_info, entity_id);
+		DrawQuadInternal(create_info, sPositions, sTexCoords, entity_id);
 	}
 
 	void QuadRenderer::DrawSprite(const FQuadParams &params, SpritePtr sprite, const FTransform &transform, int32_t entity_id)
@@ -92,53 +88,46 @@ namespace BHive
 		if (!sprite)
 			return;
 
-		static glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
 		auto spritePtr = sprite.As<Sprite>();
 
 		FQuadCreateInfo create_info{};
-		create_info.Positions = positions;
-		create_info.TexCoords = spritePtr->GetCoords();
 		create_info.Size = params.Size;
 		create_info.Color = params.Color;
 		create_info.Transform = transform;
 		create_info.Tiling = params.Tiling;
 		create_info.Flags = params.Flags;
 		create_info.Texture = spritePtr->GetSourceTexture();
-		DrawQuad(create_info, entity_id);
+		DrawQuadInternal(create_info, sPositions, spritePtr->GetCoords(), entity_id);
 	}
 
 	void QuadRenderer::DrawBillboard(const FView &view, const FQuadParams &params, TexturePtr texture, const FTransform &transform, int32_t entity_id)
 	{
 		const auto &v = view.View;
 
-		glm::vec3 positions[4] = {{-.5f, -.5f, 0.f}, {.5f, -.5f, 0.f}, {.5f, .5f, 0.f}, {-.5f, .5f, 0.f}};
-
-		const static glm::vec2 texcoords[4] = {{0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}, {0.f, 1.f}};
+		glm::vec3 positions[4];
+		std::memcpy(positions, sPositions, sizeof(sPositions));
 
 		const glm::vec3 camera_right = glm::vec3{v[0][0], v[1][0], v[2][0]};
 		const glm::vec3 camera_up = glm::vec3{v[0][1], v[1][1], v[2][1]};
 		for (uint32_t i = 0; i < 4; i++)
 		{
-			auto newposition = glm::vec4(positions[i] * glm::vec3(params.Size, 1), 1.0f);
+			auto newposition = glm::vec4(sPositions[i] * glm::vec3(params.Size, 1), 1.0f);
 			glm::vec3 world_space_center = transform.Translation;
 			positions[i] = world_space_center + camera_right * newposition.x + camera_up * newposition.y;
 		}
 
 		FQuadCreateInfo create_info{};
-		create_info.Positions = positions;
-		create_info.TexCoords = texcoords;
 		create_info.Size = {1, 1};
 		create_info.Color = params.Color;
 		create_info.Transform = FTransform{};
 		create_info.Tiling = params.Tiling;
 		create_info.Flags = params.Flags;
 		create_info.Texture = texture;
-		DrawQuad(create_info, entity_id);
+		DrawQuadInternal(create_info, positions, sTexCoords, entity_id);
 	}
 
-	void QuadRenderer::DrawQuad(const FQuadCreateInfo &create_info, int32_t entity_id)
+	void QuadRenderer::DrawQuadInternal(const FQuadCreateInfo &create_info, const glm::vec3 *pos, const glm::vec2 *coords, int32_t entity_id)
 	{
-		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
 
 		if (!QuadBatch.IsActive())
 			QuadBatch.StartBatch();
@@ -155,24 +144,24 @@ namespace BHive
 			texture_index = TextureBatch.GetTextureIndex(create_info.Texture);
 		}
 
+		auto offset = QuadBatch.GetBuffer().GetVertexCount();
+
 		for (uint32_t i = 0; i < 4; i++)
 		{
 			auto mat = create_info.Transform.ToMat4();
 			auto v = QuadBatch.GetBuffer().PushVertex();
-			v->Position = mat * (glm::vec4(create_info.Positions[i], 1.0f) * glm::vec4(create_info.Size, 1.f, 1.f));
+			v->Position = mat * (glm::vec4(pos[i], 1.0f) * glm::vec4(create_info.Size, 1.f, 1.f));
 			v->Normal = glm::transpose(glm::inverse(mat)) * glm::vec4(0, 0, 1, 0);
-			v->TexCoord = create_info.TexCoords[i] * create_info.Tiling;
+			v->TexCoord = coords[i] * create_info.Tiling;
 			v->Color = create_info.Color;
 			v->TextureIndex = texture_index;
 			v->Flags = create_info.Flags;
 			v->EntityID = entity_id;
 		}
 
-		auto offset = QuadBatch.GetBuffer().GetVertexCount();
-
 		for (uint32_t i = 0; i < 6; i++)
 		{
-			*QuadBatch.GetBuffer().PushIndex() = indices[i] + offset;
+			*QuadBatch.GetBuffer().PushIndex() = sIndices[i] + offset;
 		}
 	}
 
@@ -239,7 +228,7 @@ namespace BHive
 			coords[2] = uvs.Max;
 			coords[3] = {uvs.Min.x, uvs.Max.y};
 
-			DrawTextQuad(quad, coords, {1, 1}, params.Style, transform.ToMat4(), texture, entity_id);
+			DrawTextQuadInternal(quad, coords, {1, 1}, params.Style, transform.ToMat4(), texture, entity_id);
 
 			// bitshift advance to get value in pixels (2^6 = 64)
 			if (i < text.size() - 1)
@@ -254,9 +243,8 @@ namespace BHive
 	}
 
 	void
-	QuadRenderer::DrawTextQuad(const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, TexturePtr texture, int32_t entity_id)
+	QuadRenderer::DrawTextQuadInternal(const glm::vec3 *pos, const glm::vec2 *coords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, TexturePtr texture, int32_t entity_id)
 	{
-		static uint32_t indices[] = {0, 1, 2, 2, 3, 0};
 
 		if (!TextBatch.IsActive())
 			TextBatch.StartBatch();
@@ -277,8 +265,8 @@ namespace BHive
 		for (uint32_t i = 0; i < 4; i++)
 		{
 			auto v = TextBatch.GetBuffer().PushVertex();
-			v->Position = transform * (glm::vec4(points[i], 1.0f) * glm::vec4(size, 1.f, 1.f));
-			v->TexCoord = texcoords[i];
+			v->Position = transform * (glm::vec4(pos[i], 1.0f) * glm::vec4(size, 1.f, 1.f));
+			v->TexCoord = coords[i];
 			v->Color = style.TextColor;
 			v->Thickness = {style.Thickness, style.Smoothness};
 			v->Outline = {style.OutlineThickness, style.OutlineSmoothness};
@@ -289,7 +277,7 @@ namespace BHive
 
 		for (uint32_t i = 0; i < 6; i++)
 		{
-			*TextBatch.GetBuffer().PushIndex() = indices[i] + offset;
+			*TextBatch.GetBuffer().PushIndex() = sIndices[i] + offset;
 		}
 	}
 } // namespace BHive

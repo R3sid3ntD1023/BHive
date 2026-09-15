@@ -12,7 +12,7 @@ layout(std140, set = 0, binding = 0) uniform CameraBuffer
 {
     mat4 uProjection;
     mat4 uView;
-    vec2 uNearFar;
+    vec4 uNearFar;
     vec4 uCameraPosition;
 };
 

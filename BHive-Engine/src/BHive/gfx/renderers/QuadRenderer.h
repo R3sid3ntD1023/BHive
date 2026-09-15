@@ -57,9 +57,6 @@ namespace BHive
 
 	struct FQuadCreateInfo
 	{
-		const glm::vec3 *Positions;
-		const glm::vec2 *TexCoords;
-
 		FColor Color = FColor::White;
 		TexturePtr Texture;
 		glm::vec2 Size{1, 1};
@@ -98,12 +95,12 @@ namespace BHive
 
 		void DrawBillboard(const FView &view, const FQuadParams &params, TexturePtr texture, const FTransform &transform, int32_t entity = -1);
 
-		void DrawQuad(const FQuadCreateInfo &create_info, int32_t entity = -1);
-
 		void DrawText(FontPtr font, float size, const std::string &text, const FTextParams &params = {}, const FTransform &transform = {}, int32_t entity = -1);
 
 	private:
-		void DrawTextQuad(const glm::vec3 *points, const glm::vec2 *texcoords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, TexturePtr texture, int32_t entity = -1);
+		void DrawQuadInternal(const FQuadCreateInfo &create_info, const glm::vec3 *pos, const glm::vec2 *coords, int32_t entity = -1);
+
+		void DrawTextQuadInternal(const glm::vec3 *pos, const glm::vec2 *coords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, TexturePtr texture, int32_t entity = -1);
 
 	private:
 		QuadRenderBatch QuadBatch;

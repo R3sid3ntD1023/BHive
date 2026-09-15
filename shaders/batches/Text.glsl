@@ -16,8 +16,8 @@ layout(std140 , set = 0, binding = 0) uniform CameraBuffer
 {
     mat4 uProjection;
     mat4 uView;
-    vec2 uNearFar;
-    vec3 CameraPosition;
+    vec4 uNearFar;
+    vec4 CameraPosition;
 };
 
 layout(location = 0) out flat int v_TextureID;

@@ -40,7 +40,7 @@ namespace BHive
 		auto &pass = renderer.GetActivePass();
 		pass.Emplace<CmdBindPipeline>()(mPipeline);
 		pass.Emplace<CmdBindMaterial>()(mCircleMaterial.As<Material>());
-		pass.Emplace<CmdDraw>()(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
+		pass.Emplace<CmdDrawIndexed>()(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
 
 		mIsActive = false;
 	}
