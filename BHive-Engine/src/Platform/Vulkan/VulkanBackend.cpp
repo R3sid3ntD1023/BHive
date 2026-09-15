@@ -196,10 +196,11 @@ namespace BHive
 		std::vector required_extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 		std::vector<const char *> enabled_layers;
 
-#ifdef VALIDATION_LAYERS_ENABLED
-		enabled_layers.assign(s_validationLayers.begin(), s_validationLayers.end());
-		required_extensions.push_back(vk::EXTDebugUtilsExtensionName);
-#endif
+		if (EngineConfig::DebugEnabled)
+			enabled_layers.assign(s_validationLayers.begin(), s_validationLayers.end());
+
+		if (EngineConfig::DebugLabels)
+			required_extensions.push_back(vk::EXTDebugUtilsExtensionName);
 
 		if (std::ranges::any_of(
 				enabled_layers, [layerProperties](const char *layerName)
@@ -218,10 +219,10 @@ namespace BHive
 			}
 		}
 
-#ifdef VALIDATION_LAYERS_ENABLED
+		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions);
 
 		vk::ValidationFeatureEnableEXT enabled_features[] = {
-			vk::ValidationFeatureEnableEXT::eSynchronizationValidation,
+			vk::ValidationFeatureEnableEXT::eSynchronizationValidation
 			// vk::ValidationFeatureEnableEXT::eBestPractices,
 			//  vk::ValidationFeatureEnableEXT::eDebugPrintf,
 			// vk::ValidationFeatureEnableEXT::eGpuAssisted
@@ -229,23 +230,23 @@ namespace BHive
 
 		vk::ValidationFeaturesEXT enabled(enabled_features);
 
-		auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
-						 | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
-		auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
-
-		vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, debugCallback, &mDebugNames);
-		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions, &enabled);
-#else
-		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions);
-#endif
+		if (EngineConfig::DebugEnabled)
+		{
+			instanceCreateInfo.setPNext(&enabled);
+		}
 
 		mInstance = vk::raii::Instance(mContext, instanceCreateInfo);
 		VULKAN_HPP_DEFAULT_DISPATCHER.init((vk::Instance)mInstance);
 
-#ifdef VALIDATION_LAYERS_ENABLED
-		mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mInstance, debugCreateInfo);
+		if (EngineConfig::DebugEnabled)
+		{
+			auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
+							 | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
+			auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
-#endif
+			vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, debugCallback, &mDebugNames);
+			mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mInstance, debugCreateInfo);
+		}
 	}
 
 	void VulkanBackend::CreateDebugMessenger()

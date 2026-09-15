@@ -86,6 +86,12 @@ namespace BHive
 			TargetFPS = std::min(TargetFPS, 1000.0);
 		}
 
+		if (ini.has("Renderer"))
+		{
+			DebugEnabled = ini::utils::Get(ini["Renderer"], "DebugEnabled", DebugEnabled);
+			DebugLabels = ini::utils::Get(ini["Renderer"], "DebugLabels", DebugLabels) && DebugEnabled;
+		}
+
 		if (ini.has("Physics"))
 			EnablePhysics = ini::utils::Get(ini["Physics"], "Enable", EnablePhysics);
 

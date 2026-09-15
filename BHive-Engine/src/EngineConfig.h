@@ -16,6 +16,10 @@ namespace BHive
 		static inline bool EnableLogging = false;
 		static inline double TargetFPS = 1000.0;
 
+		// Renderer
+		static inline bool DebugEnabled = false;
+		static inline bool DebugLabels = false;
+
 		// Features
 		static inline bool EnablePhysics = 0u;
 		static inline bool EnableAudio = 0u;

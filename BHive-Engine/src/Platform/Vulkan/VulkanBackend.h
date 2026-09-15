@@ -53,14 +53,15 @@ namespace BHive
 		template <typename THandleType>
 		static void SetObjectName(const THandleType &handle, const std::string &name)
 		{
-#ifdef _DEBUG
+			if (!EngineConfig::DebugLabels)
+				return;
+
 			auto &device = VulkanBackend::GetLogicalDevice();
 			device.setDebugUtilsObjectNameEXT<THandleType>(handle, name);
 
 			VkObjectType type = (VkObjectType)handle.objectType;
 			uint64_t h = reinterpret_cast<uint64_t>(&handle);
 			GetDebugNameRegistry().SetName(type, h, name);
-#endif
 		}
 
 		static VulkanBackend &Get() { return *sInstance; }
