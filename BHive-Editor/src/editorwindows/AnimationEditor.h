@@ -1,7 +1,7 @@
 #pragma once
 
-#include "mesh/SkeletalAnimation.h"
 #include "TAssetEditor.h"
+#include "gfx/animation/SkeletalAnimation.h"
 
 namespace BHive
 {

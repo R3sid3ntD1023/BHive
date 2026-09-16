@@ -1,8 +1,8 @@
-#include "Animator/anim_graph/nodes/AnimGraphNodeBase.h"
-#include "AnimGraphEditor.h"
 #include "AnimGraphEditorNodes.h"
-#include "gui/ImGuiExtended.h"
 #include "AnimationGraph.h"
+#include "gui/ImGuiExtended.h"
+#include "runtime/animation/anim_graph/AnimGraph.h"
+#include "runtime/animation/anim_graph/nodes/AnimGraphNodeBase.h"
 
 namespace BHive
 {

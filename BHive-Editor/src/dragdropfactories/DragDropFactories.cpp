@@ -1,14 +1,14 @@
 #include "DragDropFactories.h"
 #include "audio/AudioSource.h"
-#include "mesh/SkeletalMesh.h"
-#include "mesh/StaticMesh.h"
-#include "prefab/Prefab.h"
+#include "gfx/mesh/SkeletalMesh.h"
+#include "gfx/mesh/StaticMesh.h"
+#include "runtime/prefab/Prefab.h"
 
-#include "world/GameObject.h"
-#include "world/World.h"
-#include "world/components/AudioComponent.h"
-#include "world/components/SkeletalMeshComponent.h"
-#include "world/components/StaticMeshComponent.h"
+#include "runtime/GameObject.h"
+#include "runtime/World.h"
+#include "runtime/components/AudioComponent.h"
+#include "runtime/components/SkeletalMeshComponent.h"
+#include "runtime/components/StaticMeshComponent.h"
 
 namespace BHive
 {

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "gfx/cameras/EditorCamera.h"
-#include "mesh/BaseMesh.h"
 #include "TAssetEditor.h"
+#include "gfx/cameras/EditorCamera.h"
+#include "gfx/mesh/BaseMesh.h"
 
 namespace BHive
 {

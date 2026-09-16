@@ -1,6 +1,6 @@
 #include "AssetEditor.h"
-#include "core/platform/Platform.h"
 #include "asset/AssetFactory.h"
+#include "core/platform/Platform.h"
 
 namespace BHive
 {
@@ -30,10 +30,10 @@ namespace BHive
 		{
 			if (ImGui::IsKeyPressed(ImGuiKey_S))
 			{
-				if (ImGui::IsKeyDown(ImGuiKey_ModCtrl))
+				if (ImGui::IsKeyDown(ImGuiMod_Ctrl))
 				{
 
-					if (ImGui::IsKeyDown(ImGuiKey_ModAlt))
+					if (ImGui::IsKeyDown(ImGuiMod_Alt))
 					{
 						SaveAs();
 					}

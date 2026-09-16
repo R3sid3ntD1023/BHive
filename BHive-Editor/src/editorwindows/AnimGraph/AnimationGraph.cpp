@@ -1,6 +1,6 @@
 #include "AnimationGraph.h"
 #include "AnimGraphEditorNodes.h"
-#include "Animator/anim_graph/AnimGraph.h"
+#include "runtime/animation/anim_graph/AnimGraph.h"
 
 namespace BHive
 {

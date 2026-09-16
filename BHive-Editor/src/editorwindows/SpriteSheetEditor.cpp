@@ -1,5 +1,7 @@
 #include "SpriteSheetEditor.h"
 #include "core/platform/Platform.h"
+#include "gfx/Texture.h"
+#include "gfx/imgui/IImGuiProvider.h"
 
 namespace BHive
 {
@@ -11,16 +13,19 @@ namespace BHive
 
 			if (ImGui::BeginChild("##children", {}, ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeY))
 			{
-				if (ImGui::BeginChild("Source", {}, ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
+				if (ImGui::BeginChild("Source", {}, ImGuiChildFlags_ResizeX | ImGuiChildFlags_Borders))
 				{
 
 					auto source = mAsset->GetSource();
 
 					if (source)
 					{
+						auto tex = source.As<Texture>();
 						auto size = ImGui::GetContentRegionAvail();
-						auto texture_size = size * ImVec2{1, 1.f / source->GetAspectRatio()};
-						ImGui::Image((ImTextureID)(uint64_t)(uint32_t)*source, texture_size, {0, 1}, {1, 0});
+						auto texture_size = size * ImVec2{1, 1.f / tex->GetAspectRatio()};
+
+						auto id = IImGuiTextureProvider::GetID(*tex);
+						ImGui::Image(id, texture_size, {0, 1}, {1, 0});
 					}
 				}
 
@@ -75,11 +80,12 @@ namespace BHive
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
 
-			for (auto &sprite : sprites)
+			for (auto &spriteHandle : sprites)
 			{
-				auto texture = sprite.GetSourceTexture();
-				auto mincoords = sprite.GetMinCoords();
-				auto maxcoords = sprite.GetMaxCoords();
+				auto sprite = spriteHandle.As<Sprite>();
+				auto texture = sprite->GetSourceTexture();
+				auto mincoords = sprite->GetMinCoords();
+				auto maxcoords = sprite->GetMaxCoords();
 
 				ImGui::BeginGroup();
 				auto id = texture ? texture->GetRendererID() : 0;
@@ -108,7 +114,7 @@ namespace BHive
 		auto &sprites = mAsset->GetSprites();
 		for (size_t i = 0; i < sprites.size(); i++)
 		{
-			auto &sprite = sprites[i];
+			auto sprite = sprites[i].As<Sprite>();
 			auto filename = std::format("{}_{}{}", name, i, ext);
 			auto export_path = directory / filename;
 
@@ -118,7 +124,7 @@ namespace BHive
 			}
 
 			LOG_TRACE("Extracted Sprite {}", filename);
-			manager->ImportAsset(export_path, sprite.get_type(), sprite.GetHandle());
+			manager->ImportAsset(export_path, sprite->get_type(), sprite->GetHandle());
 		}
 
 		LOG_TRACE("Extracted Sprites");

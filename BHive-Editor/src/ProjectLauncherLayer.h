@@ -22,7 +22,7 @@ namespace BHive
 
 	class ProjectLauncherLayer : public Layer
 	{
-		void OnAttach() override;
+		void OnAttach(Application &app) override;
 
 		void OnDetach() override;
 

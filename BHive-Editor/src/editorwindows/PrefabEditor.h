@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TAssetEditor.h"
-#include "prefab/Prefab.h"
+#include "runtime/prefab/Prefab.h"
 #include "windows/SceneHeirarchyWindow.h"
 
 namespace BHive

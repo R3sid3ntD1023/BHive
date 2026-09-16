@@ -1,7 +1,7 @@
 #pragma once
 
-#include "sprite/SpriteSheet.h"
 #include "TAssetEditor.h"
+#include "gfx/sprite/SpriteSheet.h"
 
 namespace BHive
 {

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "inspectors/Inspect.h"
-#include "mesh/SkeletalAnimation.h"
 #include "asset/TAssetHandler.h"
-#include "Animator/anim_graph/nodes/AnimGraphNodeBase.h"
+#include "gfx/animation/SkeletalAnimation.h"
+#include "inspectors/Inspect.h"
+#include "runtime/animation/anim_graph/nodes/AnimGraphNodeBase.h"
 
 namespace BHive
 {

@@ -1,11 +1,11 @@
 #pragma once
 
 #include "core/Core.h"
+#include "gfx/registries/Handles.h"
+#include "importers/TextureImporter.h"
 
 namespace BHive
 {
-	class Texture2D;
-
 	class ThumbnailCache
 	{
 	private:
@@ -13,12 +13,13 @@ namespace BHive
 	public:
 		ThumbnailCache();
 
-		const Ref<Texture2D> &Get(const std::filesystem::path &path);
+		TexturePtr Get(const std::filesystem::path &path);
 
-		const Ref<Texture2D> &GetAssetIcon(const std::string &type_name);
+		TexturePtr GetAssetIcon(const std::string &type_name);
 
 	private:
-		std::unordered_map<std::string, Ref<Texture2D>> mCache;
-		std::unordered_map<std::string, Ref<Texture2D>> mAssetIconCache;
+		std::unordered_map<std::string, DecodedTexture> mCache;
+		std::unordered_map<std::string, DecodedTexture> mAssetIconCache;
+		std::unordered_map<uint64_t, TexturePtr> mLoadedIcons;
 	};
 } // namespace BHive

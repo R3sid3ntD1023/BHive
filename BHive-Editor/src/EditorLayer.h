@@ -1,18 +1,17 @@
 #pragma once
 
+#include "EditorContentBrowser.h"
 #include "asset/EditorAssetManager.h"
 #include "core/Command.h"
+#include "core/Layer.h"
 #include "core/events/ApplicationEvents.h"
 #include "core/events/KeyEvents.h"
-#include "core/Layer.h"
-#include "EditorContentBrowser.h"
 #include "gfx/cameras/EditorCamera.h"
-#include "renderers/LineRenderer.h"
+#include "renderers/EditorSceneRenderer.h"
 
 namespace BHive
 {
 
-	class EditorSceneRenderer;
 	class ImSceneHierarchy;
 	class World;
 

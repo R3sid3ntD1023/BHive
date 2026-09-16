@@ -1,11 +1,11 @@
 #pragma once
 
-#include "renderers/SceneRenderer.h"
-#include "core/EventDelegate.h"
+#include "core/delegates/EventDelegate.h"
+#include "gfx/renderers/SceneRenderer.h"
 
 namespace BHive
 {
-	class PickerRenderPass;
+	// class PickerRenderPass;
 
 	DECLARE_EVENT(FOnEntitySelected, int32_t)
 
@@ -18,11 +18,11 @@ namespace BHive
 
 		void Pick(const glm::uvec2 &mouse_pos);
 
-		void OnEntityPicked(int32_t i, const Ref<FMeshRenderData> &render_data);
+		// void OnEntityPicked(int32_t i, const Ref<FMeshRenderData> &render_data);
 
 		FOnEntitySelectedEvent OnEntitySelectedEvent{};
 
 	private:
-		Ref<PickerRenderPass> mPickPass{};
+		// Ref<PickerRenderPass> mPickPass{};
 	};
 } // namespace BHive

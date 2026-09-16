@@ -1,9 +1,9 @@
-#include "mesh/SkeletalMesh.h"
-#include "mesh/SkeletalPose.h"
-#include "mesh/Skeleton.h"
-#include "mesh/StaticMesh.h"
 #include "MeshEditor.h"
-#include "renderers/SceneRenderer.h"
+#include "gfx/animation/SkeletalPose.h"
+#include "gfx/animation/Skeleton.h"
+#include "gfx/mesh/SkeletalMesh.h"
+#include "gfx/mesh/StaticMesh.h"
+#include "gfx/renderers/SceneRenderer.h"
 
 namespace BHive
 {

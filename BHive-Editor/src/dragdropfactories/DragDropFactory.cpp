@@ -1,16 +1,16 @@
 #include "DragDropFactory.h"
+#include "DragDropFactories.h"
 #include "asset/AssetManager.h"
 #include "asset/EditorAssetManager.h"
 #include "project/Project.h"
-#include "world/GameObject.h"
-#include "world/World.h"
-#include "DragDropFactories.h"
+#include "runtime/GameObject.h"
+#include "runtime/World.h"
 
 // assets
 #include "audio/AudioSource.h"
-#include "mesh/SkeletalMesh.h"
-#include "mesh/StaticMesh.h"
-#include "prefab/Prefab.h"
+#include "gfx/mesh/SkeletalMesh.h"
+#include "gfx/mesh/StaticMesh.h"
+#include "runtime/prefab/Prefab.h"
 
 namespace BHive
 {

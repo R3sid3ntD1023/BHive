@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Animator/anim_graph/AnimGraph.h"
 #include "editorwindows/TAssetEditor.h"
+#include "runtime/animation/anim_graph/AnimGraph.h"
 
 namespace BHive
 {

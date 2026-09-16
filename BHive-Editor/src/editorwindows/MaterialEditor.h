@@ -1,8 +1,8 @@
 #pragma once
 
-#include "gfx/cameras/EditorCamera.h"
-#include "material/Material.h"
 #include "TAssetEditor.h"
+#include "gfx/cameras/EditorCamera.h"
+#include "gfx/material/Material.h"
 
 namespace BHive
 {
@@ -17,7 +17,7 @@ namespace BHive
 	protected:
 		virtual void OnUpdateContent() override;
 
-		void OnSetContext(const Ref<Material> &asset) override;
+		void OnSetContext(MaterialPtr material) override;
 
 		/*bool OnSave(const std::filesystem::path &path) override;*/
 
@@ -25,7 +25,8 @@ namespace BHive
 
 	private:
 		EditorCamera mCamera;
-		static inline Ref<class StaticMesh> mSphere;
+		MeshPtr mSphere;
+		MaterialPtr mMaterial;
 		glm::vec2 mViewportSize{300, 300};
 		glm::vec2 mViewportPanelSize{300, 300};
 

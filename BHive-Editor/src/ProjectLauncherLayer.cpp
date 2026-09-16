@@ -1,22 +1,21 @@
 #include "ProjectLauncherLayer.h"
-#include "core/threading/Threading.h"
-#include "gui/ImGuiExtended.h"
-#include "project/Project.h"
-#include "inspectors/Inspect.h"
-#include "gui/Gui.h"
+#include "EditorLayer.h"
 #include "core/Application.h"
 #include "core/platform/Platform.h"
-#include "EditorLayer.h"
+#include "core/threading/Threading.h"
 #include "gfx/Texture.h"
+#include "gui/Gui.h"
+#include "gui/ImGuiExtended.h"
 #include "importers/TextureImporter.h"
+#include "inspectors/Inspect.h"
+#include "project/Project.h"
 
 namespace BHive
 {
 	constexpr const char *cSettingsFileName = "Settings.projlncher";
 
-	void ProjectLauncherLayer::OnAttach()
+	void ProjectLauncherLayer::OnAttach(Application &app)
 	{
-		auto &app = Application::Get();
 		auto &cmd = app.GetSpecification().CommandLine;
 
 		if (std::filesystem::exists(cSettingsFileName))
@@ -139,15 +138,15 @@ namespace BHive
 		const auto file_name = path.stem().string();
 		mSettings.mRecentProjectPaths[file_name] = path;
 
-		Thread::Dispatch(
-			[=]()
-			{
-				Project::LoadProject(path);
+		// Thread::Dispatch(
+		// 	[=]()
+		// 	{
+		// 		Project::LoadProject(path);
 
-				auto &app = Application::Get();
-				app.PopLayer(this);
-				app.PushLayer<EditorLayer>();
-			});
+		// 		auto &app = Application::Get();
+		// 		app.PopLayer(this);
+		// 		app.PushLayer<EditorLayer>();
+		// 	});
 	}
 
 	void ProjectLauncherLayer::CreateProject(const FProjectConfiguration &config, std::string &message)

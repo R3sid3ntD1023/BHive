@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TAssetEditor.h"
-#include "gfx/textures/Texture2D.h"
+#include "gfx/Texture.h"
 
 namespace BHive
 {

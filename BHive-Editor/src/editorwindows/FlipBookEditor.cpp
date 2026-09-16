@@ -1,5 +1,7 @@
 #include "FlipBookEditor.h"
 #include "gfx/Texture.h"
+#include "gfx/imgui/IImGuiProvider.h"
+#include "gfx/sprite/Sprite.h"
 
 namespace BHive
 {
@@ -29,21 +31,24 @@ namespace BHive
 
 				if (count)
 				{
-					int32_t texture_id = 0;
 					glm::vec2 min = {0, 1}, max = {1, 0};
 
-					auto sprite = mAsset->GetSpriteAtFrame(mCurrentFrame);
-					if (sprite)
+					auto spriteHandle = mAsset->GetSpriteAtFrame(mCurrentFrame);
+					if (spriteHandle)
 					{
-						auto texture = sprite->GetSourceTexture();
-						texture_id = texture ? texture->GetRendererID() : 0;
+						auto sprite = spriteHandle.As<Sprite>();
+						auto textureHandle = sprite->GetSourceTexture();
 
 						min = sprite->GetMinCoords();
 						max = sprite->GetMaxCoords();
-					}
 
-					float item_width = ImGui::GetContentRegionAvail().x;
-					ImGui::Image((ImTextureID)(uint64_t)(uint32_t)texture_id, {item_width, item_width}, {min.x, max.y}, {max.x, min.y});
+						if (textureHandle)
+						{
+							float item_width = ImGui::GetContentRegionAvail().x;
+							auto id = IImGuiTextureProvider::GetID(*textureHandle.As<Texture>());
+							ImGui::Image(id, {item_width, item_width}, {min.x, max.y}, {max.x, min.y});
+						}
+					}
 
 					if (ImGui::Timeline("##timeline", &mCurrentFrame, (int)frames.size()))
 					{

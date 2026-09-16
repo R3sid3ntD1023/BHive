@@ -1,7 +1,7 @@
 #include "MaterialEditor.h"
-#include "mesh/primitives/Sphere.h"
-#include "renderers/Renderer.h"
-#include "renderers/SceneRenderer.h"
+#include "gfx/factories/MeshFactory.h"
+#include "gfx/renderers/Renderer.h"
+#include "gfx/renderers/SceneRenderer.h"
 
 namespace BHive
 {
@@ -9,8 +9,7 @@ namespace BHive
 	{
 		if (!mSphere)
 		{
-			mSphere = CreateRef<PSphere>(1.f, 64, 64);
-			mSphere->GetMaterialTable().resize(1);
+			mSphere = MeshFactory::CreateSphere(1.0f, 64u, 64u);
 		}
 
 		mCamera = EditorCamera(45.0f, 1.f, 0.01f, 1000.f);
