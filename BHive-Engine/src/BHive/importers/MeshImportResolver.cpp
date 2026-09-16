@@ -52,8 +52,6 @@ namespace BHive
 		auto name = mOptions.AssetPath.stem().string();
 		auto skeleton = mOptions.Skeleton;
 
-		LOG_TRACE("SubMesh count {}", decodedMesh.MeshData.SubMeshes.size());
-
 		switch (mOptions.MeshType)
 		{
 		case EMeshType::StaticMesh:

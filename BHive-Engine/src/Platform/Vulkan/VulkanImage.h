@@ -18,7 +18,6 @@ namespace BHive
 		vk::SamplerCreateInfo SamplerCI{};
 
 		// Engine metadata
-		EViewTopology ViewTopology{};
 		std::string DebugName{};
 		uint32_t BytesPerPixel = 0;
 	};
@@ -41,13 +40,15 @@ namespace BHive
 
 		void GenerateMipMaps(vk::CommandBuffer cmd);
 
-		ResourceID GetResourceID() const { return mImage.Image; }
-
-		const GPUImage &Native() const { return mImage; }
-
 		ImageState GetState(uint32_t mip, uint32_t layer) const;
 
-		void DebugPrintState();
+		vk::Image GetImage() const;
+
+		vk::ImageView GetView(uint32_t layer, uint32_t face, uint32_t mip) const;
+
+		vk::Sampler GetSampler() const;
+
+		void Clear();
 
 		operator bool() const { return mImage; }
 
@@ -57,7 +58,11 @@ namespace BHive
 		ImageState InitialStateFromUsage(vk::ImageUsageFlags usage, vk::Format format);
 
 	private:
-		GPUImage mImage{};
+		ResourceID mImage;
+
+		ImageViews mViews;
+
+		ResourceID mSampler;
 
 		ImageStateTracker mStateTracker;
 

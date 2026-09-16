@@ -13,14 +13,11 @@ namespace BHive
 
 		Buffer.bindMemory(Allocation.Memory, Allocation.Offset);
 
-#if BHIVE_ENABLE_OBJECT_NAMES
 		VulkanBackend::SetObjectName(*Buffer, name);
-#endif
 	}
 
 	GPUBufferResource::~GPUBufferResource()
 	{
-
 		unmap();
 		mAllocator->Free(Allocation);
 	}

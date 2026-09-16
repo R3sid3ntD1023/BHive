@@ -1,4 +1,6 @@
 #include "EngineConfig.h"
+
+#define MINI_CASE_SENSITIVE
 #include <mini/ini.h>
 
 namespace BHive

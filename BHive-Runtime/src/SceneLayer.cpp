@@ -35,6 +35,8 @@ namespace BHive
 
 	void SceneLayer::OnAttach(Application &app)
 	{
+		mFont = FontFactory::Create(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", 16.f);
+
 		auto decodeEnvironment = TextureLoader::FromFile(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
 		auto decodedSprite = TextureLoader::FromFile("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg");
 		auto decodedMario = TextureLoader::FromFile("C:/Users/dariu/Documents/BHive/projects/Mario/resources/textures/Mario.png");
@@ -55,7 +57,7 @@ namespace BHive
 		mCameras[0].SetSensitivity(sensitivity);
 
 		mCameras[1] = EditorCamera(75.f, aspect, 0.1f, 1000.f);
-		mCameras[1].SetStartState({0.f, 10.f, 10.f}, -90.0f, -45.0f);
+		mCameras[1].SetStartState({0.f, 10.f, 10.f}, -90.0f, -35.0f);
 		mCameras[1].SetSensitivity(sensitivity);
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
@@ -79,10 +81,10 @@ namespace BHive
 
 			{
 
-				auto texture = TextureFactory::Create2D(decodedSprite);
+				mTexture = TextureFactory::Create2D(decodedSprite);
 				auto material = mMaterialTables[0][0].As<LambertMaterial>();
 				material->SetDiffuseColor(FColor::DarkGray).SetEmissionColor(FColor::Black);
-				material->SetTexture("DiffuseMap", {texture});
+				material->SetTexture("DiffuseMap", {mTexture});
 			}
 
 			{
@@ -107,34 +109,9 @@ namespace BHive
 	#define SCALE 1.0f
 #else
 	#define TEST_MESH_NAME "C://Users//dariu//Documents//BHive//projects//Shadows//resources//Kachujin//Kachujin.gltf"
-	#define TEST_ANIMATION "C://Users//dariu//Documents//BHive//projects//Shadows//resources//Kachujin//animations//Unarmed Idle 02.glb"
+	#define TEST_ANIMATION "C://Users//dariu//Documents//BHive//projects//Shadows//resources//Kachujin//animations//FreezeDance.glb"
 	#define SCALE .05f
 #endif
-		// 			{
-		// 				FMeshImportOptions import_options{};
-		// 				import_options.MeshType = EMeshType::SkeletalMesh;
-		// 				// import_options.OverrideMaterials = mCharacterMaterials;
-		// 				//  import_options.ImportMaterials = false;
-		// 				auto decodedMesh = MeshImporter::Import(TEST_MESH_NAME, SCALE);
-		// 				MeshImportResolver resolver(import_options);
-		// 				auto result = resolver.Resolve(decodedMesh);
-		// 				mCharacter = result.Mesh;
-		// 				mCharacterMaterials = result.Materials;
-
-		// #ifdef TEST_ANIMATION
-		// 				mCharacterSkeleton = result.Skeleton;
-		// 				import_options.MeshType = EMeshType::SkeletalAnimation;
-		// 				import_options.ImportMaterials = false;
-		// 				import_options.Skeleton = mCharacterSkeleton;
-		// 				auto decodedAnimation = MeshImporter::Import(TEST_ANIMATION, SCALE);
-		// 				resolver.SetOptions(import_options);
-		// 				result = resolver.Resolve(decodedAnimation);
-		// 				mCharacterAnimaton = result.Animations[0];
-		// 				mCharacterPose = mCharacter.As<SkeletalMesh>()->GetDefaultPose();
-		// 				mAnimationClip = CreateRef<AnimationClip>(mCharacterAnimaton, mCharacterSkeleton);
-		// 				LOG_INFO("Animation {} Duration {}, Length {}", mCharacterAnimaton.Index, mAnimationClip->GetDuration(), mAnimationClip->GetLengthInSeconds());
-		// #endif
-		// 			}
 
 		mCameraController.SetCamera(&mCameras[0]);
 
@@ -203,8 +180,6 @@ namespace BHive
 
 	void SceneLayer::OnUpdate(float time)
 	{
-		sphereTransform.Rotation.y += 10.0f * time;
-
 		if (mAnimationClip && mCharacter)
 		{
 			auto &pose = *mCharacterPose;
@@ -228,6 +203,7 @@ namespace BHive
 		}
 
 		mSceneRenderer->Begin(&mCameras[0], mCameras[0].GetView());
+		auto view = mSceneRenderer->GetSceneView().View;
 
 		FView viewOverride = FView::Create(mCameras[1].GetProjection(), mCameras[1].GetView());
 		mSceneRenderer->SetViewOverride(viewOverride);
@@ -240,6 +216,14 @@ namespace BHive
 		renderer.Line.DrawLine({0, 0, 0}, {10, 0, 0}, FColor::Red);
 		renderer.Line.DrawLine({0, 0, 0}, {0, 10, 0}, FColor::Green);
 		renderer.Line.DrawLine({0, 0, 0}, {0, 0, 10}, FColor::Blue);
+
+		renderer.Quad.DrawQuad(FQuadParams{}, mTexture, FTransform{{-2, 4, 0}});
+
+		renderer.Quad.DrawBillboard(view, FQuadParams{}, mTexture, FTransform{{2, 4, 0}});
+
+		renderer.Quad.DrawText(mFont, 2.f, "Test Text", FTextParams{}, FTransform{{2, 2, 0}});
+
+		renderer.Quad.DrawCircle(FCircleParams{}, FTransform{{-2, 2, 0}});
 
 		mSceneRenderer->End();
 	}

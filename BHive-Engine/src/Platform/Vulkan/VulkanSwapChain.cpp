@@ -56,7 +56,7 @@ namespace BHive
 		LOG_TRACE("recreating swap chain... with size[{}x{}]", w, h);
 
 		mImages.clear();
-		mDepthImage = {};
+		mDepthImage.Clear();
 		mSwapChain.clear();
 
 		Init(w, h);
@@ -76,11 +76,10 @@ namespace BHive
 		depth.Transition(cmd, ImageState::DepthStencilAttachment());
 
 		vk::RenderingAttachmentInfo attachmentInfo(
-			image.Native().GetView(0, 0, 0), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, colorValue);
+			image.GetView(0, 0, 0), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, colorValue);
 
 		vk::RenderingAttachmentInfo depth_attachment_info(
-			depth.Native().GetView(0, 0, 0), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare,
-			depthValue);
+			depth.GetView(0, 0, 0), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, depthValue);
 
 		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, mExtent), 1, 0, attachmentInfo, &depth_attachment_info);
 		cmd.beginRendering(renderingInfo);

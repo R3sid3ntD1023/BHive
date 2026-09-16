@@ -42,18 +42,16 @@ namespace BHive
 			vk::BorderColor::eIntOpaqueBlack, VK_FALSE);
 		create_info.DebugName = mCreateInfo.DebugName;
 		create_info.BytesPerPixel = GetBytesPerPixel(mCreateInfo.Format);
-		create_info.ViewTopology = EViewTopology::Cube;
 		mImage.Initialize(create_info);
 	}
 
 	VkImageView VulkanTextureCube::ResolveRenderView(uint32_t face, uint32_t mip) const
 	{
-		return mImage.Native().GetView(0, face, mip);
+		return mImage.GetView(0, face, mip);
 	}
 
 	void VulkanTextureCube::DebugPrintState()
 	{
-		mImage.DebugPrintState();
-	}
+		}
 
 } // namespace BHive

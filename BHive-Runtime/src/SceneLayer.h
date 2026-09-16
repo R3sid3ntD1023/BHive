@@ -49,6 +49,9 @@ namespace BHive
 		SkeletonPtr mCharacterSkeleton;
 		Ref<class SkeletalPose> mCharacterPose;
 		Ref<class AnimationClip> mAnimationClip;
+
+		TexturePtr mTexture;
+		FontPtr mFont;
 	};
 
 } // namespace BHive

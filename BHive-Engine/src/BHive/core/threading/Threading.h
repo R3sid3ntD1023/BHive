@@ -13,8 +13,12 @@ namespace BHive
 
 	struct JobHandle
 	{
-		uint16_t Index = 0;
+		static constexpr uint16_t InvalidIndex = UINT16_MAX;
+
+		uint16_t Index = InvalidIndex;
 		uint16_t Generation = 0;
+
+		bool IsValid() const { return Index != InvalidIndex; }
 	};
 
 	struct Job
@@ -26,7 +30,7 @@ namespace BHive
 	struct JobState
 	{
 		std::atomic<uint32_t> UnFinishedJobs = 0;
-		uint16_t Generation;
+		uint16_t Generation = 0;
 	};
 
 	template <typename T, size_t Capacity>
@@ -78,12 +82,12 @@ namespace BHive
 
 		static void ParallelFor(uint32_t count, uint32_t batchSize, ParallelJobFunction &&func);
 
+		static bool IsDone(JobHandle handle);
+
 	private:
 		static void Worker();
 
 		static JobHandle AllocateHandle();
-
-		static bool IsDone(JobHandle handle);
 
 	private:
 		inline static RingBuffer<Job, QUEUE_SIZE> sQueue;
@@ -92,7 +96,7 @@ namespace BHive
 
 		inline static std::condition_variable sCV;
 
-		inline static bool sRunning = false;
+		inline static std::atomic<bool> sRunning = false;
 
 		inline static std::array<std::thread, MAX_WORKERS> sWorkers;
 

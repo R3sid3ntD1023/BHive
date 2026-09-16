@@ -42,6 +42,7 @@ namespace BHive
 		image.bindMemory(allocation.Memory, allocation.Offset);
 
 		VulkanBackend::SetObjectName(*image, name);
+		VulkanBackend::SetObjectName(allocation.Memory, name + "_Memory");
 
 		return id;
 	}
@@ -104,8 +105,20 @@ namespace BHive
 					return;
 				}
 
-				GetStorage<vk::raii::Image>().Remove(handle);
-				GetStorage<MemoryAllocation>().Remove(handle);
+				auto &allocStorage = GetStorage<MemoryAllocation>();
+
+				if (allocStorage.Contains(handle))
+				{
+					auto &imgStorage = GetStorage<vk::raii::Image>();
+
+					auto &alloc = allocStorage.Get(handle);
+					VulkanBackend::GetMemoryAllocator().Free(alloc);
+
+					allocStorage.Remove(handle);
+					imgStorage.Remove(handle);
+				}
+
+				handle.Release();
 			});
 	}
 
@@ -116,6 +129,8 @@ namespace BHive
 			{
 				auto &storage = GetStorage<vk::raii::ImageView>();
 				storage.Remove(handle);
+
+				handle.Release();
 			});
 	}
 
@@ -126,47 +141,6 @@ namespace BHive
 			{
 				auto &storage = GetStorage<vk::raii::Sampler>();
 				storage.Remove(handle);
-			});
-	}
-
-	void GPUResourceManager::DestroyImage(GPUImage &image)
-	{
-		if (auto smp = image.Sampler)
-		{
-			DestroySampler(smp);
-		}
-
-		for (auto &[viewKey, id] : image.Views.Views)
-			DestroyImageView(id);
-
-		image.Sampler.Release();
-		image.Views.Views.clear();
-
-		auto handle = image.Image;
-		auto name = image.DebugName;
-
-		RenderCommand::QueueDeletion(
-			[this, handle, name](uint32_t)
-			{
-				if (mExternalImages.contains(handle))
-				{
-					auto &imgStorage = GetStorage<vk::Image>();
-					mExternalImages.erase(handle);
-					imgStorage.Remove(handle);
-					return;
-				}
-
-				auto &allocStorage = GetStorage<MemoryAllocation>();
-				if (allocStorage.Contains(handle))
-				{
-					auto &imgStorage = GetStorage<vk::raii::Image>();
-					auto &alloc = allocStorage.Get(handle);
-
-					VulkanBackend::GetMemoryAllocator().Free(alloc);
-
-					allocStorage.Remove(handle);
-					imgStorage.Remove(handle);
-				}
 
 				handle.Release();
 			});

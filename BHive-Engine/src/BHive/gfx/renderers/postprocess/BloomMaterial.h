@@ -8,7 +8,7 @@ namespace BHive
 
 	class BHIVE_API BloomMaterial : public PostProcessMaterial
 	{
-		static inline constexpr uint32_t MipCount = 5;
+		static inline constexpr uint32_t MipCount = 4;
 
 	public:
 		TexturePtr AddToGraph(Graph &graph, const FPostProcessTextureSet &set) override;

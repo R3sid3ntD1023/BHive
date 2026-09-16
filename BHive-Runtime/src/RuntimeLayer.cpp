@@ -7,6 +7,7 @@
 #include "core/platform/Platform.h"
 #include "gfx/Texture.h"
 #include "gfx/debug/ImageDebugger.h"
+#include "gfx/factories/GFXFactories.h"
 #include "gfx/factories/MeshFactory.h"
 #include "gfx/factories/TextureFactory.h"
 #include "gfx/imgui/IImGuiProvider.h"
@@ -31,6 +32,7 @@ namespace BHive
 	DirectionalLight mainLight{};
 	PointLight pLight0{};
 	SpotLight spLight0{};
+	std::vector<ContextHandle> sContextHandles;
 
 	void RuntimeLayer::OnAttach(Application &app)
 	{
@@ -53,25 +55,28 @@ namespace BHive
 		mFont = FontFactory::Create(ENGINE_PATH "/data/fonts/Roboto/Roboto-Thin.ttf", 10.f);
 
 		// create materials
-		/*{
-			auto emissiveMaterial = CreateRef<EmissiveMaterial>();
-			emissiveMaterial->SetEmissionColor(FColor(1.0f, 0.0f, 0.0f, 10.0f));
+		{
+			auto emissiveMaterial = MaterialFactory::CreateEmissive();
+			emissiveMaterial.As<EmissiveMaterial>()->SetEmissionColor(FColor(1.0f, 0.0f, 0.0f, 20.0f));
 
-			auto lambertMaterial0 = CreateRef<LambertMaterial>();
-			lambertMaterial0->SetDiffuseColor(FColor::LightGray).SetEmissionColor(FColor::Black);
-			lambertMaterial0->SetTexture("DiffuseMap", {mTexture});
+			auto lambertMaterial0 = MaterialFactory::CreateLambert();
+			lambertMaterial0.As<LambertMaterial>()->SetDiffuseColor(FColor::LightGray);
+			lambertMaterial0.As<LambertMaterial>()->SetTexture("DiffuseMap", {mTexture});
 
-			auto lambertMaterial1 = CreateRef<LambertMaterial>();
-			lambertMaterial1->SetDiffuseColor(FColor::Orange).SetEmissionColor(FColor::Black);
+			auto lambertMaterial1 = MaterialFactory::CreateLambert();
+			lambertMaterial1.As<LambertMaterial>()->SetDiffuseColor(FColor::Orange).SetEmissionColor(FColor::Black);
 
-			auto standardMaterial = CreateRef<StandardMaterial>();
-			standardMaterial->SetAlbedo(FColor::White).SetEmission(FColor::Black).SetMetalness(1.0f).SetRoughness(0.5f);
+			auto standardMaterial = MaterialFactory::CreateStandard();
+			standardMaterial.As<StandardMaterial>()->SetAlbedo(FColor::White);
+			standardMaterial.As<StandardMaterial>()->SetEmission(FColor(1.0f, .5f, 0.0f, 2.0f));
+			standardMaterial.As<StandardMaterial>()->SetMetalness(1.0f);
+			standardMaterial.As<StandardMaterial>()->SetRoughness(0.5f);
 
 			mMaterials[0].Add(lambertMaterial0);
 			mMaterials[1].Add(lambertMaterial1);
 			mMaterials[2].Add(emissiveMaterial);
 			mMaterials[3].Add(standardMaterial);
-		}*/
+		}
 
 		auto &window = app.GetWindow();
 		auto aspect = window.GetAspectRatio();
@@ -79,7 +84,7 @@ namespace BHive
 		mViewportSize = window.GetSize();
 
 		mCamera = EditorCamera(75.f, aspect, 0.1f, 1000.f);
-		mCamera.SetStartState({5, 5, 5}, 0, -45.f);
+		mCamera.SetStartState({5, 5, 5}, -90.f, -30.f);
 
 		auto &dbg = ImageDebugger::Get();
 		dbg.Initialize({512, 512});
@@ -89,7 +94,7 @@ namespace BHive
 		mSceneRenderer->SetEnvironmentTexture(TextureFactory::Create2D(decodedEnviroment));
 
 		mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
-		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
+		// mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
 		mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
 
 		mObjectTransforms[0] = FTransform({0, 1, 0});
@@ -111,6 +116,27 @@ namespace BHive
 		spLight0.SetColor(FColor::Red).SetIntensity(3.f).SetDirection({0, -1, 0}).SetPosition({}).SetRadius(5.f).SetInnerAngleDegrees(45.f).SetOuterAngleDegrees(75.f);
 
 		mCameraController.SetCamera(&mCamera);
+
+		// submit meshes
+		{
+			std::vector<FMeshSubmissionRequest> infos{};
+
+			if (mMesh)
+			{
+				infos.emplace_back(mMesh, mMaterials[0], mObjectTransforms[0]);
+				infos.emplace_back(mMesh, mMaterials[1], mObjectTransforms[1]);
+			}
+
+			infos.emplace_back(mSphere, mMaterials[2], mObjectTransforms[2]);
+			infos.emplace_back(mSphere, mMaterials[3], mObjectTransforms[3]);
+			infos.emplace_back(mPlane, mMaterials[3], mObjectTransforms[4]);
+
+			for (auto &info : infos)
+			{
+				sContextHandles.emplace_back();
+				mSceneRenderer->SubmitMesh(info, sContextHandles.back());
+			}
+		}
 	}
 
 	void RuntimeLayer::OnDetach()
@@ -140,32 +166,10 @@ namespace BHive
 		}
 
 		mSceneRenderer->Begin(&mCamera, mCamera.GetView());
-
-		// Submit lights
-		{
-
-			mSceneRenderer->Submit(mainLight);
-			mSceneRenderer->Submit(pLight0);
-			mSceneRenderer->Submit(spLight0);
-		}
-
-		// submit meshes
-		{
-			std::vector<FMeshSubmissionRequest> infos{};
-
-			// if (mMesh)
-			// {
-			// 	infos.emplace_back(mMesh, mMaterials[0], mObjectTransforms[0]);
-			// 	infos.emplace_back(mMesh, mMaterials[1], mObjectTransforms[1]);
-			// }
-
-			infos.emplace_back(mSphere, mMaterials[2], mObjectTransforms[2]);
-			infos.emplace_back(mSphere, mMaterials[3], mObjectTransforms[3]);
-			infos.emplace_back(mPlane, mMaterials[3], mObjectTransforms[4]);
-
-			for (auto &info : infos)
-				mSceneRenderer->SubmitMesh(info);
-		}
+		mSceneRenderer->Submit(mainLight);
+		mSceneRenderer->Submit(pLight0);
+		mSceneRenderer->Submit(spLight0);
+		mSceneRenderer->UpdateTransform(sContextHandles[0], mObjectTransforms[0]);
 
 		// lines
 		{

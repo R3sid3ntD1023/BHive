@@ -96,9 +96,8 @@ namespace BHive
 		const auto img = bindInfo.Texture.As<Texture>()->GetNativeHandle().As<VulkanImage>();
 		ASSERT(img);
 
-		const auto &native = img->Native();
-		auto smp = native.GetSampler();
-		auto view = native.GetView(layer, face, mip);
+		auto smp = img->GetSampler();
+		auto view = img->GetView(layer, face, mip);
 
 		switch (bindInfo.Type)
 		{
@@ -115,8 +114,6 @@ namespace BHive
 		}
 		case EResourceType::StorageImage:
 		{
-			const auto &usage = native.Usage;
-			ASSERT(usage & vk::ImageUsageFlagBits::eStorage, "Image is not created with storage usage, cannot be used as a storage image resource -> {}", native.DebugName);
 			return vk::DescriptorImageInfo(nullptr, view, vk::ImageLayout::eGeneral);
 		}
 		case EResourceType::InputAttachment:

@@ -25,12 +25,20 @@ namespace BHive
 
 	struct ImageViews
 	{
+		ResourceID Default;
+
 		std::map<ViewKey, ResourceID> Views;
+
+		auto begin() { return Views.begin(); }
+
+		auto end() { return Views.end(); }
 	};
 
 	struct ImageStateTracker
 	{
 		std::vector<std::vector<ImageState>> MipStates;
+
+		std::map<ViewKey, ImageState> States;
 
 		void Initialize(uint32_t layers, uint32_t mips, const ImageState &initial);
 
@@ -38,32 +46,4 @@ namespace BHive
 
 		const ImageState &Get(uint32_t layer, uint32_t mip) const;
 	};
-
-	struct GPUImage
-	{
-		~GPUImage();
-
-		ResourceID Image{0};
-
-		ImageViews Views;
-
-		ResourceID Sampler{0};
-
-		vk::ImageUsageFlags Usage;
-
-		vk::ImageViewType ViewType;
-
-		std::string DebugName;
-
-		const vk::Image GetImage() const;
-
-		const vk::Sampler GetSampler() const;
-
-		vk::ImageView GetView(uint32_t layer, uint32_t face, uint32_t mip) const;
-
-		bool IsValid() const { return Image; }
-
-		operator bool() const { return IsValid(); }
-	};
-
 } // namespace BHive

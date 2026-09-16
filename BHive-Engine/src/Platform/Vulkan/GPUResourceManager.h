@@ -3,11 +3,16 @@
 #include "GPUResourceHandle.h"
 #include "VulkanMemory.h"
 #include "core/Core.h"
+#include "core/type/TypeID.h"
 #include "resources/GPUBufferResource.h"
 #include "resources/GPUImageResource.h"
 
 namespace BHive
 {
+	using ImageHandle = uint32_t;
+	using SamplerHandle = uint32_t;
+	using ViewHandle = uint32_t;
+	using BufferHandle = uint32_t;
 
 	struct StorageBase
 	{
@@ -83,6 +88,7 @@ namespace BHive
 
 	private:
 		TContainer mResources{};
+		std::list<uint32_t> FreeList;
 	};
 
 	class GPUResourceManager
@@ -110,8 +116,6 @@ namespace BHive
 
 		void DestroySampler(ResourceID handle);
 
-		void DestroyImage(GPUImage &image);
-
 		GPUBufferResource *ResolveBuffer(GPUBufferResourceHandle handle);
 
 		GPUImageResource *ResolveImage(GPUImageResourceHandle handle);
@@ -127,7 +131,7 @@ namespace BHive
 		template <typename T>
 		Storage<T> &GetStorage()
 		{
-			auto id = typeid(T).name();
+			auto id = TypeID<T>::value;
 			if (!mStorages.contains(id))
 				mStorages.emplace(id, CreateRef<Storage<T>>());
 
@@ -136,7 +140,7 @@ namespace BHive
 
 	private:
 		// MemoryAllocator mMemoryAllocator;
-		std::unordered_map<const char *, Ref<StorageBase>> mStorages;
+		std::unordered_map<uint32_t, Ref<StorageBase>> mStorages;
 		std::unordered_set<ResourceID> mExternalImages;
 		std::map<GPUBufferResourceHandle, GPUBufferResource> mBuffers;
 		std::map<GPUImageResourceHandle, GPUImageResource> mImages;

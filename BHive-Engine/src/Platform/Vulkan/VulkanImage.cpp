@@ -8,8 +8,7 @@ namespace BHive
 {
 	VulkanImage::~VulkanImage()
 	{
-		if (OnDestroyed)
-			OnDestroyed(mImage.Image);
+		Clear();
 	}
 
 	void VulkanImage::Initialize(const ImageCreateInfo &info)
@@ -21,24 +20,20 @@ namespace BHive
 		const auto &layers = info.ImageCI.arrayLayers;
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
 
-		auto image_id = gpu_r_m.CreateImage(info.ImageCI, vk::MemoryPropertyFlagBits::eDeviceLocal, info.DebugName);
-
-		mImage.Image = image_id;
-		mImage.DebugName = info.DebugName;
-		mImage.Usage = info.ImageCI.usage;
+		mImage = gpu_r_m.CreateImage(info.ImageCI, vk::MemoryPropertyFlagBits::eDeviceLocal, info.DebugName);
 		mStateTracker.Initialize(layers, levels, ImageState::Undefined());
 
 		if (info.ImageCI.usage & vk::ImageUsageFlagBits::eSampled)
 		{
 			auto sampler_id = gpu_r_m.CreateSampler(mutable_info.SamplerCI, std::format("Image_{}_Sampler", mutable_info.DebugName));
-			mImage.Sampler = sampler_id;
+			mSampler = sampler_id;
 		}
 
-		auto image = mImage.GetImage();
+		auto image = gpu_r_m.GetImage(mImage);
 		mutable_info.ViewCI.setImage(image);
 
 		ImageViewBuildInfo build_info{.Layers = layers, .Levels = levels, .ViewCI = mutable_info.ViewCI, .DebugName = info.DebugName};
-		ImageViewBuilder::Build(mImage, build_info, info.ViewTopology);
+		ImageViewBuilder::Build(mViews, build_info);
 
 		auto initialState = InitialStateFromUsage(info.ImageCI.usage, info.ImageCI.format);
 		if (!initialState.IsUndefined)
@@ -63,17 +58,15 @@ namespace BHive
 		mStateTracker.Initialize(layers, levels, ImageState::Undefined());
 
 		ImageViewBuildInfo build_info{.Layers = layers, .Levels = levels, .ViewCI = mutable_info.ViewCI, .DebugName = info.DebugName};
-		ImageViewBuilder::Build(mImage, build_info, mutable_info.ViewTopology);
+		ImageViewBuilder::Build(mViews, build_info);
 
 		if (info.ImageCI.usage & vk::ImageUsageFlagBits::eSampled)
 		{
 			auto sampler_id = gpu_r_m.CreateSampler(mutable_info.SamplerCI, std::format("Image_{}_Sampler", mutable_info.DebugName));
-			mImage.Sampler = sampler_id;
+			mSampler = sampler_id;
 		}
 
-		mImage.Image = gpu_r_m.RegisterExternalImage(img);
-		mImage.DebugName = info.DebugName;
-		mImage.Usage = info.ImageCI.usage;
+		mImage = gpu_r_m.RegisterExternalImage(img);
 	}
 
 	void VulkanImage::Upload(const void *data, size_t size, ImageCopyRegion region, ImageSubresourceRange range)
@@ -90,7 +83,7 @@ namespace BHive
 
 		SingleTimeCommand cmd{};
 		Transition(cmd, ImageState::TransferWrite(), range);
-		VulkanUtils::CopyBufferToImage(cmd, staging->Buffer, mImage.GetImage(), region);
+		VulkanUtils::CopyBufferToImage(cmd, staging->Buffer, GetImage(), region);
 		Transition(cmd, ImageState::ShaderRead(), range);
 
 		staging.Destroy();
@@ -98,16 +91,16 @@ namespace BHive
 
 	void VulkanImage::Transition(vk::CommandBuffer cmd, ImageState newState, ImageSubresourceRange range)
 	{
-		ASSERT(mStateTracker.MipStates.size(), "Invalid layer size must be 1 or greater -> {}", mImage.DebugName);
+		// ASSERT(mStateTracker.MipStates.size(), "Invalid layer size must be 1 or greater -> {}", mImage.DebugName);
 
-		auto image = mImage.GetImage();
+		auto image = GetImage();
 		auto aspect = mInfo.ViewCI.subresourceRange.aspectMask;
 
 		for (uint32_t layer = range.BaseArrayLayer; layer < range.BaseArrayLayer + range.LayerCount; layer++)
 		{
 			for (uint32_t mip = range.BaseMipLevel; mip < range.BaseMipLevel + range.LevelCount; mip++)
 			{
-				ASSERT(mStateTracker.MipStates[layer].size(), "Invalid mip size must be 1 or greater -> {}", mImage.DebugName);
+				// ASSERT(mStateTracker.MipStates[layer].size(), "Invalid mip size must be 1 or greater -> {}", mImage.DebugName);
 
 				auto &oldState = mStateTracker.Get(layer, mip);
 				auto oldLayout = oldState.IsUndefined ? vk::ImageLayout::eUndefined : oldState.Layout;
@@ -141,7 +134,7 @@ namespace BHive
 		auto layers = mInfo.ImageCI.arrayLayers;
 		auto levels = mInfo.ImageCI.mipLevels;
 
-		vk::Image image = mImage.GetImage();
+		vk::Image image = GetImage();
 
 		for (uint32_t mip = 1; mip < levels; ++mip)
 		{
@@ -180,15 +173,41 @@ namespace BHive
 		return mStateTracker.Get(layer, mip);
 	}
 
-	void VulkanImage::DebugPrintState()
+	vk::Image VulkanImage::GetImage() const
 	{
-		for (uint32_t layer = 0; layer < mStateTracker.MipStates.size(); layer++)
+		return VulkanBackend::GetGPUResourceManager().GetImage(mImage);
+	}
+
+	vk::ImageView VulkanImage::GetView(uint32_t layer, uint32_t face, uint32_t mip) const
+	{
+		auto id = mViews.Views.at({layer, face, mip});
+		return VulkanBackend::GetGPUResourceManager().GetImageView(id);
+	}
+
+	vk::Sampler VulkanImage::GetSampler() const
+	{
+		return VulkanBackend::GetGPUResourceManager().GetSampler(mSampler);
+	}
+
+	void VulkanImage::Clear()
+	{
+		if (OnDestroyed)
+			OnDestroyed(mImage);
+
+		auto &rm = VulkanBackend::GetGPUResourceManager();
+
+		if (mImage)
+			rm.DestroyImage(mImage);
+
+		rm.DestroyImageView(mViews.Default);
+
+		for (auto &[key, view] : mViews)
 		{
-			for (uint32_t mip = 0; mip < mStateTracker.MipStates[layer].size(); mip++)
-			{
-				LOG_TRACE("\t\t{} [layer={} mip={}] = {}", mImage.DebugName, layer, mip, vk::to_string(mStateTracker.Get(layer, mip).Layout));
-			}
+			rm.DestroyImageView(view);
 		}
+
+		if (mSampler)
+			rm.DestroySampler(mSampler);
 	}
 
 	ImageState VulkanImage::InitialStateFromUsage(vk::ImageUsageFlags usage, vk::Format format)

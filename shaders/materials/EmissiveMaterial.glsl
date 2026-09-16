@@ -19,13 +19,13 @@ layout(location = 0) in struct VS_OUT
 	vec4 Color;
 	mat3 TBN;
 	vec3 CameraPosition;
-	float InstanceID;
-	float DrawID;
+	vec3 DebugColor;
 } vs_in;
 
 struct EmissiveMaterial
 {
 	vec3 Emission;
+	vec3 Normal;
 };
 
 layout(push_constant) uniform MaterialInfo
@@ -39,11 +39,13 @@ EmissiveMaterial GetMaterial(VS_OUT vs)
 {
 	vec2 texCoord = vs.Texcoord;
 	vec3 totalEmissiveRadiance = pc.Emission.rgb * pc.Emission.a;
+	vec3 normal = normalize(vs_in.Normal);
 
 	#include <EmissionMap.glsl>
 
 	EmissiveMaterial mat;
 	mat.Emission = totalEmissiveRadiance;
+	mat.Normal = normal;
 
 	return mat;
 }

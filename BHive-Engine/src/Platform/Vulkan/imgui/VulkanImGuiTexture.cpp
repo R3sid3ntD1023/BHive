@@ -1,8 +1,8 @@
 #include "VulkanImGuiTexture.h"
-#include "gfx/Texture.h"
 #include "../VulkanImage.h"
-#include <backends/imgui_impl_vulkan.h>
 #include "gfx/RenderCommand.h"
+#include "gfx/Texture.h"
+#include <backends/imgui_impl_vulkan.h>
 
 namespace BHive
 {
@@ -12,14 +12,13 @@ namespace BHive
 		if (!handle)
 			return 0;
 
-		auto &native = handle->Native();
-		VkSampler smp = native.GetSampler();
-		VkImageView view = native.GetView(0, 0, 0);
+		VkSampler smp = handle->GetSampler();
+		VkImageView view = handle->GetView(0, 0, 0);
 
 		if (!smp || !view)
 			return 0;
 
-		auto key = handle->GetResourceID();
+		auto key = tex.GetResourceID();
 
 		if (mTextureSets.contains(key))
 			return (ImTextureID)mTextureSets.at(key);

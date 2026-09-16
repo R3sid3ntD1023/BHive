@@ -13,7 +13,7 @@ namespace BHive
 		{
 			PushLayer<SceneLayer>();
 			PushLayer<PerformanceLayer>();
-			//    PushLayer<RuntimeLayer>();
+			// PushLayer<RuntimeLayer>();
 		}
 	};
 

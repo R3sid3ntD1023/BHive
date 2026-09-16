@@ -87,7 +87,6 @@ namespace BHive
 		mCompletedFrame = 0;
 
 		mSubmittedGraphs.clear();
-		mDeletionQueue.clear();
 	}
 
 	void VulkanRendererAPI::ProcessDeletionQueue(uint32_t frame)
@@ -152,10 +151,11 @@ namespace BHive
 		auto &cmd = ctx.CommandBuffer;
 		auto state = pass.State;
 
-#ifdef _DEBUG
-		vk::DebugUtilsLabelEXT label(pass.Name.c_str(), {1.0f, .5f, 0.0f, 1.0f});
-		cmd.beginDebugUtilsLabelEXT(label);
-#endif
+		if (EngineConfig::DebugLabels)
+		{
+			vk::DebugUtilsLabelEXT label(pass.Name.c_str(), {1.0f, .5f, 0.0f, 1.0f});
+			cmd.beginDebugUtilsLabelEXT(label);
+		}
 
 		for (auto &phase : pass.Phases)
 		{
@@ -182,9 +182,8 @@ namespace BHive
 			}
 		}
 
-#ifdef _DEBUG
-		cmd.endDebugUtilsLabelEXT();
-#endif
+		if (EngineConfig::DebugLabels)
+			cmd.endDebugUtilsLabelEXT();
 	}
 
 	void VulkanRendererAPI::TransitionImages(const FPhase &phase, vk::raii::CommandBuffer &cmd)

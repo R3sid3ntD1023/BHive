@@ -5,16 +5,17 @@ namespace BHive
 {
 	void Thread::Worker()
 	{
-		while (sRunning)
+
+		while (sRunning.load())
 		{
 			Job job;
 
 			{
 				std::unique_lock lock(sMutex);
 
-				sCV.wait(lock, []() { return !sRunning || !sQueue.Empty(); });
+				sCV.wait(lock, []() { return !sRunning.load() || !sQueue.Empty(); });
 
-				if (!sRunning)
+				if (!sRunning.load())
 					return;
 
 				sQueue.Pop(job);
@@ -48,17 +49,17 @@ namespace BHive
 
 	void Thread::Init()
 	{
-		sRunning = true;
+		sRunning.store(true);
 
 		for (auto &worker : sWorkers)
 		{
-			worker = std::thread(&Thread::Worker);
+			worker = std::thread(Thread::Worker);
 		}
 	}
 
 	void Thread::Shutdown()
 	{
-		sRunning = false;
+		sRunning.store(false);
 
 		sCV.notify_all();
 
