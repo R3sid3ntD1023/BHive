@@ -1,1 +1,0 @@
-fs_out = vec4(out_color, diffuseColor.a);

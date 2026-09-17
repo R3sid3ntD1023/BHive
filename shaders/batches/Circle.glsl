@@ -10,11 +10,11 @@ layout(location = 4) in float vFade;
 // @semantic Camera
 layout(std140, set = 0, binding = 0) uniform Camera
 {
-    mat4 uProjection;
-    mat4 uView;
-    vec4 uNearFar;
-    vec4 uCameraPosition;
-};
+    mat4 ViewProjection;
+    mat4 View;
+    vec4 NearFar;
+    vec4 Position;
+} uCam;
 
 layout(location = 0) out struct VS_OUT
 {
@@ -26,7 +26,7 @@ layout(location = 0) out struct VS_OUT
 
 void main()
 {
-    gl_Position = uProjection * uView * vWorldPosition;
+    gl_Position = uCam.ViewProjection * vWorldPosition;
     vs_out = VS_OUT(vLocalPosition, vColor, vThickness, vFade);
 }
 

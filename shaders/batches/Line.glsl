@@ -10,11 +10,11 @@ layout(location = 2) in int vEntityID;
 // @semantic Camera
 layout(std140, set = 0, binding = 0) uniform CameraBuffer
 {
-    mat4 uProjection;
-    mat4 uView;
-    vec4 uNearFar;
-    vec4 uCameraPosition;
-};
+    mat4 ViewProjection;
+    mat4 View;
+    vec4 NearFar;
+    vec4 CameraPosition;
+} uCam;
 
 layout(location = 0) out struct VS_OUT
 {
@@ -23,7 +23,7 @@ layout(location = 0) out struct VS_OUT
         
 void main()
 {
-    gl_Position = uProjection * uView * vec4(vPosition, 1.0);
+    gl_Position = uCam.ViewProjection * vec4(vPosition, 1.0);
     vs_out = VS_OUT(vColor);
 }
 

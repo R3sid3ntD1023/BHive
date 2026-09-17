@@ -1,4 +1,5 @@
 
+
 void ApplyLighting(vec3 geoPosition, vec3 geoNormal, vec3 geoViewDir, Material mat, inout ReflectedLight reflected)
 {
 #if defined( Direct )
@@ -27,8 +28,15 @@ void ApplyLighting(vec3 geoPosition, vec3 geoNormal, vec3 geoViewDir, Material m
 		GetPointLightInfo(light, geoPosition, directLight);
 
 		#if defined(POINT_SHADOW_MAPPING)
+		{
 			PointLightShadowInfo shadow_info = uPointShadowInfo[i];
-			directLight.Color *= (directLight.Color != vec3(0.0f)) ?  GetPointShadow(i, geoPosition, normalize(directLight.Direction), directLight.Direction,  shadow_info.ShadowNearFar, ShadowPointMaps) : 1.0f;
+			float shadow = GetPointShadow(i, geoPosition, normalize(directLight.Direction), directLight.Direction,  shadow_info.ShadowNearFar, ShadowPointMaps);
+			float dist = length(directLight.Direction);
+			float s = dist / light.Position.w;
+			float shadowFade = 1.0 - smoothstep(0.8, 1.0, s);
+			shadow = mix(1.0, shadow, shadowFade);
+			directLight.Color *= shadow;
+		}
 		#endif
 
 		Direct(geoPosition, geoNormal, geoViewDir, directLight, mat, reflected);
