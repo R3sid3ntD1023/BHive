@@ -9,15 +9,12 @@ namespace BHive
 {
 	struct ViewKey
 	{
-		uint32_t Layer = 0, Face = 0, Mip = 0;
+		uint32_t Layer = 0, Mip = 0;
 
 		bool operator<(const ViewKey &rhs) const
 		{
 			if (Layer != rhs.Layer)
 				return Layer < rhs.Layer;
-
-			if (Face != rhs.Face)
-				return Face < rhs.Face;
 
 			return Mip < rhs.Mip;
 		}
@@ -40,7 +37,7 @@ namespace BHive
 
 		std::map<ViewKey, ImageState> States;
 
-		void Initialize(uint32_t layers, uint32_t mips, const ImageState &initial);
+		void Initialize(uint32_t layers, uint32_t mips, const ImageState &initial, uint32_t faces = 1);
 
 		ImageState &Get(uint32_t layer, uint32_t mip);
 

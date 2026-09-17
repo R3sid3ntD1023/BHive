@@ -76,10 +76,26 @@ namespace BHive
 		depth.Transition(cmd, ImageState::DepthStencilAttachment());
 
 		vk::RenderingAttachmentInfo attachmentInfo(
-			image.GetView(0, 0, 0), vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, colorValue);
+			image.GetView(0, 0),
+			vk::ImageLayout::eColorAttachmentOptimal,
+			{},
+			{},
+			vk::ImageLayout::eUndefined,
+			vk::AttachmentLoadOp::eClear,
+			vk::AttachmentStoreOp::eStore,
+			colorValue
+		);
 
 		vk::RenderingAttachmentInfo depth_attachment_info(
-			depth.GetView(0, 0, 0), vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eUndefined, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, depthValue);
+			depth.GetView(0, 0),
+			vk::ImageLayout::eDepthStencilAttachmentOptimal,
+			{},
+			{},
+			vk::ImageLayout::eUndefined,
+			vk::AttachmentLoadOp::eClear,
+			vk::AttachmentStoreOp::eDontCare,
+			depthValue
+		);
 
 		vk::RenderingInfo renderingInfo({}, vk::Rect2D({0, 0}, mExtent), 1, 0, attachmentInfo, &depth_attachment_info);
 		cmd.beginRendering(renderingInfo);
@@ -100,8 +116,23 @@ namespace BHive
 	void VulkanSwapChain::CreateSwapChain(vk::raii::Device &device)
 	{
 		vk::SwapchainCreateInfoKHR swap_chain_create_info(
-			{}, mSurface, mMinImageCount, mImageFormat.format, mImageFormat.colorSpace, mExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, {},
-			mCapabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, mPresentMode, true, nullptr, nullptr);
+			{},
+			mSurface,
+			mMinImageCount,
+			mImageFormat.format,
+			mImageFormat.colorSpace,
+			mExtent,
+			1,
+			vk::ImageUsageFlagBits::eColorAttachment,
+			vk::SharingMode::eExclusive,
+			{},
+			mCapabilities.currentTransform,
+			vk::CompositeAlphaFlagBitsKHR::eOpaque,
+			mPresentMode,
+			true,
+			nullptr,
+			nullptr
+		);
 
 		mSwapChain = device.createSwapchainKHR(swap_chain_create_info);
 	}
@@ -155,8 +186,18 @@ namespace BHive
 
 		ImageCreateInfo depth_info{};
 		depth_info.ImageCI = vk::ImageCreateInfo(
-			{}, vk::ImageType::e2D, mDepthFormat, vk::Extent3D{mExtent, 1}, 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment,
-			vk::SharingMode::eExclusive, 0);
+			{},
+			vk::ImageType::e2D,
+			mDepthFormat,
+			vk::Extent3D{mExtent, 1},
+			1,
+			1,
+			vk::SampleCountFlagBits::e1,
+			vk::ImageTiling::eOptimal,
+			vk::ImageUsageFlagBits::eDepthStencilAttachment,
+			vk::SharingMode::eExclusive,
+			0
+		);
 		auto range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1);
 		depth_info.ViewCI = vk::ImageViewCreateInfo({}, VK_NULL_HANDLE, vk::ImageViewType::e2D, mDepthFormat, {}, range);
 		depth_info.DebugName = std::format("SwapChainImage_DepthStencil");

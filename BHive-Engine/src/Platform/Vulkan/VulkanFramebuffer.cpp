@@ -39,8 +39,10 @@ namespace BHive
 		auto depth = mSpecification.Attachments.GetDepthAttachment();
 		if (IsDepthFormat(depth.CreateInfo.Format))
 		{
+			auto aspect = depth.CreateInfo.Format == EFormat::DEPTH24_STENCIL8 ? ETextureAspect::DepthStencil : ETextureAspect::Depth;
+
 			mDepthSpecification = depth;
-			mDepthSpecification.CreateInfo.Aspect = ETextureAspect::DepthStencil;
+			mDepthSpecification.CreateInfo.Aspect = aspect;
 			mDepthSpecification.CreateInfo.Roles = ETextureRole::DepthTarget | ETextureRole::Sampled;
 			mDepthSpecification.CreateInfo.DebugName = specification.DebugName + "_FB_Depth";
 		}
@@ -123,17 +125,21 @@ namespace BHive
 
 	void VulkanFramebuffer::BeginRendering(vk::CommandBuffer cmd, const VulkanFramebuffer::RenderInfo &info)
 	{
-		auto range = info.ColorRange;
+		auto layer = info.Range.baseArrayLayer;
+		auto mip = info.Range.baseMipLevel;
 
 		std::vector<vk::RenderingAttachmentInfo> color_infos;
 		for (size_t i = 0; i < mColorAttachments.size(); i++)
 		{
+
 			auto attachment = mColorAttachments[i].As<Texture>();
 			auto &spec = mColorAttachmentSpecifications[i];
-			auto view = Cast<IVulkanTextureInterface>(attachment)->ResolveRenderView(range.baseArrayLayer, range.baseMipLevel);
+			auto native = attachment->GetNativeHandle().As<VulkanImage>();
+			auto view = native->GetView(layer, mip);
 
-			auto colorInfo
-				= vk::RenderingAttachmentInfo(view, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eColorAttachmentOptimal, info.ColorLoadOp, info.ColorStoreOp, info.ClearColor);
+			auto colorInfo = vk::RenderingAttachmentInfo(
+				view, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eColorAttachmentOptimal, info.ColorLoadOp, info.ColorStoreOp, info.ClearColor
+			);
 
 			color_infos.emplace_back(colorInfo);
 		}
@@ -144,16 +150,25 @@ namespace BHive
 		if (mDepthAttachment)
 		{
 			auto &spec = mDepthSpecification;
-			auto view = Cast<IVulkanTextureInterface>(mDepthAttachment.As<Texture>())->ResolveRenderView(0, 0);
+			auto native = mDepthAttachment.As<Texture>()->GetNativeHandle().As<VulkanImage>();
+			auto view = native->GetView(layer, mip);
 
 			depthInfo = vk::RenderingAttachmentInfo(
-				view, vk::ImageLayout::eDepthStencilAttachmentOptimal, {}, {}, vk::ImageLayout::eDepthStencilAttachmentOptimal, info.DepthLoadOp, info.DepthStoreOp, info.ClearDepthValue);
+				view,
+				vk::ImageLayout::eDepthStencilAttachmentOptimal,
+				{},
+				{},
+				vk::ImageLayout::eDepthStencilAttachmentOptimal,
+				info.DepthLoadOp,
+				info.DepthStoreOp,
+				info.ClearDepthValue
+			);
 
 			depthPtr = &depthInfo;
 		}
 
 		glm::uvec2 baseSize = mSpecification.Size;
-		glm::uvec2 mipSize = {std::max(baseSize.x >> range.baseMipLevel, 1u), std::max(baseSize.y >> range.baseMipLevel, 1u)};
+		glm::uvec2 mipSize = {std::max(baseSize.x >> mip, 1u), std::max(baseSize.y >> mip, 1u)};
 
 		auto rect = vk::Rect2D({0, 0}, {mipSize.x, mipSize.y});
 		auto renderInfo = vk::RenderingInfo({}, rect, 1, 0, color_infos, depthPtr);

@@ -19,9 +19,10 @@ namespace BHive
 		const auto &levels = info.ImageCI.mipLevels;
 		const auto &layers = info.ImageCI.arrayLayers;
 		auto &gpu_r_m = VulkanBackend::GetGPUResourceManager();
+		auto isCube = info.ViewCI.viewType == vk::ImageViewType::eCube || info.ViewCI.viewType == vk::ImageViewType::eCubeArray;
 
 		mImage = gpu_r_m.CreateImage(info.ImageCI, vk::MemoryPropertyFlagBits::eDeviceLocal, info.DebugName);
-		mStateTracker.Initialize(layers, levels, ImageState::Undefined());
+		mStateTracker.Initialize(layers, levels, ImageState::Undefined(), isCube ? 6 : 1);
 
 		if (info.ImageCI.usage & vk::ImageUsageFlagBits::eSampled)
 		{
@@ -178,9 +179,9 @@ namespace BHive
 		return VulkanBackend::GetGPUResourceManager().GetImage(mImage);
 	}
 
-	vk::ImageView VulkanImage::GetView(uint32_t layer, uint32_t face, uint32_t mip) const
+	vk::ImageView VulkanImage::GetView(uint32_t layer, uint32_t mip) const
 	{
-		auto id = mViews.Views.at({layer, face, mip});
+		auto id = mViews.Views.at({layer, mip});
 		return VulkanBackend::GetGPUResourceManager().GetImageView(id);
 	}
 

@@ -32,8 +32,23 @@ namespace BHive
 		auto compare_op = compare_enabled ? ToVkCompare(mCreateInfo.CompareOp.value()) : vk::CompareOp::eAlways;
 
 		create_info.SamplerCI = vk::SamplerCreateInfo(
-			{}, magFilter, minFilter, vk::SamplerMipmapMode::eLinear, addressMode, addressMode, addressMode, 0.0f, 0u, 1.0f, compare_enabled, compare_op, 0.0f, float(levels - 1),
-			vk::BorderColor::eIntOpaqueBlack, VK_FALSE);
+			{},
+			magFilter,
+			minFilter,
+			vk::SamplerMipmapMode::eLinear,
+			addressMode,
+			addressMode,
+			addressMode,
+			0.0f,
+			0u,
+			1.0f,
+			compare_enabled,
+			compare_op,
+			0.0f,
+			float(levels - 1),
+			vk::BorderColor::eIntOpaqueBlack,
+			VK_FALSE
+		);
 		create_info.DebugName = mCreateInfo.DebugName;
 		create_info.BytesPerPixel = GetBytesPerPixel(mCreateInfo.Format);
 		mImage.Initialize(create_info);
@@ -51,11 +66,11 @@ namespace BHive
 
 	VkImageView VulkanTexture2DArray::ResolveRenderView(uint32_t layer, uint32_t mip) const
 	{
-		return mImage.GetView(layer, 0, mip);
+		return mImage.GetView(layer, mip);
 	}
 
 	void VulkanTexture2DArray::DebugPrintState()
 	{
-		}
+	}
 
 } // namespace BHive

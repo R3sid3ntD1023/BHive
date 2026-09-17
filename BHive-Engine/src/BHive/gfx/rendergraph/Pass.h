@@ -88,7 +88,7 @@ namespace BHive
 		// 	return *ptr;
 		// }
 
-		void UseFramebuffer(FramebufferPtr fbo, ImageSubresourceRange colorRange = {});
+		void UseFramebuffer(FramebufferPtr fbo, ImageSubresourceRange range = {});
 
 		void UseTexture(TexturePtr tex, EImageUsage access, ImageSubresourceRange range = {});
 

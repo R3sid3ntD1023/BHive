@@ -44,21 +44,26 @@ namespace BHive
 		size_t Size = 0;
 	};
 
+	struct BoundFramebuffer
+	{
+		FramebufferPtr FBO;
+
+		ImageSubresourceRange Range;
+	};
+
 	struct FPhase
 	{
 		std::string Name;
 
 		EPhaseType Type = EPhaseType::Graphics;
 
-		FramebufferPtr FBO;
+		BoundFramebuffer BoundFBO;
 
 		std::vector<FImageInfo> Images;
 
 		std::vector<FBufferUsageInfo> Buffers;
 
 		std::vector<FBufferTransition> BufferTransitions;
-
-		ImageSubresourceRange ColorRange{};
 
 		std::vector<ResourceSetPtr> ResourceSets;
 

@@ -159,6 +159,12 @@ namespace BHive
 
 		for (auto &phase : pass.Phases)
 		{
+			if (EngineConfig::DebugPhaseLabels)
+			{
+				vk::DebugUtilsLabelEXT label(phase.Name.c_str(), {1.0f, 0.0f, 1.0f, 1.0f});
+				cmd.beginDebugUtilsLabelEXT(label);
+			}
+
 			VulkanInterpreter::CreateBarriers(phase.BufferTransitions, ctx);
 
 			TransitionImages(phase, cmd);
@@ -180,6 +186,9 @@ namespace BHive
 				if (pass.Type == EPassType::Present)
 					TransitionSwapChainToPresent(ctx, swapChain);
 			}
+
+			if (EngineConfig::DebugPhaseLabels)
+				cmd.endDebugUtilsLabelEXT();
 		}
 
 		if (EngineConfig::DebugLabels)
@@ -214,10 +223,11 @@ namespace BHive
 
 	void VulkanRendererAPI::BeginOffScreenRendering(const FPassState &state, const FPhase &phase, FVulkanRendererContext &ctx)
 	{
-		auto fbo = phase.FBO.As<VulkanFramebuffer>();
+		auto fbo = phase.BoundFBO.FBO;
 		if (fbo)
 		{
-			const auto range = phase.ColorRange;
+			const auto framebuffer = fbo.As<VulkanFramebuffer>();
+			const auto range = phase.BoundFBO.Range;
 			auto &cmd = ctx.CommandBuffer;
 
 			VulkanFramebuffer::RenderInfo renderInfo;
@@ -227,9 +237,9 @@ namespace BHive
 			renderInfo.ColorStoreOp = utils::ToStore(state.Color.StoreOP);
 			renderInfo.DepthLoadOp = utils::ToLoad(state.Depth.LoadOP);
 			renderInfo.DepthStoreOp = utils::ToStore(state.Depth.StoreOP);
-			renderInfo.ColorRange = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, range.BaseMipLevel, range.LevelCount, range.BaseArrayLayer, range.LayerCount);
+			renderInfo.Range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, range.BaseMipLevel, range.LevelCount, range.BaseArrayLayer, range.LayerCount);
 
-			fbo->BeginRendering(ctx.CommandBuffer, renderInfo);
+			framebuffer->BeginRendering(ctx.CommandBuffer, renderInfo);
 		}
 	}
 

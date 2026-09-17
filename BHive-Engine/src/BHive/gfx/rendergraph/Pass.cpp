@@ -16,22 +16,21 @@ namespace BHive
 		mCurrentPhase = &Phases.back();
 	}
 
-	void FPass::UseFramebuffer(FramebufferPtr fbo, ImageSubresourceRange colorRange)
+	void FPass::UseFramebuffer(FramebufferPtr fbo, ImageSubresourceRange range)
 	{
 		ASSERT(mCurrentPhase)
 
-		mCurrentPhase->FBO = fbo;
-		mCurrentPhase->ColorRange = colorRange;
+		mCurrentPhase->BoundFBO = {fbo, range};
 
 		auto fb = fbo.As<Framebuffer>();
 		for (uint32_t i = 0; i < fb->GetNumColorAttachments(); i++)
 		{
-			UseTexture(fb->GetColorAttachment(i), EImageUsage::ColorWrite, colorRange);
+			UseTexture(fb->GetColorAttachment(i), EImageUsage::ColorWrite, range);
 		}
 
 		if (auto depth = fb->GetDepthAttachment())
 		{
-			UseTexture(depth, EImageUsage::DepthWrite);
+			UseTexture(depth, EImageUsage::DepthWrite, range);
 		}
 	}
 

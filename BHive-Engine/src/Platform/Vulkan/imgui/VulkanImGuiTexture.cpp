@@ -13,7 +13,7 @@ namespace BHive
 			return 0;
 
 		VkSampler smp = handle->GetSampler();
-		VkImageView view = handle->GetView(0, 0, 0);
+		VkImageView view = handle->GetView(0, 0);
 
 		if (!smp || !view)
 			return 0;

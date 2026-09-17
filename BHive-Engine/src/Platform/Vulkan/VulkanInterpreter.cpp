@@ -18,7 +18,8 @@ namespace BHive
 	{
 		auto &cmdbuffer = ctx.CommandBuffer;
 		const auto &frame = ctx.Frame;
-		const auto numAttachments = phase.FBO ? phase.FBO.As<Framebuffer>()->GetNumColorAttachments() : 0;
+		const auto fbo = phase.BoundFBO.FBO;
+		const auto numAttachments = fbo ? fbo.As<Framebuffer>()->GetNumColorAttachments() : 0;
 
 		auto it = phase.Commands.begin();
 		auto end = phase.Commands.end();

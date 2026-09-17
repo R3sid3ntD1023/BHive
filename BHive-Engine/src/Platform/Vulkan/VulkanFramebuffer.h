@@ -51,7 +51,7 @@ namespace BHive
 			vk::AttachmentStoreOp ColorStoreOp;
 			vk::AttachmentLoadOp DepthLoadOp;
 			vk::AttachmentStoreOp DepthStoreOp;
-			vk::ImageSubresourceRange ColorRange;
+			vk::ImageSubresourceRange Range;
 		};
 
 		void BeginRendering(vk::CommandBuffer cmd, const RenderInfo &info);
