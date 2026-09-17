@@ -101,6 +101,7 @@ namespace BHive
 	enum class ETextureAspect
 	{
 		Color,
+		Depth,
 		DepthStencil
 	};
 
@@ -133,7 +134,6 @@ namespace BHive
 	{
 		NONE,
 		COMPARE_REF_TO_TEXTURE,
-
 	};
 
 	enum class EImageUsage : uint8_t
@@ -155,7 +155,6 @@ namespace BHive
 		// Transfer
 		TransferSrc,
 		TransferDst
-
 	};
 
 	enum class EBufferUsage : uint8_t
@@ -385,6 +384,11 @@ namespace BHive
 		default:
 			return "Undefined";
 		}
+	}
+
+	inline constexpr uint32_t CubeFaceLayer(uint32_t cube, uint32_t face)
+	{
+		return cube * 6 + face;
 	}
 
 	inline bool IsDepthFormat(EFormat format)

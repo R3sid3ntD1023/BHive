@@ -35,6 +35,8 @@ namespace BHive
 		{
 		case BHive::ETextureAspect::Color:
 			return vk::ImageAspectFlagBits::eColor;
+		case BHive::ETextureAspect::Depth:
+			return vk::ImageAspectFlagBits::eDepth;
 		case BHive::ETextureAspect::DepthStencil:
 			return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 		default:

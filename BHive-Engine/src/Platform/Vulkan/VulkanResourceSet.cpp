@@ -91,13 +91,12 @@ namespace BHive
 		ASSERT(bindInfo.Texture)
 
 		const uint32_t layer = 0;
-		const uint32_t face = 0;
 
 		const auto img = bindInfo.Texture.As<Texture>()->GetNativeHandle().As<VulkanImage>();
 		ASSERT(img);
 
 		auto smp = img->GetSampler();
-		auto view = img->GetView(layer, face, mip);
+		auto view = img->GetView(layer, mip);
 
 		switch (bindInfo.Type)
 		{
