@@ -69,12 +69,18 @@ namespace BHive
 		{
 
 			vk::PhysicalDeviceFeatures features{};
-			features.setFillModeNonSolid(true).setWideLines(true).setMultiDrawIndirect(true).setDrawIndirectFirstInstance(true);
+			features.setFillModeNonSolid(true).setWideLines(true).setMultiDrawIndirect(true).setDrawIndirectFirstInstance(true).setGeometryShader(true).setImageCubeArray(true);
 
 			vk::StructureChain<
-				vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features,
-				vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT, vk::PhysicalDeviceVertexAttributeDivisorFeaturesEXT,
-				vk::PhysicalDeviceRobustness2FeaturesKHR, vk::PhysicalDeviceShaderObjectFeaturesEXT>
+				vk::PhysicalDeviceFeatures2,
+				vk::PhysicalDeviceVulkan11Features,
+				vk::PhysicalDeviceVulkan12Features,
+				vk::PhysicalDeviceVulkan13Features,
+				vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT,
+				vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT,
+				vk::PhysicalDeviceVertexAttributeDivisorFeaturesEXT,
+				vk::PhysicalDeviceRobustness2FeaturesKHR,
+				vk::PhysicalDeviceShaderObjectFeaturesEXT>
 				featureChain;
 			featureChain.assign<vk::PhysicalDeviceFeatures2>({}); // default initialize all features to false
 
@@ -88,7 +94,8 @@ namespace BHive
 				.setDescriptorBindingUniformBufferUpdateAfterBind(true)
 				.setDescriptorBindingStorageImageUpdateAfterBind(true);
 			featureChain.get<vk::PhysicalDeviceVulkan13Features>().setDynamicRendering(true).setSynchronization2(true).setDescriptorBindingInlineUniformBlockUpdateAfterBind(true).setMaintenance4(
-				true);
+				true
+			);
 			featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().setExtendedDynamicState(true);
 			featureChain.get<vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>().setVertexInputDynamicState(true);
 			featureChain.get<vk::PhysicalDeviceVertexAttributeDivisorFeaturesEXT>().setVertexAttributeInstanceRateZeroDivisor(true);
@@ -153,7 +160,8 @@ namespace BHive
 			vk::EXTVertexInputDynamicStateExtensionName,
 			vk::EXTExtendedDynamicStateExtensionName,
 			vk::EXTVertexAttributeDivisorExtensionName,
-			vk::EXTShaderObjectExtensionName};
+			vk::EXTShaderObjectExtensionName
+		};
 	}
 
 	uint32_t VulkanBackend::SelectQueueIndex(vk::QueueFlags queue_type, vk::SurfaceKHR surface)
@@ -203,8 +211,10 @@ namespace BHive
 			required_extensions.push_back(vk::EXTDebugUtilsExtensionName);
 
 		if (std::ranges::any_of(
-				enabled_layers, [layerProperties](const char *layerName)
-				{ return std::ranges::none_of(layerProperties, [layerName](const vk::LayerProperties &prop) { return strcmp(prop.layerName, layerName) == 0; }); }))
+				enabled_layers,
+				[layerProperties](const char *layerName)
+				{ return std::ranges::none_of(layerProperties, [layerName](const vk::LayerProperties &prop) { return strcmp(prop.layerName, layerName) == 0; }); }
+			))
 		{
 			LOG_ERROR("Missing required Vulkan validation layers");
 			ASSERT(false);
@@ -289,7 +299,8 @@ namespace BHive
 				}
 
 				return isSuitable;
-			});
+			}
+		);
 
 		if (devIter == devices.end())
 		{

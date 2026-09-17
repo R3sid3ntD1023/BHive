@@ -34,6 +34,8 @@ namespace BHive
 
 		void CreatePipelineLayout();
 
+		vk::ShaderEXT GetShaderOrNull(vk::ShaderStageFlagBits stage);
+
 	private:
 		vk::raii::Device &mDevice;
 

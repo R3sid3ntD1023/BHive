@@ -86,29 +86,32 @@ namespace BHive
 			cmd.setStencilReference(vk::StencilFaceFlagBits::eFrontAndBack, 0);
 
 			cmd.setDepthBiasEnable(VK_FALSE);
-
 			cmd.setRasterizerDiscardEnable(VK_FALSE);
-			cmd.setAlphaToCoverageEnableEXT(VK_TRUE);
+			cmd.setAlphaToCoverageEnableEXT(numAttachments != 0 ? VK_TRUE : VK_FALSE);
 
-			// Blend
-			std::vector<vk::ColorBlendEquationEXT> equations(numAttachments);
-
-			for (uint32_t i = 0; i < numAttachments; i++)
+			if (numAttachments != 0)
 			{
-				cmd.setColorWriteMaskEXT(i, vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
-				cmd.setColorBlendEnableEXT(i, state->Blend.Enabled);
 
-				vk::ColorBlendEquationEXT equation;
-				equation.setSrcColorBlendFactor(ToVkBlendFactor(state->Blend.SrcColor));
-				equation.setDstColorBlendFactor(ToVkBlendFactor(state->Blend.DstColor));
-				equation.setColorBlendOp(ToVkBlendOp(state->Blend.ColorOp));
-				equation.setSrcAlphaBlendFactor(ToVkBlendFactor(state->Blend.SrcAlpha));
-				equation.setDstAlphaBlendFactor(ToVkBlendFactor(state->Blend.DstAlpha));
-				equation.setAlphaBlendOp(ToVkBlendOp(state->Blend.AlphaOp));
-				equations[i] = equation;
+				// Blend
+				std::vector<vk::ColorBlendEquationEXT> equations(numAttachments);
+
+				for (uint32_t i = 0; i < numAttachments; i++)
+				{
+					cmd.setColorWriteMaskEXT(i, vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
+					cmd.setColorBlendEnableEXT(i, state->Blend.Enabled);
+
+					vk::ColorBlendEquationEXT equation;
+					equation.setSrcColorBlendFactor(ToVkBlendFactor(state->Blend.SrcColor));
+					equation.setDstColorBlendFactor(ToVkBlendFactor(state->Blend.DstColor));
+					equation.setColorBlendOp(ToVkBlendOp(state->Blend.ColorOp));
+					equation.setSrcAlphaBlendFactor(ToVkBlendFactor(state->Blend.SrcAlpha));
+					equation.setDstAlphaBlendFactor(ToVkBlendFactor(state->Blend.DstAlpha));
+					equation.setAlphaBlendOp(ToVkBlendOp(state->Blend.AlphaOp));
+					equations[i] = equation;
+				}
+
+				cmd.setColorBlendEquationEXT(0, equations);
 			}
-
-			cmd.setColorBlendEquationEXT(0, equations);
 
 			// topology
 			// cmd.setPrimitiveTopologyEXT(ToVkTopology(state->DrawMode));

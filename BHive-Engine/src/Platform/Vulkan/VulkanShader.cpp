@@ -25,8 +25,16 @@ namespace BHive
 
 	void VulkanShader::Bind(vk::CommandBuffer cmd)
 	{
-		for (auto &[stage, shader] : mShaderEXTs)
-			cmd.bindShadersEXT(stage, {shader});
+		if (mBindPoint == vk::PipelineBindPoint::eGraphics)
+		{
+			cmd.bindShadersEXT(vk::ShaderStageFlagBits::eVertex, GetShaderOrNull(vk::ShaderStageFlagBits::eVertex));
+			cmd.bindShadersEXT(vk::ShaderStageFlagBits::eGeometry, GetShaderOrNull(vk::ShaderStageFlagBits::eGeometry));
+			cmd.bindShadersEXT(vk::ShaderStageFlagBits::eFragment, GetShaderOrNull(vk::ShaderStageFlagBits::eFragment));
+		}
+		else if (mBindPoint == vk::PipelineBindPoint::eCompute)
+		{
+			cmd.bindShadersEXT(vk::ShaderStageFlagBits::eCompute, GetShaderOrNull(vk::ShaderStageFlagBits::eCompute));
+		}
 	}
 
 	void VulkanShader::BindSet(vk::CommandBuffer cmd, uint32_t frame, VulkanResourceSet *resourceSet)
@@ -94,8 +102,18 @@ namespace BHive
 				nextStage = ToSingleVkStage(stages[current]);
 
 			vk::ShaderCreateInfoEXT info(
-				{}, stageBit, nextStage, vk::ShaderCodeTypeEXT::eSpirv, data.Spirv.size() * sizeof(uint32_t), data.Spirv.data(), "main", layouts.size(), layouts.data(), pushConstants.size(),
-				pushConstants.data());
+				{},
+				stageBit,
+				nextStage,
+				vk::ShaderCodeTypeEXT::eSpirv,
+				data.Spirv.size() * sizeof(uint32_t),
+				data.Spirv.data(),
+				"main",
+				layouts.size(),
+				layouts.data(),
+				pushConstants.size(),
+				pushConstants.data()
+			);
 
 			mShaderEXTs.emplace(stageBit, mDevice.createShaderEXT(info));
 		}
@@ -113,6 +131,15 @@ namespace BHive
 		info.setPushConstantRanges(pushConstants);
 
 		mPipelineLayout = mDevice.createPipelineLayout(info);
+	}
+
+	vk::ShaderEXT VulkanShader::GetShaderOrNull(vk::ShaderStageFlagBits stage)
+	{
+		auto it = mShaderEXTs.find(stage);
+		if (it != mShaderEXTs.end())
+			return it->second;
+
+		return VK_NULL_HANDLE;
 	}
 
 } // namespace BHive
