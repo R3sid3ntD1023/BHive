@@ -19,6 +19,7 @@ namespace BHive
 		// Renderer
 		static inline bool DebugEnabled = false;
 		static inline bool DebugLabels = false;
+		static inline bool DebugPhaseLabels = false;
 
 		// Features
 		static inline bool EnablePhysics = 0u;

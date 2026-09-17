@@ -6,10 +6,10 @@ Standard:        c++20
 IndentWidth:     4
 TabWidth:        4
 UseTab:         Always
-ColumnLimit:     200
-AlignAfterOpenBracket: AlwaysBreak
-BinPackParameters: true
-BinPackArguments: true
+ColumnLimit:     180
+AlignAfterOpenBracket: BlockIndent
+BinPackParameters: false
+BinPackArguments: false
 AlignEscapedNewlines: Left
 AlwaysBreakTemplateDeclarations: Yes
 PackConstructorInitializers: Never
