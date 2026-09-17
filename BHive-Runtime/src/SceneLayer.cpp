@@ -69,7 +69,7 @@ namespace BHive
 		mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
 
 		auto mesh = MeshFactory::CreateSphere(1.0f, 32u, 32u);
-		auto plane = MeshFactory::CreatePlane(10.f, 10.f);
+		auto plane = MeshFactory::CreatePlane(50.f, 50.f);
 
 		{
 
@@ -109,7 +109,7 @@ namespace BHive
 	#define SCALE 1.0f
 #else
 	#define TEST_MESH_NAME "C://Users//dariu//Documents//BHive//projects//Shadows//resources//Kachujin//Kachujin.gltf"
-	#define TEST_ANIMATION "C://Users//dariu//Documents//BHive//projects//Shadows//resources//Kachujin//animations//FreezeDance.glb"
+	#define TEST_ANIMATION "C://Users//dariu//Documents//BHive//projects//Shadows//resources//Kachujin//animations//Unarmed Idle 02.glb"
 	#define SCALE .05f
 #endif
 
@@ -127,7 +127,7 @@ namespace BHive
 				FMeshSubmissionRequest request{};
 				request.Mesh = mesh;
 				request.Materials = mMaterialTables[2];
-				request.Transform = transforms.emplace_back(FTransform{{i * 3.0f, 0.0f, j * 3.0f}});
+				request.Transform = transforms.emplace_back(FTransform{{i * 3.0f, 1.5f, j * 3.0f}});
 				mSceneRenderer->SubmitMesh(request, sSphereHandle[count]);
 			}
 		}
@@ -208,7 +208,7 @@ namespace BHive
 		FView viewOverride = FView::Create(mCameras[1].GetProjection(), mCameras[1].GetView());
 		mSceneRenderer->SetViewOverride(viewOverride);
 
-		mSceneRenderer->Submit(main);
+		// mSceneRenderer->Submit(main);
 		mSceneRenderer->Submit(light);
 
 		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), {light.GetPosition()});

@@ -9,11 +9,9 @@ namespace BHive
 		  mSize(size),
 		  mCreateInfo(createInfo)
 	{
-		uint32_t cubeCount = mCreateInfo.ArrayLayers;
-
+		auto layers = mCreateInfo.ArrayLayers * 6;
 		auto format = ToVkFormat(mCreateInfo.Format);
 		auto levels = mCreateInfo.MipLevels;
-		auto layers = cubeCount * 6;
 		auto extent = vk::Extent3D(mSize, mSize, 1);
 		auto usage = InferImageUsage(mCreateInfo.Roles);
 
@@ -59,7 +57,7 @@ namespace BHive
 			compare_op,
 			0.0f,
 			float(levels - 1),
-			vk::BorderColor::eIntOpaqueBlack,
+			vk::BorderColor::eFloatOpaqueWhite,
 			VK_FALSE
 		);
 		create_info.DebugName = mCreateInfo.DebugName;

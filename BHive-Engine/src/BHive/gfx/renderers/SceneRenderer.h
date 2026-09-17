@@ -168,5 +168,7 @@ namespace BHive
 		std::vector<glm::mat4> mBoneData;
 
 		std::vector<glm::mat4> mTempBones;
+
+		friend class ShadowRenderer;
 	};
 } // namespace BHive

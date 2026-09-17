@@ -1,4 +1,5 @@
 #include "SceneRenderer.h"
+#include "RenderBatch.h"
 #include "Renderer.h"
 #include "core/math/Transform.h"
 #include "core/math/boundingbox/AABB.h"
@@ -37,120 +38,6 @@ namespace BHive
 #define MAX_BONES 200
 #define BONE_BUFFER_SIZE sizeof(glm::mat4) * MAX_BONES *MAX_OBJECTS
 
-	struct MultiDrawIndirectCommand
-	{
-		uint32_t indexCount = 0;
-		uint32_t instanceCount = 0;
-		uint32_t firstIndex = 0;
-		int32_t vertexOffset = 0;
-		uint32_t firstInstance = 0;
-	};
-
-	struct alignas(16) ObjectData
-	{
-		glm::mat4 ModelMatrix{1.0f};				  // model matrix
-		glm::vec4 CenterRadius{0.f, 0.0f, 0.0f, 0.f}; // bounding sphere center.xyz + radius
-		uint32_t ID = 0;							  // which mesh this instance belongs to
-		uint32_t BoneOffset = 0;					  // bone offset
-		glm::vec4 debugColor;
-	};
-
-	struct RenderBatch
-	{
-		struct DrawBatch
-		{
-			uint32_t FirstCommand = 0;
-			uint32_t CommandCount = 0;
-		};
-
-		// vao -> material[submissions]
-		std::unordered_map<VertexArrayPtr, std::unordered_map<MaterialPtr, DrawBatch>> MaterialBatches;
-
-		std::vector<ObjectData> ObjectDatas;
-
-		std::vector<MultiDrawIndirectCommand> DrawCommands;
-
-		RenderBatch(Ref<FRenderQueue> queue)
-			: mQueue(queue)
-		{
-			ObjectDatas.reserve(MAX_OBJECTS);
-			DrawCommands.reserve(MAX_OBJECTS);
-		}
-
-		void Build(const SubMeshSubmissions &bucket)
-		{
-			MaterialBatches.clear();
-			ObjectDatas.clear();
-			DrawCommands.clear();
-
-			for (auto &o : bucket)
-			{
-				// object data
-				auto &ctx = mQueue->ResolveContext(o.Context);
-				auto model = ctx.Transform;
-
-				auto vao = ctx.VAO;
-				auto &s = o.SubMesh;
-
-				auto objectID = ObjectDatas.size();
-
-				auto m = model * s.Transformation;
-				glm::vec3 localCenter = s.Bounds.GetCenter();
-				glm::vec3 worldCenter = m.TransformPoint(localCenter);
-				float radius = s.Bounds.GetRadius() * glm::compMax(model.Scale);
-
-				auto &inst = ObjectDatas.emplace_back();
-				inst.CenterRadius = glm::vec4(worldCenter, radius);
-				inst.ModelMatrix = m.ToMat4();
-				inst.ID = objectID;
-				inst.BoneOffset = ctx.BoneOffset;
-
-				// submesh data
-				auto &group = MaterialBatches[vao];
-				auto &batch = group[o.Material];
-
-				if (batch.CommandCount == 0)
-					batch.FirstCommand = (uint32_t)DrawCommands.size();
-
-				batch.CommandCount++;
-
-				auto &cmd = DrawCommands.emplace_back();
-				cmd.indexCount = s.IndexCount;
-				cmd.instanceCount = 0; // GPU increments this
-				cmd.firstIndex = s.StartIndex;
-				cmd.vertexOffset = s.StartVertex;
-				cmd.firstInstance = UINT32_MAX; // GPU will use visibleIndices[]
-			}
-		}
-
-		void Draw(FPass &pass, BufferPtr indirect)
-		{
-			// render meshes
-			for (auto &[vao, matMap] : MaterialBatches)
-			{
-				auto v = vao.As<VertexArray>();
-				v->DeclareAccess(pass, EBufferUsage::IndirectRead, EBufferUsage::IndirectRead);
-
-				for (auto &[material, batch] : matMap)
-				{
-					if (!material)
-						continue;
-
-					pass.Emplace<CmdBindMaterial>()(material.As<Material>());
-
-					uint32_t offset = batch.FirstCommand * sizeof(MultiDrawIndirectCommand);
-
-					pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect, vao, batch.CommandCount, MULTI_DRAW_INDIRECT_STRIDE, offset);
-				}
-			}
-		}
-
-		uint32_t InstanceCount() const { return static_cast<uint32_t>(ObjectDatas.size()); }
-
-	private:
-		Ref<FRenderQueue> mQueue;
-	};
-
 	void SceneRenderer::Init(const glm::uvec2 &size)
 	{
 		mSize = size;
@@ -161,8 +48,8 @@ namespace BHive
 		mRenderQueue->Init(MAX_OBJECTS);
 
 		mRenderBatches.resize(2);
-		mRenderBatches[0] = CreateRef<RenderBatch>(mRenderQueue);
-		mRenderBatches[1] = CreateRef<RenderBatch>(mRenderQueue);
+		mRenderBatches[0] = CreateRef<RenderBatch>(mRenderQueue, MAX_OBJECTS);
+		mRenderBatches[1] = CreateRef<RenderBatch>(mRenderQueue, MAX_OBJECTS);
 
 		// Initialize the framebuffer or any other resources needed for rendering
 		FramebufferSpecification specs;
@@ -188,6 +75,7 @@ namespace BHive
 
 		mPostProcessStack.Init(size);
 		mLights.Init();
+		mShadows.Init();
 
 		InitPipelines();
 
@@ -215,7 +103,7 @@ namespace BHive
 
 		renderer.BeginBatching();
 		mLights.BeginRecording();
-		// mShadows.BeginRecording();
+		mShadows.BeginRecording();
 
 		mRenderQueue->BuildQueue(view);
 	}
@@ -223,7 +111,6 @@ namespace BHive
 	void SceneRenderer::End()
 	{
 		mLights.EndRecording();
-		// mShadows.EndRecording();
 
 		mRenderBatches[0]->Build(mRenderQueue->Opaque);
 		mRenderBatches[1]->Build(mRenderQueue->Transparent);
@@ -288,6 +175,10 @@ namespace BHive
 			occlusionPass.Emplace<CmdBindMaterial>()(mFrustrumOcclusionMaterial[i].As<Material>());
 			occlusionPass.Emplace<CmdDispatch>()(groups, 1, 1);
 			occlusionPass.EndPhase();
+			renderer.EndPass();
+
+			auto &shadowPass = renderer.BeginPass("Shadows", EPassType::OffScreen);
+			mShadows.EndRecording(shadowPass, this);
 			renderer.EndPass();
 
 			// render scene passes
@@ -375,11 +266,10 @@ namespace BHive
 	{
 		mLights.Submit(light);
 
-		// FShadowCubeCreateInfo shadow_info{};
-		// shadow_info.LightPosition = light.GetPosition();
-		// shadow_info.LightNearFar = {1.0f, light.GetRadius()};
-
-		// mShadows.SubmitPointLight(shadow_info);
+		FShadowCubeCreateInfo shadow_info{};
+		shadow_info.LightPosition = light.GetPosition();
+		shadow_info.LightNearFar = {1.0f, light.GetRadius()};
+		mShadows.SubmitPointLight(shadow_info);
 	}
 
 	void SceneRenderer::Submit(const SpotLight &light)
@@ -492,6 +382,8 @@ namespace BHive
 		global->SetBuffer(0, mCameraUBO);
 		global->SetBuffer(1, mLights.GetBuffer());
 		global->SetTexture(2, mEnvironment.GetBRDFLUT());
+		global->SetBuffer(5, mShadows.GetBuffer());
+		global->SetTexture(10, mShadows.GetPointShadowMap());
 
 		auto opaqueSet = mSceneSets.OpaqueObjectSet.As<ResourceSet>();
 		opaqueSet->SetBuffer(0, mInstanceDataBuffer[0]);

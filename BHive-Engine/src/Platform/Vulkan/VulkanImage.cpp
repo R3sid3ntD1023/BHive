@@ -179,6 +179,11 @@ namespace BHive
 		return VulkanBackend::GetGPUResourceManager().GetImage(mImage);
 	}
 
+	vk::ImageView VulkanImage::GetFullView() const
+	{
+		return VulkanBackend::GetGPUResourceManager().GetImageView(mViews.FullView);
+	}
+
 	vk::ImageView VulkanImage::GetView(uint32_t layer, uint32_t mip) const
 	{
 		auto id = mViews.Views.at({layer, mip});
@@ -200,7 +205,7 @@ namespace BHive
 		if (mImage)
 			rm.DestroyImage(mImage);
 
-		rm.DestroyImageView(mViews.Default);
+		rm.DestroyImageView(mViews.FullView);
 
 		for (auto &[key, view] : mViews)
 		{

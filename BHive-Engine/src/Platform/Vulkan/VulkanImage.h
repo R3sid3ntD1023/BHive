@@ -44,6 +44,8 @@ namespace BHive
 
 		vk::Image GetImage() const;
 
+		vk::ImageView GetFullView() const;
+
 		vk::ImageView GetView(uint32_t layer, uint32_t mip) const;
 
 		vk::Sampler GetSampler() const;

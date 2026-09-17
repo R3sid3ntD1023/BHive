@@ -67,47 +67,55 @@ namespace BHive
 
 	void ImageViewBuilder::BuildDefault(ImageViews &views, const ImageViewBuildInfo &base)
 	{
-		views.Views[{0, 0}] = CreateFullView(views, base);
+		views.FullView = CreateFullView(base);
 	}
 
 	void ImageViewBuilder::Build2DMips(ImageViews &views, const ImageViewBuildInfo &base)
 	{
-		views.Views[{0, 0}] = CreateFullView(views, base);
+		views.FullView = CreateFullView(base);
 
 		for (uint32_t mip = 0; mip < base.Levels; ++mip)
 		{
-			views.Views[{0, mip}] = CreateMipView(views, base, mip);
+			views.Views[{0, mip}] = CreateMipView(base, mip);
 		}
 	}
 
 	void ImageViewBuilder::Build2DArrayMips(ImageViews &views, const ImageViewBuildInfo &base)
 	{
-		views.Views[{0, 0}] = CreateFullView(views, base);
+		views.FullView = CreateFullView(base);
 
 		for (uint32_t layer = 0; layer < base.Layers; ++layer)
 		{
 			for (uint32_t mip = 0; mip < base.Levels; ++mip)
 			{
-				views.Views[{layer, mip}] = CreateMipView(views, base, mip);
+				vk::ImageViewCreateInfo d = base.ViewCI;
+				d.viewType = vk::ImageViewType::e2D;
+				d.subresourceRange.baseMipLevel = mip;
+				d.subresourceRange.levelCount = 1;
+				d.subresourceRange.baseArrayLayer = layer;
+				d.subresourceRange.layerCount = 1;
+
+				views.Views[{layer, mip}] = VulkanBackend::GetGPUResourceManager().CreateImageView(d);
 			}
 		}
 	}
 
 	void ImageViewBuilder::BuildCube(ImageViews &views, const ImageViewBuildInfo &base)
 	{
-		views.Views[{0, 0}] = CreateCubeFullView(views, base);
+		views.FullView = CreateCubeFullView(base);
 
 		for (uint32_t mip = 0; mip < base.Levels; mip++)
 		{
-			views.Views[{0, mip}] = CreateCubeMipView(views, base, mip);
+
+			views.Views[{0, mip}] = CreateCubeMipView(base, mip);
 		}
 	}
 
 	void ImageViewBuilder::BuildCubeArray(ImageViews &views, const ImageViewBuildInfo &base)
 	{
-		views.Views[{0, 0}] = CreateCubeFullView(views, base);
-		const uint32_t cubeCount = base.Layers / 6;
-		for (uint32_t cube = 0; cube < cubeCount; cube++)
+		views.FullView = CreateCubeFullView(base);
+
+		for (uint32_t cube = 0; cube < (base.Layers / 6); cube++)
 		{
 			for (uint32_t face = 0; face < 6; ++face)
 			{
@@ -117,7 +125,6 @@ namespace BHive
 				{
 					vk::ImageViewCreateInfo d = base.ViewCI;
 					d.viewType = vk::ImageViewType::e2D;
-
 					d.subresourceRange.baseArrayLayer = cube * 6 + face;
 					d.subresourceRange.layerCount = 1;
 					d.subresourceRange.baseMipLevel = mip;
@@ -133,7 +140,7 @@ namespace BHive
 	{
 		const uint32_t faces = 6;
 
-		views.Views[{0, 0}] = CreateCubeFullView(views, base);
+		views.FullView = CreateFullView(base);
 
 		for (uint32_t layer = 0; layer < base.Layers; ++layer)
 		{
@@ -141,7 +148,7 @@ namespace BHive
 			{
 				for (uint32_t mip = 0; mip < base.Levels; ++mip)
 				{
-					views.Views[{layer, mip}] = CreateFaceMipView(views, base, f, mip);
+					views.Views[{layer, mip}] = CreateFaceMipView(base, f, mip);
 				}
 			}
 		}
@@ -149,15 +156,15 @@ namespace BHive
 
 	void ImageViewBuilder::Build3DMips(ImageViews &views, const ImageViewBuildInfo &base)
 	{
-		BuildDefault(views, base);
+		views.FullView = CreateFullView(base);
 
 		for (uint32_t mip = 0; mip < base.Levels; ++mip)
 		{
-			views.Views[{0, mip}] = CreateMipView(views, base, mip);
+			views.Views[{0, mip}] = CreateMipView(base, mip);
 		}
 	}
 
-	ResourceID ImageViewBuilder::CreateFullView(ImageViews &views, const ImageViewBuildInfo &base)
+	ResourceID ImageViewBuilder::CreateFullView(const ImageViewBuildInfo &base)
 	{
 		vk::ImageViewCreateInfo d = base.ViewCI;
 		d.subresourceRange.baseMipLevel = 0;
@@ -168,18 +175,7 @@ namespace BHive
 		return VulkanBackend::GetGPUResourceManager().CreateImageView(d);
 	}
 
-	ResourceID ImageViewBuilder::CreateMipView(ImageViews &views, const ImageViewBuildInfo &base, uint32_t mip)
-	{
-		vk::ImageViewCreateInfo d = base.ViewCI;
-		d.subresourceRange.baseMipLevel = mip;
-		d.subresourceRange.levelCount = 1;
-		d.subresourceRange.baseArrayLayer = 0;
-		d.subresourceRange.layerCount = base.Layers;
-
-		return VulkanBackend::GetGPUResourceManager().CreateImageView(d);
-	}
-
-	ResourceID ImageViewBuilder::CreateCubeFullView(ImageViews &views, const ImageViewBuildInfo &base)
+	ResourceID ImageViewBuilder::CreateCubeFullView(const ImageViewBuildInfo &base)
 	{
 		vk::ImageViewCreateInfo d = base.ViewCI;
 		d.viewType = vk::ImageViewType::eCube;
@@ -193,7 +189,18 @@ namespace BHive
 		return VulkanBackend::GetGPUResourceManager().CreateImageView(d);
 	}
 
-	ResourceID ImageViewBuilder::CreateCubeMipView(ImageViews &views, const ImageViewBuildInfo &base, uint32_t mip)
+	ResourceID ImageViewBuilder::CreateMipView(const ImageViewBuildInfo &base, uint32_t mip)
+	{
+		vk::ImageViewCreateInfo d = base.ViewCI;
+		d.subresourceRange.baseMipLevel = mip;
+		d.subresourceRange.levelCount = 1;
+		d.subresourceRange.baseArrayLayer = 0;
+		d.subresourceRange.layerCount = 1;
+
+		return VulkanBackend::GetGPUResourceManager().CreateImageView(d);
+	}
+
+	ResourceID ImageViewBuilder::CreateCubeMipView(const ImageViewBuildInfo &base, uint32_t mip)
 	{
 		vk::ImageViewCreateInfo d = base.ViewCI;
 		d.viewType = vk::ImageViewType::eCube;
@@ -205,7 +212,7 @@ namespace BHive
 		return VulkanBackend::GetGPUResourceManager().CreateImageView(d);
 	}
 
-	ResourceID ImageViewBuilder::CreateFaceMipView(ImageViews &views, const ImageViewBuildInfo &base, uint32_t face, uint32_t mip)
+	ResourceID ImageViewBuilder::CreateFaceMipView(const ImageViewBuildInfo &base, uint32_t face, uint32_t mip)
 	{
 		vk::ImageViewCreateInfo d = base.ViewCI;
 		d.viewType = vk::ImageViewType::e2D;

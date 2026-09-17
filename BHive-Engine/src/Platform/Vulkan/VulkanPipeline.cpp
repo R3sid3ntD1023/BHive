@@ -78,6 +78,8 @@ namespace BHive
 			// depth
 			cmd.setDepthTestEnableEXT(state->Depth.DepthTest);
 			cmd.setDepthWriteEnableEXT(state->Depth.DepthWrite);
+			cmd.setDepthBiasEnable(state->Depth.DepthBias);
+			cmd.setDepthBias(state->Depth.ConstantFactor, 0.0f, state->Depth.SlopeFactor);
 			cmd.setDepthCompareOpEXT(ToVkCompare(state->Depth.DepthCompare));
 			cmd.setStencilTestEnable(VK_TRUE);
 			cmd.setStencilOp(vk::StencilFaceFlagBits::eFrontAndBack, vk::StencilOp::eKeep, vk::StencilOp::eKeep, vk::StencilOp::eKeep, vk::CompareOp::eAlways);
@@ -85,7 +87,6 @@ namespace BHive
 			cmd.setStencilWriteMask(vk::StencilFaceFlagBits::eFrontAndBack, 0xFFFFFFFF);
 			cmd.setStencilReference(vk::StencilFaceFlagBits::eFrontAndBack, 0);
 
-			cmd.setDepthBiasEnable(VK_FALSE);
 			cmd.setRasterizerDiscardEnable(VK_FALSE);
 			cmd.setAlphaToCoverageEnableEXT(numAttachments != 0 ? VK_TRUE : VK_FALSE);
 

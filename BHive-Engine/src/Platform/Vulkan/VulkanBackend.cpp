@@ -11,14 +11,16 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 	#define VALIDATION_LAYERS_ENABLED
 #endif
 
-#define VULKAN_ERRORS_WITH_ASSERT 1
-
 namespace BHive
 {
 	static const std::vector<const char *> s_validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
-	static VKAPI_ATTR vk::Bool32 VKAPI_CALL
-	debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity, vk::DebugUtilsMessageTypeFlagsEXT messageType, const vk::DebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
+	static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(
+		vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+		vk::DebugUtilsMessageTypeFlagsEXT messageType,
+		const vk::DebugUtilsMessengerCallbackDataEXT *pCallbackData,
+		void *pUserData
+	)
 	{
 		auto message_type_string = vk::to_string(messageType);
 		auto registry = reinterpret_cast<VulkanBackend::DebugNameRegistry *>(pUserData);
@@ -53,12 +55,10 @@ namespace BHive
 			break;
 		}
 
-#if VULKAN_ERRORS_WITH_ASSERT
-		if (messageSeverity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eError)
+		if (EngineConfig::DebugAssertErrors && messageSeverity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
 		{
 			ASSERT(false);
 		}
-#endif
 
 		return false;
 	}
@@ -93,9 +93,11 @@ namespace BHive
 				.setDescriptorBindingStorageBufferUpdateAfterBind(true)
 				.setDescriptorBindingUniformBufferUpdateAfterBind(true)
 				.setDescriptorBindingStorageImageUpdateAfterBind(true);
-			featureChain.get<vk::PhysicalDeviceVulkan13Features>().setDynamicRendering(true).setSynchronization2(true).setDescriptorBindingInlineUniformBlockUpdateAfterBind(true).setMaintenance4(
-				true
-			);
+			featureChain.get<vk::PhysicalDeviceVulkan13Features>()
+				.setDynamicRendering(true)
+				.setSynchronization2(true)
+				.setDescriptorBindingInlineUniformBlockUpdateAfterBind(true)
+				.setMaintenance4(true);
 			featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().setExtendedDynamicState(true);
 			featureChain.get<vk::PhysicalDeviceVertexInputDynamicStateFeaturesEXT>().setVertexInputDynamicState(true);
 			featureChain.get<vk::PhysicalDeviceVertexAttributeDivisorFeaturesEXT>().setVertexAttributeInstanceRateZeroDivisor(true);
@@ -132,7 +134,8 @@ namespace BHive
 				auto props = mPhysicalDevice.getProperties();
 				log << "GPU: " << props.deviceName << "\n";
 				log << "Driver Version: " << props.driverVersion << "\n";
-				log << "Vulkan API Version: " << VK_VERSION_MAJOR(props.apiVersion) << "." << VK_VERSION_MINOR(props.apiVersion) << "." << VK_VERSION_PATCH(props.apiVersion) << "\n";
+				log << "Vulkan API Version: " << VK_VERSION_MAJOR(props.apiVersion) << "." << VK_VERSION_MINOR(props.apiVersion) << "." << VK_VERSION_PATCH(props.apiVersion)
+					<< "\n";
 			}
 			else
 			{
@@ -250,9 +253,10 @@ namespace BHive
 
 		if (EngineConfig::DebugEnabled)
 		{
-			auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
-							 | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
-			auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+			auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
+							 | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
+			auto messageTypes
+				= vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
 			vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, debugCallback, &mDebugNames);
 			mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mInstance, debugCreateInfo);
@@ -274,7 +278,9 @@ namespace BHive
 				const char *name = props.deviceName;
 				auto queueFamilies = device.getQueueFamilyProperties();
 				bool isSuitable = props.apiVersion >= vk::ApiVersion14;
-				const auto qfpIter = std::ranges::find_if(queueFamilies, [](const vk::QueueFamilyProperties &qfp) { return (qfp.queueFlags & vk::QueueFlagBits::eGraphics) != (vk::QueueFlags)0; });
+				const auto qfpIter = std::ranges::find_if(
+					queueFamilies, [](const vk::QueueFamilyProperties &qfp) { return (qfp.queueFlags & vk::QueueFlagBits::eGraphics) != (vk::QueueFlags)0; }
+				);
 				isSuitable = isSuitable && (qfpIter != queueFamilies.end());
 
 				auto extensions = device.enumerateDeviceExtensionProperties();

@@ -1,14 +1,12 @@
 #pragma once
 
-#include "core/Core.h"
-#include "core/math/Transform.h"
 #include "RenderData.h"
+#include "core/Core.h"
+#include "gfx/rendergraph/Pass.h"
 
 namespace BHive
 {
-	class Framebuffer;
-	class UniformBuffer;
-	class Shader;
+	class SceneRenderer;
 
 	class ShadowRenderer
 	{
@@ -19,17 +17,20 @@ namespace BHive
 		void Init(uint32_t cascaded_levels = 5);
 
 		void BeginRecording();
-		void EndRecording();
-
-		void Render(const SubMeshSubmissions &data);
+		void EndRecording(FPass &pass, SceneRenderer *sceneRenderer);
 
 		void SubmitDirectionalLight(const FShadowCascadedCreateInfo &info);
 		void SubmitSpotLight(const FShadowFrustumCreateInfo &info);
 		void SubmitPointLight(const FShadowCubeCreateInfo &info);
 
-		void BindShadowMaps(uint32_t *bindings);
+		BufferPtr GetBuffer();
+
+		TexturePtr GetDirShadowMap();
+		TexturePtr GetPointShadowMap();
+		TexturePtr GetSpotShadowMap();
 
 	private:
+		PipelinePtr mPipeline;
 		Ref<struct FShadowRenderData> mShadowRenderData;
 	};
 } // namespace BHive

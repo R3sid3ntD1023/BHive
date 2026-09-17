@@ -25,6 +25,9 @@ namespace BHive
 
 		state.Depth.DepthTest = true;
 		state.Depth.DepthWrite = true;
+		state.Depth.DepthBias = false;
+		state.Depth.ConstantFactor = 1.25f;
+		state.Depth.SlopeFactor = 1.75f;
 		state.Depth.DepthCompare = ECompareOp::LessOrEqual;
 
 		return state;

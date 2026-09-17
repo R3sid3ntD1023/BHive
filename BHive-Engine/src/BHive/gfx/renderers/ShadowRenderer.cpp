@@ -1,5 +1,7 @@
 #include "ShadowRenderer.h"
+#include "RenderBatch.h"
 #include "Renderer.h"
+#include "SceneRenderer.h"
 #include "core/math/Frustum.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/factories/GFXFactories.h"
@@ -19,7 +21,12 @@ namespace BHive
 	};
 
 	static LightDirections point_directions[] = {
-		{{1, 0, 0}, {0, -1, 0}}, {{-1, 0, 0}, {0, -1, 0}}, {{0, 1, 0}, {0, 0, 1}}, {{0, -1, 0}, {0, 0, -1}}, {{0, 0, 1}, {0, -1, 0}}, {{0, 0, -1}, {0, -1, 0}},
+		{{1, 0, 0}, {0, -1, 0}},
+		{{-1, 0, 0}, {0, -1, 0}},
+		{{0, 1, 0}, {0, 0, 1}},
+		{{0, -1, 0}, {0, 0, -1}},
+		{{0, 0, 1}, {0, -1, 0}},
+		{{0, 0, -1}, {0, -1, 0}},
 	};
 
 	struct FShadowCubeSSBO
@@ -39,7 +46,7 @@ namespace BHive
 	// 0 = dir, 1 = point, 2 = spot
 	struct FShadowPasses
 	{
-		std::array<ShaderPtr, 3> Shaders;
+		std::array<MaterialPtr, 3> ShadowMats;
 		std::array<FramebufferPtr, 3> FBOs;
 	};
 
@@ -56,24 +63,42 @@ namespace BHive
 
 		FramebufferSpecification dir_shadow_fbo_spec{.Size = {DIRECTIONAL_SHADOWMAP_SIZE, DIRECTIONAL_SHADOWMAP_SIZE}, .Depth = sMaxLights};
 		FramebufferSpecification spot_shadow_fbo_spec{.Size = {SPOT_SHADOWMAP_SIZE, SPOT_SHADOWMAP_SIZE}, .Depth = sMaxLights};
-		FramebufferSpecification point_shadow_fbo_spec{.Size = {POINT_SHADOWMAP_SIZE, POINT_SHADOWMAP_SIZE}, .Depth = sMaxLights * 6};
+		FramebufferSpecification point_shadow_fbo_spec{.Size = {POINT_SHADOWMAP_SIZE, POINT_SHADOWMAP_SIZE}, .Depth = sMaxLights};
 
 		FTextureCreateInfo shadow_texture_specs{
-			.Format = EFormat::DEPTH_COMPONENT_32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE, .CompareMode = ECompareMode::COMPARE_REF_TO_TEXTURE, .CompareOp = ECompareOp::LessOrEqual};
+			.Format = EFormat::DEPTH_COMPONENT_32F, .WrapMode = EWrapMode::CLAMP_TO_EDGE, .CompareMode = ECompareMode::COMPARE_REF_TO_TEXTURE, .CompareOp = ECompareOp::LessOrEqual
+		};
 
-		/*dir_shadow_fbo_spec.Attachments.SetDepthAttachment(shadow_texture_specs, ETextureType::TEXTURE_2D_ARRAY);
-		point_shadow_fbo_spec.Attachments.SetDepthAttachment(shadow_texture_specs, ETextureType::TEXTURE_CUBE_MAP_ARRAY);
-		spot_shadow_fbo_spec.Attachments.SetDepthAttachment(shadow_texture_specs, ETextureType::TEXTURE_2D_ARRAY);
+		FFramebufferTexture shadowTex;
+		shadowTex.CreateInfo = shadow_texture_specs;
+		shadowTex.Type = ETextureType::TEXTURE_2D_ARRAY;
+
+		dir_shadow_fbo_spec.Attachments.SetDepthAttachment(shadowTex);
+		spot_shadow_fbo_spec.Attachments.SetDepthAttachment(shadowTex);
+
+		shadowTex.Type = ETextureType::TEXTURE_CUBE_MAP_ARRAY;
+		shadowTex.CreateInfo.ArrayLayers = sMaxLights;
+		point_shadow_fbo_spec.Attachments.SetDepthAttachment(shadowTex);
 
 		auto &shadow_passes = mShadowRenderData->ShadowPasses;
-		shadow_passes.FBOs[0] = Framebuffer::Create(dir_shadow_fbo_spec);
-		shadow_passes.FBOs[1] = Framebuffer::Create(point_shadow_fbo_spec);
-		shadow_passes.FBOs[2] = Framebuffer::Create(spot_shadow_fbo_spec);
-		shadow_passes.Shaders[0] = ShaderManager::Get("ShadowDirectionalLight.glsl");
-		shadow_passes.Shaders[1] = ShaderManager::Get("ShadowPointLight.glsl");
-		shadow_passes.Shaders[2] = ShaderManager::Get("ShadowSpotLight.glsl");
+		// shadow_passes.FBOs[0] = FramebufferFactory::Create(dir_shadow_fbo_spec);
+		shadow_passes.FBOs[1] = FramebufferFactory::Create(point_shadow_fbo_spec);
+		// shadow_passes.FBOs[2] = FramebufferFactory::Create(spot_shadow_fbo_spec);
+		// shadow_passes.ShadowMats[0] = MaterialFactory::Create("ShadowDirectionalLight.glsl");
+		shadow_passes.ShadowMats[1] = MaterialFactory::Create("ShadowPointLight.glsl");
+		// shadow_passes.ShadowMats[2] = MaterialFactory::Create("ShadowSpotLight.glsl");
 
-		mShadowRenderData->ShadowBuffer = GPUBuffer::Create(sizeof(FShadowData), EBufferType::StorageBuffer);*/
+		mShadowRenderData->ShadowBuffer = BufferFactory::Create(sizeof(FShadowData), EBufferType::StorageBuffer);
+
+		auto state = Pipeline::GetDefaultGraphicsPipelineState();
+		state.Blend.Enabled = false;
+		state.Depth.DepthWrite = true;
+		state.Depth.DepthTest = true;
+		state.Depth.DepthBias = true;
+		state.Depth.DepthCompare = ECompareOp::LessOrEqual;
+		state.Raster.CullEnabled = true;
+		state.Raster.CullMode = ECullMode::Front;
+		mPipeline = PipelineFactory::Create(state);
 	}
 
 	void ShadowRenderer::BeginRecording()
@@ -81,31 +106,29 @@ namespace BHive
 		mShadowRenderData->ShadowData.NumShadowMaps = {0, 0, 0, 0};
 	}
 
-	void ShadowRenderer::EndRecording()
+	void ShadowRenderer::EndRecording(FPass &pass, SceneRenderer *sceneRenderer)
 	{
 
-		// mShadowRenderData->ShadowBuffer->BindBufferBase(SHADOW_SSBO_BINDING);
-		mShadowRenderData->ShadowBuffer.As<GeneralBuffer>()->SetData(&mShadowRenderData->ShadowData, sizeof(FShadowData));
-	}
+		pass.BeginPhase("Update Shadow Data", EPhaseType::Transfer);
+		pass.Emplace<CmdSetBufferData>()(mShadowRenderData->ShadowBuffer, &mShadowRenderData->ShadowData, sizeof(FShadowData));
+		pass.EndPhase();
 
-	void ShadowRenderer::Render(const SubMeshSubmissions &datas)
-	{
 		const auto &num_shadow_maps = glm::compAdd(mShadowRenderData->ShadowData.NumShadowMaps);
 		if (num_shadow_maps == 0)
 			return;
 
-		// RenderCommand::CullFront();
-
-		auto draw_meshes = [=](MaterialPtr material)
+		auto draw_meshes = [](FPass &_pass, BufferPtr indirect, const RenderBatch &batch, MaterialPtr material)
 		{
-			/*shader->Bind();
-
-			for (const auto &obj : datas)
+			for (auto &[vao, matMap] : batch.MaterialBatches)
 			{
-				Renderer::Draw(obj);
-			}
+				for (auto &[mat, batch] : matMap)
+				{
+					_pass.Emplace<CmdBindMaterial>()(material.As<Material>());
+					uint32_t offset = batch.FirstCommand * sizeof(MultiDrawIndirectCommand);
 
-			shader->UnBind();*/
+					_pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect, vao, batch.CommandCount, sizeof(MultiDrawIndirectCommand), offset);
+				}
+			}
 		};
 
 		if (mShadowRenderData->ShadowData.NumShadowMaps.x > 0)
@@ -121,13 +144,31 @@ namespace BHive
 
 		if (mShadowRenderData->ShadowData.NumShadowMaps.y > 0)
 		{
-			// mShadowRenderData->ShadowPasses.FBOs[1]->Bind();
+			auto fbo = mShadowRenderData->ShadowPasses.FBOs[1];
+			auto buffer = mShadowRenderData->ShadowBuffer;
+			auto material = mShadowRenderData->ShadowPasses.ShadowMats[1];
+			auto indirect = sceneRenderer->mIndirectDrawBuffer[0];
+			auto visibility = sceneRenderer->mVisibleBuffer[0];
+			auto instance = sceneRenderer->mInstanceDataBuffer[0];
+			auto &batch = *sceneRenderer->mRenderBatches[0];
 
-			// RenderCommand::Clear(Buffer_Depth);
+			for (uint32_t face = 0; face < 6; ++face)
+			{
+				material.As<Material>()->SetParam("LightIndex", MaterialParam{0});
+				material.As<Material>()->SetParam("LightFace", MaterialParam{face});
+				pass.BeginPhase("Render Point Shadow Maps", EPhaseType::Graphics);
+				pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = CubeFaceLayer(0, face)});
+				pass.UseBuffer(buffer, EBufferUsage::StorageRead);
+				pass.UseBuffer(indirect, EBufferUsage::IndirectRead);
+				pass.UseBuffer(visibility, EBufferUsage::StorageRead);
+				pass.UseBuffer(instance, EBufferUsage::StorageRead);
+				pass.BindResourceSet(sceneRenderer->mSceneSets.GlobalSet);
+				pass.BindResourceSet(sceneRenderer->mSceneSets.OpaqueObjectSet);
+				pass.Emplace<CmdBindPipeline>()(mPipeline);
+				draw_meshes(pass, indirect, batch, material);
 
-			// draw_meshes(mShadowRenderData->ShadowPasses.Shaders[1]);
-
-			// mShadowRenderData->ShadowPasses.Shaders[1]->UnBind();
+				pass.EndPhase();
+			}
 		}
 
 		if (mShadowRenderData->ShadowData.NumShadowMaps.z > 0)
@@ -140,8 +181,6 @@ namespace BHive
 
 			// mShadowRenderData->ShadowPasses.Shaders[2]->UnBind();
 		}
-
-		// RenderCommand::CullBack();
 	}
 
 	void ShadowRenderer::SubmitDirectionalLight(const FShadowCascadedCreateInfo &info)
@@ -222,14 +261,24 @@ namespace BHive
 		shadow_data.NumShadowMaps.y++;
 	}
 
-	void ShadowRenderer::BindShadowMaps(uint32_t *bindings)
+	BufferPtr ShadowRenderer::GetBuffer()
 	{
-		if (bindings)
-		{
-			// auto &fbos = mShadowRenderData->ShadowPasses.FBOs;
-			/*fbos[0]->GetDepthAttachment()->Bind(bindings[0]);
-			fbos[1]->GetDepthAttachment()->Bind(bindings[1]);
-			fbos[2]->GetDepthAttachment()->Bind(bindings[2]);*/
-		}
+		return mShadowRenderData->ShadowBuffer;
 	}
+
+	TexturePtr ShadowRenderer::GetDirShadowMap()
+	{
+		return TexturePtr();
+	}
+
+	TexturePtr ShadowRenderer::GetPointShadowMap()
+	{
+		return mShadowRenderData->ShadowPasses.FBOs[1].As<Framebuffer>()->GetDepthAttachment();
+	}
+
+	TexturePtr ShadowRenderer::GetSpotShadowMap()
+	{
+		return TexturePtr();
+	}
+
 } // namespace BHive

@@ -20,6 +20,7 @@ namespace BHive
 		static inline bool DebugEnabled = false;
 		static inline bool DebugLabels = false;
 		static inline bool DebugPhaseLabels = false;
+		static inline bool DebugAssertErrors = false;
 
 		// Features
 		static inline bool EnablePhysics = 0u;

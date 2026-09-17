@@ -93,6 +93,7 @@ namespace BHive
 			DebugEnabled = ini::utils::Get(ini["Renderer"], "DebugEnabled", DebugEnabled);
 			DebugLabels = ini::utils::Get(ini["Renderer"], "DebugLabels", DebugLabels) && DebugEnabled;
 			DebugPhaseLabels = ini::utils::Get(ini["Renderer"], "DebugPhaseLabels", DebugPhaseLabels) && DebugLabels && DebugEnabled;
+			DebugAssertErrors = ini::utils::Get(ini["Renderer"], "AssertErrors", DebugAssertErrors) && DebugEnabled;
 		}
 
 		if (ini.has("Physics"))

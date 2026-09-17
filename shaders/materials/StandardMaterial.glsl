@@ -8,6 +8,8 @@
 
 #include <Core.glsl>
 #include <Lighting.glsl>
+#include <ShadowBuffer.glsl>
+#include <ShadowCore.glsl>
 
 #define USE_DIFFUSE_MAP
 #define USE_ROUGHNESS_MAP
@@ -16,6 +18,7 @@
 #define USE_EMISSION_MAP
 #define USE_OPACITY_MAP
 #define USE_ENVIRONMENT_MAPS
+#define USE_SHADOW_MAPS
 
 layout(location = 0) in struct VS_OUT
 {
@@ -59,6 +62,8 @@ layout(set = 0, binding = 3) uniform samplerCube PreFilterMap;
 
 // @semantic EnvironmentIrradiance
 layout(set = 0, binding = 4) uniform samplerCube IrradianceMap;
+
+layout(set =0, binding = 10) uniform samplerCubeArrayShadow ShadowPointMaps;
 
 layout(set = 1, binding = 0) uniform sampler2D DiffuseMap;
 layout(set = 1, binding = 1) uniform sampler2D NormalMap;
@@ -108,7 +113,7 @@ void Direct_Standard(const in vec3 geoPosition, const in vec3 geoNormal, const i
 {
 	vec3 bdrf = CalculateBDRF(material.IrradianceF0, geoNormal, geoViewDir, light.Direction, material.Albedo, material.Metalness, material.Roughness);
 
-	float NdotL = max(dot(geoNormal, light.Direction), 0.0);
+	float NdotL = max(dot(geoNormal, normalize(light.Direction)), 0.0);
 	reflectedLight.DirectDiffuse += (bdrf * light.Color * NdotL);
 }
 
@@ -126,6 +131,8 @@ void InDirectSpecular_Standard(const in vec3 irradiance, const in vec3 geoPositi
 	reflectedLight.IndirectSpecular =  irradiance;
 }
 
+
+#define POINT_SHADOW_MAPPING
 #define Direct Direct_Standard
 #define InDirect InDirect_Standard
 #define InDirectSpecular InDirectSpecular_Standard

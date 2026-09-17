@@ -37,14 +37,14 @@ namespace BHive
 		static void Build3DMips(ImageViews &views, const ImageViewBuildInfo &base);
 
 	private:
-		static ResourceID CreateFullView(ImageViews &views, const ImageViewBuildInfo &base);
+		static ResourceID CreateFullView(const ImageViewBuildInfo &base);
 
-		static ResourceID CreateMipView(ImageViews &views, const ImageViewBuildInfo &base, uint32_t mip);
+		static ResourceID CreateMipView(const ImageViewBuildInfo &base, uint32_t mip);
 
-		static ResourceID CreateCubeFullView(ImageViews &views, const ImageViewBuildInfo &base);
+		static ResourceID CreateCubeFullView(const ImageViewBuildInfo &base);
 
-		static ResourceID CreateCubeMipView(ImageViews &views, const ImageViewBuildInfo &base, uint32_t mip);
+		static ResourceID CreateCubeMipView(const ImageViewBuildInfo &base, uint32_t mip);
 
-		static ResourceID CreateFaceMipView(ImageViews &views, const ImageViewBuildInfo &base, uint32_t face, uint32_t mip);
+		static ResourceID CreateFaceMipView(const ImageViewBuildInfo &base, uint32_t face, uint32_t mip);
 	};
 } // namespace BHive

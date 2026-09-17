@@ -22,7 +22,7 @@ namespace BHive
 
 	struct ImageViews
 	{
-		ResourceID Default;
+		ResourceID FullView;
 
 		std::map<ViewKey, ResourceID> Views;
 

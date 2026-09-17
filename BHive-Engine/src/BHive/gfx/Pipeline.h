@@ -20,6 +20,9 @@ namespace BHive
 		{
 			bool DepthTest;
 			bool DepthWrite;
+			bool DepthBias;
+			float ConstantFactor;
+			float SlopeFactor;
 			ECompareOp DepthCompare;
 		};
 
