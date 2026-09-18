@@ -54,16 +54,11 @@ struct StandardMaterial
 	vec3 IrradianceF0;
 };
 
-// @semantic EnvironmentBRDFLUT
 layout(set = 0, binding = 2) uniform sampler2D BRDFLutMap;
-
-// @semantic EnvironmentPreFilter
 layout(set = 0, binding = 3) uniform samplerCube PreFilterMap;
-
-// @semantic EnvironmentIrradiance
 layout(set = 0, binding = 4) uniform samplerCube IrradianceMap;
-
-layout(set =0, binding = 10) uniform samplerCubeArrayShadow ShadowPointMaps;
+layout(set = 0, binding = 6) uniform samplerCubeArrayShadow ShadowPointMaps;
+layout(set = 0, binding = 7) uniform sampler2DArrayShadow ShadowSpotMaps;
 
 layout(set = 1, binding = 0) uniform sampler2D DiffuseMap;
 layout(set = 1, binding = 1) uniform sampler2D NormalMap;
@@ -133,6 +128,7 @@ void InDirectSpecular_Standard(const in vec3 irradiance, const in vec3 geoPositi
 
 
 #define POINT_SHADOW_MAPPING
+#define SPOT_SHADOW_MAPPING
 #define Direct Direct_Standard
 #define InDirect InDirect_Standard
 #define InDirectSpecular InDirectSpecular_Standard

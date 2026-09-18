@@ -30,7 +30,7 @@ void ApplyLighting(vec3 geoPosition, vec3 geoNormal, vec3 geoViewDir, Material m
 		#if defined(POINT_SHADOW_MAPPING)
 		{
 			PointLightShadowInfo shadow_info = uPointShadowInfo[i];
-			float shadow = GetPointShadow(i, geoPosition, normalize(directLight.Direction), directLight.Direction,  shadow_info.ShadowNearFar, ShadowPointMaps);
+			float shadow = GetPointShadow(i, geoPosition, normalize(directLight.Direction), directLight.Direction,  shadow_info.ShadowNearFar.xy, ShadowPointMaps);
 			float dist = length(directLight.Direction);
 			float s = dist / light.Position.w;
 			float shadowFade = 1.0 - smoothstep(0.8, 1.0, s);
@@ -50,12 +50,13 @@ void ApplyLighting(vec3 geoPosition, vec3 geoNormal, vec3 geoViewDir, Material m
 
 		GetSpotLightInfo(light, geoPosition, directLight);
 
-		#if defined (USE_SHADOW_MAPS) && defined(GetSpotLightShadow)
-			directLight.Color *= GetSpotLightShadow(i, geoPosition);
+		#if defined(SPOT_SHADOW_MAPPING)
+			float shadow = GetSpotLightShadow(i, geoPosition, ShadowSpotMaps);
+			directLight.Color *= shadow;
 		#endif
 
-
 		Direct(geoPosition, geoNormal, geoViewDir, directLight, mat, reflected);
+		
 	}
 #endif
 

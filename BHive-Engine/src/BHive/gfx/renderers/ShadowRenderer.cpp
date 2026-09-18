@@ -7,10 +7,9 @@
 #include "gfx/factories/GFXFactories.h"
 #include "gfx/shader/Shader.h"
 
-#define SHADOW_SSBO_BINDING 5
 #define DIRECTIONAL_SHADOWMAP_SIZE 1024
-#define POINT_SHADOWMAP_SIZE 1024
-#define SPOT_SHADOWMAP_SIZE 512
+#define POINT_SHADOWMAP_SIZE 256
+#define SPOT_SHADOWMAP_SIZE 256
 
 namespace BHive
 {
@@ -29,18 +28,18 @@ namespace BHive
 		{{0, 0, -1}, {0, -1, 0}},
 	};
 
-	struct FShadowCubeSSBO
+	struct alignas(16) FShadowCubeSSBO
 	{
 		glm::mat4 ShadowViewProjections[6];
-		alignas(16) glm::vec2 ShadowNearFar;
+		glm::vec4 ShadowNearFar;
 	};
 
-	struct FShadowData
+	struct alignas(16) FShadowData
 	{
 		glm::uvec4 NumShadowMaps = {0, 0, 0, 0}; // {Dir, Point, Spot}
 		std::array<glm::mat4, ShadowRenderer::sMaxLights> DirProjections = {};
-		std::array<FShadowCubeSSBO, ShadowRenderer::sMaxLights> PointShadowInfos = {};
 		std::array<glm::mat4, ShadowRenderer::sMaxLights> SpotProjections = {};
+		std::array<FShadowCubeSSBO, ShadowRenderer::sMaxLights> PointShadowInfos = {};
 	};
 
 	// 0 = dir, 1 = point, 2 = spot
@@ -72,21 +71,22 @@ namespace BHive
 		FFramebufferTexture shadowTex;
 		shadowTex.CreateInfo = shadow_texture_specs;
 		shadowTex.Type = ETextureType::TEXTURE_2D_ARRAY;
+		shadowTex.CreateInfo.ArrayLayers = sMaxLights;
 
 		dir_shadow_fbo_spec.Attachments.SetDepthAttachment(shadowTex);
 		spot_shadow_fbo_spec.Attachments.SetDepthAttachment(shadowTex);
 
 		shadowTex.Type = ETextureType::TEXTURE_CUBE_MAP_ARRAY;
-		shadowTex.CreateInfo.ArrayLayers = sMaxLights;
 		point_shadow_fbo_spec.Attachments.SetDepthAttachment(shadowTex);
 
 		auto &shadow_passes = mShadowRenderData->ShadowPasses;
 		// shadow_passes.FBOs[0] = FramebufferFactory::Create(dir_shadow_fbo_spec);
 		shadow_passes.FBOs[1] = FramebufferFactory::Create(point_shadow_fbo_spec);
-		// shadow_passes.FBOs[2] = FramebufferFactory::Create(spot_shadow_fbo_spec);
+		shadow_passes.FBOs[2] = FramebufferFactory::Create(spot_shadow_fbo_spec);
+
 		// shadow_passes.ShadowMats[0] = MaterialFactory::Create("ShadowDirectionalLight.glsl");
 		shadow_passes.ShadowMats[1] = MaterialFactory::Create("ShadowPointLight.glsl");
-		// shadow_passes.ShadowMats[2] = MaterialFactory::Create("ShadowSpotLight.glsl");
+		shadow_passes.ShadowMats[2] = MaterialFactory::Create("ShadowSpotLight.glsl");
 
 		mShadowRenderData->ShadowBuffer = BufferFactory::Create(sizeof(FShadowData), EBufferType::StorageBuffer);
 
@@ -131,8 +131,16 @@ namespace BHive
 			}
 		};
 
+		auto indirect = sceneRenderer->mIndirectDrawBuffer[0];
+		auto visibility = sceneRenderer->mVisibleBuffer[0];
+		auto instance = sceneRenderer->mInstanceDataBuffer[0];
+		auto &batch = *sceneRenderer->mRenderBatches[0];
+		auto buffer = mShadowRenderData->ShadowBuffer;
+
 		if (mShadowRenderData->ShadowData.NumShadowMaps.x > 0)
 		{
+			auto fbo = mShadowRenderData->ShadowPasses.FBOs[2];
+			auto material = mShadowRenderData->ShadowPasses.ShadowMats[2];
 			// mShadowRenderData->ShadowPasses.FBOs[0]->Bind();
 
 			// RenderCommand::Clear(Buffer_Depth);
@@ -142,22 +150,44 @@ namespace BHive
 			// mShadowRenderData->ShadowPasses.FBOs[0]->UnBind();
 		}
 
-		if (mShadowRenderData->ShadowData.NumShadowMaps.y > 0)
+		if (auto count = mShadowRenderData->ShadowData.NumShadowMaps.y; count > 0)
 		{
 			auto fbo = mShadowRenderData->ShadowPasses.FBOs[1];
-			auto buffer = mShadowRenderData->ShadowBuffer;
 			auto material = mShadowRenderData->ShadowPasses.ShadowMats[1];
-			auto indirect = sceneRenderer->mIndirectDrawBuffer[0];
-			auto visibility = sceneRenderer->mVisibleBuffer[0];
-			auto instance = sceneRenderer->mInstanceDataBuffer[0];
-			auto &batch = *sceneRenderer->mRenderBatches[0];
 
-			for (uint32_t face = 0; face < 6; ++face)
+			for (uint32_t p = 0; p < count; ++p)
 			{
-				material.As<Material>()->SetParam("LightIndex", MaterialParam{0});
-				material.As<Material>()->SetParam("LightFace", MaterialParam{face});
-				pass.BeginPhase("Render Point Shadow Maps", EPhaseType::Graphics);
-				pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = CubeFaceLayer(0, face)});
+				material.As<Material>()->SetParam("LightIndex", MaterialParam{p});
+
+				for (uint32_t face = 0; face < 6; ++face)
+				{
+					material.As<Material>()->SetParam("LightFace", MaterialParam{face});
+					pass.BeginPhase("Generate PointLight ShadowMaps", EPhaseType::Graphics);
+					pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = CubeFaceLayer(p, face)});
+					pass.UseBuffer(buffer, EBufferUsage::StorageRead);
+					pass.UseBuffer(indirect, EBufferUsage::IndirectRead);
+					pass.UseBuffer(visibility, EBufferUsage::StorageRead);
+					pass.UseBuffer(instance, EBufferUsage::StorageRead);
+					pass.BindResourceSet(sceneRenderer->mSceneSets.GlobalSet);
+					pass.BindResourceSet(sceneRenderer->mSceneSets.OpaqueObjectSet);
+					pass.Emplace<CmdBindPipeline>()(mPipeline);
+					draw_meshes(pass, indirect, batch, material);
+
+					pass.EndPhase();
+				}
+			}
+		}
+
+		if (auto count = mShadowRenderData->ShadowData.NumShadowMaps.z; count > 0)
+		{
+			auto fbo = mShadowRenderData->ShadowPasses.FBOs[2];
+			auto material = mShadowRenderData->ShadowPasses.ShadowMats[2];
+
+			for (uint32_t s = 0; s < count; ++s)
+			{
+				material.As<Material>()->SetParam("LightIndex", MaterialParam{s});
+				pass.BeginPhase("Generate SpotLight Shadows", EPhaseType::Graphics);
+				pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = s});
 				pass.UseBuffer(buffer, EBufferUsage::StorageRead);
 				pass.UseBuffer(indirect, EBufferUsage::IndirectRead);
 				pass.UseBuffer(visibility, EBufferUsage::StorageRead);
@@ -169,17 +199,6 @@ namespace BHive
 
 				pass.EndPhase();
 			}
-		}
-
-		if (mShadowRenderData->ShadowData.NumShadowMaps.z > 0)
-		{
-			// mShadowRenderData->ShadowPasses.FBOs[2]->Bind();
-
-			// RenderCommand::Clear(Buffer_Depth);
-
-			// draw_meshes(mShadowRenderData->ShadowPasses.Shaders[2]);
-
-			// mShadowRenderData->ShadowPasses.Shaders[2]->UnBind();
 		}
 	}
 
@@ -235,12 +254,13 @@ namespace BHive
 
 	void ShadowRenderer::SubmitSpotLight(const FShadowFrustumCreateInfo &info)
 	{
-		auto view = glm::lookAt(info.LightPosition, info.LightPosition + info.LightDirection, {0, 1, 0});
+		auto up = glm::abs(info.LightDirection.y) > 0.99f ? glm::vec3(1, 0, 0) : glm::vec3(0, 1, 0);
 		auto proj = glm::perspective<float>(glm::radians(info.LightAngleNearFar.x), 1.f, info.LightAngleNearFar.y, info.LightAngleNearFar.z);
+		auto view = glm::lookAt(info.LightPosition, info.LightPosition + info.LightDirection, up);
 
 		auto &shadow_data = mShadowRenderData->ShadowData;
-		auto k = shadow_data.NumShadowMaps.z % sMaxLights;
-		shadow_data.SpotProjections[k] = proj * view;
+		auto i = (shadow_data.NumShadowMaps.z % sMaxLights);
+		shadow_data.SpotProjections[i] = proj * view;
 		shadow_data.NumShadowMaps.z++;
 	}
 
@@ -257,7 +277,7 @@ namespace BHive
 			shadow_data.PointShadowInfos[i].ShadowViewProjections[j] = proj * view;
 		}
 
-		shadow_data.PointShadowInfos[i].ShadowNearFar = info.LightNearFar;
+		shadow_data.PointShadowInfos[i].ShadowNearFar = glm::vec4(info.LightNearFar, 0.0, 0.0);
 		shadow_data.NumShadowMaps.y++;
 	}
 
@@ -278,7 +298,7 @@ namespace BHive
 
 	TexturePtr ShadowRenderer::GetSpotShadowMap()
 	{
-		return TexturePtr();
+		return mShadowRenderData->ShadowPasses.FBOs[2].As<Framebuffer>()->GetDepthAttachment();
 	}
 
 } // namespace BHive

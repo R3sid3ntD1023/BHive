@@ -205,8 +205,6 @@ namespace BHive
 		auto &pass = renderer.BeginPass("Frustum", EPassType::OffScreen, states[1]);
 		pass.BeginPhase(EPhaseType::Graphics);
 		pass.BindResourceSet(mSceneSets.GlobalSet);
-		/*	pass.BindBuffer(0, 0, mCameraUBO);
-			pass.BindBuffer(0, 1, mFrustumUBO);*/
 		pass.UseFramebuffer(mFramebuffer);
 		pass.Emplace<CmdBindPipeline>()(pipelines[0]);
 		pass.Emplace<CmdBindMaterial>()(mFrustumMaterial.As<Material>());
@@ -219,7 +217,6 @@ namespace BHive
 
 		linePass.BeginPhase("Line Rendering", EPhaseType::Graphics);
 		linePass.BindResourceSet(mSceneSets.GlobalSet);
-		// linePass.BindBuffer(0, 0, mCameraUBO);
 		linePass.UseFramebuffer(mFramebuffer);
 		linePass.UseBuffer(mCameraUBO, EBufferUsage::UniformRead);
 		renderer.EndBatching();
@@ -274,18 +271,14 @@ namespace BHive
 
 	void SceneRenderer::Submit(const SpotLight &light)
 	{
-		/*auto inner = glm::cos(glm::radians(info.InnerCutoff));
-		auto outer = glm::cos(glm::radians(info.OuterCutoff));*/
 		mLights.Submit(light);
 
-		// FShadowFrustumCreateInfo shadow_info{};
-		// shadow_info.LightDirection = light.GetDirection();
-		// shadow_info.LightPosition = light.GetPosition();
+		FShadowFrustumCreateInfo shadow_info{};
+		shadow_info.LightDirection = light.GetDirection();
+		shadow_info.LightPosition = light.GetPosition();
+		shadow_info.LightAngleNearFar = {light.GetOuterAngleDegrees(), .1f, light.GetRadius()};
 
-		// // TODO : maybe radius
-		// shadow_info.LightAngleNearFar = {glm::radians(light.GetOuterAngleDegrees()), .1f, light.GetRadius()};
-
-		// mShadows.SubmitSpotLight(shadow_info);
+		mShadows.SubmitSpotLight(shadow_info);
 	}
 
 	void SceneRenderer::SubmitMesh(const FMeshSubmissionRequest &info, ContextHandle &outHandle)
@@ -383,7 +376,8 @@ namespace BHive
 		global->SetBuffer(1, mLights.GetBuffer());
 		global->SetTexture(2, mEnvironment.GetBRDFLUT());
 		global->SetBuffer(5, mShadows.GetBuffer());
-		global->SetTexture(10, mShadows.GetPointShadowMap());
+		global->SetTexture(6, mShadows.GetPointShadowMap());
+		global->SetTexture(7, mShadows.GetSpotShadowMap());
 
 		auto opaqueSet = mSceneSets.OpaqueObjectSet.As<ResourceSet>();
 		opaqueSet->SetBuffer(0, mInstanceDataBuffer[0]);

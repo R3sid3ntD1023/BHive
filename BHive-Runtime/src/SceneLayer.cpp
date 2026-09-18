@@ -32,6 +32,7 @@ namespace BHive
 	ContextHandle sCharacterHandle;
 	DirectionalLight main{};
 	PointLight light{};
+	SpotLight spotLight{};
 
 	void SceneLayer::OnAttach(Application &app)
 	{
@@ -118,6 +119,7 @@ namespace BHive
 		// lights
 		main.SetColor(FColor::White).SetIntensity(1.0f).SetDirection({0.f, -1.0f, -0.5f});
 		light.SetColor(FColor::Orange).SetIntensity(1.0f).SetRadius(10.f).SetPosition({0, 1, 0});
+		spotLight.SetColor(FColor::Brown).SetIntensity(10.0f).SetRadius(10.0f).SetDirection({0.f, -1.f, 0.f}).SetPosition({1, 5, 0});
 
 		uint32_t count = 0;
 		for (int32_t i = -1; i <= 1; i++)
@@ -210,6 +212,7 @@ namespace BHive
 
 		// mSceneRenderer->Submit(main);
 		mSceneRenderer->Submit(light);
+		mSceneRenderer->Submit(spotLight);
 
 		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), {light.GetPosition()});
 		renderer.Line.DrawGrid({});
@@ -225,6 +228,7 @@ namespace BHive
 
 		renderer.Quad.DrawCircle(FCircleParams{}, FTransform{{-2, 2, 0}});
 
+		renderer.Line.DrawSpotlightCone(spotLight.GetPosition(), spotLight.GetDirection(), spotLight.GetRadius(), spotLight.GetOuterAngleDegrees(), 32, spotLight.GetColor());
 		mSceneRenderer->End();
 	}
 
@@ -292,6 +296,7 @@ namespace BHive
 
 			Inspect::get().inspect("MainLight", main);
 			Inspect::get().inspect("PointLight", light);
+			Inspect::get().inspect("SpotLight", spotLight);
 
 			auto inspect = [&](const std::string label)
 			{
