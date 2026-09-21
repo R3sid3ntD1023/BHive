@@ -1,5 +1,5 @@
-#include "gui/ImGuiExtended.h"
 #include "PropertyLayout.h"
+#include "gui/ImGuiExtended.h"
 
 namespace BHive
 {
@@ -34,12 +34,14 @@ namespace BHive
 
 		if (mColumns)
 		{
-			auto width = mWidth != 0.f ? mWidth : ImGui::GetContentRegionAvail().x;	
-			ImGui::BeginTable((mName + "##Property").c_str(), 2, ImGuiTableFlags_Borders /*| ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX,*/, {width, 0.f});
+			auto width = mWidth != 0.f ? mWidth : ImGui::GetContentRegionAvail().x;
+			ImGui::BeginTable(
+				(mName + "##Property").c_str(), 2, ImGuiTableFlags_Borders | ImGuiTableFlags_SizingStretchSame /*| ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX,*/, {width, 0.f}
+			);
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
-			ImGui::AlignTextToFramePadding();		
-		}	
+			ImGui::AlignTextToFramePadding();
+		}
 
 		ImGui::TextUnformatted(mName.c_str());
 

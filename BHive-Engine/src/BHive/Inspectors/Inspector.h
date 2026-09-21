@@ -34,7 +34,7 @@ namespace BHive
 #define REFLECT_INSPECTOR(cls, _type)                                                                                                                                            \
 	REFLECT(cls)                                                                                                                                                                 \
 	{                                                                                                                                                                            \
-		auto Factory = rttr::registration::class_<cls>(#cls)(rttr::metadata(INSPECTED_TYPE_VAR, rttr::type::get<_type>())).constructor()(rttr::policy::ctor::as_std_shared_ptr); \
+		auto Factory = rttr::registration::class_<cls>(#cls)(rttr::metadata(INSPECTED_TYPE_VAR, rttr::type::get<_type>())).constructor()(rttr::policy::ctor::as_raw_ptr); \
 	}
 
 #define INSPECTOR_BODY() bool inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData = {}, const bool is_read_only = false) override;
