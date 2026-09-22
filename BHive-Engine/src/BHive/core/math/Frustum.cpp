@@ -11,25 +11,31 @@
 
 namespace BHive
 {
-	Frustum::Frustum(const glm::mat4 &projection, const glm::mat4 &view)
+	Frustum::Frustum(const glm::mat4 &viewProjection)
 	{
-		Update(projection, view);
+		Update(viewProjection);
 	}
 
 	Frustum::Frustum(const glm::mat4 &view, float aspect, float fov, float near, float far)
 	{
-		Update(glm::perspective(fov, aspect, near, far), view);
+		Update(glm::perspective(fov, aspect, near, far) * view);
 	}
 
-	void Frustum::Update(const glm::mat4 &projection, const glm::mat4 &view)
+	void Frustum::Update(const glm::mat4 &viewProjection)
 	{
 		constexpr glm::vec4 cube[8] = {
-			{-1, -1, -1, 1}, {1, -1, -1, 1}, {1, 1, -1, 1}, {-1, 1, -1, 1},
+			{-1, -1, -1, 1},
+			{1, -1, -1, 1},
+			{1, 1, -1, 1},
+			{-1, 1, -1, 1},
 
-			{-1, -1, 1, 1},	 {1, -1, 1, 1},	 {1, 1, 1, 1},	{-1, 1, 1, 1},
+			{-1, -1, 1, 1},
+			{1, -1, 1, 1},
+			{1, 1, 1, 1},
+			{-1, 1, 1, 1},
 		};
 
-		const auto viewInv = glm::inverse(projection * view);
+		const auto viewInv = glm::inverse(viewProjection);
 
 		for (uint32_t i = 0; i < 8; i++)
 		{

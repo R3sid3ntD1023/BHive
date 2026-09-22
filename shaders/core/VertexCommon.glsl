@@ -15,5 +15,5 @@ mat3 NM = transpose(inverse(mat3(M)));
 vec3 T = normalize(NM * vTangent);
 vec3 N = normalize(NM * vNormal);
 vec3 B = normalize(NM * vBiNormal);
-    
+
 gl_Position = VIEW_PROJECTION * worldPos;

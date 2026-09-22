@@ -46,9 +46,12 @@ namespace BHive
 			t.Bindings.emplace_back(2, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::CombinedImageSampler); // brdfLUT
 			t.Bindings.emplace_back(3, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::CombinedImageSampler); // prefilter
 			t.Bindings.emplace_back(4, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::CombinedImageSampler); // irradiance
-			t.Bindings.emplace_back(5, 0u, 1, EShaderStage::Vertex | EShaderStage::Geometry | EShaderStage::Fragment, EResourceType::StorageBuffer);	   // shadowBuffer
-			t.Bindings.emplace_back(6, 0u, 1, EShaderStage::Fragment, EResourceType::CombinedImageSampler);												   // Point shadow
-			t.Bindings.emplace_back(7, 0u, 1, EShaderStage::Fragment, EResourceType::CombinedImageSampler);												   // Spot shadow
+			t.Bindings.emplace_back(
+				5, 0u, 1, EShaderStage::Vertex | EShaderStage::Geometry | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::StorageBuffer
+			);																								// shadowBuffer
+			t.Bindings.emplace_back(6, 0u, 1, EShaderStage::Fragment, EResourceType::CombinedImageSampler); // Dir shadow
+			t.Bindings.emplace_back(7, 0u, 1, EShaderStage::Fragment, EResourceType::CombinedImageSampler); // Point shadow
+			t.Bindings.emplace_back(8, 0u, 1, EShaderStage::Fragment, EResourceType::CombinedImageSampler); // Spot shadow
 			t.BuildLayoutHash();
 			return t;
 		}();

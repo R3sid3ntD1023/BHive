@@ -117,7 +117,7 @@ namespace BHive
 		mCameraController.SetCamera(&mCameras[0]);
 
 		// lights
-		main.SetColor(FColor::White).SetIntensity(1.0f).SetDirection({0.f, -1.0f, -0.5f});
+		main.SetColor(FColor::White).SetIntensity(1.0f).SetDirection({-0.4f, -0.3f, -0.0f});
 		light.SetColor(FColor::Orange).SetIntensity(1.0f).SetRadius(10.f).SetPosition({0, 1, 0});
 		spotLight.SetColor(FColor::Brown).SetIntensity(10.0f).SetRadius(10.0f).SetDirection({0.f, -1.f, 0.f}).SetPosition({1, 5, 0});
 
@@ -160,7 +160,6 @@ namespace BHive
 			mCharacterAnimaton = result.Animations[0];
 			mCharacterPose = mCharacter.As<SkeletalMesh>()->GetDefaultPose();
 			mAnimationClip = CreateRef<AnimationClip>(mCharacterAnimaton, mCharacterSkeleton);
-			LOG_INFO("Animation {} Duration {}, Length {}", mCharacterAnimaton.Index, mAnimationClip->GetDuration(), mAnimationClip->GetLengthInSeconds());
 #endif
 
 			if (mCharacter)
@@ -205,14 +204,14 @@ namespace BHive
 		}
 
 		mSceneRenderer->Begin(&mCameras[0], mCameras[0].GetView());
-		auto view = mSceneRenderer->GetSceneView().View;
-
-		FView viewOverride = FView::Create(mCameras[1].GetProjection(), mCameras[1].GetView());
-		mSceneRenderer->SetViewOverride(viewOverride);
-
-		// mSceneRenderer->Submit(main);
+		mSceneRenderer->Submit(main);
 		mSceneRenderer->Submit(light);
 		mSceneRenderer->Submit(spotLight);
+
+		auto view = mSceneRenderer->GetSceneView().View;
+
+		// FView viewOverride = FView::Create(mCameras[1].GetProjection(), mCameras[1].GetView());
+		// mSceneRenderer->SetViewOverride(viewOverride);
 
 		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), {light.GetPosition()});
 		renderer.Line.DrawGrid({});
@@ -260,40 +259,6 @@ namespace BHive
 
 		if (ImGui::Begin("Actions"))
 		{
-			if (ImGui::Button("Remove Sphere"))
-				mSceneRenderer->UpdateMesh(sSphereHandle[0], {});
-
-			if (ImGui::Button("Load Mesh"))
-			{
-				auto info = Platform::OpenFile("Mesh (*.glb;*.gltf)//0*.glb;*.gltf//0");
-				if (info)
-				{
-					FMeshImportOptions import_options{};
-					import_options.OverrideMaterials = mCharacterMaterials;
-					import_options.MeshType = EMeshType::StaticMesh;
-
-					auto decoded = MeshImporter::Import(info);
-					MeshImportResolver resolver(import_options);
-					auto result = resolver.Resolve(decoded);
-					mMesh = result.Mesh;
-					mSceneRenderer->UpdateMesh(sSphereHandle[0], mMesh);
-				}
-			}
-
-			auto loadTexture = [&](const std::string &name)
-			{
-				if (ImGui::Button(name.c_str()))
-				{
-					auto info = Platform::OpenFile("Texture (*.png;*.jpeg)//0*.png;*.jpeg//0");
-					if (info)
-					{
-						auto decoded = TextureLoader::FromFile(info);
-						auto texture = TextureFactory::Create2D(decoded);
-						mStandardMaterial.As<Material>()->SetTexture(std::format("{}Map", name), {texture});
-					}
-				}
-			};
-
 			Inspect::get().inspect("MainLight", main);
 			Inspect::get().inspect("PointLight", light);
 			Inspect::get().inspect("SpotLight", spotLight);
@@ -304,12 +269,6 @@ namespace BHive
 				Inspect::get().inspect(label, *mat);
 			};
 
-			loadTexture("Diffuse");
-			loadTexture("Metalness");
-			loadTexture("Roughness");
-			loadTexture("Normal");
-			loadTexture("Emission");
-			loadTexture("Opacity");
 			inspect("Material");
 
 			if (ImGui::Button("Load HDR Environment"))

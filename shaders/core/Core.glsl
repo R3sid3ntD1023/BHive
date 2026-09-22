@@ -3,6 +3,19 @@
 #define UNLIT BIT(0)
 #define PI 3.14159265359
 
+struct Sphere
+{
+    vec3 Center;
+    float Radius;
+};
+
+struct Frustum
+{
+    vec4 planes[6];
+	vec4 points[8];
+};
+
+
 struct ObjectData
 {	
 	mat4 model; //model matrix
@@ -21,11 +34,6 @@ struct IndirectDrawIndexedCommand
     uint firstInstance;
 };
 
-struct Frustum
-{
-    vec4 planes[6];
-	vec4 points[8];
-};
 
 vec4 EncodeEntityID(in int id)
 {

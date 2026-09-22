@@ -1,9 +1,10 @@
 #type vertex
 #version 460 core 
 
+
 #include <Constants.glsl>
-#include <ShadowBuffer.glsl>
 #include <Shadow.vert>
+#include <ShadowBuffer.glsl>
 
 layout(push_constant) uniform ShadowPC
 {
@@ -11,7 +12,7 @@ layout(push_constant) uniform ShadowPC
 	uint LightFace;
 } pc;
 
-#define VIEW_PROJECTION uPointShadowInfo[pc.LightIndex].ViewProjections[pc.LightFace]
+#define VIEW_PROJECTION PointShadowInfo[pc.LightIndex].ViewProjections[pc.LightFace]
 
 void main()
 {

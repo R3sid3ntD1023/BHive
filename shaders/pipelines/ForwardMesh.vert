@@ -47,6 +47,7 @@ layout(location = 0) out struct VS_OUT
 	mat3 TBN;
 	vec3 CameraPosition;
 	vec3 DebugColor;
+	mat4 View;
 } vs_out;
 
 #define VIEW_PROJECTION uCam.ViewProjection
@@ -61,6 +62,7 @@ void main()
 	vs_out.Normal = N;
 	vs_out.CameraPosition = uCam.Position.xyz;
 	vs_out.Color = vColor;
+	vs_out.View = uCam.View;
 
 	#if defined(SHOW_INSTANCE)
 	vs_out.DebugColor = vec3(float(gl_InstanceIndex)/ 10.0, 0, 0);

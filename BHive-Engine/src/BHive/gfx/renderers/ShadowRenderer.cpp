@@ -28,18 +28,37 @@ namespace BHive
 		{{0, 0, -1}, {0, -1, 0}},
 	};
 
-	struct alignas(16) FShadowCubeSSBO
+	struct alignas(16) CascadeShadow
+	{
+		glm::mat4 ViewProjection{1.0f};
+		glm::vec4 SplitData{0.0f}; // x= far plane
+		Frustum Frustum{};
+	};
+
+	struct alignas(16) FDirectionalShadowData
+	{
+		CascadeShadow Cascades[4];
+	};
+
+	struct alignas(16) FPointLightDataData
 	{
 		glm::mat4 ShadowViewProjections[6];
 		glm::vec4 ShadowNearFar;
+		Frustum Frustums[6];
+	};
+
+	struct alignas(16) FSpotLightData
+	{
+		glm::mat4 ViewProjection{1.0f};
+		Frustum Frustum{};
 	};
 
 	struct alignas(16) FShadowData
 	{
 		glm::uvec4 NumShadowMaps = {0, 0, 0, 0}; // {Dir, Point, Spot}
-		std::array<glm::mat4, ShadowRenderer::sMaxLights> DirProjections = {};
-		std::array<glm::mat4, ShadowRenderer::sMaxLights> SpotProjections = {};
-		std::array<FShadowCubeSSBO, ShadowRenderer::sMaxLights> PointShadowInfos = {};
+		std::array<FDirectionalShadowData, ShadowRenderer::sMaxLights> DirProjections = {};
+		std::array<FPointLightDataData, ShadowRenderer::sMaxLights> PointShadowInfos = {};
+		std::array<FSpotLightData, ShadowRenderer::sMaxLights> SpotProjections = {};
 	};
 
 	// 0 = dir, 1 = point, 2 = spot
@@ -56,7 +75,7 @@ namespace BHive
 		FShadowData ShadowData;
 	};
 
-	void ShadowRenderer::Init(uint32_t cascaded_levels)
+	void ShadowRenderer::Init()
 	{
 		mShadowRenderData = CreateRef<FShadowRenderData>();
 
@@ -71,22 +90,25 @@ namespace BHive
 		FFramebufferTexture shadowTex;
 		shadowTex.CreateInfo = shadow_texture_specs;
 		shadowTex.Type = ETextureType::TEXTURE_2D_ARRAY;
-		shadowTex.CreateInfo.ArrayLayers = sMaxLights;
+		shadowTex.CreateInfo.ArrayLayers = sMaxLights * 4;
 
 		dir_shadow_fbo_spec.Attachments.SetDepthAttachment(shadowTex);
+
+		shadowTex.CreateInfo.ArrayLayers = sMaxLights;
 		spot_shadow_fbo_spec.Attachments.SetDepthAttachment(shadowTex);
 
 		shadowTex.Type = ETextureType::TEXTURE_CUBE_MAP_ARRAY;
 		point_shadow_fbo_spec.Attachments.SetDepthAttachment(shadowTex);
 
 		auto &shadow_passes = mShadowRenderData->ShadowPasses;
-		// shadow_passes.FBOs[0] = FramebufferFactory::Create(dir_shadow_fbo_spec);
+		shadow_passes.FBOs[0] = FramebufferFactory::Create(dir_shadow_fbo_spec);
 		shadow_passes.FBOs[1] = FramebufferFactory::Create(point_shadow_fbo_spec);
 		shadow_passes.FBOs[2] = FramebufferFactory::Create(spot_shadow_fbo_spec);
 
-		// shadow_passes.ShadowMats[0] = MaterialFactory::Create("ShadowDirectionalLight.glsl");
+		shadow_passes.ShadowMats[0] = MaterialFactory::Create("ShadowDirectionalLight.glsl");
 		shadow_passes.ShadowMats[1] = MaterialFactory::Create("ShadowPointLight.glsl");
 		shadow_passes.ShadowMats[2] = MaterialFactory::Create("ShadowSpotLight.glsl");
+		mCullingMaterial = MaterialFactory::Create("ShadowCulling.glsl");
 
 		mShadowRenderData->ShadowBuffer = BufferFactory::Create(sizeof(FShadowData), EBufferType::StorageBuffer);
 
@@ -99,6 +121,9 @@ namespace BHive
 		state.Raster.CullEnabled = true;
 		state.Raster.CullMode = ECullMode::Front;
 		mPipeline = PipelineFactory::Create(state);
+
+		InitializeBuffers();
+		InitializeSets();
 	}
 
 	void ShadowRenderer::BeginRecording()
@@ -106,8 +131,29 @@ namespace BHive
 		mShadowRenderData->ShadowData.NumShadowMaps = {0, 0, 0, 0};
 	}
 
-	void ShadowRenderer::EndRecording(FPass &pass, SceneRenderer *sceneRenderer)
+	void ShadowRenderer::SetLightBuffer(BufferPtr lightBuffer)
 	{
+		mGlobalSet.As<ResourceSet>()->SetBuffer(1, lightBuffer);
+	}
+
+	void ShadowRenderer::SetBoneBuffer(BufferPtr boneBuffer)
+	{
+		mObjectSet.As<ResourceSet>()->SetBuffer(3, boneBuffer);
+	}
+
+	void ShadowRenderer::EndRecording(FPass &pass, const RenderBatch &batch)
+	{
+		const uint32_t objectCount = batch.InstanceCount();
+		const uint32_t groups = (objectCount + 255) / 256;
+
+		pass.BeginPhase("Upload Shadow Batch", EPhaseType::Transfer);
+		pass.Emplace<CmdClearBuffer>()(mObjectBuffer);
+		pass.Emplace<CmdClearBuffer>()(mIndirectBuffer);
+		pass.Emplace<CmdClearBuffer>()(mVisibilityBuffer);
+		pass.Emplace<CmdSetBufferData>()(mObjectBuffer, &objectCount, sizeof(uint32_t));
+		pass.Emplace<CmdSetBufferData>()(mObjectBuffer, batch.ObjectDatas.data(), sizeof(ObjectData) * objectCount, 16U);
+		pass.Emplace<CmdSetBufferData>()(mIndirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
+		pass.EndPhase();
 
 		pass.BeginPhase("Update Shadow Data", EPhaseType::Transfer);
 		pass.Emplace<CmdSetBufferData>()(mShadowRenderData->ShadowBuffer, &mShadowRenderData->ShadowData, sizeof(FShadowData));
@@ -131,23 +177,52 @@ namespace BHive
 			}
 		};
 
-		auto indirect = sceneRenderer->mIndirectDrawBuffer[0];
-		auto visibility = sceneRenderer->mVisibleBuffer[0];
-		auto instance = sceneRenderer->mInstanceDataBuffer[0];
-		auto &batch = *sceneRenderer->mRenderBatches[0];
 		auto buffer = mShadowRenderData->ShadowBuffer;
 
-		if (mShadowRenderData->ShadowData.NumShadowMaps.x > 0)
+		if (auto count = mShadowRenderData->ShadowData.NumShadowMaps.x; count > 0)
 		{
-			auto fbo = mShadowRenderData->ShadowPasses.FBOs[2];
-			auto material = mShadowRenderData->ShadowPasses.ShadowMats[2];
-			// mShadowRenderData->ShadowPasses.FBOs[0]->Bind();
+			auto fbo = mShadowRenderData->ShadowPasses.FBOs[0];
+			auto material = mShadowRenderData->ShadowPasses.ShadowMats[0];
 
-			// RenderCommand::Clear(Buffer_Depth);
+			mCullingMaterial.As<Material>()->SetParam("LightType", 0);
 
-			// draw_meshes(mShadowRenderData->ShadowPasses.Shaders[0]);
+			for (uint32_t d = 0; d < count; ++d)
+			{
+				for (uint32_t c = 0; c < 4; ++c)
+				{
+					pass.BeginPhase("Reset Directional Shadow Culling", EPhaseType::Transfer);
+					pass.Emplace<CmdSetBufferData>()(mIndirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
+					pass.Emplace<CmdClearBuffer>()(mVisibilityBuffer);
+					pass.EndPhase();
 
-			// mShadowRenderData->ShadowPasses.FBOs[0]->UnBind();
+					mCullingMaterial.As<Material>()->SetParam("LightIndex", MaterialParam{d});
+					mCullingMaterial.As<Material>()->SetParam("LightFace", MaterialParam{c});
+					pass.BeginPhase("Cull Directional Shadows", EPhaseType::Compute);
+					pass.UseBuffer(mIndirectBuffer, EBufferUsage::StorageWrite);
+					pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageWrite);
+					pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
+					pass.BindResourceSet(mGlobalSet);
+					pass.BindResourceSet(mObjectSet);
+					pass.Emplace<CmdBindMaterial>()(mCullingMaterial.As<Material>());
+					pass.Emplace<CmdDispatch>()(groups, 1, 1);
+					pass.EndPhase();
+
+					material.As<Material>()->SetParam("LightIndex", MaterialParam{d});
+					material.As<Material>()->SetParam("CascadeIndex", MaterialParam{c});
+					pass.BeginPhase("Generate Directional Shadows", EPhaseType::Graphics);
+					pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = d * 4 + c});
+					pass.UseBuffer(buffer, EBufferUsage::StorageRead);
+					pass.UseBuffer(mIndirectBuffer, EBufferUsage::IndirectRead);
+					pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageRead);
+					pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
+					pass.BindResourceSet(mGlobalSet);
+					pass.BindResourceSet(mObjectSet);
+					pass.Emplace<CmdBindPipeline>()(mPipeline);
+					draw_meshes(pass, mIndirectBuffer, batch, material);
+
+					pass.EndPhase();
+				}
+			}
 		}
 
 		if (auto count = mShadowRenderData->ShadowData.NumShadowMaps.y; count > 0)
@@ -155,23 +230,42 @@ namespace BHive
 			auto fbo = mShadowRenderData->ShadowPasses.FBOs[1];
 			auto material = mShadowRenderData->ShadowPasses.ShadowMats[1];
 
+			mCullingMaterial.As<Material>()->SetParam("LightType", 1);
+
 			for (uint32_t p = 0; p < count; ++p)
 			{
-				material.As<Material>()->SetParam("LightIndex", MaterialParam{p});
+				mCullingMaterial.As<Material>()->SetParam("LightIndex", p);
 
 				for (uint32_t face = 0; face < 6; ++face)
 				{
+					mCullingMaterial.As<Material>()->SetParam("LightFace", face);
+					pass.BeginPhase("Reset Point Shadow Culling", EPhaseType::Transfer);
+					pass.Emplace<CmdSetBufferData>()(mIndirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
+					pass.Emplace<CmdClearBuffer>()(mVisibilityBuffer);
+					pass.EndPhase();
+
+					pass.BeginPhase("Cull Point Shadows", EPhaseType::Compute);
+					pass.UseBuffer(mIndirectBuffer, EBufferUsage::StorageWrite);
+					pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageWrite);
+					pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
+					pass.BindResourceSet(mGlobalSet);
+					pass.BindResourceSet(mObjectSet);
+					pass.Emplace<CmdBindMaterial>()(mCullingMaterial.As<Material>());
+					pass.Emplace<CmdDispatch>()(groups, 1, 1);
+					pass.EndPhase();
+
+					material.As<Material>()->SetParam("LightIndex", MaterialParam{p});
 					material.As<Material>()->SetParam("LightFace", MaterialParam{face});
 					pass.BeginPhase("Generate PointLight ShadowMaps", EPhaseType::Graphics);
 					pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = CubeFaceLayer(p, face)});
 					pass.UseBuffer(buffer, EBufferUsage::StorageRead);
-					pass.UseBuffer(indirect, EBufferUsage::IndirectRead);
-					pass.UseBuffer(visibility, EBufferUsage::StorageRead);
-					pass.UseBuffer(instance, EBufferUsage::StorageRead);
-					pass.BindResourceSet(sceneRenderer->mSceneSets.GlobalSet);
-					pass.BindResourceSet(sceneRenderer->mSceneSets.OpaqueObjectSet);
+					pass.UseBuffer(mIndirectBuffer, EBufferUsage::IndirectRead);
+					pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageRead);
+					pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
+					pass.BindResourceSet(mGlobalSet);
+					pass.BindResourceSet(mObjectSet);
 					pass.Emplace<CmdBindPipeline>()(mPipeline);
-					draw_meshes(pass, indirect, batch, material);
+					draw_meshes(pass, mIndirectBuffer, batch, material);
 
 					pass.EndPhase();
 				}
@@ -183,19 +277,37 @@ namespace BHive
 			auto fbo = mShadowRenderData->ShadowPasses.FBOs[2];
 			auto material = mShadowRenderData->ShadowPasses.ShadowMats[2];
 
+			mCullingMaterial.As<Material>()->SetParam("LightType", 2);
+
 			for (uint32_t s = 0; s < count; ++s)
 			{
+				pass.BeginPhase("Reset Spot Shadow Culling", EPhaseType::Transfer);
+				pass.Emplace<CmdSetBufferData>()(mIndirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
+				pass.Emplace<CmdClearBuffer>()(mVisibilityBuffer);
+				pass.EndPhase();
+
+				mCullingMaterial.As<Material>()->SetParam("LightIndex", MaterialParam{s});
+				pass.BeginPhase("Cull Spot Shadows", EPhaseType::Compute);
+				pass.UseBuffer(mIndirectBuffer, EBufferUsage::StorageWrite);
+				pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageWrite);
+				pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
+				pass.BindResourceSet(mGlobalSet);
+				pass.BindResourceSet(mObjectSet);
+				pass.Emplace<CmdBindMaterial>()(mCullingMaterial.As<Material>());
+				pass.Emplace<CmdDispatch>()(groups, 1, 1);
+				pass.EndPhase();
+
 				material.As<Material>()->SetParam("LightIndex", MaterialParam{s});
 				pass.BeginPhase("Generate SpotLight Shadows", EPhaseType::Graphics);
 				pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = s});
 				pass.UseBuffer(buffer, EBufferUsage::StorageRead);
-				pass.UseBuffer(indirect, EBufferUsage::IndirectRead);
-				pass.UseBuffer(visibility, EBufferUsage::StorageRead);
-				pass.UseBuffer(instance, EBufferUsage::StorageRead);
-				pass.BindResourceSet(sceneRenderer->mSceneSets.GlobalSet);
-				pass.BindResourceSet(sceneRenderer->mSceneSets.OpaqueObjectSet);
+				pass.UseBuffer(mIndirectBuffer, EBufferUsage::IndirectRead);
+				pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageRead);
+				pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
+				pass.BindResourceSet(mGlobalSet);
+				pass.BindResourceSet(mObjectSet);
 				pass.Emplace<CmdBindPipeline>()(mPipeline);
-				draw_meshes(pass, indirect, batch, material);
+				draw_meshes(pass, mIndirectBuffer, batch, material);
 
 				pass.EndPhase();
 			}
@@ -204,81 +316,138 @@ namespace BHive
 
 	void ShadowRenderer::SubmitDirectionalLight(const FShadowCascadedCreateInfo &info)
 	{
-
-		auto frustum = Frustum(info.CameraProj, info.InverseCameraView);
-
-		const auto light_view = glm::lookAt({}, info.LightDirection, {0, 1, 0});
-
-		float min_x = std::numeric_limits<float>::max();
-		float max_x = std::numeric_limits<float>::lowest();
-		float min_y = std::numeric_limits<float>::max();
-		float max_y = std::numeric_limits<float>::lowest();
-		float min_z = std::numeric_limits<float>::max();
-		float max_z = std::numeric_limits<float>::lowest();
-
-		for (const auto &v : frustum.GetPoints())
-		{
-			const auto trf = light_view * v;
-			min_x = std::min(min_x, trf.x);
-			max_x = std::max(max_x, trf.x);
-			min_y = std::min(min_y, trf.y);
-			max_y = std::max(max_y, trf.y);
-			min_z = std::min(min_z, trf.z);
-			max_z = std::max(max_z, trf.z);
-		}
-
-		constexpr float z_multi = 10.0f;
-		if (min_z < 0)
-		{
-			min_z *= z_multi;
-		}
-		else
-		{
-			min_z /= z_multi;
-		}
-		if (max_z < 0)
-		{
-			max_z /= z_multi;
-		}
-		else
-		{
-			max_z *= z_multi;
-		}
-
 		auto &shadow_data = mShadowRenderData->ShadowData;
-		auto k = shadow_data.NumShadowMaps.x % sMaxLights;
-		auto projection = glm::ortho<float>(min_x, max_x, min_y, max_y, min_z, max_z);
-		shadow_data.DirProjections[k] = projection * light_view;
-		shadow_data.NumShadowMaps.x++;
+		auto &k = shadow_data.NumShadowMaps.x;
+		if (k >= sMaxLights)
+			return;
+
+		const auto &frustum = info.CameraFrustum;
+		const auto &pts = frustum.GetPoints();
+		const auto &near = info.CameraNearFar.x;
+		const auto &far = info.CameraNearFar.y;
+
+		float splits[4]{0, 0, 0, 0};
+		float previousSplit = near;
+
+		for (uint32_t i = 0; i < 4; i++)
+		{
+			float p = float(i + 1) / 4.0f;
+			float logSplit = near * glm::pow(far / near, p);
+			float uniformSplit = near + (far - near) * p;
+			splits[i] = glm::mix(uniformSplit, logSplit, 0.95f);
+		}
+
+		for (uint32_t cascade = 0; cascade < 4; cascade++)
+		{
+			float cascadeStart = previousSplit;
+			float cascadeEnd = splits[cascade];
+			previousSplit = cascadeEnd;
+
+			float splitNear = (cascadeStart - near) / (far - near);
+			float splitFar = (cascadeEnd - near) / (far - near);
+
+			glm::vec3 cascadePoints[8];
+			for (uint32_t i = 0; i < 4; i++)
+			{
+				glm::vec3 nearCorner = pts[i];
+				glm::vec3 farCorner = pts[i + 4];
+
+				cascadePoints[i] = glm::mix(nearCorner, farCorner, splitNear);
+				cascadePoints[i + 4] = glm::mix(nearCorner, farCorner, splitFar);
+			}
+
+			shadow_data.DirProjections[k].Cascades[cascade].SplitData.x = cascadeEnd;
+
+			glm::vec3 center(0.0f);
+
+			for (auto &p : cascadePoints)
+			{
+				center += p;
+			}
+			center /= 8.0f;
+
+			float radius = 0.0f;
+			for (auto &p : cascadePoints)
+			{
+				radius = glm::max(radius, glm::distance(center, p));
+			}
+			radius = glm::ceil(radius * 16.0f) / 16.0f;
+
+			const auto up = glm::abs(info.LightDirection.y) > 0.99f ? glm::vec3(1, 0, 0) : glm::vec3(0, 1, 0);
+			glm::mat4 tempView = glm::lookAt(center - info.LightDirection * radius * 2.0f, center, up);
+			glm::vec4 centerLS = tempView * glm::vec4(center, 1.0f);
+
+			float extent = radius * 2.0f;
+			float texelSize = extent / DIRECTIONAL_SHADOWMAP_SIZE;
+
+			// snap center
+			centerLS.x = glm::floor(centerLS.x / texelSize) * texelSize;
+			centerLS.y = glm::floor(centerLS.y / texelSize) * texelSize;
+			center = glm::inverse(tempView) * centerLS;
+
+			const auto lightView = glm::lookAt(center - info.LightDirection * radius * 2.0f, center, up);
+
+			float minX = std::numeric_limits<float>::max();
+			float maxX = std::numeric_limits<float>::lowest();
+			float minY = std::numeric_limits<float>::max();
+			float maxY = std::numeric_limits<float>::lowest();
+			float minZ = std::numeric_limits<float>::max();
+			float maxZ = std::numeric_limits<float>::lowest();
+
+			for (auto &p : cascadePoints)
+			{
+				glm::vec4 lp = lightView * glm::vec4(p, 1.0f);
+
+				minX = std::min(minX, lp.x);
+				maxX = std::max(maxX, lp.x);
+				minY = std::min(minY, lp.y);
+				maxY = std::max(maxY, lp.y);
+				minZ = std::min(minZ, lp.z);
+				maxZ = std::max(maxZ, lp.z);
+			}
+
+			auto proj = glm::ortho(minX, maxX, minY, maxY, minZ - radius, maxZ + radius);
+			shadow_data.DirProjections[k].Cascades[cascade].ViewProjection = proj * lightView;
+			shadow_data.DirProjections[k].Cascades[cascade].Frustum = Frustum(proj * lightView);
+		}
+
+		k++;
 	}
 
 	void ShadowRenderer::SubmitSpotLight(const FShadowFrustumCreateInfo &info)
 	{
+		auto &shadow_data = mShadowRenderData->ShadowData;
+		auto &i = shadow_data.NumShadowMaps.z;
+		if (i >= sMaxLights)
+			return;
+
 		auto up = glm::abs(info.LightDirection.y) > 0.99f ? glm::vec3(1, 0, 0) : glm::vec3(0, 1, 0);
 		auto proj = glm::perspective<float>(glm::radians(info.LightAngleNearFar.x), 1.f, info.LightAngleNearFar.y, info.LightAngleNearFar.z);
 		auto view = glm::lookAt(info.LightPosition, info.LightPosition + info.LightDirection, up);
 
-		auto &shadow_data = mShadowRenderData->ShadowData;
-		auto i = (shadow_data.NumShadowMaps.z % sMaxLights);
-		shadow_data.SpotProjections[i] = proj * view;
-		shadow_data.NumShadowMaps.z++;
+		shadow_data.SpotProjections[i].ViewProjection = proj * view;
+		shadow_data.SpotProjections[i].Frustum = Frustum(proj * view);
+		i++;
 	}
 
 	void ShadowRenderer::SubmitPointLight(const FShadowCubeCreateInfo &info)
 	{
 		auto &shadow_data = mShadowRenderData->ShadowData;
+		auto &i = shadow_data.NumShadowMaps.y;
+		if (i >= sMaxLights)
+			return;
 
 		auto proj = glm::perspective(glm::radians(90.0f), 1.f, info.LightNearFar.x, info.LightNearFar.y);
-		auto i = (shadow_data.NumShadowMaps.y % sMaxLights);
 
 		for (int j = 0; j < 6; j++)
 		{
 			auto view = glm::lookAt(info.LightPosition, info.LightPosition + point_directions[j].normal, point_directions[j].up);
 			shadow_data.PointShadowInfos[i].ShadowViewProjections[j] = proj * view;
+			shadow_data.PointShadowInfos[i].Frustums[j] = Frustum(proj * view);
 		}
 
 		shadow_data.PointShadowInfos[i].ShadowNearFar = glm::vec4(info.LightNearFar, 0.0, 0.0);
-		shadow_data.NumShadowMaps.y++;
+		i++;
 	}
 
 	BufferPtr ShadowRenderer::GetBuffer()
@@ -288,7 +457,7 @@ namespace BHive
 
 	TexturePtr ShadowRenderer::GetDirShadowMap()
 	{
-		return TexturePtr();
+		return mShadowRenderData->ShadowPasses.FBOs[0].As<Framebuffer>()->GetDepthAttachment();
 	}
 
 	TexturePtr ShadowRenderer::GetPointShadowMap()
@@ -299,6 +468,25 @@ namespace BHive
 	TexturePtr ShadowRenderer::GetSpotShadowMap()
 	{
 		return mShadowRenderData->ShadowPasses.FBOs[2].As<Framebuffer>()->GetDepthAttachment();
+	}
+
+	void ShadowRenderer::InitializeBuffers()
+	{
+		mObjectBuffer = BufferFactory::Create(OBJECT_BUFFER_SIZE, EBufferType::StorageBuffer);
+		mIndirectBuffer = BufferFactory::Create(DRAWCOMMAND_BUFFER_SIZE, EBufferType::IndirectBuffer | EBufferType::StorageBuffer);
+		mVisibilityBuffer = BufferFactory::Create(VISIBILITY_BUFFER_SIZE, EBufferType::StorageBuffer);
+	}
+
+	void ShadowRenderer::InitializeSets()
+	{
+		mGlobalSet = ResourceSetFactory::Create(RendererTemplates::Global());
+		mObjectSet = ResourceSetFactory::Create(RendererTemplates::Object());
+
+		mGlobalSet.As<ResourceSet>()->SetBuffer(5, mShadowRenderData->ShadowBuffer);
+
+		mObjectSet.As<ResourceSet>()->SetBuffer(0, mObjectBuffer);
+		mObjectSet.As<ResourceSet>()->SetBuffer(1, mIndirectBuffer);
+		mObjectSet.As<ResourceSet>()->SetBuffer(2, mVisibilityBuffer);
 	}
 
 } // namespace BHive

@@ -32,6 +32,12 @@ namespace BHive
 
 		virtual ~Material() = default;
 
+		template <typename T>
+		IMaterial &SetParam(const std::string &name, const T &value) &
+		{
+			return SetParam(name, MaterialParam{value});
+		}
+
 		IMaterial &SetParam(const std::string &name, const MaterialParam &param) & override;
 
 		IMaterial &SetTexture(const std::string &name, const TextureBinding &texture) & override;

@@ -7,6 +7,7 @@
 namespace BHive
 {
 	class SceneRenderer;
+	struct RenderBatch;
 
 	class ShadowRenderer
 	{
@@ -14,10 +15,12 @@ namespace BHive
 		static constexpr uint32_t sMaxLights = 32;
 
 	public:
-		void Init(uint32_t cascaded_levels = 5);
+		void Init();
 
 		void BeginRecording();
-		void EndRecording(FPass &pass, SceneRenderer *sceneRenderer);
+		void EndRecording(FPass &pass, const RenderBatch &batch);
+		void SetLightBuffer(BufferPtr lightBuffer);
+		void SetBoneBuffer(BufferPtr boneBuffer);
 
 		void SubmitDirectionalLight(const FShadowCascadedCreateInfo &info);
 		void SubmitSpotLight(const FShadowFrustumCreateInfo &info);
@@ -30,7 +33,20 @@ namespace BHive
 		TexturePtr GetSpotShadowMap();
 
 	private:
+		void InitializeBuffers();
+		void InitializeSets();
+
+	private:
 		PipelinePtr mPipeline;
 		Ref<struct FShadowRenderData> mShadowRenderData;
+
+		BufferPtr mObjectBuffer;
+		BufferPtr mIndirectBuffer;
+		BufferPtr mVisibilityBuffer;
+
+		ResourceSetPtr mGlobalSet;
+		ResourceSetPtr mObjectSet;
+
+		MaterialPtr mCullingMaterial;
 	};
 } // namespace BHive

@@ -29,6 +29,7 @@ layout(location = 0) in struct VS_OUT
 	mat3 TBN;
 	vec3 CameraPosition;
 	vec3 DebugColor;
+	mat4 View;
 } vs_in;
 
 layout(push_constant) uniform MaterialInfo
@@ -57,8 +58,10 @@ struct StandardMaterial
 layout(set = 0, binding = 2) uniform sampler2D BRDFLutMap;
 layout(set = 0, binding = 3) uniform samplerCube PreFilterMap;
 layout(set = 0, binding = 4) uniform samplerCube IrradianceMap;
-layout(set = 0, binding = 6) uniform samplerCubeArrayShadow ShadowPointMaps;
-layout(set = 0, binding = 7) uniform sampler2DArrayShadow ShadowSpotMaps;
+
+layout(set = 0, binding = 6) uniform sampler2DArrayShadow ShadowDirMaps;
+layout(set = 0, binding = 7) uniform samplerCubeArrayShadow ShadowPointMaps;
+layout(set = 0, binding = 8) uniform sampler2DArrayShadow ShadowSpotMaps;
 
 layout(set = 1, binding = 0) uniform sampler2D DiffuseMap;
 layout(set = 1, binding = 1) uniform sampler2D NormalMap;
@@ -126,7 +129,7 @@ void InDirectSpecular_Standard(const in vec3 irradiance, const in vec3 geoPositi
 	reflectedLight.IndirectSpecular =  irradiance;
 }
 
-
+#define DIRECTIONAL_SHADOW_MAPPING
 #define POINT_SHADOW_MAPPING
 #define SPOT_SHADOW_MAPPING
 #define Direct Direct_Standard

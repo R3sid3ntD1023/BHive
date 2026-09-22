@@ -5,6 +5,7 @@
 layout(local_size_x = 256) in;
 
 #include <Core.glsl>
+#include <Intersections.glsl>
 
 layout(std140, set = 0, binding = 0) uniform CameraBuffer
 {
@@ -32,19 +33,7 @@ layout(std430, set = 3, binding = 2) buffer Visible
     uint visibleIndices[];
 };
 
-bool SphereIntersection(Frustum frustum, vec3 c, float r)
-{
-    for(int i = 0; i < 6; i++)
-    {
-        vec4 plane = frustum.planes[i];
-        float dist = dot(c, plane.xyz) + plane.w; 
 
-        if(dist > r)
-            return false;
-    }
-
-    return true;
-}
 
 void main()
 {
@@ -54,10 +43,9 @@ void main()
 
     ObjectData object = objects[id];
 
-    vec3 center = object.center_radius.xyz;
-    float radius = object.center_radius.w;
-    
-    bool visible = SphereIntersection(uCam.Frustum, center, radius);
+    Sphere s = Sphere(object.center_radius.xyz,object.center_radius.w);
+
+    bool visible = SphereFrustumIntersection(uCam.Frustum, s);
     
     objects[id].debugcolor.xyz = vec3(float(id)/ 10.f, 0.0, 1.0 - float(id) / 10.0);
     objects[id].debugcolor.xyz = visible ? vec3(float(id)/10.0, 0.0, 1.0 - float(id)/10.0) : vec3(1.0, 0.0, 0.0);

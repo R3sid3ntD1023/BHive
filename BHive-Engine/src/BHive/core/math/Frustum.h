@@ -8,10 +8,10 @@ namespace BHive
 	struct BHIVE_API Frustum
 	{
 		Frustum() = default;
-		Frustum(const glm::mat4 &projection, const glm::mat4 &view);
+		Frustum(const glm::mat4 &viewProjection);
 		Frustum(const glm::mat4 &view, float aspect, float fov, float near, float far);
 
-		void Update(const glm::mat4 &projection, const glm::mat4 &view);
+		void Update(const glm::mat4 &viewProjection);
 
 		const std::array<glm::vec4, 6> &GetPlanes() const { return mPlanes; }
 

@@ -11,8 +11,17 @@ void ApplyLighting(vec3 geoPosition, vec3 geoNormal, vec3 geoViewDir, Material m
 
 		GetDirectionalLightInfo(light, directLight);
 
-		#if defined (USE_SHADOW_MAPS) && defined(GetDirectionalShadow)
-			directLight.Color *= GetDirectionalShadow(i, geoPosition);
+		#if defined (DIRECTIONAL_SHADOW_MAPPING) 
+		{
+			if (light.Color.a > 0.0)
+			{
+				DirectionalShadowInfo info = DirShadowInfo[i];
+				float viewDepth = -(vs_in.View * vec4(geoPosition, 1.0)).z;
+				float shadow = SampleShadowDepth(i, viewDepth, geoPosition, info, ShadowDirMaps);
+				directLight.Color *= shadow;
+			}
+			//directLight.Color = DebugCascadeShadow(viewDepth, geoPosition, info);
+		}
 		#endif
 
 
@@ -29,13 +38,16 @@ void ApplyLighting(vec3 geoPosition, vec3 geoNormal, vec3 geoViewDir, Material m
 
 		#if defined(POINT_SHADOW_MAPPING)
 		{
-			PointLightShadowInfo shadow_info = uPointShadowInfo[i];
-			float shadow = GetPointShadow(i, geoPosition, normalize(directLight.Direction), directLight.Direction,  shadow_info.ShadowNearFar.xy, ShadowPointMaps);
-			float dist = length(directLight.Direction);
-			float s = dist / light.Position.w;
-			float shadowFade = 1.0 - smoothstep(0.8, 1.0, s);
-			shadow = mix(1.0, shadow, shadowFade);
-			directLight.Color *= shadow;
+			if (light.Color.a > 0.0)
+			{
+				PointLightShadowInfo shadow_info = PointShadowInfo[i];
+				float shadow = GetPointShadow(i, geoPosition, normalize(directLight.Direction), directLight.Direction, shadow_info.ShadowNearFar.xy, ShadowPointMaps);
+				float dist = length(directLight.Direction);
+				float s = dist / light.Position.w;
+				float shadowFade = 1.0 - smoothstep(0.8, 1.0, s);
+				shadow = mix(1.0, shadow, shadowFade);
+				directLight.Color *= shadow;
+			}
 		}
 		#endif
 
@@ -51,8 +63,14 @@ void ApplyLighting(vec3 geoPosition, vec3 geoNormal, vec3 geoViewDir, Material m
 		GetSpotLightInfo(light, geoPosition, directLight);
 
 		#if defined(SPOT_SHADOW_MAPPING)
-			float shadow = GetSpotLightShadow(i, geoPosition, ShadowSpotMaps);
-			directLight.Color *= shadow;
+		{
+			if (light.Color.a > 0.0)
+			{
+				mat4 viewProj = SpotShadowInfo[i].ViewProjection;
+				float shadow = GetSpotLightShadow(i, viewProj, geoPosition, ShadowSpotMaps);
+				directLight.Color *= shadow;
+			}
+		}
 		#endif
 
 		Direct(geoPosition, geoNormal, geoViewDir, directLight, mat, reflected);

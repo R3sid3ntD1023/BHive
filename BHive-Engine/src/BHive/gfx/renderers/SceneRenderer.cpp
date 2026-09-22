@@ -28,15 +28,6 @@
 
 namespace BHive
 {
-#define MULTI_DRAW_INDIRECT_STRIDE sizeof(MultiDrawIndirectCommand)
-#define MAX_OBJECTS 100
-#define VISIBILITY_BUFFER_SIZE 16 + 16 * MAX_OBJECTS
-#define OBJECT_STRIDE sizeof(ObjectData)
-#define OBJECT_BUFFER_SIZE 16 + OBJECT_STRIDE *MAX_OBJECTS
-#define DRAWCOMMAND_BUFFER_SIZE MULTI_DRAW_INDIRECT_STRIDE *MAX_OBJECTS
-#define MAX_LIGHTS Lights::sMaxLights
-#define MAX_BONES 200
-#define BONE_BUFFER_SIZE sizeof(glm::mat4) * MAX_BONES *MAX_OBJECTS
 
 	void SceneRenderer::Init(const glm::uvec2 &size)
 	{
@@ -50,6 +41,7 @@ namespace BHive
 		mRenderBatches.resize(2);
 		mRenderBatches[0] = CreateRef<RenderBatch>(mRenderQueue, MAX_OBJECTS);
 		mRenderBatches[1] = CreateRef<RenderBatch>(mRenderQueue, MAX_OBJECTS);
+		mShadowBatch = CreateScope<RenderBatch>(mRenderQueue, MAX_OBJECTS);
 
 		// Initialize the framebuffer or any other resources needed for rendering
 		FramebufferSpecification specs;
@@ -99,7 +91,7 @@ namespace BHive
 		auto &renderer = Renderer::Get();
 
 		mSceneView.View = FView::Create(camera->GetProjection(), view);
-		mSceneView.Frustum = Frustum(camera->GetProjection(), view);
+		mSceneView.Frustum = Frustum(camera->GetProjection() * view);
 
 		renderer.BeginBatching();
 		mLights.BeginRecording();
@@ -114,6 +106,7 @@ namespace BHive
 
 		mRenderBatches[0]->Build(mRenderQueue->Opaque);
 		mRenderBatches[1]->Build(mRenderQueue->Transparent);
+		mShadowBatch->Build(mRenderQueue->ShadowPassRenderData);
 
 		auto &renderer = Renderer::Get();
 
@@ -163,7 +156,7 @@ namespace BHive
 			auto objectSet = objectSets[i];
 			// frustum pass
 
-			uint32_t groups = (instanceCount + 256) / 256;
+			uint32_t groups = (instanceCount + 255) / 256;
 			auto &occlusionPass = renderer.BeginPass("Occlusion " + passNames[i], EPassType::OffScreen);
 			occlusionPass.BeginPhase(EPhaseType::Compute);
 			occlusionPass.BindResourceSet(mSceneSets.GlobalSet);
@@ -178,7 +171,7 @@ namespace BHive
 			renderer.EndPass();
 
 			auto &shadowPass = renderer.BeginPass("Shadows", EPassType::OffScreen);
-			mShadows.EndRecording(shadowPass, this);
+			mShadows.EndRecording(shadowPass, *mShadowBatch);
 			renderer.EndPass();
 
 			// render scene passes
@@ -249,14 +242,12 @@ namespace BHive
 	{
 		mLights.Submit(light);
 
-		// FShadowCascadedCreateInfo shadow_info{};
-		// shadow_info.LightDirection = light.GetDirection();
-		// shadow_info.CameraProj = mView.Projection;
-		// shadow_info.InverseCameraView = mView.View;
-		// shadow_info.CameraNearFar = mView.NearFar;
-		// shadow_info.LightCascadeFrustumNear = 1.0f;
+		FShadowCascadedCreateInfo shadow{};
+		shadow.LightDirection = light.GetDirection();
+		shadow.CameraFrustum = mSceneView.Frustum;
+		shadow.CameraNearFar = mSceneView.View.NearFar.xy;
 
-		// mShadows.SubmitDirectionalLight(shadow_info);
+		mShadows.SubmitDirectionalLight(shadow);
 	}
 
 	void SceneRenderer::Submit(const PointLight &light)
@@ -376,8 +367,11 @@ namespace BHive
 		global->SetBuffer(1, mLights.GetBuffer());
 		global->SetTexture(2, mEnvironment.GetBRDFLUT());
 		global->SetBuffer(5, mShadows.GetBuffer());
-		global->SetTexture(6, mShadows.GetPointShadowMap());
-		global->SetTexture(7, mShadows.GetSpotShadowMap());
+		global->SetTexture(6, mShadows.GetDirShadowMap());
+		global->SetTexture(7, mShadows.GetPointShadowMap());
+		global->SetTexture(8, mShadows.GetSpotShadowMap());
+		mShadows.SetLightBuffer(mLights.GetBuffer());
+		mShadows.SetBoneBuffer(mBoneBuffer);
 
 		auto opaqueSet = mSceneSets.OpaqueObjectSet.As<ResourceSet>();
 		opaqueSet->SetBuffer(0, mInstanceDataBuffer[0]);

@@ -4,6 +4,7 @@
 #include "LightCasters.h"
 #include "Lights.h"
 #include "PMREMGenerator.h"
+#include "RenderBatch.h"
 #include "RenderData.h"
 #include "RenderQueue.h"
 #include "ShadowRenderer.h"
@@ -148,6 +149,8 @@ namespace BHive
 		Ref<struct FRenderQueue> mRenderQueue;
 
 		std::vector<Ref<struct RenderBatch>> mRenderBatches;
+
+		Scope<RenderBatch> mShadowBatch;
 
 		glm::uvec2 mSize{0, 0};
 
