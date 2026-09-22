@@ -2,6 +2,7 @@
 
 #include "RenderData.h"
 #include "core/Core.h"
+#include "gfx/Framebuffer.h"
 #include "gfx/rendergraph/Pass.h"
 
 namespace BHive
@@ -37,8 +38,51 @@ namespace BHive
 		void InitializeSets();
 
 	private:
+		struct LightDirections
+		{
+			glm::vec3 normal;
+			glm::vec3 up;
+		};
+
+		struct alignas(16) CascadeShadow
+		{
+			glm::mat4 ViewProjection{1.0f};
+			glm::vec4 SplitData{0.0f};
+			Frustum Frustum{};
+		};
+
+		struct alignas(16) DirectionalShadowData
+		{
+			CascadeShadow Cascades[4];
+		};
+
+		struct alignas(16) PointLightShadowData
+		{
+			glm::mat4 ShadowViewProjections[6];
+			glm::vec4 ShadowNearFar;
+			Frustum Frustums[6];
+		};
+
+		struct alignas(16) SpotLightShadowData
+		{
+			glm::mat4 ViewProjection{1.0f};
+			Frustum Frustum{};
+		};
+
+		struct alignas(16) ShadowData
+		{
+			glm::uvec4 NumShadowMaps = {0, 0, 0, 0};
+			std::array<DirectionalShadowData, sMaxLights> DirProjections = {};
+			std::array<PointLightShadowData, sMaxLights> PointShadowInfos = {};
+			std::array<SpotLightShadowData, sMaxLights> SpotProjections = {};
+		};
+
 		PipelinePtr mPipeline;
-		Ref<struct FShadowRenderData> mShadowRenderData;
+		PipelinePtr mDirectionalPipeline;
+		std::array<MaterialPtr, 3> mShadowMaterials;
+		std::array<FramebufferPtr, 3> mShadowFramebuffers;
+		ShadowData mShadowData;
+		BufferPtr mShadowBuffer;
 
 		BufferPtr mObjectBuffer;
 		BufferPtr mIndirectBuffer;

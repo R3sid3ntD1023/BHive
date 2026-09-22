@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gfx/Texture.h"
 #include "Platform/Vulkan/VulkanImage.h"
+#include "gfx/Texture.h"
 
 namespace BHive
 {
@@ -13,7 +13,7 @@ namespace BHive
 
 		VulkanTextureCube(uint32_t size, const FTextureCreateInfo &createInfo);
 
-		glm::uvec2 GetSize() const  override{ return {mSize, mSize}; }
+		glm::uvec2 GetSize() const override { return {mSize, mSize}; }
 
 		virtual void SetData(const FTextureUploadInfo &info) {}
 
@@ -28,7 +28,6 @@ namespace BHive
 		void DebugPrintState() override;
 
 	private:
-		vk::raii::Device &mDevice;
 		uint32_t mSize{0};
 		FTextureCreateInfo mCreateInfo;
 		VulkanImage mImage;

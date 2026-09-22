@@ -5,8 +5,7 @@
 namespace BHive
 {
 	VulkanTextureCubeArray::VulkanTextureCubeArray(uint32_t size, const FTextureCreateInfo &createInfo)
-		: mDevice(VulkanBackend::GetLogicalDevice()),
-		  mSize(size),
+		: mSize(size),
 		  mCreateInfo(createInfo)
 	{
 		auto layers = mCreateInfo.ArrayLayers * 6;
@@ -14,9 +13,15 @@ namespace BHive
 		auto levels = mCreateInfo.MipLevels;
 		auto extent = vk::Extent3D(mSize, mSize, 1);
 		auto usage = InferImageUsage(mCreateInfo.Roles);
+		auto aspect = ToVkAspect(mCreateInfo.Aspect);
+		auto range = vk::ImageSubresourceRange(aspect, 0, levels, 0, layers);
+		auto magFilter = ToVkFilter(mCreateInfo.MagFilter);
+		auto minFilter = ToVkFilter(mCreateInfo.MinFilter);
+		auto addressMode = ToVkWrap(mCreateInfo.WrapMode);
+		auto compare_enabled = mCreateInfo.CompareOp.has_value();
+		auto compare_op = compare_enabled ? ToVkCompare(mCreateInfo.CompareOp.value()) : vk::CompareOp::eAlways;
 
-		ImageCreateInfo create_info{};
-		create_info.ImageCI = vk::ImageCreateInfo(
+		vk::ImageCreateInfo imgInfo(
 			vk::ImageCreateFlagBits::eCubeCompatible,
 			vk::ImageType::e2D,
 			format,
@@ -30,19 +35,9 @@ namespace BHive
 			0
 		);
 
-		// create default view info image is set in VulkanImage
-		auto aspect = ToVkAspect(mCreateInfo.Aspect);
-		auto range = vk::ImageSubresourceRange(aspect, 0, levels, 0, layers);
-		create_info.ViewCI = vk::ImageViewCreateInfo({}, VK_NULL_HANDLE, vk::ImageViewType::eCubeArray, format, {}, range);
+		vk::ImageViewCreateInfo viewInfo({}, VK_NULL_HANDLE, vk::ImageViewType::eCubeArray, format, {}, range);
 
-		// create sampler info
-		auto magFilter = ToVkFilter(mCreateInfo.MagFilter);
-		auto minFilter = ToVkFilter(mCreateInfo.MinFilter);
-		auto addressMode = ToVkWrap(mCreateInfo.WrapMode);
-		auto compare_enabled = mCreateInfo.CompareOp.has_value();
-		auto compare_op = compare_enabled ? ToVkCompare(mCreateInfo.CompareOp.value()) : vk::CompareOp::eAlways;
-
-		create_info.SamplerCI = vk::SamplerCreateInfo(
+		vk::SamplerCreateInfo smpInfo(
 			{},
 			magFilter,
 			minFilter,
@@ -57,12 +52,12 @@ namespace BHive
 			compare_op,
 			0.0f,
 			float(levels - 1),
-			vk::BorderColor::eFloatOpaqueWhite,
+			ToVkBorderColor(mCreateInfo.BorderColor),
 			VK_FALSE
 		);
-		create_info.DebugName = mCreateInfo.DebugName;
-		create_info.BytesPerPixel = GetBytesPerPixel(mCreateInfo.Format);
-		mImage.Initialize(create_info);
+
+		mImage.Initialize(imgInfo, viewInfo, smpInfo);
+		mImage.SetDebugName(mCreateInfo.DebugName);
 	}
 
 	void VulkanTextureCubeArray::SetData(const FTextureUploadInfo &info)
@@ -71,7 +66,6 @@ namespace BHive
 
 	VkImageView VulkanTextureCubeArray::ResolveRenderView(uint32_t layer, uint32_t mip) const
 	{
-		LOG_INFO("VulkanTextureCubeArray layer {} mip {}", layer, mip);
 		return mImage.GetView(layer, mip);
 	}
 

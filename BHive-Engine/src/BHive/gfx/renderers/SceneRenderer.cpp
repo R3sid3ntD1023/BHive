@@ -244,8 +244,9 @@ namespace BHive
 
 		FShadowCascadedCreateInfo shadow{};
 		shadow.LightDirection = light.GetDirection();
-		shadow.CameraFrustum = mSceneView.Frustum;
 		shadow.CameraNearFar = mSceneView.View.NearFar.xy;
+		shadow.CameraPosition = mSceneView.View.Position;
+		shadow.CameraForward = glm::normalize(-glm::vec3(mSceneView.View.View[2]));
 
 		mShadows.SubmitDirectionalLight(shadow);
 	}

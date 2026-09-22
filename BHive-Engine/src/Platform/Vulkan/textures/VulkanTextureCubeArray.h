@@ -23,8 +23,6 @@ namespace BHive
 		void DebugPrintState() override;
 
 	private:
-		vk::raii::Device &mDevice;
-
 		uint32_t mSize;
 
 		FTextureCreateInfo mCreateInfo;

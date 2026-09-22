@@ -167,15 +167,9 @@ namespace BHive
 			auto swapChainImage = swapChainImages[i];
 			auto &img = mImages[i];
 
-			ImageCreateInfo info{};
-			info.ImageCI.arrayLayers = 1;
-			info.ImageCI.mipLevels = 1;
-			info.ImageCI.usage = vk::ImageUsageFlagBits::eColorAttachment;
-			info.DebugName = std::format("SwapChainImage_{}", i);
-
 			auto range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
-			info.ViewCI = vk::ImageViewCreateInfo({}, swapChainImage, vk::ImageViewType::e2D, mImageFormat.format, {}, range);
-			img.Initialize(swapChainImage, info);
+			vk::ImageViewCreateInfo viewInfo({}, swapChainImage, vk::ImageViewType::e2D, mImageFormat.format, {}, range);
+			img.Initialize(swapChainImage, 1, 1, vk::ImageUsageFlagBits::eColorAttachment, viewInfo, {});
 		}
 	}
 
@@ -184,8 +178,7 @@ namespace BHive
 		if (mDepthImage)
 			mDepthImage = {};
 
-		ImageCreateInfo depth_info{};
-		depth_info.ImageCI = vk::ImageCreateInfo(
+		vk::ImageCreateInfo imgInfo(
 			{},
 			vk::ImageType::e2D,
 			mDepthFormat,
@@ -199,10 +192,9 @@ namespace BHive
 			0
 		);
 		auto range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1);
-		depth_info.ViewCI = vk::ImageViewCreateInfo({}, VK_NULL_HANDLE, vk::ImageViewType::e2D, mDepthFormat, {}, range);
-		depth_info.DebugName = std::format("SwapChainImage_DepthStencil");
-
-		mDepthImage.Initialize(depth_info);
+		vk::ImageViewCreateInfo viewInfo({}, VK_NULL_HANDLE, vk::ImageViewType::e2D, mDepthFormat, {}, range);
+		mDepthImage.Initialize(imgInfo, viewInfo, {});
+		mDepthImage.SetDebugName(std::format("SwapChainImage_DepthStencil"));
 	}
 
 	vk::Semaphore VulkanSwapChain::GetRenderFinishedSemaphore(uint32_t imageIndex)

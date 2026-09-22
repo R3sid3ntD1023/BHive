@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gfx/Texture.h"
 #include "Platform/Vulkan/VulkanImage.h"
+#include "gfx/Texture.h"
 
 namespace BHive
 {
@@ -9,7 +9,7 @@ namespace BHive
 	class BHIVE_API VulkanTexture2D : public Texture2D, public IVulkanTextureInterface
 	{
 	public:
-		VulkanTexture2D();
+		VulkanTexture2D() = default;
 
 		VulkanTexture2D(const glm::uvec2 &size, const FTextureCreateInfo &createInfo, const ByteBuffer &data);
 
@@ -42,8 +42,6 @@ namespace BHive
 		void Initialize();
 
 	private:
-		vk::raii::Device &mDevice;
-
 		glm::uvec2 mSize{0, 0};
 
 		ByteBuffer mBuffer;

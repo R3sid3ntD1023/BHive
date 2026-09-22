@@ -10,7 +10,7 @@ namespace BHive
 		GPUBufferResource(const GPUBufferResource &) = delete;
 		GPUBufferResource &operator=(const GPUBufferResource &) = delete;
 
-		GPUBufferResource(const std::string &name, vk::BufferCreateInfo info, vk::MemoryPropertyFlags flags, size_t Size, MemoryAllocator *allocator);
+		GPUBufferResource(vk::BufferCreateInfo info, vk::MemoryPropertyFlags flags, size_t Size, MemoryAllocator *allocator);
 
 		~GPUBufferResource();
 

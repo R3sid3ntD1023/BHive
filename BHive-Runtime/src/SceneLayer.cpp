@@ -136,7 +136,7 @@ namespace BHive
 
 		FMeshSubmissionRequest request{};
 		request.Materials = mMaterialTables[2];
-		request.Transform = FTransform{{0, 0, 0}};
+		request.Transform = FTransform{{0, -.5, 0}};
 		request.Mesh = plane;
 		mSceneRenderer->SubmitMesh(request, sPlaneHandle);
 

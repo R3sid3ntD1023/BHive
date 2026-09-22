@@ -9,19 +9,6 @@
 
 namespace BHive
 {
-	struct ImageCreateInfo
-	{
-		vk::ImageCreateInfo ImageCI{};
-
-		vk::ImageViewCreateInfo ViewCI{};
-
-		vk::SamplerCreateInfo SamplerCI{};
-
-		// Engine metadata
-		std::string DebugName{};
-		uint32_t BytesPerPixel = 0;
-	};
-
 	DECLARE_EVENT(OnDestroyed, ResourceID)
 
 	class VulkanImage : public INativeObject
@@ -29,10 +16,12 @@ namespace BHive
 	public:
 		~VulkanImage();
 
-		void Initialize(const ImageCreateInfo &info);
+		void Initialize(const vk::ImageCreateInfo &imgInfo, const vk::ImageViewCreateInfo &viewInfo, const vk::SamplerCreateInfo &smpInfo);
 
 		// ImageCI unused
-		void Initialize(const vk::Image &img, const ImageCreateInfo &info);
+		void Initialize(
+			const vk::Image &img, uint32_t layers, uint32_t levels, vk::ImageUsageFlags usage, const vk::ImageViewCreateInfo &viewInfo, const vk::SamplerCreateInfo &smpInfo
+		);
 
 		void Upload(const void *data, size_t size, ImageCopyRegion region, ImageSubresourceRange range = {});
 
@@ -49,6 +38,8 @@ namespace BHive
 		vk::ImageView GetView(uint32_t layer, uint32_t mip) const;
 
 		vk::Sampler GetSampler() const;
+
+		void SetDebugName(const std::string &dbgName);
 
 		void Clear();
 
@@ -68,9 +59,11 @@ namespace BHive
 
 		ImageStateTracker mStateTracker;
 
-		ImageCreateInfo mInfo;
+		uint32_t mLayers = 0, mLevels = 0;
 
-		bool mRawImage{0};
+		vk::Extent3D mExtents{0, 0, 1};
+
+		vk::ImageAspectFlags mImageAspect = vk::ImageAspectFlagBits::eColor;
 	};
 
 } // namespace BHive

@@ -77,9 +77,9 @@ namespace BHive
 
 	struct FShadowCascadedCreateInfo
 	{
-		Frustum CameraFrustum;
-
 		glm::vec2 CameraNearFar;
+		glm::vec3 CameraPosition;
+		glm::vec3 CameraForward;
 
 		glm::vec3 LightDirection;
 	};

@@ -3,7 +3,7 @@
 
 namespace BHive
 {
-	GPUBufferResource::GPUBufferResource(const std::string &name, vk::BufferCreateInfo info, vk::MemoryPropertyFlags flags, size_t size, MemoryAllocator *allocator)
+	GPUBufferResource::GPUBufferResource(vk::BufferCreateInfo info, vk::MemoryPropertyFlags flags, size_t size, MemoryAllocator *allocator)
 		: Size(size),
 		  mAllocator(allocator)
 	{
@@ -12,8 +12,6 @@ namespace BHive
 		Allocation = allocator->Allocate(Buffer, flags);
 
 		Buffer.bindMemory(Allocation.Memory, Allocation.Offset);
-
-		VulkanBackend::SetObjectName(*Buffer, name);
 	}
 
 	GPUBufferResource::~GPUBufferResource()

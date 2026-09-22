@@ -100,6 +100,14 @@ namespace BHive
 
 		MaterialSnapshot Snapshot;
 
+		void operator()(MaterialPtr material)
+		{
+			auto *resolved = material.As<Material>();
+			ASSERT(resolved, "Invalid material handle");
+			if (resolved)
+				Snapshot = resolved->CreateSnapshot();
+		}
+
 		void operator()(IMaterial *mat) { Snapshot = mat->CreateSnapshot(); }
 	};
 

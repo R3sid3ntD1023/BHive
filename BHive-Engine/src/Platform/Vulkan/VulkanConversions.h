@@ -292,6 +292,26 @@ namespace BHive
 		return vk::SamplerAddressMode::eRepeat;
 	}
 
+	inline vk::BorderColor ToVkBorderColor(EBorderColor color)
+	{
+		switch (color)
+		{
+		case EBorderColor::FLOAT_TRANSPARENT_BLACK:
+			return vk::BorderColor::eFloatTransparentBlack;
+		case EBorderColor::FLOAT_OPAQUE_BLACK:
+			return vk::BorderColor::eFloatOpaqueBlack;
+		case EBorderColor::FLOAT_OPAQUE_WHITE:
+			return vk::BorderColor::eFloatOpaqueWhite;
+		case EBorderColor::INT_TRANSPARENT_BLACK:
+			return vk::BorderColor::eIntTransparentBlack;
+		case EBorderColor::INT_OPAQUE_WHITE:
+			return vk::BorderColor::eIntOpaqueWhite;
+		case EBorderColor::INT_OPAQUE_BLACK:
+		default:
+			return vk::BorderColor::eIntOpaqueBlack;
+		}
+	}
+
 	inline vk::ShaderStageFlags ToVkShaderStageBit(EShaderStage s)
 	{
 		vk::ShaderStageFlags flags{};

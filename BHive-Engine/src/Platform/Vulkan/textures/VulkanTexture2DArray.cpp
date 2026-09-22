@@ -5,8 +5,7 @@
 namespace BHive
 {
 	VulkanTexture2DArray::VulkanTexture2DArray(const glm::uvec2 &size, const FTextureCreateInfo &createInfo)
-		: mDevice(VulkanBackend::GetLogicalDevice()),
-		  mSize(size),
+		: mSize(size),
 		  mCreateInfo(createInfo)
 	{
 		auto format = ToVkFormat(mCreateInfo.Format);
@@ -14,24 +13,21 @@ namespace BHive
 		auto layers = mCreateInfo.ArrayLayers;
 		auto extent = vk::Extent3D(mSize.x, mSize.y, 1);
 		auto usage = InferImageUsage(mCreateInfo.Roles);
-
-		ImageCreateInfo create_info{};
-		create_info.ImageCI
-			= vk::ImageCreateInfo({}, vk::ImageType::e2D, format, extent, levels, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage, vk::SharingMode::eExclusive, 0);
-
-		// create default view info image is set in VulkanImage
 		auto aspect = ToVkAspect(mCreateInfo.Aspect);
-		auto range = vk::ImageSubresourceRange(aspect, 0, levels, 0, layers);
-		create_info.ViewCI = vk::ImageViewCreateInfo({}, VK_NULL_HANDLE, vk::ImageViewType::e2DArray, format, {}, range);
-
-		// create sampler info
 		auto magFilter = ToVkFilter(mCreateInfo.MagFilter);
 		auto minFilter = ToVkFilter(mCreateInfo.MinFilter);
 		auto addressMode = ToVkWrap(mCreateInfo.WrapMode);
 		auto compare_enabled = mCreateInfo.CompareOp.has_value();
 		auto compare_op = compare_enabled ? ToVkCompare(mCreateInfo.CompareOp.value()) : vk::CompareOp::eAlways;
+		auto range = vk::ImageSubresourceRange(aspect, 0, levels, 0, layers);
 
-		create_info.SamplerCI = vk::SamplerCreateInfo(
+		vk::ImageCreateInfo imgInfo(
+			{}, vk::ImageType::e2D, format, extent, levels, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage, vk::SharingMode::eExclusive, 0
+		);
+
+		vk::ImageViewCreateInfo viewInfo({}, VK_NULL_HANDLE, vk::ImageViewType::e2DArray, format, {}, range);
+
+		vk::SamplerCreateInfo smpInfo(
 			{},
 			magFilter,
 			minFilter,
@@ -46,12 +42,12 @@ namespace BHive
 			compare_op,
 			0.0f,
 			float(levels - 1),
-			vk::BorderColor::eIntOpaqueBlack,
+			ToVkBorderColor(mCreateInfo.BorderColor),
 			VK_FALSE
 		);
-		create_info.DebugName = mCreateInfo.DebugName;
-		create_info.BytesPerPixel = GetBytesPerPixel(mCreateInfo.Format);
-		mImage.Initialize(create_info);
+
+		mImage.Initialize(imgInfo, viewInfo, smpInfo);
+		mImage.SetDebugName(mCreateInfo.DebugName);
 	}
 
 	void VulkanTexture2DArray::SetData(const FTextureUploadInfo &info)

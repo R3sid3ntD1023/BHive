@@ -12,11 +12,19 @@ namespace BHive
 		FTextureCreateInfo CreateInfo{};
 		ETextureType Type = ETextureType::TEXTURE_2D;
 		TexturePtr ExternalTexture = {};
-	};
 
-	struct FRenderbufferTexture
-	{
-		EFormat Format = EFormat::None;
+		FFramebufferTexture() = default;
+		FFramebufferTexture(const FTextureCreateInfo &createInfo, ETextureType type = ETextureType::TEXTURE_2D)
+			: CreateInfo(createInfo),
+			  Type(type)
+		{
+		}
+
+		FFramebufferTexture(TexturePtr texture, ETextureType type = ETextureType::TEXTURE_2D)
+			: Type(type),
+			  ExternalTexture(texture)
+		{
+		}
 	};
 
 	struct BHIVE_API FramebufferAttachments
@@ -27,7 +35,6 @@ namespace BHive
 		{
 			mColorAttachments.clear();
 			mDepthAttachment = {};
-			mRenderBufferSpecification = {};
 			return *this;
 		}
 
@@ -37,30 +44,31 @@ namespace BHive
 			return *this;
 		}
 
+		FramebufferAttachments &AddColorAttachment(const FTextureCreateInfo &createInfo, ETextureType type = ETextureType::TEXTURE_2D)
+		{
+			return AddColorAttachment(FFramebufferTexture{createInfo, type});
+		}
+
 		FramebufferAttachments &SetDepthAttachment(const FFramebufferTexture &spec)
 		{
 			mDepthAttachment = spec;
 			return *this;
 		}
 
-		FramebufferAttachments &SetRenderBuffer(const FRenderbufferTexture &format)
+		FramebufferAttachments &SetDepthAttachment(const FTextureCreateInfo &createInfo, ETextureType type = ETextureType::TEXTURE_2D)
 		{
-			mRenderBufferSpecification = format;
-			return *this;
+			return SetDepthAttachment(FFramebufferTexture{createInfo, type});
 		}
 
 		const std::vector<FFramebufferTexture> &GetColorAttachments() const { return mColorAttachments; }
 
 		const FFramebufferTexture &GetDepthAttachment() const { return mDepthAttachment; }
 
-		const FRenderbufferTexture &GetRenderBuffer() const { return mRenderBufferSpecification; }
-
 		uint32_t GetColorAttachmentCount() const { return mColorAttachments.size(); }
 
 	private:
 		std::vector<FFramebufferTexture> mColorAttachments;
 		FFramebufferTexture mDepthAttachment;
-		FRenderbufferTexture mRenderBufferSpecification;
 
 		friend class Framebuffer;
 	};
@@ -69,7 +77,6 @@ namespace BHive
 	{
 		FramebufferAttachments Attachments;
 		glm::uvec2 Size{800, 600};
-		uint32_t Depth = 1;
 		uint32_t Samples = 1;
 		std::string DebugName = "";
 	};

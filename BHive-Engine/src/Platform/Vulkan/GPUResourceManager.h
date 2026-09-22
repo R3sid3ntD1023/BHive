@@ -98,15 +98,15 @@ namespace BHive
 
 		void Shutdown();
 
-		GPUBufferResourceHandle CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name = "");
+		GPUBufferResourceHandle CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags);
 
-		ResourceID CreateImage(const vk::ImageCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name = "");
+		ResourceID CreateImage(const vk::ImageCreateInfo &info, vk::MemoryPropertyFlags flags);
 
-		ResourceID RegisterExternalImage(const vk::Image &image, const std::string &name = "");
+		ResourceID RegisterExternalImage(const vk::Image &image);
 
-		ResourceID CreateImageView(const vk::ImageViewCreateInfo &info, const std::string &name = "");
+		ResourceID CreateImageView(const vk::ImageViewCreateInfo &info);
 
-		ResourceID CreateSampler(const vk::SamplerCreateInfo &info, const std::string &name = "");
+		ResourceID CreateSampler(const vk::SamplerCreateInfo &info);
 
 		void Destroy(GPUBufferResourceHandle handle);
 

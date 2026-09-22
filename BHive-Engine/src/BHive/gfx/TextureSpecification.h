@@ -5,7 +5,8 @@
 #include "gfx/Enumerations.h"
 
 namespace BHive
-{;
+{
+	;
 
 	struct FTextureCreateInfo
 	{
@@ -16,6 +17,8 @@ namespace BHive
 		EFormat Format = EFormat::None;
 
 		EWrapMode WrapMode = EWrapMode::REPEAT;
+
+		EBorderColor BorderColor = EBorderColor::INT_OPAQUE_BLACK;
 
 		EMinFilter MinFilter = EMinFilter::LINEAR;
 
@@ -33,11 +36,12 @@ namespace BHive
 
 		template <typename A>
 		void Serialize(A &ar)
-		{		
+		{
 			ar(MAKE_NVP(Roles));
 			ar(MAKE_NVP(Aspect));
 			ar(MAKE_NVP(Format));
 			ar(MAKE_NVP(WrapMode));
+			ar(MAKE_NVP(BorderColor));
 			ar(MAKE_NVP(MinFilter));
 			ar(MAKE_NVP(MagFilter));
 			ar(MAKE_NVP(CompareMode));

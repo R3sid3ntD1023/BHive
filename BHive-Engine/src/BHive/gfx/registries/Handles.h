@@ -28,6 +28,7 @@ namespace BHive
 	class Font;
 	class VertexArray;
 	class BufferBase;
+	class ResourceSet;
 
 	using MeshPtr = ResourceHandle;
 

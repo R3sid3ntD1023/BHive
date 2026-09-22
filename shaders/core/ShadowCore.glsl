@@ -30,6 +30,8 @@ float GetSpotLightShadow(int light, mat4 lightViewProjection, vec3 position, in 
 	vec4 fragLightPos = lightViewProjection * vec4(position, 1.0f);
 	vec3 projCoords = fragLightPos.xyz / fragLightPos.w;
 	projCoords = (projCoords + 1.f) * .5f;
+	if (any(lessThan(projCoords, vec3(0.0))) || any(greaterThan(projCoords, vec3(1.0))))
+		return 1.0;
 
 #if USE_POISSONDISK
 	float shadow = 0.0;
@@ -61,10 +63,14 @@ float GetPointShadow(int light, vec3 position, vec3 lightDirection, vec3 lightVe
 {
 	vec3 absDirect = abs(lightVector);
 	float dist = max(absDirect.x, max(absDirect.y, absDirect.z));
+	if (dist <= 0.0001 || dist > near_far.y)
+		return 1.0;
+
 	float depth = (near_far.y + near_far.x) * dist;
 	depth += (-2 * near_far.y * near_far.x);
 	depth /= (near_far.y - near_far.x) * dist;
 	depth = (depth * 0.5) + 0.5;
+	depth = clamp(depth, 0.0, 1.0);
 
 #if USE_POISSONDISK
 	float shadow = 0.0;

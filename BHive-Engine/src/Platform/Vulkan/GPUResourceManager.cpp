@@ -20,14 +20,14 @@ namespace BHive
 	{
 	}
 
-	GPUBufferResourceHandle GPUResourceManager::CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name)
+	GPUBufferResourceHandle GPUResourceManager::CreateBuffer(const vk::BufferCreateInfo &info, vk::MemoryPropertyFlags flags)
 	{
 		GPUBufferResourceHandle id{};
-		mBuffers.try_emplace(id, name, info, flags, info.size, &VulkanBackend::GetMemoryAllocator());
+		mBuffers.try_emplace(id, info, flags, info.size, &VulkanBackend::GetMemoryAllocator());
 		return id;
 	}
 
-	ResourceID GPUResourceManager::CreateImage(const vk::ImageCreateInfo &info, vk::MemoryPropertyFlags flags, const std::string &name)
+	ResourceID GPUResourceManager::CreateImage(const vk::ImageCreateInfo &info, vk::MemoryPropertyFlags flags)
 	{
 		ResourceID id{};
 		auto &image = GetStorage<vk::raii::Image>().Create(id);
@@ -41,25 +41,20 @@ namespace BHive
 		allocation = allocator.Allocate(image, flags);
 		image.bindMemory(allocation.Memory, allocation.Offset);
 
-		VulkanBackend::SetObjectName(*image, name);
-		VulkanBackend::SetObjectName(allocation.Memory, name + "_Memory");
-
 		return id;
 	}
 
-	ResourceID GPUResourceManager::RegisterExternalImage(const vk::Image &image, const std::string &name)
+	ResourceID GPUResourceManager::RegisterExternalImage(const vk::Image &image)
 	{
 		ResourceID id{};
 		auto &storage = GetStorage<vk::Image>();
 		storage.Create(id) = image;
 		mExternalImages.insert(id);
 
-		VulkanBackend::SetObjectName(image, name);
-
 		return id;
 	}
 
-	ResourceID GPUResourceManager::CreateImageView(const vk::ImageViewCreateInfo &info, const std::string &name)
+	ResourceID GPUResourceManager::CreateImageView(const vk::ImageViewCreateInfo &info)
 	{
 		ResourceID id{};
 		auto &view = GetStorage<vk::raii::ImageView>().Create(id);
@@ -67,19 +62,15 @@ namespace BHive
 		auto &device = VulkanBackend::GetLogicalDevice();
 		view = device.createImageView(info);
 
-		VulkanBackend::SetObjectName(*view, name);
-
 		return id;
 	}
 
-	ResourceID GPUResourceManager::CreateSampler(const vk::SamplerCreateInfo &info, const std::string &name)
+	ResourceID GPUResourceManager::CreateSampler(const vk::SamplerCreateInfo &info)
 	{
 		ResourceID id{};
 		auto &sampler = GetStorage<vk::raii::Sampler>().Create(id);
 		auto &device = VulkanBackend::GetLogicalDevice();
 		sampler = device.createSampler(info);
-		VulkanBackend::SetObjectName(*sampler, name);
-
 		return id;
 	}
 
@@ -90,7 +81,8 @@ namespace BHive
 			{
 				auto &storage = mBuffers;
 				storage.erase(handle);
-			});
+			}
+		);
 	}
 
 	void GPUResourceManager::DestroyImage(ResourceID handle)
@@ -119,7 +111,8 @@ namespace BHive
 				}
 
 				handle.Release();
-			});
+			}
+		);
 	}
 
 	void GPUResourceManager::DestroyImageView(ResourceID handle)
@@ -131,7 +124,8 @@ namespace BHive
 				storage.Remove(handle);
 
 				handle.Release();
-			});
+			}
+		);
 	}
 
 	void GPUResourceManager::DestroySampler(ResourceID handle)
@@ -143,7 +137,8 @@ namespace BHive
 				storage.Remove(handle);
 
 				handle.Release();
-			});
+			}
+		);
 	}
 
 	GPUBufferResource *GPUResourceManager::ResolveBuffer(GPUBufferResourceHandle handle)

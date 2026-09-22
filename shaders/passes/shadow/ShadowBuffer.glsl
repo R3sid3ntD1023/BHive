@@ -85,6 +85,9 @@ float SampleShadowDepth(int light, float viewDepth, vec3 geoPosition,Directional
 {
 	int cascade = 0;
 	vec3 uvw = GetDirectionalShadowUvs(viewDepth, geoPosition, info, cascade);
+	if (any(lessThan(uvw, vec3(0.0))) || any(greaterThan(uvw, vec3(1.0))))
+		return 1.0;
+
 	float shadow = texture(shadowRaw, vec4(uvw.xy, light * 4 + cascade, uvw.z));
 	
 	return shadow;

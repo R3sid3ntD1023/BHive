@@ -196,6 +196,16 @@ namespace BHive
 		CLAMP_TO_BORDER
 	};
 
+	enum class EBorderColor
+	{
+		FLOAT_TRANSPARENT_BLACK,
+		FLOAT_OPAQUE_BLACK,
+		FLOAT_OPAQUE_WHITE,
+		INT_TRANSPARENT_BLACK,
+		INT_OPAQUE_BLACK,
+		INT_OPAQUE_WHITE
+	};
+
 	enum class ClearMask : uint32_t
 	{
 		None = 0,

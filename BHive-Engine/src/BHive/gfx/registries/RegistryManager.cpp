@@ -1,5 +1,6 @@
 #include "RegistryManager.h"
 #include "ResourceRegistry.h"
+#include "gfx/Buffers.h"
 #include "gfx/Framebuffer.h"
 #include "gfx/Pipeline.h"
 #include "gfx/ResourceSet.h"
@@ -23,6 +24,8 @@ namespace BHive
 		RegisterRegistry<Font>();
 		RegisterRegistry<Framebuffer>();
 		RegisterRegistry<BufferBase>();
+		RegisterRegistry<VertexBuffer>();
+		RegisterRegistry<IndexBuffer>();
 		RegisterRegistry<VertexArray>();
 		RegisterRegistry<Pipeline>();
 		RegisterRegistry<Shader>();
@@ -41,6 +44,8 @@ namespace BHive
 		UnRegisterRegistry<Font>();
 		UnRegisterRegistry<Framebuffer>();
 		UnRegisterRegistry<BufferBase>();
+		UnRegisterRegistry<VertexBuffer>();
+		UnRegisterRegistry<IndexBuffer>();
 		UnRegisterRegistry<VertexArray>();
 		UnRegisterRegistry<Pipeline>();
 		UnRegisterRegistry<Shader>();
