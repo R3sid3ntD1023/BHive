@@ -69,7 +69,7 @@ void GetPointLightInfo(const in PointLight light, const in vec3 geoPosition, ino
 	float fade = 1.0 - smoothstep(0.5, 1.0, s);
 
 	float attenuation = sqrt(max(0.0, 1.0 - sqrt(min(s, 1.0)))) / (1.0 + radius * s);
-	directLight.Color =  light.Color.rgb * light.Color.a * attenuation * fade;
+	directLight.Color = light.Color.rgb * light.Color.a * attenuation * fade;
 }
 
 void GetSpotLightInfo(const in SpotLight light, const in vec3 geoPosition, inout IncidentLight directLight)

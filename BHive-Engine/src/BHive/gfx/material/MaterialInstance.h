@@ -9,7 +9,7 @@ namespace BHive
 	class BHIVE_API MaterialInstance : public IMaterial
 	{
 	public:
-		MaterialInstance(const Ref<Material> &parent);
+		MaterialInstance(MaterialPtr parent);
 
 		IMaterial &SetParam(const std::string &name, const MaterialParam &val) & override;
 
@@ -18,7 +18,7 @@ namespace BHive
 		MaterialSnapshot CreateSnapshot() const override;
 
 	private:
-		Ref<Material> mParent;
+		MaterialPtr mParent;
 		std::unordered_map<uint64_t, TextureBinding> mTextureOverrides;
 		std::unordered_map<uint64_t, MaterialParam> mUniformOverrides;
 	};

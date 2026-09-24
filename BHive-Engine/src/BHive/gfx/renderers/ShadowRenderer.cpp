@@ -290,7 +290,9 @@ namespace BHive
 			splits[i] = glm::mix(uniformSplit, logSplit, 0.95f);
 		}
 
-		static constexpr float cascadeExtents[4] = {20.0f, 45.0f, 90.0f, 180.f};
+		float cascadeExtents[4] = {20.0f, 45.0f, 90.0f, 180.f};
+
+		glm::vec3 center = {0, 0, 0};
 
 		for (uint32_t cascade = 0; cascade < 4; cascade++)
 		{
@@ -302,22 +304,12 @@ namespace BHive
 
 			const float extent = cascadeExtents[cascade];
 			const float radius = extent * 0.5f;
-			glm::vec3 center = info.CameraPosition + info.CameraForward * ((cascadeStart + cascadeEnd) * 0.5f);
 
-			const auto up = glm::abs(info.LightDirection.y) > 0.99f ? glm::vec3(1, 0, 0) : glm::vec3(0, 1, 0);
-			glm::mat4 lightView = glm::lookAt(center - info.LightDirection * radius * 2.0f, center, up);
-			glm::vec4 centerLS = lightView * glm::vec4(center, 1.0f);
+			const auto lightPos = -info.LightDirection * extent;
+			const auto up = glm::abs(lightPos.y) > 0.99f ? glm::vec3(1, 0, 0) : glm::vec3(0, 1, 0);
+			glm::mat4 lightView = glm::lookAt(lightPos, center, glm::vec3(0, 1, 0));
 
-			float texelSize = (extent * 2.0f) / DIRECTIONAL_SHADOWMAP_SIZE;
-
-			// snap center
-			centerLS.x = glm::floor(centerLS.x / texelSize) * texelSize;
-			centerLS.y = glm::floor(centerLS.y / texelSize) * texelSize;
-			center = glm::inverse(lightView) * centerLS;
-
-			lightView = glm::lookAt(center - info.LightDirection * extent, center, up);
-
-			auto proj = glm::ortho(-extent, extent, -extent, extent, -extent * 4.0f, extent * 4.0f);
+			auto proj = glm::ortho(-extent, extent, -extent, extent, -extent * 8.0f, extent * 8.0f);
 			shadow_data.DirProjections[k].Cascades[cascade].ViewProjection = proj * lightView;
 			shadow_data.DirProjections[k].Cascades[cascade].Frustum = Frustum(proj * lightView);
 		}

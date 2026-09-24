@@ -9,9 +9,8 @@
 
 namespace BHive
 {
-	class Texture;
 
-	class BHIVE_API Material : public Asset, public IMaterial
+	class BHIVE_API Material : public IMaterial, public Asset
 	{
 	public:
 		enum class ESurfaceType : uint8_t

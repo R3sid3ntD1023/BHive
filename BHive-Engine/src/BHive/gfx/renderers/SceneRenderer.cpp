@@ -235,7 +235,7 @@ namespace BHive
 
 	void SceneRenderer::SetViewOverride(const FView &view)
 	{
-		mSceneView.View = view;
+		mSceneView.View.ViewProjection = view.ViewProjection;
 	}
 
 	void SceneRenderer::Submit(const DirectionalLight &light)
@@ -245,8 +245,9 @@ namespace BHive
 		FShadowCascadedCreateInfo shadow{};
 		shadow.LightDirection = light.GetDirection();
 		shadow.CameraNearFar = mSceneView.View.NearFar.xy;
-		shadow.CameraPosition = mSceneView.View.Position;
-		shadow.CameraForward = glm::normalize(-glm::vec3(mSceneView.View.View[2]));
+		shadow.CameraForward = -glm::normalize(glm::vec3(glm::inverse(mSceneView.View.View)[2]));
+		shadow.CameraPostion = mSceneView.View.Position;
+		shadow.CameraFrustum = mSceneView.Frustum;
 
 		mShadows.SubmitDirectionalLight(shadow);
 	}

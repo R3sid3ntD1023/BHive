@@ -1,6 +1,7 @@
 #include "MaterialFactory.h"
 #include "gfx/material/EmissiveMaterial.h"
 #include "gfx/material/LambertMaterial.h"
+#include "gfx/material/MaterialInstance.h"
 #include "gfx/material/StandardMaterial.h"
 
 namespace BHive
@@ -23,6 +24,11 @@ namespace BHive
 	MaterialPtr MaterialFactory::CreateEmissive()
 	{
 		return CreateResource<EmissiveMaterial>();
+	}
+
+	MaterialPtr MaterialFactory::CreateInstance(MaterialPtr parent)
+	{
+		return CreateResource<MaterialInstance>(parent);
 	}
 
 } // namespace BHive

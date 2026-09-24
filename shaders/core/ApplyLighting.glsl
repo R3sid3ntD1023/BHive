@@ -12,7 +12,7 @@ void ApplyLighting(vec3 geoPosition, vec3 geoNormal, vec3 geoViewDir, Material m
 		GetDirectionalLightInfo(light, directLight);
 
 		#if defined (DIRECTIONAL_SHADOW_MAPPING) 
-		{
+		{		
 			if (light.Color.a > 0.0)
 			{
 				DirectionalShadowInfo info = DirShadowInfo[i];
@@ -20,7 +20,6 @@ void ApplyLighting(vec3 geoPosition, vec3 geoNormal, vec3 geoViewDir, Material m
 				float shadow = SampleShadowDepth(i, viewDepth, geoPosition, info, ShadowDirMaps);
 				directLight.Color *= shadow;
 			}
-			//directLight.Color = DebugCascadeShadow(viewDepth, geoPosition, info);
 		}
 		#endif
 

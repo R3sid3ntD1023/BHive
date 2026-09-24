@@ -65,44 +65,29 @@ namespace BHive
 		mSceneRenderer->Init(mViewportSize);
 		mSceneRenderer->SetEnvironmentTexture(TextureFactory::Create2D(decodeEnvironment));
 
-		mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
-		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
-		mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
+		// mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
+		//  mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
+		//  mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
 
 		auto mesh = MeshFactory::CreateSphere(1.0f, 32u, 32u);
 		auto plane = MeshFactory::CreatePlane(50.f, 50.f);
+		mTexture = TextureFactory::Create2D(decodedSprite);
 
 		{
 
-			mStandardMaterial = MaterialFactory::CreateStandard();
+			auto sphereMat = MaterialFactory::CreateStandard();
+			auto planeMat = MaterialFactory::CreateStandard();
 
-			mMaterialTables[0].Add(MaterialFactory::CreateLambert());
-			mMaterialTables[1].Add(MaterialFactory::CreateLambert());
-			mMaterialTables[2].Add(mStandardMaterial);
+			planeMat.As<StandardMaterial>()->SetFlags(StandardMaterial::EFlags::ReceiveShadows);
 
-			{
+			auto mat = sphereMat.As<StandardMaterial>();
+			mat->SetAlbedo({0.5f, 0.5f, 0.5f, 1.0f});
+			mat->SetEmission(FColor::Black);
+			mat->SetMetalness(0.0f);
+			mat->SetRoughness(0.5f);
 
-				mTexture = TextureFactory::Create2D(decodedSprite);
-				auto material = mMaterialTables[0][0].As<LambertMaterial>();
-				material->SetDiffuseColor(FColor::DarkGray).SetEmissionColor(FColor::Black);
-				material->SetTexture("DiffuseMap", {mTexture});
-			}
-
-			{
-				auto texture = TextureFactory::Create2D(decodedMario);
-				auto material = mMaterialTables[1][0].As<LambertMaterial>();
-				material->SetDiffuseColor({.2f, .2f, .2f, 1.0f});
-				material->SetTexture("DiffuseMap", {texture});
-				material->SetSurfaceType(Material::ESurfaceType::Transparent);
-			}
-
-			{
-				auto material = mMaterialTables[2][0].As<StandardMaterial>();
-				material->SetAlbedo({0.5f, 0.5f, 0.5f, 1.0f});
-				material->SetEmission(FColor::Black);
-				material->SetMetalness(0.0f);
-				material->SetRoughness(0.5f);
-			}
+			mMaterialTables[0].Add(planeMat);
+			mMaterialTables[1].Add(sphereMat);
 		}
 
 #if 0
@@ -117,7 +102,7 @@ namespace BHive
 		mCameraController.SetCamera(&mCameras[0]);
 
 		// lights
-		main.SetColor(FColor::White).SetIntensity(1.0f).SetDirection({-0.4f, -0.3f, -0.0f});
+		main.SetColor(FColor::White).SetIntensity(1.0f).SetDirection({-1.0f, -1.0f, 0.0f});
 		light.SetColor(FColor::Orange).SetIntensity(1.0f).SetRadius(10.f).SetPosition({0, 1, 0});
 		spotLight.SetColor(FColor::Brown).SetIntensity(10.0f).SetRadius(10.0f).SetDirection({0.f, -1.f, 0.f}).SetPosition({1, 5, 0});
 
@@ -128,14 +113,14 @@ namespace BHive
 			{
 				FMeshSubmissionRequest request{};
 				request.Mesh = mesh;
-				request.Materials = mMaterialTables[2];
+				request.Materials = mMaterialTables[1];
 				request.Transform = transforms.emplace_back(FTransform{{i * 3.0f, 1.5f, j * 3.0f}});
 				mSceneRenderer->SubmitMesh(request, sSphereHandle[count]);
 			}
 		}
 
 		FMeshSubmissionRequest request{};
-		request.Materials = mMaterialTables[2];
+		request.Materials = mMaterialTables[0];
 		request.Transform = FTransform{{0, -.5, 0}};
 		request.Mesh = plane;
 		mSceneRenderer->SubmitMesh(request, sPlaneHandle);
@@ -218,6 +203,7 @@ namespace BHive
 		renderer.Line.DrawLine({0, 0, 0}, {10, 0, 0}, FColor::Red);
 		renderer.Line.DrawLine({0, 0, 0}, {0, 10, 0}, FColor::Green);
 		renderer.Line.DrawLine({0, 0, 0}, {0, 0, 10}, FColor::Blue);
+		renderer.Line.DrawLine({0, 0, 0}, main.GetDirection() * 5.0f, main.GetColor(), FTransform{{-5, 5, 0}});
 
 		renderer.Quad.DrawQuad(FQuadParams{}, mTexture, FTransform{{-2, 4, 0}});
 
@@ -265,7 +251,7 @@ namespace BHive
 
 			auto inspect = [&](const std::string label)
 			{
-				auto mat = mStandardMaterial.As<StandardMaterial>();
+				auto mat = mMaterialTables[1][0].As<StandardMaterial>();
 				Inspect::get().inspect(label, *mat);
 			};
 

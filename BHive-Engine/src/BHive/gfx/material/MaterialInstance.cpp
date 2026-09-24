@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	MaterialInstance::MaterialInstance(const Ref<Material> &parent)
+	MaterialInstance::MaterialInstance(MaterialPtr parent)
 		: mParent(parent)
 	{
 	}
@@ -25,7 +25,7 @@ namespace BHive
 
 	MaterialSnapshot MaterialInstance::CreateSnapshot() const
 	{
-		auto base = mParent->CreateSnapshot();
+		auto base = mParent.As<IMaterial>()->CreateSnapshot();
 		auto &shaderTemplate = base.Shader.As<Shader>()->GetTemplate();
 
 		for (auto &[nameHash, slot] : mTextureOverrides)

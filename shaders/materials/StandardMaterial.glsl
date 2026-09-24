@@ -18,7 +18,6 @@
 #define USE_EMISSION_MAP
 #define USE_OPACITY_MAP
 #define USE_ENVIRONMENT_MAPS
-#define USE_SHADOW_MAPS
 
 layout(location = 0) in struct VS_OUT
 {

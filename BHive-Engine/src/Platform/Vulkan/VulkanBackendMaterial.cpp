@@ -13,6 +13,7 @@ namespace BHive
 {
 
 	VulkanBackendMaterial::VulkanBackendMaterial(const std::string &shaderProgramName)
+		: mShaderProgramName(shaderProgramName)
 	{
 		Initialize(shaderProgramName);
 	}
@@ -80,8 +81,6 @@ namespace BHive
 
 	MaterialSnapshot VulkanBackendMaterial::CreateSnapshot() const
 	{
-		auto shader = mShaderProgram.As<VulkanShader>();
-
 		MaterialSnapshot snapshot{};
 
 		snapshot.Buffers = mBufferBindings;

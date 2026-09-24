@@ -8,6 +8,12 @@
 
 #include <Core.glsl>
 #include <Lighting.glsl>
+#include <ShadowBuffer.glsl>
+#include <ShadowCore.glsl>
+
+layout(set = 0, binding = 6) uniform sampler2DArrayShadow ShadowDirMaps;
+layout(set = 0, binding = 7) uniform samplerCubeArrayShadow ShadowPointMaps;
+layout(set = 0, binding = 8) uniform sampler2DArrayShadow ShadowSpotMaps;
 
 #define USE_DIFFUSE_MAP
 #define USE_EMISSION_MAP
@@ -21,6 +27,7 @@ layout(location = 0) in struct VS_OUT
 	mat3 TBN;
 	vec3 CameraPosition;
 	vec3 DebugColor;
+	mat4 View;
 } vs_in;
 
 struct LambertMaterial
@@ -66,6 +73,9 @@ void Direct_Lambert(const in vec3 geoPosition, const in vec3 geoNormal, const in
 	reflectedLight.DirectDiffuse += irradiance * directLight.Color;
 }
 
+#define DIRECTIONAL_SHADOW_MAPPING
+#define POINT_SHADOW_MAPPING
+#define SPOT_SHADOW_MAPPING
 #define Direct Direct_Lambert
 #define Material LambertMaterial
 #define HAS_EMISSION

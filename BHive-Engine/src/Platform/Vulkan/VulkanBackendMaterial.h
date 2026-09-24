@@ -24,6 +24,8 @@ namespace BHive
 	private:
 		ShaderPtr mShaderProgram;
 
+		std::string mShaderProgramName = "";
+
 		const ShaderTemplate *mShaderTemplate = nullptr;
 
 		std::vector<std::byte> mPushConstantData;

@@ -63,11 +63,5 @@ void main()
 	vs_out.CameraPosition = uCam.Position.xyz;
 	vs_out.Color = vColor;
 	vs_out.View = uCam.View;
-
-	#if defined(SHOW_INSTANCE)
-	vs_out.DebugColor = vec3(float(gl_InstanceIndex)/ 10.0, 0, 0);
-	#else
-	vs_out.DebugColor = vec3(float(gl_BaseInstance)/ 10.0, 0, 0);
-	#endif
 }
 

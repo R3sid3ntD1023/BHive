@@ -37,6 +37,10 @@ namespace BHive
 		void InitializeBuffers();
 		void InitializeSets();
 
+		glm::mat4 GetLightMatrix(const Frustum frustum, const glm::vec3 &lightDir, const float nearPlane, const float farPlane);
+
+		std::vector<glm::mat4> GetLightMatrices(const Frustum &frustum, const glm::vec3 &lightDir, const float nearPlane, const float farPlane, std::vector<float> cascadedLevels);
+
 	private:
 		struct LightDirections
 		{

@@ -35,13 +35,12 @@ namespace BHive
 		Ref<SceneRenderer> mSceneRenderer;
 		MeshPtr mMesh;
 		MeshPtr mPlane;
-		MaterialTable mMaterialTables[3];
+		MaterialTable mMaterialTables[2];
 		EditorCamera mCameras[2];
 		glm::uvec2 mViewportSize{0, 0};
 		bool mViewportActive = false;
 		EditorCameraController mCameraController;
 		uint32_t mCurrentCameraIndex = 0;
-		MaterialPtr mStandardMaterial;
 		MeshPtr mCharacter;
 		MaterialTable mCharacterMaterials;
 

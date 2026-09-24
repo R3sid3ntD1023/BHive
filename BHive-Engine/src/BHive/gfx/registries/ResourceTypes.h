@@ -5,7 +5,7 @@
 namespace BHive
 {
 	class Skeleton;
-	class Material;
+	class IMaterial;
 	class BaseMesh;
 	class Skeleton;
 	class SkeletalAnimation;
@@ -23,7 +23,7 @@ namespace BHive
 	class Pipeline;
 	class ResourceSet;
 
-	REGISTER_TYPE(Material)
+	REGISTER_TYPE(IMaterial)
 	REGISTER_TYPE(Texture)
 	REGISTER_TYPE(BaseMesh)
 	REGISTER_TYPE(Skeleton)

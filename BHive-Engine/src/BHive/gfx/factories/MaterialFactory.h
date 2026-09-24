@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	struct BHIVE_API MaterialFactory : public IResourceFactory<Material>
+	struct BHIVE_API MaterialFactory : public IResourceFactory<IMaterial>
 	{
 		static MaterialPtr Create(const std::string &shaderName);
 
@@ -14,5 +14,7 @@ namespace BHive
 		static MaterialPtr CreateStandard();
 
 		static MaterialPtr CreateEmissive();
+
+		static MaterialPtr CreateInstance(MaterialPtr parent);
 	};
 } // namespace BHive

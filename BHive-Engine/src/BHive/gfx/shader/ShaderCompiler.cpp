@@ -165,27 +165,35 @@ namespace BHive
 		mOpenglCompileOptions.SetIncluder(std::make_unique<utils::IncludeHandler>());
 	}
 
-	void ShaderCompiler::Compile(ShaderAsset &asset)
+	void ShaderCompiler::Compile(ShaderAsset &asset, const MacroDefinitions &definitions)
 	{
-		CompileToVulkan(asset);
+		CompileToVulkan(asset, definitions);
 
 		switch (RenderCommand::GetAPI())
 		{
 		case RendererAPI::Vulkan:
 			break;
 		case RendererAPI::Opengl:
-			CompileToOpengl(asset);
+			CompileToOpengl(asset, definitions);
 			break;
 		default:
 			break;
 		}
 	}
 
-	void ShaderCompiler::CompileToVulkan(ShaderAsset &asset)
+	void ShaderCompiler::CompileToVulkan(ShaderAsset &asset, const MacroDefinitions &definitions)
 	{
+		auto options = mVulkanCompileOptions;
+
 		for (auto &[stage, data] : asset.Stages)
 		{
-			auto spirv_binary = mVulkanCompiler.CompileGlslToSpv(data.Code, utils::GetShadercType(stage), mFilePath.string().c_str(), mVulkanCompileOptions);
+			if (definitions.contains(stage))
+			{
+				for (auto &name : definitions.Names.at(stage))
+					options.AddMacroDefinition(name);
+			}
+
+			auto spirv_binary = mVulkanCompiler.CompileGlslToSpv(data.Code, utils::GetShadercType(stage), mFilePath.string().c_str(), options);
 			if (spirv_binary.GetCompilationStatus() != shaderc_compilation_status_success)
 			{
 				LOG_ERROR("Vulkan: Failed to compile shader = {}, stage = {} : \n{}", mFilePath, ShaderUtils::ToString(stage), spirv_binary.GetErrorMessage());
@@ -224,14 +232,22 @@ namespace BHive
 		LOG_TRACE(asset.MergedReflection.to_string())
 	}
 
-	void ShaderCompiler::CompileToOpengl(ShaderAsset &asset)
+	void ShaderCompiler::CompileToOpengl(ShaderAsset &asset, const MacroDefinitions &definitions)
 	{
+		auto options = mOpenglCompileOptions;
+
 		for (auto &[stage, data] : asset.Stages)
 		{
 			spirv_cross::CompilerGLSL glsl_compiler(data.Spirv);
 			std::string glsl_source = glsl_compiler.compile();
 
-			auto spirv_binary = mOpenglCompiler.CompileGlslToSpv(glsl_source, utils::GetShadercType(stage), mFilePath.string().c_str(), mOpenglCompileOptions);
+			if (definitions.contains(stage))
+			{
+				for (auto &name : definitions.Names.at(stage))
+					options.AddMacroDefinition(name);
+			}
+
+			auto spirv_binary = mOpenglCompiler.CompileGlslToSpv(glsl_source, utils::GetShadercType(stage), mFilePath.string().c_str(), options);
 
 			if (spirv_binary.GetCompilationStatus() != shaderc_compilation_status_success)
 			{

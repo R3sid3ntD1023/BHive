@@ -52,20 +52,41 @@ int GetCascadeIndex(float viewDepth, CascadeShadow cascades[4])
 	return layer;
 }
 
-vec3 GetDirectionalShadowUvs(float viewDepth, vec3 geoPosition, DirectionalShadowInfo info, out int cascade)
+vec4 GetDirectionalShadowUvs(int lightIndex, float viewDepth, vec3 geoPosition, DirectionalShadowInfo info)
 {
-	cascade = GetCascadeIndex(viewDepth, info.Cascades);
+	int cascade = GetCascadeIndex(viewDepth, info.Cascades);
 
 	vec4 lightPos = info.Cascades[cascade].ViewProjection * vec4(geoPosition, 1.0);
-	vec3 uvw = lightPos.xyz / lightPos.w;
-	uvw = uvw * 0.5 + 0.5;
-	return uvw;
+	vec3 ndc = lightPos.xyz / lightPos.w;
+
+	vec3 coord;
+	coord.xy = ndc.xy * 0.5 + 0.5;
+	coord.y = 1.0 - coord.y;
+	coord.z = float(lightIndex * 4 + cascade);
+
+	float depth = ndc.z;
+
+	return vec4(coord, depth);
 };
 
-vec3 VisualizeShadowUvs(float viewDepth, vec3 geoPosition,DirectionalShadowInfo info)
+
+float SampleShadowDepth(int lightIndex, float viewDepth, vec3 geoPosition,DirectionalShadowInfo info, sampler2DArrayShadow shadowRaw)
 {
-	int cascade = 0;
-	vec3 uvw = GetDirectionalShadowUvs(viewDepth, geoPosition, info, cascade);
+	vec4 coord = GetDirectionalShadowUvs(lightIndex, viewDepth, geoPosition, info);
+	vec3 uvw = coord.xyz;
+	float depth = coord.w;
+
+	if (any(lessThan(uvw, vec3(0.0))) || any(greaterThan(uvw, vec3(1.0))))
+		return 1.0;
+	
+	float shadow = texture(shadowRaw, vec4(uvw, depth));
+	
+	return shadow;
+}
+
+vec3 VisualizeShadowUvs(int lightIndex, float viewDepth, vec3 geoPosition,DirectionalShadowInfo info)
+{
+	vec3 uvw = GetDirectionalShadowUvs(lightIndex, viewDepth, geoPosition, info).xyz;
 
 	if(uvw.x < 0.0 || uvw.x > 1.0 || uvw.y < 0.0 || uvw.y > 1.0)
 		return vec3(1, 0, 1);
@@ -73,25 +94,13 @@ vec3 VisualizeShadowUvs(float viewDepth, vec3 geoPosition,DirectionalShadowInfo 
 	return vec3(uvw.xy, 0.0);
 };
 
-vec3 VisualizeShadowDepth(float viewDepth,vec3 geoPosition, DirectionalShadowInfo info)
+
+vec3 VisualizeShadowDepth(int lightIndex, float viewDepth,vec3 geoPosition, DirectionalShadowInfo info)
 {
-	int cascade = 0;
-	vec3 uvw = GetDirectionalShadowUvs(viewDepth, geoPosition, info, cascade);
+	vec3 uvw = GetDirectionalShadowUvs(lightIndex, viewDepth, geoPosition, info).xyz;
 		
 	return vec3(uvw.z);
 };
-
-float SampleShadowDepth(int light, float viewDepth, vec3 geoPosition,DirectionalShadowInfo info, sampler2DArrayShadow shadowRaw)
-{
-	int cascade = 0;
-	vec3 uvw = GetDirectionalShadowUvs(viewDepth, geoPosition, info, cascade);
-	if (any(lessThan(uvw, vec3(0.0))) || any(greaterThan(uvw, vec3(1.0))))
-		return 1.0;
-
-	float shadow = texture(shadowRaw, vec4(uvw.xy, light * 4 + cascade, uvw.z));
-	
-	return shadow;
-}
 
 vec3 DebugCascadeShadow(float viewDepth, vec3 geoPosition, DirectionalShadowInfo info)
 {

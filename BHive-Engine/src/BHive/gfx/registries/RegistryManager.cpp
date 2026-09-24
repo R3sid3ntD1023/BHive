@@ -8,7 +8,7 @@
 #include "gfx/animation/SkeletalAnimation.h"
 #include "gfx/animation/Skeleton.h"
 #include "gfx/font/Font.h"
-#include "gfx/material/Material.h"
+#include "gfx/material/BackendMaterial.h"
 #include "gfx/mesh/BaseMesh.h"
 #include "gfx/shader/Shader.h"
 #include "gfx/sprite/Sprite.h"
@@ -18,7 +18,7 @@ namespace BHive
 	void ResourceRegistriesManager::Init()
 	{
 		RegisterRegistry<Texture>();
-		RegisterRegistry<Material>();
+		RegisterRegistry<IMaterial>();
 		RegisterRegistry<Sprite>();
 		RegisterRegistry<BaseMesh>();
 		RegisterRegistry<Font>();
@@ -38,7 +38,7 @@ namespace BHive
 	{
 
 		UnRegisterRegistry<Texture>();
-		UnRegisterRegistry<Material>();
+		UnRegisterRegistry<IMaterial>();
 		UnRegisterRegistry<Sprite>();
 		UnRegisterRegistry<BaseMesh>();
 		UnRegisterRegistry<Font>();
