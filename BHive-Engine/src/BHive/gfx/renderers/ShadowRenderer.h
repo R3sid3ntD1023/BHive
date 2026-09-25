@@ -14,6 +14,7 @@ namespace BHive
 	{
 	public:
 		static constexpr uint32_t sMaxLights = 32;
+		static constexpr uint32_t sCascadeCount = 5;
 
 	public:
 		void Init();
@@ -57,7 +58,8 @@ namespace BHive
 
 		struct alignas(16) DirectionalShadowData
 		{
-			CascadeShadow Cascades[4];
+			glm::vec4 Direction;
+			CascadeShadow Cascades[sCascadeCount];
 		};
 
 		struct alignas(16) PointLightShadowData

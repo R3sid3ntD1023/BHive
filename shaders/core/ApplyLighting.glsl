@@ -17,8 +17,9 @@ void ApplyLighting(vec3 geoPosition, vec3 geoNormal, vec3 geoViewDir, Material m
 			{
 				DirectionalShadowInfo info = DirShadowInfo[i];
 				float viewDepth = -(vs_in.View * vec4(geoPosition, 1.0)).z;
-				float shadow = SampleShadowDepth(i, viewDepth, geoPosition, info, ShadowDirMaps);
+				float shadow = SampleShadowDepth(i, viewDepth, geoPosition, geoNormal, info, ShadowDirMaps);
 				directLight.Color *= shadow;
+				//directLight.Color *= DebugCascadeShadow(viewDepth, geoPosition, info);
 			}
 		}
 		#endif

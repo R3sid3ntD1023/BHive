@@ -42,7 +42,7 @@ namespace BHive
 			.CompareOp = ECompareOp::LessOrEqual
 		};
 
-		shadow_texture_specs.ArrayLayers = sMaxLights * 4;
+		shadow_texture_specs.ArrayLayers = sMaxLights * 5;
 		dir_shadow_fbo_spec.Attachments.SetDepthAttachment(shadow_texture_specs, ETextureType::TEXTURE_2D_ARRAY);
 		shadow_texture_specs.ArrayLayers = sMaxLights;
 		spot_shadow_fbo_spec.Attachments.SetDepthAttachment(shadow_texture_specs, ETextureType::TEXTURE_2D_ARRAY);
@@ -143,7 +143,7 @@ namespace BHive
 
 			for (uint32_t d = 0; d < count; ++d)
 			{
-				for (uint32_t c = 0; c < 4; ++c)
+				for (uint32_t c = 0; c < sCascadeCount; ++c)
 				{
 					pass.BeginPhase("Reset Directional Shadow Culling", EPhaseType::Transfer);
 					pass.Emplace<CmdSetBufferData>()(mIndirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
@@ -165,7 +165,7 @@ namespace BHive
 					material.As<Material>()->SetParam("LightIndex", MaterialParam{d});
 					material.As<Material>()->SetParam("CascadeIndex", MaterialParam{c});
 					pass.BeginPhase("Generate Directional Shadows", EPhaseType::Graphics);
-					pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = d * 4 + c});
+					pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = d * sCascadeCount + c});
 					pass.UseBuffer(buffer, EBufferUsage::StorageRead);
 					pass.UseBuffer(mIndirectBuffer, EBufferUsage::IndirectRead);
 					pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageRead);
@@ -276,42 +276,83 @@ namespace BHive
 		if (k >= sMaxLights)
 			return;
 
+		auto &directionalShadows = shadow_data.DirProjections[k];
 		const auto &near = info.CameraNearFar.x;
 		const auto &far = info.CameraNearFar.y;
+		const auto &corners = info.CameraFrustum.GetPoints();
 
-		float splits[4]{0, 0, 0, 0};
+		constexpr float lambda = 0.95f;
+
+		float splits[sCascadeCount]{0, 0, 0, 0};
 		float previousSplit = near;
 
-		for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t i = 0; i < sCascadeCount; i++)
 		{
-			float p = float(i + 1) / 4.0f;
+			float p = float(i + 1) / float(sCascadeCount);
 			float logSplit = near * glm::pow(far / near, p);
 			float uniformSplit = near + (far - near) * p;
-			splits[i] = glm::mix(uniformSplit, logSplit, 0.95f);
+			splits[i] = glm::mix(uniformSplit, logSplit, lambda);
 		}
 
-		float cascadeExtents[4] = {20.0f, 45.0f, 90.0f, 180.f};
-
-		glm::vec3 center = {0, 0, 0};
-
-		for (uint32_t cascade = 0; cascade < 4; cascade++)
+		for (uint32_t cascade = 0; cascade < sCascadeCount; cascade++)
 		{
-			float cascadeStart = previousSplit;
-			float cascadeEnd = splits[cascade];
-			previousSplit = cascadeEnd;
+			float cascadeNear = previousSplit;
+			float cascadeFar = splits[cascade];
 
-			shadow_data.DirProjections[k].Cascades[cascade].SplitData.x = cascadeEnd;
+			glm::vec3 subFrustCorners[8]{};
 
-			const float extent = cascadeExtents[cascade];
-			const float radius = extent * 0.5f;
+			for (uint32_t i = 0; i < 4; i++)
+			{
+				float t0 = (cascadeNear - near) / (far - near);
+				float t1 = (cascadeFar - near) / (far - near);
+				glm::vec3 cornerRay = corners[i + 4].xyz - corners[i].xyz;
+				glm::vec3 cornerNear = corners[i].xyz + cornerRay * t0;
+				glm::vec3 cornerFar = corners[i].xyz + cornerRay * t1;
 
-			const auto lightPos = -info.LightDirection * extent;
-			const auto up = glm::abs(lightPos.y) > 0.99f ? glm::vec3(1, 0, 0) : glm::vec3(0, 1, 0);
+				subFrustCorners[i] = glm::vec4(cornerNear, 1.0f);
+				subFrustCorners[i + 4] = glm::vec4(cornerFar, 1.0f);
+			}
+
+			glm::vec3 center = {0, 0, 0};
+			for (auto &c : subFrustCorners)
+			{
+				center += c;
+			}
+
+			center /= corners.size();
+
+			float radius = 0.0f;
+			for (auto &c : subFrustCorners)
+			{
+				radius = glm::max(radius, glm::length(c - center));
+			}
+			radius = glm::ceil(radius * 32.0f) / 32.0f;
+
+			const auto lightDir = glm::normalize(info.LightDirection);
+			auto lightPos = center - lightDir * radius * 2.0f;
 			glm::mat4 lightView = glm::lookAt(lightPos, center, glm::vec3(0, 1, 0));
 
-			auto proj = glm::ortho(-extent, extent, -extent, extent, -extent * 8.0f, extent * 8.0f);
-			shadow_data.DirProjections[k].Cascades[cascade].ViewProjection = proj * lightView;
-			shadow_data.DirProjections[k].Cascades[cascade].Frustum = Frustum(proj * lightView);
+			glm::vec4 shadowCenterLS = lightView * glm::vec4(center, 1.0f);
+			float unitPerTexel = DIRECTIONAL_SHADOWMAP_SIZE / (radius * 2.0f);
+
+			shadowCenterLS.xy = glm::floor(shadowCenterLS.xy * unitPerTexel) / unitPerTexel;
+
+			glm::vec3 snappedCenterWS = glm::inverse(lightView) * shadowCenterLS;
+			glm::vec3 minBounds{-radius}, maxBounds{radius};
+
+			lightPos += snappedCenterWS - center;
+			lightView = glm::lookAt(lightPos, snappedCenterWS, glm::vec3(0, 1, 0));
+
+			float depthPadding = glm::max(radius * 2.0f, 100.0f);
+			auto proj = glm::ortho(minBounds.x, maxBounds.x, minBounds.y, maxBounds.y, minBounds.z * 8.0f - depthPadding, maxBounds.z * 8.0f + depthPadding);
+			auto lightVP = proj * lightView;
+
+			directionalShadows.Cascades[cascade].ViewProjection = lightVP;
+			directionalShadows.Cascades[cascade].Frustum = Frustum(lightVP);
+			directionalShadows.Cascades[cascade].SplitData.x = cascadeFar;
+			directionalShadows.Direction = glm::vec4(lightDir, far);
+
+			previousSplit = cascadeFar;
 		}
 
 		k++;

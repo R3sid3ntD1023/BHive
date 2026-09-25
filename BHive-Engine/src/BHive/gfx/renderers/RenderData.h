@@ -79,10 +79,6 @@ namespace BHive
 	{
 		glm::vec2 CameraNearFar;
 
-		glm::vec3 CameraPostion;
-
-		glm::vec3 CameraForward;
-
 		Frustum CameraFrustum;
 
 		glm::vec3 LightDirection;

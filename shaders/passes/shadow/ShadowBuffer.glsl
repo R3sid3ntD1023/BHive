@@ -1,3 +1,7 @@
+#extension GL_EXT_texture_shadow_lod: enable
+
+#define CASCADE_COUNT 5
+
 struct CascadeShadow
 {
 	mat4 ViewProjection;
@@ -7,7 +11,8 @@ struct CascadeShadow
 
 struct DirectionalShadowInfo
 {
-	CascadeShadow Cascades[4];
+	vec4 Direction; //xyz = direction, w = farplane
+	CascadeShadow Cascades[CASCADE_COUNT];
 	
 };
 
@@ -32,12 +37,12 @@ layout(std430, set = 0, binding = 5) restrict readonly buffer ShadowSSBO
 	SpotLightShadowInfo SpotShadowInfo[MAX_LIGHTS];
 };
 
-int GetCascadeIndex(float viewDepth, CascadeShadow cascades[4])
+int GetCascadeIndex(float viewDepth, CascadeShadow cascades[CASCADE_COUNT])
 {
 	int layer = -1;
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < CASCADE_COUNT; i++)
 	{
-		if(viewDepth <= cascades[i].SplitData.x)
+		if(viewDepth < cascades[i].SplitData.x)
 		{
 			layer = i;
 			break;
@@ -46,23 +51,23 @@ int GetCascadeIndex(float viewDepth, CascadeShadow cascades[4])
 
 	if(layer == -1)
 	{
-		layer = 3;
+		layer = CASCADE_COUNT;
 	}
 	
 	return layer;
 }
 
-vec4 GetDirectionalShadowUvs(int lightIndex, float viewDepth, vec3 geoPosition, DirectionalShadowInfo info)
+vec4 GetDirectionalShadowUvs(int lightIndex, float viewDepth, vec3 geoPosition,  DirectionalShadowInfo info)
 {
 	int cascade = GetCascadeIndex(viewDepth, info.Cascades);
 
-	vec4 lightPos = info.Cascades[cascade].ViewProjection * vec4(geoPosition, 1.0);
-	vec3 ndc = lightPos.xyz / lightPos.w;
+	vec4 fragLightPos = info.Cascades[cascade].ViewProjection * vec4(geoPosition, 1.0);
+	vec3 ndc = fragLightPos.xyz / fragLightPos.w;
 
 	vec3 coord;
 	coord.xy = ndc.xy * 0.5 + 0.5;
 	coord.y = 1.0 - coord.y;
-	coord.z = float(lightIndex * 4 + cascade);
+	coord.z = float(lightIndex * CASCADE_COUNT + cascade);
 
 	float depth = ndc.z;
 
@@ -70,16 +75,32 @@ vec4 GetDirectionalShadowUvs(int lightIndex, float viewDepth, vec3 geoPosition, 
 };
 
 
-float SampleShadowDepth(int lightIndex, float viewDepth, vec3 geoPosition,DirectionalShadowInfo info, sampler2DArrayShadow shadowRaw)
+float SampleShadowDepth(int lightIndex, float viewDepth, vec3 geoPosition, vec3 geoNormal, DirectionalShadowInfo info, sampler2DArrayShadow shadowRaw)
 {
 	vec4 coord = GetDirectionalShadowUvs(lightIndex, viewDepth, geoPosition, info);
 	vec3 uvw = coord.xyz;
 	float depth = coord.w;
 
-	if (any(lessThan(uvw, vec3(0.0))) || any(greaterThan(uvw, vec3(1.0))))
-		return 1.0;
-	
-	float shadow = texture(shadowRaw, vec4(uvw, depth));
+	if(depth > 1.0)
+	{
+		return 0.0;
+	}
+
+	vec3 normal = geoNormal;
+	vec3 lightDir  =info.Direction.xyz;
+	float farPlane = info.Direction.w;
+
+	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+	if(coord.z == CASCADE_COUNT)
+	{
+		bias *= 1 / (farPlane * 0.5f);
+	}
+	else
+	{
+		bias *=1 / (info.Cascades[int(coord.z)].SplitData.x * 0.5f);
+	}
+
+	float shadow = texture(shadowRaw, vec4(uvw, depth), bias);
 	
 	return shadow;
 }
