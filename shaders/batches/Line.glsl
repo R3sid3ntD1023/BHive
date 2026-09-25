@@ -1,14 +1,14 @@
 #type vertex
 #version 460  core
 
-#extension GL_EXT_scalar_block_layout: require
+#include <Constants.glsl>
 
 layout(location = 0) in vec3 vPosition;
 layout(location = 1) in vec4 vColor;
 layout(location = 2) in int vEntityID;
 
 // @semantic Camera
-layout(std140, set = 0, binding = 0) uniform CameraBuffer
+layout(std140, set = SET_GLOBAL, binding = 0) uniform CameraBuffer
 {
     mat4 ViewProjection;
     mat4 View;

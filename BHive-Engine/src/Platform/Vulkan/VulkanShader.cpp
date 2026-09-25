@@ -61,10 +61,13 @@ namespace BHive
 		for (auto &setTemplate : shaderTemplate.Sets)
 		{
 			const BindingSetTemplate *_template = &setTemplate;
-			if (setTemplate.SetIndex == EngineConfig::GLOBAL_SET_INDEX)
-				_template = &RendererTemplates::Global();
-			else if (setTemplate.SetIndex == EngineConfig::OBJECT_SET_INDEX)
-				_template = &RendererTemplates::Object();
+			for (const auto &t : RendererTemplates::GetTemplates())
+			{
+				if (setTemplate.SetIndex == t.SetIndex)
+				{
+					_template = &t;
+				};
+			}
 
 			info.SetLayouts[setTemplate.SetIndex] = layoutCache.GetOrCreate(*_template);
 		}

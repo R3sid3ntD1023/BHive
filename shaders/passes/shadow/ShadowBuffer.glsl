@@ -1,7 +1,7 @@
 #extension GL_EXT_texture_shadow_lod: enable
 
 #include <ShadowCore.glsl>
-
+#include <Constants.glsl>
 
 #define CASCADE_COUNT 5
 
@@ -32,7 +32,7 @@ struct SpotLightShadowInfo
 	Frustum Frustum;
 };
 
-layout(std430, set = 0, binding = 5) restrict readonly buffer ShadowSSBO
+layout(std430, set = SET_SHADOW, binding = 0) restrict readonly buffer ShadowSSBO
 {
 	uvec4 NumShadowMaps;
 	DirectionalShadowInfo DirShadowInfo[MAX_LIGHTS];

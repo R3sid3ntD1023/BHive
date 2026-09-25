@@ -2,11 +2,12 @@
 #version 460 core
 
 #include <PMREMFuncs.glsl>
+#include <Constants.glsl>
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 6) in;
 
-layout(rgba32f, set = 1, binding = 0) uniform restrict writeonly imageCube irradianceMap;
-layout(set = 1, binding = 1) uniform samplerCube environmentMap;
+layout(rgba32f, set = SET_MATERIAL, binding = 0) uniform restrict writeonly imageCube irradianceMap;
+layout(set = SET_MATERIAL, binding = 1) uniform samplerCube environmentMap;
 
 layout(push_constant) uniform PushConstants
 {

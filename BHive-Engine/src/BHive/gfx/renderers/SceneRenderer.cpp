@@ -81,9 +81,9 @@ namespace BHive
 
 		auto envMaps = mEnvironment.GetCurrentMaps();
 
-		auto globalSet = mSceneSets.GlobalSet.As<ResourceSet>();
-		globalSet->SetTexture(3, envMaps.PreFilter);
-		globalSet->SetTexture(4, envMaps.Irradiance);
+		auto set = mSceneSets.ImageBasedLightingSet.As<ResourceSet>();
+		set->SetTexture(1, envMaps.PreFilter);
+		set->SetTexture(2, envMaps.Irradiance);
 	}
 
 	void SceneRenderer::Begin(const Camera *camera, const glm::mat4 &view)
@@ -177,8 +177,16 @@ namespace BHive
 			// render scene passes
 			auto &pass = renderer.BeginPass("Scene " + passNames[i], EPassType::OffScreen, states[i]);
 			pass.BeginPhase("Phase " + passNames[i], EPhaseType::Graphics);
+
+			///-------------------------------------
+			/// Bind Sets
+			///-------------------------------------
 			pass.BindResourceSet(mSceneSets.GlobalSet);
 			pass.BindResourceSet(objectSet);
+			pass.BindResourceSet(mSceneSets.LightingSet);
+			pass.BindResourceSet(mSceneSets.ShadowSet);
+			pass.BindResourceSet(mSceneSets.ImageBasedLightingSet);
+
 			pass.UseFramebuffer(mFramebuffer);
 			pass.UseTexture(prefilter, EImageUsage::ColorRead);
 			pass.UseTexture(irradiance, EImageUsage::ColorRead);
@@ -358,20 +366,15 @@ namespace BHive
 		mSceneSets.GlobalSet = ResourceSetFactory::Create(RendererTemplates::Global());
 		mSceneSets.OpaqueObjectSet = ResourceSetFactory::Create(RendererTemplates::Object());
 		mSceneSets.TransparentObjectSet = ResourceSetFactory::Create(RendererTemplates::Object());
+		mSceneSets.LightingSet = ResourceSetFactory::Create(RendererTemplates::Lighting());
+		mSceneSets.ShadowSet = ResourceSetFactory::Create(RendererTemplates::Shadow());
+		mSceneSets.ImageBasedLightingSet = ResourceSetFactory::Create(RendererTemplates::ImageLighting());
 	}
 
 	void SceneRenderer::BindResourceSets()
 	{
 		auto global = mSceneSets.GlobalSet.As<ResourceSet>();
 		global->SetBuffer(0, mCameraUBO);
-		global->SetBuffer(1, mLights.GetBuffer());
-		global->SetTexture(2, mEnvironment.GetBRDFLUT());
-		global->SetBuffer(5, mShadows.GetBuffer());
-		global->SetTexture(6, mShadows.GetDirShadowMap());
-		global->SetTexture(7, mShadows.GetPointShadowMap());
-		global->SetTexture(8, mShadows.GetSpotShadowMap());
-		mShadows.SetLightBuffer(mLights.GetBuffer());
-		mShadows.SetBoneBuffer(mBoneBuffer);
 
 		auto opaqueSet = mSceneSets.OpaqueObjectSet.As<ResourceSet>();
 		opaqueSet->SetBuffer(0, mInstanceDataBuffer[0]);
@@ -384,6 +387,25 @@ namespace BHive
 		transparentSet->SetBuffer(1, mIndirectDrawBuffer[1]);
 		transparentSet->SetBuffer(2, mVisibleBuffer[1]);
 		transparentSet->SetBuffer(3, mBoneBuffer);
+
+		{
+			auto set = mSceneSets.LightingSet.As<ResourceSet>();
+			set->SetBuffer(0, mLights.GetBuffer());
+		}
+
+		{
+			auto set = mSceneSets.ShadowSet.As<ResourceSet>();
+			set->SetBuffer(0, mShadows.GetBuffer());
+			set->SetTexture(1, mShadows.GetDirShadowMap());
+			set->SetTexture(2, mShadows.GetPointShadowMap());
+			set->SetTexture(3, mShadows.GetSpotShadowMap());
+		}
+
+		auto imageBasedLightingSet = mSceneSets.ImageBasedLightingSet.As<ResourceSet>();
+		imageBasedLightingSet->SetTexture(0, mEnvironment.GetBRDFLUT());
+
+		mShadows.SetLightBuffer(mLights.GetBuffer());
+		mShadows.SetBoneBuffer(mBoneBuffer);
 	}
 
 	void SceneRenderer::Resize(const glm::uvec2 &size)

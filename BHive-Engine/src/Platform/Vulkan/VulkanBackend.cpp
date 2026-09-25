@@ -57,7 +57,7 @@ namespace BHive
 
 		if (EngineConfig::DebugAssertErrors && messageSeverity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
 		{
-			ASSERT(false);
+			__debugbreak();
 		}
 
 		return false;

@@ -6,6 +6,7 @@
 #type fragment
 #version 460 core
 
+#include <Constants.glsl>
 
 //https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl
 /*
@@ -72,7 +73,7 @@ vec3 filmic(vec3 x) {
 
 layout(location = 0) in vec2 vUV;
 
-layout(set = 1, binding = 0) uniform sampler2D uSceneColor;
+layout(set = SET_MATERIAL, binding = 0) uniform sampler2D uSceneColor;
 
 layout(location = 0) out vec4 oColor;
 

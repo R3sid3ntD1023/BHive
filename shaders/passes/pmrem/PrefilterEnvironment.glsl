@@ -2,16 +2,17 @@
 #version 460 core
 
 #include <PMREMFuncs.glsl>
+#include <Constants.glsl>
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 // One view per mip is bound from the CPU side:
 //   SetTexture("imgOutput", mPreFilteredEnvironment, mip);
 // so this image always targets a single mip level.
-layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly imageCube imgOutput;
+layout(rgba16f, set = SET_MATERIAL, binding = 0) uniform restrict writeonly imageCube imgOutput;
 
 // Full environment cube with all mips.
-layout(set = 1, binding = 1) uniform samplerCube environmentMap;
+layout(set = SET_MATERIAL, binding = 1) uniform samplerCube environmentMap;
 
 
 layout(push_constant) uniform PushConstants

@@ -7,10 +7,11 @@
 #version 460 core
 
 #include <Sampling.glsl>
+#include <Constants.glsl>
 
 layout(location = 0) in vec2 vUV;
 
-layout(set = 1, binding = 0 ) uniform sampler2D uSrcTexture;
+layout(set = SET_MATERIAL, binding = 0 ) uniform sampler2D uSrcTexture;
 
 layout(location = 0) out vec4 oColor;
 

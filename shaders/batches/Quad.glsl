@@ -1,13 +1,15 @@
 #type vertex
 #version 460 core
 
+#include <Constants.glsl>
+
 layout(location = 0) in vec4 vPosition;
 layout(location = 2) in vec2 vTexCoord;
 layout(location = 3) in vec4 vColor;
 layout(location = 4) in int vTextureID;
 
 // @semantic Camera
-layout(std140, set = 0, binding = 0) uniform CameraBuffer
+layout(std140, set = SET_GLOBAL, binding = 0) uniform CameraBuffer
 {
 	mat4 ViewProjection;
 	mat4 View;
@@ -50,7 +52,7 @@ layout(location = 1) in struct VS_OUT
 }
 vs_in;
 
-layout(set = 1, binding = 0) uniform sampler2DArray uTexture;
+layout(set = SET_MATERIAL, binding = 0) uniform sampler2DArray uTexture;
 
 layout(location = 0) out vec4 fs_out;
 

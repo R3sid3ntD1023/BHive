@@ -2,6 +2,7 @@
 #version 460 core
 
 #include <Fullscreen.vert>
+#include <Constants.glsl>
 
 #type fragment
 #version 460 core
@@ -17,8 +18,8 @@ vec3 FilamentBloomCombine(vec3 scene, vec3 bloom, float strength, float exposure
 
 layout (location = 0) in vec2 vUV;
 
-layout(set = 1, binding = 0) uniform sampler2D uTextureA; //scene
-layout(set = 1, binding = 1) uniform sampler2D uTextureB; //bloom mip 0
+layout(set = SET_MATERIAL, binding = 0) uniform sampler2D uTextureA; //scene
+layout(set = SET_MATERIAL, binding = 1) uniform sampler2D uTextureB; //bloom mip 0
 
 layout(push_constant) uniform BloomSettings
 {

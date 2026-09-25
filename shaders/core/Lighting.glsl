@@ -40,7 +40,7 @@ struct ReflectedLight
 
 
 // @semantic Lights
-layout(std430, set = 0, binding = 1) restrict readonly buffer LightSSBO
+layout(std430, set = SET_LIGHTING, binding = 0) restrict readonly buffer LightSSBO
 {
 	uvec4 NumLights; //dir, point, spot
 	DirectionalLight uDirectionalLights[MAX_LIGHTS];

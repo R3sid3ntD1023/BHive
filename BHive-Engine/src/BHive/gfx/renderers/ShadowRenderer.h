@@ -94,8 +94,9 @@ namespace BHive
 		BufferPtr mIndirectBuffer;
 		BufferPtr mVisibilityBuffer;
 
-		ResourceSetPtr mGlobalSet;
 		ResourceSetPtr mObjectSet;
+		ResourceSetPtr mShadowSet;
+		ResourceSetPtr mLightSet;
 
 		MaterialPtr mCullingMaterial;
 	};

@@ -88,7 +88,7 @@ namespace BHive
 
 	void ShadowRenderer::SetLightBuffer(BufferPtr lightBuffer)
 	{
-		mGlobalSet.As<ResourceSet>()->SetBuffer(1, lightBuffer);
+		mLightSet.As<ResourceSet>()->SetBuffer(0, lightBuffer);
 	}
 
 	void ShadowRenderer::SetBoneBuffer(BufferPtr boneBuffer)
@@ -156,8 +156,9 @@ namespace BHive
 					pass.UseBuffer(mIndirectBuffer, EBufferUsage::StorageWrite);
 					pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageWrite);
 					pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
-					pass.BindResourceSet(mGlobalSet);
+					pass.BindResourceSet(mShadowSet);
 					pass.BindResourceSet(mObjectSet);
+					pass.BindResourceSet(mLightSet);
 					pass.Emplace<CmdBindMaterial>()(mCullingMaterial.As<Material>());
 					pass.Emplace<CmdDispatch>()(groups, 1, 1);
 					pass.EndPhase();
@@ -170,7 +171,7 @@ namespace BHive
 					pass.UseBuffer(mIndirectBuffer, EBufferUsage::IndirectRead);
 					pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageRead);
 					pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
-					pass.BindResourceSet(mGlobalSet);
+					pass.BindResourceSet(mShadowSet);
 					pass.BindResourceSet(mObjectSet);
 					pass.Emplace<CmdBindPipeline>()(mDirectionalPipeline);
 					draw_meshes(pass, mIndirectBuffer, batch, material);
@@ -203,8 +204,9 @@ namespace BHive
 					pass.UseBuffer(mIndirectBuffer, EBufferUsage::StorageWrite);
 					pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageWrite);
 					pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
-					pass.BindResourceSet(mGlobalSet);
+					pass.BindResourceSet(mShadowSet);
 					pass.BindResourceSet(mObjectSet);
+					pass.BindResourceSet(mLightSet);
 					pass.Emplace<CmdBindMaterial>()(mCullingMaterial.As<Material>());
 					pass.Emplace<CmdDispatch>()(groups, 1, 1);
 					pass.EndPhase();
@@ -217,7 +219,7 @@ namespace BHive
 					pass.UseBuffer(mIndirectBuffer, EBufferUsage::IndirectRead);
 					pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageRead);
 					pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
-					pass.BindResourceSet(mGlobalSet);
+					pass.BindResourceSet(mShadowSet);
 					pass.BindResourceSet(mObjectSet);
 					pass.Emplace<CmdBindPipeline>()(mPipeline);
 					draw_meshes(pass, mIndirectBuffer, batch, material);
@@ -246,8 +248,9 @@ namespace BHive
 				pass.UseBuffer(mIndirectBuffer, EBufferUsage::StorageWrite);
 				pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageWrite);
 				pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
-				pass.BindResourceSet(mGlobalSet);
+				pass.BindResourceSet(mShadowSet);
 				pass.BindResourceSet(mObjectSet);
+				pass.BindResourceSet(mLightSet);
 				pass.Emplace<CmdBindMaterial>()(mCullingMaterial.As<Material>());
 				pass.Emplace<CmdDispatch>()(groups, 1, 1);
 				pass.EndPhase();
@@ -259,7 +262,7 @@ namespace BHive
 				pass.UseBuffer(mIndirectBuffer, EBufferUsage::IndirectRead);
 				pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageRead);
 				pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
-				pass.BindResourceSet(mGlobalSet);
+				pass.BindResourceSet(mShadowSet);
 				pass.BindResourceSet(mObjectSet);
 				pass.Emplace<CmdBindPipeline>()(mPipeline);
 				draw_meshes(pass, mIndirectBuffer, batch, material);
@@ -423,10 +426,11 @@ namespace BHive
 
 	void ShadowRenderer::InitializeSets()
 	{
-		mGlobalSet = ResourceSetFactory::Create(RendererTemplates::Global());
 		mObjectSet = ResourceSetFactory::Create(RendererTemplates::Object());
+		mLightSet = ResourceSetFactory::Create(RendererTemplates::Lighting());
+		mShadowSet = ResourceSetFactory::Create(RendererTemplates::Shadow());
 
-		mGlobalSet.As<ResourceSet>()->SetBuffer(5, mShadowBuffer);
+		mShadowSet.As<ResourceSet>()->SetBuffer(0, mShadowBuffer);
 
 		mObjectSet.As<ResourceSet>()->SetBuffer(0, mObjectBuffer);
 		mObjectSet.As<ResourceSet>()->SetBuffer(1, mIndirectBuffer);

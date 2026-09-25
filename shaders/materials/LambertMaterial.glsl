@@ -7,6 +7,7 @@
 #version 460 core
 
 #include <Core.glsl>
+#include <Constants.glsl>
 #include <Lighting.glsl>
 #include <ShadowBuffer.glsl>
 
@@ -44,8 +45,8 @@ layout(push_constant) uniform MaterialInfo
 	vec4 Emission;
 } pc;
 
-layout(set = 1, binding = 0) uniform sampler2D DiffuseMap;
-layout(set = 1, binding = 1) uniform sampler2D EmissionMap;
+layout(set = SET_MATERIAL, binding = 0) uniform sampler2D DiffuseMap;
+layout(set = SET_MATERIAL, binding = 1) uniform sampler2D EmissionMap;
 
 LambertMaterial GetMaterial(VS_OUT vs)
 {

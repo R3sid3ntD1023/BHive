@@ -25,7 +25,7 @@ namespace BHive
 
 		// init set manager
 
-		if (auto set = mShaderTemplate->FindSet(EngineConfig::MATERIAL_SET_INDEX))
+		if (auto set = mShaderTemplate->FindSet(ERenderingSets::MATERIAL))
 		{
 
 			for (auto &binding : set->Bindings)

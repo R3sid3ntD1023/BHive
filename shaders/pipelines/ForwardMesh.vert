@@ -1,4 +1,5 @@
 #include <Core.glsl>
+#include <Constants.glsl>
 #include <Skinning.glsl>
 
 layout(location = 0) in vec3 vPosition;
@@ -11,7 +12,7 @@ layout(location = 6) in ivec4 vBoneIds;
 layout(location = 7) in vec4 vWeights;
 
 
-layout(std140, set = 0, binding = 0) uniform CameraBuffer
+layout(std140, set = SET_GLOBAL, binding = 0) uniform CameraBuffer
 {
 	mat4 ViewProjection;
 	mat4 View;
@@ -20,19 +21,19 @@ layout(std140, set = 0, binding = 0) uniform CameraBuffer
 	Frustum Frustum;
 } uCam;
 
-layout(std430, set = 3, binding = 0) readonly buffer Objects
+layout(std430, set = SET_OBJECT, binding = 0) readonly buffer Objects
 {
     uint objectCount;
     ObjectData objects[];
 };
 
-layout(std430, set = 3, binding = 1) readonly buffer Draws
+layout(std430, set = SET_OBJECT, binding = 1) readonly buffer Draws
 {
     IndirectDrawIndexedCommand drawCommands[];
 };
 
 
-layout(std430, set = 3, binding = 2) readonly buffer Visible
+layout(std430, set = SET_OBJECT, binding = 2) readonly buffer Visible
 {
     uint visibleCount;
     uint visibleIndices[];

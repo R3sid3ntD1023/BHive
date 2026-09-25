@@ -45,8 +45,11 @@ namespace BHive
 		struct ResourceSets
 		{
 			ResourceSetPtr GlobalSet;			 // 0
-			ResourceSetPtr OpaqueObjectSet;		 // 3
-			ResourceSetPtr TransparentObjectSet; // 3
+			ResourceSetPtr OpaqueObjectSet;		 // 1
+			ResourceSetPtr TransparentObjectSet; // 1
+			ResourceSetPtr LightingSet;
+			ResourceSetPtr ShadowSet;
+			ResourceSetPtr ImageBasedLightingSet;
 		};
 
 		struct SceneView

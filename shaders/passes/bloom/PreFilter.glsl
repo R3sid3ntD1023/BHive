@@ -5,11 +5,13 @@
 
 #type fragment
 #version 460 core
+
 #include <Core.glsl>
+#include <Constants.glsl>
 
 layout(location = 0) in vec2 vUV;
 
-layout(set = 1, binding = 0) uniform sampler2D uSceneColor;  
+layout(set = SET_MATERIAL, binding = 0) uniform sampler2D uSceneColor;  
 
 layout(push_constant) uniform PushConstants
 {

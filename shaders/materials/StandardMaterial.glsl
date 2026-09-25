@@ -7,6 +7,7 @@
 #version 460 core
 
 #include <Core.glsl>
+#include <Constants.glsl>
 #include <Lighting.glsl>
 #include <ShadowBuffer.glsl>
 
@@ -53,20 +54,22 @@ struct StandardMaterial
 	vec3 IrradianceF0;
 };
 
-layout(set = 0, binding = 2) uniform sampler2D BRDFLutMap;
-layout(set = 0, binding = 3) uniform samplerCube PreFilterMap;
-layout(set = 0, binding = 4) uniform samplerCube IrradianceMap;
 
-layout(set = 0, binding = 6) uniform sampler2DArrayShadow ShadowDirMaps;
-layout(set = 0, binding = 7) uniform samplerCubeArrayShadow ShadowPointMaps;
-layout(set = 0, binding = 8) uniform sampler2DArrayShadow ShadowSpotMaps;
 
-layout(set = 1, binding = 0) uniform sampler2D DiffuseMap;
-layout(set = 1, binding = 1) uniform sampler2D NormalMap;
-layout(set = 1, binding = 2) uniform sampler2D RoughnessMap;
-layout(set = 1, binding = 3) uniform sampler2D MetalnessMap;
-layout(set = 1, binding = 4) uniform sampler2D EmissionMap;
-layout(set = 1, binding = 5) uniform sampler2D OpacityMap;
+layout(set = SET_SHADOW, binding = 1) uniform sampler2DArrayShadow ShadowDirMaps;
+layout(set = SET_SHADOW, binding = 2) uniform samplerCubeArrayShadow ShadowPointMaps;
+layout(set = SET_SHADOW, binding = 3) uniform sampler2DArrayShadow ShadowSpotMaps;
+
+layout(set = SET_MATERIAL, binding = 0) uniform sampler2D DiffuseMap;
+layout(set = SET_MATERIAL, binding = 1) uniform sampler2D NormalMap;
+layout(set = SET_MATERIAL, binding = 2) uniform sampler2D RoughnessMap;
+layout(set = SET_MATERIAL, binding = 3) uniform sampler2D MetalnessMap;
+layout(set = SET_MATERIAL, binding = 4) uniform sampler2D EmissionMap;
+layout(set = SET_MATERIAL, binding = 5) uniform sampler2D OpacityMap;
+
+layout(set = SET_IMAGE_BASED_LIGHTING, binding = 0) uniform sampler2D BRDFLutMap;
+layout(set = SET_IMAGE_BASED_LIGHTING, binding = 1) uniform samplerCube PreFilterMap;
+layout(set = SET_IMAGE_BASED_LIGHTING, binding = 2) uniform samplerCube IrradianceMap;
 
 #define RECEIVE_SHADOWS 1 << 1
 

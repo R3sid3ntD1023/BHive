@@ -3,24 +3,25 @@
 #version 460 core
 
 #include <Core.glsl>
+#include <Constants.glsl>
 #include <Intersections.glsl>
 #include <Lighting.glsl>
 #include <ShadowBuffer.glsl>
 
 layout(local_size_x = 256) in;
 
-layout(std430, set = 3, binding = 0) buffer ShadowObjects
+layout(std430, set = SET_OBJECT, binding = 0) buffer ShadowObjects
 {
     uint objectCount;
     ObjectData objects[];
 };
 
-layout(std430, set = 3, binding = 1) buffer ShadowDraws
+layout(std430, set = SET_OBJECT, binding = 1) buffer ShadowDraws
 {
     IndirectDrawIndexedCommand drawCommands[];
 };
 
-layout(std430 , set = 3, binding = 2) buffer ShadowVisibility
+layout(std430 , set = SET_OBJECT, binding = 2) buffer ShadowVisibility
 {
     uint visibleCount;
     uint visibles[];

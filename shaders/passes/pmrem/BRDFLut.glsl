@@ -2,10 +2,11 @@
 #version 460 core
 
 #include <PMREMFuncs.glsl>
+#include <Constants.glsl>
 
 layout(local_size_x =  8, local_size_y = 8, local_size_z = 1) in;
 
-layout(rg16f, set = 1, binding =  0) uniform restrict writeonly image2D brdfLutTexture;
+layout(rg16f, set = SET_MATERIAL, binding =  0) uniform restrict writeonly image2D brdfLutTexture;
 
 float GeomertySchlickGGX(float NDotV, float roughness)
 {

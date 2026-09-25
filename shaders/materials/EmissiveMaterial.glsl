@@ -7,6 +7,7 @@
 #version 460 core
 
 #include <Core.glsl>
+#include <Constants.glsl>
 #include <Lighting.glsl>
 
 #define USE_EMISSION_MAP
@@ -33,7 +34,7 @@ layout(push_constant) uniform MaterialInfo
 	vec4 Emission;
 } pc;
 
-layout(set = 1, binding = 0) uniform sampler2D EmissionMap;
+layout(set = SET_MATERIAL, binding = 0) uniform sampler2D EmissionMap;
 
 EmissiveMaterial GetMaterial(VS_OUT vs)
 {

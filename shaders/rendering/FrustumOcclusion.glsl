@@ -2,12 +2,14 @@
 
 #version 460 core
 
+#include <Constants.glsl>
+
 layout(local_size_x = 256) in;
 
 #include <Core.glsl>
 #include <Intersections.glsl>
 
-layout(std140, set = 0, binding = 0) uniform CameraBuffer
+layout(std140, set = SET_GLOBAL, binding = 0) uniform CameraBuffer
 {
 	mat4 ViewProjection;
     mat4 View;
@@ -16,18 +18,18 @@ layout(std140, set = 0, binding = 0) uniform CameraBuffer
     Frustum Frustum;
 } uCam;
 
-layout(std430, set = 3, binding = 0) buffer Objects
+layout(std430, set = SET_OBJECT, binding = 0) buffer Objects
 {
     uint objectCount;
     ObjectData objects[];
 };
 
-layout(std430, set = 3, binding = 1) buffer Draws
+layout(std430, set = SET_OBJECT, binding = 1) buffer Draws
 {
     IndirectDrawIndexedCommand drawCommands[];
 };
 
-layout(std430, set = 3, binding = 2) buffer Visible
+layout(std430, set = SET_OBJECT, binding = 2) buffer Visible
 {
     uint visibleCount;
     uint visibleIndices[];

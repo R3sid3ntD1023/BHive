@@ -2,6 +2,8 @@
 
 #version 460 core
 
+#include <Constants.glsl>
+
 layout(location = 0) in vec4 vPos;
 layout(location = 1) in vec2 vTexCoord;
 layout(location = 2) in vec4 vColor;
@@ -12,7 +14,7 @@ layout(location = 6) in vec4 vOutlineColor;
 layout(location = 7) in int vEntityID;
 
 // @semantic Camera
-layout(std140 , set = 0, binding = 0) uniform CameraBuffer
+layout(std140 , set = SET_GLOBAL, binding = 0) uniform CameraBuffer
 {
     mat4 ViewProjection;
     mat4 View;
@@ -57,7 +59,7 @@ layout(location = 1) in struct VS_OUT
     vec4 outlineColor;
 } vs_in;
 
-layout(set = 1, binding = 0) uniform sampler2DArray uTexture;
+layout(set = SET_MATERIAL, binding = 0) uniform sampler2DArray uTexture;
 
 layout(location = 0) out vec4 fColor;
 

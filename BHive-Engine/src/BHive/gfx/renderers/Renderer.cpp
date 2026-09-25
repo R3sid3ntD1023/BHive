@@ -40,18 +40,8 @@ namespace BHive
 		static auto globalSetTemplate = []() -> BindingSetTemplate
 		{
 			BindingSetTemplate t{};
-			t.SetIndex = EngineConfig::GLOBAL_SET_INDEX;
-			t.Bindings.emplace_back(0, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::UniformBuffer);		   // camera
-			t.Bindings.emplace_back(1, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::StorageBuffer);		   // light
-			t.Bindings.emplace_back(2, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::CombinedImageSampler); // brdfLUT
-			t.Bindings.emplace_back(3, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::CombinedImageSampler); // prefilter
-			t.Bindings.emplace_back(4, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::CombinedImageSampler); // irradiance
-			t.Bindings.emplace_back(
-				5, 0u, 1, EShaderStage::Vertex | EShaderStage::Geometry | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::StorageBuffer
-			);																								// shadowBuffer
-			t.Bindings.emplace_back(6, 0u, 1, EShaderStage::Fragment, EResourceType::CombinedImageSampler); // Dir shadow
-			t.Bindings.emplace_back(7, 0u, 1, EShaderStage::Fragment, EResourceType::CombinedImageSampler); // Point shadow
-			t.Bindings.emplace_back(8, 0u, 1, EShaderStage::Fragment, EResourceType::CombinedImageSampler); // Spot shadow
+			t.SetIndex = ERenderingSets::GLOBAL;
+			t.Bindings.emplace_back(0, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::UniformBuffer); // camera
 			t.BuildLayoutHash();
 			return t;
 		}();
@@ -64,7 +54,7 @@ namespace BHive
 		static auto objectSetTemplate = []() -> BindingSetTemplate
 		{
 			BindingSetTemplate t{};
-			t.SetIndex = EngineConfig::OBJECT_SET_INDEX;
+			t.SetIndex = ERenderingSets::OBJECT;
 			t.Bindings.emplace_back(0, 0u, 1, EShaderStage::Compute | EShaderStage::Vertex, EResourceType::StorageBuffer); // objectdata
 			t.Bindings.emplace_back(1, 0u, 1, EShaderStage::Compute | EShaderStage::Vertex, EResourceType::StorageBuffer); // indirect
 			t.Bindings.emplace_back(2, 0u, 1, EShaderStage::Compute | EShaderStage::Vertex, EResourceType::StorageBuffer); // visibility
@@ -74,6 +64,66 @@ namespace BHive
 		}();
 
 		return objectSetTemplate;
+	}
+
+	const BindingSetTemplate &RendererTemplates::Lighting()
+	{
+		static auto t = []() -> BindingSetTemplate
+		{
+			BindingSetTemplate t{};
+			t.SetIndex = ERenderingSets::LIGHTING;
+			t.Bindings.emplace_back(0, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::StorageBuffer); // light
+			t.BuildLayoutHash();
+			return t;
+		}();
+
+		return t;
+	}
+
+	const BindingSetTemplate &RendererTemplates::Shadow()
+	{
+		static auto t = []() -> BindingSetTemplate
+		{
+			BindingSetTemplate t{};
+			t.SetIndex = ERenderingSets::SHADOW;
+			t.Bindings.emplace_back(
+				0, 0u, 1, EShaderStage::Vertex | EShaderStage::Geometry | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::StorageBuffer
+			);																								// shadowBuffer
+			t.Bindings.emplace_back(1, 0u, 1, EShaderStage::Fragment, EResourceType::CombinedImageSampler); // Dir shadow
+			t.Bindings.emplace_back(2, 0u, 1, EShaderStage::Fragment, EResourceType::CombinedImageSampler); // Point shadow
+			t.Bindings.emplace_back(3, 0u, 1, EShaderStage::Fragment, EResourceType::CombinedImageSampler); // Spot shadow
+			t.BuildLayoutHash();
+			return t;
+		}();
+
+		return t;
+	}
+
+	const BindingSetTemplate &RendererTemplates::ImageLighting()
+	{
+		static auto t = []() -> BindingSetTemplate
+		{
+			BindingSetTemplate t{};
+			t.SetIndex = ERenderingSets::IMAGE_BASED_LIGHTING;
+			t.Bindings.emplace_back(0, 0u, 1, EShaderStage::Fragment, EResourceType::CombinedImageSampler); // brdfLUT
+			t.Bindings.emplace_back(1, 0u, 1, EShaderStage::Fragment, EResourceType::CombinedImageSampler); // prefilter
+			t.Bindings.emplace_back(2, 0u, 1, EShaderStage::Fragment, EResourceType::CombinedImageSampler); // irradiance
+			t.BuildLayoutHash();
+			return t;
+		}();
+
+		return t;
+	}
+
+	const std::vector<BindingSetTemplate> &RendererTemplates::GetTemplates()
+	{
+		static auto m = []()
+		{
+			std::vector<BindingSetTemplate> m = {Global(), Object(), Lighting(), Shadow(), ImageLighting()};
+			return m;
+		}();
+
+		return m;
 	}
 
 	Renderer::Renderer(Scope<RendererAPI> api)

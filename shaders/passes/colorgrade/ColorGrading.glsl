@@ -6,6 +6,8 @@
 #type fragment
 #version 460 core
 
+#include <Constants.glsl>
+
 vec3 Grade(vec3 c, vec3 lift, vec3 gamma, vec3 gain, float saturation)
 {
 	c = c + lift;
@@ -26,7 +28,7 @@ layout(push_constant) uniform ColorGrading
 	float uSaturation;
 } pc;
 
-layout(set = 1, binding = 0) uniform sampler2D uTonemapped;
+layout(set = SET_MATERIAL, binding = 0) uniform sampler2D uTonemapped;
 layout(location = 0) in vec2 vUV;
 layout(location = 0) out vec4 oColor;
 

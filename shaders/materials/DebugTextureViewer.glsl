@@ -9,8 +9,8 @@
 layout(location = 0) in vec2 vUV;
 layout(location = 0) out vec4 oColor;
 
-layout(set = 1, binding = 0) uniform sampler2D u_Tex2D;
-layout(set = 1, binding = 1) uniform samplerCube u_TexCube;
+layout(set = SET_MATERIAL, binding = 0) uniform sampler2D u_Tex2D;
+layout(set = SET_MATERIAL, binding = 1) uniform samplerCube u_TexCube;
 
 layout(push_constant) uniform PushConstants
 {

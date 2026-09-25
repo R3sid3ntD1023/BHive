@@ -1,1 +1,7 @@
 #define MAX_LIGHTS 32
+#define SET_GLOBAL 0
+#define SET_OBJECT 1
+#define SET_MATERIAL 2
+#define SET_LIGHTING 3
+#define SET_SHADOW 4
+#define SET_IMAGE_BASED_LIGHTING 5

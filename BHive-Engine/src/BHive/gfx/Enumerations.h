@@ -5,6 +5,17 @@
 
 namespace BHive
 {
+	enum ERenderingSets : uint32_t
+	{
+		GLOBAL = 0,
+		OBJECT,
+		MATERIAL,
+		LIGHTING,
+		SHADOW,
+		IMAGE_BASED_LIGHTING,
+		MAX
+	};
+
 	enum class ETopologyMode
 	{
 		Points,

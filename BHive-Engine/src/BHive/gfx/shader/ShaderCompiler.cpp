@@ -146,6 +146,9 @@ namespace BHive
 			}
 		}
 
+		constexpr const char *SetMarcos[ERenderingSets::MAX] = {"SET_OBJECT", "SET_OBJECT", "SET_MATERIAL", "SET_LIGHTING", "SET_SHADOW", "SET_IMAGE_BASED_LIGHTING"};
+		constexpr const char *SetValues[ERenderingSets::MAX] = {"0", "1", "2", "3", "4", "5"};
+
 	} // namespace utils
 
 	ShaderCompiler::ShaderCompiler(const std::filesystem::path &filepath)
@@ -184,6 +187,8 @@ namespace BHive
 	void ShaderCompiler::CompileToVulkan(ShaderAsset &asset, const MacroDefinitions &definitions)
 	{
 		auto options = mVulkanCompileOptions;
+		for (uint32_t i = 0; i < ERenderingSets::MAX; i++)
+			options.AddMacroDefinition(utils::SetMarcos[i], utils::SetValues[i]);
 
 		for (auto &[stage, data] : asset.Stages)
 		{

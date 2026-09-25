@@ -27,6 +27,10 @@ namespace BHive
 	public:
 		static const BindingSetTemplate &Global();
 		static const BindingSetTemplate &Object();
+		static const BindingSetTemplate &Lighting();
+		static const BindingSetTemplate &Shadow();
+		static const BindingSetTemplate &ImageLighting();
+		static const std::vector<BindingSetTemplate> &GetTemplates();
 	};
 
 	class BHIVE_API Renderer

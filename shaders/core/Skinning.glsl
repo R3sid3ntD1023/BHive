@@ -1,7 +1,7 @@
 #define SKINNING
 #define MAX_BONE_INFLUENCE 4
 
-layout(std430, set = 3, binding = 3) readonly buffer Bones
+layout(std430, set = SET_OBJECT, binding = 3) readonly buffer Bones
 {
 	mat4 bones[];
 };

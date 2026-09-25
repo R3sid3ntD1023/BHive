@@ -1,5 +1,8 @@
 #type vertex
+
 #version 460 core
+
+#include <Constants.glsl>
 
 struct Frustum
 {
@@ -28,7 +31,7 @@ uint indices[24] = uint[](
     3, 7
 );
 
-layout(std140, set = 0, binding = 0) uniform Camera
+layout(std140, set = SET_GLOBAL, binding = 0) uniform Camera
 {
     mat4 ViewProjection;
     mat4 View;

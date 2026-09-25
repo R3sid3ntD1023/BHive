@@ -208,7 +208,7 @@ namespace BHive
 
 		auto &descriptorCache = VulkanBackend::GetDescriptorCache();
 
-		if (auto setTemplate = shader->GetTemplate().FindSet(1))
+		if (auto setTemplate = shader->GetTemplate().FindSet(ERenderingSets::MATERIAL))
 		{
 			auto &cachedSet = descriptorCache.GetOrCreateDescriptorSet({setTemplate, &snap});
 			shader->BindSet(cmd, frame, cachedSet.ResourceSet.get());
