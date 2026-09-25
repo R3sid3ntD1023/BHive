@@ -14,16 +14,7 @@ namespace BHive
 		glm::vec4 Direction;
 	};
 
-	struct FGPUPointLight
-	{
-		// rgb + intensity
-		glm::vec4 Color;
-
-		// xyz + radius
-		glm::vec4 Position;
-	};
-
-	struct FGPUSpotLight
+	struct FGPULocalLight
 	{
 		// rgb + intensity
 		glm::vec4 Color;
@@ -34,7 +25,7 @@ namespace BHive
 		// xyz + innerCutoff
 		glm::vec4 Direction;
 
-		// outerCutoff + padding
+		// outerCutoff + type + padding
 		glm::vec4 Params;
 	};
 
@@ -82,7 +73,7 @@ namespace BHive
 
 		float GetRadius() const { return mRadius; }
 
-		FGPUPointLight ToGPU() const;
+		FGPULocalLight ToGPU() const;
 
 		REFLECTABLE()
 
@@ -126,7 +117,7 @@ namespace BHive
 
 		REFLECTABLE()
 
-		FGPUSpotLight ToGPU() const;
+		FGPULocalLight ToGPU() const;
 
 	private:
 		FColor mColor = FColor::White;

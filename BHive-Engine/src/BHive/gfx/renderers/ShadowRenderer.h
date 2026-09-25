@@ -21,7 +21,6 @@ namespace BHive
 
 		void BeginRecording();
 		void EndRecording(FPass &pass, const RenderBatch &batch);
-		void SetLightBuffer(BufferPtr lightBuffer);
 		void SetBoneBuffer(BufferPtr boneBuffer);
 
 		void SubmitDirectionalLight(const FShadowCascadedCreateInfo &info);
@@ -64,8 +63,9 @@ namespace BHive
 
 		struct alignas(16) PointLightShadowData
 		{
-			glm::mat4 ShadowViewProjections[6];
+			glm::vec4 Position;
 			glm::vec4 ShadowNearFar;
+			glm::mat4 ShadowViewProjections[6];
 			Frustum Frustums[6];
 		};
 
@@ -96,7 +96,6 @@ namespace BHive
 
 		ResourceSetPtr mObjectSet;
 		ResourceSetPtr mShadowSet;
-		ResourceSetPtr mLightSet;
 
 		MaterialPtr mCullingMaterial;
 	};

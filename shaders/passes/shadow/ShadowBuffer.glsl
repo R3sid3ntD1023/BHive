@@ -21,8 +21,9 @@ struct DirectionalShadowInfo
 
 struct PointLightShadowInfo
 {
-	mat4 ViewProjections[6];
+	vec4 Position;//pos
 	vec4 ShadowNearFar;
+	mat4 ViewProjections[6];
 	Frustum Frustums[6];
 };
 

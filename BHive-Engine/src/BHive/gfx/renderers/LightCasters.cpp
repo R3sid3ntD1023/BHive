@@ -53,11 +53,12 @@ namespace BHive
 		return *this;
 	}
 
-	FGPUPointLight PointLight::ToGPU() const
+	FGPULocalLight PointLight::ToGPU() const
 	{
-		FGPUPointLight gpu{};
+		FGPULocalLight gpu{};
 		gpu.Color = {mColor.r, mColor.g, mColor.b, mIntensity};
 		gpu.Position = {mPosition, mRadius};
+		gpu.Params.y = 0;
 		return gpu;
 	}
 
@@ -105,13 +106,14 @@ namespace BHive
 		return *this;
 	}
 
-	FGPUSpotLight SpotLight::ToGPU() const
+	FGPULocalLight SpotLight::ToGPU() const
 	{
-		FGPUSpotLight gpu{};
+		FGPULocalLight gpu{};
 		gpu.Color = {mColor.r, mColor.g, mColor.b, mIntensity};
 		gpu.Position = {mPosition, mRadius};
 		gpu.Direction = {mDirection, mInnerCutOffCos};
 		gpu.Params.x = mOuterCutOffCos;
+		gpu.Params.y = 1;
 		return gpu;
 	}
 

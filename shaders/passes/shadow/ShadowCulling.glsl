@@ -5,7 +5,6 @@
 #include <Core.glsl>
 #include <Constants.glsl>
 #include <Intersections.glsl>
-#include <Lighting.glsl>
 #include <ShadowBuffer.glsl>
 
 layout(local_size_x = 256) in;
@@ -63,10 +62,9 @@ void main()
             uint index = pc.LightIndex;
             uint face = pc.LightFace;
 
-            PointLight light = uPointLights[index];
             PointLightShadowInfo shadowInfo = PointShadowInfo[index];
 
-            Sphere lightSphere = Sphere(light.Position.xyz, light.Position.w);
+            Sphere lightSphere = Sphere(shadowInfo.Position.xyz, shadowInfo.ShadowNearFar.y);
             Sphere objectSphere = Sphere(object.center_radius.xyz, object.center_radius.w);
     
             bool insideLightRange = SphereSphereIntersection(lightSphere, objectSphere);

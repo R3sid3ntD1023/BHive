@@ -1,45 +1,52 @@
 #include "Lights.h"
-#include "gfx/Buffers.h"
 #include "Renderer.h"
+#include "gfx/Buffers.h"
 #include "gfx/factories/BufferFactory.h"
 
 namespace BHive
 {
+	constexpr uint32_t HeaderSize = 16;
+
 	void Lights::Init()
 	{
-		mLightBuffer = BufferFactory::Create(sizeof(FLightBufferData), EBufferType::StorageBuffer);
+		mDirectionalLightBuffer = BufferFactory::Create(HeaderSize + sizeof(FGPUDirectionalLight) * sMaxLights, EBufferType::StorageBuffer);
+		mLocalLightBuffer = BufferFactory::Create(HeaderSize + sizeof(FGPULocalLight) * sMaxLights, EBufferType::StorageBuffer);
 	}
 
 	void Lights::BeginRecording()
 	{
-		mLightInfo.NumLights = {0, 0, 0, 0};
+		mDirectionalLights.clear();
+		mLocalLights.clear();
 	}
 
 	void Lights::EndRecording()
 	{
-		mLightBuffer.As<GeneralBuffer>()->SetData(&mLightInfo, sizeof(FLightBufferData));
+		auto dirBuffer = mDirectionalLightBuffer.As<GeneralBuffer>();
+		auto localBuffer = mLocalLightBuffer.As<GeneralBuffer>();
+
+		auto dirCount = mDirectionalLights.size();
+		auto localCount = mLocalLights.size();
+
+		dirBuffer->SetData(&dirCount, sizeof(uint32_t));
+		localBuffer->SetData(&localCount, sizeof(uint32_t));
+
+		dirBuffer->SetData(mDirectionalLights.data(), mDirectionalLights.size() * sizeof(FGPUDirectionalLight), HeaderSize);
+		localBuffer->SetData(mLocalLights.data(), mLocalLights.size() * sizeof(FGPULocalLight), HeaderSize);
 	}
 
 	void Lights::Submit(const DirectionalLight &light)
 	{
-		auto num_lights = mLightInfo.NumLights[0]++ % sMaxLights;
-		mLightInfo.DirectionalLightInfo[num_lights] = light.ToGPU();
+		mDirectionalLights.emplace_back(light.ToGPU());
 	}
 
 	void Lights::Submit(const PointLight &light)
 	{
-		auto num_lights = mLightInfo.NumLights[1]++ % sMaxLights;
-		mLightInfo.PointLightInfo[num_lights] = light.ToGPU();
+		mLocalLights.emplace_back(light.ToGPU());
 	}
 
 	void Lights::Submit(const SpotLight &light)
 	{
-		auto num_lights = mLightInfo.NumLights[2]++ % sMaxLights;
-		mLightInfo.SpotLightInfo[num_lights] = light.ToGPU();
+		mLocalLights.emplace_back(light.ToGPU());
 	}
 
-	const glm::uvec3 &BHive::Lights::NumLights() const
-	{
-		return mLightInfo.NumLights;
-	}
 } // namespace BHive

@@ -10,13 +10,7 @@ struct DirectionalLight
 	vec4 Direction;		// xyz + unused
 };
 
-struct PointLight
-{
-	vec4 Color;			// rgb + intensity
-	vec4 Position;		// xyz + radius
-};
-
-struct SpotLight
+struct LocalLight
 {
 	vec4 Color;			// rgb + intensity
 	vec4 Position;		// xyz + radius
@@ -38,15 +32,17 @@ struct ReflectedLight
 	vec3 IndirectSpecular;
 };
 
-
-// @semantic Lights
-layout(std430, set = SET_LIGHTING, binding = 0) restrict readonly buffer LightSSBO
+layout(std430, set = SET_LIGHTING, binding = 0) restrict readonly buffer DirectionalLightSSBO
 {
-	uvec4 NumLights; //dir, point, spot
-	DirectionalLight uDirectionalLights[MAX_LIGHTS];
-	PointLight uPointLights[MAX_LIGHTS];
-	SpotLight uSpotLights[MAX_LIGHTS];
-};
+	uint Count;
+	DirectionalLight Lights[];
+} DirectionalLights;
+
+layout(std430, set = SET_LIGHTING, binding = 1) restrict readonly buffer LocalLightSSBO
+{
+	uint Count;
+	LocalLight Lights[];
+} LocalLights;
 
 
 void GetDirectionalLightInfo(const in DirectionalLight light, inout IncidentLight directLight)
@@ -55,7 +51,7 @@ void GetDirectionalLightInfo(const in DirectionalLight light, inout IncidentLigh
 	directLight.Color = max(vec3(0), light.Color.rgb * light.Color.a);
 }
 
-void GetPointLightInfo(const in PointLight light, const in vec3 geoPosition, inout IncidentLight directLight)
+void GetPointLightInfo(const in LocalLight light, const in vec3 geoPosition, inout IncidentLight directLight)
 {
 	float radius = max(light.Position.w, 0.001);
 
@@ -72,10 +68,9 @@ void GetPointLightInfo(const in PointLight light, const in vec3 geoPosition, ino
 	directLight.Color = max(vec3(0), light.Color.rgb * light.Color.a * attenuation * fade);
 }
 
-void GetSpotLightInfo(const in SpotLight light, const in vec3 geoPosition, inout IncidentLight directLight)
+void GetSpotLightInfo(const in LocalLight light, const in vec3 geoPosition, inout IncidentLight directLight)
 {
-	PointLight point_light = PointLight(light.Color, light.Position);
-	GetPointLightInfo(point_light, geoPosition, directLight);
+	GetPointLightInfo(light, geoPosition, directLight);
 	
 	float theta = dot(normalize(light.Position.xyz - geoPosition), normalize(-light.Direction.xyz ));
 	float epsilon = light.Direction.w - light.Params.x;

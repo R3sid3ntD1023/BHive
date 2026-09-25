@@ -3,9 +3,9 @@ void ApplyLighting(vec3 geoPosition, vec3 geoNormal, vec3 geoViewDir, Material m
 {
 #if defined( Direct )
 	//Directional lights
-	for(int i = 0; i < NumLights.x; i++)
+	for(int i = 0; i < DirectionalLights.Count; i++)
 	{
-		DirectionalLight light = uDirectionalLights[i];
+		DirectionalLight light = DirectionalLights.Lights[i];
 		IncidentLight directLight;
 
 		GetDirectionalLightInfo(light, directLight);
@@ -28,52 +28,53 @@ void ApplyLighting(vec3 geoPosition, vec3 geoNormal, vec3 geoViewDir, Material m
 	}
 
 	//pointlights
-	for(int i = 0; i < NumLights.y; i++)
+	for(int i = 0; i < LocalLights.Count; i++)
 	{
-		PointLight light = uPointLights[i];
+		LocalLight light = LocalLights.Lights[i];
 		IncidentLight directLight;
 
-		GetPointLightInfo(light, geoPosition, directLight);
-
-		#if defined(POINT_SHADOW_MAPPING)
+		int type = int(light.Params.y);
+		switch(type)
 		{
-			if (light.Color.a > 0.0)
+			case 0:
 			{
-				PointLightShadowInfo shadow_info = PointShadowInfo[i];
-				float shadow = GetPointShadow(i, geoPosition, normalize(directLight.Direction), directLight.Direction, shadow_info.ShadowNearFar.xy, ShadowPointMaps);
-				float dist = length(directLight.Direction);
-				float s = dist / light.Position.w;
-				float shadowFade = 1.0 - smoothstep(0.8, 1.0, s);
-				shadow = mix(1.0, shadow, shadowFade);
-				directLight.Color *= shadow;
+				GetPointLightInfo(light, geoPosition, directLight);
+
+				#if defined(POINT_SHADOW_MAPPING)
+				{
+					if (light.Color.a > 0.0)
+					{
+						PointLightShadowInfo shadow_info = PointShadowInfo[i];
+						float shadow = GetPointShadow(i, geoPosition, normalize(directLight.Direction), directLight.Direction, shadow_info.ShadowNearFar.xy, ShadowPointMaps);
+						float dist = length(directLight.Direction);
+						float s = dist / light.Position.w;
+						float shadowFade = 1.0 - smoothstep(0.8, 1.0, s);
+						shadow = mix(1.0, shadow, shadowFade);
+						directLight.Color *= shadow;
+					}
+				}
+				#endif
 			}
-		}
-		#endif
-
-		Direct(geoPosition, geoNormal, geoViewDir, directLight, mat, reflected);
-	}
-
-	//spotlights
-	for(int i = 0; i < NumLights.z; i++)
-	{
-		SpotLight light = uSpotLights[i];
-		IncidentLight directLight;
-
-		GetSpotLightInfo(light, geoPosition, directLight);
-
-		#if defined(SPOT_SHADOW_MAPPING)
-		{
-			if (light.Color.a > 0.0)
+			break;
+			case 1:
 			{
-				mat4 viewProj = SpotShadowInfo[i].ViewProjection;
-				float shadow = GetSpotLightShadow(i, viewProj, geoPosition, ShadowSpotMaps);
-				directLight.Color *= shadow;
-			}
-		}
-		#endif
+				GetSpotLightInfo(light, geoPosition, directLight);
 
-		Direct(geoPosition, geoNormal, geoViewDir, directLight, mat, reflected);
+				#if defined(SPOT_SHADOW_MAPPING)
+				{
+					if (light.Color.a > 0.0)
+					{
+						mat4 viewProj = SpotShadowInfo[i].ViewProjection;
+						float shadow = GetSpotLightShadow(i, viewProj, geoPosition, ShadowSpotMaps);
+						directLight.Color *= shadow;
+					}
+				}
+				#endif
+			}
+			break;
+		}
 		
+		Direct(geoPosition, geoNormal, geoViewDir, directLight, mat, reflected);
 	}
 #endif
 

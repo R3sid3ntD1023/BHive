@@ -72,7 +72,8 @@ namespace BHive
 		{
 			BindingSetTemplate t{};
 			t.SetIndex = ERenderingSets::LIGHTING;
-			t.Bindings.emplace_back(0, 0u, 1, EShaderStage::Vertex | EShaderStage::Fragment | EShaderStage::Compute, EResourceType::StorageBuffer); // light
+			t.Bindings.emplace_back(0, 0u, 1, EShaderStage::Fragment | EShaderStage::Compute, EResourceType::StorageBuffer); // DirectionalLights
+			t.Bindings.emplace_back(1, 0u, 1, EShaderStage::Fragment | EShaderStage::Compute, EResourceType::StorageBuffer); // LocalLights
 			t.BuildLayoutHash();
 			return t;
 		}();

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/Core.h"
 #include "LightCasters.h"
+#include "core/Core.h"
 #include "gfx/registries/Handles.h"
 
 namespace BHive
@@ -24,23 +24,16 @@ namespace BHive
 
 		void Submit(const SpotLight &light);
 
-		const glm::uvec3 &NumLights() const;
+		BufferPtr GetDirectionalLightBuffer() const { return mDirectionalLightBuffer; }
 
-		BufferPtr GetBuffer() const { return mLightBuffer; }
-
-	private:
-		struct FLightBufferData
-		{
-			glm::uvec4 NumLights = {0, 0, 0, 0};
-			std::array<FGPUDirectionalLight, sMaxLights> DirectionalLightInfo;
-			std::array<FGPUPointLight, sMaxLights> PointLightInfo;
-			std::array<FGPUSpotLight, sMaxLights> SpotLightInfo;
-		};
+		BufferPtr GetLocalLightBuffer() const { return mLocalLightBuffer; }
 
 	private:
-		FLightBufferData mLightInfo{};
+		std::vector<FGPUDirectionalLight> mDirectionalLights;
+		std::vector<FGPULocalLight> mLocalLights;
 
-		BufferPtr mLightBuffer;
+		BufferPtr mDirectionalLightBuffer;
+		BufferPtr mLocalLightBuffer;
 	};
 
 } // namespace BHive

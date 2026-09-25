@@ -86,11 +86,6 @@ namespace BHive
 		mShadowData.NumShadowMaps = {0, 0, 0, 0};
 	}
 
-	void ShadowRenderer::SetLightBuffer(BufferPtr lightBuffer)
-	{
-		mLightSet.As<ResourceSet>()->SetBuffer(0, lightBuffer);
-	}
-
 	void ShadowRenderer::SetBoneBuffer(BufferPtr boneBuffer)
 	{
 		mObjectSet.As<ResourceSet>()->SetBuffer(3, boneBuffer);
@@ -158,7 +153,6 @@ namespace BHive
 					pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
 					pass.BindResourceSet(mShadowSet);
 					pass.BindResourceSet(mObjectSet);
-					pass.BindResourceSet(mLightSet);
 					pass.Emplace<CmdBindMaterial>()(mCullingMaterial.As<Material>());
 					pass.Emplace<CmdDispatch>()(groups, 1, 1);
 					pass.EndPhase();
@@ -206,7 +200,6 @@ namespace BHive
 					pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
 					pass.BindResourceSet(mShadowSet);
 					pass.BindResourceSet(mObjectSet);
-					pass.BindResourceSet(mLightSet);
 					pass.Emplace<CmdBindMaterial>()(mCullingMaterial.As<Material>());
 					pass.Emplace<CmdDispatch>()(groups, 1, 1);
 					pass.EndPhase();
@@ -250,7 +243,6 @@ namespace BHive
 				pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
 				pass.BindResourceSet(mShadowSet);
 				pass.BindResourceSet(mObjectSet);
-				pass.BindResourceSet(mLightSet);
 				pass.Emplace<CmdBindMaterial>()(mCullingMaterial.As<Material>());
 				pass.Emplace<CmdDispatch>()(groups, 1, 1);
 				pass.EndPhase();
@@ -384,13 +376,16 @@ namespace BHive
 		if (i >= sMaxLights)
 			return;
 
+		auto &p = shadow_data.PointShadowInfos[i];
 		auto proj = glm::perspective(glm::radians(90.0f), 1.f, info.LightNearFar.x, info.LightNearFar.y);
 
 		for (int j = 0; j < 6; j++)
 		{
 			auto view = glm::lookAt(info.LightPosition, info.LightPosition + point_directions[j].normal, point_directions[j].up);
-			shadow_data.PointShadowInfos[i].ShadowViewProjections[j] = proj * view;
-			shadow_data.PointShadowInfos[i].Frustums[j] = Frustum(proj * view);
+
+			p.Position = glm::vec4(info.LightPosition, 1.0f);
+			p.ShadowViewProjections[j] = proj * view;
+			p.Frustums[j] = Frustum(proj * view);
 		}
 
 		shadow_data.PointShadowInfos[i].ShadowNearFar = glm::vec4(info.LightNearFar, 0.0, 0.0);
@@ -427,7 +422,6 @@ namespace BHive
 	void ShadowRenderer::InitializeSets()
 	{
 		mObjectSet = ResourceSetFactory::Create(RendererTemplates::Object());
-		mLightSet = ResourceSetFactory::Create(RendererTemplates::Lighting());
 		mShadowSet = ResourceSetFactory::Create(RendererTemplates::Shadow());
 
 		mShadowSet.As<ResourceSet>()->SetBuffer(0, mShadowBuffer);

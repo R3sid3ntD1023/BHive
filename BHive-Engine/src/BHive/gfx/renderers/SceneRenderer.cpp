@@ -192,7 +192,8 @@ namespace BHive
 			pass.UseTexture(irradiance, EImageUsage::ColorRead);
 			pass.UseTexture(brdfLUT, EImageUsage::ColorRead);
 			pass.UseBuffer(mCameraUBO, EBufferUsage::UniformRead);
-			pass.UseBuffer(mLights.GetBuffer(), EBufferUsage::StorageRead);
+			pass.UseBuffer(mLights.GetDirectionalLightBuffer(), EBufferUsage::StorageRead);
+			pass.UseBuffer(mLights.GetLocalLightBuffer(), EBufferUsage::StorageRead);
 			pass.UseBuffer(instanceBuffer, EBufferUsage::StorageRead);
 			pass.UseBuffer(visibilityBuffer, EBufferUsage::StorageRead);
 
@@ -390,7 +391,8 @@ namespace BHive
 
 		{
 			auto set = mSceneSets.LightingSet.As<ResourceSet>();
-			set->SetBuffer(0, mLights.GetBuffer());
+			set->SetBuffer(0, mLights.GetDirectionalLightBuffer());
+			set->SetBuffer(1, mLights.GetLocalLightBuffer());
 		}
 
 		{
@@ -404,7 +406,6 @@ namespace BHive
 		auto imageBasedLightingSet = mSceneSets.ImageBasedLightingSet.As<ResourceSet>();
 		imageBasedLightingSet->SetTexture(0, mEnvironment.GetBRDFLUT());
 
-		mShadows.SetLightBuffer(mLights.GetBuffer());
 		mShadows.SetBoneBuffer(mBoneBuffer);
 	}
 
