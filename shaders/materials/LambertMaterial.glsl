@@ -9,7 +9,7 @@
 #include <Core.glsl>
 #include <Lighting.glsl>
 #include <ShadowBuffer.glsl>
-#include <ShadowCore.glsl>
+
 
 layout(set = 0, binding = 6) uniform sampler2DArrayShadow ShadowDirMaps;
 layout(set = 0, binding = 7) uniform samplerCubeArrayShadow ShadowPointMaps;

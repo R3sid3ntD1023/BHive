@@ -1,5 +1,4 @@
 
-
 void ApplyLighting(vec3 geoPosition, vec3 geoNormal, vec3 geoViewDir, Material mat, inout ReflectedLight reflected)
 {
 #if defined( Direct )

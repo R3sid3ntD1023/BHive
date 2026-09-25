@@ -9,7 +9,6 @@
 #include <Core.glsl>
 #include <Lighting.glsl>
 #include <ShadowBuffer.glsl>
-#include <ShadowCore.glsl>
 
 #define USE_DIFFUSE_MAP
 #define USE_ROUGHNESS_MAP

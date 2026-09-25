@@ -1,5 +1,8 @@
 #extension GL_EXT_texture_shadow_lod: enable
 
+#include <ShadowCore.glsl>
+
+
 #define CASCADE_COUNT 5
 
 struct CascadeShadow
@@ -39,22 +42,15 @@ layout(std430, set = 0, binding = 5) restrict readonly buffer ShadowSSBO
 
 int GetCascadeIndex(float viewDepth, CascadeShadow cascades[CASCADE_COUNT])
 {
-	int layer = -1;
 	for(int i = 0; i < CASCADE_COUNT; i++)
 	{
-		if(viewDepth < cascades[i].SplitData.x)
+		if(viewDepth <= cascades[i].SplitData.x)
 		{
-			layer = i;
-			break;
+			return i;
 		}
 	}
 
-	if(layer == -1)
-	{
-		layer = CASCADE_COUNT;
-	}
-	
-	return layer;
+	return CASCADE_COUNT - 1;
 }
 
 vec4 GetDirectionalShadowUvs(int lightIndex, float viewDepth, vec3 geoPosition,  DirectionalShadowInfo info)
@@ -86,11 +82,18 @@ float SampleShadowDepth(int lightIndex, float viewDepth, vec3 geoPosition, vec3 
 		return 0.0;
 	}
 
-	vec3 normal = geoNormal;
-	vec3 lightDir  =info.Direction.xyz;
-	float farPlane = info.Direction.w;
+	if(any(lessThan(uvw.xy, vec2(0.0))) ||
+			any(greaterThan(uvw.xy, vec2(1.0))))
+	{
+		return 0.0;
+	}
 
-	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+	vec3 normal = normalize(geoNormal);
+	vec3 lightDir  = normalize(info.Direction.xyz);
+	float farPlane = info.Direction.w;
+	int cascade = int(mod(coord.z, CASCADE_COUNT));
+
+	float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.0005);
 	if(coord.z == CASCADE_COUNT)
 	{
 		bias *= 1 / (farPlane * 0.5f);
@@ -100,9 +103,18 @@ float SampleShadowDepth(int lightIndex, float viewDepth, vec3 geoPosition, vec3 
 		bias *=1 / (info.Cascades[int(coord.z)].SplitData.x * 0.5f);
 	}
 
-	float shadow = texture(shadowRaw, vec4(uvw, depth), bias);
+	vec2 texelSize = 1.0 / vec2(textureSize(shadowRaw, 0).xy);
+	const float cascadeRadius[CASCADE_COUNT] = {1.0, 1.75, 2.5, 3.5, 5.0};
+	float radius = cascadeRadius[cascade];
+
+	float shadow  = 0.0;
+
+	for(int i = 0; i < 9; i++)
+	{
+		shadow += texture(shadowRaw, vec4(uvw.xy + poissionDisk[i] * texelSize * radius, uvw.z, depth), bias);
+	}
 	
-	return shadow;
+	return shadow / 9.0;
 }
 
 vec3 VisualizeShadowUvs(int lightIndex, float viewDepth, vec3 geoPosition,DirectionalShadowInfo info)

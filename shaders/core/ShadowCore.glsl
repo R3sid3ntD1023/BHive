@@ -1,6 +1,6 @@
 const float light_size = 0.07;
 
-const vec2 poissonDisk[9] = vec2[]
+const vec2 poissionDisk[9] = vec2[]
 (
 	vec2(-0.01529481f, -0.07395129f),
     vec2(-0.56232890f, -0.36484920f),
@@ -13,7 +13,7 @@ const vec2 poissonDisk[9] = vec2[]
     vec2(-0.96646290f, -0.04688413f)
 );
 
-const vec3 v3poissonDisk[9] = vec3[](
+const vec3 v3poissionDisk[9] = vec3[](
     vec3(-0.023860920f, -0.115901396f,  0.985948205f),
     vec3(-0.649357200f, -0.542242587f,  0.066411376f),
     vec3( 0.956068397f,  0.285292149f, -0.865215898f),
@@ -33,7 +33,6 @@ float GetSpotLightShadow(int light, mat4 lightViewProjection, vec3 position, in 
 	if (any(lessThan(projCoords, vec3(0.0))) || any(greaterThan(projCoords, vec3(1.0))))
 		return 1.0;
 
-#if USE_POISSONDISK
 	float shadow = 0.0;
 	float shadow_region = light_size * projCoords.z;
 	float shadow_size = shadow_region / 9;
@@ -43,7 +42,7 @@ float GetSpotLightShadow(int light, mat4 lightViewProjection, vec3 position, in 
 
 	for(int i = 0; i < 9; i++)
 	{
-		vec2 rotated_poisson = (poissonDisk[i].x * rotate.yx) + (poissonDisk[i].y * rotate * vec2(-1.0f, 1.0f));
+		vec2 rotated_poisson = (poissionDisk[i].x * rotate.yx) + (poissionDisk[i].y * rotate * vec2(-1.0f, 1.0f));
 		vec2 offset = rotated_poisson * shadow_size;
 		vec3 uvc = projCoords + vec3(offset, 0.0f);
 		
@@ -51,11 +50,6 @@ float GetSpotLightShadow(int light, mat4 lightViewProjection, vec3 position, in 
 	}
 
 	return shadow / 9.0;
-
-#else
-	vec3 uvc = projCoords;
-	return texture(shadow_array_texture,vec4(uvc.xy, light, uvc.z));
-#endif
 }
 
 float GetPointShadow(int light, vec3 position, vec3 lightDirection, vec3 lightVector,  vec2 near_far, 
@@ -72,7 +66,6 @@ float GetPointShadow(int light, vec3 position, vec3 lightDirection, vec3 lightVe
 	depth = (depth * 0.5) + 0.5;
 	depth = clamp(depth, 0.0, 1.0);
 
-#if USE_POISSONDISK
 	float shadow = 0.0;
 	float shadow_region = light_size * depth;
 	float shadow_size = shadow_region / 9;
@@ -81,9 +74,9 @@ float GetPointShadow(int light, vec3 position, vec3 lightDirection, vec3 lightVe
 
 	for(int i = 0; i < 9; i++)
 	{
-		vec3 rotated_poisson = (v3poissonDisk[i].x * rotate.yyx * rotate.zxx) + 
-			(v3poissonDisk[i].y * rotate.xyx * rotate.zyy * vec3(-1.0f, 1.0f, 1.0f) +
-			(v3poissonDisk[i].z * rotate.zxy * vec3(0.0f, -1.0f, 1.0f))
+		vec3 rotated_poisson = (v3poissionDisk[i].x * rotate.yyx * rotate.zxx) + 
+			(v3poissionDisk[i].y * rotate.xyx * rotate.zyy * vec3(-1.0f, 1.0f, 1.0f) +
+			(v3poissionDisk[i].z * rotate.zxy * vec3(0.0f, -1.0f, 1.0f))
 			);
 
 		vec3 offset = rotated_poisson * shadow_size;
@@ -92,54 +85,5 @@ float GetPointShadow(int light, vec3 position, vec3 lightDirection, vec3 lightVe
 	}
 
 	return shadow / 9.0;
-
-#else
-	return texture(point_shadow_array_texture, vec4(-lightDirection, light), depth).r;
-#endif
-}
-
-
-float SampleVariancePointLightShadow(int light, vec3 position, vec3 lightDirection, vec3 lightDirectionUN, vec2 near_far, 
-	in samplerCubeArray point_shadow_array_texture)
-{
-
-	vec3 absDirect = abs(lightDirectionUN);
-	float dist = max(absDirect.x, max(absDirect.y, absDirect.z));
-	float depth = (near_far.y + near_far.x) * dist;
-	depth += (-2 * near_far.y * near_far.x);
-	depth /= (near_far.y - near_far.x) * dist;
-	depth = (depth * 0.5) + 0.5;
-
-	float shadow = 0.0;
-	float shadow_region = light_size * depth;
-	float shadow_size = shadow_region / 9;
-	float angle = random(position, 500.f) * (PI * 2.0f);
-	vec3 rotate = vec3(sin(angle), cos(angle), 1);
-
-	for(int i = 0; i < 9; i++)
-	{	
-		vec3 rotated_poisson = (v3poissonDisk[i].x * rotate.yyx * rotate.zxx) + 
-			(v3poissonDisk[i].y * rotate.xyx * rotate.zyy * vec3(-1.0f, 1.0f, 1.0f) +
-			(v3poissonDisk[i].z * rotate.zxy * vec3(0.0f, -1.0f, 1.0f))
-			);
-		vec3 offset =  rotated_poisson * shadow_size;
-		vec3 uvc = -lightDirection + offset;
-		vec2 moments =  texture(point_shadow_array_texture, vec4(uvc, light)).xy;
-		shadow += SampleVariance(moments, depth);
-	}
-
-	return shadow / 9.0;
-}
-
-float SampleVarianceSpotLightShadow(int light, mat4 lightViewProjection, vec3 position, in sampler2DArray shadow_array_texture)
-{
-	vec4 fragLightPos = lightViewProjection * vec4(position, 1.0f);
-	vec3 projCoords = fragLightPos.xyz / fragLightPos.w;
-	projCoords = (projCoords + 1.f) * .5f;
-
-	vec3 uvc = projCoords;
-	vec2 moments =  texture(shadow_array_texture,vec3(uvc.xy, light)).xy;
-
-	return SampleVariance(moments, uvc.z);
 }
 
