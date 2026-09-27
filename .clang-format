@@ -20,6 +20,8 @@ AllowShortFunctionsOnASingleLine: InlineOnly
 IndentPPDirectives: BeforeHash
 SortIncludes:  Never
 BreakBeforeBraces : Allman
+BreakAfterReturnType: None
+AlwaysBreakAfterReturnType: None
 BraceWrapping:
  AfterEnum:	true
  AfterStruct:	true

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Platform/Vulkan/MemoryAllocator.h"
 #include "Platform/Vulkan/VulkanCore.h"
 #include "Platform/Vulkan/VulkanMemory.h"
 

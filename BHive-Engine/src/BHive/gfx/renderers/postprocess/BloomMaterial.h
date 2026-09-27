@@ -42,6 +42,7 @@ namespace BHive
 		std::array<MaterialPtr, 4> mMaterials;
 		std::vector<glm::uvec2> mMipSizes;
 		PipelinePtr mPipeline;
+		PipelinePtr mUpSamplePipeline;
 	};
 
 	REFLECT_EXTERN(BloomMaterial::FParams);

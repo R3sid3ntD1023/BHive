@@ -26,7 +26,7 @@ void main()
     vec2 texel = 1.0 / vec2(srcSize);
     float radius = max(pc.uFilterRadius, 0.001);
 
-    vec3 upsample = BicubicSample(uSrcTexture, vUV, texel * radius);
+    vec3 upsample = UpsampleTent(uSrcTexture, vUV, texel * radius);
 
     oColor =  vec4(upsample, 1.0);
 }

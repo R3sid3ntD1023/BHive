@@ -2,16 +2,10 @@
 
 #include "BufferBase.h"
 #include "BufferLayout.h"
-#include "core/EnumFlags.h"
+#include "gfx/Enumerations.h"
 
 namespace BHive
 {
-
-	enum class EBufferLifetime
-	{
-		Static,
-		Dynamic
-	};
 
 	struct FBufferCreateInfo
 	{

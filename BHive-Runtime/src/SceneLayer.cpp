@@ -2,6 +2,7 @@
 
 #include "Inspectors/Inspect.h"
 #include "core/Application.h"
+#include "core/FPSCounter.h"
 #include "core/WindowInput.h"
 #include "core/layers/ImGuiLayer.h"
 #include "core/platform/Platform.h"
@@ -24,11 +25,6 @@
 
 namespace BHive
 {
-	FTransform sphereTransform{{0, 0, 0}};
-	std::vector<FTransform> transforms;
-	std::array<ContextHandle, 9> sSphereHandle;
-	ContextHandle sPlaneHandle;
-	ContextHandle sCharacterHandle;
 	DirectionalLight main{};
 	PointLight light{};
 	SpotLight spotLight{};
@@ -65,20 +61,25 @@ namespace BHive
 		mSceneRenderer->Init(mViewportSize);
 		mSceneRenderer->SetEnvironmentTexture(TextureFactory::Create2D(decodeEnvironment));
 
-		// mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
-		//  mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
-		//  mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
+		mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
+		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
+		mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
 
 		auto mesh = MeshFactory::CreateSphere(1.0f, 32u, 32u);
-		auto plane = MeshFactory::CreatePlane(50.f, 50.f);
+		auto plane = MeshFactory::CreatePlane(1.f, 1.f);
 		mTexture = TextureFactory::Create2D(decodedSprite);
 
 		{
 
 			auto sphereMat = MaterialFactory::CreateStandard();
 			auto planeMat = MaterialFactory::CreateStandard();
+			auto transparentMat = MaterialFactory::CreateStandard();
 
 			planeMat.As<StandardMaterial>()->SetFlags(StandardMaterial::EFlags::ReceiveShadows);
+
+			auto texture = TextureFactory::Create2D(decodedMario);
+			transparentMat.As<StandardMaterial>()->SetSurfaceType(Material::ESurfaceType::Transparent);
+			transparentMat.As<StandardMaterial>()->SetTexture("DiffuseMap", {texture});
 
 			auto mat = sphereMat.As<StandardMaterial>();
 			mat->SetAlbedo({0.5f, 0.5f, 0.5f, 1.0f});
@@ -86,8 +87,9 @@ namespace BHive
 			mat->SetMetalness(0.0f);
 			mat->SetRoughness(0.5f);
 
-			mMaterialTables[0].Add(planeMat);
-			mMaterialTables[1].Add(sphereMat);
+			mMaterialTables.emplace_back().Add(planeMat);
+			mMaterialTables.emplace_back().Add(sphereMat);
+			mMaterialTables.emplace_back().Add(transparentMat);
 		}
 
 #if 0
@@ -111,19 +113,35 @@ namespace BHive
 		{
 			for (int32_t j = -1; j <= 1; j++, count++)
 			{
+				mTransforms.emplace_back(std::pair{ContextHandle{}, FTransform{{i * 3.0f, 1.5f, j * 3.0f}}});
+
 				FMeshSubmissionRequest request{};
 				request.Mesh = mesh;
 				request.Materials = mMaterialTables[1];
-				request.Transform = transforms.emplace_back(FTransform{{i * 3.0f, 1.5f, j * 3.0f}});
-				mSceneRenderer->SubmitMesh(request, sSphereHandle[count]);
+				request.Transform = mTransforms[count].second;
+				mSceneRenderer->SubmitMesh(request, mTransforms.at(count).first);
 			}
 		}
 
-		FMeshSubmissionRequest request{};
-		request.Materials = mMaterialTables[0];
-		request.Transform = FTransform{{0, -.5, 0}};
-		request.Mesh = plane;
-		mSceneRenderer->SubmitMesh(request, sPlaneHandle);
+		mTransforms.emplace_back(std::pair{ContextHandle{}, FTransform{{0, -.5, 0}, {}, {50.f, 1.f, 50.f}}});
+		mTransforms.emplace_back(std::pair{ContextHandle{}, FTransform{{2, 1.5, 0}}});
+		mTransforms.emplace_back(std::pair{ContextHandle{}, FTransform{{0, 0, 0}}});
+
+		{
+			FMeshSubmissionRequest request{};
+			request.Materials = mMaterialTables[0];
+			request.Transform = mTransforms[9].second;
+			request.Mesh = plane;
+			mSceneRenderer->SubmitMesh(request, mTransforms.at(9).first);
+		}
+
+		{
+			FMeshSubmissionRequest request{};
+			request.Materials = mMaterialTables[2];
+			request.Transform = mTransforms[10].second;
+			request.Mesh = plane;
+			mSceneRenderer->SubmitMesh(request, mTransforms.at(10).first);
+		}
 
 		{
 			FMeshImportOptions import_options{};
@@ -132,7 +150,7 @@ namespace BHive
 			MeshImportResolver resolver(import_options);
 			auto result = resolver.Resolve(decodedMesh);
 			mCharacter = result.Mesh;
-			mCharacterMaterials = result.Materials;
+			mMaterialTables.emplace_back(result.Materials);
 
 #ifdef TEST_ANIMATION
 			mCharacterSkeleton = result.Skeleton;
@@ -152,10 +170,10 @@ namespace BHive
 
 				FMeshSubmissionRequest request{};
 				request.Mesh = mCharacter;
-				request.Materials = mCharacterMaterials;
-				request.Transform = sphereTransform;
+				request.Materials = mMaterialTables.back();
+				request.Transform = mTransforms[11].second;
 				request.BoneTransforms = mCharacter.As<SkeletalMesh>()->GetSkeleton()->GetRestPoseTransforms();
-				mSceneRenderer->SubmitMesh(request, sCharacterHandle);
+				mSceneRenderer->SubmitMesh(request, mTransforms.at(11).first);
 			}
 		}
 	}
@@ -170,8 +188,8 @@ namespace BHive
 		{
 			auto &pose = *mCharacterPose;
 			mAnimationClip->Play(time, pose);
-			mSceneRenderer->UpdateTransform(sCharacterHandle, sphereTransform);
-			mSceneRenderer->UpdateBones(sCharacterHandle, pose.GetTransformsJointSpace());
+			mSceneRenderer->UpdateTransform(mTransforms[11].first, mTransforms[11].second);
+			mSceneRenderer->UpdateBones(mTransforms[11].first, pose.GetTransformsJointSpace());
 		}
 
 		if (mViewportActive)
@@ -198,27 +216,32 @@ namespace BHive
 		// FView viewOverride = FView::Create(mCameras[1].GetProjection(), mCameras[1].GetView());
 		// mSceneRenderer->SetViewOverride(viewOverride);
 
-		// renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), {light.GetPosition()});
-		// renderer.Line.DrawGrid({});
-		// renderer.Line.DrawLine({0, 0, 0}, {10, 0, 0}, FColor::Red);
-		// renderer.Line.DrawLine({0, 0, 0}, {0, 10, 0}, FColor::Green);
-		// renderer.Line.DrawLine({0, 0, 0}, {0, 0, 10}, FColor::Blue);
-		// renderer.Line.DrawLine({0, 0, 0}, main.GetDirection() * 5.0f, main.GetColor(), FTransform{{-5, 5, 0}});
+		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), {light.GetPosition()});
+		renderer.Line.DrawGrid({});
+		renderer.Line.DrawLine({0, 0, 0}, {10, 0, 0}, FColor::Red);
+		renderer.Line.DrawLine({0, 0, 0}, {0, 10, 0}, FColor::Green);
+		renderer.Line.DrawLine({0, 0, 0}, {0, 0, 10}, FColor::Blue);
+		renderer.Line.DrawLine({0, 0, 0}, main.GetDirection() * 5.0f, main.GetColor(), FTransform{{-5, 5, 0}});
+		renderer.Line.DrawCircle(2.0f, 32, {}, FColor::Red, FTransform{{0, 3, 0}});
+		renderer.Line.DrawCircle(4.0f, 32, {}, FColor::Blue, FTransform{{0, 3, 0}});
 
-		// renderer.Quad.DrawQuad(FQuadParams{}, mTexture, FTransform{{-2, 4, 0}});
+		renderer.Quad.DrawQuad(FQuadParams{}, mTexture, FTransform{{-2, 4, 0}});
 
-		// renderer.Quad.DrawBillboard(view, FQuadParams{}, mTexture, FTransform{{2, 4, 0}});
+		renderer.Quad.DrawBillboard(view, FQuadParams{}, mTexture, FTransform{{2, 4, 0}});
 
-		// renderer.Quad.DrawText(mFont, 2.f, "Test Text", FTextParams{}, FTransform{{2, 2, 0}});
+		renderer.Quad.DrawText(mFont, 2.f, "Test Text", FTextParams{}, FTransform{{2, 2, 0}});
 
-		// renderer.Quad.DrawCircle(FCircleParams{}, FTransform{{-2, 2, 0}});
+		renderer.Quad.DrawCircle(FCircleParams{}, FTransform{{-2, 2, 0}});
 
-		// renderer.Line.DrawSpotlightCone(spotLight.GetPosition(), spotLight.GetDirection(), spotLight.GetRadius(), spotLight.GetOuterAngleDegrees(), 32, spotLight.GetColor());
+		renderer.Line.DrawSpotlightCone(spotLight.GetPosition(), spotLight.GetDirection(), spotLight.GetRadius(), spotLight.GetOuterAngleDegrees(), 32, spotLight.GetColor());
+
 		mSceneRenderer->End();
 	}
 
 	void SceneLayer::OnGuiRender()
 	{
+		const float fps = FPSCounter::Get();
+
 		if (ImGui::Begin("SceneRenderer"))
 		{
 			auto viewportSize = ImGui::GetContentRegionAvail();
@@ -243,19 +266,60 @@ namespace BHive
 
 		ImGui::End();
 
-		if (ImGui::Begin("Actions"))
+		if (ImGui::Begin("Transforms"))
+		{
+			for (uint32_t i = 0; i < mTransforms.size(); ++i)
+			{
+				auto name = std::format("Transform_{}", i);
+				auto &[c, t] = mTransforms[i];
+				if (Inspect::get().inspect(name, t))
+					mSceneRenderer->UpdateTransform(c, t);
+			}
+		}
+
+		ImGui::End();
+
+		if (ImGui::Begin("Materials"))
+		{
+			for (uint32_t t = 0; t < mMaterialTables.size(); t++)
+			{
+				auto &table = mMaterialTables[t];
+				auto label = std::format("MaterialTable_{}", t);
+				bool opened = ImGui::TreeNodeEx(label.c_str(), ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_LabelSpanAllColumns);
+
+				if (opened)
+				{
+					for (uint32_t m = 0; m < table.Count(); m++)
+					{
+						auto name = std::format("Material_{}", m);
+						auto mat = table[m].As<StandardMaterial>();
+						Inspect::get().inspect(name, *mat);
+					}
+					ImGui::TreePop();
+				}
+			}
+		}
+
+		ImGui::End();
+
+		if (ImGui::Begin("FPS"))
+		{
+			ImGui::Text("CPU FPS: %.2f", fps);
+		}
+
+		ImGui::End();
+
+		if (ImGui::Begin("Lights"))
 		{
 			Inspect::get().inspect("MainLight", main);
 			Inspect::get().inspect("PointLight", light);
 			Inspect::get().inspect("SpotLight", spotLight);
+		}
 
-			auto inspect = [&](const std::string label)
-			{
-				auto mat = mMaterialTables[1][0].As<StandardMaterial>();
-				Inspect::get().inspect(label, *mat);
-			};
+		ImGui::End();
 
-			inspect("Material");
+		if (ImGui::Begin("Actions"))
+		{
 
 			if (ImGui::Button("Load HDR Environment"))
 			{
@@ -284,17 +348,6 @@ namespace BHive
 					request.Transform = newT.second;
 					mSceneRenderer->SubmitMesh(request, newT.first);
 				}
-			}
-
-			if (Inspect::get().inspect("Transform", sphereTransform))
-				mSceneRenderer->UpdateTransform(sCharacterHandle, sphereTransform);
-
-			for (uint32_t i = 0; i < mTransforms.size(); ++i)
-			{
-				auto name = std::format("Transform_{}", i);
-				auto &[c, t] = mTransforms[i];
-				if (Inspect::get().inspect(name, t))
-					mSceneRenderer->UpdateTransform(c, t);
 			}
 		}
 

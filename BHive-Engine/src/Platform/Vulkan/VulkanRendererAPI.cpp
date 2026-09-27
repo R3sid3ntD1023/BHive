@@ -153,7 +153,8 @@ namespace BHive
 		auto &cmd = ctx.CommandBuffer;
 		auto state = pass.State;
 
-		if (EngineConfig::DebugLabels)
+		const bool passLabel = EngineConfig::DebugLabels && !pass.Name.empty();
+		if (passLabel)
 		{
 			vk::DebugUtilsLabelEXT label(pass.Name.c_str(), {1.0f, .5f, 0.0f, 1.0f});
 			cmd.beginDebugUtilsLabelEXT(label);
@@ -161,7 +162,8 @@ namespace BHive
 
 		for (auto &phase : pass.Phases)
 		{
-			if (EngineConfig::DebugPhaseLabels)
+			const bool phaseLabel = EngineConfig::DebugPhaseLabels && !phase.Name.empty();
+			if (phaseLabel)
 			{
 				vk::DebugUtilsLabelEXT label(phase.Name.c_str(), {1.0f, 0.0f, 1.0f, 1.0f});
 				cmd.beginDebugUtilsLabelEXT(label);
@@ -191,11 +193,11 @@ namespace BHive
 				}
 			}
 
-			if (EngineConfig::DebugPhaseLabels)
+			if (phaseLabel)
 				cmd.endDebugUtilsLabelEXT();
 		}
 
-		if (EngineConfig::DebugLabels)
+		if (passLabel)
 			cmd.endDebugUtilsLabelEXT();
 	}
 

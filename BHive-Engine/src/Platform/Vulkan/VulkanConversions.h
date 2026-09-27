@@ -395,4 +395,22 @@ namespace BHive
 			return vk::AccessFlagBits2::eNone;
 		}
 	}
+
+	inline vk::BufferUsageFlags ToVkBufferType(EBufferType type)
+	{
+		vk::BufferUsageFlags usage{};
+
+		if (HasFlag(type, EBufferType::StorageBuffer))
+			usage |= vk::BufferUsageFlagBits::eStorageBuffer;
+
+		if (HasFlag(type, EBufferType::UniformBuffer))
+			usage |= vk::BufferUsageFlagBits::eUniformBuffer;
+
+		if (HasFlag(type, EBufferType::IndirectBuffer))
+			usage |= vk::BufferUsageFlagBits::eIndirectBuffer;
+
+		ASSERT(usage != (vk::BufferUsageFlags)0);
+		return usage;
+	}
+
 } // namespace BHive

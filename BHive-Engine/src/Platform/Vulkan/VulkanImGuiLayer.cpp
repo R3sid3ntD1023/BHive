@@ -109,7 +109,7 @@ namespace BHive
 
 		FPassState state{};
 		auto &pass = renderer.BeginPass("ImGui", EPassType::Present, state);
-		pass.BeginPhase();
+		pass.BeginPhase(EPhaseType::Graphics);
 		pass.Emplace<CmdImGuiRender>()(drawData);
 		pass.EndPhase();
 

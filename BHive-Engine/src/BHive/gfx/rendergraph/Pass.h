@@ -49,9 +49,7 @@ namespace BHive
 		FPassState State;
 		std::list<FPhase> Phases;
 
-		void BeginPhase(EPhaseType type = EPhaseType::Graphics);
-
-		void BeginPhase(const std::string &name, EPhaseType type = EPhaseType::Graphics);
+		void BeginPhase(EPhaseType type, const std::string &name = "");
 
 		template <typename T>
 		T &Emplace()
@@ -88,7 +86,8 @@ namespace BHive
 		// 	return *ptr;
 		// }
 
-		void UseFramebuffer(FramebufferPtr fbo, ImageSubresourceRange range = {});
+		void
+		UseFramebuffer(FramebufferPtr fbo, ImageSubresourceRange range = {}, EImageUsage colorUsage = EImageUsage::ColorWrite, EImageUsage depthUsage = EImageUsage::DepthWrite);
 
 		void UseTexture(TexturePtr tex, EImageUsage access, ImageSubresourceRange range = {});
 

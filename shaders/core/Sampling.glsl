@@ -58,6 +58,25 @@ vec3 Downsample13TapShared(in vec3 tile[20][20], ivec2 id)
 	return c;
 }
 
+vec3 UpsampleTent(sampler2D tex, vec2 uv, vec2 texel)
+{
+	vec3 c = vec3(0.0);
+    
+    c += textureLod(tex, uv + texel * vec2(-1,   -1),     0).rgb * 1.0;
+    c += textureLod(tex, uv + texel * vec2(0,  -1),     0).rgb * 2.0;
+    c += textureLod(tex, uv + texel * vec2(1,   -1),     0).rgb * 1.0;
+
+    c += textureLod(tex, uv + texel * vec2(-1,   0),     0).rgb * 2.0;
+    c += textureLod(tex, uv, 0).rgb * 4.0;
+    c += textureLod(tex, uv + texel * vec2(1,   0),    0).rgb * 2.0;
+                 
+    c += textureLod(tex, uv + texel * vec2(-1,  1),      0).rgb * 1.0;
+    c += textureLod(tex, uv + texel * vec2(0,  1),     0).rgb * 2.0;
+    c += textureLod(tex, uv + texel * vec2(1,   1),     0).rgb * 1.0;
+
+	return c / 16.0;
+}
+
 float Cubic(float x)
 {
     x = abs(x);

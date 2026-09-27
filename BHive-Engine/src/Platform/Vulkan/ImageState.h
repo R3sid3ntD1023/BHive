@@ -29,6 +29,8 @@ namespace BHive
 
 		static ImageState ColorAttachment();
 
+		static ImageState ColorAttachmentReadWrite();
+
 		static ImageState DepthStencilAttachment();
 
 		static ImageState ShaderRead();
@@ -45,4 +47,4 @@ namespace BHive
 
 		static ImageState ToImageState(EImageUsage access);
 	};
-}
+} // namespace BHive

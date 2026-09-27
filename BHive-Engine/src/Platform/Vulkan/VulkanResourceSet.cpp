@@ -97,7 +97,7 @@ namespace BHive
 
 		auto smp = img->GetSampler();
 
-		auto fullView = img->GetFullView();
+		auto view = mip == 0 ? img->GetFullView() : img->GetView(layer, mip);
 
 		switch (bindInfo.Type)
 		{
@@ -105,7 +105,7 @@ namespace BHive
 		case EResourceType::SeperatedImage:
 		{
 			ASSERT(smp)
-			return vk::DescriptorImageInfo(smp, fullView, vk::ImageLayout::eShaderReadOnlyOptimal);
+			return vk::DescriptorImageInfo(smp, view, vk::ImageLayout::eShaderReadOnlyOptimal);
 		}
 		case EResourceType::SeperatedSampler:
 		{
@@ -114,16 +114,15 @@ namespace BHive
 		}
 		case EResourceType::StorageImage:
 		{
-			auto view = img->GetView(layer, mip);
 			return vk::DescriptorImageInfo(nullptr, view, vk::ImageLayout::eGeneral);
 		}
 		case EResourceType::InputAttachment:
 		{
-			return vk::DescriptorImageInfo(nullptr, fullView, vk::ImageLayout::eShaderReadOnlyOptimal);
+			return vk::DescriptorImageInfo(nullptr, view, vk::ImageLayout::eShaderReadOnlyOptimal);
 		}
 		default:
 			ASSERT(smp)
-			return vk::DescriptorImageInfo(smp, fullView, vk::ImageLayout::eShaderReadOnlyOptimal);
+			return vk::DescriptorImageInfo(smp, view, vk::ImageLayout::eShaderReadOnlyOptimal);
 		}
 	}
 

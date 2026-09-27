@@ -174,7 +174,7 @@ namespace BHive
 
 			// render scene passes
 			auto &pass = renderer.BeginPass("Scene " + passNames[i], EPassType::OffScreen, states[i]);
-			pass.BeginPhase("Phase " + passNames[i], EPhaseType::Graphics);
+			pass.BeginPhase(EPhaseType::Graphics);
 
 			///-------------------------------------
 			/// Bind Sets
@@ -215,7 +215,7 @@ namespace BHive
 
 		auto &linePass = renderer.BeginPass("Line Renderer", EPassType::OffScreen, states[1]);
 
-		linePass.BeginPhase("Line Rendering", EPhaseType::Graphics);
+		linePass.BeginPhase(EPhaseType::Graphics);
 		linePass.BindResourceSet(mSceneSets.GlobalSet);
 		linePass.UseFramebuffer(mFramebuffer);
 		linePass.UseBuffer(mCameraUBO, EBufferUsage::UniformRead);
@@ -226,7 +226,7 @@ namespace BHive
 		auto framebuffer = mFramebuffer.As<Framebuffer>();
 
 		auto &transitionPass = renderer.BeginPass("Transition to read", EPassType::OffScreen, {});
-		transitionPass.BeginPhase("Transition to read", EPhaseType::Transfer);
+		transitionPass.BeginPhase(EPhaseType::Transfer);
 		transitionPass.UseTexture(framebuffer->GetColorAttachment(), EImageUsage::ColorRead);
 		transitionPass.EndPhase();
 		renderer.EndPass();

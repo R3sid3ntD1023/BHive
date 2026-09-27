@@ -49,7 +49,7 @@ namespace BHive
 		auto &pass = graph.AddPass("Generate PMREM Maps", EPassType::OffScreen);
 
 		// Phase 0 : equirectangular -> cubemap
-		pass.BeginPhase("Convert 2D -> cube", EPhaseType::Compute);
+		pass.BeginPhase(EPhaseType::Compute);
 		pass.UseTexture(hdr, EImageUsage::ComputeSampled);
 		pass.UseTexture(environmentTextures.Environment, EImageUsage::ComputeStorageWrite, {0, 1, 0, 6});
 		pass.Emplace<CmdBindMaterial>()(equirectangularMaterial);
@@ -57,12 +57,12 @@ namespace BHive
 		pass.EndPhase();
 
 		// Phase 1 : generate mipmaps for environment
-		pass.BeginPhase("Gen Mips for Environment Cube", EPhaseType::Transfer);
+		pass.BeginPhase(EPhaseType::Transfer);
 		pass.Emplace<CmdGenerateMipMaps>()(environmentTextures.Environment);
 		pass.EndPhase();
 
 		// Phase 2 : Irradiance convolution
-		pass.BeginPhase("Convolution", EPhaseType::Compute);
+		pass.BeginPhase(EPhaseType::Compute);
 		pass.UseTexture(environmentTextures.Environment, EImageUsage::ComputeSampled);
 		pass.UseTexture(environmentTextures.Irradiance, EImageUsage::ComputeStorageWrite, {0, 1, 0, 6});
 		pass.Emplace<CmdBindMaterial>()(convolutionMaterial);
@@ -85,7 +85,7 @@ namespace BHive
 				.SetParam("u_width", MaterialParam(s))
 				.SetParam("u_height", MaterialParam(s));
 
-			pass.BeginPhase(std::format("Prefiltering Mip {}", mip), EPhaseType::Compute);
+			pass.BeginPhase(EPhaseType::Compute);
 			pass.UseTexture(environmentTextures.Environment, EImageUsage::ComputeSampled);
 			pass.UseTexture(environmentTextures.PreFilter, EImageUsage::ComputeStorageWrite, {mip, 1, 0, 6});
 			pass.Emplace<CmdBindMaterial>()(prefilterMaterial);

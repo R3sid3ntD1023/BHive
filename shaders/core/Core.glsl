@@ -134,7 +134,7 @@ vec4 CompositeWeightedTransparency(in sampler2D reveal, in sampler2D accum, ivec
 	return vec4(average_color, 1.0 - revealage);
 }
 
-vec3 SoftKeeThreshold(vec3 color, float threshold)
+vec3 SoftKneeThreshold(vec3 color, float threshold)
 {
 	threshold = max(threshold, 0.0);
     float knee = threshold * 0.5;

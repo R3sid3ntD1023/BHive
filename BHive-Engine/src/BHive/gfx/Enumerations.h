@@ -154,6 +154,7 @@ namespace BHive
 		// Graphics
 		ColorRead,
 		ColorWrite,
+		ColorReadWrite,
 
 		DepthRead,
 		DepthWrite,
@@ -166,6 +167,12 @@ namespace BHive
 		// Transfer
 		TransferSrc,
 		TransferDst
+	};
+
+	enum class EBufferLifetime
+	{
+		Static,
+		Dynamic
 	};
 
 	enum class EBufferUsage : uint8_t

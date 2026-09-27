@@ -71,20 +71,23 @@ namespace BHive
 			const auto &tex = entry.Tex;
 
 			auto material = mMaterial.As<Material>();
-			material->SetParam("u_Type", MaterialParam(type)).SetParam("u_Mip", MaterialParam(mip)).SetParam("u_Face", MaterialParam(face)).SetTexture(uniform, TextureBinding(tex));
+			material->SetParam("u_Type", MaterialParam(type))
+				.SetParam("u_Mip", MaterialParam(mip))
+				.SetParam("u_Face", MaterialParam(face))
+				.SetTexture(uniform, TextureBinding(tex));
 
 			ImageSubresourceRange range{mip, mipLevels, face, layers};
 
 			auto &pass = renderer.BeginPass("ImageDebugger", EPassType::OffScreen);
 
-			pass.BeginPhase("ImageDebugger : Render To Qaud", EPhaseType::Graphics);
+			pass.BeginPhase(EPhaseType::Graphics);
 			pass.UseFramebuffer(mFB);
 			pass.UseTexture(tex, EImageUsage::ColorRead, range);
 			pass.Emplace<CmdBindMaterial>()(mMaterial.As<Material>());
 			pass.Emplace<CmdDrawFullScreen>()();
 			pass.EndPhase();
 
-			pass.BeginPhase("ImageDebugger : Transition to Read", EPhaseType::Transfer);
+			pass.BeginPhase(EPhaseType::Transfer);
 			pass.UseTexture(mFB.As<Framebuffer>()->GetColorAttachment(), EImageUsage::ColorRead);
 			pass.EndPhase();
 

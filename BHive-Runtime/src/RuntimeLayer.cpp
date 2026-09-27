@@ -64,11 +64,11 @@ namespace BHive
 			lambertMaterial0.As<LambertMaterial>()->SetTexture("DiffuseMap", {mTexture});
 
 			auto lambertMaterial1 = MaterialFactory::CreateLambert();
-			lambertMaterial1.As<LambertMaterial>()->SetDiffuseColor(FColor::Orange).SetEmissionColor(FColor::Black);
+			lambertMaterial1.As<LambertMaterial>()->SetDiffuseColor(FColor::Orange);
 
 			auto standardMaterial = MaterialFactory::CreateStandard();
 			standardMaterial.As<StandardMaterial>()->SetAlbedo(FColor::White);
-			standardMaterial.As<StandardMaterial>()->SetEmission(FColor(1.0f, .5f, 0.0f, 2.0f));
+			// standardMaterial.As<StandardMaterial>()->SetEmission(FColor(1.0f, .5f, 0.0f, 2.0f));
 			standardMaterial.As<StandardMaterial>()->SetMetalness(1.0f);
 			standardMaterial.As<StandardMaterial>()->SetRoughness(0.5f);
 
@@ -94,7 +94,7 @@ namespace BHive
 		mSceneRenderer->SetEnvironmentTexture(TextureFactory::Create2D(decodedEnviroment));
 
 		mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
-		// mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
+		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
 		mSceneRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
 
 		mObjectTransforms[0] = FTransform({0, 1, 0});

@@ -3,20 +3,13 @@
 
 namespace BHive
 {
-
-	void FPass::BeginPhase(EPhaseType type)
-	{
-		auto name = std::format("Phase{}", (uint32_t)Phases.size());
-		BeginPhase(name, type);
-	}
-
-	void FPass::BeginPhase(const std::string &name, EPhaseType type)
+	void FPass::BeginPhase(EPhaseType type, const std::string &name)
 	{
 		Phases.emplace_back(name, type);
 		mCurrentPhase = &Phases.back();
 	}
 
-	void FPass::UseFramebuffer(FramebufferPtr fbo, ImageSubresourceRange range)
+	void FPass::UseFramebuffer(FramebufferPtr fbo, ImageSubresourceRange range, EImageUsage colorUsage, EImageUsage depthUsage)
 	{
 		ASSERT(mCurrentPhase)
 
@@ -25,12 +18,12 @@ namespace BHive
 		auto fb = fbo.As<Framebuffer>();
 		for (uint32_t i = 0; i < fb->GetNumColorAttachments(); i++)
 		{
-			UseTexture(fb->GetColorAttachment(i), EImageUsage::ColorWrite, range);
+			UseTexture(fb->GetColorAttachment(i), colorUsage, range);
 		}
 
 		if (auto depth = fb->GetDepthAttachment())
 		{
-			UseTexture(depth, EImageUsage::DepthWrite, range);
+			UseTexture(depth, depthUsage, range);
 		}
 	}
 

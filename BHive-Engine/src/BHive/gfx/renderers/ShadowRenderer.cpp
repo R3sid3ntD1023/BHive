@@ -96,7 +96,7 @@ namespace BHive
 		const uint32_t objectCount = batch.InstanceCount();
 		const uint32_t groups = (objectCount + 255) / 256;
 
-		pass.BeginPhase("Upload Shadow Batch", EPhaseType::Transfer);
+		pass.BeginPhase(EPhaseType::Transfer);
 		pass.Emplace<CmdClearBuffer>()(mObjectBuffer);
 		pass.Emplace<CmdClearBuffer>()(mIndirectBuffer);
 		pass.Emplace<CmdClearBuffer>()(mVisibilityBuffer);
@@ -105,7 +105,7 @@ namespace BHive
 		pass.Emplace<CmdSetBufferData>()(mIndirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
 		pass.EndPhase();
 
-		pass.BeginPhase("Update Shadow Data", EPhaseType::Transfer);
+		pass.BeginPhase(EPhaseType::Transfer);
 		pass.Emplace<CmdSetBufferData>()(mShadowBuffer, &mShadowData, sizeof(ShadowData));
 		pass.EndPhase();
 
@@ -140,14 +140,14 @@ namespace BHive
 			{
 				for (uint32_t c = 0; c < sCascadeCount; ++c)
 				{
-					pass.BeginPhase("Reset Directional Shadow Culling", EPhaseType::Transfer);
+					pass.BeginPhase(EPhaseType::Transfer);
 					pass.Emplace<CmdSetBufferData>()(mIndirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
 					pass.Emplace<CmdClearBuffer>()(mVisibilityBuffer);
 					pass.EndPhase();
 
 					mCullingMaterial.As<Material>()->SetParam("LightIndex", MaterialParam{d});
 					mCullingMaterial.As<Material>()->SetParam("LightFace", MaterialParam{c});
-					pass.BeginPhase("Cull Directional Shadows", EPhaseType::Compute);
+					pass.BeginPhase(EPhaseType::Compute);
 					pass.UseBuffer(mIndirectBuffer, EBufferUsage::StorageWrite);
 					pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageWrite);
 					pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
@@ -159,7 +159,7 @@ namespace BHive
 
 					material.As<Material>()->SetParam("LightIndex", MaterialParam{d});
 					material.As<Material>()->SetParam("CascadeIndex", MaterialParam{c});
-					pass.BeginPhase("Generate Directional Shadows", EPhaseType::Graphics);
+					pass.BeginPhase(EPhaseType::Graphics);
 					pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = d * sCascadeCount + c});
 					pass.UseBuffer(buffer, EBufferUsage::StorageRead);
 					pass.UseBuffer(mIndirectBuffer, EBufferUsage::IndirectRead);
@@ -189,12 +189,12 @@ namespace BHive
 				for (uint32_t face = 0; face < 6; ++face)
 				{
 					mCullingMaterial.As<Material>()->SetParam("LightFace", face);
-					pass.BeginPhase("Reset Point Shadow Culling", EPhaseType::Transfer);
+					pass.BeginPhase(EPhaseType::Transfer);
 					pass.Emplace<CmdSetBufferData>()(mIndirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
 					pass.Emplace<CmdClearBuffer>()(mVisibilityBuffer);
 					pass.EndPhase();
 
-					pass.BeginPhase("Cull Point Shadows", EPhaseType::Compute);
+					pass.BeginPhase(EPhaseType::Compute);
 					pass.UseBuffer(mIndirectBuffer, EBufferUsage::StorageWrite);
 					pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageWrite);
 					pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
@@ -206,7 +206,7 @@ namespace BHive
 
 					material.As<Material>()->SetParam("LightIndex", MaterialParam{p});
 					material.As<Material>()->SetParam("LightFace", MaterialParam{face});
-					pass.BeginPhase("Generate PointLight ShadowMaps", EPhaseType::Graphics);
+					pass.BeginPhase(EPhaseType::Graphics);
 					pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = CubeFaceLayer(p, face)});
 					pass.UseBuffer(buffer, EBufferUsage::StorageRead);
 					pass.UseBuffer(mIndirectBuffer, EBufferUsage::IndirectRead);
@@ -231,13 +231,13 @@ namespace BHive
 
 			for (uint32_t s = 0; s < count; ++s)
 			{
-				pass.BeginPhase("Reset Spot Shadow Culling", EPhaseType::Transfer);
+				pass.BeginPhase(EPhaseType::Transfer);
 				pass.Emplace<CmdSetBufferData>()(mIndirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
 				pass.Emplace<CmdClearBuffer>()(mVisibilityBuffer);
 				pass.EndPhase();
 
 				mCullingMaterial.As<Material>()->SetParam("LightIndex", MaterialParam{s});
-				pass.BeginPhase("Cull Spot Shadows", EPhaseType::Compute);
+				pass.BeginPhase(EPhaseType::Compute);
 				pass.UseBuffer(mIndirectBuffer, EBufferUsage::StorageWrite);
 				pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageWrite);
 				pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
@@ -248,7 +248,7 @@ namespace BHive
 				pass.EndPhase();
 
 				material.As<Material>()->SetParam("LightIndex", MaterialParam{s});
-				pass.BeginPhase("Generate SpotLight Shadows", EPhaseType::Graphics);
+				pass.BeginPhase(EPhaseType::Graphics);
 				pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = s});
 				pass.UseBuffer(buffer, EBufferUsage::StorageRead);
 				pass.UseBuffer(mIndirectBuffer, EBufferUsage::IndirectRead);

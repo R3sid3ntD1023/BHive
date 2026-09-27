@@ -1,8 +1,6 @@
 #pragma once
 
 #include "ImageState.h"
-#include "MemoryAllocator.h"
-#include "gfx/NativeHandle.h"
 #include "gfx/ResourceID.h"
 
 namespace BHive
