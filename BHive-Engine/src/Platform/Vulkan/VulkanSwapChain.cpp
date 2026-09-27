@@ -5,6 +5,7 @@
 namespace BHive
 {
 	VulkanSwapChain::VulkanSwapChain(VkSurfaceKHR surface)
+		: mDevice(VulkanBackend::GetLogicalDevice())
 	{
 		auto &instance = VulkanBackend::GetInstance();
 		mSurface = vk::raii::SurfaceKHR(instance, surface);
@@ -12,37 +13,27 @@ namespace BHive
 
 	VulkanSwapChain::~VulkanSwapChain()
 	{
-		auto &device = VulkanBackend::GetLogicalDevice();
-		device.waitIdle();
-
-		// mInFlightFences.clear();
-		// mRenderFinishedSemaphores.clear();
-		// mPresentSemaphores.clear();
-		// mImages.clear();
-		// mDepthImage = {};
-		// mSwapChain.clear();
-		// mSurface.clear();
+		mDevice.waitIdle();
 	}
 
 	void VulkanSwapChain::Init(uint32_t w, uint32_t h)
 	{
-		auto &device = VulkanBackend::GetLogicalDevice();
 		auto &physical_device = VulkanBackend::GetPhysicalDevice();
 		auto formats = physical_device.getSurfaceFormatsKHR(mSurface);
 		auto presentModes = physical_device.getSurfacePresentModesKHR(mSurface);
 
 		mCapabilities = physical_device.getSurfaceCapabilitiesKHR(mSurface);
 		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(formats);
-		mPresentMode = VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR::eMailbox, presentModes);
+		mPresentMode = VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR::eImmediate, presentModes);
 
 		mExtent = VulkanUtils::ChooseSwapExtent(mCapabilities, w, h);
 		mMinImageCount = VulkanUtils::ChooseMinImageCount(mCapabilities);
 		mDepthFormat = VulkanUtils::FindDepthFormat();
 
-		CreateSwapChain(device);
-		CreateSyncObjects(device);
-		CreateImages(device);
-		CreateDepthImage(device);
+		CreateSwapChain();
+		CreateSyncObjects();
+		CreateImages();
+		CreateDepthImage();
 	}
 
 	bool VulkanSwapChain::Recreate(uint32_t w, uint32_t h)
@@ -53,10 +44,9 @@ namespace BHive
 		auto &device = VulkanBackend::GetLogicalDevice();
 		device.waitIdle();
 
-		LOG_TRACE("recreating swap chain... with size[{}x{}]", w, h);
-
 		mImages.clear();
 		mDepthImage.Clear();
+		mImagesInFlight.clear();
 		mSwapChain.clear();
 
 		Init(w, h);
@@ -109,11 +99,13 @@ namespace BHive
 
 	void VulkanSwapChain::EndRendering(vk::CommandBuffer cmd, uint32_t imageIndex)
 	{
+		cmd.endRendering();
+
 		auto &image = mImages.at(imageIndex);
 		image.Transition(cmd, ImageState::Present());
 	}
 
-	void VulkanSwapChain::CreateSwapChain(vk::raii::Device &device)
+	void VulkanSwapChain::CreateSwapChain()
 	{
 		vk::SwapchainCreateInfoKHR swap_chain_create_info(
 			{},
@@ -134,10 +126,10 @@ namespace BHive
 			nullptr
 		);
 
-		mSwapChain = device.createSwapchainKHR(swap_chain_create_info);
+		mSwapChain = mDevice.createSwapchainKHR(swap_chain_create_info);
 	}
 
-	void VulkanSwapChain::CreateSyncObjects(vk::raii::Device &device)
+	void VulkanSwapChain::CreateSyncObjects()
 	{
 		uint32_t imageCount = mSwapChain.getImages().size();
 
@@ -147,17 +139,19 @@ namespace BHive
 
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			mPresentSemaphores.emplace_back(device, vk::SemaphoreCreateInfo());
-			mInFlightFences.emplace_back(device, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
+			mPresentSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
+			mInFlightFences.emplace_back(mDevice, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
 		}
 
 		for (uint32_t i = 0; i < imageCount; i++)
 		{
-			mRenderFinishedSemaphores.emplace_back(device, vk::SemaphoreCreateInfo());
+			mRenderFinishedSemaphores.emplace_back(mDevice, vk::SemaphoreCreateInfo());
 		}
+
+		mImagesInFlight.resize(imageCount, VK_NULL_HANDLE);
 	}
 
-	void VulkanSwapChain::CreateImages(vk::raii::Device &device)
+	void VulkanSwapChain::CreateImages()
 	{
 		auto swapChainImages = mSwapChain.getImages();
 		mImages.resize(swapChainImages.size());
@@ -173,7 +167,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanSwapChain::CreateDepthImage(vk::raii::Device &device)
+	void VulkanSwapChain::CreateDepthImage()
 	{
 		if (mDepthImage)
 			mDepthImage = {};
@@ -197,9 +191,9 @@ namespace BHive
 		mDepthImage.SetDebugName(std::format("SwapChainImage_DepthStencil"));
 	}
 
-	vk::Semaphore VulkanSwapChain::GetRenderFinishedSemaphore(uint32_t imageIndex)
+	vk::Semaphore VulkanSwapChain::GetRenderFinishedSemaphore(uint32_t frame)
 	{
-		return mRenderFinishedSemaphores.at(imageIndex);
+		return mRenderFinishedSemaphores.at(frame);
 	}
 
 	vk::Semaphore VulkanSwapChain::GetImageAvailableSemaphore(uint32_t frame)
@@ -214,28 +208,37 @@ namespace BHive
 
 	void VulkanSwapChain::WaitForFence(uint32_t frame)
 	{
-
 		vk::Fence fence = GetInFlightFence(frame);
+		mDevice.waitForFences(fence, VK_TRUE, UINT64_MAX);
+	}
 
-		if (fence)
-		{
-			auto &device = VulkanBackend::GetLogicalDevice();
-			device.waitForFences(fence, VK_TRUE, UINT64_MAX);
-			device.resetFences(fence);
-		}
+	void VulkanSwapChain::ResetFence(uint32_t frame)
+	{
+		vk::Fence fence = GetInFlightFence(frame);
+		mDevice.resetFences(fence);
 	}
 
 	vk::ResultValue<uint32_t> VulkanSwapChain::AquireNextImage(uint32_t frame)
 	{
 		vk::Semaphore imageAvialable = GetImageAvailableSemaphore(frame);
-		return mSwapChain.acquireNextImage(UINT64_MAX, imageAvialable, VK_NULL_HANDLE);
+		auto [result, imageIndex] = mSwapChain.acquireNextImage(UINT64_MAX, imageAvialable, VK_NULL_HANDLE);
+
+		ASSERT(imageIndex < mImagesInFlight.size());
+
+		if (mImagesInFlight[imageIndex] != VK_NULL_HANDLE)
+		{
+			mDevice.waitForFences(mImagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+		}
+
+		mImagesInFlight[imageIndex] = GetInFlightFence(frame);
+		return {result, imageIndex};
 	}
 
 	vk::Result VulkanSwapChain::Present(vk::CommandBuffer cmd, uint32_t imageIndex, uint32_t frame)
 	{
 		vk::Fence fence = GetInFlightFence(frame);
 		vk::Semaphore waitSemaphore = GetImageAvailableSemaphore(frame);
-		vk::Semaphore signalSemaphore = GetRenderFinishedSemaphore(imageIndex);
+		vk::Semaphore signalSemaphore = GetRenderFinishedSemaphore(frame);
 
 		vk::SemaphoreSubmitInfo wait_info(waitSemaphore, 0, vk::PipelineStageFlagBits2::eAllCommands);
 		vk::CommandBufferSubmitInfo cmd_submit_info(cmd);

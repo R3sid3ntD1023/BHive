@@ -144,8 +144,8 @@ namespace BHive
 			auto &batchData = renderer.BeginPass("Set Batch Data", EPassType::OffScreen);
 			batchData.BeginPhase(EPhaseType::Transfer);
 			batchData.Emplace<CmdClearBuffer>()(visibilityBuffer);
-			batchData.Emplace<CmdClearBuffer>()(instanceBuffer);
-			batchData.Emplace<CmdClearBuffer>()(indirectBuffer);
+			//  batchData.Emplace<CmdClearBuffer>()(instanceBuffer);
+			//  batchData.Emplace<CmdClearBuffer>()(indirectBuffer);
 			batchData.Emplace<CmdSetBufferData>()(instanceBuffer, &instanceCount, sizeof(uint32_t));
 			batchData.Emplace<CmdSetBufferData>()(instanceBuffer, batch.ObjectDatas.data(), sizeof(ObjectData) * instanceCount, 16U);
 			batchData.Emplace<CmdSetBufferData>()(indirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());

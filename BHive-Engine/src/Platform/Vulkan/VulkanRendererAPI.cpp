@@ -134,6 +134,8 @@ namespace BHive
 
 		cmd.end();
 
+		swapChain->ResetFence(current_frame);
+
 		result = swapChain->Present(cmd, imageIndex, current_frame);
 
 		mCompletedFrame = current_frame;
@@ -181,10 +183,12 @@ namespace BHive
 
 			if (phase.Type == EPhaseType::Graphics)
 			{
-				EndRendering(ctx);
-
 				if (pass.Type == EPassType::Present)
-					TransitionSwapChainToPresent(ctx, swapChain);
+					EndSwapChainRendering(ctx, swapChain);
+				else
+				{
+					EndOffScreenRendering(phase, ctx);
+				}
 			}
 
 			if (EngineConfig::DebugPhaseLabels)
@@ -237,20 +241,27 @@ namespace BHive
 			renderInfo.ColorStoreOp = utils::ToStore(state.Color.StoreOP);
 			renderInfo.DepthLoadOp = utils::ToLoad(state.Depth.LoadOP);
 			renderInfo.DepthStoreOp = utils::ToStore(state.Depth.StoreOP);
-			renderInfo.Range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, range.BaseMipLevel, range.LevelCount, range.BaseArrayLayer, range.LayerCount);
 
-			framebuffer->BeginRendering(ctx.CommandBuffer, renderInfo);
+			framebuffer->BeginRendering(cmd, range, renderInfo);
 		}
 	}
 
-	void VulkanRendererAPI::TransitionSwapChainToPresent(FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
+	void VulkanRendererAPI::EndSwapChainRendering(FVulkanRendererContext &ctx, VulkanSwapChain *swapChain)
 	{
 		swapChain->EndRendering(ctx.CommandBuffer, ctx.ImageIndex);
 	}
 
-	void VulkanRendererAPI::EndRendering(FVulkanRendererContext &ctx)
+	void VulkanRendererAPI::EndOffScreenRendering(const FPhase &phase, FVulkanRendererContext &ctx)
 	{
-		ctx.CommandBuffer.endRendering();
+		auto fbo = phase.BoundFBO.FBO;
+		if (fbo)
+		{
+			const auto framebuffer = fbo.As<VulkanFramebuffer>();
+			const auto range = phase.BoundFBO.Range;
+			auto &cmd = ctx.CommandBuffer;
+
+			framebuffer->EndRendering(cmd, range);
+		}
 	}
 
 	void VulkanRendererAPI::FlushDeletionQueue()

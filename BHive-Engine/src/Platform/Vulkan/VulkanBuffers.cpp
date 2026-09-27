@@ -11,7 +11,16 @@ namespace BHive
 		vk::BufferMemoryBarrier2 MakeBufferBarrier(vk::Buffer buffer, vk::PipelineStageFlags2 dstStage, vk::AccessFlags2 dstAccess)
 		{
 			return vk::BufferMemoryBarrier2(
-				vk::PipelineStageFlagBits2::eCopy, vk::AccessFlagBits2::eTransferWrite, dstStage, dstAccess, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, buffer, 0, VK_WHOLE_SIZE);
+				vk::PipelineStageFlagBits2::eCopy,
+				vk::AccessFlagBits2::eTransferWrite,
+				dstStage,
+				dstAccess,
+				VK_QUEUE_FAMILY_IGNORED,
+				VK_QUEUE_FAMILY_IGNORED,
+				buffer,
+				0,
+				VK_WHOLE_SIZE
+			);
 		}
 
 		vk::BufferUsageFlags ToVkBufferType(EBufferType type)

@@ -6,7 +6,6 @@
 #include "core/layers/ImGuiLayer.h"
 #include "core/platform/Platform.h"
 #include "core/threading/Threading.h"
-#include "gfx/Framebuffer.h"
 #include "gfx/animation/AnimationClip.h"
 #include "gfx/factories/MaterialFactory.h"
 #include "gfx/factories/MeshFactory.h"
@@ -33,6 +32,7 @@ namespace BHive
 	DirectionalLight main{};
 	PointLight light{};
 	SpotLight spotLight{};
+	std::vector<std::pair<ContextHandle, FTransform>> mTransforms;
 
 	void SceneLayer::OnAttach(Application &app)
 	{
@@ -54,7 +54,7 @@ namespace BHive
 		sensitivity.OrbitSpeed = EngineConfig::OrbitSpeed;
 
 		mCameras[0] = EditorCamera(75.f, aspect, 0.1f, 1000.f);
-		mCameras[0].SetStartState({0.f, 0.f, 0.f}, -90.0f, 0.0f);
+		mCameras[0].SetStartState({0.f, 10.f, 10.f}, -90.0f, -35.0f);
 		mCameras[0].SetSensitivity(sensitivity);
 
 		mCameras[1] = EditorCamera(75.f, aspect, 0.1f, 1000.f);
@@ -170,8 +170,8 @@ namespace BHive
 		{
 			auto &pose = *mCharacterPose;
 			mAnimationClip->Play(time, pose);
-			mSceneRenderer->UpdateBones(sCharacterHandle, pose.GetTransformsJointSpace());
 			mSceneRenderer->UpdateTransform(sCharacterHandle, sphereTransform);
+			mSceneRenderer->UpdateBones(sCharacterHandle, pose.GetTransformsJointSpace());
 		}
 
 		if (mViewportActive)
@@ -198,22 +198,22 @@ namespace BHive
 		// FView viewOverride = FView::Create(mCameras[1].GetProjection(), mCameras[1].GetView());
 		// mSceneRenderer->SetViewOverride(viewOverride);
 
-		renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), {light.GetPosition()});
-		renderer.Line.DrawGrid({});
-		renderer.Line.DrawLine({0, 0, 0}, {10, 0, 0}, FColor::Red);
-		renderer.Line.DrawLine({0, 0, 0}, {0, 10, 0}, FColor::Green);
-		renderer.Line.DrawLine({0, 0, 0}, {0, 0, 10}, FColor::Blue);
-		renderer.Line.DrawLine({0, 0, 0}, main.GetDirection() * 5.0f, main.GetColor(), FTransform{{-5, 5, 0}});
+		// renderer.Line.DrawSphere(light.GetRadius(), 20, {}, light.GetColor(), {light.GetPosition()});
+		// renderer.Line.DrawGrid({});
+		// renderer.Line.DrawLine({0, 0, 0}, {10, 0, 0}, FColor::Red);
+		// renderer.Line.DrawLine({0, 0, 0}, {0, 10, 0}, FColor::Green);
+		// renderer.Line.DrawLine({0, 0, 0}, {0, 0, 10}, FColor::Blue);
+		// renderer.Line.DrawLine({0, 0, 0}, main.GetDirection() * 5.0f, main.GetColor(), FTransform{{-5, 5, 0}});
 
-		renderer.Quad.DrawQuad(FQuadParams{}, mTexture, FTransform{{-2, 4, 0}});
+		// renderer.Quad.DrawQuad(FQuadParams{}, mTexture, FTransform{{-2, 4, 0}});
 
-		renderer.Quad.DrawBillboard(view, FQuadParams{}, mTexture, FTransform{{2, 4, 0}});
+		// renderer.Quad.DrawBillboard(view, FQuadParams{}, mTexture, FTransform{{2, 4, 0}});
 
-		renderer.Quad.DrawText(mFont, 2.f, "Test Text", FTextParams{}, FTransform{{2, 2, 0}});
+		// renderer.Quad.DrawText(mFont, 2.f, "Test Text", FTextParams{}, FTransform{{2, 2, 0}});
 
-		renderer.Quad.DrawCircle(FCircleParams{}, FTransform{{-2, 2, 0}});
+		// renderer.Quad.DrawCircle(FCircleParams{}, FTransform{{-2, 2, 0}});
 
-		renderer.Line.DrawSpotlightCone(spotLight.GetPosition(), spotLight.GetDirection(), spotLight.GetRadius(), spotLight.GetOuterAngleDegrees(), 32, spotLight.GetColor());
+		// renderer.Line.DrawSpotlightCone(spotLight.GetPosition(), spotLight.GetDirection(), spotLight.GetRadius(), spotLight.GetOuterAngleDegrees(), 32, spotLight.GetColor());
 		mSceneRenderer->End();
 	}
 
@@ -267,8 +267,35 @@ namespace BHive
 				}
 			}
 
+			if (ImGui::Button("Load Mesh"))
+			{
+				auto fileInfo = Platform::OpenFile("(obj)\0*.obj\0(glb)\0*.glb\0(fbx)\0*.fbx\0");
+				if (fileInfo)
+				{
+					FMeshImportOptions options{.ImportMaterials = true};
+					auto decodedMesh = MeshImporter::Import(fileInfo, 0.001f);
+					MeshImportResolver resolver(options);
+					auto result = resolver.Resolve(decodedMesh);
+
+					auto &newT = mTransforms.emplace_back();
+					FMeshSubmissionRequest request;
+					request.Mesh = result.Mesh;
+					request.Materials = result.Materials;
+					request.Transform = newT.second;
+					mSceneRenderer->SubmitMesh(request, newT.first);
+				}
+			}
+
 			if (Inspect::get().inspect("Transform", sphereTransform))
 				mSceneRenderer->UpdateTransform(sCharacterHandle, sphereTransform);
+
+			for (uint32_t i = 0; i < mTransforms.size(); ++i)
+			{
+				auto name = std::format("Transform_{}", i);
+				auto &[c, t] = mTransforms[i];
+				if (Inspect::get().inspect(name, t))
+					mSceneRenderer->UpdateTransform(c, t);
+			}
 		}
 
 		ImGui::End();

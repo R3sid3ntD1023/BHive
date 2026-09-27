@@ -28,15 +28,22 @@ namespace BHive
 	ImageState ImageState::DepthStencilAttachment()
 	{
 		return {
-			vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
-			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests, false};
+			vk::ImageLayout::eDepthStencilAttachmentOptimal,
+			vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
+			false
+		};
 	}
 
 	ImageState ImageState::ShaderRead()
 	{
 		return {
-			vk::ImageLayout::eShaderReadOnlyOptimal, vk::AccessFlagBits2::eShaderRead | vk::AccessFlagBits2::eColorAttachmentRead | vk::AccessFlagBits2::eDepthStencilAttachmentRead,
-			vk::PipelineStageFlagBits2::eVertexShader | vk::PipelineStageFlagBits2::eFragmentShader | vk::PipelineStageFlagBits2::eComputeShader, false};
+			vk::ImageLayout::eShaderReadOnlyOptimal,
+			vk::AccessFlagBits2::eShaderRead | vk::AccessFlagBits2::eColorAttachmentRead | vk::AccessFlagBits2::eInputAttachmentRead | vk::AccessFlagBits2::eShaderSampledRead
+				| vk::AccessFlagBits2::eShaderStorageRead,
+			vk::PipelineStageFlagBits2::eVertexShader | vk::PipelineStageFlagBits2::eFragmentShader | vk::PipelineStageFlagBits2::eComputeShader,
+			false
+		};
 	}
 
 	ImageState ImageState::ComputeRead()

@@ -63,6 +63,7 @@ void main()
 	vs_out.Normal = N;
 	vs_out.CameraPosition = uCam.Position.xyz;
 	vs_out.Color = vColor;
+	vs_out.DebugColor = vec3(float(instanceID)/ float(objectCount), 0, 1);
 	vs_out.View = uCam.View;
 }
 

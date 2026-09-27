@@ -42,6 +42,11 @@ namespace BHive
 		return SetIndexLookup.contains(setIndex) ? &Sets.at(SetIndexLookup.at(setIndex)) : nullptr;
 	}
 
+	bool ShaderTemplate::HasSet(uint32_t setIndex) const
+	{
+		return SetIndexLookup.contains(setIndex);
+	}
+
 	ShaderTemplate ShaderTemplate::Build(const FShaderReflection &reflection)
 	{
 		ShaderTemplate temp{};

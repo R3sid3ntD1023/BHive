@@ -63,7 +63,7 @@ namespace BHive
 		for (auto &[vao, matMap] : MaterialBatches)
 		{
 			auto v = vao.As<VertexArray>();
-			v->DeclareAccess(pass, EBufferUsage::IndirectRead, EBufferUsage::IndirectRead);
+			v->DeclareAccess(pass);
 
 			for (auto &[material, batch] : matMap)
 			{
@@ -74,6 +74,7 @@ namespace BHive
 
 				uint32_t offset = batch.FirstCommand * sizeof(MultiDrawIndirectCommand);
 
+				pass.UseBuffer(indirect, EBufferUsage::IndirectRead);
 				pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect, vao, batch.CommandCount, sizeof(MultiDrawIndirectCommand), offset);
 			}
 		}

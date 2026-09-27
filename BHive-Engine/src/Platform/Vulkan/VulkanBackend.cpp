@@ -1,14 +1,14 @@
 #include "VulkanBackend.h"
 #include "VulkanRendererAPI.h"
 #include "VulkanUtils.h"
-#include "core/debug/CrashHandler.h"
 #include "gfx/RenderCommand.h"
 #include <GLFW/glfw3.h>
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(BHIVE_ENABLE_LOGGING)
 	#define VALIDATION_LAYERS_ENABLED
+	#define VULKAN_DEBUGGING
 #endif
 
 namespace BHive
@@ -23,19 +23,6 @@ namespace BHive
 	)
 	{
 		auto message_type_string = vk::to_string(messageType);
-		auto registry = reinterpret_cast<VulkanBackend::DebugNameRegistry *>(pUserData);
-
-		if (messageSeverity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
-		{
-			for (uint32_t i = 0; i < pCallbackData->objectCount; i++)
-			{
-				const auto &obj = pCallbackData->pObjects[i];
-
-				auto name = registry->GetName(obj.objectType, obj.objectHandle);
-
-				printf("Vulkan Validation: %s (type=%d, handle=%llu)\n", name.c_str(), obj.objectType, (unsigned long long)obj.objectHandle);
-			}
-		}
 
 		switch (messageSeverity)
 		{
@@ -55,9 +42,9 @@ namespace BHive
 			break;
 		}
 
-		if (EngineConfig::DebugAssertErrors && messageSeverity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
+		if (messageSeverity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eError || messageType == vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation)
 		{
-			__debugbreak();
+			ASSERT(false)
 		}
 
 		return false;
@@ -120,30 +107,13 @@ namespace BHive
 		CreateInstance();
 		CreateDebugMessenger();
 		PickPhysicalDevice();
+		LogPhysicalDeviceInfo();
 		CreateLogicalDevice();
 		CreateCommandBuffers();
 		CreateDescriptorPool();
 		CreateImmediateCommandPool();
 		CreateMemoryAllocator();
 		CreateGPUResourceManager();
-
-		auto log_info = [=](std::ofstream &log)
-		{
-			if (mPhysicalDevice != VK_NULL_HANDLE)
-			{
-				auto props = mPhysicalDevice.getProperties();
-				log << "GPU: " << props.deviceName << "\n";
-				log << "Driver Version: " << props.driverVersion << "\n";
-				log << "Vulkan API Version: " << VK_VERSION_MAJOR(props.apiVersion) << "." << VK_VERSION_MINOR(props.apiVersion) << "." << VK_VERSION_PATCH(props.apiVersion)
-					<< "\n";
-			}
-			else
-			{
-				log << "No Vulkan physical device information available\n";
-			}
-		};
-
-		CrashHandler::Get().SetLogInfo(log_info);
 
 		sInstance = this;
 	}
@@ -234,33 +204,30 @@ namespace BHive
 
 		vk::InstanceCreateInfo instanceCreateInfo({}, &appInfo, enabled_layers, required_extensions);
 
+#if defined(VALIDATION_LAYERS_ENABLED)
 		vk::ValidationFeatureEnableEXT enabled_features[] = {
-			vk::ValidationFeatureEnableEXT::eSynchronizationValidation
-			// vk::ValidationFeatureEnableEXT::eBestPractices,
+			vk::ValidationFeatureEnableEXT::eSynchronizationValidation,
+			vk::ValidationFeatureEnableEXT::eBestPractices,
 			//  vk::ValidationFeatureEnableEXT::eDebugPrintf,
 			// vk::ValidationFeatureEnableEXT::eGpuAssisted
 		};
 
 		vk::ValidationFeaturesEXT enabled(enabled_features);
 
-		if (EngineConfig::DebugEnabled)
-		{
-			instanceCreateInfo.setPNext(&enabled);
-		}
+		instanceCreateInfo.setPNext(&enabled);
+#endif
 
 		mInstance = vk::raii::Instance(mContext, instanceCreateInfo);
 		VULKAN_HPP_DEFAULT_DISPATCHER.init((vk::Instance)mInstance);
 
-		if (EngineConfig::DebugEnabled)
-		{
-			auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
-							 | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
-			auto messageTypes
-				= vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+#if defined(VULKAN_DEBUGGING)
+		auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
+						 | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
+		auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
-			vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, debugCallback, &mDebugNames);
-			mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mInstance, debugCreateInfo);
-		}
+		vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, debugCallback, &mDebugNames);
+		mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mInstance, debugCreateInfo);
+#endif
 	}
 
 	void VulkanBackend::CreateDebugMessenger()
@@ -313,6 +280,16 @@ namespace BHive
 			LOG_ERROR("Failed to find a suitable GPU!");
 			ASSERT(false);
 		}
+	}
+
+	void VulkanBackend::LogPhysicalDeviceInfo()
+	{
+		ASSERT(mPhysicalDevice != VK_NULL_HANDLE, "No Vulkan physical device information available");
+		auto props = mPhysicalDevice.getProperties();
+
+		LOG_INFO("GPU: {}", props.deviceName.data());
+		LOG_INFO("Driver Version: {} ", props.driverVersion);
+		LOG_INFO("Vulkan API Version: {}.{}.{}", VK_VERSION_MAJOR(props.apiVersion), VK_VERSION_MINOR(props.apiVersion), VK_VERSION_PATCH(props.apiVersion));
 	}
 
 	void VulkanBackend::CreateCommandBuffers()

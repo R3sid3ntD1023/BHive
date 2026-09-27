@@ -116,6 +116,8 @@ namespace BHive
 
 		void PickPhysicalDevice();
 
+		void LogPhysicalDeviceInfo();
+
 		void CreateCommandBuffers();
 
 		void CreateImmediateCommandPool();

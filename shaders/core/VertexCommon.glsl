@@ -1,12 +1,12 @@
-uint visibleIndex =  gl_BaseInstance;
+uint visibleIndex =  gl_BaseInstance;// + gl_InstanceIndex;
 uint instanceID = visibleIndices[visibleIndex];
 ObjectData object = objects[instanceID];
 
+mat4 M = object.model;
+
 #if defined(SKINNING)
     mat4 boneMatrix = GetBoneMatrix(vBoneIds, vWeights, object.boneOffset);
-    mat4 M =  object.model * boneMatrix;
-#else
-    mat4 M = object.model;
+    M *= boneMatrix;
 #endif
 
 vec4 worldPos = M * vec4(vPosition, 1);

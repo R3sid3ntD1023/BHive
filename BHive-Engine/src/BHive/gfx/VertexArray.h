@@ -20,6 +20,6 @@ namespace BHive
 
 		virtual const std::vector<VertexBufferPtr> &GetVertexBuffers() const = 0;
 
-		void DeclareAccess(FPass &pass, EBufferUsage vbAccess, EBufferUsage ibAccess);
+		void DeclareAccess(FPass &pass);
 	};
 } // namespace BHive

@@ -62,5 +62,8 @@ namespace BHive
 		void MergeFreeList(Block *block);
 
 		vk::DeviceSize ChooseBlockSize(vk::DeviceSize req);
+
+		// 8MiB
+		vk::DeviceSize GetMemoryThresold() const { return 8ull * 1024 * 1024; }
 	};
 } // namespace BHive

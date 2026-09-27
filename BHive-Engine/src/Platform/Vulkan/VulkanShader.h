@@ -29,6 +29,8 @@ namespace BHive
 
 		FPipelineLayoutInfo GetPipelineLayoutInfo() const;
 
+		bool HasSet(uint32_t setIndex) const;
+
 	private:
 		void CreateModules(const ShaderAsset &asset);
 

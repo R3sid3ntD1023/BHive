@@ -37,8 +37,6 @@ namespace BHive
 
 		// evaluate local transforms
 		{
-			BH_PROFILE_SCOPE("Evaluate");
-
 			for (uint32_t i = 0; i < mRuntimeBones.size(); i++)
 			{
 				auto &bone = mRuntimeBones[i];
@@ -49,8 +47,6 @@ namespace BHive
 
 		// build globals
 		{
-			BH_PROFILE_SCOPE("Bind Globals");
-
 			for (uint32_t i = 0; i < mRuntimeBones.size(); i++)
 			{
 				auto &bone = mRuntimeBones[i];
@@ -63,7 +59,6 @@ namespace BHive
 				}
 				else
 				{
-					BH_PROFILE_SCOPE("ParentConcat");
 					mGlobalTransforms[i] = mGlobalTransforms[bone.Parent] * local;
 				}
 			}
@@ -71,8 +66,6 @@ namespace BHive
 
 		// final pose
 		{
-			BH_PROFILE_SCOPE("Final Pose");
-
 			for (uint32_t i = 0; i < mRuntimeBones.size(); i++)
 			{
 				auto &bone = mRuntimeBones[i];

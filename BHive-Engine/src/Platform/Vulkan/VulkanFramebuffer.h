@@ -2,6 +2,7 @@
 
 #include "VulkanCore.h"
 #include "gfx/Framebuffer.h"
+#include "gfx/resources/ImageSubResourceRange.h"
 
 namespace BHive
 {
@@ -51,12 +52,11 @@ namespace BHive
 			vk::AttachmentStoreOp ColorStoreOp;
 			vk::AttachmentLoadOp DepthLoadOp;
 			vk::AttachmentStoreOp DepthStoreOp;
-			vk::ImageSubresourceRange Range;
 		};
 
-		void BeginRendering(vk::CommandBuffer cmd, const RenderInfo &info);
+		void BeginRendering(vk::CommandBuffer cmd, const ImageSubresourceRange &range, const RenderInfo &info);
 
-		void EndRendering(vk::CommandBuffer cmd);
+		void EndRendering(vk::CommandBuffer cmd, const ImageSubresourceRange &range);
 
 	private:
 		void Initialize();

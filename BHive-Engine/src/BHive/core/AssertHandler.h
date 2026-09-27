@@ -19,7 +19,7 @@ namespace BHive
 	}
 } // namespace BHive
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(BHIVE_ENABLE_LOGGING)
 	#define ASSERT(expr, ...)                                                     \
 		do                                                                        \
 		{                                                                         \

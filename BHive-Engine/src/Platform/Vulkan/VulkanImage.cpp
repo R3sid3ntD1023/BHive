@@ -36,14 +36,6 @@ namespace BHive
 
 		ImageViewBuildInfo build_info{.Layers = mLayers, .Levels = mLevels, .ViewCI = view};
 		ImageViewBuilder::Build(mViews, build_info);
-
-		auto initialState = InitialStateFromUsage(imgInfo.usage, imgInfo.format);
-		if (!initialState.IsUndefined)
-		{
-			SingleTimeCommand cmd{};
-			ImageSubresourceRange fullRange{0, mLevels, 0, mLayers};
-			Transition(cmd, initialState, fullRange);
-		}
 	}
 
 	void VulkanImage::Initialize(
@@ -104,7 +96,7 @@ namespace BHive
 				auto &oldState = mStateTracker.Get(layer, mip);
 				auto oldLayout = oldState.IsUndefined ? vk::ImageLayout::eUndefined : oldState.Layout;
 				auto oldAccess = oldState.IsUndefined ? vk::AccessFlagBits2{} : oldState.Access;
-				auto oldStage = oldState.IsUndefined ? vk::PipelineStageFlagBits2::eTopOfPipe : oldState.Stage;
+				auto oldStage = oldState.IsUndefined ? vk::PipelineStageFlags2{} : oldState.Stage;
 
 				if (oldLayout == newState.Layout && oldAccess == newState.Access && oldStage == newState.Stage)
 				{
@@ -219,41 +211,4 @@ namespace BHive
 			rm.DestroySampler(mSampler);
 	}
 
-	ImageState VulkanImage::InitialStateFromUsage(vk::ImageUsageFlags usage, vk::Format format)
-	{
-		const bool isDepth = format == vk::Format::eD32Sfloat || format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint || format == vk::Format::eD16Unorm;
-
-		// Depth/stencil images
-
-		if (usage & vk::ImageUsageFlagBits::eDepthStencilAttachment)
-			return isDepth ? ImageState::DepthStencilAttachment() : ImageState::ColorAttachment();
-
-		if ((usage & vk::ImageUsageFlagBits::eColorAttachment) && !(usage & vk::ImageUsageFlagBits::eSampled))
-		{
-			return ImageState::ColorAttachment();
-		}
-
-		if ((usage & vk::ImageUsageFlagBits::eColorAttachment) && (usage & vk::ImageUsageFlagBits::eSampled))
-		{
-			return ImageState::ShaderRead();
-		}
-
-		if (usage & vk::ImageUsageFlagBits::eStorage)
-		{
-			return ImageState::ComputeWrite();
-		}
-
-		if (usage & vk::ImageUsageFlagBits::eTransferDst)
-		{
-			return ImageState::TransferWrite();
-		}
-
-		if (usage & vk::ImageUsageFlagBits::eTransferSrc)
-		{
-			return ImageState::TransferRead();
-		}
-
-		// fallback: undefined (rare)
-		return ImageState::Undefined();
-	}
 } // namespace BHive

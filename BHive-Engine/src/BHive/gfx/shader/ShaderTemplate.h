@@ -65,6 +65,8 @@ namespace BHive
 
 		const BindingSetTemplate *FindSet(uint32_t setIndex) const;
 
+		bool HasSet(uint32_t setIndex) const;
+
 		static ShaderTemplate Build(const struct FShaderReflection &reflection);
 	};
 } // namespace BHive

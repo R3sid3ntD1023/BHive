@@ -1,7 +1,7 @@
-#include "gfx/RenderCommand.h"
-#include "VulkanRendererAPI.h"
 #include "VulkanUtils.h"
 #include "VulkanBackend.h"
+#include "VulkanRendererAPI.h"
+#include "gfx/RenderCommand.h"
 
 namespace BHive
 {
@@ -33,12 +33,14 @@ namespace BHive
 		{
 		case vk::PresentModeKHR::eMailbox: // fast vsync
 		{
-			presentMode = std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eMailbox; }) ? vk::PresentModeKHR::eMailbox : vk::PresentModeKHR::eFifo;
+			presentMode = std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eMailbox; }) ? vk::PresentModeKHR::eMailbox
+																																	 : vk::PresentModeKHR::eFifo;
 			break;
 		}
 		case vk::PresentModeKHR::eImmediate: // vsync off
 		{
-			presentMode = std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eImmediate; }) ? vk::PresentModeKHR::eImmediate : vk::PresentModeKHR::eFifo;
+			presentMode = std::ranges::any_of(availablePresentModes, [](auto mode) { return mode == vk::PresentModeKHR::eImmediate; }) ? vk::PresentModeKHR::eImmediate
+																																	   : vk::PresentModeKHR::eFifo;
 			break;
 		}
 		default:
@@ -111,6 +113,10 @@ namespace BHive
 		vk::SubmitInfo submitInfo({}, {}, *commandBuffer);
 		auto &graphics_queue = VulkanBackend::GetQueueFamilies().GraphicsQueue;
 		graphics_queue.submit(submitInfo, nullptr);
+
+		// TODO:
+		// Replace waitIdle() with upload fence when
+		// async asset streaming is implemented.
 		graphics_queue.waitIdle();
 	}
 
@@ -135,11 +141,22 @@ namespace BHive
 	}
 
 	void VulkanUtils::TransitionImageLayout(
-		vk::CommandBuffer cmd, vk::Image image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
-		vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, ImageSubresourceRange inRange)
+		vk::CommandBuffer cmd,
+		vk::Image image,
+		vk::ImageLayout oldLayout,
+		vk::ImageLayout newLayout,
+		vk::AccessFlags2 srcAccessMask,
+		vk::AccessFlags2 dstAccessMask,
+		vk::PipelineStageFlags2 srcStageMask,
+		vk::PipelineStageFlags2 dstStageMask,
+		vk::ImageAspectFlags aspect_flags,
+		ImageSubresourceRange inRange
+	)
 	{
 		vk::ImageSubresourceRange range{aspect_flags, inRange.BaseMipLevel, inRange.LevelCount, inRange.BaseArrayLayer, inRange.LayerCount};
-		vk::ImageMemoryBarrier2 barrier(srcStageMask, srcAccessMask, dstStageMask, dstAccessMask, oldLayout, newLayout, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, image, range);
+		vk::ImageMemoryBarrier2 barrier(
+			srcStageMask, srcAccessMask, dstStageMask, dstAccessMask, oldLayout, newLayout, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, image, range
+		);
 
 		vk::DependencyInfo depInfo({}, {}, {}, barrier);
 
@@ -168,7 +185,11 @@ namespace BHive
 	{
 		auto physical_device = VulkanBackend::GetPhysicalDevice();
 		return FindSupportedFormat(
-			physical_device, {vk::Format::eD24UnormS8Uint, vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint}, vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment);
+			physical_device,
+			{vk::Format::eD24UnormS8Uint, vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint},
+			vk::ImageTiling::eOptimal,
+			vk::FormatFeatureFlagBits::eDepthStencilAttachment
+		);
 	}
 
 	bool VulkanUtils::HasStencilComponent(vk::Format format)

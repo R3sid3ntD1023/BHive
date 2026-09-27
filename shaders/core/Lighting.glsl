@@ -7,7 +7,7 @@
 struct DirectionalLight
 {
 	vec4 Color;			// rgb + intensity
-	vec4 Direction;		// xyz + unused
+	vec4 Direction;		// xyz + shadowIndex
 };
 
 struct LocalLight
@@ -15,7 +15,7 @@ struct LocalLight
 	vec4 Color;			// rgb + intensity
 	vec4 Position;		// xyz + radius
 	vec4 Direction;		// xyz + innerCutoff
-	vec4 Params;		// outerCutoff + padding
+	vec4 Params;		// outerCutoff + type + shadowIndex + padding
 };
 
 struct IncidentLight

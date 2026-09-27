@@ -18,6 +18,8 @@ namespace BHive
 
 		void WaitForFence(uint32_t frame);
 
+		void ResetFence(uint32_t frame);
+
 		vk::ResultValue<uint32_t> AquireNextImage(uint32_t frame);
 
 		vk::Result Present(vk::CommandBuffer cmd, uint32_t imageIndex, uint32_t frame);
@@ -41,21 +43,23 @@ namespace BHive
 		void EndRendering(vk::CommandBuffer cmd, uint32_t imageIndex);
 
 	private:
-		void CreateSwapChain(vk::raii::Device &device);
+		void CreateSwapChain();
 
-		void CreateSyncObjects(vk::raii::Device &device);
+		void CreateSyncObjects();
 
-		void CreateImages(vk::raii::Device &device);
+		void CreateImages();
 
-		void CreateDepthImage(vk::raii::Device &device);
+		void CreateDepthImage();
 
-		vk::Semaphore GetRenderFinishedSemaphore(uint32_t imageIndex);
+		vk::Semaphore GetRenderFinishedSemaphore(uint32_t frame);
 
 		vk::Semaphore GetImageAvailableSemaphore(uint32_t frame);
 
 		vk::Fence GetInFlightFence(uint32_t frame);
 
 	private:
+		vk::raii::Device &mDevice;
+
 		vk::raii::SurfaceKHR mSurface = VK_NULL_HANDLE;
 
 		vk::raii::SwapchainKHR mSwapChain = nullptr;
@@ -66,9 +70,11 @@ namespace BHive
 
 		std::vector<vk::raii::Semaphore> mPresentSemaphores; // per frame
 
-		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores; // per image
+		std::vector<vk::raii::Semaphore> mRenderFinishedSemaphores; // per frame
 
 		std::vector<vk::raii::Fence> mInFlightFences; // per frame
+
+		std::vector<vk::Fence> mImagesInFlight; // per swapchain image
 
 		// Cached Properties
 

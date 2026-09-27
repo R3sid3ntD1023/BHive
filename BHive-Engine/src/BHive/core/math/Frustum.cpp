@@ -24,10 +24,10 @@ namespace BHive
 	void Frustum::Update(const glm::mat4 &viewProjection)
 	{
 		constexpr glm::vec4 cube[8] = {
-			{-1, -1, -1, 1},
-			{1, -1, -1, 1},
-			{1, 1, -1, 1},
-			{-1, 1, -1, 1},
+			{-1, -1, 0, 1},
+			{1, -1, 0, 1},
+			{1, 1, 0, 1},
+			{-1, 1, 0, 1},
 
 			{-1, -1, 1, 1},
 			{1, -1, 1, 1},

@@ -180,10 +180,10 @@ namespace BHive
 			auto dstAccess = ToAccess(t.Dst);
 
 			bufBarriers.emplace_back(srcStage, srcAccess, dstStage, dstAccess, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, buf, 0, VK_WHOLE_SIZE);
-
-			vk::DependencyInfo depInfo({}, {}, bufBarriers);
-			cmd.pipelineBarrier2(depInfo);
 		}
+
+		vk::DependencyInfo depInfo({}, {}, bufBarriers);
+		cmd.pipelineBarrier2(depInfo);
 	}
 
 	void VulkanInterpreter::BindMaterialSnapshot(const MaterialSnapshot &snap, FVulkanRendererContext &ctx, const FPhase &phase)
@@ -203,7 +203,8 @@ namespace BHive
 
 		for (auto &resourceSet : phase.ResourceSets)
 		{
-			shader->BindSet(cmd, frame, resourceSet.As<VulkanResourceSet>());
+			auto set = resourceSet.As<VulkanResourceSet>();
+			shader->BindSet(cmd, frame, set);
 		}
 
 		auto &descriptorCache = VulkanBackend::GetDescriptorCache();

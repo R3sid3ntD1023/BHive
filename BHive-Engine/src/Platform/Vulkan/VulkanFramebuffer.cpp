@@ -64,8 +64,6 @@ namespace BHive
 
 		mSpecification.Size = newSize;
 
-		LOG_TRACE("recreating fbo... with size[{}x{}]", newSize.x, newSize.y);
-
 		Initialize();
 	}
 
@@ -123,10 +121,10 @@ namespace BHive
 		}
 	}
 
-	void VulkanFramebuffer::BeginRendering(vk::CommandBuffer cmd, const VulkanFramebuffer::RenderInfo &info)
+	void VulkanFramebuffer::BeginRendering(vk::CommandBuffer cmd, const ImageSubresourceRange &range, const VulkanFramebuffer::RenderInfo &info)
 	{
-		auto layer = info.Range.baseArrayLayer;
-		auto mip = info.Range.baseMipLevel;
+		auto layer = range.BaseArrayLayer;
+		auto mip = range.BaseMipLevel;
 
 		std::vector<vk::RenderingAttachmentInfo> color_infos;
 		for (size_t i = 0; i < mColorAttachments.size(); i++)
@@ -182,7 +180,7 @@ namespace BHive
 		cmd.setScissorWithCount(scissor);
 	}
 
-	void VulkanFramebuffer::EndRendering(vk::CommandBuffer cmd)
+	void VulkanFramebuffer::EndRendering(vk::CommandBuffer cmd, const ImageSubresourceRange &range)
 	{
 		cmd.endRendering();
 	}

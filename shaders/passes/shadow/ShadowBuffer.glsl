@@ -16,7 +16,6 @@ struct DirectionalShadowInfo
 {
 	vec4 Direction; //xyz = direction, w = farplane
 	CascadeShadow Cascades[CASCADE_COUNT];
-	
 };
 
 struct PointLightShadowInfo
@@ -86,27 +85,21 @@ float SampleShadowDepth(int lightIndex, float viewDepth, vec3 geoPosition, vec3 
 	if(any(lessThan(uvw.xy, vec2(0.0))) ||
 			any(greaterThan(uvw.xy, vec2(1.0))))
 	{
-		return 0.0;
+		return 1.0;
 	}
 
 	vec3 normal = normalize(geoNormal);
 	vec3 lightDir  = normalize(info.Direction.xyz);
 	float farPlane = info.Direction.w;
 	int cascade = int(mod(coord.z, CASCADE_COUNT));
-
+	
 	float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.0005);
-	if(coord.z == CASCADE_COUNT)
-	{
-		bias *= 1 / (farPlane * 0.5f);
-	}
-	else
-	{
-		bias *=1 / (info.Cascades[int(coord.z)].SplitData.x * 0.5f);
-	}
 
 	vec2 texelSize = 1.0 / vec2(textureSize(shadowRaw, 0).xy);
 	const float cascadeRadius[CASCADE_COUNT] = {1.0, 1.75, 2.5, 3.5, 5.0};
 	float radius = cascadeRadius[cascade];
+
+	bias *= radius;
 
 	float shadow  = 0.0;
 

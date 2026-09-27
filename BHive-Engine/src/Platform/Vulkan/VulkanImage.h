@@ -48,9 +48,6 @@ namespace BHive
 		OnDestroyedEvent OnDestroyed;
 
 	private:
-		ImageState InitialStateFromUsage(vk::ImageUsageFlags usage, vk::Format format);
-
-	private:
 		ResourceID mImage;
 
 		ImageViews mViews;

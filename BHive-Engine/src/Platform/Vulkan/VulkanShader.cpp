@@ -39,6 +39,9 @@ namespace BHive
 
 	void VulkanShader::BindSet(vk::CommandBuffer cmd, uint32_t frame, VulkanResourceSet *resourceSet)
 	{
+		if (!HasSet(resourceSet->GetSetIndex()))
+			return;
+
 		auto set = resourceSet->GetSet(frame);
 		cmd.bindDescriptorSets(mBindPoint, mPipelineLayout, resourceSet->GetSetIndex(), {set}, {});
 	}
@@ -78,6 +81,12 @@ namespace BHive
 		}
 
 		return info;
+	}
+
+	bool VulkanShader::HasSet(uint32_t setIndex) const
+	{
+		const auto &shaderTemplate = GetTemplate();
+		return shaderTemplate.HasSet(setIndex);
 	}
 
 	void VulkanShader::CreateModules(const ShaderAsset &asset)

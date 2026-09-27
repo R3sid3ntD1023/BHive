@@ -156,6 +156,7 @@ namespace BHive
 		Graph graph;
 		auto &pass = graph.AddPass("Generate BRDFLut", EPassType::OffScreen);
 		pass.BeginPhase(EPhaseType::Compute);
+		pass.UseTexture(brdfLUT, EImageUsage::ComputeStorageWrite);
 		pass.Emplace<CmdBindMaterial>()(material);
 		pass.Emplace<CmdDispatch>()(size / 8, size / 8, 1);
 		pass.EndPhase();

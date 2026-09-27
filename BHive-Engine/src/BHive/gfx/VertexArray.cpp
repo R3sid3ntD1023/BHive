@@ -1,17 +1,17 @@
+#include "VertexArray.h"
 #include "Platform/Vulkan/VulkanVertexArray.h"
 #include "RenderCommand.h"
-#include "VertexArray.h"
 #include "rendergraph/Pass.h"
 
 namespace BHive
 {
-	void VertexArray::DeclareAccess(FPass &pass, EBufferUsage vbAccess, EBufferUsage ibAccess)
+	void VertexArray::DeclareAccess(FPass &pass)
 	{
 		for (auto &vb : GetVertexBuffers())
-			pass.UseBuffer(vb, vbAccess);
+			pass.UseBuffer(vb, EBufferUsage::VertexRead);
 
 		if (auto ib = GetIndexBuffer())
-			pass.UseBuffer(ib, ibAccess);
+			pass.UseBuffer(ib, EBufferUsage::IndexRead);
 	}
 
 } // namespace BHive

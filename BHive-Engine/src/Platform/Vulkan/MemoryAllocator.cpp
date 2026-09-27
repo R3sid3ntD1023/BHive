@@ -15,9 +15,11 @@ namespace BHive
 		auto memoryTypeIndex = FindMemoryType(req.memoryTypeBits, props);
 		if (ShouldUseDedicatedAllocation(req))
 		{
+			LOG_INFO(" Buffer Using Dedicated Memory");
 			return AllocateDedicated(req, memoryTypeIndex);
 		}
 
+		LOG_INFO(" Buffer Using Block Memory");
 		return AllocateFromBlock(req, memoryTypeIndex);
 	}
 
@@ -27,9 +29,11 @@ namespace BHive
 		auto memoryTypeIndex = FindMemoryType(req.memoryTypeBits, props);
 		if (ShouldUseDedicatedAllocation(req))
 		{
+			LOG_INFO("Image Using Dedicated Memory");
 			return AllocateDedicated(req, memoryTypeIndex);
 		}
 
+		LOG_INFO("Image Using Block Memory");
 		return AllocateFromBlock(req, memoryTypeIndex);
 	}
 
@@ -118,7 +122,7 @@ namespace BHive
 
 	bool MemoryAllocator::ShouldUseDedicatedAllocation(const vk::MemoryRequirements &req) const
 	{
-		return req.size >= (512 * 1024); // 512 KB
+		return req.size >= GetMemoryThresold();
 	}
 
 	MemoryAllocation MemoryAllocator::AllocateDedicated(const vk::MemoryRequirements &req, uint32_t memoryTypeIndex)
@@ -149,7 +153,10 @@ namespace BHive
 
 		// create new block
 		vk::DeviceSize blockSize = ChooseBlockSize(req.size);
+
 		Block &newBlock = CreateBlock(memoryTypeIndex, blockSize);
+
+		LOG_INFO("Req={} Block={}", req.size, newBlock.Size);
 		return AllocateFromBlock(newBlock, req, memoryTypeIndex);
 	}
 
@@ -253,7 +260,11 @@ namespace BHive
 		if (req <= 2 * 1024 * 1024)
 			return 2 * 1024 * 1024;
 
-		// huge -> 4 MB block
-		return 4 * 1024 * 1024;
+		// very large -> 4 MB block
+		if (req <= 4 * 1024 * 1024)
+			return 4 * 1024 * 1024;
+
+		// huge -> 8 MB block
+		return std::max(req, 8ull * 1024 * 1024);
 	}
 } // namespace BHive

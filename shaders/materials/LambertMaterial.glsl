@@ -7,14 +7,10 @@
 #version 460 core
 
 #include <Core.glsl>
-#include <Constants.glsl>
 #include <Lighting.glsl>
 #include <ShadowBuffer.glsl>
 
 
-layout(set = 0, binding = 6) uniform sampler2DArrayShadow ShadowDirMaps;
-layout(set = 0, binding = 7) uniform samplerCubeArrayShadow ShadowPointMaps;
-layout(set = 0, binding = 8) uniform sampler2DArrayShadow ShadowSpotMaps;
 
 #define USE_DIFFUSE_MAP
 #define USE_EMISSION_MAP
@@ -44,6 +40,10 @@ layout(push_constant) uniform MaterialInfo
 	vec4 DiffuseColor;
 	vec4 Emission;
 } pc;
+
+layout(set = SET_SHADOW, binding = 1) uniform sampler2DArrayShadow ShadowDirMaps;
+layout(set = SET_SHADOW, binding = 2) uniform samplerCubeArrayShadow ShadowPointMaps;
+layout(set = SET_SHADOW, binding = 3) uniform sampler2DArrayShadow ShadowSpotMaps;
 
 layout(set = SET_MATERIAL, binding = 0) uniform sampler2D DiffuseMap;
 layout(set = SET_MATERIAL, binding = 1) uniform sampler2D EmissionMap;

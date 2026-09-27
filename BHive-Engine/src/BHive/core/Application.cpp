@@ -141,9 +141,9 @@ namespace BHive
 
 	void Application::UpdateLayersAndWindow()
 	{
-		const double targetFPS = EngineConfig::TargetFPS;
-		const double targetFrameTime = 1.0 / targetFPS;
-		auto frameStart = std::chrono::high_resolution_clock::now();
+		// const double targetFPS = EngineConfig::TargetFPS;
+		// const double targetFrameTime = 1.0 / targetFPS;
+		// auto frameStart = std::chrono::high_resolution_clock::now();
 
 		Time::Update();
 		auto dt = Time::DeltaTime();
@@ -178,12 +178,12 @@ namespace BHive
 
 		mWindowManager.Update(dt);
 
-		auto frameEnd = std::chrono::high_resolution_clock::now();
-		double elapsed = std::chrono::duration<double>(frameEnd - frameStart).count();
-		if (elapsed < targetFrameTime)
-		{
-			std::this_thread::sleep_for(std::chrono::duration<double>(targetFrameTime - elapsed));
-		}
+		// auto frameEnd = std::chrono::high_resolution_clock::now();
+		// double elapsed = std::chrono::duration<double>(frameEnd - frameStart).count();
+		// if (elapsed < targetFrameTime)
+		// {
+		// 	std::this_thread::sleep_for(std::chrono::duration<double>(targetFrameTime - elapsed));
+		// }
 	}
 
 	bool Application::OnWindowClosed(WindowCloseEvent &event)

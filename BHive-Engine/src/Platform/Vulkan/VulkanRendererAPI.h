@@ -69,9 +69,9 @@ namespace BHive
 
 		void BeginOffScreenRendering(const FPassState &state, const FPhase &phase, FVulkanRendererContext &ctx);
 
-		void TransitionSwapChainToPresent(FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
+		void EndSwapChainRendering(FVulkanRendererContext &ctx, VulkanSwapChain *swapChain);
 
-		void EndRendering(FVulkanRendererContext &ctx);
+		void EndOffScreenRendering(const FPhase &phase, FVulkanRendererContext &ctx);
 
 		void FlushDeletionQueue();
 

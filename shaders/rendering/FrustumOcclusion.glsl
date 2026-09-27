@@ -35,8 +35,6 @@ layout(std430, set = SET_OBJECT, binding = 2) buffer Visible
     uint visibleIndices[];
 };
 
-
-
 void main()
 {
     uint id = gl_GlobalInvocationID.x;
@@ -48,11 +46,10 @@ void main()
     Sphere s = Sphere(object.center_radius.xyz,object.center_radius.w);
 
     bool visible = SphereFrustumIntersection(uCam.Frustum, s);
+
+    drawCommands[id].instanceCount = 0;
+    drawCommands[id].firstInstance = 0;
     
-    objects[id].debugcolor.xyz = vec3(float(id)/ 10.f, 0.0, 1.0 - float(id) / 10.0);
-    objects[id].debugcolor.xyz = visible ? vec3(float(id)/10.0, 0.0, 1.0 - float(id)/10.0) : vec3(1.0, 0.0, 0.0);
-
-
     if(visible)   
     {
         uint slot  = atomicAdd(visibleCount, 1);
@@ -62,4 +59,5 @@ void main()
         drawCommands[id].instanceCount = 1;
         drawCommands[id].firstInstance = slot;
     }
+    
 }

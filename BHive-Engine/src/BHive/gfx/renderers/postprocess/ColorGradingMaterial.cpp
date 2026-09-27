@@ -68,6 +68,7 @@ namespace BHive
 		BEGIN_REFLECT(ColorGradingMaterial::FParams)
 		REFLECT_PROPERTY(Lift)(META_DATA(EPropertyMetaData_Default, glm::vec3{-0.02f COMMA - 0.02f COMMA - 0.01f}))
 			REFLECT_PROPERTY(Gamma)(META_DATA(EPropertyMetaData_Default, glm::vec3{0.95f COMMA 0.97f COMMA 1.00f}))
-				REFLECT_PROPERTY(Gain)(META_DATA(EPropertyMetaData_Default, glm::vec3{1.05f COMMA 1.03f COMMA 1.00f})) REFLECT_PROPERTY(Saturation)(META_DATA(EPropertyMetaData_Default, 1.1f));
+				REFLECT_PROPERTY(Gain)(META_DATA(EPropertyMetaData_Default, glm::vec3{1.05f COMMA 1.03f COMMA 1.00f}))
+					REFLECT_PROPERTY(Saturation)(META_DATA(EPropertyMetaData_Default, 1.1f));
 	}
 } // namespace BHive
