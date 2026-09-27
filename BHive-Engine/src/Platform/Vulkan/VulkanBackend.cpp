@@ -207,9 +207,9 @@ namespace BHive
 #if defined(VALIDATION_LAYERS_ENABLED)
 		vk::ValidationFeatureEnableEXT enabled_features[] = {
 			vk::ValidationFeatureEnableEXT::eSynchronizationValidation,
-			vk::ValidationFeatureEnableEXT::eBestPractices,
-			//  vk::ValidationFeatureEnableEXT::eDebugPrintf,
-			// vk::ValidationFeatureEnableEXT::eGpuAssisted
+			// vk::ValidationFeatureEnableEXT::eBestPractices,
+			//   vk::ValidationFeatureEnableEXT::eDebugPrintf,
+			//  vk::ValidationFeatureEnableEXT::eGpuAssisted
 		};
 
 		vk::ValidationFeaturesEXT enabled(enabled_features);

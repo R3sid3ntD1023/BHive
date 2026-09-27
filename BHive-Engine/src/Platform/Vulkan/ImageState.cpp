@@ -17,7 +17,7 @@ namespace BHive
 
 	ImageState ImageState::Present()
 	{
-		return {vk::ImageLayout::ePresentSrcKHR, {}, vk::PipelineStageFlagBits2::eBottomOfPipe, false};
+		return {vk::ImageLayout::ePresentSrcKHR, {}, {}, false};
 	}
 
 	ImageState ImageState::ColorAttachment()

@@ -1,12 +1,12 @@
 #pragma once
 
+#include "RenderData.h"
 #include "core/Core.h"
-#include "gfx/material/MaterialTable.h"
+#include "core/delegates/MultiEventDelegate.h"
 #include "core/math/Transform.h"
 #include "core/math/boundingbox/AABB.h"
+#include "gfx/material/MaterialTable.h"
 #include "gfx/mesh/MeshData.h"
-#include "core/delegates/MultiEventDelegate.h"
-#include "RenderData.h"
 
 namespace BHive
 {
@@ -24,7 +24,7 @@ namespace BHive
 
 		FMeshSubmissionContext &ResolveContext(ContextHandle h);
 
-		uint32_t AddSubmissionContext();
+		int32_t AddSubmissionContext();
 
 		void RemoveSubmissionsForContext(ContextHandle h);
 
@@ -45,6 +45,6 @@ namespace BHive
 		FRenderQueueChangedEvent OnQueueChanged;
 
 	private:
-		uint32_t mGenerationVersion = 1;
+		int32_t mGenerationVersion = 1;
 	};
 } // namespace BHive

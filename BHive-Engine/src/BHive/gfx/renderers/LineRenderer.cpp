@@ -71,7 +71,8 @@ namespace BHive
 		DrawRect({-w, -h, 0}, {w, -h, 0}, {w, h, 0}, {-w, h, 0}, color, transform, entityID);
 	}
 
-	void LineRenderer::DrawRect(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3, const FColor &color, const FTransform &transform, int32_t entityID)
+	void
+	LineRenderer::DrawRect(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3, const FColor &color, const FTransform &transform, int32_t entityID)
 	{
 		DrawLine(p0, p1, color, transform, entityID);
 		DrawLine(p1, p2, color, transform, entityID);
@@ -109,18 +110,13 @@ namespace BHive
 
 	void LineRenderer::DrawArc(float radius, uint32_t sides, float start, float end, const glm::vec3 &offset, const FColor &color, const FTransform &transform, int32_t entityID)
 	{
-		float step = glm::radians(360.0f / (float)sides);
-		for (float theta = start; theta < end; theta += step)
+		auto &unitCircle = GetUnitCircle(sides);
+		for (uint32_t i = 0; i < unitCircle.size(); i += 2)
 		{
-			float x0 = cos(theta);
-			float y0 = 0.0f;
-			float z0 = sin(theta);
+			auto &p0 = unitCircle[i];
+			auto &p1 = unitCircle[i + 1];
 
-			float x1 = cos(theta + step);
-			float y1 = 0.0f;
-			float z1 = sin(theta + step);
-
-			DrawLine(glm::vec3{x0, y0, z0} * radius + offset, glm::vec3{x1, y1, z1} * radius + offset, color, transform, entityID);
+			DrawLine(p0 * radius + offset, p1 * radius + offset, color, transform, entityID);
 		}
 	}
 
@@ -307,6 +303,33 @@ namespace BHive
 	void LineRenderer::SetLineWidth(float width)
 	{
 		LineBatch.SetLineWidth(width);
+	}
+
+	const std::vector<glm::vec3> &LineRenderer::GetUnitCircle(uint32_t sides) const
+	{
+		static std::unordered_map<uint32_t, std::vector<glm::vec3>> circles;
+
+		if (!circles.contains(sides))
+		{
+			circles.emplace(sides, std::vector<glm::vec3>());
+			auto &p = circles.at(sides);
+
+			float step = glm::two_pi<float>() / sides;
+
+			for (float theta = 0.0f; theta <= glm::two_pi<float>(); theta += step)
+			{
+				float x0 = cos(theta);
+				float z0 = sin(theta);
+
+				float x1 = cos(theta + step);
+				float z1 = sin(theta + step);
+
+				p.emplace_back(glm::vec3{x0, 0.0f, z0});
+				p.emplace_back(glm::vec3{x1, 0.0f, z1});
+			}
+		}
+
+		return circles.at(sides);
 	}
 
 } // namespace BHive

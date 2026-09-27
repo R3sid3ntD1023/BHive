@@ -17,8 +17,8 @@ namespace BHive
 
 	struct ContextHandle
 	{
-		uint32_t ContextIndex = -1;
-		uint32_t Generation = -1;
+		int32_t ContextIndex = -1;
+		int32_t Generation = -1;
 	};
 
 	struct FMeshSubmissionRequest
@@ -54,7 +54,7 @@ namespace BHive
 
 		bool Active = true;
 
-		uint32_t Generation = 0;
+		int32_t Generation = 0;
 	};
 
 	struct FSubMeshSubmission

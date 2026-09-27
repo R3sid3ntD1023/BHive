@@ -191,9 +191,9 @@ namespace BHive
 		mDepthImage.SetDebugName(std::format("SwapChainImage_DepthStencil"));
 	}
 
-	vk::Semaphore VulkanSwapChain::GetRenderFinishedSemaphore(uint32_t frame)
+	vk::Semaphore VulkanSwapChain::GetRenderFinishedSemaphore(uint32_t imageIndex)
 	{
-		return mRenderFinishedSemaphores.at(frame);
+		return mRenderFinishedSemaphores.at(imageIndex);
 	}
 
 	vk::Semaphore VulkanSwapChain::GetImageAvailableSemaphore(uint32_t frame)
@@ -238,7 +238,7 @@ namespace BHive
 	{
 		vk::Fence fence = GetInFlightFence(frame);
 		vk::Semaphore waitSemaphore = GetImageAvailableSemaphore(frame);
-		vk::Semaphore signalSemaphore = GetRenderFinishedSemaphore(frame);
+		vk::Semaphore signalSemaphore = GetRenderFinishedSemaphore(imageIndex);
 
 		vk::SemaphoreSubmitInfo wait_info(waitSemaphore, 0, vk::PipelineStageFlagBits2::eAllCommands);
 		vk::CommandBufferSubmitInfo cmd_submit_info(cmd);

@@ -19,7 +19,7 @@ namespace BHive
 		return ctx;
 	}
 
-	uint32_t FRenderQueue::AddSubmissionContext()
+	int32_t FRenderQueue::AddSubmissionContext()
 	{
 		for (uint32_t i = 0; i < Contexts.size(); i++)
 		{
@@ -36,7 +36,7 @@ namespace BHive
 
 	void FRenderQueue::RemoveSubmissionsForContext(ContextHandle h)
 	{
-		const uint32_t ctxIndex = h.ContextIndex;
+		const int32_t ctxIndex = h.ContextIndex;
 
 		auto pred = [ctxIndex](const FSubMeshSubmission &s) { return s.Context.ContextIndex == ctxIndex; };
 
@@ -49,7 +49,7 @@ namespace BHive
 
 	void FRenderQueue::AddSubmissionsForMesh(ContextHandle h, MeshPtr mesh)
 	{
-		const uint32_t ctxIndex = h.ContextIndex;
+		const int32_t ctxIndex = h.ContextIndex;
 
 		auto &ctx = Contexts.at(ctxIndex);
 		ctx.Active = true;

@@ -43,7 +43,8 @@ namespace BHive
 
 		void DrawRect(const glm::vec2 &size, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
 
-		void DrawRect(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
+		void
+		DrawRect(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
 
 		void DrawBox(const glm::vec3 &halfExtents, const glm::vec3 &offset, const FColor &color, const FTransform &transform = {}, int32_t entityID = -1);
 
@@ -70,6 +71,9 @@ namespace BHive
 		void DrawFrustum(const Frustum &frustum, const FColor &color, int32_t entityID = -1);
 
 		void SetLineWidth(float width);
+
+	private:
+		const std::vector<glm::vec3> &GetUnitCircle(uint32_t sides) const;
 
 	private:
 		LineRenderBatch LineBatch;

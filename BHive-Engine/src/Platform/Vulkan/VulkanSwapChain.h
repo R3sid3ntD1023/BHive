@@ -51,7 +51,7 @@ namespace BHive
 
 		void CreateDepthImage();
 
-		vk::Semaphore GetRenderFinishedSemaphore(uint32_t frame);
+		vk::Semaphore GetRenderFinishedSemaphore(uint32_t imageIndex);
 
 		vk::Semaphore GetImageAvailableSemaphore(uint32_t frame);
 

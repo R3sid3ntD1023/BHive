@@ -133,7 +133,7 @@ namespace BHive
 		ResourceSetPtr objectSets[2] = {mSceneSets.OpaqueObjectSet, mSceneSets.TransparentObjectSet};
 		static std::string passNames[2] = {"OpaquePass", "TransparentPass"};
 
-		for (uint32_t i = 0; i < 1; i++)
+		for (uint32_t i = 0; i < 2; i++)
 		{
 			auto &batch = *mRenderBatches[i];
 			auto instanceCount = batch.InstanceCount();
@@ -144,8 +144,6 @@ namespace BHive
 			auto &batchData = renderer.BeginPass("Set Batch Data", EPassType::OffScreen);
 			batchData.BeginPhase(EPhaseType::Transfer);
 			batchData.Emplace<CmdClearBuffer>()(visibilityBuffer);
-			//  batchData.Emplace<CmdClearBuffer>()(instanceBuffer);
-			//  batchData.Emplace<CmdClearBuffer>()(indirectBuffer);
 			batchData.Emplace<CmdSetBufferData>()(instanceBuffer, &instanceCount, sizeof(uint32_t));
 			batchData.Emplace<CmdSetBufferData>()(instanceBuffer, batch.ObjectDatas.data(), sizeof(ObjectData) * instanceCount, 16U);
 			batchData.Emplace<CmdSetBufferData>()(indirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
