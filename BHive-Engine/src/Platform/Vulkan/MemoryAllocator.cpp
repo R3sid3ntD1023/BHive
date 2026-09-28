@@ -152,7 +152,6 @@ namespace BHive
 
 		Block &newBlock = CreateBlock(memoryTypeIndex, blockSize);
 
-		LOG_INFO("Req={} Block={}", req.size, newBlock.Size);
 		return AllocateFromBlock(newBlock, req, memoryTypeIndex);
 	}
 

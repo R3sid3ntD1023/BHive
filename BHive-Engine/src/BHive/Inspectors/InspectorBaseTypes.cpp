@@ -1,16 +1,17 @@
 #include "InspectorBaseTypes.h"
-#include "core/UUID.h"
-#include "gui/ImGuiExtended.h"
-#include "gfx/Color.h"
 #include "Inspect.h"
+#include "core/UUID.h"
+#include "gfx/Color.h"
+#include "gui/ImGuiExtended.h"
 
 namespace BHive
 {
 	bool Inspector_UUID::inspect(const rttr::variant &owner, rttr::variant &var, const MetaGetter &GetMetaData, const bool is_read_only)
 	{
+
 		auto data = var.get_value<UUID>();
 
-		ImGui::TextWrapped("%s", ((std::string)data).c_str());
+		ImGui::TextWrapped("%s", data.ToString().c_str());
 
 		return false;
 	}
@@ -32,7 +33,7 @@ namespace BHive
 		{
 			auto &component = vec[i];
 			ImGui::PushStyleColor(ImGuiCol_Button, component_colors[i]);
-			if (ImGui::Button(component_names[i], {line_height}))
+			if (ImGui::Button(component_names[i], ImVec2(line_height, line_height)))
 			{
 				component = defaultvalue[i];
 				changed |= true;

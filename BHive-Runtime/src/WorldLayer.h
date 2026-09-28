@@ -35,5 +35,6 @@ namespace BHive
 
 		PipelinePtr mSceneOutputPipeline;
 		MaterialPtr mSceneOutput;
+		FontPtr mFont;
 	};
 } // namespace BHive

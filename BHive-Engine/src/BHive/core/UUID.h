@@ -9,8 +9,7 @@ namespace BHive
 {
 	struct NullID_t
 	{
-		operator std::string() const { return "00000000-0000-0000-0000-000000000000"; }
-		bool operator==(const std::string &rhs) const { return rhs == "00000000-0000-0000-0000-000000000000"; }
+		explicit constexpr NullID_t() = default;
 	};
 
 	inline constexpr NullID_t NullID{};
@@ -19,34 +18,39 @@ namespace BHive
 	{
 	public:
 		UUID();
-		UUID(const char *guid);
-		UUID(const std::string &guid);
+		UUID(uint64_t high, uint64_t low);
 		UUID(const UUID &) = default;
 		UUID(NullID_t);
 
-		UUID &operator=(const char *rhs);
-		UUID &operator=(NullID_t);
+		bool IsValid() const { return mHigh != 0ULL && mLow != 0ULL; }
 
-		bool operator==(const UUID &rhs) const;
-		bool operator!=(const UUID &rhs) const;
+		uint64_t Hash() const { return mHigh ^ (mLow * 0x93779b97f4a7c15ULL); };
 
-		operator const std::string &() const { return mGUID; }
-		operator bool() const { return mGUID != NullID; }
+		std::string ToString() const;
+
+		UUID &FromString(const std::string &s);
+
+		auto operator<=>(const UUID &rhs) const = default;
+
+		operator uint64_t() const { return Hash(); }
+
+		operator bool() const { return IsValid(); }
 
 		template <typename Ar>
 		std::string SaveMinimal(const Ar &ar) const
 		{
-			return mGUID;
+			return ToString();
 		}
 
 		template <typename Ar>
 		void LoadMinimal(const Ar &ar, const std::string &v)
 		{
-			mGUID = v;
+			FromString(v);
 		}
 
 	private:
-		std::string mGUID;
+		uint64_t mHigh = 0;
+		uint64_t mLow = 0;
 
 		friend struct std::hash<BHive::UUID>;
 	};
@@ -59,6 +63,6 @@ namespace std
 	template <>
 	struct hash<BHive::UUID>
 	{
-		size_t operator()(const BHive::UUID &uuid) const { return std::hash<std::string>()(uuid.mGUID); }
+		size_t operator()(const BHive::UUID &uuid) const { return std::hash<uint64_t>()(uuid.mHigh) ^ std::hash<uint64_t>()(uuid.mLow) << 1; }
 	};
 } // namespace std

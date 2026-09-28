@@ -34,13 +34,13 @@ namespace BHive
 		template <typename A>
 		inline std::string SaveMinimal(const A &ar) const
 		{
-			return mPtr ? mPtr->GetHandle() : UUID(NullID);
+			return mPtr ? mPtr->GetHandle().ToString() : UUID(NullID).ToString();
 		}
 
 		template <typename A>
 		inline void LoadMinimal(const A &ar, const std::string &value)
 		{
-			mPtr = AssetManager::GetAsset<T>(value);
+			mPtr = AssetManager::GetAsset<T>(UUID(0, 0).FromString(value));
 		}
 
 	private:

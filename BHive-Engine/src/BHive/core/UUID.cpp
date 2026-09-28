@@ -7,65 +7,56 @@ namespace BHive
 
 	UUID::UUID()
 	{
-		static const int uuid_string_length = 36;
-		::GUID id;
-		RPC_CSTR uuid_string = nullptr;
-
-		auto result = CoCreateGuid(&id);
+		::GUID guid;
+		auto result = CoCreateGuid(&guid);
 		if (SUCCEEDED(result))
 		{
-			result = (result == RPC_S_UUID_LOCAL_ONLY) ? S_OK : result;
-
-			if (SUCCEEDED(result))
-				result = ::UuidToString(&id, &uuid_string);
-
-			if (SUCCEEDED(result))
-			{
-				mGUID.resize(uuid_string_length);
-				memcpy(&mGUID[0], uuid_string, uuid_string_length);
-			}
-
-			if (uuid_string != nullptr)
-			{
-				RpcStringFree(&uuid_string);
-			}
+			mHigh = uint64_t(guid.Data1 << 32) | uint64_t(guid.Data2 << 16) | guid.Data3;
+			mLow = uint64_t(guid.Data4[0] << 56) | uint64_t(guid.Data4[1] << 48) | uint64_t(guid.Data4[2] << 40) | uint64_t(guid.Data4[3] << 32) | uint64_t(guid.Data4[4] << 24)
+				   | uint64_t(guid.Data4[5] << 16) | uint64_t(guid.Data4[6] << 8) | guid.Data4[7];
 		}
 	}
 
-	UUID::UUID(const char *guid)
-		: mGUID(guid)
-	{
-	}
-
-	UUID::UUID(const std::string &guid)
-		: mGUID(guid)
+	UUID::UUID(uint64_t high, uint64_t low)
+		: mHigh(high),
+		  mLow(low)
 	{
 	}
 
 	UUID::UUID(NullID_t null)
-		: mGUID(null)
+		: mHigh(0),
+		  mLow(0)
 	{
 	}
 
-	UUID &UUID::operator=(const char *rhs)
+	std::string UUID::ToString() const
 	{
-		mGUID = rhs;
+		char buffer[37];
+
+		std::snprintf(
+			buffer,
+			sizeof(buffer),
+			"%08x-%04x-%04x-%04x-%012llx",
+			uint32_t(mHigh >> 32),
+			uint16_t(mHigh >> 16),
+			uint16_t(mHigh),
+			uint16_t(mLow >> 48),
+			uint64_t(mLow & 0x0000FFFFFFFFFFFFULL)
+		);
+		return buffer;
+	}
+
+	UUID &UUID::FromString(const std::string &s)
+	{
+		uint32_t a;
+		uint16_t b;
+		uint16_t c;
+		uint16_t d;
+		uint64_t e;
+
+		std::sscanf(s.c_str(), "%8x-%4hx-%4hx-%4hx-%12llx", &a, &b, &c, &d, &e);
+		mHigh = uint64_t(a << 32) | uint64_t(b << 16) | c;
+		mLow = uint64_t(d << 48) | e;
 		return *this;
-	}
-
-	UUID &UUID::operator=(NullID_t null)
-	{
-		mGUID = null;
-		return *this;
-	}
-
-	bool UUID::operator==(const UUID &rhs) const
-	{
-		return rhs.mGUID == mGUID;
-	}
-
-	bool UUID::operator!=(const UUID &rhs) const
-	{
-		return !(*this == rhs);
 	}
 } // namespace BHive

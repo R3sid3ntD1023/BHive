@@ -31,6 +31,8 @@ namespace BHive
 
 		mSceneOutput = MaterialFactory::Create("Scene.glsl");
 		mSceneOutputPipeline = PipelineFactory::Create(Pipeline::GetDefaultGraphicsPipelineState());
+
+		mFont = FontFactory::Create(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", 16.f);
 	}
 
 	void WorldLayer::OnUpdate(float dt)
@@ -42,11 +44,14 @@ namespace BHive
 
 	void WorldLayer::OnRender(Renderer &renderer)
 	{
+		auto fps = FPSCounter::Get().GetFPS();
+
 		mRenderer->Begin(mCamera.GetProjection(), mCamera.GetView());
 
 		mCurrentWorld->Render(mRenderer.get(), &renderer);
 
 		renderer.Line.DrawGrid({});
+		renderer.Quad.DrawText(mFont, 1.0f, std::format("{}", fps));
 
 		mRenderer->End();
 

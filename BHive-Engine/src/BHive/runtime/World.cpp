@@ -206,7 +206,7 @@ namespace BHive
 		mObjects.emplace(id, object);
 		mEnttMap.emplace(*object, id);
 
-		LOG_TRACE("Added gameobject with ID: {}", (std::string)id);
+		LOG_TRACE("Added gameobject with ID: {}", (uint64_t)id);
 	}
 
 	GameObject *World::DuplicateGameobject(GameObject *object)

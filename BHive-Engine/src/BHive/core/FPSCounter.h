@@ -11,6 +11,8 @@ namespace BHive
 
 		void Frame();
 
+		float GetFPS() const { return (float)mFPS; };
+
 		operator float() const;
 
 		static FPSCounter &Get();
