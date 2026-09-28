@@ -1,9 +1,9 @@
 #pragma once
 
-#include "runtime/animation/anim_player/BlackBoard.h"
 #include "asset/Asset.h"
 #include "gfx/animation/SkeletalPose.h"
 #include "gfx/animation/Skeleton.h"
+#include "runtime/animation/anim_player/BlackBoard.h"
 
 namespace BHive
 {
@@ -18,7 +18,7 @@ namespace BHive
 
 	public:
 		AnimGraph() = default;
-		AnimGraph(const Ref<Skeleton> &skeleton);
+		AnimGraph(AssetHandle<Skeleton> skeleton);
 
 		void add_node(const Ref<AnimGraphNodeBase> &node);
 
@@ -30,14 +30,14 @@ namespace BHive
 
 		const Nodes &get_nodes() { return mNodes; }
 
-		const Ref<Skeleton> &get_skeleton() const { return mSkeleton; }
+		const Ref<Skeleton> &get_skeleton() const { return mSkeleton.Get(); }
 
 		REFLECTABLEV(Asset)
 
 	private:
 		Nodes mNodes;
 
-		Ref<Skeleton> mSkeleton;
+		AssetHandle<Skeleton> mSkeleton;
 
 		BlackBoard mBlackBoard;
 	};

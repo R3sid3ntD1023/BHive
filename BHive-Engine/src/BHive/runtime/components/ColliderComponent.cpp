@@ -1,7 +1,7 @@
 #include "ColliderComponent.h"
-#include "runtime/GameObject.h"
-#include "physics/PhysicsContext.h"
 #include "core/subsystem/SubSystem.h"
+#include "physics/PhysicsContext.h"
+#include "runtime/GameObject.h"
 #include <physx/PxPhysicsAPI.h>
 
 namespace BHive
@@ -32,12 +32,12 @@ namespace BHive
 	}
 	void ColliderComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(CollisionEnabled, Offset, Color, IsTrigger, CollisionChannel, CollisionChannelMasks, TAssetHandle(PhysicsMaterial));
+		ar(CollisionEnabled, Offset, Color, IsTrigger, CollisionChannel, CollisionChannelMasks, PhysicsMaterial);
 	}
 
 	void ColliderComponent::Load(cereal::BinaryInputArchive &ar)
 	{
-		ar(CollisionEnabled, Offset, Color, IsTrigger, CollisionChannel, CollisionChannelMasks, TAssetHandle(PhysicsMaterial));
+		ar(CollisionEnabled, Offset, Color, IsTrigger, CollisionChannel, CollisionChannelMasks, PhysicsMaterial);
 	}
 
 	void BHive::ColliderComponent::CreateCollsionShape(void *rb, const FTransform &transform)
@@ -78,14 +78,11 @@ namespace BHive
 
 		auto shape = physcs->createShape(*geo, *material, true);
 		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, IsTrigger);
-		shape->userData = this;
+		shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, true);
 		shape->setLocalPose(relative_transform);
 		shape->setQueryFilterData(filter_data);
 		shape->setSimulationFilterData(filter_data);
-
-#ifdef _DEBUG
-		shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, true);
-#endif // _DEBUG
+		shape->userData = this;
 
 		((physx::PxRigidActor *)rb)->attachShape(*shape);
 
@@ -118,9 +115,22 @@ namespace BHive
 	REFLECT(ECollisionChannel)
 	{
 		BEGIN_REFLECT_ENUM(ECollisionChannel)
-		(ENUM_VALUE(CollisionChannel_None), ENUM_VALUE(CollisionChannel_0), ENUM_VALUE(CollisionChannel_1), ENUM_VALUE(CollisionChannel_2), ENUM_VALUE(CollisionChannel_3),
-		 ENUM_VALUE(CollisionChannel_4), ENUM_VALUE(CollisionChannel_5), ENUM_VALUE(CollisionChannel_6), ENUM_VALUE(CollisionChannel_7), ENUM_VALUE(CollisionChannel_8), ENUM_VALUE(CollisionChannel_9),
-		 ENUM_VALUE(CollisionChannel_10), ENUM_VALUE(CollisionChannel_11), ENUM_VALUE(CollisionChannel_12), ENUM_VALUE(CollisionChannel_13), ENUM_VALUE(CollisionChannel_14),
+		(ENUM_VALUE(CollisionChannel_None),
+		 ENUM_VALUE(CollisionChannel_0),
+		 ENUM_VALUE(CollisionChannel_1),
+		 ENUM_VALUE(CollisionChannel_2),
+		 ENUM_VALUE(CollisionChannel_3),
+		 ENUM_VALUE(CollisionChannel_4),
+		 ENUM_VALUE(CollisionChannel_5),
+		 ENUM_VALUE(CollisionChannel_6),
+		 ENUM_VALUE(CollisionChannel_7),
+		 ENUM_VALUE(CollisionChannel_8),
+		 ENUM_VALUE(CollisionChannel_9),
+		 ENUM_VALUE(CollisionChannel_10),
+		 ENUM_VALUE(CollisionChannel_11),
+		 ENUM_VALUE(CollisionChannel_12),
+		 ENUM_VALUE(CollisionChannel_13),
+		 ENUM_VALUE(CollisionChannel_14),
 		 ENUM_VALUE(CollisionChannel_All));
 	}
 } // namespace BHive

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "AssetManagerBase.h"
-#include "AssetMetaData.h"
 #include "Asset.h"
 #include "AssetFactory.h"
+#include "AssetManagerBase.h"
+#include "AssetMetaData.h"
 
 namespace BHive
 {
@@ -21,7 +21,7 @@ namespace BHive
 		bool IsAssetLoaded(UUID handle) const override;
 		rttr::type GetAssetType(UUID handle) const override;
 
-		void ImportAsset(const std::filesystem::path &path, const rttr::type &type, const UUID &handle);
+		UUID ImportAsset(const std::filesystem::path &path, const rttr::type &type);
 		bool RemoveAsset(UUID handle);
 		bool RemoveAsset(const std::filesystem::path &relative_path);
 		bool RenameAsset(const std::filesystem::path &old_, const std::filesystem::path &new_);
@@ -38,6 +38,9 @@ namespace BHive
 
 		void Serialize() const;
 		bool Deserialize();
+
+	private:
+		std::filesystem::path GetDirectory() const;
 
 	private:
 		AssetRegistry mAssetRegistry;

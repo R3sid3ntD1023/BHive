@@ -1,8 +1,8 @@
 #pragma once
 
+#include "AssetHandle.h"
 #include "core/Core.h"
 #include "core/UUID.h"
-#include "TAssetHandler.h"
 
 namespace BHive
 {

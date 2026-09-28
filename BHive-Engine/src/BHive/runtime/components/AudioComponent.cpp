@@ -18,12 +18,12 @@ namespace BHive
 
 	void AudioComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(AutoPlay, TAssetHandle(Audio));
+		ar(AutoPlay, Audio);
 	}
 
 	void AudioComponent::Load(cereal::BinaryInputArchive &ar)
 	{
-		ar(AutoPlay, TAssetHandle(Audio));
+		ar(AutoPlay, Audio);
 	}
 
 	REFLECT(AudioComponent)

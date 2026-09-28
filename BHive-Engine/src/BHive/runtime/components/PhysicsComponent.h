@@ -2,14 +2,14 @@
 
 #include "core/Core.h"
 #include "core/EnumAsByte.h"
+#include "core/math/Math.h"
 #include "physics/LockAxis.h"
 #include "runtime/Component.h"
-#include "core/math/Math.h"
 
 namespace BHive
 {
 
-	enum class EBodyType : int
+	enum class EBodyType : uint8_t
 	{
 		Static,
 		Kinematic,
@@ -22,22 +22,24 @@ namespace BHive
 
 		EBodyType BodyType = EBodyType::Static;
 
+		TEnumAsByte<ELockAxis> LinearLockAxis = NoAxis;
+
+		TEnumAsByte<ELockAxis> AngularLockAxis = NoAxis;
+
 		float Mass = 1.0f;
 
 		float LinearDamping = 0.0f;
 
 		float AngularDamping = 0.0f;
 
-		TEnumAsByte<ELockAxis> LinearLockAxis = NoAxis;
-
-		TEnumAsByte<ELockAxis> AngularLockAxis = NoAxis;
-
 		bool GravityEnabled = true;
+
+		glm::vec3 InitialVelocity = {0.f, 0.f, 0.f};
 
 		template <typename A>
 		void Serialize(A &ar)
 		{
-			ar(PhysicsEnabled, BodyType, Mass, LinearDamping, AngularDamping, LinearLockAxis, AngularLockAxis, GravityEnabled);
+			ar(PhysicsEnabled, BodyType, Mass, LinearDamping, AngularDamping, GravityEnabled, InitialVelocity, LinearLockAxis, AngularLockAxis);
 		}
 	};
 

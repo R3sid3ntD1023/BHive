@@ -1,10 +1,15 @@
 #include "WorldLayer.h"
+#include "audio/AudioImporter.h"
+#include "audio/AudioSource.h"
 #include "core/FPSCounter.h"
 #include "gfx/renderers/SceneRenderer.h"
+#include "runtime/Components.h"
+#include "runtime/GameObject.h"
 #include "runtime/World.h"
 
 namespace BHive
 {
+
 	void WorldLayer::OnAttach(Application &app)
 	{
 		const auto &window = app.GetWindow();
@@ -27,12 +32,53 @@ namespace BHive
 		mRenderer->Init(size);
 
 		mCurrentWorld = CreateRef<World>();
-		mCurrentWorld->Begin();
 
 		mSceneOutput = MaterialFactory::Create("Scene.glsl");
 		mSceneOutputPipeline = PipelineFactory::Create(Pipeline::GetDefaultGraphicsPipelineState());
 
 		mFont = FontFactory::Create(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", 16.f);
+
+		AssetManager::SetAssetManager(&mAssetManager);
+
+		// auto decoded = AudioImporter::Import("E://Files//Mods//Resident Evil 4  - The Mercenaries - Leon Theme.wav");
+
+		// AudioSource audio(decoded.Data, decoded.Specification);
+
+		// AssetFactory factory{};
+		// factory.Export(&audio, "Assets/Resident Evil 4  - The Mercenaries - Leon Theme.asset");
+
+				// auto handle = mAssetManager.ImportAsset("Assets/Resident Evil 4  - The Mercenaries - Leon Theme.asset", rttr::type::get<AudioSource>());
+
+		auto handle = mAssetManager.GetHandle("Assets/Resident Evil 4  - The Mercenaries - Leon Theme.asset");
+
+		AssetHandle<AudioSource>(handle)->SetLooping(true);
+
+		{
+			auto gameObject = mCurrentWorld->CreateGameObject("AudioGameObj");
+			gameObject->AddComponent<PhysicsComponent>();
+			gameObject->AddComponent<SphereColliderComponent>();
+			gameObject->GetComponent<TransformComponent>()->Transform.Translation = {0.f, 1.f, 0.f};
+			auto comp = gameObject->AddComponent<AudioComponent>();
+			comp->AutoPlay = false;
+			comp->Audio = AssetHandle<AudioSource>(handle);
+		}
+
+		{
+			auto gameObject = mCurrentWorld->CreateGameObject("GameObject2");
+			auto p = gameObject->AddComponent<PhysicsComponent>();
+			p->Settings.InitialVelocity = {10.f, 0.f, 0.f};
+			p->Settings.BodyType = EBodyType::Dynamic;
+			gameObject->AddComponent<CapsuleColliderComponent>();
+			gameObject->GetComponent<TransformComponent>()->Transform.Translation = {2.f, 3.f, 0.f};
+		}
+
+		{
+			auto gameObject = mCurrentWorld->CreateGameObject("GameObject3");
+			gameObject->AddComponent<PhysicsComponent>();
+			gameObject->AddComponent<BoxColliderComponent>()->Extents = {50.f, .5f, 50.f};
+		}
+
+		mCurrentWorld->Begin();
 	}
 
 	void WorldLayer::OnUpdate(float dt)

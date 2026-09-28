@@ -1,16 +1,16 @@
 #pragma once
 
-#include "runtime/Component.h"
 #include "core/EnumAsByte.h"
 #include "core/delegates/EventDelegate.h"
-#include "gfx/Color.h"
 #include "core/math/boundingbox/AABB.h"
+#include "gfx/Color.h"
 #include "physics/CollisionChannel.h"
 #include "physics/PhysicsMaterial.h"
+#include "runtime/Component.h"
 
 namespace BHive
 {
-	DECLARE_EVENT(OnCollison, struct ColliderComponent *,GameObject *);
+	DECLARE_EVENT(OnCollison, struct ColliderComponent *, GameObject *);
 	DECLARE_EVENT(OnTrigger, struct ColliderComponent *, GameObject *);
 	DECLARE_EVENT(OnHit, const glm::vec3 &, const glm::vec3 &, float);
 
@@ -31,7 +31,7 @@ namespace BHive
 
 		TEnumAsByte<ECollisionChannel> CollisionChannelMasks = CollisionChannel_All;
 
-		Ref<PhysicsMaterial> PhysicsMaterial;
+		AssetHandle<PhysicsMaterial> PhysicsMaterial;
 
 		OnCollisonEvent OnCollisionEnter;
 

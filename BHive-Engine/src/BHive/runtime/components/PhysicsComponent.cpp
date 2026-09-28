@@ -28,6 +28,8 @@ namespace BHive
 		{
 			rb->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, enabled);
 		}
+
+		Settings.GravityEnabled = enabled;
 	}
 
 	void PhysicsComponent::ApplyForce(const glm::vec3 &force)

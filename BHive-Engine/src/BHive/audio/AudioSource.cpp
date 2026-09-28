@@ -5,14 +5,12 @@
 
 namespace BHive
 {
-	AudioSource::AudioSource(int16_t *buffer, int size, const FAudioSpecification &specs)
+	AudioSource::AudioSource(const MemoryBlock<int16_t> &data, const FAudioSpecification &specs)
 		: mSpecification(specs),
-		  mLength((float)specs.mNumSamples / (float)specs.mSampleRate)
+		  mLength((float)specs.mNumSamples / (float)specs.mSampleRate),
+		  mBuffer(data)
+
 	{
-		mBuffer.Allocate(size);
-
-		memcpy_s(mBuffer.GetData(), mBuffer.GetSize(), buffer, size);
-
 		Initialize();
 	}
 
@@ -35,6 +33,8 @@ namespace BHive
 
 		alGenSources(1, &mSourceID);
 		alSourcei(mSourceID, AL_BUFFER, mAudioID);
+
+		LOG_TRACE("length:{}, time:{}", GetLengthSeconds(), GetLength().to_string());
 	}
 
 	void AudioSource::Play()
@@ -107,15 +107,15 @@ namespace BHive
 	void AudioSource::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);
-		ar(mSpecification, mPitch, mGain, mIsLooping, mLength);
-		ar(mBuffer);
+
+		ar(mSpecification, mPitch, mGain, mIsLooping, mLength, mBuffer);
 	}
 
 	void AudioSource::Load(cereal::BinaryInputArchive &ar)
 	{
 		Asset::Load(ar);
-		ar(mSpecification, mPitch, mGain, mIsLooping, mLength);
-		ar(mBuffer);
+
+		ar(mSpecification, mPitch, mGain, mIsLooping, mLength, mBuffer);
 
 		Initialize();
 		SetPitch(mPitch);

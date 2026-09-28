@@ -1,5 +1,6 @@
 #pragma once
 
+#include "asset/AssetHandle.h"
 #include "runtime/Component.h"
 
 namespace BHive
@@ -17,7 +18,7 @@ namespace BHive
 
 		bool AutoPlay{false};
 
-		Ref<AudioSource> Audio;
+		AssetHandle<AudioSource> Audio;
 
 		REFLECTABLEV(Component)
 	};

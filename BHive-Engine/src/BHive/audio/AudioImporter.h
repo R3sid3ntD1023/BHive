@@ -1,14 +1,19 @@
 #pragma once
 
+#include "AudioSpecification.h"
 #include "core/Core.h"
 
 namespace BHive
 {
-	class AudioSource;
+	struct DecodedAudio
+	{
+		FAudioSpecification Specification;
+		MemoryBlock<int16_t> Data;
+	};
 
 	struct BHIVE_API AudioImporter
 	{
-		static Ref<AudioSource> Import(const std::filesystem::path &path);
+		static DecodedAudio Import(const std::filesystem::path &path);
 	};
 
 } // namespace BHive

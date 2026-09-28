@@ -12,7 +12,7 @@ namespace BHive
 		ar(size);
 		if (size)
 		{
-			ar(cereal::binary_data(buffer.GetData(), buffer.GetSize() * sizeof(T)));
+			ar(cereal::binary_data(buffer.GetData(), buffer.GetSize()));
 		}
 	}
 
@@ -25,7 +25,7 @@ namespace BHive
 		if (size)
 		{
 			buffer.Allocate(size);
-			ar(cereal::binary_data(buffer.GetData(), size * sizeof(T)));
+			ar(cereal::binary_data(buffer.GetData(), size));
 		}
 	}
 

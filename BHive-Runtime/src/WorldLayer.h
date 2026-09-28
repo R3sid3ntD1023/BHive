@@ -1,5 +1,6 @@
 #pragma once
 
+#include "asset/EditorAssetManager.h"
 #include "core/Application.h"
 #include "core/Layer.h"
 #include "gfx/cameras/EditorCamera.h"
@@ -36,5 +37,7 @@ namespace BHive
 		PipelinePtr mSceneOutputPipeline;
 		MaterialPtr mSceneOutput;
 		FontPtr mFont;
+
+		EditorAssetManager mAssetManager{"Assets", "Assets.json"};
 	};
 } // namespace BHive

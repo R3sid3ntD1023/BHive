@@ -1,17 +1,17 @@
 #pragma once
 
-#include "runtime/Component.h"
 #include "input/InputContext.h"
+#include "runtime/Component.h"
 
 namespace BHive
 {
 	struct BHIVE_API InputComponent : public Component, public ITickable
 	{
+		AssetHandle<InputContext> Context;
+
 		InputComponent() = default;
 
 		InputComponent(const InputComponent &) = default;
-
-		Ref<InputContext> Context;
 
 		void CreateInstance();
 

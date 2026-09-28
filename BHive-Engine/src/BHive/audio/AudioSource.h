@@ -1,10 +1,10 @@
 #pragma once
 
-#include "core/Core.h"
-#include "AudioTime.h"
-#include "core/Buffer.h"
 #include "AudioSpecification.h"
+#include "AudioTime.h"
 #include "asset/Asset.h"
+#include "core/Buffer.h"
+#include "core/Core.h"
 
 namespace BHive
 {
@@ -13,7 +13,7 @@ namespace BHive
 	{
 	public:
 		AudioSource() = default;
-		AudioSource(int16_t *buffer, int size, const FAudioSpecification &specs = {});
+		AudioSource(const MemoryBlock<int16_t> &data, const FAudioSpecification &specs = {});
 		~AudioSource();
 
 		void Play();

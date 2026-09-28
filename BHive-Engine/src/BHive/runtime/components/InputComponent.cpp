@@ -32,12 +32,12 @@ namespace BHive
 
 	void InputComponent::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(TAssetHandle<InputContext>(Context));
+		ar(Context);
 	}
 
 	void InputComponent::Load(cereal::BinaryInputArchive &ar)
 	{
-		ar(TAssetHandle<InputContext>(Context));
+		ar(Context);
 	}
 
 	REFLECT(InputComponent)

@@ -18,11 +18,7 @@ namespace BHive
 
 		~MemoryBlock() { Release(); }
 
-		MemoryBlock(const MemoryBlock &other)
-		{
-			Allocate(other.mSize);
-			memcpy_s(mData, mSize, other.mData, other.mSize);
-		}
+		MemoryBlock(const MemoryBlock &other) { Allocate(other.mData, other.mSize); }
 
 		MemoryBlock(MemoryBlock &&other) noexcept
 			: mData(other.mData),
@@ -104,30 +100,4 @@ namespace BHive
 
 	using ByteBuffer = MemoryBlock<uint8_t>;
 
-	struct BufferArena
-	{
-		BufferArena(size_t size = 1024 * 1024) { mBuffer.Allocate(size); }
-
-		size_t Push(const void *data, size_t size)
-		{
-			ASSERT(mHead + size <= mBuffer.GetSize());
-
-			size_t offset = mHead;
-			memcpy_s(mBuffer.GetData() + offset, mBuffer.GetSize() - offset, data, size);
-			mHead += size;
-			return offset;
-		}
-
-		void Reset() { mHead = 0; }
-
-		uint8_t *Data(size_t head) const { return mBuffer.GetData() + head; }
-
-		size_t GetUsedSize() const { return mHead; }
-
-		size_t GetCapacity() const { return mBuffer.GetSize(); }
-
-	private:
-		ByteBuffer mBuffer;
-		size_t mHead = 0;
-	};
 } // namespace BHive

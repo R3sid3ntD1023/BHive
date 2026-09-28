@@ -13,6 +13,11 @@ namespace BHive
 		return physx::PxTransform(pos, orientation);
 	}
 
+	physx::PxVec3 PhysicsUtils::Convert(const glm::vec3 &v)
+	{
+		return physx::PxVec3(v.x, v.y, v.z);
+	}
+
 	FTransform PhysicsUtils::Convert(const physx::PxTransform &transform)
 	{
 		const auto &t = transform.p;

@@ -37,7 +37,7 @@ namespace BHive
 			{
 				const FAssetMetaData &metadata = GetMetaData(handle);
 
-				if (!mAssetFactory.Import(asset, mDirectory / metadata.Path))
+				if (!mAssetFactory.Import(asset, metadata.Path))
 				{
 					LOG_ERROR("Failed to load asset");
 					return asset;
@@ -70,26 +70,30 @@ namespace BHive
 		return mAssetRegistry.at(handle).Type;
 	}
 
-	void EditorAssetManager::ImportAsset(const std::filesystem::path &path, const rttr::type &type, const UUID &handle)
+	UUID EditorAssetManager::ImportAsset(const std::filesystem::path &path, const rttr::type &type)
 	{
-		if (GetHandle(path))
+		if (auto handle = GetHandle(path))
 		{
-			return;
+			return handle;
 		}
 
 		if (type == InvalidType)
 		{
 			LOG_ERROR("UnSupported Asset Type");
-			return;
+			return {NullID};
 		}
 
-		FAssetMetaData metadata;
-		metadata.Path = std::filesystem::relative(path, mDirectory);
+		auto importPath = path.is_absolute() ? path : std::filesystem::relative(path, GetDirectory());
+		FAssetMetaData metadata{};
+		metadata.Path = GetDirectory() / path.filename();
 		metadata.Type = type;
-		metadata.Name = path.stem().string();
+		metadata.Name = importPath.stem().string();
 
+		UUID handle{};
 		mAssetRegistry[handle] = metadata;
 		Serialize();
+
+		return handle;
 	}
 
 	bool EditorAssetManager::RemoveAsset(UUID handle)
@@ -206,12 +210,13 @@ namespace BHive
 	{
 		try
 		{
-			if (!std::filesystem::exists(mDirectory))
+			auto directory = GetDirectory();
+			if (!std::filesystem::exists(directory))
 			{
-				std::filesystem::create_directory(mDirectory);
+				std::filesystem::create_directory(directory);
 			}
 
-			std::ofstream out(mDirectory / mFileName, std::ios::out);
+			std::ofstream out(directory / mFileName, std::ios::out);
 			if (!out)
 				return;
 
@@ -228,10 +233,11 @@ namespace BHive
 	{
 		try
 		{
-			if (!std::filesystem::exists(mDirectory))
+			auto directory = GetDirectory();
+			if (!std::filesystem::exists(directory))
 				return false;
 
-			std::ifstream in(mDirectory / mFileName, std::ios::in);
+			std::ifstream in(directory / mFileName, std::ios::in);
 			if (!in)
 				return false;
 
@@ -246,5 +252,10 @@ namespace BHive
 		}
 
 		return false;
+	}
+
+	std::filesystem::path EditorAssetManager::GetDirectory() const
+	{
+		return !mDirectory.empty() ? mDirectory : std::filesystem::current_path();
 	}
 } // namespace BHive

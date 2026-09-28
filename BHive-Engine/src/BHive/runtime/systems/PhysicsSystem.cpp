@@ -32,18 +32,19 @@ namespace BHive
 
 #if defined(_DEBUG) || defined(BHIVE_ENABLE_LOGGING)
 		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eSCALE, 1.0f);
-		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eACTOR_AXES, 2.0f);
+		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eACTOR_AXES, 1.0f);
 
-		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_AXES, 2.0f);
-		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_MASS_AXES, 2.0f);
-		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_ANG_VELOCITY, 2.0f);
-		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_LIN_VELOCITY, 2.0f);
+		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_AXES, 1.0f);
+		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_MASS_AXES, 1.0f);
+		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_ANG_VELOCITY, 1.0f);
+		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eBODY_LIN_VELOCITY, 1.0f);
 
-		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_DYNAMIC, 2.0f);
-		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_AABBS, 2.0f);
+		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_DYNAMIC, 1.0f);
+		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_AABBS, 1.0f);
 		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_COMPOUNDS, 2.0f);
-		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_EDGES, 2.0f);
-		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_AXES, 2.0f);
+		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_EDGES, 1.0f);
+		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_AXES, 1.0f);
+		mScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_SHAPES, 1.0f);
 #endif // _DEBUG
 
 		physx::PxPvdSceneClient *pvdClient = mScene->getScenePvdClient();
@@ -65,13 +66,13 @@ namespace BHive
 			auto gameobject = world->GetGameObject((int32_t)e);
 			auto t = gameobject->GetWorldTransform();
 
-			physx::PxRigidActor *rigid_body = nullptr;
+			physx::PxRigidActor *rigidBody = nullptr;
 			switch (settings.BodyType)
 			{
 			case EBodyType::Static:
 			{
 				auto body = physics->createRigidStatic(PhysicsUtils::Convert(t));
-				rigid_body = body;
+				rigidBody = body;
 			}
 			break;
 			case EBodyType::Dynamic:
@@ -82,25 +83,22 @@ namespace BHive
 				body->setAngularDamping(settings.AngularDamping);
 				body->setLinearDamping(settings.LinearDamping);
 				body->setMass(settings.Mass);
+				body->setLinearVelocity(PhysicsUtils::Convert(settings.InitialVelocity));
 				body->setRigidDynamicLockFlags(PhysicsUtils::GetLockFlags(settings.LinearLockAxis, settings.AngularLockAxis));
 				body->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, !settings.GravityEnabled);
-				rigid_body = body;
+				rigidBody = body;
 			}
 			break;
 			default:
 				break;
 			}
 
-			if (rigid_body && gameobject)
+			if (rigidBody && gameobject)
 			{
-
-#if defined(_DEBUG) || defined(BHIVE_ENABLE_LOGGING)
-				rigid_body->setActorFlag(PxActorFlag::eVISUALIZATION, true);
-#endif // _DEBUG
-
-				rigid_body->userData = gameobject.get();
-				mScene->addActor(*rigid_body);
-				component.SetRigidBody(rigid_body);
+				rigidBody->setActorFlag(PxActorFlag::eVISUALIZATION, true);
+				rigidBody->userData = gameobject.get();
+				component.SetRigidBody(rigidBody);
+				mScene->addActor(*rigidBody);
 			}
 		}
 	}
@@ -147,21 +145,21 @@ namespace BHive
 
 		for (physx::PxU32 i = 0; i < rb.getNbLines(); i++)
 		{
-			// const auto &line = rb.getLines()[i];
+			const auto &line = rb.getLines()[i];
 
-			// uint32_t color = line.color1;
-			// glm::vec3 p0 = {line.pos0.x, line.pos0.y, line.pos0.z};
-			// glm::vec3 p1 = {line.pos1.x, line.pos1.y, line.pos1.z};
-			////LineRenderer::DrawLine(p0, p1, color, {});
+			uint32_t color = line.color1;
+			glm::vec3 p0 = {line.pos0.x, line.pos0.y, line.pos0.z};
+			glm::vec3 p1 = {line.pos1.x, line.pos1.y, line.pos1.z};
+			renderer->Line.DrawLine(p0, p1, color, {});
 		}
 
 		for (physx::PxU32 i = 0; i < rb.getNbTriangles(); i++)
 		{
-			// const auto &tri = rb.getTriangles()[i];
-			// glm::vec3 p0 = {tri.pos0.x, tri.pos0.y, tri.pos0.z};
-			// glm::vec3 p1 = {tri.pos1.x, tri.pos1.y, tri.pos1.z};
-			// glm::vec3 p2 = {tri.pos2.x, tri.pos2.y, tri.pos2.z};
-			////LineRenderer::DrawTriangle(p0, p1, p2, tri.color0, {});
+			const auto &tri = rb.getTriangles()[i];
+			glm::vec3 p0 = {tri.pos0.x, tri.pos0.y, tri.pos0.z};
+			glm::vec3 p1 = {tri.pos1.x, tri.pos1.y, tri.pos1.z};
+			glm::vec3 p2 = {tri.pos2.x, tri.pos2.y, tri.pos2.z};
+			renderer->Line.DrawTriangle(p0, p1, p2, tri.color0, {});
 		}
 	}
 
