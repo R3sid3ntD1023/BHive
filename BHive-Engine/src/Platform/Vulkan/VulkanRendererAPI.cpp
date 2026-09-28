@@ -205,6 +205,9 @@ namespace BHive
 	{
 		for (auto &imgInfo : phase.Images)
 		{
+			if (!imgInfo.Texture)
+				continue;
+
 			auto tex = imgInfo.Texture.As<Texture>();
 			auto name = tex->GetInfo().DebugName;
 			auto vkImg = tex->GetNativeHandle().As<VulkanImage>();

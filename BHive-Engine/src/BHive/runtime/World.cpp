@@ -1,9 +1,9 @@
-#include "core/subsystem/SubSystem.h"
-#include "GameObject.h"
-#include "gfx/renderers/Renderer.h"
-#include "systems/RenderSystem.h"
-#include "systems/PhysicsSystem.h"
 #include "World.h"
+#include "GameObject.h"
+#include "core/subsystem/SubSystem.h"
+#include "gfx/renderers/Renderer.h"
+#include "systems/PhysicsSystem.h"
+#include "systems/RenderSystem.h"
 
 namespace BHive
 {
@@ -87,7 +87,7 @@ namespace BHive
 		mIsRunning = true;
 	}
 
-	void World::Update(float dt, SceneRenderer *renderer)
+	void World::Update(float dt)
 	{
 		if (mIsRunning)
 		{
@@ -109,9 +109,6 @@ namespace BHive
 			}
 		}
 
-		mRenderSystem->OnUpdate(renderer, this);
-		mPhysicsSystem->DebugDraw();
-
 		while (!mDestroyQueue.empty())
 		{
 			auto &identifier = mDestroyQueue.front();
@@ -121,6 +118,12 @@ namespace BHive
 			mRegistry.destroy(identifier.second);
 			mDestroyQueue.pop();
 		}
+	}
+
+	void World::Render(SceneRenderer *sceneRenderer, Renderer *renderer)
+	{
+		mRenderSystem->OnUpdate(sceneRenderer, this);
+		mPhysicsSystem->DebugDraw(renderer);
 	}
 
 	void World::End()

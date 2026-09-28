@@ -23,8 +23,9 @@ namespace BHive
 		static inline bool DebugAssertErrors = false;
 
 		// Features
-		static inline bool EnablePhysics = 0u;
-		static inline bool EnableAudio = 0u;
+		static inline bool EnableImGui = true;
+		static inline bool EnablePhysics = false;
+		static inline bool EnableAudio = false;
 
 		// EditorCamera
 		static inline float MoveSpeed = 1.0f;

@@ -15,11 +15,9 @@ namespace BHive
 		auto memoryTypeIndex = FindMemoryType(req.memoryTypeBits, props);
 		if (ShouldUseDedicatedAllocation(req))
 		{
-			LOG_INFO(" Buffer Using Dedicated Memory");
 			return AllocateDedicated(req, memoryTypeIndex);
 		}
 
-		LOG_INFO(" Buffer Using Block Memory");
 		return AllocateFromBlock(req, memoryTypeIndex);
 	}
 
@@ -29,11 +27,9 @@ namespace BHive
 		auto memoryTypeIndex = FindMemoryType(req.memoryTypeBits, props);
 		if (ShouldUseDedicatedAllocation(req))
 		{
-			LOG_INFO("Image Using Dedicated Memory");
 			return AllocateDedicated(req, memoryTypeIndex);
 		}
 
-		LOG_INFO("Image Using Block Memory");
 		return AllocateFromBlock(req, memoryTypeIndex);
 	}
 

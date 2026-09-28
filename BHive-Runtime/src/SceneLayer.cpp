@@ -206,7 +206,7 @@ namespace BHive
 			mCameras[1].Resize(mViewportSize.x, mViewportSize.y);
 		}
 
-		mSceneRenderer->Begin(&mCameras[0], mCameras[0].GetView());
+		mSceneRenderer->Begin(mCameras[0].GetProjection(), mCameras[0].GetView());
 		mSceneRenderer->Submit(main);
 		mSceneRenderer->Submit(light);
 		mSceneRenderer->Submit(spotLight);

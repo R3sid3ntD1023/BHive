@@ -17,6 +17,7 @@ namespace BHive
 {
 	class World;
 	struct FHitResult;
+	class Renderer;
 
 	struct PhysicsSystem
 	{
@@ -26,7 +27,7 @@ namespace BHive
 
 		void Shutdown(World *world);
 
-		void DebugDraw();
+		void DebugDraw(Renderer *renderer);
 
 		void InitCallbacks();
 

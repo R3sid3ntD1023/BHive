@@ -96,11 +96,12 @@ namespace BHive
 			DebugAssertErrors = ini::utils::Get(ini["Renderer"], "AssertErrors", DebugAssertErrors) && DebugEnabled;
 		}
 
-		if (ini.has("Physics"))
-			EnablePhysics = ini::utils::Get(ini["Physics"], "Enable", EnablePhysics);
-
-		if (ini.has("Audio"))
-			EnableAudio = ini::utils::Get(ini["Audio"], "Enable", EnableAudio);
+		if (ini.has("Features"))
+		{
+			EnablePhysics = ini::utils::Get(ini["Features"], "Physics", EnablePhysics);
+			EnableAudio = ini::utils::Get(ini["Features"], "Audio", EnableAudio);
+			EnableImGui = ini::utils::Get(ini["Features"], "ImGui", EnableImGui);
+		}
 
 		if (ini.has("EditorCamera"))
 		{

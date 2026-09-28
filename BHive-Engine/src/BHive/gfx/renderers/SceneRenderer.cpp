@@ -86,12 +86,12 @@ namespace BHive
 		set->SetTexture(2, envMaps.Irradiance);
 	}
 
-	void SceneRenderer::Begin(const Camera *camera, const glm::mat4 &view)
+	void SceneRenderer::Begin(const glm::mat4 &projection, const glm::mat4 &view)
 	{
 		auto &renderer = Renderer::Get();
 
-		mSceneView.View = FView::Create(camera->GetProjection(), view);
-		mSceneView.Frustum = Frustum(camera->GetProjection() * view);
+		mSceneView.View = FView::Create(projection, view);
+		mSceneView.Frustum = Frustum(projection * view);
 
 		renderer.BeginBatching();
 		mLights.BeginRecording();

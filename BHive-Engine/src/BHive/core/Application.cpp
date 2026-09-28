@@ -43,9 +43,12 @@ namespace BHive
 
 		WindowInput::WindowEvent.Add(this, &Application::OnEvent);
 
-		auto layer = ImGuiLayer::Create(mMainWindow->GetNative());
-		PushLayer(layer);
-		mImGuiLayer = layer.get();
+		if (EngineConfig::EnableImGui)
+		{
+			auto layer = ImGuiLayer::Create(mMainWindow->GetNative());
+			PushLayer(layer);
+			mImGuiLayer = layer.get();
+		}
 
 		if (EngineConfig::EnableAudio)
 		{
@@ -62,6 +65,7 @@ namespace BHive
 
 	Application::~Application()
 	{
+		mLayerStack.Clear();
 
 		RenderCommand::Shutdown();
 

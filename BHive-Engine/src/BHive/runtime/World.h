@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/Core.h"
 #include "asset/Asset.h"
+#include "core/Core.h"
 #include "core/math/Transform.h"
 #include "physics/HitResult.h"
 #include <entt/entt.hpp>
@@ -12,6 +12,7 @@ namespace BHive
 	class Texture2D;
 	class Camera;
 	class SceneRenderer;
+	class Renderer;
 
 	using ObjectIdentifier = std::pair<UUID, entt::entity>;
 	using ObjectList = std::unordered_map<UUID, Ref<GameObject>>;
@@ -31,7 +32,9 @@ namespace BHive
 
 		void Begin();
 
-		void Update(float dt, SceneRenderer *renderer);
+		void Update(float dt);
+
+		void Render(SceneRenderer *sceneRenderer, Renderer *renderer);
 
 		void End();
 

@@ -65,7 +65,7 @@ namespace BHive
 
 		virtual void Init(const glm::uvec2 &size);
 
-		void Begin(const Camera *camera, const glm::mat4 &view);
+		void Begin(const glm::mat4 &projection, const glm::mat4 &view);
 
 		virtual void End();
 
