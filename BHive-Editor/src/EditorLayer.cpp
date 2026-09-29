@@ -66,7 +66,7 @@ namespace BHive
 				SetActiveWorld(asset);
 
 				auto &meta_data = mAssetManager->GetMetaData(handle);
-				mCurrentWorldPath = Project::GetResourceDirectory() / meta_data.Path;
+				mCurrentWorldPath = Project::GetResourceDirectory() / meta_data.AssetPath;
 			}
 		};
 
@@ -351,7 +351,8 @@ namespace BHive
 				{
 					mEditorCamera.Focus(selection->GetWorldTransform(), selection->GetBounds().Max);
 				}
-			});
+			}
+		);
 	}
 
 	void EditorLayer::InitRenderer(const glm::uvec2 &size)
@@ -364,7 +365,8 @@ namespace BHive
 				auto object = mActiveWorld->GetGameObject(entity);
 				auto &selection = SubSystemContext::Get().GetSubSystem<Selection>();
 				selection.Select(object.get());
-			});
+			}
+		);
 	}
 
 	bool EditorLayer::OnWindowResize(WindowResizeEvent &e)
@@ -461,7 +463,7 @@ namespace BHive
 			return;
 		}
 
-		AssetFactory::Export(mEditorWorld, mCurrentWorldPath);
+		AssetSerializer::Export(mEditorWorld, mCurrentWorldPath);
 
 		auto &window = Application::Get().GetWindow();
 		window.SetTitle(mCurrentWorldPath.stem().string());
@@ -472,9 +474,9 @@ namespace BHive
 
 	void EditorLayer::SaveWorldAs()
 	{
-		if (auto info = Platform::SaveFile(AssetFactory::GetFileFilters()))
+		if (auto info = Platform::SaveFile(AssetSerializer::GetFileFilters()))
 		{
-			AssetFactory::Export(mEditorWorld, info);
+			AssetSerializer::Export(mEditorWorld, info);
 			mCurrentWorldPath = info;
 			mAssetManager->ImportAsset(mCurrentWorldPath, rttr::type::get<World>(), mEditorWorld->GetHandle());
 		}
@@ -482,7 +484,7 @@ namespace BHive
 
 	void EditorLayer::LoadWorld()
 	{
-		if (auto info = Platform::OpenFile(AssetFactory::GetFileFilters()))
+		if (auto info = Platform::OpenFile(AssetSerializer::GetFileFilters()))
 		{
 			LoadWorld(info);
 		}
@@ -490,7 +492,7 @@ namespace BHive
 
 	void EditorLayer::LoadWorld(const std::filesystem::path &path)
 	{
-		if (!AssetFactory::Import(mEditorWorld, path))
+		if (!AssetSerializer::Import(mEditorWorld, path))
 			return;
 
 		SetActiveWorld(mEditorWorld);
@@ -555,7 +557,7 @@ namespace BHive
 		if (config.StartScene)
 		{
 			auto &meta_data = mAssetManager->GetMetaData(config.StartScene);
-			LoadWorld(resource_directory / meta_data.Path);
+			LoadWorld(resource_directory / meta_data.AssetPath);
 		}
 	}
 
@@ -642,7 +644,9 @@ namespace BHive
 						{
 							const auto &camera_view = mEditorCamera.GetView();
 							const auto mouse_pos = ImGui::GetMousePos();
-							auto mouse_ray = MathFunctionLibrary::GetMouseRay(mouse_pos.x, mouse_pos.y, mViewportSize.x, mViewportSize.y, mEditorCamera.GetProjection(), camera_view.Inverse());
+							auto mouse_ray = MathFunctionLibrary::GetMouseRay(
+								mouse_pos.x, mouse_pos.y, mViewportSize.x, mViewportSize.y, mEditorCamera.GetProjection(), camera_view.Inverse()
+							);
 
 							auto distance = glm::distance(camera_view[0], {0, 0, 0});
 							auto point = RayCast::GetPointOnRay(mEditorCamera.GetView()[0], mouse_ray, distance);
@@ -653,7 +657,7 @@ namespace BHive
 							if (metadata)
 							{
 
-								auto handle = mAssetManager->GetHandle(metadata.Path);
+								auto handle = mAssetManager->GetHandle(metadata.AssetPath);
 								if (auto asset = mAssetManager->GetAsset(handle))
 								{
 									if (auto factory = DragDropFactory::GetFactoryFromType(metadata.Type); factory && factory->CanCreate(metadata.Type))

@@ -1,9 +1,6 @@
 #pragma once
 
 #include "core/Core.h"
-#include <stdint.h>
-#include <string>
-#include <xhash>
 
 namespace BHive
 {

@@ -1,8 +1,8 @@
-#include "AssetFactory.h"
+#include "AssetSerializer.h"
 
 namespace BHive
 {
-	bool AssetFactory::Import(Ref<Asset> &asset, const std::filesystem::path &path)
+	Ref<Asset> AssetSerializer::Import(const std::filesystem::path &path)
 	{
 
 		try
@@ -17,43 +17,35 @@ namespace BHive
 			if (!type || !type.get_constructor())
 			{
 				LOG_ERROR("AssetFactory::Import() no default constructor found for type {} for {}", type, path);
-				return false;
+				return nullptr;
 			}
 
 			auto var = type.create();
 			if (!var.is_valid())
 			{
 				LOG_ERROR("AssetFactory::Import() failed to create instance of type", type);
-				return false;
+				return nullptr;
 			}
 
-			asset = var.get_value<Ref<Asset>>();
+			auto asset = var.get_value<Ref<Asset>>();
 			asset->Load(ar);
 
 			LOG_TRACE("AssetFactory::Import() Imported asset from {}", path);
 
-			return true;
+			return asset;
 		}
 		catch (std::exception &e)
 		{
 			LOG_ERROR("AssetFactory::Import() Exception - {}", e.what());
 		}
 
-		return false;
+		return nullptr;
 	}
 
-	bool AssetFactory::Export(const Ref<Asset> &asset, const std::filesystem::path &path)
-	{
-		return Export(asset.get(), path);
-	}
-
-	bool AssetFactory::Export(const Asset *asset, const std::filesystem::path &path)
+	bool AssetSerializer::Export(const Ref<Asset> &asset, const std::filesystem::path &path)
 	{
 		if (!asset)
 			return false;
-
-		std::ofstream out(path, std::ios::out | std::ios::binary);
-		cereal::BinaryOutputArchive ar(out);
 
 		try
 		{
@@ -62,6 +54,9 @@ namespace BHive
 			{
 				std::filesystem::create_directory(parent_directory);
 			}
+
+			std::ofstream out(path, std::ios::out | std::ios::binary);
+			cereal::BinaryOutputArchive ar(out);
 
 			ar(asset->get_type());
 			asset->Save(ar);
@@ -76,6 +71,4 @@ namespace BHive
 
 		return false;
 	}
-
-	REFLECT_FACTORY(AssetFactory)
 } // namespace BHive

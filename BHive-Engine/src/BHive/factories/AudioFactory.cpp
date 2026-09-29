@@ -6,20 +6,12 @@ namespace BHive
 {
 	Ref<Asset> AudioFactory::Import(const std::filesystem::path &path)
 	{
-		AudioImporter importer;
-		auto source = importer.Import(path);
-		source->SetName(path.stem().string());
-
-		OnImportCompleted.invoke(source);
-
-		return source;
+		auto decoded = AudioImporter::Import(path);
+		return CreateRef<AudioSource>(decoded.Data, decoded.Specification);
 	}
 
 	rttr::type AudioFactory::GetAssetType() const
 	{
 		return rttr::type::get<AudioSource>();
 	}
-
-	REFLECT_FACTORY(AudioFactory)
-
 } // namespace BHive

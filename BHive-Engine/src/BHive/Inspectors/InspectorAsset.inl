@@ -1,9 +1,9 @@
+#include "InspectorAsset.h"
 #include "asset/AssetManager.h"
 #include "asset/EditorAssetManager.h"
 #include "gui/ImGuiExtended.h"
-#include "InspectorAsset.h"
-#include "project/Project.h"
 #include "gui/PayloadHelpers.h"
+#include "project/Project.h"
 
 #define ASSET_DRAG_DROP_NAME "CONTENT_BROWSER_ITEM"
 
@@ -75,7 +75,7 @@ namespace BHive
 				{
 					auto relative = Project::GetResourceRelativePath(entries[0]);
 					auto handle = asset_manager->GetHandle(relative);
-					auto handle_meta_data = asset_manager->GetMetaData(handle);
+					auto &handle_meta_data = asset_manager->GetMetaData(handle);
 					if (handle_meta_data.Type == inspected_type || handle_meta_data.Type.is_derived_from(inspected_type))
 					{
 						data = AssetManager::GetAsset<T>(handle);

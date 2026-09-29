@@ -48,7 +48,7 @@ namespace BHive
 
 	void AssetEditor::SaveAs()
 	{
-		if (auto info = Platform::SaveFile(AssetFactory::GetFileFilters()))
+		if (auto info = Platform::SaveFile(AssetSerializer::GetFileFilters()))
 		{
 			mCurrentSavePath = info;
 			Save();

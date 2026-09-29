@@ -51,7 +51,7 @@ namespace BHive
 			int index = 0;
 			if (ImGui::Button("Extract"))
 			{
-				if (auto info = Platform::SaveFile(AssetFactory::GetFileFilters()))
+				if (auto info = Platform::SaveFile(AssetSerializer::GetFileFilters()))
 				{
 					ExtractSprites(info);
 				}
@@ -118,7 +118,7 @@ namespace BHive
 			auto filename = std::format("{}_{}{}", name, i, ext);
 			auto export_path = directory / filename;
 
-			if (!AssetFactory::Export(&sprite, export_path))
+			if (!AssetSerializer::Export(&sprite, export_path))
 			{
 				LOG_TRACE("Failed to extract Sprite {}", filename);
 			}

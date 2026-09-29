@@ -28,7 +28,7 @@ namespace BHive
 
 			if (mAsset)
 			{
-				mCurrentSavePath = Project::GetResourceDirectory() / metadata.Path;
+				mCurrentSavePath = Project::GetResourceDirectory() / metadata.AssetPath;
 				mLabel = metadata.Name;
 				OnSetContext(mAsset);
 			}
@@ -57,7 +57,7 @@ namespace BHive
 
 		virtual bool OnSave(const std::filesystem::path &path)
 		{
-			AssetFactory factory;
+			AssetSerializer factory;
 			return factory.Export(mAsset, path);
 		}
 

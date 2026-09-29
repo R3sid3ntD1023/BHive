@@ -17,20 +17,13 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar);
 
-		void SetName(const std::string &name) { mName = name; }
-
-		const std::string &GetName() const { return mName; }
-
-		static UUID GetHandle(const Ref<Asset> &asset) { return GetHandle(asset.get()); }
-
-		static UUID GetHandle(const Asset *asset) { return asset ? asset->GetHandle() : NullID; }
-
 		const UUID &GetHandle() const { return mHandle; }
+
+		static UUID GetHandle(const Ref<Asset> &asset) { return asset ? asset->GetHandle() : NullID; }
 
 		REFLECTABLEV()
 
 	private:
-		std::string mName;
 		UUID mHandle;
 	};
 

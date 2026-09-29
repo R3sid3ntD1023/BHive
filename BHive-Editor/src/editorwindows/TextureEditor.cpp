@@ -41,10 +41,10 @@ namespace BHive
 
 				if (ImGui::Button("Create"))
 				{
-					if (auto info = Platform::SaveFile(AssetFactory::GetFileFilters()))
+					if (auto info = Platform::SaveFile(AssetSerializer::GetFileFilters()))
 					{
 						auto texture = mAsset->CreateSubTexture(mSubTexture);
-						AssetFactory::Export(texture, info);
+						AssetSerializer::Export(texture, info);
 						AssetManager::GetAssetManager<EditorAssetManager>()->ImportAsset(info, texture->get_type(), texture->GetHandle());
 					}
 				}

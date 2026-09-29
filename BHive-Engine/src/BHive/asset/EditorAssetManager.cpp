@@ -1,11 +1,12 @@
 #include "EditorAssetManager.h"
+#include "Factory.h"
+#include "FactoryRegistry.h"
 
 namespace BHive
 {
 
-	EditorAssetManager::EditorAssetManager(const std::filesystem::path &directory, const std::string &filename)
-		: mDirectory(directory),
-		  mFileName(filename)
+	EditorAssetManager::EditorAssetManager(const std::filesystem::path &directory)
+		: mDirectory(directory)
 	{
 
 		Deserialize();
@@ -37,14 +38,13 @@ namespace BHive
 			{
 				const FAssetMetaData &metadata = GetMetaData(handle);
 
-				if (!mAssetFactory.Import(asset, metadata.Path))
+				if (auto asset = mAssetSerializer.Import(GetMetaDataPath(metadata)))
 				{
 					LOG_ERROR("Failed to load asset");
 					return asset;
 				}
 
 				mLoadedAssets[handle] = asset;
-				LOG_TRACE("Imported asset {}", metadata.Path.string());
 			}
 		}
 
@@ -70,50 +70,85 @@ namespace BHive
 		return mAssetRegistry.at(handle).Type;
 	}
 
-	UUID EditorAssetManager::ImportAsset(const std::filesystem::path &path, const rttr::type &type)
+	UUID EditorAssetManager::ImportAsset(const std::filesystem::path &sourcePath)
 	{
-		if (auto handle = GetHandle(path))
+		auto importPath = sourcePath.is_absolute() ? sourcePath : std::filesystem::relative(sourcePath, GetDirectory());
+		auto name = importPath.stem().string();
+		auto ext = importPath.extension().string();
+
+		if (auto handle = GetHandle(importPath))
 		{
 			return handle;
 		}
 
-		if (type == InvalidType)
-		{
-			LOG_ERROR("UnSupported Asset Type");
-			return {NullID};
-		}
+		auto factory = mFactoryRegistry.Get(ext);
+		if (!factory)
+			return NullID;
 
-		auto importPath = path.is_absolute() ? path : std::filesystem::relative(path, GetDirectory());
-		FAssetMetaData metadata{};
-		metadata.Path = GetDirectory() / path.filename();
-		metadata.Type = type;
-		metadata.Name = importPath.stem().string();
+		auto asset = factory->Import(importPath);
+		if (!asset)
+			return NullID;
+
+		auto assetPath = GetAssetPath(name);
+
+		if (!mAssetSerializer.Export(asset, assetPath))
+			return NullID;
 
 		UUID handle{};
+
+		FAssetMetaData metadata{};
+		metadata.Handle = handle;
+		metadata.Type = asset->get_type();
+		metadata.Name = importPath.stem().string();
+		metadata.SourcePath = importPath;
+		metadata.SourceTimeStamp = std::filesystem::last_write_time(sourcePath).time_since_epoch().count();
+
 		mAssetRegistry[handle] = metadata;
-		Serialize();
+		mLoadedAssets[handle] = asset;
+		mPathToHandle[GetAssetPath(metadata.Name)] = handle;
+
+		Serialize(metadata);
 
 		return handle;
 	}
 
+	void EditorAssetManager::ReimportAsset(UUID handle)
+	{
+		auto &metaData = GetMetaData(handle);
+		auto factory = mFactoryRegistry.Get(metaData.Type);
+		auto asset = factory->Import(metaData.SourcePath);
+
+		if (mAssetSerializer.Export(asset, GetMetaDataPath(metaData)))
+		{
+			auto currentTimestamp = std::filesystem::last_write_time(metaData.SourcePath).time_since_epoch().count();
+			metaData.SourceTimeStamp = currentTimestamp;
+			Serialize(metaData);
+		}
+	}
+
 	bool EditorAssetManager::RemoveAsset(UUID handle)
 	{
-		bool removed = false;
-
 		if (mAssetRegistry.contains(handle))
 		{
-			mAssetRegistry.erase(handle);
-			Serialize();
-			removed |= true;
+			auto &metaData = GetMetaData(handle);
+			auto metaPath = GetMetaDataPath(metaData);
+			auto assetPath = GetAssetPath(metaData.Name);
+
+			if (std::filesystem::remove(metaPath) && std::filesystem::remove(assetPath))
+			{
+				mAssetRegistry.erase(handle);
+
+				return true;
+			}
 		}
 
 		if (mLoadedAssets.contains(handle))
 		{
 			mLoadedAssets.erase(handle);
-			removed |= true;
+			return true;
 		}
 
-		return removed;
+		return false;
 	}
 
 	bool EditorAssetManager::RemoveAsset(const std::filesystem::path &path)
@@ -131,18 +166,9 @@ namespace BHive
 		if (!metadata)
 			return false;
 
-		metadata.Path = new_;
 		metadata.Name = new_.stem().string();
 
-		if (auto handle = GetHandle(old_))
-		{
-			if (IsAssetLoaded(handle))
-			{
-				mLoadedAssets[handle]->SetName(metadata.Name);
-			}
-		}
-
-		Serialize();
+		Serialize(metadata);
 
 		return true;
 	}
@@ -172,10 +198,11 @@ namespace BHive
 	const FAssetMetaData &EditorAssetManager::GetMetaData(const std::filesystem::path &file) const
 	{
 		static FAssetMetaData sNullMetaData;
-		auto it = std::find_if(mAssetRegistry.begin(), mAssetRegistry.end(), [file](const auto &pair) { return pair.second.Path == file; });
 
-		if (it != mAssetRegistry.end())
-			return (*it).second;
+		if (mPathToHandle.contains(file); auto handle = mPathToHandle.at(file))
+		{
+			return mAssetRegistry.at(handle);
+		}
 
 		return sNullMetaData;
 	}
@@ -183,30 +210,31 @@ namespace BHive
 	FAssetMetaData &EditorAssetManager::GetMetaData(const std::filesystem::path &file)
 	{
 		static FAssetMetaData sNullMetaData;
-		auto it = std::find_if(mAssetRegistry.begin(), mAssetRegistry.end(), [file](const auto &pair) { return pair.second.Path == file; });
 
-		if (it != mAssetRegistry.end())
-			return (*it).second;
+		if (mPathToHandle.contains(file); auto handle = mPathToHandle.at(file))
+		{
+			return mAssetRegistry.at(handle);
+		}
 
 		return sNullMetaData;
 	}
 
-	UUID EditorAssetManager::GetHandle(const std::filesystem::path &relative_path) const
+	UUID EditorAssetManager::GetHandle(const std::filesystem::path &file) const
 	{
-		auto it = std::find_if(mAssetRegistry.begin(), mAssetRegistry.end(), [=](const auto &pair) { return pair.second.Path == relative_path; });
-
-		if (it != mAssetRegistry.end())
-			return it->first;
+		if (mPathToHandle.contains(file))
+		{
+			return mPathToHandle.at(file);
+		}
 
 		return NullID;
 	}
 
 	const std::filesystem::path &EditorAssetManager::GetFilePath(UUID handle) const
 	{
-		return GetMetaData(handle).Path;
+		return GetAssetPath(GetMetaData(handle).Name);
 	}
 
-	void EditorAssetManager::Serialize() const
+	void EditorAssetManager::Serialize(const FAssetMetaData &metaData) const
 	{
 		try
 		{
@@ -216,12 +244,13 @@ namespace BHive
 				std::filesystem::create_directory(directory);
 			}
 
-			std::ofstream out(directory / mFileName, std::ios::out);
+			auto filename = metaData.Name + ".meta";
+			std::ofstream out(directory / filename, std::ios::out);
 			if (!out)
 				return;
 
 			cereal::JSONOutputArchive ar(out);
-			ar(MAKE_NVP("Assets", mAssetRegistry));
+			ar(metaData);
 		}
 		catch (std::exception &e)
 		{
@@ -229,33 +258,64 @@ namespace BHive
 		}
 	}
 
-	bool EditorAssetManager::Deserialize()
+	void EditorAssetManager::Deserialize()
 	{
 		try
 		{
 			auto directory = GetDirectory();
 			if (!std::filesystem::exists(directory))
-				return false;
+				return;
 
-			std::ifstream in(directory / mFileName, std::ios::in);
-			if (!in)
-				return false;
+			for (auto &entry : std::filesystem::recursive_directory_iterator(directory))
+			{
+				const auto &path = entry.path();
+				const auto &ext = path.extension();
 
-			cereal::JSONInputArchive ar(in);
-			ar(MAKE_NVP("Assets", mAssetRegistry));
+				if (ext != ".meta")
+					continue;
 
-			return true;
+				std::ifstream in(path, std::ios::in);
+				cereal::JSONInputArchive ar(in);
+				FAssetMetaData metaData{};
+				ar(metaData);
+
+				mAssetRegistry.emplace(metaData.Handle, metaData);
+				mPathToHandle.emplace(GetAssetPath(metaData.Name), metaData.Handle);
+			}
+
+			for (auto &[handle, metaData] : mAssetRegistry)
+			{
+				if (IsAssetOutofDate(metaData))
+				{
+					ReimportAsset(handle);
+				}
+			}
 		}
 		catch (std::exception &e)
 		{
 			LOG_ERROR("EditorAssetManager::Deserialize() ERROR: {}", e.what());
 		}
+	}
 
-		return false;
+	bool EditorAssetManager::IsAssetOutofDate(const FAssetMetaData &metaData) const
+	{
+		auto timestamp = std::filesystem::last_write_time(metaData.SourcePath).time_since_epoch().count();
+		return timestamp > metaData.SourceTimeStamp;
 	}
 
 	std::filesystem::path EditorAssetManager::GetDirectory() const
 	{
 		return !mDirectory.empty() ? mDirectory : std::filesystem::current_path();
 	}
+
+	std::filesystem::path EditorAssetManager::GetAssetPath(const std::string &name) const
+	{
+		return GetDirectory() / (name + ".asset");
+	}
+
+	std::filesystem::path BHive::EditorAssetManager::GetMetaDataPath(const FAssetMetaData &metaData) const
+	{
+		return GetDirectory() / (metaData.Name + ".meta");
+	}
+
 } // namespace BHive

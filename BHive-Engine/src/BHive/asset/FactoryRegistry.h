@@ -1,39 +1,41 @@
 #pragma once
 
+#include "Factory.h"
 #include "core/Core.h"
 
 namespace BHive
 {
-	class Factory;
-
 	class BHIVE_API FactoryRegistry
 	{
-		using factories = std::vector<Ref<Factory>>;
-
 	public:
 		FactoryRegistry();
 
 		template <typename TFactory, typename = std::enable_if<std::is_base_of_v<Factory, TFactory>>>
-		void Register()
+		TFactory *Register()
 		{
-			Register(CreateRef<TFactory>());
+			auto factory = CreateRef<TFactory>();
+
+			auto ptr = factory.get();
+
+			mFactories.emplace_back(std::move(factory));
+
+			mTypeMap.emplace(ptr->GetAssetType().get_id(), ptr);
+
+			return ptr;
 		}
 
-		void Register(const Ref<Factory> &Factory);
+		void Register(Factory *factory, std::initializer_list<std::string> exts);
 
-		Ref<Factory> Get(const std::string &extension) const;
+		Factory *Get(std::string_view extension) const;
 
-		static FactoryRegistry &Get()
-		{
-			static FactoryRegistry instance;
-			return instance;
-		}
+		Factory *Get(const rttr::type &type) const;
 
-		const factories &GetRegisteredFactories() const { return mRegisteredFactories; }
+		const auto &GetFactories() const { return mFactories; }
 
 	private:
-		// extension - factory
-		factories mRegisteredFactories;
+		std::vector<Ref<Factory>> mFactories;
+		std::unordered_map<std::string, Factory *> mExtensionMap;
+		std::unordered_map<rttr::type::type_id, Factory *> mTypeMap;
 	};
 
 } // namespace BHive

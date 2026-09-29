@@ -1,11 +1,13 @@
 #pragma once
 
-#include "core/Core.h"
 #include "asset/Asset.h"
+#include "core/Core.h"
 #include "core/delegates/EventDelegate.h"
 
 namespace BHive
 {
+	class Texture;
+
 	DECLARE_EVENT(OnImportCompleted, const Ref<Asset> &);
 	DECLARE_EVENT(OnAssetCreated, Ref<Asset>);
 
@@ -16,19 +18,29 @@ namespace BHive
 
 		virtual Ref<Asset> Import(const std::filesystem::path &path) { return nullptr; };
 
-		virtual void Export(Ref<Asset> asset, const std::filesystem::path &path) {};
+		// virtual void Export(Ref<Asset> asset, const std::filesystem::path &path) {};
+
+		// virtual Ref<Asset> Reimport(Ref<Asset> asset, const std::filesystem::path &path) { return nullptr; };
+
+		// virtual bool ValidateImport(const std::filesystem::path &path, std::string &err) { return true; };
 
 		virtual Ref<Asset> CreateNew() { return nullptr; };
 
 		virtual bool CanCreateNew() const { return false; }
 
-		virtual std::string GetDefaultAssetName() const { return ""; }
+		// virtual bool CanReimport() const { return false; }
 
 		virtual std::vector<Ref<Asset>> GetOtherCreatedAssets() { return {}; }
 
-		virtual std::vector<std::string> GetSupportedExtensions() { return {}; }
+		virtual Ref<Texture> GenerateThumbnail(Ref<Asset> asset) { return nullptr; }
 
-		virtual std::string GetDisplayName() const { return "Factory"; }
+		virtual std::string GetDefaultAssetName() const { return "New_" + GetDisplayName(); }
+
+		virtual rttr::type GetAssetType() const = 0;
+
+		virtual uint8_t GetCategory() const = 0;
+
+		virtual std::string GetDisplayName() const = 0;
 
 		OnImportCompletedEvent OnImportCompleted;
 

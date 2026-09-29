@@ -1,17 +1,22 @@
 #pragma once
 
+#include <algorithm>
 #include <any>
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <filesystem>
+#include <fmt/format.h>
 #include <fstream>
 #include <functional>
 #include <future>
+#include <iomanip>
 #include <iostream>
 #include <list>
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <ranges>
 #include <set>
 #include <sstream>
 #include <string>
@@ -22,8 +27,3 @@
 #include <variant>
 #include <vector>
 #include <xhash>
-
-#include <algorithm>
-#include <chrono>
-#include <fmt/format.h>
-#include <iomanip>

@@ -1,15 +1,15 @@
+#include "EditorContentBrowser.h"
+#include "ThumbnailCache.h"
 #include "asset/AssetContextMenuRegistry.h"
 #include "asset/AssetFactory.h"
 #include "asset/AssetManager.h"
 #include "asset/EditorAssetManager.h"
-#include "asset/FactoryRegistry.h"
 #include "asset/FAssetContextMenu.h"
-#include "EditorContentBrowser.h"
-#include "gfx/Texture.h"
-#include "project/Project.h"
+#include "asset/FactoryRegistry.h"
 #include "core/subsystem/subsystem.h"
-#include "ThumbnailCache.h"
+#include "gfx/Texture.h"
 #include "importers/TextureImporter.h"
+#include "project/Project.h"
 
 namespace BHive
 {
@@ -18,7 +18,7 @@ namespace BHive
 	{
 		auto manager = AssetManager::GetAssetManager<T>();
 		auto export_path = dir / (rel.stem().string() + ".asset");
-		AssetFactory asset_factory;
+		AssetSerializer asset_factory;
 		asset_factory.Export(asset, export_path);
 
 		manager->ImportAsset(export_path, asset->get_type(), asset->GetHandle());
@@ -26,7 +26,7 @@ namespace BHive
 		for (auto &other : others)
 		{
 			export_path = dir / (other->GetName() + ".asset");
-			AssetFactory asset_factory;
+			AssetSerializer asset_factory;
 			asset_factory.Export(other, export_path);
 			manager->ImportAsset(export_path, other->get_type(), other->GetHandle());
 		}
@@ -38,7 +38,7 @@ namespace BHive
 		asset->SetName(name);
 		auto export_path = path / (asset->GetName() + ".asset");
 
-		AssetFactory asset_factory;
+		AssetSerializer asset_factory;
 		asset_factory.Export(asset, export_path);
 
 		auto manager = AssetManager::GetAssetManager<T>();

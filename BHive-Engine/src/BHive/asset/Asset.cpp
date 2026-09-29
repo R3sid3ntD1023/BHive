@@ -4,12 +4,12 @@ namespace BHive
 {
 	void Asset::Save(cereal::BinaryOutputArchive &ar) const
 	{
-		ar(mHandle, mName);
+		ar(mHandle);
 	}
 
 	void Asset::Load(cereal::BinaryInputArchive &ar)
 	{
-		ar(mHandle, mName);
+		ar(mHandle);
 	}
 
 	REFLECT(Asset)

@@ -1,38 +1,36 @@
 #include "FactoryRegistry.h"
-#include "asset/Factory.h"
+#include "factories/AudioFactory.h"
 
 namespace BHive
 {
 	FactoryRegistry::FactoryRegistry()
 	{
-		auto derived_types = rttr::type::get<Factory>().get_derived_classes();
-		for (auto &type : derived_types)
+		Register(Register<AudioFactory>(), {".ogg", ".wav"});
+	}
+
+	void FactoryRegistry::Register(Factory *factory, std::initializer_list<std::string> exts)
+	{
+		for (auto &ext : exts)
 		{
-			auto factory = type.create();
-
-			if (!factory)
-			{
-				LOG_WARN("No Factory found for type - {}", type);
-				continue;
-			}
-
-			Register(factory.get_value<Ref<Factory>>());
+			mExtensionMap.emplace(ext, factory);
 		}
 	}
 
-	void FactoryRegistry::Register(const Ref<Factory> &factory)
+	Factory *FactoryRegistry::Get(const rttr::type &type) const
 	{
-		mRegisteredFactories.push_back(factory);
+		if (mTypeMap.contains(type.get_id()))
+		{
+			return mTypeMap.at(type.get_id());
+		}
+
+		return nullptr;
 	}
 
-	Ref<Factory> FactoryRegistry::Get(const std::string &extension) const
+	Factory *FactoryRegistry::Get(std::string_view ext) const
 	{
-		for (auto &factory : mRegisteredFactories)
+		if (mExtensionMap.contains(ext.data()))
 		{
-			auto extensions = factory->GetSupportedExtensions();
-			auto it = std::find(extensions.begin(), extensions.end(), extension);
-			if (it != extensions.end())
-				return factory;
+			return mExtensionMap.at(ext.data());
 		}
 
 		return nullptr;

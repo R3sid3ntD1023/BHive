@@ -1,24 +1,29 @@
 #pragma once
 
 #include "core/Core.h"
+#include "core/UUID.h"
 
 namespace BHive
 {
 
 	struct BHIVE_API FAssetMetaData
 	{
+		UUID Handle;
+
 		rttr::type Type = InvalidType;
 
-		std::filesystem::path Path;
+		std::string Name = "";
 
-		std::string Name;
+		std::filesystem::path SourcePath = "";
+
+		uint64_t SourceTimeStamp = 0;
 
 		operator bool() const { return Type != InvalidType; }
 
 		template <typename A>
 		inline void Serialize(A &ar)
 		{
-			ar(MAKE_NVP("Type", Type), MAKE_NVP("Path", Path), MAKE_NVP("Name", Name));
+			ar(Handle, Type, Name, SourcePath, SourceTimeStamp);
 		}
 
 		REFLECTABLE()
@@ -27,8 +32,10 @@ namespace BHive
 	REFLECT_INLINE(FAssetMetaData)
 	{
 		BEGIN_REFLECT(FAssetMetaData)
+		REFLECT_PROPERTY("Handle", Handle)
 		REFLECT_PROPERTY("Type", Type)
-		REFLECT_PROPERTY("Path", Path)
+		REFLECT_PROPERTY("SourcePath", SourcePath)
+		REFLECT_PROPERTY("SourceTimeStamp", SourceTimeStamp)
 		REFLECT_PROPERTY("Name", Name);
 	}
 } // namespace BHive

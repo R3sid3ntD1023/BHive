@@ -164,7 +164,6 @@ namespace BHive
 	Ref<World> World::Copy() const
 	{
 		auto new_world = CreateRef<World>(*this);
-		new_world->SetName("Instance");
 		auto &dst_registry = new_world->mRegistry;
 
 		auto &objects = GetGameObjects();

@@ -40,18 +40,12 @@ namespace BHive
 
 		AssetManager::SetAssetManager(&mAssetManager);
 
-		// auto decoded = AudioImporter::Import("E://Files//Mods//Resident Evil 4  - The Mercenaries - Leon Theme.wav");
+		auto handle = mAssetManager.ImportAsset("E://Files//Mods//Resident Evil 4  - The Mercenaries - Leon Theme.wav");
 
-		// AudioSource audio(decoded.Data, decoded.Specification);
-
-		// AssetFactory factory{};
-		// factory.Export(&audio, "Assets/Resident Evil 4  - The Mercenaries - Leon Theme.asset");
-
-				// auto handle = mAssetManager.ImportAsset("Assets/Resident Evil 4  - The Mercenaries - Leon Theme.asset", rttr::type::get<AudioSource>());
-
-		auto handle = mAssetManager.GetHandle("Assets/Resident Evil 4  - The Mercenaries - Leon Theme.asset");
-
-		AssetHandle<AudioSource>(handle)->SetLooping(true);
+		if (handle)
+		{
+			AssetHandle<AudioSource>(handle)->SetLooping(true);
+		}
 
 		{
 			auto gameObject = mCurrentWorld->CreateGameObject("AudioGameObj");

@@ -38,6 +38,6 @@ namespace BHive
 		MaterialPtr mSceneOutput;
 		FontPtr mFont;
 
-		EditorAssetManager mAssetManager{"Assets", "Assets.json"};
+		EditorAssetManager mAssetManager{"Assets"};
 	};
 } // namespace BHive
