@@ -2,6 +2,7 @@
 #include "audio/AudioImporter.h"
 #include "audio/AudioSource.h"
 #include "core/FPSCounter.h"
+#include "core/platform/Platform.h"
 #include "gfx/renderers/SceneRenderer.h"
 #include "runtime/Components.h"
 #include "runtime/GameObject.h"
@@ -44,17 +45,15 @@ namespace BHive
 
 		if (handle)
 		{
-			AssetHandle<AudioSource>(handle)->SetLooping(true);
-		}
+			auto audio = AssetHandle<AudioSource>(handle);
 
-		{
 			auto gameObject = mCurrentWorld->CreateGameObject("AudioGameObj");
 			gameObject->AddComponent<PhysicsComponent>();
 			gameObject->AddComponent<SphereColliderComponent>();
 			gameObject->GetComponent<TransformComponent>()->Transform.Translation = {0.f, 1.f, 0.f};
-			auto comp = gameObject->AddComponent<AudioComponent>();
-			comp->AutoPlay = false;
-			comp->Audio = AssetHandle<AudioSource>(handle);
+			mAudioComponent = gameObject->AddComponent<AudioComponent>();
+			mAudioComponent->AutoPlay = true;
+			mAudioComponent->Audio = audio;
 		}
 
 		{
@@ -93,6 +92,12 @@ namespace BHive
 		renderer.Line.DrawGrid({});
 		renderer.Quad.DrawText(mFont, 1.0f, std::format("{}", fps));
 
+		if (mAudioComponent && mAudioComponent->Audio)
+		{
+			auto playbackPos = mAudioComponent->Audio->GetPlaybackPosition();
+			renderer.Quad.DrawText(mFont, 1.0f, std::format("Audio Pos: {}", playbackPos.to_string()), {}, {{0, 3, 0}});
+		}
+
 		mRenderer->End();
 
 		mSceneOutput.As<Material>()->SetTexture("Scene", {mRenderer->GetOutput()});
@@ -109,6 +114,35 @@ namespace BHive
 
 	void WorldLayer::OnGuiRender()
 	{
+		if (ImGui::Begin("World Layer"))
+		{
+			if (ImGui::Button("Reset World"))
+			{
+				mCurrentWorld->End();
+				mCurrentWorld->Begin();
+			}
+
+			ImGui::Text("FPS: %.2f", FPSCounter::Get().GetFPS());
+
+			if (mAudioComponent && mAudioComponent->Audio)
+				ImGui::Text("Audio Position: {}", mAudioComponent->Audio->GetPlaybackPosition().to_string());
+
+			if (ImGui::Button("Load Audio"))
+			{
+				// Add your audio loading logic here
+				auto audioFile = Platform::OpenFile("Wav Files (*.wav)|*.wav|MP3 Files (*.mp3)|*.mp3|OGG Files (*.ogg)|*.ogg", "Open Audio File");
+				if (audioFile)
+				{
+					auto handle = mAssetManager.ImportAsset(audioFile);
+					mAudioComponent->Audio->Stop();
+
+					mAudioComponent->Audio = handle;
+					mAudioComponent->Audio->Play();
+				}
+			}
+		}
+
+		ImGui::End();
 	}
 
 	void WorldLayer::OnEvent(Event &e)

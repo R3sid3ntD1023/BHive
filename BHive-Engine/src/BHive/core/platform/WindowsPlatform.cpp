@@ -1,7 +1,7 @@
 #include "Platform.h"
+#include <ShlObj.h>
 #include <Windows.h>
 #include <commdlg.h>
-#include <ShlObj.h>
 #include <glfw/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <glfw/glfw3native.h>
@@ -33,7 +33,7 @@ namespace BHive
 		}
 	}
 
-	Platform::FileInfo Platform::OpenFile(const char *filter)
+	Platform::FileInfo Platform::OpenFile(const char *filter, const char *title)
 	{
 		OPENFILENAMEA ofn;
 		CHAR szFile[260] = {0};
@@ -42,6 +42,7 @@ namespace BHive
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow *)Application::Get().GetWindow().GetNative());
 		ofn.lpstrFile = szFile;
+		ofn.lpstrTitle = title;
 		ofn.nMaxFile = sizeof(szFile);
 		if (GetCurrentDirectoryA(256, currentDir))
 			ofn.lpstrInitialDir = currentDir;
@@ -55,7 +56,7 @@ namespace BHive
 		return {""};
 	}
 
-	Platform::FileInfo Platform::SaveFile(const char *filter)
+	Platform::FileInfo Platform::SaveFile(const char *filter, const char *title)
 	{
 		OPENFILENAMEA ofn;
 		CHAR szFile[260] = {0};
@@ -64,6 +65,7 @@ namespace BHive
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow *)Application::Get().GetWindow().GetNative());
 		ofn.lpstrFile = szFile;
+		ofn.lpstrTitle = title;
 		ofn.nMaxFile = sizeof(szFile);
 		if (GetCurrentDirectoryA(256, currentDir))
 			ofn.lpstrInitialDir = currentDir;

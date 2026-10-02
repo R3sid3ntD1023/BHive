@@ -19,36 +19,33 @@ namespace BHive
 
 	Ref<Asset> EditorAssetManager::GetAsset(UUID handle)
 	{
-		Ref<Asset> asset;
 
 		if (!IsAssetHandleValid(handle))
 			return nullptr;
 
 		if (mMemoryAssets.contains(handle))
 		{
-			asset = mMemoryAssets.at(handle);
+			return mMemoryAssets.at(handle);
 		}
 		else
 		{
 			if (IsAssetLoaded(handle))
 			{
-				asset = mLoadedAssets.at(handle);
+				return mLoadedAssets.at(handle);
 			}
 			else
 			{
 				const FAssetMetaData &metadata = GetMetaData(handle);
 
-				if (auto asset = mAssetSerializer.Import(GetMetaDataPath(metadata)))
+				if (auto asset = mAssetSerializer.Import(GetAssetPath(metadata.Name)))
 				{
-					LOG_ERROR("Failed to load asset");
-					return asset;
+					return mLoadedAssets[handle] = asset;
 				}
-
-				mLoadedAssets[handle] = asset;
 			}
 		}
 
-		return asset;
+		LOG_ERROR("Failed to load asset {}", handle.ToString());
+		return nullptr;
 	}
 
 	bool EditorAssetManager::IsAssetHandleValid(UUID handle) const
@@ -76,7 +73,7 @@ namespace BHive
 		auto name = importPath.stem().string();
 		auto ext = importPath.extension().string();
 
-		if (auto handle = GetHandle(importPath))
+		if (auto handle = GetHandle(sourcePath))
 		{
 			return handle;
 		}
@@ -260,12 +257,15 @@ namespace BHive
 
 	void EditorAssetManager::Deserialize()
 	{
+		mAssetRegistry.clear();
+		mPathToHandle.clear();
+
+		auto directory = GetDirectory();
+		if (!std::filesystem::exists(directory))
+			return;
+
 		try
 		{
-			auto directory = GetDirectory();
-			if (!std::filesystem::exists(directory))
-				return;
-
 			for (auto &entry : std::filesystem::recursive_directory_iterator(directory))
 			{
 				const auto &path = entry.path();
@@ -280,7 +280,7 @@ namespace BHive
 				ar(metaData);
 
 				mAssetRegistry.emplace(metaData.Handle, metaData);
-				mPathToHandle.emplace(GetAssetPath(metaData.Name), metaData.Handle);
+				mPathToHandle.emplace(metaData.SourcePath, metaData.Handle);
 			}
 
 			for (auto &[handle, metaData] : mAssetRegistry)

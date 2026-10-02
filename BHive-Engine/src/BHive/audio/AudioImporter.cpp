@@ -7,26 +7,6 @@
 
 namespace BHive
 {
-	void WaveLoggerCallback(WAVE::Logger::LogLevel level, const char *message)
-	{
-		switch (level)
-		{
-		case WAVE::Logger::info:
-			// LOG_INFO(message);
-			break;
-		case WAVE::Logger::trace:
-			// LOG_TRACE(message);
-			break;
-		case WAVE::Logger::warn:
-			LOG_WARN(message);
-			break;
-		case WAVE::Logger::error:
-			LOG_ERROR(message);
-			break;
-		default:
-			break;
-		}
-	}
 
 	DecodedAudio ImportVorbis(const std::filesystem::path &path)
 	{
@@ -82,20 +62,39 @@ namespace BHive
 
 	DecodedAudio ImportWave(const std::filesystem::path &path)
 	{
-		WAVE::Logger::SetCallback(WaveLoggerCallback);
+		waveparser::Parser parser(path.string().c_str());
+		waveparser::Wave wave{};
 
-		try
+		if (!parser.Parse(wave))
 		{
-			WAVE::Parser parser(path.string().c_str());
-			WAVE::wave_t wave{};
+			return {};
+		}
 
-			if (!parser.parse(wave))
+		if (wave.GetAudioFormat() != 1)
+		{
+			LOG_ERROR("unsupported WAV encoding: expected PCM");
+			return {};
+		}
+
+		ALenum format = 0;
+		switch (wave.Fmt.BitsPerSample)
+		{
+		case 8:
+			switch (wave.GetNumChannels())
 			{
+			case 1:
+				format = AL_FORMAT_MONO8;
+				break;
+			case 2:
+				format = AL_FORMAT_STEREO8;
+				break;
+			default:
+				LOG_ERROR("unsupported WAV channel count: {}", wave.GetNumChannels());
 				return {};
 			}
-
-			auto format = 0;
-			switch (wave.fmt.num_channels)
+			break;
+		case 16:
+			switch (wave.GetNumChannels())
 			{
 			case 1:
 				format = AL_FORMAT_MONO16;
@@ -104,37 +103,51 @@ namespace BHive
 				format = AL_FORMAT_STEREO16;
 				break;
 			default:
-				break;
+				LOG_ERROR("unsupported WAV channel count: {}", wave.GetNumChannels());
+				return {};
 			}
-
-			FAudioSpecification specification;
-			specification.mFormat = format;
-			specification.mNumSamples = wave.get_num_samples_per_channel();
-			specification.mSampleRate = wave.fmt.sample_rate;
-
-			if (wave.list.id3_chunk.has_tag("LOOP_START"))
-			{
-				auto value = wave.list.id3_chunk.get_tag<WAVE::id3_Frame_TXXX>("LOOP_START")->Value;
-				specification.mStartLoop = stoi(value);
-			}
-			if (wave.list.id3_chunk.has_tag("LOOP_END"))
-			{
-				auto value = wave.list.id3_chunk.get_tag<WAVE::id3_Frame_TXXX>("LOOP_END")->Value;
-				specification.mEndLoop = stoi(value);
-			}
-
-			DecodedAudio decoded{};
-			decoded.Specification = specification;
-			decoded.Data.Allocate(wave.get_samples(), (size_t)wave.get_buffer_size());
-
-			return decoded;
+			break;
+		default:
+			LOG_ERROR("unsupported WAV bit depth: {}", wave.Fmt.BitsPerSample);
+			return {};
 		}
-		catch (const std::runtime_error &e)
+
+		FAudioSpecification specification{};
+		specification.mFormat = format;
+		specification.mNumSamples = wave.GetNumSamples();
+		specification.mSampleRate = wave.GetSampleRate();
+
+		auto frameCount = wave.GetNumSamplesPerChannel();
+
+		auto loopStartTag = wave.Id3Chunk.GetTXXXByDescription("LOOP_START");
+		auto loopEndTag = wave.Id3Chunk.GetTXXXByDescription("LOOP_END");
+
+		if (loopStartTag.size())
 		{
-			LOG_WARN("Exception: {}", e.what());
+			specification.mStartLoop = std::stoi(loopStartTag[0]->GetValue());
+		}
+		if (loopEndTag.size())
+		{
+			specification.mEndLoop = std::stoi(loopEndTag[0]->GetValue());
+		}
+		if (specification.mStartLoop && specification.mEndLoop)
+		{
+			const auto loopStart = *specification.mStartLoop;
+			const auto loopEnd = *specification.mEndLoop;
+			if (loopStart < 0 || loopEnd <= loopStart || static_cast<size_t>(loopEnd) > frameCount)
+			{
+				LOG_ERROR("invalid WAV loop points: {} to {} for {} frames", loopStart, loopEnd, frameCount);
+				return {};
+			}
 		}
 
-		return {};
+		DecodedAudio decoded{};
+		decoded.Specification = specification;
+		auto &data = wave.GetData();
+		const short *dataPtr = reinterpret_cast<const short *>(data.data());
+		decoded.Data.Allocate(dataPtr, data.size());
+
+		return decoded;
 	}
 
 	DecodedAudio AudioImporter::Import(const std::filesystem::path &path)

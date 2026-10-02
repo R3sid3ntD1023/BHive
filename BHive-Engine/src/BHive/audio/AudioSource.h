@@ -13,23 +13,39 @@ namespace BHive
 	{
 	public:
 		AudioSource() = default;
+
 		AudioSource(const MemoryBlock<int16_t> &data, const FAudioSpecification &specs = {});
+
 		~AudioSource();
 
 		void Play();
+
 		void Stop();
+
 		void Pause();
+
 		void SetLooping(bool loop);
+
 		void SetPosition(float x, float y, float z);
+
 		void SetPitch(float pitch);
+
 		void SetSpatial(bool spatial);
+
 		void SetVolume(float gain);
 
 		bool IsPlaying() const { return mIsPlaying; }
+
 		float GetLengthSeconds() const { return mLength; }
+
+		AudioTime GetPlaybackPosition() const;
+
 		AudioTime GetLength() const { return mLength; }
+
 		float GetVolume() const { return mGain; }
+
 		float GetPitch() const { return mPitch; }
+
 		bool IsLooping() const { return mIsLooping; }
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
@@ -43,15 +59,23 @@ namespace BHive
 
 	private:
 		uint32_t mAudioID{0};
+
 		uint32_t mSourceID{0};
 
 		bool mIsPlaying{false};
+
 		float mPosition[3] = {0, 0, 0};
+
 		float mGain = 1.0f;
+
 		float mPitch = 1.0f;
+
 		bool mIsSpatial{false};
+
 		bool mIsLooping{false};
+
 		float mLength{0.0f};
+
 		FAudioSpecification mSpecification;
 
 		MemoryBlock<int16_t> mBuffer;

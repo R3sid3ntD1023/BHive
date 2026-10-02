@@ -9,6 +9,8 @@
 
 namespace BHive
 {
+	class AudioSource;
+
 	class WorldLayer : public Layer
 	{
 	public:
@@ -39,5 +41,6 @@ namespace BHive
 		FontPtr mFont;
 
 		EditorAssetManager mAssetManager{"Assets"};
+		struct AudioComponent *mAudioComponent;
 	};
 } // namespace BHive

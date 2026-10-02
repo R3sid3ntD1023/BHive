@@ -23,9 +23,9 @@ namespace BHive
 
 		static void ExecuteProcess(const char *process, char *args);
 
-		static FileInfo OpenFile(const char *filter);
+		static FileInfo OpenFile(const char *filter, const char *title = "Open File");
 
-		static FileInfo SaveFile(const char *filter);
+		static FileInfo SaveFile(const char *filter, const char *title = "Save File");
 
 		static FileInfo GetDirectory();
 

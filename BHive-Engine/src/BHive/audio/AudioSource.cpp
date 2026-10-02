@@ -5,6 +5,25 @@
 
 namespace BHive
 {
+	const char *GetOpenALErrorString(ALenum err)
+	{
+		switch (err)
+		{
+		case AL_NO_ERROR:
+			return "AL_NO_ERROR";
+		case AL_INVALID_NAME:
+			return "AL_INVALID_NAME";
+		case AL_INVALID_ENUM:
+			return "AL_INVALID_ENUM";
+		case AL_INVALID_VALUE:
+			return "AL_INVALID_VALUE";
+		case AL_INVALID_OPERATION:
+			return "AL_INVALID_OPERATION";
+		default:
+			return "UNKNOWN_ERROR";
+		}
+	}
+
 	AudioSource::AudioSource(const MemoryBlock<int16_t> &data, const FAudioSpecification &specs)
 		: mSpecification(specs),
 		  mLength((float)specs.mNumSamples / (float)specs.mSampleRate),
@@ -24,15 +43,32 @@ namespace BHive
 	{
 		alGenBuffers(1, &mAudioID);
 		alBufferData(mAudioID, mSpecification.mFormat, mBuffer.GetData(), (ALsizei)mBuffer.GetSize(), mSpecification.mSampleRate);
+		auto err = alGetError();
+		ASSERT(err == AL_NO_ERROR, "{}", GetOpenALErrorString(err));
 
-		if (mSpecification.mStartLoop.has_value() && mSpecification.mEndLoop.has_value())
+		bool hasLoopPoints = mSpecification.mStartLoop.has_value() && mSpecification.mEndLoop.has_value();
+		if (hasLoopPoints)
 		{
-			int offsets[2] = {*mSpecification.mStartLoop, *mSpecification.mEndLoop};
+			ASSERT(alIsExtensionPresent("AL_SOFT_loop_points"));
+
+			int startLoop = *mSpecification.mStartLoop;
+			int endLoop = *mSpecification.mEndLoop;
+			int offsets[2] = {startLoop, endLoop};
 			alBufferiv(mAudioID, AL_LOOP_POINTS_SOFT, offsets);
+
+			err = alGetError();
+			ASSERT(err == AL_NO_ERROR, "{} - {} - {}", GetOpenALErrorString(err), offsets[0], offsets[1]);
 		}
 
 		alGenSources(1, &mSourceID);
 		alSourcei(mSourceID, AL_BUFFER, mAudioID);
+		err = alGetError();
+		ASSERT(err == AL_NO_ERROR, "{}", GetOpenALErrorString(err));
+
+		if (hasLoopPoints)
+		{
+			alSourcei(mSourceID, AL_LOOPING, AL_TRUE);
+		}
 
 		LOG_TRACE("length:{}, time:{}", GetLengthSeconds(), GetLength().to_string());
 	}
@@ -102,6 +138,13 @@ namespace BHive
 	{
 		mGain = gain;
 		alSourcef(mSourceID, AL_GAIN, gain);
+	}
+
+	AudioTime AudioSource::GetPlaybackPosition() const
+	{
+		float seconds;
+		alGetSourcef(mSourceID, AL_SEC_OFFSET, &seconds);
+		return seconds;
 	}
 
 	void AudioSource::Save(cereal::BinaryOutputArchive &ar) const
