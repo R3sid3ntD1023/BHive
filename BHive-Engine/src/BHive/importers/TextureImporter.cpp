@@ -50,7 +50,7 @@ namespace BHive
 		}
 	} // namespace TextureUtils
 
-	bool TextureLoader::LoadImageData(const std::filesystem::path &file, int32_t &w, int32_t &h, int32_t &c, ByteBuffer &buf, int32_t flip)
+	bool TextureImporter::LoadImageData(const std::filesystem::path &file, int32_t &w, int32_t &h, int32_t &c, ByteBuffer &buf, int32_t flip)
 	{
 		auto path_str = file.string();
 		bool is_hdr = stbi_is_hdr(path_str.c_str());
@@ -80,7 +80,7 @@ namespace BHive
 		return true;
 	}
 
-	DecodedTexture TextureLoader::CreateDecodedTexture(const std::string &name, const glm::uvec3 &size, const ByteBuffer &buf, bool hdr)
+	DecodedTexture TextureImporter::CreateDecodedTexture(const std::string &name, const glm::uvec3 &size, const ByteBuffer &buf, bool hdr)
 	{
 		uint32_t c = size.z;
 
@@ -101,7 +101,7 @@ namespace BHive
 		return decoded;
 	}
 
-	DecodedTexture TextureLoader::FromFile(const std::filesystem::path &file)
+	DecodedTexture TextureImporter::FromFile(const std::filesystem::path &file)
 	{
 		int w = 0, h = 0, c_in = 0;
 		const int forced_channels = 4;
@@ -138,7 +138,7 @@ namespace BHive
 		return CreateDecodedTexture(file.stem().string(), {w, h, c_out}, data, is_hdr);
 	}
 
-	DecodedTexture TextureLoader::LoadFromMemory(const uint8_t *data, int length)
+	DecodedTexture TextureImporter::LoadFromMemory(const uint8_t *data, int length)
 	{
 		int w = 0, h = 0, c_in = 0;
 		int c_out = 4, forced_channels = 4;
@@ -171,7 +171,7 @@ namespace BHive
 		return CreateDecodedTexture("Memory Created", {w, h, c_out}, outData, is_hdr);
 	}
 
-	void TextureLoader::Resize(DecodedTexture &decodedTexture, const glm::uvec2 &requestedSize)
+	void TextureImporter::Resize(DecodedTexture &decodedTexture, const glm::uvec2 &requestedSize)
 	{
 		auto w = requestedSize.x;
 		auto h = requestedSize.y;

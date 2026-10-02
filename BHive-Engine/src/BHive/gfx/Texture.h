@@ -1,11 +1,11 @@
 #pragma once
 
+#include "NativeHandle.h"
+#include "ResourceID.h"
+#include "TextureSpecification.h"
 #include "asset/Asset.h"
 #include "core/Buffer.h"
 #include "core/Core.h"
-#include "TextureSpecification.h"
-#include "NativeHandle.h"
-#include "ResourceID.h"
 #include "gfx/registries/Handles.h"
 
 namespace BHive
@@ -30,43 +30,54 @@ namespace BHive
 	class Texture : public Asset
 	{
 	public:
-		virtual ~Texture() { mResourceID.Release(); }
+		virtual ~Texture() = default; //{ mResourceID.Release(); }
 
-		virtual glm::uvec2 GetSize() const = 0;
+		virtual glm::uvec2 GetSize() const { return {0, 0}; };
 
 		float GetAspectRatio() const { return (float)GetSize().x / (float)GetSize().y; }
 
-		virtual void SetData(const FTextureUploadInfo &info) = 0;
+		virtual void SetData(const FTextureUploadInfo &info) {};
 
 		virtual const FTextureCreateInfo &GetInfo() const = 0;
 
-		virtual NativeHandle GetNativeHandle() const = 0;
-
-		EngineResourceID GetResourceID() const { return mResourceID; }
-
 		virtual void DebugPrintState() {};
 
-		REFLECTABLEV(Asset)
+		virtual uint32_t GetTextureID() const = 0;
 
-	private:
-		EngineResourceID mResourceID{};
+		REFLECTABLEV(Asset)
 	};
 
 	class BHIVE_API Texture2D : public Texture
 	{
 	public:
-		virtual ~Texture2D() = default;
+		Texture2D() = default;
 
-		virtual const FTextureCreateInfo &GetInfo() const = 0;
+		Texture2D(const glm::uvec2 &size, const FTextureCreateInfo &createInfo, const ByteBuffer &data = {});
 
-		virtual void SetInfo(const FTextureCreateInfo &specs) = 0;
+		~Texture2D();
 
-		virtual const ByteBuffer &GetBuffer() const = 0;
+		void SetData(const FTextureUploadInfo &info) override;
+
+		const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
+
+		void SetInfo(const FTextureCreateInfo &specs) { mCreateInfo = specs; }
+
+		const ByteBuffer &GetBuffer() const { return mBuffer; }
+
+		uint32_t GetTextureID() const override { return mTextureID; }
 
 		REFLECTABLEV(Texture)
 
 	private:
 		int32_t mLayerIndex = -1; // used by texture2d array
+
+		ByteBuffer mBuffer;
+
+		FTextureCreateInfo mCreateInfo;
+
+		glm::uvec2 mSize;
+
+		int32_t mTextureID = -1;
 
 		friend class Texture2DArray;
 	};
@@ -74,7 +85,15 @@ namespace BHive
 	class BHIVE_API Texture2DArray : public Texture
 	{
 	public:
-		virtual ~Texture2DArray() = default;
+		Texture2DArray(const glm::uvec2 &size, const FTextureCreateInfo &specification);
+
+		~Texture2DArray();
+
+		glm::uvec2 GetSize() const override { return mSize; }
+
+		void SetData(const FTextureUploadInfo &info) override;
+
+		const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
 
 		void SetStartLayer(uint32_t layer) { mStartLayer = layer; }
 
@@ -82,32 +101,66 @@ namespace BHive
 
 		TexturePtr GetTexture(uint32_t index) const;
 
+		uint32_t GetTextureID() const override { return mTextureID; }
+
 		void Clear();
 
 	private:
 		uint32_t mCurrentLayer = 0;
 		uint32_t mStartLayer = 0;
+		glm::uvec2 mSize;
+		FTextureCreateInfo mCreateInfo;
+		int32_t mTextureID = -1;
 		std::vector<TexturePtr> mStoredTextures;
 	};
 
 	class BHIVE_API Texture3D : public Texture
 	{
 	public:
-		virtual ~Texture3D() = default;
+		Texture3D(const glm::uvec3 &size, const FTextureCreateInfo &createInfo, const ByteBuffer &data);
 
-		static Ref<Texture3D> Create(const glm::uvec3 &size, const FTextureCreateInfo &createInfo, const ByteBuffer &data = {});
+		~Texture3D();
+
+		uint32_t GetTextureID() const override { return mTextureID; }
+
+		const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
+
+	private:
+		FTextureCreateInfo mCreateInfo;
+		int32_t mTextureID = -1;
 	};
 
 	class BHIVE_API TextureCube : public Texture
 	{
 	public:
-		virtual ~TextureCube() = default;
+		TextureCube(uint32_t size, const FTextureCreateInfo &createInfo);
+
+		~TextureCube();
+
+		uint32_t GetTextureID() const override { return mTextureID; }
+
+		const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
+
+	private:
+		FTextureCreateInfo mCreateInfo;
+		int32_t mTextureID = -1;
 	};
 
 	class BHIVE_API TextureCubeArray : public Texture
 	{
 	public:
-		virtual ~TextureCubeArray() = default;
+		TextureCubeArray(uint32_t size, const FTextureCreateInfo &createInfo);
+
+		~TextureCubeArray();
+
+		uint32_t GetTextureID() const override { return mTextureID; }
+
+		const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
+
+	private:
+		glm::uvec2 mSize;
+		FTextureCreateInfo mCreateInfo;
+		int32_t mTextureID = -1;
 	};
 
 } // namespace BHive

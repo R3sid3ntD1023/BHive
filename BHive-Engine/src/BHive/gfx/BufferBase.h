@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/Core.h"
 #include "NativeHandle.h"
+#include "core/Core.h"
 #include "gfx/Enumerations.h"
 
 namespace BHive
@@ -16,9 +16,7 @@ namespace BHive
 
 		virtual void Clear() = 0;
 
-		virtual NativeHandle GetNativeHandle() const = 0;
-
-		virtual bool NeedsBarrier() const { return false; }
+		virtual int32_t GetBufferID() const = 0;
 
 		template <typename T>
 		void TSetData(const T &data)

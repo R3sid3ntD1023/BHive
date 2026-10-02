@@ -126,14 +126,18 @@ namespace BHive
 		auto layer = range.BaseArrayLayer;
 		auto mip = range.BaseMipLevel;
 
+		VulkanRendererAPI *api = VulkanRendererAPI::GetInstance();
+
 		std::vector<vk::RenderingAttachmentInfo> color_infos;
 		for (size_t i = 0; i < mColorAttachments.size(); i++)
 		{
 
 			auto attachment = mColorAttachments[i].As<Texture>();
 			auto &spec = mColorAttachmentSpecifications[i];
-			auto native = attachment->GetNativeHandle().As<VulkanImage>();
-			auto view = native->GetView(layer, mip);
+			auto textureID = attachment->GetTextureID();
+			auto vkImage = api->GetTexture(textureID);
+
+			auto view = vkImage->GetView(layer, mip);
 
 			auto colorInfo = vk::RenderingAttachmentInfo(
 				view, vk::ImageLayout::eColorAttachmentOptimal, {}, {}, vk::ImageLayout::eColorAttachmentOptimal, info.ColorLoadOp, info.ColorStoreOp, info.ClearColor
@@ -148,8 +152,9 @@ namespace BHive
 		if (mDepthAttachment)
 		{
 			auto &spec = mDepthSpecification;
-			auto native = mDepthAttachment.As<Texture>()->GetNativeHandle().As<VulkanImage>();
-			auto view = native->GetView(layer, mip);
+			auto textureID = mDepthAttachment.As<Texture>()->GetTextureID();
+			auto vkImage = api->GetTexture(textureID);
+			auto view = vkImage->GetView(layer, mip);
 
 			depthInfo = vk::RenderingAttachmentInfo(
 				view,

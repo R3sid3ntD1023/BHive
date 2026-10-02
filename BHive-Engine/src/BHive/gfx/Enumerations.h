@@ -316,7 +316,9 @@ namespace BHive
 		Undefined = 0,
 		UniformBuffer = BIT(0),
 		StorageBuffer = BIT(1),
-		IndirectBuffer = BIT(2)
+		IndirectBuffer = BIT(2),
+		IndexBuffer = BIT(3),
+		VertexBuffer = BIT(4)
 	};
 
 	ENABLE_BITMASK_OPERATORS(EBufferType)

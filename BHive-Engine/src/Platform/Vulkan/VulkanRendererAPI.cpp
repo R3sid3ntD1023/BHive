@@ -1,7 +1,7 @@
 #include "VulkanRendererAPI.h"
 #include "VulkanBackend.h"
+#include "VulkanConversions.h"
 #include "VulkanFramebuffer.h"
-#include "VulkanImage.h"
 #include "VulkanInterpreter.h"
 #include "VulkanQuery.h"
 #include "VulkanSwapChain.h"
@@ -39,6 +39,18 @@ namespace BHive
 			}
 		}
 	} // namespace utils
+
+	VulkanRendererAPI *VulkanRendererAPI::sInstance = nullptr;
+
+	VulkanRendererAPI::VulkanRendererAPI()
+	{
+		sInstance = this;
+	}
+
+	VulkanRendererAPI::~VulkanRendererAPI()
+	{
+		sInstance = nullptr;
+	}
 
 	void VulkanRendererAPI::Init()
 	{
@@ -87,6 +99,341 @@ namespace BHive
 		mCompletedFrame = 0;
 
 		mSubmittedGraphs.clear();
+	}
+
+	void VulkanRendererAPI::CreateTexture2D(int32_t &id, uint32_t x, uint32_t y, const FTextureCreateInfo &info)
+	{
+		auto format = ToVkFormat(info.Format);
+		auto levels = info.MipLevels;
+		auto layers = info.ArrayLayers;
+		auto extent = vk::Extent3D(x, y, 1);
+		auto usage = InferImageUsage(info.Roles);
+		auto aspect = ToVkAspect(info.Aspect);
+		auto magFilter = ToVkFilter(info.MagFilter);
+		auto minFilter = ToVkFilter(info.MinFilter);
+		auto addressMode = ToVkWrap(info.WrapMode);
+		auto compare_enabled = info.CompareOp.has_value();
+		auto compare_op = compare_enabled ? ToVkCompare(info.CompareOp.value()) : vk::CompareOp::eAlways;
+		auto range = vk::ImageSubresourceRange(aspect, 0, levels, 0, layers);
+
+		vk::ImageCreateInfo imgInfo(
+			{}, vk::ImageType::e2D, format, extent, levels, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage, vk::SharingMode::eExclusive, 0
+		);
+
+		vk::ImageViewCreateInfo viewInfo({}, VK_NULL_HANDLE, vk::ImageViewType::e2D, format, {}, range);
+
+		vk::SamplerCreateInfo smpInfo(
+			{},
+			magFilter,
+			minFilter,
+			vk::SamplerMipmapMode::eLinear,
+			addressMode,
+			addressMode,
+			addressMode,
+			0.0f,
+			0u,
+			1.0f,
+			compare_enabled,
+			compare_op,
+			0.0f,
+			float(levels - 1),
+			ToVkBorderColor(info.BorderColor),
+			VK_FALSE
+		);
+
+		id = CreateTexture(imgInfo, viewInfo, smpInfo, info.DebugName.c_str());
+	}
+
+	void VulkanRendererAPI::CreateTexture2DArray(int32_t &id, uint32_t x, uint32_t y, const FTextureCreateInfo &info)
+	{
+		auto format = ToVkFormat(info.Format);
+		auto levels = info.MipLevels;
+		auto layers = info.ArrayLayers;
+		auto extent = vk::Extent3D(x, y, 1);
+		auto usage = InferImageUsage(info.Roles);
+		auto aspect = ToVkAspect(info.Aspect);
+		auto magFilter = ToVkFilter(info.MagFilter);
+		auto minFilter = ToVkFilter(info.MinFilter);
+		auto addressMode = ToVkWrap(info.WrapMode);
+		auto compare_enabled = info.CompareOp.has_value();
+		auto compare_op = compare_enabled ? ToVkCompare(info.CompareOp.value()) : vk::CompareOp::eAlways;
+		auto range = vk::ImageSubresourceRange(aspect, 0, levels, 0, layers);
+
+		vk::ImageCreateInfo imgInfo(
+			{}, vk::ImageType::e2D, format, extent, levels, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage, vk::SharingMode::eExclusive, 0
+		);
+
+		vk::ImageViewCreateInfo viewInfo({}, VK_NULL_HANDLE, vk::ImageViewType::e2DArray, format, {}, range);
+
+		vk::SamplerCreateInfo smpInfo(
+			{},
+			magFilter,
+			minFilter,
+			vk::SamplerMipmapMode::eLinear,
+			addressMode,
+			addressMode,
+			addressMode,
+			0.0f,
+			0u,
+			1.0f,
+			compare_enabled,
+			compare_op,
+			0.0f,
+			float(levels - 1),
+			ToVkBorderColor(info.BorderColor),
+			VK_FALSE
+		);
+
+		id = CreateTexture(imgInfo, viewInfo, smpInfo, info.DebugName.c_str());
+	}
+
+	void VulkanRendererAPI::CreateTextureCube(int32_t &id, uint32_t s, const FTextureCreateInfo &info)
+	{
+		auto format = ToVkFormat(info.Format);
+		auto levels = info.MipLevels;
+		auto layers = 6;
+		auto extent = vk::Extent3D(s, s, 1);
+		auto usage = InferImageUsage(info.Roles);
+		auto aspect = ToVkAspect(info.Aspect);
+		auto magFilter = ToVkFilter(info.MagFilter);
+		auto minFilter = ToVkFilter(info.MinFilter);
+		auto addressMode = ToVkWrap(info.WrapMode);
+		auto compare_enabled = info.CompareOp.has_value();
+		auto compare_op = compare_enabled ? ToVkCompare(info.CompareOp.value()) : vk::CompareOp::eAlways;
+
+		vk::ImageCreateInfo imgInfo(
+			vk::ImageCreateFlagBits::eCubeCompatible,
+			vk::ImageType::e2D,
+			format,
+			extent,
+			levels,
+			layers,
+			vk::SampleCountFlagBits::e1,
+			vk::ImageTiling::eOptimal,
+			usage,
+			vk::SharingMode::eExclusive,
+			0
+		);
+
+		auto range = vk::ImageSubresourceRange(aspect, 0, levels, 0, layers);
+		vk::ImageViewCreateInfo viewInfo({}, VK_NULL_HANDLE, vk::ImageViewType::eCube, format, {}, range);
+
+		vk::SamplerCreateInfo smpInfo(
+			{},
+			magFilter,
+			minFilter,
+			vk::SamplerMipmapMode::eLinear,
+			addressMode,
+			addressMode,
+			addressMode,
+			0.0f,
+			0u,
+			1.0f,
+			compare_enabled,
+			compare_op,
+			0.0f,
+			float(levels - 1),
+			ToVkBorderColor(info.BorderColor),
+			VK_FALSE
+		);
+
+		id = CreateTexture(imgInfo, viewInfo, smpInfo, info.DebugName.c_str());
+	}
+
+	void VulkanRendererAPI::CreateTextureCubeArray(int32_t &id, uint32_t s, const FTextureCreateInfo &info)
+	{
+		auto layers = info.ArrayLayers * 6;
+		auto format = ToVkFormat(info.Format);
+		auto levels = info.MipLevels;
+		auto extent = vk::Extent3D(s, s, 1);
+		auto usage = InferImageUsage(info.Roles);
+		auto aspect = ToVkAspect(info.Aspect);
+		auto range = vk::ImageSubresourceRange(aspect, 0, levels, 0, layers);
+		auto magFilter = ToVkFilter(info.MagFilter);
+		auto minFilter = ToVkFilter(info.MinFilter);
+		auto addressMode = ToVkWrap(info.WrapMode);
+		auto compare_enabled = info.CompareOp.has_value();
+		auto compare_op = compare_enabled ? ToVkCompare(info.CompareOp.value()) : vk::CompareOp::eAlways;
+
+		vk::ImageCreateInfo imgInfo(
+			vk::ImageCreateFlagBits::eCubeCompatible,
+			vk::ImageType::e2D,
+			format,
+			extent,
+			levels,
+			layers,
+			vk::SampleCountFlagBits::e1,
+			vk::ImageTiling::eOptimal,
+			usage,
+			vk::SharingMode::eExclusive,
+			0
+		);
+
+		vk::ImageViewCreateInfo viewInfo({}, VK_NULL_HANDLE, vk::ImageViewType::eCubeArray, format, {}, range);
+
+		vk::SamplerCreateInfo smpInfo(
+			{},
+			magFilter,
+			minFilter,
+			vk::SamplerMipmapMode::eLinear,
+			addressMode,
+			addressMode,
+			addressMode,
+			0.0f,
+			0u,
+			1.0f,
+			compare_enabled,
+			compare_op,
+			0.0f,
+			float(levels - 1),
+			ToVkBorderColor(info.BorderColor),
+			VK_FALSE
+		);
+		id = CreateTexture(imgInfo, viewInfo, smpInfo, info.DebugName.c_str());
+	}
+
+	void VulkanRendererAPI::CreateTexture3D(int32_t &id, uint32_t x, uint32_t y, uint32_t z, const FTextureCreateInfo &info)
+	{
+		auto format = ToVkFormat(info.Format);
+		auto levels = info.MipLevels;
+		auto layers = info.ArrayLayers;
+		auto extent = vk::Extent3D(x, y, z);
+		auto usage = InferImageUsage(info.Roles);
+		auto aspect = ToVkAspect(info.Aspect);
+		auto range = vk::ImageSubresourceRange(aspect, 0, levels, 0, layers);
+		auto magFilter = ToVkFilter(info.MagFilter);
+		auto minFilter = ToVkFilter(info.MinFilter);
+		auto addressMode = ToVkWrap(info.WrapMode);
+		auto compare_enabled = info.CompareOp.has_value();
+		auto compare_op = compare_enabled ? ToVkCompare(info.CompareOp.value()) : vk::CompareOp::eAlways;
+
+		vk::ImageCreateInfo imgInfo(
+			{}, vk::ImageType::e3D, format, extent, levels, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage, vk::SharingMode::eExclusive, 0
+		);
+
+		vk::ImageViewCreateInfo viewInfo({}, VK_NULL_HANDLE, vk::ImageViewType::e3D, format, {}, range);
+
+		vk::SamplerCreateInfo smpInfo(
+			{},
+			magFilter,
+			minFilter,
+			vk::SamplerMipmapMode::eLinear,
+			addressMode,
+			addressMode,
+			addressMode,
+			0.0f,
+			0u,
+			1.0f,
+			compare_enabled,
+			compare_op,
+			0.0f,
+			float(levels - 1),
+			ToVkBorderColor(info.BorderColor),
+			VK_FALSE
+		);
+		id = CreateTexture(imgInfo, viewInfo, smpInfo, info.DebugName.c_str());
+	}
+
+	void VulkanRendererAPI::DeleteTexture(int32_t &textureID)
+	{
+		if (textureID != -1 || textureID >= mTextures.size())
+		{
+			return;
+		}
+
+		mTextures[textureID] = VulkanImage();
+		mTextureFreeList.push(textureID);
+		textureID = -1;
+	}
+
+	void VulkanRendererAPI::SetTextureData(int32_t textureID, const void *data, size_t size, ImageCopyRegion region, ImageSubresourceRange range)
+	{
+		if (textureID >= mTextures.size() || textureID == -1)
+			return;
+
+		mTextures[textureID].Upload(data, size, region, range);
+	}
+
+	VulkanImage *VulkanRendererAPI::GetTexture(int32_t textureID)
+	{
+		if (textureID == -1 || textureID >= static_cast<int32_t>(mTextures.size()))
+			return nullptr;
+		return &mTextures.at(textureID);
+	}
+
+	int32_t
+	VulkanRendererAPI::CreateTexture(const vk::ImageCreateInfo &imgInfo, const vk::ImageViewCreateInfo &viewInfo, const vk::SamplerCreateInfo &smpInfo, const char *debugName)
+	{
+		int32_t textureID = -1;
+
+		if (!mTextureFreeList.empty())
+		{
+			auto textureID = mTextureFreeList.front();
+			mTextureFreeList.pop();
+			auto &image = mTextures.at(textureID);
+			image.Initialize(imgInfo, viewInfo, smpInfo);
+			image.SetDebugName(debugName);
+			return textureID;
+		}
+
+		auto &image = mTextures.emplace_back();
+		image.Initialize(imgInfo, viewInfo, smpInfo);
+		image.SetDebugName(debugName);
+
+		textureID = static_cast<uint32_t>(mTextures.size() - 1);
+		return textureID;
+	}
+
+	void VulkanRendererAPI::CreateBuffer(int32_t &id, EBufferType type, EBufferLifetime lifeTime, size_t size, const char *debugName)
+	{
+		if (!mBufferFreeList.empty())
+		{
+			id = mBufferFreeList.front();
+			mBufferFreeList.pop();
+			auto &buffer = mBuffers.at(id);
+			buffer.Initialize(size, ToVkBufferType(type), lifeTime);
+			return;
+		}
+
+		auto &buffer = mBuffers.emplace_back();
+		buffer.Initialize(size, ToVkBufferType(type), lifeTime);
+		id = static_cast<uint32_t>(mBuffers.size() - 1);
+	}
+
+	void VulkanRendererAPI::DeleteBuffer(int32_t &bufferID)
+	{
+		if (bufferID != -1 && bufferID < static_cast<int32_t>(mBuffers.size()))
+		{
+			mBuffers[bufferID] = VulkanBuffer();
+			mBufferFreeList.push(bufferID);
+			bufferID = -1;
+		}
+	}
+
+	void VulkanRendererAPI::SetBufferData(int32_t bufferID, const void *data, size_t size, uint32_t offset)
+	{
+		if (!data || size == 0)
+			return;
+
+		if (bufferID == -1 || bufferID >= static_cast<int32_t>(mBuffers.size()))
+			return;
+
+		mBuffers[bufferID].Upload(data, size, offset);
+	}
+
+	void VulkanRendererAPI::ClearBuffer(int32_t bufferID)
+	{
+		if (bufferID == -1 || bufferID >= static_cast<int32_t>(mBuffers.size()))
+			return;
+
+		mBuffers[bufferID].ClearData();
+	}
+
+	VulkanBuffer *VulkanRendererAPI::GetBuffer(int32_t bufferID)
+	{
+		if (bufferID == -1 || bufferID >= static_cast<int32_t>(mBuffers.size()))
+			return nullptr;
+		return &mBuffers.at(bufferID);
 	}
 
 	void VulkanRendererAPI::ProcessDeletionQueue(uint32_t frame)
@@ -209,15 +556,21 @@ namespace BHive
 				continue;
 
 			auto tex = imgInfo.Texture.As<Texture>();
-			auto name = tex->GetInfo().DebugName;
-			auto vkImg = tex->GetNativeHandle().As<VulkanImage>();
+			auto textureID = tex->GetTextureID();
 
-			ImageState oldState = vkImg->GetState(imgInfo.Range.BaseMipLevel, imgInfo.Range.BaseArrayLayer);
+			if (textureID == -1)
+			{
+				continue;
+			}
+
+			auto vkImage = GetTexture(textureID);
+
+			ImageState oldState = vkImage->GetState(imgInfo.Range.BaseMipLevel, imgInfo.Range.BaseArrayLayer);
 			ImageState newState = ImageState::ToImageState(imgInfo.Access);
 
 			if (oldState.IsUndefined || oldState != newState)
 			{
-				vkImg->Transition(cmd, newState, imgInfo.Range);
+				vkImage->Transition(cmd, newState, imgInfo.Range);
 			}
 		}
 	}

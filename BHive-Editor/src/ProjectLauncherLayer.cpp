@@ -36,7 +36,7 @@ namespace BHive
 		{
 			auto snapshot_path = path.parent_path() / "snapshot.png";
 			if (std::filesystem::exists(snapshot_path))
-				mSnapshots[name] = TextureLoader::Import(snapshot_path);
+				mSnapshots[name] = TextureImporter::Import(snapshot_path);
 		}
 	}
 

@@ -11,7 +11,7 @@ namespace BHive
 	{
 		~VulkanBuffer();
 
-		void Init(size_t size, const void *data, vk::BufferUsageFlags usage, EBufferLifetime lifeTime);
+		void Initialize(size_t size, vk::BufferUsageFlags usage, EBufferLifetime lifeTime);
 
 		GPUBufferResourceHandle GetNative(uint32_t frame = 0) const;
 
@@ -19,11 +19,9 @@ namespace BHive
 
 		void ClearData();
 
-		bool NeedsBarrier() const { return mLifeTime == EBufferLifetime::Static; }
-
 	private:
-		void InitStatic(size_t size, const void *data, vk::BufferUsageFlags usage);
-		void InitDynamic(size_t size, const void *data, vk::BufferUsageFlags usage);
+		void InitStatic(size_t size, vk::BufferUsageFlags usage);
+		void InitDynamic(size_t size, vk::BufferUsageFlags usage);
 
 	private:
 		std::array<GPUBufferResourceHandle, MAX_FRAMES_IN_FLIGHT> mBuffers;

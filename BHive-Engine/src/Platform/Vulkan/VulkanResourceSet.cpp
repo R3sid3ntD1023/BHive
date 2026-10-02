@@ -1,11 +1,10 @@
 #include "VulkanResourceSet.h"
 #include "VulkanBackend.h"
-#include "VulkanBuffers.h"
+#include "VulkanBuffer.h"
 #include "VulkanConversions.h"
 #include "VulkanRendererAPI.h"
 #include "VulkanShader.h"
 #include "gfx/BufferBase.h"
-#include "gfx/RenderCommand.h"
 #include "gfx/Texture.h"
 
 namespace BHive
@@ -81,9 +80,10 @@ namespace BHive
 	{
 		ASSERT(bindInfo.Buffer)
 
-		auto handle = bindInfo.Buffer.As<BufferBase>()->GetNativeHandle().As<VulkanBuffer>();
-		auto buf = handle->GetNative(frame);
-		return vk::DescriptorBufferInfo(buf->Buffer, 0, buf->Size);
+		auto bufferID = bindInfo.Buffer.As<BufferBase>()->GetBufferID();
+		auto buf = VulkanRendererAPI::GetInstance()->GetBuffer(bufferID);
+		auto buffer = buf->GetNative(frame);
+		return vk::DescriptorBufferInfo(buffer->Buffer, 0, buffer->Size);
 	}
 
 	vk::DescriptorImageInfo VulkanResourceSet::BuildImageInfo(const FBindingInfo &bindInfo, uint32_t mip) const
@@ -92,7 +92,12 @@ namespace BHive
 
 		const uint32_t layer = 0;
 
-		const auto img = bindInfo.Texture.As<Texture>()->GetNativeHandle().As<VulkanImage>();
+		const auto textureID = bindInfo.Texture.As<Texture>()->GetTextureID();
+		if (textureID == -1)
+			return vk::DescriptorImageInfo();
+
+		const auto img = VulkanRendererAPI::GetInstance()->GetTexture(textureID);
+
 		ASSERT(img);
 
 		auto smp = img->GetSampler();

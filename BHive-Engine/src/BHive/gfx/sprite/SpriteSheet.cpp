@@ -1,6 +1,6 @@
-#include "gfx/Texture.h"
-#include "Sprite.h"
 #include "SpriteSheet.h"
+#include "Sprite.h"
+#include "gfx/Texture.h"
 #include "gfx/factories/SpriteFactory.h"
 
 namespace BHive
@@ -25,8 +25,8 @@ namespace BHive
 			for (uint32_t r = 0; r < mGrid.Rows; r++)
 			{
 				FSpriteGenerator generator{{c, r}, mGrid.CellSize, {1, 1}};
-				SpritePtr sprite = SpriteFactory::Create(mSource, generator);
-				mSprites.emplace_back(sprite);
+				// SpritePtr sprite = SpriteFactory::Create(mSource, generator);
+				// mSprites.emplace_back(sprite);
 			}
 		}
 	}

@@ -23,11 +23,11 @@ namespace BHive
 				DecodedTexture decodedTex{};
 				if (texture.Source == EmbeddedTexture::External)
 				{
-					decodedTex = TextureLoader::FromFile(parent_path / texture.Path);
+					decodedTex = TextureImporter::FromFile(parent_path / texture.Path);
 				}
 				else
 				{
-					decodedTex = TextureLoader::LoadFromMemory(texture.EmbeddedData, texture.EmbeddedData.GetSize());
+					decodedTex = TextureImporter::LoadFromMemory(texture.EmbeddedData, texture.EmbeddedData.GetSize());
 				}
 
 				mLoadedTextures[hash] = TextureFactory::Create2D(decodedTex);

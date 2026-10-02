@@ -10,9 +10,9 @@ namespace BHive
 	{
 		static BufferPtr Create(size_t size, EBufferType type, EBufferLifetime lifetime = EBufferLifetime::Dynamic, const void *data = nullptr);
 
-		static IndexBufferPtr CreateIndexBuffer(const uint32_t count, EBufferLifetime lifetime = EBufferLifetime::Dynamic, const uint32_t *data = nullptr);
+		static IndexBufferPtr CreateIndexBuffer(uint32_t count, EBufferLifetime lifetime = EBufferLifetime::Dynamic, const uint32_t *data = nullptr);
 
-		static VertexBufferPtr CreateVertexBuffer(const uint64_t size, EBufferLifetime lifetime = EBufferLifetime::Dynamic, const void *data = nullptr);
+		static VertexBufferPtr CreateVertexBuffer(size_t size, EBufferLifetime lifetime = EBufferLifetime::Dynamic, const void *data = nullptr);
 	};
 
 	struct BHIVE_API VertexArrayFactory : public IResourceFactory<VertexArray>

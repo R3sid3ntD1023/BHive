@@ -1,11 +1,15 @@
 #include "FactoryRegistry.h"
 #include "factories/AudioFactory.h"
+#include "factories/SpriteFactory.h"
+#include "factories/TextureFactory.h"
 
 namespace BHive
 {
 	FactoryRegistry::FactoryRegistry()
 	{
 		Register(Register<AudioFactory>(), {".ogg", ".wav"});
+		Register(Register<TextureFactory>(), {".png", ".jpg", ".jpeg"});
+		Register(Register<SpriteFactory>(), {".sprite"});
 	}
 
 	void FactoryRegistry::Register(Factory *factory, std::initializer_list<std::string> exts)
@@ -16,7 +20,7 @@ namespace BHive
 		}
 	}
 
-	Factory *FactoryRegistry::Get(const rttr::type &type) const
+	Factory *FactoryRegistry::Find(const rttr::type &type) const
 	{
 		if (mTypeMap.contains(type.get_id()))
 		{
@@ -26,7 +30,7 @@ namespace BHive
 		return nullptr;
 	}
 
-	Factory *FactoryRegistry::Get(std::string_view ext) const
+	Factory *FactoryRegistry::Find(std::string_view ext) const
 	{
 		if (mExtensionMap.contains(ext.data()))
 		{

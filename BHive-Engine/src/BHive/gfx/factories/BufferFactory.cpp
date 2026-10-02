@@ -1,50 +1,24 @@
 #include "BufferFactory.h"
-#include "Platform/Vulkan/VulkanBuffers.h"
 #include "Platform/Vulkan/VulkanVertexArray.h"
+#include "gfx/Buffers.h"
 #include "gfx/RenderCommand.h"
+#include "gfx/VertexArray.h"
 
 namespace BHive
 {
-	IndexBufferPtr BufferFactory::CreateIndexBuffer(const uint32_t count, EBufferLifetime lifeTime, const uint32_t *data)
+	IndexBufferPtr BufferFactory::CreateIndexBuffer(uint32_t count, EBufferLifetime lifeTime, const uint32_t *data)
 	{
-		switch (RenderCommand::GetAPI())
-		{
-		case BHive::RendererAPI::Opengl:
-			break;
-		case BHive::RendererAPI::Vulkan:
-			return CreateResource<VulkanIndexBuffer>(count, lifeTime, data);
-		}
-
-		ASSERT(false);
-		return {};
+		return CreateResource<IndexBuffer>(count * sizeof(uint32_t), lifeTime, data, count);
 	}
 
-	VertexBufferPtr BufferFactory::CreateVertexBuffer(const uint64_t size, EBufferLifetime lifeTime, const void *data)
+	VertexBufferPtr BufferFactory::CreateVertexBuffer(size_t size, EBufferLifetime lifeTime, const void *data)
 	{
-		switch (RenderCommand::GetAPI())
-		{
-		case BHive::RendererAPI::Opengl:
-			break;
-		case BHive::RendererAPI::Vulkan:
-			return CreateResource<VulkanVertexBuffer>(size, lifeTime, data);
-		}
-
-		ASSERT(false);
-		return {};
+		return CreateResource<VertexBuffer>(size, lifeTime, data, size);
 	}
 
 	BufferPtr BufferFactory::Create(size_t size, EBufferType usage, EBufferLifetime lifeTime, const void *data)
 	{
-		switch (RenderCommand::GetAPI())
-		{
-		case RendererAPI::Vulkan:
-			return CreateResource<VulkanGeneralBuffer>(size, usage, lifeTime, data);
-		default:
-			break;
-		}
-
-		ASSERT(false)
-		return {};
+		return CreateResource<GeneralBuffer>(size, usage, lifeTime, data, size);
 	}
 
 	VertexArrayPtr VertexArrayFactory::Create()

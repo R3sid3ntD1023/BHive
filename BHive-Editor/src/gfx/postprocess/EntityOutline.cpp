@@ -1,11 +1,11 @@
+#include "OutlineRenderPass.h"
 #include "gfx/Framebuffer.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/Shader.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
-#include "importers/TextureImporter.h"
-#include "OutlineRenderPass.h"
 #include "gfx/renderers/Renderer.h"
+#include "importers/TextureImporter.h"
 
 namespace BHive
 {
@@ -22,7 +22,6 @@ namespace BHive
 		Renderer::Get().ClearColor(0, 0, 0, 0);
 		Renderer::Get().Clear();
 
-
 		/*switch (mSelectedRenderData->GetRenderDataType())
 		{
 		case FMeshRenderData::Billboard:
@@ -33,7 +32,7 @@ namespace BHive
 			break;
 		}*/
 
-		//Renderer::Draw(mSelectedRenderData);
+		// Renderer::Draw(mSelectedRenderData);
 
 		mFrambuffer->UnBind();
 	}
@@ -69,7 +68,7 @@ namespace BHive
 
 		int32_t width = 0, height = 0, channels = 0;
 		uint8_t *data = nullptr;
-		bool loaded = TextureLoader::LoadImageData(ENGINE_PATH "/data/textures/cg_none.png", width, height, channels, data);
+		bool loaded = TextureImporter::LoadImageData(ENGINE_PATH "/data/textures/cg_none.png", width, height, channels, data);
 
 		if (loaded)
 		{
@@ -95,19 +94,19 @@ namespace BHive
 		/*Image output_image(mOutputTexture);
 		Image outline_image(mOutlineOutput);*/
 
-		//mBoxBlurShader->Bind();
-		//mOutlineTexture->Bind(0);
-		//outline_image.Bind(0, EImageAccess::WRITE);
-		//mBoxBlurShader->Dispatch(mSize.x, mSize.y);
-		//mBoxBlurShader->UnBind();
+		// mBoxBlurShader->Bind();
+		// mOutlineTexture->Bind(0);
+		// outline_image.Bind(0, EImageAccess::WRITE);
+		// mBoxBlurShader->Dispatch(mSize.x, mSize.y);
+		// mBoxBlurShader->UnBind();
 
-		//mOutlineColorGradingShader->Bind();
+		// mOutlineColorGradingShader->Bind();
 
-		//texture->Bind(0);		 // color sampler
-		//mOutlineOutput->Bind(1); // blurred outline texture
-		//mColorGradingLUTTexture->Bind(2);
+		// texture->Bind(0);		 // color sampler
+		// mOutlineOutput->Bind(1); // blurred outline texture
+		// mColorGradingLUTTexture->Bind(2);
 
-		//output_image.Bind(0, EImageAccess::WRITE);
+		// output_image.Bind(0, EImageAccess::WRITE);
 
 		/*mOutlineColorGradingShader->Dispatch(mSize.x, mSize.y);
 		mOutlineColorGradingShader->UnBind();*/

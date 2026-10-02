@@ -7,12 +7,12 @@
 
 namespace BHive
 {
-	struct BHIVE_API SpriteFactory : public IResourceFactory<Sprite>
-	{
-		static SpritePtr Create(TexturePtr texture, const FSpriteGenerator &generator);
+	// struct BHIVE_API SpriteFactory : public IResourceFactory<Sprite>
+	// {
+	// 	static SpritePtr Create(TexturePtr texture, const FSpriteGenerator &generator);
 
-		static SpritePtr Create(TexturePtr texture, const glm::vec2 &min, const glm::vec2 &max);
-	};
+	// 	static SpritePtr Create(TexturePtr texture, const glm::vec2 &min, const glm::vec2 &max);
+	// };
 
 	struct BHIVE_API FlipBookFactory : public IResourceFactory<FlipBook>
 	{

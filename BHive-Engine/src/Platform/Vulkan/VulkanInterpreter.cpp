@@ -1,7 +1,6 @@
 #include "VulkanInterpreter.h"
 #include "DescriptorCache.h"
 #include "VulkanBackendMaterial.h"
-#include "VulkanBuffers.h"
 #include "VulkanConversions.h"
 #include "VulkanPipeline.h"
 #include "VulkanShader.h"
@@ -23,6 +22,7 @@ namespace BHive
 
 		auto it = phase.Commands.begin();
 		auto end = phase.Commands.end();
+		auto api = VulkanRendererAPI::GetInstance();
 
 		while (it != end)
 		{
@@ -34,23 +34,28 @@ namespace BHive
 			{
 			case ECommandType::SetBufferData:
 			{
+
 				auto &c = *reinterpret_cast<const CmdSetBufferData *>(payloadPtr);
-				auto buffer = c.Buffer.As<BufferBase>()->GetNativeHandle().As<VulkanBuffer>();
+				auto bufferID = c.Buffer.As<BufferBase>()->GetBufferID();
+				auto buffer = api->GetBuffer(bufferID);
 				buffer->Upload(c.Data.data(), c.Size, c.Offset);
 			}
 			break;
 			case ECommandType::ClearBuffer:
 			{
 				auto &c = *reinterpret_cast<const CmdClearBuffer *>(payloadPtr);
-				auto buffer = c.Buffer.As<BufferBase>()->GetNativeHandle().As<VulkanBuffer>();
-				buffer->ClearData();
+				auto buffer = c.Buffer.As<BufferBase>()->GetBufferID();
+				auto vkBuffer = api->GetBuffer(buffer);
+				vkBuffer->ClearData();
 			}
 			break;
 			case ECommandType::GenerateMipMaps:
 			{
 				auto &c = *reinterpret_cast<const CmdGenerateMipMaps *>(payloadPtr);
-				auto vkImage = c.Texture.As<Texture>()->GetNativeHandle().As<VulkanImage>();
-				vkImage->GenerateMipMaps(cmdbuffer);
+				auto textureID = c.Texture.As<Texture>()->GetTextureID();
+				auto vkImage = VulkanRendererAPI::GetInstance()->GetTexture(textureID);
+				if (vkImage)
+					vkImage->GenerateMipMaps(cmdbuffer);
 			}
 			break;
 			case ECommandType::Dispatch:
@@ -133,8 +138,9 @@ namespace BHive
 			{
 				auto &c = *reinterpret_cast<const CmdMultiDrawIndexedIndirect *>(payloadPtr);
 				auto topology = ToVkTopology(c.Mode);
-				auto handle = c.Buffer.As<BufferBase>()->GetNativeHandle().As<VulkanBuffer>();
-				vk::Buffer buf = handle->GetNative(frame)->Buffer;
+				auto handle = c.Buffer.As<BufferBase>()->GetBufferID();
+				auto buffer = api->GetBuffer(handle);
+				vk::Buffer buf = buffer->GetNative(frame)->Buffer;
 
 				auto vao = c.VAO.As<VulkanVertexArray>();
 				auto stride = (uint32_t)c.Stride;
@@ -171,8 +177,11 @@ namespace BHive
 
 		for (auto &t : transitions)
 		{
-			auto handle = t.Buffer.As<BufferBase>()->GetNativeHandle().As<VulkanBuffer>();
-			vk::Buffer buf = handle->GetNative(frame)->Buffer;
+			auto bufferID = t.Buffer.As<BufferBase>()->GetBufferID();
+			if (bufferID < 0)
+				continue;
+
+			vk::Buffer buf = VulkanRendererAPI::GetInstance()->GetBuffer(bufferID)->GetNative(frame)->Buffer;
 
 			auto srcStage = ToStage(t.Src);
 			auto dstStage = ToStage(t.Dst);

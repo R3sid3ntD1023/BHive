@@ -1,4 +1,5 @@
 #include "WorldLayer.h"
+#include "asset/FactoryRegistry.h"
 #include "audio/AudioImporter.h"
 #include "audio/AudioSource.h"
 #include "core/FPSCounter.h"
@@ -42,6 +43,7 @@ namespace BHive
 		AssetManager::SetAssetManager(&mAssetManager);
 
 		auto handle = mAssetManager.ImportAsset("E://Files//Mods//Resident Evil 4  - The Mercenaries - Leon Theme.wav");
+		auto texture = mAssetManager.ImportAsset("C:\\Users\\dariu\\Documents\\BHive\\projects\\Mario\\resources\\NES - Super Mario Bros - Tileset.png");
 
 		if (handle)
 		{
@@ -54,6 +56,13 @@ namespace BHive
 			mAudioComponent = gameObject->AddComponent<AudioComponent>();
 			mAudioComponent->AutoPlay = true;
 			mAudioComponent->Audio = audio;
+
+			auto factory = FactoryRegistry::Get().Find(rttr::type::get<Sprite>());
+			auto sprite = factory->CreateNew();
+			auto s = mAssetManager.RegisterAsset(sprite, "Sprite");
+
+			auto sc = gameObject->AddComponent<SpriteComponent>();
+			sc->Sprite = s;
 		}
 
 		{

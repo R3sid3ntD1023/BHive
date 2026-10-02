@@ -17,6 +17,25 @@ namespace BHive
 		LOG_TRACE("EditorAssetManager Destructor Called");
 	}
 
+	UUID EditorAssetManager::RegisterAsset(Ref<Asset> asset, const std::string &name)
+	{
+		UUID handle{};
+
+		mLoadedAssets[handle] = asset;
+		mMemoryAssets[handle] = asset;
+
+		FAssetMetaData metadata{};
+		metadata.Handle = handle;
+		metadata.Type = asset->get_type();
+		metadata.Name = name;
+		metadata.SourcePath = "";
+		metadata.SourceTimeStamp = 0;
+
+		Serialize(metadata);
+
+		return handle;
+	}
+
 	Ref<Asset> EditorAssetManager::GetAsset(UUID handle)
 	{
 
@@ -78,7 +97,7 @@ namespace BHive
 			return handle;
 		}
 
-		auto factory = mFactoryRegistry.Get(ext);
+		auto factory = FactoryRegistry::Get().Find(ext);
 		if (!factory)
 			return NullID;
 
@@ -112,7 +131,7 @@ namespace BHive
 	void EditorAssetManager::ReimportAsset(UUID handle)
 	{
 		auto &metaData = GetMetaData(handle);
-		auto factory = mFactoryRegistry.Get(metaData.Type);
+		auto factory = FactoryRegistry::Get().Find(metaData.Type);
 		auto asset = factory->Import(metaData.SourcePath);
 
 		if (mAssetSerializer.Export(asset, GetMetaDataPath(metaData)))

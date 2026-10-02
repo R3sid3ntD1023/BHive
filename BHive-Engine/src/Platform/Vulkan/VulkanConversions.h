@@ -409,6 +409,12 @@ namespace BHive
 		if (HasFlag(type, EBufferType::IndirectBuffer))
 			usage |= vk::BufferUsageFlagBits::eIndirectBuffer;
 
+		if (HasFlag(type, EBufferType::VertexBuffer))
+			usage |= vk::BufferUsageFlagBits::eVertexBuffer;
+
+		if (HasFlag(type, EBufferType::IndexBuffer))
+			usage |= vk::BufferUsageFlagBits::eIndexBuffer;
+
 		ASSERT(usage != (vk::BufferUsageFlags)0);
 		return usage;
 	}

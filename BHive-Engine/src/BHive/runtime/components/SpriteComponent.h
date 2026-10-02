@@ -1,11 +1,12 @@
 #pragma once
 
-#include "runtime/Component.h"
-#include "gfx/registries/Handles.h"
+#include "asset/AssetHandle.h"
 #include "gfx/Color.h"
+#include "runtime/Component.h"
 
 namespace BHive
 {
+	class Sprite;
 
 	struct BHIVE_API SpriteComponent : public Component
 	{
@@ -18,7 +19,7 @@ namespace BHive
 
 		FColor Color = FColor::White;
 
-		SpritePtr Sprite;
+		AssetHandle<Sprite> Sprite;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;

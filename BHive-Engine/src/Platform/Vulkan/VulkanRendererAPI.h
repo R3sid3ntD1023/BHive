@@ -1,6 +1,8 @@
 #pragma once
 
+#include "VulkanBuffer.h"
 #include "VulkanCore.h"
+#include "VulkanImage.h"
 #include "gfx/RendererAPI.h"
 #include "gfx/WindowContext.h"
 
@@ -40,7 +42,9 @@ namespace BHive
 	class BHIVE_API VulkanRendererAPI : public RendererAPI
 	{
 	public:
-		VulkanRendererAPI() = default;
+		VulkanRendererAPI();
+
+		~VulkanRendererAPI();
 
 		void Init() override;
 
@@ -56,7 +60,37 @@ namespace BHive
 
 		uint32_t GetCurrentFrame() const { return mCurrentFrame; }
 
+		void CreateTexture2D(int32_t &id, uint32_t x, uint32_t y, const FTextureCreateInfo &info) override;
+
+		void CreateTexture2DArray(int32_t &id, uint32_t x, uint32_t y, const FTextureCreateInfo &info) override;
+
+		void CreateTextureCube(int32_t &id, uint32_t s, const FTextureCreateInfo &info) override;
+
+		void CreateTextureCubeArray(int32_t &id, uint32_t s, const FTextureCreateInfo &info) override;
+
+		void CreateTexture3D(int32_t &id, uint32_t x, uint32_t y, uint32_t z, const FTextureCreateInfo &info) override;
+
+		void DeleteTexture(int32_t &textureID) override;
+
+		void SetTextureData(int32_t textureID, const void *data, size_t size, ImageCopyRegion region, ImageSubresourceRange range) override;
+
+		void CreateBuffer(int32_t &id, EBufferType type, EBufferLifetime lifeTime, size_t size, const char *debugName = nullptr) override;
+
+		void DeleteBuffer(int32_t &bufferID) override;
+
+		void SetBufferData(int32_t bufferID, const void *data, size_t size, uint32_t offset) override;
+
+		void ClearBuffer(int32_t bufferID) override;
+
+		VulkanImage *GetTexture(int32_t textureID);
+
+		VulkanBuffer *GetBuffer(int32_t bufferID);
+
+		static VulkanRendererAPI *GetInstance() { return sInstance; }
+
 	private:
+		int32_t CreateTexture(const vk::ImageCreateInfo &imgInfo, const vk::ImageViewCreateInfo &viewInfo, const vk::SamplerCreateInfo &smpInfo, const char *debugName);
+
 		void ProcessDeletionQueue(uint32_t frame);
 
 		vk::Result ExecuteFinalGraph(VulkanSwapChain *swapChain, Graph &graph);
@@ -88,6 +122,13 @@ namespace BHive
 
 		uint32_t mCurrentFrame = 0;
 
+		static VulkanRendererAPI *sInstance;
+
 		friend class VulkanFramebuffer;
+
+		std::deque<VulkanImage> mTextures;
+		std::queue<uint32_t> mTextureFreeList;
+		std::deque<VulkanBuffer> mBuffers;
+		std::queue<uint32_t> mBufferFreeList;
 	};
 } // namespace BHive

@@ -34,9 +34,9 @@ namespace BHive
 	{
 		mFont = FontFactory::Create(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", 16.f);
 
-		auto decodeEnvironment = TextureLoader::FromFile(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
-		auto decodedSprite = TextureLoader::FromFile("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg");
-		auto decodedMario = TextureLoader::FromFile("C:/Users/dariu/Documents/BHive/projects/Mario/resources/textures/Mario.png");
+		auto decodeEnvironment = TextureImporter::FromFile(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
+		auto decodedSprite = TextureImporter::FromFile("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg");
+		auto decodedMario = TextureImporter::FromFile("C:/Users/dariu/Documents/BHive/projects/Mario/resources/textures/Mario.png");
 
 		auto &window = app.GetWindow();
 		auto aspect = window.GetAspectRatio();
@@ -326,7 +326,7 @@ namespace BHive
 				auto info = Platform::OpenFile("HDR Environment (*.hdr)//0*.hdr//0");
 				if (info)
 				{
-					auto decoded = TextureLoader::FromFile(info);
+					auto decoded = TextureImporter::FromFile(info);
 					mSceneRenderer->SetEnvironmentTexture(TextureFactory::Create2D(decoded));
 				}
 			}

@@ -36,8 +36,8 @@ namespace BHive
 
 	void RuntimeLayer::OnAttach(Application &app)
 	{
-		auto decodedSprite = TextureLoader::FromFile("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg");
-		auto decodedEnviroment = TextureLoader::FromFile(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
+		auto decodedSprite = TextureImporter::FromFile("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg");
+		auto decodedEnviroment = TextureImporter::FromFile(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
 
 		mTexture = TextureFactory::Create2D(decodedSprite);
 
@@ -284,7 +284,7 @@ namespace BHive
 				auto info = Platform::OpenFile("HDR (*.hdr;)\0*.hdr;\0");
 				if (info)
 				{
-					auto decodedEnironment = TextureLoader::FromFile(info.Path);
+					auto decodedEnironment = TextureImporter::FromFile(info.Path);
 					auto tex = TextureFactory::Create2D(decodedEnironment);
 
 					mSceneRenderer->SetEnvironmentTexture(tex);

@@ -11,11 +11,11 @@ namespace BHive
 	struct BHIVE_API DecodedTexture
 	{
 		glm::uvec3 Size{0, 0, 0}; // w, h, c
-		ByteBuffer Data;			  // data
+		ByteBuffer Data;		  // data
 		FTextureCreateInfo CreateInfo{};
 	};
 
-	struct BHIVE_API TextureLoader
+	struct BHIVE_API TextureImporter
 	{
 		static bool LoadImageData(const std::filesystem::path &file, int32_t &w, int32_t &h, int32_t &c, ByteBuffer &buf, int32_t flip = 1);
 

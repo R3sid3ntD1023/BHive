@@ -26,11 +26,17 @@ namespace BHive
 
 		void Register(Factory *factory, std::initializer_list<std::string> exts);
 
-		Factory *Get(std::string_view extension) const;
+		Factory *Find(std::string_view extension) const;
 
-		Factory *Get(const rttr::type &type) const;
+		Factory *Find(const rttr::type &type) const;
 
 		const auto &GetFactories() const { return mFactories; }
+
+		static FactoryRegistry &Get()
+		{
+			static FactoryRegistry instance;
+			return instance;
+		}
 
 	private:
 		std::vector<Ref<Factory>> mFactories;

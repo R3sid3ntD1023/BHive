@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/Core.h"
-#include "renderers/Renderer.h"
 #include "gfx/RendererAPI.h"
+#include "renderers/Renderer.h"
 
 namespace BHive
 {

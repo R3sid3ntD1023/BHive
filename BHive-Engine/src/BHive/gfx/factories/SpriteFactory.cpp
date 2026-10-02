@@ -2,15 +2,15 @@
 
 namespace BHive
 {
-	SpritePtr SpriteFactory::Create(TexturePtr texture, const FSpriteGenerator &generator)
-	{
-		return CreateResource<Sprite>(texture, generator);
-	}
+	// SpritePtr SpriteFactory::Create(TexturePtr texture, const FSpriteGenerator &generator)
+	// {
+	// 	return CreateResource<Sprite>(texture, generator);
+	// }
 
-	SpritePtr SpriteFactory::Create(TexturePtr texture, const glm::vec2 &min, const glm::vec2 &max)
-	{
-		return CreateResource<Sprite>(texture, min, max);
-	}
+	// SpritePtr SpriteFactory::Create(TexturePtr texture, const glm::vec2 &min, const glm::vec2 &max)
+	// {
+	// 	return CreateResource<Sprite>(texture, min, max);
+	// }
 
 	FlipBookPtr FlipBookFactory::Create()
 	{

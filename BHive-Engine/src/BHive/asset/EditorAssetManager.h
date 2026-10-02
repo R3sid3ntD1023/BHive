@@ -18,6 +18,8 @@ namespace BHive
 
 		~EditorAssetManager();
 
+		UUID RegisterAsset(Ref<Asset> asset, const std::string &name);
+
 		Ref<Asset> GetAsset(UUID handle) override;
 
 		bool IsAssetHandleValid(UUID handle) const override;
@@ -78,7 +80,5 @@ namespace BHive
 		std::filesystem::path mDirectory;
 
 		AssetSerializer mAssetSerializer;
-
-		FactoryRegistry mFactoryRegistry;
 	};
 } // namespace BHive

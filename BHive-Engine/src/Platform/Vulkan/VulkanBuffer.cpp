@@ -41,10 +41,10 @@ namespace BHive
 		}
 	}
 
-	void VulkanBuffer::Init(size_t size, const void *data, vk::BufferUsageFlags usage, EBufferLifetime lifeTime)
+	void VulkanBuffer::Initialize(size_t size, vk::BufferUsageFlags usage, EBufferLifetime lifeTime)
 	{
 		mLifeTime = lifeTime;
-		(mLifeTime == EBufferLifetime::Static) ? InitStatic(size, data, usage) : InitDynamic(size, data, usage);
+		(mLifeTime == EBufferLifetime::Static) ? InitStatic(size, usage) : InitDynamic(size, usage);
 	}
 
 	GPUBufferResourceHandle VulkanBuffer::GetNative(uint32_t frame) const
@@ -55,7 +55,19 @@ namespace BHive
 	void VulkanBuffer::Upload(const void *data, size_t size, uint32_t offset)
 	{
 		if (mLifeTime != EBufferLifetime::Dynamic)
+		{
+			if (!data || size == 0)
+				return;
+
+			SingleTimeCommand cmd{};
+			if (mMappedPtrs[1])
+			{
+				std::memcpy(static_cast<std::byte *>(mMappedPtrs[1]), data, size);
+				vk::BufferCopy region(0, 0, size);
+				cmd.Get().copyBuffer(mBuffers[1]->Buffer, mBuffers[0]->Buffer, region);
+			}
 			return;
+		}
 
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
@@ -67,7 +79,16 @@ namespace BHive
 	void VulkanBuffer::ClearData()
 	{
 		if (mLifeTime != EBufferLifetime::Dynamic)
+		{
+			SingleTimeCommand cmd{};
+			if (mMappedPtrs[1])
+			{
+				std::memset(static_cast<std::byte *>(mMappedPtrs[1]), 0, mBuffers[1]->Size);
+				vk::BufferCopy region(0, 0, mBuffers[1]->Size);
+				cmd.Get().copyBuffer(mBuffers[1]->Buffer, mBuffers[0]->Buffer, region);
+			}
 			return;
+		}
 
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
@@ -75,7 +96,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanBuffer::InitStatic(size_t size, const void *data, vk::BufferUsageFlags usage)
+	void VulkanBuffer::InitStatic(size_t size, vk::BufferUsageFlags usage)
 	{
 		auto info = vk::BufferCreateInfo({}, size, usage | vk::BufferUsageFlagBits::eTransferDst);
 		mBuffers[0] = VulkanBackend::GetGPUResourceManager().CreateBuffer(info, vk::MemoryPropertyFlagBits::eDeviceLocal);
@@ -84,31 +105,15 @@ namespace BHive
 		mBuffers[1] = VulkanBackend::GetGPUResourceManager().CreateBuffer(stageInfo, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
 		mMappedPtrs[1] = mBuffers[1]->map(0, size);
-
-		if (!data)
-			return;
-
-		SingleTimeCommand cmd{};
-		if (mMappedPtrs[1])
-		{
-			std::memcpy(static_cast<std::byte *>(mMappedPtrs[1]), data, size);
-			vk::BufferCopy region(0, 0, size);
-			cmd.Get().copyBuffer(mBuffers[1]->Buffer, mBuffers[0]->Buffer, region);
-		}
 	}
 
-	void VulkanBuffer::InitDynamic(size_t size, const void *data, vk::BufferUsageFlags usage)
+	void VulkanBuffer::InitDynamic(size_t size, vk::BufferUsageFlags usage)
 	{
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			auto info = vk::BufferCreateInfo({}, size, usage);
 			mBuffers[i] = VulkanBackend::GetGPUResourceManager().CreateBuffer(info, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 			mMappedPtrs[i] = mBuffers[i]->map(0, size);
-		}
-
-		if (data)
-		{
-			Upload(data, size, 0);
 		}
 	}
 
