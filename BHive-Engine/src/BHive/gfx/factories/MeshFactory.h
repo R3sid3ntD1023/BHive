@@ -33,24 +33,4 @@ namespace BHive
 		static SkeletalAnimationPtr Create(float duration, float ticksPerSecond, const SkeletalAnimation::Frames &frames);
 	};
 
-	// class VertexBuffer;
-	// class IndexBuffer;
-	// class VertexArray;
-
-	// struct MeshManager
-	// {
-	// 	void Init();
-
-	// 	void Add(MeshHandle h);
-
-	// 	Ref<VertexArray> GetVAO() const { return mVAO; }
-
-	// private:
-	// 	uint32_t mCurrentVertexIndex = 0;
-	// 	uint32_t mCurrentIndexIndex = 0;
-
-	// 	Ref<VertexBuffer> mVertexBuffer;
-	// 	Ref<IndexBuffer> mIndexBuffer;
-	// 	Ref<VertexArray> mVAO;
-	// };
 } // namespace BHive

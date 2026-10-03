@@ -26,6 +26,13 @@ namespace BHive
 		TriangleFan
 	};
 
+	enum class EShaderMeshType : uint8_t
+	{
+		None,
+		Static,
+		Skeletal
+	};
+
 	enum class EPolygonMode
 	{
 		Fill,

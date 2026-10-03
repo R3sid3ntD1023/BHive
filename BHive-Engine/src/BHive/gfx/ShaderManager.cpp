@@ -41,4 +41,35 @@ namespace BHive
 
 		return {};
 	}
+
+	ShaderPtr ShaderManager::GetVariant(const std::string &name, std::vector<std::string> definitions)
+	{
+		if (definitions.empty())
+			return Get(name);
+
+		std::sort(definitions.begin(), definitions.end());
+		definitions.erase(std::unique(definitions.begin(), definitions.end()), definitions.end());
+
+		std::string variantName;
+		for (const auto &definition : definitions)
+		{
+			if (!variantName.empty())
+				variantName += '_';
+			variantName += definition;
+		}
+
+		const auto key = name + '_' + variantName;
+		const auto hash = utils::ComputeHash(key);
+		if (Contains(hash))
+			return mShaders.at(hash);
+
+		auto resolvedPath = FileSystem::ResolvePath(name, ENGINE_SHADER_PATH);
+		if (!std::filesystem::exists(resolvedPath))
+			return {};
+
+		auto program = ShaderFactory::Create(resolvedPath, definitions, variantName);
+		if (program)
+			mShaders[hash] = program;
+		return program;
+	}
 } // namespace BHive

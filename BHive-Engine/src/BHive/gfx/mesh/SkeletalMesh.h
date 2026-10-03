@@ -17,6 +17,7 @@ namespace BHive
 		Skeleton *GetSkeleton() { return mSkeleton; }
 
 		Ref<class SkeletalPose> GetDefaultPose() const { return mDefaultPose; }
+		bool IsSkeletal() const override { return true; }
 
 		AABB GetBoundingBox() const override;
 

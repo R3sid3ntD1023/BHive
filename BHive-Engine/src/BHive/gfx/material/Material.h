@@ -54,6 +54,9 @@ namespace BHive
 		virtual bool ShouldCastShadows() const { return true; }
 
 		MaterialSnapshot CreateSnapshot() const override;
+		MaterialSnapshot CreateSnapshot(EShaderMeshType meshType) const override;
+
+		virtual std::vector<std::string> GetShaderDefinitions() const { return {}; }
 
 		ESurfaceType GetSurfaceType() const { return mSurfaceType; }
 

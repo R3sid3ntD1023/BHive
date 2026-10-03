@@ -40,6 +40,35 @@ namespace BHive
 		return mBackendMaterial->CreateSnapshot();
 	}
 
+	MaterialSnapshot Material::CreateSnapshot(EShaderMeshType meshType) const
+	{
+		auto snapshot = mBackendMaterial->CreateSnapshot();
+		if (meshType == EShaderMeshType::None)
+			return snapshot;
+
+		auto definitions = GetShaderDefinitions();
+		switch (meshType)
+		{
+		case EShaderMeshType::Static:
+			definitions.emplace_back("MESH_STATIC");
+			break;
+		case EShaderMeshType::Skeletal:
+			definitions.emplace_back("MESH_SKELETAL");
+			definitions.emplace_back("SKINNING");
+			break;
+		case EShaderMeshType::None:
+			break;
+		}
+
+		if (!definitions.empty())
+		{
+			auto variant = ShaderManager::GetVariant(mShaderProgramName, std::move(definitions));
+			ASSERT(variant, "Failed to load shader variant for material {}", mShaderProgramName);
+			snapshot.Shader = variant;
+		}
+		return snapshot;
+	}
+
 	void Material::Save(cereal::BinaryOutputArchive &ar) const
 	{
 		Asset::Save(ar);

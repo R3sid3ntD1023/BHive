@@ -117,12 +117,17 @@ namespace BHive
 		{
 			for (auto &[vao, matMap] : batch.MaterialBatches)
 			{
-				for (auto &[mat, batch] : matMap)
+				auto vertexArray = vao.As<VertexArray>();
+				vertexArray->DeclareAccess(_pass);
+				_pass.Emplace<CmdBindVertexArray>()(vao);
+				for (auto &[mat, variants] : matMap)
 				{
-					_pass.Emplace<CmdBindMaterial>()(material.As<Material>());
-					uint32_t offset = batch.FirstCommand * sizeof(MultiDrawIndirectCommand);
-
-					_pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect, vao, batch.CommandCount, sizeof(MultiDrawIndirectCommand), offset);
+					for (auto &[meshType, batch] : variants)
+					{
+						_pass.Emplace<CmdBindMaterial>()(material.As<IMaterial>(), meshType);
+						uint32_t offset = batch.FirstCommand * sizeof(MultiDrawIndirectCommand);
+						_pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect, batch.CommandCount, sizeof(MultiDrawIndirectCommand), offset);
+					}
 				}
 			}
 		};

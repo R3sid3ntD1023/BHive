@@ -1,21 +1,30 @@
+#include "ShaderFactory.h"
+#include "Platform/Vulkan/VulkanResourceSet.h"
+#include "Platform/Vulkan/VulkanShader.h"
 #include "core/FileSystem.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/shader/Shader.h"
 #include "gfx/shader/ShaderCache.h"
 #include "gfx/shader/ShaderCompiler.h"
 #include "gfx/shader/ShaderUtils.h"
-#include "Platform/Vulkan/VulkanResourceSet.h"
-#include "Platform/Vulkan/VulkanShader.h"
-#include "ShaderFactory.h"
 
 namespace BHive
 {
 	ShaderPtr ShaderFactory::Create(const std::filesystem::path &path)
 	{
+		return Create(path, {}, {});
+	}
+
+	ShaderPtr ShaderFactory::Create(const std::filesystem::path &path, const std::vector<std::string> &definitions, const std::string &variantName)
+	{
 		auto resolvedPath = FileSystem::ResolvePath(path, ENGINE_SHADER_PATH);
 
 		ShaderAsset asset{};
-		asset.Name = path.stem().string();
+		asset.CacheName = path.stem().string();
+		asset.VariantName = variantName;
+		asset.Name = asset.CacheName;
+		if (!variantName.empty())
+			asset.Name += "_" + variantName;
 		asset.SourcePath = path;
 
 		// load source
@@ -26,9 +35,11 @@ namespace BHive
 			return {};
 		}
 
-		auto expanded_source = ShaderUtils::ExpandIncludes(source, asset.SourcePath.string());
+		auto expanded = ShaderUtils::ExpandIncludesWithDependencies(source, asset.SourcePath.string());
+		auto &expanded_source = expanded.Source;
+		asset.Dependencies = std::move(expanded.Dependencies);
 		const uint64_t newHash = ShaderCache::ComputeHash(expanded_source);
-		const uint64_t oldHash = ShaderCache::GetStoredHash(asset.Name);
+		const uint64_t oldHash = ShaderCache::GetStoredHash(asset);
 
 		auto source_stages = ShaderUtils::PreProcess(expanded_source);
 
@@ -49,7 +60,10 @@ namespace BHive
 
 		ShaderCompiler compiler(path);
 		compiler.Init();
-		compiler.Compile(asset);
+		MacroDefinitions macroDefinitions;
+		for (const auto &[stage, _] : asset.Stages)
+			macroDefinitions.Names[stage] = definitions;
+		compiler.Compile(asset, macroDefinitions);
 
 		if (changed)
 			ShaderCache::StoreCache(asset, expanded_source);
@@ -61,6 +75,7 @@ namespace BHive
 	{
 		ShaderAsset asset{};
 		asset.Name = name;
+		asset.CacheName = name;
 
 		asset.Stages[EShaderStage::Vertex].Code = vert;
 		asset.Stages[EShaderStage::Fragment].Code = frag;

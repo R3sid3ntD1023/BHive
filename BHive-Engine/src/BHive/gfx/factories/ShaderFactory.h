@@ -3,6 +3,7 @@
 #include "gfx/factories/IResourceFactory.h"
 #include "gfx/ResourceSet.h"
 #include "gfx/shader/Shader.h"
+#include "gfx/shader/ShaderCompiler.h"
 
 namespace BHive
 {
@@ -10,6 +11,8 @@ namespace BHive
 	{
 	public:
 		static ShaderPtr Create(const std::filesystem::path &path);
+
+		static ShaderPtr Create(const std::filesystem::path &path, const std::vector<std::string> &definitions, const std::string &variantName);
 
 		static ShaderPtr Create(const std::string &name, const std::string &vert, const std::string &frag);
 

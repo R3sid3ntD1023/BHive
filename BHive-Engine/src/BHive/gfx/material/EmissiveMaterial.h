@@ -15,6 +15,8 @@ namespace BHive
 
 		void SetTextureFromType(EMaterialTextureType type, TexturePtr texture) override;
 
+		std::vector<std::string> GetShaderDefinitions() const override { return {"MATERIAL_EMISSIVE"}; }
+
 		void Save(cereal::BinaryOutputArchive &ar) const override;
 
 		void Load(cereal::BinaryInputArchive &ar) override;

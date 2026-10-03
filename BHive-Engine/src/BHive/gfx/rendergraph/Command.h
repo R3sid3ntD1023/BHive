@@ -6,6 +6,7 @@ namespace BHive
 	{
 		GenerateMipMaps,
 		BindPipeline,
+		BindVertexArray,
 		BindMaterial,
 		UploadBuffer,
 		Draw,
@@ -20,8 +21,4 @@ namespace BHive
 		SetBufferData
 	};
 
-	struct FCommand
-	{
-		virtual ~FCommand() = default;
-	};
 } // namespace BHive

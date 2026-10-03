@@ -25,7 +25,12 @@ namespace BHive
 
 	MaterialSnapshot MaterialInstance::CreateSnapshot() const
 	{
-		auto base = mParent.As<IMaterial>()->CreateSnapshot();
+		return CreateSnapshot(EShaderMeshType::None);
+	}
+
+	MaterialSnapshot MaterialInstance::CreateSnapshot(EShaderMeshType meshType) const
+	{
+		auto base = mParent.As<IMaterial>()->CreateSnapshot(meshType);
 		auto &shaderTemplate = base.Shader.As<Shader>()->GetTemplate();
 
 		for (auto &[nameHash, slot] : mTextureOverrides)

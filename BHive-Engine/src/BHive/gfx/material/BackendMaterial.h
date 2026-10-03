@@ -2,6 +2,7 @@
 
 #include "MaterialSnapshot.h"
 #include "asset/Asset.h"
+#include "gfx/Enumerations.h"
 #include "core/Core.h"
 
 namespace BHive
@@ -44,6 +45,7 @@ namespace BHive
 		virtual void SetParam(const std::string &name, const MaterialParam &value) = 0;
 
 		virtual MaterialSnapshot CreateSnapshot() const = 0;
+		virtual MaterialSnapshot CreateSnapshot(EShaderMeshType meshType) const { return CreateSnapshot(); }
 
 		static Ref<IMaterialBackendInterface> Create(const std::string &shaderProgramName);
 	};
@@ -60,5 +62,6 @@ namespace BHive
 		virtual IMaterial &SetParam(const std::string &name, const MaterialParam &value) && = delete;
 
 		virtual MaterialSnapshot CreateSnapshot() const = 0;
+		virtual MaterialSnapshot CreateSnapshot(EShaderMeshType meshType) const { return CreateSnapshot(); }
 	};
 } // namespace BHive

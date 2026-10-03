@@ -13,7 +13,10 @@ namespace BHive
 	struct ShaderAsset
 	{
 		std::string Name;
+		std::string CacheName;
+		std::string VariantName;
 		std::filesystem::path SourcePath;
+		std::vector<std::filesystem::path> Dependencies;
 		std::unordered_map<EShaderStage, ShaderStageData> Stages;
 		FShaderReflection MergedReflection;
 	};

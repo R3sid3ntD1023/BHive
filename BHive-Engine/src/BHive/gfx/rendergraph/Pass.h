@@ -55,36 +55,8 @@ namespace BHive
 		T &Emplace()
 		{
 			ASSERT(mCurrentPhase);
-
-			static_assert(std::is_base_of_v<FCommand, T>, "Type T doesn't derive from FCommand!");
-
-			CmdHeader header{T::Type, sizeof(T)};
-			auto cmd = CreateRef<T>();
-			mCurrentPhase->Commands.emplace_back(header, cmd);
-			return *cmd.get();
+			return mCurrentPhase->Commands->Emplace<T>(T::Type);
 		}
-
-		// template <typename T>
-		// T &Emplace()
-		// {
-		// 	ASSERT(mCurrentPhase);
-
-		// 	T cmd{};
-
-		// 	CmdHeader header{T::Type, sizeof(T)};
-
-		// 	auto &commands = mCurrentPhase->CommandPtr;
-		// 	size_t start = commands.size();
-		// 	commands.resize(start + sizeof(CmdHeader) + sizeof(T));
-		// 	auto data = commands.data();
-
-		// 	std::memcpy(data + start, &header, sizeof(CmdHeader));
-		// 	std::memcpy(data + start + sizeof(CmdHeader), &cmd, sizeof(T));
-
-		// 	T *ptr = reinterpret_cast<T *>(data + start + sizeof(CmdHeader));
-		// 	ASSERT(ptr);
-		// 	return *ptr;
-		// }
 
 		void
 		UseFramebuffer(FramebufferPtr fbo, ImageSubresourceRange range = {}, EImageUsage colorUsage = EImageUsage::ColorWrite, EImageUsage depthUsage = EImageUsage::DepthWrite);

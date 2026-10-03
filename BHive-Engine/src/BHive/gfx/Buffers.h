@@ -29,6 +29,8 @@ namespace BHive
 
 		uint32_t GetCount() const { return mCount; }
 
+		void SetCount(uint32_t count) { mCount = count; }
+
 		int32_t GetBufferID() const { return mBufferID; }
 
 	private:

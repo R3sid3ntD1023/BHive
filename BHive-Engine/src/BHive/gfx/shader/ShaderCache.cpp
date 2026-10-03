@@ -2,9 +2,22 @@
 #include "ShaderUtils.h"
 #include "core/FileSystem.h"
 #include "gfx/RenderCommand.h"
+#include <cctype>
 
 namespace BHive
 {
+	namespace
+	{
+		std::string GetSafeVariantFolder(const std::string &variantName)
+		{
+			std::string folder;
+			folder.reserve(variantName.size());
+			for (const unsigned char character : variantName)
+				folder += std::isalnum(character) || character == '_' || character == '-' ? static_cast<char>(character) : '_';
+			return folder.empty() ? "unnamed" : folder;
+		}
+	} // namespace
+
 	const char *GetCacheOpenglFileExtension(EShaderStage stage)
 	{
 		switch (stage)
@@ -50,26 +63,29 @@ namespace BHive
 		ar(meta.Hash, meta.Stages, meta.MergedReflection);
 	}
 
-	std::filesystem::path ShaderCache::GetShaderCacheDir(const std::string &name)
+	std::filesystem::path ShaderCache::GetShaderCacheDir(const ShaderAsset &asset)
 	{
-		return ShaderUtils::GetCacheDirectory() / name;
+		auto directory = ShaderUtils::GetCacheDirectory() / asset.CacheName;
+		if (!asset.VariantName.empty())
+			directory /= std::filesystem::path("variants") / GetSafeVariantFolder(asset.VariantName);
+		return directory;
 	}
 
-	std::filesystem::path ShaderCache::GetStageCachePath(const std::string &name, EShaderStage stage)
+	std::filesystem::path ShaderCache::GetStageCachePath(const ShaderAsset &asset, EShaderStage stage)
 	{
 		if (RenderCommand::GetAPI() == RendererAPI::Vulkan)
-			return GetShaderCacheDir(name) / (name + GetCacheVulkanFileExtension(stage));
+			return GetShaderCacheDir(asset) / (asset.Name + GetCacheVulkanFileExtension(stage));
 
 		if (RenderCommand::GetAPI() == RendererAPI::Opengl)
-			return GetShaderCacheDir(name) / (name + GetCacheOpenglFileExtension(stage));
+			return GetShaderCacheDir(asset) / (asset.Name + GetCacheOpenglFileExtension(stage));
 
 		ASSERT(false)
 		return "";
 	}
 
-	std::filesystem::path ShaderCache::GetMetaPath(const std::string &name)
+	std::filesystem::path ShaderCache::GetMetaPath(const ShaderAsset &asset)
 	{
-		return GetShaderCacheDir(name) / (name + ".meta");
+		return GetShaderCacheDir(asset) / (asset.Name + ".meta");
 	}
 
 	uint64_t ShaderCache::ComputeHash(const std::string &source)
@@ -77,11 +93,11 @@ namespace BHive
 		return std::hash<std::string>{}(source);
 	}
 
-	ShaderCache::MetaData ShaderCache::LoadMeta(const std::string &name)
+	ShaderCache::MetaData ShaderCache::LoadMeta(const ShaderAsset &asset)
 	{
 		MetaData meta;
 
-		auto meta_path = GetMetaPath(name);
+		auto meta_path = GetMetaPath(asset);
 		if (!std::filesystem::exists(meta_path))
 			return meta;
 
@@ -94,16 +110,16 @@ namespace BHive
 		return meta;
 	}
 
-	void ShaderCache::StoreMeta(const std::string &name, const MetaData &meta)
+	void ShaderCache::StoreMeta(const ShaderAsset &asset, const MetaData &meta)
 	{
-		std::ofstream out(GetMetaPath(name), std::ios::out | std::ios::binary);
+		std::ofstream out(GetMetaPath(asset), std::ios::out | std::ios::binary);
 		cereal::JSONOutputArchive ar(out);
 		ar(meta);
 	}
 
 	bool ShaderCache::HasValidCache(const ShaderAsset &asset, const std::string &source)
 	{
-		auto meta = LoadMeta(asset.Name);
+		auto meta = LoadMeta(asset);
 		if (!meta.Valid)
 			return false;
 
@@ -121,7 +137,7 @@ namespace BHive
 
 		for (auto &[stage, _] : asset.Stages)
 		{
-			auto path = GetStageCachePath(asset.Name, stage);
+			auto path = GetStageCachePath(asset, stage);
 			if (!std::filesystem::exists(path))
 				return false;
 		}
@@ -131,11 +147,11 @@ namespace BHive
 
 	void ShaderCache::LoadCache(ShaderAsset &asset)
 	{
-		auto meta = LoadMeta(asset.Name);
+		auto meta = LoadMeta(asset);
 
 		for (auto &[stage, data] : asset.Stages)
 		{
-			auto path = GetStageCachePath(asset.Name, stage);
+			auto path = GetStageCachePath(asset, stage);
 			FileSystem::ReadFile(path, data.Spirv);
 		}
 
@@ -144,14 +160,14 @@ namespace BHive
 
 	void ShaderCache::StoreCache(const ShaderAsset &asset, const std::string &source)
 	{
-		auto dir = GetShaderCacheDir(asset.Name);
+		auto dir = GetShaderCacheDir(asset);
 		if (!std::filesystem::exists(dir))
 			std::filesystem::create_directories(dir);
 
 		// Write SPIR-V
 		for (auto &[stage, data] : asset.Stages)
 		{
-			auto path = GetStageCachePath(asset.Name, stage);
+			auto path = GetStageCachePath(asset, stage);
 			FileSystem::WriteFile(path, data.Spirv);
 		}
 
@@ -164,12 +180,12 @@ namespace BHive
 
 		meta.MergedReflection = asset.MergedReflection;
 
-		StoreMeta(asset.Name, meta);
+		StoreMeta(asset, meta);
 	}
 
-	uint64_t ShaderCache::GetStoredHash(const std::string &name)
+	uint64_t ShaderCache::GetStoredHash(const ShaderAsset &asset)
 	{
-		auto meta = LoadMeta(name);
+		auto meta = LoadMeta(asset);
 		return meta.Valid ? meta.Hash : 0;
 	}
 } // namespace BHive

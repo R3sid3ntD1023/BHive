@@ -8,7 +8,7 @@ namespace BHive
 {
 	struct MacroDefinitions
 	{
-		std::unordered_map<EShaderStage, std::vector<const char *>> Names;
+		std::unordered_map<EShaderStage, std::vector<std::string>> Names;
 
 		bool contains(EShaderStage stage) const { return Names.contains(stage); }
 	};

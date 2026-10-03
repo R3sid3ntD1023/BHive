@@ -16,6 +16,7 @@ namespace BHive
 		IMaterial &SetTexture(const std::string &name, const TextureBinding &texture) & override;
 
 		MaterialSnapshot CreateSnapshot() const override;
+		MaterialSnapshot CreateSnapshot(EShaderMeshType meshType) const override;
 
 	private:
 		MaterialPtr mParent;

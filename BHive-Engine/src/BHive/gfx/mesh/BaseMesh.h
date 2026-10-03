@@ -22,6 +22,10 @@ namespace BHive
 		void Initialize();
 
 		VertexArrayPtr GetVertexArray() const { return mVertexArray; }
+		uint32_t GetBaseVertex() const { return mBaseVertex; }
+		uint32_t GetBaseIndex() const { return mBaseIndex; }
+		uint32_t GetGeometryPage() const { return mGeometryPage; }
+		virtual bool IsSkeletal() const { return false; }
 
 		const FMeshData &GetData() const { return mData; }
 
@@ -52,6 +56,9 @@ namespace BHive
 		FMeshData mData;
 
 		VertexArrayPtr mVertexArray;
+		uint32_t mGeometryPage = 0;
+		uint32_t mBaseVertex = 0;
+		uint32_t mBaseIndex = 0;
 	};
 
 	struct BHIVE_API MeshUtils

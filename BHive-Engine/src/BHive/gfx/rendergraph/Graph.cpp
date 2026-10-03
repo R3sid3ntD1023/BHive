@@ -35,14 +35,13 @@ namespace BHive
 					LOG_TRACE("\t\tTransition -> [{}:{}]", to_string(tex.Access), to_string(tex.Range));
 				}
 
-				auto it = phase.Commands.begin();
-				auto end = phase.Commands.end();
-
-				while (it != end)
+				size_t offset = 0;
+				while (offset < phase.Commands->GetUsedSize())
 				{
-					auto &header = (*it).first;
+					const auto *record = phase.Commands->Data() + offset;
+					const auto &header = *reinterpret_cast<const CmdHeader *>(record);
 					LOG_TRACE("\t\t{}", (int)header.Type);
-					++it;
+					offset += header.RecordSize;
 				}
 			}
 		}

@@ -12,10 +12,11 @@ namespace BHive
 		{
 			uint32_t FirstCommand = 0;
 			uint32_t CommandCount = 0;
+			std::vector<const FSubMeshSubmission *> Submissions;
 		};
 
-		// vao -> material[submissions]
-		std::unordered_map<VertexArrayPtr, std::unordered_map<MaterialPtr, DrawBatch>> MaterialBatches;
+		// VAO page -> material -> mesh shader variant.
+		std::unordered_map<VertexArrayPtr, std::unordered_map<MaterialPtr, std::unordered_map<EShaderMeshType, DrawBatch>>> MaterialBatches;
 
 		std::vector<ObjectData> ObjectDatas;
 

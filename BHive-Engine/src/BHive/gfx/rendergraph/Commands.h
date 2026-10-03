@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Command.h"
+#include "Phase.h"
 #include "core/Core.h"
 #include "gfx/Enumerations.h"
 #include <imgui.h>
@@ -11,7 +12,7 @@
 namespace BHive
 {
 
-	struct CmdGenerateMipMaps : FCommand
+	struct CmdGenerateMipMaps
 	{
 		static constexpr ECommandType Type = ECommandType::GenerateMipMaps;
 
@@ -20,7 +21,7 @@ namespace BHive
 		void operator()(TexturePtr texture) { Texture = texture; }
 	};
 
-	struct CmdClearBuffer : FCommand
+	struct CmdClearBuffer
 	{
 		static constexpr ECommandType Type = ECommandType::ClearBuffer;
 
@@ -29,29 +30,29 @@ namespace BHive
 		void operator()(BufferPtr b) { Buffer = b; }
 	};
 
-	struct CmdSetBufferData : FCommand
+	struct CmdSetBufferData
 	{
 		static constexpr ECommandType Type = ECommandType::SetBufferData;
 
 		BufferPtr Buffer;
 
-		std::vector<std::byte> Data;
+		FCommandStream *Storage = nullptr;
+		size_t DataOffset = 0;
 
-		uint32_t Size;
+		size_t Size = 0;
 
-		uint32_t Offset;
+		uint32_t Offset = 0;
 
 		void operator()(BufferPtr b, const void *data, size_t size, uint32_t offset = 0)
 		{
 			Buffer = b;
 			Size = size;
 			Offset = offset;
-			Data.resize(size);
-			std::memcpy(Data.data(), data, size);
+			DataOffset = Storage->StoreBytes(data, size);
 		}
 	};
 
-	struct CmdDispatch : FCommand
+	struct CmdDispatch
 	{
 		static constexpr ECommandType Type = ECommandType::Dispatch;
 
@@ -65,7 +66,7 @@ namespace BHive
 		}
 	};
 
-	struct CmdImGuiRender : FCommand
+	struct CmdImGuiRender
 	{
 		static constexpr ECommandType Type = ECommandType::ImGuiRender;
 
@@ -74,14 +75,14 @@ namespace BHive
 		void operator()(ImDrawData *data) { DrawData = data; }
 	};
 
-	struct CmdDrawFullScreen : FCommand
+	struct CmdDrawFullScreen
 	{
 		static constexpr ECommandType Type = ECommandType::DrawFullScreen;
 
 		void operator()() {}
 	};
 
-	struct CmdBindPipeline : FCommand
+	struct CmdBindPipeline
 	{
 		static constexpr ECommandType Type = ECommandType::BindPipeline;
 
@@ -90,47 +91,59 @@ namespace BHive
 		void operator()(PipelinePtr pipeline) { Pipeline = pipeline; }
 	};
 
+	struct CmdBindVertexArray
+	{
+		static constexpr ECommandType Type = ECommandType::BindVertexArray;
+
+		VertexArrayPtr VertexArray;
+
+		void operator()(VertexArrayPtr vertexArray) { VertexArray = vertexArray; }
+	};
+
 	/*
 	 * @param const IMaterial*, const Ref<IMaterial>&
 	 * @param Pipeline*
 	 */
-	struct CmdBindMaterial : FCommand
+	struct CmdBindMaterial
 	{
 		static constexpr ECommandType Type = ECommandType::BindMaterial;
 
-		MaterialSnapshot Snapshot;
+		FCommandStream *Storage = nullptr;
+		uint32_t SnapshotIndex = 0;
 
-		void operator()(MaterialPtr material)
+		void operator()(MaterialPtr material, EShaderMeshType meshType = EShaderMeshType::None)
 		{
-			auto *resolved = material.As<Material>();
+			auto *resolved = material.As<IMaterial>();
 			ASSERT(resolved, "Invalid material handle");
 			if (resolved)
-				Snapshot = resolved->CreateSnapshot();
+				SnapshotIndex = Storage->StoreObject<MaterialSnapshot>(resolved->CreateSnapshot(meshType));
 		}
 
-		void operator()(IMaterial *mat) { Snapshot = mat->CreateSnapshot(); }
+		void operator()(IMaterial *mat, EShaderMeshType meshType = EShaderMeshType::None) { SnapshotIndex = Storage->StoreObject<MaterialSnapshot>(mat->CreateSnapshot(meshType)); }
 	};
 
-	struct CmdUploadBuffer : FCommand
+	struct CmdUploadBuffer
 	{
 		static constexpr ECommandType Type = ECommandType::UploadBuffer;
 
 		BufferPtr Buffer;
 
-		Ref<std::vector<std::byte>> Data;
+		FCommandStream *Storage = nullptr;
+		size_t DataOffset = 0;
+		size_t Size = 0;
 
-		uint32_t Offset;
+		uint32_t Offset = 0;
 
 		void operator()(BufferPtr buffer, const void *data, size_t size, uint32_t offset = 0)
 		{
 			Buffer = buffer;
 			Offset = offset;
-			Data = CreateRef<std::vector<std::byte>>(size);
-			memcpy(Data->data(), data, size);
+			Size = size;
+			DataOffset = Storage->StoreBytes(data, size);
 		}
 	};
 
-	struct CmdDraw : FCommand
+	struct CmdDraw
 	{
 		static constexpr ECommandType Type = ECommandType::Draw;
 
@@ -148,7 +161,7 @@ namespace BHive
 		}
 	};
 
-	struct CmdDrawIndexed : FCommand
+	struct CmdDrawIndexed
 	{
 		static constexpr ECommandType Type = ECommandType::DrawIndexed;
 
@@ -166,29 +179,27 @@ namespace BHive
 		}
 	};
 
-	struct CmdMultiDrawIndexedIndirect : FCommand
+	struct CmdMultiDrawIndexedIndirect
 	{
 		static constexpr ECommandType Type = ECommandType::MultiDrawIndexedIndirect;
 
 		ETopologyMode Mode;
 		BufferPtr Buffer;
-		VertexArrayPtr VAO;
 		uint32_t DrawCount = 1;
 		uint64_t Stride = 0;
 		uint32_t Offset = 0;
 
-		void operator()(ETopologyMode mode, BufferPtr buffer, VertexArrayPtr vao, uint32_t drawCount, uint64_t stride = 0, uint32_t offset = 0)
+		void operator()(ETopologyMode mode, BufferPtr buffer, uint32_t drawCount, uint64_t stride = 0, uint32_t offset = 0)
 		{
 			Mode = mode;
 			Buffer = buffer;
-			VAO = vao;
 			DrawCount = drawCount;
 			Stride = stride;
 			Offset = offset;
 		}
 	};
 
-	struct CmdSetLineWidth : FCommand
+	struct CmdSetLineWidth
 	{
 		static constexpr ECommandType Type = ECommandType::SetLineWidth;
 

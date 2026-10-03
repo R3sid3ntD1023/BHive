@@ -3,6 +3,7 @@
 #include "core/Core.h"
 #include "core/math/Transform.h"
 #include "gfx/Color.h"
+#include "gfx/Enumerations.h"
 #include "gfx/animation/AnimTransform.h"
 #include "gfx/material/MaterialTable.h"
 #include "gfx/mesh/MeshData.h"
@@ -39,6 +40,10 @@ namespace BHive
 	struct FMeshSubmissionContext
 	{
 		VertexArrayPtr VAO;
+		uint32_t BaseVertex = 0;
+		uint32_t BaseIndex = 0;
+		uint32_t GeometryPage = 0;
+		EShaderMeshType ShaderMeshType = EShaderMeshType::Static;
 
 		FTransform Transform;
 

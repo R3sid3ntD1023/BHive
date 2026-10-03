@@ -3,6 +3,7 @@
 #include "ShaderUtils.h"
 #include "core/FileSystem.h"
 #include "gfx/RenderCommand.h"
+#include <future>
 #include <regex>
 #include <spirv_cross/spirv_glsl.hpp>
 
@@ -186,30 +187,70 @@ namespace BHive
 
 	void ShaderCompiler::CompileToVulkan(ShaderAsset &asset, const MacroDefinitions &definitions)
 	{
-		auto options = mVulkanCompileOptions;
+		auto baseOptions = mVulkanCompileOptions;
 		for (uint32_t i = 0; i < ERenderingSets::MAX; i++)
-			options.AddMacroDefinition(utils::SetMarcos[i], utils::SetValues[i]);
+			baseOptions.AddMacroDefinition(utils::SetMarcos[i], utils::SetValues[i]);
 
-		for (auto &[stage, data] : asset.Stages)
+		struct FCompiledStage
 		{
+			EShaderStage Stage;
+			std::vector<uint32_t> Spirv;
+			std::string Error;
+		};
+
+		const auto fileName = mFilePath.string();
+		auto compileStage = [&baseOptions, &definitions, &fileName](EShaderStage stage, const std::string &code)
+		{
+			FCompiledStage result{};
+			result.Stage = stage;
+			auto options = baseOptions;
 			if (definitions.contains(stage))
 			{
 				for (auto &name : definitions.Names.at(stage))
 					options.AddMacroDefinition(name);
 			}
 
-			auto spirv_binary = mVulkanCompiler.CompileGlslToSpv(data.Code, utils::GetShadercType(stage), mFilePath.string().c_str(), options);
-			if (spirv_binary.GetCompilationStatus() != shaderc_compilation_status_success)
+			shaderc::Compiler compiler;
+			auto spirvBinary = compiler.CompileGlslToSpv(code, utils::GetShadercType(stage), fileName.c_str(), options);
+			if (spirvBinary.GetCompilationStatus() != shaderc_compilation_status_success)
 			{
-				LOG_ERROR("Vulkan: Failed to compile shader = {}, stage = {} : \n{}", mFilePath, ShaderUtils::ToString(stage), spirv_binary.GetErrorMessage());
-				ASSERT(false);
+				result.Error = spirvBinary.GetErrorMessage();
+				return result;
 			}
 
-			data.Spirv.assign(spirv_binary.cbegin(), spirv_binary.cend());
+			result.Spirv.assign(spirvBinary.cbegin(), spirvBinary.cend());
+			return result;
+		};
 
-			// reflect
-			LOG_TRACE("Reflecting Shader... {}", asset.Name)
+		auto storeResult = [&asset](FCompiledStage result)
+		{
+			if (!result.Error.empty())
+			{
+				LOG_ERROR("Vulkan: Failed to compile shader = {}, stage = {} : \n{}", asset.SourcePath, ShaderUtils::ToString(result.Stage), result.Error);
+				ASSERT(false);
+				return;
+			}
+
+			asset.Stages.at(result.Stage).Spirv = std::move(result.Spirv);
+		};
+
+		if (asset.Stages.size() <= 1)
+		{
+			for (const auto &[stage, data] : asset.Stages)
+				storeResult(compileStage(stage, data.Code));
 		}
+		else
+		{
+			std::vector<std::future<FCompiledStage>> jobs;
+			jobs.reserve(asset.Stages.size());
+			for (const auto &[stage, data] : asset.Stages)
+				jobs.emplace_back(std::async(std::launch::async, [&, stage, code = data.Code] { return compileStage(stage, code); }));
+
+			for (auto &job : jobs)
+				storeResult(job.get());
+		}
+
+		LOG_TRACE("Reflecting Shader... {}", asset.Name)
 
 		std::unordered_map<EShaderStage, FShaderReflection> refl_map;
 
@@ -239,10 +280,11 @@ namespace BHive
 
 	void ShaderCompiler::CompileToOpengl(ShaderAsset &asset, const MacroDefinitions &definitions)
 	{
-		auto options = mOpenglCompileOptions;
+		const auto baseOptions = mOpenglCompileOptions;
 
 		for (auto &[stage, data] : asset.Stages)
 		{
+			auto options = baseOptions;
 			spirv_cross::CompilerGLSL glsl_compiler(data.Spirv);
 			std::string glsl_source = glsl_compiler.compile();
 

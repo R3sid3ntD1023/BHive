@@ -20,15 +20,14 @@ namespace BHive
 		const auto fbo = phase.BoundFBO.FBO;
 		const auto numAttachments = fbo ? fbo.As<Framebuffer>()->GetNumColorAttachments() : 0;
 
-		auto it = phase.Commands.begin();
-		auto end = phase.Commands.end();
+		size_t offset = 0;
 		auto api = VulkanRendererAPI::GetInstance();
 
-		while (it != end)
+		while (offset < phase.Commands->GetUsedSize())
 		{
-			const CmdHeader *header = reinterpret_cast<const CmdHeader *>(&(*it).first);
-
-			const auto *payloadPtr = (*it).second.get();
+			const auto *record = phase.Commands->Data() + offset;
+			const auto *header = reinterpret_cast<const CmdHeader *>(record);
+			const auto *payloadPtr = record + header->PayloadOffset;
 
 			switch (header->Type)
 			{
@@ -38,7 +37,7 @@ namespace BHive
 				auto &c = *reinterpret_cast<const CmdSetBufferData *>(payloadPtr);
 				auto bufferID = c.Buffer.As<BufferBase>()->GetBufferID();
 				auto buffer = api->GetBuffer(bufferID);
-				buffer->Upload(c.Data.data(), c.Size, c.Offset);
+				buffer->Upload(phase.Commands->GetData(c.DataOffset), c.Size, c.Offset);
 			}
 			break;
 			case ECommandType::ClearBuffer:
@@ -77,20 +76,24 @@ namespace BHive
 				pipeline->Bind(cmdbuffer, frame, numAttachments);
 			}
 			break;
+			case ECommandType::BindVertexArray:
+			{
+				auto &c = *reinterpret_cast<const CmdBindVertexArray *>(payloadPtr);
+				c.VertexArray.As<VulkanVertexArray>()->Bind(cmdbuffer, frame);
+			}
+			break;
 			case ECommandType::BindMaterial:
 			{
 				auto &c = *reinterpret_cast<const CmdBindMaterial *>(payloadPtr);
-				BindMaterialSnapshot(c.Snapshot, ctx, phase);
+				BindMaterialSnapshot(phase.Commands->GetObject<MaterialSnapshot>(c.SnapshotIndex), ctx, phase);
 			}
 			break;
 			case ECommandType::UploadBuffer:
 			{
 				auto &c = *reinterpret_cast<const CmdUploadBuffer *>(payloadPtr);
-				auto data = c.Data->data();
-				auto size = c.Data->size();
 				auto offset = c.Offset;
 
-				c.Buffer.As<BufferBase>()->SetData(data, size, offset);
+				c.Buffer.As<BufferBase>()->SetData(phase.Commands->GetData(c.DataOffset), c.Size, offset);
 			}
 			break;
 			case ECommandType::DrawFullScreen:
@@ -142,10 +145,8 @@ namespace BHive
 				auto buffer = api->GetBuffer(handle);
 				vk::Buffer buf = *buffer->GetNative(frame);
 
-				auto vao = c.VAO.As<VulkanVertexArray>();
 				auto stride = (uint32_t)c.Stride;
 
-				vao->Bind(cmdbuffer, frame);
 				cmdbuffer.setPrimitiveTopology(topology);
 				cmdbuffer.drawIndexedIndirect(buf, c.Offset, c.DrawCount, stride);
 			}
@@ -160,7 +161,7 @@ namespace BHive
 				break;
 			}
 
-			++it;
+			offset += header->RecordSize;
 		}
 	}
 

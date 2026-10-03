@@ -19,41 +19,43 @@ namespace BHive
 
 		for (auto &o : bucket)
 		{
-			// object data
 			auto &ctx = mQueue->ResolveContext(o.Context);
-			auto model = ctx.Transform;
+			auto &batch = MaterialBatches[ctx.VAO][o.Material][ctx.ShaderMeshType];
+			batch.Submissions.push_back(&o);
+		}
 
-			auto vao = ctx.VAO;
-			auto &s = o.SubMesh;
+		for (auto &[vao, materials] : MaterialBatches)
+		{
+			for (auto &[material, variants] : materials)
+			{
+				for (auto &[meshType, batch] : variants)
+				{
+					batch.FirstCommand = static_cast<uint32_t>(DrawCommands.size());
+					for (const auto *submission : batch.Submissions)
+					{
+						auto &ctx = mQueue->ResolveContext(submission->Context);
+						const auto &submesh = submission->SubMesh;
+						auto model = ctx.Transform;
+						auto transform = model * submesh.Transformation;
+						glm::vec3 worldCenter = transform.TransformPoint(submesh.Bounds.GetCenter());
+						float radius = submesh.Bounds.GetRadius() * glm::compMax(model.Scale);
 
-			auto objectID = ObjectDatas.size();
+						auto &instance = ObjectDatas.emplace_back();
+						instance.CenterRadius = glm::vec4(worldCenter, radius);
+						instance.ModelMatrix = transform.ToMat4();
+						instance.ID = static_cast<uint32_t>(ObjectDatas.size() - 1);
+						instance.BoneOffset = ctx.BoneOffset;
 
-			auto m = model * s.Transformation;
-			glm::vec3 localCenter = s.Bounds.GetCenter();
-			glm::vec3 worldCenter = m.TransformPoint(localCenter);
-			float radius = s.Bounds.GetRadius() * glm::compMax(model.Scale);
-
-			auto &inst = ObjectDatas.emplace_back();
-			inst.CenterRadius = glm::vec4(worldCenter, radius);
-			inst.ModelMatrix = m.ToMat4();
-			inst.ID = objectID;
-			inst.BoneOffset = ctx.BoneOffset;
-
-			// submesh data
-			auto &group = MaterialBatches[vao];
-			auto &batch = group[o.Material];
-
-			if (batch.CommandCount == 0)
-				batch.FirstCommand = (uint32_t)DrawCommands.size();
-
-			batch.CommandCount++;
-
-			auto &cmd = DrawCommands.emplace_back();
-			cmd.indexCount = s.IndexCount;
-			cmd.instanceCount = 0; // GPU increments this
-			cmd.firstIndex = s.StartIndex;
-			cmd.vertexOffset = s.StartVertex;
-			cmd.firstInstance = UINT32_MAX; // GPU will use visibleIndices[]
+						auto &command = DrawCommands.emplace_back();
+						command.indexCount = submesh.IndexCount;
+						command.instanceCount = 0;
+						command.firstIndex = ctx.BaseIndex + submesh.StartIndex;
+						command.vertexOffset = static_cast<int32_t>(ctx.BaseVertex + submesh.StartVertex);
+						command.firstInstance = UINT32_MAX;
+					}
+					batch.CommandCount = static_cast<uint32_t>(batch.Submissions.size());
+				}
+			}
 		}
 	}
 
@@ -64,18 +66,20 @@ namespace BHive
 		{
 			auto v = vao.As<VertexArray>();
 			v->DeclareAccess(pass);
+			pass.Emplace<CmdBindVertexArray>()(vao);
 
-			for (auto &[material, batch] : matMap)
+			for (auto &[material, variants] : matMap)
 			{
 				if (!material)
 					continue;
 
-				pass.Emplace<CmdBindMaterial>()(material.As<Material>());
-
-				uint32_t offset = batch.FirstCommand * sizeof(MultiDrawIndirectCommand);
-
-				pass.UseBuffer(indirect, EBufferUsage::IndirectRead);
-				pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect, vao, batch.CommandCount, sizeof(MultiDrawIndirectCommand), offset);
+				for (auto &[meshType, batch] : variants)
+				{
+					pass.Emplace<CmdBindMaterial>()(material.As<IMaterial>(), meshType);
+					uint32_t offset = batch.FirstCommand * sizeof(MultiDrawIndirectCommand);
+					pass.UseBuffer(indirect, EBufferUsage::IndirectRead);
+					pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect, batch.CommandCount, sizeof(MultiDrawIndirectCommand), offset);
+				}
 			}
 		}
 	}

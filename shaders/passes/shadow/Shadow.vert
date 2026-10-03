@@ -1,6 +1,8 @@
 #include <Core.glsl>
 #include <Constants.glsl>
+#ifdef SKINNING
 #include <Skinning.glsl>
+#endif
 
 layout(location = 0) in vec3 vPosition;
 layout(location = 1) in vec2 vTexCoord;

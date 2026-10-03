@@ -12,6 +12,8 @@ namespace BHive
 
 		static ShaderPtr Get(const std::string &name);
 
+		static ShaderPtr GetVariant(const std::string &name, std::vector<std::string> definitions);
+
 	private:
 		static bool Contains(uint64_t hash) { return mShaders.contains(hash); }
 

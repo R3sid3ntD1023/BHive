@@ -53,7 +53,12 @@ namespace BHive
 
 		auto &ctx = Contexts.at(ctxIndex);
 		ctx.Active = true;
-		ctx.VAO = mesh.As<BaseMesh>()->GetVertexArray();
+		auto *baseMesh = mesh.As<BaseMesh>();
+		ctx.VAO = baseMesh->GetVertexArray();
+		ctx.BaseVertex = baseMesh->GetBaseVertex();
+		ctx.BaseIndex = baseMesh->GetBaseIndex();
+		ctx.GeometryPage = baseMesh->GetGeometryPage();
+		ctx.ShaderMeshType = baseMesh->IsSkeletal() ? EShaderMeshType::Skeletal : EShaderMeshType::Static;
 		const auto &materials = ctx.Materials;
 		const auto &subMeshes = mesh.As<BaseMesh>()->GetSubMeshes();
 
@@ -84,6 +89,10 @@ namespace BHive
 		ctx.EntityID = request.EntityID;
 		// ctx.InstanceTransforms = request.InstanceTransforms;
 		ctx.VAO = mesh->GetVertexArray();
+		ctx.BaseVertex = mesh->GetBaseVertex();
+		ctx.BaseIndex = mesh->GetBaseIndex();
+		ctx.GeometryPage = mesh->GetGeometryPage();
+		ctx.ShaderMeshType = mesh->IsSkeletal() ? EShaderMeshType::Skeletal : EShaderMeshType::Static;
 		ctx.Generation = ++mGenerationVersion;
 		ctx.Materials = request.Materials;
 

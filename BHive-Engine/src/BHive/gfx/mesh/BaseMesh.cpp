@@ -1,7 +1,5 @@
 #include "BaseMesh.h"
-#include "gfx/Buffers.h"
-#include "gfx/VertexArray.h"
-#include "gfx/factories/GFXFactories.h"
+#include "MeshManager.h"
 #include "glad/glad.h"
 
 namespace BHive
@@ -34,14 +32,11 @@ namespace BHive
 
 	void BaseMesh::CreateVertexArrayBuffer()
 	{
-		const auto &indices = mData.Indices;
-		const auto &vertices = mData.Vertices;
-
-		auto indexbuffer = BufferFactory::CreateIndexBuffer((uint32_t)indices.size(), EBufferLifetime::Static, indices.data());
-		auto vertexbuffer = BufferFactory::CreateVertexBuffer(vertices.size() * sizeof(FVertex), EBufferLifetime::Static, vertices.data());
-		vertexbuffer.As<VertexBuffer>()->SetLayout(FVertex::Layout());
-
-		mVertexArray = VertexArrayFactory::Create({vertexbuffer}, indexbuffer);
+		auto geometry = MeshManager::Get().Register(mData);
+		mVertexArray = geometry.VertexArray;
+		mGeometryPage = geometry.Page;
+		mBaseVertex = geometry.BaseVertex;
+		mBaseIndex = geometry.BaseIndex;
 	}
 
 	REFLECT(BaseMesh)

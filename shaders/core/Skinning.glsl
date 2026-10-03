@@ -1,4 +1,3 @@
-#define SKINNING
 #define MAX_BONE_INFLUENCE 4
 
 layout(std430, set = SET_OBJECT, binding = 3) readonly buffer Bones

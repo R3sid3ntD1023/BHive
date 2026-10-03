@@ -1,9 +1,131 @@
 #include "ShaderUtils.h"
-#include "gfx/Enumerations.h"
 #include "core/FileSystem.h"
+#include "gfx/Enumerations.h"
+#include <string_view>
 
 namespace BHive
 {
+	namespace
+	{
+		struct FIncludeExpansionContext
+		{
+			std::vector<std::filesystem::path> Dependencies;
+			std::unordered_set<std::string> DependencyKeys;
+			std::unordered_set<std::string> OnceFiles;
+			std::unordered_set<std::string> ActiveFiles;
+		};
+
+		std::string_view Trim(std::string_view value)
+		{
+			while (!value.empty() && std::isspace(static_cast<unsigned char>(value.front())))
+				value.remove_prefix(1);
+			while (!value.empty() && std::isspace(static_cast<unsigned char>(value.back())))
+				value.remove_suffix(1);
+			return value;
+		}
+
+		bool IsPragmaOnce(std::string_view line)
+		{
+			line = Trim(line);
+			if (!line.starts_with("#pragma"))
+				return false;
+
+			line = Trim(line.substr(7));
+			if (!line.starts_with("once"))
+				return false;
+
+			line = Trim(line.substr(4));
+			return line.empty() || line.starts_with("//") || line.starts_with("/*");
+		}
+
+		std::string ExpandIncludesRecursive(const std::string &source, const std::filesystem::path &requestingPath, FIncludeExpansionContext &context, bool rootSource = false)
+		{
+			const auto normalizedPath = requestingPath.lexically_normal();
+			const auto sourceName = normalizedPath.generic_string();
+			if (context.DependencyKeys.insert(sourceName).second)
+				context.Dependencies.emplace_back(normalizedPath);
+
+			bool pragmaOnce = false;
+			{
+				std::stringstream sourceLines(source);
+				std::string sourceLine;
+				while (std::getline(sourceLines, sourceLine))
+				{
+					if (IsPragmaOnce(sourceLine))
+					{
+						pragmaOnce = true;
+						break;
+					}
+				}
+			}
+			if (pragmaOnce && context.OnceFiles.contains(sourceName))
+				return {};
+
+			if (!context.ActiveFiles.insert(sourceName).second)
+			{
+				LOG_ERROR("Shader include cycle detected at {}", sourceName);
+				return {};
+			}
+
+			if (pragmaOnce)
+				context.OnceFiles.insert(sourceName);
+
+			std::stringstream input(source);
+			std::stringstream output;
+			std::string line;
+			int lineNumber = 0;
+
+			output << "#line 0 \"" << sourceName << "\"\n";
+			while (std::getline(input, line))
+			{
+				const auto trimmedLine = Trim(line);
+				if (rootSource && trimmedLine.starts_with("#type"))
+					context.OnceFiles.clear();
+
+				if (IsPragmaOnce(trimmedLine))
+				{
+					output << '\n';
+				}
+				else if (trimmedLine.starts_with("#include"))
+				{
+					auto start = line.find('<');
+					if (start == std::string::npos)
+						start = line.find('"');
+					const char closingDelimiter = start != std::string::npos && line[start] == '"' ? '"' : '>';
+					auto end = start == std::string::npos ? std::string::npos : line.find(closingDelimiter, start + 1);
+					if (start == std::string::npos || end == std::string::npos)
+					{
+						LOG_ERROR("Malformed shader include directive in {}:{}", sourceName, lineNumber + 1);
+						output << '\n';
+					}
+					else
+					{
+						const auto includeName = line.substr(start + 1, end - start - 1);
+						const auto includePath = ShaderUtils::ResolveIncludePath(includeName, sourceName);
+						std::string includeSource;
+						if (includePath.empty() || !FileSystem::ReadFile(includePath, includeSource))
+						{
+							LOG_ERROR("Failed to read shader include {} from {}", includeName, sourceName);
+						}
+						else
+						{
+							output << ExpandIncludesRecursive(includeSource, includePath, context);
+						}
+						output << "#line " + std::to_string(lineNumber + 1) + " \"" + sourceName + "\"\n";
+					}
+				}
+				else
+				{
+					output << line << '\n';
+				}
+				lineNumber++;
+			}
+
+			context.ActiveFiles.erase(sourceName);
+			return output.str();
+		}
+	} // namespace
+
 	std::string ShaderUtils::ToString(EShaderStage stage)
 	{
 		switch (stage)
@@ -88,39 +210,14 @@ namespace BHive
 
 	std::string ShaderUtils::ExpandIncludes(const std::string &source, const std::string &requestingPath)
 	{
-		std::stringstream input(source);
-		std::stringstream output;
+		return ExpandIncludesWithDependencies(source, requestingPath).Source;
+	}
 
-		std::string line;
-		int lineNumber = 0;
-
-		output << "#line 0 \"" << requestingPath + "\"\n";
-
-		while (std::getline(input, line))
-		{
-			if (line.starts_with("#include"))
-			{
-				auto start = line.find("<") + 1;
-				auto end = line.find(">", start);
-
-				std::string includeName = line.substr(start, end - start);
-				std::filesystem::path includePath = ResolveIncludePath(includeName, requestingPath);
-
-				std::string includeSource;
-				FileSystem::ReadFile(includePath.string(), includeSource);
-
-				output << ExpandIncludes(includeSource, includePath.string());
-				output << "#line " + std::to_string(lineNumber + 1) + " \"" + requestingPath + "\"\n";
-			}
-			else
-			{
-				output << line << "\n";
-			}
-
-			lineNumber++;
-		}
-
-		return output.str();
+	ShaderUtils::ExpandedSource ShaderUtils::ExpandIncludesWithDependencies(const std::string &source, const std::string &requestingPath)
+	{
+		FIncludeExpansionContext context;
+		auto expandedSource = ExpandIncludesRecursive(source, requestingPath, context, true);
+		return {std::move(expandedSource), std::move(context.Dependencies)};
 	}
 
 	std::string ShaderUtils::ResolveIncludePath(const std::string &requested, const std::string &requesting)
