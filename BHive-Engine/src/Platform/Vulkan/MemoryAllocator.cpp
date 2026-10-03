@@ -9,6 +9,20 @@ namespace BHive
 	{
 	}
 
+	MemoryAllocator::~MemoryAllocator()
+	{
+		for (auto &blocks : mBlocksPerType)
+		{
+			for (auto &block : blocks)
+			{
+				if (block.MappedPtr)
+					mDevice.unmapMemory(block.Memory);
+				if (block.Memory != VK_NULL_HANDLE)
+					mDevice.freeMemory(block.Memory);
+			}
+		}
+	}
+
 	MemoryAllocation MemoryAllocator::Allocate(const vk::raii::Buffer &buffer, vk::MemoryPropertyFlags props)
 	{
 		vk::MemoryRequirements req = buffer.getMemoryRequirements();
@@ -60,12 +74,13 @@ namespace BHive
 		return allocation.MappedPtr;
 	}
 
-	void MemoryAllocator::UnMap(const MemoryAllocation &allocation)
+	void MemoryAllocator::UnMap(MemoryAllocation &allocation)
 	{
 		if (allocation.IsDedicated && allocation.IsMapped)
-		{
 			mDevice.unmapMemory(allocation.Memory);
-		}
+
+		allocation.IsMapped = false;
+		allocation.MappedPtr = nullptr;
 	}
 
 	void MemoryAllocator::Free(const MemoryAllocation &allocation)
@@ -86,18 +101,6 @@ namespace BHive
 			block->FreeList.emplace_back(allocation.Offset, allocation.Size);
 
 			MergeFreeList(block);
-
-			if (block->FreeList.size() == 1 && block->FreeList[0] == std::pair{0, block->Size})
-			{
-				if (block->MappedPtr)
-				{
-					mDevice.unmapMemory(block->Memory);
-
-					block->MappedPtr = nullptr;
-				}
-
-				mDevice.freeMemory(block->Memory);
-			}
 		}
 	}
 

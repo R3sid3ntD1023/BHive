@@ -32,15 +32,7 @@ namespace BHive
 
 		virtual void QueueDeletion(FQeueuDeletionFunc &&fn) = 0;
 
-		virtual void CreateTexture2D(int32_t &id, uint32_t x, uint32_t y, const FTextureCreateInfo &info) = 0;
-
-		virtual void CreateTexture2DArray(int32_t &id, uint32_t x, uint32_t y, const FTextureCreateInfo &info) = 0;
-
-		virtual void CreateTextureCube(int32_t &id, uint32_t s, const FTextureCreateInfo &info) = 0;
-
-		virtual void CreateTextureCubeArray(int32_t &id, uint32_t s, const FTextureCreateInfo &info) = 0;
-
-		virtual void CreateTexture3D(int32_t &id, uint32_t x, uint32_t y, uint32_t z, const FTextureCreateInfo &info) = 0;
+		virtual void CreateTexture(int32_t &id, ETextureType type, const glm::uvec3 &size, const FTextureCreateInfo &info) = 0;
 
 		virtual void DeleteTexture(int32_t &textureID) = 0;
 

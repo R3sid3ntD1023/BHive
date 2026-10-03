@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DescriptorCache.h"
-#include "GPUResourceManager.h"
 #include "MemoryAllocator.h"
 #include "VulkanCore.h"
 #include "VulkanLayoutCache.h"
@@ -80,8 +79,6 @@ namespace BHive
 
 		static MemoryAllocator &GetMemoryAllocator() { return *Get().mMemoryAllocator; }
 
-		static GPUResourceManager &GetGPUResourceManager() { return *Get().mGPUResourceManager; }
-
 		static vk::raii::CommandPool &GetCommandPool() { return Get().mCommandPool; }
 
 		static vk::raii::CommandBuffer &GetCommandBuffer(uint32_t frame) { return Get().mCommandBuffers.at(frame); }
@@ -126,8 +123,6 @@ namespace BHive
 
 		void CreateMemoryAllocator();
 
-		void CreateGPUResourceManager();
-
 		void CreateDeviceInternal(uint32_t graphicsIndex, uint32_t presentIndex);
 
 	private:
@@ -156,8 +151,6 @@ namespace BHive
 		VkQueueFamilies mQueueFamilies;
 
 		Scope<MemoryAllocator> mMemoryAllocator;
-
-		Scope<GPUResourceManager> mGPUResourceManager;
 
 		DebugNameRegistry mDebugNames;
 

@@ -2,7 +2,6 @@
 
 #include "gfx/imgui/IImGuiProvider.h"
 #include "../VulkanCore.h"
-#include "gfx/ResourceID.h"
 
 namespace BHive
 {
@@ -13,7 +12,7 @@ namespace BHive
 
 		void InvalidateTexture(const Texture &tex) override;
 
-		void OnTextureDestroyed(ResourceID id);
+		void OnTextureDestroyed(int32_t id);
 
 	private:
 		std::unordered_map<uint32_t, VkDescriptorSet> mTextureSets;

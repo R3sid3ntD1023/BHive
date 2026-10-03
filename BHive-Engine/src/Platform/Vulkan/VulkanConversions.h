@@ -2,6 +2,8 @@
 
 #include "VulkanCore.h"
 #include "gfx/Enumerations.h"
+#include "gfx/TextureSpecification.h"
+#include <glm/vec3.hpp>
 
 namespace BHive
 {
@@ -418,5 +420,95 @@ namespace BHive
 		ASSERT(usage != (vk::BufferUsageFlags)0);
 		return usage;
 	}
+
+	struct FVulkanTextureCreateInfo
+	{
+		vk::ImageCreateInfo ImageInfo{};
+		vk::ImageViewCreateInfo ViewInfo{};
+		vk::SamplerCreateInfo SamplerInfo{};
+
+		FVulkanTextureCreateInfo(ETextureType type, const glm::uvec3 &size, const FTextureCreateInfo &info)
+		{
+			auto format = ToVkFormat(info.Format);
+			vk::ImageType imageType = vk::ImageType::e2D;
+			vk::ImageViewType viewType = vk::ImageViewType::e2D;
+			vk::ImageCreateFlags flags{};
+			vk::Extent3D extent(size.x, size.y, 1);
+			uint32_t layers = 1;
+
+			switch (type)
+			{
+			case ETextureType::TEXTURE_1D:
+				imageType = vk::ImageType::e1D;
+				viewType = vk::ImageViewType::e1D;
+				extent = vk::Extent3D(size.x, 1, 1);
+				break;
+			case ETextureType::TEXTURE_1D_ARRAY:
+				imageType = vk::ImageType::e1D;
+				viewType = vk::ImageViewType::e1DArray;
+				extent = vk::Extent3D(size.x, 1, 1);
+				layers = info.ArrayLayers;
+				break;
+			case ETextureType::TEXTURE_2D:
+			case ETextureType::TEXTURE_RECTANGLE:
+				extent = vk::Extent3D(size.x, size.y, 1);
+				break;
+			case ETextureType::TEXTURE_2D_ARRAY:
+				viewType = vk::ImageViewType::e2DArray;
+				extent = vk::Extent3D(size.x, size.y, 1);
+				layers = info.ArrayLayers;
+				break;
+			case ETextureType::TEXTURE_3D:
+				imageType = vk::ImageType::e3D;
+				viewType = vk::ImageViewType::e3D;
+				extent = vk::Extent3D(size.x, size.y, size.z);
+				break;
+			case ETextureType::TEXTURE_CUBE_MAP:
+				flags = vk::ImageCreateFlagBits::eCubeCompatible;
+				viewType = vk::ImageViewType::eCube;
+				extent = vk::Extent3D(size.x, size.x, 1);
+				layers = 6;
+				break;
+			case ETextureType::TEXTURE_CUBE_MAP_ARRAY:
+				flags = vk::ImageCreateFlagBits::eCubeCompatible;
+				viewType = vk::ImageViewType::eCubeArray;
+				extent = vk::Extent3D(size.x, size.x, 1);
+				layers = info.ArrayLayers * 6;
+				break;
+			}
+
+			auto usage = InferImageUsage(info.Roles);
+			auto aspect = ToVkAspect(info.Aspect);
+			auto range = vk::ImageSubresourceRange(aspect, 0, info.MipLevels, 0, layers);
+			ImageInfo = vk::ImageCreateInfo(
+				flags, imageType, format, extent, info.MipLevels, layers, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, usage, vk::SharingMode::eExclusive, 0
+			);
+			ViewInfo = vk::ImageViewCreateInfo({}, VK_NULL_HANDLE, viewType, format, {}, range);
+
+			auto magFilter = ToVkFilter(info.MagFilter);
+			auto minFilter = ToVkFilter(info.MinFilter);
+			auto addressMode = ToVkWrap(info.WrapMode);
+			auto compareEnabled = info.CompareOp.has_value();
+			auto compareOp = compareEnabled ? ToVkCompare(*info.CompareOp) : vk::CompareOp::eAlways;
+			SamplerInfo = vk::SamplerCreateInfo(
+				{},
+				magFilter,
+				minFilter,
+				vk::SamplerMipmapMode::eLinear,
+				addressMode,
+				addressMode,
+				addressMode,
+				0.0f,
+				0u,
+				1.0f,
+				compareEnabled,
+				compareOp,
+				0.0f,
+				float(info.MipLevels - 1),
+				ToVkBorderColor(info.BorderColor),
+				VK_FALSE
+			);
+		}
+	};
 
 } // namespace BHive

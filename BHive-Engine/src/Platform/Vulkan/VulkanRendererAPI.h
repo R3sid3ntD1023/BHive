@@ -3,6 +3,7 @@
 #include "VulkanBuffer.h"
 #include "VulkanCore.h"
 #include "VulkanImage.h"
+#include "VulkanResourceList.h"
 #include "gfx/RendererAPI.h"
 #include "gfx/WindowContext.h"
 
@@ -43,6 +44,8 @@ namespace BHive
 	{
 	public:
 		VulkanRendererAPI();
+		VulkanRendererAPI(const VulkanRendererAPI &) = delete;
+		VulkanRendererAPI &operator=(const VulkanRendererAPI &) = delete;
 
 		~VulkanRendererAPI();
 
@@ -60,15 +63,7 @@ namespace BHive
 
 		uint32_t GetCurrentFrame() const { return mCurrentFrame; }
 
-		void CreateTexture2D(int32_t &id, uint32_t x, uint32_t y, const FTextureCreateInfo &info) override;
-
-		void CreateTexture2DArray(int32_t &id, uint32_t x, uint32_t y, const FTextureCreateInfo &info) override;
-
-		void CreateTextureCube(int32_t &id, uint32_t s, const FTextureCreateInfo &info) override;
-
-		void CreateTextureCubeArray(int32_t &id, uint32_t s, const FTextureCreateInfo &info) override;
-
-		void CreateTexture3D(int32_t &id, uint32_t x, uint32_t y, uint32_t z, const FTextureCreateInfo &info) override;
+		void CreateTexture(int32_t &id, ETextureType type, const glm::uvec3 &size, const FTextureCreateInfo &info) override;
 
 		void DeleteTexture(int32_t &textureID) override;
 
@@ -126,9 +121,7 @@ namespace BHive
 
 		friend class VulkanFramebuffer;
 
-		std::deque<VulkanImage> mTextures;
-		std::queue<uint32_t> mTextureFreeList;
-		std::deque<VulkanBuffer> mBuffers;
-		std::queue<uint32_t> mBufferFreeList;
+		VulkanResourceList<VulkanImage> mTextures;
+		VulkanResourceList<VulkanBuffer> mBuffers;
 	};
 } // namespace BHive

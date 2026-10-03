@@ -82,8 +82,8 @@ namespace BHive
 
 		auto bufferID = bindInfo.Buffer.As<BufferBase>()->GetBufferID();
 		auto buf = VulkanRendererAPI::GetInstance()->GetBuffer(bufferID);
-		auto buffer = buf->GetNative(frame);
-		return vk::DescriptorBufferInfo(buffer->Buffer, 0, buffer->Size);
+		const auto &buffer = buf->GetNative(frame);
+		return vk::DescriptorBufferInfo(*buffer, 0, buf->GetSize());
 	}
 
 	vk::DescriptorImageInfo VulkanResourceSet::BuildImageInfo(const FBindingInfo &bindInfo, uint32_t mip) const

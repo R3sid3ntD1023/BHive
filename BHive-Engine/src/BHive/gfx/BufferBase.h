@@ -1,6 +1,5 @@
 #pragma once
 
-#include "NativeHandle.h"
 #include "core/Core.h"
 #include "gfx/Enumerations.h"
 

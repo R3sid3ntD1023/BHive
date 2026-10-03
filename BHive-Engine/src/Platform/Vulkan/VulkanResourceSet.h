@@ -2,7 +2,6 @@
 
 #include "VulkanCore.h"
 #include "gfx/Enumerations.h"
-#include "gfx/NativeHandle.h"
 #include "gfx/ResourceSet.h"
 #include "gfx/registries/Handles.h"
 #include "gfx/shader/ShaderTemplate.h"

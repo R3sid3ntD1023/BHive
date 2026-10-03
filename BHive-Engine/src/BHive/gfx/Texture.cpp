@@ -14,7 +14,7 @@ namespace BHive
 		  mBuffer(data)
 	{
 		auto api = RenderCommand::GetGraphicsAPI();
-		api->CreateTexture2D(mTextureID, size.x, size.y, createInfo);
+		api->CreateTexture(mTextureID, ETextureType::TEXTURE_2D, {size.x, size.y, 1}, createInfo);
 
 		if (data)
 		{
@@ -49,7 +49,7 @@ namespace BHive
 		  mCreateInfo(specification)
 	{
 		auto api = RenderCommand::GetGraphicsAPI();
-		api->CreateTexture2DArray(mTextureID, size.x, size.y, specification);
+		api->CreateTexture(mTextureID, ETextureType::TEXTURE_2D_ARRAY, {size.x, size.y, 1}, specification);
 	}
 
 	Texture2DArray::~Texture2DArray()
@@ -129,7 +129,7 @@ namespace BHive
 		: mCreateInfo(createInfo)
 	{
 		auto api = RenderCommand::GetGraphicsAPI();
-		api->CreateTextureCube(mTextureID, size, createInfo);
+		api->CreateTexture(mTextureID, ETextureType::TEXTURE_CUBE_MAP, {size, size, 1}, createInfo);
 	}
 
 	TextureCube::~TextureCube()
@@ -143,7 +143,7 @@ namespace BHive
 		  mCreateInfo(createInfo)
 	{
 		auto api = RenderCommand::GetGraphicsAPI();
-		api->CreateTextureCubeArray(mTextureID, size, createInfo);
+		api->CreateTexture(mTextureID, ETextureType::TEXTURE_CUBE_MAP_ARRAY, {size, size, 1}, createInfo);
 	}
 
 	TextureCubeArray::~TextureCubeArray()
@@ -156,7 +156,7 @@ namespace BHive
 		: mCreateInfo(createInfo)
 	{
 		auto api = RenderCommand::GetGraphicsAPI();
-		api->CreateTexture3D(mTextureID, size.x, size.y, size.z, createInfo);
+		api->CreateTexture(mTextureID, ETextureType::TEXTURE_3D, size, createInfo);
 		if (data)
 		{
 			SetData({

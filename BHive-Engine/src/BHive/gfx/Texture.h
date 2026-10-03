@@ -1,6 +1,5 @@
 #pragma once
 
-#include "NativeHandle.h"
 #include "ResourceID.h"
 #include "TextureSpecification.h"
 #include "asset/Asset.h"

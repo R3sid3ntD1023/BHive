@@ -5,51 +5,68 @@
 
 namespace BHive
 {
-	namespace utils
+	VulkanBuffer::VulkanBuffer(vk::raii::Device &device)
+		: mDevice(device)
 	{
-		vk::BufferMemoryBarrier2 MakeBufferBarrier(vk::Buffer buffer, vk::PipelineStageFlags2 dstStage, vk::AccessFlags2 dstAccess)
-		{
-			return vk::BufferMemoryBarrier2(
-				vk::PipelineStageFlagBits2::eCopy,
-				vk::AccessFlagBits2::eTransferWrite,
-				dstStage,
-				dstAccess,
-				VK_QUEUE_FAMILY_IGNORED,
-				VK_QUEUE_FAMILY_IGNORED,
-				buffer,
-				0,
-				VK_WHOLE_SIZE
-			);
-		}
+		mBuffers.reserve(MAX_FRAMES_IN_FLIGHT);
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+			mBuffers.emplace_back(nullptr);
+	}
 
-	} // namespace utils
+	VulkanBuffer::VulkanBuffer(VulkanBuffer &&other) noexcept
+		: mDevice(other.mDevice),
+		  mBuffers(std::move(other.mBuffers)),
+		  mAllocations(other.mAllocations),
+		  mSize(std::exchange(other.mSize, 0)),
+		  mBufferCount(std::exchange(other.mBufferCount, 0)),
+		  mLifeTime(other.mLifeTime)
+	{
+		other.mAllocations = {};
+	}
 
 	VulkanBuffer::~VulkanBuffer()
 	{
-		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-			mMappedPtrs[i] = nullptr;
+		Reset();
+	}
 
-		if (mLifeTime == EBufferLifetime::Static)
+	void VulkanBuffer::Reset()
+	{
+		for (uint32_t i = 0; i < mBufferCount; i++)
 		{
-			mBuffers[0].Destroy();
-			mBuffers[1].Destroy();
+			mBuffers[i] = VK_NULL_HANDLE;
+			VulkanBackend::GetMemoryAllocator().Free(mAllocations[i]);
+			mAllocations[i] = {};
 		}
-		else
-		{
-			for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-				mBuffers[i].Destroy();
-		}
+		mBufferCount = 0;
+		mSize = 0;
 	}
 
 	void VulkanBuffer::Initialize(size_t size, vk::BufferUsageFlags usage, EBufferLifetime lifeTime)
 	{
+		Reset();
+		mSize = size;
 		mLifeTime = lifeTime;
 		(mLifeTime == EBufferLifetime::Static) ? InitStatic(size, usage) : InitDynamic(size, usage);
 	}
 
-	GPUBufferResourceHandle VulkanBuffer::GetNative(uint32_t frame) const
+	const vk::raii::Buffer &VulkanBuffer::GetNative(uint32_t frame) const
 	{
-		return (mLifeTime == EBufferLifetime::Static) ? mBuffers[0] : mBuffers[frame];
+		return mBuffers[(mLifeTime == EBufferLifetime::Static) ? 0 : frame];
+	}
+
+	void *VulkanBuffer::MapAllocation(uint32_t index)
+	{
+		auto &allocation = mAllocations[index];
+		if (!allocation.IsMapped)
+			allocation.MappedPtr = VulkanBackend::GetMemoryAllocator().Map(allocation);
+		return allocation.MappedPtr;
+	}
+
+	void VulkanBuffer::CopyStaticBuffer(vk::DeviceSize size, vk::DeviceSize offset)
+	{
+		SingleTimeCommand cmd{};
+		vk::BufferCopy region(offset, offset, size);
+		cmd.Get().copyBuffer(*mBuffers[1], *mBuffers[0], region);
 	}
 
 	void VulkanBuffer::Upload(const void *data, size_t size, uint32_t offset)
@@ -59,20 +76,17 @@ namespace BHive
 			if (!data || size == 0)
 				return;
 
-			SingleTimeCommand cmd{};
-			if (mMappedPtrs[1])
-			{
-				std::memcpy(static_cast<std::byte *>(mMappedPtrs[1]), data, size);
-				vk::BufferCopy region(0, 0, size);
-				cmd.Get().copyBuffer(mBuffers[1]->Buffer, mBuffers[0]->Buffer, region);
-			}
+			ASSERT(offset + size <= mSize);
+			auto mapped = MapAllocation(1);
+			std::memcpy(static_cast<std::byte *>(mapped) + offset, data, size);
+			CopyStaticBuffer(size, offset);
 			return;
 		}
 
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			ASSERT(offset + size <= mBuffers[i]->Size);
-			std::memcpy(static_cast<std::byte *>(mMappedPtrs[i]) + offset, data, size);
+			ASSERT(offset + size <= mSize);
+			std::memcpy(static_cast<std::byte *>(MapAllocation(i)) + offset, data, size);
 		}
 	}
 
@@ -80,31 +94,29 @@ namespace BHive
 	{
 		if (mLifeTime != EBufferLifetime::Dynamic)
 		{
-			SingleTimeCommand cmd{};
-			if (mMappedPtrs[1])
-			{
-				std::memset(static_cast<std::byte *>(mMappedPtrs[1]), 0, mBuffers[1]->Size);
-				vk::BufferCopy region(0, 0, mBuffers[1]->Size);
-				cmd.Get().copyBuffer(mBuffers[1]->Buffer, mBuffers[0]->Buffer, region);
-			}
+			std::memset(MapAllocation(1), 0, mSize);
+			CopyStaticBuffer(mSize);
 			return;
 		}
 
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			std::memset(mMappedPtrs[i], 0, mBuffers[i]->Size);
+			std::memset(MapAllocation(i), 0, mSize);
 		}
 	}
 
 	void VulkanBuffer::InitStatic(size_t size, vk::BufferUsageFlags usage)
 	{
 		auto info = vk::BufferCreateInfo({}, size, usage | vk::BufferUsageFlagBits::eTransferDst);
-		mBuffers[0] = VulkanBackend::GetGPUResourceManager().CreateBuffer(info, vk::MemoryPropertyFlagBits::eDeviceLocal);
+		mBuffers[0] = mDevice.createBuffer(info);
+		mAllocations[0] = VulkanBackend::GetMemoryAllocator().Allocate(mBuffers[0], vk::MemoryPropertyFlagBits::eDeviceLocal);
+		mBuffers[0].bindMemory(mAllocations[0].Memory, mAllocations[0].Offset);
 
 		auto stageInfo = vk::BufferCreateInfo({}, size, vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eTransferDst);
-		mBuffers[1] = VulkanBackend::GetGPUResourceManager().CreateBuffer(stageInfo, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-
-		mMappedPtrs[1] = mBuffers[1]->map(0, size);
+		mBuffers[1] = mDevice.createBuffer(stageInfo);
+		mAllocations[1] = VulkanBackend::GetMemoryAllocator().Allocate(mBuffers[1], vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+		mBuffers[1].bindMemory(mAllocations[1].Memory, mAllocations[1].Offset);
+		mBufferCount = 2;
 	}
 
 	void VulkanBuffer::InitDynamic(size_t size, vk::BufferUsageFlags usage)
@@ -112,9 +124,11 @@ namespace BHive
 		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			auto info = vk::BufferCreateInfo({}, size, usage);
-			mBuffers[i] = VulkanBackend::GetGPUResourceManager().CreateBuffer(info, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-			mMappedPtrs[i] = mBuffers[i]->map(0, size);
+			mBuffers[i] = mDevice.createBuffer(info);
+			mAllocations[i] = VulkanBackend::GetMemoryAllocator().Allocate(mBuffers[i], vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+			mBuffers[i].bindMemory(mAllocations[i].Memory, mAllocations[i].Offset);
 		}
+		mBufferCount = MAX_FRAMES_IN_FLIGHT;
 	}
 
 } // namespace BHive

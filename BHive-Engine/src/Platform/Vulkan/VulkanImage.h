@@ -2,19 +2,25 @@
 
 #include "IVulkanTextureInterface.h"
 #include "Platform/Vulkan/ImageViewBuilder.h"
+#include "Platform/Vulkan/MemoryAllocator.h"
 #include "Platform/Vulkan/VulkanMemory.h"
 #include "core/delegates/EventDelegate.h"
-#include "gfx/NativeHandle.h"
 #include "gfx/resources/ImageCopyRegion.h"
 #include "gfx/resources/ImageSubresourceRange.h"
 
 namespace BHive
 {
-	DECLARE_EVENT(OnDestroyed, ResourceID)
+	DECLARE_EVENT(OnDestroyed)
 
-	class VulkanImage : public INativeObject
+	class VulkanImage
 	{
 	public:
+		VulkanImage() = default;
+		VulkanImage(const VulkanImage &) = delete;
+		VulkanImage &operator=(const VulkanImage &) = delete;
+		VulkanImage(VulkanImage &&other) noexcept;
+		VulkanImage &operator=(VulkanImage &&other) noexcept;
+
 		~VulkanImage();
 
 		void Initialize(const vk::ImageCreateInfo &imgInfo, const vk::ImageViewCreateInfo &viewInfo, const vk::SamplerCreateInfo &smpInfo);
@@ -44,23 +50,24 @@ namespace BHive
 
 		void Clear();
 
-		operator bool() const { return mImage; }
+		operator bool() const { return mImage != VK_NULL_HANDLE; }
 
 		OnDestroyedEvent OnDestroyed;
 
 	private:
-		ResourceID mImage;
+		vk::raii::Image mOwnedImage{nullptr};
+		vk::Image mImage = VK_NULL_HANDLE;
+		vk::raii::Sampler mSampler{nullptr};
+		MemoryAllocator *mAllocator = nullptr;
+		MemoryAllocation mAllocation;
 
-		ImageViews mViews;
-
-		ResourceID mSampler;
+		vk::ImageViewCreateInfo mViewInfo{};
+		mutable ImageViews mViews;
 
 		ImageStateTracker mStateTracker;
 
 		uint32_t mLayers = 0, mLevels = 0;
-
 		vk::Extent3D mExtents{0, 0, 1};
-
 		vk::ImageAspectFlags mImageAspect = vk::ImageAspectFlagBits::eColor;
 	};
 

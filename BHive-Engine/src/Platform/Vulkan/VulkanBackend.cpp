@@ -113,7 +113,6 @@ namespace BHive
 		CreateDescriptorPool();
 		CreateImmediateCommandPool();
 		CreateMemoryAllocator();
-		CreateGPUResourceManager();
 
 		sInstance = this;
 	}
@@ -329,11 +328,6 @@ namespace BHive
 	void VulkanBackend::CreateMemoryAllocator()
 	{
 		mMemoryAllocator = CreateScope<MemoryAllocator>(mDevice, mPhysicalDevice);
-	}
-
-	void VulkanBackend::CreateGPUResourceManager()
-	{
-		mGPUResourceManager = CreateScope<GPUResourceManager>();
 	}
 
 	void VulkanBackend::CreateDeviceInternal(uint32_t graphicsIndex, uint32_t presentIndex)

@@ -2,12 +2,11 @@
 
 #include "ShaderAsset.h"
 #include "ShaderTemplate.h"
-#include "gfx/NativeHandle.h"
 #include "gfx/ResourceID.h"
 
 namespace BHive
 {
-	class BHIVE_API Shader : public INativeObject
+	class BHIVE_API Shader
 	{
 	public:
 		Shader(const ShaderAsset &asset)

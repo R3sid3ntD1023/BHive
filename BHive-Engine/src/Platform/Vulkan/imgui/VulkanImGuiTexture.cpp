@@ -26,7 +26,7 @@ namespace BHive
 		auto set = ImGui_ImplVulkan_AddTexture(smp, view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		mTextureSets[handle] = set;
 
-		image->OnDestroyed.bind(this, &VulkanImGuiTexture::OnTextureDestroyed);
+		image->OnDestroyed.bind([this, handle] { OnTextureDestroyed(handle); });
 
 		return (ImTextureID)set;
 	}
@@ -42,7 +42,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanImGuiTexture::OnTextureDestroyed(ResourceID id)
+	void VulkanImGuiTexture::OnTextureDestroyed(int32_t id)
 	{
 		if (RenderCommand::IsShuttingDown())
 			return;

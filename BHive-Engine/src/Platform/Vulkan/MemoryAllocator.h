@@ -20,6 +20,7 @@ namespace BHive
 	{
 	public:
 		MemoryAllocator(vk::Device device, vk::PhysicalDevice physicalDevice);
+		~MemoryAllocator();
 
 		MemoryAllocation Allocate(const vk::raii::Buffer &buffer, vk::MemoryPropertyFlags props);
 
@@ -27,7 +28,7 @@ namespace BHive
 
 		void *Map(MemoryAllocation &allocation);
 
-		void UnMap(const MemoryAllocation &allocation);
+		void UnMap(MemoryAllocation &allocation);
 
 		void Free(const MemoryAllocation &allocation);
 

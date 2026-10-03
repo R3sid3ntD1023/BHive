@@ -140,7 +140,7 @@ namespace BHive
 				auto topology = ToVkTopology(c.Mode);
 				auto handle = c.Buffer.As<BufferBase>()->GetBufferID();
 				auto buffer = api->GetBuffer(handle);
-				vk::Buffer buf = buffer->GetNative(frame)->Buffer;
+				vk::Buffer buf = *buffer->GetNative(frame);
 
 				auto vao = c.VAO.As<VulkanVertexArray>();
 				auto stride = (uint32_t)c.Stride;
@@ -181,7 +181,7 @@ namespace BHive
 			if (bufferID < 0)
 				continue;
 
-			vk::Buffer buf = VulkanRendererAPI::GetInstance()->GetBuffer(bufferID)->GetNative(frame)->Buffer;
+			vk::Buffer buf = *VulkanRendererAPI::GetInstance()->GetBuffer(bufferID)->GetNative(frame);
 
 			auto srcStage = ToStage(t.Src);
 			auto dstStage = ToStage(t.Dst);

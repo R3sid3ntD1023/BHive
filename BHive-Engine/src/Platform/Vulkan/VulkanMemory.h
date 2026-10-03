@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ImageState.h"
-#include "gfx/ResourceID.h"
 
 namespace BHive
 {
@@ -20,9 +19,9 @@ namespace BHive
 
 	struct ImageViews
 	{
-		ResourceID FullView;
+		vk::raii::ImageView FullView{nullptr};
 
-		std::map<ViewKey, ResourceID> Views;
+		std::map<ViewKey, vk::raii::ImageView> Views;
 
 		auto begin() { return Views.begin(); }
 

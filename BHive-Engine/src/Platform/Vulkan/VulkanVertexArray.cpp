@@ -67,7 +67,7 @@ namespace BHive
 		{
 			auto handle = mVertexBuffers[i].As<VertexBuffer>();
 			auto vkBuffer = api->GetBuffer(handle->GetBufferID());
-			vertex_handles[i] = vkBuffer->GetNative(frame)->Buffer;
+			vertex_handles[i] = *vkBuffer->GetNative(frame);
 		}
 
 		std::vector<vk::DeviceSize> offsets(vb_count, 0);
@@ -81,7 +81,7 @@ namespace BHive
 		{
 			auto bufferID = mIndexBuffer.As<IndexBuffer>();
 			auto vkBuffer = api->GetBuffer(bufferID->GetBufferID());
-			vk::Buffer index_handle = vkBuffer->GetNative(frame)->Buffer;
+			vk::Buffer index_handle = *vkBuffer->GetNative(frame);
 			cmd.bindIndexBuffer(index_handle, 0, vk::IndexType::eUint32);
 		}
 	}

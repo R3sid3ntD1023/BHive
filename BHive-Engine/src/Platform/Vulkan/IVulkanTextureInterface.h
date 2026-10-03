@@ -1,6 +1,5 @@
 #pragma once
 
-#include "GPUResourceHandle.h"
 #include "VulkanCore.h"
 
 namespace BHive
