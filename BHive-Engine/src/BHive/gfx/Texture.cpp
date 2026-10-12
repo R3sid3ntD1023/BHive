@@ -1,9 +1,9 @@
-#include "gfx/factories/TextureFactory.h"
+#include "Texture.h"
+#include "RenderCommand.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/RendererAPI.h"
+#include "gfx/factories/TextureFactory.h"
 #include "importers/TextureImporter.h"
-#include "RenderCommand.h"
-#include "Texture.h"
 #include <stb_image_resize2.h>
 
 namespace BHive
@@ -171,6 +171,12 @@ namespace BHive
 	{
 		auto api = RenderCommand::GetGraphicsAPI();
 		api->DeleteTexture(mTextureID);
+	}
+
+	REFLECT(Texture2D)
+	{
+		BEGIN_REFLECT(Texture2D)
+		REFLECT_CONSTRUCTOR();
 	}
 
 } // namespace BHive

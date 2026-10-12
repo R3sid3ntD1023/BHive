@@ -14,7 +14,13 @@ namespace BHive
 			rttr::type type = InvalidType;
 			ar(type);
 
-			if (!type || !type.get_constructor())
+			if (!type)
+			{
+				LOG_ERROR("AssetFactory::Import() failed to read type for {}", path);
+				return nullptr;
+			}
+
+			if (!type.get_constructor())
 			{
 				LOG_ERROR("AssetFactory::Import() no default constructor found for type {} for {}", type, path);
 				return nullptr;

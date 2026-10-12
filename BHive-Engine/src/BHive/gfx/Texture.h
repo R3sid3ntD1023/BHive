@@ -81,6 +81,8 @@ namespace BHive
 		friend class Texture2DArray;
 	};
 
+	REFLECT_EXTERN(Texture2D)
+
 	class BHIVE_API Texture2DArray : public Texture
 	{
 	public:

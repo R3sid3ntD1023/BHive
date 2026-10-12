@@ -149,7 +149,6 @@ namespace BHive
 		ResourceRegistriesManager::Shutdown();
 
 		mData.reset();
-		mAPI->Shutdown();
 	}
 
 	void Renderer::BeginFrame()

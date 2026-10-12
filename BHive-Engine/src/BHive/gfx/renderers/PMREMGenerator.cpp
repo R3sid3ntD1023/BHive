@@ -24,9 +24,9 @@ namespace BHive
 	{
 		auto environmentTextures = InitializeTextures();
 
-		static Material EquirectangularMaterial = Material(PMREM_EQUIRECTANGULAR);
-		static Material ConvolutionMaterial = Material(PMREM_CONVOLUTION);
-		static Material PrefilterMaterial = Material(PMREM_PREFILTER);
+		Material EquirectangularMaterial = Material(PMREM_EQUIRECTANGULAR);
+		Material ConvolutionMaterial = Material(PMREM_CONVOLUTION);
+		Material PrefilterMaterial = Material(PMREM_PREFILTER);
 
 		EquirectangularMaterial.SetTexture("equirectangularMap", TextureBinding(hdr));
 		EquirectangularMaterial.SetTexture("imgOutput", TextureBinding(environmentTextures.Environment, 0, 0));
@@ -134,7 +134,7 @@ namespace BHive
 
 	Ref<Texture2D> BRDFLUTGenerator::GenerateBRDFLUTMap(uint32_t size)
 	{
-		static Material material = Material(PMREM_BRDFLUT);
+		Material material = Material(PMREM_BRDFLUT);
 
 		FTextureCreateInfo brdfLUTInfo{};
 		brdfLUTInfo.Format = EFormat::RG16F;
@@ -144,7 +144,7 @@ namespace BHive
 		brdfLUTInfo.Roles |= ETextureRole::ComputeWrite;
 		brdfLUTInfo.DebugName = "BRDFLUT Texture";
 
-		static auto brdfLUT = CreateRef<Texture2D>(glm::vec2{size, size}, brdfLUTInfo);
+		auto brdfLUT = CreateRef<Texture2D>(glm::vec2{size, size}, brdfLUTInfo);
 
 		material.SetTexture("brdfLutTexture", TextureBinding(brdfLUT));
 

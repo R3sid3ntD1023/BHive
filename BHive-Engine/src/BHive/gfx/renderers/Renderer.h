@@ -97,6 +97,13 @@ namespace BHive
 	private:
 		Scope<RendererAPI> mAPI;
 
+		// Declared right after mAPI so it runs after every later member (Line, Quad, ...) is destroyed.
+		struct APIShutdownGuard
+		{
+			RendererAPI *API;
+			~APIShutdownGuard() { API->Shutdown(); }
+		} mAPIShutdownGuard{mAPI.get()};
+
 		Ref<struct RenderData> mData;
 
 		RenderGraphScheduler mScheduler;
