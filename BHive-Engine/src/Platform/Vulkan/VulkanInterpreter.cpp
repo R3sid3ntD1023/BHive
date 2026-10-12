@@ -51,8 +51,7 @@ namespace BHive
 			case ECommandType::GenerateMipMaps:
 			{
 				auto &c = *reinterpret_cast<const CmdGenerateMipMaps *>(payloadPtr);
-				auto textureID = c.Texture.As<Texture>()->GetTextureID();
-				auto vkImage = VulkanRendererAPI::GetInstance()->GetTexture(textureID);
+				auto vkImage = VulkanRendererAPI::GetInstance()->GetTexture(c.Texture);
 				if (vkImage)
 					vkImage->GenerateMipMaps(cmdbuffer);
 			}

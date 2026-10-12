@@ -6,6 +6,7 @@ namespace BHive
 	void Component::SetOwner(GameObject *owner)
 	{
 		mOwningObject = owner;
+		MarkDirty();
 	}
 
 	FTransform Component::GetWorldTransform() const

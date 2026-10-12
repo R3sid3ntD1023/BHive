@@ -2,16 +2,17 @@
 
 #include "core/Core.h"
 #include "core/Layer.h"
-#include "gfx/cameras/EditorCamera.h"
 #include "core/events/ApplicationEvents.h"
-#include "gfx/renderers/SceneRenderer.h"
-#include "gfx/material/MaterialTable.h"
+#include "gfx/cameras/EditorCamera.h"
 #include "gfx/cameras/EditorCameraController.h"
+#include "gfx/material/MaterialTable.h"
+#include "gfx/renderers/SceneRenderer.h"
 
 namespace BHive
 {
 	class BaseMesh;
 	class Texture2D;
+	class Font;
 
 	class RuntimeLayer : public Layer
 	{
@@ -34,11 +35,11 @@ namespace BHive
 	private:
 		EditorCamera mCamera;
 
-		MeshPtr mSphere;
-		MeshPtr mPlane;
-		MeshPtr mMesh;
-		Texture2DPtr mTexture;
-		FontPtr mFont;
+		Ref<BaseMesh> mSphere;
+		Ref<BaseMesh> mPlane;
+		Ref<BaseMesh> mMesh;
+		Ref<Texture2D> mTexture;
+		Ref<Font> mFont;
 
 		glm::uvec2 mViewportSize{0, 0};
 		bool mViewportActive = false;

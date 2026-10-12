@@ -1,6 +1,6 @@
 #include "EnvironmentSystem.h"
-#include "RenderGraphScheduler.h"
 #include "Renderer.h"
+#include "RenderGraphScheduler.h"
 
 namespace BHive
 {
@@ -10,7 +10,7 @@ namespace BHive
 		mBRDFLut = BRDFLUTGenerator::GenerateBRDFLUTMap();
 	}
 
-	void EnvironmentSystem::SetHDR(Texture2DPtr hdr)
+	void EnvironmentSystem::SetHDR(Ref<Texture2D> hdr)
 	{
 		mPendingHDR = hdr;
 		mDirty = true;

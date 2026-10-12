@@ -1,11 +1,11 @@
 
-#include "QuadRenderer.h"
-#include "Renderer.h"
 #include "core/profiler/CPUGPUProfiler.h"
-#include "gfx/Texture.h"
 #include "gfx/font/Font.h"
 #include "gfx/font/MSDFData.h"
 #include "gfx/sprite/Sprite.h"
+#include "gfx/Texture.h"
+#include "QuadRenderer.h"
+#include "Renderer.h"
 
 namespace BHive
 {
@@ -70,7 +70,7 @@ namespace BHive
 		}
 	}
 
-	void QuadRenderer::DrawQuad(const FQuadParams &params, TexturePtr texture, const FTransform &transform, int32_t entity_id)
+	void QuadRenderer::DrawQuad(const FQuadParams &params, Ref<Texture2D> texture, const FTransform &transform, int32_t entity_id)
 	{
 
 		FQuadCreateInfo create_info{};
@@ -83,24 +83,19 @@ namespace BHive
 		DrawQuadInternal(create_info, sPositions, sTexCoords, entity_id);
 	}
 
-	void QuadRenderer::DrawSprite(const FQuadParams &params, SpritePtr sprite, const FTransform &transform, int32_t entity_id)
+	void QuadRenderer::DrawSprite(const FQuadParams &params, const Sprite &sprite, const FTransform &transform, int32_t entity_id)
 	{
-		if (!sprite)
-			return;
-
-		auto spritePtr = sprite.As<Sprite>();
-
 		FQuadCreateInfo create_info{};
 		create_info.Size = params.Size;
 		create_info.Color = params.Color;
 		create_info.Transform = transform;
 		create_info.Tiling = params.Tiling;
 		create_info.Flags = params.Flags;
-		create_info.Texture = spritePtr->GetSourceTexture();
-		DrawQuadInternal(create_info, sPositions, spritePtr->GetCoords(), entity_id);
+		create_info.Texture = sprite.GetSourceTexture().Get();
+		DrawQuadInternal(create_info, sPositions, sprite.GetCoords(), entity_id);
 	}
 
-	void QuadRenderer::DrawBillboard(const FView &view, const FQuadParams &params, TexturePtr texture, const FTransform &transform, int32_t entity_id)
+	void QuadRenderer::DrawBillboard(const FView &view, const FQuadParams &params, Ref<Texture2D> texture, const FTransform &transform, int32_t entity_id)
 	{
 		const auto &v = view.View;
 
@@ -165,19 +160,16 @@ namespace BHive
 		}
 	}
 
-	void QuadRenderer::DrawText(FontPtr font, float size_arg, const std::string &text, const FTextParams &params, const FTransform &transform, int32_t entity_id)
+	void QuadRenderer::DrawText(const Font &font, float size_arg, const std::string &text, const FTextParams &params, const FTransform &transform, int32_t entity_id)
 	{
-		if (!font)
-			return;
-
-		auto texture = font.As<Font>()->GetAtlas();
-		const auto &fontgeometry = font.As<Font>()->GetMSDFData()->FontGeometry;
+		auto texture = font.GetAtlas();
+		const auto &fontgeometry = font.GetMSDFData()->FontGeometry;
 		const auto &metrics = fontgeometry.getMetrics();
 
 		double scale = (1.0 / (metrics.ascenderY - metrics.descenderY)) * size_arg;
 		const double spaceGlyphAdvance = fontgeometry.getGlyph(' ')->getAdvance();
 
-		glm::vec2 texel_size = 1.0f / glm::vec2(texture.As<Texture2D>()->GetSize());
+		glm::vec2 texel_size = 1.0f / glm::vec2(texture->GetSize());
 
 		glm::vec2 coords[4];
 
@@ -242,8 +234,9 @@ namespace BHive
 		}
 	}
 
-	void
-	QuadRenderer::DrawTextQuadInternal(const glm::vec3 *pos, const glm::vec2 *coords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, TexturePtr texture, int32_t entity_id)
+	void QuadRenderer::DrawTextQuadInternal(
+		const glm::vec3 *pos, const glm::vec2 *coords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, Ref<Texture2D> texture, int32_t entity_id
+	)
 	{
 
 		if (!TextBatch.IsActive())

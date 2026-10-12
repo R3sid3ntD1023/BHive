@@ -9,7 +9,7 @@ namespace BHive
 
 	struct RenderSystem
 	{
-		void OnUpdate(SceneRenderer *renderer, const World *world);
+		void OnUpdate(SceneRenderer &renderer, const World *world);
 
 		void OnResize(const glm::uvec2 &size, World *world);
 	};

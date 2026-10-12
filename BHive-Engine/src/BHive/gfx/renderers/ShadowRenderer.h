@@ -1,9 +1,10 @@
 #pragma once
 
-#include "RenderData.h"
 #include "core/Core.h"
 #include "gfx/Framebuffer.h"
+#include "gfx/material/Material.h"
 #include "gfx/rendergraph/Pass.h"
+#include "RenderData.h"
 
 namespace BHive
 {
@@ -29,9 +30,9 @@ namespace BHive
 
 		BufferPtr GetBuffer();
 
-		TexturePtr GetDirShadowMap();
-		TexturePtr GetPointShadowMap();
-		TexturePtr GetSpotShadowMap();
+		Ref<Texture> GetDirShadowMap();
+		Ref<Texture> GetPointShadowMap();
+		Ref<Texture> GetSpotShadowMap();
 
 	private:
 		void InitializeBuffers();
@@ -85,7 +86,7 @@ namespace BHive
 
 		PipelinePtr mPipeline;
 		PipelinePtr mDirectionalPipeline;
-		std::array<MaterialPtr, 3> mShadowMaterials;
+		std::array<Material, 3> mShadowMaterials;
 		std::array<FramebufferPtr, 3> mShadowFramebuffers;
 		ShadowData mShadowData;
 		BufferPtr mShadowBuffer;
@@ -97,6 +98,6 @@ namespace BHive
 		ResourceSetPtr mObjectSet;
 		ResourceSetPtr mShadowSet;
 
-		MaterialPtr mCullingMaterial;
+		Material mCullingMaterial;
 	};
 } // namespace BHive

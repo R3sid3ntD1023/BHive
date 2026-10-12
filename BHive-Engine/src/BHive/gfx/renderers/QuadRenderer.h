@@ -1,17 +1,18 @@
 #pragma once
 
-#include "ViewSystem.h"
 #include "batches/CircleRenderBatch.h"
 #include "batches/QuadRenderBatch.h"
 #include "batches/TextRenderBatch.h"
 #include "batches/TextureBatch.h"
 #include "core/math/Transform.h"
 #include "gfx/Color.h"
-#include "gfx/registries/Handles.h"
+#include "ViewSystem.h"
 
 namespace BHive
 {
 	class Font;
+	class Texture;
+	class Texture2D;
 
 	struct FTextStyle
 	{
@@ -58,7 +59,7 @@ namespace BHive
 	struct FQuadCreateInfo
 	{
 		FColor Color = FColor::White;
-		TexturePtr Texture;
+		Ref<Texture2D> Texture;
 		glm::vec2 Size{1, 1};
 		glm::vec2 Tiling{1, 1};
 		FTransform Transform{};
@@ -71,7 +72,7 @@ namespace BHive
 		glm::vec2 Tiling{1, 1};
 		FColor Color{0xffffffff};
 		QuadRendererFlags Flags{0};
-		TexturePtr Texture;
+		Ref<Texture2D> Texture;
 		FTransform Transform;
 		int32_t EntityID = -1;
 	};
@@ -89,18 +90,20 @@ namespace BHive
 
 		void DrawCircle(const FCircleParams &params, const FTransform &transform, int32_t entity = -1);
 
-		void DrawQuad(const FQuadParams &params, TexturePtr texture, const FTransform &transform, int32_t entity = -1);
+		void DrawQuad(const FQuadParams &params, Ref<Texture2D> texture, const FTransform &transform, int32_t entity = -1);
 
-		void DrawSprite(const FQuadParams &params, SpritePtr sprite, const FTransform &transform, int32_t entity = -1);
+		void DrawSprite(const FQuadParams &params, const Sprite &sprite, const FTransform &transform, int32_t entity = -1);
 
-		void DrawBillboard(const FView &view, const FQuadParams &params, TexturePtr texture, const FTransform &transform, int32_t entity = -1);
+		void DrawBillboard(const FView &view, const FQuadParams &params, Ref<Texture2D> texture, const FTransform &transform, int32_t entity = -1);
 
-		void DrawText(FontPtr font, float size, const std::string &text, const FTextParams &params = {}, const FTransform &transform = {}, int32_t entity = -1);
+		void DrawText(const Font &font, float size, const std::string &text, const FTextParams &params = {}, const FTransform &transform = {}, int32_t entity = -1);
 
 	private:
 		void DrawQuadInternal(const FQuadCreateInfo &create_info, const glm::vec3 *pos, const glm::vec2 *coords, int32_t entity = -1);
 
-		void DrawTextQuadInternal(const glm::vec3 *pos, const glm::vec2 *coords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, TexturePtr texture, int32_t entity = -1);
+		void DrawTextQuadInternal(
+			const glm::vec3 *pos, const glm::vec2 *coords, const glm::vec2 &size, const FTextStyle &style, const glm::mat4 &transform, Ref<Texture2D> texture, int32_t entity = -1
+		);
 
 	private:
 		QuadRenderBatch QuadBatch;

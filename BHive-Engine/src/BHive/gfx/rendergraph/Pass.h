@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Phase.h"
 #include "core/Buffer.h"
 #include "gfx/renderers/ViewSystem.h"
 #include "gfx/resources/ImageSubResourceRange.h"
+#include "Phase.h"
 
 namespace BHive
 {
@@ -61,7 +61,7 @@ namespace BHive
 		void
 		UseFramebuffer(FramebufferPtr fbo, ImageSubresourceRange range = {}, EImageUsage colorUsage = EImageUsage::ColorWrite, EImageUsage depthUsage = EImageUsage::DepthWrite);
 
-		void UseTexture(TexturePtr tex, EImageUsage access, ImageSubresourceRange range = {});
+		void UseTexture(Ref<Texture> tex, EImageUsage access, ImageSubresourceRange range = {});
 
 		void UseBuffer(BufferPtr buffer, EBufferUsage access);
 

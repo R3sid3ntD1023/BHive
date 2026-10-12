@@ -1,7 +1,7 @@
 #include "Font.h"
-#include "MSDFData.h"
-#include "gfx/Texture.h"
 #include "gfx/factories/TextureFactory.h"
+#include "gfx/Texture.h"
+#include "MSDFData.h"
 
 using namespace msdf_atlas;
 
@@ -9,7 +9,7 @@ namespace BHive
 {
 
 	template <typename T, typename S, int N, msdf_atlas::GeneratorFunction<S, N> GenFunc>
-	TexturePtr CreateAndCacheAtlas(float fontSize, const std::vector<msdf_atlas::GlyphGeometry> &glyphs, const msdf_atlas::FontGeometry &fontGeomerty, uint32_t w, uint32_t h)
+	Ref<Texture2D> CreateAndCacheAtlas(float fontSize, const std::vector<msdf_atlas::GlyphGeometry> &glyphs, const msdf_atlas::FontGeometry &fontGeomerty, uint32_t w, uint32_t h)
 	{
 
 		GeneratorAttributes attributes;

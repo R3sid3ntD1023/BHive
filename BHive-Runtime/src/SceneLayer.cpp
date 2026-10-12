@@ -8,12 +8,11 @@
 #include "core/platform/Platform.h"
 #include "core/threading/Threading.h"
 #include "gfx/animation/AnimationClip.h"
-#include "gfx/factories/MaterialFactory.h"
+#include "gfx/factories/FontFactory.h"
 #include "gfx/factories/MeshFactory.h"
-#include "gfx/factories/TextureFactory.h"
 #include "gfx/imgui/IImGuiProvider.h"
-#include "gfx/material/LambertMaterial.h"
-#include "gfx/material/StandardMaterial.h"
+#include "gfx/material/Materials.h"
+#include "gfx/mesh/StaticMesh.h"
 #include "gfx/renderers/SceneRenderer.h"
 #include "gfx/renderers/postprocess/AcesMaterial.h"
 #include "gfx/renderers/postprocess/BloomMaterial.h"
@@ -59,7 +58,7 @@ namespace BHive
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Init(mViewportSize);
-		mSceneRenderer->SetEnvironmentTexture(TextureFactory::Create2D(decodeEnvironment));
+		mSceneRenderer->SetEnvironmentTexture(CreateRef<Texture2D>(decodeEnvironment.Size, decodeEnvironment.CreateInfo, decodeEnvironment.Data));
 
 		mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
 		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
@@ -67,25 +66,24 @@ namespace BHive
 
 		auto mesh = MeshFactory::CreateSphere(1.0f, 32u, 32u);
 		auto plane = MeshFactory::CreatePlane(1.f, 1.f);
-		mTexture = TextureFactory::Create2D(decodedSprite);
+		mTexture = CreateRef<Texture2D>(decodedSprite.Size, decodedSprite.CreateInfo, decodedSprite.Data);
 
 		{
 
-			auto sphereMat = MaterialFactory::CreateStandard();
-			auto planeMat = MaterialFactory::CreateStandard();
-			auto transparentMat = MaterialFactory::CreateStandard();
+			auto sphereMat = CreateRef<StandardMaterial>();
+			auto planeMat = CreateRef<StandardMaterial>();
+			auto transparentMat = CreateRef<StandardMaterial>();
 
-			planeMat.As<StandardMaterial>()->SetFlags(StandardMaterial::EFlags::ReceiveShadows);
+			planeMat->SetFlags(StandardMaterial::EFlags::ReceiveShadows);
 
-			auto texture = TextureFactory::Create2D(decodedMario);
-			transparentMat.As<StandardMaterial>()->SetSurfaceType(Material::ESurfaceType::Transparent);
-			transparentMat.As<StandardMaterial>()->SetTexture("DiffuseMap", {texture});
+			mMarioTex = CreateRef<Texture2D>(decodedMario.Size, decodedMario.CreateInfo, decodedMario.Data);
+			transparentMat->SetSurfaceType(Material::ESurfaceType::Transparent);
+			transparentMat->SetTexture("DiffuseMap", {mMarioTex});
 
-			auto mat = sphereMat.As<StandardMaterial>();
-			mat->SetAlbedo({0.5f, 0.5f, 0.5f, 1.0f});
-			mat->SetEmission(FColor::Black);
-			mat->SetMetalness(0.0f);
-			mat->SetRoughness(0.5f);
+			sphereMat->SetAlbedo({0.5f, 0.5f, 0.5f, 1.0f});
+			sphereMat->SetEmission(FColor::Black);
+			sphereMat->SetMetalness(0.0f);
+			sphereMat->SetRoughness(0.5f);
 
 			mMaterialTables.emplace_back().Add(planeMat);
 			mMaterialTables.emplace_back().Add(sphereMat);
@@ -149,7 +147,7 @@ namespace BHive
 			auto decodedMesh = MeshImporter::Import(TEST_MESH_NAME, SCALE);
 			MeshImportResolver resolver(import_options);
 			auto result = resolver.Resolve(decodedMesh);
-			mCharacter = result.Mesh;
+			mCharacter = Cast<SkeletalMesh>(result.Mesh);
 			mMaterialTables.emplace_back(result.Materials);
 
 #ifdef TEST_ANIMATION
@@ -161,7 +159,7 @@ namespace BHive
 			resolver.SetOptions(import_options);
 			result = resolver.Resolve(decodedAnimation);
 			mCharacterAnimaton = result.Animations[0];
-			mCharacterPose = mCharacter.As<SkeletalMesh>()->GetDefaultPose();
+			mCharacterPose = mCharacter->GetDefaultPose();
 			mAnimationClip = CreateRef<AnimationClip>(mCharacterAnimaton, mCharacterSkeleton);
 #endif
 
@@ -172,7 +170,7 @@ namespace BHive
 				request.Mesh = mCharacter;
 				request.Materials = mMaterialTables.back();
 				request.Transform = mTransforms[11].second;
-				request.BoneTransforms = mCharacter.As<SkeletalMesh>()->GetSkeleton()->GetRestPoseTransforms();
+				request.BoneTransforms = mCharacter->GetSkeleton()->GetRestPoseTransforms();
 				mSceneRenderer->SubmitMesh(request, mTransforms.at(11).first);
 			}
 		}
@@ -229,7 +227,7 @@ namespace BHive
 
 		renderer.Quad.DrawBillboard(view, FQuadParams{}, mTexture, FTransform{{2, 4, 0}});
 
-		renderer.Quad.DrawText(mFont, 2.f, "Test Text", FTextParams{}, FTransform{{2, 2, 0}});
+		renderer.Quad.DrawText(*mFont, 2.f, "Test Text", FTextParams{}, FTransform{{2, 2, 0}});
 
 		renderer.Quad.DrawCircle(FCircleParams{}, FTransform{{-2, 2, 0}});
 
@@ -251,7 +249,7 @@ namespace BHive
 			auto output = mSceneRenderer->GetOutput();
 			if (output)
 			{
-				auto id = IImGuiTextureProvider::GetID(*output.As<Texture>());
+				auto id = IImGuiTextureProvider::GetID(*output);
 				ImGui::Image(id, viewportSize);
 			}
 
@@ -292,8 +290,7 @@ namespace BHive
 					for (uint32_t m = 0; m < table.Count(); m++)
 					{
 						auto name = std::format("Material_{}", m);
-						auto mat = table[m].As<StandardMaterial>();
-						Inspect::get().inspect(name, *mat);
+						Inspect::get().inspect(name, *table[m].Get());
 					}
 					ImGui::TreePop();
 				}
@@ -327,7 +324,7 @@ namespace BHive
 				if (info)
 				{
 					auto decoded = TextureImporter::FromFile(info);
-					mSceneRenderer->SetEnvironmentTexture(TextureFactory::Create2D(decoded));
+					mSceneRenderer->SetEnvironmentTexture(CreateRef<Texture2D>(decoded.Size, decoded.CreateInfo, decoded.Data));
 				}
 			}
 

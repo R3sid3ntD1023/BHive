@@ -1,10 +1,10 @@
-#include "MaterialInstance.h"
 #include "core/utils/Hash.h"
 #include "gfx/shader/Shader.h"
+#include "MaterialInstance.h"
 
 namespace BHive
 {
-	MaterialInstance::MaterialInstance(MaterialPtr parent)
+	MaterialInstance::MaterialInstance(Ref<Material> parent)
 		: mParent(parent)
 	{
 	}
@@ -30,7 +30,7 @@ namespace BHive
 
 	MaterialSnapshot MaterialInstance::CreateSnapshot(EShaderMeshType meshType) const
 	{
-		auto base = mParent.As<IMaterial>()->CreateSnapshot(meshType);
+		auto base = mParent->CreateSnapshot(meshType);
 		auto &shaderTemplate = base.Shader.As<Shader>()->GetTemplate();
 
 		for (auto &[nameHash, slot] : mTextureOverrides)

@@ -1,24 +1,24 @@
 #pragma once
 
-#include "Material.h"
+#include "asset/Assethandle.h"
 #include "core/Core.h"
-#include "gfx/registries/Handles.h"
+#include "Material.h"
 
 namespace BHive
 {
 	struct BHIVE_API MaterialTable
 	{
-		MaterialPtr Get(uint32_t index = 0) const;
+		AssetHandle<Material> Get(uint32_t index = 0) const;
 
-		void Add(MaterialPtr h);
+		void Add(AssetHandle<Material> h);
 
-		void Set(MaterialPtr h, uint32_t index = 0);
+		void Set(uint32_t index, AssetHandle<Material> h);
 
 		const auto &GetAll() const { return mMaterials; }
 
-		void SetAll(const std::vector<MaterialPtr> &materials);
+		void SetAll(const std::vector<AssetHandle<Material>> &materials);
 
-		void SetAll(MaterialPtr material);
+		void SetAll(AssetHandle<Material> material);
 
 		void Reset();
 
@@ -26,7 +26,7 @@ namespace BHive
 
 		size_t Count() const;
 
-		MaterialPtr operator[](size_t index) const;
+		AssetHandle<Material> operator[](size_t index) const;
 
 		template <typename A>
 		void Save(A &ar) const
@@ -43,7 +43,7 @@ namespace BHive
 		REFLECTABLE()
 
 	private:
-		std::vector<MaterialPtr> mMaterials;
+		std::vector<AssetHandle<Material>> mMaterials;
 	};
 
 	REFLECT_EXTERN(MaterialTable)

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "IResourceFactory.h"
 #include "gfx/sprite/FlipBook.h"
 #include "gfx/sprite/Sprite.h"
 #include "gfx/sprite/SpriteSheet.h"
+#include "IResourceFactory.h"
 
 namespace BHive
 {
@@ -25,8 +25,8 @@ namespace BHive
 	{
 		static SpriteSheetPtr Create();
 
-		static SpriteSheetPtr Create(TexturePtr source, const FSpriteSheetGrid &grid);
+		static SpriteSheetPtr Create(Ref<Texture2D> source, const FSpriteSheetGrid &grid);
 
-		static SpriteSheetPtr Create(TexturePtr source, uint32_t rows, uint32_t columns, const glm::vec2 &cellSize);
+		static SpriteSheetPtr Create(Ref<Texture2D> source, uint32_t rows, uint32_t columns, const glm::vec2 &cellSize);
 	};
 } // namespace BHive

@@ -105,6 +105,11 @@ namespace BHive
 		image.Transition(cmd, ImageState::Present());
 	}
 
+	void VulkanSwapChain::TransitionToPresent(vk::CommandBuffer cmd, uint32_t imageIndex)
+	{
+		mImages.at(imageIndex).Transition(cmd, ImageState::Present());
+	}
+
 	void VulkanSwapChain::CreateSwapChain()
 	{
 		vk::SwapchainCreateInfoKHR swap_chain_create_info(

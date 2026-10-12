@@ -1,6 +1,6 @@
-#include "RenderBatch.h"
-#include "gfx/VertexArray.h"
 #include "gfx/rendergraph/Commands.h"
+#include "gfx/VertexArray.h"
+#include "RenderBatch.h"
 
 namespace BHive
 {
@@ -75,7 +75,7 @@ namespace BHive
 
 				for (auto &[meshType, batch] : variants)
 				{
-					pass.Emplace<CmdBindMaterial>()(material.As<IMaterial>(), meshType);
+					pass.Emplace<CmdBindMaterial>()(material.get(), meshType);
 					uint32_t offset = batch.FirstCommand * sizeof(MultiDrawIndirectCommand);
 					pass.UseBuffer(indirect, EBufferUsage::IndirectRead);
 					pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect, batch.CommandCount, sizeof(MultiDrawIndirectCommand), offset);

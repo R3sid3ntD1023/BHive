@@ -95,7 +95,7 @@ target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
 
 add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${VCPKG_INSTALLED_DIR}/x64-windows/bin/PhysXCommon_64.dll"
+	"${VCPKG_INSTALLED_DIR}/x64-windows/$<IF:$<CONFIG:Debug>,debug/bin,bin>/PhysXCommon_64.dll"
         "$<TARGET_FILE_DIR:${TARGET_NAME}>"
 )
 

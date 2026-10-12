@@ -6,7 +6,7 @@
 namespace BHive
 {
 
-	SpriteSheet::SpriteSheet(TexturePtr source, const FSpriteSheetGrid &grid)
+	SpriteSheet::SpriteSheet(AssetHandle<Texture2D> source, const FSpriteSheetGrid &grid)
 		: mSource(source),
 		  mGrid(grid)
 	{
@@ -31,7 +31,7 @@ namespace BHive
 		}
 	}
 
-	void SpriteSheet::SetSource(TexturePtr source)
+	void SpriteSheet::SetSource(AssetHandle<Texture2D> source)
 	{
 		mSource = source;
 		CreateSprites();

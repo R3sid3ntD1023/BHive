@@ -24,7 +24,7 @@ namespace BHive
 	// Tex, Mip, Levels, Layer, Layers, Access
 	struct FImageInfo
 	{
-		TexturePtr Texture;
+		Ref<Texture> Texture;
 		EImageUsage Access = EImageUsage::None;
 		ImageSubresourceRange Range{};
 	};

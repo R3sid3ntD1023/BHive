@@ -1,34 +1,30 @@
 #include "MaterialFactory.h"
-#include "gfx/material/EmissiveMaterial.h"
-#include "gfx/material/LambertMaterial.h"
-#include "gfx/material/MaterialInstance.h"
-#include "gfx/material/StandardMaterial.h"
 
 namespace BHive
 {
-	MaterialPtr MaterialFactory::Create(const std::string &shaderName)
+	Ref<Material> MaterialFactory::Create(const std::string &shaderName)
 	{
-		return CreateResource<Material>(shaderName);
+		return CreateRef<Material>(shaderName);
 	}
 
-	MaterialPtr MaterialFactory::CreateLambert()
+	Ref<LambertMaterial> MaterialFactory::CreateLambert()
 	{
-		return CreateResource<LambertMaterial>();
+		return CreateRef<LambertMaterial>();
 	}
 
-	MaterialPtr MaterialFactory::CreateStandard()
+	Ref<StandardMaterial> MaterialFactory::CreateStandard()
 	{
-		return CreateResource<StandardMaterial>();
+		return CreateRef<StandardMaterial>();
 	}
 
-	MaterialPtr MaterialFactory::CreateEmissive()
+	Ref<EmissiveMaterial> MaterialFactory::CreateEmissive()
 	{
-		return CreateResource<EmissiveMaterial>();
+		return CreateRef<EmissiveMaterial>();
 	}
 
-	MaterialPtr MaterialFactory::CreateInstance(MaterialPtr parent)
+	Ref<MaterialInstance> MaterialFactory::CreateInstance(Ref<Material> parent)
 	{
-		return CreateResource<MaterialInstance>(parent);
+		return CreateRef<MaterialInstance>(parent);
 	}
 
 } // namespace BHive

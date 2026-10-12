@@ -10,7 +10,7 @@ namespace BHive
 {
 	static const uint32_t sMaxFramebufferSize = 8192;
 
-	TexturePtr CreateFramebufferTexture(const glm::uvec2 &size, uint32_t samples, const FFramebufferTexture &specification)
+	Ref<Texture> CreateFramebufferTexture(const glm::uvec2 &size, uint32_t samples, const FFramebufferTexture &specification)
 	{
 		if (specification.ExternalTexture)
 			return specification.ExternalTexture;
@@ -88,13 +88,13 @@ namespace BHive
 		ASSERT(attachmentIndex < mColorAttachmentSpecifications.size());
 	}
 
-	TexturePtr VulkanFramebuffer::GetColorAttachment(uint32_t index) const
+	Ref<Texture> VulkanFramebuffer::GetColorAttachment(uint32_t index) const
 	{
 		ASSERT(index < mColorAttachments.size());
 		return mColorAttachments[index];
 	}
 
-	TexturePtr VulkanFramebuffer::GetDepthAttachment() const
+	Ref<Texture> VulkanFramebuffer::GetDepthAttachment() const
 	{
 		return mDepthAttachment;
 	}
@@ -132,7 +132,7 @@ namespace BHive
 		for (size_t i = 0; i < mColorAttachments.size(); i++)
 		{
 
-			auto attachment = mColorAttachments[i].As<Texture>();
+			auto attachment = mColorAttachments[i];
 			auto &spec = mColorAttachmentSpecifications[i];
 			auto textureID = attachment->GetTextureID();
 			auto vkImage = api->GetTexture(textureID);
@@ -152,7 +152,7 @@ namespace BHive
 		if (mDepthAttachment)
 		{
 			auto &spec = mDepthSpecification;
-			auto textureID = mDepthAttachment.As<Texture>()->GetTextureID();
+			auto textureID = mDepthAttachment->GetTextureID();
 			auto vkImage = api->GetTexture(textureID);
 			auto view = vkImage->GetView(layer, mip);
 

@@ -1,11 +1,12 @@
 #pragma once
 
 #include "core/Core.h"
-#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
 	struct IRendererContext;
+	class Texture2D;
+	class TextureCube;
 
 	struct PMREMSettings
 	{
@@ -17,9 +18,9 @@ namespace BHive
 
 	struct PMREMResult
 	{
-		TextureCubePtr Environment;
-		TextureCubePtr Irradiance;
-		TextureCubePtr PreFilter;
+		Ref<TextureCube> Environment;
+		Ref<TextureCube> Irradiance;
+		Ref<TextureCube> PreFilter;
 
 		bool IsValid() const { return Environment && Irradiance && PreFilter; }
 	};
@@ -29,7 +30,7 @@ namespace BHive
 	public:
 		static void Initialize(const PMREMSettings &settings = {});
 
-		static PMREMResult GenerateEnvironmentMaps(Texture2DPtr hdr);
+		static PMREMResult GenerateEnvironmentMaps(Ref<Texture2D> hdr);
 
 	private:
 		static PMREMResult InitializeTextures();
@@ -41,6 +42,6 @@ namespace BHive
 	class BHIVE_API BRDFLUTGenerator
 	{
 	public:
-		static Texture2DPtr GenerateBRDFLUTMap(uint32_t size = 512);
+		static Ref<Texture2D> GenerateBRDFLUTMap(uint32_t size = 512);
 	};
 } // namespace BHive

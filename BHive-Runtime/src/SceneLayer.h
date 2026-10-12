@@ -1,9 +1,9 @@
 #pragma once
 
 #include "core/Core.h"
-#include "core/Layer.h"
 #include "core/events/ApplicationEvents.h"
 #include "core/events/KeyEvents.h"
+#include "core/Layer.h"
 #include "gfx/cameras/EditorCamera.h"
 #include "gfx/cameras/EditorCameraController.h"
 #include "gfx/material/MaterialTable.h"
@@ -12,7 +12,13 @@ namespace BHive
 {
 	class Texture2D;
 	class BaseMesh;
+	class SkeletalMesh;
 	class SceneRenderer;
+	class Font;
+	class SkeletalAnimation;
+	class Skeleton;
+	class SkeletalPose;
+	class AnimationClip;
 
 	class SceneLayer : public Layer
 	{
@@ -33,23 +39,24 @@ namespace BHive
 
 	private:
 		Ref<SceneRenderer> mSceneRenderer;
-		MeshPtr mMesh;
-		MeshPtr mPlane;
+		Ref<BaseMesh> mMesh;
+		Ref<BaseMesh> mPlane;
 		std::vector<MaterialTable> mMaterialTables;
 		EditorCamera mCameras[2];
 		glm::uvec2 mViewportSize{0, 0};
 		bool mViewportActive = false;
 		EditorCameraController mCameraController;
 		uint32_t mCurrentCameraIndex = 0;
-		MeshPtr mCharacter;
+		Ref<SkeletalMesh> mCharacter;
 
-		SkeletalAnimationPtr mCharacterAnimaton;
-		SkeletonPtr mCharacterSkeleton;
+		Ref<class SkeletalAnimation> mCharacterAnimaton;
+		Ref<class Skeleton> mCharacterSkeleton;
 		Ref<class SkeletalPose> mCharacterPose;
 		Ref<class AnimationClip> mAnimationClip;
 
-		TexturePtr mTexture;
-		FontPtr mFont;
+		Ref<Texture2D> mTexture;
+		Ref<Texture2D> mMarioTex;
+		Ref<Font> mFont;
 	};
 
 } // namespace BHive

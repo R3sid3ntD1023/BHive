@@ -16,7 +16,7 @@ namespace BHive
 		return SetParam("Emission", MaterialParam(mEmissionColor));
 	}
 
-	void EmissiveMaterial::SetTextureFromType(EMaterialTextureType type, TexturePtr texture)
+	void EmissiveMaterial::SetTextureFromType(EMaterialTextureType type, Ref<Texture> texture)
 	{
 		switch (type)
 		{

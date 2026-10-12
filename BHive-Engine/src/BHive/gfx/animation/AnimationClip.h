@@ -2,8 +2,8 @@
 
 #include "AnimationFrames.h"
 #include "Bone.h"
+#include "asset/AssetHandle.h"
 #include "core/Core.h"
-#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
@@ -12,7 +12,7 @@ namespace BHive
 	class SkeletalPose;
 	class SkeletalAnimation;
 
-		struct RuntimeBone
+	struct RuntimeBone
 	{
 		uint16_t Parent;
 		const Bone *Bone;
@@ -31,7 +31,7 @@ namespace BHive
 	public:
 		static constexpr uint16_t INVALID_PARENT = UINT16_MAX;
 
-		AnimationClip(SkeletalAnimationPtr animation, SkeletonPtr skeleton);
+		AnimationClip(AssetHandle<SkeletalAnimation> animation, AssetHandle<Skeleton> skeleton);
 
 		void Play(float dt, SkeletalPose &pose);
 
@@ -57,8 +57,8 @@ namespace BHive
 		AnimTransform Evaluate(RuntimeBone &bone, float time);
 
 	private:
-		SkeletalAnimation *mAnimation = nullptr;
-		Skeleton *mSkeleton = nullptr;
+		AssetHandle<SkeletalAnimation> mAnimation;
+		AssetHandle<Skeleton> mSkeleton;
 
 		float mCurrentTime = 0.0f;
 		std::vector<RuntimeBone> mRuntimeBones;

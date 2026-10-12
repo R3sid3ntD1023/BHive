@@ -11,6 +11,8 @@ namespace BHive
 	class Texture;
 	class Material;
 	class Skeleton;
+	class BaseMesh;
+	class SkeletalAnimation;
 
 	enum class EMeshType : uint8_t
 	{
@@ -27,7 +29,7 @@ namespace BHive
 		bool ImportAnimations = false;
 
 		// skeleton to use if skeletal mesh
-		SkeletonPtr Skeleton;
+		Ref<Skeleton> Skeleton;
 
 		// Materials to override if ImportMaterials is false
 		MaterialTable OverrideMaterials;
@@ -40,10 +42,10 @@ namespace BHive
 
 		struct Result
 		{
-			MeshPtr Mesh;
+			Ref<BaseMesh> Mesh;
 			MaterialTable Materials;
-			SkeletonPtr Skeleton;
-			std::vector<SkeletalAnimationPtr> Animations;
+			Ref<Skeleton> Skeleton;
+			std::vector<Ref<SkeletalAnimation>> Animations;
 		};
 
 	public:
@@ -56,11 +58,10 @@ namespace BHive
 		const AdditionalAssets &GetAdditonalAssets() const { return mAdditionalAssets; }
 
 	private:
-		std::vector<SkeletalAnimationPtr> ResolveAnimations(const std::vector<DecodedAnimation> &animations);
+		std::vector<Ref<SkeletalAnimation>> ResolveAnimations(const std::vector<DecodedAnimation> &animations);
 
 		void ResolveMaterials(const std::vector<DecodedMaterial> &materials, MaterialTable &material_table, const std::filesystem::path &assetPath);
-
-		MaterialPtr GetMaterialFromShadingMode(EMaterialShadingMode mode);
+		Ref<Material> GetMaterialFromShadingMode(EMaterialShadingMode mode);
 
 	private:
 		FMeshImportOptions mOptions;

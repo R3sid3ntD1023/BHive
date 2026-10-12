@@ -1,9 +1,9 @@
-#include "Texture.h"
-#include "RenderCommand.h"
+#include "gfx/factories/TextureFactory.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/RendererAPI.h"
-#include "gfx/factories/TextureFactory.h"
 #include "importers/TextureImporter.h"
+#include "RenderCommand.h"
+#include "Texture.h"
 #include <stb_image_resize2.h>
 
 namespace BHive
@@ -69,14 +69,13 @@ namespace BHive
 		api->SetTextureData(mTextureID, info.Data, size, region, range);
 	}
 
-	int32_t Texture2DArray::Append(TexturePtr tex)
+	int32_t Texture2DArray::Append(Ref<Texture2D> texture)
 	{
-		if (!tex)
+		if (!texture)
 		{
 			return 0;
 		}
 
-		auto texture = tex.As<Texture2D>();
 		if (texture->mLayerIndex != -1)
 		{
 			return texture->mLayerIndex;
@@ -108,7 +107,7 @@ namespace BHive
 		};
 		SetData(info);
 
-		mStoredTextures[mCurrentLayer] = tex;
+		mStoredTextures[mCurrentLayer] = texture;
 
 		texture->mLayerIndex = (int32_t)mCurrentLayer;
 
@@ -120,7 +119,7 @@ namespace BHive
 		mCurrentLayer = mStartLayer;
 	}
 
-	TexturePtr Texture2DArray::GetTexture(uint32_t index) const
+	Ref<Texture2D> Texture2DArray::GetTexture(uint32_t index) const
 	{
 		return mStoredTextures[index];
 	}
@@ -129,7 +128,7 @@ namespace BHive
 		: mCreateInfo(createInfo)
 	{
 		auto api = RenderCommand::GetGraphicsAPI();
-		api->CreateTexture(mTextureID, ETextureType::TEXTURE_CUBE_MAP, {size, size, 1}, createInfo);
+		api->CreateTexture(mTextureID, ETextureType::TEXTURE_CUBE, {size, size, 1}, createInfo);
 	}
 
 	TextureCube::~TextureCube()

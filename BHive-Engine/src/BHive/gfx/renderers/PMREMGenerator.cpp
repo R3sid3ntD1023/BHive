@@ -20,30 +20,26 @@ namespace BHive
 		mSettings = settings;
 	}
 
-	PMREMResult PMREMGenerator::GenerateEnvironmentMaps(Texture2DPtr hdr)
+	PMREMResult PMREMGenerator::GenerateEnvironmentMaps(Ref<Texture2D> hdr)
 	{
 		auto environmentTextures = InitializeTextures();
 
-		static MaterialPtr EquirectangularMaterial = MaterialFactory::Create(PMREM_EQUIRECTANGULAR);
-		static MaterialPtr ConvolutionMaterial = MaterialFactory::Create(PMREM_CONVOLUTION);
-		static MaterialPtr PreFilterMaterial = MaterialFactory::Create(PMREM_PREFILTER);
+		static Material EquirectangularMaterial = Material(PMREM_EQUIRECTANGULAR);
+		static Material ConvolutionMaterial = Material(PMREM_CONVOLUTION);
+		static Material PrefilterMaterial = Material(PMREM_PREFILTER);
 
-		auto equirectangularMaterial = EquirectangularMaterial.As<Material>();
-		auto convolutionMaterial = ConvolutionMaterial.As<Material>();
-		auto prefilterMaterial = PreFilterMaterial.As<Material>();
+		EquirectangularMaterial.SetTexture("equirectangularMap", TextureBinding(hdr));
+		EquirectangularMaterial.SetTexture("imgOutput", TextureBinding(environmentTextures.Environment, 0, 0));
+		EquirectangularMaterial.SetParam("u_width", MaterialParam(mSettings.EnvironmentMapSize));
+		EquirectangularMaterial.SetParam("u_height", MaterialParam(mSettings.EnvironmentMapSize));
 
-		equirectangularMaterial->SetTexture("equirectangularMap", TextureBinding(hdr));
-		equirectangularMaterial->SetTexture("imgOutput", TextureBinding(environmentTextures.Environment, 0, 0));
-		equirectangularMaterial->SetParam("u_width", MaterialParam(mSettings.EnvironmentMapSize));
-		equirectangularMaterial->SetParam("u_height", MaterialParam(mSettings.EnvironmentMapSize));
+		ConvolutionMaterial.SetTexture("environmentMap", TextureBinding(environmentTextures.Environment));
+		ConvolutionMaterial.SetTexture("irradianceMap", TextureBinding(environmentTextures.Irradiance, 0, 0));
+		ConvolutionMaterial.SetParam("u_width", MaterialParam(mSettings.IrradianceSize));
+		ConvolutionMaterial.SetParam("u_height", MaterialParam(mSettings.IrradianceSize));
 
-		convolutionMaterial->SetTexture("environmentMap", TextureBinding(environmentTextures.Environment));
-		convolutionMaterial->SetTexture("irradianceMap", TextureBinding(environmentTextures.Irradiance, 0, 0));
-		convolutionMaterial->SetParam("u_width", MaterialParam(mSettings.IrradianceSize));
-		convolutionMaterial->SetParam("u_height", MaterialParam(mSettings.IrradianceSize));
-
-		prefilterMaterial->SetTexture("environmentMap", TextureBinding(environmentTextures.Environment));
-		prefilterMaterial->SetParam("u_envResolution", MaterialParam(mSettings.EnvironmentMapSize));
+		PrefilterMaterial.SetTexture("environmentMap", TextureBinding(environmentTextures.Environment));
+		PrefilterMaterial.SetParam("u_envResolution", MaterialParam(mSettings.EnvironmentMapSize));
 
 		Graph graph;
 		auto &pass = graph.AddPass("Generate PMREM Maps", EPassType::OffScreen);
@@ -52,20 +48,20 @@ namespace BHive
 		pass.BeginPhase(EPhaseType::Compute);
 		pass.UseTexture(hdr, EImageUsage::ComputeSampled);
 		pass.UseTexture(environmentTextures.Environment, EImageUsage::ComputeStorageWrite, {0, 1, 0, 6});
-		pass.Emplace<CmdBindMaterial>()(equirectangularMaterial);
+		pass.Emplace<CmdBindMaterial>()(&EquirectangularMaterial);
 		pass.Emplace<CmdDispatch>()((mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 6);
 		pass.EndPhase();
 
 		// Phase 1 : generate mipmaps for environment
 		pass.BeginPhase(EPhaseType::Transfer);
-		pass.Emplace<CmdGenerateMipMaps>()(environmentTextures.Environment);
+		pass.Emplace<CmdGenerateMipMaps>()(environmentTextures.Environment->GetTextureID());
 		pass.EndPhase();
 
 		// Phase 2 : Irradiance convolution
 		pass.BeginPhase(EPhaseType::Compute);
 		pass.UseTexture(environmentTextures.Environment, EImageUsage::ComputeSampled);
 		pass.UseTexture(environmentTextures.Irradiance, EImageUsage::ComputeStorageWrite, {0, 1, 0, 6});
-		pass.Emplace<CmdBindMaterial>()(convolutionMaterial);
+		pass.Emplace<CmdBindMaterial>()(&ConvolutionMaterial);
 		pass.Emplace<CmdDispatch>()((mSettings.EnvironmentMapSize + 7) / 8, (mSettings.EnvironmentMapSize + 7) / 8, 1);
 		pass.EndPhase();
 
@@ -79,7 +75,7 @@ namespace BHive
 
 			float roughness = (float)mip / (float)(mSettings.PrefilterMipLevels - 1);
 
-			prefilterMaterial->SetTexture("imgOutput", TextureBinding(environmentTextures.PreFilter, mip))
+			PrefilterMaterial.SetTexture("imgOutput", TextureBinding(environmentTextures.PreFilter, mip))
 				.SetParam("u_roughness", MaterialParam(roughness))
 				.SetParam("u_mip_level", MaterialParam(int32_t(mip)))
 				.SetParam("u_width", MaterialParam(s))
@@ -88,7 +84,7 @@ namespace BHive
 			pass.BeginPhase(EPhaseType::Compute);
 			pass.UseTexture(environmentTextures.Environment, EImageUsage::ComputeSampled);
 			pass.UseTexture(environmentTextures.PreFilter, EImageUsage::ComputeStorageWrite, {mip, 1, 0, 6});
-			pass.Emplace<CmdBindMaterial>()(prefilterMaterial);
+			pass.Emplace<CmdBindMaterial>()(&PrefilterMaterial);
 			pass.Emplace<CmdDispatch>()((s + 7) / 8, (s + 7) / 8, 6);
 			pass.EndPhase();
 		}
@@ -110,7 +106,7 @@ namespace BHive
 			cubeInfo.MipLevels = mSettings.PrefilterMipLevels;
 			cubeInfo.DebugName = "EnvironmentCube";
 			cubeInfo.Roles |= ETextureRole::ComputeWrite;
-			auto Environment = TextureFactory::CreateCube(mSettings.EnvironmentMapSize, cubeInfo);
+			auto Environment = CreateRef<TextureCube>(mSettings.EnvironmentMapSize, cubeInfo);
 
 			FTextureCreateInfo convolutionInfo{};
 			convolutionInfo.Format = EFormat::RGBA32F;
@@ -118,7 +114,7 @@ namespace BHive
 			convolutionInfo.MinFilter = EMinFilter::LINEAR;
 			convolutionInfo.Roles |= ETextureRole::ComputeWrite;
 			convolutionInfo.DebugName = "Irradiance";
-			auto Irradiance = TextureFactory::CreateCube(mSettings.IrradianceSize, convolutionInfo);
+			auto Irradiance = CreateRef<TextureCube>(mSettings.IrradianceSize, convolutionInfo);
 
 			FTextureCreateInfo preFilteredInfo{};
 			preFilteredInfo.Format = EFormat::RGBA16F;
@@ -128,7 +124,7 @@ namespace BHive
 			preFilteredInfo.MipLevels = mSettings.PrefilterMipLevels;
 			preFilteredInfo.Roles |= ETextureRole::ComputeWrite;
 			preFilteredInfo.DebugName = "PreFilterEnvironment";
-			auto PreFilter = TextureFactory::CreateCube(mSettings.PrefilterMapSize, preFilteredInfo);
+			auto PreFilter = CreateRef<TextureCube>(mSettings.PrefilterMapSize, preFilteredInfo);
 
 			return {.Environment = Environment, .Irradiance = Irradiance, .PreFilter = PreFilter};
 		}();
@@ -136,11 +132,10 @@ namespace BHive
 		return environmentTextures;
 	}
 
-	Texture2DPtr BRDFLUTGenerator::GenerateBRDFLUTMap(uint32_t size)
+	Ref<Texture2D> BRDFLUTGenerator::GenerateBRDFLUTMap(uint32_t size)
 	{
-		static MaterialPtr BRDFLUTMaterial = MaterialFactory::Create(PMREM_BRDFLUT);
+		static Material material = Material(PMREM_BRDFLUT);
 
-		auto material = BRDFLUTMaterial.As<Material>();
 		FTextureCreateInfo brdfLUTInfo{};
 		brdfLUTInfo.Format = EFormat::RG16F;
 		brdfLUTInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
@@ -149,15 +144,15 @@ namespace BHive
 		brdfLUTInfo.Roles |= ETextureRole::ComputeWrite;
 		brdfLUTInfo.DebugName = "BRDFLUT Texture";
 
-		auto brdfLUT = TextureFactory::Create2D({size, size}, brdfLUTInfo);
+		static auto brdfLUT = CreateRef<Texture2D>(glm::vec2{size, size}, brdfLUTInfo);
 
-		material->SetTexture("brdfLutTexture", TextureBinding(brdfLUT));
+		material.SetTexture("brdfLutTexture", TextureBinding(brdfLUT));
 
 		Graph graph;
 		auto &pass = graph.AddPass("Generate BRDFLut", EPassType::OffScreen);
 		pass.BeginPhase(EPhaseType::Compute);
 		pass.UseTexture(brdfLUT, EImageUsage::ComputeStorageWrite);
-		pass.Emplace<CmdBindMaterial>()(material);
+		pass.Emplace<CmdBindMaterial>()(&material);
 		pass.Emplace<CmdDispatch>()(size / 8, size / 8, 1);
 		pass.EndPhase();
 		Renderer::Get().ExecuteGraph(graph);

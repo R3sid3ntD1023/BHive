@@ -76,13 +76,13 @@ namespace BHive
 		Material::SetTexture(name, texture);
 		if (name == "NormalMap")
 		{
-			SetParam("HasNormalMap", MaterialParam(texture.Texture.IsValid()));
+			SetParam("HasNormalMap", MaterialParam(texture.Texture != nullptr));
 		}
 
 		return *this;
 	}
 
-	void StandardMaterial::SetTextureFromType(EMaterialTextureType type, TexturePtr texture)
+	void StandardMaterial::SetTextureFromType(EMaterialTextureType type, Ref<Texture> texture)
 	{
 
 		switch (type)
@@ -137,10 +137,12 @@ namespace BHive
 		BEGIN_REFLECT(StandardMaterial)
 		REFLECT_CONSTRUCTOR()
 		REFLECT_PROPERTY("Albedo", GetAlbedo, SetAlbedo)
-		REFLECT_PROPERTY("Metalness", GetMetalness, SetMetalness)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY(
-			"Roughness", GetRoughness,
-			SetRoughness)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Emission", GetEmission, SetEmission)(META_DATA(EPropertyMetaData_HDR, true))
-			REFLECT_PROPERTY("Opacity", GetOpacity, SetOpacity)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Tiling", mTiling)
+		REFLECT_PROPERTY("Metalness", GetMetalness, SetMetalness)(META_DATA(EPropertyMetaData_Max, 1.0f))(
+			META_DATA(EPropertyMetaData_Min, 0.0f)
+		)REFLECT_PROPERTY("Roughness", GetRoughness, SetRoughness)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))
+			REFLECT_PROPERTY("Emission", GetEmission, SetEmission)(
+				META_DATA(EPropertyMetaData_HDR, true)
+			) REFLECT_PROPERTY("Opacity", GetOpacity, SetOpacity)(META_DATA(EPropertyMetaData_Max, 1.0f))(META_DATA(EPropertyMetaData_Min, 0.0f))REFLECT_PROPERTY("Tiling", mTiling)
 				REFLECT_PROPERTY("DepthScale", mDepthScale) REFLECT_PROPERTY("Flags", mFlags)(META_DATA(EPropertyFlags_BitFlags, true));
 
 		rttr::type::register_wrapper_converter_for_base_classes<Ref<StandardMaterial>>();

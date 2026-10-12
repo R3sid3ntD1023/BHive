@@ -6,7 +6,7 @@
 namespace BHive
 {
 	template <typename T>
-	struct BHIVE_API AssetHandle
+	struct AssetHandle
 	{
 		AssetHandle() = default;
 
@@ -15,9 +15,21 @@ namespace BHive
 		{
 		}
 
-		Ref<T> Get() const { return AssetManager::GetAsset<T>(mID); }
+		AssetHandle(Ref<T> ref)
+			: mRef(ref)
+		{
+		}
 
-		bool IsValid() const { return AssetManager::IsAssetHandleValid(mID); }
+		template <typename U>
+			requires(std::is_base_of_v<T, U>)
+		AssetHandle(Ref<U> ref)
+			: mRef(ref)
+		{
+		}
+
+		Ref<T> Get() const { return mRef ? mRef : AssetManager::GetAsset<T>(mID); }
+
+		bool IsValid() const { return mRef ? true : AssetManager::IsAssetHandleValid(mID); }
 
 		template <typename A>
 		inline std::string SaveMinimal(const A &ar) const
@@ -37,6 +49,7 @@ namespace BHive
 
 	private:
 		UUID mID{NullID};
+		std::shared_ptr<T> mRef;
 	};
 
 } // namespace BHive

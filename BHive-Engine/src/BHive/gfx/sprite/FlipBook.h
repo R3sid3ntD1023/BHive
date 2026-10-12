@@ -1,17 +1,17 @@
 #pragma once
 
 #include "asset/Asset.h"
-#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
+	class Sprite;
 
 	class BHIVE_API FlipBook : public Asset
 	{
 	public:
 		struct Frame
 		{
-			SpritePtr Sprite;
+			AssetHandle<Sprite> Sprite;
 
 			uint32_t Duration{1};
 
@@ -37,15 +37,15 @@ namespace BHive
 
 		void SetFramesPerSecond(float fps);
 
-		void AddFrame(SpritePtr sprite, uint32_t duration = 1);
+		void AddFrame(AssetHandle<Sprite> sprite, uint32_t duration = 1);
 
-		void InsertFrame(SpritePtr sprite, uint32_t duration = 1, uint32_t index = 0);
+		void InsertFrame(AssetHandle<Sprite> sprite, uint32_t duration = 1, uint32_t index = 0);
 
-		SpritePtr RemoveSprite(uint32_t index);
+		AssetHandle<Sprite> RemoveSprite(uint32_t index);
 
 		void SetFrames(const std::vector<FlipBook::Frame> &frames);
 
-		SpritePtr GetCurrentSprite() const;
+		AssetHandle<Sprite> GetCurrentSprite() const;
 
 		const auto &GetFrames() const { return mFrames; }
 
@@ -55,9 +55,9 @@ namespace BHive
 
 		float GetFramesPerSecond() const { return mFramesPerSecond; }
 
-		SpritePtr GetSpriteAtFrame(int32_t frame) const;
+		AssetHandle<Sprite> GetSpriteAtFrame(int32_t frame) const;
 
-		SpritePtr GetSpriteAtTime(float time) const;
+		AssetHandle<Sprite> GetSpriteAtTime(float time) const;
 
 		float GetTotalTime() const;
 

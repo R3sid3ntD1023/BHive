@@ -13,7 +13,7 @@ namespace BHive
 
 		IMaterial &SetEmissionColor(FColor color);
 
-		void SetTextureFromType(EMaterialTextureType type, TexturePtr texture) override;
+		void SetTextureFromType(EMaterialTextureType type, Ref<Texture> texture) override;
 
 		std::vector<std::string> GetShaderDefinitions() const override { return {"MATERIAL_EMISSIVE"}; }
 

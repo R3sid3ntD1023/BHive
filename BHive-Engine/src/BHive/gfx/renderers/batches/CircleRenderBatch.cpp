@@ -14,7 +14,7 @@ namespace BHive
 		state.Raster.CullEnabled = false;
 		state.Depth.DepthWrite = false;
 
-		mCircleMaterial = MaterialFactory::Create("Circle.glsl");
+		mCircleMaterial = Material("Circle.glsl");
 		mPipeline = PipelineFactory::Create(state);
 	}
 
@@ -39,7 +39,7 @@ namespace BHive
 
 		auto &pass = renderer.GetActivePass();
 		pass.Emplace<CmdBindPipeline>()(mPipeline);
-		pass.Emplace<CmdBindMaterial>()(mCircleMaterial.As<Material>());
+		pass.Emplace<CmdBindMaterial>()(&mCircleMaterial);
 		pass.Emplace<CmdDrawIndexed>()(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
 
 		mIsActive = false;

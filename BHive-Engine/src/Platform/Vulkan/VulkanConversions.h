@@ -463,7 +463,7 @@ namespace BHive
 				viewType = vk::ImageViewType::e3D;
 				extent = vk::Extent3D(size.x, size.y, size.z);
 				break;
-			case ETextureType::TEXTURE_CUBE_MAP:
+			case ETextureType::TEXTURE_CUBE:
 				flags = vk::ImageCreateFlagBits::eCubeCompatible;
 				viewType = vk::ImageViewType::eCube;
 				extent = vk::Extent3D(size.x, size.x, 1);

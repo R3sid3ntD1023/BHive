@@ -1,16 +1,16 @@
 #pragma once
 
+#include "core/Core.h"
+#include "core/math/Frustum.h"
 #include "EnvironmentSystem.h"
 #include "LightCasters.h"
 #include "Lights.h"
 #include "PMREMGenerator.h"
+#include "postprocess/PostProcessStack.h"
 #include "RenderBatch.h"
 #include "RenderData.h"
 #include "RenderQueue.h"
 #include "ShadowRenderer.h"
-#include "core/Core.h"
-#include "core/math/Frustum.h"
-#include "postprocess/PostProcessStack.h"
 
 namespace BHive
 {
@@ -71,7 +71,7 @@ namespace BHive
 
 		void SetViewOverride(const FView &view);
 
-		void SetEnvironmentTexture(Texture2DPtr hdr);
+		void SetEnvironmentTexture(Ref<Texture2D> hdr);
 
 		void Submit(const DirectionalLight &light);
 
@@ -83,15 +83,19 @@ namespace BHive
 
 		void SubmitMesh(const FMeshSubmissionRequest &info);
 
-		void UpdateMesh(ContextHandle requestHandle, MeshPtr mesh);
+		void UpdateMesh(ContextHandle requestHandle, Ref<BaseMesh> mesh);
 
 		void UpdateTransform(ContextHandle requestHandle, const FTransform &t);
 
 		void UpdateBones(ContextHandle handle, const std::vector<AnimTransform> &bones);
 
+		void UpdateMaterials(ContextHandle h, MaterialTable materials);
+
+		void SetCamera(const glm::mat4 &projection, const glm::mat4 &view);
+
 		void Resize(const glm::uvec2 &size);
 
-		TexturePtr GetOutput() const { return mOutputTexture; }
+		Ref<Texture> GetOutput() const { return mOutputTexture; }
 
 		FRenderSettings &GetRenderSettings() { return mRenderSettings; }
 
@@ -131,11 +135,11 @@ namespace BHive
 
 		FramebufferPtr mFramebuffer;
 
-		TexturePtr mOutputTexture;
+		Ref<Texture> mOutputTexture;
 
-		std::array<MaterialPtr, 2> mFrustrumOcclusionMaterial;
+		std::array<Material, 2> mFrustrumOcclusionMaterial;
 
-		MaterialPtr mFrustumMaterial;
+		Material mFrustumMaterial;
 
 		BufferPtr mCameraUBO;
 

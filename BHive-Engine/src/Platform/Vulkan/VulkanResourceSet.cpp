@@ -1,11 +1,11 @@
-#include "VulkanResourceSet.h"
+#include "gfx/BufferBase.h"
+#include "gfx/Texture.h"
 #include "VulkanBackend.h"
 #include "VulkanBuffer.h"
 #include "VulkanConversions.h"
 #include "VulkanRendererAPI.h"
+#include "VulkanResourceSet.h"
 #include "VulkanShader.h"
-#include "gfx/BufferBase.h"
-#include "gfx/Texture.h"
 
 namespace BHive
 {
@@ -26,7 +26,7 @@ namespace BHive
 		}
 	}
 
-	void VulkanResourceSet::SetTexture(uint32_t binding, TexturePtr texture, uint32_t mip)
+	void VulkanResourceSet::SetTexture(uint32_t binding, Ref<Texture> texture, uint32_t mip)
 	{
 		auto info = FindBinding(binding);
 		if (info && (info->Texture != texture || info->MipLevel != mip))
@@ -92,7 +92,7 @@ namespace BHive
 
 		const uint32_t layer = 0;
 
-		const auto textureID = bindInfo.Texture.As<Texture>()->GetTextureID();
+		const auto textureID = bindInfo.Texture->GetTextureID();
 		if (textureID == -1)
 			return vk::DescriptorImageInfo();
 

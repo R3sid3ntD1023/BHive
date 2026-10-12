@@ -34,7 +34,7 @@ namespace BHive
 
 		void Update(float dt);
 
-		void Render(SceneRenderer *sceneRenderer, Renderer *renderer);
+		void Render(SceneRenderer &sceneRenderer, Renderer &renderer);
 
 		void End();
 

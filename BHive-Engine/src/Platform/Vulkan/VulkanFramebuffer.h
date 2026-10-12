@@ -28,9 +28,9 @@ namespace BHive
 
 		uint32_t GetNumColorAttachments() const override { return (uint32_t)mColorAttachments.size(); }
 
-		TexturePtr GetColorAttachment(uint32_t index = 0) const override;
+		Ref<Texture> GetColorAttachment(uint32_t index = 0) const override;
 
-		TexturePtr GetDepthAttachment() const override;
+		Ref<Texture> GetDepthAttachment() const override;
 
 		const FramebufferSpecification &GetSpecification() const override { return mSpecification; }
 
@@ -68,9 +68,9 @@ namespace BHive
 
 		FFramebufferTexture mDepthSpecification{};
 
-		std::vector<TexturePtr> mColorAttachments;
+		std::vector<Ref<Texture>> mColorAttachments;
 
-		TexturePtr mDepthAttachment;
+		Ref<Texture> mDepthAttachment;
 	};
 
 } // namespace BHive

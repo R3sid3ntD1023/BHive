@@ -211,12 +211,23 @@ namespace BHive
 		vk::CommandBufferBeginInfo beginInfo{};
 		cmd.begin(beginInfo);
 
-		for (auto &pass : graph.GetPasses())
+		if (graph.GetPasses().empty())
 		{
-			pass.ResolveBufferTransitons();
-
-			ExecutePass(pass, vk_ctx, swapChain);
+			BeginSwapChainRendering({}, {}, vk_ctx, swapChain);
+			EndSwapChainRendering(vk_ctx, swapChain);
 		}
+		else
+		{
+			for (auto &pass : graph.GetPasses())
+			{
+				pass.ResolveBufferTransitons();
+
+				ExecutePass(pass, vk_ctx, swapChain);
+			}
+		}
+
+		// Covers graphs that never render to the swapchain image.
+		swapChain->TransitionToPresent(cmd, imageIndex);
 
 		cmd.end();
 
@@ -294,8 +305,7 @@ namespace BHive
 			if (!imgInfo.Texture)
 				continue;
 
-			auto tex = imgInfo.Texture.As<Texture>();
-			auto textureID = tex->GetTextureID();
+			auto textureID = imgInfo.Texture->GetTextureID();
 
 			if (textureID == -1)
 			{

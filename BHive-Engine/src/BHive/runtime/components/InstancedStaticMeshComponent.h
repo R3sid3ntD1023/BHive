@@ -9,6 +9,8 @@ namespace BHive
 
 		void SetInstances(const std::vector<FTransform> &transforms);
 
+		void OnRender(const FComponentRenderContext &context) override;
+
 		int32_t GetCount() { return (uint32_t)mInstances.size(); }
 
 		const std::vector<FTransform> &GetInstances() const { return mInstances; }

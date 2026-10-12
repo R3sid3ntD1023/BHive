@@ -1,10 +1,10 @@
 #pragma once
 
-#include "VulkanCore.h"
 #include "gfx/Enumerations.h"
-#include "gfx/ResourceSet.h"
 #include "gfx/registries/Handles.h"
+#include "gfx/ResourceSet.h"
 #include "gfx/shader/ShaderTemplate.h"
+#include "VulkanCore.h"
 
 namespace BHive
 {
@@ -15,7 +15,7 @@ namespace BHive
 		uint32_t MipLevel = 0;
 
 		BufferPtr Buffer;
-		TexturePtr Texture;
+		Ref<Texture> Texture;
 	};
 
 	class VulkanResourceSet : public ResourceSet
@@ -44,7 +44,7 @@ namespace BHive
 
 		void SetBuffer(uint32_t binding, BufferPtr buffer);
 
-		void SetTexture(uint32_t binding, TexturePtr texture, uint32_t mip = 0);
+		void SetTexture(uint32_t binding, Ref<Texture> texture, uint32_t mip = 0);
 
 		vk::DescriptorSet GetSet(uint32_t frame);
 
@@ -67,7 +67,7 @@ namespace BHive
 
 		bool IsDirty(uint32_t frame) const { return mDirtyBindings[frame].Bindings.size() > 0; }
 
-		private:
+	private:
 		uint32_t mSetIndex;
 
 		std::vector<vk::DescriptorSet> mSets;

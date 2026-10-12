@@ -27,12 +27,12 @@ namespace BHive
 		return CreateResource<SpriteSheet>();
 	}
 
-	SpriteSheetPtr SpriteSheetFactory::Create(TexturePtr source, const FSpriteSheetGrid &grid)
+	SpriteSheetPtr SpriteSheetFactory::Create(Ref<Texture2D> source, const FSpriteSheetGrid &grid)
 	{
 		return CreateResource<SpriteSheet>(source, grid);
 	}
 
-	SpriteSheetPtr SpriteSheetFactory::Create(TexturePtr source, uint32_t rows, uint32_t columns, const glm::vec2 &cellSize)
+	SpriteSheetPtr SpriteSheetFactory::Create(Ref<Texture2D> source, uint32_t rows, uint32_t columns, const glm::vec2 &cellSize)
 	{
 		FSpriteSheetGrid grid{};
 		grid.Rows = rows;

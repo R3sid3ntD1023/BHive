@@ -1,12 +1,14 @@
 #include "FlipBookComponent.h"
-#include "runtime/GameObject.h"
+#include "gfx/renderers/Renderer.h"
 #include "gfx/sprite/FlipBook.h"
+#include "runtime/GameObject.h"
 
 namespace BHive
 {
 	void FlipBookComponent::Begin()
 	{
-		mInstance = new FlipBook(*FlipBookHandle.As<FlipBook>());
+		if (FlipBookHandle)
+			mInstance = new FlipBook(*FlipBookHandle.Get());
 
 		if (AutoPlay)
 			mInstance->Play();
@@ -22,7 +24,22 @@ namespace BHive
 		if (mInstance)
 		{
 			mInstance->Update(dt);
+			MarkDirty();
 		}
+	}
+
+	void FlipBookComponent::OnRender(const FComponentRenderContext &context)
+	{
+		if (!FlipBookHandle)
+			return;
+
+		FQuadParams params{};
+		params.Color = Color;
+		params.Size = Size;
+		params.Tiling = Tiling;
+
+		const auto sprite = mInstance ? mInstance->GetCurrentSprite() : FlipBookHandle->GetCurrentSprite();
+		context.EngineRenderer.Quad.DrawSprite(params, *sprite.Get(), GetWorldTransform(), context.EntityID);
 	}
 
 	void FlipBookComponent::Save(cereal::BinaryOutputArchive &ar) const

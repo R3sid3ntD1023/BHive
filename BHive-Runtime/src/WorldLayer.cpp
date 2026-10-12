@@ -4,7 +4,11 @@
 #include "audio/AudioSource.h"
 #include "core/FPSCounter.h"
 #include "core/platform/Platform.h"
+#include "gfx/Texture.h"
+#include "gfx/factories/FontFactory.h"
+#include "gfx/material/Materials.h"
 #include "gfx/renderers/SceneRenderer.h"
+#include "importers/TextureImporter.h"
 #include "runtime/Components.h"
 #include "runtime/GameObject.h"
 #include "runtime/World.h"
@@ -35,7 +39,7 @@ namespace BHive
 
 		mCurrentWorld = CreateRef<World>();
 
-		mSceneOutput = MaterialFactory::Create("Scene.glsl");
+		mSceneOutput = CreateRef<Material>("Scene.glsl");
 		mSceneOutputPipeline = PipelineFactory::Create(Pipeline::GetDefaultGraphicsPipelineState());
 
 		mFont = FontFactory::Create(ENGINE_PATH "/data/fonts/Roboto/Roboto-Regular.ttf", 16.f);
@@ -45,6 +49,15 @@ namespace BHive
 		auto handle = mAssetManager.ImportAsset("E://Files//Mods//Resident Evil 4  - The Mercenaries - Leon Theme.wav");
 		auto texture = mAssetManager.ImportAsset("C:\\Users\\dariu\\Documents\\BHive\\projects\\Mario\\resources\\NES - Super Mario Bros - Tileset.png");
 
+		auto decompressedEnv = TextureImporter::FromFile(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
+		auto env = CreateRef<Texture2D>(decompressedEnv.Size, decompressedEnv.CreateInfo, decompressedEnv.Data);
+		mRenderer->SetEnvironmentTexture(env);
+
+		mMesh = MeshFactory::CreateSphere(1.f);
+		mMaterial = CreateRef<StandardMaterial>();
+		auto materialID = mAssetManager.RegisterAsset(mMaterial, "StandardMaterial");
+		auto meshID = mAssetManager.RegisterAsset(mMesh, "CubeMesh");
+
 		if (handle)
 		{
 			auto audio = AssetHandle<AudioSource>(handle);
@@ -52,13 +65,12 @@ namespace BHive
 			auto gameObject = mCurrentWorld->CreateGameObject("AudioGameObj");
 			gameObject->AddComponent<PhysicsComponent>();
 			gameObject->AddComponent<SphereColliderComponent>();
-			gameObject->GetComponent<TransformComponent>()->Transform.Translation = {0.f, 1.f, 0.f};
+			gameObject->GetComponent<TransformComponent>()->SetTransform({{0.f, 1.f, 0.f}});
 			mAudioComponent = gameObject->AddComponent<AudioComponent>();
-			mAudioComponent->AutoPlay = true;
+			mAudioComponent->AutoPlay = false;
 			mAudioComponent->Audio = audio;
 
-			auto factory = FactoryRegistry::Get().Find(rttr::type::get<Sprite>());
-			auto sprite = factory->CreateNew();
+			auto sprite = CreateRef<Sprite>(texture, glm::vec2{0, 0}, glm::vec2{1, 1});
 			auto s = mAssetManager.RegisterAsset(sprite, "Sprite");
 
 			auto sc = gameObject->AddComponent<SpriteComponent>();
@@ -68,10 +80,14 @@ namespace BHive
 		{
 			auto gameObject = mCurrentWorld->CreateGameObject("GameObject2");
 			auto p = gameObject->AddComponent<PhysicsComponent>();
-			p->Settings.InitialVelocity = {10.f, 0.f, 0.f};
 			p->Settings.BodyType = EBodyType::Dynamic;
-			gameObject->AddComponent<CapsuleColliderComponent>();
-			gameObject->GetComponent<TransformComponent>()->Transform.Translation = {2.f, 3.f, 0.f};
+			p->Settings.InitialVelocity = {1.f, 0.f, 0.f};
+			gameObject->AddComponent<SphereColliderComponent>();
+			gameObject->GetComponent<TransformComponent>()->SetTransform({{0.f, 3.f, 0.f}});
+
+			auto smp = gameObject->AddComponent<StaticMeshComponent>();
+			smp->SetStaticMesh(meshID);
+			smp->SetMaterial(0, materialID);
 		}
 
 		{
@@ -80,7 +96,17 @@ namespace BHive
 			gameObject->AddComponent<BoxColliderComponent>()->Extents = {50.f, .5f, 50.f};
 		}
 
+		{
+			auto gameObject = mCurrentWorld->CreateGameObject("GameObject3");
+			auto c = gameObject->AddComponent<CameraComponent>();
+			c->IsPrimary = true;
+			c->Camera.SetPerspective(45.f, 16.f / 9.f, 0.1f, 100.f);
+			gameObject->GetComponent<TransformComponent>()->SetTransform(FTransform::LookAt({0.f, 0.f, 0.f}, {0.f, 5.f, 10.f}));
+		}
+
 		mCurrentWorld->Begin();
+
+		// Renderer::Get().Line.DrawPersistent(0.0f, [this](LineRenderer &line) { line.DrawGrid({}); });
 	}
 
 	void WorldLayer::OnUpdate(float dt)
@@ -96,26 +122,25 @@ namespace BHive
 
 		mRenderer->Begin(mCamera.GetProjection(), mCamera.GetView());
 
-		mCurrentWorld->Render(mRenderer.get(), &renderer);
+		mCurrentWorld->Render(*mRenderer, renderer);
 
-		renderer.Line.DrawGrid({});
-		renderer.Quad.DrawText(mFont, 1.0f, std::format("{}", fps));
+		renderer.Quad.DrawText(*mFont, 1.0f, std::format("{}", fps));
 
 		if (mAudioComponent && mAudioComponent->Audio)
 		{
 			auto playbackPos = mAudioComponent->Audio->GetPlaybackPosition();
-			renderer.Quad.DrawText(mFont, 1.0f, std::format("Audio Pos: {}", playbackPos.to_string()), {}, {{0, 3, 0}});
+			renderer.Quad.DrawText(*mFont, 1.0f, std::format("Audio Pos: {}", playbackPos.to_string()), {}, {{0, 3, 0}});
 		}
 
 		mRenderer->End();
 
-		mSceneOutput.As<Material>()->SetTexture("Scene", {mRenderer->GetOutput()});
+		mSceneOutput->SetTexture("Scene", {mRenderer->GetOutput()});
 
 		auto &pass = renderer.BeginPass("RenderToScreen", EPassType::Present);
 		pass.BeginPhase(EPhaseType::Graphics);
 		pass.UseTexture(mRenderer->GetOutput(), EImageUsage::ColorRead);
 		pass.Emplace<CmdBindPipeline>()(mSceneOutputPipeline);
-		pass.Emplace<CmdBindMaterial>()(mSceneOutput);
+		pass.Emplace<CmdBindMaterial>()(mSceneOutput.get());
 		pass.Emplace<CmdDrawFullScreen>();
 		pass.EndPhase();
 		renderer.EndPass();

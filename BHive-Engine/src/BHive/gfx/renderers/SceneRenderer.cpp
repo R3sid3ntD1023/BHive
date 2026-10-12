@@ -1,15 +1,15 @@
-#include "SceneRenderer.h"
-#include "RenderBatch.h"
-#include "Renderer.h"
-#include "core/math/Transform.h"
 #include "core/math/boundingbox/AABB.h"
+#include "core/math/Transform.h"
 #include "core/math/volumes/SphereVolume.h"
 #include "gfx/Camera.h"
+#include "gfx/factories/GFXFactories.h"
+#include "gfx/mesh/SkeletalMesh.h"
 #include "gfx/Query.h"
 #include "gfx/ShaderManager.h"
 #include "gfx/Texture.h"
-#include "gfx/factories/GFXFactories.h"
-#include "gfx/mesh/SkeletalMesh.h"
+#include "RenderBatch.h"
+#include "Renderer.h"
+#include "SceneRenderer.h"
 
 // {
 // 	auto state = Pipeline::GetDefaultGraphicsPipelineState();
@@ -61,9 +61,9 @@ namespace BHive
 			mInstanceDataBuffer[i] = BufferFactory::Create(OBJECT_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
 			mIndirectDrawBuffer[i] = BufferFactory::Create(DRAWCOMMAND_BUFFER_SIZE, EBufferType::StorageBuffer | EBufferType::IndirectBuffer, EBufferLifetime::Dynamic);
 			mVisibleBuffer[i] = BufferFactory::Create(VISIBILITY_BUFFER_SIZE, EBufferType::StorageBuffer, EBufferLifetime::Dynamic);
-			mFrustrumOcclusionMaterial[i] = MaterialFactory::Create("FrustumOcclusion.glsl");
+			mFrustrumOcclusionMaterial[i] = Material("FrustumOcclusion.glsl");
 		}
-		mFrustumMaterial = MaterialFactory::Create("Frustum.glsl");
+		mFrustumMaterial = Material("Frustum.glsl");
 
 		mPostProcessStack.Init(size);
 		mLights.Init();
@@ -74,7 +74,7 @@ namespace BHive
 		BindResourceSets();
 	}
 
-	void SceneRenderer::SetEnvironmentTexture(Texture2DPtr hdr)
+	void SceneRenderer::SetEnvironmentTexture(Ref<Texture2D> hdr)
 	{
 		mEnvironment.SetHDR(hdr);
 		mEnvironment.Update();
@@ -89,15 +89,13 @@ namespace BHive
 	void SceneRenderer::Begin(const glm::mat4 &projection, const glm::mat4 &view)
 	{
 		auto &renderer = Renderer::Get();
-
-		mSceneView.View = FView::Create(projection, view);
-		mSceneView.Frustum = Frustum(projection * view);
-
 		renderer.BeginBatching();
 		mLights.BeginRecording();
 		mShadows.BeginRecording();
 
 		mRenderQueue->BuildQueue(view);
+
+		SetCamera(projection, view);
 	}
 
 	void SceneRenderer::End()
@@ -163,7 +161,7 @@ namespace BHive
 			occlusionPass.UseBuffer(visibilityBuffer, EBufferUsage::StorageWrite);
 			occlusionPass.UseBuffer(instanceBuffer, EBufferUsage::StorageRead);
 			occlusionPass.UseBuffer(mCameraUBO, EBufferUsage::UniformRead);
-			occlusionPass.Emplace<CmdBindMaterial>()(mFrustrumOcclusionMaterial[i].As<Material>());
+			occlusionPass.Emplace<CmdBindMaterial>()(&mFrustrumOcclusionMaterial[i]);
 			occlusionPass.Emplace<CmdDispatch>()(groups, 1, 1);
 			occlusionPass.EndPhase();
 			renderer.EndPass();
@@ -207,7 +205,7 @@ namespace BHive
 		pass.BindResourceSet(mSceneSets.GlobalSet);
 		pass.UseFramebuffer(mFramebuffer);
 		pass.Emplace<CmdBindPipeline>()(pipelines[0]);
-		pass.Emplace<CmdBindMaterial>()(mFrustumMaterial.As<Material>());
+		pass.Emplace<CmdBindMaterial>()(&mFrustumMaterial);
 		pass.Emplace<CmdSetLineWidth>()(1.0f);
 		pass.Emplace<CmdDraw>()(ETopologyMode::Lines, {}, 24);
 		pass.EndPhase();
@@ -331,7 +329,22 @@ namespace BHive
 		memcpy(&mBoneData[ctx.BoneOffset], mTempBones.data(), ctx.BoneCount * sizeof(glm::mat4));
 	}
 
-	void SceneRenderer::UpdateMesh(ContextHandle requestHandle, MeshPtr mesh)
+	void SceneRenderer::UpdateMaterials(ContextHandle h, MaterialTable materials)
+	{
+		if (!mRenderQueue->IsHandleValid(h))
+			return;
+
+		auto &ctx = mRenderQueue->ResolveContext(h);
+		ctx.Materials = materials;
+	}
+
+	void SceneRenderer::SetCamera(const glm::mat4 &projection, const glm::mat4 &view)
+	{
+		mSceneView.View = FView::Create(projection, view);
+		mSceneView.Frustum = Frustum(projection * view);
+	}
+
+	void SceneRenderer::UpdateMesh(ContextHandle requestHandle, Ref<BaseMesh> mesh)
 	{
 		mRenderQueue->RemoveSubmissionsForContext(requestHandle);
 

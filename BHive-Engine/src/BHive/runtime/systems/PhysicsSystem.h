@@ -27,7 +27,7 @@ namespace BHive
 
 		void Shutdown(World *world);
 
-		void DebugDraw(Renderer *renderer);
+		void DebugDraw(Renderer &renderer);
 
 		void InitCallbacks();
 

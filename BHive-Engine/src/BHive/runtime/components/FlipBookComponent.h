@@ -1,9 +1,8 @@
 #pragma once
 
-#include "runtime/Component.h"
-#include "gfx/registries/Handles.h"
 #include "gfx/Color.h"
 #include "gfx/sprite/FlipBook.h"
+#include "runtime/Component.h"
 
 namespace BHive
 {
@@ -22,11 +21,13 @@ namespace BHive
 
 		glm::vec2 Tiling{1, 1};
 
-		FlipBookPtr FlipBookHandle;
+		AssetHandle<FlipBook> FlipBookHandle;
 
 		virtual void Begin() override;
 		virtual void End() override;
 		virtual void Update(float dt) override;
+
+		void OnRender(const FComponentRenderContext &context) override;
 
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;

@@ -15,7 +15,7 @@ namespace BHive
 	struct FDebugTextureEntry
 	{
 		std::string Name;
-		TexturePtr Tex;
+		Ref<Texture> Tex;
 		bool IsCube = false;
 		uint32_t MipLevels = 1;
 		uint32_t Layers = 1;
@@ -32,7 +32,7 @@ namespace BHive
 
 		void Initialize(const glm::uvec2 &size);
 
-		void RegisterTexture(const std::string &name, TexturePtr tex);
+		void RegisterTexture(const std::string &name, Ref<Texture> tex);
 
 		void OnRender(Renderer &renderer);
 
@@ -52,7 +52,7 @@ namespace BHive
 
 		FramebufferPtr mFB;
 		Ref<Pipeline> mPipeline;
-		MaterialPtr mMaterial;
+		Ref<Material> mMaterial;
 		glm::uvec2 mSize{};
 
 		bool mHasRendered = false;

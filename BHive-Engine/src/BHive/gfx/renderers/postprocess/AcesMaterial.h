@@ -1,14 +1,14 @@
 #pragma once
 
-#include "PostProcessMaterial.h"
 #include "gfx/material/Material.h"
+#include "PostProcessMaterial.h"
 
 namespace BHive
 {
 	class BHIVE_API AcesMaterial : public PostProcessMaterial
 	{
 	public:
-		TexturePtr AddToGraph(Graph &graph, const FPostProcessTextureSet &set) override;
+		Ref<Texture> AddToGraph(Graph &graph, const FPostProcessTextureSet &set) override;
 
 		void Init(const glm::uvec2 &size) override;
 
@@ -17,7 +17,7 @@ namespace BHive
 	private:
 		FramebufferPtr mFramebuffer;
 
-		MaterialPtr mMaterial;
+		Material mMaterial;
 
 		PipelinePtr mPipeline;
 	};

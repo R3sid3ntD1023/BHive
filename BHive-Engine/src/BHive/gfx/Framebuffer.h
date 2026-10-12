@@ -11,7 +11,7 @@ namespace BHive
 	{
 		FTextureCreateInfo CreateInfo{};
 		ETextureType Type = ETextureType::TEXTURE_2D;
-		TexturePtr ExternalTexture = {};
+		Ref<Texture> ExternalTexture = {};
 
 		FFramebufferTexture() = default;
 		FFramebufferTexture(const FTextureCreateInfo &createInfo, ETextureType type = ETextureType::TEXTURE_2D)
@@ -20,7 +20,7 @@ namespace BHive
 		{
 		}
 
-		FFramebufferTexture(TexturePtr texture, ETextureType type = ETextureType::TEXTURE_2D)
+		FFramebufferTexture(Ref<Texture> texture, ETextureType type = ETextureType::TEXTURE_2D)
 			: Type(type),
 			  ExternalTexture(texture)
 		{
@@ -100,9 +100,9 @@ namespace BHive
 
 		virtual uint32_t GetNumColorAttachments() const = 0;
 
-		virtual TexturePtr GetColorAttachment(uint32_t index = 0) const = 0;
+		virtual Ref<Texture> GetColorAttachment(uint32_t index = 0) const = 0;
 
-		virtual TexturePtr GetDepthAttachment() const = 0;
+		virtual Ref<Texture> GetDepthAttachment() const = 0;
 
 		virtual const FramebufferSpecification &GetSpecification() const = 0;
 

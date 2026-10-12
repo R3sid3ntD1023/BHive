@@ -1,7 +1,7 @@
+#include "core/EntryPoint.h"
 #include "RuntimeLayer.h"
 #include "SceneLayer.h"
 #include "WorldLayer.h"
-#include "core/EntryPoint.h"
 
 namespace BHive
 {
@@ -13,7 +13,7 @@ namespace BHive
 		{
 			PushLayer<SceneLayer>();
 			// PushLayer<WorldLayer>();
-			//  PushLayer<PerformanceLayer>();
+			//   PushLayer<PerformanceLayer>();
 			//  PushLayer<RuntimeLayer>();
 		}
 	};

@@ -11,9 +11,12 @@ namespace BHive
 		auto result = CoCreateGuid(&guid);
 		if (SUCCEEDED(result))
 		{
-			mHigh = uint64_t(guid.Data1 << 32) | uint64_t(guid.Data2 << 16) | guid.Data3;
-			mLow = uint64_t(guid.Data4[0] << 56) | uint64_t(guid.Data4[1] << 48) | uint64_t(guid.Data4[2] << 40) | uint64_t(guid.Data4[3] << 32) | uint64_t(guid.Data4[4] << 24)
-				   | uint64_t(guid.Data4[5] << 16) | uint64_t(guid.Data4[6] << 8) | guid.Data4[7];
+			mHigh = (uint64_t(guid.Data1) << 32) | (uint64_t(guid.Data2) << 16) | uint64_t(guid.Data3);
+			mLow = 0;
+			for (int i = 0; i < 8; ++i)
+			{
+				mLow = (mLow << 8) | uint64_t(guid.Data4[i]);
+			}
 		}
 	}
 
@@ -48,15 +51,21 @@ namespace BHive
 
 	UUID &UUID::FromString(const std::string &s)
 	{
-		uint32_t a;
-		uint16_t b;
-		uint16_t c;
-		uint16_t d;
-		uint64_t e;
+		uint32_t a = 0;
+		uint16_t b = 0;
+		uint16_t c = 0;
+		uint16_t d = 0;
+		unsigned long long e = 0;
 
-		std::sscanf(s.c_str(), "%8x-%4hx-%4hx-%4hx-%12llx", &a, &b, &c, &d, &e);
-		mHigh = uint64_t(a << 32) | uint64_t(b << 16) | c;
-		mLow = uint64_t(d << 48) | e;
+		if (std::sscanf(s.c_str(), "%8x-%4hx-%4hx-%4hx-%12llx", &a, &b, &c, &d, &e) != 5)
+		{
+			mHigh = 0;
+			mLow = 0;
+			return *this;
+		}
+
+		mHigh = (uint64_t(a) << 32) | (uint64_t(b) << 16) | uint64_t(c);
+		mLow = (uint64_t(d) << 48) | uint64_t(e);
 		return *this;
 	}
 } // namespace BHive

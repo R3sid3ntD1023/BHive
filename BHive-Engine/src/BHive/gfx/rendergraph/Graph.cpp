@@ -2,7 +2,7 @@
 
 namespace BHive
 {
-	void Graph::Append(Graph &graph)
+	void Graph::Append(Graph graph)
 	{
 		auto &passes = graph.GetPasses();
 		mPasses.insert(mPasses.end(), passes.begin(), passes.end());
@@ -18,6 +18,10 @@ namespace BHive
 		return pass;
 	}
 
+	void Graph::ResolveBufferTransitions()
+	{
+	}
+
 	void Graph::DebugPrint()
 	{
 		for (auto &pass : mPasses)
@@ -30,7 +34,10 @@ namespace BHive
 
 				for (auto &tex : phase.Images)
 				{
-					tex.Texture.As<Texture>()->DebugPrintState();
+					if (!tex.Texture)
+						continue;
+
+					tex.Texture->DebugPrintState();
 
 					LOG_TRACE("\t\tTransition -> [{}:{}]", to_string(tex.Access), to_string(tex.Range));
 				}

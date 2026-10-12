@@ -4,21 +4,25 @@
 #include "gfx/animation/SkeletalAnimation.h"
 #include "gfx/mesh/BaseMesh.h"
 #include "gfx/mesh/SkeletalMesh.h"
+#include "gfx/mesh/StaticMesh.h"
 #include "importers/MeshImporter.h"
 
 namespace BHive
 {
-	struct BHIVE_API MeshFactory : public IResourceFactory<BaseMesh>
+	class StaticMesh;
+	class SkeletalMesh;
+
+	struct BHIVE_API MeshFactory
 	{
-		static MeshPtr CreateStatic(const FMeshData &meshData);
+		static Ref<StaticMesh> CreateStatic(const FMeshData &meshData);
 
-		static MeshPtr CreateSkeletal(const FMeshData &meshData, SkeletonPtr skeleton);
+		static Ref<SkeletalMesh> CreateSkeletal(const FMeshData &meshData, SkeletonPtr skeleton);
 
-		static MeshPtr CreateCube(float size = 1.0f);
+		static Ref<StaticMesh> CreateCube(float size = 1.0f);
 
-		static MeshPtr CreateSphere(float radius, uint32_t sectors = 32u, uint32_t stacks = 32u);
+		static Ref<StaticMesh> CreateSphere(float radius, uint32_t sectors = 32u, uint32_t stacks = 32u);
 
-		static MeshPtr CreatePlane(float x = 1.0f, float y = 1.0f);
+		static Ref<StaticMesh> CreatePlane(float x = 1.0f, float y = 1.0f);
 	};
 
 	struct BHIVE_API SkeletonFactory : public IResourceFactory<Skeleton>

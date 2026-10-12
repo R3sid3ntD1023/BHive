@@ -14,7 +14,7 @@ namespace BHive
 		state.Raster.CullEnabled = false;
 		state.Depth.DepthWrite = false;
 
-		mQuadMaterial = MaterialFactory::Create("Quad.glsl");
+		mQuadMaterial = Material("Quad.glsl");
 		mPipeline = PipelineFactory::Create(state);
 	}
 
@@ -26,11 +26,11 @@ namespace BHive
 		mBuffer->Upload();
 
 		auto texture = mTextureBatch->GetTexture();
-		mQuadMaterial.As<Material>()->SetTexture("uTexture", {texture});
+		mQuadMaterial.SetTexture("uTexture", {texture});
 
 		auto &pass = renderer.GetActivePass();
 		pass.Emplace<CmdBindPipeline>()(mPipeline);
-		pass.Emplace<CmdBindMaterial>()(mQuadMaterial.As<Material>());
+		pass.Emplace<CmdBindMaterial>()(&mQuadMaterial);
 		pass.Emplace<CmdDrawIndexed>()(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
 
 		mIsActive = false;

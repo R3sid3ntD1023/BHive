@@ -1,6 +1,6 @@
-#include "RenderQueue.h"
-#include "Renderer.h"
 #include "gfx/mesh/BaseMesh.h"
+#include "Renderer.h"
+#include "RenderQueue.h"
 
 namespace BHive
 {
@@ -47,20 +47,19 @@ namespace BHive
 		ctx.Active = false;
 	}
 
-	void FRenderQueue::AddSubmissionsForMesh(ContextHandle h, MeshPtr mesh)
+	void FRenderQueue::AddSubmissionsForMesh(ContextHandle h, Ref<BaseMesh> mesh)
 	{
 		const int32_t ctxIndex = h.ContextIndex;
 
 		auto &ctx = Contexts.at(ctxIndex);
 		ctx.Active = true;
-		auto *baseMesh = mesh.As<BaseMesh>();
-		ctx.VAO = baseMesh->GetVertexArray();
-		ctx.BaseVertex = baseMesh->GetBaseVertex();
-		ctx.BaseIndex = baseMesh->GetBaseIndex();
-		ctx.GeometryPage = baseMesh->GetGeometryPage();
-		ctx.ShaderMeshType = baseMesh->IsSkeletal() ? EShaderMeshType::Skeletal : EShaderMeshType::Static;
+		ctx.VAO = mesh->GetVertexArray();
+		ctx.BaseVertex = mesh->GetBaseVertex();
+		ctx.BaseIndex = mesh->GetBaseIndex();
+		ctx.GeometryPage = mesh->GetGeometryPage();
+		ctx.ShaderMeshType = mesh->IsSkeletal() ? EShaderMeshType::Skeletal : EShaderMeshType::Static;
 		const auto &materials = ctx.Materials;
-		const auto &subMeshes = mesh.As<BaseMesh>()->GetSubMeshes();
+		const auto &subMeshes = mesh->GetSubMeshes();
 
 		for (auto &s : subMeshes)
 		{
@@ -71,16 +70,16 @@ namespace BHive
 			FSubMeshSubmission sub{};
 			sub.Context = {ctxIndex, ctx.Generation};
 			sub.SubMesh = s;
-			sub.Material = material;
-			sub.BitFlags[0] = material.As<Material>()->IsTransparent();
-			sub.BitFlags[1] = material.As<Material>()->ShouldCastShadows();
+			sub.Material = material.Get();
+			sub.BitFlags[0] = material->IsTransparent();
+			sub.BitFlags[1] = material->ShouldCastShadows();
 			AddSubmission(sub);
 		}
 	}
 
 	ContextHandle FRenderQueue::AddMesh(const FMeshSubmissionRequest &request)
 	{
-		auto mesh = request.Mesh.As<BaseMesh>();
+		auto mesh = request.Mesh;
 
 		auto ctxIndex = AddSubmissionContext();
 		auto &ctx = Contexts.at(ctxIndex);
@@ -109,9 +108,9 @@ namespace BHive
 			FSubMeshSubmission sub{};
 			sub.Context = {ctxIndex, mGenerationVersion};
 			sub.SubMesh = s;
-			sub.BitFlags[0] = material.As<Material>()->IsTransparent();
-			sub.BitFlags[1] = material.As<Material>()->ShouldCastShadows();
-			sub.Material = material;
+			sub.BitFlags[0] = material->IsTransparent();
+			sub.BitFlags[1] = material->ShouldCastShadows();
+			sub.Material = material.Get();
 			AddSubmission(sub);
 		}
 

@@ -1,4 +1,5 @@
 #include "FlipBook.h"
+#include "Sprite.h"
 
 namespace BHive
 {
@@ -43,17 +44,17 @@ namespace BHive
 		mFramesPerSecond = fps;
 	}
 
-	void FlipBook::AddFrame(SpritePtr sprite, uint32_t duration)
+	void FlipBook::AddFrame(AssetHandle<Sprite> sprite, uint32_t duration)
 	{
 		mFrames.emplace_back(Frame{.Sprite = sprite, .Duration = duration});
 	}
 
-	void FlipBook::InsertFrame(SpritePtr sprite, uint32_t duration, uint32_t index)
+	void FlipBook::InsertFrame(AssetHandle<Sprite> sprite, uint32_t duration, uint32_t index)
 	{
 		mFrames.insert(mFrames.begin() + index, Frame{.Sprite = sprite, .Duration = duration});
 	}
 
-	SpritePtr FlipBook::RemoveSprite(uint32_t index)
+	AssetHandle<Sprite> FlipBook::RemoveSprite(uint32_t index)
 	{
 		if (mFrames.size() > index)
 		{
@@ -68,7 +69,7 @@ namespace BHive
 		mFrames = frames;
 	}
 
-	SpritePtr FlipBook::GetCurrentSprite() const
+	AssetHandle<Sprite> FlipBook::GetCurrentSprite() const
 	{
 		return GetSpriteAtTime(mCurrentTime);
 	}
@@ -108,7 +109,7 @@ namespace BHive
 		}
 	}
 
-	SpritePtr FlipBook::GetSpriteAtFrame(int32_t frame) const
+	AssetHandle<Sprite> FlipBook::GetSpriteAtFrame(int32_t frame) const
 	{
 		if (frame < 0 || frame >= mFrames.size())
 			return {};
@@ -116,10 +117,10 @@ namespace BHive
 		return mFrames.at(frame).Sprite;
 	}
 
-	SpritePtr FlipBook::GetSpriteAtTime(float time) const
+	AssetHandle<Sprite> FlipBook::GetSpriteAtTime(float time) const
 	{
 		const auto index = GetFrameIndexAtTime(time);
-		return (index != -1) ? mFrames[index].Sprite : SpritePtr{};
+		return (index >= 0 && index < mFrames.size()) ? mFrames[index].Sprite : AssetHandle<Sprite>{};
 	}
 
 	float FlipBook::GetTotalTime() const

@@ -15,6 +15,8 @@ namespace BHive
 
 		bool IsPrimary = true;
 
+		void SubmitCamera(SceneRenderer &sceneRenderer) const;
+
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 

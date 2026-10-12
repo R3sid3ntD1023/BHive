@@ -1,6 +1,5 @@
-#include "TextureBatch.h"
 #include "gfx/Texture.h"
-#include "gfx/factories/TextureFactory.h"
+#include "TextureBatch.h"
 
 namespace BHive
 {
@@ -13,7 +12,7 @@ namespace BHive
 		create_info.ArrayLayers = sMaxTextureCount;
 		create_info.DebugName = "TextureArray_TexBatch";
 
-		mTextureArray = TextureFactory::Create2DArray({512, 512}, create_info);
+		mTextureArray = CreateRef<Texture2DArray>(glm::vec2{512, 512}, create_info);
 
 		std::vector<uint32_t> white(512 * 512, 0xFFFFFFFF);
 		ByteBuffer data(white.data(), white.size() * sizeof(uint32_t));
@@ -22,10 +21,10 @@ namespace BHive
 		info.Aspect = ETextureAspect::Color;
 		info.Roles = ETextureRole::Sampled | ETextureRole::TransferDst;
 		info.DebugName = "WhiteTexture_TexBatch";
-		auto defaultTex = TextureFactory::Create2D({512, 512}, info, data);
+		auto defaultTex = CreateRef<Texture2D>(glm::vec2{512, 512}, info, data);
 
-		mTextureArray.As<Texture2DArray>()->Append(defaultTex);
-		mTextureArray.As<Texture2DArray>()->SetStartLayer(1);
+		mTextureArray->Append(defaultTex);
+		mTextureArray->SetStartLayer(1);
 	}
 
 	void TextureBatchData::Reset()
@@ -38,21 +37,21 @@ namespace BHive
 		return mTextureCount >= sMaxTextureCount;
 	}
 
-	int32_t TextureBatchData::GetTextureIndex(TexturePtr texture)
+	int32_t TextureBatchData::GetTextureIndex(Ref<Texture2D> texture)
 	{
 		if (!texture)
 			return 0;
 
 		for (uint32_t i = 1; i < mTextureCount; i++)
 		{
-			if (mTextureArray.As<Texture2DArray>()->GetTexture(i) == texture)
+			if (mTextureArray->GetTexture(i) == texture)
 				return i;
 		}
 
 		if (mTextureCount >= sMaxTextureCount)
 			return -1;
 
-		int32_t index = mTextureArray.As<Texture2DArray>()->Append(texture);
+		int32_t index = mTextureArray->Append(texture);
 		if (index == -1)
 			return -1;
 

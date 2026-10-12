@@ -92,7 +92,7 @@ namespace BHive
 
 		const Statitics &GetStats() const { return mStats; }
 
-		Texture2DPtr GetWhiteTexture() const;
+		Ref<Texture2D> GetWhiteTexture() const;
 
 	private:
 		Scope<RendererAPI> mAPI;

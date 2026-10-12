@@ -15,7 +15,7 @@ namespace BHive
 		state.Raster.CullEnabled = false;
 		state.DrawMode = ETopologyMode::Lines;
 
-		mLineMaterial = MaterialFactory::Create("Line.glsl");
+		mLineMaterial = Material("Line.glsl");
 		mPipeline = PipelineFactory::Create(state);
 	}
 
@@ -40,7 +40,7 @@ namespace BHive
 		auto &pass = renderer.GetActivePass();
 		pass.Emplace<CmdBindPipeline>()(mPipeline);
 		pass.Emplace<CmdSetLineWidth>()(glm::max(0.01f, mLineWidth));
-		pass.Emplace<CmdBindMaterial>()(mLineMaterial.As<Material>());
+		pass.Emplace<CmdBindMaterial>()(&mLineMaterial);
 		pass.Emplace<CmdDraw>()(ETopologyMode::Lines, mBuffer->GetVAO(), mBuffer->GetVertexCount());
 
 		mIsActive = false;

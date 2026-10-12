@@ -6,17 +6,17 @@
 
 namespace BHive
 {
-	TexturePtr ColorGradingMaterial::AddToGraph(Graph &graph, const FPostProcessTextureSet &set)
+	Ref<Texture> ColorGradingMaterial::AddToGraph(Graph &graph, const FPostProcessTextureSet &set)
 	{
 		auto input = set.PrevOutput;
 		auto output = mFramebuffer.As<Framebuffer>()->GetColorAttachment();
 
-		auto material = mMaterial.As<Material>();
-		material->SetTexture("uTonemapped", TextureBinding(input));
-		material->SetParam("uLift", MaterialParam(Params.Lift));
-		material->SetParam("uGamma", MaterialParam(Params.Gamma));
-		material->SetParam("uGain", MaterialParam(Params.Gain));
-		material->SetParam("uSaturation", MaterialParam(Params.Saturation));
+		auto &material = mMaterial;
+		material.SetTexture("uTonemapped", TextureBinding(input));
+		material.SetParam("uLift", MaterialParam(Params.Lift));
+		material.SetParam("uGamma", MaterialParam(Params.Gamma));
+		material.SetParam("uGain", MaterialParam(Params.Gain));
+		material.SetParam("uSaturation", MaterialParam(Params.Saturation));
 
 		auto &pass = graph.AddPass("Color Grading Pass", EPassType::OffScreen);
 
@@ -24,7 +24,7 @@ namespace BHive
 		pass.UseFramebuffer(mFramebuffer);
 		pass.UseTexture(input, EImageUsage::ColorRead);
 		pass.Emplace<CmdBindPipeline>()(mPipeline);
-		pass.Emplace<CmdBindMaterial>()(material);
+		pass.Emplace<CmdBindMaterial>()(&material);
 		pass.Emplace<CmdDrawFullScreen>()();
 		pass.EndPhase();
 
@@ -45,7 +45,7 @@ namespace BHive
 
 	void ColorGradingMaterial::Init(const glm::uvec2 &size)
 	{
-		mMaterial = MaterialFactory::Create("ColorGrading.glsl");
+		mMaterial = Material("ColorGrading.glsl");
 		mPipeline = PipelineFactory::Create(Pipeline::GetDefaultGraphicsPipelineState());
 
 		FTextureCreateInfo info{};

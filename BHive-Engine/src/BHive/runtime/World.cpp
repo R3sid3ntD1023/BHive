@@ -18,7 +18,9 @@ namespace BHive
 		for (auto &component : src.GetComponents())
 		{
 			auto type = component->get_type();
-			type.get_method(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME).invoke(dst, component);
+			auto copied = type.get_method(EMPLACE_OR_REPLACE_COMPONENT_FUNCTION_NAME).invoke(dst, component);
+			if (copied)
+				copied.get_value<Component *>()->MarkDirty();
 		}
 	}
 
@@ -120,7 +122,7 @@ namespace BHive
 		}
 	}
 
-	void World::Render(SceneRenderer *sceneRenderer, Renderer *renderer)
+	void World::Render(SceneRenderer &sceneRenderer, Renderer &renderer)
 	{
 		mRenderSystem->OnUpdate(sceneRenderer, this);
 		mPhysicsSystem->DebugDraw(renderer);

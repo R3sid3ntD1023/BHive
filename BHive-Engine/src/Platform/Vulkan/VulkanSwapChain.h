@@ -42,6 +42,8 @@ namespace BHive
 
 		void EndRendering(vk::CommandBuffer cmd, uint32_t imageIndex);
 
+		void TransitionToPresent(vk::CommandBuffer cmd, uint32_t imageIndex);
+
 	private:
 		void CreateSwapChain();
 

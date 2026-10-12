@@ -31,6 +31,7 @@ namespace BHive
 		metadata.SourcePath = "";
 		metadata.SourceTimeStamp = 0;
 
+		mAssetRegistry[handle] = metadata;
 		Serialize(metadata);
 
 		return handle;
@@ -318,6 +319,9 @@ namespace BHive
 
 	bool EditorAssetManager::IsAssetOutofDate(const FAssetMetaData &metaData) const
 	{
+		if (metaData.SourcePath.empty())
+			return false;
+
 		auto timestamp = std::filesystem::last_write_time(metaData.SourcePath).time_since_epoch().count();
 		return timestamp > metaData.SourceTimeStamp;
 	}

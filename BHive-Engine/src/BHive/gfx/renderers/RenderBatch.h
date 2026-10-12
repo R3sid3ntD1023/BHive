@@ -1,7 +1,7 @@
 #pragma once
 
-#include "RenderQueue.h"
 #include "gfx/rendergraph/Pass.h"
+#include "RenderQueue.h"
 
 namespace BHive
 {
@@ -16,7 +16,7 @@ namespace BHive
 		};
 
 		// VAO page -> material -> mesh shader variant.
-		std::unordered_map<VertexArrayPtr, std::unordered_map<MaterialPtr, std::unordered_map<EShaderMeshType, DrawBatch>>> MaterialBatches;
+		std::unordered_map<VertexArrayPtr, std::unordered_map<Ref<Material>, std::unordered_map<EShaderMeshType, DrawBatch>>> MaterialBatches;
 
 		std::vector<ObjectData> ObjectDatas;
 

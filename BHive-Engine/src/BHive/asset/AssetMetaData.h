@@ -23,7 +23,7 @@ namespace BHive
 		template <typename A>
 		inline void Serialize(A &ar)
 		{
-			ar(Handle, Type, Name, SourcePath, SourceTimeStamp);
+			ar(MAKE_NVP(Handle), MAKE_NVP(Type), MAKE_NVP(Name), MAKE_NVP(SourcePath), MAKE_NVP(SourceTimeStamp));
 		}
 
 		REFLECTABLE()

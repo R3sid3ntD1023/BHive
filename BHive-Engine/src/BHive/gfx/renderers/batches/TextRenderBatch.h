@@ -1,9 +1,9 @@
 #pragma once
 
+#include "gfx/material/Material.h"
 #include "RenderBatch.h"
 #include "TextureBatch.h"
 #include "VertexBatchBuffer.h"
-#include "gfx/material/Material.h"
 
 namespace BHive
 {
@@ -20,8 +20,16 @@ namespace BHive
 
 		static BufferLayout GetLayout()
 		{
-			return {{EShaderDataType::Float4}, {EShaderDataType::Float2}, {EShaderDataType::Float4}, {EShaderDataType::Int},
-					{EShaderDataType::Float2}, {EShaderDataType::Float2}, {EShaderDataType::Float4}, {EShaderDataType::Int}};
+			return {
+				{EShaderDataType::Float4},
+				{EShaderDataType::Float2},
+				{EShaderDataType::Float4},
+				{EShaderDataType::Int},
+				{EShaderDataType::Float2},
+				{EShaderDataType::Float2},
+				{EShaderDataType::Float4},
+				{EShaderDataType::Int}
+			};
 		}
 	};
 
@@ -51,7 +59,7 @@ namespace BHive
 	private:
 		TextureBatchData *mTextureBatch = nullptr;
 		Scope<VertexBatchBuffer<TextVertex>> mBuffer;
-		MaterialPtr mMaterial;
+		Material mMaterial;
 		PipelinePtr mPipeline;
 		bool mIsActive = false;
 	};

@@ -9,9 +9,9 @@ namespace BHive
 
 	struct BHIVE_API RenderData
 	{
-		TexturePtr WhiteTexture;
-		TexturePtr BlackTexture;
-		TexturePtr BlueTexture;
+		Ref<Texture2D> WhiteTexture;
+		Ref<Texture2D> BlackTexture;
+		Ref<Texture2D> BlueTexture;
 
 		RenderData()
 		{
@@ -185,7 +185,7 @@ namespace BHive
 		memset(&mStats, 0, sizeof(Statitics));
 	}
 
-	Texture2DPtr Renderer::GetWhiteTexture() const
+	Ref<Texture2D> Renderer::GetWhiteTexture() const
 	{
 		return mData->WhiteTexture;
 	}

@@ -7,13 +7,13 @@
 namespace BHive
 {
 
-	TexturePtr AcesMaterial::AddToGraph(Graph &graph, const FPostProcessTextureSet &set)
+	Ref<Texture> AcesMaterial::AddToGraph(Graph &graph, const FPostProcessTextureSet &set)
 	{
 		auto output = mFramebuffer.As<Framebuffer>()->GetColorAttachment();
 		auto input = set.PrevOutput;
 
-		auto material = mMaterial.As<Material>();
-		material->SetTexture("uSceneColor", TextureBinding(input));
+		auto &material = mMaterial;
+		material.SetTexture("uSceneColor", TextureBinding(input));
 
 		auto &pass = graph.AddPass("Aces", EPassType::OffScreen);
 
@@ -21,7 +21,7 @@ namespace BHive
 		pass.UseFramebuffer(mFramebuffer);
 		pass.UseTexture(input, EImageUsage::ColorRead);
 		pass.Emplace<CmdBindPipeline>()(mPipeline);
-		pass.Emplace<CmdBindMaterial>()(material);
+		pass.Emplace<CmdBindMaterial>()(&material);
 		pass.Emplace<CmdDrawFullScreen>()();
 		pass.EndPhase();
 
@@ -42,7 +42,7 @@ namespace BHive
 
 	void AcesMaterial::Init(const glm::uvec2 &size)
 	{
-		mMaterial = MaterialFactory::Create("Aces.glsl");
+		mMaterial = Material("Aces.glsl");
 		mPipeline = PipelineFactory::Create(Pipeline::GetDefaultGraphicsPipelineState());
 
 		FTextureCreateInfo info{};

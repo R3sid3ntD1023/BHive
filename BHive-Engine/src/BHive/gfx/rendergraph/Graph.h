@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/Core.h"
 #include "Commands.h"
+#include "core/Core.h"
 #include "Pass.h"
 
 namespace BHive
@@ -11,7 +11,9 @@ namespace BHive
 	public:
 		FPass &AddPass(const std::string &name, EPassType type, FPassState state = {});
 
-		void Append(Graph &graph);
+		void Append(Graph graph);
+
+		void ResolveBufferTransitions();
 
 		bool IsEmpty() const { return mPasses.size() == 0; };
 

@@ -37,8 +37,10 @@ namespace BHive
 		Ref<class SceneRenderer> mRenderer;
 
 		PipelinePtr mSceneOutputPipeline;
-		MaterialPtr mSceneOutput;
-		FontPtr mFont;
+		Ref<class Material> mSceneOutput;
+		Ref<class Font> mFont;
+		Ref<class BaseMesh> mMesh;
+		Ref<class Material> mMaterial;
 
 		EditorAssetManager mAssetManager{"Assets"};
 		struct AudioComponent *mAudioComponent;

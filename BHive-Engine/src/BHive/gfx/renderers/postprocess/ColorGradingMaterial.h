@@ -1,8 +1,8 @@
 #pragma once
 
-#include "PostProcessMaterial.h"
 #include "core/math/Math.h"
 #include "gfx/material/Material.h"
+#include "PostProcessMaterial.h"
 
 namespace BHive
 {
@@ -13,7 +13,7 @@ namespace BHive
 
 		void Resize(const glm::uvec2 &size) override;
 
-		TexturePtr AddToGraph(Graph &graph, const FPostProcessTextureSet &set) override;
+		Ref<Texture> AddToGraph(Graph &graph, const FPostProcessTextureSet &set) override;
 
 		struct FParams
 		{
@@ -25,7 +25,7 @@ namespace BHive
 
 	private:
 		FramebufferPtr mFramebuffer;
-		MaterialPtr mMaterial;
+		Material mMaterial;
 		PipelinePtr mPipeline;
 	};
 

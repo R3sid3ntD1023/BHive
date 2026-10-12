@@ -27,7 +27,7 @@ namespace BHive
 		spec.DebugName = "ImageDebugger";
 		mFB = FramebufferFactory::Create(spec);
 
-		mMaterial = MaterialFactory::Create("DebugTextureViewer.glsl");
+		mMaterial = CreateRef<Material>("DebugTextureViewer.glsl");
 	}
 
 	void ImageDebugger::Shutdown()
@@ -35,16 +35,14 @@ namespace BHive
 		mTextureEntries.clear();
 	}
 
-	void ImageDebugger::RegisterTexture(const std::string &name, TexturePtr handle)
+	void ImageDebugger::RegisterTexture(const std::string &name, Ref<Texture> texture)
 	{
-		auto tex = handle.As<Texture>();
-
 		FDebugTextureEntry e{};
 		e.Name = name;
-		e.Tex = handle;
-		e.IsCube = Cast<TextureCube>(tex) != nullptr;
-		e.MipLevels = tex->GetInfo().MipLevels;
-		e.Layers = tex->GetInfo().ArrayLayers;
+		e.Tex = texture;
+		e.IsCube = Cast<TextureCube>(texture) != nullptr;
+		e.MipLevels = texture->GetInfo().MipLevels;
+		e.Layers = texture->GetInfo().ArrayLayers;
 
 		if (mTextures.contains(name))
 		{
@@ -70,8 +68,7 @@ namespace BHive
 			const char *uniform = entry.IsCube ? "u_TexCube" : "u_Tex2D";
 			const auto &tex = entry.Tex;
 
-			auto material = mMaterial.As<Material>();
-			material->SetParam("u_Type", MaterialParam(type))
+			mMaterial->SetParam("u_Type", MaterialParam(type))
 				.SetParam("u_Mip", MaterialParam(mip))
 				.SetParam("u_Face", MaterialParam(face))
 				.SetTexture(uniform, TextureBinding(tex));
@@ -83,7 +80,7 @@ namespace BHive
 			pass.BeginPhase(EPhaseType::Graphics);
 			pass.UseFramebuffer(mFB);
 			pass.UseTexture(tex, EImageUsage::ColorRead, range);
-			pass.Emplace<CmdBindMaterial>()(mMaterial.As<Material>());
+			pass.Emplace<CmdBindMaterial>()(mMaterial.get());
 			pass.Emplace<CmdDrawFullScreen>()();
 			pass.EndPhase();
 
@@ -135,7 +132,7 @@ namespace BHive
 					ImGui::SliderInt("Face", &mSelectedFace, 0, 5);
 				}
 
-				auto id = IImGuiTextureProvider::GetID(*mFB.As<Framebuffer>()->GetColorAttachment().As<Texture>());
+				auto id = IImGuiTextureProvider::GetID(*mFB.As<Framebuffer>()->GetColorAttachment());
 				ImGui::Image(id, ImVec2(float(mSize.x), float(mSize.y)));
 			}
 		}

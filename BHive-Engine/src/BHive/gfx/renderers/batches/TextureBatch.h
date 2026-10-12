@@ -1,10 +1,12 @@
 #pragma once
 
 #include "core/Core.h"
-#include "gfx/registries/Handles.h"
 
 namespace BHive
 {
+	class Texture2D;
+	class Texture2DArray;
+
 	struct BHIVE_API TextureBatchData
 	{
 		static inline const size_t sMaxTextureCount = 32;
@@ -17,13 +19,13 @@ namespace BHive
 
 		uint32_t GetTextureCount() const { return mTextureCount; }
 
-		TexturePtr GetTexture() const { return mTextureArray; }
+		Ref<Texture2DArray> GetTexture() const { return mTextureArray; }
 
-		int32_t GetTextureIndex(TexturePtr texture);
+		int32_t GetTextureIndex(Ref<Texture2D> texture);
 
 	private:
 		uint32_t mTextureCount = 1;
-		TexturePtr mTextureArray;
+		Ref<Texture2DArray> mTextureArray;
 	};
 
 } // namespace BHive

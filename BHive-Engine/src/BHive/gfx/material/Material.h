@@ -1,11 +1,11 @@
 #pragma once
 
-#include "BackendMaterial.h"
-#include "MaterialEnumerations.h"
 #include "asset/Asset.h"
+#include "BackendMaterial.h"
 #include "core/EnumAsByte.h"
 #include "gfx/Color.h"
 #include "gfx/Texture.h"
+#include "MaterialEnumerations.h"
 
 namespace BHive
 {
@@ -27,6 +27,7 @@ namespace BHive
 		};
 
 	public:
+		Material() = default;
 		Material(const std::string &shaderProgramName);
 
 		virtual ~Material() = default;
@@ -41,7 +42,7 @@ namespace BHive
 
 		IMaterial &SetTexture(const std::string &name, const TextureBinding &texture) & override;
 
-		virtual void SetTextureFromType(EMaterialTextureType type, TexturePtr texture) {};
+		virtual void SetTextureFromType(EMaterialTextureType type, Ref<Texture> texture) {};
 
 		IMaterial &SetSurfaceType(ESurfaceType surfaceType);
 

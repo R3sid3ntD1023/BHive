@@ -1,11 +1,11 @@
-#include "ShadowRenderer.h"
+#include "core/math/Frustum.h"
+#include "gfx/factories/GFXFactories.h"
+#include "gfx/shader/Shader.h"
+#include "gfx/ShaderManager.h"
 #include "RenderBatch.h"
 #include "Renderer.h"
 #include "SceneRenderer.h"
-#include "core/math/Frustum.h"
-#include "gfx/ShaderManager.h"
-#include "gfx/factories/GFXFactories.h"
-#include "gfx/shader/Shader.h"
+#include "ShadowRenderer.h"
 
 #define DIRECTIONAL_SHADOWMAP_SIZE 2048
 #define POINT_SHADOWMAP_SIZE 256
@@ -53,10 +53,10 @@ namespace BHive
 		mShadowFramebuffers[1] = FramebufferFactory::Create(point_shadow_fbo_spec);
 		mShadowFramebuffers[2] = FramebufferFactory::Create(spot_shadow_fbo_spec);
 
-		mShadowMaterials[0] = MaterialFactory::Create("ShadowDirectionalLight.glsl");
-		mShadowMaterials[1] = MaterialFactory::Create("ShadowPointLight.glsl");
-		mShadowMaterials[2] = MaterialFactory::Create("ShadowSpotLight.glsl");
-		mCullingMaterial = MaterialFactory::Create("ShadowCulling.glsl");
+		mShadowMaterials[0] = Material("ShadowDirectionalLight.glsl");
+		mShadowMaterials[1] = Material("ShadowPointLight.glsl");
+		mShadowMaterials[2] = Material("ShadowSpotLight.glsl");
+		mCullingMaterial = Material("ShadowCulling.glsl");
 
 		mShadowBuffer = BufferFactory::Create(sizeof(ShadowData), EBufferType::StorageBuffer);
 
@@ -113,7 +113,7 @@ namespace BHive
 		if (num_shadow_maps == 0)
 			return;
 
-		auto draw_meshes = [](FPass &_pass, BufferPtr indirect, const RenderBatch &batch, MaterialPtr material)
+		auto draw_meshes = [](FPass &_pass, BufferPtr indirect, const RenderBatch &batch, Material &material)
 		{
 			for (auto &[vao, matMap] : batch.MaterialBatches)
 			{
@@ -124,7 +124,7 @@ namespace BHive
 				{
 					for (auto &[meshType, batch] : variants)
 					{
-						_pass.Emplace<CmdBindMaterial>()(material.As<IMaterial>(), meshType);
+						_pass.Emplace<CmdBindMaterial>()(&material, meshType);
 						uint32_t offset = batch.FirstCommand * sizeof(MultiDrawIndirectCommand);
 						_pass.Emplace<CmdMultiDrawIndexedIndirect>()(ETopologyMode::Triangles, indirect, batch.CommandCount, sizeof(MultiDrawIndirectCommand), offset);
 					}
@@ -139,7 +139,7 @@ namespace BHive
 			auto fbo = mShadowFramebuffers[0];
 			auto material = mShadowMaterials[0];
 
-			mCullingMaterial.As<Material>()->SetParam("LightType", 0);
+			mCullingMaterial.SetParam("LightType", 0);
 
 			for (uint32_t d = 0; d < count; ++d)
 			{
@@ -150,20 +150,20 @@ namespace BHive
 					pass.Emplace<CmdClearBuffer>()(mVisibilityBuffer);
 					pass.EndPhase();
 
-					mCullingMaterial.As<Material>()->SetParam("LightIndex", MaterialParam{d});
-					mCullingMaterial.As<Material>()->SetParam("LightFace", MaterialParam{c});
+					mCullingMaterial.SetParam("LightIndex", MaterialParam{d});
+					mCullingMaterial.SetParam("LightFace", MaterialParam{c});
 					pass.BeginPhase(EPhaseType::Compute);
 					pass.UseBuffer(mIndirectBuffer, EBufferUsage::StorageWrite);
 					pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageWrite);
 					pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
 					pass.BindResourceSet(mShadowSet);
 					pass.BindResourceSet(mObjectSet);
-					pass.Emplace<CmdBindMaterial>()(mCullingMaterial.As<Material>());
+					pass.Emplace<CmdBindMaterial>()(&mCullingMaterial);
 					pass.Emplace<CmdDispatch>()(groups, 1, 1);
 					pass.EndPhase();
 
-					material.As<Material>()->SetParam("LightIndex", MaterialParam{d});
-					material.As<Material>()->SetParam("CascadeIndex", MaterialParam{c});
+					material.SetParam("LightIndex", MaterialParam{d});
+					material.SetParam("CascadeIndex", MaterialParam{c});
 					pass.BeginPhase(EPhaseType::Graphics);
 					pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = d * sCascadeCount + c});
 					pass.UseBuffer(buffer, EBufferUsage::StorageRead);
@@ -185,15 +185,15 @@ namespace BHive
 			auto fbo = mShadowFramebuffers[1];
 			auto material = mShadowMaterials[1];
 
-			mCullingMaterial.As<Material>()->SetParam("LightType", 1);
+			mCullingMaterial.SetParam("LightType", 1);
 
 			for (uint32_t p = 0; p < count; ++p)
 			{
-				mCullingMaterial.As<Material>()->SetParam("LightIndex", p);
+				mCullingMaterial.SetParam("LightIndex", p);
 
 				for (uint32_t face = 0; face < 6; ++face)
 				{
-					mCullingMaterial.As<Material>()->SetParam("LightFace", face);
+					mCullingMaterial.SetParam("LightFace", face);
 					pass.BeginPhase(EPhaseType::Transfer);
 					pass.Emplace<CmdSetBufferData>()(mIndirectBuffer, batch.DrawCommands.data(), sizeof(MultiDrawIndirectCommand) * batch.DrawCommands.size());
 					pass.Emplace<CmdClearBuffer>()(mVisibilityBuffer);
@@ -205,12 +205,12 @@ namespace BHive
 					pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
 					pass.BindResourceSet(mShadowSet);
 					pass.BindResourceSet(mObjectSet);
-					pass.Emplace<CmdBindMaterial>()(mCullingMaterial.As<Material>());
+					pass.Emplace<CmdBindMaterial>()(&mCullingMaterial);
 					pass.Emplace<CmdDispatch>()(groups, 1, 1);
 					pass.EndPhase();
 
-					material.As<Material>()->SetParam("LightIndex", MaterialParam{p});
-					material.As<Material>()->SetParam("LightFace", MaterialParam{face});
+					material.SetParam("LightIndex", MaterialParam{p});
+					material.SetParam("LightFace", MaterialParam{face});
 					pass.BeginPhase(EPhaseType::Graphics);
 					pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = CubeFaceLayer(p, face)});
 					pass.UseBuffer(buffer, EBufferUsage::StorageRead);
@@ -232,7 +232,7 @@ namespace BHive
 			auto fbo = mShadowFramebuffers[2];
 			auto material = mShadowMaterials[2];
 
-			mCullingMaterial.As<Material>()->SetParam("LightType", 2);
+			mCullingMaterial.SetParam("LightType", 2);
 
 			for (uint32_t s = 0; s < count; ++s)
 			{
@@ -241,18 +241,18 @@ namespace BHive
 				pass.Emplace<CmdClearBuffer>()(mVisibilityBuffer);
 				pass.EndPhase();
 
-				mCullingMaterial.As<Material>()->SetParam("LightIndex", MaterialParam{s});
+				mCullingMaterial.SetParam("LightIndex", MaterialParam{s});
 				pass.BeginPhase(EPhaseType::Compute);
 				pass.UseBuffer(mIndirectBuffer, EBufferUsage::StorageWrite);
 				pass.UseBuffer(mVisibilityBuffer, EBufferUsage::StorageWrite);
 				pass.UseBuffer(mObjectBuffer, EBufferUsage::StorageRead);
 				pass.BindResourceSet(mShadowSet);
 				pass.BindResourceSet(mObjectSet);
-				pass.Emplace<CmdBindMaterial>()(mCullingMaterial.As<Material>());
+				pass.Emplace<CmdBindMaterial>()(&mCullingMaterial);
 				pass.Emplace<CmdDispatch>()(groups, 1, 1);
 				pass.EndPhase();
 
-				material.As<Material>()->SetParam("LightIndex", MaterialParam{s});
+				material.SetParam("LightIndex", MaterialParam{s});
 				pass.BeginPhase(EPhaseType::Graphics);
 				pass.UseFramebuffer(fbo, ImageSubresourceRange{.BaseArrayLayer = s});
 				pass.UseBuffer(buffer, EBufferUsage::StorageRead);
@@ -402,17 +402,17 @@ namespace BHive
 		return mShadowBuffer;
 	}
 
-	TexturePtr ShadowRenderer::GetDirShadowMap()
+	Ref<Texture> ShadowRenderer::GetDirShadowMap()
 	{
 		return mShadowFramebuffers[0].As<Framebuffer>()->GetDepthAttachment();
 	}
 
-	TexturePtr ShadowRenderer::GetPointShadowMap()
+	Ref<Texture> ShadowRenderer::GetPointShadowMap()
 	{
 		return mShadowFramebuffers[1].As<Framebuffer>()->GetDepthAttachment();
 	}
 
-	TexturePtr ShadowRenderer::GetSpotShadowMap()
+	Ref<Texture> ShadowRenderer::GetSpotShadowMap()
 	{
 		return mShadowFramebuffers[2].As<Framebuffer>()->GetDepthAttachment();
 	}

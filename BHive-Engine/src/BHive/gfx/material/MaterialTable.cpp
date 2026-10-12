@@ -1,5 +1,5 @@
-#include "MaterialTable.h"
 #include "asset/AssetManager.h"
+#include "MaterialTable.h"
 
 namespace BHive
 {
@@ -18,7 +18,7 @@ namespace BHive
 		return mMaterials.size();
 	}
 
-	MaterialPtr MaterialTable::Get(uint32_t index) const
+	AssetHandle<Material> MaterialTable::Get(uint32_t index) const
 	{
 		if (mMaterials.size() > index)
 		{
@@ -28,12 +28,12 @@ namespace BHive
 		return {};
 	}
 
-	void MaterialTable::Add(MaterialPtr h)
+	void MaterialTable::Add(AssetHandle<Material> h)
 	{
 		mMaterials.emplace_back(h);
 	}
 
-	void MaterialTable::Set(MaterialPtr h, uint32_t index)
+	void MaterialTable::Set(uint32_t index, AssetHandle<Material> h)
 	{
 		if (mMaterials.size() > index)
 		{
@@ -41,12 +41,12 @@ namespace BHive
 		}
 	}
 
-	void MaterialTable::SetAll(const std::vector<MaterialPtr> &materials)
+	void MaterialTable::SetAll(const std::vector<AssetHandle<Material>> &materials)
 	{
 		mMaterials = materials;
 	}
 
-	void MaterialTable::SetAll(MaterialPtr material)
+	void MaterialTable::SetAll(AssetHandle<Material> material)
 	{
 		for (size_t i = 0; i < mMaterials.size(); i++)
 		{
@@ -54,7 +54,7 @@ namespace BHive
 		}
 	}
 
-	MaterialPtr MaterialTable::operator[](size_t index) const
+	AssetHandle<Material> MaterialTable::operator[](size_t index) const
 	{
 		ASSERT(index < mMaterials.size());
 
@@ -63,7 +63,6 @@ namespace BHive
 
 	REFLECT(MaterialTable)
 	{
-		BEGIN_REFLECT(MaterialTable)
-		REFLECT_PROPERTY("Materials", mMaterials);
+		BEGIN_REFLECT(MaterialTable) REFLECT_PROPERTY("Materials", mMaterials);
 	}
 } // namespace BHive

@@ -30,9 +30,9 @@ namespace BHive
 		Sprite() = default;
 		Sprite(const Sprite &other);
 
-		Sprite(TexturePtr texture, const FSpriteGenerator &generator);
+		Sprite(AssetHandle<Texture2D> texture, const FSpriteGenerator &generator);
 
-		Sprite(TexturePtr texture, const glm::vec2 &min, const glm::vec2 &max);
+		Sprite(AssetHandle<Texture2D> texture, const glm::vec2 &min, const glm::vec2 &max);
 
 		void SetCoords(const glm::vec2 &min, const glm::vec2 &max);
 
@@ -41,7 +41,7 @@ namespace BHive
 		void Save(cereal::BinaryOutputArchive &ar) const;
 		void Load(cereal::BinaryInputArchive &ar);
 
-		TexturePtr GetSourceTexture() const { return mSource; }
+		AssetHandle<Texture2D> GetSourceTexture() const { return mSource; }
 
 		const glm::vec2 *GetCoords() const { return mCoords.data(); }
 		const glm::vec2 &GetMinCoords() const { return mMin; }
@@ -57,7 +57,7 @@ namespace BHive
 		void CalculateMinMax(const FSpriteGenerator &generator);
 
 	private:
-		TexturePtr mSource;
+		AssetHandle<Texture2D> mSource;
 
 		glm::vec2 mMin{0, 0};
 

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "RenderData.h"
 #include "core/Core.h"
 #include "core/delegates/MultiEventDelegate.h"
-#include "core/math/Transform.h"
 #include "core/math/boundingbox/AABB.h"
+#include "core/math/Transform.h"
 #include "gfx/material/MaterialTable.h"
 #include "gfx/mesh/MeshData.h"
+#include "RenderData.h"
 
 namespace BHive
 {
@@ -28,7 +28,7 @@ namespace BHive
 
 		void RemoveSubmissionsForContext(ContextHandle h);
 
-		void AddSubmissionsForMesh(ContextHandle h, MeshPtr mesh);
+		void AddSubmissionsForMesh(ContextHandle h, Ref<BaseMesh> mesh);
 
 		ContextHandle AddMesh(const FMeshSubmissionRequest &request);
 

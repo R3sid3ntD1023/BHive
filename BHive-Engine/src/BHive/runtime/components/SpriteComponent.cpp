@@ -1,6 +1,7 @@
-#include "SpriteComponent.h"
+#include "gfx/renderers/Renderer.h"
 #include "gfx/sprite/Sprite.h"
 #include "runtime/GameObject.h"
+#include "SpriteComponent.h"
 
 namespace BHive
 {
@@ -13,6 +14,18 @@ namespace BHive
 	void SpriteComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ar(Color, Size, Tiling, Sprite);
+	}
+
+	void SpriteComponent::OnRender(const FComponentRenderContext &context)
+	{
+		if (!Sprite)
+			return;
+
+		FQuadParams params;
+		params.Color = Color;
+		params.Size = Size;
+		params.Tiling = Tiling;
+		context.EngineRenderer.Quad.DrawSprite(params, *Sprite.Get(), GetWorldTransform(), context.EntityID);
 	}
 
 	REFLECT(SpriteComponent)

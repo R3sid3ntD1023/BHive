@@ -2,8 +2,8 @@
 
 #include "MaterialSnapshot.h"
 #include "asset/Asset.h"
-#include "gfx/Enumerations.h"
 #include "core/Core.h"
+#include "gfx/Enumerations.h"
 
 namespace BHive
 {

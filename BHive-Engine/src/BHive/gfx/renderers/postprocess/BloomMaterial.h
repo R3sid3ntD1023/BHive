@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PostProcessMaterial.h"
 #include "core/math/Math.h"
+#include "PostProcessMaterial.h"
 
 namespace BHive
 {
@@ -11,7 +11,7 @@ namespace BHive
 		static inline constexpr uint32_t MipCount = 4;
 
 	public:
-		TexturePtr AddToGraph(Graph &graph, const FPostProcessTextureSet &set) override;
+		Ref<Texture> AddToGraph(Graph &graph, const FPostProcessTextureSet &set) override;
 
 		void Init(const glm::uvec2 &size) override;
 
@@ -39,7 +39,7 @@ namespace BHive
 
 	private:
 		std::array<FramebufferPtr, 2> mFramebuffers;
-		std::array<MaterialPtr, 4> mMaterials;
+		std::array<Material, 4> mMaterials;
 		std::vector<glm::uvec2> mMipSizes;
 		PipelinePtr mPipeline;
 		PipelinePtr mUpSamplePipeline;

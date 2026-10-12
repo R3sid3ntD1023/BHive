@@ -78,7 +78,7 @@ namespace BHive
 
 	void GameObject::SetLocalTransform(const FTransform &transform)
 	{
-		GetComponent<TransformComponent>()->Transform = transform;
+		GetComponent<TransformComponent>()->SetTransform(transform);
 	}
 
 	void GameObject::Save(cereal::BinaryOutputArchive &ar) const
@@ -108,6 +108,7 @@ namespace BHive
 			if (component)
 			{
 				component->Load(ar);
+				component->MarkDirty();
 			}
 		}
 	}
@@ -212,7 +213,9 @@ namespace BHive
 	}
 	FTransform &GameObject::GetLocalTransform()
 	{
-		return GetComponent<TransformComponent>()->Transform;
+		auto *transform = GetComponent<TransformComponent>();
+		transform->MarkDirty();
+		return transform->Transform;
 	}
 
 	AABB GameObject::GetBounds() const

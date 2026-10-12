@@ -25,7 +25,7 @@ namespace BHive
 		return *this;
 	}
 
-	void LambertMaterial::SetTextureFromType(EMaterialTextureType type, TexturePtr texture)
+	void LambertMaterial::SetTextureFromType(EMaterialTextureType type, Ref<Texture> texture)
 	{
 		switch (type)
 		{

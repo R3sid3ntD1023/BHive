@@ -14,6 +14,15 @@ namespace BHive
 
 		FTransform Transform{};
 
+		void SetTransform(const FTransform &transform)
+		{
+			if (Transform == transform)
+				return;
+
+			Transform = transform;
+			MarkDirty();
+		}
+
 		REFLECTABLEV(Component);
 	};
 

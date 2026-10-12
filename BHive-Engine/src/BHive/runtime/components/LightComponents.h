@@ -11,6 +11,8 @@ namespace BHive
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
+		void OnRender(const FComponentRenderContext &context) override;
+
 		FColor Color{0xFFFFFFFF};
 
 		REFLECTABLEV(Component)
@@ -21,6 +23,8 @@ namespace BHive
 	public:
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
+
+		void OnRender(const FComponentRenderContext &context) override;
 
 		FColor Color{0xFFFFFFFF};
 
@@ -34,6 +38,8 @@ namespace BHive
 	public:
 		virtual void Save(cereal::BinaryOutputArchive &ar) const override;
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
+
+		void OnRender(const FComponentRenderContext &context) override;
 
 		FColor Color{0xFFFFFFFF};
 

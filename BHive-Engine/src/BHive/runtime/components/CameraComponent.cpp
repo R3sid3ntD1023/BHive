@@ -1,4 +1,5 @@
 #include "CameraComponent.h"
+#include "gfx/renderers/SceneRenderer.h"
 #include "runtime/GameObject.h"
 
 namespace BHive
@@ -12,6 +13,13 @@ namespace BHive
 	void CameraComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ar(Camera, IsPrimary);
+		MarkDirty();
+	}
+
+	void CameraComponent::SubmitCamera(SceneRenderer &sceneRenderer) const
+	{
+		const auto view = GetWorldTransform().Inverse().ToMat4();
+		sceneRenderer.SetCamera(Camera.GetProjection(), view);
 	}
 
 	REFLECT(CameraComponent)

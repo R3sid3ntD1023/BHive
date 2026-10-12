@@ -1,10 +1,10 @@
 #include "MeshImportResolver.h"
 #include "TextureImporter.h"
+#include "gfx/Texture.h"
 #include "gfx/animation/SkeletalAnimation.h"
 #include "gfx/animation/Skeleton.h"
-#include "gfx/factories/MaterialFactory.h"
-#include "gfx/factories/MeshFactory.h"
 #include "gfx/factories/TextureFactory.h"
+#include "gfx/material/Materials.h"
 #include "gfx/mesh/SkeletalMesh.h"
 #include "gfx/mesh/StaticMesh.h"
 
@@ -12,7 +12,7 @@ namespace BHive
 {
 	struct TextureResolver
 	{
-		TexturePtr Resolve(const EmbeddedTexture &texture, const std::filesystem::path &parent_path)
+		Ref<Texture2D> Resolve(const EmbeddedTexture &texture, const std::filesystem::path &parent_path)
 		{
 
 			auto name = texture.Path.filename().string();
@@ -30,14 +30,14 @@ namespace BHive
 					decodedTex = TextureImporter::LoadFromMemory(texture.EmbeddedData, texture.EmbeddedData.GetSize());
 				}
 
-				mLoadedTextures[hash] = TextureFactory::Create2D(decodedTex);
+				mLoadedTextures[hash] = TextureFactory::Create2D(decodedTex.Size, decodedTex.CreateInfo, decodedTex.Data);
 			}
 
 			return mLoadedTextures.at(hash);
 		}
 
 	private:
-		std::unordered_map<uint64_t, TexturePtr> mLoadedTextures;
+		std::unordered_map<uint64_t, Ref<Texture2D>> mLoadedTextures;
 	};
 
 	MeshImportResolver::MeshImportResolver(const FMeshImportOptions &options)
@@ -56,14 +56,14 @@ namespace BHive
 		{
 		case EMeshType::StaticMesh:
 		{
-			result.Mesh = MeshFactory::CreateStatic(decodedMesh.MeshData);
+			result.Mesh = CreateRef<StaticMesh>(decodedMesh.MeshData);
 			break;
 		}
 		case EMeshType::SkeletalMesh:
 		{
 			if (!skeleton)
 			{
-				skeleton = SkeletonFactory::Create(decodedMesh.Bones, decodedMesh.BoneHeirarchy);
+				skeleton = CreateRef<Skeleton>(decodedMesh.Bones, decodedMesh.BoneHeirarchy);
 				result.Skeleton = skeleton;
 			}
 
@@ -72,7 +72,7 @@ namespace BHive
 				result.Animations = ResolveAnimations(decodedMesh.Animations);
 			}
 
-			result.Mesh = MeshFactory::CreateSkeletal(decodedMesh.MeshData, skeleton);
+			result.Mesh = CreateRef<SkeletalMesh>(decodedMesh.MeshData, skeleton.get());
 			break;
 		}
 		case EMeshType::SkeletalAnimation:
@@ -82,7 +82,7 @@ namespace BHive
 
 			if (!skeleton)
 			{
-				skeleton = SkeletonFactory::Create(decodedMesh.Bones, decodedMesh.BoneHeirarchy);
+				skeleton = CreateRef<Skeleton>(decodedMesh.Bones, decodedMesh.BoneHeirarchy);
 				result.Skeleton = skeleton;
 			}
 
@@ -103,12 +103,12 @@ namespace BHive
 		return result;
 	}
 
-	std::vector<SkeletalAnimationPtr> MeshImportResolver::ResolveAnimations(const std::vector<DecodedAnimation> &animations)
+	std::vector<Ref<SkeletalAnimation>> MeshImportResolver::ResolveAnimations(const std::vector<DecodedAnimation> &animations)
 	{
-		std::vector<SkeletalAnimationPtr> resolvedAnimations;
+		std::vector<Ref<SkeletalAnimation>> resolvedAnimations;
 		for (auto &decoded : animations)
 		{
-			auto anim = SkeletalAnimationFactory::Create(decoded);
+			auto anim = CreateRef<SkeletalAnimation>(decoded.Duration, decoded.TicksPerSecond, decoded.Frames);
 			resolvedAnimations.emplace_back(anim);
 		}
 
@@ -123,10 +123,10 @@ namespace BHive
 
 		for (size_t i = 0; i < num_materials; i++)
 		{
-			MaterialPtr overrideHandle = mOptions.OverrideMaterials.Get(i);
+			AssetHandle<Material> overrideHandle = mOptions.OverrideMaterials.Get(i);
 			if (overrideHandle)
 			{
-				material_table.Set(overrideHandle, i);
+				material_table.Set((uint32_t)i, overrideHandle);
 				continue;
 			}
 
@@ -134,7 +134,7 @@ namespace BHive
 			const auto &textures = materialData.Textures;
 			const auto num_textures = textures.size();
 
-			auto materialHandle = GetMaterialFromShadingMode(materialData.ShadingMode);
+			AssetHandle<Material> materialHandle = GetMaterialFromShadingMode(materialData.ShadingMode);
 
 			for (size_t texIdx = 0; texIdx < num_textures; texIdx++)
 			{
@@ -144,22 +144,22 @@ namespace BHive
 
 				if (textureHandle)
 				{
-					materialHandle.As<Material>()->SetTextureFromType(textureData.Type, textureHandle);
+					materialHandle->SetTextureFromType(textureData.Type, textureHandle);
 				}
 			}
 
-			material_table.Set(materialHandle, (uint32_t)i);
+			material_table.Set((uint32_t)i, materialHandle);
 		}
 	}
 
-	MaterialPtr MeshImportResolver::GetMaterialFromShadingMode(EMaterialShadingMode mode)
+	Ref<Material> MeshImportResolver::GetMaterialFromShadingMode(EMaterialShadingMode mode)
 	{
 		switch (mode)
 		{
 		case EMaterialShadingMode::Standard:
-			return MaterialFactory::CreateStandard();
+			return CreateRef<StandardMaterial>();
 		default:
-			return MaterialFactory::CreateLambert();
+			return CreateRef<LambertMaterial>();
 		}
 	}
 

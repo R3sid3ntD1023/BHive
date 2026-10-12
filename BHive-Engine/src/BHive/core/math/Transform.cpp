@@ -3,6 +3,14 @@
 
 namespace BHive
 {
+	FTransform FTransform::LookAt(const glm::vec3 &target, const glm::vec3 &translation)
+	{
+		FTransform result;
+		result.Translation = translation;
+		result.Rotation = glm::degrees(glm::eulerAngles(glm::quatLookAt(glm::normalize(target - result.Translation), glm::vec3(0, 1, 0))));
+		return result;
+	}
+
 	FTransform FTransform::Rotate(const glm::vec3 &eulerDegrees) const
 	{
 		FTransform result = *this;

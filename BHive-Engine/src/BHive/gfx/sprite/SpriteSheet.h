@@ -29,15 +29,15 @@ namespace BHive
 	public:
 		SpriteSheet() = default;
 
-		SpriteSheet(TexturePtr source, const FSpriteSheetGrid &grid);
+		SpriteSheet(AssetHandle<Texture2D> source, const FSpriteSheetGrid &grid);
 
 		void CreateSprites();
 
-		void SetSource(TexturePtr source);
+		void SetSource(AssetHandle<Texture2D> source);
 
 		void SetGrid(const FSpriteSheetGrid &grid);
 
-		TexturePtr GetSource() const { return mSource; }
+		AssetHandle<Texture2D> GetSource() const { return mSource; }
 
 		const auto &GetSprites() const { return mSprites; }
 
@@ -52,7 +52,7 @@ namespace BHive
 	private:
 		std::vector<SpritePtr> mSprites;
 
-		TexturePtr mSource;
+		AssetHandle<Texture2D> mSource;
 
 		FSpriteSheetGrid mGrid;
 	};

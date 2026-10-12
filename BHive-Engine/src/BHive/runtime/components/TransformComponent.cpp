@@ -11,6 +11,7 @@ namespace BHive
 	void TransformComponent::Load(cereal::BinaryInputArchive &ar)
 	{
 		ar(Transform);
+		MarkDirty();
 	}
 
 	RTTR_REGISTRATION

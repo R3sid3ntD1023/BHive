@@ -18,16 +18,18 @@ namespace BHive
 
 		virtual void Load(cereal::BinaryInputArchive &ar) override;
 
-		void SetSkeletalMesh(MeshPtr h);
+		void OnRender(const FComponentRenderContext &context) override;
 
-		MeshPtr GetSkeletalMesh() const { return SkeletalMeshAsset; }
+		void SetSkeletalMesh(AssetHandle<SkeletalMesh> h);
+
+		AssetHandle<SkeletalMesh> GetSkeletalMesh() const { return SkeletalMeshAsset; }
 
 		const MaterialTable &GetMaterials() const { return mOverrideMaterials; }
 
 		REFLECTABLEV(Component)
 
 	private:
-		MeshPtr SkeletalMeshAsset;
+		AssetHandle<SkeletalMesh> SkeletalMeshAsset;
 
 		MaterialTable mOverrideMaterials;
 	};

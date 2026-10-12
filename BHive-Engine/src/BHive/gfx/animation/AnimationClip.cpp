@@ -6,13 +6,13 @@
 
 namespace BHive
 {
-	AnimationClip::AnimationClip(SkeletalAnimationPtr animation, SkeletonPtr skeleton)
+	AnimationClip::AnimationClip(AssetHandle<SkeletalAnimation> animation, AssetHandle<Skeleton> skeleton)
 	{
 		ASSERT(skeleton && animation);
 
-		mAnimation = animation.As<SkeletalAnimation>();
-		mSkeleton = skeleton.As<Skeleton>();
-		BuildRuntime(mSkeleton);
+		mAnimation = animation;
+		mSkeleton = skeleton;
+		BuildRuntime(mSkeleton.Get().get());
 		mCurrentTime = 0.0f;
 	}
 

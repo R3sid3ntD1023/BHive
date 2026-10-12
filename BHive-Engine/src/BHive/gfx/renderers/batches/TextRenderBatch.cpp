@@ -23,7 +23,7 @@ namespace BHive
 		state.Blend.DstAlpha = EBlendFactor::OneMinusSrcAlpha;
 		state.Blend.AlphaOp = EBlendOp::Add;
 
-		mMaterial = MaterialFactory::Create("Text.glsl");
+		mMaterial = Material("Text.glsl");
 		mPipeline = PipelineFactory::Create(state);
 	}
 
@@ -46,11 +46,11 @@ namespace BHive
 		mBuffer->Upload();
 
 		auto texture = mTextureBatch->GetTexture();
-		mMaterial.As<Material>()->SetTexture("uTexture", {texture});
+		mMaterial.SetTexture("uTexture", {texture});
 
 		auto &pass = renderer.GetActivePass();
 		pass.Emplace<CmdBindPipeline>()(mPipeline);
-		pass.Emplace<CmdBindMaterial>()(mMaterial.As<Material>());
+		pass.Emplace<CmdBindMaterial>()(&mMaterial);
 		pass.Emplace<CmdDrawIndexed>()(ETopologyMode::Triangles, mBuffer->GetVAO(), mBuffer->GetIndexCount());
 
 		mIsActive = false;

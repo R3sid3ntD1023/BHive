@@ -1,5 +1,5 @@
-#include "Pass.h"
 #include "gfx/Framebuffer.h"
+#include "Pass.h"
 
 namespace BHive
 {
@@ -27,7 +27,7 @@ namespace BHive
 		}
 	}
 
-	void FPass::UseTexture(TexturePtr tex, EImageUsage access, ImageSubresourceRange range)
+	void FPass::UseTexture(Ref<Texture> tex, EImageUsage access, ImageSubresourceRange range)
 	{
 		ASSERT(mCurrentPhase)
 

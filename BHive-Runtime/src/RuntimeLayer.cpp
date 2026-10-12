@@ -7,14 +7,12 @@
 #include "core/platform/Platform.h"
 #include "gfx/Texture.h"
 #include "gfx/debug/ImageDebugger.h"
+#include "gfx/factories/FontFactory.h"
 #include "gfx/factories/GFXFactories.h"
 #include "gfx/factories/MeshFactory.h"
-#include "gfx/factories/TextureFactory.h"
 #include "gfx/imgui/IImGuiProvider.h"
-#include "gfx/material/EmissiveMaterial.h"
-#include "gfx/material/LambertMaterial.h"
 #include "gfx/material/Material.h"
-#include "gfx/material/StandardMaterial.h"
+#include "gfx/material/Materials.h"
 #include "gfx/mesh/StaticMesh.h"
 #include "gfx/renderers/Renderer.h"
 #include "gfx/renderers/postprocess/AcesMaterial.h"
@@ -39,7 +37,7 @@ namespace BHive
 		auto decodedSprite = TextureImporter::FromFile("C:/Users/dariu/Documents/BHive/projects/Mario/resources/sprites0.jpg");
 		auto decodedEnviroment = TextureImporter::FromFile(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
 
-		mTexture = TextureFactory::Create2D(decodedSprite);
+		mTexture = CreateRef<Texture2D>(decodedSprite.Size, decodedSprite.CreateInfo, decodedSprite.Data);
 
 		// create mesh
 		FMeshImportOptions import_options{.ImportMaterials = false};
@@ -56,21 +54,21 @@ namespace BHive
 
 		// create materials
 		{
-			auto emissiveMaterial = MaterialFactory::CreateEmissive();
-			emissiveMaterial.As<EmissiveMaterial>()->SetEmissionColor(FColor(1.0f, 0.0f, 0.0f, 20.0f));
+			auto emissiveMaterial = CreateRef<EmissiveMaterial>();
+			emissiveMaterial->SetEmissionColor(FColor(1.0f, 0.0f, 0.0f, 20.0f));
 
-			auto lambertMaterial0 = MaterialFactory::CreateLambert();
-			lambertMaterial0.As<LambertMaterial>()->SetDiffuseColor(FColor::LightGray);
-			lambertMaterial0.As<LambertMaterial>()->SetTexture("DiffuseMap", {mTexture});
+			auto lambertMaterial0 = CreateRef<LambertMaterial>();
+			lambertMaterial0->SetDiffuseColor(FColor::LightGray);
+			lambertMaterial0->SetTexture("DiffuseMap", {mTexture});
 
-			auto lambertMaterial1 = MaterialFactory::CreateLambert();
-			lambertMaterial1.As<LambertMaterial>()->SetDiffuseColor(FColor::Orange);
+			auto lambertMaterial1 = CreateRef<LambertMaterial>();
+			lambertMaterial1->SetDiffuseColor(FColor::Orange);
 
-			auto standardMaterial = MaterialFactory::CreateStandard();
-			standardMaterial.As<StandardMaterial>()->SetAlbedo(FColor::White);
-			// standardMaterial.As<StandardMaterial>()->SetEmission(FColor(1.0f, .5f, 0.0f, 2.0f));
-			standardMaterial.As<StandardMaterial>()->SetMetalness(1.0f);
-			standardMaterial.As<StandardMaterial>()->SetRoughness(0.5f);
+			auto standardMaterial = CreateRef<StandardMaterial>();
+			standardMaterial->SetAlbedo(FColor::White);
+			// standardMaterial->SetEmission(FColor(1.0f, .5f, 0.0f, 2.0f));
+			standardMaterial->SetMetalness(1.0f);
+			standardMaterial->SetRoughness(0.5f);
 
 			mMaterials[0].Add(lambertMaterial0);
 			mMaterials[1].Add(lambertMaterial1);
@@ -91,7 +89,7 @@ namespace BHive
 
 		mSceneRenderer = CreateRef<SceneRenderer>();
 		mSceneRenderer->Init(mViewportSize);
-		mSceneRenderer->SetEnvironmentTexture(TextureFactory::Create2D(decodedEnviroment));
+		mSceneRenderer->SetEnvironmentTexture(CreateRef<Texture2D>(decodedEnviroment.Size, decodedEnviroment.CreateInfo, decodedEnviroment.Data));
 
 		mSceneRenderer->AddPostProcessMaterial<BloomMaterial>();
 		mSceneRenderer->AddPostProcessMaterial<AcesMaterial>();
@@ -188,7 +186,7 @@ namespace BHive
 			renderer.Quad.DrawQuad(params, mTexture, FTransform({0, 0, -2}));
 
 			renderer.Quad.DrawCircle({.Radius = 1.f, .LineColor = FColor::Orange}, FTransform({2, 0, 0}));
-			renderer.Quad.DrawText(mFont, 1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
+			renderer.Quad.DrawText(*mFont, 1.0f, "Cube", tex_params, FTransform({0, 2, 0}));
 		}
 
 		mSceneRenderer->End();
@@ -210,7 +208,7 @@ namespace BHive
 			auto output = mSceneRenderer->GetOutput();
 			if (output)
 			{
-				auto id = IImGuiTextureProvider::GetID(*output.As<Texture>());
+				auto id = IImGuiTextureProvider::GetID(*output);
 				ImGui::Image(id, viewportSize);
 			}
 		}
@@ -261,7 +259,7 @@ namespace BHive
 
 		if (ImGui::Begin("Window"))
 		{
-			auto id = IImGuiTextureProvider::GetID(*mTexture.As<Texture>());
+			auto id = IImGuiTextureProvider::GetID(*mTexture);
 			ImGui::Image(id, {200, 200}, {0, 1}, {1, 0});
 
 			Inspect::get().inspect("Transform", mObjectTransforms[0]);
@@ -285,7 +283,7 @@ namespace BHive
 				if (info)
 				{
 					auto decodedEnironment = TextureImporter::FromFile(info.Path);
-					auto tex = TextureFactory::Create2D(decodedEnironment);
+					auto tex = CreateRef<Texture2D>(decodedEnironment.Size, decodedEnironment.CreateInfo, decodedEnironment.Data);
 
 					mSceneRenderer->SetEnvironmentTexture(tex);
 

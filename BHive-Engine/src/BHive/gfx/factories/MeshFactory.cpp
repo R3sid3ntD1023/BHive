@@ -1,21 +1,21 @@
-#include "MeshFactory.h"
 #include "gfx/animation/Skeleton.h"
 #include "gfx/mesh/SkeletalMesh.h"
 #include "gfx/mesh/StaticMesh.h"
+#include "MeshFactory.h"
 
 namespace BHive
 {
-	MeshPtr MeshFactory::CreateStatic(const FMeshData &meshData)
+	Ref<StaticMesh> MeshFactory::CreateStatic(const FMeshData &meshData)
 	{
-		return CreateResource<StaticMesh>(meshData);
+		return CreateRef<StaticMesh>(meshData);
 	}
 
-	MeshPtr MeshFactory::CreateSkeletal(const FMeshData &meshData, SkeletonPtr skeleton)
+	Ref<SkeletalMesh> MeshFactory::CreateSkeletal(const FMeshData &meshData, SkeletonPtr skeleton)
 	{
-		return CreateResource<SkeletalMesh>(meshData, skeleton.As<Skeleton>());
+		return CreateRef<SkeletalMesh>(meshData, skeleton.As<Skeleton>());
 	}
 
-	MeshPtr MeshFactory::CreateCube(float size)
+	Ref<StaticMesh> MeshFactory::CreateCube(float size)
 	{
 		const float s = size * .5f;
 		std::vector<FVertex> vertices = {
@@ -77,7 +77,7 @@ namespace BHive
 		return CreateStatic(data);
 	}
 
-	MeshPtr MeshFactory::CreateSphere(float radius, uint32_t sectors, uint32_t stacks)
+	Ref<StaticMesh> MeshFactory::CreateSphere(float radius, uint32_t sectors, uint32_t stacks)
 	{
 		std::vector<FVertex> vertices;
 		std::vector<uint32_t> indices;
@@ -142,15 +142,17 @@ namespace BHive
 		return CreateStatic(data);
 	}
 
-	MeshPtr MeshFactory::CreatePlane(float x, float y)
+	Ref<StaticMesh> MeshFactory::CreatePlane(float x, float y)
 	{
 		float w = x * .5f;
 		float h = y * .5f;
 		const auto normal = glm::vec3(0, 1, 0);
 
 		std::vector<FVertex> vertices
-			= {FVertex{.Position = {-w, 0, h}, .TexCoord = {0, 1}, .Normal = normal}, FVertex{.Position = {w, 0, h}, .TexCoord = {1, 1}, .Normal = normal},
-			   FVertex{.Position = {w, 0, -h}, .TexCoord = {1, 0}, .Normal = normal}, FVertex{.Position = {-w, 0, -h}, .TexCoord = {0, 0}, .Normal = normal}};
+			= {FVertex{.Position = {-w, 0, h}, .TexCoord = {0, 1}, .Normal = normal},
+			   FVertex{.Position = {w, 0, h}, .TexCoord = {1, 1}, .Normal = normal},
+			   FVertex{.Position = {w, 0, -h}, .TexCoord = {1, 0}, .Normal = normal},
+			   FVertex{.Position = {-w, 0, -h}, .TexCoord = {0, 0}, .Normal = normal}};
 
 		FMeshData data;
 		data.Indices = {0, 1, 2, 2, 3, 0};

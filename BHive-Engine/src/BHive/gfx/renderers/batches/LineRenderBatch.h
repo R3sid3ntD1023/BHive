@@ -1,8 +1,8 @@
 #pragma once
 
+#include "gfx/material/Material.h"
 #include "RenderBatch.h"
 #include "VertexBatchBuffer.h"
-#include "gfx/material/Material.h"
 
 namespace BHive
 {
@@ -41,7 +41,7 @@ namespace BHive
 
 	private:
 		Scope<VertexBatchBuffer<FLineVertex>> mBuffer;
-		MaterialPtr mLineMaterial;
+		Material mLineMaterial;
 		PipelinePtr mPipeline;
 		bool mIsActive = false;
 		float mLineWidth = 1.f;

@@ -2,9 +2,9 @@
 
 #include "core/Core.h"
 #include "core/math/Transform.h"
+#include "gfx/animation/AnimTransform.h"
 #include "gfx/Color.h"
 #include "gfx/Enumerations.h"
-#include "gfx/animation/AnimTransform.h"
 #include "gfx/material/MaterialTable.h"
 #include "gfx/mesh/MeshData.h"
 #include "gfx/registries/Handles.h"
@@ -24,7 +24,7 @@ namespace BHive
 
 	struct FMeshSubmissionRequest
 	{
-		MeshPtr Mesh;
+		Ref<BaseMesh> Mesh;
 
 		MaterialTable Materials;
 
@@ -70,7 +70,7 @@ namespace BHive
 
 		uint32_t DrawCommandIndex = 0;
 
-		MaterialPtr Material;
+		Ref<Material> Material;
 
 		// opaque/transparent, cast_shadows
 		std::bitset<2> BitFlags;

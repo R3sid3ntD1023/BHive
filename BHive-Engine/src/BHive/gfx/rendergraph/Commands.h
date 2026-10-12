@@ -1,13 +1,13 @@
 #pragma once
 
 #include "Command.h"
-#include "Phase.h"
 #include "core/Core.h"
 #include "gfx/Enumerations.h"
+#include "Phase.h"
 #include <imgui.h>
 
-#include "gfx/Query.h"
 #include "gfx/material/Material.h"
+#include "gfx/Query.h"
 
 namespace BHive
 {
@@ -16,9 +16,9 @@ namespace BHive
 	{
 		static constexpr ECommandType Type = ECommandType::GenerateMipMaps;
 
-		TexturePtr Texture;
+		int32_t Texture;
 
-		void operator()(TexturePtr texture) { Texture = texture; }
+		void operator()(int32_t texture) { Texture = texture; }
 	};
 
 	struct CmdClearBuffer
@@ -111,12 +111,12 @@ namespace BHive
 		FCommandStream *Storage = nullptr;
 		uint32_t SnapshotIndex = 0;
 
-		void operator()(MaterialPtr material, EShaderMeshType meshType = EShaderMeshType::None)
+		void operator()(const IMaterial *material, EShaderMeshType meshType = EShaderMeshType::None)
 		{
-			auto *resolved = material.As<IMaterial>();
-			ASSERT(resolved, "Invalid material handle");
-			if (resolved)
-				SnapshotIndex = Storage->StoreObject<MaterialSnapshot>(resolved->CreateSnapshot(meshType));
+			if (!material)
+				return;
+
+			SnapshotIndex = Storage->StoreObject<MaterialSnapshot>(material->CreateSnapshot(meshType));
 		}
 
 		void operator()(IMaterial *mat, EShaderMeshType meshType = EShaderMeshType::None) { SnapshotIndex = Storage->StoreObject<MaterialSnapshot>(mat->CreateSnapshot(meshType)); }

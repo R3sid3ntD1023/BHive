@@ -9,7 +9,7 @@ namespace BHive
 
 	struct TextureBinding
 	{
-		TexturePtr Texture;
+		Ref<Texture> Texture;
 		uint32_t BaseMipLevel = 0;
 		uint32_t BaseArrayLayer = 0;
 	};

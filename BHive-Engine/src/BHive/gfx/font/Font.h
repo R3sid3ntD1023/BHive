@@ -1,12 +1,12 @@
 #pragma once
 
 #include "core/Core.h"
-#include <glm/glm.hpp>
-#include "gfx/registries/Handles.h"
+#include "core/math/Math.h"
 
 namespace BHive
 {
 	struct MSDFData;
+	class Texture2D;
 
 	struct GlyphBounds
 	{
@@ -24,7 +24,7 @@ namespace BHive
 
 		const MSDFData *GetMSDFData() const { return mData; }
 
-		TexturePtr GetAtlas() const { return mTextureAtlas; }
+		Ref<Texture2D> GetAtlas() const { return mTextureAtlas; }
 
 	private:
 		void Initialize(const std::filesystem::path &path);
@@ -36,7 +36,7 @@ namespace BHive
 		int mLineHeight = 0;
 		float mDeviceScale;
 
-		TexturePtr mTextureAtlas;
+		Ref<Texture2D> mTextureAtlas;
 		MSDFData *mData = nullptr;
 	};
 

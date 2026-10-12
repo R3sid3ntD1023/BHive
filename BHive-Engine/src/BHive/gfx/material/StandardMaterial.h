@@ -48,7 +48,7 @@ namespace BHive
 
 		IMaterial &SetTexture(const std::string &name, const TextureBinding &texture) & override;
 
-		void SetTextureFromType(EMaterialTextureType type, TexturePtr texture) override;
+		void SetTextureFromType(EMaterialTextureType type, Ref<Texture> texture) override;
 
 		std::vector<std::string> GetShaderDefinitions() const override { return {"MATERIAL_STANDARD"}; }
 

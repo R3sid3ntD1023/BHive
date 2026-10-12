@@ -1,5 +1,5 @@
-#include "gfx/Texture.h"
 #include "Sprite.h"
+#include "gfx/Texture.h"
 
 namespace BHive
 {
@@ -11,7 +11,7 @@ namespace BHive
 	{
 	}
 
-	Sprite::Sprite(TexturePtr texture, const FSpriteGenerator &generator)
+	Sprite::Sprite(AssetHandle<Texture2D> texture, const FSpriteGenerator &generator)
 		: mSource(texture),
 		  mGenerator(generator)
 
@@ -20,7 +20,7 @@ namespace BHive
 		Initialize();
 	}
 
-	Sprite::Sprite(TexturePtr texture, const glm::vec2 &min, const glm::vec2 &max)
+	Sprite::Sprite(AssetHandle<Texture2D> texture, const glm::vec2 &min, const glm::vec2 &max)
 		: mSource(texture),
 		  mMin(min),
 		  mMax(max)
@@ -66,7 +66,7 @@ namespace BHive
 		ASSERT(mSource, "Source texture is null!");
 
 		auto texture = mSource;
-		glm::vec2 texture_size = texture.As<Texture>()->GetSize();
+		glm::vec2 texture_size = texture->GetSize();
 		mMin = (generator.Coordinates * generator.CellSize) / texture_size;
 		mMax = ((generator.Coordinates + generator.Size) * generator.CellSize) / texture_size;
 	}

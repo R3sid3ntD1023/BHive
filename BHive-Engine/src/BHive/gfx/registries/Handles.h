@@ -40,20 +40,6 @@ namespace BHive
 
 	using SkeletalAnimationPtr = ResourceHandle;
 
-	using TexturePtr = ResourceHandle;
-
-	using Texture2DPtr = ResourceHandle;
-
-	using Texture2DArrayPtr = ResourceHandle;
-
-	using Texture3DPtr = ResourceHandle;
-
-	using TextureCubePtr = ResourceHandle;
-
-	using TextureCubeArrayPtr = ResourceHandle;
-
-	using MaterialPtr = ResourceHandle;
-
 	using SpritePtr = ResourceHandle;
 
 	using FlipBookPtr = ResourceHandle;
