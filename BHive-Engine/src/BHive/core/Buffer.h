@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdint.h>
-
 namespace BHive
 {
 	template <typename T>

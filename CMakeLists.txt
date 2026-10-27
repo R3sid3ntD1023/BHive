@@ -21,13 +21,10 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
 set(BHIVE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_INSTALL_PREFIX "${BHIVE_ROOT_DIR}/install")
 
-include(cmake/StrictWarnings.cmake)
 add_subdirectory(BHive-Engine)
+add_subdirectory(BHive-Inspectors)
 add_subdirectory(BHive-Editor)
 add_subdirectory(BHive-Runtime)
-add_subdirectory(projects)
-
-#ENABLE_STRICT_WARNINGS(BHive-Engine)
 
 
 

@@ -27,3 +27,5 @@
 #include <variant>
 #include <vector>
 #include <xhash>
+#include <cstddef>
+#include <new>
