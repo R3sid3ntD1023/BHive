@@ -4,6 +4,7 @@ bin-int/
 build/
 downloads/
 
+**.cache
 **.sln
 **.vcxproj
 **.vcxproj.filters
