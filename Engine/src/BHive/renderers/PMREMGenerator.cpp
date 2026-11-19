@@ -55,25 +55,17 @@ namespace BHive
 	void PMREMGenerator::SetEnvironmentMap(const Ref<Texture> &texture)
 	{
 		mEnvironmentTexture = texture;
+
+		if (!mInitialized)
+			Initialize();
+
+		if (!mEnvironmentTexture)
+			return;
+
 		CreateEnvironmentCubeMap();
 		CreateIrradianceMap();
 		CreateBRDFLUTMap();
 		CreatePreFilteredEnvironmentMap();
-	}
-
-	const Ref<Texture> &PMREMGenerator::GetIrradianceTexture() const
-	{
-		return mIrradianceCapture->GetTargetTexture();
-	}
-
-	const Ref<Texture> &PMREMGenerator::GetPreFilteredEnvironmentTetxure() const
-	{
-		return mPreFilteredEnvironmentTexture;
-	}
-
-	const Ref<Texture> &PMREMGenerator::GetBDRFLUT() const
-	{
-		return mBRDFLUTTexture;
 	}
 
 	void PMREMGenerator::CreateEnvironmentCubeMap()

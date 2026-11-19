@@ -27,6 +27,18 @@
       "features": [ "gl-api-latest", "extensions" ]
     },
     {
+      "name": "imgui",
+      "features": [ "glfw-binding", "opengl3-binding", "docking-experimental", "libigl-imgui", "freetype-svg" ]
+    },
+    "imguizmo",
+    {
+      "name": "glad",
+      "features": [ "gl-api-46" ]
+    },
+    {
+      "name": "implot"
+    },
+    {
       "name": "glm"
     },
     {

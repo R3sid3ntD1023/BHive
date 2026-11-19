@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	class StorageBuffer : public BufferBase
+	class StorageBuffer : public GeneralBuffer
 	{
 	public:
 		StorageBuffer() = default;

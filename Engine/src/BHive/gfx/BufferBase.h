@@ -13,11 +13,15 @@ namespace BHive
 
 		void SetData(const void *data, size_t size, uint32_t offset = 0);
 
-		virtual void BindBufferBase(uint32_t binding) const {};
-
 		uint32_t GetBufferID() const { return mBufferID; }
 
 	protected:
 		uint32_t mBufferID = 0;
+	};
+
+	class GeneralBuffer : public BufferBase
+	{
+	public:
+		virtual void BindBufferBase(uint32_t binding) const = 0;
 	};
 } // namespace BHive

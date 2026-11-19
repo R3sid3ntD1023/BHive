@@ -15,8 +15,6 @@ namespace BHive
 
 		virtual uint32_t GetCount() const { return mCount; }
 
-		virtual void SetData(const void *data, uint64_t size, uint32_t offset = 0);
-
 	private:
 		uint32_t mCount;
 	};
@@ -28,10 +26,8 @@ namespace BHive
 		VertexBuffer(const float *data, const uint64_t size);
 		VertexBuffer(const uint64_t size);
 
-		virtual void SetData(const void *data, uint64_t size, uint32_t offset = 0);
 		virtual void SetLayout(const BufferLayout &layout);
 		virtual const BufferLayout &GetLayout() const { return mLayout; }
-		virtual void BindBufferBase(uint32_t binding) const override;
 
 	private:
 		BufferLayout mLayout;

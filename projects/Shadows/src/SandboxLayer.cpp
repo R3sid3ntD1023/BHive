@@ -32,6 +32,10 @@ namespace BHive
 	void SandboxLayer::OnAttach()
 	{
 		mInstances.resize(1000);
+
+		float radius = 50.f;
+		float offset = 2.5f;
+
 		for (uint32_t i = 0; i < 1000; i++)
 		{
 			glm::mat4 model = glm::mat4(1.0f);

@@ -3,14 +3,13 @@
 #include "core/Core.h"
 #include "gfx/cameras/CubeCamera.h"
 #include "gfx/textures/RenderTargetCube.h"
+#include "gfx/textures/Texture2D.h"
+#include "gfx/textures/TextureCube.h"
 
 namespace BHive
 {
-	class Texture;
 	class StaticMesh;
 	class Framebuffer;
-	class TextureCube;
-	class Texture2D;
 	class Shader;
 
 	class PMREMGenerator
@@ -21,9 +20,9 @@ namespace BHive
 		void Initialize();
 		void SetEnvironmentMap(const Ref<Texture> &texture);
 
-		const Ref<Texture> &GetIrradianceTexture() const;
-		const Ref<Texture> &GetPreFilteredEnvironmentTetxure() const;
-		const Ref<Texture> &GetBDRFLUT() const;
+		const Ref<Texture> &GetIrradianceTexture() const { return mIrradianceCapture->GetTargetTexture(); }
+		const Ref<Texture> &GetPreFilteredEnvironmentTexture() const { return mPreFilteredEnvironmentTexture; }
+		const Ref<Texture> &GetBDRFLUT() const { return mBRDFLUTTexture; }
 
 	private:
 		void CreateEnvironmentCubeMap();

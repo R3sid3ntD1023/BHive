@@ -4,7 +4,7 @@
 
 namespace BHive
 {
-	class UniformBuffer : public BufferBase
+	class UniformBuffer : public GeneralBuffer
 	{
 	public:
 		UniformBuffer(uint32_t binding, uint64_t size);

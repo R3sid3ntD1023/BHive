@@ -80,7 +80,7 @@ namespace BHive
 
 	std::filesystem::path ShaderUtils::GetCacheDirectory()
 	{
-		return "cache/shaders";
+		return ".cache/shaders";
 	}
 
 	ShaderUtils::PreProcessData ShaderUtils::PreProcess(const std::string &source, const std::string &preprocessors)

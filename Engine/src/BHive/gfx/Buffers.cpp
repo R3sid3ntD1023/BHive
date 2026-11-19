@@ -16,11 +16,6 @@ namespace BHive
 		glNamedBufferData(mBufferID, count * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
 	}
 
-	void IndexBuffer::SetData(const void *data, uint64_t size, uint32_t offset)
-	{
-		BufferBase::SetData(data, size, offset);
-	}
-
 	VertexBuffer::VertexBuffer(const float *data, const uint64_t size)
 	{
 
@@ -30,16 +25,6 @@ namespace BHive
 	VertexBuffer::VertexBuffer(const uint64_t size)
 	{
 		glNamedBufferData(GetBufferID(), size, nullptr, GL_DYNAMIC_DRAW);
-	}
-
-	void VertexBuffer::BindBufferBase(uint32_t binding) const
-	{
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, mBufferID);
-	}
-
-	void VertexBuffer::SetData(const void *data, uint64_t size, uint32_t offset)
-	{
-		BufferBase::SetData(data, size, offset);
 	}
 
 	void VertexBuffer::SetLayout(const BufferLayout &layout)

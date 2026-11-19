@@ -4,45 +4,22 @@
 #include <frames/v23/id3_Frame_TXXX.h>
 #include <AL/al.h>
 
-void WaveLoggerCallback(WAVE::Logger::LogLevel level, const char *message)
-{
-	switch (level)
-	{
-	case WAVE::Logger::info:
-		// LOG_INFO(message);
-		break;
-	case WAVE::Logger::trace:
-		// LOG_TRACE(message);
-		break;
-	case WAVE::Logger::warn:
-		LOG_WARN(message);
-		break;
-	case WAVE::Logger::error:
-		LOG_ERROR(message);
-		break;
-	default:
-		break;
-	}
-}
-
 namespace BHive
 {
 	Ref<AudioSource> WaveImporter::Import(const std::filesystem::path &path)
 	{
-		WAVE::Logger::SetCallback(WaveLoggerCallback);
-
 		try
 		{
-			WAVE::Parser parser(path.string().c_str());
-			WAVE::wave_t wave{};
+			waveparser::Parser parser(path);
+			waveparser::Wave wave{};
 
-			if (!parser.parse(wave))
+			if (!parser.Parse(wave))
 			{
 				return nullptr;
 			}
 
 			auto format = 0;
-			switch (wave.fmt.num_channels)
+			switch (wave.GetNumChannels())
 			{
 			case 1:
 				format = AL_FORMAT_MONO16;
@@ -56,21 +33,25 @@ namespace BHive
 
 			FAudioSpecification specification;
 			specification.mFormat = format;
-			specification.mNumSamples = wave.get_num_samples_per_channel();
-			specification.mSampleRate = wave.fmt.sample_rate;
+			specification.mNumSamples = wave.GetNumSamplesPerChannel();
+			specification.mSampleRate = wave.GetSampleRate();
 
-			if (wave.list.id3_chunk.has_tag("LOOP_START"))
+			auto start = wave.Id3Chunk.GetTXXXByDescription("LOOP_START");
+			auto end = wave.Id3Chunk.GetTXXXByDescription("LOOP_END");
+
+			if (start.size())
 			{
-				auto value = wave.list.id3_chunk.get_tag<WAVE::id3_Frame_TXXX>("LOOP_START")->Value;
+				auto value = start[0]->GetValue();
 				specification.mStartLoop = stoi(value);
 			}
-			if (wave.list.id3_chunk.has_tag("LOOP_END"))
+			if (end.size())
 			{
-				auto value = wave.list.id3_chunk.get_tag<WAVE::id3_Frame_TXXX>("LOOP_END")->Value;
+				auto value = end[0]->GetValue();
 				specification.mEndLoop = stoi(value);
 			}
 
-			return CreateRef<AudioSource>(wave.get_samples(), wave.get_buffer_size(), specification);
+			auto &data = wave.GetData();
+			return CreateRef<AudioSource>(reinterpret_cast<int16_t *>(data.data()), int(data.size()), specification);
 		}
 		catch (const std::runtime_error &e)
 		{

@@ -91,14 +91,6 @@ namespace BHive
 
 		mVertexBuffers.push_back(vertexbuffer);
 	}
-	void VertexArray::BindBuffersBase(uint32_t binding) const
-	{
-		int i = binding;
-		for (auto &vertexBuffer : mVertexBuffers)
-		{
-			vertexBuffer->BindBufferBase(i++);
-		}
-	}
 
 	Ref<VertexBuffer> VertexArray::GetVertexBuffer(uint32_t index) const
 	{

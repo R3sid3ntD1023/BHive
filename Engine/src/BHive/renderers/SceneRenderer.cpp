@@ -147,15 +147,23 @@ namespace BHive
 
 		RenderCommand::Clear();
 
+		auto prefiltered_env_map = EnvironmentMapGenerator.GetPreFilteredEnvironmentTexture();
+		if (prefiltered_env_map)
+			prefiltered_env_map->Bind(6);
+
+		auto irradiance_map = EnvironmentMapGenerator.GetIrradianceTexture();
+		if (irradiance_map)
+			irradiance_map->Bind(7);
+
+		auto brdf_lut = EnvironmentMapGenerator.GetBDRFLUT();
+		if (brdf_lut)
+			brdf_lut->Bind(8);
+
 		// render meshes
 		for (auto &[mat, objects] : mSceneRenderData->RenderData)
 		{
 			auto shader = mat->GetShader();
 			shader->Bind();
-
-			EnvironmentMapGenerator.GetPreFilteredEnvironmentTetxure()->Bind(6);
-			EnvironmentMapGenerator.GetIrradianceTexture()->Bind(7);
-			EnvironmentMapGenerator.GetBDRFLUT()->Bind(8);
 
 			static uint32_t shadow_map_bindings[] = {9, 10, 11};
 			mSceneRenderData->ShadowRenderer.BindShadowMaps(shadow_map_bindings);
