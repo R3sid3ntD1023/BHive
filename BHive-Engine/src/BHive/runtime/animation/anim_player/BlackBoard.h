@@ -5,7 +5,7 @@
 
 namespace BHive
 {
-	class BlackBoard
+	class BHIVE_API BlackBoard
 	{
 	public:
 		/* data */

@@ -59,6 +59,8 @@ namespace BHive
 
 		virtual void OnEvent(Event &event);
 
+		virtual void OnPostInitialize() {};
+
 	public:
 		const FApplicationSpecification &GetSpecification() const { return mSpecification; }
 

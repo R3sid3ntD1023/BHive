@@ -11,6 +11,16 @@
       "name": "glad",
       "features": [ "gl-api-latest", "extensions" ]
     },
+    {
+      "name": "imgui",
+      "features": [ "glfw-binding", "opengl3-binding", "vulkan-binding", "docking-experimental", "libigl-imgui", "freetype", "freetype-svg" ]
+    },
+    {
+      "name": "imguizmo"
+    },
+    {
+      "name": "implot"
+    },
     { "name": "glm" },
     { "name": "rttr" },
     { "name": "stb" },

@@ -2,7 +2,6 @@
 
 #include "core/Core.h"
 #include "gfx/shader/ShaderAsset.h"
-#include <shaderc/shaderc.hpp>
 
 namespace BHive
 {
@@ -26,10 +25,6 @@ namespace BHive
 		void CompileToOpengl(ShaderAsset &asset, const MacroDefinitions &definitions = {});
 
 	private:
-		shaderc::Compiler mVulkanCompiler;
-		shaderc::Compiler mOpenglCompiler;
-		shaderc::CompileOptions mVulkanCompileOptions;
-		shaderc::CompileOptions mOpenglCompileOptions;
 		std::filesystem::path mFilePath;
 	};
 } // namespace BHive

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "InspectorCore.h"
 #include "core/subsystem/SubSystem.h"
 #include "Inspector.h"
 #include "undoredo/Commands.h"
@@ -13,13 +14,21 @@ namespace BHive
 	{
 		static rttr::variant meta_data_empty(const rttr::variant &);
 
-		bool inspect(const rttr::variant &instance, rttr::variant &var, bool skip_custom = false, bool read_only = false, float width = 0.0f, const MetaGetter &get_meta_data = meta_data_empty);
+		bool inspect(
+			const rttr::variant &instance,
+			rttr::variant &var,
+			bool skip_custom = false,
+			bool read_only = false,
+			float width = 0.0f,
+			const MetaGetter &get_meta_data = meta_data_empty
+		);
 
 		bool inspect(const rttr::variant &instance, rttr::variant &object, rttr::property &property, bool read_only = false, float width = 0.0f);
 
 		// inspect readonly data
 		template <typename T>
-		bool inspect(const std::string &label, const T &obj, bool skip_custom = false, bool read_only = false, float width = 0.0f, const MetaGetter &get_meta_data = meta_data_empty)
+		bool
+		inspect(const std::string &label, const T &obj, bool skip_custom = false, bool read_only = false, float width = 0.0f, const MetaGetter &get_meta_data = meta_data_empty)
 		{
 			rttr::variant var = obj;
 			if (!label.empty() && needs_tree_node(var))
@@ -68,7 +77,15 @@ namespace BHive
 
 		// inspect readonly data
 		template <typename T, typename U>
-		bool inspect(const std::string &label, U owning_object, const T &obj, bool skip_custom = false, bool read_only = false, float width = 0.0f, const MetaGetter &get_meta_data = meta_data_empty)
+		bool inspect(
+			const std::string &label,
+			U owning_object,
+			const T &obj,
+			bool skip_custom = false,
+			bool read_only = false,
+			float width = 0.0f,
+			const MetaGetter &get_meta_data = meta_data_empty
+		)
 		{
 			rttr::variant var = obj;
 			if (!label.empty() && needs_tree_node(var))
@@ -89,7 +106,15 @@ namespace BHive
 
 		// inspect data read_only optional
 		template <typename T, typename U>
-		bool inspect(const std::string &label, U owning_object, T &obj, bool skip_custom = false, bool read_only = false, float width = 0.0f, const MetaGetter &get_meta_data = meta_data_empty)
+		bool inspect(
+			const std::string &label,
+			U owning_object,
+			T &obj,
+			bool skip_custom = false,
+			bool read_only = false,
+			float width = 0.0f,
+			const MetaGetter &get_meta_data = meta_data_empty
+		)
 		{
 			rttr::variant var = obj;
 			bool changed = false;
@@ -115,12 +140,7 @@ namespace BHive
 			return changed;
 		}
 
-
-		static Inspect &get()
-		{
-			static Inspect instance;
-			return instance;
-		}
+		static Inspect &get();
 
 	private:
 		rttr::type get_instance_type(const rttr::instance &object);

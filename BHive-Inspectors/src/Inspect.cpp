@@ -202,4 +202,10 @@ namespace BHive
 
 		return changed;
 	}
+
+	Inspect &Inspect::get()
+	{
+		static Inspect instance;
+		return instance;
+	}
 } // namespace BHive

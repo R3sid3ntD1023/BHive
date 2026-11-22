@@ -7,9 +7,8 @@
 #include "gfx/RenderCommand.h"
 #include "gfx/Texture.h"
 #include <GLFW/glfw3.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_vulkan.cpp>
-#include <backends/imgui_impl_vulkan.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_vulkan.h>
 
 namespace BHive
 {

@@ -5,6 +5,7 @@
 
 struct GLFWwindow;
 struct ImDrawData;
+struct ImGuiContext;
 
 namespace BHive
 {
@@ -31,7 +32,7 @@ namespace BHive
 
 		void BlockEvents(bool block);
 
-		void *GetContext() const;
+		ImGuiContext *GetContext() const;
 
 		void GetAllocatorCallbacks(void *alloc_func, void *free_func, void **user_data) const;
 

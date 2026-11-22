@@ -1,0 +1,84 @@
+[15:33:04] [info] BHive: Selected GPU: NVIDIA GeForce RTX 3060
+
+[15:33:04] [info] BHive: GPU: NVIDIA GeForce RTX 3060
+
+[15:33:04] [info] BHive: Driver Version: 2604679168 
+
+[15:33:04] [info] BHive: Vulkan API Version: 1.4.357
+
+[15:33:04] [info] BHive: { General } : Inserted device layer "VK_LAYER_KHRONOS_validation" (C:\VulkanSDK\1.4.335.0\Bin\VkLayer_khronos_validation.dll)
+
+[15:33:04] [info] BHive: { General } : Inserted device layer "VK_LAYER_NV_present" (C:\WINDOWS\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_20f49c6eb5c9b39b\nvoglv64.dll)
+
+[15:33:04] [info] BHive: { General } : Inserted device layer "VK_LAYER_NV_optimus" (C:\WINDOWS\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_20f49c6eb5c9b39b\nvoglv64.dll)
+
+[15:33:04] [info] BHive: { General } : vkCreateDevice layer callstack setup to:
+
+[15:33:04] [info] BHive: { General } :    <Application>
+
+[15:33:04] [info] BHive: { General } :      ||
+
+[15:33:04] [info] BHive: { General } :    <Loader>
+
+[15:33:04] [info] BHive: { General } :      ||
+
+[15:33:04] [info] BHive: { General } :    VK_LAYER_NV_optimus
+
+[15:33:04] [info] BHive: { General } :            Type: Implicit
+
+[15:33:04] [info] BHive: { General } :            Enabled By: Implicit Layer
+
+[15:33:04] [info] BHive: { General } :                Disable Env Var:  DISABLE_LAYER_NV_OPTIMUS_1
+
+[15:33:04] [info] BHive: { General } :            Manifest: C:\WINDOWS\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_20f49c6eb5c9b39b\nv-vk64.json
+
+[15:33:04] [info] BHive: { General } :            Library:  C:\WINDOWS\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_20f49c6eb5c9b39b\nvoglv64.dll
+
+[15:33:04] [info] BHive: { General } :      ||
+
+[15:33:04] [info] BHive: { General } :    VK_LAYER_NV_present
+
+[15:33:04] [info] BHive: { General } :            Type: Implicit
+
+[15:33:04] [info] BHive: { General } :            Enabled By: Implicit Layer
+
+[15:33:04] [info] BHive: { General } :                Disable Env Var:  DISABLE_LAYER_NV_PRESENT_1
+
+[15:33:04] [info] BHive: { General } :            Manifest: C:\WINDOWS\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_20f49c6eb5c9b39b\nv-vk64.json
+
+[15:33:04] [info] BHive: { General } :            Library:  C:\WINDOWS\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_20f49c6eb5c9b39b\nvoglv64.dll
+
+[15:33:04] [info] BHive: { General } :      ||
+
+[15:33:04] [info] BHive: { General } :    VK_LAYER_KHRONOS_validation
+
+[15:33:04] [info] BHive: { General } :            Type: Explicit
+
+[15:33:04] [info] BHive: { General } :            Enabled By: By the Application
+
+[15:33:04] [info] BHive: { General } :            Manifest: C:\VulkanSDK\1.4.335.0\Bin\VkLayer_khronos_validation.json
+
+[15:33:04] [info] BHive: { General } :            Library:  C:\VulkanSDK\1.4.335.0\Bin\VkLayer_khronos_validation.dll
+
+[15:33:04] [info] BHive: { General } :      ||
+
+[15:33:04] [info] BHive: { General } :    <Device>
+
+[15:33:04] [info] BHive: { General } :        Using "NVIDIA GeForce RTX 3060" with driver: "C:\WINDOWS\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_20f49c6eb5c9b39b\nvoglv64.dll"
+
+[15:33:05] [trace] BHive: VulkanUtils: PresentMode 'Immediate' selected!
+
+[15:33:05] [trace] BHive: Initialized Audio Context
+
+[15:33:05] [info] BHive: Audio Device Info:
+
+[15:33:05] [info] BHive: 	Name: OpenAL Soft
+
+[15:33:05] [info] BHive: 	Sample Rate: 48000
+
+[15:33:05] [info] BHive: 		Mono: 255
+
+[15:33:05] [info] BHive: 		Stereo: 1
+
+[15:33:05] [info] BHive: Loaded 191 glyphs
+

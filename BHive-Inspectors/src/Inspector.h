@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core/Core.h"
 #include "PropertyLayout.h"
 
 namespace BHive
@@ -31,9 +30,9 @@ namespace BHive
 
 #define INSPECTED_TYPE_VAR "InspectedType"
 
-#define REFLECT_INSPECTOR(cls, _type)                                                                                                                                            \
-	REFLECT(cls)                                                                                                                                                                 \
-	{                                                                                                                                                                            \
+#define REFLECT_INSPECTOR(cls, _type)                                                                                                                                     \
+	REFLECT(cls)                                                                                                                                                          \
+	{                                                                                                                                                                     \
 		auto Factory = rttr::registration::class_<cls>(#cls)(rttr::metadata(INSPECTED_TYPE_VAR, rttr::type::get<_type>())).constructor()(rttr::policy::ctor::as_raw_ptr); \
 	}
 

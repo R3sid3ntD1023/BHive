@@ -6,4 +6,4 @@ set_target_properties(BHive-Runtime PROPERTIES
 	CXX_STANDARD 20
 	CXX_STANDARD_REQUIRED YES
 )
-target_link_libraries(BHive-Runtime PUBLIC BHive-Engine)
+target_link_libraries(BHive-Runtime PUBLIC BHive-Engine PUBLIC BHive-Inspectors)

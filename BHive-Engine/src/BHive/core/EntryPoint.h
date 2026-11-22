@@ -32,10 +32,8 @@ namespace BHive
 		void *user_data = nullptr;
 
 		auto ctx = layer->GetContext();
-
 		layer->GetAllocatorCallbacks(&alloc_func, &free_func, &user_data);
-
-		ImGui::SetCurrentContext((ImGuiContext *)ctx);
+		ImGui::SetCurrentContext(ctx);
 		ImGui::SetAllocatorFunctions(alloc_func, free_func, user_data);
 #endif
 	}
@@ -49,6 +47,7 @@ namespace BHive
 
 		BH_PROFILE_BEGIN_SESSION("StartUp", "Profile-StartUp.json");
 		auto app = BHive::CreateApplication({argc, argv});
+		app->OnPostInitialize();
 
 		SetImGuiContext(app);
 

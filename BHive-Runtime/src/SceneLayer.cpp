@@ -1,6 +1,6 @@
 #include "SceneLayer.h"
 
-#include "Inspectors/Inspect.h"
+#include "Inspect.h"
 #include "core/Application.h"
 #include "core/FPSCounter.h"
 #include "core/WindowInput.h"
@@ -290,7 +290,8 @@ namespace BHive
 					for (uint32_t m = 0; m < table.Count(); m++)
 					{
 						auto name = std::format("Material_{}", m);
-						Inspect::get().inspect(name, *table[m].Get());
+						rttr::variant var = table.Get(m).Get().get();
+						Inspect::get().inspect(name, var);
 					}
 					ImGui::TreePop();
 				}

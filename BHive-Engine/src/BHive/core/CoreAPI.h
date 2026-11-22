@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef BUILD_SHARED
-	#ifdef BUILD_DLL
+	#ifdef BHIVE_BUILD_DLL
 		#define BHIVE_API __declspec(dllexport)
 	#else
 		#define BHIVE_API __declspec(dllimport)

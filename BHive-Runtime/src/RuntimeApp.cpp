@@ -2,6 +2,7 @@
 #include "RuntimeLayer.h"
 #include "SceneLayer.h"
 #include "WorldLayer.h"
+#include "InspectorCore.h"
 
 namespace BHive
 {
@@ -11,10 +12,17 @@ namespace BHive
 		RuntimeApp(const FApplicationSpecification &specs)
 			: Application(specs)
 		{
-			//PushLayer<SceneLayer>();
-			PushLayer<WorldLayer>();
-			//   PushLayer<PerformanceLayer>();
-			//  PushLayer<RuntimeLayer>();
+			PushLayer<SceneLayer>();
+			// PushLayer<WorldLayer>();
+			//    PushLayer<PerformanceLayer>();
+			//   PushLayer<RuntimeLayer>();
+		}
+
+		void OnPostInitialize() override
+		{
+			Application::OnPostInitialize();
+
+			inspectors::SetImGuiContext(GetImGuiLayer()->GetContext());
 		}
 	};
 

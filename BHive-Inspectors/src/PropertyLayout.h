@@ -1,5 +1,6 @@
 #pragma once
 
+#include "InspectorCore.h"
 #include "core/reflection/Reflection.h"
 
 namespace BHive

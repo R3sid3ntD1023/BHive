@@ -1,6 +1,6 @@
 #pragma once
 
-#include "inspectors/Inspector.h"
+#include "Inspector.h"
 
 namespace BHive
 {

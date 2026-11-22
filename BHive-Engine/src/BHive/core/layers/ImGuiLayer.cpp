@@ -5,7 +5,7 @@
 #include "gfx/imgui/IImGuiProvider.h"
 
 #include "Platform/Vulkan/VulkanImGuiLayer.h"
-#include <backends/imgui_impl_glfw.h>
+#include <imgui_impl_glfw.h>
 
 #include <glfw/glfw3.h>
 #include "gfx/RenderCommand.h"
@@ -146,7 +146,7 @@ namespace BHive
 		mBlockEvents = block;
 	}
 
-	void *ImGuiLayer::GetContext() const
+	ImGuiContext *ImGuiLayer::GetContext() const
 	{
 		return ImGui::GetCurrentContext();
 	}

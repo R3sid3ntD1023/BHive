@@ -6,6 +6,7 @@
 #include <future>
 #include <regex>
 #include <spirv_cross/spirv_glsl.hpp>
+#include <shaderc/shaderc.hpp>
 
 namespace BHive
 {
@@ -159,14 +160,6 @@ namespace BHive
 
 	void ShaderCompiler::Init()
 	{
-		mVulkanCompileOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_4);
-		mVulkanCompileOptions.SetTargetSpirv(shaderc_spirv_version_1_6);
-
-		mVulkanCompileOptions.SetIncluder(std::make_unique<utils::IncludeHandler>());
-
-		mOpenglCompileOptions.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
-		mOpenglCompileOptions.SetAutoMapLocations(true);
-		mOpenglCompileOptions.SetIncluder(std::make_unique<utils::IncludeHandler>());
 	}
 
 	void ShaderCompiler::Compile(ShaderAsset &asset, const MacroDefinitions &definitions)
@@ -187,7 +180,13 @@ namespace BHive
 
 	void ShaderCompiler::CompileToVulkan(ShaderAsset &asset, const MacroDefinitions &definitions)
 	{
-		auto baseOptions = mVulkanCompileOptions;
+
+		shaderc::CompileOptions options{};
+		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_4);
+		options.SetTargetSpirv(shaderc_spirv_version_1_6);
+		options.SetIncluder(std::make_unique<utils::IncludeHandler>());
+
+		auto baseOptions = options;
 		for (uint32_t i = 0; i < ERenderingSets::MAX; i++)
 			baseOptions.AddMacroDefinition(utils::SetMarcos[i], utils::SetValues[i]);
 
@@ -210,8 +209,7 @@ namespace BHive
 					options.AddMacroDefinition(name);
 			}
 
-			shaderc::Compiler compiler;
-			auto spirvBinary = compiler.CompileGlslToSpv(code, utils::GetShadercType(stage), fileName.c_str(), options);
+			auto spirvBinary = shaderc::Compiler().CompileGlslToSpv(code, utils::GetShadercType(stage), fileName.c_str(), options);
 			if (spirvBinary.GetCompilationStatus() != shaderc_compilation_status_success)
 			{
 				result.Error = spirvBinary.GetErrorMessage();
@@ -280,11 +278,13 @@ namespace BHive
 
 	void ShaderCompiler::CompileToOpengl(ShaderAsset &asset, const MacroDefinitions &definitions)
 	{
-		const auto baseOptions = mOpenglCompileOptions;
-
+		shaderc::CompileOptions options{};
+		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
+		options.SetAutoMapLocations(true);
+		options.SetIncluder(std::make_unique<utils::IncludeHandler>());
 		for (auto &[stage, data] : asset.Stages)
 		{
-			auto options = baseOptions;
+
 			spirv_cross::CompilerGLSL glsl_compiler(data.Spirv);
 			std::string glsl_source = glsl_compiler.compile();
 
@@ -294,7 +294,7 @@ namespace BHive
 					options.AddMacroDefinition(name);
 			}
 
-			auto spirv_binary = mOpenglCompiler.CompileGlslToSpv(glsl_source, utils::GetShadercType(stage), mFilePath.string().c_str(), options);
+			auto spirv_binary = shaderc::Compiler().CompileGlslToSpv(glsl_source, utils::GetShadercType(stage), mFilePath.string().c_str(), options);
 
 			if (spirv_binary.GetCompilationStatus() != shaderc_compilation_status_success)
 			{

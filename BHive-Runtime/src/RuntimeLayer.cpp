@@ -1,6 +1,6 @@
 #include "RuntimeLayer.h"
 
-#include "Inspectors/Inspect.h"
+#include "Inspect.h"
 #include "core/Application.h"
 #include "core/Time.h"
 #include "core/layers/ImGuiLayer.h"
