@@ -1,5 +1,6 @@
 #include "BackendMaterial.h"
 #include "Platform/Vulkan/VulkanBackendMaterial.h"
+#include "Platform/Opengl/GLBackendMaterial.h"
 #include "gfx/RenderCommand.h"
 
 namespace BHive
@@ -8,6 +9,8 @@ namespace BHive
 	{
 		switch (RenderCommand::GetAPI())
 		{
+		case RendererAPI::Opengl:
+			return CreateRef<GLBackendMaterial>(shaderProgramName);
 		case RendererAPI::Vulkan:
 			return CreateRef<VulkanBackendMaterial>(shaderProgramName);
 		}

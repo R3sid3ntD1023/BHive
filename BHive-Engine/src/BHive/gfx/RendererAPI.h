@@ -32,19 +32,19 @@ namespace BHive
 
 		virtual void QueueDeletion(FQeueuDeletionFunc &&fn) = 0;
 
-		virtual void CreateTexture(int32_t &id, ETextureType type, const glm::uvec3 &size, const FTextureCreateInfo &info) = 0;
+		virtual void CreateTexture(uint32_t &id, ETextureType type, const glm::uvec3 &size, const FTextureCreateInfo &info) = 0;
 
-		virtual void DeleteTexture(int32_t &textureID) = 0;
+		virtual void DeleteTexture(uint32_t &textureID) = 0;
 
-		virtual void SetTextureData(int32_t textureID, const void *data, size_t size, ImageCopyRegion region, ImageSubresourceRange range) = 0;
+		virtual void SetTextureData(uint32_t textureID, const void *data, size_t size, ImageCopyRegion region, ImageSubresourceRange range) = 0;
 
-		virtual void CreateBuffer(int32_t &id, EBufferType type, EBufferLifetime lifeTime, size_t size, const char *debugName = nullptr) = 0;
+		virtual void CreateBuffer(uint32_t &id, EBufferType type, EBufferLifetime lifeTime, size_t size, const char *debugName = nullptr) = 0;
 
-		virtual void DeleteBuffer(int32_t &bufferID) = 0;
+		virtual void DeleteBuffer(uint32_t &bufferID) = 0;
 
-		virtual void SetBufferData(int32_t bufferID, const void *data, size_t size, uint32_t offset) = 0;
+		virtual void SetBufferData(uint32_t bufferID, const void *data, size_t size, uint32_t offset) = 0;
 
-		virtual void ClearBuffer(int32_t bufferID) = 0;
+		virtual void ClearBuffer(uint32_t bufferID) = 0;
 
 		static Scope<RendererAPI> Create();
 	};

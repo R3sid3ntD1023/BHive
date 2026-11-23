@@ -51,7 +51,7 @@ namespace BHive
 	enum class EFrontFace
 	{
 		CW,
-		CWW
+		CCW
 	};
 
 	enum class ECompareOp
@@ -372,6 +372,26 @@ namespace BHive
 			return EBufferType::StorageBuffer;
 		default:
 			return EBufferType::Undefined;
+		}
+	}
+
+	inline std::string to_string(EShaderStage s)
+	{
+		switch (s)
+		{
+		case EShaderStage::None:
+			return "None";
+		case EShaderStage::Vertex:
+			return "Vertex";
+		case EShaderStage::Fragment:
+			return "Fragment";
+		case EShaderStage::Compute:
+			return "Compute";
+		case EShaderStage::Geometry:
+			return "Geometry";
+
+		default:
+			return "";
 		}
 	}
 

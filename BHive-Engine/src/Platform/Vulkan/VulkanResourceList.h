@@ -13,7 +13,7 @@ namespace BHive
 	{
 	public:
 		template <typename... TArgs>
-		int32_t Create(TArgs &&...args)
+		uint32_t Create(TArgs &&...args)
 		{
 			uint32_t id;
 			if (!mFreeList.empty())
@@ -28,19 +28,19 @@ namespace BHive
 				mResources.emplace_back(std::in_place, std::forward<TArgs>(args)...);
 			}
 
-			return static_cast<int32_t>(id);
+			return id;
 		}
 
-		void Delete(int32_t &id)
+		void Delete(uint32_t &id)
 		{
 			if (!Get(id))
 				return;
 
-			mDeletionQueue.push(static_cast<uint32_t>(id));
+			mDeletionQueue.push(id);
 			id = -1;
 		}
 
-		T *Get(int32_t id)
+		T *Get(uint32_t id)
 		{
 			if (id < 0 || static_cast<size_t>(id) >= mResources.size() || !mResources[id])
 				return nullptr;

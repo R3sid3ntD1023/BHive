@@ -11,7 +11,7 @@ namespace BHive
 
 		state.Raster.CullEnabled = true;
 		state.Raster.CullMode = ECullMode::Back;
-		state.Raster.FrontFace = EFrontFace::CWW;
+		state.Raster.FrontFace = EFrontFace::CCW;
 		state.Raster.FillMode = EPolygonMode::Fill;
 
 		state.DrawMode = ETopologyMode::Triangles;

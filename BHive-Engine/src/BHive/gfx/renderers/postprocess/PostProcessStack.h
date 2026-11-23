@@ -78,6 +78,11 @@ namespace BHive
 
 			for (auto &mat : mOrderedMaterials)
 			{
+				if (!mat || !mat->IsEnabled())
+				{
+					continue;
+				}
+
 				set.PrevOutput = output;
 				output = mat->AddToGraph(graph, set);
 			}

@@ -64,6 +64,13 @@ namespace BHive
 			mFrustrumOcclusionMaterial[i] = Material("FrustumOcclusion.glsl");
 		}
 		mFrustumMaterial = Material("Frustum.glsl");
+		mPresentMaterial = Material("Scene.glsl");
+		auto presentPipelineState = Pipeline::GetDefaultGraphicsPipelineState();
+		presentPipelineState.Raster.CullEnabled = false;
+		presentPipelineState.Depth.DepthTest = false;
+		presentPipelineState.Depth.DepthWrite = false;
+		presentPipelineState.Blend.Enabled = false;
+		mPresentPipeline = PipelineFactory::Create(presentPipelineState);
 
 		mPostProcessStack.Init(size);
 		mLights.Init();
@@ -431,7 +438,23 @@ namespace BHive
 
 	void SceneRenderer::RenderToScreen()
 	{
-		mFramebuffer.As<Framebuffer>()->BlitToWindow(0, 0, mSize.x, mSize.y);
+		if (!mOutputTexture)
+		{
+			LOG_ERROR("SceneRenderer::RenderToScreen called before rendering a scene");
+			return;
+		}
+
+		mPresentMaterial.SetTexture("Scene", TextureBinding(mOutputTexture));
+
+		auto &renderer = Renderer::Get();
+		auto &pass = renderer.BeginPass("Scene Output", EPassType::Present);
+		pass.BeginPhase(EPhaseType::Graphics);
+		pass.UseTexture(mOutputTexture, EImageUsage::ColorRead);
+		pass.Emplace<CmdBindPipeline>()(mPresentPipeline);
+		pass.Emplace<CmdBindMaterial>()(&mPresentMaterial);
+		pass.Emplace<CmdDrawFullScreen>()();
+		pass.EndPhase();
+		renderer.EndPass();
 	}
 
 	void SceneRenderer::AddPostProcessMaterial(const Ref<PostProcessMaterial> &mat)

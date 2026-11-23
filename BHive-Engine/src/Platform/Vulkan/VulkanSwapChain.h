@@ -8,13 +8,20 @@ namespace BHive
 	class VulkanSwapChain
 	{
 	public:
+		struct Config
+		{
+			vk::Extent2D Extent{};
+			vk::PresentModeKHR PresentMode{};
+		};
+
+	public:
 		VulkanSwapChain(VkSurfaceKHR surface);
 
 		~VulkanSwapChain();
 
-		void Init(uint32_t w, uint32_t h);
+		void Init(Config config);
 
-		bool Recreate(uint32_t w, uint32_t h);
+		bool Recreate(vk::Extent2D extent);
 
 		void WaitForFence(uint32_t frame);
 
@@ -38,7 +45,12 @@ namespace BHive
 
 		uint32_t GetImageCount() const { return (uint32_t)mImages.size(); }
 
-		void BeginRendering(vk::CommandBuffer cmd, uint32_t imageindex, vk::ClearColorValue colorValue, vk::ClearDepthStencilValue depthValue);
+		void BeginRendering(
+			vk::CommandBuffer cmd,
+			uint32_t imageindex,
+			vk::ClearColorValue colorValue,
+			vk::ClearDepthStencilValue depthValue,
+			vk::AttachmentLoadOp colorLoadOp);
 
 		void EndRendering(vk::CommandBuffer cmd, uint32_t imageIndex);
 
@@ -91,5 +103,7 @@ namespace BHive
 		uint32_t mMinImageCount = 0;
 
 		vk::Format mDepthFormat = vk::Format::eUndefined;
+
+		vk::PresentModeKHR mRequestedPresentMode = vk::PresentModeKHR::eImmediate;
 	};
 } // namespace BHive

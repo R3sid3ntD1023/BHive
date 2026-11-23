@@ -1,5 +1,6 @@
 #include "BufferFactory.h"
 #include "Platform/Vulkan/VulkanVertexArray.h"
+#include "Platform/Opengl/GLVertexArray.h"
 #include "gfx/Buffers.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/VertexArray.h"
@@ -26,7 +27,7 @@ namespace BHive
 		switch (RenderCommand::GetAPI())
 		{
 		case BHive::RendererAPI::Opengl:
-			break;
+			return CreateResource<GLVertexArray>();
 		case BHive::RendererAPI::Vulkan:
 			return CreateResource<VulkanVertexArray>();
 		}
@@ -40,7 +41,7 @@ namespace BHive
 		switch (RenderCommand::GetAPI())
 		{
 		case BHive::RendererAPI::Opengl:
-			break;
+			return CreateResource<GLVertexArray>(vbos, ibo);
 		case BHive::RendererAPI::Vulkan:
 			return CreateResource<VulkanVertexArray>(vbos, ibo);
 		}

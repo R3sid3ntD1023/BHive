@@ -3,6 +3,7 @@
 #include "ShaderUtils.h"
 #include "core/FileSystem.h"
 #include "gfx/RenderCommand.h"
+#include "gfx/shader/OpenGLBindingMapping.h"
 #include <future>
 #include <regex>
 #include <spirv_cross/spirv_glsl.hpp>
@@ -189,6 +190,8 @@ namespace BHive
 		auto baseOptions = options;
 		for (uint32_t i = 0; i < ERenderingSets::MAX; i++)
 			baseOptions.AddMacroDefinition(utils::SetMarcos[i], utils::SetValues[i]);
+		if (RenderCommand::GetAPI() == RendererAPI::Opengl)
+			baseOptions.AddMacroDefinition("BHIVE_OPENGL");
 
 		struct FCompiledStage
 		{
@@ -284,8 +287,33 @@ namespace BHive
 		options.SetIncluder(std::make_unique<utils::IncludeHandler>());
 		for (auto &[stage, data] : asset.Stages)
 		{
-
 			spirv_cross::CompilerGLSL glsl_compiler(data.Spirv);
+			auto glsl_options = glsl_compiler.get_common_options();
+			glsl_options.emit_push_constant_as_uniform_buffer = true;
+			glsl_compiler.set_common_options(glsl_options);
+			if (data.Code.find("GL_EXT_texture_shadow_lod") != std::string::npos)
+				glsl_compiler.require_extension("GL_EXT_texture_shadow_lod");
+
+			auto resources = glsl_compiler.get_shader_resources();
+			auto remapBindings = [&glsl_compiler](const auto &descriptors, EResourceType type)
+			{
+				for (const auto &descriptor : descriptors)
+				{
+					const uint32_t set = glsl_compiler.get_decoration(descriptor.id, spv::DecorationDescriptorSet);
+					const uint32_t binding = glsl_compiler.get_decoration(descriptor.id, spv::DecorationBinding);
+					glsl_compiler.set_decoration(descriptor.id, spv::DecorationBinding, GetOpenGLBindingLocation(set, binding, type));
+				}
+			};
+			remapBindings(resources.uniform_buffers, EResourceType::UniformBuffer);
+			remapBindings(resources.storage_buffers, EResourceType::StorageBuffer);
+			remapBindings(resources.sampled_images, EResourceType::CombinedImageSampler);
+			remapBindings(resources.separate_images, EResourceType::SeperatedImage);
+			remapBindings(resources.separate_samplers, EResourceType::SeperatedSampler);
+			remapBindings(resources.storage_images, EResourceType::StorageImage);
+			remapBindings(resources.subpass_inputs, EResourceType::InputAttachment);
+
+			for (const auto &pushConstant : glsl_compiler.get_shader_resources().push_constant_buffers)
+				glsl_compiler.set_decoration(pushConstant.id, spv::DecorationBinding, 0);
 			std::string glsl_source = glsl_compiler.compile();
 
 			if (definitions.contains(stage))

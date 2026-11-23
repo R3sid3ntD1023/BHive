@@ -106,6 +106,7 @@ namespace BHive
 			auto &buffer_type = compiler.get_type(pcb.base_type_id);
 
 			auto &pco = PushConstants.emplace_back();
+			pco.Name = compiler.get_name(buffer_type.self);
 			pco.Size = compiler.get_declared_struct_size(buffer_type);
 			pco.Offset = 0;
 			pco.Stages |= stage;
@@ -280,6 +281,7 @@ namespace BHive
 			for (auto &pc : refl.PushConstants)
 			{
 				auto &dst = merged.PushConstants.emplace_back();
+				dst.Name = pc.Name;
 				dst.Size = pc.Size;
 				dst.Offset = pc.Offset;
 				dst.Stages |= pc.Stages;

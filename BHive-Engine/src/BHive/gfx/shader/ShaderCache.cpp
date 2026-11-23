@@ -65,7 +65,7 @@ namespace BHive
 
 	std::filesystem::path ShaderCache::GetShaderCacheDir(const ShaderAsset &asset)
 	{
-		auto directory = ShaderUtils::GetCacheDirectory() / asset.CacheName;
+		auto directory = ShaderUtils::GetCacheDirectory() / "v4" / asset.CacheName;
 		if (!asset.VariantName.empty())
 			directory /= std::filesystem::path("variants") / GetSafeVariantFolder(asset.VariantName);
 		return directory;

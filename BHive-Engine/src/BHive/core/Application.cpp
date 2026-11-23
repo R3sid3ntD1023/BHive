@@ -26,12 +26,10 @@ namespace BHive
 		if (!mSpecification.WorkingDirectory.empty())
 			std::filesystem::current_path(mSpecification.WorkingDirectory);
 
-		RenderCommand::Init(RendererAPI::Vulkan);
+		auto api = static_cast<RendererAPI::EAPI>(EngineConfig::RendererAPI);
+		RenderCommand::Init(api);
 
 		Window::Init();
-
-		auto api = RendererAPI::Create();
-		mRenderer = CreateScope<Renderer>(std::move(api));
 
 		FWindowProperties props{};
 		props.Title = specification.Title;
@@ -39,7 +37,19 @@ namespace BHive
 		props.VSync = specification.VSync;
 		props.mCenterWindow = specification.CenterWindow;
 		props.Maximize = specification.Maximize;
-		mMainWindow = mWindowManager.Create(props);
+
+		if (api == RendererAPI::EAPI::Vulkan)
+		{
+			auto apiContext = RendererAPI::Create();
+			mRenderer = CreateScope<Renderer>(std::move(apiContext));
+			mMainWindow = mWindowManager.Create(props);
+		}
+		else
+		{
+			mMainWindow = mWindowManager.Create(props);
+			auto apiContext = RendererAPI::Create();
+			mRenderer = CreateScope<Renderer>(std::move(apiContext));
+		}
 
 		WindowInput::WindowEvent.Add(this, &Application::OnEvent);
 

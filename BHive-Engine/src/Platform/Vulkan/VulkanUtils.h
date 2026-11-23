@@ -18,7 +18,7 @@ namespace BHive
 
 		static vk::Format FindSupportedFormat(vk::PhysicalDevice device, const std::vector<vk::Format> &candidates, vk::ImageTiling tiling, vk::FormatFeatureFlagBits features);
 
-		static vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities, uint32_t w, uint32_t h);
+		static vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities, vk::Extent2D requestedExtent);
 
 		static uint32_t ChooseMinImageCount(vk::SurfaceCapabilitiesKHR capabilities);
 
@@ -31,8 +31,17 @@ namespace BHive
 		static void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer stBuffer, vk::DeviceSize size);
 
 		static void TransitionImageLayout(
-			vk::CommandBuffer cmd, vk::Image image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask, vk::AccessFlags2 dstAccessMask,
-			vk::PipelineStageFlags2 srcStageMask, vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_flags, ImageSubresourceRange range);
+			vk::CommandBuffer cmd,
+			vk::Image image,
+			vk::ImageLayout oldLayout,
+			vk::ImageLayout newLayout,
+			vk::AccessFlags2 srcAccessMask,
+			vk::AccessFlags2 dstAccessMask,
+			vk::PipelineStageFlags2 srcStageMask,
+			vk::PipelineStageFlags2 dstStageMask,
+			vk::ImageAspectFlags aspect_flags,
+			ImageSubresourceRange range
+		);
 
 		static void CopyBufferToImage(vk::CommandBuffer cmd, vk::Buffer buffer, vk::Image image, ImageCopyRegion region);
 

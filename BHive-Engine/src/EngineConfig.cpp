@@ -90,6 +90,8 @@ namespace BHive
 
 		if (ini.has("Renderer"))
 		{
+			RendererAPI = ini::utils::Get(ini["Renderer"], "Api", RendererAPI);
+			EnableVSync = ini::utils::Get(ini["Renderer"], "VSync", EnableVSync);
 			DebugEnabled = ini::utils::Get(ini["Renderer"], "DebugEnabled", DebugEnabled);
 			DebugLabels = ini::utils::Get(ini["Renderer"], "DebugLabels", DebugLabels) && DebugEnabled;
 			DebugPhaseLabels = ini::utils::Get(ini["Renderer"], "DebugPhaseLabels", DebugPhaseLabels) && DebugLabels && DebugEnabled;

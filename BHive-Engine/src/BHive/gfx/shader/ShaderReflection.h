@@ -36,6 +36,7 @@ namespace BHive
 
 	struct FPushConstantsRange
 	{
+		std::string Name;
 		size_t Size{0};
 		int32_t Offset{0};
 		EShaderStage Stages{};
@@ -75,7 +76,7 @@ namespace BHive
 
 		std::unordered_map<uint32_t, FSetReflection> Sets;
 		std::unordered_map<std::string, FUniform> Uniforms; // unused in vulkan
-		std::vector<FPushConstantsRange> PushConstants;		// unused in opengl
+		std::vector<FPushConstantsRange> PushConstants;		// OpenGL uploads these ranges via uniform buffers.
 	};
 
 	struct FReflectedResource

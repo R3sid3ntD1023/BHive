@@ -1,5 +1,6 @@
 #include "FramebufferFactory.h"
 #include "Platform/Vulkan/VulkanFramebuffer.h"
+#include "Platform/Opengl/GLFramebuffer.h"
 #include "gfx/RenderCommand.h"
 
 namespace BHive
@@ -8,6 +9,8 @@ namespace BHive
 	{
 		switch (RenderCommand::GetAPI())
 		{
+		case RendererAPI::Opengl:
+			return CreateResource<GLFramebuffer>(specification);
 		case RendererAPI::Vulkan:
 			return CreateResource<VulkanFramebuffer>(specification);
 		default:

@@ -1,6 +1,8 @@
 #include "ShaderFactory.h"
 #include "Platform/Vulkan/VulkanResourceSet.h"
 #include "Platform/Vulkan/VulkanShader.h"
+#include "Platform/Opengl/GLResourceSet.h"
+#include "Platform/Opengl/GLShader.h"
 #include "core/FileSystem.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/shader/Shader.h"
@@ -91,6 +93,8 @@ namespace BHive
 	{
 		switch (RenderCommand::GetAPI())
 		{
+		case RendererAPI::Opengl:
+			return CreateResource<GLShader>(asset);
 		case RendererAPI::Vulkan:
 			return CreateResource<VulkanShader>(asset);
 		}
@@ -103,6 +107,8 @@ namespace BHive
 	{
 		switch (RenderCommand::GetAPI())
 		{
+		case RendererAPI::Opengl:
+			return CreateResource<GLResourceSet>(setTemplate);
 		case RendererAPI::Vulkan:
 			return CreateResource<VulkanResourceSet>(setTemplate);
 		}

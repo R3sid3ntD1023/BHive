@@ -1,9 +1,8 @@
-#extension GL_EXT_texture_shadow_lod: enable
-
 #include <ShadowCore.glsl>
 #include <Constants.glsl>
 
 #define CASCADE_COUNT 5
+#extension GL_EXT_texture_shadow_lod : require
 
 struct CascadeShadow
 {
@@ -62,7 +61,9 @@ vec4 GetDirectionalShadowUvs(int lightIndex, float viewDepth, vec3 geoPosition, 
 
 	vec3 coord;
 	coord.xy = ndc.xy * 0.5 + 0.5;
+#ifndef BHIVE_OPENGL
 	coord.y = 1.0 - coord.y;
+#endif
 	coord.z = float(lightIndex * CASCADE_COUNT + cascade);
 
 	float depth = ndc.z;

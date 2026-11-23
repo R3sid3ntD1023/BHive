@@ -107,6 +107,15 @@ namespace BHive
 		auto &renderer = Renderer::Get();
 
 		FPassState state{};
+		for (const auto &priorPass : renderer.GetActiveGraph().GetPasses())
+		{
+			if (priorPass.Type == EPassType::Present)
+			{
+				state.Color.LoadOP = EAttachmentLoadState::Load;
+				break;
+			}
+		}
+
 		auto &pass = renderer.BeginPass("ImGui", EPassType::Present, state);
 		pass.BeginPhase(EPhaseType::Graphics);
 		pass.Emplace<CmdImGuiRender>()(drawData);

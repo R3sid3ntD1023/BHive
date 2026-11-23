@@ -71,14 +71,14 @@ namespace BHive
 		return vk::Format::eUndefined;
 	}
 
-	vk::Extent2D VulkanUtils::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities, uint32_t w, uint32_t h)
+	vk::Extent2D VulkanUtils::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities, vk::Extent2D requestedExtent)
 	{
 		if (capabilities.currentExtent.width != 0xFFFFFFF)
 		{
 			return capabilities.currentExtent;
 		}
 
-		vk::Extent2D actualExtent = {w, h};
+		vk::Extent2D actualExtent = requestedExtent;
 		actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
 		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 		return actualExtent;

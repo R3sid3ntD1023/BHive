@@ -17,6 +17,8 @@ namespace BHive
 		static inline double TargetFPS = 1000.0;
 
 		// Renderer
+		static inline uint32_t RendererAPI = 0; // 0 = OpenGL, 1 = Vulkan
+		static inline bool EnableVSync = false;
 		static inline bool DebugEnabled = false;
 		static inline bool DebugLabels = false;
 		static inline bool DebugPhaseLabels = false;

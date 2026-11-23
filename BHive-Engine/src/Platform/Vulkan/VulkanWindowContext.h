@@ -33,6 +33,7 @@ namespace BHive
 
 		bool mIsMinimized = false;
 		bool mHasPendingResize = false;
+
 		uint32_t mPendingWidth = 0;
 		uint32_t mPendingHeight = 0;
 		std::chrono::steady_clock::time_point mLastResizeTime;

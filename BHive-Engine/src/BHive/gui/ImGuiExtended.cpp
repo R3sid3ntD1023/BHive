@@ -1,18 +1,33 @@
 #include "ImGuiExtended.h"
 #include "core/layers/ImGuiLayer.h"
 #include "gfx/Color.h"
+#include "gfx/RenderCommand.h"
 #include "gfx/Texture.h"
 #include "gfx/imgui/IImGuiProvider.h"
 #include <imgui_stdlib.h>
 
 namespace ImGui
 {
+	static void GetTextureUVs(ImVec2 &uv0, ImVec2 &uv1)
+	{
+		uv0 = {0, 0};
+		uv1 = {1, 1};
+		if (BHive::RenderCommand::GetAPI() == BHive::RendererAPI::Opengl)
+		{
+			uv0.y = 1;
+			uv1.y = 0;
+		}
+	}
+
 	void Image(const BHive::Texture *texture, const ImVec2 size, const ImVec4 &tint_col, const ImVec4 &border_col)
 	{
 		if (!texture)
 			return;
 
-		ImGui::Image(BHive::IImGuiTextureProvider::GetID(*texture), size, {0, 1}, {1, 0}, tint_col, border_col);
+		ImVec2 uv0;
+		ImVec2 uv1;
+		GetTextureUVs(uv0, uv1);
+		ImGui::Image(BHive::IImGuiTextureProvider::GetID(*texture), size, uv0, uv1, tint_col, border_col);
 	}
 
 	bool DrawIcon(const std::string &label, BHive::Texture *icon, float size, ImGuiButtonFlags flags)
@@ -22,7 +37,18 @@ namespace ImGui
 		if (icon)
 		{
 			auto id = ImGui::GetID(label.c_str());
-			pressed = ImageButtonEx(id, (ImTextureID)(uint64_t)icon->GetHandle(), {size, size}, {0, 1}, {1, 0}, {0, 0, 0, 0}, {1, 1, 1, 1}, flags);
+			ImVec2 uv0;
+			ImVec2 uv1;
+			GetTextureUVs(uv0, uv1);
+			pressed = ImageButtonEx(
+				id,
+				static_cast<ImTextureID>(BHive::IImGuiTextureProvider::GetID(*icon)),
+				{size, size},
+				uv0,
+				uv1,
+				{0, 0, 0, 0},
+				{1, 1, 1, 1},
+				flags);
 		}
 		else
 		{

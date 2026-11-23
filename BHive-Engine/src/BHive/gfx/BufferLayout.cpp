@@ -10,6 +10,7 @@ namespace BHive
         case BHive::EShaderDataType::Float2:    return 4 * 2;
         case BHive::EShaderDataType::Float3:    return 4 * 3;
         case BHive::EShaderDataType::Float4:    return 4 * 4;
+        case BHive::EShaderDataType::UInt:      return 4;
         case BHive::EShaderDataType::Int:       return 4 * 1;
         case BHive::EShaderDataType::Int2:      return 4 * 2;
         case BHive::EShaderDataType::Int3:      return 4 * 3;
@@ -31,6 +32,7 @@ namespace BHive
         case BHive::EShaderDataType::Float2:    return 2;
         case BHive::EShaderDataType::Float3:    return 3;
         case BHive::EShaderDataType::Float4:    return 4;
+        case BHive::EShaderDataType::UInt:      return 1;
         case BHive::EShaderDataType::Int:       return 1;
         case BHive::EShaderDataType::Int2:      return 2;
         case BHive::EShaderDataType::Int3:      return 3;

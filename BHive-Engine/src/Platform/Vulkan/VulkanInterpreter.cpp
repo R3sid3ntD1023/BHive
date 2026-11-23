@@ -178,7 +178,7 @@ namespace BHive
 		for (auto &t : transitions)
 		{
 			auto bufferID = t.Buffer.As<BufferBase>()->GetBufferID();
-			if (bufferID < 0)
+			if (bufferID == 0)
 				continue;
 
 			vk::Buffer buf = *VulkanRendererAPI::GetInstance()->GetBuffer(bufferID)->GetNative(frame);

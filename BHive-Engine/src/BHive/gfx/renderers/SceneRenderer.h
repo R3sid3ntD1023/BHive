@@ -141,6 +141,8 @@ namespace BHive
 
 		Material mFrustumMaterial;
 
+		Material mPresentMaterial;
+
 		BufferPtr mCameraUBO;
 
 		std::array<BufferPtr, 2> mVisibleBuffer;
@@ -172,6 +174,8 @@ namespace BHive
 		PipelinePtr mOpaquePipeline;
 
 		PipelinePtr mTransparentPipeline;
+
+		PipelinePtr mPresentPipeline;
 
 		ResourceSets mSceneSets;
 

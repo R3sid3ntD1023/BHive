@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Core.h"
+#include "gfx/shader/ShaderTemplate.h"
 #include "gfx/registries/Handles.h"
 
 namespace BHive

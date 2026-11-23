@@ -36,6 +36,7 @@ namespace BHive
 		specs.Maximize = EngineConfig::Maximized;
 		specs.Title = "BHive Runtime";
 		specs.Size = {EngineConfig::WindowWidth, EngineConfig::WindowHeight};
+		specs.VSync = EngineConfig::EnableVSync;
 		return new RuntimeApp(specs);
 	}
 } // namespace BHive

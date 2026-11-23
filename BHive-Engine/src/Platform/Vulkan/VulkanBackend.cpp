@@ -218,19 +218,20 @@ namespace BHive
 
 		mInstance = vk::raii::Instance(mContext, instanceCreateInfo);
 		VULKAN_HPP_DEFAULT_DISPATCHER.init((vk::Instance)mInstance);
-
-#if defined(VULKAN_DEBUGGING)
-		auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
-						 | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
-		auto messageTypes = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
-
-		vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, debugCallback, &mDebugNames);
-		mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mInstance, debugCreateInfo);
-#endif
 	}
 
 	void VulkanBackend::CreateDebugMessenger()
 	{
+		if (EngineConfig::DebugEnabled)
+		{
+			auto loglevels = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
+							 | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
+			auto messageTypes
+				= vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+
+			vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo({}, loglevels, messageTypes, debugCallback, &mDebugNames);
+			mDebugMessenger = vk::raii::DebugUtilsMessengerEXT(mInstance, debugCreateInfo);
+		}
 	}
 
 	void VulkanBackend::PickPhysicalDevice()

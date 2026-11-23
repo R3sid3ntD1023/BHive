@@ -63,23 +63,23 @@ namespace BHive
 
 		uint32_t GetCurrentFrame() const { return mCurrentFrame; }
 
-		void CreateTexture(int32_t &id, ETextureType type, const glm::uvec3 &size, const FTextureCreateInfo &info) override;
+		void CreateTexture(uint32_t &id, ETextureType type, const glm::uvec3 &size, const FTextureCreateInfo &info) override;
 
-		void DeleteTexture(int32_t &textureID) override;
+		void DeleteTexture(uint32_t &textureID) override;
 
-		void SetTextureData(int32_t textureID, const void *data, size_t size, ImageCopyRegion region, ImageSubresourceRange range) override;
+		void SetTextureData(uint32_t textureID, const void *data, size_t size, ImageCopyRegion region, ImageSubresourceRange range) override;
 
-		void CreateBuffer(int32_t &id, EBufferType type, EBufferLifetime lifeTime, size_t size, const char *debugName = nullptr) override;
+		void CreateBuffer(uint32_t &id, EBufferType type, EBufferLifetime lifeTime, size_t size, const char *debugName = nullptr) override;
 
-		void DeleteBuffer(int32_t &bufferID) override;
+		void DeleteBuffer(uint32_t &bufferID) override;
 
-		void SetBufferData(int32_t bufferID, const void *data, size_t size, uint32_t offset) override;
+		void SetBufferData(uint32_t bufferID, const void *data, size_t size, uint32_t offset) override;
 
-		void ClearBuffer(int32_t bufferID) override;
+		void ClearBuffer(uint32_t bufferID) override;
 
-		VulkanImage *GetTexture(int32_t textureID);
+		VulkanImage *GetTexture(uint32_t textureID);
 
-		VulkanBuffer *GetBuffer(int32_t bufferID);
+		VulkanBuffer *GetBuffer(uint32_t bufferID);
 
 		static VulkanRendererAPI *GetInstance() { return sInstance; }
 

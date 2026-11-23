@@ -31,11 +31,11 @@ namespace BHive
 
 		void SetCount(uint32_t count) { mCount = count; }
 
-		int32_t GetBufferID() const { return mBufferID; }
+		uint32_t GetBufferID() const { return mBufferID; }
 
 	private:
 		uint32_t mCount = 0;
-		int32_t mBufferID = -1;
+		uint32_t mBufferID = 0;
 	};
 
 	class BHIVE_API VertexBuffer : public BufferBase
@@ -53,10 +53,10 @@ namespace BHive
 
 		const BufferLayout &GetLayout() const { return mLayout; };
 
-		int32_t GetBufferID() const { return mBufferID; }
+		uint32_t GetBufferID() const { return mBufferID; }
 
 	private:
-		int32_t mBufferID = -1;
+		uint32_t mBufferID = 0;
 		BufferLayout mLayout;
 	};
 
@@ -71,10 +71,10 @@ namespace BHive
 
 		void Clear() override;
 
-		int32_t GetBufferID() const { return mBufferID; }
+		uint32_t GetBufferID() const { return mBufferID; }
 
 	private:
-		int32_t mBufferID = -1;
+		uint32_t mBufferID = 0;
 	};
 
 } // namespace BHive

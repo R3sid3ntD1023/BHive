@@ -25,9 +25,10 @@ namespace BHive
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#if _DEBUG
-			glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-#endif // _DEBUG
+
+			if (EngineConfig::DebugEnabled)
+				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+
 			shared_context = glfwGetCurrentContext();
 		}
 		else
@@ -52,6 +53,7 @@ namespace BHive
 			glfwMaximizeWindow(mWindow);
 
 		mContext = WindowContext::Create(this);
+		mContext->SetVSync(properties.VSync);
 		mContext->Init();
 
 		WindowInput::RegisterCallbacks(mWindow, &mState);

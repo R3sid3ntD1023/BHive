@@ -15,7 +15,7 @@ namespace BHive
 
 		virtual void Clear() = 0;
 
-		virtual int32_t GetBufferID() const = 0;
+		virtual uint32_t GetBufferID() const = 0;
 
 		template <typename T>
 		void TSetData(const T &data)

@@ -106,24 +106,24 @@ namespace BHive
 		mSubmittedGraphs.clear();
 	}
 
-	void VulkanRendererAPI::CreateTexture(int32_t &id, ETextureType type, const glm::uvec3 &size, const FTextureCreateInfo &info)
+	void VulkanRendererAPI::CreateTexture(uint32_t &id, ETextureType type, const glm::uvec3 &size, const FTextureCreateInfo &info)
 	{
 		FVulkanTextureCreateInfo createInfo(type, size, info);
 		id = CreateTexture(createInfo.ImageInfo, createInfo.ViewInfo, createInfo.SamplerInfo, info.DebugName.c_str());
 	}
 
-	void VulkanRendererAPI::DeleteTexture(int32_t &textureID)
+	void VulkanRendererAPI::DeleteTexture(uint32_t &textureID)
 	{
 		mTextures.Delete(textureID);
 	}
 
-	void VulkanRendererAPI::SetTextureData(int32_t textureID, const void *data, size_t size, ImageCopyRegion region, ImageSubresourceRange range)
+	void VulkanRendererAPI::SetTextureData(uint32_t textureID, const void *data, size_t size, ImageCopyRegion region, ImageSubresourceRange range)
 	{
 		if (auto texture = GetTexture(textureID))
 			texture->Upload(data, size, region, range);
 	}
 
-	VulkanImage *VulkanRendererAPI::GetTexture(int32_t textureID)
+	VulkanImage *VulkanRendererAPI::GetTexture(uint32_t textureID)
 	{
 		return mTextures.Get(textureID);
 	}
@@ -138,18 +138,18 @@ namespace BHive
 		return textureID;
 	}
 
-	void VulkanRendererAPI::CreateBuffer(int32_t &id, EBufferType type, EBufferLifetime lifeTime, size_t size, const char *debugName)
+	void VulkanRendererAPI::CreateBuffer(uint32_t &id, EBufferType type, EBufferLifetime lifeTime, size_t size, const char *debugName)
 	{
 		id = mBuffers.Create(VulkanBackend::GetLogicalDevice());
 		mBuffers.Get(id)->Initialize(size, ToVkBufferType(type), lifeTime);
 	}
 
-	void VulkanRendererAPI::DeleteBuffer(int32_t &bufferID)
+	void VulkanRendererAPI::DeleteBuffer(uint32_t &bufferID)
 	{
 		mBuffers.Delete(bufferID);
 	}
 
-	void VulkanRendererAPI::SetBufferData(int32_t bufferID, const void *data, size_t size, uint32_t offset)
+	void VulkanRendererAPI::SetBufferData(uint32_t bufferID, const void *data, size_t size, uint32_t offset)
 	{
 		if (!data || size == 0)
 			return;
@@ -158,13 +158,13 @@ namespace BHive
 			buffer->Upload(data, size, offset);
 	}
 
-	void VulkanRendererAPI::ClearBuffer(int32_t bufferID)
+	void VulkanRendererAPI::ClearBuffer(uint32_t bufferID)
 	{
 		if (auto buffer = GetBuffer(bufferID))
 			buffer->ClearData();
 	}
 
-	VulkanBuffer *VulkanRendererAPI::GetBuffer(int32_t bufferID)
+	VulkanBuffer *VulkanRendererAPI::GetBuffer(uint32_t bufferID)
 	{
 		return mBuffers.Get(bufferID);
 	}
@@ -329,7 +329,7 @@ namespace BHive
 		vk::ClearColorValue clearColor(state.Color.ClearColor.r, state.Color.ClearColor.g, state.Color.ClearColor.b, state.Color.ClearColor.a);
 		vk::ClearDepthStencilValue depthValue = {1.0f, 0};
 
-		swapChain->BeginRendering(ctx.CommandBuffer, ctx.ImageIndex, clearColor, depthValue);
+		swapChain->BeginRendering(ctx.CommandBuffer, ctx.ImageIndex, clearColor, depthValue, utils::ToLoad(state.Color.LoadOP));
 	}
 
 	void VulkanRendererAPI::BeginOffScreenRendering(const FPassState &state, const FPhase &phase, FVulkanRendererContext &ctx)

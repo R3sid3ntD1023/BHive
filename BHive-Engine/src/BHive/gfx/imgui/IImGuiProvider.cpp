@@ -1,5 +1,6 @@
 #include "IImGuiProvider.h"
 #include "Platform/Vulkan/imgui/VulkanImGuiTexture.h"
+#include "Platform/Opengl/GLImGuiTexture.h"
 #include "gfx/RenderCommand.h"
 
 namespace BHive
@@ -9,11 +10,12 @@ namespace BHive
 		auto api = RenderCommand::GetAPI();
 		switch (api)
 		{
-		case BHive::RendererAPI::Vulkan:
-		{
+		case RendererAPI::Opengl:
+			sBackend = CreateScope<GLImGuiTexture>();
+			break;
+		case RendererAPI::Vulkan:
 			sBackend = CreateScope<VulkanImGuiTexture>();
-		}
-		break;
+			break;
 		default:
 			break;
 		}

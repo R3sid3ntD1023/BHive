@@ -15,11 +15,17 @@ namespace BHive
 
 		virtual void SwapBuffers() = 0;
 
+		void SetVSync(bool enabled) { mIsVSyncEnabled = enabled; }
+
+		bool IsVSyncEnabled() const { return mIsVSyncEnabled; }
+
 		static WindowContext &Get() { return *sInstance; }
 
 		static Scope<WindowContext> Create(Window *window);
 
 	private:
 		static inline WindowContext *sInstance = nullptr;
+
+		bool mIsVSyncEnabled = false;
 	};
 } // namespace BHive

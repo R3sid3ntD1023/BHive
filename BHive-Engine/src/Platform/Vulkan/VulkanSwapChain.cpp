@@ -16,7 +16,7 @@ namespace BHive
 		mDevice.waitIdle();
 	}
 
-	void VulkanSwapChain::Init(uint32_t w, uint32_t h)
+	void VulkanSwapChain::Init(Config config)
 	{
 		auto &physical_device = VulkanBackend::GetPhysicalDevice();
 		auto formats = physical_device.getSurfaceFormatsKHR(mSurface);
@@ -24,11 +24,12 @@ namespace BHive
 
 		mCapabilities = physical_device.getSurfaceCapabilitiesKHR(mSurface);
 		mImageFormat = VulkanUtils::ChooseSwapSurfaceFormat(formats);
-		mPresentMode = VulkanUtils::ChooseSwapPresentMode(vk::PresentModeKHR::eImmediate, presentModes);
+		mPresentMode = VulkanUtils::ChooseSwapPresentMode(config.PresentMode, presentModes);
 
-		mExtent = VulkanUtils::ChooseSwapExtent(mCapabilities, w, h);
+		mExtent = VulkanUtils::ChooseSwapExtent(mCapabilities, config.Extent);
 		mMinImageCount = VulkanUtils::ChooseMinImageCount(mCapabilities);
 		mDepthFormat = VulkanUtils::FindDepthFormat();
+		mRequestedPresentMode = config.PresentMode;
 
 		CreateSwapChain();
 		CreateSyncObjects();
@@ -36,9 +37,9 @@ namespace BHive
 		CreateDepthImage();
 	}
 
-	bool VulkanSwapChain::Recreate(uint32_t w, uint32_t h)
+	bool VulkanSwapChain::Recreate(vk::Extent2D extent)
 	{
-		if (w <= 0 || h <= 0)
+		if (extent.width <= 0 || extent.height <= 0)
 			return false;
 
 		auto &device = VulkanBackend::GetLogicalDevice();
@@ -49,12 +50,17 @@ namespace BHive
 		mImagesInFlight.clear();
 		mSwapChain.clear();
 
-		Init(w, h);
+		Init({extent, mRequestedPresentMode});
 
 		return true;
 	}
 
-	void VulkanSwapChain::BeginRendering(vk::CommandBuffer cmd, uint32_t imageIndex, vk::ClearColorValue colorValue, vk::ClearDepthStencilValue depthValue)
+	void VulkanSwapChain::BeginRendering(
+		vk::CommandBuffer cmd,
+		uint32_t imageIndex,
+		vk::ClearColorValue colorValue,
+		vk::ClearDepthStencilValue depthValue,
+		vk::AttachmentLoadOp colorLoadOp)
 	{
 		auto &image = mImages.at(imageIndex);
 		auto &depth = mDepthImage;
@@ -71,7 +77,7 @@ namespace BHive
 			{},
 			{},
 			vk::ImageLayout::eUndefined,
-			vk::AttachmentLoadOp::eClear,
+			colorLoadOp,
 			vk::AttachmentStoreOp::eStore,
 			colorValue
 		);

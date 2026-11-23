@@ -40,7 +40,7 @@ namespace BHive
 
 			if (ms > DebounceMs)
 			{
-				if (mSwapChain->Recreate(mPendingWidth, mPendingHeight))
+				if (mSwapChain->Recreate({mPendingWidth, mPendingHeight}))
 				{
 					api->ResetFrameIndex();
 					mHasPendingResize = false;
@@ -55,7 +55,7 @@ namespace BHive
 		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
 		{
 
-			if (mSwapChain->Recreate(mPendingWidth, mPendingHeight))
+			if (mSwapChain->Recreate({mPendingWidth, mPendingHeight}))
 			{
 				api->ResetFrameIndex();
 				mHasPendingResize = false;
@@ -89,7 +89,13 @@ namespace BHive
 		}
 
 		mSwapChain = CreateScope<VulkanSwapChain>(surface);
-		mSwapChain->Init(uint32_t(w), uint32_t(h));
+
+		VulkanSwapChain::Config config;
+		config.Extent.setWidth(uint32_t(w));
+		config.Extent.setHeight(uint32_t(h));
+		config.PresentMode = IsVSyncEnabled() ? vk::PresentModeKHR::eFifo : vk::PresentModeKHR::eImmediate;
+
+		mSwapChain->Init(config);
 	}
 
 	void VulkanWindowContext::OnEvent(Event &event)

@@ -41,7 +41,7 @@ namespace BHive
 
 		virtual void DebugPrintState() {};
 
-		virtual int32_t GetTextureID() const = 0;
+		virtual uint32_t GetTextureID() const = 0;
 
 		REFLECTABLEV(Asset)
 	};
@@ -63,7 +63,7 @@ namespace BHive
 
 		const ByteBuffer &GetBuffer() const { return mBuffer; }
 
-		int32_t GetTextureID() const override { return mTextureID; }
+		uint32_t GetTextureID() const override { return mTextureID; }
 
 		REFLECTABLEV(Texture)
 
@@ -76,7 +76,7 @@ namespace BHive
 
 		glm::uvec2 mSize;
 
-		int32_t mTextureID = -1;
+		uint32_t mTextureID = 0;
 
 		friend class Texture2DArray;
 	};
@@ -102,7 +102,7 @@ namespace BHive
 
 		Ref<Texture2D> GetTexture(uint32_t index) const;
 
-		int32_t GetTextureID() const override { return mTextureID; }
+		uint32_t GetTextureID() const override { return mTextureID; }
 
 		void Clear();
 
@@ -111,7 +111,7 @@ namespace BHive
 		uint32_t mStartLayer = 0;
 		glm::uvec2 mSize;
 		FTextureCreateInfo mCreateInfo;
-		int32_t mTextureID = -1;
+		uint32_t mTextureID = 0;
 		std::vector<Ref<Texture2D>> mStoredTextures;
 	};
 
@@ -122,13 +122,13 @@ namespace BHive
 
 		~Texture3D();
 
-		int32_t GetTextureID() const override { return mTextureID; }
+		uint32_t GetTextureID() const override { return mTextureID; }
 
 		const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
 
 	private:
 		FTextureCreateInfo mCreateInfo;
-		int32_t mTextureID = -1;
+		uint32_t mTextureID = 0;
 	};
 
 	class BHIVE_API TextureCube : public Texture
@@ -138,13 +138,13 @@ namespace BHive
 
 		~TextureCube();
 
-		int32_t GetTextureID() const override { return mTextureID; }
+		uint32_t GetTextureID() const override { return mTextureID; }
 
 		const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
 
 	private:
 		FTextureCreateInfo mCreateInfo;
-		int32_t mTextureID = -1;
+		uint32_t mTextureID = 0;
 	};
 
 	class BHIVE_API TextureCubeArray : public Texture
@@ -154,14 +154,14 @@ namespace BHive
 
 		~TextureCubeArray();
 
-		int32_t GetTextureID() const override { return mTextureID; }
+		uint32_t GetTextureID() const override { return mTextureID; }
 
 		const FTextureCreateInfo &GetInfo() const override { return mCreateInfo; }
 
 	private:
 		glm::uvec2 mSize;
 		FTextureCreateInfo mCreateInfo;
-		int32_t mTextureID = -1;
+		uint32_t mTextureID = 0;
 	};
 
 } // namespace BHive

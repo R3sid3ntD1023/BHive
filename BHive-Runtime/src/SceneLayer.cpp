@@ -10,7 +10,6 @@
 #include "gfx/animation/AnimationClip.h"
 #include "gfx/factories/FontFactory.h"
 #include "gfx/factories/MeshFactory.h"
-#include "gfx/imgui/IImGuiProvider.h"
 #include "gfx/material/Materials.h"
 #include "gfx/mesh/StaticMesh.h"
 #include "gfx/renderers/SceneRenderer.h"
@@ -18,6 +17,7 @@
 #include "gfx/renderers/postprocess/BloomMaterial.h"
 #include "gfx/renderers/postprocess/ColorGradingMaterial.h"
 #include "gui/Gui.h"
+#include "gui/ImGuiExtended.h"
 #include "importers/MeshImportResolver.h"
 #include "importers/MeshImporter.h"
 #include "importers/TextureImporter.h"
@@ -248,10 +248,7 @@ namespace BHive
 			auto cursorPos = ImGui::GetCursorPos();
 			auto output = mSceneRenderer->GetOutput();
 			if (output)
-			{
-				auto id = IImGuiTextureProvider::GetID(*output);
-				ImGui::Image(id, viewportSize);
-			}
+				ImGui::Image(output.get(), viewportSize);
 
 			ImGui::SetCursorPos(cursorPos);
 			ImGui::BeginGroup();
@@ -358,11 +355,28 @@ namespace BHive
 
 			auto bloom = stack.Get<BloomMaterial>();
 			auto colorGrading = stack.Get<ColorGradingMaterial>();
+			auto aces = stack.Get<AcesMaterial>();
 
 			if (bloom)
+			{
+				bool enabled = bloom->IsEnabled();
+				if (ImGui::Checkbox("Bloom Enabled", &enabled))
+					bloom->SetEnabled(enabled);
 				inspector.inspect("Bloom", bloom, bloom->Params);
+			}
 			if (colorGrading)
+			{
+				bool enabled = colorGrading->IsEnabled();
+				if (ImGui::Checkbox("Color Grading Enabled", &enabled))
+					colorGrading->SetEnabled(enabled);
 				inspector.inspect("Color Grading", colorGrading, colorGrading->Params);
+			}
+			if (aces)
+			{
+				bool enabled = aces->IsEnabled();
+				if (ImGui::Checkbox("ACES Enabled", &enabled))
+					aces->SetEnabled(enabled);
+			}
 		}
 
 		ImGui::End();

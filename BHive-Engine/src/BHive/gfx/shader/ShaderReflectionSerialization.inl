@@ -30,7 +30,7 @@ namespace BHive
 	template <typename A>
 	void SERIALIZE(A &ar, FPushConstantsRange &r)
 	{
-		ar(r.Size, r.Offset, r.Stages, r.Members);
+		ar(r.Size, r.Offset, r.Stages, r.Members, r.Name);
 	}
 
 	template <typename A>

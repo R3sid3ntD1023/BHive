@@ -5,6 +5,7 @@
 #include "gfx/imgui/IImGuiProvider.h"
 
 #include "Platform/Vulkan/VulkanImGuiLayer.h"
+#include "Platform/Opengl/GLImguiLayer.h"
 #include <imgui_impl_glfw.h>
 
 #include <glfw/glfw3.h>
@@ -160,6 +161,8 @@ namespace BHive
 	{
 		switch (RenderCommand::GetAPI())
 		{
+		case RendererAPI::Opengl:
+			return CreateRef<GLImGuiLayer>(window);
 		case RendererAPI::EAPI::Vulkan:
 			return CreateRef<VulkanImGuiLayer>(window);
 		default:

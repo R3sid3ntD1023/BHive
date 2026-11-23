@@ -1,21 +1,30 @@
 #include "WindowContext.h"
 #include "Platform/Vulkan/VulkanWindowContext.h"
+#include "Platform/Opengl/GLWindowContext.h"
 #include "RenderCommand.h"
 
 namespace BHive
 {
-	Scope<WindowContext> WindowContext::Create(Window* window)
+	Scope<WindowContext> CreateContext(Window *window)
 	{
-		Scope<WindowContext> instance;
-
 		switch (RenderCommand::GetAPI())
 		{
+		case RendererAPI::Opengl:
+			return CreateScope<GLWindowContext>(window);
 		case RendererAPI::Vulkan:
-			instance = CreateScope<VulkanWindowContext>(window);
+			return CreateScope<VulkanWindowContext>(window);
 			break;
 		default:
 			break;
 		}
+
+		ASSERT(false)
+		return nullptr;
+	}
+
+	Scope<WindowContext> WindowContext::Create(Window *window)
+	{
+		Scope<WindowContext> instance = CreateContext(window);
 
 		ASSERT(instance)
 		sInstance = instance.get();
