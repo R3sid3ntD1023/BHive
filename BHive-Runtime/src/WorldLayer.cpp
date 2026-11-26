@@ -12,6 +12,9 @@
 #include "runtime/Components.h"
 #include "runtime/GameObject.h"
 #include "runtime/World.h"
+#include "gui/ImGuiExtended.h"
+#include "gfx/material/TerrainMaterial.h"
+#include "gfx/material/OceanMaterial.h"
 
 namespace BHive
 {
@@ -29,7 +32,7 @@ namespace BHive
 		sensitivity.OrbitSpeed = EngineConfig::OrbitSpeed;
 
 		mCamera = EditorCamera(75.0f, aspect, 0.1f, 1000.0f);
-		mCamera.SetStartState({0, 10, 10}, -90.f, -35.0f);
+		mCamera.SetStartState({0, 1000, 1000}, -90.f, -35.0f);
 		mCamera.SetSensitivity(sensitivity);
 
 		mCameraController.SetCamera(&mCamera);
@@ -56,6 +59,7 @@ namespace BHive
 		mMesh = MeshFactory::CreateSphere(1.f);
 		mMaterial = CreateRef<StandardMaterial>();
 		auto materialID = mAssetManager.RegisterAsset(mMaterial, "StandardMaterial");
+
 		auto meshID = mAssetManager.RegisterAsset(mMesh, "CubeMesh");
 
 		if (handle)
@@ -78,6 +82,13 @@ namespace BHive
 		}
 
 		{
+			auto gameObject = mCurrentWorld->CreateGameObject("Ocean");
+			auto p = gameObject->AddComponent<StaticMeshComponent>();
+			p->SetStaticMesh(MeshFactory::CreatePlane(2000, 2000));
+			p->SetMaterial(0, CreateRef<OceanMaterial>());
+		}
+
+		{
 			auto gameObject = mCurrentWorld->CreateGameObject("GameObject2");
 			auto p = gameObject->AddComponent<PhysicsComponent>();
 			p->Settings.BodyType = EBodyType::Dynamic;
@@ -91,6 +102,17 @@ namespace BHive
 		}
 
 		{
+			auto terrainID = mAssetManager.RegisterAsset(CreateRef<TerrainMaterial>(), "Terrain");
+			auto comp = mCurrentWorld->CreateGameObject("Terrain")->AddComponent<TerrainComponent>();
+			comp->TerrainParameters.Resolution = 1000;
+			comp->TerrainParameters.WorldHalfSize = 800;
+			comp->TerrainParameters.Scale = 20.0f;
+			comp->TerrainParameters.Source = "C:\\Users\\dariu\\Documents\\Game\\assets\\textures\\hawaii_height_map.png";
+			comp->SetMaterial(terrainID);
+			comp->Build();
+		}
+
+		{
 			auto gameObject = mCurrentWorld->CreateGameObject("GameObject3");
 			gameObject->AddComponent<PhysicsComponent>();
 			gameObject->AddComponent<BoxColliderComponent>()->Extents = {50.f, .5f, 50.f};
@@ -100,8 +122,14 @@ namespace BHive
 			auto gameObject = mCurrentWorld->CreateGameObject("GameObject3");
 			auto c = gameObject->AddComponent<CameraComponent>();
 			c->IsPrimary = true;
-			c->Camera.SetPerspective(45.f, 16.f / 9.f, 0.1f, 100.f);
-			gameObject->GetComponent<TransformComponent>()->SetTransform(FTransform::LookAt({0.f, 0.f, 0.f}, {0.f, 5.f, 10.f}));
+			c->Camera.SetPerspective(45.f, 16.f / 9.f, 0.1f, 2000.f);
+			gameObject->GetComponent<TransformComponent>()->SetTransform(FTransform::LookAt({0.f, 0.f, 0.f}, {0.f, 200.f, 1000.f}));
+		}
+
+		{
+			auto directionLight = mCurrentWorld->CreateGameObject("Main Light");
+			auto c = directionLight->AddComponent<DirectionalLightComponent>();
+			directionLight->SetLocalTransform({{0, 0, 0}, {0, -90, -35}});
 		}
 
 		mCurrentWorld->Begin();
@@ -174,6 +202,14 @@ namespace BHive
 					mAudioComponent->Audio->Play();
 				}
 			}
+		}
+
+		ImGui::End();
+
+		if (ImGui::Begin("Scene"))
+		{
+			auto output = mRenderer->GetOutput();
+			ImGui::Image(output.get(), {800, 600});
 		}
 
 		ImGui::End();

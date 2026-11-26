@@ -13,6 +13,7 @@ namespace BHive
 	class Texture2D;
 	class BaseMesh;
 	class SkeletalMesh;
+	class StaticMesh;
 	class SceneRenderer;
 	class Font;
 	class SkeletalAnimation;
@@ -57,6 +58,7 @@ namespace BHive
 		Ref<Texture2D> mTexture;
 		Ref<Texture2D> mMarioTex;
 		Ref<Font> mFont;
+		Ref<StaticMesh> mTerrainMesh;
 	};
 
 } // namespace BHive

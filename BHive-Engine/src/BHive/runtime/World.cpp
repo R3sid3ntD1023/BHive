@@ -4,6 +4,7 @@
 #include "gfx/renderers/Renderer.h"
 #include "systems/PhysicsSystem.h"
 #include "systems/RenderSystem.h"
+#include "components/CameraComponent.h"
 
 namespace BHive
 {

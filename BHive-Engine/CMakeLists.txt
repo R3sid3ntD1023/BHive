@@ -47,7 +47,7 @@ set(TARGET_NAME BHive-Engine)
 set(BUILD_SHARED_LIB TRUE CACHE BOOL "Build Engine as a shared library" FORCE)
 
 if(BUILD_SHARED_LIB)
-	add_library(${TARGET_NAME} SHARED ${ENGINE_HEADERS} ${ENGINE_SOURCES} )
+	add_library(${TARGET_NAME} SHARED ${ENGINE_HEADERS} ${ENGINE_SOURCES})
 	target_compile_definitions(${TARGET_NAME} 	PUBLIC BUILD_SHARED PRIVATE BHIVE_BUILD_DLL)
 	message(STATUS "Building Engine as Shared Library")
 else()

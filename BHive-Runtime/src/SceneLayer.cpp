@@ -21,6 +21,7 @@
 #include "importers/MeshImportResolver.h"
 #include "importers/MeshImporter.h"
 #include "importers/TextureImporter.h"
+#include "runtime/Terrain.h"
 
 namespace BHive
 {
@@ -342,6 +343,43 @@ namespace BHive
 					request.Materials = result.Materials;
 					request.Transform = newT.second;
 					mSceneRenderer->SubmitMesh(request, newT.first);
+				}
+			}
+		}
+
+		ImGui::End();
+
+		if (ImGui::Begin("Terrain"))
+		{
+			static FTerrainParameters params{};
+			static bool created_terrain = false;
+
+			Inspect().get().inspect("Terrain Parameters", params);
+
+			if (ImGui::Button("Build"))
+			{
+				Terrain terrain;
+				terrain.Init(params);
+
+				mTerrainMesh = CreateRef<StaticMesh>(terrain.BuildMesh());
+				if (mTerrainMesh)
+				{
+					if (!created_terrain)
+					{
+						mTransforms.emplace_back();
+
+						FMeshSubmissionRequest request{};
+						request.Mesh = mTerrainMesh;
+						request.Materials = mMaterialTables.at(0);
+						request.Transform = mTransforms.at(12).second;
+						mSceneRenderer->SubmitMesh(request, mTransforms.at(12).first);
+
+						created_terrain = true;
+					}
+					else
+					{
+						mSceneRenderer->UpdateMesh(mTransforms.at(12).first, mTerrainMesh);
+					}
 				}
 			}
 		}

@@ -9,10 +9,10 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${command:cmake.launchTargetPath}",
-            "args": [ ],
+            "args": [],
             "stopAtEntry": false,
             "cwd": "${command:cmake.launchTargetDirectory}",
-            "environment": [ ],
+            "environment": [],
             "console": "integratedTerminal"
         },
         {

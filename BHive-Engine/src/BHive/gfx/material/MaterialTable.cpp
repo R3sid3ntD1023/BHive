@@ -18,6 +18,11 @@ namespace BHive
 		return mMaterials.size();
 	}
 
+	MaterialTable::MaterialTable(uint64_t size)
+	{
+		mMaterials.resize(size);
+	}
+
 	AssetHandle<Material> MaterialTable::Get(uint32_t index) const
 	{
 		if (mMaterials.size() > index)

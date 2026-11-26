@@ -18,6 +18,12 @@ namespace BHive
 		EPropertyMetaData_Flags
 	};
 
+	enum EPathMetaData : uint8_t
+	{
+		EPathMetaData_AsFiles,
+		EPathMetaData_Extensions
+	};
+
 	enum EPropertyFlags : uint32_t
 	{
 		EPropertyFlags_None = 0,

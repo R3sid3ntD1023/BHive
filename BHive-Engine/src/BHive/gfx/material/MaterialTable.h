@@ -8,6 +8,10 @@ namespace BHive
 {
 	struct BHIVE_API MaterialTable
 	{
+		MaterialTable() = default;
+
+		MaterialTable(uint64_t size);
+
 		AssetHandle<Material> Get(uint32_t index = 0) const;
 
 		void Add(AssetHandle<Material> h);

@@ -24,9 +24,23 @@ namespace BHive
 
 		ImGui::SameLine();
 
+		auto files_var = GetMetaData(EPathMetaData_AsFiles);
+		auto exts_var = GetMetaData(EPathMetaData_Extensions);
+
+		auto as_files = files_var ? files_var.to_bool() : false;
+		auto exts = exts_var ? exts_var.to_string() : ".*";
+
 		if (ImGui::Button("...##"))
 		{
-			if (auto info = Platform::GetDirectory())
+			if (as_files)
+			{
+				if (auto info = Platform::OpenFile(exts.data()))
+				{
+					data = info;
+					changed |= true;
+				}
+			}
+			else if (auto info = Platform::GetDirectory())
 			{
 				data = info;
 				changed |= true;
