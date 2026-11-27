@@ -180,7 +180,7 @@ namespace BHive
 			GLuint buffer = 0;
 			glCreateBuffers(1, &buffer);
 			std::vector<std::byte> initialData(bufferSize, std::byte{0});
-			glNamedBufferData(buffer, static_cast<GLsizeiptr>(bufferSize), initialData.data(), GL_DYNAMIC_DRAW);
+			glNamedBufferData(buffer, static_cast<GLsizeiptr>(bufferSize), initialData.data(), GL_STREAM_DRAW);
 
 			mPushConstantBuffers.push_back({buffer, binding, static_cast<size_t>(range.Offset), range.Size, bufferSize});
 		}
@@ -198,7 +198,12 @@ namespace BHive
 
 			std::vector<std::byte> uploadData(pushConstant.BufferSize, std::byte{0});
 			std::memcpy(uploadData.data(), data.data() + pushConstant.Offset, pushConstant.Size);
-			glNamedBufferSubData(pushConstant.Buffer, 0, static_cast<GLsizeiptr>(pushConstant.BufferSize), uploadData.data());
+			glNamedBufferData(
+				pushConstant.Buffer,
+				static_cast<GLsizeiptr>(pushConstant.BufferSize),
+				uploadData.data(),
+				GL_STREAM_DRAW
+			);
 			glBindBufferBase(GL_UNIFORM_BUFFER, pushConstant.Binding, pushConstant.Buffer);
 		}
 	}

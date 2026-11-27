@@ -88,7 +88,7 @@ namespace BHive
 			cmd.setStencilReference(vk::StencilFaceFlagBits::eFrontAndBack, 0);
 
 			cmd.setRasterizerDiscardEnable(VK_FALSE);
-			cmd.setAlphaToCoverageEnableEXT(numAttachments != 0 ? VK_TRUE : VK_FALSE);
+			cmd.setAlphaToCoverageEnableEXT(VK_FALSE);
 
 			if (numAttachments != 0)
 			{

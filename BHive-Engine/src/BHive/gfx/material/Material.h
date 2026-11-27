@@ -20,12 +20,6 @@ namespace BHive
 			Additive
 		};
 
-		enum EFlags : uint32_t
-		{
-			None,
-			DoubleSided = BIT(2)
-		};
-
 	public:
 		Material() = default;
 		Material(const std::string &shaderProgramName);
@@ -55,6 +49,7 @@ namespace BHive
 		virtual bool ShouldCastShadows() const { return true; }
 
 		MaterialSnapshot CreateSnapshot() const override;
+
 		MaterialSnapshot CreateSnapshot(EShaderMeshType meshType) const override;
 
 		virtual std::vector<std::string> GetShaderDefinitions() const { return {}; }
@@ -62,8 +57,6 @@ namespace BHive
 		ESurfaceType GetSurfaceType() const { return mSurfaceType; }
 
 		virtual bool IsTransparent() const { return GetSurfaceType() == ESurfaceType::Transparent; }
-
-		virtual EFlags GetFlags() const { return EFlags::None; }
 
 		REFLECTABLEV(Asset)
 

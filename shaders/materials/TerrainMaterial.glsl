@@ -21,6 +21,7 @@ layout(location = 0) in struct VS_OUT
 	vec3 CameraPosition;
 	vec3 DebugColor;
 	mat4 View;
+    float Time;
 } vs_in;
 
 layout(push_constant) uniform MaterialInfo
@@ -30,11 +31,16 @@ layout(push_constant) uniform MaterialInfo
 
 struct TerrainMaterial
 {
-    vec3 Diffuse;
+    vec3 Albedo;
 	vec3 Normal;
     float Roughness;
     float Metalness;
+    vec3 IrradianceF0;
 };
+
+layout(set = SET_IMAGE_BASED_LIGHTING, binding = 0) uniform sampler2D BRDFLutMap;
+layout(set = SET_IMAGE_BASED_LIGHTING, binding = 1) uniform samplerCube PreFilterMap;
+layout(set = SET_IMAGE_BASED_LIGHTING, binding = 2) uniform samplerCube IrradianceMap;
 
 TerrainMaterial GetMaterial(VS_OUT vs)
 {
@@ -43,8 +49,11 @@ TerrainMaterial GetMaterial(VS_OUT vs)
     vec2 p = wp.xz;
     float large = Fbm(p * 0.018);
     float mid = Fbm(p * 0.12 + 7.0);
-    float fine = Fbm(p * 1.7);
-    float grain = ValueNoise(p * 9.0);
+    float pixelWorld = max(fwidth(p.x), fwidth(p.y));
+    float fineFootprint = pixelWorld * 1.7 * 8.0;
+    float fine = mix(0.5, Fbm(p * 1.7), 1.0 - smoothstep(0.35, 1.5, fineFootprint));
+    float grainFootprint = pixelWorld * 9.0;
+    float grain = mix(0.5, ValueNoise(p * 9.0), 1.0 - smoothstep(0.35, 1.5, grainFootprint));
 
     vec3 grassA = vec3(0.035, 0.11, 0.025), grassB = vec3(0.09, 0.15, 0.04);
     vec3 grass = mix(grassA, grassB, smoothstep(0.35, 0.7, mid)) * (0.75 + 0.5 * fine);
@@ -72,25 +81,45 @@ TerrainMaterial GetMaterial(VS_OUT vs)
     rough = mix(rough, 0.05, puddle);
 
 	TerrainMaterial mat;
-	mat.Diffuse = c;
+	mat.Albedo = c;
 	mat.Normal = gl_FrontFacing ? n : -n;
-    mat.Roughness = 0.5;
+    mat.Roughness = rough;
 	mat.Metalness = 0.0;
+    mat.IrradianceF0 = mix(vec3(0.04), mat.Albedo, mat.Metalness);
 
 	return mat;
 }
 
-void Direct_Terrain(const in vec3 geoPosition, const in vec3 geoNormal, const in vec3 geoViewDir, const in IncidentLight directLight, const in TerrainMaterial material, inout ReflectedLight reflectedLight)
+#include <BDRFFunctions.glsl>
+
+void Direct_Terrain(const in vec3 geoPosition, const in vec3 geoNormal, const in vec3 geoViewDir, const in IncidentLight light, const in TerrainMaterial material, inout ReflectedLight reflectedLight)
 {
-	vec3 diffuse = material.Diffuse.rgb; 
-	vec3 irradiance = max(dot(geoNormal, directLight.Direction), 0.0) * diffuse;
-	reflectedLight.DirectDiffuse += irradiance * directLight.Color;
+	vec3 bdrf = CalculateBDRF(material.IrradianceF0, geoNormal, geoViewDir, light.Direction, material.Albedo, material.Metalness, material.Roughness);
+
+	float NdotL = max(dot(geoNormal, normalize(light.Direction)), 0.0);
+	reflectedLight.DirectDiffuse += (bdrf * light.Color * NdotL);
+}
+
+void InDirect_Terrain(const in vec3 irradiance, const in vec3 geoPosition, const in vec3 geoNormal, const in vec3 geoViewDir,const in TerrainMaterial material, inout ReflectedLight reflectedLight)
+{
+	vec3 F = fresnelSchlickRoughness(max(dot(geoNormal,geoViewDir), 0.0), material.IrradianceF0, material.Roughness);
+	vec3 kS = F;
+	vec3 kD = vec3(1.0) - kS;
+	kD *= 1.0 - material.Metalness;
+	reflectedLight.IndirectDiffuse = kD *  irradiance * material.Albedo;
+}
+
+void InDirectSpecular_Terrain(const in vec3 irradiance, const in vec3 geoPosition, const in vec3 geoNormal, const in vec3 geoViewDir, const in TerrainMaterial material, inout ReflectedLight reflectedLight)
+{
+	reflectedLight.IndirectSpecular =  irradiance;
 }
 
 //#define DIRECTIONAL_SHADOW_MAPPING
 //#define POINT_SHADOW_MAPPING
 //#define SPOT_SHADOW_MAPPING
 #define Direct Direct_Terrain
+#define InDirect InDirect_Terrain
+#define InDirectSpecular InDirectSpecular_Terrain
 #define Material TerrainMaterial
 
 #include <ForwardMesh.frag>

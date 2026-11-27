@@ -142,22 +142,49 @@ namespace BHive
 		return CreateStatic(data);
 	}
 
-	Ref<StaticMesh> MeshFactory::CreatePlane(float x, float y)
+	Ref<StaticMesh> MeshFactory::CreatePlane(float x, float y, uint32_t res)
 	{
 		float w = x * .5f;
 		float h = y * .5f;
 		const auto normal = glm::vec3(0, 1, 0);
+		const uint32_t divisions = res == 0 ? 1 : res;
+		const uint32_t stride = divisions + 1;
+		std::vector<FVertex> vertices;
+		std::vector<uint32_t> indices;
+		vertices.reserve(static_cast<size_t>(stride) * stride);
+		indices.reserve(static_cast<size_t>(divisions) * divisions * 6);
 
-		std::vector<FVertex> vertices
-			= {FVertex{.Position = {-w, 0, h}, .TexCoord = {0, 1}, .Normal = normal},
-			   FVertex{.Position = {w, 0, h}, .TexCoord = {1, 1}, .Normal = normal},
-			   FVertex{.Position = {w, 0, -h}, .TexCoord = {1, 0}, .Normal = normal},
-			   FVertex{.Position = {-w, 0, -h}, .TexCoord = {0, 0}, .Normal = normal}};
+		for (uint32_t row = 0; row <= divisions; row++)
+		{
+			const float v = static_cast<float>(row) / divisions;
+			for (uint32_t column = 0; column <= divisions; column++)
+			{
+				const float u = static_cast<float>(column) / divisions;
+				vertices.push_back(FVertex{
+					.Position = {-w + x * u, 0, h - y * v},
+					.TexCoord = {u, 1.f - v},
+					.Normal = normal,
+				});
+			}
+		}
+
+		for (uint32_t row = 0; row < divisions; row++)
+		{
+			for (uint32_t column = 0; column < divisions; column++)
+			{
+				const uint32_t topLeft = row * stride + column;
+				const uint32_t topRight = topLeft + 1;
+				const uint32_t bottomLeft = topLeft + stride;
+				const uint32_t bottomRight = bottomLeft + 1;
+
+				indices.insert(indices.end(), {topLeft, topRight, bottomRight, bottomRight, bottomLeft, topLeft});
+			}
+		}
 
 		FMeshData data;
-		data.Indices = {0, 1, 2, 2, 3, 0};
+		data.Indices = indices;
 		data.Vertices = vertices;
-		data.SubMeshes.push_back(FSubMesh{.StartVertex = 0, .StartIndex = 0, .IndexCount = 6, .MaterialIndex = 0, .Bounds = {{-1, -1, 0}, {1, 1, 0}}});
+		data.SubMeshes.push_back(FSubMesh{.StartVertex = 0, .StartIndex = 0, .IndexCount = static_cast<uint32_t>(indices.size()), .MaterialIndex = 0, .Bounds = {{-w, 0, -h}, {w, 0, h}}});
 		data.MaterialCount = 1;
 
 		return CreateStatic(data);

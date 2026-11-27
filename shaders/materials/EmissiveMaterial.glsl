@@ -21,6 +21,7 @@ layout(location = 0) in struct VS_OUT
 	mat3 TBN;
 	vec3 CameraPosition;
 	vec3 DebugColor;
+	float Time;
 } vs_in;
 
 struct EmissiveMaterial

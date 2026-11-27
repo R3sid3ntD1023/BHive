@@ -65,7 +65,7 @@ namespace BHive
 
 	std::filesystem::path ShaderCache::GetShaderCacheDir(const ShaderAsset &asset)
 	{
-		auto directory = ShaderUtils::GetCacheDirectory() / "v4" / asset.CacheName;
+		auto directory = ShaderUtils::GetCacheDirectory() / "v5" / asset.CacheName;
 		if (!asset.VariantName.empty())
 			directory /= std::filesystem::path("variants") / GetSafeVariantFolder(asset.VariantName);
 		return directory;
@@ -90,7 +90,13 @@ namespace BHive
 
 	uint64_t ShaderCache::ComputeHash(const std::string &source)
 	{
-		return std::hash<std::string>{}(source);
+		uint64_t hash = 14695981039346656037ull;
+		for (const unsigned char byte : source)
+		{
+			hash ^= byte;
+			hash *= 1099511628211ull;
+		}
+		return hash;
 	}
 
 	ShaderCache::MetaData ShaderCache::LoadMeta(const ShaderAsset &asset)

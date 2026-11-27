@@ -37,12 +37,15 @@ namespace BHive
 
 	MaterialSnapshot Material::CreateSnapshot() const
 	{
-		return mBackendMaterial->CreateSnapshot();
+		auto snapshot = mBackendMaterial->CreateSnapshot();
+		snapshot.Flags = mFlags;
+		return snapshot;
 	}
 
 	MaterialSnapshot Material::CreateSnapshot(EShaderMeshType meshType) const
 	{
 		auto snapshot = mBackendMaterial->CreateSnapshot();
+		snapshot.Flags = mFlags;
 		if (meshType == EShaderMeshType::None)
 			return snapshot;
 

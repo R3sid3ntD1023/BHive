@@ -135,8 +135,7 @@ namespace BHive
 		{
 			auto state = Cast<GraphicsPipelineState>(mState.get());
 
-			const bool cullEnabled = state->Raster.CullEnabled &&
-				state->Raster.CullMode != ECullMode::None;
+			const bool cullEnabled = state->Raster.CullEnabled && state->Raster.CullMode != ECullMode::None;
 			if (utils::SetEnabled(GL_CULL_FACE, cullEnabled))
 			{
 				auto face = utils::ToFrontFace(state->Raster.FrontFace);
@@ -145,11 +144,12 @@ namespace BHive
 
 				glCullFace(cull);
 				glFrontFace(face);
-				glPolygonMode(GL_FRONT_AND_BACK, poly);
+
+				// glPolygonMode(GL_FRONT_AND_BACK, poly);
 			}
 			else
 			{
-				glPolygonMode(GL_FRONT_AND_BACK, utils::ToPolygonMode(state->Raster.FillMode));
+				// glPolygonMode(GL_FRONT_AND_BACK, utils::ToPolygonMode(state->Raster.FillMode));
 			}
 
 			if (utils::SetEnabled(GL_DEPTH_TEST, state->Depth.DepthTest))
@@ -183,10 +183,9 @@ namespace BHive
 						utils::ToBlendFactor(state->Blend.SrcColor),
 						utils::ToBlendFactor(state->Blend.DstColor),
 						utils::ToBlendFactor(state->Blend.SrcAlpha),
-						utils::ToBlendFactor(state->Blend.DstAlpha));
-					glBlendEquationSeparate(
-						utils::ToBlendOp(state->Blend.ColorOp),
-						utils::ToBlendOp(state->Blend.AlphaOp));
+						utils::ToBlendFactor(state->Blend.DstAlpha)
+					);
+					glBlendEquationSeparate(utils::ToBlendOp(state->Blend.ColorOp), utils::ToBlendOp(state->Blend.AlphaOp));
 				}
 			}
 			else

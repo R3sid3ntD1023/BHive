@@ -200,6 +200,9 @@ namespace BHive
 		auto &cmd = ctx.CommandBuffer;
 		const auto frame = ctx.Frame;
 
+		if (HasFlag(snap.Flags, EMaterialFlags::DoubleSided))
+			cmd.setCullModeEXT(vk::CullModeFlagBits::eNone);
+
 		if (CurrentBoundShader != snap.Shader)
 		{
 			CurrentBoundShader = snap.Shader;

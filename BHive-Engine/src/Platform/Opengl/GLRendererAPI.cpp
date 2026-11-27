@@ -572,7 +572,8 @@ namespace BHive
 					region.LayerCount,
 					info.Format,
 					info.Type,
-					data);
+					data
+				);
 				break;
 
 			case GL_TEXTURE_2D:
@@ -593,24 +594,15 @@ namespace BHive
 					region.LayerCount,
 					info.Format,
 					info.Type,
-					data);
+					data
+				);
 				break;
 
 			case GL_TEXTURE_CUBE_MAP:
 				for (uint32_t layer = 0; layer < region.LayerCount; ++layer)
 				{
 					const GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X + region.BaseArrayLayer + layer;
-					glTextureSubImage2DEXT(
-						textureID,
-						face,
-						level,
-						region.Offset.x,
-						region.Offset.y,
-						region.Extents.x,
-						region.Extents.y,
-						info.Format,
-						info.Type,
-						data);
+					glTextureSubImage2DEXT(textureID, face, level, region.Offset.x, region.Offset.y, region.Extents.x, region.Extents.y, info.Format, info.Type, data);
 				}
 				break;
 
@@ -629,7 +621,7 @@ namespace BHive
 	{
 		glCreateBuffers(1, &id);
 
-		auto usage = lifeTime == EBufferLifetime::Static ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW;
+		auto usage = lifeTime == EBufferLifetime::Static ? GL_STATIC_DRAW : GL_STREAM_DRAW;
 
 		glNamedBufferData(id, size, nullptr, usage);
 	}
@@ -818,6 +810,11 @@ namespace BHive
 
 				if (!snapshot.PushConstantData.empty())
 					shader->SetPushConstants(snapshot.PushConstantData);
+
+				if (HasFlag(snapshot.Flags, EMaterialFlags::DoubleSided))
+				{
+					glDisable(GL_CULL_FACE);
+				}
 				break;
 			}
 			case ECommandType::UploadBuffer:
@@ -904,11 +901,8 @@ namespace BHive
 				glBindBuffer(GL_DRAW_INDIRECT_BUFFER, buffer->GetBufferID());
 				const auto *drawOffset = reinterpret_cast<const void *>(static_cast<uintptr_t>(command.Offset));
 				glMultiDrawElementsIndirect(
-					utils::ToGLTopology(command.Mode),
-					GL_UNSIGNED_INT,
-					drawOffset,
-					static_cast<GLsizei>(command.DrawCount),
-					static_cast<GLsizei>(command.Stride));
+					utils::ToGLTopology(command.Mode), GL_UNSIGNED_INT, drawOffset, static_cast<GLsizei>(command.DrawCount), static_cast<GLsizei>(command.Stride)
+				);
 				break;
 			}
 			case ECommandType::SetLineWidth:
@@ -933,6 +927,7 @@ namespace BHive
 			}
 			case ECommandType::DrawFullScreen:
 			{
+
 				glBindVertexArray(mFullscreenVertexArray);
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 				break;

@@ -10,21 +10,7 @@
 #include "RenderBatch.h"
 #include "Renderer.h"
 #include "SceneRenderer.h"
-
-// {
-// 	auto state = Pipeline::GetDefaultGraphicsPipelineState();
-// 	state.Blend.Enabled = false;
-// 	state.Depth.DepthTest = true;
-// 	state.Depth.DepthWrite = true;
-// 	Register("MESH_MASKED", state);
-// }
-
-// {
-// 	auto state = Pipeline::GetDefaultGraphicsPipelineState();
-// 	state.Depth.DepthTest = true;
-// 	state.Depth.DepthWrite = true;
-// 	Register("MESH_SHADOW", state);
-// }
+#include "core/Time.h"
 
 namespace BHive
 {
@@ -103,6 +89,7 @@ namespace BHive
 		mRenderQueue->BuildQueue(view);
 
 		SetCamera(projection, view);
+		mSceneView.Time = Time::Raw();
 	}
 
 	void SceneRenderer::End()

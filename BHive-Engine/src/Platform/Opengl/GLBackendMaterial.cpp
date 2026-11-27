@@ -85,6 +85,7 @@ namespace BHive
 		snapshot.PushConstantData = mPushConstantData;
 		snapshot.Textures = mTextureBindings;
 		snapshot.Shader = mShaderProgram;
+		snapshot.Flags = mFlags;
 		return snapshot;
 	}
 

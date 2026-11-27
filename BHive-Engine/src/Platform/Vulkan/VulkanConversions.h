@@ -258,11 +258,41 @@ namespace BHive
 		switch (f)
 		{
 		case EMinFilter::LINEAR:
+		case EMinFilter::MIPMAP_LINEAR:
+		case EMinFilter::MIPMAP_LINEAR_NEAREST:
 			return vk::Filter::eLinear;
 		case EMinFilter::NEAREST:
+		case EMinFilter::MIPMAP_NEAREST:
+		case EMinFilter::MIPMAP_NEAREST_LINEAR:
 			return vk::Filter::eNearest;
 		default:
 			return vk::Filter::eLinear;
+		}
+	}
+
+	inline vk::SamplerMipmapMode ToVkMipmapMode(EMinFilter f)
+	{
+		switch (f)
+		{
+		case EMinFilter::MIPMAP_NEAREST:
+		case EMinFilter::MIPMAP_LINEAR_NEAREST:
+			return vk::SamplerMipmapMode::eNearest;
+		default:
+			return vk::SamplerMipmapMode::eLinear;
+		}
+	}
+
+	inline bool UsesMipmaps(EMinFilter f)
+	{
+		switch (f)
+		{
+		case EMinFilter::MIPMAP_LINEAR:
+		case EMinFilter::MIPMAP_NEAREST:
+		case EMinFilter::MIPMAP_LINEAR_NEAREST:
+		case EMinFilter::MIPMAP_NEAREST_LINEAR:
+			return true;
+		default:
+			return false;
 		}
 	}
 
@@ -490,11 +520,12 @@ namespace BHive
 			auto addressMode = ToVkWrap(info.WrapMode);
 			auto compareEnabled = info.CompareOp.has_value();
 			auto compareOp = compareEnabled ? ToVkCompare(*info.CompareOp) : vk::CompareOp::eAlways;
+			const float maxLod = UsesMipmaps(info.MinFilter) ? float(info.MipLevels - 1) : 0.0f;
 			SamplerInfo = vk::SamplerCreateInfo(
 				{},
 				magFilter,
 				minFilter,
-				vk::SamplerMipmapMode::eLinear,
+				ToVkMipmapMode(info.MinFilter),
 				addressMode,
 				addressMode,
 				addressMode,
@@ -504,7 +535,7 @@ namespace BHive
 				compareEnabled,
 				compareOp,
 				0.0f,
-				float(info.MipLevels - 1),
+				maxLod,
 				ToVkBorderColor(info.BorderColor),
 				VK_FALSE
 			);

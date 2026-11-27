@@ -20,6 +20,12 @@ namespace BHive
 	ShaderPtr ShaderFactory::Create(const std::filesystem::path &path, const std::vector<std::string> &definitions, const std::string &variantName)
 	{
 		auto resolvedPath = FileSystem::ResolvePath(path, ENGINE_SHADER_PATH);
+		if (resolvedPath.empty())
+		{
+			LOG_ERROR("Failed to resolve shader file: {}", path.string());
+			return {};
+		}
+		resolvedPath = std::filesystem::absolute(resolvedPath).lexically_normal();
 
 		ShaderAsset asset{};
 		asset.CacheName = path.stem().string();
@@ -27,7 +33,7 @@ namespace BHive
 		asset.Name = asset.CacheName;
 		if (!variantName.empty())
 			asset.Name += "_" + variantName;
-		asset.SourcePath = path;
+		asset.SourcePath = resolvedPath;
 
 		// load source
 		std::string source;
@@ -37,7 +43,7 @@ namespace BHive
 			return {};
 		}
 
-		auto expanded = ShaderUtils::ExpandIncludesWithDependencies(source, asset.SourcePath.string());
+		auto expanded = ShaderUtils::ExpandIncludesWithDependencies(source, resolvedPath.string());
 		auto &expanded_source = expanded.Source;
 		asset.Dependencies = std::move(expanded.Dependencies);
 		const uint64_t newHash = ShaderCache::ComputeHash(expanded_source);
@@ -60,14 +66,16 @@ namespace BHive
 			return Create(asset);
 		}
 
-		ShaderCompiler compiler(path);
+		ShaderCompiler compiler(resolvedPath);
 		compiler.Init();
 		MacroDefinitions macroDefinitions;
 		for (const auto &[stage, _] : asset.Stages)
 			macroDefinitions.Names[stage] = definitions;
 		compiler.Compile(asset, macroDefinitions);
 
-		if (changed)
+		const bool hasCompiledStages = !asset.Stages.empty()
+			&& std::all_of(asset.Stages.begin(), asset.Stages.end(), [](const auto &stage) { return !stage.second.Spirv.empty(); });
+		if (hasCompiledStages)
 			ShaderCache::StoreCache(asset, expanded_source);
 
 		return Create(asset);

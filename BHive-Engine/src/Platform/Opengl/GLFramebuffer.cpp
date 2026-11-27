@@ -82,25 +82,18 @@ namespace BHive
 				mColorAttachments[i]->GetTextureID(),
 				mColorAttachmentSpecifications[i].Type,
 				range.BaseMipLevel,
-				range.BaseArrayLayer);
+				range.BaseArrayLayer
+			);
 		}
 
 		if (mDepthAttachment)
 		{
-			AttachFramebufferTexture(
-				mRendererID,
-				GL_DEPTH_ATTACHMENT,
-				mDepthAttachment->GetTextureID(),
-				mDepthSpecification.Type,
-				range.BaseMipLevel,
-				range.BaseArrayLayer);
+			AttachFramebufferTexture(mRendererID, GL_DEPTH_ATTACHMENT, mDepthAttachment->GetTextureID(), mDepthSpecification.Type, range.BaseMipLevel, range.BaseArrayLayer);
 		}
 
 		ASSERT(glCheckNamedFramebufferStatus(mRendererID, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
-		const glm::uvec2 mipSize{
-			std::max(mSpecification.Size.x >> range.BaseMipLevel, 1u),
-			std::max(mSpecification.Size.y >> range.BaseMipLevel, 1u)};
+		const glm::uvec2 mipSize{std::max(mSpecification.Size.x >> range.BaseMipLevel, 1u), std::max(mSpecification.Size.y >> range.BaseMipLevel, 1u)};
 		glBindFramebuffer(GL_FRAMEBUFFER, mRendererID);
 		glViewport(0, 0, mipSize.x, mipSize.y);
 	}
@@ -155,7 +148,8 @@ namespace BHive
 			static_cast<GLint>(x + w),
 			static_cast<GLint>(y + h),
 			GL_COLOR_BUFFER_BIT,
-			GL_LINEAR);
+			GL_LINEAR
+		);
 	}
 
 	void GLFramebuffer::ReadPixel(uint32_t attachmentIndex, unsigned x, unsigned y, unsigned w, unsigned h, void *data) const

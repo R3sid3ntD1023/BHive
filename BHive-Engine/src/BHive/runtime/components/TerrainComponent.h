@@ -29,7 +29,7 @@ namespace BHive
 
 		void Load(cereal::BinaryInputArchive &ar) override;
 
-		const Terrain &GetTerrain() const { return mTerrain; }
+		Terrain &GetTerrain() { return mTerrain; }
 
 		REFLECTABLEV(Component)
 

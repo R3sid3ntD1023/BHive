@@ -101,6 +101,7 @@ namespace BHive
 			ssbo.Stages |= stage;
 		}
 
+		int32_t offset = 0;
 		for (const auto &pcb : resources.push_constant_buffers)
 		{
 			auto &buffer_type = compiler.get_type(pcb.base_type_id);
@@ -108,7 +109,7 @@ namespace BHive
 			auto &pco = PushConstants.emplace_back();
 			pco.Name = compiler.get_name(buffer_type.self);
 			pco.Size = compiler.get_declared_struct_size(buffer_type);
-			pco.Offset = 0;
+			pco.Offset = offset;
 			pco.Stages |= stage;
 
 			for (uint32_t i = 0; i < (uint32_t)buffer_type.member_types.size(); i++)
@@ -122,6 +123,8 @@ namespace BHive
 				u.Location = compiler.get_decoration(buffer_type.self, spv::DecorationLocation);
 				u.Stages |= stage;
 			}
+
+			offset += pco.Size;
 		}
 
 		for (const auto &uniform : resources.gl_plain_uniforms)
@@ -202,7 +205,9 @@ namespace BHive
 				result += fmt::format("\t\tUniform Buffer: {} ->  Binding: {}, Size: {}\n", name, buffer.Binding, buffer.Size);
 				for (const auto &[uniform_name, uniform] : buffer.Members)
 				{
-					result += fmt::format("\t\tMember: {} - Type: {} - Size: {} - Offset: {} - Location: {}\n", uniform_name, uniform.Type, uniform.Size, uniform.Offset, uniform.Location);
+					result += fmt::format(
+						"\t\tMember: {} - Type: {} - Size: {} - Offset: {} - Location: {}\n", uniform_name, uniform.Type, uniform.Size, uniform.Offset, uniform.Location
+					);
 				}
 			}
 
@@ -217,7 +222,9 @@ namespace BHive
 			result += fmt::format("\t\tPush Constant: Size: {}\n", pco.Size);
 			for (const auto &[uniform_name, uniform] : pco.Members)
 			{
-				result += fmt::format("\t\tMember: {} - Type: {} - Size: {} - Offset: {} - Location: {}\n", uniform_name, uniform.Type, uniform.Size, uniform.Offset, uniform.Location);
+				result += fmt::format(
+					"\t\tMember: {} - Type: {} - Size: {} - Offset: {} - Location: {}\n", uniform_name, uniform.Type, uniform.Size, uniform.Offset, uniform.Location
+				);
 			}
 		}
 		for (const auto &[name, uniform] : Uniforms)
@@ -280,12 +287,29 @@ namespace BHive
 			// Merge Push Constants
 			for (auto &pc : refl.PushConstants)
 			{
-				auto &dst = merged.PushConstants.emplace_back();
-				dst.Name = pc.Name;
-				dst.Size = pc.Size;
-				dst.Offset = pc.Offset;
-				dst.Stages |= pc.Stages;
-				dst.Members = pc.Members;
+				auto existing = std::ranges::find_if(merged.PushConstants, [&](const FPushConstantsRange &r) { return r.Offset == pc.Offset && r.Size == pc.Size; });
+				if (existing == merged.PushConstants.end())
+				{
+					merged.PushConstants.push_back(pc);
+				}
+				else
+				{
+					existing->Stages |= pc.Stages;
+					for (const auto &[memberName, member] : pc.Members)
+					{
+						auto [existingMember, inserted] = existing->Members.try_emplace(memberName, member);
+						if (inserted)
+							continue;
+
+						auto &dstMember = existingMember->second;
+						ASSERT(
+							dstMember.Type == member.Type && dstMember.Size == member.Size && dstMember.Offset == member.Offset,
+							"Push constant member '{}' has incompatible layouts across shader stages",
+							memberName
+						);
+						dstMember.Stages |= member.Stages;
+					}
+				}
 			}
 
 			// // Merge plain uniforms

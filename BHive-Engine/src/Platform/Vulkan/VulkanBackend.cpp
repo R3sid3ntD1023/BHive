@@ -179,7 +179,7 @@ namespace BHive
 		if (EngineConfig::DebugEnabled)
 			enabled_layers.assign(s_validationLayers.begin(), s_validationLayers.end());
 
-		if (EngineConfig::DebugLabels)
+		if (EngineConfig::DebugEnabled || EngineConfig::DebugLabels)
 			required_extensions.push_back(vk::EXTDebugUtilsExtensionName);
 
 		if (std::ranges::any_of(
@@ -192,11 +192,11 @@ namespace BHive
 			ASSERT(false);
 		};
 
-		for (uint32_t i = 0; i < glfwExtensionCount; i++)
+		for (const char *extension : required_extensions)
 		{
-			if (std::ranges::none_of(extensionProperties, [glfwExtensions, i](const vk::ExtensionProperties &prop) { return strcmp(prop.extensionName, glfwExtensions[i]) == 0; }))
+			if (std::ranges::none_of(extensionProperties, [extension](const vk::ExtensionProperties &prop) { return strcmp(prop.extensionName, extension) == 0; }))
 			{
-				LOG_ERROR("Missing required Vulkan extension: {}", glfwExtensions[i]);
+				LOG_ERROR("Missing required Vulkan extension: {}", extension);
 				ASSERT(false);
 			}
 		}

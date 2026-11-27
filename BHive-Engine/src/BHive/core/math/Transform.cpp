@@ -106,4 +106,20 @@ namespace BHive
 		return Translation == rhs.Translation && Rotation == rhs.Rotation && Scale == rhs.Scale;
 	}
 
+	FTransform FTransform::FromForwardVector(const glm::vec3 &direction)
+	{
+		const float directionLength = glm::length(direction);
+		if (directionLength <= 1e-6f)
+			return {};
+
+		const glm::vec3 forward = direction / directionLength;
+		glm::vec3 up = {0, 1, 0};
+		if (std::abs(glm::dot(forward, up)) > 0.999f)
+			up = {0, 0, 1};
+
+		FTransform result;
+		result.Rotation = glm::degrees(glm::eulerAngles(glm::quatLookAt(forward, up)));
+		return result;
+	}
+
 } // namespace BHive

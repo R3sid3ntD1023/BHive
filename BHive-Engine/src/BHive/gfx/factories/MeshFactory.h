@@ -22,7 +22,7 @@ namespace BHive
 
 		static Ref<StaticMesh> CreateSphere(float radius, uint32_t sectors = 32u, uint32_t stacks = 32u);
 
-		static Ref<StaticMesh> CreatePlane(float x = 1.0f, float y = 1.0f);
+		static Ref<StaticMesh> CreatePlane(float x = 1.0f, float y = 1.0f, uint32_t res = 1);
 	};
 
 	struct BHIVE_API SkeletonFactory : public IResourceFactory<Skeleton>

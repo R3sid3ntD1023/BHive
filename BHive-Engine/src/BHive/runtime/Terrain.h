@@ -25,6 +25,21 @@ namespace BHive
 		REFLECTABLE()
 	};
 
+	struct FShoreParameters
+	{
+		int32_t Size = 1024;
+		glm::vec2 Center = {0, 0};
+		float Extent = 1.f;
+
+		template <typename Ar>
+		void Serialize(Ar &ar)
+		{
+			ar(Center, Extent);
+		}
+
+		bool operator==(const FShoreParameters &rhs) const { return Size == rhs.Size && Center == rhs.Center && Extent == rhs.Extent; }
+	};
+
 	REFLECT_EXTERN(FTerrainParameters)
 
 	class BHIVE_API Terrain
@@ -44,8 +59,14 @@ namespace BHive
 
 		FMeshData BuildMesh();
 
+		void GenerateShoreMap(const FShoreParameters &shoreParams);
+
+		Ref<Texture2D> GetShoreMap() const { return mShoreMap; }
+
 	private:
 		DecodedTexture mSource;
 		FTerrainParameters mParams;
+		Ref<Texture2D> mShoreMap;
+		FShoreParameters mShoreParameters;
 	};
 } // namespace BHive

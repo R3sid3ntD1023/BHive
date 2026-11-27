@@ -4,6 +4,7 @@
 #include "core/FileSystem.h"
 #include "gfx/RenderCommand.h"
 #include "gfx/shader/OpenGLBindingMapping.h"
+#include <glad/glad.h>
 #include <future>
 #include <regex>
 #include <spirv_cross/spirv_glsl.hpp>
@@ -312,9 +313,30 @@ namespace BHive
 			remapBindings(resources.storage_images, EResourceType::StorageImage);
 			remapBindings(resources.subpass_inputs, EResourceType::InputAttachment);
 
-			for (const auto &pushConstant : glsl_compiler.get_shader_resources().push_constant_buffers)
-				glsl_compiler.set_decoration(pushConstant.id, spv::DecorationBinding, 0);
-			std::string glsl_source = glsl_compiler.compile();
+			if (!resources.push_constant_buffers.empty())
+			{
+				GLint maxBindings = 0;
+				glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxBindings);
+				if (maxBindings <= 0 || resources.push_constant_buffers.size() > static_cast<size_t>(maxBindings))
+					throw std::runtime_error("No available OpenGL uniform-buffer bindings for shader push constants");
+
+				for (size_t i = 0; i < resources.push_constant_buffers.size(); ++i)
+				{
+					const auto binding = static_cast<uint32_t>(maxBindings - 1 - i);
+					glsl_compiler.set_decoration(resources.push_constant_buffers[i].id, spv::DecorationBinding, binding);
+				}
+			}
+
+			std::string glsl_source;
+			try
+			{
+				glsl_source = glsl_compiler.compile();
+			}
+			catch (const spirv_cross::CompilerError &error)
+			{
+				LOG_ERROR("SPIRV-Cross failed to convert shader '{}' stage {}: {}", mFilePath, ShaderUtils::ToString(stage), error.what());
+				throw;
+			}
 
 			if (definitions.contains(stage))
 			{

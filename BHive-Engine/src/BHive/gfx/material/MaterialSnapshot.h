@@ -2,6 +2,7 @@
 
 #include "core/Core.h"
 #include "gfx/registries/Handles.h"
+#include "core/EnumFlags.h"
 
 namespace BHive
 {
@@ -19,6 +20,14 @@ namespace BHive
 		BufferPtr Buffer;
 	};
 
+	enum class EMaterialFlags : uint8_t
+	{
+		None = 0,
+		DoubleSided = 1 << 0
+	};
+
+	ENABLE_BITMASK_OPERATORS(EMaterialFlags)
+
 	struct MaterialSnapshot
 	{
 		ShaderPtr Shader;
@@ -30,5 +39,7 @@ namespace BHive
 		std::unordered_map<uint32_t, BufferBinding> Buffers;
 
 		std::vector<std::byte> PushConstantData;
+
+		EMaterialFlags Flags;
 	};
 } // namespace BHive

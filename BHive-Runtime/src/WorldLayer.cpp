@@ -16,6 +16,10 @@
 #include "gfx/material/TerrainMaterial.h"
 #include "gfx/material/OceanMaterial.h"
 
+#include "gfx/renderers/postprocess/AcesMaterial.h"
+#include "gfx/renderers/postprocess/BloomMaterial.h"
+#include "gfx/renderers/postprocess/ColorGradingMaterial.h"
+
 namespace BHive
 {
 
@@ -31,14 +35,20 @@ namespace BHive
 		sensitivity.MoveSpeed = EngineConfig::MoveSpeed;
 		sensitivity.OrbitSpeed = EngineConfig::OrbitSpeed;
 
-		mCamera = EditorCamera(75.0f, aspect, 0.1f, 1000.0f);
-		mCamera.SetStartState({0, 1000, 1000}, -90.f, -35.0f);
+		mCamera = EditorCamera(75.0f, aspect, 0.1f, 5000.0f);
+		mCamera.SetStartState({0, 10, 10}, -90.f, -35.0f);
 		mCamera.SetSensitivity(sensitivity);
 
 		mCameraController.SetCamera(&mCamera);
 
 		mRenderer = CreateRef<SceneRenderer>();
 		mRenderer->Init(size);
+
+		auto decodedEnviroment = TextureImporter::FromFile(ENGINE_PATH "/data/hdr/kloofendal_43d_clear_puresky_1k.hdr");
+		mRenderer->SetEnvironmentTexture(CreateRef<Texture2D>(decodedEnviroment.Size, decodedEnviroment.CreateInfo, decodedEnviroment.Data));
+		mRenderer->AddPostProcessMaterial<BloomMaterial>();
+		mRenderer->AddPostProcessMaterial<AcesMaterial>();
+		mRenderer->AddPostProcessMaterial<ColorGradingMaterial>();
 
 		mCurrentWorld = CreateRef<World>();
 
@@ -82,13 +92,6 @@ namespace BHive
 		}
 
 		{
-			auto gameObject = mCurrentWorld->CreateGameObject("Ocean");
-			auto p = gameObject->AddComponent<StaticMeshComponent>();
-			p->SetStaticMesh(MeshFactory::CreatePlane(2000, 2000));
-			p->SetMaterial(0, CreateRef<OceanMaterial>());
-		}
-
-		{
 			auto gameObject = mCurrentWorld->CreateGameObject("GameObject2");
 			auto p = gameObject->AddComponent<PhysicsComponent>();
 			p->Settings.BodyType = EBodyType::Dynamic;
@@ -110,6 +113,25 @@ namespace BHive
 			comp->TerrainParameters.Source = "C:\\Users\\dariu\\Documents\\Game\\assets\\textures\\hawaii_height_map.png";
 			comp->SetMaterial(terrainID);
 			comp->Build();
+			auto &t = comp->GetTerrain();
+
+			FShoreParameters shoreParameters{};
+			shoreParameters.Extent = comp->TerrainParameters.WorldHalfSize * 2.0f;
+			t.GenerateShoreMap(shoreParameters);
+			auto shoreMap = t.GetShoreMap();
+
+			auto oceanMat = CreateRef<OceanMaterial>();
+			oceanMat->SetFlags(EMaterialFlags::DoubleSided);
+			oceanMat->SetSurfaceType(Material::ESurfaceType::Transparent);
+			oceanMat->SetTexture("ShoreMap", {shoreMap});
+			oceanMat->SetParam("ShoreCenter", shoreParameters.Center);
+			oceanMat->SetParam("ShoreExtent", shoreParameters.Extent);
+			oceanMat->SetParam("WindDirection", glm::vec2(1, 0));
+
+			auto ocean = mCurrentWorld->CreateGameObject("Ocean");
+			auto p = ocean->AddComponent<StaticMeshComponent>();
+			p->SetStaticMesh(MeshFactory::CreatePlane(2000, 2000, 400));
+			p->SetMaterial(0, oceanMat);
 		}
 
 		{
@@ -121,15 +143,17 @@ namespace BHive
 		{
 			auto gameObject = mCurrentWorld->CreateGameObject("GameObject3");
 			auto c = gameObject->AddComponent<CameraComponent>();
-			c->IsPrimary = true;
+			c->IsPrimary = false;
 			c->Camera.SetPerspective(45.f, 16.f / 9.f, 0.1f, 2000.f);
 			gameObject->GetComponent<TransformComponent>()->SetTransform(FTransform::LookAt({0.f, 0.f, 0.f}, {0.f, 200.f, 1000.f}));
 		}
 
 		{
-			auto directionLight = mCurrentWorld->CreateGameObject("Main Light");
-			auto c = directionLight->AddComponent<DirectionalLightComponent>();
-			directionLight->SetLocalTransform({{0, 0, 0}, {0, -90, -35}});
+
+			mDirectionalLight = mCurrentWorld->CreateGameObject("Main Light");
+			auto c = mDirectionalLight->AddComponent<DirectionalLightComponent>();
+			mDirectionalLight->SetLocalTransform(FTransform::FromForwardVector({0, -1, 0}));
+			c->Color = FColor(1.f, 1.f, 1.f, 2.f);
 		}
 
 		mCurrentWorld->Begin();
@@ -142,6 +166,10 @@ namespace BHive
 		mCameraController.Update(dt);
 
 		mCurrentWorld->Update(dt);
+
+		// auto &t = mDirectionalLight->GetLocalTransform();
+		// t.Rotation.x += dt * 10.0f;
+		// mDirectionalLight->SetLocalTransform(t);
 	}
 
 	void WorldLayer::OnRender(Renderer &renderer)

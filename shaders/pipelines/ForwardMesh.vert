@@ -20,6 +20,7 @@ layout(std140, set = SET_GLOBAL, binding = 0) uniform CameraBuffer
 	mat4 View;
 	vec4 NearFar;
 	vec4 Position;
+	float Time;
 	Frustum Frustum;
 } uCam;
 
@@ -51,6 +52,7 @@ layout(location = 0) out struct VS_OUT
 	vec3 CameraPosition;
 	vec3 DebugColor;
 	mat4 View;
+	float Time;
 } vs_out;
 
 #define VIEW_PROJECTION uCam.ViewProjection
@@ -67,5 +69,7 @@ void main()
 	vs_out.Color = vColor;
 	vs_out.DebugColor = vec3(float(instanceID)/ float(objectCount), 0, 1);
 	vs_out.View = uCam.View;
+	vs_out.Time = uCam.Time;
+
 }
 

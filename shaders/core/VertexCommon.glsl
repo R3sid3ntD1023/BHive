@@ -16,4 +16,10 @@ vec3 T = normalize(NM * vTangent);
 vec3 N = normalize(NM * vNormal);
 vec3 B = normalize(NM * vBiNormal);
 
+#ifdef APPLY_POSITION_OFFSET
+	vec3 offset = ProcessVertex(worldPos.xyz, uCam.Time, uCam.Position.xyz);
+	worldPos.xyz += offset;
+#endif
+
 gl_Position = VIEW_PROJECTION * worldPos;
+

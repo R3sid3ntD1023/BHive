@@ -10,6 +10,7 @@
 namespace BHive
 {
 	class AudioSource;
+	class GameObject;
 
 	class WorldLayer : public Layer
 	{
@@ -44,5 +45,7 @@ namespace BHive
 
 		EditorAssetManager mAssetManager{"Assets"};
 		struct AudioComponent *mAudioComponent;
+
+		Ref<GameObject> mDirectionalLight;
 	};
 } // namespace BHive

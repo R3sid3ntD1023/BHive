@@ -49,6 +49,8 @@ namespace BHive
 		{
 			ar(Translation, Rotation, Scale);
 		}
+
+		static FTransform FromForwardVector(const glm::vec3 &direction);
 	};
 
 	template <typename Ostream>

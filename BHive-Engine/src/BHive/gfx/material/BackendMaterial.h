@@ -47,7 +47,12 @@ namespace BHive
 		virtual MaterialSnapshot CreateSnapshot() const = 0;
 		virtual MaterialSnapshot CreateSnapshot(EShaderMeshType meshType) const { return CreateSnapshot(); }
 
+		void SetFlags(EMaterialFlags flags) { mFlags = flags; };
+
 		static Ref<IMaterialBackendInterface> Create(const std::string &shaderProgramName);
+
+	protected:
+		EMaterialFlags mFlags = EMaterialFlags::None;
 	};
 
 	class BHIVE_API IMaterial
@@ -63,5 +68,10 @@ namespace BHive
 
 		virtual MaterialSnapshot CreateSnapshot() const = 0;
 		virtual MaterialSnapshot CreateSnapshot(EShaderMeshType meshType) const { return CreateSnapshot(); }
+
+		void SetFlags(EMaterialFlags flags) { mFlags = flags; };
+
+	protected:
+		EMaterialFlags mFlags = EMaterialFlags::None;
 	};
 } // namespace BHive

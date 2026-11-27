@@ -12,9 +12,9 @@ namespace BHive
 			: Material("OceanMaterial.glsl")
 		{
 			SetTexture("ShoreMap", {nullptr});
-			SetParam("Time", 0.0f);
 			SetParam("ShoreCenter", glm::vec2{0, 0});
-			SetParam("ShoreExtent", 0.f);
+			SetParam("ShoreExtent", 1.f);
+			SetParam("WindDirection", glm::vec2{1, .5});
 		}
 
 		void SetTextureFromType(EMaterialTextureType type, Ref<Texture> texture) override {};

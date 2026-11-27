@@ -55,6 +55,7 @@ namespace BHive
 		struct SceneView
 		{
 			FView View;
+			float Time;
 			Frustum Frustum;
 		};
 

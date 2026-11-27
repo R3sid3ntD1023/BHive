@@ -24,18 +24,28 @@ namespace BHive
 		u = std::clamp(u, 0.0f, 1.0f);
 		v = std::clamp(v, 0.0f, 1.0f);
 
-		if (!mSource.Data)
+		if (!mSource.Data || mSource.Size.x == 0 || mSource.Size.y == 0)
 			return 0.0f;
 
 		auto s = mSource.Size;
+		const float px = u * static_cast<float>(s.x - 1);
+		const float pz = v * static_cast<float>(s.y - 1);
+		const uint32_t x0 = static_cast<uint32_t>(px);
+		const uint32_t z0 = static_cast<uint32_t>(pz);
+		const uint32_t x1 = std::min(x0 + 1, s.x - 1);
+		const uint32_t z1 = std::min(z0 + 1, s.y - 1);
+		const float tx = px - static_cast<float>(x0);
+		const float tz = pz - static_cast<float>(z0);
 
-		const int ix = static_cast<int>(u * (s.x - 1));
-		const int iz = static_cast<int>(v * (s.y - 1));
-		if (ix < 0 || ix >= s.x || iz < 0 || iz >= s.y)
-			return 0.0f;
+		auto sample = [&](uint32_t sx, uint32_t sz)
+		{
+			const size_t index = (static_cast<size_t>(sz) * s.x + sx) * 4;
+			return static_cast<float>(mSource.Data[index]) / 255.0f;
+		};
 
-		const int index = (iz * s.x + ix) * 4;
-		float pixel = (static_cast<float>(mSource.Data[index])) / 255.0f;
+		const float top = glm::mix(sample(x0, z0), sample(x1, z0), tx);
+		const float bottom = glm::mix(sample(x0, z1), sample(x1, z1), tx);
+		const float pixel = glm::mix(top, bottom, tz);
 		return (pixel - 0.5f) * 2.0f * mParams.Scale;
 	}
 
@@ -104,6 +114,41 @@ namespace BHive
 		s.StartVertex = 0;
 		s.Bounds = AABB{glm::vec3{-mParams.WorldHalfSize}, glm::vec3{mParams.WorldHalfSize}};
 		return m;
+	}
+
+	void Terrain::GenerateShoreMap(const FShoreParameters &shoreParams)
+	{
+		if (mShoreMap && mShoreParameters == shoreParams)
+			return;
+
+		const auto size = shoreParams.Size;
+		const float extent = shoreParams.Extent;
+		if (size <= 0 || extent <= 0.0f)
+		{
+			LOG_ERROR("Cannot generate shore map with size {} and extent {}", size, extent);
+			return;
+		}
+
+		std::vector<float> heights(static_cast<size_t>(size) * size);
+		for (int j = 0; j < size; ++j)
+			for (int i = 0; i < size; ++i)
+			{
+				const float u = (static_cast<float>(i) + 0.5f) / static_cast<float>(size);
+				const float v = (static_cast<float>(j) + 0.5f) / static_cast<float>(size);
+				const float x = shoreParams.Center.x + (u - 0.5f) * extent;
+				const float z = shoreParams.Center.y + (v - 0.5f) * extent;
+				heights[static_cast<size_t>(j) * size + i] = Height(x, z);
+			}
+
+		FTextureCreateInfo texInfo{};
+		texInfo.Format = EFormat::R32F;
+		texInfo.WrapMode = EWrapMode::CLAMP_TO_EDGE;
+		texInfo.MinFilter = EMinFilter::LINEAR;
+		texInfo.MagFilter = EMagFilter::LINEAR;
+
+		ByteBuffer data(heights.data(), heights.size() * sizeof(float));
+		mShoreMap = CreateRef<Texture2D>(glm::vec2(size, size), texInfo, data);
+		mShoreParameters = shoreParams;
 	}
 
 	REFLECT(FTerrainParameters)
